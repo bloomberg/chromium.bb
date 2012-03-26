@@ -212,7 +212,6 @@ weston_surface_create(struct weston_compositor *compositor)
 
 	wl_list_init(&surface->link);
 	wl_list_init(&surface->layer_link);
-	wl_list_init(&surface->buffer_link);
 
 	surface->surface.resource.client = NULL;
 
@@ -637,8 +636,6 @@ destroy_surface(struct wl_resource *resource)
 		compositor->destroy_image(compositor->display,
 					  surface->image);
 
-	wl_list_remove(&surface->buffer_link);
-
 	pixman_region32_fini(&surface->transform.boundingbox);
 	pixman_region32_fini(&surface->damage);
 	pixman_region32_fini(&surface->opaque);
@@ -663,7 +660,6 @@ weston_buffer_attach(struct wl_buffer *buffer, struct wl_surface *surface)
 {
 	struct weston_surface *es = (struct weston_surface *) surface;
 	struct weston_compositor *ec = es->compositor;
-	struct wl_list *surfaces_attached_to;
 
 	if (!es->texture) {
 		glGenTextures(1, &es->texture);
@@ -679,15 +675,6 @@ weston_buffer_attach(struct wl_buffer *buffer, struct wl_surface *surface)
 
 	if (wl_buffer_is_shm(buffer)) {
 		es->pitch = wl_shm_buffer_get_stride(buffer) / 4;
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_BGRA_EXT,
-			     es->pitch, buffer->height, 0,
-			     GL_BGRA_EXT, GL_UNSIGNED_BYTE,
-			     wl_shm_buffer_get_data(buffer));
-
-		surfaces_attached_to = buffer->user_data;
-
-		wl_list_remove(&es->buffer_link);
-		wl_list_insert(surfaces_attached_to, &es->buffer_link);
 	} else {
 		if (es->image != EGL_NO_IMAGE_KHR)
 			ec->destroy_image(ec->display, es->image);
@@ -1187,6 +1174,17 @@ surface_damage(struct wl_client *client,
 	struct weston_surface *es = resource->data;
 
 	weston_surface_damage_rectangle(es, x, y, width, height);
+
+	if (es->buffer && wl_buffer_is_shm(es->buffer)) {
+		glBindTexture(GL_TEXTURE_2D, es->texture);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_BGRA_EXT,
+			     es->pitch, es->buffer->height, 0,
+			     GL_BGRA_EXT, GL_UNSIGNED_BYTE,
+			     wl_shm_buffer_get_data(es->buffer));
+
+		/* Hmm, should use glTexSubImage2D() here but GLES2 doesn't
+		 * support any unpack attributes except GL_UNPACK_ALIGNMENT. */
+	}
 }
 
 static void
@@ -1877,6 +1875,9 @@ input_device_attach(struct wl_client *client,
 	if (device->input_device.pointer_focus->resource.client != client)
 		return;
 
+	if (device->sprite->buffer)
+		wl_list_remove(&device->sprite->buffer_destroy_listener.link);
+
 	if (!buffer_resource) {
 		if (device->sprite->output)
 			weston_surface_unmap(device->sprite);
@@ -1897,8 +1898,13 @@ input_device_attach(struct wl_client *client,
 				 device->input_device.y - device->hotspot_y,
 				 buffer->width, buffer->height);
 
+	device->sprite->buffer = buffer;
+	wl_list_insert(buffer->resource.destroy_listener_list.prev,
+		       &device->sprite->buffer_destroy_listener.link);
+
 	weston_buffer_attach(buffer, &device->sprite->surface);
-	weston_surface_damage(device->sprite);
+	surface_damage(NULL, &device->sprite->surface.resource,
+		       0, 0, buffer->width, buffer->height);
 }
 
 const static struct wl_input_device_interface input_device_interface = {
@@ -1946,6 +1952,7 @@ weston_input_device_init(struct weston_input_device *device,
 			      device, bind_input_device);
 
 	device->sprite = weston_surface_create(ec);
+	device->sprite->surface.resource.data = device->sprite;
 
 	device->compositor = ec;
 	device->hotspot_x = 16;
@@ -2273,61 +2280,6 @@ weston_output_init(struct weston_output *output, struct weston_compositor *c,
 }
 
 static void
-shm_buffer_created(struct wl_buffer *buffer)
-{
-	struct wl_list *surfaces_attached_to;
-
-	surfaces_attached_to = malloc(sizeof *surfaces_attached_to);
-	if (!surfaces_attached_to) {
-		buffer->user_data = NULL;
-		return;
-	}
-
-	wl_list_init(surfaces_attached_to);
-
-	buffer->user_data = surfaces_attached_to;
-}
-
-static void
-shm_buffer_damaged(struct wl_buffer *buffer,
-		   int32_t x, int32_t y, int32_t width, int32_t height)
-{
-	struct wl_list *surfaces_attached_to = buffer->user_data;
-	struct weston_surface *es;
-	GLsizei tex_width = wl_shm_buffer_get_stride(buffer) / 4;
-
-	wl_list_for_each(es, surfaces_attached_to, buffer_link) {
-		glBindTexture(GL_TEXTURE_2D, es->texture);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_BGRA_EXT,
-			     tex_width, buffer->height, 0,
-			     GL_BGRA_EXT, GL_UNSIGNED_BYTE,
-			     wl_shm_buffer_get_data(buffer));
-		/* Hmm, should use glTexSubImage2D() here but GLES2 doesn't
-		 * support any unpack attributes except GL_UNPACK_ALIGNMENT. */
-	}
-}
-
-static void
-shm_buffer_destroyed(struct wl_buffer *buffer)
-{
-	struct wl_list *surfaces_attached_to = buffer->user_data;
-	struct weston_surface *es, *next;
-
-	wl_list_for_each_safe(es, next, surfaces_attached_to, buffer_link) {
-		wl_list_remove(&es->buffer_link);
-		wl_list_init(&es->buffer_link);
-	}
-
-	free(surfaces_attached_to);
-}
-
-const static struct wl_shm_callbacks shm_callbacks = {
-	shm_buffer_created,
-	shm_buffer_damaged,
-	shm_buffer_destroyed
-};
-
-static void
 compositor_bind(struct wl_client *client,
 		void *data, uint32_t version, uint32_t id)
 {
@@ -2349,7 +2301,7 @@ weston_compositor_init(struct weston_compositor *ec, struct wl_display *display)
 				   ec, compositor_bind))
 		return -1;
 
-	ec->shm = wl_shm_init(display, &shm_callbacks);
+	wl_display_init_shm(display);
 
 	ec->image_target_texture_2d =
 		(void *) eglGetProcAddress("glEGLImageTargetTexture2DOES");
@@ -2428,8 +2380,6 @@ weston_compositor_shutdown(struct weston_compositor *ec)
 		output->destroy(output);
 
 	weston_binding_list_destroy_all(&ec->binding_list);
-
-	wl_shm_finish(ec->shm);
 
 	wl_array_release(&ec->vertices);
 	wl_array_release(&ec->indices);

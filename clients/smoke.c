@@ -220,8 +220,6 @@ redraw_handler(struct widget *widget, void *data)
 
 	render(smoke, surface);
 
-	display_surface_damage(smoke->display, surface,
-			       0, 0, smoke->width, smoke->height);
 	window_damage(smoke->window, 0, 0, smoke->width, smoke->height);
 
 	cairo_surface_destroy(surface);

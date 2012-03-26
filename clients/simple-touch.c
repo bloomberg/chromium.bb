@@ -184,9 +184,7 @@ touch_paint(struct touch *touch, int32_t x, int32_t y, int32_t id)
 	p += touch->width;
 	p[1] = c;
 
-	wl_buffer_damage(touch->buffer, 0, 0, touch->width, touch->height);
-	wl_surface_damage(touch->surface,
-			  0, 0, touch->width, touch->height);
+	wl_surface_damage(touch->surface, 0, 0, touch->width, touch->height);
 }
 
 static void
@@ -312,7 +310,6 @@ touch_create(int width, int height)
 	wl_surface_set_user_data(touch->surface, touch);
 
 	memset(touch->data, 64, width * height * 4);
-	wl_buffer_damage(touch->buffer, 0, 0, width, height);
 	wl_surface_attach(touch->surface, touch->buffer, 0, 0);
 	wl_surface_damage(touch->surface, 0, 0, width, height);
 

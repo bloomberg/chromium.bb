@@ -284,7 +284,6 @@ struct weston_surface {
 	int32_t pitch;
 	struct wl_list link;
 	struct wl_list layer_link;
-	struct wl_list buffer_link;
 	struct weston_shader *shader;
 	GLfloat color[4];
 	uint32_t alpha;

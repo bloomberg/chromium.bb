@@ -142,7 +142,6 @@ redraw(void *data, struct wl_callback *callback, uint32_t time)
 	offset = time >> 4;
 	for (i = 0; i < end; i++)
 		p[i] = (i + offset) * 0x0080401;
-	wl_buffer_damage(window->buffer, 0, 0, window->width, window->height);
 
 	wl_surface_attach(window->surface, window->buffer, 0, 0);
 	wl_surface_damage(window->surface,
