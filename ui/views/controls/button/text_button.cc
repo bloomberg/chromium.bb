@@ -513,6 +513,9 @@ void TextButtonBase::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
         ComputeCanvasStringFlags();
 
     if (mode == PB_FOR_DRAG) {
+      // Disable sub-pixel rendering as background is transparent.
+      draw_string_flags |= gfx::Canvas::NO_SUBPIXEL_RENDERING;
+
 #if defined(OS_WIN)
       // TODO(erg): Either port DrawStringWithHalo to linux or find an
       // alternative here.
