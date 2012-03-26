@@ -159,7 +159,7 @@
 
       <!-- The relative font size in % used in Web UI (e.g. History).  -->
       <message name="IDS_WEB_FONT_SIZE" use_name_for_id="true">
-        84%
+        75%
       </message>
 
       <!-- The default value for |WebPreference::standard_font_family| -->
