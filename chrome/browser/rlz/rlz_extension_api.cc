@@ -4,11 +4,15 @@
 
 #include "chrome/browser/rlz/rlz_extension_api.h"
 
+#include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/common/extensions/extension.h"
 #include "rlz/lib/lib_values.h"
+#include "rlz/lib/rlz_lib.h"
 
 namespace {
 
@@ -113,16 +117,16 @@ bool RlzGetAccessPointRlzFunction::RunImpl() {
   return true;
 }
 
-bool RlzSendFinancialPingFunction::RunImpl() {
-  // This can be slow if registry access goes to disk. Should preferably
-  // perform registry operations on the File thread.
-  //   http://code.google.com/p/chromium/issues/detail?id=62098
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
+RlzSendFinancialPingFunction::RlzSendFinancialPingFunction() {
+}
 
+RlzSendFinancialPingFunction::~RlzSendFinancialPingFunction() {
+}
+
+bool RlzSendFinancialPingFunction::RunImpl() {
   std::string product_name;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &product_name));
-  rlz_lib::Product product;
-  EXTENSION_FUNCTION_VALIDATE(GetProductFromName(product_name, &product));
+  EXTENSION_FUNCTION_VALIDATE(GetProductFromName(product_name, &product_));
 
   ListValue* access_points_list;
   EXTENSION_FUNCTION_VALIDATE(args_->GetList(1, &access_points_list));
@@ -131,9 +135,9 @@ bool RlzSendFinancialPingFunction::RunImpl() {
   }
 
   // Allocate an access point array to pass to ClearProductState().  The array
-  // must be termindated with the value rlz_lib::NO_ACCESS_POINT, hence + 1
+  // must be terminated with the value rlz_lib::NO_ACCESS_POINT, hence + 1
   // when allocating the array.
-  scoped_array<rlz_lib::AccessPoint> access_points(
+  access_points_.reset(
       new rlz_lib::AccessPoint[access_points_list->GetSize() + 1]);
 
   size_t i;
@@ -141,37 +145,49 @@ bool RlzSendFinancialPingFunction::RunImpl() {
     std::string ap_name;
     EXTENSION_FUNCTION_VALIDATE(access_points_list->GetString(i, &ap_name));
     EXTENSION_FUNCTION_VALIDATE(rlz_lib::GetAccessPointFromName(
-        ap_name.c_str(), &access_points[i]));
+        ap_name.c_str(), &access_points_[i]));
   }
-  access_points[i] = rlz_lib::NO_ACCESS_POINT;
+  access_points_[i] = rlz_lib::NO_ACCESS_POINT;
 
-  std::string signature;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetString(2, &signature));
+  EXTENSION_FUNCTION_VALIDATE(args_->GetString(2, &signature_));
+  EXTENSION_FUNCTION_VALIDATE(args_->GetString(3, &brand_));
+  EXTENSION_FUNCTION_VALIDATE(args_->GetString(4, &id_));
+  EXTENSION_FUNCTION_VALIDATE(args_->GetString(5, &lang_));
+  EXTENSION_FUNCTION_VALIDATE(args_->GetBoolean(6, &exclude_machine_id_));
 
-  std::string brand;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetString(3, &brand));
+  // |system_request_context| needs to run on the UI thread.
+  rlz_lib::SetURLRequestContext(g_browser_process->system_request_context());
 
-  std::string id;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetString(4, &id));
+  content::BrowserThread::GetBlockingPool()->PostTask(
+      FROM_HERE,
+      base::Bind(&RlzSendFinancialPingFunction::WorkOnWorkerThread, this));
 
-  std::string lang;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetString(5, &lang));
+  return true;
+}
 
-  bool exclude_machine_id;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetBoolean(6, &exclude_machine_id));
-
+void RlzSendFinancialPingFunction::WorkOnWorkerThread() {
   // rlz_lib::SendFinancialPing() will not send a ping more often than once in
   // any 24-hour period.  Calling it more often has no effect.  If a ping is
   // not sent false is returned, but this is not an error, so we should not
   // use the return value of rlz_lib::SendFinancialPing() as the return value
   // of this function.  Callers interested in the return value can register
   // an optional callback function.
-  bool sent = rlz_lib::SendFinancialPing(product, access_points.get(),
-                                         signature.c_str(), brand.c_str(),
-                                         id.c_str(), lang.c_str(),
-                                         exclude_machine_id);
+  bool sent = rlz_lib::SendFinancialPing(product_, access_points_.get(),
+                                         signature_.c_str(), brand_.c_str(),
+                                         id_.c_str(), lang_.c_str(),
+                                         exclude_machine_id_);
+
   result_.reset(Value::CreateBooleanValue(sent));
-  return true;
+
+  bool post_task_result = content::BrowserThread::PostTask(
+      content::BrowserThread::UI, FROM_HERE,
+      base::Bind(&RlzSendFinancialPingFunction::RespondOnUIThread, this));
+  DCHECK(post_task_result);
+}
+
+void RlzSendFinancialPingFunction::RespondOnUIThread() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  SendResponse(true);
 }
 
 bool RlzClearProductStateFunction::RunImpl() {

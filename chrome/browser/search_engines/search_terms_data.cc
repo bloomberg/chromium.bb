@@ -13,7 +13,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
 
-#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+#if defined(ENABLE_RLZ)
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/rlz/rlz.h"
 #endif
@@ -54,7 +54,7 @@ std::string SearchTermsData::GetApplicationLocale() const {
   return "en";
 }
 
-#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+#if defined(ENABLE_RLZ)
 string16 SearchTermsData::GetRlzParameterValue() const {
   return string16();
 }
@@ -89,7 +89,7 @@ std::string UIThreadSearchTermsData::GetApplicationLocale() const {
   return g_browser_process->GetApplicationLocale();
 }
 
-#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+#if defined(ENABLE_RLZ)
 string16 UIThreadSearchTermsData::GetRlzParameterValue() const {
   DCHECK(!BrowserThread::IsWellKnownThread(BrowserThread::UI) ||
          BrowserThread::CurrentlyOn(BrowserThread::UI));

@@ -4609,13 +4609,22 @@
             },
           ],
         }],
+        ['OS=="win" or OS=="mac"', {
+          'dependencies': [
+            '../rlz/rlz.gyp:rlz_lib',
+          ],
+        }, {  # 'OS!="win" and OS!="mac"
+          'sources/': [
+            # Exclude all of rlz.
+            ['exclude', '^browser/rlz/'],
+          ],
+        }],
         ['OS=="win"', {
           'include_dirs': [
             '<(DEPTH)/third_party/wtl/include',
           ],
           'dependencies': [
             '../google_update/google_update.gyp:google_update',
-            '../rlz/rlz.gyp:rlz_lib',
             '../third_party/iaccessible2/iaccessible2.gyp:iaccessible2',
             '../third_party/isimpledom/isimpledom.gyp:isimpledom',
             '../ui/views/views.gyp:views',
@@ -4660,10 +4669,6 @@
             # Exclude parts of password_manager.
             ['exclude', '^browser/password_manager/ie7_password\\.cc$'],
 
-            # Exclude all of rlz.
-            ['exclude', '^browser/rlz/'],
-            ['exclude', '^browser/extensions/extension_rlz_module'],
-
             # Exclude all of views.
             ['exclude', '^browser/ui/views/'],
 
@@ -4698,7 +4703,6 @@
                 # This exclude duplicates the one just above because of the
                 # order of evaluation of the 'sources/' rule above, the
                 # conditions, and this 'sources/' rule.
-                ['exclude', '^browser/extensions/extension_rlz_module'],
                 ['exclude', '^browser/google/google_update.cc'],
                 ['exclude', '^browser/google/google_update.h'],
                 ['exclude', '^browser/platform_util_common_linux.cc'],

@@ -1587,7 +1587,7 @@ void TemplateURLService::SetDefaultSearchProviderNoNotify(
     const TemplateURLRef* url_ref = url->url();
     if (url_ref && url_ref->HasGoogleBaseURLs()) {
       GoogleURLTracker::RequestServerCheck();
-#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+#if defined(ENABLE_RLZ)
       // Needs to be evaluated. See http://crbug.com/62328.
       base::ThreadRestrictions::ScopedAllowIO allow_io;
       RLZTracker::RecordProductEvent(rlz_lib::CHROME,

@@ -2352,6 +2352,11 @@
             'browser/spellchecker/spellchecker_platform_engine_unittest.cc',
           ],
         }],
+        ['OS!="win" and OS!="mac"', {
+          'sources!': [
+            'browser/rlz/rlz_unittest.cc',
+          ],
+        }],
         ['OS=="win"', {
           'dependencies': [
             'chrome_version_resources',
@@ -2413,7 +2418,6 @@
             'app/chrome_dll.rc',
             'browser/accessibility/browser_accessibility_win_unittest.cc',
             'browser/bookmarks/bookmark_node_data_unittest.cc',
-            'browser/rlz/rlz_unittest.cc',
             'browser/search_engines/template_url_scraper_unittest.cc',
             'browser/ui/views/bookmarks/bookmark_editor_view_unittest.cc',
             'browser/ui/views/extensions/browser_action_drag_data_unittest.cc',
@@ -3082,6 +3086,11 @@
             '../content/browser/accessibility/dump_accessibility_tree_helper.cc',
           ],
         }],
+        ['OS!="win" and OS!="mac"', {
+          'sources!': [
+            'browser/rlz/rlz_extension_apitest.cc',
+          ],
+        }],
         ['OS=="win"', {
           'sources': [
             '<(SHARED_INTERMEDIATE_DIR)/chrome/browser_resources.rc',
@@ -3128,7 +3137,6 @@
             'app/chrome_dll.rc',
             'app/chrome_dll_resource.h',
             'app/chrome_version.rc.version',
-            'browser/rlz/rlz_extension_apitest.cc',
           ],
         }],
         ['toolkit_uses_gtk == 1', {

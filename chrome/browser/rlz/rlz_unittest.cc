@@ -7,9 +7,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/stringprintf.h"
 #include "base/path_service.h"
-#include "base/test/test_reg_util_win.h"
+#include "base/scoped_temp_dir.h"
 #include "base/utf_string_conversions.h"
-#include "base/win/registry.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -21,21 +20,33 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
-#include "rlz/win/lib/rlz_lib.h"  // InitializeTempHivesForTesting
 #include "testing/gtest/include/gtest/gtest.h"
 
-using base::win::RegKey;
+#if defined(OS_WIN)
+#include "base/test/test_reg_util_win.h"
+#include "base/win/registry.h"
+#include "rlz/win/lib/rlz_lib.h"  // InitializeTempHivesForTesting
+#elif defined(OS_MACOSX)
+#include "rlz/lib/rlz_value_store.h"  // SetRlzStoreDirectory
+#endif
+
 using content::NavigationEntry;
-using registry_util::RegistryOverrideManager;
 using testing::AssertionResult;
 using testing::AssertionSuccess;
 using testing::AssertionFailure;
 
+#if defined(OS_WIN)
+using base::win::RegKey;
+using registry_util::RegistryOverrideManager;
+#endif
+
 namespace {
 
+#if defined(OS_WIN)
 // Registry path to overridden hive.
 const wchar_t kRlzTempHkcu[] = L"rlz_hkcu";
 const wchar_t kRlzTempHklm[] = L"rlz_hklm";
+#endif
 
 // Dummy RLZ string for the access points.
 const char kOmniboxRlzString[] = "test_omnibox";
@@ -146,7 +157,9 @@ class RlzLibTest : public testing::Test {
  protected:
   void SetMainBrand(const char* brand);
   void SetReactivationBrand(const char* brand);
+#if defined(OS_WIN)
   void SetRegistryBrandValue(const wchar_t* name, const char* brand);
+#endif
 
   void SimulateOmniboxUsage();
   void SimulateHomepageUsage();
@@ -157,12 +170,18 @@ class RlzLibTest : public testing::Test {
   void ExpectReactivationRlzPingSent(bool expected);
 
   TestRLZTracker tracker_;
+#if defined(OS_WIN)
   RegistryOverrideManager override_manager_;
+#elif defined(OS_MACOSX)
+  ScopedTempDir temp_dir_;
+  scoped_ptr<google_util::BrandForTesting> brand_override_;
+#endif
 };
 
 void RlzLibTest::SetUp() {
   testing::Test::SetUp();
 
+#if defined(OS_WIN)
   // Before overriding HKLM for the tests, we need to set it up correctly
   // so that the rlz_lib calls work. This needs to be done before we do the
   // override.
@@ -193,6 +212,10 @@ void RlzLibTest::SetUp() {
   // initialization performed above.
   override_manager_.OverrideRegistry(HKEY_LOCAL_MACHINE, kRlzTempHklm);
   override_manager_.OverrideRegistry(HKEY_CURRENT_USER, kRlzTempHkcu);
+#elif defined(OS_MACOSX)
+  ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+  rlz_lib::testing::SetRlzStoreDirectory(temp_dir_.path());
+#endif
 
   // Make sure a non-organic brand code is set in the registry or the RLZTracker
   // is pretty much a no-op.
@@ -201,23 +224,34 @@ void RlzLibTest::SetUp() {
 }
 
 void RlzLibTest::TearDown() {
+#if defined(OS_MACOSX)
+  rlz_lib::testing::SetRlzStoreDirectory(FilePath());
+#endif
   testing::Test::TearDown();
 }
 
 void RlzLibTest::SetMainBrand(const char* brand) {
+#if defined(OS_WIN)
   SetRegistryBrandValue(google_update::kRegRLZBrandField, brand);
+#elif defined(OS_MACOSX)
+  brand_override_.reset(new google_util::BrandForTesting(brand));
+#endif
   std::string check_brand;
   google_util::GetBrand(&check_brand);
   EXPECT_EQ(brand, check_brand);
 }
 
 void RlzLibTest::SetReactivationBrand(const char* brand) {
+  // TODO(thakis): Reactivation doesn't exist on Mac yet.
+#if defined(OS_WIN)
   SetRegistryBrandValue(google_update::kRegRLZReactivationBrandField, brand);
   std::string check_brand;
   google_util::GetReactivationBrand(&check_brand);
   EXPECT_EQ(brand, check_brand);
+#endif
 }
 
+#if defined(OS_WIN)
 void RlzLibTest::SetRegistryBrandValue(const wchar_t* name,
                                        const char* brand) {
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
@@ -227,10 +261,11 @@ void RlzLibTest::SetRegistryBrandValue(const wchar_t* name,
     LONG result = key.DeleteValue(name);
     ASSERT_TRUE(ERROR_SUCCESS == result || ERROR_FILE_NOT_FOUND == result);
   } else {
-    string16 brand16 = ASCIIToWide(brand);
+    string16 brand16 = ASCIIToUTF16(brand);
     ASSERT_EQ(ERROR_SUCCESS, key.WriteValue(name, brand16.c_str()));
   }
 }
+#endif
 
 void RlzLibTest::SimulateOmniboxUsage() {
   tracker_.Observe(chrome::NOTIFICATION_OMNIBOX_OPENED_URL,
@@ -513,7 +548,7 @@ TEST_F(RlzLibTest, GetAccessPointRlzOnIoThread) {
 
   tracker_.set_assume_not_ui_thread(true);
   EXPECT_TRUE(RLZTracker::GetAccessPointRlz(rlz_lib::CHROME_OMNIBOX, &rlz));
-  EXPECT_STREQ(kOmniboxRlzString, WideToUTF8(rlz).c_str());
+  EXPECT_STREQ(kOmniboxRlzString, UTF16ToUTF8(rlz).c_str());
 }
 
 TEST_F(RlzLibTest, GetAccessPointRlzNotOnIoThread) {
@@ -537,11 +572,11 @@ TEST_F(RlzLibTest, GetAccessPointRlzIsCached) {
 
   tracker_.set_assume_not_ui_thread(true);
   EXPECT_TRUE(RLZTracker::GetAccessPointRlz(rlz_lib::CHROME_OMNIBOX, &rlz));
-  EXPECT_STREQ(kOmniboxRlzString, WideToUTF8(rlz).c_str());
+  EXPECT_STREQ(kOmniboxRlzString, UTF16ToUTF8(rlz).c_str());
 
   tracker_.set_assume_not_ui_thread(false);
   EXPECT_TRUE(RLZTracker::GetAccessPointRlz(rlz_lib::CHROME_OMNIBOX, &rlz));
-  EXPECT_STREQ(kOmniboxRlzString, WideToUTF8(rlz).c_str());
+  EXPECT_STREQ(kOmniboxRlzString, UTF16ToUTF8(rlz).c_str());
 }
 
 TEST_F(RlzLibTest, PingUpdatesRlzCache) {
@@ -555,17 +590,17 @@ TEST_F(RlzLibTest, PingUpdatesRlzCache) {
   tracker_.set_assume_not_ui_thread(true);
 
   EXPECT_TRUE(RLZTracker::GetAccessPointRlz(rlz_lib::CHROME_OMNIBOX, &rlz));
-  EXPECT_STREQ(kOmniboxRlzString, WideToUTF8(rlz).c_str());
+  EXPECT_STREQ(kOmniboxRlzString, UTF16ToUTF8(rlz).c_str());
   EXPECT_TRUE(RLZTracker::GetAccessPointRlz(rlz_lib::CHROME_HOME_PAGE, &rlz));
-  EXPECT_STREQ(kHomepageRlzString, WideToUTF8(rlz).c_str());
+  EXPECT_STREQ(kHomepageRlzString, UTF16ToUTF8(rlz).c_str());
 
   // Make sure cache is valid.
   tracker_.set_assume_not_ui_thread(false);
 
   EXPECT_TRUE(RLZTracker::GetAccessPointRlz(rlz_lib::CHROME_OMNIBOX, &rlz));
-  EXPECT_STREQ(kOmniboxRlzString, WideToUTF8(rlz).c_str());
+  EXPECT_STREQ(kOmniboxRlzString, UTF16ToUTF8(rlz).c_str());
   EXPECT_TRUE(RLZTracker::GetAccessPointRlz(rlz_lib::CHROME_HOME_PAGE, &rlz));
-  EXPECT_STREQ(kHomepageRlzString, WideToUTF8(rlz).c_str());
+  EXPECT_STREQ(kHomepageRlzString, UTF16ToUTF8(rlz).c_str());
 
   // Perform ping.
   tracker_.set_assume_not_ui_thread(true);
@@ -577,9 +612,9 @@ TEST_F(RlzLibTest, PingUpdatesRlzCache) {
   tracker_.set_assume_not_ui_thread(false);
 
   EXPECT_TRUE(RLZTracker::GetAccessPointRlz(rlz_lib::CHROME_OMNIBOX, &rlz));
-  EXPECT_STREQ(kNewOmniboxRlzString, WideToUTF8(rlz).c_str());
+  EXPECT_STREQ(kNewOmniboxRlzString, UTF16ToUTF8(rlz).c_str());
   EXPECT_TRUE(RLZTracker::GetAccessPointRlz(rlz_lib::CHROME_HOME_PAGE, &rlz));
-  EXPECT_STREQ(kNewHomepageRlzString, WideToUTF8(rlz).c_str());
+  EXPECT_STREQ(kNewHomepageRlzString, UTF16ToUTF8(rlz).c_str());
 }
 
 TEST_F(RlzLibTest, ObserveHandlesBadArgs) {
@@ -594,6 +629,8 @@ TEST_F(RlzLibTest, ObserveHandlesBadArgs) {
                    content::Details<NavigationEntry>(entry.get()));
 }
 
+// TODO(thakis): Reactivation doesn't exist on Mac yet.
+#if defined(OS_WIN)
 TEST_F(RlzLibTest, ReactivationNonOrganicNonOrganic) {
   SetReactivationBrand("REAC");
 
@@ -636,4 +673,4 @@ TEST_F(RlzLibTest, ReactivationOrganicOrganic) {
   ExpectRlzPingSent(false);
   ExpectReactivationRlzPingSent(false);
 }
-
+#endif  // defined(OS_WIN)

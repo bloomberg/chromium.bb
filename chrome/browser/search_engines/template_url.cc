@@ -397,11 +397,10 @@ std::string TemplateURLRef::ReplaceSearchTermsUsingTermsData(
         // to happen so that we replace the RLZ template with the
         // empty string.  (If we don't handle this case, we hit a
         // NOTREACHED below.)
-#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+#if defined(ENABLE_RLZ)
         string16 rlz_string = search_terms_data.GetRlzParameterValue();
         if (!rlz_string.empty()) {
-          rlz_string = L"rlz=" + rlz_string + L"&";
-          url.insert(i->index, UTF16ToUTF8(rlz_string));
+          url.insert(i->index, "rlz=" + UTF16ToUTF8(rlz_string) + "&");
         }
 #endif
         break;

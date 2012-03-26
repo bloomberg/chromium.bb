@@ -33,7 +33,7 @@ class SearchTermsData {
   // "en" and thus should be overridden where the result is actually meaningful.
   virtual std::string GetApplicationLocale() const;
 
-#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+#if defined(ENABLE_RLZ)
   // Returns the value for the Chrome Omnibox rlz.  This implementation returns
   // the empty string.
   virtual string16 GetRlzParameterValue() const;
@@ -70,7 +70,7 @@ class UIThreadSearchTermsData : public SearchTermsData {
   // Implementation of SearchTermsData.
   virtual std::string GoogleBaseURLValue() const OVERRIDE;
   virtual std::string GetApplicationLocale() const OVERRIDE;
-#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+#if defined(ENABLE_RLZ)
   virtual string16 GetRlzParameterValue() const OVERRIDE;
 #endif
 

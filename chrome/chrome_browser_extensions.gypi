@@ -499,7 +499,6 @@
         }],
         ['OS=="win"', {
           'dependencies': [
-            '../rlz/rlz.gyp:rlz_lib',
             '../third_party/iaccessible2/iaccessible2.gyp:iaccessible2',
             '../third_party/isimpledom/isimpledom.gyp:isimpledom',
           ],
@@ -519,10 +518,6 @@
               ],
               'sources/': [
                 ['include', '^browser/extensions/'],
-                # This exclude duplicates the one just above because of the
-                # order of evaluation of the 'sources/' rule above, the
-                # conditions, and this 'sources/' rule.
-                ['exclude', '^browser/extensions/extension_rlz_module'],
 
                 # Other excluded stuff.
                 ['exclude', '^browser/extensions/browser_action_test_util_gtk.cc'],

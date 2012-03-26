@@ -4,14 +4,19 @@
 
 #include <map>
 
-#include "base/win/registry.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/rlz/rlz_extension_api.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
-#include "rlz/win/lib/rlz_lib.h"
+#include "net/base/mock_host_resolver.h"
+#include "rlz/lib/rlz_lib.h"
+
+#if (OS_WIN)
+#include "base/win/registry.h"
+#endif
 
 class MockRlzSendFinancialPingFunction : public RlzSendFinancialPingFunction {
   virtual bool RunImpl();
@@ -37,6 +42,14 @@ ExtensionFunction* MockRlzSendFinancialPingFunctionFactory() {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Rlz) {
+  // The default test resolver doesn't allow lookups to *.google.com. That
+  // makes sense, but it does make RLZ's SendFinancialPing() fail -- so allow
+  // connections to google.com in this test.
+  scoped_refptr<net::RuleBasedHostResolverProc> resolver =
+      new net::RuleBasedHostResolverProc(host_resolver());
+  resolver->AllowDirectLookup("*.google.com");
+  net::ScopedDefaultHostResolverProc scoper(resolver);
+
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExperimentalExtensionApis);
 
@@ -49,6 +62,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Rlz) {
   rlz_lib::ClearProductState(rlz_lib::PINYIN_IME, access_points);
   rlz_lib::ClearProductState(rlz_lib::DESKTOP, access_points);
 
+#if defined(OS_WIN)
   // Check that the state has really been cleared.
   base::win::RegKey key(HKEY_CURRENT_USER,
                         L"Software\\Google\\Common\\Rlz\\Events\\N",
@@ -58,6 +72,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Rlz) {
   key.Open(HKEY_CURRENT_USER, L"Software\\Google\\Common\\Rlz\\Events\\D",
            KEY_READ);
   ASSERT_FALSE(key.Valid());
+#endif
 
   // Mock out experimental.rlz.sendFinancialPing().
   ASSERT_TRUE(ExtensionFunctionDispatcher::OverrideFunction(
@@ -73,6 +88,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Rlz) {
   ASSERT_EQ(3, MockRlzSendFinancialPingFunction::expected_count());
   ExtensionFunctionDispatcher::ResetFunctions();
 
+#if defined(OS_WIN)
   // Now make sure we recorded what was expected.  If the code in test.js
   // changes, need to make appropriate changes here.
   key.Open(HKEY_CURRENT_USER, L"Software\\Google\\Common\\Rlz\\Events\\N",
@@ -93,6 +109,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Rlz) {
   key.Open(HKEY_CURRENT_USER, L"Software\\Google\\Common\\Rlz\\Events\\D",
            KEY_READ);
   ASSERT_FALSE(key.Valid());
+#endif
 
   // Cleanup.
   rlz_lib::ClearProductState(rlz_lib::PINYIN_IME, access_points);

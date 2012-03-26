@@ -42,6 +42,9 @@
 #if defined(OS_WIN)
 #include "chrome/browser/browser_util_win.h"
 #include "chrome/browser/first_run/upgrade_util_win.h"
+#endif
+
+#if defined(ENABLE_RLZ)
 #include "chrome/browser/rlz/rlz.h"
 #endif
 
@@ -155,7 +158,7 @@ bool ShutdownPreThreadsStop() {
 
   prefs->CommitPendingWrite();
 
-#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+#if defined(ENABLE_RLZ)
   // Cleanup any statics created by RLZ. Must be done before NotificationService
   // is destroyed.
   RLZTracker::CleanupRlz();

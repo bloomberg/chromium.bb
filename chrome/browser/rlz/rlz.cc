@@ -11,13 +11,8 @@
 #include <algorithm>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
-#include "base/file_path.h"
 #include "base/message_loop.h"
-#include "base/path_service.h"
 #include "base/string_util.h"
-#include "base/synchronization/lock.h"
-#include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
@@ -26,12 +21,30 @@
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/chrome_paths.h"
-#include "chrome/common/env_vars.h"
-#include "chrome/installer/util/google_update_settings.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
+
+#if defined(OS_WIN)
+#include "chrome/installer/util/google_update_settings.h"
+#else
+namespace GoogleUpdateSettings {
+static bool GetLanguage(string16* language) {
+  // TODO(thakis): Implement.
+  NOTIMPLEMENTED();
+  return false;
+}
+
+// The referral program is defunct and not used. No need to implement these
+// functions on mac.
+static bool GetReferral(string16* referral) {
+  return true;
+}
+static bool ClearReferral() {
+  return true;
+}
+}  // namespace GoogleUpdateSettings
+#endif
 
 using content::BrowserThread;
 using content::NavigationEntry;
@@ -188,6 +201,7 @@ bool RLZTracker::Init(bool first_run, int delay, bool google_default_search,
 void RLZTracker::ScheduleDelayedInit(int delay) {
   // The RLZTracker is a singleton object that outlives any runnable tasks
   // that will be queued up.
+  // TODO: Move to SequencedWorkerPool once http://crbug.com/119657 is fixed.
   BrowserThread::PostDelayedTask(
       BrowserThread::FILE,
       FROM_HERE,
@@ -196,7 +210,11 @@ void RLZTracker::ScheduleDelayedInit(int delay) {
 }
 
 void RLZTracker::DelayedInit() {
+  worker_pool_token_ = BrowserThread::GetBlockingPool()->GetSequenceToken();
+
   bool schedule_ping = false;
+
+  rlz_lib::SetURLRequestContext(g_browser_process->system_request_context());
 
   // For organic brandcodes do not use rlz at all. Empty brandcode usually
   // means a chromium install. This is ok.
@@ -227,10 +245,8 @@ void RLZTracker::DelayedInit() {
 }
 
 void RLZTracker::ScheduleFinancialPing() {
-  // TODO(thakis): Once akalin's TaskRunner around PostTask() is done,
-  // use that instead of the file thread.
-  BrowserThread::PostTask(
-      BrowserThread::FILE,
+  BrowserThread::GetBlockingPool()->PostSequencedWorkerTask(
+      worker_pool_token_,
       FROM_HERE,
       base::Bind(&RLZTracker::PingNowImpl, base::Unretained(this)));
 }
@@ -385,8 +401,9 @@ bool RLZTracker::ScheduleGetAccessPointRlz(rlz_lib::AccessPoint point) {
     return false;
 
   string16* not_used = NULL;
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
+  BrowserThread::GetBlockingPool()->PostSequencedWorkerTask(
+      worker_pool_token_,
+      FROM_HERE,
       base::Bind(base::IgnoreResult(&RLZTracker::GetAccessPointRlz), point,
                  not_used));
   return true;

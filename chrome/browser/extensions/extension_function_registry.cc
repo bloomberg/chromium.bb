@@ -208,7 +208,7 @@ void ExtensionFunctionRegistry::ResetFunctions() {
   RegisterFunction<MetricsRecordLongTimeFunction>();
 
   // RLZ.
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_MACOSX)
   RegisterFunction<RlzRecordProductEventFunction>();
   RegisterFunction<RlzGetAccessPointRlzFunction>();
   RegisterFunction<RlzSendFinancialPingFunction>();

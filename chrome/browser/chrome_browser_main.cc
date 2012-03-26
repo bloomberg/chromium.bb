@@ -150,7 +150,6 @@
 #include "chrome/browser/first_run/try_chrome_dialog_view.h"
 #include "chrome/browser/first_run/upgrade_util_win.h"
 #include "chrome/browser/net/url_fixer_upper.h"
-#include "chrome/browser/rlz/rlz.h"
 #include "chrome/browser/ui/views/user_data_dir_dialog.h"
 #include "chrome/installer/util/helper.h"
 #include "chrome/installer/util/install_util.h"
@@ -166,6 +165,10 @@
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "chrome/browser/mac/install_from_dmg.h"
 #include "chrome/browser/mac/keystone_glue.h"
+#endif
+
+#if defined(ENABLE_RLZ)
+#include "chrome/browser/rlz/rlz.h"
 #endif
 
 #if defined(TOOLKIT_VIEWS)
@@ -1609,8 +1612,9 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
     ChromeBrowserMainPartsWin::RegisterApplicationRestart(
         parsed_command_line());
   }
+#endif  // OS_WIN
 
-#if defined(GOOGLE_CHROME_BUILD)
+#if defined(ENABLE_RLZ)
   // Init the RLZ library. This just binds the dll and schedules a task on the
   // file thread to be run sometime later. If this is the first run we record
   // the installation event.
@@ -1642,8 +1646,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // for the startup page if needed (i.e., when the startup page is set to
   // the home page).
   RLZTracker::GetAccessPointRlz(rlz_lib::CHROME_HOME_PAGE, NULL);
-#endif  // GOOGLE_CHROME_BUILD
-#endif  // OS_WIN
+#endif  // defined(ENABLE_RLZ)
 
   // Configure modules that need access to resources.
   net::NetModule::SetResourceProvider(chrome_common_net::NetResourceProvider);

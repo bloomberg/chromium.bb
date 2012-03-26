@@ -11,6 +11,10 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(ENABLE_RLZ)
+#include "chrome/browser/google/google_util.h"
+#endif
+
 // TestSearchTermsData --------------------------------------------------------
 
 // Simple implementation of SearchTermsData.
@@ -409,11 +413,15 @@ TEST_F(TemplateURLTest, Suggestions) {
   }
 }
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_MACOSX)
 TEST_F(TemplateURLTest, RLZ) {
   string16 rlz_string;
-#if defined(GOOGLE_CHROME_BUILD)
-  RLZTracker::GetAccessPointRlz(rlz_lib::CHROME_OMNIBOX, &rlz_string);
+#if defined(ENABLE_RLZ)
+  std::string brand;
+  if (google_util::GetBrand(&brand) && !brand.empty() &&
+      !google_util::IsOrganic(brand)) {
+    RLZTracker::GetAccessPointRlz(rlz_lib::CHROME_OMNIBOX, &rlz_string);
+  }
 #endif
 
   TemplateURL t_url;

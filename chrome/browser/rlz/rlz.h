@@ -8,7 +8,7 @@
 
 #include "build/build_config.h"
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_MACOSX)
 
 #include <map>
 #include <string>
@@ -16,6 +16,7 @@
 #include "base/basictypes.h"
 #include "base/memory/singleton.h"
 #include "base/string16.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "rlz/lib/rlz_lib.h"
@@ -126,6 +127,10 @@ class RLZTracker : public content::NotificationObserver {
   bool google_default_search_;
   bool google_default_homepage_;
 
+  // Unique sequence token so that tasks posted by RLZTracker are executed
+  // sequentially in the blocking pool.
+  base::SequencedWorkerPool::SequenceToken worker_pool_token_;
+
   // Keeps track if the RLZ tracker has already performed its delayed
   // initialization.
   bool already_ran_;
@@ -145,6 +150,6 @@ class RLZTracker : public content::NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(RLZTracker);
 };
 
-#endif  // defined(OS_WIN)
+#endif  // defined(OS_WIN) || defined(OS_MACOSX)
 
 #endif  // CHROME_BROWSER_RLZ_RLZ_H_
