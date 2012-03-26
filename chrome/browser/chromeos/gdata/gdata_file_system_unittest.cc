@@ -99,8 +99,8 @@ class GDataFileSystemTest : public testing::Test {
  protected:
   GDataFileSystemTest()
       : ui_thread_(content::BrowserThread::UI, &message_loop_),
-        io_thread_(content::BrowserThread::IO, &message_loop_),
         file_thread_(content::BrowserThread::FILE),
+        io_thread_(content::BrowserThread::IO, &message_loop_),
         file_system_(NULL),
         mock_doc_service_(NULL),
         mock_sync_client_(NULL),
@@ -775,9 +775,11 @@ class GDataFileSystemTest : public testing::Test {
   };
 
   MessageLoopForUI message_loop_;
+  // The order of the test threads is important, do not change the order.
+  // See also content/browser/browser_thread_imple.cc.
   content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread io_thread_;
   content::TestBrowserThread file_thread_;
+  content::TestBrowserThread io_thread_;
   scoped_ptr<TestingProfile> profile_;
   scoped_refptr<CallbackHelper> callback_helper_;
   GDataFileSystem* file_system_;
