@@ -500,14 +500,6 @@ class GDataFileSystem : public GDataFileSystemInterface {
     FileOperationCallback callback;
   };
 
-  // Internal intermediate callback OnGetCacheState for GetCacheStateOnIOThread,
-  // runs on calling thread, allows OnGetCacheState to lock GDataFile for safe
-  // access by |callback|.
-  typedef base::Callback<void(base::PlatformFileError error,
-                              int cache_state,
-                              const GetCacheStateCallback& callback)>
-      GetCacheStateIntermediateCallback;
-
   // Internal intermediate callback OnFilePinned and OnFileUnpinned for
   // PinOnIOThreadPool and UnpinOnIOThreadPool respectively, runs on calling
   // thread, allows OnFilePinned and OnFileUnpinned to notify observers.
@@ -618,15 +610,15 @@ class GDataFileSystem : public GDataFileSystemInterface {
       std::string* resource_id);
 
   // Creates a temporary JSON file representing a document with |edit_url|
-  // and |resource_id| under |document_dir| on IO thread pool. Upon completion
-  // it will invoke |callback| with the path of the created temporary file on
-  // thread represented by |relay_proxy|.
+  // and |resource_id| under |document_dir| on IO thread pool.
   static void CreateDocumentJsonFileOnIOThreadPool(
       const FilePath& document_dir,
       const GURL& edit_url,
       const std::string& resource_id,
-      const GetFileCallback& callback,
-      scoped_refptr<base::MessageLoopProxy> relay_proxy);
+      base::PlatformFileError* error,
+      FilePath* temp_file_path,
+      std::string* mime_type,
+      GDataFileType* file_type);
 
   // Initiates transfer of |local_file_path| with |resource_id| to
   // |remote_dest_file_path|. |local_file_path| must be a file from the local
@@ -1058,14 +1050,12 @@ class GDataFileSystem : public GDataFileSystemInterface {
   // Even though this task doesn't involve IO operations, it still runs on the
   // IO thread pool, to force synchronization of all tasks on IO thread pool,
   // e.g. this absolute must execute after InitailizeCacheOnIOTheadPool.
-  // Upon completion, invokes |callback| on the thread where GetFromCache was
-  // called.
   void GetFromCacheOnIOThreadPool(
       const std::string& resource_id,
       const std::string& md5,
       const FilePath& gdata_file_path,
-      const GetFromCacheCallback& callback,
-      scoped_refptr<base::MessageLoopProxy> relay_proxy);
+      base::PlatformFileError* error,
+      FilePath* cache_file_path);
 
   // Task posted from GetCacheState to run on IO thread pool.
   // Checks if file corresponding to |resource_id| and |md5| exists in cache
@@ -1073,14 +1063,11 @@ class GDataFileSystem : public GDataFileSystemInterface {
   // Even though this task doesn't involve IO operations, it still runs on the
   // IO thread pool, to force synchronization of all tasks on IO thread pool,
   // e.g. this absolutely must execute after InitailizeCacheOnIOTheadPool.
-  // Upon completion, invokes OnGetCacheState i.e. |intermediate_callback| on
-  // the thread where GetCacheState was called.
   void GetCacheStateOnIOThreadPool(
       const std::string& resource_id,
       const std::string& md5,
-      const GetCacheStateCallback& callback,
-      const GetCacheStateIntermediateCallback& intermediate_callback,
-      scoped_refptr<base::MessageLoopProxy> relay_proxy);
+      base::PlatformFileError* error,
+      int* cache_state);
 
   // Task posted from StoreToCache to run on IO thread pool:
   // - moves or copies (per |params.file_operation_type|) |params.source_path|
@@ -1143,21 +1130,11 @@ class GDataFileSystem : public GDataFileSystemInterface {
   // - remove all delete stale cache versions corresponding to |resource_id| in
   //   persistent, tmp and pinned directories
   // - remove entry corresponding to |resource_id| from cache map.
-  // Upon completion, |callback| is invoked on the thread where RemoveFromCache
-  // was called.
-  void RemoveFromCacheOnIOThreadPool(
-      const std::string& resource_id,
-      const CacheOperationCallback& callback,
-      scoped_refptr<base::MessageLoopProxy> relay_proxy);
+  void RemoveFromCacheOnIOThreadPool(const std::string& resource_id,
+                                     base::PlatformFileError* error);
 
   // Cache intermediate callbacks, that run on calling thread, for above cache
   // tasks that were run on IO thread pool.
-
-  // Callback for GetCacheState.  Simply locks to allow safe access of GDataFile
-  // by |callback|, then invokes callback.
-  void OnGetCacheState(base::PlatformFileError error,
-                       int cache_state,
-                       const GetCacheStateCallback& callback);
 
   // Callback for Pin. Runs |callback| and notifies the observers.
   void OnFilePinned(base::PlatformFileError error,
@@ -1209,6 +1186,15 @@ class GDataFileSystem : public GDataFileSystemInterface {
       const std::string& sequence_token_name,
       const tracked_objects::Location& from_here,
       const base::Closure& task);
+
+  // Similar to PostBlockingPoolSequencedTask() but this one takes a reply
+  // callback that runs on the calling thread.
+  // TODO(satorux): As of now, it's posting to FILE thread.
+  void PostBlockingPoolSequencedTaskAndReply(
+    const std::string& sequence_token_name,
+    const tracked_objects::Location& from_here,
+    const base::Closure& request_task,
+    const base::Closure& reply_task);
 
   // Helper function used to perform file search on the calling thread of
   // FindFileByPath() request.
