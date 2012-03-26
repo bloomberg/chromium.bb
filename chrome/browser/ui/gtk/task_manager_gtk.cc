@@ -36,6 +36,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/gtk_util.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/linux_util.h"
 
 namespace {
 

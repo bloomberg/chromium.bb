@@ -42,9 +42,9 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/text/text_elider.h"
 #include "ui/base/x/x11_util.h"
-#include "ui/gfx/gtk_util.h"
 #include "ui/gfx/image/cairo_cached_surface.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/linux_util.h"
 
 // These conflict with base/tracked_objects.h, so need to come last.
 #include <gdk/gdkx.h>  // NOLINT

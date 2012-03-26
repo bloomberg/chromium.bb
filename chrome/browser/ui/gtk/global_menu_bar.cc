@@ -21,7 +21,7 @@
 #include "content/public/browser/notification_source.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/gfx/gtk_util.h"
+#include "ui/gfx/linux_util.h"
 
 struct GlobalMenuBarCommand {
   int str_id;

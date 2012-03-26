@@ -22,6 +22,7 @@
 #include "ui/base/models/button_menu_item_model.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/gfx/gtk_util.h"
+#include "ui/gfx/linux_util.h"
 #include "webkit/glue/window_open_disposition.h"
 
 bool MenuGtk::block_activation_ = false;

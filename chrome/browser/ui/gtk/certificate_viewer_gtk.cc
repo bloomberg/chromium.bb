@@ -20,7 +20,7 @@
 #include "net/base/x509_certificate.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/gfx/gtk_util.h"
+#include "ui/gfx/linux_util.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace {

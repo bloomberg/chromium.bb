@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/linux_util.h"
+#include "base/memory/scoped_ptr.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkUnPreMultiply.h"
 #include "ui/gfx/rect.h"

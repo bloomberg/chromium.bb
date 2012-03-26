@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,15 +6,9 @@
 #define UI_GFX_GTK_UTIL_H_
 #pragma once
 
-#include <glib-object.h>
-#include <stdint.h>
-
-#include <string>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "ui/base/ui_export.h"
-#include "ui/gfx/linux_util.h"
 
 typedef struct _GdkPixbuf GdkPixbuf;
 typedef struct _GdkRegion GdkRegion;

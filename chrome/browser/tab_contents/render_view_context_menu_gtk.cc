@@ -15,7 +15,7 @@
 #include "content/public/common/context_menu_params.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/gfx/gtk_util.h"
+#include "ui/gfx/linux_util.h"
 
 using content::WebContents;
 
