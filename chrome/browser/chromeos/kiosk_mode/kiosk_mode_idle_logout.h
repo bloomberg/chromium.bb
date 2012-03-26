@@ -33,12 +33,18 @@ class KioskModeIdleLogout : public PowerManagerClient::Observer,
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
+
+  // PowerManagerClient::Observer overrides:
   virtual void IdleNotify(int64 threshold) OVERRIDE;
   virtual void ActiveNotify() OVERRIDE;
 
  private:
   friend class KioskModeIdleLogoutTest;
   content::NotificationRegistrar registrar_;
+
+  void SetupIdleNotifications();
+  void RequestNextActiveNotification();
+  void RequestNextIdleNotification();
 
   DISALLOW_COPY_AND_ASSIGN(KioskModeIdleLogout);
 };

@@ -31,14 +31,21 @@ const int kCountdownUpdateInterval = 1; // second.
 
 ////////////////////////////////////////////////////////////////////////////////
 // IdleLogoutDialogView public static methods
+// static
 void IdleLogoutDialogView::ShowDialog() {
+  // We only show the dialog if it is not already showing. We don't want two
+  // countdowns on the screen for any reason. If the dialog is closed by using
+  // CloseDialog, we reset g_instance so the next Show will work correctly; in
+  // case the dialog is closed by the system, DeleteDelegate is guaranteed to be
+  // called, in which case we reset g_instance there if not already reset.
   if (!g_instance) {
     g_instance = new IdleLogoutDialogView();
     g_instance->Init();
+    g_instance->Show();
   }
-  g_instance->Show();
 }
 
+// static
 void IdleLogoutDialogView::CloseDialog() {
   if (g_instance) {
     g_instance->set_closed();
