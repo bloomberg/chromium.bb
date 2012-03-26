@@ -114,7 +114,8 @@ HOST_ARCH=${HOST_ARCH:-${BUILD_ARCH}}
 HOST_ARCH_X8632=false
 HOST_ARCH_X8664=false
 HOST_ARCH_ARM=false
-if [ "${HOST_ARCH}" == "i386" ] ||
+if [ "${HOST_ARCH}" == "x86_32" ] ||
+   [ "${HOST_ARCH}" == "i386" ] ||
    [ "${HOST_ARCH}" == "i686" ] ; then
   HOST_ARCH=x86_32
   HOST_ARCH_X8632=true
