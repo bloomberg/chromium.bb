@@ -80,6 +80,7 @@ class InputMethodManagerImpl : public InputMethodManager,
         should_launch_ime_(false),
         ime_connected_(false),
         enable_auto_ime_shutdown_(false),  // workaround for crosbug.com/27051.
+        enable_extension_imes_(true),
         shutting_down_(false),
         ibus_daemon_process_handle_(base::kNullProcessHandle),
         util_(whitelist_.GetSupportedInputMethods()),
@@ -308,10 +309,12 @@ class InputMethodManagerImpl : public InputMethodManager,
         value.type == InputMethodConfigValue::kValueTypeStringList) {
       active_input_method_ids_ = value.string_list_value;
 
-      std::map<std::string, InputMethodDescriptor>::const_iterator ix;
-      for (ix = extra_input_method_ids_.begin();
-           ix != extra_input_method_ids_.end(); ++ix) {
-        active_input_method_ids_.push_back(ix->first);
+      if (enable_extension_imes_) {
+        std::map<std::string, InputMethodDescriptor>::const_iterator ix;
+        for (ix = extra_input_method_ids_.begin();
+             ix != extra_input_method_ids_.end(); ++ix) {
+          active_input_method_ids_.push_back(ix->first);
+        }
       }
     }
 
@@ -1192,6 +1195,10 @@ class InputMethodManagerImpl : public InputMethodManager,
     // enable_auto_ime_shutdown_ = enable;
   }
 
+  void SetEnableExtensionIMEs(bool enable) {
+    enable_extension_imes_ = enable;
+  }
+
   // content::NotificationObserver implementation:
   void Observe(int type,
                const content::NotificationSource& source,
@@ -1252,6 +1259,8 @@ class InputMethodManagerImpl : public InputMethodManager,
   // True if we should stop input method daemon when there are no input
   // methods other than one for the hardware keyboard.
   bool enable_auto_ime_shutdown_;
+  // True if extension IMEs can be enabled.
+  bool enable_extension_imes_;
   // The ID of the tentative current input method (ex. "mozc"). This value
   // can be different from the actual current input method, if
   // ChangeInputMethod() fails.

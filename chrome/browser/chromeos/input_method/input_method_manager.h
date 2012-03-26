@@ -216,6 +216,10 @@ class InputMethodManager {
   // engines are removed.
   virtual void SetEnableAutoImeShutdown(bool enable) = 0;
 
+  // Controls whether extension IME are displayed in the language menu, and can
+  // be selected.
+  virtual void SetEnableExtensionIMEs(bool enable) = 0;
+
   // Sends a handwriting stroke to libcros. See chromeos::SendHandwritingStroke
   // for details.
   virtual void SendHandwritingStroke(

@@ -161,6 +161,7 @@ class ScreenLockObserver : public chromeos::PowerManagerClient::Observer,
       // We don't want to shut down the IME, even if the hardware layout is the
       // only IME left.
       manager->SetEnableAutoImeShutdown(false);
+      manager->SetEnableExtensionIMEs(false);
       manager->SetInputMethodConfig(
           chromeos::language_prefs::kGeneralSectionName,
           chromeos::language_prefs::kPreloadEnginesConfigName,
@@ -178,6 +179,7 @@ class ScreenLockObserver : public chromeos::PowerManagerClient::Observer,
           chromeos::input_method::InputMethodConfigValue::kValueTypeStringList;
       value.string_list_value = saved_active_input_method_list_;
       manager->SetEnableAutoImeShutdown(true);
+      manager->SetEnableExtensionIMEs(true);
       manager->SetInputMethodConfig(
           chromeos::language_prefs::kGeneralSectionName,
           chromeos::language_prefs::kPreloadEnginesConfigName,
