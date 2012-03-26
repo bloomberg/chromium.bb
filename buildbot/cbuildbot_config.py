@@ -704,6 +704,7 @@ _config.add_group('x86-alex-release-group',
     boards=['x86-alex_he'],
     vm_tests=None,
     unittests=None,
+    upload_hw_test_artifacts=False,
   ),
 )
 
@@ -716,6 +717,7 @@ _config.add_group('x86-zgb-release-group',
     boards=['x86-zgb_he'],
     vm_tests=None,
     unittests=None,
+    upload_hw_test_artifacts=False,
   )
 )
 
