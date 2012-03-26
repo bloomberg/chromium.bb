@@ -827,11 +827,11 @@ TabContentsWrapper* InstantLoader::ReleasePreviewContents(
       type == INSTANT_COMMIT_DESTROY ? PREVIEW_DELETED : PREVIEW_COMMITTED,
       group_);
   if (type != INSTANT_COMMIT_DESTROY) {
-    UMA_HISTOGRAM_ENUMERATION(
-        "Instant.SessionStorageNamespace" + group_,
-        tab_contents == NULL || session_storage_namespace_ ==
-            GetSessionStorageNamespace(tab_contents),
-        2);
+    base::Histogram* histogram = base::LinearHistogram::FactoryGet(
+        "Instant.SessionStorageNamespace" + group_, 1, 2, 3,
+        base::Histogram::kUmaTargetedHistogramFlag);
+    histogram->Add(tab_contents == NULL || session_storage_namespace_ ==
+        GetSessionStorageNamespace(tab_contents));
   }
   session_storage_namespace_ = NULL;
   return preview_contents_.release();
