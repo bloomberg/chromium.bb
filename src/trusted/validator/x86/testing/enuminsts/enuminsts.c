@@ -91,6 +91,29 @@ NaClEnumeratorDecoder* kAvailableDecoders[NACL_MAX_AVAILABLE_DECODERS];
 /* Holds the number of (pre)registered available decoders. */
 size_t kNumAvailableDecoders;
 
+/* This struct holds a list of instruction opcode sequences that we
+ * want to treat specially. Used to filter out problem cases from
+ * the enumeration.
+ */
+typedef struct {
+  /* Pointer to array of bytes for the instruction. */
+  uint8_t* bytes_;
+  /* The size of bytes_. */
+  size_t bytes_size_;
+  /* Pointer to array of instructions. Each element is
+   * the index into bytes_ where the corresponding byte sequence
+   * of the instruction begins. The next element in the array is
+   * the end point for the current instruction.
+   */
+  size_t* insts_;
+  /* The size of insts_. */
+  size_t insts_size_;
+  /* Number of instructions stored in insts_. */
+  size_t num_insts_;
+  /* Number of bytes stored in bytes_. */
+  size_t num_bytes_;
+} InstList;
+
 /* This struct holds state concerning an instruction, both from the
  * various available decoders. Some of the state information is
  * redundant, preserved to avoid having to recompute it.
@@ -134,6 +157,12 @@ static void Usage() {
   fprintf(stderr, "\n");
   fprintf(stderr, "Options are:\n");
   fprintf(stderr, "    --checkoperands: enables operand comparison (slow)\n");
+  fprintf(stderr, "    --ignore_mnemonic=file: ignore mnemonic name "
+          "comparison\n");
+  fprintf(stderr, "         for instruction sequences in file (may be "
+          "repeated)\n");
+  fprintf(stderr, "    --ignored=<file>: ignore instruction sequences "
+          "in file (may be repeated)\n");
   fprintf(stderr, "    --illegal=XX: Filter instructions to only consider "
           "those instructions\n");
   fprintf(stderr, "         that are illegal instructions, as defined by "
@@ -169,6 +198,40 @@ static void Usage() {
 void InternalError(const char *why) {
   fprintf(stderr, "%s: Internal Error: %s\n", gArgv0, why);
   gSawLethalError = 1;
+}
+
+/* Records that a fatal (i.e. non-recoverable) error occurred. */
+static void ReportFatalError(const char* why) {
+  char buffer[kBufferSize];
+  snprintf(buffer, kBufferSize, "%s - quitting!", why);
+  InternalError(buffer);
+  exit(1);
+}
+
+/* Returns true if the given opcode sequence text is in the
+ * given instruction list.
+ */
+static Bool InInstructionList(InstList* list, uint8_t* itext, size_t nbytes) {
+  size_t i;
+  size_t j;
+  if (NULL == list) return FALSE;
+  for (i = 0; i < list->num_insts_; ++i) {
+    Bool found_match = TRUE;
+    size_t start = list->insts_[i];
+    size_t end = list->insts_[i + 1];
+    size_t inst_bytes = (end - start);
+    if (inst_bytes < nbytes) continue;
+    for (j = 0; j < inst_bytes; j++) {
+      if (itext[j] != list->bytes_[start + j]) {
+        found_match = FALSE;
+        break;
+      }
+    }
+    if (found_match) {
+      return TRUE;
+    }
+  }
+  return FALSE;
 }
 
 /* Takes the given text and sends it to each of the instruction
@@ -318,7 +381,154 @@ static unsigned int A2IByte(char nibble1, char nibble2) {
   return A2INibble(nibble2) + A2INibble(nibble1) * 0x10;
 }
 
+/* Generates a buffer containing the context message to print.
+ * Arguments are:
+ *   context - String describing the context (i.e. filename or
+ *          command line argument description).
+ *   line - The line number associated with the context (if negative,
+ *          it assumes that the line number shouldn't be reported).
+ */
+static const char* TextContext(const char* context,
+                               int line) {
+  if (line < 0) {
+    return context;
+  } else {
+    static char buffer[kBufferSize];
+    snprintf(buffer, kBufferSize, "%s line %d", context, line);
+    return buffer;
+  }
+}
+
+/* Installs byte into the byte buffer. Returns the new value for num_bytes.
+ * Arguments are:
+ *   ibytes - The found sequence of opcode bytes.
+ *   num_bytes - The number of bytes currently in ibytes.
+ *   mini_buf - The buffer containing the two hexidecimal characters to convert.
+ *   context - String describing the context (i.e. filename or
+ *          command line argument description).
+ *   line - The line number associated with the context (if negative,
+ *          it assumes that the line number shouldn't be reported).
+ */
+static int InstallTextByte(uint8_t ibytes[NACL_ENUM_MAX_INSTRUCTION_BYTES],
+                           int num_bytes,
+                           char mini_buf[2],
+                           const char* itext,
+                           const char* context,
+                           int line) {
+  if (num_bytes == NACL_ENUM_MAX_INSTRUCTION_BYTES) {
+    char buffer[kBufferSize];
+    snprintf(buffer, kBufferSize,
+             "%s: opcode sequence too long in '%s'",
+             TextContext(context, line), itext);
+    ReportFatalError(buffer);
+  }
+  ibytes[num_bytes] = A2IByte(mini_buf[0], mini_buf[1]);
+  return num_bytes + 1;
+}
+
+/* Reads a line of text defining the sequence of bytes that defines
+ * an instruction, and converts that to the corresponding sequence of
+ * opcode bytes. Returns the number of bytes found. Arguments are:
+ *   ibytes - The found sequence of opcode bytes.
+ *   itext - The sequence of bytes to convert.
+ *   context - String describing the context (i.e. filename or
+ *          command line argument description).
+ *   line - The line number associated with the context (if negative,
+ *          it assumes that the line number shouldn't be reported).
+ */
+static int Text2Bytes(uint8_t ibytes[NACL_ENUM_MAX_INSTRUCTION_BYTES],
+                      char* itext,
+                      const char* context,
+                      int line) {
+  char mini_buf[2];
+  size_t mini_buf_index;
+  char *next;
+  char ch;
+  int num_bytes = 0;
+  Bool continue_translation = TRUE;
+
+  /* Now process text of itext. */
+  next = &itext[0];
+  mini_buf_index = 0;
+  while (continue_translation && (ch = *(next++))) {
+    switch (ch) {
+      case '#':
+        /* Comment, skip reading any more characters. */
+        continue_translation = FALSE;
+        break;
+      case '0':
+      case '1':
+      case '2':
+      case '3':
+      case '4':
+      case '5':
+      case '6':
+      case '7':
+      case '8':
+      case '9':
+      case 'a':
+      case 'b':
+      case 'c':
+      case 'd':
+      case 'e':
+      case 'f':
+      case 'A':
+      case 'B':
+      case 'C':
+      case 'D':
+      case 'E':
+      case 'F':
+        /* Hexidecimal character. Add to mini buffer, and install
+         * if two bytes.
+         */
+        mini_buf[mini_buf_index++] = ch;
+        if (2 == mini_buf_index) {
+          num_bytes = InstallTextByte(ibytes, num_bytes, mini_buf, itext,
+                                      context, line);
+          mini_buf_index = 0;
+        }
+        break;
+      case ' ':
+      case '\t':
+      case '\n':
+        /* Space - assume it is a separator between bytes. */
+        switch(mini_buf_index) {
+          case 0:
+            break;
+          case 2:
+            num_bytes = InstallTextByte(ibytes, num_bytes, mini_buf, itext,
+                                        context, line);
+            mini_buf_index = 0;
+            break;
+          default:
+            continue_translation = FALSE;
+        }
+        break;
+      default: {
+        char buffer[kBufferSize];
+        snprintf(buffer, kBufferSize,
+                 "%s: contains bad text:\n   '%s'\n",
+                 TextContext(context, line), itext);
+        ReportFatalError(buffer);
+        break;
+      }
+    }
+  }
+
+  /* If only a single byte was used to define hex value, convert it. */
+  if (mini_buf_index > 0) {
+    char buffer[kBufferSize];
+    snprintf(buffer, kBufferSize,
+             "%s: Opcode sequence must be an even number of chars '%s'",
+             TextContext(context, line), itext);
+    ReportFatalError(buffer);
+  }
+
+  return num_bytes;
+}
+
 #if NACL_TARGET_SUBARCH == 64
+
 /* The instructions:
  *    48 89 e5  mov  rbp, rsp
  *    4a 89 e5  mov  rbp, rsp
@@ -457,6 +667,11 @@ static Bool AreInstOperandsEqual(ComparedInstruction *cinst) {
   return TRUE;
 }
 
+/* If non-null, the list of instructions for which mnemonics should
+ * not be compared.
+ */
+static InstList* kIgnoreMnemonics = NULL;
+
 /* Compares mnemonic names between decoder's disassembled instructions,
  * returning true if they agree on the mnemonic name.
  */
@@ -475,6 +690,12 @@ static Bool AreInstMnemonicsEqual(ComparedInstruction *cinst) {
     NaClEnumeratorDecoder *decoder = cinst->_enumerator._decoder[i];
     if (NULL == decoder->_get_inst_mnemonic_fn) continue;
     if (!decoder->_is_inst_legal_fn(&cinst->_enumerator)) continue;
+
+    /* If on ignore list, ignore. */
+    if (InInstructionList(kIgnoreMnemonics,
+                          cinst->_enumerator._itext,
+                          decoder->_inst_length_fn(&cinst->_enumerator)))
+      continue;
 
     /* Record mnemonic name and decoder for comparisons below. */
     name[num_decoders] = decoder->_get_inst_mnemonic_fn(&cinst->_enumerator);
@@ -585,6 +806,9 @@ static Bool PrintInstOnly(ComparedInstruction *cinst) {
   return result;
 }
 
+/* If non-null, the list of instruction bytes to ignore. */
+static InstList* kIgnoredInstructions = NULL;
+
 /* Test comparison for a single instruction.
  */
 static void TryOneInstruction(ComparedInstruction *cinst,
@@ -601,6 +825,9 @@ static void TryOneInstruction(ComparedInstruction *cinst,
 
     /* Try to parse the sequence of test bytes. */
     ParseFirstInstruction(cinst, itext, nbytes);
+
+    /* Don't bother to compare ignored instructions. */
+    if (InInstructionList(kIgnoredInstructions, itext, nbytes)) break;
 
     /* Apply filters */
     if (RemovedByInstLegalFilters(cinst)) break;
@@ -729,29 +956,20 @@ static void TestAllInstructions(ComparedInstruction *cinst) {
  * testing, or for instruction arguments from the command line.
  */
 static void TestOneInstruction(ComparedInstruction *cinst, char *asciihex) {
-  unsigned char ibytes[NACL_ENUM_MAX_INSTRUCTION_BYTES];
-  unsigned char *ibp;
-  unsigned int i, len, nbytes;
+  uint8_t ibytes[NACL_ENUM_MAX_INSTRUCTION_BYTES];
+  int nbytes;
 
-  len = strlen(asciihex);
-  nbytes = len / 2;
-  if (nbytes * 2 != len) {
-    fprintf(stderr, "bad instruction %s\nMust be an even number of chars.\n",
-            asciihex);
-    exit(1);
-  }
-  if (nbytes > NACL_ENUM_MAX_INSTRUCTION_BYTES) {
-    fprintf(stderr, "bad instruction %s\nMust be less than %d bytes\n",
-            asciihex, NACL_ENUM_MAX_INSTRUCTION_BYTES);
-    exit(1);
-  }
-  for (i = 0; i < len; i += 2) {
-    ibytes[i/2] = A2IByte(asciihex[i], asciihex[i+1]);
-  }
+  nbytes = Text2Bytes(ibytes, asciihex, "Command-line argument", -1);
+  if (nbytes == 0) return;
   if (gVerbose) {
-    printf("trying %s (%02x%02x)\n", asciihex, ibytes[0], ibytes[1]);
+    int i;
+    printf("trying %s (", asciihex);
+    for (i = 0; i < nbytes; ++i) {
+      printf("%02x", ibytes[i]);
+    }
+    printf(")\n");
   }
-  TryOneInstruction(cinst, ibytes, nbytes);
+  TryOneInstruction(cinst, ibytes, (size_t) nbytes);
 }
 
 /* A set of test cases that have caused problems in the past.
@@ -821,6 +1039,135 @@ static void NaClInstallLegalFilter(ComparedInstruction* cinst,
   NaClRegisterEnumeratorDecoder(cinst, decoder_name)->_legal_only = new_value;
 }
 
+/* The initial size for bytes_ when creating an instruction list.
+ */
+static const size_t kInitialInstBytesSize = 1024;
+
+/* The initial size for insts_ when creating an instruction list.
+ */
+static const size_t kInitialInstListInstsSize = 256;
+
+/* Creates an initially empty list of instructions. */
+static InstList* CreateEmptyInstList() {
+  InstList* list = (InstList*) malloc(sizeof(InstList));
+  if (NULL == list) ReportFatalError("Out of memory");
+  list->bytes_ = (uint8_t*) malloc(kInitialInstBytesSize);
+  list->bytes_size_ = kInitialInstBytesSize;
+  list->insts_ = (size_t*) malloc(kInitialInstListInstsSize);
+  list->insts_size_ = kInitialInstListInstsSize;
+  list->insts_[0] = 0;
+  list->num_insts_ = 0;
+  list->num_bytes_ = 0;
+  return list;
+}
+/* Expands the bytes_ field of the instruction list so that
+ * more instructions can be added.
+ */
+static void ExpandInstListBytes(InstList* list) {
+  size_t i;
+  uint8_t* new_buffer;
+  size_t new_size = list->bytes_size_ *2;
+  if (new_size < list->bytes_size_) {
+    ReportFatalError("Instruction list file too big");
+  }
+  new_buffer = (uint8_t*) malloc(new_size);
+  if (NULL == new_buffer) ReportFatalError("Out of memory");
+  for (i = 0; i < list->num_bytes_; ++i) {
+    new_buffer[i] = list->bytes_[i];
+  }
+  free(list->bytes_);
+  list->bytes_ = new_buffer;
+  list->bytes_size_ = new_size;
+}
+
+/* Expands the insts_ field of the instruction list so that
+ * more instructions can be added.
+ */
+static void ExpandInstListInsts(InstList* list) {
+  size_t i;
+  size_t* new_buffer;
+  size_t new_size = list->insts_size_ * 2;
+
+  if (new_size < list->insts_size_)
+    ReportFatalError("Instruction list file too big");
+  new_buffer = (size_t*) malloc(new_size);
+  if (NULL == new_buffer) ReportFatalError("Out of memory");
+  for (i = 0; i < list->num_insts_; ++i) {
+    new_buffer[i] = list->insts_[i];
+  }
+  free(list->insts_);
+  list->insts_ = new_buffer;
+  list->insts_size_ = new_size;
+}
+
+/* Reads the bytes defined in line, and coverts it to the corresponding
+ * ignored instruction. Then adds it to the list of ignored instructions.
+ */
+static void ReadInstListInst(InstList* list,
+                             char line[kBufferSize],
+                             const char* context,
+                             int line_number) {
+  int i;
+  uint8_t ibytes[NACL_ENUM_MAX_INSTRUCTION_BYTES];
+  int num_bytes = Text2Bytes(ibytes, line, context, line_number);
+
+  /* Ignore line if no opcode sequence. */
+  if (num_bytes == 0) return;
+
+  /* First update the instruction pointers. */
+  if (list->num_insts_ == list->insts_size_) {
+    ExpandInstListInsts(list);
+  }
+  ++list->num_insts_;
+  list->insts_[list->num_insts_] =
+      list->insts_[list->num_insts_ - 1];
+
+  /* Now install the bytes. */
+  for (i = 0; i < num_bytes; ++i) {
+    /* Be sure we have room for the byte. */
+    if (list->num_bytes_ == list->bytes_size_) {
+      ExpandInstListBytes(list);
+    }
+
+    /* Record into the ignore instruction list. */
+    list->bytes_[list->num_bytes_++] = ibytes[i];
+    list->insts_[list->num_insts_] = list->num_bytes_;
+  }
+}
+
+/* Reads a file containing a list of instruction bytes to ignore,
+ * and adds it to the end of the list of instructions.
+ */
+static void GetInstList(InstList** list,
+                        FILE* file,
+                        const char* filename) {
+  char line[kBufferSize];
+  int line_number = 0;
+  if (NULL == *list) {
+    *list = CreateEmptyInstList();
+  }
+  while (TRUE) {
+    ++line_number;
+    if (fgets(line, kBufferSize, file) == NULL) return;
+    ReadInstListInst(*list, line, filename, line_number);
+  }
+  return;
+}
+
+/* Read the file containing a list of instruction bytes,
+ * and adds it to the end of the list of instructions.
+ */
+static void ReadInstList(InstList** list, const char* filename) {
+  FILE* file = fopen(filename, "r");
+  if (NULL == file) {
+    char buffer[kBufferSize];
+    snprintf(buffer, kBufferSize, "%s: unable to open", filename);
+    ReportFatalError(buffer);
+  }
+  GetInstList(list, file, filename);
+  fclose(file);
+}
+
 /* Very simple command line arg parsing. Returns index to the first
  * arg that doesn't begin with '--', or argc if there are none.
  */
@@ -849,6 +1196,10 @@ static int ParseArgs(ComparedInstruction* cinst, int argc, char *argv[]) {
                    GrokBoolFlag("--skipcontiguous", argv[i],
                                 &gSkipContiguous) ||
                    GrokBoolFlag("--verbose", argv[i], &gVerbose)) {
+        } else if (GrokCstringFlag("--ignored", argv[i], &cstr_value)) {
+          ReadInstList(&kIgnoredInstructions, cstr_value);
+        } else if (GrokCstringFlag("--ignore_mnemonic", argv[i], &cstr_value)) {
+          ReadInstList(&kIgnoreMnemonics, cstr_value);
         } else if (GrokCstringFlag("--print", argv[i], &cstr_value)) {
           NaClRegisterEnumeratorDecoder(cinst, cstr_value)->_print_only = TRUE;
         } else if (GrokUint32HexFlag("--prefix", argv[i], &prefix)) {
@@ -932,10 +1283,9 @@ int main(int argc, char *argv[]) {
   NaClInitializeAvailableDecoders();
   NaClInitializeComparedInstruction(&gCinst);
 
-
+  gArgv0 = argv[0];
   if (argc == 1) Usage();
 
-  gArgv0 = argv[0];
   testargs = ParseArgs(&gCinst, argc, argv);
   InstallFlags(&gCinst._enumerator);
 

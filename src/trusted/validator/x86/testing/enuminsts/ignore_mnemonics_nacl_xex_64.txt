@@ -1,0 +1,36 @@
+# Contains instructions for which nacl and xed disagree (in x86-64), but we still
+# that they are ok.
+
+# The following are cases where xed doesn't assume a nop, but nacl does.
+#
+
+#**** ERROR: MNEMONIC MISMATCH: (xed) xchg != (nacl) nop
+#  XED: 0000000000001000: 40 87 c0                                     xchg eax, eax
+# NaCl: 0000000000001000: 40 87 c0                                     xchg %eax, %eax
+40 87 c0
+
+#**** ERROR: MNEMONIC MISMATCH: (xed) xchg != (nacl) nop
+#  XED: 0000000000001000: 42 87 c0                                     xchg eax, eax
+# NaCl: 0000000000001000: 42 87 c0                                     xchg %eax, %eax
+42 87 c0
+
+#**** ERROR: MNEMONIC MISMATCH: (xed) xchg != (nacl) nop
+#  XED: 0000000000001000: 48 87 c0                                     xchg rax, rax
+# NaCl: 0000000000001000: 48 87 c0                                     xchg %rax, %rax
+48 87 c0
+
+#**** ERROR: MNEMONIC MISMATCH: (xed) xchg != (nacl) nop
+#  XED: 0000000000001000: 4a 87 c0                                     xchg rax, rax
+# NaCl: 0000000000001000: 4a 87 c0                                     xchg %rax, %rax
+4a 87 c0
+
+#**** ERROR: MNEMONIC MISMATCH: (xed) xchg != (nacl) nop
+#  XED: 0000000000001000: 87 c0                                        xchg eax, eax
+# NaCl: 0000000000001000: 87 c0                                        xchg %eax, %eax
+87 c0
+
+#**** ERROR: MNEMONIC MISMATCH: (xed) xchg != (nacl) nop
+#  XED: 0000000000001000: 87 c0                                        xchg eax, eax
+# NaCl: 0000000000001000: 87 c0                                        xchg %eax, %eax
+66 87 c0
+
