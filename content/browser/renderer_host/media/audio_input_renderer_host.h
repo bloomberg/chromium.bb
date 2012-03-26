@@ -175,9 +175,6 @@ class CONTENT_EXPORT AudioInputRendererHost
   // is closed.
   void CloseAndDeleteStream(AudioEntry* entry);
 
-  // Called on the audio thread after the audio input stream is closed.
-  void OnStreamClosed(AudioEntry* entry);
-
   // Delete an audio entry and close the related audio stream.
   void DeleteEntry(AudioEntry* entry);
 

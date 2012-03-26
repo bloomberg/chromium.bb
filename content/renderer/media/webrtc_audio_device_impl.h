@@ -258,7 +258,7 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl
     return input_audio_parameters_.frames_per_buffer();
   }
   size_t output_buffer_size() const {
-    return input_audio_parameters_.frames_per_buffer();
+    return output_audio_parameters_.frames_per_buffer();
   }
   int input_channels() const {
     return input_audio_parameters_.channels();

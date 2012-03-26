@@ -329,17 +329,9 @@ void AudioRendererHost::CloseAndDeleteStream(AudioEntry* entry) {
 
   if (!entry->pending_close) {
     entry->controller->Close(
-        base::Bind(&AudioRendererHost::OnStreamClosed, this, entry));
+        base::Bind(&AudioRendererHost::DeleteEntry, this, entry));
     entry->pending_close = true;
   }
-}
-
-void AudioRendererHost::OnStreamClosed(AudioEntry* entry) {
-  // Delete the entry on the IO thread after we've closed the stream.
-  // (We're currently on the audio thread).
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&AudioRendererHost::DeleteEntry, this, entry));
 }
 
 void AudioRendererHost::DeleteEntry(AudioEntry* entry) {
