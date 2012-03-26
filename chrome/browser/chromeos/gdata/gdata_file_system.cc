@@ -273,6 +273,17 @@ void DeleteFilesSelectively(const FilePath& path_to_delete_pattern,
   }
 }
 
+// Invoked upon completion of TransferRegularFile initiated by Copy.
+//
+// |callback| is run on the thread represented by |relay_proxy|.
+void OnTransferRegularFileCompleteForCopy(
+    const gdata::FileOperationCallback& callback,
+    scoped_refptr<base::MessageLoopProxy> relay_proxy,
+    base::PlatformFileError error) {
+  if (!callback.is_null())
+    relay_proxy->PostTask(FROM_HERE, base::Bind(callback, error));
+}
+
 }  // namespace
 
 namespace gdata {
@@ -659,6 +670,8 @@ void GDataFileSystem::StartFileUploadOnUIThread(
     const FileOperationCallback& callback,
     base::PlatformFileError* error,
     UploadFileInfo* upload_file_info) {
+  // This method needs to run on the UI thread as required by
+  // GDataUploader::UploadFile().
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(error);
   DCHECK(upload_file_info);
@@ -804,15 +817,21 @@ void GDataFileSystem::OnGetFileCompleteForCopy(
   }
 
   // This callback is only triggered for a regular file via Copy() and runs
-  // on the same thread as Copy (i.e. not the UI thread). As TransferRegularFile
-  // must run on the UI thread, we thus need to post a task to the UI thread.
+  // on the same thread as Copy (IO thread). As TransferRegularFile must run
+  // on the UI thread, we thus need to post a task to the UI thread.
+  // Also, upon the completion of TransferRegularFile, we need to run |callback|
+  // on the same thread as Copy (IO thread), and the transition from UI thread
+  // to IO thread is handled by OnTransferRegularFileCompleteForCopy.
   DCHECK_EQ(REGULAR_FILE, file_type);
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
       base::Bind(&GDataFileSystem::TransferRegularFile,
                  ui_weak_ptr_,
-                 local_file_path, remote_dest_file_path, callback));
+                 local_file_path, remote_dest_file_path,
+                 base::Bind(OnTransferRegularFileCompleteForCopy,
+                            callback,
+                            base::MessageLoopProxy::current())));
 }
 
 void GDataFileSystem::CopyDocumentToDirectory(

@@ -214,7 +214,7 @@ class GDataFileSystemInterface {
   // |remote_dest_file_path| is the virtual destination path within gdata file
   // system.
   //
-  // Can be called from *UI* thread. |callback| is run on the calling thread.
+  // Must be called from *UI* thread. |callback| is run on the calling thread.
   virtual void TransferFile(const FilePath& local_file_path,
                             const FilePath& remote_dest_file_path,
                             const FileOperationCallback& callback) = 0;
@@ -635,7 +635,7 @@ class GDataFileSystem : public GDataFileSystemInterface {
   // handled by CopyDocumentToDirectory. Otherwise, the transfer is handled by
   // TransferRegularFile.
   //
-  // Can be called from *UI* thread. |callback| is run on the calling thread.
+  // Must be called from *UI* thread. |callback| is run on the calling thread.
   void TransferFileForResourceId(const FilePath& local_file_path,
                                  const FilePath& remote_dest_file_path,
                                  const FileOperationCallback& callback,
@@ -646,12 +646,12 @@ class GDataFileSystem : public GDataFileSystemInterface {
   // the local file system, |remote_dest_file_path| is the virtual destination
   // path within gdata file system.
   //
-  // Can be called from *UI* thread. |callback| is run on the calling thread.
+  // Must be called from *UI* thread. |callback| is run on the calling thread.
   void TransferRegularFile(const FilePath& local_file_path,
                            const FilePath& remote_dest_file_path,
                            const FileOperationCallback& callback);
 
-  // Invoked by upon completion of GetFile initiated by Copy. If GetFile
+  // Invoked upon completion of GetFile initiated by Copy. If GetFile
   // reports no error, calls TransferRegularFile to transfer |local_file_path|
   // to |remote_dest_file_path|.
   //
