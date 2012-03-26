@@ -153,6 +153,7 @@ class PowerManagerClientImpl : public PowerManagerClient {
   // PowerManagerClient overrides:
 
   virtual void AddObserver(Observer* observer) OVERRIDE {
+    CHECK(observer);  // http://crbug.com/119976
     observers_.AddObserver(observer);
   }
 
