@@ -17,7 +17,6 @@
       'msvs_settings': {
         'VCLinkerTool': {
           'DataExecutionPrevention': '1',
-          'SubSystem': '1',
         }
       },
       'sources': ['hello.cc'],
@@ -28,7 +27,6 @@
       'msvs_settings': {
         'VCLinkerTool': {
           'DataExecutionPrevention': '2',
-          'SubSystem': '1',
         },
       },
       'sources': ['hello.cc'],

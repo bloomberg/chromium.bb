@@ -262,6 +262,14 @@ class MsvsSettings(object):
                         ldflags)
     if not base_flags:
       ldflags.append('/DYNAMICBASE')
+
+    # If the NXCOMPAT flag has not been specified, default to on. Despite the
+    # documentation that says this only defaults to on when the subsystem is
+    # Vista or greater (which applies to the linker), the IDE defaults it on
+    # unless it's explicitly off.
+    if not filter(lambda x: 'NXCOMPAT' in x, ldflags):
+      ldflags.append('/NXCOMPAT')
+
     return ldflags
 
 

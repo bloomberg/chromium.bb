@@ -22,14 +22,9 @@ if sys.platform == 'win32':
   def GetHeaders(exe):
     return test.run_dumpbin('/headers', test.built_file_path(exe, chdir=CHDIR))
 
-  # NXCOMPAT is on by default in 2010, and off by default before that. Use the
-  # uses_msbuild flag to determine if we're on >= 2010.
-  if test.uses_msbuild: # >= 2010.
-    if 'NX compatible' not in GetHeaders('test_nxcompat_default.exe'):
-      test.fail_test()
-  else: # < 2010.
-    if 'NX compatible' in GetHeaders('test_nxcompat_default.exe'):
-      test.fail_test()
+  # NXCOMPAT is on by default.
+  if 'NX compatible' not in GetHeaders('test_nxcompat_default.exe'):
+    test.fail_test()
 
   # Explicitly off, should not be marked NX compatiable.
   if 'NX compatible' in GetHeaders('test_nxcompat_no.exe'):

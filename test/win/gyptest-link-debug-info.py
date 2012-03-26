@@ -19,7 +19,8 @@ if sys.platform == 'win32':
   test.run_gyp('debug-info.gyp', chdir=CHDIR)
   test.build('debug-info.gyp', test.ALL, chdir=CHDIR)
 
-  test.built_file_must_not_exist('test_debug_off.exe.pdb', chdir=CHDIR)
-  test.built_file_must_exist('test_debug_on.exe.pdb', chdir=CHDIR)
+  suffix = '.exe.pdb' if test.format == 'ninja' else '.pdb'
+  test.built_file_must_not_exist('test_debug_off%s' % suffix, chdir=CHDIR)
+  test.built_file_must_exist('test_debug_on%s' % suffix, chdir=CHDIR)
 
   test.pass_test()
