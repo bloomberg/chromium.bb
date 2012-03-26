@@ -286,6 +286,8 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
       IDS_OPTIONS2_DEVICE_GROUP_POINTER_SETTINGS_BUTTON_TITLE },
     { "sectionTitleDevice", IDS_OPTIONS_DEVICE_GROUP_NAME },
     { "sectionTitleInternet", IDS_OPTIONS_INTERNET_OPTIONS_GROUP_LABEL },
+    { "syncOverview", IDS_SYNC_OVERVIEW },
+    { "syncButtonTextStart", IDS_SYNC_SETUP_BUTTON_LABEL },
     { "timezone", IDS_OPTIONS_SETTINGS_TIMEZONE_DESCRIPTION },
     { "use24HourClock", IDS_OPTIONS_SETTINGS_USE_24HOUR_CLOCK_DESCRIPTION },
 #else
@@ -308,6 +310,7 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
   RegisterStrings(values, resources, arraysize(resources));
   RegisterCloudPrintValues(values);
 
+#if !defined(OS_CHROMEOS)
   values->SetString(
       "syncOverview",
       l10n_util::GetStringFUTF16(IDS_SYNC_OVERVIEW,
@@ -316,6 +319,7 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
       "syncButtonTextStart",
       l10n_util::GetStringFUTF16(IDS_SYNC_START_SYNC_BUTTON_LABEL,
           l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME)));
+#endif
 
   values->SetString("syncLearnMoreURL", chrome::kSyncLearnMoreURL);
   values->SetString(
