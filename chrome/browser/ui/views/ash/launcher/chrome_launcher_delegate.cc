@@ -153,7 +153,14 @@ ash::LauncherID ChromeLauncherDelegate::CreateAppLauncherItem(
     ash::LauncherItemStatus status) {
   ash::LauncherID id = model_->next_id();
   ash::LauncherItem item;
-  item.type = !updater ? ash::TYPE_APP_SHORTCUT : ash::TYPE_TABBED;
+  if (!updater) {
+    item.type = ash::TYPE_APP_SHORTCUT;
+  } else if (app_type == APP_TYPE_APP_PANEL ||
+             app_type == APP_TYPE_EXTENSION_PANEL) {
+    item.type =  ash::TYPE_APP_PANEL;
+  } else {
+    item.type = ash::TYPE_TABBED;
+  }
   item.is_incognito = false;
   item.image = Extension::GetDefaultIcon(true);
   item.status = status;

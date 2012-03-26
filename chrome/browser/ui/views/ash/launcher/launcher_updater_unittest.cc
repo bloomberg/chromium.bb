@@ -242,7 +242,7 @@ TEST_F(LauncherUpdaterTest, PanelItem) {
                             LauncherUpdater::TYPE_APP_PANEL, std::string());
     updater.Init();
     ASSERT_EQ(initial_size + 1, launcher_model_->items().size());
-    EXPECT_EQ(ash::TYPE_TABBED, GetItem(&updater).type);
+    EXPECT_EQ(ash::TYPE_APP_PANEL, GetItem(&updater).type);
     ash::LauncherID id = GetItem(&updater).id;
     EXPECT_EQ(ChromeLauncherDelegate::APP_TYPE_APP_PANEL,
               launcher_delegate_->GetAppType(id));
@@ -262,7 +262,7 @@ TEST_F(LauncherUpdaterTest, PanelItem) {
                             std::string());
     updater.Init();
     ASSERT_EQ(initial_size + 1, launcher_model_->items().size());
-    EXPECT_EQ(ash::TYPE_TABBED, GetItem(&updater).type);
+    EXPECT_EQ(ash::TYPE_APP_PANEL, GetItem(&updater).type);
     ash::LauncherID id = GetItem(&updater).id;
     EXPECT_EQ(ChromeLauncherDelegate::APP_TYPE_EXTENSION_PANEL,
               launcher_delegate_->GetAppType(id));

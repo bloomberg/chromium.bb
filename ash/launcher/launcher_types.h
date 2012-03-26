@@ -28,7 +28,10 @@ enum ASH_EXPORT LauncherItemType {
   // Represents a tabbed browser.
   TYPE_TABBED,
 
-  // Represents an app window.
+  // Represents a running app panel.
+  TYPE_APP_PANEL,
+
+  // Represents a pinned shortcut to an app.
   TYPE_APP_SHORTCUT,
 
   // Toggles visiblity of the app list.

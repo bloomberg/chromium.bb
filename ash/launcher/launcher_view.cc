@@ -365,7 +365,8 @@ views::View* LauncherView::CreateViewForItem(const LauncherItem& item) {
       break;
     }
 
-    case TYPE_APP_SHORTCUT: {
+    case TYPE_APP_SHORTCUT:
+    case TYPE_APP_PANEL: {
       LauncherButton* button = LauncherButton::Create(this, this);
       button->SetImage(item.image);
       ReflectItemStatus(item, button);
@@ -499,7 +500,9 @@ void LauncherView::GetOverflowItems(std::vector<LauncherItem>* items) {
   }
   while (index < view_model_->view_size()) {
     const LauncherItem& item = model_->items()[index];
-    if (item.type == TYPE_TABBED || item.type == TYPE_APP_SHORTCUT)
+    if (item.type == TYPE_TABBED ||
+        item.type == TYPE_APP_PANEL ||
+        item.type == TYPE_APP_SHORTCUT)
       items->push_back(item);
     index++;
   }
@@ -636,7 +639,8 @@ void LauncherView::LauncherItemChanged(int model_index,
       break;
     }
 
-    case TYPE_APP_SHORTCUT: {
+    case TYPE_APP_SHORTCUT:
+    case TYPE_APP_PANEL: {
       LauncherButton* button = static_cast<LauncherButton*>(view);
       ReflectItemStatus(item, button);
       button->SetImage(item.image);
@@ -703,6 +707,7 @@ string16 LauncherView::GetAccessibleName(const views::View* view) {
 
   switch (model_->items()[view_index].type) {
     case TYPE_TABBED:
+    case TYPE_APP_PANEL:
     case TYPE_APP_SHORTCUT:
       return delegate_->GetTitle(model_->items()[view_index]);
 
@@ -734,6 +739,7 @@ void LauncherView::ButtonPressed(views::Button* sender,
 
   switch (model_->items()[view_index].type) {
     case TYPE_TABBED:
+    case TYPE_APP_PANEL:
     case TYPE_APP_SHORTCUT:
       delegate_->ItemClicked(model_->items()[view_index]);
       break;
