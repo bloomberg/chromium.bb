@@ -202,6 +202,38 @@ are declared in build/common.gypi.
         </message>
       </if>
 
+      <!-- Website Settings UI -->
+      <message name="IDS_WEBSITE_SETTINGS_TITLE_SITE_PERMISSIONS" desc="Title of the permissions section of the website settings popup.">
+        Permissions
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_TITLE_SITE_DATA" desc="Title of the site data section of the website settings popup.">
+        Cookies and site data
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_PERMISSION_ALLOW" desc="The label used in the permissions dropdowns for the option that grants a permissions.">
+        Allow
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_PERMISSION_BLOCK" desc="The label used in the permissions dropdowns for the option that denies a permissions. ">
+        Block
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_TYPE_POPUPS" desc="The label used for popups permissions controls in the Website Settings popup.">
+        Popups
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_TYPE_PLUGINS" desc="The label used for plugin permissions in the Website Settings popup.">
+        Plugins
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_TYPE_LOCATION" desc="The label used for location permissions controls in the Website Settings popup.">
+        Location
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_TYPE_NOTIFICATIONS" desc="The label used for notifications permissions controls in the Website Settings popup.">
+        Notifications
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_SHOW_PERMISSION_SETTINGS" desc="The label of the Manage Permission Settings link in the site permissions section of the Website Settings popup.">
+        Manage permission settings
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_SHOW_SITE_DATA" desc="The label of the Show Cookies and Site Data link in the site data section of the Website Settings popup.">
+        Show cookies and site data
+      </message>
+
       <message name="IDS_SHOWFULLHISTORY_LINK" desc="The label of the Show Full History link at the bottom of the back/forward menu.">
         Show Full History
       </message>
