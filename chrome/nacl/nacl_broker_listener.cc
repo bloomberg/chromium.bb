@@ -148,6 +148,7 @@ void NaClBrokerListener::OnLaunchLoaderThroughBroker(
       DuplicateHandle(::GetCurrentProcess(), loader_process,
           browser_handle_, &loader_handle_in_browser,
           PROCESS_DUP_HANDLE | PROCESS_QUERY_INFORMATION , FALSE, 0);
+      base::CloseProcessHandle(loader_process);
     }
   }
   channel_->Send(new NaClProcessMsg_LoaderLaunched(loader_channel_id,
