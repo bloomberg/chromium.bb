@@ -504,7 +504,6 @@ class GDataFileSystem : public GDataFileSystemInterface {
   // runs on calling thread, allows OnGetCacheState to lock GDataFile for safe
   // access by |callback|.
   typedef base::Callback<void(base::PlatformFileError error,
-                              GDataFile* file,
                               int cache_state,
                               const GetCacheStateCallback& callback)>
       GetCacheStateIntermediateCallback;
@@ -1157,7 +1156,6 @@ class GDataFileSystem : public GDataFileSystemInterface {
   // Callback for GetCacheState.  Simply locks to allow safe access of GDataFile
   // by |callback|, then invokes callback.
   void OnGetCacheState(base::PlatformFileError error,
-                       GDataFile* file,
                        int cache_state,
                        const GetCacheStateCallback& callback);
 

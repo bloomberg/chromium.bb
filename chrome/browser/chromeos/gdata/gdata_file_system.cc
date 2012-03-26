@@ -2738,7 +2738,6 @@ void GDataFileSystem::GetCacheStateOnIOThreadPool(
     relay_proxy->PostTask(FROM_HERE,
                           base::Bind(intermediate_callback,
                                      error,
-                                     file,
                                      cache_state,
                                      final_callback));
   }
@@ -3399,17 +3398,13 @@ void GDataFileSystem::RemoveFromCacheOnIOThreadPool(
 //=== GDataFileSystem: Cache callbacks for tasks that ran on io thread pool ====
 
 void GDataFileSystem::OnGetCacheState(base::PlatformFileError error,
-                                      GDataFile* file,
                                       int cache_state,
                                       const GetCacheStateCallback& callback) {
   DVLOG(1) << "OnGetCacheState: " << error;
 
-  // Lock to let callback access |file| safely.
-  base::AutoLock lock(lock_);
-
   // Invoke callback.
   if (!callback.is_null())
-    callback.Run(error, file, cache_state);
+    callback.Run(error, cache_state);
 }
 
 void GDataFileSystem::OnFilePinned(base::PlatformFileError error,

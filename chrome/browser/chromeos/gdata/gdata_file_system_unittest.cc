@@ -108,7 +108,6 @@ class GDataFileSystemTest : public testing::Test {
         expected_error_(base::PLATFORM_FILE_OK),
         expected_cache_state_(0),
         expected_sub_dir_type_(GDataRootDirectory::CACHE_TYPE_META),
-        expected_file_(NULL),
         expect_outgoing_symlink_(false) {
   }
 
@@ -406,7 +405,6 @@ class GDataFileSystemTest : public testing::Test {
                          int expected_cache_state, GDataFile* expected_file) {
     expected_error_ = expected_error;
     expected_cache_state_ = expected_cache_state;
-    expected_file_ = expected_file;
 
     {  // Lock to use GetCacheState, but release before flushing tasks because
        // OnGetCacheState callback will attempt to lock.
@@ -419,15 +417,13 @@ class GDataFileSystemTest : public testing::Test {
     RunAllPendingForIO();
   }
 
-  void VerifyGetCacheState(base::PlatformFileError error, GDataFile* file,
-                           int cache_state) {
+  void VerifyGetCacheState(base::PlatformFileError error, int cache_state) {
     ++num_callback_invocations_;
 
     EXPECT_EQ(expected_error_, error);
 
     if (error == base::PLATFORM_FILE_OK) {
       EXPECT_EQ(expected_cache_state_, cache_state);
-      EXPECT_EQ(expected_file_, file);
     }
   }
 
@@ -790,7 +786,6 @@ class GDataFileSystemTest : public testing::Test {
   base::PlatformFileError expected_error_;
   int expected_cache_state_;
   GDataRootDirectory::CacheSubDirectoryType expected_sub_dir_type_;
-  GDataFile* expected_file_;
   bool expect_outgoing_symlink_;
   std::string expected_file_extension_;
 };

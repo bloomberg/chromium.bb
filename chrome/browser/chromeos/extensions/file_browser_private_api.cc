@@ -1587,7 +1587,6 @@ void GetGDataFilePropertiesFunction::OnFileProperties(
 void GetGDataFilePropertiesFunction::CacheStateReceived(
     base::DictionaryValue* property_dict,
     base::PlatformFileError error,
-    gdata::GDataFile* file,
     int cache_state) {
   property_dict->SetBoolean(
       "isPinned",

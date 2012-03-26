@@ -30,7 +30,6 @@ class GDataRootDirectory;
 
 // Callback for GetCacheState operation.
 typedef base::Callback<void(base::PlatformFileError error,
-                            GDataFile* file,
                             int cache_state)> GetCacheStateCallback;
 
 // Directory content origin.

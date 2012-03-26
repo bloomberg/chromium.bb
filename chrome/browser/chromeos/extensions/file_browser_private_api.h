@@ -413,7 +413,6 @@ class GetGDataFilePropertiesFunction : public FileBrowserFunction {
 
   void CacheStateReceived(base::DictionaryValue* property_dict,
                           base::PlatformFileError error,
-                          gdata::GDataFile* file,
                           int cache_state);
 
   size_t current_index_;
