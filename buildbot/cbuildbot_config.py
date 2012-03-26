@@ -542,13 +542,6 @@ chrome_pfq_info.add_config('amd64-generic-tot-chrome-pfq-informational',
   boards=['amd64-generic'],
 )
 
-# TODO(ferringb): Remove this builder config -- it isn't used anymore.
-chrome_pfq_info.add_config('patch-tot-chrome-pfq-informational',
-  arm,
-  boards=['arm-generic'],
-  useflags=['touchui_patches'],
-)
-
 arm_generic_full = \
 full.add_config('arm-generic-full', arm,
   boards=['arm-generic'],
