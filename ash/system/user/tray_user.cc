@@ -360,7 +360,8 @@ TrayUser::~TrayUser() {
 
 views::View* TrayUser::CreateTrayView(user::LoginStatus status) {
   avatar_.reset(new tray::RoundedImageView(kUserIconCornerRadius));
-  if (status == user::LOGGED_IN_USER || status == user::LOGGED_IN_OWNER) {
+  if (status != user::LOGGED_IN_NONE && status != user::LOGGED_IN_KIOSK &&
+      status != user::LOGGED_IN_GUEST) {
     avatar_->SetImage(
         ash::Shell::GetInstance()->tray_delegate()->GetUserImage(),
         gfx::Size(kUserIconSize, kUserIconSize));

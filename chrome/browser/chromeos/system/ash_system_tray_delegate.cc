@@ -38,7 +38,6 @@
 #include "chrome/browser/chromeos/login/base_login_display_host.h"
 #include "chrome/browser/chromeos/login/login_display_host.h"
 #include "chrome/browser/chromeos/login/message_bubble.h"
-#include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/mobile_config.h"
@@ -130,6 +129,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
         network_menu_(ALLOW_THIS_IN_INITIALIZER_LIST(new NetworkMenu(this))),
         clock_type_(base::k24HourClock),
         search_key_mapped_to_(input_method::kSearchKey),
+        screen_locked_(false),
         data_promo_notification_(new DataPromoNotification()) {
     AudioHandler::GetInstance()->AddVolumeObserver(this);
     DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
@@ -207,11 +207,9 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
   virtual ash::user::LoginStatus GetUserLoginStatus() const OVERRIDE {
     UserManager* manager = UserManager::Get();
-    const chromeos::ScreenLocker* locker =
-        chromeos::ScreenLocker::default_screen_locker();
     if (!manager->IsUserLoggedIn())
       return ash::user::LOGGED_IN_NONE;
-    if (locker && locker->locked())
+    if (screen_locked_)
       return ash::user::LOGGED_IN_LOCKED;
     if (manager->IsCurrentUserOwner())
       return ash::user::LOGGED_IN_OWNER;
@@ -677,10 +675,12 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   }
 
   virtual void LockScreen() OVERRIDE {
+    screen_locked_ = true;
     tray_->UpdateAfterLoginStatusChange(GetUserLoginStatus());
   }
 
   virtual void UnlockScreen() OVERRIDE {
+    screen_locked_ = false;
     tray_->UpdateAfterLoginStatusChange(GetUserLoginStatus());
   }
 
@@ -916,6 +916,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   PowerSupplyStatus power_supply_status_;
   base::HourClockType clock_type_;
   int search_key_mapped_to_;
+  bool screen_locked_;
 
   scoped_ptr<BluetoothAdapter> bluetooth_adapter_;
 
