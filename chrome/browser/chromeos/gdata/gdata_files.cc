@@ -473,8 +473,10 @@ GDataRootDirectory::CacheEntry* GDataRootDirectory::GetCacheEntry(
 
   CacheEntry* entry = iter->second;
 
-  // Entry is only valid if |md5| is not empty and it matches with entry's.
-  if (!md5.empty() && entry->md5 != md5) {
+  // If entry is not dirty, it's only valid if matches with non-empty |md5|.
+  // If entry is dirty, its md5 may have been replaced by "local" during cache
+  // initialization, so we don't compare md5.
+  if (!entry->IsDirty() && !md5.empty() && entry->md5 != md5) {
     DVLOG(1) << "Non-matching md5: want=" << md5
              << ", found=[res_id=" << resource_id
              << ", " << entry->ToString()

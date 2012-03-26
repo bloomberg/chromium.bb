@@ -286,6 +286,16 @@ class GDataRootDirectory : public GDataDirectory {
           sub_dir_type(in_sub_dir_type),
           cache_state(in_cache_state) {
     }
+    bool IsPresent() const {
+      return cache_state & GDataFile::CACHE_STATE_PRESENT;
+    }
+    bool IsPinned() const {
+      return cache_state & GDataFile::CACHE_STATE_PINNED;
+    }
+    bool IsDirty() const {
+      return cache_state & GDataFile::CACHE_STATE_DIRTY;
+    }
+
     // For debugging purposes.
     std::string ToString() const;
 

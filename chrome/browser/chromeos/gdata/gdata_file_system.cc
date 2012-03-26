@@ -2645,12 +2645,15 @@ void GDataFileSystem::InitializeCacheOnIOThreadPool() {
   ScanCacheDirectory(GDataRootDirectory::CACHE_TYPE_PERSISTENT, &cache_map);
   ScanCacheDirectory(GDataRootDirectory::CACHE_TYPE_TMP, &cache_map);
 
-  // Then scan pinned directory to update existing entries in cache map, or
-  // create new ones for symlinks to /dev/null which target nothing.
-  // Pinned directory should be scanned after the persistent directory as we'll
-  // add PINNED state to the existing files in the persistent directory per the
-  // contents of the pinned directory.
+  // Then scan pinned and outgoing directories to update existing entries in
+  // cache map, or create new ones for pinned symlinks to /dev/null which target
+  // nothing.
+  // Pinned and outgoing directories should be scanned after the persistent
+  // directory as we'll add PINNED and DIRTY states respectively to the existing
+  // files in the persistent directory per the contents of the pinned and
+  // outgoing directories.
   ScanCacheDirectory(GDataRootDirectory::CACHE_TYPE_PINNED, &cache_map);
+  ScanCacheDirectory(GDataRootDirectory::CACHE_TYPE_OUTGOING, &cache_map);
 
   // Lock to update cache map.
   base::AutoLock lock(lock_);
@@ -2673,11 +2676,13 @@ void GDataFileSystem::GetFromCacheOnIOThreadPool(
 
   GDataRootDirectory::CacheEntry* entry = root_->GetCacheEntry(resource_id,
                                                                md5);
-  if (entry && entry->cache_state & GDataFile::CACHE_STATE_PRESENT) {
-    cache_file_path = GetCacheFilePath(resource_id,
-                                       md5,
-                                       entry->sub_dir_type,
-                                       CACHED_FILE_FROM_SERVER);
+  if (entry && entry->IsPresent()) {
+    cache_file_path = GetCacheFilePath(
+        resource_id,
+        md5,
+        entry->sub_dir_type,
+        entry->IsDirty() ? CACHED_FILE_LOCALLY_MODIFIED :
+                           CACHED_FILE_FROM_SERVER);
   } else {
     error = base::PLATFORM_FILE_ERROR_NOT_FOUND;
   }
@@ -2749,7 +2754,7 @@ void GDataFileSystem::StoreToCacheOnIOThreadPool(
   // symlink in pinned dir.
   if (entry) {  // File exists in cache, determines destination path.
     cache_state |= entry->cache_state;
-    if (entry->cache_state & GDataFile::CACHE_STATE_PINNED) {
+    if (entry->IsPinned()) {
       sub_dir_type = GDataRootDirectory::CACHE_TYPE_PERSISTENT;
       dest_path = GetCacheFilePath(params.resource_id, params.md5, sub_dir_type,
                                    CACHED_FILE_FROM_SERVER);
@@ -2846,7 +2851,7 @@ void GDataFileSystem::PinOnIOThreadPool(const ModifyCacheStateParams& params) {
     // If file is dirty, don't move it, so determine |dest_path| and set
     // |source_path| the same, because ModifyCacheState only moves files if
     // source and destination are different.
-    if (entry->cache_state & GDataFile::CACHE_STATE_DIRTY) {
+    if (entry->IsDirty()) {
       DCHECK_EQ(GDataRootDirectory::CACHE_TYPE_PERSISTENT, entry->sub_dir_type);
       dest_path = GetCacheFilePath(params.resource_id,
                                    params.md5,
@@ -2944,7 +2949,7 @@ void GDataFileSystem::UnpinOnIOThreadPool(
   // If file is dirty, don't move it, so determine |dest_path| and set
   // |source_path| the same, because ModifyCacheState moves files if source
   // and destination are different.
-  if (entry->cache_state & GDataFile::CACHE_STATE_DIRTY) {
+  if (entry->IsDirty()) {
     sub_dir_type = GDataRootDirectory::CACHE_TYPE_PERSISTENT;
     DCHECK_EQ(sub_dir_type, entry->sub_dir_type);
     dest_path = GetCacheFilePath(params.resource_id,
@@ -2975,7 +2980,7 @@ void GDataFileSystem::UnpinOnIOThreadPool(
   // If file was pinned, get absolute path of symlink in pinned dir so as to
   // remove it.
   FilePath symlink_path;
-  if (entry->cache_state & GDataFile::CACHE_STATE_PINNED) {
+  if (entry->IsPinned()) {
     symlink_path = GetCacheFilePath(params.resource_id,
                                     std::string(),
                                     GDataRootDirectory::CACHE_TYPE_PINNED,
@@ -3011,8 +3016,12 @@ void GDataFileSystem::MarkDirtyInCacheOnIOThreadPool(
   // Lock to access cache map.
   base::AutoLock lock(lock_);
 
+  // If file has already been marked dirty in previous instance of chrome, we
+  // would have lost the md5 info during cache initialization, because the file
+  // would have been renamed to .local extension.
+  // So, search for entry in cache without comparing md5.
   GDataRootDirectory::CacheEntry* entry = root_->GetCacheEntry(
-      params.resource_id, params.md5);
+      params.resource_id, std::string());
 
   // Marking a file dirty means its entry and actual file blob must exist in
   // cache.
@@ -3040,7 +3049,7 @@ void GDataFileSystem::MarkDirtyInCacheOnIOThreadPool(
   // not being uploaded.  However, for now, cache doesn't know if uploading of a
   // file is in progress.  Per zel, the upload process should be canceled before
   // MarkDirtyInCache is called again.
-  if (entry->cache_state & GDataFile::CACHE_STATE_DIRTY) {
+  if (entry->IsDirty()) {
     // The file must be in persistent dir.
     DCHECK_EQ(GDataRootDirectory::CACHE_TYPE_PERSISTENT, entry->sub_dir_type);
 
@@ -3101,7 +3110,7 @@ void GDataFileSystem::MarkDirtyInCacheOnIOThreadPool(
 
   // If file is pinned, update symlink in pinned dir.
   FilePath symlink_path;
-  if (entry->cache_state & GDataFile::CACHE_STATE_PINNED) {
+  if (entry->IsPinned()) {
     symlink_path = GetCacheFilePath(params.resource_id,
                                     std::string(),
                                     GDataRootDirectory::CACHE_TYPE_PINNED,
@@ -3138,8 +3147,12 @@ void GDataFileSystem::CommitDirtyInCacheOnIOThreadPool(
   // Lock to access cache map.
   base::AutoLock lock(lock_);
 
+  // If file has already been marked dirty in previous instance of chrome, we
+  // would have lost the md5 info during cache initialization, because the file
+  // would have been renamed to .local extension.
+  // So, search for entry in cache without comparing md5.
   GDataRootDirectory::CacheEntry* entry = root_->GetCacheEntry(
-      params.resource_id, params.md5);
+      params.resource_id, std::string());
 
   // Committing a file dirty means its entry and actual file blob must exist in
   // cache.
@@ -3161,7 +3174,7 @@ void GDataFileSystem::CommitDirtyInCacheOnIOThreadPool(
 
   // If a file is not dirty (it should have been marked dirty via
   // MarkDirtyInCache), commiting it dirty is an invalid operation.
-  if (!(entry->cache_state & GDataFile::CACHE_STATE_DIRTY)) {
+  if (!entry->IsDirty()) {
     LOG(WARNING) << "Can't commit a non-dirty file: res_id="
                  << params.resource_id
                  << ", md5=" << params.md5;
@@ -3242,7 +3255,7 @@ void GDataFileSystem::ClearDirtyInCacheOnIOThreadPool(
 
   // If a file is not dirty (it should have been marked dirty via
   // MarkDirtyInCache), clearing its dirty state is an invalid operation.
-  if (!(entry->cache_state & GDataFile::CACHE_STATE_DIRTY)) {
+  if (!entry->IsDirty()) {
     LOG(WARNING) << "Can't clear dirty state of a non-dirty file: res_id="
                  << params.resource_id
                  << ", md5=" << params.md5;
@@ -3271,9 +3284,8 @@ void GDataFileSystem::ClearDirtyInCacheOnIOThreadPool(
   // If file is pinned, move it to persistent dir with .md5 extension;
   // otherwise, move it to tmp dir with .md5 extension.
   GDataRootDirectory::CacheSubDirectoryType sub_dir_type =
-      entry->cache_state & GDataFile::CACHE_STATE_PINNED ?
-      GDataRootDirectory::CACHE_TYPE_PERSISTENT :
-      GDataRootDirectory::CACHE_TYPE_TMP;
+      entry->IsPinned() ? GDataRootDirectory::CACHE_TYPE_PERSISTENT :
+                          GDataRootDirectory::CACHE_TYPE_TMP;
   FilePath dest_path = GetCacheFilePath(params.resource_id,
                                         params.md5,
                                         sub_dir_type,
@@ -3294,8 +3306,7 @@ void GDataFileSystem::ClearDirtyInCacheOnIOThreadPool(
       false /* don't create symlink */);
 
   // If file is pinned, update symlink in pinned dir.
-  if (error == base::PLATFORM_FILE_OK &&
-      entry->cache_state & GDataFile::CACHE_STATE_PINNED) {
+  if (error == base::PLATFORM_FILE_OK && entry->IsPinned()) {
     symlink_path = GetCacheFilePath(params.resource_id,
                                     std::string(),
                                     GDataRootDirectory::CACHE_TYPE_PINNED,
@@ -3453,8 +3464,9 @@ void GDataFileSystem::ScanCacheDirectory(
     std::string resource_id;
     std::string md5;
 
-    // Pinned symlinks have no extension.
-    if (sub_dir_type == GDataRootDirectory::CACHE_TYPE_PINNED) {
+    // Pinned and outgoing symlinks have no extension.
+    if (sub_dir_type == GDataRootDirectory::CACHE_TYPE_PINNED ||
+        sub_dir_type == GDataRootDirectory::CACHE_TYPE_OUTGOING) {
       resource_id = GDataFileBase::UnescapeUtf8FileName(base_name.value());
     } else {
       FilePath::StringType extension = base_name.Extension();
@@ -3471,7 +3483,6 @@ void GDataFileSystem::ScanCacheDirectory(
     // If we're scanning pinned directory and if entry already exists, just
     // update its pinned state.
     if (sub_dir_type == GDataRootDirectory::CACHE_TYPE_PINNED) {
-      cache_state |= GDataFile::CACHE_STATE_PINNED;
       GDataRootDirectory::CacheMap::iterator iter =
           cache_map->find(resource_id);
       if (iter != cache_map->end()) {  // Entry exists, update pinned state.
@@ -3481,6 +3492,20 @@ void GDataFileSystem::ScanCacheDirectory(
       // Entry doesn't exist, this is a special symlink that refers to
       // /dev/null; follow through to create an entry with the PINNED but not
       // PRESENT state.
+      cache_state |= GDataFile::CACHE_STATE_PINNED;
+    } else if (sub_dir_type == GDataRootDirectory::CACHE_TYPE_OUTGOING) {
+      // If we're scanning outgoing directory, entry must exist, update its
+      // dirty state.
+      // If entry doesn't exist, it's a logic error from previous execution,
+      // ignore this outgoing symlink and move on.
+      GDataRootDirectory::CacheMap::iterator iter =
+          cache_map->find(resource_id);
+      if (iter != cache_map->end()) {  // Entry exists, update dirty state.
+        iter->second->cache_state |= GDataFile::CACHE_STATE_DIRTY;
+      } else {
+        NOTREACHED() << "Dirty cache file MUST have actual file blob";
+      }
+      continue;
     } else {
       // Scanning other directories means that cache file is actually present.
       cache_state |= GDataFile::CACHE_STATE_PRESENT;
