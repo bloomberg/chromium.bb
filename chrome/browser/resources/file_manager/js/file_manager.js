@@ -3130,9 +3130,9 @@ FileManager.prototype = {
     }
 
     clipboard.setData('fs/isCut', isCut.toString());
+    clipboard.setData('fs/isOnGData', this.isOnGData());
     clipboard.setData('fs/sourceDir',
                                   this.directoryModel_.currentEntry.fullPath);
-    clipboard.setData('fs/sourceOnGData', this.isOnGData());
     clipboard.setData('fs/directories', directories);
     clipboard.setData('fs/files', files);
 
@@ -3177,16 +3177,12 @@ FileManager.prototype = {
   FileManager.prototype.pasteFromClipboard_ = function(clipboard) {
     var operationInfo = {
       isCut: clipboard.getData('fs/isCut'),
+      isOnGData: clipboard.getData('fs/isOnGData'),
       sourceDir: clipboard.getData('fs/sourceDir'),
-      sourceOnGData: clipboard.getData('fs/sourceOnGData'),
       directories: clipboard.getData('fs/directories'),
       files: clipboard.getData('fs/files')
     };
 
-    // If both source and target are on GData, FileCopyManager uses
-    // FileEntry.copyTo() / FileEntry.moveTo() to copy / move files.
-    var sourceAndTargetOnGData = operationInfo.sourceOnGData &&
-                                 this.isOnGData();
     this.copyManager_.paste(operationInfo,
                             this.directoryModel_.currentEntry,
                             this.isOnGData(),
