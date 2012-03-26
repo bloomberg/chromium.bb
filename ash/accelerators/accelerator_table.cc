@@ -70,6 +70,7 @@ const AcceleratorData kAcceleratorData[] = {
   { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_F10, false, false, false, VOLUME_UP },
   { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_VOLUME_UP, false, false, false,
     VOLUME_UP },
+  { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_S, true, false, true, FOCUS_TRAY },
   { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_F1, true, true, false, SHOW_OAK },
   { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_1, false, false, true,
     SELECT_WIN_0 },

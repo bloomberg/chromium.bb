@@ -50,9 +50,6 @@ const AcceleratorMapping kAcceleratorMap[] = {
 #if !defined(OS_CHROMEOS)
   { ui::VKEY_F3,             true,  false, false, IDC_FIND_PREVIOUS },
 #endif
-#if defined(OS_CHROMEOS)
-  { ui::VKEY_S,              true,  false, true,  IDC_FOCUS_CHROMEOS_STATUS },
-#endif
   { ui::VKEY_D,              false, false, true,  IDC_FOCUS_LOCATION },
   { ui::VKEY_L,              false, true,  false, IDC_FOCUS_LOCATION },
 #if !defined(OS_CHROMEOS)

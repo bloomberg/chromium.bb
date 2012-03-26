@@ -8,6 +8,7 @@
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/ash_switches.h"
 #include "ash/caps_lock_delegate.h"
+#include "ash/focus_cycler.h"
 #include "ash/ime_control_delegate.h"
 #include "ash/launcher/launcher.h"
 #include "ash/launcher/launcher_model.h"
@@ -18,6 +19,7 @@
 #include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
 #include "ash/system/brightness/brightness_control_delegate.h"
+#include "ash/system/tray/system_tray.h"
 #include "ash/volume_control_delegate.h"
 #include "ash/wm/window_cycle_controller.h"
 #include "ash/wm/window_util.h"
@@ -381,6 +383,10 @@ bool AcceleratorController::AcceleratorPressed(
     case VOLUME_UP:
       if (volume_control_delegate_.get())
         return volume_control_delegate_->HandleVolumeUp(accelerator);
+      break;
+    case FOCUS_TRAY:
+      if (shell->tray())
+        return shell->focus_cycler()->FocusWidget(shell->tray()->GetWidget());
       break;
     case SHOW_OAK:
       if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshEnableOak))

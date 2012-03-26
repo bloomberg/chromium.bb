@@ -6,6 +6,7 @@
 
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
+#include "ash/system/tray/system_tray.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/focus/focus_search.h"
 #include "ui/aura/window.h"
@@ -71,19 +72,23 @@ void FocusCycler::RotateFocus(Direction direction) {
         break;
       }
     } else {
-      views::Widget* widget = widgets_[index];
-
-      views::AccessiblePaneView* view =
-          static_cast<views::AccessiblePaneView*>(widget->GetContentsView());
-      if (view->SetPaneFocusAndFocusDefault()) {
-        widget_activating_ = widget;
-        widget->Activate();
-        widget_activating_ = NULL;
-        if (widget->IsActive())
-          break;
-      }
+      if (FocusWidget(widgets_[index]))
+        break;
     }
   }
+}
+
+bool FocusCycler::FocusWidget(views::Widget* widget) {
+  views::AccessiblePaneView* view =
+      static_cast<views::AccessiblePaneView*>(widget->GetContentsView());
+  if (view->SetPaneFocusAndFocusDefault()) {
+    widget_activating_ = widget;
+    widget->Activate();
+    widget_activating_ = NULL;
+    if (widget->IsActive())
+      return true;
+  }
+  return false;
 }
 
 bool FocusCycler::AcceleratorPressed(const ui::Accelerator& accelerator) {
@@ -95,6 +100,7 @@ bool FocusCycler::AcceleratorPressed(const ui::Accelerator& accelerator) {
       RotateFocus(FORWARD);
       return true;
     default:
+      NOTREACHED();
       return false;
   }
 }

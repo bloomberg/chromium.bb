@@ -31,6 +31,7 @@ enum AcceleratorAction {
   VOLUME_MUTE,
   VOLUME_UP,
   SHOW_OAK,
+  FOCUS_TRAY,
 #if defined(OS_CHROMEOS)
   LOCK_SCREEN,
 #endif

@@ -43,6 +43,9 @@ class ASH_EXPORT FocusCycler : public ui::AcceleratorTarget {
   // Move focus to the next widget.
   void RotateFocus(Direction direction);
 
+  // Moves focus the specified widget. Returns true if the widget was activated.
+  bool FocusWidget(views::Widget* widget);
+
   // ui::AcceleratorTarget overrides
   virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
   virtual bool CanHandleAccelerators() const OVERRIDE;
