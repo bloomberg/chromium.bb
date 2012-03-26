@@ -412,12 +412,14 @@ def RunLLCSRPC():
   outfile = env.getone('output')
   flags = env.get('LLC_FLAGS')
   script = MakeSelUniversalScriptForLLC(infile, outfile, flags)
-  retcode, stdout, stderr = driver_tools.RunWithLog('${SEL_UNIVERSAL_PREFIX} ' +
-                 '${SEL_UNIVERSAL} ${SEL_UNIVERSAL_FLAGS} -- ${LLC_SRPC}',
+  command = ('${SEL_UNIVERSAL_PREFIX} ${SEL_UNIVERSAL} ${SEL_UNIVERSAL_FLAGS} '
+    '-- ${LLC_SRPC}')
+  retcode, stdout, stderr = driver_tools.RunWithLog(command,
                   stdin=script, echo_stdout=False, echo_stderr=False,
                   return_stdout=True, return_stderr=True, errexit=False)
   if retcode:
-    Log.FatalWithResult(retcode, 'ERROR: Sandboxed LLC Failed. stdout:\n' +
+    Log.FatalWithResult(retcode, 'ERROR: Sandboxed LLC Failed. command:\n' +
+                        command + '\nstdout:\n' +
                         stdout + '\nstderr:\n' + stderr)
     driver_tools.DriverExit(retcode)
   # Get the values returned from the llc RPC to use in input to ld
