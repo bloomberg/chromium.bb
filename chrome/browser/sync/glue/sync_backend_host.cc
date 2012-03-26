@@ -220,7 +220,7 @@ class SyncBackendHost::Core
   SyncBackendRegistrar* registrar_;
 
   // The timer used to periodically call SaveChanges.
-  scoped_ptr<base::RepeatingTimer<Core> > save_changes_timer_;
+  base::RepeatingTimer<Core> save_changes_timer_;
 
   // Our encryptor, which uses Chrome's encryption functions.
   ChromeEncryptor encryptor_;
@@ -1149,7 +1149,7 @@ void SyncBackendHost::Core::DoShutdown(bool sync_disabled) {
   if (!sync_manager_.get())
     return;
 
-  save_changes_timer_.reset();
+  save_changes_timer_.Stop();
   sync_manager_->ShutdownOnSyncThread();
   sync_manager_->RemoveObserver(this);
   sync_manager_.reset();
@@ -1196,9 +1196,7 @@ void SyncBackendHost::Core::StartSavingChanges() {
   if (!sync_loop_)
     return;
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
-  DCHECK(!save_changes_timer_.get());
-  save_changes_timer_.reset(new base::RepeatingTimer<Core>());
-  save_changes_timer_->Start(FROM_HERE,
+  save_changes_timer_.Start(FROM_HERE,
       base::TimeDelta::FromSeconds(kSaveChangesIntervalSeconds),
       this, &Core::SaveChanges);
 }

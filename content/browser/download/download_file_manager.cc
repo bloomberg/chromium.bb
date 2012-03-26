@@ -140,20 +140,16 @@ DownloadFile* DownloadFileManager::GetDownloadFile(
 
 void DownloadFileManager::StartUpdateTimer() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  if (!update_timer_.get())
-    update_timer_.reset(new base::RepeatingTimer<DownloadFileManager>());
-  if (!update_timer_->IsRunning()) {
-    update_timer_->Start(FROM_HERE,
-                         base::TimeDelta::FromMilliseconds(kUpdatePeriodMs),
-                         this, &DownloadFileManager::UpdateInProgressDownloads);
+  if (!update_timer_.IsRunning()) {
+    update_timer_.Start(FROM_HERE,
+                        base::TimeDelta::FromMilliseconds(kUpdatePeriodMs),
+                        this, &DownloadFileManager::UpdateInProgressDownloads);
   }
 }
 
 void DownloadFileManager::StopUpdateTimer() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  // Destroy the timer now. We can't wait until ~DownloadFileManager, because it
-  // may happen on another thread and timers don't allow that.
-  update_timer_.reset();
+  update_timer_.Stop();
 }
 
 void DownloadFileManager::UpdateInProgressDownloads() {

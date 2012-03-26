@@ -316,8 +316,7 @@ class URLFetcherImpl::Core
   base::TimeDelta backoff_delay_;
 
   // Timer to poll the progress of uploading for POST and PUT requests.
-  // When crbug.com/119629 is fixed, scoped_ptr is not necessary here.
-  scoped_ptr<base::RepeatingTimer<Core> > upload_progress_checker_timer_;
+  base::RepeatingTimer<Core> upload_progress_checker_timer_;
   // Number of bytes sent so far.
   int64 current_upload_bytes_;
   // Number of bytes received so far.
@@ -904,8 +903,7 @@ void URLFetcherImpl::Core::StartURLRequest() {
       current_upload_bytes_ = -1;
       // TODO(kinaba): http://crbug.com/118103. Implement upload callback in the
       // net:: layer and avoid using timer here.
-      upload_progress_checker_timer_.reset(new base::RepeatingTimer<Core>());
-      upload_progress_checker_timer_->Start(
+      upload_progress_checker_timer_.Start(
           FROM_HERE,
           base::TimeDelta::FromMilliseconds(kUploadProgressTimerInterval),
           this,
@@ -1052,7 +1050,7 @@ void URLFetcherImpl::Core::NotifyMalformedContent() {
 }
 
 void URLFetcherImpl::Core::ReleaseRequest() {
-  upload_progress_checker_timer_.reset();
+  upload_progress_checker_timer_.Stop();
   request_.reset();
   g_registry.Get().RemoveURLFetcherCore(this);
 }

@@ -441,8 +441,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
 
   // A timer that periodically calls UpdateLoadStates while pending_requests_
   // is not empty.
-  scoped_ptr<base::RepeatingTimer<ResourceDispatcherHostImpl> >
-      update_load_states_timer_;
+  base::RepeatingTimer<ResourceDispatcherHostImpl> update_load_states_timer_;
 
   // We own the download file writing thread and manager
   scoped_refptr<DownloadFileManager> download_file_manager_;
