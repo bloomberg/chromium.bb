@@ -14153,7 +14153,6 @@ Battery
 Calculating remaining time
       </message>
       <message name="IDS_STATUSBAR_BATTERY_IS_CHARGED" desc="In the power menu button, the battery is charged message.">
-Charging
 Battery full
       </message>
       <message name="IDS_STATUSBAR_NETWORK_NO_NETWORK_TOOLTIP" desc="Tooltip for the network menu status bar icon when no network is connected.">
