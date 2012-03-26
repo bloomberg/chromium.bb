@@ -2721,11 +2721,9 @@ void GDataFileSystem::GetCacheStateOnIOThreadPool(
 
   // Get file object for |resource_id|.
   GDataFileBase* file_base = root_->GetFileByResourceId(resource_id);
-  GDataFile* file = NULL;
   if (!file_base || !file_base->AsGDataFile()) {
     error = base::PLATFORM_FILE_ERROR_NOT_FOUND;
   } else {
-    file = file_base->AsGDataFile();
     // Get cache state of file corresponding to |resource_id| and |md5|.
     GDataRootDirectory::CacheEntry* entry = root_->GetCacheEntry(resource_id,
                                                                  md5);
