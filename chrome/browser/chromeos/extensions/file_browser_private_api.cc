@@ -1742,6 +1742,7 @@ void GetGDataFilesFunction::GetFileOrSendResponse() {
 void GetGDataFilesFunction::OnFileReady(
     base::PlatformFileError error,
     const FilePath& local_path,
+    const std::string& unused_mime_type,
     gdata::GDataFileType file_type) {
   FilePath gdata_path = remaining_gdata_paths_.front();
 

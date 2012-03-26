@@ -742,9 +742,11 @@ class GDataFileSystemTest : public testing::Test {
     virtual ~CallbackHelper() {}
     virtual void GetFileCallback(base::PlatformFileError error,
                                  const FilePath& file_path,
+                                 const std::string& mime_type,
                                  GDataFileType file_type) {
       last_error_ = error;
       download_path_ = file_path;
+      mime_type_ = mime_type;
       file_type_ = file_type;
     }
     virtual void FileOperationCallback(base::PlatformFileError error) {
@@ -762,6 +764,7 @@ class GDataFileSystemTest : public testing::Test {
 
     base::PlatformFileError last_error_;
     FilePath download_path_;
+    std::string mime_type_;
     GDataFileType file_type_;
     int quota_bytes_total_;
     int quota_bytes_used_;

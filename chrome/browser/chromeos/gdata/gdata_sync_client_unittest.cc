@@ -86,8 +86,8 @@ class GDataSyncClientTest : public testing::Test {
 };
 
 // Action used to set mock expectations for GetFileForResourceId().
-ACTION_P3(MockGetFileForResourceId, error, local_path, file_type) {
-  arg1.Run(error, local_path, file_type);
+ACTION_P4(MockGetFileForResourceId, error, local_path, mime_type, file_type) {
+  arg1.Run(error, local_path, mime_type, file_type);
 }
 
 TEST_F(GDataSyncClientTest, StartInitialScan) {
@@ -131,18 +131,21 @@ TEST_F(GDataSyncClientTest, DoFetchLoop) {
       .WillOnce(MockGetFileForResourceId(
           base::PLATFORM_FILE_OK,
           FilePath::FromUTF8Unsafe("local_path_does_not_matter"),
+          std::string("mime_type_does_not_matter"),
           REGULAR_FILE));
   EXPECT_CALL(*mock_file_system_,
               GetFileForResourceId("resource_id_not_fetched_bar", _))
       .WillOnce(MockGetFileForResourceId(
           base::PLATFORM_FILE_OK,
           FilePath::FromUTF8Unsafe("local_path_does_not_matter"),
+          std::string("mime_type_does_not_matter"),
           REGULAR_FILE));
   EXPECT_CALL(*mock_file_system_,
               GetFileForResourceId("resource_id_not_fetched_baz", _))
       .WillOnce(MockGetFileForResourceId(
           base::PLATFORM_FILE_OK,
           FilePath::FromUTF8Unsafe("local_path_does_not_matter"),
+          std::string("mime_type_does_not_matter"),
           REGULAR_FILE));
 
   sync_client_->DoFetchLoop();
@@ -158,6 +161,7 @@ TEST_F(GDataSyncClientTest, OnFilePinned) {
       .WillOnce(MockGetFileForResourceId(
           base::PLATFORM_FILE_OK,
           FilePath::FromUTF8Unsafe("local_path_does_not_matter"),
+          std::string("mime_type_does_not_matter"),
           REGULAR_FILE));
 
   sync_client_->OnFilePinned("resource_id_not_fetched_foo", "md5");

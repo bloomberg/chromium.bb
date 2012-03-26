@@ -38,7 +38,9 @@ using content::BrowserThread;
 
 namespace {
 
-const char kApplicationOctetStream[] = "application/octet-stream";
+const char kMimeTypeJson[] = "application/json";
+const char kMimeTypeOctetStream[] = "application/octet-stream";
+
 const FilePath::CharType kGDataRootDirectory[] = FILE_PATH_LITERAL("gdata");
 const char kFeedField[] = "feed";
 const char kWildCard[] = "*";
@@ -385,6 +387,7 @@ GDataFileSystem::GetFileFromCacheParams::GetFileFromCacheParams(
     const GURL& content_url,
     const std::string& resource_id,
     const std::string& md5,
+    const std::string& mime_type,
     scoped_refptr<base::MessageLoopProxy> proxy,
     const GetFileCallback& callback)
     : virtual_file_path(virtual_file_path),
@@ -392,6 +395,7 @@ GDataFileSystem::GetFileFromCacheParams::GetFileFromCacheParams(
       content_url(content_url),
       resource_id(resource_id),
       md5(md5),
+      mime_type(mime_type),
       proxy(proxy),
       callback(callback) {
 }
@@ -713,7 +717,7 @@ void GDataFileSystem::CreateUploadFileInfoOnIOThreadPool(
   std::string mime_type;
   if (!net::GetMimeTypeFromExtension(local_file.Extension(),
                                      &upload_file_info->content_type)) {
-    upload_file_info->content_type= kApplicationOctetStream;
+    upload_file_info->content_type= kMimeTypeOctetStream;
   }
 
   BrowserThread::PostTask(
@@ -783,6 +787,7 @@ void GDataFileSystem::OnGetFileCompleteForCopy(
     const FileOperationCallback& callback,
     base::PlatformFileError error,
     const FilePath& local_file_path,
+    const std::string& unused_mime_type,
     GDataFileType file_type) {
   if (error != base::PLATFORM_FILE_OK) {
     if (!callback.is_null())
@@ -1104,7 +1109,7 @@ void GDataFileSystem::CreateDocumentJsonFileOnIOThreadPool(
       temp_file.clear();
 
     relay_proxy->PostTask(FROM_HERE,
-        base::Bind(callback, error, temp_file, HOSTED_DOCUMENT));
+        base::Bind(callback, error, temp_file, kMimeTypeJson, HOSTED_DOCUMENT));
   }
 }
 
@@ -1118,6 +1123,7 @@ void GDataFileSystem::GetFile(const FilePath& file_path,
           base::Bind(callback,
                      base::PLATFORM_FILE_ERROR_NOT_FOUND,
                      FilePath(),
+                     std::string(),
                      REGULAR_FILE));
     }
     return;
@@ -1156,6 +1162,7 @@ void GDataFileSystem::GetFile(const FilePath& file_path,
                                           file_properties.content_url,
                                           file_properties.resource_id,
                                           file_properties.file_md5,
+                                          file_properties.mime_type,
                                           base::MessageLoopProxy::current(),
                                           callback)));
 }
@@ -1179,6 +1186,7 @@ void GDataFileSystem::GetFileForResourceId(
           base::Bind(callback,
                      base::PLATFORM_FILE_ERROR_NOT_FOUND,
                      FilePath(),
+                     std::string(),
                      REGULAR_FILE));
     }
     return;
@@ -1201,6 +1209,7 @@ void GDataFileSystem::GetFileForResourceId(
                                         file->content_url(),
                                         resource_id,
                                         file->file_md5(),
+                                        file->content_mime_type(),
                                         base::MessageLoopProxy::current(),
                                         callback)));
 }
@@ -1218,6 +1227,7 @@ void GDataFileSystem::OnGetFileFromCache(const GetFileFromCacheParams& params,
                              base::Bind(params.callback,
                                         error,
                                         cache_file_path,
+                                        params.mime_type,
                                         REGULAR_FILE));
     }
     return;
@@ -1368,6 +1378,7 @@ bool GDataFileSystem::GetFileInfoFromPath(
   GDataFile* regular_file = file->AsGDataFile();
   if (regular_file) {
     properties->file_md5 = regular_file->file_md5();
+    properties->mime_type = regular_file->content_mime_type();
     properties->content_url = regular_file->content_url();
     properties->edit_url = regular_file->edit_url();
     properties->is_hosted_document = regular_file->is_hosted_document();
@@ -2000,6 +2011,7 @@ void GDataFileSystem::OnFileDownloaded(
                            base::Bind(params.callback,
                                       error,
                                       downloaded_file_path,
+                                      params.mime_type,
                                       REGULAR_FILE));
   }
 }

@@ -64,6 +64,7 @@ typedef base::Callback<void(base::PlatformFileError error,
 // Used to get files from the file system.
 typedef base::Callback<void(base::PlatformFileError error,
                             const FilePath& file_path,
+                            const std::string& mime_type,
                             GDataFileType file_type)>
     GetFileCallback;
 
@@ -126,6 +127,7 @@ struct GDataFileProperties {
   base::PlatformFileInfo file_info;
   std::string resource_id;
   std::string file_md5;
+  std::string mime_type;
   GURL content_url;
   GURL edit_url;
   bool is_hosted_document;
@@ -554,6 +556,7 @@ class GDataFileSystem : public GDataFileSystemInterface {
         const GURL& content_url,
         const std::string& resource_id,
         const std::string& md5,
+        const std::string& mime_type,
         scoped_refptr<base::MessageLoopProxy> proxy,
         const GetFileCallback& callback);
     ~GetFileFromCacheParams();
@@ -563,6 +566,7 @@ class GDataFileSystem : public GDataFileSystemInterface {
     GURL content_url;
     std::string resource_id;
     std::string md5;
+    std::string mime_type;
     scoped_refptr<base::MessageLoopProxy> proxy;
     const GetFileCallback callback;
   };
@@ -660,6 +664,7 @@ class GDataFileSystem : public GDataFileSystemInterface {
                                 const FileOperationCallback& callback,
                                 base::PlatformFileError error,
                                 const FilePath& local_file_path,
+                                const std::string& unused_mime_type,
                                 GDataFileType file_type);
 
   // Copies a document with |resource_id| to the directory at |dir_path|

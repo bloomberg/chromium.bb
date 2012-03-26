@@ -165,6 +165,7 @@ void GDataSyncClient::OnInitialScanComplete(
 void GDataSyncClient::OnFetchFileComplete(const std::string& resource_id,
                                           base::PlatformFileError error,
                                           const FilePath& local_path,
+                                          const std::string& ununsed_mime_type,
                                           GDataFileType file_type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 

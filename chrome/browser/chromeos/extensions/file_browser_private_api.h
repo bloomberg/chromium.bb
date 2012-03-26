@@ -507,6 +507,7 @@ class GetGDataFilesFunction : public FileBrowserFunction {
   // |remaining_gdata_paths_|, and calls GetFileOrSendResponse().
   void OnFileReady(base::PlatformFileError error,
                    const FilePath& local_path,
+                   const std::string& unused_mime_type,
                    gdata::GDataFileType file_type);
 
   std::queue<FilePath> remaining_gdata_paths_;

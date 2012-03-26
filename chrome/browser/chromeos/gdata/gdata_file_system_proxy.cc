@@ -35,6 +35,7 @@ void CallSnapshotFileCallback(
     base::PlatformFileInfo file_info,
     base::PlatformFileError error,
     const FilePath& local_path,
+    const std::string& unused_mime_type,
     gdata::GDataFileType file_type) {
   scoped_refptr<ShareableFileReference> file_ref;
 
