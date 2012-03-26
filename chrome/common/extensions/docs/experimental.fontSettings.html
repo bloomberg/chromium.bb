@@ -198,9 +198,13 @@
             <a href="#global-methods">Methods</a>
             <ol>
               <li>
+                <a href="#method-getDefaultFontSize">getDefaultFontSize</a>
+              </li><li>
                 <a href="#method-getFontList">getFontList</a>
               </li><li>
                 <a href="#method-getFontName">getFontName</a>
+              </li><li>
+                <a href="#method-setDefaultFontSize">setDefaultFontSize</a>
               </li><li>
                 <a href="#method-setFontName">setFontName</a>
               </li>
@@ -239,6 +243,143 @@
             <h3>Methods</h3>
             <!-- iterates over all functions -->
             <div class="apiItem">
+              <a name="method-getDefaultFontSize"></a> <!-- method-anchor -->
+              <h4>getDefaultFontSize</h4>
+              <div class="summary">
+                  <!-- Note: intentionally longer 80 columns -->
+                  <span>chrome.experimental.fontSettings.getDefaultFontSize</span>(<span class="null"><span>object</span>
+                      <var><span>details</span></var></span><span class="optional"><span>, </span><span>function</span>
+                      <var><span>callback</span></var></span>)</div>
+              <div class="description">
+                <p>Gets the default font size.</p>
+                <!-- PARAMETERS -->
+                <h4>Parameters</h4>
+                <dl>
+                  <div>
+                    <div>
+          <dt>
+            <var>details</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>object</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>This parameter is currently unused.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                  </div><div>
+                    <div>
+          <dt>
+            <var>callback</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>function</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                  </div>
+                </dl>
+                <!-- RETURNS -->
+                <dl>
+                </dl>
+                <!-- CALLBACK -->
+                <div>
+                  <div>
+                  <h4>Callback function</h4>
+                  <p>
+                    If you specify the <em>callback</em> parameter, it should
+                    specify a function that looks like this:
+                  </p>
+                  <!-- Note: intentionally longer 80 columns -->
+                  <pre>function(<span>object details</span>) <span class="subdued">{...}</span>;</pre>
+                  <dl>
+                    <div>
+                      <div>
+          <dt>
+            <var>details</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>object</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <dd>
+            <dl>
+              <div>
+                <div>
+          <dt>
+            <var>pixelSize</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>integer</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>The font size in pixels.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div>
+            </dl>
+          </dd>
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                    </div>
+                  </dl>
+                  </div>
+                </div>
+                <!-- MIN_VERSION -->
+              </div> <!-- /description -->
+            </div><div class="apiItem">
               <a name="method-getFontList"></a> <!-- method-anchor -->
               <h4>getFontList</h4>
               <div class="summary">
@@ -518,6 +659,119 @@
           <!-- FUNCTION PARAMETERS -->
         </div>
                     </div>
+                  </dl>
+                  </div>
+                </div>
+                <!-- MIN_VERSION -->
+              </div> <!-- /description -->
+            </div><div class="apiItem">
+              <a name="method-setDefaultFontSize"></a> <!-- method-anchor -->
+              <h4>setDefaultFontSize</h4>
+              <div class="summary">
+                  <!-- Note: intentionally longer 80 columns -->
+                  <span>chrome.experimental.fontSettings.setDefaultFontSize</span>(<span class="null"><span>object</span>
+                      <var><span>details</span></var></span><span class="optional"><span>, </span><span>function</span>
+                      <var><span>callback</span></var></span>)</div>
+              <div class="description">
+                <p>Sets the default font size.</p>
+                <!-- PARAMETERS -->
+                <h4>Parameters</h4>
+                <dl>
+                  <div>
+                    <div>
+          <dt>
+            <var>details</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>object</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <dd>
+            <dl>
+              <div>
+                <div>
+          <dt>
+            <var>pixelSize</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>integer</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>The font size in pixels.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div>
+            </dl>
+          </dd>
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                  </div><div>
+                    <div>
+          <dt>
+            <var>callback</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>function</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                  </div>
+                </dl>
+                <!-- RETURNS -->
+                <dl>
+                </dl>
+                <!-- CALLBACK -->
+                <div>
+                  <div>
+                  <h4>Callback function</h4>
+                  <p>
+                    If you specify the <em>callback</em> parameter, it should
+                    specify a function that looks like this:
+                  </p>
+                  <!-- Note: intentionally longer 80 columns -->
+                  <pre>function(<span></span>) <span class="subdued">{...}</span>;</pre>
+                  <dl>
                   </dl>
                   </div>
                 </div>

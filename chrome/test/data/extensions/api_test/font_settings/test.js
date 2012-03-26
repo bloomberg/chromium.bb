@@ -56,5 +56,17 @@ chrome.test.runTests([
       chrome.test.assertEq('string', typeof(value[0].fontName), message);
       chrome.test.assertEq('string', typeof(value[0].localizedName), message);
     }));
+  },
+
+  function setDefaultFontSize() {
+    fs.setDefaultFontSize({
+      pixelSize: 22
+    }, chrome.test.callbackPass());
+  },
+
+  function getDefaultFontSize() {
+    var expected = 22;
+    var message = 'Setting for default font size should be ' + expected;
+    fs.getDefaultFontSize({}, expect({pixelSize: expected}, message));
   }
 ]);

@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension_error_utils.h"
+#include "chrome/common/pref_names.h"
 #include "content/public/browser/font_list_async.h"
 
 namespace {
@@ -19,6 +20,7 @@ namespace {
 const char kGenericFamilyKey[] = "genericFamily";
 const char kFontNameKey[] = "fontName";
 const char kLocalizedNameKey[] = "localizedName";
+const char kPixelSizeKey[] = "pixelSize";
 const char kScriptKey[] = "script";
 
 // Format for per-script font preference keys.
@@ -35,8 +37,7 @@ const char kWebKitGlobalFontPrefFormat[] =
 
 // Gets the font name preference path from |details| which contains key
 // |kGenericFamilyKey| and optionally |kScriptKey|.
-bool GetFontNamePrefPath(DictionaryValue* details, std::string* pref_path)
-{
+bool GetFontNamePrefPath(DictionaryValue* details, std::string* pref_path) {
   std::string generic_family;
   if (!details->GetString(kGenericFamilyKey, &generic_family))
     return false;
@@ -110,8 +111,7 @@ void GetFontListFunction::FontListHasLoaded(scoped_ptr<ListValue> list) {
   SendResponse(success);
 }
 
-bool GetFontListFunction::CopyFontsToResult(ListValue* fonts)
-{
+bool GetFontListFunction::CopyFontsToResult(ListValue* fonts) {
   scoped_ptr<ListValue> result(new ListValue());
   for (ListValue::iterator it = fonts->begin(); it != fonts->end(); ++it) {
     ListValue* font_list_value;
@@ -139,5 +139,30 @@ bool GetFontListFunction::CopyFontsToResult(ListValue* fonts)
   }
 
   result_.reset(result.release());
+  return true;
+}
+
+bool GetDefaultFontSizeFunction::RunImpl() {
+  PrefService* prefs = profile_->GetPrefs();
+  int size = prefs->GetInteger(prefs::kWebKitGlobalDefaultFontSize);
+
+  DictionaryValue* result = new DictionaryValue();
+  result->SetInteger(kPixelSizeKey, size);
+  result_.reset(result);
+  return true;
+}
+
+bool SetDefaultFontSizeFunction::RunImpl() {
+  DictionaryValue* details = NULL;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &details));
+
+  int size;
+  EXTENSION_FUNCTION_VALIDATE(details->GetInteger(kPixelSizeKey, &size));
+
+  ExtensionPrefs* prefs = profile_->GetExtensionService()->extension_prefs();
+  prefs->SetExtensionControlledPref(extension_id(),
+                                    prefs::kWebKitGlobalDefaultFontSize,
+                                    kExtensionPrefsScopeRegular,
+                                    Value::CreateIntegerValue(size));
   return true;
 }

@@ -30,4 +30,18 @@ class GetFontListFunction : public AsyncExtensionFunction {
   bool CopyFontsToResult(base::ListValue* fonts);
 };
 
+class GetDefaultFontSizeFunction : public SyncExtensionFunction {
+ public:
+  virtual bool RunImpl() OVERRIDE;
+  DECLARE_EXTENSION_FUNCTION_NAME(
+      "experimental.fontSettings.getDefaultFontSize")
+};
+
+class SetDefaultFontSizeFunction : public SyncExtensionFunction {
+ public:
+  virtual bool RunImpl() OVERRIDE;
+  DECLARE_EXTENSION_FUNCTION_NAME(
+      "experimental.fontSettings.setDefaultFontSize")
+};
+
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_FONT_SETTINGS_API_H__

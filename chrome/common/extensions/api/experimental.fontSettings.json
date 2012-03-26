@@ -125,6 +125,58 @@
             ]
           }
         ]
+      },
+      {
+        "name": "getDefaultFontSize",
+        "type": "function",
+        "description": "Gets the default font size.",
+        "parameters": [
+          {
+            "name": "details",
+            "type": "object",
+            "description": "This parameter is currently unused."
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": "true",
+            "parameters": [
+              {
+                "name": "details",
+                "type": "object",
+                "properties": {
+                  "pixelSize": {
+                    "type": "integer",
+                    "description": "The font size in pixels."
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "setDefaultFontSize",
+        "type": "function",
+        "description": "Sets the default font size.",
+        "parameters": [
+          {
+            "name": "details",
+            "type": "object",
+            "properties": {
+              "pixelSize": {
+                "type": "integer",
+                "description": "The font size in pixels."
+              }
+            }
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": "true",
+            "parameters": []
+          }
+        ]
       }
     ]
   }

@@ -102,8 +102,10 @@
     "chrome.experimental.devtools.console.onMessageAdded": "experimental.devtools.console.html#event-onMessageAdded",
     "chrome.experimental.downloads.download": "experimental.downloads.html#method-download",
     "chrome.experimental.extension.onInstalled": "experimental.extension.html#event-onInstalled",
+    "chrome.experimental.fontSettings.getDefaultFontSize": "experimental.fontSettings.html#method-getDefaultFontSize",
     "chrome.experimental.fontSettings.getFontList": "experimental.fontSettings.html#method-getFontList",
     "chrome.experimental.fontSettings.getFontName": "experimental.fontSettings.html#method-getFontName",
+    "chrome.experimental.fontSettings.setDefaultFontSize": "experimental.fontSettings.html#method-setDefaultFontSize",
     "chrome.experimental.fontSettings.setFontName": "experimental.fontSettings.html#method-setFontName",
     "chrome.experimental.infobars.show": "experimental.infobars.html#method-show",
     "chrome.experimental.keybinding.onCommand": "experimental.keybinding.html#event-onCommand",
@@ -1041,8 +1043,10 @@
     },
     {
       "api_calls": [
+        "chrome.experimental.fontSettings.getDefaultFontSize",
         "chrome.experimental.fontSettings.getFontList",
         "chrome.experimental.fontSettings.getFontName",
+        "chrome.experimental.fontSettings.setDefaultFontSize",
         "chrome.experimental.fontSettings.setFontName"
       ],
       "crx_path": null,
@@ -1058,13 +1062,13 @@
       "packaged_app": false,
       "path": "examples\/api\/fontSettings\/",
       "protocols": [],
-      "search_string": "FONT SETTINGS SAMPLE EXTENSION FOR FONT SETTINGS API BROWSER_ACTION EXPERIMENTAL POPUP CHROME.EXPERIMENTAL.FONTSETTINGS.GETFONTLIST CHROME.EXPERIMENTAL.FONTSETTINGS.GETFONTNAME CHROME.EXPERIMENTAL.FONTSETTINGS.SETFONTNAME",
+      "search_string": "FONT SETTINGS SAMPLE EXTENSION FOR FONT SETTINGS API BROWSER_ACTION EXPERIMENTAL POPUP CHROME.EXPERIMENTAL.FONTSETTINGS.GETDEFAULTFONTSIZE CHROME.EXPERIMENTAL.FONTSETTINGS.GETFONTLIST CHROME.EXPERIMENTAL.FONTSETTINGS.GETFONTNAME CHROME.EXPERIMENTAL.FONTSETTINGS.SETDEFAULTFONTSIZE CHROME.EXPERIMENTAL.FONTSETTINGS.SETFONTNAME",
       "source_files": [
         "manifest.json",
         "popup.html",
         "popup.js"
       ],
-      "source_hash": "8d5bfbc7f8578f6a0f70602cc5e360f1c6138588",
+      "source_hash": "b5febada226fcd2d38461121c039c55ebcb3decf",
       "zip_path": "examples\/api\/fontSettings.zip"
     },
     {

@@ -107,6 +107,16 @@ function updateListSelections() {
   }
 }
 
+function defaultFontSizeChanged() {
+  var defaultFontSizeInput = document.getElementById('defaultFontSize');
+  var pixelSize = parseInt(defaultFontSizeInput.value);
+  if (!isNaN(pixelSize)) {
+    chrome.experimental.fontSettings.setDefaultFontSize({
+      pixelSize: pixelSize
+    });
+  }
+}
+
 function init() {
   scriptList = document.getElementById('scriptList');
   scriptList.addEventListener('change', updateListSelections);
@@ -120,6 +130,12 @@ function init() {
     var handler = getFontChangeHandler(list, genericFamilies[i].name);
     list.addEventListener('change', handler);
   }
+
+  var defaultFontSizeInput = document.getElementById('defaultFontSize');
+  chrome.experimental.fontSettings.getDefaultFontSize({}, function(details) {
+    defaultFontSizeInput.value = details.pixelSize;
+  });
+  defaultFontSizeInput.addEventListener('change', defaultFontSizeChanged);
 }
 
 document.addEventListener('DOMContentLoaded', init);
