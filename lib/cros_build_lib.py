@@ -9,6 +9,7 @@ import logging
 import os
 import re
 import signal
+import socket
 import subprocess
 import sys
 import tempfile
@@ -774,10 +775,10 @@ def GetProjectManifestBranch(buildroot, project):
                for key in ['remote', 'revision'])
 
 
-def GetProjectUserEmail(cwd):
+def GetProjectUserEmail(cwd, quiet=False):
   """Get the email configured for the project ."""
   output = RunCommand(['git', 'var', 'GIT_COMMITTER_IDENT'],
-                      redirect_stdout=True,
+                      redirect_stdout=True, print_cmd=(not quiet),
                       cwd=cwd).output.strip()
   m = re.search('<([^>]*)>', output)
   return m.group(1) if m else None
@@ -927,6 +928,21 @@ def GitPushWithRetry(branch, cwd, dryrun=False, retries=5):
       else:
         raise
 
+
+def GetHostName(fully_qualified=False):
+  """Return hostname of current machine, with domain if |fully_qualified|."""
+  hostname = socket.gethostbyaddr(socket.gethostname())[0]
+
+  if fully_qualified:
+    return hostname
+  else:
+    return hostname.partition('.')[0]
+
+def GetHostDomain():
+  """Return domain of current machine, or None if there is no domain."""
+  hostname = GetHostName(fully_qualified=True)
+  domain = hostname.partition('.')[2]
+  return domain if domain else None
 
 def RunCommandWithRetries(max_retry, *args, **kwds):
   """Wrapper for RunCommand that will retry a command
