@@ -9,6 +9,12 @@ namespace switches {
 // Turn on Calling GL Error after every command.
 const char kCompileShaderAlwaysSucceeds[]   = "compile-shader-always-succeeds";
 
+// Disable the GLSL translator.
+const char kDisableGLSLTranslator[]         = "disable-glsl-translator";
+
+// Turn on Logging GPU commands.
+const char kEnableGPUCommandLogging[]       = "enable-gpu-command-logging";
+
 // Turn on Calling GL Error after every command.
 const char kEnableGPUDebugging[]            = "enable-gpu-debugging";
 

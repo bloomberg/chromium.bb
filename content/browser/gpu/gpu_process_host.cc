@@ -29,6 +29,7 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
+#include "gpu/command_buffer/service/gpu_switches.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_switches.h"
 #include "ui/gfx/gl/gl_context.h"
@@ -681,15 +682,19 @@ bool GpuProcessHost::LaunchGpuProcess(const std::string& channel_id) {
 
   // Propagate relevant command line switches.
   static const char* const kSwitchNames[] = {
+    switches::kCompileShaderAlwaysSucceeds,
     switches::kDisableBreakpad,
     switches::kDisableGLMultisampling,
     switches::kDisableGpuDriverBugWorkarounds,
     switches::kDisableGpuSandbox,
     switches::kReduceGpuSandbox,
+    switches::kDisableGLSLTranslator,
     switches::kDisableGpuVsync,
     switches::kDisableGpuWatchdog,
     switches::kDisableImageTransportSurface,
     switches::kDisableLogging,
+    switches::kEnableGPUCommandLogging,
+    switches::kEnableGPUDebugging,
     switches::kEnableGPUServiceLogging,
     switches::kEnableLogging,
 #if defined(OS_MACOSX)

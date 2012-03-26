@@ -8,10 +8,14 @@
 #define GPU_COMMAND_BUFFER_SERVICE_GPU_SWITCHES_H_
 #pragma once
 
+#include "gpu/gpu_export.h"
+
 namespace switches {
 
-extern const char kCompileShaderAlwaysSucceeds[];
-extern const char kEnableGPUDebugging[];
+GPU_EXPORT extern const char kCompileShaderAlwaysSucceeds[];
+GPU_EXPORT extern const char kDisableGLSLTranslator[];
+GPU_EXPORT extern const char kEnableGPUCommandLogging[];
+GPU_EXPORT extern const char kEnableGPUDebugging[];
 
 }  // namespace switches
 

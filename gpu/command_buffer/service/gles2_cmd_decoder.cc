@@ -1989,7 +1989,9 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
   if ((gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2 &&
        !feature_info_->feature_flags().chromium_webglsl &&
        !force_webgl_glsl_validation_) ||
-      gfx::GetGLImplementation() == gfx::kGLImplementationMockGL) {
+      gfx::GetGLImplementation() == gfx::kGLImplementationMockGL ||
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableGLSLTranslator)) {
     use_shader_translator_ = false;
   }
 
@@ -2016,6 +2018,11 @@ bool GLES2DecoderImpl::Initialize(
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableGPUDebugging)) {
     set_debug(true);
+  }
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableGPUCommandLogging)) {
+    set_log_commands(true);
   }
 
   compile_shader_always_succeeds_ = CommandLine::ForCurrentProcess()->HasSwitch(
@@ -3121,7 +3128,9 @@ error::Error GLES2DecoderImpl::DoCommand(
     const void* cmd_data) {
   error::Error result = error::kNoError;
   if (log_commands()) {
-    LOG(INFO) << "[" << this << "]" << "cmd: " << GetCommandName(command);
+    // TODO(notme): Change this to a LOG/VLOG that works in release. Tried
+    // LOG(INFO), tried VLOG(1), no luck.
+    LOG(ERROR) << "[" << this << "]" << "cmd: " << GetCommandName(command);
   }
   unsigned int command_index = command - kStartPoint - 1;
   if (command_index < arraysize(g_command_info)) {
@@ -3145,10 +3154,10 @@ error::Error GLES2DecoderImpl::DoCommand(
       if (debug()) {
         GLenum error;
         while ((error = glGetError()) != GL_NO_ERROR) {
+          LOG(ERROR) << "[" << this << "] "
+                     << "GL ERROR: " << GLES2Util::GetStringEnum(error) << " : "
+                     << GetCommandName(command);
           SetGLError(error, "GL error from driver");
-          LOG(INFO) << "[" << this << "]"
-                    << "GL ERROR: " << GLES2Util::GetStringEnum(error) << " : "
-                    << GetCommandName(command);
         }
       }
     } else {
