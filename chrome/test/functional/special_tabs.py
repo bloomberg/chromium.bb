@@ -18,7 +18,7 @@ class SpecialTabsTest(pyauto.PyUITest):
     """Get a dict of accelerators and corresponding tab titles."""
     ret = {
         pyauto.IDC_SHOW_HISTORY: 'History',
-        pyauto.IDC_MANAGE_EXTENSIONS: 'Settings - Extensions',
+        pyauto.IDC_MANAGE_EXTENSIONS: 'Extensions',
         pyauto.IDC_SHOW_DOWNLOADS: 'Downloads',
     }
     return ret
@@ -318,13 +318,12 @@ class SpecialTabsTest(pyauto.PyUITest):
     self.assertEqual('About DNS', self.GetActiveTabTitle())
 
   def testSpecialAcceratorTabs(self):
-    """Test special tabs created by acclerators like IDC_SHOW_HISTORY,
-       IDC_SHOW_DOWNLOADS."""
+    """Test special tabs created by accelerators."""
     for accel, title in self.GetSpecialAcceleratorTabs().iteritems():
       self.RunCommand(accel)
       self.assertTrue(self.WaitUntil(
             self.GetActiveTabTitle, expect_retval=title),
-          msg='Expected "%s"' % title)
+          msg='Expected "%s", got "%s"' % (title, self.GetActiveTabTitle()))
 
 
 if __name__ == '__main__':
