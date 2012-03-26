@@ -1059,6 +1059,7 @@ def GenerateNPlus1Payloads(build_root, build_config, target_image_path,
          '--target=%s' % target_image_path,
          '--base_latest_from_config=%s' % build_config,
          '--nplus1',
+         '--novm',
          '--nplus1_archive_dir=%s' % archive_dir,
         ]
   cros_lib.RunCommand(cmd)
