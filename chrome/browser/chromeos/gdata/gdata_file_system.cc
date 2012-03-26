@@ -145,7 +145,8 @@ base::PlatformFileError CreateCacheDirectories(
 }
 
 // Modifies cache state of file on IO thread pool, which involves:
-// - moving file from |source_path| to |dest_path| if they're different
+// - moving or copying file (per |file_operation_type|) from |source_path| to
+//  |dest_path| if they're different
 // - deleting symlink if |symlink_path| is not empty
 // - creating symlink if |symlink_path| is not empty and |create_symlink| is
 //   true.

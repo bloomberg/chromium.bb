@@ -1084,7 +1084,8 @@ class GDataFileSystem : public GDataFileSystemInterface {
       scoped_refptr<base::MessageLoopProxy> relay_proxy);
 
   // Task posted from StoreToCache to run on IO thread pool:
-  // - moves |params.source_path| to |params.dest_path| in the cache dir
+  // - moves or copies (per |params.file_operation_type|) |params.source_path|
+  //   to |params.dest_path| in the cache dir
   // - if necessary, creates symlink
   // - deletes stale cached versions of |params.resource_id| in
   //   |params.dest_path|'s directory.
