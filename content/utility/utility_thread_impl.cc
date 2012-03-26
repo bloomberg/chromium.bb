@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -143,19 +143,16 @@ void UtilityThreadImpl::OnLoadPlugins(
   }
 #endif
 
+  ScopedVector<webkit::npapi::PluginGroup> plugin_groups;
+  // TODO(bauerb): If we restart loading plug-ins, we might mess up the logic in
+  // PluginList::ShouldLoadPlugin due to missing the previously loaded plug-ins
+  // in |plugin_groups|.
   for (size_t i = 0; i < plugin_paths.size(); ++i) {
-    ScopedVector<webkit::npapi::PluginGroup> plugin_groups;
-    plugin_list->LoadPlugin(plugin_paths[i], &plugin_groups);
-
-    if (plugin_groups.empty()) {
+    webkit::WebPluginInfo plugin;
+    if (!plugin_list->LoadPlugin(plugin_paths[i], &plugin_groups, &plugin))
       Send(new UtilityHostMsg_LoadPluginFailed(i, plugin_paths[i]));
-      continue;
-    }
-
-    const webkit::npapi::PluginGroup* group = plugin_groups[0];
-    DCHECK_EQ(group->web_plugin_infos().size(), 1u);
-
-    Send(new UtilityHostMsg_LoadedPlugin(i, group->web_plugin_infos().front()));
+    else
+      Send(new UtilityHostMsg_LoadedPlugin(i, plugin));
   }
 
   ReleaseProcessIfNeeded();
