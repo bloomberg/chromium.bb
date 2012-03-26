@@ -12892,6 +12892,15 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_OPTIONS_SET_WALLPAPER_AUTHOR_TEXT" desc="Author label.">
         Attribution:
       </message>
+      <message name="IDS_OPTIONS_SET_WALLPAPER_RANDOM1" desc="Label for option to randomly choose wallpaper at login.">
+        Random
+      </message>
+      <message name="IDS_OPTIONS_SET_WALLPAPER_RANDOM2" desc="Alternate label for option to randomly choose wallpaper at login.">
+        Random Wallpaper
+      </message>
+      <message name="IDS_OPTIONS_SET_WALLPAPER_RANDOM3" desc="Alternate label for option to randomly choose wallpaper at login.">
+        Choose one randomly
+      </message>
       <message name="IDS_OPTIONS_CHANGE_PICTURE" desc="In the settings tab, the text on the button to change picture for the current user.">
         Change picture...
       </message>
