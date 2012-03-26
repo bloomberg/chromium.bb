@@ -9,6 +9,7 @@
 #include "ash/system/brightness/brightness_observer.h"
 #include "ash/system/tray/system_tray_item.h"
 #include "base/compiler_specific.h"
+#include "base/memory/weak_ptr.h"
 
 namespace ash {
 namespace internal {
@@ -24,6 +25,15 @@ class TrayBrightness : public SystemTrayItem,
   virtual ~TrayBrightness();
 
  private:
+  // Sends a request to get the current screen brightness so |current_percent_|
+  // can be initialized.
+  void GetInitialBrightness();
+
+  // Updates |current_percent_| with the initial brightness requested by
+  // GetInitialBrightness(), if we haven't seen the brightness already in the
+  // meantime.
+  void HandleInitialBrightness(double percent);
+
   // Overridden from SystemTrayItem.
   virtual views::View* CreateTrayView(user::LoginStatus status) OVERRIDE;
   virtual views::View* CreateDefaultView(user::LoginStatus status) OVERRIDE;
@@ -33,14 +43,24 @@ class TrayBrightness : public SystemTrayItem,
   virtual void DestroyDetailedView() OVERRIDE;
 
   // Overridden from BrightnessObserver.
-  virtual void OnBrightnessChanged(float fraction,
+  virtual void OnBrightnessChanged(double percent,
                                    bool user_initiated) OVERRIDE;
+
+  base::WeakPtrFactory<TrayBrightness> weak_ptr_factory_;
 
   scoped_ptr<tray::BrightnessView> brightness_view_;
 
-  // Brightness level in the range [0.0, 1.0] that we've heard about most
+  // Was |brightness_view_| created for CreateDefaultView() rather than
+  // CreateDetailedView()?  Used to avoid resetting |brightness_view_|
+  // inappropriately in DestroyDefaultView() or DestroyDetailedView().
+  bool is_default_view_;
+
+  // Brightness level in the range [0.0, 100.0] that we've heard about most
   // recently.
-  float current_fraction_;
+  double current_percent_;
+
+  // Has |current_percent_| been initialized?
+  bool got_current_percent_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayBrightness);
 };

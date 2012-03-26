@@ -143,6 +143,8 @@ void Slider::OnPaint(gfx::Canvas* canvas) {
 }
 
 bool Slider::OnMousePressed(const views::MouseEvent& event) {
+  if (listener_)
+    listener_->SliderDragStarted(this);
   return OnMouseDragged(event);
 }
 
@@ -158,6 +160,11 @@ bool Slider::OnMouseDragged(const views::MouseEvent& event) {
                      VALUE_CHANGED_BY_USER);
   }
   return true;
+}
+
+void Slider::OnMouseReleased(const views::MouseEvent& event) {
+  if (listener_)
+    listener_->SliderDragEnded(this);
 }
 
 bool Slider::OnKeyPressed(const views::KeyEvent& event) {

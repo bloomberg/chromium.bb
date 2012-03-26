@@ -664,7 +664,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   // Overridden from PowerManagerClient::Observer.
   virtual void BrightnessChanged(int level, bool user_initiated) OVERRIDE {
     ash::Shell::GetInstance()->tray()->brightness_observer()->
-        OnBrightnessChanged(level / 100.f, user_initiated);
+        OnBrightnessChanged(static_cast<double>(level), user_initiated);
   }
 
   virtual void PowerChanged(const PowerSupplyStatus& power_status) OVERRIDE {

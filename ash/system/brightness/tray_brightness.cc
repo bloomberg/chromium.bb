@@ -10,6 +10,8 @@
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_views.h"
+#include "base/bind.h"
+#include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "grit/ash_strings.h"
 #include "grit/ui_resources.h"
@@ -30,20 +32,20 @@ namespace tray {
 
 namespace {
 
-// Avoid asking for the screen brightness to be updated until the slider has
-// been moved by more than this much from the last actual brightness level that
-// we observed (given a total range of [0.0, 1.0]).  It's roughly based on the
-// amount by which the power manager adjusts the brightness for each
-// brightness-up or -down request.
-const float kMinBrightnessChange = 0.05f;
+// We don't let the screen brightness go lower than this when it's being
+// adjusted via the slider.  Otherwise, if the user doesn't know about the
+// brightness keys, they may turn the backlight off and not know how to turn it
+// back on.
+const double kMinBrightnessPercent = 5.0;
 
 }  // namespace
 
 class BrightnessView : public views::View,
                        public views::SliderListener {
  public:
-  explicit BrightnessView(float initial_fraction)
-      : last_fraction_(initial_fraction) {
+  explicit BrightnessView(double initial_percent)
+      : dragging_(false),
+        last_percent_(initial_percent) {
     SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal,
           kTrayPopupPaddingHorizontal, 0, kTrayPopupPaddingBetweenItems));
 
@@ -54,7 +56,7 @@ class BrightnessView : public views::View,
     AddChildView(icon);
 
     slider_ = new views::Slider(this, views::Slider::HORIZONTAL);
-    slider_->SetValue(initial_fraction);
+    slider_->SetValue(static_cast<float>(initial_percent / 100.0));
     slider_->SetAccessibleName(
         ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
             IDS_ASH_STATUS_TRAY_BRIGHTNESS));
@@ -63,10 +65,11 @@ class BrightnessView : public views::View,
 
   virtual ~BrightnessView() {}
 
-  // |fraction| is in the range [0.0, 1.0].
-  void SetBrightnessFraction(float fraction) {
-    last_fraction_ = fraction;
-    slider_->SetValue(fraction);
+  // |percent| is in the range [0.0, 100.0].
+  void SetBrightnessPercent(double percent) {
+    last_percent_ = percent;
+    if (!dragging_)
+      slider_->SetValue(static_cast<float>(percent / 100.0));
   }
 
  private:
@@ -81,50 +84,91 @@ class BrightnessView : public views::View,
                                   float value,
                                   float old_value,
                                   views::SliderChangeReason reason) OVERRIDE {
+    DCHECK_EQ(sender, slider_);
     if (reason != views::VALUE_CHANGED_BY_USER)
       return;
-    // TODO(derat): This isn't correct, since we are unable to pass the level to
-    // which the brightness should be set.
-    // http://crbug.com/119743
 #if !defined(OS_MACOSX)
     AcceleratorController* ac = Shell::GetInstance()->accelerator_controller();
     if (ac->brightness_control_delegate()) {
-      BrightnessControlDelegate* delegate = ac->brightness_control_delegate();
-      if (value <= last_fraction_ - kMinBrightnessChange || value < 0.001)
-        delegate->HandleBrightnessDown(ui::Accelerator());
-      else if (value >= last_fraction_ + kMinBrightnessChange || value > 0.999)
-        delegate->HandleBrightnessUp(ui::Accelerator());
+      double percent = std::max(value * 100.0, kMinBrightnessPercent);
+      ac->brightness_control_delegate()->SetBrightnessPercent(percent, true);
     }
 #endif  // OS_MACOSX
   }
 
+  // Overridden from views:SliderListener.
+  virtual void SliderDragStarted(views::Slider* slider) OVERRIDE {
+    DCHECK_EQ(slider, slider_);
+    dragging_ = true;
+  }
+
+  // Overridden from views:SliderListener.
+  virtual void SliderDragEnded(views::Slider* slider) OVERRIDE {
+    DCHECK_EQ(slider, slider_);
+    dragging_ = false;
+    slider_->SetValue(static_cast<float>(last_percent_ / 100.0));
+  }
+
   views::Slider* slider_;
 
-  // Last brightness level that we observed, in the range [0.0, 1.0].
-  float last_fraction_;
+  // Is |slider_| currently being dragged?
+  bool dragging_;
+
+  // Last brightness level that we observed, in the range [0.0, 100.0].
+  double last_percent_;
 
   DISALLOW_COPY_AND_ASSIGN(BrightnessView);
 };
 
 }  // namespace tray
 
-// TODO(derat):  There is currently no way to get the brightness level of the
-// system, so start with a random value.  http://crosbug.com/26935
-TrayBrightness::TrayBrightness() : current_fraction_(0.8f) {}
+TrayBrightness::TrayBrightness()
+    : weak_ptr_factory_(this),
+      is_default_view_(false),
+      current_percent_(100.0),
+      got_current_percent_(false) {
+  // Post a task to get the initial brightness; the BrightnessControlDelegate
+  // isn't created yet.
+  MessageLoopForUI::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&TrayBrightness::GetInitialBrightness,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
 
 TrayBrightness::~TrayBrightness() {}
+
+void TrayBrightness::GetInitialBrightness() {
+  BrightnessControlDelegate* delegate =
+      Shell::GetInstance()->accelerator_controller()->
+      brightness_control_delegate();
+  if (!delegate) {
+    LOG(WARNING) << "Unable to get initial brightness; "
+                 << "BrightnessControlDelegate not yet created";
+    return;
+  }
+  delegate->GetBrightnessPercent(
+      base::Bind(&TrayBrightness::HandleInitialBrightness,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+void TrayBrightness::HandleInitialBrightness(double percent) {
+  if (!got_current_percent_)
+    OnBrightnessChanged(percent, false);
+}
 
 views::View* TrayBrightness::CreateTrayView(user::LoginStatus status) {
   return NULL;
 }
 
 views::View* TrayBrightness::CreateDefaultView(user::LoginStatus status) {
-  brightness_view_.reset(new tray::BrightnessView(current_fraction_));
+  brightness_view_.reset(new tray::BrightnessView(current_percent_));
+  is_default_view_ = true;
   return brightness_view_.get();
 }
 
 views::View* TrayBrightness::CreateDetailedView(user::LoginStatus status) {
-  brightness_view_.reset(new tray::BrightnessView(current_fraction_));
+  brightness_view_.reset(new tray::BrightnessView(current_percent_));
+  is_default_view_ = false;
   return brightness_view_.get();
 }
 
@@ -132,17 +176,21 @@ void TrayBrightness::DestroyTrayView() {
 }
 
 void TrayBrightness::DestroyDefaultView() {
-  brightness_view_.reset();
+  if (is_default_view_)
+    brightness_view_.reset();
 }
 
 void TrayBrightness::DestroyDetailedView() {
-  brightness_view_.reset();
+  if (!is_default_view_)
+    brightness_view_.reset();
 }
 
-void TrayBrightness::OnBrightnessChanged(float fraction, bool user_initiated) {
-  current_fraction_ = fraction;
+void TrayBrightness::OnBrightnessChanged(double percent, bool user_initiated) {
+  current_percent_ = percent;
+  got_current_percent_ = true;
+
   if (brightness_view_.get())
-    brightness_view_->SetBrightnessFraction(fraction);
+    brightness_view_->SetBrightnessPercent(percent);
   if (!user_initiated)
     return;
 

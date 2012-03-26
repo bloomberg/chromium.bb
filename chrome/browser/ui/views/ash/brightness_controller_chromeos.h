@@ -21,6 +21,9 @@ class BrightnessController : public ash::BrightnessControlDelegate {
   virtual bool HandleBrightnessDown(
       const ui::Accelerator& accelerator) OVERRIDE;
   virtual bool HandleBrightnessUp(const ui::Accelerator& accelerator) OVERRIDE;
+  virtual void SetBrightnessPercent(double percent, bool gradual) OVERRIDE;
+  virtual void GetBrightnessPercent(
+      const base::Callback<void(double)>& callback) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BrightnessController);

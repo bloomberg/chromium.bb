@@ -6,6 +6,8 @@
 #define ASH_SYSTEM_BRIGHTNESS_BRIGHTNESS_CONTROL_DELEGATE_H_
 #pragma once
 
+#include "base/callback.h"
+
 namespace ui {
 class Accelerator;
 }  // namespace ui
@@ -17,8 +19,20 @@ class BrightnessControlDelegate {
  public:
   virtual ~BrightnessControlDelegate() {}
 
+  // Handles an accelerator-driven request to decrease or increase the screen
+  // brightness.
   virtual bool HandleBrightnessDown(const ui::Accelerator& accelerator) = 0;
   virtual bool HandleBrightnessUp(const ui::Accelerator& accelerator) = 0;
+
+  // Requests that the brightness be set to |percent|, in the range
+  // [0.0, 100.0].  |gradual| specifies whether the transition to the new
+  // brightness should be animated or instantaneous.
+  virtual void SetBrightnessPercent(double percent, bool gradual) = 0;
+
+  // Asynchronously invokes |callback| with the current brightness, in the range
+  // [0.0, 100.0].
+  virtual void GetBrightnessPercent(
+      const base::Callback<void(double)>& callback) = 0;
 };
 
 }  // namespace ash

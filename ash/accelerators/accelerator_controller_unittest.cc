@@ -210,6 +210,11 @@ class DummyBrightnessControlDelegate : public BrightnessControlDelegate {
     last_accelerator_ = accelerator;
     return consume_;
   }
+  virtual void SetBrightnessPercent(double percent, bool gradual) OVERRIDE {}
+  virtual void GetBrightnessPercent(
+      const base::Callback<void(double)>& callback) OVERRIDE {
+    callback.Run(100.0);
+  }
 
   int handle_brightness_down_count() const {
     return handle_brightness_down_count_;

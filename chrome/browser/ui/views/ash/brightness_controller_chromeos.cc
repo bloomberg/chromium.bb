@@ -29,3 +29,14 @@ bool BrightnessController::HandleBrightnessUp(
       IncreaseScreenBrightness();
   return true;
 }
+
+void BrightnessController::SetBrightnessPercent(double percent, bool gradual) {
+  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
+      SetScreenBrightnessPercent(percent, gradual);
+}
+
+void BrightnessController::GetBrightnessPercent(
+    const base::Callback<void(double)>& callback) {
+  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
+      GetScreenBrightnessPercent(callback);
+}

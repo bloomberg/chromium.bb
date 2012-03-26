@@ -49,6 +49,10 @@ struct PowerSupplyStatus {
 typedef base::Callback<void(int64)> CalculateIdleTimeCallback;
 typedef base::Callback<void(void)> IdleNotificationCallback;
 
+// Callback used for getting the current screen brightness.  The param is in the
+// range [0.0, 100.0].
+typedef base::Callback<void(double)> GetScreenBrightnessPercentCallback;
+
 // PowerManagerClient is used to communicate with the power manager.
 class PowerManagerClient {
  public:
@@ -110,6 +114,15 @@ class PowerManagerClient {
 
   // Increases the screen brightness.
   virtual void IncreaseScreenBrightness() = 0;
+
+  // Set the screen brightness to |percent|, in the range [0.0, 100.0].
+  // If |gradual| is true, the transition will be animated.
+  virtual void SetScreenBrightnessPercent(double percent, bool gradual) = 0;
+
+  // Asynchronously gets the current screen brightness, in the range
+  // [0.0, 100.0].
+  virtual void GetScreenBrightnessPercent(
+      const GetScreenBrightnessPercentCallback& callback) = 0;
 
   // Request for power supply status update.
   virtual void RequestStatusUpdate(UpdateRequestType update_type) = 0;

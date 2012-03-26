@@ -84,6 +84,8 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget {
 
   scoped_ptr<ui::AcceleratorManager> accelerator_manager_;
 
+  // TODO(derat): BrightnessControlDelegate is also used by the system tray;
+  // move it outside of this class.
   scoped_ptr<BrightnessControlDelegate> brightness_control_delegate_;
   scoped_ptr<CapsLockDelegate> caps_lock_delegate_;
   scoped_ptr<ImeControlDelegate> ime_control_delegate_;

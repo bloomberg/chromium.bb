@@ -30,6 +30,11 @@ class VIEWS_EXPORT SliderListener {
                                   float old_value,
                                   SliderChangeReason reason) = 0;
 
+  // Invoked when a drag starts or ends (more specifically, when the mouse
+  // button is pressed or released).
+  virtual void SliderDragStarted(Slider* sender) {}
+  virtual void SliderDragEnded(Slider* sender) {}
+
  protected:
   virtual ~SliderListener() {}
 };
@@ -61,6 +66,7 @@ class VIEWS_EXPORT Slider : public View,
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE;
   virtual bool OnMouseDragged(const views::MouseEvent& event) OVERRIDE;
+  virtual void OnMouseReleased(const views::MouseEvent& event) OVERRIDE;
   virtual bool OnKeyPressed(const views::KeyEvent& event) OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 

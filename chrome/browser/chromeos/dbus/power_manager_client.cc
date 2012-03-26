@@ -181,6 +181,33 @@ class PowerManagerClientImpl : public PowerManagerClient {
     SimpleMethodCallToPowerManager(power_manager::kIncreaseScreenBrightness);
   }
 
+  virtual void SetScreenBrightnessPercent(double percent, bool gradual) {
+    dbus::MethodCall method_call(
+        power_manager::kPowerManagerInterface,
+        power_manager::kSetScreenBrightnessPercent);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendDouble(percent);
+    writer.AppendInt32(
+        gradual ?
+        power_manager::kBrightnessTransitionGradual :
+        power_manager::kBrightnessTransitionInstant);
+    power_manager_proxy_->CallMethod(
+        &method_call,
+        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        dbus::ObjectProxy::EmptyResponseCallback());
+  }
+
+  virtual void GetScreenBrightnessPercent(
+      const GetScreenBrightnessPercentCallback& callback) OVERRIDE {
+    dbus::MethodCall method_call(power_manager::kPowerManagerInterface,
+                                 power_manager::kGetScreenBrightnessPercent);
+    power_manager_proxy_->CallMethod(
+        &method_call,
+        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&PowerManagerClientImpl::OnGetScreenBrightnessPercent,
+                   weak_ptr_factory_.GetWeakPtr(), callback));
+  }
+
   virtual void RequestStatusUpdate(UpdateRequestType update_type) OVERRIDE {
     dbus::MethodCall method_call(
         power_manager::kPowerManagerInterface,
@@ -366,6 +393,22 @@ class PowerManagerClientImpl : public PowerManagerClient {
     callback.Run(idle_time_ms/1000);
   }
 
+  void OnGetScreenBrightnessPercent(
+      const GetScreenBrightnessPercentCallback& callback,
+      dbus::Response* response) {
+    if (!response) {
+      LOG(ERROR) << "Error calling "
+                 << power_manager::kGetScreenBrightnessPercent;
+      return;
+    }
+    dbus::MessageReader reader(response);
+    double percent = 0.0;
+    if (!reader.PopDouble(&percent))
+      LOG(ERROR) << "Error reading response from powerd: "
+                 << response->ToString();
+    callback.Run(percent);
+  }
+
   void ScreenLockSignalReceived(dbus::Signal* signal) {
     FOR_EACH_OBSERVER(Observer, observers_, LockScreen());
   }
@@ -448,6 +491,17 @@ class PowerManagerClientStubImpl : public PowerManagerClient {
 
   virtual void IncreaseScreenBrightness() OVERRIDE {
     VLOG(1) << "Requested to increase screen brightness";
+  }
+
+  virtual void SetScreenBrightnessPercent(double percent,
+                                          bool gradual) OVERRIDE {
+    VLOG(1) << "Requested to set screen brightness to " << percent << "% "
+            << (gradual ? "gradually" : "instantaneously");
+  }
+
+  virtual void GetScreenBrightnessPercent(
+      const GetScreenBrightnessPercentCallback& callback) OVERRIDE {
+    callback.Run(100.0);
   }
 
   virtual void RequestStatusUpdate(UpdateRequestType update_type) OVERRIDE {
