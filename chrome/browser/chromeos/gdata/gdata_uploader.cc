@@ -124,6 +124,8 @@ UploadFileInfo* GDataUploader::GetUploadFileInfo(int upload_id) const {
 }
 
 void GDataUploader::RemovePendingUpload(UploadFileInfo* upload_file_info) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   pending_uploads_.erase(upload_file_info->upload_id);
   if (!upload_file_info->completion_callback.is_null()) {
     upload_file_info->completion_callback.Run(

@@ -70,7 +70,7 @@ typedef base::Callback<void(base::PlatformFileError error,
 
 // Used for file operations like removing files.
 typedef base::Callback<void(base::PlatformFileError error,
-                            scoped_ptr<base::Value> value)>
+                            base::ListValue* feed_list)>
     GetJsonDocumentCallback;
 
 // Used to get available space for the account from GData.
@@ -214,7 +214,7 @@ class GDataFileSystemInterface {
   // |remote_dest_file_path| is the virtual destination path within gdata file
   // system.
   //
-  // Can be called from any thread.
+  // Can be called from *UI* thread. |callback| is run on the calling thread.
   virtual void TransferFile(const FilePath& local_file_path,
                             const FilePath& remote_dest_file_path,
                             const FileOperationCallback& callback) = 0;
@@ -613,13 +613,10 @@ class GDataFileSystem : public GDataFileSystemInterface {
 
   // Checks if a local file at |local_file_path| is a JSON file referencing a
   // hosted document on IO thread poll, and if so, gets the resource ID of the
-  // document. Upon completion, invokes |callback| with the document resource
-  // ID or, if the file is not a valid document JSON, an empty string on the
-  // thread represented by |relay_proxy|.
+  // document.
   static void GetDocumentResourceIdOnIOThreadPool(
       const FilePath& local_file_path,
-      const GetDocumentResourceIdCallback& callback,
-      scoped_refptr<base::MessageLoopProxy> relay_proxy);
+      std::string* resource_id);
 
   // Creates a temporary JSON file representing a document with |edit_url|
   // and |resource_id| under |document_dir| on IO thread pool. Upon completion
@@ -639,18 +636,18 @@ class GDataFileSystem : public GDataFileSystemInterface {
   // handled by CopyDocumentToDirectory. Otherwise, the transfer is handled by
   // TransferRegularFile.
   //
-  // Can be called from UI/IO thread. |callback| is run on the calling thread.
+  // Can be called from *UI* thread. |callback| is run on the calling thread.
   void TransferFileForResourceId(const FilePath& local_file_path,
                                  const FilePath& remote_dest_file_path,
                                  const FileOperationCallback& callback,
-                                 const std::string& resource_id);
+                                 std::string* resource_id);
 
   // Initiates transfer of |local_file_path| to |remote_dest_file_path|.
   // |local_file_path| must be a regular file (i.e. not a hosted document) from
   // the local file system, |remote_dest_file_path| is the virtual destination
   // path within gdata file system.
   //
-  // Can be called from UI/IO thread. |callback| is run on the calling thread.
+  // Can be called from *UI* thread. |callback| is run on the calling thread.
   void TransferRegularFile(const FilePath& local_file_path,
                            const FilePath& remote_dest_file_path,
                            const FileOperationCallback& callback);
@@ -714,7 +711,6 @@ class GDataFileSystem : public GDataFileSystemInterface {
   // started FindFileByPath() request.
   void OnGetDocuments(const FilePath& search_file_path,
                       scoped_ptr<base::ListValue> feed_list,
-                      scoped_refptr<base::MessageLoopProxy> proxy,
                       const FindFileCallback& callback,
                       GDataErrorCode status,
                       scoped_ptr<base::Value> data);
@@ -849,33 +845,29 @@ class GDataFileSystem : public GDataFileSystemInterface {
   // Starts root feed load from the server. If successful, it will try to find
   // the file upon retrieval completion.
   void LoadFeedFromServer(const FilePath& search_file_path,
-                          scoped_refptr<base::MessageLoopProxy> proxy,
                           const FindFileCallback& callback);
 
   // Starts root feed load from the cache. If successful, it will try to find
   // the file upon retrieval completion. In addition to that, it will
-  // initate retrieval of the root feed from the server if |load_from_server|
-  // is set.
+  // initate retrieval of the root feed from the server if
+  // |should_load_from_server| is set.
   void LoadRootFeedFromCache(const FilePath& search_file_path,
-                             bool load_from_server,
-                             scoped_refptr<base::MessageLoopProxy> proxy,
+                             bool should_load_from_server,
                              const FindFileCallback& callback);
 
   // Loads root feed content from |file_path| on IO thread pool. Upon
   // completion it will invoke |callback| on thread represented by
   // |relay_proxy|.
-  static void LoadRootFeedOnIOThreadPool(
-      const FilePath& meta_cache_path,
-      scoped_refptr<base::MessageLoopProxy> relay_proxy,
-      const GetJsonDocumentCallback& callback);
+  static void LoadRootFeedOnIOThreadPool(const FilePath& meta_cache_path,
+                                         base::PlatformFileError* error,
+                                         base::ListValue* feed_list);
 
   // Callback for handling root directory refresh from the cache.
   void OnLoadRootFeed(const FilePath& search_file_path,
-                      bool load_from_server,
-                      scoped_refptr<base::MessageLoopProxy> proxy,
-                      FindFileCallback callback,
-                      base::PlatformFileError error,
-                      scoped_ptr<base::Value> feed_list);
+                      bool should_load_from_server,
+                      const FindFileCallback& callback,
+                      base::PlatformFileError* error,
+                      base::ListValue* feed_list);
 
   // Saves a collected feed in GCache directory under
   // <user_profile_dir>/GCache/v1/meta/|name| for later reloading when offline.
@@ -903,24 +895,22 @@ class GDataFileSystem : public GDataFileSystemInterface {
   void OnTransferCompleted(
       const FilePath& local_file_path,
       const FilePath& remote_dest_file_path,
-      scoped_refptr<base::MessageLoopProxy> proxy,
       const FileOperationCallback& callback,
       base::PlatformFileError error,
       DocumentEntry* entry);
 
   // Kicks off file upload once it receives |upload_file_info|.
   void StartFileUploadOnUIThread(
-      scoped_refptr<base::MessageLoopProxy> proxy,
       const FileOperationCallback& callback,
-      base::PlatformFileError error,
-      scoped_ptr<UploadFileInfo> upload_file_info);
+      base::PlatformFileError* error,
+      UploadFileInfo* upload_file_info);
 
-  // Reads properties of |local_file| and fills in values of UploadFileInfo
-  // which are returned through |callback| on UI thread.
+  // Reads properties of |local_file| and fills in values of UploadFileInfo.
   static void CreateUploadFileInfoOnIOThreadPool(
       const FilePath& local_file,
       const FilePath& remote_dest_file,
-      const CreateUploadFileInfoCallback& callback);
+      base::PlatformFileError* error,
+      UploadFileInfo* upload_file_info);
 
   // Cache entry points from within GDataFileSystem.
   // The functionalities of GData blob cache include:
@@ -1213,8 +1203,9 @@ class GDataFileSystem : public GDataFileSystemInterface {
   // the right order.
   void RunTaskOnIOThreadPool(const base::Closure& task);
 
-  // Wrapper around BrowserThread::PostBlockingPoolTask to post
-  // RunTaskOnIOThreadPool task on IO thread pool.
+  // Wrapper around BrowserThread::PostTask to post
+  // RunTaskOnIOThreadPool task to the blocking thread pool.
+  // TODO(satorux): As of now, it's posting to FILE thread.
   void PostBlockingPoolSequencedTask(
       const std::string& sequence_token_name,
       const tracked_objects::Location& from_here,

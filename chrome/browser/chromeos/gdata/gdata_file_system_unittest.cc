@@ -44,6 +44,7 @@ using ::testing::_;
 using base::Value;
 using base::DictionaryValue;
 using base::ListValue;
+using content::BrowserThread;
 
 namespace {
 
@@ -99,6 +100,7 @@ class GDataFileSystemTest : public testing::Test {
   GDataFileSystemTest()
       : ui_thread_(content::BrowserThread::UI, &message_loop_),
         io_thread_(content::BrowserThread::IO, &message_loop_),
+        file_thread_(content::BrowserThread::FILE),
         file_system_(NULL),
         mock_doc_service_(NULL),
         mock_sync_client_(NULL),
@@ -111,6 +113,8 @@ class GDataFileSystemTest : public testing::Test {
   }
 
   virtual void SetUp() OVERRIDE {
+    file_thread_.StartIOThread();
+
     profile_.reset(new TestingProfile);
 
     callback_helper_ = new CallbackHelper;
@@ -669,7 +673,8 @@ class GDataFileSystemTest : public testing::Test {
     // We should first flush tasks on UI thread, as it can require some
     // tasks to be run before IO tasks start.
     message_loop_.RunAllPending();
-    content::BrowserThread::GetBlockingPool()->FlushForTesting();
+    file_thread_.Stop();
+    file_thread_.StartIOThread();
     // Once IO tasks are done, flush UI thread again so the results from IO
     // tasks are processed.
     message_loop_.RunAllPending();
@@ -689,7 +694,6 @@ class GDataFileSystemTest : public testing::Test {
     file_system_->LoadRootFeedFromCache(
         FilePath(FILE_PATH_LITERAL("gdata")),
         false,     // load_from_server
-        base::MessageLoopProxy::current(),
         base::Bind(&GDataFileSystemTest::OnExpectToFindFile,
                    FilePath(FILE_PATH_LITERAL("gdata"))));
     RunAllPendingForIO();
@@ -773,6 +777,7 @@ class GDataFileSystemTest : public testing::Test {
   MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread io_thread_;
+  content::TestBrowserThread file_thread_;
   scoped_ptr<TestingProfile> profile_;
   scoped_refptr<CallbackHelper> callback_helper_;
   GDataFileSystem* file_system_;

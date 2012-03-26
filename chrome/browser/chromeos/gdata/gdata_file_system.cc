@@ -509,28 +509,23 @@ void GDataFileSystem::FindFileByPathSync(
 void GDataFileSystem::FindFileByPathAsync(
     const FilePath& search_file_path,
     const FindFileCallback& callback) {
-  scoped_refptr<base::MessageLoopProxy> proxy(
-      base::MessageLoopProxy::current());
   base::AutoLock lock(lock_);
   if (root_->origin() == UNINITIALIZED) {
     // Load root feed from this disk cache. Upon completion, kick off server
     // fetching.
     LoadRootFeedFromCache(search_file_path,
-                          true,     // load_from_server
-                          proxy,
+                          true,     // should_load_from_server
                           callback);
     return;
   } else if (root_->NeedsRefresh()) {
     // If content is stale or from disk from cache, fetch content from
     // the server.
-    LoadFeedFromServer(search_file_path, proxy, callback);
+    LoadFeedFromServer(search_file_path, callback);
     return;
   }
-  proxy->PostTask(FROM_HERE,
-                  base::Bind(&GDataFileSystem::FindFileByPathOnCallingThread,
-                             GetWeakPtrForCurrentThread(),
-                             search_file_path,
-                             callback));
+  GDataFileSystem::FindFileByPathOnCallingThread(
+      search_file_path,
+      callback);
 }
 
 void GDataFileSystem::FindFileByPathOnCallingThread(
@@ -542,7 +537,6 @@ void GDataFileSystem::FindFileByPathOnCallingThread(
 
 void GDataFileSystem::LoadFeedFromServer(
     const FilePath& search_file_path,
-    scoped_refptr<base::MessageLoopProxy> proxy,
     const FindFileCallback& callback) {
   // ...then also kick off document feed fetching from the server as well.
   // |feed_list| will contain the list of all collected feed updates that
@@ -556,13 +550,14 @@ void GDataFileSystem::LoadFeedFromServer(
                  GetWeakPtrForCurrentThread(),
                  search_file_path,
                  base::Passed(&feed_list),
-                 proxy,
                  callback));
 }
 
 void GDataFileSystem::TransferFile(const FilePath& local_file_path,
                                    const FilePath& remote_dest_file_path,
                                    const FileOperationCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   base::AutoLock lock(lock_);
   // Make sure the destination directory exists
   GDataFileBase* dest_dir = GetGDataFileInfoFromPath(
@@ -573,23 +568,30 @@ void GDataFileSystem::TransferFile(const FilePath& local_file_path,
     return;
   }
 
-  BrowserThread::PostBlockingPoolTask(FROM_HERE,
+  std::string* resource_id = new std::string;
+  BrowserThread::PostTaskAndReply(
+      BrowserThread::FILE,
+      FROM_HERE,
       base::Bind(&GDataFileSystem::GetDocumentResourceIdOnIOThreadPool,
                  local_file_path,
-                 base::Bind(&GDataFileSystem::TransferFileForResourceId,
-                            GetWeakPtrForCurrentThread(),
-                            local_file_path,
-                            remote_dest_file_path,
-                            callback),
-                 base::MessageLoopProxy::current()));
+                 resource_id),
+      base::Bind(&GDataFileSystem::TransferFileForResourceId,
+                 GetWeakPtrForCurrentThread(),
+                 local_file_path,
+                 remote_dest_file_path,
+                 callback,
+                 base::Owned(resource_id)));
 }
 
 void GDataFileSystem::TransferFileForResourceId(
     const FilePath& local_file_path,
     const FilePath& remote_dest_file_path,
     const FileOperationCallback& callback,
-    const std::string& resource_id) {
-  if (resource_id.empty()) {
+    std::string* resource_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(resource_id);
+
+  if (resource_id->empty()) {
     // If |resource_id| is empty, upload the local file as a regular file.
     TransferRegularFile(local_file_path, remote_dest_file_path, callback);
     return;
@@ -599,7 +601,7 @@ void GDataFileSystem::TransferFileForResourceId(
   // to the destination directory (collection).
   CopyDocumentToDirectory(
       remote_dest_file_path.DirName(),
-      resource_id,
+      *resource_id,
       // Drop the document extension, which should not be
       // in the document title.
       remote_dest_file_path.BaseName().RemoveExtension().value(),
@@ -610,51 +612,61 @@ void GDataFileSystem::TransferRegularFile(
     const FilePath& local_file_path,
     const FilePath& remote_dest_file_path,
     const FileOperationCallback& callback) {
-  BrowserThread::PostBlockingPoolTask(FROM_HERE,
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  base::PlatformFileError* error =
+      new base::PlatformFileError(base::PLATFORM_FILE_OK);
+  UploadFileInfo* upload_file_info = new UploadFileInfo;
+  BrowserThread::PostTaskAndReply(
+      BrowserThread::FILE,
+      FROM_HERE,
       base::Bind(&GDataFileSystem::CreateUploadFileInfoOnIOThreadPool,
                  local_file_path,
                  remote_dest_file_path,
-                 base::Bind(&GDataFileSystem::StartFileUploadOnUIThread,
-                            ui_weak_ptr_factory_->GetWeakPtr(),
-                            base::MessageLoopProxy::current(),
-                            callback)));
+                 error,
+                 upload_file_info),
+      base::Bind(&GDataFileSystem::StartFileUploadOnUIThread,
+                 GetWeakPtrForCurrentThread(),
+                 callback,
+                 error,
+                 upload_file_info));
 }
 
 // static
 void GDataFileSystem::GetDocumentResourceIdOnIOThreadPool(
     const FilePath& local_file_path,
-    const GetDocumentResourceIdCallback& callback,
-    scoped_refptr<base::MessageLoopProxy> relay_proxy) {
-  std::string resource_id;
+    std::string* resource_id) {
+  DCHECK(resource_id);
+
   if (DocumentEntry::HasHostedDocumentExtension(local_file_path)) {
     std::string error;
     DictionaryValue* dict_value = NULL;
     JSONFileValueSerializer serializer(local_file_path);
     scoped_ptr<Value> value(serializer.Deserialize(NULL, &error));
     if (value.get() && value->GetAsDictionary(&dict_value))
-      dict_value->GetString("resource_id", &resource_id);
+      dict_value->GetString("resource_id", resource_id);
   }
-
-  relay_proxy->PostTask(FROM_HERE, base::Bind(callback, resource_id));
 }
 
 void GDataFileSystem::StartFileUploadOnUIThread(
-    scoped_refptr<base::MessageLoopProxy> proxy,
     const FileOperationCallback& callback,
-    base::PlatformFileError error,
-    scoped_ptr<UploadFileInfo> upload_file_info) {
+    base::PlatformFileError* error,
+    UploadFileInfo* upload_file_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(error);
+  DCHECK(upload_file_info);
+
   GDataSystemService* service =
       GDataSystemServiceFactory::GetForProfile(profile_);
 
-  if (error == base::PLATFORM_FILE_OK) {
-    if (!service || !upload_file_info.get())
-      error = base::PLATFORM_FILE_ERROR_FAILED;
+  if (*error == base::PLATFORM_FILE_OK) {
+    if (!service)
+      *error = base::PLATFORM_FILE_ERROR_FAILED;
   }
 
-  if (error != base::PLATFORM_FILE_OK) {
+  if (*error != base::PLATFORM_FILE_OK) {
     if (!callback.is_null())
-      proxy->PostTask(FROM_HERE, base::Bind(callback, error));
+      callback.Run(*error);
 
     return;
   }
@@ -664,16 +676,14 @@ void GDataFileSystem::StartFileUploadOnUIThread(
                  GetWeakPtrForCurrentThread(),
                  upload_file_info->file_path,
                  upload_file_info->gdata_path,
-                 proxy,
                  callback);
 
-  service->uploader()->UploadFile(upload_file_info.release());
+  service->uploader()->UploadFile(upload_file_info);
 }
 
 void GDataFileSystem::OnTransferCompleted(
     const FilePath& local_file_path,
     const FilePath& remote_dest_file_path,
-    scoped_refptr<base::MessageLoopProxy> proxy,
     const FileOperationCallback& callback,
     base::PlatformFileError error,
     DocumentEntry* entry) {
@@ -683,29 +693,25 @@ void GDataFileSystem::OnTransferCompleted(
                     local_file_path,
                     FILE_OPERATION_COPY);
   }
-  proxy->PostTask(FROM_HERE, base::Bind(callback, error));
+  if (!callback.is_null())
+    callback.Run(error);
 }
 
 // static.
 void GDataFileSystem::CreateUploadFileInfoOnIOThreadPool(
     const FilePath& local_file,
     const FilePath& remote_dest_file,
-    const CreateUploadFileInfoCallback& callback) {
-  scoped_ptr<UploadFileInfo> upload_file_info;
+    base::PlatformFileError* error,
+    UploadFileInfo* upload_file_info) {
+  DCHECK(error);
+  DCHECK(upload_file_info);
 
-  int64 file_size;
+  int64 file_size = 0;
   if (!file_util::GetFileSize(local_file, &file_size)) {
-    BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(callback,
-                   base::PLATFORM_FILE_ERROR_NOT_FOUND,
-                   base::Passed(&upload_file_info)));
-
+    *error = base::PLATFORM_FILE_ERROR_NOT_FOUND;
     return;
   }
 
-  upload_file_info.reset(new UploadFileInfo());
   upload_file_info->file_path = local_file;
   upload_file_info->file_size = file_size;
   // Extract the final path from DownloadItem.
@@ -720,14 +726,8 @@ void GDataFileSystem::CreateUploadFileInfoOnIOThreadPool(
     upload_file_info->content_type= kMimeTypeOctetStream;
   }
 
-  BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(callback,
-                 base::PLATFORM_FILE_OK,
-                 base::Passed(&upload_file_info)));
+  *error = base::PLATFORM_FILE_OK;
 }
-
 
 void GDataFileSystem::Copy(const FilePath& src_file_path,
                            const FilePath& dest_file_path,
@@ -1626,7 +1626,6 @@ void GDataFileSystem::OnCreateDirectoryCompleted(
 void GDataFileSystem::OnGetDocuments(
     const FilePath& search_file_path,
     scoped_ptr<ListValue> feed_list,
-    scoped_refptr<base::MessageLoopProxy> proxy,
     const FindFileCallback& callback,
     GDataErrorCode status,
     scoped_ptr<base::Value> data) {
@@ -1639,9 +1638,8 @@ void GDataFileSystem::OnGetDocuments(
 
   if (error != base::PLATFORM_FILE_OK) {
     if (!callback.is_null()) {
-      proxy->PostTask(FROM_HERE,
-           base::Bind(callback, error, FilePath(),
-               reinterpret_cast<GDataFileBase*>(NULL)));
+      callback.Run(error, FilePath(),
+                   reinterpret_cast<GDataFileBase*>(NULL));
     }
 
     return;
@@ -1653,9 +1651,8 @@ void GDataFileSystem::OnGetDocuments(
   scoped_ptr<DocumentFeed> current_feed(ParseDocumentFeed(data.get()));
   if (!current_feed.get()) {
     if (!callback.is_null()) {
-      proxy->PostTask(FROM_HERE,
-           base::Bind(callback, base::PLATFORM_FILE_ERROR_FAILED, FilePath(),
-               reinterpret_cast<GDataFileBase*>(NULL)));
+      callback.Run(base::PLATFORM_FILE_ERROR_FAILED, FilePath(),
+                   reinterpret_cast<GDataFileBase*>(NULL));
     }
 
     return;
@@ -1682,9 +1679,8 @@ void GDataFileSystem::OnGetDocuments(
                                             FROM_SERVER);
     if (error != base::PLATFORM_FILE_OK) {
       if (!callback.is_null()) {
-        proxy->PostTask(FROM_HERE,
-             base::Bind(callback, error, FilePath(),
-                 reinterpret_cast<GDataFileBase*>(NULL)));
+        callback.Run(error, FilePath(),
+                     reinterpret_cast<GDataFileBase*>(NULL));
       }
 
       return;
@@ -1693,11 +1689,7 @@ void GDataFileSystem::OnGetDocuments(
     // If we had someone to report this too, then this retrieval was done in a
     // context of search... so continue search.
     if (!callback.is_null()) {
-      proxy->PostTask(FROM_HERE,
-          base::Bind(&GDataFileSystem::FindFileByPathOnCallingThread,
-                     GetWeakPtrForCurrentThread(),
-                     search_file_path,
-                     callback));
+      FindFileByPathOnCallingThread(search_file_path, callback);
     }
   }
 
@@ -1714,7 +1706,6 @@ void GDataFileSystem::OnGetDocuments(
                    GetWeakPtrForCurrentThread(),
                    search_file_path,
                    base::Passed(&feed_list),
-                   proxy,
                    continue_callback));
   } else {
     // Save completed feed in meta cache.
@@ -1725,55 +1716,55 @@ void GDataFileSystem::OnGetDocuments(
 
 void GDataFileSystem::LoadRootFeedFromCache(
     const FilePath& search_file_path,
-    bool load_from_server,
-    scoped_refptr<base::MessageLoopProxy> proxy,
+    bool should_load_from_server,
     const FindFileCallback& callback) {
-  BrowserThread::PostBlockingPoolTask(FROM_HERE,
+  base::PlatformFileError* error =
+      new base::PlatformFileError(base::PLATFORM_FILE_OK);
+  base::ListValue* feed_list = new base::ListValue;
+
+  BrowserThread::PostTaskAndReply(
+      BrowserThread::FILE,
+      FROM_HERE,
       base::Bind(&GDataFileSystem::LoadRootFeedOnIOThreadPool,
                  cache_paths_[GDataRootDirectory::CACHE_TYPE_META].Append(
                      kLastFeedFile),
-                 proxy,
-                 base::Bind(&GDataFileSystem::OnLoadRootFeed,
-                            GetWeakPtrForCurrentThread(),
-                            search_file_path,
-                            load_from_server,
-                            proxy,
-                            callback)));
+                 error,
+                 feed_list),
+      base::Bind(&GDataFileSystem::OnLoadRootFeed,
+                 GetWeakPtrForCurrentThread(),
+                 search_file_path,
+                 should_load_from_server,
+                 callback,
+                 base::Owned(error),
+                 base::Owned(feed_list)));
 }
 
 void GDataFileSystem::OnLoadRootFeed(
     const FilePath& search_file_path,
-    bool load_from_server,
-    scoped_refptr<base::MessageLoopProxy> proxy,
-    FindFileCallback callback,
-    base::PlatformFileError error,
-    scoped_ptr<base::Value> feed_list) {
-  if (error == base::PLATFORM_FILE_OK &&
-      (!feed_list.get() || feed_list->GetType() != Value::TYPE_LIST)) {
-    LOG(WARNING) << "No feed content!";
-    error = base::PLATFORM_FILE_ERROR_FAILED;
-  }
+    bool should_load_from_server,
+    const FindFileCallback& in_callback,
+    base::PlatformFileError* error,
+    base::ListValue* feed_list) {
+  DCHECK(error);
+  DCHECK(feed_list);
 
-  if (error == base::PLATFORM_FILE_OK) {
-    error = UpdateDirectoryWithDocumentFeed(
-        reinterpret_cast<ListValue*>(feed_list.get()),
+  if (*error == base::PLATFORM_FILE_OK) {
+    *error = UpdateDirectoryWithDocumentFeed(
+        feed_list,
         FROM_CACHE);
   }
 
+  FindFileCallback callback = in_callback;
   // If we got feed content from cache, try search over it.
-  if (!load_from_server ||
-      (error == base::PLATFORM_FILE_OK && !callback.is_null())) {
+  if (!should_load_from_server ||
+      (*error == base::PLATFORM_FILE_OK && !callback.is_null())) {
     // Continue file content search operation if the delegate hasn't terminated
     // this search branch already.
-    proxy->PostTask(FROM_HERE,
-                    base::Bind(&GDataFileSystem::FindFileByPathOnCallingThread,
-                               GetWeakPtrForCurrentThread(),
-                               search_file_path,
-                               callback));
+    FindFileByPathOnCallingThread(search_file_path, callback);
     callback.Reset();
   }
 
-  if (!load_from_server)
+  if (!should_load_from_server)
     return;
 
   // Kick of the retreival of the feed from server. If we have previously
@@ -1786,25 +1777,18 @@ void GDataFileSystem::OnLoadRootFeed(
                  GetWeakPtrForCurrentThread(),
                  search_file_path,
                  base::Passed(&server_feed_list),
-                 proxy,
                  callback));
 }
 
-// Static.
+// static.
 void GDataFileSystem::LoadRootFeedOnIOThreadPool(
     const FilePath& file_path,
-    scoped_refptr<base::MessageLoopProxy> relay_proxy,
-    const GetJsonDocumentCallback& callback) {
-
+    base::PlatformFileError* error,
+    base::ListValue* feed_list) {
   scoped_ptr<base::Value> root_value;
   std::string contents;
   if (!file_util::ReadFileToString(file_path, &contents)) {
-    if (!callback.is_null()) {
-      relay_proxy->PostTask(FROM_HERE,
-                             base::Bind(callback,
-                                        base::PLATFORM_FILE_ERROR_NOT_FOUND,
-                                        base::Passed(&root_value)));
-    }
+    *error = base::PLATFORM_FILE_ERROR_NOT_FOUND;
     return;
   }
 
@@ -1817,15 +1801,13 @@ void GDataFileSystem::LoadRootFeedOnIOThreadPool(
   if (!has_root)
     LOG(WARNING) << "Cached content read failed for file " << file_path.value();
 
-  if (!callback.is_null()) {
-    relay_proxy->PostTask(FROM_HERE,
-        base::Bind(callback,
-                   has_root ? base::PLATFORM_FILE_OK :
-                              base::PLATFORM_FILE_ERROR_FAILED,
-                   base::Passed(&root_value)));
+  if (has_root && root_value->GetType() == Value::TYPE_LIST) {
+    *error = base::PLATFORM_FILE_OK;
+    feed_list->Swap(reinterpret_cast<base::ListValue*>(root_value.get()));
+  } else {
+    *error = base::PLATFORM_FILE_ERROR_FAILED;
   }
 }
-
 
 void GDataFileSystem::OnFilePathUpdated(const FileOperationCallback& callback,
                                         base::PlatformFileError error,
@@ -3576,8 +3558,8 @@ void GDataFileSystem::PostBlockingPoolSequencedTask(
     base::AutoLock lock(num_pending_tasks_lock_);
     ++num_pending_tasks_;
   }
-  const bool posted = BrowserThread::PostBlockingPoolSequencedTask(
-      sequence_token_name,
+  const bool posted = BrowserThread::PostTask(
+      BrowserThread::FILE,
       from_here,
       base::Bind(&GDataFileSystem::RunTaskOnIOThreadPool,
                  base::Unretained(this),
