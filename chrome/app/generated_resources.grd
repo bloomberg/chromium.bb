@@ -5594,7 +5594,7 @@ Because search results are requested even while you're typing your query, your d
 
       <!-- Plug-in placeholders -->
       <message name="IDS_PLUGIN_LOAD" desc="The link for loading a blocked plug-in, displayed in the click to play UI.">
-        Click to run the <ph name="PLUGIN_NAME">$1<ex>Flash</ex></ph> plug-in.
+        Click to run <ph name="PLUGIN_NAME">$1<ex>Flash</ex></ph>.
       </message>
       <message name="IDS_PLUGIN_HIDE" desc="The tooltip for hiding a blocked plug-in, displayed in the click to play UI.">
         Hide this plug-in
@@ -5603,13 +5603,13 @@ Because search results are requested even while you're typing your query, your d
         Update plug-in...
       </message>
       <message name="IDS_PLUGIN_BLOCKED" desc="The placeholder text for a blocked plug-in.">
-        The <ph name="PLUGIN_NAME">$1<ex>Flash</ex></ph> plug-in is not allowed.
+        <ph name="PLUGIN_NAME">$1<ex>Flash</ex></ph> is not allowed.
       </message>
       <message name="IDS_PLUGIN_OUTDATED" desc="The placeholder text for an outdated plug-in.">
-        The <ph name="PLUGIN_NAME">$1<ex>Flash</ex></ph> plug-in is out of date.
+        <ph name="PLUGIN_NAME">$1<ex>Flash</ex></ph> is out of date.
       </message>
       <message name="IDS_PLUGIN_NOT_AUTHORIZED" desc="The placeholder text for a plug-in that requires user permission to run.">
-        The <ph name="PLUGIN_NAME">$1<ex>Java</ex></ph> plug-in needs your permission to run.
+        <ph name="PLUGIN_NAME">$1<ex>Java</ex></ph> needs your permission to run.
       </message>
       <message name="IDS_PLUGIN_NOT_FOUND" desc="The placeholder text for an unknown plug-in that is not installed.">
         No plug-in available to display this content.
@@ -5618,37 +5618,37 @@ Because search results are requested even while you're typing your query, your d
         Looking for plug-in...
       </message>
       <message name="IDS_PLUGIN_DOWNLOADING" desc="The placeholder text when downloading a missing plug-in.">
-        Downloading plug-in...
+        Downloading <ph name="PLUGIN_NAME">$1<ex>Realplayer</ex></ph>...
       </message>
       <message name="IDS_PLUGIN_DOWNLOAD_ERROR" desc="The placeholder text when there was an error download a missing plug-in.">
-        There was an error downloading the plug-in (<ph name="ERROR">$1<ex>net::ERR_TOO_MANY_GOATS</ex></ph>). Sorry :-/
+        There was an error (<ph name="ERROR">$1<ex>net::ERR_TOO_MANY_GOATS</ex></ph>) while downloading the plug-in.
       </message>
       <message name="IDS_PLUGIN_DOWNLOAD_ERROR_SHORT" desc="The placeholder text when there was an error download a missing plug-in.">
-        There was an error downloading the plug-in. Sorry :-/
+        <ph name="PLUGIN_NAME">$1<ex>Realplayer</ex></ph> download failed.
       </message>
       <message name="IDS_PLUGIN_DOWNLOAD_CANCELLED" desc="The placeholder text when the user cancelled downloading the plug-in.">
-        The plug-in download was cancelled.
+        <ph name="PLUGIN_NAME">$1<ex>Realplayer</ex></ph> download was cancelled.
       </message>
       <message name="IDS_PLUGIN_INSTALLING" desc="The placeholder text when installing a missing plug-in.">
-        After installing the plug-in, reload the page.
+        When <ph name="PLUGIN_NAME">$1<ex>Realplayer</ex></ph> has finished installing, reload the page to activate it.
       </message>
       <message name="IDS_PLUGIN_UPDATING" desc="The placeholder text when updating an out-of-date plug-in.">
-        After updating the plug-in, reload the page.
+        When <ph name="PLUGIN_NAME">$1<ex>Realplayer</ex></ph> has finished updating, reload the page to activate it.
       </message>
       <message name="IDS_PLUGIN_FOUND" desc="The placeholder text for a known plug-in that is not installed.">
-        The <ph name="PLUGIN_NAME">$1<ex>Quicktime</ex></ph> plug-in is required to display this content.
+        <ph name="PLUGIN_NAME">$1<ex>Quicktime</ex></ph> is required to display this content.
       </message>
       <message name="IDS_PLUGIN_CONFIRM_INSTALL_DIALOG_TITLE" desc="Title of the plug-in installation confirmation dialog.">
-        <ph name="PLUGIN_NAME">$1<ex>Realplayer</ex></ph> plug-in needed
+        Install <ph name="PLUGIN_NAME">$1<ex>Realplayer</ex></ph>
       </message>
       <message name="IDS_PLUGIN_CONFIRM_INSTALL_DIALOG_MSG" desc="Message of the plug-in installation confirmation dialog.">
-        Please confirm that you would like to install the <ph name="PLUGIN_NAME">$1<ex>Realplayer</ex></ph> plug-in. You should only install plug-ins that you trust.
+        Are you sure you want to install <ph name="PLUGIN_NAME">$1<ex>Realplayer</ex></ph>? You should only install plug-ins that you trust.
       </message>
       <message name="IDS_PLUGIN_CONFIRM_INSTALL_DIALOG_ACCEPT_BUTTON" desc="Button title to install a missing plug-in.">
-        Get Plug-in
+        Install
       </message>
       <message name="IDS_PLUGIN_DISABLED" desc="The placeholder text for a disabled plug-in.">
-        The <ph name="PLUGIN_NAME">$1<ex>Flash</ex></ph> plug-in has been disabled. To re-enable it, please go to <ph name="CHROME_PLUGINS_LINK">chrome://plugins</ph>.
+        <ph name="PLUGIN_NAME">$1<ex>Flash</ex></ph> has been disabled. To re-enable it, please go to <ph name="CHROME_PLUGINS_LINK">chrome://plugins</ph>.
       </message>
 
       <!-- Session Crashed Info Bar-->
@@ -9912,7 +9912,7 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
       </message>
 
       <message name="IDS_PLUGININSTALLER_INSTALLPLUGIN_PROMPT" desc="Info Bar message to prompt installing missing plugin">
-        The <ph name="PLUGIN_NAME">$1<ex>Quicktime</ex></ph> plug-in is required to display some elements on this page.
+        <ph name="PLUGIN_NAME">$1<ex>Quicktime</ex></ph> is required to display some elements on this page.
       </message>
       <message name="IDS_PLUGININSTALLER_INSTALLPLUGIN_BUTTON" desc="Info Bar button to install missing plugin">
         Install plug-in...
@@ -9924,13 +9924,16 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
         Problems updating?
       </message>
       <message name="IDS_PLUGIN_OUTDATED_PROMPT" desc="Info Bar message when an outdated plugin was disabled">
-        The <ph name="PLUGIN_NAME">$1<ex>Flash</ex></ph> plug-in was blocked because it is out of date.
+        <ph name="PLUGIN_NAME">$1<ex>Flash</ex></ph> was blocked because it is out of date.
       </message>
       <message name="IDS_PLUGIN_ENABLE_TEMPORARILY" desc="Info Bar button to run a blocked outdated plugin">
         Run this time
       </message>
       <message name="IDS_PLUGIN_ENABLE_ALWAYS" desc="Info Bar button to always run blocked plugins for this website">
         Always run on this site
+      </message>
+      <message name="IDS_PLUGIN_RETRY_DOWNLOAD" desc="Info Bar button to retry downloading the plug-in.">
+        Try again
       </message>
       <message name="IDS_PLUGIN_CRASHED_PROMPT" desc="Info Bar message to notify about a crashed plugin">
         The following plug-in has crashed: <ph name="PLUGIN_NAME">$1<ex>Shockwave</ex></ph>

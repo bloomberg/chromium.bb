@@ -151,7 +151,8 @@ InfoBarDelegate* OutdatedPluginInfoBarDelegate::Create(
                                            installer->name());
       break;
     case PluginInstaller::kStateDownloading:
-      message = l10n_util::GetStringUTF16(IDS_PLUGIN_DOWNLOADING);
+      message = l10n_util::GetStringFUTF16(IDS_PLUGIN_DOWNLOADING,
+                                           installer->name());
       break;
   }
   return new OutdatedPluginInfoBarDelegate(
@@ -244,20 +245,24 @@ bool OutdatedPluginInfoBarDelegate::LinkClicked(
 }
 
 void OutdatedPluginInfoBarDelegate::DownloadStarted() {
-  ReplaceWithInfoBar(l10n_util::GetStringUTF16(IDS_PLUGIN_DOWNLOADING));
+  ReplaceWithInfoBar(l10n_util::GetStringFUTF16(IDS_PLUGIN_DOWNLOADING,
+                                                installer()->name()));
 }
 
 void OutdatedPluginInfoBarDelegate::DownloadError(const std::string& message) {
   ReplaceWithInfoBar(
-      l10n_util::GetStringUTF16(IDS_PLUGIN_DOWNLOAD_ERROR_SHORT));
+      l10n_util::GetStringFUTF16(IDS_PLUGIN_DOWNLOAD_ERROR_SHORT,
+                                 installer()->name()));
 }
 
 void OutdatedPluginInfoBarDelegate::DownloadCancelled() {
-  ReplaceWithInfoBar(l10n_util::GetStringUTF16(IDS_PLUGIN_DOWNLOAD_CANCELLED));
+  ReplaceWithInfoBar(l10n_util::GetStringFUTF16(IDS_PLUGIN_DOWNLOAD_CANCELLED,
+                                                installer()->name()));
 }
 
 void OutdatedPluginInfoBarDelegate::DownloadFinished() {
-  ReplaceWithInfoBar(l10n_util::GetStringUTF16(IDS_PLUGIN_UPDATING));
+  ReplaceWithInfoBar(l10n_util::GetStringFUTF16(IDS_PLUGIN_UPDATING,
+                                                installer()->name()));
 }
 
 void OutdatedPluginInfoBarDelegate::OnlyWeakObserversLeft() {
@@ -302,13 +307,14 @@ InfoBarDelegate* PluginInstallerInfoBarDelegate::Create(
     PluginInstaller* installer,
     const base::Closure& callback) {
   string16 message;
+  const string16& plugin_name = installer->name();
   switch (installer->state()) {
     case PluginInstaller::kStateIdle:
       message = l10n_util::GetStringFUTF16(
-          IDS_PLUGININSTALLER_INSTALLPLUGIN_PROMPT, installer->name());
+          IDS_PLUGININSTALLER_INSTALLPLUGIN_PROMPT, plugin_name);
       break;
     case PluginInstaller::kStateDownloading:
-      message = l10n_util::GetStringUTF16(IDS_PLUGIN_DOWNLOADING);
+      message = l10n_util::GetStringFUTF16(IDS_PLUGIN_DOWNLOADING, plugin_name);
       break;
   }
   return new PluginInstallerInfoBarDelegate(
@@ -362,21 +368,25 @@ bool PluginInstallerInfoBarDelegate::LinkClicked(
 }
 
 void PluginInstallerInfoBarDelegate::DownloadStarted() {
-  ReplaceWithInfoBar(l10n_util::GetStringUTF16(IDS_PLUGIN_DOWNLOADING));
+  ReplaceWithInfoBar(l10n_util::GetStringFUTF16(IDS_PLUGIN_DOWNLOADING,
+                                                installer()->name()));
 }
 
 void PluginInstallerInfoBarDelegate::DownloadCancelled() {
-  ReplaceWithInfoBar(l10n_util::GetStringUTF16(IDS_PLUGIN_DOWNLOAD_CANCELLED));
+  ReplaceWithInfoBar(l10n_util::GetStringFUTF16(IDS_PLUGIN_DOWNLOAD_CANCELLED,
+                                                installer()->name()));
 }
 
 void PluginInstallerInfoBarDelegate::DownloadError(const std::string& message) {
   ReplaceWithInfoBar(
-      l10n_util::GetStringUTF16(IDS_PLUGIN_DOWNLOAD_ERROR_SHORT));
+      l10n_util::GetStringFUTF16(IDS_PLUGIN_DOWNLOAD_ERROR_SHORT,
+                                 installer()->name()));
 }
 
 void PluginInstallerInfoBarDelegate::DownloadFinished() {
-  ReplaceWithInfoBar(l10n_util::GetStringUTF16(
-      new_install_ ? IDS_PLUGIN_INSTALLING : IDS_PLUGIN_UPDATING));
+  ReplaceWithInfoBar(l10n_util::GetStringFUTF16(
+      new_install_ ? IDS_PLUGIN_INSTALLING : IDS_PLUGIN_UPDATING,
+      installer()->name()));
 }
 
 void PluginInstallerInfoBarDelegate::OnlyWeakObserversLeft() {

@@ -306,26 +306,29 @@ void PluginPlaceholder::OnFoundMissingPlugin(const string16& plugin_name) {
   if (status_->value == ChromeViewHostMsg_GetPluginInfo_Status::kNotFound)
     SetMessage(l10n_util::GetStringFUTF16(IDS_PLUGIN_FOUND, plugin_name));
   has_host_ = true;
+  plugin_name_ = plugin_name;
 }
 
 void PluginPlaceholder::OnStartedDownloadingPlugin() {
-  SetMessage(l10n_util::GetStringUTF16(IDS_PLUGIN_DOWNLOADING));
+  SetMessage(l10n_util::GetStringFUTF16(IDS_PLUGIN_DOWNLOADING, plugin_name_));
 }
 
 void PluginPlaceholder::OnFinishedDownloadingPlugin() {
   bool is_installing =
       status_->value == ChromeViewHostMsg_GetPluginInfo_Status::kNotFound;
-  SetMessage(l10n_util::GetStringUTF16(
-      is_installing ? IDS_PLUGIN_INSTALLING : IDS_PLUGIN_UPDATING));
+  SetMessage(l10n_util::GetStringFUTF16(
+      is_installing ? IDS_PLUGIN_INSTALLING : IDS_PLUGIN_UPDATING,
+      plugin_name_));
 }
 
 void PluginPlaceholder::OnErrorDownloadingPlugin(const std::string& error) {
   SetMessage(l10n_util::GetStringFUTF16(IDS_PLUGIN_DOWNLOAD_ERROR,
-                                       UTF8ToUTF16(error)));
+                                        UTF8ToUTF16(error)));
 }
 
 void PluginPlaceholder::OnCancelledDownloadingPlugin() {
-  SetMessage(l10n_util::GetStringUTF16(IDS_PLUGIN_DOWNLOAD_CANCELLED));
+  SetMessage(l10n_util::GetStringFUTF16(IDS_PLUGIN_DOWNLOAD_CANCELLED,
+                                        plugin_name_));
 }
 #endif  // defined(ENABLE_PLUGIN_INSTALLATION)
 

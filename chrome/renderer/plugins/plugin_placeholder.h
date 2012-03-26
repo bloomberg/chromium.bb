@@ -149,6 +149,7 @@ class PluginPlaceholder : public content::RenderViewObserver,
   bool hidden_;
   bool has_host_;
   bool finished_loading_;
+  string16 plugin_name_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginPlaceholder);
 };
