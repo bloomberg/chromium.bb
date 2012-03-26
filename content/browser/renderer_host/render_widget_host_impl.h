@@ -203,8 +203,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   void StartHangMonitorTimeout(base::TimeDelta delay);
 
   // Stops all existing hang monitor timeouts and assumes the renderer is
-  // responsive.
-  void StopHangMonitorTimeout();
+  // responsive. It is virtual so RenderViewHost can make a decision whether
+  // the timer should be stopped.
+  virtual void StopHangMonitorTimeout();
 
   // Forwards the given message to the renderer. These are called by the view
   // when it has received a message.

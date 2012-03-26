@@ -11,6 +11,7 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/view_messages.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "net/base/host_port_pair.h"
@@ -227,4 +228,93 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostTest, BaseURLParam) {
       FILE_PATH_LITERAL("google.mht")));
   ui_test_utils::NavigateToURL(browser(), test_url);
   EXPECT_EQ("http://www.google.com/", observer.base_url().spec());
+}
+
+// Test that a hung renderer is killed after navigating away during cross-site
+// navigation.
+// Note: if this test becomes flaky and times out during the final navigation,
+// it might be due to an input event that is stopping the hang monitor. Check
+// that StopHangMonitorTimeout doesn't stop while waiting for beforeunload or
+// unload acks.
+IN_PROC_BROWSER_TEST_F(RenderViewHostTest, UnresponsiveCrossSiteNavigation) {
+  WebContents* tab = NULL;
+  WebContents* tab2 = NULL;
+  content::RenderProcessHost* rph = NULL;
+  base::ProcessHandle process;
+  FilePath doc_root;
+
+  doc_root = doc_root.Append(FILE_PATH_LITERAL("content"));
+  doc_root = doc_root.Append(FILE_PATH_LITERAL("test"));
+  doc_root = doc_root.Append(FILE_PATH_LITERAL("data"));
+
+  // Start two servers to enable cross-site navigations.
+  net::TestServer server(net::TestServer::TYPE_HTTP,
+      net::TestServer::kLocalhost, doc_root);
+  ASSERT_TRUE(server.Start());
+  net::TestServer https_server(net::TestServer::TYPE_HTTPS,
+      net::TestServer::kLocalhost, doc_root);
+  ASSERT_TRUE(https_server.Start());
+
+  GURL infinite_beforeunload_url(
+      server.GetURL("files/infinite_beforeunload.html"));
+  GURL infinite_unload_url(server.GetURL("files/infinite_unload.html"));
+  GURL same_process_url(server.GetURL("files/english_page.html"));
+  GURL new_process_url(https_server.GetURL("files/english_page.html"));
+
+  // Navigate the tab to the page which will lock up the process when we
+  // navigate away from it.
+  ui_test_utils::NavigateToURL(browser(), infinite_unload_url);
+  tab = browser()->GetWebContentsAt(0);
+  rph = tab->GetRenderProcessHost();
+  EXPECT_EQ(tab->GetURL(), infinite_unload_url);
+
+  // Remember the process prior to navigation, as we expect it to get killed.
+  process = rph->GetHandle();
+  ASSERT_TRUE(process);
+
+  {
+    ui_test_utils::WindowedNotificationObserver process_exit_observer(
+        content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
+        content::NotificationService::AllSources());
+    ui_test_utils::NavigateToURL(browser(), new_process_url);
+    process_exit_observer.Wait();
+  }
+
+  // This should fail, because the navigation to the new URL results in
+  // the process getting killed. This is an indirect way to check for the
+  // process having been terminated.
+  EXPECT_FALSE(base::KillProcess(process, 1, false));
+
+  ui_test_utils::NavigateToURL(browser(), same_process_url);
+  tab = browser()->GetWebContentsAt(0);
+  rph = tab->GetRenderProcessHost();
+  ASSERT_TRUE(tab != NULL);
+  EXPECT_EQ(tab->GetURL(), same_process_url);
+
+  // Now, let's open another tab with the unresponsive page, which will cause
+  // the previous page and the unresponsive one to use the same process.
+  ui_test_utils::NavigateToURLWithDisposition(browser(),
+      infinite_beforeunload_url, NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  EXPECT_EQ(browser()->tab_count(), 2);
+  tab2 = browser()->GetWebContentsAt(1);
+  ASSERT_TRUE(tab2 != NULL);
+  EXPECT_EQ(tab2->GetURL(), infinite_beforeunload_url);
+  EXPECT_EQ(rph, tab2->GetRenderProcessHost());
+
+  process = rph->GetHandle();
+  ASSERT_TRUE(process);
+
+  // Navigating to the cross site URL will not kill the process, since it will
+  // have more than one tab using it. Kill it to confirm that it is still there,
+  // as well as finish the test faster.
+  {
+    ui_test_utils::WindowedNotificationObserver process_exit_observer(
+        content::NOTIFICATION_RENDERER_PROCESS_HANG,
+        content::NotificationService::AllSources());
+    ui_test_utils::NavigateToURL(browser(), new_process_url);
+    process_exit_observer.Wait();
+  }
+
+  EXPECT_TRUE(base::KillProcess(process, 2, false));
 }
