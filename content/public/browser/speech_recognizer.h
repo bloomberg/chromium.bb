@@ -46,7 +46,7 @@ class SpeechRecognizer : public base::RefCountedThreadSafe<SpeechRecognizer> {
   // though each recognition request can be made only after the previous one
   // completes (i.e. after receiving
   // SpeechRecognitionEventListener::OnRecognitionEnd).
-  virtual bool StartRecognition() = 0;
+  virtual void StartRecognition() = 0;
 
   // Stops recording audio and cancels recognition. Any audio recorded so far
   // gets discarded.

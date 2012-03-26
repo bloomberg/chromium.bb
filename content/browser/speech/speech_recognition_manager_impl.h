@@ -82,7 +82,7 @@ class CONTENT_EXPORT SpeechRecognitionManagerImpl
   virtual void OnRecognitionResult(
       int caller_id, const content::SpeechRecognitionResult& result) OVERRIDE;
   virtual void OnRecognitionError(
-      int caller_id, const content::SpeechRecognitionErrorCode& error) OVERRIDE;
+      int caller_id, const content::SpeechRecognitionError& error) OVERRIDE;
   virtual void OnAudioLevelsChange(
       int caller_id, float volume, float noise_volume) OVERRIDE;
 

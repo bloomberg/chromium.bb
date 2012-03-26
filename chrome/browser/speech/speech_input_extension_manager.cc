@@ -24,6 +24,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/speech_recognition_manager.h"
 #include "content/public/browser/speech_recognizer.h"
+#include "content/public/common/speech_recognition_error.h"
 #include "content/public/common/speech_recognition_result.h"
 
 using content::BrowserThread;
@@ -340,10 +341,10 @@ void SpeechInputExtensionManager::DidStartReceivingAudioOnUIThread() {
 }
 
 void SpeechInputExtensionManager::OnRecognitionError(
-    int caller_id, const content::SpeechRecognitionErrorCode& error) {
+    int caller_id, const content::SpeechRecognitionError& error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK_EQ(caller_id, kSpeechCallerId);
-  VLOG(1) << "OnRecognitionError: " << error;
+  VLOG(1) << "OnRecognitionError: " << error.code;
 
   base::AutoLock auto_lock(state_lock_);
   if (state_ == kShutdown)
@@ -355,7 +356,7 @@ void SpeechInputExtensionManager::OnRecognitionError(
   std::string event_error_code;
   bool report_to_event = true;
 
-  switch (error) {
+  switch (error.code) {
     case content::SPEECH_RECOGNITION_ERROR_NONE:
       break;
 

@@ -203,24 +203,11 @@ void SpeechRecognitionManagerImpl::StartRecognitionForRequest(int caller_id) {
   // If we are currently recording audio for another caller, abort that cleanly.
   if (recording_caller_id_)
     CancelRecognitionAndInformDelegate(recording_caller_id_);
-
-  if (!HasAudioInputDevices()) {
-    if (delegate_) {
-      delegate_->ShowMicError(caller_id,
-          SpeechRecognitionManagerDelegate::MIC_ERROR_NO_DEVICE_AVAILABLE);
-    }
-  } else if (IsCapturingAudio()) {
-    if (delegate_) {
-      delegate_->ShowMicError(
-          caller_id, SpeechRecognitionManagerDelegate::MIC_ERROR_DEVICE_IN_USE);
-    }
-  } else {
-    recording_caller_id_ = caller_id;
-    requests_[caller_id].is_active = true;
-    requests_[caller_id].recognizer->StartRecognition();
-    if (delegate_)
-      delegate_->ShowWarmUp(caller_id);
-  }
+  recording_caller_id_ = caller_id;
+  requests_[caller_id].is_active = true;
+  requests_[caller_id].recognizer->StartRecognition();
+  if (delegate_)
+    delegate_->ShowWarmUp(caller_id);
 }
 
 void SpeechRecognitionManagerImpl::CancelRecognitionForRequest(int caller_id) {
@@ -288,8 +275,12 @@ void SpeechRecognitionManagerImpl::OnRecognitionResult(
 }
 
 void SpeechRecognitionManagerImpl::OnAudioEnd(int caller_id) {
+  if (recording_caller_id_ != caller_id)
+    return;
   DCHECK_EQ(recording_caller_id_, caller_id);
   DCHECK(HasPendingRequest(caller_id));
+  if (!requests_[caller_id].is_active)
+    return;
   recording_caller_id_ = 0;
   GetDelegate(caller_id)->DidCompleteRecording(caller_id);
   if (delegate_)
@@ -297,6 +288,8 @@ void SpeechRecognitionManagerImpl::OnAudioEnd(int caller_id) {
 }
 
 void SpeechRecognitionManagerImpl::OnRecognitionEnd(int caller_id) {
+  if (!HasPendingRequest(caller_id) || !requests_[caller_id].is_active)
+    return;
   GetDelegate(caller_id)->DidCompleteRecognition(caller_id);
   requests_.erase(caller_id);
   if (delegate_)
@@ -310,12 +303,24 @@ void SpeechRecognitionManagerImpl::OnSoundEnd(int caller_id) {
 }
 
 void SpeechRecognitionManagerImpl::OnRecognitionError(
-    int caller_id, const content::SpeechRecognitionErrorCode& error) {
+    int caller_id, const content::SpeechRecognitionError& error) {
+  DCHECK(HasPendingRequest(caller_id));
   if (caller_id == recording_caller_id_)
     recording_caller_id_ = 0;
   requests_[caller_id].is_active = false;
-  if (delegate_)
-    delegate_->ShowRecognizerError(caller_id, error);
+  if (delegate_) {
+    if (error.code == content::SPEECH_RECOGNITION_ERROR_AUDIO &&
+        error.details == content::SPEECH_AUDIO_ERROR_DETAILS_NO_MIC) {
+      delegate_->ShowMicError(caller_id,
+          SpeechRecognitionManagerDelegate::MIC_ERROR_NO_DEVICE_AVAILABLE);
+    } else if (error.code == content::SPEECH_RECOGNITION_ERROR_AUDIO &&
+               error.details == content::SPEECH_AUDIO_ERROR_DETAILS_IN_USE) {
+      delegate_->ShowMicError(
+          caller_id, SpeechRecognitionManagerDelegate::MIC_ERROR_DEVICE_IN_USE);
+    } else {
+      delegate_->ShowRecognizerError(caller_id, error.code);
+    }
+  }
 }
 
 void SpeechRecognitionManagerImpl::OnAudioStart(int caller_id) {

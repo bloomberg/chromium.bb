@@ -17,6 +17,7 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/speech_recognition_error.h"
 #include "content/public/common/speech_recognition_result.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 

@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "content/public/common/speech_recognition_error.h"
 #include "content/public/common/speech_recognition_result.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_param_traits.h"
@@ -21,7 +22,6 @@ IPC_STRUCT_TRAITS_BEGIN(content::SpeechRecognitionHypothesis)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::SpeechRecognitionResult)
-  IPC_STRUCT_TRAITS_MEMBER(error)
   IPC_STRUCT_TRAITS_MEMBER(hypotheses)
 IPC_STRUCT_TRAITS_END()
 

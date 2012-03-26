@@ -6,8 +6,7 @@
 
 namespace content {
 
-SpeechRecognitionResult::SpeechRecognitionResult()
-    : error(SPEECH_RECOGNITION_ERROR_NONE) {
+SpeechRecognitionResult::SpeechRecognitionResult() {
 }
 
 SpeechRecognitionResult::~SpeechRecognitionResult() {

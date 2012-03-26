@@ -5,22 +5,22 @@
 #ifndef CONTENT_BROWSER_SPEECH_SPEECH_RECOGNIZER_IMPL_H_
 #define CONTENT_BROWSER_SPEECH_SPEECH_RECOGNIZER_IMPL_H_
 
-#include <list>
-#include <utility>
-
-#include "base/compiler_specific.h"
+#include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/browser/speech/audio_encoder.h"
 #include "content/browser/speech/endpointer/endpointer.h"
-#include "content/browser/speech/speech_recognition_request.h"
+#include "content/browser/speech/speech_recognition_engine.h"
 #include "content/public/browser/speech_recognizer.h"
-#include "content/public/common/speech_recognition_result.h"
+#include "content/public/common/speech_recognition_error.h"
 #include "media/audio/audio_input_controller.h"
-
-class AudioManager;
+#include "net/url_request/url_request_context_getter.h"
 
 namespace content {
 class SpeechRecognitionEventListener;
+struct SpeechRecognitionResult;
+}
+
+namespace media {
+class AudioInputController;
 }
 
 namespace speech {
@@ -28,34 +28,34 @@ namespace speech {
 // Records audio, sends recorded audio to server and translates server response
 // to recognition result.
 class CONTENT_EXPORT SpeechRecognizerImpl
-    : NON_EXPORTED_BASE(public content::SpeechRecognizer),
+    : public NON_EXPORTED_BASE(content::SpeechRecognizer),
       public media::AudioInputController::EventHandler,
-      public SpeechRecognitionRequestDelegate {
+      public NON_EXPORTED_BASE(SpeechRecognitionEngineDelegate) {
  public:
   static const int kAudioSampleRate;
-  static const int kAudioPacketIntervalMs;  // Duration of each audio packet.
   static const ChannelLayout kChannelLayout;
   static const int kNumBitsPerAudioSample;
-  static const int kNoSpeechTimeoutSec;
+  static const int kNoSpeechTimeoutMs;
   static const int kEndpointerEstimationTimeMs;
 
-  SpeechRecognizerImpl(content::SpeechRecognitionEventListener* listener,
-                       int caller_id,
-                       const std::string& language,
-                       const std::string& grammar,
-                       net::URLRequestContextGetter* context_getter,
-                       bool filter_profanities,
-                       const std::string& hardware_info,
-                       const std::string& origin_url);
-
+  SpeechRecognizerImpl(
+    content::SpeechRecognitionEventListener* listener,
+    int caller_id,
+    const std::string& language,
+    const std::string& grammar,
+    net::URLRequestContextGetter* context_getter,
+    bool filter_profanities,
+    const std::string& hardware_info,
+    const std::string& origin_url);
   virtual ~SpeechRecognizerImpl();
 
   // content::SpeechRecognizer methods.
-  virtual bool StartRecognition() OVERRIDE;
+  virtual void StartRecognition() OVERRIDE;
   virtual void AbortRecognition() OVERRIDE;
   virtual void StopAudioCapture() OVERRIDE;
   virtual bool IsActive() const OVERRIDE;
   virtual bool IsCapturingAudio() const OVERRIDE;
+  const SpeechRecognitionEngine& recognition_engine() const;
 
   // AudioInputController::EventHandler methods.
   virtual void OnCreated(media::AudioInputController* controller) OVERRIDE {}
@@ -66,9 +66,11 @@ class CONTENT_EXPORT SpeechRecognizerImpl
                       const uint8* data,
                       uint32 size) OVERRIDE;
 
-  // SpeechRecognitionRequest::Delegate methods.
-  virtual void SetRecognitionResult(
+  // SpeechRecognitionEngineDelegate methods.
+  virtual void OnSpeechRecognitionEngineResult(
       const content::SpeechRecognitionResult& result) OVERRIDE;
+  virtual void OnSpeechRecognitionEngineError(
+      const content::SpeechRecognitionError& error) OVERRIDE;
 
  private:
   friend class SpeechRecognizerImplTest;
@@ -88,22 +90,19 @@ class CONTENT_EXPORT SpeechRecognizerImpl
   void SetAudioManagerForTesting(AudioManager* audio_manager);
 
   content::SpeechRecognitionEventListener* listener_;
+  AudioManager* testing_audio_manager_;
+  scoped_ptr<SpeechRecognitionEngine> recognition_engine_;
+  Endpointer endpointer_;
+  scoped_refptr<media::AudioInputController> audio_controller_;
+  scoped_refptr<net::URLRequestContextGetter> context_getter_;
   int caller_id_;
   std::string language_;
   std::string grammar_;
   bool filter_profanities_;
   std::string hardware_info_;
   std::string origin_url_;
-
-  scoped_ptr<SpeechRecognitionRequest> request_;
-  scoped_refptr<media::AudioInputController> audio_controller_;
-  scoped_refptr<net::URLRequestContextGetter> context_getter_;
-  AudioEncoder::Codec codec_;
-  scoped_ptr<AudioEncoder> encoder_;
-  Endpointer endpointer_;
   int num_samples_recorded_;
   float audio_level_;
-  AudioManager* audio_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(SpeechRecognizerImpl);
 };

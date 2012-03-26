@@ -13,6 +13,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/speech_recognition_event_listener.h"
+#include "content/public/common/speech_recognition_error.h"
 #include "content/public/common/speech_recognition_result.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

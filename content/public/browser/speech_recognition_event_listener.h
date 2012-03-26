@@ -7,9 +7,11 @@
 
 #include "base/basictypes.h"
 #include "content/common/content_export.h"
-#include "content/public/common/speech_recognition_result.h"
 
 namespace content {
+
+struct SpeechRecognitionError;
+struct SpeechRecognitionResult;
 
 // The interface to be implemented by consumers interested in receiving
 // speech recognition events.
@@ -46,7 +48,7 @@ class CONTENT_EXPORT SpeechRecognitionEventListener {
   // The recognition has already been cancelled when this call is made and
   // no more events will be raised.
   virtual void OnRecognitionError(int caller_id,
-                                  const SpeechRecognitionErrorCode& error) = 0;
+                                  const SpeechRecognitionError& error) = 0;
 
   // Informs of a change in the captured audio level, useful if displaying
   // a microphone volume indicator while recording.

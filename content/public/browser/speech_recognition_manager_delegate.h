@@ -8,7 +8,7 @@
 
 #include <string>
 
-#include "content/public/common/speech_recognition_result.h"
+#include "content/public/common/speech_recognition_error.h"
 
 namespace gfx {
 class Rect;

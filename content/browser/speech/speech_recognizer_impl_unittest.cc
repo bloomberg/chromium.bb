@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "content/browser/browser_thread_impl.h"
+#include "content/browser/speech/google_one_shot_remote_engine.h"
 #include "content/browser/speech/speech_recognizer_impl.h"
 #include "content/public/browser/speech_recognition_event_listener.h"
 #include "content/test/test_url_fetcher_factory.h"
@@ -104,7 +105,7 @@ class SpeechRecognizerImplTest : public content::SpeechRecognitionEventListener,
     recognizer_->SetAudioManagerForTesting(audio_manager_.get());
     int audio_packet_length_bytes =
         (SpeechRecognizerImpl::kAudioSampleRate *
-         SpeechRecognizerImpl::kAudioPacketIntervalMs *
+         GoogleOneShotRemoteEngine::kAudioPacketIntervalMs *
          ChannelLayoutToChannelCount(SpeechRecognizerImpl::kChannelLayout) *
          SpeechRecognizerImpl::kNumBitsPerAudioSample) / (8 * 1000);
     audio_packet_.resize(audio_packet_length_bytes);
@@ -126,8 +127,8 @@ class SpeechRecognizerImplTest : public content::SpeechRecognitionEventListener,
 
   virtual void OnRecognitionError(
       int caller_id,
-      const content::SpeechRecognitionErrorCode& error) OVERRIDE {
-    error_ = error;
+      const content::SpeechRecognitionError& error) OVERRIDE {
+    error_ = error.code;
   }
 
   virtual void OnAudioLevelsChange(int caller_id, float volume,
@@ -189,7 +190,7 @@ class SpeechRecognizerImplTest : public content::SpeechRecognitionEventListener,
 
 TEST_F(SpeechRecognizerImplTest, StopNoData) {
   // Check for callbacks when stopping record before any audio gets recorded.
-  EXPECT_TRUE(recognizer_->StartRecognition());
+  recognizer_->StartRecognition();
   recognizer_->AbortRecognition();
   EXPECT_FALSE(audio_ended_);
   EXPECT_FALSE(recognition_ended_);
@@ -201,7 +202,7 @@ TEST_F(SpeechRecognizerImplTest, StopNoData) {
 TEST_F(SpeechRecognizerImplTest, CancelNoData) {
   // Check for callbacks when canceling recognition before any audio gets
   // recorded.
-  EXPECT_TRUE(recognizer_->StartRecognition());
+  recognizer_->StartRecognition();
   recognizer_->StopAudioCapture();
   EXPECT_TRUE(audio_ended_);
   EXPECT_TRUE(recognition_ended_);
@@ -213,7 +214,7 @@ TEST_F(SpeechRecognizerImplTest, CancelNoData) {
 TEST_F(SpeechRecognizerImplTest, StopWithData) {
   // Start recording, give some data and then stop. This should wait for the
   // network callback to arrive before completion.
-  EXPECT_TRUE(recognizer_->StartRecognition());
+  recognizer_->StartRecognition();
   TestAudioInputController* controller =
       audio_input_controller_factory_.controller();
   ASSERT_TRUE(controller);
@@ -260,7 +261,7 @@ TEST_F(SpeechRecognizerImplTest, StopWithData) {
 TEST_F(SpeechRecognizerImplTest, CancelWithData) {
   // Start recording, give some data and then cancel. This should create
   // a network request but give no callbacks.
-  EXPECT_TRUE(recognizer_->StartRecognition());
+  recognizer_->StartRecognition();
   TestAudioInputController* controller =
       audio_input_controller_factory_.controller();
   ASSERT_TRUE(controller);
@@ -279,7 +280,7 @@ TEST_F(SpeechRecognizerImplTest, CancelWithData) {
 TEST_F(SpeechRecognizerImplTest, ConnectionError) {
   // Start recording, give some data and then stop. Issue the network callback
   // with a connection error and verify that the recognizer bubbles the error up
-  EXPECT_TRUE(recognizer_->StartRecognition());
+  recognizer_->StartRecognition();
   TestAudioInputController* controller =
       audio_input_controller_factory_.controller();
   ASSERT_TRUE(controller);
@@ -314,7 +315,7 @@ TEST_F(SpeechRecognizerImplTest, ConnectionError) {
 TEST_F(SpeechRecognizerImplTest, ServerError) {
   // Start recording, give some data and then stop. Issue the network callback
   // with a 500 error and verify that the recognizer bubbles the error up
-  EXPECT_TRUE(recognizer_->StartRecognition());
+  recognizer_->StartRecognition();
   TestAudioInputController* controller =
       audio_input_controller_factory_.controller();
   ASSERT_TRUE(controller);
@@ -347,7 +348,7 @@ TEST_F(SpeechRecognizerImplTest, ServerError) {
 
 TEST_F(SpeechRecognizerImplTest, AudioControllerErrorNoData) {
   // Check if things tear down properly if AudioInputController threw an error.
-  EXPECT_TRUE(recognizer_->StartRecognition());
+  recognizer_->StartRecognition();
   TestAudioInputController* controller =
       audio_input_controller_factory_.controller();
   ASSERT_TRUE(controller);
@@ -363,7 +364,7 @@ TEST_F(SpeechRecognizerImplTest, AudioControllerErrorNoData) {
 TEST_F(SpeechRecognizerImplTest, AudioControllerErrorWithData) {
   // Check if things tear down properly if AudioInputController threw an error
   // after giving some audio data.
-  EXPECT_TRUE(recognizer_->StartRecognition());
+  recognizer_->StartRecognition();
   TestAudioInputController* controller =
       audio_input_controller_factory_.controller();
   ASSERT_TRUE(controller);
@@ -382,15 +383,15 @@ TEST_F(SpeechRecognizerImplTest, AudioControllerErrorWithData) {
 TEST_F(SpeechRecognizerImplTest, NoSpeechCallbackIssued) {
   // Start recording and give a lot of packets with audio samples set to zero.
   // This should trigger the no-speech detector and issue a callback.
-  EXPECT_TRUE(recognizer_->StartRecognition());
+  recognizer_->StartRecognition();
   TestAudioInputController* controller =
       audio_input_controller_factory_.controller();
   ASSERT_TRUE(controller);
   controller = audio_input_controller_factory_.controller();
   ASSERT_TRUE(controller);
 
-  int num_packets = (SpeechRecognizerImpl::kNoSpeechTimeoutSec * 1000) /
-                     SpeechRecognizerImpl::kAudioPacketIntervalMs;
+  int num_packets = (SpeechRecognizerImpl::kNoSpeechTimeoutMs) /
+                     GoogleOneShotRemoteEngine::kAudioPacketIntervalMs;
   // The vector is already filled with zero value samples on create.
   for (int i = 0; i < num_packets; ++i) {
     controller->event_handler()->OnData(controller, &audio_packet_[0],
@@ -409,15 +410,15 @@ TEST_F(SpeechRecognizerImplTest, NoSpeechCallbackNotIssued) {
   // and then some more with reasonably loud audio samples. This should be
   // treated as normal speech input and the no-speech detector should not get
   // triggered.
-  EXPECT_TRUE(recognizer_->StartRecognition());
+  recognizer_->StartRecognition();
   TestAudioInputController* controller =
       audio_input_controller_factory_.controller();
   ASSERT_TRUE(controller);
   controller = audio_input_controller_factory_.controller();
   ASSERT_TRUE(controller);
 
-  int num_packets = (SpeechRecognizerImpl::kNoSpeechTimeoutSec * 1000) /
-                     SpeechRecognizerImpl::kAudioPacketIntervalMs;
+  int num_packets = (SpeechRecognizerImpl::kNoSpeechTimeoutMs) /
+                     GoogleOneShotRemoteEngine::kAudioPacketIntervalMs;
 
   // The vector is already filled with zero value samples on create.
   for (int i = 0; i < num_packets / 2; ++i) {
@@ -444,7 +445,7 @@ TEST_F(SpeechRecognizerImplTest, SetInputVolumeCallback) {
   // and then some more with reasonably loud audio samples. Check that we don't
   // get the callback during estimation phase, then get zero for the silence
   // samples and proper volume for the loud audio.
-  EXPECT_TRUE(recognizer_->StartRecognition());
+  recognizer_->StartRecognition();
   TestAudioInputController* controller =
       audio_input_controller_factory_.controller();
   ASSERT_TRUE(controller);
@@ -453,7 +454,7 @@ TEST_F(SpeechRecognizerImplTest, SetInputVolumeCallback) {
 
   // Feed some samples to begin with for the endpointer to do noise estimation.
   int num_packets = SpeechRecognizerImpl::kEndpointerEstimationTimeMs /
-                    SpeechRecognizerImpl::kAudioPacketIntervalMs;
+                    GoogleOneShotRemoteEngine::kAudioPacketIntervalMs;
   FillPacketWithNoise();
   for (int i = 0; i < num_packets; ++i) {
     controller->event_handler()->OnData(controller, &audio_packet_[0],
