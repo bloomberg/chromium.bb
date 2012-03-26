@@ -823,16 +823,17 @@ TEST_F(FaviconHandlerTest, MultipleFavicon) {
   const GURL icon_url("http://www.google.com/favicon");
   const GURL icon_url_small("http://www.google.com/favicon_small");
   const GURL icon_url_large("http://www.google.com/favicon_large");
-  const GURL icon_url_preferred("http://www.google.com/favicon_preferred");
+  const GURL icon_url_preferred1("http://www.google.com/favicon_preferred1");
+  const GURL icon_url_preferred2("http://www.google.com/favicon_preferred2");
 
   TestFaviconHandlerDelegate delegate(contents());
   Profile* profile = Profile::FromBrowserContext(
       contents()->GetBrowserContext());
-  TestFaviconHandler helper(page_url, profile,
-                            &delegate, FaviconHandler::FAVICON);
+  TestFaviconHandler handler(page_url, profile,
+                             &delegate, FaviconHandler::FAVICON);
 
-  helper.FetchFavicon(page_url);
-  HistoryRequestHandler* history_handler = helper.history_handler();
+  handler.FetchFavicon(page_url);
+  HistoryRequestHandler* history_handler = handler.history_handler();
 
   // Set valid icon data.
   history_handler->favicon_data_.known_icon = true;
@@ -852,40 +853,101 @@ TEST_F(FaviconHandlerTest, MultipleFavicon) {
   // preferred size is found, so icon_url_preferred must be last.
   urls.push_back(FaviconURL(icon_url_small, FaviconURL::FAVICON));
   urls.push_back(FaviconURL(icon_url_large, FaviconURL::FAVICON));
-  urls.push_back(FaviconURL(icon_url_preferred, FaviconURL::FAVICON));
-  helper.OnUpdateFaviconURL(0, urls);
+  urls.push_back(FaviconURL(icon_url_preferred1, FaviconURL::FAVICON));
+  urls.push_back(FaviconURL(icon_url_preferred2, FaviconURL::FAVICON));
+  handler.OnUpdateFaviconURL(0, urls);
+  EXPECT_EQ(4U, handler.image_urls().size());
 
-  DownloadHandler* download_handler = helper.download_handler();
+  DownloadHandler* download_handler = handler.download_handler();
 
   // Download the first icon (set not in history).
-  helper.history_handler()->favicon_data_.known_icon = false;
-  helper.history_handler()->InvokeCallback();
+  handler.history_handler()->favicon_data_.known_icon = false;
+  handler.history_handler()->InvokeCallback();
   ASSERT_TRUE(download_handler->HasDownload());
   EXPECT_EQ(icon_url_small, download_handler->GetImageUrl());
   download_handler->SetImageSize(gfx::kFaviconSize / 2);
   download_handler->InvokeCallback();
+  EXPECT_EQ(3U, handler.image_urls().size());
 
   // Download the second icon (set not in history).
-  helper.history_handler()->favicon_data_.known_icon = false;
-  helper.history_handler()->InvokeCallback();
+  handler.history_handler()->favicon_data_.known_icon = false;
+  handler.history_handler()->InvokeCallback();
   ASSERT_TRUE(download_handler->HasDownload());
   EXPECT_EQ(icon_url_large, download_handler->GetImageUrl());
   download_handler->SetImageSize(gfx::kFaviconSize * 2);
   download_handler->InvokeCallback();
+  EXPECT_EQ(2U, handler.image_urls().size());
 
   // Download the third icon (set not in history).
-  helper.history_handler()->favicon_data_.known_icon = false;
-  helper.history_handler()->InvokeCallback();
+  handler.history_handler()->favicon_data_.known_icon = false;
+  handler.history_handler()->InvokeCallback();
   ASSERT_TRUE(download_handler->HasDownload());
-  EXPECT_EQ(icon_url_preferred, download_handler->GetImageUrl());
+  EXPECT_EQ(icon_url_preferred1, download_handler->GetImageUrl());
   download_handler->SetImageSize(gfx::kFaviconSize);
   download_handler->InvokeCallback();
+  // Verify that this was detected as an exact match and image_urls_ is cleared.
+  EXPECT_EQ(0U, handler.image_urls().size());
 
   // Verify correct icon size chosen.
-  EXPECT_EQ(icon_url_preferred, helper.GetEntry()->GetFavicon().url);
-  EXPECT_TRUE(helper.GetEntry()->GetFavicon().valid);
-  EXPECT_FALSE(helper.GetEntry()->GetFavicon().bitmap.empty());
-  EXPECT_EQ(gfx::kFaviconSize, helper.GetEntry()->GetFavicon().bitmap.width());
+  EXPECT_EQ(icon_url_preferred1, handler.GetEntry()->GetFavicon().url);
+  EXPECT_TRUE(handler.GetEntry()->GetFavicon().valid);
+  EXPECT_FALSE(handler.GetEntry()->GetFavicon().bitmap.empty());
+  EXPECT_EQ(gfx::kFaviconSize, handler.GetEntry()->GetFavicon().bitmap.width());
+}
+
+TEST_F(FaviconHandlerTest, FirstFavicon) {
+  const GURL page_url("http://www.google.com");
+  const GURL icon_url("http://www.google.com/favicon");
+  const GURL icon_url_preferred1("http://www.google.com/favicon_preferred1");
+  const GURL icon_url_large("http://www.google.com/favicon_large");
+
+  TestFaviconHandlerDelegate delegate(contents());
+  Profile* profile = Profile::FromBrowserContext(
+      contents()->GetBrowserContext());
+  TestFaviconHandler handler(page_url, profile,
+                             &delegate, FaviconHandler::FAVICON);
+
+  handler.FetchFavicon(page_url);
+  HistoryRequestHandler* history_handler = handler.history_handler();
+
+  // Set valid icon data.
+  history_handler->favicon_data_.known_icon = true;
+  history_handler->favicon_data_.icon_type = history::FAVICON;
+  history_handler->favicon_data_.expired = false;
+  history_handler->favicon_data_.icon_url = icon_url;
+  scoped_refptr<RefCountedBytes> data = new RefCountedBytes();
+  FillBitmap(gfx::kFaviconSize, gfx::kFaviconSize, &data->data());
+  history_handler->favicon_data_.image_data = data;
+
+  // Send history response.
+  history_handler->InvokeCallback();
+
+  // Simulates update with the different favicon url.
+  std::vector<FaviconURL> urls;
+  // Note: the code will stop making requests when an icon matching the
+  // preferred size is found, so icon_url_preferred must be last.
+  urls.push_back(FaviconURL(icon_url_preferred1, FaviconURL::FAVICON));
+  urls.push_back(FaviconURL(icon_url_large, FaviconURL::FAVICON));
+  handler.OnUpdateFaviconURL(0, urls);
+  EXPECT_EQ(2U, handler.image_urls().size());
+
+  DownloadHandler* download_handler = handler.download_handler();
+
+  // Download the first icon (set not in history).
+  handler.history_handler()->favicon_data_.known_icon = false;
+  handler.history_handler()->InvokeCallback();
+  ASSERT_TRUE(download_handler->HasDownload());
+  EXPECT_EQ(icon_url_preferred1, download_handler->GetImageUrl());
+  download_handler->SetImageSize(gfx::kFaviconSize);
+  download_handler->InvokeCallback();
+  // Verify that this was detected as an exact match and image_urls_ is cleared.
+  EXPECT_EQ(0U, handler.image_urls().size());
+
+  // Verify correct icon size chosen.
+  EXPECT_EQ(icon_url_preferred1, handler.GetEntry()->GetFavicon().url);
+  EXPECT_TRUE(handler.GetEntry()->GetFavicon().valid);
+  EXPECT_FALSE(handler.GetEntry()->GetFavicon().bitmap.empty());
+  EXPECT_EQ(gfx::kFaviconSize, handler.GetEntry()->GetFavicon().bitmap.width());
 }
 
 }  // namespace.

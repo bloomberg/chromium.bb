@@ -115,6 +115,9 @@ class FaviconHandler {
                             bool errored,
                             const gfx::Image& image);
 
+  // For testing.
+  const std::deque<FaviconURL>& image_urls() const { return image_urls_; }
+
  protected:
   // These virtual methods make FaviconHandler testable and are overridden by
   // TestFaviconHandler.

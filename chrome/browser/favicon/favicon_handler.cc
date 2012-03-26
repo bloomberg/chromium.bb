@@ -49,6 +49,16 @@ bool DoUrlAndIconMatch(const FaviconURL& favicon_url,
       favicon_url.icon_type == static_cast<FaviconURL::IconType>(icon_type);
 }
 
+std::string UrlWithoutFragment(const GURL& gurl) {
+  GURL::Replacements replacements;
+  replacements.ClearRef();
+  return gurl.ReplaceComponents(replacements).spec();
+}
+
+bool UrlMatches(const GURL& gurl_a, const GURL& gurl_b) {
+  return UrlWithoutFragment(gurl_a) == UrlWithoutFragment(gurl_b);
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -154,10 +164,11 @@ bool FaviconHandler::UpdateFaviconCandidate(const GURL& url,
                                             const gfx::Image& image,
                                             history::IconType icon_type) {
   bool update_candidate = false;
-  bool exact_match = false;
   SkBitmap bitmap = *(image.ToSkBitmap());
   int bitmap_size = std::max(bitmap.width(), bitmap.height());
+  bool exact_match = (bitmap_size == preferred_icon_size());
   if (preferred_icon_size() == 0) {
+    // No preferred size, use this icon.
     update_candidate = true;
     exact_match = true;
   } else if (favicon_candidate_.icon_type == history::INVALID_ICON) {
@@ -167,7 +178,6 @@ bool FaviconHandler::UpdateFaviconCandidate(const GURL& url,
     if (bitmap_size == preferred_icon_size()) {
       // Exact match, use this.
       update_candidate = true;
-      exact_match = true;
     } else {
       // Compare against current candidate.
       int cur_size = favicon_candidate_.bitmap_size;
@@ -201,7 +211,7 @@ void FaviconHandler::SetFavicon(
       SetHistoryFavicon(url, image_url, image_data, icon_type);
   }
 
-  if (url == url_ && icon_type == history::FAVICON) {
+  if (UrlMatches(url, url_) && icon_type == history::FAVICON) {
     NavigationEntry* entry = GetEntry();
     if (entry) {
       entry->GetFavicon().url = image_url;
@@ -323,7 +333,7 @@ void FaviconHandler::OnDidDownloadFavicon(int id,
 
 NavigationEntry* FaviconHandler::GetEntry() {
   NavigationEntry* entry = delegate_->GetActiveEntry();
-  if (entry && entry->GetURL() == url_)
+  if (entry && UrlMatches(entry->GetURL(), url_))
     return entry;
 
   // If the URL has changed out from under us (as will happen with redirects)
