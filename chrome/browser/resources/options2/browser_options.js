@@ -622,7 +622,7 @@ cr.define('options', function() {
       $('sync-action-link').hidden = syncData.actionLinkText.length == 0;
       $('sync-action-link').disabled = syncData.managed;
 
-      if (syncData.syncHasError)
+      if (syncData.hasError)
         $('sync-status').classList.add('sync-error');
       else
         $('sync-status').classList.remove('sync-error');
