@@ -1042,9 +1042,32 @@ enum {
 - (void)updateWindowLevel {
   if (![self isWindowLoaded])
     return;
-  BOOL onTop = windowShim_->panel()->always_on_top() &&
-               !windowShim_->panel()->manager()->is_full_screen();
-  [[self window] setLevel:(onTop ? NSStatusWindowLevel : NSNormalWindowLevel)];
+  // Make sure we don't draw on top of a window in full screen mode.
+  if (windowShim_->panel()->manager()->is_full_screen() ||
+      !windowShim_->panel()->always_on_top()) {
+    [[self window] setLevel:NSNormalWindowLevel];
+    return;
+  }
+  // If we simply use NSStatusWindowLevel (25) for all docked panel windows,
+  // IME composition windows for things like CJK languages appear behind panels.
+  // Pre 10.7, IME composition windows have a window level of 19, which is
+  // lower than the dock at level 20. Since we want panels to appear on top of
+  // the dock, it is impossible to enforce an ordering where IME > panel > dock,
+  // since IME < dock.
+  // On 10.7, IME composition windows and the dock both live at level 20, so we
+  // use the same window level for panels. Since newly created windows appear at
+  // the top of their window level, panels are typically on top of the dock, and
+  // the IME composition window correctly draws over the panel.
+  // An autohide dock causes problems though: since it's constantly being
+  // revealed, it ends up drawing on top of other windows at the same level.
+  // While this is OK for expanded panels, it makes minimized panels impossible
+  // to activate. As a result, we still use NSStatusWindowLevel for minimized
+  // panels, since it's impossible to compose IME text in them anyway.
+  if (windowShim_->panel()->IsMinimized()) {
+    [[self window] setLevel:NSStatusWindowLevel];
+    return;
+  }
+  [[self window] setLevel:NSDockWindowLevel];
 }
 
 - (void)enableResizeByMouse:(BOOL)enable {

@@ -10,6 +10,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/panels/native_panel.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "ui/gfx/rect.h"
 
 class Browser;
@@ -21,7 +23,8 @@ class Panel;
 // interact with this object when it needs to manipulate the window.
 
 class PanelBrowserWindowCocoa : public NativePanel,
-                                public TabStripModelObserver {
+                                public TabStripModelObserver,
+                                public content::NotificationObserver {
  public:
   PanelBrowserWindowCocoa(Browser* browser, Panel* panel,
                           const gfx::Rect& bounds);
@@ -77,6 +80,11 @@ class PanelBrowserWindowCocoa : public NativePanel,
                              bool foreground) OVERRIDE;
   virtual void TabDetachedAt(TabContentsWrapper* contents, int index) OVERRIDE;
 
+  // Overridden from NotificationObserver.
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
+
   Panel* panel() { return panel_.get(); }
   Browser* browser() const { return browser_.get(); }
 
@@ -127,6 +135,8 @@ class PanelBrowserWindowCocoa : public NativePanel,
   // window over other application windows due to panels having a higher
   // priority NSWindowLevel, so we distinguish between the two scenarios.
   bool activation_requested_by_browser_;
+
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(PanelBrowserWindowCocoa);
 };

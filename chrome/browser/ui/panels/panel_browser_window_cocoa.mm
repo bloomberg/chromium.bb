@@ -17,7 +17,9 @@
 #import "chrome/browser/ui/panels/panel_utils_cocoa.h"
 #import "chrome/browser/ui/panels/panel_window_controller_cocoa.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/native_web_keyboard_event.h"
+#include "content/public/browser/notification_source.h"
 
 using content::WebContents;
 
@@ -51,6 +53,10 @@ PanelBrowserWindowCocoa::PanelBrowserWindowCocoa(Browser* browser,
     activation_requested_by_browser_(false) {
   controller_ = [[PanelWindowControllerCocoa alloc] initWithBrowserWindow:this];
   browser_->tabstrip_model()->AddObserver(this);
+  registrar_.Add(
+      this,
+      chrome::NOTIFICATION_PANEL_CHANGED_EXPANSION_STATE,
+      content::Source<Panel>(panel_.get()));
 }
 
 PanelBrowserWindowCocoa::~PanelBrowserWindowCocoa() {
@@ -326,6 +332,14 @@ void PanelBrowserWindowCocoa::TabInsertedAt(TabContentsWrapper* contents,
 void PanelBrowserWindowCocoa::TabDetachedAt(TabContentsWrapper* contents,
                                             int index) {
   [controller_ tabDetached:contents->web_contents()];
+}
+
+void PanelBrowserWindowCocoa::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  DCHECK_EQ(chrome::NOTIFICATION_PANEL_CHANGED_EXPANSION_STATE, type);
+  [controller_ updateWindowLevel];
 }
 
 // NativePanelTesting implementation.
