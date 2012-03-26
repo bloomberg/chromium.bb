@@ -68,9 +68,6 @@ class ASH_EXPORT SystemTray : public views::View,
   // Updates the items when the login status of the system changes.
   void UpdateAfterLoginStatusChange(user::LoginStatus login_status);
 
-  // Returns true if a bubble is currently showing.
-  bool showing_bubble() const { return bubble_ != NULL; }
-
   const ScopedVector<SystemTrayItem>& items() const { return items_; }
 
   // Sets whether the tray paints a background. Default is true, but is set to
@@ -78,6 +75,9 @@ class ASH_EXPORT SystemTray : public views::View,
   void SetPaintsBackground(
       bool value,
       internal::BackgroundAnimator::ChangeType change_type);
+
+  // Returns true if the launcher should show.
+  bool should_show_launcher() const { return popup_ && should_show_launcher_; }
 
   AccessibilityObserver* accessibility_observer() const {
     return accessibility_observer_;
@@ -165,6 +165,9 @@ class ASH_EXPORT SystemTray : public views::View,
 
   // Owned by the view it's installed on.
   internal::SystemTrayBackground* background_;
+
+  // See description agove getter.
+  bool should_show_launcher_;
 
   internal::BackgroundAnimator hide_background_animator_;
   internal::BackgroundAnimator hover_background_animator_;

@@ -365,8 +365,8 @@ ShelfLayoutManager::AutoHideState ShelfLayoutManager::CalculateAutoHideState(
     return AUTO_HIDE_HIDDEN;
 
   Shell* shell = Shell::GetInstance();
-  if (shell->tray() && shell->tray()->showing_bubble())
-    return AUTO_HIDE_SHOWN;  // Always show if a bubble is open from the shelf.
+  if (shell->tray() && shell->tray()->should_show_launcher())
+    return AUTO_HIDE_SHOWN;
 
   aura::RootWindow* root = launcher_widget()->GetNativeView()->GetRootWindow();
   bool mouse_over_launcher =

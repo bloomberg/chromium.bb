@@ -23,6 +23,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
+#include "ui/aura/root_window.h"
 #include "ui/base/events.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -34,6 +35,7 @@
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/view.h"
+#include "ui/views/widget/widget.h"
 
 namespace ash {
 
@@ -430,6 +432,7 @@ SystemTray::SystemTray()
       bubble_(NULL),
       popup_(NULL),
       background_(new internal::SystemTrayBackground),
+      should_show_launcher_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(hide_background_animator_(this,
           0, kTrayBackgroundAlpha)),
       ALLOW_THIS_IN_INITIALIZER_LIST(hover_background_animator_(this,
@@ -564,8 +567,6 @@ void SystemTray::ShowItems(std::vector<SystemTrayItem*>& items,
       base::TimeDelta::FromMilliseconds(kAnimationDurationForPopupMS));
 
   bubble_->Show();
-
-  Shell::GetInstance()->shelf()->UpdateAutoHideState();
 }
 
 bool SystemTray::OnKeyPressed(const views::KeyEvent& event) {
@@ -591,11 +592,15 @@ bool SystemTray::OnMousePressed(const views::MouseEvent& event) {
 }
 
 void SystemTray::OnMouseEntered(const views::MouseEvent& event) {
+  should_show_launcher_ = true;
   hover_background_animator_.SetPaintsBackground(true,
       internal::BackgroundAnimator::CHANGE_ANIMATE);
 }
 
 void SystemTray::OnMouseExited(const views::MouseEvent& event) {
+  // When the popup closes we'll update |should_show_launcher_|.
+  if (!popup_)
+    should_show_launcher_ = false;
   hover_background_animator_.SetPaintsBackground(false,
       internal::BackgroundAnimator::CHANGE_ANIMATE);
 }
@@ -616,7 +621,15 @@ void SystemTray::OnWidgetClosing(views::Widget* widget) {
   MessageLoopForUI::current()->RemoveObserver(this);
   popup_ = NULL;
   bubble_ = NULL;
-  Shell::GetInstance()->shelf()->UpdateAutoHideState();
+  if (should_show_launcher_) {
+    // No need to show the launcher if the mouse isn't over the status area
+    // anymore.
+    aura::RootWindow* root = GetWidget()->GetNativeView()->GetRootWindow();
+    should_show_launcher_ = GetWidget()->GetWindowScreenBounds().Contains(
+        root->last_mouse_location());
+    if (!should_show_launcher_)
+      Shell::GetInstance()->shelf()->UpdateAutoHideState();
+  }
 }
 
 void SystemTray::OnWidgetVisibilityChanged(views::Widget* widget,
