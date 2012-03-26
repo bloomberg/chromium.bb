@@ -214,7 +214,6 @@ void CaptureVideoDecoder::OnDeviceInfoReceivedOnDecoderThread(
   if (device_info.width != natural_size_.width() ||
       device_info.height != natural_size_.height()) {
     natural_size_.SetSize(device_info.width, device_info.height);
-    host()->SetNaturalVideoSize(natural_size_);
   }
 }
 
@@ -239,7 +238,6 @@ void CaptureVideoDecoder::OnBufferReadyOnDecoderThread(
   if (buf->width != natural_size_.width() ||
       buf->height != natural_size_.height()) {
     natural_size_.SetSize(buf->width, buf->height);
-    host()->SetNaturalVideoSize(natural_size_);
   }
 
   // Need to rebase timestamp with zero as starting point.
