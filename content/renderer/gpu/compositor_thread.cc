@@ -5,6 +5,7 @@
 #include "content/renderer/gpu/compositor_thread.h"
 
 #include "base/bind.h"
+#include "base/debug/trace_event.h"
 #include "content/renderer/gpu/input_event_filter.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositor.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositorClient.h"
@@ -98,6 +99,7 @@ void CompositorThread::AddInputHandler(int routing_id, int input_handler_id) {
     return;
   }
 
+  TRACE_EVENT0("CompositorThread::AddInputHandler", "AddingRoute");
   filter_->AddRoute(routing_id);
   input_handlers_[routing_id] =
       make_linked_ptr(new InputHandlerWrapper(this, routing_id, input_handler));
@@ -105,6 +107,8 @@ void CompositorThread::AddInputHandler(int routing_id, int input_handler_id) {
 
 void CompositorThread::RemoveInputHandler(int routing_id) {
   DCHECK(thread_.message_loop() == MessageLoop::current());
+
+  TRACE_EVENT0("CompositorThread::RemoveInputHandler", "RemovingRoute");
 
   filter_->RemoveRoute(routing_id);
   input_handlers_.erase(routing_id);
@@ -117,6 +121,7 @@ void CompositorThread::HandleInputEvent(
 
   InputHandlerMap::iterator it = input_handlers_.find(routing_id);
   if (it == input_handlers_.end()) {
+    TRACE_EVENT0("CompositorThread::HandleInputEvent", "NoInputHandlerFound");
     // Oops, we no longer have an interested input handler..
     filter_->DidNotHandleInputEvent(true);
     return;
