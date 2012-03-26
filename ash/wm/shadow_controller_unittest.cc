@@ -14,6 +14,7 @@
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "ui/aura/client/activation_client.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/compositor/layer.h"
@@ -148,6 +149,42 @@ TEST_F(ShadowControllerTest, SmallShadowsForTooltipsAndMenus) {
   Shadow* menu_shadow = api.GetShadowForWindow(tooltip_window.get());
   ASSERT_TRUE(menu_shadow != NULL);
   EXPECT_EQ(Shadow::STYLE_SMALL, menu_shadow->style());
+}
+
+// http://crbug.com/120210 - transient parents of certain types of transients
+// should not lose their shadow when they lose activation to the transient.
+TEST_F(ShadowControllerTest, TransientParentKeepsActiveShadow) {
+  ShadowController::TestApi api(
+      ash::Shell::GetInstance()->shadow_controller());
+
+  scoped_ptr<aura::Window> window1(new aura::Window(NULL));
+  window1->SetType(aura::client::WINDOW_TYPE_NORMAL);
+  window1->Init(ui::LAYER_TEXTURED);
+  window1->SetParent(NULL);
+  window1->SetBounds(gfx::Rect(10, 20, 300, 400));
+  window1->Show();
+  wm::ActivateWindow(window1.get());
+
+  // window1 is active, so style should have active appearance.
+  Shadow* shadow1 = api.GetShadowForWindow(window1.get());
+  ASSERT_TRUE(shadow1 != NULL);
+  EXPECT_EQ(Shadow::STYLE_ACTIVE, shadow1->style());
+
+  // Create a window that is transient to window1, and that has the 'hide on
+  // deactivate' property set. Upon activation, window1 should still have an
+  // active shadow.
+  scoped_ptr<aura::Window> window2(new aura::Window(NULL));
+  window2->SetType(aura::client::WINDOW_TYPE_NORMAL);
+  window2->Init(ui::LAYER_TEXTURED);
+  window2->SetParent(NULL);
+  window2->SetBounds(gfx::Rect(11, 21, 301, 401));
+  window1->AddTransientChild(window2.get());
+  aura::client::SetHideOnDeactivate(window2.get(), true);
+  window2->Show();
+  wm::ActivateWindow(window2.get());
+
+  // window1 is now inactive, but its shadow should still appear active.
+  EXPECT_EQ(Shadow::STYLE_ACTIVE, shadow1->style());
 }
 
 }  // namespace internal

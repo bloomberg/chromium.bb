@@ -47,6 +47,16 @@ AURA_EXPORT ActivationClient* GetActivationClient(RootWindow* root_window);
 AURA_EXPORT extern const WindowProperty<Window*>* const
     kRootWindowActiveWindowKey;
 
+// Some types of transient window are only visible when active.
+// The transient parents of these windows may have visual appearance properties
+// that differ from transient parents that can be deactivated.
+// The presence of this property implies these traits.
+// TODO(beng): currently the UI framework (views) implements the actual
+//             close-on-deactivate component of this feature but it should be
+//             possible to implement in the aura client.
+AURA_EXPORT void SetHideOnDeactivate(Window* window, bool hide_on_deactivate);
+AURA_EXPORT bool GetHideOnDeactivate(Window* window);
+
 }  // namespace clients
 }  // namespace aura
 

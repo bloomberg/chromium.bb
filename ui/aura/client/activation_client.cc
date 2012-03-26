@@ -9,6 +9,7 @@
 
 DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(AURA_EXPORT, aura::Window*)
 DECLARE_WINDOW_PROPERTY_TYPE(aura::client::ActivationClient*)
+DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(AURA_EXPORT, bool);
 
 namespace aura {
 namespace client {
@@ -16,6 +17,7 @@ namespace client {
 DEFINE_WINDOW_PROPERTY_KEY(Window*, kRootWindowActiveWindowKey, NULL);
 DEFINE_WINDOW_PROPERTY_KEY(
     ActivationClient*, kRootWindowActivationClientKey, NULL);
+DEFINE_WINDOW_PROPERTY_KEY(bool, kHideOnDeactivate, false);
 
 void SetActivationClient(RootWindow* root_window, ActivationClient* client) {
   root_window->SetProperty(kRootWindowActivationClientKey, client);
@@ -24,6 +26,14 @@ void SetActivationClient(RootWindow* root_window, ActivationClient* client) {
 ActivationClient* GetActivationClient(RootWindow* root_window) {
   return root_window ?
       root_window->GetProperty(kRootWindowActivationClientKey) : NULL;
+}
+
+void SetHideOnDeactivate(Window* window, bool hide_on_deactivate) {
+  window->SetProperty(kHideOnDeactivate, hide_on_deactivate);
+}
+
+bool GetHideOnDeactivate(Window* window) {
+  return window->GetProperty(kHideOnDeactivate);
 }
 
 }  // namespace client

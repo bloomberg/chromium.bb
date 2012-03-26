@@ -163,6 +163,8 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
   window_->set_user_data(this);
   window_->SetType(GetAuraWindowTypeForWidgetType(params.type));
   window_->SetProperty(aura::client::kShowStateKey, params.show_state);
+  if (params.type == Widget::InitParams::TYPE_BUBBLE)
+    aura::client::SetHideOnDeactivate(window_, true);
   window_->SetTransparent(params.transparent);
   window_->Init(params.layer_type);
   if (params.type == Widget::InitParams::TYPE_CONTROL)
