@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_CORE_OOBE_HANDLER_H_
 #pragma once
 
-#include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "chrome/browser/chromeos/login/version_info_updater.h"
+#include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 
 namespace base {
   class ListValue;
@@ -38,7 +38,8 @@ class CoreOobeHandler : public BaseScreenHandler,
   virtual void OnBootTimesLabelTextUpdated(
       const std::string& boot_times_label_text) OVERRIDE;
   virtual void OnEnterpriseInfoUpdated(
-      const std::string& message_text) OVERRIDE;
+      const std::string& message_text,
+      bool reporting_hint) OVERRIDE;
 
   // Show or hide OOBE UI.
   void ShowOobeUI(bool show);

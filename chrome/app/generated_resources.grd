@@ -15180,6 +15180,9 @@ Battery full
       <message name="IDS_LOGIN_MANAGED_BY_NOTICE" desc="Text for the notification bar on the login screen showing that this is a managed device.">
         This device is managed by <ph name="DOMAIN">$1<ex>yourdomain.com</ex></ph>.
       </message>
+      <message name="IDS_LOGIN_MANAGED_REPORTING_HINT" desc="Text for the hint on reporting features displayed in the enterprise notification bar on the login screen.">
+        Device usage may be tracked.
+      </message>
     </if>
     <message name="IDS_BOOKMARK_BAR_IMPORT_LINK" desc="text shown for importing ">
       Import bookmarks now...

@@ -17,6 +17,9 @@ const ACCELERATOR_ENROLLMENT = 'enrollment';
 const ACCELERATOR_EXIT = 'exit';
 const ACCELERATOR_VERSION = 'version';
 
+/* Help topic identifiers. */
+const HELP_TOPIC_ENTERPRISE_REPORTING = 2535613;
+
 cr.define('cr.ui.login', function() {
   var Bubble = cr.ui.Bubble;
 
@@ -405,11 +408,21 @@ cr.define('cr.ui.login', function() {
   /**
    * Sets the text content of the enterprise info message.
    * @param {string} messageText The message text.
+   * @param {boolean} showReportingHint Whether to show the reporting warning.
    */
-  DisplayManager.setEnterpriseInfo = function(messageText) {
+  DisplayManager.setEnterpriseInfo = function(messageText, showReportingHint) {
     $('enterprise-info-message').textContent = messageText;
-    if (messageText)
+    if (messageText) {
       $('enterprise-info-container').hidden = false;
+      if (showReportingHint) {
+        $('enterprise-reporting-hint-container').hidden = false;
+        var link = $('enterprise-reporting-hint-link');
+        link.addEventListener('click', function(e) {
+          chrome.send('launchHelpApp', [HELP_TOPIC_ENTERPRISE_REPORTING]);
+          e.preventDefault();
+        });
+      }
+    }
   };
 
   // Export
