@@ -3046,6 +3046,9 @@ compilePassOpcode (FileInfo * nested, TranslationTableOpcode opcode)
 
       /* Compile action part */
       while (passLinepos < passLine.length &&
+	     passLine.chars[passLinepos] <= 32)
+	     passLinepos++;
+      while (passLinepos < passLine.length &&
 	     passLine.chars[passLinepos] > 32)
 	{
 	  switch ((passSubOp = passLine.chars[passLinepos]))
