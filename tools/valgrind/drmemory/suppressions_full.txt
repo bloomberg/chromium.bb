@@ -869,7 +869,6 @@ UNINITIALIZED READ
 name=http://code.google.com/p/drmemory/issues/detail?id=791
 RICHED20.dll!*
 RICHED20.dll!*
-RICHED20.dll!*
 
 # Already suppressed by drmemory default supp we don't have yet.
 LEAK
