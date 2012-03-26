@@ -212,16 +212,17 @@ bool NetworkParser::ParseValue(PropertyIndex index,
       return true;
     }
     case PROPERTY_INDEX_UI_DATA: {
-      network->ui_data()->Clear();
+      network->set_ui_data(NetworkUIData());
       std::string ui_data_json;
       if (!value.GetAsString(&ui_data_json))
         return false;
-      scoped_ptr<base::Value> ui_data(
+      scoped_ptr<base::Value> ui_data_value(
           base::JSONReader::Read(ui_data_json, false));
-      if (!ui_data.get() || !ui_data->IsType(base::Value::TYPE_DICTIONARY))
+      base::DictionaryValue* ui_data_dict = NULL;
+      if (!ui_data_value.get() ||
+          !ui_data_value->GetAsDictionary(&ui_data_dict))
         return false;
-      network->ui_data()->Swap(
-          static_cast<base::DictionaryValue*>(ui_data.get()));
+      network->set_ui_data(NetworkUIData(*ui_data_dict));
       return true;
     }
     default:

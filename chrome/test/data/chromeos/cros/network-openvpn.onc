@@ -44,7 +44,7 @@
             "EnrollmentURI": [
               "chrome-extension://abc/keygen-cert.html"
             ]
-          },
+          }
         }
       }
     }

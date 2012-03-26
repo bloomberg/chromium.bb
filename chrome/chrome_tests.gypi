@@ -1305,6 +1305,7 @@
         'browser/chrome_browser_application_mac_unittest.mm',
         'browser/chrome_browser_main_unittest.cc',
         'browser/chrome_page_zoom_unittest.cc',
+        'browser/chromeos/cros/network_constants.h',
         'browser/chromeos/cros/network_library.cc',
         'browser/chromeos/cros/network_library.h',
         'browser/chromeos/cros/network_library_unittest.cc',

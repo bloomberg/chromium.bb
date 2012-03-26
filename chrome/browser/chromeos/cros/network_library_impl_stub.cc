@@ -133,7 +133,7 @@ void NetworkLibraryImplStub::Init() {
   wifi7->SetEAPPassphrase("password");
   NetworkUIData wifi7_ui_data;
   wifi7_ui_data.set_onc_source(NetworkUIData::ONC_SOURCE_DEVICE_POLICY);
-  wifi7_ui_data.FillDictionary(wifi7->ui_data());
+  wifi7->set_ui_data(wifi7_ui_data);
   AddStubNetwork(wifi7, PROFILE_USER);
 
   CellularNetwork* cellular1 = new CellularNetwork("cellular1");
@@ -161,7 +161,7 @@ void NetworkLibraryImplStub::Init() {
   cellular3->set_network_technology(NETWORK_TECHNOLOGY_EVDO);
   NetworkUIData cellular3_ui_data;
   cellular3_ui_data.set_onc_source(NetworkUIData::ONC_SOURCE_USER_POLICY);
-  cellular3_ui_data.FillDictionary(cellular3->ui_data());
+  cellular3->set_ui_data(cellular3_ui_data);
   AddStubNetwork(cellular3, PROFILE_NONE);
 
   CellularNetwork* cellular4 = new CellularNetwork("cellular4");
@@ -171,7 +171,7 @@ void NetworkLibraryImplStub::Init() {
   cellular4->set_network_technology(NETWORK_TECHNOLOGY_GSM);
   NetworkUIData cellular4_ui_data;
   cellular4_ui_data.set_onc_source(NetworkUIData::ONC_SOURCE_USER_POLICY);
-  cellular4_ui_data.FillDictionary(cellular4->ui_data());
+  cellular4->set_ui_data(cellular4_ui_data);
   AddStubNetwork(cellular4, PROFILE_NONE);
 
   CellularNetwork* cellular5 = new CellularNetwork("cellular5");
@@ -238,7 +238,7 @@ void NetworkLibraryImplStub::Init() {
   vpn4->set_provider_type(PROVIDER_TYPE_OPEN_VPN);
   NetworkUIData vpn4_ui_data;
   vpn4_ui_data.set_onc_source(NetworkUIData::ONC_SOURCE_DEVICE_POLICY);
-  vpn4_ui_data.FillDictionary(vpn4->ui_data());
+  vpn4->set_ui_data(vpn4_ui_data);
   AddStubNetwork(vpn4, PROFILE_USER);
 
   wifi_scanning_ = false;
@@ -322,9 +322,8 @@ void NetworkLibraryImplStub::AddStubRememberedNetwork(Network* network) {
     WifiNetwork* remembered_wifi = new WifiNetwork(network->service_path());
     remembered_wifi->set_encryption(remembered_wifi->encryption());
     NetworkUIData wifi_ui_data;
-    wifi_ui_data.set_onc_source(
-        NetworkUIData::GetONCSource(network->ui_data()));
-    wifi_ui_data.FillDictionary(remembered_wifi->ui_data());
+    wifi_ui_data.set_onc_source(network->ui_data().onc_source());
+    remembered_wifi->set_ui_data(wifi_ui_data);
     remembered = remembered_wifi;
   } else if (network->type() == TYPE_VPN) {
     VirtualNetwork* remembered_vpn =
@@ -332,8 +331,8 @@ void NetworkLibraryImplStub::AddStubRememberedNetwork(Network* network) {
     remembered_vpn->set_server_hostname("vpnserver.fake.com");
     remembered_vpn->set_provider_type(PROVIDER_TYPE_L2TP_IPSEC_USER_CERT);
     NetworkUIData vpn_ui_data;
-    vpn_ui_data.set_onc_source(NetworkUIData::GetONCSource(network->ui_data()));
-    vpn_ui_data.FillDictionary(remembered_vpn->ui_data());
+    vpn_ui_data.set_onc_source(network->ui_data().onc_source());
+    remembered_vpn->set_ui_data(vpn_ui_data);
     remembered = remembered_vpn;
   }
   if (remembered) {

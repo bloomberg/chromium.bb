@@ -227,8 +227,8 @@ TEST_F(OncNetworkParserTest, TestCreateNetworkWifi) {
   EXPECT_EQ("ssid", wifi->name());
   CheckStringProperty(wifi, PROPERTY_INDEX_SSID, "ssid");
   EXPECT_EQ(false, wifi->auto_connect());
-  EXPECT_EQ("z123456789012", wifi->passphrase());
-  CheckStringProperty(wifi, PROPERTY_INDEX_PASSPHRASE, "z123456789012");
+  EXPECT_EQ("0x1234567890", wifi->passphrase());
+  CheckStringProperty(wifi, PROPERTY_INDEX_PASSPHRASE, "0x1234567890");
 }
 
 TEST_F(OncNetworkParserTest, TestCreateNetworkEthernet) {
@@ -282,14 +282,14 @@ TEST_F(OncNetworkParserTest, TestLoadWifiCertificatePattern) {
   EXPECT_EQ(false, wifi->auto_connect());
   EXPECT_EQ("", wifi->passphrase());
   EXPECT_EQ(chromeos::EAP_METHOD_TLS, wifi->eap_method());
-  EXPECT_EQ(chromeos::CLIENT_CERT_TYPE_PATTERN, wifi->eap_client_cert_type());
+  EXPECT_EQ(chromeos::CLIENT_CERT_TYPE_PATTERN, wifi->client_cert_type());
   EXPECT_EQ("Google, Inc.",
-            wifi->client_cert_pattern()->issuer().organization());
-  ASSERT_EQ(2ul, wifi->client_cert_pattern()->enrollment_uri_list().size());
+            wifi->client_cert_pattern().issuer().organization());
+  ASSERT_EQ(2ul, wifi->client_cert_pattern().enrollment_uri_list().size());
   EXPECT_EQ("http://youtu.be/dQw4w9WgXcQ",
-            wifi->client_cert_pattern()->enrollment_uri_list()[0]);
+            wifi->client_cert_pattern().enrollment_uri_list()[0]);
   EXPECT_EQ("chrome-extension://abc/keygen-cert.html",
-            wifi->client_cert_pattern()->enrollment_uri_list()[1]);
+            wifi->client_cert_pattern().enrollment_uri_list()[1]);
 }
 
 
@@ -307,14 +307,14 @@ TEST_F(OncNetworkParserTest, TestLoadVPNCertificatePattern) {
   VirtualNetwork* vpn = static_cast<VirtualNetwork*>(network.get());
   EXPECT_EQ("MyVPN", vpn->name());
   EXPECT_EQ(false, vpn->auto_connect());
-  EXPECT_EQ(chromeos::CLIENT_CERT_TYPE_PATTERN, vpn->client_cert_type_);
+  EXPECT_EQ(chromeos::CLIENT_CERT_TYPE_PATTERN, vpn->client_cert_type());
   EXPECT_EQ("Google, Inc.",
-            vpn->client_cert_pattern()->issuer().organization());
-  ASSERT_EQ(2ul, vpn->client_cert_pattern()->enrollment_uri_list().size());
+            vpn->client_cert_pattern().issuer().organization());
+  ASSERT_EQ(2ul, vpn->client_cert_pattern().enrollment_uri_list().size());
   EXPECT_EQ("http://youtu.be/dQw4w9WgXcQ",
-            vpn->client_cert_pattern()->enrollment_uri_list()[0]);
+            vpn->client_cert_pattern().enrollment_uri_list()[0]);
   EXPECT_EQ("chrome-extension://abc/keygen-cert.html",
-            vpn->client_cert_pattern()->enrollment_uri_list()[1]);
+            vpn->client_cert_pattern().enrollment_uri_list()[1]);
 }
 
 TEST_F(OncNetworkParserTest, TestCreateNetworkWifiEAP1) {

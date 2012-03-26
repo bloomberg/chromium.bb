@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,7 +11,9 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/cros/certificate_pattern.h"
 #include "chrome/browser/chromeos/cros/enum_mapper.h"
+#include "chrome/browser/chromeos/cros/network_constants.h"
 
 namespace chromeos {
 
@@ -35,35 +37,55 @@ class NetworkUIData {
     ONC_SOURCE_DEVICE_POLICY,
     ONC_SOURCE_USER_POLICY,
   };
-
-  // Constructs a new dictionary builder.
   NetworkUIData();
+  explicit NetworkUIData(const base::DictionaryValue& dict);
   ~NetworkUIData();
 
-  // Sets the ONC source.
   void set_onc_source(ONCSource onc_source) { onc_source_ = onc_source; }
+  ONCSource onc_source() const { return onc_source_; }
+
+  void set_certificate_pattern(const CertificatePattern& pattern) {
+    certificate_pattern_ = pattern;
+  }
+  const CertificatePattern& certificate_pattern() const {
+    return certificate_pattern_;
+  }
+  void set_certificate_type(ClientCertType type) {
+    certificate_type_ = type;
+  }
+  ClientCertType certificate_type() const {
+    return certificate_type_;
+  }
+  bool is_managed() const {
+    return onc_source_ == ONC_SOURCE_DEVICE_POLICY ||
+        onc_source_ == ONC_SOURCE_USER_POLICY;
+  }
 
   // Fills in |dict| with the currently configured values. This will write the
   // keys appropriate for Network::ui_data() as defined below (kKeyXXX).
   void FillDictionary(base::DictionaryValue* dict) const;
 
-  // Get the ONC source for a network.
-  static ONCSource GetONCSource(const base::DictionaryValue* ui_data);
-
-  // Check whether a network is managed by policy.
-  static bool IsManaged(const base::DictionaryValue* ui_data);
-
-  // Source of the ONC network. This is an integer according to enum ONCSource.
+  // Key for storing source of the ONC network, which is an integer according to
+  // enum ONCSource.
   static const char kKeyONCSource[];
+
+  // Key for storing certificate pattern for this network (if any).
+  static const char kKeyCertificatePattern[];
+
+  // Key for storing certificate type for this network (if any), which is one of
+  // "pattern", "ref", or "none", according to ClientCertType.
+  static const char kKeyCertificateType[];
 
  private:
   static EnumMapper<ONCSource>& GetONCSourceMapper();
+  static EnumMapper<ClientCertType>& GetClientCertMapper();
 
+  CertificatePattern certificate_pattern_;
   ONCSource onc_source_;
+  ClientCertType certificate_type_;
 
   static const EnumMapper<NetworkUIData::ONCSource>::Pair kONCSourceTable[];
-
-  DISALLOW_COPY_AND_ASSIGN(NetworkUIData);
+  static const EnumMapper<ClientCertType>::Pair kClientCertTable[];
 };
 
 // Holds meta information for a network property: Whether the property is under
@@ -84,7 +106,7 @@ class NetworkPropertyUIData {
   ~NetworkPropertyUIData();
 
   // Initializes the object by calling Reset() with the provided ui_data.
-  explicit NetworkPropertyUIData(const base::DictionaryValue* ui_data);
+  explicit NetworkPropertyUIData(const NetworkUIData& ui_data);
 
   // Initializes the object with the given values. |default_value| may be NULL
   // to specify no default value is present. Takes ownership of |default_value|.
@@ -92,11 +114,11 @@ class NetworkPropertyUIData {
 
   // Resets the property to the controller specified by the given |ui_data| and
   // clears the default value.
-  void Reset(const base::DictionaryValue* ui_data);
+  void Reset(const NetworkUIData& ui_data);
 
   // Update the property object from dictionary, reading the key given by
   // |property_key|.
-  void ParseOncProperty(const base::DictionaryValue* ui_data,
+  void ParseOncProperty(const NetworkUIData& ui_data,
                         const base::DictionaryValue* onc,
                         const std::string& property_key);
 

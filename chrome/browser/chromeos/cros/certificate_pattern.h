@@ -12,6 +12,10 @@
 
 #include "base/memory/ref_counted.h"
 
+namespace base {
+class DictionaryValue;
+}
+
 namespace net {
 struct CertPrincipal;
 class X509Certificate;
@@ -39,6 +43,9 @@ class IssuerSubjectPattern {
   // Returns true if all fields in the pattern are empty.
   bool Empty() const;
 
+  // Clears out all values in this pattern (so Empty returns true).
+  void Clear();
+
   void set_common_name(const std::string& name) { common_name_ = name; }
   void set_locality(const std::string& locality) { locality_ = locality; }
   void set_organization(const std::string& organization) {
@@ -60,6 +67,13 @@ class IssuerSubjectPattern {
   const std::string& organizational_unit() const {
     return organizational_unit_;
   }
+
+  // Creates a new dictionary with the issuer subject pattern as its contents.
+  // Caller assumes ownership.
+  base::DictionaryValue* CreateAsDictionary() const;
+
+  bool CopyFromDictionary(const base::DictionaryValue& dictionary);
+
  private:
   std::string common_name_;
   std::string locality_;
@@ -77,6 +91,9 @@ class CertificatePattern {
   // Returns true if this pattern has nothing set (and so would match
   // all certs).  Ignores enrollment_uri_;
   bool Empty() const;
+
+  // Clears out all the values in this pattern (so Empty returns true).
+  void Clear();
 
   // Fetches the matching certificate that has the latest valid start date.
   // Returns a NULL refptr if there is no such match.
@@ -103,6 +120,14 @@ class CertificatePattern {
   const std::vector<std::string>& enrollment_uri_list() const {
     return enrollment_uri_list_;
   }
+
+  // Creates a new dictionary containing the data in the certificate pattern.
+  base::DictionaryValue* CreateAsDictionary() const;
+
+  // Replaces the contents of this CertificatePattern object with
+  // the values in the dictionary.  Returns false if the dictionary is
+  // malformed.
+  bool CopyFromDictionary(const base::DictionaryValue& dictionary);
 
  private:
   std::vector<std::string> issuer_ca_ref_list_;

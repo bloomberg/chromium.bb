@@ -352,11 +352,6 @@ void Network::SetIntegerProperty(const char* prop, int i, int* dest) {
   SetValueProperty(prop, value.get());
 }
 
-// Not inline so we can forward declare CertificatePattern.
-void Network::init_client_cert_pattern() {
-  client_cert_pattern_.reset(new CertificatePattern);
-}
-
 void Network::SetPreferred(bool preferred) {
   if (preferred) {
     SetIntegerProperty(
@@ -378,7 +373,7 @@ void Network::SetSaveCredentials(bool save_credentials) {
 }
 
 void Network::ClearUIData() {
-  ui_data_.Clear();
+  ui_data_ = NetworkUIData();
   ClearProperty(flimflam::kUIDataProperty);
 }
 
@@ -525,9 +520,7 @@ VirtualNetwork::VirtualNetwork(const std::string& service_path)
       provider_type_(PROVIDER_TYPE_L2TP_IPSEC_PSK),
       // Assume PSK and user passphrase are not available initially
       psk_passphrase_required_(true),
-      user_passphrase_required_(true),
-      client_cert_type_(CLIENT_CERT_TYPE_NONE) {
-  init_client_cert_pattern();
+      user_passphrase_required_(true) {
 }
 
 VirtualNetwork::~VirtualNetwork() {}
@@ -549,7 +542,11 @@ bool VirtualNetwork::RequiresUserProfile() const {
 }
 
 void VirtualNetwork::AttemptConnection(const base::Closure& closure) {
-  MatchCertificatePattern(closure);
+  if (client_cert_type() == CLIENT_CERT_TYPE_PATTERN) {
+    MatchCertificatePattern(closure);
+  } else {
+    closure.Run();
+  }
 }
 
 void VirtualNetwork::CopyCredentialsFromRemembered(Network* remembered) {
@@ -581,7 +578,8 @@ bool VirtualNetwork::NeedMoreInfoToConnect() const {
         return true;
       break;
     case PROVIDER_TYPE_L2TP_IPSEC_USER_CERT:
-      if (client_cert_id_.empty())
+      if (client_cert_id_.empty() &&
+          client_cert_type() != CLIENT_CERT_TYPE_PATTERN)
         return true;
       break;
     case PROVIDER_TYPE_OPEN_VPN:
@@ -702,15 +700,15 @@ void VirtualNetwork::SetCertificateSlotAndPin(
 }
 
 void VirtualNetwork::MatchCertificatePattern(const base::Closure& closure) {
-  DCHECK(client_cert_type_ == CLIENT_CERT_TYPE_PATTERN);
-  DCHECK(!client_cert_pattern()->Empty());
-  if (client_cert_pattern()->Empty()) {
+  DCHECK(client_cert_type() == CLIENT_CERT_TYPE_PATTERN);
+  DCHECK(!client_cert_pattern().Empty());
+  if (client_cert_pattern().Empty()) {
     closure.Run();
     return;
   }
 
   scoped_refptr<net::X509Certificate> matching_cert =
-      client_cert_pattern()->GetMatch();
+      client_cert_pattern().GetMatch();
   if (matching_cert.get()) {
     std::string client_cert_id =
         x509_certificate_model::GetPkcs11Id(matching_cert->os_cert_handle());
@@ -723,7 +721,7 @@ void VirtualNetwork::MatchCertificatePattern(const base::Closure& closure) {
     }
   } else {
     if (enrollment_handler()) {
-      enrollment_handler()->Enroll(client_cert_pattern()->enrollment_uri_list(),
+      enrollment_handler()->Enroll(client_cert_pattern().enrollment_uri_list(),
                                    closure);
       // Enrollment handler will take care of running the closure at the
       // appropriate time, if the user doesn't cancel.
@@ -1157,8 +1155,8 @@ WifiNetwork::WifiNetwork(const std::string& service_path)
       passphrase_required_(false),
       eap_method_(EAP_METHOD_UNKNOWN),
       eap_phase_2_auth_(EAP_PHASE_2_AUTH_AUTO),
-      eap_use_system_cas_(true) {
-  init_client_cert_pattern();
+      eap_use_system_cas_(true),
+      eap_save_credentials_(false) {
 }
 
 WifiNetwork::~WifiNetwork() {}
@@ -1379,9 +1377,14 @@ bool WifiNetwork::IsPassphraseRequired() const {
   // (http://crosbug.com/10135).
   if (error() == ERROR_BAD_PASSPHRASE || error() == ERROR_BAD_WEPKEY)
     return true;
-  // For 802.1x networks, configuration is required if connectable is false.
-  if (encryption_ == SECURITY_8021X)
-    return !connectable();
+  // For 802.1x networks, configuration is required if connectable is false
+  // unless we're using a certificate pattern.
+  if (encryption_ == SECURITY_8021X) {
+    if (eap_method_ != EAP_METHOD_TLS ||
+        client_cert_type() != CLIENT_CERT_TYPE_PATTERN)
+      return !connectable();
+    return false;
+  }
   return passphrase_required_;
 }
 
@@ -1394,14 +1397,18 @@ bool WifiNetwork::RequiresUserProfile() const {
     return false;
 
   if (eap_client_cert_pkcs11_id().empty() &&
-      eap_client_cert_type_ != CLIENT_CERT_TYPE_PATTERN)
+      client_cert_type() != CLIENT_CERT_TYPE_PATTERN)
         return false;
 
   return true;
 }
 
 void WifiNetwork::AttemptConnection(const base::Closure& closure) {
-  MatchCertificatePattern(closure);
+  if (client_cert_type() == CLIENT_CERT_TYPE_PATTERN) {
+    MatchCertificatePattern(closure);
+  } else {
+    closure.Run();
+  }
 }
 
 void WifiNetwork::SetCertificatePin(const std::string& pin) {
@@ -1409,23 +1416,23 @@ void WifiNetwork::SetCertificatePin(const std::string& pin) {
 }
 
 void WifiNetwork::MatchCertificatePattern(const base::Closure& closure) {
-  DCHECK(eap_client_cert_type_ == CLIENT_CERT_TYPE_PATTERN);
-  DCHECK(!client_cert_pattern()->Empty());
-  if (client_cert_pattern()->Empty()) {
+  DCHECK(client_cert_type() == CLIENT_CERT_TYPE_PATTERN);
+  DCHECK(!client_cert_pattern().Empty());
+  if (client_cert_pattern().Empty()) {
     closure.Run();
     return;
   }
 
   scoped_refptr<net::X509Certificate> matching_cert =
-      client_cert_pattern()->GetMatch();
+      client_cert_pattern().GetMatch();
   if (matching_cert.get()) {
     SetEAPClientCertPkcs11Id(
         x509_certificate_model::GetPkcs11Id(matching_cert->os_cert_handle()));
   } else {
     if (enrollment_handler()) {
-      enrollment_handler()->Enroll(client_cert_pattern()->enrollment_uri_list(),
+      enrollment_handler()->Enroll(client_cert_pattern().enrollment_uri_list(),
                                    closure);
-      // Enrollment handler will take care of running the closure at the
+      // Enrollment handler should take care of running the closure at the
       // appropriate time, if the user doesn't cancel.
       return;
     }

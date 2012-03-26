@@ -737,7 +737,7 @@ void NetworkLibraryImplBase::NetworkConnectStartWifi(
       wifi->SetCertificatePin(tpm_pin);
 
     // For certificate patterns, we have to delay the connect start.
-    if (wifi->eap_client_cert_type() == CLIENT_CERT_TYPE_PATTERN) {
+    if (wifi->client_cert_type() == CLIENT_CERT_TYPE_PATTERN) {
       wifi->MatchCertificatePattern(
           base::Bind(&NetworkLibraryImplBase::NetworkConnectStart,
                      notify_manager_weak_factory_.GetWeakPtr(),
@@ -1146,7 +1146,7 @@ bool NetworkLibraryImplBase::LoadOncNetworks(const std::string& onc_blob,
     for (WifiNetworkVector::iterator i(remembered_wifi_networks_.begin());
          i != remembered_wifi_networks_.end(); ++i) {
       WifiNetwork* network = *i;
-      if (NetworkUIData::GetONCSource(network->ui_data()) == source &&
+      if (network->ui_data().onc_source() == source &&
           network_ids.find(network->unique_id()) == network_ids.end()) {
         to_be_deleted.push_back(network->service_path());
       }
@@ -1155,7 +1155,7 @@ bool NetworkLibraryImplBase::LoadOncNetworks(const std::string& onc_blob,
     for (VirtualNetworkVector::iterator i(remembered_virtual_networks_.begin());
          i != remembered_virtual_networks_.end(); ++i) {
       VirtualNetwork* network = *i;
-      if (NetworkUIData::GetONCSource(network->ui_data()) == source &&
+      if (network->ui_data().onc_source() == source &&
           network_ids.find(network->unique_id()) == network_ids.end()) {
         to_be_deleted.push_back(network->service_path());
       }

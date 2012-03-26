@@ -545,10 +545,10 @@ Network* OncNetworkParser::CreateNetworkFromInfo(
   }
   scoped_ptr<Network> network(CreateNewNetwork(type, service_path));
 
-  // Initialize UI data.
-  NetworkUIData ui_data;
+  // Initialize ONC source.
+  NetworkUIData ui_data = network->ui_data();
   ui_data.set_onc_source(onc_source_);
-  ui_data.FillDictionary(network->ui_data());
+  network->set_ui_data(ui_data);
 
   // Parse all properties recursively.
   if (!ParseNestedObject(network.get(),
@@ -563,9 +563,11 @@ Network* OncNetworkParser::CreateNetworkFromInfo(
     return NULL;
   }
 
-  // Update the UI data property.
+  // Update the UI data property in flimflam.
   std::string ui_data_json;
-  base::JSONWriter::Write(network->ui_data(), &ui_data_json);
+  base::DictionaryValue ui_data_dict;
+  network->ui_data().FillDictionary(&ui_data_dict);
+  base::JSONWriter::Write(&ui_data_dict, &ui_data_json);
   base::StringValue ui_data_string_value(ui_data_json);
   network->UpdatePropertyMap(PROPERTY_INDEX_UI_DATA, &ui_data_string_value);
 
@@ -1346,16 +1348,18 @@ bool OncNetworkParser::ParseClientCertPattern(OncNetworkParser* parser,
       std::vector<std::string> resulting_list;
       if (!GetAsListOfStrings(value, &resulting_list))
         return false;
-      CertificatePattern* pattern = network->client_cert_pattern();
-      pattern->set_enrollment_uri_list(resulting_list);
+      CertificatePattern pattern = network->client_cert_pattern();
+      pattern.set_enrollment_uri_list(resulting_list);
+      network->set_client_cert_pattern(pattern);
       return true;
     }
     case PROPERTY_INDEX_ONC_CERTIFICATE_PATTERN_ISSUER_CA_REF: {
       std::vector<std::string> resulting_list;
       if (!GetAsListOfStrings(value, &resulting_list))
         return false;
-      CertificatePattern* pattern = network->client_cert_pattern();
-      pattern->set_issuer_ca_ref_list(resulting_list);
+      CertificatePattern pattern = network->client_cert_pattern();
+      pattern.set_issuer_ca_ref_list(resulting_list);
+      network->set_client_cert_pattern(pattern);
       return true;
     }
     case PROPERTY_INDEX_ONC_CERTIFICATE_PATTERN_ISSUER:
@@ -1383,7 +1387,9 @@ bool OncNetworkParser::ParseIssuerPattern(OncNetworkParser* parser,
                                           Network* network) {
   IssuerSubjectPattern pattern;
   if (ParseIssuerSubjectPattern(&pattern, parser, index, value, network)) {
-    network->client_cert_pattern()->set_issuer(pattern);
+    CertificatePattern cert_pattern = network->client_cert_pattern();
+    cert_pattern.set_issuer(pattern);
+    network->set_client_cert_pattern(cert_pattern);
     return true;
   }
   return false;
@@ -1396,7 +1402,9 @@ bool OncNetworkParser::ParseSubjectPattern(OncNetworkParser* parser,
                                            Network* network) {
   IssuerSubjectPattern pattern;
   if (ParseIssuerSubjectPattern(&pattern, parser, index, value, network)) {
-    network->client_cert_pattern()->set_subject(pattern);
+    CertificatePattern cert_pattern = network->client_cert_pattern();
+    cert_pattern.set_subject(pattern);
+    network->set_client_cert_pattern(cert_pattern);
     return true;
   }
   return false;
@@ -1597,9 +1605,12 @@ bool OncWifiNetworkParser::ParseEAPValue(OncNetworkParser* parser,
             OncNetworkParser::ParseClientCertPattern);
     case PROPERTY_INDEX_ONC_CLIENT_CERT_TYPE: {
       ClientCertType type = ParseClientCertType(GetStringValue(value));
-      wifi_network->set_eap_client_cert_type(type);
+      wifi_network->set_client_cert_type(type);
       return true;
     }
+    case PROPERTY_INDEX_SAVE_CREDENTIALS:
+      wifi_network->set_eap_save_credentials(GetBooleanValue(value));
+      return true;
     default:
       break;
   }

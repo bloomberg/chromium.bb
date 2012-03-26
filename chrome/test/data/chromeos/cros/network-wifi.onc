@@ -5,7 +5,7 @@
       "Type": "WiFi",
       "Name": "My WiFi Network",
       "WiFi": {
-        "Passphrase": "z123456789012",
+        "Passphrase": "0x1234567890",
         "SSID": "ssid",
         "Security": "WEP-PSK"
       }

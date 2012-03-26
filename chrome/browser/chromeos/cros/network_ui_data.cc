@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,8 @@ namespace chromeos {
 
 // Top-level UI data dictionary keys.
 const char NetworkUIData::kKeyONCSource[] = "onc_source";
+const char NetworkUIData::kKeyCertificatePattern[] = "certificate_pattern";
+const char NetworkUIData::kKeyCertificateType[] = "certificate_type";
 
 // Property names for per-property data stored under |kKeyProperties|.
 const EnumMapper<NetworkUIData::ONCSource>::Pair
@@ -20,12 +22,42 @@ const EnumMapper<NetworkUIData::ONCSource>::Pair
   { "user_policy", NetworkUIData::ONC_SOURCE_USER_POLICY },
 };
 
+// Property names for per-property data stored under |kKeyProperties|.
+const EnumMapper<ClientCertType>::Pair
+    NetworkUIData::kClientCertTable[] =  {
+  { "none", CLIENT_CERT_TYPE_NONE },
+  { "pattern", CLIENT_CERT_TYPE_PATTERN },
+  { "ref", CLIENT_CERT_TYPE_REF },
+};
+
 // Property names for the per-property dictionary.
 const char NetworkPropertyUIData::kKeyController[] = "controller";
 const char NetworkPropertyUIData::kKeyDefaultValue[] = "default_value";
 
 NetworkUIData::NetworkUIData()
-  : onc_source_(ONC_SOURCE_NONE) {
+    : onc_source_(ONC_SOURCE_NONE),
+      certificate_type_(CLIENT_CERT_TYPE_NONE) {
+}
+
+NetworkUIData::NetworkUIData(const DictionaryValue& dict) {
+  std::string source;
+  if (dict.GetString(kKeyONCSource, &source)) {
+    onc_source_ = GetONCSourceMapper().Get(source);
+  } else {
+    onc_source_ = ONC_SOURCE_NONE;
+  }
+  DictionaryValue* cert_dict = NULL;
+  if (dict.GetDictionary(kKeyCertificatePattern, &cert_dict) && cert_dict)
+    certificate_pattern_.CopyFromDictionary(*cert_dict);
+  std::string type_string;
+  if (dict.GetString(kKeyCertificateType, &type_string)) {
+    certificate_type_ = GetClientCertMapper().Get(type_string);
+  } else {
+    certificate_type_ = CLIENT_CERT_TYPE_NONE;
+  }
+  DCHECK(certificate_type_ != CLIENT_CERT_TYPE_PATTERN ||
+         (certificate_type_ == CLIENT_CERT_TYPE_PATTERN &&
+          !certificate_pattern_.Empty()));
 }
 
 NetworkUIData::~NetworkUIData() {
@@ -37,21 +69,21 @@ void NetworkUIData::FillDictionary(base::DictionaryValue* dict) const {
   std::string source_string(GetONCSourceMapper().GetKey(onc_source_));
   if (!source_string.empty())
     dict->SetString(kKeyONCSource, source_string);
-}
-
-// static
-NetworkUIData::ONCSource NetworkUIData::GetONCSource(
-    const base::DictionaryValue* ui_data) {
-  std::string source;
-  if (ui_data && ui_data->GetString(kKeyONCSource, &source))
-    return GetONCSourceMapper().Get(source);
-  return ONC_SOURCE_NONE;
-}
-
-// static
-bool NetworkUIData::IsManaged(const base::DictionaryValue* ui_data) {
-  ONCSource source = GetONCSource(ui_data);
-  return source == ONC_SOURCE_DEVICE_POLICY || source == ONC_SOURCE_USER_POLICY;
+  std::string type_string(GetClientCertMapper().GetKey(certificate_type_));
+  switch (certificate_type_) {
+    case CLIENT_CERT_TYPE_REF:
+      dict->SetString(kKeyCertificateType, "ref");
+      break;
+    case CLIENT_CERT_TYPE_PATTERN:
+      dict->SetString(kKeyCertificateType, "pattern");
+      if (!certificate_pattern_.Empty()) {
+        dict->Set(kKeyCertificatePattern,
+                  certificate_pattern_.CreateAsDictionary());
+      }
+    case CLIENT_CERT_TYPE_NONE:
+    default:
+      break;
+  }
 }
 
 // static
@@ -59,6 +91,14 @@ EnumMapper<NetworkUIData::ONCSource>& NetworkUIData::GetONCSourceMapper() {
   CR_DEFINE_STATIC_LOCAL(EnumMapper<ONCSource>, mapper,
                          (kONCSourceTable, arraysize(kONCSourceTable),
                           ONC_SOURCE_NONE));
+  return mapper;
+}
+
+// static
+EnumMapper<ClientCertType>& NetworkUIData::GetClientCertMapper() {
+  CR_DEFINE_STATIC_LOCAL(EnumMapper<ClientCertType>, mapper,
+                         (kClientCertTable, arraysize(kClientCertTable),
+                          CLIENT_CERT_TYPE_NONE));
   return mapper;
 }
 
@@ -76,18 +116,17 @@ NetworkPropertyUIData::NetworkPropertyUIData(Controller controller,
 }
 
 NetworkPropertyUIData::NetworkPropertyUIData(
-    const base::DictionaryValue* ui_data) {
+    const NetworkUIData& ui_data) {
   Reset(ui_data);
 }
 
-void NetworkPropertyUIData::Reset(const base::DictionaryValue* ui_data) {
+void NetworkPropertyUIData::Reset(const NetworkUIData& ui_data) {
   default_value_.reset();
-  controller_ = NetworkUIData::IsManaged(ui_data) ? CONTROLLER_POLICY
-                                                  : CONTROLLER_USER;
+  controller_ = ui_data.is_managed() ? CONTROLLER_POLICY : CONTROLLER_USER;
 }
 
 void NetworkPropertyUIData::ParseOncProperty(
-    const base::DictionaryValue* ui_data,
+    const NetworkUIData& ui_data,
     const base::DictionaryValue* onc,
     const std::string& property_key) {
   Reset(ui_data);

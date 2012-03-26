@@ -175,7 +175,7 @@ NetworkInfoDictionary::NetworkInfoDictionary(const chromeos::Network* network) {
   set_remembered(false);
   set_shared(false);
   set_needs_new_plan(false);
-  set_policy_managed(chromeos::NetworkUIData::IsManaged(network->ui_data()));
+  set_policy_managed(network->ui_data().is_managed());
 }
 
 NetworkInfoDictionary::NetworkInfoDictionary(
@@ -192,7 +192,7 @@ NetworkInfoDictionary::NetworkInfoDictionary(
   set_remembered(true);
   set_shared(remembered->profile_type() == chromeos::PROFILE_SHARED);
   set_needs_new_plan(false);
-  set_policy_managed(chromeos::NetworkUIData::IsManaged(remembered->ui_data()));
+  set_policy_managed(remembered->ui_data().is_managed());
 }
 
 DictionaryValue* NetworkInfoDictionary::BuildDictionary() {
@@ -790,7 +790,7 @@ void InternetOptionsHandler::PopulateDictionaryDetails(
         network->service_path());
   }
 
-  const base::DictionaryValue* ui_data = network->ui_data();
+  const chromeos::NetworkUIData& ui_data = network->ui_data();
   const base::DictionaryValue* onc =
       cros_->FindOncForNetwork(network->unique_id());
 
