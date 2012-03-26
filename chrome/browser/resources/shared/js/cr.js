@@ -2,49 +2,56 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-const cr = (function() {
+var cr = (function() {
 
   /**
    * Whether we are using a Mac or not.
    * @type {boolean}
+   * @const
    */
-  const isMac = /Mac/.test(navigator.platform);
+  var isMac = /Mac/.test(navigator.platform);
 
   /**
    * Whether this is on the Windows platform or not.
    * @type {boolean}
+   * @const
    */
-  const isWindows = /Win/.test(navigator.platform);
+  var isWindows = /Win/.test(navigator.platform);
 
   /**
    * Whether this is on chromeOS or not.
    * @type {boolean}
+   * @const
    */
-  const isChromeOS = /CrOS/.test(navigator.userAgent);
+  var isChromeOS = /CrOS/.test(navigator.userAgent);
 
   /**
    * Whether this is on vanilla Linux (not chromeOS).
    * @type {boolean}
+   * @const
    */
-  const isLinux = /Linux/.test(navigator.userAgent);
+  var isLinux = /Linux/.test(navigator.userAgent);
 
   /**
    * Whether this uses GTK or not.
    * @type {boolean}
+   * @const
    */
-  const isGTK = /GTK/.test(chrome.toolkit);
+  var isGTK = /GTK/.test(chrome.toolkit);
 
   /**
    * Whether this uses the views toolkit or not.
    * @type {boolean}
+   * @const
    */
-  const isViews = /views/.test(chrome.toolkit);
+  var isViews = /views/.test(chrome.toolkit);
 
   /**
    * Whether this window is optimized for touch-based input.
    * @type {boolean}
+   * @const
    */
-  const isTouchOptimized = !!chrome.touchOptimized;
+  var isTouchOptimized = !!chrome.touchOptimized;
 
   /**
    * Sets the os and toolkit attributes in the <html> element so that platform
@@ -97,7 +104,8 @@ const cr = (function() {
 
   // cr.Event is called CrEvent in here to prevent naming conflicts. We also
   // store the original Event in case someone does a global alias of cr.Event.
-  const DomEvent = Event;
+  // @const
+  var DomEvent = Event;
 
   /**
    * Creates a new event to be used with cr.EventTarget or DOM EventTarget
@@ -148,8 +156,9 @@ const cr = (function() {
   /**
    * The kind of property to define in {@code defineProperty}.
    * @enum {number}
+   * @const
    */
-  const PropertyKind = {
+  var PropertyKind = {
     /**
      * Plain old JS property where the backing data is stored as a "private"
      * field on the object.
@@ -171,8 +180,8 @@ const cr = (function() {
   /**
    * Helper function for defineProperty that returns the getter to use for the
    * property.
-   * @param {string} name
-   * @param {cr.PropertyKind} kind
+   * @param {string} name The name of the property.
+   * @param {cr.PropertyKind} kind The kind of the property.
    * @return {function():*} The getter for the property.
    */
   function getGetter(name, kind) {
@@ -314,8 +323,23 @@ const cr = (function() {
   }
 
   /**
-   * @param {string} name
-   * @param {!Function} fun
+   * Calls |fun| and adds all the fields of the returned object to the object
+   * named by |name|. For example, cr.define('cr.ui', function() {
+   *   function List() {
+   *     ...
+   *   }
+   *   function ListItem() {
+   *     ...
+   *   }
+   *   return {
+   *     List: List,
+   *     ListItem: ListItem,
+   *   };
+   * });
+   * defines the functions cr.ui.List and cr.ui.ListItem.
+   * @param {string} name The name of the object that we are adding fields to.
+   * @param {!Function} fun The function that will return an object containing
+   *     the names and values of the new fields.
    */
   function define(name, fun) {
     var obj = exportPath(name);

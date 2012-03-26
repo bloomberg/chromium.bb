@@ -4,7 +4,7 @@
 
 cr.define('cr.ui', function() {
 
-  const Menu = cr.ui.Menu;
+  /** @const */ var Menu = cr.ui.Menu;
 
   /**
    * Handles context menus.

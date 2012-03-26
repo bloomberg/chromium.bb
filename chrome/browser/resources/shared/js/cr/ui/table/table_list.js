@@ -7,9 +7,9 @@
  */
 
 cr.define('cr.ui.table', function() {
-  const List = cr.ui.List;
-  const TableRow = cr.ui.table.TableRow;
-  const ListItem = cr.ui.ListItem;
+  /** @const */ var List = cr.ui.List;
+  /** @const */ var TableRow = cr.ui.table.TableRow;
+  /** @const */ var ListItem = cr.ui.ListItem;
 
   /**
    * Creates a new table list element.

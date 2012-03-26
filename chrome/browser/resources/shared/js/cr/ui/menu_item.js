@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 cr.define('cr.ui', function() {
-  const Command = cr.ui.Command;
+  /** @const */ var Command = cr.ui.Command;
 
   /**
    * Creates a new menu item element.
@@ -15,7 +15,7 @@ cr.define('cr.ui', function() {
 
   /**
    * Creates a new menu separator element.
-   * @return {cr.ui.MenuItem}
+   * @return {cr.ui.MenuItem} The new separator element.
    */
   MenuItem.createSeparator = function() {
     var el = cr.doc.createElement('hr');

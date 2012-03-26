@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,7 +11,7 @@
  */
 
 cr.define('cr.ui', function() {
-  const Splitter = cr.ui.Splitter;
+  /** @const */ var Splitter = cr.ui.Splitter;
 
   /**
    * Creates a new table splitter element.

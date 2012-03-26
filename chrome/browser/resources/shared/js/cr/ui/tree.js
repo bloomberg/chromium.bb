@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,8 +9,9 @@ cr.define('cr.ui', function() {
   /**
    * The number of pixels to indent per level.
    * @type {number}
+   * @const
    */
-  const INDENT = 20;
+  var INDENT = 20;
 
   /**
    * Returns the computed style for an element.
@@ -613,7 +614,7 @@ cr.define('cr.ui', function() {
   /**
    * Helper function that returns the next visible tree item.
    * @param {cr.ui.TreeItem} item The tree item.
-   * @retrun {cr.ui.TreeItem} The found item or null.
+   * @return {cr.ui.TreeItem} The found item or null.
    */
   function getNext(item) {
     if (item.expanded) {
@@ -629,7 +630,7 @@ cr.define('cr.ui', function() {
   /**
    * Another helper function that returns the next visible tree item.
    * @param {cr.ui.TreeItem} item The tree item.
-   * @retrun {cr.ui.TreeItem} The found item or null.
+   * @return {cr.ui.TreeItem} The found item or null.
    */
   function getNextHelper(item) {
     if (!item)
@@ -645,7 +646,7 @@ cr.define('cr.ui', function() {
   /**
    * Helper function that returns the previous visible tree item.
    * @param {cr.ui.TreeItem} item The tree item.
-   * @retrun {cr.ui.TreeItem} The found item or null.
+   * @return {cr.ui.TreeItem} The found item or null.
    */
   function getPrevious(item) {
     var previousSibling = item.previousElementSibling;

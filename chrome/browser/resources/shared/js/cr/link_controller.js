@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,7 +17,7 @@ cr.define('cr', function() {
    * The kind of link open we want to perform.
    * @enum {number}
    */
-  const LinkKind = {
+  var LinkKind = {
     FOREGROUND_TAB: 0,
     BACKGROUND_TAB: 1,
     WINDOW: 2,
@@ -102,7 +102,7 @@ cr.define('cr', function() {
      * @param {string} url The URL to open.
      * @param {LinkKind} kind The kind of open we want to do.
      */
-    openUrl: function (url, kind) {
+    openUrl: function(url, kind) {
       this.openUrls([url], kind);
     },
 
@@ -111,7 +111,7 @@ cr.define('cr', function() {
      * @param {!Array.<string>} urls The URLs to open.
      * @param {LinkKind} kind The kind of open we want to do.
      */
-    openUrls: function (urls, kind) {
+    openUrls: function(urls, kind) {
       if (urls.length < 1)
         return;
 

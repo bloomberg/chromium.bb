@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,9 +13,9 @@
  */
 
 cr.define('cr.ui', function() {
-  const ListSelectionController = cr.ui.ListSelectionController;
-  const List = cr.ui.List;
-  const ListItem = cr.ui.ListItem;
+  /** @const */ var ListSelectionController = cr.ui.ListSelectionController;
+  /** @const */ var List = cr.ui.List;
+  /** @const */ var ListItem = cr.ui.ListItem;
 
   /**
    * Creates a new grid item element.
@@ -406,5 +406,5 @@ cr.define('cr.ui', function() {
     Grid: Grid,
     GridItem: GridItem,
     GridSelectionController: GridSelectionController
-  }
+  };
 });

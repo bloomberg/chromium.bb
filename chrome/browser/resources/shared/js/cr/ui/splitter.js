@@ -191,5 +191,5 @@ cr.define('cr.ui', function() {
 
   return {
     Splitter: Splitter
-  }
+  };
 });

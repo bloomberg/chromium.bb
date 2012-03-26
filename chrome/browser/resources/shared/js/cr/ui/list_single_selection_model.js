@@ -1,10 +1,10 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 cr.define('cr.ui', function() {
-  const Event = cr.Event;
-  const EventTarget = cr.EventTarget;
+  /** @const */ var Event = cr.Event;
+  /** @const */ var EventTarget = cr.EventTarget;
 
   /**
    * Creates a new selection model that is to be used with lists. This only

@@ -7,7 +7,7 @@
  */
 
 cr.define('cr.ui.table', function() {
-  const TableSplitter = cr.ui.TableSplitter;
+  /** @const */ var TableSplitter = cr.ui.TableSplitter;
 
   /**
    * Creates a new table header.

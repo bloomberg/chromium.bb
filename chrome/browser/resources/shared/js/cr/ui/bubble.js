@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,47 +6,59 @@
 
 cr.define('cr.ui', function() {
 
-  // The arrow location specifies how the arrow and bubble are positioned in
-  // relation to the anchor node.
-  const ArrowLocation = {
+  /**
+   * The arrow location specifies how the arrow and bubble are positioned in
+   * relation to the anchor node.
+   * @enum
+   */
+  var ArrowLocation = {
     // The arrow is positioned at the top and the start of the bubble. In left
     // to right mode this is the top left. The entire bubble is positioned below
     // the anchor node.
-    TOP_START : "top-start",
+    TOP_START: 'top-start',
     // The arrow is positioned at the top and the end of the bubble. In left to
     // right mode this is the top right. The entire bubble is positioned below
     // the anchor node.
-    TOP_END : "top-end",
+    TOP_END: 'top-end',
     // The arrow is positioned at the bottom and the start of the bubble. In
     // left to right mode this is the bottom left. The entire bubble is
     // positioned above the anchor node.
-    BOTTOM_START : "bottom-start",
+    BOTTOM_START: 'bottom-start',
     // The arrow is positioned at the bottom and the end of the bubble. In
     // left to right mode this is the bottom right. The entire bubble is
     // positioned above the anchor node.
-    BOTTOM_END : "bottom-end"
+    BOTTOM_END: 'bottom-end'
   };
 
-  // The bubble alignment specifies the horizontal position of the bubble in
-  // relation to the anchor node.
-  const BubbleAlignment = {
+  /**
+   * The bubble alignment specifies the horizontal position of the bubble in
+   * relation to the anchor node.
+   * @enum
+   */
+  var BubbleAlignment = {
     // The bubble is positioned so that the tip of the arrow points to the
     // middle of the anchor node.
-    ARROW_TO_MID_ANCHOR : "arrow-to-mid-anchor",
+    ARROW_TO_MID_ANCHOR: 'arrow-to-mid-anchor',
     // The bubble is positioned so that the edge nearest to the arrow is lined
     // up with the edge of the anchor node.
-    BUBBLE_EDGE_TO_ANCHOR_EDGE : "bubble-edge-anchor-edge"
+    BUBBLE_EDGE_TO_ANCHOR_EDGE: 'bubble-edge-anchor-edge'
   };
 
-  // The horizontal distance between the tip of the arrow and the start or the
-  // end of the bubble (as specified by the arrow location).
-  const ARROW_OFFSET_X = 30;
+  /**
+   * The horizontal distance between the tip of the arrow and the start or the
+   * end of the bubble (as specified by the arrow location).
+   * @const
+   */
+  var ARROW_OFFSET_X = 30;
 
-  // The vertical distance between the tip of the arrow and the bottom or top of
-  // the bubble (as specified by the arrow location). Note, if you change this
-  // then you should also change the "top" and "bottom" values for .bubble-arrow
-  // in bubble.css.
-  const ARROW_OFFSET_Y = 8;
+  /**
+   * The vertical distance between the tip of the arrow and the bottom or top of
+   * the bubble (as specified by the arrow location). Note, if you change this
+   * then you should also change the "top" and "bottom" values for .bubble-arrow
+   * in bubble.css.
+   * @const
+   */
+  var ARROW_OFFSET_Y = 8;
 
   /**
    * Bubble is a free-floating informational bubble with a triangular arrow
@@ -60,10 +72,10 @@ cr.define('cr.ui', function() {
     decorate: function() {
       this.className = 'bubble';
       this.innerHTML =
-          '<div class=\"bubble-contents\"></div>' +
-          '<div class=\"bubble-close\"></div>' +
-          '<div class=\"bubble-shadow\"></div>' +
-          '<div class=\"bubble-arrow\"></div>';
+          '<div class="bubble-contents"></div>' +
+          '<div class="bubble-close"></div>' +
+          '<div class="bubble-shadow"></div>' +
+          '<div class="bubble-arrow"></div>';
 
       this.hidden = true;
       this.handleCloseEvent = this.hide;
@@ -77,7 +89,7 @@ cr.define('cr.ui', function() {
      */
     set content(node) {
       var bubbleContent = this.querySelector('.bubble-contents');
-      bubbleContent.innerHTML = "";
+      bubbleContent.innerHTML = '';
       bubbleContent.appendChild(node);
     },
 
@@ -231,8 +243,8 @@ cr.define('cr.ui', function() {
   };
 
   return {
-    ArrowLocation : ArrowLocation,
-    Bubble : Bubble,
-    BubbleAlignment : BubbleAlignment
+    ArrowLocation: ArrowLocation,
+    Bubble: Bubble,
+    BubbleAlignment: BubbleAlignment
   };
 });

@@ -174,7 +174,7 @@ cr.define('cr.ui.dialogs', function() {
       this.title_.textContent = title;
       this.title_.hidden = false;
     } else {
-      this.title_.textContent = "";
+      this.title_.textContent = '';
       this.title_.hidden = true;
     }
 
@@ -190,7 +190,7 @@ cr.define('cr.ui.dialogs', function() {
     this.frame_.style.left = (left + 10) + 'px';
 
     var self = this;
-    setTimeout(function () {
+    setTimeout(function() {
       // Note that we control the opacity of the *container*, but the top/left
       // of the *frame*.
       self.container_.style.opacity = '1';

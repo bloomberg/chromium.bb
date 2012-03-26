@@ -3,8 +3,10 @@
 // found in the LICENSE file.
 
 cr.define('cr.ui', function() {
-  const Menu = cr.ui.Menu;
-  const positionPopupAroundElement = cr.ui.positionPopupAroundElement;
+  /** @const */
+  var Menu = cr.ui.Menu;
+  /** @const */
+  var positionPopupAroundElement = cr.ui.positionPopupAroundElement;
 
   /**
    * Creates a new menu button element.

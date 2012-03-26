@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,8 +6,9 @@ cr.define('cr.ui', function() {
 
   /**
    * The class name to set on the document element.
+   * @const
    */
-  const CLASS_NAME = 'focus-outline-visible';
+  var CLASS_NAME = 'focus-outline-visible';
 
   /**
    * This class sets a CSS class name on the HTML element of |doc| when the user
@@ -53,7 +54,7 @@ cr.define('cr.ui', function() {
     get visible() {
       this.classList_.contains(CLASS_NAME);
     }
-  }
+  };
 
   /**
    * Array of Document and FocusOutlineManager pairs.

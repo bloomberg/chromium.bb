@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,7 +19,7 @@ cr.define('cr.ui', function() {
    * Enum for defining how to anchor a popup to an anchor element.
    * @enum {number}
    */
-  const AnchorType = {
+  var AnchorType = {
     /**
      * The popup's right edge is aligned with the left edge of the anchor.
      * The popup's top edge is aligned with the top edge of the anchor.
@@ -118,7 +118,7 @@ cr.define('cr.ui', function() {
 
     var style = popupElement.style;
     // Reset all directions.
-    style.left = style.right = style.top = style.bottom = 'auto'
+    style.left = style.right = style.top = style.bottom = 'auto';
 
     // Primary direction
     switch (type) {

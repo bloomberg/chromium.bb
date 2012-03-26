@@ -99,7 +99,7 @@ cr.define('cr.ui.overlay', function() {
   return {
     globalInitialization: globalInitialization,
     setupOverlay: setupOverlay,
-  }
+  };
 });
 
 document.addEventListener('DOMContentLoaded',

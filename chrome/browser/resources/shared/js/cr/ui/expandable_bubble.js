@@ -193,7 +193,7 @@ cr.define('cr.ui', function() {
      * @param {Event} e The event.
      * @private
      */
-    onNotificationClick_ : function(e) {
+    onNotificationClick_: function(e) {
       if (!this.contains(e.target))
         return;
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -140,7 +140,7 @@ cr.define('cr.ui', function() {
         if (sm.multiple && (cr.isMac ? e.metaKey :
                                        (e.ctrlKey && !e.shiftKey))) {
           // Selection is handled at mouseUp on windows/linux, mouseDown on mac.
-          if (cr.isMac? isDown : !isDown) {
+          if (cr.isMac ? isDown : !isDown) {
             // Toggle the current one and make it anchor index.
             sm.setIndexSelected(index, !sm.getIndexSelected(index));
             sm.leadIndex = index;
@@ -177,7 +177,7 @@ cr.define('cr.ui', function() {
      * @param {Event} e The keydown event.
      */
     handleKeyDown: function(e) {
-      const SPACE_KEY_CODE = 32;
+      var SPACE_KEY_CODE = 32;
       var tagName = e.target.tagName;
       // If focus is in an input field of some kind, only handle navigation keys
       // that aren't likely to conflict with input interaction (e.g., text

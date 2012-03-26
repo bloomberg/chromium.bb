@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 cr.define('cr.ui', function() {
-  const ArrayDataModel = cr.ui.ArrayDataModel;
-  const List = cr.ui.List;
-  const ListItem = cr.ui.ListItem;
+  /** @const */ var ArrayDataModel = cr.ui.ArrayDataModel;
+  /** @const */ var List = cr.ui.List;
+  /** @const */ var ListItem = cr.ui.ListItem;
 
   /**
    * Creates a new autocomplete list item.
@@ -157,7 +157,7 @@ cr.define('cr.ui', function() {
       this.targetInput_ = input;
       this.style.width = input.getBoundingClientRect().width + 'px';
       this.hidden = false;  // Necessary for positionPopupAroundElement to work.
-      cr.ui.positionPopupAroundElement(input, this, cr.ui.AnchorType.BELOW)
+      cr.ui.positionPopupAroundElement(input, this, cr.ui.AnchorType.BELOW);
       // Start hidden; when the data model gets results the list will show.
       this.hidden = true;
 
@@ -169,7 +169,7 @@ cr.define('cr.ui', function() {
      * Detaches the autocomplete popup from its current input element, if any.
      */
     detach: function() {
-      var input = this.targetInput_
+      var input = this.targetInput_;
       if (!input)
         return;
 
@@ -184,14 +184,14 @@ cr.define('cr.ui', function() {
      * attached to. Should be called any time the input is resized.
      */
     syncWidthToInput: function() {
-      var input = this.targetInput_
+      var input = this.targetInput_;
       if (input)
         this.style.width = input.getBoundingClientRect().width + 'px';
     },
 
     /**
-     * The text field the autocomplete popup is currently attached to, if any.
-     * @return {HTMLElement}
+     * @return {HTMLElement} The text field the autocomplete popup is currently
+     *     attached to, if any.
      */
     get targetInput() {
       return this.targetInput_;

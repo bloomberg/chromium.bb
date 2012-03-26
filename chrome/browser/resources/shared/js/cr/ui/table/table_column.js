@@ -7,8 +7,8 @@
  */
 
 cr.define('cr.ui.table', function() {
-  const EventTarget = cr.EventTarget;
-  const Event = cr.Event;
+  /** @const */ var EventTarget = cr.EventTarget;
+  /** @const */ var Event = cr.Event;
 
   /**
    * A table column that wraps column ids and settings.
@@ -32,7 +32,7 @@ cr.define('cr.ui.table', function() {
 
     width_: null,
 
-    endAlign_ : false,
+    endAlign_: false,
 
     /**
      * Clones column.

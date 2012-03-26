@@ -1,10 +1,10 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 cr.define('cr.ui', function() {
 
-  const MenuItem = cr.ui.MenuItem;
+  /** @const */ var MenuItem = cr.ui.MenuItem;
 
   /**
    * Creates a new menu element.
@@ -34,8 +34,9 @@ cr.define('cr.ui', function() {
     },
 
     /**
-     * Walks up the ancestors until a menu item belonging to this menu is found.
-     * @param {Element} el
+     * Walks up the ancestors of |el| until a menu item belonging to this menu
+     * is found.
+     * @param {Element} el The element to start searching from.
      * @return {cr.ui.MenuItem} The found menu item or null.
      * @private
      */

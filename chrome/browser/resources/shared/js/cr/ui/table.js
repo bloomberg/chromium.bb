@@ -7,12 +7,12 @@
  */
 
 cr.define('cr.ui', function() {
-  const ListSelectionModel = cr.ui.ListSelectionModel;
-  const ListSelectionController = cr.ui.ListSelectionController;
-  const ArrayDataModel = cr.ui.ArrayDataModel;
-  const TableColumnModel = cr.ui.table.TableColumnModel;
-  const TableList = cr.ui.table.TableList;
-  const TableHeader = cr.ui.table.TableHeader;
+  /** @const */ var ListSelectionModel = cr.ui.ListSelectionModel;
+  /** @const */ var ListSelectionController = cr.ui.ListSelectionController;
+  /** @const */ var ArrayDataModel = cr.ui.ArrayDataModel;
+  /** @const */ var TableColumnModel = cr.ui.table.TableColumnModel;
+  /** @const */ var TableList = cr.ui.table.TableList;
+  /** @const */ var TableHeader = cr.ui.table.TableHeader;
 
   /**
    * Creates a new table element.

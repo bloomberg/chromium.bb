@@ -12,9 +12,9 @@
  */
 
 cr.define('cr.ui', function() {
-  const ListSelectionModel = cr.ui.ListSelectionModel;
-  const ListSelectionController = cr.ui.ListSelectionController;
-  const ArrayDataModel = cr.ui.ArrayDataModel;
+  /** @const */ var ListSelectionModel = cr.ui.ListSelectionModel;
+  /** @const */ var ListSelectionController = cr.ui.ListSelectionController;
+  /** @const */ var ArrayDataModel = cr.ui.ArrayDataModel;
 
   /**
    * Whether a mouse event is inside the element viewport. This will return
@@ -572,7 +572,7 @@ cr.define('cr.ui', function() {
 
     /**
      * Handles a change of the lead item from the selection model.
-     * @property {Event} pe The property change event.
+     * @param {Event} pe The property change event.
      * @private
      */
     handleLeadChange_: function(pe) {
@@ -844,7 +844,7 @@ cr.define('cr.ui', function() {
         return this.getFirstItemInRow(Math.floor(offset / itemHeight));
 
       // If offset exceeds the height of list.
-      var lastHeight =  0;
+      var lastHeight = 0;
       if (this.dataModel.length) {
         var h = this.getHeightsForIndex_(this.dataModel.length - 1);
         lastHeight = h.top + h.height;
@@ -866,8 +866,8 @@ cr.define('cr.ui', function() {
         if (top <= offset && offset <= (top + height))
           break;
 
-        isIncrementing ? ++estimatedIndex: --estimatedIndex;
-      } while (0 < estimatedIndex && estimatedIndex < this.dataModel.length)
+        isIncrementing ? ++estimatedIndex : --estimatedIndex;
+      } while (0 < estimatedIndex && estimatedIndex < this.dataModel.length);
 
       return estimatedIndex;
     },
@@ -1205,7 +1205,7 @@ cr.define('cr.ui', function() {
      * item or til the data model changes (unlike other items that could be
      * removed when they go out of the visible range).
      *
-     * @return {cr.ui.ListItem}
+     * @return {cr.ui.ListItem} The lead item for the list.
      */
     ensureLeadItemExists: function() {
       var index = this.selectionModel.leadIndex;
@@ -1251,5 +1251,5 @@ cr.define('cr.ui', function() {
 
   return {
     List: List
-  }
+  };
 });
