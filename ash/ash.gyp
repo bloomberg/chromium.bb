@@ -202,6 +202,7 @@
         'wm/partial_screenshot_event_filter.h',
         'wm/partial_screenshot_view.cc',
         'wm/partial_screenshot_view.h',
+        'wm/shelf_auto_hide_behavior.h',
         'wm/system_modal_container_layout_manager.cc',
         'wm/system_modal_container_layout_manager.h',
         'wm/system_modal_container_event_filter.cc',

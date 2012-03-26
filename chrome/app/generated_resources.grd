@@ -15713,7 +15713,7 @@ Battery full
         Auto-hide
       </message>
       <message name="IDS_LAUNCHER_CONTEXT_MENU_NEVER_AUTO_HIDE" desc="Title of the menu item in the context menu for never auto-hiding">
-        Always visibile
+        Always visible
       </message>
       <message name="IDS_LAUNCHER_CONTEXT_MENU_AUTO_HIDE_WHEN_MAXIMIZED" desc="Title of the menu item in the context menu for auto-hiding when window is maximized">
         Hide when window is maximized

@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "ash/ash_export.h"
+#include "ash/wm/shelf_auto_hide_behavior.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
@@ -209,9 +210,9 @@ class ASH_EXPORT Shell {
   // Force the shelf to query for it's current visibility state.
   void UpdateShelfVisibility();
 
-  // Sets/gets whether the shelf always auto-hides.
-  void SetShelfAlwaysAutoHide(bool value);
-  bool GetShelfAlwaysAutoHide() const;
+  // Sets/gets the shelf auto-hide behavior.
+  void SetShelfAutoHideBehavior(ShelfAutoHideBehavior behavior);
+  ShelfAutoHideBehavior GetShelfAutoHideBehavior() const;
 
   // TODO(sky): don't expose this!
   internal::ShelfLayoutManager* shelf() const { return shelf_; }

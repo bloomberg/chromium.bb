@@ -670,8 +670,6 @@ extern const char kRestoreSessionStateDialogShown[];
 extern const char kWebIntentsEnabled[];
 
 #if defined(USE_AURA)
-extern const char kAlwaysAutoHideShelf[];
-
 extern const char kPinnedLauncherApps[];
 
 extern const char kMaximumSecondsBetweenDoubleClick[];
@@ -679,6 +677,9 @@ extern const char kMaximumTouchDownDurationInSecondsForClick[];
 extern const char kMaximumTouchMoveInPixelsForClick[];
 extern const char kMinFlickSpeedSquared[];
 extern const char kMinimumTouchDownDurationInSecondsForClick[];
+
+extern const char kShelfAutoHideBehavior[];
+
 #endif
 
 extern const char kInManagedMode[];

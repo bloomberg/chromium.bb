@@ -47,6 +47,11 @@ const char kAppTypePath[] = "type";
 const char kAppTypeTab[] = "tab";
 const char kAppTypeWindow[] = "window";
 
+// Values used for prefs::kShelfAutoHideBehavior.
+const char kShelfAutoHideBehaviorAlways[] = "Always";
+const char kShelfAutoHideBehaviorDefault[] = "Default";
+const char kShelfAutoHideBehaviorNever[] = "Never";
+
 }  // namespace
 
 // ChromeLauncherDelegate::Item ------------------------------------------------
@@ -115,8 +120,15 @@ void ChromeLauncherDelegate::Init() {
   }
   // TODO(sky): update unit test so that this test isn't necessary.
   if (ash::Shell::HasInstance()) {
-    ash::Shell::GetInstance()->SetShelfAlwaysAutoHide(
-        profile_->GetPrefs()->GetBoolean(prefs::kAlwaysAutoHideShelf));
+    std::string behavior_value(
+        profile_->GetPrefs()->GetString(prefs::kShelfAutoHideBehavior));
+    ash::ShelfAutoHideBehavior behavior =
+        ash::SHELF_AUTO_HIDE_BEHAVIOR_DEFAULT;
+    if (behavior_value == kShelfAutoHideBehaviorNever)
+      behavior = ash::SHELF_AUTO_HIDE_BEHAVIOR_NEVER;
+    else if (behavior_value == kShelfAutoHideBehaviorAlways)
+      behavior = ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS;
+    ash::Shell::GetInstance()->SetShelfAutoHideBehavior(behavior);
   }
 }
 
@@ -126,8 +138,9 @@ void ChromeLauncherDelegate::RegisterUserPrefs(PrefService* user_prefs) {
   // pushed to local state and we'll need to track profile per item.
   user_prefs->RegisterListPref(prefs::kPinnedLauncherApps,
                                PrefService::SYNCABLE_PREF);
-  user_prefs->RegisterBooleanPref(prefs::kAlwaysAutoHideShelf,
-                                  false, PrefService::SYNCABLE_PREF);
+  user_prefs->RegisterStringPref(prefs::kShelfAutoHideBehavior,
+                                 kShelfAutoHideBehaviorDefault,
+                                 PrefService::SYNCABLE_PREF);
 }
 
 ash::LauncherID ChromeLauncherDelegate::CreateTabbedLauncherItem(
@@ -342,6 +355,24 @@ void ChromeLauncherDelegate::UnpinAppsWithID(const std::string& app_id) {
     if (current->second.app_id == app_id && IsPinned(current->first))
       Unpin(current->first);
   }
+}
+
+void ChromeLauncherDelegate::SetAutoHideBehavior(
+    ash::ShelfAutoHideBehavior behavior) {
+  ash::Shell::GetInstance()->SetShelfAutoHideBehavior(behavior);
+  const char* value = NULL;
+  switch (behavior) {
+    case ash::SHELF_AUTO_HIDE_BEHAVIOR_DEFAULT:
+      value = kShelfAutoHideBehaviorDefault;
+      break;
+    case ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS:
+      value = kShelfAutoHideBehaviorAlways;
+      break;
+    case ash::SHELF_AUTO_HIDE_BEHAVIOR_NEVER:
+      value = kShelfAutoHideBehaviorNever;
+      break;
+  }
+  profile_->GetPrefs()->SetString(prefs::kShelfAutoHideBehavior, value);
 }
 
 void ChromeLauncherDelegate::CreateNewTab() {

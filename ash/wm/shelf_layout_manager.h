@@ -8,6 +8,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/launcher/launcher.h"
+#include "ash/wm/shelf_auto_hide_behavior.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/timer.h"
@@ -63,9 +64,11 @@ class ASH_EXPORT ShelfLayoutManager : public aura::LayoutManager {
   explicit ShelfLayoutManager(views::Widget* status);
   virtual ~ShelfLayoutManager();
 
-  // Sets whether the shelf always auto-hides. Default is false.
-  void SetAlwaysAutoHide(bool value);
-  bool always_auto_hide() const { return always_auto_hide_; }
+  // Sets the ShelfAutoHideBehavior. See enum description for details.
+  void SetAutoHideBehavior(ShelfAutoHideBehavior behavior);
+  ShelfAutoHideBehavior auto_hide_behavior() const {
+    return auto_hide_behavior_;
+  }
 
   void set_workspace_manager(WorkspaceManager* manager) {
     workspace_manager_ = manager;
@@ -174,7 +177,7 @@ class ASH_EXPORT ShelfLayoutManager : public aura::LayoutManager {
   bool in_layout_;
 
   // See description above setter.
-  bool always_auto_hide_;
+  ShelfAutoHideBehavior auto_hide_behavior_;
 
   // Current state.
   State state_;

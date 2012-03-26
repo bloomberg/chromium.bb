@@ -4,11 +4,7 @@
 
 #include "chrome/browser/ui/views/ash/launcher/launcher_context_menu.h"
 
-#include "ash/shell.h"
-#include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/views/ash/launcher/chrome_launcher_delegate.h"
-#include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -16,7 +12,8 @@ LauncherContextMenu::LauncherContextMenu(ChromeLauncherDelegate* delegate,
                                          const ash::LauncherItem* item)
     : ui::SimpleMenuModel(NULL),
       delegate_(delegate),
-      item_(item ? *item : ash::LauncherItem()) {
+      item_(item ? *item : ash::LauncherItem()),
+      shelf_menu_(delegate) {
   set_delegate(this);
 
   if (is_valid_item()) {
@@ -40,8 +37,9 @@ LauncherContextMenu::LauncherContextMenu(ChromeLauncherDelegate* delegate,
     }
     AddSeparator();
   }
-  AddCheckItemWithStringId(MENU_AUTO_HIDE,
-                           IDS_LAUNCHER_CONTEXT_MENU_AUTO_HIDE_SHELF);
+  AddSubMenuWithStringId(MENU_AUTO_HIDE,
+                         IDS_LAUNCHER_CONTEXT_MENU_SHELF_VISIBILITY,
+                         &shelf_menu_);
 }
 
 LauncherContextMenu::~LauncherContextMenu() {
@@ -49,8 +47,6 @@ LauncherContextMenu::~LauncherContextMenu() {
 
 bool LauncherContextMenu::IsCommandIdChecked(int command_id) const {
   switch (command_id) {
-    case MENU_AUTO_HIDE:
-      return ash::Shell::GetInstance()->GetShelfAlwaysAutoHide();
     case LAUNCH_TYPE_REGULAR_TAB:
       return delegate_->GetAppType(item_.id) ==
           ChromeLauncherDelegate::APP_TYPE_TAB;
@@ -90,11 +86,6 @@ void LauncherContextMenu::ExecuteCommand(int command_id) {
       delegate_->SetAppType(item_.id, ChromeLauncherDelegate::APP_TYPE_WINDOW);
       break;
     case MENU_AUTO_HIDE:
-      ash::Shell::GetInstance()->SetShelfAlwaysAutoHide(
-          !ash::Shell::GetInstance()->GetShelfAlwaysAutoHide());
-      delegate_->profile()->GetPrefs()->SetBoolean(
-          prefs::kAlwaysAutoHideShelf,
-          ash::Shell::GetInstance()->GetShelfAlwaysAutoHide());
       break;
   }
 }

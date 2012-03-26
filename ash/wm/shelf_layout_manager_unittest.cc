@@ -263,8 +263,8 @@ TEST_F(ShelfLayoutManagerTest, VisibleWhenLockScreenShowing) {
   EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE, shelf->visibility_state());
 }
 
-// Assertions around SetAlwaysAutoHide.
-TEST_F(ShelfLayoutManagerTest, SetAlwaysAutoHide) {
+// Assertions around SetAutoHideBehavior.
+TEST_F(ShelfLayoutManagerTest, SetAutoHideBehavior) {
   ShelfLayoutManager* shelf = GetShelfLayoutManager();
   views::Widget* widget = new views::Widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
@@ -272,12 +272,28 @@ TEST_F(ShelfLayoutManagerTest, SetAlwaysAutoHide) {
   // Widget is now owned by the parent window.
   widget->Init(params);
   widget->Show();
+  aura::Window* window = widget->GetNativeWindow();
+  gfx::Rect monitor_bounds(gfx::Screen::GetMonitorAreaNearestWindow(window));
+  EXPECT_EQ(monitor_bounds.bottom() - ShelfLayoutManager::kAutoHideHeight,
+            shelf->GetMaximizedWindowBounds(window).bottom());
   EXPECT_EQ(ShelfLayoutManager::VISIBLE, shelf->visibility_state());
 
-  shelf->SetAlwaysAutoHide(true);
+  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE, shelf->visibility_state());
+  EXPECT_EQ(monitor_bounds.bottom() - ShelfLayoutManager::kAutoHideHeight,
+            shelf->GetMaximizedWindowBounds(window).bottom());
 
-  shelf->SetAlwaysAutoHide(FALSE);
+  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_DEFAULT);
+  EXPECT_EQ(ShelfLayoutManager::VISIBLE, shelf->visibility_state());
+  EXPECT_EQ(monitor_bounds.bottom() - ShelfLayoutManager::kAutoHideHeight,
+            shelf->GetMaximizedWindowBounds(window).bottom());
+
+  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
+  EXPECT_EQ(ShelfLayoutManager::VISIBLE, shelf->visibility_state());
+  EXPECT_GT(monitor_bounds.bottom() - ShelfLayoutManager::kAutoHideHeight,
+            shelf->GetMaximizedWindowBounds(window).bottom());
+
+  widget->Maximize();
   EXPECT_EQ(ShelfLayoutManager::VISIBLE, shelf->visibility_state());
 }
 

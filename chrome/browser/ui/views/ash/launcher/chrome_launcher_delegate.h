@@ -12,6 +12,7 @@
 #include "ash/launcher/launcher_delegate.h"
 #include "ash/launcher/launcher_model_observer.h"
 #include "ash/launcher/launcher_types.h"
+#include "ash/wm/shelf_auto_hide_behavior.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
@@ -148,6 +149,8 @@ class ChromeLauncherDelegate : public ash::LauncherDelegate,
   ash::LauncherModel* model() { return model_; }
 
   Profile* profile() { return profile_; }
+
+  void SetAutoHideBehavior(ash::ShelfAutoHideBehavior behavior);
 
   // ash::LauncherDelegate overrides:
   virtual void CreateNewTab() OVERRIDE;

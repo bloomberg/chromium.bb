@@ -106,7 +106,7 @@ ShelfLayoutManager::AutoHideEventFilter::PreHandleGestureEvent(
 
 ShelfLayoutManager::ShelfLayoutManager(views::Widget* status)
     : in_layout_(false),
-      always_auto_hide_(false),
+      auto_hide_behavior_(SHELF_AUTO_HIDE_BEHAVIOR_DEFAULT),
       shelf_height_(status->GetWindowScreenBounds().height()),
       launcher_(NULL),
       status_(status),
@@ -117,10 +117,10 @@ ShelfLayoutManager::ShelfLayoutManager(views::Widget* status)
 ShelfLayoutManager::~ShelfLayoutManager() {
 }
 
-void ShelfLayoutManager::SetAlwaysAutoHide(bool value) {
-  if (always_auto_hide_ == value)
+void ShelfLayoutManager::SetAutoHideBehavior(ShelfAutoHideBehavior behavior) {
+  if (auto_hide_behavior_ == behavior)
     return;
-  always_auto_hide_ = value;
+  auto_hide_behavior_ = behavior;
   UpdateVisibilityState();
 }
 
@@ -128,8 +128,13 @@ gfx::Rect ShelfLayoutManager::GetMaximizedWindowBounds(
     aura::Window* window) const {
   // TODO: needs to be multi-mon aware.
   gfx::Rect bounds(gfx::Screen::GetMonitorAreaNearestWindow(window));
-  bounds.set_height(bounds.height() - kAutoHideHeight);
-  return bounds;
+  if (auto_hide_behavior_ == SHELF_AUTO_HIDE_BEHAVIOR_DEFAULT ||
+      auto_hide_behavior_ == SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS) {
+    bounds.set_height(bounds.height() - kAutoHideHeight);
+    return bounds;
+  }
+  // SHELF_AUTO_HIDE_BEHAVIOR_NEVER maximized windows don't get any taller.
+  return GetUnmaximizedWorkAreaBounds(window);
 }
 
 gfx::Rect ShelfLayoutManager::GetUnmaximizedWorkAreaBounds(
@@ -183,12 +188,14 @@ void ShelfLayoutManager::UpdateVisibilityState() {
         break;
 
       case WorkspaceManager::WINDOW_STATE_MAXIMIZED:
-        SetState(AUTO_HIDE);
+        SetState(auto_hide_behavior_ != SHELF_AUTO_HIDE_BEHAVIOR_NEVER ?
+                 AUTO_HIDE : VISIBLE);
         break;
 
       case WorkspaceManager::WINDOW_STATE_WINDOW_OVERLAPS_SHELF:
       case WorkspaceManager::WINDOW_STATE_DEFAULT:
-        SetState(always_auto_hide_ ? AUTO_HIDE : VISIBLE);
+        SetState(auto_hide_behavior_ == SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS ?
+                 AUTO_HIDE : VISIBLE);
         SetWindowOverlapsShelf(window_state ==
             WorkspaceManager::WINDOW_STATE_WINDOW_OVERLAPS_SHELF);
     }

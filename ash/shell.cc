@@ -854,12 +854,12 @@ void Shell::UpdateShelfVisibility() {
   shelf_->UpdateVisibilityState();
 }
 
-void Shell::SetShelfAlwaysAutoHide(bool value) {
-  shelf_->SetAlwaysAutoHide(value);
+void Shell::SetShelfAutoHideBehavior(ShelfAutoHideBehavior behavior) {
+  shelf_->SetAutoHideBehavior(behavior);
 }
 
-bool Shell::GetShelfAlwaysAutoHide() const {
-  return shelf_->always_auto_hide();
+ShelfAutoHideBehavior Shell::GetShelfAutoHideBehavior() const {
+  return shelf_->auto_hide_behavior();
 }
 
 int Shell::GetGridSize() const {
