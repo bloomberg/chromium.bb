@@ -21,6 +21,7 @@ const char* kHandledSettings[] = {
   kAccountsPrefUsers,
   kAccountsPrefEphemeralUsersEnabled,
   kDeviceOwner,
+  kPolicyMissingMitigationMode,
   kReleaseChannel,
   kReportDeviceVersionInfo,
   kReportDeviceActivityTimes,

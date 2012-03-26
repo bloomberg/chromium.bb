@@ -61,6 +61,10 @@ class CryptohomeClient {
   // This method blocks until the call returns.
   virtual bool IsMounted(bool* is_mounted) = 0;
 
+  // Calls Unmount method and returns true when the call succeeds.
+  // This method blocks until the call returns.
+  virtual bool Unmount(bool* success) = 0;
+
   // Calls AsyncCheckKey method.  |callback| is called after the method call
   // succeeds.
   virtual void AsyncCheckKey(const std::string& username,

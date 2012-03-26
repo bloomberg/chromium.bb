@@ -92,6 +92,9 @@ const char kCaptivePortalLaunchURL[] = "http://www.google.com/";
 // Delay for transferring the auth cache to the system profile.
 const long int kAuthCacheTransferDelayMs = 2000;
 
+// Delay for restarting the ui if safe-mode login has failed.
+const long int kSafeModeRestartUiDelayMs = 30000;
+
 // Makes a call to the policy subsystem to reload the policy when we detect
 // authentication change.
 void RefreshPoliciesOnUIThread() {
@@ -472,7 +475,15 @@ void ExistingUserController::OnLoginFailure(const LoginFailure& failure) {
   guest_mode_url_ = GURL::EmptyGURL();
   std::string error = failure.GetErrorString();
 
-  if (!online_succeeded_for_.empty()) {
+  if (failure.reason() == LoginFailure::OWNER_REQUIRED) {
+    ShowError(IDS_LOGIN_ERROR_OWNER_REQUIRED, error);
+    content::BrowserThread::PostDelayedTask(
+        content::BrowserThread::UI, FROM_HERE,
+        base::Bind(&SessionManagerClient::StopSession,
+                   base::Unretained(DBusThreadManager::Get()->
+                                    GetSessionManagerClient())),
+        kSafeModeRestartUiDelayMs);
+  } else if (!online_succeeded_for_.empty()) {
     ShowGaiaPasswordChanged(online_succeeded_for_);
   } else {
     // Check networking after trying to login in case user is

@@ -43,6 +43,8 @@ extern const char kIdleLogoutWarningDuration[];
 
 extern const char kStartUpUrls[];
 
+extern const char kPolicyMissingMitigationMode[];
+
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_CROS_SETTINGS_NAMES_H_

@@ -29,6 +29,7 @@ class LoginFailure {
     LOGIN_TIMED_OUT,
     UNLOCK_FAILED,
     NETWORK_AUTH_FAILED,  // Could not authenticate against Google
+    OWNER_REQUIRED,       // Only the device owner can log-in.
     NUM_FAILURE_REASONS,  // This has to be the last item.
   };
 
@@ -76,6 +77,8 @@ class LoginFailure {
           return net::ErrorToString(error_.network_error());
         }
         return "Google authentication failed.";
+      case OWNER_REQUIRED:
+        return "Login is restricted to the owner's account only.";
       default:
         NOTREACHED();
         return std::string();

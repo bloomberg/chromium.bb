@@ -26,7 +26,6 @@ class Profile;
 namespace chromeos {
 
 class LoginStatusConsumer;
-class ResolveChecker;
 
 // Authenticates a Chromium OS user against the Google Accounts ClientLogin API.
 //
@@ -63,7 +62,8 @@ class ParallelAuthenticator : public Authenticator,
     UNLOCK,          // Screen unlock succeeded.
     ONLINE_FAILED,   // Online login disallowed, but offline succeeded.
     GUEST_LOGIN,     // Logged in guest mode.
-    LOGIN_FAILED     // Login denied.
+    LOGIN_FAILED,    // Login denied.
+    OWNER_REQUIRED   // Login is restricted to the owner only.
   };
 
   explicit ParallelAuthenticator(LoginStatusConsumer* consumer);
@@ -199,11 +199,23 @@ class ParallelAuthenticator : public Authenticator,
     current_online_.reset(attempt);
   }
 
+  // Used for testing to set the expected state of an owner check.
+  void SetOwnerState(bool owner_check_finished, bool check_result);
+
   // If we don't have the system salt yet, loads it from the CryptohomeLibrary.
   void LoadSystemSalt();
   // If we don't have supplemental_user_key_ yet, loads it from the NSS DB.
   // Returns false if the key can not be loaded/created.
   bool LoadSupplementalUserKey();
+
+  // checks if the current mounted home contains the owner case and either
+  // continues or fails the log-in. Used for policy lost mitigation "safe-mode".
+  // Returns true if the owner check has been successful or if it is not needed.
+  bool VerifyOwner();
+
+  // checks if the current mounted home contains the owner case and either
+  // continues or fails the log-in. Used for policy lost mitigation "safe-mode".
+  void FinishVerifyOwnerOnFileThread();
 
   // Records OAuth1 access token verification failure for |user_account|.
   void RecordOAuthCheckFailure(const std::string& user_account);
@@ -228,11 +240,23 @@ class ParallelAuthenticator : public Authenticator,
   // This allows us to present the same behavior to the caller, regardless
   // of the order in which we receive these results.
   bool already_reported_success_;
-  base::Lock success_lock_;  // A lock around already_reported_success_.
+  base::Lock success_lock_;  // A lock around |already_reported_success_|.
+
+  // Flags signaling whether the owner verification has been done and the result
+  // of it.
+  bool owner_is_verified_;
+  bool user_can_login_;
+  // A lock for |owner_is_verified_| and |user_can_login_|.
+  base::Lock owner_verified_lock_;
 
   // True if we use OAuth-based authentication flow.
   bool using_oauth_;
 
+  FRIEND_TEST_ALL_PREFIXES(ParallelAuthenticatorTest,
+                           ResolveOwnerNeededDirectFailedMount);
+  FRIEND_TEST_ALL_PREFIXES(ParallelAuthenticatorTest, ResolveOwnerNeededMount);
+  FRIEND_TEST_ALL_PREFIXES(ParallelAuthenticatorTest,
+                           ResolveOwnerNeededFailedMount);
   DISALLOW_COPY_AND_ASSIGN(ParallelAuthenticator);
 };
 

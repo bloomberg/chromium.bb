@@ -18,10 +18,15 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/mock_cryptohome_library.h"
 #include "chrome/browser/chromeos/cros/mock_library_loader.h"
+#include "chrome/browser/chromeos/cros_settings.h"
 #include "chrome/browser/chromeos/cryptohome/mock_async_method_caller.h"
+#include "chrome/browser/chromeos/dbus/mock_dbus_thread_manager.h"
+#include "chrome/browser/chromeos/dbus/mock_cryptohome_client.h"
 #include "chrome/browser/chromeos/login/mock_login_status_consumer.h"
 #include "chrome/browser/chromeos/login/mock_url_fetchers.h"
+#include "chrome/browser/chromeos/login/mock_user_manager.h"
 #include "chrome/browser/chromeos/login/test_attempt_state.h"
+#include "chrome/browser/chromeos/stub_cros_settings_provider.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/net/gaia/mock_url_fetcher_factory.h"
 #include "chrome/test/base/testing_profile.h"
@@ -43,7 +48,7 @@ using ::testing::AnyNumber;
 using ::testing::DoAll;
 using ::testing::Invoke;
 using ::testing::Return;
-using ::testing::SetArgumentPointee;
+using ::testing::SetArgPointee;
 using ::testing::_;
 
 namespace chromeos {
@@ -61,6 +66,7 @@ class ParallelAuthenticatorTest : public testing::Test {
   ParallelAuthenticatorTest()
       : message_loop_(MessageLoop::TYPE_UI),
         ui_thread_(BrowserThread::UI, &message_loop_),
+        file_thread_(BrowserThread::FILE, &message_loop_),
         io_thread_(BrowserThread::IO),
         username_("me@nowhere.org"),
         password_("fakepass") {
@@ -90,6 +96,9 @@ class ParallelAuthenticatorTest : public testing::Test {
     mock_library_ = new MockCryptohomeLibrary();
     test_api->SetCryptohomeLibrary(mock_library_, true);
     io_thread_.Start();
+
+    EXPECT_CALL(*mock_user_manager_.user_manager(), LoadKeyStore())
+        .Times(AnyNumber());
 
     auth_ = new ParallelAuthenticator(&consumer_);
     auth_->set_using_oauth(false);
@@ -198,12 +207,17 @@ class ParallelAuthenticatorTest : public testing::Test {
     return auth->ResolveState();
   }
 
+  void SetOwnerState(bool owner_check_finished, bool check_result) {
+    auth_->SetOwnerState(owner_check_finished, check_result);
+  }
+
   void FakeOnlineAttempt() {
     auth_->set_online_attempt(new TestOnlineAttempt(state_.get(), auth_.get()));
   }
 
   MessageLoop message_loop_;
   content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread file_thread_;
   content::TestBrowserThread io_thread_;
 
   std::string username_;
@@ -216,6 +230,7 @@ class ParallelAuthenticatorTest : public testing::Test {
   // Mocks, destroyed by CrosLibrary class.
   MockCryptohomeLibrary* mock_library_;
   MockLibraryLoader* loader_;
+  ScopedMockUserManagerEnabler mock_user_manager_;
 
   cryptohome::MockAsyncMethodCaller* mock_caller_;
 
@@ -277,6 +292,85 @@ TEST_F(ParallelAuthenticatorTest, ResolveNeedOldPw) {
 
   EXPECT_EQ(ParallelAuthenticator::NEED_OLD_PW,
             SetAndResolveState(auth_, state_.release()));
+}
+
+TEST_F(ParallelAuthenticatorTest, ResolveOwnerNeededDirectFailedMount) {
+  // Set up state as though a cryptohome mount attempt has occurred
+  // and succeeded but we are in safe mode and the current user is not owner.
+  // This is a high level test to verify the proper transitioning in this mode
+  // only. It is not testing that we properly verify that the user is an owner
+  // or that we really are in "safe-mode".
+  state_->PresetCryptohomeStatus(true, cryptohome::MOUNT_ERROR_NONE);
+  SetOwnerState(true, false);
+
+  EXPECT_EQ(ParallelAuthenticator::OWNER_REQUIRED,
+            SetAndResolveState(auth_, state_.release()));
+}
+
+TEST_F(ParallelAuthenticatorTest, ResolveOwnerNeededMount) {
+  // Set up state as though a cryptohome mount attempt has occurred
+  // and succeeded but we are in safe mode and the current user is not owner.
+  // This test will check that the "safe-mode" policy is not set and will let
+  // the mount finish successfully.
+  state_->PresetCryptohomeStatus(true, cryptohome::MOUNT_ERROR_NONE);
+  SetOwnerState(false, false);
+  // and test that the mount has succeeded.
+  state_.reset(new TestAttemptState(username_,
+                                    password_,
+                                    hash_ascii_,
+                                    "",
+                                    "",
+                                    false));
+  state_->PresetCryptohomeStatus(true, cryptohome::MOUNT_ERROR_NONE);
+  EXPECT_EQ(ParallelAuthenticator::OFFLINE_LOGIN,
+            SetAndResolveState(auth_, state_.release()));
+}
+
+TEST_F(ParallelAuthenticatorTest, ResolveOwnerNeededFailedMount) {
+  FailOnLoginSuccess();  // Set failing on success as the default...
+  LoginFailure failure = LoginFailure(LoginFailure::OWNER_REQUIRED);
+  ExpectLoginFailure(failure);
+
+  MockDBusThreadManager* mock_dbus_thread_manager =
+      new MockDBusThreadManager;
+  DBusThreadManager::InitializeForTesting(mock_dbus_thread_manager);
+  EXPECT_CALL(*mock_dbus_thread_manager->mock_cryptohome_client(), Unmount(_))
+      .WillOnce(DoAll(SetArgPointee<0>(true), Return(true)));
+
+  CrosSettingsProvider* device_settings_provider;
+  StubCrosSettingsProvider stub_settings_provider;
+  // Set up state as though a cryptohome mount attempt has occurred
+  // and succeeded but we are in safe mode and the current user is not owner.
+  state_->PresetCryptohomeStatus(true, cryptohome::MOUNT_ERROR_NONE);
+  SetOwnerState(false, false);
+  // Remove the real DeviceSettingsProvider and replace it with a stub.
+  device_settings_provider =
+      CrosSettings::Get()->GetProvider(chromeos::kReportDeviceVersionInfo);
+  EXPECT_TRUE(device_settings_provider != NULL);
+  EXPECT_TRUE(
+      CrosSettings::Get()->RemoveSettingsProvider(device_settings_provider));
+  CrosSettings::Get()->AddSettingsProvider(&stub_settings_provider);
+  CrosSettings::Get()->SetBoolean(kPolicyMissingMitigationMode, true);
+
+  EXPECT_EQ(ParallelAuthenticator::CONTINUE,
+            SetAndResolveState(auth_, state_.release()));
+  // Let the owner verification run on the FILE thread...
+  message_loop_.RunAllPending();
+  // and test that the mount has succeeded.
+  state_.reset(new TestAttemptState(username_,
+                                    password_,
+                                    hash_ascii_,
+                                    "",
+                                    "",
+                                    false));
+  state_->PresetCryptohomeStatus(true, cryptohome::MOUNT_ERROR_NONE);
+  EXPECT_EQ(ParallelAuthenticator::OWNER_REQUIRED,
+            SetAndResolveState(auth_, state_.release()));
+
+  EXPECT_TRUE(
+      CrosSettings::Get()->RemoveSettingsProvider(&stub_settings_provider));
+  CrosSettings::Get()->AddSettingsProvider(device_settings_provider);
+  DBusThreadManager::Get()->Shutdown();
 }
 
 TEST_F(ParallelAuthenticatorTest, DriveFailedMount) {

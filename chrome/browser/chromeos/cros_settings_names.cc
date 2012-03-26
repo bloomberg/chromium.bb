@@ -68,4 +68,8 @@ const char kIdleLogoutWarningDuration[] = "cros.idle_logout.warning_duration";
 // if the device is in KIOSK mode.
 const char kStartUpUrls[] = "cros.start_up_urls";
 
+// This policy should not appear in the protobuf ever but is used internally to
+// signal that we are running in a "safe-mode" for policy recovery.
+const char kPolicyMissingMitigationMode[] =
+    "cros.internal.policy_mitigation_mode";
 }  // namespace chromeos

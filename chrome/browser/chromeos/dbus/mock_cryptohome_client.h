@@ -21,6 +21,7 @@ class MockCryptohomeClient : public CryptohomeClient {
   MOCK_METHOD1(SetAsyncCallStatusHandler, void(AsyncCallStatusHandler handler));
   MOCK_METHOD0(ResetAsyncCallStatusHandler, void());
   MOCK_METHOD1(IsMounted, bool(bool* is_mounted));
+  MOCK_METHOD1(Unmount, bool(bool* success));
   MOCK_METHOD3(AsyncCheckKey,
                void(const std::string& username,
                     const std::string& key,

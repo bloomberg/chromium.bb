@@ -15104,6 +15104,9 @@ Battery full
       <message name="IDS_LOGIN_ERROR_CAPTIVE_PORTAL" desc="An error message shown when we suggest that user may be behind the captive portal.">
         Before signing in, please enter as Guest to activate the network <ph name="NETWORK_ID">$1<ex>Public Wifi</ex></ph>
       </message>
+      <message name="IDS_LOGIN_ERROR_OWNER_REQUIRED" desc="Couldn't sign in because the machine is in policy safe mode and needs owner login">
+        Login has been resticted to the owner account only. Please reboot and sign in with the owner account. The machine will auto reboot in 30 seconds.
+      </message>
       <message name="IDS_LOGIN_FIX_CAPTIVE_PORTAL" desc="An link text to fix Internet connection (captive portal) in guest mode.">
         Enter as Guest
       </message>

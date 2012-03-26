@@ -288,6 +288,7 @@ UserManagerImpl::UserManagerImpl()
       is_current_user_owner_(false),
       is_current_user_new_(false),
       is_current_user_ephemeral_(false),
+      key_store_loaded_(false),
       ephemeral_users_enabled_(false),
       observed_sync_service_(NULL),
       last_image_set_async_(false),
@@ -880,6 +881,19 @@ void UserManagerImpl::NotifyOnLogin() {
       content::Source<UserManagerImpl>(this),
       content::Details<const User>(logged_in_user_));
 
+  LoadKeyStore();
+
+  // Schedules current user ownership check on file thread.
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+                          base::Bind(&UserManagerImpl::CheckOwnership,
+                                     base::Unretained(this)));
+}
+
+void UserManagerImpl::LoadKeyStore() {
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (key_store_loaded_)
+    return;
+
   // Ensure we've opened the real user's key/certificate database.
   crypto::OpenPersistentNSSDB();
 
@@ -894,11 +908,7 @@ void UserManagerImpl::NotifyOnLogin() {
     // Note: this calls crypto::EnsureTPMTokenReady()
     cert_library->RequestCertificates();
   }
-
-  // Schedules current user ownership check on file thread.
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-                          base::Bind(&UserManagerImpl::CheckOwnership,
-                                     base::Unretained(this)));
+  key_store_loaded_ = true;
 }
 
 void UserManagerImpl::SetInitialUserImage(const std::string& username) {

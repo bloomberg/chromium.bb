@@ -99,6 +99,12 @@ class CryptohomeClientImpl : public CryptohomeClient {
   }
 
   // CryptohomeClient override.
+  virtual bool Unmount(bool *success) OVERRIDE {
+    INITIALIZE_METHOD_CALL(method_call, cryptohome::kCryptohomeUnmount);
+    return CallMethodAndBlock(&method_call, base::Bind(&PopBool, success));
+  }
+
+  // CryptohomeClient override.
   virtual void AsyncCheckKey(const std::string& username,
                              const std::string& key,
                              AsyncMethodCallback callback) OVERRIDE {
@@ -461,6 +467,12 @@ class CryptohomeClientStubImpl : public CryptohomeClient {
   // CryptohomeClient override.
   virtual bool IsMounted(bool* is_mounted) OVERRIDE {
     *is_mounted = true;
+    return true;
+  }
+
+  // CryptohomeClient override.
+  virtual bool Unmount(bool* success) OVERRIDE {
+    *success = true;
     return true;
   }
 

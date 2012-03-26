@@ -14,7 +14,10 @@
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
+#include "chrome/browser/chromeos/cros_settings.h"
 #include "chrome/browser/chromeos/cryptohome/async_method_caller.h"
+#include "chrome/browser/chromeos/dbus/cryptohome_client.h"
+#include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
 #include "chrome/browser/chromeos/login/authentication_notification_details.h"
 #include "chrome/browser/chromeos/login/login_status_consumer.h"
 #include "chrome/browser/chromeos/login/ownership_service.h"
@@ -169,6 +172,8 @@ ParallelAuthenticator::ParallelAuthenticator(LoginStatusConsumer* consumer)
       mount_guest_attempted_(false),
       check_key_attempted_(false),
       already_reported_success_(false),
+      owner_is_verified_(false),
+      user_can_login_(false),
       using_oauth_(
           !CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kSkipOAuthLogin)) {
@@ -195,6 +200,12 @@ void ParallelAuthenticator::AuthenticateToLogin(
           login_token,
           login_captcha,
           !UserManager::Get()->IsKnownUser(canonicalized)));
+  {
+    // Reset the verified flag.
+    base::AutoLock for_this_block(owner_verified_lock_);
+    owner_is_verified_ = false;
+  }
+
   const bool create_if_missing = false;
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
@@ -202,7 +213,6 @@ void ParallelAuthenticator::AuthenticateToLogin(
                  current_state_.get(),
                  static_cast<AuthAttemptStateResolver*>(this),
                  create_if_missing));
-
   // ClientLogin authentication check should happen immediately here.
   // We should not try OAuthLogin check until the profile loads.
   if (!using_oauth_) {
@@ -225,6 +235,12 @@ void ParallelAuthenticator::CompleteLogin(Profile* profile,
           password,
           CrosLibrary::Get()->GetCryptohomeLibrary()->HashPassword(password),
           !UserManager::Get()->IsKnownUser(canonicalized)));
+  {
+    // Reset the verified flag.
+    base::AutoLock for_this_block(owner_verified_lock_);
+    owner_is_verified_ = false;
+  }
+
   const bool create_if_missing = false;
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
@@ -375,6 +391,39 @@ void ParallelAuthenticator::ResyncEncryptedData() {
       base::Bind(&Remove,
                  current_state_.get(),
                  static_cast<AuthAttemptStateResolver*>(this)));
+}
+
+bool ParallelAuthenticator::VerifyOwner() {
+  base::AutoLock for_this_block(owner_verified_lock_);
+  if (owner_is_verified_)
+    return true;
+  // Check if policy data is fine and continue in safe mode if needed.
+  bool is_safe_mode = false;
+  CrosSettings::Get()->GetBoolean(kPolicyMissingMitigationMode, &is_safe_mode);
+  if (!is_safe_mode) {
+    // Now we can continue with the login and report mount success.
+    user_can_login_ = true;
+    owner_is_verified_ = true;
+    return true;
+  }
+  // First we have to make sure the current user's cert store is available.
+  UserManager::Get()->LoadKeyStore();
+  // Now we can continue reading the private key.
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&ParallelAuthenticator::FinishVerifyOwnerOnFileThread, this));
+  return false;
+}
+
+void ParallelAuthenticator::FinishVerifyOwnerOnFileThread() {
+  base::AutoLock for_this_block(owner_verified_lock_);
+  // Now we can check if this user is the owner.
+  user_can_login_ =
+      OwnershipService::GetSharedInstance()->IsCurrentUserOwner();
+  owner_is_verified_ = true;
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&ParallelAuthenticator::Resolve, this));
 }
 
 void ParallelAuthenticator::RetryAuth(Profile* profile,
@@ -546,6 +595,22 @@ void ParallelAuthenticator::Resolve() {
                                   this,
                                   current_state_->online_outcome()));
       break;
+    case OWNER_REQUIRED: {
+      current_state_->ResetCryptohomeStatus();
+      bool success = false;
+      DBusThreadManager::Get()->GetCryptohomeClient()->Unmount(&success);
+      if (!success) {
+        // Maybe we should reboot immediately here?
+        LOG(ERROR) << "Couldn't unmount users home!";
+      }
+      BrowserThread::PostTask(BrowserThread::UI,
+                              FROM_HERE,
+                              base::Bind(
+                                  &ParallelAuthenticator::OnLoginFailure,
+                                  this,
+                                  LoginFailure(LoginFailure::OWNER_REQUIRED)));
+      break;
+    }
     default:
       NOTREACHED();
       break;
@@ -665,7 +730,10 @@ ParallelAuthenticator::ResolveCryptohomeSuccessState() {
     return RECOVER_MOUNT;
   if (check_key_attempted_)
     return UNLOCK;
-  return OFFLINE_LOGIN;
+
+  if (!VerifyOwner())
+    return CONTINUE;
+  return user_can_login_ ? OFFLINE_LOGIN : OWNER_REQUIRED;
 }
 
 ParallelAuthenticator::AuthState
@@ -708,6 +776,13 @@ void ParallelAuthenticator::ResolveLoginCompletionStatus() {
   // Shortcut online state resolution process.
   current_state_->RecordOnlineLoginStatus(LoginFailure::None());
   Resolve();
+}
+
+void ParallelAuthenticator::SetOwnerState(bool owner_check_finished,
+                                          bool check_result) {
+  base::AutoLock for_this_block(owner_verified_lock_);
+  owner_is_verified_ = owner_check_finished;
+  user_can_login_ = check_result;
 }
 
 }  // namespace chromeos

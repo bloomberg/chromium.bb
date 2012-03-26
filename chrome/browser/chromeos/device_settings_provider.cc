@@ -22,6 +22,8 @@
 #include "chrome/browser/chromeos/login/signed_settings_helper.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/policy/app_pack_updater.h"
+#include "chrome/browser/policy/browser_policy_connector.h"
+#include "chrome/browser/policy/cloud_policy_constants.h"
 #include "chrome/browser/ui/options/options_util.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/installer/util/google_update_settings.h"
@@ -46,6 +48,7 @@ const char* kKnownSettings[] = {
   kDeviceOwner,
   kIdleLogoutTimeout,
   kIdleLogoutWarningDuration,
+  kPolicyMissingMitigationMode,
   kReleaseChannel,
   kReleaseChannelDelegated,
   kReportDeviceActivityTimes,
@@ -604,40 +607,38 @@ void DeviceSettingsProvider::ApplySideEffects() const {
 }
 
 bool DeviceSettingsProvider::MitigateMissingPolicy() {
-  // As this code runs only in exceptional cases it's fine to allow I/O here.
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
-  FilePath legacy_policy_file(kLegacyPolicyFile);
-  // Check if legacy file exists but is not writable to avoid possible
-  // attack of creating this file through chronos (although this should be
-  // not possible in root owned location), but better be safe than sorry.
-  // TODO(pastarmovj): Remove this workaround once we have proper checking
-  // for policy corruption or when Cr48 is phased out the very latest.
-  // See: http://crosbug.com/24916.
-  if (file_util::PathExists(legacy_policy_file) &&
-      !file_util::PathIsWritable(legacy_policy_file)) {
-    // We are in pre 11 dev upgrading to post 17 version mode.
-    LOG(ERROR) << "Detected system upgraded from ChromeOS 11 or older with "
-               << "missing policies. Switching to migration policy mode "
-               << "until the owner logs in to regenerate the policy data.";
-    // In this situation we should pretend we have policy even though we
-    // don't until the owner logs in and restores the policy blob.
-    values_cache_.SetBoolean(kAccountsPrefAllowNewUser, true);
-    values_cache_.SetBoolean(kAccountsPrefAllowGuest, true);
-    trusted_ = true;
-    // Make sure we will recreate the policy once the owner logs in.
-    // Any value not in this list will be left to the default which is fine as
-    // we repopulate the whitelist with the owner and any other possible every
-    // time the user enables whitelist filtering on the UI.
-    migration_helper_->AddMigrationValue(
-        kAccountsPrefAllowNewUser, base::Value::CreateBooleanValue(true));
-    migration_helper_->MigrateValues();
-    // The last step is to pretend we loaded policy correctly and call everyone.
-    for (size_t i = 0; i < callbacks_.size(); ++i)
-      callbacks_[i].Run();
-    callbacks_.clear();
-    return true;
+  // First check if the device has been owned already and if not exit
+  // immediately.
+  if (g_browser_process->browser_policy_connector()->GetDeviceMode() !=
+      policy::DEVICE_MODE_CONSUMER) {
+    return false;
   }
-  return false;
+
+  // If we are here the policy file were corrupted or missing. This can happen
+  // because we are migrating Pre R11 device to the new secure policies or there
+  // was an attempt to circumvent policy system. In this case we should populate
+  // the policy cache with "safe-mode" defaults which should allow the owner to
+  // log in but lock the device for anyone else until the policy blob has been
+  // recreated by the session manager.
+  LOG(ERROR) << "Corruption of the policy data has been detected."
+             << "Switching to \"safe-mode\" policies until the owner logs in "
+             << "to regenerate the policy data.";
+  values_cache_.SetBoolean(kAccountsPrefAllowNewUser, true);
+  values_cache_.SetBoolean(kAccountsPrefAllowGuest, true);
+  values_cache_.SetBoolean(kPolicyMissingMitigationMode, true);
+  trusted_ = true;
+  // Make sure we will recreate the policy once the owner logs in.
+  // Any value not in this list will be left to the default which is fine as
+  // we repopulate the whitelist with the owner and all other existing users
+  // every time the owner enables whitelist filtering on the UI.
+  migration_helper_->AddMigrationValue(
+      kAccountsPrefAllowNewUser, base::Value::CreateBooleanValue(true));
+  migration_helper_->MigrateValues();
+  // The last step is to pretend we loaded policy correctly and call everyone.
+  for (size_t i = 0; i < callbacks_.size(); ++i)
+    callbacks_[i].Run();
+  callbacks_.clear();
+  return true;
 }
 
 const base::Value* DeviceSettingsProvider::Get(const std::string& path) const {
@@ -708,8 +709,6 @@ void DeviceSettingsProvider::OnRetrievePolicyCompleted(
       break;
     }
     case SignedSettings::NOT_FOUND:
-      // Verify if we don't have to mitigate pre Chrome 12 machine here and if
-      // needed do the magic.
       if (MitigateMissingPolicy())
         break;
     case SignedSettings::KEY_UNAVAILABLE: {
