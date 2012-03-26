@@ -3513,6 +3513,8 @@ void Browser::ActiveTabChanged(TabContentsWrapper* old_contents,
         base::TERMINATION_STATUS_PROCESS_WAS_KILLED) {
     const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
     if (parsed_command_line.HasSwitch(switches::kReloadKilledTabs)) {
+      // Log to track down crash crbug.com/119068
+      LOG(WARNING) << "Reloading killed tab at " << index;
       Reload(CURRENT_TAB);
       return;
     }
