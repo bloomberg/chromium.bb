@@ -173,6 +173,11 @@ class CppTypeGenerator(object):
       for type_ in types:
         c.Append('struct %s;' % type_)
       c.Append('}')
+    c.Concat(self.GetNamespaceStart())
+    for (name, type_) in self._namespace.types.items():
+      if not type_.functions:
+        c.Append('struct %s;' % name)
+    c.Concat(self.GetNamespaceEnd())
     return c
 
   def GenerateIncludes(self):

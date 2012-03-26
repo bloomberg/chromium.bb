@@ -65,7 +65,7 @@ class HGenerator(object):
         .Append('//')
         .Append()
       )
-      for type_ in self._namespace.types.values():
+      for type_ in self._FieldDependencyOrder():
         (c.Concat(self._GenerateType(type_))
           .Append()
         )
@@ -86,6 +86,26 @@ class HGenerator(object):
       .Append()
     )
     return c
+
+  def _FieldDependencyOrder(self):
+    """Generates the list of types in the current namespace in an order in which
+    depended-upon types appear before types which depend on them.
+    """
+    dependency_order = []
+
+    def ExpandType(path, type_):
+      if type_ in path:
+        raise ValueError("Illegal circular dependency via cycle " +
+                         ", ".join(map(lambda x: x.name, path + [type_])))
+      for prop in type_.properties.values():
+        if not prop.optional and prop.type_ == PropertyType.REF:
+          ExpandType(path + [type_], self._namespace.types[prop.ref_type])
+      if not type_ in dependency_order:
+        dependency_order.append(type_)
+
+    for type_ in self._namespace.types.values():
+      ExpandType([], type_)
+    return dependency_order
 
   def _GenerateEnumDeclaration(self, enum_name, prop, values):
     """Generate the declaration of a C++ enum for the given property and
