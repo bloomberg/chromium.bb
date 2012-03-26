@@ -216,6 +216,14 @@ Value* GetFeatureStatus() {
           false
       },
       {
+          "css_animation",
+          flags & content::GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING,
+          command_line.HasSwitch(switches::kDisableThreadedAnimation) ||
+          command_line.HasSwitch(switches::kDisableAcceleratedCompositing),
+          "Accelerated CSS animation has been disabled at the command line.",
+          true
+      },
+      {
           "webgl",
           flags & content::GPU_FEATURE_TYPE_WEBGL,
           command_line.HasSwitch(switches::kDisableExperimentalWebGL),
@@ -241,10 +249,14 @@ Value* GetFeatureStatus() {
       std::string status;
       if (kGpuFeatureInfo[i].disabled) {
         status = "disabled";
-        if (kGpuFeatureInfo[i].fallback_to_software)
-          status += "_software";
-        else
-          status += "_off";
+        if (kGpuFeatureInfo[i].name == "css_animation") {
+          status += "_software_animated";
+        } else {
+          if (kGpuFeatureInfo[i].fallback_to_software)
+            status += "_software";
+          else
+            status += "_off";
+        }
       } else if (GpuDataManager::GetInstance()->ShouldUseSoftwareRendering()) {
         status = "unavailable_software";
       } else if (kGpuFeatureInfo[i].blocked ||
@@ -260,6 +272,23 @@ Value* GetFeatureStatus() {
             (command_line.HasSwitch(switches::kDisableAcceleratedCompositing) ||
              (flags & content::GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING)))
           status += "_readback";
+        bool has_thread = CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableThreadedCompositing) &&
+            (!CommandLine::ForCurrentProcess()->HasSwitch(
+                switches::kDisableThreadedCompositing));
+        if (kGpuFeatureInfo[i].name == "compositing" &&
+            CommandLine::ForCurrentProcess()->HasSwitch(
+                switches::kForceCompositingMode))
+          status += "_force";
+        if (kGpuFeatureInfo[i].name == "compositing" &&
+            has_thread)
+          status += "_threaded";
+        if (kGpuFeatureInfo[i].name == "css_animation") {
+          if (has_thread)
+            status = "accelerated_threaded";
+          else
+            status = "accelerated";
+        }
       }
       feature_status_list->Append(
           NewStatusValue(kGpuFeatureInfo[i].name.c_str(), status.c_str()));

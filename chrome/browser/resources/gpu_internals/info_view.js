@@ -76,27 +76,43 @@ cr.define('gpu', function() {
       var featureLabelMap = {
         '2d_canvas': 'Canvas',
         '3d_css': '3D CSS',
-        'compositing': 'HTML Rendering',
+        'css_animation': 'CSS Animation',
+        'compositing': 'Compositing',
         'webgl': 'WebGL',
         'multisampling': 'WebGL multisampling'
       };
       var statusLabelMap = {
         'disabled_software': 'Software only. Hardware acceleration disabled.',
+        'disabled_software_animated': 'Software animated.',
         'disabled_off': 'Unavailable. Hardware acceleration disabled.',
         'software': 'Software rendered. Hardware acceleration not enabled.',
         'unavailable_off': 'Unavailable. Hardware acceleration unavailable',
         'unavailable_software':
             'Software only, hardware acceleration unavailable',
         'enabled_readback': 'Hardware accelerated, but at reduced performance',
-        'enabled': 'Hardware accelerated'
+        'enabled_force': 'Hardware accelerated on all pages',
+        'enabled_threaded': 'Hardware accelerated on demand and threaded',
+        'enabled_force_threaded':
+            'Hardware accelerated on all pages and threaded',
+        'enabled': 'Hardware accelerated',
+        'accelerated': 'Accelerated',
+        'accelerated_threaded': 'Accelerated and threaded'
       };
+
       var statusClassMap = {
         'disabled_software': 'feature-yellow',
+        'disabled_software_animated': 'feature-yellow',
         'disabled_off': 'feature-red',
         'software': 'feature-yellow',
         'unavailable_off': 'feature-red',
         'unavailable_software': 'feature-yellow',
-        'enabled': 'feature-green'
+        'enabled_force': 'feature-green',
+        'enabled_readback': 'feature-yellow',
+        'enabled_threaded': 'feature-green',
+        'enabled_force_threaded': 'feature-green',
+        'enabled': 'feature-green',
+        'accelerated': 'feature-green',
+        'accelerated_threaded': 'feature-green'
       };
 
       // GPU info, basic
