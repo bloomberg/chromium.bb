@@ -11,6 +11,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
+#include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/browser/chromeos/login/screen_observer.h"
 #include "chrome/browser/policy/auto_enrollment_client.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
@@ -52,7 +53,7 @@ EnterpriseEnrollmentScreen::~EnterpriseEnrollmentScreen() {}
 void EnterpriseEnrollmentScreen::SetParameters(bool is_auto_enrollment,
                                                const std::string& user) {
   is_auto_enrollment_ = is_auto_enrollment;
-  user_ = user;
+  user_ = user.empty() ? user : Authenticator::Canonicalize(user);
 }
 
 void EnterpriseEnrollmentScreen::PrepareToShow() {
@@ -72,7 +73,7 @@ void EnterpriseEnrollmentScreen::Hide() {
 void EnterpriseEnrollmentScreen::OnOAuthTokenAvailable(
     const std::string& user,
     const std::string& token) {
-  user_ = user;
+  user_ = Authenticator::Canonicalize(user);
   RegisterForDevicePolicy(token);
 }
 

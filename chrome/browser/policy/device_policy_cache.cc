@@ -18,6 +18,7 @@
 #include "chrome/browser/chromeos/cros_settings.h"
 #include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
 #include "chrome/browser/chromeos/dbus/update_engine_client.h"
+#include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/browser/chromeos/login/ownership_service.h"
 #include "chrome/browser/chromeos/login/signed_settings_helper.h"
 #include "chrome/browser/policy/app_pack_updater.h"
@@ -169,7 +170,10 @@ bool DevicePolicyCache::SetPolicy(const em::PolicyFetchResponse& policy) {
     return false;
   }
 
-  if (registration_user != policy_data.username()) {
+  // Existing installations may not have a canonicalized version of the
+  // registration user name in install attributes, so re-canonicalize here.
+  if (chromeos::Authenticator::Canonicalize(registration_user) !=
+      chromeos::Authenticator::Canonicalize(policy_data.username())) {
     LOG(WARNING) << "Refusing policy blob for " << policy_data.username()
                  << " which doesn't match " << registration_user;
     UMA_HISTOGRAM_ENUMERATION(kMetricPolicy, kMetricPolicyFetchUserMismatch,
