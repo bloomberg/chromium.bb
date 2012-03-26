@@ -772,24 +772,18 @@ void MenuGtk::OnSubMenuShow(GtkWidget* submenu) {
 }
 
 void MenuGtk::OnSubMenuHidden(GtkWidget* submenu) {
-  GtkWidget* menu_item = static_cast<GtkWidget*>(
-      g_object_get_data(G_OBJECT(submenu), "menu-item"));
-
-  // Increase the reference count of the old submenu. We get this hide
-  // notification before we've actually processed menu activations, so if we
-  // were to end up deleting the submenu now, we might lose the activation. We
-  // post a task to delete it later, after the activation has been processed.
+  // Increase the reference count of the old submenu, and schedule it to be
+  // deleted later. We get this hide notification before we've processed menu
+  // activations, so if we were to delete the submenu now, we might lose the
+  // activation. Note that we disconnect it from the parent menu item below.
   g_object_ref(G_OBJECT(submenu));
   MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&MenuGtk::OnSubMenuHiddenCallback, submenu));
 
-  // Notify the submenu model that the menu has been hidden.
-  ui::MenuModel* submenu_model = static_cast<ui::MenuModel*>(
-      g_object_get_data(G_OBJECT(menu_item), "submenu-model"));
-  submenu_model->MenuClosed();
-
   // Build a new submenu, which will be populated when it is next shown.
+  GtkWidget* menu_item = static_cast<GtkWidget*>(
+      g_object_get_data(G_OBJECT(submenu), "menu-item"));
   submenu = gtk_menu_new();
   g_object_set_data(G_OBJECT(submenu), "menu-item", menu_item);
   gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_item), submenu);
@@ -799,7 +793,14 @@ void MenuGtk::OnSubMenuHidden(GtkWidget* submenu) {
 
 // static
 void MenuGtk::OnSubMenuHiddenCallback(GtkWidget* submenu) {
-  // See OnSubMenuHidden() above.
+  // Notify the submenu model that the menu has been hidden.
+  GtkWidget* menu_item = static_cast<GtkWidget*>(
+      g_object_get_data(G_OBJECT(submenu), "menu-item"));
+  ui::MenuModel* submenu_model = static_cast<ui::MenuModel*>(
+      g_object_get_data(G_OBJECT(menu_item), "submenu-model"));
+  submenu_model->MenuClosed();
+
+  // Remove the reference we grabbed in OnSubMenuHidden() above.
   g_object_unref(G_OBJECT(submenu));
 }
 
