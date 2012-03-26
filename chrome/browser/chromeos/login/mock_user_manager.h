@@ -68,6 +68,20 @@ class MockUserManager : public UserManager {
   User* user_;
 };
 
+// Class that provides easy life-cycle management for mocking the UserManager
+// for tests.
+class ScopedMockUserManagerEnabler {
+ public:
+  ScopedMockUserManagerEnabler();
+  ~ScopedMockUserManagerEnabler();
+
+  MockUserManager* user_manager();
+
+ private:
+  UserManager* old_user_manager_;
+  scoped_ptr<MockUserManager> user_manager_;
+};
+
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_LOGIN_MOCK_USER_MANAGER_H_

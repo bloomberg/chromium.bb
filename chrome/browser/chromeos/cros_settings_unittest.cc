@@ -44,9 +44,7 @@ class CrosSettingsTest : public testing::Test {
   }
 
   virtual void SetUp() {
-    mock_user_manager_.reset(new MockUserManager());
-    old_user_manager_ = UserManager::Set(mock_user_manager_.get());
-    EXPECT_CALL(*mock_user_manager_, IsCurrentUserOwner())
+    EXPECT_CALL(*mock_user_manager_.user_manager(), IsCurrentUserOwner())
         .Times(AnyNumber())
         .WillRepeatedly(Return(true));
     // Reset the cache between tests.
@@ -59,7 +57,6 @@ class CrosSettingsTest : public testing::Test {
     // Reset the cache between tests.
     ApplyEmptyPolicy();
     STLDeleteValues(&expected_props_);
-    UserManager::Set(old_user_manager_);
   }
 
   void FetchPref(const std::string& pref) {
@@ -123,8 +120,7 @@ class CrosSettingsTest : public testing::Test {
 
   ScopedTestingLocalState local_state_;
 
-  scoped_ptr<MockUserManager> mock_user_manager_;
-  UserManager* old_user_manager_;
+  ScopedMockUserManagerEnabler mock_user_manager_;
   ScopedStubCrosEnabler stub_cros_enabler_;
 };
 

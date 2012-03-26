@@ -182,9 +182,8 @@ TEST_F(BrowserCommandsTest, BackForwardInNewTab) {
 namespace chromeos {
 
 TEST_F(BrowserCommandsTest, Search) {
-  scoped_ptr<MockUserManager> mock_user_manager(new MockUserManager());
-  UserManager* old_user_manager = UserManager::Set(mock_user_manager.get());
-  EXPECT_CALL(*mock_user_manager, IsLoggedInAsGuest())
+  ScopedMockUserManagerEnabler mock_user_manager;
+  EXPECT_CALL(*mock_user_manager.user_manager(), IsLoggedInAsGuest())
       .Times(1).WillRepeatedly(::testing::Return(false));
 
   // Load a non-NTP URL.
@@ -208,8 +207,6 @@ TEST_F(BrowserCommandsTest, Search) {
   current_url = browser()->GetSelectedWebContents()->GetURL();
   EXPECT_TRUE(current_url.SchemeIs(chrome::kChromeUIScheme));
   EXPECT_EQ(chrome::kChromeUINewTabHost, current_url.host());
-
-  UserManager::Set(old_user_manager);
 }
 
 }  // namespace chromeos

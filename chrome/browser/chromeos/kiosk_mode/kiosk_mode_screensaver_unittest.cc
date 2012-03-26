@@ -46,9 +46,7 @@ class KioskModeScreensaverTest : public testing::Test {
   }
 
   virtual void SetUp() OVERRIDE {
-    mock_user_manager_.reset(new MockUserManager());
-    old_user_manager_ = UserManager::Set(mock_user_manager_.get());
-    EXPECT_CALL(*mock_user_manager_, IsUserLoggedIn())
+    EXPECT_CALL(*mock_user_manager_.user_manager(), IsUserLoggedIn())
         .Times(AnyNumber())
         .WillRepeatedly(Return(false));
 
@@ -74,7 +72,6 @@ class KioskModeScreensaverTest : public testing::Test {
 
   virtual void TearDown() OVERRIDE {
     delete screensaver_;
-    UserManager::Set(old_user_manager_);
     DBusThreadManager::Shutdown();
   }
 
@@ -94,8 +91,7 @@ class KioskModeScreensaverTest : public testing::Test {
   MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
 
-  scoped_ptr<MockUserManager> mock_user_manager_;
-  UserManager* old_user_manager_;
+  ScopedMockUserManagerEnabler mock_user_manager_;
 
   KioskModeScreensaver* screensaver_;
   content::NotificationRegistrar registrar_;

@@ -100,7 +100,6 @@ class ExistingUserControllerTest : public CrosInProcessBrowserTest {
         mock_network_library_(NULL),
         mock_login_display_(NULL),
         mock_login_display_host_(NULL),
-        mock_user_manager_(NULL),
         testing_profile_(NULL) {
   }
 
@@ -145,18 +144,16 @@ class ExistingUserControllerTest : public CrosInProcessBrowserTest {
     mock_login_display_.reset(new MockLoginDisplay());
     mock_login_display_host_.reset(new MockLoginDisplayHost());
 
-    mock_user_manager_.reset(new MockUserManager());
-    old_user_manager_ = UserManager::Set(mock_user_manager_.get());
-    EXPECT_CALL(*mock_user_manager_, IsKnownUser(kUsername))
+    EXPECT_CALL(*mock_user_manager_.user_manager(), IsKnownUser(kUsername))
         .Times(AnyNumber())
         .WillRepeatedly(Return(true));
-    EXPECT_CALL(*mock_user_manager_, IsKnownUser(kNewUsername))
+    EXPECT_CALL(*mock_user_manager_.user_manager(), IsKnownUser(kNewUsername))
         .Times(AnyNumber())
         .WillRepeatedly(Return(false));
-    EXPECT_CALL(*mock_user_manager_, IsUserLoggedIn())
+    EXPECT_CALL(*mock_user_manager_.user_manager(), IsUserLoggedIn())
         .Times(AnyNumber())
         .WillRepeatedly(Return(false));
-    EXPECT_CALL(*mock_user_manager_, IsLoggedInAsGuest())
+    EXPECT_CALL(*mock_user_manager_.user_manager(), IsLoggedInAsGuest())
         .Times(AnyNumber())
         .WillRepeatedly(Return(false));
 
@@ -182,7 +179,6 @@ class ExistingUserControllerTest : public CrosInProcessBrowserTest {
   }
 
   virtual void TearDownInProcessBrowserTestFixture() OVERRIDE {
-    UserManager::Set(old_user_manager_);
     CrosInProcessBrowserTest::TearDownInProcessBrowserTestFixture();
     DBusThreadManager::Shutdown();
   }
@@ -194,9 +190,7 @@ class ExistingUserControllerTest : public CrosInProcessBrowserTest {
   scoped_ptr<MockLoginDisplay> mock_login_display_;
   scoped_ptr<MockLoginDisplayHost> mock_login_display_host_;
 
-  // Owned by UserManagerImplWrapper.
-  scoped_ptr<MockUserManager> mock_user_manager_;
-  UserManager* old_user_manager_;
+  ScopedMockUserManagerEnabler mock_user_manager_;
 
   // Owned by LoginUtilsWrapper.
   MockLoginUtils* mock_login_utils_;

@@ -885,11 +885,10 @@ TEST_F(OncNetworkParserTest, TestProxySettingsManual) {
 }
 
 TEST(OncNetworkParserUserExpansionTest, GetUserExpandedValue) {
-  scoped_ptr<MockUserManager> mock_user_manager(new MockUserManager());
-  UserManager* old_user_manager = UserManager::Set(mock_user_manager.get());
-  mock_user_manager->SetLoggedInUser("onc@example.com", false);
+  ScopedMockUserManagerEnabler mock_user_manager;
+  mock_user_manager.user_manager()->SetLoggedInUser("onc@example.com", false);
 
-  EXPECT_CALL(*mock_user_manager, IsUserLoggedIn())
+  EXPECT_CALL(*mock_user_manager.user_manager(), IsUserLoggedIn())
       .Times(2)
       .WillRepeatedly(Return(false));
 
@@ -914,7 +913,7 @@ TEST(OncNetworkParserUserExpansionTest, GetUserExpandedValue) {
                 login_email_pattern, source));
 
   // Log in a user and check that the expansions work as expected.
-  EXPECT_CALL(*mock_user_manager, IsUserLoggedIn())
+  EXPECT_CALL(*mock_user_manager.user_manager(), IsUserLoggedIn())
       .Times(2)
       .WillRepeatedly(Return(true));
 
@@ -924,8 +923,6 @@ TEST(OncNetworkParserUserExpansionTest, GetUserExpandedValue) {
   EXPECT_EQ("a onc@example.com b",
             chromeos::OncNetworkParser::GetUserExpandedValue(
                 login_email_pattern, source));
-
-  UserManager::Set(old_user_manager);
 }
 
 }  // namespace chromeos
