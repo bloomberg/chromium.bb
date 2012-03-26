@@ -183,20 +183,6 @@
       updates the contents is defined by the buffer factory interface
     </description>
 
-    <request name="damage">
-      <description summary="mark part of the buffer damaged">
-	Notify the server that the specified area of the buffers
-	contents have changed.  To describe a more complicated area of
-	damage, break down the region into rectangles and use this
-	request several times.
-      </description>
-
-      <arg name="x" type="int"/>
-      <arg name="y" type="int"/>
-      <arg name="width" type="int"/>
-      <arg name="height" type="int"/>
-    </request>
-
     <request name="destroy" type="destructor">
       <description summary="destroy a buffer">
 	Destroy a buffer.  This will invalidate the object id.

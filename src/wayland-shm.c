@@ -33,13 +33,8 @@
 
 #include "wayland-server.h"
 
-struct wl_shm {
-	const struct wl_shm_callbacks *callbacks;
-};
-
 struct wl_shm_buffer {
 	struct wl_buffer buffer;
-	struct wl_shm *shm;
 	int32_t stride;
 	uint32_t format;
 	void *data;
@@ -53,19 +48,7 @@ destroy_buffer(struct wl_resource *resource)
 
 	munmap(buffer->data, buffer->stride * buffer->buffer.height);
 
-	buffer->shm->callbacks->buffer_destroyed(&buffer->buffer);
-
 	free(buffer);
-}
-
-static void
-shm_buffer_damage(struct wl_client *client, struct wl_resource *resource,
-		  int32_t x, int32_t y, int32_t width, int32_t height)
-{
-	struct wl_shm_buffer *buffer = resource->data;
-
-	buffer->shm->callbacks->buffer_damaged(&buffer->buffer, x, y,
-					       width, height);
 }
 
 static void
@@ -75,12 +58,11 @@ shm_buffer_destroy(struct wl_client *client, struct wl_resource *resource)
 }
 
 const static struct wl_buffer_interface shm_buffer_interface = {
-	shm_buffer_damage,
 	shm_buffer_destroy
 };
 
 static struct wl_shm_buffer *
-wl_shm_buffer_init(struct wl_shm *shm, struct wl_client *client, uint32_t id,
+wl_shm_buffer_init(struct wl_client *client, uint32_t id,
 		   int32_t width, int32_t height,
 		   int32_t stride, uint32_t format, void *data)
 {
@@ -105,10 +87,6 @@ wl_shm_buffer_init(struct wl_shm *shm, struct wl_client *client, uint32_t id,
 	buffer->buffer.resource.client = client;
 	buffer->buffer.resource.destroy = destroy_buffer;
 
-	buffer->shm = shm;
-	
-	buffer->shm->callbacks->buffer_created(&buffer->buffer);
-
 	return buffer;
 }
 
@@ -117,7 +95,6 @@ shm_create_buffer(struct wl_client *client, struct wl_resource *resource,
 		  uint32_t id, int fd, int32_t width, int32_t height,
 		  uint32_t stride, uint32_t format)
 {
-	struct wl_shm *shm = resource->data;
 	struct wl_shm_buffer *buffer;
 	void *data;
 
@@ -154,7 +131,7 @@ shm_create_buffer(struct wl_client *client, struct wl_resource *resource,
 		return;
 	}
 
-	buffer = wl_shm_buffer_init(shm, client, id,
+	buffer = wl_shm_buffer_init(client, id,
 				    width, height, stride, format, data);
 	if (buffer == NULL) {
 		munmap(data, stride * height);
@@ -182,34 +159,13 @@ bind_shm(struct wl_client *client,
 	wl_shm_send_format(resource, WL_SHM_FORMAT_XRGB8888);
 }
 
-WL_EXPORT struct wl_shm *
-wl_shm_init(struct wl_display *display,
-	    const struct wl_shm_callbacks *callbacks)
+WL_EXPORT int
+wl_display_init_shm(struct wl_display *display)
 {
-	struct wl_shm *shm;
+	if (!wl_display_add_global(display, &wl_shm_interface, NULL, bind_shm))
+		return -1;
 
-	shm = malloc(sizeof *shm);
-	if (!shm)
-		return NULL;
-
-	if (!wl_display_add_global(display,
-				   &wl_shm_interface, shm, bind_shm)) {
-
-		free(shm);
-		return NULL;
-	}
-
-	shm->callbacks = callbacks;
-
-	return shm;
-}
-
-WL_EXPORT void
-wl_shm_finish(struct wl_shm *shm)
-{
-	/* FIXME: add wl_display_del_{object,global} */
-
-	free(shm);
+	return 0;
 }
 
 WL_EXPORT int

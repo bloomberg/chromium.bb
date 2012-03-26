@@ -36,10 +36,6 @@ Core wayland protocol
    is something in the protocol/architecute that makes it harder than
    it should be.
 
- - Remove wl_buffer.damage.  This is only used for wl_shm buffers and
-   is not a generic wl_buffer request.  We move it to wl_shm, and
-   we'll have to figure out how to get swrast to call it.
-
  - Reconsider data types for coordinates in events.  double, floats or
    fixed point.  Transformed and/or accelerated input generates
    sub-pixel positions.  24.8 fixed point could work.  Need to think

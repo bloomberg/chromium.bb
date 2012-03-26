@@ -339,12 +339,11 @@ wl_shm_buffer_create(struct wl_shm *shm, int width, int height,
 int
 wl_buffer_is_shm(struct wl_buffer *buffer);
 
-struct wl_shm *
-wl_shm_init(struct wl_display *display,
-	    const struct wl_shm_callbacks *callbacks);
+int
+wl_display_init_shm(struct wl_display *display);
 
 void
-wl_shm_finish(struct wl_shm *shm);
+wl_shm_finish(struct wl_display *display);
 
 #ifdef  __cplusplus
 }
