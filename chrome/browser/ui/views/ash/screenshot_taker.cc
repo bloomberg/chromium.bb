@@ -117,7 +117,9 @@ void ScreenshotTaker::HandleTakeScreenshot(aura::Window* window) {
 
 void ScreenshotTaker::CloseVisualFeedbackLayer(const base::Closure& task) {
   visual_feedback_layer_.reset();
-  task.Run();
+  // Hide the visual feedback immediately because |task| may take a long time
+  // to finish.
+  MessageLoopForUI::current()->PostTask(FROM_HERE, task);
 }
 
 void ScreenshotTaker::DisplayVisualFeedback(const gfx::Rect& rect,
