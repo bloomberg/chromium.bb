@@ -367,10 +367,8 @@ mode-buildbot-arm() {
   scons-tests "arm" "${mode} -k" "small_tests medium_tests large_tests"
 
   # Run tests in pexe mode
-  scons-tests-no-translator "arm" "${mode} -j4 -k pnacl_generate_pexe=1" \
+  scons-tests-no-translator "arm" "${mode} -k pnacl_generate_pexe=1" \
     "toolchain_tests"
-  scons-tests-translator "arm" \
-    "--mode=opt-host,nacl -j4 -k pnacl_generate_pexe=1" "toolchain_tests"
 
   # Full test suite of translator for ARM is too flaky on QEMU
   # http://code.google.com/p/nativeclient/issues/detail?id=2581
@@ -401,8 +399,6 @@ mode-buildbot-arm-hw() {
   scons-tests-no-translator "arm" "${flags} -k" \
      "small_tests medium_tests large_tests"
   scons-tests-no-translator "arm" "${flags} -k pnacl_generate_pexe=1" \
-    "toolchain_tests"
-  scons-tests-translator "arm" "${flags} -k -j2 pnacl_generate_pexe=1" \
     "toolchain_tests"
   browser-tests "arm" "${flags}"
 }

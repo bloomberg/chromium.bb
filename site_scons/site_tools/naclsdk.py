@@ -230,8 +230,6 @@ def _SetEnvForPnacl(env, root):
   else:
     subroot = root + '/newlib'
 
-  translator_root = os.path.join(os.path.dirname(root), 'pnacl_translator')
-
   binprefix = os.path.join(subroot, 'bin', 'pnacl-')
   binext = ''
   if env.Bit('host_windows'):
@@ -256,12 +254,7 @@ def _SetEnvForPnacl(env, root):
   pnacl_as = binprefix + 'as' + binext
   pnacl_nm = binprefix + 'nm' + binext
   pnacl_ranlib = binprefix + 'ranlib' + binext
-  # Use the standalone sandboxed translator in sbtc mode
-  if env.Bit('use_sandboxed_translator'):
-    pnacl_translate = os.path.join(translator_root, 'bin',
-                                   'pnacl-translate' + binext)
-  else:
-    pnacl_translate = binprefix + 'translate' + binext
+  pnacl_translate = binprefix + 'translate' + binext
 
   frontend = env['PNACL_FRONTEND']
   if frontend == 'clang':
@@ -342,7 +335,9 @@ def _SetEnvForPnacl(env, root):
       print 'Not installing', dest
     env.Replace(CC='true', CXX='true', LINK='true', AR='true',
                 RANLIB='true', AS='true', LD='true',
-                STRIP='true', INSTALL=FakeInstall)
+                STRIP='true', INSTALL=FakeInstall,
+                #TODO(dschuff) remove this when we can translate on arm hw
+                TRANSLATE='true')
 
 
 def _SetEnvForSdkManually(env):
@@ -415,8 +410,7 @@ def PNaClGetNNaClEnv(env):
                        CFLAGS=env['CFLAGS'],
                        CXXFLAGS=env['CXXFLAGS'])
   if env.Bit('built_elsewhere'):
-    native_env.Replace(CC='true', CXX='true', LINK='true', LD='true',
-                       AR='true', RANLIB='true')
+    native_env.Replace(CC='true', CXX='true', LINK='true', LD='true')
   return native_env
 
 
