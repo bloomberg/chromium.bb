@@ -384,7 +384,10 @@ void RequestLocalFileSystemFunction::AddGDataMountPoint() {
   // Grant R/W permission for tmp and pinned cache folder.
   gdata::GDataSystemService* system_service =
       gdata::GDataSystemServiceFactory::GetForProfile(profile_);
-  DCHECK(system_service);
+  // |system_service| is NULL if incognito window / guest login.
+  if (!system_service)
+    return;
+
   gdata::GDataFileSystem* gdata_file_system = system_service->file_system();
 
   // We check permissions for raw cache file paths only for read-only
