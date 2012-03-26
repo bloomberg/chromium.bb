@@ -3655,17 +3655,18 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     return self._GetResultFromJSONRequest(cmd_dict)
 
   def GetPolicyDefinitionList(self):
-    """Gets a dictionary of existing policies mapped to their value types.
+    """Gets a dictionary of existing policies mapped to their definitions.
 
     SAMPLE OUTPUT:
     {
-      'ShowHomeButton': 'bool',
-      'DefaultSearchProviderSearchURL': 'str',
+      'ShowHomeButton': ['bool', false],
+      'DefaultSearchProviderSearchURL': ['str', false],
       ...
     }
 
     Returns:
-      A dictionary mapping policy names to their value types.
+      A dictionary mapping each policy name to its value type and a Boolean flag
+      indicating whether it is a device policy.
     """
     cmd_dict = {
         'command': 'GetPolicyDefinitionList'

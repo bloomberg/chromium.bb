@@ -149,13 +149,13 @@ class PolicyPrefsUITest(policy_base.PolicyTestBase):
           'chrome/test/functional/policy_prefs_ui.py.\n'
           'Please edit the file and add an entry for this policy.' % policy)
       test_type = type(PolicyPrefsTestCases.policies[policy][0]).__name__
-      expected_type = all_policies[policy]
+      expected_type = all_policies[policy][0]
       self.assertEqual(expected_type, test_type, msg=
           'Policy "%s" has type "%s" but the test value has type "%s".' %
               (policy, expected_type, test_type))
 
   def testTogglePolicyTogglesBanner(self):
-    """Verifies that toggling a policy also toggles the banner's visitiblity."""
+    """Verifies that toggling a policy also toggles the banner's visibility."""
     # |policy| just has to be any policy that has at least a settings page that
     # displays the banner when the policy is set.
     policy = 'ShowHomeButton'

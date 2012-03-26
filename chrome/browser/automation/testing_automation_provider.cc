@@ -6281,7 +6281,12 @@ void TestingAutomationProvider::GetPolicyDefinitionList(
       reply.SendError(error + entry->name);
       return;
     }
-    response.SetString(entry->name, types[entry->value_type]);
+    Value* type = Value::CreateStringValue(types[entry->value_type]);
+    Value* device_policy = Value::CreateBooleanValue(entry->device_policy);
+    ListValue* definition = new ListValue;
+    definition->Append(type);
+    definition->Append(device_policy);
+    response.Set(entry->name, definition);
   }
 
   reply.SendSuccess(&response);

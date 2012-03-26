@@ -84,8 +84,8 @@ def _GetPolicyDetails(policy):
   # platforms is a list of 'chrome', 'chrome_os' and/or 'chrome_frame'.
   platforms = [ x.split(':')[0] for x in policy['supported_on'] ]
   is_deprecated = policy.get('deprecated', False)
-  return (name, vtype, platforms, is_deprecated)
-
+  is_device_policy = policy.get('device_only', False)
+  return (name, vtype, platforms, is_deprecated, is_device_policy)
 
 def _GetPolicyList(template_file_contents):
   policies = []
@@ -102,16 +102,16 @@ def _GetPolicyList(template_file_contents):
 
 
 def _GetPolicyNameList(template_file_contents):
-  return [name for (name, _, _, _) in _GetPolicyList(template_file_contents)]
-
+  return [name for (name, _, _, _, _) in _GetPolicyList(template_file_contents)]
 
 def _GetChromePolicyList(template_file_contents):
-  return [(name, platforms, vtype) for (name, vtype, platforms, _)
-                                   in _GetPolicyList(template_file_contents)]
+  return [(name, platforms, vtype, is_device_policy)
+      for (name, vtype, platforms, _, is_device_policy)
+      in _GetPolicyList(template_file_contents)]
 
 
 def _GetDeprecatedPolicyList(template_file_contents):
-  return [name for (name, _, _, is_deprecated)
+  return [name for (name, _, _, is_deprecated, _)
                in _GetPolicyList(template_file_contents)
                if is_deprecated]
 
@@ -152,6 +152,7 @@ def _WritePolicyConstantHeader(template_file_contents, args, opts):
             '  struct Entry {\n'
             '    const char* name;\n'
             '    base::Value::Type value_type;\n'
+            '    bool device_policy;\n'
             '  };\n'
             '\n'
             '  const Entry* begin;\n'
@@ -196,9 +197,10 @@ def _WritePolicyConstantSource(template_file_contents, args, opts):
 
     f.write('const PolicyDefinitionList::Entry kEntries[] = {\n')
     policy_list = _GetChromePolicyList(template_file_contents)
-    for (name, platforms, vtype) in policy_list:
+    for (name, platforms, vtype, device_policy) in policy_list:
       if (platform in platforms) or (platform_wildcard in platforms):
-        f.write('  { key::k%s, Value::%s },\n' % (name, vtype))
+        f.write('  { key::k%s, Value::%s, %s },\n' %
+            (name, vtype, 'true' if device_policy else 'false'))
     f.write('};\n\n')
 
     f.write('const PolicyDefinitionList kChromePolicyList = {\n'
