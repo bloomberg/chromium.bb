@@ -90,6 +90,14 @@ class DomAutomationController : public CppBoundClass {
   // This function does not modify/escape the returned string in any way.
   void SendJSON(const CppArgumentList& args, CppVariant* result);
 
+  // Sends a string with a provided Automation Id.
+  // Expects two javascript values; the first must be a number type and will be
+  // used as the Automation Id, the second must be of type NPString.
+  // The function returns true/false to the javascript based on the success
+  // of the send over IPC. It sets the javascript return value to null on
+  // unexpected errors or arguments.
+  void SendWithId(const CppArgumentList& args, CppVariant* result);
+
   void SetAutomationId(const CppArgumentList& args, CppVariant* result);
 
   // TODO(vibhor): Implement later

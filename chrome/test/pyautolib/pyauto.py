@@ -2831,12 +2831,24 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     return self._GetResultFromJSONRequest(cmd_dict, windex=windex,
                                           timeout=timeout)
 
-  def AddDomRaisedEventObserver(self, event_name=''):
+  def AddDomRaisedEventObserver(self, event_name='', automation_id=-1,
+                                recurring=True):
     """Adds a DomRaisedEventObserver associated with the AutomationEventQueue.
 
+    An app raises a matching event in Javascript by calling:
+    window.domAutomationController.sendWithId(automation_id, event_name)
+
     Args:
-      event_name: The raised event name to watch for. By default all raised
-                  events are observed.
+      event_name: The event name to watch for. By default an event is raised
+                  for every message.
+      automation_id: The Automation Id of the sent message. By default all
+                     messages sent from the window.domAutomationController are
+                     observed. Note that other PyAuto functions also send
+                     messages through window.domAutomationController with
+                     arbirary Automation Ids and they will be observed.
+      recurring: If False the observer will be removed after it generates one
+                 event, otherwise it will continue observing and generating
+                 events until explicity removed with RemoveEventObserver(id).
 
     Returns:
       The id of the created observer, which can be used with GetNextEvent(id)
@@ -2845,11 +2857,11 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     Raises:
       pyauto_errors.JSONInterfaceError if the automation call returns an error.
     """
-    # TODO(craigdh): Add documentation for raising an event once it has been
-    #                implemented.
     cmd_dict = {
       'command': 'AddDomRaisedEventObserver',
       'event_name': event_name,
+      'automation_id': automation_id,
+      'recurring': recurring,
     }
     return self._GetResultFromJSONRequest(cmd_dict, windex=None)['observer_id']
 

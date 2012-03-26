@@ -6465,8 +6465,18 @@ void TestingAutomationProvider::AddDomRaisedEventObserver(
 
   AutomationJSONReply reply(this, reply_message);
   std::string event_name;
+  int automation_id;
+  bool recurring;
   if (!args->GetString("event_name", &event_name)) {
     reply.SendError("'event_name' missing or invalid");
+    return;
+  }
+  if (!args->GetInteger("automation_id", &automation_id)) {
+    reply.SendError("'automation_id' missing or invalid");
+    return;
+  }
+  if (!args->GetBoolean("recurring", &recurring)) {
+    reply.SendError("'recurring' missing or invalid");
     return;
   }
 
@@ -6474,7 +6484,10 @@ void TestingAutomationProvider::AddDomRaisedEventObserver(
     automation_event_queue_.reset(new AutomationEventQueue);
 
   int observer_id = automation_event_queue_->AddObserver(
-      new DomRaisedEventObserver(automation_event_queue_.get(), event_name));
+      new DomRaisedEventObserver(automation_event_queue_.get(),
+                                 event_name,
+                                 automation_id,
+                                 recurring));
   scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
   return_value->SetInteger("observer_id", observer_id);
   reply.SendSuccess(return_value.get());
@@ -6521,7 +6534,7 @@ void TestingAutomationProvider::GetNextEvent(
   }
   if (!automation_event_queue_.get()) {
     reply->SendError(
-        "No observers are attached to the queue. Did you forget to add one?");
+        "No observers are attached to the queue. Did you create any?");
     return;
   }
 

@@ -16,38 +16,47 @@
 // AutomationEvent into the AutomationEventQueue for each occurance.
 class AutomationEventObserver {
  public:
-  explicit AutomationEventObserver(AutomationEventQueue* event_queue);
+  explicit AutomationEventObserver(AutomationEventQueue* event_queue,
+                                   bool recurring);
   virtual ~AutomationEventObserver();
 
   void Init(int observer_id);
   void NotifyEvent(DictionaryValue* value);
   int GetId() const;
 
+ protected:
+  void RemoveIfDone();  // This may delete the object.
+
  private:
   AutomationEventQueue* event_queue_;
+  bool recurring_;
   int observer_id_;
+  // TODO(craigdh): Add a PyAuto hook to retrieve the number of times an event
+  // has occurred.
+  int event_count_;
 
   DISALLOW_COPY_AND_ASSIGN(AutomationEventObserver);
 };
 
 // AutomationEventObserver implementation that listens for explicitly raised
-// events. A webpage currently raises events by calling:
-// window.domAutomationController.setAutomationId(42); // Any integer works.
-// window.domAutomationController("EVENT_NAME");
-// TODO(craigdh): This method is a temporary hack.
+// events. A webpage explicitly raises events by calling:
+// window.domAutomationController.raiseEvent("EVENT_NAME");
 class DomRaisedEventObserver
-    : public AutomationEventObserver, public DomOperationObserver {
+    : public AutomationEventObserver, public content::NotificationObserver {
  public:
   DomRaisedEventObserver(AutomationEventQueue* event_queue,
-                         const std::string& event_name);
+                         const std::string& event_name,
+                         int automation_id,
+                         bool recurring);
   virtual ~DomRaisedEventObserver();
 
-  virtual void OnDomOperationCompleted(const std::string& json) OVERRIDE;
-  virtual void OnModalDialogShown() OVERRIDE;
-  virtual void OnJavascriptBlocked() OVERRIDE;
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   std::string event_name_;
+  int automation_id_;
   content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(DomRaisedEventObserver);
