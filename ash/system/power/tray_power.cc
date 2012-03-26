@@ -127,7 +127,7 @@ class PowerPopupView : public views::Label {
     int hour = time.InHours();
     int min = (time - base::TimeDelta::FromHours(hour)).InMinutes();
     ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-    if (hour && min) {
+    if (hour || min) {
       SetText(l10n_util::GetStringFUTF16(IDS_ASH_STATUS_TRAY_BATTERY_STATUS,
           base::IntToString16(
               static_cast<int>(supply_status_.battery_percentage)),
