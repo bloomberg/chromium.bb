@@ -30,6 +30,9 @@
 #endif  // USE_VIRTUAL_KEYBOARD
 
 namespace chromeos {
+
+extern const char* kExtensionImePrefix;
+
 namespace input_method {
 
 namespace {
@@ -191,6 +194,13 @@ TEST_F(InputMethodUtilTest, TestStringIsSupported) {
 TEST_F(InputMethodUtilTest, TestIsKeyboardLayout) {
   EXPECT_TRUE(InputMethodUtil::IsKeyboardLayout("xkb:us::eng"));
   EXPECT_FALSE(InputMethodUtil::IsKeyboardLayout("mozc"));
+}
+
+TEST_F(InputMethodUtilTest, TestExtensionInputMethod) {
+  EXPECT_TRUE(InputMethodUtil::IsExtensionInputMethod(
+      kExtensionImePrefix + std::string("123abc")));
+  EXPECT_FALSE(InputMethodUtil::IsExtensionInputMethod(""));
+  EXPECT_FALSE(InputMethodUtil::IsExtensionInputMethod("mozc"));
 }
 
 TEST_F(InputMethodUtilTest, TestGetKeyboardLayoutName) {

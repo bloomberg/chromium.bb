@@ -64,6 +64,9 @@ const size_t kMappingFromIdToIndicatorTextLen =
 }
 
 namespace chromeos {
+
+extern const char* kExtensionImePrefix;
+
 namespace input_method {
 
 namespace {
@@ -327,6 +330,15 @@ bool InputMethodUtil::IsKeyboardLayout(const std::string& input_method_id) {
   return StartsWithASCII(input_method_id, "xkb:", kCaseInsensitive);
 }
 
+// static
+bool InputMethodUtil::IsExtensionInputMethod(
+    const std::string& input_method_id) {
+  const bool kCaseInsensitive = false;
+  return StartsWithASCII(input_method_id,
+                         kExtensionImePrefix,
+                         kCaseInsensitive);
+}
+
 std::string InputMethodUtil::GetLanguageCodeFromInputMethodId(
     const std::string& input_method_id) const {
   // The code should be compatible with one of codes used for UI languages,
@@ -351,7 +363,8 @@ std::string InputMethodUtil::GetKeyboardLayoutName(
 std::string InputMethodUtil::GetInputMethodDisplayNameFromId(
     const std::string& input_method_id) const {
   string16 display_name;
-  if (TranslateStringInternal(input_method_id, &display_name)) {
+  if (!IsExtensionInputMethod(input_method_id) &&
+      TranslateStringInternal(input_method_id, &display_name)) {
     return UTF16ToUTF8(display_name);
   }
   // Return an empty string if the display name is not found.
