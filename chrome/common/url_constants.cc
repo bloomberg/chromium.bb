@@ -241,9 +241,7 @@ const char kChromeUITabModalConfirmDialogHost[] = "tab-modal-confirm-dialog";
 // Add sub page paths to kChromeSettingsSubPages in builtin_provider.cc to be
 // listed by the built-in AutocompleteProvider.
 const char kAboutOptionsSubPage[] = "about";
-const char kAdvancedOptionsSubPage[] = "advanced";
 const char kAutofillSubPage[] = "autofill";
-const char kBrowserOptionsSubPage[] = "browser";
 const char kClearBrowserDataSubPage[] = "clearBrowserData";
 const char kContentSettingsExceptionsSubPage[] = "contentExceptions";
 const char kContentSettingsSubPage[] = "content";
@@ -254,8 +252,8 @@ const char kInstantConfirmPage[] = "instantConfirm";
 const char kLanguageOptionsSubPage[] = "languages";
 const char kManageProfileSubPage[] = "manageProfile";
 const char kPasswordManagerSubPage[] = "passwords";
-const char kPersonalOptionsSubPage[] = "personal";
 const char kSearchEnginesSubPage[] = "searchEngines";
+const char kSearchSubPage[] = "search";
 const char kSyncSetupSubPage[] = "syncSetup";
 const char kSyncSetupForceLoginSubPage[] = "syncSetup#forceLogin";
 #if defined(OS_CHROMEOS)

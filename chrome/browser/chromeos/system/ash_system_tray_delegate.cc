@@ -250,7 +250,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   }
 
   virtual void ShowDateSettings() OVERRIDE {
-    GetAppropriateBrowser()->OpenAdvancedOptionsDialog();
+    GetAppropriateBrowser()->ShowDateOptions();
   }
 
   virtual void ShowNetworkSettings() OVERRIDE {

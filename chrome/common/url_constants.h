@@ -230,9 +230,7 @@ extern const char kChromeUITabModalConfirmDialogHost[];
 
 // Options sub-pages.
 extern const char kAboutOptionsSubPage[];
-extern const char kAdvancedOptionsSubPage[];
 extern const char kAutofillSubPage[];
-extern const char kBrowserOptionsSubPage[];
 extern const char kClearBrowserDataSubPage[];
 extern const char kContentSettingsExceptionsSubPage[];
 extern const char kContentSettingsSubPage[];
@@ -243,8 +241,8 @@ extern const char kInstantConfirmPage[];
 extern const char kLanguageOptionsSubPage[];
 extern const char kManageProfileSubPage[];
 extern const char kPasswordManagerSubPage[];
-extern const char kPersonalOptionsSubPage[];
 extern const char kSearchEnginesSubPage[];
+extern const char kSearchSubPage[];
 extern const char kSyncSetupForceLoginSubPage[];
 extern const char kSyncSetupSubPage[];
 #if defined(OS_CHROMEOS)

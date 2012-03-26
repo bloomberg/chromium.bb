@@ -30,7 +30,7 @@ class StatusAreaButton : public views::MenuButton {
     enum Command {
       SHOW_LANGUAGE_OPTIONS,
       SHOW_NETWORK_OPTIONS,
-      SHOW_ADVANCED_OPTIONS
+      SHOW_DATE_OPTIONS
     };
 
     // |command_id| can be any int, passed from the button to the delegate.

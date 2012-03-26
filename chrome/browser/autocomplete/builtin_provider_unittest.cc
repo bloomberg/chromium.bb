@@ -201,12 +201,12 @@ TEST_F(BuiltinProviderTest, ChromeSettingsSubpages) {
   // This makes assumptions about the chrome URLs listed by the BuiltinProvider.
   // Currently they are derived from ChromePaths() in browser_about_handler.cc.
   const string16 kSettings = ASCIIToUTF16(chrome::kChromeUISettingsURL);
-  const string16 kDefaultPage1 = ASCIIToUTF16(chrome::kAdvancedOptionsSubPage);
-  const string16 kDefaultPage2 = ASCIIToUTF16(chrome::kAutofillSubPage);
+  const string16 kDefaultPage1 = ASCIIToUTF16(chrome::kAutofillSubPage);
+  const string16 kDefaultPage2 = ASCIIToUTF16(chrome::kClearBrowserDataSubPage);
   const GURL kDefaultURL1 = GURL(kSettings + kDefaultPage1);
   const GURL kDefaultURL2 = GURL(kSettings + kDefaultPage2);
-  const string16 kPage1 = ASCIIToUTF16(chrome::kPersonalOptionsSubPage);
-  const string16 kPage2 = ASCIIToUTF16(chrome::kPasswordManagerSubPage);
+  const string16 kPage1 = ASCIIToUTF16(chrome::kSearchEnginesSubPage);
+  const string16 kPage2 = ASCIIToUTF16(chrome::kSyncSetupSubPage);
   const GURL kURL1 = GURL(kSettings + kPage1);
   const GURL kURL2 = GURL(kSettings + kPage2);
 

@@ -2425,7 +2425,7 @@ void Browser::OpenClearBrowsingDataDialog() {
 
 void Browser::OpenOptionsDialog() {
   content::RecordAction(UserMetricsAction("ShowOptions"));
-  ShowOptionsTab("");
+  ShowOptionsTab(std::string());
 }
 
 void Browser::OpenPasswordManager() {
@@ -2503,11 +2503,11 @@ void Browser::Shutdown() {
       RequestShutdown();
 }
 
-void Browser::OpenAdvancedOptionsDialog() {
-  // TODO(csilv): The main purpose of this method is to expose the date & time
-  // settings from the clock. Simply showing the options tab not quite enough.
-  content::RecordAction(UserMetricsAction("OpenSystemOptionsDialog"));
-  ShowOptionsTab("");
+void Browser::ShowDateOptions() {
+  content::RecordAction(UserMetricsAction("ShowDateOptions"));
+  std::string sub_page = std::string(chrome::kSearchSubPage) + "#" +
+      l10n_util::GetStringUTF8(IDS_OPTIONS_ADVANCED_SECTION_TITLE_PRIVACY);
+  ShowOptionsTab(sub_page);
 }
 
 void Browser::OpenInternetOptionsDialog() {
@@ -5668,7 +5668,7 @@ void Browser::ShowSyncSetup(SyncPromoUI::Source source) {
   LoginUIService* login_service =
       LoginUIServiceFactory::GetForProfile(profile()->GetOriginalProfile());
   if (service->HasSyncSetupCompleted()) {
-    ShowOptionsTab(chrome::kPersonalOptionsSubPage);
+    ShowOptionsTab(std::string());
   } else if (SyncPromoUI::ShouldShowSyncPromo(profile()) &&
              login_service->current_login_ui() == NULL) {
     // There is no currently active login UI, so display a new promo page.

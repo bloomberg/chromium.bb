@@ -145,7 +145,7 @@ bool ClockMenuButton::IsCommandEnabled(int id) const {
 void ClockMenuButton::ExecuteCommand(int id) {
   DCHECK_EQ(CLOCK_OPEN_OPTIONS_ITEM, id);
   delegate()->ExecuteStatusAreaCommand(
-      this, StatusAreaButton::Delegate::SHOW_ADVANCED_OPTIONS);
+      this, StatusAreaButton::Delegate::SHOW_DATE_OPTIONS);
 }
 
 // StatusAreaButton implementation
@@ -196,7 +196,7 @@ views::MenuRunner* ClockMenuButton::CreateMenu() {
 
   // If options UI is available, show a separator and configure menu item.
   if (delegate()->ShouldExecuteStatusAreaCommand(
-          this, StatusAreaButton::Delegate::SHOW_ADVANCED_OPTIONS)) {
+          this, StatusAreaButton::Delegate::SHOW_DATE_OPTIONS)) {
     menu->AppendSeparator();
 
     const string16 clock_open_options_label =

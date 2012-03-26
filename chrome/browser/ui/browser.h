@@ -685,7 +685,7 @@ class Browser : public TabHandlerDelegate,
 #if defined(OS_CHROMEOS)
   void LockScreen();
   void Shutdown();
-  void OpenAdvancedOptionsDialog();
+  void ShowDateOptions();
   void OpenInternetOptionsDialog();
   void OpenLanguageOptionsDialog();
   void OpenSystemTabAndActivate();

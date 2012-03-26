@@ -142,8 +142,8 @@ void StatusAreaHostAura::ExecuteStatusAreaCommand(
       case StatusAreaButton::Delegate::SHOW_LANGUAGE_OPTIONS:
         browser->OpenLanguageOptionsDialog();
         break;
-      case StatusAreaButton::Delegate::SHOW_ADVANCED_OPTIONS:
-        browser->OpenAdvancedOptionsDialog();
+      case StatusAreaButton::Delegate::SHOW_DATE_OPTIONS:
+        browser->ShowDateOptions();
         break;
       default:
         NOTREACHED();
