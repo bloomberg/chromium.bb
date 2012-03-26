@@ -23,7 +23,9 @@ class DOMStorageTest : public testing::Test {
  public:
   DOMStorageTest()
       : message_loop_(MessageLoop::TYPE_IO),
-        webkit_thread_(BrowserThread::WEBKIT_DEPRECATED, &message_loop_) {
+        webkit_thread_(BrowserThread::WEBKIT_DEPRECATED, &message_loop_),
+        file_thread_(BrowserThread::FILE_USER_BLOCKING, &message_loop_),
+        io_thread_(BrowserThread::IO, &message_loop_) {
   }
 
  protected:
@@ -31,6 +33,8 @@ class DOMStorageTest : public testing::Test {
 
  private:
   BrowserThreadImpl webkit_thread_;
+  BrowserThreadImpl file_thread_;
+  BrowserThreadImpl io_thread_;
 };
 
 TEST_F(DOMStorageTest, SessionOnly) {
@@ -70,6 +74,7 @@ TEST_F(DOMStorageTest, SessionOnly) {
   // temporary data directory stays alive long enough to conduct the test.
   ScopedTempDir temp_dir;
   ignore_result(temp_dir.Set(browser_context->TakePath()));
+  message_loop_.RunAllPending();
   browser_context.reset();
   // Run the message loop to ensure that DOMStorageContext gets destroyed.
   message_loop_.RunAllPending();
@@ -122,6 +127,7 @@ TEST_F(DOMStorageTest, SaveSessionState) {
   // temporary data directory stays alive long enough to conduct the test.
   ScopedTempDir temp_dir;
   ignore_result(temp_dir.Set(browser_context->TakePath()));
+  message_loop_.RunAllPending();
   browser_context.reset();
   // Run the message loop to ensure that DOMStorageContext gets destroyed.
   message_loop_.RunAllPending();
@@ -130,6 +136,47 @@ TEST_F(DOMStorageTest, SaveSessionState) {
   // SaveSessionState.
   EXPECT_TRUE(file_util::PathExists(session_only_database_path));
   EXPECT_TRUE(file_util::PathExists(permanent_database_path));
+}
+
+TEST_F(DOMStorageTest, ClearLocalState) {
+  // Create test files.
+  ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  FilePath domstorage_dir = temp_dir.path().Append(
+      DOMStorageContextImpl::kLocalStorageDirectory);
+  ASSERT_TRUE(file_util::CreateDirectory(domstorage_dir));
+
+  FilePath::StringType file_name_1(FILE_PATH_LITERAL("http_foo_0"));
+  file_name_1.append(DOMStorageContextImpl::kLocalStorageExtension);
+  FilePath::StringType file_name_2(FILE_PATH_LITERAL("chrome-devtools_foo_0"));
+  file_name_2.append(DOMStorageContextImpl::kLocalStorageExtension);
+  FilePath temp_file_path_1 = domstorage_dir.Append(file_name_1);
+  FilePath temp_file_path_2 = domstorage_dir.Append(file_name_2);
+
+  ASSERT_EQ(1, file_util::WriteFile(temp_file_path_1, ".", 1));
+  ASSERT_EQ(1, file_util::WriteFile(temp_file_path_2, "o", 1));
+
+  // Create the scope which will ensure we run the destructor of the webkit
+  // context which should trigger the clean up.
+  {
+    TestBrowserContext browser_context;
+    scoped_refptr<quota::MockSpecialStoragePolicy> special_storage_policy =
+        new quota::MockSpecialStoragePolicy;
+    special_storage_policy->AddProtected(GURL("chrome-devtools://"));
+    browser_context.SetSpecialStoragePolicy(special_storage_policy);
+    DOMStorageContextImpl* dom_storage_context =
+        static_cast<DOMStorageContextImpl*>(
+            BrowserContext::GetDOMStorageContext(&browser_context));
+    dom_storage_context->set_data_path_for_testing(temp_dir.path());
+    dom_storage_context->SetClearLocalState(true);
+    message_loop_.RunAllPending();
+  }
+  message_loop_.RunAllPending();
+
+  // Because we specified https for scheme to be skipped the second file
+  // should survive and the first go into vanity.
+  ASSERT_FALSE(file_util::PathExists(temp_file_path_1));
+  ASSERT_TRUE(file_util::PathExists(temp_file_path_2));
 }
 
 #endif  // ENABLE_NEW_DOM_STORAGE_BACKEND

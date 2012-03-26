@@ -933,6 +933,9 @@ TEST_F(ResourceDispatcherHostTest, TestBlockedRequestsDontLeak) {
   MakeTestRequest(filter_.get(), 2, 5, net::URLRequestTestJob::test_url_2());
   MakeTestRequest(filter_.get(), 2, 6, net::URLRequestTestJob::test_url_3());
 
+  host_.CancelRequestsForProcess(filter_->child_id());
+  host_.CancelRequestsForProcess(second_filter->child_id());
+
   // Flush all the pending requests.
   while (net::URLRequestTestJob::ProcessOnePendingMessage()) {}
 }

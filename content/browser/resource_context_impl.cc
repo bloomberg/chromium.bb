@@ -12,6 +12,7 @@
 #include "content/browser/in_process_webkit/indexed_db_context_impl.h"
 #include "content/browser/net/view_blob_internals_job_factory.h"
 #include "content/browser/net/view_http_cache_job_factory.h"
+#include "content/browser/renderer_host/resource_dispatcher_host_impl.h"
 #include "content/browser/renderer_host/resource_request_info_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -163,6 +164,11 @@ void InitializeRequestContext(
 AppCacheService* ResourceContext::GetAppCacheService(ResourceContext* context) {
   return UserDataAdapter<ChromeAppCacheService>::Get(
       context, kAppCacheServicKeyName);
+}
+
+ResourceContext::~ResourceContext() {
+  if (ResourceDispatcherHostImpl::Get())
+    ResourceDispatcherHostImpl::Get()->CancelRequestsForContext(this);
 }
 
 BlobStorageController* GetBlobStorageControllerForResourceContext(

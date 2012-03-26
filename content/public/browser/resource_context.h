@@ -21,13 +21,13 @@ namespace content {
 
 // ResourceContext contains the relevant context information required for
 // resource loading. It lives on the IO thread, although it is constructed on
-// the UI thread.
+// the UI thread. It must be destructed on the IO thread.
 class CONTENT_EXPORT ResourceContext : public base::SupportsUserData {
  public:
   static appcache::AppCacheService* GetAppCacheService(
       ResourceContext* resource_context);
 
-  virtual ~ResourceContext() {}
+  virtual ~ResourceContext();
   virtual net::HostResolver* GetHostResolver() = 0;
   virtual net::URLRequestContext* GetRequestContext() = 0;
 };

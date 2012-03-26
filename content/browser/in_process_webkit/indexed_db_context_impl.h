@@ -86,9 +86,9 @@ class CONTENT_EXPORT IndexedDBContextImpl
   }
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(IndexedDBBrowserTest, ClearLocalState);
-  FRIEND_TEST_ALL_PREFIXES(IndexedDBBrowserTest, ClearSessionOnlyDatabases);
-  FRIEND_TEST_ALL_PREFIXES(IndexedDBBrowserTest, SaveSessionState);
+  FRIEND_TEST_ALL_PREFIXES(IndexedDBTest, ClearLocalState);
+  FRIEND_TEST_ALL_PREFIXES(IndexedDBTest, ClearSessionOnlyDatabases);
+  FRIEND_TEST_ALL_PREFIXES(IndexedDBTest, SaveSessionState);
   friend class IndexedDBQuotaClientTest;
 
   typedef std::map<GURL, int64> OriginToSizeMap;

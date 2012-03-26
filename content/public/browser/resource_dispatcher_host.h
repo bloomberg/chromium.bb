@@ -34,11 +34,6 @@ class CONTENT_EXPORT ResourceDispatcherHost {
   // dialog boxes.
   virtual void SetAllowCrossOriginAuthPrompt(bool value) = 0;
 
-  // Force cancels any pending requests for the given |context|. This is
-  // necessary to ensure that before |context| goes away, all requests
-  // for it are dead.
-  virtual void CancelRequestsForContext(ResourceContext* context) = 0;
-
   // Initiates a download by explicit request of the renderer, e.g. due to
   // alt-clicking a link.  If the download is started, |started_callback| will
   // be called on the UI thread with the DownloadId; otherwise an error code

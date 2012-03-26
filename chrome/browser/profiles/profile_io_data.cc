@@ -45,7 +45,6 @@
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/resource_context.h"
-#include "content/public/browser/resource_dispatcher_host.h"
 #include "net/base/server_bound_cert_service.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/http/http_util.h"
@@ -62,7 +61,6 @@
 using content::BrowserContext;
 using content::BrowserThread;
 using content::ResourceContext;
-using content::ResourceDispatcherHost;
 
 namespace {
 
@@ -514,12 +512,6 @@ void ProfileIOData::ShutdownOnUIThread() {
   if (url_blacklist_manager_.get())
     url_blacklist_manager_->ShutdownOnUIThread();
 #endif
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(
-          &ResourceDispatcherHost::CancelRequestsForContext,
-          base::Unretained(ResourceDispatcherHost::Get()),
-          &resource_context_));
   bool posted = BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE, this);
   if (!posted)
     delete this;
