@@ -68,6 +68,12 @@ class DevicePolicyCache : public CloudPolicyCacheBase {
       const enterprise_management::PolicyFetchResponse& policy,
       std::string* device_token);
 
+  // Ensures that CrosSettings has established trust on the reporting prefs and
+  // publishes the |device_token| loaded from the cache. It's important that we
+  // have fully-initialized device settings s.t. device status uploads get the
+  // correct reporting policy flags.
+  void SetTokenAndFlagReady(const std::string& device_token);
+
   // Decode the various groups of policies.
   static void DecodeLoginPolicies(
       const enterprise_management::ChromeDeviceSettingsProto& policy,

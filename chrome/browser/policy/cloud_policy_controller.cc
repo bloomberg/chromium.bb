@@ -337,7 +337,6 @@ void CloudPolicyController::SendPolicyRequest() {
   em::DeviceManagementRequest* request = request_job_->GetRequest();
   em::PolicyFetchRequest* fetch_request =
       request->mutable_policy_request()->add_request();
-  em::DeviceStatusReportRequest device_status;
   fetch_request->set_signature_type(em::PolicyFetchRequest::SHA1_RSA);
   fetch_request->set_policy_type(data_store_->policy_type());
   if (cache_->machine_id_missing() && !data_store_->machine_id().empty())

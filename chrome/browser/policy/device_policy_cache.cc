@@ -205,10 +205,7 @@ void DevicePolicyCache::OnRetrievePolicyCompleted(
   if (!IsReady()) {
     std::string device_token;
     InstallInitialPolicy(code, policy, &device_token);
-    // We need to call SetDeviceToken unconditionally to indicate the cache has
-    // finished loading.
-    data_store_->SetDeviceToken(device_token, true);
-    SetReady();
+    SetTokenAndFlagReady(device_token);
   } else {  // In other words, IsReady() == true
     if (code != chromeos::SignedSettings::SUCCESS) {
       if (code == chromeos::SignedSettings::BAD_SIGNATURE) {
@@ -314,6 +311,21 @@ void DevicePolicyCache::InstallInitialPolicy(
   base::Time timestamp;
   if (SetPolicyInternal(policy, &timestamp, true))
     set_last_policy_refresh_time(timestamp);
+}
+
+void DevicePolicyCache::SetTokenAndFlagReady(const std::string& device_token) {
+  // Wait for device settings to become available.
+  if (!chromeos::CrosSettings::Get()->PrepareTrustedValues(
+          base::Bind(&DevicePolicyCache::SetTokenAndFlagReady,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     device_token))) {
+    return;
+  }
+
+  // We need to call SetDeviceToken unconditionally to indicate the cache has
+  // finished loading.
+  data_store_->SetDeviceToken(device_token, true);
+  SetReady();
 }
 
 // static

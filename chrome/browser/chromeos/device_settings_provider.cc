@@ -480,8 +480,11 @@ void DeviceSettingsProvider::DecodeReportingPolicies(
           kReportDeviceVersionInfo,
           policy.device_reporting().report_version_info());
     }
-    // TODO(dubroy): Re-add device activity time policy here when the UI
-    // to notify the user has been implemented (http://crosbug.com/26252).
+    if (policy.device_reporting().has_report_activity_times()) {
+      new_values_cache->SetBoolean(
+          kReportDeviceActivityTimes,
+          policy.device_reporting().report_activity_times());
+    }
     if (policy.device_reporting().has_report_boot_mode()) {
       new_values_cache->SetBoolean(
           kReportDeviceBootMode,
