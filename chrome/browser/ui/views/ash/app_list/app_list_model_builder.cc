@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/views/ash/app_list/extension_app_item.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"
 #include "grit/generated_resources.h"
@@ -178,7 +179,7 @@ void AppListModelBuilder::Observe(int type,
     }
     case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
       const Extension* extension =
-          content::Details<const Extension>(details).ptr();
+          content::Details<UnloadedExtensionInfo>(details)->extension;
       int index = FindApp(extension->id());
       if (index >= 0)
         model_->DeleteItemAt(index);
