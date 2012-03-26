@@ -449,6 +449,12 @@ void BrowserWindowCocoa::ShowChromeToMobileBubble() {
   NOTIMPLEMENTED();
 }
 
+#if defined(ENABLE_ONE_CLICK_SIGNIN)
+void BrowserWindowCocoa::ShowOneClickSigninBubble() {
+  NOTIMPLEMENTED();
+}
+#endif
+
 bool BrowserWindowCocoa::IsDownloadShelfVisible() const {
   return [controller_ isDownloadShelfVisible] != NO;
 }

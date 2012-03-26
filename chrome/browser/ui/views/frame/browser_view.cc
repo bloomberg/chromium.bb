@@ -121,6 +121,10 @@
 #include "chrome/browser/ui/webui/chromeos/mobile_setup_dialog.h"
 #endif
 
+#if defined(ENABLE_ONE_CLICK_SIGNIN)
+#include "chrome/browser/ui/views/sync/one_click_signin_bubble_view.h"
+#endif
+
 #if !defined(OS_CHROMEOS) || defined(USE_AURA)
 #include "chrome/browser/ui/views/download/download_shelf_view.h"
 #endif
@@ -1113,6 +1117,12 @@ void BrowserView::ShowBookmarkBubble(const GURL& url, bool already_bookmarked) {
 void BrowserView::ShowChromeToMobileBubble() {
   GetLocationBarView()->ShowChromeToMobileBubble();
 }
+
+#if defined(ENABLE_ONE_CLICK_SIGNIN)
+void BrowserView::ShowOneClickSigninBubble() {
+  OneClickSigninBubbleView::ShowBubble(toolbar_->app_menu(), browser_.get());
+}
+#endif
 
 void BrowserView::SetDownloadShelfVisible(bool visible) {
   // This can be called from the superclass destructor, when it destroys our

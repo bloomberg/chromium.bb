@@ -216,6 +216,11 @@ class BrowserWindow : public BaseWindow {
   // Shows the Chrome To Mobile bubble.
   virtual void ShowChromeToMobileBubble() = 0;
 
+#if defined(ENABLE_ONE_CLICK_SIGNIN)
+  // Shows the one-click sign in bubble.
+  virtual void ShowOneClickSigninBubble() = 0;
+#endif
+
   // Whether or not the shelf view is visible.
   virtual bool IsDownloadShelfVisible() const = 0;
 

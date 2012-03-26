@@ -2142,6 +2142,11 @@
         '../webkit/quota/mock_storage_client.h',
       ],
       'conditions': [
+        ['enable_one_click_signin==0', {
+          'sources!': [
+            'browser/ui/cocoa/one_click_signin_dialog_controller_unittest.mm',
+          ]
+        }],
         ['disable_nacl==1', {
           'sources!':[
             'nacl/nacl_validation_query_unittest.cc',
@@ -2814,6 +2819,7 @@
         'browser/ui/views/dom_view_browsertest.cc',
         'browser/ui/views/html_dialog_view_browsertest.cc',
         'browser/ui/views/select_file_dialog_extension_browsertest.cc',
+        'browser/ui/views/sync/one_click_signin_bubble_view_browsertest.cc',
         'browser/ui/webui/chrome_url_data_manager_browsertest.cc',
         'browser/ui/webui/ntp/most_visited_browsertest.cc',
         'browser/ui/webui/test_chrome_web_ui_controller_factory_browsertest.cc',
@@ -2957,6 +2963,11 @@
         },
       ],
       'conditions': [
+        ['enable_one_click_signin==0', {
+          'sources!': [
+            'browser/ui/views/sync/one_click_signin_bubble_view_browsertest.cc',
+          ]
+        }],
         ['disable_nacl==0', {
           'sources':[
             'browser/extensions/extension_nacl_browsertest.cc',
@@ -3207,6 +3218,7 @@
             'browser/ui/views/crypto_module_password_dialog_view_unittest.cc',
             'browser/ui/views/dom_view_browsertest.cc',
             'browser/ui/views/html_dialog_view_browsertest.cc',
+            'browser/ui/views/sync/one_click_signin_bubble_view_browsertest.cc',
           ],
         }],
         ['target_arch!="arm"', {

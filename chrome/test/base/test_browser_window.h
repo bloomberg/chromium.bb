@@ -93,6 +93,9 @@ class TestBrowserWindow : public BrowserWindow {
   virtual void ShowBookmarkBubble(const GURL& url,
                                   bool already_bookmarked) OVERRIDE {}
   virtual void ShowChromeToMobileBubble() OVERRIDE {}
+#if defined(ENABLE_ONE_CLICK_SIGNIN)
+  virtual void ShowOneClickSigninBubble() OVERRIDE {}
+#endif
   virtual bool IsDownloadShelfVisible() const OVERRIDE;
   virtual DownloadShelf* GetDownloadShelf() OVERRIDE;
   virtual void ConfirmBrowserCloseWithPendingDownloads() OVERRIDE {}

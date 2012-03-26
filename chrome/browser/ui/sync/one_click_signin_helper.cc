@@ -17,6 +17,8 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "chrome/browser/tab_contents/tab_util.h"
+#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/sync/one_click_signin_dialog.h"
 #include "chrome/browser/ui/sync/one_click_signin_histogram.h"
 #include "chrome/browser/ui/sync/one_click_signin_sync_starter.h"
@@ -65,8 +67,6 @@ class OneClickLoginInfoBarDelegate : public ConfirmInfoBarDelegate {
   // Record the specified action in the histogram for one-click sign in.
   void RecordHistogramAction(int action);
 
-  Profile* profile_;
-
   // Information about the account that has just logged in.
   std::string session_index_;
   std::string email_;
@@ -84,13 +84,10 @@ OneClickLoginInfoBarDelegate::OneClickLoginInfoBarDelegate(
     const std::string& email,
     const std::string& password)
     : ConfirmInfoBarDelegate(owner),
-      profile_(Profile::FromBrowserContext(
-          owner->web_contents()->GetBrowserContext())),
       session_index_(session_index),
       email_(email),
       password_(password),
       button_pressed_(false) {
-  DCHECK(profile_);
   RecordHistogramAction(one_click_signin::HISTOGRAM_SHOWN);
 }
 
@@ -127,15 +124,20 @@ string16 OneClickLoginInfoBarDelegate::GetButtonLabel(
 namespace {
 
 // Start syncing with the given user information.
-void StartSync(Profile* profile,
+void StartSync(content::WebContents* web_contents,
                const std::string& session_index,
                const std::string& email,
                const std::string& password,
                bool use_default_settings) {
   // The starter deletes itself once its done.
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
   ignore_result(
       new OneClickSigninSyncStarter(
           profile, session_index, email, password, use_default_settings));
+
+  Browser* browser = BrowserList::FindBrowserWithWebContents(web_contents);
+  browser->window()->ShowOneClickSigninBubble();
 }
 
 }  // namespace
@@ -145,7 +147,8 @@ bool OneClickLoginInfoBarDelegate::Accept() {
   RecordHistogramAction(one_click_signin::HISTOGRAM_ACCEPTED);
   ShowOneClickSigninDialog(
       owner()->web_contents()->GetView()->GetTopLevelNativeWindow(),
-      base::Bind(&StartSync, profile_, session_index_, email_, password_));
+      base::Bind(&StartSync, owner()->web_contents(), session_index_, email_,
+                 password_));
   button_pressed_ = true;
   return true;
 }
@@ -269,14 +272,12 @@ void OneClickSigninHelper::ShowInfoBarUIThread(
 
   // TODO(rogerta): remove this #if once the dialog is fully implemented for
   // mac and linux.
-#if defined(ENABLE_ONE_CLICK_SIGNIN)
   // Save the email in the one-click signin manager.  The manager may
   // not exist if the contents is incognito or if the profile is already
   // connected to a Google account.
   OneClickSigninHelper* helper = wrapper->one_click_signin_helper();
   if (helper)
     helper->SaveSessionIndexAndEmail(session_index, email);
-#endif
 }
 
 void OneClickSigninHelper::DidNavigateAnyFrame(

@@ -524,6 +524,12 @@ void Panel::ShowChromeToMobileBubble() {
   NOTIMPLEMENTED();
 }
 
+#if defined(ENABLE_ONE_CLICK_SIGNIN)
+void Panel::ShowOneClickSigninBubble() {
+  NOTIMPLEMENTED();
+}
+#endif
+
 bool Panel::IsDownloadShelfVisible() const {
   return false;
 }

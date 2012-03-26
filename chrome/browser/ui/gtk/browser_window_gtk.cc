@@ -1078,6 +1078,14 @@ void BrowserWindowGtk::ShowChromeToMobileBubble() {
   toolbar_->GetLocationBarView()->ShowChromeToMobileBubble();
 }
 
+#if defined(ENABLE_ONE_CLICK_SIGNIN)
+void BrowserWindowGtk::ShowOneClickSigninBubble() {
+  // TODO(rogerta): will be implemented when the one-click feature is done on
+  // linux.
+  NOTIMPLEMENTED();
+}
+#endif
+
 bool BrowserWindowGtk::IsDownloadShelfVisible() const {
   return download_shelf_.get() && download_shelf_->IsShowing();
 }
