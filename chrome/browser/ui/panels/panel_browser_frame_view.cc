@@ -518,7 +518,9 @@ void PanelBrowserFrameView::OnThemeChanged() {
 }
 
 gfx::Size PanelBrowserFrameView::GetMinimumSize() {
-  return panel_browser_view_->panel()->min_size();
+  // This makes the panel be able to shrink to very small, like minimized panel
+  // or overflow panel.
+  return gfx::Size();
 }
 
 gfx::Size PanelBrowserFrameView::GetMaximumSize() {
