@@ -17,6 +17,7 @@
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/ppb_file_ref_proxy.h"
 #include "ppapi/proxy/serialized_var.h"
+#include "ppapi/shared_impl/array_writer.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/resource_tracker.h"
 #include "ppapi/shared_impl/tracked_callback.h"
@@ -44,11 +45,18 @@ class FileChooser : public Resource,
   virtual PPB_FileChooser_API* AsPPB_FileChooser_API() OVERRIDE;
 
   // PPB_FileChooser_API implementation.
-  virtual int32_t Show(const PP_CompletionCallback& callback) OVERRIDE;
-  virtual PP_Resource GetNextChosenFile() OVERRIDE;
+  virtual int32_t Show(const PP_ArrayOutput& output,
+                       const PP_CompletionCallback& callback) OVERRIDE;
   virtual int32_t ShowWithoutUserGesture(
-      bool save_as,
-      const char* suggested_file_name,
+      PP_Bool save_as,
+      PP_Var suggested_file_name,
+      const PP_ArrayOutput& output,
+      const PP_CompletionCallback& callback);
+  virtual int32_t Show0_5(const PP_CompletionCallback& callback) OVERRIDE;
+  virtual PP_Resource GetNextChosenFile() OVERRIDE;
+  virtual int32_t ShowWithoutUserGesture0_5(
+      PP_Bool save_as,
+      PP_Var suggested_file_name,
       const PP_CompletionCallback& callback) OVERRIDE;
 
   // Handles the choose complete notification from the host.
@@ -58,16 +66,19 @@ class FileChooser : public Resource,
 
  private:
   int32_t Show(bool require_user_gesture,
-               bool save_as,
-               const char* suggested_file_name,
+               PP_Bool save_as,
+               PP_Var suggested_file_name,
                const PP_CompletionCallback& callback);
+
+  // When using v0.6 of the API, contains the array output info.
+  ArrayWriter output_;
 
   scoped_refptr<TrackedCallback> current_show_callback_;
 
-  // All files returned by the current show callback that haven't yet been
-  // given to the plugin. The plugin will repeatedly call us to get the next
-  // file, and we'll vend those out of this queue, removing them when ownership
-  // has transferred to the plugin.
+  // When using v0.5 of the API, contains all files returned by the current
+  // show callback that haven't yet been given to the plugin. The plugin will
+  // repeatedly call us to get the next file, and we'll vend those out of this
+  // queue, removing them when ownership has transferred to the plugin.
   std::queue<PP_Resource> file_queue_;
 
   DISALLOW_COPY_AND_ASSIGN(FileChooser);
@@ -91,20 +102,39 @@ PPB_FileChooser_API* FileChooser::AsPPB_FileChooser_API() {
   return this;
 }
 
-int32_t FileChooser::Show(const PP_CompletionCallback& callback) {
-  return Show(true, false, NULL, callback);
+int32_t FileChooser::Show(const PP_ArrayOutput& output,
+                          const PP_CompletionCallback& callback) {
+  int32_t result = Show(true, PP_FALSE, PP_MakeUndefined(), callback);
+  if (result == PP_OK_COMPLETIONPENDING)
+    output_.set_pp_array_output(output);
+  return result;
 }
 
 int32_t FileChooser::ShowWithoutUserGesture(
-    bool save_as,
-    const char* suggested_file_name,
+    PP_Bool save_as,
+    PP_Var suggested_file_name,
+    const PP_ArrayOutput& output,
+    const PP_CompletionCallback& callback) {
+  int32_t result = Show(false, save_as, PP_MakeUndefined(), callback);
+  if (result == PP_OK_COMPLETIONPENDING)
+    output_.set_pp_array_output(output);
+  return result;
+}
+
+int32_t FileChooser::Show0_5(const PP_CompletionCallback& callback) {
+  return Show(true, PP_FALSE, PP_MakeUndefined(), callback);
+}
+
+int32_t FileChooser::ShowWithoutUserGesture0_5(
+    PP_Bool save_as,
+    PP_Var suggested_file_name,
     const PP_CompletionCallback& callback) {
   return Show(false, save_as, suggested_file_name, callback);
 }
 
 int32_t FileChooser::Show(bool require_user_gesture,
-                          bool save_as,
-                          const char* suggested_file_name,
+                          PP_Bool save_as,
+                          PP_Var suggested_file_name,
                           const PP_CompletionCallback& callback) {
   if (!callback.func)
     return PP_ERROR_BLOCKS_MAIN_THREAD;
@@ -113,12 +143,13 @@ int32_t FileChooser::Show(bool require_user_gesture,
     return PP_ERROR_INPROGRESS;  // Can't show more than once.
 
   current_show_callback_ = new TrackedCallback(this, callback);
-  PluginDispatcher::GetForResource(this)->Send(
+  PluginDispatcher* dispatcher = PluginDispatcher::GetForResource(this);
+  dispatcher->Send(
       new PpapiHostMsg_PPBFileChooser_Show(
           API_ID_PPB_FILE_CHOOSER,
           host_resource(),
           save_as,
-          suggested_file_name ? suggested_file_name : "",
+          SerializedVarSendInput(dispatcher, suggested_file_name),
           require_user_gesture));
   return PP_OK_COMPLETIONPENDING;
 }
@@ -138,11 +169,21 @@ PP_Resource FileChooser::GetNextChosenFile() {
 void FileChooser::ChooseComplete(
     int32_t result_code,
     const std::vector<PPB_FileRef_CreateInfo>& chosen_files) {
-  // Convert each of the passed in file infos to resources. These will be owned
-  // by the FileChooser object until they're passed to the plugin.
-  DCHECK(file_queue_.empty());
-  for (size_t i = 0; i < chosen_files.size(); i++)
-    file_queue_.push(PPB_FileRef_Proxy::DeserializeFileRef(chosen_files[i]));
+  if (output_.is_valid()) {
+    // Using v0.6 of the API with the output array.
+    std::vector<PP_Resource> files;
+    for (size_t i = 0; i < chosen_files.size(); i++)
+      files.push_back(PPB_FileRef_Proxy::DeserializeFileRef(chosen_files[i]));
+    output_.StoreResourceVector(files);
+  } else {
+    // Convert each of the passed in file infos to resources. These will be
+    // owned by the FileChooser object until they're passed to the plugin.
+    DCHECK(file_queue_.empty());
+    for (size_t i = 0; i < chosen_files.size(); i++) {
+      file_queue_.push(PPB_FileRef_Proxy::DeserializeFileRef(
+          chosen_files[i]));
+    }
+  }
 
   // Notify the plugin of the new data.
   TrackedCallback::ClearAndRun(&current_show_callback_, result_code);
@@ -223,19 +264,24 @@ void PPB_FileChooser_Proxy::OnMsgCreate(
 
 void PPB_FileChooser_Proxy::OnMsgShow(
     const HostResource& chooser,
-    bool save_as,
-    std::string suggested_file_name,
+    PP_Bool save_as,
+    SerializedVarReceiveInput suggested_file_name,
     bool require_user_gesture) {
+  scoped_refptr<RefCountedArrayOutputAdapter<PP_Resource> > output(
+      new RefCountedArrayOutputAdapter<PP_Resource>);
   EnterHostFromHostResourceForceCallback<PPB_FileChooser_API> enter(
-      chooser, callback_factory_, &PPB_FileChooser_Proxy::OnShowCallback,
-      chooser);
+      chooser,
+      callback_factory_.NewOptionalCallback(
+          &PPB_FileChooser_Proxy::OnShowCallback, output, chooser));
   if (enter.succeeded()) {
     if (require_user_gesture) {
-      enter.SetResult(enter.object()->Show(enter.callback()));
+      enter.SetResult(enter.object()->Show(output->pp_array_output(),
+                                           enter.callback()));
     } else {
       enter.SetResult(enter.object()->ShowWithoutUserGesture(
           save_as,
-          suggested_file_name.c_str(),
+          suggested_file_name.Get(dispatcher()),
+          output->pp_array_output(),
           enter.callback()));
     }
   }
@@ -252,8 +298,11 @@ void PPB_FileChooser_Proxy::OnMsgChooseComplete(
   }
 }
 
-void PPB_FileChooser_Proxy::OnShowCallback(int32_t result,
-                                           const HostResource& chooser) {
+void PPB_FileChooser_Proxy::OnShowCallback(
+    int32_t result,
+    scoped_refptr<RefCountedArrayOutputAdapter<PP_Resource> >
+        output,
+    HostResource chooser) {
   EnterHostFromHostResource<PPB_FileChooser_API> enter(chooser);
 
   std::vector<PPB_FileRef_CreateInfo> files;
@@ -262,11 +311,14 @@ void PPB_FileChooser_Proxy::OnShowCallback(int32_t result,
         dispatcher()->GetInterfaceProxy(API_ID_PPB_FILE_REF));
 
     // Convert the returned files to the serialized info.
-    while (PP_Resource cur_file_resource =
-           enter.object()->GetNextChosenFile()) {
+    ResourceTracker* tracker = PpapiGlobals::Get()->GetResourceTracker();
+    for (size_t i = 0; i < output->output().size(); i++) {
       PPB_FileRef_CreateInfo cur_create_info;
-      file_ref_proxy->SerializeFileRef(cur_file_resource, &cur_create_info);
+      file_ref_proxy->SerializeFileRef(output->output()[i], &cur_create_info);
       files.push_back(cur_create_info);
+
+      // Done with this resource, caller gave us a ref.
+      tracker->ReleaseResource(output->output()[i]);
     }
   }
 

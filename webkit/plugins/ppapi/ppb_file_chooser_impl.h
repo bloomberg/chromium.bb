@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "ppapi/c/dev/ppb_file_chooser_dev.h"
+#include "ppapi/shared_impl/array_writer.h"
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/thunk/ppb_file_chooser_api.h"
 #include "webkit/plugins/webkit_plugins_export.h"
@@ -63,12 +64,18 @@ class PPB_FileChooser_Impl : public ::ppapi::Resource,
   void RunCallback(int32_t result);
 
   // PPB_FileChooser_API implementation.
-  virtual int32_t Show(const PP_CompletionCallback& callback) OVERRIDE;
-  virtual PP_Resource GetNextChosenFile() OVERRIDE;
-
+  virtual int32_t Show(const PP_ArrayOutput& output,
+                       const PP_CompletionCallback& callback) OVERRIDE;
   virtual int32_t ShowWithoutUserGesture(
-      bool save_as,
-      const char* suggested_file_name,
+      PP_Bool save_as,
+      PP_Var suggested_file_name,
+      const PP_ArrayOutput& output,
+      const PP_CompletionCallback& callback);
+  virtual int32_t Show0_5(const PP_CompletionCallback& callback) OVERRIDE;
+  virtual PP_Resource GetNextChosenFile() OVERRIDE;
+  virtual int32_t ShowWithoutUserGesture0_5(
+      PP_Bool save_as,
+      PP_Var suggested_file_name,
       const PP_CompletionCallback& callback) OVERRIDE;
 
   // Splits a comma-separated MIME type list |accept_mime_types|, trims the
@@ -81,7 +88,15 @@ class PPB_FileChooser_Impl : public ::ppapi::Resource,
   PP_FileChooserMode_Dev mode_;
   std::string accept_mime_types_;
   scoped_refptr< ::ppapi::TrackedCallback> callback_;
-  std::vector< scoped_refptr<PPB_FileRef_Impl> > chosen_files_;
+
+  // When using the v0.6 of the API, this will contain the output for the
+  // resources when the show command is complete. When using 0.5, this
+  // object will be is_null() and the chosen_files_ will be used instead.
+  ::ppapi::ArrayWriter output_;
+
+  // Used to store and iterate over the results when using 0.5 of the API.
+  // These are valid when we get a file result and output_ is not null.
+  std::vector< scoped_refptr<Resource> > chosen_files_;
   size_t next_chosen_file_index_;
 };
 

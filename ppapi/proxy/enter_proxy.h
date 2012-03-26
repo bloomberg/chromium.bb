@@ -89,6 +89,14 @@ template<typename ResourceT>
 class EnterHostFromHostResourceForceCallback
     : public EnterHostFromHostResource<ResourceT> {
  public:
+  EnterHostFromHostResourceForceCallback(
+      const HostResource& host_resource,
+      const pp::CompletionCallback& callback)
+      : EnterHostFromHostResource<ResourceT>(host_resource),
+        needs_running_(true),
+        callback_(callback) {
+  }
+
   // For callbacks that take no parameters except the "int32_t result". Most
   // implementations will use the 1-extra-argument constructor below.
   template<class CallbackFactory, typename Method>
@@ -168,42 +176,12 @@ template<typename FunctionT>
 class EnterHostFunctionForceCallback
     : public thunk::EnterFunctionNoLock<FunctionT> {
  public:
-  // For callbacks that take no parameters except the "int32_t result". Most
-  // implementations will use the 1-extra-argument constructor below.
-  template<class CallbackFactory, typename Method>
-  EnterHostFunctionForceCallback(PP_Instance instance,
-                                 CallbackFactory& factory,
-                                 Method method)
+  EnterHostFunctionForceCallback(
+      PP_Instance instance,
+      const pp::CompletionCallback& callback)
       : thunk::EnterFunctionNoLock<FunctionT>(instance, false),
         needs_running_(true),
-        callback_(factory.NewOptionalCallback(method)) {
-    if (this->failed())
-      RunCallback(PP_ERROR_BADARGUMENT);
-  }
-
-  // For callbacks that take an extra parameter as a closure.
-  template<class CallbackFactory, typename Method, typename A>
-  EnterHostFunctionForceCallback(PP_Instance instance,
-                                 CallbackFactory& factory,
-                                 Method method,
-                                 const A& a)
-      : thunk::EnterFunctionNoLock<FunctionT>(instance, false),
-        needs_running_(true),
-        callback_(factory.NewOptionalCallback(method, a)) {
-    if (this->failed())
-      RunCallback(PP_ERROR_BADARGUMENT);
-  }
-
-  // For callbacks that take two extra parameters as a closure.
-  template<class CallbackFactory, typename Method, typename A, typename B>
-  EnterHostFunctionForceCallback(PP_Instance instance,
-                                 CallbackFactory& factory,
-                                 Method method,
-                                 const A& a,
-                                 const B& b)
-      : thunk::EnterFunctionNoLock<FunctionT>(instance),
-        needs_running_(true),
-        callback_(factory.NewOptionalCallback(method, a, b)) {
+        callback_(callback) {
     if (this->failed())
       RunCallback(PP_ERROR_BADARGUMENT);
   }

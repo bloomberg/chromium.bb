@@ -149,7 +149,7 @@ struct CallbackOutputTraits<Var> {
 template<typename T>
 struct GenericVectorCallbackOutputTraits {
   // All arrays are output via a PP_ArrayOutput type.
-  typedef PP_ArrayOutput* APIArgType;
+  typedef PP_ArrayOutput APIArgType;
 
   // We store the array as this adapter which combines the PP_ArrayOutput
   // structure with the underlying std::vector that it will write into.
@@ -177,7 +177,7 @@ struct GenericVectorCallbackOutputTraits {
 // class of pp::Resource.
 template<typename T>
 struct ResourceVectorCallbackOutputTraits {
-  typedef PP_ArrayOutput* APIArgType;
+  typedef PP_ArrayOutput APIArgType;
   typedef ResourceArrayOutputAdapterWithStorage<T> StorageType;
 
   static inline APIArgType StorageToAPIArg(StorageType& t) {
@@ -207,7 +207,7 @@ struct CallbackOutputTraits< std::vector<T> >
 template<>
 struct CallbackOutputTraits< std::vector<pp::Var> > {
   // All arrays are output via a PP_ArrayOutput type.
-  typedef PP_ArrayOutput* APIArgType;
+  typedef PP_ArrayOutput APIArgType;
 
   // We store the array as this adapter which combines the PP_ArrayOutput
   // structure with the underlying std::vector that it will write into.

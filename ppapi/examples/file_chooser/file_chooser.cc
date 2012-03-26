@@ -49,19 +49,16 @@ class MyInstance : public pp::InstancePrivate {
     std::string accept_mime_types = (multi_select ? "" : "plain/text");
 
     chooser_ = pp::FileChooser_Dev(this, mode, accept_mime_types);
-    chooser_.Show(callback_factory_.NewCallback(
+    chooser_.Show(callback_factory_.NewCallbackWithOutput(
         &MyInstance::ShowSelectedFileNames));
   }
 
-  void ShowSelectedFileNames(int32_t result) {
-    if (!result != PP_OK)
+  void ShowSelectedFileNames(int32_t result,
+                             const std::vector<pp::FileRef>& files) {
+    if (result != PP_OK)
       return;
-
-    pp::FileRef file_ref = chooser_.GetNextChosenFile();
-    while (!file_ref.is_null()) {
-      Log(file_ref.GetName());
-      file_ref = chooser_.GetNextChosenFile();
-    }
+    for (size_t i = 0; i < files.size(); i++)
+      Log(files[i].GetName());
   }
 
   void RecreateConsole() {

@@ -34,53 +34,102 @@ PP_Bool IsFileChooser(PP_Resource resource) {
   return PP_FromBool(enter.succeeded());
 }
 
-int32_t Show(PP_Resource chooser, PP_CompletionCallback callback) {
+int32_t Show0_5(PP_Resource chooser, PP_CompletionCallback callback) {
   EnterResource<PPB_FileChooser_API> enter(chooser, callback, true);
   if (enter.failed())
     return enter.retval();
-  return enter.SetResult(enter.object()->Show(callback));
+  return enter.SetResult(enter.object()->Show0_5(callback));
 }
 
-PP_Resource GetNextChosenFile(PP_Resource chooser) {
+PP_Resource GetNextChosenFile0_5(PP_Resource chooser) {
   EnterResource<PPB_FileChooser_API> enter(chooser, true);
   if (enter.failed())
     return 0;
   return enter.object()->GetNextChosenFile();
 }
 
+int32_t Show(PP_Resource chooser,
+             PP_ArrayOutput output,
+             PP_CompletionCallback callback) {
+  EnterResource<PPB_FileChooser_API> enter(chooser, callback, true);
+  if (enter.failed())
+    return enter.retval();
+  return enter.SetResult(enter.object()->Show(output, callback));
+}
+
+
 int32_t ShowWithoutUserGesture(PP_Resource chooser,
                                PP_Bool save_as,
                                PP_Var suggested_file_name,
+                               const PP_ArrayOutput* output,
                                PP_CompletionCallback callback) {
   EnterResource<PPB_FileChooser_API> enter(chooser, callback, true);
   if (enter.failed())
     return enter.retval();
-  scoped_refptr<StringVar> string_var =
-      StringVar::FromPPVar(suggested_file_name);
-  std::string str = string_var ? string_var->value() : std::string();
   return enter.SetResult(enter.object()->ShowWithoutUserGesture(
-      save_as == PP_TRUE, str.c_str(), callback));
+      save_as, suggested_file_name, *output, callback));
 }
 
-const PPB_FileChooser_Dev g_ppb_file_chooser_thunk = {
+int32_t ShowWithoutUserGesture0_5(PP_Resource chooser,
+                                  PP_Bool save_as,
+                                  PP_Var suggested_file_name,
+                                  PP_CompletionCallback callback) {
+  EnterResource<PPB_FileChooser_API> enter(chooser, callback, true);
+  if (enter.failed())
+    return enter.retval();
+  return enter.SetResult(enter.object()->ShowWithoutUserGesture0_5(
+      save_as, suggested_file_name, callback));
+}
+
+int32_t ShowWithoutUserGesture0_6(PP_Resource chooser,
+                                  PP_Bool save_as,
+                                  PP_Var suggested_file_name,
+                                  PP_ArrayOutput output,
+                                  PP_CompletionCallback callback) {
+  EnterResource<PPB_FileChooser_API> enter(chooser, callback, true);
+  if (enter.failed())
+    return enter.retval();
+  return enter.SetResult(enter.object()->ShowWithoutUserGesture(
+      save_as, suggested_file_name, output, callback));
+}
+
+const PPB_FileChooser_Dev_0_5 g_ppb_file_chooser_0_5_thunk = {
   &Create,
   &IsFileChooser,
-  &Show,
-  &GetNextChosenFile
+  &Show0_5,
+  &GetNextChosenFile0_5
 };
 
-const PPB_FileChooserTrusted g_ppb_file_chooser_trusted_thunk = {
-  &ShowWithoutUserGesture
+const PPB_FileChooser_Dev_0_6 g_ppb_file_chooser_0_6_thunk = {
+  &Create,
+  &IsFileChooser,
+  &Show
+};
+
+const PPB_FileChooserTrusted_0_5 g_ppb_file_chooser_trusted_0_5_thunk = {
+  &ShowWithoutUserGesture0_5
+};
+
+const PPB_FileChooserTrusted_0_6 g_ppb_file_chooser_trusted_0_6_thunk = {
+  &ShowWithoutUserGesture0_6
 };
 
 }  // namespace
 
 const PPB_FileChooser_Dev_0_5* GetPPB_FileChooser_Dev_0_5_Thunk() {
-  return &g_ppb_file_chooser_thunk;
+  return &g_ppb_file_chooser_0_5_thunk;
+}
+
+const PPB_FileChooser_Dev_0_6* GetPPB_FileChooser_Dev_0_6_Thunk() {
+  return &g_ppb_file_chooser_0_6_thunk;
 }
 
 const PPB_FileChooserTrusted_0_5* GetPPB_FileChooser_Trusted_0_5_Thunk() {
-  return &g_ppb_file_chooser_trusted_thunk;
+  return &g_ppb_file_chooser_trusted_0_5_thunk;
+}
+
+const PPB_FileChooserTrusted_0_6* GetPPB_FileChooser_Trusted_0_6_Thunk() {
+  return &g_ppb_file_chooser_trusted_0_6_thunk;
 }
 
 }  // namespace thunk

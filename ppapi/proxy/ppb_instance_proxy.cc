@@ -573,8 +573,10 @@ void PPB_Instance_Proxy::OnHostMsgPostMessage(
 
 void PPB_Instance_Proxy::OnHostMsgLockMouse(PP_Instance instance) {
   EnterHostFunctionForceCallback<PPB_Instance_FunctionAPI> enter(
-      instance, callback_factory_,
-      &PPB_Instance_Proxy::MouseLockCompleteInHost, instance);
+      instance,
+      callback_factory_.NewCallback(
+          &PPB_Instance_Proxy::MouseLockCompleteInHost,
+          instance));
   if (enter.succeeded())
     enter.SetResult(enter.functions()->LockMouse(instance, enter.callback()));
 }

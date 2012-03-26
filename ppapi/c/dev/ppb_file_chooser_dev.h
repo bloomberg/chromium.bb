@@ -3,11 +3,12 @@
  * found in the LICENSE file.
  */
 
-/* From dev/ppb_file_chooser_dev.idl modified Mon Nov 14 10:36:01 2011. */
+/* From dev/ppb_file_chooser_dev.idl modified Thu Mar 15 09:29:39 2012. */
 
 #ifndef PPAPI_C_DEV_PPB_FILE_CHOOSER_DEV_H_
 #define PPAPI_C_DEV_PPB_FILE_CHOOSER_DEV_H_
 
+#include "ppapi/c/pp_array_output.h"
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_instance.h"
@@ -17,7 +18,8 @@
 #include "ppapi/c/pp_var.h"
 
 #define PPB_FILECHOOSER_DEV_INTERFACE_0_5 "PPB_FileChooser(Dev);0.5"
-#define PPB_FILECHOOSER_DEV_INTERFACE PPB_FILECHOOSER_DEV_INTERFACE_0_5
+#define PPB_FILECHOOSER_DEV_INTERFACE_0_6 "PPB_FileChooser(Dev);0.6"
+#define PPB_FILECHOOSER_DEV_INTERFACE PPB_FILECHOOSER_DEV_INTERFACE_0_6
 
 /**
  * @file
@@ -52,7 +54,7 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_FileChooserMode_Dev, 4);
  * @addtogroup Interfaces
  * @{
  */
-struct PPB_FileChooser_Dev_0_5 {
+struct PPB_FileChooser_Dev_0_6 {
   /**
    * This function creates a file chooser dialog resource.  The chooser is
    * associated with a particular instance, so that it may be positioned on the
@@ -94,29 +96,32 @@ struct PPB_FileChooser_Dev_0_5 {
    * no file, or another error code from pp_errors.h on failure.
    *
    * @param[in] chooser The file chooser resource.
+   *
+   * @param[in] output An output array which will receive PP_Resource(s)
+   * identifying the <code>PPB_FileRef</code> objects that the user selected on
+   * success.
+   *
    * @param[in] callback A <code>CompletionCallback</code> to be called after
    * the user has closed the file chooser dialog.
    *
    * @return PP_OK_COMPLETIONPENDING if request to show the dialog was
    * successful, another error code from pp_errors.h on failure.
    */
-  int32_t (*Show)(PP_Resource chooser, struct PP_CompletionCallback callback);
-  /**
-   * After a successful completion callback call from Show, this method may be
-   * used to query the chosen files.  It should be called in a loop until it
-   * returns 0.  Their file system type will be PP_FileSystemType_External.  If
-   * the user chose no files or canceled the dialog, then this method will
-   * simply return 0 the first time it is called.
-   *
-   * @param[in] chooser The file chooser resource.
-   *
-   * @return A <code>PP_Resource</code> containing the next file chosen by the
-   * user, or 0 if there are no more files.
-   */
-  PP_Resource (*GetNextChosenFile)(PP_Resource chooser);
+  int32_t (*Show)(PP_Resource chooser,
+                  struct PP_ArrayOutput output,
+                  struct PP_CompletionCallback callback);
 };
 
-typedef struct PPB_FileChooser_Dev_0_5 PPB_FileChooser_Dev;
+typedef struct PPB_FileChooser_Dev_0_6 PPB_FileChooser_Dev;
+
+struct PPB_FileChooser_Dev_0_5 {
+  PP_Resource (*Create)(PP_Instance instance,
+                        PP_FileChooserMode_Dev mode,
+                        struct PP_Var accept_mime_types);
+  PP_Bool (*IsFileChooser)(PP_Resource resource);
+  int32_t (*Show)(PP_Resource chooser, struct PP_CompletionCallback callback);
+  PP_Resource (*GetNextChosenFile)(PP_Resource chooser);
+};
 /**
  * @}
  */

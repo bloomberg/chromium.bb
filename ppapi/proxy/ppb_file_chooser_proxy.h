@@ -11,8 +11,11 @@
 #include "base/basictypes.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/proxy/interface_proxy.h"
+#include "ppapi/proxy/proxy_array_output.h"
 #include "ppapi/proxy/proxy_non_thread_safe_ref_count.h"
+#include "ppapi/proxy/serialized_var.h"
 #include "ppapi/thunk/ppb_file_chooser_api.h"
+#include "ppapi/cpp/output_traits.h"
 #include "ppapi/utility/completion_callback_factory.h"
 
 namespace ppapi {
@@ -46,8 +49,8 @@ class PPB_FileChooser_Proxy : public InterfaceProxy {
                    std::string accept_mime_types,
                    ppapi::HostResource* result);
   void OnMsgShow(const ppapi::HostResource& chooser,
-                 bool save_as,
-                 std::string suggested_file_name,
+                 PP_Bool save_as,
+                 SerializedVarReceiveInput suggested_file_name,
                  bool require_user_gesture);
 
   // Host -> plugin message handlers.
@@ -58,7 +61,10 @@ class PPB_FileChooser_Proxy : public InterfaceProxy {
 
   // Called when the show is complete in the host. This will notify the plugin
   // via IPC and OnMsgChooseComplete will be called there.
-  void OnShowCallback(int32_t result, const ppapi::HostResource& chooser);
+  void OnShowCallback(
+      int32_t result,
+      scoped_refptr<RefCountedArrayOutputAdapter<PP_Resource> > output,
+      HostResource chooser);
 
   pp::CompletionCallbackFactory<PPB_FileChooser_Proxy,
                                 ProxyNonThreadSafeRefCount> callback_factory_;

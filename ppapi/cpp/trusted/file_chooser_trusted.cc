@@ -15,8 +15,12 @@ namespace pp {
 
 namespace {
 
-template <> const char* interface_name<PPB_FileChooserTrusted>() {
-  return PPB_FILECHOOSER_TRUSTED_INTERFACE;
+template <> const char* interface_name<PPB_FileChooserTrusted_0_5>() {
+  return PPB_FILECHOOSER_TRUSTED_INTERFACE_0_5;
+}
+
+template <> const char* interface_name<PPB_FileChooserTrusted_0_6>() {
+  return PPB_FILECHOOSER_TRUSTED_INTERFACE_0_6;
 }
 
 }  // namespace
@@ -48,14 +52,29 @@ FileChooser_Trusted& FileChooser_Trusted::operator=(
   return *this;
 }
 
-int32_t FileChooser_Trusted::Show(const CompletionCallback& cc) {
-  if (!has_interface<PPB_FileChooserTrusted>())
-    return cc.MayForce(PP_ERROR_NOINTERFACE);
-  return get_interface<PPB_FileChooserTrusted>()->ShowWithoutUserGesture(
-      pp_resource(),
-      PP_FromBool(save_as_),
-      Var(suggested_file_name_).pp_var(),
-      cc.pp_completion_callback());
+int32_t FileChooser_Trusted::Show(
+    const CompletionCallbackWithOutput< std::vector<FileRef> >& callback) {
+  if (has_interface<PPB_FileChooserTrusted_0_6>()) {
+    return get_interface<PPB_FileChooserTrusted_0_6>()->ShowWithoutUserGesture(
+        pp_resource(),
+        PP_FromBool(save_as_),
+        Var(suggested_file_name_).pp_var(),
+        callback.output(),
+        callback.pp_completion_callback());
+  }
+  if (has_interface<PPB_FileChooserTrusted_0_5>()) {
+    // Data for our callback. The callback handler will delete it.
+    ChooseCallbackData0_5* data = new ChooseCallbackData0_5;
+    data->file_chooser = pp_resource();
+    data->output = callback.output();
+
+    return get_interface<PPB_FileChooserTrusted_0_5>()->ShowWithoutUserGesture(
+        pp_resource(),
+        PP_FromBool(save_as_),
+        Var(suggested_file_name_).pp_var(),
+        PP_MakeCompletionCallback(&CallbackConverter, data));
+  }
+  return callback.MayForce(PP_ERROR_NOINTERFACE);
 }
 
 }  // namespace pp

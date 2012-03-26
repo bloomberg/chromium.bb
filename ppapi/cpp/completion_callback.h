@@ -185,6 +185,8 @@ class CompletionCallbackWithOutput : public CompletionCallback {
   /// specializations for all of these cases.
   typedef typename internal::CallbackOutputTraits<T>::StorageType
       OutputStorageType;
+  typedef typename internal::CallbackOutputTraits<T>::APIArgType
+      APIArgType;
 
   /// The default constructor will create a blocking
   /// <code>CompletionCallback</code> that references the given output
@@ -237,7 +239,9 @@ class CompletionCallbackWithOutput : public CompletionCallback {
         output_(output) {
   }
 
-  OutputStorageType* output() const { return output_; }
+  APIArgType output() const {
+    return internal::CallbackOutputTraits<T>::StorageToAPIArg(*output_);
+  }
 
  private:
   OutputStorageType* output_;

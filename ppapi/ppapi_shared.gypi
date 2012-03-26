@@ -52,6 +52,8 @@
         }],
       ],
       'sources': [
+        'shared_impl/array_writer.cc',
+        'shared_impl/array_writer.h',
         'shared_impl/callback_tracker.cc',
         'shared_impl/callback_tracker.h',
         'shared_impl/file_type_conversion.cc',

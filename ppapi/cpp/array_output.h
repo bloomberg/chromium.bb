@@ -47,7 +47,7 @@ class ArrayOutputAdapterBase {
   }
   virtual ~ArrayOutputAdapterBase() {}
 
-  PP_ArrayOutput* pp_array_output() { return &pp_array_output_; }
+  const PP_ArrayOutput& pp_array_output() { return pp_array_output_; }
 
  protected:
   virtual void* GetDataBuffer(uint32_t element_count,
@@ -92,6 +92,8 @@ class ArrayOutputAdapter : public ArrayOutputAdapterBase {
 
   // ArrayOutputAdapterBase implementation.
   virtual void* GetDataBuffer(uint32_t element_count, uint32_t element_size) {
+    if (element_count == 0)
+      return NULL;
     PP_DCHECK(element_size == sizeof(T));
     if (element_size != sizeof(T))
       return NULL;
@@ -140,6 +142,8 @@ class ResourceArrayOutputAdapter : public ArrayOutputAdapterBase {
   // ArrayOutputAdapterBase implementation.
   virtual void* GetDataBuffer(uint32_t element_count,
                               uint32_t element_size) {
+    if (element_count == 0)
+      return NULL;
     PP_DCHECK(element_size == sizeof(PP_Resource));
     if (element_size != sizeof(PP_Resource))
       return NULL;

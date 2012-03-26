@@ -58,6 +58,13 @@ class FileChooserCompletionImpl : public WebFileChooserCompletion {
 
     file_chooser_->StoreChosenFiles(files);
   }
+  virtual void didChooseFile(const WebVector<SelectedFileInfo>& file_names) {
+    std::vector<std::string> files;
+    for (size_t i = 0; i < file_names.size(); i++)
+      files.push_back(file_names[i].path.utf8());
+
+    file_chooser_->StoreChosenFiles(files);
+  }
 
  private:
   scoped_refptr<PPB_FileChooser_Impl> file_chooser_;
@@ -101,8 +108,9 @@ PPB_FileChooser_API* PPB_FileChooser_Impl::AsPPB_FileChooser_API() {
 
 void PPB_FileChooser_Impl::StoreChosenFiles(
     const std::vector<std::string>& files) {
-  chosen_files_.clear();
   next_chosen_file_index_ = 0;
+
+  std::vector< scoped_refptr<Resource> > chosen_files;
   for (std::vector<std::string>::const_iterator it = files.begin();
        it != files.end(); ++it) {
 #if defined(OS_WIN)
@@ -111,11 +119,16 @@ void PPB_FileChooser_Impl::StoreChosenFiles(
     FilePath file_path(*it);
 #endif
 
-    chosen_files_.push_back(make_scoped_refptr(
+    chosen_files.push_back(scoped_refptr<Resource>(
         PPB_FileRef_Impl::CreateExternal(pp_instance(), file_path)));
   }
 
-  RunCallback((chosen_files_.size() > 0) ? PP_OK : PP_ERROR_USERCANCEL);
+  int32_t result_code = (chosen_files.size() > 0) ? PP_OK : PP_ERROR_USERCANCEL;
+  if (output_.is_valid())
+    output_.StoreResourceVector(chosen_files);
+  else  // v0.5 API.
+    chosen_files_.swap(chosen_files);
+  RunCallback(result_code);
 }
 
 int32_t PPB_FileChooser_Impl::ValidateCallback(
@@ -146,18 +159,38 @@ void PPB_FileChooser_Impl::RunCallback(int32_t result) {
   TrackedCallback::ClearAndRun(&callback_, result);
 }
 
-int32_t PPB_FileChooser_Impl::Show(const PP_CompletionCallback& callback) {
+int32_t PPB_FileChooser_Impl::Show(const PP_ArrayOutput& output,
+                                   const PP_CompletionCallback& callback) {
+  int32_t result = Show0_5(callback);
+  if (result == PP_OK_COMPLETIONPENDING)
+    output_.set_pp_array_output(output);
+  return result;
+}
+
+int32_t PPB_FileChooser_Impl::ShowWithoutUserGesture(
+    PP_Bool save_as,
+    PP_Var suggested_file_name,
+    const PP_ArrayOutput& output,
+    const PP_CompletionCallback& callback) {
+  int32_t result = ShowWithoutUserGesture0_5(save_as, suggested_file_name,
+                                             callback);
+  if (result == PP_OK_COMPLETIONPENDING)
+    output_.set_pp_array_output(output);
+  return result;
+}
+
+int32_t PPB_FileChooser_Impl::Show0_5(const PP_CompletionCallback& callback) {
   PluginInstance* plugin_instance = ResourceHelper::GetPluginInstance(this);
   if (!plugin_instance)
     return PP_ERROR_FAILED;
   if (!plugin_instance->IsProcessingUserGesture())
     return PP_ERROR_NO_USER_GESTURE;
-  return ShowWithoutUserGesture(false, NULL, callback);
+  return ShowWithoutUserGesture0_5(PP_FALSE, PP_MakeUndefined(), callback);
 }
 
-int32_t PPB_FileChooser_Impl::ShowWithoutUserGesture(
-    bool save_as,
-    const char* suggested_file_name,
+int32_t PPB_FileChooser_Impl::ShowWithoutUserGesture0_5(
+    PP_Bool save_as,
+    PP_Var suggested_file_name,
     const PP_CompletionCallback& callback) {
   int32_t rv = ValidateCallback(callback);
   if (rv != PP_OK)
@@ -169,8 +202,9 @@ int32_t PPB_FileChooser_Impl::ShowWithoutUserGesture(
   WebFileChooserParams params;
   if (save_as) {
     params.saveAs = true;
-    if (suggested_file_name)
-      params.initialValue = WebString::fromUTF8(suggested_file_name);
+    StringVar* str = StringVar::FromPPVar(suggested_file_name);
+    if (str)
+      params.initialValue = WebString::fromUTF8(str->value().c_str());
   } else {
     params.multiSelect = (mode_ == PP_FILECHOOSERMODE_OPENMULTIPLE);
   }

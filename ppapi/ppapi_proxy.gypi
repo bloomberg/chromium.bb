@@ -28,6 +28,15 @@
         '../..',  # For nacl includes to work.
       ],
       'sources': [
+        # Take some standalong files from the C++ wrapper allowing us to more
+        # easily make async callbacks in the proxy. We can't depend on the
+        # full C++ wrappers at this layer since the C++ wrappers expect
+        # symbols defining the globals for "being a plugin" which we are not.
+        # These callback files are standalone.
+        'cpp/completion_callback.cc',
+        'cpp/completion_callback.h',
+        'utility/completion_callback_factory.h',
+
         'proxy/broker_dispatcher.cc',
         'proxy/broker_dispatcher.h',
         'proxy/dispatcher.cc',
@@ -151,6 +160,8 @@
         'proxy/ppp_text_input_proxy.h',
         'proxy/ppp_video_decoder_proxy.cc',
         'proxy/ppp_video_decoder_proxy.h',
+        'proxy/proxy_array_output.cc',
+        'proxy/proxy_array_output.h',
         'proxy/proxy_channel.cc',
         'proxy/proxy_channel.h',
         'proxy/proxy_module.cc',

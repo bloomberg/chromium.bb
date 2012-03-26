@@ -4,6 +4,8 @@
 
 #include "ppapi/cpp/dev/file_chooser_dev.h"
 
+#include <string.h>
+
 #include "ppapi/c/dev/ppb_file_chooser_dev.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/cpp/completion_callback.h"
@@ -16,8 +18,12 @@ namespace pp {
 
 namespace {
 
-template <> const char* interface_name<PPB_FileChooser_Dev>() {
-  return PPB_FILECHOOSER_DEV_INTERFACE;
+template <> const char* interface_name<PPB_FileChooser_Dev_0_5>() {
+  return PPB_FILECHOOSER_DEV_INTERFACE_0_5;
+}
+
+template <> const char* interface_name<PPB_FileChooser_Dev_0_6>() {
+  return PPB_FILECHOOSER_DEV_INTERFACE_0_6;
 }
 
 }  // namespace
@@ -25,28 +31,72 @@ template <> const char* interface_name<PPB_FileChooser_Dev>() {
 FileChooser_Dev::FileChooser_Dev(const InstanceHandle& instance,
                                  PP_FileChooserMode_Dev mode,
                                  const Var& accept_mime_types) {
-  if (!has_interface<PPB_FileChooser_Dev>())
-    return;
-  PassRefFromConstructor(get_interface<PPB_FileChooser_Dev>()->Create(
-      instance.pp_instance(), mode, accept_mime_types.pp_var()));
+  if (has_interface<PPB_FileChooser_Dev_0_6>()) {
+    PassRefFromConstructor(get_interface<PPB_FileChooser_Dev_0_6>()->Create(
+        instance.pp_instance(), mode, accept_mime_types.pp_var()));
+  } else if (has_interface<PPB_FileChooser_Dev_0_5>()) {
+    PassRefFromConstructor(get_interface<PPB_FileChooser_Dev_0_5>()->Create(
+        instance.pp_instance(), mode, accept_mime_types.pp_var()));
+  }
 }
 
 FileChooser_Dev::FileChooser_Dev(const FileChooser_Dev& other)
     : Resource(other) {
 }
 
-int32_t FileChooser_Dev::Show(const CompletionCallback& cc) {
-  if (!has_interface<PPB_FileChooser_Dev>())
-    return cc.MayForce(PP_ERROR_NOINTERFACE);
-  return get_interface<PPB_FileChooser_Dev>()->Show(
-      pp_resource(), cc.pp_completion_callback());
+int32_t FileChooser_Dev::Show(
+    const CompletionCallbackWithOutput< std::vector<FileRef> >& callback) {
+  if (has_interface<PPB_FileChooser_Dev_0_6>()) {
+    return get_interface<PPB_FileChooser_Dev_0_6>()->Show(
+        pp_resource(),
+        callback.output(),
+        callback.pp_completion_callback());
+  }
+  if (has_interface<PPB_FileChooser_Dev_0_5>()) {
+    // Data for our callback wrapper. The callback handler will delete it.
+    ChooseCallbackData0_5* data = new ChooseCallbackData0_5;
+    data->file_chooser = pp_resource();
+    data->output = callback.output();
+    data->original_callback = callback.pp_completion_callback();
+
+    return get_interface<PPB_FileChooser_Dev_0_5>()->Show(
+        pp_resource(), PP_MakeCompletionCallback(&CallbackConverter, data));
+  }
+  return callback.MayForce(PP_ERROR_NOINTERFACE);
 }
 
-FileRef FileChooser_Dev::GetNextChosenFile() const {
-  if (!has_interface<PPB_FileChooser_Dev>())
-    return FileRef();
-  return FileRef(PASS_REF,
-      get_interface<PPB_FileChooser_Dev>()->GetNextChosenFile(pp_resource()));
+// static
+void FileChooser_Dev::CallbackConverter(void* user_data, int32_t result) {
+  ChooseCallbackData0_5* data = static_cast<ChooseCallbackData0_5*>(user_data);
+
+  // Get all of the selected file resources using the iterator API.
+  std::vector<PP_Resource> selected_files;
+  if (result == PP_OK) {
+    const PPB_FileChooser_Dev_0_5* chooser =
+        get_interface<PPB_FileChooser_Dev_0_5>();
+    while (PP_Resource cur = chooser->GetNextChosenFile(data->file_chooser))
+      selected_files.push_back(cur);
+  }
+
+  // Need to issue the "GetDataBuffer" even for error cases & when the
+  // number of items is 0.
+  void* output_buf = data->output.GetDataBuffer(
+      data->output.user_data,
+      selected_files.size(), sizeof(PP_Resource));
+  if (output_buf) {
+    if (!selected_files.empty()) {
+      memcpy(output_buf, &selected_files[0],
+             sizeof(PP_Resource) * selected_files.size());
+    }
+  } else {
+    // Error allocating, need to free the resource IDs.
+    for (size_t i = 0; i < selected_files.size(); i++)
+      Module::Get()->core()->ReleaseResource(selected_files[i]);
+  }
+
+  // Now execute the original callback.
+  PP_RunCompletionCallback(&data->original_callback, result);
+  delete data;
 }
 
 }  // namespace pp

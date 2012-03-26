@@ -702,8 +702,8 @@ IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBFileChooser_Create,
                            ppapi::HostResource /* result */)
 IPC_MESSAGE_ROUTED4(PpapiHostMsg_PPBFileChooser_Show,
                     ppapi::HostResource /* file_chooser */,
-                    bool /* save_as */,
-                    std::string /* suggested_file_name */,
+                    PP_Bool /* save_as */,
+                    ppapi::proxy::SerializedVar /* suggested_file_name */,
                     bool /* require_user_gesture */)
 
 // PPB_FileIO.

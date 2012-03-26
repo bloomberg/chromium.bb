@@ -75,6 +75,7 @@ typedef mem_t PP_ArrayOutput_GetDataBuffer([inout] mem_t user_data,
  * }
  * @endcode
  */
+[passByValue]
 struct PP_ArrayOutput {
   /**
    * A pointer to the allocation function that the browser implements.

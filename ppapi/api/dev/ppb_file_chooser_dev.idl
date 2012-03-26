@@ -9,7 +9,8 @@
  */
 
 label Chrome {
-  M16 = 0.5
+  M16 = 0.5,
+  M19 = 0.6
 };
 
 /**
@@ -80,6 +81,7 @@ interface PPB_FileChooser_Dev {
    * @return PP_OK_COMPLETIONPENDING if request to show the dialog was
    * successful, another error code from pp_errors.h on failure.
    */
+  [deprecate=0.6]
   int32_t Show(
       [in] PP_Resource chooser,
       [in] PP_CompletionCallback callback);
@@ -96,7 +98,33 @@ interface PPB_FileChooser_Dev {
    * @return A <code>PP_Resource</code> containing the next file chosen by the
    * user, or 0 if there are no more files.
    */
+  [deprecate=0.6]
   PP_Resource GetNextChosenFile(
       [in] PP_Resource chooser);
+
+  /**
+   * This function displays a previously created file chooser resource as a
+   * dialog box, prompting the user to choose a file or files. This function
+   * must be called in response to a user gesture, such as a mouse click or
+   * touch event. The callback is called with PP_OK on successful completion
+   * with a file (or files) selected, PP_ERROR_USERCANCEL if the user selected
+   * no file, or another error code from pp_errors.h on failure.
+   *
+   * @param[in] chooser The file chooser resource.
+   *
+   * @param[in] output An output array which will receive PP_Resource(s)
+   * identifying the <code>PPB_FileRef</code> objects that the user selected on
+   * success.
+   *
+   * @param[in] callback A <code>CompletionCallback</code> to be called after
+   * the user has closed the file chooser dialog.
+   *
+   * @return PP_OK_COMPLETIONPENDING if request to show the dialog was
+   * successful, another error code from pp_errors.h on failure.
+   */
+  [version=0.6]
+  int32_t Show([in] PP_Resource chooser,
+               [in] PP_ArrayOutput output,
+               [in] PP_CompletionCallback callback);
 };
 
