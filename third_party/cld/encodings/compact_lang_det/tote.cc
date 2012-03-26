@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -275,7 +275,7 @@ void ToteWithReliability::Sort(int n) {
         value_[sub] = value_[sub2];
         value_[sub2] = tmpv;
 
-        double tmps = score_[sub];
+        int tmps = score_[sub];
         score_[sub] = score_[sub2];
         score_[sub2] = tmps;
 

@@ -1163,10 +1163,6 @@ name=http://crbug.com/113847 (2)
 *!openDatabase
 *!sqlite3_open
 
-UNINITIALIZED READ
-name=http://crbug.com/115326
-*!ToteWithReliability::Sort
-
 # Some unit tests must not be waiting for the file thread after deleting the
 # AppNotificationManager.
 LEAK
