@@ -209,7 +209,6 @@ TEST_F(CaptureVideoDecoderTest, OnDeviceInfoReceived) {
   params.frame_per_second = kFPS;
   params.session_id = kVideoStreamId;
 
-  EXPECT_CALL(host_, SetNaturalVideoSize(expected_size));
   decoder_->OnDeviceInfoReceived(vc_impl_.get(), params);
   message_loop_->RunAllPending();
 
