@@ -178,8 +178,7 @@ body {
 }
 
 .track .art.error {
-  /* TODO(kaznacheev): This is a stopgap. Replace with the warning icon */
-  background-image: url(../images/media/media_pause_audio.png);
+  background-image: url(../images/media/error.png);
   background-repeat: no-repeat;
   background-position: center center;
 }

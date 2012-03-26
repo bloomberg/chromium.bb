@@ -129,6 +129,7 @@
         <include name="IDR_FILE_MANAGER_IMG_GALLERY_CURSOR_SWNE" file="file_manager/images/gallery/cursor_swne.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_IMG_GALLERY_SLIDER_THUMB" file="file_manager/images/gallery/slider_thumb.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_IMG_GALLERY_BUTTERBAR_CLOSE_X" file="file_manager/images/gallery/butterbar_close_x.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_GALLERY_SPINNER" file="file_manager/images/gallery/spinner_white.svg" type="BINDATA" />
 
         <include name="IDR_FILE_MANAGER_ICON_LIST_VIEW_ON" file="file_manager/images/icon_list_view_on.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_ICON_LIST_VIEW_OFF" file="file_manager/images/icon_list_view_off.png" type="BINDATA" />
@@ -198,6 +199,8 @@
         <include name="IDR_FILE_MANAGER_MEDIAPLAYER_PREVIOUS" file="file_manager/images/media/media_previous.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_MEDIAPLAYER_PREVIOUS_HOVER" file="file_manager/images/media/media_previous_hover.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_MEDIAPLAYER_PREVIOUS_DOWN" file="file_manager/images/media/media_previous_down.png" type="BINDATA" />
+
+        <include name="IDR_FILE_MANAGER_MEDIA_ERROR" file="file_manager/images/media/error.png" type="BINDATA" />
       </if>
 
       <if expr="pp_ifdef('use_virtual_keyboard')">

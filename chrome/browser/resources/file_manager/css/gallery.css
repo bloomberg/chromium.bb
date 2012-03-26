@@ -821,22 +821,16 @@ body {
 /* Load spinner and error banner */
 
 .gallery .spinner {
-  width: 22px;
-  height: 22px;
+  width: 32px;
+  height: 32px;
   position: absolute;
   left: 50%;
   top: 50%;
-  margin-left: -11px;
-  margin-top: -11px;
+  margin-left: -16px;
+  margin-top: -16px;
   opacity: 0.5;
   background-size: 100%;
-
-  background-image: url(../images/spinner.svg);
-  /* TODO(kaznacheev): The above spinner is black. Replace it with white
-   and remove the hacky lines below. */
-  background-color: white;
-  border: 3px solid white;
-  -webkit-border-radius: 13px;
+  background-image: url(../images/gallery/spinner_white.svg);
 }
 
 .gallery:not([spinner]) .spinner {
@@ -847,19 +841,17 @@ body {
   color: white;
   background-color: rgba(24, 24, 24, 1);
   height: 54px;
-  padding-left: 60px;
-  padding-right: 30px;
+  padding-left: 70px;
+  padding-right: 35px;
 
   display: -webkit-box;
   -webkit-box-orient: horizontal;
   -webkit-box-align: center;
   -webkit-box-pack: center;
 
-  /* TODO(kaznacheev): This is a stopgap. Replace with the warning icon
-    and correct the position*/
-  background-image: url(../images/media/media_pause_audio.png);
+  background-image: url(../images/media/error.png);
   background-repeat: no-repeat;
-  background-position: 20px 13px;
+  background-position: 25px center;
 }
 
 .gallery:not([error]) .error-banner {
