@@ -145,7 +145,7 @@ void CookieInfoView::ItemChanged(views::Combobox* combo_box,
 
 ///////////////////////////////////////////////////////////////////////////////
 // CookieInfoView, ui::ComboboxModel overrides.
-int CookieInfoView::GetItemCount() {
+int CookieInfoView::GetItemCount() const {
   return static_cast<int>(expire_combo_values_.size());
 }
 
