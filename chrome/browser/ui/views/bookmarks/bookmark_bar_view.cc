@@ -1134,6 +1134,11 @@ void BookmarkBarView::Init() {
 
   bookmarks_separator_view_ = new ButtonSeparatorView();
   AddChildView(bookmarks_separator_view_);
+#if defined(USE_ASH)
+  // Ash does not paint the bookmarks separator line because it looks odd on
+  // the flat background.  We keep it present for layout, but don't draw it.
+  bookmarks_separator_view_->SetVisible(false);
+#endif
 
   instructions_ = new BookmarkBarInstructionsView(this);
   AddChildView(instructions_);
@@ -1537,7 +1542,9 @@ void BookmarkBarView::UpdateOtherBookmarksVisibility() {
   if (has_other_children == other_bookmarked_button_->visible())
     return;
   other_bookmarked_button_->SetVisible(has_other_children);
+#if !defined(USE_ASH)
   bookmarks_separator_view_->SetVisible(has_other_children);
+#endif
   Layout();
   SchedulePaint();
 }
