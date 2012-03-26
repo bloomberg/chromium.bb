@@ -96,6 +96,8 @@ FrameMaximizeButton::FrameMaximizeButton(views::ButtonListener* listener,
     : ImageButton(listener),
       frame_(frame),
       is_snap_enabled_(false),
+      is_left_right_enabled_(true),
+      is_maximize_enabled_(true),
       exceeded_drag_threshold_(false),
       snap_type_(SNAP_NONE) {
   // TODO(sky): nuke this. It's temporary while we don't have good images.
@@ -160,6 +162,14 @@ void FrameMaximizeButton::OnMouseReleased(const views::MouseEvent& event) {
 void FrameMaximizeButton::OnMouseCaptureLost() {
   Cancel();
   ImageButton::OnMouseCaptureLost();
+}
+
+void FrameMaximizeButton::SetIsLeftRightEnabled(bool e) {
+  is_left_right_enabled_ = e;
+  int id = is_left_right_enabled_ ?
+      IDS_FRAME_MAXIMIZE_BUTTON_TOOLTIP :
+      IDS_FRAME_MAXIMIZE_BUTTON_NO_SIDE_SNAP_TOOLTIP;
+  SetTooltipText(l10n_util::GetStringUTF16(id));
 }
 
 SkBitmap FrameMaximizeButton::GetImageToPaint() {
@@ -261,19 +271,25 @@ void FrameMaximizeButton::UpdateSnap(const gfx::Point& location) {
   phantom_window_->Show(BoundsForType(snap_type_));
 }
 
+bool FrameMaximizeButton::AllowMaximize() const {
+  return !frame_->GetWidget()->IsMaximized() && is_maximize_enabled_;
+}
+
 FrameMaximizeButton::SnapType FrameMaximizeButton::SnapTypeForLocation(
     const gfx::Point& location) const {
   int delta_x = location.x() - press_location_.x();
   int delta_y = location.y() - press_location_.y();
   if (!views::View::ExceededDragThreshold(delta_x, delta_y))
-    return frame_->GetWidget()->IsMaximized() ? SNAP_NONE : SNAP_MAXIMIZE;
+    return AllowMaximize() ? SNAP_MAXIMIZE : SNAP_NONE;
   else if (delta_x < 0 && delta_y > delta_x && delta_y < -delta_x)
-    return SNAP_LEFT;
+    return is_left_right_enabled_ ? SNAP_LEFT : SNAP_NONE;
   else if (delta_x > 0 && delta_y > -delta_x && delta_y < delta_x)
-    return SNAP_RIGHT;
+    return is_left_right_enabled_ ? SNAP_RIGHT : SNAP_NONE;
   else if (delta_y > 0)
     return SNAP_MINIMIZE;
-  return frame_->GetWidget()->IsMaximized() ? SNAP_NONE : SNAP_MAXIMIZE;
+  else if (AllowMaximize())
+    return SNAP_MAXIMIZE;
+  return SNAP_NONE;
 }
 
 gfx::Rect FrameMaximizeButton::BoundsForType(SnapType type) const {
