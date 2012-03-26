@@ -73,15 +73,15 @@
   background-image: url('chrome://resources/images/x.png');
   background-position: center;
   background-repeat: no-repeat;
-  height: 44px;
+  height: 24px;
   position: absolute;
-  right: 0;
-  top: 0;
-  width: 44px;
+  right: 10px;
+  top: 10px;
+  width: 24px;
 }
 
 html[dir='rtl'] .overlay .page > .close-button {
-  left: 0;
+  left: 10px;
   right: auto;
 }
 
