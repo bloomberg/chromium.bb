@@ -125,8 +125,7 @@ struct window {
 	int redraw_scheduled;
 	int redraw_needed;
 	struct task redraw_task;
-	int resize_scheduled;
-	struct task resize_task;
+	int resize_needed;
 	int type;
 	int transparent;
 	struct input *keyboard_device;
@@ -888,8 +887,6 @@ window_destroy(struct window *window)
 
 	if (window->redraw_scheduled)
 		wl_list_remove(&window->redraw_task.link);
-	if (window->resize_scheduled)
-		wl_list_remove(&window->resize_task.link);
 
 	wl_list_for_each(input, &display->input_list, link) {
 		if (input->pointer_focus == window)
@@ -2014,13 +2011,11 @@ window_move(struct window *window, struct input *input, uint32_t time)
 }
 
 static void
-idle_resize(struct task *task, uint32_t events)
+idle_resize(struct window *window)
 {
-	struct window *window =
-		container_of(task, struct window, resize_task);
 	struct widget *widget;
 
-	window->resize_scheduled = 0;
+	window->resize_needed = 0;
 	widget = window->widget;
 	widget_set_allocation(widget,
 			      window->pending_allocation.x,
@@ -2059,11 +2054,8 @@ window_schedule_resize(struct window *window, int width, int height)
 	window->pending_allocation.width = width;
 	window->pending_allocation.height = height;
 
-	if (!window->resize_scheduled) {
-		window->resize_task.run = idle_resize;
-		display_defer(window->display, &window->resize_task);
-		window->resize_scheduled = 1;
-	}
+	window->resize_needed = 1;
+	window_schedule_redraw(window);
 }
 
 void
@@ -2151,9 +2143,11 @@ static const struct wl_callback_listener listener = {
 static void
 idle_redraw(struct task *task, uint32_t events)
 {
-	struct window *window =
-		container_of(task, struct window, redraw_task);
+	struct window *window = container_of(task, struct window, redraw_task);
 	struct wl_callback *callback;
+
+	if (window->resize_needed)
+		idle_resize(window);
 
 	window_create_surface(window);
 	widget_redraw(window->widget);
