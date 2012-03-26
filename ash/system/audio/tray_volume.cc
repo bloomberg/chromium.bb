@@ -166,14 +166,16 @@ class VolumeView : public views::View,
 
 }  // namespace tray
 
-TrayVolume::TrayVolume() : is_default_view_(false) {
+TrayVolume::TrayVolume()
+    : TrayImageItem(IDR_AURA_UBER_TRAY_VOLUME_MUTE),
+      is_default_view_(false) {
 }
 
 TrayVolume::~TrayVolume() {
 }
 
-views::View* TrayVolume::CreateTrayView(user::LoginStatus status) {
-  return NULL;
+bool TrayVolume::GetInitialVisibility() {
+  return ash::Shell::GetInstance()->tray_delegate()->IsAudioMuted();
 }
 
 views::View* TrayVolume::CreateDefaultView(user::LoginStatus status) {
@@ -188,9 +190,6 @@ views::View* TrayVolume::CreateDetailedView(user::LoginStatus status) {
   return volume_view_.get();
 }
 
-void TrayVolume::DestroyTrayView() {
-}
-
 void TrayVolume::DestroyDefaultView() {
   if (is_default_view_)
     volume_view_.reset();
@@ -202,6 +201,9 @@ void TrayVolume::DestroyDetailedView() {
 }
 
 void TrayVolume::OnVolumeChanged(float percent) {
+  if (image_view())
+    image_view()->SetVisible(GetInitialVisibility());
+
   if (volume_view_.get()) {
     volume_view_->SetVolumeLevel(percent);
     SetDetailedViewCloseDelay(kTrayPopupAutoCloseDelayInSeconds);

@@ -7,7 +7,7 @@
 #pragma once
 
 #include "ash/system/audio/audio_observer.h"
-#include "ash/system/tray/system_tray_item.h"
+#include "ash/system/tray/tray_image_item.h"
 #include "base/memory/scoped_ptr.h"
 
 namespace ash {
@@ -17,18 +17,19 @@ namespace tray {
 class VolumeView;
 }
 
-class TrayVolume : public SystemTrayItem,
+class TrayVolume : public TrayImageItem,
                    public AudioObserver {
  public:
   TrayVolume();
   virtual ~TrayVolume();
 
  private:
+  // Overridden from TrayImageItem.
+  virtual bool GetInitialVisibility() OVERRIDE;
+
   // Overridden from SystemTrayItem.
-  virtual views::View* CreateTrayView(user::LoginStatus status) OVERRIDE;
   virtual views::View* CreateDefaultView(user::LoginStatus status) OVERRIDE;
   virtual views::View* CreateDetailedView(user::LoginStatus status) OVERRIDE;
-  virtual void DestroyTrayView() OVERRIDE;
   virtual void DestroyDefaultView() OVERRIDE;
   virtual void DestroyDetailedView() OVERRIDE;
 

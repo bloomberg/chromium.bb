@@ -306,6 +306,7 @@
         <include name="IDR_AURA_WINDOW_ZOOM_ICON" file="aura/slab_zoom.png" type="BINDATA" />
         <include name="IDR_AURA_UBER_TRAY_UPDATE" file="aura/system_update.png" type="BINDATA" />
         <include name="IDR_AURA_UBER_TRAY_VOLUME_LEVELS" file="aura/status_volume_all.png" type="BINDATA" />
+        <include name="IDR_AURA_UBER_TRAY_VOLUME_MUTE" file="aura/status_volume_mute.png" type="BINDATA" />
         <include name="IDR_AURA_UBER_TRAY_BRIGHTNESS" file="aura/status_brightness.png" type="BINDATA" />
         <include name="IDR_AURA_UBER_TRAY_SETTINGS" file="aura/status_settings.png" type="BINDATA" />
         <include name="IDR_AURA_UBER_TRAY_POWER_SMALL" file="aura/status_power_small_all.png" type="BINDATA" />
