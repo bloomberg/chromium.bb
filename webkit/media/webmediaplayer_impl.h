@@ -274,7 +274,9 @@ class WebMediaPlayerImpl
 
   scoped_refptr<media::MediaLog> media_log_;
 
-  bool is_accelerated_compositing_active_;
+  // Since accelerated compositing status is only known after the first layout,
+  // we delay reporting it to UMA until that time.
+  bool accelerated_compositing_reported_;
 
   bool incremented_externally_allocated_memory_;
 

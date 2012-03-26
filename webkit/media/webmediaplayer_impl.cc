@@ -118,7 +118,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       delegate_(delegate),
       media_stream_client_(media_stream_client),
       media_log_(media_log),
-      is_accelerated_compositing_active_(false),
+      accelerated_compositing_reported_(false),
       incremented_externally_allocated_memory_(false),
       audio_source_provider_(audio_source_provider) {
   media_log_->AddEvent(
@@ -138,9 +138,6 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       FROM_HERE,
       base::Bind(&WebMediaPlayerImpl::IncrementExternallyAllocatedMemory,
                  AsWeakPtr()));
-
-  is_accelerated_compositing_active_ =
-      frame->view()->isAcceleratedCompositingActive();
 
   // Also we want to be notified of |main_loop_| destruction.
   main_loop_->AddDestructionObserver(this);
@@ -621,6 +618,11 @@ WebKit::WebVideoFrame* WebMediaPlayerImpl::getCurrentFrame() {
 
 void WebMediaPlayerImpl::putCurrentFrame(
     WebKit::WebVideoFrame* web_video_frame) {
+  if (!accelerated_compositing_reported_) {
+    accelerated_compositing_reported_ = true;
+    UMA_HISTOGRAM_BOOLEAN("Media.AcceleratedCompositingActive",
+                          frame_->view()->isAcceleratedCompositingActive());
+  }
   if (web_video_frame) {
     scoped_refptr<media::VideoFrame> video_frame(
         WebVideoFrameImpl::toVideoFrame(web_video_frame));
@@ -678,12 +680,8 @@ void WebMediaPlayerImpl::OnPipelineInitialize(PipelineStatus status) {
         static_cast<float>(pipeline_->GetMediaDuration().InSecondsF());
     buffered_.swap(new_buffered);
 
-    if (hasVideo()) {
-      UMA_HISTOGRAM_BOOLEAN("Media.AcceleratedCompositingActive",
-                            is_accelerated_compositing_active_);
-    } else {
+    if (!hasVideo())
       GetClient()->disableAcceleratedCompositing();
-    }
 
     if (pipeline_->IsLocalSource())
       SetNetworkState(WebKit::WebMediaPlayer::Loaded);
