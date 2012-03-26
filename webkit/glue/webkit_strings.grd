@@ -406,7 +406,11 @@ below:
       <message name="IDS_PDF_PROGRESS_LOADING" desc="A message displayed on the progress control over PDF page during document loading.">
         Loading
       </message>
-      
+
+      <message name="IDS_PLUGIN_INITIALIZATION_ERROR" desc="A message displayed when a plug-in failed to load">
+        Couldn't load plug-in.
+      </message>
+
     </messages>
   </release>
 </grit>
