@@ -583,6 +583,7 @@ div.img-container {
 
 div.img-container > img {
   position: absolute;
+  -webkit-user-drag: none;
 }
 
 .list-container list > *,
@@ -655,6 +656,11 @@ input.rename {
   width: 114px;
   height: 20px;
   -webkit-box-sizing: border-box;
+}
+
+.thumbnail-grid li,
+.detail-table list li {
+  -webkit-user-drag: element;
 }
 
 /* The cr.ui.Table representing the detailed file list. */
@@ -1040,6 +1046,7 @@ li.table-row {
 
 .dialog-footer .filename-label {
   -webkit-box-orient: horizontal;
+  background-color: white;
   color: #666;
   display: -webkit-box;
   font-weight: bold;
@@ -1088,6 +1095,37 @@ li.table-row {
   height: 100%;
   border: none;
   z-index: 100;
+}
+
+/* Invisible container for elements representing files while dragging. */
+#drag-image-container {
+  position: fixed;
+  /* Only nodes in visible viewport will be rendered. */
+  top: 0;
+  left: 0;
+  display: -webkit-box;
+  -webkit-box-orient: horizontal;
+  padding-left: 100px;
+  z-index: -1;  /* below .dialog-container */
+}
+
+#drag-image-container > * {
+  display: inline-block;
+  background-color: #CBDBF1;
+  border-color: #E0E9F7;
+  border: 1px solid white; /* transparent white */
+  cursor: default;
+  line-height: 20px;
+  margin: 0 0 0 -100px;
+  overflow: hidden;
+  padding: 0 3px;
+  position: relative; /* to allow overlap */
+  text-overflow: ellipsis;
+  white-space: pre;
+}
+
+#drag-image-container > li input[type=checkbox] {
+  display: none;
 }
 
 menu.file-context-menu {

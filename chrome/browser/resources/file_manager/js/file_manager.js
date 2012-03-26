@@ -36,6 +36,8 @@ function FileManager(dialogDom) {
 
   this.commands_ = {};
 
+  this.thumbnailUrlCache_ = {};
+
   this.document_ = dialogDom.ownerDocument;
   this.dialogType_ = this.params_.type || FileManager.DialogType.FULL_PAGE;
 
@@ -648,7 +650,7 @@ FileManager.prototype = {
 
     this.document_.addEventListener('keydown', this.onKeyDown_.bind(this));
     this.document_.addEventListener('copy',
-                                    this.copySelectionToClipboard_.bind(this));
+                                    this.onCopy_.bind(this));
     // Disable the default browser context menu.
     this.document_.addEventListener('contextmenu',
                                     function (e) { e.preventDefault() });
@@ -656,16 +658,16 @@ FileManager.prototype = {
     // We need to store a reference to the function returned by bind. Later, in
     // canPaste function, we need to temporarily remove this event handler and
     // use another 'paste' event handler to check the state of system clipboard.
-    this.pasteFromClipboardBind_ = this.pasteFromClipboard_.bind(this);
-    this.document_.addEventListener('paste', this.pasteFromClipboardBind_);
+    this.onPasteBound_ = this.onPaste_.bind(this);
+    this.document_.addEventListener('paste', this.onPasteBound_);
 
     // In pasteFromClipboard function, we need to reset system clipboard after
     // 'cut' and 'paste' command sequence. The clipboardData.clearData doesn't
     // seem to work. We reset the system clipboard in another 'cut' event
     // handler as a workaround. This reference is used to temporarily remove
     // 'cut' event handler as well.
-    this.cutFromClipboardBind_ = this.cutSelectionToClipboard_.bind(this);
-    this.document_.addEventListener('cut', this.cutFromClipboardBind_);
+    this.onCutBound_ = this.onCut_.bind(this);
+    this.document_.addEventListener('cut', this.onCutBound_);
 
     this.renameInput_ = this.document_.createElement('input');
     this.renameInput_.className = 'rename';
@@ -1114,11 +1116,11 @@ FileManager.prototype = {
          canPaste = true;
     };
 
-    this.document_.removeEventListener('paste', this.pasteFromClipboardBind_);
+    this.document_.removeEventListener('paste', this.onPasteBound_);
     this.document_.addEventListener('paste', clipboardCanPaste);
     this.document_.execCommand('paste');
     this.document_.removeEventListener('paste', clipboardCanPaste);
-    this.document_.addEventListener('paste', this.pasteFromClipboardBind_);
+    this.document_.addEventListener('paste', this.onPasteBound_);
     return canPaste && !readonly;
   };
 
@@ -1252,6 +1254,7 @@ FileManager.prototype = {
     cr.ui.contextMenuHandler.setContextMenu(this.grid_, this.fileContextMenu_);
     this.grid_.addEventListener('mousedown',
                                 this.onGridOrTableMouseDown_.bind(this));
+    this.setupDragAndDrop_(this.grid_);
   };
 
   /**
@@ -1296,6 +1299,27 @@ FileManager.prototype = {
 
     this.table_.addEventListener('mousedown',
                                  this.onGridOrTableMouseDown_.bind(this));
+    this.setupDragAndDrop_(this.table_.list);
+  };
+
+  FileManager.prototype.setupDragAndDrop_ = function(list) {
+    list.addEventListener('dragstart', this.onDragStart_.bind(this));
+  };
+
+  FileManager.prototype.onDragStart_ = function(event) {
+    var dt = event.dataTransfer;
+    var container = this.document_.querySelector('#drag-image-container');
+    container.textContent = '';
+    for (var i = 0; i < this.selection.dragNodes.length; i++) {
+      var listItem = this.selection.dragNodes[i];
+      listItem.selected = true;
+      container.appendChild(listItem);
+    }
+
+    this.cutOrCopyToClipboard_(dt, false);
+
+    dt.setDragImage(container, 0, 0);
+    dt.effectAllowed = 'copyMove';
   };
 
   FileManager.prototype.initButter_ = function() {
@@ -1729,7 +1753,13 @@ FileManager.prototype = {
     box.className = 'img-container';
     var img = this.document_.createElement('img');
     var self = this;
-    this.getThumbnailURL(entry, function(iconType, url, transform) {
+
+    function onThumbnailURL(iconType, url, transform) {
+      self.thumbnailUrlCache_[entry.fullPath] = {
+        iconType: iconType,
+        url: url,
+        transform: transform
+      };
       img.onload = function() {
         self.centerImage_(img.style, img.width, img.height, fill);
         if (opt_imageLoadCallback)
@@ -1738,7 +1768,14 @@ FileManager.prototype = {
       };
       img.src = url;
       self.applyImageTransformation_(box, transform);
-    });
+    }
+
+   var cached = this.thumbnailUrlCache_[entry.fullPath];
+    if (cached)
+      onThumbnailURL(cached.iconType, cached.url, cached.transform);
+    else
+      this.getThumbnailURL(entry, onThumbnailURL);
+
     return box;
   };
 
@@ -2076,7 +2113,9 @@ FileManager.prototype = {
       directoryCount: 0,
       bytes: 0,
       iconType: null,
-      indexes: this.currentList_.selectionModel.selectedIndexes
+      indexes: this.currentList_.selectionModel.selectedIndexes,
+      files: [],
+      dragNodes: []
     };
 
     if (!selection.indexes.length) {
@@ -2129,6 +2168,12 @@ FileManager.prototype = {
         thumbnailCount++;
       }
 
+      // Items to drag are created in advance. Images must be loaded
+      // at the time the 'dragstart' event comes. Otherwise draggable
+      // image will be rendered without IMG tags.
+      if (selection.dragNodes.length < MAX_PREVIEW_THUMBAIL_COUNT)
+        selection.dragNodes.push(new GridItem(this, entry));
+
       selection.totalCount++;
 
       if (entry.isFile) {
@@ -2143,6 +2188,16 @@ FileManager.prototype = {
           continue;
         } else {
           selection.bytes += entry.cachedSize_;
+        }
+        // File object must be prepeared in advance for clipboard operations
+        // (copy, paste and drag). Clipboard object closes for write after
+        // returning control from that handlers so they may not have
+        // asynchronous operations.
+        // TODO(serya): Put file objects into the clipboard.
+        if (!this.isOnGData()) {
+          entry.file(function(f) {
+            selection.files.push(f);
+          });
         }
       } else {
         selection.directoryCount += 1;
@@ -3061,68 +3116,74 @@ FileManager.prototype = {
   /**
    * Write the current selection to system clipboard.
    *
-   * @param {Event} event Cut or Copy event.
+   * @param {Clipboard} clipboard Clipboard from the event.
    * @param {boolean} isCut True if the current command is cut.
    */
-  FileManager.prototype.cutOrCopyToClipboard_ = function(event, isCut) {
-      event.preventDefault();
+  FileManager.prototype.cutOrCopyToClipboard_ = function(clipboard, isCut) {
+    var directories  = '';
+    var files = '';
+    for(var i = 0, entry; i < this.selection.entries.length; i++) {
+      entry = this.selection.entries[i];
+      if (entry.isDirectory)
+        directories += entry.fullPath + '\n';
+      else
+        files += entry.fullPath + '\n';
+    }
 
-      var directories  = '';
-      var files = '';
-      for(var i = 0, entry; i < this.selection.entries.length; i++) {
-        entry = this.selection.entries[i];
-        if (entry.isDirectory)
-          directories += entry.fullPath + '\n';
-        else
-          files += entry.fullPath + '\n';
-      }
-
-      event.clipboardData.setData('fs/isCut', isCut.toString());
-      event.clipboardData.setData('fs/isOnGData',
-                                  this.isOnGData().toString());
-      event.clipboardData.setData('fs/sourceDir',
+    clipboard.setData('fs/isCut', isCut.toString());
+    clipboard.setData('fs/sourceDir',
                                   this.directoryModel_.currentEntry.fullPath);
-      event.clipboardData.setData('fs/directories', directories);
-      event.clipboardData.setData('fs/files', files);
+    clipboard.setData('fs/sourceOnGData', this.isOnGData());
+    clipboard.setData('fs/directories', directories);
+    clipboard.setData('fs/files', files);
   }
 
-  FileManager.prototype.copySelectionToClipboard_ = function(event) {
-      if (!this.selection || this.selection.totalCount == 0)
-        return;
+  FileManager.prototype.onCopy_ = function(event) {
+    if (!this.selection || this.selection.totalCount == 0)
+      return;
 
-      this.cutOrCopyToClipboard_(event, false);
+    event.preventDefault();
+    this.cutOrCopyToClipboard_(event.clipboardData, false);
 
-      this.blinkSelection();
+    this.blinkSelection();
   };
 
-  FileManager.prototype.cutSelectionToClipboard_ = function(event) {
+  FileManager.prototype.onCut_ = function(event) {
     if (!this.selection || this.selection.totalCount == 0 ||
         this.commands_['cut'].disabled)
       return;
 
-    this.cutOrCopyToClipboard_(event, true);
+    event.preventDefault();
+    this.cutOrCopyToClipboard_(event.clipboardData, true);
 
     this.blinkSelection();
+  };
+
+  FileManager.prototype.onPaste_ = function(event) {
+    event.preventDefault();
+    this.pasteFromClipboard_(event.clipboardData);
   };
 
   /**
    * Queue up a file copy operation based on the current system clipboard.
    */
-  FileManager.prototype.pasteFromClipboard_ = function(event) {
-    event.preventDefault();
-
+  FileManager.prototype.pasteFromClipboard_ = function(clipboard) {
     if (!event.clipboardData.getData('fs/isCut'))
       return;
 
-    var clipboard = {
-      isCut: event.clipboardData.getData('fs/isCut'),
-      isOnGData: event.clipboardData.getData('fs/isOnGData'),
-      sourceDir: event.clipboardData.getData('fs/sourceDir'),
-      directories: event.clipboardData.getData('fs/directories'),
-      files: event.clipboardData.getData('fs/files')
+    var operationInfo = {
+      isCut: clipboard.getData('fs/isCut'),
+      sourceDir: clipboard.getData('fs/sourceDir'),
+      sourceOnGData: clipboard.getData('fs/sourceOnGData'),
+      directories: clipboard.getData('fs/directories'),
+      files: clipboard.getData('fs/files')
     };
 
-    this.copyManager_.paste(clipboard,
+    // If both source and target are on GData, FileCopyManager uses
+    // FileEntry.copyTo() / FileEntry.moveTo() to copy / move files.
+    var sourceAndTargetOnGData = operationInfo.sourceOnGData &&
+                                 this.isOnGData();
+    this.copyManager_.paste(operationInfo,
                             this.directoryModel_.currentEntry,
                             this.isOnGData(),
                             this.filesystem_.root);
@@ -3134,12 +3195,12 @@ FileManager.prototype = {
 
     // On cut, we clear the clipboard after the file is pasted/moved so we don't
     // try to move/delete the original file again.
-    if (clipboard.isCut == 'true') {
-      this.document_.removeEventListener('cut', this.cutFromClipboardBind_);
+    if (operationInfo.isCut == 'true') {
+      this.document_.removeEventListener('cut', this.onCutBound_);
       this.document_.addEventListener('cut', clearClipboard);
       this.document_.execCommand('cut');
       this.document_.removeEventListener('cut', clearClipboard);
-      this.document_.addEventListener('cut', this.cutFromClipboardBind_);
+      this.document_.addEventListener('cut', this.onCutBound_);
     }
   };
 
@@ -3265,8 +3326,18 @@ FileManager.prototype = {
 
     this.updateOkButton_();
 
-    var self = this;
-    setTimeout(function() { self.onSelectionChangeComplete_(event) }, 0);
+    var newThumbnailUrlCache = {};
+    if (this.selection) {
+      const entries = this.selection.entries;
+      for (var i = 0; i < entries.length; i++) {
+        var path = entries[i].fullPath;
+        if (path in this.thumbnailUrlCache_)
+          newThumbnailUrlCache[path] = this.thumbnailUrlCache_[path];
+      }
+    }
+    this.thumbnailUrlCache_ = newThumbnailUrlCache;
+
+    setTimeout(this.onSelectionChangeComplete_.bind(this, event), 0);
   };
 
   /**
@@ -3519,17 +3590,9 @@ FileManager.prototype = {
   };
 
   FileManager.prototype.findListItemForNode_ = function(node) {
-    var list = this.currentList_;
-    // Assume list items are direct children of the list.
-    if (node == list)
-      return null;
-    while (node) {
-      var parent = node.parentNode;
-      if (parent == list && node instanceof cr.ui.ListItem)
-        return node;
-      node = parent;
-    }
-    return null;
+    var item = this.currentList_.getListItemAncestor(node);
+    // TODO(serya): list should check that.
+    return item && this.currentList_.isItem(item) ? item : null;
   };
 
   FileManager.prototype.onGridOrTableMouseDown_ = function(event) {
