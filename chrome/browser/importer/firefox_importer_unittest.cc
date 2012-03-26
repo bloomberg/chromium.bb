@@ -181,7 +181,7 @@ class FirefoxObserver : public ProfileWriter,
     }
   }
 
-  virtual void AddKeywords(const std::vector<TemplateURL*>& template_urls,
+  virtual void AddKeywords(ScopedVector<TemplateURL> template_urls,
                            bool unique_on_host_and_path) {
     for (size_t i = 0; i < template_urls.size(); ++i) {
       // The order might not be deterministic, look in the expected list for
@@ -199,8 +199,6 @@ class FirefoxObserver : public ProfileWriter,
       EXPECT_TRUE(found);
       ++keyword_count_;
     }
-
-    STLDeleteContainerPointers(template_urls.begin(), template_urls.end());
   }
 
   void AddFavicons(const std::vector<history::ImportedFaviconUsage>& favicons) {
@@ -333,7 +331,7 @@ class Firefox3Observer : public ProfileWriter,
     }
   }
 
-  void AddKeywords(const std::vector<TemplateURL*>& template_urls,
+  void AddKeywords(ScopedVector<TemplateURL> template_urls,
                    bool unique_on_host_and_path) {
     for (size_t i = 0; i < template_urls.size(); ++i) {
       // The order might not be deterministic, look in the expected list for
@@ -351,8 +349,6 @@ class Firefox3Observer : public ProfileWriter,
       EXPECT_TRUE(found);
       ++keyword_count_;
     }
-
-    STLDeleteContainerPointers(template_urls.begin(), template_urls.end());
   }
 
   void AddFavicons(const std::vector<history::ImportedFaviconUsage>& favicons) {

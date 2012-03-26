@@ -292,7 +292,7 @@ static void BuildHostPathMap(TemplateURLService* model,
   }
 }
 
-void ProfileWriter::AddKeywords(const std::vector<TemplateURL*>& template_urls,
+void ProfileWriter::AddKeywords(ScopedVector<TemplateURL> template_urls,
                                 bool unique_on_host_and_path) {
   TemplateURLService* model =
       TemplateURLServiceFactory::GetForProfile(profile_);
@@ -300,13 +300,11 @@ void ProfileWriter::AddKeywords(const std::vector<TemplateURL*>& template_urls,
   if (unique_on_host_and_path)
     BuildHostPathMap(model, &host_path_map);
 
-  for (std::vector<TemplateURL*>::const_iterator i = template_urls.begin();
+  for (ScopedVector<TemplateURL>::iterator i = template_urls.begin();
        i != template_urls.end(); ++i) {
-    scoped_ptr<TemplateURL> t_url(*i);
-
     // TemplateURLService requires keywords to be unique. If there is already a
     // TemplateURL with this keyword, don't import it again.
-    if (model->GetTemplateURLForKeyword(t_url->keyword()) != NULL)
+    if (model->GetTemplateURLForKeyword((*i)->keyword()) != NULL)
       continue;
 
     // For search engines if there is already a keyword with the same
@@ -315,13 +313,14 @@ void ProfileWriter::AddKeywords(const std::vector<TemplateURL*>& template_urls,
     // sure the search engines we provide aren't replaced by those from the
     // imported browser.
     if (unique_on_host_and_path &&
-        (host_path_map.find(BuildHostPathKey(t_url.get(), true)) !=
-            host_path_map.end()))
+        (host_path_map.find(BuildHostPathKey(*i, true)) != host_path_map.end()))
       continue;
 
     // Only add valid TemplateURLs to the model.
-    if (t_url->url() && t_url->url()->IsValid())
-      model->Add(t_url.release());
+    if ((*i)->url() && (*i)->url()->IsValid()) {
+      model->Add(*i);  // Takes ownership.
+      *i = NULL;       // Prevent the vector from deleting *i later.
+    }
   }
 }
 

@@ -105,12 +105,9 @@ void ExternalProcessImporterBridge::SetHistoryItems(
 void ExternalProcessImporterBridge::SetKeywords(
     const std::vector<TemplateURL*>& template_urls,
     bool unique_on_host_and_path) {
-  std::vector<TemplateURL> urls;
-  for (size_t i = 0; i < template_urls.size(); ++i) {
-    urls.push_back(*template_urls[i]);
-  }
-  Send(new ProfileImportProcessHostMsg_NotifyKeywordsReady(urls,
+  Send(new ProfileImportProcessHostMsg_NotifyKeywordsReady(template_urls,
       unique_on_host_and_path));
+  STLDeleteContainerPointers(template_urls.begin(), template_urls.end());
 }
 
 void ExternalProcessImporterBridge::SetPasswordForm(

@@ -290,18 +290,11 @@ void ExternalProcessImporterClient::OnPasswordFormImportReady(
 }
 
 void ExternalProcessImporterClient::OnKeywordsImportReady(
-    const std::vector<TemplateURL>& template_urls,
+    const std::vector<TemplateURL*>& template_urls,
     bool unique_on_host_and_path) {
   if (cancelled_)
     return;
 
-  std::vector<TemplateURL*> template_url_vec;
-  template_url_vec.reserve(template_urls.size());
-  std::vector<TemplateURL>::const_iterator iter;
-  for (iter = template_urls.begin();
-       iter != template_urls.end();
-       ++iter) {
-    template_url_vec.push_back(new TemplateURL(*iter));
-  }
-  bridge_->SetKeywords(template_url_vec, unique_on_host_and_path);
+  bridge_->SetKeywords(template_urls, unique_on_host_and_path);
+  // The pointers in |template_urls| have now been deleted.
 }

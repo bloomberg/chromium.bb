@@ -314,11 +314,10 @@ void Firefox2Importer::ImportBookmarks() {
                                        IDS_BOOKMARK_GROUP_FROM_FIREFOX);
     bridge_->AddBookmarks(bookmarks, first_folder_name);
   }
-  if (!parsing_bookmarks_html_file_ && !template_urls.empty() && !cancelled()) {
+  if (!parsing_bookmarks_html_file_ && !template_urls.empty() && !cancelled())
     bridge_->SetKeywords(template_urls, false);
-  } else {
-    STLDeleteContainerPointers(template_urls.begin(), template_urls.end());
-  }
+  else
+    STLDeleteElements(&template_urls);
   if (!favicons.empty())
     bridge_->SetFavicons(favicons);
 }

@@ -68,7 +68,9 @@ class ExternalProcessImporterClient : public content::UtilityProcessHostClient {
   void OnFaviconsImportGroup(
       const std::vector<history::ImportedFaviconUsage>& favicons_group);
   void OnPasswordFormImportReady(const webkit::forms::PasswordForm& form);
-  void OnKeywordsImportReady(const std::vector<TemplateURL>& template_urls,
+  // WARNING: This function takes ownership of (and deletes) the pointers in
+  // |template_urls|!
+  void OnKeywordsImportReady(const std::vector<TemplateURL*>& template_urls,
                              bool unique_on_host_and_path);
 
  private:

@@ -38,6 +38,8 @@ class ImporterBridge : public base::RefCountedThreadSafe<ImporterBridge> {
   virtual void SetHistoryItems(const history::URLRows& rows,
                                history::VisitSource visit_source) = 0;
 
+  // WARNING: This function takes ownership of (and deletes) the pointers in
+  // |template_urls|!
   virtual void SetKeywords(const std::vector<TemplateURL*>& template_urls,
                            bool unique_on_host_and_path) = 0;
 

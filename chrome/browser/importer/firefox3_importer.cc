@@ -280,7 +280,7 @@ void Firefox3Importer::ImportBookmarks() {
     }
   }
 
-  STLDeleteContainerPointers(list.begin(), list.end());
+  STLDeleteElements(&list);
 
   // Write into profile.
   if (!bookmarks.empty() && !cancelled()) {
@@ -291,7 +291,7 @@ void Firefox3Importer::ImportBookmarks() {
   if (!template_urls.empty() && !cancelled())
     bridge_->SetKeywords(template_urls, false);
   else
-    STLDeleteContainerPointers(template_urls.begin(), template_urls.end());
+    STLDeleteElements(&template_urls);
   if (!favicon_map.empty() && !cancelled()) {
     std::vector<history::ImportedFaviconUsage> favicons;
     LoadFavicons(&db, favicon_map, &favicons);

@@ -229,34 +229,40 @@ struct ParamTraits<TemplateURL::ImageRef> {
   }
 };
 
-// Traits for TemplateURL
+// Traits for TemplateURL*.
+// WARNING: These will cause us to allocate a new TemplateURL on the heap on the
+// receiver side.  Any messages using this type must have handlers that are
+// careful to properly take ownership and avoid leaks!  See warning below on
+// ProfileImportProcessHostMsg_NotifyKeywordsReady.
 template <>
-struct ParamTraits<TemplateURL> {
-  typedef TemplateURL param_type;
+struct ParamTraits<TemplateURL*> {
+  typedef TemplateURL* param_type;
   static void Write(Message* m, const param_type& p) {
-    WriteParam(m, p.short_name());
-    WriteParam(m, p.description());
-    if (p.suggestions_url()) {
+    WriteParam(m, p->short_name());
+    WriteParam(m, p->description());
+    if (p->suggestions_url()) {
       WriteParam(m, true);
-      WriteParam(m, *p.suggestions_url());
+      WriteParam(m, *p->suggestions_url());
     } else {
       WriteParam(m, false);
     }
-    WriteParam(m, *p.url());
-    WriteParam(m, p.originating_url());
-    WriteParam(m, p.keyword());
-    WriteParam(m, p.autogenerate_keyword());
-    WriteParam(m, p.show_in_default_list());
-    WriteParam(m, p.safe_for_autoreplace());
-    WriteParam(m, p.image_refs());
-    WriteParam(m, p.languages());
-    WriteParam(m, p.input_encodings());
-    WriteParam(m, p.date_created());
-    WriteParam(m, p.last_modified());
-    WriteParam(m, p.usage_count());
-    WriteParam(m, p.prepopulate_id());
+    WriteParam(m, *p->url());
+    WriteParam(m, p->originating_url());
+    WriteParam(m, p->keyword());
+    WriteParam(m, p->autogenerate_keyword());
+    WriteParam(m, p->show_in_default_list());
+    WriteParam(m, p->safe_for_autoreplace());
+    WriteParam(m, p->image_refs());
+    WriteParam(m, p->languages());
+    WriteParam(m, p->input_encodings());
+    WriteParam(m, p->date_created());
+    WriteParam(m, p->last_modified());
+    WriteParam(m, p->usage_count());
+    WriteParam(m, p->prepopulate_id());
   }
   static bool Read(const Message* m, PickleIterator* iter, param_type* p) {
+    *p = NULL;
+
     string16 short_name;
     string16 description;
     bool includes_suggestions_url;
@@ -293,8 +299,8 @@ struct ParamTraits<TemplateURL> {
         !ReadParam(m, iter, &safe_for_autoreplace))
       return false;
 
-    *p = TemplateURL();
-    if (!ReadParam(m, iter, &p->image_refs_) ||
+    scoped_ptr<TemplateURL> turl(new TemplateURL());
+    if (!ReadParam(m, iter, &turl->image_refs_) ||
         !ReadParam(m, iter, &languages) ||
         !ReadParam(m, iter, &input_encodings) ||
         !ReadParam(m, iter, &date_created) ||
@@ -303,28 +309,30 @@ struct ParamTraits<TemplateURL> {
         !ReadParam(m, iter, &prepopulate_id))
       return false;
 
-    p->set_short_name(short_name);
-    p->set_description(description);
-    p->SetSuggestionsURL(suggestions_url.url(), suggestions_url.index_offset(),
-                         suggestions_url.page_offset());
-    p->SetURL(url.url(), url.index_offset(), url.page_offset());
-    p->set_originating_url(originating_url);
-    p->set_keyword(keyword);
-    p->set_autogenerate_keyword(autogenerate_keyword);
-    p->set_show_in_default_list(show_in_default_list);
-    p->set_safe_for_autoreplace(safe_for_autoreplace);
+    turl->set_short_name(short_name);
+    turl->set_description(description);
+    turl->SetSuggestionsURL(suggestions_url.url(),
+                            suggestions_url.index_offset(),
+                            suggestions_url.page_offset());
+    turl->SetURL(url.url(), url.index_offset(), url.page_offset());
+    turl->set_originating_url(originating_url);
+    turl->set_keyword(keyword);
+    turl->set_autogenerate_keyword(autogenerate_keyword);
+    turl->set_show_in_default_list(show_in_default_list);
+    turl->set_safe_for_autoreplace(safe_for_autoreplace);
 
     std::vector<string16>::const_iterator lang_iter;
     for (lang_iter = languages.begin();
          lang_iter != languages.end();
          ++lang_iter) {
-      p->languages_.push_back(*lang_iter);
+      turl->languages_.push_back(*lang_iter);
     }
-    p->set_input_encodings(input_encodings);
-    p->set_date_created(date_created);
-    p->set_last_modified(last_modified);
-    p->set_usage_count(usage_count);
-    p->SetPrepopulateId(prepopulate_id);
+    turl->set_input_encodings(input_encodings);
+    turl->set_date_created(date_created);
+    turl->set_last_modified(last_modified);
+    turl->set_usage_count(usage_count);
+    turl->SetPrepopulateId(prepopulate_id);
+    *p = turl.release();
     return true;
   }
   static void Log(const param_type& p, std::string* l) {
@@ -397,6 +405,9 @@ IPC_MESSAGE_CONTROL1(ProfileImportProcessHostMsg_NotifyFaviconsImportGroup,
 IPC_MESSAGE_CONTROL1(ProfileImportProcessHostMsg_NotifyPasswordFormReady,
                      webkit::forms::PasswordForm)
 
+// WARNING: The TemplateURL*s in the following message get heap-allocated on the
+// receiving end.  The message handler for this message MUST take ownership of
+// these pointers and ensure they're properly freed!
 IPC_MESSAGE_CONTROL2(ProfileImportProcessHostMsg_NotifyKeywordsReady,
-                     std::vector<TemplateURL>,
+                     std::vector<TemplateURL*>,
                      bool  /* unique on host and path */)

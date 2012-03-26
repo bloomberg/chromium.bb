@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/importer/importer_host.h"
+#include "chrome/browser/search_engines/template_url.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "webkit/forms/password_form.h"
@@ -65,9 +66,12 @@ void InProcessImporterBridge::SetHistoryItems(
 void InProcessImporterBridge::SetKeywords(
     const std::vector<TemplateURL*>& template_urls,
     bool unique_on_host_and_path) {
+  ScopedVector<TemplateURL> owned_template_urls;
+  std::copy(template_urls.begin(), template_urls.end(),
+            std::back_inserter(owned_template_urls));
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      base::Bind(&ProfileWriter::AddKeywords, writer_, template_urls,
-                 unique_on_host_and_path));
+      base::Bind(&ProfileWriter::AddKeywords, writer_,
+                 base::Passed(&owned_template_urls), unique_on_host_and_path));
 }
 
 void InProcessImporterBridge::SetPasswordForm(
