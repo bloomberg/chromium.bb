@@ -84,7 +84,12 @@ void ExtractIMEInfo(const input_method::InputMethodDescriptor& ime,
                     const input_method::InputMethodUtil& util,
                     ash::IMEInfo* info) {
   info->id = ime.id();
-  info->name = UTF8ToUTF16(util.GetInputMethodDisplayNameFromId(info->id));
+  std::string name = util.GetInputMethodDisplayNameFromId(info->id);
+  if (name.empty()) {
+    name = ime.name();
+  }
+  info->name = UTF8ToUTF16(name);
+
   info->short_name = util.GetInputMethodShortName(ime);
 }
 
