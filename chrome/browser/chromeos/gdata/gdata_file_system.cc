@@ -803,9 +803,16 @@ void GDataFileSystem::OnGetFileCompleteForCopy(
     return;
   }
 
-  // This callback is only triggered for a regular file.
+  // This callback is only triggered for a regular file via Copy() and runs
+  // on the same thread as Copy (i.e. not the UI thread). As TransferRegularFile
+  // must run on the UI thread, we thus need to post a task to the UI thread.
   DCHECK_EQ(REGULAR_FILE, file_type);
-  TransferRegularFile(local_file_path, remote_dest_file_path, callback);
+  BrowserThread::PostTask(
+      BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&GDataFileSystem::TransferRegularFile,
+                 ui_weak_ptr_,
+                 local_file_path, remote_dest_file_path, callback));
 }
 
 void GDataFileSystem::CopyDocumentToDirectory(
