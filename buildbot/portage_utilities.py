@@ -56,6 +56,14 @@ def FindOverlays(srcroot, overlay_type):
   return overlays
 
 
+def GetOverlayName(overlay):
+  try:
+    return open('%s/profiles/repo_name' % overlay).readline().rstrip()
+  except IOError:
+    # Not all overlays have a repo_name, so don't make a fuss.
+    return None
+
+
 class _BlackListManager(object):
   """Small wrapper class to manage black lists for marking all packages."""
   BLACK_LIST_FILE = os.path.join(os.path.dirname(os.path.realpath(__file__)),
@@ -536,3 +544,42 @@ def BuildEBuildDictionary(overlays, use_all, packages):
       # are in packages.
       if ebuild and (use_all or ebuild.package in packages):
         overlays[overlay].append(ebuild)
+
+
+def RegenCache(overlay):
+  """Regenerate the cache of the specified overlay.
+
+  overlay: The tree to regenerate the cache for.
+  """
+  repo_name = GetOverlayName(overlay)
+  if not repo_name:
+    return
+
+  cache_config = ['cache-format', '=', 'md5-dict']
+
+  layout_conf = '%s/metadata/layout.conf' % overlay
+  if not os.path.exists(layout_conf):
+    return
+
+  gencache = False
+  with open(layout_conf) as f:
+    for line in f:
+      line = line.split('#')[0].split()
+      if line == cache_config:
+        gencache = True
+        break
+  if not gencache:
+    return
+
+  # Regen for the whole repo.
+  cros_build_lib.RunCommand(['egencache', '--update', '--repo', repo_name])
+  # If there was nothing new generated, then let's just bail.
+  result = cros_build_lib.RunCommand(['git', 'status', '-s', 'metadata/'],
+                                     cwd=overlay, redirect_stdout=True)
+  if not result.output:
+    return
+  # Explicitly add any new files to the index.
+  cros_build_lib.RunCommand(['git', 'add', 'metadata/'], cwd=overlay)
+  # Explicitly tell git to also include rm-ed files.
+  cros_build_lib.RunCommand(['git', 'commit', '-m', 'regen cache',
+                             'metadata/'], cwd=overlay)

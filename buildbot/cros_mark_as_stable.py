@@ -1,11 +1,12 @@
 #!/usr/bin/python
 
-# Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 """This module uprevs a given package's ebuild to the next revision."""
 
+import multiprocessing
 import optparse
 import os
 import subprocess
@@ -266,44 +267,65 @@ def main():
   revved_packages = []
   new_package_atoms = []
 
-  for overlay, ebuilds in overlays.items():
-    if not os.path.isdir(overlay):
-      cros_build_lib.Warning("Skipping %s" % overlay)
-      continue
+  # Slight optimization hack: process the chromiumos overlay first so we can
+  # background cache generation in it.  A perfect solution would walk all the
+  # overlays, figure out any dependencies between them (with layout.conf), and
+  # then process them in dependency order.  However, this operation isn't slow
+  # enough to warrant that level of complexity, so we'll just special case the
+  # main overlay.
+  keys = overlays.keys()
+  for k in keys:
+    if k.endswith('/third_party/chromiumos-overlay'):
+      keys.remove(k)
+      keys.insert(0, k)
+      break
 
-    # TODO(davidjames): Currently, all code that interacts with git depends on
-    # the cwd being set to the overlay directory. We should instead pass in
-    # this parameter so that we don't need to modify the cwd globally.
-    os.chdir(overlay)
+  cache_queue = multiprocessing.Queue()
+  with background.BackgroundTaskRunner(cache_queue,
+                                       portage_utilities.RegenCache):
+    for overlay in keys:
+      ebuilds = overlays[overlay]
+      if not os.path.isdir(overlay):
+        cros_build_lib.Warning("Skipping %s" % overlay)
+        continue
 
-    if command == 'push':
-      PushChange(constants.STABLE_EBUILD_BRANCH, tracking_branch,
-                 options.dryrun)
-    elif command == 'commit' and ebuilds:
-      existing_branch = cros_build_lib.GetCurrentBranch('.')
-      work_branch = GitBranch(constants.STABLE_EBUILD_BRANCH, tracking_branch)
-      work_branch.CreateBranch()
-      if not work_branch.Exists():
-        cros_build_lib.Die('Unable to create stabilizing branch in %s' %
-                           overlay)
+      # TODO(davidjames): Currently, all code that interacts with git depends on
+      # the cwd being set to the overlay directory. We should instead pass in
+      # this parameter so that we don't need to modify the cwd globally.
+      os.chdir(overlay)
 
-      # In the case of uprevving overlays that have patches applied to them,
-      # include the patched changes in the stabilizing branch.
-      if existing_branch:
-        _SimpleRunCommand('git rebase %s' % existing_branch)
+      if command == 'push':
+        PushChange(constants.STABLE_EBUILD_BRANCH, tracking_branch,
+                   options.dryrun)
+      elif command == 'commit' and ebuilds:
+        existing_branch = cros_build_lib.GetCurrentBranch('.')
+        work_branch = GitBranch(constants.STABLE_EBUILD_BRANCH, tracking_branch)
+        work_branch.CreateBranch()
+        if not work_branch.Exists():
+          cros_build_lib.Die('Unable to create stabilizing branch in %s' %
+                             overlay)
 
-      for ebuild in ebuilds:
-        try:
-          _Print('Working on %s' % ebuild.package)
-          new_package = ebuild.RevWorkOnEBuild(options.srcroot)
-          if new_package:
-            revved_packages.append(ebuild.package)
-            new_package_atoms.append('=%s' % new_package)
-        except (OSError, IOError):
-          cros_build_lib.Warning('Cannot rev %s\n' % ebuild.package +
-                  'Note you will have to go into %s '
-                  'and reset the git repo yourself.' % overlay)
-          raise
+        # In the case of uprevving overlays that have patches applied to them,
+        # include the patched changes in the stabilizing branch.
+        if existing_branch:
+          _SimpleRunCommand('git rebase %s' % existing_branch)
+
+        for ebuild in ebuilds:
+          try:
+            _Print('Working on %s' % ebuild.package)
+            new_package = ebuild.RevWorkOnEBuild(options.srcroot)
+            if new_package:
+              revved_packages.append(ebuild.package)
+              new_package_atoms.append('=%s' % new_package)
+          except (OSError, IOError):
+            cros_build_lib.Warning('Cannot rev %s\n' % ebuild.package +
+                    'Note you will have to go into %s '
+                    'and reset the git repo yourself.' % overlay)
+            raise
+
+        # Regenerate caches if need be.  We do this all the time to
+        # catch when users make changes without updating cache files.
+        cache_queue.put([overlay])
 
   if command == 'commit':
     CleanStalePackages(options.boards.split(':'), new_package_atoms)
