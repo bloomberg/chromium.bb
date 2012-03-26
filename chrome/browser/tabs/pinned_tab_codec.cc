@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_tab_helper.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser.h"
@@ -35,6 +36,15 @@ static bool HasPinnedTabs(Browser* browser) {
       return true;
   }
   return false;
+}
+
+// Adds a DictionaryValue to |values| representing |tab|.
+static void EncodeTab(const Tab& tab, ListValue* values) {
+  scoped_ptr<DictionaryValue> value(new DictionaryValue);
+  value->SetString(kURL, tab.url.spec());
+  if (tab.is_app)
+    value->SetString(kAppID, tab.app_id);
+  values->Append(value.release());
 }
 
 // Adds a DictionaryValue to |values| representing the pinned tab at the
@@ -114,22 +124,39 @@ void PinnedTabCodec::WritePinnedTabs(Profile* profile) {
 }
 
 // static
-std::vector<Tab> PinnedTabCodec::ReadPinnedTabs(Profile* profile) {
-  std::vector<Tab> results;
-
+void PinnedTabCodec::WritePinnedTabs(Profile* profile, const Tabs& tabs) {
   PrefService* prefs = profile->GetPrefs();
   if (!prefs)
+    return;
+
+  ListPrefUpdate update(prefs, prefs::kPinnedTabs);
+  ListValue* values = update.Get();
+  values->Clear();
+  for (Tabs::const_iterator i = tabs.begin(); i != tabs.end(); ++i)
+    EncodeTab(*i, values);
+}
+
+// static
+PinnedTabCodec::Tabs PinnedTabCodec::ReadPinnedTabs(Profile* profile) {
+  PrefService* prefs = profile->GetPrefs();
+  if (!prefs)
+    return Tabs();
+  return ReadPinnedTabs(prefs->GetList(prefs::kPinnedTabs));
+}
+
+// static
+PinnedTabCodec::Tabs PinnedTabCodec::ReadPinnedTabs(const base::Value* value) {
+  Tabs results;
+
+  const base::ListValue* tabs_list = NULL;
+  if (!value->GetAsList(&tabs_list))
     return results;
 
-  const ListValue* pref_value = prefs->GetList(prefs::kPinnedTabs);
-  if (!pref_value)
-    return results;
-
-  for (size_t i = 0, max = pref_value->GetSize(); i < max; ++i) {
-    DictionaryValue* values = NULL;
-    if (pref_value->GetDictionary(i, &values)) {
+  for (size_t i = 0, max = tabs_list->GetSize(); i < max; ++i) {
+    base::DictionaryValue* tab_values = NULL;
+    if (tabs_list->GetDictionary(i, &tab_values)) {
       Tab tab;
-      if (DecodeTab(*values, &tab))
+      if (DecodeTab(*tab_values, &tab))
         results.push_back(tab);
     }
   }

@@ -69,6 +69,7 @@ bool PrefsBackupInvalidChange::Init(Profile* profile) {
   DismissOnPrefChange(prefs::kShowHomeButton);
   DismissOnPrefChange(prefs::kRestoreOnStartup);
   DismissOnPrefChange(prefs::kURLsToRestoreOnStartup);
+  DismissOnPrefChange(prefs::kPinnedTabs);
   return true;
 }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -41,7 +41,21 @@ TEST_F(PinnedTabCodecTest, PinnedAndNonPinned) {
 
   PinnedTabCodec::WritePinnedTabs(profile());
 
-  std::string result = PinnedTabTestUtils::TabsToString(
+  PinnedTabCodec::Tabs pinned_tabs = PinnedTabCodec::ReadPinnedTabs(profile());
+  std::string result = PinnedTabTestUtils::TabsToString(pinned_tabs);
+  EXPECT_EQ("http://www.google.com/::pinned:", result);
+
+  // Update pinned tabs and restore back the old value directly.
+  browser()->tabstrip_model()->SetTabPinned(1, true);
+
+  PinnedTabCodec::WritePinnedTabs(profile());
+  result = PinnedTabTestUtils::TabsToString(
+      PinnedTabCodec::ReadPinnedTabs(profile()));
+  EXPECT_EQ("http://www.google.com/::pinned: http://www.google.com/2::pinned:",
+            result);
+
+  PinnedTabCodec::WritePinnedTabs(profile(), pinned_tabs);
+  result = PinnedTabTestUtils::TabsToString(
       PinnedTabCodec::ReadPinnedTabs(profile()));
   EXPECT_EQ("http://www.google.com/::pinned:", result);
 }

@@ -47,6 +47,10 @@ class ProtectedPrefsWatcherTest : public testing::Test {
     prefs_watcher_->ValidateBackup();
   }
 
+  void ForceUpdateSignature() {
+    prefs_watcher_->UpdateBackupSignature();
+  }
+
  protected:
   ProtectedPrefsWatcher* prefs_watcher_;
   TestingProfile profile_;
@@ -135,12 +139,23 @@ TEST_F(ProtectedPrefsWatcherTest, ExtensionPrefChange) {
   EXPECT_TRUE(IsSignatureValid());
 }
 
-TEST_F(ProtectedPrefsWatcherTest, PinnedTabsMigration) {
-  // Verify that backup for "pinned_tabs" is added if signature is valid.
+// Verify that version bigger than 1 is included in the signature.
+TEST_F(ProtectedPrefsWatcherTest, VersionIsSigned) {
+  // Reset version to 1.
+  prefs_->ClearPref("backup._version");
+  // This should make the backup invalid.
+  EXPECT_FALSE(IsSignatureValid());
 
-  // Store the old signature (without "pinned_tabs").
-  std::string old_signature = prefs_->GetString(kBackupSignature);
+  // "Migrate" the backup back to the latest version.
+  RevalidateBackup();
 
+  EXPECT_FALSE(prefs_watcher_->is_backup_valid());
+  EXPECT_EQ(ProtectedPrefsWatcher::kCurrentVersionNumber,
+            prefs_->GetInteger("backup._version"));
+}
+
+// Verify that backup for "pinned_tabs" is added during version 2 migration.
+TEST_F(ProtectedPrefsWatcherTest, MigrationToVersion2) {
   // Add a pinned tab.
   {
     ListPrefUpdate pinned_tabs_update(prefs_, prefs::kPinnedTabs);
@@ -150,18 +165,19 @@ TEST_F(ProtectedPrefsWatcherTest, PinnedTabsMigration) {
     tab->SetString("url", "http://example.com/");
     pinned_tabs->Append(tab);
   }
-
   EXPECT_TRUE(prefs_watcher_->is_backup_valid());
 
   scoped_ptr<base::Value> pinned_tabs_copy(
       prefs_->GetList(prefs::kPinnedTabs)->DeepCopy());
 
-  // Removed "pinned_tabs" from backup and restore old signature.
+  // Reset version to 1, remove "pinned_tabs" and overwrite the signature.
+  // Store the old signature (without "pinned_tabs").
+  prefs_->ClearPref("backup._version");
   prefs_->ClearPref("backup.pinned_tabs");
-  EXPECT_FALSE(IsSignatureValid());
-  prefs_->SetString(kBackupSignature, old_signature);
+  ForceUpdateSignature();
   EXPECT_TRUE(IsSignatureValid());
 
+  // This will migrate backup to the latest version.
   RevalidateBackup();
 
   // Now the backup should be valid and "pinned_tabs" is added back.
@@ -169,6 +185,8 @@ TEST_F(ProtectedPrefsWatcherTest, PinnedTabsMigration) {
   EXPECT_TRUE(pinned_tabs_copy->Equals(prefs_->GetList("backup.pinned_tabs")));
   EXPECT_TRUE(pinned_tabs_copy->Equals(prefs_->GetList(prefs::kPinnedTabs)));
   EXPECT_FALSE(prefs_watcher_->DidPrefChange(prefs::kPinnedTabs));
+  EXPECT_EQ(ProtectedPrefsWatcher::kCurrentVersionNumber,
+            prefs_->GetInteger("backup._version"));
 }
 
 }  // namespace protector

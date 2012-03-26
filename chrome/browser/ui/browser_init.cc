@@ -138,6 +138,10 @@ using content::ChildProcessSecurityPolicy;
 using content::OpenURLParams;
 using content::Referrer;
 using content::WebContents;
+using protector::BaseSettingChange;
+using protector::ProtectedPrefsWatcher;
+using protector::ProtectorService;
+using protector::ProtectorServiceFactory;
 
 namespace {
 
@@ -797,28 +801,6 @@ bool BrowserInit::WasRestarted() {
 SessionStartupPref BrowserInit::GetSessionStartupPref(
     const CommandLine& command_line,
     Profile* profile) {
-  // Check for external changes to this pref.
-  if (SessionStartupPref::DidStartupPrefChange(profile)) {
-    LOG(WARNING) << "Session startup settings have changed";
-    SessionStartupPref new_pref = SessionStartupPref::GetStartupPref(profile);
-    // The histograms should be reported even when Protector is disabled.
-    scoped_ptr<protector::BaseSettingChange> change(
-        protector::CreateSessionStartupChange(
-            new_pref, SessionStartupPref::GetStartupPrefBackup(profile)));
-    if (protector::IsEnabled()) {
-      protector::ProtectorService* protector_service =
-          protector::ProtectorServiceFactory::GetForProfile(profile);
-      DCHECK(protector_service);
-      protector_service->ShowChange(change.release());
-    } else {
-      // Protector is turned off: set the startup pref to itself to update the
-      // backup and sign it. Otherwise, change will be reported every time on
-      // startup.
-      SessionStartupPref::SetStartupPref(profile, new_pref);
-    }
-  }
-
-  // Now the actual pref value is correct so we read it again.
   SessionStartupPref pref = SessionStartupPref::GetStartupPref(profile);
 
   // Session restore should be avoided on the first run.
@@ -923,6 +905,11 @@ bool BrowserInit::LaunchWithProfile::Launch(
   } else {
     RecordLaunchModeHistogram(urls_to_open.empty()?
                               LM_TO_BE_DECIDED : LM_WITH_URLS);
+
+    // Notify user if the Preferences backup is invalid or changes to settings
+    // affecting browser startup have been detected.
+    CheckPreferencesBackup(profile);
+
     ProcessLaunchURLs(process_startup, urls_to_open);
 
     // If this is an app launch, but we didn't open an app window, it may
@@ -943,9 +930,6 @@ bool BrowserInit::LaunchWithProfile::Launch(
       KeystoneInfoBar::PromotionInfoBar(profile);
 #endif
     }
-
-    // Notify user if the Preferences backup is invalid.
-    CheckPreferencesBackup(profile);
   }
 
 #if defined(OS_WIN)
@@ -1588,12 +1572,47 @@ bool BrowserInit::LaunchWithProfile::CheckIfAutoLaunched(Profile* profile) {
 }
 
 void BrowserInit::LaunchWithProfile::CheckPreferencesBackup(Profile* profile) {
-  protector::ProtectorService* protector_service =
-      protector::ProtectorServiceFactory::GetForProfile(profile);
-  protector::ProtectedPrefsWatcher* prefs_watcher =
-      protector_service->GetPrefsWatcher();
-  if (protector::IsEnabled() && !prefs_watcher->is_backup_valid())
-    protector_service->ShowChange(protector::CreatePrefsBackupInvalidChange());
+  ProtectorService* protector_service =
+      ProtectorServiceFactory::GetForProfile(profile);
+  ProtectedPrefsWatcher* prefs_watcher = protector_service->GetPrefsWatcher();
+
+  // BaseSettingChange instances are always created, even when Protector is
+  // disabled, to report corresponding histograms. With Protector disabled,
+  // the backup is updated to match the new setting value, otherwise histograms
+  // would be reported on each run.
+  // TODO(ivankr): move IsEnabled() check to ProtectorService::ShowChange().
+
+  // Check if backup is valid.
+  if (!prefs_watcher->is_backup_valid()) {
+    scoped_ptr<BaseSettingChange> change(
+        protector::CreatePrefsBackupInvalidChange());
+    if (protector::IsEnabled())
+      protector_service->ShowChange(change.release());
+    // Further checks make no sense.
+    return;
+  }
+
+  // Check for session startup (including pinned tabs) changes.
+  if (SessionStartupPref::DidStartupPrefChange(profile) ||
+      prefs_watcher->DidPrefChange(prefs::kPinnedTabs)) {
+    LOG(WARNING) << "Session startup settings have changed";
+    SessionStartupPref new_pref = SessionStartupPref::GetStartupPref(profile);
+    PinnedTabCodec::Tabs new_tabs = PinnedTabCodec::ReadPinnedTabs(profile);
+    const base::Value* tabs_backup =
+        prefs_watcher->GetBackupForPref(prefs::kPinnedTabs);
+    scoped_ptr<BaseSettingChange> change(
+        protector::CreateSessionStartupChange(
+            new_pref,
+            new_tabs,
+            SessionStartupPref::GetStartupPrefBackup(profile),
+            PinnedTabCodec::ReadPinnedTabs(tabs_backup)));
+    if (protector::IsEnabled()) {
+      protector_service->ShowChange(change.release());
+    } else {
+      SessionStartupPref::SetStartupPref(profile, new_pref);
+      PinnedTabCodec::WritePinnedTabs(profile, new_tabs);
+    }
+  }
 }
 
 std::vector<GURL> BrowserInit::GetURLsFromCommandLine(

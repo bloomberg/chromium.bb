@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,10 @@
 
 #include "chrome/browser/ui/browser_init.h"
 #include "googleurl/src/gurl.h"
+
+namespace base {
+class Value;
+}
 
 class PrefService;
 class Profile;
@@ -23,15 +27,20 @@ class Profile;
 // dictionary describing the entry.
 class PinnedTabCodec {
  public:
+  typedef std::vector<BrowserInit::LaunchWithProfile::Tab> Tabs;
+
   // Registers the preference used by this class.
   static void RegisterUserPrefs(PrefService* prefs);
 
   // Resets the preferences state.
   static void WritePinnedTabs(Profile* profile);
 
+  // Sets the preferences state from the specified tab list.
+  static void WritePinnedTabs(Profile* profile, const Tabs& tabs);
+
   // Reads and returns the set of pinned tabs to restore from preferences.
-  static std::vector<BrowserInit::LaunchWithProfile::Tab> ReadPinnedTabs(
-      Profile* profile);
+  static Tabs ReadPinnedTabs(Profile* profile);
+  static Tabs ReadPinnedTabs(const base::Value* value);
 
  private:
   PinnedTabCodec();

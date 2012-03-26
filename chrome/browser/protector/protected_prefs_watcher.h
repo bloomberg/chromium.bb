@@ -25,6 +25,9 @@ namespace protector {
 
 class ProtectedPrefsWatcher : public content::NotificationObserver {
  public:
+  // Current backup version.
+  static const int kCurrentVersionNumber;
+
   explicit ProtectedPrefsWatcher(Profile* profile);
   virtual ~ProtectedPrefsWatcher();
 

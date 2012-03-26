@@ -36,8 +36,12 @@ const char kBackupURLsToRestoreOnStartup[] =
 const char kBackupPinnedTabs[] = "backup.pinned_tabs";
 const char kBackupExtensionsIDs[] = "backup.extensions.ids";
 const char kBackupSignature[] = "backup._signature";
+const char kBackupVersion[] = "backup._version";
 
 }  // namespace
+
+// static
+const int ProtectedPrefsWatcher::kCurrentVersionNumber = 2;
 
 ProtectedPrefsWatcher::ProtectedPrefsWatcher(Profile* profile)
     : is_backup_valid_(true),
@@ -73,12 +77,16 @@ void ProtectedPrefsWatcher::RegisterUserPrefs(PrefService* prefs) {
                           PrefService::UNSYNCABLE_PREF);
   prefs->RegisterStringPref(kBackupSignature, "",
                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterIntegerPref(kBackupVersion, 1,
+                             PrefService::UNSYNCABLE_PREF);
 }
 
 bool ProtectedPrefsWatcher::DidPrefChange(const std::string& path) const {
   const base::Value* backup_value = GetBackupForPref(path);
-  if (!backup_value)
+  if (!backup_value) {
+    LOG(WARNING) << "No backup for " << path;
     return false;
+  }
   const PrefService::Preference* new_pref =
       profile_->GetPrefs()->FindPreference(path.c_str());
   DCHECK(new_pref);
@@ -155,19 +163,26 @@ void ProtectedPrefsWatcher::InitBackup() {
        it != cached_extension_ids_.end(); ++it) {
     extension_ids->Append(base::Value::CreateStringValue(*it));
   }
+  prefs->SetInteger(kBackupVersion, kCurrentVersionNumber);
   UpdateBackupSignature();
 }
 
 void ProtectedPrefsWatcher::MigrateOldBackupIfNeeded() {
   PrefService* prefs = profile_->GetPrefs();
-  bool changed = false;
-  if (!prefs->HasPrefPath(kBackupPinnedTabs) &&
-      prefs->HasPrefPath(prefs::kPinnedTabs)) {
-    prefs->Set(kBackupPinnedTabs, *prefs->GetList(prefs::kPinnedTabs));
-    changed = true;
+
+  int current_version = prefs->GetInteger(kBackupVersion);
+  VLOG(1) << "Backup version: " << current_version;
+  if (current_version == kCurrentVersionNumber)
+    return;
+
+  switch (current_version) {
+    case 1:
+      prefs->Set(kBackupPinnedTabs, *prefs->GetList(prefs::kPinnedTabs));
+      // FALL THROUGH
   }
-  if (changed)
-    UpdateBackupSignature();
+
+  prefs->SetInteger(kBackupVersion, kCurrentVersionNumber);
+  UpdateBackupSignature();
 }
 
 bool ProtectedPrefsWatcher::UpdateBackupEntry(const std::string& pref_name) {
@@ -262,6 +277,7 @@ void ProtectedPrefsWatcher::ValidateBackup() {
 }
 
 std::string ProtectedPrefsWatcher::GetSignatureData(PrefService* prefs) const {
+  int current_version = prefs->GetInteger(kBackupVersion);
   // TODO(ivankr): replace this with some existing reliable serializer.
   // JSONWriter isn't a good choice because JSON formatting may change suddenly.
   std::string data = base::StringPrintf(
@@ -279,28 +295,33 @@ std::string ProtectedPrefsWatcher::GetSignatureData(PrefService* prefs) const {
       NOTREACHED();
     base::StringAppendF(&data, "|%s", url.c_str());
   }
-  const base::ListValue* pinned_tabs = prefs->GetList(kBackupPinnedTabs);
-  for (base::ListValue::const_iterator it = pinned_tabs->begin();
-       it != pinned_tabs->end(); ++it) {
-    const base::DictionaryValue* tab = NULL;
-    if (!(*it)->GetAsDictionary(&tab)) {
-      NOTREACHED();
-      continue;
-    }
-    for (base::DictionaryValue::Iterator it2(*tab); it2.HasNext();
-         it2.Advance()) {
-      std::string value;
-      if (!it2.value().GetAsString(&value))
-        NOTREACHED();
-      base::StringAppendF(&data, "|%s|%s", it2.key().c_str(), value.c_str());
-    }
-  }
   // These are safe to use becase they are always up-to-date and returned in
   // a consistent (sorted) order.
   for (ExtensionPrefs::ExtensionIdSet::const_iterator it =
            cached_extension_ids_.begin();
        it != cached_extension_ids_.end(); ++it) {
     base::StringAppendF(&data, "|%s", it->c_str());
+  }
+  if (current_version >= 2) {
+    // Version itself is included only since version 2 since it wasn't there
+    // in version 1.
+    base::StringAppendF(&data, "|v%d", current_version);
+    const base::ListValue* pinned_tabs = prefs->GetList(kBackupPinnedTabs);
+    for (base::ListValue::const_iterator it = pinned_tabs->begin();
+         it != pinned_tabs->end(); ++it) {
+      const base::DictionaryValue* tab = NULL;
+      if (!(*it)->GetAsDictionary(&tab)) {
+        NOTREACHED();
+        continue;
+      }
+      for (base::DictionaryValue::Iterator it2(*tab); it2.HasNext();
+           it2.Advance()) {
+        std::string value;
+        if (!it2.value().GetAsString(&value))
+          NOTREACHED();
+        base::StringAppendF(&data, "|%s|%s", it2.key().c_str(), value.c_str());
+      }
+    }
   }
   return data;
 }

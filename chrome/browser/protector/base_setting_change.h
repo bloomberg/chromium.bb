@@ -11,6 +11,7 @@
 
 #include "base/basictypes.h"
 #include "base/string16.h"
+#include "chrome/browser/tabs/pinned_tab_codec.h"
 
 class Browser;
 class Profile;
@@ -88,10 +89,12 @@ BaseSettingChange* CreateDefaultSearchProviderChange(const TemplateURL* actual,
                                                      TemplateURL* backup);
 
 // Allocates and initializes BaseSettingChange implementation for session
-// startup setting. Reports corresponding histograms.
+// startup setting, including the pinned tabs. Reports corresponding histograms.
 BaseSettingChange* CreateSessionStartupChange(
-    const SessionStartupPref& actual,
-    const SessionStartupPref& backup);
+    const SessionStartupPref& actual_startup_pref,
+    const PinnedTabCodec::Tabs& actual_pinned_tabs,
+    const SessionStartupPref& backup_startup_pref,
+    const PinnedTabCodec::Tabs& backup_pinned_tabs);
 
 // Allocates and initializes BaseSettingChange implementation for an unknown
 // preferences change with invalid backup.
