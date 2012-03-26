@@ -123,11 +123,8 @@ AudioPlayer.prototype.loadMetadata_ = function(track) {
 };
 
 AudioPlayer.prototype.displayMetadata_ = function(track, metadata) {
-  if (metadata.thumbnailURL || metadata.error) {
-    this.container_.classList.remove('noart');
-  }
-  this.trackListItems_[track].setMetadata(metadata);
-  this.trackStackItems_[track].setMetadata(metadata);
+  this.trackListItems_[track].setMetadata(metadata, this.container_);
+  this.trackStackItems_[track].setMetadata(metadata, this.container_);
 };
 
 AudioPlayer.prototype.select_ = function(newTrack) {
@@ -246,7 +243,7 @@ AudioPlayer.prototype.cancelAutoAdvance_ = function() {
     clearTimeout(this.autoAdvanceTimer_);
     this.autoAdvanceTimer_ = null;
   }
-}
+};
 
 AudioPlayer.prototype.onExpandCollapse_ = function() {
   this.container_.classList.toggle('collapsed');
@@ -325,12 +322,21 @@ AudioPlayer.TrackInfo.prototype.getDefaultArtist = function() {
   return 'Unknown Artist';  // TODO(kaznacheev): i18n
 };
 
-AudioPlayer.TrackInfo.prototype.setMetadata = function(metadata) {
+/**
+ * @param {Object} metadata The metadata object
+ * @param {HTMLElement} container The container for the tracks.
+ */
+AudioPlayer.TrackInfo.prototype.setMetadata = function(metadata, container) {
   if (metadata.error) {
     this.art_.classList.add('blank');
     this.art_.classList.add('error');
+    container.classList.remove('noart');
   } else if (metadata.thumbnailURL) {
-    this.art_.classList.remove('blank');
+    this.img_.onload = function() {
+      // Only display the image if the thumbnail loaded successfully.
+      this.art_.classList.remove('blank');
+      container.classList.remove('noart');
+    }.bind(this);
     this.img_.src = metadata.thumbnailURL;
   }
   this.title_.textContent = metadata.title || this.getDefaultTitle();
