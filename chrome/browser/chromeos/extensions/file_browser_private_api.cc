@@ -1590,15 +1590,15 @@ void GetGDataFilePropertiesFunction::CacheStateReceived(
     int cache_state) {
   property_dict->SetBoolean(
       "isPinned",
-      static_cast<bool>(cache_state & gdata::GDataFile::CACHE_STATE_PINNED));
+      gdata::GDataFile::IsCachePinned(cache_state));
 
   property_dict->SetBoolean(
       "isPresent",
-      static_cast<bool>(cache_state & gdata::GDataFile::CACHE_STATE_PRESENT));
+      gdata::GDataFile::IsCachePresent(cache_state));
 
   property_dict->SetBoolean(
       "isDirty",
-      static_cast<bool>(cache_state & gdata::GDataFile::CACHE_STATE_DIRTY));
+      gdata::GDataFile::IsCacheDirty(cache_state));
   CompleteGetFileProperties();
 }
 

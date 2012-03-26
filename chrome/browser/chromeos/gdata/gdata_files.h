@@ -152,6 +152,34 @@ class GDataFile : public GDataFileBase {
                                           DocumentEntry* doc,
                                           GDataRootDirectory* root);
 
+  static bool IsCachePresent(int cache_state) {
+    return cache_state & CACHE_STATE_PRESENT;
+  }
+  static bool IsCachePinned(int cache_state) {
+    return cache_state & CACHE_STATE_PINNED;
+  }
+  static bool IsCacheDirty(int cache_state) {
+    return cache_state & CACHE_STATE_DIRTY;
+  }
+  static int SetCachePresent(int cache_state) {
+    return cache_state |= CACHE_STATE_PRESENT;
+  }
+  static int SetCachePinned(int cache_state) {
+    return cache_state |= CACHE_STATE_PINNED;
+  }
+  static int SetCacheDirty(int cache_state) {
+    return cache_state |= CACHE_STATE_DIRTY;
+  }
+  static int ClearCachePresent(int cache_state) {
+    return cache_state &= ~CACHE_STATE_PRESENT;
+  }
+  static int ClearCachePinned(int cache_state) {
+    return cache_state &= ~CACHE_STATE_PINNED;
+  }
+  static int ClearCacheDirty(int cache_state) {
+    return cache_state &= ~CACHE_STATE_DIRTY;
+  }
+
   DocumentEntry::EntryKind kind() const { return kind_; }
   const GURL& thumbnail_url() const { return thumbnail_url_; }
   const GURL& edit_url() const { return edit_url_; }
@@ -285,14 +313,15 @@ class GDataRootDirectory : public GDataDirectory {
           sub_dir_type(in_sub_dir_type),
           cache_state(in_cache_state) {
     }
+
     bool IsPresent() const {
-      return cache_state & GDataFile::CACHE_STATE_PRESENT;
+      return GDataFile::IsCachePresent(cache_state);
     }
     bool IsPinned() const {
-      return cache_state & GDataFile::CACHE_STATE_PINNED;
+      return GDataFile::IsCachePinned(cache_state);
     }
     bool IsDirty() const {
-      return cache_state & GDataFile::CACHE_STATE_DIRTY;
+      return GDataFile::IsCacheDirty(cache_state);
     }
 
     // For debugging purposes.

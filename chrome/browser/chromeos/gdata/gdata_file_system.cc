@@ -3001,8 +3001,9 @@ void GDataFileSystem::UnpinOnIOThreadPool(
 
   if (error == base::PLATFORM_FILE_OK) {
     // Now that file operations have completed, update cache map.
+    int cache_state = GDataFile::ClearCachePinned(entry->cache_state);
     root_->UpdateCacheMap(params.resource_id, params.md5, sub_dir_type,
-                          entry->cache_state & ~GDataFile::CACHE_STATE_PINNED);
+                          cache_state);
   }
 
   // Invoke |intermediate_callback|.
@@ -3131,8 +3132,9 @@ void GDataFileSystem::MarkDirtyInCacheOnIOThreadPool(
 
   if (error == base::PLATFORM_FILE_OK) {
     // Now that file operations have completed, update cache map.
+    int cache_state = GDataFile::SetCacheDirty(entry->cache_state);
     root_->UpdateCacheMap(params.resource_id, params.md5, sub_dir_type,
-                          entry->cache_state | GDataFile::CACHE_STATE_DIRTY);
+                          cache_state);
   }
 
   // Invoke |params.get_from_cache_callback|.
@@ -3329,8 +3331,9 @@ void GDataFileSystem::ClearDirtyInCacheOnIOThreadPool(
 
   if (error == base::PLATFORM_FILE_OK) {
     // Now that file operations have completed, update cache map.
+    int cache_state = GDataFile::ClearCacheDirty(entry->cache_state);
     root_->UpdateCacheMap(params.resource_id, params.md5, sub_dir_type,
-                          entry->cache_state & ~GDataFile::CACHE_STATE_DIRTY);
+                          cache_state);
   }
 
   // Invoke |final_callback|.
@@ -3487,13 +3490,14 @@ void GDataFileSystem::ScanCacheDirectory(
       GDataRootDirectory::CacheMap::iterator iter =
           cache_map->find(resource_id);
       if (iter != cache_map->end()) {  // Entry exists, update pinned state.
-        iter->second->cache_state |= GDataFile::CACHE_STATE_PINNED;
+        GDataRootDirectory::CacheEntry* entry = iter->second;
+        entry->cache_state = GDataFile::SetCachePinned(entry->cache_state);
         continue;
       }
       // Entry doesn't exist, this is a special symlink that refers to
       // /dev/null; follow through to create an entry with the PINNED but not
       // PRESENT state.
-      cache_state |= GDataFile::CACHE_STATE_PINNED;
+      cache_state = GDataFile::SetCachePinned(cache_state);
     } else if (sub_dir_type == GDataRootDirectory::CACHE_TYPE_OUTGOING) {
       // If we're scanning outgoing directory, entry must exist, update its
       // dirty state.
@@ -3502,14 +3506,15 @@ void GDataFileSystem::ScanCacheDirectory(
       GDataRootDirectory::CacheMap::iterator iter =
           cache_map->find(resource_id);
       if (iter != cache_map->end()) {  // Entry exists, update dirty state.
-        iter->second->cache_state |= GDataFile::CACHE_STATE_DIRTY;
+        GDataRootDirectory::CacheEntry* entry = iter->second;
+        entry->cache_state = GDataFile::SetCacheDirty(entry->cache_state);
       } else {
         NOTREACHED() << "Dirty cache file MUST have actual file blob";
       }
       continue;
     } else {
       // Scanning other directories means that cache file is actually present.
-      cache_state |= GDataFile::CACHE_STATE_PRESENT;
+      cache_state = GDataFile::SetCachePresent(cache_state);
     }
 
     // Create and insert new entry into cache map.

@@ -136,6 +136,7 @@ void GDataFile::SetFileNameFromTitle() {
   }
 }
 
+// static.
 GDataFileBase* GDataFile::FromDocumentEntry(GDataDirectory* parent,
                                             DocumentEntry* doc,
                                             GDataRootDirectory* root) {
@@ -335,11 +336,11 @@ bool GDataDirectory::RemoveFileFromChildrenList(GDataFileBase* file) {
 
 std::string GDataRootDirectory::CacheEntry::ToString() const {
   std::vector<std::string> cache_states;
-  if (cache_state & GDataFile::CACHE_STATE_PRESENT)
+  if (GDataFile::IsCachePresent(cache_state))
     cache_states.push_back("present");
-  if (cache_state & GDataFile::CACHE_STATE_PINNED)
+  if (GDataFile::IsCachePinned(cache_state))
     cache_states.push_back("pinned");
-  if (cache_state & GDataFile::CACHE_STATE_DIRTY)
+  if (GDataFile::IsCacheDirty(cache_state))
     cache_states.push_back("dirty");
 
   return base::StringPrintf("md5=%s, subdir=%s, cache_state=%s",
