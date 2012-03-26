@@ -113,6 +113,7 @@
         ['OS=="linux"', {
           'link_settings': {
             'libraries': [
+              '-lXfixes',
               '-lXrandr',
             ],
           },
