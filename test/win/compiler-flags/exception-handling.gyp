@@ -4,6 +4,8 @@
 
 {
  'targets': [
+    # Optimization disabled so that the exception-causing code is not removed
+    # (divide by zero was getting optimized away in VS2010).
     {
       'target_name': 'test_eh_off',
       'product_name': 'test_eh_off',
@@ -11,7 +13,8 @@
       'msvs_settings': {
         'VCCLCompilerTool': {
           'ExceptionHandling': '0',
-          'WarnAsError': 'true'
+          'WarnAsError': 'true',
+          'Optimization': '0',
         }
       },
       'sources': [
@@ -25,7 +28,8 @@
       'msvs_settings': {
         'VCCLCompilerTool': {
           'ExceptionHandling': '1',
-          'WarnAsError': 'true'
+          'WarnAsError': 'true',
+          'Optimization': '0',
         }
       },
       'sources': [
@@ -39,7 +43,8 @@
       'msvs_settings': {
         'VCCLCompilerTool': {
           'ExceptionHandling': '2',
-          'WarnAsError': 'true'
+          'WarnAsError': 'true',
+          'Optimization': '0',
         }
       },
       'sources': [
