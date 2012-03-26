@@ -81,8 +81,8 @@ TEST_F(ProtoEnumConversionsTest, GetErrorTypeString) {
 TEST_F(ProtoEnumConversionsTest, GetActionString) {
   TestEnumStringFunction(
       GetActionString,
-      sync_pb::ClientToServerResponse::Error::Action_MIN,
-      sync_pb::ClientToServerResponse::Error::Action_MAX);
+      sync_pb::SyncEnums::Action_MIN,
+      sync_pb::SyncEnums::Action_MAX);
 }
 
 }  // namespace

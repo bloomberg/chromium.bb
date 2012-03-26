@@ -125,18 +125,16 @@ const char* GetErrorTypeString(sync_pb::SyncEnums::ErrorType error_type) {
   return "";
 }
 
-const char* GetActionString(
-   sync_pb::ClientToServerResponse::Error::Action action) {
-  ASSERT_ENUM_BOUNDS(sync_pb::ClientToServerResponse::Error, Action,
+const char* GetActionString(sync_pb::SyncEnums::Action action) {
+  ASSERT_ENUM_BOUNDS(sync_pb::SyncEnums, Action,
                      UPGRADE_CLIENT, UNKNOWN_ACTION);
   switch (action) {
-    ENUM_CASE(sync_pb::ClientToServerResponse::Error, UPGRADE_CLIENT);
-    ENUM_CASE(sync_pb::ClientToServerResponse::Error,
-              CLEAR_USER_DATA_AND_RESYNC);
-    ENUM_CASE(sync_pb::ClientToServerResponse::Error, ENABLE_SYNC_ON_ACCOUNT);
-    ENUM_CASE(sync_pb::ClientToServerResponse::Error, STOP_AND_RESTART_SYNC);
-    ENUM_CASE(sync_pb::ClientToServerResponse::Error, DISABLE_SYNC_ON_CLIENT);
-    ENUM_CASE(sync_pb::ClientToServerResponse::Error, UNKNOWN_ACTION);
+    ENUM_CASE(sync_pb::SyncEnums, UPGRADE_CLIENT);
+    ENUM_CASE(sync_pb::SyncEnums, CLEAR_USER_DATA_AND_RESYNC);
+    ENUM_CASE(sync_pb::SyncEnums, ENABLE_SYNC_ON_ACCOUNT);
+    ENUM_CASE(sync_pb::SyncEnums, STOP_AND_RESTART_SYNC);
+    ENUM_CASE(sync_pb::SyncEnums, DISABLE_SYNC_ON_CLIENT);
+    ENUM_CASE(sync_pb::SyncEnums, UNKNOWN_ACTION);
   }
   NOTREACHED();
   return "";

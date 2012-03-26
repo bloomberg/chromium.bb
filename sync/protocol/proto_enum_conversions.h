@@ -37,8 +37,7 @@ const char* GetResponseTypeString(
 
 const char* GetErrorTypeString(sync_pb::SyncEnums::ErrorType error_type);
 
-const char* GetActionString(
-   sync_pb::ClientToServerResponse::Error::Action action);
+const char* GetActionString(sync_pb::SyncEnums::Action action);
 
 const char* GetDeviceTypeString(
     sync_pb::SessionHeader::DeviceType device_type);

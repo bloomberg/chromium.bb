@@ -642,18 +642,7 @@ message ClientToServerResponse {
     optional SyncEnums.ErrorType error_type = 1 [default = UNKNOWN];
     optional string error_description       = 2;
     optional string url                     = 3;
-    enum Action {
-      UPGRADE_CLIENT              = 0; // Upgrade the client to latest version.
-      CLEAR_USER_DATA_AND_RESYNC  = 1; // Clear user data from dashboard and
-                                       // setup sync again.
-      ENABLE_SYNC_ON_ACCOUNT      = 2; // The administrator needs to enable sync
-                                       // on the account.
-      STOP_AND_RESTART_SYNC       = 3; // Stop sync and set up sync again.
-      DISABLE_SYNC_ON_CLIENT      = 4; // Wipe the client of all sync data and
-                                       // stop syncing.
-      UNKNOWN_ACTION              = 5; // This is the default.
-    }
-    optional Action action              = 4 [default = UNKNOWN_ACTION];
+    optional SyncEnums.Action action        = 4 [default = UNKNOWN_ACTION];
 
     // Currently only meaningful if |error_type| is throttled. If this field
     // is absent then the whole client (all datatypes) is throttled.
