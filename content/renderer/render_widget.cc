@@ -1108,6 +1108,11 @@ void RenderWidget::didDeactivateCompositor() {
     using_asynchronous_swapbuffers_ = false;
 }
 
+void RenderWidget::willBeginCompositorFrame() {
+  TRACE_EVENT0("gpu", "RenderWidget::willBeginCompositorFrame");
+  WillInitiatePaint();
+}
+
 void RenderWidget::didCommitAndDrawCompositorFrame() {
   TRACE_EVENT0("gpu", "RenderWidget::didCommitAndDrawCompositorFrame");
   // Accelerated FPS tick for performance tests. See throughput_tests.cc.
@@ -1118,6 +1123,8 @@ void RenderWidget::didCommitAndDrawCompositorFrame() {
 }
 
 void RenderWidget::didCompleteSwapBuffers() {
+  DidFlushPaint();
+
   if (update_reply_pending_)
     return;
 

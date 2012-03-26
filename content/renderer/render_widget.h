@@ -113,6 +113,7 @@ class CONTENT_EXPORT RenderWidget
   virtual bool Send(IPC::Message* msg) OVERRIDE;
 
   // WebKit::WebWidgetClient
+  virtual void willBeginCompositorFrame();
   virtual void didInvalidateRect(const WebKit::WebRect&);
   virtual void didScrollRect(int dx, int dy, const WebKit::WebRect& clipRect);
   virtual void didAutoResize(const WebKit::WebSize& new_size);
