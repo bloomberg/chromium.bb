@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-# Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -2454,6 +2454,7 @@ class UpgradePackageTest(CpuTestBase):
     pinfo.upgraded_stable = not unstable_ok
 
     # Add test-specific mocks/stubs
+    self.mox.StubOutWithMock(cros_lib, 'RunCommand')
 
     # Replay script
     mocked_upgrader._FindUpstreamCPV(pinfo.package).AndReturn(stable_up)
@@ -2481,6 +2482,17 @@ class UpgradePackageTest(CpuTestBase):
           mocked_upgrader._RunGit(mocked_upgrader._stable_repo,
                                   ['add', pinfo.package])
           mocked_upgrader._UpdateCategories(pinfo)
+          cache_files = 'metadata/md5-cache/%s-[0-9]*' % pinfo.package
+          mocked_upgrader._RunGit(mocked_upgrader._stable_repo, ['rm',
+                                  '--ignore-unmatch', '-q', '-f', cache_files])
+          cmd = ['egencache', '--update', '--repo=portage-stable',
+                 pinfo.package]
+          run_result = RunCommandResult(returncode=0, output=None)
+          cros_lib.RunCommand(cmd, print_cmd=False,
+                              redirect_stdout=True,
+                              combine_stdout_stderr=True).AndReturn(run_result)
+          mocked_upgrader._RunGit(mocked_upgrader._stable_repo,
+                                  ['add', cache_files])
     self.mox.ReplayAll()
 
     # Verify
