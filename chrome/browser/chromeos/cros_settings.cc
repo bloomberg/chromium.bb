@@ -12,6 +12,7 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros_settings_provider.h"
 #include "chrome/browser/chromeos/device_settings_provider.h"
+#include "chrome/browser/chromeos/login/signed_settings_helper.h"
 #include "chrome/browser/chromeos/stub_cros_settings_provider.h"
 #include "chrome/browser/ui/webui/options2/chromeos/system_settings_provider2.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -281,7 +282,8 @@ CrosSettings::CrosSettings() {
           switches::kStubCrosSettings)) {
     AddSettingsProvider(new StubCrosSettingsProvider(notify_cb));
   } else {
-    AddSettingsProvider(new DeviceSettingsProvider(notify_cb));
+    AddSettingsProvider(
+        new DeviceSettingsProvider(notify_cb, SignedSettingsHelper::Get()));
   }
   // System settings are not mocked currently.
   AddSettingsProvider(new options2::SystemSettingsProvider(notify_cb));

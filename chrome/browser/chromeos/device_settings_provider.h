@@ -30,7 +30,8 @@ namespace chromeos {
 class DeviceSettingsProvider : public CrosSettingsProvider,
                                public content::NotificationObserver {
  public:
-  explicit DeviceSettingsProvider(const NotifyObserversCallback& notify_cb);
+  explicit DeviceSettingsProvider(const NotifyObserversCallback& notify_cb,
+                                  SignedSettingsHelper* signed_settings_helper);
   virtual ~DeviceSettingsProvider();
 
   // CrosSettingsProvider implementation.
@@ -38,6 +39,12 @@ class DeviceSettingsProvider : public CrosSettingsProvider,
   virtual bool PrepareTrustedValues(const base::Closure& callback) OVERRIDE;
   virtual bool HandlesSetting(const std::string& path) const OVERRIDE;
   virtual void Reload() OVERRIDE;
+
+ protected:
+  // For test use only.
+  void set_ownership_status(OwnershipService::Status status) {
+    ownership_status_ = status;
+  }
 
  private:
   // CrosSettingsProvider implementation:
@@ -125,6 +132,7 @@ class DeviceSettingsProvider : public CrosSettingsProvider,
   // Pending callbacks that need to be invoked after settings verification.
   std::vector<base::Closure> callbacks_;
 
+  SignedSettingsHelper* signed_settings_helper_;
   OwnershipService::Status ownership_status_;
   mutable scoped_ptr<SignedSettingsMigrationHelper> migration_helper_;
 
@@ -143,6 +151,9 @@ class DeviceSettingsProvider : public CrosSettingsProvider,
   typedef std::pair<std::string, base::Value*> PendingQueueElement;
   std::vector<PendingQueueElement> pending_changes_;
 
+  friend class DeviceSettingsProviderTest;
+  FRIEND_TEST_ALL_PREFIXES(DeviceSettingsProviderTest,
+                           InitializationTestUnowned);
   DISALLOW_COPY_AND_ASSIGN(DeviceSettingsProvider);
 };
 

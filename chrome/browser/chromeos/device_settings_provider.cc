@@ -82,8 +82,10 @@ bool HasOldMetricsFile() {
 }  // namespace
 
 DeviceSettingsProvider::DeviceSettingsProvider(
-    const NotifyObserversCallback& notify_cb)
+    const NotifyObserversCallback& notify_cb,
+    SignedSettingsHelper* signed_settings_helper)
     : CrosSettingsProvider(notify_cb),
+      signed_settings_helper_(signed_settings_helper),
       ownership_status_(OwnershipService::GetSharedInstance()->GetStatus(true)),
       migration_helper_(new SignedSettingsMigrationHelper()),
       retries_left_(kNumRetriesLimit),
@@ -108,7 +110,7 @@ void DeviceSettingsProvider::Reload() {
     RetrieveCachedData();
   } else {
     // Retrieve the real data.
-    SignedSettingsHelper::Get()->StartRetrievePolicyOp(
+    signed_settings_helper_->StartRetrievePolicyOp(
         base::Bind(&DeviceSettingsProvider::OnRetrievePolicyCompleted,
                    base::Unretained(this)));
   }
@@ -195,7 +197,7 @@ void DeviceSettingsProvider::SetInPolicy() {
 
   if (!RequestTrustedEntity()) {
     // Otherwise we should first reload and apply on top of that.
-    SignedSettingsHelper::Get()->StartRetrievePolicyOp(
+    signed_settings_helper_->StartRetrievePolicyOp(
         base::Bind(&DeviceSettingsProvider::FinishSetInPolicy,
                    base::Unretained(this)));
     return;
@@ -305,7 +307,7 @@ void DeviceSettingsProvider::SetInPolicy() {
   if (ownership_status_ == OwnershipService::OWNERSHIP_TAKEN) {
     em::PolicyFetchResponse policy_envelope;
     policy_envelope.set_policy_data(policy_.SerializeAsString());
-    SignedSettingsHelper::Get()->StartStorePolicyOp(
+    signed_settings_helper_->StartStorePolicyOp(
         policy_envelope,
         base::Bind(&DeviceSettingsProvider::OnStorePolicyCompleted,
                    base::Unretained(this)));
