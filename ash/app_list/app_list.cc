@@ -21,7 +21,7 @@ namespace internal {
 
 namespace {
 
-const float kDefaultContainerAnimationScaleFactor = 1.05f;
+const float kContainerAnimationScaleFactor = 1.05f;
 
 // Duration for both default container and app list animation in milliseconds.
 const int kAnimationDurationMs = 130;
@@ -133,14 +133,10 @@ void AppList::ScheduleAnimation() {
 
 }
 
-void AppList::ScheduleBrowserWindowsAnimation() {
-  aura::Window* default_container = Shell::GetInstance()->GetContainer(
-      internal::kShellWindowId_DefaultContainer);
-  // |default_container| could be NULL during Shell shutdown.
-  if (!default_container)
-    return;
-
-  ui::Layer* layer = default_container->layer();
+void AppList::ScheduleBrowserWindowsAnimationForContainer(
+    aura::Window* container) {
+  DCHECK(container);
+  ui::Layer* layer = container->layer();
   layer->GetAnimator()->StopAnimating();
 
   ui::ScopedLayerAnimationSettings animation(layer->GetAnimator());
@@ -154,8 +150,20 @@ void AppList::ScheduleBrowserWindowsAnimation() {
       ui::GetScaleTransform(
           gfx::Point(layer->bounds().width() / 2,
                      layer->bounds().height() / 2),
-          kDefaultContainerAnimationScaleFactor) :
+          kContainerAnimationScaleFactor) :
       ui::Transform());
+}
+
+void AppList::ScheduleBrowserWindowsAnimation() {
+  // Note: containers could be NULL during Shell shutdown.
+  aura::Window* default_container = Shell::GetInstance()->GetContainer(
+      internal::kShellWindowId_DefaultContainer);
+  if (default_container)
+    ScheduleBrowserWindowsAnimationForContainer(default_container);
+  aura::Window* always_on_top_container = Shell::GetInstance()->GetContainer(
+      internal::kShellWindowId_AlwaysOnTopContainer);
+  if (always_on_top_container)
+    ScheduleBrowserWindowsAnimationForContainer(always_on_top_container);
 }
 
 void AppList::ScheduleDimmingAnimation() {

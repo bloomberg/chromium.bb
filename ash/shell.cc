@@ -61,6 +61,7 @@
 #include "ash/wm/window_cycle_controller.h"
 #include "ash/wm/window_modality_controller.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm/workspace/always_on_top_layout_manager.h"
 #include "ash/wm/workspace_controller.h"
 #include "ash/wm/workspace/workspace_event_filter.h"
 #include "ash/wm/workspace/workspace_layout_manager.h"
@@ -171,6 +172,10 @@ void CreateSpecialContainers(aura::RootWindow* root_window) {
 
   CreateContainer(internal::kShellWindowId_LauncherContainer,
                   "LauncherContainer",
+                  non_lock_screen_containers);
+
+  CreateContainer(internal::kShellWindowId_AppListContainer,
+                  "AppListContainer",
                   non_lock_screen_containers);
 
   aura::Window* modal_container = CreateContainer(
@@ -887,6 +892,12 @@ void Shell::InitLayoutManagers() {
   workspace_controller_->workspace_manager()->set_shelf(shelf_layout_manager);
   shelf_layout_manager->set_workspace_manager(
       workspace_controller_->workspace_manager());
+
+  aura::Window* always_on_top_container =
+      GetContainer(internal::kShellWindowId_AlwaysOnTopContainer);
+  always_on_top_container->SetLayoutManager(
+      new internal::AlwaysOnTopLayoutManager(
+          always_on_top_container->GetRootWindow()));
 
   // Create desktop background widget.
   // TODO(bshe): We should be able to use OnDesktopBackgroundChanged function

@@ -31,6 +31,7 @@ const int kWindowContainerIds[] = {
     kShellWindowId_AlwaysOnTopContainer,
     kShellWindowId_SettingBubbleContainer,
     kShellWindowId_DefaultContainer,
+    kShellWindowId_AppListContainer,
 
     // Panel, launcher and status are intentionally checked after other
     // containers even though these layers are higher. The user expects their

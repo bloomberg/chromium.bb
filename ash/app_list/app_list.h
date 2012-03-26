@@ -57,6 +57,7 @@ class AppList : public aura::EventFilter,
   // is the reverse of the showing animation.
   void ScheduleAnimation();
 
+  void ScheduleBrowserWindowsAnimationForContainer(aura::Window* container);
   void ScheduleBrowserWindowsAnimation();
   void ScheduleDimmingAnimation();
   void ScheduleAppListAnimation();
