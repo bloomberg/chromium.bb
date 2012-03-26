@@ -49,7 +49,6 @@
 #include "chrome/browser/translate/translate_prefs.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/prefs/prefs_tab_helper.h"
 #include "chrome/browser/ui/search_engines/search_engine_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_constants.h"
@@ -1905,14 +1904,9 @@ bool RenderViewContextMenu::IsDevCommandEnabled(int id) const {
     // always enabled.
     const Extension* extension = GetExtension();
     if (!extension) {
-      TabContentsWrapper* contents_wrapper =
-          TabContentsWrapper::GetCurrentWrapperForContents(
-              source_web_contents_);
-      if (!contents_wrapper)
-        return false;
       const CommandLine* command_line = CommandLine::ForCurrentProcess();
-      if (!contents_wrapper->prefs_tab_helper()->per_tab_prefs()->GetBoolean(
-              prefs::kWebKitJavascriptEnabled) ||
+      if (!profile_->GetPrefs()->GetBoolean(
+          prefs::kWebKitGlobalJavascriptEnabled) ||
           command_line->HasSwitch(switches::kDisableJavaScript))
         return false;
 #if defined(OS_MACOSX)

@@ -204,32 +204,6 @@ PrefService* PrefService::CreateIncognitoPrefService(
       false);
 }
 
-PrefService* PrefService::CreatePrefServiceWithPerTabPrefStore() {
-  pref_service_forked_ = true;
-  PrefNotifierImpl* pref_notifier = new PrefNotifierImpl();
-  OverlayUserPrefStore* per_tab_pref_store =
-      new OverlayUserPrefStore(user_pref_store_.get());
-  PrefsTabHelper::InitPerTabUserPrefStore(per_tab_pref_store);
-  DefaultPrefStore* default_store = new DefaultPrefStore();
-  return new PrefService(
-      pref_notifier,
-      pref_value_store_->CloneAndSpecialize(
-          NULL,  // managed_platform_prefs
-          NULL,  // managed_cloud_prefs
-          NULL,  // extension_prefs
-          NULL,  // command_line_prefs
-          per_tab_pref_store,
-          NULL,  // recommended_platform_prefs
-          NULL,  // recommended_cloud_prefs
-          default_store,
-          NULL,
-          pref_notifier),
-      per_tab_pref_store,
-      default_store,
-      NULL,
-      false);
-}
-
 PrefService::PrefService(PrefNotifierImpl* pref_notifier,
                          PrefValueStore* pref_value_store,
                          PersistentPrefStore* user_prefs,

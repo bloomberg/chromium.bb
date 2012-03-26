@@ -1959,7 +1959,6 @@
         'browser/ui/panels/display_settings_provider_win_unittest.cc',
         'browser/ui/panels/panel_browser_window_cocoa_unittest.mm',
         'browser/ui/panels/panel_mouse_watcher_unittest.cc',
-        'browser/ui/prefs/prefs_tab_helper_unittest.cc',
         'browser/ui/search_engines/keyword_editor_controller_unittest.cc',
         'browser/ui/select_file_dialog_unittest.cc',
         'browser/ui/tabs/dock_info_unittest.cc',

@@ -161,10 +161,6 @@ class PrefService : public base::NonThreadSafe {
   // incognito windows).
   PrefService* CreateIncognitoPrefService(PrefStore* incognito_extension_prefs);
 
-  // Creates a per-tab copy of the pref service that shares most pref stores
-  // and allows WebKit-related preferences to be overridden on per-tab basis.
-  PrefService* CreatePrefServiceWithPerTabPrefStore();
-
   virtual ~PrefService();
 
   // Reloads the data from file. This should only be called when the importer
