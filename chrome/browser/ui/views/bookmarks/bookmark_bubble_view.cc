@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -171,7 +171,7 @@ void BookmarkBubbleView::Init() {
   parent_combobox_ = new views::Combobox(&parent_model_);
   parent_combobox_->SetSelectedItem(parent_model_.node_parent_index());
   parent_combobox_->set_listener(this);
-  parent_combobox_->SetAccessibleName(combobox_label->GetText());
+  parent_combobox_->SetAccessibleName(combobox_label->text());
 
   views::Label* title_label = new views::Label(
       l10n_util::GetStringUTF16(

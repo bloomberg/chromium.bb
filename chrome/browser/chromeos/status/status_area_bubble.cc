@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -40,7 +40,7 @@ StatusAreaBubbleContentView::~StatusAreaBubbleContentView() {
 }
 
 string16 StatusAreaBubbleContentView::GetMessage() const {
-  return message_view_->GetText();
+  return message_view_->text();
 }
 
 void StatusAreaBubbleContentView::SetMessage(const string16& message) {

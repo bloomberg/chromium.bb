@@ -475,7 +475,7 @@ void LocationBarView::SetInstantSuggestion(const string16& text,
         suggested_text_view_->SetFont(GetOmniboxViewWin()->GetFont());
 #endif
       AddChildView(suggested_text_view_);
-    } else if (suggested_text_view_->GetText() != text) {
+    } else if (suggested_text_view_->text() != text) {
       suggested_text_view_->SetText(text);
     }
     if (animate_to_complete && !location_entry_->IsImeComposing())
@@ -492,7 +492,7 @@ void LocationBarView::SetInstantSuggestion(const string16& text,
 }
 
 string16 LocationBarView::GetInstantSuggestion() const {
-  return HasValidSuggestText() ? suggested_text_view_->GetText() : string16();
+  return HasValidSuggestText() ? suggested_text_view_->text() : string16();
 }
 #endif
 
@@ -1300,7 +1300,7 @@ void LocationBarView::Observe(int type,
 #if defined(OS_WIN) || defined(USE_AURA)
 bool LocationBarView::HasValidSuggestText() const {
   return suggested_text_view_ && !suggested_text_view_->size().IsEmpty() &&
-      !suggested_text_view_->GetText().empty();
+      !suggested_text_view_->text().empty();
 }
 
 #if !defined(USE_AURA)

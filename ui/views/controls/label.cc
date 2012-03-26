@@ -54,27 +54,19 @@ void Label::SetFont(const gfx::Font& font) {
 
 void Label::SetText(const string16& text) {
   text_ = text;
-  url_set_ = false;
+  url_ = GURL();
   text_size_valid_ = false;
   PreferredSizeChanged();
   SchedulePaint();
-}
-
-const string16 Label::GetText() const {
-  return url_set_ ? UTF8ToUTF16(url_.spec()) : text_;
 }
 
 void Label::SetURL(const GURL& url) {
+  DCHECK(url.is_valid());
   url_ = url;
   text_ = UTF8ToUTF16(url_.spec());
-  url_set_ = true;
   text_size_valid_ = false;
   PreferredSizeChanged();
   SchedulePaint();
-}
-
-const GURL Label::GetURL() const {
-  return url_set_ ? url_ : GURL(UTF16ToUTF8(text_));
 }
 
 void Label::SetAutoColorReadabilityEnabled(bool enabled) {
@@ -354,7 +346,6 @@ void Label::Init(const string16& text, const gfx::Font& font) {
   contains_mouse_ = false;
   font_ = font;
   text_size_valid_ = false;
-  url_set_ = false;
   requested_enabled_color_ = kDefaultEnabledColor;
   requested_disabled_color_ = kDefaultDisabledColor;
   background_color_ = kDefaultBackgroundColor;
@@ -434,7 +425,7 @@ int Label::ComputeDrawStringFlags() const {
 
   if (directionality_mode_ == AUTO_DETECT_DIRECTIONALITY) {
     base::i18n::TextDirection direction =
-        base::i18n::GetFirstStrongCharacterDirection(GetText());
+        base::i18n::GetFirstStrongCharacterDirection(text_);
     if (direction == base::i18n::RIGHT_TO_LEFT)
       flags |= gfx::Canvas::FORCE_RTL_DIRECTIONALITY;
     else
@@ -482,7 +473,7 @@ void Label::CalculateDrawStringParams(string16* paint_text,
                                       int* flags) const {
   DCHECK(paint_text && text_bounds && flags);
 
-  if (url_set_) {
+  if (!url_.is_empty()) {
     // TODO(jungshik) : Figure out how to get 'intl.accept_languages'
     // preference and use it when calling ElideUrl.
     *paint_text =

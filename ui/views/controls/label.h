@@ -63,17 +63,14 @@ class VIEWS_EXPORT Label : public View {
   // Set the label text.
   void SetText(const string16& text);
 
+  // Set URL Value - text_ is set to spec().
+  void SetURL(const GURL& url);
+
   // Return the font used by this label.
   gfx::Font font() const { return font_; }
 
   // Return the label text.
-  const string16 GetText() const;
-
-  // Set URL Value - text_ is set to spec().
-  void SetURL(const GURL& url);
-
-  // Return the label URL.
-  const GURL GetURL() const;
+  string16 text() const { return text_; };
 
   // Enables or disables auto-color-readability (enabled by default).  If this
   // is enabled, then calls to set any foreground or background color will
@@ -263,7 +260,6 @@ class VIEWS_EXPORT Label : public View {
   bool is_multi_line_;
   bool allow_character_break_;
   bool elide_in_middle_;
-  bool url_set_;
   Alignment horiz_alignment_;
   string16 tooltip_text_;
   // Whether the mouse is over this label.

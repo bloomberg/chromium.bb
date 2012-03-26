@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -46,8 +46,8 @@ gfx::Size SelectedKeywordView::GetMinimumSize() {
 }
 
 void SelectedKeywordView::Layout() {
-  SetLabel((width() == GetPreferredSize().width()) ?
-      full_label_.GetText() : partial_label_.GetText());
+  SetLabel(((width() == GetPreferredSize().width()) ?
+      full_label_ : partial_label_).text());
   IconLabelBubbleView::Layout();
 }
 
@@ -71,6 +71,6 @@ void SelectedKeywordView::SetKeyword(const string16& keyword) {
   const std::wstring min_string(
       location_bar_util::CalculateMinString(UTF16ToWide(short_name)));
   partial_label_.SetText(min_string.empty() ?
-      full_label_.GetText() :
+      full_label_.text() :
       l10n_util::GetStringFUTF16(message_id, WideToUTF16(min_string)));
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,7 +35,7 @@ TEST_F(GenericInfoViewTest, GenericInfoView) {
   root_view->AddChildView(view1);
   view1->SetName(0, kName);
   view1->SetValue(0, kValue);
-  EXPECT_EQ(kName, view1->name_views_[0]->GetText());
+  EXPECT_EQ(kName, view1->name_views_[0]->text());
   EXPECT_EQ(kValue, view1->value_views_[0]->text());
   view1->ClearValues();
   EXPECT_TRUE(view1->value_views_[0]->text().empty());
@@ -50,8 +50,8 @@ TEST_F(GenericInfoViewTest, GenericInfoView) {
 
   string16 product_name = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
   string16 product_desc = l10n_util::GetStringUTF16(IDS_PRODUCT_DESCRIPTION);
-  EXPECT_EQ(product_name, view2->name_views_[0]->GetText());
-  EXPECT_EQ(product_desc, view2->name_views_[1]->GetText());
+  EXPECT_EQ(product_name, view2->name_views_[0]->text());
+  EXPECT_EQ(product_desc, view2->name_views_[1]->text());
   widget->CloseNow();
 }
 #endif  // OS_WIN

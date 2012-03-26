@@ -1063,7 +1063,7 @@ void DownloadItemView::SizeLabelToMinWidth() {
   if (dangerous_download_label_sized_)
     return;
 
-  string16 label_text = dangerous_download_label_->GetText();
+  string16 label_text = dangerous_download_label_->text();
   TrimWhitespace(label_text, TRIM_ALL, &label_text);
   DCHECK_EQ(string16::npos, label_text.find('\n'));
 
@@ -1140,7 +1140,7 @@ bool DownloadItemView::InDropDownButtonXCoordinateRange(int x) {
 void DownloadItemView::UpdateAccessibleName() {
   string16 new_name;
   if (IsShowingWarningDialog()) {
-    new_name = dangerous_download_label_->GetText();
+    new_name = dangerous_download_label_->text();
   } else {
     new_name = status_text_ + char16(' ') +
         download_->GetFileNameToReportUser().LossyDisplayName();

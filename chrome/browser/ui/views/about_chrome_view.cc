@@ -254,8 +254,8 @@ void AboutChromeView::Init() {
   // Add together all the strings in the dialog for the purpose of calculating
   // the height of the dialog. The space for the Terms of Service string is not
   // included (it is added later, if needed).
-  string16 full_text = main_label_chunk1_ + chromium_url_->GetText() +
-                       main_label_chunk2_ + open_source_url_->GetText() +
+  string16 full_text = main_label_chunk1_ + chromium_url_->text() +
+                       main_label_chunk2_ + open_source_url_->text() +
                        main_label_chunk3_;
 
   dialog_dimensions_ = views::Widget::GetLocalizedContentsSize(
@@ -785,7 +785,7 @@ void AboutChromeView::UpdateStatus(GoogleUpdateUpgradeResult result,
 }
 
 int AboutChromeView::EnlargeWindowSizeIfNeeded() {
-  if (!error_label_ || error_label_->GetText().empty())
+  if (!error_label_ || error_label_->text().empty())
     return 0;
 
   // This will enlarge the window each time the function is called, which is
