@@ -955,7 +955,7 @@ TEST_F(RenderTextTest, OriginForSkiaDrawing) {
 
   Point origin = render_text->GetOriginForSkiaDrawing();
   EXPECT_EQ(origin.x(), 0);
-  EXPECT_EQ(origin.y(), 13);
+  EXPECT_EQ(origin.y(), render_text->GetFont().GetBaseline());
 
   // Set display area's height greater than font height.
   display_rect = Rect(0, 0, 100, font_height + 2);
@@ -963,7 +963,7 @@ TEST_F(RenderTextTest, OriginForSkiaDrawing) {
 
   origin = render_text->GetOriginForSkiaDrawing();
   EXPECT_EQ(origin.x(), 0);
-  EXPECT_EQ(origin.y(), 14);
+  EXPECT_EQ(origin.y(), render_text->GetFont().GetBaseline() + 1);
 }
 
 TEST_F(RenderTextTest, DisplayRectShowsCursorLTR) {
