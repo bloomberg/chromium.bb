@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/preferences.h"
 
+#include "ash/ash_switches.h"
 #include "base/chromeos/chromeos_version.h"
 #include "base/command_line.h"
 #include "base/i18n/time_formatting.h"
@@ -266,8 +267,11 @@ void Preferences::Init(PrefService* prefs) {
   hotkey_previous_engine_.Init(
       prefs::kLanguageHotkeyPreviousEngine, prefs, this);
   preferred_languages_.Init(prefs::kLanguagePreferredLanguages,
-                                     prefs, this);
+                            prefs, this);
   preload_engines_.Init(prefs::kLanguagePreloadEngines, prefs, this);
+  current_input_method_.Init(prefs::kLanguageCurrentInputMethod, prefs, this);
+  previous_input_method_.Init(prefs::kLanguagePreviousInputMethod, prefs, this);
+
   for (size_t i = 0; i < language_prefs::kNumChewingBooleanPrefs; ++i) {
     chewing_boolean_prefs_[i].Init(
         language_prefs::kChewingBooleanPrefs[i].pref_name, prefs, this);
@@ -423,6 +427,27 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
                                      language_prefs::kPreloadEnginesConfigName,
                                      preload_engines_.GetValue());
   }
+
+  // Do not check |*pref_name| for the two prefs. We're only interested in
+  // initial values of the prefs.
+  // TODO(yusukes): Remove the second condition on R20.
+  if (!pref_name && !CommandLine::ForCurrentProcess()->HasSwitch(
+          ash::switches::kDisableAshUberTray)) {
+    const std::string previous_input_method_id =
+        previous_input_method_.GetValue();
+    const std::string current_input_method_id =
+        current_input_method_.GetValue();
+    // NOTICE: ChangeInputMethod() has to be called AFTER the value of
+    // |preload_engines_| is sent to the InputMethodManager. Otherwise, the
+    // ChangeInputMethod request might be ignored as an invalid input method ID.
+    input_method::InputMethodManager* manager =
+        input_method::InputMethodManager::GetInstance();
+    if (!previous_input_method_id.empty())
+      manager->ChangeInputMethod(previous_input_method_id);
+    if (!current_input_method_id.empty())
+      manager->ChangeInputMethod(current_input_method_id);
+  }
+
   for (size_t i = 0; i < language_prefs::kNumChewingBooleanPrefs; ++i) {
     if (!pref_name ||
         *pref_name == language_prefs::kChewingBooleanPrefs[i].pref_name) {

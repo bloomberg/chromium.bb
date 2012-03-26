@@ -566,6 +566,8 @@
         'browser/chromeos/imageburner/burn_controller.h',
         'browser/chromeos/imageburner/burn_manager.cc',
         'browser/chromeos/imageburner/burn_manager.h',
+        'browser/chromeos/input_method/browser_state_monitor.cc',
+        'browser/chromeos/input_method/browser_state_monitor.h',
         'browser/chromeos/input_method/candidate_window.cc',
         'browser/chromeos/input_method/candidate_window.h',
         'browser/chromeos/input_method/ibus_controller.cc',
