@@ -14,7 +14,7 @@ namespace ui {
 class ComboboxModel {
  public:
   // Returns the number of items in the combo box.
-  virtual int GetItemCount() const = 0;
+  virtual int GetItemCount() = 0;
 
   // Returns the string at the specified index.
   virtual string16 GetItemAt(int index) = 0;

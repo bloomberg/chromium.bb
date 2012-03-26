@@ -45,12 +45,10 @@ class SecurityComboboxModel : public ui::ComboboxModel {
  public:
   SecurityComboboxModel() {}
   virtual ~SecurityComboboxModel() {}
-
-  // Overridden from ui::ComboboxModel:
-  virtual int GetItemCount() const OVERRIDE {
+  virtual int GetItemCount() {
     return SECURITY_INDEX_COUNT;
   }
-  virtual string16 GetItemAt(int index) OVERRIDE {
+  virtual string16 GetItemAt(int index) {
     if (index == SECURITY_INDEX_NONE)
       return l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SECURITY_NONE);
@@ -63,7 +61,6 @@ class SecurityComboboxModel : public ui::ComboboxModel {
     NOTREACHED();
     return string16();
   }
-
  private:
   DISALLOW_COPY_AND_ASSIGN(SecurityComboboxModel);
 };
@@ -82,12 +79,10 @@ class EAPMethodComboboxModel : public ui::ComboboxModel {
  public:
   EAPMethodComboboxModel() {}
   virtual ~EAPMethodComboboxModel() {}
-
-  // Overridden from ui::ComboboxModel:
-  virtual int GetItemCount() const OVERRIDE {
+  virtual int GetItemCount() {
     return EAP_METHOD_INDEX_COUNT;
   }
-  virtual string16 GetItemAt(int index) OVERRIDE {
+  virtual string16 GetItemAt(int index) {
     if (index == EAP_METHOD_INDEX_NONE)
       return l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_EAP_METHOD_NONE);
@@ -126,9 +121,7 @@ class Phase2AuthComboboxModel : public ui::ComboboxModel {
   explicit Phase2AuthComboboxModel(views::Combobox* eap_method_combobox)
       : eap_method_combobox_(eap_method_combobox) {}
   virtual ~Phase2AuthComboboxModel() {}
-
-  // Overridden from ui::ComboboxModel:
-  virtual int GetItemCount() const OVERRIDE {
+  virtual int GetItemCount() {
     switch (eap_method_combobox_->selected_item()) {
       case EAP_METHOD_INDEX_NONE:
       case EAP_METHOD_INDEX_TLS:
@@ -142,7 +135,7 @@ class Phase2AuthComboboxModel : public ui::ComboboxModel {
     NOTREACHED();
     return 0;
   }
-  virtual string16 GetItemAt(int index) OVERRIDE {
+  virtual string16 GetItemAt(int index) {
     if (index == PHASE_2_AUTH_INDEX_AUTO)
       return l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PHASE_2_AUTH_AUTO);
@@ -167,7 +160,6 @@ class Phase2AuthComboboxModel : public ui::ComboboxModel {
 
  private:
   views::Combobox* eap_method_combobox_;
-
   DISALLOW_COPY_AND_ASSIGN(Phase2AuthComboboxModel);
 };
 
@@ -197,15 +189,13 @@ class ServerCACertComboboxModel : public ui::ComboboxModel {
     DCHECK(cert_library);
   }
   virtual ~ServerCACertComboboxModel() {}
-
-  // Overridden from ui::ComboboxModel:
-  virtual int GetItemCount() const OVERRIDE {
+  virtual int GetItemCount() {
     if (cert_library_->CertificatesLoading())
       return 1;  // "Loading"
     // First "Default", then the certs, then "Do not check".
     return cert_library_->GetCACertificates().Size() + 2;
   }
-  virtual string16 GetItemAt(int combo_index) OVERRIDE {
+  virtual string16 GetItemAt(int combo_index) {
     if (cert_library_->CertificatesLoading())
       return l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_LOADING);
@@ -231,9 +221,7 @@ class UserCertComboboxModel : public ui::ComboboxModel {
     DCHECK(cert_library);
   }
   virtual ~UserCertComboboxModel() {}
-
-  // Overridden from ui::ComboboxModel:
-  virtual int GetItemCount() const OVERRIDE {
+  virtual int GetItemCount() {
     if (cert_library_->CertificatesLoading())
       return 1;  // "Loading"
     int num_certs = cert_library_->GetUserCertificates().Size();
@@ -241,19 +229,18 @@ class UserCertComboboxModel : public ui::ComboboxModel {
       return 1;  // "None installed"
     return num_certs;
   }
-  virtual string16 GetItemAt(int index) OVERRIDE {
+  virtual string16 GetItemAt(int combo_index) {
     if (cert_library_->CertificatesLoading())
       return l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_LOADING);
     if (cert_library_->GetUserCertificates().Size() == 0)
       return l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_USER_CERT_NONE_INSTALLED);
-    return cert_library_->GetUserCertificates().GetDisplayStringAt(index);
+    return cert_library_->GetUserCertificates().GetDisplayStringAt(combo_index);
   }
 
  private:
   CertLibrary* cert_library_;
-
   DISALLOW_COPY_AND_ASSIGN(UserCertComboboxModel);
 };
 

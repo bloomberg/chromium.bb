@@ -54,7 +54,7 @@ class ComboboxModelExampleList : public ui::ComboboxModel {
   virtual ~ComboboxModelExampleList() {}
 
   // Overridden from ui::ComboboxModel:
-  virtual int GetItemCount() const OVERRIDE { return example_list_.size(); }
+  virtual int GetItemCount() OVERRIDE { return example_list_.size(); }
   virtual string16 GetItemAt(int index) OVERRIDE {
     return UTF8ToUTF16(example_list_[index]->example_title());
   }
