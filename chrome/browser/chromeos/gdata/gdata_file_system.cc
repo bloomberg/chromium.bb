@@ -573,7 +573,7 @@ void GDataFileSystem::TransferFile(const FilePath& local_file_path,
       base::Bind(&GDataFileSystem::GetDocumentResourceIdOnIOThreadPool,
                  local_file_path,
                  base::Bind(&GDataFileSystem::TransferFileForResourceId,
-                            ui_weak_ptr_factory_->GetWeakPtr(),
+                            GetWeakPtrForCurrentThread(),
                             local_file_path,
                             remote_dest_file_path,
                             callback),
@@ -587,14 +587,7 @@ void GDataFileSystem::TransferFileForResourceId(
     const std::string& resource_id) {
   if (resource_id.empty()) {
     // If |resource_id| is empty, upload the local file as a regular file.
-    BrowserThread::PostBlockingPoolTask(FROM_HERE,
-        base::Bind(&GDataFileSystem::CreateUploadFileInfoOnIOThreadPool,
-                   local_file_path,
-                   remote_dest_file_path,
-                   base::Bind(&GDataFileSystem::StartFileUploadOnUIThread,
-                              ui_weak_ptr_factory_->GetWeakPtr(),
-                              base::MessageLoopProxy::current(),
-                              callback)));
+    TransferRegularFile(local_file_path, remote_dest_file_path, callback);
     return;
   }
 
@@ -607,6 +600,20 @@ void GDataFileSystem::TransferFileForResourceId(
       // in the document title.
       remote_dest_file_path.BaseName().RemoveExtension().value(),
       callback);
+}
+
+void GDataFileSystem::TransferRegularFile(
+    const FilePath& local_file_path,
+    const FilePath& remote_dest_file_path,
+    const FileOperationCallback& callback) {
+  BrowserThread::PostBlockingPoolTask(FROM_HERE,
+      base::Bind(&GDataFileSystem::CreateUploadFileInfoOnIOThreadPool,
+                 local_file_path,
+                 remote_dest_file_path,
+                 base::Bind(&GDataFileSystem::StartFileUploadOnUIThread,
+                            ui_weak_ptr_factory_->GetWeakPtr(),
+                            base::MessageLoopProxy::current(),
+                            callback)));
 }
 
 // static
@@ -724,21 +731,24 @@ void GDataFileSystem::Copy(const FilePath& src_file_path,
   base::PlatformFileError error = base::PLATFORM_FILE_OK;
   FilePath dest_parent_path = dest_file_path.DirName();
 
-  base::AutoLock lock(lock_);
-  GDataFileBase* src_file = GetGDataFileInfoFromPath(src_file_path);
-  GDataFileBase* dest_parent = GetGDataFileInfoFromPath(dest_parent_path);
-  if (!src_file || !dest_parent) {
-    error = base::PLATFORM_FILE_ERROR_NOT_FOUND;
-  } else {
-    // TODO(benchan): Implement copy for regular files and directories.
-    // To copy a regular file, we need to first download the file and
-    // then upload it, which is not yet implemented. Also, in the interim,
-    // we handle recursive directory copy in the file manager.
-    if (!src_file->AsGDataFile() ||
-        !src_file->AsGDataFile()->is_hosted_document()) {
-      error = base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
+  std::string src_file_resource_id;
+  bool src_file_is_hosted_document = false;
+  {
+    base::AutoLock lock(lock_);
+    GDataFileBase* src_file = GetGDataFileInfoFromPath(src_file_path);
+    GDataFileBase* dest_parent = GetGDataFileInfoFromPath(dest_parent_path);
+    if (!src_file || !dest_parent) {
+      error = base::PLATFORM_FILE_ERROR_NOT_FOUND;
     } else if (!dest_parent->AsGDataDirectory()) {
       error = base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY;
+    } else if (!src_file->AsGDataFile()) {
+      // TODO(benchan): Implement copy for directories. In the interim,
+      // we handle recursive directory copy in the file manager.
+      error = base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
+    } else {
+      src_file_resource_id = src_file->resource_id();
+      src_file_is_hosted_document =
+          src_file->AsGDataFile()->is_hosted_document();
     }
   }
 
@@ -749,12 +759,41 @@ void GDataFileSystem::Copy(const FilePath& src_file_path,
     return;
   }
 
-  CopyDocumentToDirectory(dest_parent_path,
-                          src_file->resource_id(),
-                          // Drop the document extension, which should not be
-                          // in the document title.
-                          dest_file_path.BaseName().RemoveExtension().value(),
-                          callback);
+  if (src_file_is_hosted_document) {
+    CopyDocumentToDirectory(dest_parent_path,
+                            src_file_resource_id,
+                            // Drop the document extension, which should not be
+                            // in the document title.
+                            dest_file_path.BaseName().RemoveExtension().value(),
+                            callback);
+    return;
+  }
+
+  // TODO(benchan): Reimplement this once the server API supports
+  // copying of regular files directly on the server side.
+  GetFile(src_file_path,
+          base::Bind(&GDataFileSystem::OnGetFileCompleteForCopy,
+                     GetWeakPtrForCurrentThread(),
+                     dest_file_path,
+                     callback));
+}
+
+void GDataFileSystem::OnGetFileCompleteForCopy(
+    const FilePath& remote_dest_file_path,
+    const FileOperationCallback& callback,
+    base::PlatformFileError error,
+    const FilePath& local_file_path,
+    GDataFileType file_type) {
+  if (error != base::PLATFORM_FILE_OK) {
+    if (!callback.is_null())
+      callback.Run(error);
+
+    return;
+  }
+
+  // This callback is only triggered for a regular file.
+  DCHECK_EQ(REGULAR_FILE, file_type);
+  TransferRegularFile(local_file_path, remote_dest_file_path, callback);
 }
 
 void GDataFileSystem::CopyDocumentToDirectory(

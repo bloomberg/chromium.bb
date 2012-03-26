@@ -632,14 +632,35 @@ class GDataFileSystem : public GDataFileSystemInterface {
   // |remote_dest_file_path|. |local_file_path| must be a file from the local
   // file system, |remote_dest_file_path| is the virtual destination path within
   // gdata file system. If |resource_id| is a non-empty string, the transfer is
-  // handled by CopyDocumentToDirectory. Otherwise, the transfer is performed as
-  // a regular file upload.
+  // handled by CopyDocumentToDirectory. Otherwise, the transfer is handled by
+  // TransferRegularFile.
   //
   // Can be called from UI/IO thread. |callback| is run on the calling thread.
   void TransferFileForResourceId(const FilePath& local_file_path,
                                  const FilePath& remote_dest_file_path,
                                  const FileOperationCallback& callback,
                                  const std::string& resource_id);
+
+  // Initiates transfer of |local_file_path| to |remote_dest_file_path|.
+  // |local_file_path| must be a regular file (i.e. not a hosted document) from
+  // the local file system, |remote_dest_file_path| is the virtual destination
+  // path within gdata file system.
+  //
+  // Can be called from UI/IO thread. |callback| is run on the calling thread.
+  void TransferRegularFile(const FilePath& local_file_path,
+                           const FilePath& remote_dest_file_path,
+                           const FileOperationCallback& callback);
+
+  // Invoked by upon completion of GetFile initiated by Copy. If GetFile
+  // reports no error, calls TransferRegularFile to transfer |local_file_path|
+  // to |remote_dest_file_path|.
+  //
+  // Can be called from UI/IO thread. |callback| is run on the calling thread.
+  void OnGetFileCompleteForCopy(const FilePath& remote_dest_file_path,
+                                const FileOperationCallback& callback,
+                                base::PlatformFileError error,
+                                const FilePath& local_file_path,
+                                GDataFileType file_type);
 
   // Copies a document with |resource_id| to the directory at |dir_path|
   // and names the copied document as |new_name|.
