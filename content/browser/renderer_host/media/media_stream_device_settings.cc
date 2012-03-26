@@ -88,7 +88,8 @@ class MediaStreamDeviceSettingsRequest : public MediaStreamRequest {
       const std::string& origin,
       const StreamOptions& request_options)
       : MediaStreamRequest(render_pid, render_vid, origin),
-        options(request_options) {}
+        options(request_options),
+        posted_task(false) {}
 
   ~MediaStreamDeviceSettingsRequest() {}
 
@@ -96,6 +97,9 @@ class MediaStreamDeviceSettingsRequest : public MediaStreamRequest {
   StreamOptions options;
   // Map containing available devices for the requested capture types.
   DeviceMap devices_full;
+  // Whether or not a task was posted to make the call to
+  // RequestMediaAccessPermission, to make sure that we never post twice to it.
+  bool posted_task;
 };
 
 typedef std::map<MediaStreamType, StreamDeviceInfoArray> DeviceMap;
@@ -139,6 +143,8 @@ void MediaStreamDeviceSettings::AvailableDevices(
 
   // Add the answer for the request.
   MediaStreamDeviceSettingsRequest* request = request_it->second;
+  DCHECK_EQ(request->devices_full.count(stream_type), static_cast<size_t>(0)) <<
+      "This request already has a list of devices for this stream type.";
   request->devices_full[stream_type] = devices;
 
   // Check if we're done.
@@ -153,6 +159,12 @@ void MediaStreamDeviceSettings::AvailableDevices(
   if (request->devices_full.size() == num_media_requests) {
     // We have all answers needed.
     if (!use_fake_ui_) {
+      // Abort if the task was already posted: wait for it to PostResponse.
+      if (request->posted_task) {
+        return;
+      }
+      request->posted_task = true;
+
       // Create the simplified list of devices.
       for (DeviceMap::iterator it = request->devices_full.begin();
            it != request->devices_full.end(); ++it) {
