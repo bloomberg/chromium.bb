@@ -15492,6 +15492,9 @@ Battery full
     <message name="IDS_INTENT_PICKER_MORE_SUGGESTIONS" desc="Link text providing a Chrome Web Store link to select more apps.">
       More suggestions
     </message>
+    <message name="IDS_INTENT_PICKER_USE_ALTERNATE_SERVICE" desc="Link text that, when clicked, allows the user to choose an alternate intent service from the picker.">
+      or use another service...
+    </message>
 
     <!-- Web Intents common actions -->
     <message name="IDS_WEB_INTENTS_ACTION_SHARE" desc="Question asking the user to pick a service for the 'share' action.">
