@@ -2193,7 +2193,6 @@ FileManager.prototype = {
         // (copy, paste and drag). Clipboard object closes for write after
         // returning control from that handlers so they may not have
         // asynchronous operations.
-        // TODO(serya): Put file objects into the clipboard.
         if (!this.isOnGData()) {
           entry.file(function(f) {
             selection.files.push(f);
@@ -3136,6 +3135,11 @@ FileManager.prototype = {
     clipboard.setData('fs/sourceOnGData', this.isOnGData());
     clipboard.setData('fs/directories', directories);
     clipboard.setData('fs/files', files);
+
+    var files = this.selection.files;
+    for(var i = 0; i < files.length; i++) {
+      clipboard.items.add(files[i]);
+    }
   }
 
   FileManager.prototype.onCopy_ = function(event) {
@@ -3160,6 +3164,9 @@ FileManager.prototype = {
   };
 
   FileManager.prototype.onPaste_ = function(event) {
+    // Check that the data copied by ourselves.
+    if (!event.clipboardData.getData('fs/isCut'))
+      return;
     event.preventDefault();
     this.pasteFromClipboard_(event.clipboardData);
   };
@@ -3168,9 +3175,6 @@ FileManager.prototype = {
    * Queue up a file copy operation based on the current system clipboard.
    */
   FileManager.prototype.pasteFromClipboard_ = function(clipboard) {
-    if (!event.clipboardData.getData('fs/isCut'))
-      return;
-
     var operationInfo = {
       isCut: clipboard.getData('fs/isCut'),
       sourceDir: clipboard.getData('fs/sourceDir'),
