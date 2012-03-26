@@ -262,6 +262,7 @@ html[dir=rtl]  .step.left {
   display: inline-block;
   margin: 0;
   outline: none;
+  overflow: hidden;
   padding: 0;
   width: 400px;
 }
