@@ -196,6 +196,7 @@ void TestWebSocket::RunTests(const std::string& filter) {
   RUN_TEST_WITH_REFERENCE_CHECK(GetProtocol, filter);
   RUN_TEST_WITH_REFERENCE_CHECK(TextSendReceive, filter);
   RUN_TEST_WITH_REFERENCE_CHECK(BinarySendReceive, filter);
+  RUN_TEST_WITH_REFERENCE_CHECK(StressedSendReceive, filter);
   RUN_TEST_WITH_REFERENCE_CHECK(BufferedAmount, filter);
 
   RUN_TEST_WITH_REFERENCE_CHECK(CcInterfaces, filter);
@@ -632,6 +633,54 @@ std::string TestWebSocket::TestBinarySendReceive() {
   ASSERT_EQ(PP_OK, result);
   ASSERT_TRUE(AreEqualWithBinary(received_message, binary));
   ReleaseVar(received_message);
+  core_interface_->ReleaseResource(ws);
+
+  PASS();
+}
+
+std::string TestWebSocket::TestStressedSendReceive() {
+  // Connect to test echo server.
+  int32_t connect_result;
+  PP_Resource ws = Connect(GetFullURL(kEchoServerURL), &connect_result, "");
+  ASSERT_TRUE(ws);
+  ASSERT_EQ(PP_OK, connect_result);
+
+  // Prepare PP_Var objects to send.
+  const char* text = "hello pepper";
+  PP_Var text_var = CreateVarString(text);
+  std::vector<uint8_t> binary(256);
+  for (uint32_t i = 0; i < binary.size(); ++i)
+    binary[i] = i;
+  PP_Var binary_var = CreateVarBinary(binary);
+
+  // Send many messages.
+  for (int i = 0; i < 256; ++i) {
+    int32_t result = websocket_interface_->SendMessage(ws, text_var);
+    ASSERT_EQ(PP_OK, result);
+    result = websocket_interface_->SendMessage(ws, binary_var);
+    ASSERT_EQ(PP_OK, result);
+  }
+  ReleaseVar(text_var);
+  ReleaseVar(binary_var);
+
+  // Receive echoed data.
+  for (int i = 0; i < 512; ++i) {
+    TestCompletionCallback callback(instance_->pp_instance(), force_async_);
+    PP_Var received_message;
+    int32_t result = websocket_interface_->ReceiveMessage(
+        ws, &received_message, static_cast<pp::CompletionCallback>(
+            callback).pp_completion_callback());
+    ASSERT_TRUE(result == PP_OK || result == PP_OK_COMPLETIONPENDING);
+    if (result == PP_OK_COMPLETIONPENDING)
+      result = callback.WaitForResult();
+    ASSERT_EQ(PP_OK, result);
+    if (i & 1) {
+      ASSERT_TRUE(AreEqualWithBinary(received_message, binary));
+    } else {
+      ASSERT_TRUE(AreEqualWithString(received_message, text));
+    }
+    ReleaseVar(received_message);
+  }
   core_interface_->ReleaseResource(ws);
 
   PASS();

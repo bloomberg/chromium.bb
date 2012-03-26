@@ -144,6 +144,11 @@ void PpbWebSocketRpcServer::PPB_WebSocket_ReceiveMessage(
       MakeRemoteCompletionCallback(rpc->channel, callback_id, &callback_var);
   if (NULL == remote_callback.func)
     return;
+  // TODO(toyoshim): Removing optional flag is easy way to expect asynchronous
+  // completion on the following PPBWebSocketInterface()->ReceiveMessage(). But
+  // from the viewpoint of performance, we should handle synchronous
+  // completion correctly.
+  remote_callback.flags &= ~PP_COMPLETIONCALLBACK_FLAG_OPTIONAL;
 
   // The callback is always invoked asynchronously for now, so it doesn't care
   // about re-entrancy.
@@ -151,7 +156,7 @@ void PpbWebSocketRpcServer::PPB_WebSocket_ReceiveMessage(
       ws, callback_var, remote_callback);
   DebugPrintf("PPB_WebSocket::ReceiveMessage: pp_error=%"NACL_PRId32"\n",
       *pp_error);
-
+  CHECK(*pp_error != PP_OK);  // Should not complete synchronously
   if (*pp_error != PP_OK_COMPLETIONPENDING)
     DeleteRemoteCallbackInfo(remote_callback);
   rpc->result = NACL_SRPC_RESULT_OK;
