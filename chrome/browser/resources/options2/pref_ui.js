@@ -572,8 +572,8 @@ cr.define('options', function() {
 
       // Listen to user events.
       this.addEventListener('change', function(event) {
-        if (!this.dialogPref)
-          this.updatePreference_(prefValue);
+        if (!self.dialogPref)
+          self.updatePreference_(self.prefValue_);
       });
     },
 
