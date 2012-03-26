@@ -1212,14 +1212,14 @@ class DependencyGraphNode(object):
     # dependencies not in flat_list.  Initially, it is a copy of the children
     # of this node, because when the graph was built, nodes with no
     # dependencies were made implicit dependents of the root node.
-    in_degree_zeros = self.dependents[:]
+    in_degree_zeros = set(self.dependents[:])
 
     while in_degree_zeros:
       # Nodes in in_degree_zeros have no dependencies not in flat_list, so they
       # can be appended to flat_list.  Take these nodes out of in_degree_zeros
       # as work progresses, so that the next node to process from the list can
       # always be accessed at a consistent position.
-      node = in_degree_zeros.pop(0)
+      node = in_degree_zeros.pop()
       flat_list.append(node.ref)
 
       # Look at dependents of the node just added to flat_list.  Some of them
@@ -1239,7 +1239,7 @@ class DependencyGraphNode(object):
           # All of the dependent's dependencies are already in flat_list.  Add
           # it to in_degree_zeros where it will be processed in a future
           # iteration of the outer loop.
-          in_degree_zeros.append(node_dependent)
+          in_degree_zeros.add(node_dependent)
 
     return flat_list
 
@@ -1423,7 +1423,8 @@ def BuildDependencyList(targets):
   # targets that are not in flat_list.
   if len(flat_list) != len(targets):
     raise DependencyGraphNode.CircularException, \
-        'Some targets not reachable, cycle in dependency graph detected'
+        'Some targets not reachable, cycle in dependency graph detected: ' + \
+        ' '.join(set(flat_list) ^ set(targets))
 
   return [dependency_nodes, flat_list]
 
