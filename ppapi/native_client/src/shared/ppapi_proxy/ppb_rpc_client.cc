@@ -2231,6 +2231,63 @@ NaClSrpcError PpbNetAddressPrivateRpcClient::PPB_NetAddress_Private_GetAddress(
   return retval;
 }
 
+NaClSrpcError PpbNetAddressPrivateRpcClient::PPB_NetAddress_Private_GetScopeID(
+    NaClSrpcChannel* channel,
+    nacl_abi_size_t addr_bytes, char* addr,
+    int32_t* scope_id)  {
+  VCHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread(),
+         ("%s: PPAPI calls are not supported off the main thread\n",
+          __FUNCTION__));
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_NetAddress_Private_GetScopeID:C:i",
+      addr_bytes, addr,
+      scope_id
+  );
+  return retval;
+}
+
+NaClSrpcError PpbNetAddressPrivateRpcClient::PPB_NetAddress_Private_CreateFromIPv4Address(
+    NaClSrpcChannel* channel,
+    nacl_abi_size_t ip_bytes, char* ip,
+    int32_t port,
+    nacl_abi_size_t* addr_bytes, char* addr)  {
+  VCHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread(),
+         ("%s: PPAPI calls are not supported off the main thread\n",
+          __FUNCTION__));
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_NetAddress_Private_CreateFromIPv4Address:Ci:C",
+      ip_bytes, ip,
+      port,
+      addr_bytes, addr
+  );
+  return retval;
+}
+
+NaClSrpcError PpbNetAddressPrivateRpcClient::PPB_NetAddress_Private_CreateFromIPv6Address(
+    NaClSrpcChannel* channel,
+    nacl_abi_size_t ip_bytes, char* ip,
+    int32_t scope_id,
+    int32_t port,
+    nacl_abi_size_t* addr_bytes, char* addr)  {
+  VCHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread(),
+         ("%s: PPAPI calls are not supported off the main thread\n",
+          __FUNCTION__));
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_NetAddress_Private_CreateFromIPv6Address:Cii:C",
+      ip_bytes, ip,
+      scope_id,
+      port,
+      addr_bytes, addr
+  );
+  return retval;
+}
+
 NaClSrpcError PpbPdfRpcClient::PPB_PDF_GetLocalizedString(
     NaClSrpcChannel* channel,
     PP_Instance instance,

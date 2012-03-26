@@ -227,6 +227,74 @@ PP_Bool GetAddress(const PP_NetAddress_Private* addr,
   return PP_FALSE;
 }
 
+uint32_t GetScopeID(const PP_NetAddress_Private* addr) {
+  DebugPrintf("PPB_NetAddress_Private::GetScopeID\n");
+
+  nacl_abi_size_t addr_bytes =
+      static_cast<nacl_abi_size_t>(sizeof(PP_NetAddress_Private));
+  char* const raw_addr =
+      reinterpret_cast<char*>(const_cast<PP_NetAddress_Private*>(addr));
+  int32_t scope_id;
+
+  NaClSrpcError srpc_result =
+      PpbNetAddressPrivateRpcClient::PPB_NetAddress_Private_GetScopeID(
+          GetMainSrpcChannel(),
+          addr_bytes,
+          raw_addr, &scope_id);
+
+  DebugPrintf("PPB_NetAddress_Private::GetScopeID: %s\n",
+              NaClSrpcErrorString(srpc_result));
+
+  return static_cast<uint32_t>(scope_id);
+}
+
+void CreateFromIPv4Address(const uint8_t ip[4],
+                           uint16_t port,
+                           struct PP_NetAddress_Private* addr) {
+  DebugPrintf("PPB_NetAddress_Private::CreateFromIPv4Address\n");
+
+  char* raw_ip = reinterpret_cast<char*>(const_cast<uint8_t*>(ip));
+
+  nacl_abi_size_t addr_bytes =
+      static_cast<nacl_abi_size_t>(sizeof(PP_NetAddress_Private));
+  char* const raw_addr =
+      reinterpret_cast<char*>(const_cast<PP_NetAddress_Private*>(addr));
+
+  NaClSrpcError srpc_result =
+      PpbNetAddressPrivateRpcClient::
+      PPB_NetAddress_Private_CreateFromIPv4Address(
+          GetMainSrpcChannel(),
+          4, raw_ip, port,
+          &addr_bytes, raw_addr);
+
+  DebugPrintf("PPB_NetAddress_Private::CreateFromIPv4Address: %s\n",
+              NaClSrpcErrorString(srpc_result));
+}
+
+void CreateFromIPv6Address(const uint8_t ip[16],
+                           uint32_t scope_id,
+                           uint16_t port,
+                           struct PP_NetAddress_Private* addr) {
+  DebugPrintf("PPB_NetAddress_Private::CreateFromIPv6Address\n");
+
+  char* raw_ip = reinterpret_cast<char*>(const_cast<uint8_t*>(ip));
+
+  nacl_abi_size_t addr_bytes =
+      static_cast<nacl_abi_size_t>(sizeof(PP_NetAddress_Private));
+  char* const raw_addr =
+      reinterpret_cast<char*>(const_cast<PP_NetAddress_Private*>(addr));
+
+  NaClSrpcError srpc_result =
+      PpbNetAddressPrivateRpcClient::
+      PPB_NetAddress_Private_CreateFromIPv6Address(
+          GetMainSrpcChannel(),
+          16, raw_ip, scope_id, port,
+          &addr_bytes, raw_addr);
+
+  DebugPrintf("PPB_NetAddress_Private::CreateFromIPv6Address: %s\n",
+              NaClSrpcErrorString(srpc_result));
+}
+
 }  // namespace
 
 // static
@@ -252,6 +320,24 @@ const PPB_NetAddress_Private_1_0* PluginNetAddressPrivate::GetInterface1_0() {
     GetFamily,
     GetPort,
     GetAddress
+  };
+  return &netaddress_private_interface;
+}
+
+// static
+const PPB_NetAddress_Private_1_1* PluginNetAddressPrivate::GetInterface1_1() {
+  static const PPB_NetAddress_Private_1_1 netaddress_private_interface = {
+    AreEqual,
+    AreHostsEqual,
+    Describe,
+    ReplacePort,
+    GetAnyAddress,
+    GetFamily,
+    GetPort,
+    GetAddress,
+    GetScopeID,
+    CreateFromIPv4Address,
+    CreateFromIPv6Address
   };
   return &netaddress_private_interface;
 }
