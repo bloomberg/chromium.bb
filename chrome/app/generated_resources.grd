@@ -12841,13 +12841,13 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_OPTIONS_SETTINGS_USE_SHARED_PROXIES" desc="In the settings tab, the text next to the checkbox for allowing proxy settings for shared networks.">
         Allow proxies for shared networks
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_ENABLE_DATA_ROAMING" desc="Appears in the Mobile Data drop-down menu in the Internet Connections section of the Settigns tab.">
+      <message name="IDS_OPTIONS_SETTINGS_ENABLE_DATA_ROAMING" desc="Appears in the Mobile Data drop-down menu in the Internet Connections section of the Settings tab.">
         Allow mobile data roaming
       </message>
 <message name="IDS_OPTIONS_SETTINGS_TOGGLE_DATA_ROAMING_RESTRICTION" desc="Tooltip for the 'enable data roaming' entry in the Mobile Data drop-down menu indicating why the command is disabled.">
         This setting may only be modified by the owner.
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_DISABLE_DATA_ROAMING" desc="Appears in the Mobile Data drop-down menu in the Internet Connections section of the Settigns tab.">
+      <message name="IDS_OPTIONS_SETTINGS_DISABLE_DATA_ROAMING" desc="Appears in the Mobile Data drop-down menu in the Internet Connections section of the Settings tab.">
         Disable mobile data roaming
       </message>
       <message name="IDS_OPTIONS_ACCOUNTS_ALLOW_BWSI_DESCRIPTION" desc="In the Accounts settings tab, the text on the checkbox to allow browse without signing in.">
