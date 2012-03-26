@@ -288,10 +288,47 @@ npapi_test_plugin.dll!NPAPIClient::ExecuteGetJavascriptUrlTest::TimerProc
 WARNING
 name=http://crbug.com/109963 a
 system call NtGdiDeleteObjectApp
+# usually one or two GDI32.dll frames here but sometimes in light mode
+# there are zero.  still pretty narrow b/c of frames on either side.
+...
 *!skia::BitmapPlatformDevice::BitmapPlatformDeviceData::~BitmapPlatformDeviceData
 
 WARNING
 name=http://crbug.com/109963 b
 system call NtGdiDeleteObjectApp
-GDI32.dll!*
+# usually one or two GDI32.dll frames here but sometimes in light mode
+# there are zero.  still pretty narrow b/c of frames on either side.
+...
 *!skia::BitmapPlatformDevice::BitmapPlatformDeviceData::ReleaseBitmapDC
+
+# GDI usage errors in 3rd-party components
+WARNING
+name=http://crbug.com/119552 a
+system call NtGdiDeleteObjectApp                            
+...
+*!OmniboxViewWin::*
+
+WARNING
+name=http://crbug.com/119552 b
+system call Nt*
+...
+*!ATL::*
+
+WARNING
+name=http://crbug.com/119552 c
+# optional gdi32.dll frame followed by user32.dll
+# TODO(bruening): once have 
+# http://code.google.com/p/drmemory/issues/detail?id=846
+# I would do "gdi32.dll!...\nuser32.dll!*"
+*32.dll!*
+...
+shell32.dll!SHGetFileInfoW
+*!IconLoader::ReadIcon
+
+WARNING
+name=http://crbug.com/119552 d
+system call NtGdiDeleteObjectApp
+gdi32.dll!DeleteObject
+riched20.dll!*
+riched20.dll!*
+riched20.dll!*
