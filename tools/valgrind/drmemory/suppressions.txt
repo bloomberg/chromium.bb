@@ -332,3 +332,9 @@ gdi32.dll!DeleteObject
 riched20.dll!*
 riched20.dll!*
 riched20.dll!*
+
+WARNING
+name=http://crbug.com/120157
+# "ReleaseDC called from different thread than GetDC"
+system call NtUserCallOneParam.RELEASEDC                    
+*!*FontCache::CacheElement::~CacheElement
