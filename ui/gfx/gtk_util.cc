@@ -82,7 +82,7 @@ GdkPixbuf* GdkPixbufFromSkBitmap(const SkBitmap* bitmap) {
   if (bitmap->isNull())
     return NULL;
 
-  bitmap->lockPixels();
+  SkAutoLockPixels lock_pixels(*bitmap);
 
   int width = bitmap->width();
   int height = bitmap->height();
@@ -122,7 +122,6 @@ GdkPixbuf* GdkPixbufFromSkBitmap(const SkBitmap* bitmap) {
       8,
       width, height, stride, &FreePixels, divided);
 
-  bitmap->unlockPixels();
   return pixbuf;
 }
 
