@@ -3844,7 +3844,8 @@ def PnaclSetEmulatorForSandboxedTranslator(selected_envs):
         and env.UsingEmulator()):
       # This must modify the LINK command itself, since LINKFLAGS may
       # be filtered (e.g., in barebones tests).
-      env['LINK'] = env.get('LINK') + ' --pnacl-use-emulator'
+      env.Append(LINK=' --pnacl-use-emulator')
+      env.Append(TRANSLATE=' --pnacl-use-emulator')
 
 # ----------------------------------------------------------
 # Blank out defaults.

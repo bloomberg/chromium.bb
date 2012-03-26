@@ -212,6 +212,7 @@ scons-tests() {
   # http://code.google.com/p/nativeclient/issues/detail?id=2581
   # run only a subset below
   if [ "${platform}" != arm ]; then
+    build-sbtc-prerequisites ${platform}
     scons-tests-translator ${platform} "${extra}" "${test}"
   fi
 }
@@ -221,7 +222,6 @@ scons-tests-translator() {
   local extra=$2
   local test=$3
 
-  build-sbtc-prerequisites ${platform}
   single-scons-test ${platform} "${extra} use_sandboxed_translator=1" "${test}"
 }
 
@@ -287,6 +287,7 @@ mode-trybot-arm() {
   clobber
   install-lkgr-toolchains
   scons-tests "arm" "--mode=opt-host,nacl -j8 -k" "smoke_tests"
+  build-sbtc-prerequisites "arm"
   # Full test suite of translator for ARM is too flaky on QEMU
   # http://code.google.com/p/nativeclient/issues/detail?id=2581
   # Running a subset here (and skipping in scons-test() itself).
@@ -366,14 +367,18 @@ mode-buildbot-arm() {
   # processing time of *.scons files
   scons-tests "arm" "${mode} -k" "small_tests medium_tests large_tests"
 
+  build-sbtc-prerequisites "arm"
+
   # Run tests in pexe mode
-  scons-tests-no-translator "arm" "${mode} -k pnacl_generate_pexe=1" \
+  scons-tests-no-translator "arm" "${mode} -j4 -k pnacl_generate_pexe=1" \
     "toolchain_tests"
+  scons-tests-translator "arm" \
+    "${mode} -j4 -k pnacl_generate_pexe=1" "toolchain_tests"
 
   # Full test suite of translator for ARM is too flaky on QEMU
   # http://code.google.com/p/nativeclient/issues/detail?id=2581
   # Running a subset here (and skipping in scons-test() itself).
-  scons-tests-translator "arm" "--mode=opt-host,nacl -j4 -k" "toolchain_tests"
+  scons-tests-translator "arm" "${mode} -j4 -k" "toolchain_tests"
   browser-tests "arm" "${mode}"
   ad-hoc-shared-lib-tests "arm"
 }
@@ -396,9 +401,9 @@ mode-buildbot-arm-try() {
 mode-buildbot-arm-hw() {
   FAIL_FAST=false
   local flags="naclsdk_validate=0 built_elsewhere=1 $1"
-  scons-tests-no-translator "arm" "${flags} -k" \
+  scons-tests-no-translator "arm" "${flags} -k -j2" \
      "small_tests medium_tests large_tests"
-  scons-tests-no-translator "arm" "${flags} -k pnacl_generate_pexe=1" \
+  scons-tests-translator "arm" "${flags} -k -j2 pnacl_generate_pexe=1" \
     "toolchain_tests"
   browser-tests "arm" "${flags}"
 }
