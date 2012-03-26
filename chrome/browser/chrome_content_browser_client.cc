@@ -362,7 +362,7 @@ content::BrowserMainParts* ChromeContentBrowserClient::CreateBrowserMainParts(
 content::WebContentsView*
     ChromeContentBrowserClient::OverrideCreateWebContentsView(
         WebContents* web_contents) {
-#if defined(TOOLKIT_VIEWS)
+#if defined(TOOLKIT_VIEWS) && (!defined(OS_WIN) || defined(USE_AURA))
   return new TabContentsViewViews(web_contents,
                                   GetWebContentsViewDelegate(web_contents));
 #endif
