@@ -6,6 +6,7 @@
 #define ASH_LAUNCHER_LAUNCHER_VIEW_H_
 #pragma once
 
+#include <utility>
 #include <vector>
 
 #include "ash/launcher/launcher_button_host.h"
@@ -97,6 +98,10 @@ class ASH_EXPORT LauncherView : public views::View,
 
   // Invoked when the mouse is dragged. Updates the models as appropriate.
   void ContinueDrag(const views::MouseEvent& event);
+
+  // Returns the range (in the model) the item at the specified index can be
+  // dragged to.
+  std::pair<int,int> GetDragRange(int index);
 
   // If there is a drag operation in progress it's canceled.
   void CancelDrag(views::View* deleted_view);

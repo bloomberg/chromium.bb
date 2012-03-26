@@ -435,18 +435,30 @@ void LauncherView::ContinueDrag(const views::MouseEvent& event) {
   int current_index = view_model_->GetIndexOfView(drag_view_);
   DCHECK_NE(-1, current_index);
 
-  // Constrain the x location so that it doesn't overlap the two buttons.
-  int x = std::max(view_model_->ideal_bounds(0).x(),
+  // Constrain the x location to the range of valid indices for the type.
+  std::pair<int,int> indices(GetDragRange(current_index));
+  int x = std::max(view_model_->ideal_bounds(indices.first).x(),
                    drag_point.x() - drag_offset_);
-  x = std::min(view_model_->ideal_bounds(view_model_->view_size() - 1).right() -
-               view_model_->ideal_bounds(current_index).width(),
-               x);
+  if (view_model_->view_at(indices.second)->visible()) {
+    x = std::min(view_model_->ideal_bounds(indices.second).right() -
+                 view_model_->ideal_bounds(current_index).width(),
+                 x);
+  } else {
+    // If the last index isn't valid, we're overflowing. Constrain to the app
+    // list (which is the last visible item).
+    x = std::min(
+        view_model_->ideal_bounds(view_model_->view_size() - 1).right() -
+        view_model_->ideal_bounds(current_index).width(),
+        x);
+  }
   if (drag_view_->x() == x)
     return;
 
   drag_view_->SetX(x);
   int target_index =
       ViewModelUtils::DetermineMoveIndex(*view_model_, drag_view_, x);
+  target_index =
+      std::min(indices.second, std::max(target_index, indices.first));
   if (target_index == current_index)
     return;
 
@@ -458,6 +470,20 @@ void LauncherView::ContinueDrag(const views::MouseEvent& event) {
   view_model_->Move(current_index, target_index);
   AnimateToIdealBounds();
   bounds_animator_->StopAnimatingView(drag_view_);
+}
+
+std::pair<int,int> LauncherView::GetDragRange(int index) {
+  int min_index = -1;
+  int max_index = -1;
+  LauncherItemType type = model_->items()[index].type;
+  for (int i = 0; i < model_->item_count(); ++i) {
+    if (type == model_->items()[i].type) {
+      if (min_index == -1)
+        min_index = i;
+      max_index = i;
+    }
+  }
+  return std::pair<int,int>(min_index, max_index);
 }
 
 void LauncherView::ConfigureChildView(views::View* view) {
@@ -637,32 +663,24 @@ void LauncherView::LauncherItemWillChange(int index) {
 
 void LauncherView::MousePressedOnButton(views::View* view,
                                         const views::MouseEvent& event) {
-  // TODO: reenable.
-  /*
   if (view_model_->GetIndexOfView(view) == -1 || view_model_->view_size() <= 1)
     return;  // View is being deleted, ignore request.
 
   drag_view_ = view;
   drag_offset_ = event.x();
-  */
 }
 
 void LauncherView::MouseDraggedOnButton(views::View* view,
                                         const views::MouseEvent& event) {
-  // TODO: reenable.
-  /*
   if (!dragging_ && drag_view_ &&
       abs(event.x() - drag_offset_) >= kMinimumDragDistance)
     PrepareForDrag(event);
   if (dragging_)
     ContinueDrag(event);
-  */
 }
 
 void LauncherView::MouseReleasedOnButton(views::View* view,
                                          bool canceled) {
-  // TODO: reenable.
-  /*
   if (canceled) {
     CancelDrag(NULL);
   } else {
@@ -670,7 +688,6 @@ void LauncherView::MouseReleasedOnButton(views::View* view,
     drag_view_ = NULL;
     AnimateToIdealBounds();
   }
-  */
 }
 
 void LauncherView::MouseExitedButton(views::View* view) {
