@@ -15,6 +15,7 @@
 #include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/threading/platform_thread.h"
+#include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_localization_peer.h"
@@ -222,6 +223,11 @@ ChromeRenderProcessObserver::ChromeRenderProcessObserver(
   std::string error;
   base::LoadNativeLibrary(FilePath(L"crypt32.dll"), &error);
 #endif
+
+  // Setup initial set of crash dump data for Field Trials.
+  std::string state;
+  base::FieldTrialList::StatesToString(&state);
+  child_process_logging::InitExperimentList(state);
 }
 
 ChromeRenderProcessObserver::~ChromeRenderProcessObserver() {

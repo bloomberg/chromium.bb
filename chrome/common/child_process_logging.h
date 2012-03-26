@@ -24,6 +24,11 @@ struct GPUInfo;
 // dependency.
 static const int kMaxReportedActiveExtensions = 10;
 
+// The maximum number of experiment chunks we will report.
+// Also used in chrome/app, but we define it here to avoid a common->app
+// dependency.
+static const int kMaxReportedExperimentChunks = 15;
+
 // The maximum number of prn-info-* records.
 static const size_t kMaxReportedPrinterRecords = 4;
 
@@ -97,6 +102,13 @@ void SetPrinterInfo(const char* printer_info);
 // Sets the command line arguments to send along with crash reports to the
 // values in |command_line|.
 void SetCommandLine(const CommandLine* command_line);
+
+// Initialize the list of experiment info to send along with crash reports.
+void InitExperimentList(const std::string& state);
+
+// Add a new experiment group info to send along with crash reports.
+void AddFieldTrialGroup(const std::string& field_trial_name,
+                        const std::string& group_name);
 
 #if defined(OS_LINUX) || defined(OS_OPENBSD) || defined(OS_MACOSX)
 // Sets the product channel data to send along with crash reports to |channel|.
