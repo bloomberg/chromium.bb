@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -43,6 +43,51 @@ enum SafetyLevel {
    */
   MAY_BE_SAFE
 };
+
+/****************  Decoder helper classes *****************************
+ *
+ * Decoder helper classes provide facilities to extract information from
+ * thumb instructions. Thumb instructions are 1 or 2 16-bit words.
+ **********************************************************************/
+
+/* Helper class to pull out Register D from bits 12 through 15. */
+class RegDBits12To15 {
+ public:
+  virtual ~RegDBits12To15() {}
+  inline Register Rd(const Instruction& i) const {
+    return i.reg(15, 12);
+  }
+};
+
+/* Helper class to pull out Register M from bits 0 through 3. */
+class RegMBits0To3 {
+ public:
+  virtual ~RegMBits0To3() {}
+  inline Register Rm(const Instruction& i) const {
+    return i.reg(3, 0);
+  }
+};
+
+/* Helper class to pull out Register n from bits 16 through 19.
+ */
+class RegNBits16To19 {
+ public:
+  virtual ~RegNBits16To19() {}
+  inline Register Rn(const Instruction& i) const {
+    return i.reg(19, 16);
+  }
+};
+
+/* Helper class to pull out Register S from bits 8 through 11. */
+class RegSBits8To11 {
+ public:
+  virtual ~RegSBits8To11() {}
+  inline Register Rs(const Instruction& i) const {
+    return i.reg(11, 8);
+  }
+};
+
+/****************  Arm decoder classes ******************************/
 
 /*
  * Decodes a class of instructions.  Does spooky undefined things if handed
@@ -394,6 +439,79 @@ class Breakpoint : public Roadblock {
   virtual bool is_literal_pool_head(Instruction i) const;
 };
 
+/* Models a 3-register-shifted unary operation of the form:
+ * Op(S)<c> <Rd>, <Rm>,  <type> <Rs>
+ * +--------+--------------+--+--------+--------+--------+--+----+--+--------+
+ * |31302928|27262524232221|20|19181716|15141312|1110 9 8| 7| 6 5| 4| 3 2 1 0|
+ * +--------+--------------+--+--------+--------+--------+--+----+--+--------+
+ * |  cond  |              | S|        |   Rd   |   Rs   |  |type|  |   Rm   |
+ * +--------+--------------+--+--------+--------+--------+--+----+--+--------+
+ * Note: if Rd, Rs, or Rm is R15, the instruction is unpredictable.
+ * Definitions:
+ *    Rd - The destination register.
+ *    Rm - The register that is shifted and used as the operand.
+ *    Rs - The regsiter whose bottom byte contains the amount to shift by.
+ *    type - The type of shift to apply (not modeled).
+ *    S - Defines if the flags regsiter is updated.
+ * Implements:
+ *    MVN(register-shifted) A1 A8-218
+ */
+class Unary3RegisterShiftedOp : public ClassDecoder,
+                                public RegMBits0To3,
+                                public RegSBits8To11,
+                                public RegDBits12To15 {
+ public:
+  virtual ~Unary3RegisterShiftedOp() {}
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList defs(Instruction i) const;
+  // Returns true if S is 1. That is, it updates the flags register.
+  inline bool UpdatesFlagsRegister(Instruction i) const {
+    return i.bit(20);
+  }
+};
+
+/* Models a 4-register-shifted binary operation of the form:
+ * Op(S)<c> <Rd>, <Rn>, <Rm>,  <type> <Rs>
+ * +--------+--------------+--+--------+--------+--------+--+----+--+--------+
+ * |31302928|27262524232221|20|19181716|15141312|1110 9 8| 7| 6 5| 4| 3 2 1 0|
+ * +--------+--------------+--+--------+--------+--------+--+----+--+--------+
+ * |  cond  |              | S|   Rn   |   Rd   |   Rs   |  |type|  |   Rm   |
+ * +--------+--------------+--+--------+--------+--------+--+----+--+--------+
+ * Note: if Rn, Rd, Rs, or Rm is R15, the instruction is unpredictable.
+ * Definitions:
+ *    Rd - The destination register.
+ *    Rn - The first operand register.
+ *    Rm - The register that is shifted and used as the second operand.
+ *    Rs - The regsiter whose bottom byte contains the amount to shift by.
+ *    type - The type of shift to apply (not modeled).
+ *    S - Defines if the flags regsiter is updated.
+ * Implements:
+ *    ADC(register-shifted) A1 A8-18
+ *    ADD(register-shifted) A1 A8-26
+ *    AND(register-shifted) A1 A8-38
+ *    BIC(register-shifted) A1 A8-54
+ *    EOR(register-shifted) A1 A8-98
+ *    ORR(register-shifted) A1 A8-232
+ *    RSB(register-shifted) A1 A8-288
+ *    RSC(register-shifted) A1 A8-294
+ *    SBC(register-shifted) A1 A8-306
+ *    SUB(register-shifted) A1 A8-424
+ */
+class Binary4RegisterShiftedOp : public ClassDecoder,
+                                 public RegMBits0To3,
+                                 public RegSBits8To11,
+                                 public RegDBits12To15,
+                                 public RegNBits16To19 {
+ public:
+  virtual ~Binary4RegisterShiftedOp() {}
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList defs(Instruction i) const;
+  // Returns true if S is 1. That is, it updates the flags register.
+  inline bool UpdatesFlagsRegister(Instruction i) const {
+    return i.bit(20);
+  }
+};
+
 /*
  * Models the most common class of data processing instructions.  We use this
  * for any operation that
@@ -403,15 +521,15 @@ class Breakpoint : public Roadblock {
  *  - writes flags when bit 20 is set.
  *
  * Includes:
- * MOV (immediate) 16-bit version, MOVT, AND(register), AND(shifted-reg),
- * EOR(register), EOR(shifted-reg), SUB(register), SUB(shifted-reg),
- * RSB(register), RSB(shifted-reg), ADD(register), ADD(shifted-reg),
- * ADC(register), ADC(shifted-reg), SBC(register), SBC(shifted-reg),
- * RSC(register), RSC(shifted-reg), ORR(register), ORR(shifted-reg),
+ * MOV (immediate) 16-bit version, MOVT, AND(register),
+ * EOR(register), SUB(register),
+ * RSB(register), ADD(register),
+ * ADC(register), SBC(register),
+ * RSC(register), ORR(register),
  * MOV(register), LSL(register), LSL(immediate), LSL(register),
  * LSR(immediate), LSR(register), ASR(immediate), ASR(register),
  * RRX, ROR(register), ROR(immediate), ROR(register), BIC(register),
- * BIC(shifted-reg), MVN(register), MVN(shifted-reg), AND(immediate),
+ * MVN(register), AND(immediate),
  * EOR(immediate), SUB(immediate), ADR, RSB(immediate), ADD(immediate), ADR,
  * ADC(immediate), SBC(immediate), RSC(immediate), ORR(immediate),
  * MOV(immediate), MVN(immediate), MRS, CLZ, SBFX, BFC, BFI, UBFX, UADD16,
@@ -430,19 +548,52 @@ class DataProc : public ClassDecoder {
   }
 };
 
+/* Models a 3-register-shifted test operation of the form:
+ * OpS<c> <Rn>, <Rm>, <type>, <Rs>
+ * +--------+--------------+--+--------+--------+--------+--+----+--+--------+
+ * |31302928|27262524232221|20|19181716|15141312|1110 9 8| 7| 6 5| 4| 3 2 1 0|
+ * +--------+--------------+--+--------+--------+--------+--+----+--+--------+
+ * |  cond  |              | S|   Rn   |        |   Rs   |  |type|  |   Rm   |
+ * +--------+--------------+--+--------+--------+--------+--+----+--+--------+
+ * Note: if Rn, Rs, or Rm is R15, the instruction is unpredictable.
+ * Definitions:
+ *    Rn - The first operand register.
+ *    Rm - The register that is shifted and used as the second operand.
+ *    Rs - The regsiter whose bottom byte contains the amount to shift by.
+ *    type - The type of shift to apply (not modeled).
+ *    S - Defines if the flags regsiter is updated.
+ * Implements:
+ *    CMN(register-shifted) A1 A8-78
+ *    CMP(register-shifted) A1 A8-84
+ *    TEQ(register-shifted) A1 A8-452
+ *    TST(register-shifted) A1 A8-458
+ */
+class Binary3RegisterShiftedTest : public ClassDecoder,
+                                   public RegMBits0To3,
+                                   public RegSBits8To11,
+                                   public RegNBits16To19 {
+ public:
+  virtual ~Binary3RegisterShiftedTest() {}
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList defs(Instruction i) const;
+  // Returns true if S is 1. That is, it updates the flags register.
+  inline bool UpdatesFlagsRegister(Instruction i) const {
+    return i.bit(20);
+  }
+};
+
 /*
  * Models the few data-processing instructions that *don't* produce a result,
  * but may still set flags.
  *
  * Includes:
- * TST(register), TST(shifted-reg), TEQ(register), TEQ(shifted-reg),
- * CMP(register), CMP(shifted-reg), CMN(register), CMN(shifted-reg),
+ * TST(register), TEQ(register),
+ * CMP(register), CMN(register),
  * TST(immediate), TEQ(immediate), CMP(immediate), CMN(immediate)
  */
 class Test : public DataProc {
  public:
   virtual ~Test() {}
-
   virtual RegisterList defs(Instruction i) const;
 };
 

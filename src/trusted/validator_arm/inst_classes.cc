@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -38,11 +38,44 @@ bool Breakpoint::is_literal_pool_head(const Instruction i) const {
       && i.bits(3, 0) == 0x7;
 }
 
+/*
+ * Binary4RegisterShiftedOp
+ */
+SafetyLevel Binary4RegisterShiftedOp::safety(Instruction i) const {
+  // Unsafe if any register contains PC (ARM restriction).
+  if ((Rn(i) == kRegisterPc) ||
+      (Rd(i) == kRegisterPc) ||
+      (Rs(i) == kRegisterPc) ||
+      (Rm(i) == kRegisterPc)) return UNPREDICTABLE;
+  // Note: We would restrict out PC as well for Rd in NaCl, but no need
+  // since the ARM restriction doesn't allow it anyway.
+  return MAY_BE_SAFE;
+}
+
+RegisterList Binary4RegisterShiftedOp::defs(const Instruction i) const {
+  return Rd(i) + (UpdatesFlagsRegister(i) ? kRegisterFlags : kRegisterNone);
+}
+
+/*
+ * Unary3RegisterShiftedOp
+ */
+SafetyLevel Unary3RegisterShiftedOp::safety(Instruction i) const {
+  // Unsafe if any register contains PC (ARM restriction).
+  if ((Rd(i) == kRegisterPc) ||
+      (Rs(i) == kRegisterPc) ||
+      (Rm(i) == kRegisterPc)) return UNPREDICTABLE;
+  // Note: We would restrict out PC as well for Rd in NaCl, but no need
+  // since the ARM restriction doesn't allow it anyway.
+  return MAY_BE_SAFE;
+}
+
+RegisterList Unary3RegisterShiftedOp::defs(const Instruction i) const {
+  return Rd(i) + (UpdatesFlagsRegister(i) ? kRegisterFlags : kRegisterNone);
+}
 
 /*
  * Data processing and arithmetic
  */
-
 SafetyLevel DataProc::safety(const Instruction i) const {
   if (defs(i)[kRegisterPc]) {
     return FORBIDDEN_OPERANDS;
@@ -54,6 +87,20 @@ RegisterList DataProc::defs(const Instruction i) const {
   return Rd(i) + (UpdatesFlagsRegister(i) ? kRegisterFlags : kRegisterNone);
 }
 
+/*
+ * Binary3RegisterShiftedTest
+ */
+SafetyLevel Binary3RegisterShiftedTest::safety(Instruction i) const {
+  // Unsafe if any register contains PC (ARM restriction).
+  if ((Rn(i) == kRegisterPc) ||
+      (Rs(i) == kRegisterPc) ||
+      (Rm(i) == kRegisterPc)) return UNPREDICTABLE;
+  return MAY_BE_SAFE;
+}
+
+RegisterList Binary3RegisterShiftedTest::defs(const Instruction i) const {
+  return (UpdatesFlagsRegister(i) ? kRegisterFlags : kRegisterNone);
+}
 
 RegisterList Test::defs(const Instruction i) const {
   return (UpdatesFlagsRegister(i) ? kRegisterFlags : kRegisterNone);
