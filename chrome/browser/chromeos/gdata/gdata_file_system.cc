@@ -524,9 +524,15 @@ void GDataFileSystem::FindFileByPathAsync(
     LoadFeedFromServer(search_file_path, callback);
     return;
   }
-  GDataFileSystem::FindFileByPathOnCallingThread(
-      search_file_path,
-      callback);
+
+  // Post a task to the same thread, rather than calling it here, as
+  // FindFileByPathAsync() is asynchronous.
+  base::MessageLoopProxy::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&GDataFileSystem::FindFileByPathOnCallingThread,
+                 GetWeakPtrForCurrentThread(),
+                 search_file_path,
+                 callback));
 }
 
 void GDataFileSystem::FindFileByPathOnCallingThread(
