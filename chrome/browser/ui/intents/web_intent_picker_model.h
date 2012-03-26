@@ -96,8 +96,11 @@ class WebIntentPickerModel {
   // observer.
   void Clear();
 
-  // Return the intent service installed service at |index|.
+  // Return the intent service installed at |index|.
   const InstalledService& GetInstalledServiceAt(size_t index) const;
+
+  // Return the intent service that uses |url| as its service url, or NULL.
+  const InstalledService* GetInstalledServiceWithURL(const GURL& url) const;
 
   // Return the number of intent services in the picker.
   size_t GetInstalledServiceCount() const;

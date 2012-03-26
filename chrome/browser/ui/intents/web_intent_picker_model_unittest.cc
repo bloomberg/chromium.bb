@@ -94,6 +94,16 @@ TEST_F(WebIntentPickerModelTest, Clear) {
   EXPECT_EQ(0U, model_.GetInstalledServiceCount());
 }
 
+TEST_F(WebIntentPickerModelTest, GetInstalledServiceWithURL) {
+  EXPECT_CALL(observer_, OnModelChanged(&model_)).Times(2);
+
+  model_.AddInstalledService(kTitle1, kUrl1, kWindowDisposition);
+  model_.AddInstalledService(kTitle2, kUrl2, kWindowDisposition);
+
+  EXPECT_EQ(kTitle2, model_.GetInstalledServiceWithURL(kUrl2)->title);
+  EXPECT_EQ(NULL, model_.GetInstalledServiceWithURL(kUrl3));
+}
+
 TEST_F(WebIntentPickerModelTest, UpdateFaviconAt) {
   EXPECT_CALL(observer_, OnModelChanged(&model_)).Times(2);
   EXPECT_CALL(observer_, OnFaviconChanged(&model_, 1U)).Times(1);
