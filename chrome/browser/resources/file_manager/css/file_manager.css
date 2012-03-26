@@ -169,6 +169,7 @@ input[type='submit'][disabled]:hover {
 
 /* Main part of the dialog between header and footer. */
 .dialog-container {
+  position: relative;
   display: -webkit-box;
   -webkit-box-orient: horizontal;
   -webkit-box-align: stretch;
@@ -410,9 +411,26 @@ div.open-sidebar:hover {
 /* Container for the ok/cancel buttons. */
 .dialog-footer {
   -webkit-box-orient: horizontal;
+  -webkit-box-align: center;
   display: -webkit-box;
   margin: 15px;
   margin-top: 0;
+}
+
+.dialog-footer:not([progress]) .progress-bar,
+.dialog-footer:not([progress]) .preparing-label {
+  display: none;
+}
+
+.dialog-footer[progress] .ok,
+.dialog-footer[progress] .filename-label,
+.dialog-footer[progress] .filename-input {
+  display: none;
+}
+
+.dialog-footer .progress-bar {
+  -webkit-margin-start: 20px;
+  -webkit-margin-end: 20px;
 }
 
 /* The container for breadcrumb elements. */
@@ -1146,4 +1164,19 @@ div.offline {
 div.offline > * {
   -webkit-box-align: center;
   display: -webkit-box;
+}
+
+div.shade {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.8);
+  opacity: 0;
+  webkit-transition: opacity 1000ms linear;
+}
+
+div.shade[fadein] {
+  opacity: 1;
 }

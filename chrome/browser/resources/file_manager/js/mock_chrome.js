@@ -365,6 +365,7 @@ chrome.fileBrowserPrivate = {
       ERROR_NEW_FOLDER_EMPTY_NAME: 'Please specify a folder name',
       NEW_FOLDER_BUTTON_LABEL: 'New folder',
       FILENAME_LABEL: 'File Name',
+      PREPARING_LABEL: 'Preparing',
 
       DIMENSIONS_LABEL: 'Dimensions',
       DIMENSIONS_FORMAT: '$1 x $2',

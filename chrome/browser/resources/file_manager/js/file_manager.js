@@ -4109,61 +4109,126 @@ FileManager.prototype = {
   },
 
   /**
-   * Selects a file.
-   *
-   * @param {string} fileUrl The filename as a URL.
-   * @param {number} filterIndex The integer file filter index.
-   */
-  FileManager.prototype.selectFile_ = function(fileUrl, filterIndex) {
-    this.resolveSelectResults_(
-        [fileUrl],
-        function(resolvedUrls) {
-          // Call doSelectFiles_ on a timeout, as it's unsafe to
-          // close a window from a callback.
-          setTimeout(
-              this.doSelectFile_.bind(this, resolvedUrls[0], filterIndex), 0);
-        }.bind(this));
-  };
-
-  /**
-   * Selects a file.  Closes the window.
+   * Closes this modal dialog with some files selected.
    * TODO(jamescook): Make unload handler work automatically, crbug.com/104811
-   *
-   * @param {string} fileUrl The filename as a URL.
-   * @param {number} filterIndex The integer file filter index.
+   * @param {Object} selection Contains urls, filterIndex and multiple fields.
    */
-  FileManager.prototype.doSelectFile_ = function(fileUrl, filterIndex) {
-    chrome.fileBrowserPrivate.selectFile(fileUrl, filterIndex);
+  FileManager.prototype.callSelectFilesApiAndClose_ = function(selection) {
+    if (selection.multiple) {
+      chrome.fileBrowserPrivate.selectFiles(selection.urls);
+    } else {
+      chrome.fileBrowserPrivate.selectFile(
+          selection.urls[0], selection.filterIndex);
+    }
     this.onUnload_();
     window.close();
   };
 
-
   /**
-   * Selects a file. Starts getting gdata files if needed.
-   *
-   * @param {Array.<string>} fileUrls Array of filename URLs.
+   * Tries to close this modal dialog with some files selected.
+   * Performs preprocessing if needed (e.g. for GData).
+   * @param {Object} selection Contains urls, filterIndex and multiple fields.
    */
-  FileManager.prototype.selectFiles_ = function(fileUrls) {
-    this.resolveSelectResults_(
-        fileUrls,
-        function(resolvedUrls) {
-          // Call doSelectFiles_ on a timeout, as it's unsafe to
-          // close a window from a callback.
-          setTimeout(this.doSelectFiles_.bind(this, resolvedUrls), 0);
-        }.bind(this));
-  };
+  FileManager.prototype.selectFilesAndClose_ = function(selection) {
+    if (!this.isOnGData()) {
+      setTimeout(this.callSelectFilesApiAndClose_.bind(this, selection), 0);
+      return;
+    }
 
-  /**
-   * Selects multiple files.  Closes the window.
-   * TODO(jamescook): Make unload handler work automatically, crbug.com/104811
-   *
-   * @param {Array.<string>} fileUrls Array of filename URLs.
-   */
-  FileManager.prototype.doSelectFiles_ = function(fileUrls) {
-    chrome.fileBrowserPrivate.selectFiles(fileUrls);
-    this.onUnload_();
-    window.close();
+    var shade = this.document_.createElement('div');
+    shade.className = 'shade';
+    var footer = this.document_.querySelector('.dialog-footer');
+    var progress = footer.querySelector('.progress-track');
+    progress.style.width = '0%';
+    var cancelled = false;
+
+    var progressMap = {};
+    var filesStarted = 0;
+    var filesTotal = selection.urls.length;
+    for (var index = 0; index < selection.urls.length; index++) {
+      progressMap[selection.urls[index]] = -1;
+    }
+    var lastPercent = 0;
+    var bytesTotal = 0;
+    var bytesDone = 0;
+
+    var onFileTransfersUpdated = function(statusList) {
+      for (var index = 0; index < statusList.length; index++) {
+        var status = statusList[index];
+        var escaped = encodeURI(status.fileUrl);
+        if (!(escaped in progressMap)) continue;
+        if (status.total == -1) continue;
+
+        var old = progressMap[escaped];
+        if (old == -1) {
+          // -1 means we don't know file size yet.
+          bytesTotal += status.total;
+          filesStarted++;
+          old = 0;
+        }
+        bytesDone += status.processed - old;
+        progressMap[escaped] = status.processed;
+      }
+
+      var percent = bytesTotal == 0 ? 0 : bytesDone / bytesTotal;
+      // For files we don't have information about, assume the progress is zero.
+      percent = percent * filesStarted / filesTotal * 100;
+      // Do not decrease the progress. This may happen, if first downloaded
+      // file is small, and the second one is large.
+      lastPercent = Math.max(lastPercent, percent);
+      progress.style.width = lastPercent + '%';
+    }.bind(this);
+
+    var setup = function() {
+      this.document_.querySelector('.dialog-container').appendChild(shade);
+      setTimeout(function() { shade.setAttribute('fadein', 'fadein') }, 100);
+      footer.setAttribute('progress', 'progress');
+      this.cancelButton_.removeEventListener('click', this.onCancelBound_);
+      this.cancelButton_.addEventListener('click', onCancel);
+      chrome.fileBrowserPrivate.onFileTransfersUpdated.addListener(
+          onFileTransfersUpdated);
+    }.bind(this);
+
+    var cleanup = function() {
+      shade.parentNode.removeChild(shade);
+      footer.removeAttribute('progress');
+      this.cancelButton_.removeEventListener('click', onCancel);
+      this.cancelButton_.addEventListener('click', this.onCancelBound_);
+      chrome.fileBrowserPrivate.onFileTransfersUpdated.removeListener(
+          onFileTransfersUpdated);
+    }.bind(this);
+
+    var onCancel = function() {
+      cancelled = true;
+      // According to API cancel may fail, but there is no proper UI to reflect
+      // this. So, we just silently assume that everything is cancelled.
+      chrome.fileBrowserPrivate.cancelFileTransfers(
+          selection.urls, function(response) {});
+      cleanup();
+    }.bind(this);
+
+    var onResolved = function(resolvedUrls) {
+      if (cancelled) return;
+      cleanup();
+      selection.urls = resolvedUrls;
+      // Call next method on a timeout, as it's unsafe to
+      // close a window from a callback.
+      setTimeout(this.callSelectFilesApiAndClose_.bind(this, selection), 0);
+    }.bind(this);
+
+    var onGotProperties = function(properties) {
+      for (var i = 0; i < properties.length; i++) {
+        if (properties[i].isPresent) {
+          // For files already in GCache, we don't get any transfer updates.
+          filesTotal--;
+        }
+      }
+      this.resolveSelectResults_(selection.urls, onResolved);
+    }.bind(this);
+
+    setup();
+    chrome.fileBrowserPrivate.getGDataFileProperties(
+        selection.urls, onGotProperties);
   };
 
   /**
@@ -4190,12 +4255,17 @@ FileManager.prototype = {
       if (!this.validateFileName_(filename))
         return;
 
+      var singleSelection = {
+        urls: [currentDirUrl + encodeURIComponent(filename)],
+        multiple: false,
+        filterIndex: self.getSelectedFilterIndex_(filename)
+      };
+
       function resolveCallback(victim) {
         if (victim instanceof FileError) {
-          // File does not exist.  Closes the window and does not return.
-          self.selectFile_(
-              currentDirUrl + encodeURIComponent(filename),
-              self.getSelectedFilterIndex_(filename));
+          // File does not exist.
+          self.selectFilesAndClose_(singleSelection);
+          return;
         }
 
         if (victim.isDirectory) {
@@ -4205,12 +4275,9 @@ FileManager.prototype = {
           self.confirm.show(strf('CONFIRM_OVERWRITE_FILE', filename),
                             function() {
                               // User selected Ok from the confirm dialog.
-                              self.selectFile_(
-                                  currentDirUrl + encodeURIComponent(filename),
-                                  self.getSelectedFilterIndex_(filename));
+                              self.selectFilesAndClose_(singleSelection);
                             });
         }
-        return;
       }
 
       this.resolvePath(this.getCurrentDirectory() + '/' + filename,
@@ -4240,8 +4307,11 @@ FileManager.prototype = {
 
     // Multi-file selection has no other restrictions.
     if (this.dialogType_ == FileManager.DialogType.SELECT_OPEN_MULTI_FILE) {
-      // Closes the window and does not return.
-      this.selectFiles_(files);
+      var multipleSelection = {
+        urls: files,
+        multiple: true
+      };
+      this.selectFilesAndClose_(multipleSelection);
       return;
     }
 
@@ -4259,8 +4329,12 @@ FileManager.prototype = {
         throw new Error('Selected entry is not a file!');
     }
 
-    // Closes the window and does not return.
-    this.selectFile_(files[0], this.getSelectedFilterIndex_(files[0]));
+    var singleSelection = {
+      urls: [files[0]],
+      multiple: false,
+      filterIndex: this.getSelectedFilterIndex_(files[0])
+    };
+    this.selectFilesAndClose_(singleSelection);
   };
 
   /**
