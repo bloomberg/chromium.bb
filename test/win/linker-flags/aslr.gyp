@@ -9,9 +9,7 @@
       'type': 'executable',
       'msvs_settings': {
       },
-      'sources': [
-        'hello.cc'
-      ]
+      'sources': ['hello.cc'],
     },
     {
       'target_name': 'test_aslr_no',
@@ -21,9 +19,7 @@
           'RandomizedBaseAddress': '1',
         },
       },
-      'sources': [
-        'hello.cc'
-      ]
+      'sources': ['hello.cc'],
     },
     {
       'target_name': 'test_aslr_yes',
@@ -33,9 +29,7 @@
           'RandomizedBaseAddress': '2',
         }
       },
-      'sources': [
-        'hello.cc'
-      ]
+      'sources': ['hello.cc'],
     },
   ]
 }

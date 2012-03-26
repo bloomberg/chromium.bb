@@ -16,6 +16,7 @@
         'VCCLCompilerTool': {
           'EnableFunctionLevelLinking': 'true',
           'DebugInformationFormat': '3',
+          'Optimization': '0',
         },
         'VCLinkerTool': {
           'GenerateDebugInformation': 'true',
@@ -31,6 +32,7 @@
         'VCCLCompilerTool': {
           'EnableFunctionLevelLinking': 'true',
           'DebugInformationFormat': '3',
+          'Optimization': '0',
         },
         'VCLinkerTool': {
           'GenerateDebugInformation': 'true',
@@ -47,6 +49,7 @@
         'VCCLCompilerTool': {
           'EnableFunctionLevelLinking': 'true',
           'DebugInformationFormat': '3',
+          'Optimization': '0',
         },
         'VCLinkerTool': {
           'GenerateDebugInformation': 'true',

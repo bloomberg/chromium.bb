@@ -6,7 +6,6 @@
  'targets': [
     {
       'target_name': 'test_rtti_off',
-      'product_name': 'test_rtti_off',
       'type': 'executable',
       'msvs_settings': {
         'VCCLCompilerTool': {
@@ -14,13 +13,10 @@
           'WarnAsError': 'true'
         }
       },
-      'sources': [
-        'rtti-on.cc'
-      ]
+      'sources': ['rtti-on.cc'],
     },
     {
       'target_name': 'test_rtti_on',
-      'product_name': 'test_rtti_on',
       'type': 'executable',
       'msvs_settings': {
         'VCCLCompilerTool': {
@@ -28,19 +24,14 @@
           'WarnAsError': 'true'
         }
       },
-      'sources': [
-        'rtti-on.cc'
-      ]
+      'sources': ['rtti-on.cc'],
     },
     {
       'target_name': 'test_rtti_unset',
-      'product_name': 'test_rtti_unset',
       'type': 'executable',
       'msvs_settings': {
       },
-      'sources': [
-        'rtti-on.cc'
-      ]
+      'sources': ['rtti-on.cc'],
     },
   ]
 }

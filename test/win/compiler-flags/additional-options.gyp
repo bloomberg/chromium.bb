@@ -13,13 +13,10 @@
           'WarnAsError': 'true',
         }
       },
-      'sources': [
-        'additional-options.cc'
-      ]
+      'sources': ['additional-options.cc'],
     },
     {
       'target_name': 'test_additional_one',
-      'product_name': 'test_additional_one',
       'type': 'executable',
       'msvs_settings': {
         'VCCLCompilerTool': {
@@ -28,9 +25,7 @@
           'AdditionalOptions': [ '/W1' ],
         }
       },
-      'sources': [
-        'additional-options.cc'
-      ]
+      'sources': ['additional-options.cc'],
     },
   ]
 }

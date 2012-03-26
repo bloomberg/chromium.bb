@@ -6,55 +6,43 @@
  'targets': [
     {
       'target_name': 'test_rl_md',
-      'product_name': 'test_rl_md',
       'type': 'executable',
       'msvs_settings': {
         'VCCLCompilerTool': {
           'RuntimeLibrary': '2'
         }
       },
-      'sources': [
-        'runtime-library-md.cc'
-      ]
+      'sources': ['runtime-library-md.cc'],
     },
     {
       'target_name': 'test_rl_mdd',
-      'product_name': 'test_rl_mdd',
       'type': 'executable',
       'msvs_settings': {
         'VCCLCompilerTool': {
           'RuntimeLibrary': '3'
         }
       },
-      'sources': [
-        'runtime-library-mdd.cc'
-      ]
+      'sources': ['runtime-library-mdd.cc'],
     },
     {
       'target_name': 'test_rl_mt',
-      'product_name': 'test_rl_mt',
       'type': 'executable',
       'msvs_settings': {
         'VCCLCompilerTool': {
           'RuntimeLibrary': '0'
         }
       },
-      'sources': [
-        'runtime-library-mt.cc'
-      ]
+      'sources': ['runtime-library-mt.cc'],
     },
     {
       'target_name': 'test_rl_mtd',
-      'product_name': 'test_rl_mtd',
       'type': 'executable',
       'msvs_settings': {
         'VCCLCompilerTool': {
           'RuntimeLibrary': '1'
         }
       },
-      'sources': [
-        'runtime-library-mtd.cc'
-      ]
+      'sources': ['runtime-library-mtd.cc'],
     },
   ]
 }

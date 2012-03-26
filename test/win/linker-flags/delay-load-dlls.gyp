@@ -11,9 +11,7 @@
         'VCLinkerTool': {
         }
       },
-      'sources': [
-        'delay-load.cc'
-      ]
+      'sources': ['delay-load.cc'],
     },
     {
       'target_name': 'test_dld_shell32',
@@ -23,9 +21,7 @@
           'DelayLoadDLLs': ['shell32.dll']
         }
       },
-      'sources': [
-        'delay-load.cc'
-      ]
+      'sources': ['delay-load.cc'],
     },
   ]
 }

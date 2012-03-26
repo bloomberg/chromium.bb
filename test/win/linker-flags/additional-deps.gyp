@@ -6,19 +6,15 @@
  'targets': [
     {
       'target_name': 'test_deps_none',
-      'product_name': 'test_deps_none',
       'type': 'executable',
       'msvs_settings': {
         'VCLinkerTool': {
         }
       },
-      'sources': [
-        'hello.cc'
-      ]
+      'sources': ['hello.cc'],
     },
     {
       'target_name': 'test_deps_few',
-      'product_name': 'test_deps_few',
       'type': 'executable',
       'msvs_settings': {
         'VCLinkerTool': {
@@ -28,9 +24,7 @@
           ]
         }
       },
-      'sources': [
-        'additional-deps.cc'
-      ]
+      'sources': ['additional-deps.cc'],
     },
   ]
 }

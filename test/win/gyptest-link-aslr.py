@@ -10,12 +10,10 @@ Make sure aslr setting is extracted properly.
 
 import TestGyp
 
-import os
-import subprocess
 import sys
 
 if sys.platform == 'win32':
-  test = TestGyp.TestGyp(formats=['ninja', 'msvs'])
+  test = TestGyp.TestGyp(formats=['msvs', 'ninja'])
 
   CHDIR = 'linker-flags'
   test.run_gyp('aslr.gyp', chdir=CHDIR)

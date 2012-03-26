@@ -11,9 +11,7 @@
       'msvs_configuration_attributes': {
         'CharacterSet': '0'
       },
-      'sources': [
-        'hello.cc'
-      ]
+      'sources': ['hello.cc'],
     },
     {
       'target_name': 'test_cs_unicode',
@@ -22,9 +20,7 @@
       'msvs_configuration_attributes': {
         'CharacterSet': '1'
       },
-      'sources': [
-        'character-set-unicode.cc'
-      ]
+      'sources': ['character-set-unicode.cc'],
     },
     {
       'target_name': 'test_cs_mbcs',
@@ -33,9 +29,7 @@
       'msvs_configuration_attributes': {
         'CharacterSet': '2'
       },
-      'sources': [
-        'character-set-mbcs.cc'
-      ]
+      'sources': ['character-set-mbcs.cc'],
     },
   ]
 }

@@ -10,7 +10,6 @@ Make sure additional manual compiler flags are extracted properly.
 
 import TestGyp
 
-import subprocess
 import sys
 
 if sys.platform == 'win32':

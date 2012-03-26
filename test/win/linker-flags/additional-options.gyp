@@ -11,9 +11,7 @@
         'VCLinkerTool': {
         }
       },
-      'sources': [
-        'hello.cc'
-      ]
+      'sources': ['hello.cc'],
     },
     {
       'target_name': 'test_additional_few',
@@ -25,9 +23,7 @@
           ]
         }
       },
-      'sources': [
-        'hello.cc'
-      ]
+      'sources': ['hello.cc'],
     },
   ]
 }

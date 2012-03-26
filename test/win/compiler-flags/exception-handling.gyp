@@ -8,7 +8,6 @@
     # (divide by zero was getting optimized away in VS2010).
     {
       'target_name': 'test_eh_off',
-      'product_name': 'test_eh_off',
       'type': 'executable',
       'msvs_settings': {
         'VCCLCompilerTool': {
@@ -17,13 +16,10 @@
           'Optimization': '0',
         }
       },
-      'sources': [
-        'exception-handling-on.cc'
-      ]
+      'sources': ['exception-handling-on.cc'],
     },
     {
       'target_name': 'test_eh_s',
-      'product_name': 'test_eh_s',
       'type': 'executable',
       'msvs_settings': {
         'VCCLCompilerTool': {
@@ -32,13 +28,10 @@
           'Optimization': '0',
         }
       },
-      'sources': [
-        'exception-handling-on.cc'
-      ]
+      'sources': ['exception-handling-on.cc'],
     },
     {
       'target_name': 'test_eh_a',
-      'product_name': 'test_eh_a',
       'type': 'executable',
       'msvs_settings': {
         'VCCLCompilerTool': {
@@ -47,9 +40,7 @@
           'Optimization': '0',
         }
       },
-      'sources': [
-        'exception-handling-on.cc'
-      ]
+      'sources': ['exception-handling-on.cc'],
     },
   ]
 }

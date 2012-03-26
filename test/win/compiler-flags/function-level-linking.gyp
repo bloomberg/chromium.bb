@@ -6,29 +6,23 @@
  'targets': [
     {
       'target_name': 'test_fll_off',
-      'product_name': 'test_fll_off',
       'type': 'executable',
       'msvs_settings': {
         'VCCLCompilerTool': {
           'EnableFunctionLevelLinking': 'false'
         }
       },
-      'sources': [
-        'function-level-linking.cc'
-      ]
+      'sources': ['function-level-linking.cc'],
     },
     {
       'target_name': 'test_fll_on',
-      'product_name': 'test_fll_on',
       'type': 'executable',
       'msvs_settings': {
         'VCCLCompilerTool': {
           'EnableFunctionLevelLinking': 'true',
         }
       },
-      'sources': [
-        'function-level-linking.cc'
-      ]
+      'sources': ['function-level-linking.cc'],
     },
   ]
 }

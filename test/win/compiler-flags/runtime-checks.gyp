@@ -9,6 +9,7 @@
       'type': 'executable',
       'msvs_settings': {
         'VCCLCompilerTool': {
+          'Optimization': '0',
         }
       },
       'sources': ['runtime-checks.cc'],
@@ -18,6 +19,7 @@
       'type': 'executable',
       'msvs_settings': {
         'VCCLCompilerTool': {
+          'Optimization': '0',
           'BasicRuntimeChecks': '3'
         }
       },

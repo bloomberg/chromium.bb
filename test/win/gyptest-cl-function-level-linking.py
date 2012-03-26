@@ -10,11 +10,10 @@ Make sure function-level linking setting is extracted properly.
 
 import TestGyp
 
-import subprocess
 import sys
 
 if sys.platform == 'win32':
-  test = TestGyp.TestGyp(formats=['ninja', 'msvs'])
+  test = TestGyp.TestGyp(formats=['msvs', 'ninja'])
 
   CHDIR = 'compiler-flags'
   test.run_gyp('function-level-linking.gyp', chdir=CHDIR)

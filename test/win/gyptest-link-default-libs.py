@@ -13,7 +13,7 @@ import TestGyp
 import sys
 
 if sys.platform == 'win32':
-  test = TestGyp.TestGyp(formats=['ninja', 'msvs'])
+  test = TestGyp.TestGyp(formats=['msvs', 'ninja'])
 
   CHDIR = 'linker-flags'
   test.run_gyp('default-libs.gyp', chdir=CHDIR)

@@ -14,7 +14,7 @@
           'WarnAsError': 'true',
         }
       },
-      'sources': ['warning-level1.cc']
+      'sources': ['warning-level1.cc'],
     },
     {
       'target_name': 'test_wl1_pass',
@@ -25,7 +25,7 @@
           'WarnAsError': 'true',
         }
       },
-      'sources': ['warning-level2.cc']
+      'sources': ['warning-level2.cc'],
     },
 
     # Level 2
@@ -38,7 +38,7 @@
           'WarnAsError': 'true',
         }
       },
-      'sources': ['warning-level2.cc']
+      'sources': ['warning-level2.cc'],
     },
     {
       'target_name': 'test_wl2_pass',
@@ -49,7 +49,7 @@
           'WarnAsError': 'true',
         }
       },
-      'sources': ['warning-level3.cc']
+      'sources': ['warning-level3.cc'],
     },
 
     # Level 3
@@ -62,7 +62,7 @@
           'WarnAsError': 'true',
         }
       },
-      'sources': ['warning-level3.cc']
+      'sources': ['warning-level3.cc'],
     },
     {
       'target_name': 'test_wl3_pass',
@@ -73,7 +73,7 @@
           'WarnAsError': 'true',
         }
       },
-      'sources': ['warning-level4.cc']
+      'sources': ['warning-level4.cc'],
     },
 
 
@@ -87,7 +87,7 @@
           'WarnAsError': 'true',
         }
       },
-      'sources': ['warning-level4.cc']
+      'sources': ['warning-level4.cc'],
     },
 
     # Default level
@@ -99,7 +99,7 @@
           'WarnAsError': 'true',
         }
       },
-      'sources': ['warning-level1.cc']
+      'sources': ['warning-level1.cc'],
     },
     {
       'target_name': 'test_def_pass',
@@ -108,7 +108,7 @@
         'VCCLCompilerTool': {
         }
       },
-      'sources': ['warning-level2.cc']
+      'sources': ['warning-level2.cc'],
     },
 
   ]

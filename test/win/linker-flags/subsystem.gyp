@@ -12,7 +12,7 @@
           'SubSystem': '1'
         }
       },
-      'sources': [ 'hello.cc' ]
+      'sources': ['hello.cc'],
     },
     {
       'target_name': 'test_console_fail',
@@ -22,7 +22,7 @@
           'SubSystem': '1'
         }
       },
-      'sources': [ 'subsystem-windows.cc' ]
+      'sources': ['subsystem-windows.cc'],
     },
     {
       'target_name': 'test_windows_ok',
@@ -32,7 +32,7 @@
           'SubSystem': '2'
         }
       },
-      'sources': [ 'subsystem-windows.cc' ]
+      'sources': ['subsystem-windows.cc'],
     },
     {
       'target_name': 'test_windows_fail',
@@ -42,7 +42,7 @@
           'SubSystem': '2'
         }
       },
-      'sources': [ 'hello.cc' ]
+      'sources': ['hello.cc'],
     },
   ]
 }
