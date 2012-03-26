@@ -9,6 +9,7 @@
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/models/combobox_model.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/views/controls/combobox/combobox_listener.h"
 #include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/widget/widget.h"
@@ -30,6 +31,12 @@ Combobox::Combobox(ui::ComboboxModel* model)
 }
 
 Combobox::~Combobox() {
+}
+
+// static
+const gfx::Font& Combobox::GetFont() {
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  return rb.GetFont(ui::ResourceBundle::BaseFont);
 }
 
 void Combobox::ModelChanged() {

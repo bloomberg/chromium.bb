@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,10 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/controls/combobox/native_combobox_wrapper.h"
 #include "ui/views/view.h"
+
+namespace gfx {
+class Font;
+}
 
 namespace ui {
 class ComboboxModel;
@@ -29,6 +33,8 @@ class VIEWS_EXPORT Combobox : public View {
   // |model| is not owned by the combo box.
   explicit Combobox(ui::ComboboxModel* model);
   virtual ~Combobox();
+
+  static const gfx::Font& GetFont();
 
   // Register |listener| for item change events.
   void set_listener(ComboboxListener* listener) {

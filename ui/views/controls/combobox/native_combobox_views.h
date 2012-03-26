@@ -17,7 +17,6 @@ class Font;
 
 namespace views {
 
-class KeyEvent;
 class FocusableBorder;
 class MenuRunner;
 
@@ -27,6 +26,8 @@ class NativeComboboxViews : public views::View,
                             public NativeComboboxWrapper,
                             public views::MenuDelegate {
  public:
+  static const char kViewClassName[];
+
   explicit NativeComboboxViews(Combobox* parent);
   virtual ~NativeComboboxViews();
 
@@ -60,13 +61,7 @@ class NativeComboboxViews : public views::View,
   virtual void ExecuteCommand(int id) OVERRIDE;
   virtual bool GetAccelerator(int id, ui::Accelerator* accelerator) OVERRIDE;
 
-  // class name of internal
-  static const char kViewClassName[];
-
  private:
-  // Returns the Combobox's font.
-  const gfx::Font& GetFont() const;
-
   // Given bounds within our View, this helper routine mirrors the bounds if
   // necessary.
   void AdjustBoundsForRTLUI(gfx::Rect* rect) const;
