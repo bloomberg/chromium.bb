@@ -104,8 +104,6 @@ class Preferences : public content::NotificationObserver {
   StringPrefMember hotkey_previous_engine_;
   StringPrefMember preferred_languages_;
   StringPrefMember preload_engines_;
-  StringPrefMember current_input_method_;
-  StringPrefMember previous_input_method_;
 
   BooleanPrefMember chewing_boolean_prefs_[
       language_prefs::kNumChewingBooleanPrefs];

@@ -38,17 +38,6 @@ class XKeyboard;
 // InputMethodManager::GetInstance().
 class InputMethodManager {
  public:
-  enum State {
-    STATE_LOGIN_SCREEN = 0,
-    // The user entered the correct password (= NOTIFICATION_LOGIN_USER_CHANGED
-    // has been sent), but NOTIFICATION_SESSION_STARTED has not.
-    STATE_LOGGING_IN,
-    // The browser window for user session is ready.
-    STATE_BROWSER_SCREEN,
-    STATE_LOCK_SCREEN,
-    STATE_TERMINATING,
-  };
-
   class Observer {
    public:
     virtual ~Observer() {}

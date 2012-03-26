@@ -17,7 +17,6 @@
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/input_method/browser_state_monitor.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/input_method/input_method_whitelist.h"
 #include "chrome/browser/chromeos/input_method/virtual_keyboard_selector.h"
@@ -85,7 +84,6 @@ class InputMethodManagerImpl : public InputMethodManager,
         ibus_daemon_process_handle_(base::kNullProcessHandle),
         util_(whitelist_.GetSupportedInputMethods()),
         xkeyboard_(XKeyboard::Create(util_)),
-        ALLOW_THIS_IN_INITIALIZER_LIST(browser_state_monitor_(this)),
         ignore_hotkeys_(false) {
     // Observe APP_TERMINATING to stop input method daemon gracefully.
     // We should not use APP_EXITING here since logout might be canceled by
@@ -1299,10 +1297,6 @@ class InputMethodManagerImpl : public InputMethodManager,
   // An object for switching XKB layouts and keyboard status like caps lock and
   // auto-repeat interval.
   scoped_ptr<XKeyboard> xkeyboard_;
-
-  // An object which monitors a notification from the browser to keep track of
-  // the browser state (not logged in, logged in, etc.).
-  BrowserStateMonitor browser_state_monitor_;
 
   // true when DisableHotkeys() is called to temporarily disable IME hotkeys.
   // EnableHotkeys() resets the flag to the default value, false.
