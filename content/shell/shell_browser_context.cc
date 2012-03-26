@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/threading/thread.h"
-#include "content/browser/download/download_manager_impl.h"
+#include "content/public/browser/download_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/geolocation_permission_context.h"
 #include "content/public/browser/speech_recognition_preferences.h"
@@ -129,7 +129,7 @@ bool ShellBrowserContext::IsOffTheRecord() const {
 DownloadManager* ShellBrowserContext::GetDownloadManager()  {
   if (!download_manager_.get()) {
     download_manager_delegate_ = new ShellDownloadManagerDelegate();
-    download_manager_ = new DownloadManagerImpl(download_manager_delegate_,
+    download_manager_ = DownloadManager::Create(download_manager_delegate_,
                                                 NULL);
     download_manager_delegate_->SetDownloadManager(download_manager_.get());
     download_manager_->Init(this);

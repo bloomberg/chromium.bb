@@ -7,7 +7,7 @@
 #include <iostream>
 
 #include "base/message_loop.h"
-#include "content/browser/renderer_host/render_view_host_impl.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/shell/shell.h"
 #include "content/shell/shell_messages.h"
 

@@ -11,7 +11,7 @@
 #import "base/memory/scoped_nsobject.h"
 #include "base/string_piece.h"
 #include "base/sys_string_conversions.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/shell/resource.h"
 #include "googleurl/src/gurl.h"
@@ -199,7 +199,7 @@ void Shell::PlatformCreateWindow(int width, int height) {
 }
 
 void Shell::PlatformSetContents() {
-  NSView* web_view = tab_contents_->GetView()->GetNativeView();
+  NSView* web_view = web_contents_->GetView()->GetNativeView();
   NSView* content = [window_ contentView];
   [content addSubview:web_view];
 

@@ -14,16 +14,6 @@
 #include "googleurl/src/gurl.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
-#if defined(OS_WIN)
-#include "content/browser/tab_contents/tab_contents.h"
-#include "content/browser/tab_contents/tab_contents_view_win.h"
-#include "content/common/view_messages.h"
-#elif defined(OS_LINUX)
-#include "content/browser/tab_contents/tab_contents_view_gtk.h"
-#elif defined(OS_MACOSX)
-#include "content/browser/tab_contents/web_contents_view_mac.h"
-#endif
-
 namespace content {
 
 ShellContentBrowserClient::ShellContentBrowserClient()
