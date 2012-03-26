@@ -638,8 +638,6 @@ void GpuCommandBufferStub::SendMemoryAllocationToProxy(
 
 void GpuCommandBufferStub::SetMemoryAllocation(
     const GpuMemoryAllocation& allocation) {
-  if (allocation == allocation_)
-    return;
   allocation_ = allocation;
 
   SendMemoryAllocationToProxy(allocation);
