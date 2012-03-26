@@ -16,11 +16,11 @@ const int kTrayPopupPaddingBetweenItems = 10;
 const int kTrayPopupItemHeight = 48;
 const int kTrayPopupDetailsIconWidth = 27;
 
-const SkColor kBackgroundColor = SK_ColorWHITE;
-const SkColor kHoverBackgroundColor = SkColorSetRGB(0xfb, 0xfc, 0xfb);
+const SkColor kBackgroundColor = SkColorSetRGB(0xfe, 0xfe, 0xfe);
+const SkColor kHoverBackgroundColor = SkColorSetRGB(0xf5, 0xf5, 0xf5);
 
-const SkColor kBorderDarkColor = SkColorSetRGB(120, 120, 120);
-const SkColor kBorderLightColor = SkColorSetRGB(240, 240, 240);
+const SkColor kBorderDarkColor = SkColorSetARGB(51, 0, 0, 0);
+const SkColor kBorderLightColor = SkColorSetRGB(0xeb, 0xeb, 0xeb);
 
 const int kTrayPopupWidth = 300;
 

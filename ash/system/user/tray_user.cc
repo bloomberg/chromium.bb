@@ -116,7 +116,7 @@ class UserView : public views::View,
     CHECK(login_ != ash::user::LOGGED_IN_NONE);
     SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical,
           0, 0, 0));
-    set_background(views::Background::CreateSolidBackground(SK_ColorWHITE));
+    set_background(views::Background::CreateSolidBackground(kBackgroundColor));
 
     bool guest = login_ == ash::user::LOGGED_IN_GUEST;
     bool kiosk = login_ == ash::user::LOGGED_IN_KIOSK;

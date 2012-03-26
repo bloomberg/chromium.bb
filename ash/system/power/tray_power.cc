@@ -180,7 +180,7 @@ views::View* TrayPower::CreateDefaultView(user::LoginStatus status) {
   layout->set_spread_blank_space(true);
   container->SetLayoutManager(layout);
   container->set_background(views::Background::CreateSolidBackground(
-      SkColorSetRGB(245, 245, 245)));
+      SkColorSetRGB(0xf1, 0xf1, 0xf1)));
   container->AddChildView(date_.get());
 
   PowerSupplyStatus power_status =

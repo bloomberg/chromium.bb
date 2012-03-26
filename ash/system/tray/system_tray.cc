@@ -170,8 +170,8 @@ class SystemTrayBubbleBackground : public views::Background {
       views::View* v = owner_->child_at(i);
 
       if (!v->border()) {
-        canvas->DrawLine(gfx::Point(v->x() - 1, v->y() - 1),
-            gfx::Point(v->x() + v->width() + 1, v->y() - 1),
+        canvas->DrawLine(gfx::Point(v->x(), v->y() - 1),
+            gfx::Point(v->x() + v->width(), v->y() - 1),
             !last_view || last_view->border() ? kBorderDarkColor :
                                                 kBorderLightColor);
         canvas->DrawLine(gfx::Point(v->x() - 1, v->y() - 1),
