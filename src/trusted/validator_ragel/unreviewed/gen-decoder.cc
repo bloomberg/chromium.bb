@@ -194,51 +194,62 @@ namespace {
     return file_content;
   }
 
-  bool eol(char c) {
+  bool is_eol(char c) {
     return c == '\n';
   }
 
-  bool right_parenthesis(char c) {
-    return c == ')';
-  }
-
-  bool whitespace(char c) {
+  bool is_whitespace(char c) {
     return c == ' ' || c == '\t';
   }
 
-  std::vector<std::string> get_strings(std::string::const_iterator &it,
-                                       std::string::const_iterator end) {
-    std::vector<std::string> strings;
-    std::string string;
-    while ((it = std::find_if_not(it, end, whitespace)) < end && *it != ',') {
-      for (; it < end && *it != ',' && !whitespace(*it); ++it) {
-        if (*it != '\\') {
-          string.push_back(*it);
-        } else {
-          if (*++it == '(') {
-            auto parenthesis = std::find_if(it, end, right_parenthesis);
-            string.insert(string.end(), it, ++parenthesis);
-            it = --parenthesis;
-          } else {
-            string.push_back(*it);
-          }
+  /* Advances the iterator till the next comma or line end, splits the traversed
+   * text by whitespace and returns it.  Respects quoted text.
+   */
+  std::vector<std::string> split_till_comma(
+      std::string::const_iterator *it_out,
+      const std::string::const_iterator &line_end) {
+    std::vector<std::string> ret;
+    std::string::const_iterator &it = *it_out;
+    std::string str;
+
+    for (; it != line_end; ++it) {
+      if (is_whitespace(*it)) {
+        if (!str.empty()) {
+          ret.push_back(str);
+          str.clear();
         }
+        it = std::find_if_not(it, line_end, is_whitespace);
       }
-      strings.push_back(string);
-      string.clear();
+      if (*it == ',') {
+        break;
+      }
+      if (*it != '"') {
+        str.push_back(*it);
+        continue;
+      }
+
+      for (++it; *it != '"'; ++it) {
+        if (it == line_end) {
+          fprintf(stderr, _("%s: quoted text reaches end of line: %s\n"),
+                  short_program_name, str.c_str());
+          exit(1);
+        }
+        str.push_back(*it);
+      }
     }
-    return strings;
+    ret.push_back(str);
+    return ret;
   }
 
   struct extract_operand {
-    Instruction &instruction;
-    std::vector<std::string> &operation;
+    Instruction* instruction;
+    const std::vector<std::string>& operation;
 
-    extract_operand(Instruction &i, std::vector<std::string> &o)
+    extract_operand(Instruction *i, const std::vector<std::string> &o)
       : instruction(i), operation(o) {
     }
 
-    void operator()(std::string &str) {
+    void operator()(const std::string &str) {
       Instruction::Operand operand;
       switch (str[0]) {
         case '\'':
@@ -267,7 +278,7 @@ namespace {
       if (*(operand.size.rbegin()) == '*') {
         operand.size.resize(operand.size.length() - 1);
       }
-      instruction.operands.push_back(operand);
+      instruction->operands.push_back(operand);
     }
   };
 
@@ -275,30 +286,31 @@ namespace {
     const std::string file_content = read_file(filename);
     auto it = file_content.begin();
     while (it != file_content.end()) {
-      it = std::find_if_not(it, file_content.end(), eol);
+      it = std::find_if_not(it, file_content.end(), is_eol);
       if (it == file_content.end()) {
         return;
       }
       /* If line starts with '#' then it's a comment. */
       if (*it == '#') {
-        it = std::find_if(it, file_content.end(), eol);
+        it = std::find_if(it, file_content.end(), is_eol);
       } else {
-        auto end = std::find_if(it, file_content.end(), eol);
+        auto line_end = std::find_if(it, file_content.end(), is_eol);
         /* Note: initialization list makes sure flags are toggled to zero.  */
         Instruction instruction { };
-        auto operation = get_strings(it, end);
-        /* Line with just a whitespaces is ignored.  */
+        auto operation = split_till_comma(&it, line_end);
+        /* Line with just whitespaces is ignored.  */
         if (operation.size() != 0) {
           instruction_names[instruction.name = operation[0]] = 0;
-          for_each(operation.rbegin(), operation.rend() - 1,
-            extract_operand(instruction, operation));
+          for_each(operation.rbegin(),
+                   operation.rend() - 1,
+                   extract_operand(&instruction, operation));
           auto enabled_instruction = true;
           if (*it == ',') {
             ++it;
-            instruction.opcodes = get_strings(it, end);
+            instruction.opcodes = split_till_comma(&it, line_end);
             if (*it == ',') {
               ++it;
-              auto flags = get_strings(it, end);
+              auto flags = split_till_comma(&it, line_end);
               for (auto flag_it = flags.begin();
                    flag_it != flags.end(); ++flag_it) {
                 auto &flag = *flag_it;
@@ -343,7 +355,7 @@ namespace {
             instructions.push_back(instruction);
           }
         }
-        it = std::find_if(it, file_content.end(), eol);
+        it = std::find_if(it, file_content.end(), is_eol);
       }
     }
   }

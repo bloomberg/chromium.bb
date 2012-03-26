@@ -585,10 +585,10 @@ pop Ew, 0x66 0x8f /0
 pop Ed, 0x8f /0, ia32
 pop Eq, 0x8f /0, amd64
 pop rr, 0x58
-pop\ \ \ \ %fs, 0x0f 0xa1, ia32 nacl-forbidden
-pop\ \ \ \ %gs, 0x0f 0xa9, ia32 nacl-forbidden
-popq\ \ \ %fs, 0x0f 0xa1, amd64 nacl-forbidden
-popq\ \ \ %gs, 0x0f 0xa9, amd64 nacl-forbidden
+"pop    %fs", 0x0f 0xa1, ia32 nacl-forbidden
+"pop    %gs", 0x0f 0xa9, ia32 nacl-forbidden
+"popq   %fs", 0x0f 0xa1, amd64 nacl-forbidden
+"popq   %gs", 0x0f 0xa9, amd64 nacl-forbidden
 ######## POPCNT ################################################################
 popcnt Ev Gv, 0xf3 0x0f 0xb8, Fn0000_0001_ECX_POPCNT
 ######## POPF/POPFD/POPFQ ######################################################
@@ -616,10 +616,10 @@ push =Eq, 0xff /6, amd64
 push =rr, 0x50
 push =Iz, 0x68
 push =Ib, 0x6a
-push\ \ \ %fs, 0x0f 0xa0, ia32 nacl-forbidden
-push\ \ \ %gs, 0x0f 0xa8, ia32 nacl-forbidden
-pushq\ \ %fs, 0x0f 0xa0, amd64 nacl-forbidden
-pushq\ \ %gs, 0x0f 0xa8, amd64 nacl-forbidden
+"push   %fs", 0x0f 0xa0, ia32 nacl-forbidden
+"push   %gs", 0x0f 0xa8, ia32 nacl-forbidden
+"pushq  %fs", 0x0f 0xa0, amd64 nacl-forbidden
+"pushq  %gs", 0x0f 0xa8, amd64 nacl-forbidden
 ######## PUSHF/PUSHFD/PUSHFQ ###################################################
 pushfw, data16 0x9c
 pushf, 0x9c, ia32 nacl-forbidden
