@@ -5,6 +5,7 @@
 #include "chrome/browser/tab_contents/spelling_menu_observer.h"
 
 #include "base/bind.h"
+#include "base/i18n/case_conversion.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -110,6 +111,8 @@ void SpellingMenuObserver::InitMenu(const content::ContextMenuParams& params) {
 
   // If word is misspelled, give option for "Add to dictionary" and a check item
   // "Ask Google for suggestions".
+  integrate_spelling_service_ =
+      profile->GetPrefs()->GetBoolean(prefs::kSpellCheckUseSpellingService);
   if (!params.misspelled_word.empty()) {
     if (params.dictionary_suggestions.empty()) {
       proxy_->AddMenuItem(IDC_CONTENT_CONTEXT_NO_SPELLING_SUGGESTIONS,
@@ -120,8 +123,6 @@ void SpellingMenuObserver::InitMenu(const content::ContextMenuParams& params) {
     proxy_->AddMenuItem(IDC_SPELLCHECK_ADD_TO_DICTIONARY,
         l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_ADD_TO_DICTIONARY));
 
-    integrate_spelling_service_ =
-        profile->GetPrefs()->GetBoolean(prefs::kSpellCheckUseSpellingService);
     proxy_->AddCheckItem(IDC_CONTENT_CONTEXT_SPELLING_TOGGLE,
         l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_SPELLING_ASK_GOOGLE));
 
@@ -261,9 +262,10 @@ void SpellingMenuObserver::OnTextCheckComplete(
          it != results.end(); ++it) {
       result_.replace(it->location, it->length, it->replacement);
     }
+    string16 result = base::i18n::ToLower(result_);
     for (std::vector<string16>::const_iterator it = suggestions_.begin();
          it != suggestions_.end(); ++it) {
-      if (result_ == *it) {
+      if (result == base::i18n::ToLower(*it)) {
         succeeded_ = false;
         break;
       }

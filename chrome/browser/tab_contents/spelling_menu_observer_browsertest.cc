@@ -257,6 +257,26 @@ IN_PROC_BROWSER_TEST_F(SpellingMenuObserverTest, InitMenuWithMisspelledWord) {
   EXPECT_FALSE(item.hidden);
 }
 
+// Tests that right-clicking a correct word when we enable spelling-service
+// integration to verify an item "Ask Google for suggestions" is checked. Even
+// though this meanu itself does not add this item, its sub-menu adds the item
+// and calls SpellingMenuObserver::IsChecked() to check it.
+IN_PROC_BROWSER_TEST_F(SpellingMenuObserverTest,
+                       EnableSpellingServiceWithCorrectWord) {
+  scoped_ptr<MockRenderViewContextMenu> menu(new MockRenderViewContextMenu);
+  scoped_ptr<SpellingMenuObserver> observer(
+      new SpellingMenuObserver(menu.get()));
+  menu->SetObserver(observer.get());
+  menu->GetPrefs()->SetBoolean(prefs::kSpellCheckUseSpellingService, true);
+
+  content::ContextMenuParams params;
+  params.is_editable = true;
+  observer->InitMenu(params);
+
+  EXPECT_TRUE(
+      observer->IsCommandIdChecked(IDC_CONTENT_CONTEXT_SPELLING_TOGGLE));
+}
+
 // Tests that right-clicking a misspelled word when we enable spelling-service
 // integration to verify an item "Ask Google for suggestions" is checked. (This
 // test does not actually send JSON-RPC requests to the service because it makes
