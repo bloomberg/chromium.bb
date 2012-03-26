@@ -95,6 +95,7 @@ struct I18nContentToMessage {
   { "keyboardOverlayContentBrowser", IDS_KEYBOARD_OVERLAY_CONTENT_BROWSER },
   { "keyboardOverlayCopy", IDS_KEYBOARD_OVERLAY_COPY },
   { "keyboardOverlayCut", IDS_KEYBOARD_OVERLAY_CUT },
+  { "keyboardOverlayCycleMonitor", IDS_KEYBOARD_OVERLAY_CYCLE_MONITOR },
   { "keyboardOverlayCycleThroughInputMethods",
     IDS_KEYBOARD_OVERLAY_CYCLE_THROUGH_INPUT_METHODS },
   { "keyboardOverlayDelete", IDS_KEYBOARD_OVERLAY_DELETE },

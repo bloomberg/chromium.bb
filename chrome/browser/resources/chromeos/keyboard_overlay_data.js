@@ -15812,6 +15812,7 @@ var keyboardOverlayData = {
     "f<>ALT": "keyboardOverlayShowWrenchMenu",
     "f<>CTRL": "keyboardOverlayFindText",
     "forward<>CTRL": "keyboardOverlayFocusNextPane",
+    "full screen<>CTRL": "keyboardOverlayCycleMonitor",
     "g<>CTRL": "keyboardOverlayFindTextAgain",
     "g<>CTRL<>SHIFT": "keyboardOverlayFindPreviousText",
     "h<>CTRL": "keyboardOverlayHistory",

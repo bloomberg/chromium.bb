@@ -14665,6 +14665,9 @@ Battery full
       <message name="IDS_KEYBOARD_OVERLAY_CUT" desc="The text in the keyboard overlay to explain the shortcut.">
         Cut
       </message>
+      <message name="IDS_KEYBOARD_OVERLAY_CYCLE_MONITOR" desc="The text in the keyboard overlay to explain the shortcut (cycle through the monitors).">
+        Cycle monitor
+      </message>
       <message name="IDS_KEYBOARD_OVERLAY_CYCLE_THROUGH_INPUT_METHODS" desc="The text in the keyboard overlay to explain the shortcut.">
         Cycle through input methods
       </message>
