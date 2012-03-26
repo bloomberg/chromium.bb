@@ -14,7 +14,6 @@
 #include "chrome/browser/policy/cloud_policy_provider_impl.h"
 #include "chrome/browser/policy/cloud_policy_subsystem.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"
-#include "chrome/browser/policy/network_configuration_updater.h"
 #include "chrome/browser/policy/policy_service_impl.h"
 #include "chrome/browser/policy/user_policy_cache.h"
 #include "chrome/browser/policy/user_policy_token_cache.h"
@@ -42,6 +41,7 @@
 #include "chrome/browser/chromeos/system/statistics_provider.h"
 #include "chrome/browser/policy/app_pack_updater.h"
 #include "chrome/browser/policy/device_policy_cache.h"
+#include "chrome/browser/policy/network_configuration_updater.h"
 #endif
 
 using content::BrowserThread;
