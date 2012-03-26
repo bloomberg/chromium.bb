@@ -846,7 +846,7 @@ def _SplitAndFlatten(appended_items):
   """
   new_list = []
   for item in appended_items:
-    new_list.extend(item.split(' '))
+    new_list.extend(item.split())
   return new_list
 
 
