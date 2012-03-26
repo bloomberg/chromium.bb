@@ -474,12 +474,15 @@ class TestGypOnMSToolchain(TestGypBase):
 
   def initialize_build_tool(self):
     super(TestGypOnMSToolchain, self).initialize_build_tool()
-    self.devenv_path, self.uses_msbuild = FindVisualStudioInstallation()
-    self.vsvars_path = TestGypOnMSToolchain._ComputeVsvarsPath(self.devenv_path)
+    if sys.platform in ('win32', 'cygwin'):
+      self.devenv_path, self.uses_msbuild = FindVisualStudioInstallation()
+      self.vsvars_path = TestGypOnMSToolchain._ComputeVsvarsPath(
+          self.devenv_path)
 
   def run_dumpbin(self, *dumpbin_args):
     """Run the dumpbin tool with the specified arguments, and capturing and
     returning stdout."""
+    assert sys.platform in ('win32', 'cygwin')
     cmd = os.environ.get('COMSPEC', 'cmd.exe')
     arguments = [cmd, '/c', self.vsvars_path, '&&', 'dumpbin']
     arguments.extend(dumpbin_args)
