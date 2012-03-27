@@ -5779,6 +5779,15 @@
    fun:_ZN17AudioRendererHost16OnChannelClosingEv
    fun:_ZN3IPC12ChannelProxy7Context15OnChannelClosedEv
 }
+{
+   bug_120353
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4base8internal20PostTaskAndReplyImpl16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEESA_
+   fun:_ZN4base10TaskRunner16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEES9_
+   fun:_ZN7content13BrowserThread16PostTaskAndReplyENS0_2IDERKN15tracked_objects8LocationERKN4base8CallbackIFvvEEESB_
+   fun:_ZN5gdata15GDataFileSystem37PostBlockingPoolSequencedTaskAndReplyERKSsRKN15tracked_objects8LocationERKN4base8CallbackIFvvEEESC_
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
