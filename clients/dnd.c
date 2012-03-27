@@ -53,6 +53,7 @@ struct dnd_drag {
 	uint32_t time;
 	struct item *item;
 	int x_offset, y_offset;
+	int width, height;
 	const char *mime_type;
 
 	struct wl_surface *drag_surface;
@@ -256,6 +257,8 @@ data_source_target(void *data,
 
 	buffer = display_get_buffer_for_surface(dnd->display, surface);
 	wl_surface_attach(dnd_drag->drag_surface, buffer, 0, 0);
+	wl_surface_damage(dnd_drag->drag_surface, 0, 0,
+			  dnd_drag->width, dnd_drag->height);
 }
 
 static void
@@ -347,6 +350,8 @@ create_drag_cursor(struct dnd_drag *dnd_drag,
 
 	dnd_drag->hotspot_x = pointer_width + x - item->x;
 	dnd_drag->hotspot_y = pointer_height + y - item->y;
+	dnd_drag->width = rectangle.width;
+	dnd_drag->height = rectangle.height;
 
 	return surface;
 }
@@ -418,6 +423,8 @@ dnd_button_handler(struct widget *widget,
 		buffer = display_get_buffer_for_surface(dnd->display, dnd_drag->translucent);
 		wl_surface_attach(dnd_drag->drag_surface, buffer,
 				  -dnd_drag->hotspot_x, -dnd_drag->hotspot_y);
+		wl_surface_damage(dnd_drag->drag_surface, 0, 0,
+				  dnd_drag->width, dnd_drag->height);
 
 		window_schedule_redraw(dnd->window);
 	}
