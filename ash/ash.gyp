@@ -362,6 +362,7 @@
         'wm/toplevel_window_event_filter_unittest.cc',
         'wm/video_detector_unittest.cc',
         'wm/visibility_controller_unittest.cc',
+        'wm/window_animations_unittest.cc',
         'wm/window_cycle_controller_unittest.cc',
         'wm/window_modality_controller_unittest.cc',
         'wm/workspace_controller_test_helper.cc',

@@ -55,7 +55,8 @@ void ASH_EXPORT SetWindowVisibilityAnimationDuration(
 namespace internal {
 
 // Returns false if the |window| didn't animate.
-bool AnimateOnChildWindowVisibilityChanged(aura::Window* window, bool visible);
+bool ASH_EXPORT AnimateOnChildWindowVisibilityChanged(
+    aura::Window* window, bool visible);
 
 }  // namespace internal
 }  // namespace ash
