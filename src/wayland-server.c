@@ -533,6 +533,8 @@ wl_input_device_init(struct wl_input_device *device)
 	device->selection_data_source = NULL;
 	wl_list_init(&device->selection_listener_list);
 
+	wl_list_init(&device->drag_icon_listener_list);
+
 	device->x = 100;
 	device->y = 100;
 }

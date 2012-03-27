@@ -300,6 +300,7 @@ data_device_start_drag(struct wl_client *client, struct wl_resource *resource,
 		       struct wl_resource *icon_resource, uint32_t time)
 {
 	struct wl_input_device *device = resource->data;
+	struct wl_listener *listener, *tmp;
 
 	/* FIXME: Check that client has implicit grab on the origin
 	 * surface that matches the given time. */
@@ -318,6 +319,10 @@ data_device_start_drag(struct wl_client *client, struct wl_resource *resource,
 		device->drag_icon_listener.func = destroy_data_device_icon;
 		wl_list_insert(icon_resource->destroy_listener_list.prev,
 			       &device->drag_icon_listener.link);
+
+		wl_list_for_each_safe(listener, tmp,
+				      &device->drag_icon_listener_list, link)
+			listener->func(listener, icon_resource, time);
 	}
 
 	wl_input_device_start_pointer_grab(device, &device->drag_grab, time);
