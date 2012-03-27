@@ -102,7 +102,7 @@ runHistoryTestFns([
         chrome.tabs.onUpdated.removeListener(tabsCompleteListener);
 
         // Allow indexing to occur.
-        waitAFewSeconds(2, function() {
+        waitAFewSeconds(3, function() {
           validateTest();
         });
       }

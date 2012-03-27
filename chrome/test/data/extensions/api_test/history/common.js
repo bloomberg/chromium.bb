@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -112,10 +112,13 @@ function countItemsInHistory(callback) {
  * @param {function} callback Closure.
  */
 function populateHistory(urls, callback) {
+  var num_urls_added = 0;
   urls.forEach(function(url) {
-    chrome.history.addUrl({ 'url': url });
+    chrome.history.addUrl({ 'url': url }, function() {
+      if (++num_urls_added == urls.length)
+        callback()
+    });
   });
-  callback();
 }
 
 /**
@@ -148,34 +151,29 @@ function addUrlsWithTimeline(urls, callback) {
   assertEq(2, urls.length);
 
   // Add the first URL now.
-  chrome.history.addUrl({url: urls[0]});
-
-  // Add the second URL after a delay, so that the times at which the
-  // URLs were added are not the same.
-  waitAFewSeconds(1, function() {
-    chrome.history.addUrl({url: urls[1]});
-
-    // TODO(skerner): If addUrl() had a callback, waiting would not be
-    // necessary.  When crbug/76170 is fixed, use a callback.
+  chrome.history.addUrl({url: urls[0]}, function() {
     waitAFewSeconds(1, function() {
+      chrome.history.addUrl({url: urls[1]}, function() {
+        waitAFewSeconds(1, function() {
+          // Use search to get the times of the two URLs, and compute times
+          // to pass to the callback.
+          chrome.history.search({text: ''}, function(historyItems) {
+            // Check that both URLs were added.
+            assertEq(urls.length, historyItems.length);
 
-      // Use search to get the times of the two URLs, and compute times
-      // to pass to the callback.
-      chrome.history.search({text: ''}, function(historyItems) {
-        // Check that both URLs were added.
-        assertEq(urls.length, historyItems.length);
+            // Don't assume anything about the order of history records in
+            // |historyItems|.
+            var firstUrlTime = Math.min(historyItems[0].lastVisitTime,
+                                        historyItems[1].lastVisitTime);
+            var secondUrlTime = Math.max(historyItems[0].lastVisitTime,
+                                         historyItems[1].lastVisitTime);
 
-        // Don't assume anything about the order of history records in
-        // |historyItems|.
-        var firstUrlTime = Math.min(historyItems[0].lastVisitTime,
-                                    historyItems[1].lastVisitTime);
-        var secondUrlTime = Math.max(historyItems[0].lastVisitTime,
-                                     historyItems[1].lastVisitTime);
-
-        callback({
-          before: firstUrlTime - 100.0,
-          between: (firstUrlTime + secondUrlTime) / 2.0,
-          after: secondUrlTime + 100.0
+            callback({
+              before: firstUrlTime - 100.0,
+              between: (firstUrlTime + secondUrlTime) / 2.0,
+              after: secondUrlTime + 100.0
+            });
+          });
         });
       });
     });
