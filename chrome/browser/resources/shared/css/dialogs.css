@@ -40,6 +40,10 @@
   width: 460px;
 }
 
+.cr-dialog-frame:focus {
+  outline: none;
+}
+
 @-webkit-keyframes pulse {
  0% {
    -webkit-transform: scale(1);

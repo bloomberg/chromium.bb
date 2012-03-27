@@ -44,6 +44,7 @@ cr.define('cr.ui.dialogs', function() {
 
     this.frame_ = doc.createElement('div');
     this.frame_.className = 'cr-dialog-frame';
+    this.frame_.tabIndex = 0;
     this.container_.appendChild(this.frame_);
 
     this.title_ = doc.createElement('div');
@@ -97,6 +98,7 @@ cr.define('cr.ui.dialogs', function() {
       // Start 'pulse' animation.
       classList.remove('pulse');
       setTimeout(classList.add.bind(classList, 'pulse'), 0);
+      event.preventDefault();
     }
   };
 
