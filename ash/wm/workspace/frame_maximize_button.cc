@@ -265,8 +265,7 @@ void FrameMaximizeButton::UpdateSnap(const gfx::Point& location) {
   }
   if (!phantom_window_.get()) {
     phantom_window_.reset(new internal::PhantomWindowController(
-                              frame_->GetWidget()->GetNativeWindow(),
-                              internal::PhantomWindowController::TYPE_EDGE, 0));
+                              frame_->GetWidget()->GetNativeWindow()));
   }
   phantom_window_->Show(BoundsForType(snap_type_));
 }

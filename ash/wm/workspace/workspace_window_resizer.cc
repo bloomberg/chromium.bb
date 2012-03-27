@@ -29,9 +29,6 @@ namespace {
 // Duration of the animation when snapping the window into place.
 const int kSnapDurationMS = 100;
 
-// Delay before the phantom window is shown (in milliseconds).
-const int kPhantomDelayMS = 400;
-
 // Returns true if should snap to the edge.
 bool ShouldSnapToEdge(int distance_from_edge, int grid_size) {
   return distance_from_edge <= grid_size / 2 &&
@@ -81,11 +78,7 @@ void WorkspaceWindowResizer::Drag(const gfx::Point& location) {
 }
 
 void WorkspaceWindowResizer::CompleteDrag() {
-  if (phantom_window_controller_.get()) {
-    if (snap_type_ == SNAP_DESTINATION)
-      phantom_window_controller_->DelayedClose(kSnapDurationMS);
-    phantom_window_controller_.reset();
-  }
+  phantom_window_controller_.reset();
   if (!did_move_or_resize_ || details_.window_component != HTCAPTION)
     return;
 
@@ -204,9 +197,7 @@ WorkspaceWindowResizer::WorkspaceWindowResizer(
 gfx::Rect WorkspaceWindowResizer::GetFinalBounds(
     const gfx::Rect& bounds) const {
   if (phantom_window_controller_.get() &&
-      phantom_window_controller_->IsShowing() &&
-      phantom_window_controller_->type() ==
-      PhantomWindowController::TYPE_EDGE) {
+      phantom_window_controller_->IsShowing()) {
     return phantom_window_controller_->bounds();
   }
   return AdjustBoundsToGrid(bounds, details_.grid_size);
@@ -320,7 +311,8 @@ void WorkspaceWindowResizer::SnapToWorkAreaEdges(
   } else if (ShouldSnapToEdge(right_edge - bounds->right(),
                               details_.grid_size)) {
     bounds->set_x(right_edge - bounds->width());
-  } if (ShouldSnapToEdge(bounds->y() - top_edge, details_.grid_size)) {
+  }
+  if (ShouldSnapToEdge(bounds->y() - top_edge, details_.grid_size)) {
     bounds->set_y(top_edge);
   } else if (ShouldSnapToEdge(bottom_edge - bounds->bottom(),
                             details_.grid_size) &&
@@ -362,43 +354,27 @@ void WorkspaceWindowResizer::UpdatePhantomWindow(const gfx::Point& location,
   if (!did_move_or_resize_ || details_.window_component != HTCAPTION)
     return;
 
+  SnapType last_type = snap_type_;
   snap_type_ = GetSnapType(location);
-  if (snap_type_ == SNAP_NONE) {
+  if (snap_type_ == SNAP_NONE || snap_type_ != last_type) {
     phantom_window_controller_.reset();
     snap_sizer_.reset();
-    return;
+    if (snap_type_ == SNAP_NONE)
+      return;
   }
-  PhantomWindowController::Type phantom_type;
-  if (snap_type_ == SNAP_LEFT_EDGE || snap_type_ == SNAP_RIGHT_EDGE)
-    phantom_type = PhantomWindowController::TYPE_EDGE;
-  else
-    phantom_type = PhantomWindowController::TYPE_DESTINATION;
-  if (phantom_window_controller_.get() &&
-      phantom_window_controller_->type() != phantom_type) {
-    phantom_window_controller_.reset();
-    snap_sizer_.reset();
-  }
-  if (phantom_type == PhantomWindowController::TYPE_EDGE) {
-    if (!snap_sizer_.get()) {
-      SnapSizer::Edge edge = (snap_type_ == SNAP_LEFT_EDGE) ?
-          SnapSizer::LEFT_EDGE : SnapSizer::RIGHT_EDGE;
-      snap_sizer_.reset(
-          new SnapSizer(details_.window, location, edge, details_.grid_size));
-    } else {
-      snap_sizer_->Update(location);
-    }
+  if (!snap_sizer_.get()) {
+    SnapSizer::Edge edge = (snap_type_ == SNAP_LEFT_EDGE) ?
+        SnapSizer::LEFT_EDGE : SnapSizer::RIGHT_EDGE;
+    snap_sizer_.reset(
+        new SnapSizer(details_.window, location, edge, details_.grid_size));
+  } else {
+    snap_sizer_->Update(location);
   }
   if (!phantom_window_controller_.get()) {
     phantom_window_controller_.reset(
-        new PhantomWindowController(details_.window, phantom_type,
-                                    kPhantomDelayMS));
+        new PhantomWindowController(details_.window));
   }
-  gfx::Rect phantom_bounds;
-  if (snap_sizer_.get())
-    phantom_bounds = snap_sizer_->target_bounds();
-  else
-    phantom_bounds = GetFinalBounds(bounds);
-  phantom_window_controller_->Show(phantom_bounds);
+  phantom_window_controller_->Show(snap_sizer_->target_bounds());
 }
 
 void WorkspaceWindowResizer::RestackWindows() {
@@ -441,8 +417,6 @@ WorkspaceWindowResizer::SnapType WorkspaceWindowResizer::GetSnapType(
     return SNAP_LEFT_EDGE;
   if (location.x() >= area.right() - 1)
     return SNAP_RIGHT_EDGE;
-  if (details_.grid_size > 1 && wm::IsWindowNormal(details_.window))
-    return SNAP_DESTINATION;
   return SNAP_NONE;
 }
 

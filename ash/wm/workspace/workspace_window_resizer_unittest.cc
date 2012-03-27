@@ -520,6 +520,8 @@ TEST_F(WorkspaceWindowResizerTest, ResizeBottomOutsideWorkArea) {
 
 // Verifies snapping to edges works.
 TEST_F(WorkspaceWindowResizerTest, SnapToEdge) {
+  Shell::GetInstance()->SetShelfAutoHideBehavior(
+      SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   window_->SetBounds(gfx::Rect(96, 112, 320, 160));
   scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
       window_.get(), gfx::Point(), HTCAPTION, 16, empty_windows()));

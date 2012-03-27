@@ -6,9 +6,8 @@
 #define ASH_WM_WORKSPACE_PHANTOM_WINDOW_CONTROLLER_H_
 
 #include "ash/ash_export.h"
-#include "base/compiler_specific.h"
+#include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/timer.h"
 #include "ui/gfx/rect.h"
 
 namespace aura {
@@ -22,24 +21,12 @@ class Widget;
 namespace ash {
 namespace internal {
 
-// PhantomWindowController is responsible for showing a phantom beneath an
-// existing window. PhantomWindowController is used during dragging a window to
-// give an indication of where the window will land.
+// PhantomWindowController is responsible for showing a phantom above a window.
+// It's used used during dragging a window to show a snap location.
 class ASH_EXPORT PhantomWindowController {
  public:
-  enum Type {
-    // Used for showing an indication of where on the grid the window will land.
-    TYPE_DESTINATION,
-
-    // Used when the window is placed along the edge of the screen.
-    TYPE_EDGE,
-  };
-
-  // |delay_ms| specifies the delay before the phantom is shown.
-  PhantomWindowController(aura::Window* window, Type type, int delay_ms);
+  explicit PhantomWindowController(aura::Window* window);
   ~PhantomWindowController();
-
-  Type type() const { return type_; }
 
   // Bounds last passed to Show().
   const gfx::Rect& bounds() const { return bounds_; }
@@ -54,9 +41,6 @@ class ASH_EXPORT PhantomWindowController {
   // Returns true if the phantom is showing.
   bool IsShowing() const;
 
-  // Closes the phantom window after a delay (in milliseconds).
-  void DelayedClose(int delay_ms);
-
  private:
   // Shows the window immediately.
   void ShowNow();
@@ -64,18 +48,10 @@ class ASH_EXPORT PhantomWindowController {
   // Window the phantom is placed beneath.
   aura::Window* window_;
 
-  const Type type_;
-
-  // Delay before closing.
-  const int delay_ms_;
-
   // Last bounds passed to Show().
   gfx::Rect bounds_;
 
   scoped_ptr<views::Widget> phantom_widget_;
-
-  // Timer used to show the phantom window.
-  base::OneShotTimer<PhantomWindowController> show_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(PhantomWindowController);
 };

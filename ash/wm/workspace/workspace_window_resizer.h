@@ -67,9 +67,6 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
     SNAP_LEFT_EDGE,
     SNAP_RIGHT_EDGE,
 
-    // Snap to the final bounds. Used when there is a grid.
-    SNAP_DESTINATION,
-
     // No snap position.
     SNAP_NONE
   };
