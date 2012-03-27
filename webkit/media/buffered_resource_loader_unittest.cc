@@ -981,12 +981,7 @@ TEST_F(BufferedResourceLoaderTest, Tricky_ReadPastThreshold) {
   StopWhenLoad();
 }
 
-// NOTE: This test will need to be reworked a little once
-// http://code.google.com/p/chromium/issues/detail?id=72578
-// is fixed.
-//
-// TODO(scherkus): update tests to reflect new DCHECKs.
-TEST_F(BufferedResourceLoaderTest, DISABLED_HasSingleOrigin) {
+TEST_F(BufferedResourceLoaderTest, HasSingleOrigin) {
   // Make sure no redirect case works as expected.
   Initialize(kHttpUrl, -1, -1);
   Start();
@@ -1015,6 +1010,7 @@ TEST_F(BufferedResourceLoaderTest, DISABLED_HasSingleOrigin) {
   Initialize(kHttpUrl, -1, -1);
   Start();
   Redirect(kHttpRedirectToDifferentDomainUrl1);
+  FullResponse(1024);
   EXPECT_FALSE(loader_->HasSingleOrigin());
   StopWhenLoad();
 
@@ -1023,6 +1019,7 @@ TEST_F(BufferedResourceLoaderTest, DISABLED_HasSingleOrigin) {
   Start();
   Redirect(kHttpRedirectToSameDomainUrl1);
   Redirect(kHttpRedirectToDifferentDomainUrl1);
+  FullResponse(1024);
   EXPECT_FALSE(loader_->HasSingleOrigin());
   StopWhenLoad();
 }
