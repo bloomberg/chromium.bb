@@ -222,7 +222,6 @@ weston_surface_create(struct weston_compositor *compositor)
 
 	surface->buffer = NULL;
 	surface->output = NULL;
-	surface->force_configure = 0;
 
 	pixman_region32_init(&surface->damage);
 	pixman_region32_init(&surface->opaque);

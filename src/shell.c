@@ -126,6 +126,8 @@ struct shell_surface {
 	struct weston_output *fullscreen_output;
 	struct weston_output *output;
 	struct wl_list link;
+
+	int force_configure;
 };
 
 struct weston_move_grab {
@@ -379,7 +381,7 @@ shell_unset_fullscreen(struct shell_surface *shsurf)
 	weston_surface_destroy(shsurf->fullscreen.black_surface);
 	shsurf->fullscreen.black_surface = NULL;
 	shsurf->fullscreen_output = NULL;
-	shsurf->surface->force_configure = 1;
+	shsurf->force_configure = 1;
 	weston_surface_set_position(shsurf->surface,
 				    shsurf->saved_x, shsurf->saved_y);
 }
@@ -634,7 +636,7 @@ shell_surface_set_fullscreen(struct wl_client *client,
 	shsurf->saved_position_valid = true;
 
 	if (weston_surface_is_mapped(es))
-		shsurf->surface->force_configure = 1;
+		shsurf->force_configure = 1;
 
 	wl_shell_surface_send_configure(&shsurf->resource,
 					weston_compositor_get_time(), 0,
@@ -1723,10 +1725,11 @@ static void
 shell_surface_configure(struct weston_surface *es, int32_t sx, int32_t sy)
 {
 	struct weston_shell *shell = es->compositor->shell;
+	struct shell_surface *shsurf = get_shell_surface(es);
 
 	if (!weston_surface_is_mapped(es)) {
 		map(shell, es, es->buffer->width, es->buffer->height, sx, sy);
-	} else if (es->force_configure || sx != 0 || sy != 0 ||
+	} else if (shsurf->force_configure || sx != 0 || sy != 0 ||
 		   es->geometry.width != es->buffer->width ||
 		   es->geometry.height != es->buffer->height) {
 		GLfloat from_x, from_y;
@@ -1738,7 +1741,7 @@ shell_surface_configure(struct weston_surface *es, int32_t sx, int32_t sy)
 			  es->geometry.x + to_x - from_x,
 			  es->geometry.y + to_y - from_y,
 			  es->buffer->width, es->buffer->height);
-		es->force_configure = 0;
+		shsurf->force_configure = 0;
 	}
 }
 
