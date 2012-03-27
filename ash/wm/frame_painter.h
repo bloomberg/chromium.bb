@@ -6,8 +6,6 @@
 #define ASH_WM_FRAME_PAINTER_H_
 #pragma once
 
-#include <set>
-
 #include "ash/ash_export.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"  // OVERRIDE
@@ -38,16 +36,6 @@ namespace ash {
 // layout constants for Ash window frames.
 class ASH_EXPORT FramePainter : public aura::WindowObserver {
  public:
-  // Opacity values for the window header in various states, from 0 to 255.
-  static int kActiveWindowOpacity;
-  static int kInactiveWindowOpacity;
-  static int kSoloWindowOpacity;
-
-  enum HeaderMode {
-    ACTIVE,
-    INACTIVE
-  };
-
   FramePainter();
   virtual ~FramePainter();
 
@@ -70,7 +58,6 @@ class ASH_EXPORT FramePainter : public aura::WindowObserver {
   // Paints the frame header.
   void PaintHeader(views::NonClientFrameView* view,
                    gfx::Canvas* canvas,
-                   HeaderMode header_mode,
                    const SkBitmap* theme_frame,
                    const SkBitmap* theme_frame_overlay);
 
@@ -107,14 +94,6 @@ class ASH_EXPORT FramePainter : public aura::WindowObserver {
 
   // Returns the offset between window left edge and title string.
   int GetTitleOffsetX() const;
-
-  // Returns true if there is exactly one visible, normal-type window in the
-  // default window container, in which case we should paint a transparent
-  // window header.  Does not count window |ignore|.  Pass NULL for |ignore|
-  // to check all windows.
-  bool UseSoloWindowHeader(aura::Window* ignore) const;
-
-  static std::set<FramePainter*>* instances_;
 
   // Not owned
   views::Widget* frame_;

@@ -331,7 +331,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(content::WebUI* web_ui,
       || url.host() == chrome::kChromeUIDiscardsHost
       || url.host() == chrome::kChromeUINetworkHost
       || url.host() == chrome::kChromeUIOSCreditsHost
-      || url.host() == chrome::kChromeUITransparencyHost
 #endif
       ) {
     return &NewWebUI<AboutUI>;
