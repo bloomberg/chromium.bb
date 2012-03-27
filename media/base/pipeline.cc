@@ -1109,13 +1109,6 @@ void Pipeline::FinishDestroyingFiltersTask() {
   error_caused_teardown_ = false;
 }
 
-bool Pipeline::PrepareFilter(scoped_refptr<Filter> filter) {
-  bool ret = pipeline_init_state_->composite->AddFilter(filter.get());
-  if (!ret)
-    SetError(PIPELINE_ERROR_INITIALIZATION_FAILED);
-  return ret;
-}
-
 void Pipeline::InitializeDemuxer() {
   DCHECK_EQ(MessageLoop::current(), message_loop_);
   DCHECK(IsPipelineOk());
@@ -1218,8 +1211,7 @@ bool Pipeline::InitializeAudioRenderer(
     return false;
   }
 
-  if (!PrepareFilter(audio_renderer_))
-    return false;
+  pipeline_init_state_->composite->AddFilter(audio_renderer_);
 
   audio_renderer_->Initialize(
       decoder,
@@ -1244,8 +1236,7 @@ bool Pipeline::InitializeVideoRenderer(
     return false;
   }
 
-  if (!PrepareFilter(video_renderer_))
-    return false;
+  pipeline_init_state_->composite->AddFilter(video_renderer_);
 
   video_renderer_->Initialize(
       decoder,

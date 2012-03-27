@@ -22,10 +22,8 @@ class MEDIA_EXPORT CompositeFilter : public Filter {
 
   // Adds a filter to the composite. This is only allowed after set_host()
   // is called and before the first state changing operation such as Play(),
-  // Flush(), Stop(), or Seek(). True is returned if the filter was successfully
-  // added to the composite. False is returned if the filter couldn't be added
-  // because the composite is in the wrong state.
-  bool AddFilter(scoped_refptr<Filter> filter);
+  // Flush(), Stop(), or Seek(). CHECK-fails if preconditions are not met.
+  void AddFilter(scoped_refptr<Filter> filter);
 
   // Undoes AddFilter's actions.  CHECK-fails if |filter| is unknown.
   void RemoveFilter(scoped_refptr<Filter> filter);

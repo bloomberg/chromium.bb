@@ -49,17 +49,13 @@ CompositeFilter::~CompositeFilter() {
   filters_.clear();
 }
 
-bool CompositeFilter::AddFilter(scoped_refptr<Filter> filter) {
-  // TODO(fischman,scherkus): s/bool/void/ the return type and CHECK on failure
-  // of the sanity-checks that return false today.
+void CompositeFilter::AddFilter(scoped_refptr<Filter> filter) {
   DCHECK_EQ(message_loop_, MessageLoop::current());
-  if (!filter.get() || state_ != kCreated || !host())
-    return false;
+  CHECK(filter && state_ == kCreated && host());
 
   // Register ourselves as the filter's host.
   filter->set_host(host_impl_.get());
   filters_.push_back(make_scoped_refptr(filter.get()));
-  return true;
 }
 
 void CompositeFilter::RemoveFilter(scoped_refptr<Filter> filter) {
