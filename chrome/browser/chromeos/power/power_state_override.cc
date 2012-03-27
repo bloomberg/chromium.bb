@@ -48,7 +48,7 @@ void PowerStateOverride::CallRequestPowerStateOverrides(
     // Request the duration of twice our heartbeat.
     power_manager->RequestPowerStateOverrides(
         request_id,
-        kHeartbeatTime * 2,
+        kHeartbeatTimeInSecs * 2,
         PowerManagerClient::DISABLE_IDLE_DIM |
         PowerManagerClient::DISABLE_IDLE_BLANK |
         PowerManagerClient::DISABLE_IDLE_SUSPEND |
