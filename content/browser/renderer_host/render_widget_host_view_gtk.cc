@@ -201,8 +201,8 @@ class RenderWidgetHostViewGtkWidget {
         host_view->is_fullscreen_;
     if (should_close_on_escape && GDK_Escape == event->keyval) {
       host_view->host_->Shutdown();
-    } if (host_view->host_ &&
-          host_view->host_->KeyPressListenersHandleEvent(event)) {
+    } else if (host_view->host_ &&
+               host_view->host_->KeyPressListenersHandleEvent(event)) {
       return TRUE;
     } else {
       // Send key event to input method.
