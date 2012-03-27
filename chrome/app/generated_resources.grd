@@ -2515,7 +2515,7 @@ are declared in build/common.gypi.
       </message>
       <message name="IDS_PROMPT_CONFIRM_KEEP_DANGEROUS_DOWNLOAD"
                desc="Text for the native UI prompt to confirm that a user really meant to keep a dangerous download">
-        <ph name="FILE_NAME">$1<ex>dangerous.exe</ex></ph> might hurt. Don't say we didn't warn you...
+        This might hurt. Don't say we didn't warn you...
       </message>
       <message name="IDS_CONFIRM_DOWNLOAD"
                desc="Text for the button used to validate the downloading of a dangerous download.">
