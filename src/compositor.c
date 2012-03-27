@@ -1958,6 +1958,18 @@ bind_input_device(struct wl_client *client,
 	resource->destroy = unbind_input_device;
 }
 
+static void
+device_handle_new_drag_icon(struct wl_listener *listener,
+			    struct wl_resource *resource, uint32_t time)
+{
+	struct weston_input_device *device;
+
+	device = container_of(listener, struct weston_input_device,
+			      new_drag_icon_listener);
+
+	weston_input_update_drag_surface(&device->input_device, 0, 0);
+}
+
 WL_EXPORT void
 weston_input_device_init(struct weston_input_device *device,
 			 struct weston_compositor *ec)
@@ -1979,6 +1991,10 @@ weston_input_device_init(struct weston_input_device *device,
 	device->drag_surface_destroy_listener.func = handle_drag_surface_destroy;
 
 	wl_list_insert(ec->input_device_list.prev, &device->link);
+
+	device->new_drag_icon_listener.func = device_handle_new_drag_icon;
+	wl_list_insert(device->input_device.drag_icon_listener_list.prev,
+		       &device->new_drag_icon_listener.link);
 }
 
 WL_EXPORT void

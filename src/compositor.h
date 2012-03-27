@@ -121,6 +121,8 @@ struct weston_input_device {
 	struct wl_listener touch_focus_listener;
 	struct wl_resource *touch_focus_resource;
 	struct wl_listener touch_focus_resource_listener;
+
+	struct wl_listener new_drag_icon_listener;
 };
 
 struct weston_shader {
