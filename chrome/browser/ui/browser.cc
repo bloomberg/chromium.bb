@@ -2443,7 +2443,10 @@ void Browser::OpenInstantConfirmDialog() {
 void Browser::OpenAboutChromeDialog() {
   content::RecordAction(UserMetricsAction("AboutChrome"));
 #if !defined(OS_WIN)
-  ShowSingletonTab(GURL(chrome::kChromeUIUberURL));
+  GURL url = GURL(chrome::kChromeUIUberURL);
+  browser::NavigateParams params(GetSingletonTabNavigateParams(url));
+  params.path_behavior = browser::NavigateParams::IGNORE_AND_NAVIGATE;
+  ShowSingletonTabOverwritingNTP(params);
 #else
   // crbug.com/115123.
   window_->ShowAboutChromeDialog();
