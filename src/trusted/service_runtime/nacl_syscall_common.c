@@ -1131,7 +1131,6 @@ int32_t NaClCommonSysMmapIntern(struct NaClApp        *nap,
   nacl_off64_t                file_bytes;
   nacl_off64_t                host_rounded_file_bytes;
   size_t                      alloc_rounded_file_bytes;
-  size_t                      start_of_inaccessible;
 
   holding_app_lock = 0;
   nmop = NULL;
@@ -1284,15 +1283,6 @@ int32_t NaClCommonSysMmapIntern(struct NaClApp        *nap,
    * kMaxUsableFileSize.
    */
   length = size_min(alloc_rounded_length, (size_t) host_rounded_file_bytes);
-  start_of_inaccessible = size_min(alloc_rounded_length,
-                                   alloc_rounded_file_bytes);
-
-  /*
-   * Now, we map, relative to usraddr, bytes [0, length) from the file
-   * starting at offset, inaccessible pages for the memory region
-   * [length, start_of_inaccessible), and inaccessible pages for the
-   * memory region [start_of_inaccessible, alloc_rounded_length).
-   */
 
   /*
    * Lock the addr space.
@@ -1510,44 +1500,15 @@ int32_t NaClCommonSysMmapIntern(struct NaClApp        *nap,
    * with how ELF dynamic linkers usually like to set up an ELF
    * object's BSS.
    */
-#if !NACL_WINDOWS
-  /*
-   * Map region C (see above) as inaccessible.  This is only necessary
-   * on Unix.  On Windows, this region has already been made
-   * inaccessible.
-   */
-  if (length < start_of_inaccessible) {
-    size_t  map_len = start_of_inaccessible - length;
-
-    NaClLog(2,
-            ("inaccessible pages for memory range"
-             " [0x%08"NACL_PRIxPTR", 0x%08"NACL_PRIxPTR
-             "), length 0x%"NACL_PRIxS"\n"),
-            sysaddr + length, sysaddr + start_of_inaccessible, map_len);
-    map_result = NaClHostDescMap((struct NaClHostDesc *) NULL,
-                                 (void *) (sysaddr + length),
-                                 map_len,
-                                 NACL_ABI_PROT_NONE,
-                                 (NACL_ABI_MAP_ANONYMOUS
-                                  | NACL_ABI_MAP_PRIVATE
-                                  | NACL_ABI_MAP_FIXED),
-                                 (off_t) 0);
-    if (NaClPtrIsNegErrno(&map_result)) {
-      NaClLog(LOG_ERROR,
-              ("Could not create inaccessible pages for memory range"
-               " [0x%08"NACL_PRIxPTR", 0x%08"NACL_PRIxPTR")\n"),
-              sysaddr + length, sysaddr + start_of_inaccessible);
-      goto cleanup;
-    }
-    NaClCommonUtilUpdateAddrMap(nap, sysaddr + length, map_len,
-                                NaClProtMap(prot),
-                                (struct NaClDesc *) NULL, 0, (off_t) 0, 0);
-  }
-#endif
-  /* inaccessible: [start_of_inaccessible, alloc_rounded_length) */
-  if (start_of_inaccessible < alloc_rounded_length) {
-    size_t  map_len = alloc_rounded_length - start_of_inaccessible;
-    map_result = MunmapInternal(nap, sysaddr + start_of_inaccessible, map_len);
+  /* inaccessible: [length, alloc_rounded_length) */
+  if (length < alloc_rounded_length) {
+    /*
+     * On Unix, this maps regions C and D as inaccessible.  On
+     * Windows, it just maps region D; region C has already been made
+     * inaccessible.
+     */
+    size_t map_len = alloc_rounded_length - length;
+    map_result = MunmapInternal(nap, sysaddr + length, map_len);
     if (map_result != 0) {
       goto cleanup;
     }
