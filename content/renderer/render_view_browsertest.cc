@@ -160,6 +160,7 @@ TEST_F(RenderViewImplTest, DecideNavigationPolicyForWebUI) {
 // Ensure the RenderViewImpl sends an ACK to a SwapOut request, even if it is
 // already swapped out.  http://crbug.com/93427.
 TEST_F(RenderViewImplTest, SendSwapOutACK) {
+  LoadHTML("<div>Page A</div>");
   int initial_page_id = view()->GetPageId();
 
   // Respond to a swap out request.
@@ -192,6 +193,22 @@ TEST_F(RenderViewImplTest, SendSwapOutACK) {
   const IPC::Message* msg2 = render_thread_->sink().GetUniqueMessageMatching(
       ViewHostMsg_SwapOut_ACK::ID);
   ASSERT_TRUE(msg2);
+
+  // If we navigate back to this RenderView, ensure we don't send a state
+  // update for the swapped out URL.  (http://crbug.com/72235)
+  ViewMsg_Navigate_Params nav_params;
+  nav_params.url = GURL("data:text/html,<div>Page B</div>");
+  nav_params.navigation_type = ViewMsg_Navigate_Type::NORMAL;
+  nav_params.transition = content::PAGE_TRANSITION_TYPED;
+  nav_params.current_history_list_length = 1;
+  nav_params.current_history_list_offset = 0;
+  nav_params.pending_history_list_offset = 1;
+  nav_params.page_id = -1;
+  view()->OnNavigate(nav_params);
+  ProcessPendingMessages();
+  const IPC::Message* msg3 = render_thread_->sink().GetUniqueMessageMatching(
+      ViewHostMsg_UpdateState::ID);
+  EXPECT_FALSE(msg3);
 }
 
 // Test that we get the correct UpdateState message when we go back twice

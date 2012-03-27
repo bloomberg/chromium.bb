@@ -37,6 +37,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebFileSystem.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebConsoleMessage.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrameClient.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebHistoryItem.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIconURL.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNode.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPageSerializerClient.h"
@@ -739,6 +740,7 @@ class RenderViewImpl : public RenderWidget,
   void UpdateTitle(WebKit::WebFrame* frame, const string16& title,
                    WebKit::WebTextDirection title_direction);
   void UpdateSessionHistory(WebKit::WebFrame* frame);
+  void SendUpdateState(const WebKit::WebHistoryItem& item);
 
   // Update current main frame's encoding and send it to browser window.
   // Since we want to let users see the right encoding info from menu
