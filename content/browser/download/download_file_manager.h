@@ -195,7 +195,7 @@ class CONTENT_EXPORT DownloadFileManager
 
   // Schedule periodic updates of the download progress. This timer
   // is controlled from the FILE thread, and posts updates to the UI thread.
-  base::RepeatingTimer<DownloadFileManager> update_timer_;
+  scoped_ptr<base::RepeatingTimer<DownloadFileManager> > update_timer_;
 
   scoped_ptr<DownloadFileFactory> download_file_factory_;
 
