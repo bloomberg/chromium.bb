@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/memory/mru_cache.h"
 #include "base/memory/singleton.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
@@ -195,16 +196,27 @@ class NaClBrowser {
   // Path to IRT. Available even before IRT is loaded.
   const FilePath& GetIrtFilePath();
 
+  // Is the validation signature in the database?
+  bool QueryKnownToValidate(const std::string& signature);
+
+  // Put the validation signature in the database.
+  void SetKnownToValidate(const std::string& signature);
+
  private:
   base::PlatformFile irt_platform_file_;
 
   FilePath irt_filepath_;
 
+  typedef base::HashingMRUCache<std::string, bool> ValidationCacheType;
+  ValidationCacheType validation_cache_;
+
   friend struct DefaultSingletonTraits<NaClBrowser>;
 
   NaClBrowser()
       : irt_platform_file_(base::kInvalidPlatformFileValue),
-        irt_filepath_() {
+        irt_filepath_(),
+        // For the moment, choose an arbitrary cache size.
+        validation_cache_(200) {
     InitIrtFilePath();
   }
 
@@ -843,7 +855,42 @@ void NaClProcessHost::SendStart(base::PlatformFile irt_file) {
   internal_->sockets_for_sel_ldr.clear();
 }
 
+bool NaClBrowser::QueryKnownToValidate(const std::string& signature) {
+  ValidationCacheType::iterator iter = validation_cache_.Get(signature);
+  if (iter == validation_cache_.end()) {
+    // Not found.
+    return false;
+  } else {
+    return iter->second;
+  }
+}
+
+void NaClBrowser::SetKnownToValidate(const std::string& signature) {
+  validation_cache_.Put(signature, true);
+}
+
+void NaClProcessHost::OnQueryKnownToValidate(const std::string& signature,
+                                             bool* result) {
+  *result = NaClBrowser::GetInstance()->QueryKnownToValidate(signature);
+}
+
+void NaClProcessHost::OnSetKnownToValidate(const std::string& signature) {
+  NaClBrowser::GetInstance()->SetKnownToValidate(signature);
+}
+
+// Needed to handle sync messages in OnMessageRecieved.
+bool NaClProcessHost::Send(IPC::Message* msg) {
+  return process_->Send(msg);
+}
+
 bool NaClProcessHost::OnMessageReceived(const IPC::Message& msg) {
-  NOTREACHED() << "Invalid message with type = " << msg.type();
-  return false;
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(NaClProcessHost, msg)
+    IPC_MESSAGE_HANDLER(NaClProcessMsg_QueryKnownToValidate,
+                        OnQueryKnownToValidate)
+    IPC_MESSAGE_HANDLER(NaClProcessMsg_SetKnownToValidate,
+                        OnSetKnownToValidate)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;
 }

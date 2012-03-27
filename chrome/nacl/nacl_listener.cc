@@ -5,13 +5,17 @@
 #include "chrome/nacl/nacl_listener.h"
 
 #include <errno.h>
+#include <stdlib.h>
 
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "chrome/common/nacl_messages.h"
-#include "ipc/ipc_channel.h"
+#include "chrome/nacl/nacl_validation_db.h"
+#include "chrome/nacl/nacl_validation_query.h"
+#include "ipc/ipc_sync_channel.h"
+#include "ipc/ipc_sync_message_filter.h"
 #include "ipc/ipc_switches.h"
 #include "native_client/src/trusted/service_runtime/sel_main_chrome.h"
 
@@ -64,19 +68,85 @@ int CreateMemoryObject(size_t size, int executable) {
 }
 
 #endif
+
+// Use an env var because command line args are eaten by nacl_helper.
+bool CheckEnvVar(const char* name, bool default_value) {
+  bool result = default_value;
+  const char* var = getenv(name);
+  if (var && strlen(var) > 0) {
+    result = var[0] != '0';
+  }
+  return result;
+}
+
 }  // namespace
 
-NaClListener::NaClListener() : debug_enabled_(false) {}
+class BrowserValidationDBProxy : public NaClValidationDB {
+ public:
+  explicit BrowserValidationDBProxy(NaClListener* listener)
+      : listener_(listener) {
+  }
 
-NaClListener::~NaClListener() {}
+  bool QueryKnownToValidate(const std::string& signature) {
+    // Initialize to false so that if the Send fails to write to the return
+    // value we're safe.  For example if the message is (for some reason)
+    // dispatched as an async message the return parameter will not be written.
+    bool result = false;
+    if (!listener_->Send(new NaClProcessMsg_QueryKnownToValidate(signature,
+                                                                 &result))) {
+      LOG(ERROR) << "Failed to query NaCl validation cache.";
+      result = false;
+    }
+    return result;
+  }
+
+  void SetKnownToValidate(const std::string& signature) {
+    // Caching is optional: NaCl will still work correctly if the IPC fails.
+    if (!listener_->Send(new NaClProcessMsg_SetKnownToValidate(signature))) {
+      LOG(ERROR) << "Failed to update NaCl validation cache.";
+    }
+  }
+
+ private:
+  // The listener never dies, otherwise this might be a dangling reference.
+  NaClListener* listener_;
+};
+
+
+NaClListener::NaClListener() : shutdown_event_(true, false),
+                               io_thread_("NaCl_IOThread"),
+                               main_loop_(NULL),
+                               debug_enabled_(false) {
+  io_thread_.StartWithOptions(base::Thread::Options(MessageLoop::TYPE_IO, 0));
+}
+
+NaClListener::~NaClListener() {
+  NOTREACHED();
+  shutdown_event_.Signal();
+}
+
+bool NaClListener::Send(IPC::Message* msg) {
+  DCHECK(main_loop_ != NULL);
+  if (MessageLoop::current() == main_loop_) {
+    // This thread owns the channel.
+    return channel_->Send(msg);
+  } else {
+    // This thread does not own the channel.
+    return filter_->Send(msg);
+  }
+}
 
 void NaClListener::Listen() {
   std::string channel_name =
       CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kProcessChannelID);
-  IPC::Channel channel(channel_name, IPC::Channel::MODE_CLIENT, this);
-  CHECK(channel.Connect());
-  MessageLoop::current()->Run();
+  channel_.reset(new IPC::SyncChannel(this, io_thread_.message_loop_proxy(),
+                                      &shutdown_event_));
+  filter_.reset(new IPC::SyncMessageFilter(&shutdown_event_));
+  channel_->AddFilter(filter_.get());
+  channel_->Init(channel_name, IPC::Channel::MODE_CLIENT, true);
+  main_loop_ = MessageLoop::current();
+  main_loop_->Run();
 }
 
 bool NaClListener::OnMessageReceived(const IPC::Message& msg) {
@@ -119,6 +189,15 @@ void NaClListener::OnStartSelLdr(std::vector<nacl::FileDescriptor> handles,
 #else
   args->irt_fd = irt_handle;
 #endif
+
+  if (CheckEnvVar("NACL_VALIDATION_CACHE", false)) {
+    LOG(INFO) << "NaCl validation cache enabled.";
+    // The cache structure is not freed and exists until the NaCl process exits.
+    args->validation_cache = CreateValidationCache(
+        new BrowserValidationDBProxy(this),
+        // TODO(ncbray) plumb through real keys and versions.
+        "bogus key for HMAC....", "bogus version");
+  }
 
   CHECK(handles.size() == 1);
   args->imc_bootstrap_handle = nacl::ToNativeHandle(handles[0]);
