@@ -48,9 +48,9 @@ class PropertyDelegate;
 class Property {
  public:
   Property(PropRegistry* parent, const char* name)
-      : parent_(parent), delegate_(NULL), name_(name) {}
+      : gprop_(NULL), parent_(parent), delegate_(NULL), name_(name) {}
   Property(PropRegistry* parent, const char* name, PropertyDelegate* delegate)
-      : parent_(parent), delegate_(delegate), name_(name) {}
+      : gprop_(NULL), parent_(parent), delegate_(delegate), name_(name) {}
 
   virtual ~Property() {
     if (parent_)
