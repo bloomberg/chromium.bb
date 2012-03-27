@@ -53,7 +53,7 @@
           {
             "type": "function",
             "name": "callback",
-            "optional": "true",
+            "optional": true,
             "parameters": [
               {
                 "name": "details",
@@ -103,7 +103,7 @@
           {
             "type": "function",
             "name": "callback",
-            "optional": "true",
+            "optional": true,
             "parameters": []
           }
         ]
@@ -134,12 +134,13 @@
           {
             "name": "details",
             "type": "object",
+            "optional": true,
             "description": "This parameter is currently unused."
           },
           {
             "name": "callback",
             "type": "function",
-            "optional": "true",
+            "optional": true,
             "parameters": [
               {
                 "name": "details",
@@ -173,7 +174,113 @@
           {
             "type": "function",
             "name": "callback",
-            "optional": "true",
+            "optional": true,
+            "parameters": []
+          }
+        ]
+      },
+      {
+        "name": "getDefaultFixedFontSize",
+        "type": "function",
+        "description": "Gets the default size for fixed width fonts.",
+        "parameters": [
+          {
+            "name": "details",
+            "type": "object",
+            "optional": true,
+            "description": "This parameter is currently unused."
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": true,
+            "parameters": [
+              {
+                "name": "details",
+                "type": "object",
+                "properties": {
+                  "pixelSize": {
+                    "type": "integer",
+                    "description": "The font size in pixels."
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "setDefaultFixedFontSize",
+        "type": "function",
+        "description": "Sets the default size for fixed width fonts.",
+        "parameters": [
+          {
+            "name": "details",
+            "type": "object",
+            "properties": {
+              "pixelSize": {
+                "type": "integer",
+                "description": "The font size in pixels."
+              }
+            }
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "parameters": []
+          }
+        ]
+      },
+      {
+        "name": "getMinimumFontSize",
+        "type": "function",
+        "description": "Gets the minimum font size.",
+        "parameters": [
+          {
+            "name": "details",
+            "type": "object",
+            "optional": true,
+            "description": "This parameter is currently unused."
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": true,
+            "parameters": [
+              {
+                "name": "details",
+                "type": "object",
+                "properties": {
+                  "pixelSize": {
+                    "type": "integer",
+                    "description": "The font size in pixels."
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "setMinimumFontSize",
+        "type": "function",
+        "description": "Sets the minimum font size.",
+        "parameters": [
+          {
+            "name": "details",
+            "type": "object",
+            "properties": {
+              "pixelSize": {
+                "type": "integer",
+                "description": "The font size in pixels."
+              }
+            }
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
             "parameters": []
           }
         ]

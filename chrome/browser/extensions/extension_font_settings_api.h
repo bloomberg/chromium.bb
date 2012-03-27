@@ -30,18 +30,76 @@ class GetFontListFunction : public AsyncExtensionFunction {
   bool CopyFontsToResult(base::ListValue* fonts);
 };
 
-class GetDefaultFontSizeFunction : public SyncExtensionFunction {
- public:
+// Base class for functions that get a font size.
+class GetFontSizeExtensionFunction : public SyncExtensionFunction {
+ protected:
   virtual bool RunImpl() OVERRIDE;
-  DECLARE_EXTENSION_FUNCTION_NAME(
-      "experimental.fontSettings.getDefaultFontSize")
+
+  // Implementations should return the name of the font size preference to get.
+  virtual const char* GetPrefName() = 0;
 };
 
-class SetDefaultFontSizeFunction : public SyncExtensionFunction {
- public:
+// Base class for functions that set a font size.
+class SetFontSizeExtensionFunction : public SyncExtensionFunction {
+ protected:
   virtual bool RunImpl() OVERRIDE;
+
+  // Implementations should return the name of the font size preference to set.
+  virtual const char* GetPrefName() = 0;
+};
+
+class GetDefaultFontSizeFunction : public GetFontSizeExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION_NAME(
+      "experimental.fontSettings.getDefaultFontSize")
+
+ protected:
+  virtual const char* GetPrefName() OVERRIDE;
+};
+
+class SetDefaultFontSizeFunction : public SetFontSizeExtensionFunction {
+ public:
   DECLARE_EXTENSION_FUNCTION_NAME(
       "experimental.fontSettings.setDefaultFontSize")
+
+ protected:
+  virtual const char* GetPrefName() OVERRIDE;
+};
+
+class GetDefaultFixedFontSizeFunction : public GetFontSizeExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION_NAME(
+      "experimental.fontSettings.getDefaultFixedFontSize")
+
+ protected:
+  virtual const char* GetPrefName() OVERRIDE;
+};
+
+class SetDefaultFixedFontSizeFunction : public SetFontSizeExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION_NAME(
+      "experimental.fontSettings.setDefaultFixedFontSize")
+
+ protected:
+  virtual const char* GetPrefName() OVERRIDE;
+};
+
+class GetMinimumFontSizeFunction : public GetFontSizeExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION_NAME(
+      "experimental.fontSettings.getMinimumFontSize")
+
+ protected:
+  virtual const char* GetPrefName() OVERRIDE;
+};
+
+class SetMinimumFontSizeFunction : public SetFontSizeExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION_NAME(
+      "experimental.fontSettings.setMinimumFontSize")
+
+ protected:
+  virtual const char* GetPrefName() OVERRIDE;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_FONT_SETTINGS_API_H__

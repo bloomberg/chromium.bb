@@ -142,9 +142,9 @@ bool GetFontListFunction::CopyFontsToResult(ListValue* fonts) {
   return true;
 }
 
-bool GetDefaultFontSizeFunction::RunImpl() {
+bool GetFontSizeExtensionFunction::RunImpl() {
   PrefService* prefs = profile_->GetPrefs();
-  int size = prefs->GetInteger(prefs::kWebKitGlobalDefaultFontSize);
+  int size = prefs->GetInteger(GetPrefName());
 
   DictionaryValue* result = new DictionaryValue();
   result->SetInteger(kPixelSizeKey, size);
@@ -152,7 +152,7 @@ bool GetDefaultFontSizeFunction::RunImpl() {
   return true;
 }
 
-bool SetDefaultFontSizeFunction::RunImpl() {
+bool SetFontSizeExtensionFunction::RunImpl() {
   DictionaryValue* details = NULL;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &details));
 
@@ -161,8 +161,32 @@ bool SetDefaultFontSizeFunction::RunImpl() {
 
   ExtensionPrefs* prefs = profile_->GetExtensionService()->extension_prefs();
   prefs->SetExtensionControlledPref(extension_id(),
-                                    prefs::kWebKitGlobalDefaultFontSize,
+                                    GetPrefName(),
                                     kExtensionPrefsScopeRegular,
                                     Value::CreateIntegerValue(size));
   return true;
+}
+
+const char* GetDefaultFontSizeFunction::GetPrefName() {
+  return prefs::kWebKitGlobalDefaultFontSize;
+}
+
+const char* SetDefaultFontSizeFunction::GetPrefName() {
+  return prefs::kWebKitGlobalDefaultFontSize;
+}
+
+const char* GetDefaultFixedFontSizeFunction::GetPrefName() {
+  return prefs::kWebKitGlobalDefaultFixedFontSize;
+}
+
+const char* SetDefaultFixedFontSizeFunction::GetPrefName() {
+  return prefs::kWebKitGlobalDefaultFixedFontSize;
+}
+
+const char* GetMinimumFontSizeFunction::GetPrefName() {
+  return prefs::kWebKitGlobalMinimumFontSize;
+}
+
+const char* SetMinimumFontSizeFunction::GetPrefName() {
+  return prefs::kWebKitGlobalMinimumFontSize;
 }
