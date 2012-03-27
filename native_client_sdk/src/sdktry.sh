@@ -11,6 +11,7 @@ gcl try $* \
   -b naclsdkm-linux \
   -b naclsdkm-linux \
   -b naclsdkm-pnacl-linux \
+  -b naclsdkm-pnacl-mac \
   -b naclsdkm-windows32 \
   -b naclsdkm-windows64 \
   -S svn://svn.chromium.org/chrome-try/try-nacl

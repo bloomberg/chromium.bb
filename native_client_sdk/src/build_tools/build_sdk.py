@@ -15,6 +15,7 @@ BUILDBOT_BUILDERNAME to determine whether the script is run locally
 and whether it should upload an SDK to file storage (GSTORE)
 """
 
+
 # std python includes
 import optparse
 import os
@@ -92,7 +93,7 @@ def GetNewlibToolchain(platform, arch):
 def GetPNaClToolchain(platform, arch):
   tcdir = os.path.join(NACL_DIR, 'toolchain', '.tars')
   if arch == 'x86':
-    tcname = 'naclsdk_pnacl_%s_%s_64.tgz' % (platform, arch)
+    tcname = 'naclsdk_pnacl_%s_%s_32.tgz' % (platform, arch)
   else:
     buildbot_common.ErrorExit('Unknown architecture.')
   return os.path.join(tcdir, tcname)
