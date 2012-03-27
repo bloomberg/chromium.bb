@@ -102,6 +102,9 @@ class ASH_EXPORT LauncherView : public views::View,
   // Invoked when the mouse is dragged. Updates the models as appropriate.
   void ContinueDrag(const views::MouseEvent& event);
 
+  // Returns true if |typea| and |typeb| should be in the same drag range.
+  bool SameDragType(LauncherItemType typea, LauncherItemType typeb) const;
+
   // Returns the range (in the model) the item at the specified index can be
   // dragged to.
   std::pair<int,int> GetDragRange(int index);

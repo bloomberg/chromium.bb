@@ -485,12 +485,27 @@ void LauncherView::ContinueDrag(const views::MouseEvent& event) {
   bounds_animator_->StopAnimatingView(drag_view_);
 }
 
+bool LauncherView::SameDragType(LauncherItemType typea,
+                                LauncherItemType typeb) const {
+  switch(typea) {
+    case TYPE_TABBED:
+    case TYPE_APP_PANEL:
+      return (typeb == TYPE_TABBED || typeb == TYPE_APP_PANEL);
+    case TYPE_APP_SHORTCUT:
+    case TYPE_APP_LIST:
+    case TYPE_BROWSER_SHORTCUT:
+      return typeb == typea;
+  }
+  NOTREACHED();
+  return false;
+}
+
 std::pair<int,int> LauncherView::GetDragRange(int index) {
   int min_index = -1;
   int max_index = -1;
   LauncherItemType type = model_->items()[index].type;
   for (int i = 0; i < model_->item_count(); ++i) {
-    if (type == model_->items()[i].type) {
+    if (SameDragType(model_->items()[i].type, type)) {
       if (min_index == -1)
         min_index = i;
       max_index = i;
