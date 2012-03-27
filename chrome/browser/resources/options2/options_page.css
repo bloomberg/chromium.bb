@@ -43,8 +43,7 @@ div.disabled {
 
 .settings-row {
   display: block;
-  margin-bottom: 0.45em;
-  margin-top: 0.45em;
+  margin: 0.65em 0;
 }
 
 .hbox {
