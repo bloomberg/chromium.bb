@@ -54,22 +54,11 @@ var cr = (function() {
   var isTouchOptimized = !!chrome.touchOptimized;
 
   /**
-   * Sets the os and toolkit attributes in the <html> element so that platform
-   * specific css rules can be applied.
+   * Tags the html element with an attribute that allows touch-specific css
+   * rules.
+   * TODO(rbyers): make Chrome always touch-optimized. http://crbug.com/105380
    */
-  function enablePlatformSpecificCSSRules() {
-    if (isMac)
-      doc.documentElement.setAttribute('os', 'mac');
-    if (isWindows)
-      doc.documentElement.setAttribute('os', 'windows');
-    if (isChromeOS)
-      doc.documentElement.setAttribute('os', 'chromeos');
-    if (isLinux)
-      doc.documentElement.setAttribute('os', 'linux');
-    if (isGTK)
-      doc.documentElement.setAttribute('toolkit', 'gtk');
-    if (isViews)
-      doc.documentElement.setAttribute('toolkit', 'views');
+  function enableTouchOptimizedCss() {
     if (isTouchOptimized)
       doc.documentElement.setAttribute('touch-optimized', '');
   }
@@ -397,7 +386,7 @@ var cr = (function() {
     isLinux: isLinux,
     isViews: isViews,
     isTouchOptimized: isTouchOptimized,
-    enablePlatformSpecificCSSRules: enablePlatformSpecificCSSRules,
+    enableTouchOptimizedCss: enableTouchOptimizedCss,
     define: define,
     defineProperty: defineProperty,
     PropertyKind: PropertyKind,
@@ -417,3 +406,5 @@ var cr = (function() {
     Event: CrEvent
   };
 })();
+
+cr.enableTouchOptimizedCss();

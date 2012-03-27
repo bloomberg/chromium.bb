@@ -97,8 +97,6 @@ cr.define('ntp', function() {
    * Invoked at startup once the DOM is available to initialize the app.
    */
   function onLoad() {
-    cr.enablePlatformSpecificCSSRules();
-
     sectionsToWaitFor = templateData.showApps ? 2 : 1;
     measureNavDots();
 

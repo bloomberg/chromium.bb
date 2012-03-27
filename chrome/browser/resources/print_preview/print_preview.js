@@ -143,7 +143,6 @@ var customEvents = {
  * the printer list.
  */
 function onLoad() {
-  cr.enablePlatformSpecificCSSRules();
   initialPreviewRequestID = randomInteger(MIN_REQUEST_ID, MAX_REQUEST_ID);
   lastPreviewRequestID = initialPreviewRequestID;
 

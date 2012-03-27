@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/command_line.h"
 #include "base/memory/singleton.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/io_thread.h"
@@ -18,6 +19,7 @@
 #include "grit/ui_resources.h"
 #include "net/base/mime_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/ui_base_switches.h"
 
 namespace {
 
@@ -45,6 +47,12 @@ int PathToIDR(const std::string& path) {
         break;
       }
     }
+
+    if (idr == IDR_SHARED_CSS_CHROME2 &&
+        CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kTouchOptimizedUI)) {
+      idr = IDR_SHARED_CSS_CHROME2_TOUCH;
+    }
   }
 
   return idr;
@@ -66,6 +74,7 @@ void SharedResourcesDataSource::StartDataRequest(const std::string& path,
   DCHECK_NE(-1, idr) << " path: " << path;
   const ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   scoped_refptr<RefCountedStaticMemory> bytes(rb.LoadDataResourceBytes(idr));
+
   SendResponse(request_id, bytes);
 }
 

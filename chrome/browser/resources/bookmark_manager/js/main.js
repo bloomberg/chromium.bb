@@ -17,8 +17,6 @@ const Promise = cr.Promise;
 if (!chrome.bookmarks)
   console.error('Bookmarks extension API is not available');
 
-cr.enablePlatformSpecificCSSRules();
-
 /**
  * The local strings object which is used to do the translation.
  * @type {!LocalStrings}

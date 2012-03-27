@@ -139,7 +139,6 @@ void PrintPreviewDataSource::Init(bool is_dummy) {
 
   set_json_path("strings.js");
   if (is_dummy) {
-    add_resource_path("print_preview_dummy.js", IDR_PRINT_PREVIEW_DUMMY_JS);
     set_default_resource(IDR_PRINT_PREVIEW_DUMMY_HTML);
   } else {
     add_resource_path("print_preview.js", IDR_PRINT_PREVIEW_JS);

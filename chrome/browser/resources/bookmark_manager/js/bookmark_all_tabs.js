@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,8 +13,6 @@ const NEWFOLDER_SELECTION_DELAY = 50;
 // Sometimes the extension API is not initialized.
 if (!chrome.bookmarks)
   console.error('Bookmarks extension API is not available');
-
-cr.enablePlatformSpecificCSSRules();
 
 /**
  * The local strings object which is used to do the translation.

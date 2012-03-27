@@ -30,7 +30,6 @@ cr.define('extensions', function() {
      * Perform initial setup.
      */
     initialize: function() {
-      cr.enablePlatformSpecificCSSRules();
       uber.onContentFrameLoaded();
 
       // Set the title.

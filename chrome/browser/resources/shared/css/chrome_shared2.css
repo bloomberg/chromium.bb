@@ -60,19 +60,6 @@ a:active {
   color: rgb(5, 37, 119);
 }
 
-/*
- * Add padding to increase the touchable area of search box. Use original font
- * size to avoid the width of search box exceeding the width of navbar.
- */
-html[touch-optimized] input[type='search'] {
-  font-size: 13px;
-  padding: 5px;
-}
-
-html[touch-optimized] input[type='search']::-webkit-search-cancel-button {
-  -webkit-transform: scale(1.5);
-}
-
 /* Elements that need to be LTR even in an RTL context, but should align
  * right. (Namely, URLs, search engine names, etc.)
  */

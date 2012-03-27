@@ -214,9 +214,6 @@ function load() {
     };
   }
 
-  // Allow platform specific CSS rules.
-  cr.enablePlatformSpecificCSSRules();
-
   if (navigator.plugins['Shockwave Flash'])
     document.documentElement.setAttribute('hasFlashPlugin', '');
 

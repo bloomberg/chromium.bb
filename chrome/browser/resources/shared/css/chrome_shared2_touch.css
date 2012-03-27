@@ -1,0 +1,17 @@
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+/* NB: do not include this file directly. Include chrome_shared2.css. If touch
+ * optimization is enabled, these rules will be automatically loaded by the
+ * SharedResourceDataSource. */
+
+<include src="chrome_shared2.css">
+
+html input[type='search'] {
+  font-size: 1.1em;
+}
+
+input[type='search']::-webkit-search-cancel-button {
+  -webkit-transform: scale(1.5);
+}
