@@ -86,7 +86,7 @@ case ${BUILD_OS}-${BUILD_ARCH} in
     RUN_TESTS="x86-32 x86-32-browser"
     ;;
   win-64)
-    TOOLCHAIN_LABEL=pnacl_win_x86_64
+    TOOLCHAIN_LABEL=pnacl_win_x86_32
     BUILD_32BIT_PLUGIN=true
     RUN_TESTS="x86-64 x86-64-browser"
     ;;

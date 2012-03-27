@@ -3749,8 +3749,11 @@ show-config() {
   echo "PNACL_DEBUG:       ${PNACL_DEBUG}"
   echo "PNACL_PRUNE:       ${PNACL_PRUNE}"
   echo "PNACL_VERBOSE:     ${PNACL_VERBOSE}"
+  echo "INSTALL_ROOT:      ${INSTALL_ROOT}"
   Banner "Your Environment:"
   env | grep PNACL
+  Banner "uname info for builder:"
+  uname -a
 }
 
 #@ help                  - Usage information.

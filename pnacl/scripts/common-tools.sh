@@ -59,9 +59,12 @@ if [ "${BUILD_PLATFORM}" == "linux" ] ; then
   SO_EXT=.so
   SO_DIR=lib
 elif [[ "${BUILD_PLATFORM}" =~ cygwin_nt ]]; then
-  BUILD_PLATFORM=windows
+  BUILD_PLATFORM=win
   BUILD_PLATFORM_WIN=true
   SCONS_BUILD_PLATFORM=win
+  # force 32 bit host because build is also 32 bit on windows.
+  HOST_ARCH=${HOST_ARCH:-x86_32}
+  BUILD_ARCH=${BUILD_ARCH:-x86_32}
   SO_PREFIX=cyg
   SO_EXT=.dll
   SO_DIR=bin  # On Windows, DLLs are placed in bin/
@@ -71,7 +74,8 @@ elif [ "${BUILD_PLATFORM}" == "darwin" ] ; then
   BUILD_PLATFORM_MAC=true
   SCONS_BUILD_PLATFORM=mac
   # force 32 bit host because build is also 32 bit on mac (no 64bit nacl)
-  HOST_ARCH=${HOST_ARCH:-i386}
+  HOST_ARCH=${HOST_ARCH:-x86_32}
+  BUILD_ARCH=${BUILD_ARCH:-x86_32}
   SO_PREFIX=lib
   SO_EXT=.dylib
   SO_DIR=lib
@@ -93,7 +97,8 @@ BUILD_ARCH=$(uname -m)
 BUILD_ARCH_X8632=false
 BUILD_ARCH_X8664=false
 BUILD_ARCH_ARM=false
-if [ "${BUILD_ARCH}" == "i386" ] ||
+if [ "${BUILD_ARCH}" == "x86_32" ] ||
+   [ "${BUILD_ARCH}" == "i386" ] ||
    [ "${BUILD_ARCH}" == "i686" ] ; then
   BUILD_ARCH=x86_32
   BUILD_ARCH_X8632=true
