@@ -1,4 +1,4 @@
-# Copyright (c) 2011 Google Inc. All rights reserved.
+# Copyright (c) 2012 Google Inc. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -513,7 +513,7 @@ def InstalledXcodeVersion():
   return cached_xcode_version
 
 
-def AddSourceToTarget(source, pbxp, xct):
+def AddSourceToTarget(source, type, pbxp, xct):
   # TODO(mark): Perhaps source_extensions and library_extensions can be made a
   # little bit fancier.
   source_extensions = ['c', 'cc', 'cpp', 'cxx', 'm', 'mm', 's']
@@ -529,9 +529,9 @@ def AddSourceToTarget(source, pbxp, xct):
   if ext != '':
     ext = ext[1:].lower()
 
-  if ext in source_extensions:
+  if ext in source_extensions and type != 'none':
     xct.SourcesPhase().AddFile(source)
-  elif ext in library_extensions:
+  elif ext in library_extensions and type != 'none':
     xct.FrameworksPhase().AddFile(source)
   else:
     # Files that aren't added to a sources or frameworks build phase can still
@@ -772,7 +772,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
       # TODO(mark): Should verify that at most one of these is specified.
       if int(action.get('process_outputs_as_sources', False)):
         for output in action['outputs']:
-          AddSourceToTarget(output, pbxp, xct)
+          AddSourceToTarget(output, type, pbxp, xct)
 
       if int(action.get('process_outputs_as_mac_bundle_resources', False)):
         for output in action['outputs']:
@@ -900,7 +900,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
         # TODO(mark): Should verify that at most one of these is specified.
         if int(rule.get('process_outputs_as_sources', False)):
           for output in concrete_outputs_for_this_rule_source:
-            AddSourceToTarget(output, pbxp, xct)
+            AddSourceToTarget(output, type, pbxp, xct)
 
         # If the file came from the mac_bundle_resources list or if the rule
         # is marked to process outputs as bundle resource, do so.
@@ -1064,7 +1064,7 @@ exit 1
       if source_extension[1:] not in rules_by_ext:
         # AddSourceToTarget will add the file to a root group if it's not
         # already there.
-        AddSourceToTarget(source, pbxp, xct)
+        AddSourceToTarget(source, type, pbxp, xct)
       else:
         pbxp.AddOrGetFileInRootGroup(source)
 
