@@ -35,7 +35,6 @@ const int kUserInfoVerticalPadding = 10;
 const int kUserInfoPaddingBetweenItems = 3;
 
 const int kUserIconSize = 27;
-const int kUserIconCornerRadius = 2;
 
 const SkColor kButtonStrokeColor = SkColorSetRGB(0xdd, 0xdd, 0xdd);
 
@@ -359,7 +358,7 @@ TrayUser::~TrayUser() {
 }
 
 views::View* TrayUser::CreateTrayView(user::LoginStatus status) {
-  avatar_.reset(new tray::RoundedImageView(kUserIconCornerRadius));
+  avatar_.reset(new tray::RoundedImageView(kTrayRoundedBorderRadius));
   if (status != user::LOGGED_IN_NONE && status != user::LOGGED_IN_KIOSK &&
       status != user::LOGGED_IN_GUEST) {
     avatar_->SetImage(

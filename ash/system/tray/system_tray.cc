@@ -41,7 +41,7 @@ namespace ash {
 
 namespace {
 
-const int kPaddingFromRightEdgeOfScreen = 10;
+const int kPaddingFromRightEdgeOfScreen = 16;
 const int kPaddingFromBottomOfScreen = 10;
 
 const int kAnimationDurationForPopupMS = 200;
@@ -269,7 +269,7 @@ class SystemTrayBackground : public views::Background {
     paint.setColor(SkColorSetARGB(alpha_, 0, 0, 0));
     SkPath path;
     gfx::Rect bounds(view->bounds());
-    SkScalar radius = SkIntToScalar(4);
+    SkScalar radius = SkIntToScalar(kTrayRoundedBorderRadius);
     path.addRoundRect(gfx::RectToSkRect(bounds), radius, radius);
     canvas->sk_canvas()->drawPath(path, paint);
   }
