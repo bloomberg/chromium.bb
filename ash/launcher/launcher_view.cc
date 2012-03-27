@@ -615,6 +615,14 @@ void LauncherView::LauncherItemAdded(int model_index) {
   view->SetVisible(false);
   view_model_->Add(view, model_index);
 
+  // Give the button it's ideal bounds. That way if we end up animating the
+  // button before this animation completes it doesn't appear at some random
+  // spot (because it was in the middle of animating from 0,0 0x0 to its
+  // target).
+  IdealBounds ideal_bounds;
+  CalculateIdealBounds(&ideal_bounds);
+  view->SetBoundsRect(view_model_->ideal_bounds(model_index));
+
   // The first animation moves all the views to their target position. |view| is
   // hidden, so it visually appears as though we are providing space for
   // it. When done we'll fade the view in.
