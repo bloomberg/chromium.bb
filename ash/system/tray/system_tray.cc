@@ -611,6 +611,12 @@ void SystemTray::AboutToRequestFocusFromTabTraversal(bool reverse) {
     v->GetWidget()->Activate();
 }
 
+void SystemTray::GetAccessibleState(ui::AccessibleViewState* state) {
+  state->role = ui::AccessibilityTypes::ROLE_PUSHBUTTON;
+  state->name = l10n_util::GetStringUTF16(
+      IDS_ASH_STATUS_TRAY_ACCESSIBLE_NAME);
+}
+
 void SystemTray::OnPaintFocusBorder(gfx::Canvas* canvas) {
   if (GetWidget() && GetWidget()->IsActive())
     views::View::OnPaintFocusBorder(canvas);
