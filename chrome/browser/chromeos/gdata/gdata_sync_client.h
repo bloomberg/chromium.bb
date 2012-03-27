@@ -67,11 +67,6 @@ class GDataSyncClient : public GDataSyncClientInterface {
   // once the initial scan is complete.
   void StartInitialScan(const base::Closure& closure);
 
-  // Runs the fetch loop that fetches files in |queue_|. One file is fetched
-  // at a time, rather than in parallel. The loop ends when the queue becomes
-  // empty.
-  void DoFetchLoop();
-
   // Returns the contents of |queue_|. Used only for testing.
   const std::deque<std::string>& GetResourceIdsForTesting() const {
     return queue_;
@@ -82,7 +77,15 @@ class GDataSyncClient : public GDataSyncClientInterface {
     queue_.push_back(resource_id);
   }
 
+  // Starts the fetch loop if it's not running.
+  void StartFetchLoop();
+
  private:
+  // Runs the fetch loop that fetches files in |queue_|. One file is fetched
+  // at a time, rather than in parallel. The loop ends when the queue becomes
+  // empty.
+  void DoFetchLoop();
+
   // Called when the initial scan is complete. Receives the resource IDs of
   // pinned-but-not-fetched files as |resource_ids|. |closure| is run at the
   // end.
@@ -97,13 +100,15 @@ class GDataSyncClient : public GDataSyncClientInterface {
                            const std::string& ununsed_mime_type,
                            GDataFileType file_type);
 
-
   GDataFileSystemInterface* file_system_;
 
   // The queue of resource IDs used to fetch pinned-but-not-fetched files in
   // the background thread. Note that this class does not use a lock to
   // protect |queue_| as all methods touching |queue_| run on the UI thread.
   std::deque<std::string> queue_;
+
+  // True if the fetch loop is running.
+  bool fetch_loop_is_running_;
 
   base::WeakPtrFactory<GDataSyncClient> weak_ptr_factory_;
 

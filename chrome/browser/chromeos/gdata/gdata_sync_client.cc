@@ -67,6 +67,7 @@ void ScanPinnedDirectory(const FilePath& directory,
 
 GDataSyncClient::GDataSyncClient(GDataFileSystemInterface* file_system)
     : file_system_(file_system),
+      fetch_loop_is_running_(false),
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
@@ -102,11 +103,19 @@ void GDataSyncClient::StartInitialScan(const base::Closure& closure) {
   DCHECK(posted);
 }
 
+void GDataSyncClient::StartFetchLoop() {
+  if (!fetch_loop_is_running_)
+    DoFetchLoop();
+}
+
 void GDataSyncClient::DoFetchLoop() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (queue_.empty())
+  if (queue_.empty()) {
+    fetch_loop_is_running_ = false;
     return;
+  }
+  fetch_loop_is_running_ = true;
 
   const std::string resource_id = queue_.front();
   queue_.pop_front();
@@ -122,7 +131,8 @@ void GDataSyncClient::DoFetchLoop() {
 void GDataSyncClient::OnCacheInitialized() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  StartInitialScan(base::Bind(&GDataSyncClient::DoFetchLoop,
+  // Start the initial scan. Once it's complete, start the fetch loop.
+  StartInitialScan(base::Bind(&GDataSyncClient::StartFetchLoop,
                               weak_ptr_factory_.GetWeakPtr()));
 }
 
@@ -132,7 +142,7 @@ void GDataSyncClient::OnFilePinned(const std::string& resource_id,
 
   // Add it to the queue, kick off the loop.
   queue_.push_back(resource_id);
-  DoFetchLoop();
+  StartFetchLoop();
 }
 
 void GDataSyncClient::OnFileUnpinned(const std::string& resource_id,
@@ -176,6 +186,7 @@ void GDataSyncClient::OnFetchFileComplete(const std::string& resource_id,
     LOG(WARNING) << "Failed to fetch " << resource_id;
   }
 
+  // Continue the loop.
   DoFetchLoop();
 }
 

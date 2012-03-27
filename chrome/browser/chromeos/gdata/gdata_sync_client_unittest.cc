@@ -117,7 +117,7 @@ TEST_F(GDataSyncClientTest, StartInitialScan) {
   // resource_id_fetched is not collected in the queue.
 }
 
-TEST_F(GDataSyncClientTest, DoFetchLoop) {
+TEST_F(GDataSyncClientTest, StartFetchLoop) {
   SetUpTestFiles();
 
   sync_client_->AddResourceIdForTesting("resource_id_not_fetched_foo");
@@ -125,7 +125,7 @@ TEST_F(GDataSyncClientTest, DoFetchLoop) {
   sync_client_->AddResourceIdForTesting("resource_id_not_fetched_baz");
 
   // The three files will be fetched by GetFileForResourceId(), once
-  // DoFetchLoop() starts.
+  // StartFetchLoop() starts.
   EXPECT_CALL(*mock_file_system_,
               GetFileForResourceId("resource_id_not_fetched_foo", _))
       .WillOnce(MockGetFileForResourceId(
@@ -148,7 +148,7 @@ TEST_F(GDataSyncClientTest, DoFetchLoop) {
           std::string("mime_type_does_not_matter"),
           REGULAR_FILE));
 
-  sync_client_->DoFetchLoop();
+  sync_client_->StartFetchLoop();
 }
 
 TEST_F(GDataSyncClientTest, OnFilePinned) {
