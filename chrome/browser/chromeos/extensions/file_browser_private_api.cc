@@ -373,6 +373,8 @@ void RequestLocalFileSystemFunction::AddGDataMountPoint() {
   fileapi::ExternalFileSystemMountPointProvider* provider =
       BrowserContext::GetFileSystemContext(profile_)->external_provider();
   const FilePath mount_point = gdata::util::GetGDataMountPointPath();
+  if (!render_view_host() || !render_view_host()->GetProcess())
+    return;
   if (!provider || provider->HasMountPoint(mount_point))
     return;
 
@@ -386,9 +388,8 @@ void RequestLocalFileSystemFunction::AddGDataMountPoint() {
   gdata::GDataSystemService* system_service =
       gdata::GDataSystemServiceFactory::GetForProfile(profile_);
   // |system_service| is NULL if incognito window / guest login.
-  if (!system_service)
+  if (!system_service || !system_service->file_system())
     return;
-
   gdata::GDataFileSystem* gdata_file_system = system_service->file_system();
 
   // We check permissions for raw cache file paths only for read-only

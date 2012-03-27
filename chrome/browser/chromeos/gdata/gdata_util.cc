@@ -91,10 +91,10 @@ void SetPermissionsForGDataCacheFiles(Profile* profile,
                                       const FilePath& path) {
   GDataSystemService* system_service =
       GDataSystemServiceFactory::GetForProfile(profile);
-  DCHECK(system_service);
+  if (!system_service || !system_service->file_system())
+    return;
 
   GDataFileSystem* file_system = system_service->file_system();
-  DCHECK(file_system);
 
   GDataFileProperties file_properties;
   file_system->GetFileInfoFromPath(path, &file_properties);
