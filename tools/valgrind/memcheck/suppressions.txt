@@ -5788,6 +5788,13 @@
    fun:_ZN7content13BrowserThread16PostTaskAndReplyENS0_2IDERKN15tracked_objects8LocationERKN4base8CallbackIFvvEEESB_
    fun:_ZN5gdata15GDataFileSystem37PostBlockingPoolSequencedTaskAndReplyERKSsRKN15tracked_objects8LocationERKN4base8CallbackIFvvEEESC_
 }
+{
+   bug_120118
+   Memcheck:Leak
+   ...
+   fun:gtk_widget_style_get
+   fun:_ZN15ThemeServiceGtk13LoadGtkValuesEv
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
@@ -5817,3 +5824,4 @@
    obj:/bin/grep
    obj:/bin/grep
 }
+

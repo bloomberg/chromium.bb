@@ -14,17 +14,20 @@
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/google/google_util.h"
+#include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
@@ -78,12 +81,6 @@ class GeolocationInfoBarQueueController : content::NotificationObserver {
                             int render_view_id,
                             int bridge_id);
 
-  // Called by the InfoBarDelegate to notify it's closed. It'll display a new
-  // InfoBar if there's any request pending for this tab.
-  void OnInfoBarClosed(int render_process_id,
-                       int render_view_id,
-                       int bridge_id);
-
   // Called by the InfoBarDelegate to notify permission has been set.
   // It'll notify and dismiss any other pending InfoBar request for the same
   // |requesting_frame| and embedder.
@@ -97,7 +94,7 @@ class GeolocationInfoBarQueueController : content::NotificationObserver {
   // content::NotificationObserver
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   struct PendingInfoBarRequest;
@@ -106,11 +103,15 @@ class GeolocationInfoBarQueueController : content::NotificationObserver {
   typedef std::vector<PendingInfoBarRequest> PendingInfoBarRequests;
 
   // Shows the first pending infobar for this tab.
-  void ShowQueuedInfoBar(int render_process_id, int render_view_id);
+  void ShowQueuedInfoBar(int render_process_id, int render_view_id,
+                         InfoBarTabHelper* helper);
 
-  // Cancels an InfoBar request and returns the next iterator position.
-  PendingInfoBarRequests::iterator CancelInfoBarRequestInternal(
-      PendingInfoBarRequests::iterator i);
+  // Removes any pending requests for a given tab.
+  void ClearPendingInfoBarRequestsForTab(int render_process_id,
+                                         int render_view_id);
+
+  InfoBarTabHelper* GetInfoBarHelper(int render_process_id, int render_view_id);
+  bool AlreadyShowingInfoBar(int render_process_id, int render_view_id);
 
   content::NotificationRegistrar registrar_;
 
@@ -135,8 +136,10 @@ class GeolocationConfirmInfoBarDelegate : public ConfirmInfoBarDelegate {
       const GURL& requesting_frame_url,
       const std::string& display_languages);
 
+  int render_process_id() const { return render_process_id_; }
+  int render_view_id() const { return render_view_id_; }
+
  private:
-  virtual ~GeolocationConfirmInfoBarDelegate();
 
   // ConfirmInfoBarDelegate:
   virtual bool ShouldExpire(
@@ -183,11 +186,6 @@ GeolocationConfirmInfoBarDelegate::GeolocationConfirmInfoBarDelegate(
       infobar_helper->web_contents()->GetController().GetLastCommittedEntry();
   committed_contents_unique_id_ = committed_entry ?
       committed_entry->GetUniqueID() : 0;
-}
-
-GeolocationConfirmInfoBarDelegate::~GeolocationConfirmInfoBarDelegate() {
-  controller_->OnInfoBarClosed(render_process_id_, render_view_id_,
-                               bridge_id_);
 }
 
 bool GeolocationConfirmInfoBarDelegate::ShouldExpire(
@@ -283,7 +281,7 @@ struct GeolocationInfoBarQueueController::PendingInfoBarRequest {
   GURL requesting_frame;
   GURL embedder;
   base::Callback<void(bool)> callback;
-  InfoBarDelegate* infobar_delegate;
+  GeolocationConfirmInfoBarDelegate* infobar_delegate;
 };
 
 GeolocationInfoBarQueueController::PendingInfoBarRequest::PendingInfoBarRequest(
@@ -354,7 +352,6 @@ bool GeolocationInfoBarQueueController::RequestEquals::operator()(
   return request.Equals(render_process_id_, render_view_id_, bridge_id_);
 }
 
-
 // GeolocationInfoBarQueueController ------------------------------------------
 
 GeolocationInfoBarQueueController::GeolocationInfoBarQueueController(
@@ -382,9 +379,18 @@ void GeolocationInfoBarQueueController::CreateInfoBarRequest(
       RequestEquals(render_process_id, render_view_id, bridge_id)) ==
       pending_infobar_requests_.end());
 
+  InfoBarTabHelper* helper = GetInfoBarHelper(render_process_id,
+                                              render_view_id);
+  if (!helper) {
+    // We won't be able to create any infobars, shortcut and remove any pending
+    // requests.
+    ClearPendingInfoBarRequestsForTab(render_process_id, render_view_id);
+    return;
+  }
   pending_infobar_requests_.push_back(PendingInfoBarRequest(render_process_id,
       render_view_id, bridge_id, requesting_frame, embedder, callback));
-  ShowQueuedInfoBar(render_process_id, render_view_id);
+  if (!AlreadyShowingInfoBar(render_process_id, render_view_id))
+    ShowQueuedInfoBar(render_process_id, render_view_id, helper);
 }
 
 void GeolocationInfoBarQueueController::CancelInfoBarRequest(
@@ -397,22 +403,16 @@ void GeolocationInfoBarQueueController::CancelInfoBarRequest(
       pending_infobar_requests_.begin(), pending_infobar_requests_.end(),
       RequestEquals(render_process_id, render_view_id, bridge_id));
   // TODO(pkasting): Can this conditional become a DCHECK()?
-  if (i != pending_infobar_requests_.end())
-    CancelInfoBarRequestInternal(i);
-}
-
-void GeolocationInfoBarQueueController::OnInfoBarClosed(int render_process_id,
-                                                        int render_view_id,
-                                                        int bridge_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  PendingInfoBarRequests::iterator i = std::find_if(
-      pending_infobar_requests_.begin(), pending_infobar_requests_.end(),
-      RequestEquals(render_process_id, render_view_id, bridge_id));
-  if (i != pending_infobar_requests_.end())
+  if (i == pending_infobar_requests_.end())
+    return;
+  InfoBarDelegate* delegate = i->infobar_delegate;
+  if (!delegate) {
     pending_infobar_requests_.erase(i);
-
-  ShowQueuedInfoBar(render_process_id, render_view_id);
+    return;
+  }
+  InfoBarTabHelper* helper = GetInfoBarHelper(render_process_id,
+                                              render_view_id);
+  helper->RemoveInfoBar(delegate);
 }
 
 void GeolocationInfoBarQueueController::OnPermissionSet(
@@ -433,107 +433,140 @@ void GeolocationInfoBarQueueController::OnPermissionSet(
       std::string(),
       content_setting);
 
+  // Cancel this request first, then notify listeners.  TODO(pkasting): Why
+  // is this order important?
+  PendingInfoBarRequests requests_to_notify;
+  PendingInfoBarRequests infobars_to_remove;
   for (PendingInfoBarRequests::iterator i = pending_infobar_requests_.begin();
        i != pending_infobar_requests_.end(); ) {
     if (i->IsForPair(requesting_frame, embedder)) {
-      // Cancel this request first, then notify listeners.  TODO(pkasting): Why
-      // is this order important?
-      // NOTE: If the pending request had an infobar, TabContents will close it
-      // either synchronously or asynchronously, which will then pump the queue
-      // via OnInfoBarClosed().
-      PendingInfoBarRequest copied_request = *i;
-      // Don't let CancelInfoBarRequestInternal() call RemoveInfoBar() with the
-      // delegate that's currently calling us.  That delegate is in either
-      // Accept() or Cancel(), so its owning InfoBar will call RemoveInfoBar()
-      // later on in this callstack anyway; and if we do it here, and it causes
-      // the delegate to be deleted, our GURL& args will point to garbage and we
-      // may also cause other problems during stack unwinding.
-      if (i->Equals(render_process_id, render_view_id, bridge_id))
-        i->infobar_delegate = NULL;
-      i = CancelInfoBarRequestInternal(i);
-
-      geolocation_permission_context_->NotifyPermissionSet(
-          copied_request.render_process_id, copied_request.render_view_id,
-          copied_request.bridge_id, copied_request.requesting_frame,
-          copied_request.callback, allowed);
+      requests_to_notify.push_back(*i);
+      if (i->Equals(render_process_id, render_view_id, bridge_id)) {
+        // The delegate that called us is i, and it's currently in either
+        // Accept() or Cancel(). This means that the owning InfoBar will call
+        // RemoveInfoBar() later on, and that will trigger a notification we're
+        // observing.
+        ++i;
+      } else if (i->infobar_delegate) {
+        // This InfoBar is for the same frame/embedder pair, but in a different
+        // tab. We should remove it now that we've got an answer for it.
+        infobars_to_remove.push_back(*i);
+        ++i;
+      } else {
+        // We haven't created an InfoBar yet, just remove the pending request.
+        i = pending_infobar_requests_.erase(i);
+      }
     } else {
       ++i;
     }
+  }
+
+  // Remove all InfoBars for the same |requesting_frame| and |embedder|.
+  for (PendingInfoBarRequests::iterator i = infobars_to_remove.begin();
+       i != infobars_to_remove.end(); ++i ) {
+    InfoBarTabHelper* helper = GetInfoBarHelper(i->render_process_id,
+                                                i->render_view_id);
+    helper->RemoveInfoBar(i->infobar_delegate);
+  }
+
+  // Send out the permission notifications.
+  for (PendingInfoBarRequests::iterator i = requests_to_notify.begin();
+       i != requests_to_notify.end(); ++i ) {
+    geolocation_permission_context_->NotifyPermissionSet(
+        i->render_process_id, i->render_view_id,
+        i->bridge_id, i->requesting_frame,
+        i->callback, allowed);
   }
 }
 
 void GeolocationInfoBarQueueController::Observe(
-    int type, const content::NotificationSource& source,
+    int type,
+    const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  registrar_.Remove(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
-                    source);
-  WebContents* web_contents = content::Source<WebContents>(source).ptr();
+  DCHECK_EQ(chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED, type);
+  // We will receive this notification for all infobar closures, so we need to
+  // check whether this is the geolocation infobar we're tracking.
+  InfoBarDelegate* delegate =
+      content::Details<InfoBarRemovedDetails>(details)->first;
   for (PendingInfoBarRequests::iterator i = pending_infobar_requests_.begin();
-       i != pending_infobar_requests_.end();) {
-    if (i->infobar_delegate == NULL &&
-        web_contents == tab_util::GetWebContentsByID(i->render_process_id,
-                                                     i->render_view_id)) {
-      i = pending_infobar_requests_.erase(i);
-    } else {
-      ++i;
+       i != pending_infobar_requests_.end(); ++i) {
+    GeolocationConfirmInfoBarDelegate* confirm_delegate = i->infobar_delegate;
+    if (confirm_delegate == delegate) {
+      InfoBarTabHelper* helper =
+          content::Source<InfoBarTabHelper>(source).ptr();
+      registrar_.Remove(this, chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
+                        source);
+      int render_process_id = i->render_process_id;
+      int render_view_id = i->render_view_id;
+      pending_infobar_requests_.erase(i);
+      ShowQueuedInfoBar(render_process_id, render_view_id, helper);
+      return;
     }
   }
 }
 
-void GeolocationInfoBarQueueController::ShowQueuedInfoBar(int render_process_id,
-                                                          int render_view_id) {
-  WebContents* tab_contents =
-      tab_util::GetWebContentsByID(render_process_id, render_view_id);
-  TabContentsWrapper* wrapper = NULL;
-  if (tab_contents)
-    wrapper = TabContentsWrapper::GetCurrentWrapperForContents(tab_contents);
+void GeolocationInfoBarQueueController::ClearPendingInfoBarRequestsForTab(
+    int render_process_id,
+    int render_view_id) {
   for (PendingInfoBarRequests::iterator i = pending_infobar_requests_.begin();
        i != pending_infobar_requests_.end(); ) {
-    if (i->IsForTab(render_process_id, render_view_id)) {
-      if (!wrapper) {
-        i = pending_infobar_requests_.erase(i);
-        continue;
-      }
-
-      if (!i->infobar_delegate) {
-        if (!registrar_.IsRegistered(
-                this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
-                content::Source<WebContents>(tab_contents))) {
-          registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
-                         content::Source<WebContents>(tab_contents));
-        }
-        i->infobar_delegate = new GeolocationConfirmInfoBarDelegate(
-            wrapper->infobar_tab_helper(), this, render_process_id,
-            render_view_id, i->bridge_id, i->requesting_frame,
-            profile_->GetPrefs()->GetString(prefs::kAcceptLanguages));
-        wrapper->infobar_tab_helper()->AddInfoBar(i->infobar_delegate);
-      }
-      break;
-    }
-    ++i;
+    if (i->IsForTab(render_process_id, render_view_id))
+      i = pending_infobar_requests_.erase(i);
+    else
+      ++i;
   }
 }
 
-GeolocationInfoBarQueueController::PendingInfoBarRequests::iterator
-    GeolocationInfoBarQueueController::CancelInfoBarRequestInternal(
-    PendingInfoBarRequests::iterator i) {
-  InfoBarDelegate* delegate = i->infobar_delegate;
-  if (!delegate)
-    return pending_infobar_requests_.erase(i);
-
-  WebContents* web_contents =
-      tab_util::GetWebContentsByID(i->render_process_id, i->render_view_id);
-  if (!web_contents)
-    return pending_infobar_requests_.erase(i);
-
-  // WebContents will destroy the InfoBar, which will remove from our vector
-  // asynchronously.
+InfoBarTabHelper* GeolocationInfoBarQueueController::GetInfoBarHelper(
+    int render_process_id,
+    int render_view_id) {
+  WebContents* tab_contents =
+      tab_util::GetWebContentsByID(render_process_id, render_view_id);
+  if (!tab_contents)
+    return NULL;
   TabContentsWrapper* wrapper =
-      TabContentsWrapper::GetCurrentWrapperForContents(web_contents);
-  wrapper->infobar_tab_helper()->RemoveInfoBar(i->infobar_delegate);
-  return ++i;
+      TabContentsWrapper::GetCurrentWrapperForContents(tab_contents);
+  if (!wrapper)
+    return NULL;
+  return wrapper->infobar_tab_helper();
 }
 
+bool GeolocationInfoBarQueueController::AlreadyShowingInfoBar(
+    int render_process_id,
+    int render_view_id) {
+  for (PendingInfoBarRequests::iterator i = pending_infobar_requests_.begin();
+       i != pending_infobar_requests_.end(); ++i) {
+    if (i->IsForTab(render_process_id, render_view_id) && i->infobar_delegate)
+      return true;
+  }
+  return false;
+}
+
+void GeolocationInfoBarQueueController::ShowQueuedInfoBar(
+    int render_process_id,
+    int render_view_id,
+    InfoBarTabHelper* helper) {
+  DCHECK(helper);
+  DCHECK(!AlreadyShowingInfoBar(render_process_id, render_view_id));
+  for (PendingInfoBarRequests::iterator i = pending_infobar_requests_.begin();
+       i != pending_infobar_requests_.end(); ++i) {
+    if (i->IsForTab(render_process_id, render_view_id) &&
+        !i->infobar_delegate) {
+        DCHECK(!registrar_.IsRegistered(
+            this, chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
+            content::Source<InfoBarTabHelper>(helper)));
+        registrar_.Add(
+            this, chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
+            content::Source<InfoBarTabHelper>(helper));
+        i->infobar_delegate = new GeolocationConfirmInfoBarDelegate(
+            helper, this, render_process_id,
+            render_view_id, i->bridge_id, i->requesting_frame,
+            profile_->GetPrefs()->GetString(prefs::kAcceptLanguages));
+        helper->AddInfoBar(i->infobar_delegate);
+        break;
+    }
+  }
+}
 
 // GeolocationPermissionContext -----------------------------------------------
 
