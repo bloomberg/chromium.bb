@@ -149,8 +149,8 @@ webrtc::MediaStreamTrackInterface* MediaStreamImpl::GetLocalMediaStreamTrack(
 
 void MediaStreamImpl::requestUserMedia(
     const WebKit::WebUserMediaRequest& user_media_request,
-    const WebKit::WebVector<WebKit::WebMediaStreamSource>&
-        media_stream_source_vector) {
+    const WebKit::WebVector<WebKit::WebMediaStreamSource>& audio_sources,
+    const WebKit::WebVector<WebKit::WebMediaStreamSource>& video_sources) {
   DCHECK(CalledOnValidThread());
   DCHECK(!user_media_request.isNull());
 
@@ -159,26 +159,15 @@ void MediaStreamImpl::requestUserMedia(
   bool audio = user_media_request.audio();
   media_stream::StreamOptions::VideoOption video_option =
       media_stream::StreamOptions::kNoCamera;
-  if (user_media_request.video()) {
-    // If no preference is set, use user facing camera.
-    video_option = media_stream::StreamOptions::kFacingUser;
-    if (user_media_request.cameraPreferenceUser() &&
-        user_media_request.cameraPreferenceEnvironment()) {
-      video_option = media_stream::StreamOptions::kFacingBoth;
-    } else if (user_media_request.cameraPreferenceEnvironment()) {
-      video_option = media_stream::StreamOptions::kFacingEnvironment;
-    }
-  }
+  if (user_media_request.video())
+    video_option = media_stream::StreamOptions::kFacingBoth;
 
   std::string security_origin = UTF16ToUTF8(
       user_media_request.securityOrigin().toString());
 
   DVLOG(1) << "MediaStreamImpl::generateStream(" << request_id << ", [ "
-           << (audio ? "audio " : "")
-           << ((user_media_request.cameraPreferenceUser()) ?
-               "video_facing_user " : "")
-           << ((user_media_request.cameraPreferenceEnvironment()) ?
-               "video_facing_environment " : "") << "], "
+           << (audio ? "audio" : "")
+           << (user_media_request.video() ? " video" : "") << "], "
            << security_origin << ")";
 
   user_media_requests_.insert(
@@ -288,10 +277,9 @@ void MediaStreamImpl::OnStreamGenerated(
   // creating a peer connection later on will fail if we don't have a factory.
   EnsurePeerConnectionFactory();
 
-  WebKit::WebVector<WebKit::WebMediaStreamSource> source_vector(
-      audio_array.size() + video_array.size());
-
   // Add audio tracks.
+  WebKit::WebVector<WebKit::WebMediaStreamSource> audio_source_vector(
+      audio_array.size());
   std::string track_label;
   for (size_t i = 0; i < audio_array.size(); ++i) {
     track_label = CreateTrackLabel(label, audio_array[i].session_id, false);
@@ -303,13 +291,15 @@ void MediaStreamImpl::OnStreamGenerated(
           std::pair<std::string, MediaStreamTrackPtr>(track_label,
                                                       audio_track));
     }
-    source_vector[i].initialize(
+    audio_source_vector[i].initialize(
           UTF8ToUTF16(track_label),
           WebKit::WebMediaStreamSource::TypeAudio,
           UTF8ToUTF16(audio_array[i].name));
   }
 
   // Add video tracks.
+  WebKit::WebVector<WebKit::WebMediaStreamSource> video_source_vector(
+      video_array.size());
   for (size_t i = 0; i < video_array.size(); ++i) {
     track_label = CreateTrackLabel(label, video_array[i].session_id, true);
     if (dependency_factory_->PeerConnectionFactoryCreated()) {
@@ -325,7 +315,7 @@ void MediaStreamImpl::OnStreamGenerated(
           std::pair<std::string, MediaStreamTrackPtr>(track_label,
                                                       video_track));
     }
-    source_vector[audio_array.size() + i].initialize(
+    video_source_vector[i].initialize(
           UTF8ToUTF16(track_label),
           WebKit::WebMediaStreamSource::TypeVideo,
           UTF8ToUTF16(video_array[i].name));
@@ -342,7 +332,7 @@ void MediaStreamImpl::OnStreamGenerated(
   WebKit::WebUserMediaRequest user_media_request = it->second;
   user_media_requests_.erase(it);
 
-  user_media_request.requestSucceeded(source_vector);
+  user_media_request.requestSucceeded(audio_source_vector, video_source_vector);
 }
 
 void MediaStreamImpl::OnStreamGenerationFailed(int request_id) {

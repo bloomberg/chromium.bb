@@ -42,7 +42,7 @@ class CONTENT_EXPORT PeerConnectionHandler
   // WebKit::WebPeerConnectionHandler implementation
   virtual void initialize(
       const WebKit::WebString& server_configuration,
-      const WebKit::WebSecurityOrigin& security_origin) OVERRIDE;
+      const WebKit::WebString& username) OVERRIDE;
   virtual void produceInitialOffer(
       const WebKit::WebVector<WebKit::WebMediaStreamDescriptor>&
           pending_add_streams) OVERRIDE;

@@ -50,7 +50,7 @@ void PeerConnectionHandler::SetVideoRenderer(
 
 void PeerConnectionHandler::initialize(
     const WebKit::WebString& server_configuration,
-    const WebKit::WebSecurityOrigin& security_origin) {
+    const WebKit::WebString& username) {
   native_peer_connection_ = dependency_factory_->CreateRoapPeerConnection(
       UTF16ToUTF8(server_configuration),
       this);

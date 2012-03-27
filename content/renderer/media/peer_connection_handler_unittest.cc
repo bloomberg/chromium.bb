@@ -73,8 +73,8 @@ TEST(PeerConnectionHandlerTest, Basic) {
 
   WebKit::WebString server_config(
       WebKit::WebString::fromUTF8("STUN stun.l.google.com:19302"));
-  WebKit::WebSecurityOrigin security_origin;
-  pc_handler->initialize(server_config, security_origin);
+  WebKit::WebString username;
+  pc_handler->initialize(server_config, username);
   EXPECT_TRUE(pc_handler->native_peer_connection_.get());
   webrtc::MockPeerConnectionImpl* mock_peer_connection =
       static_cast<webrtc::MockPeerConnectionImpl*>(
