@@ -614,9 +614,9 @@ FileCopyManager.prototype.serviceNextTaskEntry_ = function(
         sourceFileUrl, targetFileUrl,
         function() {
           if (chrome.extension.lastError) {
-            util.flog('Error copying ' + sourceFileUrl + ' to ' +
-                      targetFileUrl, onFilesystemError);
-
+            console.log(
+                'Error copying ' + sourceFileUrl + ' to ' + targetFileUrl);
+            onFilesystemError({code: chrome.extension.lastError.message});
           } else {
             onFilesystemCopyComplete(sourceEntry);
           }

@@ -10454,7 +10454,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Paste failed, item exists: $1
       </message>
       <message name="IDS_FILE_BROWSER_PASTE_FILESYSTEM_ERROR" desc="File picker status message.">
-        Paste failed, file system error: $1'
+        Paste failed, file system error: $1
       </message>
       <message name="IDS_FILE_BROWSER_PASTE_UNEXPECTED_ERROR" desc="File picker status message.">
         Paste failed, unexpected error: $1

@@ -51,6 +51,7 @@
 #include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_util.h"
+#include "webkit/glue/webkit_glue.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/disks/disk_mount_manager.h"
@@ -1915,5 +1916,11 @@ void TransferFileFunction::GetLocalPathsResponseOnUIThread(
 
 void TransferFileFunction::OnTransferCompleted(
     base::PlatformFileError error) {
-  SendResponse(error == base::PLATFORM_FILE_OK);
+  if (error == base::PLATFORM_FILE_OK) {
+    SendResponse(true);
+  } else {
+    error_ = base::StringPrintf("%d", static_cast<int>(
+        webkit_glue::PlatformFileErrorToWebFileError(error)));
+    SendResponse(false);
+  }
 }
