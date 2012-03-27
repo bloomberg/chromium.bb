@@ -2321,6 +2321,11 @@ weston_compositor_init(struct weston_compositor *ec, struct wl_display *display)
 		return -1;
 	}
 
+	if (!strstr(extensions, "GL_EXT_read_format_bgra")) {
+		fprintf(stderr, "GL_EXT_read_format_bgra not available\n");
+		return -1;
+	}
+
 	extensions =
 		(const char *) eglQueryString(ec->display, EGL_EXTENSIONS);
 	if (strstr(extensions, "EGL_WL_bind_wayland_display"))

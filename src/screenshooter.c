@@ -62,7 +62,7 @@ screenshooter_shoot(struct wl_client *client,
 
 	glPixelStorei(GL_PACK_ALIGNMENT, 1);
 	glReadPixels(0, 0, output->current->width, output->current->height,
-		     GL_RGBA, GL_UNSIGNED_BYTE, tmp);
+		     GL_BGRA_EXT, GL_UNSIGNED_BYTE, tmp);
 
 	d = wl_shm_buffer_get_data(buffer);
 	s = tmp + stride * (buffer->height - 1);
