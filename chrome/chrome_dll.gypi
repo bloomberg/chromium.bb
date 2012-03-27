@@ -242,6 +242,7 @@
                 'app/nibs/BookmarkEditor.xib',
                 'app/nibs/BookmarkNameFolder.xib',
                 'app/nibs/BrowserWindow.xib',
+                'app/nibs/ChromeToMobileBubble.xib',
                 'app/nibs/CollectedCookies.xib',
                 'app/nibs/CookieDetailsView.xib',
                 'app/nibs/ContentBlockedCookies.xib',

@@ -31,6 +31,7 @@
 class Browser;
 class BrowserWindow;
 class BrowserWindowCocoa;
+@class ChromeToMobileBubbleController;
 class ConstrainedWindowMac;
 @class DevToolsController;
 @class DownloadShelfController;
@@ -85,6 +86,8 @@ class WebContents;
   BookmarkBubbleController* bookmarkBubbleController_;  // Weak.
   BOOL initializing_;  // YES while we are currently in initWithBrowser:
   BOOL ownsBrowser_;  // Only ever NO when testing
+
+  ChromeToMobileBubbleController* chromeToMobileBubbleController_;  // Weak.
 
   // The total amount by which we've grown the window up or down (to display a
   // bookmark bar and/or download shelf), respectively; reset to 0 when moved
@@ -276,6 +279,9 @@ class WebContents;
 - (void)showBookmarkBubbleForURL:(const GURL&)url
                alreadyBookmarked:(BOOL)alreadyBookmarked;
 
+// Show the Chrome To Mobile bubble (e.g. user just clicked on the icon)
+- (void)showChromeToMobileBubble;
+
 // Returns the (lazily created) window sheet controller of this window. Used
 // for the per-tab sheets.
 - (GTMWindowSheetController*)sheetController;
@@ -305,6 +311,9 @@ class WebContents;
 
 // Return the point to which a bubble window's arrow should point.
 - (NSPoint)bookmarkBubblePoint;
+
+// Return the Chrome To Mobile bubble window's arrow anchor point.
+- (NSPoint)chromeToMobileBubblePoint;
 
 // Shows or hides the Instant preview contents.
 - (void)showInstant:(content::WebContents*)previewContents;

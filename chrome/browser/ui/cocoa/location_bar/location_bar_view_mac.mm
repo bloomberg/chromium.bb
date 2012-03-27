@@ -14,6 +14,8 @@
 #include "chrome/browser/alternate_nav_url_fetcher.h"
 #import "chrome/browser/app_controller_mac.h"
 #import "chrome/browser/autocomplete/autocomplete_popup_model.h"
+#include "chrome/browser/chrome_to_mobile_service.h"
+#include "chrome/browser/chrome_to_mobile_service_factory.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
@@ -32,6 +34,7 @@
 #import "chrome/browser/ui/cocoa/first_run_bubble_controller.h"
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field.h"
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_cell.h"
+#import "chrome/browser/ui/cocoa/location_bar/chrome_to_mobile_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/content_setting_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/ev_bubble_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/keyword_hint_decoration.h"
@@ -89,6 +92,7 @@ LocationBarViewMac::LocationBarViewMac(
           new EVBubbleDecoration(location_icon_decoration_.get(),
                                  OmniboxViewMac::GetFieldFont())),
       star_decoration_(new StarDecoration(command_updater)),
+      chrome_to_mobile_decoration_(nil),
       keyword_hint_decoration_(
           new KeywordHintDecoration(OmniboxViewMac::GetFieldFont())),
       profile_(profile),
@@ -98,6 +102,17 @@ LocationBarViewMac::LocationBarViewMac(
           content::PAGE_TRANSITION_TYPED |
           content::PAGE_TRANSITION_FROM_ADDRESS_BAR)),
       weak_ptr_factory_(this) {
+  // Disable Chrome To Mobile for off-the-record and non-synced profiles,
+  // or if the feature is disabled by a command line flag or chrome://flags.
+  if (!profile_->IsOffTheRecord() && profile_->IsSyncAccessible() &&
+      ChromeToMobileService::IsChromeToMobileEnabled()) {
+    command_updater_->AddCommandObserver(IDC_CHROME_TO_MOBILE_PAGE, this);
+    chrome_to_mobile_decoration_.reset(
+        new ChromeToMobileDecoration(profile, command_updater));
+    ChromeToMobileServiceFactory::GetForProfile(profile)->
+        RequestMobileListUpdate();
+  }
+
   for (size_t i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
     DCHECK_EQ(i, content_setting_decorations_.size());
     ContentSettingsType type = static_cast<ContentSettingsType>(i);
@@ -214,6 +229,7 @@ void LocationBarViewMac::Update(const WebContents* contents,
   bool star_enabled = IsStarEnabled();
   command_updater_->UpdateCommandEnabled(IDC_BOOKMARK_PAGE, star_enabled);
   star_decoration_->SetVisible(star_enabled);
+  UpdateChromeToMobileEnabled();
   RefreshPageActionDecorations();
   RefreshContentSettingsDecorations();
   // OmniboxView restores state if the tab is non-NULL.
@@ -425,6 +441,7 @@ void LocationBarViewMac::TestPageActionPressed(size_t index) {
 void LocationBarViewMac::SetEditable(bool editable) {
   [field_ setEditable:editable ? YES : NO];
   star_decoration_->SetVisible(IsStarEnabled());
+  UpdateChromeToMobileEnabled();
   UpdatePageActions();
   Layout();
 }
@@ -443,11 +460,31 @@ void LocationBarViewMac::SetStarred(bool starred) {
   [field_ setNeedsDisplay:YES];
 }
 
+void LocationBarViewMac::SetChromeToMobileDecorationLit(bool lit) {
+  chrome_to_mobile_decoration_->SetLit(lit);
+
+  // TODO(shess): The field-editor frame and cursor rects should not
+  // change, here.
+  [field_ updateCursorAndToolTipRects];
+  [field_ resetFieldEditorFrameIfNeeded];
+  [field_ setNeedsDisplay:YES];
+}
+
 NSPoint LocationBarViewMac::GetBookmarkBubblePoint() const {
   AutocompleteTextFieldCell* cell = [field_ cell];
   const NSRect frame = [cell frameForDecoration:star_decoration_.get()
                                         inFrame:[field_ bounds]];
   const NSPoint point = star_decoration_->GetBubblePointInFrame(frame);
+  return [field_ convertPoint:point toView:nil];
+}
+
+NSPoint LocationBarViewMac::GetChromeToMobileBubblePoint() const {
+  AutocompleteTextFieldCell* cell = [field_ cell];
+  const NSRect frame =
+      [cell frameForDecoration:chrome_to_mobile_decoration_.get()
+                       inFrame:[field_ bounds]];
+  const NSPoint point =
+    chrome_to_mobile_decoration_->GetBubblePointInFrame(frame);
   return [field_ convertPoint:point toView:nil];
 }
 
@@ -496,6 +533,7 @@ void LocationBarViewMac::Observe(int type,
 
     case chrome::NOTIFICATION_PREF_CHANGED:
       star_decoration_->SetVisible(IsStarEnabled());
+      UpdateChromeToMobileEnabled();
       OnChanged();
       break;
 
@@ -503,6 +541,11 @@ void LocationBarViewMac::Observe(int type,
       NOTREACHED() << "Unexpected notification";
       break;
   }
+}
+
+void LocationBarViewMac::EnabledStateChangedForCommand(int id, bool enabled) {
+  DCHECK_EQ(id, IDC_CHROME_TO_MOBILE_PAGE);
+  UpdateChromeToMobileEnabled();
 }
 
 void LocationBarViewMac::PostNotification(NSString* notification) {
@@ -588,6 +631,8 @@ void LocationBarViewMac::Layout() {
   [cell addLeftDecoration:selected_keyword_decoration_.get()];
   [cell addLeftDecoration:ev_bubble_decoration_.get()];
   [cell addRightDecoration:star_decoration_.get()];
+  if (chrome_to_mobile_decoration_.get())
+    [cell addRightDecoration:chrome_to_mobile_decoration_.get()];
 
   // Note that display order is right to left.
   for (size_t i = 0; i < page_action_decorations_.size(); ++i) {
@@ -650,4 +695,16 @@ bool LocationBarViewMac::IsStarEnabled() {
          browser_defaults::bookmarks_enabled &&
          !toolbar_model_->input_in_progress() &&
          edit_bookmarks_enabled_.GetValue();
+}
+
+void LocationBarViewMac::UpdateChromeToMobileEnabled() {
+  if (!chrome_to_mobile_decoration_.get())
+    return;
+
+  DCHECK(ChromeToMobileService::IsChromeToMobileEnabled());
+  bool enabled = [field_ isEditable] && !toolbar_model_->input_in_progress() &&
+      !ChromeToMobileServiceFactory::GetForProfile(profile_)->mobiles().empty();
+
+  chrome_to_mobile_decoration_->SetVisible(enabled);
+  command_updater_->UpdateCommandEnabled(IDC_CHROME_TO_MOBILE_PAGE, enabled);
 }

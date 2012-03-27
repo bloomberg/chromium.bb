@@ -446,7 +446,7 @@ void BrowserWindowCocoa::ShowBookmarkBubble(const GURL& url,
 }
 
 void BrowserWindowCocoa::ShowChromeToMobileBubble() {
-  NOTIMPLEMENTED();
+  [controller_ showChromeToMobileBubble];
 }
 
 #if defined(ENABLE_ONE_CLICK_SIGNIN)

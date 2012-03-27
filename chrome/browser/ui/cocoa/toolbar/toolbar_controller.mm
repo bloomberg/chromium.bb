@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -167,6 +167,7 @@ class NotificationBridge : public content::NotificationObserver {
     commandObserver_->ObserveCommand(IDC_RELOAD);
     commandObserver_->ObserveCommand(IDC_HOME);
     commandObserver_->ObserveCommand(IDC_BOOKMARK_PAGE);
+    commandObserver_->ObserveCommand(IDC_CHROME_TO_MOBILE_PAGE);
   }
   return self;
 }
@@ -709,6 +710,10 @@ class NotificationBridge : public content::NotificationObserver {
 
 - (NSPoint)bookmarkBubblePoint {
   return locationBarView_->GetBookmarkBubblePoint();
+}
+
+- (NSPoint)chromeToMobileBubblePoint {
+  return locationBarView_->GetChromeToMobileBubblePoint();
 }
 
 - (CGFloat)desiredHeightForCompression:(CGFloat)compressByHeight {

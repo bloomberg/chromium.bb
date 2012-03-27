@@ -17,8 +17,6 @@ const char kDummyString[] = "dummy";
 
 class DummyNotificationSource {};
 
-}  // namespace
-
 // A mock ChromeToMobileService with a mocked out RefreshAccessToken method.
 class MockChromeToMobileService : public ChromeToMobileService {
  public:
@@ -61,3 +59,5 @@ TEST_F(ChromeToMobileServiceTest, AuthenticateOnTokenAvailable) {
       content::Source<DummyNotificationSource>(&dummy_source),
       content::Details<TokenService::TokenAvailableDetails>(&login_details));
 }
+
+}  // namespace

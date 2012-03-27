@@ -1831,6 +1831,7 @@
         'browser/ui/cocoa/bubble_view_unittest.mm',
         'browser/ui/cocoa/chrome_browser_window_unittest.mm',
         'browser/ui/cocoa/chrome_event_processing_window_unittest.mm',
+        'browser/ui/cocoa/chrome_to_mobile_bubble_controller_unittest.mm',
         'browser/ui/cocoa/clickhold_button_cell_unittest.mm',
         'browser/ui/cocoa/cocoa_profile_test.h',
         'browser/ui/cocoa/cocoa_profile_test.mm',

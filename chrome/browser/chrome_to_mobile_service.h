@@ -24,6 +24,7 @@
 
 class OAuth2AccessTokenFetcher;
 class CloudPrintURL;
+class MockChromeToMobileService;
 class Profile;
 
 namespace base {
@@ -84,12 +85,14 @@ class ChromeToMobileService : public ProfileKeyedService,
   void RequestMobileListUpdate();
 
   // Callback with an MHTML snapshot of the profile's selected WebContents.
-  void GenerateSnapshot(base::WeakPtr<Observer> observer);
+  // Virtual for unit test mocking.
+  virtual void GenerateSnapshot(base::WeakPtr<Observer> observer);
 
   // Send the profile's selected WebContents to the specified mobile device.
-  void SendToMobile(const string16& mobile_id,
-                    const FilePath& snapshot,
-                    base::WeakPtr<Observer> observer);
+  // Virtual for unit test mocking.
+  virtual void SendToMobile(const string16& mobile_id,
+                            const FilePath& snapshot,
+                            base::WeakPtr<Observer> observer);
 
   // content::URLFetcherDelegate method.
   virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
@@ -104,13 +107,16 @@ class ChromeToMobileService : public ProfileKeyedService,
   virtual void OnGetTokenFailure(const GoogleServiceAuthError& error) OVERRIDE;
 
  private:
+  friend class MockChromeToMobileService;
+
   // Utility function to initialize the ScopedTempDir.
   void CreateUniqueTempDir();
 
   // Utility function to create URLFetcher requests.
   content::URLFetcher* CreateRequest(const RequestData& data);
 
-  // Send the OAuth2AccessTokenFetcher request; virtual for unit test mocking.
+  // Send the OAuth2AccessTokenFetcher request.
+  // Virtual for unit test mocking.
   virtual void RefreshAccessToken();
 
   // Send the cloud print URLFetcher search request.

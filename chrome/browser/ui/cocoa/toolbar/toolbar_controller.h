@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -141,6 +141,10 @@ class NotificationBridge;
 // Point on the star icon for the bookmark bubble to be - in the
 // associated window's coordinate system.
 - (NSPoint)bookmarkBubblePoint;
+
+// Return the anchor point for the Chrome To Mobile bubble on its icon.
+// The returned value is in the associated window's coordinate system.
+- (NSPoint)chromeToMobileBubblePoint;
 
 // Returns the desired toolbar height for the given compression factor.
 - (CGFloat)desiredHeightForCompression:(CGFloat)compressByHeight;

@@ -199,7 +199,7 @@ void ChromeToMobileService::RequestMobileListUpdate() {
 
 void ChromeToMobileService::GenerateSnapshot(base::WeakPtr<Observer> observer) {
   FilePath path(temp_dir_.path().Append(kSnapshotPath));
-    BrowserList::GetLastActiveWithProfile(profile_)->GetSelectedWebContents()->
+  BrowserList::GetLastActiveWithProfile(profile_)->GetSelectedWebContents()->
       GenerateMHTML(path.InsertBeforeExtensionASCII(guid::GenerateGUID()),
                     base::Bind(&Observer::SnapshotGenerated, observer));
 }
