@@ -71,7 +71,7 @@ TEST_F('OptionsWebUITest', 'MAYBE_testSetBooleanPrefTriggers', function() {
 
 // Not meant to run on ChromeOS at this time.
 // Not finishing in windows. http://crbug.com/81723
-TEST_F('OptionsWebUITest', 'testRefreshStaysOnCurrentPage',
+TEST_F('OptionsWebUITest', 'DISABLED_testRefreshStaysOnCurrentPage',
     function() {
   assertTrue($('search-engine-manager-page').hidden);
   var item = $('manage-default-search-engines');
