@@ -41,14 +41,14 @@ class MockCryptohomeClient : public CryptohomeClient {
   MOCK_METHOD1(AsyncMountGuest,
                void(base::Callback<void(int async_id)> callback));
   MOCK_METHOD1(TpmIsReady, bool(bool* ready));
-  MOCK_METHOD1(TpmIsEnabled, bool(bool* enabled));
+  MOCK_METHOD1(TpmIsEnabled, void(BoolMethodCallback callback));
+  MOCK_METHOD1(CallTpmIsEnabledAndBlock, bool(bool* enabled));
   MOCK_METHOD1(TpmGetPassword, bool(std::string* password));
   MOCK_METHOD1(TpmIsOwned, bool(bool* owned));
   MOCK_METHOD1(TpmIsBeingOwned, bool(bool* owning));
   MOCK_METHOD0(TpmCanAttemptOwnership, bool());
   MOCK_METHOD0(TpmClearStoredPassword, bool());
-  MOCK_METHOD1(Pkcs11IsTpmTokenReady,
-               void(Pkcs11IsTpmTokenReadyCallback callback));
+  MOCK_METHOD1(Pkcs11IsTpmTokenReady, void(BoolMethodCallback callback));
   MOCK_METHOD1(Pkcs11GetTpmTokenInfo,
                void(Pkcs11GetTpmTokenInfoCallback callback));
   MOCK_METHOD3(InstallAttributesGet,

@@ -188,7 +188,18 @@ class CryptohomeClientImpl : public CryptohomeClient {
   }
 
   // CryptohomeClient override.
-  virtual bool TpmIsEnabled(bool* enabled) OVERRIDE {
+  virtual void TpmIsEnabled(BoolMethodCallback callback) OVERRIDE {
+    INITIALIZE_METHOD_CALL(method_call, cryptohome::kCryptohomeTpmIsEnabled);
+    proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(
+            &CryptohomeClientImpl::OnBoolMethod,
+            weak_ptr_factory_.GetWeakPtr(),
+            callback));
+  }
+
+  // CryptohomeClient override.
+  virtual bool CallTpmIsEnabledAndBlock(bool* enabled) OVERRIDE {
     INITIALIZE_METHOD_CALL(method_call, cryptohome::kCryptohomeTpmIsEnabled);
     return CallMethodAndBlock(&method_call, base::Bind(&PopBool, enabled));
   }
@@ -226,14 +237,14 @@ class CryptohomeClientImpl : public CryptohomeClient {
   }
 
   // CryptohomeClient override.
-  virtual void Pkcs11IsTpmTokenReady(Pkcs11IsTpmTokenReadyCallback callback)
+  virtual void Pkcs11IsTpmTokenReady(BoolMethodCallback callback)
       OVERRIDE {
     INITIALIZE_METHOD_CALL(method_call,
                            cryptohome::kCryptohomePkcs11IsTpmTokenReady);
     proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::Bind(
-            &CryptohomeClientImpl::OnPkcs11IsTpmTokenReady,
+            &CryptohomeClientImpl::OnBoolMethod,
             weak_ptr_factory_.GetWeakPtr(),
             callback));
   }
@@ -375,20 +386,20 @@ class CryptohomeClientImpl : public CryptohomeClient {
     }
   }
 
-  // Handles responses for Pkcs11IsTpmTokenReady.
-  void OnPkcs11IsTpmTokenReady(Pkcs11IsTpmTokenReadyCallback callback,
-                               dbus::Response* response) {
+  // Handles responses for methods with a bool value result.
+  void OnBoolMethod(BoolMethodCallback callback,
+                    dbus::Response* response) {
     if (!response) {
       callback.Run(FAILURE, false);
       return;
     }
     dbus::MessageReader reader(response);
-    bool ready = false;
-    if (!reader.PopBool(&ready)) {
+    bool result = false;
+    if (!reader.PopBool(&result)) {
       callback.Run(FAILURE, false);
       return;
     }
-    callback.Run(SUCCESS, ready);
+    callback.Run(SUCCESS, result);
   }
 
   // Handles responses for Pkcs11GetTpmtTokenInfo.
@@ -525,7 +536,13 @@ class CryptohomeClientStubImpl : public CryptohomeClient {
   }
 
   // CryptohomeClient override.
-  virtual bool TpmIsEnabled(bool* enabled) OVERRIDE {
+  virtual void TpmIsEnabled(BoolMethodCallback callback) OVERRIDE {
+    MessageLoop::current()->PostTask(FROM_HERE,
+                                     base::Bind(callback, SUCCESS, true));
+  }
+
+  // CryptohomeClient override.
+  virtual bool CallTpmIsEnabledAndBlock(bool* enabled) OVERRIDE {
     *enabled = true;
     return true;
   }

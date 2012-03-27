@@ -221,7 +221,8 @@ RealTPMTokenInfoDelegate::~RealTPMTokenInfoDelegate() {}
 bool RealTPMTokenInfoDelegate::IsTokenAvailable() const {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   bool result = false;
-  DBusThreadManager::Get()->GetCryptohomeClient()->TpmIsEnabled(&result);
+  DBusThreadManager::Get()->GetCryptohomeClient()->CallTpmIsEnabledAndBlock(
+      &result);
   return result;
 }
 
