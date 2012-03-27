@@ -17,6 +17,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBDatabaseCallbacks.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBDatabaseError.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBDatabaseException.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBKeyRange.h"
 
 using base::ThreadLocalPointer;
@@ -42,6 +43,8 @@ int32 CurrentWorkerId() {
 }
 
 } // unnamed namespace
+
+const size_t kMaxIDBValueSizeInBytes = 64 * 1024 * 1024;
 
 IndexedDBDispatcher::IndexedDBDispatcher() {
   g_idb_dispatcher_tls.Pointer()->Set(this);
@@ -113,7 +116,11 @@ void IndexedDBDispatcher::RequestIDBCursorUpdate(
     WebExceptionCode* ec) {
   ResetCursorPrefetchCaches();
   scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
-
+  if (!value.is_null() &&
+      (value.data().length() * sizeof(char16)) > kMaxIDBValueSizeInBytes) {
+    *ec = WebKit::WebIDBDatabaseExceptionDataError;
+    return;
+  }
   int32 response_id = pending_callbacks_.Add(callbacks.release());
   Send(
       new IndexedDBHostMsg_CursorUpdate(idb_cursor_id, CurrentWorkerId(),
@@ -398,6 +405,11 @@ void IndexedDBDispatcher::RequestIDBObjectStorePut(
     WebExceptionCode* ec) {
   ResetCursorPrefetchCaches();
   scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
+  if (!value.is_null() &&
+      (value.data().length() * sizeof(char16)) > kMaxIDBValueSizeInBytes) {
+    *ec = WebKit::WebIDBDatabaseExceptionDataError;
+    return;
+  }
   IndexedDBHostMsg_ObjectStorePut_Params params;
   params.thread_id = CurrentWorkerId();
   params.idb_object_store_id = idb_object_store_id;

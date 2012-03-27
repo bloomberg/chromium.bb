@@ -11,6 +11,7 @@
 
 #include "base/id_map.h"
 #include "base/nullable_string16.h"
+#include "content/common/content_export.h"
 #include "ipc/ipc_sync_message_filter.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebExceptionCode.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBCallbacks.h"
@@ -41,9 +42,12 @@ namespace content {
 class SerializedScriptValue;
 }
 
+CONTENT_EXPORT extern const size_t kMaxIDBValueSizeInBytes;
+
 // Handle the indexed db related communication for this context thread - the
 // main thread and each worker thread have their own copies.
-class IndexedDBDispatcher : public webkit_glue::WorkerTaskRunner::Observer {
+class CONTENT_EXPORT IndexedDBDispatcher
+    : public webkit_glue::WorkerTaskRunner::Observer {
  public:
   virtual ~IndexedDBDispatcher();
   static IndexedDBDispatcher* ThreadSpecificInstance();
@@ -203,6 +207,8 @@ class IndexedDBDispatcher : public webkit_glue::WorkerTaskRunner::Observer {
   static int32 TransactionId(const WebKit::WebIDBTransaction& transaction);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(IndexedDBDispatcherTest, ValueSizeTest);
+
   IndexedDBDispatcher();
   // IDBCallback message handlers.
   void OnSuccessNull(int32 response_id);
