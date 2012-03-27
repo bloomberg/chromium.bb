@@ -622,7 +622,7 @@ DirectoryModel.prototype = {
     function onLeafError(baseDirEntry, err) {
       resolveCallback(false);
       // Usually, leaf does not exist, because it's just a suggested file name.
-      if (err != FileError.NOT_FOUND_ERR)
+      if (err.code != FileError.NOT_FOUND_ERR)
         console.log('Unexpected error resolving default leaf: ' + err);
       this.changeDirectoryEntry_(baseDirEntry, autoSelect, true);
     }
