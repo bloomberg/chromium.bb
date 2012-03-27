@@ -9,61 +9,85 @@ function MetadataCache() {
   this.cache_ = {};
 }
 
-MetadataCache.prototype.doFetch = function(url) {
+/**
+ * @param {string} url
+ * @param {Object} opt_param Opaque parameter, used by the overriders.
+ */
+MetadataCache.prototype.doFetch = function(url, opt_param) {
   throw new Error('MetadataCache.doFetch not implemented');
 };
 
-MetadataCache.prototype.fetch = function(url, callback) {
-  var cacheValue = this.cache_[url];
+/**
+ * @param {string} url
+ * @param {function(Object)} callback
+ * @param {Object} opt_forceParam If defined, forces doFetch call regardless of
+ *   the cache state and is passed to doFetch.
+ */
+MetadataCache.prototype.fetch = function(url, callback, opt_forceParam) {
+  var entry = this.cache_[url];
 
-  if (!cacheValue) {
-    // This is the first time anyone has asked, go get it.
-    this.cache_[url] = [callback];
-    if (!this.doFetch(url)) {
-      // Fetch failed, return an empty map, no caching needed.
-      delete this.cache_[url];
-      setTimeout(callback, 0, {});
+  if (!entry) {
+    entry = this.cache_[url] = {};
+  }
+
+  var scheduleFetch = function() {
+    if (entry.pending) {
+      entry.pending.push(scheduleFetch);
+    } else if (this.doFetch(url, opt_forceParam)) {
+      entry.pending = [callback];
+    } else {
+      entry.result = entry.result || {};
+      setTimeout(callback, 0, entry.result);
     }
+  }.bind(this);
+
+  if (entry.pending) {
+    // Something is already pending, add to the list of callbacks.
+    entry.pending.push(opt_forceParam ? scheduleFetch : callback);
     return;
   }
 
-  if (cacheValue instanceof Array) {
-    // Something is already pending, add to the list of observers.
-    cacheValue.push(callback);
+  if (!entry.result || opt_forceParam) {
+    scheduleFetch();
     return;
   }
 
-  if (cacheValue instanceof Object) {
-    // We already know the answer, let the caller know in a fresh call stack.
-    setTimeout(callback, 0, cacheValue);
-    return;
-  }
-
-  console.error('Unexpected metadata cache value:', cacheValue);
+  setTimeout(callback, 0, entry.result);
 };
 
 MetadataCache.prototype.processResult = function(url, result) {
   console.log('metadata result:', result);
 
-  var observers = this.cache_[url];
-  if (!observers || !(observers instanceof Array)) {
+  var entry = this.cache_[url];
+  if (!entry || ! entry.pending) {
     console.error('Missing or invalid metadata observers: ' + url + ': ',
-                  observers);
+                  entry);
     return;
   }
 
-  for (var i = 0; i < observers.length; i++) {
-    observers[i](result);
+  if (!entry.result) {
+    entry.result = result;
+  } else {
+    // Merge the new result into existing one.
+    for (var key in result) {
+      if (result.hasOwnProperty(key))
+        entry.result[key] = result[key];
+    }
   }
 
-  this.cache_[url] = result;
+  var callbacks = entry.pending;
+  delete entry.pending;
+  while(callbacks.length) {
+    callbacks.shift()(entry.result);
+  }
 };
 
 
 MetadataCache.prototype.reset = function(url) {
-  if (this.cache_[url] instanceof Array) {
+  var entry = this.cache_[url];
+  if (entry && entry.pending) {
     console.error(
-        'Abandoned ' + this.cache_[url].length + ' metadata subscribers',
+        'Abandoned ' + entry.pending.length + ' metadata subscribers',
         url);
   }
   delete this.cache_[url];
@@ -193,6 +217,7 @@ GDataMetadataFetcher.prototype = { __proto__: MetadataFetcher.prototype };
 GDataMetadataFetcher.prototype.doFetch = function(url) {
   function convertMetadata(result) {
     return {
+      remote: true,
       thumbnailURL: result.thumbnailUrl,
       contentURL: (result.contentUrl || '').replace(/\?.*$/gi, ''),
       fileSize: 0  // TODO(kaznacheev) Get the correct size from File API.
@@ -214,15 +239,15 @@ GDataMetadataFetcher.prototype.doFetch = function(url) {
 function MetadataProvider(rootUrl) {
   MetadataCache.call(this);
 
-  var resultCallback = this.processResult.bind(this);
+  var callback = this.processResult.bind(this);
 
   // TODO(kaznacheev): We use 'gdata' literal here because
   // DirectoryModel.GDATA_DIRECTORY definition might be not available.
   // Consider extracting this definition into some common js file.
-  this.fetchers_ = [
-    new GDataMetadataFetcher(resultCallback, rootUrl + 'gdata' + '/'),
-    new LocalMetadataFetcher(resultCallback, rootUrl)
-  ];
+  this.gdata_ = new GDataMetadataFetcher(callback, rootUrl + 'gdata' + '/'),
+  this.local_ = new LocalMetadataFetcher(callback, rootUrl);
+
+  this.fetchers_ = [this.gdata_, this.local_];
 }
 
 MetadataProvider.prototype = { __proto__: MetadataCache.prototype };
@@ -235,13 +260,29 @@ MetadataProvider.prototype.isInitialized = function() {
   return true;
 };
 
-MetadataProvider.prototype.doFetch = function(url) {
-  for (var i = 0; i != this.fetchers_.length; i++) {
-    var fetcher = this.fetchers_[i];
+MetadataProvider.prototype.doFetch = function(url, opt_fetchers) {
+  var fetchers = opt_fetchers || this.fetchers_;
+  for (var i = 0; i != fetchers.length; i++) {
+    var fetcher = fetchers[i];
     if (fetcher.supports(url)) {
       fetcher.doFetch(url);
       return true;
     }
   }
   return false;
+};
+
+/**
+ * Force fetches metadata from a local file.
+ * Expensive to call, should be used only if local metadata is a must have.
+ */
+MetadataProvider.prototype.fetchLocal = function(url, callback) {
+  this.fetch(url, function(metadata) {
+    if (metadata.remote) {
+      delete metadata.remote;
+      this.fetch(url, callback, [this.local_]);
+    } else {
+      callback(metadata);
+    }
+  }.bind(this));
 };

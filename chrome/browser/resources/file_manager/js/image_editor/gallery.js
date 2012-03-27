@@ -243,15 +243,25 @@ Gallery.prototype.initDom_ = function() {
   this.editBarModeWrapper_.className = 'edit-modal-wrapper';
   this.editBarMode_.appendChild(this.editBarModeWrapper_);
 
-  this.editor_ = new ImageEditor(
-      this.container_,
+  this.viewport_ = new Viewport();
+
+  this.imageView_ = new ImageView(
       this.imageContainer_,
-      this.editBarMain_,
-      this.editBarModeWrapper_,
+      this.viewport_,
+      this.context_.metadataProvider);
+
+  this.editor_ = new ImageEditor(
+      this.viewport_,
+      this.imageView_,
+      {
+        root: this.container_,
+        image: this.imageContainer_,
+        toolbar: this.editBarMain_,
+        mode: this.editBarModeWrapper_
+      },
       Gallery.editorModes,
       this.displayStringFunction_);
 
-  this.imageView_ = this.editor_.getImageView();
   this.imageView_.addContentCallback(this.onImageContentChanged_.bind(this));
 
   this.editor_.trackWindow(doc.defaultView);

@@ -350,45 +350,54 @@ ImageUtil.setAttribute = function(element, attribute, on) {
 ImageUtil.ImageLoader = function(document) {
   this.document_ = document;
   this.image_ = null;
+  this.generation_ = 0;
 };
 
 /**
  * @param {string} url
- * @param {{scaleX: number, scaleY: number, rotate90: number}} transform
+ * @param {function(function(object))} transformFetcher function to get
+ *    the image transform (which we need for the image orientation)
  * @param {function(HTMLCanvasElement} callback
  * @param {number} opt_delay Load delay in milliseconds, useful to let the
  *        animations play out before the computation heavy image loading starts.
  */
 ImageUtil.ImageLoader.prototype.load = function(
-    url, transform, callback, opt_delay) {
+    url, transformFetcher, callback, opt_delay) {
   this.cancel();
 
   this.url_ = url;
-  this.transform_ = transform || { scaleX: 1, scaleY: 1, rotate90: 0};
   this.callback_ = callback;
 
-  var self = this;
-  function startLoad() {
+  // The transform fetcher is not cancellable so we need a generation counter.
+  var generation = ++this.generation_;
+  var onTransform = function(image, transform) {
+    if (generation == this.generation_) {
+      this.convertImage_(
+          image, transform || { scaleX: 1, scaleY: 1, rotate90: 0});
+    }
+  };
+
+  var startLoad = function() {
     ImageUtil.metrics.startInterval(ImageUtil.getMetricName('LoadTime'));
-    self.timeout_ = null;
+    this.timeout_ = null;
     // The clients of this class sometimes request the same url repeatedly.
     // The onload fires only if the src is different from the previous value.
     // To work around that we create a new Image every time.
-    self.image_ = new Image();
-    self.image_.onload = function(e) {
-      self.image_ = null;
-      self.convertImage_(e.target);
-    };
-    self.image_.onerror = function(e) {
-      self.image_ = null;
-      self.callback_ = null;
-      var emptyCanvas = self.document_.createElement('canvas');
+    this.image_ = new Image();
+    this.image_.onload = function(e) {
+      this.image = null;
+      transformFetcher(url, onTransform.bind(this, e.target));
+    }.bind(this);
+    this.image_.onerror = function() {
+      this.image_ = null;
+      this.callback_ = null;
+      var emptyCanvas = this.document_.createElement('canvas');
       emptyCanvas.width = 0;
       emptyCanvas.height = 0;
       callback(emptyCanvas);
-    };
-    self.image_.src = url;
-  }
+    }.bind(this);
+    this.image_.src = url;
+  }.bind(this);
   if (opt_delay) {
     this.timeout_ = setTimeout(startLoad, opt_delay);
   } else {
@@ -419,12 +428,13 @@ ImageUtil.ImageLoader.prototype.cancel = function() {
     this.image_.onload = function(){};
     this.image_ = null;
   }
+  this.generation_++;  // Silence the transform fetcher if it is in progress.
 };
 
-ImageUtil.ImageLoader.prototype.convertImage_ = function(image) {
+ImageUtil.ImageLoader.prototype.convertImage_ = function(image, transform) {
   var canvas = this.document_.createElement('canvas');
 
-  if (this.transform_.rotate90 & 1) {  // Rotated +/-90deg, swap the dimensions.
+  if (transform.rotate90 & 1) {  // Rotated +/-90deg, swap the dimensions.
     canvas.width = image.height;
     canvas.height = image.width;
   } else  {
@@ -435,8 +445,8 @@ ImageUtil.ImageLoader.prototype.convertImage_ = function(image) {
   var context = canvas.getContext('2d');
   context.save();
   context.translate(canvas.width / 2, canvas.height / 2);
-  context.rotate(this.transform_.rotate90 * Math.PI/2);
-  context.scale(this.transform_.scaleX, this.transform_.scaleY);
+  context.rotate(transform.rotate90 * Math.PI/2);
+  context.scale(transform.scaleX, transform.scaleY);
 
   var stripCount = Math.ceil(image.width * image.height / ( 1 << 21));
   var step = Math.max(16, Math.ceil(image.height / stripCount)) & 0xFFFFF0;
@@ -458,9 +468,8 @@ ImageUtil.ImageLoader.prototype.copyStrip_ = function(
     if (this.url_.substr(0, 5) != 'data:') {  // Ignore data urls.
       ImageUtil.metrics.recordInterval(ImageUtil.getMetricName('LoadTime'));
     }
-    var callback = this.callback_;
+    setTimeout(this.callback_, 0, context.canvas);
     this.callback_ = null;
-    callback(context.canvas);
   } else {
     var self = this;
     this.timeout_ = setTimeout(

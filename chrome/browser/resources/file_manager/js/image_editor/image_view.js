@@ -5,7 +5,7 @@
 /**
  * The overlay displaying the image.
  */
-function ImageView(container, viewport) {
+function ImageView(container, viewport, metadataProvider) {
   this.container_ = container;
   this.viewport_ = viewport;
   this.document_ = container.ownerDocument;
@@ -36,6 +36,11 @@ function ImageView(container, viewport) {
    */
   this.screenImage_ = null;
 
+  this.localImageTransformFetcher_ = function(url, callback) {
+    metadataProvider.fetchLocal(url, function(metadata) {
+      callback(metadata.imageTransform);
+    });
+  };
 }
 
 ImageView.ANIMATION_DURATION = 180;
@@ -217,7 +222,7 @@ ImageView.prototype.load = function(
     } else if (metadata.thumbnailURL) {
       this.imageLoader_.load(
           metadata.thumbnailURL,
-          metadata.thumbnailTransform,
+          function(url, callback) { callback(metadata.thumbnailTransform); },
           displayThumbnail.bind(null, ImageView.LOAD_TYPE_IMAGE_FILE, slide));
     } else {
       loadMainImage(ImageView.LOAD_TYPE_IMAGE_FILE, slide, source,
@@ -240,10 +245,8 @@ ImageView.prototype.load = function(
     }
     self.lastLoadTime_ = time;
 
-    var contentURL = source;
     if (canvas.width) {
       if (metadata.contentURL) {
-        contentURL = metadata.contentURL;
         // We do not know the main image size, but chances are that it is large
         // enough. Show the thumbnail at the maximum possible scale.
         var bounds = self.viewport_.getScreenBounds();
@@ -261,7 +264,7 @@ ImageView.prototype.load = function(
       // Thumbnail image load failed, loading the main image immediately.
       mainImageLoadDelay = 0;
     }
-    loadMainImage(loadType, mainImageSlide, contentURL,
+    loadMainImage(loadType, mainImageSlide, source,
         canvas.width != 0, mainImageLoadDelay);
   }
 
@@ -282,7 +285,7 @@ ImageView.prototype.load = function(
 
     self.imageLoader_.load(
         contentURL,
-        metadata.imageTransform,
+        self.localImageTransformFetcher_,
         displayMainImage.bind(null, loadType, slide, previewShown),
         delay);
   }
@@ -351,7 +354,7 @@ ImageView.prototype.prefetch = function(id, source, metadata) {
 
     this.prefetchLoader_.load(
         source,
-        metadata.imageTransform,
+        this.localImageTransformFetcher_,
         prefetchDone,
         ImageView.ANIMATION_WAIT_INTERVAL);
   }

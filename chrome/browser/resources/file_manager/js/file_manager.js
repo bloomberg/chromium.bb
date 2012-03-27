@@ -2816,13 +2816,19 @@ FileManager.prototype = {
       galleryFrame.contentWindow.FileType = FileType;
       galleryFrame.contentWindow.util = util;
 
-      var readonly = self.directoryModel_.readonly;
+      // Gallery shoud treat GData folder as readonly.
+      var readonly = self.directoryModel_.readonly || self.isOnGData();
       var currentDir = self.directoryModel_.currentEntry;
       var downloadsDir = self.directoryModel_.rootsList.item(0);
 
       var context = {
-        // We show the root name in readonly warning (e.g. archive name).
-        readonlyDirName: readonly ? self.directoryModel_.rootName : null,
+        // We show the root label in readonly warning (e.g. archive name).
+        readonlyDirName:
+            readonly ?
+                (self.isOnGData() ?
+                    self.getRootLabel_(currentDir.fullPath) :
+                    self.directoryModel_.rootName) :
+                null,
         saveDirEntry: readonly ? downloadsDir : currentDir,
         metadataProvider: self.getMetadataProvider(),
         getShareActions: self.getShareActions_.bind(self),

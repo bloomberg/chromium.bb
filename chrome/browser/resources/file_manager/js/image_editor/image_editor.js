@@ -5,18 +5,16 @@
 /**
  * ImageEditor is the top level object that holds together and connects
  * everything needed for image editing.
- * @param {HTMLElement} rootContainer
- * @param {HTMLElement} galleryContainer
- * @param {HTMLElement} mainToolbarContainer
- * @param {HTMLElement} modeToolbarContainer
+ * @param {Viewport} viewport
+ * @param {ImageView} imageView
+ * @param {Object} DOMContainers
  * @param {Array.<ImageEditor.Mode>} modes
  * @param {Object} displayStringFunction
  */
 function ImageEditor(
-    rootContainer, galleryContainer, mainToolbarContainer, modeToolbarContainer,
-    modes, displayStringFunction) {
-  this.rootContainer_ = rootContainer;
-  this.container_ = galleryContainer;
+    viewport, imageView, DOMContainers, modes, displayStringFunction) {
+  this.rootContainer_ = DOMContainers.root;
+  this.container_ = DOMContainers.image;
   this.modes_ = modes;
   this.displayStringFunction_ = displayStringFunction;
 
@@ -24,13 +22,13 @@ function ImageEditor(
 
   var document = this.container_.ownerDocument;
 
-  this.viewport_ = new Viewport();
+  this.viewport_ = viewport;
   this.viewport_.sizeByFrame(this.container_);
 
   this.buffer_ = new ImageBuffer();
   this.viewport_.addRepaintCallback(this.buffer_.draw.bind(this.buffer_));
 
-  this.imageView_ = new ImageView(this.container_, this.viewport_);
+  this.imageView_ = imageView;
   this.imageView_.addContentCallback(this.onContentUpdate_.bind(this));
   this.buffer_.addOverlay(this.imageView_);
 
@@ -38,10 +36,10 @@ function ImageEditor(
       this.rootContainer_, this.container_, this.getBuffer());
 
   this.mainToolbar_ = new ImageEditor.Toolbar(
-      mainToolbarContainer, displayStringFunction);
+      DOMContainers.toolbar, displayStringFunction);
 
   this.modeToolbar_ = new ImageEditor.Toolbar(
-      modeToolbarContainer, displayStringFunction,
+      DOMContainers.mode, displayStringFunction,
       this.onOptionsChange.bind(this));
 
   this.prompt_ = new ImageEditor.Prompt(
