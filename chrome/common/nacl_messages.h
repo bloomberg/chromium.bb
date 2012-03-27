@@ -18,7 +18,7 @@
 
 //-----------------------------------------------------------------------------
 // NaClProcess messages
-// These are messages sent from the browser to the NaCl process.
+// These are messages sent between the browser and the NaCl process.
 // Tells the NaCl process to start.
 IPC_MESSAGE_CONTROL2(NaClProcessMsg_Start,
                      std::vector<nacl::FileDescriptor> /* sockets */,
@@ -47,3 +47,14 @@ IPC_MESSAGE_CONTROL1(NaClProcessMsg_DebugExceptionHandlerLaunched,
 // Notify the broker that all loader processes have been terminated and it
 // should shutdown.
 IPC_MESSAGE_CONTROL0(NaClProcessMsg_StopBroker)
+
+// Used by the NaCl process to query a database in the browser.  The database
+// contains the signatures of previously validated code chunks.
+IPC_SYNC_MESSAGE_CONTROL1_1(NaClProcessMsg_QueryKnownToValidate,
+                            std::string, /* A validation signature */
+                            bool /* Can validation be skipped? */)
+
+// Used by the NaCl process to add a validation signature to the validation
+// database in the browser.
+IPC_MESSAGE_CONTROL1(NaClProcessMsg_SetKnownToValidate,
+                     std::string /* A validation signature */)
