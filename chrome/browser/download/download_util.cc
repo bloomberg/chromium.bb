@@ -55,6 +55,11 @@
 #if defined(TOOLKIT_VIEWS)
 #include "ui/base/dragdrop/drag_utils.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
+#if !defined(TOOLKIT_USES_GTK)
+#include "ui/base/dragdrop/drag_drop_types.h"
+#include "ui/gfx/screen.h"
+#include "ui/views/widget/widget.h"
+#endif
 #endif
 
 #if defined(TOOLKIT_USES_GTK)
@@ -391,17 +396,15 @@ void DragDownload(const DownloadItem* download,
                 download->GetFileNameToReportUser().LossyDisplayName());
   }
 
-#if defined(USE_AURA)
-  // TODO(beng):
-  NOTIMPLEMENTED();
-#elif defined(OS_WIN)
-  scoped_refptr<ui::DragSource> drag_source(new ui::DragSource);
+#if !defined(TOOLKIT_USES_GTK)
+  views::Widget* widget = views::Widget::GetWidgetForNativeView(view);
+  gfx::Point location = gfx::Screen::GetCursorScreenPoint();
+  // We do not care about notifying the DragItemView on completion of drag. So
+  // we pass NULL to RunShellDrag for the source view.
+  widget->RunShellDrag(NULL, data, location,
+      ui::DragDropTypes::DRAG_COPY | ui::DragDropTypes::DRAG_LINK);
 
-  // Run the drag and drop loop
-  DWORD effects;
-  DoDragDrop(ui::OSExchangeDataProviderWin::GetIDataObject(data),
-             drag_source.get(), DROPEFFECT_COPY | DROPEFFECT_LINK, &effects);
-#elif defined(TOOLKIT_USES_GTK)
+#else
   GtkWidget* root = gtk_widget_get_toplevel(view);
   if (!root)
     return;
@@ -413,7 +416,7 @@ void DragDownload(const DownloadItem* download,
 
   widget->DoDrag(data,
                  ui::DragDropTypes::DRAG_COPY | ui::DragDropTypes::DRAG_LINK);
-#endif  // OS_WIN
+#endif  // TOOLKIT_USES_GTK
 }
 #elif defined(USE_X11)
 void DragDownload(const DownloadItem* download,
