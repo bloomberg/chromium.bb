@@ -399,13 +399,12 @@ html[dir='rtl'] #decrement {
 
 /* TODO(estade): unfork this code. */
 .button-strip {
+<if expr="not pp_ifdef('toolkit_views')">
+  -webkit-box-direction: reverse;
+</if>
   -webkit-box-orient: horizontal;
   -webkit-box-pack: end;
   display: -webkit-box;
-}
-
-html:not([toolkit=views]) .button-strip {
-  -webkit-box-direction: reverse;
 }
 
 #print-preview .button-strip button {

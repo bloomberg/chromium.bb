@@ -132,20 +132,21 @@ list [editing] .url input {
 }
 
 .tree-item [editing] input {
-  margin: 0;
-  padding: 0;
   -webkit-margin-start: -3px;
   -webkit-padding-end: 7px;
-}
-
-html[os=mac] .tree-label [editing] input {
+  margin: 0;
+  padding: 0;
+<if expr="is_macosx">
   padding-top: 1px;
+</if>
 }
 
-html:not([os=mac]) list .label input,
-html:not([os=mac]) list .url input {
+<if expr="is_macosx">
+list .label input,
+list .url input {
   outline: none;
 }
+</if>
 
 list > [editing] {
   overflow: visible;
@@ -168,18 +169,14 @@ html[dir=rtl] list > .folder > .label {
   background-image: url("../../../../../ui/resources/folder_closed_rtl.png");
 }
 
-html[os=mac] list > .folder > .label {
+<if expr="is_macosx">
+list > .folder > .label,
+.tree-label,
+.tree-row[may-have-children] > .tree-label,
+.tree-item[expanded] > .tree-row > .tree-label {
   background-image: url("../../../../app/theme/bookmark_bar_folder_mac.png");
 }
-
-html[os=mac] .tree-label,
-html[os=mac] .tree-row[may-have-children] > .tree-label {
-  background-image: url("../../../../app/theme/bookmark_bar_folder_mac.png");
-}
-
-html[os=mac] .tree-item[expanded] > .tree-row > .tree-label {
-  background-image: url("../../../../app/theme/bookmark_bar_folder_mac.png");
-}
+</if>
 
 .main {
   position: absolute;
@@ -221,10 +218,9 @@ html[os=mac] .tree-item[expanded] > .tree-row > .tree-label {
   width: 5px;
   background-color: #ebeff9;
   cursor: e-resize;
-}
-
-html[os=mac] .splitter {
+<if expr="is_macosx">
   cursor: col-resize;
+</if>
 }
 
 .logo {

@@ -1,3 +1,7 @@
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
 tree {
   outline: none;
   overflow: auto;
@@ -157,11 +161,10 @@ tree[icon-visibility=parent] .tree-row[has-children=false] > .tree-label {
   font-size: inherit;
   font-weight: inherit;
   margin: -2px -8px -2px -3px;
-  padding: 1px 7px 1px 1px;
-}
-
-html:not([os=mac]) .tree-item[editing] input {
+<if expr="not is_macosx">
   outline: none;
+</if>
+  padding: 1px 7px 1px 1px;
 }
 
 html[dir=rtl] .tree-item[editing] input {

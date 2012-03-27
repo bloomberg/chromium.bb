@@ -41,10 +41,9 @@ html[dir='rtl'] .cloudprint-success-footer {
 }
 
 .button {
+<if expr="is_macosx">
+  font-size: 12pt;
+</if>
   min-width: 87px;
   min-height: 26px;
-}
-
-html[os='mac'].button {
-  font-size: 12pt;
 }

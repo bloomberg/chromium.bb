@@ -15,7 +15,9 @@
   width: 260px;
 }
 
+<if expr="pp_ifdef('toolkit_views')">
 /* TODO(estade): apply this everywhere. */
-html:not([toolkit=views]) .button-strip {
+.button-strip {
   -webkit-box-direction: reverse;
 }
+</if>

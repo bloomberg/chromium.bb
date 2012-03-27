@@ -208,10 +208,9 @@
 
 #sync-setup-configure {
   background: white;
-}
-
-html[os='mac'] #sync-setup-configure {
+<if expr="is_macosx">
   line-height: 1.5em;
+</if>
 }
 
 #choose-data-types-form {

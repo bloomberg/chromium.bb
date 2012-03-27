@@ -1,8 +1,6 @@
-/*
-Copyright (c) 2011 The Chromium Authors. All rights reserved.
-Use of this source code is governed by a BSD-style license that can be
-found in the LICENSE file.
-*/
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
 
 #sync-search-query {
   width: 20em;
@@ -21,27 +19,25 @@ found in the LICENSE file.
 }
 
 #sync-results-list {
-  height: 100%;
-  width: 275px;
-  /* min-width and max-width are used by the split pane. */
-  min-width: 50px;
-  max-width: 50%;
-  overflow: auto;
-  box-sizing: border-box;
-  padding: 5px;
   -webkit-padding-start: 10px;
+  box-sizing: border-box;
+  height: 100%;
+  /* min-width and max-width are used by the split pane. */
+  max-width: 50%;
+  min-width: 50px;
+  overflow: auto;
+  padding: 5px;
+  width: 275px;
 }
 
 #sync-results-splitter {
-  width: 5px;
   background-color: #ebeff9;
   cursor: col-resize;
-}
-
-/* Platform annotations are set in sync_node_browser.js. */
-/* TODO(akalin): Make the BMM also use this style. */
-html[os=win] #sync-results-splitter {
+  width: 5px;
+<if expr="is_win">
+  /* TODO(akalin): Make the BMM also use this style. */
   cursor: e-resize;
+</if>
 }
 
 #sync-result-details-container {
