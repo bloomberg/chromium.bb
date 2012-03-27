@@ -72,7 +72,7 @@ class MockBufferedDataSource : public BufferedDataSource {
 
 static const int64 kFileSize = 5000000;
 static const int64 kFarReadPosition = 4000000;
-static const size_t kDataSize = 1024;
+static const int kDataSize = 1024;
 
 class BufferedDataSourceTest : public testing::Test {
  public:
@@ -144,7 +144,7 @@ class BufferedDataSourceTest : public testing::Test {
     message_loop_->RunAllPending();
   }
 
-  MOCK_METHOD1(ReadCallback, void(size_t size));
+  MOCK_METHOD1(ReadCallback, void(int size));
 
   void ReadAt(int64 position) {
     data_source_->Read(position, kDataSize, buffer_,

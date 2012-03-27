@@ -12,8 +12,8 @@ static void LogAndRunStopClosure(const base::Closure& closure) {
 }
 
 static void LogAndRunReadCB(
-    int64 position, size_t size,
-    const media::DataSource::ReadCB& read_cb, size_t result) {
+    int64 position, int size,
+    const media::DataSource::ReadCB& read_cb, int result) {
   VLOG(1) << "Read(" << position << ", " << size << ") -> " << result;
   read_cb.Run(result);
 }
@@ -38,7 +38,7 @@ void DataSourceLogger::Stop(const base::Closure& closure) {
 }
 
 void DataSourceLogger::Read(
-    int64 position, size_t size, uint8* data,
+    int64 position, int size, uint8* data,
     const media::DataSource::ReadCB& read_cb) {
   VLOG(1) << "Read(" << position << ", " << size << ")";
   data_source_->Read(position, size, data, base::Bind(

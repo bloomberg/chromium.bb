@@ -17,11 +17,11 @@ namespace media {
 // The starting size in bytes for |audio_buffer_|.
 // Previous usage maintained a deque of 16 Buffers, each of size 4Kb. This
 // worked well, so we maintain this number of bytes (16 * 4096).
-static const size_t kStartingBufferSizeInBytes = 65536;
+static const int kStartingBufferSizeInBytes = 65536;
 
 // The maximum size in bytes for the |audio_buffer_|. Arbitrarily determined.
 // This number represents 3 seconds of 96kHz/16 bit 7.1 surround sound.
-static const size_t kMaxBufferSizeInBytes = 4608000;
+static const int kMaxBufferSizeInBytes = 4608000;
 
 // Duration of audio segments used for crossfading (in seconds).
 static const double kWindowDuration = 0.08;
@@ -104,14 +104,14 @@ void AudioRendererAlgorithmBase::Initialize(
   crossfade_buffer_.reset(new uint8[bytes_in_crossfade_]);
 }
 
-uint32 AudioRendererAlgorithmBase::FillBuffer(
-    uint8* dest, uint32 requested_frames) {
-  DCHECK_NE(bytes_per_frame_, 0u);
+int AudioRendererAlgorithmBase::FillBuffer(
+    uint8* dest, int requested_frames) {
+  DCHECK_NE(bytes_per_frame_, 0);
 
   if (playback_rate_ == 0.0f)
     return 0;
 
-  uint32 total_frames_rendered = 0;
+  int total_frames_rendered = 0;
   uint8* output_ptr = dest;
   while (total_frames_rendered < requested_frames) {
     if (index_into_window_ == window_size_)
@@ -159,25 +159,25 @@ bool AudioRendererAlgorithmBase::OutputFasterPlayback(uint8* dest) {
   //
   // The duration of each phase is computed below based on the |window_size_|
   // and |playback_rate_|.
-  uint32 input_step = window_size_;
-  uint32 output_step = ceil(window_size_ / playback_rate_);
+  int input_step = window_size_;
+  int output_step = ceil(window_size_ / playback_rate_);
   AlignToFrameBoundary(&output_step);
   DCHECK_GT(input_step, output_step);
 
-  uint32 bytes_to_crossfade = bytes_in_crossfade_;
+  int bytes_to_crossfade = bytes_in_crossfade_;
   if (muted_ || bytes_to_crossfade > output_step)
     bytes_to_crossfade = 0;
 
   // This is the index of the end of phase a, beginning of phase b.
-  uint32 outtro_crossfade_begin = output_step - bytes_to_crossfade;
+  int outtro_crossfade_begin = output_step - bytes_to_crossfade;
 
   // This is the index of the end of phase b, beginning of phase c.
-  uint32 outtro_crossfade_end = output_step;
+  int outtro_crossfade_end = output_step;
 
   // This is the index of the end of phase c, beginning of phase d.
   // This phase continues until |index_into_window_| reaches |window_size_|, at
   // which point the window restarts.
-  uint32 intro_crossfade_begin = input_step - bytes_to_crossfade;
+  int intro_crossfade_begin = input_step - bytes_to_crossfade;
 
   // a) Output a raw frame if we haven't reached the crossfade section.
   if (index_into_window_ < outtro_crossfade_begin) {
@@ -193,7 +193,7 @@ bool AudioRendererAlgorithmBase::OutputFasterPlayback(uint8* dest) {
       return false;
 
     // This phase only applies if there are bytes to crossfade.
-    DCHECK_GT(bytes_to_crossfade, 0u);
+    DCHECK_GT(bytes_to_crossfade, 0);
     uint8* place_to_copy = crossfade_buffer_.get() +
         (index_into_window_ - outtro_crossfade_begin);
     CopyWithAdvance(place_to_copy);
@@ -221,7 +221,7 @@ bool AudioRendererAlgorithmBase::OutputFasterPlayback(uint8* dest) {
 
   // d) Crossfade and output a frame.
   DCHECK_LT(index_into_window_, window_size_);
-  uint32 offset_into_buffer = index_into_window_ - intro_crossfade_begin;
+  int offset_into_buffer = index_into_window_ - intro_crossfade_begin;
   memcpy(dest, crossfade_buffer_.get() + offset_into_buffer,
          bytes_per_frame_);
   scoped_array<uint8> intro_frame_ptr(new uint8[bytes_per_frame_]);
@@ -252,25 +252,25 @@ bool AudioRendererAlgorithmBase::OutputSlowerPlayback(uint8* dest) {
   //
   // The duration of each phase is computed below based on the |window_size_|
   // and |playback_rate_|.
-  uint32 input_step = ceil(window_size_ * playback_rate_);
+  int input_step = ceil(window_size_ * playback_rate_);
   AlignToFrameBoundary(&input_step);
-  uint32 output_step = window_size_;
+  int output_step = window_size_;
   DCHECK_LT(input_step, output_step);
 
-  uint32 bytes_to_crossfade = bytes_in_crossfade_;
+  int bytes_to_crossfade = bytes_in_crossfade_;
   if (muted_ || bytes_to_crossfade > input_step)
     bytes_to_crossfade = 0;
 
   // This is the index of the end of phase a, beginning of phase b.
-  uint32 intro_crossfade_begin = input_step - bytes_to_crossfade;
+  int intro_crossfade_begin = input_step - bytes_to_crossfade;
 
   // This is the index of the end of phase b, beginning of phase c.
-  uint32 intro_crossfade_end = input_step;
+  int intro_crossfade_end = input_step;
 
   // This is the index of the end of phase c,  beginning of phase d.
   // This phase continues until |index_into_window_| reaches |window_size_|, at
   // which point the window restarts.
-  uint32 outtro_crossfade_begin = output_step - bytes_to_crossfade;
+  int outtro_crossfade_begin = output_step - bytes_to_crossfade;
 
   // a) Output a raw frame.
   if (index_into_window_ < intro_crossfade_begin) {
@@ -282,7 +282,7 @@ bool AudioRendererAlgorithmBase::OutputSlowerPlayback(uint8* dest) {
   // b) Save the raw frame for the intro crossfade section, then output the
   //    frame to |dest|.
   if (index_into_window_ < intro_crossfade_end) {
-    uint32 offset = index_into_window_ - intro_crossfade_begin;
+    int offset = index_into_window_ - intro_crossfade_begin;
     uint8* place_to_copy = crossfade_buffer_.get() + offset;
     CopyWithoutAdvance(place_to_copy);
     CopyWithAdvance(dest);
@@ -290,7 +290,7 @@ bool AudioRendererAlgorithmBase::OutputSlowerPlayback(uint8* dest) {
     return true;
   }
 
-  uint32 audio_buffer_offset = index_into_window_ - intro_crossfade_end;
+  int audio_buffer_offset = index_into_window_ - intro_crossfade_end;
 
   if (audio_buffer_.forward_bytes() < audio_buffer_offset + bytes_per_frame_)
     return false;
@@ -303,7 +303,7 @@ bool AudioRendererAlgorithmBase::OutputSlowerPlayback(uint8* dest) {
   // d) Crossfade the next frame of |crossfade_buffer_| into |dest| if we've
   //    reached the outtro crossfade section of the window.
   if (index_into_window_ >= outtro_crossfade_begin) {
-    uint32 offset_into_crossfade_buffer =
+    int offset_into_crossfade_buffer =
         index_into_window_ - outtro_crossfade_begin;
     uint8* intro_frame_ptr =
         crossfade_buffer_.get() + offset_into_crossfade_buffer;
@@ -333,12 +333,12 @@ void AudioRendererAlgorithmBase::CopyWithoutAdvance(uint8* dest) {
 }
 
 void AudioRendererAlgorithmBase::CopyWithoutAdvance(
-    uint8* dest, uint32 offset) {
+    uint8* dest, int offset) {
   if (muted_) {
     memset(dest, 0, bytes_per_frame_);
     return;
   }
-  uint32 copied = audio_buffer_.Peek(dest, bytes_per_frame_, offset);
+  int copied = audio_buffer_.Peek(dest, bytes_per_frame_, offset);
   DCHECK_EQ(bytes_per_frame_, copied);
 }
 
@@ -375,7 +375,7 @@ void AudioRendererAlgorithmBase::CrossfadeFrame(
   Type* outtro = reinterpret_cast<Type*>(outtro_bytes);
   const Type* intro = reinterpret_cast<const Type*>(intro_bytes);
 
-  uint32 frames_in_crossfade = bytes_in_crossfade_ / bytes_per_frame_;
+  int frames_in_crossfade = bytes_in_crossfade_ / bytes_per_frame_;
   float crossfade_ratio =
       static_cast<float>(crossfade_frame_number_) / frames_in_crossfade;
   for (int channel = 0; channel < channels_; ++channel) {
@@ -394,7 +394,7 @@ void AudioRendererAlgorithmBase::SetPlaybackRate(float new_rate) {
   ResetWindow();
 }
 
-void AudioRendererAlgorithmBase::AlignToFrameBoundary(uint32* value) {
+void AudioRendererAlgorithmBase::AlignToFrameBoundary(int* value) {
   (*value) -= ((*value) % bytes_per_frame_);
 }
 
@@ -432,7 +432,7 @@ bool AudioRendererAlgorithmBase::IsQueueFull() {
   return audio_buffer_.forward_bytes() >= audio_buffer_.forward_capacity();
 }
 
-uint32 AudioRendererAlgorithmBase::QueueCapacity() {
+int AudioRendererAlgorithmBase::QueueCapacity() {
   return audio_buffer_.forward_capacity();
 }
 

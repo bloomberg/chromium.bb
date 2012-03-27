@@ -25,7 +25,7 @@ class DataSourceLogger : public media::DataSource {
   virtual void set_host(media::DataSourceHost* host) OVERRIDE;
   virtual void Stop(const base::Closure& closure) OVERRIDE;
   virtual void Read(
-      int64 position, size_t size, uint8* data,
+      int64 position, int size, uint8* data,
       const media::DataSource::ReadCB& read_cb) OVERRIDE;
   virtual bool GetSize(int64* size_out) OVERRIDE;
   virtual bool IsStreaming() OVERRIDE;

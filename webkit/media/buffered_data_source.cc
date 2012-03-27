@@ -139,7 +139,7 @@ void BufferedDataSource::SetBitrate(int bitrate) {
 /////////////////////////////////////////////////////////////////////////////
 // media::DataSource implementation.
 void BufferedDataSource::Read(
-    int64 position, size_t size, uint8* data,
+    int64 position, int size, uint8* data,
     const media::DataSource::ReadCB& read_cb) {
   DVLOG(1) << "Read: " << position << " offset, " << size << " bytes";
   DCHECK(!read_cb.is_null());
@@ -157,8 +157,7 @@ void BufferedDataSource::Read(
   }
 
   render_loop_->PostTask(FROM_HERE, base::Bind(
-      &BufferedDataSource::ReadTask, this,
-      position, static_cast<int>(size), data));
+      &BufferedDataSource::ReadTask, this, position, size, data));
 }
 
 bool BufferedDataSource::GetSize(int64* size_out) {
@@ -334,7 +333,7 @@ void BufferedDataSource::DoneRead_Locked(int error) {
   lock_.AssertAcquired();
 
   if (error >= 0) {
-    read_cb_.Run(static_cast<size_t>(error));
+    read_cb_.Run(error);
   } else {
     read_cb_.Run(kReadError);
   }

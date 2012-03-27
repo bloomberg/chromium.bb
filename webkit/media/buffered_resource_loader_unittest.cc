@@ -89,7 +89,7 @@ class BufferedResourceLoaderTest : public testing::Test {
     loader_->SetURLLoaderForTest(scoped_ptr<WebKit::WebURLLoader>(url_loader_));
   }
 
-  void SetLoaderBuffer(size_t forward_capacity, size_t backward_capacity) {
+  void SetLoaderBuffer(int forward_capacity, int backward_capacity) {
     loader_->buffer_.reset(
         new media::SeekableBuffer(backward_capacity, forward_capacity));
   }
@@ -213,8 +213,8 @@ class BufferedResourceLoaderTest : public testing::Test {
   }
 
   void WriteUntilThreshold() {
-    size_t buffered = loader_->buffer_->forward_bytes();
-    size_t capacity = loader_->buffer_->forward_capacity();
+    int buffered = loader_->buffer_->forward_bytes();
+    int capacity = loader_->buffer_->forward_capacity();
     CHECK_LT(buffered, capacity);
 
     EXPECT_CALL(*this, NetworkCallback());
@@ -242,22 +242,22 @@ class BufferedResourceLoaderTest : public testing::Test {
     EXPECT_EQ(loader_->last_offset_, expected_last_offset);
   }
 
-  void ConfirmBufferState(size_t backward_bytes,
-                          size_t backward_capacity,
-                          size_t forward_bytes,
-                          size_t forward_capacity) {
+  void ConfirmBufferState(int backward_bytes,
+                          int backward_capacity,
+                          int forward_bytes,
+                          int forward_capacity) {
     EXPECT_EQ(backward_bytes, loader_->buffer_->backward_bytes());
     EXPECT_EQ(backward_capacity, loader_->buffer_->backward_capacity());
     EXPECT_EQ(forward_bytes, loader_->buffer_->forward_bytes());
     EXPECT_EQ(forward_capacity, loader_->buffer_->forward_capacity());
   }
 
-  void ConfirmLoaderBufferBackwardCapacity(size_t expected_backward_capacity) {
+  void ConfirmLoaderBufferBackwardCapacity(int expected_backward_capacity) {
     EXPECT_EQ(loader_->buffer_->backward_capacity(),
               expected_backward_capacity);
   }
 
-  void ConfirmLoaderBufferForwardCapacity(size_t expected_forward_capacity) {
+  void ConfirmLoaderBufferForwardCapacity(int expected_forward_capacity) {
     EXPECT_EQ(loader_->buffer_->forward_capacity(), expected_forward_capacity);
   }
 
@@ -268,12 +268,12 @@ class BufferedResourceLoaderTest : public testing::Test {
   // Makes sure the |loader_| buffer window is in a reasonable range.
   void CheckBufferWindowBounds() {
     // Corresponds to value defined in buffered_resource_loader.cc.
-    static const size_t kMinBufferCapacity = 2 * 1024 * 1024;
+    static const int kMinBufferCapacity = 2 * 1024 * 1024;
     EXPECT_GE(loader_->buffer_->forward_capacity(), kMinBufferCapacity);
     EXPECT_GE(loader_->buffer_->backward_capacity(), kMinBufferCapacity);
 
     // Corresponds to value defined in buffered_resource_loader.cc.
-    static const size_t kMaxBufferCapacity = 20 * 1024 * 1024;
+    static const int kMaxBufferCapacity = 20 * 1024 * 1024;
     EXPECT_LE(loader_->buffer_->forward_capacity(), kMaxBufferCapacity);
     EXPECT_LE(loader_->buffer_->backward_capacity(), kMaxBufferCapacity);
   }
@@ -283,8 +283,8 @@ class BufferedResourceLoaderTest : public testing::Test {
   MOCK_METHOD0(NetworkCallback, void());
 
   // Accessors for private variables on |loader_|.
-  size_t forward_bytes() { return loader_->buffer_->forward_bytes(); }
-  size_t forward_capacity() { return loader_->buffer_->forward_capacity(); }
+  int forward_bytes() { return loader_->buffer_->forward_bytes(); }
+  int forward_capacity() { return loader_->buffer_->forward_capacity(); }
 
  protected:
   GURL gurl_;
@@ -943,8 +943,8 @@ TEST_F(BufferedResourceLoaderTest, Tricky_LargeReadBackwards) {
 }
 
 TEST_F(BufferedResourceLoaderTest, Tricky_ReadPastThreshold) {
-  const size_t kSize = 5 * 1024 * 1024;
-  const size_t kThreshold = 2 * 1024 * 1024;
+  const int kSize = 5 * 1024 * 1024;
+  const int kThreshold = 2 * 1024 * 1024;
 
   Initialize(kHttpUrl, 10, kSize);
   SetLoaderBuffer(10, 10);

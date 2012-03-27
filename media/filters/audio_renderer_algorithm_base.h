@@ -30,8 +30,6 @@ namespace media {
 
 class Buffer;
 
-// TODO(vrk): Remove all the uint32s from AudioRendererAlgorithmBase and
-// replace them with ints.
 class MEDIA_EXPORT AudioRendererAlgorithmBase {
  public:
   AudioRendererAlgorithmBase();
@@ -61,7 +59,7 @@ class MEDIA_EXPORT AudioRendererAlgorithmBase {
   //
   // Returns the number of frames copied into |dest|.
   // May request more reads via |request_read_cb_| before returning.
-  uint32 FillBuffer(uint8* dest, uint32 requested_frames);
+  int FillBuffer(uint8* dest, int requested_frames);
 
   // Clears |audio_buffer_|.
   void FlushBuffers();
@@ -84,7 +82,7 @@ class MEDIA_EXPORT AudioRendererAlgorithmBase {
   bool IsQueueFull();
 
   // Returns the capacity of |audio_buffer_|.
-  uint32 QueueCapacity();
+  int QueueCapacity();
 
   // Increase the capacity of |audio_buffer_| if possible.
   void IncreaseQueueCapacity();
@@ -92,11 +90,11 @@ class MEDIA_EXPORT AudioRendererAlgorithmBase {
   // Returns the number of bytes left in |audio_buffer_|, which may be larger
   // than QueueCapacity() in the event that a read callback delivered more data
   // than |audio_buffer_| was intending to hold.
-  uint32 bytes_buffered() { return audio_buffer_.forward_bytes(); }
+  int bytes_buffered() { return audio_buffer_.forward_bytes(); }
 
-  uint32 bytes_per_frame() { return bytes_per_frame_; }
+  int bytes_per_frame() { return bytes_per_frame_; }
 
-  uint32 bytes_per_channel() { return bytes_per_channel_; }
+  int bytes_per_channel() { return bytes_per_channel_; }
 
   bool is_muted() { return muted_; }
 
@@ -136,7 +134,7 @@ class MEDIA_EXPORT AudioRendererAlgorithmBase {
   // |audio_buffer_|'s internal "current" cursor. Optionally peeks at a forward
   // byte |offset|.
   void CopyWithoutAdvance(uint8* dest);
-  void CopyWithoutAdvance(uint8* dest, uint32 offset);
+  void CopyWithoutAdvance(uint8* dest, int offset);
 
   // Copies a raw frame from |audio_buffer_| into |dest| and progresses the
   // |audio_buffer_| forward.
@@ -152,7 +150,7 @@ class MEDIA_EXPORT AudioRendererAlgorithmBase {
   void CrossfadeFrame(uint8* outtro, const uint8* intro);
 
   // Rounds |*value| down to the nearest frame boundary.
-  void AlignToFrameBoundary(uint32* value);
+  void AlignToFrameBoundary(int* value);
 
   // Number of channels in audio stream.
   int channels_;
@@ -173,18 +171,18 @@ class MEDIA_EXPORT AudioRendererAlgorithmBase {
   SeekableBuffer audio_buffer_;
 
   // Length for crossfade in bytes.
-  uint32 bytes_in_crossfade_;
+  int bytes_in_crossfade_;
 
   // Length of frame in bytes.
-  uint32 bytes_per_frame_;
+  int bytes_per_frame_;
 
   // The current location in the audio window, between 0 and |window_size_|.
   // When |index_into_window_| reaches |window_size_|, the window resets.
   // Indexed by byte.
-  uint32 index_into_window_;
+  int index_into_window_;
 
   // The frame number in the crossfade.
-  uint32 crossfade_frame_number_;
+  int crossfade_frame_number_;
 
   // True if the audio should be muted.
   bool muted_;
@@ -195,7 +193,7 @@ class MEDIA_EXPORT AudioRendererAlgorithmBase {
   scoped_array<uint8> crossfade_buffer_;
 
   // Window size, in bytes (calculated from audio properties).
-  uint32 window_size_;
+  int window_size_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioRendererAlgorithmBase);
 };
