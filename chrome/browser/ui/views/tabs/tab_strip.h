@@ -484,7 +484,11 @@ class TabStrip : public AbstractTabStripView,
   // able to lay it out before we are able to get its image from the
   // ui::ThemeProvider.  It also makes sense to do this, because the size of the
   // new tab button should not need to be calculated dynamically.
+#if defined(USE_ASH)
+  static const int kNewTabButtonWidth = 34;
+#else
   static const int kNewTabButtonWidth = 28;
+#endif
   static const int kNewTabButtonHeight = 18;
 
   // Valid for the lifetime of a drag over us.
