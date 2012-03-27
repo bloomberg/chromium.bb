@@ -74,6 +74,8 @@ def handle_single_schema(filename, dest_dir, root, root_namespace):
     type_generator = cpp_type_generator.CppTypeGenerator(
         root_namespace, namespace, namespace.unix_name)
     for referenced_namespace in api_model.namespaces.values():
+      if referenced_namespace == namespace:
+        continue
       type_generator.AddNamespace(
           referenced_namespace,
           referenced_namespace.unix_name)
