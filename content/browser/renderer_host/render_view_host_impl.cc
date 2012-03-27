@@ -1532,6 +1532,9 @@ void RenderViewHostImpl::SetAltErrorPageURL(const GURL& url) {
 
 void RenderViewHostImpl::ExitFullscreen() {
   RejectMouseLockOrUnlockIfNecessary();
+  // We need to notify the tab that its fullscreen state has changed. This
+  // is done as part of the resize message.
+  WasResized();
 }
 
 void RenderViewHostImpl::UpdateWebkitPreferences(const WebPreferences& prefs) {

@@ -21,6 +21,7 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 
+using content::RenderViewHost;
 using content::UserMetricsAction;
 using content::WebContents;
 
@@ -271,17 +272,18 @@ bool FullscreenController::HandleUserPressedEscape() {
 }
 
 void FullscreenController::NotifyTabOfFullscreenExitIfNecessary() {
-  if (fullscreened_tab_ &&
-      fullscreened_tab_->web_contents()->GetRenderViewHost()) {
-    fullscreened_tab_->web_contents()->GetRenderViewHost()->ExitFullscreen();
+  if (fullscreened_tab_) {
+    RenderViewHost* rvh =
+        fullscreened_tab_->web_contents()->GetRenderViewHost();
+    fullscreened_tab_ = NULL;
+    tab_caused_fullscreen_ = false;
+    tab_fullscreen_accepted_ = false;
+    mouse_lock_state_ = MOUSELOCK_NOT_REQUESTED;
+    if (rvh)
+      rvh->ExitFullscreen();
   } else {
     DCHECK_EQ(mouse_lock_state_, MOUSELOCK_NOT_REQUESTED);
   }
-
-  fullscreened_tab_ = NULL;
-  tab_caused_fullscreen_ = false;
-  tab_fullscreen_accepted_ = false;
-  mouse_lock_state_ = MOUSELOCK_NOT_REQUESTED;
 
   UpdateFullscreenExitBubbleContent();
 }

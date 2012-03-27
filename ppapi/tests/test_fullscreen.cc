@@ -272,6 +272,8 @@ void TestFullscreen::CheckPluginPaint() {
 // fullscreen.
 //
 // NOTE: The number of DidChangeView calls for <object> might be different.
+// TODO(bbudge) Figure out how to test that the plugin positon eventually
+// changes to normal_position_.
 void TestFullscreen::DidChangeView(const pp::View& view) {
   pp::Rect position = view.GetRect();
   pp::Rect clip = view.GetClipRect();
@@ -296,8 +298,6 @@ void TestFullscreen::DidChangeView(const pp::View& view) {
     normal_pending_ = false;
     if (screen_mode_.IsFullscreen())
       FailNormalTest("DidChangeview is in fullscreen");
-    else if (position != normal_position_)
-      FailNormalTest("DidChangeView position is not normal");
     else if (!instance_->BindGraphics(graphics2d_))
       FailNormalTest("Failed to BindGraphics() in normal");
     else if (!PaintPlugin(position.size(), kSheerBlue))
