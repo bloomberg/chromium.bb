@@ -115,6 +115,10 @@ class Shell : public WebContentsDelegate,
                                   const GURL& target_url,
                                   WebContents* new_contents) OVERRIDE;
   virtual void DidNavigateMainFramePostCommit(WebContents* tab) OVERRIDE;
+#if defined(OS_MACOSX)
+  virtual void HandleKeyboardEvent(
+      const NativeWebKeyboardEvent& event) OVERRIDE;
+#endif
 
   // content::WebContentsObserver
   virtual void DidFinishLoad(int64 frame_id,

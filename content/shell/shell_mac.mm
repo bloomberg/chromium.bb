@@ -11,6 +11,7 @@
 #import "base/memory/scoped_nsobject.h"
 #include "base/string_piece.h"
 #include "base/sys_string_conversions.h"
+#include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/shell/resource.h"
@@ -238,6 +239,16 @@ void Shell::URLEntered(std::string url_string) {
       url = GURL("http://" + url_string);
     LoadURL(url);
   }
+}
+
+void Shell::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
+  if (event.skip_in_browser)
+    return;
+
+  // The event handling to get this strictly right is a tangle; cheat here a bit
+  // by just letting the menus have a chance at it.
+  if ([event.os_event type] == NSKeyDown)
+    [[NSApp mainMenu] performKeyEquivalent:event.os_event];
 }
 
 }  // namespace content
