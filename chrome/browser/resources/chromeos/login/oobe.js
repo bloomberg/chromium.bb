@@ -43,7 +43,7 @@ cr.define('cr.ui', function() {
       select.appendChild(option);
     }
     if (callback) {
-      select.addEventListener('change', function(event) {
+      select.addEventListener('blur', function(event) {
         chrome.send(callback, [select.options[select.selectedIndex].value]);
       });
     }
