@@ -56,8 +56,14 @@ void Label::SetText(const string16& text) {
   text_ = text;
   url_ = GURL();
   text_size_valid_ = false;
+  is_email_ = false;
   PreferredSizeChanged();
   SchedulePaint();
+}
+
+void Label::SetEmail(const string16& email) {
+  SetText(email);
+  is_email_ = true;
 }
 
 void Label::SetURL(const GURL& url) {
@@ -65,6 +71,7 @@ void Label::SetURL(const GURL& url) {
   url_ = url;
   text_ = UTF8ToUTF16(url_.spec());
   text_size_valid_ = false;
+  is_email_ = false;
   PreferredSizeChanged();
   SchedulePaint();
 }
@@ -140,6 +147,7 @@ void Label::SetElideInMiddle(bool elide_in_middle) {
   if (elide_in_middle != elide_in_middle_) {
     elide_in_middle_ = elide_in_middle;
     text_size_valid_ = false;
+    is_email_ = false;
     PreferredSizeChanged();
     SchedulePaint();
   }
@@ -378,6 +386,7 @@ void Label::Init(const string16& text, const gfx::Font& font) {
   is_multi_line_ = false;
   allow_character_break_ = false;
   elide_in_middle_ = false;
+  is_email_ = false;
   collapse_when_hidden_ = false;
   directionality_mode_ = USE_UI_DIRECTIONALITY;
   paint_as_focused_ = false;
@@ -517,6 +526,8 @@ void Label::CalculateDrawStringParams(string16* paint_text,
     // layout.
     *paint_text = base::i18n::GetDisplayStringInLTRDirectionality(
         *paint_text);
+  } else if (is_email_) {
+    *paint_text = ui::ElideEmail(text_, font_, GetAvailableRect().width());
   } else if (elide_in_middle_) {
     *paint_text = ui::ElideText(text_, font_, GetAvailableRect().width(),
                                 ui::ELIDE_IN_MIDDLE);

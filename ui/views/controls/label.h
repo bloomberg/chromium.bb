@@ -63,6 +63,9 @@ class VIEWS_EXPORT Label : public View {
   // Sets the label text.
   void SetText(const string16& text);
 
+  // Sets the label text to |email|.  Emails have a custom eliding algorithm.
+  void SetEmail(const string16& email);
+
   // Sets URL Value - text_ is set to spec().
   void SetURL(const GURL& url);
 
@@ -269,6 +272,7 @@ class VIEWS_EXPORT Label : public View {
   bool is_multi_line_;
   bool allow_character_break_;
   bool elide_in_middle_;
+  bool is_email_;
   Alignment horiz_alignment_;
   string16 tooltip_text_;
   // Whether the mouse is over this label.

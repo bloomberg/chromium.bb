@@ -158,7 +158,8 @@ void AvatarMenuModel::RebuildMenu() {
     Item* item = new Item(i, icon);
     item->name = profile_info_->GetNameOfProfileAtIndex(i);
     item->sync_state = profile_info_->GetUserNameOfProfileAtIndex(i);
-    if (item->sync_state.empty()) {
+    item->signed_in = !item->sync_state.empty();
+    if (!item->signed_in) {
       item->sync_state = l10n_util::GetStringUTF16(
           IDS_PROFILES_LOCAL_PROFILE_STATE);
     }
