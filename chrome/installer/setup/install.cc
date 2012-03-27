@@ -38,7 +38,6 @@
 #include "chrome/installer/util/work_item_list.h"
 
 // Build-time generated include file.
-#include "installer_util_strings.h"  // NOLINT
 #include "registered_dlls.h"  // NOLINT
 
 using installer::InstallerState;

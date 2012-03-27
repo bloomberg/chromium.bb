@@ -36,8 +36,6 @@
 #include "chrome/installer/util/master_preferences.h"
 #include "chrome/installer/util/master_preferences_constants.h"
 
-#include "installer_util_strings.h"
-
 using base::win::RegKey;
 
 namespace {
