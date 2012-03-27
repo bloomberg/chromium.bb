@@ -107,7 +107,7 @@ class CryptohomeClient {
 
   // Calls TpmIsEnabled method and returns true when the call succeeds.
   // This method blocks until the call returns.
-  // TODO(hashimoto): Remove this method.
+  // TODO(hashimoto): Remove this method. crosbug.com/28500
   virtual bool CallTpmIsEnabledAndBlock(bool* enabled) = 0;
 
   // Calls TpmGetPassword method and returns true when the call succeeds.

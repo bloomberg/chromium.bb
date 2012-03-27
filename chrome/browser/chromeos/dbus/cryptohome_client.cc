@@ -199,8 +199,12 @@ class CryptohomeClientImpl : public CryptohomeClient {
   }
 
   // CryptohomeClient override.
+  // TODO(hashimoto): Remove this method. crosbug.com/28500
   virtual bool CallTpmIsEnabledAndBlock(bool* enabled) OVERRIDE {
-    INITIALIZE_METHOD_CALL(method_call, cryptohome::kCryptohomeTpmIsEnabled);
+    // We don't use INITIALIZE_METHOD_CALL here because the C++ method name is
+    // different from the D-Bus method name (TpmIsEnabled).
+    dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
+                                 cryptohome::kCryptohomeTpmIsEnabled);
     return CallMethodAndBlock(&method_call, base::Bind(&PopBool, enabled));
   }
 
