@@ -3,12 +3,12 @@
 	<data>
 		<int key="IBDocument.SystemTarget">1050</int>
 		<string key="IBDocument.SystemVersion">10K549</string>
-		<string key="IBDocument.InterfaceBuilderVersion">804</string>
+		<string key="IBDocument.InterfaceBuilderVersion">851</string>
 		<string key="IBDocument.AppKitVersion">1038.36</string>
 		<string key="IBDocument.HIToolboxVersion">461.00</string>
 		<object class="NSMutableDictionary" key="IBDocument.PluginVersions">
 			<string key="NS.key.0">com.apple.InterfaceBuilder.CocoaPlugin</string>
-			<string key="NS.object.0">804</string>
+			<string key="NS.object.0">851</string>
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -67,7 +67,7 @@
 						<int key="NSvFlags">274</int>
 						<string key="NSFrame">{{0, -36}, {319, 96}}</string>
 						<reference key="NSSuperview" ref="304499912"/>
-						<string key="NSClassName">BalloonOverlayViewCocoa</string>
+						<string key="NSClassName">PanelTitlebarOverlayView</string>
 					</object>
 					<object class="NSCustomView" id="892753116">
 						<reference key="NSNextResponder" ref="304499912"/>
@@ -271,6 +271,14 @@
 					</object>
 					<int key="connectionID">25</int>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">controller_</string>
+						<reference key="source" ref="438255290"/>
+						<reference key="destination" ref="1001"/>
+					</object>
+					<int key="connectionID">27</int>
+				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
@@ -455,35 +463,11 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">25</int>
+			<int key="maxID">27</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
 				<bool key="EncodedWithXMLCoder">YES</bool>
-				<object class="IBPartialClassDescription">
-					<string key="className">BalloonOverlayViewCocoa</string>
-					<string key="superclassName">NSView</string>
-					<object class="IBClassDescriptionSource" key="sourceIdentifier">
-						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">browser/ui/cocoa/notifications/balloon_view.h</string>
-					</object>
-				</object>
-				<object class="IBPartialClassDescription">
-					<string key="className">ChromeBrowserWindow</string>
-					<string key="superclassName">ChromeEventProcessingWindow</string>
-					<object class="IBClassDescriptionSource" key="sourceIdentifier">
-						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">browser/ui/cocoa/chrome_browser_window.h</string>
-					</object>
-				</object>
-				<object class="IBPartialClassDescription">
-					<string key="className">ChromeEventProcessingWindow</string>
-					<string key="superclassName">NSWindow</string>
-					<object class="IBClassDescriptionSource" key="sourceIdentifier">
-						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">browser/ui/cocoa/chrome_event_processing_window.h</string>
-					</object>
-				</object>
 				<object class="IBPartialClassDescription">
 					<string key="className">FirstResponder</string>
 					<string key="superclassName">NSObject</string>
@@ -573,6 +557,25 @@
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">browser/ui/cocoa/themed_window.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">PanelTitlebarOverlayView</string>
+					<string key="superclassName">NSView</string>
+					<object class="NSMutableDictionary" key="outlets">
+						<string key="NS.key.0">controller_</string>
+						<string key="NS.object.0">PanelWindowControllerCocoa</string>
+					</object>
+					<object class="NSMutableDictionary" key="toOneOutletInfosByName">
+						<string key="NS.key.0">controller_</string>
+						<object class="IBToOneOutletInfo" key="NS.object.0">
+							<string key="name">controller_</string>
+							<string key="candidateClassName">PanelWindowControllerCocoa</string>
+						</object>
+					</object>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier" id="501324801">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">browser/ui/panels/panel_titlebar_view_cocoa.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -670,18 +673,7 @@
 							</object>
 						</object>
 					</object>
-					<object class="IBClassDescriptionSource" key="sourceIdentifier">
-						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">browser/ui/panels/panel_titlebar_view_cocoa.h</string>
-					</object>
-				</object>
-				<object class="IBPartialClassDescription">
-					<string key="className">PanelWindowCocoaImpl</string>
-					<string key="superclassName">ChromeBrowserWindow</string>
-					<object class="IBClassDescriptionSource" key="sourceIdentifier" id="113923837">
-						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">browser/ui/panels/panel_window_controller_cocoa.h</string>
-					</object>
+					<reference key="sourceIdentifier" ref="501324801"/>
 				</object>
 				<object class="IBPartialClassDescription">
 					<string key="className">PanelWindowControllerCocoa</string>
@@ -697,7 +689,10 @@
 							<string key="candidateClassName">PanelTitlebarViewCocoa</string>
 						</object>
 					</object>
-					<reference key="sourceIdentifier" ref="113923837"/>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">browser/ui/panels/panel_window_controller_cocoa.h</string>
+					</object>
 				</object>
 				<object class="IBPartialClassDescription">
 					<string key="className">PanelWindowControllerCocoa</string>

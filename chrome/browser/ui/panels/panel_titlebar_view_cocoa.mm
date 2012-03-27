@@ -55,6 +55,31 @@ static NSEvent* MakeMouseEvent(NSEventType type,
                             pressure:0.0];
 }
 
+@implementation PanelTitlebarOverlayView
+// Sometimes we do not want to bring chrome window to foreground when we click
+// on any part of the titlebar. To do this, we first postpone the window
+// reorder here (shouldDelayWindowOrderingForEvent is called during when mouse
+// button is pressed but before mouseDown: is dispatched) and then complete
+// canceling the reorder by [NSApp preventWindowOrdering] in mouseDown handler
+// of this view.
+- (BOOL)shouldDelayWindowOrderingForEvent:(NSEvent*)theEvent {
+  disableReordering_ = ![controller_ IsActivationByClickingTitlebarEnabled];
+  return disableReordering_;
+}
+
+- (void)mouseDown:(NSEvent*)event {
+  if (disableReordering_)
+    [NSApp preventWindowOrdering];
+  disableReordering_ = NO;
+  // Continue bubbling the event up the chain of responders.
+  [super mouseDown:event];
+}
+
+- (BOOL)acceptsFirstMouse:(NSEvent*)event {
+  return YES;
+}
+@end
+
 @implementation RepaintAnimation
 - (id)initWithView:(NSView*)targetView duration:(double) duration {
   if (![super initWithDuration:duration animationCurve:NSAnimationEaseInOut])
