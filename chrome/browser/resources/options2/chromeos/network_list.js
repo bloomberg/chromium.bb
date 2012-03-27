@@ -586,9 +586,14 @@ cr.define('options.network', function() {
      */
     createConnectCallback_: function(menu, data, opt_connect) {
       var cmd = opt_connect ? opt_connect : 'connect';
+      var label = data.networkName;
+      if (cmd == 'activate') {
+        label = localStrings.getString('activateNetwork');
+        label = label.replace('$1', data.networkName);
+      }
       var menuItem = this.createCallback_(menu,
                                           data,
-                                          data.networkName,
+                                          label,
                                           cmd);
       menuItem.style.backgroundImage = url(data.iconURL);
 
