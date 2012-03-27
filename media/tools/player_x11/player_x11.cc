@@ -41,18 +41,6 @@ AudioManager* g_audio_manager = NULL;
 
 media::VideoRendererBase* g_video_renderer = NULL;
 
-class MessageLoopQuitter {
- public:
-  explicit MessageLoopQuitter(MessageLoop* loop) : loop_(loop) {}
-  void Quit(media::PipelineStatus status) {
-    loop_->PostTask(FROM_HERE, MessageLoop::QuitClosure());
-    delete this;
-  }
- private:
-  MessageLoop* loop_;
-  DISALLOW_COPY_AND_ASSIGN(MessageLoopQuitter);
-};
-
 scoped_refptr<media::FileDataSource> CreateFileDataSource(
     const std::string& file) {
   scoped_refptr<media::FileDataSource> file_data_source(
@@ -153,7 +141,7 @@ bool InitPipeline(MessageLoop* message_loop,
   note.Wait();
   if (note.status() != media::PIPELINE_OK) {
     std::cout << "InitPipeline: " << note.status() << std::endl;
-    (*pipeline)->Stop(media::PipelineStatusCB());
+    (*pipeline)->Stop(base::Closure());
     return false;
   }
 
@@ -173,9 +161,7 @@ void PeriodicalUpdate(
   if (!g_running) {
     // interrupt signal was received during last time period.
     // Quit message_loop only when pipeline is fully stopped.
-    MessageLoopQuitter* quitter = new MessageLoopQuitter(message_loop);
-    pipeline->Stop(base::Bind(&MessageLoopQuitter::Quit,
-                              base::Unretained(quitter)));
+    pipeline->Stop(MessageLoop::QuitClosure());
     return;
   }
 
@@ -208,9 +194,7 @@ void PeriodicalUpdate(
           if (key == XK_Escape) {
             g_running = false;
             // Quit message_loop only when pipeline is fully stopped.
-            MessageLoopQuitter* quitter = new MessageLoopQuitter(message_loop);
-            pipeline->Stop(base::Bind(&MessageLoopQuitter::Quit,
-                                      base::Unretained(quitter)));
+            pipeline->Stop(MessageLoop::QuitClosure());
             return;
           } else if (key == XK_space) {
             if (pipeline->GetPlaybackRate() < 0.01f)  // paused

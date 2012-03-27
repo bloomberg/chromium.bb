@@ -47,7 +47,7 @@ class CallbackHelper {
 
   MOCK_METHOD1(OnStart, void(PipelineStatus));
   MOCK_METHOD1(OnSeek, void(PipelineStatus));
-  MOCK_METHOD1(OnStop, void(PipelineStatus));
+  MOCK_METHOD0(OnStop, void());
   MOCK_METHOD1(OnEnded, void(PipelineStatus));
   MOCK_METHOD1(OnError, void(PipelineStatus));
 
@@ -88,7 +88,7 @@ class PipelineTest : public ::testing::Test {
     }
 
     // Expect a stop callback if we were started.
-    EXPECT_CALL(callbacks_, OnStop(PIPELINE_OK));
+    EXPECT_CALL(callbacks_, OnStop());
     pipeline_->Stop(base::Bind(&CallbackHelper::OnStop,
                                base::Unretained(&callbacks_)));
     message_loop_.RunAllPending();
@@ -318,8 +318,6 @@ TEST_F(PipelineTest, NeverInitializes) {
 }
 
 TEST_F(PipelineTest, RequiredFilterMissing) {
-  EXPECT_CALL(callbacks_, OnError(PIPELINE_ERROR_REQUIRED_FILTER_MISSING));
-
   // Sets up expectations on the callback and initializes the pipeline.  Called
   // after tests have set expectations any filters they wish to use.
   // Expect an initialization callback.
@@ -341,12 +339,6 @@ TEST_F(PipelineTest, RequiredFilterMissing) {
 }
 
 TEST_F(PipelineTest, URLNotFound) {
-  // TODO(acolwell,fischman): Since OnStart() is getting called with an error
-  // code already, OnError() doesn't also need to get called.  Fix the pipeline
-  // (and it's consumers!) so that OnError doesn't need to be called after
-  // another callback has already reported the error.  Same applies to NoStreams
-  // below.
-  EXPECT_CALL(callbacks_, OnError(PIPELINE_ERROR_URL_NOT_FOUND));
   InitializePipeline(PIPELINE_ERROR_URL_NOT_FOUND);
   EXPECT_FALSE(pipeline_->IsInitialized());
 }
@@ -356,9 +348,6 @@ TEST_F(PipelineTest, NoStreams) {
   // we cannot fully initialize the pipeline.
   EXPECT_CALL(*mocks_->demuxer(), Stop(_))
       .WillOnce(Invoke(&RunStopFilterCallback));
-  // TODO(acolwell,fischman): see TODO in URLNotFound above.
-  EXPECT_CALL(callbacks_, OnError(PIPELINE_ERROR_COULD_NOT_RENDER));
-
   InitializePipeline(PIPELINE_OK, PIPELINE_ERROR_COULD_NOT_RENDER);
   EXPECT_FALSE(pipeline_->IsInitialized());
 }
@@ -743,7 +732,6 @@ TEST_F(PipelineTest, ErrorDuringSeek) {
   pipeline_->Seek(seek_time,base::Bind(&CallbackHelper::OnSeek,
                                        base::Unretained(&callbacks_)));
   EXPECT_CALL(callbacks_, OnSeek(PIPELINE_ERROR_READ));
-  EXPECT_CALL(callbacks_, OnError(PIPELINE_ERROR_READ));
   message_loop_.RunAllPending();
 }
 
@@ -793,7 +781,6 @@ TEST_F(PipelineTest, NoMessageDuringTearDownFromError) {
   pipeline_->Seek(seek_time,base::Bind(&CallbackHelper::OnSeek,
                                        base::Unretained(&callbacks_)));
   EXPECT_CALL(callbacks_, OnSeek(PIPELINE_ERROR_READ));
-  EXPECT_CALL(callbacks_, OnError(PIPELINE_ERROR_READ));
   message_loop_.RunAllPending();
 }
 

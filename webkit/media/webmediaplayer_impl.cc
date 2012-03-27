@@ -867,9 +867,10 @@ void WebMediaPlayerImpl::Destroy() {
   // Make sure to kill the pipeline so there's no more media threads running.
   // Note: stopping the pipeline might block for a long time.
   if (started_) {
-    media::PipelineStatusNotification note;
-    pipeline_->Stop(note.Callback());
-    note.Wait();
+    base::WaitableEvent waiter(false, false);
+    pipeline_->Stop(base::Bind(
+        &base::WaitableEvent::Signal, base::Unretained(&waiter)));
+    waiter.Wait();
     started_ = false;
   }
 

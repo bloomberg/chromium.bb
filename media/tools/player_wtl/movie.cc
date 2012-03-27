@@ -186,7 +186,7 @@ bool Movie::GetDumpYuvFileEnable() {
 // Teardown.
 void Movie::Close() {
   if (pipeline_) {
-    pipeline_->Stop(media::PipelineStatusCB());
+    pipeline_->Stop(base::Closure());
     pipeline_ = NULL;
   }
 
