@@ -349,16 +349,24 @@ void PasswordAutofillManager::SendPasswordForms(WebKit::WebFrame* frame,
     // Respect autocomplete=off.
     if (!form.autoComplete())
       continue;
+
+    // If requested, ignore non-rendered forms, e.g. those styled with
+    // display:none.
     if (only_visible && !form.hasNonEmptyBoundingBox())
       continue;
+
     scoped_ptr<webkit::forms::PasswordForm> password_form(
         webkit::forms::PasswordFormDomManager::CreatePasswordForm(form));
     if (password_form.get())
       password_forms.push_back(*password_form);
   }
 
-  if (password_forms.empty())
+  if (password_forms.empty() && !only_visible) {
+    // We need to send the PasswordFormsRendered message regardless of whether
+    // there are any forms visible, as this is also the code path that triggers
+    // showing the infobar.
     return;
+  }
 
   if (only_visible) {
     Send(new AutofillHostMsg_PasswordFormsRendered(
@@ -378,10 +386,17 @@ bool PasswordAutofillManager::OnMessageReceived(const IPC::Message& message) {
 }
 
 void PasswordAutofillManager::DidFinishDocumentLoad(WebKit::WebFrame* frame) {
+  // The |frame| contents have been parsed, but not yet rendered.  Let the
+  // PasswordManager know that forms are loaded, even though we can't yet tell
+  // whether they're visible.
   SendPasswordForms(frame, false);
 }
 
 void PasswordAutofillManager::DidFinishLoad(WebKit::WebFrame* frame) {
+  // The |frame| contents have been rendered.  Let the PasswordManager know
+  // which of the loaded frames are actually visible to the user.  This also
+  // triggers the "Save password?" infobar if the user just submitted a password
+  // form.
   SendPasswordForms(frame, true);
 }
 

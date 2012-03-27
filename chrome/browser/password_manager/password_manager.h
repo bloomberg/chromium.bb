@@ -55,7 +55,6 @@ class PasswordManager : public LoginModel,
   void ProvisionallySavePassword(const webkit::forms::PasswordForm& form);
 
   // content::WebContentsObserver overrides.
-  virtual void DidStopLoading() OVERRIDE;
   virtual void DidNavigateAnyFrame(
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) OVERRIDE;
