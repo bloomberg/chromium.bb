@@ -8,6 +8,9 @@
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/utility/non_thread_safe_ref_count.h"
 
+/// @file
+/// This file defines the API to create CompletionCallback objects that are
+/// bound to member functions.
 namespace pp {
 
 // TypeUnwrapper --------------------------------------------------------------
