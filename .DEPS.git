@@ -58,7 +58,7 @@ deps = {
     'tools/clang':
         Var('git_url') + '/chromium/src/tools/clang.git@d1c66637e4c8b114485b3aaa27837d436886b5a5',
     'tools/gyp':
-        Var('git_url') + '/external/gyp.git@5fd4856a28070d901cc679e20b2a537e921b8b8c',
+        Var('git_url') + '/external/gyp.git@714d6eaec919fd4e2882b245a066619c02d9be5e',
     'tools/valgrind':
         Var('git_url') + '/chromium/src/tools/valgrind.git@b5445e7e4a76f84af1619cff6ecff5e28a027bf7',
 }
