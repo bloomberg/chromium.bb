@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,7 +15,7 @@ BrowserOptionsWebUITest.prototype = {
   /**
    * Browse to browser options.
    **/
-  browsePreload: 'chrome://settings/browser',
+  browsePreload: 'chrome://chrome/settings/',
 };
 
 // Test opening the browser options has correct location.
