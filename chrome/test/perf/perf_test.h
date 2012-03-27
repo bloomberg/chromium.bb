@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 #define CHROME_TEST_PERF_PERF_TEST_H_
 #pragma once
 
+#include <stdio.h>
 #include <string>
 
 #include "chrome/test/base/chrome_process_util.h"
@@ -32,6 +33,14 @@ void PrintResult(const std::string& measurement,
                  const std::string& units,
                  bool important);
 
+void AppendResult(std::string& output,
+                  const std::string& measurement,
+                  const std::string& modifier,
+                  const std::string& trace,
+                  size_t value,
+                  const std::string& units,
+                  bool important);
+
 // Like the above version of PrintResult(), but takes a std::string value
 // instead of a size_t.
 void PrintResult(const std::string& measurement,
@@ -40,6 +49,14 @@ void PrintResult(const std::string& measurement,
                  const std::string& value,
                  const std::string& units,
                  bool important);
+
+void AppendResult(std::string& output,
+                  const std::string& measurement,
+                  const std::string& modifier,
+                  const std::string& trace,
+                  const std::string& value,
+                  const std::string& units,
+                  bool important);
 
 // Like PrintResult(), but prints a (mean, standard deviation) result pair.
 // The |<values>| should be two comma-separated numbers, the mean and
@@ -50,6 +67,14 @@ void PrintResultMeanAndError(const std::string& measurement,
                              const std::string& mean_and_error,
                              const std::string& units,
                              bool important);
+
+void AppendResultMeanAndError(std::string& output,
+                              const std::string& measurement,
+                              const std::string& modifier,
+                              const std::string& trace,
+                              const std::string& mean_and_error,
+                              const std::string& units,
+                              bool important);
 
 // Like PrintResult(), but prints an entire list of results. The |values|
 // will generally be a list of comma-separated numbers. A typical
@@ -62,22 +87,56 @@ void PrintResultList(const std::string& measurement,
                      const std::string& units,
                      bool important);
 
+void AppendResultList(std::string& output,
+                      const std::string& measurement,
+                      const std::string& modifier,
+                      const std::string& trace,
+                      const std::string& values,
+                      const std::string& units,
+                      bool important);
+
 // Prints IO performance data for use by perf graphs.
 void PrintIOPerfInfo(const std::string& test_name,
                      const ChromeProcessList& chrome_processes,
                      base::ProcessId browser_pid);
+
+void PrintIOPerfInfo(FILE* target,
+                     const std::string& test_name,
+                     const ChromeProcessList& chrome_processes,
+                     base::ProcessId browser_pid);
+
+std::string IOPerfInfoToString(const std::string& test_name,
+                               const ChromeProcessList& chrome_processes,
+                               base::ProcessId browser_pid);
 
 // Prints memory usage data for use by perf graphs.
 void PrintMemoryUsageInfo(const std::string& test_name,
                           const ChromeProcessList& chrome_processes,
                           base::ProcessId browser_pid);
 
+void PrintMemoryUsageInfo(FILE* target,
+                          const std::string& test_name,
+                          const ChromeProcessList& chrome_processes,
+                          base::ProcessId browser_pid);
+
+std::string MemoryUsageInfoToString(const std::string& test_name,
+                                    const ChromeProcessList& chrome_processes,
+                                    base::ProcessId browser_pid);
+
 // Prints memory commit charge stats for use by perf graphs.
 void PrintSystemCommitCharge(const std::string& test_name,
                              size_t charge,
                              bool important);
 
+void PrintSystemCommitCharge(FILE* target,
+                             const std::string& test_name,
+                             size_t charge,
+                             bool important);
+
+std::string SystemCommitChargeToString(const std::string& test_name,
+                                       size_t charge,
+                                       bool important);
+
 }  // namespace perf_test
 
 #endif  // CHROME_TEST_PERF_PERF_TEST_H_
-
