@@ -200,21 +200,6 @@ cr.define('ntp', function() {
       chrome.send('introMessageSeen');
     }
 
-    var promo = localStrings.getString('serverpromo');
-    if (promo) {
-      var tags = ['IMG'];
-      var attrs = {
-        src: function(node, value) {
-          return node.tagName == 'IMG' &&
-                 /^data\:image\/(?:png|gif|jpe?g)/.test(value);
-        },
-      };
-      showNotification(parseHtmlSubset(promo, tags, attrs), [], function() {
-        chrome.send('closeNotificationPromo');
-      }, 60000);
-      chrome.send('notificationPromoViewed');
-    }
-
     var loginContainer = getRequiredElement('login-container');
     loginContainer.addEventListener('click', function() {
       var rect = loginContainer.getBoundingClientRect();
@@ -229,6 +214,21 @@ cr.define('ntp', function() {
       // Mark the current page.
       newTabView.cardSlider.currentCardValue.navigationDot.classList.add(
           'selected');
+
+      var promo = localStrings.getString('serverpromo');
+      if (promo) {
+        var tags = ['IMG'];
+        var attrs = {
+          src: function(node, value) {
+            return node.tagName == 'IMG' &&
+                   /^data\:image\/(?:png|gif|jpe?g)/.test(value);
+          },
+        };
+        showNotification(parseHtmlSubset(promo, tags, attrs), [], function() {
+          chrome.send('closeNotificationPromo');
+        }, 60000);
+        chrome.send('notificationPromoViewed');
+      }
 
       document.documentElement.classList.remove('starting-up');
     });
