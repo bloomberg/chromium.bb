@@ -4,6 +4,8 @@
 
 #include "ash/wm/frame_painter.h"
 
+#include "ash/shell.h"
+#include "ash/shell_window_ids.h"
 #include "ash/wm/window_util.h"
 #include "base/logging.h"  // DCHECK
 #include "grit/ui_resources.h"
@@ -73,6 +75,7 @@ const int kThemeFrameBitmapOffsetX = 5;
 // starting |bitmap_offset_x| pixels from the left of the image.
 void TileRoundRect(gfx::Canvas* canvas,
                    int x, int y, int w, int h,
+                   SkPaint* paint,
                    const SkBitmap& bitmap,
                    int corner_radius,
                    int bitmap_offset_x) {
@@ -90,25 +93,36 @@ void TileRoundRect(gfx::Canvas* canvas,
   SkPath path;
   path.addRoundRect(rect, radii, SkPath::kCW_Direction);
 
-  SkPaint paint;
   SkShader* shader = SkShader::CreateBitmapShader(bitmap,
                                                   SkShader::kRepeat_TileMode,
                                                   SkShader::kRepeat_TileMode);
-  paint.setShader(shader);
-  paint.setXfermodeMode(SkXfermode::kSrcOver_Mode);
+  paint->setShader(shader);
   // CreateBitmapShader returns a Shader with a reference count of one, we
   // need to unref after paint takes ownership of the shader.
   shader->unref();
   // Adjust canvas to compensate for image sampling offset, draw, then adjust
   // back. This is cheaper than pushing/popping the entire canvas state.
   canvas->sk_canvas()->translate(SkIntToScalar(-bitmap_offset_x), 0);
-  canvas->sk_canvas()->drawPath(path, paint);
+  canvas->sk_canvas()->drawPath(path, *paint);
   canvas->sk_canvas()->translate(SkIntToScalar(bitmap_offset_x), 0);
+}
+
+// Returns true if |window| is a visible, normal window.
+bool IsVisibleNormalWindow(aura::Window* window) {
+  return window &&
+    window->IsVisible() &&
+    window->type() == aura::client::WINDOW_TYPE_NORMAL;
 }
 
 }  // namespace
 
 namespace ash {
+
+// static
+int FramePainter::kActiveWindowOpacity = 255;
+int FramePainter::kInactiveWindowOpacity = 166;
+int FramePainter::kSoloWindowOpacity = 230;
+std::set<FramePainter*>* FramePainter::instances_ = NULL;
 
 ///////////////////////////////////////////////////////////////////////////////
 // FramePainter, public:
@@ -125,12 +139,16 @@ FramePainter::FramePainter()
       top_right_corner_(NULL),
       header_left_edge_(NULL),
       header_right_edge_(NULL) {
+  if (!instances_)
+    instances_ = new std::set<FramePainter*>();
+  instances_->insert(this);
 }
 
 FramePainter::~FramePainter() {
+  // Sometimes we are destroyed before the window closes, so ensure we clean up.
   if (window_)
     window_->RemoveObserver(this);
-
+  instances_->erase(this);
 }
 
 void FramePainter::Init(views::Widget* frame,
@@ -258,13 +276,20 @@ gfx::Size FramePainter::GetMinimumSize(views::NonClientFrameView* view) {
 
 void FramePainter::PaintHeader(views::NonClientFrameView* view,
                                gfx::Canvas* canvas,
+                               HeaderMode header_mode,
                                const SkBitmap* theme_frame,
                                const SkBitmap* theme_frame_overlay) {
+  int opacity = UseSoloWindowHeader(NULL) ?
+      kSoloWindowOpacity :
+      (header_mode == ACTIVE ? kActiveWindowOpacity : kInactiveWindowOpacity);
 
+  SkPaint paint;
+  paint.setAlpha(opacity);
   // Draw the header background, clipping the corners to be rounded.
   const int kCornerRadius = 2;
   TileRoundRect(canvas,
                 0, 0, view->width(), theme_frame->height(),
+                &paint,
                 *theme_frame,
                 kCornerRadius,
                 kThemeFrameBitmapOffsetX);
@@ -421,12 +446,28 @@ void FramePainter::OnWindowPropertyChanged(aura::Window* window,
   }
 }
 
-void FramePainter::OnWindowDestroying(aura::Window* window) {
-  DCHECK_EQ(window_, window);
+void FramePainter::OnWindowDestroying(aura::Window* destroying) {
+  DCHECK_EQ(window_, destroying);
   // Must be removed here and not in the destructor, as the aura::Window is
   // already destroyed when our destructor runs.
   window_->RemoveObserver(this);
   window_ = NULL;
+
+  // For purposes of painting and solo window computation, we're done.
+  instances_->erase(this);
+
+  // If we have two or more windows open and we close this one, we might trigger
+  // the solo window appearance.  If so, find the window that is becoming solo
+  // and schedule it to paint.
+  if (UseSoloWindowHeader(destroying)) {
+    for (std::set<FramePainter*>::const_iterator it = instances_->begin();
+         it != instances_->end();
+         ++it) {
+      FramePainter* painter = *it;
+      if (IsVisibleNormalWindow(painter->window_) && painter->frame_)
+        painter->frame_->non_client_view()->SchedulePaint();
+    }
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -449,6 +490,23 @@ int FramePainter::GetTitleOffsetX() const {
   return window_icon_ ?
       window_icon_->bounds().right() + kTitleIconOffsetX :
       kTitleNoIconOffsetX;
+}
+
+bool FramePainter::UseSoloWindowHeader(aura::Window* ignore) const {
+  const aura::Window* default_container = Shell::GetInstance()->GetContainer(
+      internal::kShellWindowId_DefaultContainer);
+  int normal_window_count = 0;
+  const aura::Window::Windows& windows = default_container->children();
+  for (aura::Window::Windows::const_iterator it = windows.begin();
+       it != windows.end();
+       ++it) {
+    if (*it != ignore && IsVisibleNormalWindow(*it)) {
+      normal_window_count++;
+      if (normal_window_count > 1)
+        return false;
+    }
+  }
+  return normal_window_count == 1;
 }
 
 }  // namespace ash
