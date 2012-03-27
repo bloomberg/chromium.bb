@@ -544,23 +544,15 @@ device_added(struct udev_device *udev_device, struct evdev_input *master)
 }
 
 static void
-device_removed(struct udev_device *udev_device, struct evdev_input *master)
+device_removed(struct evdev_input_device *device)
 {
-	const char *devnode = udev_device_get_devnode(udev_device);
-	struct evdev_input_device *device, *next;
-
-	wl_list_for_each_safe(device, next, &master->devices_list, link) {
-		if (!strcmp(device->devnode, devnode)) {
-			wl_event_source_remove(device->source);
-			wl_list_remove(&device->link);
-			if (device->mtdev)
-				mtdev_close_delete(device->mtdev);
-			close(device->fd);
-			free(device->devnode);
-			free(device);
-			break;
-		}
-	}
+	wl_event_source_remove(device->source);
+	wl_list_remove(&device->link);
+	if (device->mtdev)
+		mtdev_close_delete(device->mtdev);
+	close(device->fd);
+	free(device->devnode);
+	free(device);
 }
 
 void
@@ -604,7 +596,9 @@ evdev_udev_handler(int fd, uint32_t mask, void *data)
 {
 	struct evdev_input *master = data;
 	struct udev_device *udev_device;
+	struct evdev_input_device *device, *next;
 	const char *action;
+	const char *devnode;
 
 	udev_device = udev_monitor_receive_device(master->udev_monitor);
 	if (!udev_device)
@@ -618,8 +612,15 @@ evdev_udev_handler(int fd, uint32_t mask, void *data)
 		if (!strcmp(action, "add")) {
 			device_added(udev_device, master);
 		}
-		else if (!strcmp(action, "remove"))
-			device_removed(udev_device, master);
+		else if (!strcmp(action, "remove")) {
+			devnode = udev_device_get_devnode(udev_device);
+			wl_list_for_each_safe(device, next,
+					      &master->devices_list, link)
+				if (!strcmp(device->devnode, devnode)) {
+					device_removed(device);
+					break;
+				}
+		}
 	}
 	udev_device_unref(udev_device);
 
@@ -685,13 +686,8 @@ evdev_remove_devices(struct weston_input_device *input_base)
 	struct evdev_input *input = (struct evdev_input *) input_base;
 	struct evdev_input_device *device, *next;
 
-        wl_list_for_each_safe(device, next, &input->devices_list, link) {
-		wl_event_source_remove(device->source);
-		wl_list_remove(&device->link);
-		close(device->fd);
-		free(device->devnode);
-		free(device);
-	}
+	wl_list_for_each_safe(device, next, &input->devices_list, link)
+		device_removed(device);
 }
 
 void
