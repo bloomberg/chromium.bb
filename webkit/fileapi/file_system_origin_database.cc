@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,17 +7,26 @@
 #include "base/format_macros.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
-#include "third_party/leveldatabase/src/include/leveldb/iterator.h"
+#include "third_party/leveldatabase/src/include/leveldb/db.h"
 #include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
 
 namespace {
 
 const char kOriginKeyPrefix[] = "ORIGIN:";
 const char kLastPathKey[] = "LAST_PATH";
+const int64 kMinimumReportIntervalHours = 1;
+const char kInitStatusHistogramLabel[] = "FileSystem.OriginDatabaseInit";
+
+enum InitStatus {
+  INIT_STATUS_OK = 0,
+  INIT_STATUS_CORRUPTION,
+  INIT_STATUS_MAX
+};
 
 std::string OriginToOriginKey(const std::string& origin) {
   std::string key(kOriginKeyPrefix);
@@ -62,6 +71,7 @@ bool FileSystemOriginDatabase::Init() {
   options.create_if_missing = true;
   leveldb::DB* db;
   leveldb::Status status = leveldb::DB::Open(options, path_, &db);
+  ReportInitStatus(status);
   if (status.ok()) {
     db_.reset(db);
     return true;
@@ -71,10 +81,28 @@ bool FileSystemOriginDatabase::Init() {
 }
 
 void FileSystemOriginDatabase::HandleError(
-    const tracked_objects::Location& from_here, leveldb::Status status) {
+    const tracked_objects::Location& from_here,
+    const leveldb::Status& status) {
   db_.reset();
   LOG(ERROR) << "FileSystemOriginDatabase failed at: "
              << from_here.ToString() << " with error: " << status.ToString();
+}
+
+void FileSystemOriginDatabase::ReportInitStatus(const leveldb::Status& status) {
+  base::Time now = base::Time::Now();
+  base::TimeDelta minimum_interval =
+      base::TimeDelta::FromHours(kMinimumReportIntervalHours);
+  if (last_reported_time_ + minimum_interval >= now)
+    return;
+  last_reported_time_ = now;
+
+  if (status.ok()) {
+    UMA_HISTOGRAM_ENUMERATION(kInitStatusHistogramLabel,
+                              INIT_STATUS_OK, INIT_STATUS_MAX);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION(kInitStatusHistogramLabel,
+                              INIT_STATUS_CORRUPTION, INIT_STATUS_MAX);
+  }
 }
 
 bool FileSystemOriginDatabase::HasOriginPath(const std::string& origin) {

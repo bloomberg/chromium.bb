@@ -7,11 +7,12 @@
 #include <math.h>
 
 #include "base/location.h"
+#include "base/metrics/histogram.h"
 #include "base/pickle.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
-#include "third_party/leveldatabase/src/include/leveldb/iterator.h"
+#include "third_party/leveldatabase/src/include/leveldb/db.h"
 #include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
 #include "webkit/fileapi/file_system_util.h"
 
@@ -74,6 +75,14 @@ const char kChildLookupPrefix[] = "CHILD_OF:";
 const char kChildLookupSeparator[] = ":";
 const char kLastFileIdKey[] = "LAST_FILE_ID";
 const char kLastIntegerKey[] = "LAST_INTEGER";
+const int64 kMinimumReportIntervalHours = 1;
+const char kInitStatusHistogramLabel[] = "FileSystem.DirectoryDatabaseInit";
+
+enum InitStatus {
+  INIT_STATUS_OK = 0,
+  INIT_STATUS_CORRUPTION,
+  INIT_STATUS_MAX
+};
 
 std::string GetChildLookupKey(
     fileapi::FileSystemDirectoryDatabase::FileId parent_id,
@@ -421,12 +430,31 @@ bool FileSystemDirectoryDatabase::Init() {
  options.create_if_missing = true;
  leveldb::DB* db;
  leveldb::Status status = leveldb::DB::Open(options, path_, &db);
+ ReportInitStatus(status);
  if (status.ok()) {
    db_.reset(db);
    return true;
  }
  HandleError(FROM_HERE, status);
  return false;
+}
+
+void FileSystemDirectoryDatabase::ReportInitStatus(
+    const leveldb::Status& status) {
+  base::Time now = base::Time::Now();
+  const base::TimeDelta minimum_interval =
+      base::TimeDelta::FromHours(kMinimumReportIntervalHours);
+  if (last_reported_time_ + minimum_interval >= now)
+    return;
+  last_reported_time_ = now;
+
+  if (status.ok()) {
+    UMA_HISTOGRAM_ENUMERATION(kInitStatusHistogramLabel,
+                              INIT_STATUS_OK, INIT_STATUS_MAX);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION(kInitStatusHistogramLabel,
+                              INIT_STATUS_CORRUPTION, INIT_STATUS_MAX);
+  }
 }
 
 bool FileSystemDirectoryDatabase::StoreDefaultValues() {
@@ -539,7 +567,7 @@ bool FileSystemDirectoryDatabase::RemoveFileInfoHelper(
 
 void FileSystemDirectoryDatabase::HandleError(
     const tracked_objects::Location& from_here,
-    leveldb::Status status) {
+    const leveldb::Status& status) {
   LOG(ERROR) << "FileSystemDirectoryDatabase failed at: "
              << from_here.ToString() << " with error: " << status.ToString();
   db_.reset();

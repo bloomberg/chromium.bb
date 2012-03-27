@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,7 +11,12 @@
 
 #include "base/file_path.h"
 #include "base/memory/scoped_ptr.h"
-#include "third_party/leveldatabase/src/include/leveldb/db.h"
+#include "base/time.h"
+
+namespace leveldb {
+class DB;
+class Status;
+}
 
 namespace tracked_objects {
 class Location;
@@ -54,11 +59,13 @@ class FileSystemOriginDatabase {
  private:
   bool Init();
   void HandleError(const tracked_objects::Location& from_here,
-                   leveldb::Status status);
+                   const leveldb::Status& status);
+  void ReportInitStatus(const leveldb::Status& status);
   bool GetLastPathNumber(int* number);
 
   std::string path_;
   scoped_ptr<leveldb::DB> db_;
+  base::Time last_reported_time_;
   DISALLOW_COPY_AND_ASSIGN(FileSystemOriginDatabase);
 };
 
