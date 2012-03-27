@@ -4041,12 +4041,7 @@
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN27PasswordManagerDelegateImpl33AddSavePasswordInfoBarIfPermittedEP19PasswordFormManager
-   fun:_ZN15PasswordManager14DidStopLoadingEv
-   fun:_ZN11TabContents14DidStopLoadingEv
-   fun:_ZN7content18RenderViewHostImpl19OnMsgDidStopLoadingEv
-   fun:_ZN3IPC7Message8DispatchIN7content18RenderViewHostImplES3_EEbPKS0_PT_PT0_MS6_FvvE
-   fun:_ZN7content18RenderViewHostImpl17OnMessageReceivedERKN3IPC7MessageE
-   fun:_ZN21RenderProcessHostImpl17OnMessageReceivedERKN3IPC7MessageE
+   fun:_ZN15PasswordManager23OnPasswordFormsRenderedERKSt6vectorIN6webkit5forms12PasswordFormESaIS3_EE
 }
 {
    bug_96367
