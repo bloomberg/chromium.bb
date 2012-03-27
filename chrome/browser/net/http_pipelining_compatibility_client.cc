@@ -311,7 +311,7 @@ void CollectPipeliningCapabilityStatsOnIOThread(
 
   chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
   if (channel == chrome::VersionInfo::CHANNEL_CANARY) {
-    probability_to_run_test = 1;
+    probability_to_run_test = 20;
   }
 
   int collect_stats_group = trial->AppendGroup("enable_test",
