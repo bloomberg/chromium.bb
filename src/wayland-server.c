@@ -221,8 +221,9 @@ wl_client_connection_data(int fd, uint32_t mask, void *data)
 			wl_resource_post_error(client->display_resource,
 					       WL_DISPLAY_ERROR_INVALID_METHOD,
 					       "invalid method %d, object %s@%d",
+					       opcode,
 					       object->interface->name,
-					       object->id, opcode);
+					       object->id);
 			break;
 		}
 
