@@ -252,26 +252,28 @@ void MergeCancelOfResponses(
   }
 }
 
-// Helper function for MergeOnBeforeRequestResponses() that allows considering
-// only data:// urls. These are considered a special case of cancelling a
-// request. This helper function allows us to ignore all other redirects
-// in case any extension wants to cancel the request by redirecting to a
-// data:// url.
+// Helper function for MergeOnBeforeRequestResponses() that allows ignoring
+// all redirects but those to data:// urls and about:blank. This is important
+// to treat these URLs as "cancel urls", i.e. URLs that extensions redirect
+// to if they want to express that they want to cancel a request. This reduces
+// the number of conflicts that we need to flag, as canceling is considered
+// a higher precedence operation that redirects.
 // Returns whether a redirect occurred.
 static bool MergeOnBeforeRequestResponsesHelper(
     const EventResponseDeltas& deltas,
     GURL* new_url,
     std::set<std::string>* conflicting_extensions,
     EventLogEntries* event_log_entries,
-    bool consider_only_data_scheme_urls) {
+    bool consider_only_cancel_scheme_urls) {
   bool redirected = false;
 
   EventResponseDeltas::const_iterator delta;
   for (delta = deltas.begin(); delta != deltas.end(); ++delta) {
     if ((*delta)->new_url.is_empty())
       continue;
-    if (consider_only_data_scheme_urls &&
-        !(*delta)->new_url.SchemeIs(chrome::kDataScheme)) {
+    if (consider_only_cancel_scheme_urls &&
+        !(*delta)->new_url.SchemeIs(chrome::kDataScheme) &&
+        (*delta)->new_url.spec() != "about:blank") {
       continue;
     }
 
@@ -301,12 +303,12 @@ void MergeOnBeforeRequestResponses(
     std::set<std::string>* conflicting_extensions,
     EventLogEntries* event_log_entries) {
 
-  // First handle only redirects to data:// URLs. These are a special case as
-  // they represent a way of cancelling a request.
+  // First handle only redirects to data:// URLs and about:blank. These are a
+  // special case as they represent a way of cancelling a request.
   if (MergeOnBeforeRequestResponsesHelper(
           deltas, new_url, conflicting_extensions, event_log_entries, true)) {
-    // If any extension cancelled a request by redirecting to a data:// URL,
-    // we don't consider the other redirects.
+    // If any extension cancelled a request by redirecting to a data:// URL or
+    // about:blank, we don't consider the other redirects.
     return;
   }
 

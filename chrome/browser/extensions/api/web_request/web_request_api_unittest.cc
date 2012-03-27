@@ -1142,6 +1142,40 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnBeforeRequestResponses2) {
   EXPECT_EQ(3u, event_log.size());
 }
 
+// This tests that we can redirect to about:blank, which is considered
+// a kind of cancelling requests.
+TEST(ExtensionWebRequestHelpersTest, TestMergeOnBeforeRequestResponses3) {
+  EventResponseDeltas deltas;
+  EventLogEntries event_log;
+  std::set<std::string> conflicting_extensions;
+  GURL effective_new_url;
+
+  // Single redirect.
+  GURL new_url_0("http://foo.com");
+  linked_ptr<EventResponseDelta> d0(
+      new EventResponseDelta("extid0", base::Time::FromInternalValue(2000)));
+  d0->new_url = GURL(new_url_0);
+  deltas.push_back(d0);
+  MergeOnBeforeRequestResponses(
+      deltas, &effective_new_url, &conflicting_extensions, &event_log);
+  EXPECT_EQ(new_url_0, effective_new_url);
+
+  // Cancel request by redirecting to about:blank. This shall override
+  // the other redirect but not cause any conflict warnings.
+  GURL new_url_1("about:blank");
+  linked_ptr<EventResponseDelta> d1(
+      new EventResponseDelta("extid1", base::Time::FromInternalValue(1500)));
+  d1->new_url = GURL(new_url_1);
+  deltas.push_back(d1);
+  deltas.sort(&InDecreasingExtensionInstallationTimeOrder);
+  event_log.clear();
+  MergeOnBeforeRequestResponses(
+      deltas, &effective_new_url, &conflicting_extensions, &event_log);
+  EXPECT_EQ(new_url_1, effective_new_url);
+  EXPECT_TRUE(conflicting_extensions.empty());
+  EXPECT_EQ(1u, event_log.size());
+}
+
 TEST(ExtensionWebRequestHelpersTest, TestMergeOnBeforeSendHeadersResponses) {
   net::HttpRequestHeaders base_headers;
   base_headers.AddHeaderFromString("key1: value 1");
