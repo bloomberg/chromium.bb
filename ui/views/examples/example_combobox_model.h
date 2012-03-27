@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 #define UI_VIEWS_EXAMPLES_EXAMPLE_COMBOBOX_MODEL_H_
 #pragma once
 
+#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "ui/base/models/combobox_model.h"
 
@@ -18,7 +19,7 @@ class ExampleComboboxModel : public ui::ComboboxModel {
   virtual ~ExampleComboboxModel();
 
   // Overridden from ui::ComboboxModel:
-  virtual int GetItemCount() OVERRIDE;
+  virtual int GetItemCount() const OVERRIDE;
   virtual string16 GetItemAt(int index) OVERRIDE;
 
  private:

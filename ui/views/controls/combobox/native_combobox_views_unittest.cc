@@ -50,19 +50,20 @@ class TestCombobox : public views::Combobox {
   DISALLOW_COPY_AND_ASSIGN(TestCombobox);
 };
 
-// A concrete class is needed to test the combobox
+// A concrete class is needed to test the combo box.
 class TestComboboxModel : public ui::ComboboxModel {
  public:
   TestComboboxModel() {}
   virtual ~TestComboboxModel() {}
-  virtual int GetItemCount() {
+
+  // Overridden from ui::ComboboxModel:
+  virtual int GetItemCount() const OVERRIDE {
     return 4;
   }
-  virtual string16 GetItemAt(int index) {
-    EXPECT_GE(index, 0);
-    EXPECT_LT(index, GetItemCount());
+  virtual string16 GetItemAt(int index) OVERRIDE {
     return string16();
   }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(TestComboboxModel);
 };

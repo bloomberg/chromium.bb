@@ -74,7 +74,7 @@ class CookieInfoView : public views::View,
                            int new_index) OVERRIDE;
 
   // ui::ComboboxModel:
-  virtual int GetItemCount() OVERRIDE;
+  virtual int GetItemCount() const OVERRIDE;
   virtual string16 GetItemAt(int index) OVERRIDE;
 
  private:
