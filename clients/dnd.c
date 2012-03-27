@@ -247,9 +247,7 @@ data_source_target(void *data,
 	struct dnd *dnd = dnd_drag->dnd;
 	cairo_surface_t *surface;
 	struct wl_buffer *buffer;
-	struct wl_data_device *device;
 
-	device = input_get_data_device(dnd_drag->input);
 	dnd_drag->mime_type = mime_type;
 	if (mime_type)
 		surface = dnd_drag->opaque;
