@@ -1469,14 +1469,7 @@ class BookmarkBarViewTest17 : public BookmarkBarViewEventTestBase {
   ContextMenuNotificationObserver observer_;
 };
 
-#if defined(USE_AURA)
-// This keeps failing on chromeos trybot. see crbug.com/113260.
-#define MAYBE_ContextMenus3 DISABLED_ContextMenus3
-#else
-#define MAYBE_ContextMenus3 ContextMenus3
-#endif
-
-VIEW_TEST(BookmarkBarViewTest17, MAYBE_ContextMenus3)
+VIEW_TEST(BookmarkBarViewTest17, ContextMenus3)
 
 // Verifies sibling menus works. Clicks on the 'other bookmarks' folder, then
 // moves the mouse over the first item on the bookmark bar and makes sure the
