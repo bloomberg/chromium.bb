@@ -69,6 +69,13 @@ void AudioDevice::Initialize(const AudioParameters& params,
   CHECK(!callback_);  // Calling Initialize() twice?
 
   audio_parameters_ = params;
+  // TODO(xians): We have to hard code the sample format to 16 since the
+  // current audio path does not support sample formats rather than 16bits per
+  // channel. Remove it if the problem is fixed.
+  audio_parameters_.Reset(
+      params.format(),
+      params.channel_layout(), params.sample_rate(), 16,
+      params.frames_per_buffer());
   callback_ = callback;
 }
 
