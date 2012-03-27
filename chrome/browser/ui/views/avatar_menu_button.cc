@@ -103,8 +103,8 @@ void AvatarMenuButton::OnPaint(gfx::Canvas* canvas) {
 
   if (old_height_ != height() || button_icon_.isNull()) {
     old_height_ = height();
-    button_icon_ = profiles::GetAvatarIconForTitleBar(
-        *icon_, is_gaia_picture_, width(), height());
+    button_icon_ = *profiles::GetAvatarIconForTitleBar(
+        *icon_, is_gaia_picture_, width(), height()).ToSkBitmap();
   }
 
   // Scale the image to fit the width of the button.

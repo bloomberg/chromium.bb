@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,13 +22,13 @@ Image* ImageFromPNGEncodedData(const unsigned char* input, size_t input_size) {
 
 bool PNGEncodedDataFromImage(const Image& image,
                              std::vector<unsigned char>* dst) {
-  const SkBitmap& bitmap = image;
+  const SkBitmap& bitmap = *image.ToSkBitmap();
   return gfx::PNGCodec::EncodeBGRASkBitmap(bitmap, false, dst);
 }
 
 bool JPEGEncodedDataFromImage(const Image& image, int quality,
                               std::vector<unsigned char>* dst) {
-  const SkBitmap& bitmap = image;
+  const SkBitmap& bitmap = *image.ToSkBitmap();
   SkAutoLockPixels bitmap_lock(bitmap);
 
   if (!bitmap.readyToDraw())

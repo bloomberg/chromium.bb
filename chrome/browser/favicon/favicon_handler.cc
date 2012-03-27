@@ -235,7 +235,7 @@ void FaviconHandler::UpdateFavicon(NavigationEntry* entry,
   if (!image)
     return;
 
-  entry->GetFavicon().bitmap = *image;
+  entry->GetFavicon().bitmap = *image->ToSkBitmap();
   delegate_->NotifyFaviconUpdated();
 }
 
@@ -302,7 +302,7 @@ void FaviconHandler::OnDidDownloadFavicon(int id,
   }
 
   if (!i->second.callback.is_null()) {
-    i->second.callback.Run(id, errored, *(&image));
+    i->second.callback.Run(id, errored, *image.ToSkBitmap());
   } else if (current_candidate() &&
              DoUrlAndIconMatch(*current_candidate(), image_url,
                                i->second.icon_type)) {

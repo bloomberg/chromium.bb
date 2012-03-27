@@ -185,13 +185,13 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
 
   if (!is_bundle_install()) {
     // Scale down to icon size, but allow smaller icons (don't scale up).
-    SkBitmap bitmap = prompt.icon();
-    gfx::Size size(bitmap.width(), bitmap.height());
+    const SkBitmap* bitmap = prompt.icon().ToSkBitmap();
+    gfx::Size size(bitmap->width(), bitmap->height());
     if (size.width() > kIconSize || size.height() > kIconSize)
       size = gfx::Size(kIconSize, kIconSize);
     views::ImageView* icon = new views::ImageView();
     icon->SetImageSize(size);
-    icon->SetImage(bitmap);
+    icon->SetImage(*bitmap);
     icon->SetHorizontalAlignment(views::ImageView::CENTER);
     icon->SetVerticalAlignment(views::ImageView::CENTER);
     int icon_row_span = 1;

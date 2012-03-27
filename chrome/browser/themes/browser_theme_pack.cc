@@ -1023,7 +1023,8 @@ void BrowserThemePack::RepackImages(const ImageCache& images,
   for (ImageCache::const_iterator it = images.begin();
        it != images.end(); ++it) {
     std::vector<unsigned char> image_data;
-    if (!gfx::PNGCodec::EncodeBGRASkBitmap(*(it->second), false, &image_data)) {
+    if (!gfx::PNGCodec::EncodeBGRASkBitmap(*it->second->ToSkBitmap(), false,
+                                           &image_data)) {
       NOTREACHED() << "Image file for resource " << it->first
                    << " could not be encoded.";
     } else {

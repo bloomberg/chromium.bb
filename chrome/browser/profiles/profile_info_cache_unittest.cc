@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -117,11 +117,13 @@ namespace {
 TEST_F(ProfileInfoCacheTest, AddProfiles) {
   EXPECT_EQ(0u, GetCache()->GetNumberOfProfiles());
 
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   for (uint32 i = 0; i < 4; ++i) {
     FilePath profile_path = GetProfilePath(StringPrintf("path_%ud", i));
     string16 profile_name = ASCIIToUTF16(StringPrintf("name_%ud", i));
-    const SkBitmap& icon = ResourceBundle::GetSharedInstance().GetImageNamed(
-        ProfileInfoCache::GetDefaultAvatarIconResourceIDAtIndex(i));
+    const SkBitmap* icon = rb.GetImageNamed(
+        ProfileInfoCache::GetDefaultAvatarIconResourceIDAtIndex(
+            i)).ToSkBitmap();
 
     GetCache()->AddProfileToCache(profile_path, profile_name, string16(), i);
     GetCache()->SetBackgroundStatusOfProfileAtIndex(i, true);
@@ -131,9 +133,10 @@ TEST_F(ProfileInfoCacheTest, AddProfiles) {
     EXPECT_EQ(i + 1, GetCache()->GetNumberOfProfiles());
     EXPECT_EQ(profile_name, GetCache()->GetNameOfProfileAtIndex(i));
     EXPECT_EQ(profile_path, GetCache()->GetPathOfProfileAtIndex(i));
-    const SkBitmap& actual_icon = GetCache()->GetAvatarIconOfProfileAtIndex(i);
-    EXPECT_EQ(icon.width(), actual_icon.width());
-    EXPECT_EQ(icon.height(), actual_icon.height());
+    const SkBitmap* actual_icon = GetCache()->GetAvatarIconOfProfileAtIndex(
+        i).ToSkBitmap();
+    EXPECT_EQ(icon->width(), actual_icon->width());
+    EXPECT_EQ(icon->height(), actual_icon->height());
   }
 
   // Reset the cache and test the it reloads correctly.

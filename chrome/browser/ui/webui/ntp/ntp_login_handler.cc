@@ -52,16 +52,16 @@ namespace {
 SkBitmap GetGAIAPictureForNTP(const gfx::Image& image) {
   // This value must match the width and height value of login-status-icon
   // in new_tab.css.
-  const int length = 27;
-  SkBitmap bmp = skia::ImageOperations::Resize(
-      image, skia::ImageOperations::RESIZE_BEST, length, length);
+  const int kLength = 27;
+  SkBitmap bmp = skia::ImageOperations::Resize(*image.ToSkBitmap(),
+      skia::ImageOperations::RESIZE_BEST, kLength, kLength);
 
-  gfx::Canvas canvas(gfx::Size(length, length), false);
+  gfx::Canvas canvas(gfx::Size(kLength, kLength), false);
   canvas.DrawBitmapInt(bmp, 0, 0);
 
   // Draw a gray border on the inside of the icon.
   SkColor color = SkColorSetARGB(83, 0, 0, 0);
-  canvas.DrawRect(gfx::Rect(0, 0, length - 1, length - 1), color);
+  canvas.DrawRect(gfx::Rect(0, 0, kLength - 1, kLength - 1), color);
 
   return canvas.ExtractBitmap();
 }

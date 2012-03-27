@@ -926,7 +926,8 @@ void BrowserOptionsHandler::SendProfilesInfo() {
     if (is_gaia_picture) {
       gfx::Image icon = profiles::GetAvatarIconForWebUI(
           cache.GetAvatarIconOfProfileAtIndex(i), true);
-      profile_value->SetString("iconURL", web_ui_util::GetImageDataUrl(icon));
+      profile_value->SetString("iconURL",
+          web_ui_util::GetImageDataUrl(*icon.ToSkBitmap()));
     } else {
       size_t icon_index = cache.GetAvatarIconIndexOfProfileAtIndex(i);
       profile_value->SetString("iconURL",

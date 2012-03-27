@@ -75,8 +75,8 @@ TEST_F(GAIAInfoUpdateServiceTest, DownloadSuccess) {
   string16 name = ASCIIToUTF16("Pat Smith");
   EXPECT_CALL(downloader, GetProfileFullName()).WillOnce(Return(name));
   gfx::Image image = gfx::test::CreateImage();
-  SkBitmap bmp = image;
-  EXPECT_CALL(downloader, GetProfilePicture()).WillOnce(Return(bmp));
+  const SkBitmap* bmp = image.ToSkBitmap();
+  EXPECT_CALL(downloader, GetProfilePicture()).WillOnce(Return(*bmp));
   EXPECT_CALL(downloader, GetProfilePictureStatus()).
       WillOnce(Return(ProfileDownloader::PICTURE_SUCCESS));
   std::string url("foo.com");
@@ -133,8 +133,8 @@ TEST_F(GAIAInfoUpdateServiceTest, NoMigration) {
   string16 new_name = ASCIIToUTF16("Pat Smith");
   EXPECT_CALL(downloader, GetProfileFullName()).WillOnce(Return(new_name));
   gfx::Image new_image = gfx::test::CreateImage();
-  SkBitmap new_bmp = new_image;
-  EXPECT_CALL(downloader, GetProfilePicture()).WillOnce(Return(new_bmp));
+  const SkBitmap* new_bmp = new_image.ToSkBitmap();
+  EXPECT_CALL(downloader, GetProfilePicture()).WillOnce(Return(*new_bmp));
   EXPECT_CALL(downloader, GetProfilePictureStatus()).
       WillOnce(Return(ProfileDownloader::PICTURE_SUCCESS));
   EXPECT_CALL(downloader, GetProfilePictureURL()).WillOnce(Return(""));

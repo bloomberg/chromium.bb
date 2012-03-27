@@ -20,7 +20,7 @@ gfx::Image GetAvatarIconForMenu(const gfx::Image& image,
 
   int length = std::min(kAvatarIconWidth, kAvatarIconHeight) - 2;
   SkBitmap bmp = skia::ImageOperations::Resize(
-      image, skia::ImageOperations::RESIZE_BEST, length, length);
+      *image.ToSkBitmap(), skia::ImageOperations::RESIZE_BEST, length, length);
   gfx::Canvas canvas(gfx::Size(kAvatarIconWidth, kAvatarIconHeight), false);
 
   // Draw the icon centered on the canvas.
@@ -42,7 +42,7 @@ gfx::Image GetAvatarIconForWebUI(const gfx::Image& image,
 
   int length = std::min(kAvatarIconWidth, kAvatarIconHeight) - 2;
   SkBitmap bmp = skia::ImageOperations::Resize(
-      image, skia::ImageOperations::RESIZE_BEST, length, length);
+      *image.ToSkBitmap(), skia::ImageOperations::RESIZE_BEST, length, length);
   gfx::Canvas canvas(gfx::Size(kAvatarIconWidth, kAvatarIconHeight), false);
 
   // Draw the icon centered on the canvas.
@@ -63,7 +63,7 @@ gfx::Image GetAvatarIconForTitleBar(const gfx::Image& image,
   int length = std::min(std::min(kAvatarIconWidth, kAvatarIconHeight),
       std::min(dst_width, dst_height)) - 2;
   SkBitmap bmp = skia::ImageOperations::Resize(
-      image, skia::ImageOperations::RESIZE_BEST, length, length);
+      *image.ToSkBitmap(), skia::ImageOperations::RESIZE_BEST, length, length);
   gfx::Canvas canvas(gfx::Size(dst_width, dst_height), false);
 
   // Draw the icon on the bottom center of the canvas.

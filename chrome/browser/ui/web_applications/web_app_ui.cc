@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -241,7 +241,8 @@ void UpdateShortcutWorker::UpdateShortcutsOnFileThread() {
 
   FilePath icon_file = web_app_path.Append(file_name_).ReplaceExtension(
       FILE_PATH_LITERAL(".ico"));
-  web_app::internals::CheckAndSaveIcon(icon_file, shortcut_info_.favicon);
+  web_app::internals::CheckAndSaveIcon(icon_file,
+                                       *shortcut_info_.favicon.ToSkBitmap());
 
   // Update existing shortcuts' description, icon and app id.
   CheckExistingShortcuts();

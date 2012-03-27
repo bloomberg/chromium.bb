@@ -179,7 +179,7 @@ ProfileItemView::ProfileItemView(const AvatarMenuModel::Item& item,
     : views::CustomButton(switch_profile_listener),
       item_(item) {
   image_view_ = new ProfileImageView();
-  SkBitmap profile_icon = item_.icon;
+  SkBitmap profile_icon = *item_.icon.ToSkBitmap();
   if (item_.active) {
     SkBitmap badged_icon(GetBadgedIcon(profile_icon));
     image_view_->SetImage(&badged_icon);
@@ -310,17 +310,18 @@ SkBitmap ProfileItemView::GetBadgedIcon(const SkBitmap& icon) {
   gfx::Rect icon_rect = GetCenteredAndScaledRect(icon.width(), icon.height(),
       0, 0, profiles::kAvatarIconWidth, kItemHeight);
 
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  SkBitmap badge = rb.GetImageNamed(IDR_PROFILE_SELECTED);
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  const SkBitmap* badge = rb.GetImageNamed(IDR_PROFILE_SELECTED).ToSkBitmap();
   const float kBadgeOverlapRatioX = 1.0f / 5.0f;
-  int width = icon_rect.width() + badge.width() * kBadgeOverlapRatioX;
+  int width = icon_rect.width() + badge->width() * kBadgeOverlapRatioX;
   const float kBadgeOverlapRatioY = 1.0f / 3.0f;
-  int height = icon_rect.height() + badge.height() * kBadgeOverlapRatioY;
+  int height = icon_rect.height() + badge->height() * kBadgeOverlapRatioY;
 
   gfx::Canvas canvas(gfx::Size(width, height), false);
   canvas.DrawBitmapInt(icon, 0, 0, icon.width(), icon.height(), 0, 0,
                        icon_rect.width(), icon_rect.height(), true);
-  canvas.DrawBitmapInt(badge, width - badge.width(), height - badge.height());
+  canvas.DrawBitmapInt(*badge, width - badge->width(),
+                       height - badge->height());
   return canvas.ExtractBitmap();
 }
 

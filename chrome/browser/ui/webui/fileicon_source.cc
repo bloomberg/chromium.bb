@@ -91,7 +91,8 @@ void FileIconSource::FetchFileIcon(const FilePath& path,
 
   if (icon) {
     scoped_refptr<RefCountedBytes> icon_data(new RefCountedBytes);
-    gfx::PNGCodec::EncodeBGRASkBitmap(*icon, false, &icon_data->data());
+    gfx::PNGCodec::EncodeBGRASkBitmap(*icon->ToSkBitmap(), false,
+                                      &icon_data->data());
 
     SendResponse(request_id, icon_data);
   } else {
@@ -127,7 +128,8 @@ void FileIconSource::OnFileIconDataAvailable(IconManager::Handle handle,
 
   if (icon) {
     scoped_refptr<RefCountedBytes> icon_data(new RefCountedBytes);
-    gfx::PNGCodec::EncodeBGRASkBitmap(*icon, false, &icon_data->data());
+    gfx::PNGCodec::EncodeBGRASkBitmap(*icon->ToSkBitmap(), false,
+                                      &icon_data->data());
 
     SendResponse(request_id, icon_data);
   } else {

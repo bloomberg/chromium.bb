@@ -175,7 +175,7 @@ void CreateShortcutTask(const FilePath& web_app_path,
   FilePath icon_file = web_app_path.Append(file_name).ReplaceExtension(
       FILE_PATH_LITERAL(".ico"));
   if (!web_app::internals::CheckAndSaveIcon(icon_file,
-                                            shortcut_info.favicon)) {
+        *shortcut_info.favicon.ToSkBitmap())) {
     return;
   }
 

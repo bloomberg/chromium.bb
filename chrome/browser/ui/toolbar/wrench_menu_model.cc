@@ -282,13 +282,13 @@ string16 WrenchMenuModel::GetLabelForCommandId(int command_id) const {
 
 bool WrenchMenuModel::GetIconForCommandId(int command_id,
                                           SkBitmap* icon) const {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   switch (command_id) {
     case IDC_UPGRADE_DIALOG: {
       if (UpgradeDetector::GetInstance()->notify_upgrade()) {
-        *icon = rb.GetNativeImageNamed(
+        *icon = *rb.GetNativeImageNamed(
             UpgradeDetector::GetInstance()->GetIconResourceID(
-                UpgradeDetector::UPGRADE_ICON_TYPE_MENU_ICON));
+                UpgradeDetector::UPGRADE_ICON_TYPE_MENU_ICON)).ToSkBitmap();
         return true;
       }
       return false;
@@ -301,7 +301,7 @@ bool WrenchMenuModel::GetIconForCommandId(int command_id,
       if (error && error->HasCustomizedSyncMenuItem()) {
         int icon_id = error->MenuItemIconResourceID();
         if (icon_id) {
-          *icon = rb.GetNativeImageNamed(icon_id);
+          *icon = *rb.GetNativeImageNamed(icon_id).ToSkBitmap();
           return true;
         }
       }
@@ -506,7 +506,7 @@ void WrenchMenuModel::Build() {
       IDS_VIEW_INCOMPATIBILITIES));
 
 #if defined(OS_WIN)
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   SetIcon(GetIndexOfCommandId(IDC_VIEW_INCOMPATIBILITIES),
           *rb.GetBitmapNamed(IDR_CONFLICT_MENU));
 #endif
@@ -527,7 +527,7 @@ void WrenchMenuModel::AddGlobalErrorMenuItems() {
   // window. This means that if a new error is added after the menu is built
   // it won't show in the existing wrench menu. To fix this we need to some
   // how update the menu if new errors are added.
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   const GlobalErrorService::GlobalErrorList& errors =
       GlobalErrorServiceFactory::GetForProfile(browser_->profile())->errors();
   for (GlobalErrorService::GlobalErrorList::const_iterator

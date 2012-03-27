@@ -12,8 +12,8 @@
 #include "ui/gfx/size.h"
 
 #if defined(TOOLKIT_USES_GTK)
-#include <gdk/gdk.h>
 #include <gdk-pixbuf/gdk-pixbuf.h>
+#include <gdk/gdk.h>
 #include <glib-object.h>
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/gtk_util.h"
@@ -325,10 +325,6 @@ NSImage* Image::CopyNSImage() const {
   return image;
 }
 #endif
-
-Image::operator const SkBitmap&() const {
-  return *ToSkBitmap();
-}
 
 #if defined(OS_MACOSX)
 Image::operator NSImage*() const {

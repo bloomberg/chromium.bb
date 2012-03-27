@@ -244,11 +244,12 @@ void AvatarMenuItemGtk::Init(ThemeServiceGtk* theme_service) {
     gfx::Canvas canvas(*avatar_image, /* is_opaque */ true);
 
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    SkBitmap check_image = rb.GetImageNamed(IDR_PROFILE_SELECTED);
-    gfx::Rect check_rect(0, 0, check_image.width(), check_image.height());
-    int y = avatar_image->height() - check_image.height();
-    int x = avatar_image->width() - check_image.width() + kCheckMarkXOffset;
-    canvas.DrawBitmapInt(check_image, x, y);
+    const SkBitmap* check_image = rb.GetImageNamed(
+        IDR_PROFILE_SELECTED).ToSkBitmap();
+    gfx::Rect check_rect(0, 0, check_image->width(), check_image->height());
+    int y = avatar_image->height() - check_image->height();
+    int x = avatar_image->width() - check_image->width() + kCheckMarkXOffset;
+    canvas.DrawBitmapInt(*check_image, x, y);
 
     SkBitmap final_image = canvas.ExtractBitmap();
     avatar_pixbuf = gfx::GdkPixbufFromSkBitmap(&final_image);

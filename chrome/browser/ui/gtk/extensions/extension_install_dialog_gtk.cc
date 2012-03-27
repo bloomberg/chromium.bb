@@ -183,7 +183,7 @@ ExtensionInstallDialog::ExtensionInstallDialog(
 
   if (!is_bundle_install) {
     // Resize the icon if necessary.
-    SkBitmap scaled_icon = prompt.icon();
+    SkBitmap scaled_icon = *prompt.icon().ToSkBitmap();
     if (scaled_icon.width() > kImageSize || scaled_icon.height() > kImageSize) {
       scaled_icon = skia::ImageOperations::Resize(
           scaled_icon, skia::ImageOperations::RESIZE_LANCZOS3,

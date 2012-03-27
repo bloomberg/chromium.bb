@@ -119,7 +119,6 @@ class UI_EXPORT Image {
 
   // DEPRECATED ----------------------------------------------------------------
   // Conversion handlers. These wrap the ToType() variants.
-  operator const SkBitmap&() const;
 #if defined(OS_MACOSX)
   operator NSImage*() const;
 #endif

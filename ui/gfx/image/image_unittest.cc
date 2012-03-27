@@ -82,8 +82,8 @@ TEST_F(ImageTest, SkiaRefToSkia) {
 TEST_F(ImageTest, SkiaToSkiaRef) {
   gfx::Image image(gt::CreateBitmap(25, 25));
 
-  const SkBitmap& bitmap = static_cast<const SkBitmap&>(image);
-  EXPECT_FALSE(bitmap.isNull());
+  const SkBitmap* bitmap = image.ToSkBitmap();
+  EXPECT_FALSE(bitmap->isNull());
   EXPECT_EQ(1U, image.RepresentationCount());
 
   const SkBitmap* bitmap1 = image.ToSkBitmap();
@@ -106,8 +106,8 @@ TEST_F(ImageTest, SkiaToPlatform) {
   EXPECT_TRUE(gt::ToPlatformType(image));
   EXPECT_EQ(kRepCount, image.RepresentationCount());
 
-  const SkBitmap& bitmap = static_cast<const SkBitmap&>(image);
-  EXPECT_FALSE(bitmap.isNull());
+  const SkBitmap* bitmap = image.ToSkBitmap();
+  EXPECT_FALSE(bitmap->isNull());
   EXPECT_EQ(kRepCount, image.RepresentationCount());
 
   EXPECT_TRUE(image.HasRepresentation(gfx::Image::kImageRepSkia));
@@ -198,10 +198,10 @@ TEST_F(ImageTest, SkiaToCocoaCopy) {
 
 TEST_F(ImageTest, CheckSkiaColor) {
   gfx::Image image(gt::CreatePlatformImage());
-  const SkBitmap& bitmap(image);
+  const SkBitmap* bitmap = image.ToSkBitmap();
 
-  SkAutoLockPixels auto_lock(bitmap);
-  uint32_t* pixel = bitmap.getAddr32(10, 10);
+  SkAutoLockPixels auto_lock(*bitmap);
+  uint32_t* pixel = bitmap->getAddr32(10, 10);
   EXPECT_EQ(SK_ColorRED, *pixel);
 }
 
