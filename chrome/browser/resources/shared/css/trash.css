@@ -29,8 +29,8 @@
 }
 
 .trash > .lid {
-  -webkit-transition: -webkit-transform 150ms;
   -webkit-transform-origin: -7% 100%;
+  -webkit-transition: -webkit-transform 150ms;
   height: 6px;
   width: 14px;
 }
@@ -41,8 +41,8 @@ html[dir='rtl'] .trash > .lid {
 
 .trash:focus > .lid,
 .trash:hover > .lid {
-  -webkit-transition: -webkit-transform 250ms;
   -webkit-transform: rotate(-45deg);
+  -webkit-transition: -webkit-transform 250ms;
 }
 
 html[dir='rtl'] .trash:focus > .lid,

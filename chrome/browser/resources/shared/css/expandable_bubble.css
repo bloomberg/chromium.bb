@@ -50,8 +50,8 @@
 .expandable-bubble[expanded] > .expandable-bubble-contents >
     .expandable-bubble-title {
   font-size: 13px;
-  margin-left: 0;
   margin-bottom: 3px;
+  margin-left: 0;
 }
 
 .expandable-bubble-close {

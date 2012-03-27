@@ -69,16 +69,16 @@
 .cr-dialog-frame {
   -webkit-transform: perspective(500px) scale(0.99)
                      translateY(-20px) rotateX(5deg);
-  -webkit-transition: all 0.18s;
+  -webkit-transition: all 180ms;
   -webkit-transition-duration: 250ms;
   opacity: 0;
 }
 
 .cr-dialog-shield {
-  -webkit-transition: opacity .5s;
+  -webkit-transition: opacity 500ms;
   background-color: white;
-  display: block;
   bottom: 0;
+  display: block;
   left: 0;
   opacity: 0;
   pointer-events: none;
@@ -88,7 +88,7 @@
 }
 
 .shown > .cr-dialog-shield {
-  -webkit-transition: opacity .5s;
+  -webkit-transition: opacity 500ms;
   opacity: 0.75;
 }
 
@@ -100,8 +100,8 @@
   -webkit-margin-after: 10px;
   -webkit-margin-end: 20px;
   display: block;
-  font-weight: bold;
   font-size: 120%;
+  font-weight: bold;
   white-space: nowrap;
   word-wrap: normal;
 }
@@ -112,8 +112,8 @@
 
 .cr-dialog-text,
 .cr-dialog-title {
-  text-overflow: ellipsis;
   overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .cr-dialog-frame input {
@@ -122,10 +122,10 @@
 }
 
 .cr-dialog-buttons {
-  display: -webkit-box;
   -webkit-box-orient: horizontal;
-  padding-top: 10px;
   -webkit-box-pack: end;
+  display: -webkit-box;
+  padding-top: 10px;
 }
 
 .cr-dialog-close {

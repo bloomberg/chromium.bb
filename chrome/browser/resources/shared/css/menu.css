@@ -22,8 +22,8 @@ menu > * {
   box-sizing: border-box;
   display: block;
   margin: 0;
-  width: 100%;
   text-align: start;
+  width: 100%;
 }
 
 menu > :not(hr) {
@@ -55,16 +55,16 @@ menu > [hidden] {
 }
 
 menu > :not(hr)[selected] {
-  background-color: #dce5fa;
+  background-color: rgb(220, 229, 250);
 }
 
 menu > :not(hr)[selected]:active {
-  background-color: #426dc9;
+  background-color: rgb(66, 109, 201);
   color: #fff;
 }
 
 menu > [checked]:before {
-  content: url("../images/checkbox_black.png");
+  content: url('../images/checkbox_black.png');
   display: inline-block;
   height: 9px;
   margin: 0 5px;
@@ -77,5 +77,5 @@ menu > [checked] {
 }
 
 menu > [selected][checked]:active:before {
-  content: url("../images/checkbox_white.png");
+  content: url('../images/checkbox_white.png');
 }

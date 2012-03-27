@@ -1,3 +1,6 @@
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
 
 list,
 grid {
@@ -50,18 +53,18 @@ grid > [anchor] {
 
 list:not([disabled]) > :hover,
 grid:not([disabled]) > :hover {
+  background-color: hsl(214, 91%, 97%);
   border-color: hsl(214, 91%, 85%);
   z-index: 1;
-  background-color: hsl(214, 91%, 97%);
 }
 
 list > [selected],
 grid > [selected] {
-  border-color: hsl(0, 0%, 85%);
   background-color: hsl(0, 0%, 90%);
-  z-index: 2;
   background-image: -webkit-linear-gradient(rgba(255, 255, 255, 0.8),
                                             rgba(255, 255, 255, 0));
+  border-color: hsl(0, 0%, 85%);
+  z-index: 2;
 }
 
 list:focus > [selected],
@@ -83,9 +86,9 @@ grid > .spacer {
   border: 0;
   box-sizing: border-box;
   display: block;
+  margin: 0;
   overflow: hidden;
   visibility: hidden;
-  margin: 0;
 }
 
 list > [hidden],
