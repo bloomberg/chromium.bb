@@ -25,7 +25,7 @@ Library
    */
 
 #ifdef HAVE_CONFIG_H
-# include "config.h"
+#include "config.h"
 #endif
 
 #include <stdio.h>
@@ -316,8 +316,9 @@ main (int argc, char **argv)
 	    inlen = getInput ();
 	    if (inlen == 0)
 	      break;
-	    for (realInlen = 0; realInlen < inlen; realInlen++)
-	      inbuf[realInlen] = inputBuffer[realInlen];
+	    if (!(realInlen = extParseChars (inputBuffer, inbuf)))
+	      break;
+	    inlen = realInlen;
 	    if (!lou_translateString (table, inbuf, &inlen, transbuf,
 				      &translen, NULL, NULL, 0))
 	      break;
@@ -359,14 +360,16 @@ main (int argc, char **argv)
 	    outlen = outputSize;
 	    if (backOnly)
 	      {
-		for (translen = 0; translen < inlen; translen++)
-		  transbuf[translen] = inputBuffer[translen];
+	    if (!(translen = extParseChars (inputBuffer, transbuf)))
+	      break;
+	    inlen = realInlen;
 	      }
 	    else
 	      {
 		translen = outputSize;
-		for (realInlen = 0; realInlen < inlen; realInlen++)
-		  inbuf[realInlen] = inputBuffer[realInlen];
+	    if (!(realInlen = extParseChars (inputBuffer, inbuf)))
+	      break;
+	    inlen = realInlen;
 		if (!lou_translate (table, inbuf, &inlen, transbuf,
 				    &translen, emphasis, spacing,
 				    &outputPos[0], &inputPos[0], &cursorPos,
