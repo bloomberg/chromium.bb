@@ -318,12 +318,6 @@ The event life cycle for successful requests is illustrated here, followed by
 event definitions:<br>
 <img src="images/webrequestapi.png" width="385" height="503" alt="Life cycle of a web request from the perspective of the webrequest API" style="margin-left: auto; margin-right: auto; display: block">
 </p>
-<p class="note">
-<b>Note:</b> This diagram does not capture a bug that will be fixed soon: If
-extensions redirect a URL request via the web request API, this redirection does
-not trigger <code>onBeforeRedirect</code>. Instead the request is cancelled
-and a new request is started at <code>onBeforeRedirect</code>. See <a href="http://crbug.com/79520">http://crbug.com/79520</a>.
-</p>
 <p>
 </p><dl>
   <dt><code>onBeforeRequest</code> (optionally synchronous)</dt>
