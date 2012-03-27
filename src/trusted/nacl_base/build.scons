@@ -81,6 +81,8 @@ env.AddNodeToTestSuite(node, ['small_tests'])
 # macros to behave differently
 nacl_min_max_env = env.Clone()
 nacl_min_max_env['CCCOM'] = Action(nacl_min_max_env['CXXCOM'])
+if nacl_min_max_env.Bit('clang'):
+    nacl_min_max_env.Append(CXXFLAGS='-Wno-deprecated')
 nacl_min_max_cpp_test_obj = nacl_min_max_env.ComponentObject(
     'nacl_min_max_cpp_test',
     ['nacl_min_max_test.c'])

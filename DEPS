@@ -17,7 +17,7 @@ vars = {
   # NOTE!  These four should match their counterparts in chromium/src/DEPS.
   # Be sure to update them when updating chrome_rev, above.
   "gtest_rev": "560",
-  "gyp_rev": "1233",
+  "gyp_rev": "1246",
   "jsoncpp_revision": "248",
   "lss_rev": "9",
 
