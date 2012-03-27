@@ -6,6 +6,9 @@
 #define CHROME_BROWSER_CHROMEOS_BLUETOOTH_BLUETOOTH_DEVICE_H_
 #pragma once
 
+#include <string>
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
@@ -163,6 +166,10 @@ class BluetoothDevice : private BluetoothDeviceClient::Observer,
   // Indicates whether the device is currently connected to the adapter
   // and at least one service available for use.
   bool IsConnected() const;
+
+  // Returns the services (as UUID strings) that this device provides.
+  typedef std::vector<std::string> ServiceList;
+  const ServiceList& GetServices() const { return service_uuids_; }
 
   // Indicates whether the device is currently pairing and expecting a
   // PIN Code to be returned.
@@ -451,6 +458,9 @@ class BluetoothDevice : private BluetoothDeviceClient::Observer,
   // the device.
   bool bonded_;
   bool connected_;
+
+  // The services (identified by UUIDs) that this device provides.
+  std::vector<std::string> service_uuids_;
 
   // During pairing this is set to an object that we don't own, but on which
   // we can make method calls to request, display or confirm PIN Codes and

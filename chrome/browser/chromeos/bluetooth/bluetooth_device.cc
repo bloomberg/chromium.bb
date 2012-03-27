@@ -52,6 +52,7 @@ void BluetoothDevice::Update(
   std::string address = properties->address.value();
   std::string name = properties->name.value();
   uint32 bluetooth_class = properties->bluetooth_class.value();
+  const std::vector<std::string> &uuids = properties->uuids.value();
 
   if (!address.empty())
     address_ = address;
@@ -59,6 +60,10 @@ void BluetoothDevice::Update(
     name_ = name;
   if (bluetooth_class)
     bluetooth_class_ = bluetooth_class;
+  if (!uuids.empty()) {
+    service_uuids_.clear();
+    service_uuids_.assign(uuids.begin(), uuids.end());
+  }
 
   if (update_state) {
     // BlueZ uses paired to mean link keys exchanged, whereas the Bluetooth
