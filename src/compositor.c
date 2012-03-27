@@ -714,6 +714,9 @@ weston_surface_attach(struct wl_surface *surface, struct wl_buffer *buffer)
 
 	if (wl_buffer_is_shm(buffer)) {
 		es->pitch = wl_shm_buffer_get_stride(buffer) / 4;
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_BGRA_EXT,
+			     es->pitch, es->buffer->height, 0,
+			     GL_BGRA_EXT, GL_UNSIGNED_BYTE, NULL);
 	} else {
 		if (es->image != EGL_NO_IMAGE_KHR)
 			ec->destroy_image(ec->display, es->image);
@@ -1177,13 +1180,13 @@ surface_damage(struct wl_client *client,
 
 	if (es->buffer && wl_buffer_is_shm(es->buffer)) {
 		glBindTexture(GL_TEXTURE_2D, es->texture);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_BGRA_EXT,
-			     es->pitch, es->buffer->height, 0,
-			     GL_BGRA_EXT, GL_UNSIGNED_BYTE,
-			     wl_shm_buffer_get_data(es->buffer));
+		glPixelStorei(GL_UNPACK_ROW_LENGTH, es->pitch);
+		glPixelStorei(GL_UNPACK_SKIP_PIXELS, x);
+		glPixelStorei(GL_UNPACK_SKIP_ROWS, y);
 
-		/* Hmm, should use glTexSubImage2D() here but GLES2 doesn't
-		 * support any unpack attributes except GL_UNPACK_ALIGNMENT. */
+		glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, width, height,
+				GL_BGRA_EXT, GL_UNSIGNED_BYTE,
+				wl_shm_buffer_get_data(es->buffer));
 	}
 }
 
@@ -2354,6 +2357,11 @@ weston_compositor_init(struct weston_compositor *ec, struct wl_display *display)
 
 	if (!strstr(extensions, "GL_EXT_read_format_bgra")) {
 		fprintf(stderr, "GL_EXT_read_format_bgra not available\n");
+		return -1;
+	}
+
+	if (!strstr(extensions, "GL_EXT_unpack_subimage")) {
+		fprintf(stderr, "GL_EXT_unpack_subimage not available\n");
 		return -1;
 	}
 
