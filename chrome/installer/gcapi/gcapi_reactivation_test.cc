@@ -125,32 +125,22 @@ TEST_F(GCAPIReactivationTest, CheckSetReactivationBrandCode) {
   EXPECT_TRUE(SetReactivationBrandCode(L"GAGA", GCAPI_INVOKED_STANDARD_SHELL));
   EXPECT_EQ(L"GAGA", GetReactivationString(HKEY_CURRENT_USER));
 
-  std::vector<std::wstring> check_codes;
-  check_codes.push_back(L"GAGA");
-  EXPECT_TRUE(HasBeenReactivatedByBrandCodes(check_codes));
+  EXPECT_TRUE(HasBeenReactivated());
 
-  check_codes.push_back(L"GOOGOO");
-  EXPECT_TRUE(HasBeenReactivatedByBrandCodes(check_codes));
-
-  check_codes.erase(check_codes.begin());
-  EXPECT_FALSE(HasBeenReactivatedByBrandCodes(check_codes));
 }
 
 TEST_F(GCAPIReactivationTest, CanOfferReactivation_Basic) {
-  const wchar_t* previous_brands[] = {L"GOOGOO", L"MAMA", L"DADA"};
   DWORD error;
 
   // We're not installed yet. Make sure CanOfferReactivation fails.
-  EXPECT_FALSE(CanOfferReactivation(L"GAGA", arraysize(previous_brands),
-                                    previous_brands,
+  EXPECT_FALSE(CanOfferReactivation(L"GAGA",
                                     GCAPI_INVOKED_STANDARD_SHELL,
                                     &error));
   EXPECT_EQ(REACTIVATE_ERROR_NOTINSTALLED, error);
 
   // Now pretend to be installed. CanOfferReactivation should pass.
   EXPECT_TRUE(SetChromeInstallMarker(HKEY_CURRENT_USER));
-  EXPECT_TRUE(CanOfferReactivation(L"GAGA", arraysize(previous_brands),
-                                   previous_brands,
+  EXPECT_TRUE(CanOfferReactivation(L"GAGA",
                                    GCAPI_INVOKED_STANDARD_SHELL,
                                    &error));
 
@@ -158,8 +148,7 @@ TEST_F(GCAPIReactivationTest, CanOfferReactivation_Basic) {
   Time hkcu_last_run = Time::NowFromSystemTime() - TimeDelta::FromDays(20);
   EXPECT_TRUE(SetLastRunTime(HKEY_CURRENT_USER,
                              hkcu_last_run.ToInternalValue()));
-  EXPECT_FALSE(CanOfferReactivation(L"GAGA", arraysize(previous_brands),
-                                    previous_brands,
+  EXPECT_FALSE(CanOfferReactivation(L"GAGA",
                                     GCAPI_INVOKED_STANDARD_SHELL,
                                     &error));
   EXPECT_EQ(REACTIVATE_ERROR_NOTDORMANT, error);
@@ -169,39 +158,31 @@ TEST_F(GCAPIReactivationTest, CanOfferReactivation_Basic) {
       TimeDelta::FromDays(kReactivationMinDaysDormant);
   EXPECT_TRUE(SetLastRunTime(HKEY_CURRENT_USER,
                              hkcu_last_run.ToInternalValue()));
-  EXPECT_TRUE(CanOfferReactivation(L"GAGA", arraysize(previous_brands),
-                                   previous_brands,
+  EXPECT_TRUE(CanOfferReactivation(L"GAGA",
                                    GCAPI_INVOKED_STANDARD_SHELL,
                                    &error));
 
   // Test some invalid inputs
-  EXPECT_FALSE(CanOfferReactivation(NULL, arraysize(previous_brands),
-                                    previous_brands,
+  EXPECT_FALSE(CanOfferReactivation(NULL,
                                     GCAPI_INVOKED_STANDARD_SHELL,
-                                    &error));
-  EXPECT_EQ(REACTIVATE_ERROR_INVALID_INPUT, error);
-  EXPECT_FALSE(CanOfferReactivation(L"GAGA", arraysize(previous_brands),
-                                    NULL, GCAPI_INVOKED_STANDARD_SHELL,
                                     &error));
   EXPECT_EQ(REACTIVATE_ERROR_INVALID_INPUT, error);
 
   // One more valid one
-  EXPECT_TRUE(CanOfferReactivation(L"GAGA", 0, NULL,
+  EXPECT_TRUE(CanOfferReactivation(L"GAGA",
                                    GCAPI_INVOKED_STANDARD_SHELL,
                                    &error));
 
   // Check that the previous brands check works:
   EXPECT_TRUE(SetReactivationBrandCode(L"GOOGOO",
                                        GCAPI_INVOKED_STANDARD_SHELL));
-  EXPECT_FALSE(CanOfferReactivation(L"GAGA", arraysize(previous_brands),
-                                    previous_brands,
+  EXPECT_FALSE(CanOfferReactivation(L"GAGA",
                                     GCAPI_INVOKED_STANDARD_SHELL,
                                     &error));
   EXPECT_EQ(REACTIVATE_ERROR_ALREADY_REACTIVATED, error);
 }
 
 TEST_F(GCAPIReactivationTest, Reactivation_Flow) {
-  const wchar_t* previous_brands[] = {L"GOOGOO", L"MAMA", L"DADA"};
   DWORD error;
 
   // Set us up as a candidate for reactivation.
@@ -212,33 +193,32 @@ TEST_F(GCAPIReactivationTest, Reactivation_Flow) {
   EXPECT_TRUE(SetLastRunTime(HKEY_CURRENT_USER,
                              hkcu_last_run.ToInternalValue()));
 
-  EXPECT_TRUE(ReactivateChrome(L"GAGA", arraysize(previous_brands),
-                               previous_brands, GCAPI_INVOKED_STANDARD_SHELL,
+  EXPECT_TRUE(ReactivateChrome(L"GAGA",
+                               GCAPI_INVOKED_STANDARD_SHELL,
                                &error));
   EXPECT_EQ(L"GAGA", GetReactivationString(HKEY_CURRENT_USER));
 
   // Make sure we can't reactivate again:
-  EXPECT_FALSE(ReactivateChrome(L"GAGA", arraysize(previous_brands),
-                                previous_brands, GCAPI_INVOKED_STANDARD_SHELL,
+  EXPECT_FALSE(ReactivateChrome(L"GAGA",
+                                GCAPI_INVOKED_STANDARD_SHELL,
                                 &error));
   EXPECT_EQ(REACTIVATE_ERROR_ALREADY_REACTIVATED, error);
 
-  // Should still be able to reactivate under other brands:
-  EXPECT_TRUE(ReactivateChrome(L"MAMA", arraysize(previous_brands),
-                               previous_brands, GCAPI_INVOKED_STANDARD_SHELL,
-                               &error));
-  EXPECT_EQ(L"MAMA", GetReactivationString(HKEY_CURRENT_USER));
+  // Should not be able to reactivate under other brands:
+  EXPECT_FALSE(ReactivateChrome(L"MAMA",
+                                GCAPI_INVOKED_STANDARD_SHELL,
+                                &error));
+  EXPECT_EQ(L"GAGA", GetReactivationString(HKEY_CURRENT_USER));
 
   // Validate that previous_brands are rejected:
-  EXPECT_FALSE(ReactivateChrome(L"PFFT", arraysize(previous_brands),
-                                previous_brands, GCAPI_INVOKED_STANDARD_SHELL,
+  EXPECT_FALSE(ReactivateChrome(L"PFFT",
+                                GCAPI_INVOKED_STANDARD_SHELL,
                                 &error));
   EXPECT_EQ(REACTIVATE_ERROR_ALREADY_REACTIVATED, error);
-  EXPECT_EQ(L"MAMA", GetReactivationString(HKEY_CURRENT_USER));
+  EXPECT_EQ(L"GAGA", GetReactivationString(HKEY_CURRENT_USER));
 }
 
 TEST_F(GCAPIReactivationTest, ExperimentLabelCheck) {
-  const wchar_t* previous_brands[] = {L"GOOGOO", L"MAMA", L"DADA"};
   DWORD error;
 
   // Set us up as a candidate for reactivation.
@@ -249,8 +229,8 @@ TEST_F(GCAPIReactivationTest, ExperimentLabelCheck) {
   EXPECT_TRUE(SetLastRunTime(HKEY_CURRENT_USER,
                              hkcu_last_run.ToInternalValue()));
 
-  EXPECT_TRUE(ReactivateChrome(L"GAGA", arraysize(previous_brands),
-                               previous_brands, GCAPI_INVOKED_STANDARD_SHELL,
+  EXPECT_TRUE(ReactivateChrome(L"GAGA",
+                               GCAPI_INVOKED_STANDARD_SHELL,
                                &error));
   EXPECT_EQ(L"GAGA", GetReactivationString(HKEY_CURRENT_USER));
 

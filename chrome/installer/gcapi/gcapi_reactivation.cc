@@ -25,24 +25,12 @@ std::wstring GetReactivationHistoryKeyPath() {
 }
 }  // namespace
 
-bool HasBeenReactivatedByBrandCodes(
-    const std::vector<std::wstring>& brand_codes) {
-  bool success = false;
-
+bool HasBeenReactivated() {
   RegKey reactivation_key(HKEY_CURRENT_USER,
                           GetReactivationHistoryKeyPath().c_str(),
                           KEY_QUERY_VALUE);
-  if (reactivation_key.Valid()) {
-    std::vector<std::wstring>::const_iterator brand_iter(brand_codes.begin());
-    for (; brand_iter != brand_codes.end(); ++brand_iter) {
-      if (reactivation_key.HasValue(brand_iter->c_str())) {
-        success = true;
-        break;
-      }
-    }
-  }
 
-  return success;
+  return reactivation_key.Valid();
 }
 
 bool SetReactivationBrandCode(const std::wstring& brand_code, int shell_mode) {
@@ -81,3 +69,4 @@ bool SetReactivationBrandCode(const std::wstring& brand_code, int shell_mode) {
 
   return success;
 }
+

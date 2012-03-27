@@ -9,8 +9,7 @@
 #include <string>
 #include <vector>
 
-bool HasBeenReactivatedByBrandCodes(
-    const std::vector<std::wstring>& brand_codes);
+bool HasBeenReactivated();
 
 bool SetReactivationBrandCode(const std::wstring& brand_code, int shell_mode);
 

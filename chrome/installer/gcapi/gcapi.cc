@@ -556,25 +556,13 @@ int __stdcall GoogleChromeDaysSinceLastRun() {
 }
 
 BOOL __stdcall CanOfferReactivation(const wchar_t* brand_code,
-                                    int previous_brand_codes_length,
-                                    const wchar_t** previous_brand_codes,
                                     int shell_mode,
                                     DWORD* error_code) {
   DCHECK(error_code);
 
-  if (!brand_code ||
-      (previous_brand_codes_length > 0 && previous_brand_codes == NULL)) {
+  if (!brand_code) {
     if (error_code)
       *error_code = REACTIVATE_ERROR_INVALID_INPUT;
-    return FALSE;
-  }
-
-  bool has_system_install = IsChromeInstalled(HKEY_LOCAL_MACHINE);
-  bool has_user_install = IsChromeInstalled(HKEY_CURRENT_USER);
-
-  if (!has_system_install && !has_user_install) {
-    if (error_code)
-      *error_code = REACTIVATE_ERROR_NOTINSTALLED;
     return FALSE;
   }
 
@@ -586,21 +574,20 @@ BOOL __stdcall CanOfferReactivation(const wchar_t* brand_code,
     return FALSE;
   }
 
-  // Make sure we haven't previously been reactivated by this brand code
-  // or any of the previous brand codes from this partner.
-  // Since this function is invoked by ReactivateChrome, and since
-  // ReactivateChrome is called first in non-elevated shell and
-  // second in UAC-elevated shell, we only want to execute this block
-  // of code the first time, in non-elevated mode.
+  // Only run the code below when this function is invoked from a standard,
+  // non-elevated cmd shell.  This is because this section of code looks at
+  // values in HKEY_CURRENT_USER, and we only want to look at the logged-in
+  // user's HKCU, not the admin user's HKCU.
   if (shell_mode == GCAPI_INVOKED_STANDARD_SHELL) {
-    std::vector<std::wstring> reactivation_brands;
-    reactivation_brands.push_back(brand_code);
-    if (previous_brand_codes_length > 0 && previous_brand_codes != NULL) {
-      std::copy(previous_brand_codes,
-                previous_brand_codes + previous_brand_codes_length,
-                std::back_inserter(reactivation_brands));
+
+    if (!IsChromeInstalled(HKEY_LOCAL_MACHINE) &&
+        !IsChromeInstalled(HKEY_CURRENT_USER)) {
+      if (error_code)
+        *error_code = REACTIVATE_ERROR_NOTINSTALLED;
+      return FALSE;
     }
-    if (HasBeenReactivatedByBrandCodes(reactivation_brands)) {
+
+    if (HasBeenReactivated()) {
       if (error_code)
         *error_code = REACTIVATE_ERROR_ALREADY_REACTIVATED;
       return FALSE;
@@ -611,14 +598,10 @@ BOOL __stdcall CanOfferReactivation(const wchar_t* brand_code,
 }
 
 BOOL __stdcall ReactivateChrome(wchar_t* brand_code,
-                                int previous_brand_codes_length,
-                                const wchar_t** previous_brand_codes,
                                 int shell_mode,
                                 DWORD* error_code) {
   BOOL result = FALSE;
   if (CanOfferReactivation(brand_code,
-                           previous_brand_codes_length,
-                           previous_brand_codes,
                            shell_mode,
                            error_code)) {
     if (SetReactivationBrandCode(brand_code, shell_mode)) {
