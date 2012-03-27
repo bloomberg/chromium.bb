@@ -59,7 +59,7 @@ class WebMediaPlayerProxy
   void SetOpaque(bool opaque);
 
   // Methods for WebMediaPlayerImpl -> Filter communication.
-  void Paint(SkCanvas* canvas, const gfx::Rect& dest_rect);
+  void Paint(SkCanvas* canvas, const gfx::Rect& dest_rect, uint8_t alpha);
   void Detach();
   void GetCurrentFrame(scoped_refptr<media::VideoFrame>* frame_out);
   void PutCurrentFrame(scoped_refptr<media::VideoFrame> frame);

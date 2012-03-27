@@ -30,7 +30,8 @@ class SkCanvasVideoRenderer {
   // Black will be painted on |canvas| if |video_frame| is null.
   void Paint(media::VideoFrame* video_frame,
              SkCanvas* canvas,
-             const gfx::Rect& dest_rect);
+             const gfx::Rect& dest_rect,
+             uint8_t alpha);
 
  private:
   // An RGB bitmap and corresponding timestamp of the previously converted

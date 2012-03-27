@@ -92,7 +92,7 @@ SkCanvasVideoRendererTest::SkCanvasVideoRendererTest()
 SkCanvasVideoRendererTest::~SkCanvasVideoRendererTest() {}
 
 void SkCanvasVideoRendererTest::PaintWithoutFrame(SkCanvas* canvas) {
-  renderer_.Paint(NULL, canvas, kNaturalRect);
+  renderer_.Paint(NULL, canvas, kNaturalRect, 0xFF);
 }
 
 void SkCanvasVideoRendererTest::Paint(VideoFrame* video_frame,
@@ -106,7 +106,7 @@ void SkCanvasVideoRendererTest::Paint(VideoFrame* video_frame,
       media::FillYUV(video_frame, 29, 255, 107);
       break;
   }
-  renderer_.Paint(video_frame, canvas, kNaturalRect);
+  renderer_.Paint(video_frame, canvas, kNaturalRect, 0xFF);
 }
 
 TEST_F(SkCanvasVideoRendererTest, FastPaint_NoFrame) {

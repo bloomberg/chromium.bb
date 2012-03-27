@@ -51,12 +51,14 @@ void WebMediaPlayerProxy::SetOpaque(bool opaque) {
       &WebMediaPlayerProxy::SetOpaqueTask, this, opaque));
 }
 
-void WebMediaPlayerProxy::Paint(SkCanvas* canvas, const gfx::Rect& dest_rect) {
+void WebMediaPlayerProxy::Paint(SkCanvas* canvas,
+                                const gfx::Rect& dest_rect,
+                                uint8_t alpha) {
   DCHECK(render_loop_->BelongsToCurrentThread());
   if (frame_provider_) {
     scoped_refptr<media::VideoFrame> video_frame;
     frame_provider_->GetCurrentFrame(&video_frame);
-    video_renderer_.Paint(video_frame, canvas, dest_rect);
+    video_renderer_.Paint(video_frame, canvas, dest_rect, alpha);
     frame_provider_->PutCurrentFrame(video_frame);
   }
 }

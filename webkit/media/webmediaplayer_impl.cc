@@ -496,13 +496,21 @@ void WebMediaPlayerImpl::setSize(const WebSize& size) {
   // Don't need to do anything as we use the dimensions passed in via paint().
 }
 
+// This variant (without alpha) is just present during staging of this API
+// change. Later we will again only have one virtual paint().
+void WebMediaPlayerImpl::paint(WebKit::WebCanvas* canvas,
+                               const WebKit::WebRect& rect) {
+  paint(canvas, rect, 0xFF);
+}
+
 void WebMediaPlayerImpl::paint(WebCanvas* canvas,
-                               const WebRect& rect) {
+                               const WebRect& rect,
+                               uint8_t alpha) {
   DCHECK_EQ(main_loop_, MessageLoop::current());
   DCHECK(proxy_);
 
 #if WEBKIT_USING_SKIA
-  proxy_->Paint(canvas, rect);
+  proxy_->Paint(canvas, rect, alpha);
 #elif WEBKIT_USING_CG
   // Get the current scaling in X and Y.
   CGAffineTransform mat = CGContextGetCTM(canvas);
