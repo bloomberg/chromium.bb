@@ -10,11 +10,8 @@ Import('env')
 if env.Bit('nacl_glibc'):
   Return()
 
-# Although the regular PNaCl frontend is able to link object files
-# generated from assembly code, the sandboxed version cannot.
-if env.Bit('use_sandboxed_translator'):
-  Return()
-if env.Bit('pnacl_generate_pexe'):
+# PNaCl translator handles linker flags differently in pexe mode
+if env.Bit('bitcode') and env.Bit('pnacl_generate_pexe'):
   Return()
 
 if env.Bit('bitcode'):
@@ -35,4 +32,5 @@ node = env.CommandSelLdrTestNacl(
     sel_ldr_flags=['-B', env.GetIrtNexe()],
     stdout_golden=env.File('${SCONSTRUCT_DIR}/tests/hello_world'
                            '/hello_world.stdout'))
-env.AddNodeToTestSuite(node, ['small_tests'], 'run_blob_library_loading_test')
+env.AddNodeToTestSuite(node, ['small_tests', 'nonpexe_tests'],
+                       'run_blob_library_loading_test')

@@ -19,12 +19,8 @@ if env.IsRunningUnderValgrind():
 if env.Bit('nacl_glibc'):
   Return()
 
-# The PNaCl translators are not supposed to handle incoming native code
-if env.Bit('use_sandboxed_translator'):
-  Return()
-
-# target_pexe case is similar
-if env.Bit('pnacl_generate_pexe'):
+# Pexes can't contain native code
+if env.Bit('bitcode') and env.Bit('pnacl_generate_pexe'):
   Return()
 
 # ----------------------------------------------------------
@@ -167,5 +163,6 @@ for text_end, variant in test_specs:
     node = env.CommandSelLdrTestNacl(base_name + '.out',
                                      nexe)
     env.AddNodeToTestSuite(node,
-                           ['small_tests', 'sel_ldr_sled_tests'],
+                           ['small_tests', 'sel_ldr_sled_tests',
+                            'nonpexe_tests'],
                            'run_' + base_name)

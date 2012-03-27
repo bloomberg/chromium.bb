@@ -7,7 +7,7 @@ Import('env')
 
 # Do not run these tests with pexes, assuming they are portable, since
 # they use inline assembler.
-if env.Bit('pnacl_generate_pexe'):
+if env.Bit('bitcode') and env.Bit('pnacl_generate_pexe'):
   Return()
 
 prog_env = env.Clone()
@@ -31,5 +31,5 @@ is_broken = prog_env.Bit('target_arm') and prog_env.UsingEmulator()
 # upgraded to a newer kernel.
 is_broken = prog_env.Bit('target_arm')
 
-prog_env.AddNodeToTestSuite(node, ['small_tests'], 'run_execute_data_test',
-                            is_broken=is_broken)
+prog_env.AddNodeToTestSuite(node, ['small_tests', 'nonpexe_tests'],
+                            'run_execute_data_test', is_broken=is_broken)

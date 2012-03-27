@@ -6,7 +6,7 @@
 Import('env')
 
 # This test does not make any sense for pure pnacl
-if env.Bit('pnacl_generate_pexe'):
+if env.Bit('bitcode') and env.Bit('pnacl_generate_pexe'):
   Return()
 
 # Case-by-case calling Convention Test for PNaCl and nacl-gcc compatibility.
@@ -111,5 +111,6 @@ for test_source in ['return_structs.cc',
                                      EXTRA_LIBS=['${NONIRT_LIBS}'])
     node = env.CommandSelLdrTestNacl(test_full_name + '.out',
                                      prog)
-    env.AddNodeToTestSuite(node, ['small_tests', 'toolchain_tests'],
+    env.AddNodeToTestSuite(node, ['small_tests', 'toolchain_tests',
+                                  'nonpexe_tests'],
                            'run_' + test_full_name + '_test')

@@ -6,7 +6,7 @@
 Import('env')
 
 # This test does not make any sense for pure pnacl
-if env.Bit('pnacl_generate_pexe'):
+if env.Bit('bitcode') and env.Bit('pnacl_generate_pexe'):
   Return()
 
 # If this test is failing on the bots, you can find the seed
@@ -116,7 +116,8 @@ node = link_env.CommandSelLdrTestNacl(
          prog,
          stdout_golden=nodes[0])
 
-env.AddNodeToTestSuite(node, ['medium_tests'], 'run_callingconv_test',
+env.AddNodeToTestSuite(node, ['medium_tests', 'nonpexe_tests'],
+                       'run_callingconv_test',
                        # This test takes too long to compile for ARM
                        # and the resulting code doesn't pass this test.
                        is_broken=env.Bit('target_arm'))

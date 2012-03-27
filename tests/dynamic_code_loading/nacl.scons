@@ -6,7 +6,7 @@
 Import('env')
 
 # Do not run these tests with pexes, assuming they are portable.
-if env.Bit('pnacl_generate_pexe'):
+if env.Bit('bitcode') and env.Bit('pnacl_generate_pexe'):
   Return()
 
 # The test works with PNaCl-ARM but not with PNaCl-x86, because the
@@ -116,7 +116,8 @@ dyncode_demand_alloc_test_nexe = env.ComponentProgram(
     ['dyncode_demand_alloc_test.c'],
     EXTRA_LIBS=['${DYNCODE_LIBS}', '${NONIRT_LIBS}'])
 
-test_suites = ['small_tests', 'sel_ldr_tests', 'dynamic_load_tests']
+test_suites = ['small_tests', 'sel_ldr_tests', 'dynamic_load_tests',
+               'nonpexe_tests']
 
 node = env.CommandSelLdrTestNacl('dynamic_load_test.out',
                                  dynamic_load_test_nexe)

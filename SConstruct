@@ -677,6 +677,7 @@ ACCEPTABLE_TEST_SUITES = set([
   'dynamic_load_tests',
   'exception_tests',
   'exit_status_tests',
+  'nonpexe_tests',
   'performance_tests',
   'pnacl_abi_tests',
   'sel_ldr_sled_tests',

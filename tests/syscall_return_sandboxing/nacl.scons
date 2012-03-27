@@ -5,12 +5,9 @@
 
 Import('env')
 
-# The PNaCl translators are not supposed to handle incoming native code
-if env.Bit('use_sandboxed_translator'):
-  Return()
 # Do not run these tests with pexes, assuming they are portable, since
 # they use inline assembler.
-if env.Bit('pnacl_generate_pexe'):
+if env.Bit('bitcode') and env.Bit('pnacl_generate_pexe'):
   Return()
 
 # env's BUILD_ARCH, BUILD_SUBARCH controls what assembly files to use.
@@ -42,7 +39,7 @@ node = env.CommandSelLdrTestNacl(
     'syscall_return_sandboxing.out',
     syscall_return_sandboxing_nexe)
 env.AddNodeToTestSuite(node,
-                       ['small_tests', 'sel_ldr_tests'],
+                       ['small_tests', 'sel_ldr_tests', 'nonpexe_tests'],
                        'run_syscall_return_sandboxing_test')
 
 thread_create_bad_address_nexe = env.ComponentProgram(
@@ -52,5 +49,5 @@ thread_create_bad_address_nexe = env.ComponentProgram(
 node = env.CommandSelLdrTestNacl(
     'thread_create_bad_address.out',
     thread_create_bad_address_nexe)
-env.AddNodeToTestSuite(node, ['small_tests'],
+env.AddNodeToTestSuite(node, ['small_tests', 'nonpexe_tests'],
                        'run_thread_create_bad_address_test')
