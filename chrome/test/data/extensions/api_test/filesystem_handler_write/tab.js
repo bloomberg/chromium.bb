@@ -84,7 +84,7 @@ function runFileSystemHandlerTest(entries) {
     writeToFile(entry, reader.result);
   };
   reader.onerror = function(e) {
-    errorCallback({message: "Unable to read file."});
+    errorCallback({message: 'Unable to read file.'});
   };
   entry.file(function(file) {
     reader.readAsText(file);
@@ -93,18 +93,18 @@ function runFileSystemHandlerTest(entries) {
 }
 
 function executeListener(id, details) {
-  if (id != "AbcAction" && id != "BaseAction" && id != "123Action") {
-    chrome.test.fail("Unexpected action id: " + id);
+  if (id != 'TestAction_aBc' && id != 'TestAction_def' && id != '123Action') {
+    errorCallback({message: 'Unexpected action id: ' + id});
     return;
   }
   var file_entries = details.entries;
   if (!file_entries || file_entries.length != 1) {
-    chrome.test.fail("Unexpected file url list");
+    errorCallback({message: 'Unexpected file url list'});
     return;
   }
   chrome.tabs.get(details.tab_id, function(tab) {
-    if (tab.title != "file browser component test") {
-      chrome.test.fail("Unexpected tab title: " + tab.title);
+    if (tab.title != 'file browser component test') {
+      errorCallback({message: 'Unexpected tab title: ' + tab.title});
       return;
     }
     runFileSystemHandlerTest(file_entries);

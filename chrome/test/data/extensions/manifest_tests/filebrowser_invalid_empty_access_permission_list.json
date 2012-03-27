@@ -1,0 +1,15 @@
+{
+  "name": "test",
+  "version": "1",
+  "file_browser_handlers": [
+    {
+      "id" : "ID",
+      "default_title" : "Default title",
+      "default_icon" : "icon.png",
+      "file_filters" : [
+        "filesystem:*.txt"
+      ],
+      "file_access": [ ]
+    }
+  ]
+}

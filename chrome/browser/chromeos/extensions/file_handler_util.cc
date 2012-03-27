@@ -104,6 +104,34 @@ URLPatternSet GetAllMatchingPatterns(const FileBrowserHandler* handler,
 
 typedef std::set<const FileBrowserHandler*> ActionSet;
 
+const FileBrowserHandler* FindFileBrowserHandler(const Extension* extension,
+                                                 const std::string& action_id) {
+  for (Extension::FileBrowserHandlerList::const_iterator action_iter =
+           extension->file_browser_handlers()->begin();
+       action_iter != extension->file_browser_handlers()->end();
+       ++action_iter) {
+    if (action_iter->get()->id() == action_id)
+      return action_iter->get();
+  }
+  return NULL;
+}
+
+unsigned int GetAccessPermissionsForHandler(const Extension* extension,
+                                            const std::string& action_id) {
+  const FileBrowserHandler* action =
+      FindFileBrowserHandler(extension, action_id);
+  if (!action)
+    return 0;
+  unsigned int result = 0;
+  if (action->CanRead())
+    result |= kReadOnlyFilePermissions;
+  if (action->CanWrite())
+    result |= kReadWriteFilePermissions;
+  // TODO(tbarzic): We don't handle Create yet.
+  return result;
+}
+
+
 std::string EscapedUtf8ToLower(const std::string& str) {
   string16 utf16 = UTF8ToUTF16(
       net::UnescapeURLComponent(str, net::UnescapeRule::NORMAL));
@@ -285,12 +313,13 @@ class FileTaskExecutor::ExecuteTasksFileSystemCallbackDispatcher {
       const GURL& source_url,
       scoped_refptr<const Extension> handler_extension,
       int handler_pid,
+      const std::string& action_id,
       const std::vector<GURL>& file_urls) {
     return base::Bind(
         &ExecuteTasksFileSystemCallbackDispatcher::DidOpenFileSystem,
         base::Owned(new ExecuteTasksFileSystemCallbackDispatcher(
             executor, profile, source_url, handler_extension,
-            handler_pid, file_urls)));
+            handler_pid, action_id, file_urls)));
   }
 
   void DidOpenFileSystem(base::PlatformFileError result,
@@ -347,12 +376,14 @@ class FileTaskExecutor::ExecuteTasksFileSystemCallbackDispatcher {
       const GURL& source_url,
       const scoped_refptr<const Extension>& handler_extension,
       int handler_pid,
+      const std::string& action_id,
       const std::vector<GURL>& file_urls)
       : executor_(executor),
         profile_(profile),
         source_url_(source_url),
         handler_extension_(handler_extension),
         handler_pid_(handler_pid),
+        action_id_(action_id),
         origin_file_urls_(file_urls) {
     DCHECK(executor_);
   }
@@ -418,15 +449,10 @@ class FileTaskExecutor::ExecuteTasksFileSystemCallbackDispatcher {
       }
     }
 
-    // TODO(tbarzic): Add explicit R/W + R/O permissions for non-component
-    // extensions.
-
-    // Grant R/O access permission to non-component extension and R/W to
-    // component extensions.
     ChildProcessSecurityPolicy::GetInstance()->GrantPermissionsForFile(
         handler_pid_,
         final_file_path,
-        GetReadWritePermissions());
+        GetAccessPermissionsForHandler(handler_extension_.get(), action_id_));
 
     // Grant access to this particular file to target extension. This will
     // ensure that the target extension can access only this FS entry and
@@ -453,6 +479,7 @@ class FileTaskExecutor::ExecuteTasksFileSystemCallbackDispatcher {
   GURL source_url_;
   scoped_refptr<const Extension> handler_extension_;
   int handler_pid_;
+  std::string action_id_;
   std::vector<GURL> origin_file_urls_;
   DISALLOW_COPY_AND_ASSIGN(ExecuteTasksFileSystemCallbackDispatcher);
 };
@@ -512,6 +539,7 @@ void FileTaskExecutor::RequestFileEntryOnFileThread(
           source_url_,
           handler,
           handler_pid,
+          action_id_,
           file_urls));
 }
 

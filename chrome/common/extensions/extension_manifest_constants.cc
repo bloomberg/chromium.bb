@@ -30,6 +30,7 @@ const char kDevToolsPage[] = "devtools_page";
 const char kEventName[] = "event_name";
 const char kExcludeGlobs[] = "exclude_globs";
 const char kExcludeMatches[] = "exclude_matches";
+const char kFileAccessList[] = "file_access";
 const char kFileFilters[] = "file_filters";
 const char kFileBrowserHandlers[] = "file_browser_handlers";
 const char kHomepageURL[] = "homepage_url";
@@ -224,6 +225,10 @@ const char kInvalidExcludeMatch[] =
     "Invalid value for 'content_scripts[*].exclude_matches[*]': *";
 const char kInvalidExcludeMatches[] =
     "Invalid value for 'content_scripts[*].exclude_matches'.";
+const char kInvalidFileAccessList[] =
+    "Invalid value for 'file_access'.";
+const char kInvalidFileAccessValue[] =
+    "Invalid value for 'file_access[*]'.";
 const char kInvalidFileBrowserHandler[] =
     "Invalid value for 'file_browser_handers'.";
 const char kInvalidFileFiltersList[] =

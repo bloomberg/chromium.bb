@@ -199,6 +199,14 @@ IN_PROC_BROWSER_TEST_F(FileSystemExtensionApiTest, FileBrowserTestWrite) {
 }
 
 IN_PROC_BROWSER_TEST_F(FileSystemExtensionApiTest,
+                       FileBrowserTestWriteReadOnly) {
+  AddTmpMountPoint();
+  ASSERT_TRUE(RunExtensionTest("filesystem_handler_write")) << message_;
+  ASSERT_FALSE(RunExtensionSubtest(
+      "filebrowser_component", "write.html#def", kComponentFlags)) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemExtensionApiTest,
                        FileBrowserTestWriteComponent) {
   AddTmpMountPoint();
   ASSERT_TRUE(RunComponentExtensionTest("filesystem_handler_write"))

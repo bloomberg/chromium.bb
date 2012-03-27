@@ -20,13 +20,16 @@ var cleanupError = 'Got unexpected error while cleaning up test directory.';
 // |fileVerifierFunction| method that will verify test results received from the
 //     filesystem_handler part of the test.
 //     The method will be passed received fileEntry object, original file
-//     content, file content received from filesystem_handler and callback
+//     content, response received from filesystem_handler and callback
 //     function that will expect error object as its argument (or undefined on
 //     success).
-var TestExpectations = function(expectedTasks, fileVerifierFunction) {
+// TODO(tbarzic): Rename this to TestParams, or something similar.
+var TestExpectations = function(fileExtension, expectedTasks,
+    fileVerifierFunction) {
   this.fileText_ = undefined;
   this.file_ = undefined;
   this.expectedTasks_ = expectedTasks;
+  this.fileExtension_ = fileExtension;
   this.fileVerifierFunction_ = fileVerifierFunction;
 };
 
@@ -34,6 +37,10 @@ var TestExpectations = function(expectedTasks, fileVerifierFunction) {
 TestExpectations.prototype.setFileAndFileText = function(file, fileText) {
   this.file_ = file;
   this.fileText_ = fileText;
+};
+
+TestExpectations.prototype.getFileExtension = function() {
+  return this.fileExtension_;
 };
 
 TestExpectations.prototype.verifyHandlerRequest = function(request, callback) {
@@ -53,7 +60,7 @@ TestExpectations.prototype.verifyHandlerRequest = function(request, callback) {
     return;
   }
 
-  this.fileVerifierFunction_(this.file_, this.fileText_, request.fileContent,
+  this.fileVerifierFunction_(this.file_, this.fileText_, request,
                              callback);
 };
 
@@ -118,10 +125,16 @@ TestRunner.prototype.onFileSystemFetched_ = function(fs) {
 };
 
 TestRunner.prototype.onFileCreatorInit_ = function() {
+  var ext = this.expectations_.getFileExtension();
+  if (!ext) {
+    this.errorCallback_({message: "Test file extension not set."});
+    return;
+  }
+console.log(this.fileExtension);
   var self = this;
   this.fileCreator_.createFile('.log',
       function(file, text) {
-        self.fileCreator_.createFile('.aBc',
+        self.fileCreator_.createFile(ext,
             self.onFileCreated_.bind(self),
             self.errorCallback_.bind(self));
       },

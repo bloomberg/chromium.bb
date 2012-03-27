@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -50,6 +50,21 @@ class FileBrowserHandler {
     default_icon_path_ = path;
   }
 
+  // File access permissions.
+  // Adjusts file_access_permission_flags_ to allow specified permission.
+  bool AddFileAccessPermission(const std::string& permission_str);
+  // Checks that specified file access permissions are valid (all set
+  // permissions are valid and there is no other permission specified with
+  // "create")
+  // If no access permissions were set, initialize them to default value.
+  bool ValidateFileAccessPermissions();
+  // Checks if handler has read access.
+  bool CanRead() const;
+  // Checks if handler has write access.
+  bool CanWrite() const;
+  // Checks if handler has "create" access specified.
+  bool HasCreateAccessPermission() const;
+
  private:
   // The id for the extension this action belongs to (as defined in the
   // extension manifest).
@@ -58,6 +73,8 @@ class FileBrowserHandler {
   std::string default_icon_path_;
   // The id for the FileBrowserHandler, for example: "PdfFileAction".
   std::string id_;
+  unsigned int file_access_permission_flags_;
+
   // A list of file filters.
   URLPatternSet url_set_;
 };

@@ -5,11 +5,11 @@
 // Checks that filesystem_handler read the file correctly (original and received
 // text match) and changed its content in expected way (file should contain
 // originalText + originalText).
-function verifyFileContent(file, originalText, receivedText, callback) {
-  if (receivedText != originalText) {
+function verifyFileContent(file, originalText, request, callback) {
+  if (request.fileContent != originalText) {
     callback({message:'Received content does not match. ' +
                       'Expected: "' + originalText + '", ' +
-                      'Got "' + receivedText + '".'});
+                      'Got "' + request.fileContent + '".'});
     return;
   }
 
@@ -27,10 +27,34 @@ function verifyFileContent(file, originalText, receivedText, callback) {
      callback);
 };
 
+function getFileExtensionFromLocationHref() {
+  var loc = window.location.href;
+  console.log("Opening tab " + loc);
+  if (loc.indexOf("#") == -1 ) {
+    console.log("No params in url, faling back to default.");
+    return undefined;
+  }
+
+  loc = unescape(loc.substr(loc.indexOf("#") + 1));
+  return loc;
+}
+
+function createTestExpectations(defaultFileExtension) {
+  var fileExtension = getFileExtensionFromLocationHref();
+  if (!fileExtension)
+    fileExtension = defaultFileExtension;
+
+  var fileActionName = 'TestAction_' + fileExtension;
+  var fileActionFilter = ['filesystem:*.' + fileExtension.toLowerCase()];
+  var expectedTasks = {};
+  expectedTasks[fileActionName] = fileActionFilter;
+  fileExtension = '.' + fileExtension;
+
+  return new TestExpectations(fileExtension, expectedTasks, verifyFileContent);
+}
+
 chrome.test.runTests([function tab() {
-  var expectedTasks = {'AbcAction': ['filesystem:*.abc'],
-                       'BaseAction': ['filesystem:*', 'filesystem:*.*']};
-  var expectations = new TestExpectations(expectedTasks, verifyFileContent);
+  var expectations = createTestExpectations('aBc');
 
   var testRunner = new TestRunner(expectations);
   testRunner.runTest();

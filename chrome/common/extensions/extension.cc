@@ -2317,38 +2317,65 @@ FileBrowserHandler* Extension::LoadFileBrowserHandler(
   }
   result->set_title(title);
 
-  // Initialize file filters (mandatory).
-  ListValue* list_value = NULL;
-  if (!file_browser_handler->HasKey(keys::kFileFilters) ||
-      !file_browser_handler->GetList(keys::kFileFilters, &list_value) ||
-      list_value->empty()) {
-    *error = ASCIIToUTF16(errors::kInvalidFileFiltersList);
+  // Initialize access permissions (optional).
+  ListValue* access_list_value = NULL;
+  if (file_browser_handler->HasKey(keys::kFileAccessList)) {
+    if (!file_browser_handler->GetList(keys::kFileAccessList,
+                                       &access_list_value) ||
+        access_list_value->empty()) {
+      *error = ASCIIToUTF16(errors::kInvalidFileAccessList);
+      return NULL;
+    }
+    for (size_t i = 0; i < access_list_value->GetSize(); ++i) {
+      std::string access;
+      if (!access_list_value->GetString(i, &access) ||
+          result->AddFileAccessPermission(access)) {
+        *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
+            errors::kInvalidFileAccessValue, base::IntToString(i));
+        return NULL;
+      }
+    }
+  }
+  if (!result->ValidateFileAccessPermissions()) {
+    *error = ASCIIToUTF16(errors::kInvalidFileAccessList);
     return NULL;
   }
-  for (size_t i = 0; i < list_value->GetSize(); ++i) {
-    std::string filter;
-    if (!list_value->GetString(i, &filter)) {
-      *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
-          errors::kInvalidFileFilterValue, base::IntToString(i));
+
+  // Initialize file filters (mandatory, unless "create" access is specified,
+  // in which case is ignored).
+  if (!result->HasCreateAccessPermission()) {
+    ListValue* list_value = NULL;
+    if (!file_browser_handler->HasKey(keys::kFileFilters) ||
+        !file_browser_handler->GetList(keys::kFileFilters, &list_value) ||
+        list_value->empty()) {
+      *error = ASCIIToUTF16(errors::kInvalidFileFiltersList);
       return NULL;
     }
-    StringToLowerASCII(&filter);
-    URLPattern pattern(URLPattern::SCHEME_FILESYSTEM);
-    if (pattern.Parse(filter) != URLPattern::PARSE_SUCCESS) {
-      *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
-          errors::kInvalidURLPatternError, filter);
-      return NULL;
+    for (size_t i = 0; i < list_value->GetSize(); ++i) {
+      std::string filter;
+      if (!list_value->GetString(i, &filter)) {
+        *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
+            errors::kInvalidFileFilterValue, base::IntToString(i));
+        return NULL;
+      }
+      StringToLowerASCII(&filter);
+      URLPattern pattern(URLPattern::SCHEME_FILESYSTEM);
+      if (pattern.Parse(filter) != URLPattern::PARSE_SUCCESS) {
+        *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
+            errors::kInvalidURLPatternError, filter);
+        return NULL;
+      }
+      std::string path = pattern.path();
+      bool allowed = path == "*" || path == "*.*" ||
+          (path.compare(0, 2, "*.") == 0 &&
+           path.find_first_of('*', 2) == std::string::npos);
+      if (!allowed) {
+        *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
+            errors::kInvalidURLPatternError, filter);
+        return NULL;
+      }
+      result->AddPattern(pattern);
     }
-    std::string path = pattern.path();
-    bool allowed = path == "*" || path == "*.*" ||
-        (path.compare(0, 2, "*.") == 0 &&
-         path.find_first_of('*', 2) == std::string::npos);
-    if (!allowed) {
-      *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
-          errors::kInvalidURLPatternError, filter);
-      return NULL;
-    }
-    result->AddPattern(pattern);
   }
 
   std::string default_icon;

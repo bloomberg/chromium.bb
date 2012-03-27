@@ -4,19 +4,20 @@
 
 // Verifies that the filesystem_handler extension returned the content of the
 // file.
-function verifyFileContent(file, originalText, receivedText, callback) {
+function verifyFileContent(file, originalText, request, callback) {
   var error = undefined;
-  if (receivedText != originalText)
+  if (request.fileContent != originalText)
     error = {message: 'Received content does not match. ' +
                       'Expected "' + originalText + '", ' +
-                      'Got "' + receivedText + '".'};
+                      'Got "' + request.fileContent + '".'};
   callback(error);
 };
 
 chrome.test.runTests([function tab() {
   var expectedTasks = {'AbcAction': ['filesystem:*.abc'],
                        'BaseAction': ['filesystem:*', 'filesystem:*.*']};
-  var expectations = new TestExpectations(expectedTasks, verifyFileContent);
+  var expectations =
+      new TestExpectations(".aBc", expectedTasks, verifyFileContent);
 
   var testRunner = new TestRunner(expectations);
   testRunner.runTest();

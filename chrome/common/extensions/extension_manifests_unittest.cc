@@ -983,6 +983,13 @@ TEST_F(ExtensionManifestTest, IsolatedApps) {
 
 
 TEST_F(ExtensionManifestTest, FileBrowserHandlers) {
+  LoadAndExpectError("filebrowser_invalid_access_permission.json",
+      ExtensionErrorUtils::FormatErrorMessage(
+          errors::kInvalidFileAccessValue, base::IntToString(1)));
+  LoadAndExpectError("filebrowser_invalid_access_permission_list.json",
+      errors::kInvalidFileAccessList);
+  LoadAndExpectError("filebrowser_invalid_empty_access_permission_list.json",
+      errors::kInvalidFileAccessList);
   LoadAndExpectError("filebrowser_invalid_actions_1.json",
       errors::kInvalidFileBrowserHandler);
   LoadAndExpectError("filebrowser_invalid_actions_2.json",
@@ -1014,6 +1021,23 @@ TEST_F(ExtensionManifestTest, FileBrowserHandlers) {
   ASSERT_EQ(patterns.patterns().size(), 1U);
   ASSERT_TRUE(action->MatchesURL(
       GURL("filesystem:chrome-extension://foo/local/test.txt")));
+  ASSERT_FALSE(action->HasCreateAccessPermission());
+  ASSERT_TRUE(action->CanRead());
+  ASSERT_TRUE(action->CanWrite());
+
+  scoped_refptr<Extension> create_extension(
+      LoadAndExpectSuccess("filebrowser_valid_with_create.json"));
+  ASSERT_TRUE(create_extension->file_browser_handlers() != NULL);
+  ASSERT_EQ(create_extension->file_browser_handlers()->size(), 1U);
+  const FileBrowserHandler* create_action =
+      create_extension->file_browser_handlers()->at(0).get();
+  EXPECT_EQ(create_action->title(), "Default title");
+  EXPECT_EQ(create_action->icon_path(), "icon.png");
+  const URLPatternSet& create_patterns = create_action->file_url_patterns();
+  ASSERT_EQ(create_patterns.patterns().size(), 0U);
+  ASSERT_TRUE(create_action->HasCreateAccessPermission());
+  ASSERT_FALSE(create_action->CanRead());
+  ASSERT_FALSE(create_action->CanWrite());
 }
 
 TEST_F(ExtensionManifestTest, FileManagerURLOverride) {

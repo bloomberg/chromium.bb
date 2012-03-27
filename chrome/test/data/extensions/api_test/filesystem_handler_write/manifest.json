@@ -9,7 +9,7 @@
   },
   "file_browser_handlers": [
     {
-      "id" : "AbcAction",
+      "id" : "TestAction_aBc",
       "default_title" : "abc file action.",
       "default_icon" : "icon.png",
       "file_filters" : [ "filesystem:*.aBc", "filesystem:*.abcfile" ]
@@ -21,10 +21,12 @@
       "file_filters" : [ "filesystem:*.123", "filesystem:*.1234" ]
     },
     {
-      "id" : "BaseAction",
-      "default_title" : "Base action",
+      "id" : "TestAction_def",
+      "default_title" : "Read-only action",
       "default_icon" : "icon.png",
-      "file_filters" : [ "filesystem:*", "filesystem:*.*" ]
+      "file_filters" : [ "filesystem:*.def" ],
+      "file_access": [ "read" ]
+
     }
   ],
   "permissions": [
