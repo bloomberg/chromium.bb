@@ -540,6 +540,8 @@ void BufferedResourceLoader::didFail(
 }
 
 bool BufferedResourceLoader::HasSingleOrigin() const {
+  DCHECK(start_cb_.is_null())
+      << "Start() must complete before calling HasSingleOrigin()";
   return single_origin_;
 }
 

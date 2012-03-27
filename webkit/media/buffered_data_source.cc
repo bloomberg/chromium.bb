@@ -5,6 +5,7 @@
 #include "webkit/media/buffered_data_source.h"
 
 #include "base/bind.h"
+#include "base/message_loop.h"
 #include "media/base/media_log.h"
 #include "net/base/net_errors.h"
 
@@ -107,6 +108,20 @@ void BufferedDataSource::Initialize(
       frame_);
 }
 
+bool BufferedDataSource::HasSingleOrigin() {
+  DCHECK(MessageLoop::current() == render_loop_);
+  DCHECK(initialize_cb_.is_null() && loader_.get())
+      << "Initialize() must complete before calling HasSingleOrigin()";
+  return loader_->HasSingleOrigin();
+}
+
+void BufferedDataSource::Abort() {
+  DCHECK(MessageLoop::current() == render_loop_);
+
+  CleanupTask();
+  frame_ = NULL;
+}
+
 /////////////////////////////////////////////////////////////////////////////
 // media::Filter implementation.
 void BufferedDataSource::Stop(const base::Closure& closure) {
@@ -171,18 +186,6 @@ bool BufferedDataSource::GetSize(int64* size_out) {
 
 bool BufferedDataSource::IsStreaming() {
   return streaming_;
-}
-
-bool BufferedDataSource::HasSingleOrigin() {
-  DCHECK(MessageLoop::current() == render_loop_);
-  return loader_.get() ? loader_->HasSingleOrigin() : true;
-}
-
-void BufferedDataSource::Abort() {
-  DCHECK(MessageLoop::current() == render_loop_);
-
-  CleanupTask();
-  frame_ = NULL;
 }
 
 /////////////////////////////////////////////////////////////////////////////

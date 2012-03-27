@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/message_loop.h"
 #include "media/base/media_log.h"
 #include "media/base/mock_callback.h"
 #include "media/base/mock_data_source_host.h"

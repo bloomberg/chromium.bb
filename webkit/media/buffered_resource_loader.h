@@ -18,8 +18,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLLoaderClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLRequest.h"
 #include "webkit/media/active_loader.h"
-#include "webkit/media/web_data_source.h"
-#include "webkit/media/webmediaplayer_impl.h"
 
 namespace media {
 class MediaLog;
@@ -159,6 +157,8 @@ class BufferedResourceLoader : public WebKit::WebURLLoaderClient {
       WebKit::WebURLLoader* loader,
       const WebKit::WebURLError&);
 
+  // Returns true if the media resource has a single origin, false otherwise.
+  // Only valid to call after Start() has completed.
   bool HasSingleOrigin() const;
 
   // Sets the defer strategy to the given value.

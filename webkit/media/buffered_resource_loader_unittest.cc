@@ -7,6 +7,7 @@
 
 #include "base/bind.h"
 #include "base/format_macros.h"
+#include "base/message_loop.h"
 #include "base/stringprintf.h"
 #include "media/base/media_log.h"
 #include "net/base/net_errors.h"

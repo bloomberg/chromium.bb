@@ -11,8 +11,8 @@
 #include "base/synchronization/lock.h"
 #include "media/base/pipeline.h"
 #include "media/filters/chunk_demuxer_client.h"
+#include "webkit/media/buffered_data_source.h"
 #include "webkit/media/skcanvas_video_renderer.h"
-#include "webkit/media/web_data_source.h"
 
 class SkCanvas;
 
@@ -41,10 +41,10 @@ class WebMediaPlayerProxy
  public:
   WebMediaPlayerProxy(const scoped_refptr<base::MessageLoopProxy>& render_loop,
                       WebMediaPlayerImpl* webmediaplayer);
-  const scoped_refptr<WebDataSource>& data_source() {
+  const scoped_refptr<BufferedDataSource>& data_source() {
     return data_source_;
   }
-  void set_data_source(const scoped_refptr<WebDataSource>& data_source) {
+  void set_data_source(const scoped_refptr<BufferedDataSource>& data_source) {
     data_source_ = data_source;
   }
 
@@ -116,7 +116,7 @@ class WebMediaPlayerProxy
   scoped_refptr<base::MessageLoopProxy> render_loop_;
   WebMediaPlayerImpl* webmediaplayer_;
 
-  scoped_refptr<WebDataSource> data_source_;
+  scoped_refptr<BufferedDataSource> data_source_;
   scoped_refptr<media::VideoRendererBase> frame_provider_;
   SkCanvasVideoRenderer video_renderer_;
 

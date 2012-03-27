@@ -28,8 +28,6 @@
         'media_stream_client.h',
         'skcanvas_video_renderer.cc',
         'skcanvas_video_renderer.h',
-        'web_data_source.cc',
-        'web_data_source.h',
         'webmediaplayer_delegate.h',
         'webmediaplayer_impl.cc',
         'webmediaplayer_impl.h',
