@@ -57,12 +57,18 @@ const MasterPreferences& MasterPreferences::ForCurrentProcess() {
 }
 }
 
-// The use of std::vector<GURL>() above requires us to have a destructor for
-// GURL.  GURL contains a member of type url_parse::Parsed, which declares (but
-// does not implement) an explicit destructor in its header file.  We're missing
-// the real implementation by not depending on the googleurl library.  However,
-// we don't really need it, so we just replace it here rather than building a
-// 64-bit version of the googleurl library with all its dependencies.
+// The use of std::vector<GURL>() above requires us to have destructors for
+// GURL and its contained types.  GURL contains a member of type
+// url_parse::Parsed.  Both Parsed and GURL declare (but do not implement)
+// explicit destructors in their header files.  We're missing the real
+// implementations by not depending on the googleurl library.  However, we don't
+// really need them, so we just replace them here rather than building a 64-bit
+// version of the googleurl library with all its dependencies.
+
+GURL::~GURL() {
+  NOTREACHED();
+}
+
 namespace url_parse {
 
 Parsed::~Parsed() {
