@@ -14,6 +14,7 @@
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/extensions/crx_installer.h"
@@ -31,11 +32,14 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
 
 using content::BrowserThread;
+using content::DownloadId;
+using content::DownloadItem;
 using content::NavigationController;
 
 namespace {
@@ -43,7 +47,10 @@ namespace {
 const char kInvalidIdError[] = "Invalid id";
 const char kNoBrowserError[] = "No browser found";
 const char kDownloadDirectoryError[] = "Could not create download directory";
-
+const char kDownloadCanceledError[] = "Download canceled";
+const char kInstallCanceledError[] = "Install canceled";
+const char kDownloadInterruptedError[] = "Download interrupted";
+const char kInvalidDownloadError[] = "Download was not a CRX";
 const char kInlineInstallSource[] = "inline";
 const char kDefaultInstallSource[] = "";
 
@@ -60,9 +67,8 @@ GURL GetWebstoreInstallURL(
   }
   std::vector<std::string> params;
   params.push_back("id=" + extension_id);
-  if (!install_source.empty()) {
+  if (!install_source.empty())
     params.push_back("installsource=" + install_source);
-  }
   params.push_back("lang=" + g_browser_process->GetApplicationLocale());
   params.push_back("uc");
   std::string url_string = extension_urls::GetWebstoreUpdateUrl(true).spec();
@@ -120,17 +126,25 @@ WebstoreInstaller::WebstoreInstaller(Profile* profile,
       delegate_(delegate),
       controller_(controller),
       id_(id),
+      download_item_(NULL),
       flags_(flags) {
   download_url_ = GetWebstoreInstallURL(id, flags & FLAG_INLINE_INSTALL ?
       kInlineInstallSource : kDefaultInstallSource);
 
+  registrar_.Add(this, chrome::NOTIFICATION_CRX_INSTALLER_DONE,
+                 content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_INSTALLED,
                  content::Source<Profile>(profile));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_INSTALL_ERROR,
                  content::Source<CrxInstaller>(NULL));
 }
 
-WebstoreInstaller::~WebstoreInstaller() {}
+WebstoreInstaller::~WebstoreInstaller() {
+  if (download_item_) {
+    download_item_->RemoveObserver(this);
+    download_item_ = NULL;
+  }
+}
 
 void WebstoreInstaller::Start() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -155,6 +169,18 @@ void WebstoreInstaller::Observe(int type,
                                 const content::NotificationSource& source,
                                 const content::NotificationDetails& details) {
   switch (type) {
+    case chrome::NOTIFICATION_CRX_INSTALLER_DONE: {
+      const Extension* extension =
+          content::Details<const Extension>(details).ptr();
+      CrxInstaller* installer = content::Source<CrxInstaller>(source).ptr();
+      if (extension == NULL && download_item_ != NULL &&
+          installer->download_url() == download_item_->GetURL() &&
+          installer->profile()->IsSameProfile(profile_)) {
+        ReportFailure(kInstallCanceledError);
+      }
+      break;
+    }
+
     case chrome::NOTIFICATION_EXTENSION_INSTALLED: {
       CHECK(profile_->IsSameProfile(content::Source<Profile>(source).ptr()));
       const Extension* extension =
@@ -188,6 +214,48 @@ void WebstoreInstaller::SetDownloadDirectoryForTests(FilePath* directory) {
   g_download_directory_for_tests = directory;
 }
 
+void WebstoreInstaller::OnDownloadStarted(DownloadId id, net::Error error) {
+  if (error != net::OK) {
+    ReportFailure(net::ErrorToString(error));
+    return;
+  }
+
+  CHECK(id.IsValid());
+
+  content::DownloadManager* download_manager = profile_->GetDownloadManager();
+  download_item_ = download_manager->GetActiveDownloadItem(id.local());
+  download_item_->AddObserver(this);
+}
+
+void WebstoreInstaller::OnDownloadUpdated(DownloadItem* download) {
+  CHECK_EQ(download_item_, download);
+
+  switch (download->GetState()) {
+    case DownloadItem::CANCELLED:
+      ReportFailure(kDownloadCanceledError);
+      break;
+    case DownloadItem::INTERRUPTED:
+      ReportFailure(kDownloadInterruptedError);
+      break;
+    case DownloadItem::REMOVING:
+      download_item_->RemoveObserver(this);
+      download_item_ = NULL;
+      break;
+    case DownloadItem::COMPLETE:
+      // Wait for other notifications if the download is really an extension.
+      if (!ChromeDownloadManagerDelegate::IsExtensionDownload(download))
+        ReportFailure(kInvalidDownloadError);
+      break;
+    default:
+      // Continue listening if the download is not in one of the above states.
+      break;
+  }
+}
+
+void WebstoreInstaller::OnDownloadOpened(DownloadItem* download) {
+  CHECK_EQ(download_item_, download);
+}
+
 void WebstoreInstaller::StartDownload(const FilePath& file) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -216,19 +284,23 @@ void WebstoreInstaller::StartDownload(const FilePath& file) {
   profile_->GetDownloadManager()->DownloadUrl(
       download_url_, referrer, "",
       false, -1, save_info, controller_->GetWebContents(),
-      content::DownloadManager::OnStartedCallback());
+      base::Bind(&WebstoreInstaller::OnDownloadStarted, this));
 }
 
 void WebstoreInstaller::ReportFailure(const std::string& error) {
-  if (delegate_)
+  if (delegate_) {
     delegate_->OnExtensionInstallFailure(id_, error);
+    delegate_ = NULL;
+  }
 
   Release();  // Balanced in Start().
 }
 
 void WebstoreInstaller::ReportSuccess() {
-  if (delegate_)
+  if (delegate_) {
     delegate_->OnExtensionInstallSuccess(id_);
+    delegate_ = NULL;
+  }
 
   Release();  // Balanced in Start().
 }

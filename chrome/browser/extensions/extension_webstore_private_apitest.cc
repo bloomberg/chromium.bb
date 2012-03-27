@@ -351,7 +351,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateBundleTest,
 
   PackInvalidCRX("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
   PackCRX("bmfoocgfinpmkmlbjhcbofejhkhlbchk", "extension1.json");
-  PackCRX("pkapffpjmiilhlhbibjhamlmdhfneidj", "extension2.json");
   PackCRX("begfmnajjkbjdgmffnjaojchoncnmngg", "app1.json");
 
   ASSERT_TRUE(RunPageTest(GetTestServerURL(
@@ -359,8 +358,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateBundleTest,
 
   ASSERT_TRUE(service()->GetExtensionById(
       "begfmnajjkbjdgmffnjaojchoncnmngg", false));
-  ASSERT_TRUE(service()->GetExtensionById(
-      "pkapffpjmiilhlhbibjhamlmdhfneidj", false));
+  ASSERT_FALSE(service()->GetExtensionById(
+      "pkapffpjmiilhlhbibjhamlmdhfneidj", true));
   ASSERT_FALSE(service()->GetExtensionById(
       "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", true));
   ASSERT_FALSE(service()->GetExtensionById(

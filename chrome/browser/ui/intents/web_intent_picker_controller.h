@@ -29,7 +29,6 @@ class GURL;
 class TabContentsWrapper;
 class WebIntentPicker;
 class WebIntentPickerModel;
-class WebstoreInstaller;
 
 namespace content {
 class WebContents;
@@ -176,9 +175,6 @@ class WebIntentPickerController : public content::NotificationObserver,
 
   // Request consumer used when asynchronously loading favicons.
   CancelableRequestConsumerTSimple<size_t> favicon_consumer_;
-
-  // Used to install extensions from the Chrome Web Store.
-  scoped_refptr<WebstoreInstaller> webstore_installer_;
 
   base::WeakPtrFactory<WebIntentPickerController> weak_ptr_factory_;
 

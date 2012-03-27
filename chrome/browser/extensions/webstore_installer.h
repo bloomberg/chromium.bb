@@ -11,8 +11,11 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
+#include "content/public/browser/download_id.h"
+#include "content/public/browser/download_item.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "net/base/net_errors.h"
 #include "googleurl/src/gurl.h"
 
 class FilePath;
@@ -24,6 +27,7 @@ class NavigationController;
 
 // Downloads and installs extensions from the web store.
 class WebstoreInstaller : public content::NotificationObserver,
+                          public content::DownloadItem::Observer,
                           public base::RefCounted<WebstoreInstaller> {
  public:
   enum Flag {
@@ -40,7 +44,6 @@ class WebstoreInstaller : public content::NotificationObserver,
     virtual void OnExtensionInstallFailure(const std::string& id,
                                            const std::string& error) = 0;
   };
-
 
   // Creates a WebstoreInstaller for downloading and installing the extension
   // with the given |id| from the Chrome Web Store. If |delegate| is not NULL,
@@ -68,6 +71,13 @@ class WebstoreInstaller : public content::NotificationObserver,
   static void SetDownloadDirectoryForTests(FilePath* directory);
 
  private:
+  // DownloadManager::DownloadUrl callback.
+  void OnDownloadStarted(content::DownloadId id, net::Error error);
+
+  // DownloadItem::Observer implementation:
+  virtual void OnDownloadUpdated(content::DownloadItem* download) OVERRIDE;
+  virtual void OnDownloadOpened(content::DownloadItem* download) OVERRIDE;
+
   // Starts downloading the extension to |file_path|.
   void StartDownload(const FilePath& file_path);
 
@@ -85,6 +95,10 @@ class WebstoreInstaller : public content::NotificationObserver,
   Delegate* delegate_;
   content::NavigationController* controller_;
   std::string id_;
+  // The DownloadItem is owned by the DownloadManager and is valid from when
+  // OnDownloadStarted is called (with no error) until the DownloadItem
+  // transitions to state REMOVING.
+  content::DownloadItem* download_item_;
   int flags_;
   GURL download_url_;
 };

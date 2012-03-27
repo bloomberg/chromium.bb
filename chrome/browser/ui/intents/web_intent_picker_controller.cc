@@ -276,12 +276,12 @@ void WebIntentPickerController::OnInlineDispositionWebContentsCreated(
 
 void WebIntentPickerController::OnExtensionInstallRequested(
     const std::string& id) {
-  webstore_installer_ = new WebstoreInstaller(
+  scoped_refptr<WebstoreInstaller> installer = new WebstoreInstaller(
       wrapper_->profile(), this, &wrapper_->web_contents()->GetController(), id,
       WebstoreInstaller::FLAG_INLINE_INSTALL);
 
   pending_async_count_++;
-  webstore_installer_->Start();
+  installer->Start();
 }
 
 void WebIntentPickerController::OnCancelled() {
