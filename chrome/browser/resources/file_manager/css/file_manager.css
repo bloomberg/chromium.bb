@@ -189,8 +189,8 @@ input[type='submit'][disabled]:hover {
 .dialog-sidebar {
   position: relative;
   -webkit-box-flex: 0;
-  width: 169px;
-  margin-left: -169px;
+  width: 168px;
+  margin-left: -168px;
   background-color: #e6e6e6;
   -webkit-transition: margin-left 180ms ease;
   overflow: hidden;

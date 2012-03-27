@@ -1261,15 +1261,17 @@ FileManager.prototype = {
    * Initialize the file list table.
    */
   FileManager.prototype.initTable_ = function() {
+    var fullPage = (this.dialogType_ == FileManager.DialogType.FULL_PAGE);
+
     var columns = [
         new cr.ui.table.TableColumn('name', str('NAME_COLUMN_LABEL'),
-                                    64),
-        new cr.ui.table.TableColumn('cachedSize_',
-                                    str('SIZE_COLUMN_LABEL'), 15.5, true),
-        new cr.ui.table.TableColumn('type',
-                                    str('TYPE_COLUMN_LABEL'), 15.5),
-        new cr.ui.table.TableColumn('cachedMtime_',
-                                    str('DATE_COLUMN_LABEL'), 21)
+                                    fullPage ? 64 : 324),
+        new cr.ui.table.TableColumn('cachedSize_', str('SIZE_COLUMN_LABEL'),
+                                    fullPage ? 15.5 : 92, true),
+        new cr.ui.table.TableColumn('type', str('TYPE_COLUMN_LABEL'),
+                                     fullPage ? 15.5 : 160),
+        new cr.ui.table.TableColumn('cachedMtime_', str('DATE_COLUMN_LABEL'),
+                                     fullPage ? 21 : 210)
     ];
 
     columns[0].renderFunction = this.renderName_.bind(this);
@@ -1284,11 +1286,15 @@ FileManager.prototype = {
 
     this.regularColumnModel_ = new cr.ui.table.TableColumnModel(columns);
 
-    columns.push(
-       new cr.ui.table.TableColumn('offline', str('OFFLINE_COLUMN_LABEL'), 21));
-    columns[4].renderFunction = this.renderOffline_.bind(this);
+    if (fullPage) {
+      columns.push(new cr.ui.table.TableColumn(
+          'offline', str('OFFLINE_COLUMN_LABEL'), 21));
+      columns[4].renderFunction = this.renderOffline_.bind(this);
 
-    this.gdataColumnModel_ = new cr.ui.table.TableColumnModel(columns);
+      this.gdataColumnModel_ = new cr.ui.table.TableColumnModel(columns);
+    } else {
+      this.gdataColumnModel_ = null;
+    }
 
     // Don't pay attention to double clicks on the table header.
     this.table_.querySelector('.list').addEventListener(
@@ -1413,8 +1419,9 @@ FileManager.prototype = {
     if (this.listType_ != FileManager.ListType.DETAIL)
       return;
     this.table_.columnModel =
-        this.directoryModel_.rootType == DirectoryModel.RootType.GDATA ?
-            this.gdataColumnModel_ : this.regularColumnModel_;
+        (this.isOnGData() && this.gdataColumnModel_) ?
+            this.gdataColumnModel_ :
+            this.regularColumnModel_;
   };
 
   /**

@@ -28,8 +28,8 @@ using content::BrowserThread;
 
 namespace {
 
-const int kFileManagerWidth = 720;  // pixels
-const int kFileManagerHeight = 580;  // pixels
+const int kFileManagerWidth = 954;  // pixels
+const int kFileManagerHeight = 640;  // pixels
 
 // Holds references to file manager dialogs that have callbacks pending
 // to their listeners.
