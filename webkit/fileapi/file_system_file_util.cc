@@ -86,18 +86,6 @@ PlatformFileError FileSystemFileUtil::GetFileInfo(
   return base::PLATFORM_FILE_ERROR_FAILED;
 }
 
-PlatformFileError FileSystemFileUtil::ReadDirectory(
-    FileSystemOperationContext* context,
-    const FileSystemPath& path,
-    std::vector<base::FileUtilProxy::Entry>* entries) {
-  if (underlying_file_util_.get()) {
-    return underlying_file_util_->ReadDirectory(context, path, entries);
-  }
-  NOTREACHED() << "Subclasses must provide implementation if they have no"
-               << "underlying_file_util";
-  return base::PLATFORM_FILE_ERROR_FAILED;
-}
-
 FileSystemFileUtil::AbstractFileEnumerator*
 FileSystemFileUtil::CreateFileEnumerator(
     FileSystemOperationContext* context,

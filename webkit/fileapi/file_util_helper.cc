@@ -275,6 +275,40 @@ base::PlatformFileError FileUtilHelper::Delete(
 }
 
 // static
+base::PlatformFileError FileUtilHelper::ReadDirectory(
+    FileSystemOperationContext* context,
+    FileSystemFileUtil* file_util,
+    const FileSystemPath& path,
+    std::vector<base::FileUtilProxy::Entry>* entries) {
+  DCHECK(entries);
+
+  // TODO(kkanetkar): Implement directory read in multiple chunks.
+  if (!file_util->DirectoryExists(context, path))
+    return base::PLATFORM_FILE_ERROR_NOT_FOUND;
+
+  scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator> file_enum(
+      file_util->CreateFileEnumerator(context, path, false /* recursive */));
+
+  FilePath current;
+  while (!(current = file_enum->Next()).empty()) {
+    // TODO(rkc): Fix this also once we've refactored file_util
+    // http://code.google.com/p/chromium-os/issues/detail?id=15948
+    // This currently just prevents a file from showing up at all
+    // if it's a link, hence preventing arbitary 'read' exploits.
+    if (file_enum->IsLink())
+      continue;
+
+    base::FileUtilProxy::Entry entry;
+    entry.is_directory = file_enum->IsDirectory();
+    entry.name = current.BaseName().value();
+    entry.size = file_enum->Size();
+    entry.last_modified_time = file_enum->LastModifiedTime();
+    entries->push_back(entry);
+  }
+  return base::PLATFORM_FILE_OK;
+}
+
+// static
 base::PlatformFileError FileUtilHelper::DeleteDirectoryRecursive(
     FileSystemOperationContext* context,
     FileSystemFileUtil* file_util,

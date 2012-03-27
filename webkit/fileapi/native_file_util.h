@@ -49,10 +49,6 @@ class NativeFileUtil : public FileSystemFileUtil {
       const FileSystemPath& path,
       base::PlatformFileInfo* file_info,
       FilePath* platform_file_path) OVERRIDE;
-  virtual PlatformFileError ReadDirectory(
-      FileSystemOperationContext* unused,
-      const FileSystemPath& path,
-      std::vector<base::FileUtilProxy::Entry>* entries) OVERRIDE;
   virtual AbstractFileEnumerator* CreateFileEnumerator(
       FileSystemOperationContext* unused,
       const FileSystemPath& root_path,

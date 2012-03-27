@@ -74,7 +74,7 @@ class ReadDirectoryHelper {
   void RunWork(FileSystemFileUtil* file_util,
                FileSystemOperationContext* context,
                const FileSystemPath& path) {
-    error_ = file_util->ReadDirectory(context, path, &entries_);
+    error_ = FileUtilHelper::ReadDirectory(context, file_util, path, &entries_);
   }
 
   void Reply(const Proxy::ReadDirectoryCallback& callback) {

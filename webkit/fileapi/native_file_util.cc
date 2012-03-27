@@ -146,41 +146,6 @@ PlatformFileError NativeFileUtil::GetFileInfo(
   return base::PLATFORM_FILE_OK;
 }
 
-PlatformFileError NativeFileUtil::ReadDirectory(
-    FileSystemOperationContext* unused,
-    const FileSystemPath& path,
-    std::vector<base::FileUtilProxy::Entry>* entries) {
-  // TODO(kkanetkar): Implement directory read in multiple chunks.
-  if (!file_util::DirectoryExists(path.internal_path()))
-    return base::PLATFORM_FILE_ERROR_NOT_FOUND;
-
-  file_util::FileEnumerator file_enum(
-      path.internal_path(), false,
-      static_cast<file_util::FileEnumerator::FileType>(
-          file_util::FileEnumerator::FILES |
-          file_util::FileEnumerator::DIRECTORIES));
-  FilePath current;
-  while (!(current = file_enum.Next()).empty()) {
-    base::FileUtilProxy::Entry entry;
-    file_util::FileEnumerator::FindInfo info;
-    file_enum.GetFindInfo(&info);
-    entry.is_directory = file_enum.IsDirectory(info);
-    // This will just give the entry's name instead of entire path
-    // if we use current.value().
-    entry.name = file_util::FileEnumerator::GetFilename(info).value();
-    entry.size = file_util::FileEnumerator::GetFilesize(info);
-    entry.last_modified_time =
-        file_util::FileEnumerator::GetLastModifiedTime(info);
-    // TODO(rkc): Fix this also once we've refactored file_util
-    // http://code.google.com/p/chromium-os/issues/detail?id=15948
-    // This currently just prevents a file from showing up at all
-    // if it's a link, hence preventing arbitary 'read' exploits.
-    if (!file_util::IsLink(path.internal_path().Append(entry.name)))
-      entries->push_back(entry);
-  }
-  return base::PLATFORM_FILE_OK;
-}
-
 FileSystemFileUtil::AbstractFileEnumerator*
 NativeFileUtil::CreateFileEnumerator(
     FileSystemOperationContext* unused,

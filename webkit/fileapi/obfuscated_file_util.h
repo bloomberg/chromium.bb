@@ -90,11 +90,6 @@ class ObfuscatedFileUtil : public FileSystemFileUtil,
       base::PlatformFileInfo* file_info,
       FilePath* platform_file) OVERRIDE;
 
-  virtual base::PlatformFileError ReadDirectory(
-      FileSystemOperationContext* context,
-      const FileSystemPath& path,
-      std::vector<base::FileUtilProxy::Entry>* entries) OVERRIDE;
-
   virtual AbstractFileEnumerator* CreateFileEnumerator(
       FileSystemOperationContext* context,
       const FileSystemPath& root_path,

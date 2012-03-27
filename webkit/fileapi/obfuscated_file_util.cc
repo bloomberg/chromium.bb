@@ -121,7 +121,8 @@ class ObfuscatedFileEnumerator
       FileSystemFileUtil* underlying_file_util,
       const FileSystemPath& virtual_root_path,
       bool recursive)
-      : base_path_(base_path),
+      : current_file_size_(0),
+        base_path_(base_path),
         virtual_root_path_(virtual_root_path),
         db_(db),
         context_(context),
@@ -152,28 +153,32 @@ class ObfuscatedFileEnumerator
       return FilePath();
     current_ = display_queue_.front();
     display_queue_.pop();
+
+    if (current_.file_info.is_directory()) {
+      current_file_size_ = 0;
+    } else {
+      base::PlatformFileInfo file_info;
+      FilePath platform_file_path;
+      FilePath local_path = base_path_.Append(current_.file_info.data_path);
+
+      base::PlatformFileError error = underlying_file_util_->GetFileInfo(
+          context_, virtual_root_path_.WithInternalPath(local_path),
+          &file_info, &platform_file_path);
+      if (error != base::PLATFORM_FILE_OK) {
+        LOG(WARNING) << "Lost a backing file.";
+        return Next();
+      }
+      current_.file_info.modification_time = file_info.last_modified;
+      current_file_size_ = file_info.size;
+    }
+
     if (recursive_ && current_.file_info.is_directory())
       recurse_queue_.push(current_);
     return current_.file_path;
   }
 
   virtual int64 Size() OVERRIDE {
-    if (IsDirectory())
-      return 0;
-
-    base::PlatformFileInfo file_info;
-    FilePath platform_file_path;
-
-    FilePath local_path = base_path_.Append(current_.file_info.data_path);
-    base::PlatformFileError error = underlying_file_util_->GetFileInfo(
-        context_,
-        virtual_root_path_.WithInternalPath(local_path),
-        &file_info, &platform_file_path);
-    if (error != base::PLATFORM_FILE_OK) {
-      LOG(WARNING) << "Lost a backing file.";
-      return 0;
-    }
-    return file_info.size;
+    return current_file_size_;
   }
 
   virtual base::Time LastModifiedTime() OVERRIDE {
@@ -220,6 +225,7 @@ class ObfuscatedFileEnumerator
   std::queue<FileRecord> display_queue_;
   std::queue<FileRecord> recurse_queue_;
   FileRecord current_;
+  int64 current_file_size_;
   FilePath base_path_;
   FileSystemPath virtual_root_path_;
   FileSystemDirectoryDatabase* db_;
@@ -459,64 +465,6 @@ PlatformFileError ObfuscatedFileUtil::GetFileInfo(
                              virtual_path.origin(), virtual_path.type(),
                              file_id, &local_info,
                              file_info, platform_file_path);
-}
-
-PlatformFileError ObfuscatedFileUtil::ReadDirectory(
-    FileSystemOperationContext* context,
-    const FileSystemPath& virtual_path,
-    std::vector<base::FileUtilProxy::Entry>* entries) {
-  // TODO(kkanetkar): Implement directory read in multiple chunks.
-  FileSystemDirectoryDatabase* db = GetDirectoryDatabase(
-      virtual_path.origin(), virtual_path.type(), false);
-  if (!db) {
-    if (IsRootDirectory(virtual_path)) {
-      // It's the root directory and the database hasn't been initialized yet.
-      entries->clear();
-      return base::PLATFORM_FILE_OK;
-    }
-    return base::PLATFORM_FILE_ERROR_NOT_FOUND;
-  }
-  FileId file_id;
-  if (!db->GetFileWithPath(virtual_path.internal_path(), &file_id))
-    return base::PLATFORM_FILE_ERROR_NOT_FOUND;
-  FileInfo file_info;
-  if (!db->GetFileInfo(file_id, &file_info)) {
-    DCHECK(!file_id);
-    // It's the root directory and the database hasn't been initialized yet.
-    entries->clear();
-    return base::PLATFORM_FILE_OK;
-  }
-  if (!file_info.is_directory())
-    return base::PLATFORM_FILE_ERROR_NOT_FOUND;
-  std::vector<FileId> children;
-  if (!db->ListChildren(file_id, &children)) {
-    NOTREACHED();
-    return base::PLATFORM_FILE_ERROR_FAILED;
-  }
-  std::vector<FileId>::iterator iter;
-  for (iter = children.begin(); iter != children.end(); ++iter) {
-    base::PlatformFileInfo platform_file_info;
-    FilePath file_path;
-    if (GetFileInfoInternal(db, context,
-                            virtual_path.origin(), virtual_path.type(),
-                            *iter, &file_info, &platform_file_info,
-                            &file_path) !=
-        base::PLATFORM_FILE_OK) {
-      LOG(WARNING) << "Lost a backing file.";
-      // TODO(tzik): We found a file entry in directory database without
-      // backing file here.  Track the inconsistency and remove the database
-      // entry if we can't recover it.
-      continue;
-    }
-
-    base::FileUtilProxy::Entry entry;
-    entry.name = file_info.name;
-    entry.is_directory = file_info.is_directory();
-    entry.size = entry.is_directory ? 0 : platform_file_info.size;
-    entry.last_modified_time = platform_file_info.last_modified;
-    entries->push_back(entry);
-  }
-  return base::PLATFORM_FILE_OK;
 }
 
 FileSystemFileUtil::AbstractFileEnumerator*

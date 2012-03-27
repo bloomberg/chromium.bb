@@ -60,10 +60,6 @@ class LocalFileUtil : public FileSystemFileUtil {
       const FileSystemPath& path,
       base::PlatformFileInfo* file_info,
       FilePath* platform_file) OVERRIDE;
-  virtual PlatformFileError ReadDirectory(
-      FileSystemOperationContext* context,
-      const FileSystemPath& path,
-      std::vector<base::FileUtilProxy::Entry>* entries) OVERRIDE;
   virtual AbstractFileEnumerator* CreateFileEnumerator(
       FileSystemOperationContext* context,
       const FileSystemPath& root_path,

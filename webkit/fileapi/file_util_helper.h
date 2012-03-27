@@ -5,6 +5,7 @@
 #ifndef WEBKIT_FILEAPI_FILE_UTIL_HELPER_H_
 #define WEBKIT_FILEAPI_FILE_UTIL_HELPER_H_
 
+#include "base/file_util_proxy.h"
 #include "base/platform_file.h"
 
 namespace fileapi {
@@ -36,6 +37,12 @@ class FileUtilHelper {
       FileSystemFileUtil* file_util,
       const FileSystemPath& path,
       bool recursive);
+
+  static base::PlatformFileError ReadDirectory(
+      FileSystemOperationContext* context,
+      FileSystemFileUtil* file_util,
+      const FileSystemPath& path,
+      std::vector<base::FileUtilProxy::Entry>* entries);
 
  private:
   static base::PlatformFileError DeleteDirectoryRecursive(

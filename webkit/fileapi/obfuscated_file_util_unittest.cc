@@ -303,7 +303,8 @@ class ObfuscatedFileUtilTest : public testing::Test {
     context.reset(NewContext(NULL));
     std::vector<base::FileUtilProxy::Entry> entries;
     EXPECT_EQ(base::PLATFORM_FILE_OK,
-        ofu()->ReadDirectory(context.get(), root_path, &entries));
+              FileUtilHelper::ReadDirectory(
+                  context.get(), ofu(), root_path, &entries));
     EXPECT_EQ(0UL, entries.size());
 
     files->clear();
@@ -345,7 +346,8 @@ class ObfuscatedFileUtilTest : public testing::Test {
     std::vector<base::FileUtilProxy::Entry> entries;
     context.reset(NewContext(NULL));
     EXPECT_EQ(base::PLATFORM_FILE_OK,
-        ofu()->ReadDirectory(context.get(), root_path, &entries));
+              FileUtilHelper::ReadDirectory(
+                  context.get(), ofu(), root_path, &entries));
     std::vector<base::FileUtilProxy::Entry>::iterator entry_iter;
     EXPECT_EQ(files.size() + directories.size(), entries.size());
     for (entry_iter = entries.begin(); entry_iter != entries.end();
@@ -869,7 +871,8 @@ TEST_F(ObfuscatedFileUtilTest, TestReadDirectoryOnFile) {
   context.reset(NewContext(NULL));
   std::vector<base::FileUtilProxy::Entry> entries;
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND,
-      ofu()->ReadDirectory(context.get(), path, &entries));
+            FileUtilHelper::ReadDirectory(
+                context.get(), ofu(), path, &entries));
 
   EXPECT_TRUE(ofu()->IsDirectoryEmpty(context.get(), path));
 }
@@ -1453,7 +1456,8 @@ TEST_F(ObfuscatedFileUtilTest, TestIncompleteDirectoryReading) {
   context.reset(NewContext(NULL));
   std::vector<base::FileUtilProxy::Entry> entries;
   EXPECT_EQ(base::PLATFORM_FILE_OK,
-            ofu()->ReadDirectory(context.get(), empty_path, &entries));
+            FileUtilHelper::ReadDirectory(
+                context.get(), ofu(), empty_path, &entries));
   EXPECT_EQ(3u, entries.size());
 
   context.reset(NewContext(NULL));
@@ -1465,7 +1469,8 @@ TEST_F(ObfuscatedFileUtilTest, TestIncompleteDirectoryReading) {
   context.reset(NewContext(NULL));
   entries.clear();
   EXPECT_EQ(base::PLATFORM_FILE_OK,
-            ofu()->ReadDirectory(context.get(), empty_path, &entries));
+            FileUtilHelper::ReadDirectory(
+                context.get(), ofu(), empty_path, &entries));
   EXPECT_EQ(ARRAYSIZE_UNSAFE(kPath) - 1, entries.size());
 }
 
@@ -1672,4 +1677,57 @@ TEST_F(ObfuscatedFileUtilTest, TestDirectoryTimestampForCopyAndMove) {
       CreatePathFromUTF8("move overwrite"), false, true);
   TestDirectoryTimestampHelper(
       CreatePathFromUTF8("move non-overwrite"), false, false);
+}
+
+TEST_F(ObfuscatedFileUtilTest, TestFileEnumeratorTimestamp) {
+  FileSystemPath dir = CreatePathFromUTF8("foo");
+  FileSystemPath path1 = dir.AppendASCII("bar");
+  FileSystemPath path2 = dir.AppendASCII("baz");
+
+  scoped_ptr<FileSystemOperationContext> context(NewContext(NULL));
+  EXPECT_EQ(base::PLATFORM_FILE_OK,
+            ofu()->CreateDirectory(context.get(), dir, false, false));
+
+  bool created = false;
+  context.reset(NewContext(NULL));
+  EXPECT_EQ(base::PLATFORM_FILE_OK,
+            ofu()->EnsureFileExists(context.get(), path1, &created));
+  EXPECT_TRUE(created);
+
+  context.reset(NewContext(NULL));
+  EXPECT_EQ(base::PLATFORM_FILE_OK,
+            ofu()->CreateDirectory(context.get(), path2, false, false));
+
+  FilePath file_path;
+  context.reset(NewContext(NULL));
+  EXPECT_EQ(base::PLATFORM_FILE_OK,
+            ofu()->GetLocalFilePath(context.get(), path1, &file_path));
+  EXPECT_FALSE(file_path.empty());
+
+  context.reset(NewContext(NULL));
+  EXPECT_EQ(base::PLATFORM_FILE_OK,
+            ofu()->Touch(context.get(), path1,
+                         base::Time::Now() + base::TimeDelta::FromHours(1),
+                         base::Time()));
+
+  context.reset(NewContext(NULL));
+  scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator> file_enum(
+      ofu()->CreateFileEnumerator(context.get(), dir, false));
+
+  int count = 0;
+  FilePath file_path_each;
+  while (!(file_path_each = file_enum->Next()).empty()) {
+    context.reset(NewContext(NULL));
+    base::PlatformFileInfo file_info;
+    FilePath file_path;
+    EXPECT_EQ(base::PLATFORM_FILE_OK,
+              ofu()->GetFileInfo(context.get(),
+                                 dir.WithInternalPath(file_path_each),
+                                 &file_info, &file_path));
+    EXPECT_EQ(file_info.is_directory, file_enum->IsDirectory());
+    EXPECT_EQ(file_info.last_modified, file_enum->LastModifiedTime());
+    EXPECT_EQ(file_info.size, file_enum->Size());
+    ++count;
+  }
+  EXPECT_EQ(2, count);
 }

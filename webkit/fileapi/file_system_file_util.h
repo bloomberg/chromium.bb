@@ -95,12 +95,6 @@ class FileSystemFileUtil {
       base::PlatformFileInfo* file_info,
       FilePath* platform_path);
 
-  // Reads the filenames in |path|.
-  virtual PlatformFileError ReadDirectory(
-      FileSystemOperationContext* context,
-      const FileSystemPath& path,
-      std::vector<base::FileUtilProxy::Entry>* entries);
-
   // Returns a pointer to a new instance of AbstractFileEnumerator which is
   // implemented for each FileSystemFileUtil subclass. The instance needs to be
   // freed by the caller, and its lifetime should not extend past when the

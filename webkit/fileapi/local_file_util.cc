@@ -124,18 +124,6 @@ PlatformFileError LocalFileUtil::GetFileInfo(
       context, local_path, file_info, platform_file_path);
 }
 
-PlatformFileError LocalFileUtil::ReadDirectory(
-    FileSystemOperationContext* context,
-    const FileSystemPath& path,
-    std::vector<base::FileUtilProxy::Entry>* entries) {
-  // TODO(kkanetkar): Implement directory read in multiple chunks.
-  FileSystemPath local_path = GetLocalPath(context, path);
-  if (local_path.internal_path().empty())
-    return base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
-  return underlying_file_util()->ReadDirectory(
-      context, local_path, entries);
-}
-
 FileSystemFileUtil::AbstractFileEnumerator* LocalFileUtil::CreateFileEnumerator(
     FileSystemOperationContext* context,
     const FileSystemPath& root_path,
