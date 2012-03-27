@@ -246,6 +246,10 @@ void ThumbnailDatabase::CommitTransaction() {
   db_.CommitTransaction();
 }
 
+void ThumbnailDatabase::RollbackTransaction() {
+  db_.RollbackTransaction();
+}
+
 void ThumbnailDatabase::Vacuum() {
   DCHECK(db_.transaction_nesting() == 0) <<
       "Can not have a transaction when vacuuming.";
@@ -420,7 +424,8 @@ bool ThumbnailDatabase::GetFavicon(
   if (!statement.Step())
     return false;  // No entry for the id.
 
-  *last_updated = base::Time::FromTimeT(statement.ColumnInt64(0));
+  if (last_updated)
+    *last_updated = base::Time::FromTimeT(statement.ColumnInt64(0));
   if (statement.ColumnByteLength(1) > 0)
     statement.ColumnBlobAsVector(1, png_icon_data);
   if (icon_url)

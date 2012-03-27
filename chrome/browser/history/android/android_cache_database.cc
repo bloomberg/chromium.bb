@@ -5,21 +5,13 @@
 #include "chrome/browser/history/android/android_cache_database.h"
 
 #include "base/file_util.h"
+#include "chrome/browser/history/android/android_time.h"
 #include "sql/statement.h"
 
 using base::Time;
 using base::TimeDelta;
 
 namespace history {
-
-namespace {
-
-int64 ToMilliseconds(const Time& time) {
-  TimeDelta delta = time - Time::UnixEpoch();
-  return delta.InMilliseconds();
-}
-
-}  // namespace.
 
 AndroidCacheDatabase::AndroidCacheDatabase() {
 }
