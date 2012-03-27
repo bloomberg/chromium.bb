@@ -84,8 +84,9 @@ class CONTENT_EXPORT SpeechRecognizerImpl
   // Handles OnData in the IO thread. Takes ownership of |raw_audio|.
   void HandleOnData(AudioChunk* raw_audio);
 
-  // Helper method which closes the audio controller and blocks until done.
-  void CloseAudioControllerSynchronously();
+  // Helper method which closes the audio controller and frees it asynchronously
+  // without blocking the IO thread.
+  void CloseAudioControllerAsynchronously();
 
   void SetAudioManagerForTesting(AudioManager* audio_manager);
 

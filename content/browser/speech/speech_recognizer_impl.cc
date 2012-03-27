@@ -57,6 +57,7 @@ bool DetectClipping(const speech::AudioChunk& chunk) {
   return false;
 }
 
+void OnAudioClosed(AudioInputController*) {}
 }  // namespace
 
 SpeechRecognizer* SpeechRecognizer::Create(
@@ -157,7 +158,7 @@ void SpeechRecognizerImpl::AbortRecognition() {
 
   // Stop recording if required.
   if (audio_controller_.get()) {
-    CloseAudioControllerSynchronously();
+    CloseAudioControllerAsynchronously();
   }
 
   VLOG(1) << "SpeechRecognizer canceling recognition.";
@@ -172,7 +173,7 @@ void SpeechRecognizerImpl::StopAudioCapture() {
   if (!audio_controller_.get())
     return;
 
-  CloseAudioControllerSynchronously();
+  CloseAudioControllerAsynchronously();
   listener_->OnSoundEnd(caller_id_);
   listener_->OnAudioEnd(caller_id_);
 
@@ -323,17 +324,14 @@ void SpeechRecognizerImpl::InformErrorAndAbortRecognition(
   listener_->OnRecognitionError(caller_id_, error);
 }
 
-void SpeechRecognizerImpl::CloseAudioControllerSynchronously() {
+void SpeechRecognizerImpl::CloseAudioControllerAsynchronously() {
   VLOG(1) << "SpeechRecognizer stopping record.";
-
-  // TODO(satish): investigate the possibility to utilize the closure
-  // and switch to async. version of this method. Compare with how
-  // it's done in e.g. the AudioRendererHost.
-  base::WaitableEvent closed_event(true, false);
-  audio_controller_->Close(base::Bind(&base::WaitableEvent::Signal,
-                           base::Unretained(&closed_event)));
-  closed_event.Wait();
-  audio_controller_ = NULL;  // Releases the ref ptr.
+  // Issues a Close on the audio controller, passing an empty callback. The only
+  // purpose of such callback is to keep the audio controller refcounted until
+  // Close has completed (in the audio thread) and automatically destroy it
+  // afterwards (upon return from OnAudioClosed).
+  audio_controller_->Close(base::Bind(&OnAudioClosed, audio_controller_));
+  audio_controller_ = NULL;  // The controller is still refcounted by Bind.
 }
 
 bool SpeechRecognizerImpl::IsActive() const {
