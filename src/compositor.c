@@ -425,14 +425,21 @@ weston_surface_update_transform(struct weston_surface *surface)
 }
 
 WL_EXPORT void
+weston_surface_to_global_float(struct weston_surface *surface,
+			       int32_t sx, int32_t sy, GLfloat *x, GLfloat *y)
+{
+	weston_surface_update_transform(surface);
+
+	surface_to_global_float(surface, sx, sy, x, y);
+}
+
+WL_EXPORT void
 weston_surface_to_global(struct weston_surface *surface,
 			 int32_t sx, int32_t sy, int32_t *x, int32_t *y)
 {
 	GLfloat xf, yf;
 
-	weston_surface_update_transform(surface);
-
-	surface_to_global_float(surface, sx, sy, &xf, &yf);
+	weston_surface_to_global_float(surface, sx, sy, &xf, &yf);
 	*x = floorf(xf);
 	*y = floorf(yf);
 }

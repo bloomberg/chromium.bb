@@ -342,6 +342,9 @@ weston_surface_update_transform(struct weston_surface *surface);
 void
 weston_surface_to_global(struct weston_surface *surface,
 			 int32_t sx, int32_t sy, int32_t *x, int32_t *y);
+void
+weston_surface_to_global_float(struct weston_surface *surface,
+			       int32_t sx, int32_t sy, GLfloat *x, GLfloat *y);
 
 void
 weston_surface_from_global(struct weston_surface *surface,
