@@ -797,6 +797,8 @@
         'browser/chromeos/power/power_button_controller_delegate_chromeos.h',
         'browser/chromeos/power/power_button_observer.cc',
         'browser/chromeos/power/power_button_observer.h',
+        'browser/chromeos/power/power_state_override.cc',
+        'browser/chromeos/power/power_state_override.h',
         'browser/chromeos/power/resume_observer.cc',
         'browser/chromeos/power/resume_observer.h',
         'browser/chromeos/power/screen_lock_observer.cc',
@@ -4158,6 +4160,7 @@
             '../third_party/mozc/chrome/chromeos/renderer/chromeos_renderer.gyp:mozc_candidates_proto',
             'browser/chromeos/input_method/input_method.gyp:gencode',
             'power_supply_properties_proto',
+            'power_state_control_proto',
           ],
           'sources!': [
             'browser/first_run/upgrade_util.cc',
@@ -5172,6 +5175,24 @@
         ['chromeos==1', {
          'sources': [
            '../third_party/cros_system_api/dbus/power_supply_properties.proto',
+         ],
+         'variables': {
+          'proto_in_dir': '../third_party/cros_system_api/dbus/',
+          'proto_out_dir': 'chrome/browser/chromeos/dbus',
+         },
+         'includes': ['../build/protoc.gypi'],
+        }],
+      ],
+    },
+    {
+      # Protobuf compiler / generator for the PowerSupplyProperties protocol
+      # buffer.
+      'target_name': 'power_state_control_proto',
+      'type': 'static_library',
+      'conditions': [
+        ['chromeos==1', {
+         'sources': [
+           '../third_party/cros_system_api/dbus/power_state_control.proto',
          ],
          'variables': {
           'proto_in_dir': '../third_party/cros_system_api/dbus/',

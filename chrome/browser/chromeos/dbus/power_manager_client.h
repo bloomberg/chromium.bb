@@ -48,6 +48,7 @@ struct PowerSupplyStatus {
 // seconds the user has been idle.
 typedef base::Callback<void(int64)> CalculateIdleTimeCallback;
 typedef base::Callback<void(void)> IdleNotificationCallback;
+typedef base::Callback<void(uint32)> PowerStateRequestIdCallback;
 
 // Callback used for getting the current screen brightness.  The param is in the
 // range [0.0, 100.0].
@@ -101,6 +102,13 @@ class PowerManagerClient {
     UPDATE_INITIAL,  // Initial update request.
     UPDATE_USER,     // User initialted update request.
     UPDATE_POLL      // Update requested by poll signal.
+  };
+
+  enum PowerStateOverrideType {
+    DISABLE_IDLE_DIM = 1,  // Disable screen dimming on idle.
+    DISABLE_IDLE_BLANK = 2,  // Disable screen blanking on idle.
+    DISABLE_IDLE_SUSPEND = 3,  // Disable suspend on idle.
+    DISABLE_IDLE_LID_SUSPEND = 4,  // Disable suspend on lid closed.
   };
 
   // Adds and removes the observer.
@@ -162,6 +170,20 @@ class PowerManagerClient {
   // Requests that the observers be notified in case of an Idle->Active event.
   // NOTE: Like the previous request, this will also get triggered exactly once.
   virtual void RequestActiveNotification() = 0;
+
+  // Override the current power state on the machine. The overrides will be
+  // applied to the request ID specified. To specify a new request; use 0 as
+  // the request id and the method will call the provided callback with the
+  // new request ID for use with further calls.
+  // The overrides parameter will & out the PowerStateOverrideType types to
+  // allow specific selection of overrides. For example, to override just dim
+  // and suspending but leaving blanking in, set overrides to,
+  // DISABLE_IDLE_DIM | DISABLE_IDLE_SUSPEND.
+  virtual void RequestPowerStateOverrides(
+      uint32 request_id,
+      uint32 duration,
+      int overrides,
+      PowerStateRequestIdCallback callback) = 0;
 
   // Creates the instance.
   static PowerManagerClient* Create(dbus::Bus* bus);

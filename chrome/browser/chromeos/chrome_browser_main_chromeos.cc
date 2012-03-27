@@ -41,6 +41,7 @@
 #include "chrome/browser/chromeos/power/brightness_observer.h"
 #include "chrome/browser/chromeos/power/power_button_controller_delegate_chromeos.h"
 #include "chrome/browser/chromeos/power/power_button_observer.h"
+#include "chrome/browser/chromeos/power/power_state_override.h"
 #include "chrome/browser/chromeos/power/resume_observer.h"
 #include "chrome/browser/chromeos/power/screen_lock_observer.h"
 #include "chrome/browser/chromeos/power/video_property_writer.h"
@@ -408,6 +409,8 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
   brightness_observer_.reset(new chromeos::BrightnessObserver());
   resume_observer_.reset(new chromeos::ResumeObserver());
   screen_lock_observer_.reset(new chromeos::ScreenLockObserver());
+  if (chromeos::KioskModeSettings::Get()->IsKioskModeEnabled())
+    power_state_override_.reset(new chromeos::PowerStateOverride());
 
   ChromeBrowserMainPartsLinux::PostProfileInit();
 }

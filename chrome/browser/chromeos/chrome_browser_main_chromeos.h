@@ -13,6 +13,7 @@ class BrightnessObserver;
 class DesktopBackgroundObserver;
 class InitialBrowserWindowObserver;
 class PowerButtonObserver;
+class PowerStateOverride;
 class ResumeObserver;
 class ScreenLockObserver;
 class SessionManagerObserver;
@@ -48,6 +49,7 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
   scoped_ptr<chromeos::InitialBrowserWindowObserver>
       initial_browser_window_observer_;
   scoped_ptr<chromeos::PowerButtonObserver> power_button_observer_;
+  scoped_ptr<chromeos::PowerStateOverride> power_state_override_;
   scoped_ptr<chromeos::VideoPropertyWriter> video_property_writer_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainPartsChromeos);

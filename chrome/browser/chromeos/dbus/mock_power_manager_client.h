@@ -31,6 +31,10 @@ class MockPowerManagerClient : public PowerManagerClient {
   MOCK_METHOD1(CalculateIdleTime, void(const CalculateIdleTimeCallback&));
   MOCK_METHOD1(RequestIdleNotification, void(int64));
   MOCK_METHOD0(RequestActiveNotification, void(void));
+  MOCK_METHOD4(RequestPowerStateOverrides, void(uint32,
+                                                uint32,
+                                                int,
+                                                PowerStateRequestIdCallback));
   MOCK_METHOD0(NotifyScreenLockRequested, void(void));
   MOCK_METHOD0(NotifyScreenLockCompleted, void(void));
   MOCK_METHOD0(NotifyScreenUnlockRequested, void(void));

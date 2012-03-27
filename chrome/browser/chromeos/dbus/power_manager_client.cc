@@ -16,6 +16,7 @@
 #include "base/time.h"
 #include "base/timer.h"
 #include "chrome/browser/chromeos/dbus/power_supply_properties.pb.h"
+#include "chrome/browser/chromeos/dbus/power_state_control.pb.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
@@ -254,6 +255,30 @@ class PowerManagerClientImpl : public PowerManagerClient {
     RequestIdleNotification(0);
   }
 
+  virtual void RequestPowerStateOverrides(
+      uint32 request_id,
+      uint32 duration,
+      int overrides,
+      PowerStateRequestIdCallback callback) OVERRIDE {
+    dbus::MethodCall method_call(power_manager::kPowerManagerInterface,
+                                 power_manager::kStateOverrideRequest);
+    dbus::MessageWriter writer(&method_call);
+
+    PowerStateControl protobuf;
+    protobuf.set_request_id(request_id);
+    protobuf.set_duration(duration);
+    protobuf.set_disable_idle_dim(overrides & DISABLE_IDLE_DIM);
+    protobuf.set_disable_idle_blank(overrides & DISABLE_IDLE_BLANK);
+    protobuf.set_disable_idle_suspend(overrides & DISABLE_IDLE_SUSPEND);
+    protobuf.set_disable_lid_suspend(overrides & DISABLE_IDLE_LID_SUSPEND);
+
+    writer.AppendProtoAsArrayOfBytes(protobuf);
+    power_manager_proxy_->CallMethod(
+        &method_call,
+        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&PowerManagerClientImpl::OnPowerStateOverride,
+                   weak_ptr_factory_.GetWeakPtr(), callback));
+  }
 
   virtual void NotifyScreenLockRequested() OVERRIDE {
     SimpleMethodCallToPowerManager(power_manager::kRequestLockScreenMethod);
@@ -393,6 +418,25 @@ class PowerManagerClientImpl : public PowerManagerClient {
     callback.Run(idle_time_ms/1000);
   }
 
+  void OnPowerStateOverride(const PowerStateRequestIdCallback& callback,
+                            dbus::Response* response) {
+    if (!response) {
+      LOG(ERROR) << "Error calling " << power_manager::kStateOverrideRequest;
+      return;
+    }
+
+    dbus::MessageReader reader(response);
+    uint32 request_id = 0;
+    if (!reader.PopUint32(&request_id)) {
+      LOG(ERROR) << "Error reading response from powerd: "
+                 << response->ToString();
+      callback.Run(0);
+      return;
+    }
+
+    callback.Run(request_id);
+  }
+
   void OnGetScreenBrightnessPercent(
       const GetScreenBrightnessPercentCallback& callback,
       dbus::Response* response) {
@@ -530,6 +574,11 @@ class PowerManagerClientStubImpl : public PowerManagerClient {
 
   virtual void RequestIdleNotification(int64 threshold) OVERRIDE {}
   virtual void RequestActiveNotification() OVERRIDE {}
+  virtual void RequestPowerStateOverrides(
+      uint32 request_id,
+      uint32 duration,
+      int overrides,
+      PowerStateRequestIdCallback callback) OVERRIDE {}
 
   virtual void NotifyScreenLockRequested() OVERRIDE {
     FOR_EACH_OBSERVER(Observer, observers_, LockScreen());
