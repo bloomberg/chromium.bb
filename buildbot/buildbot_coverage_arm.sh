@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -47,6 +47,6 @@ BUILDBOT_REVISION=${BUILDBOT_REVISION:-None}
 LINK_URL=${GSD_URL}/${BUILDBOT_REVISION}/${COVERAGE_PATH}
 GSD_BASE=gs://nativeclient-coverage2/revs
 GS_PATH=${GSD_BASE}/${BUILDBOT_REVISION}/${VARIANT_NAME}
-/b/build/scripts/slave/gsutil_cp_dir.py \
+/b/build/scripts/slave/gsutil_cp_dir.py -a public-read \
      scons-out/${VARIANT_NAME}/coverage ${GS_PATH}
 echo @@@STEP_LINK@view@${LINK_URL}@@@

@@ -1,4 +1,4 @@
-:: Copyright (c) 2011 The Native Client Authors. All rights reserved.
+:: Copyright (c) 2012 The Native Client Authors. All rights reserved.
 :: Use of this source code is governed by a BSD-style license that can be
 :: found in the LICENSE file.
 
@@ -64,7 +64,7 @@ if %BUILDBOT_REVISION% equ "" set BUILDBOT_REVISION=None
 set LINK_URL="%GSD_URL%/%BUILDBOT_REVISION%/%COVERAGE_PATH%"
 set GSD_BASE="gs://nativeclient-coverage2/revs"
 set GS_PATH="%GSD_BASE%/%BUILDBOT_REVISION%/%VARIANT_NAME%"
-python /b/build/scripts/slave/gsutil_cp_dir.py ^
+python /b/build/scripts/slave/gsutil_cp_dir.py -a public-read ^
  scons-out/%VARIANT_NAME%/coverage %GS_PATH%
 if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
 echo @@@STEP_LINK@view@%LINK_URL%@@@
