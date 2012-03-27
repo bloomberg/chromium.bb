@@ -26,8 +26,8 @@ namespace internal {
 
 namespace {
 
-// Delay before showing/hiding the launcher after the mouse enters the launcher.
-const int kAutoHideDelayMS = 500;
+// Delay before showing the launcher. This is after the mouse stops moving.
+const int kAutoHideDelayMS = 200;
 
 ui::Layer* GetLayer(views::Widget* widget) {
   return widget->GetNativeView()->layer();
@@ -203,10 +203,14 @@ void ShelfLayoutManager::UpdateVisibilityState() {
 }
 
 void ShelfLayoutManager::UpdateAutoHideState() {
-  if (CalculateAutoHideState(state_.visibility_state) !=
-      state_.auto_hide_state) {
-    // Don't change state immediately. Instead delay for a bit.
-    if (!auto_hide_timer_.IsRunning()) {
+  AutoHideState auto_hide_state =
+      CalculateAutoHideState(state_.visibility_state);
+  if (auto_hide_state != state_.auto_hide_state) {
+    if (auto_hide_state == AUTO_HIDE_HIDDEN) {
+      // Hides happen immediately.
+      SetState(state_.visibility_state);
+    } else {
+      auto_hide_timer_.Stop();
       auto_hide_timer_.Start(
           FROM_HERE,
           base::TimeDelta::FromMilliseconds(kAutoHideDelayMS),
