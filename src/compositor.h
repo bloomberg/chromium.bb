@@ -335,6 +335,12 @@ struct weston_surface {
 	struct wl_buffer *buffer;
 	struct wl_listener buffer_destroy_listener;
 
+	/*
+	 * If non-NULL, this function will be called on surface::attach after
+	 * a new buffer has been set up for this surface. The integer params
+	 * are the sx and sy paramerters supplied to surface::attach .
+	 */
+	void (*configure)(struct weston_surface *es, int32_t sx, int32_t sy);
 	int force_configure;
 };
 

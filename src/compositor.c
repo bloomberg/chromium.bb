@@ -1151,30 +1151,6 @@ weston_surface_assign_output(struct weston_surface *es)
 }
 
 static void
-surface_configure(struct weston_surface *es, int32_t sx, int32_t sy)
-{
-	struct weston_shell *shell = es->compositor->shell;
-
-	if (!weston_surface_is_mapped(es)) {
-		shell->map(shell, es, es->buffer->width, es->buffer->height,
-			   sx, sy);
-	} else if (es->force_configure || sx != 0 || sy != 0 ||
-		   es->geometry.width != es->buffer->width ||
-		   es->geometry.height != es->buffer->height) {
-		GLfloat from_x, from_y;
-		GLfloat to_x, to_y;
-
-		surface_to_global_float(es, 0, 0, &from_x, &from_y);
-		surface_to_global_float(es, sx, sy, &to_x, &to_y);
-		shell->configure(shell, es,
-				 es->geometry.x + to_x - from_x,
-				 es->geometry.y + to_y - from_y,
-				 es->buffer->width, es->buffer->height);
-		es->force_configure = 0;
-	}
-}
-
-static void
 surface_attach(struct wl_client *client,
 	       struct wl_resource *resource,
 	       struct wl_resource *buffer_resource, int32_t sx, int32_t sy)
@@ -1187,8 +1163,8 @@ surface_attach(struct wl_client *client,
 
 	weston_buffer_attach(buffer, &es->surface);
 
-	if (buffer)
-		surface_configure(es, sx, sy);
+	if (buffer && es->configure)
+		es->configure(es, sx, sy);
 }
 
 static void
@@ -2013,23 +1989,43 @@ weston_input_device_release(struct weston_input_device *device)
 }
 
 static void
+drag_surface_configure(struct weston_surface *es, int32_t sx, int32_t sy)
+{
+	weston_surface_configure(es,
+				 es->geometry.x + sx, es->geometry.y + sy,
+				 es->buffer->width, es->buffer->height);
+}
+
+static int
 device_setup_new_drag_surface(struct weston_input_device *device,
 			      struct weston_surface *surface)
 {
 	struct wl_input_device *input_device = &device->input_device;
+
+	if (surface->configure) {
+		wl_resource_post_error(&surface->surface.resource,
+				       WL_DISPLAY_ERROR_INVALID_OBJECT,
+				       "surface->configure already set");
+		return 0;
+	}
 
 	device->drag_surface = surface;
 
 	weston_surface_set_position(device->drag_surface,
 				    input_device->x, input_device->y);
 
+	surface->configure = drag_surface_configure;
+
 	wl_list_insert(surface->surface.resource.destroy_listener_list.prev,
 		       &device->drag_surface_destroy_listener.link);
+
+	return 1;
 }
 
 static void
 device_release_drag_surface(struct weston_input_device *device)
 {
+	device->drag_surface->configure = NULL;
 	undef_region(&device->drag_surface->input);
 	wl_list_remove(&device->drag_surface_destroy_listener.link);
 	device->drag_surface = NULL;
@@ -2074,7 +2070,8 @@ weston_input_update_drag_surface(struct wl_input_device *input_device,
 	if (!device->drag_surface || surface_changed) {
 		struct weston_surface *surface = (struct weston_surface *)
 			input_device->drag_surface;
-		device_setup_new_drag_surface(device, surface);
+		if (!device_setup_new_drag_surface(device, surface))
+			return;
 	}
 
 	/* the client may not have attached a buffer to the drag surface

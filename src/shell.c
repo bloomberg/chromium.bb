@@ -771,8 +771,10 @@ destroy_shell_surface(struct wl_resource *resource)
 		wl_input_device_end_pointer_grab(shsurf->popup.grab.input_device, 0);
 
 	/* in case cleaning up a dead client destroys shell_surface first */
-	if (shsurf->surface)
+	if (shsurf->surface) {
 		wl_list_remove(&shsurf->surface_destroy_listener.link);
+		shsurf->surface->configure = NULL;
+	}
 
 	if (shsurf->fullscreen.black_surface)
 		weston_surface_destroy(shsurf->fullscreen.black_surface);
@@ -811,6 +813,9 @@ get_shell_surface(struct weston_surface *surface)
 }
 
 static void
+shell_surface_configure(struct weston_surface *, int32_t, int32_t);
+
+static void
 shell_get_shell_surface(struct wl_client *client,
 			struct wl_resource *resource,
 			uint32_t id,
@@ -826,11 +831,20 @@ shell_get_shell_surface(struct wl_client *client,
 		return;
 	}
 
+	if (surface->configure) {
+		wl_resource_post_error(surface_resource,
+				       WL_DISPLAY_ERROR_INVALID_OBJECT,
+				       "surface->configure already set");
+		return;
+	}
+
 	shsurf = calloc(1, sizeof *shsurf);
 	if (!shsurf) {
 		wl_resource_post_no_memory(resource);
 		return;
 	}
+
+	surface->configure = shell_surface_configure;
 
 	shsurf->resource.destroy = destroy_shell_surface;
 	shsurf->resource.object.id = id;
@@ -1702,6 +1716,29 @@ configure(struct weston_shell *base, struct weston_surface *surface,
 			surface->output = shsurf->output;
 		else if (surface_type == SHELL_SURFACE_MAXIMIZED)
 			surface->output = shsurf->output;
+	}
+}
+
+static void
+shell_surface_configure(struct weston_surface *es, int32_t sx, int32_t sy)
+{
+	struct weston_shell *shell = es->compositor->shell;
+
+	if (!weston_surface_is_mapped(es)) {
+		map(shell, es, es->buffer->width, es->buffer->height, sx, sy);
+	} else if (es->force_configure || sx != 0 || sy != 0 ||
+		   es->geometry.width != es->buffer->width ||
+		   es->geometry.height != es->buffer->height) {
+		GLfloat from_x, from_y;
+		GLfloat to_x, to_y;
+
+		weston_surface_to_global_float(es, 0, 0, &from_x, &from_y);
+		weston_surface_to_global_float(es, sx, sy, &to_x, &to_y);
+		configure(shell, es,
+			  es->geometry.x + to_x - from_x,
+			  es->geometry.y + to_y - from_y,
+			  es->buffer->width, es->buffer->height);
+		es->force_configure = 0;
 	}
 }
 
