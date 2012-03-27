@@ -89,6 +89,20 @@ void Label::SetBackgroundColor(const SkColor& color) {
   RecalculateColors();
 }
 
+void Label::SetShadowColors(SkColor enabled_color, SkColor disabled_color) {
+  enabled_shadow_color_ = enabled_color;
+  disabled_shadow_color_ = disabled_color;
+  has_shadow_ = true;
+}
+
+void Label::SetShadowOffset(int x, int y) {
+  shadow_offset_.SetPoint(x, y);
+}
+
+void Label::ClearEmbellishing() {
+  has_shadow_ = false;
+}
+
 void Label::SetHorizontalAlignment(Alignment alignment) {
   // If the View's UI layout is right-to-left and directionality_mode_ is
   // USE_UI_DIRECTIONALITY, we need to flip the alignment so that the alignment
@@ -258,6 +272,15 @@ void Label::PaintText(gfx::Canvas* canvas,
                       const string16& text,
                       const gfx::Rect& text_bounds,
                       int flags) {
+  if (has_shadow_) {
+    canvas->DrawStringInt(
+        text, font_,
+        enabled() ? enabled_shadow_color_ : disabled_shadow_color_,
+        text_bounds.x() + shadow_offset_.x(),
+        text_bounds.y() + shadow_offset_.y(),
+        text_bounds.width(), text_bounds.height(),
+        flags);
+  }
   canvas->DrawStringInt(text, font_,
       enabled() ? actual_enabled_color_ : actual_disabled_color_,
       text_bounds.x(), text_bounds.y(), text_bounds.width(),
@@ -359,6 +382,10 @@ void Label::Init(const string16& text, const gfx::Font& font) {
   directionality_mode_ = USE_UI_DIRECTIONALITY;
   paint_as_focused_ = false;
   has_focus_border_ = false;
+  enabled_shadow_color_ = 0;
+  disabled_shadow_color_ = 0;
+  shadow_offset_.SetPoint(1, 1);
+  has_shadow_ = false;
 
   SetText(text);
 }

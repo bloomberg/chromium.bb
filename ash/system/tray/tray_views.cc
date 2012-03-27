@@ -184,6 +184,9 @@ void SetupLabelForTray(views::Label* label) {
   label->SetAutoColorReadabilityEnabled(false);
   label->SetEnabledColor(SK_ColorWHITE);
   label->SetBackgroundColor(SkColorSetARGB(0, 255, 255, 255));
+  label->SetShadowColors(SkColorSetARGB(64, 0, 0, 0),
+                         SkColorSetARGB(64, 0, 0, 0));
+  label->SetShadowOffset(0, 1);
 }
 
 }  // namespace internal
