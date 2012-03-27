@@ -802,8 +802,9 @@ void LauncherView::ShowContextMenuForView(views::View* source,
     return;
 
   int view_index = view_model_->GetIndexOfView(source);
-  if (model_->items()[view_index].type == TYPE_BROWSER_SHORTCUT ||
-      model_->items()[view_index].type == TYPE_APP_LIST) {
+  if (view_index != -1 &&
+      (model_->items()[view_index].type == TYPE_BROWSER_SHORTCUT ||
+       model_->items()[view_index].type == TYPE_APP_LIST)) {
     view_index = -1;
   }
 #if !defined(OS_MACOSX)
