@@ -203,16 +203,16 @@ void SkiaTextRenderer::SetFontFamilyWithStyle(const std::string& family,
   DCHECK(!family.empty());
 
   SkTypeface::Style skia_style = ConvertFontStyleToSkiaTypefaceStyle(style);
-  SkAutoTUnref<SkTypeface> typeface(
-      SkTypeface::CreateFromName(family.c_str(), skia_style));
-  if (typeface.get()) {
+  SkTypeface* typeface = SkTypeface::CreateFromName(family.c_str(), skia_style);
+  SkAutoUnref auto_unref(typeface);
+  if (typeface) {
     // |paint_| adds its own ref. So don't |release()| it from the ref ptr here.
-    SetTypeface(typeface.get());
+    SetTypeface(typeface);
 
     // Enable fake bold text if bold style is needed but new typeface does not
     // have it.
     paint_.setFakeBoldText((skia_style & SkTypeface::kBold) &&
-                           !typeface.get()->isBold());
+                           !typeface->isBold());
   }
 }
 
@@ -783,11 +783,11 @@ void RenderText::ApplyFadeEffects(internal::SkiaTextRenderer* renderer) {
   text_rect.Inset(GetAlignmentOffset().x(), 0, 0, 0);
 
   const SkColor color = default_style().foreground;
-  SkAutoTUnref<SkShader> shader(
-      CreateFadeShader(text_rect, left_part, right_part, color));
-  if (shader.get()) {
+  SkShader* shader = CreateFadeShader(text_rect, left_part, right_part, color);
+  SkAutoUnref auto_unref(shader);
+  if (shader) {
     // |renderer| adds its own ref. So don't |release()| it from the ref ptr.
-    renderer->SetShader(shader.get());
+    renderer->SetShader(shader);
   }
 }
 
