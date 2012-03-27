@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/gfx/test_suite.h"
+#include "ui/gfx/test/test_suite.h"
 
 #include "base/file_path.h"
 #include "base/path_service.h"
@@ -14,6 +14,9 @@
 #if defined(OS_MACOSX)
 #include "base/mac/bundle_locations.h"
 #endif
+
+namespace gfx {
+namespace test {
 
 GfxTestSuite::GfxTestSuite(int argc, char** argv) : TestSuite(argc, argv) {}
 
@@ -60,3 +63,6 @@ void GfxTestSuite::Shutdown() {
 #endif
   base::TestSuite::Shutdown();
 }
+
+}  // namespace test
+}  // namespace gfx
