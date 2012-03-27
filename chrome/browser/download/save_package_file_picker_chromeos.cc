@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/i18n/file_util_icu.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/gdata/gdata_download_observer.h"
 #include "chrome/browser/chromeos/gdata/gdata_file_system.h"
@@ -38,13 +39,16 @@ SavePackageFilePickerChromeOS::SavePackageFilePickerChromeOS(
 SavePackageFilePickerChromeOS::~SavePackageFilePickerChromeOS() {
 }
 
-void SavePackageFilePickerChromeOS::FileSelected(const FilePath& path,
+void SavePackageFilePickerChromeOS::FileSelected(const FilePath& selected_path,
                                                  int index,
                                                  void* params) {
   if (!web_contents()) {
     delete this;
     return;
   }
+
+  FilePath path = selected_path;
+  file_util::NormalizeFileNameEncoding(&path);
 
   gdata::GDataFileSystem* gdata_filesystem = GetGDataFileSystem();
   if (gdata_filesystem && gdata::util::IsUnderGDataMountPoint(path)) {

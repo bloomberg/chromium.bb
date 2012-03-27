@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/file_util.h"
+#include "base/i18n/file_util_icu.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/gdata/gdata_download_observer.h"
@@ -45,9 +46,12 @@ DownloadFilePickerChromeOS::DownloadFilePickerChromeOS(
 DownloadFilePickerChromeOS::~DownloadFilePickerChromeOS() {
 }
 
-void DownloadFilePickerChromeOS::FileSelected(const FilePath& path,
+void DownloadFilePickerChromeOS::FileSelected(const FilePath& selected_path,
                                               int index,
                                               void* params) {
+  FilePath path = selected_path;
+  file_util::NormalizeFileNameEncoding(&path);
+
   RecordFileSelected(path);
 
   if (download_manager_) {
