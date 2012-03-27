@@ -162,7 +162,10 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   // |last_moust_location()|.
   void OnWindowTransformed(Window* window, bool contained_mouse);
 
-  // Add/remove observer.
+  // Add/remove observer. There is no need to remove the observer if
+  // the root window is being deleted. In particular, you SHOULD NOT remove
+  // in |WindowObserver::OnWindowDestroying| of the observer observing
+  // the root window because it is too late to remove it.
   void AddRootWindowObserver(RootWindowObserver* observer);
   void RemoveRootWindowObserver(RootWindowObserver* observer);
 

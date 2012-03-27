@@ -25,12 +25,16 @@ BaseLayoutManager::BaseLayoutManager(aura::RootWindow* root_window)
     : root_window_(root_window) {
   Shell::GetInstance()->AddShellObserver(this);
   root_window_->AddRootWindowObserver(this);
+  root_window_->AddObserver(this);
 }
 
 BaseLayoutManager::~BaseLayoutManager() {
+  if (root_window_) {
+    root_window_->RemoveObserver(this);
+    root_window_->RemoveRootWindowObserver(this);
+  }
   for (WindowSet::const_iterator i = windows_.begin(); i != windows_.end(); ++i)
     (*i)->RemoveObserver(this);
-  root_window_->RemoveRootWindowObserver(this);
   Shell::GetInstance()->RemoveShellObserver(this);
 }
 
@@ -91,6 +95,13 @@ void BaseLayoutManager::OnWindowPropertyChanged(aura::Window* window,
                                                 intptr_t old) {
   if (key == aura::client::kShowStateKey)
     UpdateBoundsFromShowState(window);
+}
+
+void BaseLayoutManager::OnWindowDestroying(aura::Window* window) {
+  if (root_window_ == window) {
+    root_window_->RemoveObserver(this);
+    root_window_ = NULL;
+  }
 }
 
 //////////////////////////////////////////////////////////////////////////////
