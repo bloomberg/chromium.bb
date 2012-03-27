@@ -237,6 +237,9 @@ function onClientStateChange_(oldState, newState) {
     } else if (remoting.clientSession.error ==
                remoting.ClientSession.ConnectionError.NETWORK_FAILURE) {
       showConnectError_(remoting.Error.NETWORK_FAILURE);
+    } else if (remoting.clientSession.error ==
+               remoting.ClientSession.ConnectionError.HOST_IS_DISABLED) {
+      showConnectError_(remoting.Error.HOST_IS_DISABLED);
     } else {
       showConnectError_(remoting.Error.GENERIC);
     }

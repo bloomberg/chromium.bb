@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/threading/thread.h"
+#include "net/base/backoff_entry.h"
 #include "remoting/base/encoder.h"
 #include "remoting/host/capturer.h"
 #include "remoting/host/client_session.h"
@@ -202,6 +203,9 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
 
   // Configuration of the protocol.
   scoped_ptr<protocol::CandidateSessionConfig> protocol_config_;
+
+  // Login backoff state.
+  net::BackoffEntry login_backoff_;
 
   // Flags used for RejectAuthenticatingClient().
   bool authenticating_client_;

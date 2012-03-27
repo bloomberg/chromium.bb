@@ -471,6 +471,9 @@ void JingleSession::OnTerminate(const JingleMessage& message,
     case JingleMessage::DECLINE:
       error_ = AUTHENTICATION_FAILED;
       break;
+    case JingleMessage::CANCEL:
+      error_ = HOST_IS_DISABLED;
+      break;
     case JingleMessage::GENERAL_ERROR:
       error_ = CHANNEL_CONNECTION_ERROR;
       break;
@@ -545,6 +548,9 @@ void JingleSession::CloseInternal(ErrorCode error) {
         break;
       case INCOMPATIBLE_PROTOCOL:
         reason = JingleMessage::INCOMPATIBLE_PARAMETERS;
+        break;
+      case HOST_IS_DISABLED:
+        reason = JingleMessage::CANCEL;
         break;
       default:
         reason = JingleMessage::GENERAL_ERROR;

@@ -88,7 +88,8 @@ remoting.ClientSession.ConnectionError = {
   HOST_IS_OFFLINE: 1,
   SESSION_REJECTED: 2,
   INCOMPATIBLE_PROTOCOL: 3,
-  NETWORK_FAILURE: 4
+  NETWORK_FAILURE: 4,
+  HOST_IS_DISABLED: 5,
 };
 
 // The mode of this session.

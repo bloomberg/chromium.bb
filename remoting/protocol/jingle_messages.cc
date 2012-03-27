@@ -66,6 +66,7 @@ const NameMapElement<JingleMessage::ActionType> kActionTypes[] = {
 const NameMapElement<JingleMessage::Reason> kReasons[] = {
   { JingleMessage::SUCCESS, "success" },
   { JingleMessage::DECLINE, "decline" },
+  { JingleMessage::CANCEL, "cancel" },
   { JingleMessage::GENERAL_ERROR, "general-error" },
   { JingleMessage::INCOMPATIBLE_PARAMETERS, "incompatible-parameters" },
 };

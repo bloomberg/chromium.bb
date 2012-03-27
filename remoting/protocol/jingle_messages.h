@@ -35,11 +35,10 @@ struct JingleMessage {
   };
 
   enum Reason {
-    // Currently only termination reasons that can be sent by the host
-    // are understood. All others are converted to UNKNOWN_REASON.
     UNKNOWN_REASON,
     SUCCESS,
     DECLINE,
+    CANCEL,
     GENERAL_ERROR,
     INCOMPATIBLE_PARAMETERS,
   };

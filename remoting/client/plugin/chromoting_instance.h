@@ -81,6 +81,7 @@ class ChromotingInstance :
     ERROR_SESSION_REJECTED,
     ERROR_INCOMPATIBLE_PROTOCOL,
     ERROR_NETWORK_FAILURE,
+    ERROR_HOST_IS_DISABLED,
   };
 
   // Plugin API version. This should be incremented whenever the API

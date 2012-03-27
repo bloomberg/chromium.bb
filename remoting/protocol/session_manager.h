@@ -110,8 +110,18 @@ class SessionManager : public base::NonThreadSafe {
   virtual ~SessionManager() { }
 
   enum IncomingSessionResponse {
+    // Accept the session.
     ACCEPT,
+
+    // Reject the session due to incompatible session configuration.
     INCOMPATIBLE,
+
+    // Reject the session because the host is currently disabled due
+    // to previous login attempts.
+    DISABLED,
+
+    // Reject the session because the client is not allowed to connect
+    // to the host.
     DECLINE,
   };
 

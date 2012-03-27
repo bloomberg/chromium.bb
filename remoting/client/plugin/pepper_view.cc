@@ -51,6 +51,9 @@ ChromotingInstance::ConnectionError ConvertConnectionError(
     case protocol::INCOMPATIBLE_PROTOCOL:
       return ChromotingInstance::ERROR_INCOMPATIBLE_PROTOCOL;
 
+    case protocol::HOST_IS_DISABLED:
+      return ChromotingInstance::ERROR_HOST_IS_DISABLED;
+
     case protocol::CHANNEL_CONNECTION_ERROR:
     case protocol::SIGNALING_ERROR:
     case protocol::SIGNALING_TIMEOUT:

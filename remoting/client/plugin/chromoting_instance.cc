@@ -79,6 +79,8 @@ std::string ConnectionErrorToString(ChromotingInstance::ConnectionError error) {
       return "INCOMPATIBLE_PROTOCOL";
     case ChromotingInstance::ERROR_NETWORK_FAILURE:
       return "NETWORK_FAILURE";
+    case ChromotingInstance::ERROR_HOST_IS_DISABLED:
+      return "HOST_IS_DISABLED";
   }
   NOTREACHED();
   return "";

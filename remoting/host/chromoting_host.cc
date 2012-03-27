@@ -31,6 +31,33 @@ using remoting::protocol::InputStub;
 
 namespace remoting {
 
+namespace {
+
+const net::BackoffEntry::Policy kDefaultBackoffPolicy = {
+  // Number of initial errors (in sequence) to ignore before applying
+  // exponential back-off rules.
+  0,
+
+  // Initial delay for exponential back-off in ms.
+  2000,
+
+  // Factor by which the waiting time will be multiplied.
+  2,
+
+  // Fuzzing percentage. ex: 10% will spread requests randomly
+  // between 90%-100% of the calculated time.
+  0,
+
+  // Maximum amount of time we are willing to delay our request in ms.
+  -1,
+
+  // Time to keep an entry from being discarded even when it
+  // has no significant state, -1 to never discard.
+  -1,
+};
+
+}  // namespace
+
 ChromotingHost::ChromotingHost(
     ChromotingHostContext* context,
     SignalStrategy* signal_strategy,
@@ -43,6 +70,7 @@ ChromotingHost::ChromotingHost(
       stopping_recorders_(0),
       state_(kInitial),
       protocol_config_(protocol::CandidateSessionConfig::CreateDefault()),
+      login_backoff_(&kDefaultBackoffPolicy),
       authenticating_client_(false),
       reject_authenticating_client_(false) {
   DCHECK(context_);
@@ -137,7 +165,7 @@ void ChromotingHost::SetAuthenticatorFactory(
 void ChromotingHost::OnSessionAuthenticated(ClientSession* client) {
   DCHECK(context_->network_message_loop()->BelongsToCurrentThread());
 
-  // TODO(sergeyu): Update BackoffEntry here.
+  login_backoff_.Reset();
 }
 
 void ChromotingHost::OnSessionChannelsConnected(ClientSession* client) {
@@ -250,6 +278,17 @@ void ChromotingHost::OnIncomingSession(
     *response = protocol::SessionManager::DECLINE;
     return;
   }
+
+  if (login_backoff_.ShouldRejectRequest()) {
+    *response = protocol::SessionManager::DISABLED;
+    return;
+  }
+
+  // Backoff incoming connections until the new connection is
+  // authenticated. Is is neccessary to prevent the attack when
+  // multiple connections are initiated at the same time and all of
+  // them try to authenticate simultaneously.
+  login_backoff_.InformOfRequest(false);
 
   protocol::SessionConfig config;
   if (!protocol_config_->Select(session->candidate_config(), &config)) {
