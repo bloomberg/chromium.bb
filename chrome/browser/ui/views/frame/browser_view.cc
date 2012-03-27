@@ -109,6 +109,7 @@
 #include "chrome/browser/ui/views/accelerator_table.h"
 #include "chrome/browser/ui/views/ash/chrome_shell_delegate.h"
 #include "chrome/browser/ui/views/ash/launcher/launcher_updater.h"
+#include "chrome/browser/ui/views/ash/window_positioner.h"
 #include "ui/gfx/screen.h"
 #elif defined(OS_WIN)
 #include "chrome/browser/aeropeek_manager.h"
@@ -1545,6 +1546,18 @@ bool BrowserView::GetSavedWindowPlacement(
     ui::WindowShowState* show_state) const {
   *bounds = browser_->GetSavedWindowBounds();
   *show_state = browser_->GetSavedWindowShowState();
+
+#if defined(USE_ASH)
+  if (browser_->is_type_popup() || browser_->is_type_panel()) {
+    // In case of a popup or panel with an 'unspecified' location we are looking
+    // for a good screen location. We are interpreting (0,0) as an unspecified
+    // location.
+    if (bounds->x() == 0 && bounds->y() == 0) {
+      *bounds = ChromeShellDelegate::instance()->window_positioner()->
+          GetPopupPosition(*bounds);
+    }
+  }
+#endif
 
   if ((browser_->is_type_popup() || browser_->is_type_panel())
       && !browser_->is_devtools() && !browser_->is_app()) {
