@@ -250,6 +250,8 @@ void ExtensionSettingsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_OPTIONS_LINK));
   localized_strings->SetString("extensionSettingsActivity",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_ACTIVITY_LINK));
+  localized_strings->SetString("extensionSettingsVisitWebsite",
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_VISIT_WEBSITE));
   localized_strings->SetString("extensionSettingsPolicyControlled",
      l10n_util::GetStringUTF16(IDS_EXTENSIONS_POLICY_CONTROLLED));
   localized_strings->SetString("extensionSettingsShowButton",
