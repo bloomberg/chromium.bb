@@ -11,7 +11,7 @@ vars = {
     'git_url':
          'http://git.chromium.org',
     'webkit_rev':
-         '@f7ab4d5c9bc9450475a2dad8717ac93c80db7d43'
+         '@b9ae90e8283d3ae4b6de35a5381f21466fe7c215'
 }
 
 deps = {
@@ -28,7 +28,7 @@ deps = {
     'src/chrome/test/data/perf/frame_rate/content':
         Var('git_url') + '/chromium/frame_rate/content.git@c10272c88463efeef6bb19c9ec07c42bc8fe22b9',
     'src/googleurl':
-        Var('git_url') + '/external/google-url.git@27f43d01b63c81376b6ba73f9465a24ba3cb1fbe',
+        Var('git_url') + '/external/google-url.git@12a312ffe289b9e603032cc703923c6461dcee9a',
     'src/native_client':
         Var('git_url') + '/native_client/src/native_client.git@81c29a5a1ee0ab63d2ddd8cae4cf55621055fc09',
     'src/native_client_sdk/src/site_scons':
@@ -100,9 +100,9 @@ deps = {
     'src/third_party/sfntly/cpp/src':
         Var('git_url') + '/external/sfntly/cpp/src.git@127cef2a54a5b6e6777761d550c1ec90e736383f',
     'src/third_party/skia/include':
-        Var('git_url') + '/external/skia/include.git@9b9da23a5235e15f735e0838b6ca7c62345169e3',
+        Var('git_url') + '/external/skia/include.git@0ffc5913dcb1ad10158dd45db6006ce036f3f645',
     'src/third_party/skia/src':
-        Var('git_url') + '/external/skia/src.git@51c77c3a7125492fbaaa0ab95f56c196e1ca98b5',
+        Var('git_url') + '/external/skia/src.git@19be8d34138d93df3a792263eb185d77f153c0c6',
     'src/third_party/skia/third_party/glu':
         Var('git_url') + '/external/skia/third_party/glu.git@53680310e174393579d8946c84c78625e6ac133c',
     'src/third_party/smhasher/src':
