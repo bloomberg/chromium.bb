@@ -1016,6 +1016,20 @@ def RunCommandWithRetries(max_retry, *args, **kwds):
     raise
 
 
+def RunCommandCaptureOutput(cmd, **kwds):
+  """Wrapper for RunCommand that captures output.
+
+  This wrapper calls RunCommand with redirect_stdout=True and
+  combine_stdout_stderr=True. This is for convenience.
+
+  Arguments:
+    cmd: The command to run.
+    kwds: Optional args passed to RunCommand; see RunCommand for specifics.
+  """
+  return RunCommand(cmd, redirect_stdout=True, combine_stdout_stderr=True,
+                    **kwds)
+
+
 def GetInput(prompt):
   """Helper function to grab input from a user.   Makes testing easier."""
   return raw_input(prompt)
