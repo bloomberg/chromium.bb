@@ -13,6 +13,17 @@
   border-bottom: 1px solid #555;
 }
 
+#profiling-view > .control > span {
+  padding-left: 5px;
+  padding-right: 10px;
+}
+
+#profiling-view > .control > button {
+  font-size: 75%;
+  height: 20px;
+  min-height: 10px;
+}
+
 #profiling-view > .container {
   display: -webkit-box;
   -webkit-box-flex: 1;

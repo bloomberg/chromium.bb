@@ -28,6 +28,9 @@ cr.define('tracing', function() {
       this.controlDiv_.className = 'control';
       this.appendChild(this.controlDiv_);
 
+      var tracingEl = document.createElement('span');
+      tracingEl.textContent = 'Tracing: ';
+
       this.recordBn_ = document.createElement('button');
       this.recordBn_.textContent = 'Record';
       this.recordBn_.addEventListener('click', this.onRecord_.bind(this));
@@ -45,6 +48,7 @@ cr.define('tracing', function() {
 
       this.timelineView_ = new TimelineView();
 
+      this.controlDiv_.appendChild(tracingEl);
       this.controlDiv_.appendChild(this.recordBn_);
       this.controlDiv_.appendChild(this.loadBn_);
       this.controlDiv_.appendChild(this.saveBn_);
