@@ -189,10 +189,13 @@ void BrowserNonClientFrameViewAura::OnPaint(gfx::Canvas* canvas) {
     return;  // Nothing visible, don't paint.
   // The primary header image changes based on window activation state and
   // theme, so we look it up for each paint.
-  frame_painter_->PaintHeader(this,
-                              canvas,
-                              GetThemeFrameBitmap(),
-                              GetThemeFrameOverlayBitmap());
+  frame_painter_->PaintHeader(
+      this,
+      canvas,
+      ShouldPaintAsActive() ?
+          ash::FramePainter::ACTIVE : ash::FramePainter::INACTIVE,
+      GetThemeFrameBitmap(),
+      GetThemeFrameOverlayBitmap());
   if (browser_view()->ShouldShowWindowTitle())
     frame_painter_->PaintTitleBar(this, canvas, BrowserFrame::GetTitleFont());
   if (browser_view()->IsToolbarVisible())
