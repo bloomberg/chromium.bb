@@ -515,15 +515,6 @@ void WebDataService::RemoveFormElementsAddedBetween(const Time& delete_begin,
                     this, request));
 }
 
-void WebDataService::RemoveExpiredFormElements() {
-  WebDataRequest* request =
-      new WebDataRequest(this, GetNextRequestHandle(), NULL);
-  RegisterRequest(request);
-  ScheduleTask(FROM_HERE,
-               Bind(&WebDataService::RemoveExpiredFormElementsImpl,
-                    this, request));
-}
-
 void WebDataService::RemoveFormValueForElementName(
     const string16& name, const string16& value) {
   GenericRequest2<string16, string16>* request =
@@ -1249,29 +1240,6 @@ void WebDataService::RemoveFormElementsAddedBetweenImpl(
     AutofillChangeList changes;
     if (db_->GetAutofillTable()->RemoveFormElementsAddedBetween(
         request->arg1(), request->arg2(), &changes)) {
-      if (!changes.empty()) {
-        request->SetResult(
-            new WDResult<AutofillChangeList>(AUTOFILL_CHANGES, changes));
-
-        // Post the notifications including the list of affected keys.
-        // This is sent here so that work resulting from this notification
-        // will be done on the DB thread, and not the UI thread.
-        content::NotificationService::current()->Notify(
-            chrome::NOTIFICATION_AUTOFILL_ENTRIES_CHANGED,
-            content::Source<WebDataService>(this),
-            content::Details<AutofillChangeList>(&changes));
-      }
-      ScheduleCommit();
-    }
-  }
-  request->RequestComplete();
-}
-
-void WebDataService::RemoveExpiredFormElementsImpl(WebDataRequest* request) {
-  InitializeDatabaseIfNecessary();
-  if (db_ && !request->IsCancelled(NULL)) {
-    AutofillChangeList changes;
-    if (db_->GetAutofillTable()->RemoveExpiredFormElements(&changes)) {
       if (!changes.empty()) {
         request->SetResult(
             new WDResult<AutofillChangeList>(AUTOFILL_CHANGES, changes));

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -154,26 +154,17 @@ class AutofillTable : public WebDatabaseTable {
                                       const base::Time& delete_end,
                                       std::vector<AutofillChange>* changes);
 
-  // Removes rows from autofill_dates if they were accessed strictly before
-  // |AutofillEntry::ExpirationTime()|. Removes the corresponding row from the
-  // autofill table. Also culls timestamps to only two. TODO(georgey): remove
-  // culling in future versions.
-  bool RemoveExpiredFormElements(std::vector<AutofillChange>* changes);
-
   // Removes from autofill_dates rows with given pair_id where date_created lies
-  // between |delete_begin| and |delete_end|.
+  // between delte_begin and delte_end.
   bool RemoveFormElementForTimeRange(int64 pair_id,
                                      const base::Time& delete_begin,
                                      const base::Time& delete_end,
                                      int* how_many);
 
-  // Increments the count in the row corresponding to |pair_id| by |delta|.
-  bool AddToCountOfFormElement(int64 pair_id, int delta);
-
-  // Counts how many timestamp data rows are in the |autofill_dates| table for
-  // a given |pair_id|. GetCountOfFormElement() on the other hand gives the
-  // |count| property for a given id.
-  int CountTimestampsData(int64 pair_id);
+  // Increments the count in the row corresponding to |pair_id| by
+  // |delta|.  Removes the row from the table and sets the
+  // |was_removed| out parameter to true if the count becomes 0.
+  bool AddToCountOfFormElement(int64 pair_id, int delta, bool* was_removed);
 
   // Gets the pair_id and count entries from name and value specified in
   // |element|.  Sets *pair_id and *count to 0 if there is no such row in
@@ -195,9 +186,6 @@ class AutofillTable : public WebDatabaseTable {
 
   // Adds a new row to the autofill_dates table.
   bool InsertPairIDAndDate(int64 pair_id, const base::Time& date_created);
-
-  // Deletes last access to the Autofill data from the autofill_dates table.
-  bool DeleteLastAccess(int64 pair_id);
 
   // Removes row from the autofill tables given |pair_id|.
   bool RemoveFormElementForID(int64 pair_id);

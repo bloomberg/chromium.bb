@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -46,21 +46,14 @@ class AutofillEntry {
 
   bool timestamps_culled() const { return timestamps_culled_; }
 
-  // Checks if last of the timestamps are older than ExpirationTime().
-  bool IsExpired() const;
-
-  // The entries last accessed before this time should expire.
-  static base::Time ExpirationTime();
-
  private:
   FRIEND_TEST_ALL_PREFIXES(AutofillEntryTest, NoCulling);
   FRIEND_TEST_ALL_PREFIXES(AutofillEntryTest, Culling);
-  FRIEND_TEST_ALL_PREFIXES(AutofillEntryTest, CullByTime);
 
-  // Culls the list of timestamps to 2 - the oldest and most recent. This is a
-  // precursor to getting rid of the timestamps db altogether.
-  // See http://crbug.com/118696.
-  // |source| is expected to be sorted from oldest to newest.
+  // Culls the list of timestamps to |kMaxAutofillTimeStamps| latest timestamps.
+  // Result is stored in |result|. If the original vtor's size is less
+  // than kMaxAutofillTimeStamps then false is returned. Otherwise true is
+  // returned. Note: source and result should be DIFFERENT vectors.
   static bool CullTimeStamps(const std::vector<base::Time>& source,
                              std::vector<base::Time>* result);
 
@@ -69,4 +62,6 @@ class AutofillEntry {
   bool timestamps_culled_;
 };
 
+// TODO(lipalani): Move this inside the class defintion.
+const unsigned int kMaxAutofillTimeStamps = 50;
 #endif  // CHROME_BROWSER_WEBDATA_AUTOFILL_ENTRY_H__

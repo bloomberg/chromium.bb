@@ -1,21 +1,13 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
-#include "chrome/browser/webdata/autofill_entry.h"
 
 #include <algorithm>
 #include <set>
 
 #include "base/logging.h"
+#include "chrome/browser/webdata/autofill_entry.h"
 #include "base/utf_string_conversions.h"
-
-namespace {
-
-// The period after which Autofill entries should expire in days.
-const int64 kExpirationPeriodInDays = 60;
-
-}  // namespace
 
 AutofillKey::AutofillKey() {}
 
@@ -80,19 +72,7 @@ bool AutofillEntry::operator<(const AutofillEntry& entry) const {
   return key_ < entry.key();
 }
 
-bool AutofillEntry::IsExpired() const {
-  base::Time time = ExpirationTime();
-  // TODO(georgey): add DCHECK(!timestamps_.empty()) after conversion of the db
-  // is complete.
-  return (timestamps_.empty() || timestamps_.back() < time);
-}
-
-// static
-base::Time AutofillEntry::ExpirationTime() {
-  return base::Time::Now() - base::TimeDelta::FromDays(kExpirationPeriodInDays);
-}
-
-// Culls the list of timestamps to the first and last used.
+// Culls the list of timestamps to the most recent |kMaxAutofillTimeStamps|.
 // If sync is enabled, at every browser restart, sync will do a match up of all
 // autofill items on the server with all items on the web db. When webdb loads
 // all the items in memory(for sync to process. The method is
@@ -103,23 +83,26 @@ base::Time AutofillEntry::ExpirationTime() {
 // restart. But sync when uploading to the server will only upload this culled
 // list. Meaning until restart there will be mis-match in timestamps but
 // it should correct itself at startup.
+// Also if sync is not enabled this culling would never take place.
 bool AutofillEntry::CullTimeStamps(const std::vector<base::Time>& source,
-                                   std::vector<base::Time>* result) {
+                                       std::vector<base::Time>* result) {
   DCHECK(result);
   DCHECK(&source != result);
 
   // First copy the source to result.
   result->clear();
+  result->insert(result->begin(), source.begin(), source.end());
 
-  if (source.size() <= 2) {
-    result->insert(result->begin(), source.begin(), source.end());
+  if (source.size() <= kMaxAutofillTimeStamps)
     return false;
-  }
 
-  result->push_back(source.front());
-  result->push_back(source.back());
+  VLOG(1) << "Culling timestamps. Current count is : " << source.size();
 
-  DVLOG(1) << "Culling timestamps. Current count is : " << source.size();
+  // Regular sort does ascending order. So we pass in a comparator function.
+  partial_sort(result->begin(), result->begin() + kMaxAutofillTimeStamps,
+               result->end(), std::greater<base::Time>());
+
+  result->erase(result->begin() + kMaxAutofillTimeStamps, result->end());
 
   return true;
 }
