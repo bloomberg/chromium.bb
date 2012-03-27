@@ -382,7 +382,11 @@ TEST_F(ClientSideDetectionHostTest,
   EXPECT_TRUE(Mock::VerifyAndClear(sb_service_.get()));
 }
 
+#if defined(OS_CHROMEOS)
+TEST_F(ClientSideDetectionHostTest, FLAKY_OnPhishingDetectionDoneDisabled) {
+#else
 TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneDisabled) {
+#endif
   // Case 2: client thinks the page is phishing and so does the server but
   // showing the interstitial is disabled => no interstitial is shown.
   MockBrowserFeatureExtractor* mock_extractor = new MockBrowserFeatureExtractor(
