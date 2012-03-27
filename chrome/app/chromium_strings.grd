@@ -101,61 +101,6 @@ be available for now. -->
     <output filename="chromium_strings_zh-TW.pak" type="data_package" lang="zh-TW" />
   </outputs>
   <translations>
-    <if expr="not pp_ifdef('use_third_party_translations')">
-      <file path="resources/chromium_strings_am.xtb" lang="am" />
-      <file path="resources/chromium_strings_ar.xtb" lang="ar" />
-      <file path="resources/chromium_strings_bg.xtb" lang="bg" />
-      <file path="resources/chromium_strings_bn.xtb" lang="bn" />
-      <file path="resources/chromium_strings_ca.xtb" lang="ca" />
-      <file path="resources/chromium_strings_cs.xtb" lang="cs" />
-      <file path="resources/chromium_strings_da.xtb" lang="da" />
-      <file path="resources/chromium_strings_de.xtb" lang="de" />
-      <file path="resources/chromium_strings_el.xtb" lang="el" />
-      <file path="resources/chromium_strings_en-GB.xtb" lang="en-GB" />
-      <file path="resources/chromium_strings_es.xtb" lang="es" />
-      <file path="resources/chromium_strings_es-419.xtb" lang="es-419" />
-      <file path="resources/chromium_strings_et.xtb" lang="et" />
-      <file path="resources/chromium_strings_fa.xtb" lang="fa" />
-      <file path="resources/chromium_strings_fi.xtb" lang="fi" />
-      <file path="resources/chromium_strings_fil.xtb" lang="fil" />
-      <file path="resources/chromium_strings_fr.xtb" lang="fr" />
-      <file path="resources/chromium_strings_gu.xtb" lang="gu" />
-      <file path="resources/chromium_strings_hi.xtb" lang="hi" />
-      <file path="resources/chromium_strings_hr.xtb" lang="hr" />
-      <file path="resources/chromium_strings_hu.xtb" lang="hu" />
-      <file path="resources/chromium_strings_id.xtb" lang="id" />
-      <file path="resources/chromium_strings_it.xtb" lang="it" />
-      <!-- The translation console uses 'iw' for Hebrew, but we use 'he'. -->
-      <file path="resources/chromium_strings_iw.xtb" lang="he" />
-      <file path="resources/chromium_strings_ja.xtb" lang="ja" />
-      <file path="resources/chromium_strings_kn.xtb" lang="kn" />
-      <file path="resources/chromium_strings_ko.xtb" lang="ko" />
-      <file path="resources/chromium_strings_lt.xtb" lang="lt" />
-      <file path="resources/chromium_strings_lv.xtb" lang="lv" />
-      <file path="resources/chromium_strings_ml.xtb" lang="ml" />
-      <file path="resources/chromium_strings_mr.xtb" lang="mr" />
-      <file path="resources/chromium_strings_ms.xtb" lang="ms" />
-      <file path="resources/chromium_strings_nl.xtb" lang="nl" />
-      <file path="resources/chromium_strings_no.xtb" lang="no" />
-      <file path="resources/chromium_strings_pl.xtb" lang="pl" />
-      <file path="resources/chromium_strings_pt-BR.xtb" lang="pt-BR" />
-      <file path="resources/chromium_strings_pt-PT.xtb" lang="pt-PT" />
-      <file path="resources/chromium_strings_ro.xtb" lang="ro" />
-      <file path="resources/chromium_strings_ru.xtb" lang="ru" />
-      <file path="resources/chromium_strings_sk.xtb" lang="sk" />
-      <file path="resources/chromium_strings_sl.xtb" lang="sl" />
-      <file path="resources/chromium_strings_sr.xtb" lang="sr" />
-      <file path="resources/chromium_strings_sv.xtb" lang="sv" />
-      <file path="resources/chromium_strings_sw.xtb" lang="sw" />
-      <file path="resources/chromium_strings_ta.xtb" lang="ta" />
-      <file path="resources/chromium_strings_te.xtb" lang="te" />
-      <file path="resources/chromium_strings_th.xtb" lang="th" />
-      <file path="resources/chromium_strings_tr.xtb" lang="tr" />
-      <file path="resources/chromium_strings_uk.xtb" lang="uk" />
-      <file path="resources/chromium_strings_vi.xtb" lang="vi" />
-      <file path="resources/chromium_strings_zh-CN.xtb" lang="zh-CN" />
-      <file path="resources/chromium_strings_zh-TW.xtb" lang="zh-TW" />
-    </if>
     <if expr="pp_ifdef('use_third_party_translations')">
       <file path="../../third_party/launchpad_translations/chromium_strings_ast.xtb" lang="ast" />
       <file path="../../third_party/launchpad_translations/chromium_strings_bg.xtb" lang="bg" />
