@@ -390,13 +390,19 @@ DictionaryValue* GpuInfoAsDictionaryValue() {
 }
 
 void UpdateStats() {
+  GpuBlacklist* blacklist = GpuBlacklist::GetInstance();
+  uint32 max_entry_id = blacklist->max_entry_id();
+  if (max_entry_id == 0) {
+    // GPU Blacklist was not loaded.  No need to go further.
+    return;
+  }
+
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   uint32 flags = GpuDataManager::GetInstance()->GetGpuFeatureType();
-  GpuBlacklist* blacklist = GpuBlacklist::GetInstance();
   bool disabled = false;
   if (flags == 0) {
     UMA_HISTOGRAM_ENUMERATION("GPU.BlacklistTestResultsPerEntry",
-        0, blacklist->max_entry_id() + 1);
+        0, max_entry_id + 1);
   } else {
     std::vector<uint32> flag_entries;
     blacklist->GetGpuFeatureTypeEntries(
@@ -404,7 +410,7 @@ void UpdateStats() {
     DCHECK_GT(flag_entries.size(), 0u);
     for (size_t i = 0; i < flag_entries.size(); ++i) {
       UMA_HISTOGRAM_ENUMERATION("GPU.BlacklistTestResultsPerEntry",
-          flag_entries[i], blacklist->max_entry_id() + 1);
+          flag_entries[i], max_entry_id + 1);
     }
   }
 
@@ -416,7 +422,7 @@ void UpdateStats() {
       content::GPU_FEATURE_TYPE_ALL, flag_disabled_entries, disabled);
   for (size_t i = 0; i < flag_disabled_entries.size(); ++i) {
     UMA_HISTOGRAM_ENUMERATION("GPU.BlacklistTestResultsPerDisabledEntry",
-        flag_disabled_entries[i], blacklist->max_entry_id() + 1);
+        flag_disabled_entries[i], max_entry_id + 1);
   }
 
   const content::GpuFeatureType kGpuFeatures[] = {
