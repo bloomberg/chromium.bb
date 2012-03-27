@@ -138,7 +138,7 @@ PluginInstaller* PluginFinder::CreateInstaller(
   bool display_url = false;
   plugin_dict->GetBoolean("displayurl", &display_url);
   bool requires_authorization = true;
-  plugin_dict->GetBoolean("requires_authorization", &display_url);
+  plugin_dict->GetBoolean("requires_authorization", &requires_authorization);
   PluginInstaller* installer = new PluginInstaller(identifier,
                                                    GURL(url),
                                                    GURL(help_url),
