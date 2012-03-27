@@ -191,6 +191,7 @@ extern const char kChromeUIActiveDownloadsHost[];
 extern const char kChromeUIChooseMobileNetworkHost[];
 extern const char kChromeUICryptohomeHost[];
 extern const char kChromeUIDiscardsHost[];
+extern const char kChromeUIGDataHost[];
 extern const char kChromeUIIdleLogoutDialogHost[];
 extern const char kChromeUIImageBurnerHost[];
 extern const char kChromeUIKeyboardOverlayHost[];

@@ -8,6 +8,8 @@
 
 #include <string>
 
+#include "googleurl/src/gurl.h"
+
 class FilePath;
 class Profile;
 
@@ -22,6 +24,11 @@ const std::string& GetGDataMountPointPathAsString();
 
 // Returns the 'local' root of remote file system as "/special".
 const FilePath& GetSpecialRemoteRootPath();
+
+// Returns the gdata file resource url formatted as
+// chrome://gdata/<resource_id>/<file_name>.
+GURL GetFileResourceUrl(const std::string& resource_id,
+                        const std::string& file_name);
 
 // Returns true if the given path is under the GData mount point.
 bool IsUnderGDataMountPoint(const FilePath& path);

@@ -548,6 +548,24 @@ void GDataFileSystem::FindFileByPathSync(
   UnsafeFindFileByPath(search_file_path, delegate);
 }
 
+void GDataFileSystem::FindFileByResourceIdSync(
+    const std::string& resource_id,
+    FindFileDelegate* delegate) {
+  base::AutoLock lock(lock_);  // To access the cache map.
+
+  GDataFile* file = NULL;
+  GDataFileBase* file_base = root_->GetFileByResourceId(resource_id);
+  if (file_base)
+    file = file_base->AsGDataFile();
+
+  if (file) {
+    delegate->OnDone(base::PLATFORM_FILE_OK, file->parent()->GetFilePath(),
+                     file);
+  } else {
+    delegate->OnDone(base::PLATFORM_FILE_ERROR_NOT_FOUND, FilePath(), NULL);
+  }
+}
+
 void GDataFileSystem::FindFileByPathAsync(
     const FilePath& search_file_path,
     const FindFileCallback& callback) {

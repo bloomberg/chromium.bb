@@ -209,6 +209,15 @@ class GDataFileSystemInterface {
   virtual void FindFileByPathSync(const FilePath& file_path,
                                   FindFileDelegate* delegate) = 0;
 
+  // Finds file info by using |resource_id|. This call does not initiate
+  // content refreshing and will invoke one of |delegate| methods directly as
+  // it executes.
+  //
+  // Can be called from UI/IO thread. |delegate| is run on the calling thread
+  // synchronously.
+  virtual void FindFileByResourceIdSync(const std::string& resource_id,
+                                        FindFileDelegate* delegate) = 0;
+
   // Initiates transfer of |local_file_path| to |remote_dest_file_path|.
   // |local_file_path| must be a file from the local file system,
   // |remote_dest_file_path| is the virtual destination path within gdata file
@@ -405,6 +414,8 @@ class GDataFileSystem : public GDataFileSystemInterface {
                                    const FindFileCallback& callback) OVERRIDE;
   virtual void FindFileByPathSync(const FilePath& file_path,
                                   FindFileDelegate* delegate) OVERRIDE;
+  virtual void FindFileByResourceIdSync(const std::string& resource_id,
+                                        FindFileDelegate* delegate) OVERRIDE;
   virtual void TransferFile(const FilePath& local_file_path,
                             const FilePath& remote_dest_file_path,
                             const FileOperationCallback& callback) OVERRIDE;

@@ -11,10 +11,12 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/logging.h"
+#include "base/stringprintf.h"
 #include "chrome/common/libxml_utils.h"
 #include "chrome/browser/chromeos/gdata/gdata_file_system.h"
 #include "chrome/browser/chromeos/gdata/gdata_system_service.h"
 #include "content/public/browser/child_process_security_policy.h"
+#include "net/base/escape.h"
 
 namespace gdata {
 namespace util {
@@ -52,6 +54,14 @@ const FilePath& GetSpecialRemoteRootPath() {
   CR_DEFINE_STATIC_LOCAL(FilePath, gdata_mount_path,
       (FilePath::FromUTF8Unsafe(kGDataSpecialRootPath)));
   return gdata_mount_path;
+}
+
+GURL GetFileResourceUrl(const std::string& resource_id,
+                        const std::string& file_name) {
+  return GURL(base::StringPrintf(
+      "chrome://gdata/%s/%s",
+      net::EscapePath(resource_id).c_str(),
+      net::EscapePath(file_name).c_str()));
 }
 
 bool IsUnderGDataMountPoint(const FilePath& path) {
