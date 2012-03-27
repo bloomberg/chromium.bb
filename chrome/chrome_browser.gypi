@@ -49,6 +49,7 @@
         '../third_party/libjingle/libjingle.gyp:libjingle',
         '../third_party/libphonenumber/libphonenumber.gyp:libphonenumber',
         '../third_party/libxml/libxml.gyp:libxml',
+        '../third_party/libusb/libusb.gyp:libusb',
         '../third_party/npapi/npapi.gyp:npapi',
         '../ui/base/strings/ui_strings.gyp:ui_strings',
         '../ui/gfx/surface/surface.gyp:surface',
