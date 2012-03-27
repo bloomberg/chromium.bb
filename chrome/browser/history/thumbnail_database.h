@@ -66,7 +66,6 @@ class ThumbnailDatabase {
   int transaction_nesting() const {
     return db_.transaction_nesting();
   }
-  void RollbackTransaction();
 
   // Vacuums the database. This will cause sqlite to defragment and collect
   // unused space in the file. It can be VERY SLOW.

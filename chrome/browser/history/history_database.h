@@ -19,11 +19,6 @@
 #include "sql/init_status.h"
 #include "sql/meta_table.h"
 
-#if defined(OS_ANDROID)
-#include "chrome/browser/history/android/android_cache_database.h"
-#include "chrome/browser/history/android/android_urls_database.h"
-#endif
-
 class FilePath;
 
 namespace history {
@@ -36,10 +31,6 @@ namespace history {
 // as the storage interface. Logic for manipulating this storage layer should
 // be in HistoryBackend.cc.
 class HistoryDatabase : public DownloadDatabase,
-#if defined(OS_ANDROID)
-                        public AndroidURLsDatabase,
-                        public AndroidCacheDatabase,
-#endif
                         public URLDatabase,
                         public VisitDatabase,
                         public VisitSegmentDatabase {
@@ -93,7 +84,6 @@ class HistoryDatabase : public DownloadDatabase,
   int transaction_nesting() const {  // for debugging and assertion purposes
     return db_.transaction_nesting();
   }
-  void RollbackTransaction();
 
   // Drops all tables except the URL, and download tables, and recreates them
   // from scratch. This is done to rapidly clean up stuff when deleting all
@@ -151,10 +141,6 @@ class HistoryDatabase : public DownloadDatabase,
   virtual void UpdateEarlyExpirationThreshold(base::Time threshold);
 
  private:
-#if defined(OS_ANDROID)
-  // AndroidProviderBackend uses the |db_|.
-  friend class AndroidProviderBackend;
-#endif
   friend class InMemoryURLIndexTest;
   FRIEND_TEST_ALL_PREFIXES(IconMappingMigrationTest, TestIconMappingMigration);
 

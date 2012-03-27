@@ -17,7 +17,8 @@ class HistoryDatabase;
 // The SQL handler for bookmarking_mapping table.
 class BookmarkModelSQLHandler : public SQLHandler {
  public:
-  explicit BookmarkModelSQLHandler(URLDatabase* url_database);
+  BookmarkModelSQLHandler(URLDatabase* url_database,
+                          Profile* profile);
 
   virtual ~BookmarkModelSQLHandler();
 
@@ -39,7 +40,7 @@ class BookmarkModelSQLHandler : public SQLHandler {
     // checked to see if it is still valid in ProfileManger before it used to
     // get bookmark model in UI thread; So we can make sure the bookmark model
     // we working on is still valid at the time it is used.
-    Task();
+    explicit Task(Profile* profile);
 
     // Add the a bookmark with the given |url| to mobile folder.
     void AddBookmarkToMobileFolder(const GURL& url, const string16& title);
@@ -60,10 +61,13 @@ class BookmarkModelSQLHandler : public SQLHandler {
     // Returns profile_'s BookmarkModel if the profile_ is valid.
     BookmarkModel* GetBookmarkModel();
 
+    Profile* profile_;
+
     DISALLOW_COPY_AND_ASSIGN(Task);
   };
 
   URLDatabase* url_database_;
+  Profile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkModelSQLHandler);
 };

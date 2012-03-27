@@ -146,10 +146,6 @@ void HistoryDatabase::CommitTransaction() {
   db_.CommitTransaction();
 }
 
-void HistoryDatabase::RollbackTransaction() {
-  db_.RollbackTransaction();
-}
-
 bool HistoryDatabase::RecreateAllTablesButURL() {
   if (!DropVisitTable())
     return false;
