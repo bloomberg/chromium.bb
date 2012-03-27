@@ -150,7 +150,10 @@ var TimelineView = (function() {
      */
     updateDataSeriesVisibility_: function(dataSeries, listItem, checkBox) {
       dataSeries.show(checkBox.checked);
-      changeClassName(listItem, TimelineView.HIDDEN_CLASS, !checkBox.checked);
+      if (checkBox.checked)
+        listItem.classList.remove(TimelineView.HIDDEN_CLASS);
+      else
+        listItem.classList.add(TimelineView.HIDDEN_CLASS);
     },
 
     dataSeriesClicked_: function(dataSeries, listItem, checkBox) {
@@ -170,7 +173,7 @@ var TimelineView = (function() {
 
       // Make sure |listItem| is visible, and then use its color for the
       // DataSource.
-      changeClassName(listItem, TimelineView.HIDDEN_CLASS, false);
+      listItem.classList.remove(TimelineView.HIDDEN_CLASS);
       dataSeries.setColor(getComputedStyle(listItem).color);
 
       this.updateDataSeriesVisibility_(dataSeries, listItem, checkBox);

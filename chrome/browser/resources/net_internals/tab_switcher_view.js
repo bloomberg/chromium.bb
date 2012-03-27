@@ -143,7 +143,10 @@ var TabSwitcherView = (function() {
 
   TabEntry.prototype.setSelected = function(isSelected) {
     this.active = isSelected;
-    changeClassName(this.getTabHandleNode(), 'selected', isSelected);
+    if (isSelected)
+      this.getTabHandleNode().classList.add('selected');
+    else
+      this.getTabHandleNode().classList.remove('selected');
     this.contentView.show(isSelected);
   };
 

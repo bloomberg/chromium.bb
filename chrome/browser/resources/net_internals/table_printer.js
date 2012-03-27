@@ -216,7 +216,7 @@ var TablePrinter = (function() {
         var tableTitleRow = addNode(thead, 'tr');
         var tableTitle = addNodeWithText(tableTitleRow, 'th', this.title_);
         tableTitle.colSpan = numColumns;
-        changeClassName(tableTitle, 'title', true);
+        tableTitle.classList.add('title');
       }
 
       // Fill table body, adding header row first, if needed.

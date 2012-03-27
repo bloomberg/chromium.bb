@@ -76,7 +76,7 @@ var SourceRow = (function() {
       // Add a CSS classname specific to this source type (so CSS can specify
       // different stylings for different types).
       var sourceTypeClass = sourceTypeString.toLowerCase().replace(/_/g, '-');
-      changeClassName(this.row_, 'source-' + sourceTypeClass, true);
+      this.row_.classList.add('source-' + sourceTypeClass);
 
       this.updateClass_();
     },
@@ -121,9 +121,12 @@ var SourceRow = (function() {
       var noStyleSet = true;
       for (var i = 0; i < propertyNames.length; ++i) {
         var setStyle = noStyleSet && this[propertyNames[i][0]];
-        changeClassName(this.row_, propertyNames[i][1], setStyle);
-        if (setStyle)
+        if (setStyle) {
+          this.row_.classList.add(propertyNames[i][1]);
           noStyleSet = false;
+        } else {
+          this.row_.classList.remove(propertyNames[i][1]);
+        }
       }
     },
 
