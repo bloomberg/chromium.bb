@@ -1,0 +1,63 @@
+<if expr="not pp_ifdef('chromeos')">
+<section id="sync-section">
+  <h3 i18n-content="sectionTitleSync"></h3>
+</if>
+<if expr="pp_ifdef('chromeos')">
+<div id="sync-section">
+</if>
+
+  <div id="sync-overview" class="settings-row" hidden>
+    <p i18n-content="syncOverview"></p>
+    <a i18n-values="href:syncLearnMoreURL" i18n-content="learnMore"
+        target="_blank"></a>
+  </div>
+
+<if expr="pp_ifdef('chromeos')">
+  <div id="account-picture-wrapper">
+    <img id="account-picture"
+        src="chrome://theme/IDR_PROFILE_PICTURE_LOADING">
+    <div id="change-picture-caption" i18n-content="changePicture"></div>
+  </div>
+  <div id="sync-general">
+</if>  <!-- pp_ifdef('chromeos') -->
+
+    <div id="sync-status" class="settings-row" hidden>
+      <span id="sync-status-text"></span>
+      <button id="sync-action-link" class="link-button"></button>
+    </div>
+
+<if expr="pp_ifdef('chromeos')">
+    <div class="checkbox">
+      <label>
+        <input id="enable-screen-lock" type="checkbox"
+            pref="settings.enable_screen_lock">
+        <span i18n-content="enableScreenlock"></span>
+      </label>
+    </div>
+  </div>
+</if>  <!-- pp_ifdef('chromeos') -->
+
+  <div id="sync-buttons" class="settings-row">
+    <button id="start-stop-sync" hidden></button>
+    <button id="customize-sync" i18n-content="customizeSync" hidden>
+    </button>
+<if expr="pp_ifdef('chromeos')">
+    <button id="manage-accounts-button"
+        i18n-content="manageAccountsButtonTitle">
+    </button>
+</if>  <!-- pp_ifdef('chromeos') -->
+    <div id="enable-auto-login-checkbox" class="checkbox" hidden>
+      <label>
+        <input id="enable-auto-login" pref="autologin.enabled"
+            metric="Options_Autologin" type="checkbox">
+        <span i18n-content="autologinEnabled"></span>
+      </label>
+    </div>
+  </div>
+
+<if expr="not pp_ifdef('chromeos')">
+</section>
+</if>
+<if expr="pp_ifdef('chromeos')">
+</div>
+</if>

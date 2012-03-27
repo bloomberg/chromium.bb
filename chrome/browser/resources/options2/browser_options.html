@@ -9,31 +9,7 @@
     </span>
   </header>
 <if expr="not pp_ifdef('chromeos')">
-  <section id="sync-section">
-    <h3 i18n-content="sectionTitleSync"></h3>
-    <div id="sync-overview" class="settings-row" hidden>
-      <p i18n-content="syncOverview"></p>
-      <a i18n-values="href:syncLearnMoreURL" i18n-content="learnMore"
-          target="_blank">
-      </a>
-    </div>
-    <div id="sync-status" class="settings-row" hidden>
-      <span id="sync-status-text"></span>
-      <button id="sync-action-link" class="link-button"></button>
-    </div>
-    <div id="sync-buttons" class="settings-row">
-      <button id="start-stop-sync" hidden></button>
-      <button id="customize-sync" i18n-content="customizeSync" hidden>
-      </button>
-      <div id="enable-auto-login-checkbox" class="checkbox" hidden>
-        <label>
-          <input id="enable-auto-login" pref="autologin.enabled"
-              metric="Options_Autologin" type="checkbox">
-          <span i18n-content="autologinEnabled"></span>
-        </label>
-      </div>
-    </div>
-  </section>
+  <include src="sync_section.html">
 </if>
 <if expr="pp_ifdef('chromeos')">
   <section>
@@ -55,47 +31,7 @@
   </section>
 </if>
 <if expr="not pp_ifdef('chromeos')">
-  <!-- This section is duplicated below for ChromeOS. Both sections must stay
-       in sync. -->
-  <section id="startup-section">
-    <h3 i18n-content="sectionTitleStartup"></h3>
-    <div>
-      <div class="radio">
-        <label>
-          <input id="startup-newtab" type="radio" name="startup" value="5"
-              pref="session.restore_on_startup"
-              metric="Options_Startup_NewTab">
-          <span i18n-content="startupShowNewTab"></span>
-        </label>
-      </div>
-      <div class="radio">
-        <label>
-          <input id="startup-restore-session" type="radio" name="startup"
-              value="1" pref="session.restore_on_startup"
-              metric="Options_Startup_LastSession">
-          <span id="old-startup-last-text"
-              i18n-content="startupShowLastSession">
-          </span>
-          <span id="new-startup-last-text"
-              i18n-content="startupRestoreLastSession" hidden>
-          </span>
-        </label>
-      </div>
-      <div class="radio">
-        <label>
-          <input id="startup-show-pages" type="radio" name="startup"
-              pref="session.restore_on_startup"
-              value="4" metric="Options_Startup_Custom">
-          <span>
-            <span i18n-content="startupShowPages"></span>
-            <button id="startup-set-pages" class="link-button"
-                i18n-content="startupSetPages">
-            </button>
-          </span>
-        </label>
-      </div>
-    </div>
-  </section>
+  <include src="startup_section.html">
 </if>
   <section>
     <h3 i18n-content="sectionTitleAppearance"></h3>
@@ -194,45 +130,7 @@
   <section guest-visibility="hidden">
     <h3 i18n-content="sectionTitleUsers"></h3>
 <if expr="pp_ifdef('chromeos')">
-    <div id="sync-section">
-      <div id="sync-overview" class="settings-row" hidden>
-        <p i18n-content="syncOverview"></p>
-        <a i18n-values="href:syncLearnMoreURL" i18n-content="learnMore"></a>
-      </div>
-      <div id="account-picture-wrapper">
-        <img id="account-picture"
-            src="chrome://theme/IDR_PROFILE_PICTURE_LOADING">
-        <div id="change-picture-caption" i18n-content="changePicture"></div>
-      </div>
-      <div id="sync-general">
-        <div id="sync-status" class="settings-row" hidden>
-          <span id="sync-status-text"></span>
-          <button id="sync-action-link" class="link-button"></button>
-        </div>
-        <div id="enable-auto-login-checkbox" class="checkbox" hidden>
-          <label>
-            <input id="enable-auto-login" pref="autologin.enabled"
-                metric="Options_Autologin" type="checkbox">
-            <span i18n-content="autologinEnabled"></span>
-          </label>
-        </div>
-        <div class="checkbox">
-          <label>
-            <input id="enable-screen-lock" type="checkbox"
-                pref="settings.enable_screen_lock">
-            <span i18n-content="enableScreenlock"></span>
-          </label>
-        </div>
-      </div>
-      <div id="sync-buttons" class="settings-row">
-        <button id="start-stop-sync" hidden></button>
-        <button id="customize-sync" i18n-content="customizeSync" hidden>
-        </button>
-        <button id="manage-accounts-button"
-            i18n-content="manageAccountsButtonTitle">
-        </button>
-      </div>
-    </div>
+    <include src="sync_section.html">
 </if>
     <div id="profiles-section" hidden>
       <list id="profiles-list" class="settings-list" hidden></list>
@@ -267,7 +165,7 @@
       </div>
     </div>
   </section>
-</if>
+</if>  <!-- not pp_ifdef('chromeos') -->
 <div id="advanced-settings" hidden>
 <div id="advanced-settings-container">
 <if expr="pp_ifdef('chromeos')">
@@ -361,9 +259,9 @@
 </if>  <!-- pp_ifdef('_google_chrome') -->
     </div>
   </section>
+<if expr="pp_ifdef('chromeos')">
   <!-- By default, the bluetooth section is hidden.  It is only visible if a
        bluetooth adapter is discovered -->
-<if expr="pp_ifdef('chromeos')">
   <section id="bluetooth-devices" hidden>
     <h3 i18n-content="bluetooth"></h3>
     <div id="bluetooth-options-div">
@@ -388,7 +286,7 @@
       </div>
     </div>
   </section>
-</if>
+</if>  <!-- pp_ifdef('chromeos') -->
   <section id="passwords-and-autofill-section">
     <h3 i18n-content="passwordsAndAutofillGroupName"></h3>
     <div class="checkbox">
@@ -556,51 +454,12 @@
       </div>
       <div class="settings-row">
         <button id="cloudPrintManageButton"
-                i18n-content="cloudPrintChromeosOptionButton"></button>
+            i18n-content="cloudPrintChromeosOptionButton"></button>
       </div>
     </div>
   </section>
 <if expr="pp_ifdef('chromeos')">
-  <!-- This section is duplicated here for ChromeOS. This must stay in sync
-       with the section above. -->
-  <section id="startup-section" guest-visibility="hidden">
-    <h3 i18n-content="sectionTitleStartup"></h3>
-    <div>
-      <div class="radio">
-        <label>
-          <input id="startup-newtab" type="radio" name="startup" value="5"
-              pref="session.restore_on_startup"
-              metric="Options_Startup_NewTab">
-          <span i18n-content="startupShowNewTab"></span>
-        </label>
-      </div>
-      <div class="radio">
-        <label>
-          <input id="startup-restore-session" type="radio" name="startup"
-              value="1" pref="session.restore_on_startup"
-              metric="Options_Startup_LastSession">
-          <span id="old-startup-last-text"
-              i18n-content="startupShowLastSession">
-          </span>
-          <span id="new-startup-last-text"
-              i18n-content="startupRestoreLastSession" hidden>
-          </span>
-        </label>
-      </div>
-      <div class="radio">
-        <label>
-          <input id="startup-show-pages" type="radio" name="startup"
-              pref="session.restore_on_startup"
-              value="4" metric="Options_Startup_Custom">
-          <span>
-            <span i18n-content="startupShowPages"></span>
-            <button id="startup-set-pages" class="link-button"
-                i18n-content="startupSetPages"></button>
-          </span>
-        </label>
-      </div>
-    </div>
-  </section>
+  <include src="startup_section.html">
 </if>
   <section>
     <h3 i18n-content="accessibilityTitle"></h3>
