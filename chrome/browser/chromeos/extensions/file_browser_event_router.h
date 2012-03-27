@@ -156,12 +156,6 @@ class FileBrowserEventRouter
                       const std::string& device_path,
                       bool small);
 
-  // Process GData operation list updates.
-  void HandleProgressUpdateForExtensionAPI(
-      const std::vector<gdata::GDataOperationRegistry::ProgressStatus>& list);
-  void HandleProgressUpdateForSystemNotification(
-      const std::vector<gdata::GDataOperationRegistry::ProgressStatus>& list);
-
   scoped_refptr<FileWatcherDelegate> delegate_;
   WatcherMap file_watchers_;
   scoped_ptr<FileBrowserNotifications> notifications_;

@@ -117,26 +117,6 @@ void FileBrowserNotifications::ShowNotification(NotificationType type,
       l10n_util::GetStringUTF16(GetMessageId(type)));
 }
 
-void FileBrowserNotifications::ManageNotificationOnGDataSyncProgress(
-    int count) {
-  HideNotification(GDATA_SYNC_SUCCESS, "");
-  HideNotification(GDATA_SYNC_FAIL, "");
-  ShowNotificationWithMessage(GDATA_SYNC, "",
-      l10n_util::GetStringFUTF16Int(GetMessageId(GDATA_SYNC), count));
-}
-
-void FileBrowserNotifications::ManageNotificationOnGDataSyncFinish(
-    bool success) {
-  HideNotification(GDATA_SYNC, "");
-  if (success) {
-    HideNotification(FileBrowserNotifications::GDATA_SYNC_FAIL, "");
-    ShowNotification(FileBrowserNotifications::GDATA_SYNC_SUCCESS, "");
-  } else {
-    HideNotification(FileBrowserNotifications::GDATA_SYNC_SUCCESS, "");
-    ShowNotification(FileBrowserNotifications::GDATA_SYNC_FAIL, "");
-  }
-}
-
 void FileBrowserNotifications::ShowNotificationWithMessage(
     NotificationType type, const std::string& path, const string16& message) {
   std::string notification_id;
@@ -259,15 +239,6 @@ void FileBrowserNotifications::CreateNotificationId(NotificationType type,
     case(FORMAT_START):
       *id = "FS";
       break;
-    case(GDATA_SYNC):
-      *id = "GD";
-      break;
-    case(GDATA_SYNC_SUCCESS):
-      *id = "GS";
-      break;
-    case(GDATA_SYNC_FAIL):
-      *id = "GF";
-      break;
     default:
       *id = "FF";
   }
@@ -287,10 +258,6 @@ int FileBrowserNotifications::GetIconId(NotificationType type) {
     case(FORMAT_SUCCESS):
     case(FORMAT_START):
       return IDR_PAGEINFO_INFO;
-    case(GDATA_SYNC):
-    case(GDATA_SYNC_SUCCESS):
-    case(GDATA_SYNC_FAIL):
-      return IDR_NOTIFICATION_GDATA;
     case(DEVICE_FAIL):
     case(FORMAT_START_FAIL):
     case(FORMAT_FAIL):
@@ -312,11 +279,6 @@ int FileBrowserNotifications::GetTitleId(NotificationType type) {
     case(FORMAT_SUCCESS):
     case(FORMAT_FAIL):
       return IDS_FORMATTING_OF_DEVICE_FINISHED_TITLE;
-    case(GDATA_SYNC):
-    case(GDATA_SYNC_SUCCESS):
-      return IDS_CHROMEOS_GDATA_SYNC_TITLE;
-    case(GDATA_SYNC_FAIL):
-      return IDS_CHROMEOS_GDATA_SYNC_FINISHED_FAILURE_TITLE;
     default:
       NOTREACHED();
       return 0;
@@ -337,12 +299,6 @@ int FileBrowserNotifications::GetMessageId(NotificationType type) {
       return IDS_FORMATTING_OF_DEVICE_PENDING_MESSAGE;
     case(FORMAT_START_FAIL):
       return IDS_FORMATTING_STARTED_FAILURE_MESSAGE;
-    case(GDATA_SYNC):
-      return IDS_CHROMEOS_GDATA_SYNC_PROGRESS_MESSAGE;
-    case(GDATA_SYNC_SUCCESS):
-      return IDS_CHROMEOS_GDATA_SYNC_FINISHED_SUCCESS_MESSAGE;
-    case(GDATA_SYNC_FAIL):
-      return IDS_CHROMEOS_GDATA_SYNC_FINISHED_FAILURE_MESSAGE;
     default:
       NOTREACHED();
       return 0;
