@@ -60,6 +60,18 @@
                 '../../build/linux/system.gyp:freetype2',
               ],
             }],
+            ['clang == 1', {
+              'xcode_settings': {
+                'WARNING_CFLAGS': [
+                  # "harfbuzz is in strict maintenace mode",
+                  # see http://crbug.com/113708
+                  '-Wno-pointer-sign',
+                ],
+              },
+              'cflags': [
+                '-Wno-pointer-sign',
+              ],
+            }],
           ],
         },
       ],
