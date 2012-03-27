@@ -20,12 +20,12 @@ class HistoryExtensionApiTest : public ExtensionApiTest {
 };
 
 // Full text search indexing sometimes exceeds a timeout. (http://crbug/119505)
-IN_PROC_BROWSER_TEST_F(HistoryExtensionApiTest, MiscSearch) {
+IN_PROC_BROWSER_TEST_F(HistoryExtensionApiTest, DISABLED_MiscSearch) {
   ASSERT_TRUE(RunExtensionSubtest("history", "misc_search.html")) << message_;
 }
 
 // Same could happen here without the FTS (http://crbug/119505)
-IN_PROC_BROWSER_TEST_F(HistoryExtensionApiTest, TimedSearch) {
+IN_PROC_BROWSER_TEST_F(HistoryExtensionApiTest, DISABLED_TimedSearch) {
   ASSERT_TRUE(RunExtensionSubtest("history", "timed_search.html")) << message_;
 }
 
