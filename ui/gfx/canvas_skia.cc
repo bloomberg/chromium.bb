@@ -60,26 +60,15 @@ int VAlignText(const gfx::Font& font,
                int line_count,
                int flags,
                int available_height) {
-  const int text_size = font.GetFontSize();
-
   if (flags & gfx::Canvas::TEXT_VALIGN_TOP)
-    return text_size;
+    return 0;
 
-  if (flags & gfx::Canvas::TEXT_VALIGN_BOTTOM) {
-    // Note: The -1 was chosen empirically to match the existing GDI code.
-    int offset = available_height + text_size - font.GetHeight() - 1;
-    if (line_count > 1)
-      offset -= (line_count * text_size);
-    return offset;
-  }
+  const int text_height = line_count * font.GetHeight();
+  if (flags & gfx::Canvas::TEXT_VALIGN_BOTTOM)
+    return available_height - text_height;
 
   // Default case: TEXT_VALIGN_MIDDLE.
-  // Note: The +1 below and the -2 further down were chosen empirically to match
-  // the alignment and rounding in the existing GDI code.
-  int double_offset = available_height + text_size + 1;
-  if (line_count > 1)
-    double_offset -= (line_count * text_size);
-  return double_offset / 2 - 2;
+  return (available_height - text_height) / 2;
 }
 
 // Strips accelerator character prefixes in |text| if needed, based on |flags|.
@@ -124,7 +113,6 @@ void UpdateRenderText(const gfx::Rect& rect,
   render_text->SetCursorEnabled(false);
 
   gfx::Rect display_rect = rect;
-  display_rect.Offset(0, -font.GetFontSize());
   display_rect.set_height(font.GetHeight());
   render_text->SetDisplayRect(display_rect);
 
@@ -239,12 +227,14 @@ void Canvas::DrawStringInt(const string16& text,
 
   flags = AdjustPlatformSpecificFlags(text, flags);
 
+#if defined(OS_WIN)
   // TODO(asvitkine): On Windows, MULTI_LINE implies top alignment.
   //                  http://crbug.com/107357
   if (flags & MULTI_LINE) {
     flags &= ~(TEXT_VALIGN_MIDDLE | TEXT_VALIGN_BOTTOM);
     flags |= TEXT_VALIGN_TOP;
   }
+#endif
 
   gfx::Rect rect(x, y, w, h);
   canvas_->save(SkCanvas::kClip_SaveFlag);
