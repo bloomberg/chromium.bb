@@ -15,7 +15,7 @@ import gyp.MSVSVersion
 
 windows_quoter_regex = re.compile(r'(\\*)"')
 
-def QuoteCmdExeArgument(arg):
+def QuoteForRspFile(arg):
   """Quote a command line argument so that it appears as one argument when
   processed via cmd.exe and parsed by CommandLineToArgvW (as is typical for
   Windows programs)."""
@@ -24,31 +24,35 @@ def QuoteCmdExeArgument(arg):
   # for the shell, because the shell doesn't do anything in Windows. This
   # works more or less because most programs (including the compiler, etc.)
   # use that function to handle command line arguments.
-  #
+
+  # If the string ends in a \, then it will be interpreted as an escaper for
+  # the trailing ", so we need to pre-escape that.
+  if arg[-1] == '\\':
+    arg = arg + '\\'
+
   # For a literal quote, CommandLineToArgvW requires 2n+1 backslashes
   # preceding it, and results in n backslashes + the quote. So we substitute
   # in 2* what we match, +1 more, plus the quote.
-  tmp = windows_quoter_regex.sub(lambda mo: 2 * mo.group(1) + '\\"', arg)
-
-  # Now, we need to escape some things that are actually for the shell.
-  # ^-escape various characters that are otherwise interpreted by the shell.
-  tmp = re.sub(r'([&|^])', r'^\1', tmp)
+  arg = windows_quoter_regex.sub(lambda mo: 2 * mo.group(1) + '\\"', arg)
 
   # %'s also need to be doubled otherwise they're interpreted as batch
   # positional arguments. Also make sure to escape the % so that they're
   # passed literally through escaping so they can be singled to just the
   # original %. Otherwise, trying to pass the literal representation that
   # looks like an environment variable to the shell (e.g. %PATH%) would fail.
-  tmp = tmp.replace('%', '^%^%')
+  arg = arg.replace('%', '%%')
+
+  # These commands are used in rsp files, so no escaping for the shell (via ^)
+  # is necessary.
 
   # Finally, wrap the whole thing in quotes so that the above quote rule
   # applies and whitespace isn't a word break.
-  return '"' + tmp + '"'
+  return '"' + arg + '"'
 
 
-def EncodeCmdExeList(args):
+def EncodeRspFileList(args):
   """Process a list of arguments using QuoteCmdExeArgument."""
-  return ' '.join(QuoteCmdExeArgument(arg) for arg in args)
+  return ' '.join(QuoteForRspFile(arg) for arg in args)
 
 
 def _GenericRetrieve(root, default, path):

@@ -65,7 +65,7 @@ def QuoteShellArgument(arg, flavor):
   if re.match(r'^[a-zA-Z0-9_=-]+$', arg):
     return arg  # No quoting necessary.
   if flavor == 'win':
-    return gyp.msvs_emulation.QuoteCmdExeArgument(arg)
+    return gyp.msvs_emulation.QuoteForRspFile(arg)
   return "'" + arg.replace("'", "'" + '"\'"' + "'")  + "'"
 
 def InvertRelativePath(path):
@@ -979,7 +979,7 @@ class NinjaWriter:
     if self.flavor == 'win':
       # TODO(scottmg): Respect msvs_cygwin setting here.
       # If there's no command, fake one to match the dangling |&&| above.
-      command = gyp.msvs_emulation.EncodeCmdExeList(args) or 'cmd /c'
+      command = gyp.msvs_emulation.EncodeRspFileList(args) or 'cmd /c'
     else:
       command = gyp.common.EncodePOSIXShellList(args)
     if env:
@@ -1142,18 +1142,22 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
       'cc',
       description='CC $out',
       command=('cmd /s /c "$cc /nologo /showIncludes '
-               '$defines $includes $cflags $cflags_c '
+               '@$out.rsp '
                '$cflags_pch_c /c $in /Fo$out /Fd$out.pdb '
                '| ninja-deplist-helper -q -f cl -o $out.dl"'),
-      deplist='$out.dl')
+      deplist='$out.dl',
+      rspfile='$out.rsp',
+      rspfile_content='$defines $includes $cflags $cflags_c')
     master_ninja.rule(
       'cxx',
       description='CXX $out',
       command=('cmd /s /c "$cxx /nologo /showIncludes '
-               '$defines $includes $cflags $cflags_cc '
+               '@$out.rsp '
                '$cflags_pch_cc /c $in /Fo$out /Fd$out.pdb '
                '| ninja-deplist-helper -q -f cl -o $out.dl"'),
-      deplist='$out.dl')
+      deplist='$out.dl',
+      rspfile='$out.rsp',
+      rspfile_content='$defines $includes $cflags $cflags_cc')
 
   if flavor != 'mac' and flavor != 'win':
     master_ninja.rule(
@@ -1177,23 +1181,22 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
                '-Wl,--start-group $in -Wl,--end-group $libs'))
   elif flavor == 'win':
     master_ninja.rule(
-      'alink',
-      description='LIB $out',
-      command='lib /nologo /ignore:4221 $libflags /OUT:$out $in')
+        'alink',
+        description='LIB $out',
+        command='$ar /nologo /ignore:4221 $libflags /OUT:$out @$out.rsp',
+        rspfile='$out.rsp',
+        rspfile_content='$in')
+    dlldesc = 'LINK(DLL) $dll and $implib'
+    dllcmd = ('$ld /nologo /IMPLIB:$implib /DLL $ldflags /OUT:$dll '
+               '/PDB:$dll.pdb $libs @$dll.rsp')
+    master_ninja.rule('solink', description=dlldesc, command=dllcmd,
+                      rspfile='$dll.rsp', rspfile_content='$in')
+    master_ninja.rule('solink_module', description=dlldesc, command=dllcmd,
+                      rspfile='$dll.rsp', rspfile_content='$in')
     master_ninja.rule(
-      'solink',
-      description='LINK(DLL) $dll',
-      command=('$ld /nologo /IMPLIB:$implib /DLL $ldflags /OUT:$dll '
-               '/PDB:$dll.pdb $in $libs'))
-    master_ninja.rule(
-      'solink_module',
-      description='LINK(DLL) $dll',
-      command=('$ld /nologo /IMPLIB:$implib /DLL $ldflags /OUT:$dll '
-               '/PDB:$dll.pdb $in $libs'))
-    master_ninja.rule(
-      'link',
-      description='LINK $out',
-      command=('$ld /nologo $ldflags /OUT:$out /PDB:$out.pdb $in $libs'))
+        'link',
+        description='LINK $out',
+        command=('$ld /nologo $ldflags /OUT:$out /PDB:$out.pdb $in $libs'))
   else:
     master_ninja.rule(
       'objc',
