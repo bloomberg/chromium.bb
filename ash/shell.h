@@ -64,6 +64,7 @@ class DragDropController;
 class EventClientImpl;
 class FocusCycler;
 class InputMethodEventFilter;
+class KeyRewriterEventFilter;
 class MonitorController;
 class PartialScreenshotEventFilter;
 class ResizeShadowController;
@@ -177,6 +178,9 @@ class ASH_EXPORT Shell {
   }
   internal::TooltipController* tooltip_controller() {
     return tooltip_controller_.get();
+  }
+  internal::KeyRewriterEventFilter* key_rewriter_filter() {
+    return key_rewriter_filter_.get();
   }
   internal::PartialScreenshotEventFilter* partial_screenshot_filter() {
     return partial_screenshot_filter_.get();
@@ -296,8 +300,8 @@ class ASH_EXPORT Shell {
   scoped_ptr<internal::EventClientImpl> event_client_;
   scoped_ptr<internal::MonitorController> monitor_controller_;
 
-  // An event filter that pre-handles all key events to send them to an IME.
-  scoped_ptr<internal::InputMethodEventFilter> input_method_filter_;
+  // An event filter that rewrites or drops a key event.
+  scoped_ptr<internal::KeyRewriterEventFilter> key_rewriter_filter_;
 
   // An event filter that pre-handles key events while the partial
   // screenshot UI is active.
@@ -307,6 +311,9 @@ class ASH_EXPORT Shell {
   // An event filter that pre-handles global accelerators.
   scoped_ptr<internal::AcceleratorFilter> accelerator_filter_;
 #endif
+
+  // An event filter that pre-handles all key events to send them to an IME.
+  scoped_ptr<internal::InputMethodEventFilter> input_method_filter_;
 
   // The shelf for managing the launcher and the status widget in non-compact
   // mode. Shell does not own the shelf. Instead, it is owned by container of

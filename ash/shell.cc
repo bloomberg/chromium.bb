@@ -43,6 +43,7 @@
 #include "ash/wm/custom_frame_view_ash.h"
 #include "ash/wm/dialog_frame_view.h"
 #include "ash/wm/event_client_impl.h"
+#include "ash/wm/key_rewriter_event_filter.h"
 #include "ash/wm/panel_window_event_filter.h"
 #include "ash/wm/panel_layout_manager.h"
 #include "ash/wm/partial_screenshot_event_filter.h"
@@ -523,6 +524,7 @@ Shell::Shell(ShellDelegate* delegate)
 }
 
 Shell::~Shell() {
+  RemoveRootWindowEventFilter(key_rewriter_filter_.get());
   RemoveRootWindowEventFilter(partial_screenshot_filter_.get());
   RemoveRootWindowEventFilter(input_method_filter_.get());
   RemoveRootWindowEventFilter(window_modality_controller_.get());
@@ -620,20 +622,24 @@ void Shell::Init() {
   // Pass ownership of the filter to the root window.
   GetRootWindow()->SetEventFilter(root_filter_);
 
+  // KeyRewriterEventFilter must be the first one.
   DCHECK(!GetRootWindowEventFilterCount());
+  key_rewriter_filter_.reset(new internal::KeyRewriterEventFilter);
+  AddRootWindowEventFilter(key_rewriter_filter_.get());
 
-  // PartialScreenshotEventFilter must be the first one to capture key
+  // PartialScreenshotEventFilter must be the second one to capture key
   // events when the taking partial screenshot UI is there.
+  DCHECK_EQ(1U, GetRootWindowEventFilterCount());
   partial_screenshot_filter_.reset(new internal::PartialScreenshotEventFilter);
   AddRootWindowEventFilter(partial_screenshot_filter_.get());
 
   // Then AcceleratorFilter and InputMethodEventFilter must be added (in this
   // order) since they have the second highest priority.
-  DCHECK_EQ(1U, GetRootWindowEventFilterCount());
+  DCHECK_EQ(2U, GetRootWindowEventFilterCount());
 #if !defined(OS_MACOSX)
   accelerator_filter_.reset(new internal::AcceleratorFilter);
   AddRootWindowEventFilter(accelerator_filter_.get());
-  DCHECK_EQ(2U, GetRootWindowEventFilterCount());
+  DCHECK_EQ(3U, GetRootWindowEventFilterCount());
 #endif
   input_method_filter_.reset(new internal::InputMethodEventFilter);
   AddRootWindowEventFilter(input_method_filter_.get());
