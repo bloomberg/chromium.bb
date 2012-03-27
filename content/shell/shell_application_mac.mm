@@ -4,6 +4,8 @@
 
 #include "content/shell/shell_application_mac.h"
 
+#include "base/auto_reset.h"
+
 @implementation ShellCrApplication
 
 - (BOOL)isHandlingSendEvent {
@@ -11,10 +13,8 @@
 }
 
 - (void)sendEvent:(NSEvent*)event {
-  BOOL wasHandlingSendEvent = handlingSendEvent_;
-  handlingSendEvent_ = YES;
+  AutoReset<BOOL> scoper(&handlingSendEvent_, YES);
   [super sendEvent:event];
-  handlingSendEvent_ = wasHandlingSendEvent;
 }
 
 - (void)setHandlingSendEvent:(BOOL)handlingSendEvent {
