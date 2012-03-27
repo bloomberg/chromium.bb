@@ -109,7 +109,9 @@ class CONTENT_EXPORT DownloadManagerDelegate {
                           FilePath* download_save_dir) {}
 
   // Asks the user for the path to save a page. The delegate calls the callback
-  // to give the answer.
+  // to give the answer, except on ChromeOS, where the saving is done by
+  // SavePackageFilePickerChromeOS. TODO(achuith): Move ChromeOS save
+  // functionality to SavePackage.
   virtual void ChooseSavePath(WebContents* web_contents,
                               const FilePath& suggested_path,
                               const FilePath::StringType& default_extension,

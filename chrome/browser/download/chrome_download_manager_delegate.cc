@@ -48,6 +48,7 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/gdata/gdata_download_observer.h"
 #include "chrome/browser/download/download_file_picker_chromeos.h"
+#include "chrome/browser/download/save_package_file_picker_chromeos.h"
 #endif
 
 using content::BrowserThread;
@@ -317,9 +318,13 @@ void ChromeDownloadManagerDelegate::ChooseSavePath(
     bool can_save_as_complete,
     content::SaveFilePathPickedCallback callback) {
   // Deletes itself.
-  new SavePackageFilePicker(
-      web_contents, suggested_path, default_extension, can_save_as_complete,
-      download_prefs_.get(), callback);
+#if defined(OS_CHROMEOS)
+  // Note that we're ignoring the callback here. TODO(achuith): Fix this.
+  new SavePackageFilePickerChromeOS(web_contents, suggested_path);
+#else
+  new SavePackageFilePicker(web_contents, suggested_path, default_extension,
+      can_save_as_complete, download_prefs_.get(), callback);
+#endif
 }
 
 #if defined(ENABLE_SAFE_BROWSING)

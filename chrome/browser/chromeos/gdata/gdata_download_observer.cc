@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/gdata/gdata_download_observer.h"
 
+#include "base/file_util.h"
 #include "chrome/browser/chromeos/gdata/gdata_uploader.h"
 #include "chrome/browser/chromeos/gdata/gdata_upload_file_info.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
@@ -151,6 +152,20 @@ int GDataDownloadObserver::PercentComplete(DownloadItem* download) {
   if (total > 0)
     return static_cast<int>((complete * 100.0) / total);
   return -1;
+}
+
+// |gdata_tmp_download_path| is set to a temporary local download path in
+// ~/GCache/v1/tmp/downloads/
+// static
+void GDataDownloadObserver::GetGDataTempDownloadPath(
+    const FilePath& gdata_tmp_download_dir,
+    FilePath* gdata_tmp_download_path) {
+  bool created = file_util::CreateDirectory(gdata_tmp_download_dir);
+  DCHECK(created) << "Can not create temp download directory at "
+                  << gdata_tmp_download_dir.value();
+  created = file_util::CreateTemporaryFileInDir(gdata_tmp_download_dir,
+                                                gdata_tmp_download_path);
+  DCHECK(created) << "Temporary download file creation failed";
 }
 
 void GDataDownloadObserver::ManagerGoingDown(

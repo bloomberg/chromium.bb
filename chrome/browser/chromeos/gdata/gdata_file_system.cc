@@ -631,6 +631,7 @@ void GDataFileSystem::TransferFile(const FilePath& local_file_path,
   if (!dest_dir || !dest_dir->AsGDataDirectory()) {
     base::MessageLoopProxy::current()->PostTask(FROM_HERE,
         base::Bind(callback, base::PLATFORM_FILE_ERROR_NOT_FOUND));
+    NOTREACHED();
     return;
   }
 

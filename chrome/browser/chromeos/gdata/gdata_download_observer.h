@@ -54,6 +54,12 @@ class GDataDownloadObserver : public content::DownloadManager::Observer,
   // progress is unknown, returns -1.
   static int PercentComplete(content::DownloadItem* download);
 
+  // Create a temporary file |gdata_tmp_download_path| in
+  // |gdata_tmp_download_dir|. Must be called on a thread that allows file
+  // operations.
+  static void GetGDataTempDownloadPath(const FilePath& gdata_tmp_download_dir,
+                                       FilePath* gdata_tmp_download_path);
+
  private:
   // Gets the gdata_path from external data in |download|.
   // GetGDataPath may return an empty path in case SetGDataPath was not

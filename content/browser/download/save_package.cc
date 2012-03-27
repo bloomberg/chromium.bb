@@ -1273,6 +1273,8 @@ void SavePackage::ContinueGetSaveInfo(const FilePath& suggested_path,
   if (can_save_as_complete)
     default_extension = kDefaultHtmlExtension;
 
+  // On ChromeOS, OnPathPicked is not invoked; SavePackageFilePickerChromeOS
+  // handles the the save.
   download_manager_->delegate()->ChooseSavePath(
       web_contents(), suggested_path, default_extension, can_save_as_complete,
       base::Bind(&SavePackage::OnPathPicked, AsWeakPtr()));
