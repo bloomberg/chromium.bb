@@ -31,13 +31,11 @@ class IdentityInterceptor : public OAuth2MintTokenFlow::InterceptorForTests {
 class ExperimentalApiTest : public PlatformAppApiTest {
 };
 
-// http://code.google.com/p/chromium/issues/detail?id=120075
-IN_PROC_BROWSER_TEST_F(ExperimentalApiTest, DISABLED_VerifyPermissions) {
+IN_PROC_BROWSER_TEST_F(ExperimentalApiTest, IdentityVerifyPermissions) {
   VerifyPermissions(test_data_dir_.AppendASCII("identity"));
 }
 
-// http://code.google.com/p/chromium/issues/detail?id=120075
-IN_PROC_BROWSER_TEST_F(ExperimentalApiTest, DISABLED_Identity) {
+IN_PROC_BROWSER_TEST_F(ExperimentalApiTest, Identity) {
   IdentityInterceptor interceptor;
   OAuth2MintTokenFlow::SetInterceptorForTests(&interceptor);
   ASSERT_TRUE(RunExtensionTest("identity")) << message_;
