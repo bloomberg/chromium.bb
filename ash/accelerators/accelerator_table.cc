@@ -120,7 +120,6 @@ const size_t kAcceleratorDataLength = arraysize(kAcceleratorData);
 const AcceleratorAction kActionsAllowedAtLoginScreen[] = {
   BRIGHTNESS_DOWN,
   BRIGHTNESS_UP,
-  EXIT,
   NEXT_IME,
   PREVIOUS_IME,
   SWITCH_IME,  // Switch to another IME depending on the accelerator.
