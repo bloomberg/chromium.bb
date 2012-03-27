@@ -13,6 +13,7 @@
 #include "base/compiler_specific.h"
 #include "base/json/json_writer.h"
 #include "base/memory/ref_counted.h"
+#include "base/metrics/histogram.h"
 #include "base/observer_list.h"
 #include "base/string_number_conversions.h"
 #include "base/values.h"
@@ -110,6 +111,10 @@ GetUpdatesCallerInfo::GetUpdatesSource GetSourceFromReason(
   return GetUpdatesCallerInfo::UNKNOWN;
 }
 
+// The maximum number of times we will automatically overwrite the nigori node
+// because the encryption keys don't match (per chrome instantiation).
+static const int kNigoriOverwriteLimit = 10;
+
 } // namespace
 
 namespace sync_api {
@@ -140,7 +145,8 @@ class SyncManager::SyncInternal
         encryptor_(NULL),
         unrecoverable_error_handler_(NULL),
         report_unrecoverable_error_function_(NULL),
-        created_on_loop_(MessageLoop::current()) {
+        created_on_loop_(MessageLoop::current()),
+        nigori_overwrite_count_(0) {
     // Pre-fill |notification_info_map_|.
     for (int i = syncable::FIRST_REAL_MODEL_TYPE;
          i < syncable::MODEL_TYPE_COUNT; ++i) {
@@ -235,7 +241,7 @@ class SyncManager::SyncInternal
   // Stores the current set of encryption keys (if the cryptographer is ready)
   // and encrypted types into the nigori node.
   void UpdateNigoriEncryptionState(Cryptographer* cryptographer,
-                                   WriteNode* nigori_node) const;
+                                   WriteNode* nigori_node);
 
   // Updates the nigori node with any new encrypted types and then
   // encrypts the nodes for those new data types as well as other
@@ -608,6 +614,11 @@ class SyncManager::SyncInternal
   ReportUnrecoverableErrorFunction report_unrecoverable_error_function_;
 
   MessageLoop* const created_on_loop_;
+
+  // The number of times we've automatically (i.e. not via SetPassphrase or
+  // conflict resolver) updated the nigori's encryption keys in this chrome
+  // instantiation.
+  int nigori_overwrite_count_;
 };
 
 // A class to calculate nudge delays for types.
@@ -1008,15 +1019,28 @@ void SyncManager::SyncInternal::UpdateCryptographerAndNigori(
 
 void SyncManager::SyncInternal::UpdateNigoriEncryptionState(
     Cryptographer* cryptographer,
-    WriteNode* nigori_node) const {
+    WriteNode* nigori_node) {
   DCHECK(nigori_node);
   sync_pb::NigoriSpecifics nigori = nigori_node->GetNigoriSpecifics();
 
-  if (cryptographer->is_ready()) {
+  if (cryptographer->is_ready() &&
+      nigori_overwrite_count_ < kNigoriOverwriteLimit) {
     // Does not modify the encrypted blob if the unencrypted data already
     // matches what is about to be written.
+    sync_pb::EncryptedData original_keys = nigori.encrypted();
     if (!cryptographer->GetKeys(nigori.mutable_encrypted()))
       NOTREACHED();
+
+    if (nigori.encrypted().SerializeAsString() !=
+        original_keys.SerializeAsString()) {
+      // We've updated the nigori node's encryption keys. In order to prevent
+      // a possible looping of two clients constantly overwriting each other,
+      // we limit the absolute number of overwrites per client instantiation.
+      nigori_overwrite_count_++;
+      UMA_HISTOGRAM_COUNTS("Sync.AutoNigoriOverwrites",
+                           nigori_overwrite_count_);
+    }
+
     // Note: we don't try to set using_explicit_passphrase here since if that
     // is lost the user can always set it again. The main point is to preserve
     // the encryption keys so all data remains decryptable.
