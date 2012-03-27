@@ -20,18 +20,27 @@ document.write('<link id="incognitothemecss" rel="stylesheet" ' +
   </div>
 </div>
 </body>
+<script src="chrome://resources/js/cr.js"></script>
 <script>
-function themeChanged() {
-  document.getElementById('incognitothemecss').href =
-      'chrome://theme/css/incognito_new_tab_theme.css?' + Date.now();
-}
+cr.define('ntp', function() {
+  'use strict';
+  /**
+   * Set whether the bookmarks bar is attached or not.
+   * @param {boolean} attached Whether the bar is attached or not.
+   */
+  function setBookmarkBarAttached(attached) {
+    document.documentElement.setAttribute('bookmarkbarattached', !!attached);
+  }
 
-function bookmarkBarAttached() {
-  document.documentElement.setAttribute("bookmarkbarattached", "true");
-}
+  function themeChanged() {
+    document.getElementById('incognitothemecss').href =
+        'chrome://theme/css/incognito_new_tab_theme.css?' + Date.now();
+  }
 
-function bookmarkBarDetached() {
-  document.documentElement.setAttribute("bookmarkbarattached", "false");
-}
+  return {
+    setBookmarkBarAttached: setBookmarkBarAttached,
+    themeChanged: themeChanged,
+  };
+});
 </script>
 </html>

@@ -205,8 +205,8 @@ RefCountedMemory* NTPResourceCache::GetNewTabHTML(bool is_incognito) {
     if (!new_tab_html_.get())
       CreateNewTabHTML();
   }
-  return is_incognito ? new_tab_incognito_html_.get()
-                      : new_tab_html_.get();
+  return is_incognito ? new_tab_incognito_html_.get() :
+                        new_tab_html_.get();
 }
 
 RefCountedMemory* NTPResourceCache::GetNewTabCSS(bool is_incognito) {
@@ -218,8 +218,8 @@ RefCountedMemory* NTPResourceCache::GetNewTabCSS(bool is_incognito) {
     if (!new_tab_css_.get())
       CreateNewTabCSS();
   }
-  return is_incognito ? new_tab_incognito_css_.get()
-                      : new_tab_css_.get();
+  return is_incognito ? new_tab_incognito_css_.get() :
+                        new_tab_css_.get();
 }
 
 void NTPResourceCache::Observe(int type,
