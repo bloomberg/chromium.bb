@@ -607,11 +607,7 @@ void RenderWidgetHostViewAura::GetScreenInfo(WebKit::WebScreenInfo* results) {
 }
 
 gfx::Rect RenderWidgetHostViewAura::GetRootWindowBounds() {
-  // TODO(beng): this is actually wrong, we are supposed to return the bounds
-  //             of the container "top level" window, but we don't have a firm
-  //             concept of what constitutes a toplevel right now, so just do
-  //             this.
-  return window_->GetScreenBounds();
+  return window_->GetToplevelWindow()->bounds();
 }
 
 void RenderWidgetHostViewAura::ProcessTouchAck(
