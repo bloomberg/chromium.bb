@@ -20,6 +20,7 @@
 #include "ui/gfx/compositor/layer_animator.h"
 #include "ui/gfx/compositor/layer_delegate.h"
 #include "ui/gfx/compositor/layer_type.h"
+#include "ui/gfx/insets.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
 
@@ -220,15 +221,26 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
 
   void set_ignore_events(bool ignore_events) { ignore_events_ = ignore_events; }
 
-  // Sets the window to grab hits for an area extending |outer| pixels outside
-  // its bounds and |inner| pixels inside its bounds (even if that inner region
-  // overlaps a child window).  This can be used to create an invisible non-
-  // client area, for example if your windows have no visible frames but still
-  // need to have resize edges.  Both |outer| and |inner| must be >= 0.
-  void SetHitTestBoundsOverride(int outer, int inner);
+  // Sets the window to grab hits for an area extending -|insets| pixels outside
+  // its bounds. This can be used to create an invisible non- client area, for
+  // example if your windows have no visible frames but still need to have
+  // resize edges.
+  void set_hit_test_bounds_override_outer(const gfx::Insets& insets) {
+    hit_test_bounds_override_outer_ = insets;
+  }
+  gfx::Insets hit_test_bounds_override_outer() const {
+    return hit_test_bounds_override_outer_;
+  }
 
-  // Returns the hit test bounds override set above.
-  void GetHitTestBoundsOverride(int* outer, int* inner);
+  // Sets the window to grab hits for an area extending |insets| pixels inside
+  // its bounds (even if that inner region overlaps a child window). This can be
+  // used to create an invisible non-client area that overlaps the client area.
+  void set_hit_test_bounds_override_inner(const gfx::Insets& insets) {
+    hit_test_bounds_override_inner_ = insets;
+  }
+  gfx::Insets hit_test_bounds_override_inner() const {
+    return hit_test_bounds_override_inner_;
+  }
 
   // Returns true if the |point_in_root| in root window's coordinate falls
   // within this window's bounds. Returns false if the window is detached
@@ -422,9 +434,9 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   // Makes the window pass all events through to any windows behind it.
   bool ignore_events_;
 
-  // See SetHitTestBoundsOverride().
-  int hit_test_bounds_override_outer_;
-  int hit_test_bounds_override_inner_;
+  // See set_hit_test_outer_override().
+  gfx::Insets hit_test_bounds_override_outer_;
+  gfx::Insets hit_test_bounds_override_inner_;
 
   ObserverList<WindowObserver> observers_;
 

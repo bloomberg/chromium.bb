@@ -8,6 +8,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
+#include "ui/gfx/insets.h"
 #include "ui/gfx/rect.h"
 
 namespace oak {
@@ -31,6 +32,11 @@ string16 PropertyWithBool(const std::string& prefix, bool value) {
 string16 PropertyWithBounds(const std::string& prefix,
                             const gfx::Rect& bounds) {
   return ASCIIToUTF16(prefix + bounds.ToString());
+}
+
+string16 PropertyWithInsets(const std::string& prefix,
+                            const gfx::Insets& insets) {
+  return ASCIIToUTF16(prefix + insets.ToString());
 }
 
 }  // namespace internal

@@ -163,8 +163,13 @@ void FramePainter::Init(views::Widget* frame,
 
   window_ = frame->GetNativeWindow();
   // Ensure we get resize cursors for a few pixels outside our bounds.
-  window_->SetHitTestBoundsOverride(kResizeOutsideBoundsSize,
-                                                      kResizeInsideBoundsSize);
+  window_->set_hit_test_bounds_override_outer(
+      gfx::Insets(-kResizeOutsideBoundsSize, -kResizeOutsideBoundsSize,
+                  -kResizeOutsideBoundsSize, -kResizeOutsideBoundsSize));
+  // Ensure we get resize cursors just inside our bounds as well.
+  window_->set_hit_test_bounds_override_inner(
+      gfx::Insets(kResizeInsideBoundsSize, kResizeInsideBoundsSize,
+                  kResizeInsideBoundsSize, kResizeInsideBoundsSize));
 
   // Watch for maximize/restore state changes.  Observer removes itself in
   // OnWindowDestroying() below, or in the destructor if we go away before the
@@ -404,9 +409,12 @@ void FramePainter::OnWindowPropertyChanged(aura::Window* window,
   // Maximized windows don't want resize handles overlapping the content area,
   // because when the user moves the cursor to the right screen edge we want
   // them to be able to hit the scroll bar.
-  bool maximized = ash::wm::IsWindowMaximized(window);
-  window->SetHitTestBoundsOverride(kResizeOutsideBoundsSize,
-                                   maximized ? 0 : kResizeInsideBoundsSize);
+  if (ash::wm::IsWindowMaximized(window))
+    window->set_hit_test_bounds_override_inner(gfx::Insets());
+  else
+    window->set_hit_test_bounds_override_inner(
+        gfx::Insets(kResizeInsideBoundsSize, kResizeInsideBoundsSize,
+                    kResizeInsideBoundsSize, kResizeInsideBoundsSize));
 }
 
 void FramePainter::OnWindowDestroying(aura::Window* window) {

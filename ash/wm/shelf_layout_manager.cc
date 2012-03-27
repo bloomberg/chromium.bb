@@ -141,8 +141,7 @@ gfx::Rect ShelfLayoutManager::GetUnmaximizedWorkAreaBounds(
     aura::Window* window) const {
   // TODO: needs to be multi-mon aware.
   gfx::Rect bounds(gfx::Screen::GetMonitorAreaNearestWindow(window));
-  bounds.set_height(bounds.height() - shelf_height_ -
-                    kWorkspaceAreaBottomInset);
+  bounds.set_height(bounds.height() - shelf_height_);
   return bounds;
 }
 
@@ -173,6 +172,7 @@ void ShelfLayoutManager::LayoutShelf() {
   Shell::GetInstance()->SetMonitorWorkAreaInsets(
       Shell::GetRootWindow(),
       target_bounds.work_area_insets);
+  UpdateHitTestBounds();
 }
 
 void ShelfLayoutManager::UpdateVisibilityState() {
@@ -299,6 +299,7 @@ void ShelfLayoutManager::SetState(VisibilityState visibility_state) {
   Shell::GetInstance()->SetMonitorWorkAreaInsets(
       Shell::GetRootWindow(),
       target_bounds.work_area_insets);
+  UpdateHitTestBounds();
   UpdateShelfBackground(change_type);
 }
 
@@ -315,16 +316,13 @@ void ShelfLayoutManager::CalculateTargetBounds(
       status_->GetNativeView()->GetRootWindow()->bounds());
   int y = available_bounds.bottom();
   int shelf_height = 0;
-  int work_area_delta = 0;
   if (state.visibility_state == VISIBLE ||
       (state.visibility_state == AUTO_HIDE &&
-       state.auto_hide_state == AUTO_HIDE_SHOWN)) {
+       state.auto_hide_state == AUTO_HIDE_SHOWN))
     shelf_height = shelf_height_;
-    work_area_delta = kWorkspaceAreaBottomInset;
-  } else if (state.visibility_state == AUTO_HIDE &&
-             state.auto_hide_state == AUTO_HIDE_HIDDEN) {
+  else if (state.visibility_state == AUTO_HIDE &&
+           state.auto_hide_state == AUTO_HIDE_HIDDEN)
     shelf_height = kAutoHideHeight;
-  }
   y -= shelf_height;
   gfx::Rect status_bounds(status_->GetWindowScreenBounds());
   // The status widget should extend to the bottom and right edges.
@@ -344,7 +342,7 @@ void ShelfLayoutManager::CalculateTargetBounds(
       (state.visibility_state == VISIBLE ||
        state.visibility_state == AUTO_HIDE) ? 1.0f : 0.0f;
   target_bounds->work_area_insets =
-      gfx::Insets(0, 0, shelf_height + work_area_delta, 0);
+      gfx::Insets(0, 0, shelf_height, 0);
 }
 
 void ShelfLayoutManager::UpdateShelfBackground(
@@ -383,6 +381,21 @@ ShelfLayoutManager::AutoHideState ShelfLayoutManager::CalculateAutoHideState(
       launcher_widget()->GetWindowScreenBounds().Contains(
           root->last_mouse_location());
   return mouse_over_launcher ? AUTO_HIDE_SHOWN : AUTO_HIDE_HIDDEN;
+}
+
+void ShelfLayoutManager::UpdateHitTestBounds() {
+  gfx::Insets insets;
+  // Only modify the hit test when the shelf is visible, so we don't mess with
+  // hover hit testing in the auto-hide state.
+  if (state_.visibility_state == VISIBLE) {
+    // Let clicks at the very top of the launcher through so windows can be
+    // resized with the bottom-right corner and bottom edge.
+    insets.Set(kWorkspaceAreaBottomInset, 0, 0, 0);
+  }
+  if (launcher_widget() && launcher_widget()->GetNativeWindow())
+    launcher_widget()->GetNativeWindow()->set_hit_test_bounds_override_outer(
+        insets);
+  status_->GetNativeWindow()->set_hit_test_bounds_override_outer(insets);
 }
 
 }  // namespace internal

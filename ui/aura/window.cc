@@ -55,9 +55,7 @@ Window::Window(WindowDelegate* delegate)
       id_(-1),
       transparent_(false),
       user_data_(NULL),
-      ignore_events_(false),
-      hit_test_bounds_override_outer_(0),
-      hit_test_bounds_override_inner_(0) {
+      ignore_events_(false) {
 }
 
 Window::~Window() {
@@ -374,18 +372,6 @@ void Window::RemoveObserver(WindowObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void Window::SetHitTestBoundsOverride(int outer, int inner) {
-  DCHECK(outer >= 0);
-  DCHECK(inner >= 0);
-  hit_test_bounds_override_outer_ = outer;
-  hit_test_bounds_override_inner_ = inner;
-}
-
-void Window::GetHitTestBoundsOverride(int* outer, int* inner) {
-  *outer = hit_test_bounds_override_outer_;
-  *inner = hit_test_bounds_override_inner_;
-}
-
 bool Window::ContainsPointInRoot(const gfx::Point& point_in_root) {
   Window* root_window = GetRootWindow();
   if (!root_window)
@@ -404,8 +390,7 @@ bool Window::HitTest(const gfx::Point& local_point) {
   // Expand my bounds for hit testing (override is usually zero but it's
   // probably cheaper to do the math every time than to branch).
   gfx::Rect local_bounds(gfx::Point(), bounds().size());
-  local_bounds.Inset(-hit_test_bounds_override_outer_,
-                     -hit_test_bounds_override_outer_);
+  local_bounds.Inset(hit_test_bounds_override_outer_);
   // TODO(beng): hittest masks.
   return local_bounds.Contains(local_point);
 }
@@ -638,11 +623,10 @@ Window* Window::GetWindowForPoint(const gfx::Point& local_point,
 
   // Check if I should claim this event and not pass it to my children because
   // the location is inside my hit test override area.  For details, see
-  // SetHitTestBoundsOverride().
-  if (for_event_handling && hit_test_bounds_override_inner_ != 0) {
+  // set_hit_test_bounds_override_inner().
+  if (for_event_handling && !hit_test_bounds_override_inner_.empty()) {
     gfx::Rect inset_local_bounds(gfx::Point(), bounds().size());
-    inset_local_bounds.Inset(hit_test_bounds_override_inner_,
-                             hit_test_bounds_override_inner_);
+    inset_local_bounds.Inset(hit_test_bounds_override_inner_);
     // We know we're inside the normal local bounds, so if we're outside the
     // inset bounds we must be in the special hit test override area.
     DCHECK(HitTest(local_point));

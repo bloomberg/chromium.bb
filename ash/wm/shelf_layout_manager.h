@@ -172,6 +172,9 @@ class ASH_EXPORT ShelfLayoutManager : public aura::LayoutManager {
   // tray.
   AutoHideState CalculateAutoHideState(VisibilityState visibility_state) const;
 
+  // Updates the hit test bounds override for launcher and status area.
+  void UpdateHitTestBounds();
+
   // True when inside LayoutShelf method. Used to prevent calling LayoutShelf
   // again from SetChildBounds().
   bool in_layout_;

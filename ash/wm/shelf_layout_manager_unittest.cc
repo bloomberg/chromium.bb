@@ -73,8 +73,7 @@ TEST_F(ShelfLayoutManagerTest, MAYBE_SetVisible) {
       manager->GetMonitorNearestWindow(Shell::GetRootWindow());
   ASSERT_TRUE(monitor);
   // Bottom inset should be the max of widget heights.
-  EXPECT_EQ(shelf->shelf_height() +
-            ShelfLayoutManager::kWorkspaceAreaBottomInset,
+  EXPECT_EQ(shelf->shelf_height(),
             monitor->work_area_insets().bottom());
 
   // Hide the shelf.
@@ -97,8 +96,7 @@ TEST_F(ShelfLayoutManagerTest, MAYBE_SetVisible) {
   StepWidgetLayerAnimatorToEnd(shelf->launcher_widget());
   StepWidgetLayerAnimatorToEnd(shelf->status());
   EXPECT_EQ(ShelfLayoutManager::VISIBLE, shelf->visibility_state());
-  EXPECT_EQ(shelf->shelf_height() +
-            ShelfLayoutManager::kWorkspaceAreaBottomInset,
+  EXPECT_EQ(shelf->shelf_height(),
             monitor->work_area_insets().bottom());
 
   // Make sure the bounds of the two widgets changed.

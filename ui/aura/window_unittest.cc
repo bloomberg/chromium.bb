@@ -282,7 +282,7 @@ TEST_F(WindowTest, HitTest) {
   EXPECT_FALSE(w1.HitTest(gfx::Point(-1, -1)));
 
   // We can expand the bounds slightly to track events outside our border.
-  w1.SetHitTestBoundsOverride(1, 0);
+  w1.set_hit_test_bounds_override_outer(gfx::Insets(-1, -1, -1, -1));
   EXPECT_TRUE(w1.HitTest(gfx::Point(-1, -1)));
   EXPECT_FALSE(w1.HitTest(gfx::Point(-2, -2)));
 
@@ -330,7 +330,7 @@ TEST_F(WindowTest, GetEventHandlerForPointWithOverride) {
 
   // We can override the hit test bounds of the parent to make the parent grab
   // events along that edge.
-  parent->SetHitTestBoundsOverride(0, 1);
+  parent->set_hit_test_bounds_override_inner(gfx::Insets(1, 1, 1, 1));
   EXPECT_EQ(parent.get(), parent->GetEventHandlerForPoint(gfx::Point(0, 0)));
   EXPECT_EQ(child.get(),  parent->GetEventHandlerForPoint(gfx::Point(1, 1)));
 }
