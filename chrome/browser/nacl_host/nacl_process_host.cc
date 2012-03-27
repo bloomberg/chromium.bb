@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/memory/mru_cache.h"
 #include "base/memory/singleton.h"
+#include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
@@ -856,17 +857,22 @@ void NaClProcessHost::SendStart(base::PlatformFile irt_file) {
 }
 
 bool NaClBrowser::QueryKnownToValidate(const std::string& signature) {
+  bool result = false;
   ValidationCacheType::iterator iter = validation_cache_.Get(signature);
-  if (iter == validation_cache_.end()) {
-    // Not found.
-    return false;
-  } else {
-    return iter->second;
+  if (iter != validation_cache_.end()) {
+    result = iter->second;
   }
+  UMA_HISTOGRAM_ENUMERATION("NaCl.ValidationCache.Query",
+                            result ? 1 : 0, 2);
+  return result;
 }
 
 void NaClBrowser::SetKnownToValidate(const std::string& signature) {
   validation_cache_.Put(signature, true);
+  // The number of sets should be equal to the number of cache misses, minus
+  // validation failures and successful validations where stubout occurs.
+  // Bucket zero is reserved for future use.
+  UMA_HISTOGRAM_ENUMERATION("NaCl.ValidationCache.Set", 1, 2);
 }
 
 void NaClProcessHost::OnQueryKnownToValidate(const std::string& signature,
