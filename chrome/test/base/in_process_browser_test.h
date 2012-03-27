@@ -20,6 +20,14 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #endif  // defined(OS_CHROMEOS)
 
+#if defined(OS_MACOSX)
+namespace base {
+namespace mac {
+class ScopedNSAutoreleasePool;
+}  // namespace mac
+}  // namespace base
+#endif  // OS_MACOSX
+
 class Browser;
 class CommandLine;
 class Profile;
@@ -167,6 +175,13 @@ class InProcessBrowserTest : public BrowserTestBase {
     tab_closeable_state_watcher_enabled_ = true;
   }
 
+#if defined(OS_MACOSX)
+  // Returns the autorelease pool in use inside RunTestOnMainThreadLoop().
+  base::mac::ScopedNSAutoreleasePool* AutoreleasePool() const {
+    return autorelease_pool_;
+  }
+#endif  // OS_MACOSX
+
  private:
   // Creates a user data directory for the test if one is needed. Returns true
   // if successful.
@@ -212,6 +227,10 @@ class InProcessBrowserTest : public BrowserTestBase {
 #if defined(OS_CHROMEOS)
   chromeos::ScopedStubCrosEnabler stub_cros_enabler_;
 #endif  // defined(OS_CHROMEOS)
+
+#if defined(OS_MACOSX)
+  base::mac::ScopedNSAutoreleasePool* autorelease_pool_;
+#endif  // OS_MACOSX
 };
 
 #endif  // CHROME_TEST_BASE_IN_PROCESS_BROWSER_TEST_H_

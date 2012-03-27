@@ -892,6 +892,12 @@ NSString* const kVersionKey = @"KSVersion";
 
   // Upon completion, ksr::KSRegistrationPromotionDidCompleteNotification will
   // be posted, and -promotionComplete: will be called.
+
+  // If synchronous, see to it that this happens immediately. Give it a
+  // 10-second deadline.
+  if (synchronous) {
+    CFRunLoopRunInMode(kCFRunLoopDefaultMode, 10, false);
+  }
 }
 
 - (void)promotionComplete:(NSNotification*)notification {
@@ -909,6 +915,13 @@ NSString* const kVersionKey = @"KSVersion";
   } else {
     authorization_.reset();
     [self updateStatus:kAutoupdatePromoteFailed version:nil];
+  }
+
+  if (synchronousPromotion_) {
+    // The run loop doesn't need to wait for this any longer.
+    CFRunLoopRef runLoop = CFRunLoopGetCurrent();
+    CFRunLoopStop(runLoop);
+    CFRunLoopWakeUp(runLoop);
   }
 }
 

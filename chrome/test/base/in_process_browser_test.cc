@@ -4,6 +4,7 @@
 
 #include "chrome/test/base/in_process_browser_test.h"
 
+#include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/debug/stack_trace.h"
@@ -55,7 +56,11 @@ InProcessBrowserTest::InProcessBrowserTest()
       show_window_(false),
       initial_window_required_(true),
       dom_automation_enabled_(false),
-      tab_closeable_state_watcher_enabled_(false) {
+      tab_closeable_state_watcher_enabled_(false)
+#if defined(OS_MACOSX)
+    , autorelease_pool_(NULL)
+#endif  // OS_MACOSX
+    {
 #if defined(OS_MACOSX)
   // TODO(phajdan.jr): Make browser_tests self-contained on Mac, remove this.
   // Before we run the browser, we have to hack the path to the exe to match
@@ -290,6 +295,8 @@ void InProcessBrowserTest::RunTestOnMainThreadLoop() {
   // browser shutdown). To avoid this, the following pool is recycled after each
   // time code is directly executed.
   base::mac::ScopedNSAutoreleasePool pool;
+  AutoReset<base::mac::ScopedNSAutoreleasePool*> autorelease_pool_reset(
+      &autorelease_pool_, &pool);
 #endif
 
   // Pump startup related events.

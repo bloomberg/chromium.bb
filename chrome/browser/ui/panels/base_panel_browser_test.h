@@ -102,7 +102,7 @@ class BasePanelBrowserTest : public InProcessBrowserTest {
                                            const DictionaryValue& extra_value);
 
   static void MoveMouse(const gfx::Point& position);
-  static void CloseWindowAndWait(Browser* browser);
+  void CloseWindowAndWait(Browser* browser);
   static std::string MakePanelName(int index);
 
   gfx::Rect GetTestingWorkArea() const;

@@ -36,6 +36,7 @@
 #if defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "chrome/browser/ui/cocoa/find_bar/find_bar_bridge.h"
+#include "chrome/browser/ui/cocoa/run_loop_testing.h"
 #endif
 
 using content::WebContentsTester;
@@ -489,6 +490,17 @@ void BasePanelBrowserTest::CloseWindowAndWait(Browser* browser) {
   signal.Wait();
   // Now we have one less browser instance.
   EXPECT_EQ(browser_count - 1, BrowserList::size());
+
+#if defined(OS_MACOSX)
+  // Mac window controllers may be autoreleased, and in the non-test
+  // environment, may actually depend on the autorelease pool being recycled
+  // with the run loop in order to perform important work. Replicate this in
+  // the test environment.
+  AutoreleasePool()->Recycle();
+
+  // Make sure that everything has a chance to run.
+  chrome::testing::NSRunLoopRunAllPending();
+#endif  // OS_MACOSX
 }
 
 void BasePanelBrowserTest::MoveMouse(const gfx::Point& position) {

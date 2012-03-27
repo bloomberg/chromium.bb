@@ -737,7 +737,16 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, ToggleMinimizeAll) {
   PanelManager::GetInstance()->CloseAll();
 }
 
-IN_PROC_BROWSER_TEST_F(PanelBrowserTest, ActivatePanelOrTabbedWindow) {
+#if defined(OS_MACOSX)
+// This test doesn't pass on Snow Leopard (10.6), although it works just
+// fine on Lion (10.7). The problem is not having a real run loop around
+// the window close is at fault, given how window controllers in Chrome
+// autorelease themselves on a -performSelector:withObject:afterDelay:
+#define MAYBE_ActivatePanelOrTabbedWindow DISABLED_ActivatePanelOrTabbedWindow
+#else
+#define MAYBE_ActivatePanelOrTabbedWindow ActivatePanelOrTabbedWindow
+#endif
+IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_ActivatePanelOrTabbedWindow) {
   CreatePanelParams params1("Panel1", gfx::Rect(), SHOW_AS_ACTIVE);
   Panel* panel1 = CreatePanelWithParams(params1);
   CreatePanelParams params2("Panel2", gfx::Rect(), SHOW_AS_ACTIVE);
