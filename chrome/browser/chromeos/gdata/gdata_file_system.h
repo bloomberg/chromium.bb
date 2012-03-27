@@ -500,45 +500,6 @@ class GDataFileSystem : public GDataFileSystemInterface {
     FileOperationCallback callback;
   };
 
-  // Internal intermediate callback OnFilePinned and OnFileUnpinned for
-  // PinOnIOThreadPool and UnpinOnIOThreadPool respectively, runs on calling
-  // thread, allows OnFilePinned and OnFileUnpinned to notify observers.
-  typedef base::Callback<void(base::PlatformFileError error,
-                              const std::string& resource_id,
-                              const std::string& md5,
-                              const CacheOperationCallback& callback)>
-      CacheOperationIntermediateCallback;
-
-  // Internal intermediate callback for dealing with results of
-  // CreateUploadFileInfoOnIOThreadPool() method.
-  typedef base::Callback<void(base::PlatformFileError error,
-                              scoped_ptr<UploadFileInfo> upload_file_info)>
-      CreateUploadFileInfoCallback;
-
-  // Parameters to pass from calling thread to all cache file operations tasks
-  // on IO thread pool.
-  struct ModifyCacheStateParams {
-    ModifyCacheStateParams(
-        const std::string& resource_id,
-        const std::string& md5,
-        const FilePath& source_path,
-        FileOperationType file_operation_type,
-        const CacheOperationCallback& final_callback,
-        const CacheOperationIntermediateCallback& intermediate_callback,
-        const GetFromCacheCallback& get_from_cache_callback,
-        scoped_refptr<base::MessageLoopProxy> relay_proxy);
-    virtual ~ModifyCacheStateParams();
-
-    const std::string resource_id;
-    const std::string md5;
-    const FilePath source_path;
-    const FileOperationType file_operation_type;
-    const CacheOperationCallback final_callback;
-    const CacheOperationIntermediateCallback intermediate_callback;
-    const GetFromCacheCallback get_from_cache_callback;
-    const scoped_refptr<base::MessageLoopProxy> relay_proxy;
-  };
-
   // Defines set of parameters passed to intermediate callbacks during
   // execution of GetFile() method.
   struct GetFileFromCacheParams {
@@ -1070,61 +1031,70 @@ class GDataFileSystem : public GDataFileSystemInterface {
       int* cache_state);
 
   // Task posted from StoreToCache to run on IO thread pool:
-  // - moves or copies (per |params.file_operation_type|) |params.source_path|
-  //   to |params.dest_path| in the cache dir
+  // - moves or copies (per |file_operation_type|) |source_path|
+  //   to |dest_path| in the cache dir
   // - if necessary, creates symlink
-  // - deletes stale cached versions of |params.resource_id| in
-  //   |params.dest_path|'s directory.
-  // Upon completion, |params.callback| is invoked on the thread where
-  // StoreToCache was called.
-  void StoreToCacheOnIOThreadPool(const ModifyCacheStateParams& params);
+  // - deletes stale cached versions of |resource_id| in
+  //   |dest_path|'s directory.
+  void StoreToCacheOnIOThreadPool(
+      const std::string& resource_id,
+      const std::string& md5,
+      const FilePath& source_path,
+      FileOperationType file_operation_type,
+      base::PlatformFileError* error);
 
   // Task posted from Pin to modify cache state on the IO thread pool, which
   // involves the following:
-  // - moves |params.source_path| to |params.dest_path| in persistent dir if
+  // - moves |source_path| to |dest_path| in persistent dir if
   //   file is not dirty
   // - creates symlink in pinned dir that references downloaded or locally
   //   modified file
-  // Upon completion, OnFilePinned (i.e. |params.intermediate_callback| is
-  // invoked on the same thread where Pin was called.
-  void PinOnIOThreadPool(const ModifyCacheStateParams& params);
+  void PinOnIOThreadPool(const std::string& resource_id,
+                         const std::string& md5,
+                         FileOperationType file_operation_type,
+                         base::PlatformFileError* error);
 
   // Task posted from Unpin to modify cache state on the IO thread pool, which
   // involves the following:
-  // - moves |params.source_path| to |params.dest_path| in tmp dir if file is
+  // - moves |source_path| to |dest_path| in tmp dir if file is
   //   not dirty
   // - deletes symlink from pinned dir
-  // Upon completion, OnFileUnpinned (i.e. |params.intermediate_callback| is
-  // invoked on the same thread where Unpin was called.
-  void UnpinOnIOThreadPool(const ModifyCacheStateParams& params);
+  void UnpinOnIOThreadPool(const std::string& resource_id,
+                           const std::string& md5,
+                           FileOperationType file_operation_type,
+                           base::PlatformFileError* error);
 
   // Task posted from MarkDirtyInCache to modify cache state on the IO thread
   // pool, which involves the following:
-  // - moves |params.source_path| to |params.dest_path| in persistent dir, where
+  // - moves |source_path| to |dest_path| in persistent dir, where
   //   |source_path| has .<md5> extension and |dest_path| has .local extension
   // - if file is pinned, updates symlink in pinned dir to reference dirty file
-  // Upon completion, |params.callback| is invoked on the same thread where
-  // MarkDirtyInCache was called.
-  void MarkDirtyInCacheOnIOThreadPool(const ModifyCacheStateParams& params);
+  void MarkDirtyInCacheOnIOThreadPool(const std::string& resource_id,
+                                      const std::string& md5,
+                                      FileOperationType file_operation_type,
+                                      base::PlatformFileError* error,
+                                      FilePath* cache_file_path);
 
   // Task posted from CommitDirtyInCache to modify cache state on the IO thread
   // pool, i.e. creates symlink in outgoing dir to reference dirty file in
   // persistent dir.
-  // Upon completion, |params.callback| is invoked on the same thread where
-  // CommitDirtyInCache was called.
-  void CommitDirtyInCacheOnIOThreadPool(const ModifyCacheStateParams& params);
+  void CommitDirtyInCacheOnIOThreadPool(const std::string& resource_id,
+                                        const std::string& md5,
+                                        FileOperationType file_operation_type,
+                                        base::PlatformFileError* error);
 
   // Task posted from ClearDirtyInCache to modify cache state on the IO thread
   // pool, which involves the following:
-  // - moves |params.source_path| to |params.dest_path| in persistent dir if
+  // - moves |source_path| to |dest_path| in persistent dir if
   //   file is pinned or tmp dir otherwise, where |source_path| has .local
   //   extension and |dest_path| has .<md5> extension
   // - deletes symlink in outgoing dir
   // - if file is pinned, updates symlink in pinned dir to reference
-  //   |params.dest_path|
-  // Upon completion, |params.callback| is invoked on the same thread where
-  // ClearDirtyInCache was called.
-  void ClearDirtyInCacheOnIOThreadPool(const ModifyCacheStateParams& params);
+  //   |dest_path|
+  void ClearDirtyInCacheOnIOThreadPool(const std::string& resource_id,
+                                       const std::string& md5,
+                                       FileOperationType file_operation_type,
+                                       base::PlatformFileError* error);
 
   // Task posted from RemoveFromCache to do the following on the IO thread pool:
   // - remove all delete stale cache versions corresponding to |resource_id| in
@@ -1137,16 +1107,16 @@ class GDataFileSystem : public GDataFileSystemInterface {
   // tasks that were run on IO thread pool.
 
   // Callback for Pin. Runs |callback| and notifies the observers.
-  void OnFilePinned(base::PlatformFileError error,
+  void OnFilePinned(base::PlatformFileError* error,
                     const std::string& resource_id,
                     const std::string& md5,
                     const CacheOperationCallback& callback);
 
   // Callback for Unpin. Runs |callback| and notifies the observers.
-  void OnFileUnpinned(base::PlatformFileError error,
-                    const std::string& resource_id,
-                    const std::string& md5,
-                    const CacheOperationCallback& callback);
+  void OnFileUnpinned(base::PlatformFileError* error,
+                      const std::string& resource_id,
+                      const std::string& md5,
+                      const CacheOperationCallback& callback);
 
   // Helper function for internally handling responses from GetFromCache()
   // calls during processing of GetFile() request.
