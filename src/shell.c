@@ -633,7 +633,7 @@ shell_surface_set_fullscreen(struct wl_client *client,
 	shsurf->saved_y = es->geometry.y;
 	shsurf->saved_position_valid = true;
 
-	if (es->output)
+	if (weston_surface_is_mapped(es))
 		shsurf->surface->force_configure = 1;
 
 	wl_shell_surface_send_configure(&shsurf->resource,

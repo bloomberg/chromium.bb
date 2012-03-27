@@ -453,6 +453,9 @@ void
 weston_surface_set_position(struct weston_surface *surface,
 			    GLfloat x, GLfloat y);
 
+int
+weston_surface_is_mapped(struct weston_surface *surface);
+
 void
 weston_surface_assign_output(struct weston_surface *surface);
 

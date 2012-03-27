@@ -418,7 +418,7 @@ weston_surface_update_transform(struct weston_surface *surface)
 	pixman_region32_union(&surface->damage, &surface->damage,
 			      &surface->transform.boundingbox);
 
-	if (surface->output)
+	if (weston_surface_is_mapped(surface))
 		weston_surface_assign_output(surface);
 
 	weston_compositor_schedule_repaint(surface->compositor);
@@ -530,6 +530,15 @@ weston_surface_set_position(struct weston_surface *surface,
 	surface->geometry.dirty = 1;
 }
 
+WL_EXPORT int
+weston_surface_is_mapped(struct weston_surface *surface)
+{
+	if (surface->output)
+		return 1;
+	else
+		return 0;
+}
+
 WL_EXPORT uint32_t
 weston_compositor_get_time(void)
 {
@@ -623,7 +632,7 @@ destroy_surface(struct wl_resource *resource)
 			     struct weston_surface, surface.resource);
 	struct weston_compositor *compositor = surface->compositor;
 
-	if (surface->output)
+	if (weston_surface_is_mapped(surface))
 		weston_surface_unmap(surface);
 
 	if (surface->texture)
@@ -1119,7 +1128,7 @@ surface_attach(struct wl_client *client,
 	struct weston_shell *shell = es->compositor->shell;
 	struct wl_buffer *buffer;
 
-	if (!buffer_resource && !es->output)
+	if (!buffer_resource && !weston_surface_is_mapped(es))
 		return;
 
 	if (es->buffer) {
@@ -1127,7 +1136,7 @@ surface_attach(struct wl_client *client,
 		wl_list_remove(&es->buffer_destroy_listener.link);
 	}
 
-	if (!buffer_resource && es->output) {
+	if (!buffer_resource && weston_surface_is_mapped(es)) {
 		weston_surface_unmap(es);
 		es->buffer = NULL;
 		return;
@@ -1146,7 +1155,7 @@ surface_attach(struct wl_client *client,
 		pixman_region32_init(&es->opaque);
 	}
 
-	if (es->output == NULL) {
+	if (!weston_surface_is_mapped(es)) {
 		shell->map(shell, es, buffer->width, buffer->height, sx, sy);
 	} else if (es->force_configure || sx != 0 || sy != 0 ||
 		   es->geometry.width != buffer->width ||
@@ -1879,12 +1888,12 @@ input_device_attach(struct wl_client *client,
 		wl_list_remove(&device->sprite->buffer_destroy_listener.link);
 
 	if (!buffer_resource) {
-		if (device->sprite->output)
+		if (weston_surface_is_mapped(device->sprite))
 			weston_surface_unmap(device->sprite);
 		return;
 	}
 
-	if (!device->sprite->output) {
+	if (!weston_surface_is_mapped(device->sprite)) {
 		wl_list_insert(&compositor->cursor_layer.surface_list,
 			       &device->sprite->layer_link);
 		weston_surface_assign_output(device->sprite);
@@ -2003,7 +2012,7 @@ device_release_drag_surface(struct weston_input_device *device)
 static void
 device_map_drag_surface(struct weston_input_device *device)
 {
-	if (device->drag_surface->output ||
+	if (weston_surface_is_mapped(device->drag_surface) ||
 	    !device->drag_surface->buffer)
 		return;
 
