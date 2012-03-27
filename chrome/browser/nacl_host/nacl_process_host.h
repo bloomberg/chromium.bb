@@ -52,8 +52,6 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
   void OnDebugExceptionHandlerLaunchedByBroker();
 #endif
 
-  bool Send(IPC::Message* msg);
-
  private:
   // Internal class that holds the nacl::Handle objecs so that
   // nacl_process_host.h doesn't include NaCl headers.  Needed since it's
@@ -75,10 +73,7 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
   void IrtReady();
   void SendStart(base::PlatformFile irt_file);
 
-  // Message handlers for validation caching.
-  void OnQueryKnownToValidate(const std::string& signature, bool* result);
-  void OnSetKnownToValidate(const std::string& signature);
-
+ private:
 #if defined(OS_WIN)
   class DebugContext;
 

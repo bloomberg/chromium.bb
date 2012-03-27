@@ -8,16 +8,8 @@
 
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
-#include "base/synchronization/waitable_event.h"
-#include "base/threading/thread.h"
 #include "chrome/common/nacl_types.h"
 #include "ipc/ipc_channel.h"
-
-namespace IPC {
-class SyncChannel;
-class SyncMessageFilter;
-}
 
 // The NaClListener is an IPC channel listener that waits for a
 // request to start a NaCl module.
@@ -29,24 +21,10 @@ class NaClListener : public IPC::Channel::Listener {
   void Listen();
   void set_debug_enabled(bool value) {debug_enabled_ = value;}
 
-  bool Send(IPC::Message* msg);
-
  private:
   void OnStartSelLdr(std::vector<nacl::FileDescriptor> handles,
                      bool enable_exception_handling);
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
-
-  // A channel back to the browser.
-  scoped_ptr<IPC::SyncChannel> channel_;
-
-  // A filter that allows other threads to use the channel.
-  scoped_ptr<IPC::SyncMessageFilter> filter_;
-
-  base::WaitableEvent shutdown_event_;
-  base::Thread io_thread_;
-
-  // Used to identify what thread we're on.
-  MessageLoop* main_loop_;
 
   bool debug_enabled_;
 

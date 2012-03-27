@@ -533,7 +533,6 @@
             '../base/base.gyp:base_nacl_win64',
             '../base/base.gyp:base_static_win64',
             '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations_win64',
-            '../crypto/crypto.gyp:crypto_nacl_win64',
             '../ipc/ipc.gyp:ipc_win64',
             '../sandbox/sandbox.gyp:sandbox_win64',
           ],
