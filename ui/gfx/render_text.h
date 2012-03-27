@@ -41,9 +41,7 @@ class SkiaTextRenderer {
   void SetFontSmoothingSettings(bool enable_smoothing, bool enable_lcd_text);
   void SetTypeface(SkTypeface* typeface);
   void SetTextSize(int size);
-  void SetFont(const gfx::Font& font);
   void SetFontFamilyWithStyle(const std::string& family, int font_style);
-  void SetFontStyle(int font_style);
   void SetForegroundColor(SkColor foreground);
   void SetShader(SkShader* shader);
   void DrawSelection(const std::vector<Rect>& selection, SkColor color);

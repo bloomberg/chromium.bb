@@ -216,33 +216,6 @@ void SkiaTextRenderer::SetFontFamilyWithStyle(const std::string& family,
   }
 }
 
-void SkiaTextRenderer::SetFontStyle(int style) {
-  SkTypeface::Style skia_style = ConvertFontStyleToSkiaTypefaceStyle(style);
-  SkTypeface* current_typeface = paint_.getTypeface();
-
-  if (current_typeface->style() == skia_style)
-    return;
-
-  SkAutoTUnref<SkTypeface> typeface(
-      SkTypeface::CreateFromTypeface(current_typeface, skia_style));
-  if (typeface.get()) {
-    // |paint_| adds its own ref. So don't |release()| it from the ref ptr here.
-    SetTypeface(typeface.get());
-  }
-}
-
-void SkiaTextRenderer::SetFont(const gfx::Font& font) {
-  SkTypeface::Style skia_style =
-      ConvertFontStyleToSkiaTypefaceStyle(font.GetStyle());
-  SkAutoTUnref<SkTypeface> typeface(
-      SkTypeface::CreateFromName(font.GetFontName().c_str(), skia_style));
-  if (typeface.get()) {
-    // |paint_| adds its own ref. So don't |release()| it from the ref ptr here.
-    SetTypeface(typeface.get());
-  }
-  SetTextSize(font.GetFontSize());
-}
-
 void SkiaTextRenderer::SetForegroundColor(SkColor foreground) {
   paint_.setColor(foreground);
 }

@@ -486,8 +486,7 @@ void RenderTextWin::DrawVisualText(Canvas* canvas) {
       glyph_x += SkIntToScalar(run->advance_widths[glyph]);
     }
 
-    renderer.SetFont(run->font);
-    renderer.SetFontStyle(run->font_style);
+    renderer.SetFontFamilyWithStyle(run->font.GetFontName(), run->font_style);
     renderer.SetForegroundColor(run->foreground);
     renderer.DrawPosText(&pos[0], run->glyphs.get(), run->glyph_count);
     // TODO(oshima|msw): Consider refactoring StyleRange into Style
