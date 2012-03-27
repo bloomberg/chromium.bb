@@ -13,12 +13,16 @@
 #include "chrome/browser/ui/webui/extensions/extensions_ui.h"
 #include "chrome/browser/ui/webui/options2/options_ui2.h"
 #include "chrome/common/url_constants.h"
+#include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 
+using content::NavigationController;
+using content::NavigationEntry;
 using content::RenderViewHost;
 using content::WebContents;
 
@@ -93,6 +97,14 @@ ChromeWebUIDataSource* CreateUberFrameHTMLSource() {
 UberUI::UberUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
   profile->GetChromeURLDataManager()->AddDataSource(CreateUberHTMLSource());
+
+  // The user may use a virtual (short) URL to get to the page. To avoid
+  // duplicate uber tabs, clear the virtual URL so that the omnibox will show
+  // the real URL. http://crbug.com/111878.
+  NavigationController* controller = &web_ui->GetWebContents()->GetController();
+  NavigationEntry* pending_entry = controller->GetPendingEntry();
+  if (pending_entry)
+    pending_entry->SetVirtualURL(GURL());
 
   RegisterSubpage(chrome::kChromeUIExtensionsFrameURL);
   RegisterSubpage(chrome::kChromeUIHelpFrameURL);
