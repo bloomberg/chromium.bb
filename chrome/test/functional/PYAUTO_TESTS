@@ -92,10 +92,33 @@
       '-autofill.AutofillTest.testMergeAggregatedProfilesWithSameAddress',
       # crbug.com/99475
       '-autofill.AutofillTest.testNoDuplicatePhoneNumsInPrefs',
+      # crbug.com/120280
+      '-browsing_data.BrowsingDataTest.testClearDownloads',
+      '-browsing_data.BrowsingDataTest.testClearHistoryAndDownloads',
+      '-browsing_data.BrowsingDataTest.testClearingAccuracy',
+      '-downloads.DownloadsTest.testBigZip',
+      '-downloads.DownloadsTest.testCancelDownload',
+      '-downloads.DownloadsTest.testCrazyFilenames',
+      '-downloads.DownloadsTest.testDeclineDangerousDownload',
+      '-downloads.DownloadsTest.testDownloadIncognitoAndRegular',
+      '-downloads.DownloadsTest.testDownloadPercentage',
+      '-downloads.DownloadsTest.testDownloadTheme',
+      '-downloads.DownloadsTest.testDownloadsPersistence',
+      '-downloads.DownloadsTest.testFileRenaming',
+      '-downloads.DownloadsTest.testPauseAndResume',
+      '-downloads.DownloadsTest.testRemoveDownload',
+      '-downloads.DownloadsTest.testSaveDangerousFile',
+      '-downloads.DownloadsTest.testZip',
+      '-downloads.DownloadsTest.testZipInIncognito',
+      '-find_in_page.FindMatchTests.testSearchWithinSpecialURL',
       # crbug.com/115534
       '-gtalk.test_basic',
+      # crbug.com/120280
+      '-history.HistoryTest.testDownloadNoHistory',
       # crbug.com/119110
       '-https.SSLTest.testSSLCertOK',
+      # crbug.com/120280
+      '-infobars.InfobarTest.testMultipleDownloadsInfobar',
       # crbug.com/99506
       '-notifications.NotificationsTest.testSpecialURLNotification',
       # crbug.com/71715
@@ -108,6 +131,8 @@
       '-popups.PopupsTest.testBlockedPopupNotShowInHistory',
       # crbug.com/83827
       '-popups.PopupsTest.testUnblockedPopupAddedToOmnibox',
+      # crbug.com/120280
+      '-prefs.PrefsTest.testDownloadDirPref',
       # crbug.com/85600
       '-prefs.PrefsTest.testNavigationStateOnSessionRestore',
       # Flaky: crbug.com/67851
@@ -124,6 +149,8 @@
       '-special_tabs.SpecialTabsTest.testSpecialURLTabs',
       # crbug.com/88593
       '-sync.SyncTest.testPersonalStuffSyncSection',
+      # crbug.com/120280
+      '-translate.TranslateTest.testDownloadsNotTranslated',
       # crbug.com/100593
       '-nacl_sdk.NaClSDKTest.testVerifyNaClPlugin',
       # crbug.com/105560
