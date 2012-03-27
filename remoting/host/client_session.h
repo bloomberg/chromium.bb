@@ -35,6 +35,9 @@ class ClientSession : public protocol::HostEventStub,
     // Called after authentication has finished successfully.
     virtual void OnSessionAuthenticated(ClientSession* client) = 0;
 
+    // Called after we've finished connecting all channels.
+    virtual void OnSessionChannelsConnected(ClientSession* client) = 0;
+
     // Called after authentication has failed. Must not tear down this
     // object. OnSessionClosed() is notified after this handler
     // returns.
@@ -71,11 +74,11 @@ class ClientSession : public protocol::HostEventStub,
   virtual void InjectMouseEvent(const protocol::MouseEvent& event) OVERRIDE;
 
   // protocol::ConnectionToClient::EventHandler interface.
-  virtual void OnConnectionOpened(
+  virtual void OnConnectionAuthenticated(
       protocol::ConnectionToClient* connection) OVERRIDE;
-  virtual void OnConnectionClosed(
+  virtual void OnConnectionChannelsConnected(
       protocol::ConnectionToClient* connection) OVERRIDE;
-  virtual void OnConnectionFailed(protocol::ConnectionToClient* connection,
+  virtual void OnConnectionClosed(protocol::ConnectionToClient* connection,
                                   protocol::ErrorCode error) OVERRIDE;
   virtual void OnSequenceNumberUpdated(
       protocol::ConnectionToClient* connection, int64 sequence_number) OVERRIDE;
@@ -92,10 +95,6 @@ class ClientSession : public protocol::HostEventStub,
 
   protocol::ConnectionToClient* connection() const {
     return connection_.get();
-  }
-
-  bool authenticated() const {
-    return authenticated_;
   }
 
   void set_awaiting_continue_approval(bool awaiting) {
@@ -142,6 +141,10 @@ class ClientSession : public protocol::HostEventStub,
 
   // Whether this client is authenticated.
   bool authenticated_;
+
+  // Whether this client is fully connected (i.e. all channels are
+  // connected).
+  bool connected_;
 
   // Whether or not inputs from this client are blocked pending approval from
   // the host user to continue the connection.

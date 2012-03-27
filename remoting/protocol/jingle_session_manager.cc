@@ -151,7 +151,22 @@ bool JingleSessionManager::OnSignalStrategyIncomingStanza(
     if (response == SessionManager::ACCEPT) {
       session->AcceptIncomingConnection(message);
     } else {
-      session->Close();
+      ErrorCode error;
+      switch (response) {
+        case INCOMPATIBLE:
+          error = INCOMPATIBLE_PROTOCOL;
+          break;
+
+        case DECLINE:
+          error = SESSION_REJECTED;
+          break;
+
+        default:
+          NOTREACHED();
+          error = SESSION_REJECTED;
+      }
+
+      session->CloseInternal(error);
       delete session;
       DCHECK(sessions_.find(message.sid) == sessions_.end());
     }

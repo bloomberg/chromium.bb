@@ -194,8 +194,12 @@ class ChromotingHostTest : public testing::Test {
                               host_, client));
     if (authenticate) {
       context_.network_message_loop()->PostTask(
-          FROM_HERE, base::Bind(&ClientSession::OnConnectionOpened,
+          FROM_HERE, base::Bind(&ClientSession::OnConnectionAuthenticated,
                                 base::Unretained(client), connection_ptr));
+      context_.network_message_loop()->PostTask(
+          FROM_HERE,
+          base::Bind(&ClientSession::OnConnectionChannelsConnected,
+                     base::Unretained(client), connection_ptr));
     }
 
     if (connection_index == 0) {
@@ -207,7 +211,7 @@ class ChromotingHostTest : public testing::Test {
 
   // Helper method to remove a client connection from ChromotingHost.
   void RemoveClientSession() {
-    client_->OnConnectionClosed(connection_);
+    client_->OnConnectionClosed(connection_, protocol::OK);
   }
 
   static void AddClientToHost(scoped_refptr<ChromotingHost> host,

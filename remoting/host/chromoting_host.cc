@@ -137,6 +137,12 @@ void ChromotingHost::SetAuthenticatorFactory(
 void ChromotingHost::OnSessionAuthenticated(ClientSession* client) {
   DCHECK(context_->network_message_loop()->BelongsToCurrentThread());
 
+  // TODO(sergeyu): Update BackoffEntry here.
+}
+
+void ChromotingHost::OnSessionChannelsConnected(ClientSession* client) {
+  DCHECK(context_->network_message_loop()->BelongsToCurrentThread());
+
   // Disconnect all other clients.
   // Iterate over a copy of the list of clients, to avoid mutating the list
   // while iterating over it.

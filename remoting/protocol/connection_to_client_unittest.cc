@@ -35,7 +35,8 @@ class ConnectionToClientTest : public testing::Test {
     viewer_->set_host_stub(&host_stub_);
     viewer_->set_input_stub(&input_stub_);
     viewer_->SetEventHandler(&handler_);
-    EXPECT_CALL(handler_, OnConnectionOpened(viewer_.get()));
+    EXPECT_CALL(handler_, OnConnectionAuthenticated(viewer_.get()));
+    EXPECT_CALL(handler_, OnConnectionChannelsConnected(viewer_.get()));
     session_->state_change_callback().Run(
         protocol::Session::CONNECTED);
     session_->state_change_callback().Run(
@@ -98,11 +99,11 @@ TEST_F(ConnectionToClientTest, NoWriteAfterDisconnect) {
 }
 
 TEST_F(ConnectionToClientTest, StateChange) {
-  EXPECT_CALL(handler_, OnConnectionClosed(viewer_.get()));
+  EXPECT_CALL(handler_, OnConnectionClosed(viewer_.get(), OK));
   session_->state_change_callback().Run(protocol::Session::CLOSED);
   message_loop_.RunAllPending();
 
-  EXPECT_CALL(handler_, OnConnectionFailed(viewer_.get(), SESSION_REJECTED));
+  EXPECT_CALL(handler_, OnConnectionClosed(viewer_.get(), SESSION_REJECTED));
   session_->set_error(SESSION_REJECTED);
   session_->state_change_callback().Run(protocol::Session::FAILED);
   message_loop_.RunAllPending();

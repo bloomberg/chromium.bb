@@ -106,6 +106,7 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   ////////////////////////////////////////////////////////////////////////////
   // ClientSession::EventHandler implementation.
   virtual void OnSessionAuthenticated(ClientSession* client) OVERRIDE;
+  virtual void OnSessionChannelsConnected(ClientSession* client) OVERRIDE;
   virtual void OnSessionAuthenticationFailed(ClientSession* client) OVERRIDE;
   virtual void OnSessionClosed(ClientSession* session) OVERRIDE;
   virtual void OnSessionSequenceNumber(ClientSession* session,

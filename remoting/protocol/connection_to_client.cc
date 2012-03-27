@@ -102,6 +102,8 @@ void ConnectionToClient::OnSessionStateChange(Session::State state) {
       break;
 
     case Session::AUTHENTICATED:
+      handler_->OnConnectionAuthenticated(this);
+
       // Initialize channels.
       control_dispatcher_.reset(new HostControlDispatcher());
       control_dispatcher_->Init(session_.get(), base::Bind(
@@ -124,12 +126,11 @@ void ConnectionToClient::OnSessionStateChange(Session::State state) {
       break;
 
     case Session::CLOSED:
-      CloseChannels();
-      handler_->OnConnectionClosed(this);
+      Close(OK);
       break;
 
     case Session::FAILED:
-      CloseOnError();
+      Close(session_->error());
       break;
   }
 }
@@ -145,7 +146,7 @@ void ConnectionToClient::OnChannelInitialized(bool successful) {
 
   if (!successful) {
     LOG(ERROR) << "Failed to connect a channel";
-    CloseOnError();
+    Close(CHANNEL_CONNECTION_ERROR);
     return;
   }
 
@@ -158,13 +159,13 @@ void ConnectionToClient::NotifyIfChannelsReady() {
   if (control_dispatcher_.get() && control_dispatcher_->is_connected() &&
       event_dispatcher_.get() && event_dispatcher_->is_connected() &&
       video_writer_.get() && video_writer_->is_connected()) {
-    handler_->OnConnectionOpened(this);
+    handler_->OnConnectionChannelsConnected(this);
   }
 }
 
-void ConnectionToClient::CloseOnError() {
+void ConnectionToClient::Close(ErrorCode error) {
   CloseChannels();
-  handler_->OnConnectionFailed(this, session_->error());
+  handler_->OnConnectionClosed(this, error);
 }
 
 void ConnectionToClient::CloseChannels() {
