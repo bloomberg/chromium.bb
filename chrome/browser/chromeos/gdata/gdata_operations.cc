@@ -216,7 +216,7 @@ void UrlFetchOperationBase::Start(const std::string& auth_token) {
   }
 
   // Register to operation registry.
-  NotifyStart();
+  NotifyStartToOperationRegistry();
 
   url_fetcher_->Start();
   started_ = true;
@@ -265,8 +265,18 @@ void UrlFetchOperationBase::OnURLFetchComplete(const URLFetcher* source) {
 
   // Overridden by each specialization
   bool success = ProcessURLFetchResults(source);
-  NotifyFinish(success ? GDataOperationRegistry::OPERATION_COMPLETED
-                       : GDataOperationRegistry::OPERATION_FAILED);
+  if (success)
+    NotifySuccessToOperationRegistry();
+  else
+    NotifyFinish(GDataOperationRegistry::OPERATION_FAILED);
+}
+
+void UrlFetchOperationBase::NotifySuccessToOperationRegistry() {
+  NotifyFinish(GDataOperationRegistry::OPERATION_COMPLETED);
+}
+
+void UrlFetchOperationBase::NotifyStartToOperationRegistry() {
+  NotifyStart();
 }
 
 void UrlFetchOperationBase::OnAuthFailed(GDataErrorCode code) {
@@ -782,6 +792,10 @@ bool InitiateUploadOperation::ProcessURLFetchResults(const URLFetcher* source) {
   return code == HTTP_SUCCESS;
 }
 
+void InitiateUploadOperation::NotifySuccessToOperationRegistry() {
+  NotifySuspend();
+}
+
 void InitiateUploadOperation::RunCallbackOnPrematureFailure(
     GDataErrorCode code) {
   if (!callback_.is_null()) {
@@ -835,7 +849,8 @@ ResumeUploadOperation::ResumeUploadOperation(
                           params.virtual_path,
                           profile),
       callback_(callback),
-      params_(params) {
+      params_(params),
+      last_chunk_completed_(false) {
 }
 
 ResumeUploadOperation::~ResumeUploadOperation() {}
@@ -900,7 +915,22 @@ bool ResumeUploadOperation::ProcessURLFetchResults(const URLFetcher* source) {
                                         end_range_received),
                    base::Passed(&entry)));
   }
+
+  if (code == HTTP_CREATED)
+    last_chunk_completed_ = true;
+
   return code == HTTP_CREATED || code == HTTP_RESUME_INCOMPLETE;
+}
+
+void ResumeUploadOperation::NotifyStartToOperationRegistry() {
+  NotifyResume();
+}
+
+void ResumeUploadOperation::NotifySuccessToOperationRegistry() {
+  if (last_chunk_completed_)
+    NotifyFinish(GDataOperationRegistry::OPERATION_COMPLETED);
+  else
+    NotifySuspend();
 }
 
 void ResumeUploadOperation::RunCallbackOnPrematureFailure(GDataErrorCode code) {
@@ -950,6 +980,5 @@ void ResumeUploadOperation::OnURLFetchUploadProgress(
   // Adjust the progress values according to the range currently uploaded.
   NotifyProgress(params_.start_range + current, params_.content_length);
 }
-
 
 }  // namespace gdata

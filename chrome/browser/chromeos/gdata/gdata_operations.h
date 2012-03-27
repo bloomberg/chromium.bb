@@ -117,6 +117,12 @@ class UrlFetchOperationBase : public GDataOperationInterface,
   // authentication error. Must be implemented by a derived class.
   virtual bool ProcessURLFetchResults(const content::URLFetcher* source) = 0;
 
+  // Invoked when it needs to notify the status. Chunked operations that
+  // constructs a logically single operation from multiple physical operations
+  // should notify resume/suspend instead of start/finish.
+  virtual void NotifyStartToOperationRegistry();
+  virtual void NotifySuccessToOperationRegistry();
+
   // Invoked by this base class upon an authentication error or cancel by
   // an user operation. Must be implemented by a derived class.
   virtual void RunCallbackOnPrematureFailure(GDataErrorCode code) = 0;
@@ -445,6 +451,7 @@ class InitiateUploadOperation : public UrlFetchOperationBase {
   virtual GURL GetURL() const OVERRIDE;
   virtual bool ProcessURLFetchResults(const content::URLFetcher* source)
       OVERRIDE;
+  virtual void NotifySuccessToOperationRegistry() OVERRIDE;
   virtual void RunCallbackOnPrematureFailure(GDataErrorCode code) OVERRIDE;
 
   // Overridden from UrlFetchOperationBase.
@@ -477,6 +484,8 @@ class ResumeUploadOperation : public UrlFetchOperationBase {
   virtual GURL GetURL() const OVERRIDE;
   virtual bool ProcessURLFetchResults(const content::URLFetcher* source)
       OVERRIDE;
+  virtual void NotifyStartToOperationRegistry() OVERRIDE;
+  virtual void NotifySuccessToOperationRegistry() OVERRIDE;
   virtual void RunCallbackOnPrematureFailure(GDataErrorCode code) OVERRIDE;
 
   // Overridden from UrlFetchOperationBase.
@@ -492,6 +501,7 @@ class ResumeUploadOperation : public UrlFetchOperationBase {
  private:
   ResumeUploadCallback callback_;
   ResumeUploadParams params_;
+  bool last_chunk_completed_;
 
   DISALLOW_COPY_AND_ASSIGN(ResumeUploadOperation);
 };

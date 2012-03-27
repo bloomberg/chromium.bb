@@ -131,6 +131,9 @@ void GDataUploader::RemovePendingUpload(UploadFileInfo* upload_file_info) {
     upload_file_info->completion_callback.Run(
         base::PLATFORM_FILE_ERROR_ABORT, NULL);
   }
+
+  file_system_->CancelOperation(upload_file_info->gdata_path);
+
   // The file stream is closed by the destructor asynchronously.
   delete upload_file_info->file_stream;
   delete upload_file_info;

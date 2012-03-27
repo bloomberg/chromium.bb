@@ -40,6 +40,7 @@ class GDataOperationRegistry {
     OPERATION_IN_PROGRESS,
     OPERATION_COMPLETED,
     OPERATION_FAILED,
+    OPERATION_SUSPENDED,
   };
 
   static std::string OperationTypeToString(OperationType type);
@@ -101,6 +102,15 @@ class GDataOperationRegistry {
     void NotifyStart();
     void NotifyProgress(int64 current, int64 total);
     void NotifyFinish(OperationTransferState status);
+    // Notifies suspend/resume, used for chunked upload operations.
+    // The initial upload operation should issue "start" "progress"* "suspend".
+    // The subsequent operations will call "resume" "progress"* "suspend",
+    // and the last one will do "resume" "progress"* "finish".
+    // In other words, "suspend" is similar to "finish" except it lasts to live
+    // until the next "resume" comes. "Resume" is similar to "start", except
+    // that it removes the existing "suspend" operation.
+    void NotifySuspend();
+    void NotifyResume();
 
    private:
     // Does the cancellation.
@@ -131,6 +141,8 @@ class GDataOperationRegistry {
   void OnOperationStart(Operation* operation, OperationID* id);
   void OnOperationProgress(OperationID operation);
   void OnOperationFinish(OperationID operation);
+  void OnOperationSuspend(OperationID operation);
+  void OnOperationResume(Operation* operation, ProgressStatus* new_status);
 
   bool IsFileTransferOperation(const Operation* operation) const;
 
