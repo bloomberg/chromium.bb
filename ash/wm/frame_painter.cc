@@ -171,9 +171,9 @@ void FramePainter::Init(views::Widget* frame,
       gfx::Insets(kResizeInsideBoundsSize, kResizeInsideBoundsSize,
                   kResizeInsideBoundsSize, kResizeInsideBoundsSize));
 
-  // Watch for maximize/restore state changes.  Observer removes itself in
-  // OnWindowDestroying() below, or in the destructor if we go away before the
-  // window.
+  // Watch for maximize/restore/fullscreen state changes.  Observer removes
+  // itself in OnWindowDestroying() below, or in the destructor if we go away
+  // before the window.
   window_->AddObserver(this);
 }
 
@@ -210,9 +210,11 @@ int FramePainter::NonClientHitTest(views::NonClientFrameView* view,
   bool can_ever_resize = frame_->widget_delegate() ?
       frame_->widget_delegate()->CanResize() :
       false;
-  // Don't allow overlapping resize handles when the window is maximized, as it
-  // can't be resized in that state.
-  int resize_border = frame_->IsMaximized() ? 0 : kResizeInsideBoundsSize;
+  // Don't allow overlapping resize handles when the window is maximized or
+  // fullscreen, as it can't be resized in those states.
+  int resize_border =
+      frame_->IsMaximized() || frame_->IsFullscreen() ? 0 :
+      kResizeInsideBoundsSize;
   int frame_component = view->GetHTComponentForFrame(point,
                                                      resize_border,
                                                      resize_border,
@@ -406,15 +408,17 @@ void FramePainter::OnWindowPropertyChanged(aura::Window* window,
   if (key != aura::client::kShowStateKey)
     return;
 
-  // Maximized windows don't want resize handles overlapping the content area,
-  // because when the user moves the cursor to the right screen edge we want
-  // them to be able to hit the scroll bar.
-  if (ash::wm::IsWindowMaximized(window))
+  // Maximized and fullscreen windows don't want resize handles overlapping the
+  // content area, because when the user moves the cursor to the right screen
+  // edge we want them to be able to hit the scroll bar.
+  if (ash::wm::IsWindowMaximized(window) ||
+      ash::wm::IsWindowFullscreen(window)) {
     window->set_hit_test_bounds_override_inner(gfx::Insets());
-  else
+  } else {
     window->set_hit_test_bounds_override_inner(
         gfx::Insets(kResizeInsideBoundsSize, kResizeInsideBoundsSize,
                     kResizeInsideBoundsSize, kResizeInsideBoundsSize));
+  }
 }
 
 void FramePainter::OnWindowDestroying(aura::Window* window) {
