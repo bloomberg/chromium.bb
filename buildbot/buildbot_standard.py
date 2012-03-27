@@ -190,7 +190,12 @@ def BuildScript(status, context):
       SCons(context, platform='x86-32', parallel=True, args=['ncval'])
     with Step('ncval-x86-64', status):
       SCons(context, platform='x86-64', parallel=True, args=['ncval'])
-    with Step('validator_regression_test', status):
+    with Step('predownload validator corpus', status):
+      Command(context,
+          cmd=[sys.executable,
+               'tests/validator_regression/validator_regression_test.py',
+               '--download-only'])
+    with Step('validator_regression_test current', status):
       Command(context,
           cmd=[sys.executable,
                'tests/validator_regression/validator_regression_test.py'])

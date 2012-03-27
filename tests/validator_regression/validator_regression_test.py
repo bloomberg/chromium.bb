@@ -4,7 +4,9 @@
 # found in the LICENSE file.
 
 import hashlib
+import optparse
 import os
+import shutil
 import struct
 import subprocess
 import sys
@@ -130,16 +132,16 @@ def Sha1Sum(path):
   return m.hexdigest()
 
 
-def ValidateNexe(path, src_path, expect_pass):
+def ValidateNexe(options, path, src_path, expect_pass):
   """Run the validator on a nexe, check if the result is expected.
 
   Args:
+    options: bag of options.
     path: path to the nexe.
     src_path: path to nexe on server.
     expect_pass: boolean indicating if the nexe is expected to validate.
   """
   # Select which ncval to use.
-  platform, platform_exe = PlatformInfo()
   architecture = NexeAritecture(path)
   if architecture is None:
     print 'Validating: %s' % path
@@ -147,10 +149,10 @@ def ValidateNexe(path, src_path, expect_pass):
     print 'Size: %d' % os.path.getsize(path)
     print 'SHA1: %s' % Sha1Sum(path)
     raise Exception('Unknown nexe architecture')
-  ncval = os.path.join(
-      NACL_DIR, 'scons-out',
-      'opt-%s-%s' % (platform, architecture),
-      'staging', 'ncval' + platform_exe)
+  ncval = {
+      'x86-32': options.ncval_x86_32,
+      'x86-64': options.ncval_x86_64,
+  }[architecture]
   # Run ncval.
   process = subprocess.Popen(
       [ncval, path],
@@ -185,10 +187,69 @@ def NexeShouldValidate(path):
   return path not in KNOWN_BAD_NEXES
 
 
-def TestValidators(work_dir):
+
+def CachedPath(options, filename):
+  """Find the full path of a cached file, a cache root relative path.
+
+  Args:
+    options: bags of options.
+    filename: filename relative to the top of the download url / cache.
+  Returns:
+    Absolute path of where the file goes in the cache.
+  """
+  return os.path.join(options.cache_dir, 'nacl_validator_test_cache', filename)
+
+
+def Sha1FromFilename(filename):
+  """Get the expected sha1 of a file path.
+
+  Throughout we use the convention that files are store to a name of the form:
+    <path_to_file>/<sha1hex>[.<some_extention>]
+  This function extracts the expected sha1.
+
+  Args:
+    filename: filename to extract.
+  Returns:
+    Excepted sha1.
+  """
+  return os.path.splitext(os.path.basename(filename))[0]
+
+
+def PrimeCache(options, filename):
+  """Attempt to add a file to the cache directory if its not already there.
+
+  Args:
+    options: bag of options.
+    filename: filename relative to the top of the download url / cache.
+  """
+  dpath = CachedPath(options, filename)
+  if not os.path.exists(dpath) or Sha1Sum(dpath) != Sha1FromFilename(filename):
+    # Try to make the directory, fail is ok, let the download fail instead.
+    try:
+      os.makedirs(os.path.basename(dpath))
+    except OSError:
+      pass
+    DownloadNexe(filename, dpath)
+
+
+def CopyFromCache(options, filename, dest_filename):
+  """Copy an item from the cache.
+
+  Args:
+    options: bag of options.
+    filename: filename relative to the top of the download url / cache.
+    dest_filename: location to copy the file to.
+  """
+  dpath = CachedPath(options, filename)
+  shutil.copy(dpath, dest_filename)
+  assert Sha1Sum(dest_filename) == Sha1FromFilename(filename)
+
+
+def TestValidators(options, work_dir):
   """Test x86 validators on current snapshot.
 
   Args:
+    options: bag of options.
     work_dir: directory to operate in.
   """
 
@@ -209,16 +270,67 @@ def TestValidators(work_dir):
       eta_str = ' (ETA %d:%02d)' % (eta_minutes, eta_seconds)
     else:
       eta_str = ''
-    print 'Checking %d of %d%s...' % (index + 1, count, eta_str)
-    DownloadNexe(filename, nexe_filename)
-    ValidateNexe(nexe_filename, filename, NexeShouldValidate(filename))
+    print 'Processing %d of %d%s...' % (index + 1, count, eta_str)
+    PrimeCache(options, filename)
+    # Stop here if downloading only.
+    if options.download_only:
+      continue
+    # Validate a copy in case validator is mutating.
+    CopyFromCache(options, filename, nexe_filename)
+    try:
+      ValidateNexe(
+          options, nexe_filename, filename, NexeShouldValidate(filename))
+    finally:
+      try:
+        os.remove(nexe_filename)
+      except OSError:
+        print 'ERROR - unable to remove %s' % nexe_filename
   print 'SUCCESS'
 
 
 def Main():
+  platform, platform_exe = PlatformInfo()
+  ncval_x86_32 = os.path.join(
+      NACL_DIR, 'scons-out',
+      'opt-%s-x86-32' % platform,
+      'staging', 'ncval' + platform_exe)
+  ncval_x86_64 = os.path.join(
+      NACL_DIR, 'scons-out',
+      'opt-%s-x86-64' % platform,
+      'staging', 'ncval' + platform_exe)
+
+  # Decide a default cache directory.
+  # Prefer /b (for the bots)
+  # Failing that, use scons-out.
+  # Failing that, use the current users's home dir.
+  default_cache_dir = '/b'
+  if not os.path.isdir(default_cache_dir):
+    default_cache_dir = os.path.join(NACL_DIR, 'scons-out')
+  if not os.path.isdir(default_cache_dir):
+    default_cache_dir = os.path.expanduser('~/')
+  default_cache_dir = os.path.abspath(default_cache_dir)
+  assert os.path.isdir(default_cache_dir)
+
+  parser = optparse.OptionParser()
+  parser.add_option(
+      '--cache-dir', dest='cache_dir', default=default_cache_dir,
+      help='directory to cache downloads in')
+  parser.add_option(
+      '--download-only', default=False, action='store_true',
+      help='download to cache without running the tests')
+  parser.add_option(
+      '--x86-32', dest='ncval_x86_32', default=ncval_x86_32,
+      help='location of x86-32 validator')
+  parser.add_option(
+      '--x86-64', dest='ncval_x86_64', default=ncval_x86_64,
+      help='location of x86-64 validator')
+  options, args = parser.parse_args()
+  if args:
+    parser.error('unused arguments')
+
   work_dir = tempfile.mkdtemp(suffix='validate_nexes', prefix='tmp')
   try:
-    TestValidators(work_dir)
+    TestValidators(options, work_dir)
   finally:
     download_utils.RemoveDir(work_dir)
 
