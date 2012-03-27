@@ -53,10 +53,10 @@ remoting.init = function() {
     document.getElementById('current-email').innerText = email;
   }
 
-  // The focus and paste hooks are disabled until crbug.com/119838 is fixed.
-  //window.addEventListener('focus', pluginGotFocus_, false);
   window.addEventListener('blur', pluginLostFocus_, false);
-  //window.addEventListener('paste', pluginGotPaste_, false);
+  // The plugin's onFocus handler sends a paste command to |window|, because
+  // it can't send one to the plugin element itself.
+  window.addEventListener('paste', pluginGotPaste_, false);
 
   if (isHostModeSupported_()) {
     var noShare = document.getElementById('chrome-os-no-share');
@@ -134,15 +134,6 @@ remoting.clearOAuth2 = function() {
   window.localStorage.removeItem(KEY_EMAIL_);
   remoting.setMode(remoting.AppMode.UNAUTHENTICATED);
 };
-
-/**
- * Callback function called when the browser window gets focus.
- */
-function pluginGotFocus_() {
-  /** @type {function(string): void} */
-  document.execCommand;
-  document.execCommand("paste");
-}
 
 /**
  * Callback function called when the browser window gets a paste operation.

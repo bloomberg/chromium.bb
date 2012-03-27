@@ -186,6 +186,17 @@ remoting.ClientSession.prototype.createClientPlugin_ = function(container, id) {
 };
 
 /**
+ * Callback function called when the plugin element gets focus.
+ */
+remoting.ClientSession.prototype.pluginGotFocus_ = function() {
+  // It would be cleaner to send a paste command to the plugin element,
+  // but that's not supported.
+  /** @type {function(string): void } */
+  document.execCommand;
+  document.execCommand("paste");
+}
+
+/**
  * Adds <embed> element to |container| and readies the sesion object.
  *
  * @param {Element} container The element to add the plugin to.
@@ -204,6 +215,8 @@ remoting.ClientSession.prototype.createPluginAndConnect =
   this.plugin.initialize(function(result) {
       that.onPluginInitialized_(oauth2AccessToken, result);
     });
+  this.plugin.element().addEventListener(
+      'focus', function() { that.pluginGotFocus_() }, false);
 };
 
 /**
