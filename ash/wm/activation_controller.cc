@@ -26,10 +26,10 @@ namespace {
 // that need to be activated in the order that they should be activated.
 const int kWindowContainerIds[] = {
     kShellWindowId_LockSystemModalContainer,
+    kShellWindowId_SettingBubbleContainer,
     kShellWindowId_LockScreenContainer,
     kShellWindowId_SystemModalContainer,
     kShellWindowId_AlwaysOnTopContainer,
-    kShellWindowId_SettingBubbleContainer,
     kShellWindowId_DefaultContainer,
     kShellWindowId_AppListContainer,
 
