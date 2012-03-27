@@ -5,38 +5,32 @@
  */
 
 .cr-dialog-container {
-  position: absolute;
-  -webkit-user-select: none;
-  top: 0;
-  left: 0;
-  height: 100%;
-  width: 100%;
-
-  background: -webkit-radial-gradient(rgba(127, 127, 127, 0.5),
-                                      rgba(127, 127, 127, 0.5) 35%,
-                                      rgba(0, 0, 0, 0.7));
-  opacity: 0;
+  -webkit-box-align: center;
+  -webkit-box-pack: center;
   -webkit-transition: opacity 250ms linear;
+  -webkit-user-select: none;
+  display: -webkit-box;
+  height: 100%;
+  left: 0;
   overflow: hidden;
-
+  position: absolute;
+  top: 0;
+  width: 100%;
   z-index: 9999;
 }
 
 .cr-dialog-frame {
   -webkit-box-orient: vertical;
-  -webkit-transition-duration: 250ms;
-  -webkit-transition-property: none;
-
+  -webkit-box-shadow: 5px 5px 5px rgba(100, 100, 100, 0.5);
   background-color: white;
   border: 1px solid rgba(0, 0, 0, 0.3);
   border-radius: 3px;
-  position: absolute;
   box-shadow: 0 4px 23px 5px rgba(0, 0, 0, 0.2),
               0 2px 6px rgba(0, 0, 0, 0.15);
   cursor: default;
   display: -webkit-box;
-
   padding: 14px 17px;
+  position: relative;
   width: 460px;
 }
 
@@ -64,6 +58,38 @@
   -webkit-animation-iteration-count: 1;
   -webkit-animation-name: pulse;
   -webkit-animation-timing-function: ease-in-out;
+}
+
+.shown > .cr-dialog-frame {
+  -webkit-transform: perspective(500px) scale(1)
+                     translateY(0) rotateX(0);
+  opacity: 1;
+}
+
+.cr-dialog-frame {
+  -webkit-transform: perspective(500px) scale(0.99)
+                     translateY(-20px) rotateX(5deg);
+  -webkit-transition: all 0.18s;
+  -webkit-transition-duration: 250ms;
+  opacity: 0;
+}
+
+.cr-dialog-shield {
+  -webkit-transition: opacity .5s;
+  background-color: white;
+  display: block;
+  bottom: 0;
+  left: 0;
+  opacity: 0;
+  pointer-events: none;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+.shown > .cr-dialog-shield {
+  -webkit-transition: opacity .5s;
+  opacity: 0.75;
 }
 
 [hidden] {
