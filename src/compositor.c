@@ -677,6 +677,30 @@ weston_buffer_attach(struct wl_buffer *buffer, struct wl_surface *surface)
 	struct weston_surface *es = (struct weston_surface *) surface;
 	struct weston_compositor *ec = es->compositor;
 
+	if (es->buffer) {
+		weston_buffer_post_release(es->buffer);
+		wl_list_remove(&es->buffer_destroy_listener.link);
+	}
+
+	es->buffer = buffer;
+
+	if (!buffer) {
+		if (weston_surface_is_mapped(es))
+			weston_surface_unmap(es);
+		return;
+	}
+
+	buffer->busy_count++;
+	wl_list_insert(es->buffer->resource.destroy_listener_list.prev,
+		       &es->buffer_destroy_listener.link);
+
+	if (es->geometry.width != buffer->width ||
+	    es->geometry.height != buffer->height) {
+		undef_region(&es->input);
+		pixman_region32_fini(&es->opaque);
+		pixman_region32_init(&es->opaque);
+	}
+
 	if (!es->texture) {
 		glGenTextures(1, &es->texture);
 		glBindTexture(GL_TEXTURE_2D, es->texture);
@@ -697,7 +721,7 @@ weston_buffer_attach(struct wl_buffer *buffer, struct wl_surface *surface)
 		es->image = ec->create_image(ec->display, NULL,
 					     EGL_WAYLAND_BUFFER_WL,
 					     buffer, NULL);
-		
+
 		ec->image_target_texture_2d(GL_TEXTURE_2D, es->image);
 
 		es->pitch = buffer->width;
@@ -1127,46 +1151,16 @@ weston_surface_assign_output(struct weston_surface *es)
 }
 
 static void
-surface_attach(struct wl_client *client,
-	       struct wl_resource *resource,
-	       struct wl_resource *buffer_resource, int32_t sx, int32_t sy)
+surface_configure(struct weston_surface *es, int32_t sx, int32_t sy)
 {
-	struct weston_surface *es = resource->data;
 	struct weston_shell *shell = es->compositor->shell;
-	struct wl_buffer *buffer;
-
-	if (!buffer_resource && !weston_surface_is_mapped(es))
-		return;
-
-	if (es->buffer) {
-		weston_buffer_post_release(es->buffer);
-		wl_list_remove(&es->buffer_destroy_listener.link);
-	}
-
-	if (!buffer_resource && weston_surface_is_mapped(es)) {
-		weston_surface_unmap(es);
-		es->buffer = NULL;
-		return;
-	}
-
-	buffer = buffer_resource->data;
-	buffer->busy_count++;
-	es->buffer = buffer;
-	wl_list_insert(es->buffer->resource.destroy_listener_list.prev,
-		       &es->buffer_destroy_listener.link);
-
-	if (es->geometry.width != buffer->width ||
-	    es->geometry.height != buffer->height) {
-		undef_region(&es->input);
-		pixman_region32_fini(&es->opaque);
-		pixman_region32_init(&es->opaque);
-	}
 
 	if (!weston_surface_is_mapped(es)) {
-		shell->map(shell, es, buffer->width, buffer->height, sx, sy);
+		shell->map(shell, es, es->buffer->width, es->buffer->height,
+			   sx, sy);
 	} else if (es->force_configure || sx != 0 || sy != 0 ||
-		   es->geometry.width != buffer->width ||
-		   es->geometry.height != buffer->height) {
+		   es->geometry.width != es->buffer->width ||
+		   es->geometry.height != es->buffer->height) {
 		GLfloat from_x, from_y;
 		GLfloat to_x, to_y;
 
@@ -1175,11 +1169,26 @@ surface_attach(struct wl_client *client,
 		shell->configure(shell, es,
 				 es->geometry.x + to_x - from_x,
 				 es->geometry.y + to_y - from_y,
-				 buffer->width, buffer->height);
+				 es->buffer->width, es->buffer->height);
 		es->force_configure = 0;
 	}
+}
+
+static void
+surface_attach(struct wl_client *client,
+	       struct wl_resource *resource,
+	       struct wl_resource *buffer_resource, int32_t sx, int32_t sy)
+{
+	struct weston_surface *es = resource->data;
+	struct wl_buffer *buffer = NULL;
+
+	if (buffer_resource)
+		buffer = buffer_resource->data;
 
 	weston_buffer_attach(buffer, &es->surface);
+
+	if (buffer)
+		surface_configure(es, sx, sy);
 }
 
 static void
@@ -1882,7 +1891,7 @@ input_device_attach(struct wl_client *client,
 {
 	struct weston_input_device *device = resource->data;
 	struct weston_compositor *compositor = device->compositor;
-	struct wl_buffer *buffer;
+	struct wl_buffer *buffer = NULL;
 
 	if (time < device->input_device.pointer_focus_time)
 		return;
@@ -1891,14 +1900,13 @@ input_device_attach(struct wl_client *client,
 	if (device->input_device.pointer_focus->resource.client != client)
 		return;
 
-	if (device->sprite->buffer)
-		wl_list_remove(&device->sprite->buffer_destroy_listener.link);
+	if (buffer_resource)
+		buffer = buffer_resource->data;
 
-	if (!buffer_resource) {
-		if (weston_surface_is_mapped(device->sprite))
-			weston_surface_unmap(device->sprite);
+	weston_buffer_attach(buffer, &device->sprite->surface);
+
+	if (!buffer)
 		return;
-	}
 
 	if (!weston_surface_is_mapped(device->sprite)) {
 		wl_list_insert(&compositor->cursor_layer.surface_list,
@@ -1906,7 +1914,7 @@ input_device_attach(struct wl_client *client,
 		weston_surface_assign_output(device->sprite);
 	}
 
-	buffer = buffer_resource->data;
+
 	device->hotspot_x = x;
 	device->hotspot_y = y;
 	weston_surface_configure(device->sprite,
@@ -1914,11 +1922,6 @@ input_device_attach(struct wl_client *client,
 				 device->input_device.y - device->hotspot_y,
 				 buffer->width, buffer->height);
 
-	device->sprite->buffer = buffer;
-	wl_list_insert(buffer->resource.destroy_listener_list.prev,
-		       &device->sprite->buffer_destroy_listener.link);
-
-	weston_buffer_attach(buffer, &device->sprite->surface);
 	surface_damage(NULL, &device->sprite->surface.resource,
 		       0, 0, buffer->width, buffer->height);
 }
