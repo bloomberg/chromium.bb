@@ -525,12 +525,12 @@ void WebIntentPickerController::OnExtensionInstallServiceAvailable(
 void WebIntentPickerController::AsyncOperationFinished() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   if (--pending_async_count_ == 0) {
-    picker_->OnPendingAsyncCompleted();
+    if (picker_)
+      picker_->OnPendingAsyncCompleted();
   }
 }
 
 void WebIntentPickerController::ClosePicker() {
-  if (picker_) {
+  if (picker_)
     picker_->Close();
-  }
 }

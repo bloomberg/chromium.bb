@@ -36,9 +36,12 @@ class WebIntentPickerCocoa : public WebIntentPicker,
   // WebIntentPickerDelegate forwarding API.
   void OnCancelled();
   void OnServiceChosen(size_t index);
+  void OnExtensionInstallRequested(const std::string& extension_id);
 
   // WebIntentPicker:
   virtual void Close() OVERRIDE;
+  virtual void OnExtensionInstallSuccess(const std::string& id) OVERRIDE;
+  virtual void OnExtensionInstallFailure(const std::string& id) OVERRIDE;
 
   // WebIntentPickerModelObserver implementation.
   virtual void OnModelChanged(WebIntentPickerModel* model) OVERRIDE;

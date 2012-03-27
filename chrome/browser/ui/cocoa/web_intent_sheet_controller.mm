@@ -101,6 +101,8 @@ const CGFloat kTextWidth = kWindowWidth - (kImageSize + kImageSpacing +
 
 // Handle default OSX dialog cancel mechanisms. (Cmd-.)
 - (void)cancelOperation:(id)sender {
+  if (picker_)
+    picker_->OnCancelled();
   [self closeSheet];
 }
 
@@ -116,7 +118,6 @@ const CGFloat kTextWidth = kWindowWidth - (kImageSize + kImageSpacing +
 - (void)sheetDidEnd:(NSWindow*)sheet
          returnCode:(int)returnCode
         contextInfo:(void*)contextInfo {
-  // Also called when user navigates to another page while the sheet is open.
   if (picker_)
     picker_->OnSheetDidEnd(sheet);
 }
@@ -135,11 +136,6 @@ const CGFloat kTextWidth = kWindowWidth - (kImageSize + kImageSpacing +
   browser->OpenURL(params);
 }
 
-// Cancels the current selection - no intent is selected.
-- (IBAction)cancelSelection:(id)sender {
-  [self closeSheet];
-}
-
 // A picker button has been pressed - invoke corresponding service.
 - (IBAction)invokeService:(id)sender {
   if (picker_)
@@ -147,6 +143,7 @@ const CGFloat kTextWidth = kWindowWidth - (kImageSize + kImageSpacing +
 }
 
 - (IBAction)openExtensionLink:(id)sender {
+  DCHECK(model_);
   const WebIntentPickerModel::SuggestedExtension& extension =
       model_->GetSuggestedExtensionAt([sender tag]);
 
@@ -161,7 +158,11 @@ const CGFloat kTextWidth = kWindowWidth - (kImageSize + kImageSpacing +
 }
 
 - (IBAction)installExtension:(id)sender {
-  // TODO(groby):one-click install
+  DCHECK(model_);
+  const WebIntentPickerModel::SuggestedExtension& extension =
+      model_->GetSuggestedExtensionAt([sender tag]);
+  if (picker_)
+    picker_->OnExtensionInstallRequested(UTF16ToUTF8(extension.id));
 }
 
 // Sets proprties on the given |field| to act as the title or description labels
@@ -259,7 +260,7 @@ const CGFloat kTextWidth = kWindowWidth - (kImageSize + kImageSpacing +
   [addButton setFrame:frame];
 
   [addButton setTarget:self];
-  [addButton setAction:@selector(invokeService:)];
+  [addButton setAction:@selector(installExtension:)];
   [addButton setTag:index];
   [subviews addObject:addButton.get()];
 
@@ -350,7 +351,7 @@ const CGFloat kTextWidth = kWindowWidth - (kImageSize + kImageSpacing +
   scoped_nsobject<HoverCloseButton> closeButton(
       [[HoverCloseButton alloc] initWithFrame:buttonFrame]);
   [closeButton setTarget:self];
-  [closeButton setAction:@selector(cancelSelection:)];
+  [closeButton setAction:@selector(cancelOperation:)];
 
   // Adjust view height to fit elements, center-align elements.
   CGFloat maxHeight = std::max(NSHeight(buttonFrame),
