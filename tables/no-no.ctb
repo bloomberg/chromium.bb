@@ -286,6 +286,8 @@ sign \X00FF 12568 	# 255 latin small letter y with diaeresis
 sign \x20ac 2678	# Euro-tegn       \200
 sign \x201a 67		# Enkelt nedre anførselstegn      \202
 sign \x0192 45678	# Liten latinsk bokstav f med krok        \203
+sign \x200e 0		# left to right marker
+sign \x200f 0		# right to left marker
 sign \x201e 3567 	# Dobbelt nedre anførselstegn    \204
 sign \x2026 37		# Horisontal ellipse (tre prikker)        \205
 sign \x2020 47		# Dagger  \206
