@@ -152,9 +152,10 @@ TEST(ClickWiggleFilterInterpreterTest, OneFingerClickSuppressTest) {
     { 1.11, 1, 1, 1, &finger_states[2] },
   };
 
-  for (size_t i = 0; i < arraysize(hardware_state); ++i)
+  for (size_t i = 0; i < arraysize(hardware_state); ++i) {
     // Assertions happen in the base interpreter
     interpreter.SyncInterpret(&hardware_state[i], NULL);
+  }
 }
 
 }  // namespace gestures
