@@ -28,6 +28,7 @@
 #include "chrome/browser/chromeos/background/desktop_background_observer.h"
 #include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
 #include "chrome/browser/chromeos/dbus/power_manager_client.h"
+#include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/system/ash_system_tray_delegate.h"
 #endif
@@ -93,7 +94,8 @@ bool ChromeShellDelegate::IsUserLoggedIn() {
 
 void ChromeShellDelegate::LockScreen() {
 #if defined(OS_CHROMEOS)
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kGuestSession)) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kGuestSession) &&
+      !chromeos::KioskModeSettings::Get()->IsKioskModeEnabled()) {
     chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
         NotifyScreenLockRequested();
   }
