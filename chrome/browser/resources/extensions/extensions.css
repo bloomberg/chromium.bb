@@ -141,6 +141,10 @@ html[dir='rtl'] .extension-list-item {
   display: none;
 }
 
+.load-path > span {
+  word-wrap: break-word;
+}
+
 .terminated-reload-link {
   -webkit-margin-end: 2em;
 }

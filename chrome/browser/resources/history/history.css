@@ -204,9 +204,3 @@ html[dir='rtl'] .entry .title {
   -webkit-transition: opacity 200ms;
   opacity: 0;
 }
-
-.page-navigation {
-  -webkit-margin-end: 4px;
-  background-color: rgb(235, 239, 249);
-  padding: 8px;
-}

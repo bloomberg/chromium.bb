@@ -725,17 +725,12 @@ HistoryView.prototype.displayNavBar_ = function() {
  * @return {HTMLAnchorElement} the pagination link
  */
 HistoryView.prototype.createPageNav_ = function(page, name) {
-  anchor = document.createElement('a');
-  anchor.className = 'page-navigation';
-  anchor.textContent = name;
-  var hashString = PageState.getHashString(this.model_.getSearchText(), page);
-  var link = 'chrome://history/' + (hashString ? '#' + hashString : '');
-  anchor.href = link;
-  anchor.onclick = function() {
+  var navButton = createElementWithClassName('button', 'link-button');
+  navButton.textContent = name;
+  navButton.onclick = function() {
     setPage(page);
-    return false;
   };
-  return anchor;
+  return navButton;
 };
 
 /**
