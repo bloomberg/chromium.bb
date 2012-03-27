@@ -84,7 +84,8 @@ void LauncherUpdater::Init() {
 LauncherUpdater* LauncherUpdater::Create(Browser* browser) {
   Type type;
   std::string app_id;
-  if (browser->type() == Browser::TYPE_TABBED) {
+  if (browser->type() == Browser::TYPE_TABBED ||
+      browser->type() == Browser::TYPE_POPUP) {
     type = TYPE_TABBED;
   } else if (browser->is_app()) {
     if (browser->is_type_panel()) {
