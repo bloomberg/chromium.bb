@@ -7,6 +7,8 @@
 #include <string>
 
 #include "base/metrics/field_trial.h"
+#include "base/stringprintf.h"
+#include "base/string_number_conversions.h"
 
 namespace {
 
@@ -15,6 +17,7 @@ static const char kAggressiveHUPFieldTrialName[] =
     "OmniboxAggressiveHistoryURLProvider";
 static const char kDisallowInlineHQPFieldTrialName[] =
     "OmniboxDisallowInlineHQP";
+static const char kSuggestFieldTrialName[] = "OmniboxSearchSuggest";
 
 // Field trial experiment probabilities.
 
@@ -29,6 +32,11 @@ const base::FieldTrial::Probability
 const base::FieldTrial::Probability kDisallowInlineHQPFieldTrialDivisor = 100;
 const base::FieldTrial::Probability
     kDisallowInlineHQPFieldTrialExperimentFraction = 10;
+
+// For the search suggestion field trial, divide the people in the
+// trial into 20 equally-sized buckets.  The suggest provider backend
+// will decide what behavior (if any) to change based on the group.
+const int kSuggestFieldTrialNumberOfGroups = 20;
 
 // Field trial IDs.
 // Though they are not literally "const", they are set only once, in
@@ -72,6 +80,19 @@ void AutocompleteFieldTrial::Activate() {
     disallow_inline_hqp_experiment_group = trial->AppendGroup("DisallowInline",
         kDisallowInlineHQPFieldTrialExperimentFraction);
   }
+
+  // Create the suggest field trial (regardless of sticky-ness status, but
+  // make it sticky if possible).
+  // Make it expire on October 1, 2012.
+  scoped_refptr<base::FieldTrial> trial(new base::FieldTrial(
+      kSuggestFieldTrialName, kSuggestFieldTrialNumberOfGroups,
+      "0", 2012, 10, 1));
+  if (base::FieldTrialList::IsOneTimeRandomizationEnabled())
+    trial->UseOneTimeRandomization();
+  // We've already created one group; now just need to create
+  // kSuggestFieldTrialNumGroups - 1 more.
+  for (int i = 1; i < kSuggestFieldTrialNumberOfGroups; i++)
+    trial->AppendGroup(base::StringPrintf("%d", i), 1);
 }
 
 bool AutocompleteFieldTrial::InAggressiveHUPFieldTrial() {
@@ -100,4 +121,29 @@ bool AutocompleteFieldTrial::InDisallowInlineHQPFieldTrialExperimentGroup() {
   const int group = base::FieldTrialList::FindValue(
       kDisallowInlineHQPFieldTrialName);
   return group == disallow_inline_hqp_experiment_group;
+}
+
+bool AutocompleteFieldTrial::InSuggestFieldTrial() {
+  return base::FieldTrialList::TrialExists(kSuggestFieldTrialName);
+}
+
+std::string AutocompleteFieldTrial::GetSuggestGroupName() {
+  return base::FieldTrialList::FindFullName(kSuggestFieldTrialName);
+}
+
+// Yes, this is roundabout.  It's easier to provide the group number as
+// a string (simply by choosing group names appropriately) than provide
+// it as an integer.  It might look more straightforward to use group ids
+// for the group number with respect to suggest.  However, we don't want
+// to assume that group ids are creates as 0, 1, 2, ... -- this isn't part
+// of the field_trial.h specification.  Hence, we use the group names to
+// get numbers that we know are 0, 1, 2, ...
+int AutocompleteFieldTrial::GetSuggestGroupNameAsNumber() {
+  int group_num;
+  base::StringToInt(GetSuggestGroupName(), &group_num);
+  return group_num;
+}
+
+int AutocompleteFieldTrial::GetSuggestNumberOfGroups() {
+  return kSuggestFieldTrialNumberOfGroups;
 }

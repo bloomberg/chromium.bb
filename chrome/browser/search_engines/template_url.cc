@@ -12,6 +12,7 @@
 #include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/autocomplete/autocomplete_field_trial.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/search_engines/search_terms_data.h"
 #include "chrome/browser/search_engines/template_url_service.h"
@@ -407,9 +408,11 @@ std::string TemplateURLRef::ReplaceSearchTermsUsingTermsData(
       }
 
       case GOOGLE_SEARCH_FIELDTRIAL_GROUP:
-        // We are not curerntly running any fieldtrials that modulate the search
-        // url.  If we do, then we'd have some conditional insert such as:
-        // url.insert(i->index, used_www ? "gcx=w&" : "gcx=c&");
+        if (AutocompleteFieldTrial::InSuggestFieldTrial()) {
+          // Add something like sugexp=chrome,mod=5 to the URL request.
+          url.insert(i->index, "sugexp=chrome,mod=" +
+              AutocompleteFieldTrial::GetSuggestGroupName() + "&");
+        }
         break;
 
       case GOOGLE_UNESCAPED_SEARCH_TERMS: {

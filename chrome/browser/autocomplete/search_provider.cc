@@ -13,9 +13,11 @@
 #include "base/i18n/icu_string_conversions.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/message_loop.h"
+#include "base/metrics/histogram.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
+#include "chrome/browser/autocomplete/autocomplete_field_trial.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/keyword_provider.h"
 #include "chrome/browser/history/history.h"
@@ -87,6 +89,23 @@ SearchProvider::SearchProvider(ACProviderListener* listener, Profile* profile)
       suggest_results_pending_(0),
       have_suggest_results_(false),
       instant_finalized_(false) {
+  // We use GetSuggestNumberOfGroups() as the group ID to mean "not in field
+  // trial."  Field trial groups run from 0 to GetSuggestNumberOfGroups() - 1
+  // (inclusive).
+  int suggest_field_trial_group_number =
+      AutocompleteFieldTrial::GetSuggestNumberOfGroups();
+  if (AutocompleteFieldTrial::InSuggestFieldTrial()) {
+    suggest_field_trial_group_number =
+        AutocompleteFieldTrial::GetSuggestGroupNameAsNumber();
+  }
+  // Add a beacon to the logs that'll allow us to identify later what
+  // suggest field trial group a user is in.  Do this by incrementing a
+  // bucket in a histogram, where the bucket represents the user's
+  // suggest group id.
+  UMA_HISTOGRAM_ENUMERATION(
+      "Omnibox.SuggestFieldTrialBeacon",
+      suggest_field_trial_group_number,
+      AutocompleteFieldTrial::GetSuggestNumberOfGroups() + 1);
 }
 
 void SearchProvider::FinalizeInstantQuery(const string16& input_text,
