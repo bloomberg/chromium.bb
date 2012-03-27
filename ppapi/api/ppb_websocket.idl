@@ -223,10 +223,10 @@ interface PPB_WebSocket {
    * WebSocket API specification.
    * Returns <code>PP_ERROR_NOACCESS</code> if the protocol specified in the
    * <code>url</code> is not a secure protocol, but the origin of the caller
-   * has a secure scheme. Also returns <code>PP_ERROR_NOACCESS</CODE> if the
+   * has a secure scheme. Also returns <code>PP_ERROR_NOACCESS</code> if the
    * port specified in the <code>url</code> is a port that the user agent
    * is configured to block access to because it is a well-known port like
-   * SMTP. <code>PP_ERROR_NOACCESS</code> corresponds to SecurityError of the
+   * SMTP. <code>PP_ERROR_NOACCESS</code> corresponds to a SecurityError of the
    * specification.
    * Returns <code>PP_ERROR_INPROGRESS</code> if this is not the first call to
    * Connect().
@@ -244,7 +244,7 @@ interface PPB_WebSocket {
    * @param[in] web_socket A <code>PP_Resource</code> corresponding to a
    * WebSocket.
    *
-   * @param[in] code The WebSocket close code. Ignored if it is 0.
+   * @param[in] code The WebSocket close code. This is ignored if it is 0.
    * <code>PP_WEBSOCKETSTATUSCODE_NORMAL_CLOSURE</code> must be used for the
    * usual case. To indicate some specific error cases, codes in the range
    * <code>PP_WEBSOCKETSTATUSCODE_USER_REGISTERED_MIN</code> to
@@ -268,8 +268,8 @@ interface PPB_WebSocket {
    * in the WebSocket API specification.
    * Returns <code>PP_ERROR_NOACCESS</code> if the code is not an integer
    * equal to 1000 or in the range 3000 to 4999. <code>PP_ERROR_NOACCESS</code>
-   * corresponds to InvalidAccessError of the specification. Returns
-   * <code>PP_ERROR_INPROGRESS</code> if this is not the first call to
+   * corresponds to an InvalidAccessError in the WebSocket API specification.
+   * Returns <code>PP_ERROR_INPROGRESS</code> if this is not the first call to
    * Close().
    */
   int32_t Close([in] PP_Resource web_socket,
@@ -319,11 +319,11 @@ interface PPB_WebSocket {
    * @return An int32_t containing an error code from <code>pp_errors.h</code>.
    * Returns <code>PP_ERROR_FAILED</code> if the ReadyState is
    * <code>PP_WEBSOCKETREADYSTATE_CONNECTING</code>.
-   * <code>PP_ERROR_FAILED</code> corresponds to the JavaScript
+   * <code>PP_ERROR_FAILED</code> corresponds to a JavaScript
    * InvalidStateError in the WebSocket API specification.
    * Returns <code>PP_ERROR_BADARGUMENT</code> if the provided
    * <code>message</code> contains an invalid character as a UTF-8 string.
-   * <code>PP_ERROR_BADARGUMENT</code> corresponds to the JavaScript
+   * <code>PP_ERROR_BADARGUMENT</code> corresponds to a JavaScript
    * SyntaxError in the WebSocket API specification.
    * Otherwise, returns <code>PP_OK</code>, which doesn't necessarily mean
    * that the server received the message.
