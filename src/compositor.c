@@ -700,7 +700,7 @@ weston_buffer_attach(struct wl_buffer *buffer, struct wl_surface *surface)
 		
 		ec->image_target_texture_2d(GL_TEXTURE_2D, es->image);
 
-		es->pitch = es->geometry.width;
+		es->pitch = buffer->width;
 	}
 }
 
