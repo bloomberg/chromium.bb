@@ -179,9 +179,12 @@ gfx::Rect Launcher::GetScreenBoundsOfItemIconForWindow(aura::Window* window) {
                    bounds.height());
 }
 
+bool Launcher::IsShowingMenu() const {
+  return launcher_view_->IsShowingMenu();
+}
+
 internal::LauncherView* Launcher::GetLauncherViewForTest() {
-  return static_cast<internal::LauncherView*>(
-      widget_->GetContentsView()->child_at(0));
+  return launcher_view_;
 }
 
 void Launcher::UpdateBackground(int alpha) {

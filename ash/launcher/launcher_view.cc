@@ -276,6 +276,16 @@ gfx::Rect LauncherView::GetIdealBoundsOfItemIcon(LauncherID id) {
                    icon_bounds.width(), icon_bounds.height());
 }
 
+bool LauncherView::IsShowingMenu() const {
+#if !defined(OS_MACOSX)
+  return (overflow_menu_runner_.get() &&
+          overflow_menu_runner_->IsRunning()) ||
+      (launcher_menu_runner_.get() &&
+       launcher_menu_runner_->IsRunning());
+#endif
+  return false;
+}
+
 void LauncherView::LayoutToIdealBounds() {
   IdealBounds ideal_bounds;
   CalculateIdealBounds(&ideal_bounds);
@@ -529,8 +539,12 @@ void LauncherView::ShowOverflowMenu() {
   ConvertPointToScreen(overflow_button_, &origin);
   if (overflow_menu_runner_->RunMenuAt(GetWidget(), NULL,
           gfx::Rect(origin, size()), views::MenuItemView::TOPLEFT, 0) ==
-      views::MenuRunner::MENU_DELETED ||
-      menu_delegate.activated_command_id() == -1)
+      views::MenuRunner::MENU_DELETED)
+    return;
+
+  Shell::GetInstance()->UpdateShelfVisibility();
+
+  if (menu_delegate.activated_command_id() == -1)
     return;
 
   LauncherID activated_id = items[menu_delegate.activated_command_id()].id;
@@ -786,6 +800,8 @@ void LauncherView::ShowContextMenuForView(views::View* source,
           source->GetWidget(), NULL, gfx::Rect(point, gfx::Size()),
           views::MenuItemView::TOPLEFT, 0) == views::MenuRunner::MENU_DELETED)
     return;
+
+  Shell::GetInstance()->UpdateShelfVisibility();
 #endif
 }
 

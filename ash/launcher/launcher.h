@@ -54,7 +54,12 @@ class ASH_EXPORT Launcher : public internal::BackgroundAnimatorDelegate {
   // Returns the screen bounds of the item for the specified window. If there is
   // no item for the specified window an empty rect is returned.
   gfx::Rect GetScreenBoundsOfItemIconForWindow(aura::Window* window);
+
+  // Returns true if the Launcher is showing a context menu.
+  bool IsShowingMenu() const;
+
   // Only to be called for testing. Retrieves the LauncherView.
+  // TODO(sky): remove this!
   internal::LauncherView* GetLauncherViewForTest();
 
   LauncherDelegate* delegate() { return delegate_.get(); }

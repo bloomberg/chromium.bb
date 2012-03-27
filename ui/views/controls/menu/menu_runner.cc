@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,6 +28,8 @@ class MenuRunnerImpl : public internal::MenuControllerDelegate {
   explicit MenuRunnerImpl(MenuItemView* menu);
 
   MenuItemView* menu() { return menu_; }
+
+  bool running() const { return running_; }
 
   // See description above class for details.
   void Release();
@@ -266,6 +268,10 @@ MenuRunner::RunResult MenuRunner::RunMenuAt(Widget* parent,
                                             MenuItemView::AnchorPosition anchor,
                                             int32 types) {
   return holder_->RunMenuAt(parent, button, bounds, anchor, types);
+}
+
+bool MenuRunner::IsRunning() const {
+  return holder_->running();
 }
 
 void MenuRunner::Cancel() {

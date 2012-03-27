@@ -375,6 +375,9 @@ ShelfLayoutManager::AutoHideState ShelfLayoutManager::CalculateAutoHideState(
   if (shell->tray() && shell->tray()->should_show_launcher())
     return AUTO_HIDE_SHOWN;
 
+  if (launcher_ && launcher_->IsShowingMenu())
+    return AUTO_HIDE_SHOWN;
+
   aura::RootWindow* root = launcher_widget()->GetNativeView()->GetRootWindow();
   bool mouse_over_launcher =
       launcher_widget()->GetWindowScreenBounds().Contains(

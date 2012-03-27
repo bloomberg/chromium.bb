@@ -64,6 +64,9 @@ class ASH_EXPORT LauncherView : public views::View,
   // isn't know.
   gfx::Rect GetIdealBoundsOfItemIcon(LauncherID id);
 
+  // Returns true if we're showing a menu.
+  bool IsShowingMenu() const;
+
  private:
   class FadeOutAnimationDelegate;
   class StartFadeAnimationDelegate;

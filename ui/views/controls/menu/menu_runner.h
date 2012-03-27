@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -84,6 +84,9 @@ class VIEWS_EXPORT MenuRunner {
                       const gfx::Rect& bounds,
                       MenuItemView::AnchorPosition anchor,
                       int32 types) WARN_UNUSED_RESULT;
+
+  // Returns true if we're in a nested message loop running the menu.
+  bool IsRunning() const;
 
   // Hides and cancels the menu. This does nothing if the menu is not open.
   void Cancel();
