@@ -671,7 +671,7 @@ weston_surface_destroy(struct weston_surface *surface)
 }
 
 static void
-weston_buffer_attach(struct wl_buffer *buffer, struct wl_surface *surface)
+weston_surface_attach(struct wl_surface *surface, struct wl_buffer *buffer)
 {
 	struct weston_surface *es = (struct weston_surface *) surface;
 	struct weston_compositor *ec = es->compositor;
@@ -1160,7 +1160,7 @@ surface_attach(struct wl_client *client,
 	if (buffer_resource)
 		buffer = buffer_resource->data;
 
-	weston_buffer_attach(buffer, &es->surface);
+	weston_surface_attach(&es->surface, buffer);
 
 	if (buffer && es->configure)
 		es->configure(es, sx, sy);
@@ -1878,7 +1878,7 @@ input_device_attach(struct wl_client *client,
 	if (buffer_resource)
 		buffer = buffer_resource->data;
 
-	weston_buffer_attach(buffer, &device->sprite->surface);
+	weston_surface_attach(&device->sprite->surface, buffer);
 
 	if (!buffer)
 		return;
