@@ -46,13 +46,13 @@ void FinishFinalize(PrefService* local_state,
         local_state->GetString(prefs::kSignedSettingsCache);
     std::string policy_string;
     if (!base::Base64Decode(encoded, &policy_string)) {
-      LOG(WARNING) << "Can't decode policy from base64 on finalizing.";
+      LOG(ERROR) << "Can't decode policy from base64 on finalizing.";
       return;
     }
 
     em::PolicyData merging_policy_data;
     if (!merging_policy_data.ParseFromString(policy_string)) {
-      LOG(WARNING) << "Can't decode policy from string on finalizing.";
+      LOG(ERROR) << "Can't decode policy from string on finalizing.";
       return;
     }
 
@@ -100,7 +100,7 @@ bool Store(const em::PolicyData& policy, PrefService* local_state) {
     std::string policy_string = policy.SerializeAsString();
     std::string encoded;
     if (!base::Base64Encode(policy_string, &encoded)) {
-      LOG(WARNING) << "Can't encode policy in base64.";
+      LOG(ERROR) << "Can't encode policy in base64.";
       return false;
     }
     local_state->SetString(prefs::kSignedSettingsCache, encoded);
@@ -115,7 +115,8 @@ bool Retrieve(em::PolicyData *policy, PrefService* local_state) {
         local_state->GetString(prefs::kSignedSettingsCache);
     std::string policy_string;
     if (!base::Base64Decode(encoded, &policy_string)) {
-      LOG(WARNING) << "Can't decode policy from base64.";
+      // This is normal and happens on first boot.
+      VLOG(1) << "Can't decode policy from base64.";
       return false;
     }
     return policy->ParseFromString(policy_string);
