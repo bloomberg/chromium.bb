@@ -39,6 +39,17 @@ class ModuleSystem : public NativeHandler {
     virtual bool Contains(const std::string& name) = 0;
   };
 
+  // Enables native bindings for the duration of its lifetime.
+  class NativesEnabledScope {
+   public:
+    explicit NativesEnabledScope(ModuleSystem* module_system);
+    ~NativesEnabledScope();
+
+   private:
+    ModuleSystem* module_system_;
+    DISALLOW_COPY_AND_ASSIGN(NativesEnabledScope);
+  };
+
   // |source_map| is a weak pointer.
   explicit ModuleSystem(SourceMap* source_map);
   virtual ~ModuleSystem();
@@ -59,14 +70,9 @@ class ModuleSystem : public NativeHandler {
   // Executes |code| in the current context with |name| as the filename.
   void RunString(const std::string& code, const std::string& name);
 
-  // When false |natives_enabled_| causes calls to GetNative() (the basis of
-  // requireNative() in JS) to throw an exception.
-  void set_natives_enabled(bool natives_enabled) {
-    natives_enabled_ = natives_enabled;
-  }
-
-  static v8::Handle<v8::Value> GetterRouter(v8::Local<v8::String> property,
-                                            const v8::AccessorInfo& info);
+  // Retrieves the lazily defined field specified by |property|.
+  static v8::Handle<v8::Value> LazyFieldGetter(v8::Local<v8::String> property,
+                                               const v8::AccessorInfo& info);
 
   // Make |object|.|field| lazily evaluate to the result of
   // require(|module_name|)[|module_field|].
@@ -105,7 +111,11 @@ class ModuleSystem : public NativeHandler {
   // performs a lookup on this map.
   SourceMap* source_map_;
   NativeHandlerMap native_handler_map_;
-  bool natives_enabled_;
+  // When 0, natives are disabled, otherwise indicates how many callers have
+  // pinned natives as enabled.
+  int natives_enabled_;
+
+  DISALLOW_COPY_AND_ASSIGN(ModuleSystem);
 };
 
 #endif  // CHROME_RENDERER_MODULE_SYSTEM_H_

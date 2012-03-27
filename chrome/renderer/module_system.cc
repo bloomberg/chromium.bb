@@ -16,7 +16,7 @@ const char* kModuleField = "module_field";
 
 ModuleSystem::ModuleSystem(SourceMap* source_map)
     : source_map_(source_map),
-      natives_enabled_(true) {
+      natives_enabled_(0) {
   RouteFunction("require",
       base::Bind(&ModuleSystem::RequireForJs, base::Unretained(this)));
   RouteFunction("requireNative",
@@ -27,6 +27,17 @@ ModuleSystem::ModuleSystem(SourceMap* source_map)
 }
 
 ModuleSystem::~ModuleSystem() {
+}
+
+ModuleSystem::NativesEnabledScope::NativesEnabledScope(
+    ModuleSystem* module_system)
+    : module_system_(module_system) {
+  module_system_->natives_enabled_++;
+}
+
+ModuleSystem::NativesEnabledScope::~NativesEnabledScope() {
+  module_system_->natives_enabled_--;
+  CHECK_GE(module_system_->natives_enabled_, 0);
 }
 
 void ModuleSystem::Require(const std::string& module_name) {
@@ -80,7 +91,7 @@ void ModuleSystem::RunString(const std::string& code, const std::string& name) {
 }
 
 // static
-v8::Handle<v8::Value> ModuleSystem::GetterRouter(
+v8::Handle<v8::Value> ModuleSystem::LazyFieldGetter(
     v8::Local<v8::String> property, const v8::AccessorInfo& info) {
   CHECK(!info.Data().IsEmpty());
   CHECK(info.Data()->IsObject());
@@ -91,8 +102,12 @@ v8::Handle<v8::Value> ModuleSystem::GetterRouter(
   ModuleSystem* module_system = static_cast<ModuleSystem*>(
       v8::Handle<v8::External>::Cast(module_system_value)->Value());
 
-  v8::Handle<v8::Object> module = module_system->RequireForJsInner(
-      parameters->Get(v8::String::New(kModuleName))->ToString())->ToObject();
+  v8::Handle<v8::Object> module;
+  {
+    NativesEnabledScope scope(module_system);
+    module = module_system->RequireForJsInner(
+        parameters->Get(v8::String::New(kModuleName))->ToString())->ToObject();
+  }
 
   v8::Handle<v8::String> field =
       parameters->Get(v8::String::New(kModuleField))->ToString();
@@ -113,7 +128,7 @@ void ModuleSystem::SetLazyField(v8::Handle<v8::Object> object,
   parameters->Set(v8::String::New(kModuleSystem), v8::External::New(this));
 
   object->SetAccessor(v8::String::New(field.c_str()),
-                      &ModuleSystem::GetterRouter,
+                      &ModuleSystem::LazyFieldGetter,
                       NULL,
                       parameters);
 }
@@ -135,7 +150,7 @@ v8::Handle<v8::Value> ModuleSystem::GetSource(
 
 v8::Handle<v8::Value> ModuleSystem::GetNative(const v8::Arguments& args) {
   CHECK_EQ(1, args.Length());
-  if (!natives_enabled_)
+  if (natives_enabled_ == 0)
     return ThrowException("Natives disabled");
   std::string native_name = *v8::String::AsciiValue(args[0]->ToString());
   NativeHandlerMap::iterator i = native_handler_map_.find(native_name);

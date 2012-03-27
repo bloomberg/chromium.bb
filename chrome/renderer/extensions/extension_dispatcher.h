@@ -104,6 +104,9 @@ class ExtensionDispatcher : public content::RenderProcessObserver {
 
  private:
   friend class RenderViewTest;
+  typedef void (*BindingInstaller)(ModuleSystem* module_system,
+                                  v8::Handle<v8::Object> chrome,
+                                  v8::Handle<v8::Object> chrome_hidden);
 
   // RenderProcessObserver implementation:
   virtual bool OnControlMessageReceived(const IPC::Message& message) OVERRIDE;
@@ -156,6 +159,14 @@ class ExtensionDispatcher : public content::RenderProcessObserver {
   // Inserts static source code into |source_map_|.
   void PopulateSourceMap();
 
+  // Inserts BindingInstallers into |lazy_bindings_map_|.
+  void PopulateLazyBindingsMap();
+
+  // Sets up the bindings for the given api.
+  void InstallBindings(ModuleSystem* module_system,
+                       v8::Handle<v8::Context> v8_context,
+                       const std::string& api);
+
   // Returns the Feature::Context type of context for a JavaScript context.
   extensions::Feature::Context ClassifyJavaScriptContext(
       const std::string& extension_id,
@@ -204,6 +215,10 @@ class ExtensionDispatcher : public content::RenderProcessObserver {
 
   // Cache for the v8 representation of extension API schemas.
   extensions::V8SchemaRegistry v8_schema_registry_;
+
+  // Bindings that are defined lazily and have BindingInstallers to install
+  // them.
+  std::map<std::string, BindingInstaller> lazy_bindings_map_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionDispatcher);
 };

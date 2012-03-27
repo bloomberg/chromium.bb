@@ -5,9 +5,9 @@
 // Custom bindings for the app API.
 
 var appNatives = requireNative('app');
-var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
 
-chrome.app = {
+// This becomes chrome.app
+var app = {
   getIsInstalled: appNatives.GetIsInstalled,
   install: appNatives.Install,
   getDetails: appNatives.GetDetails,
@@ -20,10 +20,11 @@ chrome.app = {
 //
 // So, define it manually, and let the getIsInstalled function act as its
 // documentation.
-chrome.app.__defineGetter__('isInstalled', appNatives.GetIsInstalled);
+app.__defineGetter__('isInstalled', appNatives.GetIsInstalled);
 
 // Called by app_bindings.cc.
-chromeHidden.app = {
+// This becomes chromeHidden.app
+var chromeHiddenApp = {
   onGetAppNotifyChannelResponse: function(channelId, error, callbackId) {
     if (callbackId) {
       callbacks[callbackId](channelId, error);
@@ -40,7 +41,8 @@ chromeHidden.app = {
 var callbacks = {};
 var nextCallbackId = 1;
 
-chrome.appNotifications = {
+// This becomes chrome.appNotifications.
+var appNotifications = {
   getChannel: function getChannel(clientId, callback) {
     var callbackId = 0;
     if (callback) {
@@ -50,3 +52,9 @@ chrome.appNotifications = {
     appNatives.GetAppNotifyChannel(clientId, callbackId);
   }
 };
+
+// These must match the names in InstallAppBindings() in
+// extension_dispatcher.cc.
+exports.chromeApp = app;
+exports.chromeAppNotifications = appNotifications;
+exports.chromeHiddenApp = chromeHiddenApp;

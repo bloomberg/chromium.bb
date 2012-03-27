@@ -118,6 +118,24 @@ class PrintNativeHandler : public NativeHandler {
   }
 };
 
+void InstallAppBindings(ModuleSystem* module_system,
+                        v8::Handle<v8::Object> chrome,
+                        v8::Handle<v8::Object> chrome_hidden) {
+  module_system->SetLazyField(chrome, "app", "app", "chromeApp");
+  module_system->SetLazyField(chrome, "appNotifications", "app",
+                              "chromeAppNotifications");
+  module_system->SetLazyField(chrome_hidden, "app", "app",
+                              "chromeHiddenApp");
+}
+
+void InstallWebstoreBindings(ModuleSystem* module_system,
+                             v8::Handle<v8::Object> chrome,
+                             v8::Handle<v8::Object> chrome_hidden) {
+  module_system->SetLazyField(chrome, "webstore", "webstore", "chromeWebstore");
+  module_system->SetLazyField(chrome_hidden, "webstore", "webstore",
+                              "chromeHiddenWebstore");
+}
+
 }
 
 ExtensionDispatcher::ExtensionDispatcher()
@@ -138,6 +156,7 @@ ExtensionDispatcher::ExtensionDispatcher()
 
   user_script_slave_.reset(new UserScriptSlave(&extensions_));
   PopulateSourceMap();
+  PopulateLazyBindingsMap();
 }
 
 ExtensionDispatcher::~ExtensionDispatcher() {
@@ -428,6 +447,28 @@ void ExtensionDispatcher::PopulateSourceMap() {
   source_map_.RegisterSource("webstore", IDR_WEBSTORE_CUSTOM_BINDINGS_JS);
 }
 
+void ExtensionDispatcher::PopulateLazyBindingsMap() {
+  lazy_bindings_map_["app"] = InstallAppBindings;
+  lazy_bindings_map_["webstore"] = InstallWebstoreBindings;
+}
+
+void ExtensionDispatcher::InstallBindings(ModuleSystem* module_system,
+                                          v8::Handle<v8::Context> v8_context,
+                                          const std::string& api) {
+  std::map<std::string, BindingInstaller>::const_iterator lazy_binding =
+      lazy_bindings_map_.find(api);
+  if (lazy_binding != lazy_bindings_map_.end()) {
+    v8::Handle<v8::Object> global(v8_context->Global());
+    v8::Handle<v8::Object> chrome =
+        global->Get(v8::String::New("chrome"))->ToObject();
+    v8::Handle<v8::Object> chrome_hidden =
+        ChromeV8Context::GetOrCreateChromeHidden(v8_context)->ToObject();
+    (*lazy_binding->second)(module_system, chrome, chrome_hidden);
+  } else {
+    module_system->Require(api);
+  }
+}
+
 void ExtensionDispatcher::DidCreateScriptContext(
     WebFrame* frame, v8::Handle<v8::Context> v8_context, int extension_group,
     int world_id) {
@@ -460,6 +501,9 @@ void ExtensionDispatcher::DidCreateScriptContext(
   v8_context_set_.Add(context);
 
   scoped_ptr<ModuleSystem> module_system(new ModuleSystem(&source_map_));
+  // Enable natives in startup.
+  ModuleSystem::NativesEnabledScope natives_enabled_scope(module_system.get());
+
   RegisterNativeHandlers(module_system.get(), context);
 
   module_system->RegisterNativeHandler("chrome_hidden",
@@ -486,8 +530,8 @@ void ExtensionDispatcher::DidCreateScriptContext(
     case Feature::UNSPECIFIED_CONTEXT:
     case Feature::WEB_PAGE_CONTEXT:
       // TODO(kalman): see comment below about ExtensionAPI.
-      module_system->Require("app");
-      module_system->Require("webstore");
+      InstallBindings(module_system.get(), v8_context, "app");
+      InstallBindings(module_system.get(), v8_context, "webstore");
       break;
 
     case Feature::BLESSED_EXTENSION_CONTEXT:
@@ -508,7 +552,7 @@ void ExtensionDispatcher::DidCreateScriptContext(
             context_type, extension, url_info.url());
       for (std::set<std::string>::iterator i = apis->begin(); i != apis->end();
           ++i) {
-        module_system->Require(*i);
+        InstallBindings(module_system.get(), v8_context, *i);
       }
 
       break;
@@ -521,10 +565,8 @@ void ExtensionDispatcher::DidCreateScriptContext(
   if (IsTestExtensionId(extension_id)) {
     module_system->Require("miscellaneous_bindings");
     module_system->Require("schema_generated_bindings");
-    module_system->Require("extension");
+    InstallBindings(module_system.get(), v8_context, "extension");
   }
-
-  module_system->set_natives_enabled(false);
 
   context->set_module_system(module_system.Pass());
 

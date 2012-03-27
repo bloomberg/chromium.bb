@@ -9,10 +9,13 @@
 #include "v8/include/v8.h"
 
 NativeHandler::NativeHandler()
-    : object_template_(v8::ObjectTemplate::New()) {
+    : object_template_(
+        v8::Persistent<v8::ObjectTemplate>::New(v8::ObjectTemplate::New())) {
 }
 
-NativeHandler::~NativeHandler() {}
+NativeHandler::~NativeHandler() {
+  object_template_.Dispose();
+}
 
 v8::Handle<v8::Object> NativeHandler::NewInstance() {
   return object_template_->NewInstance();

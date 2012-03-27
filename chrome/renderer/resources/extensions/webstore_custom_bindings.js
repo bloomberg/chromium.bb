@@ -4,7 +4,6 @@
 
 // Custom bindings for the webstore API.
 
-var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
 var webstoreNatives = requireNative('webstore');
 
 function Installer() {
@@ -42,15 +41,20 @@ Installer.prototype.onInstallResponse = function(installId, success, error) {
 
 var installer = new Installer();
 
-chrome.webstore = {
+var chromeWebstore = {
   install: function install(url, onSuccess, onFailure) {
     installer.install(url, onSuccess, onFailure);
   }
 };
 
 // Called by webstore_bindings.cc.
-chromeHidden.webstore = {
+var chromeHiddenWebstore = {
   onInstallResponse: function(installId, success, error) {
     installer.onInstallResponse(installId, success, error);
   }
 };
+
+// These must match the names in InstallWebstoreBindings in
+// extension_dispatcher.cc.
+exports.chromeWebstore = chromeWebstore;
+exports.chromeHiddenWebstore = chromeHiddenWebstore;

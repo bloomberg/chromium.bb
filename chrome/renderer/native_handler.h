@@ -49,7 +49,7 @@ class NativeHandler {
   static v8::Handle<v8::Value> Router(const v8::Arguments& args);
 
   std::vector<linked_ptr<HandlerFunction> > handler_functions_;
-  v8::Handle<v8::ObjectTemplate> object_template_;
+  v8::Persistent<v8::ObjectTemplate> object_template_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeHandler);
 };
