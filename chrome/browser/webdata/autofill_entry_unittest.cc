@@ -5,19 +5,20 @@
 #include <algorithm>
 
 #include "base/time.h"
+#include "base/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "chrome/browser/webdata/autofill_entry.h"
 
-extern const unsigned int kMaxAutofillTimeStamps;
+const unsigned int kMaxAutofillTimeStamps = 2;
+
 TEST(AutofillEntryTest, NoCulling) {
   std::vector<base::Time> source, result;
   base::Time current = base::Time::Now();
-  for (size_t i = 0; i < kMaxAutofillTimeStamps -1 ; ++i) {
+  for (size_t i = 0; i < kMaxAutofillTimeStamps; ++i)
     source.push_back(current);
-  }
 
   EXPECT_FALSE(AutofillEntry::CullTimeStamps(source, &result));
-  EXPECT_EQ(result.size(), kMaxAutofillTimeStamps -1);
+  EXPECT_EQ(result.size(), kMaxAutofillTimeStamps);
   for (std::vector<base::Time>::const_iterator it = result.begin();
        it != result.end(); ++it) {
     EXPECT_EQ(*it, current);
@@ -38,11 +39,40 @@ TEST(AutofillEntryTest, Culling) {
   EXPECT_TRUE(AutofillEntry::CullTimeStamps(source, &result));
 
   EXPECT_EQ(result.size(), kMaxAutofillTimeStamps);
-  int count = kMaxAutofillTimeStamps * 2 - 1;
-  for (std::vector<base::Time>::const_iterator it = result.begin();
-       it != result.end(); ++it) {
-    EXPECT_EQ(*it, base::Time::FromInternalValue(
-              count*offset + internal_value));
-    --count;
-  }
+  EXPECT_EQ(result.front(), base::Time::FromInternalValue(internal_value));
+  int last_offset = (kMaxAutofillTimeStamps * 2 - 1) * offset;
+  EXPECT_EQ(result.back(),
+            base::Time::FromInternalValue(last_offset + internal_value));
+}
+
+TEST(AutofillEntryTest, CullByTime) {
+  base::TimeDelta one_hour = base::TimeDelta::FromHours(1);
+
+  std::vector<base::Time> timestamps;
+  base::Time cutoff_time = AutofillEntry::ExpirationTime();
+
+  // Within the time limit.
+  timestamps.push_back(cutoff_time + one_hour);
+
+  AutofillKey key(UTF8ToUTF16("test_key"), UTF8ToUTF16("test_value"));
+
+  AutofillEntry entry_within_the_limits(key, timestamps);
+  EXPECT_FALSE(entry_within_the_limits.IsExpired());
+
+  // One within the time limit, one outside.
+  timestamps.push_back(cutoff_time - one_hour);
+
+  AutofillEntry entry_partially_within_the_limits(key, timestamps);
+  EXPECT_TRUE(
+      entry_partially_within_the_limits.IsExpired());
+
+  // All outside the time limit.
+  timestamps.clear();
+  timestamps.push_back(cutoff_time - one_hour);
+  timestamps.push_back(cutoff_time - one_hour * 2);
+  timestamps.push_back(cutoff_time - one_hour * 3);
+
+  AutofillEntry entry_outside_the_limits(key, timestamps);
+  EXPECT_TRUE(entry_outside_the_limits.IsExpired());
+  EXPECT_TRUE(entry_outside_the_limits.timestamps_culled());
 }

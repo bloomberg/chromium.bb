@@ -23,6 +23,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/webdata/autofill_entry.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
@@ -161,6 +162,19 @@ void PersonalDataManager::OnWebDataServiceRequestDone(
     AutofillProfile::AdjustInferredLabels(&profile_pointers);
     FOR_EACH_OBSERVER(PersonalDataManagerObserver, observers_,
                       OnPersonalDataChanged());
+
+    // As all Autofill data is ready, the Autocomplete data is ready as well.
+    // If sync is not set, cull older entries of the autocomplete. Otherwise,
+    // the entries will be culled when sync is connected.
+    ProfileSyncService* sync_service =
+        ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile_);
+    if (sync_service && (!sync_service->HasSyncSetupCompleted() ||
+        !profile_->GetPrefs()->GetBoolean(prefs::kSyncAutofill))) {
+      WebDataService* wds =
+          profile_->GetWebDataService(Profile::EXPLICIT_ACCESS);
+      if (wds)
+        wds->RemoveExpiredFormElements();
+    }
   }
 }
 

@@ -58,6 +58,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 
 using base::Time;
+using base::TimeDelta;
 using base::WaitableEvent;
 using browser_sync::AutofillDataTypeController;
 using browser_sync::AutofillProfileDataTypeController;
@@ -542,21 +543,25 @@ class ProfileSyncServiceAutofillTest : public AbstractProfileSyncServiceTest {
 
   static AutofillEntry MakeAutofillEntry(const char* name,
                                          const char* value,
-                                         time_t timestamp0,
-                                         time_t timestamp1) {
+                                         int time_shift0,
+                                         int time_shift1) {
+    // Time deep in the past would cause Autocomplete sync to discard the
+    // entries.
+    static Time base_time = Time::Now().LocalMidnight();
+
     std::vector<Time> timestamps;
-    if (timestamp0 > 0)
-      timestamps.push_back(Time::FromTimeT(timestamp0));
-    if (timestamp1 > 0)
-      timestamps.push_back(Time::FromTimeT(timestamp1));
+    if (time_shift0 > 0)
+      timestamps.push_back(base_time + TimeDelta::FromSeconds(time_shift0));
+    if (time_shift1 > 0)
+      timestamps.push_back(base_time + TimeDelta::FromSeconds(time_shift1));
     return AutofillEntry(
         AutofillKey(ASCIIToUTF16(name), ASCIIToUTF16(value)), timestamps);
   }
 
   static AutofillEntry MakeAutofillEntry(const char* name,
                                          const char* value,
-                                         time_t timestamp) {
-    return MakeAutofillEntry(name, value, timestamp, -1);
+                                         int time_shift) {
+    return MakeAutofillEntry(name, value, time_shift, -1);
   }
 
   friend class AddAutofillHelper<AutofillEntry>;

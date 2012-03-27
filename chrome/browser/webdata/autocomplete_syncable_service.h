@@ -6,6 +6,7 @@
 #pragma once
 
 #include <map>
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -93,9 +94,15 @@ class AutocompleteSyncableService
       AutocompleteEntryMap;
 
   // Creates or updates an autocomplete entry based on |data|.
+  // |data| -  an entry for sync.
+  // |loaded_data| - entries that were loaded from local storage.
+  // |new_entries| - entries that came from the sync.
+  // |ignored_entries| - entries that came from the sync, but too old to be
+  // stored and immediately discarded.
   void CreateOrUpdateEntry(const SyncData& data,
                            AutocompleteEntryMap* loaded_data,
-                           std::vector<AutofillEntry>* bundle);
+                           std::vector<AutofillEntry>* new_entries,
+                           std::vector<AutofillEntry>* ignored_entries);
 
   // Writes |entry| data into supplied |autofill_specifics|.
   static void WriteAutofillEntry(const AutofillEntry& entry,
@@ -117,6 +124,9 @@ class AutocompleteSyncableService
   void set_sync_processor(SyncChangeProcessor* sync_processor) {
     sync_processor_.reset(sync_processor);
   }
+
+  // Ignore deletions of the following keys as they were never synced.
+  std::set<AutofillKey> keys_to_ignore_;
 
   // Lifetime of AutocompleteSyncableService object is shorter than
   // |web_data_service_| passed to it.

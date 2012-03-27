@@ -512,6 +512,7 @@ class WebDataService
   // Removes form elements recorded for Autocomplete from the database.
   void RemoveFormElementsAddedBetween(const base::Time& delete_begin,
                                       const base::Time& delete_end);
+  void RemoveExpiredFormElements();
   void RemoveFormValueForElementName(const string16& name,
                                      const string16& value);
 
@@ -715,6 +716,7 @@ class WebDataService
       const string16& name, const string16& prefix, int limit);
   void RemoveFormElementsAddedBetweenImpl(
       GenericRequest2<base::Time, base::Time>* request);
+  void RemoveExpiredFormElementsImpl(WebDataRequest* request);
   void RemoveFormValueForElementNameImpl(
       GenericRequest2<string16, string16>* request);
   void AddAutofillProfileImpl(GenericRequest<AutofillProfile>* request);

@@ -141,20 +141,25 @@ TEST_F(AutofillTableTest, Autofill) {
   FormField field;
   field.name = ASCIIToUTF16("Name");
   field.value = ASCIIToUTF16("Superman");
+  base::Time now = base::Time::Now();
+  base::TimeDelta two_seconds = base::TimeDelta::FromSeconds(2);
   EXPECT_TRUE(db.GetAutofillTable()->AddFormFieldValue(field, &changes));
   std::vector<string16> v;
   for (int i = 0; i < 5; i++) {
     field.value = ASCIIToUTF16("Clark Kent");
-    EXPECT_TRUE(db.GetAutofillTable()->AddFormFieldValue(field, &changes));
+    EXPECT_TRUE(db.GetAutofillTable()->AddFormFieldValueTime(field, &changes,
+        now + i * two_seconds));
   }
   for (int i = 0; i < 3; i++) {
     field.value = ASCIIToUTF16("Clark Sutter");
-    EXPECT_TRUE(db.GetAutofillTable()->AddFormFieldValue(field, &changes));
+    EXPECT_TRUE(db.GetAutofillTable()->AddFormFieldValueTime(field, &changes,
+        now + i * two_seconds));
   }
   for (int i = 0; i < 2; i++) {
     field.name = ASCIIToUTF16("Favorite Color");
     field.value = ASCIIToUTF16("Green");
-    EXPECT_TRUE(db.GetAutofillTable()->AddFormFieldValue(field, &changes));
+    EXPECT_TRUE(db.GetAutofillTable()->AddFormFieldValueTime(field, &changes,
+        now + i * two_seconds));
   }
 
   int count = 0;
