@@ -1502,6 +1502,10 @@ const char kSyncAcknowledgedSyncTypes[] = "sync.acknowledged_types";
 // version (int64 represented as a string).
 const char kSyncMaxInvalidationVersions[] = "sync.max_invalidation_versions";
 
+// The GUID session sync will use to identify this client, even across sync
+// disable/enable events.
+const char kSyncSessionsGUID[] = "sync.session_sync_guid";
+
 // A string that can be used to restore sync encryption infrastructure on
 // startup so that the user doesn't need to provide credentials on each start.
 const char kSyncEncryptionBootstrapToken[] =

@@ -28,6 +28,7 @@
 #include "chrome/browser/sync/glue/synced_window_delegate.h"
 #include "sync/syncable/model_type.h"
 
+class Prefservice;
 class Profile;
 class ProfileSyncService;
 
@@ -463,8 +464,11 @@ class SessionModelAssociator
   bool waiting_for_change_;
   base::WeakPtrFactory<SessionModelAssociator> test_weak_factory_;
 
-  // Profile being synced.
-  const Profile* const profile_;
+  // Profile being synced. Weak pointer.
+  Profile* const profile_;
+
+  // Pref service. Used to persist the session sync guid. Weak pointer.
+  PrefService* const pref_service_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionModelAssociator);
 };

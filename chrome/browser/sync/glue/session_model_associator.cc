@@ -11,12 +11,10 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/sys_info.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "chrome/browser/browser_process.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_id.h"
-#include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/sync/api/sync_error.h"
 #include "chrome/browser/sync/glue/synced_session.h"
 #include "chrome/browser/sync/glue/synced_tab_delegate.h"
@@ -27,6 +25,7 @@
 #include "chrome/browser/sync/internal_api/write_transaction.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_details.h"
@@ -44,6 +43,7 @@
 
 using content::BrowserThread;
 using content::NavigationEntry;
+using prefs::kSyncSessionsGUID;
 using syncable::SESSIONS;
 
 namespace browser_sync {
@@ -90,10 +90,16 @@ SessionModelAssociator::SessionModelAssociator(ProfileSyncService* sync_service)
       setup_for_test_(false),
       waiting_for_change_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(test_weak_factory_(this)),
-      profile_(sync_service->profile()) {
+      profile_(sync_service->profile()),
+      pref_service_(profile_->GetPrefs()) {
   DCHECK(CalledOnValidThread());
   DCHECK(sync_service_);
   DCHECK(profile_);
+  if (pref_service_->FindPreference(kSyncSessionsGUID) == NULL) {
+    pref_service_->RegisterStringPref(kSyncSessionsGUID,
+                                      std::string(),
+                                      PrefService::UNSYNCABLE_PREF);
+  }
 }
 
 SessionModelAssociator::SessionModelAssociator(ProfileSyncService* sync_service,
@@ -105,10 +111,12 @@ SessionModelAssociator::SessionModelAssociator(ProfileSyncService* sync_service,
       setup_for_test_(setup_for_test),
       waiting_for_change_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(test_weak_factory_(this)),
-      profile_(sync_service->profile()) {
+      profile_(sync_service->profile()),
+      pref_service_(NULL)  {
   DCHECK(CalledOnValidThread());
   DCHECK(sync_service_);
   DCHECK(profile_);
+  DCHECK(setup_for_test);
 }
 
 SessionModelAssociator::~SessionModelAssociator() {
@@ -562,10 +570,23 @@ bool SessionModelAssociator::DisassociateModels(SyncError* error) {
 void SessionModelAssociator::InitializeCurrentMachineTag(
     sync_api::WriteTransaction* trans) {
   DCHECK(CalledOnValidThread());
-  syncable::Directory* dir = trans->GetWrappedWriteTrans()->directory();
-  current_machine_tag_ = "session_sync";
-  current_machine_tag_.append(dir->cache_guid());
-  DVLOG(1) << "Creating machine tag: " << current_machine_tag_;
+  DCHECK(current_machine_tag_.empty());
+  std::string persisted_guid;
+  if (pref_service_)
+    persisted_guid = pref_service_->GetString(kSyncSessionsGUID);
+  if (!persisted_guid.empty()) {
+    current_machine_tag_ = persisted_guid;
+    DVLOG(1) << "Restoring persisted session sync guid: "
+             << persisted_guid;
+  } else {
+    syncable::Directory* dir = trans->GetWrappedWriteTrans()->directory();
+    current_machine_tag_ = "session_sync";
+    current_machine_tag_.append(dir->cache_guid());
+    DVLOG(1) << "Creating session sync guid: " << current_machine_tag_;
+    if (pref_service_)
+      pref_service_->SetString(kSyncSessionsGUID, current_machine_tag_);
+  }
+
   tab_pool_.set_machine_tag(current_machine_tag_);
 }
 
