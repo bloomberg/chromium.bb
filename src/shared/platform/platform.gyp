@@ -174,37 +174,33 @@
         '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio',
       ],
     },
+    {
+      'target_name': 'platform_lib',
+      'type': 'none',
+      'variables': {
+        'nlib_target': 'libplatform.a',
+        'build_glibc': 1,
+        'build_newlib': 1,
+        'sources': [
+          'nacl_check.c',
+          'nacl_log.c',
+          'linux/condition_variable.c',
+          'linux/lock.c',
+          'linux/nacl_exit.c',
+          'linux/nacl_thread_id.c',
+          'linux/nacl_threads.c',
+          'linux/nacl_timestamp.c',
+          'nacl_sync_checked.c',
+          'refcount_base.cc',
+        ]
+        },
+      'dependencies': [
+        '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
+      ],
+    },
     # ----------------------------------------------------------------------
   ],
   'conditions': [
-    # NOTE: we do not support untrusted gyp build on arm yet.
-    ['target_arch!="arm"', {
-      'targets': [
-      {
-        'target_name': 'platform_lib',
-        'type': 'none',
-        'variables': {
-          'nlib_target': 'libplatform.a',
-          'build_glibc': 1,
-          'build_newlib': 1,
-          'sources': [
-            'nacl_check.c',
-            'nacl_log.c',
-            'linux/condition_variable.c',
-            'linux/lock.c',
-            'linux/nacl_exit.c',
-            'linux/nacl_thread_id.c',
-            'linux/nacl_threads.c',
-            'linux/nacl_timestamp.c',
-            'nacl_sync_checked.c',
-            'refcount_base.cc',
-          ]
-        },
-        'dependencies': [
-          '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
-        ],
-      }],
-    }],
     ['OS=="win"', {
       'targets': [
         # ---------------------------------------------------------------------
@@ -239,4 +235,3 @@
     }],
   ],
 }
-

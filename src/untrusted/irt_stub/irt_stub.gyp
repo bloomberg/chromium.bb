@@ -14,24 +14,19 @@
       'thread_creator.c'
     ]
   },
-  'conditions': [
-    # NOTE: We do not support untrusted gyp build on arm yet.
-    ['target_arch!="arm"', {
-      'targets' : [
-        {
-          'target_name': 'ppapi_stub_lib',
-          'type': 'none',
-          'variables': {
-            'nlib_target': 'libppapi_stub.a',
-            'build_glibc': 1,
-            'build_newlib': 1,
-            'sources': ['<@(common_sources)']
-          },
-          'dependencies': [
-            '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
-          ],
-        },
+  'targets' : [
+    {
+      'target_name': 'ppapi_stub_lib',
+      'type': 'none',
+      'variables': {
+        'nlib_target': 'libppapi_stub.a',
+        'build_glibc': 1,
+        'build_newlib': 1,
+        'sources': ['<@(common_sources)']
+      },
+      'dependencies': [
+        '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
       ],
-    }],
+    },
   ],
 }

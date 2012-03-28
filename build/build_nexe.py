@@ -81,8 +81,17 @@ class Builder(object):
       self.mainarch = 'x86'
       self.subarch = arch.split('-')[1]
       tool_subdir = 'x86_64-nacl'
+      self.pnacl = False
+    elif arch == 'arm':
+      self.arch = arch
+      self.mainarch = 'arm'
+      self.subarch = ''
+      self.pnacl = True
     else:
       ErrOut('Toolchain architecture %s not supported.' % arch)
+
+    if arch == 'arm' and toolname == 'glibc':
+      ErrOut('arm/glibc not yet supported.')
 
     if toolname == 'newlib':
       toolchain = '%s_%s_newlib' % (self.osname, self.mainarch)
@@ -100,10 +109,22 @@ class Builder(object):
     self.outdir = options.objdir
 
     # Set the toolchain directories
-    self.toolchain = self.GenNaClPath(os.path.join('toolchain', toolchain))
-    self.toolbin = os.path.join(self.toolchain, tool_subdir, 'bin')
-    self.toollib = os.path.join(self.toolchain, tool_subdir, 'lib'+self.subarch)
-    self.toolinc = os.path.join(self.toolchain, tool_subdir, 'include')
+    if self.pnacl:
+      pnacldir = 'pnacl_%s_x86_64' % self.osname
+      self.toolchain = self.GenNaClPath(os.path.join('toolchain',
+                                                     pnacldir,
+                                                     self.toolname))
+      self.toolbin = os.path.join(self.toolchain, 'bin')
+      self.toollib = os.path.join(self.toolchain, 'lib')
+      self.toolinc = os.path.join(self.toolchain, 'sysroot', 'include')
+    else:
+      self.toolchain = self.GenNaClPath(os.path.join('toolchain',
+                                                     toolchain))
+      self.toolbin = os.path.join(self.toolchain, tool_subdir, 'bin')
+      self.toollib = os.path.join(self.toolchain,
+                                  tool_subdir,
+                                  'lib' + self.subarch)
+      self.toolinc = os.path.join(self.toolchain, tool_subdir, 'include')
 
     self.inc_paths = ArgToList(options.incdirs)
     self.lib_paths = ArgToList(options.libdirs)
@@ -129,6 +150,34 @@ class Builder(object):
   def GetBinName(self, name):
     """Helper which prepends executable with the toolchain bin directory."""
     return os.path.join(self.toolbin, name)
+
+  def GetCCompiler(self):
+    """Helper which returns C compiler path."""
+    if self.pnacl:
+      return self.GetBinName('pnacl-clang')
+    else:
+      return self.GetBinName('gcc')
+
+  def GetCXXCompiler(self):
+    """Helper which returns C++ compiler path."""
+    if self.pnacl:
+      return self.GetBinName('pnacl-clang++')
+    else:
+      return self.GetBinName('g++')
+
+  def GetAr(self):
+    """Helper which returns ar path."""
+    if self.pnacl:
+      return self.GetBinName('pnacl-ar')
+    else:
+      return self.GetBinName('ar')
+
+  def GetStrip(self):
+    """Helper which returns strip path."""
+    if self.pnacl:
+      return self.GetBinName('pnacl-strip')
+    else:
+      return self.GetBinName('strip')
 
   def BuildAssembleOptions(self, options):
     options = ArgToList(options)
@@ -188,10 +237,13 @@ class Builder(object):
 
     filename, ext = os.path.splitext(src)
     if ext == '.c' or ext == '.S':
-      bin_name = self.GetBinName('gcc')
+      bin_name = self.GetCCompiler()
       extra = ['-std=gnu99']
+      if self.pnacl and ext == '.S':
+        extra.append('-arch')
+        extra.append(self.arch)
     elif ext == '.cc':
-      bin_name = self.GetBinName('g++')
+      bin_name = self.GetCXXCompiler()
       extra = []
     else:
       if self.verbose and ext != '.h':
@@ -218,7 +270,7 @@ class Builder(object):
     out = self.name
     if self.verbose:
       print '\nLink %s' % out
-    bin_name = self.GetBinName('g++')
+    bin_name = self.GetCXXCompiler()
     MakeDir(os.path.dirname(out))
     self.CleanOutput(out)
 
@@ -244,13 +296,13 @@ class Builder(object):
 
 
     if '-r' in self.link_options:
-      bin_name = self.GetBinName('g++')
+      bin_name = self.GetCXXCompiler()
       cmd_line = [bin_name, '-o', out, '-Wl,--as-needed']
       if not self.empty:
         cmd_line += srcs
       cmd_line += self.link_options
     else:
-      bin_name = self.GetBinName('ar')
+      bin_name = self.GetAr()
       cmd_line = [bin_name, '-rc', out]
       if not self.empty:
         cmd_line += srcs
@@ -273,7 +325,7 @@ class Builder(object):
     tmp = out + '.tmp'
     self.CleanOutput(tmp)
     os.rename(out, tmp)
-    bin_name = self.GetBinName('strip')
+    bin_name = self.GetStrip()
     cmd_line = [bin_name, '--strip-debug', tmp, '-o', out]
     err = self.Run(cmd_line, out)
     if sys.platform.startswith('win') and err == 5:
@@ -350,4 +402,3 @@ def Main(argv):
 
 if __name__ == '__main__':
   sys.exit(Main(sys.argv))
-

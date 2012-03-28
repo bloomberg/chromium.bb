@@ -26,26 +26,21 @@
         '<@(trusted_sources)',
       ],
     },
+    {
+      'target_name': 'gio_lib',
+      'type': 'none',
+      'variables': {
+        'nlib_target': 'libgio.a',
+        'build_glibc': 1,
+        'build_newlib': 1,
+        'sources': ['<@(common_sources)']
+      },
+      'dependencies': [
+        '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
+      ],
+    },
   ],
   'conditions': [
-    # NOTE: we do not support untrusted gyp build on arm yet.
-    ['target_arch!="arm"', {
-      'targets' : [
-        {
-          'target_name': 'gio_lib',
-          'type': 'none',
-          'variables': {
-            'nlib_target': 'libgio.a',
-            'build_glibc': 1,
-            'build_newlib': 1,
-            'sources': ['<@(common_sources)']
-          },
-          'dependencies': [
-            '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
-          ],
-        },
-      ],
-    }],
     ['OS=="win"', {
       'targets': [
         {

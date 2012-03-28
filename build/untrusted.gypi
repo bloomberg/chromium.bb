@@ -9,9 +9,24 @@
     'NACL_IRT_DATA_START': '0x3ef00000',
     # Expected address for beginning of code in for the IRT.
     'NACL_IRT_TEXT_START': '0x0fc00000',
+    # Default C compiler defines.
+    'default_defines': [
+      '-D__linux__',
+      '-D__STDC_LIMIT_MACROS=1',
+      '-D__STDC_FORMAT_MACROS=1',
+      '-D_GNU_SOURCE=1',
+      '-D_BSD_SOURCE=1',
+      '-D_POSIX_C_SOURCE=199506',
+      '-D_XOPEN_SOURCE=600',
+      '-DDYNAMIC_ANNOTATIONS_ENABLED=1',
+      '-DDYNAMIC_ANNOTATIONS_PREFIX=NACL_',
+    ],
+    'default_compile_flags': [
+      #'-std=gnu99',  Added by build_nexe
+      '-O3',
+    ],
   },
   'conditions': [
-    # NOTE: we do not support untrusted gyp build on arm yet.
     ['target_arch!="arm"', {
       'target_defaults': {
         'conditions': [
@@ -39,20 +54,11 @@
           'lib_dirs': [],
           'include_dirs': ['<(DEPTH)','<(DEPTH)/ppapi'],
           'defines': [
+            '<@(default_defines)',
             '-DNACL_BUILD_ARCH=x86',
-            '-D__linux__',
-            '-D__STDC_LIMIT_MACROS=1',
-            '-D__STDC_FORMAT_MACROS=1',
-            '-D_GNU_SOURCE=1',
-            '-D_BSD_SOURCE=1',
-            '-D_POSIX_C_SOURCE=199506',
-            '-D_XOPEN_SOURCE=600',
-            '-DDYNAMIC_ANNOTATIONS_ENABLED=1',
-            '-DDYNAMIC_ANNOTATIONS_PREFIX=NACL_',
            ],
           'compile_flags': [
-            #'-std=gnu99',  Added by build_nexe
-            '-O3',
+            '<@(default_compile_flags)',
             '-fomit-frame-pointer',
             '-mtls-use-call'
            ],
@@ -67,6 +73,40 @@
             '-I<(DEPTH)',
           ],
         },
+      },
+    }, {
+      # ARM case
+      'target_defaults': {
+        'variables': {
+          'python_exe': 'python',
+          'nexe_target': '',
+          'nlib_target': '',
+          'build_newlib': 0,
+          'build_glibc': 0,
+          'disable_glibc%': 1,
+          'extra_args': [],
+          'enable_arm': 1,
+          'extra_deps_arm': [],
+          'lib_dirs': [],
+          'include_dirs': ['<(DEPTH)','<(DEPTH)/ppapi'],
+          'defines': [
+            '<@(default_defines)',
+            '-DNACL_BUILD_ARCH=arm',
+           ],
+           'compile_flags': [
+             '<@(default_compile_flags)',
+           ],
+           'link_flags': [],
+           'get_sources': [
+             '>(python_exe)', '<(DEPTH)/native_client/build/scan_sources.py',
+             # This is needed to open the .c filenames, which are given
+             # relative to the .gyp file.
+             '-I.',
+             # This is needed to open the .h filenames, which are given
+             # relative to the native_client directory's parent.
+             '-I<(DEPTH)',
+           ],
+         },
       },
     }],
     ['target_arch=="x64" or OS=="win"', {
@@ -189,7 +229,7 @@
                    '--name', '>(out32)',
                    '--objdir', '>(objdir)',
                    '--include-dirs', '>(inst_dir)/include >(include_dirs) >(include_dirs)',
-                   '--lib-dirs', '>(lib_dirs) ',
+                   '--lib-dirs', '>(lib_dirs)',
                    '--compile_flags', '-m32 >@(compile_flags)',
                    '>@(defines)', '-DNACL_BUILD_SUBARCH=32',
                    '--link_flags', '-m32 -B<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib32 >(link_flags)',
@@ -242,6 +282,94 @@
                },
              ],
            }],
+        ],
+      },
+    }],
+    ['target_arch=="arm"', {
+      'target_defaults': {
+        'target_conditions': [
+          ['nexe_target!="" and build_newlib!=0', {
+            'variables': {
+              'tool_name': 'newlib',
+              'inst_dir': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib',
+              'out_arm%': '<(PRODUCT_DIR)/>(nexe_target)_newlib_arm.nexe',
+              'objdir%': '>(INTERMEDIATE_DIR)/>(tool_name)-arm/>(_target_name)',
+             },
+            'actions': [
+              {
+                'action_name': 'build newlib arm nexe',
+                'msvs_cygwin_shell': 0,
+                'description': 'building >(out_arm)',
+                'inputs': [
+                  '<(DEPTH)/native_client/build/build_nexe.py',
+                  '<(DEPTH)/ppapi/ppapi_cpp.gypi',
+                  '>!@(>(get_sources) >(sources))',
+                  '>@(extra_deps_arm)',
+                ],
+                'outputs': ['>(out_arm)'],
+                'action': [
+                  '>(python_exe)',
+                  '<(DEPTH)/native_client/build/build_nexe.py',
+                  '>@(extra_args)',
+                  '--arch', 'arm',
+                  '--build', 'newlib_nexe',
+                  '--root', '<(DEPTH)',
+                  '--name', '>(out_arm)',
+                  '--objdir', '>(objdir)',
+                  '--include-dirs', '>(inst_dir)/include >(include_dirs) >(include_dirs)',
+                  '--lib-dirs', '>(lib_dirs) ',
+                   '--compile_flags', '>@(compile_flags)',
+                  '>@(defines)', '-DNACL_BUILD_SUBARCH=32',
+                  '--link_flags', '-B<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib32 >(link_flags)',
+                  '>@(sources)',
+                ],
+              },
+            ],
+          }],
+        ],
+      },
+    }],
+    ['target_arch=="arm"', {
+      'target_defaults': {
+        'target_conditions': [
+          ['nlib_target!="" and build_newlib!=0', {
+            'variables': {
+              'tool_name': 'newlib',
+              'inst_dir': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib',
+              'out_arm%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/libarm/>(nlib_target)',
+              'objdir%': '>(INTERMEDIATE_DIR)/>(tool_name)-arm/>(_target_name)',
+            },
+            'actions': [
+              {
+                'action_name': 'build newlib arm nlib',
+                'msvs_cygwin_shell': 0,
+                'description': 'building >(out_arm)',
+                'inputs': [
+                  '<(DEPTH)/native_client/build/build_nexe.py',
+                  '<(DEPTH)/ppapi/ppapi_cpp.gypi',
+                  '>!@(>(get_sources) >(sources))',
+                  '>@(extra_deps_arm)',
+                ],
+                'outputs': ['>(out_arm)'],
+                'action': [
+                  '>(python_exe)',
+                  '<(DEPTH)/native_client/build/build_nexe.py',
+                  '>@(extra_args)',
+                  '--arch', 'arm',
+                  '--build', 'newlib_nlib',
+                  '--root', '<(DEPTH)',
+                  '--name', '>(out_arm)',
+                  '--objdir', '>(objdir)',
+                  '--include-dirs', '>(inst_dir)/include >(include_dirs) >(include_dirs)',
+                  '--lib-dirs', '>(lib_dirs) ',
+                  '--compile_flags', '>@(compile_flags)',
+                  '>@(defines)', '-DNACL_BUILD_SUBARCH=32',
+                  '--link_flags', '-B<(SHARED_INTERMEDIATE_DIR)/tc_newlib/libarm >(link_flags)',
+                  '>@(sources)',
+                ],
+              },
+            ],
+          }],
         ],
       },
     }],
