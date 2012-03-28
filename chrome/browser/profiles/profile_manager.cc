@@ -527,8 +527,6 @@ void ProfileManager::Observe(
       Profile* profile = browser->profile();
       DCHECK(profile);
       if (!profile->IsOffTheRecord() && ++browser_counts_[profile] == 1) {
-        CHECK(std::find(active_profiles_.begin(), active_profiles_.end(),
-                        profile) == active_profiles_.end());
         active_profiles_.push_back(profile);
         update_active_profiles = true;
       }
@@ -540,14 +538,8 @@ void ProfileManager::Observe(
       Profile* profile = browser->profile();
       DCHECK(profile);
       if (!profile->IsOffTheRecord() && --browser_counts_[profile] == 0) {
-        CHECK(std::find(active_profiles_.begin(), active_profiles_.end(),
-                        profile) != active_profiles_.end());
-        active_profiles_.erase(
-            std::remove(active_profiles_.begin(), active_profiles_.end(),
-                        profile),
-            active_profiles_.end());
-        CHECK(std::find(active_profiles_.begin(), active_profiles_.end(),
-                        profile) == active_profiles_.end());
+        active_profiles_.erase(std::find(active_profiles_.begin(),
+                                         active_profiles_.end(), profile));
         update_active_profiles = true;
       }
       break;
@@ -565,27 +557,18 @@ void ProfileManager::Observe(
 
     profile_list->Clear();
 
-    // Check that the same profile doesn't occur twice in last_opened_profiles.
-    {
-      std::set<Profile*> active_profiles_set;
-      for (std::vector<Profile*>::const_iterator it = active_profiles_.begin();
-           it != active_profiles_.end(); ++it) {
-        CHECK(active_profiles_set.find(*it) ==
-              active_profiles_set.end());
-        active_profiles_set.insert(*it);
-      }
-    }
-    // Used for checking that the string representations of the profiles differ.
+    // crbug.com/120112 -> several non-incognito profiles might have the same
+    // GetPath().BaseName(). In that case, we cannot restore both
+    // profiles. Include each base name only once in the last active profile
+    // list.
     std::set<std::string> profile_paths;
-
     std::vector<Profile*>::const_iterator it;
     for (it = active_profiles_.begin(); it != active_profiles_.end(); ++it) {
       std::string profile_path = (*it)->GetPath().BaseName().MaybeAsASCII();
-      CHECK(profile_paths.find(profile_path) ==
-            profile_paths.end());
-      profile_paths.insert(profile_path);
-      profile_list->Append(
-          new StringValue((*it)->GetPath().BaseName().MaybeAsASCII()));
+      if (profile_paths.find(profile_path) == profile_paths.end()) {
+        profile_paths.insert(profile_path);
+        profile_list->Append(new StringValue(profile_path));
+      }
     }
   }
 }

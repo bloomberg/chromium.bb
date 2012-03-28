@@ -318,6 +318,8 @@ class ProfileManager : public base::NonThreadSafe,
 
   // For keeping track of the last active profiles.
   std::map<Profile*, int> browser_counts_;
+  // On startup we launch the active profiles in the order they became active
+  // during the last run. This is why they are kept in a list, not in a set.
   std::vector<Profile*> active_profiles_;
   bool shutdown_started_;
 
