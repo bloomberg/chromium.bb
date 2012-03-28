@@ -92,7 +92,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_DontCreateIncognitoProfile) {
 }
 
 #if defined(OS_WIN)
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FLAKY_Incognito) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_Incognito) {
 #else
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Incognito) {
 #endif
@@ -115,7 +115,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Incognito) {
 // Tests that the APIs in an incognito-enabled split-mode extension work
 // properly.
 #if defined(OS_WIN)
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FLAKY_IncognitoSplitMode) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_IncognitoSplitMode) {
 #else
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, IncognitoSplitMode) {
 #endif
