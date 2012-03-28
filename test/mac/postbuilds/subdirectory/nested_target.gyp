@@ -6,7 +6,7 @@
     {
       'target_name': 'nest_el',
       'type': 'static_library',
-      'sources': [ '../file.c', ],
+      'sources': [ '../file_g.c', ],
       'postbuilds': [
         {
           'postbuild_name': 'Static library postbuild',
@@ -25,7 +25,7 @@
       'target_name': 'nest_dyna',
       'type': 'shared_library',
       'mac_bundle': 1,
-      'sources': [ '../file.c', ],
+      'sources': [ '../file_h.c', ],
       'postbuilds': [
         {
           'postbuild_name': 'Dynamic library postbuild',
