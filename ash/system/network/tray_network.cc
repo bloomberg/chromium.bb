@@ -231,7 +231,8 @@ class NetworkDetailedView : public views::View,
         views::BoxLayout::kVertical, 0, 0, 1));
     for (size_t i = 0; i < list.size(); i++) {
       HoverHighlightView* container = new HoverHighlightView(this);
-      container->AddIconAndLabel(list[i].image, list[i].name,
+      container->AddIconAndLabel(list[i].image,
+          list[i].description.empty() ? list[i].name : list[i].description,
           list[i].highlight ? gfx::Font::BOLD : gfx::Font::NORMAL);
       networks->AddChildView(container);
       container->set_border(views::Border::CreateEmptyBorder(0,

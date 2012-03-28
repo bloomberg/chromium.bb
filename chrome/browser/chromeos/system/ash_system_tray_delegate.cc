@@ -409,6 +409,13 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
         if (info.name.empty())
           info.name =
               l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET);
+        if (crosnet->ethernet_connecting()) {
+          info.description = l10n_util::GetStringFUTF16(
+              IDS_STATUSBAR_NETWORK_DEVICE_STATUS,
+              l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET),
+              l10n_util::GetStringUTF16(
+                  IDS_STATUSBAR_NETWORK_DEVICE_CONNECTING));
+        }
         list->push_back(info);
       }
     }
@@ -417,21 +424,43 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     if (crosnet->wifi_available() && crosnet->wifi_enabled()) {
       const WifiNetworkVector& wifi = crosnet->wifi_networks();
       for (size_t i = 0; i < wifi.size(); ++i) {
-        list->push_back(CreateNetworkIconInfo(wifi[i], network_icon_.get(),
-            network_menu_.get()));
+        ash::NetworkIconInfo info = CreateNetworkIconInfo(wifi[i],
+            network_icon_.get(), network_menu_.get());
+        if (wifi[i]->connecting()) {
+          info.description = l10n_util::GetStringFUTF16(
+            IDS_STATUSBAR_NETWORK_DEVICE_STATUS,
+            info.name,
+            l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_CONNECTING));
+        }
+        list->push_back(info);
       }
     }
 
     // Cellular.
     if (crosnet->cellular_available() && crosnet->cellular_enabled()) {
-      // TODO(sad): There are different cases for cellular networks, e.g.
-      // de-activated networks, active networks that support data plan info,
-      // networks with top-up URLs etc. All of these need to be handled
-      // properly.
       const CellularNetworkVector& cell = crosnet->cellular_networks();
       for (size_t i = 0; i < cell.size(); ++i) {
-        list->push_back(CreateNetworkIconInfo(cell[i], network_icon_.get(),
-            network_menu_.get()));
+        ash::NetworkIconInfo info = CreateNetworkIconInfo(cell[i],
+            network_icon_.get(), network_menu_.get());
+        ActivationState state = cell[i]->activation_state();
+        if (state == ACTIVATION_STATE_NOT_ACTIVATED ||
+            state == ACTIVATION_STATE_PARTIALLY_ACTIVATED) {
+          info.description = l10n_util::GetStringFUTF16(
+              IDS_STATUSBAR_NETWORK_DEVICE_ACTIVATE,
+              info.name);
+        } else if (state == ACTIVATION_STATE_ACTIVATING) {
+          info.description = l10n_util::GetStringFUTF16(
+              IDS_STATUSBAR_NETWORK_DEVICE_STATUS,
+              info.name, l10n_util::GetStringUTF16(
+                  IDS_STATUSBAR_NETWORK_DEVICE_ACTIVATING));
+        } else if (cell[i]->connecting()) {
+          info.description = l10n_util::GetStringFUTF16(
+              IDS_STATUSBAR_NETWORK_DEVICE_STATUS,
+              info.name, l10n_util::GetStringUTF16(
+                  IDS_STATUSBAR_NETWORK_DEVICE_CONNECTING));
+        }
+
+        list->push_back(info);
       }
     }
 

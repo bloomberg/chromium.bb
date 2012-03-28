@@ -19,8 +19,8 @@
 #include "chrome/browser/chromeos/status/network_menu_icon.h"
 #include "chrome/browser/chromeos/status/status_area_view_chromeos.h"
 #include "chrome/browser/defaults.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/dialog_style.h"
 #include "chrome/browser/ui/views/window.h"
 #include "chrome/common/chrome_switches.h"
@@ -90,9 +90,8 @@ void SetMenuMargins(views::MenuItemView* menu_item_view, int top, int bottom) {
 // Activate a cellular network.
 void ActivateCellular(const chromeos::CellularNetwork* cellular) {
   DCHECK(cellular);
-  Browser* browser = BrowserList::GetLastActive();
-  if (!browser)
-    return;
+  Browser* browser = Browser::GetOrCreateTabbedBrowser(
+      ProfileManager::GetDefaultProfileOrOffTheRecord());
   browser->OpenMobilePlanTabAndActivate();
 }
 
@@ -489,9 +488,9 @@ void NetworkMenuModel::ActivatedAt(int index) {
     if (active_vpn)
       cros->DisconnectFromNetwork(active_vpn);
   } else if (flags & FLAG_VIEW_ACCOUNT) {
-    Browser* browser = BrowserList::GetLastActive();
-    if (browser)
-      browser->ShowSingletonTab(GURL(top_up_url_));
+    Browser* browser = Browser::GetOrCreateTabbedBrowser(
+        ProfileManager::GetDefaultProfileOrOffTheRecord());
+    browser->ShowSingletonTab(GURL(top_up_url_));
   }
 }
 
@@ -1036,9 +1035,8 @@ void NetworkMenu::RunMenu(views::View* source) {
 
 void NetworkMenu::ShowTabbedNetworkSettings(const Network* network) const {
   DCHECK(network);
-  Browser* browser = BrowserList::GetLastActive();
-  if (!browser)
-    return;
+  Browser* browser = Browser::GetOrCreateTabbedBrowser(
+      ProfileManager::GetDefaultProfileOrOffTheRecord());
 
   // In case of a VPN, show the config settings for the connected network.
   if (network->type() == chromeos::TYPE_VPN) {
