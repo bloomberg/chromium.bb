@@ -714,6 +714,12 @@ bool RenderViewImpl::GetPluginInfo(const GURL& url,
   return found;
 }
 
+void RenderViewImpl::TransferActiveWheelFlingAnimation(
+    const WebKit::WebActiveWheelFlingParameters& params) {
+  if (webview())
+    webview()->transferActiveWheelFlingAnimation(params);
+}
+
 bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
   WebFrame* main_frame = webview() ? webview()->mainFrame() : NULL;
   if (main_frame)
@@ -2068,6 +2074,16 @@ void RenderViewImpl::requestPointerUnlock() {
 bool RenderViewImpl::isPointerLocked() {
   return mouse_lock_dispatcher_->IsMouseLockedTo(
       webwidget_mouse_lock_target_.get());
+}
+
+void RenderViewImpl::didActivateCompositor(int input_handler_identifier) {
+  CompositorThread* compositor_thread =
+      RenderThreadImpl::current()->compositor_thread();
+  if (compositor_thread)
+    compositor_thread->AddInputHandler(
+        routing_id_, input_handler_identifier, AsWeakPtr());
+
+  RenderWidget::didActivateCompositor(input_handler_identifier);
 }
 
 // WebKit::WebFrameClient -----------------------------------------------------

@@ -136,6 +136,7 @@ class WebTouchEvent;
 class WebURLLoader;
 class WebURLRequest;
 class WebUserMediaClient;
+struct WebActiveWheelFlingParameters;
 struct WebFileChooserParams;
 struct WebFindOptions;
 struct WebMediaPlayerAction;
@@ -325,6 +326,9 @@ class RenderViewImpl : public RenderWidget,
                                     webkit::WebPluginInfo* plugin_info,
                                     std::string* actual_mime_type);
 
+  void TransferActiveWheelFlingAnimation(
+      const WebKit::WebActiveWheelFlingParameters& params);
+
   // IPC::Channel::Listener implementation -------------------------------------
 
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
@@ -341,6 +345,7 @@ class RenderViewImpl : public RenderWidget,
   virtual bool requestPointerLock();
   virtual void requestPointerUnlock();
   virtual bool isPointerLocked();
+  virtual void didActivateCompositor(int input_handler_identifier);
 
   // WebKit::WebViewClient implementation --------------------------------------
 

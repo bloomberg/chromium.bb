@@ -7,7 +7,9 @@
 
 #include <map>
 
-#include "base/memory/linked_ptr.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
+#include "content/renderer/render_view_impl.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "webkit/glue/webthread_impl.h"
 
@@ -31,8 +33,10 @@ class CompositorThread {
   // to the compositor's thread.
   IPC::ChannelProxy::MessageFilter* GetMessageFilter() const;
 
-  // Callable from the main thread or the compositor's thread.
-  void AddInputHandler(int routing_id, int input_handler_id);
+  // Callable from the main thread only.
+  void AddInputHandler(int routing_id,
+                       int input_handler_id,
+                       const base::WeakPtr<RenderViewImpl>& render_view_impl);
 
   webkit_glue::WebThreadImpl* GetWebThread() { return &thread_; }
 
@@ -44,11 +48,18 @@ class CompositorThread {
   void HandleInputEvent(int routing_id,
                         const WebKit::WebInputEvent* input_event);
 
+  // Called from the compositor's thread.
+  void AddInputHandlerOnCompositorThread(
+      int routing_id,
+      int input_handler_id,
+      scoped_refptr<base::MessageLoopProxy> main_loop,
+      const base::WeakPtr<RenderViewImpl>& render_view_impl);
+
   class InputHandlerWrapper;
   friend class InputHandlerWrapper;
 
   typedef std::map<int,  // routing_id
-                   linked_ptr<InputHandlerWrapper> > InputHandlerMap;
+                   scoped_refptr<InputHandlerWrapper> > InputHandlerMap;
   InputHandlerMap input_handlers_;
 
   webkit_glue::WebThreadImpl thread_;
