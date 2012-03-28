@@ -176,17 +176,14 @@ class BluetoothDetailedView : public views::View,
 
 }  // namespace tray
 
-TrayBluetooth::TrayBluetooth()
-    : TrayImageItem(IDR_AURA_UBER_TRAY_BLUETOOTH) {
+TrayBluetooth::TrayBluetooth() {
 }
 
 TrayBluetooth::~TrayBluetooth() {
 }
 
-bool TrayBluetooth::GetInitialVisibility() {
-  // Hide at startup. If bluetooth is enabled, the tray-delegate will send a
-  // notification, and this will be made visible again.
-  return false;
+views::View* TrayBluetooth::CreateTrayView(user::LoginStatus status) {
+  return NULL;
 }
 
 views::View* TrayBluetooth::CreateDefaultView(user::LoginStatus status) {
@@ -201,6 +198,9 @@ views::View* TrayBluetooth::CreateDetailedView(user::LoginStatus status) {
     return NULL;
   detailed_.reset(new tray::BluetoothDetailedView(status));
   return detailed_.get();
+}
+
+void TrayBluetooth::DestroyTrayView() {
 }
 
 void TrayBluetooth::DestroyDefaultView() {
