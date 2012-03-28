@@ -12,6 +12,7 @@
 #include "base/atomic_sequence_num.h"
 #include "base/basictypes.h"
 #include "base/file_path.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "base/time.h"
@@ -146,6 +147,8 @@ class DomStorageContext
   void CloneSessionNamespace(int64 existing_id, int64 new_id);
 
  private:
+  friend class DomStorageContextTest;
+  FRIEND_TEST_ALL_PREFIXES(DomStorageContextTest, Basics);
   friend class base::RefCountedThreadSafe<DomStorageContext>;
   typedef std::map<int64, scoped_refptr<DomStorageNamespace> >
       StorageNamespaceMap;
