@@ -1188,8 +1188,10 @@ def GenerateSource(file, functions, set_name, used_extension_functions):
       set_name.upper())
   file.write('  DCHECK(context && context->IsCurrent(NULL));\n')
   for extension, ext_functions in used_extension_functions:
-    file.write('  if ((g_%s = context->HasExtension("%s"))) {\n' %
+    file.write('  g_%s = context->HasExtension("%s");\n' %
         (extension, extension))
+    file.write('  if (g_%s) {\n' %
+        (extension))
     queried_entry_points = set()
     for entry_point_name, function_name in ext_functions:
       # Replace the pointer unconditionally unless this extension has several
