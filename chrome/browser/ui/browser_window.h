@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_BROWSER_WINDOW_H_
 #pragma once
 
+#include "base/callback_forward.h"
 #include "chrome/browser/ui/base_window.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bar.h"
 #include "chrome/browser/ui/fullscreen_exit_bubble_type.h"
@@ -217,8 +218,11 @@ class BrowserWindow : public BaseWindow {
   virtual void ShowChromeToMobileBubble() = 0;
 
 #if defined(ENABLE_ONE_CLICK_SIGNIN)
-  // Shows the one-click sign in bubble.
-  virtual void ShowOneClickSigninBubble() = 0;
+  // Shows the one-click sign in bubble.  The given closures are run
+  // when their corresponding links are clicked.
+  virtual void ShowOneClickSigninBubble(
+      const base::Closure& learn_more_callback,
+      const base::Closure& advanced_callback) = 0;
 #endif
 
   // Whether or not the shelf view is visible.

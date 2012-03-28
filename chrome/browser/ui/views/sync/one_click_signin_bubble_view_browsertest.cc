@@ -2,24 +2,43 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/ui/views/sync/one_click_signin_bubble_view.h"
+
+#include "base/bind.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/views/sync/one_click_signin_bubble_view.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/common/page_transition_types.h"
 #include "ui/views/controls/button/text_button.h"
 #include "ui/views/events/event.h"
 
+namespace {
+
+void OnClickLink(Browser* browser) {
+  browser->AddSelectedTabWithURL(GURL("http://www.example.com"),
+                                 content::PAGE_TRANSITION_AUTO_BOOKMARK);
+}
+
+}  // namespace
+
 class OneClickSigninBubbleViewBrowserTest : public InProcessBrowserTest {
  public:
-  OneClickSigninBubbleViewBrowserTest() : InProcessBrowserTest() { }
+  OneClickSigninBubbleViewBrowserTest() {}
+
+  void ShowOneClickSigninBubble() {
+    base::Closure on_click_link_callback =
+        base::Bind(&OnClickLink, base::Unretained(browser()));
+    browser()->window()->ShowOneClickSigninBubble(on_click_link_callback,
+                                                  on_click_link_callback);
+  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(OneClickSigninBubbleViewBrowserTest);
 };
 
 IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleViewBrowserTest, Show) {
-  browser()->window()->ShowOneClickSigninBubble();
+  ShowOneClickSigninBubble();
   ui_test_utils::RunAllPendingInMessageLoop();
   EXPECT_TRUE(OneClickSigninBubbleView::IsShowing());
 
@@ -31,7 +50,7 @@ IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleViewBrowserTest, Show) {
 IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleViewBrowserTest, CloseButton) {
   int initial_tab_count = browser()->tab_count();
 
-  browser()->window()->ShowOneClickSigninBubble();
+  ShowOneClickSigninBubble();
   ui_test_utils::RunAllPendingInMessageLoop();
   EXPECT_TRUE(OneClickSigninBubbleView::IsShowing());
 
@@ -56,7 +75,7 @@ IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleViewBrowserTest, CloseButton) {
 IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleViewBrowserTest, ViewLink) {
   int initial_tab_count = browser()->tab_count();
 
-  browser()->window()->ShowOneClickSigninBubble();
+  ShowOneClickSigninBubble();
   ui_test_utils::RunAllPendingInMessageLoop();
   EXPECT_TRUE(OneClickSigninBubbleView::IsShowing());
 

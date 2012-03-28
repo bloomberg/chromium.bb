@@ -4,12 +4,12 @@
 
 #include "chrome/browser/ui/views/sync/one_click_signin_bubble_view.h"
 
+#include "base/logging.h"
 #include "base/message_loop.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/window.h"
 #include "chrome/common/url_constants.h"
-#include "content/public/common/page_transition_types.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/keycodes/keyboard_codes.h"
@@ -34,12 +34,16 @@ const int kMinimumFieldSize = 240;
 OneClickSigninBubbleView* OneClickSigninBubbleView::bubble_view_ = NULL;
 
 // static
-void OneClickSigninBubbleView::ShowBubble(views::View* anchor_view,
-                                          Browser* browser) {
+void OneClickSigninBubbleView::ShowBubble(
+    views::View* anchor_view,
+    const base::Closure& learn_more_callback,
+    const base::Closure& advanced_callback) {
   if (IsShowing())
     return;
 
-  bubble_view_ = new OneClickSigninBubbleView(anchor_view, browser);
+  bubble_view_ =
+      new OneClickSigninBubbleView(anchor_view, learn_more_callback,
+                                   advanced_callback);
   browser::CreateViewsBubble(bubble_view_);
   bubble_view_->Show();
 }
@@ -55,15 +59,19 @@ void OneClickSigninBubbleView::Hide() {
     bubble_view_->GetWidget()->Close();
 }
 
-OneClickSigninBubbleView::OneClickSigninBubbleView(views::View* anchor_view,
-                                                   Browser* browser)
+OneClickSigninBubbleView::OneClickSigninBubbleView(
+    views::View* anchor_view,
+    const base::Closure& learn_more_callback,
+    const base::Closure& advanced_callback)
     : BubbleDelegateView(anchor_view, views::BubbleBorder::TOP_RIGHT),
       learn_more_link_(NULL),
       advanced_link_(NULL),
       close_button_(NULL),
-      browser_(browser),
+      learn_more_callback_(learn_more_callback),
+      advanced_callback_(advanced_callback),
       message_loop_for_testing_(NULL) {
-  DCHECK(browser_);
+  DCHECK(!learn_more_callback_.is_null());
+  DCHECK(!advanced_callback_.is_null());
 }
 
 OneClickSigninBubbleView::~OneClickSigninBubbleView() {
@@ -160,14 +168,10 @@ void OneClickSigninBubbleView::LinkClicked(views::Link* source,
                                            int event_flags) {
   StartFade(false);
 
-  GURL url;
-  if (source == learn_more_link_) {
-    url = GURL(chrome::kSyncLearnMoreURL);
-  } else {
-    url = GURL(std::string(chrome::kChromeUISettingsURL) +
-                           chrome::kSyncSetupSubPage);
-  }
-  browser_->AddSelectedTabWithURL(url, content::PAGE_TRANSITION_AUTO_BOOKMARK);
+  if (source == learn_more_link_)
+    learn_more_callback_.Run();
+  else
+    advanced_callback_.Run();
 }
 
 void OneClickSigninBubbleView::ButtonPressed(

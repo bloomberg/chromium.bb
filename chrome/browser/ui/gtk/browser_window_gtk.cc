@@ -1079,7 +1079,9 @@ void BrowserWindowGtk::ShowChromeToMobileBubble() {
 }
 
 #if defined(ENABLE_ONE_CLICK_SIGNIN)
-void BrowserWindowGtk::ShowOneClickSigninBubble() {
+void BrowserWindowGtk::ShowOneClickSigninBubble(
+      const base::Closure& learn_more_callback,
+      const base::Closure& advanced_callback) {
   // TODO(rogerta): will be implemented when the one-click feature is done on
   // linux.
   NOTIMPLEMENTED();

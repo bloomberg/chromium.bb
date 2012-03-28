@@ -24,11 +24,14 @@
 #include "chrome/browser/ui/sync/one_click_signin_sync_starter.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/common/frame_navigate_params.h"
+#include "content/public/common/page_transition_types.h"
+#include "googleurl/src/gurl.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources_standard.h"
@@ -123,6 +126,19 @@ string16 OneClickLoginInfoBarDelegate::GetButtonLabel(
 
 namespace {
 
+void OnLearnMore(Browser* browser) {
+  browser->AddSelectedTabWithURL(
+      GURL(chrome::kSyncLearnMoreURL),
+      content::PAGE_TRANSITION_AUTO_BOOKMARK);
+}
+
+void OnAdvanced(Browser* browser) {
+  browser->AddSelectedTabWithURL(
+      GURL(std::string(chrome::kChromeUISettingsURL) +
+           chrome::kSyncSetupSubPage),
+      content::PAGE_TRANSITION_AUTO_BOOKMARK);
+}
+
 // Start syncing with the given user information.
 void StartSync(content::WebContents* web_contents,
                const std::string& session_index,
@@ -137,7 +153,9 @@ void StartSync(content::WebContents* web_contents,
           profile, session_index, email, password, use_default_settings));
 
   Browser* browser = BrowserList::FindBrowserWithWebContents(web_contents);
-  browser->window()->ShowOneClickSigninBubble();
+  browser->window()->ShowOneClickSigninBubble(
+      base::Bind(&OnLearnMore, base::Unretained(browser)),
+      base::Bind(&OnAdvanced, base::Unretained(browser)));
 }
 
 }  // namespace

@@ -2697,6 +2697,8 @@
         'browser/ui/cocoa/omnibox/omnibox_popup_view_mac.mm',
         'browser/ui/cocoa/omnibox/omnibox_view_mac.h',
         'browser/ui/cocoa/omnibox/omnibox_view_mac.mm',
+        'browser/ui/cocoa/one_click_signin_bubble_controller.h',
+        'browser/ui/cocoa/one_click_signin_bubble_controller.mm',
         'browser/ui/cocoa/one_click_signin_dialog_controller.h',
         'browser/ui/cocoa/one_click_signin_dialog_controller.mm',
         'browser/ui/cocoa/page_info_bubble_controller.h',
@@ -4019,6 +4021,8 @@
       'conditions': [
         ['enable_one_click_signin==0', {
           'sources!': [
+            'browser/ui/cocoa/one_click_signin_bubble_controller.h',
+            'browser/ui/cocoa/one_click_signin_bubble_controller.mm',
             'browser/ui/cocoa/one_click_signin_dialog_controller.h',
             'browser/ui/cocoa/one_click_signin_dialog_controller.mm',
             'browser/ui/gtk/one_click_signin_dialog_gtk.cc',
@@ -4622,6 +4626,7 @@
                   'app/nibs/ImportProgressDialog.xib',
                   'app/nibs/InstantOptIn.xib',
                   'app/nibs/MainMenu.xib',
+                  'app/nibs/OneClickSigninBubble.xib',
                   'app/nibs/OneClickSigninDialog.xib',
                   'app/nibs/SadTab.xib',
                   'app/nibs/SaveAccessoryView.xib',

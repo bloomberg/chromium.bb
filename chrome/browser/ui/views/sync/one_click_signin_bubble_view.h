@@ -7,13 +7,13 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/string16.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/link_listener.h"
 
-class Browser;
 class MessageLoop;
 
 namespace views {
@@ -30,7 +30,9 @@ class OneClickSigninBubbleView : public views::BubbleDelegateView,
   // Show the one-click signin bubble if not already showing.  The bubble
   // will be placed visually beneath |anchor_view|.  The |browser| is used
   // to open links.
-  static void ShowBubble(views::View* anchor_view, Browser* browser);
+  static void ShowBubble(views::View* anchor_view,
+                         const base::Closure& learn_more_callback,
+                         const base::Closure& advanced_callback);
 
   static bool IsShowing();
 
@@ -50,7 +52,9 @@ class OneClickSigninBubbleView : public views::BubbleDelegateView,
 
  private:
   // Creates a BookmarkBubbleView.
-  OneClickSigninBubbleView(views::View* anchor_view, Browser* browser);
+  OneClickSigninBubbleView(views::View* anchor_view,
+                           const base::Closure& learn_more_callback,
+                           const base::Closure& advanced_callback);
 
   virtual ~OneClickSigninBubbleView();
 
@@ -83,8 +87,9 @@ class OneClickSigninBubbleView : public views::BubbleDelegateView,
   // Button to close the window.
   views::TextButton* close_button_;
 
-  // The browser that contains this bubble.
-  Browser* browser_;
+  // The callbacks for the links.
+  base::Closure learn_more_callback_;
+  base::Closure advanced_callback_;
 
   // A message loop used only with unit tests.
   MessageLoop* message_loop_for_testing_;

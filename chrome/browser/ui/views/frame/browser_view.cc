@@ -1120,8 +1120,12 @@ void BrowserView::ShowChromeToMobileBubble() {
 }
 
 #if defined(ENABLE_ONE_CLICK_SIGNIN)
-void BrowserView::ShowOneClickSigninBubble() {
-  OneClickSigninBubbleView::ShowBubble(toolbar_->app_menu(), browser_.get());
+void BrowserView::ShowOneClickSigninBubble(
+    const base::Closure& learn_more_callback,
+    const base::Closure& advanced_callback) {
+  OneClickSigninBubbleView::ShowBubble(toolbar_->app_menu(),
+                                       learn_more_callback,
+                                       advanced_callback);
 }
 #endif
 

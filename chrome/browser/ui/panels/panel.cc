@@ -525,7 +525,9 @@ void Panel::ShowChromeToMobileBubble() {
 }
 
 #if defined(ENABLE_ONE_CLICK_SIGNIN)
-void Panel::ShowOneClickSigninBubble() {
+void Panel::ShowOneClickSigninBubble(
+      const base::Closure& learn_more_callback,
+      const base::Closure& advanced_callback) {
   NOTIMPLEMENTED();
 }
 #endif
