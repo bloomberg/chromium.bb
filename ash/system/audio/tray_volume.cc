@@ -60,6 +60,11 @@ class VolumeButton : public views::ToggleImageButton {
       image_index = kVolumeLevel - 1;
     else if (image_index == kVolumeLevel - 1)
       --image_index;
+    // Index 0 is reserved for mute.
+    if (delegate->IsAudioMuted())
+      image_index = 0;
+    else
+      ++image_index;
     if (image_index != image_index_) {
       SkIRect region = SkIRect::MakeXYWH(0, image_index * kVolumeImageHeight,
           kVolumeImageWidth, kVolumeImageHeight);
@@ -77,22 +82,6 @@ class VolumeButton : public views::ToggleImageButton {
     gfx::Size size = views::ToggleImageButton::GetPreferredSize();
     size.set_height(kTrayPopupItemHeight);
     return size;
-  }
-
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
-    views::ToggleImageButton::OnPaint(canvas);
-
-    ash::SystemTrayDelegate* delegate =
-        ash::Shell::GetInstance()->tray_delegate();
-    if (!delegate->IsAudioMuted())
-      return;
-
-    SkPaint paint;
-    paint.setColor(SkColorSetARGB(63, 0, 0, 0));
-    paint.setStrokeWidth(SkIntToScalar(3));
-    canvas->sk_canvas()->drawLine(SkIntToScalar(width()),
-        SkIntToScalar(10), SkIntToScalar(0), SkIntToScalar(height() - 10),
-        paint);
   }
 
   gfx::Image image_;
@@ -128,8 +117,8 @@ class VolumeView : public views::View,
     slider_->SetValue(percent);
     // It is possible that the volume was (un)muted, but the actual volume level
     // did not change. In that case, setting the value of the slider won't
-    // trigger a repaint. So explicitly trigger a repaint.
-    icon_->SchedulePaint();
+    // trigger an update. So explicitly trigger an update.
+    icon_->Update();
   }
 
  private:
