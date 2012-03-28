@@ -1108,6 +1108,15 @@ void RenderWidget::didDeactivateCompositor() {
 
 void RenderWidget::willBeginCompositorFrame() {
   TRACE_EVENT0("gpu", "RenderWidget::willBeginCompositorFrame");
+
+  DCHECK(RenderThreadImpl::current()->compositor_thread());
+
+  // The following two can result in further layout and possibly
+  // enable GPU acceleration so they need to be called before any painting
+  // is done.
+  UpdateTextInputState();
+  UpdateSelectionBounds();
+
   WillInitiatePaint();
 }
 
