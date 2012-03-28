@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,9 +7,10 @@
 
 #include <string>
 #include <vector>
-#include "base/memory/singleton.h"
 
 #include "base/basictypes.h"
+#include "base/command_line.h"
+#include "base/memory/singleton.h"
 
 // A simple class that reads and caches policy settings for Chrome Frame.
 // TODO(tommi): Support refreshing when new settings are pushed.
@@ -38,15 +39,22 @@ class PolicySettings {
     return application_locale_;
   }
 
+  // Contains additional parameters that can optionally be configured for the
+  // current user via the policy settings.  The program part of this command
+  // line object must not be used when appending to another command line.
+  const CommandLine& AdditionalLaunchParameters() const;
+
   // Helper functions for reading settings from the registry
   static void ReadUrlSettings(RendererForUrl* default_renderer,
       std::vector<std::wstring>* renderer_exclusion_list);
   static void ReadContentTypeSetting(
       std::vector<std::wstring>* content_type_list);
-  static void ReadApplicationLocaleSetting(std::wstring* application_locale);
+  static void ReadStringSetting(const char* value_name, std::wstring* value);
 
  protected:
-  PolicySettings() : default_renderer_(RENDERER_NOT_SPECIFIED) {
+  PolicySettings()
+      : default_renderer_(RENDERER_NOT_SPECIFIED),
+        additional_launch_parameters_(CommandLine::NO_PROGRAM) {
     RefreshFromRegistry();
   }
 
@@ -61,6 +69,7 @@ class PolicySettings {
   std::vector<std::wstring> renderer_exclusion_list_;
   std::vector<std::wstring> content_type_list_;
   std::wstring application_locale_;
+  CommandLine additional_launch_parameters_;
 
  private:
   // This ensures no construction is possible outside of the class itself.

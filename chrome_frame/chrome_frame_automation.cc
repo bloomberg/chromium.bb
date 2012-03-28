@@ -519,7 +519,13 @@ bool ProxyFactory::ReleaseAutomationServer(void* server_id,
     Vector::ContainerType::iterator it = std::find(proxies_.container().begin(),
                                                    proxies_.container().end(),
                                                    entry);
-    proxies_.container().erase(it);
+    if (it != proxies_.container().end()) {
+      proxies_.container().erase(it);
+    } else {
+      DLOG(ERROR) << "Proxy wasn't found. Proxy map is likely empty (size="
+                  << proxies_.container().size() << ").";
+    }
+
     lock_.Release();
   }
 

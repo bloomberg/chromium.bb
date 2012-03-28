@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -64,6 +64,7 @@
       'type': 'executable',
       'dependencies': [
         '../breakpad/breakpad.gyp:breakpad_handler',
+        '../chrome/app/policy/cloud_policy_codegen.gyp:policy',
         '../chrome/chrome.gyp:chrome_version_header',
         '../google_update/google_update.gyp:google_update',
         'chrome_frame.gyp:chrome_frame_utils',

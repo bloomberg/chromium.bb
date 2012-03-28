@@ -112,7 +112,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 140
+#   For your editing convenience: highest ID currently used: 141
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -1794,6 +1794,18 @@
           If this policy is not set the default renderer will be used for all sites as specified by the 'ChromeFrameRendererSettings' policy.
 
           For example patterns see http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.''',
+        },
+        {
+          'name': 'AdditionalLaunchParameters',
+          'type': 'string',
+          'supported_on': ['chrome_frame:19-'],
+          'features': {'dynamic_refresh': False},
+          'example_value': '--enable-media-stream --enable-media-source',
+          'id': 141,
+          'caption': '''Additional command line parameters for <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>''',
+          'desc': '''Allows you to specify additional parameters that are used when <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph> launches <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+
+          If this policy is not set the default command line will be used.''',
         },
       ],
     },

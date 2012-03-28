@@ -203,4 +203,5 @@ class PolicyPrefsTestCases(object):
     'RenderInHostList': ([ 'google.com' ], [], []),
     'ChromeFrameContentTypes': ([ 'text/xml' ], [], []),
     'GCFUserDataDir': ('${user_name}/test-frame', [], []),
+    'AdditionalLaunchParameters': ('--enable-media-stream', [], []),
   }

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 #include "base/win/registry.h"
 #include "chrome_frame/policy_settings.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"
+#include "content/public/common/content_switches.h"
 #include "policy/policy_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -39,7 +40,8 @@ bool InitializePolicyKey(HKEY policy_root, RegKey* policy_key) {
   return policy_key->Valid();
 }
 
-void WritePolicyList(RegKey* policy_key, const wchar_t* list_name,
+void WritePolicyList(RegKey* policy_key,
+                     const wchar_t* list_name,
                      const wchar_t* values[], int count) {
   DCHECK(policy_key);
   // Remove any previous settings
@@ -76,7 +78,8 @@ bool SetRendererSettings(HKEY policy_root,
   return true;
 }
 
-bool SetCFContentTypes(HKEY policy_root, const wchar_t* content_types[],
+bool SetCFContentTypes(HKEY policy_root,
+                       const wchar_t* content_types[],
                        int count) {
   RegKey policy_key;
   if (!InitializePolicyKey(policy_root, &policy_key))
@@ -88,15 +91,16 @@ bool SetCFContentTypes(HKEY policy_root, const wchar_t* content_types[],
   return true;
 }
 
-bool SetChromeApplicationLocale(HKEY policy_root, const wchar_t* locale) {
+bool SetCFPolicyString(HKEY policy_root,
+                       const char* policy_name,
+                       const wchar_t* value) {
   RegKey policy_key;
   if (!InitializePolicyKey(policy_root, &policy_key))
     return false;
 
-  std::wstring application_locale_value(
-      ASCIIToWide(policy::key::kApplicationLocaleValue));
+  std::wstring policy_name_str(ASCIIToWide(policy_name));
   EXPECT_EQ(ERROR_SUCCESS,
-      policy_key.WriteValue(application_locale_value.c_str(), locale));
+      policy_key.WriteValue(policy_name_str.c_str(), value));
   return true;
 }
 
@@ -206,10 +210,41 @@ TEST_F(PolicySettingsTest, ApplicationLocale) {
 
   HKEY root[] = { HKEY_LOCAL_MACHINE, HKEY_CURRENT_USER };
   for (int i = 0; i < arraysize(root); ++i) {
-    SetChromeApplicationLocale(root[i], kTestApplicationLocale);
+    SetCFPolicyString(root[i], policy::key::kApplicationLocaleValue,
+                      kTestApplicationLocale);
     ResetPolicySettings();
     EXPECT_EQ(std::wstring(kTestApplicationLocale),
               PolicySettings::GetInstance()->ApplicationLocale());
+
+    DeleteChromeFramePolicyEntries(root[i]);
+  }
+}
+
+TEST_F(PolicySettingsTest, AdditionalLaunchParameters) {
+  EXPECT_TRUE(PolicySettings::GetInstance()->
+      AdditionalLaunchParameters().GetProgram().empty());
+
+  std::string test_switches("--");
+  test_switches += switches::kEnableMediaStream;
+  test_switches += " --";
+  test_switches += switches::kEnableMediaSource;
+
+  HKEY root[] = { HKEY_LOCAL_MACHINE, HKEY_CURRENT_USER };
+  for (int i = 0; i < arraysize(root); ++i) {
+    SetCFPolicyString(root[i], policy::key::kAdditionalLaunchParameters,
+                      ASCIIToWide(test_switches).c_str());
+    ResetPolicySettings();
+    const CommandLine& additional_params =
+        PolicySettings::GetInstance()->AdditionalLaunchParameters();
+    EXPECT_TRUE(additional_params.HasSwitch(switches::kEnableMediaStream));
+    EXPECT_TRUE(additional_params.HasSwitch(switches::kEnableMediaSource));
+
+    FilePath program_path(FILE_PATH_LITERAL("my_chrome.exe"));
+    CommandLine new_cmd_line(program_path);
+    new_cmd_line.AppendArguments(additional_params, false);
+    EXPECT_NE(new_cmd_line.GetProgram(), additional_params.GetProgram());
+    EXPECT_TRUE(new_cmd_line.HasSwitch(switches::kEnableMediaStream));
+    EXPECT_TRUE(new_cmd_line.HasSwitch(switches::kEnableMediaSource));
 
     DeleteChromeFramePolicyEntries(root[i]);
   }

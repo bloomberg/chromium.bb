@@ -15,6 +15,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome_frame/chrome_frame_automation.h"
+#include "chrome_frame/policy_settings.h"
 
 namespace {
 
@@ -73,6 +74,15 @@ bool CreateLaunchCommandLine(scoped_ptr<CommandLine>* command_line) {
   // Shortcut for OS versions that don't need the integrity broker.
   if (base::win::GetVersion() < base::win::VERSION_VISTA) {
     command_line->reset(new CommandLine(GetChromeExecutablePath()));
+
+    // When we do not use the Chrome Launcher, we need to add the optional extra
+    // parameters from the group policy here (this is normally done by the
+    // chrome launcher).  We don't do this when we use the launcher as the
+    // optional arguments could trip off sanitization checks and prevent Chrome
+    // from being launched.
+    const CommandLine& additional_params =
+        PolicySettings::GetInstance()->AdditionalLaunchParameters();
+    command_line->get()->AppendArguments(additional_params, false);
     return true;
   }
 

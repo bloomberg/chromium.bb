@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -53,6 +53,10 @@ PolicySettings::RendererForUrl PolicySettings::GetRendererForContentType(
     }
   }
   return renderer;
+}
+
+const CommandLine& PolicySettings::AdditionalLaunchParameters() const {
+  return additional_launch_parameters_;
 }
 
 // static
@@ -117,20 +121,18 @@ void PolicySettings::ReadContentTypeSetting(
 }
 
 // static
-void PolicySettings::ReadApplicationLocaleSetting(
-    std::wstring* application_locale) {
-  DCHECK(application_locale);
-
-  application_locale->clear();
+void PolicySettings::ReadStringSetting(const char* value_name,
+                                       std::wstring* value) {
+  DCHECK(value);
+  value->clear();
   base::win::RegKey config_key;
-  std::wstring application_locale_value(
-      ASCIIToWide(policy::key::kApplicationLocaleValue));
+  std::wstring value_name_str(ASCIIToWide(value_name));
   for (int i = 0; i < arraysize(kRootKeys); ++i) {
     if ((config_key.Open(kRootKeys[i], policy::kRegistryMandatorySubKey,
                          KEY_READ) == ERROR_SUCCESS) &&
-        (config_key.ReadValue(application_locale_value.c_str(),
-                              application_locale) == ERROR_SUCCESS)) {
-        break;
+        (config_key.ReadValue(value_name_str.c_str(),
+                              value) == ERROR_SUCCESS)) {
+      break;
     }
   }
 }
@@ -140,11 +142,19 @@ void PolicySettings::RefreshFromRegistry() {
   std::vector<std::wstring> renderer_exclusion_list;
   std::vector<std::wstring> content_type_list;
   std::wstring application_locale;
+  CommandLine additional_launch_parameters(CommandLine::NO_PROGRAM);
+  std::wstring additional_parameters_str;
 
   // Read the latest settings from the registry
   ReadUrlSettings(&default_renderer, &renderer_exclusion_list);
   ReadContentTypeSetting(&content_type_list);
-  ReadApplicationLocaleSetting(&application_locale);
+  ReadStringSetting(policy::key::kApplicationLocaleValue, &application_locale);
+  ReadStringSetting(policy::key::kAdditionalLaunchParameters,
+                    &additional_parameters_str);
+  if (!additional_parameters_str.empty()) {
+    additional_parameters_str.insert(0, L"fake.exe ");
+    additional_launch_parameters.ParseFromString(additional_parameters_str);
+  }
 
   // Nofail swap in the new values.  (Note: this is all that need be protected
   // under a mutex if/when this becomes thread safe.)
@@ -154,6 +164,7 @@ void PolicySettings::RefreshFromRegistry() {
   swap(renderer_exclusion_list_, renderer_exclusion_list);
   swap(content_type_list_, content_type_list);
   swap(application_locale_, application_locale);
+  swap(additional_launch_parameters_, additional_launch_parameters);
 }
 
 // static
