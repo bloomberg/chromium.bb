@@ -689,8 +689,8 @@ class WebSocketServerSocketImpl : public net::WebSocketServerSocket {
     }
 
     char challenge[4 + 4 + sizeof(key3)];
-    int32 part1 = htonl(key_number1 / spaces1);
-    int32 part2 = htonl(key_number2 / spaces2);
+    int32 part1 = base::HostToNet32(key_number1 / spaces1);
+    int32 part2 = base::HostToNet32(key_number2 / spaces2);
     memcpy(challenge, &part1, 4);
     memcpy(challenge + 4, &part2, 4);
     memcpy(challenge + 4 + 4, key3, sizeof(key3));

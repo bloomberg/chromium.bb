@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/eintr_wrapper.h"
+#include "base/sys_byteorder.h"
 #include "net/base/net_util.h"
 #include "testing/platform_test.h"
 
@@ -50,7 +51,7 @@ void ListenSocketTester::SetUp() {
   struct sockaddr_in client;
   client.sin_family = AF_INET;
   client.sin_addr.s_addr = inet_addr(kLoopback);
-  client.sin_port = htons(kTestPort);
+  client.sin_port = base::HostToNet16(kTestPort);
   int ret = HANDLE_EINTR(
       connect(test_socket_, reinterpret_cast<sockaddr*>(&client),
               sizeof(client)));

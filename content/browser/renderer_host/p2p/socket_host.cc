@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,15 +34,15 @@ bool P2PSocketHost::GetStunPacketType(
   if (data_size < kStunHeaderSize)
     return false;
 
-  uint32 cookie = ntohl(*reinterpret_cast<const uint32*>(data + 4));
+  uint32 cookie = base::NetToHost32(*reinterpret_cast<const uint32*>(data + 4));
   if (cookie != kStunMagicCookie)
     return false;
 
-  uint16 length = ntohs(*reinterpret_cast<const uint16*>(data + 2));
+  uint16 length = base::NetToHost16(*reinterpret_cast<const uint16*>(data + 2));
   if (length != data_size - kStunHeaderSize)
     return false;
 
-  int message_type = ntohs(*reinterpret_cast<const uint16*>(data));
+  int message_type = base::NetToHost16(*reinterpret_cast<const uint16*>(data));
 
   // Verify that the type is known:
   switch (message_type) {

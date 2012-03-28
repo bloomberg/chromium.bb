@@ -452,7 +452,7 @@ bool SafeBrowsingProtocolParser::ReadChunkId(
   memcpy(chunk_id, *data, sizeof(*chunk_id));
   *data += sizeof(*chunk_id);
   *remaining -= sizeof(*chunk_id);
-  *chunk_id = htonl(*chunk_id);
+  *chunk_id = base::HostToNet32(*chunk_id);
   DCHECK_GE(*remaining, 0);
   return true;
 }

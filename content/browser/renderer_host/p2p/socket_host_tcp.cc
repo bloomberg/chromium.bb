@@ -168,8 +168,8 @@ void P2PSocketHostTcp::DidCompleteRead(int result) {
 
   read_buffer_->set_offset(read_buffer_->offset() + result);
   if (read_buffer_->offset() > kPacketHeaderSize) {
-    int packet_size =
-        ntohs(*reinterpret_cast<uint16*>(read_buffer_->StartOfBuffer()));
+    int packet_size = base::NetToHost16(
+        *reinterpret_cast<uint16*>(read_buffer_->StartOfBuffer()));
     if (packet_size + kPacketHeaderSize <= read_buffer_->offset()) {
       // We've got a full packet!
       char* start = read_buffer_->StartOfBuffer() + kPacketHeaderSize;
@@ -221,7 +221,8 @@ void P2PSocketHostTcp::Send(const net::IPEndPoint& to,
 
   int size = kPacketHeaderSize + data.size();
   write_buffer_ = new net::DrainableIOBuffer(new net::IOBuffer(size), size);
-  *reinterpret_cast<uint16*>(write_buffer_->data()) = htons(data.size());
+  *reinterpret_cast<uint16*>(write_buffer_->data()) =
+      base::HostToNet16(data.size());
   memcpy(write_buffer_->data() + kPacketHeaderSize, &data[0], data.size());
 
   DoWrite();

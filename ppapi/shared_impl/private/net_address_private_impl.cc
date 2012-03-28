@@ -72,11 +72,11 @@ uint16_t GetPort(const PP_NetAddress_Private* addr) {
   switch (GetFamilyInternal(addr)) {
     case AF_INET: {
       const sockaddr_in* a = reinterpret_cast<const sockaddr_in*>(addr->data);
-      return ntohs(a->sin_port);
+      return base::NetToHost16(a->sin_port);
     }
     case AF_INET6: {
       const sockaddr_in6* a = reinterpret_cast<const sockaddr_in6*>(addr->data);
-      return ntohs(a->sin6_port);
+      return base::NetToHost16(a->sin6_port);
     }
     default:
       return 0;
@@ -181,8 +181,8 @@ PP_Bool AreEqual(const PP_NetAddress_Private* addr1,
 #if defined(OS_WIN) || defined(OS_MACOSX)
 std::string ConvertIPv4AddressToString(const sockaddr_in* a,
                                        bool include_port) {
-  unsigned ip = ntohl(a->sin_addr.s_addr);
-  unsigned port = ntohs(a->sin_port);
+  unsigned ip = base::NetToHost32(a->sin_addr.s_addr);
+  unsigned port = base::NetToHost16(a->sin_port);
   std::string description = base::StringPrintf(
       "%u.%u.%u.%u",
       (ip >> 24) & 0xff, (ip >> 16) & 0xff, (ip >> 8) & 0xff, ip & 0xff);
@@ -204,7 +204,7 @@ std::string ConvertIPv4AddressToString(const sockaddr_in* a,
 //    5952, but consistent with |getnameinfo()|.
 std::string ConvertIPv6AddressToString(const sockaddr_in6* a,
                                        bool include_port) {
-  unsigned port = ntohs(a->sin6_port);
+  unsigned port = base::NetToHost16(a->sin6_port);
   unsigned scope = a->sin6_scope_id;
   std::string description(include_port ? "[" : "");
 
@@ -229,7 +229,7 @@ std::string ConvertIPv6AddressToString(const sockaddr_in6* a,
     int curr_start = 0;
     int curr_length = 0;
     for (int i = 0; i < 8; i++) {
-      if (ntohs(a->sin6_addr.s6_addr16[i]) != 0) {
+      if (base::NetToHost16(a->sin6_addr.s6_addr16[i]) != 0) {
         curr_length = 0;
       } else {
         if (!curr_length)
@@ -249,7 +249,7 @@ std::string ConvertIPv6AddressToString(const sockaddr_in6* a,
         need_sep = false;
         i += longest_length;
       } else {
-        unsigned v = ntohs(a->sin6_addr.s6_addr16[i]);
+        unsigned v = base::NetToHost16(a->sin6_addr.s6_addr16[i]);
         base::StringAppendF(&description, need_sep ? ":%x" : "%x", v);
         need_sep = true;
         i++;
@@ -315,12 +315,14 @@ PP_Bool ReplacePort(const struct PP_NetAddress_Private* src_addr,
   switch (GetFamilyInternal(src_addr)) {
     case AF_INET: {
       memmove(dest_addr, src_addr, sizeof(*src_addr));
-      reinterpret_cast<sockaddr_in*>(dest_addr->data)->sin_port = htons(port);
+      reinterpret_cast<sockaddr_in*>(dest_addr->data)->sin_port =
+          base::HostToNet16(port);
       return PP_TRUE;
     }
     case AF_INET6: {
       memmove(dest_addr, src_addr, sizeof(*src_addr));
-      reinterpret_cast<sockaddr_in6*>(dest_addr->data)->sin6_port = htons(port);
+      reinterpret_cast<sockaddr_in6*>(dest_addr->data)->sin6_port =
+          base::HostToNet16(port);
       return PP_TRUE;
     }
     default:

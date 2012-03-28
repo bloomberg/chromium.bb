@@ -43,7 +43,7 @@ inline uint64 HashToUInt64(const std::string& hash) {
   uint64 value;
   DCHECK_GE(hash.size(), sizeof(value));
   memcpy(&value, hash.data(), sizeof(value));
-  return base::htonll(value);
+  return base::HostToNet64(value);
 }
 
 // Creates an MD5 hash of the given value, and returns hash as a byte buffer

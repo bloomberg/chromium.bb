@@ -101,7 +101,7 @@ class AsyncSocketDataProvider : public net::SocketDataProvider {
 // Takes a 32-bit integer in host byte order and converts it to a
 // net::IPAddressNumber.
 net::IPAddressNumber Uint32ToIPAddressNumber(uint32 ip) {
-  uint32 ip_nbo = htonl(ip);
+  uint32 ip_nbo = base::HostToNet32(ip);
   const unsigned char* const ip_start =
       reinterpret_cast<const unsigned char*>(&ip_nbo);
   return net::IPAddressNumber(ip_start, ip_start + (sizeof ip_nbo));
