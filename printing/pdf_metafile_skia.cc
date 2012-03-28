@@ -95,8 +95,6 @@ bool PdfMetafileSkia::FinishDocument() {
   data_->current_page_ = NULL;
 
   int font_counts[SkAdvancedTypefaceMetrics::kNotEmbeddable_Font + 1];
-  // Work around bug in skia for the moment.
-  memset(font_counts, 0, sizeof(font_counts));
   data_->pdf_doc_.getCountOfFontTypes(font_counts);
   for (int type = 0;
        type <= SkAdvancedTypefaceMetrics::kNotEmbeddable_Font;
