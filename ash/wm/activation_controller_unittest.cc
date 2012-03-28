@@ -371,5 +371,18 @@ TEST_F(ActivationControllerTest, AnimateHideMaintainsStacking) {
   EXPECT_TRUE(w2_iter > w1_iter);
 }
 
+// Verifies that activating a minimized window would restore it.
+TEST_F(ActivationControllerTest, ActivateMinimizedWindow) {
+  aura::test::TestWindowDelegate wd;
+  scoped_ptr<aura::Window> w1(aura::test::CreateTestWindowWithDelegate(
+      &wd, -1, gfx::Rect(50, 50), NULL));
+
+  wm::MinimizeWindow(w1.get());
+
+  wm::ActivateWindow(w1.get());
+  EXPECT_TRUE(wm::IsActiveWindow(w1.get()));
+  EXPECT_FALSE(wm::IsWindowMinimized(w1.get()));
+}
+
 }  // namespace test
 }  // namespace ash

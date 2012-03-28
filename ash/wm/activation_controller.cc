@@ -30,8 +30,8 @@ const int kWindowContainerIds[] = {
     kShellWindowId_LockScreenContainer,
     kShellWindowId_SystemModalContainer,
     kShellWindowId_AlwaysOnTopContainer,
-    kShellWindowId_DefaultContainer,
     kShellWindowId_AppListContainer,
+    kShellWindowId_DefaultContainer,
 
     // Panel, launcher and status are intentionally checked after other
     // containers even though these layers are higher. The user expects their
@@ -60,7 +60,7 @@ bool SupportsChildActivation(aura::Window* window) {
 // supports activation/deactivation.
 bool CanActivateWindow(aura::Window* window, const aura::Event* event) {
   return window &&
-      window->IsVisible() &&
+      (window->IsVisible() || wm::IsWindowMinimized(window)) &&
       (!aura::client::GetActivationDelegate(window) ||
         aura::client::GetActivationDelegate(window)->ShouldActivate(event)) &&
       SupportsChildActivation(window->parent());
@@ -204,6 +204,12 @@ void ActivationController::ActivateWindowWithEvent(aura::Window* window,
   // activated or deactivated.
   if (window && !CanActivateWindow(window, event))
     return;
+
+  // Restore minimized window. This needs to be done before CanReceiveEvents()
+  // is called as that function checks window visibility.
+  if (window && wm::IsWindowMinimized(window))
+    window->Show();
+
   // If the screen is locked, just bring the window to top so that
   // it will be activated when the lock window is destroyed.
   if (window && !window->CanReceiveEvents()) {

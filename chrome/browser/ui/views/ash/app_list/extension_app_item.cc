@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/views/ash/launcher/chrome_launcher_delegate.h"
 #include "chrome/common/extensions/extension.h"
@@ -256,9 +257,13 @@ void ExtensionAppItem::ShowExtensionOptions() {
     return;
 
   Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
+  if (!browser)
+    browser = Browser::Create(profile_);
+
   if (browser) {
     browser->AddSelectedTabWithURL(extension->options_url(),
                                    content::PAGE_TRANSITION_LINK);
+    browser->window()->Activate();
   }
 }
 

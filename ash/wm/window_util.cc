@@ -79,6 +79,10 @@ void MaximizeWindow(aura::Window* window) {
   window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
 }
 
+void MinimizeWindow(aura::Window* window) {
+  window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MINIMIZED);
+}
+
 void RestoreWindow(aura::Window* window) {
   window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
 }

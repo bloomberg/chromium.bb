@@ -43,6 +43,9 @@ ASH_EXPORT bool IsWindowFullscreen(aura::Window* window);
 // Maximizes |window|, which must not be NULL.
 ASH_EXPORT void MaximizeWindow(aura::Window* window);
 
+// Minimizes |window|, which must not be NULL.
+ASH_EXPORT void MinimizeWindow(aura::Window* window);
+
 // Restores |window|, which must not be NULL.
 ASH_EXPORT void RestoreWindow(aura::Window* window);
 

@@ -861,6 +861,9 @@ WebContents* Browser::OpenApplicationTab(Profile* profile,
     browser->window()->Show();
     // There's no current tab in this browser window, so add a new one.
     disposition = NEW_FOREGROUND_TAB;
+  } else {
+    // For existing browser, ensure its window is activated.
+    browser->window()->Activate();
   }
 
   // Check the prefs for overridden mode.
