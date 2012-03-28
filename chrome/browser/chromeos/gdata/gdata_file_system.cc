@@ -2863,8 +2863,19 @@ void GDataFileSystem::StoreToCacheOnIOThreadPool(
 
   // If file was previously pinned, store it in persistent dir and create
   // symlink in pinned dir.
-  if (entry) {  // File exists in cache, determines destination path.
+  if (entry) {  // File exists in cache.
+    // If file is dirty, return error.
+    if (entry->IsDirty()) {
+      LOG(WARNING) << "Can't store a file to replace a dirty file: res_id="
+                   << resource_id
+                   << ", md5=" << md5;
+      *error = base::PLATFORM_FILE_ERROR_IN_USE;
+      return;
+    }
+
     cache_state |= entry->cache_state;
+
+    // If file is pinned, determines destination path.
     if (entry->IsPinned()) {
       sub_dir_type = GDataRootDirectory::CACHE_TYPE_PERSISTENT;
       dest_path = GetCacheFilePath(resource_id, md5, sub_dir_type,
@@ -3363,6 +3374,24 @@ void GDataFileSystem::RemoveFromCacheOnIOThreadPool(
     base::PlatformFileError* error) {
   DCHECK(error);
 
+  // Lock to access cache map.
+  base::AutoLock lock(lock_);
+
+  // MD5 is not passed into RemoveFromCache and hence
+  // RemoveFromCacheOnIOThreadPool, because we would delete all cache files
+  // corresponding to <resource_id> regardless of the md5.
+  // So, search for entry in cache without taking md5 into account.
+  GDataRootDirectory::CacheEntry* entry = root_->GetCacheEntry(
+      resource_id, std::string());
+
+  // If entry doesn't exist or is dirty in cache, nothing to do.
+  if (!entry || entry->IsDirty()) {
+    DVLOG(1) << "Entry " << (entry ? "is dirty" : "doesn't exist")
+             << " in cache, not removing";
+    *error = base::PLATFORM_FILE_OK;
+    return;
+  }
+
   // Determine paths to delete all cache versions of |resource_id| in
   // persistent, tmp and pinned directories.
   std::vector<FilePath> paths_to_delete;
@@ -3388,13 +3417,18 @@ void GDataFileSystem::RemoveFromCacheOnIOThreadPool(
       GDataRootDirectory::CACHE_TYPE_PINNED,
       CACHED_FILE_FROM_SERVER));
 
-  for (size_t i = 0; i < paths_to_delete.size(); ++i) {
-    DeleteFilesSelectively(paths_to_delete[i],
-                           FilePath() /* don't keep any files */);
-  }
+  // Don't delete locally modified (i.e. dirty and possibly outgoing) files.
+  // Since we're not deleting outgoing symlinks, we don't need to append
+  // outgoing path to |paths_to_delete|.
+  FilePath path_to_keep = GetCacheFilePath(
+      resource_id,
+      std::string(),
+      GDataRootDirectory::CACHE_TYPE_PERSISTENT,
+      CACHED_FILE_LOCALLY_MODIFIED);
 
-  // Lock to access cache map.
-  base::AutoLock lock(lock_);
+  for (size_t i = 0; i < paths_to_delete.size(); ++i) {
+    DeleteFilesSelectively(paths_to_delete[i], path_to_keep);
+  }
 
   // Now that all file operations have completed, remove from cache map.
   root_->RemoveFromCacheMap(resource_id);

@@ -99,6 +99,17 @@ struct InitialCacheResource {
      "local", gdata::GDataRootDirectory::CACHE_TYPE_PERSISTENT },
 };
 
+struct PathToVerify {
+  PathToVerify(const FilePath& in_path_to_scan,
+               const FilePath& in_expected_existing_path) :
+      path_to_scan(in_path_to_scan),
+      expected_existing_path(in_expected_existing_path) {
+  }
+
+  FilePath path_to_scan;
+  FilePath expected_existing_path;
+};
+
 }  // anonymous namespace
 
 namespace gdata {
@@ -347,25 +358,90 @@ class GDataFileSystemTest : public testing::Test {
     EXPECT_EQ(expected_error_, error);
 
     // Verify cache map.
-    EXPECT_TRUE(file_system_->root_->GetCacheEntry(resource_id, md5) == NULL);
+    GDataRootDirectory::CacheEntry* entry =
+        file_system_->root_->GetCacheEntry(resource_id, md5);
+    if (entry)
+      EXPECT_TRUE(entry->IsDirty());
 
-    // Verify that no files with "<resource_id>.*" exists in persistent and tmp
-    // dirs, and no "<resource_id>" exists in pinned dir.
-    std::vector<FilePath> paths_to_check;
-    paths_to_check.push_back(file_system_->GetCacheFilePath(resource_id, "*",
-        GDataRootDirectory::CACHE_TYPE_PERSISTENT,
-        GDataFileSystem::CACHED_FILE_FROM_SERVER));
-    paths_to_check.push_back(file_system_->GetCacheFilePath(resource_id, "*",
-        GDataRootDirectory::CACHE_TYPE_TMP,
-        GDataFileSystem::CACHED_FILE_FROM_SERVER));
-    paths_to_check.push_back(file_system_->GetCacheFilePath(resource_id, "",
-        GDataRootDirectory::CACHE_TYPE_PINNED,
-        GDataFileSystem::CACHED_FILE_FROM_SERVER));
-    for (size_t i = 0; i < paths_to_check.size(); ++i) {
-      file_util::FileEnumerator traversal(paths_to_check[i].DirName(), false,
-                                          file_util::FileEnumerator::FILES,
-                                          paths_to_check[i].BaseName().value());
-      EXPECT_TRUE(traversal.Next().empty());
+    // If entry doesn't exist, verify that:
+    // - no files with "<resource_id>.* exists in persistent and tmp dirs
+    // - no "<resource_id>" symlink exists in pinned and outgoing dirs.
+    std::vector<PathToVerify> paths_to_verify;
+    paths_to_verify.push_back(  // Index 0: CACHE_TYPE_TMP.
+        PathToVerify(file_system_->GetCacheFilePath(resource_id, "*",
+                     GDataRootDirectory::CACHE_TYPE_TMP,
+                     GDataFileSystem::CACHED_FILE_FROM_SERVER), FilePath()));
+    paths_to_verify.push_back(  // Index 1: CACHE_TYPE_PERSISTENT.
+        PathToVerify(file_system_->GetCacheFilePath(resource_id, "*",
+                     GDataRootDirectory::CACHE_TYPE_PERSISTENT,
+                     GDataFileSystem::CACHED_FILE_FROM_SERVER), FilePath()));
+    paths_to_verify.push_back(  // Index 2: CACHE_TYPE_PINNED.
+        PathToVerify(file_system_->GetCacheFilePath(resource_id, "",
+                     GDataRootDirectory::CACHE_TYPE_PINNED,
+                     GDataFileSystem::CACHED_FILE_FROM_SERVER), FilePath()));
+    paths_to_verify.push_back(  // Index 3: CACHE_TYPE_OUTGOING.
+        PathToVerify(file_system_->GetCacheFilePath(resource_id, "",
+                     GDataRootDirectory::CACHE_TYPE_OUTGOING,
+                     GDataFileSystem::CACHED_FILE_FROM_SERVER), FilePath()));
+    if (!entry) {
+      for (size_t i = 0; i < paths_to_verify.size(); ++i) {
+        file_util::FileEnumerator enumerator(
+            paths_to_verify[i].path_to_scan.DirName(), false /* not recursive*/,
+            static_cast<file_util::FileEnumerator::FileType>(
+                file_util::FileEnumerator::FILES |
+                file_util::FileEnumerator::SHOW_SYM_LINKS),
+            paths_to_verify[i].path_to_scan.BaseName().value());
+        EXPECT_TRUE(enumerator.Next().empty());
+      }
+    } else {
+      // Entry is dirty, verify that:
+      // - no files with "<resource_id>.*" exist in tmp dir
+      // - only 1 "<resource_id>.local" exists in persistent dir
+      // - only 1 <resource_id> exists in outgoing dir
+      // - if entry is pinned, only 1 <resource_id> exists in pinned dir.
+
+      // Change expected_existing_path of CACHE_TYPE_PERSISTENT (index 1).
+      paths_to_verify[1].expected_existing_path =
+          GetCacheFilePath(resource_id,
+                           std::string(),
+                           GDataRootDirectory::CACHE_TYPE_PERSISTENT,
+                           GDataFileSystem::CACHED_FILE_LOCALLY_MODIFIED);
+
+      // Change expected_existing_path of CACHE_TYPE_OUTGOING (index 3).
+      paths_to_verify[3].expected_existing_path =
+          GetCacheFilePath(resource_id,
+                           std::string(),
+                           GDataRootDirectory::CACHE_TYPE_OUTGOING,
+                           GDataFileSystem::CACHED_FILE_FROM_SERVER);
+
+      if (entry->IsPinned()) {
+         // Change expected_existing_path of CACHE_TYPE_PINNED (index 2).
+         paths_to_verify[2].expected_existing_path =
+             GetCacheFilePath(resource_id,
+                              std::string(),
+                              GDataRootDirectory::CACHE_TYPE_PINNED,
+                              GDataFileSystem::CACHED_FILE_FROM_SERVER);
+      }
+
+      for (size_t i = 0; i < paths_to_verify.size(); ++i) {
+        const struct PathToVerify& verify = paths_to_verify[i];
+        file_util::FileEnumerator enumerator(
+            verify.path_to_scan.DirName(), false /* not recursive*/,
+            static_cast<file_util::FileEnumerator::FileType>(
+                file_util::FileEnumerator::FILES |
+                file_util::FileEnumerator::SHOW_SYM_LINKS),
+            verify.path_to_scan.BaseName().value());
+        size_t num_files_found = 0;
+        for (FilePath current = enumerator.Next(); !current.empty();
+             current = enumerator.Next()) {
+          ++num_files_found;
+          EXPECT_EQ(verify.expected_existing_path, current);
+        }
+        if (verify.expected_existing_path.empty())
+          EXPECT_EQ(0U, num_files_found);
+        else
+          EXPECT_EQ(1U, num_files_found);
+      }
     }
   }
 
@@ -2102,6 +2178,51 @@ TEST_F(GDataFileSystemTest, DirtyCacheInvalid) {
   TestClearDirty(resource_id, md5, base::PLATFORM_FILE_ERROR_INVALID_OPERATION,
                  GDataFile::CACHE_STATE_PRESENT,
                  GDataRootDirectory::CACHE_TYPE_TMP);
+  EXPECT_EQ(1, num_callback_invocations_);
+
+  // Mark an existing file dirty, then store a new file to the same resource id
+  // but different md5, which should fail.
+  TestMarkDirty(resource_id, md5, base::PLATFORM_FILE_OK,
+                GDataFile::CACHE_STATE_PRESENT | GDataFile::CACHE_STATE_DIRTY,
+                GDataRootDirectory::CACHE_TYPE_PERSISTENT);
+  num_callback_invocations_ = 0;
+  md5 = "new_md5";
+  TestStoreToCache(resource_id, md5, GetTestFilePath("subdir_feed.json"),
+                   base::PLATFORM_FILE_ERROR_IN_USE,
+                   GDataFile::CACHE_STATE_PRESENT |
+                   GDataFile::CACHE_STATE_DIRTY,
+                   GDataRootDirectory::CACHE_TYPE_PERSISTENT);
+  EXPECT_EQ(1, num_callback_invocations_);
+}
+
+TEST_F(GDataFileSystemTest, RemoveFromDirtyCache) {
+  EXPECT_CALL(*mock_sync_client_, OnCacheInitialized()).Times(1);
+
+  std::string resource_id("pdf:1a2b");
+  std::string md5("abcdef0123456789");
+  EXPECT_CALL(*mock_sync_client_, OnFilePinned(resource_id, md5)).Times(1);
+
+  // Store a file to cache, pin it, mark it dirty and commit it.
+  TestStoreToCache(resource_id, md5, GetTestFilePath("root_feed.json"),
+                   base::PLATFORM_FILE_OK, GDataFile::CACHE_STATE_PRESENT,
+                   GDataRootDirectory::CACHE_TYPE_TMP);
+  TestPin(resource_id, md5, base::PLATFORM_FILE_OK,
+          GDataFile::CACHE_STATE_PRESENT | GDataFile::CACHE_STATE_PINNED,
+          GDataRootDirectory::CACHE_TYPE_PERSISTENT);
+  TestMarkDirty(resource_id, md5, base::PLATFORM_FILE_OK,
+                GDataFile::CACHE_STATE_PRESENT | GDataFile::CACHE_STATE_PINNED |
+                GDataFile::CACHE_STATE_DIRTY,
+                GDataRootDirectory::CACHE_TYPE_PERSISTENT);
+  TestCommitDirty(resource_id, md5, base::PLATFORM_FILE_OK,
+                 GDataFile::CACHE_STATE_PRESENT |
+                 GDataFile::CACHE_STATE_PINNED |
+                 GDataFile::CACHE_STATE_DIRTY,
+                 GDataRootDirectory::CACHE_TYPE_PERSISTENT);
+
+  // Try to remove the file.  Since file is dirty, it and the corresponding
+  // pinned and outgoing symlinks should not be removed.
+  num_callback_invocations_ = 0;
+  TestRemoveFromCache(resource_id, base::PLATFORM_FILE_OK);
   EXPECT_EQ(1, num_callback_invocations_);
 }
 
