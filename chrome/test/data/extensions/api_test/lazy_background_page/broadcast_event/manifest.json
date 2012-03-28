@@ -6,7 +6,7 @@
   "permissions": ["tabs", "experimental"],
   "background": {
     "scripts": ["background.js"],
-    "persistent": false
+    "transient": true
   },
   "icons": {"48": "icon48.png"},
   "page_action": {

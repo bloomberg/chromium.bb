@@ -1386,7 +1386,7 @@ bool Extension::LoadSharedFeatures(
       // LoadBackgroundScripts() must be called before LoadBackgroundPage().
       !LoadBackgroundScripts(error) ||
       !LoadBackgroundPage(api_permissions, error) ||
-      !LoadBackgroundPersistent(api_permissions, error) ||
+      !LoadBackgroundTransient(api_permissions, error) ||
       !LoadBackgroundAllowJSAccess(api_permissions, error) ||
       !LoadWebIntentServices(error))
     return false;
@@ -1799,22 +1799,22 @@ bool Extension::LoadBackgroundPage(
   return true;
 }
 
-bool Extension::LoadBackgroundPersistent(
+bool Extension::LoadBackgroundTransient(
     const ExtensionAPIPermissionSet& api_permissions,
     string16* error) {
-  Value* background_persistent = NULL;
+  Value* background_transient = NULL;
   if (!api_permissions.count(ExtensionAPIPermission::kExperimental) ||
-      !manifest_->Get(keys::kBackgroundPersistent, &background_persistent))
+      !manifest_->Get(keys::kBackgroundTransient, &background_transient))
     return true;
 
-  if (!background_persistent->IsType(Value::TYPE_BOOLEAN) ||
-      !background_persistent->GetAsBoolean(&background_page_persists_)) {
-    *error = ASCIIToUTF16(errors::kInvalidBackgroundPersistent);
+  if (!background_transient->IsType(Value::TYPE_BOOLEAN) ||
+      !background_transient->GetAsBoolean(&background_page_is_transient_)) {
+    *error = ASCIIToUTF16(errors::kInvalidBackgroundTransient);
     return false;
   }
 
   if (!has_background_page()) {
-    *error = ASCIIToUTF16(errors::kInvalidBackgroundPersistentNoPage);
+    *error = ASCIIToUTF16(errors::kInvalidBackgroundTransientNoPage);
     return false;
   }
 
@@ -2732,7 +2732,7 @@ Extension::Extension(const FilePath& path,
       incognito_split_mode_(false),
       offline_enabled_(false),
       converted_from_user_script_(false),
-      background_page_persists_(true),
+      background_page_is_transient_(false),
       allow_background_js_access_(true),
       manifest_(manifest.release()),
       is_storage_isolated_(false),

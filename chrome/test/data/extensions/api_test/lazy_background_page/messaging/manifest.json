@@ -6,7 +6,7 @@
   "permissions": ["experimental"],
   "background": {
     "scripts": ["background.js"],
-    "persistent": false
+    "transient": true
   },
   "content_scripts": [
     {

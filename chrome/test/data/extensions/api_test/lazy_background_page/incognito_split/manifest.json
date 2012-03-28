@@ -7,7 +7,7 @@
   "incognito": "split",
   "background": {
     "scripts": ["background.js"],
-    "persistent": false
+    "transient": true
   },
   "browser_action": {
     "default_title": "Bananaphone"

@@ -2514,8 +2514,7 @@ ExtensionIdSet ExtensionService::GetAppIds() const {
 }
 
 bool ExtensionService::IsBackgroundPageReady(const Extension* extension) {
-  return (!(extension->has_background_page() &&
-            extension->background_page_persists()) ||
+  return (!extension->has_persistent_background_page() ||
           extension_runtime_data_[extension->id()].background_page_ready);
 }
 
