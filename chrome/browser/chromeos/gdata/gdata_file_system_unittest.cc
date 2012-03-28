@@ -772,7 +772,8 @@ class GDataFileSystemTest : public testing::Test {
         false,     // load_from_server
         base::Bind(&GDataFileSystemTest::OnExpectToFindFile,
                    FilePath(FILE_PATH_LITERAL("gdata"))));
-    RunAllPendingForIO();
+    BrowserThread::GetBlockingPool()->FlushForTesting();
+    message_loop_.RunAllPending();
   }
 
   static void OnExpectToFindFile(const FilePath& search_file_path,

@@ -18,6 +18,7 @@
 #include "base/message_loop_proxy.h"
 #include "base/platform_file.h"
 #include "base/threading/platform_thread.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/gdata/gdata_documents_service.h"
@@ -1828,8 +1829,10 @@ void GDataFileSystem::LoadRootFeedFromCache(
       new base::PlatformFileError(base::PLATFORM_FILE_OK);
   base::ListValue* feed_list = new base::ListValue;
 
-  PostBlockingPoolSequencedTaskAndReply(
-      kGDataFileSystemToken,
+  // Post a task without the sequence token, as this doesn't have to be
+  // sequenced with other tasks, and can take long if the feed is large.
+  // Note that it's OK to do this before the cache is initialized.
+  BrowserThread::GetBlockingPool()->PostTaskAndReply(
       FROM_HERE,
       base::Bind(&GDataFileSystem::LoadRootFeedOnIOThreadPool,
                  cache_paths_[GDataRootDirectory::CACHE_TYPE_META].Append(
