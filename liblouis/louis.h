@@ -519,11 +519,15 @@ extern "C"
 
   int extParseChars (const char *inString, widechar * outString);
 /* Takes a character string and produces a sequence of wide characters. 
-* Opposite of showString. */
+* Opposite of showString. 
+* Returns the length of the widechar sequence.
+*/
 
   int extParseDots (const char *inString, widechar * outString);
 /* Takes a character string and produces a sequence of wide characters 
-* containing dot patterns. Opposite of showDots. */
+* containing dot patterns. Opposite of showDots. 
+* Returns the length of the widechar sequence.
+*/
 
   int other_translate (const char *trantab, const widechar
 		       * inbuf,
@@ -539,13 +543,13 @@ extern "C"
 			   *inputPos, int *cursorPos, int mode);
 /*Call wrappers for other back-translators.*/
 
-
   int other_dotsToChar (const char *trantab, widechar * inbuf,
 			widechar * outbuf, int length, int mode);
   int other_charToDots (const char *trantab, const widechar
 			* inbuf, widechar * outbuf, int length, int mode);
 
   void debugHook ();
+/* Can be inserted in code to be ulsed as a breakpoint in gdb */
 
 #ifdef __cplusplus
 }
