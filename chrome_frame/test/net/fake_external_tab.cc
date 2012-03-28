@@ -280,6 +280,9 @@ void FilterDisabledTests() {
     "HTTPSRequestTest.SSLSessionCacheShardTest",
     "HTTPSRequestTest.SSLSessionCacheShardTest",
     "HTTPSRequestTest.HTTPSErrorsNoClobberTSSTest",
+    "HTTPSOCSPTest.*",
+    "HTTPSEVCRLSetTest.*",
+    "HTTPSCRLSetTest.*"
   };
 
   const char* ie9_disabled_tests[] = {
