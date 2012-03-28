@@ -39,6 +39,7 @@
           '<(DEPTH)/gpu/command_buffer/client/gles2_lib.cc',
           '<(DEPTH)/gpu/command_buffer/client/mapped_memory.cc',
           '<(DEPTH)/gpu/command_buffer/client/query_tracker.cc',
+          '<(DEPTH)/gpu/command_buffer/client/share_group.cc',
           '<(DEPTH)/gpu/command_buffer/client/ring_buffer.cc',
           '<(DEPTH)/gpu/command_buffer/common/id_allocator.cc',
 
