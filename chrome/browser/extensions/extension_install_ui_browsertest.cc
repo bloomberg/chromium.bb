@@ -38,8 +38,16 @@ class ExtensionInstallUIBrowserTest : public ExtensionBrowserTest {
   }
 };
 
+#if defined(OS_LINUX)
+// Fails consistently on bot chromium.chromiumos \ Linux.
+// See: http://crbug.com/120647.
+#define MAYBE_TestThemeInstallUndoResetsToDefault DISABLED_TestThemeInstallUndoResetsToDefault
+#else
+#define MAYBE_TestThemeInstallUndoResetsToDefault TestThemeInstallUndoResetsToDefault
+#endif
+
 IN_PROC_BROWSER_TEST_F(ExtensionInstallUIBrowserTest,
-                       TestThemeInstallUndoResetsToDefault) {
+                       MAYBE_TestThemeInstallUndoResetsToDefault) {
   // Install theme once and undo to verify we go back to default theme.
   FilePath theme_crx = PackExtension(test_data_dir_.AppendASCII("theme"));
   ASSERT_TRUE(InstallExtensionWithUI(theme_crx, 1));
