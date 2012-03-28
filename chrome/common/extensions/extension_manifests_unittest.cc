@@ -279,9 +279,12 @@ TEST_F(ExtensionManifestTest, InitFromValueValid) {
 }
 
 TEST_F(ExtensionManifestTest, PlatformApps) {
+  // A minimal platform app.
+  LoadAndExpectError("init_valid_platform_app.json",
+                     errors::kPlatformAppFlagRequired);
+
   CommandLine::ForCurrentProcess()->AppendSwitch(switches::kEnablePlatformApps);
 
-  // A minimal platform app.
   LoadAndExpectSuccess("init_valid_platform_app.json");
 }
 
