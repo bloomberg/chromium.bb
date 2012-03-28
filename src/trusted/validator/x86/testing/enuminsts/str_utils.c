@@ -27,7 +27,7 @@ char *SkipPrefix(char *s, const char *prefix) {
 
 /* Return a pointer to s with leading spaces removed.
  */
-char *strip(char *s) {
+const char *strip(const char *s) {
   while (*s == ' ') s++;
   return s;
 }

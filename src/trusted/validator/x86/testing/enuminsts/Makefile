@@ -81,12 +81,17 @@ CXX=g++ -m$(BITS)
 CCARGS = -c $(NACLDEFS) $(XEDDEFS) $(XEDINCLUDE) $(NACLINCLUDE)
 
 enuminsts$(SUFFIX):$(XEDLIB) enuminsts$(SUFFIX).o str_utils$(SUFFIX).o \
-		$(XEDDECODER) nacl_tester$(SUFFIX).o
+		$(XEDDECODER) nacl_tester$(SUFFIX).o input_tester$(SUFFIX).o \
+		text2hex$(SUFFIX).o
 	$(CXX) $(OPTDBG) -o $@ enuminsts$(SUFFIX).o str_utils$(SUFFIX).o \
-		$(XEDDECODER) nacl_tester$(SUFFIX).o $(XEDLIB) $(NACLLIBS)
+		$(XEDDECODER) nacl_tester$(SUFFIX).o input_tester$(SUFFIX).o \
+		text2hex$(SUFFIX).o $(XEDLIB) $(NACLLIBS)
 
 enuminsts$(SUFFIX).o: enuminsts.c
 	$(CC) $(OPTDBG) -o enuminsts$(SUFFIX).o $(CCARGS) enuminsts.c
+
+input_tester$(SUFFIX).o: input_tester.c
+	$(CC) $(OPTDBG) -o input_tester$(SUFFIX).o $(CCARGS) input_tester.c
 
 nacl_tester$(SUFFIX).o: nacl_tester.c
 	$(CC) $(OPTDBG) -o nacl_tester$(SUFFIX).o $(CCARGS) nacl_tester.c
@@ -96,6 +101,9 @@ xed_tester$(SUFFIX).o: xed_tester.c
 
 str_utils$(SUFFIX).o: str_utils.h str_utils.c
 	$(CC) $(OPTDBG) -o str_utils$(SUFFIX).o $(CCARGS) str_utils.c
+
+text2hex$(SUFFIX).o: text2hex.c
+	$(CC) $(OPTDBG) -o text2hex$(SUFFIX).o $(CCARGS) text2hex.c
 
 $(XEDLIB):$(PINGZ)
 	tar xzf $(PINGZ) $(XEDKIT)

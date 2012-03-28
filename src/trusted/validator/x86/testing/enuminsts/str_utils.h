@@ -21,7 +21,7 @@
 char *SkipPrefix(char *s, const char *prefix);
 
 /* Return a pointer to s with leading spaces removed. */
-char *strip(char *s);
+const char *strip(const char *s);
 
 /* Updates the string by removing trailing spaces/newlines. */
 void rstrip(char *s);

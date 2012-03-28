@@ -60,7 +60,7 @@ static void XedSetup() {
 }
 
 /* Defines the function to parse the first instruction. */
-static void ParseInst(NaClEnumerator* enumerator, int pc_address) {
+static void ParseInst(const NaClEnumerator* enumerator, const int pc_address) {
   xed_decoder._has_xed_disasm = FALSE;
   xed_decoder._pc_address = pc_address;
   xed_decoder._xed_disasm[0] = 0;
@@ -75,13 +75,13 @@ static void ParseInst(NaClEnumerator* enumerator, int pc_address) {
 }
 
 /* Returns true if the instruction parsed a legal instruction. */
-static Bool IsInstLegal(NaClEnumerator* enumerator) {
+static Bool IsInstLegal(const NaClEnumerator* enumerator) {
   return (xed_decoder._xedd._decoded_length != 0) &&
       (XED_ERROR_NONE == xed_decoder._xed_error);
 }
 
 /* Returns the disassembled instruction. */
-static const char* Disassemble(NaClEnumerator* enumerator) {
+static const char* Disassemble(const NaClEnumerator* enumerator) {
   if (!xed_decoder._has_xed_disasm) {
     if (xed_decoder._xedd._decoded_length == 0) {
       strcpy(xed_decoder._xed_disasm, "[illegal instruction]");
@@ -94,7 +94,7 @@ static const char* Disassemble(NaClEnumerator* enumerator) {
 }
 
 /* Returns the mnemonic name for the disassembled instruction. */
-static const char* GetInstMnemonic(NaClEnumerator* enumerator) {
+static const char* GetInstMnemonic(const NaClEnumerator* enumerator) {
   char *allocated;
   char *xtmp;
   char *prev_xtmp;
@@ -142,50 +142,37 @@ static const char* GetInstMnemonic(NaClEnumerator* enumerator) {
   return xed_decoder._xed_opcode;
 }
 
-static const char* GetInstOperandsText(NaClEnumerator* enumerator) {
+static const char* GetInstOperandsText(const NaClEnumerator* enumerator) {
   /* Force caching of operands and return. */
   if (xed_decoder._xed_operands[0] == 0) GetInstMnemonic(enumerator);
   return xed_decoder._xed_operands;
 }
 
 /* Prints out the disassembled instruction. */
-static void PrintInst(NaClEnumerator* enumerator) {
+static void PrintInst(const NaClEnumerator* enumerator) {
   int i;
-  if (enumerator->_print_opcode_bytes_only) {
-    for (i = 0; i < xed_decoder._xedd._decoded_length; ++i) {
-      printf("%02x", enumerator->_itext[i]);
-    }
-    printf("\n");
-  } else {
-    size_t opcode_size;
-    if (!enumerator->_print_enumerated_instruction) {
-      NaClPcAddress pc_address = (NaClPcAddress) xed_decoder._pc_address;
-      printf("  XED: %"NACL_PRIxNaClPcAddressAll": ", pc_address);
-    }
-    /* Since xed doesn't print out opcode sequence, and it is
-     * useful to know, add it to the print out. Note: Use same
-     * spacing scheme as nacl decoder, so things line up.
-     */
-    size_t num_bytes = MAX_INST_LENGTH;
-    if (enumerator->_num_bytes > num_bytes)
-      num_bytes = enumerator->_num_bytes;
-    for (i = 0; i < num_bytes; ++i) {
-      if (i < xed_decoder._xedd._decoded_length) {
-        printf("%02x ", enumerator->_itext[i]);
-      } else if (!enumerator->_print_enumerated_instruction) {
-        printf("   ");
-      }
-    }
-    if (enumerator->_print_enumerated_instruction) {
-      printf("#%s %s\n", GetInstMnemonic(enumerator),
-             GetInstOperandsText(enumerator));
+  size_t opcode_size;
+  NaClPcAddress pc_address = (NaClPcAddress) xed_decoder._pc_address;
+  printf("  XED: %"NACL_PRIxNaClPcAddressAll": ", pc_address);
+
+  /* Since xed doesn't print out opcode sequence, and it is
+   * useful to know, add it to the print out. Note: Use same
+   * spacing scheme as nacl decoder, so things line up.
+   */
+  size_t num_bytes = MAX_INST_LENGTH;
+  if (enumerator->_num_bytes > num_bytes)
+    num_bytes = enumerator->_num_bytes;
+  for (i = 0; i < num_bytes; ++i) {
+    if (i < xed_decoder._xedd._decoded_length) {
+      printf("%02x ", enumerator->_itext[i]);
     } else {
-      printf("%s\n", Disassemble(enumerator));
+      printf("   ");
     }
   }
+  printf("%s\n", Disassemble(enumerator));
 }
 
-static size_t InstLength(NaClEnumerator* enumerator) {
+static size_t InstLength(const NaClEnumerator* enumerator) {
   return (size_t) xed_decoder._xedd._decoded_length;
 }
 
@@ -196,12 +183,12 @@ static inline xed_inst_t const* GetXedInst() {
   return xed_decoder._xed_inst;
 }
 
-static size_t GetNumOperands(NaClEnumerator* enumerator) {
+static size_t GetNumOperands(const NaClEnumerator* enumerator) {
   return (size_t) xed_inst_noperands(GetXedInst());
 }
 
 #if NACL_TARGET_SUBARCH == 64
-static int IsReservedReg(xed_reg_enum_t reg) {
+static int IsReservedReg(const xed_reg_enum_t reg) {
   switch (reg) {
     case XED_REG_RSP:
     case XED_REG_RBP:
@@ -212,7 +199,7 @@ static int IsReservedReg(xed_reg_enum_t reg) {
 }
 
 
-static int IsWriteAction(xed_operand_action_enum_t rw) {
+static int IsWriteAction(const xed_operand_action_enum_t rw) {
   switch (rw) {
     case XED_OPERAND_ACTION_RW:
     case XED_OPERAND_ACTION_W:
@@ -224,8 +211,8 @@ static int IsWriteAction(xed_operand_action_enum_t rw) {
   return 0;
 }
 
-static Bool WritesToReservedReg(NaClEnumerator* enumerator,
-                                size_t n) {
+static Bool WritesToReservedReg(const NaClEnumerator* enumerator,
+                                const size_t n) {
   xed_inst_t const* xi = GetXedInst();
   xed_operand_t const* op = xed_inst_operand(xi, n);
   xed_operand_enum_t op_name = xed_operand_name(op);
@@ -234,21 +221,17 @@ static Bool WritesToReservedReg(NaClEnumerator* enumerator,
       IsWriteAction(xed_operand_rw(op));
 }
 #elif NACL_TARGET_SUBARCH == 32
-static Bool WritesToReservedReg(NaClEnumerator* enumerator,
-                                size_t n) {
+static Bool WritesToReservedReg(const NaClEnumerator* enumerator,
+                                const size_t n) {
   return FALSE;
 }
 #else
 #error("Bad NACL_TARGET_SUBARCH")
 #endif
 
-static const char* Usage() {
-  return "Runs xed to decode instructions.";
-}
-
-static void InstallFlag(NaClEnumerator* enumerator,
+static void InstallFlag(const NaClEnumerator* enumerator,
                         const char* flag_name,
-                        void* flag_address) {
+                        const void* flag_address) {
 }
 
 /* Defines the registry function that creates a xed decoder, and returns
@@ -257,8 +240,6 @@ static void InstallFlag(NaClEnumerator* enumerator,
 NaClEnumeratorDecoder* RegisterXedDecoder() {
   XedSetup();
   xed_decoder._base._id_name = "xed";
-  xed_decoder._base._legal_only = TRUE;
-  xed_decoder._base._print_only = FALSE;
   xed_decoder._base._parse_inst_fn = ParseInst;
   xed_decoder._base._inst_length_fn = InstLength;
   xed_decoder._base._print_inst_fn = PrintInst;

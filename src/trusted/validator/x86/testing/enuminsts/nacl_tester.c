@@ -49,7 +49,7 @@ struct {
   Bool _ignore_instructions_not_xed_implemented;
 } nacl_decoder;
 
-static Bool IsInstLegal(NaClEnumerator *enumerator) {
+static Bool IsInstLegal(const NaClEnumerator *enumerator) {
   return !nacl_decoder._ignore_instruction &&
       NaClInstDecodesCorrectly(nacl_decoder._inst);
 }
@@ -57,7 +57,7 @@ static Bool IsInstLegal(NaClEnumerator *enumerator) {
 /* Instructions we assume that the NaCl validator accept and are valid, but
  * are not legal according to xed.
  */
-static Bool NaClIsntXedImplemented(NaClEnumerator *enumerator) {
+static Bool NaClIsntXedImplemented(const NaClEnumerator *enumerator) {
   static const char* nacl_but_not_xed[] = {
     "Pf2iw",
     "Pf2id"
@@ -73,7 +73,8 @@ static Bool NaClIsntXedImplemented(NaClEnumerator *enumerator) {
 }
 
 /* Defines the funcdtion to parse the first instruction. */
-static void ParseInst(NaClEnumerator* enumerator, int pc_address) {
+static void ParseInst(const NaClEnumerator* enumerator,
+                      const int pc_address) {
   nacl_decoder._inst = NULL;
   nacl_decoder._ignore_instruction = FALSE;
   nacl_decoder._pc_address = pc_address;
@@ -83,7 +84,8 @@ static void ParseInst(NaClEnumerator* enumerator, int pc_address) {
   nacl_decoder._mnemonic_lower[0] = 0;
   nacl_decoder._operands[0] = 0;
   nacl_decoder._inst =
-      NaClParseInst(enumerator->_itext, enumerator->_num_bytes, pc_address);
+      NaClParseInst((char*) enumerator->_itext,
+                    enumerator->_num_bytes, pc_address);
   if (nacl_decoder._ignore_instructions_not_xed_implemented &&
       IsInstLegal(enumerator)) {
     nacl_decoder._ignore_instruction = NaClIsntXedImplemented(enumerator);
@@ -92,7 +94,7 @@ static void ParseInst(NaClEnumerator* enumerator, int pc_address) {
 
 
 /* Returns the disassembled instruction. */
-static const char* Disassemble(NaClEnumerator* enumerator) {
+static const char* Disassemble(const NaClEnumerator* enumerator) {
   char* stmp;
 
   /* First see if we have cached it. If so, return it. */
@@ -105,7 +107,7 @@ static const char* Disassemble(NaClEnumerator* enumerator) {
 }
 
 /* Returns the lower case name of the instruction. */
-static const char* GetInstMnemonicLower(NaClEnumerator* enumerator) {
+static const char* GetInstMnemonicLower(const NaClEnumerator* enumerator) {
   char mnemonic[kBufferSize];
   size_t i;
 
@@ -129,7 +131,7 @@ typedef struct {
 /* Returns the disassembled instruction with the opcode byte sequence
  * removed.
  */
-static const char* SimplifiedDisassembly(NaClEnumerator *enumerator) {
+static const char* SimplifiedDisassembly(const NaClEnumerator *enumerator) {
   const char* disassembly;
   const char* mnemonic;
   const char* start;
@@ -181,7 +183,7 @@ static const char* SimplifiedDisassembly(NaClEnumerator *enumerator) {
 }
 
 /* Returns the mnemonic name for the disassembled instruction. */
-static const char* GetInstMnemonic(NaClEnumerator* enumerator) {
+static const char* GetInstMnemonic(const NaClEnumerator* enumerator) {
   char mnemonic[kBufferSize];
   const char* disassembly;
 
@@ -224,7 +226,7 @@ static const char* GetInstMnemonic(NaClEnumerator* enumerator) {
 /* Returns the text for the operands. To be used by the driver
  * to compare accross decoders.
  */
-static const char* GetInstOperandsText(NaClEnumerator* enumerator) {
+static const char* GetInstOperandsText(const NaClEnumerator* enumerator) {
   char sbuf[kBufferSize];
   char operands[kBufferSize];
   const char* disassembly;
@@ -244,54 +246,37 @@ static const char* GetInstOperandsText(NaClEnumerator* enumerator) {
 }
 
 /* Prints out the disassembled instruction. */
-static void PrintInst(NaClEnumerator* enumerator) {
-  int i;
-  uint8_t length = NaClInstLength(nacl_decoder._inst);
-  if (enumerator->_print_opcode_bytes_only) {
-    for (i = 0; i < length; ++i) {
-      printf("%02x", enumerator->_itext[i]);
-    }
-    printf("\n");
-  } else {
-    if (enumerator->_print_enumerated_instruction) {
-      for (i = 0; i < length; ++i) {
-        printf("%02x ", enumerator->_itext[i]);
-      }
-      printf("#%s %s\n", GetInstMnemonic(enumerator),
-             GetInstOperandsText(enumerator));
-    } else {
-      printf(" NaCl: %s", Disassemble(enumerator));
-    }
-  }
+static void PrintInst(const NaClEnumerator* enumerator) {
+  printf(" NaCl: %s", Disassemble(enumerator));
 }
 
 /* Returns the number of bytes in the disassembled instruction. */
-static size_t InstLength(NaClEnumerator* enumerator) {
+static size_t InstLength(const NaClEnumerator* enumerator) {
   return (size_t) NaClInstLength(nacl_decoder._inst);
 }
 
 /* Returns true if the instruction decodes, and static (single instruction)
  * validator tests pass.
  */
-static Bool MaybeInstValidates(NaClEnumerator *enumerator) {
-  return NaClInstValidates(enumerator->_itext,
+static Bool MaybeInstValidates(const NaClEnumerator *enumerator) {
+  return NaClInstValidates((char*) enumerator->_itext,
                            NaClInstLength(nacl_decoder._inst),
                            nacl_decoder._pc_address,
                            nacl_decoder._inst);
 }
 
 /* Runs the validator on the given code segment. */
-static Bool SegmentValidates(NaClEnumerator *enumerator,
-                             uint8_t* segment,
-                             size_t size,
-                             int pc_address) {
-  return NaClSegmentValidates(segment, size, pc_address);
+static Bool SegmentValidates(const NaClEnumerator *enumerator,
+                             const uint8_t* segment,
+                             const size_t size,
+                             const int pc_address) {
+  return NaClSegmentValidates((uint8_t*) segment, size, pc_address);
 }
 
 /* Installs NaCl-specific flags. */
-static void InstallFlag(NaClEnumerator* enumerator,
+static void InstallFlag(const NaClEnumerator* enumerator,
                         const char* flag_name,
-                        void* flag_address) {
+                        const void* flag_address) {
   if (0 == strcmp(flag_name, "--nops")) {
     nacl_decoder._translate_to_xed_nops = *((Bool*) flag_address);
   } else if (0 == strcmp(flag_name, "--xedimplemented")) {
@@ -303,8 +288,6 @@ static void InstallFlag(NaClEnumerator* enumerator,
 /* Generates a decoder for the (sel_ldr) nacl validator. */
 NaClEnumeratorDecoder* RegisterNaClDecoder() {
   nacl_decoder._base._id_name = "nacl";
-  nacl_decoder._base._legal_only = TRUE;
-  nacl_decoder._base._print_only = FALSE;
   nacl_decoder._base._parse_inst_fn = ParseInst;
   nacl_decoder._base._inst_length_fn = InstLength;
   nacl_decoder._base._print_inst_fn = PrintInst;
