@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -145,6 +145,12 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
   // of indirection is so that the unit test can override this behavior but we
   // still have a function to statically pass to PostTask.
   void CallMakeAsynchronousPost() { MakeAsynchronousPost(); }
+
+  // Used to destroy a fetcher when the bridge is Abort()ed, to ensure that
+  // a reference to |this| is held while flushing any pending fetch completion
+  // callbacks coming from the IO thread en route to finally destroying the
+  // fetcher.
+  void DestroyURLFetcherOnIOThread(content::URLFetcher* fetcher);
 
   // Gets a customized net::URLRequestContext for bridged requests. See
   // RequestContext definition for details.

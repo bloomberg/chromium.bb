@@ -261,11 +261,22 @@ void HttpBridge::Abort() {
     return;
 
   fetch_state_.aborted = true;
-  BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE,
-                            fetch_state_.url_poster);
+  if (!BrowserThread::PostTask(
+          BrowserThread::IO, FROM_HERE,
+          base::Bind(&HttpBridge::DestroyURLFetcherOnIOThread, this,
+                     fetch_state_.url_poster))) {
+    // Madness ensues.
+    NOTREACHED() << "Could not post task to delete URLFetcher";
+  }
+
   fetch_state_.url_poster = NULL;
   fetch_state_.error_code = net::ERR_ABORTED;
   http_post_completed_.Signal();
+}
+
+void HttpBridge::DestroyURLFetcherOnIOThread(content::URLFetcher* fetcher) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  delete fetcher;
 }
 
 void HttpBridge::OnURLFetchComplete(const content::URLFetcher *source) {
