@@ -96,7 +96,7 @@ cr.define('login', function() {
       $('bubble').showTextForElement(
           $('add-user-button'),
           localStrings.getString('addUserErrorMessage'),
-          cr.ui.Bubble.Attachment.BOTTOM, BUBBLE_OFFSET, BUBBLE_PADDING);
+          cr.ui.Bubble.Attachment.TOP, BUBBLE_OFFSET, BUBBLE_PADDING);
       chrome.send('loginAddNetworkStateObserver',
                   ['login.HeaderBar.bubbleWatchdog']);
     }

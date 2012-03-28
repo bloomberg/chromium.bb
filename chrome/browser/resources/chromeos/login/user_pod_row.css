@@ -74,8 +74,7 @@ podrow {
 .name {
   -webkit-transition: opacity 800ms ease;
   color: #565656;
-  font-weight: bold;
-  font-size: 15px;
+  font-size: 18px;
   margin: 4px 0;
   overflow: hidden;
   text-overflow: ellipsis;

@@ -27,16 +27,16 @@ button {
 #outer-container {
   -webkit-box-align: center;
   -webkit-box-pack: center;
-  bottom: 0;
+  bottom: 40px;  /* Leave space for the header bar */
   display: -webkit-box;
   left: 0;
   position: absolute;
   right: 0;
-  top: 40px;  /* Leave space for the header bar */
+  top: 0;
 }
 
 #oobe {
-  margin-bottom: 60px;  /* Compensate top header to center content. */
+  margin-top: 20px;  /* Compensate bottom header to center content. */
 }
 
 #inner-container {
@@ -738,13 +738,11 @@ html[dir=rtl] .error-message {
 
 #version-labels {
   -webkit-transition: all 500ms linear;
-  bottom: 10px;
   color: #999;
   font-size: 11px;
-  left: 10px;
+  margin: 10px;
   opacity: 1.0;
-  position: absolute;
-  right: 10px;
+  text-align: right;
   text-shadow: 0 1px 1px #fff;
 }
 

@@ -429,8 +429,8 @@
         <include name="IDR_ENROLL_FAILURE" file="enroll_failure.png" type="BINDATA"/>
         <include name="IDR_GUEST_ICON" file="guest_icon.png" type="BINDATA" />
         <include name="IDR_HELP_MENU" file="help_16.png" type="BINDATA" />
-        <include name="IDR_ICON_ADD_USER20" file="icon_add_user20.png" type="BINDATA" />
-        <include name="IDR_ICON_POWER20" file="icon_power20.png" type="BINDATA" />
+        <include name="IDR_ICON_ADD_USER24" file="icon_add_user24.png" type="BINDATA" />
+        <include name="IDR_ICON_POWER24" file="icon_power24.png" type="BINDATA" />
         <include name="IDR_LOGIN_DEFAULT_USER" file="avatar_beaker.png" type="BINDATA" />
         <include name="IDR_LOGIN_DEFAULT_USER_1" file="avatar_bee.png" type="BINDATA" />
         <include name="IDR_LOGIN_DEFAULT_USER_2" file="avatar_briefcase.png" type="BINDATA" />

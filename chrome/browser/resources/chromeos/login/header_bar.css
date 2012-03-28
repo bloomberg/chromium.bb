@@ -1,11 +1,12 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
 #login-header-bar {
-  margin: 0;
-  padding: 0;
+  bottom: 0;
+  left: 0;
+  position: absolute;
 }
 
 #login-header-bar button,
@@ -15,11 +16,11 @@
   -webkit-box-shadow: none;
   background: transparent none;
   border: 0;
-  color: #666;
   cursor: pointer;
   height: 34px;
   margin: 0;
   min-width: 0;
+  opacity: 0.6;
   padding: 5px 0;
   vertical-align: middle;
 }
@@ -42,14 +43,14 @@
 
 #login-header-bar #shutdown-button {
   -webkit-padding-start: 24px;
-  background-image: url('chrome://theme/IDR_ICON_POWER20');
+  background-image: url('chrome://theme/IDR_ICON_POWER24');
   background-position: left center;
   background-repeat: no-repeat;
 }
 
 #login-header-bar #add-user-button {
   -webkit-padding-start: 24px;
-  background-image: url('chrome://theme/IDR_ICON_ADD_USER20');
+  background-image: url('chrome://theme/IDR_ICON_ADD_USER24');
   background-position: left center;
   background-repeat: no-repeat;
 }

@@ -62,6 +62,8 @@ cr.define('cr.ui', function() {
      * @private
      */
     showContentAt_: function(pos, content, attachment) {
+      this.style.top = this.style.left = this.style.right = this.style.bottom =
+          'auto';
       for (var k in pos) {
         if (typeof pos[k] == 'number')
           this.style[k] = pos[k] + 'px';
