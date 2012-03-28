@@ -59,6 +59,7 @@
 #pragma warning(disable: 4250)
 #endif
 
+class CommandLine;
 class DeviceOrientationDispatcher;
 class DevToolsAgent;
 class DomAutomationController;
@@ -975,6 +976,10 @@ class RenderViewImpl : public RenderWidget,
   // with the navigation information saved in OnNavigate().
   void PopulateStateFromPendingNavigationParams(
       content::DocumentState* document_state);
+
+  // Processes the command-line flags --enable-viewport and
+  // --enable-fixed-layout[=w,h].
+  void ProcessViewLayoutFlags(const CommandLine& command_line);
 
   // Starts nav_state_sync_timer_ if it isn't already running.
   void StartNavStateSyncTimerIfNecessary();

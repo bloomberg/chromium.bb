@@ -249,7 +249,8 @@ const char kEnableDeviceMotion[]            = "enable-device-motion";
 const char kEnableFastback[]                = "enable-fastback";
 
 // By default, a page is laid out to fill the entire width of the window.
-// This flag fixes the layout of the page to a default of 980 CSS pixels.
+// This flag fixes the layout of the page to a default of 980 CSS pixels,
+// or to a specified width and height using --enable-fixed-layout=w,h
 const char kEnableFixedLayout[]             = "enable-fixed-layout";
 
 // Enable the JavaScript Full Screen API.
@@ -343,6 +344,10 @@ const char kEnableTouchEvents[]             = "enable-touch-events";
 // Enables support for video tracks. Current implementation is
 // incomplete and this flag is used for development and testing.
 const char kEnableVideoTrack[]              = "enable-video-track";
+
+// Enables the use of the viewport meta tag, which allows
+// pages to control aspects of their own layout.
+const char kEnableViewport[]                = "enable-viewport";
 
 // Disable Web Intents.
 const char kDisableWebIntents[]             = "disable-web-intents";
