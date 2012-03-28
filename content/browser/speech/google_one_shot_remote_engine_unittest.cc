@@ -48,12 +48,13 @@ void GoogleOneShotRemoteEngineTest::CreateAndTestRequest(
     bool success, const std::string& http_response) {
   GoogleOneShotRemoteEngine client(NULL);
   unsigned char dummy_audio_buffer_data[2] = {'\0', '\0'};
-  AudioChunk dummy_audio_chunk(&dummy_audio_buffer_data[0],
-                               sizeof(dummy_audio_buffer_data),
-                               2 /* bytes per sample */);
+  scoped_refptr<AudioChunk> dummy_audio_chunk(
+      new AudioChunk(&dummy_audio_buffer_data[0],
+                     sizeof(dummy_audio_buffer_data),
+                     2 /* bytes per sample */));
   client.set_delegate(this);
   client.StartRecognition();
-  client.TakeAudioChunk(dummy_audio_chunk);
+  client.TakeAudioChunk(*dummy_audio_chunk);
   client.AudioChunksEnded();
   TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);

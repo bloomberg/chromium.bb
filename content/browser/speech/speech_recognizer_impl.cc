@@ -211,15 +211,16 @@ void SpeechRecognizerImpl::OnData(AudioInputController* controller,
                                   const uint8* data, uint32 size) {
   if (size == 0)  // This could happen when recording stops and is normal.
     return;
-  AudioChunk* raw_audio = new AudioChunk(data, static_cast<size_t>(size),
-                                         kNumBitsPerAudioSample / 8);
+  scoped_refptr<AudioChunk> raw_audio(
+      new AudioChunk(data,
+                     static_cast<size_t>(size),
+                     kNumBitsPerAudioSample / 8));
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                           base::Bind(&SpeechRecognizerImpl::HandleOnData,
                                      this, raw_audio));
 }
 
-void SpeechRecognizerImpl::HandleOnData(AudioChunk* raw_audio) {
-  scoped_ptr<AudioChunk> free_raw_audio_on_return(raw_audio);
+void SpeechRecognizerImpl::HandleOnData(scoped_refptr<AudioChunk> raw_audio) {
   // Check if we are still recording and if not discard this buffer, as
   // recording might have been stopped after this buffer was posted to the queue
   // by |OnData|.

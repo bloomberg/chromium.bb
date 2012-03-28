@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_SPEECH_SPEECH_RECOGNIZER_IMPL_H_
 
 #include "base/basictypes.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/speech/endpointer/endpointer.h"
 #include "content/browser/speech/speech_recognition_engine.h"
@@ -81,8 +82,8 @@ class CONTENT_EXPORT SpeechRecognizerImpl
 
   void HandleOnError(int error_code);  // Handles OnError in the IO thread.
 
-  // Handles OnData in the IO thread. Takes ownership of |raw_audio|.
-  void HandleOnData(AudioChunk* raw_audio);
+  // Handles OnData in the IO thread.
+  void HandleOnData(scoped_refptr<AudioChunk> raw_audio);
 
   // Helper method which closes the audio controller and frees it asynchronously
   // without blocking the IO thread.

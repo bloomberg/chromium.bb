@@ -191,7 +191,7 @@ AudioEncoder::AudioEncoder(const std::string& mime_type, int bits_per_sample)
 AudioEncoder::~AudioEncoder() {
 }
 
-scoped_ptr<AudioChunk> AudioEncoder::GetEncodedDataAndClear() {
+scoped_refptr<AudioChunk> AudioEncoder::GetEncodedDataAndClear() {
   return encoded_audio_buffer_.DequeueAll();
 }
 

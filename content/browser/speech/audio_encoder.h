@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ref_counted.h"
 #include "content/browser/speech/audio_buffer.h"
 
 namespace speech {
@@ -38,7 +38,7 @@ class AudioEncoder {
   virtual void Flush() = 0;
 
   // Merges, retrieves and clears all the accumulated encoded audio chunks.
-  scoped_ptr<AudioChunk> GetEncodedDataAndClear();
+  scoped_refptr<AudioChunk> GetEncodedDataAndClear();
 
   const std::string& mime_type() { return mime_type_; }
   int bits_per_sample() { return bits_per_sample_; }

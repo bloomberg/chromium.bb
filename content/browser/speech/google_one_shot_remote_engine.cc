@@ -7,7 +7,6 @@
 #include <vector>
 
 #include "base/json/json_reader.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/values.h"
@@ -242,7 +241,7 @@ void GoogleOneShotRemoteEngine::TakeAudioChunk(const AudioChunk& data) {
   DCHECK(encoder_.get());
   DCHECK_EQ(data.bytes_per_sample(), config_.audio_num_bits_per_sample / 8);
   encoder_->Encode(data);
-  scoped_ptr<AudioChunk> encoded_data(encoder_->GetEncodedDataAndClear());
+  scoped_refptr<AudioChunk> encoded_data(encoder_->GetEncodedDataAndClear());
   url_fetcher_->AppendChunkToUpload(encoded_data->AsString(), false);
 }
 
@@ -254,12 +253,14 @@ void GoogleOneShotRemoteEngine::AudioChunksEnded() {
   // of silence in case encoder had no data already.
   std::vector<int16> samples(
       config_.audio_sample_rate * kAudioPacketIntervalMs / 1000);
-  AudioChunk dummy_chunk(reinterpret_cast<uint8*>(&samples[0]),
-                         samples.size() * sizeof(int16),
-                         encoder_->bits_per_sample() / 8);
-  encoder_->Encode(dummy_chunk);
+  scoped_refptr<AudioChunk> dummy_chunk(
+      new AudioChunk(reinterpret_cast<uint8*>(&samples[0]),
+                     samples.size() * sizeof(int16),
+                     encoder_->bits_per_sample() / 8));
+  encoder_->Encode(*dummy_chunk);
   encoder_->Flush();
-  scoped_ptr<AudioChunk> encoded_dummy_data(encoder_->GetEncodedDataAndClear());
+  scoped_refptr<AudioChunk> encoded_dummy_data(
+      encoder_->GetEncodedDataAndClear());
   DCHECK(!encoded_dummy_data->IsEmpty());
   encoder_.reset();
 
