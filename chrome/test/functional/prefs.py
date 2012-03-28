@@ -9,6 +9,7 @@ import shutil
 
 import pyauto_functional  # Must be imported before pyauto
 import pyauto
+import test_utils
 
 class PrefsTest(pyauto.PyUITest):
   """TestCase for Preferences."""
@@ -281,50 +282,13 @@ class PrefsTest(pyauto.PyUITest):
     self.assertFalse(driver.execute_script(script),
                      msg='At least one visible image found.')
 
-  def _GetInfobarIndexByType(self, infobar_type, windex, tab_index):
-    # TODO(dyu): Move this helper function into test_util file.
-    """Returns the index of the infobar of the given type.
-
-    Args:
-      infobar_type: The infobar type to look for.
-      windex: Window index.
-      tab_index: Tab index.
-
-    Returns:
-      Index of infobar for infobar type, or None if not found.
-    """
-    infobar_list = (
-        self.GetBrowserInfo()['windows'][windex]['tabs'][tab_index] \
-            ['infobars'])
-    for infobar in infobar_list:
-      if infobar_type == infobar['type']:
-        return infobar_list.index(infobar)
-    return None
-
-  def _GetIndexForRPHInfobar(self, windex=0, tab_index=0):
-    """Waits for RPH infobar to appear and returns its index.
-
-    Args:
-      windex: Window index. Defaults to 0 (first window).
-      tab_index: Tab index. Defaults to 0 (first tab).
-
-    Returns:
-      Index of RPH infobar.
-    """
-    self.assertTrue(
-        self.WaitUntil(lambda: self._GetInfobarIndexByType(
-            self.INFOBAR_TYPE, windex, tab_index) is not None),
-        msg='Registered Handler Protocol infobar did not appear.')
-    # Return the infobar index.
-    return self._GetInfobarIndexByType(
-        self.INFOBAR_TYPE, windex, tab_index)
-
   def testProtocolHandlerRegisteredCorrectly(self):
     """Verify sites that ask to be default handlers registers correctly."""
     url = self.GetHttpURLForDataPath('settings', 'protocol_handler.html')
     self.NavigateToURL(url)
     self.PerformActionOnInfobar(
-        'accept', infobar_index=self._GetIndexForRPHInfobar())
+        'accept', infobar_index=test_utils.WaitForInfobarTypeAndGetIndex(
+            self, self.INFOBAR_TYPE))
     driver = self.NewWebDriver()
     driver.find_element_by_id('test_protocol').click()
     self.assertTrue(

@@ -360,3 +360,61 @@ def LoginToDevice(test, test_account='test_google_account'):
     test.assertTrue(login_info['is_logged_in'], msg='Login failed.')
   else:
     test.fail(msg='Another user is already logged in. Please logout first.')
+
+def GetInfobarIndexByType(test, infobar_type, windex=0, tab_index=0):
+  """Returns the index of the infobar of the given type.
+
+  Args:
+    test: Derived from pyauto.PyUITest - base class for UI test cases.
+    infobar_type: The infobar type to look for.
+    windex: Window index.
+    tab_index: Tab index.
+
+  Returns:
+    Index of infobar for infobar type, or None if not found.
+  """
+  infobar_list = (
+      test.GetBrowserInfo()['windows'][windex]['tabs'][tab_index] \
+          ['infobars'])
+  for infobar in infobar_list:
+    if infobar_type == infobar['type']:
+      return infobar_list.index(infobar)
+  return None
+
+def WaitForInfobarTypeAndGetIndex(test, infobar_type, windex=0, tab_index=0):
+  """Wait for infobar type to appear and returns its index.
+
+  If the infobar never appears, an exception will be raised.
+
+  Args:
+    test: Derived from pyauto.PyUITest - base class for UI test cases.
+    infobar_type: The infobar type to look for.
+    windex: Window index. Defaults to 0 (first window).
+    tab_index: Tab index. Defaults to 0 (first tab).
+
+  Returns:
+    Index of infobar for infobar type.
+  """
+  test.assertTrue(
+      test.WaitUntil(lambda: GetInfobarIndexByType(
+          test, infobar_type, windex, tab_index) is not None),
+      msg='Infobar type for %s did not appear.' % infobar_type)
+  # Return the infobar index.
+  return GetInfobarIndexByType(test, infobar_type, windex, tab_index)
+
+def AssertInfobarTypeDoesNotAppear(test, infobar_type, windex=0, tab_index=0):
+  """Check that the infobar type does not appear.
+
+  This function waits 20s to assert that the infobar does not appear.
+
+  Args:
+    test: Derived from pyauto.PyUITest - base class for UI test cases.
+    infobar_type: The infobar type to look for.
+    windex: Window index. Defaults to 0 (first window).
+    tab_index: Tab index. Defaults to 0 (first tab).
+  """
+  test.assertFalse(
+      test.WaitUntil(lambda: GetInfobarIndexByType(
+          test, infobar_type, windex, tab_index) is not None, timeout=20),
+      msg=('Infobar type for %s appeared when it should be hidden.'
+           % infobar_type))

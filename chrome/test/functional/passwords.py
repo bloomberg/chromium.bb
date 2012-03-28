@@ -81,43 +81,6 @@ class PasswordTest(pyauto.PyUITest):
                 self.ExecuteJavascript(js_template % 'Passwd',
                                       tab_index, window_index) != ''))
 
-  def _GetInfobarIndexByType(self, infobar_type, windex, tab_index):
-    """Returns the index of the infobar of the given type.
-
-    Args:
-      infobar_type: The infobar type to look for.
-      windex: Window index.
-      tab_index: Tab index.
-
-    Returns:
-      Index of infobar for infobar type, or None if not found.
-    """
-    infobar_list = (
-        self.GetBrowserInfo()['windows'][windex]['tabs'][tab_index] \
-            ['infobars'])
-    for infobar in infobar_list:
-      if infobar_type == infobar['type']:
-        return infobar_list.index(infobar)
-    return None
-
-  def _GetIndexForSavePasswordInfobar(self, windex=0, tab_index=0):
-    """Waits for save password infobar to appear and returns its index.
-
-    Args:
-      windex: Window index. Defaults to 0 (first window).
-      tab_index: Tab index. Defaults to 0 (first tab).
-
-    Returns:
-      Index of infobar for infobar type.
-    """
-    self.assertTrue(
-        self.WaitUntil(lambda: self._GetInfobarIndexByType(
-            self.INFOBAR_TYPE, windex, tab_index) is not None),
-        msg='Save password infobar did not appear.')
-    # Return the infobar index.
-    return self._GetInfobarIndexByType(
-        self.INFOBAR_TYPE, windex, tab_index)
-
   def testSavePassword(self):
     """Test saving a password and getting saved passwords."""
     password1 = self._ConstructPasswordDictionary(
@@ -157,13 +120,16 @@ class PasswordTest(pyauto.PyUITest):
     creds = self.GetPrivateInfo()['test_google_account']
     username = creds['username']
     password = creds['password']
+    # Disable one-click login infobar for sync.
+    self.SetPrefs(pyauto.kReverseAutologinEnabled, False)
     test_utils.GoogleAccountsLogin(self, username, password)
     # Wait until page completes loading.
     self.WaitUntil(
         lambda: self.GetDOMValue('document.readyState'),
         expect_retval='complete')
     self.PerformActionOnInfobar(
-        'accept', infobar_index=self._GetIndexForSavePasswordInfobar())
+        'accept', infobar_index=test_utils.WaitForInfobarTypeAndGetIndex(
+            self, self.INFOBAR_TYPE))
     self.NavigateToURL(url_logout)
     self.NavigateToURL(url_https)
     self._ClickOnLoginPage(0, 0)
@@ -174,18 +140,22 @@ class PasswordTest(pyauto.PyUITest):
   def testNeverSavePasswords(self):
     """Verify passwords not saved/deleted when 'never for this site' chosen."""
     creds1 = self.GetPrivateInfo()['test_google_account']
+    # Disable one-click login infobar for sync.
+    self.SetPrefs(pyauto.kReverseAutologinEnabled, False)
     test_utils.GoogleAccountsLogin(
         self, creds1['username'], creds1['password'])
     self.PerformActionOnInfobar(
-        'accept', infobar_index=self._GetIndexForSavePasswordInfobar())
+        'accept', infobar_index=test_utils.WaitForInfobarTypeAndGetIndex(
+            self, self.INFOBAR_TYPE))
     self.assertEquals(1, len(self.GetSavedPasswords()))
     self.AppendTab(pyauto.GURL(creds1['logout_url']))
     creds2 = self.GetPrivateInfo()['test_google_account_2']
     test_utils.GoogleAccountsLogin(
         self, creds2['username'], creds2['password'], tab_index=1)
-    self._GetIndexForSavePasswordInfobar(tab_index=1)
     # Selecting 'Never for this site' option on password infobar.
-    self.PerformActionOnInfobar('cancel', infobar_index=0, tab_index=1)
+    self.PerformActionOnInfobar(
+        'cancel', infobar_index=test_utils.WaitForInfobarTypeAndGetIndex(
+            self, self.INFOBAR_TYPE, tab_index=1))
 
     # TODO: GetSavedPasswords() doesn't return anything when empty.
     # http://crbug.com/64603
@@ -199,10 +169,13 @@ class PasswordTest(pyauto.PyUITest):
     creds = self.GetPrivateInfo()['test_google_account']
     username = creds['username']
     password = creds['password']
+    # Disable one-click login infobar for sync.
+    self.SetPrefs(pyauto.kReverseAutologinEnabled, False)
     # Login to Google a/c
     test_utils.GoogleAccountsLogin(self, username, password)
     self.PerformActionOnInfobar(
-        'accept', infobar_index=self._GetIndexForSavePasswordInfobar())
+        'accept', infobar_index=test_utils.WaitForInfobarTypeAndGetIndex(
+            self, self.INFOBAR_TYPE))
     self.NavigateToURL(url_logout)
     self.NavigateToURL(url)
     self._ClickOnLoginPage(0, 0)
@@ -222,26 +195,31 @@ class PasswordTest(pyauto.PyUITest):
   def testInfoBarDisappearByNavigatingPage(self):
     """Test password infobar is dismissed when navigating to different page."""
     creds = self.GetPrivateInfo()['test_google_account']
+    # Disable one-click login infobar for sync.
+    self.SetPrefs(pyauto.kReverseAutologinEnabled, False)
     # Login to Google a/c
     test_utils.GoogleAccountsLogin(self, creds['username'], creds['password'])
     self.PerformActionOnInfobar(
-        'accept', infobar_index=self._GetIndexForSavePasswordInfobar())
+        'accept', infobar_index=test_utils.WaitForInfobarTypeAndGetIndex(
+            self, self.INFOBAR_TYPE))
     self.NavigateToURL('chrome://history')
     self.assertTrue(self.WaitForInfobarCount(0))
     # To make sure user is navigated to History page.
     self.assertEqual('History', self.GetActiveTabTitle())
-    self.assertFalse(self.GetBrowserInfo()['windows'][0]['tabs'][0]['infobars'])
+    test_utils.AssertInfobarTypeDoesNotAppear(self, self.INFOBAR_TYPE)
 
   def testInfoBarDisappearByReload(self):
     """Test that Password infobar disappears by the page reload."""
     creds = self.GetPrivateInfo()['test_google_account']
+    # Disable one-click login infobar for sync.
+    self.SetPrefs(pyauto.kReverseAutologinEnabled, False)
     # Login to Google a/c
     test_utils.GoogleAccountsLogin(self, creds['username'], creds['password'])
     self.PerformActionOnInfobar(
-        'accept', infobar_index=self._GetIndexForSavePasswordInfobar())
+        'accept', infobar_index=test_utils.WaitForInfobarTypeAndGetIndex(
+            self, self.INFOBAR_TYPE))
     self.GetBrowserWindow(0).GetTab(0).Reload()
-    self.assertTrue(self.WaitForInfobarCount(0))
-    self.assertFalse(self.GetBrowserInfo()['windows'][0]['tabs'][0]['infobars'])
+    test_utils.AssertInfobarTypeDoesNotAppear(self, self.INFOBAR_TYPE)
 
   def testPasswdInfoNotStoredWhenAutocompleteOff(self):
     """Verify that password infobar does not appear when autocomplete is off.
@@ -252,6 +230,8 @@ class PasswordTest(pyauto.PyUITest):
     password_info = {'Email': 'test@google.com',
                      'Passwd': 'test12345'}
 
+    # Disable one-click login infobar for sync.
+    self.SetPrefs(pyauto.kReverseAutologinEnabled, False)
     url = self.GetHttpURLForDataPath(
         os.path.join('password', 'password_autocomplete_off_test.html'))
     self.NavigateToURL(url)
@@ -260,10 +240,7 @@ class PasswordTest(pyauto.PyUITest):
                 'window.domAutomationController.send("done");') % (key, value)
       self.ExecuteJavascript(script, 0, 0)
     self.assertTrue(self.SubmitForm('loginform'))
-    password_infobar = (
-        self.GetBrowserInfo()['windows'][0]['tabs'][0]['infobars'])
-    self.assertFalse(password_infobar,
-                     msg='Save password infobar offered to save password info.')
+    test_utils.AssertInfobarTypeDoesNotAppear(self, self.INFOBAR_TYPE)
 
   def _SendCharToPopulateField(self, char, tab_index=0, windex=0):
     """Simulate a char being typed into a field.
@@ -292,10 +269,13 @@ class PasswordTest(pyauto.PyUITest):
     creds = self.GetPrivateInfo()['test_google_account']
     username = creds['username']
     password = creds['password']
+    # Disable one-click login infobar for sync.
+    self.SetPrefs(pyauto.kReverseAutologinEnabled, False)
     # Login to Google a/c
     test_utils.GoogleAccountsLogin(self, username, password)
     self.PerformActionOnInfobar(
-        'accept', infobar_index=self._GetIndexForSavePasswordInfobar())
+        'accept', infobar_index=test_utils.WaitForInfobarTypeAndGetIndex(
+            self, self.INFOBAR_TYPE))
     self.NavigateToURL(url_logout)
     self.NavigateToURL(url)
     self._ClickOnLoginPage(0, 0)
