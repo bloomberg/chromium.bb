@@ -11,17 +11,21 @@
 
 #include "base/file_path.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "content/browser/accessibility/browser_accessibility_win.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/iaccessible2/ia2_api_all.h"
 
 namespace {
 std::map<int32, string16> role_string_map;
-std::map<int32, string16> state_string_map;
+std::map<int32, string16> msaa_state_string_map;
+std::map<int32, string16> ia2_state_string_map;
 } // namespace
 
 // Convenience macros for generating readable strings.
 #define ROLE_MAP(x) role_string_map[x] = L#x;
-#define STATE_MAP(x) state_string_map[x] = L#x;
+#define MSAA_STATE_MAP(x) msaa_state_string_map[STATE_SYSTEM_##x] = L#x;
+#define IA2_STATE_MAP(x) ia2_state_string_map[x] = L#x;
 
 void DumpAccessibilityTreeHelper::Initialize() {
   ROLE_MAP(IA2_ROLE_UNKNOWN)
@@ -135,24 +139,57 @@ void DumpAccessibilityTreeHelper::Initialize() {
   ROLE_MAP(ROLE_SYSTEM_IPADDRESS)
   ROLE_MAP(ROLE_SYSTEM_OUTLINEBUTTON)
 
-  STATE_MAP(IA2_STATE_ACTIVE)
-  STATE_MAP(IA2_STATE_ARMED)
-  STATE_MAP(IA2_STATE_DEFUNCT)
-  STATE_MAP(IA2_STATE_EDITABLE)
-  // STATE_MAP(IA2_STATE_HORIZONTAL) // Untested.
-  STATE_MAP(IA2_STATE_ICONIFIED)
-  STATE_MAP(IA2_STATE_INVALID_ENTRY)
-  STATE_MAP(IA2_STATE_MANAGES_DESCENDANTS)
-  STATE_MAP(IA2_STATE_MODAL)
-  STATE_MAP(IA2_STATE_MULTI_LINE)
-  STATE_MAP(IA2_STATE_OPAQUE)
-  STATE_MAP(IA2_STATE_REQUIRED)
-  STATE_MAP(IA2_STATE_SELECTABLE_TEXT)
-  STATE_MAP(IA2_STATE_SINGLE_LINE)
-  STATE_MAP(IA2_STATE_STALE)
-  STATE_MAP(IA2_STATE_SUPPORTS_AUTOCOMPLETION)
-  STATE_MAP(IA2_STATE_TRANSIENT)
-  // STATE_MAP(IA2_STATE_VERTICAL) // Untested.
+  // Untested states include those that would be repeated on nearly every node,
+  // or would vary based on window size.
+  MSAA_STATE_MAP(UNAVAILABLE)
+  MSAA_STATE_MAP(SELECTED)
+  MSAA_STATE_MAP(FOCUSED)
+  MSAA_STATE_MAP(PRESSED)
+  MSAA_STATE_MAP(CHECKED)
+  MSAA_STATE_MAP(MIXED)
+  MSAA_STATE_MAP(READONLY)
+  MSAA_STATE_MAP(HOTTRACKED)
+  MSAA_STATE_MAP(DEFAULT)
+  MSAA_STATE_MAP(EXPANDED)
+  MSAA_STATE_MAP(COLLAPSED)
+  MSAA_STATE_MAP(BUSY)
+  MSAA_STATE_MAP(FLOATING)
+  MSAA_STATE_MAP(MARQUEED)
+  MSAA_STATE_MAP(ANIMATED)
+  MSAA_STATE_MAP(INVISIBLE)
+  // MSAA_STATE_MAP(OFFSCREEN) // Untested.
+  MSAA_STATE_MAP(SIZEABLE)
+  MSAA_STATE_MAP(MOVEABLE)
+  MSAA_STATE_MAP(SELFVOICING)
+  MSAA_STATE_MAP(FOCUSABLE)
+  MSAA_STATE_MAP(SELECTABLE)
+  MSAA_STATE_MAP(LINKED)
+  MSAA_STATE_MAP(TRAVERSED)
+  MSAA_STATE_MAP(MULTISELECTABLE)
+  MSAA_STATE_MAP(EXTSELECTABLE)
+  MSAA_STATE_MAP(ALERT_LOW)
+  MSAA_STATE_MAP(ALERT_MEDIUM)
+  MSAA_STATE_MAP(ALERT_HIGH)
+  MSAA_STATE_MAP(PROTECTED)
+  MSAA_STATE_MAP(HASPOPUP)
+  IA2_STATE_MAP(IA2_STATE_ACTIVE)
+  IA2_STATE_MAP(IA2_STATE_ARMED)
+  IA2_STATE_MAP(IA2_STATE_DEFUNCT)
+  IA2_STATE_MAP(IA2_STATE_EDITABLE)
+  // IA2_STATE_MAP(IA2_STATE_HORIZONTAL) // Untested.
+  IA2_STATE_MAP(IA2_STATE_ICONIFIED)
+  IA2_STATE_MAP(IA2_STATE_INVALID_ENTRY)
+  IA2_STATE_MAP(IA2_STATE_MANAGES_DESCENDANTS)
+  IA2_STATE_MAP(IA2_STATE_MODAL)
+  IA2_STATE_MAP(IA2_STATE_MULTI_LINE)
+  // IA2_STATE_MAP(IA2_STATE_OPAQUE) // Untested.
+  IA2_STATE_MAP(IA2_STATE_REQUIRED)
+  IA2_STATE_MAP(IA2_STATE_SELECTABLE_TEXT)
+  IA2_STATE_MAP(IA2_STATE_SINGLE_LINE)
+  IA2_STATE_MAP(IA2_STATE_STALE)
+  IA2_STATE_MAP(IA2_STATE_SUPPORTS_AUTOCOMPLETION)
+  IA2_STATE_MAP(IA2_STATE_TRANSIENT)
+  // IA2_STATE_MAP(IA2_STATE_VERTICAL) // Untested.
 }
 
 string16 DumpAccessibilityTreeHelper::ToString(
@@ -164,13 +201,35 @@ string16 DumpAccessibilityTreeHelper::ToString(
   string16 state;
   std::map<int32, string16>::iterator it;
 
-  for (it = state_string_map.begin(); it != state_string_map.end(); ++it) {
+  // MSAA states:
+  VARIANT variant_self;
+  variant_self.vt = VT_I4;
+  variant_self.lVal = CHILDID_SELF;
+  VARIANT msaa_state_variant;
+  HRESULT hresult = acc_obj->get_accState(variant_self, &msaa_state_variant);
+  EXPECT_EQ(S_OK, hresult);
+  EXPECT_EQ(VT_I4, msaa_state_variant.vt);
+  for (it = msaa_state_string_map.begin();
+       it != msaa_state_string_map.end();
+       ++it) {
+    if (it->first & msaa_state_variant.lVal) {
+      if (!state.empty())
+        state += L",";
+      state += it->second;
+    }
+  }
+
+  // IA2 states:
+  for (it = ia2_state_string_map.begin();
+       it != ia2_state_string_map.end();
+       ++it) {
     if (it->first & acc_obj->ia2_state()) {
       if (!state.empty())
         state += L",";
       state += it->second;
     }
   }
+
   return UTF8ToUTF16(prefix) +
          role_string_map[acc_obj->ia2_role()] +
          L" name='" + acc_obj->name() +
