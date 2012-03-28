@@ -4,7 +4,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# gcl wrapper to kick off nacl-sdk try jobs.
+# git try wrapper to kick off nacl-sdk try jobs.
 
 readonly script_dir=$(dirname $0)
-gcl try $* $(${script_dir}/sdktry-list.sh)
+git try $* $(${script_dir}/sdktry-list.sh)
