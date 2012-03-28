@@ -96,6 +96,8 @@ const int kIconSize = 69;
 
 ExtensionInstallUI::Prompt::Prompt(PromptType type)
     : type_(type),
+      extension_(NULL),
+      bundle_(NULL),
       average_rating_(0.0),
       rating_count_(0) {
 }
