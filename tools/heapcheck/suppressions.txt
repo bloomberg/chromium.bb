@@ -1822,3 +1822,11 @@
    ...
    fun:gdata::GDataFileSystem::OnFileDownloaded
 }
+{
+   bug_120726
+   Heapcheck:Leak
+   fun:MessageLoop::MessageLoop
+   fun:MessageLoopForUI::MessageLoopForUI
+   fun:GDataFileSystemTest
+   fun:GDataFileSystemTest_GetFile_FromGData_Test
+}
