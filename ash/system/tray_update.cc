@@ -66,6 +66,8 @@ bool TrayUpdate::GetInitialVisibility() {
 }
 
 views::View* TrayUpdate::CreateDefaultView(user::LoginStatus status) {
+  if (!Shell::GetInstance()->tray_delegate()->SystemShouldUpgrade())
+    return NULL;
   default_.reset(new UpdateView);
   return default_.get();
 }

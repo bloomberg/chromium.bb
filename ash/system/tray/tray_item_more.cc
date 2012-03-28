@@ -74,7 +74,9 @@ void TrayItemMore::Layout() {
 
   // Adjust the label's bounds in case it got cut off by |more_|.
   if (label_->bounds().Intersects(more_->bounds())) {
-    label_->SetBoundsRect(label_->bounds().Subtract(more_->bounds()));
+    gfx::Rect bounds = label_->bounds();
+    bounds.set_width(more_->x() - kTrayPopupPaddingBetweenItems - label_->x());
+    label_->SetBoundsRect(bounds);
   }
 }
 
