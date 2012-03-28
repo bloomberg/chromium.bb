@@ -11,8 +11,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
-#include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
-#include "chrome/browser/chromeos/dbus/session_manager_client.h"
 #include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/browser/chromeos/login/screen_observer.h"
 #include "chrome/browser/policy/auto_enrollment_client.h"
@@ -80,15 +78,6 @@ void EnterpriseEnrollmentScreen::OnOAuthTokenAvailable(
 }
 
 void EnterpriseEnrollmentScreen::OnConfirmationClosed(bool go_back_to_signin) {
-  // If the machine has been put in KIOSK mode we have to restart the session
-  // here to go in the proper KIOSK mode login screen.
-  if (g_browser_process->browser_policy_connector()->
-          GetDeviceCloudPolicyDataStore()->device_mode() ==
-      policy::DEVICE_MODE_KIOSK) {
-    DBusThreadManager::Get()->GetSessionManagerClient()->StopSession();
-    return;
-  }
-
   get_screen_observer()->OnExit(go_back_to_signin ?
       ScreenObserver::ENTERPRISE_ENROLLMENT_COMPLETED :
       ScreenObserver::ENTERPRISE_AUTO_MAGIC_ENROLLMENT_COMPLETED);
