@@ -82,7 +82,11 @@ PluginThread::PluginThread()
   {
     // XEmbed plugins assume they are hosted in a Gtk application, so we need
     // to initialize Gtk in the plugin process.
+    // g_thread_init API is deprecated since glib 2.31.0, see release note:
+    // http://mail.gnome.org/archives/gnome-announce-list/2011-October/msg00041.html
+#if !(GLIB_CHECK_VERSION(2, 31, 0))
     g_thread_init(NULL);
+#endif
 
     // Flash has problems receiving clicks with newer GTKs due to the
     // client-side windows change.  To be safe, we just always set the
