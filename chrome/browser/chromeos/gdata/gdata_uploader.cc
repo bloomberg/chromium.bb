@@ -71,9 +71,21 @@ void GDataUploader::UpdateUpload(int upload_id,
   // Update file_size and all_bytes_present.
   DVLOG(1) << "Updating file size from " << upload_file_info->file_size
            << " to " << file_size
-           << (download->AllDataSaved() ? " (Complete)" : " (In-progress)");
+           << (download->AllDataSaved() ? " (AllDataSaved)" : " (In-progress)");
   upload_file_info->file_size = file_size;
   upload_file_info->all_bytes_present = download->AllDataSaved();
+  if (upload_file_info->file_path != download->GetFullPath()) {
+    // We shouldn't see a rename if should_retry_file_open is true. The only
+    // rename we expect (for now) is the final rename that happens after the
+    // download transition from IN_PROGRESS -> COMPLETE. This, in turn, only
+    // happens after the upload completes. However, since this isn't enforced by
+    // the API contract, we reset the retry count so we can retry all over again
+    // with the new path.
+    // TODO(asanka): Introduce a synchronization point after the initial rename
+    //               of the download and get rid of the retry logic.
+    upload_file_info->num_file_open_tries = 0;
+    upload_file_info->file_path = download->GetFullPath();
+  }
 
   // Resume upload if necessary and possible.
   if (upload_file_info->upload_paused &&
@@ -84,19 +96,14 @@ void GDataUploader::UpdateUpload(int upload_id,
     UploadNextChunk(upload_file_info);
   }
 
-  // Retry opening this file if we failed before.
-  // File open can fail because the downloads system downloads to temporary
-  // locations then renames files.
+  // Retry opening this file if we failed before.  File open can fail because
+  // the downloads system sets the full path on the UI thread and schedules a
+  // rename on the FILE thread. Thus the new path is visible on the UI thread
+  // before the renamed file is available on the file system.
   if (upload_file_info->should_retry_file_open) {
-    // Reset number of file open tries if file_path has changed.
-    // This can happen when the file gets renamed from the intermediate
-    // 'foo.crdownload' to the final 'foo' path.
-    if (upload_file_info->file_path != download->GetFullPath())
-      upload_file_info->num_file_open_tries = 0;
-    upload_file_info->file_path = download->GetFullPath();
+    DCHECK(!download->IsComplete());
     // Disallow further retries.
     upload_file_info->should_retry_file_open = false;
-
     OpenFile(upload_file_info);
   }
 

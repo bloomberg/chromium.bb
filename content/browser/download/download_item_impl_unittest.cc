@@ -178,9 +178,8 @@ TEST_F(DownloadItemTest, NotificationAfterComplete) {
   DownloadItem* item = CreateDownloadItem(DownloadItem::IN_PROGRESS);
   MockObserver observer(item);
 
-  // Calling OnAllDataSaved does not trigger notification
   item->OnAllDataSaved(kDownloadChunkSize, DownloadItem::kEmptyFileHash);
-  ASSERT_FALSE(observer.CheckUpdated());
+  ASSERT_TRUE(observer.CheckUpdated());
 
   item->MarkAsComplete();
   ASSERT_TRUE(observer.CheckUpdated());

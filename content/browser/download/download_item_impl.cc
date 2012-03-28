@@ -500,6 +500,7 @@ void DownloadItemImpl::OnAllDataSaved(
   DCHECK(!all_data_saved_);
   all_data_saved_ = true;
   ProgressComplete(size, final_hash);
+  UpdateObservers();
 }
 
 void DownloadItemImpl::OnDownloadedFileRemoved() {

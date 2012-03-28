@@ -124,8 +124,13 @@ bool GDataDownloadObserver::IsGDataDownload(DownloadItem* download) {
 
 // static
 bool GDataDownloadObserver::IsReadyToComplete(DownloadItem* download) {
+  // |download| is ready for completion (as far as GData is concerned) if:
+  // 1. It's not a GData download.
+  //  - or -
+  // 2. The upload has completed.
   UploadingExternalData* upload_data = GetUploadingExternalData(download);
-  return !upload_data || upload_data->is_complete();
+  return !IsGDataDownload(download) ||
+      (upload_data && upload_data->is_complete());
 }
 
 // static
@@ -283,8 +288,8 @@ bool GDataDownloadObserver::ShouldUpload(DownloadItem* download) {
   // is complete or large enough to stream, and,
   // is not already being uploaded.
   return pending_downloads_.count(download->GetId()) != 0 &&
-         (download->IsComplete() ||
-             download->GetReceivedBytes() > kStreamingFileSize) &&
+         (download->AllDataSaved() ||
+          download->GetReceivedBytes() > kStreamingFileSize) &&
          GetUploadingExternalData(download) == NULL;
 }
 
@@ -320,8 +325,10 @@ void GDataDownloadObserver::OnUploadComplete(int32 download_id,
                                              DocumentEntry* unused_entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DownloadMap::iterator iter = pending_downloads_.find(download_id);
-  if (iter == pending_downloads_.end())
+  if (iter == pending_downloads_.end()) {
+    DVLOG(1) << "Pending download not found" << download_id;
     return;
+  }
   DVLOG(1) << "Completing upload for download ID " << download_id;
   DownloadItem* download = iter->second;
   UploadingExternalData* upload_data = GetUploadingExternalData(download);
