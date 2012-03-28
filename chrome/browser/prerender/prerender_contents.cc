@@ -295,9 +295,14 @@ void PrerenderContents::StartPrerendering(
       source_wc->GetView()->GetContainerBounds(&tab_bounds);
     }
   } else {
+#if !defined(OS_ANDROID)
     // Try to get the active tab of the active browser and use that for tab
     // bounds. If the browser has never been active, we will fail to get a size
     // but we shouldn't be prerendering in that case anyway.
+    //
+    // This code is unneeded on Android as we do not have a Browser object so we
+    // can't get the size, and |default_tab_bounds| will be set to the right
+    // value.
     Browser* active_browser = BrowserList::GetLastActiveWithProfile(profile_);
     if (active_browser) {
       WebContents* active_web_contents = active_browser->GetWebContentsAt(
@@ -305,6 +310,7 @@ void PrerenderContents::StartPrerendering(
       if (active_web_contents)
         active_web_contents->GetView()->GetContainerBounds(&tab_bounds);
     }
+#endif  // !defined(OS_ANDROID)
   }
 
   tab_contents_delegate_.reset(new TabContentsDelegateImpl(this));
