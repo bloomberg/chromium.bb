@@ -408,6 +408,10 @@ void ExtensionDispatcher::PopulateSourceMap() {
   source_map_.RegisterSource("json_schema", IDR_JSON_SCHEMA_JS);
   source_map_.RegisterSource("apitest", IDR_EXTENSION_APITEST_JS);
 
+  // Libraries.
+  source_map_.RegisterSource("sendRequest", IDR_SEND_REQUEST_JS);
+  source_map_.RegisterSource("setIcon", IDR_SET_ICON_JS);
+
   // Custom bindings.
   source_map_.RegisterSource("app", IDR_APP_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("browserAction",

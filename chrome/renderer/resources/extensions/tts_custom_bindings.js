@@ -8,10 +8,10 @@ var ttsNatives = requireNative('tts');
 var GetNextTTSEventId = ttsNatives.GetNextTTSEventId;
 
 var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
+var sendRequest = require('sendRequest').sendRequest;
 
 chromeHidden.registerCustomHook('tts', function(api) {
   var apiFunctions = api.apiFunctions;
-  var sendRequest = api.sendRequest;
 
   chromeHidden.tts = {};
   chromeHidden.tts.handlers = {};

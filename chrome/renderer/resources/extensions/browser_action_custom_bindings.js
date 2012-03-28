@@ -5,10 +5,10 @@
 // Custom bindings for the browserAction API.
 
 var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
+var setIcon = require('setIcon').setIcon;
 
 chromeHidden.registerCustomHook('browserAction', function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
-  var setIcon = bindingsAPI.setIcon;
 
   apiFunctions.setHandleRequest('setIcon', function(details) {
     setIcon(details, this.name, this.definition.parameters, 'browser action');

@@ -25,6 +25,10 @@ without changes to the corresponding grd file. fb9 -->
       <include name="IDR_SAD_PLUGIN" file="resources\sadplugin.png" type="BINDATA" />
       <include name="IDR_SCHEMA_GENERATED_BINDINGS_JS" file="resources\extensions\schema_generated_bindings.js" type="BINDATA" />
 
+      <!-- Libraries. -->
+      <include name="IDR_SEND_REQUEST_JS" file="resources\extensions\send_request.js" type="BINDATA" />
+      <include name="IDR_SET_ICON_JS" file="resources\extensions\set_icon.js" type="BINDATA" />
+
       <!-- Custom bindings for extension APIs. -->
       <include name="IDR_APP_CUSTOM_BINDINGS_JS" file="resources\extensions\app_custom_bindings.js" type="BINDATA" />
       <include name="IDR_BROWSER_ACTION_CUSTOM_BINDINGS_JS" file="resources\extensions\browser_action_custom_bindings.js" type="BINDATA" />

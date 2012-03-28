@@ -151,6 +151,8 @@
         'renderer/resources/extensions/page_actions_custom_bindings.js',
         'renderer/resources/extensions/page_capture_custom_bindings.js',
         'renderer/resources/extensions/schema_generated_bindings.js',
+        'renderer/resources/extensions/send_request.js',
+        'renderer/resources/extensions/set_icon.js',
         'renderer/resources/extensions/tts_custom_bindings.js',
         'renderer/resources/extensions/tts_engine_custom_bindings.js',
         'renderer/resources/extensions/types_custom_bindings.js',

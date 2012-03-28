@@ -6,6 +6,7 @@
 // for extensions which have permission for the omnibox API.
 
 var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
+var sendRequest = require('sendRequest').sendRequest;
 
 // Remove invalid characters from |text| so that it is suitable to use
 // for |AutocompleteMatch::contents|.
@@ -79,7 +80,6 @@ function parseOmniboxDescription(input) {
 
 chromeHidden.registerCustomHook('omnibox', function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
-  var sendRequest = bindingsAPI.sendRequest;
 
   apiFunctions.setHandleRequest('setDefaultSuggestion', function(details) {
     var parseResult = parseOmniboxDescription(details.description);

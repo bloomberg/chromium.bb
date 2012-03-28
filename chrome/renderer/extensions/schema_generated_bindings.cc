@@ -70,6 +70,8 @@ typedef std::map<int, linked_ptr<PendingRequest> > PendingRequestMap;
 base::LazyInstance<PendingRequestMap> g_pending_requests =
     LAZY_INSTANCE_INITIALIZER;
 
+// TODO(koz): Split these native handlers up so that
+// GetNextRequestId/StartRequest are in one and SetIconCommon is in the other.
 class ExtensionImpl : public ChromeV8Extension {
  public:
   explicit ExtensionImpl(ExtensionDispatcher* extension_dispatcher)

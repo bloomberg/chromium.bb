@@ -8,10 +8,10 @@
   var GetNextSocketEventId = experimentalSocketNatives.GetNextSocketEventId;
 
   var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
+  var sendRequest = require('sendRequest').sendRequest;
 
   chromeHidden.registerCustomHook('experimental.socket', function(api) {
       var apiFunctions = api.apiFunctions;
-      var sendRequest = api.sendRequest;
 
       apiFunctions.setHandleRequest('create', function() {
           var args = arguments;

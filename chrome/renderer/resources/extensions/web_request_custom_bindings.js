@@ -8,6 +8,7 @@ var webRequestNatives = requireNative('web_request');
 var GetUniqueSubEventName = webRequestNatives.GetUniqueSubEventName;
 
 var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
+var sendRequest = require('sendRequest').sendRequest;
 
 // WebRequestEvent object. This is used for special webRequest events with
 // extra parameters. Each invocation of addListener creates a new named
@@ -150,7 +151,6 @@ chromeHidden.registerCustomEvent('webRequest', WebRequestEvent);
 
 chromeHidden.registerCustomHook('webRequest', function(api) {
   var apiFunctions = api.apiFunctions;
-  var sendRequest = api.sendRequest;
 
   apiFunctions.setHandleRequest('addEventListener', function() {
     var args = Array.prototype.slice.call(arguments);

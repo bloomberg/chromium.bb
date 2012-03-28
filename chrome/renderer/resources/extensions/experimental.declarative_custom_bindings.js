@@ -5,11 +5,11 @@
 // Custom bindings for the declarative API.
 
 var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
+var sendRequest = require('sendRequest').sendRequest;
 
 chromeHidden.registerCustomHook('experimental.declarative',
                                 function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
-  var sendRequest = bindingsAPI.sendRequest;
   var apiDefinitions = bindingsAPI.apiDefinitions;
   var cachedEventOptions = {};
 

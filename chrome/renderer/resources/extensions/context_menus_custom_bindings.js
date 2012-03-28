@@ -6,12 +6,12 @@
 
 var contextMenus = requireNative('context_menus');
 var GetNextContextMenuId = contextMenus.GetNextContextMenuId;
+var sendRequest = require('sendRequest').sendRequest;
 
 var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
 
 chromeHidden.registerCustomHook('contextMenus', function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
-  var sendRequest = bindingsAPI.sendRequest;
 
   chromeHidden.contextMenus = {};
   chromeHidden.contextMenus.handlers = {};
