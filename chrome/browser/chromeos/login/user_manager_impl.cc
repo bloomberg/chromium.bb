@@ -441,6 +441,7 @@ void UserManagerImpl::EphemeralUserLoggedIn(const std::string& email) {
 
 void UserManagerImpl::StubUserLoggedIn() {
   is_current_user_ephemeral_ = true;
+  current_user_wallpaper_index_ = ash::GetGuestWallpaperIndex();
   logged_in_user_ = new User(kStubUser, false);
   logged_in_user_->SetImage(GetDefaultImage(kStubDefaultImageIndex),
                             kStubDefaultImageIndex);
