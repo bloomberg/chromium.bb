@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -46,7 +46,12 @@ class BrowserActionsContainerTest : public ExtensionBrowserTest {
 };
 
 // Test the basic functionality.
+// http://crbug.com/120770
+#if defined(OS_WIN)
+IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, DISABLED_Basic) {
+#else
 IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, Basic) {
+#endif
   BrowserActionsContainer::disable_animations_during_testing_ = true;
 
   // Load an extension with no browser action.
