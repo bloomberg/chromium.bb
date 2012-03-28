@@ -2510,7 +2510,7 @@ void Browser::Shutdown() {
 void Browser::ShowDateOptions() {
   content::RecordAction(UserMetricsAction("ShowDateOptions"));
   std::string sub_page = std::string(chrome::kSearchSubPage) + "#" +
-      l10n_util::GetStringUTF8(IDS_OPTIONS_ADVANCED_SECTION_TITLE_PRIVACY);
+      l10n_util::GetStringUTF8(IDS_OPTIONS_SETTINGS_SECTION_TITLE_DATETIME);
   ShowOptionsTab(sub_page);
 }
 
