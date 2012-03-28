@@ -380,17 +380,15 @@ IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestRTL,
 // chrome://settings-frame/syncSetup
 //===================================
 
-// TODO(estade): fix this test: http://crbug.com/119595
 IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestLTR,
-                       DISABLED_TestSettingsFrameSyncSetup) {
+                       TestSettingsFrameSyncSetup) {
   std::string url(chrome::kChromeUISettingsFrameURL);
   url += std::string(chrome::kSyncSetupSubPage);
   RunBidiCheckerOnPage(url);
 }
 
-// TODO(estade): fix this test: http://crbug.com/119595
 IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestRTL,
-                       DISABLED_TestSettingsFrameSyncSetup) {
+                       TestSettingsFrameSyncSetup) {
   std::string url(chrome::kChromeUISettingsFrameURL);
   url += std::string(chrome::kSyncSetupSubPage);
   RunBidiCheckerOnPage(url);
@@ -693,9 +691,8 @@ IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestLTR, TestExtensionsFrame) {
   RunBidiCheckerOnPage(chrome::kChromeUIExtensionsFrameURL);
 }
 
-// TODO(estade): fix this test: http://crbug.com/119595
 IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestRTL,
-                       DISABLED_TestExtensionsFrame) {
+                       TestExtensionsFrame) {
   RunBidiCheckerOnPage(chrome::kChromeUIExtensionsFrameURL);
 }
 
