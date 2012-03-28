@@ -1139,14 +1139,6 @@ IPC_SYNC_MESSAGE_ROUTED1_0(PpapiHostMsg_PPBVideoDecoder_Destroy,
                            ppapi::HostResource /* video_decoder */)
 
 #if !defined(OS_NACL)
-// PPB_Flash_NetConnector.
-IPC_MESSAGE_ROUTED5(PpapiMsg_PPBFlashNetConnector_ConnectACK,
-                    ppapi::HostResource /* net_connector */,
-                    int32_t /* result */,
-                    IPC::PlatformFileForTransit /* handle */,
-                    std::string /* local_addr_as_string */,
-                    std::string /* remote_addr_as_string */)
-
 // PPB_Flash.
 IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBFlash_SetInstanceAlwaysOnTop,
                     PP_Instance /* instance */,
@@ -1264,18 +1256,6 @@ IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBFlashMessageLoop_Run,
                            int32_t /* result */)
 IPC_SYNC_MESSAGE_ROUTED1_0(PpapiHostMsg_PPBFlashMessageLoop_Quit,
                            ppapi::HostResource /* flash_message_loop */)
-
-// PPB_Flash_NetConnector.
-IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBFlashNetConnector_Create,
-                           PP_Instance /* instance_id */,
-                           ppapi::HostResource /* result */)
-IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBFlashNetConnector_ConnectTcp,
-                    ppapi::HostResource /* connector */,
-                    std::string /* host */,
-                    uint16_t /* port */)
-IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBFlashNetConnector_ConnectTcpAddress,
-                    ppapi::HostResource /* connector */,
-                    std::string /* net_address_as_string */)
 
 // PPB_TCPSocket_Private.
 IPC_SYNC_MESSAGE_CONTROL2_1(PpapiHostMsg_PPBTCPSocket_Create,

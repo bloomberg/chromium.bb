@@ -58,7 +58,6 @@
 #include "ppapi/c/dev/pp_video_dev.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_flash.h"
-#include "ppapi/c/private/ppb_flash_net_connector.h"
 #include "ppapi/proxy/host_dispatcher.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/platform_file.h"
@@ -83,7 +82,6 @@
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/ppb_flash_impl.h"
-#include "webkit/plugins/ppapi/ppb_flash_net_connector_impl.h"
 #include "webkit/plugins/ppapi/ppb_tcp_server_socket_private_impl.h"
 #include "webkit/plugins/ppapi/ppb_tcp_socket_private_impl.h"
 #include "webkit/plugins/ppapi/ppb_udp_socket_private_impl.h"
@@ -921,54 +919,6 @@ void PepperPluginDelegateImpl::SyncGetFileSystemPlatformPath(
 scoped_refptr<base::MessageLoopProxy>
 PepperPluginDelegateImpl::GetFileThreadMessageLoopProxy() {
   return RenderThreadImpl::current()->GetFileThreadMessageLoopProxy();
-}
-
-int32_t PepperPluginDelegateImpl::ConnectTcp(
-    webkit::ppapi::PPB_Flash_NetConnector_Impl* connector,
-    const char* host,
-    uint16_t port) {
-  int request_id = pending_connect_tcps_.Add(
-      new scoped_refptr<webkit::ppapi::PPB_Flash_NetConnector_Impl>(connector));
-  IPC::Message* msg =
-      new PepperMsg_ConnectTcp(render_view_->routing_id(),
-                               request_id,
-                               std::string(host),
-                               port);
-  if (!render_view_->Send(msg)) {
-    pending_connect_tcps_.Remove(request_id);
-    return PP_ERROR_FAILED;
-  }
-
-  return PP_OK_COMPLETIONPENDING;
-}
-
-int32_t PepperPluginDelegateImpl::ConnectTcpAddress(
-    webkit::ppapi::PPB_Flash_NetConnector_Impl* connector,
-    const struct PP_NetAddress_Private* addr) {
-  int request_id = pending_connect_tcps_.Add(
-      new scoped_refptr<webkit::ppapi::PPB_Flash_NetConnector_Impl>(connector));
-  IPC::Message* msg =
-      new PepperMsg_ConnectTcpAddress(render_view_->routing_id(),
-                                      request_id,
-                                      *addr);
-  if (!render_view_->Send(msg)) {
-    pending_connect_tcps_.Remove(request_id);
-    return PP_ERROR_FAILED;
-  }
-
-  return PP_OK_COMPLETIONPENDING;
-}
-
-void PepperPluginDelegateImpl::OnConnectTcpACK(
-    int request_id,
-    base::PlatformFile socket,
-    const PP_NetAddress_Private& local_addr,
-    const PP_NetAddress_Private& remote_addr) {
-  scoped_refptr<webkit::ppapi::PPB_Flash_NetConnector_Impl> connector =
-      *pending_connect_tcps_.Lookup(request_id);
-  pending_connect_tcps_.Remove(request_id);
-
-  connector->CompleteConnectTcp(socket, local_addr, remote_addr);
 }
 
 uint32 PepperPluginDelegateImpl::TCPSocketCreate() {

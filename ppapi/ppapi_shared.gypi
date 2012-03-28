@@ -190,8 +190,6 @@
         'thunk/ppb_flash_menu_thunk.cc',
         'thunk/ppb_flash_message_loop_api.h',
         'thunk/ppb_flash_message_loop_thunk.cc',
-        'thunk/ppb_flash_net_connector_api.h',
-        'thunk/ppb_flash_net_connector_thunk.cc',
         'thunk/ppb_fullscreen_thunk.cc',
         'thunk/ppb_gamepad_thunk.cc',
         'thunk/ppb_gles_chromium_texture_mapping_thunk.cc',

@@ -88,7 +88,6 @@ class PluginInstance;
 class PluginModule;
 class PPB_Broker_Impl;
 class PPB_Flash_Menu_Impl;
-class PPB_Flash_NetConnector_Impl;
 class PPB_TCPSocket_Private_Impl;
 class PPB_UDPSocket_Private_Impl;
 
@@ -458,14 +457,6 @@ class PluginDelegate {
   // of the file thread in this renderer.
   virtual scoped_refptr<base::MessageLoopProxy>
       GetFileThreadMessageLoopProxy() = 0;
-
-  virtual int32_t ConnectTcp(
-      webkit::ppapi::PPB_Flash_NetConnector_Impl* connector,
-      const char* host,
-      uint16_t port) = 0;
-  virtual int32_t ConnectTcpAddress(
-      webkit::ppapi::PPB_Flash_NetConnector_Impl* connector,
-      const PP_NetAddress_Private* addr) = 0;
 
   // For PPB_TCPSocket_Private.
   virtual uint32 TCPSocketCreate() = 0;

@@ -119,34 +119,6 @@ class PepperMessageFilter
   // notifications.
   typedef std::set<uint32> NetworkMonitorIdSet;
 
-#if defined(ENABLE_FLAPPER_HACKS)
-  // Message handlers.
-  void OnConnectTcp(int routing_id,
-                    int request_id,
-                    const std::string& host,
-                    uint16 port);
-  void OnConnectTcpAddress(int routing_id,
-                           int request_id,
-                           const PP_NetAddress_Private& address);
-
-  // |Send()| a |PepperMsg_ConnectTcpACK|, which reports an error.
-  bool SendConnectTcpACKError(int routing_id,
-                              int request_id);
-
-  // Continuation of |OnConnectTcp()|.
-  void ConnectTcpLookupFinished(int result,
-                                const net::AddressList& addresses,
-                                const OnConnectTcpBoundInfo& bound_info);
-  void ConnectTcpOnWorkerThread(int routing_id,
-                                int request_id,
-                                net::AddressList addresses);
-
-  // Continuation of |OnConnectTcpAddress()|.
-  void ConnectTcpAddressOnWorkerThread(int routing_id,
-                                       int request_id,
-                                       PP_NetAddress_Private addr);
-#endif  // ENABLE_FLAPPER_HACKS
-
   void OnGetLocalTimeZoneOffset(base::Time t, double* result);
   void OnGetFontFamilies(IPC::Message* reply);
 

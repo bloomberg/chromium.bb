@@ -104,13 +104,6 @@ class MockPluginDelegate : public PluginDelegate {
                                              FilePath* platform_path);
   virtual scoped_refptr<base::MessageLoopProxy>
       GetFileThreadMessageLoopProxy();
-  virtual int32_t ConnectTcp(
-      webkit::ppapi::PPB_Flash_NetConnector_Impl* connector,
-      const char* host,
-      uint16_t port);
-  virtual int32_t ConnectTcpAddress(
-      webkit::ppapi::PPB_Flash_NetConnector_Impl* connector,
-      const PP_NetAddress_Private* addr);
   virtual uint32 TCPSocketCreate();
   virtual void TCPSocketConnect(PPB_TCPSocket_Private_Impl* socket,
                                 uint32 socket_id,

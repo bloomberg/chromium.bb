@@ -111,7 +111,6 @@
 #include "webkit/plugins/ppapi/ppb_flash_file_impl.h"
 #include "webkit/plugins/ppapi/ppb_flash_impl.h"
 #include "webkit/plugins/ppapi/ppb_flash_menu_impl.h"
-#include "webkit/plugins/ppapi/ppb_flash_net_connector_impl.h"
 #include "webkit/plugins/ppapi/ppb_gpu_blacklist_private_impl.h"
 #include "webkit/plugins/ppapi/ppb_graphics_2d_impl.h"
 #include "webkit/plugins/ppapi/ppb_image_data_impl.h"
@@ -373,11 +372,6 @@ const void* GetInterface(const char* name) {
     return ::ppapi::PPB_Var_Shared::GetVarInterface1_1();
   if (strcmp(name, PPB_VAR_ARRAY_BUFFER_INTERFACE_1_0) == 0)
     return ::ppapi::PPB_Var_Shared::GetVarArrayBufferInterface1_0();
-
-#ifdef ENABLE_FLAPPER_HACKS
-  if (strcmp(name, PPB_FLASH_NETCONNECTOR_INTERFACE) == 0)
-    return ::ppapi::thunk::GetPPB_Flash_NetConnector_0_2_Thunk();
-#endif  // ENABLE_FLAPPER_HACKS
 
   // Only support the testing interface when the command line switch is
   // specified. This allows us to prevent people from (ab)using this interface

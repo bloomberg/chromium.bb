@@ -234,19 +234,6 @@ MockPluginDelegate::GetFileThreadMessageLoopProxy() {
   return scoped_refptr<base::MessageLoopProxy>();
 }
 
-int32_t MockPluginDelegate::ConnectTcp(
-    webkit::ppapi::PPB_Flash_NetConnector_Impl* connector,
-    const char* host,
-    uint16_t port) {
-  return PP_ERROR_FAILED;
-}
-
-int32_t MockPluginDelegate::ConnectTcpAddress(
-    webkit::ppapi::PPB_Flash_NetConnector_Impl* connector,
-    const PP_NetAddress_Private* addr) {
-  return PP_ERROR_FAILED;
-}
-
 uint32 MockPluginDelegate::TCPSocketCreate() {
   return 0;
 }

@@ -792,12 +792,6 @@ class RenderViewImpl : public RenderWidget,
   void OnCancelDownload(int32 download_id);
   void OnClearFocusedNode();
   void OnClosePage();
-#if defined(ENABLE_FLAPPER_HACKS)
-  void OnConnectTcpACK(int request_id,
-                       IPC::PlatformFileForTransit socket_for_transit,
-                       const PP_NetAddress_Private& local_addr,
-                       const PP_NetAddress_Private& remote_addr);
-#endif
   void OnContextMenuClosed(
       const content::CustomContextMenuContext& custom_context);
   void OnCopy();

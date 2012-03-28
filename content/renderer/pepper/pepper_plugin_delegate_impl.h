@@ -256,19 +256,6 @@ class PepperPluginDelegateImpl
       FilePath* platform_path) OVERRIDE;
   virtual scoped_refptr<base::MessageLoopProxy>
       GetFileThreadMessageLoopProxy() OVERRIDE;
-  virtual int32_t ConnectTcp(
-      webkit::ppapi::PPB_Flash_NetConnector_Impl* connector,
-      const char* host,
-      uint16_t port) OVERRIDE;
-  virtual int32_t ConnectTcpAddress(
-      webkit::ppapi::PPB_Flash_NetConnector_Impl* connector,
-      const struct PP_NetAddress_Private* addr) OVERRIDE;
-  // This is the completion for both |ConnectTcp()| and |ConnectTcpAddress()|.
-  void OnConnectTcpACK(
-      int request_id,
-      base::PlatformFile socket,
-      const PP_NetAddress_Private& local_addr,
-      const PP_NetAddress_Private& remote_addr);
 
   virtual uint32 TCPSocketCreate() OVERRIDE;
   virtual void TCPSocketConnect(
@@ -461,9 +448,6 @@ class PepperPluginDelegateImpl
   unsigned saved_context_menu_action_;
 
   IDMap<AsyncOpenFileCallback> pending_async_open_files_;
-
-  IDMap<scoped_refptr<webkit::ppapi::PPB_Flash_NetConnector_Impl>,
-        IDMapOwnPointer> pending_connect_tcps_;
 
   IDMap<webkit::ppapi::PPB_TCPSocket_Private_Impl> tcp_sockets_;
 

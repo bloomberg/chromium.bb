@@ -98,7 +98,6 @@
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_util.h"
-#include "ppapi/c/private/ppb_flash_net_connector.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebAccessibilityObject.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDataSource.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
@@ -822,9 +821,6 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
 #endif
     IPC_MESSAGE_HANDLER(ViewMsg_ContextMenuClosed, OnContextMenuClosed)
     // TODO(viettrungluu): Move to a separate message filter.
-#if defined(ENABLE_FLAPPER_HACKS)
-    IPC_MESSAGE_HANDLER(PepperMsg_ConnectTcpACK, OnConnectTcpACK)
-#endif
 #if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(ViewMsg_SetInLiveResize, OnSetInLiveResize)
 #endif
@@ -5189,20 +5185,6 @@ void RenderViewImpl::OnSelectPopupMenuItem(int selected_index) {
   }
   external_popup_menu_->DidSelectItem(selected_index);
   external_popup_menu_.reset();
-}
-#endif
-
-#if defined(ENABLE_FLAPPER_HACKS)
-void RenderViewImpl::OnConnectTcpACK(
-    int request_id,
-    IPC::PlatformFileForTransit socket_for_transit,
-    const PP_NetAddress_Private& local_addr,
-    const PP_NetAddress_Private& remote_addr) {
-  pepper_delegate_.OnConnectTcpACK(
-      request_id,
-      IPC::PlatformFileForTransitToPlatformFile(socket_for_transit),
-      local_addr,
-      remote_addr);
 }
 #endif
 

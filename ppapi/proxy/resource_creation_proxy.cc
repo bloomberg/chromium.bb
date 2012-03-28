@@ -20,7 +20,6 @@
 #include "ppapi/proxy/ppb_file_system_proxy.h"
 #include "ppapi/proxy/ppb_flash_menu_proxy.h"
 #include "ppapi/proxy/ppb_flash_message_loop_proxy.h"
-#include "ppapi/proxy/ppb_flash_net_connector_proxy.h"
 #include "ppapi/proxy/ppb_graphics_2d_proxy.h"
 #include "ppapi/proxy/ppb_graphics_3d_proxy.h"
 #include "ppapi/proxy/ppb_host_resolver_private_proxy.h"
@@ -161,11 +160,6 @@ PP_Resource ResourceCreationProxy::CreateFlashMenu(
 PP_Resource ResourceCreationProxy::CreateFlashMessageLoop(
     PP_Instance instance) {
   return PPB_Flash_MessageLoop_Proxy::CreateProxyResource(instance);
-}
-
-PP_Resource ResourceCreationProxy::CreateFlashNetConnector(
-    PP_Instance instance) {
-  return PPB_Flash_NetConnector_Proxy::CreateProxyResource(instance);
 }
 #endif  // !defined(OS_NACL)
 

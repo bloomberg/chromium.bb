@@ -55,7 +55,6 @@
 #include "ppapi/c/private/ppb_flash.h"
 #include "ppapi/c/private/ppb_flash_menu.h"
 #include "ppapi/c/private/ppb_flash_message_loop.h"
-#include "ppapi/c/private/ppb_flash_net_connector.h"
 #include "ppapi/c/private/ppb_flash_tcp_socket.h"
 #include "ppapi/c/private/ppb_net_address_private.h"
 #include "ppapi/c/private/ppb_network_list_private.h"
@@ -84,7 +83,6 @@
 #include "ppapi/proxy/ppb_flash_file_proxy.h"
 #include "ppapi/proxy/ppb_flash_menu_proxy.h"
 #include "ppapi/proxy/ppb_flash_message_loop_proxy.h"
-#include "ppapi/proxy/ppb_flash_net_connector_proxy.h"
 #include "ppapi/proxy/ppb_flash_proxy.h"
 #include "ppapi/proxy/ppb_graphics_2d_proxy.h"
 #include "ppapi/proxy/ppb_graphics_3d_proxy.h"
@@ -335,13 +333,6 @@ void InterfaceList::AddFlashInterfaces() {
   // Only add the interface; PPB_TCPSocket_Private provides the API ID's proxy.
   AddPPB(PPB_FLASH_TCPSOCKET_INTERFACE_0_2, API_ID_PPB_TCPSOCKET_PRIVATE,
          thunk::GetPPB_TCPSocket_Private_0_3_Thunk());
-
-#ifdef ENABLE_FLAPPER_HACKS
-  AddProxy(API_ID_PPB_FLASH_NETCONNECTOR,
-           &ProxyFactory<PPB_Flash_NetConnector_Proxy>);
-  AddPPB(PPB_FLASH_NETCONNECTOR_INTERFACE_0_2, API_ID_PPB_FLASH_NETCONNECTOR,
-         thunk::GetPPB_Flash_NetConnector_0_2_Thunk());
-#endif
 #endif  // !defined(OS_NACL)
 }
 

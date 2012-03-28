@@ -37,7 +37,6 @@
   F(PPB_Find_API) \
   F(PPB_Flash_Menu_API) \
   F(PPB_Flash_MessageLoop_API) \
-  F(PPB_Flash_NetConnector_API) \
   F(PPB_Graphics2D_API) \
   F(PPB_Graphics3D_API) \
   F(PPB_HostResolver_Private_API) \

@@ -74,7 +74,6 @@ class ResourceCreationAPI {
   virtual PP_Resource CreateFlashMenu(PP_Instance instance,
                                       const PP_Flash_Menu* menu_data) = 0;
   virtual PP_Resource CreateFlashMessageLoop(PP_Instance instance) = 0;
-  virtual PP_Resource CreateFlashNetConnector(PP_Instance instance) = 0;
   virtual PP_Resource CreateGraphics2D(PP_Instance instance,
                                        const PP_Size& size,
                                        PP_Bool is_always_opaque) = 0;
