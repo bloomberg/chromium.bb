@@ -819,6 +819,10 @@
         '../third_party/mozilla/ComplexTextInputPanel.mm',
         '../third_party/mozilla/NSPasteboard+Utils.h',
         '../third_party/mozilla/NSPasteboard+Utils.mm',
+        '../third_party/mozilla/NSString+Utils.h',
+        '../third_party/mozilla/NSString+Utils.mm',
+        '../third_party/mozilla/NSURL+Utils.h',
+        '../third_party/mozilla/NSURL+Utils.m',
       ],
       'dependencies': [
         '../base/base.gyp:closure_blocks_leopard_compat',

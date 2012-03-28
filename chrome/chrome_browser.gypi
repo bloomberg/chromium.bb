@@ -4571,10 +4571,6 @@
             # Build necessary Mozilla sources
             '../third_party/mozilla/NSScreen+Utils.h',
             '../third_party/mozilla/NSScreen+Utils.m',
-            '../third_party/mozilla/NSString+Utils.h',
-            '../third_party/mozilla/NSString+Utils.mm',
-            '../third_party/mozilla/NSURL+Utils.h',
-            '../third_party/mozilla/NSURL+Utils.m',
             '../third_party/mozilla/NSWorkspace+Utils.h',
             '../third_party/mozilla/NSWorkspace+Utils.m',
           ],
