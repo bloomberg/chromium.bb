@@ -909,11 +909,9 @@ class Browser : public TabHandlerDelegate,
   bool is_app() const;
   bool is_devtools() const;
 
-  // See FullscreenController::IsFullscreenForTabOrPending.
-  bool IsFullscreenForTabOrPending() const;
-
-  // True when the mouse cursor is locked or pending lock.
-  bool IsMouseLockedOrPending() const;
+  // True when the current tab is in fullscreen mode, requested by
+  // webkitRequestFullScreen.
+  bool IsFullscreenForTab() const;
 
   // Called each time the browser window is shown.
   void OnWindowDidShow();
@@ -931,12 +929,14 @@ class Browser : public TabHandlerDelegate,
   virtual BrowserWindow* CreateBrowserWindow();
 
  private:
-  friend class BrowserTest;
   FRIEND_TEST_ALL_PREFIXES(AppModeTest, EnableAppModeTest);
   FRIEND_TEST_ALL_PREFIXES(BrowserTest, NoTabsInPopups);
   FRIEND_TEST_ALL_PREFIXES(BrowserTest, ConvertTabToAppShortcut);
   FRIEND_TEST_ALL_PREFIXES(BrowserTest, OpenAppWindowLikeNtp);
   FRIEND_TEST_ALL_PREFIXES(BrowserTest, AppIdSwitch);
+  FRIEND_TEST_ALL_PREFIXES(BrowserTest, TestNewTabExitsFullscreen);
+  FRIEND_TEST_ALL_PREFIXES(BrowserTest, TestTabExitsItselfFromFullscreen);
+  FRIEND_TEST_ALL_PREFIXES(BrowserTest, TestFullscreenBubbleMouseLockState);
   FRIEND_TEST_ALL_PREFIXES(BrowserTest, TabEntersPresentationModeFromWindowed);
   FRIEND_TEST_ALL_PREFIXES(FullscreenExitBubbleControllerTest,
       DenyExitsFullscreen);
@@ -1063,7 +1063,7 @@ class Browser : public TabHandlerDelegate,
                                   const FilePath& path) OVERRIDE;
   virtual void ToggleFullscreenModeForTab(content::WebContents* tab,
       bool enter_fullscreen) OVERRIDE;
-  virtual bool IsFullscreenForTabOrPending(
+  virtual bool IsFullscreenForTab(
       const content::WebContents* tab) const OVERRIDE;
   virtual void JSOutOfMemory(content::WebContents* tab) OVERRIDE;
   virtual void RegisterProtocolHandler(content::WebContents* tab,

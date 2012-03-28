@@ -28,7 +28,7 @@
 
 namespace {
 
-class BrowserUITest : public UITest {
+class BrowserTest : public UITest {
 };
 
 class VisibleBrowserTest : public UITest {
@@ -42,7 +42,7 @@ class VisibleBrowserTest : public UITest {
 
 // The browser should quit quickly if it receives a WM_ENDSESSION message
 // on Windows, or SIGTERM on posix.
-TEST_F(BrowserUITest, SessionEnd) {
+TEST_F(BrowserTest, SessionEnd) {
   FilePath test_file(test_data_directory_);
   test_file = test_file.AppendASCII("title1.html");
 

@@ -8,6 +8,8 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/site_instance.h"
 
+typedef BrowserWithTestWindowTest BrowserTest;
+
 class TestingOffTheRecordDestructionProfile : public TestingProfile {
  public:
   TestingOffTheRecordDestructionProfile() : destroyed_profile_(false) {
@@ -21,7 +23,7 @@ class TestingOffTheRecordDestructionProfile : public TestingProfile {
   DISALLOW_COPY_AND_ASSIGN(TestingOffTheRecordDestructionProfile);
 };
 
-class BrowserTestOffTheRecord : public BrowserWithTestWindowTest {
+class BrowserTestOffTheRecord : public BrowserTest {
  public:
   BrowserTestOffTheRecord() : off_the_record_profile_(NULL) {}
 
@@ -37,7 +39,7 @@ class BrowserTestOffTheRecord : public BrowserWithTestWindowTest {
 };
 
 // Various assertions around setting show state.
-TEST_F(BrowserWithTestWindowTest, GetSavedWindowShowState) {
+TEST_F(BrowserTest, GetSavedWindowShowState) {
   // Default show state is SHOW_STATE_DEFAULT.
   EXPECT_EQ(ui::SHOW_STATE_DEFAULT, browser()->GetSavedWindowShowState());
 

@@ -676,7 +676,7 @@ willPositionSheet:(NSWindow*)sheet
     return;
 
   if (presentationMode) {
-    BOOL fullscreen_for_tab = browser_->IsFullscreenForTabOrPending();
+    BOOL fullscreen_for_tab = browser_->IsFullscreenForTab();
     BOOL showDropdown = !fullscreen_for_tab &&
         (forceDropdown || [self floatingBarHasFocus]);
     NSView* contentView = [[self window] contentView];
@@ -789,7 +789,7 @@ willPositionSheet:(NSWindow*)sheet
 }
 
 - (void)showFullscreenExitBubbleIfNecessary {
-  if (!browser_->IsFullscreenForTabOrPending()) {
+  if (!browser_->IsFullscreenForTab()) {
     return;
   }
 
@@ -851,7 +851,7 @@ willPositionSheet:(NSWindow*)sheet
   NSWindow* window = [self window];
   savedRegularWindowFrame_ = [window frame];
   BOOL mode = [self shouldUsePresentationModeWhenEnteringFullscreen];
-  mode = mode || browser_->IsFullscreenForTabOrPending();
+  mode = mode || browser_->IsFullscreenForTab();
   enteringFullscreen_ = YES;
   [self setPresentationModeInternal:mode forceDropdown:NO];
 }

@@ -39,12 +39,16 @@ FullscreenController::FullscreenController(BrowserWindow* window,
 
 FullscreenController::~FullscreenController() {}
 
-bool FullscreenController::IsFullscreenForBrowser() const {
-  return window_->IsFullscreen() && !tab_caused_fullscreen_;
+bool FullscreenController::IsFullscreenForTab() const {
+  return fullscreened_tab_ != NULL;
 }
 
-bool FullscreenController::IsFullscreenForTabOrPending() const {
-  return fullscreened_tab_ != NULL;
+bool FullscreenController::IsFullscreenForTab(const WebContents* tab) const {
+  if (IsFullscreenForTabOrPending(tab)) {
+    DCHECK(window_->IsFullscreen());
+    return true;
+  }
+  return false;
 }
 
 bool FullscreenController::IsFullscreenForTabOrPending(
@@ -55,10 +59,6 @@ bool FullscreenController::IsFullscreenForTabOrPending(
     return false;
   DCHECK(tab == browser_->GetSelectedWebContents());
   return true;
-}
-
-bool FullscreenController::IsMouseLockedOrPending() const {
-  return mouse_lock_state_ != MOUSELOCK_NOT_REQUESTED;
 }
 
 void FullscreenController::RequestToLockMouse(WebContents* tab) {
@@ -171,7 +171,7 @@ void FullscreenController::LostMouseLock() {
 }
 
 void FullscreenController::OnTabClosing(WebContents* web_contents) {
-  if (IsFullscreenForTabOrPending(web_contents)) {
+  if (IsFullscreenForTab(web_contents)) {
     ExitTabbedFullscreenModeIfNecessary();
     // The call to exit fullscreen may result in asynchronous notification of
     // fullscreen state change (e.g., on Linux). We don't want to rely on it
@@ -265,7 +265,7 @@ void FullscreenController::WindowFullscreenStateChanged() {
 }
 
 bool FullscreenController::HandleUserPressedEscape() {
-  if (!IsFullscreenForTabOrPending())
+  if (!IsFullscreenForTab())
     return false;
   ExitTabbedFullscreenModeIfNecessary();
   return true;
