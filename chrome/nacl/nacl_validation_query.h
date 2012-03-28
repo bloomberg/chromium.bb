@@ -51,8 +51,6 @@ class NaClValidationQuery {
 
   void SetKnownToValidate();
 
-  NaClValidationQueryContext* context_;
-
  private:
   enum QueryState {
     READY,
