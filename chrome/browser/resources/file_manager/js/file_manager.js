@@ -1873,8 +1873,13 @@ FileManager.prototype = {
 
       var eject = this.document_.createElement('div');
       eject.className = 'root-eject';
-      eject.addEventListener('click',
-          this.unmountVolume_.bind(this, entry.toURL()));
+      eject.addEventListener('click', function(event) {
+        event.stopPropagation();
+        this.unmountVolume_(entry.toURL());
+      }.bind(this));
+      // Block other mouse handlers.
+      eject.addEventListener('mouseup', function(e) { e.stopPropagation() });
+      eject.addEventListener('mousedown', function(e) { e.stopPropagation() });
       li.appendChild(eject);
 
       cr.ui.contextMenuHandler.setContextMenu(li, this.rootsContextMenu_);
