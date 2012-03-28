@@ -437,6 +437,7 @@ TEST_F(WebRTCAudioDeviceTest, PlayLocalFile) {
   EXPECT_EQ(0, base->StartPlayout(ch));
 
   ScopedWebRTCPtr<webrtc::VoEFile> file(engine.get());
+  ASSERT_TRUE(file.valid());
   int duration = 0;
   EXPECT_EQ(0, file->GetFileDuration(file_path.c_str(), duration,
                                      webrtc::kFileFormatPcm16kHzFile));
@@ -465,8 +466,8 @@ TEST_F(WebRTCAudioDeviceTest, PlayLocalFile) {
 // where they are decoded and played out on the default audio output device.
 // Disabled when running headless since the bots don't have the required config.
 // TODO(henrika): improve quality by using a wideband codec, enabling noise-
-// suppressions and perhaps also the digital AGC.
-TEST_F(WebRTCAudioDeviceTest, FullDuplexAudio) {
+// suppressions etc.
+TEST_F(WebRTCAudioDeviceTest, FullDuplexAudioWithAGC) {
   if (IsRunningHeadless())
     return;
 
@@ -477,13 +478,13 @@ TEST_F(WebRTCAudioDeviceTest, FullDuplexAudio) {
     return;
 
   EXPECT_CALL(media_observer(),
-    OnSetAudioStreamStatus(_, 1, StrEq("created")));
+      OnSetAudioStreamStatus(_, 1, StrEq("created")));
   EXPECT_CALL(media_observer(),
-    OnSetAudioStreamPlaying(_, 1, true));
+      OnSetAudioStreamPlaying(_, 1, true));
   EXPECT_CALL(media_observer(),
-    OnSetAudioStreamStatus(_, 1, StrEq("closed")));
+      OnSetAudioStreamStatus(_, 1, StrEq("closed")));
   EXPECT_CALL(media_observer(),
-    OnDeleteAudioStream(_, 1)).Times(AnyNumber());
+      OnDeleteAudioStream(_, 1)).Times(AnyNumber());
 
   scoped_refptr<WebRtcAudioDeviceImpl> audio_device(
       new WebRtcAudioDeviceImpl());
@@ -496,10 +497,19 @@ TEST_F(WebRTCAudioDeviceTest, FullDuplexAudio) {
   int err = base->Init(audio_device);
   ASSERT_EQ(0, err);
 
+  ScopedWebRTCPtr<webrtc::VoEAudioProcessing> audio_processing(engine.get());
+  ASSERT_TRUE(audio_processing.valid());
+  bool enabled = false;
+  webrtc::AgcModes agc_mode =  webrtc::kAgcDefault;
+  EXPECT_EQ(0, audio_processing->GetAgcStatus(enabled, agc_mode));
+  EXPECT_TRUE(enabled);
+  EXPECT_EQ(agc_mode, webrtc::kAgcAdaptiveAnalog);
+
   int ch = base->CreateChannel();
   EXPECT_NE(-1, ch);
 
   ScopedWebRTCPtr<webrtc::VoENetwork> network(engine.get());
+  ASSERT_TRUE(network.valid());
   scoped_ptr<WebRTCTransportImpl> transport(
       new WebRTCTransportImpl(network.get()));
   EXPECT_EQ(0, network->RegisterExternalTransport(ch, *transport.get()));

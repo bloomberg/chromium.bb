@@ -174,7 +174,6 @@ bool AudioInputRendererHost::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER(AudioInputHostMsg_CreateStream, OnCreateStream)
     IPC_MESSAGE_HANDLER(AudioInputHostMsg_RecordStream, OnRecordStream)
     IPC_MESSAGE_HANDLER(AudioInputHostMsg_CloseStream, OnCloseStream)
-    IPC_MESSAGE_HANDLER(AudioInputHostMsg_GetVolume, OnGetVolume)
     IPC_MESSAGE_HANDLER(AudioInputHostMsg_SetVolume, OnSetVolume)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
@@ -200,7 +199,8 @@ void AudioInputRendererHost::OnStartDevice(int stream_id, int session_id) {
 
 void AudioInputRendererHost::OnCreateStream(int stream_id,
                                             const AudioParameters& params,
-                                            const std::string& device_id) {
+                                            const std::string& device_id,
+                                            bool automatic_gain_control) {
   VLOG(1) << "AudioInputRendererHost::OnCreateStream(stream_id="
           << stream_id << ")";
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -214,9 +214,11 @@ void AudioInputRendererHost::OnCreateStream(int stream_id,
   // Create a new AudioEntry structure.
   scoped_ptr<AudioEntry> entry(new AudioEntry());
 
+  uint32 mem_size = sizeof(AudioInputBufferParameters) + buffer_size;
+
   // Create the shared memory and share it with the renderer process
   // using a new SyncWriter object.
-  if (!entry->shared_memory.CreateAndMapAnonymous(buffer_size)) {
+  if (!entry->shared_memory.CreateAndMapAnonymous(mem_size)) {
     // If creation of shared memory failed then send an error message.
     SendErrorMessage(stream_id);
     return;
@@ -247,6 +249,9 @@ void AudioInputRendererHost::OnCreateStream(int stream_id,
     SendErrorMessage(stream_id);
     return;
   }
+
+  // Set the initial AGC state for the audio input stream.
+  entry->controller->SetAutomaticGainControl(automatic_gain_control);
 
   // If we have created the controller successfully create a entry and add it
   // to the map.
@@ -290,21 +295,7 @@ void AudioInputRendererHost::OnSetVolume(int stream_id, double volume) {
     return;
   }
 
-  // TODO(henrika): TBI.
-  NOTIMPLEMENTED();
-}
-
-void AudioInputRendererHost::OnGetVolume(int stream_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-  AudioEntry* entry = LookupById(stream_id);
-  if (!entry) {
-    SendErrorMessage(stream_id);
-    return;
-  }
-
-  // TODO(henrika): TBI.
-  NOTIMPLEMENTED();
+  entry->controller->SetVolume(volume);
 }
 
 void AudioInputRendererHost::SendErrorMessage(int stream_id) {

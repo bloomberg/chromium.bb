@@ -49,7 +49,7 @@
 //      base->StartPlayout(ch);
 //      base->StartSending(ch);
 //      ...
-//      <== full-duplex audio session ==>
+//      <== full-duplex audio session with AGC enabled ==>
 //      ...
 //      base->DeleteChannel(ch);
 //      base->Terminate();
@@ -57,15 +57,30 @@
 //      VoiceEngine::Delete(voe);
 //   }
 //
-// Note that, WebRtcAudioDeviceImpl::RegisterAudioCallback() will
-// be called by the webrtc::VoiceEngine::Init() call and the
-// webrtc::VoiceEngine is an webrtc::AudioTransport implementation.
-// Hence, when the underlying audio layer wants data samples to be played out,
-// the AudioDevice::RenderCallback() will be called, which in turn uses the
-// registered webrtc::AudioTransport callback and feeds the data to the
-// webrtc::VoiceEngine.
+// webrtc::VoiceEngine::Init() calls these ADM methods (in this order):
 //
-// The picture below illustrates the media flow on the capture side:
+//  RegisterAudioCallback(this)
+//    webrtc::VoiceEngine is an webrtc::AudioTransport implementation and
+//    implements the RecordedDataIsAvailable() and NeedMorePlayData() callbacks.
+//
+//  Init()
+//    Creates and initializes the AudioDevice and AudioInputDevice objects.
+//
+//  SetAGC(true)
+//    Enables the adaptive analog mode of the AGC which ensures that a
+//    suitable microphone volume level will be set. This scheme will affect
+//    the actual microphone control slider.
+//
+// Media example:
+//
+// When the underlying audio layer wants data samples to be played out, the
+// AudioDevice::RenderCallback() will be called, which in turn uses the
+// registered webrtc::AudioTransport callback and gets the data to be played
+// out from the webrtc::VoiceEngine.
+//
+// The picture below illustrates the media flow on the capture side where the
+// AudioInputDevice client acts as link between the renderer and browser
+// process:
 //
 //                   .------------------.            .----------------------.
 // (Native audio) => | AudioInputStream |-> OnData ->| AudioInputController |-.
@@ -87,11 +102,106 @@
 //      The actual data is transferred via SharedMemory. IPC is not involved
 //      in the actual media transfer.
 //
+// AGC overview:
+//
+// It aims to maintain a constant speech loudness level from the microphone.
+// This is done by both controlling the analog microphone gain and applying
+// digital gain. The microphone gain on the sound card is slowly
+// increased/decreased during speech only. By observing the microphone control
+// slider you can see it move when you speak. If you scream, the slider moves
+// downwards and then upwards again when you return to normal. It is not
+// uncommon that the slider hits the maximum. This means that the maximum
+// analog gain is not large enough to give the desired loudness. Nevertheless,
+// we can in general still attain the desired loudness. If the microphone
+// control slider is moved manually, the gain adaptation restarts and returns
+// to roughly the same position as before the change if the circumstances are
+// still the same. When the input microphone signal causes saturation, the
+// level is decreased dramatically and has to re-adapt towards the old level.
+// The adaptation is a slowly varying process and at the beginning of capture
+// this is noticed by a slow increase in volume. Smaller changes in microphone
+// input level is leveled out by the built-in digital control. For larger
+// differences we need to rely on the slow adaptation.
+// See http://en.wikipedia.org/wiki/Automatic_gain_control for more details.
+//
+// AGC implementation details:
+//
+// The adaptive analog mode of the AGC is always enabled for desktop platforms
+// in WebRTC.
+//
+// Before recording starts, the ADM sets an AGC state in the
+// AudioInputDevice by calling AudioInputDevice::SetAutomaticGainControl(true).
+//
+// A capture session with AGC is started up as follows (simplified):
+//
+//                            [renderer]
+//                                |
+//                     ADM::StartRecording()
+//             AudioInputDevice::InitializeOnIOThread()
+//           AudioInputHostMsg_CreateStream(..., agc=true)               [IPC]
+//                                |
+//                       [IPC to the browser]
+//                                |
+//              AudioInputRendererHost::OnCreateStream()
+//              AudioInputController::CreateLowLatency()
+//         AudioInputController::DoSetAutomaticGainControl(true)
+//            AudioInputStream::SetAutomaticGainControl(true)
+//                                |
+// AGC is now enabled in the media layer and streaming starts (details omitted).
+// The figure below illustrates the AGC scheme which is active in combination
+// with the default media flow explained earlier.
+//                                |
+//                            [browser]
+//                                |
+//                AudioInputStream::(Capture thread loop)
+//   AudioInputStreamImpl::QueryAgcVolume() => new volume once per second
+//                 AudioInputData::OnData(..., volume)
+//              AudioInputController::OnData(..., volume)
+//               AudioInputSyncWriter::Write(..., volume)
+//                                |
+//      [volume | size | data] is sent to the renderer         [shared memory]
+//                                |
+//                            [renderer]
+//                                |
+//          AudioInputDevice::AudioThreadCallback::Process()
+//            WebRtcAudioDeviceImpl::Capture(..., volume)
+//    AudioTransport::RecordedDataIsAvailable(...,volume, new_volume)
+//                                |
+// The AGC now uses the current volume input and computes a suitable new
+// level given by the |new_level| output. This value is only non-zero if the
+// AGC has take a decision that the microphone level should change.
+//                                |
+//                      if (new_volume != 0)
+//              AudioInputDevice::SetVolume(new_volume)
+//              AudioInputHostMsg_SetVolume(new_volume)                  [IPC]
+//                                |
+//                       [IPC to the browser]
+//                                |
+//                 AudioInputRendererHost::OnSetVolume()
+//                  AudioInputController::SetVolume()
+//             AudioInputStream::SetVolume(scaled_volume)
+//                                |
+// Here we set the new microphone level in the media layer and at the same time
+// read the new setting (we might not get exactly what is set).
+//                                |
+//             AudioInputData::OnData(..., updated_volume)
+//           AudioInputController::OnData(..., updated_volume)
+//                                |
+//                                |
+// This process repeats until we stop capturing data. Note that, a common
+// steady state is that the volume control reaches its max and the new_volume
+// value from the AGC is zero. A loud voice input is required to break this
+// state and start lowering the level again.
+//
 // Implementation notes:
 //
 //  - This class must be created on the main render thread.
 //  - The webrtc::AudioDeviceModule is reference counted.
-//  - Recording is currently not supported on Mac OS X.
+//  - AGC is only supported in combination with the WASAPI-based audio layer
+//    on Windows, i.e., it is not supported on Windows XP.
+//  - All volume levels required for the AGC scheme are transfered in a
+//    normalized range [0.0, 1.0]. Scaling takes place in both endpoints
+//    (WebRTC client a media layer). This approach ensures that we can avoid
+//    transferring maximum levels between the renderer and the browser.
 //
 class CONTENT_EXPORT WebRtcAudioDeviceImpl
     : NON_EXPORTED_BASE(public webrtc::AudioDeviceModule),
@@ -120,7 +230,8 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl
   // AudioInputDevice::CaptureCallback implementation.
   virtual void Capture(const std::vector<float*>& audio_data,
                        size_t number_of_frames,
-                       size_t audio_delay_milliseconds) OVERRIDE;
+                       size_t audio_delay_milliseconds,
+                       double volume) OVERRIDE;
   virtual void OnCaptureError() OVERRIDE;
 
   // AudioInputDevice::CaptureEventHandler implementation.
@@ -335,6 +446,9 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl
   bool initialized_;
   bool playing_;
   bool recording_;
+
+  // Local copy of the current Automatic Gain Control state.
+  bool agc_is_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRtcAudioDeviceImpl);
 };

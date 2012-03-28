@@ -15,15 +15,20 @@ AudioInputSyncWriter::AudioInputSyncWriter(base::SharedMemory* shared_memory)
 
 AudioInputSyncWriter::~AudioInputSyncWriter() {}
 
+// TODO(henrika): Combine into one method (including Write).
 void AudioInputSyncWriter::UpdateRecordedBytes(uint32 bytes) {
   socket_->Send(&bytes, sizeof(bytes));
 }
 
-uint32 AudioInputSyncWriter::Write(const void* data, uint32 size) {
-  uint32 write_size = std::min(size, shared_memory_->created_size());
-  // Copy audio input samples from recorded data to shared memory.
-  memcpy(shared_memory_->memory(), data, write_size);
-  return write_size;
+uint32 AudioInputSyncWriter::Write(const void* data, uint32 size,
+                                   double volume) {
+  AudioInputBuffer* buffer =
+      reinterpret_cast<AudioInputBuffer*>(shared_memory_->memory());
+  buffer->params.volume = volume;
+  buffer->params.size = size;
+  memcpy(buffer->audio, data, size);
+
+  return size;
 }
 
 void AudioInputSyncWriter::Close() {

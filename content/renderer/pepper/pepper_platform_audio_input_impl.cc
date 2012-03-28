@@ -127,7 +127,7 @@ void PepperPlatformAudioInputImpl::InitializeOnIOThread(int session_id) {
   if (!session_id) {
     // We will be notified by OnStreamCreated().
     filter_->Send(new AudioInputHostMsg_CreateStream(
-        stream_id_, params_, AudioManagerBase::kDefaultDeviceId));
+        stream_id_, params_, AudioManagerBase::kDefaultDeviceId, false));
   } else {
     // We will be notified by OnDeviceReady().
     filter_->Send(new AudioInputHostMsg_StartDevice(stream_id_, session_id));
@@ -229,7 +229,7 @@ void PepperPlatformAudioInputImpl::OnDeviceReady(const std::string& device_id) {
   } else {
     // We will be notified by OnStreamCreated().
     filter_->Send(new AudioInputHostMsg_CreateStream(stream_id_, params_,
-                                                     device_id));
+                                                     device_id, false));
   }
 }
 

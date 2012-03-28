@@ -140,7 +140,8 @@ class CONTENT_EXPORT AudioInputRendererHost
   // required properties.
   void OnCreateStream(int stream_id,
                       const AudioParameters& params,
-                      const std::string& device_id);
+                      const std::string& device_id,
+                      bool automatic_gain_control);
 
   // Record the audio input stream referenced by |stream_id|.
   void OnRecordStream(int stream_id);
@@ -150,9 +151,6 @@ class CONTENT_EXPORT AudioInputRendererHost
 
   // Set the volume of the audio stream referenced by |stream_id|.
   void OnSetVolume(int stream_id, double volume);
-
-  // Get the volume of the audio stream referenced by |stream_id|.
-  void OnGetVolume(int stream_id);
 
   // Complete the process of creating an audio input stream. This will set up
   // the shared memory or shared socket in low latency mode.

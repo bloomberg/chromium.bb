@@ -5,6 +5,8 @@
 // IPC messages for the audio.
 // Multiply-included message file, hence no include guard.
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/shared_memory.h"
 #include "base/sync_socket.h"
@@ -91,10 +93,11 @@ IPC_MESSAGE_CONTROL2(AudioHostMsg_CreateStream,
                      AudioParameters /* params */)
 
 // Request that got sent to browser for creating an audio input stream
-IPC_MESSAGE_CONTROL3(AudioInputHostMsg_CreateStream,
+IPC_MESSAGE_CONTROL4(AudioInputHostMsg_CreateStream,
                      int /* stream_id */,
                      AudioParameters /* params */,
-                     std::string /* device_id */)
+                     std::string /* device_id */,
+                     bool /* automatic_gain_control */)
 
 // Start buffering and play the audio stream specified by stream_id.
 IPC_MESSAGE_CONTROL1(AudioHostMsg_PlayStream,
@@ -118,11 +121,6 @@ IPC_MESSAGE_CONTROL1(AudioHostMsg_CloseStream,
 
 // Close an audio input stream specified by stream_id.
 IPC_MESSAGE_CONTROL1(AudioInputHostMsg_CloseStream,
-                     int /* stream_id */)
-
-// Get audio volume of the input stream specified by
-// (render_view_id, stream_id).
-IPC_MESSAGE_CONTROL1(AudioInputHostMsg_GetVolume,
                      int /* stream_id */)
 
 // Set audio volume of the stream specified by stream_id.
