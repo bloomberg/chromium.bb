@@ -55,6 +55,7 @@ class Isolate(unittest.TestCase):
           [unicode(x) for x in args],
       u'files': dict((unicode(f), {u'mode': mode(f)}) for f in files),
       u'relative_cwd': u'.',
+      u'read_only': False,
     }
     if with_hash:
       for filename in expected[u'files']:

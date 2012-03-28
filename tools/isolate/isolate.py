@@ -74,7 +74,7 @@ def separate_inputs_command(args, root, files):
   return [relpath(os.path.join(cwd, arg), root) for arg in args], cmd
 
 
-def isolate(outdir, resultfile, indir, infiles, mode, read_only, cmd):
+def isolate(outdir, resultfile, indir, infiles, mode, read_only, cmd, no_save):
   """Main function to isolate a target with its dependencies.
 
   Arguments:
@@ -85,12 +85,14 @@ def isolate(outdir, resultfile, indir, infiles, mode, read_only, cmd):
   - mode: Action to do. See file level docstring.
   - read_only: Makes the temporary directory read only.
   - cmd: Command to execute.
+  - no_save: If True, do not touch resultfile.
 
   Some arguments are optional, dependending on |mode|. See the corresponding
   MODE<mode> function for the exact behavior.
   """
   mode_fn = getattr(sys.modules[__name__], 'MODE' + mode)
   assert mode_fn
+  assert os.path.isabs(resultfile)
 
   infiles = tree_creator.expand_directories(
         indir, infiles, lambda x: re.match(r'.*\.(svn|pyc)$', x))
@@ -120,12 +122,13 @@ def isolate(outdir, resultfile, indir, infiles, mode, read_only, cmd):
   result = mode_fn(
       outdir, indir, dictfiles, read_only, cmd, relative_cwd, resultfile)
 
-  if result == 0:
+  if result == 0 and not no_save:
     # Saves the resulting file.
     out = {
       'command': cmd,
       'relative_cwd': relative_cwd,
       'files': dictfiles,
+      'read_only': read_only,
     }
     with open(resultfile, 'wb') as f:
       json.dump(out, f, indent=2, sort_keys=True)
@@ -196,16 +199,14 @@ def MODEtrace(
   It constructs the equivalent of dictfiles. It is hardcoded to base the
   checkout at src/.
   """
-  gyppath = os.path.relpath(relative_cwd, indir)
-  cwd = os.path.join(indir, relative_cwd)
-  logging.info('Running %s, cwd=%s' % (cmd, cwd))
+  logging.info('Running %s, cwd=%s' % (cmd, os.path.join(indir, relative_cwd)))
   return trace_inputs.trace_inputs(
       '%s.log' % resultfile,
       cmd,
-      cwd,
-      gyppath,
       indir,
-      True)
+      relative_cwd,
+      os.path.dirname(resultfile),  # Guesswork here.
+      False)
 
 
 def get_valid_modes():
@@ -228,7 +229,7 @@ def main():
       help='Determines the action to be taken: %s' % ', '.join(valid_modes))
   parser.add_option(
       '--result', metavar='FILE',
-      help='Output file containing the json information about inputs')
+      help='File containing the json information about inputs')
   parser.add_option(
       '--root', metavar='DIR', help='Base directory to fetch files, required')
   parser.add_option(
@@ -237,8 +238,11 @@ def main():
            'For run and remap, uses a /tmp subdirectory. For the other modes, '
            'defaults to the directory containing --result')
   parser.add_option(
-      '--read-only', action='store_true',
+      '--read-only', action='store_true', default=False,
       help='Make the temporary tree read-only')
+  parser.add_option(
+      '--from-results', action='store_true',
+      help='Loads everything from the result file instead of generating it')
   parser.add_option(
       '--files', metavar='FILE',
       help='File to be read containing input files')
@@ -249,10 +253,23 @@ def main():
       level=level,
       format='%(levelname)5s %(module)15s(%(lineno)3d): %(message)s')
 
-  if not options.root:
-    parser.error('--root is required.')
+  if not options.mode:
+    parser.error('--mode is required')
+
   if not options.result:
     parser.error('--result is required.')
+  if options.from_results:
+    if not options.root:
+      options.root = os.getcwd()
+    if args:
+      parser.error('Arguments cannot be used with --from-result')
+    if options.files:
+      parser.error('--files cannot be used with --from-result')
+  else:
+    if not options.root:
+      parser.error('--root is required.')
+
+  options.result = os.path.abspath(options.result)
 
   # Normalize the root input directory.
   indir = os.path.normpath(options.root)
@@ -265,20 +282,28 @@ def main():
   logging.info('sys.argv: %s' % sys.argv)
   logging.info('cwd: %s' % os.getcwd())
   logging.info('Args: %s' % args)
-  infiles, cmd = separate_inputs_command(args, indir, options.files)
-  if not infiles:
-    parser.error('Need at least one input file to map')
+  if not options.from_results:
+    infiles, cmd = separate_inputs_command(args, indir, options.files)
+    if not infiles:
+      parser.error('Need at least one input file to map')
+  else:
+    data = json.load(open(options.result))
+    cmd = data['command']
+    infiles = data['files'].keys()
+    os.chdir(data['relative_cwd'])
+
   logging.info('infiles: %s' % infiles)
 
   try:
     return isolate(
         options.outdir,
-        os.path.abspath(options.result),
+        options.result,
         indir,
         infiles,
         options.mode,
         options.read_only,
-        cmd)
+        cmd,
+        options.from_results)
   except tree_creator.MappingError, e:
     print >> sys.stderr, str(e)
     return 1

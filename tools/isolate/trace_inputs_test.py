@@ -18,9 +18,15 @@ VERBOSE = False
 
 class CalledProcessError(subprocess.CalledProcessError):
   """Makes 2.6 version act like 2.7"""
-  def __init__(self, returncode, cmd, output):
+  def __init__(self, returncode, cmd, output, cwd):
     super(CalledProcessError, self).__init__(returncode, cmd)
     self.output = output
+    self.cwd = cwd
+
+  def __str__(self):
+    return super(CalledProcessError, self).__str__() + (
+        '\n'
+        'cwd=%s\n%s') % (self.cwd, self.output)
 
 
 class TraceInputs(unittest.TestCase):
@@ -33,18 +39,23 @@ class TraceInputs(unittest.TestCase):
 
   def _execute(self, args):
     cmd = [
-        sys.executable, os.path.join(ROOT_DIR, 'trace_inputs.py'),
-        '--log', self.log,
-        '--gyp', os.path.join('data', 'trace_inputs'),
-        '--product', '.',  # Not tested.
-        '--root-dir', ROOT_DIR,
+      sys.executable, os.path.join(ROOT_DIR, 'trace_inputs.py'),
+      '--log', self.log,
+      '--root-dir', ROOT_DIR,
     ] + args
     p = subprocess.Popen(
         cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, cwd=ROOT_DIR)
     out = p.communicate()[0]
     if p.returncode:
-      raise CalledProcessError(p.returncode, cmd, out)
+      raise CalledProcessError(p.returncode, cmd, out, ROOT_DIR)
     return out
+
+  @staticmethod
+  def _gyp():
+    return [
+      '--gyp', os.path.join('data', 'trace_inputs'),
+      '--product', '.',  # Not tested.
+    ]
 
   def test_trace(self):
     if sys.platform == 'linux2':
@@ -53,8 +64,31 @@ class TraceInputs(unittest.TestCase):
       return self._test_trace_mac()
     print 'Unsupported: %s' % sys.platform
 
+  def test_trace_gyp(self):
+    if sys.platform == 'linux2':
+      return self._test_trace_gyp_linux()
+    if sys.platform == 'darwin':
+      return self._test_trace_gyp_mac()
+    print 'Unsupported: %s' % sys.platform
+
   def _test_trace_linux(self):
-    # TODO(maruel): BUG: Note that child.py is missing.
+    expected_end = [
+      "Interesting: 4 reduced to 3",
+      "  data/trace_inputs/",
+      "  trace_inputs.py",
+      "  trace_inputs_test.py",
+    ]
+    actual = self._execute(['trace_inputs_test.py', '--child1']).splitlines()
+    self.assertTrue(actual[0].startswith('Tracing... ['))
+    self.assertTrue(actual[1].startswith('Loading traces... '))
+    self.assertTrue(actual[2].startswith('Total: '))
+    self.assertEquals("Non existent: 0", actual[3])
+    # Ignore any Unexpected part.
+    # TODO(maruel): Make sure there is no Unexpected part, even in the case of
+    # virtualenv usage.
+    self.assertEquals(expected_end, actual[-len(expected_end):])
+
+  def _test_trace_gyp_linux(self):
     expected = (
         "{\n"
         "  'variables': {\n"
@@ -63,13 +97,29 @@ class TraceInputs(unittest.TestCase):
         "      '<(DEPTH)/trace_inputs_test.py',\n"
         "    ],\n"
         "    'isolate_dirs': [\n"
+        "      './',\n"
         "    ],\n"
         "  },\n"
         "},\n")
-    gyp = self._execute(['trace_inputs_test.py', '--child1'])
-    self.assertEquals(expected, gyp)
+    actual = self._execute(self._gyp() + ['trace_inputs_test.py', '--child1'])
+    self.assertEquals(expected, actual)
 
   def _test_trace_mac(self):
+    # It is annoying in the case of dtrace because it requires root access.
+    # TODO(maruel): BUG: Note that child.py is missing.
+    expected = (
+      "Total: 2\n"
+      "Non existent: 0\n"
+      "Interesting: 2 reduced to 2\n"
+      "  trace_inputs.py\n"
+      "  trace_inputs_test.py\n")
+    actual = self._execute(
+        ['trace_inputs_test.py', '--child1']).splitlines(True)
+    self.assertTrue(actual[0].startswith('Tracing... ['))
+    self.assertTrue(actual[1].startswith('Loading traces... '))
+    self.assertEquals(expected, ''.join(actual[2:]))
+
+  def _test_trace_gyp_mac(self):
     # It is annoying in the case of dtrace because it requires root access.
     # TODO(maruel): BUG: Note that child.py is missing.
     expected = (
@@ -83,8 +133,8 @@ class TraceInputs(unittest.TestCase):
         "    ],\n"
         "  },\n"
         "},\n")
-    gyp = self._execute(['trace_inputs_test.py', '--child1'])
-    self.assertEquals(expected, gyp)
+    actual = self._execute(self._gyp() + ['trace_inputs_test.py', '--child1'])
+    self.assertEquals(expected, actual)
 
 
 def child1():

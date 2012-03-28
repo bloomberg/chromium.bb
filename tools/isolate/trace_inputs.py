@@ -29,6 +29,7 @@ def isEnabledFor(level):
 class Strace(object):
   """strace implies linux."""
   IGNORED = (
+    '/bin',
     '/dev',
     '/etc',
     '/lib',
@@ -39,8 +40,146 @@ class Strace(object):
     '/var',
   )
 
-  @staticmethod
-  def gen_trace(cmd, cwd, logname):
+  class _Context(object):
+    """Processes a strace log line and keeps the list of existent and non
+    existent files accessed.
+
+    Ignores directories.
+    """
+    # This is the most common format. pid function(args) = result
+    RE_HEADER = re.compile(r'^(\d+)\s+([^\(]+)\((.+?)\)\s+= (.+)$')
+    # An interrupted function call, only grab the minimal header.
+    RE_UNFINISHED = re.compile(r'^(\d+)\s+([^\(]+).*$')
+    UNFINISHED = ' <unfinished ...>'
+    # A resumed function call.
+    RE_RESUMED = re.compile(r'^(\d+)\s+<\.\.\. ([^ ]+) resumed> (.+)$')
+    # A process received a signal.
+    RE_SIGNAL = re.compile(r'^\d+\s+--- SIG[A-Z]+ .+ ---')
+    # A process didn't handle a signal.
+    RE_KILLED = re.compile(r'^(\d+) \+\+\+ killed by ([A-Z]+) \+\+\+$')
+
+    # Arguments parsing.
+    RE_CHDIR = re.compile(r'^\"(.+?)\"$')
+    RE_EXECVE = re.compile(r'^\"(.+?)\", \[.+?\], \[.+?\]$')
+    RE_OPEN2 = re.compile(r'^\"(.*?)\", ([A-Z\_\|]+)$')
+    RE_OPEN3 = re.compile(r'^\"(.*?)\", ([A-Z\_\|]+), (\d+)$')
+    RE_RENAME = re.compile(r'^\"(.+?)\", \"(.+?)\"$')
+
+    def __init__(self, blacklist):
+      self._cwd = {}
+      self.blacklist = blacklist
+      self.files = set()
+      self.non_existent = set()
+      # Key is a tuple(pid, function name)
+      self._pending_calls = {}
+
+    @classmethod
+    def traces(cls):
+      prefix = 'handle_'
+      return [i[len(prefix):] for i in dir(cls) if i.startswith(prefix)]
+
+    def on_line(self, line):
+      line = line.strip()
+      if self.RE_SIGNAL.match(line):
+        # Ignore signals.
+        return
+
+      m = self.RE_KILLED.match(line)
+      if m:
+        self.handle_exit_group(int(m.group(1)), m.group(2), None, None)
+        return
+
+      if line.endswith(self.UNFINISHED):
+        line = line[:-len(self.UNFINISHED)]
+        m = self.RE_UNFINISHED.match(line)
+        assert m, line
+        self._pending_calls[(m.group(1), m.group(2))] = line
+        return
+
+      m = self.RE_RESUMED.match(line)
+      if m:
+        pending = self._pending_calls.pop((m.group(1), m.group(2)))
+        # Reconstruct the line.
+        line = pending + m.group(3)
+
+      m = self.RE_HEADER.match(line)
+      assert m, line
+      return getattr(self, 'handle_%s' % m.group(2))(
+          int(m.group(1)),
+          m.group(2),
+          m.group(3),
+          m.group(4))
+
+    def handle_chdir(self, pid, _function, args, result):
+      """Updates cwd."""
+      if result.startswith('0'):
+        cwd = self.RE_CHDIR.match(args).group(1)
+        if not cwd.startswith('/'):
+          cwd2 = os.path.join(self._cwd[pid], cwd)
+          logging.debug('handle_chdir(%d, %s) -> %s' % (pid, cwd, cwd2))
+          self._cwd[pid] = cwd2
+        else:
+          logging.debug('handle_chdir(%d, %s)' % (pid, cwd))
+          self._cwd[pid] = cwd
+      else:
+        assert False, 'Unexecpected fail: %s' % result
+
+    def handle_clone(self, pid, _function, _args, result):
+      """Transfers cwd."""
+      if result == '? ERESTARTNOINTR (To be restarted)':
+        return
+      self._cwd[int(result)] = self._cwd[pid]
+
+    def handle_execve(self, pid, _function, args, result):
+      self._handle_file(pid, self.RE_EXECVE.match(args).group(1), result)
+
+    def handle_exit_group(self, pid, _function, _args, _result):
+      """Removes cwd."""
+      del self._cwd[pid]
+
+    @staticmethod
+    def handle_fork(_pid, _function, args, result):
+      assert False, (args, result)
+
+    def handle_open(self, pid, _function, args, result):
+      args = (self.RE_OPEN3.match(args) or self.RE_OPEN2.match(args)).groups()
+      if 'O_DIRECTORY' in args[1]:
+        return
+      self._handle_file(pid, args[0], result)
+
+    def handle_rename(self, pid, _function, args, result):
+      args = self.RE_RENAME.match(args).groups()
+      self._handle_file(pid, args[0], result)
+      self._handle_file(pid, args[1], result)
+
+    @staticmethod
+    def handle_stat64(_pid, _function, args, result):
+      assert False, (args, result)
+
+    @staticmethod
+    def handle_vfork(_pid, _function, args, result):
+      assert False, (args, result)
+
+    def _handle_file(self, pid, filepath, result):
+      if result.startswith('-1'):
+        return
+      if not filepath.startswith('/'):
+        filepath2 = os.path.join(self._cwd[pid], filepath)
+        logging.debug('_handle_file(%d, %s) -> %s' % (pid, filepath, filepath2))
+        filepath = filepath2
+      else:
+        logging.debug('_handle_file(%d, %s)' % (pid, filepath))
+
+      if self.blacklist(filepath):
+        return
+      if filepath not in self.files and filepath not in self.non_existent:
+        if os.path.isfile(filepath):
+          self.files.add(filepath)
+        else:
+          self.non_existent.add(filepath)
+
+  @classmethod
+  def gen_trace(cls, cmd, cwd, logname):
     """Runs strace on an executable."""
     logging.info('gen_trace(%s, %s, %s)' % (cmd, cwd, logname))
     silent = not isEnabledFor(logging.INFO)
@@ -48,7 +187,8 @@ class Strace(object):
     if silent:
       stdout = subprocess.PIPE
       stderr = subprocess.PIPE
-    trace_cmd = ['strace', '-f', '-e', 'trace=open,chdir', '-o', logname]
+    traces = ','.join(cls._Context.traces())
+    trace_cmd = ['strace', '-f', '-e', 'trace=%s' % traces, '-o', logname]
     p = subprocess.Popen(
         trace_cmd + cmd, cwd=cwd, stdout=stdout, stderr=stderr)
     out, err = p.communicate()
@@ -60,7 +200,8 @@ class Strace(object):
       with open(logname) as f:
         content = f.read()
       with open(logname, 'w') as f:
-        f.write('0 chdir("%s") = 0\n' % cwd)
+        pid = content.split(' ', 1)[0]
+        f.write('%s chdir("%s") = 0\n' % (pid, cwd))
         f.write(content)
 
     if p.returncode != 0:
@@ -72,53 +213,24 @@ class Strace(object):
         print ''.join(err.splitlines(True)[-100:])
     return p.returncode
 
-  @staticmethod
-  def parse_log(filename, blacklist):
+  @classmethod
+  def parse_log(cls, filename, blacklist):
     """Processes a strace log and returns the files opened and the files that do
     not exist.
+
+    It does not track directories.
 
     Most of the time, files that do not exist are temporary test files that
     should be put in /tmp instead. See http://crbug.com/116251
     """
     logging.info('parse_log(%s, %s)' % (filename, blacklist))
-    files = set()
-    non_existent = set()
-    # 1=pid, 2=filepath, 3=mode, 4=result
-    re_open = re.compile(
-        # PID open(PATH, MODE) = RESULT
-        r'^(\d+)\s+open\("([^"]+)", ([^\)]+)\)\s+= (.+)$')
-    # 1=pid 2=path 3=result
-    re_chdir = re.compile(
-        # PID chdir(PATH) = RESULT
-        r'^(\d+)\s+chdir\("([^"]+)"\)\s+= (.+)$')
-
-    # TODO(maruel): This code is totally wrong. cwd is a process local variable
-    # so this needs to be a dict with key = pid.
-    cwd = None
+    context = cls._Context(blacklist)
     for line in open(filename):
-      m = re_open.match(line)
-      if m:
-        if m.group(4).startswith('-1') or 'O_DIRECTORY' in m.group(3):
-          # Not present or a directory.
-          continue
-        filepath = m.group(2)
-        if not filepath.startswith('/'):
-          filepath = os.path.join(cwd, filepath)
-        if blacklist(filepath):
-          continue
-        if filepath not in files and filepath not in non_existent:
-          if os.path.isfile(filepath):
-            files.add(filepath)
-          else:
-            non_existent.add(filepath)
-      m = re_chdir.match(line)
-      if m:
-        if m.group(3).startswith('0'):
-          cwd = m.group(2)
-        else:
-          assert False, 'Unexecpected fail: %s' % line
-
-    return files, non_existent
+      context.on_line(line)
+    # Resolve any symlink we hit.
+    return (
+        set(os.path.realpath(f) for f in context.files),
+        set(os.path.realpath(f) for f in context.non_existent))
 
 
 class Dtrace(object):
@@ -316,7 +428,9 @@ def relevant_files(files, root):
   unexpected = []
   for f in files:
     if f.startswith(root):
-      expected.append(f[len(root):])
+      f = f[len(root):]
+      assert f
+      expected.append(f)
     else:
       unexpected.append(f)
   return sorted(set(expected)), sorted(set(unexpected))
@@ -347,13 +461,17 @@ def trace_inputs(
   Symlinks are not processed at all.
   """
   logging.debug(
-      'trace_inputs(%s, %s, %s, %s, %s)' % (
-        logfile, cmd, root_dir, gyp_proj_dir, product_dir))
+      'trace_inputs(%s, %s, %s, %s, %s, %s)' % (
+        logfile, cmd, root_dir, gyp_proj_dir, product_dir, force_trace))
 
   # It is important to have unambiguous path.
   assert os.path.isabs(root_dir), root_dir
   assert os.path.isabs(logfile), logfile
-  assert os.path.isabs(cmd[0]), cmd[0]
+  assert (
+      (os.path.isfile(logfile) and not force_trace) or os.path.isabs(cmd[0])
+      ), cmd[0]
+  # Resolve any symlink
+  root_dir = os.path.realpath(root_dir)
 
   def print_if(txt):
     if gyp_proj_dir is None:
@@ -371,7 +489,11 @@ def trace_inputs(
     if os.path.isfile(logfile):
       os.remove(logfile)
     print_if('Tracing... %s' % cmd)
-    returncode = api.gen_trace(cmd, root_dir, logfile)
+    cwd = root_dir
+    # TODO(maruel): If --gyp is specified, use it as the cwd.
+    #if gyp_proj_dir:
+    #  cwd = os.path.join(cwd, gyp_proj_dir)
+    returncode = api.gen_trace(cmd, cwd, logfile)
     if returncode and not force_trace:
       return returncode
 
@@ -400,6 +522,7 @@ def trace_inputs(
 
   if gyp_proj_dir is not None:
     def cleanuppath(x):
+      """Cleans up a relative path."""
       if x:
         x = x.rstrip('/')
       if x == '.':
@@ -413,10 +536,12 @@ def trace_inputs(
 
     def fix(f):
       """Bases the file on the most restrictive variable."""
+      logging.debug('fix(%s)' % f)
       if product_dir and f.startswith(product_dir):
         return '<(PRODUCT_DIR)/%s' % f[len(product_dir):]
       elif gyp_proj_dir and f.startswith(gyp_proj_dir):
-        return f[len(gyp_proj_dir):]
+        # May be empty if the whole directory containing the gyp file is needed.
+        return f[len(gyp_proj_dir):] or './'
       else:
         return '<(DEPTH)/%s' % f
 
@@ -456,7 +581,8 @@ def main():
   parser.add_option(
       '--root-dir', default=ROOT_DIR,
       help='Root directory to base everything off. Default: %default')
-  parser.add_option('-f', '--force', help='Force to retrace the file')
+  parser.add_option(
+      '-f', '--force', action='store_true', help='Force to retrace the file')
 
   options, args = parser.parse_args()
   level = [logging.ERROR, logging.INFO, logging.DEBUG][min(2, options.verbose)]
@@ -464,12 +590,17 @@ def main():
         level=level,
         format='%(levelname)5s %(module)15s(%(lineno)3d):%(message)s')
 
-  if not args:
-    parser.error('Must supply a command to run')
   if not options.log:
     parser.error('Must supply a log file with -l')
+  if not args:
+    if not os.path.isfile(options.log) or options.force:
+      parser.error('Must supply a command to run')
+  else:
+    args[0] = os.path.abspath(args[0])
 
-  args[0] = os.path.abspath(args[0])
+  if options.root_dir:
+    options.root_dir = os.path.abspath(options.root_dir)
+
   return trace_inputs(
       os.path.abspath(options.log),
       args,
