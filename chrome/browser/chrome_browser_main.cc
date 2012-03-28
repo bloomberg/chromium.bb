@@ -1289,9 +1289,12 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   if (!parsed_command_line().HasSwitch(switches::kNoErrorDialogs))
     WarnAboutMinimumSystemRequirements();
 
-  // Convert active labs into switches. Modifies the current command line.
+#if !defined(OS_ANDROID)
+  // Convert active labs into switches. Modifies the current command line. Not
+  // needed on Android as there aren't experimental flags.
   about_flags::ConvertFlagsToSwitches(local_state_,
                                       CommandLine::ForCurrentProcess());
+#endif
   local_state_->UpdateCommandLinePrefStore(CommandLine::ForCurrentProcess());
 
   // Reset the command line in the crash report details, since we may have
@@ -1689,7 +1692,9 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 
   HandleTestParameters(parsed_command_line());
   RecordBreakpadStatusUMA(browser_process_->metrics_service());
+#if !defined(OS_ANDROID)
   about_flags::RecordUMAStatistics(local_state_);
+#endif
   LanguageUsageMetrics::RecordAcceptLanguages(
       profile_->GetPrefs()->GetString(prefs::kAcceptLanguages));
   LanguageUsageMetrics::RecordApplicationLanguage(

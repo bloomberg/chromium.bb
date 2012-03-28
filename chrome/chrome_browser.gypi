@@ -4464,12 +4464,22 @@
             # Bookmark export/import are handled via the BookmarkColumns
             # ContentProvider.
             'browser/bookmarks/bookmark_html_writer.cc',
+
+            # Android uses native UI for sync setup.
+            'browser/ui/webui/ntp/new_tab_page_sync_handler.cc',
+            'browser/ui/webui/ntp/new_tab_sync_setup_handler.cc',
+            'browser/ui/webui/ntp/ntp_login_handler.cc',
+            'browser/ui/webui/sync_setup_handler.cc',
+
+            # about:flags is unsupported.
+            'browser/about_flags.cc',
+            'browser/about_flags.h',
+
             'browser/jankometer.cc',
             'browser/ui/sad_tab_helper.cc',
             'browser/ui/webui/certificate_viewer_webui.cc',
             'browser/ui/window_sizer.cc',
             'browser/ui/window_sizer.h',
-            'browser/ui/webui/ntp/new_tab_page_sync_handler.cc',
             'browser/ui/webui/ntp/ntp_resource_cache.cc',
             'browser/upgrade_detector.cc',
             'browser/upgrade_detector.h',
@@ -4485,10 +4495,13 @@
             ['exclude', '^browser/ui/toolbar/'],
             ['exclude', '^browser/ui/webui/downloads_'],
             ['exclude', '^browser/ui/webui/feedback_'],
+            ['exclude', '^browser/ui/webui/flags_'],
             ['exclude', '^browser/ui/webui/help/'],
+            ['exclude', '^browser/ui/webui/inspect_'],
             ['exclude', '^browser/ui/webui/options'],
             ['exclude', '^browser/ui/webui/options2'],
             ['exclude', '^browser/ui/webui/print_preview/'],
+            ['exclude', '^browser/ui/webui/signin/'],
             ['exclude', '^browser/ui/webui/sync_promo'],
           ],
         }],

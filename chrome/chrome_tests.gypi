@@ -2442,6 +2442,9 @@
             # Sync setup uses native ui.
             'browser/ui/webui/sync_setup_handler_unittest.cc',
 
+            # about:flags is unsupported.
+            'browser/about_flags_unittest.cc',
+
             'browser/ui/window_sizer_unittest.cc',
           ],
           'sources/': [
@@ -2452,6 +2455,7 @@
             ['exclude', '^browser/ui/tabs/'],
             ['exclude', '^browser/ui/toolbar/'],
             ['exclude', '^browser/ui/webui/options/'],
+            ['exclude', '^browser/ui/webui/options2/'],
             ['exclude', '^browser/ui/webui/print_preview/'],
             # No service process on Android.
             ['exclude', '^common/service_'],

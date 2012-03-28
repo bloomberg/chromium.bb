@@ -113,7 +113,6 @@ void RegisterLocalState(PrefService* local_state) {
   Browser::RegisterPrefs(local_state);
   browser_shutdown::RegisterPrefs(local_state);
   ExternalProtocolHandler::RegisterPrefs(local_state);
-  FlagsUI::RegisterPrefs(local_state);
   geolocation::RegisterPrefs(local_state);
   GoogleURLTracker::RegisterPrefs(local_state);
   IntranetRedirectDetector::RegisterPrefs(local_state);
@@ -143,6 +142,7 @@ void RegisterLocalState(PrefService* local_state) {
 
 #if !defined(OS_ANDROID)
   BackgroundModeManager::RegisterPrefs(local_state);
+  FlagsUI::RegisterPrefs(local_state);
   NewTabPageHandler::RegisterPrefs(local_state);
   printing::PrintJobManager::RegisterPrefs(local_state);
   PromoResourceService::RegisterPrefs(local_state);

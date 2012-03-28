@@ -259,12 +259,16 @@ void BrowsingHistoryHandler::HandleRemoveURLsOnOneDay(const ListValue* args) {
 }
 
 void BrowsingHistoryHandler::HandleClearBrowsingData(const ListValue* args) {
+#if defined(OS_ANDROID)
+  NOTIMPLEMENTED() << "TODO(yfriedman): Upstream the Android version.";
+#else
   // TODO(beng): This is an improper direct dependency on Browser. Route this
   // through some sort of delegate.
   Profile* profile = Profile::FromWebUI(web_ui());
   Browser* browser = BrowserList::FindBrowserWithProfile(profile);
   if (browser)
     browser->OpenClearBrowsingDataDialog();
+#endif
 }
 
 void BrowsingHistoryHandler::QueryComplete(

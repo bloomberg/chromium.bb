@@ -183,8 +183,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(content::WebUI* web_ui,
     return &NewWebUI<ConstrainedHtmlUI>;
   if (url.host() == chrome::kChromeUIExtensionsFrameHost)
     return &NewWebUI<ExtensionsUI>;
-  if (url.host() == chrome::kChromeUIFlagsHost)
-    return &NewWebUI<FlagsUI>;
   if (url.host() == chrome::kChromeUIFlashHost)
     return &NewWebUI<FlashUI>;
   if (url.host() == chrome::kChromeUIGpuInternalsHost)
@@ -219,8 +217,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(content::WebUI* web_ui,
     return &NewWebUI<UberFrameUI>;
   if (url.host() == chrome::kChromeUIUberHost)
     return &NewWebUI<UberUI>;
-  if (url.host() == chrome::kChromeUIInspectHost)
-    return &NewWebUI<InspectUI>;
 
   /****************************************************************************
    * OS Specific #defines
@@ -229,13 +225,20 @@ WebUIFactoryFunction GetWebUIFactoryFunction(content::WebUI* web_ui,
   // These pages are implemented with native UI elements on Android.
   if (url.host() == chrome::kChromeUIDownloadsHost)
     return &NewWebUI<DownloadsUI>;
-  // Android doesn't use the Options pages.
   if (url.host() == chrome::kChromeUIFeedbackHost)
     return &NewWebUI<FeedbackUI>;
   if (url.host() == chrome::kChromeUIHelpFrameHost)
     return &NewWebUI<HelpUI>;
   if (url.host() == chrome::kChromeUISettingsFrameHost)
     return &NewWebUI<options2::OptionsUI>;
+  // chrome://flags is currently unsupported on Android.
+  if (url.host() == chrome::kChromeUIFlagsHost)
+    return &NewWebUI<FlagsUI>;
+  // chrome://inspect isn't supported on Android. Page debugging is handled by a
+  // remote devtools on the host machine, and other elements (Shared Workers,
+  // extensions, etc) aren't supported.
+  if (url.host() == chrome::kChromeUIInspectHost)
+    return &NewWebUI<InspectUI>;
   // Android doesn't support print/print-preview.
   if (url.host() == chrome::kChromeUIPrintHost &&
       !g_browser_process->local_state()->GetBoolean(
@@ -474,9 +477,6 @@ RefCountedMemory* ChromeWebUIControllerFactory::GetFaviconResourceBytes(
   if (page_url.host() == chrome::kChromeUIHistoryHost)
     return HistoryUI::GetFaviconResourceBytes();
 
-  if (page_url.host() == chrome::kChromeUIFlagsHost)
-    return FlagsUI::GetFaviconResourceBytes();
-
   if (page_url.host() == chrome::kChromeUISessionsHost)
     return SessionsUI::GetFaviconResourceBytes();
 
@@ -487,6 +487,10 @@ RefCountedMemory* ChromeWebUIControllerFactory::GetFaviconResourceBytes(
   // Android uses the native download manager.
   if (page_url.host() == chrome::kChromeUIDownloadsHost)
     return DownloadsUI::GetFaviconResourceBytes();
+
+  // chrome://flags is currently unsupported on Android.
+  if (page_url.host() == chrome::kChromeUIFlagsHost)
+    return FlagsUI::GetFaviconResourceBytes();
 
   // Android doesn't use the Options pages.
   if (page_url.host() == chrome::kChromeUISettingsFrameHost)
