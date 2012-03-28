@@ -398,6 +398,11 @@ void DragDownload(const DownloadItem* download,
 
 #if !defined(TOOLKIT_USES_GTK)
   views::Widget* widget = views::Widget::GetWidgetForNativeView(view);
+  // TODO(varunjain): Widget should not be NULL here. But its causing the crash
+  // in http://code.google.com/p/chromium/issues/detail?id=120430 Find out why.
+  if (!widget || !widget->native_widget())
+    return;
+
   gfx::Point location = gfx::Screen::GetCursorScreenPoint();
   // We do not care about notifying the DragItemView on completion of drag. So
   // we pass NULL to RunShellDrag for the source view.
