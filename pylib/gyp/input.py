@@ -705,13 +705,27 @@ def ExpandVariables(input, is_late, variables, build_file):
 
       else:
         if not contents in variables:
-          raise KeyError, 'Undefined variable ' + contents + \
-                          ' in ' + build_file
-        replacement = variables[contents]
+          if contents[-1] in ['!', '/']:
+            # In order to allow cross-compiles (nacl) to happen more naturally,
+            # we will allow references to >(sources/) etc. to resolve to
+            # and empty list if undefined. This allows actions to:
+            # 'action!': [
+            #   '>@(_sources!)',
+            # ],
+            # 'action/': [
+            #   '>@(_sources/)',
+            # ],
+            replacement = []
+          else:
+            raise KeyError, 'Undefined variable ' + contents + \
+                            ' in ' + build_file
+        else:
+          replacement = variables[contents]
 
       if isinstance(replacement, list):
         for item in replacement:
-          if not isinstance(item, str) and not isinstance(item, int):
+          if (not contents[-1] == '/' and
+              not isinstance(item, str) and not isinstance(item, int)):
             raise TypeError, 'Variable ' + contents + \
                              ' must expand to a string or list of strings; ' + \
                              'list contains a ' + \
@@ -764,10 +778,16 @@ def ExpandVariables(input, is_late, variables, build_file):
     gyp.DebugOutput(gyp.DEBUG_VARIABLES,
                     "Found output %s, recursing." % repr(output))
     if isinstance(output, list):
-      new_output = []
-      for item in output:
-        new_output.append(ExpandVariables(item, is_late, variables, build_file))
-      output = new_output
+      if output and isinstance(output[0], list):
+        # Leave output alone if it's a list of lists.
+        # We don't want such lists to be stringified.
+        pass
+      else:
+        new_output = []
+        for item in output:
+          new_output.append(
+              ExpandVariables(item, is_late, variables, build_file))
+        output = new_output
     else:
       output = ExpandVariables(output, is_late, variables, build_file)
 
