@@ -284,7 +284,6 @@ PpbNetAddressPrivateRpcServer::PPB_NetAddress_Private_CreateFromIPv4Address(
     int32_t port,
     // output
     nacl_abi_size_t* addr_bytes, char* addr) {
-  UNREFERENCED_PARAMETER(ip);
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
 
@@ -298,7 +297,7 @@ PpbNetAddressPrivateRpcServer::PPB_NetAddress_Private_CreateFromIPv4Address(
   }
 
   PPBNetAddressPrivateInterface()->CreateFromIPv4Address(
-      reinterpret_cast<uint8_t*>(addr), static_cast<uint16_t>(port),
+      reinterpret_cast<uint8_t*>(ip), static_cast<uint16_t>(port),
       reinterpret_cast<PP_NetAddress_Private*>(addr));
 
   DebugPrintf("PPB_NetAddress_Private::CreateFromIPv4Address\n");
@@ -316,7 +315,6 @@ PpbNetAddressPrivateRpcServer::PPB_NetAddress_Private_CreateFromIPv6Address(
     int32_t port,
     // output
     nacl_abi_size_t* addr_bytes, char* addr) {
-  UNREFERENCED_PARAMETER(ip);
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
 
@@ -330,7 +328,7 @@ PpbNetAddressPrivateRpcServer::PPB_NetAddress_Private_CreateFromIPv6Address(
   }
 
   PPBNetAddressPrivateInterface()->CreateFromIPv6Address(
-      reinterpret_cast<uint8_t*>(addr), static_cast<uint32_t>(scope_id),
+      reinterpret_cast<uint8_t*>(ip), static_cast<uint32_t>(scope_id),
       static_cast<uint16_t>(port),
       reinterpret_cast<PP_NetAddress_Private*>(addr));
 
