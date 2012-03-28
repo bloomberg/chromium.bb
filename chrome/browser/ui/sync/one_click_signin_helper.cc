@@ -214,9 +214,9 @@ bool OneClickSigninHelper::CanOffer(content::WebContents* web_contents,
 void OneClickSigninHelper::ShowInfoBarIfPossible(net::URLRequest* request,
                                                  int child_id,
                                                  int route_id) {
-  // See if the response contains the Google-Accounts-SignIn header.
+  // See if the response contains the X-Google-Accounts-SignIn header.
   std::string value;
-  request->GetResponseHeaderByName("Google-Accounts-SignIn", &value);
+  request->GetResponseHeaderByName("X-Google-Accounts-SignIn", &value);
   if (value.empty())
     return;
 
