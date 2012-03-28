@@ -1269,9 +1269,12 @@ void NetInternalsMessageHandler::IOThreadImpl::OnGetHttpPipeliningStatus(
 
   net::HttpNetworkSession* http_network_session =
       GetHttpNetworkSession(context_getter_->GetURLRequestContext());
-  Value* pipelined_conneciton_info =
-      http_network_session->http_stream_factory()->PipelineInfoToValue();
-  status_dict->Set("pipelined_connection_info", pipelined_conneciton_info);
+  Value* pipelined_connection_info = NULL;
+  if (http_network_session) {
+    pipelined_connection_info =
+        http_network_session->http_stream_factory()->PipelineInfoToValue();
+  }
+  status_dict->Set("pipelined_connection_info", pipelined_connection_info);
 
   const net::HttpServerProperties& http_server_properties =
       *context_getter_->GetURLRequestContext()->http_server_properties();

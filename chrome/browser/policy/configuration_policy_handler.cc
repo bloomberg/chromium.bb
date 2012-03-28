@@ -741,7 +741,7 @@ void ProxyPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
       break;
     case ProxyPrefs::MODE_PAC_SCRIPT: {
       std::string pac_url_string;
-      if (pac_url->GetAsString(&pac_url_string)) {
+      if (pac_url && pac_url->GetAsString(&pac_url_string)) {
         prefs->SetValue(prefs::kProxy,
             ProxyConfigDictionary::CreatePacScript(pac_url_string, false));
       } else {
