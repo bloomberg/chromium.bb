@@ -1151,6 +1151,7 @@ menu.file-context-menu {
 }
 
 input.common.pin[type="checkbox"]:checked::after {
+  position: relative;
   content: url('../images/pin.png');
   left: 3px;
   top: -4px;
@@ -1179,4 +1180,46 @@ div.shade {
 
 div.shade[fadein] {
   opacity: 1;
+}
+
+/* Message panel for unmounted GData */
+.dialog-container:not([unmounted]) .dialog-body > div.unmounted-panel,
+.dialog-container[unmounted] .dialog-body > div:not(.unmounted-panel) {
+  display: none;
+}
+
+div.unmounted-panel {
+  padding-top: 20px;
+  padding-left: 50px;
+}
+
+div.unmounted-panel > * {
+  height: 22px;
+  margin-bottom: 10px;
+}
+
+div.unmounted-panel > div {
+  display: -webkit-box;
+  -webkit-box-orient: horizontal;
+  -webkit-box-pack: start;
+  -webkit-box-align: center;
+}
+
+.unmounted-panel > .gdata.loading,
+.unmounted-panel > .gdata.error {
+  margin-left: -30px;  /* Room for the spinner.*/
+  padding-left: 30px;
+}
+
+.unmounted-panel > .gdata.loading {
+  background-image: url(../images/spinner.svg);
+  background-repeat: no-repeat;
+  background-position: 0 center;
+}
+
+.unmounted-panel:not([loading]) > .gdata.loading,
+.unmounted-panel:not([error]) > .gdata.error,
+.unmounted-panel:not([retry]) > .gdata.retry,
+.unmounted-panel:not([retry]) > .gdata.learn-more {
+  display: none;
 }
