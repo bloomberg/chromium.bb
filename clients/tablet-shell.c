@@ -197,11 +197,17 @@ lockscreen_draw(struct widget *widget, void *data)
 
 	cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
 	icon = load_cairo_surface(key_lockscreen_icon);
-	width = cairo_image_surface_get_width(icon);
-	height = cairo_image_surface_get_height(icon);
-	cairo_set_source_surface(cr, icon,
-				 allocation.x + (allocation.width - width) / 2,
-				 allocation.y + (allocation.height - height) / 2);
+	if (icon) {
+		width = cairo_image_surface_get_width(icon);
+		height = cairo_image_surface_get_height(icon);
+		cairo_set_source_surface(cr, icon,
+			allocation.x + (allocation.width - width) / 2,
+			allocation.y + (allocation.height - height) / 2);
+	} else {
+		fprintf(stderr, "couldn't load lockscreen icon: %s\n",
+				 key_lockscreen_icon);
+		cairo_set_source_rgb(cr, 0.2, 0, 0);
+	}
 	cairo_paint(cr);
 	cairo_destroy(cr);
 	cairo_surface_destroy(icon);
