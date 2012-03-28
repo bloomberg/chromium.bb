@@ -766,8 +766,12 @@ void ThemeServiceGtk::LoadGtkValues() {
   const GdkColor* link_color = NULL;
   gtk_widget_style_get(GTK_WIDGET(fake_window_),
                        "link-color", &link_color, NULL);
-  if (!link_color)
+
+  bool is_default_link_color = false;
+  if (!link_color) {
     link_color = &kDefaultLinkColor;
+    is_default_link_color = true;
+  }
 
   SetThemeColorFromGtk(ThemeService::COLOR_NTP_LINK,
                        link_color);
@@ -777,6 +781,9 @@ void ThemeServiceGtk::LoadGtkValues() {
                        link_color);
   SetThemeColorFromGtk(ThemeService::COLOR_NTP_SECTION_LINK_UNDERLINE,
                        link_color);
+
+  if (link_color && !is_default_link_color)
+    gdk_color_free(const_cast<GdkColor*>(link_color));
 
   // Generate the colors that we pass to WebKit.
   focus_ring_color_ = gfx::GdkColorToSkColor(frame_color);
@@ -801,10 +808,10 @@ void ThemeServiceGtk::LoadGtkValues() {
 }
 
 GdkColor ThemeServiceGtk::BuildFrameColors(GtkStyle* frame_style) {
-  const GdkColor* theme_frame = NULL;
-  const GdkColor* theme_inactive_frame = NULL;
-  const GdkColor* theme_incognito_frame = NULL;
-  const GdkColor* theme_incognito_inactive_frame = NULL;
+  GdkColor* theme_frame = NULL;
+  GdkColor* theme_inactive_frame = NULL;
+  GdkColor* theme_incognito_frame = NULL;
+  GdkColor* theme_incognito_inactive_frame = NULL;
   gtk_widget_style_get(GTK_WIDGET(fake_frame_),
                        "frame-color", &theme_frame,
                        "inactive-frame-color", &theme_inactive_frame,
@@ -819,6 +826,8 @@ GdkColor ThemeServiceGtk::BuildFrameColors(GtkStyle* frame_style) {
       kDefaultFrameShift,
       ThemeService::COLOR_FRAME,
       ThemeService::TINT_FRAME);
+  if (theme_frame)
+    gdk_color_free(theme_frame);
   SetThemeTintFromGtk(ThemeService::TINT_BACKGROUND_TAB, &frame_color);
 
   BuildAndSetFrameColor(
@@ -827,6 +836,8 @@ GdkColor ThemeServiceGtk::BuildFrameColors(GtkStyle* frame_style) {
       kDefaultFrameShift,
       ThemeService::COLOR_FRAME_INACTIVE,
       ThemeService::TINT_FRAME_INACTIVE);
+  if (theme_inactive_frame)
+    gdk_color_free(theme_inactive_frame);
 
   BuildAndSetFrameColor(
       &frame_color,
@@ -834,6 +845,8 @@ GdkColor ThemeServiceGtk::BuildFrameColors(GtkStyle* frame_style) {
       GetDefaultTint(ThemeService::TINT_FRAME_INCOGNITO),
       ThemeService::COLOR_FRAME_INCOGNITO,
       ThemeService::TINT_FRAME_INCOGNITO);
+  if (theme_incognito_frame)
+    gdk_color_free(theme_incognito_frame);
 
   BuildAndSetFrameColor(
       &frame_color,
@@ -841,6 +854,8 @@ GdkColor ThemeServiceGtk::BuildFrameColors(GtkStyle* frame_style) {
       GetDefaultTint(ThemeService::TINT_FRAME_INCOGNITO_INACTIVE),
       ThemeService::COLOR_FRAME_INCOGNITO_INACTIVE,
       ThemeService::TINT_FRAME_INCOGNITO_INACTIVE);
+  if (theme_incognito_inactive_frame)
+    gdk_color_free(theme_incognito_inactive_frame);
 
   return frame_color;
 }
@@ -993,7 +1008,7 @@ SkBitmap* ThemeServiceGtk::GenerateFrameImage(
   gfx::Canvas canvas(gfx::Size(kToolbarImageWidth, kToolbarImageHeight), true);
 
   int gradient_size;
-  const GdkColor* gradient_top_color = NULL;
+  GdkColor* gradient_top_color = NULL;
   gtk_widget_style_get(GTK_WIDGET(fake_frame_),
                        "frame-gradient-size", &gradient_size,
                        gradient_name, &gradient_top_color,
@@ -1002,6 +1017,8 @@ SkBitmap* ThemeServiceGtk::GenerateFrameImage(
     SkColor lighter = gradient_top_color ?
         gfx::GdkColorToSkColor(*gradient_top_color) :
         color_utils::HSLShift(base, kGtkFrameShift);
+    if (gradient_top_color)
+      gdk_color_free(gradient_top_color);
     SkShader* shader = gfx::CreateGradientShader(
         0, gradient_size, lighter, base);
     SkPaint paint;
