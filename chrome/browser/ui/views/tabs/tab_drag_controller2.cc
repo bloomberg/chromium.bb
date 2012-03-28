@@ -981,6 +981,7 @@ void TabDragController2::DetachIntoNewBrowserAndRunMoveLoop(
 
 void TabDragController2::RunMoveLoop() {
   move_loop_browser_view_ = GetAttachedBrowserView();
+  DCHECK(move_loop_browser_view_);
   move_loop_browser_view_->set_move_observer(this);
   is_dragging_window_ = true;
   bool destroyed = false;
