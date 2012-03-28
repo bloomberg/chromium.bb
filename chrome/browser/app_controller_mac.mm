@@ -41,7 +41,6 @@
 #include "chrome/browser/ui/browser_init.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
-#import "chrome/browser/ui/cocoa/about_window_controller.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_menu_bridge.h"
 #import "chrome/browser/ui/cocoa/browser_window_cocoa.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
@@ -369,9 +368,6 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
   // Tell BrowserList not to keep the browser process alive. Once all the
   // browsers get dealloc'd, it will stop the RunLoop and fall back into main().
   BrowserList::EndKeepAlive();
-
-  // Close these off if they have open windows.
-  [aboutController_ close];
 
   [self unregisterEventHandlers];
 }
@@ -1197,20 +1193,6 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
     // No browser window, so create one for the options tab.
     Browser::OpenOptionsWindow([self lastProfile]);
   }
-}
-
-// Called when the about window is closed. We use this to release the
-// window controller.
-- (void)aboutWindowClosed:(NSNotification*)notification {
-  NSWindow* window = [aboutController_ window];
-  DCHECK_EQ([notification object], window);
-  [[NSNotificationCenter defaultCenter]
-      removeObserver:self
-                name:NSWindowWillCloseNotification
-              object:window];
-  // AboutWindowControllers are autoreleased in
-  // -[AboutWindowController windowWillClose:].
-  aboutController_ = nil;
 }
 
 - (IBAction)orderFrontStandardAboutPanel:(id)sender {

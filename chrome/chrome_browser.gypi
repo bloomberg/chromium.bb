@@ -2356,8 +2356,6 @@
         'browser/ui/cocoa/about_ipc_controller.mm',
         'browser/ui/cocoa/about_ipc_dialog.h',
         'browser/ui/cocoa/about_ipc_dialog.mm',
-        'browser/ui/cocoa/about_window_controller.h',
-        'browser/ui/cocoa/about_window_controller.mm',
         'browser/ui/cocoa/accelerators_cocoa.h',
         'browser/ui/cocoa/accelerators_cocoa.mm',
         'browser/ui/cocoa/animatable_image.h',
@@ -4612,7 +4610,6 @@
                     'tools/build/mac/generate_localizer',
                 'xib_files_to_scan': [
                   # The xibs that need localization
-                  'app/nibs/About.xib',
                   'app/nibs/AvatarMenuItem.xib',
                   'app/nibs/BookmarkAllTabs.xib',
                   'app/nibs/BookmarkBar.xib',

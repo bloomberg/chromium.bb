@@ -232,7 +232,6 @@
                 'app/theme/<(theme_dir_name)/product_logo_32.png',
 
                 'app/framework-Info.plist',
-                'app/nibs/About.xib',
                 'app/nibs/AboutIPC.xib',
                 'app/nibs/AvatarMenuItem.xib',
                 'app/nibs/BookmarkAllTabs.xib',

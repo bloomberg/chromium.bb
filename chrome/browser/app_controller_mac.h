@@ -15,7 +15,6 @@
 #include "base/memory/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 
-@class AboutWindowController;
 class BookmarkMenuBridge;
 class CommandUpdater;
 class GURL;
@@ -40,7 +39,6 @@ class Profile;
   // (and Browser*s).
   scoped_ptr<BookmarkMenuBridge> bookmarkMenuBridge_;
   scoped_ptr<HistoryMenuBridge> historyMenuBridge_;
-  AboutWindowController* aboutController_;  // Weak.
 
   // The profile menu, which appears right before the Help menu. It is only
   // available when multiple profiles is enabled.

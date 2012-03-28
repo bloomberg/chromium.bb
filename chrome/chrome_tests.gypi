@@ -1788,7 +1788,6 @@
         # without an explicit exclusion since gyp is smart enough to
         # exclude them from non-Mac builds.
         'browser/ui/cocoa/about_ipc_controller_unittest.mm',
-        'browser/ui/cocoa/about_window_controller_unittest.mm',
         'browser/ui/cocoa/accelerators_cocoa_unittest.mm',
         'browser/ui/cocoa/animatable_image_unittest.mm',
         'browser/ui/cocoa/animatable_view_unittest.mm',
