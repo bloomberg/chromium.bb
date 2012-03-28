@@ -19,7 +19,6 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/spellcheck_common.h"
 #include "content/public/browser/user_metrics.h"
