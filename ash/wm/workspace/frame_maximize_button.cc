@@ -213,6 +213,9 @@ SkBitmap FrameMaximizeButton::GetImageToPaint() {
       }
     }
     return *ResourceBundle::GetSharedInstance().GetImageNamed(id).ToSkBitmap();
+  } else if (state() == BS_HOT) {
+    return *ResourceBundle::GetSharedInstance().GetImageNamed(
+        IDR_AURA_WINDOW_MAXIMIZED_RESTORE_SNAP_P).ToSkBitmap();
   }
   return ImageButton::GetImageToPaint();
 }
