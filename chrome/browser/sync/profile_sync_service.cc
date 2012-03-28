@@ -655,7 +655,7 @@ void ProfileSyncService::OnBackendInitialized(
   if (HasSyncSetupCompleted()) {
     ConfigureDataTypeManager();
   } else {
-    // DCHECK(FirstSetupInProgress());
+    DCHECK(FirstSetupInProgress());
   }
 }
 
