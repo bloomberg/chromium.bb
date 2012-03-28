@@ -577,9 +577,7 @@ bool HostNPScriptObject::SetDaemonPin(const NPVariant* args,
     return false;
   }
   if (NPVARIANT_IS_STRING(args[0])) {
-    bool set_pin_result =
-        daemon_controller_->SetPin(StringFromNPVariant(args[0]));
-    BOOLEAN_TO_NPVARIANT(set_pin_result, *result);
+    daemon_controller_->SetPin(StringFromNPVariant(args[0]));
     return true;
   } else {
     SetException("startDaemon: unexpected type for argument 1");
@@ -594,8 +592,9 @@ bool HostNPScriptObject::StartDaemon(const NPVariant* args,
     SetException("startDaemon: bad number of arguments");
     return false;
   }
-  bool start_result = daemon_controller_->Start();
-  BOOLEAN_TO_NPVARIANT(start_result, *result);
+  // TODO(sergeyu): Receive |config| parameters.
+  scoped_ptr<base::DictionaryValue> config(new base::DictionaryValue());
+  daemon_controller_->SetConfigAndStart(config.Pass());
   return true;
 }
 
@@ -606,8 +605,7 @@ bool HostNPScriptObject::StopDaemon(const NPVariant* args,
     SetException("startDaemon: bad number of arguments");
     return false;
   }
-  bool stop_result = daemon_controller_->Stop();
-  BOOLEAN_TO_NPVARIANT(stop_result, *result);
+  daemon_controller_->Stop();
   return true;
 }
 

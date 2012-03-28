@@ -7,6 +7,13 @@
 
 #include <string>
 
+#include "base/callback_forward.h"
+#include "base/memory/scoped_ptr.h"
+
+namespace base {
+class DictionaryValue;
+}  // namespace base
+
 namespace remoting {
 
 class DaemonController {
@@ -38,29 +45,47 @@ class DaemonController {
     STATE_UNKNOWN = 4
   };
 
+  // The callback for GetConfig(). |config| is set to NULL in case of
+  // an error. Otherwise it is a dictionary that contains the
+  // following values: host_id and xmpp_login, which may be empty if
+  // the host is not initialized yet. The config must not contain any
+  // security sensitive information, such as authentication tokens and
+  // private keys.
+  typedef base::Callback<void (scoped_ptr<base::DictionaryValue> config)>
+      GetConfigCallback;
+
   virtual ~DaemonController() {}
 
   // Return the "installed/running" state of the daemon process.
+  //
+  // TODO(sergeyu): This method is called synchronously from the
+  // webapp. In most cases it requires IO operations, so it may block
+  // the user interface. Replace it with asynchronous notifications,
+  // e.g. with StartStateNotifications()/StopStateNotifications() methods.
   virtual State GetState() = 0;
 
-  // Set the PIN for accessing this host, which should be expressed as a
-  // UTF8-encoded string. It is permitted to call SetPin when the daemon
-  // is already running. Returns true if successful, or false if the PIN
-  // does not satisfy complexity requirements.
-  //
-  // TODO(jamiewalch): More state-setting methods needed here. Sufficient
-  // state must be set prior to calling any other DaemonController method;
-  // this should be documented for each method.
-  virtual bool SetPin(const std::string& pin) = 0;
+  // Queries current host configuration. The |callback| is called
+  // after configuration is read.
+  virtual void GetConfig(const GetConfigCallback& callback) = 0;
 
   // Start the daemon process. Since this may require that the daemon be
   // downloaded and installed, Start may return before the daemon process
   // is actually running--poll GetState until the state is STATE_STARTED
   // or STATE_START_FAILED.
   //
-  // Start fails synchronously and returns false if sufficient state has
-  // not been set, including a valid PIN.
-  virtual bool Start() = 0;
+  // TODO(sergeyu): This method writes config and starts the host -
+  // these two steps are merged for simplicity. Consider splitting it
+  // into SetConfig() and Start() once we have basic host setup flow
+  // working.
+  virtual void SetConfigAndStart(scoped_ptr<base::DictionaryValue> config) = 0;
+
+  // Set the PIN for accessing this host, which should be expressed as a
+  // UTF8-encoded string. It is permitted to call SetPin when the daemon
+  // is already running. Returns true if successful, or false if the PIN
+  // does not satisfy complexity requirements.
+  //
+  // TODO(sergeyu): Add callback to be called after PIN is updated.
+  virtual void SetPin(const std::string& pin) = 0;
 
   // Stop the daemon process. It is permitted to call Stop while the daemon
   // process is being installed, in which case the installation should be
@@ -68,10 +93,7 @@ class DaemonController {
   // daemon process is not started automatically upon successful installation.
   // As with Start, Stop may return before the operation is complete--poll
   // GetState until the state is STATE_STOPPED.
-  //
-  // Stop fails synchronously and returns false if sufficient state has not
-  // been set.
-  virtual bool Stop() = 0;
+  virtual void Stop() = 0;
 
   static DaemonController* Create();
 };

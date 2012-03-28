@@ -17,9 +17,11 @@ class DaemonControllerMac : public remoting::DaemonController {
   DaemonControllerMac();
 
   virtual State GetState() OVERRIDE;
-  virtual bool SetPin(const std::string& pin) OVERRIDE;
-  virtual bool Start() OVERRIDE;
-  virtual bool Stop() OVERRIDE;
+  virtual void GetConfig(const GetConfigCallback& callback) OVERRIDE;
+  virtual void SetConfigAndStart(
+      scoped_ptr<base::DictionaryValue> config) OVERRIDE;
+  virtual void SetPin(const std::string& pin) OVERRIDE;
+  virtual void Stop() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DaemonControllerMac);
@@ -28,23 +30,25 @@ class DaemonControllerMac : public remoting::DaemonController {
 DaemonControllerMac::DaemonControllerMac() {
 }
 
-remoting::DaemonController::State DaemonControllerMac::GetState() {
-  return remoting::DaemonController::STATE_NOT_IMPLEMENTED;
+DaemonController::State DaemonControllerMac::GetState() {
+  return DaemonController::STATE_NOT_IMPLEMENTED;
 }
 
-bool DaemonControllerMac::SetPin(const std::string& pin) {
+void DaemonControllerMac::GetConfig(const GetConfigCallback& callback) {
   NOTIMPLEMENTED();
-  return false;
 }
 
-bool DaemonControllerMac::Start() {
+void DaemonControllerMac::SetConfigAndStart(
+    scoped_ptr<base::DictionaryValue> config) {
   NOTIMPLEMENTED();
-  return false;
 }
 
-bool DaemonControllerMac::Stop() {
+void DaemonControllerMac::SetPin(const std::string& pin) {
   NOTIMPLEMENTED();
-  return false;
+}
+
+void DaemonControllerMac::Stop() {
+  NOTIMPLEMENTED();
 }
 
 }  // namespace

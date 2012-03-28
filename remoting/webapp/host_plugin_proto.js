@@ -26,14 +26,14 @@ remoting.HostPlugin.prototype.disconnect = function() {};
 remoting.HostPlugin.prototype.localize = function(callback) {};
 
 /** @param {string} pin The new PIN.
- *  @return {boolean} True if the PIN was changed successfully. */
-remoting.HostPlugin.prototype.setDaemonPin = function(pin) { return false; };
+ *  @return {void} Nothing. */
+remoting.HostPlugin.prototype.setDaemonPin = function(pin) {};
 
-/** @return {boolean} True if successful (poll daemonState for completion). */
-remoting.HostPlugin.prototype.startDaemon = function() { return false; };
+/** @return {void} Nothing. */
+remoting.HostPlugin.prototype.startDaemon = function() {};
 
-/** @return {boolean} True if successful. */
-remoting.HostPlugin.prototype.stopDaemon = function() { return false; };
+/** @return {void} Nothing. */
+remoting.HostPlugin.prototype.stopDaemon = function() {};
 
 /** @type {number} */ remoting.HostPlugin.prototype.state;
 

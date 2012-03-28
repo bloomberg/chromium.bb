@@ -7,6 +7,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/values.h"
 
 namespace remoting {
 
@@ -17,9 +18,11 @@ class DaemonControllerWin : public remoting::DaemonController {
   DaemonControllerWin();
 
   virtual State GetState() OVERRIDE;
-  virtual bool SetPin(const std::string& pin) OVERRIDE;
-  virtual bool Start() OVERRIDE;
-  virtual bool Stop() OVERRIDE;
+  virtual void GetConfig(const GetConfigCallback& callback) OVERRIDE;
+  virtual void SetConfigAndStart(
+      scoped_ptr<base::DictionaryValue> config) OVERRIDE;
+  virtual void SetPin(const std::string& pin) OVERRIDE;
+  virtual void Stop() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DaemonControllerWin);
@@ -28,23 +31,25 @@ class DaemonControllerWin : public remoting::DaemonController {
 DaemonControllerWin::DaemonControllerWin() {
 }
 
-remoting::DaemonController::State DaemonControllerWin::GetState() {
-  return remoting::DaemonController::STATE_NOT_IMPLEMENTED;
+DaemonController::State DaemonControllerWin::GetState() {
+  return DaemonController::STATE_NOT_IMPLEMENTED;
 }
 
-bool DaemonControllerWin::SetPin(const std::string& pin) {
+void DaemonControllerWin::GetConfig(const GetConfigCallback& callback) {
   NOTIMPLEMENTED();
-  return false;
 }
 
-bool DaemonControllerWin::Start() {
+void DaemonControllerWin::SetConfigAndStart(
+    scoped_ptr<base::DictionaryValue> config) {
   NOTIMPLEMENTED();
-  return false;
 }
 
-bool DaemonControllerWin::Stop() {
+void DaemonControllerWin::SetPin(const std::string& pin) {
   NOTIMPLEMENTED();
-  return false;
+}
+
+void DaemonControllerWin::Stop() {
+  NOTIMPLEMENTED();
 }
 
 }  // namespace

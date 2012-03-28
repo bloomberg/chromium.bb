@@ -27,9 +27,11 @@ class DaemonControllerLinux : public remoting::DaemonController {
   DaemonControllerLinux();
 
   virtual State GetState() OVERRIDE;
-  virtual bool SetPin(const std::string& pin) OVERRIDE;
-  virtual bool Start() OVERRIDE;
-  virtual bool Stop() OVERRIDE;
+  virtual void GetConfig(const GetConfigCallback& callback) OVERRIDE;
+  virtual void SetConfigAndStart(
+      scoped_ptr<base::DictionaryValue> config) OVERRIDE;
+  virtual void SetPin(const std::string& pin) OVERRIDE;
+  virtual void Stop() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DaemonControllerLinux);
@@ -105,29 +107,36 @@ remoting::DaemonController::State DaemonControllerLinux::GetState() {
   }
 }
 
-bool DaemonControllerLinux::SetPin(const std::string& pin) {
+void DaemonControllerLinux::GetConfig(const GetConfigCallback& callback) {
+  NOTIMPLEMENTED();
+}
+
+void DaemonControllerLinux::SetConfigAndStart(
+    scoped_ptr<base::DictionaryValue> config) {
+  // TODO(sergeyu): Save the |config|.
+  // TODO(sergeyu): Set state to START_FAILED if RunScript() fails.
+  std::vector<std::string> no_args;
+  RunScript(no_args, NULL);
+}
+
+void DaemonControllerLinux::SetPin(const std::string& pin) {
   std::vector<std::string> args;
   args.push_back("--explicit-pin");
   args.push_back(pin);
   int exit_code = 0;
-  return RunScript(args, &exit_code) && exit_code == 0;
-}
-
-bool DaemonControllerLinux::Start() {
-  std::vector<std::string> no_args;
-  return RunScript(no_args, NULL);
+  RunScript(args, &exit_code);
 }
 
 // TODO(jamiewalch): If Stop is called after Start but before GetState returns
 // STARTED, then it should prevent the daemon from starting; currently it will
 // just fail silently.
-bool DaemonControllerLinux::Stop() {
+void DaemonControllerLinux::Stop() {
   std::vector<std::string> args;
   args.push_back("--stop");
   // TODO(jamiewalch): Make Stop asynchronous like start once there's UI in the
   // web-app to support it.
   int exit_code = 0;
-  return RunScript(args, &exit_code) && exit_code == 0;
+  RunScript(args, &exit_code);
 }
 
 }  // namespace
