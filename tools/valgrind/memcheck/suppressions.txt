@@ -3365,21 +3365,6 @@
    fun:_ZN11MessageLoop8PostTaskERKN15tracked_objects8LocationEP4Task
 }
 {
-   bug_83835
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN11MessageLoop10DeleteSoonIN4base20MessageLoopProxyImplEEEvRKN15tracked_objects8LocationEPKT_
-   fun:_ZNK4base20MessageLoopProxyImpl10OnDestructEv
-   fun:_ZN4base22MessageLoopProxyTraits8DestructEPKNS_16MessageLoopProxyE
-   fun:_ZNK4base20RefCountedThreadSafeINS_16MessageLoopProxyENS_22MessageLoopProxyTraitsEE7ReleaseEv
-   fun:_ZN13scoped_refptrIN4base16MessageLoopProxyEED1Ev
-   fun:_ZN3net16HostResolverImpl3JobD1Ev
-   fun:_ZN4base20RefCountedThreadSafeIN3net16HostResolverImpl3JobENS_33DefaultRefCountedThreadSafeTraitsIS3_EEE14DeleteInternalEPKS3_
-   fun:_ZN4base33DefaultRefCountedThreadSafeTraitsIN3net16HostResolverImpl3JobEE8DestructEPKS3_
-   fun:_ZNK4base20RefCountedThreadSafeIN3net16HostResolverImpl3JobENS_33DefaultRefCountedThreadSafeTraitsIS3_EEE7ReleaseEv
-   fun:_ZN20RunnableMethodTraitsIN3net16HostResolverImpl3JobEE13ReleaseCalleeEPS2_
-}
-{
    bug_84224_a
    Memcheck:Leak
    fun:_Znw*
