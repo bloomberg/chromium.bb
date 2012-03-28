@@ -2131,6 +2131,7 @@
         'browser/sync/glue/synced_session.h',
         'browser/sync/glue/synced_session.cc',
         'browser/sync/glue/synced_window_delegate.h',
+        'browser/sync/glue/synced_window_delegate_android.cc',
         'browser/sync/glue/sync_backend_host.cc',
         'browser/sync/glue/sync_backend_host.h',
         'browser/sync/glue/sync_backend_registrar.cc',
@@ -4459,6 +4460,10 @@
           ],
         }],
         ['OS=="android"', {
+          'sources': [
+            'browser/sync/glue/synced_window_delegate_registry.cc',
+            'browser/sync/glue/synced_window_delegate_registry.h',
+          ],
           'sources!': [
             'browser/bookmarks/bookmark_context_menu_controller.cc',
             # Bookmark export/import are handled via the BookmarkColumns
