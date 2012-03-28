@@ -555,11 +555,15 @@ void RenderWidget::OnHandleInputEvent(const IPC::Message& message) {
   IPC::Message* response =
       new ViewHostMsg_HandleInputEvent_ACK(routing_id_, input_event->type,
                                            processed);
+  bool event_type_gets_rate_limited =
+      input_event->type == WebInputEvent::MouseMove ||
+      input_event->type == WebInputEvent::MouseWheel ||
+      WebInputEvent::isTouchEventType(input_event->type);
+  bool is_input_throttled =
+      webwidget_->isInputThrottled() ||
+      paint_aggregator_.HasPendingUpdate();
 
-  if ((input_event->type == WebInputEvent::MouseMove ||
-       input_event->type == WebInputEvent::MouseWheel ||
-       WebInputEvent::isTouchEventType(input_event->type)) &&
-      paint_aggregator_.HasPendingUpdate()) {
+  if (event_type_gets_rate_limited && is_input_throttled) {
     // We want to rate limit the input events in this case, so we'll wait for
     // painting to finish before ACKing this message.
     if (pending_input_event_ack_.get()) {
@@ -1111,6 +1115,12 @@ void RenderWidget::didDeactivateCompositor() {
 void RenderWidget::willBeginCompositorFrame() {
   TRACE_EVENT0("gpu", "RenderWidget::willBeginCompositorFrame");
   WillInitiatePaint();
+}
+
+void RenderWidget::didBecomeReadyForAdditionalInput() {
+  TRACE_EVENT0("renderer", "RenderWidget::didBecomeReadyForAdditionalInput");
+  if (pending_input_event_ack_.get())
+    Send(pending_input_event_ack_.release());
 }
 
 void RenderWidget::didCommitAndDrawCompositorFrame() {

@@ -119,6 +119,7 @@ class CONTENT_EXPORT RenderWidget
   virtual void didAutoResize(const WebKit::WebSize& new_size);
   virtual void didActivateCompositor(int input_handler_identifier);
   virtual void didDeactivateCompositor();
+  virtual void didBecomeReadyForAdditionalInput();
   virtual void didCommitAndDrawCompositorFrame();
   virtual void didCompleteSwapBuffers();
   virtual void scheduleComposite();
