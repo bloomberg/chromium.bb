@@ -12666,6 +12666,12 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_OPTIONS2_DEVICE_GROUP_POINTER_SECTION">
         Pointer speed:
       </message>
+      <message name="IDS_OPTIONS2_SETTINGS_MOUSE_SPEED_DESCRIPTION">
+        Mouse speed:
+      </message>
+      <message name="IDS_OPTIONS2_SETTINGS_TOUCHPAD_SPEED_DESCRIPTION">
+        Touchpad speed:
+      </message>
       <message name="IDS_OPTIONS_DEVICE_GROUP_POINTER_SETTINGS_BUTTON_TITLE">
         Pointer settings...
       </message>
