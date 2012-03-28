@@ -319,7 +319,9 @@ void ChromeDownloadManagerDelegate::ChooseSavePath(
     content::SaveFilePathPickedCallback callback) {
   // Deletes itself.
 #if defined(OS_CHROMEOS)
-  // Note that we're ignoring the callback here. TODO(achuith): Fix this.
+  // Note that we're ignoring the callback here.
+  // SavePackageFilePickerChromeOS completes the save operation itself.
+  // TODO(achuith): Fix this.
   new SavePackageFilePickerChromeOS(web_contents, suggested_path);
 #else
   new SavePackageFilePicker(web_contents, suggested_path, default_extension,
