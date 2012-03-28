@@ -172,7 +172,11 @@ TEST_F(ShelfLayoutManagerTest, DontReferenceLauncherAfterDeletion) {
 }
 
 // Various assertions around auto-hide.
-TEST_F(ShelfLayoutManagerTest, DISABLED_AutoHide) {
+TEST_F(ShelfLayoutManagerTest, AutoHide) {
+  aura::RootWindow* root = Shell::GetRootWindow();
+  aura::test::EventGenerator generator(root, root);
+  generator.MoveMouseTo(0, 0);
+
   ShelfLayoutManager* shelf = GetShelfLayoutManager();
   views::Widget* widget = new views::Widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
@@ -184,26 +188,28 @@ TEST_F(ShelfLayoutManagerTest, DISABLED_AutoHide) {
   EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE, shelf->visibility_state());
   EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
 
-  aura::RootWindow* root = Shell::GetRootWindow();
   // LayoutShelf() forces the animation to completion, at which point the
   // launcher should go off the screen.
   shelf->LayoutShelf();
   EXPECT_EQ(root->bounds().bottom() - ShelfLayoutManager::kAutoHideHeight,
             shelf->launcher_widget()->GetWindowScreenBounds().y());
+  EXPECT_EQ(root->bounds().bottom() - ShelfLayoutManager::kAutoHideHeight,
+            gfx::Screen::GetMonitorWorkAreaNearestWindow(root).bottom());
 
   // Move the mouse to the bottom of the screen.
-  aura::test::EventGenerator generator(root, root);
-  generator.MoveMouseTo(gfx::Point(0, root->bounds().bottom() - 1));
+  generator.MoveMouseTo(0, root->bounds().bottom() - 1);
 
-  // Shelf should be shown again.
+  // Shelf should be shown again (but it shouldn't have changed the work area).
   SetState(shelf, ShelfLayoutManager::AUTO_HIDE);
   EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE_SHOWN, shelf->auto_hide_state());
   shelf->LayoutShelf();
   EXPECT_EQ(root->bounds().bottom() - shelf->shelf_height(),
             shelf->launcher_widget()->GetWindowScreenBounds().y());
+  EXPECT_EQ(root->bounds().bottom() - ShelfLayoutManager::kAutoHideHeight,
+            gfx::Screen::GetMonitorWorkAreaNearestWindow(root).bottom());
 
   // Move mouse back up.
-  generator.MoveMouseTo(gfx::Point(0, 0));
+  generator.MoveMouseTo(0, 0);
   SetState(shelf, ShelfLayoutManager::AUTO_HIDE);
   EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
   shelf->LayoutShelf();
@@ -263,6 +269,12 @@ TEST_F(ShelfLayoutManagerTest, VisibleWhenLockScreenShowing) {
 
 // Assertions around SetAutoHideBehavior.
 TEST_F(ShelfLayoutManagerTest, SetAutoHideBehavior) {
+  // Since ShelfLayoutManager queries for mouse location, move the mouse so
+  // it isn't over the shelf.
+  aura::test::EventGenerator generator(
+      Shell::GetInstance()->GetRootWindow(), gfx::Point());
+  generator.MoveMouseTo(0, 0);
+
   ShelfLayoutManager* shelf = GetShelfLayoutManager();
   views::Widget* widget = new views::Widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
@@ -293,6 +305,18 @@ TEST_F(ShelfLayoutManagerTest, SetAutoHideBehavior) {
 
   widget->Maximize();
   EXPECT_EQ(ShelfLayoutManager::VISIBLE, shelf->visibility_state());
+  EXPECT_EQ(gfx::Screen::GetMonitorWorkAreaNearestWindow(window).bottom(),
+            widget->GetWorkAreaBoundsInScreen().bottom());
+
+  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE, shelf->visibility_state());
+  EXPECT_EQ(gfx::Screen::GetMonitorWorkAreaNearestWindow(window).bottom(),
+            widget->GetWorkAreaBoundsInScreen().bottom());
+
+  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
+  EXPECT_EQ(ShelfLayoutManager::VISIBLE, shelf->visibility_state());
+  EXPECT_EQ(gfx::Screen::GetMonitorWorkAreaNearestWindow(window).bottom(),
+            widget->GetWorkAreaBoundsInScreen().bottom());
 }
 
 }  // namespace internal

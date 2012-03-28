@@ -100,12 +100,6 @@ void WorkspaceLayoutManager::SetChildBounds(
   workspace_manager_->UpdateShelfVisibility();
 }
 
-void WorkspaceLayoutManager::OnMonitorWorkAreaInsetsChanged() {
-  // The workspace is currently the only one that updates the shelf, so we can
-  // safely ignore this. If we don't there are timing issues when transitioning
-  // between maximized/fullscreen windows and normal windows.
-}
-
 void WorkspaceLayoutManager::OnWindowPropertyChanged(aura::Window* window,
                                                      const void* key,
                                                      intptr_t old) {

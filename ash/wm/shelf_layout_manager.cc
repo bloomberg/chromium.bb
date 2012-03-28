@@ -345,8 +345,13 @@ void ShelfLayoutManager::CalculateTargetBounds(
   target_bounds->opacity =
       (state.visibility_state == VISIBLE ||
        state.visibility_state == AUTO_HIDE) ? 1.0f : 0.0f;
-  target_bounds->work_area_insets =
-      gfx::Insets(0, 0, shelf_height, 0);
+
+  int work_area_bottom = 0;
+  if (state.visibility_state == VISIBLE)
+    work_area_bottom = shelf_height_;
+  else if (state.visibility_state == AUTO_HIDE)
+    work_area_bottom = kAutoHideHeight;
+  target_bounds->work_area_insets.Set(0, 0, work_area_bottom, 0);
 }
 
 void ShelfLayoutManager::UpdateShelfBackground(
