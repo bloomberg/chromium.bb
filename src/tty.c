@@ -152,12 +152,13 @@ tty_create(struct weston_compositor *compositor, tty_vt_func_t vt_func,
 
 	if (tty->fd <= 0) {
 		fprintf(stderr, "failed to open tty: %m\n");
+		free(tty);
 		return NULL;
 	}
 
 	if (tcgetattr(tty->fd, &tty->terminal_attributes) < 0) {
 		fprintf(stderr, "could not get terminal attributes: %m\n");
-		return NULL;
+		goto err;
 	}
 
 	/* Ignore control characters and disable echo */
@@ -174,11 +175,13 @@ tty_create(struct weston_compositor *compositor, tty_vt_func_t vt_func,
 	tty->input_source =
 		wl_event_loop_add_fd(loop, tty->fd,
 				     WL_EVENT_READABLE, on_tty_input, tty);
+	if (!tty->input_source)
+		goto err_attr;
 
 	ret = ioctl(tty->fd, KDSETMODE, KD_GRAPHICS);
 	if (ret) {
 		fprintf(stderr, "failed to set KD_GRAPHICS mode on tty: %m\n");
-		return NULL;
+		goto err_input_source;
 	}
 
 	tty->has_vt = 1;
@@ -187,13 +190,32 @@ tty_create(struct weston_compositor *compositor, tty_vt_func_t vt_func,
 	mode.acqsig = SIGUSR1;
 	if (ioctl(tty->fd, VT_SETMODE, &mode) < 0) {
 		fprintf(stderr, "failed to take control of vt handling\n");
-		return NULL;
+		goto err_kdmode;
 	}
 
 	tty->vt_source =
 		wl_event_loop_add_signal(loop, SIGUSR1, vt_handler, tty);
+	if (!tty->vt_source)
+		goto err_vtmode;
 
 	return tty;
+
+err_vtmode:
+	ioctl(tty->fd, VT_SETMODE, &mode);
+
+err_kdmode:
+	ioctl(tty->fd, KDSETMODE, KD_TEXT);
+
+err_input_source:
+	wl_event_source_remove(tty->input_source);
+
+err_attr:
+	tcsetattr(tty->fd, TCSANOW, &tty->terminal_attributes);
+
+err:
+	close(tty->fd);
+	free(tty);
+	return NULL;
 }
 
 void
