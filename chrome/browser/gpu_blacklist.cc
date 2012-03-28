@@ -701,13 +701,16 @@ bool GpuBlacklist::GpuBlacklistEntry::Contains(
       !gl_renderer_info_->Contains(gpu_info.gl_renderer))
     return false;
   if (perf_graphics_info_.get() != NULL &&
-      !perf_graphics_info_->Contains(gpu_info.performance_stats.graphics))
+      (gpu_info.performance_stats.graphics == 0.0 ||
+       !perf_graphics_info_->Contains(gpu_info.performance_stats.graphics)))
     return false;
   if (perf_gaming_info_.get() != NULL &&
-      !perf_gaming_info_->Contains(gpu_info.performance_stats.gaming))
+      (gpu_info.performance_stats.gaming == 0.0 ||
+       !perf_gaming_info_->Contains(gpu_info.performance_stats.gaming)))
     return false;
   if (perf_overall_info_.get() != NULL &&
-      !perf_overall_info_->Contains(gpu_info.performance_stats.overall))
+      (gpu_info.performance_stats.overall == 0.0 ||
+       !perf_overall_info_->Contains(gpu_info.performance_stats.overall)))
     return false;
   for (size_t i = 0; i < exceptions_.size(); ++i) {
     if (exceptions_[i]->Contains(os_type, os_version, gpu_info))

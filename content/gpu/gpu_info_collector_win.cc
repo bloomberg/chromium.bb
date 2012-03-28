@@ -71,7 +71,19 @@ content::GpuPerformanceStats RetrieveGpuPerformanceStats() {
 
     hr = assessment->get_Info(&results);
     if (FAILED(hr)) {
-      LOG(ERROR) << "assessment->get_Info() failed";
+      LOG(ERROR) << "get_Info() failed";
+      break;
+    }
+
+    WINSAT_ASSESSMENT_STATE state = WINSAT_ASSESSMENT_STATE_UNKNOWN;
+    hr = results->get_AssessmentState(&state);
+    if (FAILED(hr)) {
+      LOG(ERROR) << "get_AssessmentState() failed";
+      break;
+    }
+    if (state != WINSAT_ASSESSMENT_STATE_VALID &&
+        state != WINSAT_ASSESSMENT_STATE_INCOHERENT_WITH_HARDWARE) {
+      LOG(ERROR) << "Can't retrieve a valid assessment";
       break;
     }
 
