@@ -13,6 +13,9 @@
 
 using std::string;
 
+// Mock struct GesturesProp implementation (outside of namespace gestures)
+struct GesturesProp { };
+
 namespace gestures {
 
 class PropRegistryTest : public ::testing::Test {};
@@ -37,6 +40,7 @@ string ValueForProperty(const Property& prop) {
   base::JSONWriter::Write(&temp, false, &ret);
   return ret;
 }
+
 }  // namespace {}
 
 TEST(PropRegistryTest, SimpleTest) {
@@ -110,34 +114,39 @@ TEST(PropRegistryTest, PropChangeTest) {
 GesturesProp* MockGesturesPropCreateBool(void* data, const char* name,
                                          GesturesPropBool* loc,
                                          const GesturesPropBool init) {
+  GesturesProp *dummy = new GesturesProp();
   *loc = true;
-  return NULL;
+  return dummy;
 }
 
 GesturesProp* MockGesturesPropCreateInt(void* data, const char* name,
                                         int* loc, const int init) {
+  GesturesProp *dummy = new GesturesProp();
   *loc = 1;
-  return NULL;
+  return dummy;
 }
 
 GesturesProp* MockGesturesPropCreateReal(void* data, const char* name,
                                          double* loc, const double init) {
+  GesturesProp *dummy = new GesturesProp();
   *loc = 1.0;
-  return NULL;
+  return dummy;
 }
 
 GesturesProp* MockGesturesPropCreateShort(void* data, const char* name,
                                           short* loc,
                                           const short init) {
+  GesturesProp *dummy = new GesturesProp();
   *loc = 1;
-  return NULL;
+  return dummy;
 }
 
 GesturesProp* MockGesturesPropCreateString(void* data, const char* name,
                                            const char** loc,
                                            const char* const init) {
+  GesturesProp *dummy = new GesturesProp();
   *loc = "1";
-  return NULL;
+  return dummy;
 }
 
 void MockGesturesPropRegisterHandlers(void* data, GesturesProp* prop,
@@ -145,7 +154,9 @@ void MockGesturesPropRegisterHandlers(void* data, GesturesProp* prop,
                                       GesturesPropGetHandler getter,
                                       GesturesPropSetHandler setter) {}
 
-void MockGesturesPropFree(void* data, GesturesProp* prop) {}
+void MockGesturesPropFree(void* data, GesturesProp* prop) {
+  delete prop;
+}
 
 // This tests that if we create a prop, then set the prop provider, and the
 // prop provider changes the value at that time, that we notify the prop
