@@ -111,12 +111,6 @@
       '-downloads.DownloadsTest.testZip',
       '-downloads.DownloadsTest.testZipInIncognito',
       '-find_in_page.FindMatchTests.testSearchWithinSpecialURL',
-      # crbug.com/120358
-      '-flash.FlashTest.testCanLoadFlash',
-      '-flash.FlashTest.testFlashIncognitoMode',
-      '-flash.FlashTest.testFlashLoadsAfterKill',
-      '-flash.FlashTest.testFlashWithMultipleTabs',
-      '-flash.FlashTest.testSingleFlashPluginProcess',
       # crbug.com/115534
       '-gtalk.test_basic',
       # crbug.com/120280
@@ -127,9 +121,6 @@
       '-https.SSLTest.testSSLCertOK',
       # crbug.com/120280
       '-infobars.InfobarTest.testMultipleDownloadsInfobar',
-      # crbug.com/120358
-      '-infobars.InfobarTest.testPluginCrashForMultiTabs',
-      '-infobars.InfobarTest.testPluginCrashInfobar',
       # crbug.com/100593
       '-nacl_sdk.NaClSDKTest.testVerifyNaClPlugin',
       # crbug.com/105560
@@ -140,9 +131,6 @@
       '-omnibox.OmniboxTest.testHistoryResult',
       # crbug.com/86524
       '-plugins.PluginsTest.testAllowPluginException',
-      # crbug.com/120358
-      '-plugins.PluginsTest.testBlockAllPlugins',
-      '-plugins.PluginsTest.testBlockPluginException',
       # crbug.com/97140
       '-plugins.PluginsTest.testDisableEnableAllPlugins',
       # crbug.com/85307
@@ -169,9 +157,6 @@
       '-prefs.PrefsTest.testNavigationStateOnSessionRestore',
       # crbug.com/112051
       '-prefs_ui.PrefsUITest.testChangeExceptionBehaviorUI',
-      # crbug.com/120358
-      '-process_count.ProcessCountTest.testProcessCountCombination',
-      '-process_count.ProcessCountTest.testProcessCountFlashProcess',
       # crbug.com/119183
       '-protector.ProtectorSessionStartupTest.testDetectSessionStartupChangeAndApply',
       # crbug.com/119326
@@ -190,12 +175,6 @@
       '-translate.TranslateTest.testDownloadsNotTranslated',
       # crbug.com/95140
       '-translate.TranslateTest.testGoBackAndForwardToTranslatePage',
-      # crbug.com/120358
-      '-translate.TranslateTest.testSeveralLanguages',
-      # crbug.com/120358
-      '-youtube.YoutubeTest.testPlayerBytes',
-      '-youtube.YoutubeTest.testPlayerResolution',
-      '-youtube.YoutubeTest.testPlayerStatus',
     ],
 
     'win': [
