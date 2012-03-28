@@ -44,6 +44,9 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/renderer/chrome_content_renderer_client.h"
+#include "chrome/test/logging/win/file_logger.h"
+#include "chrome/test/logging/win/log_file_printer.h"
+#include "chrome/test/logging/win/test_log_collector.h"
 #include "chrome_frame/crash_server_init.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"
 #include "chrome_frame/test/net/test_automation_resource_message_filter.h"
@@ -140,6 +143,8 @@ class FakeMainDelegate : public content::ContentMainDelegate {
   virtual ~FakeMainDelegate() {}
 
   virtual bool BasicStartupComplete(int* exit_code) OVERRIDE {
+    logging_win::InstallTestLogCollector(
+        testing::UnitTest::GetInstance());
     return false;
   }
 
@@ -311,12 +316,6 @@ void FilterDisabledTests() {
   }
 
   ::testing::FLAGS_gtest_filter = filter;
-}
-
-void OnIEShutdownFailure() {
-  DLOG(ERROR) << "Failed to shutdown IE and npchrome_frame cleanly after test "
-                 "execution.";
-  ::ExitProcess(1);
 }
 
 }  // namespace
@@ -539,6 +538,13 @@ void CFUrlRequestUnittestRunner::ShutDownHostBrowser() {
   }
 }
 
+void CFUrlRequestUnittestRunner::OnIEShutdownFailure() {
+  LOG(ERROR) << "Failed to shutdown IE and npchrome_frame cleanly after test "
+                "execution.";
+  StopFileLogger(true);
+  ::ExitProcess(1);
+}
+
 // Override virtual void Initialize to not call icu initialize.
 void CFUrlRequestUnittestRunner::Initialize() {
   DCHECK(::GetCurrentThreadId() == test_thread_id_);
@@ -580,11 +586,17 @@ void CFUrlRequestUnittestRunner::OnConnectAutomationProviderToChannel(
 
 void CFUrlRequestUnittestRunner::OnInitialTabLoaded() {
   test_http_server_.reset();
+  BrowserThread::PostTask(
+      BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&CFUrlRequestUnittestRunner::CancelInitializationTimeout,
+                 base::Unretained(this)));
   StartTests();
 }
 
 void CFUrlRequestUnittestRunner::OnProviderDestroyed() {
   if (tests_ran_) {
+    StopFileLogger(false);
     if (crash_service_)
       base::KillProcess(crash_service_, 0, false);
     ::ExitProcess(test_result());
@@ -599,6 +611,7 @@ void CFUrlRequestUnittestRunner::StartTests() {
     MessageBoxA(NULL, "click ok to run", "", MB_OK);
 
   DCHECK_EQ(test_thread_.IsValid(), false);
+  StopFileLogger(false);
   test_thread_.Set(::CreateThread(NULL, 0, RunAllUnittests, this, 0,
                                   &test_thread_id_));
   DCHECK(test_thread_.IsValid());
@@ -623,6 +636,11 @@ void CFUrlRequestUnittestRunner::TakeDownBrowser() {
   if (prompt_after_setup_)
     MessageBoxA(NULL, "click ok to exit", "", MB_OK);
 
+  // Start capturing logs from npchrome_frame and the in-process Chrome to help
+  // diagnose failures in IE shutdown. This will be Stopped in either
+  // OnIEShutdownFailure or OnProviderDestroyed.
+  StartFileLogger();
+
   // AddRef to ensure that IE going away does not trigger the Chrome shutdown
   // process.
   // IE shutting down will, however, trigger the automation channel to shut
@@ -632,10 +650,12 @@ void CFUrlRequestUnittestRunner::TakeDownBrowser() {
 
   // In case IE is somehow hung, make sure we don't sit around until a try-bot
   // kills us. OnIEShutdownFailure will log and exit with an error.
-  BrowserThread::PostDelayedTask(BrowserThread::UI,
-                                 FROM_HERE,
-                                 base::Bind(&OnIEShutdownFailure),
-                                 TestTimeouts::action_max_timeout_ms());
+  BrowserThread::PostDelayedTask(
+      BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&CFUrlRequestUnittestRunner::OnIEShutdownFailure,
+                 base::Unretained(this)),
+      TestTimeouts::action_max_timeout_ms());
 }
 
 void CFUrlRequestUnittestRunner::InitializeLogging() {
@@ -651,6 +671,35 @@ void CFUrlRequestUnittestRunner::InitializeLogging() {
   // We want process and thread IDs because we may have multiple processes.
   // Note: temporarily enabled timestamps in an effort to catch bug 6361.
   logging::SetLogItems(true, true, true, true);
+}
+
+void CFUrlRequestUnittestRunner::CancelInitializationTimeout() {
+  timeout_closure_.Cancel();
+}
+
+void CFUrlRequestUnittestRunner::StartInitializationTimeout() {
+  timeout_closure_.Reset(
+      base::Bind(&CFUrlRequestUnittestRunner::OnInitializationTimeout,
+                 base::Unretained(this)));
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      timeout_closure_.callback(),
+      TestTimeouts::action_max_timeout_ms());
+}
+
+void CFUrlRequestUnittestRunner::OnInitializationTimeout() {
+  LOG(ERROR) << "Failed to start Chrome Frame in the host browser.";
+  StopFileLogger(true);
+
+  if (launch_browser_) {
+    base::win::ScopedCOMInitializer com;
+    chrome_frame_test::CloseAllIEWindows();
+  }
+
+  if (crash_service_)
+    base::KillProcess(crash_service_, 0, false);
+
+  ::ExitProcess(1);
 }
 
 void CFUrlRequestUnittestRunner::OverrideHttpHost() {
@@ -685,6 +734,7 @@ void CFUrlRequestUnittestRunner::OverrideHttpHost() {
 void CFUrlRequestUnittestRunner::PreEarlyInitialization() {
   testing::InitGoogleTest(&g_argc, g_argv);
   FilterDisabledTests();
+  StartFileLogger();
 }
 
 MessageLoop* CFUrlRequestUnittestRunner::GetMainMessageLoop() {
@@ -713,6 +763,7 @@ bool CFUrlRequestUnittestRunner::MainMessageLoopRun(int* result_code) {
   // We need to allow IO on the main thread for these tests.
   base::ThreadRestrictions::SetIOAllowed(true);
 
+  StartInitializationTimeout();
   return false;
 }
 
@@ -741,6 +792,37 @@ void CFUrlRequestUnittestRunner::PostDestroyThreads() {
   // Webkit global objects are created on the inproc renderer thread.
   ::ExitProcess(test_result());
 #endif
+}
+
+void CFUrlRequestUnittestRunner::StartFileLogger() {
+  if (file_util::CreateTemporaryFile(&log_file_)) {
+    file_logger_.reset(new logging_win::FileLogger());
+    file_logger_->Initialize();
+    file_logger_->StartLogging(log_file_);
+  } else {
+    LOG(ERROR) << "Failed to create an ETW log file";
+  }
+}
+
+void CFUrlRequestUnittestRunner::StopFileLogger(bool print) {
+  if (file_logger_.get() != NULL && file_logger_->is_logging()) {
+    file_logger_->StopLogging();
+
+    if (print) {
+      // Flushing stdout should prevent unrelated output from being interleaved
+      // with the log file output.
+      std::cout.flush();
+      // Dump the log to stderr.
+      logging_win::PrintLogFile(log_file_, &std::cerr);
+      std::cerr.flush();
+    }
+  }
+
+  if (!log_file_.empty() && !file_util::Delete(log_file_, false))
+    LOG(ERROR) << "Failed to delete log file " << log_file_.value();
+
+  log_file_.clear();
+  file_logger_.reset();
 }
 
 const char* IEVersionToString(IEVersion version) {

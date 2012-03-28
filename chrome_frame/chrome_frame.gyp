@@ -381,6 +381,7 @@
         '../chrome/chrome.gyp:debugger',
         '../chrome/chrome.gyp:renderer',
         '../chrome/chrome.gyp:syncapi_core',
+        '../chrome/chrome.gyp:test_support_common',
         '../chrome/chrome_resources.gyp:chrome_resources',
         '../content/content.gyp:content_app',
         '../content/content.gyp:content_gpu',
