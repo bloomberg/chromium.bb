@@ -37,7 +37,8 @@ const char* kFooIdentifier = "foo";
 const char* kFooGroupName = "Foo";
 const char* kFooName = "Foo Plugin";
 const PluginGroupDefinition kPluginDefinitions[] = {
-  { kFooIdentifier, kFooGroupName, kFooName, NULL, 0 },
+  { kFooIdentifier, kFooGroupName, kFooName, NULL, 0,
+    "http://example.com/foo" },
 };
 
 }  // namespace

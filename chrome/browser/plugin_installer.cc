@@ -64,15 +64,13 @@ PluginInstaller::PluginInstaller(const std::string& identifier,
                                  const GURL& plugin_url,
                                  const GURL& help_url,
                                  const string16& name,
-                                 bool url_for_display,
-                                 bool requires_authorization)
+                                 bool url_for_display)
     : state_(kStateIdle),
       identifier_(identifier),
       plugin_url_(plugin_url),
       help_url_(help_url),
       name_(name),
-      url_for_display_(url_for_display),
-      requires_authorization_(requires_authorization) {
+      url_for_display_(url_for_display) {
 }
 
 PluginInstaller::~PluginInstaller() {

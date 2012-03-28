@@ -20,6 +20,8 @@ namespace npapi {
 
 // static
 const char PluginGroup::kAdobeReaderGroupName[] = "Adobe Acrobat";
+const char PluginGroup::kAdobeReaderUpdateURL[] =
+    "http://get.adobe.com/reader/";
 const char PluginGroup::kJavaGroupName[] = "Java";
 const char PluginGroup::kQuickTimeGroupName[] = "QuickTime";
 const char PluginGroup::kShockwaveGroupName[] = "Shockwave";
@@ -30,7 +32,8 @@ const char PluginGroup::kWindowsMediaPlayerGroupName[] = "Windows Media Player";
 VersionRange::VersionRange(const VersionRangeDefinition& definition)
     : low_str(definition.version_matcher_low),
       high_str(definition.version_matcher_high),
-      min_str(definition.min_version) {
+      min_str(definition.min_version),
+      requires_authorization(definition.requires_authorization) {
   if (!low_str.empty())
     low.reset(Version::GetVersionFromString(low_str));
   if (!high_str.empty())
@@ -57,20 +60,24 @@ void VersionRange::InitFrom(const VersionRange& other) {
   low.reset(Version::GetVersionFromString(other.low_str));
   high.reset(Version::GetVersionFromString(other.high_str));
   min.reset(Version::GetVersionFromString(other.min_str));
+  requires_authorization = other.requires_authorization;
 }
 
 PluginGroup::PluginGroup(const string16& group_name,
                          const string16& name_matcher,
+                         const std::string& update_url,
                          const std::string& identifier)
     : identifier_(identifier),
       group_name_(group_name),
-      name_matcher_(name_matcher) {
+      name_matcher_(name_matcher),
+      update_url_(update_url) {
 }
 
 void PluginGroup::InitFrom(const PluginGroup& other) {
   identifier_ = other.identifier_;
   group_name_ = other.group_name_;
   name_matcher_ = other.name_matcher_;
+  update_url_ = other.update_url_;
   version_ranges_ = other.version_ranges_;
   web_plugin_infos_ = other.web_plugin_infos_;
 }
@@ -89,6 +96,7 @@ PluginGroup* PluginGroup::FromPluginGroupDefinition(
     const PluginGroupDefinition& definition) {
   PluginGroup* group = new PluginGroup(ASCIIToUTF16(definition.name),
                                        ASCIIToUTF16(definition.name_matcher),
+                                       definition.update_url,
                                        definition.identifier);
   for (size_t i = 0; i < definition.num_versions; ++i)
     group->version_ranges_.push_back(VersionRange(definition.versions[i]));
@@ -118,7 +126,7 @@ std::string PluginGroup::GetLongIdentifier(const WebPluginInfo& wpi) {
 /*static*/
 PluginGroup* PluginGroup::FromWebPluginInfo(const WebPluginInfo& wpi) {
   // Create a matcher from the name of this plugin.
-  return new PluginGroup(wpi.name, wpi.name,
+  return new PluginGroup(wpi.name, wpi.name, std::string(),
                          GetIdentifier(wpi));
 }
 
@@ -243,6 +251,19 @@ bool PluginGroup::IsVulnerable(const WebPluginInfo& plugin) const {
 
   for (size_t i = 0; i < version_ranges_.size(); ++i) {
     if (IsPluginOutdated(*version, version_ranges_[i]))
+      return true;
+  }
+  return false;
+}
+
+bool PluginGroup::RequiresAuthorization(const WebPluginInfo& plugin) const {
+  scoped_ptr<Version> version(CreateVersionFromString(plugin.version));
+  if (!version.get())
+    return false;
+
+  for (size_t i = 0; i < version_ranges_.size(); ++i) {
+    if (IsVersionInRange(*version, version_ranges_[i]) &&
+        version_ranges_[i].requires_authorization)
       return true;
   }
   return false;

@@ -33,8 +33,7 @@ class PluginInstaller : public content::DownloadItem::Observer {
                   const GURL& plugin_url,
                   const GURL& help_url,
                   const string16& name,
-                  bool url_for_display,
-                  bool requires_authorization);
+                  bool url_for_display);
   virtual ~PluginInstaller();
 
   virtual void OnDownloadUpdated(content::DownloadItem* download) OVERRIDE;
@@ -55,9 +54,6 @@ class PluginInstaller : public content::DownloadItem::Observer {
 
   // Human-readable name of the plug-in.
   const string16& name() const { return name_; }
-
-  // Whether the plug-in requires user authorization to run.
-  bool requires_authorization() const { return requires_authorization_; }
 
   // If |url_for_display| is false, |plugin_url| is the URL of the download page
   // for the plug-in, which should be opened in a new tab. If it is true,
@@ -94,7 +90,6 @@ class PluginInstaller : public content::DownloadItem::Observer {
   GURL help_url_;
   string16 name_;
   bool url_for_display_;
-  bool requires_authorization_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginInstaller);
 };

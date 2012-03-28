@@ -118,7 +118,6 @@ class PluginObserver::PluginPlaceholderHost : public PluginInstallerObserver {
       : PluginInstallerObserver(installer),
         observer_(observer),
         routing_id_(routing_id) {
-    DCHECK(installer);
     switch (installer->state()) {
       case PluginInstaller::kStateIdle: {
         observer->Send(new ChromeViewMsg_FoundMissingPlugin(routing_id_,
@@ -202,9 +201,11 @@ void PluginObserver::OnBlockedUnauthorizedPlugin(const string16& name) {
 void PluginObserver::OnBlockedOutdatedPlugin(int placeholder_id,
                                              const std::string& identifier) {
 #if defined(ENABLE_PLUGIN_INSTALLATION)
-  PluginFinder::Get(base::Bind(&PluginObserver::FindPluginToUpdate,
-                               weak_ptr_factory_.GetWeakPtr(),
-                               placeholder_id, identifier));
+  PluginFinder* plugin_finder = PluginFinder::GetInstance();
+  plugin_finder->FindPluginWithIdentifier(
+      identifier,
+      base::Bind(&PluginObserver::FoundPluginToUpdate,
+                 weak_ptr_factory_.GetWeakPtr(), placeholder_id));
 #else
   // If we don't support third-party plug-in installation, we shouldn't have
   // outdated plug-ins.
@@ -213,11 +214,8 @@ void PluginObserver::OnBlockedOutdatedPlugin(int placeholder_id,
 }
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
-void PluginObserver::FindPluginToUpdate(int placeholder_id,
-                                        const std::string& identifier,
-                                        PluginFinder* plugin_finder) {
-  PluginInstaller* installer =
-      plugin_finder->FindPluginWithIdentifier(identifier);
+void PluginObserver::FoundPluginToUpdate(int placeholder_id,
+                                         PluginInstaller* installer) {
   plugin_placeholders_[placeholder_id] =
       new PluginPlaceholderHost(this, placeholder_id, installer);
   InfoBarTabHelper* infobar_helper = tab_contents_->infobar_tab_helper();
@@ -227,16 +225,17 @@ void PluginObserver::FindPluginToUpdate(int placeholder_id,
 
 void PluginObserver::OnFindMissingPlugin(int placeholder_id,
                                          const std::string& mime_type) {
-PluginFinder::Get(base::Bind(&PluginObserver::FindMissingPlugin,
-                             weak_ptr_factory_.GetWeakPtr(),
-                             placeholder_id, mime_type));
+  PluginFinder* plugin_finder = PluginFinder::GetInstance();
+  std::string lang = "en-US";  // Oh yes.
+  plugin_finder->FindPlugin(
+      mime_type, lang,
+      base::Bind(&PluginObserver::FoundMissingPlugin,
+                 weak_ptr_factory_.GetWeakPtr(), placeholder_id, mime_type));
 }
 
-void PluginObserver::FindMissingPlugin(int placeholder_id,
-                                       const std::string& mime_type,
-                                       PluginFinder* plugin_finder) {
-  std::string lang = "en-US";  // Oh yes.
-  PluginInstaller* installer = plugin_finder->FindPlugin(mime_type, lang);
+void PluginObserver::FoundMissingPlugin(int placeholder_id,
+                                        const std::string& mime_type,
+                                        PluginInstaller* installer) {
   if (!installer) {
     Send(new ChromeViewMsg_DidNotFindMissingPlugin(placeholder_id));
     return;

@@ -44,15 +44,6 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "webkit/plugins/npapi/plugin_group.h"
 
-#if defined(ENABLE_PLUGIN_INSTALLATION)
-#include "chrome/browser/plugin_finder.h"
-#include "chrome/browser/plugin_installer.h"
-#else
-// Forward-declare PluginFinder. It's never actually used, but we pass a NULL
-// pointer instead.
-class PluginFinder;
-#endif
-
 using content::PluginService;
 using content::WebContents;
 using content::WebUIMessageHandler;
@@ -158,14 +149,10 @@ class PluginsDOMHandler : public WebUIMessageHandler,
 
  private:
   // Call this to start getting the plugins on the UI thread.
-  void GetPluginFinder();
-
-  // Called when we have a PluginFinder and need to load the list of plug-ins.
-  void LoadPlugins(PluginFinder* plugin_finder);
+  void LoadPlugins();
 
   // Called on the UI thread when the plugin information is ready.
-  void PluginsLoaded(PluginFinder* plugin_finder,
-                     const std::vector<PluginGroup>& groups);
+  void PluginsLoaded(const std::vector<PluginGroup>& groups);
 
   content::NotificationRegistrar registrar_;
 
@@ -210,7 +197,7 @@ void PluginsDOMHandler::RegisterMessages() {
 }
 
 void PluginsDOMHandler::HandleRequestPluginsData(const ListValue* args) {
-  GetPluginFinder();
+  LoadPlugins();
 }
 
 void PluginsDOMHandler::HandleEnablePluginMessage(const ListValue* args) {
@@ -308,31 +295,22 @@ void PluginsDOMHandler::Observe(int type,
                                 const content::NotificationSource& source,
                                 const content::NotificationDetails& details) {
   DCHECK_EQ(chrome::NOTIFICATION_PLUGIN_ENABLE_STATUS_CHANGED, type);
-  GetPluginFinder();
+  LoadPlugins();
 }
 
-void PluginsDOMHandler::GetPluginFinder() {
+void PluginsDOMHandler::LoadPlugins() {
   if (weak_ptr_factory_.HasWeakPtrs())
     return;
 
-#if defined(ENABLE_PLUGIN_INSTALLATION)
-  PluginFinder::Get(base::Bind(&PluginsDOMHandler::LoadPlugins,
-                               weak_ptr_factory_.GetWeakPtr()));
-#else
-  LoadPlugins(NULL);
-#endif
-}
-
-void PluginsDOMHandler::LoadPlugins(PluginFinder* plugin_finder) {
   PluginService::GetInstance()->GetPluginGroups(
       base::Bind(&PluginsDOMHandler::PluginsLoaded,
-          weak_ptr_factory_.GetWeakPtr(), plugin_finder));
+          weak_ptr_factory_.GetWeakPtr()));
 }
 
-void PluginsDOMHandler::PluginsLoaded(PluginFinder* plugin_finder,
-                                      const std::vector<PluginGroup>& groups) {
+void PluginsDOMHandler::PluginsLoaded(const std::vector<PluginGroup>& groups) {
   Profile* profile = Profile::FromWebUI(web_ui());
-  PluginPrefs* plugin_prefs = PluginPrefs::GetForProfile(profile);
+  PluginPrefs* plugin_prefs =
+      PluginPrefs::GetForProfile(profile);
 
   HostContentSettingsMap* map = profile->GetHostContentSettingsMap();
   ContentSettingsPattern wildcard = ContentSettingsPattern::Wildcard();
@@ -418,15 +396,7 @@ void PluginsDOMHandler::PluginsLoaded(PluginFinder* plugin_finder,
     group_data->SetString("description", active_plugin->desc);
     group_data->SetString("version", active_plugin->version);
     group_data->SetBoolean("critical", group.IsVulnerable(*active_plugin));
-
-    std::string update_url;
-#if defined(ENABLE_PLUGIN_INSTALLATION)
-    PluginInstaller* installer =
-        plugin_finder->FindPluginWithIdentifier(group.identifier());
-    if (installer)
-      update_url = installer->plugin_url().spec();
-#endif
-    group_data->SetString("update_url", update_url);
+    group_data->SetString("update_url", group.GetUpdateURL());
 
     std::string enabled_mode;
     if (all_plugins_enabled_by_policy) {
@@ -440,7 +410,7 @@ void PluginsDOMHandler::PluginsLoaded(PluginFinder* plugin_finder,
     }
     group_data->SetString("enabledMode", enabled_mode);
 
-    // TODO(bauerb): We should have a method on HostContentSettingsMap for this.
+    // TODO(bauerb): We should have a method on HostContentSettinsMap for this.
     bool always_allowed = false;
     ContentSettingsForOneType settings;
     map->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_PLUGINS,

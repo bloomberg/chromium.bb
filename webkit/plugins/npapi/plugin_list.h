@@ -162,11 +162,9 @@ class WEBKIT_PLUGINS_EXPORT PluginList {
   // If no such group exists, an empty string is returned.
   string16 GetPluginGroupName(const std::string& identifier);
 
-  // Load a specific plugin with full path. Return true iff loading the plug-in
-  // was successful.
-  bool LoadPlugin(const FilePath& filename,
-                  ScopedVector<PluginGroup>* plugin_groups,
-                  webkit::WebPluginInfo* plugin_info);
+  // Load a specific plugin with full path.
+  void LoadPlugin(const FilePath& filename,
+                  ScopedVector<PluginGroup>* plugin_groups);
 
   // The following functions are used to support probing for WebPluginInfo
   // using a different instance of this class.
@@ -188,6 +186,7 @@ class WEBKIT_PLUGINS_EXPORT PluginList {
 
   // Adds the given WebPluginInfo to its corresponding group, creating it if
   // necessary, and returns the group.
+  // Callers need to protect calls to this method by a lock themselves.
   PluginGroup* AddToPluginGroups(const webkit::WebPluginInfo& web_plugin_info,
                                  ScopedVector<PluginGroup>* plugin_groups);
 
