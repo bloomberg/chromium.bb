@@ -87,6 +87,10 @@ class ASH_EXPORT ShelfLayoutManager : public aura::LayoutManager {
   // See description above field.
   int shelf_height() const { return shelf_height_; }
 
+  // Returns whether the shelf and its contents (launcher, status) are visible
+  // on the screen.
+  bool IsVisible() const;
+
   // Returns the bounds the specified window should be when maximized.
   gfx::Rect GetMaximizedWindowBounds(aura::Window* window) const;
   gfx::Rect GetUnmaximizedWorkAreaBounds(aura::Window* window) const;

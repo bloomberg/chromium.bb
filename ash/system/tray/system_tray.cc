@@ -217,27 +217,29 @@ class SystemTrayBubbleBorder : public views::Border {
                                owner_->width() - kShadowOffset, kShadowHeight),
                      kShadowColor);
 
-    // Draw the arrow.
-    int left_base_x = owner_->width() - kArrowPaddingFromRight - kArrowWidth;
-    int left_base_y = y;
-    int tip_x = left_base_x + kArrowWidth / 2;
-    int tip_y = left_base_y + kArrowHeight;
-    SkPath path;
-    path.incReserve(4);
-    path.moveTo(SkIntToScalar(left_base_x), SkIntToScalar(left_base_y));
-    path.lineTo(SkIntToScalar(tip_x), SkIntToScalar(tip_y));
-    path.lineTo(SkIntToScalar(left_base_x + kArrowWidth),
-                SkIntToScalar(left_base_y));
+    if (Shell::GetInstance()->shelf()->IsVisible()) {
+      // Draw the arrow.
+      int left_base_x = owner_->width() - kArrowPaddingFromRight - kArrowWidth;
+      int left_base_y = y;
+      int tip_x = left_base_x + kArrowWidth / 2;
+      int tip_y = left_base_y + kArrowHeight;
+      SkPath path;
+      path.incReserve(4);
+      path.moveTo(SkIntToScalar(left_base_x), SkIntToScalar(left_base_y));
+      path.lineTo(SkIntToScalar(tip_x), SkIntToScalar(tip_y));
+      path.lineTo(SkIntToScalar(left_base_x + kArrowWidth),
+                  SkIntToScalar(left_base_y));
 
-    SkPaint paint;
-    paint.setStyle(SkPaint::kFill_Style);
-    paint.setColor(kBackgroundColor);
-    canvas->sk_canvas()->drawPath(path, paint);
+      SkPaint paint;
+      paint.setStyle(SkPaint::kFill_Style);
+      paint.setColor(kBackgroundColor);
+      canvas->sk_canvas()->drawPath(path, paint);
 
-    // Now the draw the outline.
-    paint.setStyle(SkPaint::kStroke_Style);
-    paint.setColor(kBorderDarkColor);
-    canvas->sk_canvas()->drawPath(path, paint);
+      // Now the draw the outline.
+      paint.setStyle(SkPaint::kStroke_Style);
+      paint.setColor(kBorderDarkColor);
+      canvas->sk_canvas()->drawPath(path, paint);
+    }
   }
 
   virtual void GetInsets(gfx::Insets* insets) const OVERRIDE {
