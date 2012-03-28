@@ -28,7 +28,7 @@ const float kPercents[] = { .5f, 2.0f / 3.0f, .8f };
 //   |kMovesBeforeAdjust| times.
 const int kDelayBeforeIncreaseMS = 500;
 const int kMovesBeforeAdjust = 50;
-const int kPixelsBeforeAdjust = 200;
+const int kPixelsBeforeAdjust = 100;
 
 }  // namespace
 
