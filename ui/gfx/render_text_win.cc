@@ -486,6 +486,7 @@ void RenderTextWin::DrawVisualText(Canvas* canvas) {
       glyph_x += SkIntToScalar(run->advance_widths[glyph]);
     }
 
+    renderer.SetTextSize(run->font.GetFontSize());
     renderer.SetFontFamilyWithStyle(run->font.GetFontName(), run->font_style);
     renderer.SetForegroundColor(run->foreground);
     renderer.DrawPosText(&pos[0], run->glyphs.get(), run->glyph_count);
