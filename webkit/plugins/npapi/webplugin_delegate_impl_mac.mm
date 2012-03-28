@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -256,7 +256,7 @@ int ExternalDragTracker::WebEventButtonModifierMask() {
 WebPluginDelegateImpl::WebPluginDelegateImpl(
     gfx::PluginWindowHandle containing_view,
     PluginInstance *instance)
-    : windowed_handle_(NULL),
+    : windowed_handle_(gfx::kNullPluginWindow),
       // all Mac plugins are "windowless" in the Windows/X11 sense
       windowless_(true),
       plugin_(NULL),
@@ -426,7 +426,7 @@ bool WebPluginDelegateImpl::PlatformInitialize() {
   // calls SetWindow. Rendering breaks if SetWindow is called before
   // accelerated rendering is enabled.
   if (!layer_)
-    plugin_->SetWindow(NULL);
+    plugin_->SetWindow(gfx::kNullPluginWindow);
 
 #ifndef NP_NO_CARBON
   // If the plugin wants Carbon events, hook up to the source of idle events.

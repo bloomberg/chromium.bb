@@ -214,7 +214,7 @@ CFDictionaryRef MockLaunchd::CopyDictionaryByCheckingIn(CFErrorRef* error) {
   signature.address = address;
 
   CFSocketRef socket =
-      CFSocketCreateWithSocketSignature(NULL, &signature, NULL, NULL, NULL);
+      CFSocketCreateWithSocketSignature(NULL, &signature, 0, NULL, NULL);
 
   local_pipe = CFSocketGetNative(socket);
   EXPECT_NE(-1, local_pipe);

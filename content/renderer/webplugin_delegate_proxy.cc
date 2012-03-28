@@ -1317,7 +1317,7 @@ void WebPluginDelegateProxy::OnBindFakePluginWindowHandle(bool opaque) {
 // the plug-in. Returns true if it successfully sets the window handle on the
 // plug-in.
 bool WebPluginDelegateProxy::BindFakePluginWindowHandle(bool opaque) {
-  gfx::PluginWindowHandle fake_window = NULL;
+  gfx::PluginWindowHandle fake_window = gfx::kNullPluginWindow;
   if (render_view_)
     fake_window = render_view_->AllocateFakePluginWindowHandle(opaque, false);
   // If we aren't running on 10.6, this allocation will fail.
@@ -1415,7 +1415,7 @@ void WebPluginDelegateProxy::OnAcceleratedSurfaceBuffersSwapped(
 
 void WebPluginDelegateProxy::OnAcceleratedPluginEnabledRendering() {
   uses_compositor_ = true;
-  OnSetWindow(NULL);
+  OnSetWindow(gfx::kNullPluginWindow);
 }
 
 void WebPluginDelegateProxy::OnAcceleratedPluginAllocatedIOSurface(

@@ -2094,7 +2094,7 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
   NSEvent* fakeRightClick = [NSEvent
                            mouseEventWithType:NSRightMouseDown
                                      location:location
-                                modifierFlags:nil
+                                modifierFlags:0
                                     timestamp:0
                                  windowNumber:[[self window] windowNumber]
                                       context:[NSGraphicsContext currentContext]

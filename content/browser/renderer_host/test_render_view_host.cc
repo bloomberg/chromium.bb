@@ -136,7 +136,7 @@ gfx::PluginWindowHandle
 TestRenderWidgetHostView::AllocateFakePluginWindowHandle(
     bool opaque,
     bool root) {
-  return NULL;
+  return gfx::kNullPluginWindow;
 }
 
 void TestRenderWidgetHostView::DestroyFakePluginWindowHandle(

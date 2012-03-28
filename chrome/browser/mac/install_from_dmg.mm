@@ -82,10 +82,10 @@ io_service_t CopyHDIXDriveServiceForMedia(io_service_t media) {
                                     &iterator_ref);
   if (kr != KERN_SUCCESS) {
     LOG(ERROR) << "IORegistryEntryCreateIterator: " << kr;
-    return NULL;
+    return IO_OBJECT_NULL;
   }
   base::mac::ScopedIOObject<io_iterator_t> iterator(iterator_ref);
-  iterator_ref = NULL;
+  iterator_ref = IO_OBJECT_NULL;
 
   // Look at each of the ancestor services, beginning with the parent,
   // iterating all the way up to the device tree's root. If any ancestor
@@ -102,7 +102,7 @@ io_service_t CopyHDIXDriveServiceForMedia(io_service_t media) {
   }
 
   // The media does not reside on a disk image.
-  return NULL;
+  return IO_OBJECT_NULL;
 }
 
 // Given an io_service_t (expected to be of class IOMedia), determines whether
@@ -213,7 +213,7 @@ bool IsPathOnReadOnlyDiskImage(const char path[],
     return false;
   }
   base::mac::ScopedIOObject<io_iterator_t> iterator(iterator_ref);
-  iterator_ref = NULL;
+  iterator_ref = IO_OBJECT_NULL;
 
   // There needs to be exactly one matching service.
   base::mac::ScopedIOObject<io_service_t> media(IOIteratorNext(iterator));

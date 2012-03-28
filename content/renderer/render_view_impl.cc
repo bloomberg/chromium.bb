@@ -4936,7 +4936,7 @@ void RenderViewImpl::StartPluginIme() {
 
 gfx::PluginWindowHandle RenderViewImpl::AllocateFakePluginWindowHandle(
     bool opaque, bool root) {
-  gfx::PluginWindowHandle window = NULL;
+  gfx::PluginWindowHandle window = gfx::kNullPluginWindow;
   Send(new ViewHostMsg_AllocateFakePluginWindowHandle(
       routing_id(), opaque, root, &window));
   if (window) {
