@@ -83,6 +83,10 @@ AC_ARG_ENABLE(nouveau-experimental-api,
 	      [Enable support for nouveau's experimental API (default: disabled)]),
 	      [NOUVEAU=$enableval], [NOUVEAU=no])
 
+AC_ARG_ENABLE(omap-experimental-api,
+	      AS_HELP_STRING([--enable-omap-experimental-api],
+	      [Enable support for OMAP's experimental API (default: disabled)]),
+	      [OMAP=$enableval], [OMAP=no])
 
 dnl ===========================================================================
 dnl check compiler flags
@@ -180,6 +184,11 @@ fi
 AM_CONDITIONAL(HAVE_NOUVEAU, [test "x$NOUVEAU" = xyes])
 if test "x$NOUVEAU" = xyes; then
 	AC_DEFINE(HAVE_NOUVEAU, 1, [Have nouveau (nvidia) support])
+fi
+
+AM_CONDITIONAL(HAVE_OMAP, [test "x$OMAP" = xyes])
+if test "x$OMAP" = xyes; then
+	AC_DEFINE(HAVE_OMAP, 1, [Have OMAP support])
 fi
 
 PKG_CHECK_MODULES(CAIRO, cairo, [HAVE_CAIRO=yes], [HAVE_CAIRO=no])
@@ -291,6 +300,8 @@ AC_CONFIG_FILES([
 	radeon/libdrm_radeon.pc
 	nouveau/Makefile
 	nouveau/libdrm_nouveau.pc
+	omap/Makefile
+	omap/libdrm_omap.pc
 	tests/Makefile
 	tests/modeprint/Makefile
 	tests/modetest/Makefile
@@ -310,4 +321,5 @@ echo "  Intel API      $INTEL"
 echo "  vmwgfx API     $VMWGFX"
 echo "  Radeon API     $RADEON"
 echo "  Nouveau API    $NOUVEAU"
+echo "  OMAP API       $OMAP"
 echo ""
