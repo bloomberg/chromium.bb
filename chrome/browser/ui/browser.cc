@@ -504,8 +504,12 @@ Browser::~Browser() {
   TabRestoreServiceDestroyed(tab_restore_service_);
 }
 
-bool Browser::IsFullscreenForTab() const {
-  return fullscreen_controller_->IsFullscreenForTab();
+bool Browser::IsFullscreenForTabOrPending() const {
+  return fullscreen_controller_->IsFullscreenForTabOrPending();
+}
+
+bool Browser::IsMouseLockedOrPending() const {
+  return fullscreen_controller_->IsMouseLockedOrPending();
 }
 
 // static
@@ -4194,7 +4198,7 @@ void Browser::ToggleFullscreenModeForTab(WebContents* tab,
   fullscreen_controller_->ToggleFullscreenModeForTab(tab, enter_fullscreen);
 }
 
-bool Browser::IsFullscreenForTab(const WebContents* tab) const {
+bool Browser::IsFullscreenForTabOrPending(const WebContents* tab) const {
   return fullscreen_controller_->IsFullscreenForTabOrPending(tab);
 }
 

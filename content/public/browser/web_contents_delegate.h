@@ -333,7 +333,7 @@ class CONTENT_EXPORT WebContentsDelegate {
   // Called when the renderer puts a tab into or out of fullscreen mode.
   virtual void ToggleFullscreenModeForTab(WebContents* tab,
                                           bool enter_fullscreen) {}
-  virtual bool IsFullscreenForTab(const WebContents* tab) const;
+  virtual bool IsFullscreenForTabOrPending(const WebContents* tab) const;
 
   // Called when a Javascript out of memory notification is received.
   virtual void JSOutOfMemory(WebContents* tab) {}
