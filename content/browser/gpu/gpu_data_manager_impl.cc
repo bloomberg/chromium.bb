@@ -161,6 +161,9 @@ bool GpuDataManagerImpl::GpuAccessAllowed() {
   if (software_rendering_)
     return true;
 
+  if (!gpu_info_.gpu_accessible)
+    return false;
+
   // We only need to block GPU process if more features are disallowed other
   // than those in the preliminary gpu feature flags because the latter work
   // through renderer commandline switches.
@@ -380,6 +383,7 @@ bool GpuDataManagerImpl::Merge(content::GPUInfo* object,
     }
     object->can_lose_context = other.can_lose_context;
     object->software_rendering = other.software_rendering;
+    object->gpu_accessible = other.gpu_accessible;
 #if defined(OS_WIN)
     if (object->dx_diagnostics.values.size() == 0 &&
         object->dx_diagnostics.children.size() == 0) {

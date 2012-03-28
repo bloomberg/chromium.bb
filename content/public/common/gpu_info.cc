@@ -12,6 +12,7 @@ GPUInfo::GPUInfo()
       vendor_id(0),
       device_id(0),
       can_lose_context(false),
+      gpu_accessible(true),
       software_rendering(false) {
 }
 
