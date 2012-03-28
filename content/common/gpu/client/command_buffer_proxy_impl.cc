@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/gpu/client/command_buffer_proxy.h"
+#include "content/common/gpu/client/command_buffer_proxy_impl.h"
 
 #include "base/callback.h"
 #include "base/debug/trace_event.h"
@@ -22,7 +22,7 @@
 
 using gpu::Buffer;
 
-CommandBufferProxy::CommandBufferProxy(
+CommandBufferProxyImpl::CommandBufferProxyImpl(
     GpuChannelHost* channel,
     int route_id)
     : channel_(channel),
@@ -31,7 +31,7 @@ CommandBufferProxy::CommandBufferProxy(
       last_put_offset_(-1) {
 }
 
-CommandBufferProxy::~CommandBufferProxy() {
+CommandBufferProxyImpl::~CommandBufferProxyImpl() {
   // Delete all the locally cached shared memory objects, closing the handle
   // in this process.
   for (TransferBufferMap::iterator it = transfer_buffers_.begin();
@@ -42,9 +42,9 @@ CommandBufferProxy::~CommandBufferProxy() {
   }
 }
 
-bool CommandBufferProxy::OnMessageReceived(const IPC::Message& message) {
+bool CommandBufferProxyImpl::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(CommandBufferProxy, message)
+  IPC_BEGIN_MESSAGE_MAP(CommandBufferProxyImpl, message)
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_Destroyed, OnDestroyed);
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_NotifyRepaint,
                         OnNotifyRepaint);
@@ -59,7 +59,7 @@ bool CommandBufferProxy::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void CommandBufferProxy::OnChannelError() {
+void CommandBufferProxyImpl::OnChannelError() {
   for (Decoders::iterator it = video_decoder_hosts_.begin();
        it != video_decoder_hosts_.end(); ++it) {
     it->second->OnChannelError();
@@ -67,12 +67,12 @@ void CommandBufferProxy::OnChannelError() {
   OnDestroyed(gpu::error::kUnknown);
 }
 
-void CommandBufferProxy::OnDestroyed(gpu::error::ContextLostReason reason) {
+void CommandBufferProxyImpl::OnDestroyed(gpu::error::ContextLostReason reason) {
   // Prevent any further messages from being sent.
   channel_ = NULL;
 
   // When the client sees that the context is lost, they should delete this
-  // CommandBufferProxy and create a new one.
+  // CommandBufferProxyImpl and create a new one.
   last_state_.error = gpu::error::kLostContext;
   last_state_.context_lost_reason = reason;
 
@@ -83,38 +83,38 @@ void CommandBufferProxy::OnDestroyed(gpu::error::ContextLostReason reason) {
   }
 }
 
-void CommandBufferProxy::OnEchoAck() {
+void CommandBufferProxyImpl::OnEchoAck() {
   DCHECK(!echo_tasks_.empty());
   base::Closure callback = echo_tasks_.front();
   echo_tasks_.pop();
   callback.Run();
 }
 
-void CommandBufferProxy::OnConsoleMessage(
+void CommandBufferProxyImpl::OnConsoleMessage(
     const GPUCommandBufferConsoleMessage& message) {
   if (!console_message_callback_.is_null()) {
     console_message_callback_.Run(message.message, message.id);
   }
 }
 
-void CommandBufferProxy::SetMemoryAllocationChangedCallback(
+void CommandBufferProxyImpl::SetMemoryAllocationChangedCallback(
     const base::Callback<void(const GpuMemoryAllocationForRenderer&)>&
         callback) {
   memory_allocation_changed_callback_ = callback;
 }
 
-void CommandBufferProxy::OnSetMemoryAllocation(
+void CommandBufferProxyImpl::OnSetMemoryAllocation(
     const GpuMemoryAllocationForRenderer& allocation) {
   if (!memory_allocation_changed_callback_.is_null())
     memory_allocation_changed_callback_.Run(allocation);
 }
 
-void CommandBufferProxy::SetChannelErrorCallback(
+void CommandBufferProxyImpl::SetChannelErrorCallback(
     const base::Closure& callback) {
   channel_error_callback_ = callback;
 }
 
-bool CommandBufferProxy::Initialize() {
+bool CommandBufferProxyImpl::Initialize() {
   bool result;
   if (!Send(new GpuCommandBufferMsg_Initialize(route_id_, &result))) {
     LOG(ERROR) << "Could not send GpuCommandBufferMsg_Initialize.";
@@ -151,7 +151,7 @@ bool CommandBufferProxy::Initialize() {
   return true;
 }
 
-gpu::CommandBuffer::State CommandBufferProxy::GetState() {
+gpu::CommandBuffer::State CommandBufferProxyImpl::GetState() {
   // Send will flag state with lost context if IPC fails.
   if (last_state_.error == gpu::error::kNoError) {
     gpu::CommandBuffer::State state;
@@ -163,15 +163,18 @@ gpu::CommandBuffer::State CommandBufferProxy::GetState() {
   return last_state_;
 }
 
-gpu::CommandBuffer::State CommandBufferProxy::GetLastState() {
+gpu::CommandBuffer::State CommandBufferProxyImpl::GetLastState() {
   return last_state_;
 }
 
-void CommandBufferProxy::Flush(int32 put_offset) {
+void CommandBufferProxyImpl::Flush(int32 put_offset) {
   if (last_state_.error != gpu::error::kNoError)
     return;
 
-  TRACE_EVENT1("gpu", "CommandBufferProxy::Flush", "put_offset", put_offset);
+  TRACE_EVENT1("gpu",
+               "CommandBufferProxyImpl::Flush",
+               "put_offset",
+               put_offset);
 
   if (last_put_offset_ == put_offset)
     return;
@@ -183,9 +186,10 @@ void CommandBufferProxy::Flush(int32 put_offset) {
                                           ++flush_count_));
 }
 
-gpu::CommandBuffer::State CommandBufferProxy::FlushSync(int32 put_offset,
-                                                        int32 last_known_get) {
-  TRACE_EVENT1("gpu", "CommandBufferProxy::FlushSync", "put_offset",
+gpu::CommandBuffer::State CommandBufferProxyImpl::FlushSync(
+    int32 put_offset,
+    int32 last_known_get) {
+  TRACE_EVENT1("gpu", "CommandBufferProxyImpl::FlushSync", "put_offset",
                put_offset);
   Flush(put_offset);
   TryUpdateState();
@@ -203,7 +207,7 @@ gpu::CommandBuffer::State CommandBufferProxy::FlushSync(int32 put_offset,
   return last_state_;
 }
 
-void CommandBufferProxy::SetGetBuffer(int32 shm_id) {
+void CommandBufferProxyImpl::SetGetBuffer(int32 shm_id) {
   if (last_state_.error != gpu::error::kNoError)
     return;
 
@@ -211,12 +215,13 @@ void CommandBufferProxy::SetGetBuffer(int32 shm_id) {
   last_put_offset_ = -1;
 }
 
-void CommandBufferProxy::SetGetOffset(int32 get_offset) {
+void CommandBufferProxyImpl::SetGetOffset(int32 get_offset) {
   // Not implemented in proxy.
   NOTREACHED();
 }
 
-int32 CommandBufferProxy::CreateTransferBuffer(size_t size, int32 id_request) {
+int32 CommandBufferProxyImpl::CreateTransferBuffer(
+    size_t size, int32 id_request) {
   if (last_state_.error != gpu::error::kNoError)
     return -1;
 
@@ -245,7 +250,7 @@ int32 CommandBufferProxy::CreateTransferBuffer(size_t size, int32 id_request) {
   return id;
 }
 
-int32 CommandBufferProxy::RegisterTransferBuffer(
+int32 CommandBufferProxyImpl::RegisterTransferBuffer(
     base::SharedMemory* shared_memory,
     size_t size,
     int32 id_request) {
@@ -265,7 +270,7 @@ int32 CommandBufferProxy::RegisterTransferBuffer(
   return id;
 }
 
-void CommandBufferProxy::DestroyTransferBuffer(int32 id) {
+void CommandBufferProxyImpl::DestroyTransferBuffer(int32 id) {
   if (last_state_.error != gpu::error::kNoError)
     return;
 
@@ -279,7 +284,7 @@ void CommandBufferProxy::DestroyTransferBuffer(int32 id) {
   Send(new GpuCommandBufferMsg_DestroyTransferBuffer(route_id_, id));
 }
 
-Buffer CommandBufferProxy::GetTransferBuffer(int32 id) {
+Buffer CommandBufferProxyImpl::GetTransferBuffer(int32 id) {
   if (last_state_.error != gpu::error::kNoError)
     return Buffer();
 
@@ -321,31 +326,35 @@ Buffer CommandBufferProxy::GetTransferBuffer(int32 id) {
   return buffer;
 }
 
-void CommandBufferProxy::SetToken(int32 token) {
+void CommandBufferProxyImpl::SetToken(int32 token) {
   // Not implemented in proxy.
   NOTREACHED();
 }
 
-void CommandBufferProxy::OnNotifyRepaint() {
+void CommandBufferProxyImpl::OnNotifyRepaint() {
   if (!notify_repaint_task_.is_null())
     MessageLoop::current()->PostNonNestableTask(
         FROM_HERE, notify_repaint_task_);
   notify_repaint_task_.Reset();
 }
 
-void CommandBufferProxy::SetParseError(
+void CommandBufferProxyImpl::SetParseError(
     gpu::error::Error error) {
   // Not implemented in proxy.
   NOTREACHED();
 }
 
-void CommandBufferProxy::SetContextLostReason(
+void CommandBufferProxyImpl::SetContextLostReason(
     gpu::error::ContextLostReason reason) {
   // Not implemented in proxy.
   NOTREACHED();
 }
 
-bool CommandBufferProxy::Echo(const base::Closure& callback) {
+int CommandBufferProxyImpl::GetRouteID() const {
+  return route_id_;
+}
+
+bool CommandBufferProxyImpl::Echo(const base::Closure& callback) {
   if (last_state_.error != gpu::error::kNoError) {
     return false;
   }
@@ -360,29 +369,30 @@ bool CommandBufferProxy::Echo(const base::Closure& callback) {
   return true;
 }
 
-bool CommandBufferProxy::SetSurfaceVisible(bool visible) {
+bool CommandBufferProxyImpl::SetSurfaceVisible(bool visible) {
   if (last_state_.error != gpu::error::kNoError)
     return false;
 
   return Send(new GpuCommandBufferMsg_SetSurfaceVisible(route_id_, visible));
 }
 
-bool CommandBufferProxy::DiscardBackbuffer() {
+bool CommandBufferProxyImpl::DiscardBackbuffer() {
   if (last_state_.error != gpu::error::kNoError)
     return false;
 
   return Send(new GpuCommandBufferMsg_DiscardBackbuffer(route_id_));
 }
 
-bool CommandBufferProxy::EnsureBackbuffer() {
+bool CommandBufferProxyImpl::EnsureBackbuffer() {
   if (last_state_.error != gpu::error::kNoError)
     return false;
 
   return Send(new GpuCommandBufferMsg_EnsureBackbuffer(route_id_));
 }
 
-bool CommandBufferProxy::SetParent(CommandBufferProxy* parent_command_buffer,
-                                   uint32 parent_texture_id) {
+bool CommandBufferProxyImpl::SetParent(
+    CommandBufferProxy* parent_command_buffer,
+    uint32 parent_texture_id) {
   if (last_state_.error != gpu::error::kNoError)
     return false;
 
@@ -390,7 +400,7 @@ bool CommandBufferProxy::SetParent(CommandBufferProxy* parent_command_buffer,
   if (parent_command_buffer) {
     if (!Send(new GpuCommandBufferMsg_SetParent(
         route_id_,
-        parent_command_buffer->route_id_,
+        parent_command_buffer->GetRouteID(),
         parent_texture_id,
         &result))) {
       return false;
@@ -408,12 +418,12 @@ bool CommandBufferProxy::SetParent(CommandBufferProxy* parent_command_buffer,
   return result;
 }
 
-void CommandBufferProxy::SetNotifyRepaintTask(const base::Closure& task) {
+void CommandBufferProxyImpl::SetNotifyRepaintTask(const base::Closure& task) {
   notify_repaint_task_ = task;
 }
 
 scoped_refptr<GpuVideoDecodeAcceleratorHost>
-CommandBufferProxy::CreateVideoDecoder(
+CommandBufferProxyImpl::CreateVideoDecoder(
     media::VideoDecodeAccelerator::Profile profile,
     media::VideoDecodeAccelerator::Client* client) {
   int decoder_route_id;
@@ -434,11 +444,11 @@ CommandBufferProxy::CreateVideoDecoder(
   return decoder_host;
 }
 
-gpu::error::Error CommandBufferProxy::GetLastError() {
+gpu::error::Error CommandBufferProxyImpl::GetLastError() {
   return last_state_.error;
 }
 
-bool CommandBufferProxy::Send(IPC::Message* msg) {
+bool CommandBufferProxyImpl::Send(IPC::Message* msg) {
   // Caller should not intentionally send a message if the context is lost.
   DCHECK(last_state_.error == gpu::error::kNoError);
 
@@ -460,19 +470,20 @@ bool CommandBufferProxy::Send(IPC::Message* msg) {
   return false;
 }
 
-void CommandBufferProxy::OnUpdateState(const gpu::CommandBuffer::State& state) {
+void CommandBufferProxyImpl::OnUpdateState(
+    const gpu::CommandBuffer::State& state) {
   // Handle wraparound. It works as long as we don't have more than 2B state
   // updates in flight across which reordering occurs.
   if (state.generation - last_state_.generation < 0x80000000U)
     last_state_ = state;
 }
 
-void CommandBufferProxy::SetOnConsoleMessageCallback(
+void CommandBufferProxyImpl::SetOnConsoleMessageCallback(
     const GpuConsoleMessageCallback& callback) {
   console_message_callback_ = callback;
 }
 
-void CommandBufferProxy::TryUpdateState() {
+void CommandBufferProxyImpl::TryUpdateState() {
   if (last_state_.error == gpu::error::kNoError)
     shared_state_->Read(&last_state_);
 }

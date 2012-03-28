@@ -170,7 +170,7 @@ gpu::CommandBuffer* PlatformContext3DImpl::GetCommandBuffer() {
 
 int PlatformContext3DImpl::GetCommandBufferRouteId() {
   DCHECK(command_buffer_);
-  return command_buffer_->route_id();
+  return command_buffer_->GetRouteID();
 }
 
 void PlatformContext3DImpl::SetContextLostCallback(const base::Closure& task) {

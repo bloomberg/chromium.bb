@@ -12,7 +12,7 @@
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
 #include "base/shared_memory.h"
-#include "content/common/gpu/client/command_buffer_proxy.h"
+#include "content/common/gpu/client/command_buffer_proxy_impl.h"
 #include "content/common/gpu/client/gpu_channel_host.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_channel_handle.h"
@@ -272,7 +272,7 @@ int ContentGLContext::GetChannelID() {
 }
 
 int ContentGLContext::GetContextID() {
-  return command_buffer_->route_id();
+  return command_buffer_->GetRouteID();
 }
 
 bool ContentGLContext::SetSurfaceVisible(bool visible) {

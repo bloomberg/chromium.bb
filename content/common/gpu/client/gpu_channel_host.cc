@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
-#include "content/common/gpu/client/command_buffer_proxy.h"
+#include "content/common/gpu/client/command_buffer_proxy_impl.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_sync_message_filter.h"
@@ -197,7 +197,7 @@ CommandBufferProxy* GpuChannelHost::CreateViewCommandBuffer(
 
   GPUCreateCommandBufferConfig init_params;
   init_params.share_group_id =
-      share_group ? share_group->route_id() : MSG_ROUTING_NONE;
+      share_group ? share_group->GetRouteID() : MSG_ROUTING_NONE;
   init_params.allowed_extensions = allowed_extensions;
   init_params.attribs = attribs;
   init_params.active_url = active_url;
@@ -206,7 +206,8 @@ CommandBufferProxy* GpuChannelHost::CreateViewCommandBuffer(
   if (route_id == MSG_ROUTING_NONE)
     return NULL;
 
-  CommandBufferProxy* command_buffer = new CommandBufferProxy(this, route_id);
+  CommandBufferProxyImpl* command_buffer =
+      new CommandBufferProxyImpl(this, route_id);
   AddRoute(route_id, command_buffer->AsWeakPtr());
   proxies_[route_id] = command_buffer;
   return command_buffer;
@@ -241,7 +242,7 @@ CommandBufferProxy* GpuChannelHost::CreateOffscreenCommandBuffer(
 
   GPUCreateCommandBufferConfig init_params;
   init_params.share_group_id =
-      share_group ? share_group->route_id() : MSG_ROUTING_NONE;
+      share_group ? share_group->GetRouteID() : MSG_ROUTING_NONE;
   init_params.allowed_extensions = allowed_extensions;
   init_params.attribs = attribs;
   init_params.active_url = active_url;
@@ -256,7 +257,8 @@ CommandBufferProxy* GpuChannelHost::CreateOffscreenCommandBuffer(
   if (route_id == MSG_ROUTING_NONE)
     return NULL;
 
-  CommandBufferProxy* command_buffer = new CommandBufferProxy(this, route_id);
+  CommandBufferProxyImpl* command_buffer =
+      new CommandBufferProxyImpl(this, route_id);
   AddRoute(route_id, command_buffer->AsWeakPtr());
   proxies_[route_id] = command_buffer;
   return command_buffer;
@@ -268,11 +270,10 @@ CommandBufferProxy* GpuChannelHost::CreateOffscreenCommandBuffer(
 void GpuChannelHost::DestroyCommandBuffer(CommandBufferProxy* command_buffer) {
 #if defined(ENABLE_GPU)
   AutoLock lock(context_lock_);
-  Send(new GpuChannelMsg_DestroyCommandBuffer(command_buffer->route_id()));
-
+  int route_id = command_buffer->GetRouteID();
+  Send(new GpuChannelMsg_DestroyCommandBuffer(route_id));
   // Check the proxy has not already been removed after a channel error.
-  int route_id = command_buffer->route_id();
-  if (proxies_.find(command_buffer->route_id()) != proxies_.end())
+  if (proxies_.find(route_id) != proxies_.end())
     proxies_.erase(route_id);
   RemoveRoute(route_id);
   delete command_buffer;
