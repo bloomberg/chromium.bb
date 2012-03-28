@@ -32,7 +32,7 @@ class CppTypeGenerator(object):
       if qualified_name in self._type_namespaces:
         raise ValueError('Type %s is declared in both %s and %s' %
             (qualified_name, namespace.name,
-             self._type_namespaces[qualified_type].name))
+             self._type_namespaces[qualified_name].name))
       self._type_namespaces[qualified_name] = namespace
     self._cpp_namespaces[namespace] = cpp_namespace
 
@@ -213,7 +213,7 @@ class CppTypeGenerator(object):
       if type_name == self._QualifyName(namespace, ref_type):
         return namespace
 
-    raise ValueError('Cannot resolve %s to a type in any namespace.' % ref_type)
+    return None
 
   def _NamespaceTypeDependencies(self):
     """Returns a dict containing a mapping of model.Namespace to the C++ type
