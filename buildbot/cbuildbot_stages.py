@@ -1307,10 +1307,6 @@ class UploadPrebuiltsStage(BoardSpecificBuilderStage):
     binhosts = []
     extra_args = []
 
-    # TODO(davidjames): Implement --git_sync for lkgm builders.
-    if self._build_config['use_lkgm'] or self._options.lkgm:
-      git_sync = False
-
     # Check if we are uploading dev_installer prebuilts.
     use_binhost_package_file = False
     if self._build_config['dev_installer_prebuilts']:

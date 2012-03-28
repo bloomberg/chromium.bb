@@ -941,25 +941,23 @@ def GetPushBranch(cwd):
    2. For non-repo checkouts, we assume that you have checked out from
       origin/master.
 
-  If your repo checkout is tracking a revision-locked manifest, this command
-  will fail and throw an exception.
-
   Args:
     cwd: Directory to look in.
   """
   try:
     # For valid repo projects, we push to the 'gerrit' remote which uses SSH.
-    output = RunCommand(['repo', 'forall', '.', '-c', 'echo $REPO_RREV'],
+    output = RunCommand(['repo', 'forall', '.', '-c', 'echo $REPO_PROJECT'],
                         print_cmd=False, redirect_stdout=True,
                         redirect_stderr=True, cwd=cwd).output
   except RunCommandError:
     # For other repositories, we push to origin/master.
     return 'origin', 'master'
 
-  if not output.startswith('refs/heads/'):
-    raise Exception('Could not find push branch. Got %s' % output)
-  remote_branch = output.rstrip().replace('refs/heads/', '')
-  return GERRIT_SSH_REMOTE, remote_branch
+  repo_root = FindRepoCheckoutRoot(cwd)
+  remote_branch = GetProjectManifestBranch(repo_root, output.rstrip())[1]
+  if not remote_branch.startswith('refs/heads/'):
+    raise Exception('Could not find push branch. Got %s' % remote_branch)
+  return GERRIT_SSH_REMOTE, remote_branch.replace('refs/heads/', '')
 
 
 def CreatePushBranch(branch, cwd, sync=True):

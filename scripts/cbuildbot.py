@@ -92,10 +92,11 @@ def _GetChromiteTrackingBranch():
     if tracking_branch.startswith('refs/heads/'):
       return tracking_branch.replace('refs/heads/', '')
   # If we are not on a branch, or if the tracking branch is a revision,
-  # use the default manifest branch. This only works if we are in a
-  # repo repository. TODO(davidjames): Fix this to work if we're not in a repo
-  # repository.
-  return cros_lib.GetManifestDefaultBranch(cwd)
+  # use the push branch. For repo repositories, this will be the manifest
+  # branch configured for this project. For other repositories, we'll just
+  # guess 'master', since there's no easy way to find out what branch
+  # we're on.
+  return cros_lib.GetPushBranch(cwd)[1]
 
 
 def _CheckBuildRootBranch(buildroot, tracking_branch):
