@@ -2694,7 +2694,12 @@ void GLES2Implementation::UnmapBufferSubDataCHROMIUM(const void* mem) {
   helper_->BufferSubData(
       mb.target, mb.offset, mb.size, mb.shm_id, mb.shm_offset);
   mapped_memory_->FreePendingToken(mb.shm_memory, helper_->InsertToken());
+  // Flushing after unmap lets the service side start processing commands
+  // sooner. However, on lowend devices, the thread thrashing causes is
+  // worse than the latency hit.
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
   helper_->CommandBufferHelper::Flush();
+#endif
   mapped_buffers_.erase(it);
 }
 
@@ -2767,7 +2772,9 @@ void GLES2Implementation::UnmapTexSubImage2DCHROMIUM(const void* mem) {
       mt.target, mt.level, mt.xoffset, mt.yoffset, mt.width, mt.height,
       mt.format, mt.type, mt.shm_id, mt.shm_offset, GL_FALSE);
   mapped_memory_->FreePendingToken(mt.shm_memory, helper_->InsertToken());
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
   helper_->CommandBufferHelper::Flush();
+#endif
   mapped_textures_.erase(it);
 }
 

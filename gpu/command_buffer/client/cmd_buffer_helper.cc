@@ -229,7 +229,7 @@ void CommandBufferHelper::WaitForAvailableEntries(int32 count) {
   if (pending > limit) {
     Flush();
   } else if (commands_issued_ % kCommandsPerFlushCheck == 0) {
-#if !defined(OS_ANDROID)
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
     // Allow this command buffer to be pre-empted by another if a "reasonable"
     // amount of work has been done. On highend machines, this reduces the
     // latency of GPU commands. However, on Android, this can cause the
