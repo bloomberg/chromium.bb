@@ -39,6 +39,11 @@ pass2_SOURCES =					\
 	brl_checks.h				\
 	pass2.c	
 
+letterDefTest_SOURCES = 			\
+	brl_checks.c				\
+	brl_checks.h				\
+	letterDefTest.c
+
 check_PROGRAMS =				\
 	pass2					\
 	present_progressive			\
@@ -46,7 +51,8 @@ check_PROGRAMS =				\
 	capitalized_with_sentance		\
 	inpos_compbrl				\
 	lastworditalafter			\
-	en_gb_g1_italics
+	en_gb_g1_italics \
+	letterDefTest
 
 dist_check_SCRIPTS = \
 	check_all_tables.pl \
