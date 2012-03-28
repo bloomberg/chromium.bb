@@ -45,7 +45,7 @@ void CallSnapshotFileCallback(
   if (error == base::PLATFORM_FILE_OK && file_type == gdata::HOSTED_DOCUMENT) {
     file_ref = ShareableFileReference::GetOrCreate(
         local_path, ShareableFileReference::DELETE_ON_FINAL_RELEASE,
-        base::MessageLoopProxy::current());
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
   }
 
   callback.Run(error, file_info, local_path, file_ref);
