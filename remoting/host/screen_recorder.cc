@@ -240,26 +240,24 @@ void ScreenRecorder::DoSendVideoPacket(scoped_ptr<VideoPacket> packet) {
   if (network_stopped_ || connections_.empty())
     return;
 
-  VideoPacket* packet_ptr = packet.get();
+  base::Closure callback;
+  if ((packet->flags() & VideoPacket::LAST_PARTITION) != 0)
+    callback = base::Bind(&ScreenRecorder::VideoFrameSentCallback, this);
 
   // TODO(sergeyu): Currently we send the data only to the first
   // connection. Send it to all connections if necessary.
   connections_.front()->video_stub()->ProcessVideoPacket(
-      packet_ptr, base::Bind(
-          &ScreenRecorder::VideoPacketSentCallback, this,
-          base::Passed(packet.Pass())));
+      packet.Pass(), callback);
 }
 
-void ScreenRecorder::VideoPacketSentCallback(scoped_ptr<VideoPacket> packet) {
+void ScreenRecorder::VideoFrameSentCallback() {
+  DCHECK(network_loop_->BelongsToCurrentThread());
+
   if (network_stopped_)
     return;
 
-  if ((packet->flags() & VideoPacket::LAST_PARTITION) != 0) {
-    // Post DoFinishOneRecording() if that was the last packet for the
-    // frame.
-    capture_loop_->PostTask(
-        FROM_HERE, base::Bind(&ScreenRecorder::DoFinishOneRecording, this));
-  }
+  capture_loop_->PostTask(
+      FROM_HERE, base::Bind(&ScreenRecorder::DoFinishOneRecording, this));
 }
 
 void ScreenRecorder::DoStopOnNetworkThread(const base::Closure& done_task) {

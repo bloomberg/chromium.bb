@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,11 +37,7 @@ namespace protocol {
 // e.g. when we the sender sends multiple messages in one TCP packet.
 class MessageReader : public base::RefCountedThreadSafe<MessageReader> {
  public:
-  // The callback is given ownership of the second argument
-  // (|done_task|).  The buffer (first argument) is owned by
-  // MessageReader and is freed when the task specified by the second
-  // argument is called.
-  typedef base::Callback<void(CompoundBuffer*, const base::Closure&)>
+  typedef base::Callback<void(scoped_ptr<CompoundBuffer>, const base::Closure&)>
       MessageReceivedCallback;
 
   MessageReader();
@@ -56,8 +52,7 @@ class MessageReader : public base::RefCountedThreadSafe<MessageReader> {
   void OnRead(int result);
   void HandleReadResult(int result);
   void OnDataReceived(net::IOBuffer* data, int data_size);
-  void OnMessageDone(CompoundBuffer* message,
-                     scoped_refptr<base::MessageLoopProxy> message_loop);
+  void OnMessageDone(scoped_refptr<base::MessageLoopProxy> message_loop);
   void ProcessDoneEvent();
 
   net::Socket* socket_;
@@ -85,7 +80,7 @@ class MessageReader : public base::RefCountedThreadSafe<MessageReader> {
 template <class T>
 class ProtobufMessageReader {
  public:
-  typedef typename base::Callback<void(T*, const base::Closure&)>
+  typedef typename base::Callback<void(scoped_ptr<T>, const base::Closure&)>
       MessageReceivedCallback;
 
   ProtobufMessageReader() { };
@@ -101,23 +96,17 @@ class ProtobufMessageReader {
   }
 
  private:
-  void OnNewData(CompoundBuffer* buffer, const base::Closure& done_task) {
-    T* message = new T();
-    CompoundBufferInputStream stream(buffer);
+  void OnNewData(scoped_ptr<CompoundBuffer> buffer,
+                 const base::Closure& done_task) {
+    scoped_ptr<T> message(new T());
+    CompoundBufferInputStream stream(buffer.get());
     bool ret = message->ParseFromZeroCopyStream(&stream);
     if (!ret) {
       LOG(WARNING) << "Received message that is not a valid protocol buffer.";
-      delete message;
     } else {
       DCHECK_EQ(stream.position(), buffer->total_bytes());
-      message_received_callback_.Run(message, base::Bind(
-          &ProtobufMessageReader<T>::OnDone, message, done_task));
+      message_received_callback_.Run(message.Pass(), done_task);
     }
-  }
-
-  static void OnDone(T* message, const base::Closure& done_task) {
-    delete message;
-    done_task.Run();
   }
 
   scoped_refptr<MessageReader> message_reader_;

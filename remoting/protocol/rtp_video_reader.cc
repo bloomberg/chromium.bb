@@ -184,7 +184,7 @@ void RtpVideoReader::CheckFullPacket(const PacketsQueue::iterator& pos) {
 
 void RtpVideoReader::RebuildVideoPacket(const PacketsQueue::iterator& first,
                                         const PacketsQueue::iterator& last) {
-  VideoPacket* packet = new VideoPacket();
+  scoped_ptr<VideoPacket> packet(new VideoPacket());
 
   // Set flags.
   if (first->packet->vp8_descriptor().frame_beginning)
@@ -216,8 +216,7 @@ void RtpVideoReader::RebuildVideoPacket(const PacketsQueue::iterator& first,
   // Set format.
   packet->mutable_format()->set_encoding(VideoPacketFormat::ENCODING_VP8);
 
-  video_stub_->ProcessVideoPacket(
-      packet, base::Bind(&base::DeletePointer<VideoPacket>, packet));
+  video_stub_->ProcessVideoPacket(packet.Pass(), base::Closure());
 
   SendReceiverReportIf();
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -95,22 +95,21 @@ void MessageReader::OnDataReceived(net::IOBuffer* data, int data_size) {
   // plugin thread if this code is compiled into a separate binary.  Fix this.
   for (std::vector<CompoundBuffer*>::iterator it = new_messages.begin();
        it != new_messages.end(); ++it) {
-    message_received_callback_.Run(*it, base::Bind(
-        &MessageReader::OnMessageDone, this,
-        *it, base::MessageLoopProxy::current()));
+    message_received_callback_.Run(
+        scoped_ptr<CompoundBuffer>(*it),
+        base::Bind(&MessageReader::OnMessageDone, this,
+                   base::MessageLoopProxy::current()));
   }
 }
 
 void MessageReader::OnMessageDone(
-    CompoundBuffer* message,
     scoped_refptr<base::MessageLoopProxy> message_loop) {
   if (!message_loop->BelongsToCurrentThread()) {
     message_loop->PostTask(
         FROM_HERE,
-        base::Bind(&MessageReader::OnMessageDone, this, message, message_loop));
+        base::Bind(&MessageReader::OnMessageDone, this, message_loop));
     return;
   }
-  delete message;
   ProcessDoneEvent();
 }
 

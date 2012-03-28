@@ -133,8 +133,9 @@ class ScreenRecorder : public base::RefCountedThreadSafe<ScreenRecorder> {
   // Signal network thread to cease activities.
   void DoStopOnNetworkThread(const base::Closure& done_task);
 
-  // Callback for VideoStub::ProcessVideoPacket().
-  void VideoPacketSentCallback(scoped_ptr<VideoPacket> packet);
+  // Callback for VideoStub::ProcessVideoPacket() that is used for
+  // each last packet in a frame.
+  void VideoFrameSentCallback();
 
   // Encoder thread -----------------------------------------------------------
 

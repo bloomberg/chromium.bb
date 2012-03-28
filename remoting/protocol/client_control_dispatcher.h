@@ -42,7 +42,7 @@ class ClientControlDispatcher : public ChannelDispatcherBase,
   virtual void OnInitialized() OVERRIDE;
 
  private:
-  void OnMessageReceived(ControlMessage* message,
+  void OnMessageReceived(scoped_ptr<ControlMessage> message,
                          const base::Closure& done_task);
 
   ClientStub* client_stub_;

@@ -9,6 +9,7 @@
 
 #include "net/base/ip_endpoint.h"
 #include "remoting/proto/internal.pb.h"
+#include "remoting/proto/video.pb.h"
 #include "remoting/protocol/client_stub.h"
 #include "remoting/protocol/clipboard_stub.h"
 #include "remoting/protocol/connection_to_client.h"
@@ -120,8 +121,13 @@ class MockVideoStub : public VideoStub {
   MockVideoStub();
   virtual ~MockVideoStub();
 
-  MOCK_METHOD2(ProcessVideoPacket, void(const VideoPacket* video_packet,
-                                        const base::Closure& done));
+  MOCK_METHOD2(ProcessVideoPacketPtr, void(const VideoPacket* video_packet,
+                                           const base::Closure& done));
+  virtual void ProcessVideoPacket(scoped_ptr<VideoPacket> video_packet,
+                                  const base::Closure& done) {
+    ProcessVideoPacketPtr(video_packet.get(), done);
+  }
+
   MOCK_METHOD0(GetPendingPackets, int());
 
  private:

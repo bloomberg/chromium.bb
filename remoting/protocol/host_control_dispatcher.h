@@ -48,7 +48,7 @@ class HostControlDispatcher : public ChannelDispatcherBase, public ClientStub {
   virtual void OnInitialized() OVERRIDE;
 
  private:
-  void OnMessageReceived(ControlMessage* message,
+  void OnMessageReceived(scoped_ptr<ControlMessage> message,
                          const base::Closure& done_task);
 
   ClipboardStub* clipboard_stub_;

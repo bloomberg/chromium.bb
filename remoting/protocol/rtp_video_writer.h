@@ -30,7 +30,7 @@ class RtpVideoWriter : public VideoWriter {
   virtual bool is_connected() OVERRIDE;
 
   // VideoStub interface.
-  virtual void ProcessVideoPacket(const VideoPacket* packet,
+  virtual void ProcessVideoPacket(scoped_ptr<VideoPacket> packet,
                                   const base::Closure& done) OVERRIDE;
   virtual int GetPendingPackets() OVERRIDE;
 

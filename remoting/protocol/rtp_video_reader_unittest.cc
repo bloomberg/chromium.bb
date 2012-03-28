@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,11 +25,12 @@ class RtpVideoReaderTest : public testing::Test,
                            public VideoStub {
  public:
   // VideoStub interface.
-  virtual void ProcessVideoPacket(const VideoPacket* video_packet,
+  virtual void ProcessVideoPacket(scoped_ptr<VideoPacket> video_packet,
                                   const base::Closure& done) {
     received_packets_.push_back(VideoPacket());
     received_packets_.back() = *video_packet;
-    done.Run();
+    if (!done.is_null())
+      done.Run();
   }
 
   virtual int GetPendingPackets() {

@@ -139,9 +139,9 @@ class ChromotingHostTest : public testing::Test {
         session2_, &host_stub2_, &event_executor2_));
     connection2_ = owned_connection2_.get();
 
-    ON_CALL(video_stub_, ProcessVideoPacket(_, _))
+    ON_CALL(video_stub_, ProcessVideoPacketPtr(_, _))
         .WillByDefault(DeleteArg<0>());
-    ON_CALL(video_stub2_, ProcessVideoPacket(_, _))
+    ON_CALL(video_stub2_, ProcessVideoPacketPtr(_, _))
         .WillByDefault(DeleteArg<0>());
     ON_CALL(*connection_, video_stub())
         .WillByDefault(Return(&video_stub_));
@@ -281,12 +281,12 @@ TEST_F(ChromotingHostTest, DISABLED_Connect) {
     InSequence s;
     EXPECT_CALL(*disconnect_window_, Show(_, _))
         .Times(0);
-    EXPECT_CALL(video_stub_, ProcessVideoPacket(_, _))
+    EXPECT_CALL(video_stub_, ProcessVideoPacketPtr(_, _))
         .WillOnce(DoAll(
             InvokeWithoutArgs(this, &ChromotingHostTest::ShutdownHost),
             RunDoneTask()))
         .RetiresOnSaturation();
-    EXPECT_CALL(video_stub_, ProcessVideoPacket(_, _))
+    EXPECT_CALL(video_stub_, ProcessVideoPacketPtr(_, _))
         .Times(AnyNumber());
     EXPECT_CALL(*connection_, Disconnect())
         .RetiresOnSaturation();
@@ -304,14 +304,14 @@ TEST_F(ChromotingHostTest, DISABLED_Reconnect) {
     InSequence s;
     EXPECT_CALL(*disconnect_window_, Show(_, _))
         .Times(0);
-    EXPECT_CALL(video_stub_, ProcessVideoPacket(_, _))
+    EXPECT_CALL(video_stub_, ProcessVideoPacketPtr(_, _))
         .WillOnce(DoAll(
             InvokeWithoutArgs(this, &ChromotingHostTest::RemoveClientSession),
             RunDoneTask()))
         .RetiresOnSaturation();
-    EXPECT_CALL(video_stub_, ProcessVideoPacket(_, _))
+    EXPECT_CALL(video_stub_, ProcessVideoPacketPtr(_, _))
         .Times(AnyNumber());
-    EXPECT_CALL(video_stub_, ProcessVideoPacket(_, _))
+    EXPECT_CALL(video_stub_, ProcessVideoPacketPtr(_, _))
         .Times(AnyNumber());
   }
 
@@ -328,12 +328,12 @@ TEST_F(ChromotingHostTest, DISABLED_Reconnect) {
     InSequence s;
     EXPECT_CALL(*disconnect_window_, Show(_, _))
         .Times(0);
-    EXPECT_CALL(video_stub_, ProcessVideoPacket(_, _))
+    EXPECT_CALL(video_stub_, ProcessVideoPacketPtr(_, _))
         .WillOnce(DoAll(
             InvokeWithoutArgs(this, &ChromotingHostTest::ShutdownHost),
             RunDoneTask()))
         .RetiresOnSaturation();
-    EXPECT_CALL(video_stub_, ProcessVideoPacket(_, _))
+    EXPECT_CALL(video_stub_, ProcessVideoPacketPtr(_, _))
         .Times(AnyNumber());
   }
 
@@ -353,7 +353,7 @@ TEST_F(ChromotingHostTest, DISABLED_ConnectTwice) {
     InSequence s;
     EXPECT_CALL(*disconnect_window_, Show(_, _))
         .Times(0);
-    EXPECT_CALL(video_stub_, ProcessVideoPacket(_, _))
+    EXPECT_CALL(video_stub_, ProcessVideoPacketPtr(_, _))
         .WillOnce(DoAll(
             InvokeWithoutArgs(
                 CreateFunctor(
@@ -363,14 +363,14 @@ TEST_F(ChromotingHostTest, DISABLED_ConnectTwice) {
         .RetiresOnSaturation();
     EXPECT_CALL(*disconnect_window_, Show(_, _))
         .Times(0);
-    EXPECT_CALL(video_stub_, ProcessVideoPacket(_, _))
+    EXPECT_CALL(video_stub_, ProcessVideoPacketPtr(_, _))
         .Times(AnyNumber());
-    EXPECT_CALL(video_stub2_, ProcessVideoPacket(_, _))
+    EXPECT_CALL(video_stub2_, ProcessVideoPacketPtr(_, _))
         .WillOnce(DoAll(
             InvokeWithoutArgs(this, &ChromotingHostTest::ShutdownHost),
             RunDoneTask()))
         .RetiresOnSaturation();
-    EXPECT_CALL(video_stub2_, ProcessVideoPacket(_, _))
+    EXPECT_CALL(video_stub2_, ProcessVideoPacketPtr(_, _))
         .Times(AnyNumber());
   }
 

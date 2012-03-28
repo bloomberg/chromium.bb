@@ -43,7 +43,7 @@ void ClientControlDispatcher::InjectClipboardEvent(
 }
 
 void ClientControlDispatcher::OnMessageReceived(
-    ControlMessage* message, const base::Closure& done_task) {
+    scoped_ptr<ControlMessage> message, const base::Closure& done_task) {
   DCHECK(client_stub_);
   base::ScopedClosureRunner done_runner(done_task);
   LOG(WARNING) << "Unknown control message received.";

@@ -64,10 +64,8 @@ class ConnectionToClientTest : public testing::Test {
 };
 
 TEST_F(ConnectionToClientTest, SendUpdateStream) {
-  // Then send the actual data.
-  VideoPacket* packet = new VideoPacket();
-  viewer_->video_stub()->ProcessVideoPacket(
-      packet, base::Bind(&base::DeletePointer<VideoPacket>, packet));
+  scoped_ptr<VideoPacket> packet(new VideoPacket());
+  viewer_->video_stub()->ProcessVideoPacket(packet.Pass(), base::Closure());
 
   message_loop_.RunAllPending();
 
@@ -84,10 +82,8 @@ TEST_F(ConnectionToClientTest, SendUpdateStream) {
 }
 
 TEST_F(ConnectionToClientTest, NoWriteAfterDisconnect) {
-  // Then send the actual data.
-  VideoPacket* packet = new VideoPacket();
-  viewer_->video_stub()->ProcessVideoPacket(
-      packet, base::Bind(&base::DeletePointer<VideoPacket>, packet));
+  scoped_ptr<VideoPacket> packet(new VideoPacket());
+  viewer_->video_stub()->ProcessVideoPacket(packet.Pass(), base::Closure());
 
   // And then close the connection to ConnectionToClient.
   viewer_->Disconnect();

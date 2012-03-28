@@ -19,8 +19,8 @@ namespace remoting {
 using protocol::AuthenticationMethod;
 
 ChromotingClient::QueuedVideoPacket::QueuedVideoPacket(
-    const VideoPacket* packet, const base::Closure& done)
-    : packet(packet), done(done) {
+    scoped_ptr<VideoPacket> packet, const base::Closure& done)
+    : packet(packet.release()), done(done) {
 }
 
 ChromotingClient::QueuedVideoPacket::~QueuedVideoPacket() {
@@ -78,6 +78,7 @@ void ChromotingClient::Stop(const base::Closure& shutdown_task) {
 
   // Drop all pending packets.
   while(!received_packets_.empty()) {
+    delete received_packets_.front().packet;
     received_packets_.front().done.Run();
     received_packets_.pop_front();
   }
@@ -103,7 +104,7 @@ ChromotingStats* ChromotingClient::GetStats() {
   return &stats_;
 }
 
-void ChromotingClient::ProcessVideoPacket(const VideoPacket* packet,
+void ChromotingClient::ProcessVideoPacket(scoped_ptr<VideoPacket> packet,
                                           const base::Closure& done) {
   DCHECK(message_loop()->BelongsToCurrentThread());
 
@@ -132,7 +133,7 @@ void ChromotingClient::ProcessVideoPacket(const VideoPacket* packet,
     stats_.round_trip_ms()->Record(round_trip_latency.InMilliseconds());
   }
 
-  received_packets_.push_back(QueuedVideoPacket(packet, done));
+  received_packets_.push_back(QueuedVideoPacket(packet.Pass(), done));
   if (!packet_being_processed_)
     DispatchPacket();
 }
@@ -150,7 +151,8 @@ void ChromotingClient::DispatchPacket() {
     return;
   }
 
-  const VideoPacket* packet = received_packets_.front().packet;
+  scoped_ptr<VideoPacket> packet(received_packets_.front().packet);
+  received_packets_.front().packet = NULL;
   packet_being_processed_ = true;
 
   // Measure the latency between the last packet being received and presented.
@@ -160,8 +162,9 @@ void ChromotingClient::DispatchPacket() {
     decode_start = base::Time::Now();
 
   rectangle_decoder_->DecodePacket(
-      packet, base::Bind(&ChromotingClient::OnPacketDone,
-                         base::Unretained(this), last_packet, decode_start));
+      packet.Pass(),
+      base::Bind(&ChromotingClient::OnPacketDone, base::Unretained(this),
+                 last_packet, decode_start));
 }
 
 void ChromotingClient::OnConnectionState(

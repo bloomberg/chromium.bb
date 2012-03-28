@@ -35,7 +35,7 @@ void HostControlDispatcher::OnInitialized() {
 }
 
 void HostControlDispatcher::OnMessageReceived(
-    ControlMessage* message, const base::Closure& done_task) {
+    scoped_ptr<ControlMessage> message, const base::Closure& done_task) {
   DCHECK(clipboard_stub_);
   DCHECK(host_stub_);
 

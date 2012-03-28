@@ -55,15 +55,16 @@ class ChromotingClient : public protocol::ConnectionToHost::HostEventCallback,
       protocol::ErrorCode error) OVERRIDE;
 
   // VideoStub implementation.
-  virtual void ProcessVideoPacket(const VideoPacket* packet,
+  virtual void ProcessVideoPacket(scoped_ptr<VideoPacket> packet,
                                   const base::Closure& done) OVERRIDE;
   virtual int GetPendingPackets() OVERRIDE;
 
  private:
   struct QueuedVideoPacket {
-    QueuedVideoPacket(const VideoPacket* packet, const base::Closure& done);
+    QueuedVideoPacket(scoped_ptr<VideoPacket> packet,
+                      const base::Closure& done);
     ~QueuedVideoPacket();
-    const VideoPacket* packet;
+    VideoPacket* packet;
     base::Closure done;
   };
 

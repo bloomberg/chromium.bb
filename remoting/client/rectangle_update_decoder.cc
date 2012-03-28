@@ -52,12 +52,12 @@ void RectangleUpdateDecoder::Initialize(const SessionConfig& config) {
   }
 }
 
-void RectangleUpdateDecoder::DecodePacket(const VideoPacket* packet,
+void RectangleUpdateDecoder::DecodePacket(scoped_ptr<VideoPacket> packet,
                                           const base::Closure& done) {
   if (!message_loop_->BelongsToCurrentThread()) {
     message_loop_->PostTask(
         FROM_HERE, base::Bind(&RectangleUpdateDecoder::DecodePacket,
-                              this, packet, done));
+                              this, base::Passed(&packet), done));
     return;
   }
 
@@ -91,7 +91,7 @@ void RectangleUpdateDecoder::DecodePacket(const VideoPacket* packet,
     return;
   }
 
-  if (decoder_->DecodePacket(packet) == Decoder::DECODE_DONE)
+  if (decoder_->DecodePacket(packet.get()) == Decoder::DECODE_DONE)
     SchedulePaint();
 }
 

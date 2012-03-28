@@ -32,7 +32,8 @@ class ProtobufVideoReader : public VideoReader {
 
  private:
   void OnChannelReady(scoped_ptr<net::StreamSocket> socket);
-  void OnNewData(VideoPacket* packet, const base::Closure& done_task);
+  void OnNewData(scoped_ptr<VideoPacket> packet,
+                 const base::Closure& done_task);
 
   Session* session_;
 

@@ -61,7 +61,7 @@ bool ProtobufVideoWriter::is_connected() {
   return channel_.get() != NULL;
 }
 
-void ProtobufVideoWriter::ProcessVideoPacket(const VideoPacket* packet,
+void ProtobufVideoWriter::ProcessVideoPacket(scoped_ptr<VideoPacket> packet,
                                              const base::Closure& done) {
   buffered_writer_->Write(SerializeAndFrameMessage(*packet), done);
 }

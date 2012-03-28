@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,7 +39,7 @@ class HostEventDispatcher : public ChannelDispatcherBase {
   virtual void OnInitialized() OVERRIDE;
 
  private:
-  void OnMessageReceived(EventMessage* message,
+  void OnMessageReceived(scoped_ptr<EventMessage> message,
                          const base::Closure& done_task);
 
   InputStub* input_stub_;

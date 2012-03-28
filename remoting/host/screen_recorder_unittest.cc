@@ -143,12 +143,12 @@ TEST_F(ScreenRecorderTest, StartAndStop) {
       .WillRepeatedly(Return(&video_stub));
 
   // By default delete the arguments when ProcessVideoPacket is received.
-  EXPECT_CALL(video_stub, ProcessVideoPacket(_, _))
+  EXPECT_CALL(video_stub, ProcessVideoPacketPtr(_, _))
       .WillRepeatedly(FinishSend());
 
   // For the first time when ProcessVideoPacket is received we stop the
   // ScreenRecorder.
-  EXPECT_CALL(video_stub, ProcessVideoPacket(_, _))
+  EXPECT_CALL(video_stub, ProcessVideoPacketPtr(_, _))
       .WillOnce(DoAll(
           FinishSend(),
           StopScreenRecorder(record_,

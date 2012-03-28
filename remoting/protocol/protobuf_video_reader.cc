@@ -53,9 +53,9 @@ void ProtobufVideoReader::OnChannelReady(scoped_ptr<net::StreamSocket> socket) {
   initialized_callback_.Run(true);
 }
 
-void ProtobufVideoReader::OnNewData(VideoPacket* packet,
+void ProtobufVideoReader::OnNewData(scoped_ptr<VideoPacket> packet,
                                     const base::Closure& done_task) {
-  video_stub_->ProcessVideoPacket(packet, done_task);
+  video_stub_->ProcessVideoPacket(packet.Pass(), done_task);
 }
 
 }  // namespace protocol

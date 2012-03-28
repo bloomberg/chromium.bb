@@ -48,7 +48,7 @@ class RectangleUpdateDecoder :
   // Decodes the contents of |packet|. DecodePacket may keep a reference to
   // |packet| so the |packet| must remain alive and valid until |done| is
   // executed.
-  void DecodePacket(const VideoPacket* packet, const base::Closure& done);
+  void DecodePacket(scoped_ptr<VideoPacket> packet, const base::Closure& done);
 
   // FrameProducer implementation.  These methods may be called before we are
   // Initialize()d, or we know the source screen size.
