@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -418,14 +418,14 @@ class PolicyTest(policy_base.PolicyTestBase):
 
   def testEnabledPlugins(self):
     """Verify that enabled plugins cannot be disabled."""
-    policy = {'EnabledPlugins': 'Java'}
+    policy = {'EnabledPlugins': ['Shockwave Flash']}
     self.SetPolicies(policy)
     for plugin in self.GetPluginsInfo().Plugins():
-      if 'Java' in plugin['name']:
+      if 'Flash' in plugin['name']:
         self.assertRaises(pyauto.JSONInterfaceError,
                           lambda: self.DisablePlugin(plugin['path']))
         return
-    logging.debug('Java is not present.')
+    logging.debug('Flash is not present.')
 
   def testAlwaysAuthorizePlugins(self):
     """Verify plugins are always allowed to run when policy is set."""
