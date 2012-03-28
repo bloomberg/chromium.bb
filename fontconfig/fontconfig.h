@@ -331,6 +331,9 @@ FcDirCacheValid (const FcChar8 *cache_file);
 FcPublic FcBool
 FcDirCacheClean (const FcChar8 *cache_dir, FcBool verbose);
 
+FcPublic void
+FcCacheCreateTagFile (const FcConfig *config);
+
 /* fccfg.c */
 FcPublic FcChar8 *
 FcConfigHome (void);
@@ -378,7 +381,7 @@ FcPublic FcBlanks *
 FcConfigGetBlanks (FcConfig *config);
 
 FcPublic FcStrList *
-FcConfigGetCacheDirs (FcConfig	*config);
+FcConfigGetCacheDirs (const FcConfig	*config);
 
 FcPublic int
 FcConfigGetRescanInterval (FcConfig *config);
