@@ -76,6 +76,9 @@ class WebURLLoaderMockFactory {
                    WebKit::WebURLError* error,
                    WebKit::WebData* data);
 
+  // Checks if the loader is pending. Otherwise, it may have been deleted.
+  bool IsPending(WebURLLoaderMock* loader);
+
   // Reads |m_filePath| and puts its content in |data|.
   // Returns true if it successfully read the file.
   static bool ReadFile(const FilePath& file_path, WebKit::WebData* data);
