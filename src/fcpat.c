@@ -1023,7 +1023,7 @@ bail0:
     return NULL;
 }
 
-#define OBJECT_HASH_SIZE    31
+#define OBJECT_HASH_SIZE    251
 static struct objectBucket {
     struct objectBucket	*next;
     FcChar32		hash;
