@@ -11,7 +11,8 @@
 
 namespace content {
 
-TapSuppressionController::TapSuppressionController(RenderWidgetHostImpl*) {}
+TapSuppressionController::TapSuppressionController(RenderWidgetHostImpl*)
+    : render_widget_host_(NULL) {}
 
 TapSuppressionController::~TapSuppressionController() {}
 
