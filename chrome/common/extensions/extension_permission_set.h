@@ -100,7 +100,6 @@ class ExtensionAPIPermission {
     kBookmark,
     kBrowsingData,
     kChromeAuthPrivate,
-    kChromePrivate,
     kChromeosInfoPrivate,
     kClipboardRead,
     kClipboardWrite,

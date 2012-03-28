@@ -132,8 +132,6 @@ ExtensionAPI::ExtensionAPI() {
       IDR_EXTENSION_API_JSON_CHROMEAUTHPRIVATE);
   unloaded_schemas_["chromeosInfoPrivate"] = ReadFromResource(
       IDR_EXTENSION_API_JSON_CHROMEOSINFOPRIVATE);
-  unloaded_schemas_["chromePrivate"] = ReadFromResource(
-      IDR_EXTENSION_API_JSON_CHROMEPRIVATE);
   unloaded_schemas_["contentSettings"] = ReadFromResource(
       IDR_EXTENSION_API_JSON_CONTENTSETTINGS);
   unloaded_schemas_["contextMenus"] = ReadFromResource(

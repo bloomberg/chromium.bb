@@ -19,7 +19,6 @@
 #include "chrome/renderer/extensions/app_bindings.h"
 #include "chrome/renderer/extensions/chrome_v8_context.h"
 #include "chrome/renderer/extensions/chrome_v8_extension.h"
-#include "chrome/renderer/extensions/chrome_private_custom_bindings.h"
 #include "chrome/renderer/extensions/context_menus_custom_bindings.h"
 #include "chrome/renderer/extensions/event_bindings.h"
 #include "chrome/renderer/extensions/experimental.socket_custom_bindings.h"
@@ -54,7 +53,6 @@
 #include "v8/include/v8.h"
 
 using content::RenderThread;
-using extensions::ChromePrivateCustomBindings;
 using extensions::ContextMenusCustomBindings;
 using extensions::ExperimentalSocketCustomBindings;
 using extensions::ExtensionAPI;
@@ -368,9 +366,6 @@ void ExtensionDispatcher::RegisterNativeHandlers(ModuleSystem* module_system,
   // Custom bindings.
   module_system->RegisterNativeHandler("app",
       scoped_ptr<NativeHandler>(new AppBindings(this, context)));
-  module_system->RegisterNativeHandler("chrome_private",
-      scoped_ptr<NativeHandler>(
-          new ChromePrivateCustomBindings(this)));
   module_system->RegisterNativeHandler("context_menus",
       scoped_ptr<NativeHandler>(new ContextMenusCustomBindings()));
   module_system->RegisterNativeHandler("extension",
@@ -416,8 +411,6 @@ void ExtensionDispatcher::PopulateSourceMap() {
   source_map_.RegisterSource("app", IDR_APP_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("browserAction",
                              IDR_BROWSER_ACTION_CUSTOM_BINDINGS_JS);
-  source_map_.RegisterSource("chromePrivate",
-                             IDR_CHROME_PRIVATE_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("contentSettings",
                              IDR_CONTENT_SETTINGS_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("contextMenus",

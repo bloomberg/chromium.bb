@@ -24,7 +24,6 @@ var MODULE_SCHEMAS = [
   '../api/browserAction.json',
   '../api/browsingData.json',
   '../api/chromeAuthPrivate.json',
-  '../api/chromePrivate.json',
   '../api/chromeosInfoPrivate.json',
   '../api/contentSettings.json',
   '../api/contextMenus.json',

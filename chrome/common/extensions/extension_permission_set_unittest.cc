@@ -601,7 +601,6 @@ TEST(ExtensionPermissionsTest, PermissionMessages) {
   // These are private.
   skip.insert(ExtensionAPIPermission::kChromeAuthPrivate);
   skip.insert(ExtensionAPIPermission::kChromeosInfoPrivate);
-  skip.insert(ExtensionAPIPermission::kChromePrivate);
   skip.insert(ExtensionAPIPermission::kFileBrowserPrivate);
   skip.insert(ExtensionAPIPermission::kInputMethodPrivate);
   skip.insert(ExtensionAPIPermission::kMediaPlayerPrivate);

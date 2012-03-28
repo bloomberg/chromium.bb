@@ -302,9 +302,6 @@ void ExtensionAPIPermission::RegisterAllPermissions(
       ExtensionPermissionMessage::kNone,
       kFlagCannotBeOptional);
   info->RegisterPermission(
-      kChromePrivate, "chromePrivate", 0, ExtensionPermissionMessage::kNone,
-      kFlagCannotBeOptional);
-  info->RegisterPermission(
       kInputMethodPrivate, "inputMethodPrivate", 0,
       ExtensionPermissionMessage::kNone, kFlagCannotBeOptional);
   info->RegisterPermission(
