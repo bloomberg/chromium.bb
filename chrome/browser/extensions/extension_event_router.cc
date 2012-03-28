@@ -10,6 +10,7 @@
 #include "chrome/browser/extensions/api/web_request/web_request_api.h"
 #include "chrome/browser/extensions/extension_devtools_manager.h"
 #include "chrome/browser/extensions/extension_host.h"
+#include "chrome/browser/extensions/extension_module.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_processes_api.h"
 #include "chrome/browser/extensions/extension_processes_api_constants.h"
@@ -33,7 +34,6 @@ using extensions::ExtensionAPI;
 namespace {
 
 const char kDispatchEvent[] = "Event.dispatchJSON";
-const char kOnInstalledEvent[] = "experimental.extension.onInstalled";
 
 void NotifyEventListenerRemovedOnIOThread(
     void* profile,
@@ -495,9 +495,7 @@ void ExtensionEventRouter::Observe(
       // Dispatch the onInstalled event.
       const Extension* extension =
           content::Details<const Extension>(details).ptr();
-      AddLazyEventListener(kOnInstalledEvent, extension->id());
-      DispatchEventToExtension(
-          extension->id(), kOnInstalledEvent, "[]", NULL, GURL());
+      ExtensionModuleEventRouter::DispatchOnInstalledEvent(profile_, extension);
       break;
     }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,13 @@
 #include "chrome/browser/extensions/extension_function.h"
 
 class ExtensionPrefs;
+
+class ExtensionModuleEventRouter {
+ public:
+  // Dispatches the onInstalled event to the given extension.
+  static void DispatchOnInstalledEvent(Profile* profile,
+                                       const Extension* extension);
+};
 
 class SetUpdateUrlDataFunction : public SyncExtensionFunction {
  protected:
@@ -30,4 +37,5 @@ class IsAllowedFileSchemeAccessFunction : public SyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("extension.isAllowedFileSchemeAccess");
 };
+
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_MODULE_H__

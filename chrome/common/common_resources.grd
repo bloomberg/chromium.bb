@@ -25,6 +25,7 @@
       <include name="IDR_EXTENSION_API_JSON_DEVTOOLS" file="extensions\api\devtools.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_ACCESSIBILITY" file="extensions\api\experimental.accessibility.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_APP" file="extensions\api\experimental.app.json" type="BINDATA" />
+      <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_ALARMS" file="extensions\api\experimental.alarms.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_BOOKMARKMANAGER" file="extensions\api\experimental.bookmarkManager.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_DECLARATIVE" file="extensions\api\experimental.declarative.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_DOWNLOADS" file="extensions\api\experimental.downloads.json" type="BINDATA" />

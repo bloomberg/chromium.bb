@@ -143,7 +143,8 @@ class ExtensionImpl : public ChromeV8Extension {
     const std::set<std::string>& function_names =
         v8_extension->extension_dispatcher_->function_names();
     if (function_names.find(name) == function_names.end()) {
-      NOTREACHED() << "Unexpected function " << name;
+      NOTREACHED() << "Unexpected function " << name <<
+          ". Did you remember to register it with ExtensionFunctionRegistry?";
       return v8::Undefined();
     }
 

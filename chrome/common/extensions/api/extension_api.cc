@@ -144,6 +144,8 @@ ExtensionAPI::ExtensionAPI() {
       IDR_EXTENSION_API_JSON_DEVTOOLS);
   unloaded_schemas_["experimental.accessibility"] = ReadFromResource(
       IDR_EXTENSION_API_JSON_EXPERIMENTAL_ACCESSIBILITY);
+  unloaded_schemas_["experimental.alarms"] = ReadFromResource(
+      IDR_EXTENSION_API_JSON_EXPERIMENTAL_ALARMS);
   unloaded_schemas_["experimental.app"] = ReadFromResource(
       IDR_EXTENSION_API_JSON_EXPERIMENTAL_APP);
   unloaded_schemas_["experimental.bookmarkManager"] = ReadFromResource(

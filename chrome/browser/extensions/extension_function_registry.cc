@@ -8,6 +8,7 @@
 #include "chrome/browser/bookmarks/bookmark_extension_api.h"
 #include "chrome/browser/bookmarks/bookmark_manager_extension_api.h"
 #include "chrome/browser/download/download_extension_api.h"
+#include "chrome/browser/extensions/api/alarms/alarms_api.h"
 #include "chrome/browser/extensions/api/app/app_api.h"
 #include "chrome/browser/extensions/api/browsing_data/browsing_data_api.h"
 #include "chrome/browser/extensions/api/declarative/declarative_api.h"
@@ -84,6 +85,13 @@ ExtensionFunctionRegistry::~ExtensionFunctionRegistry() {
 
 void ExtensionFunctionRegistry::ResetFunctions() {
   // Register all functions here.
+
+  // Alarms
+  RegisterFunction<AlarmsCreateFunction>();
+  RegisterFunction<AlarmsGetFunction>();
+  RegisterFunction<AlarmsGetAllFunction>();
+  RegisterFunction<AlarmsClearFunction>();
+  RegisterFunction<AlarmsClearAllFunction>();
 
   // Windows
   RegisterFunction<GetWindowFunction>();

@@ -50,7 +50,7 @@ void LazyBackgroundTaskQueue::AddPendingTask(
     const Extension* extension = profile->GetExtensionService()->
         extensions()->GetByID(extension_id);
     DCHECK(extension->has_lazy_background_page());
-    ExtensionProcessManager* pm = profile->GetExtensionProcessManager();
+  ExtensionProcessManager* pm = profile->GetExtensionProcessManager();
     pm->IncrementLazyKeepaliveCount(extension);
     pm->CreateBackgroundHost(extension, extension->GetBackgroundURL());
   } else {
@@ -60,8 +60,7 @@ void LazyBackgroundTaskQueue::AddPendingTask(
   tasks_list->push_back(task);
 }
 
-void LazyBackgroundTaskQueue::ProcessPendingTasks(
-    ExtensionHost* host) {
+void LazyBackgroundTaskQueue::ProcessPendingTasks(ExtensionHost* host) {
   PendingTasksKey key(host->profile(), host->extension()->id());
   PendingTasksMap::iterator map_it = pending_tasks_.find(key);
   if (map_it == pending_tasks_.end()) {

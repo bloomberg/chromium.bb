@@ -87,6 +87,12 @@
     "chrome.devtools.panels.ExtensionSidebarPane.setPage": "devtools.panels.html#method-ExtensionSidebarPane-setPage",
     "chrome.devtools.panels.create": "devtools.panels.html#method-create",
     "chrome.devtools.panels.setOpenResourceHandler": "devtools.panels.html#method-setOpenResourceHandler",
+    "chrome.experimental.alarms.clear": "experimental.alarms.html#method-clear",
+    "chrome.experimental.alarms.clearAll": "experimental.alarms.html#method-clearAll",
+    "chrome.experimental.alarms.get": "experimental.alarms.html#method-get",
+    "chrome.experimental.alarms.getAll": "experimental.alarms.html#method-getAll",
+    "chrome.experimental.alarms.onAlarm": "experimental.alarms.html#event-onAlarm",
+    "chrome.experimental.alarms.set": "experimental.alarms.html#method-set",
     "chrome.experimental.app.clearAllNotifications": "experimental.app.html#method-clearAllNotifications",
     "chrome.experimental.app.notify": "experimental.app.html#method-notify",
     "chrome.experimental.devtools.audits.AuditCategory.onAuditStarted": "experimental.devtools.audits.html#event-AuditCategory-onAuditStarted",
@@ -2277,7 +2283,7 @@
         "popup.html",
         "popup.js"
       ],
-      "source_hash": "70d9c5f3e56fb17c0ee9f0582c9b817d95cdc772",
+      "source_hash": "5a16cf4c1a8b25e1c73d7056ad5af86df2bc2f1c",
       "zip_path": "examples\/api\/storage\/stylizr.zip"
     },
     {

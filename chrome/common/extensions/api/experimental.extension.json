@@ -9,11 +9,8 @@
       {
         "name": "onInstalled",
         "type": "function",
-        "description": "Fired when the extension is first installed.",
-        "parameters": [
-        ]
+        "description": "Fired when the extension is first installed."
       }
     ]
   }
 ]
-
