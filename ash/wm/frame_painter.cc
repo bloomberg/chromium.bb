@@ -16,6 +16,7 @@
 #include "third_party/skia/include/core/SkShader.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
+#include "ui/base/animation/slide_animation.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
@@ -70,6 +71,8 @@ const int kCloseButtonOffsetY = 0;
 // inset to preserve alignment with the NTP image, or else we'll break a bunch
 // of existing themes.  We do something similar on OS X for the same reason.
 const int kThemeFrameBitmapOffsetX = 5;
+// Duration of crossfade animation for activating and deactivating frame.
+const int kActivationCrossfadeDurationMs = 200;
 
 // Tiles an image into an area, rounding the top corners.  Samples the |bitmap|
 // starting |bitmap_offset_x| pixels from the left of the image.
@@ -138,7 +141,12 @@ FramePainter::FramePainter()
       top_edge_(NULL),
       top_right_corner_(NULL),
       header_left_edge_(NULL),
-      header_right_edge_(NULL) {
+      header_right_edge_(NULL),
+      previous_theme_frame_(NULL),
+      previous_opacity_(0),
+      crossfade_theme_frame_(NULL),
+      crossfade_opacity_(0),
+      crossfade_animation_(NULL) {
   if (!instances_)
     instances_ = new std::set<FramePainter*>();
   instances_->insert(this);
@@ -283,16 +291,49 @@ void FramePainter::PaintHeader(views::NonClientFrameView* view,
       kSoloWindowOpacity :
       (header_mode == ACTIVE ? kActiveWindowOpacity : kInactiveWindowOpacity);
 
-  SkPaint paint;
-  paint.setAlpha(opacity);
-  // Draw the header background, clipping the corners to be rounded.
+  if (previous_theme_frame_ && previous_theme_frame_ != theme_frame) {
+    crossfade_animation_.reset(new ui::SlideAnimation(this));
+    crossfade_theme_frame_ = previous_theme_frame_;
+    crossfade_opacity_ = previous_opacity_;
+    crossfade_animation_->SetSlideDuration(kActivationCrossfadeDurationMs);
+    crossfade_animation_->Show();
+  }
+
+  header_frame_bounds_ = gfx::Rect(0, 0, view->width(), theme_frame->height());
+
   const int kCornerRadius = 2;
+  SkPaint paint;
+
+  if (crossfade_animation_.get() && crossfade_animation_->is_animating()) {
+    double current_value = crossfade_animation_->GetCurrentValue();
+    int old_alpha = (1 - current_value) * crossfade_opacity_;
+    int new_alpha = current_value * opacity;
+
+    // Draw the old header background, clipping the corners to be rounded.
+    paint.setAlpha(old_alpha);
+    paint.setXfermodeMode(SkXfermode::kPlus_Mode);
+    TileRoundRect(canvas,
+                  0, 0, view->width(), theme_frame->height(),
+                  &paint,
+                  *crossfade_theme_frame_,
+                  kCornerRadius,
+                  kThemeFrameBitmapOffsetX);
+
+    paint.setAlpha(new_alpha);
+  } else {
+    paint.setAlpha(opacity);
+  }
+
+  // Draw the header background, clipping the corners to be rounded.
   TileRoundRect(canvas,
                 0, 0, view->width(), theme_frame->height(),
                 &paint,
                 *theme_frame,
                 kCornerRadius,
                 kThemeFrameBitmapOffsetX);
+
+  previous_theme_frame_ = theme_frame;
+  previous_opacity_ = opacity;
 
   // Draw the theme frame overlay, if available.
   if (theme_frame_overlay)
@@ -468,6 +509,13 @@ void FramePainter::OnWindowDestroying(aura::Window* destroying) {
         painter->frame_->non_client_view()->SchedulePaint();
     }
   }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// ui::AnimationDelegate overrides:
+
+void FramePainter::AnimationProgressed(const ui::Animation* animation) {
+  frame_->SchedulePaintInRect(gfx::Rect(header_frame_bounds_));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
