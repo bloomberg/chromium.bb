@@ -290,8 +290,11 @@ void CaptivePortalView::LoadingStateChanged(WebContents* source) {
   bool is_loading = source->IsLoading();
   UpdateReload(is_loading, false);
   command_updater_->UpdateCommandEnabled(IDC_STOP, is_loading);
-  if (!is_loading && !redirected_)
-    proxy_->OnOriginalURLLoaded();
+  // TODO(nkostylev): Fix case of no connectivity, check HTTP code returned.
+  // Disable this heuristic as it has false positives.
+  // Relying on just flimflam portal check to close dialog is fine.
+  // if (!is_loading && !redirected_)
+  //   proxy_->OnOriginalURLLoaded();
 }
 
 TabContentsWrapper* CaptivePortalView::GetTabContentsWrapper() const {

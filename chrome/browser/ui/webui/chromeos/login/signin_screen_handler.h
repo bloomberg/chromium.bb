@@ -187,6 +187,7 @@ class SigninScreenHandler : public BaseScreenHandler,
   void HandleLaunchDemoUser(const base::ListValue* args);
   void HandleLaunchIncognito(const base::ListValue* args);
   void HandleFixCaptivePortal(const base::ListValue* args);
+  void HandleShowCaptivePortal(const base::ListValue* args);
   void HandleHideCaptivePortal(const base::ListValue* args);
   void HandleOfflineLogin(const base::ListValue* args);
   void HandleShutdownSystem(const base::ListValue* args);

@@ -31,24 +31,29 @@ CaptivePortalWindowProxy::~CaptivePortalWindowProxy() {
 }
 
 void CaptivePortalWindowProxy::ShowIfRedirected() {
-  if (!widget_ && !captive_portal_view_.get()) {
+  if (widget_) {
+    // Invalid state as when widget is created (Show())
+    // CaptivePortalView ownership is transferred to it.
+    if (captive_portal_view_.get()) {
+      NOTREACHED();
+    }
+    // Dialog is already shown, no need to reload.
+    return;
+  }
+
+  // Dialog is not initialized yet.
+  if (!captive_portal_view_.get()) {
     captive_portal_view_.reset(
         new CaptivePortalView(ProfileManager::GetDefaultProfile(), this));
-    captive_portal_view_->StartLoad();
   }
+
+  // If dialog has been created (but not shown) previously, force reload.
+  captive_portal_view_->StartLoad();
 }
 
-void CaptivePortalWindowProxy::Close() {
-  if (widget_) {
-    widget_->Close();
-  } else {
-    captive_portal_view_.reset();
-  }
-}
-
-void CaptivePortalWindowProxy::OnRedirected() {
+void CaptivePortalWindowProxy::Show() {
   if (!captive_portal_view_.get() || widget_) {
-    NOTREACHED();
+    // Dialog is already shown, do nothing.
     return;
   }
   CaptivePortalView* captive_portal_view = captive_portal_view_.release();
@@ -63,6 +68,18 @@ void CaptivePortalWindowProxy::OnRedirected() {
 
   widget_->AddObserver(this);
   widget_->Show();
+}
+
+void CaptivePortalWindowProxy::Close() {
+  if (widget_) {
+    widget_->Close();
+  } else {
+    captive_portal_view_.reset();
+  }
+}
+
+void CaptivePortalWindowProxy::OnRedirected() {
+  Show();
   delegate_->OnPortalDetected();
 }
 

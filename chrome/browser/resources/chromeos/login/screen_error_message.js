@@ -80,7 +80,7 @@ cr.define('login', function() {
         '<a id="' + FIX_CAPTIVE_PORTAL_ID + '" class="signin-link" href="#">',
         '</a>');
       $(FIX_CAPTIVE_PORTAL_ID).onclick = function() {
-        chrome.send('fixCaptivePortal');
+        chrome.send('showCaptivePortal');
       };
 
       $('proxy-message-text').innerHTML = localStrings.getStringF(
@@ -147,6 +147,7 @@ cr.define('login', function() {
           reason == ERROR_REASONS.PROXY_CONNECTION_FAILED;
       var shouldOverlay = MANAGED_SCREENS.indexOf(currentScreen.id) != -1 &&
           !currentScreen.isLocal;
+      var isTimeout = false;
 
       if (reason == ERROR_REASONS.PROXY_CONFIG_CHANGED && shouldOverlay &&
           !offlineMessage.classList.contains('hidden') &&
@@ -160,8 +161,11 @@ cr.define('login', function() {
       if (reason == ERROR_REASONS.LOADING_TIMEOUT) {
         isOnline = false;
         isUnderCaptivePortal = true;
+        isTimeout = true;
       }
 
+      // Portal was detected via generate_204 redirect on Chrome side.
+      // Subsequent call to show dialog if it's already shown does nothing.
       if (reason == ERROR_REASONS.PORTAL_DETECTED) {
         isOnline = false;
         isUnderCaptivePortal = true;
@@ -175,10 +179,18 @@ cr.define('login', function() {
 
         offlineMessage.onBeforeShow(lastNetworkType);
 
-        if (isUnderCaptivePortal && !isProxyError)
-          chrome.send('fixCaptivePortal');
-        else
+        if (isUnderCaptivePortal && !isProxyError) {
+          // In case of timeout we're suspecting that network might be
+          // a captive portal but would like to check that first.
+          // Otherwise (signal from flimflam / generate_204 got redirected)
+          // show dialog right away.
+          if (isTimeout)
+            chrome.send('fixCaptivePortal');
+          else
+            chrome.send('showCaptivePortal');
+        } else {
           chrome.send('hideCaptivePortal');
+        }
 
         if (isUnderCaptivePortal) {
           if (isProxyError) {

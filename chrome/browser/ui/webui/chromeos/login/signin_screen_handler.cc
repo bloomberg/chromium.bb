@@ -442,6 +442,9 @@ void SigninScreenHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("fixCaptivePortal",
       base::Bind(&SigninScreenHandler::HandleFixCaptivePortal,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("showCaptivePortal",
+        base::Bind(&SigninScreenHandler::HandleShowCaptivePortal,
+                 base::Unretained(this)));
   web_ui()->RegisterMessageCallback("hideCaptivePortal",
       base::Bind(&SigninScreenHandler::HandleHideCaptivePortal,
                  base::Unretained(this)));
@@ -731,6 +734,13 @@ void SigninScreenHandler::HandleFixCaptivePortal(const base::ListValue* args) {
                                      GetNativeWindow()));
   }
   captive_portal_window_proxy_->ShowIfRedirected();
+}
+
+void SigninScreenHandler::HandleShowCaptivePortal(const base::ListValue* args) {
+  // This call is an explicit user action
+  // i.e. clicking on link so force dialog show.
+  HandleFixCaptivePortal(args);
+  captive_portal_window_proxy_->Show();
 }
 
 void SigninScreenHandler::HandleHideCaptivePortal(const base::ListValue* args) {

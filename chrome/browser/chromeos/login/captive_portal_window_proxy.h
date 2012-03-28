@@ -40,7 +40,12 @@ class CaptivePortalWindowProxy : public views::Widget::Observer {
   // Shows captive portal window only after a redirection has happened. So it is
   // safe to call this method, when the caller isn't 100% sure that the network
   // is in the captive portal state.
+  // Subsequent call to this method would reuses existing view
+  // but reloads test page (generate_204).
   void ShowIfRedirected();
+
+  // Forces captive portal window show.
+  void Show();
 
   // Closes the window.
   void Close();
