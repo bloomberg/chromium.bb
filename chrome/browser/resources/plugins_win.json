@@ -1,193 +1,185 @@
 {
-  "plugins": [
-    {
-      "mime_types": [
-        "application/x-java-applet",
-        "application/x-java-applet,version=1.1",
-        "application/x-java-applet,version=1.1.1",
-        "application/x-java-applet,version=1.1.2",
-        "application/x-java-applet,version=1.1.3",
-        "application/x-java-applet,version=1.2",
-        "application/x-java-applet,version=1.2.1",
-        "application/x-java-applet,version=1.2.2",
-        "application/x-java-applet,version=1.3",
-        "application/x-java-applet,version=1.3.1",
-        "application/x-java-applet,version=1.4",
-        "application/x-java-applet,version=1.4.1",
-        "application/x-java-applet,version=1.4.2",
-        "application/x-java-applet,version=1.5",
-        "application/x-java-applet,version=1.6",
-        "application/x-java-bean",
-        "application/x-java-bean,version=1.1",
-        "application/x-java-bean,version=1.1.1",
-        "application/x-java-bean,version=1.1.2",
-        "application/x-java-bean,version=1.1.3",
-        "application/x-java-bean,version=1.2",
-        "application/x-java-bean,version=1.2.1",
-        "application/x-java-bean,version=1.2.2",
-        "application/x-java-bean,version=1.3",
-        "application/x-java-bean,version=1.3.1",
-        "application/x-java-bean,version=1.4",
-        "application/x-java-bean,version=1.4.1",
-        "application/x-java-bean,version=1.4.2",
-        "application/x-java-bean,version=1.5",
-        "application/x-java-bean,version=1.6",
-        "application/x-java-vm"
-      ],
-      "lang": "en-US",
-      "name": "Java(TM)",
-      "identifier": "java-runtime-environment",
-      "help_url": "https://support.google.com/chrome/?p=plugin_java",
-      "url": "http://java.com/download",
-      "displayurl": true
-    },
-    {
-      "mime_types": [
-        "audio/vnd.rn-realaudio",
-        "video/vnd.rn-realvideo",
-        "audio/x-pn-realaudio-plugin",
-        "audio/x-pn-realaudio"
-      ],
-      "lang": "en-US",
-      "name": "RealPlayer",
-      "identifier": "realplayer",
-      "help_url": "https://support.google.com/chrome/?p=plugin_real",
-      "url": "http://forms.real.com/real/realone/download.html?type=rpsp_us"
-    },
-    {
-      "mime_types": [
-        "application/futuresplash",
-        "application/x-shockwave-flash"
-      ],
-      "lang": "en-US",
-      "name": "Adobe Flash Player",
-      "identifier": "adobe-flash-player",
-      "help_url": "https://support.google.com/chrome/?p=plugin_flash",
-      "url": "http://get.adobe.com/flashplayer/",
-      "displayurl": true
-    },
-    {
-      "mime_types": [
-        "application/x-director"
-      ],
-      "lang": "en-US",
-      "name": "Adobe Shockwave Player",
-      "identifier": "shockwave",
-      "help_url": "https://support.google.com/chrome/?p=plugin_shockwave",
-      "url": "http://fpdownload.macromedia.com/get/shockwave/default/english/win95nt/latest/Shockwave_Installer_Slim.exe"
-    },
-    {
-      "mime_types": [
-        "application/pdf",
-        "application/vnd.adobe.x-mars",
-        "application/vnd.adobe.xdp+xml",
-        "application/vnd.adobe.xfd+xml",
-        "application/vnd.adobe.xfdf",
-        "application/vnd.fdf"
-      ],
-      "lang": "en-US",
-      "name": "Adobe Reader",
-      "identifier": "adobe-reader",
-      "help_url": "https://support.google.com/chrome/?p=plugin_pdf",
-      "url": "http://ardownload.adobe.com/pub/adobe/reader/win/10.x/10.1.2/en_US/AdbeRdr1012_en_US.exe"
-    },
-    {
-      "mime_types": [
-        "application/sdp",
-        "application/x-mpeg",
-        "application/x-rtsp",
-        "application/x-sdp",
-        "audio/3ggp",
-        "audio/3ggp2",
-        "audio/aac",
-        "audio/ac3",
-        "audio/aiff",
-        "audio/amr",
-        "audio/basic",
-        "audio/mid",
-        "audio/midi",
-        "audio/mp4",
-        "audio/mpeg",
-        "audio/vnd.qcelp",
-        "audio/wav",
-        "audio/x-aac",
-        "audio/x-ac3",
-        "audio/x-aiff",
-        "audio/x-caf",
-        "audio/x-gsm",
-        "audio/x-m4a",
-        "audio/x-m4b",
-        "audio/x-m4p",
-        "audio/x-midi",
-        "audio/x-mpeg",
-        "audio/x-wav",
-        "image/jp2",
-        "image/jpeg2000",
-        "image/jpeg2000-image",
-        "image/pict",
-        "image/png",
-        "image/x-jpeg2000-image",
-        "image/x-macpaint",
-        "image/x-pict",
-        "image/x-png",
-        "image/x-quicktime",
-        "image/x-sgi",
-        "image/x-targa",
-        "video/3ggp",
-        "video/3ggp2",
-        "video/flc",
-        "video/mp4",
-        "video/mpeg",
-        "video/quicktime",
-        "video/sd-video",
-        "video/x-m4v",
-        "video/x-mpeg"
-      ],
-      "lang": "en-US",
-      "name": "QuickTime Player",
-      "identifier": "apple-quicktime",
-      "help_url": "https://support.google.com/chrome/?p=plugin_quicktime",
-      "url": "http://appldnld.apple.com/QuickTime/041-3089.20111026.Sxpr4/QuickTimeInstaller.exe"
-    },
-    {
-      "mime_types": [
-        "application/asx",
-        "application/x-mplayer2",
-        "application/x-ms-wmp",
-        "audio/x-ms-wax",
-        "audio/x-ms-wma",
-        "video/x-ms-asf",
-        "video/x-ms-asf-plugin",
-        "video/x-ms-wm",
-        "video/x-ms-wmv",
-        "video/x-ms-wvx"
-      ],
-      "lang": "en-US",
-      "name": "Windows Media Player",
-      "identifier": "windows-media-player",
-      "help_url": "https://support.google.com/chrome/?p=plugin_wmp",
-      "url": "http://interoplabs.blob.core.windows.net/wmpff/wmpfirefoxplugin.exe"
-    },
-    {
-      "mime_types": [
-        "video/divx",
-        "video/x-matroska"
-      ],
-      "lang": "en-US",
-      "name": "DivX Web Player",
-      "identifier": "divx-player",
-      "help_url": "https://support.google.com/chrome/?p=plugin_divx",
-      "url": "http://download.divx.com/player/divxdotcom/DivXWebPlayerInstaller.exe"
-    },
-    {
-      "mime_types": [
-        "application/x-silverlight",
-        "application/x-silverlight-2"
-      ],
-      "lang": "en-US",
-      "name": "Silverlight",
-      "identifier": "silverlight",
-      "url": "http://go.microsoft.com/fwlink/?LinkID=149156"
-    }
-  ]
+  "java-runtime-environment": {
+    "mime_types": [
+      "application/x-java-applet",
+      "application/x-java-applet,version=1.1",
+      "application/x-java-applet,version=1.1.1",
+      "application/x-java-applet,version=1.1.2",
+      "application/x-java-applet,version=1.1.3",
+      "application/x-java-applet,version=1.2",
+      "application/x-java-applet,version=1.2.1",
+      "application/x-java-applet,version=1.2.2",
+      "application/x-java-applet,version=1.3",
+      "application/x-java-applet,version=1.3.1",
+      "application/x-java-applet,version=1.4",
+      "application/x-java-applet,version=1.4.1",
+      "application/x-java-applet,version=1.4.2",
+      "application/x-java-applet,version=1.5",
+      "application/x-java-applet,version=1.6",
+      "application/x-java-bean",
+      "application/x-java-bean,version=1.1",
+      "application/x-java-bean,version=1.1.1",
+      "application/x-java-bean,version=1.1.2",
+      "application/x-java-bean,version=1.1.3",
+      "application/x-java-bean,version=1.2",
+      "application/x-java-bean,version=1.2.1",
+      "application/x-java-bean,version=1.2.2",
+      "application/x-java-bean,version=1.3",
+      "application/x-java-bean,version=1.3.1",
+      "application/x-java-bean,version=1.4",
+      "application/x-java-bean,version=1.4.1",
+      "application/x-java-bean,version=1.4.2",
+      "application/x-java-bean,version=1.5",
+      "application/x-java-bean,version=1.6",
+      "application/x-java-vm"
+    ],
+    "lang": "en-US",
+    "name": "Java(TM)",
+    "help_url": "https://support.google.com/chrome/?p=plugin_java",
+    "url": "http://java.com/download",
+    "displayurl": true
+  },
+  "realplayer": {
+    "mime_types": [
+      "audio/vnd.rn-realaudio",
+      "video/vnd.rn-realvideo",
+      "audio/x-pn-realaudio-plugin",
+      "audio/x-pn-realaudio"
+    ],
+    "lang": "en-US",
+    "name": "RealPlayer",
+    "help_url": "https://support.google.com/chrome/?p=plugin_real",
+    "url": "http://forms.real.com/real/realone/download.html?type=rpsp_us"
+  },
+  "adobe-flash-player": {
+    "mime_types": [
+      "application/futuresplash",
+      "application/x-shockwave-flash"
+    ],
+    "lang": "en-US",
+    "name": "Adobe Flash Player",
+    "help_url": "https://support.google.com/chrome/?p=plugin_flash",
+    "url": "http://get.adobe.com/flashplayer/",
+    "requires_authorization": false,
+    "displayurl": true
+  },
+  "shockwave": {
+    "mime_types": [
+      "application/x-director"
+    ],
+    "lang": "en-US",
+    "name": "Adobe Shockwave Player",
+    "help_url": "https://support.google.com/chrome/?p=plugin_shockwave",
+    "url": "http://fpdownload.macromedia.com/get/shockwave/default/english/win95nt/latest/Shockwave_Installer_Slim.exe"
+  },
+  "adobe-reader": {
+    "mime_types": [
+      "application/pdf",
+      "application/vnd.adobe.x-mars",
+      "application/vnd.adobe.xdp+xml",
+      "application/vnd.adobe.xfd+xml",
+      "application/vnd.adobe.xfdf",
+      "application/vnd.fdf"
+    ],
+    "lang": "en-US",
+    "name": "Adobe Reader",
+    "help_url": "https://support.google.com/chrome/?p=plugin_pdf",
+    "url": "http://ardownload.adobe.com/pub/adobe/reader/win/10.x/10.1.2/en_US/AdbeRdr1012_en_US.exe",
+    "requires_authorization": false
+  },
+  "apple-quicktime": {
+    "mime_types": [
+      "application/sdp",
+      "application/x-mpeg",
+      "application/x-rtsp",
+      "application/x-sdp",
+      "audio/3ggp",
+      "audio/3ggp2",
+      "audio/aac",
+      "audio/ac3",
+      "audio/aiff",
+      "audio/amr",
+      "audio/basic",
+      "audio/mid",
+      "audio/midi",
+      "audio/mp4",
+      "audio/mpeg",
+      "audio/vnd.qcelp",
+      "audio/wav",
+      "audio/x-aac",
+      "audio/x-ac3",
+      "audio/x-aiff",
+      "audio/x-caf",
+      "audio/x-gsm",
+      "audio/x-m4a",
+      "audio/x-m4b",
+      "audio/x-m4p",
+      "audio/x-midi",
+      "audio/x-mpeg",
+      "audio/x-wav",
+      "image/jp2",
+      "image/jpeg2000",
+      "image/jpeg2000-image",
+      "image/pict",
+      "image/png",
+      "image/x-jpeg2000-image",
+      "image/x-macpaint",
+      "image/x-pict",
+      "image/x-png",
+      "image/x-quicktime",
+      "image/x-sgi",
+      "image/x-targa",
+      "video/3ggp",
+      "video/3ggp2",
+      "video/flc",
+      "video/mp4",
+      "video/mpeg",
+      "video/quicktime",
+      "video/sd-video",
+      "video/x-m4v",
+      "video/x-mpeg"
+    ],
+    "lang": "en-US",
+    "name": "QuickTime Player",
+    "help_url": "https://support.google.com/chrome/?p=plugin_quicktime",
+    "url": "http://appldnld.apple.com/QuickTime/041-3089.20111026.Sxpr4/QuickTimeInstaller.exe"
+  },
+  "windows-media-player": {
+    "mime_types": [
+      "application/asx",
+      "application/x-mplayer2",
+      "application/x-ms-wmp",
+      "audio/x-ms-wax",
+      "audio/x-ms-wma",
+      "video/x-ms-asf",
+      "video/x-ms-asf-plugin",
+      "video/x-ms-wm",
+      "video/x-ms-wmv",
+      "video/x-ms-wvx"
+    ],
+    "lang": "en-US",
+    "name": "Windows Media Player",
+    "help_url": "https://support.google.com/chrome/?p=plugin_wmp",
+    "url": "http://interoplabs.blob.core.windows.net/wmpff/wmpfirefoxplugin.exe"
+  },
+  "divx-player": {
+    "mime_types": [
+      "video/divx",
+      "video/x-matroska"
+    ],
+    "lang": "en-US",
+    "name": "DivX Web Player",
+    "help_url": "https://support.google.com/chrome/?p=plugin_divx",
+    "url": "http://download.divx.com/player/divxdotcom/DivXWebPlayerInstaller.exe"
+  },
+  "silverlight": {
+    "mime_types": [
+      "application/x-silverlight",
+      "application/x-silverlight-2"
+    ],
+    "lang": "en-US",
+    "name": "Silverlight",
+    "url": "http://go.microsoft.com/fwlink/?LinkID=149156",
+    "requires_authorization": false
+  }
 }

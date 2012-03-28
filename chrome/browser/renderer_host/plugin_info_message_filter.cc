@@ -21,6 +21,11 @@
 #include "webkit/plugins/npapi/plugin_group.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 
+#if defined(ENABLE_PLUGIN_INSTALLATION)
+#include "chrome/browser/plugin_finder.h"
+#include "chrome/browser/plugin_installer.h"
+#endif
+
 #if defined(OS_WIN)
 // These includes are only necessary for the PluginInfobarExperiment.
 #include "chrome/common/attrition_experiments.h"
@@ -143,7 +148,31 @@ void PluginInfoMessageFilter::PluginsLoaded(
   ChromeViewHostMsg_GetPluginInfo_Status status;
   webkit::WebPluginInfo plugin;
   std::string actual_mime_type;
-  context_.DecidePluginStatus(params, &status, &plugin, &actual_mime_type);
+  // This also fills in |actual_mime_type|.
+  if (!context_.FindEnabledPlugin(params.render_view_id, params.url,
+                                  params.top_origin_url, params.mime_type,
+                                  &status, &plugin, &actual_mime_type)) {
+    ChromeViewHostMsg_GetPluginInfo::WriteReplyParams(
+        reply_msg, status, plugin, actual_mime_type);
+    Send(reply_msg);
+    return;
+  }
+#if defined(ENABLE_PLUGIN_INSTALLATION)
+  PluginFinder::Get(base::Bind(&PluginInfoMessageFilter::GotPluginFinder, this,
+                               params, reply_msg, plugin, actual_mime_type));
+#else
+  GotPluginFinder(params, reply_msg, plugin, actual_mime_type, NULL);
+#endif
+}
+
+void PluginInfoMessageFilter::GotPluginFinder(
+    const GetPluginInfo_Params& params,
+    IPC::Message* reply_msg,
+    const webkit::WebPluginInfo& plugin,
+    const std::string& actual_mime_type,
+    PluginFinder* plugin_finder) {
+  ChromeViewHostMsg_GetPluginInfo_Status status;
+  context_.DecidePluginStatus(params, plugin, plugin_finder, &status);
   ChromeViewHostMsg_GetPluginInfo::WriteReplyParams(
       reply_msg, status, plugin, actual_mime_type);
   Send(reply_msg);
@@ -151,24 +180,16 @@ void PluginInfoMessageFilter::PluginsLoaded(
 
 void PluginInfoMessageFilter::Context::DecidePluginStatus(
     const GetPluginInfo_Params& params,
-    ChromeViewHostMsg_GetPluginInfo_Status* status,
-    webkit::WebPluginInfo* plugin,
-    std::string* actual_mime_type) const {
-  status->value = ChromeViewHostMsg_GetPluginInfo_Status::kAllowed;
-  // This also fills in |actual_mime_type|.
-  if (FindEnabledPlugin(params.render_view_id, params.url,
-                        params.top_origin_url, params.mime_type,
-                        status, plugin, actual_mime_type)) {
-    return;
-  }
+    const webkit::WebPluginInfo& plugin,
+    PluginFinder* plugin_finder,
+    ChromeViewHostMsg_GetPluginInfo_Status* status) const {
+  scoped_ptr<webkit::npapi::PluginGroup> group(
+      webkit::npapi::PluginList::Singleton()->GetPluginGroup(plugin));
 
   ContentSetting plugin_setting = CONTENT_SETTING_DEFAULT;
   bool uses_default_content_setting = true;
   // Check plug-in content settings. The primary URL is the top origin URL and
   // the secondary URL is the plug-in URL.
-  scoped_ptr<webkit::npapi::PluginGroup> group(
-      webkit::npapi::PluginList::Singleton()->GetPluginGroup(*plugin));
-
   GetPluginContentSetting(plugin, params.top_origin_url, params.url,
                           group->identifier(), &plugin_setting,
                           &uses_default_content_setting);
@@ -180,7 +201,7 @@ void PluginInfoMessageFilter::Context::DecidePluginStatus(
   PluginInfobarExperiment(&allow_outdated, &always_authorize);
 
   // Check if the plug-in is outdated.
-  if (group->IsVulnerable(*plugin) && !allow_outdated) {
+  if (group->IsVulnerable(plugin) && !allow_outdated) {
     if (allow_outdated_plugins_.IsManaged()) {
       status->value =
           ChromeViewHostMsg_GetPluginInfo_Status::kOutdatedDisallowed;
@@ -191,9 +212,13 @@ void PluginInfoMessageFilter::Context::DecidePluginStatus(
     return;
   }
 
+#if defined(ENABLE_PLUGIN_INSTALLATION)
   // Check if the plug-in requires authorization.
-  if ((group->RequiresAuthorization(*plugin) ||
-       PluginService::GetInstance()->IsPluginUnstable(plugin->path)) &&
+  // TODO(bauerb): This should be a plain struct with the plug-in information.
+  PluginInstaller* installer =
+      plugin_finder->FindPluginWithIdentifier(group->identifier());
+  if (((installer && installer->requires_authorization()) ||
+       PluginService::GetInstance()->IsPluginUnstable(plugin.path)) &&
       !always_authorize &&
       plugin_setting != CONTENT_SETTING_BLOCK &&
       uses_default_content_setting) {
@@ -201,6 +226,7 @@ void PluginInfoMessageFilter::Context::DecidePluginStatus(
        ChromeViewHostMsg_GetPluginInfo_Status::kUnauthorized;
     return;
   }
+#endif
 
   if (plugin_setting == CONTENT_SETTING_ASK)
     status->value = ChromeViewHostMsg_GetPluginInfo_Status::kClickToPlay;
@@ -236,7 +262,7 @@ bool PluginInfoMessageFilter::Context::FindEnabledPlugin(
       *actual_mime_type = mime_types[i];
       if (enabled) {
         // We have found an enabled plug-in. Return immediately.
-        return false;
+        return true;
       }
       // We have found a plug-in, but it's disabled. Keep looking for an
       // enabled one.
@@ -250,18 +276,18 @@ bool PluginInfoMessageFilter::Context::FindEnabledPlugin(
     status->value = ChromeViewHostMsg_GetPluginInfo_Status::kDisabled;
   else
     status->value = ChromeViewHostMsg_GetPluginInfo_Status::kNotFound;
-  return true;
+  return false;
 }
 
 void PluginInfoMessageFilter::Context::GetPluginContentSetting(
-    const webkit::WebPluginInfo* plugin,
+    const webkit::WebPluginInfo& plugin,
     const GURL& policy_url,
     const GURL& plugin_url,
     const std::string& resource,
     ContentSetting* setting,
     bool* uses_default_content_setting) const {
   // Treat Native Client invocations like Javascript.
-  bool is_nacl_plugin = (plugin->name == ASCIIToUTF16(
+  bool is_nacl_plugin = (plugin.name == ASCIIToUTF16(
       chrome::ChromeContentClient::kNaClPluginName));
 
   scoped_ptr<base::Value> value;

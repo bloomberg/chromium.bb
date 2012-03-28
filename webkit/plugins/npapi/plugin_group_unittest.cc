@@ -20,33 +20,33 @@ namespace webkit {
 namespace npapi {
 
 static const VersionRangeDefinition kPluginVersionRange[] = {
-    { "", "", "3.0.44", false }
+    { "", "", "3.0.44" }
 };
 static const VersionRangeDefinition kPlugin3VersionRange[] = {
-    { "0", "4", "3.0.44", false }
+    { "0", "4", "3.0.44" }
 };
 static const VersionRangeDefinition kPlugin4VersionRange[] = {
-    { "4", "5", "4.0.44", false }
+    { "4", "5", "4.0.44" }
 };
 static const VersionRangeDefinition kPlugin34VersionRange[] = {
-    { "0", "4", "3.0.44", false },
-    { "4", "5", "", false }
+    { "0", "4", "3.0.44" },
+    { "4", "5", "" }
 };
 
 static const PluginGroupDefinition kPluginDef = {
     "myplugin", "MyPlugin", "MyPlugin", kPluginVersionRange,
-    arraysize(kPluginVersionRange), "http://latest/" };
+    arraysize(kPluginVersionRange) };
 static const PluginGroupDefinition kPluginDef3 = {
     "myplugin-3", "MyPlugin 3", "MyPlugin", kPlugin3VersionRange,
-    arraysize(kPlugin3VersionRange), "http://latest" };
+    arraysize(kPlugin3VersionRange) };
 static const PluginGroupDefinition kPluginDef4 = {
     "myplugin-4", "MyPlugin 4", "MyPlugin", kPlugin4VersionRange,
-    arraysize(kPlugin4VersionRange), "http://latest" };
+    arraysize(kPlugin4VersionRange) };
 static const PluginGroupDefinition kPluginDef34 = {
     "myplugin-34", "MyPlugin 3/4", "MyPlugin", kPlugin34VersionRange,
-    arraysize(kPlugin34VersionRange), "http://latest" };
+    arraysize(kPlugin34VersionRange) };
 static const PluginGroupDefinition kPluginDefNotVulnerable = {
-    "myplugin-latest", "MyPlugin", "MyPlugin", NULL, 0, "http://latest" };
+    "myplugin-latest", "MyPlugin", "MyPlugin", NULL, 0 };
 
 const PluginGroupDefinition kPluginDefinitions[] = {
   kPluginDef,
@@ -153,14 +153,13 @@ TEST_F(PluginGroupTest, VersionExtraction) {
 TEST_F(PluginGroupTest, IsVulnerable) {
   // Adobe Reader 10
   VersionRangeDefinition adobe_reader_version_range[] = {
-      { "10", "11", "", false },
-      { "9", "10", "9.4.1", false },
-      { "0", "9", "8.2.5", false }
+      { "10", "11", "" },
+      { "9", "10", "9.4.1" },
+      { "0", "9", "8.2.5" }
   };
   PluginGroupDefinition adobe_reader_plugin_def = {
       "adobe-reader", "Adobe Reader", "Adobe Acrobat",
-      adobe_reader_version_range, arraysize(adobe_reader_version_range),
-      "http://get.adobe.com/reader/" };
+      adobe_reader_version_range, arraysize(adobe_reader_version_range) };
   WebPluginInfo adobe_reader_plugin(ASCIIToUTF16("Adobe Reader"),
                                     FilePath(FILE_PATH_LITERAL("/reader.so")),
                                     ASCIIToUTF16("10.0.0.396"),
@@ -170,17 +169,15 @@ TEST_F(PluginGroupTest, IsVulnerable) {
   group->AddPlugin(adobe_reader_plugin);
   PluginGroup group_copy(*group);  // Exercise the copy constructor.
   EXPECT_FALSE(group_copy.IsVulnerable(adobe_reader_plugin));
-  EXPECT_FALSE(group_copy.RequiresAuthorization(adobe_reader_plugin));
 
   // Silverlight 4
   VersionRangeDefinition silverlight_version_range[] = {
-      { "0", "4", "3.0.50106.0", false },
-      { "4", "5", "", true }
+      { "0", "4", "3.0.50106.0" },
+      { "4", "5", "" }
   };
   PluginGroupDefinition silverlight_plugin_def = {
       "silverlight", "Silverlight", "Silverlight", silverlight_version_range,
-      arraysize(silverlight_version_range),
-      "http://www.microsoft.com/getsilverlight/" };
+      arraysize(silverlight_version_range) };
   WebPluginInfo silverlight_plugin(ASCIIToUTF16("Silverlight"),
                                    FilePath(FILE_PATH_LITERAL("/silver.so")),
                                    ASCIIToUTF16("4.0.50917.0"),
@@ -188,7 +185,6 @@ TEST_F(PluginGroupTest, IsVulnerable) {
   group.reset(PluginGroupTest::CreatePluginGroup(silverlight_plugin_def));
   group->AddPlugin(silverlight_plugin);
   EXPECT_FALSE(PluginGroup(*group).IsVulnerable(silverlight_plugin));
-  EXPECT_TRUE(PluginGroup(*group).RequiresAuthorization(silverlight_plugin));
 }
 
 }  // namespace npapi

@@ -34,17 +34,20 @@ struct VersionRangeDefinition {
   // to match anything higher than |version_matcher_low|.
   const char* version_matcher_high;
   const char* min_version;  // Minimum secure version.
-  bool requires_authorization;  // If this range needs user permission to run.
 };
 
 // Hard-coded definitions of plugin groups.
 struct PluginGroupDefinition {
-  const char* identifier;  // Unique identifier for this group.
-  const char* name;  // Name of this group.
-  const char* name_matcher;  // Substring matcher for the plugin name.
-  const VersionRangeDefinition* versions;  // List of version ranges.
-  size_t num_versions;  // Size of the array |versions| points to.
-  const char* update_url;  // Location of latest secure version.
+  // Unique identifier for this group.
+  const char* identifier;
+  // Name of this group.
+  const char* name;
+  // Substring matcher for the plugin name.
+  const char* name_matcher;
+  // List of version ranges.
+  const VersionRangeDefinition* versions;
+  // Size of the array |versions| points to.
+  size_t num_versions;
 };
 
 // Run-time structure to hold version range information.
@@ -61,7 +64,6 @@ struct VersionRange {
   scoped_ptr<Version> low;
   scoped_ptr<Version> high;
   scoped_ptr<Version> min;
-  bool requires_authorization;
  private:
   void InitFrom(const VersionRange& other);
 };
@@ -78,7 +80,6 @@ class WEBKIT_PLUGINS_EXPORT PluginGroup {
   // Used by about:plugins to disable Reader plugin when internal PDF viewer is
   // enabled.
   static const char kAdobeReaderGroupName[];
-  static const char kAdobeReaderUpdateURL[];
   static const char kJavaGroupName[];
   static const char kQuickTimeGroupName[];
   static const char kShockwaveGroupName[];
@@ -117,18 +118,8 @@ class WEBKIT_PLUGINS_EXPORT PluginGroup {
   // Checks whether a plugin exists in the group with the given path.
   bool ContainsPlugin(const FilePath& path) const;
 
-  // Returns the update URL.
-  std::string GetUpdateURL() const { return update_url_; }
-
-  // Returns true if this plugin group is whitelisted.
-  bool IsWhitelisted() const;
-
   // Returns true if |plugin| in this group has known security problems.
   bool IsVulnerable(const WebPluginInfo& plugin) const;
-
-  // Returns true if |plugin| in this plug-in group always requires user
-  // authorization to run.
-  bool RequiresAuthorization(const WebPluginInfo& plugin) const;
 
   // Check if the group has no plugins. Could happen after a reload if the plug-
   // in has disappeared from the pc (or in the process of updating).
@@ -143,9 +134,9 @@ class WEBKIT_PLUGINS_EXPORT PluginGroup {
   }
 
  private:
-  friend class PluginList;
   friend class MockPluginList;
   friend class PluginGroupTest;
+  friend class PluginList;
   friend class ::PluginExceptionsTableModelTest;
   FRIEND_TEST_ALL_PREFIXES(PluginListTest, DisableOutdated);
 
@@ -176,7 +167,6 @@ class WEBKIT_PLUGINS_EXPORT PluginGroup {
 
   PluginGroup(const string16& group_name,
               const string16& name_matcher,
-              const std::string& update_url,
               const std::string& identifier);
 
   void InitFrom(const PluginGroup& other);
@@ -190,7 +180,6 @@ class WEBKIT_PLUGINS_EXPORT PluginGroup {
   std::string identifier_;
   string16 group_name_;
   string16 name_matcher_;
-  std::string update_url_;
   std::vector<VersionRange> version_ranges_;
   std::vector<webkit::WebPluginInfo> web_plugin_infos_;
 };
