@@ -230,6 +230,9 @@ class UserManagerImpl : public UserManager,
   // mounting their cryptohomes using tmpfs.
   bool is_current_user_ephemeral_;
 
+  // Cache current user selected index in memory.
+  int current_user_wallpaper_index_;
+
   // The key store for the current user has been loaded. This flag is needed to
   // ensure that the key store will not be loaded twice in the policy recovery
   // "safe-mode".

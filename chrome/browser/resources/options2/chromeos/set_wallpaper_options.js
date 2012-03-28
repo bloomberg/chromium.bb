@@ -111,8 +111,7 @@ cr.define('options', function() {
      */
     setSelectedImage_: function(index) {
       var wallpaperGrid = $('wallpaper-grid');
-      wallpaperGrid.selectionModel.selectedIndex = index;
-      wallpaperGrid.selectionModel.leadIndex = index;
+      wallpaperGrid.selectedItemIndex = index;
       $('author-name').innerText = this.wallpapers_[index].author;
       $('author-website').innerText = this.wallpapers_[index].website;
     },

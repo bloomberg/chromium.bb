@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -127,13 +127,19 @@ cr.define('options', function() {
     },
     set selectedItemUrl(url) {
       for (var i = 0, el; el = this.dataModel.item(i); i++) {
-        if (el.url === url) {
-          this.inProgramSelection_ = true;
-          this.selectionModel.selectedIndex = i;
-          this.selectionModel.leadIndex = i;
-          this.inProgramSelection_ = false;
-        }
+        if (el.url === url)
+          this.selectedItemIndex = i;
       }
+    },
+
+    /**
+     * Set index to the image selected.
+     * @type {number} index The index of selected image.
+     */
+    set selectedItemIndex(index) {
+      this.inProgramSelection_ = true;
+      this.selectionModel.selectedIndex = index;
+      this.inProgramSelection_ = false;
     },
 
     /** @inheritDoc */

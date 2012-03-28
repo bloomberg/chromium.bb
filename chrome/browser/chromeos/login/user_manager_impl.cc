@@ -325,6 +325,9 @@ const UserList& UserManagerImpl::GetUsers() const {
 }
 
 void UserManagerImpl::UserLoggedIn(const std::string& email) {
+  // Get a random wallpaper each time a user logged in.
+  current_user_wallpaper_index_ = ash::GetDefaultWallpaperIndex();
+
   // Remove the stub user if it is still around.
   if (logged_in_user_) {
     DCHECK(IsLoggedInAsStub());
@@ -422,6 +425,8 @@ void UserManagerImpl::DemoUserLoggedIn() {
 
 void UserManagerImpl::GuestUserLoggedIn() {
   is_current_user_ephemeral_ = true;
+  // Guest user always uses the same wallpaper.
+  current_user_wallpaper_index_ = ash::GetGuestWallpaperIndex();
   logged_in_user_ = new User(kGuestUser, true);
   NotifyOnLogin();
 }
@@ -921,10 +926,13 @@ void UserManagerImpl::SetInitialUserImage(const std::string& username) {
 int UserManagerImpl::GetUserWallpaperIndex() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  // If at login screen or logged in as a guest/incognito user, then use the
-  // randomly generated wallpaper.
-  if (IsLoggedInAsGuest() || !IsUserLoggedIn())
+  // If at login screen, use the default guest wallpaper.
+  if (!IsUserLoggedIn())
     return ash::GetGuestWallpaperIndex();
+  // If logged in as other ephemeral users (Demo/Stub/Normal user with
+  // ephemeral policy enabled/Guest), use the index in memory.
+  if (IsCurrentUserEphemeral())
+    return current_user_wallpaper_index_;
 
   const chromeos::User& user = GetLoggedInUser();
   std::string username = user.email();
@@ -933,9 +941,9 @@ int UserManagerImpl::GetUserWallpaperIndex() {
   PrefService* local_state = g_browser_process->local_state();
   const DictionaryValue* user_wallpapers =
       local_state->GetDictionary(UserManager::kUserWallpapers);
-  int index = ash::GetDefaultWallpaperIndex();
+  int index;
   if (!user_wallpapers->GetIntegerWithoutPathExpansion(username, &index))
-    SaveUserWallpaperIndex(index);
+    index = current_user_wallpaper_index_;
 
   DCHECK(index >=0 && index < ash::GetWallpaperCount());
   return index;
@@ -943,11 +951,13 @@ int UserManagerImpl::GetUserWallpaperIndex() {
 
 void UserManagerImpl::SaveUserWallpaperIndex(int wallpaper_index) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  // If at login screen or logged in as a guest/incognito user, then return.
-  // Guest/incognito user can not change wallpaper according to chromium-os
-  // issue 26900.
-  if (IsLoggedInAsGuest() || !IsUserLoggedIn())
+
+  current_user_wallpaper_index_ = wallpaper_index;
+  // Ephemeral users can not save data to local state. We just cache the index
+  // in memory for them.
+  if (IsCurrentUserEphemeral() || !IsUserLoggedIn()) {
     return;
+  }
 
   const chromeos::User& user = GetLoggedInUser();
   std::string username = user.email();
