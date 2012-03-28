@@ -209,11 +209,7 @@
       # crbug.com/95031
       '-notifications.NotificationsTest.testOriginPrefsNotSavedInIncognito',
       # crbug.com/119602
-      '-passwords.PasswordTest.testDisplayAndSavePasswordInfobar',
       '-passwords.PasswordTest.testNeverSavePasswords',
-      '-passwords.PasswordTest.testClearFetchedCredForNewUserName',
-      '-passwords.PasswordTest.testInfoBarDisappearByNavigatingPage',
-      '-passwords.PasswordTest.testInfoBarDisappearByReload',
     ],
 
     'mac': [
