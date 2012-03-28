@@ -426,10 +426,32 @@ TEST_F(ActivationControllerTest, ActivateMinimizedWindow) {
       &wd, -1, gfx::Rect(50, 50), NULL));
 
   wm::MinimizeWindow(w1.get());
+  EXPECT_TRUE(wm::IsWindowMinimized(w1.get()));
 
   wm::ActivateWindow(w1.get());
   EXPECT_TRUE(wm::IsActiveWindow(w1.get()));
   EXPECT_FALSE(wm::IsWindowMinimized(w1.get()));
+}
+
+// Verifies that a minimized window would not be automatically activated as
+// a replacement active window.
+TEST_F(ActivationControllerTest, NoAutoActivateMinimizedWindow) {
+  aura::test::TestWindowDelegate wd;
+  scoped_ptr<aura::Window> w1(aura::test::CreateTestWindowWithDelegate(
+    &wd, -1, gfx::Rect(50, 50, 50, 50), NULL));
+  scoped_ptr<aura::Window> w2(aura::test::CreateTestWindowWithDelegate(
+      &wd, -2, gfx::Rect(75, 75, 50, 50), NULL));
+
+  wm::MinimizeWindow(w1.get());
+  EXPECT_TRUE(wm::IsWindowMinimized(w1.get()));
+
+  wm::ActivateWindow(w2.get());
+  EXPECT_TRUE(wm::IsActiveWindow(w2.get()));
+
+  w2->Hide();
+
+  EXPECT_FALSE(wm::IsActiveWindow(w1.get()));
+  EXPECT_TRUE(wm::IsWindowMinimized(w1.get()));
 }
 
 }  // namespace test
