@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,6 +36,9 @@ class ForeignSessionHandler : public content::WebUIMessageHandler,
 
   // Returns a pointer to the current session model associator or NULL.
   SessionModelAssociator* GetModelAssociator();
+
+  // Returns true if tab sync is enabled for this profile, otherwise false.
+  bool IsTabSyncEnabled();
 
   // Determines which session is to be opened, and then calls
   // OpenForeignSession, to begin the process of opening a new browser window.

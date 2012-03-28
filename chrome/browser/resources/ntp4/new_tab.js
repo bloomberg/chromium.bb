@@ -53,6 +53,12 @@ cr.define('ntp', function() {
   var shouldShowLoginBubble = false;
 
   /**
+   * The 'other-sessions-menu-button' element.
+   * @type {!Element|undefined}
+   */
+  var otherSessionsButton;
+
+  /**
    * The time in milliseconds for most transitions.  This should match what's
    * in new_tab.css.  Unfortunately there's no better way to try to time
    * something to occur until after a transition has completed.
@@ -113,8 +119,9 @@ cr.define('ntp', function() {
     chrome.send('getRecentlyClosedTabs');
 
     if (templateData.showOtherSessionsMenu) {
-      cr.ui.decorate($('other-sessions-menu-button'),
-                     ntp.OtherSessionsMenuButton);
+      otherSessionsButton = getRequiredElement('other-sessions-menu-button');
+      cr.ui.decorate(otherSessionsButton, ntp.OtherSessionsMenuButton);
+      otherSessionsButton.initialize(templateData.isUserSignedIn);
     }
 
     var mostVisited = new ntp.MostVisitedPage();
@@ -199,11 +206,7 @@ cr.define('ntp', function() {
     }
 
     var loginContainer = getRequiredElement('login-container');
-    loginContainer.addEventListener('click', function() {
-      var rect = loginContainer.getBoundingClientRect();
-      chrome.send('showSyncLoginUI',
-                  [rect.left, rect.top, rect.width, rect.height]);
-    });
+    loginContainer.addEventListener('click', showSyncLoginUI);
     chrome.send('initializeSyncLogin');
 
     doWhenAllSectionsReady(function() {
@@ -495,8 +498,9 @@ cr.define('ntp', function() {
    * @param {string} loginSubHeader The second line of text.
    * @param {string} iconURL The url for the login status icon. If this is null
         then the login status icon is hidden.
+   * @param {boolean} isUserSignedIn Indicates if the user is signed in or not.
    */
-  function updateLogin(loginHeader, loginSubHeader, iconURL) {
+  function updateLogin(loginHeader, loginSubHeader, iconURL, isUserSignedIn) {
     if (loginHeader || loginSubHeader) {
       $('login-container').hidden = false;
       $('login-status-header').innerHTML = loginHeader;
@@ -522,6 +526,18 @@ cr.define('ntp', function() {
     } else if (loginBubble) {
       loginBubble.reposition();
     }
+    if (otherSessionsButton)
+      otherSessionsButton.updateSignInState(isUserSignedIn);
+  }
+
+  /**
+   * Show the sync login UI.
+   * @param {Event} e The click event.
+   */
+  function showSyncLoginUI(e) {
+    var rect = e.currentTarget.getBoundingClientRect();
+    chrome.send('showSyncLoginUI',
+                [rect.left, rect.top, rect.width, rect.height]);
   }
 
   /**
@@ -551,8 +567,9 @@ cr.define('ntp', function() {
     return newTabView.enterRearrangeMode.apply(newTabView, arguments);
   }
 
-  function foreignSessions(sessionList) {
-    $('other-sessions-menu-button').sessions = sessionList;
+  function setForeignSessions(sessionList, isTabSyncEnabled) {
+    if (otherSessionsButton)
+      otherSessionsButton.setForeignSessions(sessionList, isTabSyncEnabled);
   }
 
   function getAppsCallback() {
@@ -586,7 +603,6 @@ cr.define('ntp', function() {
     appRemoved: appRemoved,
     appsPrefChangeCallback: appsPrefChangeCallback,
     enterRearrangeMode: enterRearrangeMode,
-    foreignSessions: foreignSessions,
     getAppsCallback: getAppsCallback,
     getAppsPageIndex: getAppsPageIndex,
     getCardSlider: getCardSlider,
@@ -595,6 +611,7 @@ cr.define('ntp', function() {
     saveAppPageName: saveAppPageName,
     setAppToBeHighlighted: setAppToBeHighlighted,
     setBookmarkBarAttached: setBookmarkBarAttached,
+    setForeignSessions: setForeignSessions,
     setMostVisitedPages: setMostVisitedPages,
     setSuggestionsPages: setSuggestionsPages,
     setRecentlyClosedTabs: setRecentlyClosedTabs,

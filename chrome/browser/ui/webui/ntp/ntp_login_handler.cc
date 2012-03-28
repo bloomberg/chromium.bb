@@ -234,8 +234,9 @@ void NTPLoginHandler::UpdateLogin() {
   StringValue header_value(header);
   StringValue sub_header_value(sub_header);
   StringValue icon_url_value(icon_url);
-  web_ui()->CallJavascriptFunction(
-      "ntp.updateLogin", header_value, sub_header_value, icon_url_value);
+  base::FundamentalValue is_user_signed_in(!username.empty());
+  web_ui()->CallJavascriptFunction("ntp.updateLogin",
+      header_value, sub_header_value, icon_url_value, is_user_signed_in);
 }
 
 // static

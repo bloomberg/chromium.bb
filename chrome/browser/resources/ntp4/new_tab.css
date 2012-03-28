@@ -423,3 +423,16 @@ html[dir='rtl'] #chrome-web-store-title {
 #other-sessions-menu-button.invisible {
   display: none;
 }
+
+.other-sessions-promo-message {
+  display: none;
+  padding: 0;
+}
+
+.other-sessions-promo-message:only-child {
+  display: block;
+}
+
+.other-sessions-promo-message p {
+  margin: 0;
+}

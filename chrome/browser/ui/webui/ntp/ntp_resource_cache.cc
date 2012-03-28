@@ -289,10 +289,10 @@ void NTPResourceCache::CreateNewTabHTML() {
   // (in GetLocalizedValues) and should have more legible names.
   // Show the profile name in the title and most visited labels if the current
   // profile is not the default.
+  PrefService* prefs = profile_->GetPrefs();
   DictionaryValue localized_strings;
   localized_strings.SetString("bookmarkbarattached",
-      profile_->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar) ?
-      "true" : "false");
+      prefs->GetBoolean(prefs::kShowBookmarkBar) ? "true" : "false");
   localized_strings.SetString("hasattribution",
       ThemeServiceFactory::GetForProfile(profile_)->HasCustomImage(
           IDR_THEME_NTP_ATTRIBUTION) ?
@@ -349,6 +349,10 @@ void NTPResourceCache::CreateNewTabHTML() {
       l10n_util::GetStringUTF16(IDS_NEW_TAB_OTHER_SESSIONS_LABEL));
   localized_strings.SetString("otherSessionsEmpty",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_OTHER_SESSIONS_EMPTY));
+  localized_strings.SetString("otherSessionsLearnMoreUrl",
+      l10n_util::GetStringUTF16(IDS_NEW_TAB_OTHER_SESSIONS_LEARN_MORE_URL));
+  localized_strings.SetString("learnMore",
+      l10n_util::GetStringUTF16(IDS_LEARN_MORE));
   localized_strings.SetString("webStoreLink",
       GetUrlWithLang(GURL(extension_urls::GetWebstoreLaunchURL())));
   localized_strings.SetBoolean("isWebStoreExperimentEnabled",
@@ -391,11 +395,11 @@ void NTPResourceCache::CreateNewTabHTML() {
 
   // If the user has preferences for a start and end time for a custom logo,
   // and the time now is between these two times, show the custom logo.
-  if (profile_->GetPrefs()->FindPreference(prefs::kNtpCustomLogoStart) &&
-      profile_->GetPrefs()->FindPreference(prefs::kNtpCustomLogoEnd)) {
+  if (prefs->FindPreference(prefs::kNtpCustomLogoStart) &&
+      prefs->FindPreference(prefs::kNtpCustomLogoEnd)) {
     localized_strings.SetString("customlogo",
-        InDateRange(profile_->GetPrefs()->GetDouble(prefs::kNtpCustomLogoStart),
-                    profile_->GetPrefs()->GetDouble(prefs::kNtpCustomLogoEnd)) ?
+        InDateRange(prefs->GetDouble(prefs::kNtpCustomLogoStart),
+                    prefs->GetDouble(prefs::kNtpCustomLogoEnd)) ?
         "true" : "false");
   } else {
     localized_strings.SetString("customlogo", "false");
@@ -405,7 +409,7 @@ void NTPResourceCache::CreateNewTabHTML() {
   // the server, and this promo string exists, set the localized string.
   if (PromoResourceService::CanShowNotificationPromo(profile_)) {
     localized_strings.SetString("serverpromo",
-        profile_->GetPrefs()->GetString(prefs::kNtpPromoLine));
+        prefs->GetString(prefs::kNtpPromoLine));
   }
 
   // Determine whether to show the menu for accessing tabs on other devices.
@@ -413,6 +417,8 @@ void NTPResourceCache::CreateNewTabHTML() {
       switches::kDisableNTPOtherSessionsMenu);
   localized_strings.SetBoolean("showOtherSessionsMenu",
                                show_other_sessions_menu);
+  localized_strings.SetBoolean("isUserSignedIn",
+      !prefs->GetString(prefs::kGoogleServicesUsername).empty());
 
   // Load the new tab page appropriate for this build
   std::string full_html;

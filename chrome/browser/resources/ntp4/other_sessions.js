@@ -36,12 +36,22 @@ cr.define('ntp', function() {
                                  this.onContextMenu_.bind(this), true);
       document.body.appendChild(this.menu);
 
+      this.promoMessage_ = $('other-sessions-promo-template').cloneNode(true);
+      this.promoMessage_.removeAttribute('id');  // Prevent a duplicate id.
+
       this.sessions_ = [];
       this.anchorType = cr.ui.AnchorType.ABOVE;
       this.invertLeftRight = true;
 
-      chrome.send('getForeignSessions');
       this.recordUmaEvent_(HISTOGRAM_EVENT.INITIALIZED);
+    },
+
+    /**
+     * Initialize this element.
+     * @param {boolean} signedIn Is the current user signed in?
+     */
+    initialize: function(signedIn) {
+      this.updateSignInState(signedIn);
     },
 
     /**
@@ -73,6 +83,15 @@ cr.define('ntp', function() {
         chrome.send('getForeignSessions');
       this.recordUmaEvent_(HISTOGRAM_EVENT.SHOW_MENU);
       MenuButton.prototype.showMenu.call(this);
+    },
+
+    /**
+     * Reset the menu contents to the default state.
+     * @private
+     */
+    resetMenuContents_: function() {
+      this.menu.innerHTML = '';
+      this.menu.appendChild(this.promoMessage_);
     },
 
     /**
@@ -122,35 +141,41 @@ cr.define('ntp', function() {
     },
 
     /**
-     * Create the UI for the promo and place it inside the menu.
-     * The promo is shown instead of foreign session data when tab sync is
-     * not enabled for a profile.
+     * Sets the menu model data. An empty list means that either there are no
+     * foreign sessions, or tab sync is disabled for this profile.
+     * |isTabSyncEnabled| makes it possible to distinguish between the cases.
+     *
+     * @param {Array} sessionList Array of objects describing the sessions
+     *     from other devices.
+     * @param {boolean} isTabSyncEnabled Is tab sync enabled for this profile?
      */
-    showPromo_: function() {
-      var message = localStrings.getString('otherSessionsEmpty');
-      this.menu.appendChild(this.ownerDocument.createTextNode(message));
+    setForeignSessions: function(sessionList, isTabSyncEnabled) {
+      this.sessions_ = sessionList;
+      this.resetMenuContents_();
+      if (sessionList.length > 0) {
+        // Rebuild the menu with the new data.
+        for (var i = 0; i < sessionList.length; i++) {
+          this.addSession_(sessionList[i]);
+        }
+      }
+
+      // The menu button is shown iff tab sync is enabled.
+      if (isTabSyncEnabled)
+        this.classList.remove('invisible');
+      else
+        this.classList.add('invisible');
     },
 
     /**
-     * Sets the menu model data.
-     * @param {Array} sessionList Array of objects describing the sessions
-     * from other devices.
+     * Called when this element is initialized, and from the new tab page when
+     * the user's signed in state changes,
+     * @param {boolean} signedIn Is the user currently signed in?
      */
-    set sessions(sessionList) {
-      // Clear the current contents of the menu.
-      this.menu.innerHTML = '';
-
-      // Rebuild the menu with the new data.
-      for (var i = 0; i < sessionList.length; i++) {
-        this.addSession_(sessionList[i]);
-      }
-
-      if (sessionList.length == 0)
-        this.classList.add('invisible');
+    updateSignInState: function(signedIn) {
+      if (signedIn)
+        chrome.send('getForeignSessions');
       else
-        this.classList.remove('invisible');
-
-      this.sessions_ = sessionList;
+        this.classList.add('invisible');
     },
   };
 
