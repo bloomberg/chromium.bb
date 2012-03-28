@@ -54,7 +54,7 @@ thunk::PPB_AudioInput_API* PPB_AudioInput_Shared::AsPPB_AudioInput_API() {
 
 int32_t PPB_AudioInput_Shared::EnumerateDevices(
     PP_Resource* devices,
-    PP_CompletionCallback callback) {
+    const PP_CompletionCallback& callback) {
   if (!callback.func)
     return PP_ERROR_BLOCKS_MAIN_THREAD;
   if (TrackedCallback::IsPending(enumerate_devices_callback_))
@@ -68,7 +68,7 @@ int32_t PPB_AudioInput_Shared::Open(
     PP_Resource config,
     PPB_AudioInput_Callback audio_input_callback,
     void* user_data,
-    PP_CompletionCallback callback) {
+    const PP_CompletionCallback& callback) {
   if (!audio_input_callback)
     return PP_ERROR_BADARGUMENT;
 

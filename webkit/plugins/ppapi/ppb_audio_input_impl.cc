@@ -51,7 +51,7 @@ PP_Resource PPB_AudioInput_Impl::Create0_1(
 int32_t PPB_AudioInput_Impl::OpenTrusted(
     const std::string& device_id,
     PP_Resource config,
-    PP_CompletionCallback create_callback) {
+    const PP_CompletionCallback& create_callback) {
   return CommonOpen(device_id, config, NULL, NULL, create_callback);
 }
 

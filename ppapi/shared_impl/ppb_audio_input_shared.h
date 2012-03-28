@@ -39,13 +39,14 @@ class PPAPI_SHARED_EXPORT PPB_AudioInput_Shared
   virtual thunk::PPB_AudioInput_API* AsPPB_AudioInput_API() OVERRIDE;
 
   // Implementation of PPB_AudioInput_API non-trusted methods.
-  virtual int32_t EnumerateDevices(PP_Resource* devices,
-                                   PP_CompletionCallback callback) OVERRIDE;
+  virtual int32_t EnumerateDevices(
+      PP_Resource* devices,
+      const PP_CompletionCallback& callback) OVERRIDE;
   virtual int32_t Open(const std::string& device_id,
                        PP_Resource config,
                        PPB_AudioInput_Callback audio_input_callback,
                        void* user_data,
-                       PP_CompletionCallback callback) OVERRIDE;
+                       const PP_CompletionCallback& callback) OVERRIDE;
   virtual PP_Resource GetCurrentConfig() OVERRIDE;
   virtual PP_Bool StartCapture() OVERRIDE;
   virtual PP_Bool StopCapture() OVERRIDE;

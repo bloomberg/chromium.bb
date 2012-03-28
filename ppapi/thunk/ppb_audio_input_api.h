@@ -22,22 +22,24 @@ class PPAPI_THUNK_EXPORT PPB_AudioInput_API {
  public:
   virtual ~PPB_AudioInput_API() {}
 
-  virtual int32_t EnumerateDevices(PP_Resource* devices,
-                                   PP_CompletionCallback callback) = 0;
+  virtual int32_t EnumerateDevices(
+      PP_Resource* devices,
+      const PP_CompletionCallback& callback) = 0;
   virtual int32_t Open(const std::string& device_id,
                        PP_Resource config,
                        PPB_AudioInput_Callback audio_input_callback,
                        void* user_data,
-                       PP_CompletionCallback callback) = 0;
+                       const PP_CompletionCallback& callback) = 0;
   virtual PP_Resource GetCurrentConfig() = 0;
   virtual PP_Bool StartCapture() = 0;
   virtual PP_Bool StopCapture() = 0;
   virtual void Close() = 0;
 
   // Trusted API.
-  virtual int32_t OpenTrusted(const std::string& device_id,
-                              PP_Resource config,
-                              PP_CompletionCallback create_callback) = 0;
+  virtual int32_t OpenTrusted(
+      const std::string& device_id,
+      PP_Resource config,
+      const PP_CompletionCallback& create_callback) = 0;
   virtual int32_t GetSyncSocket(int* sync_socket) = 0;
   virtual int32_t GetSharedMemory(int* shm_handle, uint32_t* shm_size) = 0;
   virtual const std::vector<DeviceRefData>& GetDeviceRefData() const = 0;

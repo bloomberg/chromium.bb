@@ -36,9 +36,10 @@ class PPB_AudioInput_Impl : public ::ppapi::PPB_AudioInput_Shared,
                                void* user_data);
 
   // Implementation of PPB_AudioInput_API trusted methods.
-  virtual int32_t OpenTrusted(const std::string& device_id,
-                              PP_Resource config,
-                              PP_CompletionCallback create_callback) OVERRIDE;
+  virtual int32_t OpenTrusted(
+      const std::string& device_id,
+      PP_Resource config,
+      const PP_CompletionCallback& create_callback) OVERRIDE;
   virtual int32_t GetSyncSocket(int* sync_socket) OVERRIDE;
   virtual int32_t GetSharedMemory(int* shm_handle, uint32_t* shm_size) OVERRIDE;
   virtual const DeviceRefDataVector& GetDeviceRefData() const OVERRIDE;

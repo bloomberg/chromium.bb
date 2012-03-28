@@ -33,9 +33,10 @@ class AudioInput : public PPB_AudioInput_Shared {
   virtual ~AudioInput();
 
   // Implementation of PPB_AudioInput_API trusted methods.
-  virtual int32_t OpenTrusted(const std::string& device_id,
-                              PP_Resource config,
-                              PP_CompletionCallback create_callback) OVERRIDE;
+  virtual int32_t OpenTrusted(
+      const std::string& device_id,
+      PP_Resource config,
+      const PP_CompletionCallback& create_callback) OVERRIDE;
   virtual int32_t GetSyncSocket(int* sync_socket) OVERRIDE;
   virtual int32_t GetSharedMemory(int* shm_handle, uint32_t* shm_size) OVERRIDE;
   virtual const std::vector<DeviceRefData>& GetDeviceRefData() const OVERRIDE;
@@ -70,7 +71,7 @@ AudioInput::~AudioInput() {
 
 int32_t AudioInput::OpenTrusted(const std::string& device_id,
                                 PP_Resource config,
-                                PP_CompletionCallback create_callback) {
+                                const PP_CompletionCallback& create_callback) {
   return PP_ERROR_NOTSUPPORTED;  // Don't proxy the trusted interface.
 }
 
