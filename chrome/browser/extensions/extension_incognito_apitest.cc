@@ -91,7 +91,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_DontCreateIncognitoProfile) {
   ASSERT_FALSE(browser()->profile()->HasOffTheRecordProfile());
 }
 
+#if defined(OS_WIN)
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FLAKY_Incognito) {
+#else
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Incognito) {
+#endif
   host_resolver()->AddRule("*", "127.0.0.1");
   ASSERT_TRUE(StartTestServer());
 
