@@ -19,11 +19,13 @@ See more information at
 http://dev.chromium.org/developers/testing/isolated-testing
 """
 
+import hashlib
 import json
 import logging
 import optparse
 import os
 import re
+import stat
 import subprocess
 import sys
 import tempfile
@@ -48,6 +50,98 @@ def to_relative(path, root, relative):
   else:
     logging.info('%s not under %s' % (path, root))
   return path
+
+
+def expand_directories(indir, infiles, blacklist):
+  """Expands the directories, applies the blacklist and verifies files exist."""
+  logging.debug('expand_directories(%s, %s, %s)' % (indir, infiles, blacklist))
+  outfiles = []
+  for relfile in infiles:
+    if os.path.isabs(relfile):
+      raise tree_creator.MappingError('Can\'t map absolute path %s' % relfile)
+    infile = os.path.normpath(os.path.join(indir, relfile))
+    if not infile.startswith(indir):
+      raise tree_creator.MappingError(
+          'Can\'t map file %s outside %s' % (infile, indir))
+
+    if relfile.endswith('/'):
+      if not os.path.isdir(infile):
+        raise tree_creator.MappingError(
+            'Input directory %s must have a trailing slash' % infile)
+      for dirpath, dirnames, filenames in os.walk(infile):
+        # Convert the absolute path to subdir + relative subdirectory.
+        reldirpath = dirpath[len(indir)+1:]
+        outfiles.extend(os.path.join(reldirpath, f) for f in filenames)
+        for index, dirname in enumerate(dirnames):
+          # Do not process blacklisted directories.
+          if blacklist(os.path.join(reldirpath, dirname)):
+            del dirnames[index]
+    else:
+      if not os.path.isfile(infile):
+        raise tree_creator.MappingError('Input file %s doesn\'t exist' % infile)
+      outfiles.append(relfile)
+  return outfiles
+
+
+def process_inputs(indir, infiles, need_hash, read_only):
+  """Returns a dictionary of input files, populated with the files' mode and
+  hash.
+
+  The file mode is manipulated if read_only is True. In practice, we only save
+  one of 4 modes: 0755 (rwx), 0644 (rw), 0555 (rx), 0444 (r).
+  """
+  outdict = {}
+  for infile in infiles:
+    filepath = os.path.join(indir, infile)
+    filemode = stat.S_IMODE(os.stat(filepath).st_mode)
+    # Remove write access for non-owner.
+    filemode &= ~(stat.S_IWGRP | stat.S_IWOTH)
+    if read_only:
+      filemode &= ~stat.S_IWUSR
+    if filemode & stat.S_IXUSR:
+      filemode |= (stat.S_IXGRP | stat.S_IXOTH)
+    else:
+      filemode &= ~(stat.S_IXGRP | stat.S_IXOTH)
+    outdict[infile] = {
+      'mode': filemode,
+    }
+    if need_hash:
+      h = hashlib.sha1()
+      with open(filepath, 'rb') as f:
+        h.update(f.read())
+      outdict[infile]['sha-1'] = h.hexdigest()
+  return outdict
+
+
+def recreate_tree(outdir, indir, infiles, action):
+  """Creates a new tree with only the input files in it.
+
+  Arguments:
+    outdir:    Output directory to create the files in.
+    indir:     Root directory the infiles are based in.
+    infiles:   List of files to map from |indir| to |outdir|.
+    action:    See assert below.
+  """
+  logging.debug(
+      'recreate_tree(%s, %s, %s, %s)' % (outdir, indir, infiles, action))
+  logging.info('Mapping from %s to %s' % (indir, outdir))
+
+  assert action in (
+      tree_creator.HARDLINK, tree_creator.SYMLINK, tree_creator.COPY)
+  outdir = os.path.normpath(outdir)
+  if not os.path.isdir(outdir):
+    logging.info ('Creating %s' % outdir)
+    os.makedirs(outdir)
+  # Do not call abspath until the directory exists.
+  outdir = os.path.abspath(outdir)
+
+  for relfile in infiles:
+    infile = os.path.join(indir, relfile)
+    outfile = os.path.join(outdir, relfile)
+    outsubdir = os.path.dirname(outfile)
+    if not os.path.isdir(outsubdir):
+      os.makedirs(outsubdir)
+    tree_creator.link_file(outfile, infile, action)
 
 
 def separate_inputs_command(args, root, files):
@@ -94,8 +188,8 @@ def isolate(outdir, resultfile, indir, infiles, mode, read_only, cmd, no_save):
   assert mode_fn
   assert os.path.isabs(resultfile)
 
-  infiles = tree_creator.expand_directories(
-        indir, infiles, lambda x: re.match(r'.*\.(svn|pyc)$', x))
+  infiles = expand_directories(
+      indir, infiles, lambda x: re.match(r'.*\.(svn|pyc)$', x))
 
   # Note the relative current directory.
   # In general, this path will be the path containing the gyp file where the
@@ -116,8 +210,7 @@ def isolate(outdir, resultfile, indir, infiles, mode, read_only, cmd, no_save):
     cmd.insert(0, sys.executable)
 
   # Only hashtable mode really needs the sha-1.
-  dictfiles = tree_creator.process_inputs(
-      indir, infiles, mode == 'hashtable', read_only)
+  dictfiles = process_inputs(indir, infiles, mode == 'hashtable', read_only)
 
   result = mode_fn(
       outdir, indir, dictfiles, read_only, cmd, relative_cwd, resultfile)
@@ -164,8 +257,7 @@ def MODEremap(
   if len(os.listdir(outdir)):
     print 'Can\'t remap in a non-empty directory'
     return 1
-  tree_creator.recreate_tree(
-      outdir, indir, dictfiles.keys(), tree_creator.HARDLINK)
+  recreate_tree(outdir, indir, dictfiles.keys(), tree_creator.HARDLINK)
   if read_only:
     tree_creator.make_writable(outdir, True)
   return 0
@@ -176,8 +268,7 @@ def MODErun(
   """Always uses a temporary directory."""
   try:
     outdir = tempfile.mkdtemp(prefix='isolate')
-    tree_creator.recreate_tree(
-        outdir, indir, dictfiles.keys(), tree_creator.HARDLINK)
+    recreate_tree(outdir, indir, dictfiles.keys(), tree_creator.HARDLINK)
     cwd = os.path.join(outdir, relative_cwd)
     if not os.path.isdir(cwd):
       os.makedirs(cwd)
@@ -187,8 +278,6 @@ def MODErun(
     logging.info('Running %s, cwd=%s' % (cmd, cwd))
     return subprocess.call(cmd, cwd=cwd)
   finally:
-    if read_only:
-      tree_creator.make_writable(outdir, False)
     tree_creator.rmtree(outdir)
 
 
