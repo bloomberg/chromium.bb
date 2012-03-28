@@ -825,7 +825,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest,
   EXPECT_EQ(expected_favicon_url.spec(), entry->GetFavicon().url.spec());
 }
 
-#if defined(OS_MACOSX) || defined(OS_LINUX)
+#if defined(OS_MACOSX) || defined(OS_LINUX) || defined (OS_WIN)
 // http://crbug.com/83828. On Mac 10.6, the failure rate is 14%
 #define MAYBE_FaviconChange DISABLED_FaviconChange
 #else
