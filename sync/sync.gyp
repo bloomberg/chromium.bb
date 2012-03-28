@@ -28,11 +28,8 @@
         'protocol/sync_proto.gyp:sync_proto',
       ],
       'export_dependent_settings': [
-        '../base/base.gyp:base',
-        '../build/temp_gyp/googleurl.gyp:googleurl',
-        '../crypto/crypto.gyp:crypto',
-        '../net/net.gyp:net',
-        '../sql/sql.gyp:sql',
+        # Propagate sync_proto since our headers include its generated
+        # files.
         'protocol/sync_proto.gyp:sync_proto',
       ],
       'sources': [
@@ -197,12 +194,13 @@
         '../base/base.gyp:base',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
+        'protocol/sync_proto.gyp:sync_proto',
         'sync',
       ],
       'export_dependent_settings': [
-        '../base/base.gyp:base',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
+        'protocol/sync_proto.gyp:sync_proto',
         'sync',
       ],
       'sources': [
@@ -254,17 +252,19 @@
       'suppress_wildcard': 1,
       'dependencies': [
         '../base/base.gyp:base',
-        '../base/base.gyp:test_support_base',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
+        'protocol/sync_proto.gyp:sync_proto',
         'sync',
         'test_support_sync',
       ],
+      # Propagate all dependencies since the actual compilation
+      # happens in the dependents.
       'export_dependent_settings': [
         '../base/base.gyp:base',
-        '../base/base.gyp:test_support_base',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
+        'protocol/sync_proto.gyp:sync_proto',
         'sync',
         'test_support_sync',
       ],
@@ -335,7 +335,6 @@
         '../base/base.gyp:run_all_unittests',
         'sync_tests',
       ],
-
       # TODO(akalin): This is needed because histogram.cc uses
       # leak_annotations.h, which pulls this in.  Make 'base'
       # propagate this dependency.

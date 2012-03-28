@@ -14,6 +14,7 @@
 #include "base/sys_byteorder.h"
 #include "crypto/encryptor.h"
 #include "crypto/hmac.h"
+#include "crypto/symmetric_key.h"
 
 using base::Base64Encode;
 using base::Base64Decode;

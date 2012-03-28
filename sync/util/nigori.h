@@ -9,7 +9,10 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
-#include "crypto/symmetric_key.h"
+
+namespace crypto {
+class SymmetricKey;
+}  // namespace crypto
 
 namespace browser_sync {
 
