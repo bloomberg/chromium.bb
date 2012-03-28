@@ -155,6 +155,8 @@ extern const char kEnableMemoryInfo[];
 extern const char kEnableNaCl[];
 extern const char kEnableNaClDebug[];
 extern const char kEnableNaClExceptionHandling[];
+extern const char kEnableNpn[];
+extern const char kEnableNpnHttpOnly[];
 extern const char kEnablePanels[];
 extern const char kEnablePasswordGeneration[];
 extern const char kEnablePlatformApps[];

@@ -749,36 +749,61 @@ void ChromeBrowserMainParts::SpdyFieldTrial() {
     std::string spdy_mode =
         parsed_command_line().GetSwitchValueASCII(switches::kUseSpdy);
     net::HttpNetworkLayer::EnableSpdy(spdy_mode);
+  }
+  if (parsed_command_line().HasSwitch(switches::kEnableSpdy3)) {
+    net::HttpStreamFactory::EnableNpnSpdy3();
+  } else if (parsed_command_line().HasSwitch(
+             switches::kEnableSpdyFlowControl)) {
+    net::HttpStreamFactory::EnableFlowControl();
+  } else if (parsed_command_line().HasSwitch(switches::kEnableNpn)) {
+    net::HttpStreamFactory::EnableNpnSpdy();
+  } else if (parsed_command_line().HasSwitch(switches::kEnableNpnHttpOnly)) {
+    net::HttpStreamFactory::EnableNpnHttpOnly();
   } else {
 #if !defined(OS_CHROMEOS)
     bool is_spdy_trial = false;
     const base::FieldTrial::Probability kSpdyDivisor = 100;
     base::FieldTrial::Probability npnhttp_probability = 5;
+    base::FieldTrial::Probability flow_control_probability = 5;
+    base::FieldTrial::Probability spdy3_probability = 0;
 
     // After June 30, 2013 builds, it will always be in default group.
     scoped_refptr<base::FieldTrial> trial(
         new base::FieldTrial(
             "SpdyImpact", kSpdyDivisor, "npn_with_spdy", 2013, 6, 30));
 
-    // npn with spdy support is the default.
+    // NPN with spdy support is the default.
     int npn_spdy_grp = trial->kDefaultGroupNumber;
 
-    // npn with only http support, no spdy.
+    // NPN with only http support, no spdy.
     int npn_http_grp = trial->AppendGroup("npn_with_http", npnhttp_probability);
 
+    // NPN with http/1.1, spdy/2, spdy/2.1 and spdy/3 support.
+    int spdy3_grp = trial->AppendGroup("spdy3", spdy3_probability);
+
+    // NPN with http/1.1, spdy/2 and spdy/2.1 support.
+    int flow_control_grp = trial->AppendGroup(
+        "flow_control", flow_control_probability);
+
     int trial_grp = trial->group();
-    if (trial_grp == npn_http_grp) {
+    if (trial_grp == npn_spdy_grp) {
       is_spdy_trial = true;
-      net::HttpNetworkLayer::EnableSpdy("npn-http");
-    } else if (trial_grp == npn_spdy_grp) {
+      net::HttpStreamFactory::EnableNpnSpdy();
+    } else if (trial_grp == npn_http_grp) {
       is_spdy_trial = true;
-      net::HttpNetworkLayer::EnableSpdy("npn");
+      net::HttpStreamFactory::EnableNpnHttpOnly();
+    } else if (trial_grp == spdy3_grp) {
+      is_spdy_trial = true;
+      net::HttpStreamFactory::EnableNpnSpdy3();
+    } else if (trial_grp == flow_control_grp) {
+      is_spdy_trial = true;
+      net::HttpStreamFactory::EnableFlowControl();
     } else {
       CHECK(!is_spdy_trial);
     }
 #else
     // Always enable SPDY on Chrome OS
-    net::HttpNetworkLayer::EnableSpdy("npn");
+    net::HttpStreamFactory::EnableNpnSpdy();
 #endif  // !defined(OS_CHROMEOS)
   }
 
@@ -807,35 +832,6 @@ void ChromeBrowserMainParts::SpdyFieldTrial() {
         &value);
     if (value > 0)
       net::SpdySession::set_max_concurrent_streams(value);
-  }
-
-  if (parsed_command_line().HasSwitch(switches::kEnableSpdy3)) {
-    net::HttpStreamFactory::EnableSPDY3();
-  } else if (parsed_command_line().HasSwitch(
-             switches::kEnableSpdyFlowControl)) {
-    net::HttpStreamFactory::EnableFlowControl();
-  } else {
-    const base::FieldTrial::Probability kSpdyDivisor = 100;
-    base::FieldTrial::Probability flow_control_probability = 5;
-    base::FieldTrial::Probability spdy3_probability = 0;
-
-    // After October 30, 2012 builds, it will always be in default group
-    // (disable_spdy_protocol_test).
-    scoped_refptr<base::FieldTrial> trial(
-        new base::FieldTrial(
-            "SpdyProtocolTest", kSpdyDivisor, "disable_spdy_protocol_test",
-            2012, 10, 30));
-
-    int spdy3_grp = trial->AppendGroup("spdy3", spdy3_probability);
-    int flow_control_grp = trial->AppendGroup(
-        "flow_control", flow_control_probability);
-
-    int trial_grp = trial->group();
-    if (trial_grp == spdy3_grp) {
-      net::HttpStreamFactory::EnableSPDY3();
-    } else if (trial_grp == flow_control_grp) {
-      net::HttpStreamFactory::EnableFlowControl();
-    }
   }
 }
 

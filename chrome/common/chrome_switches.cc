@@ -328,6 +328,9 @@ const char kDisableIPPooling[]              = "disable-ip-pooling";
 // Avoid doing expensive animations upon login.
 const char kDisableLoginAnimations[]        = "disable-login-animations";
 
+// Disables the menu on the NTP for accessing sessions from other devices.
+const char kDisableNTPOtherSessionsMenu[]   = "disable-ntp-other-sessions-menu";
+
 // Disable speculative TCP/IP preconnection.
 const char kDisablePreconnect[]             = "disable-preconnect";
 
@@ -544,8 +547,12 @@ const char kEnableNaClDebug[]               = "enable-nacl-debug";
 // Enables hardware exception handling via debugger process.
 const char kEnableNaClExceptionHandling[]   = "enable-nacl-exception-handling";
 
-// Disables the menu on the NTP for accessing sessions from other devices.
-const char kDisableNTPOtherSessionsMenu[]   = "disable-ntp-other-sessions-menu";
+// Enables NPN and SPDY. In case server supports SPDY, browser will use SPDY.
+const char kEnableNpn[]                     = "enable-npn";
+
+// Enables NPN with HTTP. It means NPN is enabled but SPDY won't be used.
+// HTTP is still used for all requests.
+const char kEnableNpnHttpOnly[]             = "enable-npn-http";
 
 // Enables panels (always on-top docked pop-up windows).
 const char kEnablePanels[]                  = "enable-panels";

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,6 +19,7 @@
 #include "net/disk_cache/disk_cache.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_network_layer.h"
+#include "net/http/http_stream_factory.h"
 
 namespace {
 
@@ -169,9 +170,10 @@ void ChromeBenchmarkingMessageFilter::OnEnableSpdy(bool enable) {
     return;
   }
   if (enable) {
-    net::HttpNetworkLayer::EnableSpdy("npn,force-alt-protocols");
+    net::HttpStreamFactory::EnableNpnSpdy();
+    net::HttpNetworkLayer::EnableSpdy("force-alt-protocols");
   } else {
-    net::HttpNetworkLayer::EnableSpdy("npn-http");
+    net::HttpStreamFactory::EnableNpnHttpOnly();
   }
 }
 
