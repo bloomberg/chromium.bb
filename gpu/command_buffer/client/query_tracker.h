@@ -9,11 +9,7 @@
 
 #include <queue>
 #include "../../gpu_export.h"
-#if defined(__native_client__)
-  #include <tr1/unordered_map>
-#else
-  #include "base/hash_tables.h"
-#endif
+#include "../client/hash_tables.h"
 #include "../common/gles2_cmd_format.h"
 
 namespace gpu {
@@ -152,11 +148,7 @@ class GPU_EXPORT QueryTracker {
   void RemoveQuery(GLuint id);
 
  private:
-  #if defined(__native_client__)
-    typedef std::tr1::unordered_map<GLuint, Query*> QueryMap;
-  #else
-    typedef base::hash_map<GLuint, Query*> QueryMap;
-  #endif
+  typedef gpu::hash_map<GLuint, Query*> QueryMap;
 
   QueryMap queries_;
   QuerySyncManager query_sync_manager_;

@@ -28,6 +28,7 @@
           '<(DEPTH)/gpu/command_buffer/common/gles2_cmd_utils.cc',
           '<(DEPTH)/gpu/command_buffer/common/logging.cc',
 
+          '<(DEPTH)/gpu/command_buffer/client/atomicops.cc',
           '<(DEPTH)/gpu/command_buffer/client/cmd_buffer_helper.cc',
           '<(DEPTH)/gpu/command_buffer/client/fenced_allocator.cc',
           '<(DEPTH)/gpu/command_buffer/client/gles2_c_lib.cc',

@@ -14,10 +14,13 @@
     ],
   },
   'sources': [
+    'command_buffer/client/atomicops.cc',
+    'command_buffer/client/atomicops.h',
     'command_buffer/client/cmd_buffer_helper.cc',
     'command_buffer/client/cmd_buffer_helper.h',
     'command_buffer/client/fenced_allocator.cc',
     'command_buffer/client/fenced_allocator.h',
+    'command_buffer/client/hash_tables.h',
     'command_buffer/client/mapped_memory.cc',
     'command_buffer/client/mapped_memory.h',
     'command_buffer/client/query_tracker.cc',

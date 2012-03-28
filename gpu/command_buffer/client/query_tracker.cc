@@ -4,9 +4,7 @@
 
 #include "../client/query_tracker.h"
 
-#if !defined(__native_client__)
-  #include "base/atomicops.h"
-#endif
+#include "../client/atomicops.h"
 #include "../client/cmd_buffer_helper.h"
 #include "../client/mapped_memory.h"
 
@@ -59,11 +57,7 @@ bool QueryTracker::Query::CheckResultsAvailable(
     if (info_.sync->process_count == submit_count_) {
       // Need a MemoryBarrier here so that sync->result read after
       // sync->process_count.
-      #if defined(__native_client__)
-        __sync_synchronize();
-      #else
-        base::subtle::MemoryBarrier();
-      #endif
+      gpu::MemoryBarrier();
       result_ = info_.sync->result;
       state_ = kComplete;
     } else {

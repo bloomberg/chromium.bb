@@ -26,6 +26,7 @@ command_buffer_common_srcs = [
     ]
 
 command_buffer_client_srcs = [
+    'command_buffer/client/atomicops.cc',
     'command_buffer/client/cmd_buffer_helper.cc',
     'command_buffer/client/fenced_allocator.cc',
     'command_buffer/client/gles2_c_lib.cc',
