@@ -343,6 +343,7 @@ def BuildToolchains(pepperdir, platform, arch, pepper_ver, toolchains):
 EXAMPLE_MAP = {
   'newlib': [
     'debugging',
+    'file_histogram',
     'fullscreen_tumbler',
     'gamepad',
     'geturl',

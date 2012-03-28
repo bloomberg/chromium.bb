@@ -1,4 +1,4 @@
-# Copyright (c) 2012 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -7,10 +7,10 @@
 #   http://www.gnu.org/software/make/manual/make.html
 #
 
-PROJECTS:=dlopen fullscreen_tumbler gamepad geturl hello_world_glibc
-PROJECTS+=hello_world_interactive hello_world_newlib input_events load_progress
-PROJECTS+=mouselock multithreaded_input_events pi_generator pong sine_synth
-PROJECTS+=tumbler websocket
+PROJECTS:=dlopen file_histogram fullscreen_tumbler gamepad geturl
+PROJECTS:=hello_world_glibc hello_world_interactive hello_world_newlib
+PROJECTS:=input_events load_progress mouselock multithreaded_input_events
+PROJECTS:=pi_generator pong sine_synth tumbler websocket
 
 # Define the default target
 all:
