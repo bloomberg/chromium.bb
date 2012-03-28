@@ -645,11 +645,14 @@ function testAsyncEndArgsAddedToSlice() {
   var t = m.processes[52].threads[53];
   assertNotUndefined(t);
   assertEquals(1, t.asyncSlices.slices.length);
-  var slice = t.asyncSlices.slices[0];
-  assertEquals('c', slice.title);
-  assertEquals(0, slice.start);
-  assertEquals(1, slice.args['x']);
-  assertEquals(2, slice.args['y']);
+  var parentSlice = t.asyncSlices.slices[0];
+  assertEquals('c', parentSlice.title);
+
+  assertNotUndefined(parentSlice.subSlices);
+  assertEquals(1, parentSlice.subSlices.length);
+  var subSlice = parentSlice.subSlices[0];
+  assertEquals(1, subSlice.args['x']);
+  assertEquals(2, subSlice.args['y']);
 }
 
 function testAsyncEndArgOverrwritesOriginalArgValueIfDuplicated() {
@@ -665,16 +668,80 @@ function testAsyncEndArgOverrwritesOriginalArgValueIfDuplicated() {
   var t = m.processes[52].threads[53];
   assertNotUndefined(t);
   assertEquals(1, t.asyncSlices.slices.length);
-  var slice = t.asyncSlices.slices[0];
-  assertEquals('d', slice.title);
-  assertEquals(0, slice.start);
-  assertEquals(4, slice.args['z']);
+  var parentSlice = t.asyncSlices.slices[0];
+  assertEquals('d', parentSlice.title);
+
+  assertNotUndefined(parentSlice.subSlices);
+  assertEquals(1, parentSlice.subSlices.length);
+  var subSlice = parentSlice.subSlices[0];
+  assertEquals(4, subSlice.args['z']);
+}
+
+function testAsyncStepsInOneThread() {
+  var events = [
+    // Time is intentionally out of order.
+    {name: 'a', args: {z: 3}, pid: 52, ts: 560, cat: 'foo', tid: 53,
+       ph: 'F', id: 72},
+    {name: 'a', args: {step: 's1', y: 2}, pid: 52, ts: 548, cat: 'foo', tid: 53,
+       ph: 'T', id: 72, },
+    {name: 'a', args: {x: 1}, pid: 52, ts: 524, cat: 'foo', tid: 53,
+       ph: 'S', id: 72}
+  ];
+
+  var m = new tracing.TimelineModel(events);
+  var t = m.processes[52].threads[53];
+  assertNotUndefined(t);
+  assertEquals(1, t.asyncSlices.slices.length);
+  var parentSlice = t.asyncSlices.slices[0];
+  assertEquals('a', parentSlice.title);
+  assertEquals(0, parentSlice.start);
+
+  assertNotUndefined(parentSlice.subSlices);
+  assertEquals(2, parentSlice.subSlices.length);
+  var subSlice = parentSlice.subSlices[0];
+  assertEquals('a', subSlice.title);
+  assertEquals(0, subSlice.start);
+  assertAlmostEquals((548 - 524) / 1000, subSlice.duration);
+  assertEquals(1, subSlice.args['x']);
+
+  var subSlice = parentSlice.subSlices[1];
+  assertEquals('a:s1', subSlice.title);
+  assertAlmostEquals((548 - 524) / 1000, subSlice.start);
+  assertAlmostEquals((560 - 548) / 1000, subSlice.duration);
+  assertEquals(2, subSlice.args['y']);
+  assertEquals(3, subSlice.args['z']);
+}
+
+function testAsyncStepsMissingStart() {
+  var events = [
+    // Time is intentionally out of order.
+    {name: 'a', args: {z: 3}, pid: 52, ts: 560, cat: 'foo', tid: 53,
+       ph: 'F', id: 72},
+    {name: 'a', args: {step: 's1', y: 2}, pid: 52, ts: 548, cat: 'foo', tid: 53,
+       ph: 'T', id: 72, },
+  ];
+
+  var m = new tracing.TimelineModel(events);
+  var t = m.processes[52].threads[53];
+  assertUndefined(t);
+}
+
+function testAsyncStepsMissingFinish() {
+  var events = [
+    // Time is intentionally out of order.
+    {name: 'a', args: {step: 's1', y: 2}, pid: 52, ts: 548, cat: 'foo', tid: 53,
+       ph: 'T', id: 72, },
+    {name: 'a', args: {z: 3}, pid: 52, ts: 560, cat: 'foo', tid: 53,
+       ph: 'S', id: 72},
+  ];
+
+  var m = new tracing.TimelineModel(events);
+  var t = m.processes[52].threads[53];
+  assertUndefined(t);
 }
 
 // TODO(nduca): one slice, two threads
 // TODO(nduca): one slice, two pids
-// TODO(nduca): one slice that doesnt end
-// TODO(nduca): one slice that is missing a start
 
 </script>
 </body>

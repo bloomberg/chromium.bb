@@ -88,7 +88,9 @@ cr.define('tracing', function() {
 
     startThread: undefined,
 
-    endThread: undefined
+    endThread: undefined,
+
+    subSlices: undefined
   };
 
   /**
@@ -484,8 +486,12 @@ cr.define('tracing', function() {
      * specified.
      */
     shiftTimestampsForward: function(amount) {
-      for (var sI = 0; sI < this.slices.length; sI++)
-        this.slices[sI].start = (this.slices[sI].start + amount);
+      for (var sI = 0; sI < this.slices.length; sI++) {
+        var slice = this.slices[sI];
+        slice.start = (slice.start + amount);
+        for (var sJ = 0; sJ < slice.subSlices.length; sJ++)
+          slice.subSlices[sJ].start += amount;
+      }
     },
 
     /**
@@ -529,12 +535,20 @@ cr.define('tracing', function() {
           var lastSliceInSubRow = subRow[subRow.length - 1];
           if (slice.start >= lastSliceInSubRow.end) {
             found = true;
-            subRow.push(slice);
+            // Instead of plotting one big slice for the entire
+            // TimelineAsyncEvent, we plot each of the subSlices.
+            if (slice.subSlices === undefined || slice.subSlices.length < 1)
+              throw 'TimelineAsyncEvent missing subSlices: ' + slice.name;
+            for (var k = 0; k < slice.subSlices.length; k++)
+              subRow.push(slice.subSlices[k]);
             break;
           }
         }
         if (!found) {
-          subRows.push([slice]);
+          var subRow = [];
+          for (var k = 0; k < slice.subSlices.length; k++)
+            subRow.push(slice.subSlices[k]);
+          subRows.push(subRow);
         }
       }
       this.subRows_ = subRows;

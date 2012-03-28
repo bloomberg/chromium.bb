@@ -288,6 +288,8 @@ cr.define('tracing', function() {
           this.processAsyncEvent(eI, state, event);
         } else if (event.ph == 'F') {
           this.processAsyncEvent(eI, state, event);
+        } else if (event.ph == 'T') {
+          this.processAsyncEvent(eI, state, event);
         } else if (event.ph == 'I') {
           // Treat an Instant event as a duration 0 slice.
           // TimelineSliceTrack's redraw() knows how to handle this.
@@ -333,7 +335,7 @@ cr.define('tracing', function() {
         return x.event.ts - y.event.ts;
       });
 
-      var startEventStatesByNameThenID = {};
+      var asyncEventStatesByNameThenID = {};
 
       var allAsyncEvents = this.allAsyncEvents_;
       for (var i = 0; i < allAsyncEvents.length; i++) {
@@ -343,64 +345,91 @@ cr.define('tracing', function() {
         var name = event.name;
         if (name === undefined) {
           this.model_.importErrors.push(
-              'Async events (ph: S or F) require an name parameter.');
+              'Async events (ph: S, T or F) require an name parameter.');
           continue;
         }
 
         var id = event.id;
         if (id === undefined) {
           this.model_.importErrors.push(
-              'Async events (ph: S or F) require an id parameter.');
+              'Async events (ph: S, T or F) require an id parameter.');
           continue;
         }
 
+        // TODO(simonjam): Add a synchronous tick on the appropriate thread.
+
         if (event.ph == 'S') {
-          if (startEventStatesByNameThenID[name] === undefined)
-            startEventStatesByNameThenID[name] = {};
-          if (startEventStatesByNameThenID[name][id]) {
+          if (asyncEventStatesByNameThenID[name] === undefined)
+            asyncEventStatesByNameThenID[name] = {};
+          if (asyncEventStatesByNameThenID[name][id]) {
             this.model_.importErrors.push(
                 'At ' + event.ts + ', an slice of the same id ' + id +
                 ' was alrady open.');
             continue;
           }
-          startEventStatesByNameThenID[name][id] = asyncEventState;
+          asyncEventStatesByNameThenID[name][id] = [];
+          asyncEventStatesByNameThenID[name][id].push(asyncEventState);
         } else {
-          if (startEventStatesByNameThenID[name] === undefined) {
+          if (asyncEventStatesByNameThenID[name] === undefined) {
             this.model_.importErrors.push(
                 'At ' + event.ts + ', no slice named ' + name +
                 ' was open.');
             continue;
           }
-          if (startEventStatesByNameThenID[name][id] === undefined) {
+          if (asyncEventStatesByNameThenID[name][id] === undefined) {
             this.model_.importErrors.push(
                 'At ' + event.ts + ', no slice named ' + name +
                 ' with id=' + id + ' was open.');
             continue;
           }
-          var startAsyncEventState = startEventStatesByNameThenID[name][id];
-          delete startEventStatesByNameThenID[name][id];
+          var events = asyncEventStatesByNameThenID[name][id];
+          events.push(asyncEventState);
 
-          // Create a slice from startAsyncEventState to asyncEventState
-          var slice = new tracing.TimelineAsyncSlice(
-              name,
-              tracing.getStringColorId(name),
-              startAsyncEventState.event.ts / 1000);
+          if (event.ph == 'F') {
+            // Create a slice from start to end.
+            var slice = new tracing.TimelineAsyncSlice(
+                name,
+                tracing.getStringColorId(name),
+                events[0].event.ts / 1000);
 
-          slice.duration =
-              (event.ts / 1000) - (startAsyncEventState.event.ts / 1000);
+            slice.duration = (event.ts / 1000) - (events[0].event.ts / 1000);
 
-          slice.startThread = startAsyncEventState.thread;
-          slice.endThread = asyncEventState.thread;
-          slice.id = id;
-          if (startAsyncEventState.event.args)
-            slice.args = startAsyncEventState.event.args;
-          else
-            slice.args = {};
-          for (var arg in event.args)
-            slice.args[arg] = event.args[arg]
+            slice.startThread = events[0].thread;
+            slice.endThread = asyncEventState.thread;
+            slice.id = id;
+            slice.args = events[0].event.args;
+            slice.subSlices = [];
 
-          // Add it to the start-thread's asyncSlices.
-          slice.startThread.asyncSlices.push(slice);
+            // Create subSlices for each step.
+            for (var j = 1; j < events.length; ++j) {
+              var subName = name;
+              if (events[j-1].event.ph == 'T')
+                subName = name + ':' + events[j-1].event.args.step;
+              var subSlice = new tracing.TimelineAsyncSlice(
+                  subName,
+                  tracing.getStringColorId(name + j),
+                  events[j-1].event.ts / 1000);
+
+              subSlice.duration =
+                  (events[j].event.ts / 1000) - (events[j-1].event.ts / 1000);
+
+              subSlice.startThread = events[j-1].thread;
+              subSlice.endThread = events[j].thread;
+              subSlice.id = id;
+              subSlice.args = events[j-1].event.args;
+
+              slice.subSlices.push(subSlice);
+            }
+
+            // The args for the finish event go in the last subSlice.
+            var lastSlice = slice.subSlices[slice.subSlices.length-1];
+            for (var arg in event.args)
+              lastSlice.args[arg] = event.args[arg]
+
+            // Add |slice| to the start-thread's asyncSlices.
+            slice.startThread.asyncSlices.push(slice);
+            delete asyncEventStatesByNameThenID[name][id];
+          }
         }
       }
     }
