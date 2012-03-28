@@ -7,8 +7,6 @@
 #include <fcntl.h>
 #include <getopt.h>
 #include <libgen.h>
-#include <libintl.h>
-#include <locale.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -24,9 +22,6 @@ template <typename T, size_t N>
 char (&ArraySizeHelper(T (&array)[N]))[N];
 #define arraysize(array) (sizeof(ArraySizeHelper(array)))
 
-char* _(const char *s) { return gettext(s); }
-const char* N_(const char *s) { return s; }
-
 namespace {
   const char* short_program_name;
 
@@ -41,7 +36,7 @@ namespace {
 
   const char kVersion[] = "0.0";
 
-  const char*const kProgramHelp = N_("Usage: %1$s [OPTION]... [FILE]...\n"
+  const char* const kProgramHelp = "Usage: %1$s [OPTION]... [FILE]...\n"
 "\n"
 "Creates ragel machine which recognizes instructions listed in given files.\n"
 "\n"
@@ -91,13 +86,12 @@ namespace {
 "  rel_operand_action  generate rel_operand action references, but not\n"
 "                        actions themselves\n"
 "\n"
-"  nacl-forbidden      don't generate instructions forbidden for nacl\n");
+"  nacl-forbidden      don't generate instructions forbidden for nacl\n";
 
-  const char*const kVersionHelp = N_("%1$s %2$s\n"
+  const char* const kVersionHelp = "%1$s %2$s\n"
 "Copyright (c) 2012 The Native Client Authors. All rights reserved.\n"
 "Use of this source code is governed by a BSD-style license that can be\n"
-"found in the LICENSE file.\n"
-"");
+"found in the LICENSE file.\n";
 
   enum class Actions {
     kRexPrefix,
@@ -168,8 +162,8 @@ namespace {
     ssize_t count;
 
     if (file == -1) {
-      fprintf(stderr, _("%s: can not open '%s' file (%s)\n"),
-        short_program_name, filename, strerror(errno));
+      fprintf(stderr, "%s: can not open '%s' file (%s)\n",
+              short_program_name, filename, strerror(errno));
       exit(1);
     }
     while ((count = read(file, buf, sizeof(buf))) > 0) {
@@ -182,13 +176,13 @@ namespace {
       }
     }
     if (count == -1) {
-      fprintf(stderr, _("%s: can not read '%s' file (%s)\n"),
-        short_program_name, filename, strerror(errno));
+      fprintf(stderr, "%s: can not read '%s' file (%s)\n",
+              short_program_name, filename, strerror(errno));
       exit(1);
     }
     if (close(file)) {
-      fprintf(stderr, _("%s: can not close '%s' file (%s)\n"),
-        short_program_name, filename, strerror(errno));
+      fprintf(stderr, "%s: can not close '%s' file (%s)\n",
+              short_program_name, filename, strerror(errno));
       exit(1);
     }
     return file_content;
@@ -230,7 +224,7 @@ namespace {
 
       for (++it; *it != '"'; ++it) {
         if (it == line_end) {
-          fprintf(stderr, _("%s: quoted text reaches end of line: %s\n"),
+          fprintf(stderr, "%s: quoted text reaches end of line: %s\n",
                   short_program_name, str.c_str());
           exit(1);
         }
@@ -344,8 +338,8 @@ namespace {
                     break;
                   }
                 } else {
-                  fprintf(stderr, _("%s: unknown flag: '%s'\n"),
-                    short_program_name, flag.c_str());
+                  fprintf(stderr, "%s: unknown flag: '%s'\n",
+                          short_program_name, flag.c_str());
                   exit(1);
                 }
               }
@@ -1206,8 +1200,8 @@ namespace {
                   opcode->push_back(')');
                   break;
                 default:
-                  fprintf(stderr, _("%s: error - can not use 'r' operand in "
-                         "instruction '%s'"), short_program_name, name.c_str());
+                  fprintf(stderr, "%s: error - can not use 'r' operand in "
+                    "instruction '%s'", short_program_name, name.c_str());
                   exit(1);
               }
               if (operand.size != "7") rex.b = true;
@@ -1215,8 +1209,8 @@ namespace {
             }
           }
           if (opcode == opcodes.rend()) {
-            fprintf(stderr, _("%s: error - can not use 'r' operand in "
-              "instruction '%s'"), short_program_name, name.c_str());
+            fprintf(stderr, "%s: error - can not use 'r' operand in "
+              "instruction '%s'", short_program_name, name.c_str());
             exit(1);
           }
           break;
@@ -1240,8 +1234,8 @@ namespace {
             rex.w = true;
           } else {
             fprintf(stderr,
-                    _("%s: error - can not enforce '%drexw' prefix in "
-                      "instruction '%s'"),
+                    "%s: error - can not enforce '%drexw' prefix in "
+                      "instruction '%s'",
                     short_program_name,
                     instruction_class,
                     name.c_str());
@@ -1355,8 +1349,8 @@ namespace {
             operand_class = InstructionClass::kUnknown;
           }
         } else {
-          fprintf(stderr, _("%s: unknown operand: '%c%s'\n"),
-                      short_program_name, operand.source, operand.size.c_str());
+          fprintf(stderr, "%s: unknown operand: '%c%s'\n",
+                  short_program_name, operand.source, operand.size.c_str());
           exit(1);
         }
         if ((operand_class == InstructionClass::kUnknown) ||
@@ -1372,8 +1366,8 @@ namespace {
                     (operand_class == InstructionClass::kDefaultRexW))) {
           instruction_class = InstructionClass::kSize8Data16DefaultRexW;
         } else {
-          fprintf(stderr, _("%s: error - incompatible modes %d & %d\n"),
-            short_program_name, instruction_class, operand_class);
+          fprintf(stderr, "%s: error - incompatible modes %d & %d\n",
+                  short_program_name, instruction_class, operand_class);
           exit(1);
         }
       }
@@ -1446,8 +1440,8 @@ namespace {
               return;
             }
           }
-          fprintf(stderr, _("%s: error - can not set 'w' bit in "
-            "instruction '%s'"), short_program_name, name.c_str());
+          fprintf(stderr, "%s: error - can not set 'w' bit in "
+                  "instruction '%s'", short_program_name, name.c_str());
           exit(1);
         case InstructionClass::kLSetUnset:
         case InstructionClass::kLSetUnsetDefaultRexW:
@@ -1490,13 +1484,13 @@ namespace {
               return;
             }
           }
-          fprintf(stderr, _("%s: error - can not set 'L' bit in"
-            "instruction '%s'"), short_program_name, name.c_str());
+          fprintf(stderr, "%s: error - can not set 'L' bit in instruction '%s'",
+                  short_program_name, name.c_str());
           exit(1);
           break;
         case InstructionClass::kUnknown:
-          fprintf(stderr, _("%s: error - incorrect operand mode: '%d'"),
-            short_program_name, instruction_class);
+          fprintf(stderr, "%s: error - incorrect operand mode: '%d'",
+                  short_program_name, instruction_class);
           exit(1);
       }
     }
@@ -1526,8 +1520,9 @@ namespace {
           if ((modrm_memory || modrm_register) &&
               ((modrm_memory != it->second.first) ||
                (modrm_register != it->second.second))) {
-            fprintf(stderr, _("%s: error - conflicting operand sources: '%c'"
-              " and '%c'"), short_program_name, operand_source, operand.source);
+            fprintf(stderr,
+                    "%s: error - conflicting operand sources: '%c' and '%c'",
+                    short_program_name, operand_source, operand.source);
             exit(1);
           }
           modrm_memory = it->second.first;
@@ -1607,7 +1602,7 @@ namespace {
           auto it = operand_type.find(operand.source);
           if (it != operand_type.end()) {
             fprintf(out_file, " @operand%zd_from_modrm_%s",
-                                     &operand - &*operands.begin(), it->second);
+                    &operand - &*operands.begin(), it->second);
           }
         }
       }
@@ -1674,7 +1669,7 @@ namespace {
             auto it = operand_type.find(operand.source);
             if (it != operand_type.end()) {
               fprintf(out_file, " @operand%zd_%s",
-                                     &operand - &*operands.begin(), it->second);
+                      &operand - &*operands.begin(), it->second);
             }
           }
         }
@@ -1960,9 +1955,9 @@ namespace {
           }
           fprintf(out_file, ")");
         } else {
-          fprintf(stderr, _("%s: error - third byte of VEX/XOP command "
-            "in unparseable (%s) in instruction '%s'"),
-            short_program_name, third_byte.c_str(), name.c_str());
+          fprintf(stderr, "%s: error - third byte of VEX/XOP command "
+            "in unparseable (%s) in instruction '%s'",
+                  short_program_name, third_byte.c_str(), name.c_str());
           exit(1);
         }
       } else {
@@ -1988,7 +1983,7 @@ namespace {
           auto &operand = *operand_it;
           if (operand.source == 'r') {
             fprintf(out_file, " @operand%zd_from_opcode",
-                                                 &operand - &*operands.begin());
+                    &operand - &*operands.begin());
           }
         }
       }
@@ -2135,14 +2130,14 @@ namespace {
           }
           if (it == operand_sizes.end()) {
             fprintf(stderr,
-                    _("%s: error - can not determine operand size: %c%s"),
+                    "%s: error - can not determine operand size: %c%s",
                     short_program_name,
                     operand.source,
                     operand.size.c_str());
             exit(1);
           } else {
             fprintf(out_file, " @operand%zd_%s", &operand - &*operands.begin(),
-                                                                    it->second);
+                    it->second);
           }
           static std::map<char, const char*> operand_type {
             { '1', "one"                },
@@ -2163,7 +2158,7 @@ namespace {
           auto it2 = operand_type.find(operand.source);
           if (it2 != operand_type.end()) {
             fprintf(out_file, " @operand%zd_%s", &operand - &*operands.begin(),
-                                                                   it2->second);
+                    it2->second);
           }
         }
       }
@@ -2174,18 +2169,18 @@ namespace {
           if (operand.read) {
             if (operand.write) {
               fprintf(out_file, " @operand%zd_readwrite",
-                                                 &operand - &*operands.begin());
+                      &operand - &*operands.begin());
             } else {
               fprintf(out_file, " @operand%zd_read",
-                                                 &operand - &*operands.begin());
+                      &operand - &*operands.begin());
             }
           } else {
             if (operand.write) {
               fprintf(out_file, " @operand%zd_write",
-                                                 &operand - &*operands.begin());
+                      &operand - &*operands.begin());
             } else {
               fprintf(out_file, " @operand%zd_unused",
-                                                 &operand - &*operands.begin());
+                      &operand - &*operands.begin());
             }
           }
         }
@@ -2223,8 +2218,9 @@ namespace {
           auto it = immediate_sizes.find({instruction_class,
                                           operand->size});
           if (it == immediate_sizes.end()) {
-            fprintf(stderr, _("%s: error - can not determine immediate size: %c"
-             "%s"), short_program_name, operand->source, operand->size.c_str());
+            fprintf(stderr,
+                    "%s: error - can not determine immediate size: %c%s",
+                    short_program_name, operand->source, operand->size.c_str());
             exit(1);
           }
           fprintf(out_file, " %sn2", it->second);
@@ -2233,8 +2229,9 @@ namespace {
           auto it = immediate_sizes.find({instruction_class,
                                           operand->size});
           if (it == immediate_sizes.end()) {
-            fprintf(stderr, _("%s: error - can not determine immediate size: %c"
-             "%s"), short_program_name, operand->source, operand->size.c_str());
+            fprintf(stderr,
+                    "%s: error - can not determine immediate size: %c%s",
+                    short_program_name, operand->source, operand->size.c_str());
             exit(1);
           }
           fprintf(out_file, " %s", it->second);
@@ -2251,7 +2248,7 @@ namespace {
         if (operand->source == 'J') {
           auto it = jump_sizes.find({instruction_class, operand->size});
           if (it == jump_sizes.end()) {
-            fprintf(stderr, _("%s: error - can not determine jump size: %c%s"),
+            fprintf(stderr, "%s: error - can not determine jump size: %c%s",
                     short_program_name, operand->source, operand->size.c_str());
             exit(1);
           }
@@ -2287,7 +2284,7 @@ namespace {
             auto &operand = *operand_it;
             if (operand.source == 'C') {
               fprintf(out_file, " @not_lock_prefix%zd",
-                                                 &operand - &*operands.begin());
+                      &operand - &*operands.begin());
               break;
             }
           }
@@ -2335,10 +2332,6 @@ struct compare_action {
 };
 
 int main(int argc, char *argv[]) {
-  setlocale(LC_ALL, "");
-  bindtextdomain("ncval", ".");
-  textdomain("ncval");
-
   /* basename(3) may change the passed argument thus we are using copy
      of argv[0].  This creates tiny memory leak but since we only do that
      once per program invocation it's contained.  */
@@ -2376,8 +2369,8 @@ int main(int argc, char *argv[]) {
               kDisablableActionsList + arraysize(kDisablableActionsList)) {
             disabled_actions[action_number - kDisablableActionsList] = true;
           } else {
-            fprintf(stderr, _("%s: action '%s' is unknown\n"),
-              short_program_name, action_to_disable);
+            fprintf(stderr, "%s: action '%s' is unknown\n",
+                    short_program_name, action_to_disable);
             return 1;
           }
         }
@@ -2389,8 +2382,8 @@ int main(int argc, char *argv[]) {
         } else if (!strcmp(optarg, "amd64")) {
           ia32_mode = false;
         } else {
-          fprintf(stderr, _("%s: mode '%s' is unknown\n"),
-            short_program_name, optarg);
+          fprintf(stderr, "%s: mode '%s' is unknown\n",
+                  short_program_name, optarg);
           return 1;
         }
         break;
@@ -2399,10 +2392,10 @@ int main(int argc, char *argv[]) {
         out_file_name = optarg;
         break;
       case 'h':
-        printf(gettext(kProgramHelp), short_program_name);
+        printf(kProgramHelp, short_program_name);
         break;
       case 'v':
-        printf(gettext(kVersionHelp), short_program_name, kVersion);
+        printf(kVersionHelp, short_program_name, kVersion);
         break;
       case '?':
         /* getopt_long already printed an error message.  */
@@ -2418,7 +2411,7 @@ int main(int argc, char *argv[]) {
 
   if (!(out_file = fopen(out_file_name, "w"))) {
     fprintf(stderr,
-            _("%s: can not open '%s' file (%s)\n"),
+            "%s: can not open '%s' file (%s)\n",
             short_program_name, out_file_name, strerror(errno));
     return 1;
   } else if (enabled(Actions::kInstructionName) ||
@@ -2434,8 +2427,8 @@ int main(int argc, char *argv[]) {
             "-consts.c",
             const_name_len - (dot_position - const_name));
     if (!(const_file = fopen(const_name, "w"))) {
-      fprintf(stderr, _("%s: can not open '%s' file (%s)\n"),
-                               short_program_name, const_name, strerror(errno));
+      fprintf(stderr, "%s: can not open '%s' file (%s)\n",
+              short_program_name, const_name, strerror(errno));
        return 1;
     }
     free(const_name);
