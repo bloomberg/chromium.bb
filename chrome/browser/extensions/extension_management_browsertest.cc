@@ -218,8 +218,15 @@ class NotificationListener : public content::NotificationObserver {
   std::set<std::string> updates_;
 };
 
+#if defined(OS_WIN)
+// Fails consistently on Windows XP, see: http://crbug.com/120640.
+#define MAYBE_AutoUpdate DISABLED_AutoUpdate
+#else
+#define MAYBE_AutoUpdate AutoUpdate
+#endif
+
 // Tests extension autoupdate.
-IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, AutoUpdate) {
+IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, MAYBE_AutoUpdate) {
   NotificationListener notification_listener;
   FilePath basedir = test_data_dir_.AppendASCII("autoupdate");
   // Note: This interceptor gets requests on the IO thread.
