@@ -1,5 +1,5 @@
 /*
- * Copyright © 2011 Intel Corporation
+ * Copyright © 2011, 2012 Intel Corporation
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -24,6 +24,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/wait.h>
 
 #include "window.h"
 #include "cairo-util.h"
@@ -31,14 +32,25 @@
 
 #include "tablet-shell-client-protocol.h"
 
-struct tablet_shell {
+struct tablet {
 	struct display *display;
 	struct tablet_shell *tablet_shell;
 	struct rectangle allocation;
-	struct window *lockscreen;
 	struct window *switcher;
-	struct window *homescreen;
+
+	struct homescreen *homescreen;
+	struct lockscreen *lockscreen;
+};
+
+struct homescreen {
+	struct window *window;
+	struct widget *widget;
 	struct wl_list launcher_list;
+};
+
+struct lockscreen {
+	struct window *window;
+	struct widget *widget;
 };
 
 struct launcher {
@@ -74,6 +86,16 @@ static const struct config_section config_sections[] = {
 };
 
 static void
+sigchild_handler(int s)
+{
+	int status;
+	pid_t pid;
+
+	while (pid = waitpid(-1, &status, WNOHANG), pid > 0)
+		fprintf(stderr, "child %d exited\n", pid);
+}
+
+static void
 paint_background(cairo_t *cr, const char *path, struct rectangle *allocation)
 {
 	cairo_surface_t *image = NULL;
@@ -97,16 +119,16 @@ paint_background(cairo_t *cr, const char *path, struct rectangle *allocation)
 		cairo_surface_destroy(image);
 		cairo_paint(cr);
 	} else {
-		fprintf(stderr, "couldn't load backgrond image: %s\n",
-			key_lockscreen_background);
+		fprintf(stderr, "couldn't load background image: %s\n", path);
 		cairo_set_source_rgb(cr, 0.2, 0, 0);
 		cairo_paint(cr);
 	}
 }
 
 static void
-homescreen_draw(struct tablet_shell *shell)
+homescreen_draw(struct widget *widget, void *data)
 {
+	struct homescreen *homescreen = data;
 	cairo_surface_t *surface;
 	struct rectangle allocation;
 	cairo_pattern_t *pattern;
@@ -116,11 +138,10 @@ homescreen_draw(struct tablet_shell *shell)
 	const int rows = 4, columns = 5, icon_width = 128, icon_height = 128;
 	int x, y, i, width, height, vmargin, hmargin, vpadding, hpadding;
 
-	window_create_surface(shell->homescreen);
-	window_get_allocation(shell->homescreen, &allocation);
-	surface = window_get_surface(shell->homescreen);
+	surface = window_get_surface(homescreen->window);
 	cr = cairo_create(surface);
 
+	widget_get_allocation(widget, &allocation);
 	paint_background(cr, key_homescreen_background, &allocation);
 
 	cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
@@ -137,10 +158,9 @@ homescreen_draw(struct tablet_shell *shell)
 	y = vmargin;
 	i = 0;
 
-	wl_list_for_each(launcher, &shell->launcher_list, link) {
+	wl_list_for_each(launcher, &homescreen->launcher_list, link) {
 		pattern = cairo_pattern_create_for_surface(launcher->icon);
-		cairo_matrix_init_scale(&matrix, 2.0, 2.0);
-		cairo_matrix_translate(&matrix, -x, -y);
+		cairo_matrix_init_translate(&matrix, -x, -y);
 		cairo_pattern_set_matrix(pattern, &matrix);
 		cairo_pattern_set_extend(pattern, CAIRO_EXTEND_NONE);
 		cairo_set_source(cr, pattern);
@@ -155,67 +175,116 @@ homescreen_draw(struct tablet_shell *shell)
 		}
 	}
 
-	cairo_surface_flush(surface);
+	cairo_destroy(cr);
 	cairo_surface_destroy(surface);
-	window_flush(shell->homescreen);
 }
 
-
 static void
-lockscreen_draw(struct tablet_shell *shell)
+lockscreen_draw(struct widget *widget, void *data)
 {
+	struct lockscreen *lockscreen = data;
 	cairo_surface_t *surface;
 	cairo_surface_t *icon;
 	struct rectangle allocation;
 	cairo_t *cr;
 	int width, height;
 
-	window_create_surface(shell->lockscreen);
-	window_get_allocation(shell->lockscreen, &allocation);
-	surface = window_get_surface(shell->lockscreen);
+	surface = window_get_surface(lockscreen->window);
 	cr = cairo_create(surface);
 
+	widget_get_allocation(widget, &allocation);
 	paint_background(cr, key_lockscreen_background, &allocation);
 
 	cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
-	icon = cairo_image_surface_create_from_png(key_lockscreen_icon);
+	icon = load_cairo_surface(key_lockscreen_icon);
 	width = cairo_image_surface_get_width(icon);
 	height = cairo_image_surface_get_height(icon);
 	cairo_set_source_surface(cr, icon,
 				 allocation.x + (allocation.width - width) / 2,
 				 allocation.y + (allocation.height - height) / 2);
 	cairo_paint(cr);
+	cairo_destroy(cr);
 	cairo_surface_destroy(icon);
-
-	cairo_surface_flush(surface);
 	cairo_surface_destroy(surface);
-	window_flush(shell->lockscreen);
+}
+
+static void
+lockscreen_button_handler(struct widget *widget,
+			  struct input *input, uint32_t time,
+			  int button, int state, void *data)
+{
+	struct lockscreen *lockscreen = data;
+
+	if (state && lockscreen->window) {
+		window_destroy(lockscreen->window);
+		lockscreen->window = NULL;
+	}
+}
+
+static struct homescreen *
+homescreen_create(struct tablet *tablet)
+{
+	struct homescreen *homescreen;
+
+	homescreen = malloc (sizeof *homescreen);
+	memset(homescreen, 0, sizeof *homescreen);
+
+	homescreen->window = window_create(tablet->display);
+	homescreen->widget =
+		window_add_widget(homescreen->window, homescreen);
+	window_set_custom(homescreen->window);
+	window_set_user_data(homescreen->window, homescreen);
+	window_set_title(homescreen->window, "homescreen");
+	widget_set_redraw_handler(homescreen->widget, homescreen_draw);
+
+	return homescreen;
+}
+
+static struct lockscreen *
+lockscreen_create(struct tablet *tablet)
+{
+	struct lockscreen *lockscreen;
+
+	lockscreen = malloc (sizeof *lockscreen);
+	memset(lockscreen, 0, sizeof *lockscreen);
+
+	lockscreen->window = window_create(tablet->display);
+	lockscreen->widget =
+		window_add_widget(lockscreen->window, lockscreen);
+	window_set_user_data(lockscreen->window, lockscreen);
+	window_set_title(lockscreen->window, "lockscreen");
+	window_set_custom(lockscreen->window);
+	widget_set_redraw_handler(lockscreen->widget, lockscreen_draw);
+	widget_set_button_handler(lockscreen->widget,
+				  lockscreen_button_handler);
+
+	return lockscreen;
 }
 
 static void
 show_lockscreen(void *data, struct tablet_shell *tablet_shell)
 {
-	struct tablet_shell *shell = data;
+	struct tablet *tablet = data;
 
-	shell->lockscreen = window_create(shell->display);
-	window_set_user_data(shell->lockscreen, shell);
-	window_set_custom(shell->lockscreen);
+	tablet->lockscreen = lockscreen_create(tablet);
+	tablet_shell_set_lockscreen(tablet->tablet_shell,
+			window_get_wl_surface(tablet->lockscreen->window));
 
-	tablet_shell_set_lockscreen(shell->tablet_shell,
-				    window_get_wl_surface(shell->lockscreen));
-	lockscreen_draw(shell);
+	widget_schedule_resize(tablet->lockscreen->widget,
+			       tablet->allocation.width,
+			       tablet->allocation.height);
 }
 
 static void
 show_switcher(void *data, struct tablet_shell *tablet_shell)
 {
-	struct tablet_shell *shell = data;
+	struct tablet *tablet = data;
 
-	shell->switcher = window_create(shell->display);
-	window_set_user_data(shell->switcher, shell);
-	window_set_custom(shell->switcher);
-	tablet_shell_set_switcher(shell->tablet_shell,
-				  window_get_wl_surface(shell->switcher));
+	tablet->switcher = window_create(tablet->display);
+	window_set_user_data(tablet->switcher, tablet);
+	window_set_custom(tablet->switcher);
+	tablet_shell_set_switcher(tablet->tablet_shell,
+				  window_get_wl_surface(tablet->switcher));
 }
 
 static void
@@ -229,63 +298,36 @@ static const struct tablet_shell_listener tablet_shell_listener = {
 	hide_switcher
 };
 
-static struct tablet_shell *
-tablet_shell_create(struct display *display, uint32_t id)
-{
-	struct tablet_shell *shell;
-	struct output *output;
-
-	shell = malloc(sizeof *shell);
-
-	shell->display = display;
-	shell->tablet_shell =
-		wl_display_bind(display_get_display(display),
-				id, &tablet_shell_interface);
-	tablet_shell_add_listener(shell->tablet_shell,
-				  &tablet_shell_listener, shell);
-	output = display_get_output(display);
-	output_get_allocation(output, &shell->allocation);
-
-	shell->homescreen = window_create(display);
-	window_set_user_data(shell->homescreen, shell);
-	window_set_custom(shell->homescreen);
-
-	tablet_shell_set_homescreen(shell->tablet_shell,
-				    window_get_wl_surface(shell->homescreen));
-	wl_list_init(&shell->launcher_list);
-
-	return shell;
-}
-
 static void
-tablet_shell_add_launcher(struct tablet_shell *shell,
+tablet_shell_add_launcher(struct tablet *tablet,
 			  const char *icon, const char *path)
 {
 	struct launcher *launcher;
+	struct homescreen *homescreen = tablet->homescreen;
 
 	launcher = malloc(sizeof *launcher);
 	launcher->path = strdup(path);
-	launcher->icon = cairo_image_surface_create_from_png(icon);
+	launcher->icon = load_cairo_surface(icon);
 	if (cairo_surface_status (launcher->icon) != CAIRO_STATUS_SUCCESS) {
 		fprintf(stderr, "couldn't load %s\n", icon);
 		free(launcher);
 		return;
 	}
 
-	wl_list_insert(&shell->launcher_list, &launcher->link);
+	wl_list_insert(&homescreen->launcher_list, &launcher->link);
 }
 
 static void
 launcher_section_done(void *data)
 {
-	struct tablet_shell *shell = data;
+	struct tablet *tablet = data;
 
 	if (key_launcher_icon == NULL || key_launcher_path == NULL) {
 		fprintf(stderr, "invalid launcher section\n");
 		return;
 	}
 
-	tablet_shell_add_launcher(shell, key_launcher_icon, key_launcher_path);
+	tablet_shell_add_launcher(tablet, key_launcher_icon, key_launcher_path);
 
 	free(key_launcher_icon);
 	key_launcher_icon = NULL;
@@ -293,12 +335,26 @@ launcher_section_done(void *data)
 	key_launcher_path = NULL;
 }
 
+static void
+global_handler(struct wl_display *display, uint32_t id,
+		const char *interface, uint32_t version, void *data)
+{
+	struct tablet *tablet = data;
+
+	if (!strcmp(interface, "tablet_shell")) {
+		tablet->tablet_shell =
+			wl_display_bind(display, id, &tablet_shell_interface);
+		tablet_shell_add_listener(tablet->tablet_shell,
+				&tablet_shell_listener, tablet);
+	}
+}
+
 int main(int argc, char *argv[])
 {
+	struct tablet tablet = { 0 };
 	struct display *display;
 	char *config_file;
-	uint32_t id;
-	struct tablet_shell *shell;
+	struct output *output;
 
 	display = display_create(argc, argv);
 	if (display == NULL) {
@@ -306,19 +362,29 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
-	wl_display_roundtrip(display_get_display(display));
-	id = wl_display_get_global(display_get_display(display),
-				   "tablet_shell", 1);
-	shell = tablet_shell_create(display, id);
+	tablet.display = display;
+
+	wl_display_add_global_listener(display_get_display(tablet.display),
+			global_handler, &tablet);
+
+	tablet.homescreen = homescreen_create(&tablet);
+	tablet_shell_set_homescreen(tablet.tablet_shell,
+			window_get_wl_surface(tablet.homescreen->window));
+	wl_list_init(&tablet.homescreen->launcher_list);
 
 	config_file = config_file_path("weston.ini");
 	parse_config_file(config_file,
 			  config_sections, ARRAY_LENGTH(config_sections),
-			  shell);
+			  &tablet);
 	free(config_file);
 
-	homescreen_draw(shell);
+	signal(SIGCHLD, sigchild_handler);
 
+	output = display_get_output(tablet.display);
+	output_get_allocation(output, &tablet.allocation);
+	widget_schedule_resize(tablet.homescreen->widget,
+			tablet.allocation.width,
+			tablet.allocation.height);
 	display_run(display);
 
 	return 0;

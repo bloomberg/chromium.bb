@@ -57,8 +57,10 @@ struct tablet_shell {
 
 	struct weston_surface *lockscreen_surface;
 	struct wl_listener lockscreen_listener;
+	struct weston_layer lockscreen_layer;
 
 	struct weston_surface *home_surface;
+	struct weston_layer homescreen_layer;
 
 	struct weston_surface *switcher_surface;
 	struct wl_listener switcher_listener;
@@ -113,11 +115,16 @@ tablet_shell_map(struct weston_shell *base, struct weston_surface *surface,
 	weston_surface_configure(surface, 0, 0, width, height);
 
 	if (surface == shell->lockscreen_surface) {
-		/* */
+			wl_list_insert(&shell->lockscreen_layer.surface_list,
+					&surface->layer_link);
 	} else if (surface == shell->switcher_surface) {
 		/* */
 	} else if (surface == shell->home_surface) {
 		if (shell->state == STATE_STARTING) {
+	                /* homescreen always visible, at the bottom */
+			wl_list_insert(&shell->homescreen_layer.surface_list,
+					&surface->layer_link);
+
 			tablet_shell_set_state(shell, STATE_LOCKED);
 			shell->previous_state = STATE_HOME;
 			tablet_shell_send_show_lockscreen(&shell->resource);
@@ -144,6 +151,17 @@ tablet_shell_configure(struct weston_shell *base,
 }
 
 static void
+tablet_shell_surface_configure(struct weston_surface *es, int32_t sx,
+			       int32_t sy)
+{
+	struct weston_shell *shell = es->compositor->shell;
+
+	if (!weston_surface_is_mapped(es))
+		tablet_shell_map(shell, es, es->buffer->width,
+				 es->buffer->height, sx, sy);
+}
+
+static void
 handle_lockscreen_surface_destroy(struct wl_listener *listener,
 				  struct wl_resource *resource, uint32_t time)
 {
@@ -165,6 +183,7 @@ tablet_shell_set_lockscreen(struct wl_client *client,
 
 	weston_surface_set_position(es, 0, 0);
 	shell->lockscreen_surface = es;
+	shell->lockscreen_surface->configure = tablet_shell_surface_configure;
 	shell->lockscreen_listener.func = handle_lockscreen_surface_destroy;
 	wl_list_insert(es->surface.resource.destroy_listener_list.prev,
 		       &shell->lockscreen_listener.link);
@@ -211,6 +230,8 @@ tablet_shell_set_homescreen(struct wl_client *client,
 	struct tablet_shell *shell = resource->data;
 
 	shell->home_surface = surface_resource->data;
+	shell->home_surface->configure = tablet_shell_surface_configure;
+
 	weston_surface_set_position(shell->home_surface, 0, 0);
 }
 
@@ -506,6 +527,12 @@ tablet_shell_destroy(struct weston_shell *base)
 	struct tablet_shell *shell =
 		container_of(base, struct tablet_shell, shell);
 
+	if (shell->home_surface)
+		shell->home_surface->configure = NULL;
+
+	if (shell->lockscreen_surface)
+		shell->lockscreen_surface->configure = NULL;
+
 	wl_event_source_remove(shell->long_press_source);
 	free(shell);
 }
@@ -553,6 +580,10 @@ shell_init(struct weston_compositor *compositor)
 	shell->shell.configure = tablet_shell_configure;
 	shell->shell.destroy = tablet_shell_destroy;
 
+	weston_layer_init(&shell->homescreen_layer,
+			  &compositor->cursor_layer.link);
+	weston_layer_init(&shell->lockscreen_layer,
+			  &compositor->cursor_layer.link);
 	launch_ux_daemon(shell);
 
 	tablet_shell_set_state(shell, STATE_STARTING);
