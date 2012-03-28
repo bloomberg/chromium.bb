@@ -239,6 +239,12 @@ class Dtrace(object):
   Implies Mac OSX.
 
   dtruss can't be used because it has compatibility issues with python.
+
+  Also, the pid->cwd handling needs to be done manually since OSX has no way to
+  get the absolute path of the 'cwd' dtrace variable from the probe.
+
+  Also, OSX doesn't populate curpsinfo->pr_psargs properly, see
+  https://discussions.apple.com/thread/1980539.
   """
   IGNORED = (
     '/.vol',
@@ -255,55 +261,237 @@ class Dtrace(object):
   # pylint: disable=C0301
   # To understand the following code, you'll want to take a look at:
   # http://developers.sun.com/solaris/articles/dtrace_quickref/dtrace_quickref.html
-  # and
   # https://wikis.oracle.com/display/DTrace/Variables
-  # Note that cwd doesn't keep the absolute path so we need to compute it
-  # ourselve!
+  # http://docs.oracle.com/cd/E19205-01/820-4221/
+  #
+  # The list of valid probes can be retrieved with:
+  # sudo dtrace -l -P syscall | less
   D_CODE = """
-      /* Child process tracking.
-       * I'm really depressed that I need to do it myself. */
-      dtrace:::BEGIN {
-        trackedpid[ppid] = 1;
+      proc:::start /trackedpid[ppid]/ {
         trackedpid[pid] = 1;
-        /* Signal gen_trace() that we are ready to trace. */
-        printf("Go! 1 %d:%d %s", ppid, pid, execname);
+        current_processes += 1;
+        printf("%d %d:%d %s_%s(\\"%s\\", %d) = 0\\n",
+               logindex, ppid, pid, probeprov, probename, execname,
+               current_processes);
+        logindex++;
       }
-
-      /* Make sure all child processes are tracked. This is not very efficient
-       * but for our use case, it's fine enough.
-       * TODO(maruel): We should properly track fork, execve, vfork and friends
-       * instead. */
-      syscall:::entry /trackedpid[ppid]/ {
-        trackedpid[pid] = 1;
-      }
-      syscall::exit:entry /trackedpid[pid]/ {
+      proc:::exit /trackedpid[pid] && current_processes == 1/ {
         trackedpid[pid] = 0;
+        current_processes -= 1;
+        printf("%d %d:%d %s_%s(\\"%s\\", %d) = 0\\n",
+               logindex, ppid, pid, probeprov, probename, execname,
+               current_processes);
+        logindex++;
+        exit(0);
+      }
+      proc:::exit /trackedpid[pid]/ {
+        trackedpid[pid] = 0;
+        current_processes -= 1;
+        printf("%d %d:%d %s_%s(\\"%s\\", %d) = 0\\n",
+               logindex, ppid, pid, probeprov, probename, execname,
+               current_processes);
+        logindex++;
       }
 
       /* Finally what we care about! */
       syscall::open*:entry /trackedpid[pid]/ {
-        self->arg0 = copyinstr(arg0);
+        self->arg0 = arg0;
         self->arg1 = arg1;
         self->arg2 = arg2;
-        self->cwd = cwd;
       }
-      syscall::open*:return /trackedpid[pid]/ {
-        printf("%d:%d \\"%s\\"; \\"%s\\"; \\"%d\\"; \\"%d\\" = %d",
-               ppid, pid, execname, self->arg0, self->arg1, self->arg2, errno);
+      syscall::open*:return /trackedpid[pid] && errno == 0/ {
+        printf("%d %d:%d %s(\\"%s\\", %d, %d) = %d\\n",
+               logindex, ppid, pid, probefunc, copyinstr(self->arg0),
+               self->arg1, self->arg2, errno);
+        logindex++;
         self->arg0 = 0;
         self->arg1 = 0;
         self->arg2 = 0;
       }
+
+      syscall::rename:entry /trackedpid[pid]/ {
+        self->arg0 = arg0;
+        self->arg1 = arg1;
+      }
+      syscall::rename:return /trackedpid[pid]/ {
+        printf("%d %d:%d %s(\\"%s\\", \\"%s\\") = %d\\n",
+               logindex, ppid, pid, probefunc, copyinstr(self->arg0),
+               copyinstr(self->arg1), errno);
+        logindex++;
+        self->arg0 = 0;
+        self->arg1 = 0;
+      }
+
       /* Track chdir, it's painful because it is only receiving relative path */
       syscall::chdir:entry /trackedpid[pid]/ {
-        self->arg0 = copyinstr(arg0);
+        self->arg0 = arg0;
       }
       syscall::chdir:return /trackedpid[pid] && errno == 0/ {
-        printf("%d:%d \\"%s\\"; \\"%s\\" = %d",
-            ppid, pid, execname, self->arg0, errno);
-        self->cwd = self->arg0;
+        printf("%d %d:%d %s(\\"%s\\") = %d\\n",
+               logindex, ppid, pid, probefunc, copyinstr(self->arg0), errno);
+        logindex++;
+        self->arg0 = 0;
       }
+      /* TODO(maruel): *stat* functions and friends
+        syscall::access:return,
+        syscall::chdir:return,
+        syscall::chflags:return,
+        syscall::chown:return,
+        syscall::chroot:return,
+        syscall::getattrlist:return,
+        syscall::getxattr:return,
+        syscall::lchown:return,
+        syscall::lstat64:return,
+        syscall::lstat:return,
+        syscall::mkdir:return,
+        syscall::pathconf:return,
+        syscall::readlink:return,
+        syscall::removexattr:return,
+        syscall::setxattr:return,
+        syscall::stat64:return,
+        syscall::stat:return,
+        syscall::truncate:return,
+        syscall::unlink:return,
+        syscall::utimes:return,
+      */
       """
+
+  @classmethod
+  def code(cls, pid, cwd):
+    """Setups the D code to implement child process tracking.
+
+    Injects a fake chdir() trace to simplify parsing. The reason is that the
+    child process is already running at that point so:
+    - no proc_start() is logged for it.
+    - there is no way to figure out the absolute path of cwd in kernel on OSX
+
+    Since the child process is already started, initialize current_processes to
+    1.
+    """
+    pid = str(pid)
+    cwd = os.path.realpath(cwd).replace('\\', '\\\\').replace('%', '%%')
+    return (
+        'dtrace:::BEGIN {\n'
+        '  current_processes = 1;\n'
+        '  logindex = 0;\n'
+        '  trackedpid[') + pid + ('] = 1;\n'
+        '  printf("%d %d:%d chdir(\\"' + cwd + '\\") = 0\\n",\n'
+        '      logindex, 1, ' + pid + ');\n'
+        '  logindex++;\n'
+        '  printf("%d %d:%d %s_%s() = 0\\n",\n'
+        '      logindex, ppid, pid, probeprov, probename);\n'
+        '  logindex++;\n'
+        '}\n') + cls.D_CODE
+
+  class _Context(object):
+    """Processes a dtrace log line and keeps the list of existent and non
+    existent files accessed.
+
+    Ignores directories.
+    """
+    # This is the most common format. index pid function(args) = result
+    RE_HEADER = re.compile(r'^\d+ (\d+):(\d+) ([a-zA-Z_\-]+)\((.*?)\) = (.+)$')
+
+    # Arguments parsing.
+    RE_CHDIR = re.compile(r'^\"(.+?)\"$')
+    RE_OPEN = re.compile(r'^\"(.+?)\", (\d+), (\d+)$')
+    RE_RENAME = re.compile(r'^\"(.+?)\", \"(.+?)\"$')
+
+    O_DIRECTORY = 0x100000
+
+    def __init__(self, blacklist):
+      # TODO(maruel): Handling chdir() and cwd in general on OSX is tricky
+      # because OSX only keeps relative directory names. In addition, cwd is a
+      # process local variable so forks need to be properly traced and cwd
+      # saved.
+      self._cwd = {}
+      self.blacklist = blacklist
+      self.files = set()
+      self.non_existent = set()
+
+    def on_line(self, line):
+      m = self.RE_HEADER.match(line)
+      assert m, line
+      fn = getattr(
+          self,
+          'handle_%s' % m.group(3).replace('-', '_'),
+          self._handle_ignored)
+      return fn(
+          int(m.group(1)),
+          int(m.group(2)),
+          m.group(3),
+          m.group(4),
+          m.group(5))
+
+    def handle_dtrace_BEGIN(self, _ppid, _pid, _function, args, _result):
+      pass
+
+    def handle_proc_start(self, ppid, pid, _function, _args, result):
+      """Transfers cwd."""
+      assert result == '0'
+      self._cwd[pid] = self._cwd[ppid]
+
+    def handle_proc_exit(self, _ppid, pid, _function, _args, _result):
+      """Removes cwd."""
+      del self._cwd[pid]
+
+    def handle_chdir(self, _ppid, pid, _function, args, result):
+      """Updates cwd."""
+      if result.startswith('0'):
+        cwd = self.RE_CHDIR.match(args).group(1)
+        if not cwd.startswith('/'):
+          cwd2 = os.path.join(self._cwd[pid], cwd)
+          logging.debug('handle_chdir(%d, %s) -> %s' % (pid, cwd, cwd2))
+          self._cwd[pid] = cwd2
+        else:
+          logging.debug('handle_chdir(%d, %s)' % (pid, cwd))
+          self._cwd[pid] = cwd
+      else:
+        assert False, 'Unexecpected fail: %s' % result
+
+    def handle_open_nocancel(self, ppid, pid, function, args, result):
+      return self.handle_open(ppid, pid, function, args, result)
+
+    def handle_open(self, _ppid, pid, _function, args, result):
+      args = self.RE_OPEN.match(args).groups()
+      flag = int(args[1])
+      if self.O_DIRECTORY & flag == self.O_DIRECTORY:
+        # Ignore directories.
+        return
+      self._handle_file(pid, args[0], result)
+
+    def handle_rename(self, _ppid, pid, _function, args, result):
+      args = self.RE_RENAME.match(args).groups()
+      self._handle_file(pid, args[0], result)
+      self._handle_file(pid, args[1], result)
+
+    def _handle_file(self, pid, filepath, result):
+      if result.startswith(('-1', '2')):
+        return
+      orig_filepath = filepath
+      if not filepath.startswith('/'):
+        filepath = os.path.join(self._cwd[pid], filepath)
+      filepath = os.path.normpath(filepath)
+      if self.blacklist(filepath):
+        return
+      # Sadly, still need to filter out directories here;
+      # saw open_nocancel(".", 0, 0) = 0 lines.
+      if (filepath not in self.files and
+          filepath not in self.non_existent and
+          not os.path.isdir(filepath)):
+        if orig_filepath:
+          logging.debug(
+              '_handle_file(%d, %s) -> %s' % (pid, orig_filepath, filepath))
+        else:
+          logging.debug('_handle_file(%d, %s)' % (pid, filepath))
+        if os.path.isfile(filepath):
+          self.files.add(filepath)
+        else:
+          self.non_existent.add(filepath)
+
+    @staticmethod
+    def _handle_ignored(_ppid, pid, function, args, result):
+      logging.debug('%d %s(%s) = %s' % (pid, function, args, result))
 
   @classmethod
   def gen_trace(cls, cmd, cwd, logname):
@@ -331,92 +519,84 @@ class Dtrace(object):
     logging.debug('Started child pid: %d' % child.pid)
 
     # Part 2: start dtrace process.
+    # Note: do not use the -p flag. It's useless if the initial process quits
+    # too fast, resulting in missing traces from the grand-children. The D code
+    # manages the dtrace lifetime itself.
     trace_cmd = [
       'sudo',
       'dtrace',
       '-x', 'dynvarsize=4m',
       '-x', 'evaltime=exec',
-      '-n', cls.D_CODE,
+      '-n', cls.code(child.pid, cwd),
       '-o', '/dev/stderr',
-      '-p', str(child.pid),
+      '-q',
     ]
     with open(logname, 'w') as logfile:
-      # TODO(maruel): Inject a chdir() call with the absolute path (!) of cwd to
-      # be able to reconstruct the full paths.
-      #logfile.write('0 chdir("%s") = 0\n' % cwd)
-      #logfile.flush()
       dtrace = subprocess.Popen(
           trace_cmd, stdout=logfile, stderr=subprocess.STDOUT)
     logging.debug('Started dtrace pid: %d' % dtrace.pid)
 
-    # Part 3: Read until the Go! signal is sent.
+    # Part 3: Read until one line is printed, which signifies dtrace is up and
+    # ready.
     with open(logname, 'r') as logfile:
-      while True:
-        x = logfile.readline()
-        if signal in x:
+      while 'dtrace_BEGIN' not in logfile.readline():
+        if dtrace.poll() is not None:
           break
 
-    # Part 4: We can now tell our child to go.
-    child.communicate(signal)
+    try:
+      # Part 4: We can now tell our child to go.
+      child.communicate(signal)
 
-    dtrace.wait()
-    if dtrace.returncode != 0:
-      print 'Failure: %d' % dtrace.returncode
-      with open(logname) as logfile:
-        print ''.join(logfile.readlines()[-100:])
-      # Find a better way.
-      os.remove(logname)
+      dtrace.wait()
+      if dtrace.returncode != 0:
+        print 'Failure: %d' % dtrace.returncode
+        with open(logname) as logfile:
+          print ''.join(logfile.readlines()[-100:])
+        # Find a better way.
+        os.remove(logname)
+      else:
+        # Short the log right away to simplify our life. There isn't much
+        # advantage in keeping it out of order.
+        cls._sort_log(logname)
+    except KeyboardInterrupt:
+      # Still sort when testing.
+      cls._sort_log(logname)
+      raise
+
+    # Note that we ignore the child result code.
     return dtrace.returncode
 
-  @staticmethod
-  def parse_log(filename, blacklist):
+  @classmethod
+  def parse_log(cls, filename, blacklist):
     """Processes a dtrace log and returns the files opened and the files that do
     not exist.
 
+    It does not track directories.
+
     Most of the time, files that do not exist are temporary test files that
     should be put in /tmp instead. See http://crbug.com/116251
-
-    TODO(maruel): Process chdir() calls so relative paths can be processed.
     """
     logging.info('parse_log(%s, %s)' % (filename, blacklist))
-    files = set()
-    non_existent = set()
-    ignored = set()
-    # 1=filepath, 2=flags, 3=mode, 4=cwd 5=result
-    re_open = re.compile(
-        #     CPU   ID    PROBE            PPID PID EXECNAME
-        r'^\s+\d+\s+\d+\s+open[^\:]+:return \d+:\d+ \"[^\"]+\"; '
-        # PATH          FLAGS         MODE            RESULT
-        r'\"([^\"]+)\"; \"([^\"]+)\"; \"([^\"]+)\" \= (.+)$')
-    # TODO(maruel): Handling chdir() and cwd in general on OSX is complex
-    # because OSX only keeps relative directory names. In addition, cwd is a
-    # process local variable so forks need to be properly traced and cwd saved.
-    for line in open(filename):
-      m = re_open.match(line)
-      if not m:
-        continue
-      if not m.group(4).startswith('0'):
-        # Called failed.
-        continue
-      filepath = m.group(1)
-      if not filepath.startswith('/'):
-        # TODO(maruel): This is wrong since the cwd dtrace variable on OSX is
-        # not an absolute path.
-        # filepath = os.path.join(m.group(cwd), filepath)
-        pass
-      if blacklist(filepath):
-        continue
-      if (filepath not in files and
-          filepath not in non_existent and
-          filepath not in ignored):
-        if os.path.isfile(filepath):
-          files.add(filepath)
-        elif not os.path.isdir(filepath):
-          # Silently ignore directories.
-          non_existent.add(filepath)
-        else:
-          ignored.add(filepath)
-    return files, non_existent
+    context = cls._Context(blacklist)
+    for line in open(filename, 'rb'):
+      context.on_line(line)
+    # Resolve any symlink we hit.
+    return (
+        set(os.path.realpath(f) for f in context.files),
+        set(os.path.realpath(f) for f in context.non_existent))
+
+  @staticmethod
+  def _sort_log(logname):
+    """Sorts the log back in order when each call occured.
+
+    dtrace doesn't save the buffer in strict order since it keeps one buffer per
+    CPU.
+    """
+    with open(logname, 'rb') as logfile:
+      lines = [f for f in logfile.readlines() if f.strip()]
+    lines = sorted(lines, key=lambda l: int(l.split(' ', 1)[0]))
+    with open(logname, 'wb') as logfile:
+      logfile.write(''.join(lines))
 
 
 def relevant_files(files, root):

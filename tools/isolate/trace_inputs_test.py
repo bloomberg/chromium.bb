@@ -58,20 +58,9 @@ class TraceInputs(unittest.TestCase):
     ]
 
   def test_trace(self):
-    if sys.platform == 'linux2':
-      return self._test_trace_linux()
-    if sys.platform == 'darwin':
-      return self._test_trace_mac()
-    print 'Unsupported: %s' % sys.platform
-
-  def test_trace_gyp(self):
-    if sys.platform == 'linux2':
-      return self._test_trace_gyp_linux()
-    if sys.platform == 'darwin':
-      return self._test_trace_gyp_mac()
-    print 'Unsupported: %s' % sys.platform
-
-  def _test_trace_linux(self):
+    if sys.platform not in ('linux2', 'darwin'):
+      print 'WARNING: unsupported: %s' % sys.platform
+      return
     expected_end = [
       "Interesting: 4 reduced to 3",
       "  data/trace_inputs/",
@@ -88,7 +77,10 @@ class TraceInputs(unittest.TestCase):
     # virtualenv usage.
     self.assertEquals(expected_end, actual[-len(expected_end):])
 
-  def _test_trace_gyp_linux(self):
+  def test_trace_gyp(self):
+    if sys.platform not in ('linux2', 'darwin'):
+      print 'WARNING: unsupported: %s' % sys.platform
+      return
     expected = (
         "{\n"
         "  'variables': {\n"
@@ -98,38 +90,6 @@ class TraceInputs(unittest.TestCase):
         "    ],\n"
         "    'isolate_dirs': [\n"
         "      './',\n"
-        "    ],\n"
-        "  },\n"
-        "},\n")
-    actual = self._execute(self._gyp() + ['trace_inputs_test.py', '--child1'])
-    self.assertEquals(expected, actual)
-
-  def _test_trace_mac(self):
-    # It is annoying in the case of dtrace because it requires root access.
-    # TODO(maruel): BUG: Note that child.py is missing.
-    expected = (
-      "Total: 2\n"
-      "Non existent: 0\n"
-      "Interesting: 2 reduced to 2\n"
-      "  trace_inputs.py\n"
-      "  trace_inputs_test.py\n")
-    actual = self._execute(
-        ['trace_inputs_test.py', '--child1']).splitlines(True)
-    self.assertTrue(actual[0].startswith('Tracing... ['))
-    self.assertTrue(actual[1].startswith('Loading traces... '))
-    self.assertEquals(expected, ''.join(actual[2:]))
-
-  def _test_trace_gyp_mac(self):
-    # It is annoying in the case of dtrace because it requires root access.
-    # TODO(maruel): BUG: Note that child.py is missing.
-    expected = (
-        "{\n"
-        "  'variables': {\n"
-        "    'isolate_files': [\n"
-        "      '<(DEPTH)/trace_inputs.py',\n"
-        "      '<(DEPTH)/trace_inputs_test.py',\n"
-        "    ],\n"
-        "    'isolate_dirs': [\n"
         "    ],\n"
         "  },\n"
         "},\n")

@@ -225,22 +225,13 @@ class Isolate(unittest.TestCase):
     # cmd[0] is not generated from infiles[0] so it's not using a relative path.
     self._expected_result(
         False, ['isolate_test.py'], ['isolate_test.py', '--ok'], False)
-    if sys.platform == 'linux2':
-      expected = (
-          "{\n  'variables': {\n"
-          "    'isolate_files': [\n"
-          "      '<(DEPTH)/isolate_test.py',\n"
-          "    ],\n"
-          "    'isolate_dirs': [\n"
-          "    ],\n  },\n},\n")
-    else:
-      # TODO(maruel): BUG with relative paths on darwin.
-      expected = (
-          "{\n  'variables': {\n"
-          "    'isolate_files': [\n"
-          "    ],\n"
-          "    'isolate_dirs': [\n"
-          "    ],\n  },\n},\n")
+    expected = (
+        "{\n  'variables': {\n"
+        "    'isolate_files': [\n"
+        "      '<(DEPTH)/isolate_test.py',\n"
+        "    ],\n"
+        "    'isolate_dirs': [\n"
+        "    ],\n  },\n},\n")
     self.assertEquals(expected, out)
 
 
