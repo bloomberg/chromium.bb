@@ -633,6 +633,10 @@ TEST_F(ExtensionManifestTest, DevToolsExtensions) {
 TEST_F(ExtensionManifestTest, BackgroundPermission) {
   LoadAndExpectError("background_permission.json",
                      errors::kBackgroundPermissionNeeded);
+
+  scoped_refptr<Extension> extension;
+  extension = LoadAndExpectSuccess("background_permission_alias.json");
+  EXPECT_TRUE(extension->HasAPIPermission(ExtensionAPIPermission::kBackground));
 }
 
 TEST_F(ExtensionManifestTest, OptionsPageInApps) {

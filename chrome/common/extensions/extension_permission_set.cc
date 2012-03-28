@@ -72,6 +72,7 @@ const size_t kNumNonPermissionFunctionNames =
 
 const char kOldUnlimitedStoragePermission[] = "unlimited_storage";
 const char kWindowsPermission[] = "windows";
+const char kTemporaryBackgroundAlias[] = "background_alias_do_not_use";
 
 void AddPatternsAndRemovePaths(const URLPatternSet& set, URLPatternSet* out) {
   DCHECK(out);
@@ -350,6 +351,10 @@ void ExtensionAPIPermission::RegisterAllPermissions(
   // TODO(mihaip): Remove this alias for platform apps, and only give them
   // access to the chrome.windows.* APIs, but not the chrome.tabs.* ones.
   info->RegisterAlias("tabs", kWindowsPermission);
+  // TODO(mihaip): Should be removed for the M20 branch, see
+  // http://crbug.com/120447 for more details.
+  info->RegisterAlias("background", kTemporaryBackgroundAlias);
+
 }
 
 //
