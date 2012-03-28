@@ -134,6 +134,9 @@ std::string NetErrorToString(int net_error) {
     // TODO(mattm): handle more cases.
     case net::ERR_IMPORT_CA_CERT_NOT_CA:
       return l10n_util::GetStringUTF8(IDS_CERT_MANAGER_ERROR_NOT_CA);
+    case net::ERR_IMPORT_CERT_ALREADY_EXISTS:
+      return l10n_util::GetStringUTF8(
+          IDS_CERT_MANAGER_ERROR_CERT_ALREADY_EXISTS);
     default:
       return l10n_util::GetStringUTF8(IDS_CERT_MANAGER_UNKNOWN_ERROR);
   }
