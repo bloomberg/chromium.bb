@@ -238,8 +238,8 @@ function onClientStateChange_(oldState, newState) {
                remoting.ClientSession.ConnectionError.NETWORK_FAILURE) {
       showConnectError_(remoting.Error.NETWORK_FAILURE);
     } else if (remoting.clientSession.error ==
-               remoting.ClientSession.ConnectionError.HOST_IS_DISABLED) {
-      showConnectError_(remoting.Error.HOST_IS_DISABLED);
+               remoting.ClientSession.ConnectionError.HOST_OVERLOAD) {
+      showConnectError_(remoting.Error.HOST_OVERLOAD);
     } else {
       showConnectError_(remoting.Error.GENERIC);
     }

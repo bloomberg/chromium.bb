@@ -280,14 +280,14 @@ void ChromotingHost::OnIncomingSession(
   }
 
   if (login_backoff_.ShouldRejectRequest()) {
-    *response = protocol::SessionManager::DISABLED;
+    *response = protocol::SessionManager::OVERLOAD;
     return;
   }
 
-  // Backoff incoming connections until the new connection is
-  // authenticated. Is is neccessary to prevent the attack when
-  // multiple connections are initiated at the same time and all of
-  // them try to authenticate simultaneously.
+  // We treat each incoming connection as a failure to authenticate,
+  // and clear the backoff when a connection successfully
+  // authenticates. This allows the backoff to protect from parallel
+  // connection attempts as well as sequential ones.
   login_backoff_.InformOfRequest(false);
 
   protocol::SessionConfig config;

@@ -118,7 +118,7 @@ class SessionManager : public base::NonThreadSafe {
 
     // Reject the session because the host is currently disabled due
     // to previous login attempts.
-    DISABLED,
+    OVERLOAD,
 
     // Reject the session because the client is not allowed to connect
     // to the host.

@@ -142,7 +142,7 @@
     "message": "An unknown error occurred. Please sign out of Chromoting and try again.",
     "description": "Generic error message, displayed if something went wrong, but we aren't able to determine what, or the cause is too technical to be of use to a typical user."
   },
-  "ERROR_HOST_IS_DISABLED": {
+  "ERROR_HOST_OVERLOAD": {
     "message": "Connections to the remote computer are temporarily blocked because somebody was trying to connect to it with invalid PIN. Please try again later.",
     "description": "Error that is shown on the client side when the host is blocking all connections due to failed authentication attempts."
   },

@@ -157,8 +157,8 @@ bool JingleSessionManager::OnSignalStrategyIncomingStanza(
           error = INCOMPATIBLE_PROTOCOL;
           break;
 
-        case DISABLED:
-          error = HOST_IS_DISABLED;
+        case OVERLOAD:
+          error = HOST_OVERLOAD;
           break;
 
         case DECLINE:
