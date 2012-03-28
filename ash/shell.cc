@@ -172,12 +172,12 @@ void CreateSpecialContainers(aura::RootWindow* root_window) {
     panel_container->SetLayoutManager(layout_manager);
   }
 
-  CreateContainer(internal::kShellWindowId_LauncherContainer,
-                  "LauncherContainer",
-                  non_lock_screen_containers);
-
   CreateContainer(internal::kShellWindowId_AppListContainer,
                   "AppListContainer",
+                  non_lock_screen_containers);
+
+  CreateContainer(internal::kShellWindowId_LauncherContainer,
+                  "LauncherContainer",
                   non_lock_screen_containers);
 
   aura::Window* modal_container = CreateContainer(
