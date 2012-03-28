@@ -136,7 +136,7 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, BrowserActionCreateTab) {
   // Background page created a new tab before it closed.
   EXPECT_FALSE(pm->GetBackgroundHostForExtension(last_loaded_extension_id_));
   EXPECT_EQ(num_tabs_before + 1, browser()->tab_count());
-  EXPECT_EQ("chrome://extensions/",
+  EXPECT_EQ("chrome://chrome/extensions/",
             browser()->GetSelectedWebContents()->GetURL().spec());
 }
 

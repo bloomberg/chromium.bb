@@ -44,7 +44,7 @@ IN_PROC_BROWSER_TEST_F(BrowserGuestSessionNavigatorTest,
   // Navigate to the settings page.
   browser::NavigateParams p(MakeNavigateParams(incognito_browser));
   p.disposition = SINGLETON_TAB;
-  p.url = GURL("chrome://settings");
+  p.url = GURL("chrome://chrome/settings");
   p.window_action = browser::NavigateParams::SHOW_WINDOW;
   p.path_behavior = browser::NavigateParams::IGNORE_AND_NAVIGATE;
   browser::Navigate(&p);
@@ -53,7 +53,7 @@ IN_PROC_BROWSER_TEST_F(BrowserGuestSessionNavigatorTest,
   EXPECT_NE(browser(), p.browser);
   EXPECT_EQ(incognito_browser, p.browser);
   EXPECT_EQ(2, incognito_browser->tab_count());
-  EXPECT_EQ(GURL("chrome://settings"),
+  EXPECT_EQ(GURL("chrome://chrome/settings"),
             incognito_browser->GetSelectedWebContents()->GetURL());
 }
 
