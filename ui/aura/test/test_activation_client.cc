@@ -59,6 +59,10 @@ bool TestActivationClient::OnWillFocusWindow(Window* window,
   return true;
 }
 
+bool TestActivationClient::CanActivateWindow(Window* window) const {
+  return true;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // TestActivationClient, WindowObserver implementation:
 

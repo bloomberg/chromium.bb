@@ -40,6 +40,7 @@ class ASH_EXPORT ActivationController
   virtual aura::Window* GetActiveWindow() OVERRIDE;
   virtual bool OnWillFocusWindow(aura::Window* window,
                                  const aura::Event* event) OVERRIDE;
+  virtual bool CanActivateWindow(aura::Window* window) const OVERRIDE;
 
   // Overridden from aura::WindowObserver:
   virtual void OnWindowVisibilityChanged(aura::Window* window,

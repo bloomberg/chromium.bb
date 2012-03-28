@@ -20,6 +20,7 @@ ASH_EXPORT void ActivateWindow(aura::Window* window);
 ASH_EXPORT void DeactivateWindow(aura::Window* window);
 ASH_EXPORT bool IsActiveWindow(aura::Window* window);
 ASH_EXPORT aura::Window* GetActiveWindow();
+ASH_EXPORT bool CanActivateWindow(aura::Window* window);
 
 // Retrieves the activatable window for |window|. If |window| is activatable,
 // this will just return it, otherwise it will climb the parent/transient parent

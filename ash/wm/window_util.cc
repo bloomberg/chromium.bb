@@ -53,6 +53,15 @@ aura::Window* GetActivatableWindow(aura::Window* window) {
   return internal::ActivationController::GetActivatableWindow(window, NULL);
 }
 
+bool CanActivateWindow(aura::Window* window) {
+  DCHECK(window);
+  if (!window->GetRootWindow())
+    return false;
+  aura::client::ActivationClient* client =
+      aura::client::GetActivationClient(window->GetRootWindow());
+  return client && client->CanActivateWindow(window);
+}
+
 bool IsWindowNormal(aura::Window* window) {
   return window->GetProperty(aura::client::kShowStateKey) ==
           ui::SHOW_STATE_NORMAL ||

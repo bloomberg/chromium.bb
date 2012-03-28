@@ -9,6 +9,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_activation_delegate.h"
 #include "ash/wm/window_util.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/event_generator.h"
@@ -318,7 +319,7 @@ TEST_F(ActivationControllerTest, PreventFocusToNonActivatableWindow) {
   aura::test::TestWindowDelegate wd;
   scoped_ptr<aura::Window> w1(aura::test::CreateTestWindowWithDelegate(
       &wd, -1, gfx::Rect(50, 50), NULL));
-  // The RootWindow itself is a non-activatable parent.
+  // The RootWindow is a non-activatable parent.
   scoped_ptr<aura::Window> w2(aura::test::CreateTestWindowWithDelegate(
       &wd, -2, gfx::Rect(50, 50), Shell::GetRootWindow()));
   scoped_ptr<aura::Window> w21(aura::test::CreateTestWindowWithDelegate(
@@ -348,6 +349,53 @@ TEST_F(ActivationControllerTest, PreventFocusToNonActivatableWindow) {
   EXPECT_FALSE(w21->HasFocus());
   EXPECT_TRUE(wm::IsActiveWindow(w1.get()));
   EXPECT_TRUE(w1->HasFocus());
+}
+
+TEST_F(ActivationControllerTest, CanActivateWindowIteselfTest)
+{
+  aura::test::TestWindowDelegate wd;
+
+  // Normal Window
+  scoped_ptr<aura::Window> w1(aura::test::CreateTestWindowWithDelegate(
+      &wd, -1, gfx::Rect(50, 50), NULL));
+  EXPECT_TRUE(wm::CanActivateWindow(w1.get()));
+
+  // The RootWindow is a non-activatable parent.
+  scoped_ptr<aura::Window> w2(aura::test::CreateTestWindowWithDelegate(
+      &wd, -2, gfx::Rect(50, 50), Shell::GetRootWindow()));
+  scoped_ptr<aura::Window> w21(aura::test::CreateTestWindowWithDelegate(
+      &wd, -21, gfx::Rect(50, 50), w2.get()));
+  EXPECT_FALSE(wm::CanActivateWindow(w2.get()));
+  EXPECT_FALSE(wm::CanActivateWindow(w21.get()));
+
+  // The window has a transient child.
+  scoped_ptr<aura::Window> w3(aura::test::CreateTestWindowWithDelegate(
+      &wd, -3, gfx::Rect(50, 50), NULL));
+  scoped_ptr<aura::Window> w31(aura::test::CreateTestWindowWithDelegate(
+      &wd, -31, gfx::Rect(50, 50), NULL));
+  w3->AddTransientChild(w31.get());
+  EXPECT_TRUE(wm::CanActivateWindow(w3.get()));
+  EXPECT_TRUE(wm::CanActivateWindow(w31.get()));
+
+  // The window has a transient window-modal child.
+  scoped_ptr<aura::Window> w4(aura::test::CreateTestWindowWithDelegate(
+      &wd, -4, gfx::Rect(50, 50), NULL));
+  scoped_ptr<aura::Window> w41(aura::test::CreateTestWindowWithDelegate(
+      &wd, -41, gfx::Rect(50, 50), NULL));
+  w4->AddTransientChild(w41.get());
+  w41->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_WINDOW);
+  EXPECT_FALSE(wm::CanActivateWindow(w4.get()));
+  EXPECT_TRUE(wm::CanActivateWindow(w41.get()));
+
+  // The window has a transient system-modal child.
+  scoped_ptr<aura::Window> w5(aura::test::CreateTestWindowWithDelegate(
+      &wd, -5, gfx::Rect(50, 50), NULL));
+  scoped_ptr<aura::Window> w51(aura::test::CreateTestWindowWithDelegate(
+      &wd, -51, gfx::Rect(50, 50), NULL));
+  w5->AddTransientChild(w51.get());
+  w51->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_SYSTEM);
+  EXPECT_TRUE(wm::CanActivateWindow(w5.get()));
+  EXPECT_TRUE(wm::CanActivateWindow(w51.get()));
 }
 
 // Verifies code in ActivationController::OnWindowVisibilityChanged() that keeps

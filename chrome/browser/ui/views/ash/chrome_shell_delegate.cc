@@ -4,7 +4,10 @@
 
 #include "chrome/browser/ui/views/ash/chrome_shell_delegate.h"
 
+#include <algorithm>
+
 #include "ash/launcher/launcher_types.h"
+#include "ash/shell_window_ids.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/wm/partial_screenshot_view.h"
 #include "ash/wm/window_util.h"
@@ -32,22 +35,6 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/system/ash_system_tray_delegate.h"
 #endif
-namespace {
-
-// Returns a list of Aura windows from a BrowserList, using either a
-// const_iterator or const_reverse_iterator.
-template<typename IT>
-std::vector<aura::Window*> GetBrowserWindows(IT begin, IT end) {
-  std::vector<aura::Window*> windows;
-  for (IT it = begin; it != end; ++it) {
-    Browser* browser = *it;
-    if (browser && browser->window()->GetNativeHandle())
-      windows.push_back(browser->window()->GetNativeHandle());
-  }
-  return windows;
-}
-
-}  // namespace
 
 // static
 ChromeShellDelegate* ChromeShellDelegate::instance_ = NULL;
@@ -135,9 +122,19 @@ ChromeShellDelegate::CreateAppListViewDelegate() {
 
 std::vector<aura::Window*> ChromeShellDelegate::GetCycleWindowList(
     CycleSource source) const {
-  // BrowserList maintains a list of browsers sorted by activity.
-  return GetBrowserWindows(BrowserList::begin_last_active(),
-                           BrowserList::end_last_active());
+  aura::Window* default_container = ash::Shell::GetInstance()->GetContainer(
+    ash::internal::kShellWindowId_DefaultContainer);
+  std::vector<aura::Window*> windows = default_container->children();
+  // Removes unforcusable windows.
+  std::vector<aura::Window*>::iterator last =
+      std::remove_if(
+          windows.begin(),
+          windows.end(),
+          std::not1(std::ptr_fun(ash::wm::CanActivateWindow)));
+  windows.erase(last, windows.end());
+  // Window cycling expects the topmost window at the front of the list.
+  std::reverse(windows.begin(), windows.end());
+  return windows;
 }
 
 void ChromeShellDelegate::StartPartialScreenshot(

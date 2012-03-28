@@ -33,6 +33,10 @@ class AURA_EXPORT ActivationClient {
   // may be NULL. Returning false blocks |window| from getting focus.
   virtual bool OnWillFocusWindow(Window* window, const Event* event) = 0;
 
+  // Returns true if |window| can be activated, false otherwise. If |window| has
+  // a modal child it can not be activated.
+  virtual bool CanActivateWindow(Window* window) const = 0;
+
  protected:
   virtual ~ActivationClient() {}
 };
