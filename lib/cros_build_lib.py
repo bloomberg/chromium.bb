@@ -72,26 +72,34 @@ class GitPushFailed(Exception):
 class CommandResult(object):
   """An object to store various attributes of a child process."""
 
-  def __init__(self):
-    self.cmd = None
-    self.error = None
-    self.output = None
-    self.returncode = None
-
+  def __init__(self, cmd=None, error=None, output=None, returncode=None):
+    self.cmd = cmd
+    self.error = error
+    self.output = output
+    self.returncode = returncode
 
 class RunCommandError(Exception):
   """Error caught in RunCommand() method."""
-  def __init__(self, msg, cmd, error_code):
-    self.cmd = cmd
-    self.error_code = error_code
+  def __init__(self, msg, result):
+    self.result = result
     Exception.__init__(self, msg)
-    self.args = (msg, cmd, error_code)
+    self.args = (msg, result)
+
+  def __str__(self):
+    items = []
+    if self.result.error:
+      items.append(self.result.error)
+    if self.result.output:
+      items.append(self.result.output)
+    items.append(Exception.__str__(self))
+    out = '\n'.join(items)
+    # Python doesn't let you include non-ascii characters in error messages.
+    # To be safe, replace all non-ascii characters with xml-escaped versions.
+    return out.decode('utf-8').encode('ascii', 'xmlcharrefreplace')
 
   def __eq__(self, other):
     return (type(self) == type(other) and
-            str(self) == str(other) and
-            self.error_code == other.error_code and
-            self.cmd == other.cmd)
+            self.args == other.args)
 
   def __ne__(self, other):
     return not self.__eq__(other)
@@ -133,7 +141,7 @@ def SudoRunCommand(cmd, **kwds):
       raise RunCommandError(
           'We were invoked in a strict sudo non-interactive context, but no '
           'sudo keep alive daemon is running.  This is a bug in the code.',
-          cmd, 126)
+          CommandResult(cmd=cmd, returncode=126))
     sudo_mode = ['-n']
 
   # Pass these values down into the sudo environment, since sudo will
@@ -194,15 +202,15 @@ def _KillChildProcess(proc, kill_timeout, cmd, original_handler, signum, frame):
         # Still doesn't want to die.  Too bad, so sad, time to die.
         proc.kill()
     except EnvironmentError, e:
-      print "Ignoring unhandled exception in _KillChildProcess: %s" % (e,)
+      print 'Ignoring unhandled exception in _KillChildProcess: %s' % (e,)
 
     # Ensure our child process has been reaped.
     proc.wait()
 
   if not _RelaySignal(original_handler, signum, frame):
     # Mock up our own, matching exit code for signalling.
-    raise TerminateRunCommandError("Received signal %i" % signum, cmd,
-                                   signum << 8)
+    cmd_result = CommandResult(cmd=cmd, returncode=signum<<8)
+    raise TerminateRunCommandError('Received signal %i' % signum, cmd_result)
 
 
 def _SignalModuleUsable(_signal=signal.signal, _SIGUSR1=signal.SIGUSR1):
@@ -468,13 +476,14 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
     cmd_result.returncode = proc.returncode
 
     if not error_ok and not error_code_ok and proc.returncode:
-      msg = ('Failed command "%r" with extra env %r\n' % (cmd, extra_env) +
-             (error_message or cmd_result.error or cmd_result.output or ''))
-      raise RunCommandError(msg, cmd, proc.returncode)
+      msg = 'Failed command "%r" with extra env %r' % (cmd, extra_env)
+      if error_message:
+        msg += '\n%s' % error_message
+      raise RunCommandError(msg, cmd_result)
   # TODO(sosa): is it possible not to use the catch-all Exception here?
   except OSError, e:
     if not error_ok:
-      raise RunCommandError(str(e), cmd, None)
+      raise RunCommandError(str(e), CommandResult(cmd=cmd))
     else:
       Warning(str(e))
   except Exception, e:
@@ -913,7 +922,7 @@ def GetTrackingBranch(branch, cwd):
       cmd = ['git', 'config', 'branch.%s.%s' % (branch, key)]
       info[key] = RunCommand(cmd, redirect_stdout=True, cwd=cwd).output.strip()
   except RunCommandError as e:
-    if e.error_code == KEY_NOT_FOUND_ERROR_CODE:
+    if e.result.returncode == KEY_NOT_FOUND_ERROR_CODE:
       raise NoTrackingBranchException()
     else:
       raise e

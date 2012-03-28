@@ -284,11 +284,14 @@ class TestRunCommand(unittest.TestCase):
   def testExceptionEquality(self):
     """Verify equality methods for RunCommandError"""
 
-    e1 = cros_build_lib.RunCommandError('Message 1', ['ls', 'arg'], 1)
-    e2 = cros_build_lib.RunCommandError('Message 1', ['ls', 'arg'], 1)
-    e_diff_msg = cros_build_lib.RunCommandError('Message 2', ['ls', 'arg'], 1)
-    e_diff_cmd = cros_build_lib.RunCommandError('Message 1', ['ls', 'arg1'], 1)
-    e_diff_code = cros_build_lib.RunCommandError('Message 1', ['ls', 'arg'], 2)
+    c1 = cros_build_lib.CommandResult(cmd=['ls', 'arg'], returncode=1)
+    c2 = cros_build_lib.CommandResult(cmd=['ls', 'arg1'], returncode=1)
+    c3 = cros_build_lib.CommandResult(cmd=['ls', 'arg'], returncode=2)
+    e1 = cros_build_lib.RunCommandError('Message 1', c1)
+    e2 = cros_build_lib.RunCommandError('Message 1', c1)
+    e_diff_msg = cros_build_lib.RunCommandError('Message 2', c1)
+    e_diff_cmd = cros_build_lib.RunCommandError('Message 1', c2)
+    e_diff_code = cros_build_lib.RunCommandError('Message 1', c3)
 
     self.assertTrue(e1 == e2)
     self.assertFalse(e1 != e2)
@@ -583,7 +586,7 @@ class InputTest(cros_test_lib.MoxTestCase):
 
       # Craziness to catch nested timeouts.
       except cros_build_lib.TimeoutError:
-         pass
+        pass
       else:
         self.assertTrue(False, 'Should have thrown an exception')
 

@@ -830,8 +830,8 @@ class HWTestStage(BoardSpecificBuilderStage):
   # pylint: disable=W0212
   def _HandleStageException(self, exception):
     """Override and don't set status to FAIL but FORGIVEN instead."""
-    if isinstance(exception,
-                  cros_lib.RunCommandError) and exception.error_code == 2:
+    if (isinstance(exception, cros_lib.RunCommandError) and
+        exception.result.returncode == 2):
       return self._HandleExceptionAsWarning(exception)
     else:
       return super(HWTestStage, self)._HandleStageException(exception)

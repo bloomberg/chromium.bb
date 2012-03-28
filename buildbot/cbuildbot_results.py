@@ -168,7 +168,7 @@ class _Results(object):
           # failed, not it's full argument list, since those are usually
           # too long.
           out.write('%s FAIL %s (%s) in %s\n' %
-                     (edge, name, timestr, result.cmd[0]))
+                     (edge, name, timestr, result.result.cmd[0]))
         else:
           # There was a normal error, give the type of exception
           out.write('%s FAIL %s (%s) with %s\n' %
