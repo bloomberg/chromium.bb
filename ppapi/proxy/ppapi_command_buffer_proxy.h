@@ -6,6 +6,7 @@
 #define PPAPI_PROXY_COMMAND_BUFFER_PROXY_H_
 #pragma once
 
+#include "base/callback.h"
 #include "base/hash_tables.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "ppapi/proxy/ppapi_proxy_export.h"
@@ -25,6 +26,9 @@ class PPAPI_PROXY_EXPORT PpapiCommandBufferProxy : public gpu::CommandBuffer {
   PpapiCommandBufferProxy(const HostResource& resource,
                           ProxyChannel* channel);
   virtual ~PpapiCommandBufferProxy();
+
+  void SetChannelErrorCallback(const base::Closure& callback);
+  void ReportChannelError();
 
   // gpu::CommandBuffer implementation:
   virtual bool Initialize();
@@ -55,6 +59,8 @@ class PPAPI_PROXY_EXPORT PpapiCommandBufferProxy : public gpu::CommandBuffer {
 
   HostResource resource_;
   ProxyChannel* channel_;
+
+  base::Closure channel_error_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(PpapiCommandBufferProxy);
 };

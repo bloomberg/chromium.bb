@@ -29,6 +29,18 @@ PpapiCommandBufferProxy::~PpapiCommandBufferProxy() {
   }
 }
 
+void PpapiCommandBufferProxy::SetChannelErrorCallback(
+    const base::Closure& callback) {
+  channel_error_callback_ = callback;
+}
+
+void PpapiCommandBufferProxy::ReportChannelError() {
+  if (!channel_error_callback_.is_null()) {
+    channel_error_callback_.Run();
+    channel_error_callback_.Reset();
+  }
+}
+
 bool PpapiCommandBufferProxy::Initialize() {
   return Send(new PpapiHostMsg_PPBGraphics3D_InitCommandBuffer(
       ppapi::API_ID_PPB_GRAPHICS_3D, resource_));
