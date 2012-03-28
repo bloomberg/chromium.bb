@@ -115,7 +115,7 @@ TEST(DomStorageDatabaseTest, CloseEmptyDatabaseDeletesFile) {
   CreateMapWithValues(&storage);
 
   // First test the case that explicitly clearing the database will
-  // trigger it's deletion from disk.
+  // trigger its deletion from disk.
   {
     DomStorageDatabase db(file_name);
     EXPECT_EQ(file_name, db.file_path());

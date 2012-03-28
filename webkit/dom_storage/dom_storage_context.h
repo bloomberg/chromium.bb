@@ -45,7 +45,7 @@ class DomStorageTaskRunner;
 //
 // In general terms, the DomStorage object relationships are...
 //   Contexts (per-profile) own Namespaces which own Areas which share Maps.
-//   Hosts(per-renderer) refer to Namespaces and Areas open in it's renderer.
+//   Hosts(per-renderer) refer to Namespaces and Areas open in its renderer.
 //   Sessions (per-tab) cause the creation and deletion of session Namespaces.
 //
 // Session Namespaces are cloned by initially making a shallow copy of
