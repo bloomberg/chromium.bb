@@ -24,60 +24,36 @@ from distutils.dir_util import copy_tree as copytree_existing
 J = os.path.join
 
 ######################################################################
-# Normalize the platform name, just like SCons, etc.
-
-def GetPlatform():
-  if sys.platform == 'darwin':
-    platform = 'mac'
-  elif sys.platform.startswith('linux'):
-    platform = 'linux'
-  elif sys.platform in ('cygwin', 'win32'):
-    platform = 'windows'
-  else:
-    raise Exception('Unknown platform: %s' % sys.platform)
-  return platform
-
-def PnaclPlatform(platform):
-  if platform == 'mac':
-    return 'darwin'
-  return platform
-
-PLATFORM = GetPlatform()
-PNACL_BUILD_PLATFORM = PnaclPlatform(GetPlatform())
-
-######################################################################
 # Target arch and build arch junk to convert between all the
 # silly conventions between SCons, Chrome and PNaCl.
 
-def GetArch():
+# The version of the arch used by NaCl manifest files / scons placement
+# of chromebinaries.  This is based on the machine "building" this extension.
+# We also used this to identify the arch-specific different versions of
+# this extension.
+def GetBuildArch():
   arch = platform.machine()
   if arch in ('x86_64', 'amd64'):
     return 'x86-64'
-  if arch.startswith('arm'):
+  # TODO(jvoung): be more specific about the arm architecture version?
+  if arch.startswith('armv7'):
     return 'arm'
   x86_32_re = re.compile('^i.86$')
-  if x86_32_re.search(arch):
+  if x86_32_re.search(arch) or arch == 'x86_32' or arch == 'x86':
     return 'x86-32'
 
-ARCH = GetArch()
+BUILD_ARCH = GetBuildArch()
+ARCHES = ['x86-32', 'x86-64', 'arm']
 
-def PnaclBuildArch():
-  if PLATFORM == 'windows':
-    return 'i686'
-  else:
-    return platform.machine()
+def IsValidArch(arch):
+  return arch in ARCHES
 
-PNACL_BUILD_ARCH = PnaclBuildArch()
-
+# The version of the arch used by configure and pnacl's build.sh.
 def StandardArch(arch):
   return {'x86-32': 'i686',
           'x86-64': 'x86_64',
           'arm'   : 'armv7'}[arch]
 
-ARCHES=['x86-32', 'x86-64', 'arm']
-
-def IsValidArch(arch):
-  return arch in ARCHES
 
 ######################################################################
 
@@ -103,6 +79,21 @@ NACL_ROOT = GetNaClRoot()
 
 ######################################################################
 
+# Normalize the platform name to be the way SCons finds chrome binaries.
+# This is based on the platform "building" the extension.
+
+def GetBuildPlatform():
+  if sys.platform == 'darwin':
+    platform = 'mac'
+  elif sys.platform.startswith('linux'):
+    platform = 'linux'
+  elif sys.platform in ('cygwin', 'win32'):
+    platform = 'windows'
+  else:
+    raise Exception('Unknown platform: %s' % sys.platform)
+  return platform
+BUILD_PLATFORM = GetBuildPlatform()
+
 class CRXGen(object):
   """ Generate a CRX file. Can generate a fresh CRX and private key, or
   create a version of new CRX with the same AppID, using an existing private
@@ -113,16 +104,16 @@ class CRXGen(object):
 
   @staticmethod
   def ChromeBinaryName():
-    if PLATFORM == 'mac':
+    if BUILD_PLATFORM == 'mac':
       return 'Chromium.app/Contents/MacOS/Chromium'
-    elif PLATFORM == 'windows':
+    elif BUILD_PLATFORM == 'windows':
       return 'chrome.exe'
     else:
       return 'chrome'
 
   @staticmethod
   def GetCRXGenPath():
-    plat_arch = '%s_%s' % (PLATFORM, ARCH)
+    plat_arch = '%s_%s' % (BUILD_PLATFORM, BUILD_ARCH)
     return J(NACL_ROOT, 'chromebinaries', plat_arch, CRXGen.ChromeBinaryName())
 
   @staticmethod
@@ -131,7 +122,7 @@ class CRXGen(object):
     if not os.path.isfile(binary):
       raise Exception('NaCl downloaded chrome binary not found: %s' % binary)
     cmdline = []
-    if PLATFORM == 'linux':
+    if BUILD_PLATFORM == 'linux':
       # In linux, run chrome in headless mode (even though crx-packing should
       # be headless, it's not quite with the zygote). This allows you to
       # run the tool under ssh or screen, etc.
@@ -223,18 +214,12 @@ class PnaclDirs(object):
   output_dir = J(toolchain_dir, 'pnacl-package')
 
   @staticmethod
-  def BaseDir():
-    pnacl_dir = 'pnacl_%s_%s' % (PNACL_BUILD_PLATFORM,
-                                 PNACL_BUILD_ARCH)
-    return J(PnaclDirs.toolchain_dir, pnacl_dir)
-
-  @staticmethod
   def LibDir(target_arch):
-    return J(PnaclDirs.BaseDir(), 'lib-%s' % target_arch)
+    return J(PnaclDirs.toolchain_dir,
+             'pnacl_translator', 'lib-%s' % target_arch)
 
   @staticmethod
   def SandboxedCompilerDir(target_arch):
-    # Choose newlib's LLC and LD to simplify startup of those nexes.
     return J(PnaclDirs.toolchain_dir,
              'pnacl_translator', StandardArch(target_arch), 'bin')
 
