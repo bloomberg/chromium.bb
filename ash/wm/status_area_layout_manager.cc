@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,8 @@
 
 #include "ash/wm/shelf_layout_manager.h"
 #include "base/auto_reset.h"
+#include "ui/aura/window.h"
+#include "ui/views/widget/widget.h"
 
 namespace ash {
 namespace internal {
@@ -40,10 +42,22 @@ void StatusAreaLayoutManager::OnChildWindowVisibilityChanged(
 }
 
 void StatusAreaLayoutManager::SetChildBounds(
-    aura::Window* child, const gfx::Rect& requested_bounds) {
+    aura::Window* child,
+    const gfx::Rect& requested_bounds) {
+  // Only need to have the shelf do a layout if the child changing is the status
+  // area and the shelf isn't in the process of doing a layout.
+  if (child != shelf_->status()->GetNativeView() || in_layout_) {
+    SetChildBoundsDirect(child, requested_bounds);
+    return;
+  }
+
+  // If the size matches, no need to do anything. We don't check the location as
+  // that is managed by the shelf.
+  if (requested_bounds.size() == child->bounds().size())
+    return;
+
   SetChildBoundsDirect(child, requested_bounds);
-  if (!in_layout_)
-    LayoutStatusArea();
+  LayoutStatusArea();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

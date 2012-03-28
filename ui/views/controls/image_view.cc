@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,8 +23,10 @@ ImageView::~ImageView() {
 }
 
 void ImageView::SetImage(const SkBitmap& bm) {
+  gfx::Size pref_size(GetPreferredSize());
   image_ = bm;
-  PreferredSizeChanged();
+  if (pref_size != GetPreferredSize())
+    PreferredSizeChanged();
   SchedulePaint();
 }
 
