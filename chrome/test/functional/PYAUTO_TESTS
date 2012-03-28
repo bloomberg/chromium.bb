@@ -254,6 +254,8 @@
       '-plugins.PluginsTest.testDisableEnableAllPlugins',
       # crbug.com/79263
       '-popups.PopupsTest.testPopupsLaunchUponBrowserBackButton',
+      # crbug.com/120317
+      '-protector.ProtectorPreferencesTest.testPreferencesBackupInvalidRestoreLastSession',
       # crbug.com/69619
       '-search_engines.SearchEnginesTest.testDiscoverSearchEngine',
       # Keychain popups make sync tests difficult on Mac.  crbug.com/49378
