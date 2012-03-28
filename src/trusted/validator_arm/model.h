@@ -1,8 +1,7 @@
 /*
- * Copyright 2009 The Native Client Authors.  All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
- * Copyright 2009, Google Inc.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_ARM_V2_MODEL_H
@@ -63,7 +62,7 @@ class Register {
   inline bool operator!=(const Register &) const;
 
  private:
-  uint32_t _number;
+  uint32_t number_;
 };
 
 /*
@@ -130,7 +129,7 @@ class RegisterList {
   friend const RegisterList operator+(const RegisterList, const RegisterList);
 
  private:
-  uint32_t _bits;
+  uint32_t bits_;
 };
 
 /*
@@ -146,17 +145,31 @@ inline const RegisterList operator+(const RegisterList, const RegisterList);
  */
 static const RegisterList kRegisterListEverything = RegisterList(-1);
 
+/* The number of bits in an ARM instruction. */
+static const int kArm32InstSize = 32;
+
+/* The number of bits in a word of a THUMB instruction. */
+static const int kThumbWordSize = 16;
+
 
 /*
- * A 32-bit ARM instruction of unspecified type.
+ * Models an instruction, either a 32-bit ARM instruction of unspecified type,
+ * or one word (16-bit) and two word (16-bit) THUMB instructions.
  *
  * This class is designed for efficiency:
  *  - Its public methods for bitfield extraction are short and inline.
  *  - It has no vtable, so on 32-bit platforms it's exactly the size of the
  *    instruction it models.
+ *  - API's exist for accessing both ARM (32-bit) instructions and
+ *    THUMB instructions (which are 1 or two (16-bit) words).
  */
 class Instruction {
  public:
+  /******************************
+   * Arm 32-bit instruction API *
+   *****************************/
+
+  /* Creates an a 32-bit ARM instruction. */
   explicit inline Instruction(uint32_t bits);
 
   /*
@@ -164,6 +177,12 @@ class Instruction {
    * Note that the range follows hardware convention, with the high bit first.
    */
   inline uint32_t bits(int hi, int lo) const;
+
+  /*
+   * Changes the range of contiguous bits, with the given value.
+   * Note: Assumes the value fits, if not, it is truncated.
+   */
+  inline void set_bits(int hi, int lo, uint32_t value);
 
   /*
    * A convenience method that's exactly equivalent to
@@ -179,6 +198,10 @@ class Instruction {
    */
   inline bool bit(int index) const;
 
+  /*
+   * Sets the specified bit to the specified value for an ARM instruction.
+   */
+  inline void set_bit(int index, bool value);
 
   /*
    * Returns an integer equivalent of this instruction, masked by the given
@@ -204,8 +227,82 @@ class Instruction {
    */
   inline Condition condition() const;
 
+  /************************************
+   * Arm 16-bit instruction words API *
+   ************************************/
+
+  /* Creates a 1 word THUMB instruction. */
+  explicit inline Instruction(uint16_t word);
+
+  /* Creates a 2 word THUMB instruction. */
+  explicit inline Instruction(uint16_t word1, uint16_t word2);
+
+  /*
+   * Extracts a range of contiguous bits from the first word of a
+   * THUMB instruction , right-justifies it, and returns it.  Note
+   * that the range follows hardware convention, with the high bit
+   * first.
+   */
+  inline uint16_t word1_bits(int hi, int lo) const;
+
+  /*
+   * Extracts a range of contiguous bits from the second word of a
+   * THUMB instruction , right-justifies it, and returns it.  Note
+   * that the range follows hardware convention, with the high bit
+   * first.
+   */
+  inline uint16_t word2_bits(int hi, int lo) const;
+
+  /*
+   * Changes the range of contiguous bits of the first word of a THUMB
+   * instruction, with the given value.  Note: Assumes the value fits,
+   * if not, it is truncated.
+   */
+  inline void word1_set_bits(int hi, int lo, uint16_t value);
+
+  /*
+   * Changes the range of contiguous bits of the second word of a THUMB
+   * instruction, with the given value.  Note: Assumes the value fits,
+   * if not, it is truncated.
+   */
+  inline void word2_set_bits(int hi, int lo, uint16_t value);
+
+  /*
+   * A convenience method that extracts the register specified by
+   * the corresponding bits of the first word of a THUMB instruction.
+   */
+  inline const Register word1_reg(int hi, int lo) const;
+
+  /*
+   * A convenience method that extracts the register specified by
+   * the corresponding bits of the second word of a THUMB instruction.
+   */
+  inline const Register word2_reg(int hi, int lo) const;
+
+  /*
+   * Extracts a single bit (0 - 15) from the first word of a
+   * THUMB instruction.
+   */
+  inline bool word1_bit(int index) const;
+
+  /*
+   * Extracts a single bit (0 - 15) from the second word of
+   * a THUMB instruction.
+   */
+  inline bool word2_bit(int index) const;
+
+  /* Sets the specified bit of the first word in a THUMB instruction
+   * to the corresponding value.
+   */
+  inline void word1_set_bit(int index, bool value);
+
+  /* Sets the specified bit of the second word in a THUMB instruction
+   * to the corresponding value.
+   */
+  inline void word2_set_bit(int index, bool value);
+
  private:
-  uint32_t _bits;
+  uint32_t bits_;
 };
 
 }  // namespace

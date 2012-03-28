@@ -685,6 +685,8 @@ ACCEPTABLE_TEST_SUITES = set([
   'toolchain_tests',
   'validator_modeling',
   'validator_tests',
+  # Special testing of the decoder for the ARM validator.
+  'arm_decoder_tests',
 ])
 
 # Under --mode=nacl_irt_test we build variants of numerous tests normally
@@ -2135,7 +2137,7 @@ def SetTestName(node, name):
 
 def CommandTest(env, name, command, size='small', direct_emulation=True,
                 extra_deps=[], posix_path=False, capture_output=True,
-                wrapper_program_prefix=None,
+                wrapper_program_prefix=None, scale_timeout=None,
                 **extra):
   if not name.endswith('.out') or name.startswith('$'):
     raise Exception('ERROR: bad test filename for test output %r' % name)
@@ -2161,6 +2163,8 @@ def CommandTest(env, name, command, size='small', direct_emulation=True,
   max_time = TEST_TIME_THRESHOLD[size]
   if 'scale_timeout' in ARGUMENTS:
     max_time = max_time * int(ARGUMENTS['scale_timeout'])
+  if scale_timeout:
+    max_time = max_time * scale_timeout
 
   if env.Bit('nacl_glibc'):
     suite = 'nacl_glibc'

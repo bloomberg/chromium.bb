@@ -4,21 +4,21 @@
  * found in the LICENSE file.
  */
 
+#include <string.h>
 #include "native_client/src/trusted/validator_arm/inst_classes.h"
 
-/*
- * Implementations of instruction classes, for those not completely defined in
- * the header.
- */
+// Implementations of instruction classes, for those not completely defined in
 
 namespace nacl_arm_dec {
 
-/*
- * A utility function: given a modified-immediate-form instruction, extracts
- * the immediate value.  This is used to analyze BIC and TST.
- *
- * This encoding is described in Section A5.2.4.
- */
+bool ClassDecoder::IsInstanceOf(const char* class_name) const {
+  return 0 == strcmp(name(), class_name);
+}
+
+// A utility function: given a modified-immediate-form instruction, extracts
+// the immediate value.  This is used to analyze BIC and TST.
+//
+// This encoding is described in Section A5.2.4.
 static uint32_t get_modified_immediate(Instruction i) {
   int rotation = i.bits(11, 8) * 2;
   uint32_t value = i.bits(7, 0);
@@ -28,9 +28,7 @@ static uint32_t get_modified_immediate(Instruction i) {
   return (value >> rotation) | (value << (32 - rotation));
 }
 
-/*
- * Breakpoint
- */
+// Breakpoint
 
 bool Breakpoint::is_literal_pool_head(const Instruction i) const {
   return i.condition() == Instruction::AL
@@ -38,9 +36,7 @@ bool Breakpoint::is_literal_pool_head(const Instruction i) const {
       && i.bits(3, 0) == 0x7;
 }
 
-/*
- * Binary4RegisterShiftedOp
- */
+// Binary4RegisterShiftedOp
 SafetyLevel Binary4RegisterShiftedOp::safety(Instruction i) const {
   // Unsafe if any register contains PC (ARM restriction).
   if ((Rn(i) == kRegisterPc) ||
@@ -56,9 +52,7 @@ RegisterList Binary4RegisterShiftedOp::defs(const Instruction i) const {
   return Rd(i) + (UpdatesFlagsRegister(i) ? kRegisterFlags : kRegisterNone);
 }
 
-/*
- * Unary3RegisterShiftedOp
- */
+// Unary3RegisterShiftedOp
 SafetyLevel Unary3RegisterShiftedOp::safety(Instruction i) const {
   // Unsafe if any register contains PC (ARM restriction).
   if ((Rd(i) == kRegisterPc) ||
@@ -73,9 +67,7 @@ RegisterList Unary3RegisterShiftedOp::defs(const Instruction i) const {
   return Rd(i) + (UpdatesFlagsRegister(i) ? kRegisterFlags : kRegisterNone);
 }
 
-/*
- * Data processing and arithmetic
- */
+// Data processing and arithmetic
 SafetyLevel DataProc::safety(const Instruction i) const {
   if (defs(i)[kRegisterPc]) {
     return FORBIDDEN_OPERANDS;
@@ -87,9 +79,7 @@ RegisterList DataProc::defs(const Instruction i) const {
   return Rd(i) + (UpdatesFlagsRegister(i) ? kRegisterFlags : kRegisterNone);
 }
 
-/*
- * Binary3RegisterShiftedTest
- */
+// Binary3RegisterShiftedTest
 SafetyLevel Binary3RegisterShiftedTest::safety(Instruction i) const {
   // Unsafe if any register contains PC (ARM restriction).
   if ((Rn(i) == kRegisterPc) ||
@@ -156,9 +146,7 @@ RegisterList SatAddSub::defs(const Instruction i) const {
 }
 
 
-/*
- * MSR
- */
+// MSR
 
 RegisterList MoveToStatusRegister::defs(const Instruction i) const {
   UNREFERENCED_PARAMETER(i);
@@ -166,9 +154,7 @@ RegisterList MoveToStatusRegister::defs(const Instruction i) const {
 }
 
 
-/*
- * Stores
- */
+// Stores
 
 SafetyLevel StoreImmediate::safety(const Instruction i) const {
   // Don't let addressing writeback alter PC.
@@ -205,11 +191,9 @@ SafetyLevel StoreRegister::safety(const Instruction i) const {
 }
 
 RegisterList StoreRegister::defs(const Instruction i) const {
-  /*
-   * Only one form of register-register store doesn't writeback its base:
-   *   str rT, [rN, rM]
-   * We ban this form.  Thus, every safe form alters its base address reg.
-   */
+  // Only one form of register-register store doesn't writeback its base:
+  //   str rT, [rN, rM]
+  // We ban this form.  Thus, every safe form alters its base address reg.
   return base_address_register(i);
 }
 
@@ -234,9 +218,7 @@ Register StoreExclusive::base_address_register(const Instruction i) const {
 }
 
 
-/*
- * Loads
- */
+// Loads
 
 bool AbstractLoad::writeback(const Instruction i) const {
   // Algorithm defined in pseudocode in ARM instruction set spec
@@ -382,9 +364,7 @@ Register LoadMultiple::base_address_register(const Instruction i) const {
 }
 
 
-/*
- * Vector load/stores
- */
+// Vector load/stores
 
 SafetyLevel VectorLoad::safety(Instruction i) const {
   if (defs(i)[kRegisterPc]) return FORBIDDEN_OPERANDS;
@@ -452,9 +432,7 @@ Register VectorStore::base_address_register(Instruction i) const {
 }
 
 
-/*
- * Coprocessors
- */
+// Coprocessors
 
 SafetyLevel CoprocessorOp::safety(Instruction i) const {
   if (defs(i)[kRegisterPc]) return FORBIDDEN_OPERANDS;
@@ -467,7 +445,6 @@ SafetyLevel CoprocessorOp::safety(Instruction i) const {
   }
 }
 
-
 RegisterList LoadCoprocessor::defs(Instruction i) const {
   return immediate_addressing_defs(i);
 }
@@ -475,7 +452,6 @@ RegisterList LoadCoprocessor::defs(Instruction i) const {
 RegisterList LoadCoprocessor::immediate_addressing_defs(Instruction i) const {
   return WritesFlag(i) ? Rn(i) : kRegisterNone;
 }
-
 
 RegisterList StoreCoprocessor::defs(Instruction i) const {
   return immediate_addressing_defs(i);
@@ -499,10 +475,7 @@ RegisterList MoveDoubleFromCoprocessor::defs(Instruction i) const {
   return Rt(i) + Rt2(i);
 }
 
-
-/*
- * Control flow
- */
+// Control flow
 
 RegisterList BxBlx::defs(const Instruction i) const {
   return kRegisterPc + (UsesLinkRegister(i) ? kRegisterLink : kRegisterNone);

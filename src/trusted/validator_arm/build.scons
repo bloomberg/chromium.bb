@@ -86,6 +86,9 @@ if env.Bit('linux'):
 
   gtest_env = env.MakeGTestEnv()
 
+  gtest_env.ComponentLibrary('decoder_test_tools',
+                             ['decoder_tester.cc']);
+
   # Do NOT name this program 'validator_tests' because this is the same name as
   # a test suite, and scons will run that test suite if it ever builds
   # a program of the same name.
@@ -98,3 +101,18 @@ if env.Bit('linux'):
       command=[validator_tests_exe])
   gtest_env.AddNodeToTestSuite(test_node, ['small_tests'],
       'run_arm_validator_tests')
+
+  # Test ARM (32-bit) instruction decoding.
+  decoder_tests_exe = gtest_env.ComponentProgram(
+      'decoder_tests',
+      ['decoder_tests.cc'],
+      EXTRA_LIBS=['decoder_test_tools', 'arm_validator_core'])
+
+  decoder_test_node = gtest_env.CommandTest(
+      'decoder_tests.out',
+      command=[decoder_tests_exe],
+      scale_timeout=10)
+
+  gtest_env.AddNodeToTestSuite(decoder_test_node,
+                               ['huge_tests', 'arm_decoder_tests'],
+                               'run_arm_decoder_tests')
