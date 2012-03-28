@@ -33,6 +33,16 @@ static const size_t kMaxSessionsToShow = 10;
 // Invalid value, used to note that we don't have a tab or window number.
 static const int kInvalidId = -1;
 
+namespace {
+
+// Comparator function for use with std::sort that will sort sessions by
+// descending modified_time (i.e., most recent first).
+bool SortSessionsByRecency(const SyncedSession* s1, const SyncedSession* s2) {
+  return s1->modified_time > s2->modified_time;
+}
+
+}  // namepace
+
 ForeignSessionHandler::ForeignSessionHandler() {
 }
 
@@ -100,6 +110,9 @@ void ForeignSessionHandler::HandleGetForeignSessions(const ListValue* args) {
 
   ListValue session_list;
   if (associator && associator->GetAllForeignSessions(&sessions)) {
+    // Sort sessions from most recent to least recent.
+    std::sort(sessions.begin(), sessions.end(), SortSessionsByRecency);
+
     // Note: we don't own the SyncedSessions themselves.
     for (size_t i = 0; i < sessions.size() && i < kMaxSessionsToShow; ++i) {
       const SyncedSession* session = sessions[i];
