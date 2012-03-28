@@ -144,6 +144,7 @@ class SingleTestRunner(BaseTestRunner):
                                                  'sql_unittests',
                                                  'unit_tests']:
       return [
+          'base/data/json/bom_feff.json',
           'net/data/cache_tests/insert_load1',
           'net/data/cache_tests/dirty_entry5',
           'ui/base/test/data/data_pack_unittest',
