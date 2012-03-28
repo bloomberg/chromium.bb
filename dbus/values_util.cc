@@ -207,25 +207,29 @@ void AppendBasicTypeValueData(MessageWriter* writer, const base::Value& value) {
   switch (value.GetType()) {
     case base::Value::TYPE_BOOLEAN: {
       bool bool_value = false;
-      value.GetAsBoolean(&bool_value);
+      bool success = value.GetAsBoolean(&bool_value);
+      DCHECK(success);
       writer->AppendBool(bool_value);
       break;
     }
     case base::Value::TYPE_INTEGER: {
       int int_value = 0;
-      value.GetAsInteger(&int_value);
+      bool success = value.GetAsInteger(&int_value);
+      DCHECK(success);
       writer->AppendInt32(int_value);
       break;
     }
     case base::Value::TYPE_DOUBLE: {
       double double_value = 0;
-      value.GetAsDouble(&double_value);
+      bool success = value.GetAsDouble(&double_value);
+      DCHECK(success);
       writer->AppendDouble(double_value);
       break;
     }
     case base::Value::TYPE_STRING: {
       std::string string_value;
-      value.GetAsString(&string_value);
+      bool success = value.GetAsString(&string_value);
+      DCHECK(success);
       writer->AppendString(string_value);
       break;
     }
