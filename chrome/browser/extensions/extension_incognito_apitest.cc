@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -92,6 +92,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_DontCreateIncognitoProfile) {
 }
 
 #if defined(OS_WIN)
+// http://crbug.com/120484
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_Incognito) {
 #else
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Incognito) {
@@ -115,6 +116,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Incognito) {
 // Tests that the APIs in an incognito-enabled split-mode extension work
 // properly.
 #if defined(OS_WIN)
+// http://crbug.com/120484
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_IncognitoSplitMode) {
 #else
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, IncognitoSplitMode) {
@@ -153,7 +155,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, IncognitoSplitMode) {
 
 // Tests that the APIs in an incognito-disabled extension don't see incognito
 // events or callbacks.
+#if defined(OS_WIN)
+// http://crbug.com/120484
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_IncognitoDisabled) {
+#else
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, IncognitoDisabled) {
+#endif
   host_resolver()->AddRule("*", "127.0.0.1");
   ASSERT_TRUE(StartTestServer());
 
