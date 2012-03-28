@@ -67,7 +67,9 @@ void PurgeMemoryIOHelper::PurgeMemoryOnIOThread() {
         PurgeMemory();
   }
 
+#if defined(ENABLE_SAFE_BROWSING)
   safe_browsing_service_->PurgeMemory();
+#endif
 }
 
 // -----------------------------------------------------------------------------
