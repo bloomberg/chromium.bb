@@ -61,7 +61,7 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
                              enable_tap_to_click_default,
                              PrefService::SYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kNaturalScroll,
-                             true,
+                             false,
                              PrefService::SYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kPrimaryMouseButtonRight,
                              false,
