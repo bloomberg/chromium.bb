@@ -53,7 +53,6 @@ remoting.init = function() {
     document.getElementById('current-email').innerText = email;
   }
 
-  window.addEventListener('blur', pluginLostFocus_, false);
   // The plugin's onFocus handler sends a paste command to |window|, because
   // it can't send one to the plugin element itself.
   window.addEventListener('paste', pluginGotPaste_, false);
@@ -147,16 +146,6 @@ function pluginGotPaste_(eventUncast) {
     remoting.clipboard.toHost(event.clipboardData);
   }
   return false;
-}
-
-/**
- * Callback function called when the browser window loses focus. In this case,
- * release all keys to prevent them becoming 'stuck down' on the host.
- */
-function pluginLostFocus_() {
-  if (remoting.clientSession && remoting.clientSession.plugin) {
-    remoting.clientSession.plugin.releaseAllKeys();
-  }
 }
 
 /**

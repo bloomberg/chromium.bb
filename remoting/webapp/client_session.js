@@ -61,7 +61,9 @@ remoting.ClientSession = function(hostJid, hostPublicKey, sharedSecret,
   /** @type {remoting.ClientSession} */
   var that = this;
   /** @type {function():void} @private */
-  this.refocusPlugin_ = function() { that.plugin.element().focus(); };
+  this.callPluginLostFocus_ = function() { that.pluginLostFocus_(); };
+  /** @type {function():void} @private */
+  this.callPluginGotFocus_ = function() { that.pluginGotFocus_(); };
 };
 
 // Note that the positive values in both of these enums are copied directly
@@ -194,7 +196,21 @@ remoting.ClientSession.prototype.pluginGotFocus_ = function() {
   /** @type {function(string): void } */
   document.execCommand;
   document.execCommand("paste");
-}
+};
+
+/**
+ * Callback function called when the plugin element loses focus.
+ */
+remoting.ClientSession.prototype.pluginLostFocus_ = function() {
+  if (this.plugin) {
+    // Release all keys to prevent them becoming 'stuck down' on the host.
+    this.plugin.releaseAllKeys();
+    if (this.plugin.element()) {
+      // Focus should stay on the element, not (for example) the toolbar.
+      this.plugin.element().focus();
+    }
+  }
+};
 
 /**
  * Adds <embed> element to |container| and readies the sesion object.
@@ -207,7 +223,6 @@ remoting.ClientSession.prototype.createPluginAndConnect =
   this.plugin = this.createClientPlugin_(container, this.PLUGIN_ID);
 
   this.plugin.element().focus();
-  this.plugin.element().addEventListener('blur', this.refocusPlugin_, false);
 
   /** @type {remoting.ClientSession} */
   var that = this;
@@ -216,7 +231,9 @@ remoting.ClientSession.prototype.createPluginAndConnect =
       that.onPluginInitialized_(oauth2AccessToken, result);
     });
   this.plugin.element().addEventListener(
-      'focus', function() { that.pluginGotFocus_() }, false);
+      'focus', this.callPluginGotFocus_, false);
+  this.plugin.element().addEventListener(
+      'blur', this.callPluginLostFocus_, false);
 };
 
 /**
@@ -276,7 +293,9 @@ remoting.ClientSession.prototype.onPluginInitialized_ =
 remoting.ClientSession.prototype.removePlugin = function() {
   if (this.plugin) {
     this.plugin.element().removeEventListener(
-        'blur', this.refocusPlugin_, false);
+        'focus', this.callPluginGotFocus_, false);
+    this.plugin.element().removeEventListener(
+        'blur', this.callPluginLostFocus_, false);
     this.plugin.cleanup();
     this.plugin = null;
   }
