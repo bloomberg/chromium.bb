@@ -24,8 +24,12 @@
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
 
-static const int kCookieInfoViewBorderSize = 1;
-static const int kCookieInfoViewInsetSize = 3;
+namespace {
+
+const int kCookieInfoViewBorderSize = 1;
+const int kCookieInfoViewInsetSize = 3;
+
+}  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
 // CookieInfoView, public:
@@ -75,7 +79,7 @@ void CookieInfoView::SetCookie(
     expire_combo_values_.push_back(
         l10n_util::GetStringUTF16(IDS_COOKIES_COOKIE_EXPIRES_SESSION));
     expires_value_combobox_->ModelChanged();
-    expires_value_combobox_->SetSelectedItem(0);
+    expires_value_combobox_->SetSelectedIndex(0);
     expires_value_combobox_->SetEnabled(true);
     expires_value_combobox_->set_listener(this);
   } else {

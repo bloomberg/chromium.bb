@@ -65,7 +65,7 @@ void NativeComboboxWin::UpdateFromModel() {
   content_width_ = max_width;
 
   if (num_items > 0) {
-    SendMessage(native_view(), CB_SETCURSEL, combobox_->selected_item(), 0);
+    SendMessage(native_view(), CB_SETCURSEL, combobox_->selected_index(), 0);
 
     // Set the width for the drop down while accounting for the scrollbar and
     // borders.
@@ -78,23 +78,23 @@ void NativeComboboxWin::UpdateFromModel() {
   }
 }
 
-void NativeComboboxWin::UpdateSelectedItem() {
+void NativeComboboxWin::UpdateSelectedIndex() {
   // Note that we use CB_SETCURSEL and not CB_SELECTSTRING because on RTL
   // locales the strings we get from our ComboBox::Model might be augmented
-  // with Unicode directionality marks before we insert them into the combo box
+  // with Unicode directionality marks before we insert them into the combobox
   // and therefore we can not assume that the string we get from
-  // ComboBox::Model can be safely searched for and selected (which is what
+  // ui::ComboboxModel can be safely searched for and selected (which is what
   // CB_SELECTSTRING does).
-  SendMessage(native_view(), CB_SETCURSEL, combobox_->selected_item(), 0);
+  SendMessage(native_view(), CB_SETCURSEL, combobox_->selected_index(), 0);
 }
 
 void NativeComboboxWin::UpdateEnabled() {
   SetEnabled(combobox_->enabled());
 }
 
-int NativeComboboxWin::GetSelectedItem() const {
-  LRESULT selected_item = SendMessage(native_view(), CB_GETCURSEL, 0, 0);
-  return selected_item != CB_ERR ? selected_item : -1;
+int NativeComboboxWin::GetSelectedIndex() const {
+  LRESULT selected_index = SendMessage(native_view(), CB_GETCURSEL, 0, 0);
+  return selected_index != CB_ERR ? selected_index : -1;
 }
 
 bool NativeComboboxWin::IsDropdownOpen() const {

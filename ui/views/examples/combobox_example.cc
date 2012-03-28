@@ -35,7 +35,7 @@ ComboboxExample::~ComboboxExample() {
 void ComboboxExample::CreateExampleView(View* container) {
   combobox_ = new Combobox(&combobox_model_);
   combobox_->set_listener(this);
-  combobox_->SetSelectedItem(3);
+  combobox_->SetSelectedIndex(3);
 
   container->SetLayoutManager(new FillLayout);
   container->AddChildView(combobox_);

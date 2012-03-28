@@ -35,7 +35,7 @@ class TextExample : public ExampleBase,
   // Creates and adds a check box to the layout.
   Checkbox* AddCheckbox(GridLayout* layout, const char* name);
 
-  // Creates and adds a combo box to the layout.
+  // Creates and adds a combobox to the layout.
   Combobox* AddCombobox(GridLayout* layout,
                         const char* name,
                         const char** strings,

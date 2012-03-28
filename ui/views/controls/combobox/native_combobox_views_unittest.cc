@@ -50,7 +50,7 @@ class TestCombobox : public views::Combobox {
   DISALLOW_COPY_AND_ASSIGN(TestCombobox);
 };
 
-// A concrete class is needed to test the combo box.
+// A concrete class is needed to test the combobox.
 class TestComboboxModel : public ui::ComboboxModel {
  public:
   TestComboboxModel() {}
@@ -152,16 +152,16 @@ class NativeComboboxViewsTest : public ViewsTestBase {
 TEST_F(NativeComboboxViewsTest, KeyTest) {
   InitCombobox();
   SendKeyEvent(ui::VKEY_END);
-  EXPECT_EQ(combobox_->selected_item() + 1, model_->GetItemCount());
+  EXPECT_EQ(combobox_->selected_index() + 1, model_->GetItemCount());
   SendKeyEvent(ui::VKEY_HOME);
-  EXPECT_EQ(combobox_->selected_item(), 0);
+  EXPECT_EQ(combobox_->selected_index(), 0);
   SendKeyEvent(ui::VKEY_DOWN);
   SendKeyEvent(ui::VKEY_DOWN);
-  EXPECT_EQ(combobox_->selected_item(), 2);
+  EXPECT_EQ(combobox_->selected_index(), 2);
   SendKeyEvent(ui::VKEY_RIGHT);
-  EXPECT_EQ(combobox_->selected_item(), 2);
+  EXPECT_EQ(combobox_->selected_index(), 2);
   SendKeyEvent(ui::VKEY_LEFT);
-  EXPECT_EQ(combobox_->selected_item(), 2);
+  EXPECT_EQ(combobox_->selected_index(), 2);
 }
 
 // Check that if a combobox is disabled before it has a native wrapper, then the

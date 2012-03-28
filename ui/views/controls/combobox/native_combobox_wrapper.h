@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,35 +24,34 @@ class VIEWS_EXPORT NativeComboboxWrapper {
   // Updates the combobox's content from its model.
   virtual void UpdateFromModel() = 0;
 
-  // Updates the displayed selected item from the associated Combobox.
-  virtual void UpdateSelectedItem() = 0;
+  // Updates the selected index from the associated combobox.
+  virtual void UpdateSelectedIndex() = 0;
 
   // Updates the enabled state of the combobox from the associated view.
   virtual void UpdateEnabled() = 0;
 
-  // Gets the selected index.
-  virtual int GetSelectedItem() const = 0;
+  // Returns the selected index.
+  virtual int GetSelectedIndex() const = 0;
 
-  // Returns true if the Combobox dropdown is open.
+  // Returns true if the combobox dropdown is open.
   virtual bool IsDropdownOpen() const = 0;
 
   // Returns the preferred size of the combobox.
   virtual gfx::Size GetPreferredSize() = 0;
 
-  // Retrieves the views::View that hosts the native control.
+  // Retrieves the view that hosts the native control.
   virtual View* GetView() = 0;
 
   // Sets the focus to the button.
   virtual void SetFocus() = 0;
 
-  // Invoked when a key is pressed/release on Combobox.  Subclasser
-  // should return true if the event has been processed and false
-  // otherwise.
+  // Invoked when a key is pressed/release on combobox. Subclasser should
+  // return true if the event has been processed and false otherwise.
   // See also View::OnKeyPressed/OnKeyReleased.
   virtual bool HandleKeyPressed(const views::KeyEvent& e) = 0;
   virtual bool HandleKeyReleased(const views::KeyEvent& e) = 0;
 
-  // Invoked when focus is being moved from or to the Combobox.
+  // Invoked when focus is being moved from or to the combobox.
   // See also View::OnFocus/OnBlur.
   virtual void HandleFocus() = 0;
   virtual void HandleBlur() = 0;

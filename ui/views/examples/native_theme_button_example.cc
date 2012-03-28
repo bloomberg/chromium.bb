@@ -98,8 +98,7 @@ void ExampleNativeThemeButton::ItemChanged(Combobox* combo_box,
 }
 
 gfx::NativeTheme::Part ExampleNativeThemeButton::GetThemePart() const {
-  int selected = cb_part_->selected_item();
-  switch (selected) {
+  switch (cb_part_->selected_index()) {
     case 0:
       return gfx::NativeTheme::kPushButton;
     case 1:
@@ -127,7 +126,7 @@ gfx::NativeTheme::State ExampleNativeThemeButton::GetThemeState(
     gfx::NativeTheme::ExtraParams* params) const {
   GetExtraParams(params);
 
-  int selected = cb_state_->selected_item();
+  int selected = cb_state_->selected_index();
   if (selected > 3) {
     switch (state()) {
       case BS_DISABLED:
@@ -170,8 +169,7 @@ void ExampleNativeThemeButton::GetExtraParams(
 }
 
 const ui::Animation* ExampleNativeThemeButton::GetThemeAnimation() const {
-  int selected = cb_state_->selected_item();
-  return selected <= 3 ? NULL : hover_animation_.get();
+  return cb_state_->selected_index() <= 3 ? NULL : hover_animation_.get();
 }
 
 gfx::NativeTheme::State ExampleNativeThemeButton::GetBackgroundThemeState(
@@ -224,14 +222,14 @@ void NativeThemeButtonExample::CreateExampleView(View* container) {
   layout->AddView(new Label(ASCIIToUTF16("Part:")));
   Combobox* cb_part = new Combobox(
       new ExampleComboboxModel(kParts, arraysize(kParts)));
-  cb_part->SetSelectedItem(0);
+  cb_part->SetSelectedIndex(0);
   layout->AddView(cb_part);
 
   layout->StartRow(0, 0);
   layout->AddView(new Label(ASCIIToUTF16("State:")));
   Combobox* cb_state = new Combobox(
       new ExampleComboboxModel(kStates, arraysize(kStates)));
-  cb_state->SetSelectedItem(0);
+  cb_state->SetSelectedIndex(0);
   layout->AddView(cb_state);
 
   layout->AddPaddingRow(0, 32);

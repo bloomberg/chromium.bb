@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,9 +19,9 @@ class NativeComboboxWin : public NativeControlWin,
 
   // Overridden from NativeComboboxWrapper:
   virtual void UpdateFromModel() OVERRIDE;
-  virtual void UpdateSelectedItem() OVERRIDE;
+  virtual void UpdateSelectedIndex() OVERRIDE;
   virtual void UpdateEnabled() OVERRIDE;
-  virtual int GetSelectedItem() const OVERRIDE;
+  virtual int GetSelectedIndex() const OVERRIDE;
   virtual bool IsDropdownOpen() const OVERRIDE;
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual View* GetView() OVERRIDE;

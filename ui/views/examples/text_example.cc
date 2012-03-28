@@ -193,7 +193,7 @@ Combobox* TextExample::AddCombobox(GridLayout* layout,
   ExampleComboboxModel* new_model = new ExampleComboboxModel(strings, count);
   example_combobox_model_.push_back(new_model);
   Combobox* combo_box = new Combobox(new_model);
-  combo_box->SetSelectedItem(0);
+  combo_box->SetSelectedIndex(0);
   combo_box->set_listener(this);
   layout->AddView(combo_box, kNumColumns - 1, 1);
   return combo_box;

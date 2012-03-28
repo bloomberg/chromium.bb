@@ -169,7 +169,7 @@ void BookmarkBubbleView::Init() {
       l10n_util::GetStringUTF16(IDS_BOOKMARK_BUBBLE_FOLDER_TEXT));
 
   parent_combobox_ = new views::Combobox(&parent_model_);
-  parent_combobox_->SetSelectedItem(parent_model_.node_parent_index());
+  parent_combobox_->SetSelectedIndex(parent_model_.node_parent_index());
   parent_combobox_->set_listener(this);
   parent_combobox_->SetAccessibleName(combobox_label->text());
 
@@ -334,9 +334,9 @@ void BookmarkBubbleView::ApplyEdits() {
           UserMetricsAction("BookmarkBubble_ChangeTitleInBubble"));
     }
     // Last index means 'Choose another folder...'
-    if (parent_combobox_->selected_item() < parent_model_.GetItemCount() - 1) {
+    if (parent_combobox_->selected_index() < parent_model_.GetItemCount() - 1) {
       const BookmarkNode* new_parent =
-          parent_model_.GetNodeAt(parent_combobox_->selected_item());
+          parent_model_.GetNodeAt(parent_combobox_->selected_index());
       if (new_parent != node->parent()) {
         content::RecordAction(
             UserMetricsAction("BookmarkBubble_ChangeParent"));

@@ -28,7 +28,7 @@ class NativeComboboxViews : public views::View,
  public:
   static const char kViewClassName[];
 
-  explicit NativeComboboxViews(Combobox* parent);
+  explicit NativeComboboxViews(Combobox* combo_box);
   virtual ~NativeComboboxViews();
 
   // views::View overrides:
@@ -42,9 +42,9 @@ class NativeComboboxViews : public views::View,
 
   // NativeComboboxWrapper overrides:
   virtual void UpdateFromModel() OVERRIDE;
-  virtual void UpdateSelectedItem() OVERRIDE;
+  virtual void UpdateSelectedIndex() OVERRIDE;
   virtual void UpdateEnabled() OVERRIDE;
-  virtual int GetSelectedItem() const OVERRIDE;
+  virtual int GetSelectedIndex() const OVERRIDE;
   virtual bool IsDropdownOpen() const OVERRIDE;
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual View* GetView() OVERRIDE;
@@ -87,8 +87,9 @@ class NativeComboboxViews : public views::View,
   // Is the drop down list showing
   bool dropdown_open_;
 
-  // Index in the model of the selected item: -1 => none
-  int selected_item_;
+  // The selected index in the model. The default value is -1, which means no
+  // selection.
+  int selected_index_;
 
   // The maximum dimensions of the content in the dropdown
   int content_width_;
