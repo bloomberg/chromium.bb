@@ -15,6 +15,7 @@
 #include "base/json/json_file_value_serializer.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
+#include "base/scoped_temp_dir.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
@@ -23,9 +24,9 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_action.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
+#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/file_browser_handler.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -49,14 +50,24 @@ class ExtensionManifestTest : public testing::Test {
   ExtensionManifestTest() : enable_apps_(true) {}
 
  protected:
+  // If filename is a relative path, LoadManifestFile will treat it relative to
+  // the appropriate test directory.
   static DictionaryValue* LoadManifestFile(const std::string& filename,
                                            std::string* error) {
+    FilePath filename_path(FilePath::FromUTF8Unsafe(filename));
     FilePath extension_path;
-    PathService::Get(chrome::DIR_TEST_DATA, &extension_path);
-    extension_path = extension_path.AppendASCII("extensions")
-        .AppendASCII("manifest_tests");
+    FilePath manifest_path;
 
-    FilePath manifest_path = extension_path.AppendASCII(filename.c_str());
+    if (filename_path.IsAbsolute()) {
+      extension_path = filename_path.DirName();
+      manifest_path = filename_path;
+    } else {
+      PathService::Get(chrome::DIR_TEST_DATA, &extension_path);
+      extension_path = extension_path.AppendASCII("extensions")
+          .AppendASCII("manifest_tests");
+      manifest_path = extension_path.AppendASCII(filename.c_str());
+    }
+
     EXPECT_TRUE(file_util::PathExists(manifest_path)) <<
         "Couldn't find " << manifest_path.value();
 
@@ -86,7 +97,7 @@ class ExtensionManifestTest : public testing::Test {
         : name_(name), manifest_(manifest) {
     }
     Manifest(const Manifest& m) {
-      // C++98 requires the copy constructor for a type to be visiable if you
+      // C++98 requires the copy constructor for a type to be visible if you
       // take a const-ref of a temporary for that type.  Since Manifest
       // contains a scoped_ptr, its implicit copy constructor is declared
       // Manifest(Manifest&) according to spec 12.8.5.  This breaks the first
@@ -286,6 +297,72 @@ TEST_F(ExtensionManifestTest, PlatformApps) {
   CommandLine::ForCurrentProcess()->AppendSwitch(switches::kEnablePlatformApps);
 
   LoadAndExpectSuccess("init_valid_platform_app.json");
+}
+
+TEST_F(ExtensionManifestTest, CertainApisRequirePlatformApps) {
+  // Put APIs here that should be restricted to platform apps, but that haven't
+  // yet graduated from experimental.
+  const char* kPlatformAppExperimentalApis[] = {
+    "dns",
+    "serial",
+    "socket",
+  };
+  // TODO(miket): When the first platform-app API leaves experimental, write
+  // similar code that tests without the experimental flag.
+
+  // This manifest is a skeleton used to build more specific manifests for
+  // testing. The requirements are that (1) it be a valid platform app, and (2)
+  // it contain no permissions dictionary.
+  std::string error;
+  scoped_ptr<DictionaryValue> manifest(
+      LoadManifestFile("init_valid_platform_app.json", &error));
+
+  ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
+  // Create each manifest.
+  for (size_t i = 0; i < arraysize(kPlatformAppExperimentalApis); ++i) {
+    const char* api_name = kPlatformAppExperimentalApis[i];
+
+    // DictionaryValue will take ownership of this ListValue.
+    ListValue *permissions = new ListValue();
+    permissions->Append(base::Value::CreateStringValue("experimental"));
+    permissions->Append(base::Value::CreateStringValue(api_name));
+    manifest->Set("permissions", permissions);
+
+    // Each of these files lives in the scoped temp directory, so it will be
+    // cleaned up at test teardown.
+    FilePath file_path = temp_dir.path().AppendASCII(api_name);
+    JSONFileValueSerializer serializer(file_path);
+    serializer.Serialize(*(manifest.get()));
+  }
+
+  // First try to load without any flags. This should fail for every API.
+  for (size_t i = 0; i < arraysize(kPlatformAppExperimentalApis); ++i) {
+    const char* api_name = kPlatformAppExperimentalApis[i];
+    FilePath file_path = temp_dir.path().AppendASCII(api_name);
+    LoadAndExpectError(file_path.MaybeAsASCII().c_str(),
+                       errors::kExperimentalFlagRequired);
+  }
+
+  // Now try again with experimental flag set.
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableExperimentalExtensionApis);
+  for (size_t i = 0; i < arraysize(kPlatformAppExperimentalApis); ++i) {
+    const char* api_name = kPlatformAppExperimentalApis[i];
+    FilePath file_path = temp_dir.path().AppendASCII(api_name);
+    LoadAndExpectError(file_path.MaybeAsASCII().c_str(),
+                       errors::kPlatformAppFlagRequired);
+  }
+
+  // Finally, we should succeed with both experimental and platform-app flags
+  // set.
+  CommandLine::ForCurrentProcess()->AppendSwitch(switches::kEnablePlatformApps);
+  for (size_t i = 0; i < arraysize(kPlatformAppExperimentalApis); ++i) {
+    const char* api_name = kPlatformAppExperimentalApis[i];
+    FilePath file_path = temp_dir.path().AppendASCII(api_name);
+    LoadAndExpectSuccess(file_path.MaybeAsASCII().c_str());
+  }
 }
 
 TEST_F(ExtensionManifestTest, InitFromValueValidNameInRTL) {
