@@ -2264,6 +2264,7 @@ TEST_F(ExtensionServiceTest, UpdateExtensionPreservesState) {
   // over to the updated version.
   service_->DisableExtension(good->id());
   service_->SetIsIncognitoEnabled(good->id(), true);
+  service_->extension_prefs()->SetDidExtensionEscalatePermissions(good, true);
 
   path = data_dir_.AppendASCII("good2.crx");
   UpdateExtension(good_crx, path, INSTALLED);
@@ -2271,6 +2272,8 @@ TEST_F(ExtensionServiceTest, UpdateExtensionPreservesState) {
   const Extension* good2 = service_->GetExtensionById(good_crx, true);
   ASSERT_EQ("1.0.0.1", good2->version()->GetString());
   EXPECT_TRUE(service_->IsIncognitoEnabled(good2->id()));
+  EXPECT_TRUE(service_->extension_prefs()->DidExtensionEscalatePermissions(
+      good2->id()));
 }
 
 // Tests that updating preserves extension location.

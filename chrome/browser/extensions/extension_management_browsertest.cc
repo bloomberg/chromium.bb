@@ -285,6 +285,63 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, AutoUpdate) {
   ASSERT_EQ("2.0", extension->VersionString());
 }
 
+// Tests extension autoupdate.
+IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, AutoUpdateDisabledExtensions) {
+  NotificationListener notification_listener;
+  FilePath basedir = test_data_dir_.AppendASCII("autoupdate");
+  // Note: This interceptor gets requests on the IO thread.
+  scoped_refptr<AutoUpdateInterceptor> interceptor(new AutoUpdateInterceptor());
+  content::URLFetcher::SetEnableInterceptionForTests(true);
+
+  interceptor->SetResponseOnIOThread("http://localhost/autoupdate/manifest",
+                                     basedir.AppendASCII("manifest_v2.xml"));
+  interceptor->SetResponseOnIOThread("http://localhost/autoupdate/v2.crx",
+                                     basedir.AppendASCII("v2.crx"));
+
+  // Install version 1 of the extension.
+  ExtensionTestMessageListener listener1("v1 installed", false);
+  ExtensionService* service = browser()->profile()->GetExtensionService();
+  const size_t enabled_size_before = service->extensions()->size();
+  const size_t disabled_size_before = service->disabled_extensions()->size();
+  const Extension* extension =
+      InstallExtension(basedir.AppendASCII("v1.crx"), 1);
+  ASSERT_TRUE(extension);
+  listener1.WaitUntilSatisfied();
+  service->DisableExtension(extension->id());
+  ASSERT_EQ(disabled_size_before + 1, service->disabled_extensions()->size());
+  ASSERT_EQ(enabled_size_before, service->extensions()->size());
+  ASSERT_EQ("ogjcoiohnmldgjemafoockdghcjciccf", extension->id());
+  ASSERT_EQ("1.0", extension->VersionString());
+
+  // We don't want autoupdate blacklist checks.
+  service->updater()->set_blacklist_checks_enabled(false);
+
+  ExtensionTestMessageListener listener2("v2 installed", false);
+  // Run autoupdate and make sure version 2 of the extension was installed but
+  // is still disabled.
+  service->updater()->CheckNow();
+  ASSERT_TRUE(WaitForExtensionInstall());
+  ASSERT_EQ(disabled_size_before + 1, service->disabled_extensions()->size());
+  ASSERT_EQ(enabled_size_before, service->extensions()->size());
+  extension = service->GetExtensionById(
+      "ogjcoiohnmldgjemafoockdghcjciccf", true);
+  ASSERT_TRUE(extension);
+  ASSERT_FALSE(service->GetExtensionById(
+      "ogjcoiohnmldgjemafoockdghcjciccf", false));
+  ASSERT_EQ("2.0", extension->VersionString());
+
+  // The extension should have not made the callback because it is disabled.
+  // When we enabled it, it should then make the callback.
+  ASSERT_FALSE(listener2.was_satisfied());
+  service->EnableExtension(extension->id());
+  listener2.WaitUntilSatisfied();
+  ASSERT_TRUE(notification_listener.started());
+  ASSERT_TRUE(notification_listener.finished());
+  ASSERT_TRUE(ContainsKey(notification_listener.updates(),
+                          "ogjcoiohnmldgjemafoockdghcjciccf"));
+  notification_listener.Reset();
+}
+
 IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalUrlUpdate) {
   ExtensionService* service = browser()->profile()->GetExtensionService();
   const char* kExtensionId = "ogjcoiohnmldgjemafoockdghcjciccf";

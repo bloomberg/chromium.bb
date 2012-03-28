@@ -261,11 +261,18 @@ class ServiceForManifestTests : public MockService {
 
   virtual const Extension* GetExtensionById(
       const std::string& id, bool include_disabled) const OVERRIDE {
-    return extensions_.GetByID(id);
+    const Extension* result = extensions_.GetByID(id);
+    if (result || !include_disabled)
+      return result;
+    return disabled_extensions_.GetByID(id);
   }
 
   virtual const ExtensionSet* extensions() const OVERRIDE {
     return &extensions_;
+  }
+
+  virtual const ExtensionSet* disabled_extensions() const OVERRIDE {
+    return &disabled_extensions_;
   }
 
   virtual PendingExtensionManager* pending_extension_manager() OVERRIDE {
@@ -279,8 +286,16 @@ class ServiceForManifestTests : public MockService {
     }
   }
 
+  void set_disabled_extensions(ExtensionList disabled_extensions) {
+    for (ExtensionList::const_iterator it = disabled_extensions.begin();
+         it != disabled_extensions.end(); ++it) {
+      disabled_extensions_.Insert(*it);
+    }
+  }
+
  private:
   ExtensionSet extensions_;
+  ExtensionSet disabled_extensions_;
 };
 
 class ServiceForDownloadTests : public MockService {
@@ -1341,14 +1356,52 @@ TEST_F(ExtensionUpdaterTest, TestNonAutoUpdateableLocations) {
   service.CreateTestExtensions(1, 1, &extensions, NULL, Extension::INVALID);
   service.CreateTestExtensions(2, 1, &extensions, NULL, Extension::INTERNAL);
   ASSERT_EQ(2u, extensions.size());
-  const std::string& id = extensions[1]->id();
+  const std::string& updateable_id = extensions[1]->id();
 
   // These expectations fail if the delegate's methods are invoked for the
   // first extension, which has a non-matching id.
-  EXPECT_CALL(delegate, GetUpdateUrlData(id)).WillOnce(Return(""));
-  EXPECT_CALL(delegate, GetPingDataForExtension(id, _));
+  EXPECT_CALL(delegate, GetUpdateUrlData(updateable_id)).WillOnce(Return(""));
+  EXPECT_CALL(delegate, GetPingDataForExtension(updateable_id, _));
 
   service.set_extensions(extensions);
+  updater.set_blacklist_checks_enabled(false);
+  updater.Start();
+  updater.CheckNow();
+}
+
+TEST_F(ExtensionUpdaterTest, TestUpdatingDisabledExtensions) {
+  TestURLFetcherFactory factory;
+  ServiceForManifestTests service;
+  ExtensionUpdater updater(&service, service.extension_prefs(),
+                           service.pref_service(), service.profile(),
+                           kUpdateFrequencySecs);
+  MockExtensionDownloaderDelegate delegate;
+  // Set the downloader directly, so that all its events end up in the mock
+  // |delegate|.
+  ExtensionDownloader* downloader =
+      new ExtensionDownloader(&delegate, service.request_context());
+  ResetDownloader(&updater, downloader);
+
+  // Non-internal non-external extensions should be rejected.
+  ExtensionList enabled_extensions;
+  ExtensionList disabled_extensions;
+  service.CreateTestExtensions(1, 1, &enabled_extensions, NULL,
+      Extension::INTERNAL);
+  service.CreateTestExtensions(2, 1, &disabled_extensions, NULL,
+      Extension::INTERNAL);
+  ASSERT_EQ(1u, enabled_extensions.size());
+  ASSERT_EQ(1u, disabled_extensions.size());
+  const std::string& enabled_id = enabled_extensions[0]->id();
+  const std::string& disabled_id = disabled_extensions[0]->id();
+
+  // We expect that both enabled and disabled extensions are auto-updated.
+  EXPECT_CALL(delegate, GetUpdateUrlData(enabled_id)).WillOnce(Return(""));
+  EXPECT_CALL(delegate, GetPingDataForExtension(enabled_id, _));
+  EXPECT_CALL(delegate, GetUpdateUrlData(disabled_id)).WillOnce(Return(""));
+  EXPECT_CALL(delegate, GetPingDataForExtension(disabled_id, _));
+
+  service.set_extensions(enabled_extensions);
+  service.set_disabled_extensions(disabled_extensions);
   updater.set_blacklist_checks_enabled(false);
   updater.Start();
   updater.CheckNow();

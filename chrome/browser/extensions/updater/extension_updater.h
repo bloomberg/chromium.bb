@@ -25,6 +25,7 @@
 
 class ExtensionPrefs;
 class ExtensionServiceInterface;
+class ExtensionSet;
 class PrefService;
 class Profile;
 
@@ -108,6 +109,11 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
   // jitter. It also saves the scheduled time so it can be reloaded on
   // browser restart.
   void ScheduleNextCheck(const base::TimeDelta& target_delay);
+
+  // Add fetch records for extensions that are installed to the downloader,
+  // ignoring |pending_ids| so the extension isn't fetched again.
+  void AddToDownloader(const ExtensionSet* extensions,
+                       const std::set<std::string>& pending_ids);
 
   // BaseTimer::ReceiverMethod callback.
   void TimerFired();

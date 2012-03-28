@@ -14,6 +14,11 @@ const ExtensionSet* TestExtensionService::extensions() const {
   return NULL;
 }
 
+const ExtensionSet* TestExtensionService::disabled_extensions() const {
+  ADD_FAILURE();
+  return NULL;
+}
+
 PendingExtensionManager* TestExtensionService::pending_extension_manager() {
   ADD_FAILURE();
   return NULL;

@@ -22,6 +22,7 @@ class TestExtensionService : public ExtensionServiceInterface {
 
   // ExtensionServiceInterface implementation.
   virtual const ExtensionSet* extensions() const OVERRIDE;
+  virtual const ExtensionSet* disabled_extensions() const OVERRIDE;
   virtual PendingExtensionManager* pending_extension_manager() OVERRIDE;
 
   virtual bool UpdateExtension(

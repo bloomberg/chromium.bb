@@ -262,6 +262,25 @@ void ExtensionUpdater::DoCheckSoon() {
   will_check_soon_ = false;
 }
 
+void ExtensionUpdater::AddToDownloader(const ExtensionSet* extensions,
+    const std::set<std::string>& pending_ids) {
+  for (ExtensionSet::const_iterator iter = extensions->begin();
+       iter != extensions->end(); ++iter) {
+    const Extension& extension = **iter;
+    if (!Extension::IsAutoUpdateableLocation(extension.location())) {
+      VLOG(2) << "Extension " << extension.id() << " is not auto updateable";
+      continue;
+    }
+    // An extension might be overwritten by policy, and have its update url
+    // changed. Make sure existing extensions aren't fetched again, if a
+    // pending fetch for an extension with the same id already exists.
+    if (!ContainsKey(pending_ids, extension.id())) {
+      if (downloader_->AddExtension(extension))
+        in_progress_ids_.insert(extension.id());
+    }
+  }
+}
+
 void ExtensionUpdater::CheckNow() {
   VLOG(2) << "Starting update check";
   DCHECK(alive_);
@@ -296,24 +315,8 @@ void ExtensionUpdater::CheckNow() {
       in_progress_ids_.insert(*iter);
   }
 
-  // Add fetch records for extensions that are installed and have an
-  // update URL.
-  const ExtensionSet* extensions = service_->extensions();
-  for (ExtensionSet::const_iterator iter = extensions->begin();
-       iter != extensions->end(); ++iter) {
-    const Extension& extension = **iter;
-    if (!Extension::IsAutoUpdateableLocation(extension.location())) {
-      VLOG(2) << "Extension " << extension.id() << " is not auto updateable";
-      continue;
-    }
-    // An extension might be overwritten by policy, and have its update url
-    // changed. Make sure existing extensions aren't fetched again, if a
-    // pending fetch for an extension with the same id already exists.
-    if (!ContainsKey(pending_ids, extension.id())) {
-      if (downloader_->AddExtension(extension))
-        in_progress_ids_.insert(extension.id());
-    }
-  }
+  AddToDownloader(service_->extensions(), pending_ids);
+  AddToDownloader(service_->disabled_extensions(), pending_ids);
 
   // Start a fetch of the blacklist if needed.
   if (blacklist_checks_enabled_) {
@@ -418,7 +421,7 @@ bool ExtensionUpdater::GetExtensionExistingVersion(const std::string& id,
     *version = prefs_->GetString(kExtensionBlacklistUpdateVersion);
     return true;
   }
-  const Extension* extension = service_->GetExtensionById(id, false);
+  const Extension* extension = service_->GetExtensionById(id, true);
   if (!extension)
     return false;
   *version = extension->version()->GetString();

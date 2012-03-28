@@ -90,6 +90,7 @@ class ExtensionServiceInterface : public SyncableService {
 
   virtual ~ExtensionServiceInterface() {}
   virtual const ExtensionSet* extensions() const = 0;
+  virtual const ExtensionSet* disabled_extensions() const = 0;
   virtual PendingExtensionManager* pending_extension_manager() = 0;
 
   // Install an update.  Return true if the install can be started.
@@ -199,7 +200,7 @@ class ExtensionService
 
   // Gets the list of currently installed extensions.
   virtual const ExtensionSet* extensions() const OVERRIDE;
-  const ExtensionSet* disabled_extensions() const;
+  virtual const ExtensionSet* disabled_extensions() const OVERRIDE;
   const ExtensionSet* terminated_extensions() const;
 
   // Retuns a set of all installed, disabled, and terminated extensions and
