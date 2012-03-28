@@ -308,6 +308,10 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
         NotifyScreenLockRequested();
   }
 
+  virtual void RequestRestart() OVERRIDE {
+    DBusThreadManager::Get()->GetPowerManagerClient()->RequestRestart();
+  }
+
   virtual void GetAvailableBluetoothDevices(
       ash::BluetoothDeviceList* list) OVERRIDE {
     BluetoothAdapter::DeviceList devices = bluetooth_adapter_->GetDevices();

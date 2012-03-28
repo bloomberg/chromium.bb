@@ -51,5 +51,3 @@ class TrayCapsLock : public TrayImageItem,
 }  // namespace ash
 
 #endif  // ASH_SYSTEM_TRAY_CAPS_LOCK_H_
-
-

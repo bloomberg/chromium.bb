@@ -124,9 +124,6 @@ class UserView : public views::View,
     if (!guest && !kiosk)
       AddUserInfo();
 
-    if (!guest && !kiosk && !locked)
-      RefreshForUpdate();
-
     // A user should not be able to modify logged in state when screen is
     // locked.
     if (!locked)
@@ -180,42 +177,6 @@ class UserView : public views::View,
     }
 
     AddChildView(button_container);
-  }
-
-  // Shows update notification if available.
-  void RefreshForUpdate() {
-    ash::SystemTrayDelegate* tray = ash::Shell::GetInstance()->tray_delegate();
-    if (tray->SystemShouldUpgrade()) {
-      if (update_)
-        return;
-      update_ = new views::View;
-      update_->SetLayoutManager(new
-          views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 3));
-
-      ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-      views::Label *label = new views::Label(bundle.GetLocalizedString(
-          IDS_ASH_STATUS_TRAY_UPDATE));
-      label->SetFont(label->font().DeriveFont(-1));
-      update_->AddChildView(label);
-
-      views::ImageView* icon = new views::ImageView;
-      icon->SetImage(bundle.GetImageNamed(tray->GetSystemUpdateIconResource()).
-          ToSkBitmap());
-      update_->AddChildView(icon);
-
-      update_->set_border(views::Border::CreateEmptyBorder(
-          kUserInfoVerticalPadding,
-          kUserInfoHorizontalPadding,
-          kUserInfoVerticalPadding,
-          kUserInfoHorizontalPadding));
-
-      user_info_->AddChildView(update_);
-    } else if (update_) {
-      delete update_;
-      update_ = NULL;
-    }
-    user_info_->InvalidateLayout();
-    user_info_->SchedulePaint();
   }
 
  private:
@@ -392,11 +353,6 @@ void TrayUser::DestroyDefaultView() {
 }
 
 void TrayUser::DestroyDetailedView() {
-}
-
-void TrayUser::OnUpdateRecommended() {
-  if (user_.get())
-    user_->RefreshForUpdate();
 }
 
 void TrayUser::OnUserUpdate() {

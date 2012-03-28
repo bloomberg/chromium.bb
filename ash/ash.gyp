@@ -167,6 +167,8 @@
         'system/tray_accessibility.h',
         'system/tray_caps_lock.cc',
         'system/tray_caps_lock.h',
+        'system/tray_update.cc',
+        'system/tray_update.h',
         'system/user/login_status.h',
         'system/user/tray_user.cc',
         'system/user/tray_user.h',

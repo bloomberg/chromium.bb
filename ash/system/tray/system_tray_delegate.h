@@ -137,6 +137,9 @@ class SystemTrayDelegate {
   // Attempts to lock the screen.
   virtual void RequestLockScreen() = 0;
 
+  // Attempts to restart the system.
+  virtual void RequestRestart() = 0;
+
   // Returns a list of available bluetooth devices.
   virtual void GetAvailableBluetoothDevices(BluetoothDeviceList* devices) = 0;
 

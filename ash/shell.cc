@@ -36,6 +36,7 @@
 #include "ash/system/tray/tray_empty.h"
 #include "ash/system/tray_accessibility.h"
 #include "ash/system/tray_caps_lock.h"
+#include "ash/system/tray_update.h"
 #include "ash/system/user/tray_user.h"
 #include "ash/tooltips/tooltip_controller.h"
 #include "ash/wm/activation_controller.h"
@@ -353,6 +354,8 @@ class DummySystemTrayDelegate : public SystemTrayDelegate {
   }
 
   virtual void RequestLockScreen() OVERRIDE {}
+
+  virtual void RequestRestart() OVERRIDE {}
 
   virtual void GetAvailableBluetoothDevices(
       BluetoothDeviceList* list) OVERRIDE {
@@ -690,6 +693,7 @@ void Shell::Init() {
         new internal::TrayAccessibility;
     internal::TrayCapsLock* tray_caps_lock = new internal::TrayCapsLock;
     internal::TrayIME* tray_ime = new internal::TrayIME;
+    internal::TrayUpdate* tray_update = new internal::TrayUpdate;
 
     tray_->accessibility_observer_ = tray_accessibility;
     tray_->audio_observer_ = tray_volume;
@@ -700,7 +704,7 @@ void Shell::Init() {
     tray_->ime_observer_ = tray_ime;
     tray_->network_observer_ = tray_network;
     tray_->power_status_observer_ = tray_power;
-    tray_->update_observer_ = tray_user;
+    tray_->update_observer_ = tray_update;
     tray_->user_observer_ = tray_user;
 
     tray_->AddTrayItem(tray_user);
@@ -711,6 +715,7 @@ void Shell::Init() {
     tray_->AddTrayItem(tray_ime);
     tray_->AddTrayItem(tray_volume);
     tray_->AddTrayItem(tray_brightness);
+    tray_->AddTrayItem(tray_update);
     tray_->AddTrayItem(new internal::TraySettings());
     tray_->AddTrayItem(tray_accessibility);
     tray_->AddTrayItem(tray_caps_lock);

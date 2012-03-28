@@ -319,6 +319,8 @@
         <include name="IDR_AURA_UBER_TRAY_CAPS_LOCK_DARK" file="aura/status_capslock_dark.png" type="BINDATA" />
         <include name="IDR_AURA_UBER_TRAY_BLUETOOTH" file="aura/status_bluetooth.png" type="BINDATA" />
         <include name="IDR_AURA_UBER_TRAY_IME" file="aura/status_ime.png" type="BINDATA" />
+        <include name="IDR_AURA_UBER_TRAY_UPDATE" file="aura/status_update.png" type="BINDATA" />
+        <include name="IDR_AURA_UBER_TRAY_UPDATE_DARK" file="aura/status_update_dark.png" type="BINDATA" />
 
         <include name="IDR_AURA_SWITCH_MONITOR" file="aura/switch_monitor.png" type="BINDATA" />
         <include name="IDR_OAK" file="oak.png" type="BINDATA"/>
