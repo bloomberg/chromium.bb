@@ -1076,11 +1076,8 @@ enum {
   [[self window] invalidateCursorRectsForView:overlayView_];
 }
 
-- (BOOL)IsActivationByClickingTitlebarEnabled {
-  PanelStrip* panelStrip = windowShim_->panel()->panel_strip();
-  if (!panelStrip)
-    return NO;  // Unlikely user-clickable at this moment.
-  return panelStrip->type() == PanelStrip::DETACHED;
+- (BOOL)isActivationByClickingTitlebarEnabled {
+  return !windowShim_->panel()->always_on_top();
 }
 
 @end

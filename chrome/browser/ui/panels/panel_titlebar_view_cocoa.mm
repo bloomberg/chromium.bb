@@ -63,7 +63,7 @@ static NSEvent* MakeMouseEvent(NSEventType type,
 // canceling the reorder by [NSApp preventWindowOrdering] in mouseDown handler
 // of this view.
 - (BOOL)shouldDelayWindowOrderingForEvent:(NSEvent*)theEvent {
-  disableReordering_ = ![controller_ IsActivationByClickingTitlebarEnabled];
+  disableReordering_ = ![controller_ isActivationByClickingTitlebarEnabled];
   return disableReordering_;
 }
 

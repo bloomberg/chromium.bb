@@ -147,7 +147,7 @@ class PanelBrowserWindowCocoa;
 // In certain cases (when in a Docked strip for example) we want
 // the standard behavior of activating the app when clicking on the titlebar
 // to be disabled. This way, user can minimize the panel w/o activating it.
-- (BOOL)IsActivationByClickingTitlebarEnabled;
+- (BOOL)isActivationByClickingTitlebarEnabled;
 @end  // @interface PanelWindowController
 
 #endif  // CHROME_BROWSER_UI_PANELS_PANEL_WINDOW_CONTROLLER_COCOA_H_
