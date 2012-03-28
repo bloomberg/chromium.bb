@@ -221,6 +221,9 @@ tty_destroy(struct tty *tty)
 		ioctl(tty->fd, VT_WAITACTIVE, tty->starting_vt);
 	}
 
+	wl_event_source_remove(tty->input_source);
+	wl_event_source_remove(tty->vt_source);
+
 	close(tty->fd);
 
 	free(tty);

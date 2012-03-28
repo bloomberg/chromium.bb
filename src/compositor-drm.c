@@ -1424,14 +1424,18 @@ drm_destroy(struct weston_compositor *ec)
 	struct drm_compositor *d = (struct drm_compositor *) ec;
 	struct weston_input_device *input, *next;
 
+	wl_list_for_each_safe(input, next, &ec->input_device_list, link)
+		evdev_input_destroy(input);
+
+	wl_event_source_remove(d->udev_drm_source);
+	wl_event_source_remove(d->drm_source);
+
 	weston_compositor_shutdown(ec);
+
 	gbm_device_destroy(d->gbm);
 	destroy_sprites(d);
 	drmDropMaster(d->drm.fd);
 	tty_destroy(d->tty);
-
-	wl_list_for_each_safe(input, next, &ec->input_device_list, link)
-		evdev_input_destroy(input);
 
 	free(d);
 }

@@ -2415,6 +2415,8 @@ weston_compositor_shutdown(struct weston_compositor *ec)
 	struct weston_output *output, *next;
 
 	wl_event_source_remove(ec->idle_source);
+	if (ec->input_loop_source)
+		wl_event_source_remove(ec->input_loop_source);
 
 	if (ec->screenshooter)
 		screenshooter_destroy(ec->screenshooter);
@@ -2427,6 +2429,8 @@ weston_compositor_shutdown(struct weston_compositor *ec)
 
 	wl_array_release(&ec->vertices);
 	wl_array_release(&ec->indices);
+
+	wl_event_loop_destroy(ec->input_loop);
 }
 
 static int on_term_signal(int signal_number, void *data)

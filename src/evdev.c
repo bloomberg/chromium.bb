@@ -35,6 +35,7 @@ struct evdev_input {
 	struct weston_input_device base;
 	struct wl_list devices_list;
 	struct udev_monitor *udev_monitor;
+	struct wl_event_source *udev_monitor_source;
 	char *seat_id;
 };
 
@@ -562,7 +563,7 @@ evdev_add_devices(struct udev *udev, struct weston_input_device *input_base)
 	struct udev_enumerate *e;
 	struct udev_list_entry *entry;
 	struct udev_device *device;
-	const char *path;
+	const char *path, *sysname;
 
 	e = udev_enumerate_new(udev);
 	udev_enumerate_add_match_subsystem(e, "input");
@@ -571,8 +572,11 @@ evdev_add_devices(struct udev *udev, struct weston_input_device *input_base)
 		path = udev_list_entry_get_name(entry);
 		device = udev_device_new_from_syspath(udev, path);
 
-		if (strncmp("event", udev_device_get_sysname(device), 5) != 0)
+		sysname = udev_device_get_sysname(device);
+		if (strncmp("event", sysname, 5) != 0) {
+			udev_device_unref(device);
 			continue;
+		}
 
 		device_added(device, input);
 
@@ -632,6 +636,7 @@ evdev_config_udev_monitor(struct udev *udev, struct evdev_input *master)
 {
 	struct wl_event_loop *loop;
 	struct weston_compositor *c = master->base.compositor;
+	int fd;
 
 	master->udev_monitor = udev_monitor_new_from_netlink(udev, "udev");
 	if (!master->udev_monitor) {
@@ -644,12 +649,19 @@ evdev_config_udev_monitor(struct udev *udev, struct evdev_input *master)
 
 	if (udev_monitor_enable_receiving(master->udev_monitor)) {
 		fprintf(stderr, "udev: failed to bind the udev monitor\n");
+		udev_monitor_unref(master->udev_monitor);
 		return 0;
 	}
 
 	loop = wl_display_get_event_loop(c->wl_display);
-	wl_event_loop_add_fd(loop, udev_monitor_get_fd(master->udev_monitor),
-			     WL_EVENT_READABLE, evdev_udev_handler, master);
+	fd = udev_monitor_get_fd(master->udev_monitor);
+	master->udev_monitor_source =
+		wl_event_loop_add_fd(loop, fd, WL_EVENT_READABLE,
+				     evdev_udev_handler, master);
+	if (!master->udev_monitor_source) {
+		udev_monitor_unref(master->udev_monitor);
+		return 0;
+	}
 
 	return 1;
 }
@@ -696,6 +708,10 @@ evdev_input_destroy(struct weston_input_device *input_base)
 	struct evdev_input *input = (struct evdev_input *) input_base;
 
 	evdev_remove_devices(input_base);
+
+	udev_monitor_unref(input->udev_monitor);
+	wl_event_source_remove(input->udev_monitor_source);
+
 	wl_list_remove(&input->base.link);
 	free(input->seat_id);
 	free(input);
