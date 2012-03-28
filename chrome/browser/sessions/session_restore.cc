@@ -159,6 +159,9 @@ class TabLoader : public content::NotificationObserver,
   // The time the restore process started.
   base::TimeTicks restore_started_;
 
+  // Max number of tabs that were loaded in parallel (for metrics).
+  size_t max_parallel_tab_loads_;
+
   DISALLOW_COPY_AND_ASSIGN(TabLoader);
 };
 
@@ -167,7 +170,8 @@ TabLoader::TabLoader(base::TimeTicks restore_started)
       loading_(false),
       got_first_paint_(false),
       tab_count_(0),
-      restore_started_(restore_started) {
+      restore_started_(restore_started),
+      max_parallel_tab_loads_(0) {
 }
 
 TabLoader::~TabLoader() {
@@ -216,6 +220,8 @@ void TabLoader::LoadNextTab() {
     NavigationController* tab = tabs_to_load_.front();
     DCHECK(tab);
     tabs_loading_.insert(tab);
+    if (tabs_loading_.size() > max_parallel_tab_loads_)
+      max_parallel_tab_loads_ = tabs_loading_.size();
     tabs_to_load_.pop_front();
     tab->LoadIfNecessary();
     if (tab->GetWebContents()) {
@@ -404,6 +410,9 @@ void TabLoader::HandleTabClosedOrLoaded(NavigationController* tab) {
             100,
             base::Histogram::kUmaTargetedHistogramFlag);
     counter_for_count->AddTime(time_to_load);
+
+    UMA_HISTOGRAM_COUNTS_100("SessionRestore.ParallelTabLoads",
+                             max_parallel_tab_loads_);
   }
 }
 
