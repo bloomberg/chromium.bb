@@ -101,6 +101,15 @@ def SetupContextVars(context):
   context['off_trunk'] = context['branch'] not in ['native_client', '']
 
 
+def ValidatorTest(context, architecture, validator):
+  Command(context,
+      cmd=[sys.executable,
+        'tests/validator_regression/validator_regression_test.py',
+        '--keep-going',
+        '--validator', validator,
+        '--arch', architecture])
+
+
 def BuildScript(status, context):
   inside_toolchain = context['inside_toolchain']
   # When off the trunk, we don't have anywhere to get Chrome binaries
@@ -186,19 +195,45 @@ def BuildScript(status, context):
 
   # Just build both bitages of validator and test for --validator mode.
   if context['validator']:
-    with Step('ncval-x86-32', status):
+    with Step('clobber ragel_validator', status):
+      Command(context, cmd=['make', 'clean'],
+              cwd='src/trusted/validator_ragel/unreviewed')
+    with Step('build ragel_validator', status):
+      Command(context, cmd=['make'],
+              cwd='src/trusted/validator_ragel/unreviewed')
+
+    with Step('building ncval-x86-32', status):
       SCons(context, platform='x86-32', parallel=True, args=['ncval'])
-    with Step('ncval-x86-64', status):
+    with Step('building ncval-x86-64', status):
       SCons(context, platform='x86-64', parallel=True, args=['ncval'])
+
     with Step('predownload validator corpus', status):
       Command(context,
           cmd=[sys.executable,
                'tests/validator_regression/validator_regression_test.py',
                '--download-only'])
-    with Step('validator_regression_test current', status):
-      Command(context,
-          cmd=[sys.executable,
-               'tests/validator_regression/validator_regression_test.py'])
+
+    with Step('validator_regression_test current x86-32', status,
+        halt_on_fail=False):
+      ValidatorTest(
+          context, 'x86-32', 'scons-out/opt-linux-x86-32/staging/ncval')
+    with Step('validator_regression_test current x86-64', status,
+        halt_on_fail=False):
+      ValidatorTest(
+          context, 'x86-64', 'scons-out/opt-linux-x86-64/staging/ncval')
+
+    with Step('validator_regression_test ragel x86-32', status,
+        halt_on_fail=False):
+      ValidatorTest(
+          context, 'x86-32',
+          'src/trusted/validator_ragel/unreviewed/'
+          'out/build/objs/validator-test')
+    with Step('validator_regression_test ragel x86-64', status,
+        halt_on_fail=False):
+      ValidatorTest(
+          context, 'x86-64',
+          'src/trusted/validator_ragel/unreviewed/'
+          'out/build/objs/validator-test')
     return
 
   # Make sure our Gyp build is working.

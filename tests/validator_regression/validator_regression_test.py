@@ -32,7 +32,7 @@ sys.path.insert(0, os.path.join(NACL_DIR, 'build'))
 import download_utils
 
 
-def NexeAritecture(filename):
+def NexeArchitecture(filename):
   """Decide the architecture of a nexe.
 
   Args:
@@ -103,26 +103,6 @@ def DownloadNexe(src_path, dst_filename):
   GsutilCopySilent('gs://nativeclient-snaps/%s' % src_path, dst_filename)
 
 
-def PlatformInfo():
-  """Determine info about the current platform.
-
-  Returns:
-    A tuple of nacl platform name and the exe suffix on this platform.
-  """
-  if sys.platform.startswith('linux'):
-    platform = 'linux'
-    platform_exe = ''
-  elif sys.platform == 'darwin':
-    platform = 'mac'
-    platform_exe = ''
-  elif sys.platform in ['win32', 'cygwin']:
-    platform = 'win'
-    platform_exe = '.exe'
-  else:
-    raise Exception('unsupported platform\n')
-  return (platform, platform_exe)
-
-
 def Sha1Sum(path):
   """Determine the sha1 hash of a file's contents given its path."""
   m = hashlib.sha1()
@@ -132,7 +112,7 @@ def Sha1Sum(path):
   return m.hexdigest()
 
 
-def ValidateNexe(options, path, src_path, expect_pass):
+def ValidateNexe(options, path, src_path, expect_pass, print_errors):
   """Run the validator on a nexe, check if the result is expected.
 
   Args:
@@ -140,40 +120,33 @@ def ValidateNexe(options, path, src_path, expect_pass):
     path: path to the nexe.
     src_path: path to nexe on server.
     expect_pass: boolean indicating if the nexe is expected to validate.
+    print_errors: boolean indicating if detailed failure should be emitted.
+  Returns:
+    True if validation matches expectations.
   """
-  # Select which ncval to use.
-  architecture = NexeAritecture(path)
-  if architecture is None:
-    print 'Validating: %s' % path
-    print 'From: %s' % src_path
-    print 'Size: %d' % os.path.getsize(path)
-    print 'SHA1: %s' % Sha1Sum(path)
-    raise Exception('Unknown nexe architecture')
-  ncval = {
-      'x86-32': options.ncval_x86_32,
-      'x86-64': options.ncval_x86_64,
-  }[architecture]
-  # Run ncval.
   process = subprocess.Popen(
-      [ncval, path],
+      [options.validator, path],
       stdout=subprocess.PIPE,
       stderr=subprocess.PIPE)
   process_stdout, process_stderr = process.communicate()
   # Check if result is what we expect.
   did_pass = (process.returncode == 0)
   if expect_pass != did_pass:
-    print '-' * 70
-    print 'Validating: %s' % path
-    print 'From: %s' % src_path
-    print 'Size: %d' % os.path.getsize(path)
-    print 'SHA1: %s' % Sha1Sum(path)
-    print 'Unexpected return code: %s' % process.returncode
-    print '>>> STDOUT'
-    print process_stdout
-    print '>>> STDERR'
-    print process_stderr
-    print '-' * 70
-    sys.exit(1)
+    if print_errors:
+      print '-' * 70
+      print 'Validating: %s' % path
+      print 'From: %s' % src_path
+      print 'Size: %d' % os.path.getsize(path)
+      print 'SHA1: %s' % Sha1Sum(path)
+      print 'Validator: %s' % options.validator
+      print 'Unexpected return code: %s' % process.returncode
+      print '>>> STDOUT'
+      print process_stdout
+      print '>>> STDERR'
+      print process_stderr
+      print '-' * 70
+    return False
+  return True
 
 
 def NexeShouldValidate(path):
@@ -185,7 +158,6 @@ def NexeShouldValidate(path):
     Boolean indicating if the nexe should validate.
   """
   return path not in KNOWN_BAD_NEXES
-
 
 
 def CachedPath(options, filename):
@@ -252,13 +224,14 @@ def TestValidators(options, work_dir):
     options: bag of options.
     work_dir: directory to operate in.
   """
-
   list_filename = os.path.join(work_dir, 'naclapps.list')
   nexe_filename = os.path.join(work_dir, 'test.nexe')
   DownloadNexeList(list_filename)
   fh = open(list_filename)
   filenames = fh.read().splitlines()
   fh.close()
+  failures = 0
+  successes = 0
   start = time.time()
   count = len(filenames)
   for index, filename in enumerate(filenames):
@@ -275,30 +248,40 @@ def TestValidators(options, work_dir):
     # Stop here if downloading only.
     if options.download_only:
       continue
+    # Skip if not the right architecture.
+    architecture = NexeArchitecture(CachedPath(options, filename))
+    if architecture != options.architecture:
+      continue
     # Validate a copy in case validator is mutating.
     CopyFromCache(options, filename, nexe_filename)
     try:
-      ValidateNexe(
-          options, nexe_filename, filename, NexeShouldValidate(filename))
+      result = ValidateNexe(
+          options, nexe_filename, filename,
+          NexeShouldValidate(filename), failures < 1)
+      if result:
+        successes += 1
+      else:
+        failures += 1
+      if not result and not options.keep_going:
+        break
     finally:
       try:
         os.remove(nexe_filename)
       except OSError:
         print 'ERROR - unable to remove %s' % nexe_filename
-  print 'SUCCESS'
+  print 'Ran validator on %d of %d NEXEs' % (
+      successes + failures, len(filenames))
+  if failures:
+    # Our alternate validators don't currently cover everything.
+    # For now, don't fail just emit warning (and a tally of failures).
+    print '@@@STEP_WARNINGS@@@'
+    print '@@@STEP_TEXT@FAILED %d times (%.1f%% are incorrect)@@@' % (
+        failures, failures * 100 / (successes + failures))
+  else:
+    print 'SUCCESS'
 
 
 def Main():
-  platform, platform_exe = PlatformInfo()
-  ncval_x86_32 = os.path.join(
-      NACL_DIR, 'scons-out',
-      'opt-%s-x86-32' % platform,
-      'staging', 'ncval' + platform_exe)
-  ncval_x86_64 = os.path.join(
-      NACL_DIR, 'scons-out',
-      'opt-%s-x86-64' % platform,
-      'staging', 'ncval' + platform_exe)
-
   # Decide a default cache directory.
   # Prefer /b (for the bots)
   # Failing that, use scons-out.
@@ -316,17 +299,27 @@ def Main():
       '--cache-dir', dest='cache_dir', default=default_cache_dir,
       help='directory to cache downloads in')
   parser.add_option(
-      '--download-only', default=False, action='store_true',
+      '--download-only', dest='download_only',
+      default=False, action='store_true',
       help='download to cache without running the tests')
   parser.add_option(
-      '--x86-32', dest='ncval_x86_32', default=ncval_x86_32,
-      help='location of x86-32 validator')
+      '-k', '--keep-going', dest='keep_going',
+      default=False, action='store_true',
+      help='keep going on failure')
   parser.add_option(
-      '--x86-64', dest='ncval_x86_64', default=ncval_x86_64,
-      help='location of x86-64 validator')
+      '--validator', dest='validator',
+      help='location of validator executable')
+  parser.add_option(
+      '--arch', dest='architecture',
+      help='architecture of validator')
   options, args = parser.parse_args()
   if args:
     parser.error('unused arguments')
+  if not options.download_only:
+    if not options.validator:
+      parser.error('no validator specified')
+    if not options.architecture:
+      parser.error('no architecture specified')
 
   work_dir = tempfile.mkdtemp(suffix='validate_nexes', prefix='tmp')
   try:
