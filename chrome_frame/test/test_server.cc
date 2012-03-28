@@ -246,10 +246,18 @@ HTTPTestServer::~HTTPTestServer() {
 std::list<scoped_refptr<ConfigurableConnection>>::iterator
 HTTPTestServer::FindConnection(const net::ListenSocket* socket) {
   ConnectionList::iterator it;
-  for (it = connection_list_.begin(); it != connection_list_.end(); ++it) {
-    if ((*it)->socket_ == socket) {
-      break;
+  // Scan through the list searching for the desired socket. Along the way,
+  // erase any connections for which the corresponding socket has already been
+  // forgotten about as a result of all data having been sent.
+  for (it = connection_list_.begin(); it != connection_list_.end(); ) {
+    ConfigurableConnection* connection = it->get();
+    if (connection->socket_ == NULL) {
+      connection_list_.erase(it++);
+      continue;
     }
+    if (connection->socket_ == socket)
+      break;
+    ++it;
   }
 
   return it;
@@ -290,8 +298,8 @@ void HTTPTestServer::DidRead(net::ListenSocket* socket,
 
 void HTTPTestServer::DidClose(net::ListenSocket* socket) {
   ConnectionList::iterator it = FindConnection(socket);
-  DCHECK(it != connection_list_.end());
-  connection_list_.erase(it);
+  if (it != connection_list_.end())
+    connection_list_.erase(it);
 }
 
 std::wstring HTTPTestServer::Resolve(const std::wstring& path) {
@@ -336,6 +344,10 @@ void ConfigurableConnection::SendChunk() {
   }
 }
 
+void ConfigurableConnection::Close() {
+  socket_ = NULL;
+}
+
 void ConfigurableConnection::Send(const std::string& headers,
                                   const std::string& content) {
   SendOptions options(SendOptions::IMMEDIATE, 0, 0);
@@ -359,7 +371,11 @@ void ConfigurableConnection::SendWithOptions(const std::string& headers,
     socket_->Send(headers);
     socket_->Send(content_length_header, true);
     socket_->Send(content);
-    socket_ = 0;  // close the connection.
+    // Post a task to close the socket since ListenSocket doesn't like instances
+    // to go away from within its callbacks.
+    MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(&ConfigurableConnection::Close, this));
+
     return;
   }
 

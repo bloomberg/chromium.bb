@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -359,6 +359,9 @@ class ConfigurableConnection : public base::RefCounted<ConfigurableConnection> {
   // Sends a chunk of the response and queues itself as a task for sending
   // next chunk of |data_|.
   void SendChunk();
+
+  // Closes the connection by releasing this instance's reference on its socket.
+  void Close();
 
   scoped_refptr<net::ListenSocket> socket_;
   Request r_;
