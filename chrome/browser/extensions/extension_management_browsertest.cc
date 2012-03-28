@@ -292,8 +292,16 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, MAYBE_AutoUpdate) {
   ASSERT_EQ("2.0", extension->VersionString());
 }
 
+#if defined(OS_WIN)
+// Fails consistently on Windows XP, see: http://crbug.com/120640.
+#define MAYBE_AutoUpdateDisabledExtensions DISABLED_AutoUpdateDisabledExtensions
+#else
+#define MAYBE_AutoUpdateDisabledExtensions AutoUpdateDisabledExtensions
+#endif
+
 // Tests extension autoupdate.
-IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, AutoUpdateDisabledExtensions) {
+IN_PROC_BROWSER_TEST_F(ExtensionManagementTest,
+                       MAYBE_AutoUpdateDisabledExtensions) {
   NotificationListener notification_listener;
   FilePath basedir = test_data_dir_.AppendASCII("autoupdate");
   // Note: This interceptor gets requests on the IO thread.
