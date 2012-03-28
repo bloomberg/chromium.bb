@@ -649,25 +649,22 @@ FileManager.prototype = {
     link.addEventListener('click', this.onDownloadsWarningClick_.bind(this));
 
     this.document_.addEventListener('keydown', this.onKeyDown_.bind(this));
-    this.document_.addEventListener('copy',
-                                    this.onCopy_.bind(this));
+    this.document_.addEventListener('copy', this.onCopy_.bind(this));
+    this.document_.addEventListener('beforecopy',
+                                    this.onBeforeCopy_.bind(this));
     // Disable the default browser context menu.
     this.document_.addEventListener('contextmenu',
                                     function (e) { e.preventDefault() });
 
-    // We need to store a reference to the function returned by bind. Later, in
-    // canPaste function, we need to temporarily remove this event handler and
-    // use another 'paste' event handler to check the state of system clipboard.
-    this.onPasteBound_ = this.onPaste_.bind(this);
-    this.document_.addEventListener('paste', this.onPasteBound_);
-
-    // In pasteFromClipboard function, we need to reset system clipboard after
-    // 'cut' and 'paste' command sequence. The clipboardData.clearData doesn't
-    // seem to work. We reset the system clipboard in another 'cut' event
-    // handler as a workaround. This reference is used to temporarily remove
-    // 'cut' event handler as well.
-    this.onCutBound_ = this.onCut_.bind(this);
-    this.document_.addEventListener('cut', this.onCutBound_);
+    this.document_.addEventListener('paste', this.onPaste_.bind(this));
+    // HACK(serya): 'paste'/'beforepaste' must be used.
+    // But 'beforepaste' is apparently broken.
+    var iframe = this.document_.querySelector('#command-dispatcher');
+    this.commandProbbingDoc_ = iframe.contentDocument;
+    this.commandProbbingDoc_.addEventListener('paste',
+        this.onBeforePaste_.bind(this));
+    this.document_.addEventListener('cut', this.onCut_.bind(this));
+    this.document_.addEventListener('beforecut', this.onBeforeCut_.bind(this));
 
     this.renameInput_ = this.document_.createElement('input');
     this.renameInput_.className = 'rename';
@@ -697,7 +694,6 @@ FileManager.prototype = {
     this.dialogDom_.querySelector('div.close-sidebar').addEventListener(
         'keypress', this.onToggleSidebarPress_.bind(this));
     this.dialogContainer_ = this.dialogDom_.querySelector('.dialog-container');
-
     this.dialogDom_.querySelector('button.detail-view').addEventListener(
         'click', this.onDetailViewButtonClick_.bind(this));
     this.dialogDom_.querySelector('button.thumbnail-view').addEventListener(
@@ -1093,37 +1089,6 @@ FileManager.prototype = {
       this.commands_[key].disabled = !this.canExecute_(key);
   };
 
-  FileManager.prototype.canPaste_ = function(readonly) {
-    /**
-     * Fire a paste event and check the "paste" command can be executed.
-     *
-     * We need to peek the content in system clipboard. Only cut/copy/paste
-     * events contain clipboard data. So we need to fire a paste event and then
-     * peek the system clipboard immediately.
-     *
-     * @return {boolean} True if "paste" command can be executed for current
-     *                   directory.
-     */
-
-    var canPaste = false;
-    var clipboardCanPaste = function(event) {
-      event.preventDefault();
-      // Here we need to use lower case as clipboardData.types return lower
-      // case DomStringList.
-      if (event.clipboardData &&
-          event.clipboardData.types &&
-          event.clipboardData.types.indexOf('fs/iscut') != -1)
-         canPaste = true;
-    };
-
-    this.document_.removeEventListener('paste', this.onPasteBound_);
-    this.document_.addEventListener('paste', clipboardCanPaste);
-    this.document_.execCommand('paste');
-    this.document_.removeEventListener('paste', clipboardCanPaste);
-    this.document_.addEventListener('paste', this.onPasteBound_);
-    return canPaste && !readonly;
-  };
-
   /**
    * @param {string} commandId Command identifier.
    * @return {boolean} True if the command can be executed for current
@@ -1133,18 +1098,15 @@ FileManager.prototype = {
     var readonly = this.directoryModel_.readonly;
     var path = this.directoryModel_.currentEntry.fullPath;
     switch (commandId) {
-      case 'cut':
-        return !readonly &&
-               this.selection &&
-               this.selection.totalCount > 0;
-
       case 'copy':
-        return path != '/' &&
-               this.selection &&
-               this.selection.totalCount > 0;
+      case 'cut':
+        return this.document_.queryCommandEnabled(commandId);
 
       case 'paste':
-        return this.canPaste_(readonly);
+        // HACK(serya): return this.document_.queryCommandEnabled('paste')
+        // should be used.
+        this.commandProbbingDoc_.execCommand('paste');
+        return !this.commands_.paste.disabled;
 
       case 'rename':
         return (// Initialized to the point where we have a current directory
@@ -1310,15 +1272,19 @@ FileManager.prototype = {
 
   FileManager.prototype.setupDragAndDrop_ = function(list) {
     list.addEventListener('dragstart', this.onDragStart_.bind(this));
+    list.addEventListener('dragend', this.onDragEnd_.bind(this));
+    list.addEventListener('dragover', this.onDragOver_.bind(this));
+    list.addEventListener('drop', this.onDrop_.bind(this));
   };
 
   FileManager.prototype.onDragStart_ = function(event) {
     var dt = event.dataTransfer;
     var container = this.document_.querySelector('#drag-image-container');
-    container.textContent = '';
-    for (var i = 0; i < this.selection.dragNodes.length; i++) {
+    var length = this.selection.dragNodes.length;
+    for (var i = 0; i < length; i++) {
       var listItem = this.selection.dragNodes[i];
       listItem.selected = true;
+      listItem.style.zIndex = length - i;
       container.appendChild(listItem);
     }
 
@@ -1326,6 +1292,24 @@ FileManager.prototype = {
 
     dt.setDragImage(container, 0, 0);
     dt.effectAllowed = 'copyMove';
+  };
+
+  FileManager.prototype.onDragEnd_ = function(event) {
+    var container = this.document_.querySelector('#drag-image-container');
+    container.textContent = '';
+  };
+
+  FileManager.prototype.onDragOver_ = function(event) {
+    if (this.canPasteOrDrop_(event.dataTransfer)) {
+      event.preventDefault();
+    }
+  };
+
+  FileManager.prototype.onDrop_ = function(event) {
+    if (!this.canPasteOrDrop_(event.dataTransfer))
+      return;
+    event.preventDefault();
+    this.pasteFromClipboard_(event.dataTransfer);
   };
 
   FileManager.prototype.initButter_ = function() {
@@ -3161,35 +3145,64 @@ FileManager.prototype = {
   }
 
   FileManager.prototype.onCopy_ = function(event) {
-    if (!this.selection || this.selection.totalCount == 0 ||
-        this.document_.activeElement.tagName == 'INPUT')
+    if (this.document_.activeElement.tagName == 'INPUT' ||
+        !this.canCopyOrDrag_()) {
       return;
-
+    }
     event.preventDefault();
     this.cutOrCopyToClipboard_(event.clipboardData, false);
-
     this.blinkSelection();
   };
 
-  FileManager.prototype.onCut_ = function(event) {
-    if (!this.selection || this.selection.totalCount == 0 ||
-        this.commands_['cut'].disabled ||
-        this.document_.activeElement.tagName == 'INPUT')
-      return;
+  FileManager.prototype.onBeforeCopy_ = function(event) {
+    // queryCommandEnabled returns true if event.returnValue is false.
+    event.returnValue = !this.canCopyOrDrag_();
+  };
 
+  FileManager.prototype.canCopyOrDrag_ = function() {
+    return this.selection && this.selection.totalCount > 0;
+  };
+
+  FileManager.prototype.onCut_ = function(event) {
+    if (!this.document_.activeElement.tagName == 'INPUT' ||
+        this.canCutOrDrag_()) {
+      return;
+    }
     event.preventDefault();
     this.cutOrCopyToClipboard_(event.clipboardData, true);
 
     this.blinkSelection();
   };
 
+  FileManager.prototype.onBeforeCut_ = function(event) {
+    // queryCommandEnabled returns true if event.returnValue is false.
+    event.returnValue = !this.canCutOrDrag_();
+  };
+
+  FileManager.prototype.canCutOrDrag_ = function() {
+    var ro = this.directoryModel_.readonly;
+    return !ro && this.selection && this.selection.totalCount > 0;
+  };
+
   FileManager.prototype.onPaste_ = function(event) {
-    // Check that the data copied by ourselves.
-    if (!event.clipboardData.getData('fs/isCut') ||
-        this.document_.activeElement.tagName == 'INPUT')
+    if (this.document_.activeElement.tagName == 'INPUT' ||
+        !this.canPasteOrDrop_(event.clipboardData)) {
       return;
+    }
     event.preventDefault();
     this.pasteFromClipboard_(event.clipboardData);
+  };
+
+  FileManager.prototype.onBeforePaste_ = function(event) {
+    // TODO(serya) should be:
+    // event.returnValue = !this.canPasteOrDrop_(event.clipboardData);
+    this.commands_.paste.disabled =
+        !this.canPasteOrDrop_(event.clipboardData);
+  };
+
+  FileManager.prototype.canPasteOrDrop_ = function(clipboardData) {
+    var ro = this.directoryModel_.readonly;
+    return !ro && !!clipboardData.getData('fs/isCut');
   };
 
   /**
