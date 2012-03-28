@@ -4,6 +4,7 @@
 
 // TODO(sail): Refactor options_page and remove this include.
 <include src="../options/options_page.js"/>
+<include src="../shared/js/util.js"/>
 <include src="../sync_setup_overlay.js"/>
 
 cr.define('sync_promo', function() {
@@ -132,6 +133,12 @@ cr.define('sync_promo', function() {
       };
       $('confirm-everything-cancel').addEventListener('click', cancelFunc);
       $('choose-datatypes-cancel').addEventListener('click', cancelFunc);
+
+      // Add the source parameter to the document so that it can be used to
+      // selectively show and hide elements using CSS.
+      var params = parseQueryParams(document.location);
+      if (params.source == '0')
+        document.documentElement.setAttribute('isstartup', '');
     },
 
     /**

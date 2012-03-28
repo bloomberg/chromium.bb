@@ -59,6 +59,10 @@ html, body {
   color: rgb(17, 85, 204);
 }
 
+html:not([isstartup]) #promo-skip-button {
+  display: none;
+}
+
 #sync-setup-overlay * a:visited {
   color: rgb(102, 17, 12);
 }
