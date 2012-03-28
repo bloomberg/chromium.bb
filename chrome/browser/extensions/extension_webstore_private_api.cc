@@ -411,16 +411,14 @@ bool CompleteInstallFunction::RunImpl() {
     return false;
   }
 
-  if (!CrxInstaller::IsIdWhitelisted(id) &&
-      !CrxInstaller::GetWhitelistEntry(id)) {
+  if (!CrxInstaller::GetWhitelistEntry(id)) {
     error_ = ExtensionErrorUtils::FormatErrorMessage(
         kNoPreviousBeginInstallWithManifestError, id);
     return false;
   }
 
   // The extension will install through the normal extension install flow, but
-  // the above call to SetWhitelistedInstallId will bypass the normal
-  // permissions install dialog.
+  // the whitelist entry will bypass the normal permissions install dialog.
   scoped_refptr<WebstoreInstaller> installer = new WebstoreInstaller(
       profile(), test_webstore_installer_delegate,
       &(dispatcher()->delegate()->GetAssociatedWebContents()->GetController()),

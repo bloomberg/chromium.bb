@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/test/base/ui_test_utils.h"
 
 class SkBitmap;
@@ -47,21 +48,28 @@ class ExtensionCrxInstallerTest : public ExtensionBrowserTest {
   // Installs a crx from |crx_relpath| (a path relative to the extension test
   // data dir) with expected id |id|. Returns whether a confirmation prompt
   // happened or not.
-  bool DidWhitelistInstallPrompt(const std::string& crx_relpath,
+  bool DidWhitelistInstallPrompt(const std::string& ext_relpath,
                                  const std::string& id) {
     ExtensionService* service = browser()->profile()->GetExtensionService();
     MockInstallUI* mock_install_ui = new MockInstallUI(browser()->profile());
+    FilePath ext_path = test_data_dir_.AppendASCII(ext_relpath);
+
+    std::string error;
+    base::DictionaryValue* parsed_manifest =
+        extension_file_util::LoadManifest(ext_path, &error);
+    if (!parsed_manifest)
+      return false;
+
+    CrxInstaller::WhitelistEntry* entry = new CrxInstaller::WhitelistEntry;
+    entry->parsed_manifest.reset(parsed_manifest);
+    CrxInstaller::SetWhitelistEntry(id, entry);
 
     scoped_refptr<CrxInstaller> installer(
         CrxInstaller::Create(service,
                              mock_install_ui /* ownership transferred */));
-
     installer->set_allow_silent_install(true);
     installer->set_is_gallery_install(true);
-    CrxInstaller::SetWhitelistedInstallId(id);
-
-    FilePath crx_path = test_data_dir_.AppendASCII(crx_relpath);
-    installer->InstallCrx(crx_path);
+    installer->InstallCrx(PackExtension(ext_path));
     ui_test_utils::RunMessageLoop();
 
     return mock_install_ui->confirmation_requested();
@@ -71,7 +79,7 @@ class ExtensionCrxInstallerTest : public ExtensionBrowserTest {
 IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, Whitelisting) {
 #if !defined(OS_CHROMEOS)
   // An extension with NPAPI should give a prompt.
-  EXPECT_TRUE(DidWhitelistInstallPrompt("uitest/plugins.crx",
+  EXPECT_TRUE(DidWhitelistInstallPrompt("uitest/plugins",
                                         "hdgllgikmikobbofgnabhfimcfoopgnd"));
 #endif  // !defined(OS_CHROMEOS)
 }

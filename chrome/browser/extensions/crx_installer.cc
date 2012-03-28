@@ -54,7 +54,6 @@ namespace {
 // TODO(jstritar): this whitelist is not profile aware.
 struct Whitelist {
   Whitelist() {}
-  std::set<std::string> ids;
   std::map<std::string, linked_ptr<CrxInstaller::WhitelistEntry> > entries;
 };
 
@@ -73,12 +72,6 @@ scoped_refptr<CrxInstaller> CrxInstaller::Create(
     ExtensionService* frontend,
     ExtensionInstallUI* client) {
   return new CrxInstaller(frontend->AsWeakPtr(), client);
-}
-
-// static
-void CrxInstaller::SetWhitelistedInstallId(const std::string& id) {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  g_whitelisted_install_data.Get().ids.insert(id);
 }
 
 // static
@@ -111,24 +104,6 @@ CrxInstaller::WhitelistEntry* CrxInstaller::RemoveWhitelistEntry(
     return entry;
   }
   return NULL;
-}
-
-// static
-bool CrxInstaller::IsIdWhitelisted(const std::string& id) {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  std::set<std::string>& ids = g_whitelisted_install_data.Get().ids;
-  return ContainsKey(ids, id);
-}
-
-// static
-bool CrxInstaller::ClearWhitelistedInstallId(const std::string& id) {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  std::set<std::string>& ids = g_whitelisted_install_data.Get().ids;
-  if (ContainsKey(ids, id)) {
-    ids.erase(id);
-    return true;
-  }
-  return false;
 }
 
 CrxInstaller::CrxInstaller(base::WeakPtr<ExtensionService> frontend_weak,
@@ -409,9 +384,6 @@ void CrxInstaller::ConfirmInstall() {
 
   current_version_ =
       frontend_weak_->extension_prefs()->GetVersionString(extension_->id());
-
-  // TODO(asargent) - remove this when we fully deprecate the old install api.
-  ClearWhitelistedInstallId(extension_->id());
 
   bool whitelisted = false;
   scoped_ptr<CrxInstaller::WhitelistEntry> entry(
