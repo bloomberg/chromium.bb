@@ -143,6 +143,10 @@ PluginImageData::PluginImageData()
 
 PluginImageData::~PluginImageData() {
   Unmap();
+  if (shm_fd_ != -1) {
+    close(shm_fd_);
+    shm_fd_ = -1;
+  }
 }
 
 bool PluginImageData::InitFromBrowserResource(PP_Resource resource) {
