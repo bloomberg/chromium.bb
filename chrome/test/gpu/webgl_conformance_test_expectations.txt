@@ -40,6 +40,9 @@ UNFILED WIN : conformance_glsl_functions_glsl_function_atan = FAIL
 UNFILED WIN : conformance_glsl_functions_glsl_function_atan_xy = FAIL
 UNFILED WIN : conformance_glsl_misc_struct_nesting_under_maximum = FAIL
 
+UNFILED WIN : conformance_extensions_webgl_compressed_texture_s3tc = FAIL
+UNFILED WIN : conformance_glsl_samplers_glsl_function_texture2d_bias = FAIL
+
 UNFILED XP NVIDIA : conformance_textures_texture_mips = FAIL
 
 113731 WIN7 INTEL : conformance_more_conformance_webGLArrays = FAIL
