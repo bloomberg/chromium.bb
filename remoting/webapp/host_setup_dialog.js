@@ -227,7 +227,7 @@ remoting.HostSetupDialog.prototype.registerHost_ = function() {
           oauth_refresh_token: remoting.oauth2.getRefreshToken(),
           host_id: newHostId,
           host_name: that.daemon_.getHostName(),
-          host_secret_hash: 'plain:' + flow.pin,
+          host_secret_hash: 'plain:' + window.btoa(flow.pin),
           private_key: privateKey
         });
     } else {
