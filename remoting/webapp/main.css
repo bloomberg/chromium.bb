@@ -249,9 +249,12 @@ label {
   font-weight: bold;
 }
 
-section {
+section, #webapp-description {
   width: 690px;
   margin: 30px auto;
+}
+
+section {
   border: 1px solid #e5e5e5;
   background: #f9f9f9;
   padding: 20px 30px 20px 30px;
@@ -509,6 +512,11 @@ button {
 
 #top-secondary {
   margin-top: 10px
+}
+
+#webapp-description {
+  opacity: 0.8;
+  text-align: justify;
 }
 
 * {

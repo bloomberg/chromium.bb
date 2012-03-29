@@ -267,7 +267,7 @@
     "description": "Instructions shown below the access code when it is ready to be conveyed to the client."
   },
   "IT2ME_FIRST_RUN": {
-    "message": "User-to-user screen sharing&mdash;perfect for remote technical support.",
+    "message": "User-to-user screen sharing, perfect for remote technical support.",
     "description": "Description of the 'IT2Me' remote support functionality, displayed until the user clicks a 'get started' button, at which point it is replaced by the actual UI for that functionality."
   },
   "LABEL_CONNECTED": {
