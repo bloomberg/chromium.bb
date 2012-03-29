@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "ui/aura/aura_switches.h"
@@ -103,7 +104,8 @@ RootWindow::RootWindow(const gfx::Rect& initial_bounds)
       mouse_move_hold_count_(0),
       should_hold_mouse_moves_(false),
       compositor_lock_(NULL),
-      draw_on_compositor_unlock_(false) {
+      draw_on_compositor_unlock_(false),
+      draw_trace_count_(0) {
   SetName("RootWindow");
   last_mouse_location_ = host_->QueryMouseLocation();
 
@@ -198,6 +200,8 @@ void RootWindow::Draw() {
     return;
   }
   waiting_on_compositing_end_ = true;
+
+  TRACE_EVENT_ASYNC_BEGIN0("ui", "RootWindow::Draw", draw_trace_count_++);
 
   compositor_->Draw(false);
   defer_draw_scheduling_ = false;
@@ -483,6 +487,7 @@ void RootWindow::OnCompositingStarted(ui::Compositor*) {
 }
 
 void RootWindow::OnCompositingEnded(ui::Compositor*) {
+  TRACE_EVENT_ASYNC_END0("ui", "RootWindow::Draw", draw_trace_count_);
   waiting_on_compositing_end_ = false;
   if (draw_on_compositing_end_) {
     draw_on_compositing_end_ = false;
