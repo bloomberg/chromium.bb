@@ -490,10 +490,13 @@ void SandboxMountPointProvider::GetOriginsForTypeOnFileThread(
     if (enumerator->HasFileSystemType(type))
       origins->insert(origin);
   }
-  UMA_HISTOGRAM_COUNTS((type == kFileSystemTypeTemporary
-                            ? kTemporaryOriginsCountLabel
-                            : kPersistentOriginsCountLabel),
-                       origins->size());
+  if (type == kFileSystemTypeTemporary) {
+    UMA_HISTOGRAM_COUNTS(kTemporaryOriginsCountLabel,
+                         origins->size());
+  } else {
+    UMA_HISTOGRAM_COUNTS(kPersistentOriginsCountLabel,
+                         origins->size());
+  }
 }
 
 void SandboxMountPointProvider::GetOriginsForHostOnFileThread(
