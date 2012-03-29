@@ -11,7 +11,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/linked_ptr.h"
-#include "tools/json_schema_compiler/any.h"
+#include "chrome/common/extensions/api/experimental.declarative.h"
 
 namespace base {
 class Value;

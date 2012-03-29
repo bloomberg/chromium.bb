@@ -12,9 +12,9 @@
 #include "base/basictypes.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
-#include "tools/json_schema_compiler/any.h"
+#include "chrome/common/extensions/api/experimental.declarative.h"
 
-namespace base{
+namespace base {
 class Value;
 }
 
