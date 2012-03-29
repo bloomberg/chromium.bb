@@ -12,16 +12,6 @@
 #include "ui/aura/gestures/gesture_configuration.h"
 #include "ui/base/events.h"
 
-namespace {
-
-// TODO(girard): Make these configurable in sync with this CL
-//               http://crbug.com/100773
-const float kMinimumPinchUpdateDistance = 5;  // in pixels
-const float kMinimumDistanceForPinchScroll = 20;
-const float kLongPressTimeInMilliseconds = 500;
-
-}  // namespace
-
 namespace aura {
 
 namespace {
@@ -495,7 +485,8 @@ bool GestureSequence::TouchDown(const TouchEvent& event,
   AppendTapDownGestureEvent(point, gestures);
   long_press_timer_->Start(
       FROM_HERE,
-      base::TimeDelta::FromMilliseconds(kLongPressTimeInMilliseconds),
+      base::TimeDelta::FromSeconds(
+          GestureConfiguration::long_press_time_in_seconds()),
       this,
       &GestureSequence::AppendLongPressGestureEvent);
   return true;
@@ -557,14 +548,14 @@ bool GestureSequence::PinchUpdate(const TouchEvent& event,
 
   float distance = point1->Distance(*point2);
   if (abs(distance - pinch_distance_current_) <
-      GestureConfiguration::minimum_pinch_update_distance_in_pixels()) {
+      GestureConfiguration::min_pinch_update_distance_in_pixels()) {
     // The fingers didn't move towards each other, or away from each other,
     // enough to constitute a pinch. But perhaps they moved enough in the same
     // direction to do a two-finger scroll.
     if (!point1->DidScroll(event,
-        GestureConfiguration::minimum_distance_for_pinch_scroll_in_pixels()) ||
+        GestureConfiguration::min_distance_for_pinch_scroll_in_pixels()) ||
         !point2->DidScroll(event,
-        GestureConfiguration::minimum_distance_for_pinch_scroll_in_pixels()))
+        GestureConfiguration::min_distance_for_pinch_scroll_in_pixels()))
       return false;
 
     gfx::Point center = point1->last_touch_position().Middle(

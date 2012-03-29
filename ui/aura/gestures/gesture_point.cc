@@ -11,23 +11,14 @@
 #include "ui/aura/gestures/gesture_configuration.h"
 #include "ui/base/events.h"
 
-namespace {
-
-const int kMinRailBreakVelocity = 200;
-const int kMinScrollDeltaSquared = 5 * 5;
-const int kRailBreakProportion = 15;
-const int kRailStartProportion = 2;
-const int kBufferedPoints = 10;
-
-}  // namespace
-
 namespace aura {
 
 GesturePoint::GesturePoint()
     : first_touch_time_(0.0),
       last_touch_time_(0.0),
       last_tap_time_(0.0),
-      velocity_calculator_(kBufferedPoints),
+      velocity_calculator_(
+          GestureConfiguration::points_buffered_for_velocity()),
       point_id_(-1) {
 }
 
@@ -110,31 +101,33 @@ bool GesturePoint::HasEnoughDataToEstablishRail() const {
   int dy = y_delta();
 
   int delta_squared = dx * dx + dy * dy;
-  return delta_squared > kMinScrollDeltaSquared;
+  return delta_squared > GestureConfiguration::min_scroll_delta_squared();
 }
 
 bool GesturePoint::IsInHorizontalRailWindow() const {
   int dx = x_delta();
   int dy = y_delta();
-  return abs(dx) > kRailStartProportion * abs(dy);
+  return abs(dx) > GestureConfiguration::rail_start_proportion() * abs(dy);
 }
 
 bool GesturePoint::IsInVerticalRailWindow() const {
   int dx = x_delta();
   int dy = y_delta();
-  return abs(dy) > kRailStartProportion * abs(dx);
+  return abs(dy) > GestureConfiguration::rail_start_proportion() * abs(dx);
 }
 
 bool GesturePoint::BreaksHorizontalRail() {
   float vx = XVelocity();
   float vy = YVelocity();
-  return fabs(vy) > kRailBreakProportion * fabs(vx) + kMinRailBreakVelocity;
+  return fabs(vy) > GestureConfiguration::rail_break_proportion() * fabs(vx) +
+      GestureConfiguration::min_rail_break_velocity();
 }
 
 bool GesturePoint::BreaksVerticalRail() {
   float vx = XVelocity();
   float vy = YVelocity();
-  return fabs(vx) > kRailBreakProportion * fabs(vy) + kMinRailBreakVelocity;
+  return fabs(vx) > GestureConfiguration::rail_break_proportion() * fabs(vy) +
+      GestureConfiguration::min_rail_break_velocity();
 }
 
 bool GesturePoint::IsInClickTimeWindow() const {

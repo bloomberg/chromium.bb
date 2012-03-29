@@ -320,8 +320,6 @@ void SendScrollEvent(RootWindow* root_window,
   root_window->DispatchTouchEvent(&move);
 }
 
-const int kBufferedPoints = 10;
-
 }  // namespace
 
 typedef AuraTestBase GestureRecognizerTest;
@@ -458,7 +456,9 @@ TEST_F(GestureRecognizerTest, GestureEventHorizontalRailFling) {
 
   // Get a high x velocity, while still staying on the rail
   SendScrollEvents(root_window(), 1, 1, press.time_stamp(),
-                   100, 10, kTouchId, 1, kBufferedPoints, delegate.get());
+                   100, 10, kTouchId, 1,
+                   GestureConfiguration::points_buffered_for_velocity(),
+                   delegate.get());
 
   delegate->Reset();
   TouchEvent release(ui::ET_TOUCH_RELEASED, gfx::Point(101, 201), kTouchId);
@@ -490,7 +490,9 @@ TEST_F(GestureRecognizerTest, GestureEventVerticalRailFling) {
 
   // Get a high y velocity, while still staying on the rail
   SendScrollEvents(root_window(), 1, 1, press.time_stamp(),
-                   10, 100, kTouchId, 1, kBufferedPoints, delegate.get());
+                   10, 100, kTouchId, 1,
+                   GestureConfiguration::points_buffered_for_velocity(),
+                   delegate.get());
 
   delegate->Reset();
   TouchEvent release(ui::ET_TOUCH_RELEASED, gfx::Point(101, 201), kTouchId);
@@ -520,7 +522,9 @@ TEST_F(GestureRecognizerTest, GestureEventNonRailFling) {
   EXPECT_EQ(20, delegate->scroll_x());
 
   SendScrollEvents(root_window(), 1, 1, press.time_stamp(),
-                   10, 100, kTouchId, 1, kBufferedPoints, delegate.get());
+                   10, 100, kTouchId, 1,
+                   GestureConfiguration::points_buffered_for_velocity(),
+                   delegate.get());
 
   delegate->Reset();
   TouchEvent release(ui::ET_TOUCH_RELEASED, gfx::Point(101, 201), kTouchId);
@@ -685,7 +689,9 @@ TEST_F(GestureRecognizerTest, GestureEventHorizontalRailScroll) {
   // Send enough information that a velocity can be calculated for the gesture,
   // and we can break the rail
   SendScrollEvents(root_window(), 1, 1, press.time_stamp(),
-                   1, 100, kTouchId, 1, kBufferedPoints, delegate.get());
+                   1, 100, kTouchId, 1,
+                   GestureConfiguration::points_buffered_for_velocity(),
+                   delegate.get());
 
   SendScrollEvent(root_window(), 0, 0, kTouchId, delegate.get());
   SendScrollEvent(root_window(), 5, 5, kTouchId, delegate.get());
@@ -724,7 +730,9 @@ TEST_F(GestureRecognizerTest, GestureEventVerticalRailScroll) {
   // Send enough information that a velocity can be calculated for the gesture,
   // and we can break the rail
   SendScrollEvents(root_window(), 1, 1, press.time_stamp(),
-                   100, 1, kTouchId, 1, kBufferedPoints, delegate.get());
+                   100, 1, kTouchId, 1,
+                   GestureConfiguration::points_buffered_for_velocity(),
+                   delegate.get());
 
   SendScrollEvent(root_window(), 0, 0, kTouchId, delegate.get());
   SendScrollEvent(root_window(), 5, 5, kTouchId, delegate.get());
@@ -1259,11 +1267,15 @@ TEST_F(GestureRecognizerTest, GestureEventPinchScrollOnlyWhenBothFingersMove) {
   root_window()->DispatchTouchEvent(&press2);
 
   SendScrollEvents(root_window(), 100, 100, press1.time_stamp(),
-                   1, 10, kTouchId1, 1, kBufferedPoints, delegate.get());
+                   1, 10, kTouchId1, 1,
+                   GestureConfiguration::points_buffered_for_velocity(),
+                   delegate.get());
 
   SendScrollEvents(root_window(), 110, 110, press1.time_stamp() +
                    base::TimeDelta::FromMilliseconds(1000),
-                   1, 10, kTouchId2, 1, kBufferedPoints, delegate.get());
+                   1, 10, kTouchId2, 1,
+                   GestureConfiguration::points_buffered_for_velocity(),
+                   delegate.get());
   // At no point were both fingers moving at the same time,
   // so no scrolling should have occurred
 

@@ -1784,22 +1784,43 @@ const char kRestoreSessionStateDialogShown[] =
 const char kWebIntentsEnabled[] = "webintents.enabled";
 
 #if defined(USE_AURA)
-const char kPinnedLauncherApps[] = "pinned_launcher_apps";
+// Boolean value indicating whether the shelf always hides.
+const char kAlwaysAutoHideShelf[] =
+    "auto_hide_shelf";
+// String value corresponding to ash::Shell::ShelfAutoHideBehavior.
+const char kShelfAutoHideBehavior[] =
+    "auto_hide_behavior";
+const char kPinnedLauncherApps[] =
+    "pinned_launcher_apps";
 
-const char kMaximumSecondsBetweenDoubleClick[] =
-    "gesture.maximum_seconds_between_double_click";
-const char kMaximumTouchDownDurationInSecondsForClick[] =
-    "gesture.maximum_touch_down_duration_in_seconds_for_click";
-const char kMaximumTouchMoveInPixelsForClick[] =
-    "gesture.maximum_touch_move_in_pixels_for_click";
+const char kLongPressTimeInSeconds[] =
+    "gesture.long_press_time_in_seconds";
+const char kMaxSecondsBetweenDoubleClick[] =
+    "gesture.max_seconds_between_double_click";
+const char kMaxSeparationForGestureTouchesInPixels[] =
+    "gesture.max_separation_for_gesture_touches_in_pixels";
+const char kMaxTouchDownDurationInSecondsForClick[] =
+    "gesture.max_touch_down_duration_in_seconds_for_click";
+const char kMaxTouchMoveInPixelsForClick[] =
+    "gesture.max_touch_move_in_pixels_for_click";
+const char kMinDistanceForPinchScrollInPixels[] =
+    "gesture.min_distance_for_pinch_scroll_in_pixels";
 const char kMinFlickSpeedSquared[] =
     "gesture.min_flick_speed_squared";
-const char kMinimumTouchDownDurationInSecondsForClick[] =
-    "gesture.minimum_touch_down_duration_in_seconds_for_click";
-
-// String value corresponding to ash::Shell::ShelfAutoHideBehavior.
-const char kShelfAutoHideBehavior[] = "auto_hide_behavior";
-
+const char kMinPinchUpdateDistanceInPixels[] =
+    "gesture.min_pinch_update_distance_in_pixels";
+const char kMinRailBreakVelocity[] =
+    "gesture.min_rail_break_velocity";
+const char kMinScrollDeltaSquared[] =
+    "gesture.min_scroll_delta_squared";
+const char kMinTouchDownDurationInSecondsForClick[] =
+    "gesture.min_touch_down_duration_in_seconds_for_click";
+const char kPointsBufferedForVelocity[] =
+    "gesture.points_buffered_for_velocity";
+const char kRailBreakProportion[] =
+    "gesture.rail_break_proportion";
+const char kRailStartProportion[] =
+    "gesture.rail_start_proportion";
 #endif
 
 // Indicates whether the browser is in managed mode.

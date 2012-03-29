@@ -44,11 +44,20 @@ class GesturePrefsObserverAura : public content::NotificationObserver {
 // Note that this collection of settings should correspond to the settings used
 // in ui/aura/gestures/gesture_configuration.h
 const char* kPrefsToObserve[] = {
-  prefs::kMaximumSecondsBetweenDoubleClick,
-  prefs::kMaximumTouchDownDurationInSecondsForClick,
-  prefs::kMaximumTouchMoveInPixelsForClick,
+  prefs::kLongPressTimeInSeconds,
+  prefs::kMaxSecondsBetweenDoubleClick,
+  prefs::kMaxSeparationForGestureTouchesInPixels,
+  prefs::kMaxTouchDownDurationInSecondsForClick,
+  prefs::kMaxTouchMoveInPixelsForClick,
+  prefs::kMinDistanceForPinchScrollInPixels,
   prefs::kMinFlickSpeedSquared,
-  prefs::kMinimumTouchDownDurationInSecondsForClick,
+  prefs::kMinPinchUpdateDistanceInPixels,
+  prefs::kMinRailBreakVelocity,
+  prefs::kMinScrollDeltaSquared,
+  prefs::kMinTouchDownDurationInSecondsForClick,
+  prefs::kPointsBufferedForVelocity,
+  prefs::kRailBreakProportion,
+  prefs::kRailStartProportion,
 };
 
 const int kPrefsToObserveLength = arraysize(kPrefsToObserve);
@@ -70,16 +79,48 @@ void GesturePrefsObserverAura::RegisterPrefs(PrefService* local_state) {
     local_state_ = local_state;
 
     if (local_state_) {
+      local_state->RegisterDoublePref(
+          prefs::kLongPressTimeInSeconds,
+          GestureConfiguration::long_press_time_in_seconds());
       local_state_->RegisterDoublePref(
-        prefs::kMaximumSecondsBetweenDoubleClick, 0.7);
+          prefs::kMaxSecondsBetweenDoubleClick,
+          GestureConfiguration::max_seconds_between_double_click());
       local_state_->RegisterDoublePref(
-        prefs::kMaximumTouchDownDurationInSecondsForClick, 0.8);
+          prefs::kMaxSeparationForGestureTouchesInPixels,
+          GestureConfiguration::max_separation_for_gesture_touches_in_pixels());
       local_state_->RegisterDoublePref(
-        prefs::kMaximumTouchMoveInPixelsForClick, 20);
+          prefs::kMaxTouchDownDurationInSecondsForClick,
+          GestureConfiguration::max_touch_down_duration_in_seconds_for_click());
       local_state_->RegisterDoublePref(
-        prefs::kMinFlickSpeedSquared, 550.f*550.f);
+          prefs::kMaxTouchMoveInPixelsForClick,
+          GestureConfiguration::max_touch_move_in_pixels_for_click());
+      local_state->RegisterDoublePref(
+          prefs::kMinDistanceForPinchScrollInPixels,
+          GestureConfiguration::min_distance_for_pinch_scroll_in_pixels());
       local_state_->RegisterDoublePref(
-        prefs::kMinimumTouchDownDurationInSecondsForClick, 0.01);
+          prefs::kMinFlickSpeedSquared,
+          GestureConfiguration::min_flick_speed_squared());
+      local_state->RegisterDoublePref(
+          prefs::kMinPinchUpdateDistanceInPixels,
+          GestureConfiguration::min_pinch_update_distance_in_pixels());
+      local_state_->RegisterDoublePref(
+          prefs::kMinRailBreakVelocity,
+          GestureConfiguration::min_rail_break_velocity());
+      local_state_->RegisterDoublePref(
+          prefs::kMinScrollDeltaSquared,
+          GestureConfiguration::min_scroll_delta_squared());
+      local_state_->RegisterDoublePref(
+          prefs::kMinTouchDownDurationInSecondsForClick,
+          GestureConfiguration::min_touch_down_duration_in_seconds_for_click());
+      local_state->RegisterIntegerPref(
+          prefs::kPointsBufferedForVelocity,
+          GestureConfiguration::points_buffered_for_velocity());
+      local_state->RegisterDoublePref(
+          prefs::kRailBreakProportion,
+          GestureConfiguration::rail_break_proportion());
+      local_state->RegisterDoublePref(
+          prefs::kRailStartProportion,
+          GestureConfiguration::rail_start_proportion());
 
       registrar_.Init(local_state_);
       registrar_.RemoveAll();
@@ -91,18 +132,48 @@ void GesturePrefsObserverAura::RegisterPrefs(PrefService* local_state) {
 
 void GesturePrefsObserverAura::Update() {
   if (local_state_) {
+    GestureConfiguration::set_long_press_time_in_seconds(
+        local_state_->GetDouble(
+            prefs::kLongPressTimeInSeconds));
     GestureConfiguration::set_max_seconds_between_double_click(
-      local_state_->GetDouble(prefs::kMaximumSecondsBetweenDoubleClick));
+        local_state_->GetDouble(
+            prefs::kMaxSecondsBetweenDoubleClick));
+    GestureConfiguration::set_max_separation_for_gesture_touches_in_pixels(
+        local_state_->GetDouble(
+            prefs::kMaxSeparationForGestureTouchesInPixels));
     GestureConfiguration::set_max_touch_down_duration_in_seconds_for_click(
-      local_state_->GetDouble(
-      prefs::kMaximumTouchDownDurationInSecondsForClick));
+        local_state_->GetDouble(
+            prefs::kMaxTouchDownDurationInSecondsForClick));
     GestureConfiguration::set_max_touch_move_in_pixels_for_click(
-      local_state_->GetDouble(prefs::kMaximumTouchMoveInPixelsForClick));
+        local_state_->GetDouble(
+            prefs::kMaxTouchMoveInPixelsForClick));
+    GestureConfiguration::set_min_distance_for_pinch_scroll_in_pixels(
+        local_state_->GetDouble(
+            prefs::kMinDistanceForPinchScrollInPixels));
     GestureConfiguration::set_min_flick_speed_squared(
-      local_state_->GetDouble(prefs::kMinFlickSpeedSquared));
+        local_state_->GetDouble(
+            prefs::kMinFlickSpeedSquared));
+    GestureConfiguration::set_min_pinch_update_distance_in_pixels(
+        local_state_->GetDouble(
+            prefs::kMinPinchUpdateDistanceInPixels));
+    GestureConfiguration::set_min_rail_break_velocity(
+        local_state_->GetDouble(
+            prefs::kMinRailBreakVelocity));
+    GestureConfiguration::set_min_scroll_delta_squared(
+        local_state_->GetDouble(
+            prefs::kMinScrollDeltaSquared));
     GestureConfiguration::set_min_touch_down_duration_in_seconds_for_click(
-      local_state_->GetDouble(
-      prefs::kMinimumTouchDownDurationInSecondsForClick));
+        local_state_->GetDouble(
+            prefs::kMinTouchDownDurationInSecondsForClick));
+    GestureConfiguration::set_points_buffered_for_velocity(
+        local_state_->GetInteger(
+            prefs::kPointsBufferedForVelocity));
+    GestureConfiguration::set_rail_break_proportion(
+        local_state_->GetDouble(
+            prefs::kRailBreakProportion));
+    GestureConfiguration::set_rail_start_proportion(
+        local_state_->GetDouble(
+            prefs::kRailStartProportion));
   }
 }
 
@@ -112,7 +183,7 @@ void GesturePrefsObserverAura::Observe(int type,
   Update();
 }
 
-} // namespace
+}  // namespace
 
 void GesturePrefsRegisterPrefs(PrefService* prefs) {
   GesturePrefsObserverAura::GetInstance()->RegisterPrefs(prefs);

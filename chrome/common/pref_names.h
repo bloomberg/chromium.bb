@@ -670,15 +670,23 @@ extern const char kWebIntentsEnabled[];
 
 #if defined(USE_AURA)
 extern const char kPinnedLauncherApps[];
-
-extern const char kMaximumSecondsBetweenDoubleClick[];
-extern const char kMaximumTouchDownDurationInSecondsForClick[];
-extern const char kMaximumTouchMoveInPixelsForClick[];
-extern const char kMinFlickSpeedSquared[];
-extern const char kMinimumTouchDownDurationInSecondsForClick[];
-
+extern const char kAlwaysAutoHideShelf[];
 extern const char kShelfAutoHideBehavior[];
 
+extern const char kLongPressTimeInSeconds[];
+extern const char kMaxSecondsBetweenDoubleClick[];
+extern const char kMaxSeparationForGestureTouchesInPixels[];
+extern const char kMaxTouchDownDurationInSecondsForClick[];
+extern const char kMaxTouchMoveInPixelsForClick[];
+extern const char kMinDistanceForPinchScrollInPixels[];
+extern const char kMinFlickSpeedSquared[];
+extern const char kMinPinchUpdateDistanceInPixels[];
+extern const char kMinRailBreakVelocity[];
+extern const char kMinScrollDeltaSquared[];
+extern const char kMinTouchDownDurationInSecondsForClick[];
+extern const char kPointsBufferedForVelocity[];
+extern const char kRailBreakProportion[];
+extern const char kRailStartProportion[];
 #endif
 
 extern const char kInManagedMode[];
