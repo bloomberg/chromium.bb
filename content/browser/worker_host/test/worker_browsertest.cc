@@ -178,12 +178,8 @@ class WorkerHttpLayoutTest : public InProcessBrowserLayoutTest {
   }
 };
 
-#if defined(OS_MACOSX)
-// http://crbug.com/16934 hang on Mac sometimes
+// http://crbug.com/16934
 IN_PROC_BROWSER_TEST_F(WorkerHttpLayoutTest, DISABLED_Tests) {
-#else
-IN_PROC_BROWSER_TEST_F(WorkerHttpLayoutTest, Tests) {
-#endif
   static const char* kLayoutTestFiles[] = {
       "shared-worker-importScripts.html",
       "shared-worker-redirect.html",
@@ -253,7 +249,7 @@ class WorkerWebSocketHttpLayoutTest : public InProcessBrowserLayoutTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(WorkerWebSocketHttpLayoutTest, Tests) {
+IN_PROC_BROWSER_TEST_F(WorkerWebSocketHttpLayoutTest, DISABLED_Tests) {
   static const char* kLayoutTestFiles[] = {
     "close-in-onmessage-crash.html",
     "close-in-shared-worker.html",
@@ -384,7 +380,7 @@ IN_PROC_BROWSER_TEST_F(WorkerTest, LimitPerPage) {
 }
 
 // http://crbug.com/36800
-IN_PROC_BROWSER_TEST_F(WorkerTest, LimitTotal) {
+IN_PROC_BROWSER_TEST_F(WorkerTest, DISABLED_LimitTotal) {
   int max_workers_per_tab = WorkerServiceImpl::kMaxWorkersPerTabWhenSeparate;
   int total_workers = WorkerServiceImpl::kMaxWorkersWhenSeparate;
 
@@ -465,7 +461,7 @@ IN_PROC_BROWSER_TEST_F(WorkerTest, DISABLED_MultipleTabsQueuedSharedWorker) {
 }
 
 // Flaky: http://crbug.com/48148
-IN_PROC_BROWSER_TEST_F(WorkerTest, QueuedSharedWorkerStartedFromOtherTab) {
+IN_PROC_BROWSER_TEST_F(WorkerTest, DISABLED_QueuedSharedWorkerStartedFromOtherTab) {
   // Tests to make sure that queued shared workers are started up when
   // an instance is launched from another tab.
   int max_workers_per_tab = WorkerServiceImpl::kMaxWorkersPerTabWhenSeparate;
