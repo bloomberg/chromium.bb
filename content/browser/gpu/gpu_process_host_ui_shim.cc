@@ -7,10 +7,12 @@
 #include <algorithm>
 
 #include "base/bind.h"
-#include "base/debug/trace_event.h"
+#include "base/command_line.h"
 #include "base/id_map.h"
 #include "base/lazy_instance.h"
 #include "base/process_util.h"
+#include "base/string_number_conversions.h"
+#include "base/debug/trace_event.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/gpu/gpu_surface_tracker.h"
@@ -19,6 +21,7 @@
 #include "content/common/gpu/gpu_messages.h"
 #include "content/port/browser/render_widget_host_view_port.h"
 #include "content/public/browser/browser_thread.h"
+#include "ui/gfx/gl/gl_switches.h"
 
 #if defined(TOOLKIT_USES_GTK)
 // These two #includes need to come after gpu_messages.h.
@@ -337,6 +340,16 @@ void GpuProcessHostUIShim::OnAcceleratedSurfaceNew(
 
 #endif
 
+static base::TimeDelta GetSwapDelay() {
+  CommandLine* cmd_line = CommandLine::ForCurrentProcess();
+  int delay = 0;
+  if (cmd_line->HasSwitch(switches::kGpuSwapDelay)) {
+    base::StringToInt(cmd_line->GetSwitchValueNative(
+        switches::kGpuSwapDelay).c_str(), &delay);
+  }
+  return base::TimeDelta::FromMilliseconds(delay);
+}
+
 void GpuProcessHostUIShim::OnAcceleratedSurfaceBuffersSwapped(
     const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params) {
   TRACE_EVENT0("renderer",
@@ -352,6 +365,10 @@ void GpuProcessHostUIShim::OnAcceleratedSurfaceBuffersSwapped(
     return;
 
   delayed_send.Cancel();
+
+  static const base::TimeDelta swap_delay = GetSwapDelay();
+  if (swap_delay.ToInternalValue())
+    base::PlatformThread::Sleep(swap_delay);
 
   // View must send ACK message after next composite.
   view->AcceleratedSurfaceBuffersSwapped(params, host_id_);

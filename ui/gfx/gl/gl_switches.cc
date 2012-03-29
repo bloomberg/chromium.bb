@@ -39,6 +39,10 @@ const char kSwiftShaderPath[]               = "swiftshader-path";
 // context will never be lost in any situations, say, a GPU reset.
 const char kGpuNoContextLost[]              = "gpu-no-context-lost";
 
+// Add a delay in milliseconds to the gpu swap buffer completion signal.
+// Simulates a slow GPU.
+const char kGpuSwapDelay[]                  = "gpu-swap-delay";
+
 // Flag used for Linux tests: for desktop GL bindings, try to load this GL
 // library first, but fall back to regular library if loading fails.
 const char kTestGLLib[]                     = "test-gl-lib";

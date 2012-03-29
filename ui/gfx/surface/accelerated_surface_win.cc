@@ -11,6 +11,8 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/string_number_conversions.h"
+#include "base/time.h"
 #include "base/debug/trace_event.h"
 #include "base/file_path.h"
 #include "base/lazy_instance.h"
@@ -476,6 +478,16 @@ void AcceleratedPresenter::Invalidate() {
 AcceleratedPresenter::~AcceleratedPresenter() {
 }
 
+static base::TimeDelta GetSwapDelay() {
+  CommandLine* cmd_line = CommandLine::ForCurrentProcess();
+  int delay = 0;
+  if (cmd_line->HasSwitch(switches::kGpuSwapDelay)) {
+    base::StringToInt(cmd_line->GetSwitchValueNative(
+        switches::kGpuSwapDelay).c_str(), &delay);
+  }
+  return base::TimeDelta::FromMilliseconds(delay);
+}
+
 void AcceleratedPresenter::DoPresentAndAcknowledge(
     const gfx::Size& size,
     int64 surface_handle,
@@ -608,6 +620,10 @@ void AcceleratedPresenter::DoPresentAndAcknowledge(
         Sleep(0);
     } while (hr == S_FALSE);
   }
+
+  static const base::TimeDelta swap_delay = GetSwapDelay();
+  if (swap_delay.ToInternalValue())
+    base::PlatformThread::Sleep(swap_delay);
 
   scoped_completion_runner.Release();
   if (!completion_task.is_null())
