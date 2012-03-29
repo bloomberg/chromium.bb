@@ -74,17 +74,16 @@ ChromeLauncherDelegate::ChromeLauncherDelegate(Profile* profile,
                                                ash::LauncherModel* model)
     : model_(model),
       profile_(profile) {
-  if (!profile_) {
-    // Use the original profile as on chromeos we may get a temporary off the
-    // record profile.
-    profile_ = ProfileManager::GetDefaultProfile()->GetOriginalProfile();
-  }
   instance_ = this;
   model_->AddObserver(this);
-  app_icon_loader_.reset(new LauncherAppIconLoader(profile_, this));
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_UNLOADED,
-                 content::Source<Profile>(profile_));
+
+  if (profile) {
+    PostProfileInit();
+  } else {
+    registrar_.Add(this,
+                   chrome::NOTIFICATION_PROFILE_CREATED,
+                   content::NotificationService::AllSources());
+  }
 }
 
 ChromeLauncherDelegate::~ChromeLauncherDelegate() {
@@ -95,41 +94,6 @@ ChromeLauncherDelegate::~ChromeLauncherDelegate() {
   }
   if (instance_ == this)
     instance_ = NULL;
-}
-
-void ChromeLauncherDelegate::Init() {
-  const base::ListValue* pinned_apps =
-      profile_->GetPrefs()->GetList(prefs::kPinnedLauncherApps);
-  for (size_t i = 0; i < pinned_apps->GetSize(); ++i) {
-    DictionaryValue* app = NULL;
-    if (pinned_apps->GetDictionary(i, &app)) {
-      std::string app_id, type_string;
-      if (app->GetString(kAppIDPath, &app_id) &&
-          app->GetString(kAppTypePath, &type_string) &&
-          app_icon_loader_->IsValidID(app_id)) {
-        AppType app_type;
-        if (type_string == kAppTypeWindow)
-          app_type = APP_TYPE_WINDOW;
-        else if (type_string == kAppTypePanel)
-          app_type = APP_TYPE_APP_PANEL;
-        else
-          app_type = APP_TYPE_TAB;
-        CreateAppLauncherItem(NULL, app_id, app_type, ash::STATUS_CLOSED);
-      }
-    }
-  }
-  // TODO(sky): update unit test so that this test isn't necessary.
-  if (ash::Shell::HasInstance()) {
-    std::string behavior_value(
-        profile_->GetPrefs()->GetString(prefs::kShelfAutoHideBehavior));
-    ash::ShelfAutoHideBehavior behavior =
-        ash::SHELF_AUTO_HIDE_BEHAVIOR_DEFAULT;
-    if (behavior_value == kShelfAutoHideBehaviorNever)
-      behavior = ash::SHELF_AUTO_HIDE_BEHAVIOR_NEVER;
-    else if (behavior_value == kShelfAutoHideBehaviorAlways)
-      behavior = ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS;
-    ash::Shell::GetInstance()->SetShelfAutoHideBehavior(behavior);
-  }
 }
 
 // static
@@ -477,10 +441,47 @@ void ChromeLauncherDelegate::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  DCHECK_EQ(type, chrome::NOTIFICATION_EXTENSION_UNLOADED);
-  const Extension* extension =
-      content::Details<UnloadedExtensionInfo>(details)->extension;
-  UnpinAppsWithID(extension->id());
+  switch (type) {
+    case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
+      const Extension* extension =
+          content::Details<UnloadedExtensionInfo>(details)->extension;
+      UnpinAppsWithID(extension->id());
+      break;
+    }
+    case chrome::NOTIFICATION_PROFILE_CREATED: {
+      profile_ = content::Source<Profile>(source)->GetOriginalProfile();
+      PostProfileInit();
+
+      registrar_.Remove(this,
+                        chrome::NOTIFICATION_PROFILE_CREATED,
+                        content::NotificationService::AllSources());
+      break;
+    }
+    default:
+      NOTREACHED();
+  }
+}
+
+void ChromeLauncherDelegate::PostProfileInit() {
+  DCHECK(profile_);
+  SetAppIconLoader(new LauncherAppIconLoader(profile_, this));
+
+  // TODO(sky): update unit test so that this test isn't necessary.
+  if (ash::Shell::HasInstance()) {
+    std::string behavior_value(
+        profile_->GetPrefs()->GetString(prefs::kShelfAutoHideBehavior));
+    ash::ShelfAutoHideBehavior behavior =
+        ash::SHELF_AUTO_HIDE_BEHAVIOR_DEFAULT;
+    if (behavior_value == kShelfAutoHideBehaviorNever)
+      behavior = ash::SHELF_AUTO_HIDE_BEHAVIOR_NEVER;
+    else if (behavior_value == kShelfAutoHideBehaviorAlways)
+      behavior = ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS;
+    ash::Shell::GetInstance()->SetShelfAutoHideBehavior(behavior);
+  }
+
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSION_UNLOADED,
+                 content::Source<Profile>(profile_));
 }
 
 void ChromeLauncherDelegate::PersistPinnedState() {
@@ -512,8 +513,30 @@ void ChromeLauncherDelegate::PersistPinnedState() {
   }
 }
 
-void ChromeLauncherDelegate::SetAppIconLoaderForTest(AppIconLoader* loader) {
+void ChromeLauncherDelegate::SetAppIconLoader(AppIconLoader* loader) {
+  DCHECK(profile_);
   app_icon_loader_.reset(loader);
+
+  const base::ListValue* pinned_apps =
+      profile_->GetPrefs()->GetList(prefs::kPinnedLauncherApps);
+  for (size_t i = 0; i < pinned_apps->GetSize(); ++i) {
+    DictionaryValue* app = NULL;
+    if (pinned_apps->GetDictionary(i, &app)) {
+      std::string app_id, type_string;
+      if (app->GetString(kAppIDPath, &app_id) &&
+          app->GetString(kAppTypePath, &type_string) &&
+          app_icon_loader_->IsValidID(app_id)) {
+        AppType app_type;
+        if (type_string == kAppTypeWindow)
+          app_type = APP_TYPE_WINDOW;
+        else if (type_string == kAppTypePanel)
+          app_type = APP_TYPE_APP_PANEL;
+        else
+          app_type = APP_TYPE_TAB;
+        CreateAppLauncherItem(NULL, app_id, app_type, ash::STATUS_CLOSED);
+      }
+    }
+  }
 }
 
 Profile* ChromeLauncherDelegate::GetProfileForNewWindows() {

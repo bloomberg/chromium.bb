@@ -98,8 +98,7 @@ class LauncherUpdaterTest : public ChromeRenderViewHostTestHarness {
     launcher_delegate_.reset(
         new ChromeLauncherDelegate(profile(), launcher_model_.get()));
     app_icon_loader_ = new AppIconLoaderImpl;
-    launcher_delegate_->SetAppIconLoaderForTest(app_icon_loader_);
-    launcher_delegate_->Init();
+    ResetAppIconLoader();
   }
 
  protected:
@@ -161,7 +160,7 @@ class LauncherUpdaterTest : public ChromeRenderViewHostTestHarness {
   }
 
   void ResetAppIconLoader() {
-    launcher_delegate_->SetAppIconLoaderForTest(app_icon_loader_);
+    launcher_delegate_->SetAppIconLoader(app_icon_loader_);
   }
 
   void UnpinAppsWithID(const std::string& app_id) {
@@ -292,7 +291,6 @@ TEST_F(LauncherUpdaterTest, PersistPinned) {
   app_icon_loader_ = new AppIconLoaderImpl;
   app_icon_loader_->SetAppID(&tab1, "1");
   ResetAppIconLoader();
-  launcher_delegate_->Init();
   EXPECT_GT(app_icon_loader_->GetAndClearFetchCount(), 0);
   ASSERT_EQ(initial_size + 1, launcher_model_->items().size());
   EXPECT_TRUE(launcher_delegate_->IsAppPinned("1"));
