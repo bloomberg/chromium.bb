@@ -29,9 +29,9 @@ class GDataDownloadObserver : public content::DownloadManager::Observer,
   virtual ~GDataDownloadObserver();
 
   // Become an observer of  DownloadManager.
-  void Initialize(const FilePath& temp_download_path,
-                  GDataUploader* gdata_uploader,
-                  content::DownloadManager* download_manager);
+  void Initialize(GDataUploader* gdata_uploader,
+                  content::DownloadManager* download_manager,
+                  const FilePath& gdata_tmp_download_path);
 
   // Sets gdata path, for example, '/special/gdata/MyFolder/MyFile',
   // to external data in |download|.
@@ -93,14 +93,16 @@ class GDataDownloadObserver : public content::DownloadManager::Observer,
   bool ShouldUpload(content::DownloadItem* download);
 
   // Creates UploadFileInfo and initializes it using DownloadItem*.
-  UploadFileInfo* CreateUploadFileInfo(content::DownloadItem* download);
+  scoped_ptr<UploadFileInfo> CreateUploadFileInfo(
+      content::DownloadItem* download);
 
   // Callback invoked by GDataUploader when the upload associated with
   // |download_id| has completed. |error| indicated whether the
   // call was successful. This function invokes the MaybeCompleteDownload()
   // method on the DownloadItem to allow it to complete.
-  void OnUploadComplete(int32 download_id, base::PlatformFileError error,
-                        DocumentEntry* unused_entry);
+  void OnUploadComplete(int32 download_id,
+                        base::PlatformFileError error,
+                        UploadFileInfo* upload_file_info);
 
   // Private data.
   // Use GDataUploader to trigger file uploads.
@@ -108,13 +110,14 @@ class GDataDownloadObserver : public content::DownloadManager::Observer,
   // Observe the DownloadManager for new downloads.
   content::DownloadManager* download_manager_;
 
+  // Temporary download location directory.
+  FilePath gdata_tmp_download_path_;
+
+  // Map of pending downloads.
   typedef std::map<int32, content::DownloadItem*> DownloadMap;
   DownloadMap pending_downloads_;
 
   base::WeakPtrFactory<GDataDownloadObserver> weak_ptr_factory_;
-
-  // Temporary download location directory.
-  FilePath temp_download_path_;
 
   DISALLOW_COPY_AND_ASSIGN(GDataDownloadObserver);
 };

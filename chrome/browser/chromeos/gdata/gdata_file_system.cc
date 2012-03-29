@@ -37,6 +37,7 @@
 
 using content::BrowserThread;
 
+namespace gdata {
 namespace {
 
 const char kMimeTypeJson[] = "application/json";
@@ -66,18 +67,18 @@ const FilePath::CharType kAccountMetadataFile[] =
 const FilePath::CharType kSymLinkToDevNull[] = FILE_PATH_LITERAL("/dev/null");
 
 // Converts gdata error code into file platform error code.
-base::PlatformFileError GDataToPlatformError(gdata::GDataErrorCode status) {
+base::PlatformFileError GDataToPlatformError(GDataErrorCode status) {
   switch (status) {
-    case gdata::HTTP_SUCCESS:
-    case gdata::HTTP_CREATED:
+    case HTTP_SUCCESS:
+    case HTTP_CREATED:
       return base::PLATFORM_FILE_OK;
-    case gdata::HTTP_UNAUTHORIZED:
-    case gdata::HTTP_FORBIDDEN:
+    case HTTP_UNAUTHORIZED:
+    case HTTP_FORBIDDEN:
       return base::PLATFORM_FILE_ERROR_ACCESS_DENIED;
-    case gdata::HTTP_NOT_FOUND:
+    case HTTP_NOT_FOUND:
       return base::PLATFORM_FILE_ERROR_NOT_FOUND;
-    case gdata::GDATA_PARSE_ERROR:
-    case gdata::GDATA_FILE_ERROR:
+    case GDATA_PARSE_ERROR:
+    case GDATA_FILE_ERROR:
       return base::PLATFORM_FILE_ERROR_ABORT;
     default:
       return base::PLATFORM_FILE_ERROR_FAILED;
@@ -154,21 +155,22 @@ base::PlatformFileError CreateCacheDirectories(
 base::PlatformFileError ModifyCacheState(
     const FilePath& source_path,
     const FilePath& dest_path,
-    gdata::GDataFileSystem::FileOperationType file_operation_type,
+    GDataFileSystem::FileOperationType file_operation_type,
     const FilePath& symlink_path,
     bool create_symlink) {
   // Move or copy |source_path| to |dest_path| if they are different.
   if (source_path != dest_path) {
     bool success = false;
-    if (file_operation_type == gdata::GDataFileSystem::FILE_OPERATION_MOVE)
+    if (file_operation_type == GDataFileSystem::FILE_OPERATION_MOVE)
       success = file_util::Move(source_path, dest_path);
-    else if (file_operation_type == gdata::GDataFileSystem::FILE_OPERATION_COPY)
+    else if (file_operation_type ==
+        GDataFileSystem::FILE_OPERATION_COPY)
       success = file_util::CopyFile(source_path, dest_path);
     if (!success) {
       base::PlatformFileError error = SystemToPlatformError(errno);
       LOG(ERROR) << "Error "
                  << (file_operation_type ==
-                     gdata::GDataFileSystem::FILE_OPERATION_MOVE ?
+                     GDataFileSystem::FILE_OPERATION_MOVE ?
                      "moving " : "copying ")
                  << source_path.value()
                  << " to " << dest_path.value()
@@ -176,7 +178,7 @@ base::PlatformFileError ModifyCacheState(
       return error;
     } else {
       DVLOG(1) << (file_operation_type ==
-                   gdata::GDataFileSystem::FILE_OPERATION_MOVE ?
+                   GDataFileSystem::FILE_OPERATION_MOVE ?
                    "Moved " : "Copied ")
                << source_path.value()
                << " to " << dest_path.value();
@@ -278,7 +280,7 @@ void DeleteFilesSelectively(const FilePath& path_to_delete_pattern,
 //
 // |callback| is run on the thread represented by |relay_proxy|.
 void OnTransferRegularFileCompleteForCopy(
-    const gdata::FileOperationCallback& callback,
+    const FileOperationCallback& callback,
     scoped_refptr<base::MessageLoopProxy> relay_proxy,
     base::PlatformFileError error) {
   if (!callback.is_null())
@@ -287,11 +289,11 @@ void OnTransferRegularFileCompleteForCopy(
 
 // Runs GetFileCallback with pointers dereferenced.
 // Used for PostTaskAndReply().
-void RunGetFileCallbackHelper(const gdata::GetFileCallback& callback,
+void RunGetFileCallbackHelper(const GetFileCallback& callback,
                               base::PlatformFileError* error,
                               FilePath* file_path,
                               std::string* mime_type,
-                              gdata::GDataFileType* file_type) {
+                              GDataFileType* file_type) {
   DCHECK(error);
   DCHECK(file_path);
   DCHECK(mime_type);
@@ -303,7 +305,7 @@ void RunGetFileCallbackHelper(const gdata::GetFileCallback& callback,
 
 // Ditto for CacheOperationCallback.
 void RunCacheOperationCallbackHelper(
-    const gdata::CacheOperationCallback& callback,
+    const CacheOperationCallback& callback,
     base::PlatformFileError* error,
     const std::string& resource_id,
     const std::string& md5) {
@@ -315,7 +317,7 @@ void RunCacheOperationCallbackHelper(
 
 // Ditto for GetFromCacheCallback.
 void RunGetFromCacheCallbackHelper(
-    const gdata::GetFromCacheCallback& callback,
+    const GetFromCacheCallback& callback,
     base::PlatformFileError* error,
     const std::string& resource_id,
     const std::string& md5,
@@ -329,7 +331,7 @@ void RunGetFromCacheCallbackHelper(
 }
 
 void RunGetCacheStateCallbackHelper(
-    const gdata::GetCacheStateCallback& callback,
+    const GetCacheStateCallback& callback,
     base::PlatformFileError* error,
     int* cache_state) {
   DCHECK(error);
@@ -340,8 +342,6 @@ void RunGetCacheStateCallbackHelper(
 }
 
 }  // namespace
-
-namespace gdata {
 
 // FindFileDelegate class implementation.
 
@@ -744,27 +744,29 @@ void GDataFileSystem::StartFileUploadOnUIThread(
   upload_file_info->completion_callback =
       base::Bind(&GDataFileSystem::OnTransferCompleted,
                  GetWeakPtrForCurrentThread(),
-                 upload_file_info->file_path,
-                 upload_file_info->gdata_path,
                  callback);
 
-  service->uploader()->UploadFile(upload_file_info);
+  service->uploader()->UploadFile(scoped_ptr<UploadFileInfo>(upload_file_info));
 }
 
 void GDataFileSystem::OnTransferCompleted(
-    const FilePath& local_file_path,
-    const FilePath& remote_dest_file_path,
     const FileOperationCallback& callback,
     base::PlatformFileError error,
-    DocumentEntry* entry) {
-  if (error == base::PLATFORM_FILE_OK && entry) {
-    AddUploadedFile(remote_dest_file_path.DirName(),
-                    entry,
-                    local_file_path,
+    UploadFileInfo* upload_file_info) {
+  DCHECK(upload_file_info);
+  if (error == base::PLATFORM_FILE_OK && upload_file_info->entry.get()) {
+    AddUploadedFile(upload_file_info->gdata_path.DirName(),
+                    upload_file_info->entry.get(),
+                    upload_file_info->file_path,
                     FILE_OPERATION_COPY);
   }
   if (!callback.is_null())
     callback.Run(error);
+
+  GDataSystemService* service =
+      GDataSystemServiceFactory::GetForProfile(profile_);
+  if (service)
+    service->uploader()->DeleteUpload(upload_file_info);
 }
 
 // static.
@@ -2512,7 +2514,7 @@ base::PlatformFileError GDataFileSystem::RemoveFileFromGData(
 }
 
 void GDataFileSystem::AddUploadedFile(const FilePath& virtual_dir_path,
-                                      gdata::DocumentEntry* entry,
+                                      DocumentEntry* entry,
                                       const FilePath& file_content_path,
                                       FileOperationType cache_operation) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -2681,7 +2683,6 @@ void GDataFileSystem::MarkDirtyInCache(const std::string& resource_id,
                  md5,
                  FilePath() /* gdata_file_path */,
                  base::Owned(cache_file_path)));
-
 }
 
 void GDataFileSystem::CommitDirtyInCache(

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_GDATA_GDATA_FILE_SYSTEM_H_
 #define CHROME_BROWSER_CHROMEOS_GDATA_GDATA_FILE_SYSTEM_H_
+#pragma once
 
 #include <sys/stat.h>
 
@@ -856,11 +857,9 @@ class GDataFileSystem : public GDataFileSystemInterface {
   // Helper function that completes bookkeeping tasks related to
   // completed file transfer.
   void OnTransferCompleted(
-      const FilePath& local_file_path,
-      const FilePath& remote_dest_file_path,
       const FileOperationCallback& callback,
       base::PlatformFileError error,
-      DocumentEntry* entry);
+      UploadFileInfo* upload_file_info);
 
   // Kicks off file upload once it receives |upload_file_info|.
   void StartFileUploadOnUIThread(

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_GDATA_GDATA_FILES_H_
 #define CHROME_BROWSER_CHROMEOS_GDATA_GDATA_FILES_H_
+#pragma once
 
 #include <map>
 #include <string>

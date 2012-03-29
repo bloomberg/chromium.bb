@@ -88,14 +88,17 @@ GDataDownloadObserver::~GDataDownloadObserver() {
   }
 }
 
-void GDataDownloadObserver::Initialize(const FilePath& temp_download_path,
-                                       GDataUploader* gdata_uploader,
-                                       DownloadManager* download_manager) {
-  temp_download_path_ = temp_download_path;
+void GDataDownloadObserver::Initialize(
+    GDataUploader* gdata_uploader,
+    DownloadManager* download_manager,
+    const FilePath& gdata_tmp_download_path) {
+  DCHECK(gdata_uploader);
+  DCHECK(!gdata_tmp_download_path.empty());
   gdata_uploader_ = gdata_uploader;
   download_manager_ = download_manager;
   if (download_manager_)
     download_manager_->AddObserver(this);
+  gdata_tmp_download_path_ = gdata_tmp_download_path;
 }
 
 // static
@@ -184,12 +187,12 @@ void GDataDownloadObserver::ModelChanged(DownloadManager* download_manager) {
 
   DownloadManager::DownloadVector downloads;
   // GData downloads are considered temporary downloads.
-  download_manager->GetTemporaryDownloads(temp_download_path_,
+  download_manager->GetTemporaryDownloads(gdata_tmp_download_path_,
                                           &downloads);
   for (size_t i = 0; i < downloads.size(); ++i) {
     // Only accept downloads that have the GData meta data associated with
     // them. Otherwise we might trip over non-GData downloads being saved to
-    // temp_download_path_.
+    // gdata_tmp_download_path_.
     if (IsGDataDownload(downloads[i]))
       OnDownloadUpdated(downloads[i]);
   }
@@ -260,25 +263,26 @@ void GDataDownloadObserver::UploadDownloadItem(DownloadItem* download) {
   if (!ShouldUpload(download))
     return;
 
-  UploadFileInfo* upload_file_info = CreateUploadFileInfo(download);
-  gdata_uploader_->UploadFile(upload_file_info);
+  scoped_ptr<UploadFileInfo> upload_file_info = CreateUploadFileInfo(download);
+  const int upload_id = gdata_uploader_->UploadFile(upload_file_info.Pass());
 
+  // TODO(achuith): Fix this.
   // We won't know the upload ID until the after the GDataUploader::UploadFile()
   // call.
   download->SetExternalData(&kUploadingKey,
-      new UploadingExternalData(gdata_uploader_, upload_file_info->upload_id));
+      new UploadingExternalData(gdata_uploader_, upload_id));
 }
 
 void GDataDownloadObserver::UpdateUpload(DownloadItem* download) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  UploadingExternalData* external_data = GetUploadingExternalData(download);
-  if (!external_data) {
+  UploadingExternalData* upload_data = GetUploadingExternalData(download);
+  if (!upload_data) {
     DVLOG(1) << "No UploadingExternalData for download " << download->GetId();
     return;
   }
 
-  gdata_uploader_->UpdateUpload(external_data->upload_id(), download);
+  gdata_uploader_->UpdateUpload(upload_data->upload_id(), download);
 }
 
 bool GDataDownloadObserver::ShouldUpload(DownloadItem* download) {
@@ -293,9 +297,9 @@ bool GDataDownloadObserver::ShouldUpload(DownloadItem* download) {
          GetUploadingExternalData(download) == NULL;
 }
 
-UploadFileInfo* GDataDownloadObserver::CreateUploadFileInfo(
+scoped_ptr<UploadFileInfo> GDataDownloadObserver::CreateUploadFileInfo(
     DownloadItem* download) {
-  UploadFileInfo* upload_file_info = new UploadFileInfo();
+  scoped_ptr<UploadFileInfo> upload_file_info(new UploadFileInfo());
 
   // GetFullPath will be a temporary location if we're streaming.
   upload_file_info->file_path = download->GetFullPath();
@@ -315,14 +319,15 @@ UploadFileInfo* GDataDownloadObserver::CreateUploadFileInfo(
 
   upload_file_info->completion_callback =
       base::Bind(&GDataDownloadObserver::OnUploadComplete,
-                 weak_ptr_factory_.GetWeakPtr(), download->GetId());
+                 weak_ptr_factory_.GetWeakPtr(),
+                 download->GetId());
 
-  return upload_file_info;
+  return upload_file_info.Pass();
 }
 
 void GDataDownloadObserver::OnUploadComplete(int32 download_id,
                                              base::PlatformFileError error,
-                                             DocumentEntry* unused_entry) {
+                                             UploadFileInfo* upload_file_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DownloadMap::iterator iter = pending_downloads_.find(download_id);
   if (iter == pending_downloads_.end()) {
