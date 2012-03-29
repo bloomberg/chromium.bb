@@ -1,21 +1,26 @@
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
 body {
+  -webkit-user-select: none;
   background: -webkit-linear-gradient(white, #EEE);
   cursor: default;
   margin: 0;
-  -webkit-user-select: none;
   overflow: hidden;
 }
 
 .menu-item {
-  white-space: nowrap;
-  margin: 0;
-  padding-top: 1px;
-  padding-bottom: 1px;
-  background-repeat: no-repeat;
-  -webkit-padding-end: 19px;
-  display: -webkit-box;
   -webkit-box-orient: horizontal;
+  -webkit-padding-end: 19px;
+  background-repeat: no-repeat;
+  display: -webkit-box;
+  margin: 0;
   overflow: hidden;
+  padding-bottom: 1px;
+  padding-top: 1px;
+  white-space: nowrap;
 }
 
 .disabled {
@@ -32,8 +37,8 @@ body {
 }
 
 .accelerator {
-  opacity: 0.3;
   -webkit-margin-start: 15px;
+  opacity: 0.3;
 }
 
 .left-icon {
@@ -58,7 +63,7 @@ body {
 }
 
 .selected {
-  background-color: #DCE5FA;
+  background-color: rgb(220, 229, 250);
 }
 
 #viewport {
@@ -66,25 +71,25 @@ body {
 }
 
 .scroll-button {
+  background-position: center center;
+  background-repeat: no-repeat;
   height: 20px;
-  width: 100%;
   line-height: 20px;
   text-align: center;
-  background-repeat: no-repeat;
-  background-position: center center;
+  width: 100%;
 }
 
 #scroll-up {
   /* TODO(oshima): get right icons from UX designer */
-  background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAYAAAADCAYAAACwAX77AAAAI0lEQVQImWNgQIA4BgaGuQxoII6BgeEvAwPDf2RJZEEYngsA2N8I6FqZBpwAAAAASUVORK5CYII=");
+  background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAYAAAADCAYAAACwAX77AAAAI0lEQVQImWNgQIA4BgaGuQxoII6BgeEvAwPDf2RJZEEYngsA2N8I6FqZBpwAAAAASUVORK5CYII=);
 }
 
 #scroll-down {
-  background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAYAAAADCAYAAACwAX77AAAAIklEQVQImWNgYGCIY2Bg+MfAwPAfCc9jgAJkSbggsiRcEACghQjtUFgYGwAAAABJRU5ErkJggg==");
+  background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAYAAAADCAYAAACwAX77AAAAIklEQVQImWNgYGCIY2Bg+MfAwPAfCc9jgAJkSbggsiRcEACghQjtUFgYGwAAAABJRU5ErkJggg==);
 }
 
 .scroll-button:hover {
-  background-color: #DCE5FA;
+  background-color: rgb(220, 229, 250);
 }
 
 .hidden {

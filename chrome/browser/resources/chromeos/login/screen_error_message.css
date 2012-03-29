@@ -4,16 +4,16 @@
  */
 
 #error-message-screen-title {
-  -webkit-margin-start: 60px;
   -webkit-margin-end: 60px;
+  -webkit-margin-start: 60px;
   display: block;
   font-weight: bold;
   margin-bottom: 20px;
 }
 
 #error-message-body {
-  -webkit-margin-start: 60px;
   -webkit-margin-end: 60px;
+  -webkit-margin-start: 60px;
   display: block;
 }
 

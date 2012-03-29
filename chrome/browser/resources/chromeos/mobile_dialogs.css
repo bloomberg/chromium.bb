@@ -1,3 +1,8 @@
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
 body {
   cursor: default;
   font-size: 13px;
@@ -6,10 +11,10 @@ body {
 .container {
   -webkit-box-align: center;
   -webkit-box-pack: center;
-  display: -webkit-box;
-  position: fixed;
-  left: 0;
   bottom: 0;
+  display: -webkit-box;
+  left: 0;
+  position: fixed;
   right: 0;
   top: 0;
 }
@@ -25,7 +30,7 @@ body {
 .dialog h1 {
   background: -webkit-linear-gradient(white, #F8F8F8);
   border-bottom: 1px solid rgba(188, 193, 208, .5);
-  color: #53637d;
+  color: rgb(83, 99, 125);
   font-size: 105%;
   font-weight: bold;
   margin: 0;

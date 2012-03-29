@@ -27,11 +27,11 @@ podrow {
 }
 
 .pod .user-image {
-  -webkit-box-shadow: 0 3px 12px #ccc;
   -webkit-transition: all 140ms ease;
   background-color: #fff;
   border: 1px solid #ccc;
   border-radius: 2px;
+  box-shadow: 0 3px 12px #ccc;
   height: 160px;
   margin-bottom: 10px;
   padding: 4px;
@@ -47,13 +47,13 @@ podrow {
 }
 
 .pod.focused .user-image {
-  -webkit-box-shadow: 0 6px 16px #a4a4a4;
   -webkit-transform: translateY(-1px);
+  box-shadow: 0 6px 16px #a4a4a4;
 }
 
 .pod.init {
-  opacity: 0;
   -webkit-transform: scale(2.4);
+  opacity: 0;
 }
 
 .pod.left {
@@ -90,13 +90,13 @@ podrow {
 
 .pod input[type='password'] {
   -webkit-border-radius: 2px;
-  -webkit-box-shadow: inset 0 2px 2px rgba(0, 0, 0, .1), 
-                      0 1px 0 white,
-                      0 0 1px transparent,
-                      0 0 1px transparent,
-                      0 0 1px transparent;
-  -webkit-transition: -webkit-box-shadow 100ms, background 100ms, border 500ms;  
+  -webkit-transition: box-shadow 100ms, background 100ms, border 500ms;
   border: 1px solid #aaa;
+  box-shadow: inset 0 2px 2px rgba(0, 0, 0, .1),
+              0 1px 0 white,
+              0 0 1px transparent,
+              0 0 1px transparent,
+              0 0 1px transparent;
   box-sizing: border-box;
   height: 26px;
   padding: 4px 6px; 
@@ -108,14 +108,14 @@ podrow {
 }
 
 .pod input[type='password']:focus {
-  -webkit-box-shadow: inset 0 2px 2px rgba(0, 0, 0, .15),
-                      0 1px 0 transparent,
-                      0 0 1px #c0c0c0,
-                      0 0 1px #c0c0c0,
-                      0 0 1px #c0c0c0;
-  -webkit-transition: -webkit-box-shadow 200ms, background 200ms, border 200ms;
+  -webkit-transition: box-shadow 200ms, background 200ms, border 200ms;
   background: #f8f8f8;
-  border-color: #4080fa;
+  border-color: rgb(64, 128, 250);
+  box-shadow: inset 0 2px 2px rgba(0, 0, 0, .15),
+              0 1px 0 transparent,
+              0 0 1px #c0c0c0,
+              0 0 1px #c0c0c0,
+              0 0 1px #c0c0c0;
   outline: none;
 }
 
@@ -124,9 +124,9 @@ podrow {
   box-sizing: border-box;
   display: inline-block;
   height: 26px;
-  padding: 4px 8px;
-  min-width: 94px;
   max-width: 100%;
+  min-width: 94px;
+  padding: 4px 8px;
 }
 
 .pod:not(.focused) .enter-guest-button,
@@ -164,8 +164,8 @@ podrow {
   position: absolute;
   right: 10px;
   top: 194px;
-  z-index: 1;
   visibility: hidden;
+  z-index: 1;
 }
 
 html[dir=rtl] .pod .capslock-hint {
@@ -179,9 +179,9 @@ html[dir=rtl] .pod .capslock-hint {
 
 .remove-user-button {
   -webkit-transition: width 100ms ease-in-out, background 200ms ease-in-out;
-  -webkit-box-shadow: none;
   background: url('../../../../../ui/resources/close_bar.png') center center no-repeat;
   border: 0;
+  box-shadow: none;
   height: 16px;
   margin: 0;
   min-width: 16px;
@@ -193,12 +193,12 @@ html[dir=rtl] .pod .capslock-hint {
 }
 
 .remove-user-button:hover {
-  -webkit-box-shadow: none;
   background: url('../../../../../ui/resources/close_bar_h.png') center center no-repeat;
+  box-shadow: none;
 }
 
 .remove-user-button.active {
-  background-color: #e94949;
+  background-color: rgb(233, 73, 73);
   background-image: none;
   border-radius: 4px;
   color: white;

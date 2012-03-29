@@ -39,7 +39,7 @@ html[dir=rtl] #signin-right {
 }
 
 .signin-link {
-  color: #254f9b;
+  color: rgb(37, 79, 155);
   cursor: pointer;
   text-decoration: none;
 }
