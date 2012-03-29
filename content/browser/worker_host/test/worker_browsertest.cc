@@ -177,7 +177,12 @@ class WorkerHttpLayoutTest : public InProcessBrowserLayoutTest {
   }
 };
 
+#if defined(OS_MACOSX)
+// http://crbug.com/16934 hang on Mac sometimes
+IN_PROC_BROWSER_TEST_F(WorkerHttpLayoutTest, DISABLED_Tests) {
+#else
 IN_PROC_BROWSER_TEST_F(WorkerHttpLayoutTest, Tests) {
+#endif
   static const char* kLayoutTestFiles[] = {
       "shared-worker-importScripts.html",
       "shared-worker-redirect.html",
