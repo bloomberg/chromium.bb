@@ -88,12 +88,6 @@ class PrefProvider : public ObservableProvider,
       const base::Value* value,
       DictionaryValue* pattern_pairs_settings);
 
-  // Various migration methods (old cookie, popup and per-host data gets
-  // migrated to the new format). When calling these functions, |lock_|
-  // should not be held, since these functions will send out notifications of
-  // preference changes.
-  void MigrateObsoletePerhostPref();
-  void MigrateObsoletePopupsPref();
   void MigrateObsoleteContentSettingsPatternPref();
   void MigrateObsoleteGeolocationPref();
   void MigrateObsoleteNotificationsPrefs();

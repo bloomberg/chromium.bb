@@ -109,10 +109,6 @@ const char kAcceptLanguages[] = "intl.accept_languages";
 // stored in non-translatable part of the resource bundle.
 const char kStaticEncodings[] = "intl.static_encodings";
 
-// OBSOLETE.  The list of hostnames for which we whitelist popups (rather than
-// blocking).
-const char kPopupWhitelistedHosts[] = "profile.popup_whitelisted_sites";
-
 // WebKit preferences.
 const char kWebKitGlobalStandardFontFamily[] =
     "webkit.webprefs.global.standard_font_family";
@@ -809,10 +805,6 @@ const char kDesktopNotificationPosition[] =
 
 // Dictionary of content settings applied to all hosts by default.
 const char kDefaultContentSettings[] = "profile.default_content_settings";
-
-// OBSOLETE. Dictionary that maps hostnames to content related settings.
-// Default settings will be applied to hosts not in this pref.
-const char kPerHostContentSettings[] = "profile.per_host_content_settings";
 
 // Version of the pattern format used to define content settings.
 const char kContentSettingsVersion[] = "profile.content_settings.pref_version";

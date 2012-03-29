@@ -103,10 +103,6 @@ void PrefProvider::RegisterUserPrefs(PrefService* prefs) {
                           PrefService::SYNCABLE_PREF);
   prefs->RegisterListPref(prefs::kDesktopNotificationDeniedOrigins,
                           PrefService::SYNCABLE_PREF);
-  prefs->RegisterListPref(prefs::kPopupWhitelistedHosts,
-                          PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterDictionaryPref(prefs::kPerHostContentSettings,
-                                PrefService::UNSYNCABLE_PREF);
 }
 
 PrefProvider::PrefProvider(PrefService* prefs,
@@ -117,8 +113,6 @@ PrefProvider::PrefProvider(PrefService* prefs,
   DCHECK(prefs_);
   if (!is_incognito_) {
     // Migrate obsolete preferences.
-    MigrateObsoletePerhostPref();
-    MigrateObsoletePopupsPref();
     MigrateObsoleteContentSettingsPatternPref();
     MigrateObsoleteGeolocationPref();
     MigrateObsoleteNotificationsPrefs();
@@ -540,67 +534,6 @@ void PrefProvider::ShutdownOnUIThread() {
   RemoveAllObservers();
   pref_change_registrar_.RemoveAll();
   prefs_ = NULL;
-}
-
-void PrefProvider::MigrateObsoletePerhostPref() {
-  if (prefs_->HasPrefPath(prefs::kPerHostContentSettings)) {
-    const DictionaryValue* all_settings_dictionary =
-        prefs_->GetDictionary(prefs::kPerHostContentSettings);
-    DCHECK(all_settings_dictionary);
-    for (DictionaryValue::key_iterator
-         host_it(all_settings_dictionary->begin_keys());
-         host_it != all_settings_dictionary->end_keys(); ++host_it) {
-      const std::string& host(*host_it);
-      ContentSettingsPattern pattern =
-          ContentSettingsPattern::FromString(
-              std::string(ContentSettingsPattern::kDomainWildcard) + host);
-      DictionaryValue* host_settings_dictionary = NULL;
-      bool found = all_settings_dictionary->GetDictionaryWithoutPathExpansion(
-          host, &host_settings_dictionary);
-      DCHECK(found);
-
-      for (size_t i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
-        ContentSettingsType content_type = static_cast<ContentSettingsType>(i);
-
-        int setting_int_value = CONTENT_SETTING_DEFAULT;
-        if (host_settings_dictionary->GetIntegerWithoutPathExpansion(
-                GetTypeName(content_type), &setting_int_value)) {
-          ContentSetting setting = IntToContentSetting(setting_int_value);
-
-          setting = FixObsoleteCookiePromptMode(content_type, setting);
-
-          if (setting != CONTENT_SETTING_DEFAULT) {
-            SetWebsiteSetting(
-                pattern,
-                pattern,
-                content_type,
-                "",
-               Value::CreateIntegerValue(setting));
-          }
-        }
-      }
-    }
-    prefs_->ClearPref(prefs::kPerHostContentSettings);
-  }
-}
-
-void PrefProvider::MigrateObsoletePopupsPref() {
-  if (prefs_->HasPrefPath(prefs::kPopupWhitelistedHosts)) {
-    const ListValue* whitelist_pref =
-        prefs_->GetList(prefs::kPopupWhitelistedHosts);
-    for (ListValue::const_iterator i(whitelist_pref->begin());
-         i != whitelist_pref->end(); ++i) {
-      std::string host;
-      (*i)->GetAsString(&host);
-      SetWebsiteSetting(ContentSettingsPattern::FromString(host),
-                        ContentSettingsPattern::FromString(host),
-                        CONTENT_SETTINGS_TYPE_POPUPS,
-                        "",
-                        Value::CreateIntegerValue(
-          CONTENT_SETTING_ALLOW));
-    }
-    prefs_->ClearPref(prefs::kPopupWhitelistedHosts);
-  }
 }
 
 void PrefProvider::MigrateObsoleteContentSettingsPatternPref() {

@@ -669,24 +669,6 @@ TEST_F(HostContentSettingsMapTest, OffTheRecord) {
   otr_map->ShutdownOnUIThread();
 }
 
-TEST_F(HostContentSettingsMapTest, MigrateObsoletePopupPrefs) {
-  TestingProfile profile;
-  PrefService* prefs = profile.GetPrefs();
-
-  // Set obsolete data.
-  ListValue popup_hosts;
-  popup_hosts.Append(new StringValue("[*.]example.com"));
-  prefs->Set(prefs::kPopupWhitelistedHosts, popup_hosts);
-
-  HostContentSettingsMap* host_content_settings_map =
-      profile.GetHostContentSettingsMap();
-
-  GURL host("http://example.com");
-  EXPECT_EQ(CONTENT_SETTING_ALLOW,
-            host_content_settings_map->GetContentSetting(
-                host, host, CONTENT_SETTINGS_TYPE_POPUPS, ""));
-}
-
 TEST_F(HostContentSettingsMapTest, MigrateObsoleteNotificationsPrefs) {
   TestingProfile profile;
   PrefService* prefs = profile.GetPrefs();

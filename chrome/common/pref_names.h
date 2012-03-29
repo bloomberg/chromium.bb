@@ -40,7 +40,6 @@ extern const char kGlobalDefaultCharset[];
 extern const char kDefaultCharset[];
 extern const char kAcceptLanguages[];
 extern const char kStaticEncodings[];
-extern const char kPopupWhitelistedHosts[];
 extern const char kShowBookmarkBar[];
 extern const char kBookmarkEditorExpandedNodes[];
 extern const char kWebKitGlobalStandardFontFamily[];
@@ -295,7 +294,6 @@ extern const char kDesktopNotificationAllowedOrigins[];  // OBSOLETE
 extern const char kDesktopNotificationDeniedOrigins[];  // OBSOLETE
 extern const char kDesktopNotificationPosition[];
 extern const char kDefaultContentSettings[];
-extern const char kPerHostContentSettings[];  // OBSOLETE
 extern const char kContentSettingsVersion[];
 extern const char kContentSettingsPatterns[];  // OBSOLETE
 extern const char kContentSettingsPatternPairs[];
