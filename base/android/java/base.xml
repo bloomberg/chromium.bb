@@ -5,10 +5,21 @@
   <!-- Set global properties for this build -->
   <property environment="env"/>
   <property name="sdk.dir" location="${env.ANDROID_SDK_ROOT}"/>
+  <!-- TODO(jrg): The apk-runner's version is hardcoded to SDK version 14. These
+    two should be unified. -->
   <property name="sdk.version" value="${env.ANDROID_SDK_VERSION}"/>
   <property name="src" location="."/>
   <property name="build" location="build"/>
   <property name="dist" location="dist"/>
+
+  <!-- Set path depending on the type of repository. If ANDROID_BUILD_TOP is
+    set then build using the provided location. Otherwise, assume the build
+    is using the released SDK and set the path accordingly. -->
+  <condition property="location.base"
+             value="${sdk.dir}"
+             else="${sdk.dir}/platforms/android-${sdk.version}">
+    <isset property="env.ANDROID_BUILD_TOP"/>
+  </condition>
 
   <target name="init">
     <!-- Create the time stamp -->
@@ -22,7 +33,7 @@
     <!-- Compile the java code from ${src} into ${build} -->
     <javac srcdir="${src}" destdir="${build}">
       <classpath>
-        <path location="${sdk.dir}/platforms/android-${sdk.version}/android.jar"/>
+        <path location="${location.base}/android.jar"/>
       </classpath>
     </javac>
   </target>
