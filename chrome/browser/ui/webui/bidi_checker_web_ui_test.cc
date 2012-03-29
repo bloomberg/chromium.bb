@@ -114,7 +114,7 @@ static void SetupHistoryPageTest(Browser* browser,
 
 // TODO(estade): fix this test: http://crbug.com/119595
 IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestLTR,
-                       DISABLED_TestHistoryPage) {
+                       TestHistoryPage) {
   // Test an Israeli news site with a Hebrew title.
   SetupHistoryPageTest(browser(),
                        "http://www.ynet.co.il",
@@ -124,7 +124,7 @@ IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestLTR,
 
 // TODO(estade): fix this test: http://crbug.com/119595
 IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestRTL,
-                       DISABLED_TestHistoryPage) {
+                       TestHistoryPage) {
   SetupHistoryPageTest(browser(), "http://www.google.com", "Google");
   RunBidiCheckerOnPage(chrome::kChromeUIHistoryFrameURL);
 }

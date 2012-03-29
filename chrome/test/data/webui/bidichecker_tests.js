@@ -112,7 +112,18 @@ function filtersForPage(pageName, isRTL) {
         // BUG: http://crbug.com/94070
         bidichecker.FilterFactory.atText("Google Cloud Print")
       ]
-    }
+    },
+    "chrome://history-frame" : {
+      "LTR" : [
+        // BUG: http://crbug.com/119595
+        bidichecker.FilterFactory.atText("בדיקה")
+      ],
+      "RTL" : [
+        // BUG: http://crbug.com/119595
+        bidichecker.FilterFactory.atText("Google"),
+        bidichecker.FilterFactory.atText("www.google.com")
+      ],
+    },
   };
 
   var dir = isRTL ? "RTL" : "LTR";
