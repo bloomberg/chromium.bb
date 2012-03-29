@@ -61,8 +61,9 @@ class AutofillExternalDelegate {
   // used to help record the metrics of when a new popup is shown.
   void DidEndTextFieldEditing();
 
-  // Inform the delegate that an autofill suggestion have been chosen.
-  void DidAcceptAutofillSuggestions(const string16& value,
+  // Inform the delegate that an autofill suggestion have been chosen. Returns
+  // true if the suggestion was selected.
+  bool DidAcceptAutofillSuggestions(const string16& value,
                                     int unique_id,
                                     unsigned index);
 

@@ -35,7 +35,7 @@ class MockAutofillExternalDelegate : public TestAutofillExternalDelegate {
 
 class TestAutofillPopupView : public AutofillPopupView {
  public:
-  explicit TestAutofillPopupView(
+  TestAutofillPopupView(
       content::WebContents* web_contents,
       AutofillExternalDelegate* autofill_external_delegate)
       : AutofillPopupView(web_contents, autofill_external_delegate) {}
@@ -43,16 +43,12 @@ class TestAutofillPopupView : public AutofillPopupView {
 
   MOCK_METHOD0(Hide, void());
 
-  MOCK_METHOD1(InvalidateRow, void(size_t));
-
-  void SetSelectedLine(size_t selected_line) {
-    AutofillPopupView::SetSelectedLine(selected_line);
-  }
-
  protected:
   virtual void ShowInternal() OVERRIDE {}
 
   virtual void HideInternal() OVERRIDE {}
+
+  virtual void InvalidateRow(size_t row) OVERRIDE {}
 };
 
 }  // namespace
@@ -108,28 +104,4 @@ IN_PROC_BROWSER_TEST_F(AutofillPopupViewBrowserTest,
   observer.Wait();
 
   // The mock verifies that the call was made.
-}
-
-IN_PROC_BROWSER_TEST_F(AutofillPopupViewBrowserTest,
-                       SetSelectedAutofillLineAndCallInvalidate) {
-  std::vector<string16> autofill_values;
-  autofill_values.push_back(string16());
-  std::vector<int> autofill_ids;
-  autofill_ids.push_back(0);
-  autofill_popup_view_->Show(
-      autofill_values, autofill_values, autofill_values, autofill_ids, 0);
-
-  // Make sure that when a new line is selected, it is invalidated so it can
-  // be updated to show it is selected.
-  int selected_line = 0;
-  EXPECT_CALL(*autofill_popup_view_, InvalidateRow(selected_line));
-  autofill_popup_view_->SetSelectedLine(selected_line);
-
-  // Ensure that the row isn't invalidated if it didn't change.
-  EXPECT_CALL(*autofill_popup_view_, InvalidateRow(selected_line)).Times(0);
-  autofill_popup_view_->SetSelectedLine(selected_line);
-
-  // Change back to no selection.
-  EXPECT_CALL(*autofill_popup_view_, InvalidateRow(selected_line));
-  autofill_popup_view_->SetSelectedLine(-1);
 }

@@ -12,11 +12,21 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 
+namespace {
+
+// Used to indicate that no line is currently selected by the user.
+const int kNoSelection = -1;
+
+}  // end namespace
+
 AutofillPopupView::AutofillPopupView(
     content::WebContents* web_contents,
     AutofillExternalDelegate* external_delegate)
     : external_delegate_(external_delegate),
-      selected_line_(-1) {
+      selected_line_(kNoSelection) {
+  if (!web_contents)
+    return;
+
   registrar_.Add(this,
                  content::NOTIFICATION_WEB_CONTENTS_HIDDEN,
                  content::Source<content::WebContents>(web_contents));
@@ -54,19 +64,58 @@ void AutofillPopupView::SetSelectedLine(int selected_line) {
   if (selected_line_ == selected_line)
     return;
 
-  if (selected_line_ != -1)
+  if (selected_line_ != kNoSelection)
     InvalidateRow(selected_line_);
 
-  if (selected_line != -1)
+  if (selected_line != kNoSelection)
     InvalidateRow(selected_line);
 
   selected_line_ = selected_line;
 
-  if (selected_line_ != -1) {
+  if (selected_line_ != kNoSelection) {
     external_delegate_->SelectAutofillSuggestionAtIndex(
         autofill_unique_ids_[selected_line_],
         selected_line);
   }
+}
+
+void AutofillPopupView::SelectNextLine() {
+  int new_selected_line = selected_line_ + 1;
+
+  if (new_selected_line == static_cast<int>(autofill_values_.size()))
+    new_selected_line = 0;
+
+  SetSelectedLine(new_selected_line);
+}
+
+void AutofillPopupView::SelectPreviousLine() {
+  int new_selected_line = selected_line_ - 1;
+
+  if (new_selected_line <= kNoSelection)
+    new_selected_line = autofill_values_.size() - 1;
+
+  SetSelectedLine(new_selected_line);
+}
+
+bool AutofillPopupView::AcceptSelectedLine() {
+  if (selected_line_ == kNoSelection)
+    return false;
+
+  DCHECK_GE(selected_line_, 0);
+  DCHECK_LT(selected_line_, static_cast<int>(autofill_values_.size()));
+
+  return external_delegate()->DidAcceptAutofillSuggestions(
+      autofill_values_[selected_line_],
+      autofill_unique_ids_[selected_line_],
+      selected_line_);
+}
+
+bool AutofillPopupView::RemoveSelectedLine() {
+  if (selected_line_ == kNoSelection)
+    return false;
+
+  // TODO(csharp) add removal code.
+  return false;
 }
 
 void AutofillPopupView::Observe(int type,

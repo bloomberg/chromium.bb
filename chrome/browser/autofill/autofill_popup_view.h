@@ -75,6 +75,18 @@ class AutofillPopupView : public content::NotificationObserver {
   // Change which line is currently selected by the user.
   void SetSelectedLine(int selected_line);
 
+  // Increase the selected line by 1, properly handling wrapping.
+  void SelectNextLine();
+
+  // Decrease the selected line by 1, properly handling wrapping.
+  void SelectPreviousLine();
+
+  // The user has choosen the selected line.
+  bool AcceptSelectedLine();
+
+  // The user has removed a suggestion.
+  bool RemoveSelectedLine();
+
  private:
   // content::NotificationObserver method override.
   virtual void Observe(int type,
@@ -100,7 +112,7 @@ class AutofillPopupView : public content::NotificationObserver {
   int separator_index_;
 
   // The line that is currently selected by the user.
-  // -1 indicates that no line is currently selected.
+  // |kNoSelection| indicates that no line is currently selected.
   int selected_line_;
 };
 

@@ -140,13 +140,13 @@ void AutofillExternalDelegate::DidEndTextFieldEditing() {
   has_shown_autofill_popup_for_current_edit_ = false;
 }
 
-void AutofillExternalDelegate::DidAcceptAutofillSuggestions(
+bool AutofillExternalDelegate::DidAcceptAutofillSuggestions(
     const string16& value,
     int unique_id,
     unsigned index) {
   // If the selected element is a warning we don't want to do anything.
   if (unique_id < 0)
-    return;
+    return false;
 
   // TODO(csharp): Add the password autofill manager.
   // if (password_autofill_manager_->DidAcceptAutofillSuggestion(node, value))
@@ -174,6 +174,8 @@ void AutofillExternalDelegate::DidAcceptAutofillSuggestions(
   }
 
   HideAutofillPopup();
+
+  return true;
 }
 
 void AutofillExternalDelegate::ClearPreviewedForm() {
