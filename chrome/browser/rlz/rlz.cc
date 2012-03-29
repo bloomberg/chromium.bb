@@ -193,6 +193,7 @@ bool RLZTracker::Init(bool first_run, int delay, bool google_default_search,
   registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_PENDING,
                  content::NotificationService::AllSources());
 
+  rlz_lib::SetURLRequestContext(g_browser_process->system_request_context());
   ScheduleDelayedInit(delay);
 
   return true;
@@ -213,8 +214,6 @@ void RLZTracker::DelayedInit() {
   worker_pool_token_ = BrowserThread::GetBlockingPool()->GetSequenceToken();
 
   bool schedule_ping = false;
-
-  rlz_lib::SetURLRequestContext(g_browser_process->system_request_context());
 
   // For organic brandcodes do not use rlz at all. Empty brandcode usually
   // means a chromium install. This is ok.
