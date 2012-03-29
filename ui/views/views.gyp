@@ -290,8 +290,6 @@
         'painter.h',
         'repeat_controller.cc',
         'repeat_controller.h',
-        'touchui/touch_mode_support.cc',
-        'touchui/touch_mode_support.h',
         'touchui/touch_selection_controller.cc',
         'touchui/touch_selection_controller.h',
         'view.cc',
