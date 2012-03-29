@@ -152,8 +152,6 @@ EWMH
 
 EGL/gbm
 
- - Land Anders gbm_surface patches.
-
  - Don't wl_display_iterate in eglSwapBuffer, send an eventfd fd?
 
  - Land Robert Braggs EGL extensions: frame age, swap with damage
