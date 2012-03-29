@@ -206,7 +206,7 @@ function addRowsForExtraParams(tablePrinter, entry, enableSecurityStripping) {
         // string.
         if (k == 'source_dependency' && typeof value == 'object') {
           var link = '#events&s=' + value.id;
-          var sourceType = getKeyWithValue(LogSourceType, value.type);
+          var sourceType = LogSourceTypeNames[value.type];
           paramStr += value.id + ' (' + sourceType + ')';
           addTextRows(tablePrinter, paramStr, link);
           continue;
@@ -402,7 +402,7 @@ function getTextForEvent(entry) {
     text = ' ';
   }
 
-  text += getKeyWithValue(LogEventType, entry.orig.type);
+  text += LogEventTypeNames[entry.orig.type];
   return text;
 }
 

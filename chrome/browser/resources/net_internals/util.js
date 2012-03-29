@@ -101,6 +101,19 @@ function getKeyWithValue(map, value) {
 }
 
 /**
+ * Returns a new map with the keys and values of the input map inverted.
+ * @param {!Object} map The object to have its keys and values reversed.  Not
+ *     modified by the function call.
+ * @return {Object} The new map with the reversed keys and values.
+ */
+function makeInverseMap(map) {
+  var reversed = {};
+  for (var key in map)
+    reversed[map[key]] = key;
+  return reversed;
+}
+
+/**
  * Looks up |key| in |map|, and returns the resulting entry, if there is one.
  * Otherwise, returns |key|.  Intended primarily for use with incomplete
  * tables, and for reasonable behavior with system enumerations that may be

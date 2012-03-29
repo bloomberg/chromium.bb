@@ -4,13 +4,16 @@
 
 /**
  * Dictionary of constants (Initialized soon after loading by data from browser,
- * updated on load log).
+ * updated on load log).  The *Types dictionaries map strings to numeric IDs,
+ * while the *TypeNames are the other way around.
  */
 var LogEventType = null;
+var LogEventTypeNames = null;
 var LogEventPhase = null;
-var ClientInfo = null;
 var LogSourceType = null;
+var LogSourceTypeNames = null;
 var LogLevelType = null;
+var ClientInfo = null;
 var NetError = null;
 var LoadFlag = null;
 var AddressFamily = null;
@@ -241,10 +244,12 @@ ConstantsObserver.prototype.onReceivedConstants = function(receivedConstants) {
   Constants = receivedConstants;
 
   LogEventType = Constants.logEventTypes;
-  ClientInfo = Constants.clientInfo;
+  LogEventTypeNames = makeInverseMap(LogEventType);
   LogEventPhase = Constants.logEventPhase;
   LogSourceType = Constants.logSourceType;
+  LogSourceTypeNames = makeInverseMap(LogSourceType);
   LogLevelType = Constants.logLevelType;
+  ClientInfo = Constants.clientInfo;
   LoadFlag = Constants.loadFlag;
   NetError = Constants.netError;
   AddressFamily = Constants.addressFamily;

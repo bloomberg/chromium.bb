@@ -69,7 +69,7 @@ var SourceEntry = (function() {
       if (e.source.type == LogSourceType.NONE) {
         // NONE is what we use for global events that aren't actually grouped
         // by a "source ID", so we will just stringize the event's type.
-        this.description_ = getKeyWithValue(LogEventType, e.type);
+        this.description_ = LogEventTypeNames[e.type];
         return;
       }
 
@@ -235,7 +235,7 @@ var SourceEntry = (function() {
     },
 
     getSourceTypeString: function() {
-      return getKeyWithValue(LogSourceType, this.entries_[0].source.type);
+      return LogSourceTypeNames[this.entries_[0].source.type];
     },
 
     getSourceType: function() {
