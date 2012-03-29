@@ -31,6 +31,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/text/text_elider.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/border.h"
@@ -40,6 +41,7 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/link_listener.h"
+#include "ui/views/controls/throbber.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/grid_layout.h"
@@ -49,54 +51,37 @@
 #include "ui/views/window/dialog_delegate.h"
 #include "ui/views/window/non_client_view.h"
 
+// TODO(binji): The current constrained dialog implementation already has a
+// close button. Remove this define and the #if checks below when we switch to
+// the new implementation.
+// #define USE_CLOSE_BUTTON
+
 using content::WebContents;
+using views::GridLayout;
 
 namespace {
-
-// The space in pixels between the top-level groups in the dialog.
-const int kContentAreaSpacing = 18;
 
 // The space in pixels between the top-level groups and the dialog border.
 const int kContentAreaBorder = 12;
 
-// The space in pixels between controls in a group.
-const int kControlSpacing = 6;
-
 // The minimum size to display the constrained dialog.
 const int kDialogMinWidth = 400;
 
-// MinimumSizeView -------------------------------------------------------------
+// The maximum width in pixels of a suggested extension's title link.
+const int kTitleLinkMaxWidth = 130;
 
-// A view with a minimum size.
-class MinimumSizeView : public views::View {
- public:
-  explicit MinimumSizeView(const gfx::Size& size);
-  virtual ~MinimumSizeView();
+// The color used to dim disabled elements.
+const SkColor kHalfOpacityWhite = SkColorSetARGB(128, 255, 255, 255);
 
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+// The color used to display a disabled link.
+const SkColor kDisabledLinkColor = SkColorSetRGB(128, 128, 128);
 
- private:
-  gfx::Size size_;
-
-  DISALLOW_COPY_AND_ASSIGN(MinimumSizeView);
-};
-
-MinimumSizeView::MinimumSizeView(const gfx::Size& size)
-  : size_(size) {
-}
-
-MinimumSizeView::~MinimumSizeView() {
-}
-
-gfx::Size MinimumSizeView::GetPreferredSize() {
-  views::LayoutManager* layout_manager = GetLayoutManager();
-  if (layout_manager) {
-    gfx::Size lm_size = layout_manager->GetPreferredSize(this);
-    return gfx::Size(std::max(lm_size.width(), size_.width()),
-                     std::max(lm_size.height(), size_.height()));
+// Enables or disables all child views of |view|.
+void EnableChildViews(views::View* view, bool enabled) {
+  for (int i = 0; i < view->child_count(); ++i) {
+    views::View* child = view->child_at(i);
+    child->SetEnabled(enabled);
   }
-
-  return size_;
 }
 
 // StarsView -------------------------------------------------------------------
@@ -169,6 +154,9 @@ class ServiceButtonsView : public views::View,
 
   virtual gfx::Size GetPreferredSize() OVERRIDE;
 
+ protected:
+  virtual void OnEnabledChanged() OVERRIDE;
+
  private:
   const WebIntentPickerModel* model_;
   Delegate* delegate_;
@@ -195,9 +183,9 @@ void ServiceButtonsView::Update() {
     return;
 
   views::ColumnSet* cs = grid_layout->AddColumnSet(0);
-  cs->AddPaddingColumn(1, 0);
-  cs->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER, 0,
-      views::GridLayout::USE_PREF, 0, 0);
+  cs->AddPaddingColumn(0, views::kUnrelatedControlHorizontalSpacing);
+  cs->AddColumn(GridLayout::CENTER, GridLayout::CENTER, 0, GridLayout::USE_PREF,
+                0, 0);
   cs->AddPaddingColumn(1, 0);
 
   for (size_t i = 0; i < model_->GetInstalledServiceCount(); ++i) {
@@ -213,11 +201,11 @@ void ServiceButtonsView::Update() {
     button->SetIcon(*service.favicon.ToSkBitmap());
     button->set_tag(static_cast<int>(i));
     grid_layout->AddView(button);
+    grid_layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
   }
 
-  // Add a padding row between the service buttons and the label when there
-  // are service buttons to display.
-  grid_layout->AddPaddingRow(0, kContentAreaSpacing);
+  // Additional space to separate the buttons from the suggestions.
+  grid_layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 }
 
 void ServiceButtonsView::ButtonPressed(views::Button* sender,
@@ -233,15 +221,84 @@ gfx::Size ServiceButtonsView::GetPreferredSize() {
   return GetLayoutManager()->GetPreferredSize(this);
 }
 
-// SuggestedExtensionsView -----------------------------------------------------
+void ServiceButtonsView::OnEnabledChanged() {
+  EnableChildViews(this, enabled());
+  View::OnEnabledChanged();
+}
 
-// A view that contains suggested extensions from the Chrome Web Store that
-// provide an intent service matching the action/type pair.
-// This view also displays the "More suggestions" link which searches the
-// Chrome Web Store for more extensions.
-class SuggestedExtensionsView : public views::View,
-                                       views::ButtonListener,
-                                       views::LinkListener {
+// SuggestedExtensionsLayout ---------------------------------------------------
+
+// A LayoutManager used by a row of the SuggestedExtensionsView. It is similar
+// to a BoxLayout, but it right aligns the rightmost view (which is the install
+// button). It also uses the maximum height of all views in the row as a
+// preferred height so it doesn't change when the install button is hidden.
+class SuggestedExtensionsLayout : public views::LayoutManager {
+ public:
+  SuggestedExtensionsLayout();
+  virtual ~SuggestedExtensionsLayout();
+
+  // Implementation of views::LayoutManager.
+  virtual void Layout(views::View* host) OVERRIDE;
+  virtual gfx::Size GetPreferredSize(views::View* host) OVERRIDE;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SuggestedExtensionsLayout);
+};
+
+SuggestedExtensionsLayout::SuggestedExtensionsLayout() {
+}
+
+SuggestedExtensionsLayout::~SuggestedExtensionsLayout() {
+}
+
+void SuggestedExtensionsLayout::Layout(views::View* host) {
+  gfx::Rect child_area(host->GetLocalBounds());
+  child_area.Inset(host->GetInsets());
+  int x = child_area.x();
+  int y = child_area.y();
+
+  for (int i = 0; i < host->child_count(); ++i) {
+    views::View* child = host->child_at(i);
+    if (!child->visible())
+      continue;
+    gfx::Size size(child->GetPreferredSize());
+    gfx::Rect child_bounds(x, y, size.width(), child_area.height());
+    if (i == host->child_count() - 1) {
+      // Last child (the install button) should be right aligned.
+      child_bounds.set_x(std::max(child_area.width() - size.width(), x));
+    } else {
+      x += size.width() + views::kRelatedControlHorizontalSpacing;
+    }
+    // Clamp child view bounds to |child_area|.
+    child->SetBoundsRect(child_bounds.Intersect(child_area));
+  }
+}
+
+gfx::Size SuggestedExtensionsLayout::GetPreferredSize(views::View* host) {
+  int width = 0;
+  int height = 0;
+  for (int i = 0; i < host->child_count(); ++i) {
+    views::View* child = host->child_at(i);
+    gfx::Size size(child->GetPreferredSize());
+    // The preferred height includes visible and invisible children. This
+    // prevents jank when a child is hidden.
+    height = std::max(height, size.height());
+    if (!child->visible())
+      continue;
+    if (i != 0)
+      width += views::kRelatedControlHorizontalSpacing;
+  }
+  gfx::Insets insets(host->GetInsets());
+  return gfx::Size(width + insets.width(), height + insets.height());
+}
+
+// SuggestedExtensionsRowView --------------------------------------------------
+
+// A view for each row in the SuggestedExtensionsView. It displays information
+// for a given SuggestedExtension.
+class SuggestedExtensionsRowView : public views::View,
+                                   public views::ButtonListener,
+                                   public views::LinkListener {
  public:
   class Delegate {
    public:
@@ -251,29 +308,143 @@ class SuggestedExtensionsView : public views::View,
     // Called when the user clicks the extension title link.
     virtual void OnExtensionLinkClicked(const string16& extension_id) = 0;
 
-    // Called when the user clicks the "More Suggestions" link.
-    virtual void OnMoreSuggestionsLinkClicked() = 0;
-
    protected:
     virtual ~Delegate() {}
   };
 
-  // A helper class that forwards from the LinkListener to Delegate.
-  class LinkListener : public views::LinkListener {
-   public:
-    LinkListener(Delegate* delegate, const string16& extension_id);
-    virtual ~LinkListener();
+  SuggestedExtensionsRowView(
+      const WebIntentPickerModel::SuggestedExtension* extension,
+      Delegate* delegate);
+  virtual ~SuggestedExtensionsRowView();
 
-    // LinkListener implementation.
-    virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
+  // ButtonListener implementation.
+  virtual void ButtonPressed(views::Button* sender,
+                             const views::Event& event) OVERRIDE;
 
-   private:
-    Delegate* delegate_;
-    const string16& extension_id_;
-  };
+  // LinkListener implementation.
+  void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
 
+  // Start an animating throbber for this row, and hide the star rating and the
+  // install button.
+  void StartThrobber();
+
+  // Stop the throbber for this row, and show the star rating and the install
+  // button.
+  void StopThrobber();
+
+ protected:
+  virtual void OnEnabledChanged() OVERRIDE;
+
+  virtual void PaintChildren(gfx::Canvas* canvas) OVERRIDE;
+
+ private:
+  // The extension to display in this row.
+  const WebIntentPickerModel::SuggestedExtension* extension_;
+
+  // A delegate to respond to button presses and clicked links.
+  Delegate* delegate_;
+
+  // The icon of the extension.
+  views::ImageView* icon_;
+
+  // The title of the extension, which links to the CWS detailed description of
+  // this extension.
+  views::Link* title_link_;
+
+  // A throbber to display when the extension is being installed.
+  views::Throbber* throbber_;
+
+  // The star rating of this extension.
+  StarsView* stars_;
+
+  // A button to install the extension.
+  views::NativeTextButton* install_button_;
+
+  DISALLOW_COPY_AND_ASSIGN(SuggestedExtensionsRowView);
+};
+
+SuggestedExtensionsRowView::SuggestedExtensionsRowView(
+    const WebIntentPickerModel::SuggestedExtension* extension,
+    Delegate* delegate)
+    : extension_(extension),
+      delegate_(delegate) {
+  SetLayoutManager(new SuggestedExtensionsLayout);
+
+  icon_ = new views::ImageView();
+  icon_->SetImage(extension_->icon.ToSkBitmap());
+  AddChildView(icon_);
+
+  string16 elided_title = ui::ElideText(
+      extension_->title, gfx::Font(), kTitleLinkMaxWidth, ui::ELIDE_AT_END);
+  title_link_ = new views::Link(elided_title);
+  title_link_->set_listener(this);
+  AddChildView(title_link_);
+
+  throbber_ = new views::Throbber(60, true);
+  throbber_->SetVisible(false);
+  AddChildView(throbber_);
+
+  stars_ = new StarsView(extension_->average_rating);
+  AddChildView(stars_);
+
+  install_button_= new views::NativeTextButton(
+      this, l10n_util::GetStringUTF16(IDS_INTENT_PICKER_INSTALL_EXTENSION));
+  AddChildView(install_button_);
+}
+
+SuggestedExtensionsRowView::~SuggestedExtensionsRowView() {
+}
+
+void SuggestedExtensionsRowView::ButtonPressed(views::Button* sender,
+                                               const views::Event& event) {
+  delegate_->OnExtensionInstallClicked(extension_->id);
+}
+
+void SuggestedExtensionsRowView::LinkClicked(views::Link* source,
+                                             int event_flags) {
+  delegate_->OnExtensionLinkClicked(extension_->id);
+}
+
+void SuggestedExtensionsRowView::StartThrobber() {
+  stars_->SetVisible(false);
+  install_button_->SetVisible(false);
+  throbber_->SetVisible(true);
+  throbber_->Start();
+  Layout();
+}
+
+void SuggestedExtensionsRowView::StopThrobber() {
+  stars_->SetVisible(true);
+  install_button_->SetVisible(true);
+  throbber_->SetVisible(false);
+  throbber_->Stop();
+  Layout();
+}
+
+void SuggestedExtensionsRowView::OnEnabledChanged() {
+  title_link_->SetEnabled(enabled());
+  stars_->SetVisible(enabled());
+  install_button_->SetVisible(enabled());
+  View::OnEnabledChanged();
+  Layout();
+}
+
+void SuggestedExtensionsRowView::PaintChildren(gfx::Canvas* canvas) {
+  View::PaintChildren(canvas);
+  if (!enabled())
+    canvas->FillRect(GetLocalBounds(), kHalfOpacityWhite);
+}
+
+// SuggestedExtensionsView -----------------------------------------------------
+
+// A view that contains suggested extensions from the Chrome Web Store that
+// provide an intent service matching the action/type pair.
+// This view also displays the "More suggestions" link which searches the
+// Chrome Web Store for more extensions.
+class SuggestedExtensionsView : public views::View {
+ public:
   SuggestedExtensionsView(const WebIntentPickerModel* model,
-                          Delegate* delegate);
+                          SuggestedExtensionsRowView::Delegate* delegate);
 
   virtual ~SuggestedExtensionsView();
 
@@ -282,41 +453,23 @@ class SuggestedExtensionsView : public views::View,
   // Update the view to the new model data.
   void Update();
 
-  // ButtonListener implementation.
-  virtual void ButtonPressed(views::Button* sender,
-                             const views::Event& event) OVERRIDE;
+  // Show the install throbber for the row containing |extension_id|. This
+  // function also hides hides and disables other buttons and links.
+  void StartThrobber(const string16& extension_id);
 
-  // LinkListener implementation.
-  virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
+  // Hide the install throbber. This function re-enables all buttons and links.
+  void StopThrobber();
 
  private:
-  typedef ScopedVector<LinkListener> LinkListeners;
-
   const WebIntentPickerModel* model_;
-  Delegate* delegate_;
-  LinkListeners link_listeners_;
+  SuggestedExtensionsRowView::Delegate* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(SuggestedExtensionsView);
 };
 
-SuggestedExtensionsView::LinkListener::LinkListener(
-    Delegate* delegate,
-    const string16& extension_id)
-    : delegate_(delegate),
-      extension_id_(extension_id) {
-}
-
-SuggestedExtensionsView::LinkListener::~LinkListener() {
-}
-
-void SuggestedExtensionsView::LinkListener::LinkClicked(views::Link* source,
-                                                        int event_flags) {
-  delegate_->OnExtensionLinkClicked(extension_id_);
-}
-
 SuggestedExtensionsView::SuggestedExtensionsView(
     const WebIntentPickerModel* model,
-    Delegate* delegate)
+    SuggestedExtensionsRowView::Delegate* delegate)
     : model_(model),
       delegate_(delegate) {
   Update();
@@ -332,85 +485,37 @@ void SuggestedExtensionsView::Clear() {
 void SuggestedExtensionsView::Update() {
   Clear();
 
-  const int kNormalColumnSet = 0;
-  const int kMoreSuggestionsColumnSet = 1;
-  const views::GridLayout::Alignment kCenter = views::GridLayout::CENTER;
-  const views::GridLayout::SizeType kUsePref = views::GridLayout::USE_PREF;
+  views::BoxLayout* layout = new views::BoxLayout(
+      views::BoxLayout::kVertical, 0, 0, views::kRelatedControlVerticalSpacing);
+  SetLayoutManager(layout);
 
-  views::GridLayout* grid_layout = new views::GridLayout(this);
-  SetLayoutManager(grid_layout);
-  views::ColumnSet* cs = grid_layout->AddColumnSet(kNormalColumnSet);
-  cs->AddColumn(kCenter, kCenter, 0, kUsePref, 0, 0);  // Icon.
-  cs->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
-  cs->AddColumn(kCenter, kCenter, 0, kUsePref, 0, 0);  // Title.
-  cs->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
-  cs->AddColumn(kCenter, kCenter, 0, kUsePref, 0, 0);  // Stars.
-  cs->AddPaddingColumn(1, views::kUnrelatedControlHorizontalSpacing);
-  cs->AddColumn(kCenter, kCenter, 0, kUsePref, 0, 0);  // Install button.
-
-  views::ColumnSet* more_cs = grid_layout->AddColumnSet(1);
-  more_cs->AddColumn(kCenter, kCenter, 0, kUsePref, 0, 0);  // Icon.
-  more_cs->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
-  more_cs->AddColumn(kCenter, kCenter, 0, kUsePref, 0, 0);  // Label.
-  more_cs->AddPaddingColumn(1, views::kUnrelatedControlHorizontalSpacing);
-
-  if (model_->GetSuggestedExtensionCount() != 0) {
-    for (size_t i = 0; i < model_->GetSuggestedExtensionCount(); ++i) {
-      const WebIntentPickerModel::SuggestedExtension& extension =
-          model_->GetSuggestedExtensionAt(i);
-
-      grid_layout->StartRow(0, kNormalColumnSet);
-
-      views::ImageView* icon = new views::ImageView();
-      icon->SetImage(extension.icon.ToSkBitmap());
-      grid_layout->AddView(icon);
-
-      views::Link* link = new views::Link(extension.title);
-      LinkListener* link_listener = new LinkListener(delegate_, extension.id);
-      link->set_listener(link_listener);
-      link_listeners_.push_back(link_listener);
-      grid_layout->AddView(link);
-
-      StarsView* stars = new StarsView(extension.average_rating);
-      grid_layout->AddView(stars);
-
-      views::NativeTextButton* install_button = new views::NativeTextButton(
-          this,
-          l10n_util::GetStringUTF16(IDS_INTENT_PICKER_INSTALL_EXTENSION));
-      install_button->set_tag(static_cast<int>(i));
-      grid_layout->AddView(install_button);
-    }
-
-    grid_layout->AddPaddingRow(0, kContentAreaSpacing);
+  for (size_t i = 0; i < model_->GetSuggestedExtensionCount(); ++i) {
+    const WebIntentPickerModel::SuggestedExtension& extension =
+        model_->GetSuggestedExtensionAt(i);
+    AddChildView(
+        new SuggestedExtensionsRowView(&extension, delegate_));
   }
-
-  // TODO(binji): Don't display more suggestions if there aren't any.
-
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-
-  grid_layout->StartRow(0, kMoreSuggestionsColumnSet);
-  views::ImageView* cws_icon = new views::ImageView();
-  cws_icon->SetImage(rb.GetBitmapNamed(IDR_WEBSTORE_ICON_16));
-  grid_layout->AddView(cws_icon);
-
-  views::Link* cws_link = new views::Link(
-    l10n_util::GetStringUTF16(IDS_INTENT_PICKER_MORE_SUGGESTIONS));
-  cws_link->set_listener(this);
-  grid_layout->AddView(cws_link);
 }
 
-void SuggestedExtensionsView::ButtonPressed(views::Button* sender,
-                                            const views::Event& event) {
-  size_t extension_index = static_cast<size_t>(sender->tag());
-  const WebIntentPickerModel::SuggestedExtension& extension =
-      model_->GetSuggestedExtensionAt(extension_index);
-
-  delegate_->OnExtensionInstallClicked(extension.id);
+void SuggestedExtensionsView::StartThrobber(const string16& extension_id) {
+  for (size_t i = 0; i < model_->GetSuggestedExtensionCount(); ++i) {
+    SuggestedExtensionsRowView* row =
+        static_cast<SuggestedExtensionsRowView*>(child_at(i));
+    bool extension_id_matches =
+        model_->GetSuggestedExtensionAt(i).id == extension_id;
+    row->SetEnabled(extension_id_matches);
+    if (extension_id_matches)
+      row->StartThrobber();
+  }
 }
 
-void SuggestedExtensionsView::LinkClicked(views::Link* source,
-                                          int event_flags) {
-  delegate_->OnMoreSuggestionsLinkClicked();
+void SuggestedExtensionsView::StopThrobber() {
+  for (size_t i = 0; i < model_->GetSuggestedExtensionCount(); ++i) {
+    SuggestedExtensionsRowView* row =
+        static_cast<SuggestedExtensionsRowView*>(child_at(i));
+    row->SetEnabled(true);
+    row->StopThrobber();
+  }
 }
 
 }  // namespace
@@ -420,10 +525,11 @@ void SuggestedExtensionsView::LinkClicked(views::Link* source,
 // Views implementation of WebIntentPicker.
 class WebIntentPickerViews : public views::ButtonListener,
                              public views::DialogDelegate,
+                             public views::LinkListener,
                              public WebIntentPicker,
                              public WebIntentPickerModelObserver,
                              public ServiceButtonsView::Delegate,
-                             public SuggestedExtensionsView::Delegate {
+                             public SuggestedExtensionsRowView::Delegate {
  public:
   WebIntentPickerViews(Browser* browser,
                        TabContentsWrapper* tab_contents,
@@ -443,8 +549,13 @@ class WebIntentPickerViews : public views::ButtonListener,
   virtual views::View* GetContentsView() OVERRIDE;
   virtual int GetDialogButtons() const OVERRIDE;
 
+  // LinkListener implementation.
+  virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
+
   // WebIntentPicker implementation.
   virtual void Close() OVERRIDE;
+  virtual void OnExtensionInstallSuccess(const std::string& id) OVERRIDE;
+  virtual void OnExtensionInstallFailure(const std::string& id) OVERRIDE;
 
   // WebIntentPickerModelObserver implementation.
   virtual void OnModelChanged(WebIntentPickerModel* model) OVERRIDE;
@@ -459,10 +570,9 @@ class WebIntentPickerViews : public views::ButtonListener,
   virtual void OnServiceButtonClicked(
       const WebIntentPickerModel::InstalledService& service) OVERRIDE;
 
-  // SuggestedExtensionsView::Delegate implementation.
+  // SuggestedExtensionsRowView::Delegate implementation.
   virtual void OnExtensionInstallClicked(const string16& extension_id) OVERRIDE;
   virtual void OnExtensionLinkClicked(const string16& extension_id) OVERRIDE;
-  virtual void OnMoreSuggestionsLinkClicked() OVERRIDE;
 
  private:
   // Initialize the contents of the picker. After this call, contents_ will be
@@ -471,6 +581,11 @@ class WebIntentPickerViews : public views::ButtonListener,
 
   // Resize the constrained window to the size of its contents.
   void SizeToContents();
+
+#if defined(USE_CLOSE_BUTTON)
+  // Returns a new close button.
+  views::ImageButton* CreateCloseButton();
+#endif
 
   // A weak pointer to the WebIntentPickerDelegate to notify when the user
   // chooses a service or cancels.
@@ -500,6 +615,12 @@ class WebIntentPickerViews : public views::ButtonListener,
   // A weak pointer to the constrained window.
   ConstrainedWindowViews* window_;
 
+  // A weak pointer to the more suggestions link.
+  views::Link* more_suggestions_link_;
+
+  // A weak pointer to the choose another service link.
+  views::Link* choose_another_service_link_;
+
   DISALLOW_COPY_AND_ASSIGN(WebIntentPickerViews);
 };
 
@@ -525,7 +646,9 @@ WebIntentPickerViews::WebIntentPickerViews(Browser* browser,
       extensions_(NULL),
       browser_(browser),
       contents_(NULL),
-      window_(NULL) {
+      window_(NULL),
+      more_suggestions_link_(NULL),
+      choose_another_service_link_(NULL) {
   model_->set_observer(this);
   InitContents();
 
@@ -539,7 +662,9 @@ WebIntentPickerViews::~WebIntentPickerViews() {
 
 void WebIntentPickerViews::ButtonPressed(views::Button* sender,
                                          const views::Event& event) {
+#if defined(USE_CLOSE_BUTTON)
   delegate_->OnCancelled();
+#endif
 }
 
 void WebIntentPickerViews::WindowClosing() {
@@ -566,8 +691,37 @@ int WebIntentPickerViews::GetDialogButtons() const {
   return ui::DIALOG_BUTTON_NONE;
 }
 
+void WebIntentPickerViews::LinkClicked(views::Link* source, int event_flags) {
+  if (source == more_suggestions_link_) {
+    // TODO(binji): This should link to a CWS search, based on the current
+    // action/type pair.
+    browser::NavigateParams params(
+        browser_,
+        GURL(extension_urls::GetWebstoreLaunchURL()),
+        content::PAGE_TRANSITION_AUTO_BOOKMARK);
+    params.disposition = NEW_FOREGROUND_TAB;
+    browser::Navigate(&params);
+  } else if (source == choose_another_service_link_) {
+    // TODO(binji): Notify the controller that the user wants to pick again.
+  } else {
+    NOTREACHED();
+  }
+}
+
 void WebIntentPickerViews::Close() {
   window_->CloseConstrainedWindow();
+}
+
+void WebIntentPickerViews::OnExtensionInstallSuccess(const std::string& id) {
+}
+
+void WebIntentPickerViews::OnExtensionInstallFailure(const std::string& id) {
+  service_buttons_->SetEnabled(true);
+  extensions_->StopThrobber();
+  more_suggestions_link_->SetEnabled(true);
+  contents_->Layout();
+
+  // TODO(binji): What to display to user on failure?
 }
 
 void WebIntentPickerViews::OnModelChanged(WebIntentPickerModel* model) {
@@ -607,6 +761,10 @@ void WebIntentPickerViews::OnInlineDisposition(
   inline_disposition_delegate_.reset(new WebIntentInlineDispositionDelegate);
   web_contents->SetDelegate(inline_disposition_delegate_.get());
 
+  const WebIntentPickerModel::InstalledService* service =
+      model->GetInstalledServiceWithURL(url);
+  DCHECK(service);
+
   // Must call this immediately after WebContents creation to avoid race
   // with load.
   delegate_->OnInlineDispositionWebContentsCreated(web_contents);
@@ -621,14 +779,59 @@ void WebIntentPickerViews::OnInlineDisposition(
 
   // Replace the picker with the inline disposition.
   contents_->RemoveAllChildViews(true);
-  contents_->AddChildView(tab_contents_container);
+
+  views::GridLayout* grid_layout = new views::GridLayout(contents_);
+  contents_->SetLayoutManager(grid_layout);
+
+  grid_layout->SetInsets(kContentAreaBorder, kContentAreaBorder,
+                         kContentAreaBorder, kContentAreaBorder);
+  views::ColumnSet* header_cs = grid_layout->AddColumnSet(0);
+  header_cs->AddColumn(GridLayout::CENTER, GridLayout::CENTER, 0,
+                       GridLayout::USE_PREF, 0, 0);  // Icon.
+  header_cs->AddPaddingColumn(0, 4);
+  header_cs->AddColumn(GridLayout::CENTER, GridLayout::CENTER, 0,
+                       GridLayout::USE_PREF, 0, 0);  // Title.
+  header_cs->AddPaddingColumn(0, 4);
+  header_cs->AddColumn(GridLayout::CENTER, GridLayout::CENTER, 0,
+                       GridLayout::USE_PREF, 0, 0);  // Link.
+  header_cs->AddPaddingColumn(1, views::kUnrelatedControlHorizontalSpacing);
+#if defined(USE_CLOSE_BUTTON)
+  header_cs->AddColumn(GridLayout::CENTER, GridLayout::CENTER, 0,
+                       GridLayout::USE_PREF, 0, 0);  // Close Button.
+#endif
+
+  views::ColumnSet* full_cs = grid_layout->AddColumnSet(1);
+  full_cs->AddColumn(GridLayout::FILL, GridLayout::FILL, 0,
+                     GridLayout::USE_PREF, 0, 0);
+
+  // Header row.
+  grid_layout->StartRow(0, 0);
+  views::ImageView* icon = new views::ImageView();
+  icon->SetImage(service->favicon.ToSkBitmap());
+  grid_layout->AddView(icon);
+
+  string16 elided_title = ui::ElideText(
+      service->title, gfx::Font(), kTitleLinkMaxWidth, ui::ELIDE_AT_END);
+  views::Label* title = new views::Label(elided_title);
+  grid_layout->AddView(title);
+
+  choose_another_service_link_ = new views::Link(
+      l10n_util::GetStringUTF16(IDS_INTENT_PICKER_USE_ALTERNATE_SERVICE));
+  grid_layout->AddView(choose_another_service_link_);
+
+#if defined(USE_CLOSE_BUTTON)
+  grid_layout->AddView(CreateCloseButton());
+#endif
+
+  // Inline web contents row.
+  grid_layout->StartRow(0, 1);
+  grid_layout->AddView(tab_contents_container, 1, 1, GridLayout::CENTER,
+                       GridLayout::CENTER, kDialogMinWidth, 140);
 
   // The contents can only be changed after the child is added to view
   // hierarchy.
   tab_contents_container->ChangeWebContents(web_contents);
 
-  gfx::Size size = GetDefaultInlineDispositionSize(web_contents);
-  contents_->SetLayoutManager(new views::FillLayout);
   contents_->Layout();
   SizeToContents();
 }
@@ -640,7 +843,11 @@ void WebIntentPickerViews::OnServiceButtonClicked(
 
 void WebIntentPickerViews::OnExtensionInstallClicked(
     const string16& extension_id) {
-  // TODO(binji): install extension.
+  service_buttons_->SetEnabled(false);
+  extensions_->StartThrobber(extension_id);
+  more_suggestions_link_->SetEnabled(false);
+  contents_->Layout();
+  delegate_->OnExtensionInstallRequested(UTF16ToUTF8(extension_id));
 }
 
 void WebIntentPickerViews::OnExtensionLinkClicked(
@@ -654,37 +861,36 @@ void WebIntentPickerViews::OnExtensionLinkClicked(
   browser::Navigate(&params);
 }
 
-void WebIntentPickerViews::OnMoreSuggestionsLinkClicked() {
-  // TODO(binji): This should link to a CWS search, based on the current
-  // action/type pair.
-  browser::NavigateParams params(
-      browser_,
-      GURL(extension_urls::GetWebstoreLaunchURL()),
-      content::PAGE_TRANSITION_AUTO_BOOKMARK);
-  params.disposition = NEW_FOREGROUND_TAB;
-  browser::Navigate(&params);
-}
-
 void WebIntentPickerViews::InitContents() {
   const int kHeaderRowColumnSet = 0;
   const int kFullWidthColumnSet = 1;
-  const views::GridLayout::Alignment kCenter = views::GridLayout::CENTER;
-  const views::GridLayout::Alignment kFill = views::GridLayout::FILL;
-  const views::GridLayout::SizeType kUsePref = views::GridLayout::USE_PREF;
+  const int kIndentedFullWidthColumnSet = 2;
 
-  contents_ = new MinimumSizeView(gfx::Size(kDialogMinWidth, 0));
+  contents_ = new views::View();
   views::GridLayout* grid_layout = new views::GridLayout(contents_);
   contents_->SetLayoutManager(grid_layout);
 
+  grid_layout->set_minimum_size(gfx::Size(kDialogMinWidth, 0));
   grid_layout->SetInsets(kContentAreaBorder, kContentAreaBorder,
                          kContentAreaBorder, kContentAreaBorder);
   views::ColumnSet* header_cs = grid_layout->AddColumnSet(kHeaderRowColumnSet);
-  header_cs->AddColumn(kCenter, kCenter, 0, kUsePref, 0, 0);  // Title.
+  header_cs->AddColumn(GridLayout::CENTER, GridLayout::CENTER, 0,
+                       GridLayout::USE_PREF, 0, 0);  // Title.
   header_cs->AddPaddingColumn(1, views::kUnrelatedControlHorizontalSpacing);
-  header_cs->AddColumn(kCenter, kCenter, 0, kUsePref, 0, 0);  // Close Button.
+#if defined(USE_CLOSE_BUTTON)
+  header_cs->AddColumn(GridLayout::CENTER, GridLayout::CENTER, 0,
+                       GridLayout::USE_PREF, 0, 0);  // Close Button.
+#endif
 
   views::ColumnSet* full_cs = grid_layout->AddColumnSet(kFullWidthColumnSet);
-  full_cs->AddColumn(kFill, kCenter, 1, kUsePref, 0, 0);
+  full_cs->AddColumn(GridLayout::FILL, GridLayout::CENTER, 1,
+                     GridLayout::USE_PREF, 0, 0);
+
+  views::ColumnSet* indent_cs =
+      grid_layout->AddColumnSet(kIndentedFullWidthColumnSet);
+  indent_cs->AddPaddingColumn(0, views::kUnrelatedControlHorizontalSpacing);
+  indent_cs->AddColumn(GridLayout::FILL, GridLayout::CENTER, 1,
+                       GridLayout::USE_PREF, 0, 0);
 
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
 
@@ -696,17 +902,12 @@ void WebIntentPickerViews::InitContents() {
   top_label->SetFont(rb.GetFont(ResourceBundle::MediumFont));
   grid_layout->AddView(top_label);
 
-  views::ImageButton* close_button = new views::ImageButton(this);
-  close_button->SetImage(views::CustomButton::BS_NORMAL,
-                          rb.GetBitmapNamed(IDR_CLOSE_BAR));
-  close_button->SetImage(views::CustomButton::BS_HOT,
-                          rb.GetBitmapNamed(IDR_CLOSE_BAR_H));
-  close_button->SetImage(views::CustomButton::BS_PUSHED,
-                          rb.GetBitmapNamed(IDR_CLOSE_BAR_P));
-  grid_layout->AddView(close_button);
+#if defined(USE_CLOSE_BUTTON)
+  grid_layout->AddView(CreateCloseButton());
+#endif
 
   // Padding row.
-  grid_layout->AddPaddingRow(0, kContentAreaSpacing);
+  grid_layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
   // Service button row.
   grid_layout->StartRow(0, kFullWidthColumnSet);
@@ -722,12 +923,24 @@ void WebIntentPickerViews::InitContents() {
   grid_layout->AddView(suggestions_label_);
 
   // Padding row.
-  grid_layout->AddPaddingRow(0, kContentAreaSpacing);
+  grid_layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
   // Row with extension suggestions.
-  grid_layout->StartRow(0, kFullWidthColumnSet);
+  grid_layout->StartRow(0, kIndentedFullWidthColumnSet);
   extensions_ = new SuggestedExtensionsView(model_, this);
   grid_layout->AddView(extensions_);
+
+  // Padding row.
+  grid_layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+
+  // Row with "more suggestions" link.
+  grid_layout->StartRow(0, kFullWidthColumnSet);
+  more_suggestions_link_ = new views::Link(
+    l10n_util::GetStringUTF16(IDS_INTENT_PICKER_MORE_SUGGESTIONS));
+  more_suggestions_link_->SetDisabledColor(kDisabledLinkColor);
+  more_suggestions_link_->set_listener(this);
+  grid_layout->AddView(more_suggestions_link_, 1, 1, GridLayout::LEADING,
+                       GridLayout::CENTER);
 }
 
 void WebIntentPickerViews::SizeToContents() {
@@ -738,3 +951,17 @@ void WebIntentPickerViews::SizeToContents() {
   // TODO(binji): figure out how to get the constrained dialog centered...
   window_->SetSize(new_window_bounds.size());
 }
+
+#if defined(USE_CLOSE_BUTTON)
+views::ImageButton* WebIntentPickerViews::CreateCloseButton() {
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  views::ImageButton* close_button = new views::ImageButton(this);
+  close_button->SetImage(views::CustomButton::BS_NORMAL,
+                          rb.GetBitmapNamed(IDR_CLOSE_BAR));
+  close_button->SetImage(views::CustomButton::BS_HOT,
+                          rb.GetBitmapNamed(IDR_CLOSE_BAR_H));
+  close_button->SetImage(views::CustomButton::BS_PUSHED,
+                          rb.GetBitmapNamed(IDR_CLOSE_BAR_P));
+  return close_button;
+}
+#endif

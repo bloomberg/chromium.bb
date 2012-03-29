@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -183,6 +183,8 @@ class VIEWS_EXPORT GridLayout : public LayoutManager {
 
   virtual int GetPreferredHeightForWidth(View* host, int width) OVERRIDE;
 
+  void set_minimum_size(const gfx::Size& size) { minimum_size_ = size; }
+
  private:
   // As both Layout and GetPreferredSize need to do nearly the same thing,
   // they both call into this method. This sizes the Columns/Rows as
@@ -256,6 +258,9 @@ class VIEWS_EXPORT GridLayout : public LayoutManager {
 
   // Rows.
   std::vector<Row*> rows_;
+
+  // Minimum preferred size.
+  gfx::Size minimum_size_;
 
   DISALLOW_COPY_AND_ASSIGN(GridLayout);
 };

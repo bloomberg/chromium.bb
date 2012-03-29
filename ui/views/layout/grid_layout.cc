@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -834,6 +834,8 @@ gfx::Size GridLayout::GetPreferredSize(View* host) {
   DCHECK(host_ == host);
   gfx::Size out;
   SizeRowsAndColumns(false, 0, 0, &out);
+  out.SetSize(std::max(out.width(), minimum_size_.width()),
+              std::max(out.height(), minimum_size_.height()));
   return out;
 }
 

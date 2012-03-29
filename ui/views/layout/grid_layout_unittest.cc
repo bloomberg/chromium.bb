@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -603,4 +603,22 @@ TEST_F(GridLayoutTest, ColumnResizingOnGetPreferredSize) {
   // plus 20 from the statically sized view in the second row. The flexible
   // view in the third row should contribute no height.
   EXPECT_EQ(gfx::Size(20, 50), layout->GetPreferredSize(&host));
+}
+
+TEST_F(GridLayoutTest, MinimumPreferredSize) {
+  SettableSizeView v1(gfx::Size(10, 20));
+  views::ColumnSet* set = layout->AddColumnSet(0);
+  set->AddColumn(GridLayout::FILL, GridLayout::FILL,
+                 0, GridLayout::USE_PREF, 0, 0);
+  layout->StartRow(0, 0);
+  layout->AddView(&v1);
+
+  GetPreferredSize();
+  EXPECT_EQ(gfx::Size(10, 20), pref);
+
+  layout->set_minimum_size(gfx::Size(40, 40));
+  GetPreferredSize();
+  EXPECT_EQ(gfx::Size(40, 40), pref);
+
+  RemoveAll();
 }
