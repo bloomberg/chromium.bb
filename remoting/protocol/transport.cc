@@ -23,7 +23,7 @@ std::string TransportRoute::GetTypeString(RouteType type) {
   return "";
 }
 
-TransportRoute::TransportRoute() {
+TransportRoute::TransportRoute() : type(DIRECT) {
 }
 
 TransportRoute::~TransportRoute() {
