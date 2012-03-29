@@ -126,7 +126,87 @@ namespace {
   }
 
   std::map<std::string, size_t> instruction_names;
-  struct Instruction {
+
+  static const std::set<std::string> all_instruction_flags = {
+    /* Parsing flags. */
+    "branch_hint",
+    "condrep",
+    "lock",
+    "no_memory_access",
+    "rep",
+
+    /* CPUID flags. */
+    "Fn8000_0001_EDX_3DNow",
+    "Fn8000_0001_EDX_3DNowExt",
+    "Fn8000_0001_ECX_3DNowPrefetch",
+    "Fn0000_0001_ECX_AES",
+    "Fn0000_0001_ECX_AESAVX",
+    "Fn8000_0001_ECX_AltMovCr8",
+    "Fn0000_0001_ECX_AVX",
+    "Fn0000_0007_EBX_x0_BMI",
+    "Fn0000_0001_EDX_CLFSH",
+    "Fn0000_0001_EDX_CMOV",
+    "Fn0000_0001_EDX_CMPXCHG8B",
+    "Fn0000_0001_ECX_CMPXCHG16B",
+    "Fn0000_0001_ECX_CVT16",
+    "Fn8000_0001_ECX_FMA",
+    "Fn8000_0001_ECX_FMA4",
+    "Fn8000_0001_ECX_LahfSahf",
+    "Fn8000_0001_ECX_LWP",
+    "Fn0000_0001_EDX_MMX",
+    "Fn8000_0001_EDX_MmxExt",
+    "Fn8000_0001_EDX_MmxExtOrSSE",
+    "Fn0000_0001_ECX_Monitor",
+    "Fn0000_0001_ECX_PCLMULQDQ",
+    "Fn0000_0001_ECX_PCLMULQDQAVX",
+    "Fn0000_0001_ECX_POPCNT",
+    "Fn0000_0001_EDX_RDTSC",
+    "Fn8000_0001_EDX_RDTSCP",
+    "Fn0000_0001_EDX_SFENCE",
+    "Fn8000_0001_ECX_SKINIT",
+    "Fn0000_0001_EDX_SSE1",
+    "Fn0000_0001_EDX_SSE2",
+    "Fn0000_0001_ECX_SSE3",
+    "Fn0000_0001_ECX_SSE41",
+    "Fn0000_0001_ECX_SSE42",
+    "Fn8000_0001_ECX_SSE4A",
+    "Fn0000_0001_ECX_SSSE3",
+    "Fn8000_0001_EDX_SYSCALL",
+    "Fn0000_0001_EDX_SYSENTER",
+    "Fn8000_0001_ECX_SVM",
+    "Fn8000_0001_ECX_TBM",
+    "Fn0000_0001_EDX_X87",
+    "Fn8000_0001_ECX_XOP",
+    "Fn0000_0001_ECX_XSAVE",
+
+     /* Flags for enabling/disabling based on architecture and validity.  */
+     "ia32",
+     "amd64",
+     "nacl-ia32-forbidden",
+     "nacl-amd64-forbidden",
+     "nacl-forbidden"
+  };
+
+  class Instruction {
+   public:
+    static bool check_flag_valid(const std::string &flag) {
+      if (all_instruction_flags.find(flag) == all_instruction_flags.end()) {
+        fprintf(stderr, "%s: unknown flag: '%s'\n",
+                short_program_name, flag.c_str());
+        exit(1);
+      }
+    }
+
+    void add_flag(const std::string &flag) {
+      check_flag_valid(flag);
+      flags.insert(flag);
+    }
+
+    bool has_flag(const std::string &flag) {
+      check_flag_valid(flag);
+      return flags.find(flag) != flags.end();
+    }
+
     std::string name;
     struct Operand {
       char source;
@@ -137,15 +217,7 @@ namespace {
     };
     std::vector<Operand> operands;
     std::vector<std::string> opcodes;
-#if 0
-    /* We need GCC 4.7 for the following */
-    #define INSTRUCTION_FLAG(x) bool x :1 = false;
-#else
-    /* Use this and 'Instruction instruction { }'  */
-    #define INSTRUCTION_FLAG(x) bool x :1;
-#endif
-    #include "gen-decoder-flags.cc"
-    #undef INSTRUCTION_FLAG
+    std::set<std::string> flags;
   };
   std::vector<Instruction> instructions;
 
@@ -307,40 +379,31 @@ namespace {
               auto flags = split_till_comma(&it, line_end);
               for (auto flag_it = flags.begin();
                    flag_it != flags.end(); ++flag_it) {
-                auto &flag = *flag_it;
-                #define INSTRUCTION_FLAG(x) \
-                  if (flag == #x) {instruction.x = true;} else
-                #include "gen-decoder-flags.cc"
-                #undef INSTRUCTION_FLAG
-                if (flag == "ia32") {
-                  if (!ia32_mode) {
-                    enabled_instruction = false;
-                    break;
-                  }
-                } else if (flag == "amd64") {
-                  if (ia32_mode) {
-                    enabled_instruction = false;
-                    break;
-                  }
-                } else if (flag == "nacl-ia32-forbidden") {
-                  if (ia32_mode && !enabled(Actions::kNaClForbidden)) {
-                    enabled_instruction = false;
-                    break;
-                  }
-                } else if (flag == "nacl-amd64-forbidden") {
-                  if (!ia32_mode && !enabled(Actions::kNaClForbidden)) {
-                    enabled_instruction = false;
-                    break;
-                  }
-                } else if (flag == "nacl-forbidden") {
-                  if (!enabled(Actions::kNaClForbidden)) {
-                    enabled_instruction = false;
-                    break;
-                  }
-                } else {
-                  fprintf(stderr, "%s: unknown flag: '%s'\n",
-                          short_program_name, flag.c_str());
-                  exit(1);
+                instruction.add_flag(*flag_it);
+              }
+              if (instruction.has_flag("ia32")) {
+                if (!ia32_mode) {
+                  enabled_instruction = false;
+                }
+              }
+              if (instruction.has_flag("amd64")) {
+                if (ia32_mode) {
+                  enabled_instruction = false;
+                }
+              }
+              if (instruction.has_flag("nacl-ia32-forbidden")) {
+                if (ia32_mode && !enabled(Actions::kNaClForbidden)) {
+                  enabled_instruction = false;
+                }
+              }
+              if (instruction.has_flag("nacl-amd64-forbidden")) {
+                if (!ia32_mode && !enabled(Actions::kNaClForbidden)) {
+                  enabled_instruction = false;
+                }
+              }
+              if (instruction.has_flag("nacl-forbidden")) {
+                if (!enabled(Actions::kNaClForbidden)) {
+                  enabled_instruction = false;
                 }
               }
             }
@@ -354,25 +417,11 @@ namespace {
     }
   }
 
-#if (__GNUC__ >= 4) && (__GNUC_MINOR__ >= 6)
-#define USE_LAMBDA_IN_CHARTEST 1
-#else
-#define USE_LAMBDA_IN_CHARTEST 0
-#endif
-#if USE_LAMBDA_IN_CHARTEST
-  template<typename func>
-  std::string chartest(func f) {
-#else
   std::string chartest(std::vector<bool> v) {
-#endif
     std::string result;
     auto delimeter = "( ";
     for (int c = 0x00; c <= 0xff; ++c) {
-#if USE_LAMBDA_IN_CHARTEST
-      if (f(c)) {
-#else
       if (v[c]) {
-#endif
         char buf[10];
         snprintf(buf, sizeof(buf), "%s0x%02x", delimeter, c);
         result += buf;
@@ -381,9 +430,6 @@ namespace {
     }
     return result + " )";
   }
-#if USE_LAMBDA_IN_CHARTEST
-  #define chartest(x) (chartest([=](int c) { return x; }).c_str())
-#else
   struct comparator {
     const std::vector<bool> &v;
     const int n;
@@ -423,7 +469,6 @@ namespace {
   #undef DECLARE_OPERATOR
   #define chartest(x) (chartest(x).c_str())
   std::vector<bool> c(256, true);
-#endif
 
   const std::string& select_name(
       const std::map<std::string, size_t>::value_type& p) {
@@ -1138,19 +1183,20 @@ namespace {
     }
   }
 
-  struct MarkedInstruction : Instruction {
+  class MarkedInstruction : Instruction {
+   public:
     /* Additional marks are created in the process of parsing. */
     explicit MarkedInstruction(Instruction instruction_) :
         Instruction(instruction_),
         instruction_class(get_instruction_class(instruction_)),
         opcode_in_modrm(false), opcode_in_imm(false), rex { } {
-      if (branch_hint) {
+      if (has_flag("branch_hint")) {
         optional_prefixes.insert("branch_hint");
       }
-      if (condrep) {
+      if (has_flag("condrep")) {
         optional_prefixes.insert("condrep");
       }
-      if (rep) {
+      if (has_flag("rep")) {
         optional_prefixes.insert("rep");
       }
       for (auto opcode_it = opcodes.begin();
@@ -1441,7 +1487,7 @@ namespace {
             }
           }
           fprintf(stderr, "%s: error - can not set 'w' bit in "
-                  "instruction '%s'", short_program_name, name.c_str());
+            "instruction '%s'", short_program_name, name.c_str());
           exit(1);
         case InstructionClass::kLSetUnset:
         case InstructionClass::kLSetUnsetDefaultRexW:
@@ -1535,7 +1581,7 @@ namespace {
           auto saved_prefixes = optional_prefixes;
           /* optional_prefixes.insert("(segfs | seggs)"); */
           print_one_size_definition_modrm_memory();
-          if (lock) {
+          if (has_flag("lock")) {
             auto saved_prefixes = required_prefixes;
             required_prefixes.insert("lock");
             print_one_size_definition_modrm_memory();
@@ -1674,7 +1720,7 @@ namespace {
           }
         }
         fprintf(out_file, " . any* &%s", std::get<0>(mode));
-        if (enabled(Actions::kCheckAccess) && !no_memory_access) {
+        if (enabled(Actions::kCheckAccess) && !has_flag("no_memory_access")) {
           fprintf(out_file, " @check_access");
         }
         fprintf(out_file, ")");
@@ -1687,12 +1733,7 @@ namespace {
       }
     }
 
-#if 0
-  /* We need GCC 4.7 to use the following.  */
-  static auto first_delimeter = true;
-#else
-  static bool first_delimeter;
-#endif
+    static bool first_delimeter;
     void print_operator_delimeter(void) {
       if (first_delimeter) {
         fprintf(out_file, "\n    (");
@@ -1876,14 +1917,6 @@ namespace {
         }
         fprintf(out_file, " & VEX_map%s) ", opcodes[1].c_str() + 4);
         auto third_byte = opcodes[2];
-#if 0
-        /* We need GCC 4.8 for the following.  */
-        static const std::regex third_byte_check(
-                       R"([01xX]\.[01xX][01xX][01xX][01xX]\.[01xX]\.[01][01])");
-        if ((third_byte.length() != 11) ||
-            !regex_match(third_byte.begin(), third_byte.end(),
-                                                            third_byte_check)) {
-#else
         static const char* symbolic_names[] = { "cntl", "dest", "src1", "src" };
         for (int symbolic_it = 0;
              symbolic_it < arraysize(symbolic_names); ++symbolic_it) {
@@ -1921,7 +1954,6 @@ namespace {
           }
         }
         if (third_byte_ok) {
-#endif
           if (ia32_mode && third_byte[2] == 'X') {
             third_byte[2] = '1';
           }
@@ -2314,10 +2346,7 @@ namespace {
       MarkedInstruction(instruction).print_definition();
     }
   }
-#if 1
-  /* We need GCC 4.7 to remove the following */
   bool MarkedInstruction::first_delimeter = true;
-#endif
 }
 
 struct compare_action {
@@ -2348,14 +2377,6 @@ int main(int argc, char *argv[]) {
     }
 
     switch (option) {
-#if 0
-      case 0:
-        printf("option %s", kProgramOptions[option_index].name);
-        if (optarg)
-          printf(" with arg %s", optarg);
-        printf("\n");
-        break;
-#endif
       case 'd': {
         for (auto action_to_disable = strtok(optarg, ",");
              action_to_disable;
