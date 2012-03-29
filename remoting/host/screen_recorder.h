@@ -69,8 +69,8 @@ class CaptureData;
 // 3. Distribute tasks on three threads on a timely fashion to minimize latency.
 //
 // This class has the following state variables:
-// |is_recording_| - If this is set to false there should be no activity on
-//                      the capture thread by this object.
+// |capture_timer_| - If this is set to NULL there should be no activity on
+//                    the capture thread by this object.
 // |network_stopped_| - This state is to prevent activity on the network thread
 //                      if set to false.
 class ScreenRecorder : public base::RefCountedThreadSafe<ScreenRecorder> {
@@ -109,6 +109,8 @@ class ScreenRecorder : public base::RefCountedThreadSafe<ScreenRecorder> {
   // Getters for capturer and encoder.
   Capturer* capturer();
   Encoder* encoder();
+
+  bool is_recording();
 
   // Capturer thread ----------------------------------------------------------
 
@@ -165,17 +167,13 @@ class ScreenRecorder : public base::RefCountedThreadSafe<ScreenRecorder> {
   typedef std::vector<protocol::ConnectionToClient*> ConnectionToClientList;
   ConnectionToClientList connections_;
 
-  // Flag that indicates recording has been started. This variable should only
-  // be used on the capture thread.
-  bool is_recording_;
+  // Timer that calls DoCapture. Set to NULL when not recording.
+  scoped_ptr<base::OneShotTimer<ScreenRecorder> > capture_timer_;
 
   // Per-thread flags that are set when the ScreenRecorder is
   // stopped. They must be used on the corresponding threads only.
   bool network_stopped_;
   bool encoder_stopped_;
-
-  // Timer that calls DoCapture.
-  base::OneShotTimer<ScreenRecorder> capture_timer_;
 
   // Maximum simultaneous recordings allowed.
   int max_recordings_;

@@ -41,7 +41,6 @@ ScreenRecorder::ScreenRecorder(
       network_loop_(network_loop),
       capturer_(capturer),
       encoder_(encoder),
-      is_recording_(false),
       network_stopped_(false),
       encoder_stopped_(false),
       max_recordings_(kMaxRecordings),
@@ -72,8 +71,7 @@ void ScreenRecorder::Stop(const base::Closure& done_task) {
 
   DCHECK(!done_task.is_null());
 
-  capture_timer_.Stop();
-  is_recording_ = false;
+  capture_timer_.reset();
 
   network_loop_->PostTask(FROM_HERE, base::Bind(
       &ScreenRecorder::DoStopOnNetworkThread, this, done_task));
@@ -128,17 +126,22 @@ Encoder* ScreenRecorder::encoder() {
   return encoder_.get();
 }
 
+bool ScreenRecorder::is_recording() {
+  DCHECK_EQ(capture_loop_, MessageLoop::current());
+  return capture_timer_.get() != NULL;
+}
+
 // Capturer thread -------------------------------------------------------------
 
 void ScreenRecorder::DoStart() {
   DCHECK_EQ(capture_loop_, MessageLoop::current());
 
-  if (is_recording_) {
+  if (is_recording()) {
     NOTREACHED() << "Record session already started.";
     return;
   }
 
-  is_recording_ = true;
+  capture_timer_.reset(new base::OneShotTimer<ScreenRecorder>());
 
   // Capture first frame immedately.
   DoCapture();
@@ -147,10 +150,10 @@ void ScreenRecorder::DoStart() {
 void ScreenRecorder::StartCaptureTimer() {
   DCHECK_EQ(capture_loop_, MessageLoop::current());
 
-  capture_timer_.Start(FROM_HERE,
-                       scheduler_.NextCaptureDelay(),
-                       this,
-                       &ScreenRecorder::DoCapture);
+  capture_timer_->Start(FROM_HERE,
+                        scheduler_.NextCaptureDelay(),
+                        this,
+                        &ScreenRecorder::DoCapture);
 }
 
 void ScreenRecorder::DoCapture() {
@@ -158,7 +161,7 @@ void ScreenRecorder::DoCapture() {
   // Make sure we have at most two oustanding recordings. We can simply return
   // if we can't make a capture now, the next capture will be started by the
   // end of an encode operation.
-  if (recordings_ >= max_recordings_ || !is_recording_) {
+  if (recordings_ >= max_recordings_ || !is_recording()) {
     frame_skipped_ = true;
     return;
   }
@@ -171,11 +174,11 @@ void ScreenRecorder::DoCapture() {
   DCHECK_LE(recordings_, max_recordings_);
 
   // Before doing a capture schedule for the next one.
-  capture_timer_.Stop();
-  capture_timer_.Start(FROM_HERE,
-                       scheduler_.NextCaptureDelay(),
-                       this,
-                       &ScreenRecorder::DoCapture);
+  capture_timer_->Stop();
+  capture_timer_->Start(FROM_HERE,
+                        scheduler_.NextCaptureDelay(),
+                        this,
+                        &ScreenRecorder::DoCapture);
 
   // And finally perform one capture.
   capture_start_time_ = base::Time::Now();
@@ -187,7 +190,7 @@ void ScreenRecorder::CaptureDoneCallback(
     scoped_refptr<CaptureData> capture_data) {
   DCHECK_EQ(capture_loop_, MessageLoop::current());
 
-  if (!is_recording_)
+  if (!is_recording())
     return;
 
   if (capture_data) {
@@ -212,7 +215,7 @@ void ScreenRecorder::CaptureDoneCallback(
 void ScreenRecorder::DoFinishOneRecording() {
   DCHECK_EQ(capture_loop_, MessageLoop::current());
 
-  if (!is_recording_)
+  if (!is_recording())
     return;
 
   // Decrement the number of recording in process since we have completed
