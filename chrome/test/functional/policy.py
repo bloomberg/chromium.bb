@@ -27,7 +27,9 @@ class PolicyTest(policy_base.PolicyTestBase):
       Error message if any, None if pref is successfully locked.
     """
     # Check if the current value of the preference is set as expected.
-    if self.GetPrefsInfo().Prefs(pref) != val:
+    if self.GetPrefsInfo().Prefs(pref) == None:
+      return 'Preference %s is not registered.' % pref
+    elif self.GetPrefsInfo().Prefs(pref) != val:
       return ('Preference value "%s" does not match policy value "%s".' %
               (self.GetPrefsInfo().Prefs(pref), val))
     # If the preference is locked, this should throw an exception.
