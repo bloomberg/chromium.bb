@@ -2350,7 +2350,6 @@
         'browser/ui/browser_tab_restore_service_delegate.cc',
         'browser/ui/browser_tab_restore_service_delegate.h',
         'browser/ui/browser_window.h',
-        'browser/ui/color_chooser.h',
         'browser/ui/certificate_dialogs.cc',
         'browser/ui/certificate_dialogs.h',
         'browser/ui/cocoa/about_ipc_controller.h',
