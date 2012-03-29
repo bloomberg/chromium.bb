@@ -256,8 +256,16 @@ class PrefsTest(pyauto.PyUITest):
         {hostname_pattern: {hostname_pattern: 2}},  # Block the hostname.
         self.GetPrefsInfo().Prefs(pyauto.kGeolocationContentSettings))
 
-  def testImageContentSettings(self):
-    """Verify image content settings show or hide images."""
+  def _CheckForVisibleImage(self, tab_index=0, windex=0):
+    """Checks whether or not an image is visible on the webpage.
+
+    Args:
+      tab_index: Tab index. Defaults to 0 (first tab).
+      windex: Window index. Defaults to 0 (first window).
+
+    Returns:
+      True if image is loaded, otherwise returns False if image is not loaded.
+    """
     # Checks whether an image is loaded by checking the area (width
     # and height) of the image. If the area is non zero then the image is
     # visible. If the area is zero then the image is not loaded.
@@ -266,21 +274,62 @@ class PrefsTest(pyauto.PyUITest):
       for (i=0; i < document.images.length; i++) {
         if ((document.images[i].naturalWidth != 0) &&
             (document.images[i].naturalHeight != 0)) {
-          return true;
+          window.domAutomationController.send(true);
         }
       }
-      return false;
+      window.domAutomationController.send(false);
     """
-    url = self.GetFileURLForPath(os.path.join(
-        self.DataDir(), 'settings', 'image_page.html'))
+    return self.ExecuteJavascript(script, windex=windex, tab_index=tab_index)
+
+  def testImageContentSettings(self):
+    """Verify image content settings show or hide images."""
+    url = self.GetHttpURLForDataPath('settings', 'image_page.html')
     self.NavigateToURL(url)
-    driver = self.NewWebDriver()
-    self.assertTrue(driver.execute_script(script),
+    self.assertTrue(self._CheckForVisibleImage(),
                     msg='No visible images found.')
+    # Set to block all images from loading.
     self.SetPrefs(pyauto.kDefaultContentSettings, {'images': 2})
-    driver.get(url)
-    self.assertFalse(driver.execute_script(script),
+    self.NavigateToURL(url)
+    self.assertFalse(self._CheckForVisibleImage(),
                      msg='At least one visible image found.')
+
+  def testImagesNotBlockedInIncognito(self):
+    """Verify images are not blocked in Incognito mode."""
+    url = self.GetHttpURLForDataPath('settings', 'image_page.html')
+    self.RunCommand(pyauto.IDC_NEW_INCOGNITO_WINDOW)
+    self.NavigateToURL(url, 1, 0)
+    self.assertTrue(self._CheckForVisibleImage(windex=1),
+                    msg='No visible images found in Incognito mode.')
+
+  def testBlockImagesForHostname(self):
+    """Verify images blocked for defined hostname pattern."""
+    from webdriver_pages import settings
+    from webdriver_pages.settings import Behaviors, ContentTypes
+    url = 'http://www.google.com'
+    driver = self.NewWebDriver()
+    page = settings.ManageExceptionsPage.FromNavigation(
+        driver, ContentTypes.IMAGES)
+    pattern, behavior = (url, Behaviors.BLOCK)
+    # Add an exception BLOCK for hostname pattern 'www.google.com'.
+    page.AddNewException(pattern, behavior)
+    self.NavigateToURL(url)
+    self.assertFalse(self._CheckForVisibleImage(),
+                     msg='At least one visible image found.')
+
+  def testAllowImagesForHostname(self):
+    """Verify images allowed for defined hostname pattern."""
+    from webdriver_pages import settings
+    from webdriver_pages.settings import Behaviors, ContentTypes
+    url = 'http://www.google.com'
+    driver = self.NewWebDriver()
+    page = settings.ManageExceptionsPage.FromNavigation(
+        driver, ContentTypes.IMAGES)
+    pattern, behavior = (url, Behaviors.ALLOW)
+    # Add an exception ALLOW for hostname pattern 'www.google.com'.
+    page.AddNewException(pattern, behavior)
+    self.NavigateToURL(url)
+    self.assertTrue(self._CheckForVisibleImage(),
+                    msg='No visible images found.')
 
   def testProtocolHandlerRegisteredCorrectly(self):
     """Verify sites that ask to be default handlers registers correctly."""
