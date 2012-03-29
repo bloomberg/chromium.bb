@@ -242,6 +242,9 @@ const char kEnableCompositeToTexture[]      = "enable-composite-to-texture";
 // Enables CSS3 regions
 const char kEnableCssRegions[]              = "enable-css-regions";
 
+// Enables CSS3 custom filters
+const char kEnableCssShaders[]              = "enable-css-shaders";
+
 // Enables device motion events.
 const char kEnableDeviceMotion[]            = "enable-device-motion";
 

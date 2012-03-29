@@ -104,7 +104,8 @@ WebPreferences::WebPreferences()
       hixie76_websocket_protocol_enabled(false),
       visual_word_movement_enabled(false),
       per_tile_painting_enabled(false),
-      css_regions_enabled(false) {
+      css_regions_enabled(false),
+      css_shaders_enabled(false) {
 }
 
 WebPreferences::~WebPreferences() {
@@ -351,6 +352,7 @@ void WebPreferences::Apply(WebView* web_view) const {
   settings->setPerTilePaintingEnabled(per_tile_painting_enabled);
 
   settings->setExperimentalCSSRegionsEnabled(css_regions_enabled);
+  settings->setExperimentalCSSCustomFilterEnabled(css_shaders_enabled);
 
   WebNetworkStateNotifier::setOnLine(is_online);
 }

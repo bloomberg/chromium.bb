@@ -119,6 +119,7 @@ struct WEBKIT_GLUE_EXPORT WebPreferences {
   bool visual_word_movement_enabled;
   bool per_tile_painting_enabled;
   bool css_regions_enabled;
+  bool css_shaders_enabled;
   // We try to keep the default values the same as the default values in
   // chrome, except for the cases where it would require lots of extra work for
   // the embedder to use the same default value.

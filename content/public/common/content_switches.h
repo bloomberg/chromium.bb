@@ -82,6 +82,7 @@ extern const char kEnableAccessibilityLogging[];
 extern const char kEnableBrowserPlugin[];
 CONTENT_EXPORT extern const char kEnableCompositingForFixedPosition[];
 extern const char kEnableCssRegions[];
+extern const char kEnableCssShaders[];
 CONTENT_EXPORT extern const char kEnableDeferred2dCanvas[];
 extern const char kEnableCompositeToTexture[];
 CONTENT_EXPORT extern const char kEnableDeviceMotion[];
