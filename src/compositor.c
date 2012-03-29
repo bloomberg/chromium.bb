@@ -2156,9 +2156,10 @@ static const char texture_fragment_shader[] =
 static const char solid_fragment_shader[] =
 	"precision mediump float;\n"
 	"uniform vec4 color;\n"
+	"uniform float alpha;\n"
 	"void main()\n"
 	"{\n"
-	"   gl_FragColor = color\n;"
+	"   gl_FragColor = alpha * color\n;"
 	"}\n";
 
 static int
