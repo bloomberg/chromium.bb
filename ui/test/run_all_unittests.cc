@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/gfx/test/test_suite.h"
+#include "ui/test/test_suite.h"
 
 int main(int argc, char** argv) {
-  return gfx::test::GfxTestSuite(argc, argv).Run();
+  return ui::test::UITestSuite(argc, argv).Run();
 }

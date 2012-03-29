@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/gfx/test/test_suite.h"
+#include "ui/test/test_suite.h"
 
 #include "base/file_path.h"
 #include "base/path_service.h"
@@ -15,16 +15,16 @@
 #include "base/mac/bundle_locations.h"
 #endif
 
-namespace gfx {
+namespace ui {
 namespace test {
 
-GfxTestSuite::GfxTestSuite(int argc, char** argv) : TestSuite(argc, argv) {}
+UITestSuite::UITestSuite(int argc, char** argv) : base::TestSuite(argc, argv) {}
 
-void GfxTestSuite::Initialize() {
+void UITestSuite::Initialize() {
   base::TestSuite::Initialize();
 
-  gfx::RegisterPathProvider();
   ui::RegisterPathProvider();
+  gfx::RegisterPathProvider();
 
 #if defined(OS_MACOSX)
   // Look in the framework bundle for resources.
@@ -55,7 +55,7 @@ void GfxTestSuite::Initialize() {
   ui::ResourceBundle::InitSharedInstanceWithLocale("en-US");
 }
 
-void GfxTestSuite::Shutdown() {
+void UITestSuite::Shutdown() {
   ui::ResourceBundle::CleanupSharedInstance();
 
 #if defined(OS_MACOSX)
@@ -65,4 +65,4 @@ void GfxTestSuite::Shutdown() {
 }
 
 }  // namespace test
-}  // namespace gfx
+}  // namespace ui

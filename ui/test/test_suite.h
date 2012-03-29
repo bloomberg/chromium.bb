@@ -2,31 +2,31 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_GFX_TEST_TEST_SUITE_H_
-#define UI_GFX_TEST_TEST_SUITE_H_
+#ifndef UI_TEST_TEST_SUITE_H_
+#define UI_TEST_TEST_SUITE_H_
 #pragma once
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/test/test_suite.h"
 
-namespace gfx {
+namespace ui {
 namespace test {
 
-class GfxTestSuite : public base::TestSuite {
+class UITestSuite : public base::TestSuite {
  public:
-  GfxTestSuite(int argc, char** argv);
+  UITestSuite(int argc, char** argv);
 
  protected:
-  // base::TestSuite:
+  // Overridden from base::TestSuite:
   virtual void Initialize() OVERRIDE;
   virtual void Shutdown() OVERRIDE;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(GfxTestSuite);
+  DISALLOW_COPY_AND_ASSIGN(UITestSuite);
 };
 
 }  // namespace test
-}  // namespace gfx
+}  // namespace ui
 
-#endif  // UI_GFX_TEST_TEST_SUITE_H_
+#endif  // UI_TEST_TEST_SUITE_H_
