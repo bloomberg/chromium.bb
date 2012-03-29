@@ -6,6 +6,8 @@
 #define UI_GFX_PLATFORM_FONT_WIN_H_
 #pragma once
 
+#include <string>
+
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "ui/base/ui_export.h"
@@ -23,7 +25,7 @@ class UI_EXPORT PlatformFontWin : public PlatformFont {
   // Dialog units to pixels conversion.
   // See http://support.microsoft.com/kb/145994 for details.
   int horizontal_dlus_to_pixels(int dlus) const {
-    return dlus * font_ref_->dlu_base_x() / 4;
+    return dlus * font_ref_->GetDluBaseX() / 4;
   }
   int vertical_dlus_to_pixels(int dlus)  const {
     return dlus * font_ref_->height() / 8;
@@ -72,8 +74,7 @@ class UI_EXPORT PlatformFontWin : public PlatformFont {
              int height,
              int baseline,
              int ave_char_width,
-             int style,
-             int dlu_base_x);
+             int style);
 
     // Accessors
     HFONT hfont() const { return hfont_; }
@@ -81,12 +82,14 @@ class UI_EXPORT PlatformFontWin : public PlatformFont {
     int baseline() const { return baseline_; }
     int ave_char_width() const { return ave_char_width_; }
     int style() const { return style_; }
-    int dlu_base_x() const { return dlu_base_x_; }
     const std::string& font_name() const { return font_name_; }
     int font_size() const { return font_size_; }
 
+    // Returns the average character width in dialog units.
+    int GetDluBaseX();
+
    private:
-    friend class  base::RefCounted<HFontRef>;
+    friend class base::RefCounted<HFontRef>;
 
     ~HFontRef();
 
@@ -95,8 +98,9 @@ class UI_EXPORT PlatformFontWin : public PlatformFont {
     const int baseline_;
     const int ave_char_width_;
     const int style_;
-    // Constants used in converting dialog units to pixels.
-    const int dlu_base_x_;
+    // Average character width in dialog units. This is queried lazily from the
+    // system, with an initial value of -1 meaning it hasn't yet been queried.
+    int dlu_base_x_;
     std::string font_name_;
     int font_size_;
 

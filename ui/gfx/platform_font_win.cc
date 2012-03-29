@@ -8,6 +8,7 @@
 #include <math.h>
 
 #include <algorithm>
+#include <string>
 
 #include "base/logging.h"
 #include "base/string_util.h"
@@ -108,7 +109,8 @@ int PlatformFontWin::GetStringWidth(const string16& text) const {
 }
 
 int PlatformFontWin::GetExpectedTextWidth(int length) const {
-  return length * std::min(font_ref_->dlu_base_x(), GetAverageCharacterWidth());
+  return length * std::min(font_ref_->GetDluBaseX(),
+                           GetAverageCharacterWidth());
 }
 
 int PlatformFontWin::GetStyle() const {
@@ -169,13 +171,6 @@ PlatformFontWin::HFontRef* PlatformFontWin::CreateHFontRef(HFONT font) {
   HFONT previous_font = static_cast<HFONT>(SelectObject(screen_dc, font));
   int last_map_mode = SetMapMode(screen_dc, MM_TEXT);
   GetTextMetrics(screen_dc, &font_metrics);
-  // Yes, this is how Microsoft recommends calculating the dialog unit
-  // conversions.
-  SIZE ave_text_size;
-  GetTextExtentPoint32(screen_dc,
-                       L"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",
-                       52, &ave_text_size);
-  const int dlu_base_x = (ave_text_size.cx / 26 + 1) / 2;
   // To avoid the DC referencing font_handle_, select the previous font.
   SelectObject(screen_dc, previous_font);
   SetMapMode(screen_dc, last_map_mode);
@@ -193,8 +188,7 @@ PlatformFontWin::HFontRef* PlatformFontWin::CreateHFontRef(HFONT font) {
   if (font_metrics.tmWeight >= kTextMetricWeightBold)
     style |= Font::BOLD;
 
-  return new HFontRef(font, height, baseline, ave_char_width, style,
-                      dlu_base_x);
+  return new HFontRef(font, height, baseline, ave_char_width, style);
 }
 
 PlatformFontWin::PlatformFontWin(HFontRef* hfont_ref) : font_ref_(hfont_ref) {
@@ -207,14 +201,13 @@ PlatformFontWin::HFontRef::HFontRef(HFONT hfont,
          int height,
          int baseline,
          int ave_char_width,
-         int style,
-         int dlu_base_x)
+         int style)
     : hfont_(hfont),
       height_(height),
       baseline_(baseline),
       ave_char_width_(ave_char_width),
       style_(style),
-      dlu_base_x_(dlu_base_x) {
+      dlu_base_x_(-1) {
   DLOG_ASSERT(hfont);
 
   LOGFONT font_info;
@@ -222,6 +215,29 @@ PlatformFontWin::HFontRef::HFontRef(HFONT hfont,
   font_name_ = UTF16ToUTF8(string16(font_info.lfFaceName));
   DCHECK_LT(font_info.lfHeight, 0);
   font_size_ = -font_info.lfHeight;
+}
+
+int PlatformFontWin::HFontRef::GetDluBaseX() {
+  if (dlu_base_x_ != -1)
+    return dlu_base_x_;
+
+  HDC screen_dc = GetDC(NULL);
+  HFONT previous_font = static_cast<HFONT>(SelectObject(screen_dc, hfont_));
+  int last_map_mode = SetMapMode(screen_dc, MM_TEXT);
+  // Yes, this is how Microsoft recommends calculating the dialog unit
+  // conversions. See: http://support.microsoft.com/kb/125681
+  SIZE ave_text_size;
+  GetTextExtentPoint32(screen_dc,
+                       L"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",
+                       52, &ave_text_size);
+  dlu_base_x_ = (ave_text_size.cx / 26 + 1) / 2;
+  // To avoid the DC referencing font_handle_, select the previous font.
+  SelectObject(screen_dc, previous_font);
+  SetMapMode(screen_dc, last_map_mode);
+  ReleaseDC(NULL, screen_dc);
+
+  DCHECK_NE(dlu_base_x_, -1);
+  return dlu_base_x_;
 }
 
 PlatformFontWin::HFontRef::~HFontRef() {
