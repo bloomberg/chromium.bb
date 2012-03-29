@@ -12,10 +12,10 @@ class Profile;
 
 namespace extensions {
 
-// Shows UI to inform the user that an extension was disabled after upgrading
-// to higher permissions.
-void ShowExtensionDisabledUI(ExtensionService* service, Profile* profile,
-                             const Extension* extension);
+// Adds a global error to inform the user that an extension was
+// disabled after upgrading to higher permissions.
+void AddExtensionDisabledError(ExtensionService* service,
+                               const Extension* extension);
 
 // Shows the extension install dialog.
 void ShowExtensionDisabledDialog(ExtensionService* service, Profile* profile,

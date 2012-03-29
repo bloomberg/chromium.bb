@@ -51,7 +51,6 @@
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/default_apps_trial.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
-#include "chrome/browser/extensions/extension_disabled_ui.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_helper.h"
@@ -382,8 +381,6 @@ Browser::Browser(Type type, Profile* profile)
 
   registrar_.Add(this, content::NOTIFICATION_SSL_VISIBLE_STATE_CHANGED,
                  content::NotificationService::AllSources());
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UPDATE_DISABLED,
-                 content::Source<Profile>(profile_->GetOriginalProfile()));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
                  content::Source<Profile>(profile_->GetOriginalProfile()));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
@@ -4428,21 +4425,6 @@ void Browser::Observe(int type,
           content::Source<NavigationController>(source).ptr())
         UpdateToolbar(false);
       break;
-
-    case chrome::NOTIFICATION_EXTENSION_UPDATE_DISABLED: {
-      // Show the UI if the extension was disabled for escalated permissions.
-      Profile* profile = content::Source<Profile>(source).ptr();
-      if (profile_->IsSameProfile(profile)) {
-        ExtensionService* service = profile->GetExtensionService();
-        DCHECK(service);
-        const Extension* extension =
-            content::Details<const Extension>(details).ptr();
-        if (service->extension_prefs()->DidExtensionEscalatePermissions(
-                extension->id()))
-          extensions::ShowExtensionDisabledUI(service, profile_, extension);
-      }
-      break;
-    }
 
     case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
       if (window()->GetLocationBar())

@@ -41,6 +41,7 @@
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extension_cookies_api.h"
 #include "chrome/browser/extensions/extension_data_deleter.h"
+#include "chrome/browser/extensions/extension_disabled_ui.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_global_error.h"
 #include "chrome/browser/extensions/extension_host.h"
@@ -2028,14 +2029,15 @@ bool ExtensionService::AddExtension(const Extension* extension) {
   bool disabled = extension_prefs_->IsExtensionDisabled(extension->id());
   if (disabled) {
     disabled_extensions_.Insert(scoped_extension);
-    // TODO(aa): This seems dodgy. AddExtension() could get called with a
-    // disabled extension for other reasons other than that an update was
-    // disabled, e.g. as in ExtensionManagementTest.InstallRequiresConfirm.
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_EXTENSION_UPDATE_DISABLED,
-        content::Source<Profile>(profile_),
-        content::Details<const Extension>(extension));
     SyncExtensionChangeIfNeeded(*extension);
+
+    if (extension_prefs_->DidExtensionEscalatePermissions(extension->id())) {
+      content::NotificationService::current()->Notify(
+          chrome::NOTIFICATION_EXTENSION_UPDATE_DISABLED,
+          content::Source<Profile>(profile_),
+          content::Details<const Extension>(extension));
+      extensions::AddExtensionDisabledError(this, extension);
+    }
     // Although the extension is disabled, we technically did succeed in adding
     // it to the list of installed extensions.
     return true;

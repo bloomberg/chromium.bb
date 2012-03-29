@@ -293,9 +293,8 @@ void ExtensionDisabledGlobalError::Observe(
 
 namespace extensions {
 
-void ShowExtensionDisabledUI(ExtensionService* service,
-                             Profile* profile,
-                             const Extension* extension) {
+void AddExtensionDisabledError(ExtensionService* service,
+                               const Extension* extension) {
   GlobalErrorServiceFactory::GetForProfile(service->profile())->
       AddGlobalError(new ExtensionDisabledGlobalError(service, extension));
 }
