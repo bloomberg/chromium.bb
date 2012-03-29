@@ -5723,11 +5723,6 @@
    fun:_ZN5gdata25GDataSystemServiceFactory13GetForProfileEP7Profile
    fun:_ZN22FileBrowserEventRouter23ObserveFileSystemEventsEv
    fun:_ZN16ExtensionService16InitEventRoutersEv
-   fun:_ZN16ExtensionService15InitAfterImportEv
-   fun:_ZN16ExtensionService7ObserveEiRKN7content18NotificationSourceERKNS0_19NotificationDetailsE
-   fun:_ZN23NotificationServiceImpl6NotifyEiRKN7content18NotificationSourceERKNS0_19NotificationDetailsE
-   fun:_ZN14ProfileManager16OnImportFinishedEP7Profile
-   fun:_ZN22ChromeBrowserMainParts25PreMainMessageLoopRunImplEv
 }
 {
    bug_120146
