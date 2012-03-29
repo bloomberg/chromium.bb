@@ -43,7 +43,7 @@ def SetupGerritRemote(buildroot):
   shell_code = """
 if ! git config remote.gerrit.url > /dev/null; then
   if [ "${REPO_REMOTE}" = "cros" ]; then
-    git config --unset-all "remote.${REPO_REMOTE}.pushurl" || exit 1
+    git config --unset-all "remote.${REPO_REMOTE}.pushurl" 2> /dev/null;
     git remote add gerrit "%(gerrit_url)s/${REPO_PROJECT}" || exit 1
   else
     git remote add gerrit "%(gerrit_int_url)s/${REPO_PROJECT}" || exit 1
