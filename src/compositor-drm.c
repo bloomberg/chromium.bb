@@ -60,6 +60,9 @@ struct drm_compositor {
 	uint32_t connector_allocator;
 	struct tty *tty;
 
+	struct gbm_surface *dummy_surface;
+	EGLSurface dummy_egl_surface;
+
 	struct wl_list sprite_list;
 	int sprites_are_broken;
 
@@ -770,7 +773,7 @@ static int
 init_egl(struct drm_compositor *ec, struct udev_device *device)
 {
 	EGLint major, minor, n;
-	const char *extensions, *filename, *sysnum;
+	const char *filename, *sysnum;
 	int fd;
 	static const EGLint context_attribs[] = {
 		EGL_CONTEXT_CLIENT_VERSION, 2,
@@ -817,12 +820,6 @@ init_egl(struct drm_compositor *ec, struct udev_device *device)
 		return -1;
 	}
 
-	extensions = eglQueryString(ec->base.display, EGL_EXTENSIONS);
-	if (!strstr(extensions, "EGL_KHR_surfaceless_gles2")) {
-		fprintf(stderr, "EGL_KHR_surfaceless_gles2 not available\n");
-		return -1;
-	}
-
 	if (!eglBindAPI(EGL_OPENGL_ES_API)) {
 		fprintf(stderr, "failed to bind api EGL_OPENGL_ES_API\n");
 		return -1;
@@ -841,8 +838,24 @@ init_egl(struct drm_compositor *ec, struct udev_device *device)
 		return -1;
 	}
 
-	if (!eglMakeCurrent(ec->base.display, EGL_NO_SURFACE,
-			    EGL_NO_SURFACE, ec->base.context)) {
+	ec->dummy_surface = gbm_surface_create(ec->gbm, 10, 10,
+					       GBM_FORMAT_XRGB8888,
+					       GBM_BO_USE_RENDERING);
+	if (!ec->dummy_surface) {
+		fprintf(stderr, "failed to create dummy gbm surface\n");
+		return -1;
+	}
+
+	ec->dummy_egl_surface =
+		eglCreateWindowSurface(ec->base.display, ec->base.config,
+				       ec->dummy_surface, NULL);
+	if (ec->dummy_egl_surface == EGL_NO_SURFACE) {
+		fprintf(stderr, "failed to create egl surface\n");
+		return -1;
+	}
+
+	if (!eglMakeCurrent(ec->base.display, ec->dummy_egl_surface,
+			    ec->dummy_egl_surface, ec->base.context)) {
 		fprintf(stderr, "failed to make context current\n");
 		return -1;
 	}

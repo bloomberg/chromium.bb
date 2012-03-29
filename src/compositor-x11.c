@@ -48,6 +48,8 @@
 struct x11_compositor {
 	struct weston_compositor	 base;
 
+	EGLSurface		 dummy_pbuffer;
+
 	Display			*dpy;
 	xcb_connection_t	*conn;
 	xcb_screen_t		*screen;
@@ -117,7 +119,6 @@ x11_compositor_init_egl(struct x11_compositor *c)
 {
 	EGLint major, minor;
 	EGLint n;
-	const char *extensions;
 	EGLint config_attribs[] = {
 		EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
 		EGL_RED_SIZE, 1,
@@ -131,6 +132,12 @@ x11_compositor_init_egl(struct x11_compositor *c)
 		EGL_NONE
 	};
 
+	static const EGLint pbuffer_attribs[] = {
+		EGL_WIDTH, 10,
+		EGL_HEIGHT, 10,
+		EGL_NONE
+	};
+
 	c->base.display = eglGetDisplay(c->dpy);
 	if (c->base.display == NULL) {
 		fprintf(stderr, "failed to create display\n");
@@ -139,12 +146,6 @@ x11_compositor_init_egl(struct x11_compositor *c)
 
 	if (!eglInitialize(c->base.display, &major, &minor)) {
 		fprintf(stderr, "failed to initialize display\n");
-		return -1;
-	}
-
-	extensions = eglQueryString(c->base.display, EGL_EXTENSIONS);
-	if (!strstr(extensions, "EGL_KHR_surfaceless_gles2")) {
-		fprintf(stderr, "EGL_KHR_surfaceless_gles2 not available\n");
 		return -1;
 	}
 
@@ -162,6 +163,14 @@ x11_compositor_init_egl(struct x11_compositor *c)
 					   EGL_NO_CONTEXT, context_attribs);
 	if (c->base.context == NULL) {
 		fprintf(stderr, "failed to create context\n");
+		return -1;
+	}
+
+	c->dummy_pbuffer = eglCreatePbufferSurface(c->base.display,
+						   c->base.config,
+						   pbuffer_attribs);
+	if (c->base.context == NULL) {
+		fprintf(stderr, "failed to create dummy pbuffer\n");
 		return -1;
 	}
 

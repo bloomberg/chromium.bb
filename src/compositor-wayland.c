@@ -45,6 +45,9 @@
 struct wayland_compositor {
 	struct weston_compositor	 base;
 
+	struct wl_egl_pixmap		*dummy_pixmap;
+	EGLSurface			 dummy_egl_surface;;
+
 	struct {
 		struct wl_display *display;
 		struct wl_compositor *compositor;
@@ -260,7 +263,6 @@ wayland_compositor_init_egl(struct wayland_compositor *c)
 {
 	EGLint major, minor;
 	EGLint n;
-	const char *extensions;
 	EGLint config_attribs[] = {
 		EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
 		EGL_RED_SIZE, 1,
@@ -286,12 +288,6 @@ wayland_compositor_init_egl(struct wayland_compositor *c)
 		return -1;
 	}
 
-	extensions = eglQueryString(c->base.display, EGL_EXTENSIONS);
-	if (!strstr(extensions, "EGL_KHR_surfaceless_gles2")) {
-		fprintf(stderr, "EGL_KHR_surfaceless_gles2 not available\n");
-		return -1;
-	}
-
 	if (!eglBindAPI(EGL_OPENGL_ES_API)) {
 		fprintf(stderr, "failed to bind EGL_OPENGL_ES_API\n");
 		return -1;
@@ -309,8 +305,17 @@ wayland_compositor_init_egl(struct wayland_compositor *c)
 		return -1;
 	}
 
-	if (!eglMakeCurrent(c->base.display, EGL_NO_SURFACE,
-			    EGL_NO_SURFACE, c->base.context)) {
+	c->dummy_pixmap = wl_egl_pixmap_create(10, 10, 0);
+	if (!c->dummy_pixmap) {
+		fprintf(stderr, "failure to create dummy_pixmap\n");
+		return -1;
+	}
+
+	c->dummy_egl_surface =
+		eglCreatePixmapSurface(c->base.display, c->base.config,
+				       c->dummy_pixmap, NULL);
+	if (!eglMakeCurrent(c->base.display, c->dummy_egl_surface,
+			    c->dummy_egl_surface, c->base.context)) {
 		fprintf(stderr, "failed to make context current\n");
 		return -1;
 	}
