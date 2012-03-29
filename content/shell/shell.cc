@@ -11,6 +11,7 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/shell/shell_javascript_dialog_creator.h"
 #include "content/shell/shell_messages.h"
 #include "content/shell/shell_switches.h"
 #include "ui/gfx/size.h"
@@ -139,6 +140,15 @@ void Shell::WebContentsCreated(WebContents* source_contents,
 
 void Shell::DidNavigateMainFramePostCommit(WebContents* tab) {
   PlatformSetAddressBarURL(tab->GetURL());
+}
+
+JavaScriptDialogCreator* Shell::GetJavaScriptDialogCreator() {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
+    return NULL;
+
+  if (!dialog_creator_.get())
+    dialog_creator_.reset(new ShellJavaScriptDialogCreator());
+  return dialog_creator_.get();
 }
 
 void Shell::DidFinishLoad(int64 frame_id,

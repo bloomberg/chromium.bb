@@ -27,7 +27,9 @@ class GURL;
 class WebContents;
 
 namespace content {
+
 class BrowserContext;
+class ShellJavaScriptDialogCreator;
 class SiteInstance;
 
 // This represents one window of the Content Shell, i.e. all the UI including
@@ -115,6 +117,7 @@ class Shell : public WebContentsDelegate,
                                   const GURL& target_url,
                                   WebContents* new_contents) OVERRIDE;
   virtual void DidNavigateMainFramePostCommit(WebContents* tab) OVERRIDE;
+  virtual JavaScriptDialogCreator* GetJavaScriptDialogCreator() OVERRIDE;
 #if defined(OS_MACOSX)
   virtual void HandleKeyboardEvent(
       const NativeWebKeyboardEvent& event) OVERRIDE;
@@ -142,6 +145,8 @@ class Shell : public WebContentsDelegate,
   CHROMEG_CALLBACK_3(Shell, gboolean, OnHighlightURLView, GtkAccelGroup*,
                      GObject*, guint, GdkModifierType);
 #endif
+
+  scoped_ptr<ShellJavaScriptDialogCreator> dialog_creator_;
 
   scoped_ptr<WebContents> web_contents_;
 
