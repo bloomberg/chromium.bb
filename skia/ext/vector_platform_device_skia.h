@@ -20,7 +20,7 @@ namespace skia {
 
 class BitmapPlatformDevice;
 
-class VectorPlatformDeviceSkia : public PlatformDevice, public SkPDFDevice {
+class VectorPlatformDeviceSkia : public SkPDFDevice, public PlatformDevice {
  public:
   SK_API VectorPlatformDeviceSkia(const SkISize& pageSize,
                                   const SkISize& contentSize,

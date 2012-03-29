@@ -26,7 +26,7 @@ namespace skia {
 // For us, that other bitmap will become invalid as soon as the device becomes
 // invalid, which may lead to subtle bugs. Therefore, DO NOT ASSIGN THE
 // DEVICE'S PIXEL DATA TO ANOTHER BITMAP, make sure you copy instead.
-class SK_API BitmapPlatformDevice : public PlatformDevice, public SkDevice {
+class SK_API BitmapPlatformDevice : public SkDevice, public PlatformDevice {
  public:
   // Creates a BitmapPlatformDevice instance. |is_opaque| should be set if the
   // caller knows the bitmap will be completely opaque and allows some

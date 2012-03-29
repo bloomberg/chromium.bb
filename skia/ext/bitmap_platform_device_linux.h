@@ -57,7 +57,7 @@ namespace skia {
 // shared memory between the renderer and the main process at least. In this
 // case we'll probably create the buffer from a precreated region of memory.
 // -----------------------------------------------------------------------------
-class BitmapPlatformDevice : public PlatformDevice, public SkDevice {
+class BitmapPlatformDevice : public SkDevice, public PlatformDevice {
   // A reference counted cairo surface
   class BitmapPlatformDeviceData;
 
