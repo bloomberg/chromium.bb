@@ -301,7 +301,7 @@ void ChromotingScriptableObject::SendIq(const std::string& message_xml) {
 }
 
 void ChromotingScriptableObject::AddAttribute(const std::string& name,
-                                              Var attribute) {
+                                              const Var& attribute) {
   property_names_[name] = properties_.size();
   properties_.push_back(PropertyDescriptor(name, attribute));
 }

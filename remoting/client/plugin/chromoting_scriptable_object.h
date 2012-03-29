@@ -153,7 +153,7 @@ class ChromotingScriptableObject
   typedef pp::Var (ChromotingScriptableObject::*MethodHandler)(
       const std::vector<pp::Var>& args, pp::Var* exception);
   struct PropertyDescriptor {
-    PropertyDescriptor(const std::string& n, pp::Var a)
+    PropertyDescriptor(const std::string& n, const pp::Var& a)
         : type(NONE), name(n), attribute(a), method(NULL) {
     }
 
@@ -173,7 +173,7 @@ class ChromotingScriptableObject
   };
 
   // Routines to add new attribute, method properties.
-  void AddAttribute(const std::string& name, pp::Var attribute);
+  void AddAttribute(const std::string& name, const pp::Var& attribute);
   void AddMethod(const std::string& name, MethodHandler handler);
 
   void SignalConnectionInfoChange(int state, int error);
