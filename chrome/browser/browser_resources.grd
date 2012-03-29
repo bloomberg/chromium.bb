@@ -170,7 +170,6 @@
         <include name="IDR_NETWORK_MENU_JS" file="resources\chromeos\network_menu.js" flattenhtml="true" type="BINDATA" />
         <include name="IDR_NOTIFICATION_ICON_LINK_HTML" file="resources\chromeos\notification_icon_link.html" type="BINDATA" />
         <include name="IDR_OFFERS_MANIFEST" file="resources\chromeos\offers\manifest.json" type="BINDATA" />
-        <include name="IDR_OFFERS_MAIN" file="resources\chromeos\offers\main.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_OFFLINE_LOAD_HTML" file="resources\chromeos\offline_load.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_OOBE_HTML" file="resources\chromeos\login\oobe.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_OS_CREDITS_HTML" file="resources\chromeos\about_os_credits.html" flattenhtml="true" type="BINDATA" />
