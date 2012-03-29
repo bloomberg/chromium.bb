@@ -6,6 +6,7 @@
 """Perform various tasks related to updating Portage packages."""
 
 import filecmp
+import fnmatch
 import logging
 import optparse
 import os
@@ -30,7 +31,7 @@ UPGRADED = 'Upgraded'
 STANDARD_BOARD_ARCHS = set(['amd64', 'arm', 'x86'])
 
 # Files we do not include in our upgrades by convention.
-BLACKLISTED_FILES = set(['Manifest', 'ChangeLog', 'metadata.xml'])
+BLACKLISTED_FILES = set(['Manifest', 'ChangeLog*', 'metadata.xml'])
 
 class PInfo(object):
   """Class to accumulate package info during upgrade process.
@@ -721,7 +722,9 @@ class Upgrader(object):
     # ebuild requested.
     items = os.listdir(upstream_pkgdir)
     for item in items:
-      if os.path.basename(item) not in BLACKLISTED_FILES:
+      blacklisted = [b for b in BLACKLISTED_FILES
+                     if fnmatch.fnmatch(os.path.basename(item), b)]
+      if not blacklisted:
         if not item.endswith('.ebuild') or item == ebuild:
           src = os.path.join(upstream_pkgdir, item)
           dst = os.path.join(pkgdir, item)
