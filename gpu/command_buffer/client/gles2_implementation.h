@@ -15,6 +15,7 @@
 
 #include "../common/gles2_cmd_utils.h"
 #include "../common/scoped_ptr.h"
+#include "../client/ref_counted.h"
 #include "../client/gles2_cmd_helper.h"
 #include "../client/query_tracker.h"
 #include "../client/ring_buffer.h"
@@ -83,6 +84,7 @@ namespace gles2 {
 
 class ClientSideBufferHelper;
 class ProgramInfoManager;
+class ShareGroup;
 
 // Base class for IdHandlers
 class IdHandlerInterface {
@@ -169,6 +171,7 @@ class GLES2_IMPL_EXPORT GLES2Implementation {
 
   GLES2Implementation(
       GLES2CmdHelper* helper,
+      ShareGroup* share_group,
       TransferBufferInterface* transfer_buffer,
       bool share_resources,
       bool bind_generates_resource);
@@ -223,6 +226,10 @@ class GLES2_IMPL_EXPORT GLES2Implementation {
 
   void SetErrorMessageCallback(ErrorMessageCallback* callback) {
     error_message_callback_ = callback;
+  }
+
+  ShareGroup* share_group() const {
+    return share_group_.get();
   }
 
  private:
@@ -528,6 +535,8 @@ class GLES2_IMPL_EXPORT GLES2Implementation {
   scoped_ptr<MappedMemoryManager> mapped_memory_;
 
   scoped_ptr<ProgramInfoManager> program_info_manager_;
+
+  scoped_refptr<ShareGroup> share_group_;
 
   scoped_ptr<QueryTracker> query_tracker_;
   QueryTracker::Query* current_query_;

@@ -13,6 +13,7 @@
 #include "../client/mapped_memory.h"
 #include "../client/program_info_manager.h"
 #include "../client/query_tracker.h"
+#include "../client/share_group.h"
 #include "../client/transfer_buffer.h"
 #include "../common/gles2_cmd_utils.h"
 #include "../common/id_allocator.h"
@@ -575,6 +576,7 @@ GLES2Implementation::SingleThreadChecker::~SingleThreadChecker() {
 
 GLES2Implementation::GLES2Implementation(
       GLES2CmdHelper* helper,
+      ShareGroup* share_group,
       TransferBufferInterface* transfer_buffer,
       bool share_resources,
       bool bind_generates_resource)
@@ -605,6 +607,8 @@ GLES2Implementation::GLES2Implementation(
     debug_ = CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kEnableGPUClientLogging);
   });
+
+  share_group_ = (share_group ? share_group : new ShareGroup());
 
   memset(&reserved_ids_, 0, sizeof(reserved_ids_));
 }

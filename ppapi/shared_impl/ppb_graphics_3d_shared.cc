@@ -116,6 +116,7 @@ bool PPB_Graphics3D_Shared::CreateGLES2Impl(int32 command_buffer_size,
   // Create the object exposing the OpenGL API.
   gles2_impl_.reset(new gpu::gles2::GLES2Implementation(
       gles2_helper_.get(),
+      NULL,
       transfer_buffer_.get(),
       false,
       true));

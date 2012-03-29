@@ -420,6 +420,7 @@ bool ContentGLContext::Initialize(bool onscreen,
   // Create the object exposing the OpenGL API.
   gles2_implementation_ = new gpu::gles2::GLES2Implementation(
       gles2_helper_,
+      NULL,
       transfer_buffer_,
       share_resources,
       bind_generates_resources);

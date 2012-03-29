@@ -409,6 +409,7 @@ class GLES2ImplementationTest : public testing::Test {
 
       gl_.reset(new GLES2Implementation(
           helper_.get(),
+          NULL,
           transfer_buffer_.get(),
           shared_resources,
           bind_generates_resource));
@@ -525,6 +526,10 @@ const GLuint GLES2ImplementationTest::kRenderbuffersStartId;
 const GLuint GLES2ImplementationTest::kTexturesStartId;
 const GLuint GLES2ImplementationTest::kQueriesStartId;
 #endif
+
+TEST_F(GLES2ImplementationTest, Basic) {
+  EXPECT_TRUE(gl_->share_group() != NULL);
+}
 
 TEST_F(GLES2ImplementationTest, ShaderSource) {
   const uint32 kBucketId = GLES2Implementation::kResultBucketId;

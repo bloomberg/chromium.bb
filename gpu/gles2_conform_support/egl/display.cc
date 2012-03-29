@@ -176,6 +176,7 @@ EGLContext Display::CreateContext(EGLConfig config,
   bool share_resources = share_ctx != NULL;
   context_.reset(new gpu::gles2::GLES2Implementation(
       gles2_cmd_helper_.get(),
+      NULL,
       transfer_buffer_.get(),
       share_resources,
       true));

@@ -220,6 +220,7 @@ bool PluginGraphics3D::InitFromBrowserResource(PP_Resource res) {
       transfer_buffer_.reset(new gpu::TransferBuffer(gles2_helper_.get()));
       gles2_implementation_.reset(new gpu::gles2::GLES2Implementation(
         gles2_helper_.get(),
+        NULL,
         transfer_buffer_.get(),
         false,
         true));

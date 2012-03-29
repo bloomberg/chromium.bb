@@ -462,6 +462,7 @@ bool GLInProcessContext::Initialize(const gfx::Size& size,
   // Create the object exposing the OpenGL API.
   gles2_implementation_.reset(new GLES2Implementation(
       gles2_helper_.get(),
+      NULL,
       transfer_buffer_.get(),
       true,
       false));
