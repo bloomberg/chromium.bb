@@ -43,7 +43,7 @@ class Socket : public APIResource {
   // case |event_notifier| will eventually be called with the final result
   // (again, either a nonnegative number of bytes written, or a negative
   // error).
-  virtual int Write(const std::string message);
+  virtual int Write(const std::string& message);
 
   virtual void OnDataRead(int result);
   virtual void OnWriteComplete(int result);

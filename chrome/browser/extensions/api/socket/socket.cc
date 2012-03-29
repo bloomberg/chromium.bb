@@ -49,7 +49,7 @@ std::string Socket::Read() {
   return std::string(read_buffer_->data(), result);
 }
 
-int Socket::Write(const std::string message) {
+int Socket::Write(const std::string& message) {
   int length = message.length();
   scoped_refptr<net::StringIOBuffer> io_buffer(
       new net::StringIOBuffer(message));
