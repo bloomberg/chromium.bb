@@ -1,0 +1,138 @@
+<?xml version='1.0' encoding='utf-8' ?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+<!ENTITY % BOOK_ENTITIES SYSTEM "Wayland.ent">
+%BOOK_ENTITIES;
+]>
+<chapter id="chap-Compositors">
+  <title>Types of Compositors</title>
+  <section id="sect-Compositors-System-Compositor">
+    <title>System Compositor</title>
+    <para>
+      <itemizedlist>
+	<listitem>
+	  <para>
+	    ties in with graphical boot
+	  </para>
+	</listitem>
+	<listitem>
+	  <para>
+	    hosts different types of session compositors
+	  </para>
+	</listitem>
+	<listitem>
+	  <para>
+	    lets us switch between multiple sessions (fast user switching,
+	    secure/personal desktop switching)
+	  </para>
+	</listitem>
+	<listitem>
+	  <para>
+	    multiseat
+	  </para>
+	</listitem>
+	<listitem>
+	  <para>
+	    linux implementation using libudev, egl, kms, evdev, cairo
+	  </para>
+	</listitem>
+	<listitem>
+	  <para>
+	    for fullscreen clients, the system compositor can reprogram the
+	    video scanout address to source from the client provided buffer.
+	  </para>
+	</listitem>
+      </itemizedlist>
+    </para>
+  </section>
+  <section id="sect-Compositors-Session-Compositor">
+    <title>Session Compositor</title>
+    <para>
+      <itemizedlist>
+	<listitem>
+	  <para>
+	    nested under the system compositor.  nesting is feasible because
+	    protocol is async, roundtrip would break nesting
+	  </para>
+	</listitem>
+	<listitem>
+	  <para>
+	    gnome-shell
+	  </para>
+	</listitem>
+	<listitem>
+	  <para>
+	    moblin
+	  </para>
+	</listitem>
+	<listitem>
+	  <para>
+	    compiz?
+	  </para>
+	</listitem>
+	<listitem>
+	  <para>
+	    kde compositor?
+	  </para>
+	</listitem>
+	<listitem>
+	  <para>
+	    text mode using vte
+	  </para>
+	</listitem>
+	<listitem>
+	  <para>
+	    rdp session
+	  </para>
+	</listitem>
+	<listitem>
+	  <para>
+	    fullscreen X session under wayland
+	  </para>
+	</listitem>
+	<listitem>
+	  <para>
+	    can run without system compositor, on the hw where it makes
+	    sense
+	  </para>
+	</listitem>
+	<listitem>
+	  <para>
+	    root window less X server, bridging X windows into a wayland
+	    session compositor
+	  </para>
+	</listitem>
+      </itemizedlist>
+    </para>
+  </section>
+  <section id="sect-Compositors-Embedding-Compositor">
+    <title>Embedding Compositor</title>
+    <para>
+      X11 lets clients embed windows from other clients, or lets client copy
+      pixmap contents rendered by another client into their window.  This is
+      often used for applets in a panel, browser plugins and similar.
+      Wayland doesn't directly allow this, but clients can communicate GEM
+      buffer names out-of-band, for example, using d-bus or as command line
+      arguments when the panel launches the applet.  Another option is to
+      use a nested wayland instance.  For this, the wayland server will have
+      to be a library that the host application links to.  The host
+      application will then pass the wayland server socket name to the
+      embedded application, and will need to implement the wayland
+      compositor interface.  The host application composites the client
+      surfaces as part of it's window, that is, in the web page or in the
+      panel.  The benefit of nesting the wayland server is that it provides
+      the requests the embedded client needs to inform the host about buffer
+      updates and a mechanism for forwarding input events from the host
+      application.
+    </para>
+    <para>
+      <itemizedlist>
+	<listitem>
+	  <para>
+	    firefox embedding flash by being a special purpose compositor to
+	    the plugin
+	  </para>
+	</listitem>
+      </itemizedlist>
+    </para>
+  </section>
+</chapter>

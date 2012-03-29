@@ -1,0 +1,684 @@
+<?xml version='1.0' encoding='utf-8' ?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+<!ENTITY % BOOK_ENTITIES SYSTEM "Wayland.ent">
+%BOOK_ENTITIES;
+]>
+<chapter id="chap-Wayland-Protocol">
+  <title>The Wayland Protocol</title>
+  <section id="sect-Wayland-Protocol-Basic-Principles">
+    <title>Basic Principles</title>
+    <para>
+      The wayland protocol is an asynchronous object oriented protocol.  All
+      requests are method invocations on some object.  The request include
+      an object id that uniquely identifies an object on the server.  Each
+      object implements an interface and the requests include an opcode that
+      identifies which method in the interface to invoke.
+    </para>
+    <para>
+      The server sends back events to the client, each event is emitted from
+      an object.  Events can be error conditions.  The event includes the
+      object id and the event opcode, from which the client can determine
+      the type of event.  Events are generated both in response to requests
+      (in which case the request and the event constitutes a round trip) or
+      spontaneously when the server state changes.
+    </para>
+    <para>
+      <itemizedlist>
+	<listitem>
+	  <para>
+	    State is broadcast on connect, events are sent
+	    out when state changes. Clients must listen for
+	    these changes and cache the state.
+	    There is no need (or mechanism) to query server state.
+	  </para>
+	</listitem>
+	<listitem>
+	  <para>
+	    The server will broadcast the presence of a number of global objects,
+	    which in turn will broadcast their current state.
+	  </para>
+	</listitem>
+      </itemizedlist>
+    </para>
+  </section>
+  <section id="sect-Wayland-Protocol-Code-Generation">
+    <title>Code Generation</title>
+    <para>
+      The interfaces, requests and events are defined in
+      <filename>protocol/wayland.xml</filename>.
+      This xml is used to generate the function prototypes that can be used by
+      clients and compositors.
+    </para>
+    <para>
+      The protocol entry points are generated as inline functions which just
+      wrap the <function>wl_proxy_*</function> functions.  The inline functions aren't
+      part of the library ABI and language bindings should generate their
+      own stubs for the protocol entry points from the xml.
+    </para>
+  </section>
+  <section id="sect-Wayland-Protocol-Wire-Format">
+    <title>Wire Format</title>
+    <para>
+      The protocol is sent over a UNIX domain stream socket.  Currently, the
+      endpoint is named <systemitem class="service">\wayland</systemitem>,
+      but it is subject to change.  The protocol is message-based.  A
+      message sent by a client to the server is called request.  A message
+      from the server to a client is called event.  Every message is
+      structured as 32-bit words, values are represented in the host's
+      byte-order.
+    </para>
+    <para>
+      The message header has 2 words in it:
+      <itemizedlist>
+	<listitem>
+	  <para>
+	    The first word is the sender's object id (32-bit).
+	  </para>
+	</listitem>
+	<listitem>
+	  <para>
+	    The second has 2 parts of 16-bit.  The upper 16-bits are the message
+	    size in bytes, starting at the header (i.e. it has a minimum value of 8).The lower is the request/event opcode.
+	  </para>
+	</listitem>
+      </itemizedlist>
+      The payload describes the request/event arguments.  Every argument is always
+      aligned to 32-bits. Where padding is required, the value of padding bytes is
+      undefined. There is no prefix that describes the type, but it is
+      inferred implicitly from the xml specification.
+    </para>
+    <para>
+
+      The representation of argument types are as follows:
+      <variablelist>
+	<varlistentry>
+	  <term>int</term>
+	  <term>uint</term>
+	  <listitem>
+	    <para>
+	      The value is the 32-bit value of the signed/unsigned
+	      int.
+	    </para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term>string</term>
+	  <listitem>
+	    <para>
+	      Starts with an unsigned 32-bit length, followed by the
+	      string contents, including terminating NUL byte, then padding to a
+	      32-bit boundary.
+	    </para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term>object</term>
+	  <listitem>
+	    <para>
+	      32-bit object ID.
+	    </para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term>new_id</term>
+	  <listitem>
+	    <para>
+	      The 32-bit object ID.  On requests, the client
+	      decides the ID.  The only events with <type>new_id</type> are
+	      advertisements of globals, and the server will use IDs below
+	      0x10000.
+	    </para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term>array</term>
+	  <listitem>
+	    <para>
+	      Starts with 32-bit array size in bytes, followed by the array
+	      contents verbatim, and finally padding to a 32-bit boundary.
+	    </para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term>fd</term>
+	  <listitem>
+	    <para>
+	      The file descriptor is not stored in the message buffer, but in
+	      the ancillary data of the UNIX domain socket message (msg_control).
+	    </para>
+	  </listitem>
+	</varlistentry>
+      </variablelist>
+    </para>
+  </section>
+  <section id="sect-Wayland-Protocol-Interfaces">
+    <title>Interfaces</title>
+    <para>
+      The protocol includes several interfaces which are used for
+      interacting with the server.  Each interface provides requests,
+      events, and errors (which are really just special events) as described
+      above.  Specific compositor implementations may have their own
+      interfaces provided as extensions, but there are several which are
+      always expected to be present.
+    </para>
+    <para>
+      Core interfaces:
+      <variablelist>
+	<varlistentry>
+	  <term>wl_display</term>
+	  <listitem>
+	    <para>
+	      provides global functionality like objecting binding and
+	      fatal error events
+	    </para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term>wl_callback</term>
+	  <listitem>
+	    <para>
+	      callback interface for done events
+	    </para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term>wl_compositor</term>
+	  <listitem>
+	    <para>
+	      core compositor interface, allows surface creation
+	    </para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term>wl_shm</term>
+	  <listitem>
+	    <para>
+	      buffer management interface with buffer creation and format
+	      handling
+	    </para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term>wl_buffer</term>
+	  <listitem>
+	    <para>
+	      buffer handling interface for indicating damage and object
+	      destruction, also provides buffer release events from the
+	      server
+	    </para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term>wl_data_offer</term>
+	  <listitem>
+	    <para>
+	      for accepting and receiving specific mime types
+	    </para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term>wl_data_source</term>
+	  <listitem>
+	    <para>
+	      for offering specific mime types
+	    </para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term>wl_data_device</term>
+	  <listitem>
+	    <para>
+	      lets clients manage drag &amp; drop, provides pointer enter/leave events and motion
+	    </para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term>wl_data_device_manager</term>
+	  <listitem>
+	    <para>
+	      for managing data sources and devices
+	    </para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term>wl_shell</term>
+	  <listitem>
+	    <para>
+	      shell surface handling
+	    </para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term>wl_shell_surface</term>
+	  <listitem>
+	    <para>
+	      shell surface handling and desktop-like events (e.g. set a
+	      surface to fullscreen, display a popup, etc.)
+	    </para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term>wl_input_device</term>
+	  <listitem>
+	    <para>
+	      cursor setting, motion, button, and key events, etc.
+	    </para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term>wl_output</term>
+	  <listitem>
+	    <para>
+	      events describing an attached output (subpixel orientation,
+	      current mode &amp; geometry, etc.) </para>
+	  </listitem>
+	</varlistentry>
+      </variablelist>
+    </para>
+  </section>
+  <section id="sect-Wayland-Protocol-Connect-Time">
+    <title>Connect Time</title>
+    <para>
+      <itemizedlist>
+	<listitem>
+	  <para>
+	    no fixed format connect block, the server emits a bunch of
+	    events at connect time
+	  </para>
+	</listitem>
+	<listitem>
+	  <para>
+	    presence events for global objects: output, compositor, input
+	    devices
+	  </para>
+	</listitem>
+      </itemizedlist>
+    </para>
+  </section>
+  <section id="sect-Wayland-Protocol-Security-and-Authentication">
+    <title>Security and Authentication</title>
+    <para>
+      <itemizedlist>
+	<listitem>
+	  <para>
+	    mostly about access to underlying buffers, need new drm auth
+	    mechanism (the grant-to ioctl idea), need to check the cmd stream?
+	  </para>
+	</listitem>
+	<listitem>
+	  <para>
+	    getting the server socket depends on the compositor type, could
+	    be a system wide name, through fd passing on the session dbus.
+	    or the client is forked by the compositor and the fd is
+	    already opened.
+	  </para>
+	</listitem>
+      </itemizedlist>
+    </para>
+  </section>
+  <section id="sect-Wayland-Protocol-Creating-Objects">
+    <title>Creating Objects</title>
+    <para>
+      <itemizedlist>
+	<listitem>
+	  <para>
+	    client allocates object ID, uses range protocol
+	  </para>
+	</listitem>
+	<listitem>
+	  <para>
+	    server tracks how many IDs are left in current range, sends
+	    new range when client is about to run out.
+	  </para>
+	</listitem>
+      </itemizedlist>
+    </para>
+  </section>
+  <section id="sect-Wayland-Protocol-Compositor">
+    <title>Compositor</title>
+    <para>
+      The compositor is a global object, advertised at connect time.
+    </para>
+    <para>
+      See <xref linkend="protocol-spec-interface-wl_compositor"/> for the
+      protocol description.
+    </para>
+  </section>
+  <section id="sect-Wayland-Protocol-Surface">
+    <title>Surface</title>
+    <para>
+      Created by the client.
+    </para>
+    <para>
+      See <xref linkend="protocol-interface-wl_surface"/> for the protocol
+      description.
+    </para>
+    <para>
+      Needs a way to set input region, opaque region.
+    </para>
+  </section>
+  <section id="sect-Wayland-Protocol-Input">
+    <title>Input</title>
+    <para>
+      Represents a group of input devices, including mice, keyboards.  Has a
+      keyboard and pointer focus.  Global object.  Pointer events are
+      delivered in both screen coordinates and surface local coordinates.
+    </para>
+    <para>
+      See <xref linkend="protocol-interface-wl_input_device"/> for the
+      protocol description.
+    </para>
+    <para>
+      Talk about:
+
+      <itemizedlist>
+	<listitem>
+	  <para>
+	    keyboard map, change events
+	  </para>
+	</listitem>
+	<listitem>
+	  <para>
+	    xkb on wayland
+	  </para>
+	</listitem>
+	<listitem>
+	  <para>
+	    multi pointer wayland
+	  </para>
+	</listitem>
+      </itemizedlist>
+    </para>
+    <para>
+      A surface can change the pointer image when the surface is the pointer
+      focus of the input device.  Wayland doesn't automatically change the
+      pointer image when a pointer enters a surface, but expects the
+      application to set the cursor it wants in response the pointer
+      focus and motion events.  The rationale is that a client has to manage
+      changing pointer images for UI elements within the surface in response
+      to motion events anyway, so we'll make that the only mechanism for
+      setting changing the pointer image.  If the server receives a request
+      to set the pointer image after the surface loses pointer focus, the
+      request is ignored.  To the client this will look like it successfully
+      set the pointer image.
+    </para>
+    <para>
+      The compositor will revert the pointer image back to a default image
+      when no surface has the pointer focus for that device.  Clients can
+      revert the pointer image back to the default image by setting a NULL
+      image.
+    </para>
+    <para>
+      What if the pointer moves from one window which has set a special
+      pointer image to a surface that doesn't set an image in response to
+      the motion event?  The new surface will be stuck with the special
+      pointer image.  We can't just revert the pointer image on leaving a
+      surface, since if we immediately enter a surface that sets a different
+      image, the image will flicker.  Broken app, I suppose.
+    </para>
+  </section>
+  <section id="sect-Wayland-Protocol-Output">
+    <title>Output</title>
+    <para>
+      A output is a global object, advertised at connect time or as they
+      come and go.
+    </para>
+    <para>
+      See <xref linkend="protocol-interface-wl_output"/> for the protocol
+      description.
+    </para>
+    <para>
+    </para>
+    <itemizedlist>
+      <listitem>
+	<para>
+	  laid out in a big (compositor) coordinate system
+	</para>
+      </listitem>
+      <listitem>
+	<para>
+	  basically xrandr over wayland
+	</para>
+      </listitem>
+      <listitem>
+	<para>
+	  geometry needs position in compositor coordinate system\
+	</para>
+      </listitem>
+      <listitem>
+	<para>
+	  events to advertise available modes, requests to move and change
+	  modes
+	</para>
+      </listitem>
+    </itemizedlist>
+  </section>
+  <section id="sect-Wayland-Protocol-Shared-Object-Cache">
+    <title>Shared Object Cache</title>
+    <para>
+      Cache for sharing glyphs, icons, cursors across clients.  Lets clients
+      share identical objects.  The cache is a global object, advertised at
+      connect time.
+      <programlisting>
+        Interface:      cache
+        Requests:       upload(key, visual, bo, stride, width, height)
+        Events:	        item(key, bo, x, y, stride)
+                        retire(bo)
+      </programlisting>
+    </para>
+    <para>
+      <itemizedlist>
+	<listitem>
+	  <para>
+	    Upload by passing a visual, bo, stride, width, height to the
+	    cache.
+	  </para>
+	</listitem>
+	<listitem>
+	  <para>
+	    Upload returns a bo name, stride, and x, y location of object in
+	    the buffer.  Clients take a reference on the atlas bo.
+	  </para>
+	</listitem>
+	<listitem>
+	  <para>
+	    Shared objects are refcounted, freed by client (when purging
+	    glyphs from the local cache) or when a client exits.
+	  </para>
+	</listitem>
+	<listitem>
+	  <para>
+	    Server can't delete individual items from an atlas, but it can
+	    throw out an entire atlas bo if it becomes too sparse.  The server
+	    sends out an <type>retire</type> event when this happens, and clients
+	    must throw away any objects from that bo and reupload.  Between the
+	    server dropping the atlas and the client receiving the retire event,
+	    clients can still legally use the old atlas since they have a ref on
+	    the bo.
+	  </para>
+	</listitem>
+	<listitem>
+	  <para>
+	    cairo needs to hook into the glyph cache, and maybe also a way
+	    to create a read-only surface based on an object form the cache
+	    (icons).
+	    <function>cairo_wayland_create_cached_surface(surface-data)</function>
+	  </para>
+	</listitem>
+      </itemizedlist>
+    </para>
+  </section>
+  <section id="sect-Wayland-Protocol-Drag-and-Drop">
+    <title>Drag and Drop</title>
+    <para>
+      Multi-device aware. Orthogonal to rest of wayland, as it is its own
+      toplevel object.  Since the compositor determines the drag target, it
+      works with transformed surfaces (dragging to a scaled down window in
+      expose mode, for example).
+    </para>
+    <para>
+      See <xref linkend="protocol-interface-wl_data_offer"/>,
+      <xref linkend="protocol-interface-wl_data_source"/> and
+      <xref linkend="protocol-interface-wl_data_offer"/> for
+      protocol descriptions.
+    </para>
+    <para>
+      Issues: 
+      <itemizedlist>
+	<listitem>
+	  <para>
+	    we can set the cursor image to the current cursor + dragged
+	    object, which will last as long as the drag, but maybe an request to
+	    attach an image to the cursor will be more convenient?
+	  </para>
+	</listitem>
+	<listitem>
+	  <para>
+	    Should drag.send() destroy the object?  There's nothing to do
+	    after the data has been transferred.
+	  </para>
+	</listitem>
+	<listitem>
+	  <para>
+	    How do we marshal several mime-types?  We could make the drag
+	    setup a multi-step operation: dnd.create, drag.offer(mime-type1),
+	    drag.offer(mime-type2), drag.activate().  The drag object could send
+	    multiple offer events on each motion event.  Or we could just
+	    implement an array type, but that's a pain to work with.
+	  </para>
+	</listitem>
+	<listitem>
+	  <para>
+	    Middle-click drag to pop up menu?  Ctrl/Shift/Alt drag?
+	  </para>
+	</listitem>
+	<listitem>
+	  <para>
+	    Send a file descriptor over the protocol to let initiator and
+	    source exchange data out of band?
+	  </para>
+	</listitem>
+	<listitem>
+	  <para>
+	    Action? Specify action when creating the drag object? Ask
+	    action?
+	  </para>
+	</listitem>
+      </itemizedlist>
+    </para>
+    <para>
+      Sequence of events:
+      <orderedlist>
+	<listitem>
+	  <para>
+	    The initiator surface receives a click (which grabs the input
+	    device to that surface) and then enough motion to decide that a drag
+	    is starting.  Wayland has no subwindows, so it's entirely up to the
+	    application to decide whether or not a draggable object within the
+	    surface was clicked.
+	  </para>
+	</listitem>
+	<listitem>
+	  <para>
+	    The initiator creates a drag object by calling the
+	    <function>create_drag</function> method on the dnd global
+	    object.  As for any client created object, the client allocates
+	    the id.  The <function>create_drag</function> method also takes
+	    the originating surface, the device that's dragging and the
+	    mime-types supported.  If the surface
+	    has indeed grabbed the device passed in, the server will create an
+	    active drag object for the device.  If the grab was released in the
+	    meantime, the drag object will be in-active, that is, the same state
+	    as when the grab is released.  In that case, the client will receive
+	    a button up event, which will let it know that the drag finished.
+	    To the client it will look like the drag was immediately cancelled
+	    by the grab ending.
+	  </para>
+	  <para>
+	    The special mime-type application/x-root-target indicates that the
+	    initiator is looking for drag events to the root window as well.
+	  </para>
+	</listitem>
+	<listitem>
+	  <para>
+	    To indicate the object being dragged, the initiator can replace
+	    the pointer image with an larger image representing the data being
+	    dragged with the cursor image overlaid.  The pointer image will
+	    remain in place as long as the grab is in effect, since the
+	    initiating surface keeps pointer focus, and no other surface
+	    receives enter events.
+	  </para>
+	</listitem>
+	<listitem>
+	  <para>
+	    As long as the grab is active (or until the initiator cancels
+	    the drag by destroying the drag object), the drag object will send
+	    <function>offer</function> events to surfaces it moves across. As for motion
+	    events, these events contain the surface local coordinates of the
+	    device as well as the list of mime-types offered.  When a device
+	    leaves a surface, it will send an <function>offer</function> event with an empty
+	    list of mime-types to indicate that the device left the surface.
+	  </para>
+	</listitem>
+	<listitem>
+	  <para>
+	    If a surface receives an offer event and decides that it's in an
+	    area that can accept a drag event, it should call the
+	    <function>accept</function> method on the drag object in the event.  The surface
+	    passes a mime-type in the request, picked from the list in the offer
+	    event, to indicate which of the types it wants.  At this point, the
+	    surface can update the appearance of the drop target to give
+	    feedback to the user that the drag has a valid target.  If the
+	    <function>offer</function> event moves to a different drop target (the surface
+	    decides the offer coordinates is outside the drop target) or leaves
+	    the surface (the offer event has an empty list of mime-types) it
+	    should revert the appearance of the drop target to the inactive
+	    state.  A surface can also decide to retract its drop target (if the
+	    drop target disappears or moves, for example), by calling the accept
+	    method with a NULL mime-type.
+	  </para>
+	</listitem>
+	<listitem>
+	  <para>
+	    When a target surface sends an <function>accept</function> request, the drag
+	    object will send a <function>target</function> event to the initiator surface.
+	    This tells the initiator that the drag currently has a potential
+	    target and which of the offered mime-types the target wants.  The
+	    initiator can change the pointer image or drag source appearance to
+	    reflect this new state.  If the target surface retracts its drop
+	    target of if the surface disappears, a <function>target</function> event with a
+	    NULL mime-type will be sent.
+	  </para>
+	  <para>
+	    If the initiator listed application/x-root-target as a valid
+	    mime-type, dragging into the root window will make the drag object
+	    send a <function>target</function> event with the application/x-root-target
+	    mime-type.
+	  </para>
+	</listitem>
+	<listitem>
+	  <para>
+	    When the grab is released (indicated by the button release
+	    event), if the drag has an active target, the initiator calls the
+	    <function>send</function> method on the drag object to send the data to be
+	    transferred by the drag operation, in the format requested by the
+	    target.  The initiator can then destroy the drag object by calling
+	    the <function>destroy</function> method.
+	  </para>
+	</listitem>
+	<listitem>
+	  <para>
+	    The drop target receives a <function>data</function> event from the drag
+	    object with the requested data.
+	  </para>
+	</listitem>
+      </orderedlist>
+    </para>
+    <para>
+      MIME is defined in RFC's 2045-2049. A
+      <ulink url="ftp://ftp.isi.edu/in-notes/iana/assignments/media-types/">
+      registry of MIME types</ulink> is maintained by the Internet Assigned
+      Numbers Authority (IANA).
+    </para>
+  </section>
+</chapter>
