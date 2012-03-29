@@ -74,8 +74,13 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, Basic) {
   EXPECT_EQ(0, browser_actions_bar()->NumberOfBrowserActions());
 }
 
-// TODO(mpcomplete): http://code.google.com/p/chromium/issues/detail?id=38992
-IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, Visibility) {
+// http://crbug.com/38992: Times out occasionally.
+#if defined(OS_CHROMEOS)
+#define MAYBE_Visibility DISABLED_Visibility
+#else
+#define MAYBE_Visibility Visibility
+#endif
+IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, MAYBE_Visibility) {
   BrowserActionsContainer::disable_animations_during_testing_ = true;
 
   base::TimeTicks start_time = base::TimeTicks::Now();
