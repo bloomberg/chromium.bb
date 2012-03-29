@@ -331,6 +331,10 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     return location == Extension::LOAD;
   }
 
+  // Fills the |info| dictionary with basic information about the extension.
+  // |enabled| is injected for easier testing.
+  void GetBasicInfo(bool enabled, base::DictionaryValue* info) const;
+
   // See Type definition above.
   Type GetType() const;
 

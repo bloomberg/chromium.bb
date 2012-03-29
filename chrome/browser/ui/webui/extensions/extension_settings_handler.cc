@@ -111,36 +111,36 @@ void ExtensionSettingsHandler::RegisterUserPrefs(PrefService* prefs) {
                              PrefService::SYNCABLE_PREF);
 }
 
-// Static
 DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
-    ExtensionService* service, const Extension* extension,
+    const Extension* extension,
     const std::vector<ExtensionPage>& pages,
-    const ExtensionWarningSet* warnings_set,
-    bool enabled, bool terminated) {
+    const ExtensionWarningSet* warnings_set) {
   DictionaryValue* extension_data = new DictionaryValue();
+  bool enabled = extension_service_ ?
+                 extension_service_->IsExtensionEnabled(extension->id()) :
+                 true;
+  extension->GetBasicInfo(enabled, extension_data);
+
   GURL icon =
       ExtensionIconSource::GetIconURL(extension,
                                       ExtensionIconSet::EXTENSION_ICON_MEDIUM,
                                       ExtensionIconSet::MATCH_BIGGER,
                                       !enabled, NULL);
-  extension_data->SetString("id", extension->id());
-  extension_data->SetString("name", extension->name());
-  extension_data->SetString("description", extension->description());
   if (extension->location() == Extension::LOAD)
     extension_data->SetString("path", extension->path().value());
-  extension_data->SetString("version", extension->version()->GetString());
   extension_data->SetString("icon", icon.spec());
   extension_data->SetBoolean("isUnpacked",
                              extension->location() == Extension::LOAD);
-  extension_data->SetBoolean("mayDisable",
-                             Extension::UserMayDisable(extension->location()));
-  extension_data->SetBoolean("enabled", enabled);
-  extension_data->SetBoolean("terminated", terminated);
-  extension_data->SetBoolean("enabledIncognito",
-      service ? service->IsIncognitoEnabled(extension->id()) : false);
+  extension_data->SetBoolean("terminated", extension_service_ ?
+      extension_service_->terminated_extensions()->Contains(extension->id()) :
+      false);
+  extension_data->SetBoolean("enabledIncognito", extension_service_ ?
+      extension_service_->IsIncognitoEnabled(extension->id()) :
+      false);
   extension_data->SetBoolean("wantsFileAccess", extension->wants_file_access());
-  extension_data->SetBoolean("allowFileAccess",
-      service ? service->AllowFileAccess(extension) : false);
+  extension_data->SetBoolean("allowFileAccess", extension_service_ ?
+      extension_service_->AllowFileAccess(extension) :
+      false);
   extension_data->SetBoolean("allow_activity",
       enabled && CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableExtensionActivityUI));
@@ -155,11 +155,10 @@ DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
   else
     extension_data->SetInteger("order", 2);
 
-  if (!extension->options_url().is_empty() && enabled)
-    extension_data->SetString("options_url", extension->options_url().spec());
-
-  if (service && !service->GetBrowserActionVisibility(extension))
+  if (extension_service_ &&
+      !extension_service_->GetBrowserActionVisibility(extension)) {
     extension_data->SetBoolean("enable_show_button", true);
+  }
 
   // Add views
   ListValue* views = new ListValue;
@@ -181,7 +180,6 @@ DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
   extension_data->Set("views", views);
   extension_data->SetBoolean("hasPopupAction",
       extension->browser_action() || extension->page_action());
-  extension_data->SetString("homepageUrl", extension->GetHomepageURL().spec());
 
   // Add warnings.
   ListValue* warnings_list = new ListValue;
@@ -427,11 +425,9 @@ void ExtensionSettingsHandler::HandleRequestExtensionsData(
        extension != extensions->end(); ++extension) {
     if (ShouldShowExtension(*extension)) {
       extensions_list->Append(CreateExtensionDetailValue(
-          extension_service_,
           *extension,
           GetActivePagesForExtension(*extension),
-          warnings,
-          true, false));  // enabled, terminated
+          warnings));
     }
   }
   extensions = extension_service_->disabled_extensions();
@@ -439,11 +435,9 @@ void ExtensionSettingsHandler::HandleRequestExtensionsData(
        extension != extensions->end(); ++extension) {
     if (ShouldShowExtension(*extension)) {
       extensions_list->Append(CreateExtensionDetailValue(
-          extension_service_,
           *extension,
           GetActivePagesForExtension(*extension),
-          warnings,
-          false, false));  // enabled, terminated
+          warnings));
     }
   }
   extensions = extension_service_->terminated_extensions();
@@ -452,11 +446,9 @@ void ExtensionSettingsHandler::HandleRequestExtensionsData(
        extension != extensions->end(); ++extension) {
     if (ShouldShowExtension(*extension)) {
       extensions_list->Append(CreateExtensionDetailValue(
-          extension_service_,
           *extension,
           empty_pages,  // Terminated process has no active pages.
-          warnings,
-          false, true));  // enabled, terminated
+          warnings));
     }
   }
   results.Set("extensions", extensions_list);

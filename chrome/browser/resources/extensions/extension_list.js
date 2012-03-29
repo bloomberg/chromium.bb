@@ -121,7 +121,7 @@ cr.define('options', function() {
       }
 
       // The 'Options' checkbox.
-      if (extension.options_url) {
+      if (extension.enabled && extension.optionsUrl) {
         var options = node.querySelector('.options-link');
         options.addEventListener('click', function(e) {
           chrome.send('extensionSettingsOptions', [extension.id]);

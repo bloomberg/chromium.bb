@@ -50,27 +50,21 @@ ExtensionService* AsyncExtensionManagementFunction::service() {
 }
 
 static DictionaryValue* CreateExtensionInfo(const Extension& extension,
-                                            bool enabled,
-                                            bool permissions_escalated) {
+                                            ExtensionService* service) {
   DictionaryValue* info = new DictionaryValue();
-  info->SetString(keys::kIdKey, extension.id());
+  bool enabled = service->IsExtensionEnabled(extension.id());
+  extension.GetBasicInfo(enabled, info);
+
   info->SetBoolean(keys::kIsAppKey, extension.is_app());
-  info->SetString(keys::kNameKey, extension.name());
-  info->SetBoolean(keys::kEnabledKey, enabled);
+
   if (!enabled) {
+    bool permissions_escalated = service->extension_prefs()->
+        DidExtensionEscalatePermissions(extension.id());
     const char* reason = permissions_escalated ?
         keys::kDisabledReasonPermissionsIncrease : keys::kDisabledReasonUnknown;
     info->SetString(keys::kDisabledReasonKey, reason);
   }
-  info->SetBoolean(keys::kMayDisableKey,
-                   Extension::UserMayDisable(extension.location()));
-  info->SetBoolean(keys::kOfflineEnabledKey, extension.offline_enabled());
-  info->SetString(keys::kVersionKey, extension.VersionString());
-  info->SetString(keys::kDescriptionKey, extension.description());
-  info->SetString(keys::kOptionsUrlKey,
-                  extension.options_url().possibly_invalid_spec());
-  info->SetString(keys::kHomepageUrlKey,
-                  extension.GetHomepageURL().possibly_invalid_spec());
+
   if (!extension.update_url().is_empty())
     info->SetString(keys::kUpdateUrlKey,
                     extension.update_url().possibly_invalid_spec());
@@ -91,7 +85,7 @@ static DictionaryValue* CreateExtensionInfo(const Extension& extension,
       icon_info->SetString(keys::kUrlKey, url.spec());
       icon_list->Append(icon_info);
     }
-    info->Set("icons", icon_list);
+    info->Set(keys::kIconsKey, icon_list);
   }
 
   const std::set<std::string> perms =
@@ -104,7 +98,7 @@ static DictionaryValue* CreateExtensionInfo(const Extension& extension,
       permission_list->Append(permission_name);
     }
   }
-  info->Set("permissions", permission_list);
+  info->Set(keys::kPermissionsKey, permission_list);
 
   ListValue* host_permission_list = new ListValue();
   if (!extension.is_hosted_app()) {
@@ -121,15 +115,14 @@ static DictionaryValue* CreateExtensionInfo(const Extension& extension,
       }
     }
   }
-  info->Set("hostPermissions", host_permission_list);
+  info->Set(keys::kHostPermissionsKey, host_permission_list);
 
   return info;
 }
 
 static void AddExtensionInfo(ListValue* list,
                              const ExtensionSet& extensions,
-                             bool enabled,
-                             ExtensionPrefs* prefs) {
+                             ExtensionService* service) {
   for (ExtensionSet::const_iterator i = extensions.begin();
        i != extensions.end(); ++i) {
     const Extension& extension = **i;
@@ -137,9 +130,7 @@ static void AddExtensionInfo(ListValue* list,
     if (extension.location() == Extension::COMPONENT)
       continue;  // Skip built-in extensions.
 
-    bool escalated =
-        prefs->DidExtensionEscalatePermissions(extension.id());
-    list->Append(CreateExtensionInfo(extension, enabled, escalated));
+    list->Append(CreateExtensionInfo(extension, service));
   }
 }
 
@@ -147,10 +138,8 @@ bool GetAllExtensionsFunction::RunImpl() {
   ListValue* result = new ListValue();
   result_.reset(result);
 
-  ExtensionPrefs* prefs = service()->extension_prefs();
-  AddExtensionInfo(result, *service()->extensions(), true, prefs);
-  AddExtensionInfo(
-      result, *service()->disabled_extensions(), false, prefs);
+  AddExtensionInfo(result, *service()->extensions(), service());
+  AddExtensionInfo(result, *service()->disabled_extensions(), service());
 
   return true;
 }
@@ -164,10 +153,7 @@ bool GetExtensionByIdFunction::RunImpl() {
                                                      extension_id);
     return false;
   }
-  bool enabled = service()->IsExtensionEnabled(extension_id);
-  ExtensionPrefs* prefs = service()->extension_prefs();
-  bool escalated = prefs->DidExtensionEscalatePermissions(extension_id);
-  DictionaryValue* result = CreateExtensionInfo(*extension, enabled, escalated);
+  DictionaryValue* result = CreateExtensionInfo(*extension, service());
   result_.reset(result);
 
   return true;
@@ -504,10 +490,7 @@ void ExtensionManagementEventRouter::Observe(
     }
     CHECK(extension);
     ExtensionService* service = profile->GetExtensionService();
-    ExtensionPrefs* prefs = service->extension_prefs();
-    bool enabled = service->GetExtensionById(extension->id(), false) != NULL;
-    bool escalated = prefs ->DidExtensionEscalatePermissions(extension->id());
-    args.Append(CreateExtensionInfo(*extension, enabled, escalated));
+    args.Append(CreateExtensionInfo(*extension, service));
   }
 
   std::string args_json;

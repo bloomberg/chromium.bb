@@ -59,15 +59,13 @@ class ExtensionSettingsHandler : public content::WebUIMessageHandler,
 
   static void RegisterUserPrefs(PrefService* prefs);
 
-  // Extension Detail JSON Struct for page. (static for ease of testing).
-  // Note: |service| and |warnings| can be NULL in unit tests.
-  static base::DictionaryValue* CreateExtensionDetailValue(
-      ExtensionService* service,
+  // Extension Detail JSON Struct for page. |pages| is injected for unit
+  // testing.
+  // Note: |warning_set| can be NULL in unit tests.
+  base::DictionaryValue* CreateExtensionDetailValue(
       const Extension* extension,
       const std::vector<ExtensionPage>& pages,
-      const ExtensionWarningSet* warnings,
-      bool enabled,
-      bool terminated);
+      const ExtensionWarningSet* warning_set);
 
   void GetLocalizedValues(base::DictionaryValue* localized_strings);
 
@@ -152,6 +150,7 @@ class ExtensionSettingsHandler : public content::WebUIMessageHandler,
   ExtensionUninstallDialog* GetExtensionUninstallDialog();
 
   // Our model.  Outlives us since it's owned by our containing profile.
+  // Note: This may be NULL in unit tests.
   ExtensionService* extension_service_;
 
   // Used to pick the directory when loading an extension.

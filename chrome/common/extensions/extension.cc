@@ -53,6 +53,7 @@
 namespace keys = extension_manifest_keys;
 namespace values = extension_manifest_values;
 namespace errors = extension_manifest_errors;
+namespace info_keys = extension_info_keys;
 
 using extensions::csp_validator::ContentSecurityPolicyIsLegal;
 using extensions::csp_validator::ContentSecurityPolicyIsSecure;
@@ -489,6 +490,21 @@ std::string Extension::GenerateIdForPath(const FilePath& path) {
   if (!GenerateId(path_bytes, &id))
     return "";
   return id;
+}
+
+void Extension::GetBasicInfo(bool enabled,
+                             DictionaryValue* info) const {
+  info->SetString(info_keys::kIdKey, id());
+  info->SetString(info_keys::kNameKey, name());
+  info->SetBoolean(info_keys::kEnabledKey, enabled);
+  info->SetBoolean(info_keys::kMayDisableKey, UserMayDisable(location()));
+  info->SetBoolean(info_keys::kOfflineEnabledKey, offline_enabled());
+  info->SetString(info_keys::kVersionKey, VersionString());
+  info->SetString(info_keys::kDescriptionKey, description());
+  info->SetString(info_keys::kOptionsUrlKey,
+                  options_url().possibly_invalid_spec());
+  info->SetString(info_keys::kHomepageUrlKey,
+                  GetHomepageURL().possibly_invalid_spec());
 }
 
 Extension::Type Extension::GetType() const {

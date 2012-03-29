@@ -101,22 +101,6 @@ void AppLauncherHandler::CreateAppInfo(const Extension* extension,
                                        const AppNotification* notification,
                                        ExtensionService* service,
                                        DictionaryValue* value) {
-  bool enabled = service->IsExtensionEnabled(extension->id()) &&
-      !service->GetTerminatedExtension(extension->id());
-  bool icon_big_exists = true;
-  // Instead of setting grayscale here, we do it in apps_page.js.
-  GURL icon_big =
-      ExtensionIconSource::GetIconURL(extension,
-                                      ExtensionIconSet::EXTENSION_ICON_LARGE,
-                                      ExtensionIconSet::MATCH_BIGGER,
-                                      false, &icon_big_exists);
-  bool icon_small_exists = true;
-  GURL icon_small =
-      ExtensionIconSource::GetIconURL(extension,
-                                      ExtensionIconSet::EXTENSION_ICON_BITTY,
-                                      ExtensionIconSet::MATCH_BIGGER,
-                                      false, &icon_small_exists);
-
   value->Clear();
 
   // The Extension class 'helpfully' wraps bidi control characters that
@@ -125,14 +109,25 @@ void AppLauncherHandler::CreateAppInfo(const Extension* extension,
   base::i18n::UnadjustStringForLocaleDirection(&name);
   NewTabUI::SetURLTitleAndDirection(value, name, extension->GetFullLaunchURL());
 
-  value->SetString("id", extension->id());
-  value->SetString("description", extension->description());
-  value->SetBoolean("enabled", enabled);
-  value->SetString("options_url", extension->options_url().spec());
-  value->SetBoolean("can_uninstall",
-                    Extension::UserMayDisable(extension->location()));
+  bool enabled = service->IsExtensionEnabled(extension->id()) &&
+      !service->GetTerminatedExtension(extension->id());
+  extension->GetBasicInfo(enabled, value);
+
+  bool icon_big_exists = true;
+  // Instead of setting grayscale here, we do it in apps_page.js.
+  GURL icon_big =
+      ExtensionIconSource::GetIconURL(extension,
+                                      ExtensionIconSet::EXTENSION_ICON_LARGE,
+                                      ExtensionIconSet::MATCH_BIGGER,
+                                      false, &icon_big_exists);
   value->SetString("icon_big", icon_big.spec());
   value->SetBoolean("icon_big_exists", icon_big_exists);
+  bool icon_small_exists = true;
+  GURL icon_small =
+      ExtensionIconSource::GetIconURL(extension,
+                                      ExtensionIconSet::EXTENSION_ICON_BITTY,
+                                      ExtensionIconSet::MATCH_BIGGER,
+                                      false, &icon_small_exists);
   value->SetString("icon_small", icon_small.spec());
   value->SetBoolean("icon_small_exists", icon_small_exists);
   value->SetInteger("launch_container", extension->launch_container());
@@ -140,7 +135,6 @@ void AppLauncherHandler::CreateAppInfo(const Extension* extension,
   value->SetInteger("launch_type",
       prefs->GetLaunchType(extension->id(),
                            ExtensionPrefs::LAUNCH_DEFAULT));
-  value->SetBoolean("offline_enabled", extension->offline_enabled());
   value->SetBoolean("is_component",
       extension->location() == Extension::COMPONENT);
   value->SetBoolean("is_webstore",

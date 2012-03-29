@@ -10,7 +10,9 @@
 #include "chrome/common/extensions/extension.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace {
+
+class ExtensionUITest : public testing::Test {
+ protected:
   static DictionaryValue* DeserializeJSONTestData(const FilePath& path,
       std::string *error) {
     Value* value;
@@ -21,7 +23,7 @@ namespace {
     return static_cast<DictionaryValue*>(value);
   }
 
-  static DictionaryValue* CreateExtensionDetailViewFromPath(
+  DictionaryValue* CreateExtensionDetailViewFromPath(
       const FilePath& extension_path,
       const std::vector<ExtensionPage>& pages,
       Extension::Location location) {
@@ -39,11 +41,10 @@ namespace {
     EXPECT_TRUE(extension.get());
     EXPECT_EQ("", error);
 
-    return ExtensionSettingsHandler::CreateExtensionDetailValue(
-        NULL, extension.get(), pages, NULL, true, false);
+    return handler_.CreateExtensionDetailValue(extension.get(), pages, NULL);
   }
 
-  static void CompareExpectedAndActualOutput(
+  void CompareExpectedAndActualOutput(
       const FilePath& extension_path,
       const std::vector<ExtensionPage>& pages,
       const FilePath& expected_output_path) {
@@ -80,9 +81,11 @@ namespace {
       }
     }
   }
-}  // namespace
 
-TEST(ExtensionUITest, GenerateExtensionsJSONData) {
+  ExtensionSettingsHandler handler_;
+};
+
+TEST_F(ExtensionUITest, GenerateExtensionsJSONData) {
   FilePath data_test_dir_path, extension_path, expected_output_path;
   EXPECT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &data_test_dir_path));
 
@@ -146,7 +149,7 @@ TEST(ExtensionUITest, GenerateExtensionsJSONData) {
 
 // Test that using Extension::LOAD for the extension location triggers the
 // correct values in the details, including location, order, and allow_reload.
-TEST(ExtensionUITest, LocationLoadPropagation) {
+TEST_F(ExtensionUITest, LocationLoadPropagation) {
   FilePath data_test_dir_path, extension_path;
   EXPECT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &data_test_dir_path));
 
@@ -178,7 +181,7 @@ TEST(ExtensionUITest, LocationLoadPropagation) {
 // the correct values in the details, including location, order, and
 // allow_reload.  Contrast to Extension::LOAD, which has somewhat different
 // values.
-TEST(ExtensionUITest, LocationExternalPrefPropagation) {
+TEST_F(ExtensionUITest, LocationExternalPrefPropagation) {
   FilePath data_test_dir_path, extension_path;
   EXPECT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &data_test_dir_path));
 
@@ -207,7 +210,7 @@ TEST(ExtensionUITest, LocationExternalPrefPropagation) {
 
 // Test that the extension path is correctly propagated into the extension
 // details.
-TEST(ExtensionUITest, PathPropagation) {
+TEST_F(ExtensionUITest, PathPropagation) {
   FilePath data_test_dir_path, extension_path;
   EXPECT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &data_test_dir_path));
 

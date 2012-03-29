@@ -81,6 +81,19 @@ const char kGeneratedBackgroundPageFilename[] =
     "_generated_background_page.html";
 }
 
+// These must match the values expected by the chrome.management extension API.
+namespace extension_info_keys {
+  const char kDescriptionKey[] = "description";
+  const char kEnabledKey[] = "enabled";
+  const char kHomepageUrlKey[] = "homepageUrl";
+  const char kIdKey[] = "id";
+  const char kMayDisableKey[] = "mayDisable";
+  const char kNameKey[] = "name";
+  const char kOfflineEnabledKey[] = "offlineEnabled";
+  const char kOptionsUrlKey[] = "optionsUrl";
+  const char kVersionKey[] = "version";
+}
+
 namespace extension_misc {
 const char kBookmarkManagerId[] = "eemcgdkfndhakfknompkggombfjjjeno";
 const char kCitrixReceiverAppId[] = "haiffjcadagjlijoggckpgfnoeiflnem";

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,22 +7,14 @@
 namespace extension_management_api_constants {
 
 const char kAppLaunchUrlKey[] = "appLaunchUrl";
-const char kDescriptionKey[] = "description";
-const char kEnabledKey[] = "enabled";
 const char kDisabledReasonKey[] = "disabledReason";
-const char kHomepageUrlKey[] = "homepageUrl";
+const char kHostPermissionsKey[] = "hostPermissions";
 const char kIconsKey[] = "icons";
-const char kIdKey[] = "id";
 const char kIsAppKey[] = "isApp";
-const char kNameKey[] = "name";
-const char kOfflineEnabledKey[] = "offlineEnabled";
-const char kOptionsUrlKey[] = "optionsUrl";
 const char kPermissionsKey[] = "permissions";
-const char kMayDisableKey[] = "mayDisable";
 const char kSizeKey[] = "size";
 const char kUpdateUrlKey[] = "updateUrl";
 const char kUrlKey[] = "url";
-const char kVersionKey[] = "version";
 
 const char kDisabledReasonPermissionsIncrease[] = "permissions_increase";
 const char kDisabledReasonUnknown[] = "unknown";

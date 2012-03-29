@@ -136,8 +136,8 @@ cr.define('ntp', function() {
         launchTypeButton.checked = app.appData.launch_type == id;
       });
 
-      this.options_.disabled = !app.appData.options_url || !app.appData.enabled;
-      this.uninstall_.disabled = !app.appData.can_uninstall;
+      this.options_.disabled = !app.appData.optionsUrl || !app.appData.enabled;
+      this.uninstall_.disabled = !app.appData.mayDisable;
 
       this.disableNotifications_.hidden = true;
       var notificationsDisabled = app.appData.notifications_disabled;
@@ -168,7 +168,7 @@ cr.define('ntp', function() {
       });
     },
     onShowOptions_: function(e) {
-      window.location = this.app_.appData.options_url;
+      window.location = this.app_.appData.optionsUrl;
     },
     onDisableNotifications_: function(e) {
       var app = this.app_;
@@ -297,7 +297,7 @@ cr.define('ntp', function() {
       var src = this.useSmallIcon_ ? this.appData_.icon_small :
                                      this.appData_.icon_big;
       if (!this.appData_.enabled ||
-          (!this.appData_.offline_enabled && !navigator.onLine)) {
+          (!this.appData_.offlineEnabled && !navigator.onLine)) {
         src += '?grayscale=true';
       }
 
@@ -586,7 +586,7 @@ cr.define('ntp', function() {
      * @return {boolean} True if the app can be uninstalled.
      */
     canBeRemoved: function() {
-      return this.appData_.can_uninstall;
+      return this.appData_.mayDisable;
     },
 
     /**
