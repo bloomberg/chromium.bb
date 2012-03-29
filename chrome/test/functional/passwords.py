@@ -129,17 +129,10 @@ class PasswordTest(pyauto.PyUITest):
         lambda: self.GetDOMValue('document.readyState'),
         expect_retval='complete')
     self.PerformActionOnInfobar(
-<<<<<<< .mine
         'accept', infobar_index=test_utils.WaitForInfobarTypeAndGetIndex(
             self, self.INFOBAR_TYPE))
     self.NavigateToURL(URL_LOGOUT)
     self.NavigateToURL(URL_HTTPS)
-=======
-        'accept', infobar_index=test_utils.WaitForInfobarTypeAndGetIndex(
-            self, self.INFOBAR_TYPE))
-    self.NavigateToURL(url_logout)
-    self.NavigateToURL(url_https)
->>>>>>> .r129522
     self._ClickOnLoginPage(0, 0)
     test_utils.VerifyGoogleAccountCredsFilled(self, username, password,
                                               tab_index=0, windex=0)
@@ -180,17 +173,10 @@ class PasswordTest(pyauto.PyUITest):
     # Login to Google a/c
     test_utils.GoogleAccountsLogin(self, username, password)
     self.PerformActionOnInfobar(
-<<<<<<< .mine
         'accept', infobar_index=test_utils.WaitForInfobarTypeAndGetIndex(
             self, self.INFOBAR_TYPE))
     self.NavigateToURL(URL_LOGOUT)
     self.NavigateToURL(URL)
-=======
-        'accept', infobar_index=test_utils.WaitForInfobarTypeAndGetIndex(
-            self, self.INFOBAR_TYPE))
-    self.NavigateToURL(url_logout)
-    self.NavigateToURL(url)
->>>>>>> .r129522
     self._ClickOnLoginPage(0, 0)
     test_utils.VerifyGoogleAccountCredsFilled(self, username, password,
         tab_index=0, windex=0)
@@ -226,36 +212,18 @@ class PasswordTest(pyauto.PyUITest):
   def testInfoBarDisappearByNavigatingPage(self):
     """Test password infobar is dismissed when navigating to different page."""
     creds = self.GetPrivateInfo()['test_google_account']
-<<<<<<< .mine
     # Disable one-click login infobar for sync.
     self.SetPrefs(pyauto.kReverseAutologinEnabled, False)
     # Login to Google account.
-=======
-    # Disable one-click login infobar for sync.
-    self.SetPrefs(pyauto.kReverseAutologinEnabled, False)
-    # Login to Google a/c
->>>>>>> .r129522
     test_utils.GoogleAccountsLogin(self, creds['username'], creds['password'])
     self.PerformActionOnInfobar(
-<<<<<<< .mine
         'accept', infobar_index=test_utils.WaitForInfobarTypeAndGetIndex(
             self, self.INFOBAR_TYPE))
     self.NavigateToURL('chrome://version')
-=======
-        'accept', infobar_index=test_utils.WaitForInfobarTypeAndGetIndex(
-            self, self.INFOBAR_TYPE))
-    self.NavigateToURL('chrome://history')
->>>>>>> .r129522
     self.assertTrue(self.WaitForInfobarCount(0))
-<<<<<<< .mine
     # To make sure user is navigated to Version page.
     self.assertEqual('About Version', self.GetActiveTabTitle())
     test_utils.AssertInfobarTypeDoesNotAppear(self, self.INFOBAR_TYPE)
-=======
-    # To make sure user is navigated to History page.
-    self.assertEqual('History', self.GetActiveTabTitle())
-    test_utils.AssertInfobarTypeDoesNotAppear(self, self.INFOBAR_TYPE)
->>>>>>> .r129522
 
   def testInfoBarDisappearByReload(self):
     """Test that Password infobar disappears by the page reload."""
@@ -321,17 +289,10 @@ class PasswordTest(pyauto.PyUITest):
     # Login to Google a/c
     test_utils.GoogleAccountsLogin(self, username, password)
     self.PerformActionOnInfobar(
-<<<<<<< .mine
         'accept', infobar_index=test_utils.WaitForInfobarTypeAndGetIndex(
             self, self.INFOBAR_TYPE))
     self.NavigateToURL(URL_LOGOUT)
     self.NavigateToURL(URL)
-=======
-        'accept', infobar_index=test_utils.WaitForInfobarTypeAndGetIndex(
-            self, self.INFOBAR_TYPE))
-    self.NavigateToURL(url_logout)
-    self.NavigateToURL(url)
->>>>>>> .r129522
     self._ClickOnLoginPage(0, 0)
     test_utils.VerifyGoogleAccountCredsFilled(self, username, password,
         tab_index=0, windex=0)
