@@ -16,7 +16,7 @@ found in the LICENSE file.
     <link rel="stylesheet" href="main.css">
     <link rel="stylesheet" href="menu_button.css">
     <link rel="stylesheet" href="toolbar.css">
-    <script src="ask_pin_dialog.js"></script>
+    <script src="host_setup_dialog.js"></script>
     <script src="client_plugin_async.js"></script>
     <script src="client_plugin_v1.js"></script>
     <script src="client_screen.js"></script>
@@ -185,18 +185,19 @@ found in the LICENSE file.
     </div> <!-- home -->
 
     <div id="dialog-screen"
-         data-ui-mode="home.host home.client home.auth home.history home.confirm-host-delete home.ask-pin"
+         data-ui-mode="home.host home.client home.auth home.history home.confirm-host-delete home.host-setup"
          hidden></div>
 
     <div id="dialog-container"
-         data-ui-mode="home.host home.client home.auth home.history home.confirm-host-delete home.ask-pin"
+         data-ui-mode="home.host home.client home.auth home.history home.confirm-host-delete home.host-setup"
          hidden>
 
       <div class="box-spacer"></div>
 
-      <div id="ask-pin-dialog" data-ui-mode="home.ask-pin" hidden>
-        <p i18n-content="ASK_PIN_DIALOG_DESCRIPTION"></p>
-        <form id="ask-pin-form" action="">
+      <div id="host-setup-dialog" data-ui-mode="home.host-setup" hidden>
+        <p i18n-content="HOST_SETUP_DIALOG_DESCRIPTION"></p>
+        <form id="ask-pin-form" data-ui-mode="home.host-setup.ask-pin"
+              action="" hidden>
           <label for="daemon-pin-input"
                  i18n-content="ASK_PIN_DIALOG_LABEL"></label>
           <input id="daemon-pin-entry" type="password">
@@ -205,9 +206,18 @@ found in the LICENSE file.
                  i18n-content="ASK_PIN_DIALOG_CONFIRM_LABEL"></label>
           <input id="daemon-pin-confirm" type="password">
           <button id="daemon-pin-ok" type="submit" i18n-content="OK"></button>
-          <img id="start-daemon-spinner" src="spinner.gif" hidden>
         </form>
-      </div> <!-- ask-pin-dialog -->
+        <div data-ui-mode="home.host-setup.processing" hidden>
+          <img src="spinner.gif">
+          <span id="host-setup-processing-message" class="message"></span>
+        </div>
+        <div data-ui-mode="home.host-setup.done" hidden>
+          <span id="host-setup-done-message" class="message"></span>
+        </div>
+        <div data-ui-mode="home.host-setup.error" hidden>
+          <span id="host-setup-error-message" class="error-state"></span>
+        </div>
+      </div> <!-- host-setup-dialog -->
 
       <div id="auth-dialog"
            data-ui-mode="home.auth"

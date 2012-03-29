@@ -11,9 +11,11 @@
 #include "base/compiler_specific.h"
 #include "base/environment.h"
 #include "base/file_path.h"
+#include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/process_util.h"
 #include "base/string_split.h"
+#include "base/values.h"
 
 namespace remoting {
 
@@ -22,6 +24,15 @@ namespace {
 const char* kDaemonScript = "me2me_virtual_host.py";
 const int64 kDaemonTimeoutMs = 5000;
 
+// TODO(sergeyu): This is a very hacky implementation of
+// DaemonController interface for linux. Current version works, but
+// there are sevaral problems with it:
+//   * All calls are executed synchronously, even though this API is
+//     supposed to be asynchronous.
+//   * The host is configured by passing configuration data as CL
+//     argument - this is obviously not secure.
+// Rewrite this code to solve these two problems.
+// http://crbug.com/120950 .
 class DaemonControllerLinux : public remoting::DaemonController {
  public:
   DaemonControllerLinux();
@@ -113,10 +124,14 @@ void DaemonControllerLinux::GetConfig(const GetConfigCallback& callback) {
 
 void DaemonControllerLinux::SetConfigAndStart(
     scoped_ptr<base::DictionaryValue> config) {
-  // TODO(sergeyu): Save the |config|.
+  std::vector<std::string> args;
+  args.push_back("--explicit-config");
+  std::string config_json;
+  base::JSONWriter::Write(config.get(), &config_json);
+  args.push_back(config_json);
   // TODO(sergeyu): Set state to START_FAILED if RunScript() fails.
   std::vector<std::string> no_args;
-  RunScript(no_args, NULL);
+  RunScript(args, NULL);
 }
 
 void DaemonControllerLinux::SetPin(const std::string& pin) {

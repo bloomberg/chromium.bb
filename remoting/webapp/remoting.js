@@ -86,7 +86,8 @@ remoting.initDaemonUi = function () {
   remoting.daemonPlugin = new remoting.DaemonPlugin();
   remoting.daemonPlugin.updateDom();
   remoting.setMode(getAppStartupMode_());
-  remoting.askPinDialog = new remoting.AskPinDialog(remoting.daemonPlugin);
+  remoting.hostSetupDialog =
+      new remoting.HostSetupDialog(remoting.daemonPlugin);
 };
 
 /**

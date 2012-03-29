@@ -540,8 +540,10 @@ def main():
   parser.add_option("", "--check-running", dest="check_running", default=False,
                     action="store_true",
                     help="return 0 if the daemon is running, or 1 otherwise")
-  parser.add_option("", "--explicit-pin", dest="explicit_pin", default=None,
+  parser.add_option("", "--explicit-pin", dest="explicit_pin",
                     help="set or unset the pin on the command line")
+  parser.add_option("", "--explicit-config", dest="explicit_config",
+                    help="explicitly specify content of the config")
   (options, args) = parser.parse_args()
 
   size_components = options.size.split("x")
@@ -584,6 +586,12 @@ def main():
   if not os.path.exists(CONFIG_DIR):
     os.makedirs(CONFIG_DIR, mode=0700)
 
+  if options.explicit_config:
+    for file_name in ["auth.json", "host#%s.json" % host_hash]:
+      settings_file = open(os.path.join(CONFIG_DIR, file_name), 'w')
+      settings_file.write(options.explicit_config)
+      settings_file.close()
+
   auth = Authentication(os.path.join(CONFIG_DIR, "auth.json"))
   need_auth_tokens = not auth.load_config()
 
@@ -610,36 +618,37 @@ def main():
       print "The running instance has been updated with the new PIN."
       return 0
 
-  # The loop is to deal with the case of registering a new Host with
-  # previously-saved auth tokens (from a previous run of this script), which
-  # may require re-prompting for username & password.
-  while True:
-    try:
-      if need_auth_tokens:
-        auth.generate_tokens()
-        auth.save_config()
-        need_auth_tokens = False
-    except Exception:
-      logging.error("Authentication failed")
-      return 1
-
-    try:
-      if register_host:
-        host.register(auth)
-        host.save_config()
-    except urllib2.HTTPError, err:
-      if err.getcode() == 401:
-        # Authentication failed - re-prompt for username & password.
-        need_auth_tokens = True
-        continue
-      else:
-        # Not an authentication error.
-        logging.error("Directory returned error: " + str(err))
-        logging.error(err.read())
+  if not options.explicit_config:
+    # The loop is to deal with the case of registering a new Host with
+    # previously-saved auth tokens (from a previous run of this script), which
+    # may require re-prompting for username & password.
+    while True:
+      try:
+        if need_auth_tokens:
+          auth.generate_tokens()
+          auth.save_config()
+          need_auth_tokens = False
+      except Exception:
+        logging.error("Authentication failed")
         return 1
 
-    # |auth| and |host| are both set up, so break out of the loop.
-    break
+      try:
+        if register_host:
+          host.register(auth)
+          host.save_config()
+      except urllib2.HTTPError, err:
+        if err.getcode() == 401:
+          # Authentication failed - re-prompt for username & password.
+          need_auth_tokens = True
+          continue
+        else:
+          # Not an authentication error.
+          logging.error("Directory returned error: " + str(err))
+          logging.error(err.read())
+          return 1
+
+      # |auth| and |host| are both set up, so break out of the loop.
+      break
 
   global g_pidfile
   g_pidfile = PidFile(pid_filename)

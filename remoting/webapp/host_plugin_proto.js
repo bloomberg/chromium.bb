@@ -25,11 +25,20 @@ remoting.HostPlugin.prototype.disconnect = function() {};
  *  @return {void} Nothing. */
 remoting.HostPlugin.prototype.localize = function(callback) {};
 
+/** @return {string} Local hostname. */
+remoting.HostPlugin.prototype.getHostName = function() {};
+
+/** @param {function(string, string):void} callback Callback to be called
+ *  after new key is generated.
+ *  @return {void} Nothing. */
+remoting.HostPlugin.prototype.generateKeyPair = function(callback) {};
+
 /** @param {string} pin The new PIN.
  *  @return {void} Nothing. */
 remoting.HostPlugin.prototype.setDaemonPin = function(pin) {};
 
-/** @param {string} callback Callback to be called for the config.
+/** @param {function(string):void} callback Callback to be called for
+ *  the config.
  *  @return {void} Nothing. */
 remoting.HostPlugin.prototype.getDaemonConfig = function(callback) {};
 
@@ -39,11 +48,6 @@ remoting.HostPlugin.prototype.startDaemon = function(config) {};
 
 /** @return {void} Nothing. */
 remoting.HostPlugin.prototype.stopDaemon = function() {};
-
-/** @param {function(string):void} callback Callback to be called
- *  after new key is generated.
- *  @return {void} Nothing. */
-remoting.HostPlugin.prototype.generateKeyPair = function(callback) {};
 
 /** @type {number} */ remoting.HostPlugin.prototype.state;
 

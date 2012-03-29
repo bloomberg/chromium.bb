@@ -38,7 +38,11 @@ remoting.AppMode = {
       CLIENT_SESSION_FINISHED_ME2ME: 'home.client.session-finished.me2me',
     HISTORY: 'home.history',
     CONFIRM_HOST_DELETE: 'home.confirm-host-delete',
-    ASK_PIN: 'home.ask-pin',
+    HOST_SETUP: 'home.host-setup',
+      HOST_SETUP_ASK_PIN: 'home.host-setup.ask-pin',
+      HOST_SETUP_PROCESSING: 'home.host-setup.processing',
+      HOST_SETUP_DONE: 'home.host-setup.done',
+      HOST_SETUP_ERROR: 'home.host-setup.error',
   IN_SESSION: 'in-session'
 };
 

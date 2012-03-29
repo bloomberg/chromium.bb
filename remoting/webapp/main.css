@@ -438,7 +438,7 @@ button {
   margin-top: 24px;
 }
 
-#ask-pin-dialog {
+#host-setup-dialog {
   position: absolute;
   top: 50%;
   left: 50%;

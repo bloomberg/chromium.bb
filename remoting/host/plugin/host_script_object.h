@@ -117,6 +117,11 @@ class HostNPScriptObject : public HostStatusObserver {
   //////////////////////////////////////////////////////////
   // Plugin methods for Me2Me host.
 
+  // Returns host name. No arguments.
+  bool GetHostName(const NPVariant* args,
+                   uint32_t arg_count,
+                   NPVariant* result);
+
   // Generates new key pair to use for the host. The specified
   // callback is called when when the key is generated. The key is
   // returned in format understood by the host (PublicKeyInfo
@@ -201,7 +206,8 @@ class HostNPScriptObject : public HostStatusObserver {
   // Helpers for GenerateKeyPair().
   void DoGenerateKeyPair(NPObject* callback);
   void InvokeGenerateKeyPairCallback(NPObject* callback,
-                                         const std::string& result);
+                                     const std::string& private_key,
+                                     const std::string& public_key);
 
   // Callback handler for DaemonController::GetConfig().
   void InvokeGetDaemonConfigCallback(NPObject* callback,

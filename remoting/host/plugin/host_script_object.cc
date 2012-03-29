@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "remoting/host/plugin/host_script_object.h"
-#include "remoting/host/plugin/daemon_controller.h"
 
 #include "base/bind.h"
 #include "base/json/json_reader.h"
@@ -14,7 +13,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/utf_string_conversions.h"
-#include "remoting/jingle_glue/xmpp_signal_strategy.h"
+#include "net/base/net_util.h"
 #include "remoting/base/auth_token_util.h"
 #include "remoting/host/chromoting_host.h"
 #include "remoting/host/chromoting_host_context.h"
@@ -22,9 +21,11 @@
 #include "remoting/host/host_key_pair.h"
 #include "remoting/host/host_secret.h"
 #include "remoting/host/it2me_host_user_interface.h"
+#include "remoting/host/plugin/daemon_controller.h"
 #include "remoting/host/plugin/host_log_handler.h"
 #include "remoting/host/policy_hack/nat_policy.h"
 #include "remoting/host/register_support_host_request.h"
+#include "remoting/jingle_glue/xmpp_signal_strategy.h"
 #include "remoting/protocol/it2me_host_authenticator_factory.h"
 
 namespace remoting {
@@ -43,6 +44,7 @@ const char* kAttrNameOnStateChanged = "onStateChanged";
 const char* kFuncNameConnect = "connect";
 const char* kFuncNameDisconnect = "disconnect";
 const char* kFuncNameLocalize = "localize";
+const char* kFuncNameGetHostName = "getHostName";
 const char* kFuncNameGenerateKeyPair = "generateKeyPair";
 const char* kFuncNameSetDaemonPin = "setDaemonPin";
 const char* kFuncNameGetDaemonConfig = "getDaemonConfig";
@@ -151,6 +153,7 @@ bool HostNPScriptObject::HasMethod(const std::string& method_name) {
   return (method_name == kFuncNameConnect ||
           method_name == kFuncNameDisconnect ||
           method_name == kFuncNameLocalize ||
+          method_name == kFuncNameGetHostName ||
           method_name == kFuncNameGenerateKeyPair ||
           method_name == kFuncNameSetDaemonPin ||
           method_name == kFuncNameGetDaemonConfig ||
@@ -179,6 +182,8 @@ bool HostNPScriptObject::Invoke(const std::string& method_name,
     return Disconnect(args, arg_count, result);
   } else if (method_name == kFuncNameLocalize) {
     return Localize(args, arg_count, result);
+  } else if (method_name == kFuncNameGetHostName) {
+    return GetHostName(args, arg_count, result);
   } else if (method_name == kFuncNameGenerateKeyPair) {
     return GenerateKeyPair(args, arg_count, result);
   } else if (method_name == kFuncNameSetDaemonPin) {
@@ -352,6 +357,7 @@ bool HostNPScriptObject::Enumerate(std::vector<std::string>* values) {
     kFuncNameConnect,
     kFuncNameDisconnect,
     kFuncNameLocalize,
+    kFuncNameGetHostName,
     kFuncNameGenerateKeyPair,
     kFuncNameSetDaemonPin,
     kFuncNameGetDaemonConfig,
@@ -593,9 +599,21 @@ bool HostNPScriptObject::Localize(const NPVariant* args,
   }
 }
 
+bool HostNPScriptObject::GetHostName(const NPVariant* args,
+                                     uint32_t arg_count,
+                                     NPVariant* result) {
+  if (arg_count != 0) {
+    SetException("getHostName: bad number of arguments");
+    return false;
+  }
+  DCHECK(result);
+  *result = NPVariantFromString(net::GetHostName());
+  return true;
+}
+
 bool HostNPScriptObject::GenerateKeyPair(const NPVariant* args,
-                                             uint32_t arg_count,
-                                             NPVariant* result) {
+                                         uint32_t arg_count,
+                                         NPVariant* result) {
   if (arg_count != 1) {
     SetException("generateKeyPair: bad number of arguments");
     return false;
@@ -936,23 +954,28 @@ void HostNPScriptObject::UpdateWebappNatPolicy(bool nat_traversal_enabled) {
 void HostNPScriptObject::DoGenerateKeyPair(NPObject* callback) {
   HostKeyPair key_pair;
   key_pair.Generate();
-  InvokeGenerateKeyPairCallback(callback, key_pair.GetAsString());
+  InvokeGenerateKeyPairCallback(callback, key_pair.GetAsString(),
+                                key_pair.GetPublicKey());
 }
 
 void HostNPScriptObject::InvokeGenerateKeyPairCallback(
     NPObject* callback,
-    const std::string& result) {
+    const std::string& private_key,
+    const std::string& public_key) {
   if (!plugin_message_loop_proxy_->BelongsToCurrentThread()) {
     plugin_message_loop_proxy_->PostTask(
         FROM_HERE, base::Bind(
             &HostNPScriptObject::InvokeGenerateKeyPairCallback,
-            base::Unretained(this), callback, result));
+            base::Unretained(this), callback, private_key, public_key));
     return;
   }
 
-  NPVariant result_val = NPVariantFromString(result);
-  InvokeAndIgnoreResult(callback, &result_val, 1);
-  g_npnetscape_funcs->releasevariantvalue(&result_val);
+  NPVariant params[2];
+  params[0] = NPVariantFromString(private_key);
+  params[1] = NPVariantFromString(public_key);
+  InvokeAndIgnoreResult(callback, params, arraysize(params));
+  g_npnetscape_funcs->releasevariantvalue(&(params[0]));
+  g_npnetscape_funcs->releasevariantvalue(&(params[1]));
   g_npnetscape_funcs->releaseobject(callback);
 }
 
