@@ -134,6 +134,10 @@ class MsvsSettings(object):
         s = s.replace(old, new)
     return s
 
+  def AdjustLibraries(self, libraries):
+    """Strip -l from library if it's specified with that."""
+    return [lib[2:] if lib.startswith('-l') else lib for lib in libraries]
+
   def _GetAndMunge(self, field, path, default, prefix, append, map):
     """Retrieve a value from |field| at |path| or return |default|. If
     |append| is specified, and the item is found, it will be appended to that

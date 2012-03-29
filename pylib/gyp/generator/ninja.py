@@ -738,6 +738,8 @@ class NinjaWriter:
                                        spec.get('libraries', [])))
     if self.flavor == 'mac':
       libraries = self.xcode_settings.AdjustLibraries(libraries)
+    elif self.flavor == 'win':
+      libraries = self.msvs_settings.AdjustLibraries(libraries)
     self.WriteVariableList('libs', libraries)
 
     self.target.binary = output
