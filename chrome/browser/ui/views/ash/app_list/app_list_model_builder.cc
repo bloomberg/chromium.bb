@@ -12,15 +12,39 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/views/ash/app_list/extension_app_item.h"
+#include "chrome/browser/ui/views/ash/launcher/chrome_launcher_delegate.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"
+#include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_collator.h"
+#include "ui/base/resource/resource_bundle.h"
 
 namespace {
+
+class ChromeAppItem : public ChromeAppListItem {
+ public:
+  ChromeAppItem() : ChromeAppListItem(TYPE_OTHER) {
+    SetTitle(l10n_util::GetStringUTF8(IDS_SHORT_PRODUCT_NAME));
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    SetIcon(*rb.GetImageNamed(IDR_PRODUCT_LOGO_128).ToSkBitmap());
+  }
+
+ private:
+  // Overridden from ChromeAppListItem:
+  virtual void Activate(int event_flags) OVERRIDE {
+    ChromeLauncherDelegate* delegate = ChromeLauncherDelegate::instance();
+    if (event_flags & ui::EF_CONTROL_DOWN)
+      delegate->CreateNewWindow();
+    else
+      delegate->CreateNewTab();
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(ChromeAppItem);
+};
 
 // ModelItemSortData provides a string key to sort with
 // l10n_util::StringComparator.
@@ -51,7 +75,8 @@ bool MatchesQuery(const string16& query, const string16& str) {
 
 AppListModelBuilder::AppListModelBuilder(Profile* profile)
     : profile_(profile),
-      model_(NULL) {
+      model_(NULL),
+      special_items_count_(0) {
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
       content::Source<Profile>(profile_));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
@@ -69,6 +94,8 @@ void AppListModelBuilder::SetModel(ash::AppListModel* model) {
 
 void AppListModelBuilder::Build(const std::string& query) {
   DCHECK(model_ && model_->item_count() == 0);
+  CreateSpecialItems();
+
   query_ = base::i18n::ToLower(UTF8ToUTF16(query));
 
   Items items;
@@ -106,7 +133,7 @@ void AppListModelBuilder::InsertItemByTitle(ash::AppListItemModel* item) {
 
   l10n_util::StringComparator<string16> c(collator.get());
   ModelItemSortData data(item);
-  for (int i = 0; i < model_->item_count(); ++i) {
+  for (int i = special_items_count_; i < model_->item_count(); ++i) {
     ModelItemSortData current(model_->GetItem(i));
     if (!c(current.key, data.key)) {
       model_->AddItemAt(i, item);
@@ -134,11 +161,22 @@ void AppListModelBuilder::GetExtensionApps(const string16& query,
   }
 }
 
+void AppListModelBuilder::CreateSpecialItems() {
+  DCHECK(model_ && model_->item_count() == 0);
+
+  model_->AddItem(new ChromeAppItem());
+  special_items_count_ = model_->item_count();
+}
+
 int AppListModelBuilder::FindApp(const std::string& app_id) {
   DCHECK(model_);
-  for (int i = 0; i < model_->item_count(); ++i) {
-    ExtensionAppItem* extension_item =
-        static_cast<ExtensionAppItem*>(model_->GetItem(i));
+  for (int i = special_items_count_; i < model_->item_count(); ++i) {
+    ChromeAppListItem* item =
+        static_cast<ChromeAppListItem*>(model_->GetItem(i));
+    if (item->type() != ChromeAppListItem::TYPE_APP)
+      continue;
+
+    ExtensionAppItem* extension_item = static_cast<ExtensionAppItem*>(item);
     if (extension_item->extension_id() == app_id)
       return i;
   }

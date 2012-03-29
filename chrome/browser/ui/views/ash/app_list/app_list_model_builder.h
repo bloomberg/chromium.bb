@@ -35,6 +35,7 @@ class AppListModelBuilder : public content::NotificationObserver {
   void InsertItemByTitle(ash::AppListItemModel* item);
 
   void GetExtensionApps(const string16& query, Items* items);
+  void CreateSpecialItems();
 
   // Returns the index of the application item with |app_id| in |model_|. If
   // no match is found, returns -1.
@@ -57,6 +58,10 @@ class AppListModelBuilder : public content::NotificationObserver {
   // The model used by AppListView. It is passed in via SetModel and owned by
   // AppListView.
   ash::AppListModel* model_;
+
+  // Number of special items in the model. Special items index should be ranged
+  // from [0, special_items_count_ - 1].
+  int special_items_count_;
 
   std::string highlight_app_id_;
 

@@ -3247,6 +3247,7 @@
         'browser/ui/views/ash/app_list/app_list_model_builder.h',
         'browser/ui/views/ash/app_list/app_list_view_delegate.cc',
         'browser/ui/views/ash/app_list/app_list_view_delegate.h',
+        'browser/ui/views/ash/app_list/chrome_app_list_item.h',
         'browser/ui/views/ash/app_list/extension_app_item.cc',
         'browser/ui/views/ash/app_list/extension_app_item.h',
         'browser/ui/views/ash/brightness_controller_chromeos.cc',

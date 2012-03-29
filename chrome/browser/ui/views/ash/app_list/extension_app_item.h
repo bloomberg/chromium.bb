@@ -6,9 +6,9 @@
 #define CHROME_BROWSER_UI_VIEWS_ASH_APP_LIST_EXTENSION_APP_ITEM_H_
 #pragma once
 
-#include "ash/app_list/app_list_item_model.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
+#include "chrome/browser/ui/views/ash/app_list/chrome_app_list_item.h"
 #include "ui/base/models/simple_menu_model.h"
 
 class Extension;
@@ -17,16 +17,12 @@ class Profile;
 class SkBitmap;
 
 // ExtensionAppItem represents an extension app in app list.
-class ExtensionAppItem : public ash::AppListItemModel,
+class ExtensionAppItem : public ChromeAppListItem,
                          public ImageLoadingTracker::Observer,
                          public ui::SimpleMenuModel::Delegate {
  public:
   ExtensionAppItem(Profile* profile, const Extension* extension);
   virtual ~ExtensionAppItem();
-
-  // Activates the item. |event_flags| holds flags of a mouse/keyboard event
-  // associated with this activation.
-  void Activate(int event_flags);
 
   // Gets extension associated with this model. Returns NULL if extension
   // no longer exists.
@@ -61,7 +57,8 @@ class ExtensionAppItem : public ash::AppListItemModel,
       ui::Accelerator* acclelrator) OVERRIDE;
   virtual void ExecuteCommand(int command_id) OVERRIDE;
 
-  // Overridden from ash::AppListItemModel:
+  // Overridden from ChromeAppListItem:
+  virtual void Activate(int event_flags) OVERRIDE;
   virtual ui::MenuModel* GetContextMenuModel() OVERRIDE;
 
   Profile* profile_;

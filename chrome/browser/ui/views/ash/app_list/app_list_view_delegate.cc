@@ -6,7 +6,7 @@
 
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/views/ash/app_list/app_list_model_builder.h"
-#include "chrome/browser/ui/views/ash/app_list/extension_app_item.h"
+#include "chrome/browser/ui/views/ash/app_list/chrome_app_list_item.h"
 
 AppListViewDelegate::AppListViewDelegate() {
 }
@@ -35,5 +35,5 @@ void AppListViewDelegate::UpdateModel(const std::string& query) {
 void AppListViewDelegate::OnAppListItemActivated(
     ash::AppListItemModel* item,
     int event_flags) {
-  static_cast<ExtensionAppItem*>(item)->Activate(event_flags);
+  static_cast<ChromeAppListItem*>(item)->Activate(event_flags);
 }

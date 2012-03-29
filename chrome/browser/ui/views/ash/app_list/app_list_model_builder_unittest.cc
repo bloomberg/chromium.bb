@@ -4,6 +4,7 @@
 
 #include "ash/app_list/app_list_item_model.h"
 #include "base/file_util.h"
+#include "base/stl_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/views/ash/app_list/app_list_model_builder.h"
 #include "chrome/browser/extensions/extension_service_unittest.h"
@@ -41,7 +42,7 @@ class AppListModelBuilderTest : public ExtensionServiceTestBase {
   virtual ~AppListModelBuilderTest() {}
 };
 
-TEST_F(AppListModelBuilderTest, Build) {
+TEST_F(AppListModelBuilderTest, GetExtensionApps) {
   // Load "app_list" extensions test profile. The test profile has 4 extensions:
   // 1 dummy extension, 2 packaged extension apps and 1 hosted extension app.
   FilePath source_install_dir = data_dir_
@@ -57,17 +58,18 @@ TEST_F(AppListModelBuilderTest, Build) {
   const ExtensionSet* extensions = service_->extensions();
   ASSERT_EQ(static_cast<size_t>(4),  extensions->size());
 
-  scoped_ptr<ash::AppListModel> model(new ash::AppListModel());
   AppListModelBuilder builder(profile_.get());
-  builder.SetModel(model.get());
-  builder.Build(std::string());
 
-  // Since we are in unit_tests and there is no browser, the model would have
-  // only 3 extension apps in the profile.
-  EXPECT_EQ(3, model->item_count());
-  EXPECT_EQ("Hosted App", model->GetItem(0)->title());
-  EXPECT_EQ("Packaged App 1", model->GetItem(1)->title());
-  EXPECT_EQ("Packaged App 2", model->GetItem(2)->title());
+  AppListModelBuilder::Items items;
+  builder.GetExtensionApps(string16(), &items);
+
+  // The items list would have 3 extension apps in the profile.
+  EXPECT_EQ(static_cast<size_t>(3), items.size());
+  EXPECT_EQ("Hosted App", items[0]->title());
+  EXPECT_EQ("Packaged App 1", items[1]->title());
+  EXPECT_EQ("Packaged App 2", items[2]->title());
+
+  STLDeleteElements(&items);
 }
 
 TEST_F(AppListModelBuilderTest, SortAndPopulateModel) {

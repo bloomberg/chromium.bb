@@ -149,47 +149,14 @@ void UnpinApp(const std::string& extension_id) {
 
 ExtensionAppItem::ExtensionAppItem(Profile* profile,
                                    const Extension* extension)
-    : profile_(profile),
+    : ChromeAppListItem(TYPE_APP),
+      profile_(profile),
       extension_id_(extension->id()) {
   SetTitle(extension->name());
   LoadImage(extension);
 }
 
 ExtensionAppItem::~ExtensionAppItem() {
-}
-
-void ExtensionAppItem::Activate(int event_flags) {
-  const Extension* extension = GetExtension();
-  if (!extension)
-    return;
-
-  WindowOpenDisposition disposition =
-      browser::DispositionFromEventFlags(event_flags);
-
-  GURL url;
-  if (extension_id_ == extension_misc::kWebStoreAppId)
-    url = extension->GetFullLaunchURL();
-
-  if (disposition == NEW_FOREGROUND_TAB || disposition == NEW_BACKGROUND_TAB) {
-    // Opens in a tab.
-    Browser::OpenApplication(
-        profile_, extension, extension_misc::LAUNCH_TAB, url, disposition);
-  } else if (disposition == NEW_WINDOW) {
-    // Force a new window open.
-    Browser::OpenApplication(
-        profile_, extension, extension_misc::LAUNCH_WINDOW, url,
-        disposition);
-  } else {
-    // Look at preference to find the right launch container.  If no preference
-    // is set, launch as a regular tab.
-    extension_misc::LaunchContainer launch_container =
-        profile_->GetExtensionService()->extension_prefs()->GetLaunchContainer(
-            extension, ExtensionPrefs::LAUNCH_REGULAR);
-
-    Browser::OpenApplication(
-        profile_, extension, launch_container, GURL(url),
-        NEW_FOREGROUND_TAB);
-  }
 }
 
 const Extension* ExtensionAppItem::GetExtension() const {
@@ -344,6 +311,40 @@ void ExtensionAppItem::ExecuteCommand(int command_id) {
     ShowExtensionOptions();
   } else if (command_id == UNINSTALL) {
     StartExtensionUninstall();
+  }
+}
+
+void ExtensionAppItem::Activate(int event_flags) {
+  const Extension* extension = GetExtension();
+  if (!extension)
+    return;
+
+  WindowOpenDisposition disposition =
+      browser::DispositionFromEventFlags(event_flags);
+
+  GURL url;
+  if (extension_id_ == extension_misc::kWebStoreAppId)
+    url = extension->GetFullLaunchURL();
+
+  if (disposition == NEW_FOREGROUND_TAB || disposition == NEW_BACKGROUND_TAB) {
+    // Opens in a tab.
+    Browser::OpenApplication(
+        profile_, extension, extension_misc::LAUNCH_TAB, url, disposition);
+  } else if (disposition == NEW_WINDOW) {
+    // Force a new window open.
+    Browser::OpenApplication(
+        profile_, extension, extension_misc::LAUNCH_WINDOW, url,
+        disposition);
+  } else {
+    // Look at preference to find the right launch container.  If no preference
+    // is set, launch as a regular tab.
+    extension_misc::LaunchContainer launch_container =
+        profile_->GetExtensionService()->extension_prefs()->GetLaunchContainer(
+            extension, ExtensionPrefs::LAUNCH_REGULAR);
+
+    Browser::OpenApplication(
+        profile_, extension, launch_container, GURL(url),
+        NEW_FOREGROUND_TAB);
   }
 }
 
