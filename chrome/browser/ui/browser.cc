@@ -814,6 +814,19 @@ WebContents* Browser::OpenApplicationWindow(
   // is only done for app tabs in normal browsers through SetExtensionAppById.
   if (extension && type == TYPE_PANEL)
     wrapper->extension_tab_helper()->SetExtensionAppIconById(extension->id());
+
+#if defined(USE_ASH)
+  if (extension &&
+      container == extension_misc::LAUNCH_WINDOW) {
+    // In ash, LAUNCH_FULLSCREEN launches in a maximized app window.
+    ExtensionPrefs::LaunchType launch_type =
+        profile->GetExtensionService()->extension_prefs()->GetLaunchType(
+            extension->id(), ExtensionPrefs::LAUNCH_DEFAULT);
+    if (launch_type == ExtensionPrefs::LAUNCH_FULLSCREEN)
+      browser->window()->Maximize();
+  }
+#endif
+
   browser->window()->Show();
 
   // TODO(jcampan): http://crbug.com/8123 we should not need to set the initial
@@ -919,6 +932,11 @@ WebContents* Browser::OpenApplicationTab(Profile* profile,
     contents = params.target_contents->web_contents();
   }
 
+#if defined(USE_ASH)
+  // In ash, LAUNCH_FULLSCREEN launches in a maximized app window and it should
+  // not reach here.
+  DCHECK(launch_type != ExtensionPrefs::LAUNCH_FULLSCREEN);
+#else
   // TODO(skerner):  If we are already in full screen mode, and the user
   // set the app to open as a regular or pinned tab, what should happen?
   // Today we open the tab, but stay in full screen mode.  Should we leave
@@ -927,6 +945,7 @@ WebContents* Browser::OpenApplicationTab(Profile* profile,
       !browser->window()->IsFullscreen()) {
     browser->ToggleFullscreenMode();
   }
+#endif
 
   return contents;
 }

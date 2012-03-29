@@ -1003,7 +1003,11 @@ extension_misc::LaunchContainer ExtensionPrefs::GetLaunchContainer(
       // If the pref is set to launch a window (or no pref is set, and
       // window opening is the default), make the container a window.
       result = extension_misc::LAUNCH_WINDOW;
-
+#if defined(USE_ASH)
+    } else if (prefs_launch_type == ExtensionPrefs::LAUNCH_FULLSCREEN) {
+      // LAUNCH_FULLSCREEN launches in a maximized app window in ash.
+      result = extension_misc::LAUNCH_WINDOW;
+#endif
     } else {
       // All other launch types (tab, pinned, fullscreen) are
       // implemented as tabs in a window.
