@@ -361,7 +361,7 @@ void ExtensionDispatcher::RegisterNativeHandlers(ModuleSystem* module_system,
   module_system->RegisterNativeHandler("miscellaneous_bindings",
       scoped_ptr<NativeHandler>(MiscellaneousBindings::Get(this)));
   module_system->RegisterNativeHandler("schema_generated_bindings",
-      scoped_ptr<NativeHandler>(SchemaGeneratedBindings::Get(this)));
+      scoped_ptr<NativeHandler>(new SchemaGeneratedBindings(this)));
 
   // Custom bindings.
   module_system->RegisterNativeHandler("app",
