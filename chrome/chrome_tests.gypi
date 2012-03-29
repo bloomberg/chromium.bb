@@ -2078,6 +2078,7 @@
         'common/net/gaia/oauth2_mint_token_fetcher_unittest.cc',
         'common/net/gaia/oauth2_mint_token_flow_unittest.cc',
         'common/net/gaia/oauth2_revocation_fetcher_unittest.cc',
+        'common/net/x509_certificate_model_unittest.cc',
         'common/service_process_util_unittest.cc',
         'common/string_ordinal_unittest.cc',
         'common/switch_utils_unittest.cc',
@@ -2515,6 +2516,11 @@
             ['exclude', '^../views/'],
             ['exclude', '^../ui/views/'],
             ['exclude', '^browser/extensions/key_identifier_conversion_views_unittest.cc'],
+          ],
+        }],
+        ['use_nss==0 and use_openssl==0', {
+          'sources!': [
+            'common/net/x509_certificate_model_unittest.cc',
           ],
         }],
         ['use_openssl==1', {
