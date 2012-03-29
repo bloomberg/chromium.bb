@@ -183,6 +183,8 @@ CONFORMANCE_TEST(conformance_extensions_webgl_debug_renderer_info,
   "conformance/extensions/webgl-debug-renderer-info.html");
 CONFORMANCE_TEST(conformance_extensions_webgl_debug_shaders,
   "conformance/extensions/webgl-debug-shaders.html");
+CONFORMANCE_TEST(conformance_extensions_webgl_compressed_texture_s3tc,
+  "conformance/extensions/webgl-compressed-texture-s3tc.html");
 CONFORMANCE_TEST(conformance_limits_gl_min_attribs,
   "conformance/limits/gl-min-attribs.html");
 CONFORMANCE_TEST(conformance_limits_gl_max_texture_dimensions,
@@ -193,6 +195,8 @@ CONFORMANCE_TEST(conformance_limits_gl_min_uniforms,
   "conformance/limits/gl-min-uniforms.html");
 CONFORMANCE_TEST(conformance_misc_bad_arguments_test,
   "conformance/misc/bad-arguments-test.html");
+CONFORMANCE_TEST(conformance_misc_delayed_drawing,
+  "conformance/misc/delayed-drawing.html");
 CONFORMANCE_TEST(conformance_misc_error_reporting,
   "conformance/misc/error-reporting.html");
 CONFORMANCE_TEST(conformance_misc_instanceof_test,
@@ -309,6 +313,8 @@ CONFORMANCE_TEST(conformance_textures_texture_active_bind_2,
   "conformance/textures/texture-active-bind-2.html");
 CONFORMANCE_TEST(conformance_textures_texture_active_bind,
   "conformance/textures/texture-active-bind.html");
+CONFORMANCE_TEST(conformance_textures_texture_clear,
+  "conformance/textures/texture-clear.html");
 CONFORMANCE_TEST(conformance_textures_texture_complete,
   "conformance/textures/texture-complete.html");
 CONFORMANCE_TEST(conformance_textures_texture_formats_test,
@@ -541,6 +547,8 @@ CONFORMANCE_TEST(conformance_glsl_implicit_ternary_ivec3_vec3_vert,
   "conformance/glsl/implicit/ternary_ivec3_vec3.vert.html");
 CONFORMANCE_TEST(conformance_glsl_implicit_ternary_ivec4_vec4_vert,
   "conformance/glsl/implicit/ternary_ivec4_vec4.vert.html");
+CONFORMANCE_TEST(conformance_glsl_matrices_glsl_mat4_to_mat3,
+  "conformance/glsl/matrices/glsl-mat4-to-mat3.html");
 CONFORMANCE_TEST(conformance_glsl_misc_attrib_location_length_limits,
   "conformance/glsl/misc/attrib-location-length-limits.html");
 CONFORMANCE_TEST(conformance_glsl_misc_embedded_struct_definitions_forbidden,
@@ -569,6 +577,8 @@ CONFORMANCE_TEST(conformance_glsl_misc_shader_with_attrib_struct_vert,
   "conformance/glsl/misc/shader-with-attrib-struct.vert.html");
 CONFORMANCE_TEST(conformance_glsl_misc_shader_with_clipvertex_vert,
   "conformance/glsl/misc/shader-with-clipvertex.vert.html");
+CONFORMANCE_TEST(conformance_glsl_misc_shader_with_conditional_scoping,
+  "conformance/glsl/misc/shader-with-conditional-scoping.html");
 CONFORMANCE_TEST(conformance_glsl_misc_shader_with_default_precision_frag,
   "conformance/glsl/misc/shader-with-default-precision.frag.html");
 CONFORMANCE_TEST(conformance_glsl_misc_shader_with_default_precision_vert,
@@ -579,16 +589,26 @@ CONFORMANCE_TEST(conformance_glsl_misc_shader_with_dfdx_no_ext_frag,
   "conformance/glsl/misc/shader-with-dfdx-no-ext.frag.html");
 CONFORMANCE_TEST(conformance_glsl_misc_shader_with_dfdx_frag,
   "conformance/glsl/misc/shader-with-dfdx.frag.html");
+CONFORMANCE_TEST(conformance_glsl_misc_shader_with_do_scoping,
+  "conformance/glsl/misc/shader-with-do-scoping.html");
 CONFORMANCE_TEST(conformance_glsl_misc_shader_with_error_directive,
   "conformance/glsl/misc/shader-with-error-directive.html");
 CONFORMANCE_TEST(conformance_glsl_misc_shader_with_explicit_int_cast_vert,
   "conformance/glsl/misc/shader-with-explicit-int-cast.vert.html");
 CONFORMANCE_TEST(conformance_glsl_misc_shader_with_float_return_value_frag,
   "conformance/glsl/misc/shader-with-float-return-value.frag.html");
+CONFORMANCE_TEST(conformance_glsl_misc_shader_with_for_scoping,
+  "conformance/glsl/misc/shader-with-for-scoping.html");
+CONFORMANCE_TEST(conformance_glsl_misc_shader_with_for_loop,
+  "conformance/glsl/misc/shader-with-for-loop.html");
 CONFORMANCE_TEST(conformance_glsl_misc_shader_with_frag_depth_frag,
   "conformance/glsl/misc/shader-with-frag-depth.frag.html");
 CONFORMANCE_TEST(conformance_glsl_misc_shader_with_function_recursion_frag,
   "conformance/glsl/misc/shader-with-function-recursion.frag.html");
+CONFORMANCE_TEST(conformance_glsl_misc_shader_with_function_scoped_struct,
+  "conformance/glsl/misc/shader-with-function-scoped-struct.html");
+CONFORMANCE_TEST(conformance_glsl_misc_shader_with_functional_scoping,
+  "conformance/glsl/misc/shader-with-functional-scoping.html");
 CONFORMANCE_TEST(conformance_glsl_misc_shader_with_glcolor_vert,
   "conformance/glsl/misc/shader-with-glcolor.vert.html");
 CONFORMANCE_TEST(conformance_glsl_misc_shader_with_gles_1_frag,
@@ -613,6 +633,8 @@ CONFORMANCE_TEST(conformance_glsl_misc_shader_with_ivec4_return_value_frag,
   "conformance/glsl/misc/shader-with-ivec4-return-value.frag.html");
 CONFORMANCE_TEST(conformance_glsl_misc_shader_with_limited_indexing_frag,
   "conformance/glsl/misc/shader-with-limited-indexing.frag.html");
+CONFORMANCE_TEST(conformance_glsl_misc_shader_with_hex_int_constant_macro,
+  "conformance/glsl/misc/shader-with-hex-int-constant-macro.html");
 CONFORMANCE_TEST(conformance_glsl_misc_shader_with_long_line,
   "conformance/glsl/misc/shader-with-long-line.html");
 CONFORMANCE_TEST(conformance_glsl_misc_shader_with_non_ascii_error_frag,
@@ -631,6 +653,8 @@ CONFORMANCE_TEST(conformance_glsl_misc_shader_with_vec3_return_value_frag,
   "conformance/glsl/misc/shader-with-vec3-return-value.frag.html");
 CONFORMANCE_TEST(conformance_glsl_misc_shader_with_vec4_return_value_frag,
   "conformance/glsl/misc/shader-with-vec4-return-value.frag.html");
+CONFORMANCE_TEST(conformance_glsl_misc_shader_with_vec4_vec3_vec4_conditional,
+  "conformance/glsl/misc/shader-with-vec4-vec3-vec4-conditional.html");
 CONFORMANCE_TEST(conformance_glsl_misc_shader_with_version_100_frag,
   "conformance/glsl/misc/shader-with-version-100.frag.html");
 CONFORMANCE_TEST(conformance_glsl_misc_shader_with_version_100_vert,
@@ -667,6 +691,12 @@ CONFORMANCE_TEST(conformance_glsl_reserved_webgl_struct_vert,
   "conformance/glsl/reserved/webgl_struct.vert.html");
 CONFORMANCE_TEST(conformance_glsl_reserved_webgl_variable_vert,
   "conformance/glsl/reserved/webgl_variable.vert.html");
+CONFORMANCE_TEST(conformance_glsl_samplers_glsl_function_texture2d_bias,
+  "conformance/glsl/samplers/glsl-function-texture2d-bias.html");
+CONFORMANCE_TEST(conformance_glsl_samplers_glsl_function_texture2dlod,
+  "conformance/glsl/samplers/glsl-function-texture2dlod.html");
+CONFORMANCE_TEST(conformance_glsl_samplers_glsl_function_texture2dproj,
+  "conformance/glsl/samplers/glsl-function-texture2dproj.html");
 CONFORMANCE_TEST(conformance_glsl_variables_gl_fragcoord,
   "conformance/glsl/variables/gl-fragcoord.html");
 CONFORMANCE_TEST(conformance_glsl_variables_gl_frontfacing,

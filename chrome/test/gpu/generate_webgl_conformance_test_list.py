@@ -70,7 +70,12 @@ def main(argv):
     for url in input:
       url = re.sub("//.*", "", url)
       url = re.sub("#.*", "", url)
-      url = re.sub("\s+", "", url)
+      url = url.strip()
+      # Some filename has options before them, for example,
+      # --min-version 1.0.2 testname.html
+      pos = url.rfind(" ")
+      if pos != -1:
+        url = url[pos+1:]
 
       if not url:
         continue
