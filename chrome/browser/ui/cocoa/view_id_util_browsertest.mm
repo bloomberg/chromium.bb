@@ -69,10 +69,13 @@ class ViewIDTest : public InProcessBrowserTest {
           i == VIEW_ID_AUTOCOMPLETE ||
           i == VIEW_ID_CONTENTS_SPLIT ||
           i == VIEW_ID_FEEDBACK_BUTTON ||
-          i == VIEW_ID_OMNIBOX ||
-          i == VIEW_ID_CHROME_TO_MOBILE_BUTTON) {
+          i == VIEW_ID_OMNIBOX) {
         continue;
       }
+
+      // Chrome To Mobile is disabled by default.
+      if (i == VIEW_ID_CHROME_TO_MOBILE_BUTTON)
+        continue;
 
       CheckViewID(static_cast<ViewID>(i), true);
     }
