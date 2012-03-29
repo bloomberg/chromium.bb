@@ -94,6 +94,19 @@ TEST(JsonSchemaCompilerSimpleTest, OptionalStringParamsWrongType) {
   }
 }
 
+TEST(JsonSchemaCompilerSimpleTest, OptionalBeforeRequired) {
+  {
+    scoped_ptr<ListValue> params_value(new ListValue());
+    params_value->Append(Value::CreateNullValue());
+    params_value->Append(Value::CreateStringValue("asdf"));
+    scoped_ptr<OptionalBeforeRequired::Params> params(
+        OptionalBeforeRequired::Params::Create(*params_value));
+    EXPECT_TRUE(params.get());
+    EXPECT_FALSE(params->first.get());
+    EXPECT_EQ("asdf", params->second);
+  }
+}
+
 TEST(JsonSchemaCompilerSimpleTest, NoParamsResultCreate) {
   scoped_ptr<Value> result(OptionalString::Result::Create());
   scoped_ptr<Value> expected(Value::CreateNullValue());

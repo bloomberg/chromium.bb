@@ -393,23 +393,24 @@ class CCGenerator(object):
     for i, param in enumerate(function.params):
       # Any failure will cause this function to return. If any argument is
       # incorrect or missing, those following it are not processed. Note that
-      # this is still correct in the case of multiple optional arguments as an
-      # optional argument at position 4 cannot exist without an argument at
-      # position 3.
+      # for optional arguments, we allow missing arguments and proceed because
+      # there may be other arguments following it.
       failure_value = 'scoped_ptr<Params>()'
-      if param.optional:
-        arg_missing_value = 'params.Pass()'
-      else:
-        arg_missing_value = failure_value
       c.Append()
       value_var = param.unix_name + '_value'
       (c.Append('Value* %(value_var)s = NULL;')
-        .Append('if (!args.Get(%(i)s, &%(value_var)s) || '
-            '%(value_var)s->IsType(Value::TYPE_NULL))')
-        .Append('  return %s;' % arg_missing_value)
+        .Append('if (args.Get(%(i)s, &%(value_var)s) && '
+            '!%(value_var)s->IsType(Value::TYPE_NULL))')
+        .Sblock('{')
         .Concat(self._GeneratePopulatePropertyFromValue(
             param, value_var, 'params', failure_value))
+        .Eblock('}')
       )
+      if not param.optional:
+        (c.Sblock('else {')
+          .Append('return %s;' % failure_value)
+          .Eblock('}')
+        )
       c.Substitute({'value_var': value_var, 'i': i})
     (c.Append()
       .Append('return params.Pass();')

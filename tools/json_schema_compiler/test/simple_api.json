@@ -66,6 +66,27 @@
         ]
       },
       {
+        "name": "optionalBeforeRequired",
+        "type": "function",
+        "description": "Takes an optional parameter followed by a required one.",
+        "parameters": [
+          {
+            "name": "first",
+            "type": "string",
+            "optional": true
+          },
+          {
+            "name": "second",
+            "type": "string"
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "parameters": []
+          }
+        ]
+      },
+      {
         "name": "optionalCallbackParams",
         "type": "function",
         "description": "Gives back a string. Or not.",
