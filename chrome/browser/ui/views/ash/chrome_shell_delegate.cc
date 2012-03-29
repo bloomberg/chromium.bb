@@ -144,7 +144,9 @@ void ChromeShellDelegate::StartPartialScreenshot(
 
 ash::LauncherDelegate* ChromeShellDelegate::CreateLauncherDelegate(
     ash::LauncherModel* model) {
-  return new ChromeLauncherDelegate(NULL, model);
+  ChromeLauncherDelegate* delegate = new ChromeLauncherDelegate(NULL, model);
+  delegate->Init();
+  return delegate;
 }
 
 ash::SystemTrayDelegate* ChromeShellDelegate::CreateSystemTrayDelegate(

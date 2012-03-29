@@ -73,6 +73,9 @@ class ChromeLauncherDelegate : public ash::LauncherDelegate,
   ChromeLauncherDelegate(Profile* profile, ash::LauncherModel* model);
   virtual ~ChromeLauncherDelegate();
 
+  // Initializes this ChromeLauncherDelegate.
+  void Init();
+
   // Returns the single ChromeLauncherDelegate instnace.
   static ChromeLauncherDelegate* instance() { return instance_; }
 
@@ -202,18 +205,15 @@ class ChromeLauncherDelegate : public ash::LauncherDelegate,
 
   typedef std::map<ash::LauncherID, Item> IDToItemMap;
 
-  // Initializes this ChromeLauncherDelegate. This is called after the
-  // NOTIFICATION_PROFILE_CREATED event.
-  void PostProfileInit();
-
   // Updates the pinned pref state. The pinned state consists of a list pref.
   // Each item of the list is a dictionary. The key |kAppIDPath| gives the
   // id of the app. |kAppTypePath| is one of |kAppTypeTab| or |kAppTypeWindow|
   // and indicates how the app is opened.
   void PersistPinnedState();
 
-  // Sets the AppIconLoader, taking ownership of |loader|.
-  void SetAppIconLoader(AppIconLoader* loader);
+  // Sets the AppIconLoader, taking ownership of |loader|. This is intended for
+  // testing.
+  void SetAppIconLoaderForTest(AppIconLoader* loader);
 
   // Returns the profile used for new windows.
   Profile* GetProfileForNewWindows();
