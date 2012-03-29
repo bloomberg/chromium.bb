@@ -43,8 +43,19 @@ cr.define('cr.ui', function() {
       select.appendChild(option);
     }
     if (callback) {
-      select.addEventListener('blur', function(event) {
+      var send_callback = function() {
         chrome.send(callback, [select.options[select.selectedIndex].value]);
+      };
+      select.addEventListener('blur', function(event) { send_callback(); });
+      select.addEventListener('click', function(event) { send_callback(); });
+      select.addEventListener('keyup', function(event) {
+        var keycode_interested = [
+          9,  // Tab
+          13,  // Enter
+          27,  // Escape
+        ];
+        if (keycode_interested.indexOf(event.keyCode) >= 0)
+          send_callback();
       });
     }
   }
