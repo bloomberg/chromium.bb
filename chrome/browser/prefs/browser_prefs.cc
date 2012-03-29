@@ -110,7 +110,6 @@ void RegisterLocalState(PrefService* local_state) {
   local_state->RegisterIntegerPref(prefs::kMultipleProfilePrefMigration, 0);
 
   AppsPromo::RegisterPrefs(local_state);
-  Browser::RegisterPrefs(local_state);
   browser_shutdown::RegisterPrefs(local_state);
   ExternalProtocolHandler::RegisterPrefs(local_state);
   geolocation::RegisterPrefs(local_state);
@@ -120,7 +119,6 @@ void RegisterLocalState(PrefService* local_state) {
   ManagedMode::RegisterPrefs(local_state);
   MetricsLog::RegisterPrefs(local_state);
   MetricsService::RegisterPrefs(local_state);
-  NotificationUIManager::RegisterPrefs(local_state);
   PrefProxyConfigTrackerImpl::RegisterPrefs(local_state);
   ProfileInfoCache::RegisterPrefs(local_state);
   ProfileManager::RegisterPrefs(local_state);
@@ -130,6 +128,10 @@ void RegisterLocalState(PrefService* local_state) {
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
   policy::CloudPolicySubsystem::RegisterPrefs(local_state);
+#endif
+
+#if defined(ENABLE_NOTIFICATIONS)
+  NotificationUIManager::RegisterPrefs(local_state);
 #endif
 
 #if defined(ENABLE_SAFE_BROWSING)
@@ -142,6 +144,7 @@ void RegisterLocalState(PrefService* local_state) {
 
 #if !defined(OS_ANDROID)
   BackgroundModeManager::RegisterPrefs(local_state);
+  Browser::RegisterPrefs(local_state);
   FlagsUI::RegisterPrefs(local_state);
   NewTabPageHandler::RegisterPrefs(local_state);
   printing::PrintJobManager::RegisterPrefs(local_state);
@@ -176,8 +179,6 @@ void RegisterUserPrefs(PrefService* user_prefs) {
   AutofillManager::RegisterUserPrefs(user_prefs);
   bookmark_utils::RegisterUserPrefs(user_prefs);
   BookmarkModel::RegisterUserPrefs(user_prefs);
-  Browser::RegisterUserPrefs(user_prefs);
-  BrowserInit::RegisterUserPrefs(user_prefs);
   ChromeVersionService::RegisterUserPrefs(user_prefs);
   chrome_browser_net::HttpServerPropertiesManager::RegisterPrefs(user_prefs);
   chrome_browser_net::Predictor::RegisterUserPrefs(user_prefs);
@@ -194,7 +195,6 @@ void RegisterUserPrefs(PrefService* user_prefs) {
   NetPrefObserver::RegisterPrefs(user_prefs);
   NewTabUI::RegisterUserPrefs(user_prefs);
   PasswordManager::RegisterUserPrefs(user_prefs);
-  PinnedTabCodec::RegisterUserPrefs(user_prefs);
   PrefProxyConfigTrackerImpl::RegisterPrefs(user_prefs);
   PrefsTabHelper::RegisterUserPrefs(user_prefs);
   ProfileImpl::RegisterUserPrefs(user_prefs);
@@ -223,6 +223,9 @@ void RegisterUserPrefs(PrefService* user_prefs) {
 #endif
 
 #if !defined(OS_ANDROID)
+  Browser::RegisterUserPrefs(user_prefs);
+  BrowserInit::RegisterUserPrefs(user_prefs);
+  PinnedTabCodec::RegisterUserPrefs(user_prefs);
   PluginsUI::RegisterUserPrefs(user_prefs);
   PromoResourceService::RegisterUserPrefs(user_prefs);
   SyncPromoUI::RegisterUserPrefs(user_prefs);

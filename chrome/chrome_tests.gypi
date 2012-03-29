@@ -2452,11 +2452,30 @@
             # about:flags is unsupported.
             'browser/about_flags_unittest.cc',
 
+            # There's no Browser/BrowserList on Android.
+            'browser/browser_commands_unittest.cc',
+            'browser/net/gaia/gaia_oauth_fetcher_unittest.cc',
+            'browser/profiles/off_the_record_profile_impl_unittest.cc',
+            'browser/sessions/session_service_unittest.cc',
+            'browser/sync/profile_sync_service_session_unittest.cc',
+            'browser/sync/sync_global_error_unittest.cc',
+            'browser/sync/sync_setup_wizard_unittest.cc',
+            'browser/ui/browser_list_unittest.cc',
+            'browser/ui/browser_unittest.cc',
+            'browser/ui/toolbar/toolbar_model_unittest.cc',
+            'browser/ui/toolbar/wrench_menu_model_unittest.cc',
+            'browser/ui/webui/html_dialog_tab_contents_delegate_unittest.cc',
+            'test/base/browser_with_test_window_test.cc',
+            'test/base/browser_with_test_window_test.h',
+            'test/base/test_browser_window.h',
+
             'browser/ui/window_sizer_unittest.cc',
           ],
           'sources/': [
             ['exclude', '^browser/chrome_to_mobile'],
             ['exclude', '^browser/printing/'],
+            ['exclude', '^browser/tabs/pinned_tab_'],
+            ['exclude', '^browser/tabs/tab_strip_model'],
             ['exclude', '^browser/themes/'],
             ['exclude', '^browser/ui/panels'],
             ['exclude', '^browser/ui/tabs/'],

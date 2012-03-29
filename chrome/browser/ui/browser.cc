@@ -321,9 +321,7 @@ bool ParseCommaSeparatedIntegers(const std::string& str,
 }
 
 bool AllowPanels(const std::string& app_name) {
-  // TODO(yfriedman): remove OS_ANDROID clause when browser is excluded from
-  // Android build.
-#if (!defined(OS_CHROMEOS) || defined(USE_AURA)) && !defined(OS_ANDROID)
+#if (!defined(OS_CHROMEOS) || defined(USE_AURA))
   if (!PanelManager::ShouldUsePanels(
           web_app::GetExtensionIdFromApplicationName(app_name))) {
     return false;
@@ -4676,9 +4674,6 @@ void Browser::ShowFirstRunBubble() {
 // Browser, protected:
 
 BrowserWindow* Browser::CreateBrowserWindow() {
-  // TODO(yfriedman): remove OS_ANDROID clause when browser is excluded from
-  // Android build.
-#if !defined(OS_ANDROID)
   bool create_panel = false;
 #if defined(USE_ASH)
   if (CommandLine::ForCurrentProcess()->HasSwitch(
@@ -4689,7 +4684,6 @@ BrowserWindow* Browser::CreateBrowserWindow() {
 #endif
   if (create_panel)
     return PanelManager::GetInstance()->CreatePanel(this);
-#endif  // OS_ANDROID
 
   return BrowserWindow::CreateBrowserWindow(this);
 }
@@ -5694,9 +5688,6 @@ void Browser::UpdateBookmarkBarState(BookmarkBarStateChangeReason reason) {
 }
 
 void Browser::ShowSyncSetup(SyncPromoUI::Source source) {
-  // TODO(yfriedman): remove OS_ANDROID clause when browser is excluded from
-  // Android build.
-#if !defined(OS_ANDROID)
   ProfileSyncService* service =
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(
           profile()->GetOriginalProfile());
@@ -5715,7 +5706,6 @@ void Browser::ShowSyncSetup(SyncPromoUI::Source source) {
     LoginUIServiceFactory::GetForProfile(
         profile()->GetOriginalProfile())->ShowLoginUI(false);
   }
-#endif
 }
 
 void Browser::ToggleSpeechInput() {

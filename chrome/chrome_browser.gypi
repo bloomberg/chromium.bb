@@ -4482,6 +4482,17 @@
             'browser/about_flags.h',
 
             'browser/jankometer.cc',
+
+            # There's no Browser/BrowserList on Android.
+            'browser/net/gaia/gaia_oauth_fetcher.cc',
+            'browser/ui/browser.cc',
+            'browser/ui/browser_init.cc',
+            'browser/ui/browser_list.cc',
+            'browser/ui/browser_list_stub.cc',
+            'browser/ui/browser_navigator.cc',
+            'browser/ui/browser_tab_restore_service_delegate.cc',
+            'browser/ui/sync/browser_synced_window_delegate.cc',
+
             'browser/ui/sad_tab_helper.cc',
             'browser/ui/webui/certificate_viewer_webui.cc',
             'browser/ui/window_sizer.cc',
@@ -4496,6 +4507,8 @@
             ['exclude', '^browser/chrome_to_mobile'],
             ['exclude', '^browser/importer/'],
             ['exclude', '^browser/printing/'],
+            ['exclude', '^browser/tabs/pinned_tab_'],
+            ['exclude', '^browser/tabs/tab_strip_model'],
             ['exclude', '^browser/ui/panels/'],
             ['exclude', '^browser/ui/tabs/'],
             ['exclude', '^browser/ui/toolbar/'],

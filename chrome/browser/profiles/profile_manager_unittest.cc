@@ -384,6 +384,8 @@ TEST_F(ProfileManagerTest, InitProfileInfoCacheForAProfile) {
             cache.GetAvatarIconIndexOfProfileAtIndex(profile_index));
 }
 
+#if !defined(OS_ANDROID)
+// There's no Browser object on Android.
 TEST_F(ProfileManagerTest, LastOpenedProfiles) {
   FilePath dest_path1 = temp_dir_.path();
   dest_path1 = dest_path1.Append(FILE_PATH_LITERAL("New Profile 1"));
@@ -548,3 +550,4 @@ TEST_F(ProfileManagerTest, LastOpenedProfilesDoesNotContainIncognito) {
   last_opened_profiles = profile_manager->GetLastOpenedProfiles();
   ASSERT_EQ(0U, last_opened_profiles.size());
 }
+#endif  // !defined(OS_ANDROID)

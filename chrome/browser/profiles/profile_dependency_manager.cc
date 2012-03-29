@@ -180,7 +180,9 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
   NTPResourceCacheFactory::GetInstance();
   PasswordStoreFactory::GetInstance();
   PersonalDataManagerFactory::GetInstance();
+#if !defined(OS_ANDROID)
   PinnedTabServiceFactory::GetInstance();
+#endif
   PluginPrefsFactory::GetInstance();
   protector::ProtectorServiceFactory::GetInstance();
   prerender::PrerenderManagerFactory::GetInstance();

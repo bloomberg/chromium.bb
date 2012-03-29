@@ -362,13 +362,18 @@ void ProfileImpl::DoFinalInit(bool is_new_profile) {
 
   FilePath app_path = GetPath().Append(chrome::kIsolatedAppStateDirname);
 
-  SessionStartupPref startup_pref =
+#if defined(OS_ANDROID)
+  SessionStartupPref::Type startup_pref_type =
+      SessionStartupPref::GetDefaultStartupType();
+#else
+  SessionStartupPref::Type startup_pref_type =
       BrowserInit::GetSessionStartupPref(*CommandLine::ForCurrentProcess(),
-                                         this);
+                                         this).type;
+#endif
   bool restore_old_session_cookies =
       session_restore_enabled_ &&
       (!DidLastSessionExitCleanly() ||
-       startup_pref.type == SessionStartupPref::LAST);
+       startup_pref_type == SessionStartupPref::LAST);
 
   InitHostZoomMap();
 
