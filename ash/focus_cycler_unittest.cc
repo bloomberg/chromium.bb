@@ -23,6 +23,15 @@ using aura::test::CreateTestWindowWithId;
 using aura::Window;
 using internal::FocusCycler;
 
+namespace {
+
+internal::StatusAreaView* GetStatusAreaView(views::Widget* widget) {
+  return static_cast<internal::StatusAreaView*>(
+      widget->GetContentsView()->child_at(0));
+}
+
+}  // namespace
+
 typedef AshTestBase FocusCyclerTest;
 
 TEST_F(FocusCyclerTest, CycleFocusBrowserOnly) {
@@ -48,8 +57,8 @@ TEST_F(FocusCyclerTest, CycleFocusForward) {
   views::Widget* status_widget = internal::CreateStatusArea(NULL);
   ASSERT_TRUE(status_widget);
   focus_cycler->AddWidget(status_widget);
-  static_cast<internal::StatusAreaView*>(status_widget->GetContentsView())->
-      SetFocusCyclerForTesting(focus_cycler.get());
+  GetStatusAreaView(status_widget)->SetFocusCyclerForTesting(
+      focus_cycler.get());
 
   // Add a mock button to the status area.
   status_widget->GetContentsView()->AddChildView(
@@ -90,8 +99,8 @@ TEST_F(FocusCyclerTest, CycleFocusBackward) {
   views::Widget* status_widget = internal::CreateStatusArea(NULL);
   ASSERT_TRUE(status_widget);
   focus_cycler->AddWidget(status_widget);
-  static_cast<internal::StatusAreaView*>(status_widget->GetContentsView())->
-      SetFocusCyclerForTesting(focus_cycler.get());
+  GetStatusAreaView(status_widget)->SetFocusCyclerForTesting(
+      focus_cycler.get());
 
   // Add a mock button to the status area.
   status_widget->GetContentsView()->AddChildView(
@@ -163,8 +172,8 @@ TEST_F(FocusCyclerLauncherTest, CycleFocusForwardInvisible) {
   views::Widget* status_widget = internal::CreateStatusArea(NULL);
   ASSERT_TRUE(status_widget);
   focus_cycler->AddWidget(status_widget);
-  static_cast<internal::StatusAreaView*>(status_widget->GetContentsView())->
-      SetFocusCyclerForTesting(focus_cycler.get());
+  GetStatusAreaView(status_widget)->SetFocusCyclerForTesting(
+      focus_cycler.get());
 
   // Add a mock button to the status area.
   status_widget->GetContentsView()->AddChildView(
@@ -201,8 +210,8 @@ TEST_F(FocusCyclerLauncherTest, CycleFocusBackwardInvisible) {
   views::Widget* status_widget = internal::CreateStatusArea(NULL);
   ASSERT_TRUE(status_widget);
   focus_cycler->AddWidget(status_widget);
-  static_cast<internal::StatusAreaView*>(status_widget->GetContentsView())->
-      SetFocusCyclerForTesting(focus_cycler.get());
+  GetStatusAreaView(status_widget)->SetFocusCyclerForTesting(
+      focus_cycler.get());
 
   // Add a mock button to the status area.
   status_widget->GetContentsView()->AddChildView(

@@ -13,8 +13,13 @@
 #include "base/compiler_specific.h"
 #include "base/timer.h"
 #include "ui/aura/layout_manager.h"
+#include "ui/aura/window_observer.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/rect.h"
+
+namespace aura {
+class RootWindow;
+}
 
 namespace views {
 class Widget;
@@ -32,7 +37,8 @@ class WorkspaceManager;
 // layout to the status area.
 // To respond to bounds changes in the status area StatusAreaLayoutManager works
 // closely with ShelfLayoutManager.
-class ASH_EXPORT ShelfLayoutManager : public aura::LayoutManager {
+class ASH_EXPORT ShelfLayoutManager : public aura::LayoutManager,
+                                      public aura::WindowObserver {
  public:
   enum VisibilityState {
     // Completely visible.
@@ -97,6 +103,7 @@ class ASH_EXPORT ShelfLayoutManager : public aura::LayoutManager {
 
   // The launcher is typically created after the layout manager.
   void SetLauncher(Launcher* launcher);
+  Launcher* launcher() { return launcher_; }
 
   // Stops any animations and sets the bounds of the launcher and status
   // widgets.
@@ -123,6 +130,11 @@ class ASH_EXPORT ShelfLayoutManager : public aura::LayoutManager {
                                               bool visible) OVERRIDE;
   virtual void SetChildBounds(aura::Window* child,
                               const gfx::Rect& requested_bounds) OVERRIDE;
+
+  // Overriden from aura::WindowObserver:
+  virtual void OnWindowPropertyChanged(aura::Window* window,
+                                       const void* key,
+                                       intptr_t old) OVERRIDE;
 
  private:
   class AutoHideEventFilter;
@@ -178,6 +190,11 @@ class ASH_EXPORT ShelfLayoutManager : public aura::LayoutManager {
 
   // Updates the hit test bounds override for launcher and status area.
   void UpdateHitTestBounds();
+
+  // The RootWindow is cached so that we don't invoke Shell::GetInstance() from
+  // our destructor. We avoid that as at the time we're deleted Shell is being
+  // deleted too.
+  aura::RootWindow* root_window_;
 
   // True when inside LayoutShelf method. Used to prevent calling LayoutShelf
   // again from SetChildBounds().

@@ -4,6 +4,7 @@
 
 #include "ash/wm/shelf_layout_manager.h"
 
+#include "ash/focus_cycler.h"
 #include "ash/launcher/launcher.h"
 #include "ash/screen_ash.h"
 #include "ash/shell.h"
@@ -317,6 +318,37 @@ TEST_F(ShelfLayoutManagerTest, SetAutoHideBehavior) {
   EXPECT_EQ(ShelfLayoutManager::VISIBLE, shelf->visibility_state());
   EXPECT_EQ(gfx::Screen::GetMonitorWorkAreaNearestWindow(window).bottom(),
             widget->GetWorkAreaBoundsInScreen().bottom());
+}
+
+// Verifies the shelf is visible when status/launcher is focused.
+TEST_F(ShelfLayoutManagerTest, VisibileWhenStatusOrLauncherFocused) {
+  // Since ShelfLayoutManager queries for mouse location, move the mouse so
+  // it isn't over the shelf.
+  aura::test::EventGenerator generator(
+      Shell::GetInstance()->GetRootWindow(), gfx::Point());
+  generator.MoveMouseTo(0, 0);
+
+  ShelfLayoutManager* shelf = GetShelfLayoutManager();
+  views::Widget* widget = new views::Widget;
+  views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
+  params.bounds = gfx::Rect(0, 0, 200, 200);
+  // Widget is now owned by the parent window.
+  widget->Init(params);
+  widget->Show();
+  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE, shelf->visibility_state());
+  EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
+
+  // Focus the launcher. Have to go through the focus cycler as normal focus
+  // requests to it do nothing.
+  shelf->launcher()->GetFocusCycler()->RotateFocus(FocusCycler::FORWARD);
+  EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE_SHOWN, shelf->auto_hide_state());
+
+  widget->Activate();
+  EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
+
+  shelf->status()->Activate();
+  EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE_SHOWN, shelf->auto_hide_state());
 }
 
 }  // namespace internal

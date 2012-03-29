@@ -40,6 +40,7 @@ class ASH_EXPORT Launcher : public internal::BackgroundAnimatorDelegate {
 
   // Sets the focus cycler.  Also adds the launcher to the cycle.
   void SetFocusCycler(internal::FocusCycler* focus_cycler);
+  internal::FocusCycler* GetFocusCycler();
 
   // Sets whether the launcher paints a background. Default is false, but is set
   // to true if a window overlaps the shelf.

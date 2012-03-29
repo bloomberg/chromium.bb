@@ -40,8 +40,11 @@ class Launcher::DelegateView : public views::WidgetDelegate,
   void SetStatusWidth(int width);
   int status_width() const { return status_width_; }
 
-  void set_focus_cycler(const internal::FocusCycler* focus_cycler) {
+  void set_focus_cycler(internal::FocusCycler* focus_cycler) {
     focus_cycler_ = focus_cycler;
+  }
+  internal::FocusCycler* focus_cycler() {
+    return focus_cycler_;
   }
 
   // views::View overrides
@@ -67,7 +70,7 @@ class Launcher::DelegateView : public views::WidgetDelegate,
   // Width of the status area.
   int status_width_;
 
-  const internal::FocusCycler* focus_cycler_;
+  internal::FocusCycler* focus_cycler_;
 
   DISALLOW_COPY_AND_ASSIGN(DelegateView);
 };
@@ -146,6 +149,10 @@ Launcher::~Launcher() {
 void Launcher::SetFocusCycler(internal::FocusCycler* focus_cycler) {
   delegate_view_->set_focus_cycler(focus_cycler);
   focus_cycler->AddWidget(widget_.get());
+}
+
+internal::FocusCycler* Launcher::GetFocusCycler() {
+  return delegate_view_->focus_cycler();
 }
 
 void Launcher::SetPaintsBackground(

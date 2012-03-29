@@ -14,6 +14,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
+#include "ui/views/accessible_pane_view.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -77,8 +78,16 @@ ASH_EXPORT views::Widget* CreateStatusArea(views::View* contents) {
       ash::internal::kShellWindowId_StatusContainer);
   params.transparent = true;
   widget->Init(params);
+  // TODO(sky): We need the contents to be an AccessiblePaneView for
+  // FocusCycler. SystemTray isn't an AccessiblePaneView, so we wrap it in
+  // one. This is a bit of a hack, but at this point this code path is only used
+  // for tests. Once the migration to SystemTray is done this method should no
+  // longer be needed and we can nuke this.
+  views::AccessiblePaneView* accessible_pane =
+      new views::AccessiblePaneView;
+  accessible_pane->AddChildView(contents);
   widget->set_focus_on_creation(false);
-  widget->SetContentsView(contents);
+  widget->SetContentsView(accessible_pane);
   widget->Show();
   widget->GetNativeView()->SetName("StatusAreaView");
   return widget;

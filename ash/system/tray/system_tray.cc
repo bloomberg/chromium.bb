@@ -553,6 +553,10 @@ void SystemTray::ShowItems(std::vector<SystemTrayItem*>& items,
   bubble_ = new internal::SystemTrayBubble(this, container_, items, detailed);
   bubble_->set_can_activate(activate);
   popup_ = views::BubbleDelegateView::CreateBubble(bubble_);
+  // If we have focus the shelf should be visible and we need to continue
+  // showing the shelf when the popup is shown.
+  if (GetWidget()->IsActive())
+    should_show_launcher_ = true;
   bubble_->SetAlignment(views::BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE);
   popup_->non_client_view()->frame_view()->set_background(NULL);
   popup_->non_client_view()->frame_view()->set_border(
