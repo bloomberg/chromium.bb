@@ -40,15 +40,6 @@ class BrowserFrameAura::WindowPropertyWatcher : public aura::WindowObserver {
     if (browser_frame_->non_client_view() &&
         browser_frame_aura_->browser_view()->browser()->is_app())
       browser_frame_->non_client_view()->UpdateFrame();
-
-    // When migrating from regular ChromeOS to Aura, windows can have saved
-    // restore bounds that are exactly equal to the maximized bounds.  Thus when
-    // you hit maximize, there is no resize and the layout doesn't get
-    // refreshed. This can also theoretically happen if a user drags a window to
-    // 0,0 then resizes it to fill the workspace, then hits maximize.  We need
-    // to force a layout on show state changes.  crbug.com/108073
-    if (browser_frame_->non_client_view())
-      browser_frame_->non_client_view()->Layout();
   }
 
  private:

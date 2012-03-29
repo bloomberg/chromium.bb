@@ -148,6 +148,23 @@ TEST_F(BaseLayoutManagerTest, MAYBE_RootWindowResizeShrinksWindows) {
   EXPECT_EQ(old_bounds.height(), window->bounds().height());
 }
 
+// Tests that a maximized window with too-large restore bounds will be restored
+// to smaller than the full work area.
+TEST_F(BaseLayoutManagerTest, BoundsWithScreenEdgeVisible) {
+  // Create a window with bounds that fill the screen.
+  gfx::Rect bounds = gfx::Screen::GetPrimaryMonitorBounds();
+  scoped_ptr<aura::Window> window(CreateTestWindow(bounds));
+  // Maximize it, which writes the old bounds to restore bounds.
+  window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
+  // Restore it.
+  window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
+  // It should have the default maximized window bounds, inset by the grid size.
+  int grid_size = ash::Shell::GetInstance()->GetGridSize();
+  gfx::Rect max_bounds = ash::ScreenAsh::GetMaximizedWindowBounds(window.get());
+  max_bounds.Inset(grid_size, grid_size);
+  EXPECT_EQ(max_bounds.ToString(), window->bounds().ToString());
+}
+
 }  // namespace
 
 }  // namespace ash

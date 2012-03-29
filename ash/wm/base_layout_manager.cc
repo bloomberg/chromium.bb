@@ -15,6 +15,29 @@
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/screen.h"
 
+namespace {
+
+// Given a |window| and tentative |restore_bounds|, returns new bounds that
+// ensure that at least a few pixels of the screen background are visible
+// outside the edges of the window.  Use this to ensure that restoring a
+// maximized window creates enough space that the resize handles are easily
+// clickable.  We get into this state when updating Chrome OS R18 to R19, as
+// Chrome OS R18 and earlier used only maximized windows and set their restore
+// bounds to the size of the screen.  See crbug.com/108073
+gfx::Rect BoundsWithScreenEdgeVisible(aura::Window* window,
+                                      const gfx::Rect& restore_bounds) {
+  // If the restore_bounds are more than 1 grid step away from the size the
+  // window would be when maximized, inset it.
+  int grid_size = ash::Shell::GetInstance()->GetGridSize();
+  gfx::Rect max_bounds = ash::ScreenAsh::GetMaximizedWindowBounds(window);
+  max_bounds.Inset(grid_size, grid_size);
+  if (restore_bounds.Contains(max_bounds))
+    return max_bounds;
+  return restore_bounds;
+}
+
+}  // namespace
+
 namespace ash {
 namespace internal {
 
@@ -47,7 +70,9 @@ void BaseLayoutManager::OnWindowResized() {
 void BaseLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
   windows_.insert(child);
   child->AddObserver(this);
-  if (child->GetProperty(aura::client::kShowStateKey))
+  // Only update the bounds if the window has a show state that depends on the
+  // workspace area.
+  if (wm::IsWindowMaximized(child) || wm::IsWindowFullscreen(child))
     UpdateBoundsFromShowState(child);
 }
 
@@ -112,8 +137,10 @@ void BaseLayoutManager::UpdateBoundsFromShowState(aura::Window* window) {
     case ui::SHOW_STATE_DEFAULT:
     case ui::SHOW_STATE_NORMAL: {
       const gfx::Rect* restore = GetRestoreBounds(window);
-      if (restore)
-        SetChildBoundsDirect(window, *restore);
+      if (restore) {
+        SetChildBoundsDirect(window,
+                             BoundsWithScreenEdgeVisible(window, *restore));
+      }
       window->ClearProperty(aura::client::kRestoreBoundsKey);
       break;
     }
