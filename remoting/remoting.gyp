@@ -145,6 +145,8 @@
       'webapp/main.css',
       'webapp/main.html',
       'webapp/manifest.json',
+      'webapp/menu_button.css',
+      'webapp/menu_button.js',
       'webapp/oauth2.js',
       'webapp/oauth2_callback.html',
       'webapp/plugin_settings.js',
@@ -164,6 +166,7 @@
       'resources/chromoting128.png',
       'resources/disclosure_arrow_down.png',
       'resources/disclosure_arrow_right.png',
+      'resources/tick.png',
     ],
   },
 

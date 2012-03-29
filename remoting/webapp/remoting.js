@@ -33,8 +33,6 @@ remoting.Error = {
 remoting.init = function() {
   remoting.logExtensionInfoAsync_();
   l10n.localize();
-  var button = document.getElementById('toggle-scaling');
-  button.title = chrome.i18n.getMessage(/*i18n-content*/'TOOLTIP_SCALING');
   // Create global objects.
   remoting.oauth2 = new remoting.OAuth2();
   remoting.stats = new remoting.ConnectionStats(

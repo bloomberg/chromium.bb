@@ -64,6 +64,26 @@ remoting.ClientSession = function(hostJid, hostPublicKey, sharedSecret,
   this.callPluginLostFocus_ = function() { that.pluginLostFocus_(); };
   /** @type {function():void} @private */
   this.callPluginGotFocus_ = function() { that.pluginGotFocus_(); };
+  /** @type {function():void} @private */
+  this.callEnableShrink_ = function() { that.setScaleToFit(true); };
+  /** @type {function():void} @private */
+  this.callDisableShrink_ = function() { that.setScaleToFit(false); };
+  /** @type {function():void} @private */
+  this.callToggleFullScreen_ = function() { that.toggleFullScreen_(); };
+  /** @type {remoting.MenuButton} @private */
+  this.screenOptionsMenu_ = new remoting.MenuButton(
+      document.getElementById('screen-options-menu'),
+      function() { that.onShowOptionsMenu_(); }
+  );
+  /** @type {HTMLElement} @private */
+  this.shrinkToFit_ = document.getElementById('enable-shrink-to-fit');
+  /** @type {HTMLElement} @private */
+  this.originalSize_ = document.getElementById('disable-shrink-to-fit');
+  /** @type {HTMLElement} @private */
+  this.fullScreen_ = document.getElementById('toggle-full-screen');
+  this.shrinkToFit_.addEventListener('click', this.callEnableShrink_, false);
+  this.originalSize_.addEventListener('click', this.callDisableShrink_, false);
+  this.fullScreen_.addEventListener('click', this.callToggleFullScreen_, false);
 };
 
 // Note that the positive values in both of these enums are copied directly
@@ -299,6 +319,11 @@ remoting.ClientSession.prototype.removePlugin = function() {
     this.plugin.cleanup();
     this.plugin = null;
   }
+  this.shrinkToFit_.removeEventListener('click', this.callEnableShrink_, false);
+  this.originalSize_.removeEventListener('click', this.callDisableShrink_,
+                                         false);
+  this.fullScreen_.removeEventListener('click', this.callToggleFullScreen_,
+                                       false);
 };
 
 /**
@@ -341,12 +366,6 @@ remoting.ClientSession.prototype.disconnect = function() {
 remoting.ClientSession.prototype.setScaleToFit = function(scaleToFit) {
   this.scaleToFit = scaleToFit;
   this.updateDimensions();
-  var button = document.getElementById('toggle-scaling');
-  if (scaleToFit) {
-    button.classList.add('toggle-button-active');
-  } else {
-    button.classList.remove('toggle-button-active');
-  }
 }
 
 /**
@@ -537,4 +556,29 @@ remoting.ClientSession.prototype.getPerfStats = function() {
  */
 remoting.ClientSession.prototype.logStatistics = function(stats) {
   this.logToServer.logStatistics(stats, this.mode);
+};
+
+/**
+ * Toggles between full-screen and windowed mode.
+ * @return {void} Nothing.
+ * @private
+ */
+remoting.ClientSession.prototype.toggleFullScreen_ = function() {
+  if (document.webkitIsFullScreen) {
+    document.webkitCancelFullScreen();
+  } else {
+    document.body.webkitRequestFullScreen();
+  }
+};
+
+/**
+ * Updates the options menu to reflect the current scale-to-fit and full-screen
+ * settings.
+ * @return {void} Nothing.
+ * @private
+ */
+remoting.ClientSession.prototype.onShowOptionsMenu_ = function() {
+  remoting.MenuButton.select(this.shrinkToFit_, this.scaleToFit);
+  remoting.MenuButton.select(this.originalSize_, !this.scaleToFit);
+  remoting.MenuButton.select(this.fullScreen_, document.webkitIsFullScreen);
 };

@@ -1,0 +1,66 @@
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+.menu-button {
+  position: relative;
+}
+
+.menu-button button + ul {
+  visibility: hidden;
+  position: absolute;
+  top: 22px;
+  left: 1px;
+}
+
+.menu-button button.active + ul {
+  visibility: visible;
+}
+
+.menu-button button.active {
+  background-color: #EEE;
+  background-image: -webkit-gradient(linear, left top, left bottom,
+                                     from(#EEE), to(#E0E0E0));
+  -webkit-box-shadow: inset 0px 1px 2px rgba(0, 0, 0, 0.1);
+  border: 1px solid #CCC;
+  color: #333;
+}
+
+.menu-button button .kd-disclosureindicator {
+  vertical-align: middle;
+  margin-left: 7px;
+  opacity: .8;
+}
+
+.menu-button ul {
+  padding: 0;
+  margin: 0;
+  list-style-type: none;
+  background: white;
+  outline: 1px solid rgba(0, 0, 0, 0.2);
+  padding: 0 0 6px;
+  -webkit-box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.menu-button li {
+  padding: 6px 44px 6px 30px;
+  white-space: nowrap;
+}
+
+.menu-button li:hover {
+  background-color: #EEE;
+}
+
+.menu-button li.menu-separator {
+  border-top: 1px solid #EBEBEB;
+  margin-top: 9px;
+  margin-bottom: 10px;
+  padding: 0;
+}
+
+.menu-button li.selected {
+  background-image: url('tick.png');
+  background-position: left center;
+  background-repeat: no-repeat;
+}

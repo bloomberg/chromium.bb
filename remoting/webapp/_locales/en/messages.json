@@ -182,6 +182,10 @@
     "message": "waiting for connection\u2026",
     "description": "Footer text displayed at the host after an access code has been generated, but before a client connects."
   },
+  "FULL_SCREEN": {
+    "message": "Full screen",
+    "description": "Menu option for toggle full-screen mode. Equivalent to using the Wrench menu to do the same thing."
+  },
   "HELP": {
     "message": "Help",
     "description": "Help link, displayed in the top-left (assuming ltr layout) corner of the main screen. Clicking this takes the user to our FAQ."
@@ -286,6 +290,10 @@
       }
     }
   },
+  "ORIGINAL_SIZE": {
+    "message": "Original size",
+    "description": "Menu option for disabling shrink-to-fit. When clicked, the remote desktop will be displayed at 1:1 scale."
+  },
   "OUTGOING_CONNECTIONS": {
     "message": "From this computer",
     "description": "In the connection history dialog, clicking this button shows only recent connections from this computer."
@@ -320,6 +328,14 @@
     "message": "Retry",
     "description": "Label for button to retry connecting to a Me2Me host, after failing to connect to that host. This button appears on the 'session-finished' page."
   },
+  "SCREEN_OPTIONS": {
+    "message": "Screen options",
+    "description": "Tool-bar button used to access the Full-screen and shrink-to-fit features ('screen' in this context refers to the fact that the options are related to how the remote screen is displayed)."
+  },
+  "SHRINK_TO_FIT": {
+    "message": "Shrink to fit",
+    "description": "Menu option for enabling shrink-to-fit. When clicked, the remote desktop will be scaled down so that it fits in the browser window."
+  },
   "SIGN_OUT_BUTTON": {
     "message": "Sign out",
     "description": "Sign out button, visible if the user has authenticated. Clicking this clears authentication credentials and returns the web-app to the initial 'unauthenticated' state."
@@ -345,10 +361,6 @@
   "TOOLTIP_DELETE": {
     "message": "Disable remote connections to this computer",
     "description": "The tool-tip shown when the user hovers over the 'delete host' button. Clicking this button removes the host from the list and disables connections to it."
-  },
-  "TOOLTIP_SCALING": {
-    "message": "Scale to fit",
-    "description": "The tool-tip shown when the user hovers over the scale to fit button. Clicking this button toggles between scaling down the remote desktop to fit it inside the Chromium browser window and displaying it at 1:1 scale."
   },
   "TOOLTIP_RENAME": {
     "message": "Edit computer name",
