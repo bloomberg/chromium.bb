@@ -28,6 +28,10 @@
 #include "third_party/npapi/bindings/npfunctions.h"
 #include "third_party/npapi/bindings/npruntime.h"
 
+namespace base {
+class SequencedWorkerPool;
+}  // namespace base
+
 namespace remoting {
 
 class ChromotingHost;
@@ -57,11 +61,11 @@ class HostNPScriptObject : public HostStatusObserver {
 
   bool HasMethod(const std::string& method_name);
   bool InvokeDefault(const NPVariant* args,
-                     uint32_t argCount,
+                     uint32_t arg_count,
                      NPVariant* result);
   bool Invoke(const std::string& method_name,
               const NPVariant* args,
-              uint32_t argCount,
+              uint32_t arg_count,
               NPVariant* result);
   bool HasProperty(const std::string& property_name);
   bool GetProperty(const std::string& property_name, NPVariant* result);
@@ -93,44 +97,66 @@ class HostNPScriptObject : public HostStatusObserver {
     kError
   };
 
+  //////////////////////////////////////////////////////////
+  // Plugin methods for It2Me host.
+
   // Start connection. args are:
   //   string uid, string auth_token
   // No result.
-  bool Connect(const NPVariant* args, uint32_t argCount, NPVariant* result);
+  bool Connect(const NPVariant* args, uint32_t arg_count, NPVariant* result);
 
   // Disconnect. No arguments or result.
-  bool Disconnect(const NPVariant* args, uint32_t argCount, NPVariant* result);
+  bool Disconnect(const NPVariant* args, uint32_t arg_count, NPVariant* result);
 
   // Localize strings. args are:
   //   localize_func - a callback function which returns a localized string for
   //   a given tag name.
   // No result.
-  bool Localize(const NPVariant* args, uint32_t argCount, NPVariant* result);
+  bool Localize(const NPVariant* args, uint32_t arg_count, NPVariant* result);
+
+  //////////////////////////////////////////////////////////
+  // Plugin methods for Me2Me host.
+
+  // Generates new key pair to use for the host. The specified
+  // callback is called when when the key is generated. The key is
+  // returned in format understood by the host (PublicKeyInfo
+  // structure encoded with ASN.1 DER, and then BASE64). Args are:
+  //   function(string) callback The callback to be called when done.
+  bool GenerateKeyPair(const NPVariant* args,
+                       uint32_t arg_count,
+                       NPVariant* result);
 
   // Set the PIN for Me2Me. Args are:
   //   string pin
-  // Returns true if the PIN was updated successfully.
-  bool SetDaemonPin(const NPVariant* args, uint32_t argCount,
+  bool SetDaemonPin(const NPVariant* args,
+                    uint32_t arg_count,
                     NPVariant* result);
 
-  // Start the daemon process or change the PIN if it is running. No args.
-  // Returns true if the download/start mechanism was initiated successfully
-  // (poll daemonState to wait for completion) or false if an error occurred.
-  bool StartDaemon(const NPVariant* args, uint32_t argCount, NPVariant* result);
+  // Loads daemon config config. The first argument specifies the
+  // callback to be called with the config is loaded. The config is
+  // returned as a JSON formatted string. Args are:
+  //   function(string) callback
+  bool GetDaemonConfig(const NPVariant* args,
+                       uint32_t arg_count,
+                       NPVariant* result);
 
-  // Start the daemon process or change the PIN if it is running. No arguments.
-  // Returns true if the daemon was stopped successfully or false on error.
-  bool StopDaemon(const NPVariant* args, uint32_t argCount, NPVariant* result);
+  // Start the daemon process with the specified config. Args are:
+  //   string config
+  bool StartDaemon(const NPVariant* args,
+                   uint32_t arg_count,
+                   NPVariant* result);
+
+  // Stop the daemon process. No arguments.
+  bool StopDaemon(const NPVariant* args, uint32_t arg_count, NPVariant* result);
+
+  //////////////////////////////////////////////////////////
+  // Helper methods for It2Me host.
 
   // Updates state of the host. Can be called only on the main thread.
   void SetState(State state);
 
   // Notifies OnStateChanged handler of a state change.
   void NotifyStateChanged(State state);
-
-  // Call LogDebugInfo handler if there is one.
-  // This must be called on the correct thread.
-  void LogDebugInfo(const std::string& message);
 
   // Callbacks invoked during session setup.
   void OnReceivedSupportID(bool success,
@@ -169,18 +195,44 @@ class HostNPScriptObject : public HostStatusObserver {
   // NAT traversal policy, notify it.
   void UpdateWebappNatPolicy(bool nat_traversal_enabled);
 
+  //////////////////////////////////////////////////////////
+  // Helper methods for Me2Me host.
+
+  // Helpers for GenerateKeyPair().
+  void DoGenerateKeyPair(NPObject* callback);
+  void InvokeGenerateKeyPairCallback(NPObject* callback,
+                                         const std::string& result);
+
+  // Callback handler for DaemonController::GetConfig().
+  void InvokeGetDaemonConfigCallback(NPObject* callback,
+                                     scoped_ptr<base::DictionaryValue> config);
+
+  //////////////////////////////////////////////////////////
+  // Basic helper methods used for both It2Me and Me2me.
+
+  // Call LogDebugInfo handler if there is one.
+  // This must be called on the correct thread.
+  void LogDebugInfo(const std::string& message);
+
   // Helper function for executing InvokeDefault on an NPObject, and ignoring
   // the return value.
   bool InvokeAndIgnoreResult(NPObject* func,
                              const NPVariant* args,
-                             uint32_t argCount);
+                             uint32_t arg_count);
 
   // Set an exception for the current call.
   void SetException(const std::string& exception_string);
 
+  //////////////////////////////////////////////////////////
+  // Plugin state variables shared between It2Me and Me2Me.
+
+  // True if we're in the middle of handling a log message.
   NPP plugin_;
   NPObject* parent_;
+  bool am_currently_logging_;
 
+  //////////////////////////////////////////////////////////
+  // It2Me host state.
   State state_;
 
   base::Lock access_code_lock_;
@@ -208,12 +260,7 @@ class HostNPScriptObject : public HostStatusObserver {
   UiStrings ui_strings_;
   base::Lock ui_strings_lock_;
 
-  scoped_ptr<DaemonController> daemon_controller_;
-
   base::WaitableEvent disconnected_event_;
-
-  // True if we're in the middle of handling a log message.
-  bool am_currently_logging_;
 
   base::Lock nat_policy_lock_;
 
@@ -232,6 +279,13 @@ class HostNPScriptObject : public HostStatusObserver {
   // it can be executed after at least one successful policy read. This
   // variable contains the thunk if it is necessary.
   base::Closure pending_connect_;
+
+  //////////////////////////////////////////////////////////
+  // Me2Me host state.
+  scoped_ptr<DaemonController> daemon_controller_;
+  scoped_refptr<base::SequencedWorkerPool> worker_pool_;
+
+  DISALLOW_COPY_AND_ASSIGN(HostNPScriptObject);
 };
 
 }  // namespace remoting

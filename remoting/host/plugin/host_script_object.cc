@@ -6,10 +6,13 @@
 #include "remoting/host/plugin/daemon_controller.h"
 
 #include "base/bind.h"
+#include "base/json/json_reader.h"
+#include "base/json/json_writer.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
 #include "base/sys_string_conversions.h"
 #include "base/threading/platform_thread.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "base/utf_string_conversions.h"
 #include "remoting/jingle_glue/xmpp_signal_strategy.h"
 #include "remoting/base/auth_token_util.h"
@@ -40,7 +43,9 @@ const char* kAttrNameOnStateChanged = "onStateChanged";
 const char* kFuncNameConnect = "connect";
 const char* kFuncNameDisconnect = "disconnect";
 const char* kFuncNameLocalize = "localize";
+const char* kFuncNameGenerateKeyPair = "generateKeyPair";
 const char* kFuncNameSetDaemonPin = "setDaemonPin";
+const char* kFuncNameGetDaemonConfig = "getDaemonConfig";
 const char* kFuncNameStartDaemon = "startDaemon";
 const char* kFuncNameStopDaemon = "stopDaemon";
 
@@ -55,6 +60,11 @@ const char* kAttrNameError = "ERROR";
 
 const int kMaxLoginAttempts = 5;
 
+// We may need to have more than one task running at the same time
+// (e.g. key generation and status update), yet unlikely to ever need
+// more than 2 threads.
+const int kMaxWorkerPoolThreads = 2;
+
 }  // namespace
 
 HostNPScriptObject::HostNPScriptObject(
@@ -63,16 +73,18 @@ HostNPScriptObject::HostNPScriptObject(
     PluginMessageLoopProxy::Delegate* plugin_thread_delegate)
     : plugin_(plugin),
       parent_(parent),
+      am_currently_logging_(false),
       state_(kDisconnected),
       np_thread_id_(base::PlatformThread::CurrentId()),
       plugin_message_loop_proxy_(
           new PluginMessageLoopProxy(plugin_thread_delegate)),
       failed_login_attempts_(0),
-      daemon_controller_(DaemonController::Create()),
       disconnected_event_(true, false),
-      am_currently_logging_(false),
       nat_traversal_enabled_(false),
-      policy_received_(false) {
+      policy_received_(false),
+      daemon_controller_(DaemonController::Create()),
+      worker_pool_(new base::SequencedWorkerPool(kMaxWorkerPoolThreads,
+                                                 "RemotingHostPlugin")) {
 }
 
 HostNPScriptObject::~HostNPScriptObject() {
@@ -108,6 +120,10 @@ HostNPScriptObject::~HostNPScriptObject() {
     // Stops all threads.
     host_context_.reset();
   }
+
+  // Must shutdown worker pool threads so that they don't try to
+  // access the host object.
+  worker_pool_->Shutdown();
 }
 
 bool HostNPScriptObject::Init() {
@@ -135,13 +151,15 @@ bool HostNPScriptObject::HasMethod(const std::string& method_name) {
   return (method_name == kFuncNameConnect ||
           method_name == kFuncNameDisconnect ||
           method_name == kFuncNameLocalize ||
+          method_name == kFuncNameGenerateKeyPair ||
           method_name == kFuncNameSetDaemonPin ||
+          method_name == kFuncNameGetDaemonConfig ||
           method_name == kFuncNameStartDaemon ||
           method_name == kFuncNameStopDaemon);
 }
 
 bool HostNPScriptObject::InvokeDefault(const NPVariant* args,
-                                       uint32_t argCount,
+                                       uint32_t arg_count,
                                        NPVariant* result) {
   VLOG(2) << "InvokeDefault";
   CHECK_EQ(base::PlatformThread::CurrentId(), np_thread_id_);
@@ -151,22 +169,26 @@ bool HostNPScriptObject::InvokeDefault(const NPVariant* args,
 
 bool HostNPScriptObject::Invoke(const std::string& method_name,
                                 const NPVariant* args,
-                                uint32_t argCount,
+                                uint32_t arg_count,
                                 NPVariant* result) {
   VLOG(2) << "Invoke " << method_name;
   CHECK_EQ(base::PlatformThread::CurrentId(), np_thread_id_);
   if (method_name == kFuncNameConnect) {
-    return Connect(args, argCount, result);
+    return Connect(args, arg_count, result);
   } else if (method_name == kFuncNameDisconnect) {
-    return Disconnect(args, argCount, result);
+    return Disconnect(args, arg_count, result);
   } else if (method_name == kFuncNameLocalize) {
-    return Localize(args, argCount, result);
+    return Localize(args, arg_count, result);
+  } else if (method_name == kFuncNameGenerateKeyPair) {
+    return GenerateKeyPair(args, arg_count, result);
   } else if (method_name == kFuncNameSetDaemonPin) {
-    return SetDaemonPin(args, argCount, result);
+    return SetDaemonPin(args, arg_count, result);
+  } else if (method_name == kFuncNameGetDaemonConfig) {
+    return GetDaemonConfig(args, arg_count, result);
   } else if (method_name == kFuncNameStartDaemon) {
-    return StartDaemon(args, argCount, result);
+    return StartDaemon(args, arg_count, result);
   } else if (method_name == kFuncNameStopDaemon) {
-    return StopDaemon(args, argCount, result);
+    return StopDaemon(args, arg_count, result);
   } else {
     SetException("Invoke: unknown method " + method_name);
     return false;
@@ -330,7 +352,9 @@ bool HostNPScriptObject::Enumerate(std::vector<std::string>* values) {
     kFuncNameConnect,
     kFuncNameDisconnect,
     kFuncNameLocalize,
+    kFuncNameGenerateKeyPair,
     kFuncNameSetDaemonPin,
+    kFuncNameGetDaemonConfig,
     kFuncNameStartDaemon,
     kFuncNameStopDaemon
   };
@@ -569,6 +593,28 @@ bool HostNPScriptObject::Localize(const NPVariant* args,
   }
 }
 
+bool HostNPScriptObject::GenerateKeyPair(const NPVariant* args,
+                                             uint32_t arg_count,
+                                             NPVariant* result) {
+  if (arg_count != 1) {
+    SetException("generateKeyPair: bad number of arguments");
+    return false;
+  }
+
+  NPObject* callback_obj = ObjectFromNPVariant(args[0]);
+  if (!callback_obj) {
+    SetException("generateKeyPair: invalid callback parameter");
+    return false;
+  }
+
+  callback_obj = g_npnetscape_funcs->retainobject(callback_obj);
+
+  worker_pool_->PostTask(FROM_HERE,
+                         base::Bind(&HostNPScriptObject::DoGenerateKeyPair,
+                                    base::Unretained(this), callback_obj));
+  return true;
+}
+
 bool HostNPScriptObject::SetDaemonPin(const NPVariant* args,
                                       uint32_t arg_count,
                                       NPVariant* result) {
@@ -585,16 +631,51 @@ bool HostNPScriptObject::SetDaemonPin(const NPVariant* args,
   }
 }
 
+bool HostNPScriptObject::GetDaemonConfig(const NPVariant* args,
+                                         uint32_t arg_count,
+                                         NPVariant* result) {
+  if (arg_count != 1) {
+    SetException("getDaemonConfig: bad number of arguments");
+    return false;
+  }
+
+  NPObject* callback_obj = ObjectFromNPVariant(args[0]);
+  if (!callback_obj) {
+    SetException("getDaemonConfig: invalid callback parameter");
+    return false;
+  }
+
+  callback_obj = g_npnetscape_funcs->retainobject(callback_obj);
+
+  // We control lifetime of the |daemon_controller_| so it's safe to
+  // use base::Unretained() here.
+  daemon_controller_->GetConfig(
+      base::Bind(&HostNPScriptObject::InvokeGetDaemonConfigCallback,
+                 base::Unretained(this), callback_obj));
+
+  return true;
+}
+
 bool HostNPScriptObject::StartDaemon(const NPVariant* args,
                                      uint32_t arg_count,
                                      NPVariant* result) {
-  if (arg_count != 0) {
+  if (arg_count != 1) {
     SetException("startDaemon: bad number of arguments");
     return false;
   }
-  // TODO(sergeyu): Receive |config| parameters.
-  scoped_ptr<base::DictionaryValue> config(new base::DictionaryValue());
-  daemon_controller_->SetConfigAndStart(config.Pass());
+
+  std::string config_str = StringFromNPVariant(args[0]);
+  base::Value* config = base::JSONReader::Read(config_str, true);
+  base::DictionaryValue* config_dict;
+
+  if (config_str.empty() || !config || !config->GetAsDictionary(&config_dict)) {
+    delete config;
+    SetException("startDaemon: bad config parameter");
+    return false;
+  }
+
+  daemon_controller_->SetConfigAndStart(
+      scoped_ptr<base::DictionaryValue>(config_dict));
   return true;
 }
 
@@ -767,7 +848,6 @@ void HostNPScriptObject::NotifyStateChanged(State state) {
     LOG_IF(ERROR, !is_good) << "OnStateChanged failed";
   }
 }
-
 void HostNPScriptObject::PostLogDebugInfo(const std::string& message) {
   if (plugin_message_loop_proxy_->BelongsToCurrentThread()) {
     // Make sure we're not currently processing a log message.
@@ -781,27 +861,6 @@ void HostNPScriptObject::PostLogDebugInfo(const std::string& message) {
   plugin_message_loop_proxy_->PostTask(
       FROM_HERE, base::Bind(&HostNPScriptObject::LogDebugInfo,
                             base::Unretained(this), message));
-}
-
-void HostNPScriptObject::LogDebugInfo(const std::string& message) {
-  DCHECK(plugin_message_loop_proxy_->BelongsToCurrentThread());
-  if (log_debug_info_func_.get()) {
-    am_currently_logging_ = true;
-    NPVariant log_message;
-    STRINGZ_TO_NPVARIANT(message.c_str(), log_message);
-    bool is_good = InvokeAndIgnoreResult(log_debug_info_func_.get(),
-                                         &log_message, 1);
-    if (!is_good) {
-      LOG(ERROR) << "ERROR - LogDebugInfo failed\n";
-    }
-    am_currently_logging_ = false;
-  }
-}
-
-void HostNPScriptObject::SetException(const std::string& exception_string) {
-  DCHECK(plugin_message_loop_proxy_->BelongsToCurrentThread());
-  g_npnetscape_funcs->setexception(parent_, exception_string.c_str());
-  LOG(INFO) << exception_string;
 }
 
 void HostNPScriptObject::LocalizeStrings(NPObject* localize_func) {
@@ -874,15 +933,82 @@ void HostNPScriptObject::UpdateWebappNatPolicy(bool nat_traversal_enabled) {
   }
 }
 
+void HostNPScriptObject::DoGenerateKeyPair(NPObject* callback) {
+  HostKeyPair key_pair;
+  key_pair.Generate();
+  InvokeGenerateKeyPairCallback(callback, key_pair.GetAsString());
+}
+
+void HostNPScriptObject::InvokeGenerateKeyPairCallback(
+    NPObject* callback,
+    const std::string& result) {
+  if (!plugin_message_loop_proxy_->BelongsToCurrentThread()) {
+    plugin_message_loop_proxy_->PostTask(
+        FROM_HERE, base::Bind(
+            &HostNPScriptObject::InvokeGenerateKeyPairCallback,
+            base::Unretained(this), callback, result));
+    return;
+  }
+
+  NPVariant result_val = NPVariantFromString(result);
+  InvokeAndIgnoreResult(callback, &result_val, 1);
+  g_npnetscape_funcs->releasevariantvalue(&result_val);
+  g_npnetscape_funcs->releaseobject(callback);
+}
+
+void HostNPScriptObject::InvokeGetDaemonConfigCallback(
+    NPObject* callback,
+    scoped_ptr<base::DictionaryValue> config) {
+  if (!plugin_message_loop_proxy_->BelongsToCurrentThread()) {
+    plugin_message_loop_proxy_->PostTask(
+        FROM_HERE, base::Bind(
+            &HostNPScriptObject::InvokeGetDaemonConfigCallback,
+            base::Unretained(this), callback, base::Passed(&config)));
+    return;
+  }
+
+  // There is no easy way to create a dictionary from an NPAPI plugin
+  // so we have to serialize the dictionary to pass it to JavaScript.
+  std::string config_str;
+  base::JSONWriter::Write(config.get(), &config_str);
+
+  NPVariant config_val = NPVariantFromString(config_str);
+  InvokeAndIgnoreResult(callback, &config_val, 1);
+  g_npnetscape_funcs->releasevariantvalue(&config_val);
+  g_npnetscape_funcs->releaseobject(callback);
+}
+
+void HostNPScriptObject::LogDebugInfo(const std::string& message) {
+  DCHECK(plugin_message_loop_proxy_->BelongsToCurrentThread());
+  if (log_debug_info_func_.get()) {
+    am_currently_logging_ = true;
+    NPVariant log_message;
+    STRINGZ_TO_NPVARIANT(message.c_str(), log_message);
+    bool is_good = InvokeAndIgnoreResult(log_debug_info_func_.get(),
+                                         &log_message, 1);
+    if (!is_good) {
+      LOG(ERROR) << "ERROR - LogDebugInfo failed\n";
+    }
+    am_currently_logging_ = false;
+  }
+}
+
 bool HostNPScriptObject::InvokeAndIgnoreResult(NPObject* func,
                                                const NPVariant* args,
-                                               uint32_t argCount) {
+                                               uint32_t arg_count) {
+  DCHECK(plugin_message_loop_proxy_->BelongsToCurrentThread());
   NPVariant np_result;
   bool is_good = g_npnetscape_funcs->invokeDefault(plugin_, func, args,
-                                                   argCount, &np_result);
+                                                   arg_count, &np_result);
   if (is_good)
       g_npnetscape_funcs->releasevariantvalue(&np_result);
   return is_good;
+}
+
+void HostNPScriptObject::SetException(const std::string& exception_string) {
+  DCHECK(plugin_message_loop_proxy_->BelongsToCurrentThread());
+  g_npnetscape_funcs->setexception(parent_, exception_string.c_str());
+  LOG(INFO) << exception_string;
 }
 
 }  // namespace remoting

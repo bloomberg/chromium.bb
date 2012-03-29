@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -54,6 +54,10 @@ bool HostKeyPair::Load(HostConfig* host_config) {
 }
 
 void HostKeyPair::Save(MutableHostConfig* host_config) {
+  host_config->SetString(kPrivateKeyConfigPath, GetAsString());
+}
+
+std::string HostKeyPair::GetAsString() const {
   // Check that the key initialized.
   DCHECK(key_.get() != NULL);
 
@@ -61,8 +65,10 @@ void HostKeyPair::Save(MutableHostConfig* host_config) {
   key_->ExportPrivateKey(&key_buf);
   std::string key_str(key_buf.begin(), key_buf.end());
   std::string key_base64;
-  base::Base64Encode(key_str, &key_base64);
-  host_config->SetString(kPrivateKeyConfigPath, key_base64);
+  if (!base::Base64Encode(key_str, &key_base64)) {
+    LOG(FATAL) << "Base64Encode failed";
+  }
+  return key_base64;
 }
 
 std::string HostKeyPair::GetPublicKey() const {

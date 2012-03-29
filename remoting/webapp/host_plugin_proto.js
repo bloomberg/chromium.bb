@@ -29,11 +29,21 @@ remoting.HostPlugin.prototype.localize = function(callback) {};
  *  @return {void} Nothing. */
 remoting.HostPlugin.prototype.setDaemonPin = function(pin) {};
 
-/** @return {void} Nothing. */
-remoting.HostPlugin.prototype.startDaemon = function() {};
+/** @param {string} callback Callback to be called for the config.
+ *  @return {void} Nothing. */
+remoting.HostPlugin.prototype.getDaemonConfig = function(callback) {};
+
+/** @param {string} config Host configuration.
+ *  @return {void} Nothing. */
+remoting.HostPlugin.prototype.startDaemon = function(config) {};
 
 /** @return {void} Nothing. */
 remoting.HostPlugin.prototype.stopDaemon = function() {};
+
+/** @param {function(string):void} callback Callback to be called
+ *  after new key is generated.
+ *  @return {void} Nothing. */
+remoting.HostPlugin.prototype.generateKeyPair = function(callback) {};
 
 /** @type {number} */ remoting.HostPlugin.prototype.state;
 
