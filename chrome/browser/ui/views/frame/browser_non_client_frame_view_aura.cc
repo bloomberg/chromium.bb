@@ -64,8 +64,7 @@ BrowserNonClientFrameViewAura::BrowserNonClientFrameViewAura(
       maximize_button_(NULL),
       close_button_(NULL),
       window_icon_(NULL),
-      frame_painter_(new ash::FramePainter),
-      allow_maximize_(true) {
+      frame_painter_(new ash::FramePainter) {
 }
 
 BrowserNonClientFrameViewAura::~BrowserNonClientFrameViewAura() {
@@ -73,16 +72,7 @@ BrowserNonClientFrameViewAura::~BrowserNonClientFrameViewAura() {
 
 void BrowserNonClientFrameViewAura::Init() {
   // Caption buttons.
-  ash::FrameMaximizeButton* maximize_button =
-      new ash::FrameMaximizeButton(this, this);
-  maximize_button_ = maximize_button;
-  // Disable snap left/right and maximize for Panels.
-  if (browser_view()->browser()->is_type_panel() &&
-      browser_view()->browser()->app_type() == Browser::APP_TYPE_CHILD) {
-    allow_maximize_ = false;
-    maximize_button->SetIsLeftRightEnabled(false);
-    maximize_button->set_is_maximize_enabled(false);
-  }
+  maximize_button_ = new ash::FrameMaximizeButton(this, this);
   maximize_button_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_ACCNAME_MAXIMIZE));
   AddChildView(maximize_button_);
@@ -254,9 +244,6 @@ void BrowserNonClientFrameViewAura::ButtonPressed(views::Button* sender,
   if (sender == maximize_button_) {
     // The maximize button may move out from under the cursor.
     ResetWindowControls();
-    // Don't maximize if this is a Panel.
-    if (!allow_maximize_)
-      return;
     if (frame()->IsMaximized())
       frame()->Restore();
     else

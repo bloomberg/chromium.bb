@@ -91,10 +91,6 @@ class BrowserNonClientFrameViewAura : public BrowserNonClientFrameView,
   // Painter for the frame header.
   scoped_ptr<ash::FramePainter> frame_painter_;
 
-  // Set to false for Panels where maximize is undesired. (maximize button is
-  // still used for minimizing).
-  bool allow_maximize_;
-
   DISALLOW_COPY_AND_ASSIGN(BrowserNonClientFrameViewAura);
 };
 
