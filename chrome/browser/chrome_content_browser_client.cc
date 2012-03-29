@@ -793,6 +793,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
   } else if (process_type == switches::kUtilityProcess) {
     static const char* const kSwitchNames[] = {
       switches::kEnableExperimentalExtensionApis,
+      switches::kEnablePlatformApps,
       switches::kWhitelistedExtensionID,
     };
 

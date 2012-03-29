@@ -84,7 +84,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, Whitelisting) {
 #endif  // !defined(OS_CHROMEOS)
 }
 
-// crbug.com/105728: Fails because the CRX is invalid.
 IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest,
                        GalleryInstallGetsExperimental) {
   // We must modify the command line temporarily in order to pack an extension
@@ -102,4 +101,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest,
 
   EXPECT_FALSE(InstallExtension(crx_path, 0));
   EXPECT_TRUE(InstallExtensionFromWebstore(crx_path, 1));
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, PlatformAppCrx) {
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  command_line->AppendSwitch(switches::kEnableExperimentalExtensionApis);
+  command_line->AppendSwitch(switches::kEnablePlatformApps);
+  EXPECT_TRUE(InstallExtension(
+      test_data_dir_.AppendASCII("generic_platform_app.crx"), 1));
 }

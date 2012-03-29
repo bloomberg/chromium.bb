@@ -32,11 +32,6 @@ class ExperimentalApiTest : public PlatformAppApiTest {
 };
 
 // http://code.google.com/p/chromium/issues/detail?id=120075
-IN_PROC_BROWSER_TEST_F(ExperimentalApiTest, DISABLED_VerifyPermissions) {
-  VerifyPermissions(test_data_dir_.AppendASCII("identity"));
-}
-
-// http://code.google.com/p/chromium/issues/detail?id=120075
 IN_PROC_BROWSER_TEST_F(ExperimentalApiTest, DISABLED_Identity) {
   IdentityInterceptor interceptor;
   OAuth2MintTokenFlow::SetInterceptorForTests(&interceptor);

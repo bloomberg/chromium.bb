@@ -21,10 +21,6 @@ class SerialApiTest : public PlatformAppApiTest {
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_F(SerialApiTest, VerifyPermissions) {
-  VerifyPermissions(test_data_dir_.AppendASCII("serial/api"));
-}
-
 IN_PROC_BROWSER_TEST_F(SerialApiTest, SerialExtension) {
   ResultCatcher catcher;
   catcher.RestrictToProfile(browser()->profile());

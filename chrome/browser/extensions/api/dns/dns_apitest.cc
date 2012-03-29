@@ -97,10 +97,6 @@ const std::string DnsApiTest::kAddress = "9.8.7.6";
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_F(DnsApiTest, VerifyPermissions) {
-  VerifyPermissions(test_data_dir_.AppendASCII("dns/api"));
-}
-
 IN_PROC_BROWSER_TEST_F(DnsApiTest, DnsResolveIPLiteral) {
   scoped_refptr<extensions::DnsResolveFunction> resolve_function(
       new extensions::DnsResolveFunction());

@@ -33,10 +33,6 @@ class SocketApiTest : public PlatformAppApiTest {
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_F(SocketApiTest, VerifyPermissions) {
-  VerifyPermissions(test_data_dir_.AppendASCII("socket/api"));
-}
-
 IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketUDPCreateGood) {
   scoped_refptr<extensions::SocketCreateFunction> socket_create_function(
       new extensions::SocketCreateFunction());

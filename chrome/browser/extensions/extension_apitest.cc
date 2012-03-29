@@ -278,8 +278,7 @@ void ExtensionApiTest::SetUpCommandLine(CommandLine* command_line) {
   test_data_dir_ = test_data_dir_.AppendASCII("api_test");
 }
 
-PlatformAppApiTest::PlatformAppApiTest()
-    : previous_command_line_(CommandLine::NO_PROGRAM) {}
+PlatformAppApiTest::PlatformAppApiTest() {}
 
 PlatformAppApiTest::~PlatformAppApiTest() {}
 
@@ -291,46 +290,6 @@ void PlatformAppApiTest::SetUpCommandLine(CommandLine* command_line) {
   DCHECK(!command_line->HasSwitch(switches::kEnablePlatformApps));
   DCHECK(!command_line->HasSwitch(switches::kEnableExperimentalExtensionApis));
 
-  // Squirrel away for potential use in VerifyPermissions.
-  //
-  // TODO(miket): I _could_ just call VerifyPermissions here instead of
-  // requiring everyone who inherits from PlatformAppApiTest to explicitly call
-  // it within a test, but that feels overbearing.
-  previous_command_line_ = *command_line;
-
   command_line->AppendSwitch(switches::kEnableExperimentalExtensionApis);
   command_line->AppendSwitch(switches::kEnablePlatformApps);
-}
-
-void PlatformAppApiTest::VerifyPermissions(const FilePath& extension_path) {
-#if defined(OS_WIN)
-  // See http://code.google.com/p/chromium/issues/detail?id=119758.
-  //
-  // TODO(miket): investigate why WaitForExtensionLoadError() doesn't receive
-  // the expected notification on XP/Vista, but succeeds on other platforms.
-#else
-  CommandLine old_command_line(*CommandLine::ForCurrentProcess());
-  ExtensionService* service = browser()->profile()->GetExtensionService();
-
-  // Neither experimental nor platform-app flag.
-  *CommandLine::ForCurrentProcess() = previous_command_line_;
-  extensions::UnpackedInstaller::Create(service)->Load(extension_path);
-  ASSERT_TRUE(WaitForExtensionLoadError());
-
-  // Only experimental flag.
-  *CommandLine::ForCurrentProcess() = previous_command_line_;
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExperimentalExtensionApis);
-  extensions::UnpackedInstaller::Create(service)->Load(extension_path);
-  ASSERT_TRUE(WaitForExtensionLoadError());
-
-  // Only platform-app flag.
-  *CommandLine::ForCurrentProcess() = previous_command_line_;
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnablePlatformApps);
-  extensions::UnpackedInstaller::Create(service)->Load(extension_path);
-  ASSERT_TRUE(WaitForExtensionLoadError());
-
-  *CommandLine::ForCurrentProcess() = old_command_line;
-#endif
 }
