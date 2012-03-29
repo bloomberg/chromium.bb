@@ -49,7 +49,7 @@
               {
                 "name": "callback",
                 "type": "function",
-                "description": "Callback with storage items, or on failure (in which case lastError will be set).",
+                "description": "Callback with storage items, or on failure (in which case <a href='extension.html#property-lastError'>chrome.extension.lastError</a> will be set).",
                 "parameters": [
                   {
                     "name": "items",
@@ -78,7 +78,7 @@
               {
                 "name": "callback",
                 "type": "function",
-                "description": "Callback with the amount of space being used by storage, or on failure (in which case lastError will be set).",
+                "description": "Callback with the amount of space being used by storage, or on failure (in which case <a href='extension.html#property-lastError'>chrome.extension.lastError</a> will be set).",
                 "parameters": [
                   {
                     "name": "bytesInUse",
@@ -103,7 +103,7 @@
               {
                 "name": "callback",
                 "type": "function",
-                "description": "Callback on success, or on failure (in which case lastError will be set).",
+                "description": "Callback on success, or on failure (in which case <a href='extension.html#property-lastError'>chrome.extension.lastError</a> will be set).",
                 "parameters": [],
                 "optional": true
               }
@@ -125,7 +125,7 @@
               {
                 "name": "callback",
                 "type": "function",
-                "description": "Callback on success, or on failure (in which case lastError will be set).",
+                "description": "Callback on success, or on failure (in which case <a href='extension.html#property-lastError'>chrome.extension.lastError</a> will be set).",
                 "parameters": [],
                 "optional": true
               }
@@ -139,7 +139,7 @@
               {
                 "name": "callback",
                 "type": "function",
-                "description": "Callback on success, or on failure (in which case lastError will be set).",
+                "description": "Callback on success, or on failure (in which case <a href='extension.html#property-lastError'>chrome.extension.lastError</a> will be set).",
                 "parameters": [],
                 "optional": true
               }
@@ -198,8 +198,8 @@
         "properties": {
           "QUOTA_BYTES": {
             "type": "integer",
-            "value": "5120000",
-            "description": "The maximum amount (in bytes) of data that can be stored in local storage. This value may be ignored if the extension has the <code>unlimitedStorage</code> permission."
+            "value": "5242880",
+            "description": "The maximum amount (in bytes) of data that can be stored in local storage. This value will be ignored if the extension has the <code>unlimitedStorage</code> permission."
           }
         }
       }

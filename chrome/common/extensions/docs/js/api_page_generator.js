@@ -652,10 +652,21 @@ function hasPrimitiveValue(schema) {
 }
 
 function getPrimitiveValue(schema) {
-  if (schema.type === 'string')
+  if (schema.type === 'string') {
     return '"' + schema.value + '"';
-  else
+  } else if (schema.type === 'integer') {
+    // Comma-separate large numbers (e.g. 5,000,000), easier to read.
+    var value = String(schema.value);
+    var groupsOfThree = [];
+    while (value.length > 3) {
+      groupsOfThree.unshift(value.slice(value.length - 3));
+      value = value.slice(0, value.length - 3);
+    }
+    groupsOfThree.unshift(value);
+    return groupsOfThree.join(',');
+  } else {
     return schema.value;
+  }
 }
 
 function getSignatureString(parameters) {
