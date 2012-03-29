@@ -4,31 +4,31 @@
 %BOOK_ENTITIES;
 ]>
 <bookinfo id="book-Wayland-Wayland">
-	<title>Wayland</title>
-	<subtitle>The Wayland display server</subtitle>
-	<productname>Documentation</productname>
-	<productnumber>0.1</productnumber>
-	<edition>0</edition>
-	<pubsnumber>0</pubsnumber>
-	<abstract>
-		<para>
-			Wayland is a protocol for a compositor to talk to
-			its clients as well as a C library implementation of
-			that protocol. The compositor can be a standalone
-			display server running on Linux kernel modesetting
-			and evdev input devices, an X application, or a
-			wayland client itself. The clients can be
-			traditional applications, X servers (rootless or
-			fullscreen) or other display servers.
-		</para>
-	</abstract>
-	<corpauthor>
-		<inlinemediaobject>
-			<imageobject>
-				<imagedata fileref="images/wayland.png" format="PNG" />
-			</imageobject>
-		</inlinemediaobject>
-	</corpauthor>
-	<xi:include href="Common_Content/Legal_Notice.xml" xmlns:xi="http://www.w3.org/2001/XInclude" />
-	<xi:include href="Author_Group.xml" xmlns:xi="http://www.w3.org/2001/XInclude" />
+  <title>Wayland</title>
+  <subtitle>The Wayland display server</subtitle>
+  <productname>Documentation</productname>
+  <productnumber>0.1</productnumber>
+  <edition>0</edition>
+  <pubsnumber>0</pubsnumber>
+  <abstract>
+    <para>
+      Wayland is a protocol for a compositor to talk to
+      its clients as well as a C library implementation of
+      that protocol. The compositor can be a standalone
+      display server running on Linux kernel modesetting
+      and evdev input devices, an X application, or a
+      wayland client itself. The clients can be
+      traditional applications, X servers (rootless or
+      fullscreen) or other display servers.
+    </para>
+  </abstract>
+  <corpauthor>
+    <inlinemediaobject>
+      <imageobject>
+	<imagedata fileref="images/wayland.png" format="PNG" />
+      </imageobject>
+    </inlinemediaobject>
+  </corpauthor>
+  <xi:include href="Common_Content/Legal_Notice.xml" xmlns:xi="http://www.w3.org/2001/XInclude" />
+  <xi:include href="Author_Group.xml" xmlns:xi="http://www.w3.org/2001/XInclude" />
 </bookinfo>

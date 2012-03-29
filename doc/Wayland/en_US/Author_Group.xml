@@ -4,13 +4,13 @@
 %BOOK_ENTITIES;
 ]>
 <authorgroup>
-	<author>
-		<firstname>Kristian</firstname>
-		<surname>Høgsberg</surname>
-		<affiliation>
-			<orgname>Intel Corporation</orgname>
-		</affiliation>
-		<email>krh@bitplanet.net</email>
-	</author>
+  <author>
+    <firstname>Kristian</firstname>
+    <surname>Høgsberg</surname>
+    <affiliation>
+      <orgname>Intel Corporation</orgname>
+    </affiliation>
+    <email>krh@bitplanet.net</email>
+  </author>
 </authorgroup>
 

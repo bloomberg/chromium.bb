@@ -23,23 +23,23 @@
   <section id="sect-Wayland-Overview-Replacing-X11">
     <title>Replacing X11</title>
     <para>
-In Linux and other Unix-like systems, the X stack has grown to
-encompass functionality arguably belonging in client libraries,
-helper libraries, or the host operating system kernel.  Support for
-things like PCI resource management, display configuration management,
-direct rendering, and memory management has been integrated into the X
-stack, imposing limitations like limited support for standalone
-applications, duplication in other projects (e.g. the Linux fb layer
-or the DirectFB project), and high levels of complexity for systems
-combining multiple elements (for example radeon memory map handling
-between the fb driver and X driver, or VT switching).
-</para>
-<para>
-Moreover, X has grown to incorporate modern features like offscreen
-rendering and scene composition, but subject to the limitations of the
-X architecture.  For example, the X implementation of composition adds
-additional context switches and makes things like input redirection
-difficult.
+      In Linux and other Unix-like systems, the X stack has grown to
+      encompass functionality arguably belonging in client libraries,
+      helper libraries, or the host operating system kernel.  Support for
+      things like PCI resource management, display configuration management,
+      direct rendering, and memory management has been integrated into the X
+      stack, imposing limitations like limited support for standalone
+      applications, duplication in other projects (e.g. the Linux fb layer
+      or the DirectFB project), and high levels of complexity for systems
+      combining multiple elements (for example radeon memory map handling
+      between the fb driver and X driver, or VT switching).
+    </para>
+    <para>
+      Moreover, X has grown to incorporate modern features like offscreen
+      rendering and scene composition, but subject to the limitations of the
+      X architecture.  For example, the X implementation of composition adds
+      additional context switches and makes things like input redirection
+      difficult.
     </para>
     <mediaobject>
       <imageobject>
@@ -52,22 +52,22 @@ difficult.
       the screen.
     </para>
     <para>
-Over time, X developers came to understand the shortcomings of this
-approach and worked to split things up.  Over the past several years,
-a lot of functionality has moved out of the X server and into
-client-side libraries or kernel drivers. One of the first components
-to move out was font rendering, with freetype and fontconfig providing
-an alternative to the core X fonts.  Direct rendering OpenGL as a
-graphics driver in a client side library went through some iterations,
-ending up as DRI2, which abstracted most of the direct rendering
-buffer management from client code. Then cairo came along and provided
-a modern 2D rendering library independent of X, and compositing
-managers took over control of the rendering of the desktop as toolkits
-like GTK+ and Qt moved away from using X APIs for rendering. Recently,
-memory and display management have moved to the Linux kernel, further
-reducing the scope of X and its driver stack.  The end result is a
-highly modular graphics stack.
-</para>
+      Over time, X developers came to understand the shortcomings of this
+      approach and worked to split things up.  Over the past several years,
+      a lot of functionality has moved out of the X server and into
+      client-side libraries or kernel drivers. One of the first components
+      to move out was font rendering, with freetype and fontconfig providing
+      an alternative to the core X fonts.  Direct rendering OpenGL as a
+      graphics driver in a client side library went through some iterations,
+      ending up as DRI2, which abstracted most of the direct rendering
+      buffer management from client code. Then cairo came along and provided
+      a modern 2D rendering library independent of X, and compositing
+      managers took over control of the rendering of the desktop as toolkits
+      like GTK+ and Qt moved away from using X APIs for rendering. Recently,
+      memory and display management have moved to the Linux kernel, further
+      reducing the scope of X and its driver stack.  The end result is a
+      highly modular graphics stack.
+    </para>
 
   </section>
 
