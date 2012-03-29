@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,6 @@
 #define SANDBOX_SRC_BROKER_SERVICES_H__
 
 #include <list>
-#include <set>
 #include "base/basictypes.h"
 #include "sandbox/src/crosscall_server.h"
 #include "sandbox/src/job.h"
@@ -33,7 +32,7 @@ class BrokerServicesBase : public BrokerServices,
 
   ~BrokerServicesBase();
 
-  // The next five methods are the BrokerServices interface
+  // The next four methods are the BrokerServices interface
   virtual ResultCode Init();
 
   virtual TargetPolicy* CreatePolicy();
@@ -44,12 +43,6 @@ class BrokerServicesBase : public BrokerServices,
                                  PROCESS_INFORMATION* target);
 
   virtual ResultCode WaitForAllTargets();
-
-  // Checks if the supplied process ID matches one of the broker's active
-  // target processes
-  // Returns:
-  //   true if there is an active target process for this ID, otherwise false.
-  bool IsActiveTarget(DWORD process_id);
 
  private:
   // Helper structure that allows the Broker to associate a job notification
@@ -91,9 +84,6 @@ class BrokerServicesBase : public BrokerServices,
   // List of the trackers for closing and cleanup purposes.
   typedef std::list<JobTracker*> JobTrackerList;
   JobTrackerList tracker_list_;
-
-  // Provides a fast lookup to identify sandboxed processes.
-  std::set<DWORD> child_process_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(BrokerServicesBase);
 };

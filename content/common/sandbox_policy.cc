@@ -15,7 +15,6 @@
 #include "base/process_util.h"
 #include "base/stringprintf.h"
 #include "base/string_util.h"
-#include "base/win/scoped_handle.h"
 #include "base/win/windows_version.h"
 #include "content/common/debug_flags.h"
 #include "content/public/common/content_client.h"
@@ -25,7 +24,6 @@
 #include "ui/gfx/gl/gl_switches.h"
 
 static sandbox::BrokerServices* g_broker_services = NULL;
-static sandbox::TargetServices* g_target_services = NULL;
 
 namespace {
 
@@ -367,17 +365,7 @@ bool AddPolicyForGPU(CommandLine* cmd_line, sandbox::TargetPolicy* policy) {
   return true;
 }
 
-bool AddPolicyForRenderer(sandbox::TargetPolicy* policy) {
-  // Renderers need to copy sections for plugin DIBs.
-  sandbox::ResultCode result;
-  result = policy->AddRule(sandbox::TargetPolicy::SUBSYS_HANDLES,
-                           sandbox::TargetPolicy::HANDLES_DUP_ANY,
-                           L"Section");
-  if (result != sandbox::SBOX_ALL_OK) {
-    NOTREACHED();
-    return false;
-  }
-
+void AddPolicyForRenderer(sandbox::TargetPolicy* policy) {
   policy->SetJobLevel(sandbox::JOB_LOCKDOWN, 0);
 
   sandbox::TokenLevel initial_token = sandbox::USER_UNPROTECTED;
@@ -398,8 +386,6 @@ bool AddPolicyForRenderer(sandbox::TargetPolicy* policy) {
   }
 
   AddGenericDllEvictionPolicy(policy);
-
-  return true;
 }
 
 // The Pepper process as locked-down as a renderer execpt that it can
@@ -413,62 +399,22 @@ bool AddPolicyForPepperPlugin(sandbox::TargetPolicy* policy) {
     NOTREACHED();
     return false;
   }
-  return AddPolicyForRenderer(policy);
+  AddPolicyForRenderer(policy);
+  return true;
 }
 
 }  // namespace
 
 namespace sandbox {
 
-bool InitBrokerServices(sandbox::BrokerServices* broker_services) {
+void InitBrokerServices(sandbox::BrokerServices* broker_services) {
   // TODO(abarth): DCHECK(CalledOnValidThread());
   //               See <http://b/1287166>.
   DCHECK(broker_services);
   DCHECK(!g_broker_services);
-  sandbox::ResultCode result = broker_services->Init();
+  broker_services->Init();
   g_broker_services = broker_services;
-  return SBOX_ALL_OK == result;
 }
-
-bool InitTargetServices(sandbox::TargetServices* target_services) {
-  DCHECK(target_services);
-  DCHECK(!g_target_services);
-  sandbox::ResultCode result = target_services->Init();
-  g_target_services = target_services;
-  return SBOX_ALL_OK == result;
-}
-
-bool BrokerDuplicateHandle(HANDLE source_handle,
-                           DWORD target_process_id,
-                           HANDLE* target_handle,
-                           DWORD desired_access,
-                           DWORD options) {
-  // Just use DuplicateHandle() if we aren't in the sandbox.
-  if (!g_target_services) {
-    base::win::ScopedHandle target_process(::OpenProcess(PROCESS_DUP_HANDLE,
-                                                         FALSE,
-                                                         target_process_id));
-    if (!target_process.IsValid())
-      return false;
-
-    if (!::DuplicateHandle(::GetCurrentProcess(), source_handle,
-                           target_process, target_handle,
-                           desired_access, FALSE,
-                           options)) {
-      return false;
-    }
-
-    return true;
-  }
-
-  ResultCode result = g_target_services->DuplicateHandle(source_handle,
-                                                         target_process_id,
-                                                         target_handle,
-                                                         desired_access,
-                                                         options);
-  return SBOX_ALL_OK == result;
-}
-
 
 base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
                                            const FilePath& exposed_dir) {
@@ -578,8 +524,7 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
     if (!AddPolicyForPepperPlugin(policy))
       return 0;
   } else {
-    if (!AddPolicyForRenderer(policy))
-      return 0;
+    AddPolicyForRenderer(policy);
     // TODO(jschuh): Need get these restrictions applied to NaCl and Pepper.
     // Just have to figure out what needs to be warmed up first.
     if (type == content::PROCESS_TYPE_RENDERER ||

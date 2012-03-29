@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,6 @@
 #include "base/basictypes.h"
 #include "sandbox/src/crosscall_client.h"
 #include "sandbox/src/handle_closer_agent.h"
-#include "sandbox/src/handle_interception.h"
 #include "sandbox/src/ipc_tags.h"
 #include "sandbox/src/restricted_token_utils.h"
 #include "sandbox/src/sandbox.h"
@@ -174,15 +173,6 @@ void ProcessState::SetInitCalled() {
 void ProcessState::SetRevertedToSelf() {
   if (process_state_ < 3)
     process_state_ = 3;
-}
-
-ResultCode TargetServicesBase::DuplicateHandle(HANDLE source_handle,
-                                               DWORD target_process_id,
-                                               HANDLE* target_handle,
-                                               DWORD desired_access,
-                                               DWORD options) {
-  return sandbox::DuplicateHandleProxy(source_handle, target_process_id,
-                                       target_handle, desired_access, options);
 }
 
 }  // namespace sandbox

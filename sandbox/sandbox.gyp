@@ -1,4 +1,4 @@
-# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -37,12 +37,6 @@
             'src/handle_closer.h',
             'src/handle_closer_agent.cc',
             'src/handle_closer_agent.h',
-            'src/handle_dispatcher.cc',
-            'src/handle_dispatcher.h',
-            'src/handle_interception.cc',
-            'src/handle_interception.h',
-            'src/handle_policy.cc',
-            'src/handle_policy.h',
             'src/handle_table.cc',
             'src/handle_table.h',
             'src/interception.cc',
@@ -282,7 +276,6 @@
             'tests/integration_tests/integration_tests.cc',
             'src/dep_test.cc',
             'src/file_policy_test.cc',
-            'src/handle_policy_test.cc',
             'tests/integration_tests/integration_tests_test.cc',
             'src/handle_closer_test.cc',
             'src/integrity_level_test.cc',

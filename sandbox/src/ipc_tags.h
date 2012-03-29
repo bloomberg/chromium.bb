@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,7 +28,6 @@ enum {
   IPC_OPENEVENT_TAG,
   IPC_NTCREATEKEY_TAG,
   IPC_NTOPENKEY_TAG,
-  IPC_DUPLICATEHANDLEPROXY_TAG,
   IPC_LAST_TAG
 };
 

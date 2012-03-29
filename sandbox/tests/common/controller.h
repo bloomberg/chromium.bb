@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,6 @@
 #include <windows.h>
 #include <string>
 
-#include "base/win/scoped_handle.h"
 #include "sandbox/src/sandbox.h"
 
 namespace sandbox {
@@ -92,21 +91,12 @@ class TestRunner {
   // Sets the timeout value for the child to run the command and return.
   void SetTimeout(DWORD timeout_ms);
 
-  // Sets TestRunner to return without waiting for the process to exit.
-  void SetAsynchronous(bool is_async) { is_async_ = is_async; }
-
   // Sets the desired state for the test to run.
   void SetTestState(SboxTestsState desired_state);
 
   // Returns the pointers to the policy object. It can be used to modify
   // the policy manually.
   TargetPolicy* GetPolicy();
-
-  // Return the process handle for an asynchronous test.
-  HANDLE process() { return target_process_; }
-
-  // Return the process ID for an asynchronous test.
-  DWORD process_id() { return target_process_id_; }
 
  private:
   // Initializes the data in the object. Sets is_init_ to tree if the
@@ -122,9 +112,6 @@ class TestRunner {
   DWORD timeout_;
   SboxTestsState state_;
   bool is_init_;
-  bool is_async_;
-  base::win::ScopedHandle target_process_;
-  DWORD target_process_id_;
 };
 
 // Returns the broker services.
