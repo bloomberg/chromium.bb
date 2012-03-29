@@ -332,7 +332,8 @@ class ProtectorPreferencesTest(BaseProtectorTest):
     info = self.GetBrowserInfo()
     self.assertEqual(1, len(info['windows']))  # one window
     self.assertEqual(2, len(info['windows'][0]['tabs']))  # 2 tabs
-    self.assertEqual('chrome://settings/', info['windows'][0]['tabs'][1]['url'])
+    self.assertEqual('chrome://chrome/settings/',
+                     info['windows'][0]['tabs'][1]['url'])
     # No longer showing the change.
     self.assertFalse(self.GetProtectorState()['showing_change'])
     self.RestartBrowser(clear_profile=False)
