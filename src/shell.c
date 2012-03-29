@@ -1903,10 +1903,6 @@ switcher_next(struct switcher *switcher)
 	struct weston_surface *first = NULL, *prev = NULL, *next = NULL;
 
 	wl_list_for_each(surface, &compositor->surface_list, link) {
-		/* Workaround for cursor surfaces. */
-		if (surface->surface.resource.destroy_listener_list.next == NULL)
-			continue;
-
 		switch (get_shell_surface_type(surface)) {
 		case SHELL_SURFACE_TOPLEVEL:
 		case SHELL_SURFACE_FULLSCREEN:
