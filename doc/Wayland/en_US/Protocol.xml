@@ -3,9 +3,9 @@
 <!ENTITY % BOOK_ENTITIES SYSTEM "Wayland.ent">
 %BOOK_ENTITIES;
 ]>
-<chapter id="chap-Wayland-Protocol">
+<chapter id="chap-Protocol">
   <title>The Wayland Protocol</title>
-  <section id="sect-Wayland-Protocol-Basic-Principles">
+  <section id="sect-Protocol-Basic-Principles">
     <title>Basic Principles</title>
     <para>
       The wayland protocol is an asynchronous object oriented protocol.  All
@@ -41,7 +41,7 @@
       </itemizedlist>
     </para>
   </section>
-  <section id="sect-Wayland-Protocol-Code-Generation">
+  <section id="sect-Protocol-Code-Generation">
     <title>Code Generation</title>
     <para>
       The interfaces, requests and events are defined in
@@ -56,7 +56,7 @@
       own stubs for the protocol entry points from the xml.
     </para>
   </section>
-  <section id="sect-Wayland-Protocol-Wire-Format">
+  <section id="sect-Protocol-Wire-Format">
     <title>Wire Format</title>
     <para>
       The protocol is sent over a UNIX domain stream socket.  Currently, the
@@ -151,7 +151,7 @@
       </variablelist>
     </para>
   </section>
-  <section id="sect-Wayland-Protocol-Interfaces">
+  <section id="sect-Protocol-Interfaces">
     <title>Interfaces</title>
     <para>
       The protocol includes several interfaces which are used for
@@ -276,7 +276,7 @@
       </variablelist>
     </para>
   </section>
-  <section id="sect-Wayland-Protocol-Connect-Time">
+  <section id="sect-Protocol-Connect-Time">
     <title>Connect Time</title>
     <para>
       <itemizedlist>
@@ -295,7 +295,7 @@
       </itemizedlist>
     </para>
   </section>
-  <section id="sect-Wayland-Protocol-Security-and-Authentication">
+  <section id="sect-Protocol-Security-and-Authentication">
     <title>Security and Authentication</title>
     <para>
       <itemizedlist>
@@ -316,7 +316,7 @@
       </itemizedlist>
     </para>
   </section>
-  <section id="sect-Wayland-Protocol-Creating-Objects">
+  <section id="sect-Protocol-Creating-Objects">
     <title>Creating Objects</title>
     <para>
       <itemizedlist>
@@ -334,7 +334,7 @@
       </itemizedlist>
     </para>
   </section>
-  <section id="sect-Wayland-Protocol-Compositor">
+  <section id="sect-Protocol-Compositor">
     <title>Compositor</title>
     <para>
       The compositor is a global object, advertised at connect time.
@@ -344,20 +344,20 @@
       protocol description.
     </para>
   </section>
-  <section id="sect-Wayland-Protocol-Surface">
+  <section id="sect-Protocol-Surface">
     <title>Surface</title>
     <para>
       Created by the client.
     </para>
     <para>
-      See <xref linkend="protocol-interface-wl_surface"/> for the protocol
+      See <xref linkend="protocol-spec-interface-wl_surface"/> for the protocol
       description.
     </para>
     <para>
       Needs a way to set input region, opaque region.
     </para>
   </section>
-  <section id="sect-Wayland-Protocol-Input">
+  <section id="sect-Protocol-Input">
     <title>Input</title>
     <para>
       Represents a group of input devices, including mice, keyboards.  Has a
@@ -365,7 +365,7 @@
       delivered in both screen coordinates and surface local coordinates.
     </para>
     <para>
-      See <xref linkend="protocol-interface-wl_input_device"/> for the
+      See <xref linkend="protocol-spec-interface-wl_input_device"/> for the
       protocol description.
     </para>
     <para>
@@ -417,14 +417,14 @@
       image, the image will flicker.  Broken app, I suppose.
     </para>
   </section>
-  <section id="sect-Wayland-Protocol-Output">
+  <section id="sect-Protocol-Output">
     <title>Output</title>
     <para>
       A output is a global object, advertised at connect time or as they
       come and go.
     </para>
     <para>
-      See <xref linkend="protocol-interface-wl_output"/> for the protocol
+      See <xref linkend="protocol-spec-interface-wl_output"/> for the protocol
       description.
     </para>
     <para>
@@ -453,7 +453,7 @@
       </listitem>
     </itemizedlist>
   </section>
-  <section id="sect-Wayland-Protocol-Shared-Object-Cache">
+  <section id="sect-Protocol-Shared-Object-Cache">
     <title>Shared Object Cache</title>
     <para>
       Cache for sharing glyphs, icons, cursors across clients.  Lets clients
@@ -508,7 +508,7 @@
       </itemizedlist>
     </para>
   </section>
-  <section id="sect-Wayland-Protocol-Drag-and-Drop">
+  <section id="sect-Protocol-Drag-and-Drop">
     <title>Drag and Drop</title>
     <para>
       Multi-device aware. Orthogonal to rest of wayland, as it is its own
@@ -517,9 +517,9 @@
       expose mode, for example).
     </para>
     <para>
-      See <xref linkend="protocol-interface-wl_data_offer"/>,
-      <xref linkend="protocol-interface-wl_data_source"/> and
-      <xref linkend="protocol-interface-wl_data_offer"/> for
+      See <xref linkend="protocol-spec-interface-wl_data_offer"/>,
+      <xref linkend="protocol-spec-interface-wl_data_source"/> and
+      <xref linkend="protocol-spec-interface-wl_data_offer"/> for
       protocol descriptions.
     </para>
     <para>
