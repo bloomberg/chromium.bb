@@ -131,8 +131,8 @@ class PasswordTest(pyauto.PyUITest):
     self.PerformActionOnInfobar(
         'accept', infobar_index=test_utils.WaitForInfobarTypeAndGetIndex(
             self, self.INFOBAR_TYPE))
-    self.NavigateToURL(URL_LOGOUT)
-    self.NavigateToURL(URL_HTTPS)
+    self.NavigateToURL(self.URL_LOGOUT)
+    self.NavigateToURL(self.URL_HTTPS)
     self._ClickOnLoginPage(0, 0)
     test_utils.VerifyGoogleAccountCredsFilled(self, username, password,
                                               tab_index=0, windex=0)
@@ -175,12 +175,12 @@ class PasswordTest(pyauto.PyUITest):
     self.PerformActionOnInfobar(
         'accept', infobar_index=test_utils.WaitForInfobarTypeAndGetIndex(
             self, self.INFOBAR_TYPE))
-    self.NavigateToURL(URL_LOGOUT)
-    self.NavigateToURL(URL)
+    self.NavigateToURL(self.URL_LOGOUT)
+    self.NavigateToURL(self.URL)
     self._ClickOnLoginPage(0, 0)
     test_utils.VerifyGoogleAccountCredsFilled(self, username, password,
         tab_index=0, windex=0)
-    self.AppendTab(pyauto.GURL(URL))
+    self.AppendTab(pyauto.GURL(self.URL))
     self._ClickOnLoginPage(0, 1)
     test_utils.VerifyGoogleAccountCredsFilled(self, username, password,
         tab_index=1, windex=0)
@@ -198,9 +198,9 @@ class PasswordTest(pyauto.PyUITest):
     self.PerformActionOnInfobar(
         'accept', infobar_index=test_utils.WaitForInfobarTypeAndGetIndex(
             self, self.INFOBAR_TYPE))
-    self.NavigateToURL(URL_LOGOUT)
+    self.NavigateToURL(self.URL_LOGOUT)
     self.RunCommand(pyauto.IDC_NEW_INCOGNITO_WINDOW)
-    self.NavigateToURL(URL, 1, 0)
+    self.NavigateToURL(self.URL, 1, 0)
     email_value = self.GetDOMValue('document.getElementById("Email").value',
                                    tab_index=0, windex=1)
     passwd_value = self.GetDOMValue('document.getElementById("Passwd").value',
@@ -291,8 +291,8 @@ class PasswordTest(pyauto.PyUITest):
     self.PerformActionOnInfobar(
         'accept', infobar_index=test_utils.WaitForInfobarTypeAndGetIndex(
             self, self.INFOBAR_TYPE))
-    self.NavigateToURL(URL_LOGOUT)
-    self.NavigateToURL(URL)
+    self.NavigateToURL(self.URL_LOGOUT)
+    self.NavigateToURL(self.URL)
     self._ClickOnLoginPage(0, 0)
     test_utils.VerifyGoogleAccountCredsFilled(self, username, password,
         tab_index=0, windex=0)
