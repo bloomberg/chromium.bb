@@ -28,7 +28,6 @@
 #        three or more operands are assumed to read all operands except last one
 #        which is used to store the result of the execution.
 #      Possible argument types:
-#       1: One (for instructions like “shr” or “rol”).
 #       a: Accumulator (%al/%ax/%eax/%rax depending on size).
 #       b: A memory operand addressed by the %ds:(%[er]bx). See “xlat”.
 #       c: Implicit %ecx/%rcx (depending on size).
@@ -78,7 +77,8 @@
 #       Y: A memory operand addressed by the %es:%[er]di registers. Used in
 #          string instructions.
 #      Possible sizes:
-#       ␀:    A byte, word, doubleword, or quadword (in 64-bit mode),
+#       (no size provided):
+#             A byte, word, doubleword, or quadword (in 64-bit mode),
 #             depending on the effective operand size.
 #       2:    Two bits (see VPERMIL2Px instruction).
 #       7:    x87 register %st(N).
@@ -350,6 +350,7 @@ cpuid, 0x0f 0xa2
 crc32 E Gy, 0xf2 0x0f 0x38 0xf0, Fn0000_0001_ECX_SSE42
 ######## DEC ###################################################################
 dec E, 0xfe /1, lock
+dec rz, 0x48, ia32 lock
 ######## DIV ###################################################################
 div E, 0xf6 /6
 ######## ENTER #################################################################
@@ -368,6 +369,7 @@ in ob ab, 0xec, nacl-forbidden
 in oz az, 0xed, nacl-forbidden
 ######## INC ###################################################################
 inc E, 0xfe /0, lock
+inc rz, 0x40, ia32 lock
 ######## INS/INSB/INSW/INSD ####################################################
 ins ob Yb, 0x6c, rep nacl-forbidden
 ins oz Yz, 0x6d, rep nacl-forbidden
@@ -464,7 +466,7 @@ lss Mp Gv, 0x0f 0xb2
 ######## LEA ###################################################################
 lea 'Mv !Gv, 0x8d, no_memory_access
 ######## LEAVE #################################################################
-leave, 0xc9, ia32 nacl-forbidden
+leave, 0xc9, ia32
 leaveq, 0xc9, amd64 nacl-forbidden
 ######## LFENCE ################################################################
 lfence, 0x0f 0xae 0xe8, Fn0000_0001_EDX_SSE2
