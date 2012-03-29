@@ -382,10 +382,10 @@ class CryptohomeClientImpl : public CryptohomeClient {
       bool* success,
       dbus::MethodCall* method_call,
       base::Callback<bool(dbus::MessageReader*)> callback) {
-    dbus::Response* response = proxy_->CallMethodAndBlock(
-        method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT);
-    if (response) {
-      dbus::MessageReader reader(response);
+    scoped_ptr<dbus::Response> response(proxy_->CallMethodAndBlock(
+        method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT));
+    if (response.get()) {
+      dbus::MessageReader reader(response.get());
       *success = callback.Run(&reader);
     }
   }

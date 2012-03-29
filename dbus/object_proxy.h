@@ -75,6 +75,7 @@ class ObjectProxy : public base::RefCountedThreadSafe<ObjectProxy> {
 
   // Calls the method of the remote object and blocks until the response
   // is returned. Returns NULL on error.
+  // The caller is responsible to delete the returned object.
   //
   // BLOCKING CALL.
   virtual Response* CallMethodAndBlock(MethodCall* method_call,
