@@ -311,14 +311,10 @@ void PPB_FileChooser_Proxy::OnShowCallback(
         dispatcher()->GetInterfaceProxy(API_ID_PPB_FILE_REF));
 
     // Convert the returned files to the serialized info.
-    ResourceTracker* tracker = PpapiGlobals::Get()->GetResourceTracker();
     for (size_t i = 0; i < output->output().size(); i++) {
       PPB_FileRef_CreateInfo cur_create_info;
       file_ref_proxy->SerializeFileRef(output->output()[i], &cur_create_info);
       files.push_back(cur_create_info);
-
-      // Done with this resource, caller gave us a ref.
-      tracker->ReleaseResource(output->output()[i]);
     }
   }
 
