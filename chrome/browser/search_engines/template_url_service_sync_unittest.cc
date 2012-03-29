@@ -218,8 +218,8 @@ class TemplateURLServiceSyncTest : public testing::Test {
     turl->SetPrepopulateId(999999);
     if (!guid.empty())
       turl->set_sync_guid(guid);
-    turl->SetURL(url, 0, 0);
-    turl->SetFaviconURL(GURL("http://favicon.url"));
+    turl->SetURL(url);
+    turl->set_favicon_url(GURL("http://favicon.url"));
     return turl;
   }
 
@@ -234,7 +234,7 @@ class TemplateURLServiceSyncTest : public testing::Test {
     ASSERT_EQ(expected.short_name(), actual.short_name());
     ASSERT_EQ(JoinString(expected.input_encodings(), ';'),
               JoinString(actual.input_encodings(), ';'));
-    ASSERT_TRUE(expected.GetFaviconURL() == actual.GetFaviconURL());
+    ASSERT_EQ(expected.favicon_url(), actual.favicon_url());
     ASSERT_EQ(expected.safe_for_autoreplace(), actual.safe_for_autoreplace());
     ASSERT_EQ(expected.show_in_default_list(), actual.show_in_default_list());
     ASSERT_TRUE(expected.date_created() == actual.date_created());

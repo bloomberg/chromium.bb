@@ -198,7 +198,7 @@ base::DictionaryValue* SearchEngineManagerHandler::CreateDictionaryForEngine(
     index, IDS_SEARCH_ENGINES_EDITOR_KEYWORD_COLUMN));
   dict->SetString("url", template_url->url()->DisplayURL());
   dict->SetBoolean("urlLocked", template_url->prepopulate_id() > 0);
-  GURL icon_url = template_url->GetFaviconURL();
+  GURL icon_url = template_url->favicon_url();
   if (icon_url.is_valid())
     dict->SetString("iconURL", icon_url.spec());
   dict->SetString("modelIndex", base::IntToString(index));

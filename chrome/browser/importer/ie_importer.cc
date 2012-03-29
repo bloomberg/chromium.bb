@@ -586,7 +586,7 @@ void IEImporter::ImportSearchEngines() {
       if (gurl.is_valid()) {
         TemplateURL* template_url = new TemplateURL();
         template_url->set_short_name(name);
-        template_url->SetURL(url, 0, 0);
+        template_url->SetURL(url);
         // Give this a keyword to facilitate tab-to-search, if possible.
         template_url->set_keyword(TemplateURLService::GenerateKeyword(gurl,
                                                                       false));

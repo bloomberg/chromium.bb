@@ -139,8 +139,7 @@ TemplateURL* Firefox2Importer::CreateTemplateURL(const string16& title,
   // Otherwise, we use the shortcut.
   t_url->set_short_name(title.empty() ? keyword : title);
   t_url->set_keyword(keyword);
-  t_url->SetURL(TemplateURLRef::DisplayURLToURLRef(UTF8ToUTF16(url.spec())),
-                0, 0);
+  t_url->SetURL(TemplateURLRef::DisplayURLToURLRef(UTF8ToUTF16(url.spec())));
   return t_url;
 }
 

@@ -21,7 +21,6 @@
 #include "content/public/browser/user_metrics.h"
 #include "net/base/escape.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/gfx/favicon_size.h"
 
 using content::UserMetricsAction;
 
@@ -86,22 +85,16 @@ static const char kOutputEncodingType[] = "UTF-8";
 
 TemplateURLRef::TemplateURLRef()
     : prepopulated_(false) {
-  Set(std::string(), 0, 0);
+  Set(std::string());
 }
 
-TemplateURLRef::TemplateURLRef(const std::string& url,
-                               int index_offset,
-                               int page_offset)
+TemplateURLRef::TemplateURLRef(const std::string& url)
     : prepopulated_(false) {
-  Set(url, index_offset, page_offset);
+  Set(url);
 }
 
-void TemplateURLRef::Set(const std::string& url,
-                         int index_offset,
-                         int page_offset) {
+void TemplateURLRef::Set(const std::string& url) {
   url_ = url;
-  index_offset_ = index_offset;
-  page_offset_ = page_offset;
   InvalidateCachedValues();
 }
 
@@ -131,12 +124,11 @@ bool TemplateURLRef::ParseParameter(size_t start,
   } else if (parameter == kCountParameter) {
     if (!optional)
       url->insert(start, kDefaultCount);
-  } else if (parameter == kStartIndexParameter) {
+  } else if ((parameter == kStartIndexParameter) ||
+             (parameter == kStartPageParameter)) {
+    // We don't support these.
     if (!optional)
-      url->insert(start, base::IntToString(index_offset_));
-  } else if (parameter == kStartPageParameter) {
-    if (!optional)
-      url->insert(start, base::IntToString(page_offset_));
+      url->insert(start, "1");
   } else if (parameter == kLanguageParameter) {
     replacements->push_back(Replacement(LANGUAGE, start));
   } else if (parameter == kInputEncodingParameter) {
@@ -632,15 +624,13 @@ TemplateURL::TemplateURL()
 
 TemplateURL::TemplateURL(const TemplateURL& other)
     : short_name_(other.short_name_),
-      description_(other.description_),
       originating_url_(other.originating_url_),
       keyword_(other.keyword_),
       autogenerate_keyword_(other.autogenerate_keyword_),
       keyword_generated_(other.keyword_generated_),
       show_in_default_list_(other.show_in_default_list_),
       safe_for_autoreplace_(other.safe_for_autoreplace_),
-      image_refs_(other.image_refs_),
-      languages_(other.languages_),
+      favicon_url_(other.favicon_url_),
       input_encodings_(other.input_encodings_),
       id_(other.id_),
       date_created_(other.date_created_),
@@ -656,7 +646,6 @@ TemplateURL& TemplateURL::operator=(const TemplateURL& other) {
     return *this;
 
   short_name_ = other.short_name_;
-  description_ = other.description_;
   CopyURLRefs(other);
   originating_url_ = other.originating_url_;
   keyword_ = other.keyword_;
@@ -664,8 +653,7 @@ TemplateURL& TemplateURL::operator=(const TemplateURL& other) {
   keyword_generated_ = other.keyword_generated_;
   show_in_default_list_ = other.show_in_default_list_;
   safe_for_autoreplace_ = other.safe_for_autoreplace_;
-  image_refs_ = other.image_refs_;
-  languages_ = other.languages_;
+  favicon_url_ = other.favicon_url_;
   input_encodings_ = other.input_encodings_;
   id_ = other.id_;
   date_created_ = other.date_created_;
@@ -685,22 +673,16 @@ string16 TemplateURL::AdjustedShortNameForLocaleDirection() const {
   return bidi_safe_short_name;
 }
 
-void TemplateURL::SetSuggestionsURL(const std::string& url,
-                                    int index_offset,
-                                    int page_offset) {
-  suggestions_url_.Set(url, index_offset, page_offset);
+void TemplateURL::SetSuggestionsURL(const std::string& url) {
+  suggestions_url_.Set(url);
 }
 
-void TemplateURL::SetURL(const std::string& url,
-                         int index_offset,
-                         int page_offset) {
-  url_.Set(url, index_offset, page_offset);
+void TemplateURL::SetURL(const std::string& url) {
+  url_.Set(url);
 }
 
-void TemplateURL::SetInstantURL(const std::string& url,
-                                int index_offset,
-                                int page_offset) {
-  instant_url_.Set(url, index_offset, page_offset);
+void TemplateURL::SetInstantURL(const std::string& url) {
+  instant_url_.Set(url);
 }
 
 void TemplateURL::set_keyword(const string16& keyword) {
@@ -710,7 +692,7 @@ void TemplateURL::set_keyword(const string16& keyword) {
   autogenerate_keyword_ = false;
 }
 
-string16 TemplateURL::keyword() const {
+const string16& TemplateURL::keyword() const {
   EnsureKeyword();
   return keyword_;
 }
@@ -728,43 +710,10 @@ bool TemplateURL::ShowInDefaultList() const {
   return show_in_default_list() && url() && url()->SupportsReplacement();
 }
 
-void TemplateURL::SetFaviconURL(const GURL& url) {
-  for (std::vector<ImageRef>::iterator i = image_refs_.begin();
-       i != image_refs_.end(); ++i) {
-    if (i->type == "image/x-icon" &&
-        i->width == gfx::kFaviconSize && i->height == gfx::kFaviconSize) {
-      if (!url.is_valid())
-        image_refs_.erase(i);
-      else
-        i->url = url;
-      return;
-    }
-  }
-  // Don't have one yet, add it.
-  if (url.is_valid()) {
-    image_refs_.push_back(ImageRef("image/x-icon",
-        gfx::kFaviconSize, gfx::kFaviconSize, url));
-  }
-}
-
-GURL TemplateURL::GetFaviconURL() const {
-  for (std::vector<ImageRef>::const_iterator i = image_refs_.begin();
-       i != image_refs_.end(); ++i) {
-    if ((i->type == "image/x-icon" || i->type == "image/vnd.microsoft.icon")
-        && i->width == gfx::kFaviconSize && i->height == gfx::kFaviconSize) {
-      return i->url;
-    }
-  }
-  return GURL();
-}
-
 void TemplateURL::CopyURLRefs(const TemplateURL& other) {
-  suggestions_url_.Set(other.suggestions_url_.url_,
-                       other.suggestions_url_.index_offset_,
-                       other.suggestions_url_.page_offset_);
-  url_.Set(other.url_.url_, other.url_.index_offset_, other.url_.page_offset_);
-  instant_url_.Set(other.instant_url_.url_, other.instant_url_.index_offset_,
-                   other.instant_url_.page_offset_);
+  suggestions_url_.Set(other.suggestions_url_.url_);
+  url_.Set(other.url_.url_);
+  instant_url_.Set(other.instant_url_.url_);
   SetPrepopulateId(other.prepopulate_id_);
 }
 

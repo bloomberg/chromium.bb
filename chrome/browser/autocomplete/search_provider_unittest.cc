@@ -122,8 +122,8 @@ void SearchProviderTest::SetUp() {
 
   // Reset the default TemplateURL.
   default_t_url_ = new TemplateURL();
-  default_t_url_->SetURL("http://defaultturl/{searchTerms}", 0, 0);
-  default_t_url_->SetSuggestionsURL("http://defaultturl2/{searchTerms}", 0, 0);
+  default_t_url_->SetURL("http://defaultturl/{searchTerms}");
+  default_t_url_->SetSuggestionsURL("http://defaultturl2/{searchTerms}");
   default_t_url_->set_short_name(ASCIIToUTF16("t"));
   turl_model->Add(default_t_url_);
   turl_model->SetDefaultSearchProvider(default_t_url_);
@@ -137,9 +137,8 @@ void SearchProviderTest::SetUp() {
   keyword_t_url_ = new TemplateURL();
   keyword_t_url_->set_keyword(ASCIIToUTF16("k"));
   keyword_t_url_->set_short_name(ASCIIToUTF16("k"));
-  keyword_t_url_->SetURL("http://keyword/{searchTerms}", 0, 0);
-  keyword_t_url_->SetSuggestionsURL("http://suggest_keyword/{searchTerms}", 0,
-                                    0);
+  keyword_t_url_->SetURL("http://keyword/{searchTerms}");
+  keyword_t_url_->SetSuggestionsURL("http://suggest_keyword/{searchTerms}");
   turl_model->Add(keyword_t_url_);
   ASSERT_NE(0, keyword_t_url_->id());
 

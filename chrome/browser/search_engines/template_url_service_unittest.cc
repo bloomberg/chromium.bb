@@ -49,8 +49,8 @@ TemplateURL* CreatePreloadedTemplateURL(bool safe_for_autoreplace,
   t_url->set_safe_for_autoreplace(safe_for_autoreplace);
   t_url->set_date_created(Time::FromTimeT(100));
   t_url->set_last_modified(Time::FromTimeT(100));
-  t_url->SetURL("http://www.unittest.com/", 0, 0);
-  t_url->SetFaviconURL(GURL("http://favicon.url"));
+  t_url->SetURL("http://www.unittest.com/");
+  t_url->set_favicon_url(GURL("http://favicon.url"));
   return t_url;
 }
 
@@ -104,7 +104,7 @@ void TestGenerateSearchURL::RunTest() {
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(generate_url_cases); ++i) {
     TemplateURL t_url;
     if (generate_url_cases[i].url)
-      t_url.SetURL(generate_url_cases[i].url, 0, 0);
+      t_url.SetURL(generate_url_cases[i].url);
     std::string result = (search_terms_data_ ?
         TemplateURLService::GenerateSearchURLUsingTermsData(&t_url,
             *search_terms_data_) :
@@ -248,9 +248,9 @@ TemplateURL* TemplateURLServiceTest::AddKeywordWithDate(
   t_url->set_input_encodings(encodings_vector);
   t_url->set_date_created(date_created);
   t_url->set_last_modified(last_modified);
-  t_url->SetSuggestionsURL(suggest_url, 0, 0);
-  t_url->SetURL(url, 0, 0);
-  t_url->SetFaviconURL(GURL(favicon_url));
+  t_url->SetSuggestionsURL(suggest_url);
+  t_url->SetURL(url);
+  t_url->set_favicon_url(GURL(favicon_url));
   model()->Add(t_url);
   EXPECT_NE(0, t_url->id());
   return t_url;
@@ -265,7 +265,7 @@ void TemplateURLServiceTest::AssertEquals(const TemplateURL& expected,
   ASSERT_EQ(expected.short_name(), actual.short_name());
   ASSERT_EQ(JoinString(expected.input_encodings(), ';'),
             JoinString(actual.input_encodings(), ';'));
-  ASSERT_EQ(expected.GetFaviconURL(), actual.GetFaviconURL());
+  ASSERT_EQ(expected.favicon_url(), actual.favicon_url());
   ASSERT_EQ(expected.id(), actual.id());
   ASSERT_EQ(expected.safe_for_autoreplace(), actual.safe_for_autoreplace());
   ASSERT_EQ(expected.show_in_default_list(), actual.show_in_default_list());
@@ -285,7 +285,7 @@ void TemplateURLServiceTest::ExpectSimilar(const TemplateURL* expected,
   EXPECT_EQ(expected->short_name(), actual->short_name());
   EXPECT_EQ(JoinString(expected->input_encodings(), ';'),
             JoinString(actual->input_encodings(), ';'));
-  EXPECT_EQ(expected->GetFaviconURL(), actual->GetFaviconURL());
+  EXPECT_EQ(expected->favicon_url(), actual->favicon_url());
   EXPECT_EQ(expected->safe_for_autoreplace(), actual->safe_for_autoreplace());
   EXPECT_EQ(expected->show_in_default_list(), actual->show_in_default_list());
 }
@@ -410,8 +410,8 @@ TEST_F(TemplateURLServiceTest, AddUpdateRemove) {
   t_url->set_date_created(Time::FromTimeT(100));
   t_url->set_last_modified(Time::FromTimeT(100));
   t_url->set_sync_guid("00000000-0000-0000-0000-000000000001");
-  t_url->SetURL("http://www.google.com/foo/bar", 0, 0);
-  t_url->SetFaviconURL(GURL("http://favicon.url"));
+  t_url->SetURL("http://www.google.com/foo/bar");
+  t_url->set_favicon_url(GURL("http://favicon.url"));
   model()->Add(t_url);
   ASSERT_TRUE(model()->CanReplaceKeyword(ASCIIToUTF16("keyword"), GURL(),
                                          NULL));
@@ -635,8 +635,8 @@ TEST_F(TemplateURLServiceTest, Reset) {
   t_url->set_keyword(ASCIIToUTF16("keyword"));
   t_url->set_date_created(Time::FromTimeT(100));
   t_url->set_last_modified(Time::FromTimeT(100));
-  t_url->SetURL("http://www.google.com/foo/bar", 0, 0);
-  t_url->SetFaviconURL(GURL("http://favicon.url"));
+  t_url->SetURL("http://www.google.com/foo/bar");
+  t_url->set_favicon_url(GURL("http://favicon.url"));
   model()->Add(t_url);
 
   VerifyObserverCount(1);
@@ -783,9 +783,9 @@ TEST_F(TemplateURLServiceTest, DefaultSearchProviderLoadedFromPrefs) {
   t_url->set_safe_for_autoreplace(true);
   t_url->set_date_created(Time::FromTimeT(100));
   t_url->set_last_modified(Time::FromTimeT(100));
-  t_url->SetSuggestionsURL("http://url2", 0, 0);
-  t_url->SetURL("http://url", 0, 0);
-  t_url->SetInstantURL("http://instant", 0, 0);
+  t_url->SetSuggestionsURL("http://url2");
+  t_url->SetURL("http://url");
+  t_url->SetInstantURL("http://instant");
   model()->Add(t_url);
   const TemplateURLID id = t_url->id();
 
@@ -1142,7 +1142,7 @@ TEST_F(TemplateURLServiceTest, LoadDoesAutoKeywordUpdate) {
   string16 prepopulated_url;
   TemplateURL* t_url = CreateReplaceablePreloadedTemplateURL(false,
       0, &prepopulated_url);
-  t_url->SetURL("{google:baseURL}?q={searchTerms}", 0, 0);
+  t_url->SetURL("{google:baseURL}?q={searchTerms}");
   t_url->set_autogenerate_keyword(true);
 
   // Then add it to the model and save it all.
@@ -1215,8 +1215,8 @@ TEST_F(TemplateURLServiceTest, TestManagedDefaultSearch) {
   std::vector<std::string> encodings_vector;
   base::SplitString(kEncodings, ';', &encodings_vector);
   expected_managed_default1->set_input_encodings(encodings_vector);
-  expected_managed_default1->SetURL(kSearchURL, 0, 0);
-  expected_managed_default1->SetFaviconURL(GURL(kIconURL));
+  expected_managed_default1->SetURL(kSearchURL);
+  expected_managed_default1->set_favicon_url(GURL(kIconURL));
   const TemplateURL* actual_managed_default =
       model()->GetDefaultSearchProvider();
   ExpectSimilar(expected_managed_default1.get(), actual_managed_default);
@@ -1238,8 +1238,8 @@ TEST_F(TemplateURLServiceTest, TestManagedDefaultSearch) {
   expected_managed_default2->set_short_name(ASCIIToUTF16(kNewName));
   expected_managed_default2->set_keyword(ASCIIToUTF16(kNewKeyword));
   expected_managed_default2->set_show_in_default_list(true);
-  expected_managed_default2->SetSuggestionsURL(kNewSuggestURL, 0, 0);
-  expected_managed_default2->SetURL(kNewSearchURL, 0, 0);
+  expected_managed_default2->SetSuggestionsURL(kNewSuggestURL);
+  expected_managed_default2->SetURL(kNewSearchURL);
   actual_managed_default = model()->GetDefaultSearchProvider();
   ExpectSimilar(expected_managed_default2.get(), actual_managed_default);
   EXPECT_EQ(actual_managed_default->show_in_default_list(), true);
@@ -1309,7 +1309,7 @@ TEST_F(TemplateURLServiceTest, PatchEmptySyncGUID) {
   t_url->set_short_name(ASCIIToUTF16("google"));
   t_url->set_keyword(ASCIIToUTF16("keyword"));
   t_url->set_sync_guid(std::string());
-  t_url->SetURL("http://www.google.com/foo/bar", 0, 0);
+  t_url->SetURL("http://www.google.com/foo/bar");
   model()->Add(t_url);
 
   VerifyObserverCount(1);

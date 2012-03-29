@@ -597,7 +597,7 @@ bool DefaultSearchPolicyHandler::DefaultSearchURLIsValid(
   *url_value = policies.GetValue(key::kDefaultSearchProviderSearchURL);
   SearchTermsData search_terms_data;
   return *url_value && (*url_value)->GetAsString(url_string) &&
-      TemplateURLRef(*url_string, 0, 0).SupportsReplacementUsingTermsData(
+      TemplateURLRef(*url_string).SupportsReplacementUsingTermsData(
           search_terms_data);
 }
 

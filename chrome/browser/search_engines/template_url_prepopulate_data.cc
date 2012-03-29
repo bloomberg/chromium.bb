@@ -3159,10 +3159,10 @@ TemplateURL* MakePrepopulatedTemplateURL(const string16& name,
                                          const base::StringPiece& encoding,
                                          int id) {
   TemplateURL* new_turl = new TemplateURL();
-  new_turl->SetURL(search_url.as_string(), 0, 0);
-  new_turl->SetFaviconURL(GURL(favicon_url.as_string()));
-  new_turl->SetSuggestionsURL(suggest_url.as_string(), 0, 0);
-  new_turl->SetInstantURL(instant_url.as_string(), 0, 0);
+  new_turl->SetURL(search_url.as_string());
+  new_turl->set_favicon_url(GURL(favicon_url.as_string()));
+  new_turl->SetSuggestionsURL(suggest_url.as_string());
+  new_turl->SetInstantURL(instant_url.as_string());
   new_turl->set_short_name(name);
   if (keyword.empty())
     new_turl->set_autogenerate_keyword(true);

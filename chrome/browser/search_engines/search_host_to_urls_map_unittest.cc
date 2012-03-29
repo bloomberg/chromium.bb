@@ -30,9 +30,9 @@ void SearchHostToURLsMapTest::SetUp() {
   // Add some entries to the search host map.
   host_ = "www.unittest.com";
   t_urls_[0].reset(new TemplateURL());
-  t_urls_[0]->SetURL("http://" + host_ + "/path1", 0, 0);
+  t_urls_[0]->SetURL("http://" + host_ + "/path1");
   t_urls_[1].reset(new TemplateURL());
-  t_urls_[1]->SetURL("http://" + host_ + "/path2", 0, 0);
+  t_urls_[1]->SetURL("http://" + host_ + "/path2");
 
   std::vector<const TemplateURL*> template_urls;
   template_urls.push_back(t_urls_[0].get());
@@ -46,7 +46,7 @@ void SearchHostToURLsMapTest::SetUp() {
 TEST_F(SearchHostToURLsMapTest, Add) {
   std::string new_host = "example.com";
   TemplateURL new_t_url;
-  new_t_url.SetURL("http://" + new_host + "/", 0, 0);
+  new_t_url.SetURL("http://" + new_host + "/");
   UIThreadSearchTermsData search_terms_data;
   provider_map_->Add(&new_t_url, search_terms_data);
 
@@ -73,7 +73,7 @@ TEST_F(SearchHostToURLsMapTest, Remove) {
 TEST_F(SearchHostToURLsMapTest, Update) {
   std::string new_host = "example.com";
   TemplateURL new_values;
-  new_values.SetURL("http://" + new_host + "/", 0, 0);
+  new_values.SetURL("http://" + new_host + "/");
 
   UIThreadSearchTermsData search_terms_data;
   provider_map_->Update(t_urls_[0].get(), new_values, search_terms_data);
@@ -90,7 +90,7 @@ TEST_F(SearchHostToURLsMapTest, UpdateGoogleBaseURLs) {
 
   // Add in a url with the templated Google base url.
   TemplateURL new_t_url;
-  new_t_url.SetURL("{google:baseURL}?q={searchTerms}", 0, 0);
+  new_t_url.SetURL("{google:baseURL}?q={searchTerms}");
   provider_map_->Add(&new_t_url, search_terms_data);
   ASSERT_EQ(&new_t_url, provider_map_->GetTemplateURLForHost(google_base_url));
 

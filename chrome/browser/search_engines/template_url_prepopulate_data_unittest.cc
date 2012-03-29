@@ -121,7 +121,7 @@ TEST(TemplateURLPrepopulateDataTest, ProvidersFromPrefs) {
   EXPECT_EQ(ASCIIToUTF16("foo"), t_urls[0]->short_name());
   EXPECT_EQ(ASCIIToUTF16("fook"), t_urls[0]->keyword());
   EXPECT_EQ("foo.com", t_urls[0]->url()->GetHost());
-  EXPECT_EQ("foi.com", t_urls[0]->GetFaviconURL().host());
+  EXPECT_EQ("foi.com", t_urls[0]->favicon_url().host());
   EXPECT_EQ(1u, t_urls[0]->input_encodings().size());
   EXPECT_EQ(1001, t_urls[0]->prepopulate_id());
 }

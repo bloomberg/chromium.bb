@@ -235,7 +235,7 @@ TemplateURL* SearchProviderInstallDataTest::AddNewTemplateURL(
   TemplateURL* t_url = new TemplateURL();
   t_url->set_short_name(keyword);
   t_url->set_keyword(keyword);
-  t_url->SetURL(url, 0, 0);
+  t_url->SetURL(url);
   util_.model()->Add(t_url);
   return t_url;
 }

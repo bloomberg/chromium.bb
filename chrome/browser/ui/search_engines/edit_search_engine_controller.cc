@@ -38,7 +38,7 @@ bool EditSearchEngineController::IsURLValid(
     return false;
 
   // Use TemplateURLRef to extract the search placeholder.
-  TemplateURLRef template_ref(url, 0, 0);
+  TemplateURLRef template_ref(url);
   if (!template_ref.IsValid())
     return false;
 
@@ -98,7 +98,7 @@ void EditSearchEngineController::AcceptAddOrEdit(
     TemplateURL* modifiable_url = const_cast<TemplateURL*>(template_url_);
     modifiable_url->set_short_name(title_input);
     modifiable_url->set_keyword(keyword_input);
-    modifiable_url->SetURL(url_string, 0, 0);
+    modifiable_url->SetURL(url_string);
     // TemplateURLService takes ownership of template_url_.
     template_url_service->Add(modifiable_url);
     content::RecordAction(UserMetricsAction("KeywordEditor_AddKeywordJS"));
@@ -130,7 +130,7 @@ std::string EditSearchEngineController::GetFixedUpURL(
   // scheme. As the scheme may be expanded (as happens with {google:baseURL})
   // we need to replace the search terms before testing for the scheme.
   TemplateURL t_url;
-  t_url.SetURL(url, 0, 0);
+  t_url.SetURL(url);
   std::string expanded_url(t_url.url()->ReplaceSearchTerms(t_url,
       ASCIIToUTF16("x"), TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, string16()));
   url_parse::Parsed parts;

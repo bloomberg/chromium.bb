@@ -73,7 +73,7 @@ bool TemplateURLsHaveSamePrefs(const TemplateURL* url1,
       TemplateURLRef::SameUrlRefs(url1->url(), url2->url()) &&
       TemplateURLRef::SameUrlRefs(url1->suggestions_url(),
                                   url2->suggestions_url()) &&
-      url1->GetFaviconURL() == url2->GetFaviconURL() &&
+      url1->favicon_url() == url2->favicon_url() &&
       url1->safe_for_autoreplace() == url2->safe_for_autoreplace() &&
       url1->show_in_default_list() == url2->show_in_default_list() &&
       url1->input_encodings() == url2->input_encodings();
@@ -374,7 +374,7 @@ void TemplateURLService::RegisterExtensionKeyword(const Extension* extension) {
   // ID, as well as forcing the TemplateURL to be treated as a search keyword.
   template_url->SetURL(
       std::string(chrome::kExtensionScheme) + "://" +
-      extension->id() + "/?q={searchTerms}", 0, 0);
+      extension->id() + "/?q={searchTerms}");
   template_url->set_safe_for_autoreplace(false);
 
   if (existing_url) {
@@ -427,9 +427,9 @@ void TemplateURLService::ResetTemplateURL(const TemplateURL* url,
   if ((new_url.url() && search_url.empty()) ||
       (!new_url.url() && !search_url.empty()) ||
       (new_url.url() && new_url.url()->url() != search_url)) {
+    new_url.SetURL(search_url);
     // The urls have changed, reset the favicon url.
-    new_url.SetFaviconURL(GURL());
-    new_url.SetURL(search_url, 0, 0);
+    new_url.set_favicon_url(GURL());
   }
   new_url.set_safe_for_autoreplace(false);
   new_url.set_last_modified(time_provider_());
@@ -974,7 +974,7 @@ SyncData TemplateURLService::CreateSyncDataFromTemplateURL(
       specifics.mutable_search_engine();
   se_specifics->set_short_name(UTF16ToUTF8(turl.short_name()));
   se_specifics->set_keyword(UTF16ToUTF8(turl.keyword()));
-  se_specifics->set_favicon_url(turl.GetFaviconURL().spec());
+  se_specifics->set_favicon_url(turl.favicon_url().spec());
   se_specifics->set_url(turl.url() ? turl.url()->url() : std::string());
   se_specifics->set_safe_for_autoreplace(turl.safe_for_autoreplace());
   se_specifics->set_originating_url(turl.originating_url().spec());
@@ -1063,7 +1063,7 @@ void TemplateURLService::Init(const Initializer* initializers,
       TemplateURL* template_url = new TemplateURL();
       template_url->set_keyword(UTF8ToUTF16(initializers[i].keyword));
       template_url->set_short_name(UTF8ToUTF16(initializers[i].content));
-      template_url->SetURL(osd_url, 0, 0);
+      template_url->SetURL(osd_url);
       AddNoNotify(template_url);
     }
   }
@@ -1192,7 +1192,7 @@ void TemplateURLService::SaveDefaultSearchProviderToPrefs(
       suggest_url = t_url->suggestions_url()->url();
     if (t_url->instant_url())
       instant_url = t_url->instant_url()->url();
-    GURL icon_gurl = t_url->GetFaviconURL();
+    GURL icon_gurl = t_url->favicon_url();
     if (!icon_gurl.is_empty())
       icon_url = icon_gurl.spec();
     encodings = JoinString(t_url->input_encodings(), ';');
@@ -1253,11 +1253,11 @@ bool TemplateURLService::LoadDefaultSearchProviderFromPrefs(
 
   default_provider->reset(new TemplateURL());
   (*default_provider)->set_short_name(name);
-  (*default_provider)->SetURL(search_url, 0, 0);
-  (*default_provider)->SetSuggestionsURL(suggest_url, 0, 0);
-  (*default_provider)->SetInstantURL(instant_url, 0, 0);
+  (*default_provider)->SetURL(search_url);
+  (*default_provider)->SetSuggestionsURL(suggest_url);
+  (*default_provider)->SetInstantURL(instant_url);
   (*default_provider)->set_keyword(keyword);
-  (*default_provider)->SetFaviconURL(GURL(icon_url));
+  (*default_provider)->set_favicon_url(GURL(icon_url));
   std::vector<std::string> encodings_vector;
   base::SplitString(encodings, ';', &encodings_vector);
   (*default_provider)->set_input_encodings(encodings_vector);
@@ -1897,8 +1897,8 @@ void TemplateURLService::UpdateTemplateURLWithSyncData(
       sync_data.GetSpecifics().search_engine();
   dst->set_short_name(UTF8ToUTF16(specifics.short_name()));
   dst->set_keyword(UTF8ToUTF16(specifics.keyword()));
-  dst->SetFaviconURL(GURL(specifics.favicon_url()));
-  dst->SetURL(specifics.url(), 0, 0);
+  dst->set_favicon_url(GURL(specifics.favicon_url()));
+  dst->SetURL(specifics.url());
   dst->set_safe_for_autoreplace(specifics.safe_for_autoreplace());
   dst->set_originating_url(GURL(specifics.originating_url()));
   dst->set_date_created(
@@ -1907,10 +1907,10 @@ void TemplateURLService::UpdateTemplateURLWithSyncData(
   base::SplitString(specifics.input_encodings(), ';', &input_encodings);
   dst->set_input_encodings(input_encodings);
   dst->set_show_in_default_list(specifics.show_in_default_list());
-  dst->SetSuggestionsURL(specifics.suggestions_url(), 0, 0);
+  dst->SetSuggestionsURL(specifics.suggestions_url());
   dst->SetPrepopulateId(specifics.prepopulate_id());
   dst->set_autogenerate_keyword(specifics.autogenerate_keyword());
-  dst->SetInstantURL(specifics.instant_url(), 0, 0);
+  dst->SetInstantURL(specifics.instant_url());
   dst->set_last_modified(
       base::Time::FromInternalValue(specifics.last_modified()));
   dst->set_sync_guid(specifics.sync_guid());

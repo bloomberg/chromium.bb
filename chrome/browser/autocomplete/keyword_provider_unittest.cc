@@ -204,7 +204,7 @@ TEST_F(KeywordProviderTest, AddKeyword) {
   TemplateURL* template_url = new TemplateURL();
   string16 keyword(ASCIIToUTF16("foo"));
   std::string url("http://www.google.com/foo?q={searchTerms}");
-  template_url->SetURL(url, 0, 0);
+  template_url->SetURL(url);
   template_url->set_keyword(keyword);
   template_url->set_short_name(ASCIIToUTF16("Test"));
   model_->Add(template_url);

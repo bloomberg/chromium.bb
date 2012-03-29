@@ -189,46 +189,6 @@ struct ParamTraits<history::ImportedFaviconUsage> {
   }
 };  // ParamTraits<history::ImportedFaviconUsage
 
-// Traits for TemplateURLRef
-template <>
-struct ParamTraits<TemplateURLRef> {
-  typedef TemplateURLRef param_type;
-  static void Write(Message* m, const param_type& p) {
-    WriteParam(m, p.url());
-    WriteParam(m, p.index_offset());
-    WriteParam(m, p.page_offset());
-  }
-  static bool Read(const Message* m, PickleIterator* iter, param_type* p) {
-    return ReadParam(m, iter, &p->url_) &&
-        ReadParam(m, iter, &p->index_offset_) &&
-        ReadParam(m, iter, &p->page_offset_);
-  }
-  static void Log(const param_type& p, std::string* l) {
-    l->append("<TemplateURLRef>");
-  }
-};
-
-// Traits for TemplateURL::ImageRef
-template <>
-struct ParamTraits<TemplateURL::ImageRef> {
-  typedef TemplateURL::ImageRef param_type;
-  static void Write(Message* m, const param_type& p) {
-    WriteParam(m, p.type);
-    WriteParam(m, p.width);
-    WriteParam(m, p.height);
-    WriteParam(m, p.url);
-  }
-  static bool Read(const Message* m, PickleIterator* iter, param_type* p) {
-    return ReadParam(m, iter, &p->type) &&
-        ReadParam(m, iter, &p->width) &&
-        ReadParam(m, iter, &p->height) &&
-        ReadParam(m, iter, &p->url);
-  }
-  static void Log(const param_type& p, std::string* l) {
-    l->append("<TemplateURL::ImageRef>");
-  }
-};
-
 // Traits for TemplateURL*.
 // WARNING: These will cause us to allocate a new TemplateURL on the heap on the
 // receiver side.  Any messages using this type must have handlers that are
@@ -239,21 +199,19 @@ struct ParamTraits<TemplateURL*> {
   typedef TemplateURL* param_type;
   static void Write(Message* m, const param_type& p) {
     WriteParam(m, p->short_name());
-    WriteParam(m, p->description());
     if (p->suggestions_url()) {
       WriteParam(m, true);
-      WriteParam(m, *p->suggestions_url());
+      WriteParam(m, p->suggestions_url()->url());
     } else {
       WriteParam(m, false);
     }
-    WriteParam(m, *p->url());
+    WriteParam(m, p->url()->url());
     WriteParam(m, p->originating_url());
     WriteParam(m, p->keyword());
     WriteParam(m, p->autogenerate_keyword());
     WriteParam(m, p->show_in_default_list());
     WriteParam(m, p->safe_for_autoreplace());
-    WriteParam(m, p->image_refs());
-    WriteParam(m, p->languages());
+    WriteParam(m, p->favicon_url());
     WriteParam(m, p->input_encodings());
     WriteParam(m, p->date_created());
     WriteParam(m, p->last_modified());
@@ -264,24 +222,21 @@ struct ParamTraits<TemplateURL*> {
     *p = NULL;
 
     string16 short_name;
-    string16 description;
     bool includes_suggestions_url;
-    TemplateURLRef suggestions_url;
-    TemplateURLRef url;
+    std::string suggestions_url;
+    std::string url;
     GURL originating_url;
     string16 keyword;
     bool autogenerate_keyword;
     bool show_in_default_list;
     bool safe_for_autoreplace;
-    std::vector<string16> languages;
-    std::vector<std::string> input_encodings;
+    GURL favicon_url;
     base::Time date_created;
     base::Time last_modified;
     int usage_count;
     int prepopulate_id;
 
-    if (!ReadParam(m, iter, &short_name) ||
-        !ReadParam(m, iter, &description))
+    if (!ReadParam(m, iter, &short_name))
       return false;
 
     if (!ReadParam(m, iter, &includes_suggestions_url))
@@ -300,9 +255,7 @@ struct ParamTraits<TemplateURL*> {
       return false;
 
     scoped_ptr<TemplateURL> turl(new TemplateURL());
-    if (!ReadParam(m, iter, &turl->image_refs_) ||
-        !ReadParam(m, iter, &languages) ||
-        !ReadParam(m, iter, &input_encodings) ||
+    if (!ReadParam(m, iter, &favicon_url) ||
         !ReadParam(m, iter, &date_created) ||
         !ReadParam(m, iter, &last_modified) ||
         !ReadParam(m, iter, &usage_count) ||
@@ -310,24 +263,14 @@ struct ParamTraits<TemplateURL*> {
       return false;
 
     turl->set_short_name(short_name);
-    turl->set_description(description);
-    turl->SetSuggestionsURL(suggestions_url.url(),
-                            suggestions_url.index_offset(),
-                            suggestions_url.page_offset());
-    turl->SetURL(url.url(), url.index_offset(), url.page_offset());
+    turl->SetSuggestionsURL(suggestions_url);
+    turl->SetURL(url);
     turl->set_originating_url(originating_url);
     turl->set_keyword(keyword);
     turl->set_autogenerate_keyword(autogenerate_keyword);
     turl->set_show_in_default_list(show_in_default_list);
     turl->set_safe_for_autoreplace(safe_for_autoreplace);
-
-    std::vector<string16>::const_iterator lang_iter;
-    for (lang_iter = languages.begin();
-         lang_iter != languages.end();
-         ++lang_iter) {
-      turl->languages_.push_back(*lang_iter);
-    }
-    turl->set_input_encodings(input_encodings);
+    turl->set_favicon_url(favicon_url);
     turl->set_date_created(date_created);
     turl->set_last_modified(last_modified);
     turl->set_usage_count(usage_count);

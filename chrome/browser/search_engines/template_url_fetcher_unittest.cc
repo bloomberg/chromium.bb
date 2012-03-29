@@ -286,7 +286,7 @@ TEST_F(TemplateURLFetcherTest, DuplicateKeywordsTest) {
   string16 keyword(ASCIIToUTF16("test"));
 
   TemplateURL* t_url = new TemplateURL();
-  t_url->SetURL("http://example.com/", 0, 0);
+  t_url->SetURL("http://example.com/");
   t_url->set_keyword(keyword);
   t_url->set_short_name(keyword);
   test_util_.model()->Add(t_url);

@@ -134,7 +134,7 @@ TEST_F(TemplateURLParserTest, TestDictionary) {
   ASSERT_TRUE(template_url_.get());
   EXPECT_EQ(ASCIIToUTF16("Dictionary.com"), template_url_->short_name());
   EXPECT_EQ(GURL("http://cache.lexico.com/g/d/favicon.ico"),
-            template_url_->GetFaviconURL());
+            template_url_->favicon_url());
   ASSERT_FALSE(template_url_->url() == NULL);
   EXPECT_TRUE(template_url_->url()->SupportsReplacement());
   EXPECT_EQ("http://dictionary.reference.com/browse/{searchTerms}?r=75",
@@ -148,7 +148,7 @@ TEST_F(TemplateURLParserTest, TestMSDN) {
   ASSERT_TRUE(template_url_.get());
   EXPECT_EQ(ASCIIToUTF16("Search \" MSDN"), template_url_->short_name());
   EXPECT_EQ(GURL("http://search.msdn.microsoft.com/search/favicon.ico"),
-            template_url_->GetFaviconURL());
+            template_url_->favicon_url());
   ASSERT_FALSE(template_url_->url() == NULL);
   EXPECT_TRUE(template_url_->url()->SupportsReplacement());
   EXPECT_EQ("http://search.msdn.microsoft.com/search/default.aspx?"
@@ -163,7 +163,7 @@ TEST_F(TemplateURLParserTest, TestWikipedia) {
   ASSERT_TRUE(template_url_.get());
   EXPECT_EQ(ASCIIToUTF16("Wikipedia (English)"), template_url_->short_name());
   EXPECT_EQ(GURL("http://en.wikipedia.org/favicon.ico"),
-            template_url_->GetFaviconURL());
+            template_url_->favicon_url());
   ASSERT_FALSE(template_url_->url() == NULL);
   EXPECT_TRUE(template_url_->url()->SupportsReplacement());
   EXPECT_EQ("http://en.wikipedia.org/w/index.php?"
@@ -203,7 +203,7 @@ TEST_F(TemplateURLParserTest, TestFirefoxEbay) {
   ASSERT_EQ(1U, template_url_->input_encodings().size());
   EXPECT_EQ("ISO-8859-1", template_url_->input_encodings()[0]);
   EXPECT_EQ(GURL("http://search.ebay.com/favicon.ico"),
-            template_url_->GetFaviconURL());
+            template_url_->favicon_url());
 }
 
 TEST_F(TemplateURLParserTest, TestFirefoxWebster) {
@@ -221,7 +221,7 @@ TEST_F(TemplateURLParserTest, TestFirefoxWebster) {
   ASSERT_EQ(1U, template_url_->input_encodings().size());
   EXPECT_EQ("ISO-8859-1", template_url_->input_encodings()[0]);
   EXPECT_EQ(GURL("http://www.webster.com/favicon.ico"),
-            template_url_->GetFaviconURL());
+            template_url_->favicon_url());
 }
 
 TEST_F(TemplateURLParserTest, TestFirefoxYahoo) {
@@ -242,7 +242,7 @@ TEST_F(TemplateURLParserTest, TestFirefoxYahoo) {
   ASSERT_EQ(1U, template_url_->input_encodings().size());
   EXPECT_EQ("UTF-8", template_url_->input_encodings()[0]);
   EXPECT_EQ(GURL("http://search.yahoo.com/favicon.ico"),
-            template_url_->GetFaviconURL());
+            template_url_->favicon_url());
 }
 
 // Make sure we ignore POST suggestions (this is the same XML file as
@@ -263,5 +263,5 @@ TEST_F(TemplateURLParserTest, TestPostSuggestion) {
   ASSERT_EQ(1U, template_url_->input_encodings().size());
   EXPECT_EQ("UTF-8", template_url_->input_encodings()[0]);
   EXPECT_EQ(GURL("http://search.yahoo.com/favicon.ico"),
-            template_url_->GetFaviconURL());
+            template_url_->favicon_url());
 }

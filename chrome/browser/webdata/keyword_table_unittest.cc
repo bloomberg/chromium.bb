@@ -71,9 +71,9 @@ TEST_F(KeywordTableTest, Keywords) {
   keyword.set_created_by_policy(true);
   keyword.set_usage_count(32);
   keyword.SetPrepopulateId(10);
-  keyword.SetURL("http://url/", 0, 0);
-  keyword.SetInstantURL("http://instant/", 0, 0);
-  keyword.SetFaviconURL(GURL("http://favicon.url/"));
+  keyword.SetURL("http://url/");
+  keyword.SetInstantURL("http://instant/");
+  keyword.set_favicon_url(GURL("http://favicon.url/"));
   EXPECT_TRUE(keyword_table->AddKeyword(keyword));
 
   KeywordTable::Keywords keywords;
@@ -105,7 +105,7 @@ TEST_F(KeywordTableTest, Keywords) {
   ASSERT_TRUE(restored_keyword->instant_url());
   EXPECT_EQ(keyword.instant_url()->url(),
             restored_keyword->instant_url()->url());
-  EXPECT_EQ(keyword.GetFaviconURL(), restored_keyword->GetFaviconURL());
+  EXPECT_EQ(keyword.favicon_url(), restored_keyword->favicon_url());
 
   EXPECT_TRUE(keyword_table->RemoveKeyword(restored_keyword->id()));
   STLDeleteElements(&keywords);
@@ -139,9 +139,9 @@ TEST_F(KeywordTableTest, KeywordMisc) {
   keyword.set_created_by_policy(true);
   keyword.set_usage_count(32);
   keyword.SetPrepopulateId(10);
-  keyword.SetURL("http://url/", 0, 0);
-  keyword.SetInstantURL("http://instant/", 0, 0);
-  keyword.SetFaviconURL(GURL("http://favicon.url/"));
+  keyword.SetURL("http://url/");
+  keyword.SetInstantURL("http://instant/");
+  keyword.set_favicon_url(GURL("http://favicon.url/"));
   ASSERT_TRUE(keyword_table->AddKeyword(keyword));
 
   ASSERT_TRUE(keyword_table->SetDefaultSearchProviderID(10));
@@ -165,9 +165,9 @@ TEST_F(KeywordTableTest, DefaultSearchProviderBackup) {
   keyword.set_show_in_default_list(true);
   keyword.set_safe_for_autoreplace(true);
   SetID(1, &keyword);
-  keyword.SetSuggestionsURL("url2", 0, 0);
-  keyword.SetURL("http://url/", 0, 0);
-  keyword.SetFaviconURL(GURL("http://favicon.url/"));
+  keyword.SetSuggestionsURL("url2");
+  keyword.SetURL("http://url/");
+  keyword.set_favicon_url(GURL("http://favicon.url/"));
   EXPECT_TRUE(keyword_table->AddKeyword(keyword));
 
   ASSERT_TRUE(keyword_table->SetDefaultSearchProviderID(1));
@@ -180,7 +180,7 @@ TEST_F(KeywordTableTest, DefaultSearchProviderBackup) {
   EXPECT_EQ(kInvalidTemplateURLID, backup_url->id());
   EXPECT_EQ(keyword.short_name(), backup_url->short_name());
   EXPECT_EQ(keyword.keyword(), backup_url->keyword());
-  EXPECT_EQ(keyword.GetFaviconURL(), backup_url->GetFaviconURL());
+  EXPECT_EQ(keyword.favicon_url(), backup_url->favicon_url());
   ASSERT_TRUE(backup_url->url());
   EXPECT_EQ(keyword.url()->url(), backup_url->url()->url());
   EXPECT_EQ(keyword.safe_for_autoreplace(), backup_url->safe_for_autoreplace());
@@ -200,7 +200,7 @@ TEST_F(KeywordTableTest, DefaultSearchProviderBackup) {
   EXPECT_EQ(kInvalidTemplateURLID, backup_url->id());
   EXPECT_EQ(keyword.short_name(), backup_url->short_name());
   EXPECT_EQ(keyword.keyword(), backup_url->keyword());
-  EXPECT_EQ(keyword.GetFaviconURL(), backup_url->GetFaviconURL());
+  EXPECT_EQ(keyword.favicon_url(), backup_url->favicon_url());
   ASSERT_TRUE(backup_url->url());
   EXPECT_EQ(keyword.url()->url(), backup_url->url()->url());
   EXPECT_EQ(keyword.safe_for_autoreplace(), backup_url->safe_for_autoreplace());
@@ -242,7 +242,7 @@ TEST_F(KeywordTableTest, DefaultSearchProviderBackup) {
   EXPECT_EQ(kInvalidTemplateURLID, backup_url->id());
   EXPECT_EQ(keyword.short_name(), backup_url->short_name());
   EXPECT_EQ(keyword.keyword(), backup_url->keyword());
-  EXPECT_EQ(keyword.GetFaviconURL(), backup_url->GetFaviconURL());
+  EXPECT_EQ(keyword.favicon_url(), backup_url->favicon_url());
   ASSERT_TRUE(backup_url->url());
   EXPECT_EQ(keyword.url()->url(), backup_url->url()->url());
   EXPECT_EQ(keyword.safe_for_autoreplace(), backup_url->safe_for_autoreplace());
@@ -276,9 +276,9 @@ TEST_F(KeywordTableTest, GetTableContents) {
   keyword.set_date_created(base::Time::UnixEpoch());
   keyword.set_last_modified(base::Time::UnixEpoch());
   keyword.set_sync_guid("1234-5678-90AB-CDEF");
-  keyword.SetSuggestionsURL("url2", 0, 0);
-  keyword.SetURL("http://url/", 0, 0);
-  keyword.SetFaviconURL(GURL("http://favicon.url/"));
+  keyword.SetSuggestionsURL("url2");
+  keyword.SetURL("http://url/");
+  keyword.set_favicon_url(GURL("http://favicon.url/"));
   ASSERT_TRUE(keyword_table->AddKeyword(keyword));
 
   keyword.set_originating_url(GURL("http://originating.url/"));
@@ -288,7 +288,7 @@ TEST_F(KeywordTableTest, GetTableContents) {
   SetID(2, &keyword);
   keyword.SetPrepopulateId(5);
   keyword.set_sync_guid("FEDC-BA09-8765-4321");
-  keyword.SetInstantURL("http://instant2/", 0, 0);
+  keyword.SetInstantURL("http://instant2/");
   ASSERT_TRUE(keyword_table->AddKeyword(keyword));
 
   const char kTestContents[] = "1short_namekeywordhttp://favicon.url/"
@@ -318,9 +318,9 @@ TEST_F(KeywordTableTest, GetTableContentsOrdering) {
   keyword.set_date_created(base::Time::UnixEpoch());
   keyword.set_last_modified(base::Time::UnixEpoch());
   keyword.set_sync_guid("1234-5678-90AB-CDEF");
-  keyword.SetSuggestionsURL("url2", 0, 0);
-  keyword.SetURL("http://url/", 0, 0);
-  keyword.SetFaviconURL(GURL("http://favicon.url/"));
+  keyword.SetSuggestionsURL("url2");
+  keyword.SetURL("http://url/");
+  keyword.set_favicon_url(GURL("http://favicon.url/"));
   ASSERT_TRUE(keyword_table->AddKeyword(keyword));
 
   keyword.set_originating_url(GURL("http://originating.url/"));
@@ -330,7 +330,7 @@ TEST_F(KeywordTableTest, GetTableContentsOrdering) {
   SetID(1, &keyword);
   keyword.SetPrepopulateId(5);
   keyword.set_sync_guid("FEDC-BA09-8765-4321");
-  keyword.SetInstantURL("http://instant2/", 0, 0);
+  keyword.SetInstantURL("http://instant2/");
   ASSERT_TRUE(keyword_table->AddKeyword(keyword));
 
   const char kTestContents[] = "1short_nameurlhttp://favicon.url/http://url/1"
@@ -357,9 +357,9 @@ TEST_F(KeywordTableTest, UpdateKeyword) {
   keyword.set_show_in_default_list(true);
   keyword.set_safe_for_autoreplace(true);
   SetID(1, &keyword);
-  keyword.SetSuggestionsURL("url2", 0, 0);
-  keyword.SetURL("http://url/", 0, 0);
-  keyword.SetFaviconURL(GURL("http://favicon.url/"));
+  keyword.SetSuggestionsURL("url2");
+  keyword.SetURL("http://url/");
+  keyword.set_favicon_url(GURL("http://favicon.url/"));
   EXPECT_TRUE(keyword_table->AddKeyword(keyword));
 
   keyword.set_originating_url(GURL("http://originating.url/"));
@@ -367,7 +367,7 @@ TEST_F(KeywordTableTest, UpdateKeyword) {
   EXPECT_EQ(ASCIIToUTF16("url"), keyword.keyword());
   keyword.add_input_encoding("Shift_JIS");
   keyword.SetPrepopulateId(5);
-  keyword.SetInstantURL("http://instant2/", 0, 0);
+  keyword.SetInstantURL("http://instant2/");
   EXPECT_TRUE(keyword_table->UpdateKeyword(keyword));
 
   KeywordTable::Keywords keywords;
@@ -391,7 +391,7 @@ TEST_F(KeywordTableTest, UpdateKeyword) {
   EXPECT_EQ(keyword.suggestions_url()->url(),
             restored_keyword->suggestions_url()->url());
   ASSERT_TRUE(restored_keyword->instant_url());
-  EXPECT_EQ(keyword.GetFaviconURL(), restored_keyword->GetFaviconURL());
+  EXPECT_EQ(keyword.favicon_url(), restored_keyword->favicon_url());
   EXPECT_EQ(keyword.instant_url()->url(),
             restored_keyword->instant_url()->url());
 
@@ -408,7 +408,7 @@ TEST_F(KeywordTableTest, KeywordWithNoFavicon) {
   keyword.set_keyword(ASCIIToUTF16("keyword"));
   keyword.set_safe_for_autoreplace(true);
   SetID(-100, &keyword);
-  keyword.SetURL("http://url/", 0, 0);
+  keyword.SetURL("http://url/");
   EXPECT_TRUE(keyword_table->AddKeyword(keyword));
 
   KeywordTable::Keywords keywords;
@@ -421,7 +421,7 @@ TEST_F(KeywordTableTest, KeywordWithNoFavicon) {
   EXPECT_EQ(keyword.safe_for_autoreplace(),
             restored_keyword->safe_for_autoreplace());
   EXPECT_EQ(keyword.id(), restored_keyword->id());
-  EXPECT_EQ(keyword.GetFaviconURL(), restored_keyword->GetFaviconURL());
+  EXPECT_EQ(keyword.favicon_url(), restored_keyword->favicon_url());
 
   STLDeleteElements(&keywords);
 }

@@ -202,8 +202,8 @@ TemplateURL* CreateTestTemplateURL(int seed,
   turl->set_last_modified(base::Time::FromTimeT(100));
   turl->SetPrepopulateId(999999);
   turl->set_sync_guid(sync_guid);
-  turl->SetURL(url, 0, 0);
-  turl->SetFaviconURL(GURL("http://favicon.url"));
+  turl->SetURL(url);
+  turl->set_favicon_url(GURL("http://favicon.url"));
   return turl;
 }
 

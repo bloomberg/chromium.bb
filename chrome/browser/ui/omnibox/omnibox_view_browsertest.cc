@@ -286,14 +286,14 @@ class OmniboxViewTest : public InProcessBrowserTest,
       model->Remove(*i);
 
     TemplateURL* template_url = new TemplateURL();
-    template_url->SetURL(kSearchURL, 0, 0);
+    template_url->SetURL(kSearchURL);
     template_url->set_keyword(ASCIIToUTF16(kSearchKeyword));
     template_url->set_short_name(ASCIIToUTF16(kSearchShortName));
     model->Add(template_url);
     model->SetDefaultSearchProvider(template_url);
 
     TemplateURL* second_url = new TemplateURL();
-    second_url->SetURL(kSearchURL, 0, 0);
+    second_url->SetURL(kSearchURL);
     second_url->set_keyword(ASCIIToUTF16(kSearchKeyword2));
     second_url->set_short_name(ASCIIToUTF16(kSearchShortName));
     model->Add(second_url);
@@ -946,7 +946,7 @@ class OmniboxViewTest : public InProcessBrowserTest,
 
     // Add a non-default substituting keyword.
     TemplateURL* template_url = new TemplateURL();
-    template_url->SetURL("http://abc.com/{searchTerms}", 0, 0);
+    template_url->SetURL("http://abc.com/{searchTerms}");
     template_url->set_keyword(UTF8ToUTF16(kSearchText));
     template_url->set_short_name(UTF8ToUTF16("Search abc"));
     template_url_service->Add(template_url);
@@ -971,7 +971,7 @@ class OmniboxViewTest : public InProcessBrowserTest,
     // Try a non-substituting keyword.
     template_url_service->Remove(template_url);
     template_url = new TemplateURL();
-    template_url->SetURL("http://abc.com/", 0, 0);
+    template_url->SetURL("http://abc.com/");
     template_url->set_keyword(UTF8ToUTF16(kSearchText));
     template_url->set_short_name(UTF8ToUTF16("abc"));
     template_url_service->Add(template_url);

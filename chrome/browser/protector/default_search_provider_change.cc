@@ -59,7 +59,7 @@ class TemplateURLIsSame {
                                     other_->suggestions_url()) &&
         TemplateURLRef::SameUrlRefs(url->instant_url(),
                                     other_->instant_url()) &&
-        url->GetFaviconURL() == other_->GetFaviconURL() &&
+        url->favicon_url() == other_->favicon_url() &&
         url->safe_for_autoreplace() == other_->safe_for_autoreplace() &&
         url->show_in_default_list() == other_->show_in_default_list() &&
         url->input_encodings() == other_->input_encodings() &&

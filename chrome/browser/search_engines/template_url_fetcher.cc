@@ -198,8 +198,8 @@ void TemplateURLFetcher::RequestDelegate::AddSearchProvider() {
   template_url_->set_originating_url(osdd_url_);
 
   // The page may have specified a URL to use for favicons, if not, set it.
-  if (!template_url_->GetFaviconURL().is_valid())
-    template_url_->SetFaviconURL(favicon_url_);
+  if (!template_url_->favicon_url().is_valid())
+    template_url_->set_favicon_url(favicon_url_);
 
   switch (provider_type_) {
     case AUTODETECTED_PROVIDER:

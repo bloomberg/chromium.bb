@@ -1821,8 +1821,8 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
           net::StripWWW(UTF8ToUTF16((params_.page_url.host())));
       template_url->set_short_name(keyword);
       template_url->set_keyword(keyword);
-      template_url->SetURL(params_.keyword_url.spec(), 0, 0);
-      template_url->SetFaviconURL(TemplateURL::GenerateFaviconURL(
+      template_url->SetURL(params_.keyword_url.spec());
+      template_url->set_favicon_url(TemplateURL::GenerateFaviconURL(
           params_.page_url.GetOrigin()));
 
       TabContentsWrapper* tab_contents_wrapper =

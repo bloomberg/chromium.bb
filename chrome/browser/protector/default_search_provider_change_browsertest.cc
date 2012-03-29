@@ -70,7 +70,7 @@ class DefaultSearchProviderChangeTest : public InProcessBrowserTest {
       url->set_autogenerate_keyword(true);
     else
       url->set_keyword(keyword);
-    url->SetURL(search_url, 0, 0);
+    url->SetURL(search_url);
     return url;
   }
 

@@ -3357,7 +3357,6 @@ void TestingAutomationProvider::GetSearchEngineInfo(
        template_urls.begin(); it != template_urls.end(); ++it) {
     DictionaryValue* search_engine = new DictionaryValue;
     search_engine->SetString("short_name", UTF16ToUTF8((*it)->short_name()));
-    search_engine->SetString("description", UTF16ToUTF8((*it)->description()));
     search_engine->SetString("keyword", UTF16ToUTF8((*it)->keyword()));
     search_engine->SetBoolean("in_default_list", (*it)->ShowInDefaultList());
     search_engine->SetBoolean("is_default",

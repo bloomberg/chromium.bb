@@ -58,8 +58,8 @@ void BindURLToStatement(const TemplateURL& url,
   s->BindInt64(id_column, url.id());
   s->BindString16(starting_column, url.short_name());
   s->BindString16(starting_column + 1, url.keyword());
-  s->BindString(starting_column + 2, url.GetFaviconURL().is_valid() ?
-      history::HistoryDatabase::GURLToDatabaseURL(url.GetFaviconURL()) :
+  s->BindString(starting_column + 2, url.favicon_url().is_valid() ?
+      history::HistoryDatabase::GURLToDatabaseURL(url.favicon_url()) :
       std::string());
   s->BindString(starting_column + 3,
                 url.url() ? url.url()->url() : std::string());
@@ -335,8 +335,8 @@ TemplateURL* KeywordTable::GetKeywordDataFromStatement(
   url->set_keyword(s.ColumnString16(2));
   std::string tmp(s.ColumnString(3));
   if (!tmp.empty())
-    url->SetFaviconURL(GURL(tmp));
-  url->SetURL(s.ColumnString(4), 0, 0);
+    url->set_favicon_url(GURL(tmp));
+  url->SetURL(s.ColumnString(4));
   url->set_safe_for_autoreplace(s.ColumnBool(5));
   tmp = s.ColumnString(6);
   if (!tmp.empty())
@@ -347,11 +347,11 @@ TemplateURL* KeywordTable::GetKeywordDataFromStatement(
   base::SplitString(s.ColumnString(9), ';', &encodings);
   url->set_input_encodings(encodings);
   url->set_show_in_default_list(s.ColumnBool(10));
-  url->SetSuggestionsURL(s.ColumnString(11), 0, 0);
+  url->SetSuggestionsURL(s.ColumnString(11));
   url->SetPrepopulateId(s.ColumnInt(12));
   url->set_autogenerate_keyword(s.ColumnBool(13));
   url->set_created_by_policy(s.ColumnBool(15));
-  url->SetInstantURL(s.ColumnString(16), 0, 0);
+  url->SetInstantURL(s.ColumnString(16));
   url->set_last_modified(Time::FromTimeT(s.ColumnInt64(17)));
   url->set_sync_guid(s.ColumnString(18));
 

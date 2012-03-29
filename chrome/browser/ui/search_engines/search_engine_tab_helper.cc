@@ -184,7 +184,7 @@ void SearchEngineTabHelper::GenerateKeywordIfNecessary(
   // its url.
   const GURL& favicon_url = current_favicon.is_valid() ?
       current_favicon : TemplateURL::GenerateFaviconURL(params.referrer.url);
-  new_url->SetURL(url.spec(), 0, 0);
-  new_url->SetFaviconURL(favicon_url);
+  new_url->SetURL(url.spec());
+  new_url->set_favicon_url(favicon_url);
   url_service->Add(new_url);
 }
