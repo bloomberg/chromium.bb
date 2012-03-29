@@ -56,7 +56,8 @@ TabContents* TabContentsViewHelper::CreateNewWindow(
         web_contents,
         route_id,
         params.window_container_type,
-        params.frame_name);
+        params.frame_name,
+        params.target_url);
   }
 
   if (!should_create)

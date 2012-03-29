@@ -122,7 +122,8 @@ bool WebContentsDelegate::ShouldCreateWebContents(
     WebContents* web_contents,
     int route_id,
     WindowContainerType window_container_type,
-    const string16& frame_name) {
+    const string16& frame_name,
+    const GURL& target_url) {
   return true;
 }
 

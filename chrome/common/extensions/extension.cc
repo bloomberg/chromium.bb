@@ -1834,11 +1834,6 @@ bool Extension::LoadBackgroundAllowJSAccess(
     return false;
   }
 
-  if (!has_background_page()) {
-    *error = ASCIIToUTF16(errors::kInvalidBackgroundAllowJsAccessNoPage);
-    return false;
-  }
-
   return true;
 }
 

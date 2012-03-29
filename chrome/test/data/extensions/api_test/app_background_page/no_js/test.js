@@ -3,13 +3,13 @@
 // found in the LICENSE file.
 
 // This test checks that setting allow_js_access to false is effective:
-// - A background page is opened via the manifest (which is verified by the
-//   AppBackgroundPageApiTest.NoJsManifestBackgroundPage code).
-// - A live (web-extent) web page is loaded (a.html), which tries to opens a
-//   background page.  This fails because allow_js_access is false.
+// - A background page is opened via window.open (which is verified by the
+//   AppBackgroundPageApiTest.NoJsBackgroundPage code).
+// - The return value of the window.open call is null (since the background
+//   page is not scriptable)
 
 var pagePrefix =
-    'http://a.com:PORT/files/extensions/api_test/app_background_page/common';
+    'http://a.com:PORT/files/extensions/api_test/app_background_page/no_js';
 
 // Dispatch "tunneled" functions from the live web pages to this testing page.
 chrome.extension.onRequest.addListener(function(request) {
@@ -25,37 +25,24 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
 });
 
 // Start the test by opening the first page in the app. This will try to create
-// a background page whose name is "bg", but it should not replace the
-// background page created by the manifest (named "background").
+// a background page whose name is "bg", which will succeed, but will not return
+// a Window object. However, the background contents should load, which will
+// then invoke onBackgroundPageLoaded.
 window.onload = function() {
   // We wait for window.onload before getting the test config.  If the
   // config is requested before onload, then sometimes onload has already
   // fired by the time chrome.test.getConfig()'s callback runs.
   chrome.test.getConfig(function(config) {
-    var aUrl =
-        pagePrefix.replace(/PORT/, config.testServer.port) + '/a.html';
-    chrome.tabs.create({ 'url': aUrl });
+    var launchUrl =
+        pagePrefix.replace(/PORT/, config.testServer.port) + '/launch.html';
+    chrome.tabs.create({ 'url': launchUrl });
   });
 }
 
-// Background page opened.
+function onBackgroundWindowNotNull() {
+  chrome.test.notifyFail('Unexpected non-null window.open result');
+}
+
 function onBackgroundPageLoaded() {
-  // The window.open call in a.html should not succeed.
-  chrome.test.notifyFail("Background page unexpectedly loaded.");
-}
-
-function onBackgroundPagePermissionDenied() {
-  // a.html will call this if it receives null from window.open, as we expect.
   chrome.test.notifyPass();
-}
-
-// A second background page opened.
-function onBackgroundPageResponded() {
-  chrome.test.notifyFail("onBackgroundPageResponded called unexpectedly");
-}
-
-// The background counter check found an unexpected value (most likely caused
-// by an unwanted navigation).
-function onCounterError() {
-  chrome.test.notifyFail("checkCounter found an unexpected value");
 }

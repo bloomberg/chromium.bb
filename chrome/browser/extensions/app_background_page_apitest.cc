@@ -143,6 +143,47 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, ManifestBackgroundPage) {
           GetAppBackgroundContents(ASCIIToUTF16(extension->id())));
 }
 
+IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, NoJsBackgroundPage) {
+  host_resolver()->AddRule("a.com", "127.0.0.1");
+  ASSERT_TRUE(StartTestServer());
+
+  std::string app_manifest = base::StringPrintf(
+      "{"
+      "  \"name\": \"App\","
+      "  \"version\": \"0.1\","
+      "  \"manifest_version\": 2,"
+      "  \"app\": {"
+      "    \"urls\": ["
+      "      \"http://a.com/\""
+      "    ],"
+      "    \"launch\": {"
+      "      \"web_url\": \"http://a.com:%d/test.html\""
+      "    }"
+      "  },"
+      "  \"permissions\": [\"background\"],"
+      "  \"background\": {"
+      "    \"allow_js_access\": false"
+      "  }"
+      "}",
+      test_server()->host_port_pair().port());
+
+  FilePath app_dir;
+  ASSERT_TRUE(CreateApp(app_manifest, &app_dir));
+  ASSERT_TRUE(LoadExtension(app_dir));
+
+  // There isn't a background page loaded initially.
+  const Extension* extension = GetSingleLoadedExtension();
+  ASSERT_FALSE(
+      BackgroundContentsServiceFactory::GetForProfile(browser()->profile())->
+          GetAppBackgroundContents(ASCIIToUTF16(extension->id())));
+  // The test makes sure that window.open returns null.
+  ASSERT_TRUE(RunExtensionTest("app_background_page/no_js")) << message_;
+  // And after it runs there should be a background page.
+  ASSERT_TRUE(
+      BackgroundContentsServiceFactory::GetForProfile(browser()->profile())->
+          GetAppBackgroundContents(ASCIIToUTF16(extension->id())));
+}
+
 IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, NoJsManifestBackgroundPage) {
   host_resolver()->AddRule("a.com", "127.0.0.1");
   ASSERT_TRUE(StartTestServer());
@@ -178,7 +219,8 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, NoJsManifestBackgroundPage) {
   ASSERT_TRUE(
       BackgroundContentsServiceFactory::GetForProfile(browser()->profile())->
           GetAppBackgroundContents(ASCIIToUTF16(extension->id())));
-  ASSERT_TRUE(RunExtensionTest("app_background_page/no_js")) << message_;
+  ASSERT_TRUE(RunExtensionTest("app_background_page/no_js_manifest")) <<
+      message_;
 }
 
 IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, OpenTwoBackgroundPages) {

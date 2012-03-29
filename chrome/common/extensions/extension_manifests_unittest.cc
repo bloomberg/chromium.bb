@@ -1215,6 +1215,10 @@ TEST_F(ExtensionManifestTest, BackgroundAllowNoJsAccess) {
   extension = LoadAndExpectSuccess("background_allow_no_js_access.json");
   ASSERT_TRUE(extension);
   EXPECT_FALSE(extension->allow_background_js_access());
+
+  extension = LoadAndExpectSuccess("background_allow_no_js_access2.json");
+  ASSERT_TRUE(extension);
+  EXPECT_FALSE(extension->allow_background_js_access());
 }
 
 TEST_F(ExtensionManifestTest, PageActionManifestVersion2) {

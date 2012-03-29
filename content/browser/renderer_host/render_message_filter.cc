@@ -403,10 +403,17 @@ void RenderMessageFilter::OnMsgCreateWindow(
     int* route_id,
     int* surface_id,
     int64* cloned_session_storage_namespace_id) {
-  if (!content::GetContentClient()->browser()->CanCreateWindow(
-          GURL(params.opener_url), GURL(params.opener_security_origin),
-          params.window_container_type, resource_context_,
-          render_process_id_)) {
+  bool no_javascript_access;
+  bool can_create_window =
+      content::GetContentClient()->browser()->CanCreateWindow(
+          GURL(params.opener_url),
+          GURL(params.opener_security_origin),
+          params.window_container_type,
+          resource_context_,
+          render_process_id_,
+          &no_javascript_access);
+
+  if (!can_create_window) {
     *route_id = MSG_ROUTING_NONE;
     *surface_id = 0;
     return;
@@ -428,6 +435,7 @@ void RenderMessageFilter::OnMsgCreateWindow(
 #endif
 
   render_widget_helper_->CreateNewWindow(params,
+                                         no_javascript_access,
                                          peer_handle(),
                                          route_id,
                                          surface_id);

@@ -1036,7 +1036,8 @@ class Browser : public TabHandlerDelegate,
       content::WebContents* web_contents,
       int route_id,
       WindowContainerType window_container_type,
-      const string16& frame_name) OVERRIDE;
+      const string16& frame_name,
+      const GURL& target_url) OVERRIDE;
   virtual void WebContentsCreated(content::WebContents* source_contents,
                                   int64 source_frame_id,
                                   const GURL& target_url,
@@ -1356,9 +1357,9 @@ class Browser : public TabHandlerDelegate,
   // Creates a BackgroundContents if appropriate; return true if one was
   // created.
   bool MaybeCreateBackgroundContents(int route_id,
-                                     content::SiteInstance* site,
-                                     const GURL& opener_url,
-                                     const string16& frame_name);
+                                     content::WebContents* opener_web_contents,
+                                     const string16& frame_name,
+                                     const GURL& target_url);
 
   // Data members /////////////////////////////////////////////////////////////
 

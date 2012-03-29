@@ -2304,9 +2304,10 @@ void Browser::OpenBookmarkManagerEditNode(int64 node_id) {
 }
 
 bool Browser::MaybeCreateBackgroundContents(int route_id,
-                                            SiteInstance* site,
-                                            const GURL& opener_url,
-                                            const string16& frame_name) {
+                                            WebContents* opener_web_contents,
+                                            const string16& frame_name,
+                                            const GURL& target_url) {
+  GURL opener_url = opener_web_contents->GetURL();
   ExtensionService* extensions_service = profile_->GetExtensionService();
 
   if (!opener_url.is_valid() ||
@@ -2332,9 +2333,11 @@ bool Browser::MaybeCreateBackgroundContents(int route_id,
     return false;
 
   // Ensure that we're trying to open this from the extension's process.
+  SiteInstance* opener_site_instance = opener_web_contents->GetSiteInstance();
   extensions::ProcessMap* process_map = extensions_service->process_map();
-  if (!site->GetProcess() ||
-      !process_map->Contains(extension->id(), site->GetProcess()->GetID())) {
+  if (!opener_site_instance->GetProcess() ||
+      !process_map->Contains(
+          extension->id(), opener_site_instance->GetProcess()->GetID())) {
     return false;
   }
 
@@ -2347,10 +2350,32 @@ bool Browser::MaybeCreateBackgroundContents(int route_id,
     delete existing;
   }
 
+  // If script access is not allowed, create the the background contents in a
+  // new SiteInstance, so that a separate process is used.
+  bool allow_js_access = extension->allow_background_js_access();
+  scoped_refptr<content::SiteInstance> site_instance =
+      allow_js_access ?
+      opener_site_instance :
+      content::SiteInstance::Create(opener_web_contents->GetBrowserContext());
+
   // Passed all the checks, so this should be created as a BackgroundContents.
-  BackgroundContents* contents =
-      service->CreateBackgroundContents(site, route_id, profile_, frame_name,
-                                        ASCIIToUTF16(extension->id()));
+  BackgroundContents* contents = service->CreateBackgroundContents(
+      site_instance,
+      route_id,
+      profile_,
+      frame_name,
+      ASCIIToUTF16(extension->id()));
+
+  // When a separate process is used, the original renderer cannot access the
+  // new window later, thus we need to navigate the window now.
+  if (contents && !allow_js_access) {
+    contents->web_contents()->GetController().LoadURL(
+        target_url,
+        content::Referrer(),
+        content::PAGE_TRANSITION_LINK,
+        std::string());  // No extra headers.
+  }
+
   return contents != NULL;
 }
 
@@ -4087,14 +4112,12 @@ bool Browser::ShouldCreateWebContents(
     WebContents* web_contents,
     int route_id,
     WindowContainerType window_container_type,
-    const string16& frame_name) {
+    const string16& frame_name,
+    const GURL& target_url) {
   if (window_container_type == WINDOW_CONTAINER_TYPE_BACKGROUND) {
     // If a BackgroundContents is created, suppress the normal WebContents.
     return !MaybeCreateBackgroundContents(
-        route_id,
-        web_contents->GetSiteInstance(),
-        web_contents->GetURL(),
-        frame_name);
+        route_id, web_contents, frame_name, target_url);
   }
 
   return true;

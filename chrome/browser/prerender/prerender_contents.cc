@@ -154,7 +154,8 @@ class PrerenderContents::TabContentsDelegateImpl
       WebContents* web_contents,
       int route_id,
       WindowContainerType window_container_type,
-      const string16& frame_name) OVERRIDE {
+      const string16& frame_name,
+      const GURL& target_url) OVERRIDE {
     // Since we don't want to permit child windows that would have a
     // window.opener property, terminate prerendering.
     prerender_contents_->Destroy(FINAL_STATUS_CREATE_NEW_WINDOW);

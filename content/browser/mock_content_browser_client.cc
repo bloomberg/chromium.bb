@@ -248,7 +248,9 @@ bool MockContentBrowserClient::CanCreateWindow(
     const GURL& source_origin,
     WindowContainerType container_type,
     ResourceContext* context,
-    int render_process_id) {
+    int render_process_id,
+    bool* no_javascript_access) {
+  *no_javascript_access = false;
   return true;
 }
 

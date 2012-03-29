@@ -257,7 +257,9 @@ bool ShellContentBrowserClient::CanCreateWindow(
     const GURL& origin,
     WindowContainerType container_type,
     content::ResourceContext* context,
-    int render_process_id) {
+    int render_process_id,
+    bool* no_javascript_access) {
+  *no_javascript_access = false;
   return true;
 }
 

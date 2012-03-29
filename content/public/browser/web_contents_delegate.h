@@ -273,12 +273,14 @@ class CONTENT_EXPORT WebContentsDelegate {
   virtual gfx::NativeWindow GetFrameNativeWindow();
 
   // Allows delegate to control whether a WebContents will be created. Returns
-  // true to allow the creation. Default is to allow it.
+  // true to allow the creation. Default is to allow it. In cases where the
+  // delegate handles the creation/navigation itself, it will use |target_url|.
   virtual bool ShouldCreateWebContents(
       WebContents* web_contents,
       int route_id,
       WindowContainerType window_container_type,
-      const string16& frame_name);
+      const string16& frame_name,
+      const GURL& target_url);
 
   // Notifies the delegate about the creation of a new WebContents. This
   // typically happens when popups are created.

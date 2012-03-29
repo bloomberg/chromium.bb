@@ -214,15 +214,16 @@ void RenderWidgetHelper::OnCrossSiteSwapOutACK(
 
 void RenderWidgetHelper::CreateNewWindow(
     const ViewHostMsg_CreateWindow_Params& params,
+    bool no_javascript_access,
     base::ProcessHandle render_process,
     int* route_id,
     int* surface_id) {
-  if (params.opener_suppressed) {
-    // If the opener is supppressed, we should open the window in a new
-    // BrowsingInstance, and thus a new process.  That means the current
-    // renderer process will not be able to route messages to it.  Because of
-    // this, we will immediately show and navigate the window in
-    // OnCreateWindowOnUI, using the params provided here.
+  if (params.opener_suppressed || no_javascript_access) {
+    // If the opener is supppressed or script access is disallowed, we should
+    // open the window in a new BrowsingInstance, and thus a new process. That
+    // means the current renderer process will not be able to route messages to
+    // it. Because of this, we will immediately show and navigate the window
+    // in OnCreateWindowOnUI, using the params provided here.
     *route_id = MSG_ROUTING_NONE;
     *surface_id = 0;
   } else {

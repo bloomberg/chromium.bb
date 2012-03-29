@@ -168,7 +168,6 @@ namespace extension_manifest_errors {
   extern const char kInvalidAllFrames[];
   extern const char kInvalidBackground[];
   extern const char kInvalidBackgroundAllowJsAccess[];
-  extern const char kInvalidBackgroundAllowJsAccessNoPage[];
   extern const char kInvalidBackgroundCombination[];
   extern const char kInvalidBackgroundScript[];
   extern const char kInvalidBackgroundScripts[];

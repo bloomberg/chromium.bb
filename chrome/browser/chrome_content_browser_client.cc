@@ -1270,29 +1270,35 @@ bool ChromeContentBrowserClient::CanCreateWindow(
     const GURL& source_origin,
     WindowContainerType container_type,
     content::ResourceContext* context,
-    int render_process_id) {
+    int render_process_id,
+    bool* no_javascript_access) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  *no_javascript_access = false;
+
   // If the opener is trying to create a background window but doesn't have
   // the appropriate permission, fail the attempt.
   if (container_type == WINDOW_CONTAINER_TYPE_BACKGROUND) {
     ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
     ExtensionInfoMap* map = io_data->GetExtensionInfoMap();
 
-    // If the opener is not allowed to script its background window, then return
-    // false so that the window.open call returns null.  In this case, only
-    // the manifest is permitted to create a background window.
+    if (!map->SecurityOriginHasAPIPermission(
+            source_origin,
+            render_process_id,
+            ExtensionAPIPermission::kBackground)) {
+      return false;
+    }
+
     // Note: this use of GetExtensionOrAppByURL is safe but imperfect.  It may
     // return a recently installed Extension even if this CanCreateWindow call
     // was made by an old copy of the page in a normal web process.  That's ok,
-    // because the permission check below will still fail.  We must use the
-    // full URL to find hosted apps, though, and not just the origin.
+    // because the permission check above would have caused an early return
+    // already. We must use the full URL to find hosted apps, though, and not
+    // just the origin.
     const Extension* extension = map->extensions().GetExtensionOrAppByURL(
         ExtensionURLInfo(opener_url));
     if (extension && !extension->allow_background_js_access())
-      return false;
-
-    return map->SecurityOriginHasAPIPermission(
-        source_origin, render_process_id, ExtensionAPIPermission::kBackground);
+      *no_javascript_access = true;
   }
   return true;
 }

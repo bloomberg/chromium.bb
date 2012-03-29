@@ -15,6 +15,7 @@
 #include "base/process.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/common/window_container_type.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupType.h"
 #include "ui/gfx/native_widget_types.h"
@@ -128,6 +129,7 @@ class RenderWidgetHelper
   void DidReceiveUpdateMsg(const IPC::Message& msg);
 
   void CreateNewWindow(const ViewHostMsg_CreateWindow_Params& params,
+                       bool no_javascript_access,
                        base::ProcessHandle render_process,
                        int* route_id,
                        int* surface_id);
