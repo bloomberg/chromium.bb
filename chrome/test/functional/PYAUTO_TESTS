@@ -314,8 +314,6 @@
       '-youtube.YoutubeTest.testPlayerBytes',
       # crbug.com/109035
       '-youtube.YoutubeTest.testPlayerResolution',
-      # crbug.com/118055
-      '-policy.PolicyTest.testPrivacyPrefs',
     ],
 
     # ChromeOS is linux, but note that this section does not include the

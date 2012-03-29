@@ -8,6 +8,7 @@ import os
 
 import pyauto_functional  # must come before pyauto.
 import policy_base
+import policy_test_cases
 import pyauto_errors
 import pyauto
 
@@ -15,21 +16,28 @@ import pyauto
 class PolicyTest(policy_base.PolicyTestBase):
   """Tests that the effects of policies are being enforced as expected."""
 
-  def _VerifyPrefIsLocked(self, key, defaultval, newval):
+  def _GetPrefIsLockedError(self, pref, val):
     """Verify the managed preferences cannot be modified.
 
     Args:
-      key: The preference key that you want to modify
-      defaultval: Default value of the preference that we are trying to modify
-      newval: New value that we are trying to set
+      pref: The preference key that you want to modify.
+      val: Current value of the preference.
+
+    Returns:
+      Error message if any, None if pref is successfully locked.
     """
-    # Check if the default value of the preference is set as expected.
-    self.assertEqual(
-        self.GetPrefsInfo().Prefs(key), defaultval,
-        msg='Expected preference value "%s" does not match actual value "%s".' %
-        (defaultval, self.GetPrefsInfo().Prefs(key)))
-    self.assertRaises(pyauto_errors.JSONInterfaceError,
-                      lambda: self.SetPrefs(key, newval))
+    # Check if the current value of the preference is set as expected.
+    if self.GetPrefsInfo().Prefs(pref) != val:
+      return ('Preference value "%s" does not match policy value "%s".' %
+              (self.GetPrefsInfo().Prefs(pref), val))
+    # If the preference is locked, this should throw an exception.
+    try:
+      self.SetPrefs(pref, val)
+    except pyauto_errors.JSONInterfaceError:
+      pass
+    else:
+      return 'Preference can be set even though a policy is in effect.'
+    return None
 
   # TODO(frankf): Move tests dependending on this to plugins.py.
   def _GetPluginPID(self, plugin_name):
@@ -84,6 +92,29 @@ class PolicyTest(policy_base.PolicyTestBase):
     pid = info['windows'][windex]['tabs'][tab]['renderer_pid']
     self.KillRendererProcess(pid)
     self.ReloadActiveTab()
+
+  def testPolicyToPrefMapping(self):
+    """Verify that simple user policies map to corresponding prefs.
+
+    Also verify that once these policies are in effect, the prefs cannot be
+    modified by the user.
+    """
+    total = 0
+    fails = []
+    policy_prefs = policy_test_cases.PolicyPrefsTestCases
+    for policy, values in policy_prefs.policies.iteritems():
+      pref = values[policy_prefs.INDEX_PREF]
+      value = values[policy_prefs.INDEX_VALUE]
+      os = values[policy_prefs.INDEX_OS]
+      if not pref or self.GetPlatform() not in os:
+        continue
+      self.SetPolicies({policy: value})
+      error = self._GetPrefIsLockedError(getattr(pyauto, pref), value)
+      if error:
+        fails.append('%s: %s' % (policy, error))
+      total += 1
+    self.assertFalse(fails, msg='%d of %d policies failed.\n%s' %
+                     (len(fails), total, '\n'.join(fails)))
 
   def testBlacklistPolicy(self):
     """Tests the URLBlacklist and URLWhitelist policies."""
@@ -265,85 +296,6 @@ class PolicyTest(policy_base.PolicyTestBase):
         pyauto.JSONInterfaceError,
         lambda: self.SetPrefs(pyauto.kHomePageIsNewTabPage, False))
 
-  def testShowHomeButton(self):
-    """Verify that home button option cannot be modified when it's managed."""
-    policy = {'ShowHomeButton': True}
-    self.SetPolicies(policy)
-    self._VerifyPrefIsLocked(pyauto.kShowHomeButton, True, False)
-    policy = {'ShowHomeButton': False}
-    self.SetPolicies(policy)
-    self._VerifyPrefIsLocked(pyauto.kShowHomeButton, False, True)
-
-  def testInstantEnabled(self):
-    """Verify that Instant option cannot be modified."""
-    policy = {'InstantEnabled': True}
-    self.SetPolicies(policy)
-    self._VerifyPrefIsLocked(pyauto.kInstantEnabled, True, False)
-    policy = {'InstantEnabled': False}
-    self.SetPolicies(policy)
-    self._VerifyPrefIsLocked(pyauto.kInstantEnabled, False, True)
-
-  def testPasswordManagerEnabled(self):
-    """Verify that password manager preference cannot be modified."""
-    policy = {'PasswordManagerEnabled': True}
-    self.SetPolicies(policy)
-    self._VerifyPrefIsLocked(pyauto.kPasswordManagerEnabled, True, False)
-    policy = {'PasswordManagerEnabled': False}
-    self.SetPolicies(policy)
-    self._VerifyPrefIsLocked(pyauto.kPasswordManagerEnabled, False, True)
-
-  def testPasswordManagerNotAllowShowPasswords(self):
-    """Verify that the preference not to show passwords cannot be modified."""
-    policy = {'PasswordManagerAllowShowPasswords': False}
-    self.SetPolicies(policy)
-    self._VerifyPrefIsLocked(pyauto.kPasswordManagerAllowShowPasswords,
-                                   False, True)
-    policy = {'PasswordManagerAllowShowPasswords': True}
-    self.SetPolicies(policy)
-    self._VerifyPrefIsLocked(pyauto.kPasswordManagerAllowShowPasswords,
-                                   True, False)
-
-  def testPrivacyPrefs(self):
-    """Verify that the managed preferences cannot be modified."""
-    policy = {
-      'AlternateErrorPagesEnabled': True,
-      'AutofillEnabled': False,
-      'DnsPrefetchingEnabled': True,
-      'SafeBrowsingEnabled': True,
-      'SearchSuggestEnabled': True,
-    }
-    self.SetPolicies(policy)
-    prefs_list = [
-        # (preference key, default value, new value)
-        (pyauto.kAlternateErrorPagesEnabled, True, False),
-        (pyauto.kAutofillEnabled, False, True),
-        (pyauto.kNetworkPredictionEnabled, True, False),
-        (pyauto.kSafeBrowsingEnabled, True, False),
-        (pyauto.kSearchSuggestEnabled, True, False),
-        ]
-    # Check if the policies got applied by trying to modify
-    for key, defaultval, newval in prefs_list:
-      logging.info('Checking pref %s', key)
-      self._VerifyPrefIsLocked(key, defaultval, newval)
-
-  def testClearSiteDataOnExit(self):
-    """Verify that clear data on exit preference cannot be modified."""
-    policy = {'ClearSiteDataOnExit': True}
-    self.SetPolicies(policy)
-    self._VerifyPrefIsLocked(pyauto.kClearSiteDataOnExit, True, False)
-    policy = {'ClearSiteDataOnExit': False}
-    self.SetPolicies(policy)
-    self._VerifyPrefIsLocked(pyauto.kClearSiteDataOnExit, False, True)
-
-  def testBlockThirdPartyCookies(self):
-    """Verify that third party cookies can be disabled."""
-    policy = {'BlockThirdPartyCookies': True}
-    self.SetPolicies(policy)
-    self._VerifyPrefIsLocked(pyauto.kBlockThirdPartyCookies, True, False)
-    policy = {'BlockThirdPartyCookies': False}
-    self.SetPolicies(policy)
-    self._VerifyPrefIsLocked(pyauto.kBlockThirdPartyCookies, False, True)
-
   def testApplicationLocaleValue(self):
     """Verify that Chrome can be launched only in a specific locale."""
     if self.IsWin():
@@ -506,22 +458,13 @@ class PolicyTest(policy_base.PolicyTestBase):
     self.assertFalse(translate_info['page_translated'])
     self.assertTrue(translate_info['can_translate_page'])
     self.assertTrue('translate_bar' in translate_info)
-    self._VerifyPrefIsLocked(pyauto.kEnableTranslate, True, False)
+    self.assertFalse(self._GetPrefIsLockedError(pyauto.kEnableTranslate, True))
     policy = {'TranslateEnabled': False}
     self.SetPolicies(policy)
     self.assertFalse(self.GetPrefsInfo().Prefs(pyauto.kEnableTranslate))
     self.NavigateToURL(url)
     self.assertFalse(self.WaitForInfobarCount(1))
-    self._VerifyPrefIsLocked(pyauto.kEnableTranslate, False, True)
-
-  def testEditBookmarksEnabled(self):
-    """Verify that bookmarks can be edited if policy sets it."""
-    policy = {'EditBookmarksEnabled': True}
-    self.SetPolicies(policy)
-    self._VerifyPrefIsLocked(pyauto.kEditBookmarksEnabled, True, False)
-    policy = {'EditBookmarksEnabled': False}
-    self.SetPolicies(policy)
-    self._VerifyPrefIsLocked(pyauto.kEditBookmarksEnabled, False, True)
+    self.assertFalse(self._GetPrefIsLockedError(pyauto.kEnableTranslate, False))
 
   def testDefaultSearchProviderOptions(self):
     """Verify a default search is performed when using omnibox."""
@@ -540,8 +483,8 @@ class PolicyTest(policy_base.PolicyTestBase):
                                           'suggest?q={searchTerms}'),
     }
     self.SetPolicies(policy)
-    self._VerifyPrefIsLocked(pyauto.kDefaultSearchProviderEnabled, True,
-                             False)
+    self.assertFalse(
+        self._GetPrefIsLockedError(pyauto.kDefaultSearchProviderEnabled, True))
     intranet_engine = [x for x in self.GetSearchEngineInfo()
                        if x['keyword'] == 'mis']
     self.assertTrue(intranet_engine)
@@ -554,8 +497,8 @@ class PolicyTest(policy_base.PolicyTestBase):
       'DefaultSearchProviderEnabled': False,
     }
     self.SetPolicies(policy)
-    self._VerifyPrefIsLocked(pyauto.kDefaultSearchProviderEnabled, False,
-                             True)
+    self.assertFalse(
+        self._GetPrefIsLockedError(pyauto.kDefaultSearchProviderEnabled, False))
     self.SetOmniboxText('deli')
     self.WaitUntilOmniboxQueryDone()
     self.assertRaises(pyauto.JSONInterfaceError,

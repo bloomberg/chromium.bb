@@ -616,6 +616,21 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     return True
 
   @staticmethod
+  def GetPlatform():
+    """Return the platform name."""
+    # Since ChromeOS is also Linux, we check for it first.
+    if PyUITest.IsChromeOS():
+      return 'chromeos'
+    elif PyUITest.IsLinux():
+      return 'linux'
+    elif PyUITest.IsMac():
+      return 'mac'
+    elif PyUITest.IsWin():
+      return 'win'
+    else:
+      return 'unknown'
+
+  @staticmethod
   def EvalDataFrom(filename):
     """Return eval of python code from given file.
 

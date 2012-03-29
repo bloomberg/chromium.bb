@@ -44,17 +44,6 @@ class PolicyPrefsUITest(policy_base.PolicyTestBase):
         'chrome://settings-frame/accounts',
     ]
 
-  def GetPlatform(self):
-    if self.IsChromeOS():
-      return 'chromeos'
-    elif self.IsLinux():
-      return 'linux'
-    elif self.IsMac():
-      return 'mac'
-    elif self.IsWin():
-      return 'win'
-    else:
-      self.fail(msg='Unknown platform')
 
   def IsAnyBannerVisible(self):
     """Returns true if any managed prefs banner is visible in the current page.
@@ -94,12 +83,11 @@ class PolicyPrefsUITest(policy_base.PolicyTestBase):
 
     os = self.GetPlatform()
 
-    for policy in PolicyPrefsTestCases.policies:
-      policy_test = PolicyPrefsTestCases.policies[policy]
-      if len(policy_test) >= 3 and not os in policy_test[2]:
+    for policy, policy_test in PolicyPrefsTestCases.policies.iteritems():
+      if os not in policy_test[PolicyPrefsTestCases.INDEX_OS]:
         continue
-      expected_pages = [ PolicyPrefsUITest.settings_pages[n]
-                         for n in policy_test[1] ]
+      expected_pages = [PolicyPrefsUITest.settings_pages[n]
+                        for n in policy_test[PolicyPrefsTestCases.INDEX_PAGES]]
       did_test = False
       for page in PolicyPrefsUITest.settings_pages:
         expected = page in expected_pages
@@ -110,7 +98,7 @@ class PolicyPrefsUITest(policy_base.PolicyTestBase):
         if not did_test:
           did_test = True
           policy_dict = {
-            policy: policy_test[0]
+            policy: policy_test[PolicyPrefsTestCases.INDEX_VALUE]
           }
           self.SetPolicies(policy_dict)
         self.NavigateToURL(page)
@@ -148,7 +136,8 @@ class PolicyPrefsUITest(policy_base.PolicyTestBase):
           'Policy "%s" does not have a test in '
           'chrome/test/functional/policy_prefs_ui.py.\n'
           'Please edit the file and add an entry for this policy.' % policy)
-      test_type = type(PolicyPrefsTestCases.policies[policy][0]).__name__
+      test_type = type(PolicyPrefsTestCases.policies[policy]
+                       [PolicyPrefsTestCases.INDEX_VALUE]).__name__
       expected_type = all_policies[policy][0]
       self.assertEqual(expected_type, test_type, msg=
           'Policy "%s" has type "%s" but the test value has type "%s".' %
@@ -161,9 +150,10 @@ class PolicyPrefsUITest(policy_base.PolicyTestBase):
     policy = 'ShowHomeButton'
 
     policy_test = PolicyPrefsTestCases.policies[policy]
-    page = PolicyPrefsUITest.settings_pages[policy_test[1][0]]
+    page = PolicyPrefsUITest.settings_pages[
+        policy_test[PolicyPrefsTestCases.INDEX_PAGES][0]]
     policy_dict = {
-      policy: policy_test[0]
+      policy: policy_test[PolicyPrefsTestCases.INDEX_VALUE]
     }
 
     self.SetPolicies({})

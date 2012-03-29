@@ -6,19 +6,22 @@
 # This data is in a separate file so that src/chrome/app/policy/PRESUBMIT.py
 # can load it too without having to load pyautolib.
 
+import pyauto_functional  # must come before pyauto.
+import pyauto
+
+
 class PolicyPrefsTestCases(object):
   """A list of test cases for policy_prefs_ui.py."""
 
-  BROWSER         = 0
-  SEARCH_ENGINES  = 1
-  PASSWORDS       = 2
-  AUTOFILL        = 3
-  CONTENT         = 4
-  HOMEPAGE        = 5
-  LANGUAGES       = 6
-  ACCOUNTS        = 7
+  [BROWSER, SEARCH_ENGINES, PASSWORDS, AUTOFILL, CONTENT, HOMEPAGE, LANGUAGES,
+   ACCOUNTS] = range(8)
 
-  # Each policy has an entry with a tuple (Value, Pages, OS)
+  # Each policy has an entry with a tuple (Pref, Value, Pages, OS)
+  #
+  # |Pref| is the preference key for simple policies that map directly to a
+  #        preference (Refer to
+  #        chrome/browser/policy/configuration_policy_handler_list.cc).
+  #        Otherwise, set as None.
   #
   # |Value| is the value the policy should have when it is enforced.
   #
@@ -27,181 +30,248 @@ class PolicyPrefsTestCases(object):
   #         Leave empty if this policy doesn't display anything visible in
   #         the settings.
   #
-  # |OS| is a list of platforms where this policy should be tested. When empty,
-  #      all platforms are tested. Valid platforms are 'win', 'mac', 'linux'
-  #      and 'chromeos'.
+  # |OS| is a list of platforms where this policy should be tested. Valid
+  #      platforms are 'win', 'mac', 'linux', and 'chromeos'. The list can be
+  #      empty to skip the policy or set to OS_ALL if applicable to all
+  #      platforms.
+  [INDEX_PREF, INDEX_VALUE, INDEX_PAGES, INDEX_OS] = range(4)
+  OS_ALL = ['win', 'mac', 'linux', 'chromeos']
   policies = {
-    'HomepageLocation': ('http://chromium.org', [ HOMEPAGE ]),
-    'HomepageIsNewTabPage': (True, [ HOMEPAGE ]),
+    'HomepageLocation':
+        ('kHomePage', 'http://chromium.org', [HOMEPAGE], OS_ALL),
+    'HomepageIsNewTabPage':
+        ('kHomePageIsNewTabPage', True, [HOMEPAGE], OS_ALL),
     # TODO(joaodasilva): Couldn't verify on linux.
-    'DefaultBrowserSettingEnabled': (False, [], [ 'win', 'mac', 'linux' ]),
+    'DefaultBrowserSettingEnabled':
+        ('kDefaultBrowserSettingEnabled', False, [], ['win', 'mac', 'linux']),
     # TODO(joaodasilva): Test this on windows.
-    'ApplicationLocaleValue': ('', [], [ 'win' ]),
-    'AlternateErrorPagesEnabled': (False, [ BROWSER ]),
-    'SearchSuggestEnabled': (False, [ BROWSER ]),
-    'DnsPrefetchingEnabled': (False, [ BROWSER ]),
-    'DisableSpdy': (True, []),
-    'DisabledSchemes': ( ['file' ], []),
-    'JavascriptEnabled': (False, [ CONTENT ]),
-    'IncognitoEnabled': (False, []),
-    'IncognitoModeAvailability': (1, []),
-    'SavingBrowserHistoryDisabled': (True, []),
-    'RemoteAccessClientFirewallTraversal': (True, []),
-    'RemoteAccessHostFirewallTraversal': (True, []),
-    'PrintingEnabled': (False, []),
+    'ApplicationLocaleValue': ('kApplicationLocale', '', [], ['win']),
+    'AlternateErrorPagesEnabled':
+        ('kAlternateErrorPagesEnabled', False, [BROWSER], OS_ALL),
+    'SearchSuggestEnabled':
+        ('kSearchSuggestEnabled', False, [BROWSER], OS_ALL),
+    'DnsPrefetchingEnabled':
+        ('kNetworkPredictionEnabled', False, [BROWSER], OS_ALL),
+    'DisableSpdy': ('kDisableSpdy', True, [], OS_ALL),
+    'DisabledSchemes': ('kDisabledSchemes', ['file'], [], OS_ALL),
+    'JavascriptEnabled': (None, False, [CONTENT], OS_ALL),
+    'IncognitoEnabled': (None, False, [], OS_ALL),
+    'IncognitoModeAvailability': (None, 1, [], OS_ALL),
+    'SavingBrowserHistoryDisabled':
+        ('kSavingBrowserHistoryDisabled', True, [], OS_ALL),
+    'RemoteAccessClientFirewallTraversal': (None, True, [], OS_ALL),
+    'RemoteAccessHostFirewallTraversal':
+        ('kRemoteAccessHostFirewallTraversal', True, [], OS_ALL),
+    'PrintingEnabled': ('kPrintingEnabled', False, [], OS_ALL),
     # Note: supported_on is empty for this policy.
-    'CloudPrintProxyEnabled': (True, [], []),
-    'CloudPrintSubmitEnabled': (False, [], [ 'win', 'mac', 'linux' ]),
-    'SafeBrowsingEnabled': (False, [ BROWSER ]),
+    'CloudPrintProxyEnabled': ('kCloudPrintProxyEnabled', True, [], []),
+    'CloudPrintSubmitEnabled':
+        ('kCloudPrintSubmitEnabled', False, [], ['win', 'mac', 'linux']),
+    'SafeBrowsingEnabled': ('kSafeBrowsingEnabled', False, [BROWSER], OS_ALL),
     # TODO(joaodasilva): This is only in place on official builds, but the
     # SetUserCloudPolicy call is a nop on official builds. Should be BROWSER.
-    'MetricsReportingEnabled': (False, []),
-    'PasswordManagerEnabled': (False, [ BROWSER ]),
+    'MetricsReportingEnabled':
+        ('kMetricsReportingEnabled', False, [], OS_ALL),
+    'PasswordManagerEnabled':
+        ('kPasswordManagerEnabled', False, [BROWSER], OS_ALL),
     # TODO(joaodasilva): Should be PASSWORDS too. http://crbug.com/97749
-    'PasswordManagerAllowShowPasswords': (False, [ BROWSER ]),
-    'AutoFillEnabled': (False, [ BROWSER ]),
-    'DisabledPlugins': (['Flash'], []),
-    'EnabledPlugins': (['Flash'], []),
-    'DisabledPluginsExceptions': (['Flash'], []),
-    'DisablePluginFinder': (True, []),
+    'PasswordManagerAllowShowPasswords':
+        ('kPasswordManagerAllowShowPasswords', False, [BROWSER], OS_ALL),
+    'AutoFillEnabled': ('kAutofillEnabled', False, [BROWSER], OS_ALL),
+    'DisabledPlugins': ('kPluginsDisabledPlugins', ['Flash'], [], OS_ALL),
+    'EnabledPlugins': ('kPluginsEnabledPlugins', ['Flash'], [], OS_ALL),
+    'DisabledPluginsExceptions':
+        ('kPluginsDisabledPluginsExceptions', ['Flash'], [], OS_ALL),
+    'DisablePluginFinder': ('kDisablePluginFinder', True, [], OS_ALL),
     # TODO(joaodasilva): Should be PERSONAL. http://crbug.com/97749
-    'SyncDisabled': (True, []),
-    'UserDataDir': ('${users}/${user_name}/chrome-test', [], [ 'win', 'mac' ]),
-    'DiskCacheDir': ('${user_home}/test-cache', [], [ 'win', 'mac', 'linux' ]),
-    'DiskCacheSize': (100, [], [ 'win', 'mac', 'linux' ]),
-    'MediaCacheSize': (200, [], [ 'win', 'mac', 'linux' ]),
-    'DownloadDirectory': ('${user_home}/test-downloads', [ BROWSER ],
-                          [ 'win', 'mac', 'linux' ]),
-    'ClearSiteDataOnExit': (True, [ CONTENT ]),
+    'SyncDisabled': (None, True, [], OS_ALL),
+    'UserDataDir':
+        (None, '${users}/${user_name}/chrome-test', [], ['win', 'mac']),
+    'DiskCacheDir':
+        ('kDiskCacheSize', '${user_home}/test-cache', [],
+         ['win', 'mac', 'linux']),
+    'DiskCacheSize': (None, 100, [], ['win', 'mac', 'linux']),
+    'MediaCacheSize': ('kMediaCacheSize', 200, [], ['win', 'mac', 'linux']),
+    'DownloadDirectory': (None, '${user_home}/test-downloads', [BROWSER],
+                          ['win', 'mac', 'linux']),
+    'ClearSiteDataOnExit': ('kClearSiteDataOnExit', True, [CONTENT], OS_ALL),
     # TODO(joaodasilva): Should be BROWSER. http://crbug.com/97749
-    'ProxyMode': ('direct', [], [ 'win', 'mac', 'linux' ]),
+    'ProxyMode': (None, 'direct', [], ['win', 'mac', 'linux']),
     # TODO(joaodasilva): Should be BROWSER. http://crbug.com/97749
-    'ProxyServerMode': (0, [], [ 'win', 'mac', 'linux' ]),
-    'ProxyServer': ('http://localhost:8080', [], [ 'win', 'mac', 'linux' ]),
-    'ProxyPacUrl': ('http://localhost:8080/proxy.pac', [],
-                    [ 'win', 'mac', 'linux' ]),
-    'ProxyBypassList': ('localhost', [], [ 'win', 'mac', 'linux' ]),
+    'ProxyServerMode': (None, 0, [], ['win', 'mac', 'linux']),
+    'ProxyServer':
+        (None, 'http://localhost:8080', [], ['win', 'mac', 'linux']),
+    'ProxyPacUrl':
+        (None, 'http://localhost:8080/proxy.pac', [],
+         ['win', 'mac', 'linux']),
+    'ProxyBypassList': (None, 'localhost', [], ['win', 'mac', 'linux']),
     # Note: this policy is only used internally for now.
-    'ProxySettings': ({}, [], []),
-    'EnableOriginBoundCerts': (False, [], [ 'win', 'mac', 'linux' ]),
-    'DisableSSLRecordSplitting': (False, []),
-    'EnableOnlineRevocationChecks': (False, []),
-    'AuthSchemes': ('AuthSchemes', []),
-    'DisableAuthNegotiateCnameLookup': (True, []),
-    'EnableAuthNegotiatePort': (False, []),
-    'AuthServerWhitelist': ('localhost', []),
-    'AuthNegotiateDelegateWhitelist': ('localhost', []),
-    'GSSAPILibraryName': ('libwhatever.so', [], [ 'mac', 'linux' ]),
-    'AllowCrossOriginAuthPrompt': (False, [], [ 'win', 'mac', 'linux' ]),
-    'ExtensionInstallBlacklist': ( ['*'], []),
-    'ExtensionInstallWhitelist': ( ['lcncmkcnkcdbbanbjakcencbaoegdjlp' ], []),
-    'ExtensionInstallForcelist': (
-        ['lcncmkcnkcdbbanbjakcencbaoegdjlp;' +
-         'https://clients2.google.com/service/update2/crx' ], []),
-    'ShowHomeButton': (True, [ BROWSER ]),
-    'DeveloperToolsDisabled': (True, []),
-    'RestoreOnStartup': (0, [ BROWSER ]),
+    'ProxySettings': (None, {}, [], []),
+    'EnableOriginBoundCerts':
+        ('kEnableOriginBoundCerts', False, [], ['win', 'mac', 'linux']),
+    'DisableSSLRecordSplitting':
+        ('kDisableSSLRecordSplitting', False, [], OS_ALL),
+    'EnableOnlineRevocationChecks':
+        ('kCertRevocationCheckingEnabled', False, [], OS_ALL),
+    'AuthSchemes': ('kAuthSchemes', 'AuthSchemes', [], OS_ALL),
+    'DisableAuthNegotiateCnameLookup':
+        ('kDisableAuthNegotiateCnameLookup', True, [], OS_ALL),
+    'EnableAuthNegotiatePort':
+        ('kEnableAuthNegotiatePort', False, [], OS_ALL),
+    'AuthServerWhitelist': ('kAuthServerWhitelist', 'localhost', [], OS_ALL),
+    'AuthNegotiateDelegateWhitelist':
+        ('kAuthNegotiateDelegateWhitelist', 'localhost', [], OS_ALL),
+    'GSSAPILibraryName':
+        ('kGSSAPILibraryName', 'libwhatever.so', [], ['mac', 'linux']),
+    'AllowCrossOriginAuthPrompt':
+        ('kAllowCrossOriginAuthPrompt', False, [], ['win', 'mac', 'linux']),
+    'ExtensionInstallBlacklist':
+        ('kExtensionInstallDenyList', ['*'], [], OS_ALL),
+    'ExtensionInstallWhitelist':
+        ('kExtensionInstallAllowList', ['lcncmkcnkcdbbanbjakcencbaoegdjlp'],
+         [], OS_ALL),
+    'ExtensionInstallForcelist':
+      ('kExtensionInstallForceList', ['lcncmkcnkcdbbanbjakcencbaoegdjlp;' +
+       'https://clients2.google.com/service/update2/crx'], [], OS_ALL),
+    'ShowHomeButton': ('kShowHomeButton', True, [BROWSER], OS_ALL),
+    'DeveloperToolsDisabled': ('kDevToolsDisabled', True, [], OS_ALL),
+    'RestoreOnStartup': (None, 0, [BROWSER], OS_ALL),
     # TODO(joaodasilva): Should be BROWSER. http://crbug.com/97749
-    'RestoreOnStartupURLs': ([ 'chromium.org' ], []),
+    'RestoreOnStartupURLs':
+        ('kURLsToRestoreOnStartup', ['chromium.org'], [], OS_ALL),
     # TODO(joaodasilva): The banner is out of place. http://crbug.com/77791
-    'BlockThirdPartyCookies': (True, [ CONTENT ]),
+    'BlockThirdPartyCookies':
+        ('kBlockThirdPartyCookies', True, [CONTENT], OS_ALL),
     # TODO(joaodasilva): Should be BROWSER. http://crbug.com/97749
-    'DefaultSearchProviderEnabled': (False, []),
-    'DefaultSearchProviderName': ('google.com', []),
-    'DefaultSearchProviderKeyword': ('google', []),
+    'DefaultSearchProviderEnabled': (None, False, [], OS_ALL),
+    'DefaultSearchProviderName': (None, 'google.com', [], OS_ALL),
+    'DefaultSearchProviderKeyword': (None, 'google', [], OS_ALL),
     # TODO(joaodasilva): Should be BROWSER. http://crbug.com/97749
-    'DefaultSearchProviderSearchURL': ('http://www.google.com/?q={searchTerms}',
-                                       []),
+    'DefaultSearchProviderSearchURL':
+        (None, 'http://www.google.com/?q={searchTerms}', [], OS_ALL),
     'DefaultSearchProviderSuggestURL':
-        ('http://www.google.com/suggest?q={searchTerms}', []),
+        (None, 'http://www.google.com/suggest?q={searchTerms}', [], OS_ALL),
     'DefaultSearchProviderInstantURL':
-        ('http://www.google.com/instant?q={searchTerms}', []),
-    'DefaultSearchProviderIconURL': ('http://www.google.com/favicon.ico', []),
-    'DefaultSearchProviderEncodings': ([ 'UTF-8' ], []),
-    'DefaultCookiesSetting': (2, [ CONTENT ]),
-    'DefaultImagesSetting': (2, [ CONTENT ]),
-    'DefaultJavaScriptSetting': (2, [ CONTENT ]),
-    'DefaultPluginsSetting': (2, [ CONTENT ]),
-    'DefaultPopupsSetting': (2, [ CONTENT ]),
-    'DefaultNotificationsSetting': (2, [ CONTENT ]),
-    'DefaultGeolocationSetting': (2, [ CONTENT ]),
+        (None, 'http://www.google.com/instant?q={searchTerms}', [], OS_ALL),
+    'DefaultSearchProviderIconURL':
+        (None, 'http://www.google.com/favicon.ico', [], OS_ALL),
+    'DefaultSearchProviderEncodings': (None, ['UTF-8'], [], OS_ALL),
+    'DefaultCookiesSetting':
+        ('kManagedDefaultCookiesSetting', 2, [CONTENT], OS_ALL),
+    'DefaultImagesSetting':
+        ('kManagedDefaultImagesSetting', 2, [CONTENT], OS_ALL),
+    'DefaultJavaScriptSetting': (None, 2, [CONTENT], OS_ALL),
+    'DefaultPluginsSetting':
+        ('kManagedDefaultPluginsSetting', 2, [CONTENT], OS_ALL),
+    'DefaultPopupsSetting':
+        ('kManagedDefaultPopupsSetting', 2, [CONTENT], OS_ALL),
+    'DefaultNotificationsSetting':
+        ('kManagedDefaultNotificationsSetting', 2, [CONTENT], OS_ALL),
+    'DefaultGeolocationSetting':
+        ('kManagedDefaultGeolocationSetting', 2, [CONTENT], OS_ALL),
     'AutoSelectCertificateForUrls':
-        ([ '{\'pattern\':\'https://example.com\',' +
-           '\'filter\':{\'ISSUER\':{\'CN\': \'issuer-name\'}}}' ], []),
-    'CookiesAllowedForUrls': ([ '[*.]google.com' ], []),
-    'CookiesBlockedForUrls': ([ '[*.]google.com' ], []),
-    'CookiesSessionOnlyForUrls': ([ '[*.]google.com' ], []),
-    'ImagesAllowedForUrls': ([ '[*.]google.com' ], []),
-    'ImagesBlockedForUrls': ([ '[*.]google.com' ], []),
-    'JavaScriptAllowedForUrls': ([ '[*.]google.com' ], []),
-    'JavaScriptBlockedForUrls': ([ '[*.]google.com' ], []),
-    'PluginsAllowedForUrls': ([ '[*.]google.com' ], []),
-    'PluginsBlockedForUrls': ([ '[*.]google.com' ], []),
-    'PopupsAllowedForUrls': ([ '[*.]google.com' ], []),
-    'PopupsBlockedForUrls': ([ '[*.]google.com' ], []),
-    'NotificationsAllowedForUrls': ([ '[*.]google.com' ], []),
-    'NotificationsBlockedForUrls': ([ '[*.]google.com' ], []),
-    'Disable3DAPIs': (True, []),
-    'InstantEnabled': (False, [ BROWSER ]),
-    'TranslateEnabled': (False, [ BROWSER ]),
-    'AllowOutdatedPlugins': (False, []),
-    'AlwaysAuthorizePlugins': (True, []),
-    'BookmarkBarEnabled': (False, [ BROWSER ]),
-    'EditBookmarksEnabled': (False, []),
-    'AllowFileSelectionDialogs': (False, [ BROWSER ],
-                                  [ 'win', 'mac', 'linux' ]),
-    'ImportBookmarks': (False, [], [ 'win', 'mac', 'linux' ]),
-    'ImportHistory': (False, [], [ 'win', 'mac', 'linux' ]),
-    'ImportHomepage': (False, [], [ 'win', 'mac', 'linux' ]),
-    'ImportSearchEngine': (False, [], [ 'win', 'mac', 'linux' ]),
-    'ImportSavedPasswords': (False, [], [ 'win', 'mac', 'linux' ]),
-    'MaxConnectionsPerProxy': (32, []),
-    'HideWebStorePromo': (True, []),
-    'URLBlacklist': ([ 'google.com' ], []),
-    'URLWhitelist': ([ 'google.com' ], []),
-    'EnterpriseWebStoreURL': ('', []),
-    'EnterpriseWebStoreName': ('', []),
-    'EnableMemoryInfo': (True, []),
-    'DisablePrintPreview': (True, [], [ 'win', 'mac', 'linux' ]),
-    'BackgroundModeEnabled': (True, [ BROWSER ], [ 'win', 'linux' ]),
+        ('kManagedAutoSelectCertificateForUrls',
+         ['{\'pattern\':\'https://example.com\',' +
+          '\'filter\':{\'ISSUER\':{\'CN\': \'issuer-name\'}}}'], [], OS_ALL),
+    'CookiesAllowedForUrls':
+        ('kManagedCookiesAllowedForUrls', ['[*.]google.com'], [], OS_ALL),
+    'CookiesBlockedForUrls':
+        ('kManagedCookiesBlockedForUrls', ['[*.]google.com'], [], OS_ALL),
+    'CookiesSessionOnlyForUrls':
+        ('kManagedCookiesSessionOnlyForUrls', ['[*.]google.com'], [], OS_ALL),
+    'ImagesAllowedForUrls':
+        ('kManagedImagesAllowedForUrls', ['[*.]google.com'], [], OS_ALL),
+    'ImagesBlockedForUrls':
+        ('kManagedImagesBlockedForUrls', ['[*.]google.com'], [], OS_ALL),
+    'JavaScriptAllowedForUrls':
+        ('kManagedJavaScriptAllowedForUrls', ['[*.]google.com'], [], OS_ALL),
+    'JavaScriptBlockedForUrls':
+        ('kManagedJavaScriptBlockedForUrls', ['[*.]google.com'], [], OS_ALL),
+    'PluginsAllowedForUrls':
+        ('kManagedPluginsAllowedForUrls', ['[*.]google.com'], [], OS_ALL),
+    'PluginsBlockedForUrls':
+        ('kManagedPluginsBlockedForUrls', ['[*.]google.com'], [], OS_ALL),
+    'PopupsAllowedForUrls':
+        ('kManagedPopupsAllowedForUrls', ['[*.]google.com'], [], OS_ALL),
+    'PopupsBlockedForUrls':
+        ('kManagedPopupsBlockedForUrls', ['[*.]google.com'], [], OS_ALL),
+    'NotificationsAllowedForUrls':
+        ('kManagedNotificationsAllowedForUrls', ['[*.]google.com'], [],
+         OS_ALL),
+    'NotificationsBlockedForUrls':
+        ('kManagedNotificationsBlockedForUrls', ['[*.]google.com'], [],
+         OS_ALL),
+    'Disable3DAPIs': ('kDisable3DAPIs', True, [], OS_ALL),
+    'InstantEnabled': ('kInstantEnabled', False, [BROWSER], OS_ALL),
+    'TranslateEnabled': ('kEnableTranslate', False, [BROWSER], OS_ALL),
+    'AllowOutdatedPlugins': ('kPluginsAllowOutdated', False, [], OS_ALL),
+    'AlwaysAuthorizePlugins': ('kPluginsAlwaysAuthorize', True, [], OS_ALL),
+    'BookmarkBarEnabled': ('kShowBookmarkBar', False, [BROWSER], OS_ALL),
+    'EditBookmarksEnabled': ('kEditBookmarksEnabled', False, [], OS_ALL),
+    'AllowFileSelectionDialogs':
+        ('kAllowFileSelectionDialogs', False, [BROWSER],
+         ['win', 'mac', 'linux']),
+    'ImportBookmarks':
+        ('kImportBookmarks', False, [], ['win', 'mac', 'linux']),
+    'ImportHistory':
+        ('kImportHistory', False, [], ['win', 'mac', 'linux']),
+    'ImportHomepage':
+        ('kImportHomepage', False, [], ['win', 'mac', 'linux']),
+    'ImportSearchEngine':
+        ('kImportSearchEngine', False, [], ['win', 'mac', 'linux']),
+    'ImportSavedPasswords':
+        ('kImportSavedPasswords', False, [], ['win', 'mac', 'linux']),
+    'MaxConnectionsPerProxy': ('kMaxConnectionsPerProxy', 32, [], OS_ALL),
+    'HideWebStorePromo': ('kNtpHideWebStorePromo', True, [], OS_ALL),
+    'URLBlacklist': ('kUrlBlacklist', ['google.com'], [], OS_ALL),
+    'URLWhitelist': ('kUrlWhitelist', ['google.com'], [], OS_ALL),
+    'EnterpriseWebStoreURL': ('kEnterpriseWebStoreURL', '', [], OS_ALL),
+    'EnterpriseWebStoreName': ('kEnterpriseWebStoreName', '', [], OS_ALL),
+    'EnableMemoryInfo': ('kEnableMemoryInfo', True, [], OS_ALL),
+    'DisablePrintPreview':
+        ('kPrintPreviewDisabled', True, [], ['win', 'mac', 'linux']),
+    'BackgroundModeEnabled':
+        ('kBackgroundModeEnabled', True, [BROWSER], ['win', 'linux']),
 
     # ChromeOS-only policies:
-    'ChromeOsLockOnIdleSuspend': (True, [ BROWSER ], [ 'chromeos' ]),
-    'PolicyRefreshRate': (300000, [], [ 'chromeos' ]),
-    'OpenNetworkConfiguration': ('', [], [ 'chromeos' ]),
-    'GDataDisabled': (True, [], [ 'chromeos' ]),
-    'GDataDisabledOverCellular': (True, [], [ 'chromeos' ]),
+    'ChromeOsLockOnIdleSuspend':
+        ('kEnableScreenLock', True, [BROWSER], ['chromeos']),
+    'PolicyRefreshRate':
+        ('kUserPolicyRefreshRate', 300000, [], ['chromeos']),
+    'OpenNetworkConfiguration': (None, '', [], ['chromeos']),
+    'GDataDisabled': ('kDisableGData', True, [], ['chromeos']),
+    'GDataDisabledOverCellular':
+        ('kDisableGDataOverCellular', True, [], ['chromeos']),
 
     # ChromeOS Device policies:
-    'DevicePolicyRefreshRate': (300000, [], [ 'chromeos' ]),
-    'ChromeOsReleaseChannel': ('stable-channel', [], [ 'chromeos' ]),
-    'ChromeOsReleaseChannelDelegated': (False, [], [ 'chromeos' ]),
-    'DeviceOpenNetworkConfiguration': ('', [], [ 'chromeos' ]),
-    'ReportDeviceVersionInfo': (True, [], [ 'chromeos' ]),
-    'ReportDeviceActivityTimes': (True, [], [ 'chromeos' ]),
-    'ReportDeviceBootMode': (True, [], [ 'chromeos' ]),
-    'DeviceAllowNewUsers': (True, [], [ 'chromeos' ]),
-    'DeviceUserWhitelist': ([], [], [ 'chromeos' ]),
-    'DeviceGuestModeEnabled': (True, [], [ 'chromeos' ]),
-    'DeviceShowUserNamesOnSignin': (True, [], [ 'chromeos' ]),
-    'DeviceDataRoamingEnabled': (True, [], [ 'chromeos' ]),
-    'DeviceMetricsReportingEnabled': (True, [], [ 'chromeos' ]),
-    'DeviceEphemeralUsersEnabled': (True, [], [ 'chromeos' ]),
-    'DeviceIdleLogoutTimeout': (60000, [], [ 'chromeos' ]),
-    'DeviceIdleLogoutWarningDuration': (15000, [], [ 'chromeos' ]),
-    'DeviceLoginScreenSaverId': ('lcncmkcnkcdbbanbjakcencbaoegdjlp',
-                                 [],
-                                 [ 'chromeos' ]),
-    'DeviceLoginScreenSaverTimeout': (30000, [], [ 'chromeos' ]),
-    'DeviceStartUpUrls': ([ 'http://google.com' ], [], [ 'chromeos' ]),
-    'DeviceAppPack': ([], [], [ 'chromeos' ]),
-    'DeviceAutoUpdateDisabled': (True, [], [ 'chromeos' ]),
+    'DevicePolicyRefreshRate': (None, 300000, [], ['chromeos']),
+    'ChromeOsReleaseChannel': (None, 'stable-channel', [], ['chromeos']),
+    'ChromeOsReleaseChannelDelegated': (None, False, [], ['chromeos']),
+    'DeviceOpenNetworkConfiguration': (None, '', [], ['chromeos']),
+    'ReportDeviceVersionInfo': (None, True, [], ['chromeos']),
+    'ReportDeviceActivityTimes': (None, True, [], ['chromeos']),
+    'ReportDeviceBootMode': (None, True, [], ['chromeos']),
+    'DeviceAllowNewUsers': (None, True, [], ['chromeos']),
+    'DeviceUserWhitelist': (None, [], [], ['chromeos']),
+    'DeviceGuestModeEnabled': (None, True, [], ['chromeos']),
+    'DeviceShowUserNamesOnSignin': (None, True, [], ['chromeos']),
+    'DeviceDataRoamingEnabled': (None, True, [], ['chromeos']),
+    'DeviceMetricsReportingEnabled': (None, True, [], ['chromeos']),
+    'DeviceEphemeralUsersEnabled': (None, True, [], ['chromeos']),
+    'DeviceIdleLogoutTimeout': (None, 60000, [], ['chromeos']),
+    'DeviceIdleLogoutWarningDuration': (None, 15000, [], ['chromeos']),
+    'DeviceLoginScreenSaverId':
+        (None, 'lcncmkcnkcdbbanbjakcencbaoegdjlp', [], ['chromeos']),
+    'DeviceLoginScreenSaverTimeout': (None, 30000, [], ['chromeos']),
+    'DeviceStartUpUrls': (None, ['http://google.com'], [], ['chromeos']),
+    'DeviceAppPack': (None, [], [], ['chromeos']),
+    'DeviceAutoUpdateDisabled': (None, True, [], ['chromeos']),
 
     # Chrome Frame policies:
-    'ChromeFrameRendererSettings': (0, [], []),
-    'RenderInChromeFrameList': ([ 'google.com' ], [], []),
-    'RenderInHostList': ([ 'google.com' ], [], []),
-    'ChromeFrameContentTypes': ([ 'text/xml' ], [], []),
-    'GCFUserDataDir': ('${user_name}/test-frame', [], []),
-    'AdditionalLaunchParameters': ('--enable-media-stream', [], []),
+    'ChromeFrameRendererSettings': (None, 0, [], []),
+    'RenderInChromeFrameList': (None, ['google.com'], [], []),
+    'RenderInHostList': (None, ['google.com'], [], []),
+    'ChromeFrameContentTypes': (None, ['text/xml'], [], []),
+    'GCFUserDataDir': (None, '${user_name}/test-frame', [], []),
+    'AdditionalLaunchParameters': (None, '--enable-media-stream', [], []),
   }
