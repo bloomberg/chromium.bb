@@ -38,7 +38,7 @@ LauncherContextMenu::LauncherContextMenu(ChromeLauncherDelegate* delegate,
     AddSeparator();
   }
   AddSubMenuWithStringId(MENU_AUTO_HIDE,
-                         IDS_LAUNCHER_CONTEXT_MENU_SHELF_VISIBILITY,
+                         IDS_LAUNCHER_CONTEXT_MENU_LAUNCHER_VISIBILITY,
                          &shelf_menu_);
 }
 
