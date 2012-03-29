@@ -11,7 +11,6 @@
 #include "base/message_loop_proxy.h"
 #include "base/sys_string_conversions.h"
 #include "base/threading/platform_thread.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "base/utf_string_conversions.h"
 #include "net/base/net_util.h"
 #include "remoting/base/auth_token_util.h"
@@ -85,8 +84,8 @@ HostNPScriptObject::HostNPScriptObject(
       nat_traversal_enabled_(false),
       policy_received_(false),
       daemon_controller_(DaemonController::Create()),
-      worker_pool_(new base::SequencedWorkerPool(kMaxWorkerPoolThreads,
-                                                 "RemotingHostPlugin")) {
+      worker_thread_("RemotingHostPlugin") {
+  worker_thread_.Start();
 }
 
 HostNPScriptObject::~HostNPScriptObject() {
@@ -123,9 +122,7 @@ HostNPScriptObject::~HostNPScriptObject() {
     host_context_.reset();
   }
 
-  // Must shutdown worker pool threads so that they don't try to
-  // access the host object.
-  worker_pool_->Shutdown();
+  worker_thread_.Stop();
 }
 
 bool HostNPScriptObject::Init() {
@@ -627,9 +624,9 @@ bool HostNPScriptObject::GenerateKeyPair(const NPVariant* args,
 
   callback_obj = g_npnetscape_funcs->retainobject(callback_obj);
 
-  worker_pool_->PostTask(FROM_HERE,
-                         base::Bind(&HostNPScriptObject::DoGenerateKeyPair,
-                                    base::Unretained(this), callback_obj));
+  worker_thread_.message_loop_proxy()->PostTask(
+      FROM_HERE, base::Bind(&HostNPScriptObject::DoGenerateKeyPair,
+                            base::Unretained(this), callback_obj));
   return true;
 }
 

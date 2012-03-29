@@ -16,6 +16,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/string16.h"
 #include "base/threading/platform_thread.h"
+#include "base/threading/thread.h"
 #include "base/time.h"
 #include "remoting/base/plugin_message_loop_proxy.h"
 #include "remoting/host/chromoting_host_context.h"
@@ -27,10 +28,6 @@
 #include "third_party/npapi/bindings/npapi.h"
 #include "third_party/npapi/bindings/npfunctions.h"
 #include "third_party/npapi/bindings/npruntime.h"
-
-namespace base {
-class SequencedWorkerPool;
-}  // namespace base
 
 namespace remoting {
 
@@ -289,7 +286,11 @@ class HostNPScriptObject : public HostStatusObserver {
   //////////////////////////////////////////////////////////
   // Me2Me host state.
   scoped_ptr<DaemonController> daemon_controller_;
-  scoped_refptr<base::SequencedWorkerPool> worker_pool_;
+
+  // TODO(sergeyu): Replace this thread with
+  // SequencedWorkerPool. Problem is that SequencedWorkerPool relies
+  // on MessageLoopProxy::current().
+  base::Thread worker_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(HostNPScriptObject);
 };
