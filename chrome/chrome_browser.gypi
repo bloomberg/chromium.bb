@@ -488,6 +488,8 @@
         'browser/chromeos/dbus/cros_dbus_service.h',
         'browser/chromeos/dbus/dbus_thread_manager.cc',
         'browser/chromeos/dbus/dbus_thread_manager.h',
+        'browser/chromeos/dbus/flimflam_network_client.cc',
+        'browser/chromeos/dbus/flimflam_network_client.h',
         'browser/chromeos/dbus/image_burner_client.cc',
         'browser/chromeos/dbus/image_burner_client.h',
         'browser/chromeos/dbus/introspectable_client.cc',

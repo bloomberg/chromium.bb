@@ -13,6 +13,7 @@
 #include "chrome/browser/chromeos/dbus/cashew_client.h"
 #include "chrome/browser/chromeos/dbus/cros_disks_client.h"
 #include "chrome/browser/chromeos/dbus/cryptohome_client.h"
+#include "chrome/browser/chromeos/dbus/flimflam_network_client.h"
 #include "chrome/browser/chromeos/dbus/image_burner_client.h"
 #include "chrome/browser/chromeos/dbus/introspectable_client.h"
 #include "chrome/browser/chromeos/dbus/power_manager_client.h"
@@ -62,6 +63,9 @@ class DBusThreadManagerImpl : public DBusThreadManager {
     // Create the Cryptohome client.
     cryptohome_client_.reset(
         CryptohomeClient::Create(system_bus_.get()));
+    // Create the Flimflam Network client.
+    flimflam_network_client_.reset(
+        FlimflamNetworkClient::Create(system_bus_.get()));
     // Create the image burner client.
     image_burner_client_.reset(ImageBurnerClient::Create(system_bus_.get()));
     // Create the introspectable object client.
@@ -135,6 +139,11 @@ class DBusThreadManagerImpl : public DBusThreadManager {
   }
 
   // DBusThreadManager override.
+  virtual FlimflamNetworkClient* GetFlimflamNetworkClient() OVERRIDE {
+    return flimflam_network_client_.get();
+  }
+
+  // DBusThreadManager override.
   virtual ImageBurnerClient* GetImageBurnerClient() OVERRIDE {
     return image_burner_client_.get();
   }
@@ -174,6 +183,7 @@ class DBusThreadManagerImpl : public DBusThreadManager {
   scoped_ptr<CashewClient> cashew_client_;
   scoped_ptr<CrosDisksClient> cros_disks_client_;
   scoped_ptr<CryptohomeClient> cryptohome_client_;
+  scoped_ptr<FlimflamNetworkClient> flimflam_network_client_;
   scoped_ptr<ImageBurnerClient> image_burner_client_;
   scoped_ptr<IntrospectableClient> introspectable_client_;
   scoped_ptr<PowerManagerClient> power_manager_client_;

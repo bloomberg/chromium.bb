@@ -112,6 +112,8 @@
         'browser/chromeos/dbus/mock_cryptohome_client.h',
         'browser/chromeos/dbus/mock_dbus_thread_manager.cc',
         'browser/chromeos/dbus/mock_dbus_thread_manager.h',
+        'browser/chromeos/dbus/mock_flimflam_network_client.cc',
+        'browser/chromeos/dbus/mock_flimflam_network_client.h',
         'browser/chromeos/dbus/mock_image_burner_client.cc',
         'browser/chromeos/dbus/mock_image_burner_client.h',
         'browser/chromeos/dbus/mock_introspectable_client.cc',

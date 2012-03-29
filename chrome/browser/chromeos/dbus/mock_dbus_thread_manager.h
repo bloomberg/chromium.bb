@@ -26,6 +26,7 @@ class  MockBluetoothNodeClient;
 class  MockCashewClient;
 class  MockCrosDisksClient;
 class  MockCryptohomeClient;
+class  MockFlimflamNetworkClient;
 class  MockImageBurnerClient;
 class  MockIntrospectableClient;
 class  MockPowerManagerClient;
@@ -50,6 +51,7 @@ class MockDBusThreadManager : public DBusThreadManager {
   MOCK_METHOD0(GetCashewClient, CashewClient*(void));
   MOCK_METHOD0(GetCrosDisksClient, CrosDisksClient*(void));
   MOCK_METHOD0(GetCryptohomeClient, CryptohomeClient*(void));
+  MOCK_METHOD0(GetFlimflamNetworkClient, FlimflamNetworkClient*(void));
   MOCK_METHOD0(GetImageBurnerClient, ImageBurnerClient*(void));
   MOCK_METHOD0(GetIntrospectableClient, IntrospectableClient*(void));
   MOCK_METHOD0(GetPowerManagerClient, PowerManagerClient*(void));
@@ -81,6 +83,9 @@ class MockDBusThreadManager : public DBusThreadManager {
   MockCryptohomeClient* mock_cryptohome_client() {
     return mock_cryptohome_client_.get();
   }
+  MockFlimflamNetworkClient* mock_flimflam_network_client() {
+    return mock_flimflam_network_client_.get();
+  }
   MockImageBurnerClient* mock_image_burner_client() {
     return mock_image_burner_client_.get();
   }
@@ -109,6 +114,7 @@ class MockDBusThreadManager : public DBusThreadManager {
   scoped_ptr<MockCashewClient> mock_cashew_client_;
   scoped_ptr<MockCrosDisksClient> mock_cros_disks_client_;
   scoped_ptr<MockCryptohomeClient> mock_cryptohome_client_;
+  scoped_ptr<MockFlimflamNetworkClient> mock_flimflam_network_client_;
   scoped_ptr<MockImageBurnerClient> mock_image_burner_client_;
   scoped_ptr<MockIntrospectableClient> mock_introspectable_client_;
   scoped_ptr<MockPowerManagerClient> mock_power_manager_client_;
