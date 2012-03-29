@@ -1,11 +1,18 @@
 <?xml version="1.0"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
 
-  <?define ChromotingHost = "Chrome Remote Desktop Host" ?>
-  <?define EventSourceName = "remoting_me2me_host" ?>
-  <?define FirewallName = "remoting_me2me_host" ?>
-  <?define Manufacturer = "Google Inc." ?>
+  <?define EventSourceName = "chromoting" ?>
   <?define ServiceName = "chromoting" ?>
+
+  <?ifdef OfficialBuild ?>
+    <?define ChromotingHost = "Chrome Remote Desktop Host" ?>
+    <?define FirewallName = "Chrome Remote Desktop Host" ?>
+    <?define Manufacturer = "Google Inc." ?>
+  <?else?>
+    <?define ChromotingHost = "Chromoting Host" ?>
+    <?define FirewallName = "Chromoting Host" ?>
+    <?define Manufacturer = "The Chromium Authors" ?>
+  <?endif?>
 
   <?define OmahaAppid = "{b210701e-ffc4-49e3-932b-370728c72662}" ?>
   <?define UpgradeCode = "2b21f767-e157-4fa6-963c-55834c1433a6" ?>
@@ -51,7 +58,13 @@
 
     <Directory Id="TARGETDIR" Name="SourceDir">
       <Directory Id="ProgramFilesFolder" Name="PFiles">
-        <Directory Id="chromoting" Name="Chrome Remote Desktop Host"/>
+        <?ifdef OfficialBuild ?>
+          <Directory Id="google" Name="Google">
+            <Directory Id="chromoting" Name="Chrome Remote Desktop"/>
+          </Directory>
+        <?else?>
+          <Directory Id="chromoting" Name="Chromoting"/>
+        <?endif?>
       </Directory>
     </Directory>
 
@@ -122,7 +135,7 @@
         <RegistryKey Id="omaha_client_key"
                      Root="HKLM"
                      Key="SOFTWARE\Google\Update\Clients\$(var.OmahaAppid)"
-                     Action="createAndRemoveOnUninstall">
+                     Action="create">
           <RegistryValue Type="string"
                          Name="pv"
                          Value="$(var.Version)"/>

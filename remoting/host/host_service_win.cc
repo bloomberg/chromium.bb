@@ -24,8 +24,9 @@
 #include "base/utf_string_conversions.h"
 #include "base/win/wrapped_window_proc.h"
 
-#include "remoting/host/host_service_resource.h"
 #include "remoting/base/scoped_sc_handle_win.h"
+#include "remoting/host/branding.h"
+#include "remoting/host/host_service_resource.h"
 #include "remoting/host/wts_console_observer_win.h"
 #include "remoting/host/wts_session_process_launcher_win.h"
 
@@ -569,6 +570,15 @@ int main(int argc, char** argv) {
   // This object instance is required by Chrome code (for example,
   // FilePath, LazyInstance, MessageLoop).
   base::AtExitManager exit_manager;
+
+  // Write logs to the application profile directory.
+  FilePath debug_log = remoting::GetConfigDir().
+      Append(FILE_PATH_LITERAL("debug.log"));
+  InitLogging(debug_log.value().c_str(),
+              logging::LOG_ONLY_TO_FILE,
+              logging::DONT_LOCK_LOG_FILE,
+              logging::APPEND_TO_OLD_LOG_FILE,
+              logging::DISABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS);
 
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
 

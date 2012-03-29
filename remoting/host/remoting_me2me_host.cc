@@ -20,12 +20,12 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "base/path_service.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "crypto/nss_util.h"
 #include "net/base/network_change_notifier.h"
 #include "remoting/base/constants.h"
+#include "remoting/host/branding.h"
 #include "remoting/host/capturer.h"
 #include "remoting/host/chromoting_host.h"
 #include "remoting/host/chromoting_host_context.h"
@@ -49,25 +49,12 @@
 namespace {
 
 // This is used for tagging system event logs.
-const char kApplicationName[] = "remoting_me2me_host";
+const char kApplicationName[] = "chromoting";
 
 // These are used for parsing the config-file locations from the command line,
 // and for defining the default locations if the switches are not present.
 const char kAuthConfigSwitchName[] = "auth-config";
 const char kHostConfigSwitchName[] = "host-config";
-
-// TODO(lambroslambrou): The default locations should depend on whether Chrome
-// branding is enabled - this means also modifying the Python daemon script.
-// The actual location of the files is ultimately determined by the service
-// daemon and NPAPI implementation - these defaults are only used in case the
-// command-line switches are absent.
-#if defined(OS_WIN) || defined(OS_MACOSX)
-const FilePath::CharType kDefaultConfigDir[] =
-    FILE_PATH_LITERAL("Chrome Remote Desktop");
-#else
-const FilePath::CharType kDefaultConfigDir[] =
-    FILE_PATH_LITERAL("chrome-remote-desktop");
-#endif
 
 const FilePath::CharType kDefaultAuthConfigFile[] =
     FILE_PATH_LITERAL("auth.json");
@@ -76,21 +63,6 @@ const FilePath::CharType kDefaultHostConfigFile[] =
 
 const int kMinPortNumber = 12400;
 const int kMaxPortNumber = 12409;
-
-FilePath GetDefaultConfigDir() {
-  FilePath default_config_dir;
-
-#if defined(OS_WIN)
-  PathService::Get(base::DIR_LOCAL_APP_DATA, &default_config_dir);
-#elif defined(OS_MACOSX)
-  PathService::Get(base::DIR_APP_DATA, &default_config_dir);
-#else
-  default_config_dir = file_util::GetHomeDir().Append(FILE_PATH_LITERAL(
-      ".config"));
-#endif
-
-  return default_config_dir.Append(kDefaultConfigDir);
-}
 
 }  // namespace
 
@@ -114,7 +86,7 @@ class HostProcess : public OAuthClient::Delegate {
   }
 
   void InitWithCommandLine(const CommandLine* cmd_line) {
-    FilePath default_config_dir = GetDefaultConfigDir();
+    FilePath default_config_dir = remoting::GetConfigDir();
     if (cmd_line->HasSwitch(kAuthConfigSwitchName)) {
       auth_config_path_ = cmd_line->GetSwitchValuePath(kAuthConfigSwitchName);
     } else {
@@ -372,6 +344,17 @@ int main(int argc, char** argv) {
   // This object instance is required by Chrome code (for example,
   // LazyInstance, MessageLoop).
   base::AtExitManager exit_manager;
+
+#if defined(OS_WIN)
+  // Write logs to the application profile directory.
+  FilePath debug_log = remoting::GetConfigDir().
+      Append(FILE_PATH_LITERAL("debug.log"));
+  InitLogging(debug_log.value().c_str(),
+              logging::LOG_ONLY_TO_FILE,
+              logging::DONT_LOCK_LOG_FILE,
+              logging::APPEND_TO_OLD_LOG_FILE,
+              logging::DISABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS);
+#endif
 
   const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
 

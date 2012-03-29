@@ -54,8 +54,13 @@ END
 
 STRINGTABLE
 BEGIN
+#ifdef OFFICIAL_BUILD
     IDS_DISPLAY_SERVICE_NAME "Chrome Remote Desktop Service"
     IDS_SERVICE_DESCRIPTION "This service enables incoming connections from Chrome Remote Desktop clients."
+#else
+    IDS_DISPLAY_SERVICE_NAME "Chromoting Service"
+    IDS_SERVICE_DESCRIPTION "This service enables incoming connections from Chromoting clients."
+#endif
 END
 
 #endif    // English (U.S.) resources

@@ -12,7 +12,11 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 
 STRINGTABLE
 BEGIN
-  100 "Chrome Remote Desktop Service Controller"
+#ifdef OFFICIAL_BUILD
+  100 "Chrome Remote Desktop Host Controller"
+#else
+  100 "Chromoting Host Controller"
+#endif
 END
 
 #endif // English (U.S.) resources

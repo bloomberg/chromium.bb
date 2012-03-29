@@ -17,7 +17,7 @@
     # binaries from Chrome.
     'variables': {
       'version_py_path': '../chrome/tools/build/version.py',
-      'version_path': '../chrome/VERSION',
+      'version_path': '../remoting/VERSION',
     },
     'version_py_path': '<(version_py_path)',
     'version_path': '<(version_path)',
@@ -268,6 +268,8 @@
           ],
           'sources': [
             'base/scoped_sc_handle_win.h',
+            'host/branding.cc',
+            'host/branding.h',
             'host/chromoting_messages.cc',
             'host/chromoting_messages.h',
             'host/host_service.rc',
@@ -295,7 +297,7 @@
         # The .RC files are generated from the "version.rc.version" template and
         # placed in the "<(SHARED_INTERMEDIATE_DIR)/remoting_version" folder.
         # The substiture strings are taken from:
-        #   - chrome/VERSION - the current version of Chrome.
+        #   - remoting/VERSION - the current version of Chromoting.
         #   - build/util/LASTCHANGE - the last source code revision.
         #   - xxx_branding - UI/localizable strings.
         #   - xxx.ver - per-binary non-localizable strings such as the binary
@@ -305,6 +307,13 @@
           'type': 'none',
           'dependencies': [
             '../build/util/build_util.gyp:lastchange#target',
+          ],
+          'inputs': [
+            'chromium_branding',
+            'google_chrome_branding',
+            'version.rc.version',
+            '<(DEPTH)/build/util/LASTCHANGE',
+            '<(version_path)',
           ],
           'direct_dependent_settings': {
             'include_dirs': [
@@ -385,6 +394,17 @@
           'variables': {
             'sas_dll_path': '<(DEPTH)/third_party/platformsdk_win7/files/redist/x86/sas.dll'
           },
+          'conditions': [
+            ['branding == "Chrome"', {
+              'variables': {
+                 'branding': '-dOfficialBuild=1',
+              },
+            }, { # else branding!="Chrome"
+              'variables': {
+                 'branding': '',
+              },
+            }],
+          ],
           'rules': [
             {
               'rule_name': 'candle',
@@ -404,6 +424,7 @@
                 '-dVersion=<(version_full) '
                 '"-dFileSource=<(PRODUCT_DIR)." '
                 '"-dSasDllPath=<(sas_dll_path)" '
+                '<(branding) '
                 '-out <@(_outputs)',
                 '"<(RULE_INPUT_PATH)"',
               ],
@@ -432,6 +453,7 @@
                 '-dVersion=<(version_full) '
                 '"-dFileSource=<(PRODUCT_DIR)." '
                 '"-dSasDllPath=<(sas_dll_path)" '
+                '<(branding) '
                 '-out "<(PRODUCT_DIR)/<(RULE_INPUT_ROOT).msi"',
                 '"<(RULE_INPUT_PATH)"',
               ],
@@ -939,6 +961,8 @@
         '../content/content.gyp:content_common',
       ],
       'sources': [
+        'host/branding.cc',
+        'host/branding.h',
         'host/host_event_logger.h',
         'host/remoting_me2me_host.cc',
       ],
