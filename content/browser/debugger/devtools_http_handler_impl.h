@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,7 +19,7 @@
 #include "net/url_request/url_request.h"
 
 namespace net {
-class URLRequestContext;
+class URLRequestContextGetter;
 }
 
 namespace content {
@@ -43,6 +43,7 @@ class DevToolsHttpHandlerImpl
   DevToolsHttpHandlerImpl(const std::string& ip,
                           int port,
                           const std::string& frontend_url,
+                          net::URLRequestContextGetter* request_context_getter,
                           DevToolsHttpHandlerDelegate* delegate);
   virtual ~DevToolsHttpHandlerImpl();
   void Start();
@@ -108,6 +109,7 @@ class DevToolsHttpHandlerImpl
   typedef std::map<int, content::DevToolsClientHost*>
       ConnectionToClientHostMap;
   ConnectionToClientHostMap connection_to_client_host_ui_;
+  net::URLRequestContextGetter* request_context_getter_;
   scoped_ptr<DevToolsHttpHandlerDelegate> delegate_;
   typedef std::pair<int, int> Target;
   std::vector<Target> targets_;

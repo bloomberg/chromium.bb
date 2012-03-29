@@ -21,6 +21,7 @@ ShellDevToolsDelegate::ShellDevToolsDelegate(
       "127.0.0.1",
       port,
       "",
+      context_getter_,
       this);
 }
 
@@ -35,11 +36,6 @@ void ShellDevToolsDelegate::Stop() {
 std::string ShellDevToolsDelegate::GetDiscoveryPageHTML() {
   return ResourceBundle::GetSharedInstance().GetRawDataResource(
       IDR_CONTENT_SHELL_DEVTOOLS_DISCOVERY_PAGE).as_string();
-}
-
-net::URLRequestContext*
-ShellDevToolsDelegate::GetURLRequestContext() {
-  return context_getter_->GetURLRequestContext();
 }
 
 bool ShellDevToolsDelegate::BundlesFrontendResources() {

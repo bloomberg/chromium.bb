@@ -36,6 +36,7 @@
 #include "net/base/io_buffer.h"
 #include "net/server/http_server_request_info.h"
 #include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_getter.h"
 
 namespace content {
 
@@ -98,9 +99,14 @@ DevToolsHttpHandler* DevToolsHttpHandler::Start(
     const std::string& ip,
     int port,
     const std::string& frontend_url,
+    net::URLRequestContextGetter* request_context_getter,
     DevToolsHttpHandlerDelegate* delegate) {
   DevToolsHttpHandlerImpl* http_handler =
-      new DevToolsHttpHandlerImpl(ip, port, frontend_url, delegate);
+      new DevToolsHttpHandlerImpl(ip,
+                                  port,
+                                  frontend_url,
+                                  request_context_getter,
+                                  delegate);
   http_handler->Start();
   return http_handler;
 }
@@ -167,7 +173,8 @@ void DevToolsHttpHandlerImpl::OnHttpRequest(
   }
 
   // Proxy static files from chrome-devtools://devtools/*.
-  net::URLRequestContext* request_context = delegate_->GetURLRequestContext();
+  net::URLRequestContext* request_context =
+      request_context_getter_->GetURLRequestContext();
   if (!request_context) {
     server_->Send404(connection_id);
     return;
@@ -493,10 +500,12 @@ DevToolsHttpHandlerImpl::DevToolsHttpHandlerImpl(
     const std::string& ip,
     int port,
     const std::string& frontend_url,
+    net::URLRequestContextGetter* request_context_getter,
     DevToolsHttpHandlerDelegate* delegate)
     : ip_(ip),
       port_(port),
       overridden_frontend_url_(frontend_url),
+      request_context_getter_(request_context_getter),
       delegate_(delegate) {
   if (overridden_frontend_url_.empty())
       overridden_frontend_url_ = "/devtools/devtools.html";

@@ -43,13 +43,6 @@ std::string BrowserListTabContentsProvider::GetDiscoveryPageHTML() {
       IDR_DEVTOOLS_DISCOVERY_PAGE_HTML).as_string();
 }
 
-net::URLRequestContext*
-BrowserListTabContentsProvider::GetURLRequestContext() {
-  net::URLRequestContextGetter* getter =
-      Profile::Deprecated::GetDefaultRequestContext();
-  return getter ? getter->GetURLRequestContext() : NULL;
-}
-
 bool BrowserListTabContentsProvider::BundlesFrontendResources() {
   // We'd like front-end to be served from the WebUI via proxy, hence
   // pretend we don't have it bundled.
