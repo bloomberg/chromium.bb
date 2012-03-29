@@ -95,7 +95,8 @@ IN_PROC_BROWSER_TEST_F(IndexedDBLayoutTest, ComplexTests) {
   RunLayoutTests(kComplexTests);
 }
 
-IN_PROC_BROWSER_TEST_F(IndexedDBLayoutTest, IndexTests) {
+// Generally slow, and frequently times out. http://crbug.com/120924
+IN_PROC_BROWSER_TEST_F(IndexedDBLayoutTest, DISABLED_IndexTests) {
   RunLayoutTests(kIndexTests);
 }
 
