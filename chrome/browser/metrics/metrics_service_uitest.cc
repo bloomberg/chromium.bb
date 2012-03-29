@@ -58,7 +58,13 @@ class MetricsServiceTest : public UITest {
   }
 };
 
-TEST_F(MetricsServiceTest, CloseRenderersNormally) {
+// Flakily fails on chromeos only.  http://crbug.com/120925
+#if defined(OS_CHROMEOS)
+#define MAYBE_CloseRenderersNormally DISABLED_CloseRenderersNormally
+#else
+#define MAYBE_CloseRenderersNormally CloseRenderersNormally
+#endif
+TEST_F(MetricsServiceTest, MAYBE_CloseRenderersNormally) {
   OpenTabs();
   QuitBrowser();
 
