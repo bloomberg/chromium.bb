@@ -69,6 +69,28 @@ class TapRecord {
   unsigned short t5r2_released_size_;  // number of contacts that have left
 };
 
+struct ScrollEvent {
+  float dx, dy, dt;
+  static ScrollEvent Add(const ScrollEvent& left, const ScrollEvent& right);
+};
+class ScrollEventBuffer {
+ public:
+  explicit ScrollEventBuffer(size_t size)
+      : buf_(new ScrollEvent[size]), max_size_(size), size_(0), head_(0) {}
+  void Insert(float dx, float dy, float dt);
+  void Clear();
+  size_t Size() const { return size_; }
+  // 0 is newest, 1 is next newest, ..., size_ - 1 is oldest.
+  const ScrollEvent& Get(size_t offset) const;
+
+ private:
+  scoped_array<ScrollEvent> buf_;
+  size_t max_size_;
+  size_t size_;
+  size_t head_;
+  DISALLOW_COPY_AND_ASSIGN(ScrollEventBuffer);
+};
+
 class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   FRIEND_TEST(ImmediateInterpreterTest, ChangeTimeoutTest);
   FRIEND_TEST(ImmediateInterpreterTest, ClickTest);
@@ -287,7 +309,7 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // If the last time we were called, we did a scroll, it contains the ids
   // of the scrolling fingers. Otherwise it's empty.
   set<short, kMaxGesturingFingers> prev_scroll_fingers_;
-  float prev_scroll_dx_, prev_scroll_dy_, prev_scroll_dt_;
+  ScrollEventBuffer scroll_buffer_;
 
   // Properties
 
@@ -384,8 +406,8 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // are the slopes for the two lines.
   DoubleProperty vertical_scroll_snap_slope_;
   DoubleProperty horizontal_scroll_snap_slope_;
-  // Prevents sending flings that are too slow, which causes drift on finger up.
-  DoubleProperty fling_minimum_velocity_;
+  // Distances [mm] under this are considered stationary
+  DoubleProperty fling_stationary_distance_;
 };
 
 }  // namespace gestures

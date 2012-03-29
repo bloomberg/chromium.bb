@@ -183,6 +183,37 @@ int TapRecord::TapType() const {
   return touched_size > 1 ? GESTURES_BUTTON_RIGHT : GESTURES_BUTTON_LEFT;
 }
 
+// static
+ScrollEvent ScrollEvent::Add(const ScrollEvent& left,
+                             const ScrollEvent& right) {
+  ScrollEvent ret = { left.dx + right.dx,
+                      left.dy + right.dy,
+                      left.dt + right.dt };
+  return ret;
+}
+
+void ScrollEventBuffer::Insert(float dx, float dy, float dt) {
+  head_ = (head_ + max_size_ - 1) % max_size_;
+  buf_[head_].dx = dx;
+  buf_[head_].dy = dy;
+  buf_[head_].dt = dt;
+  size_ = std::min(size_ + 1, max_size_);
+}
+
+void ScrollEventBuffer::Clear() {
+  size_ = 0;
+}
+
+const ScrollEvent& ScrollEventBuffer::Get(size_t offset) const {
+  if (offset >= size_) {
+    Err("Out of bounds access!");
+    // avoid returning null pointer
+    static ScrollEvent dummy_event = { 0.0, 0.0, 0.0 };
+    return dummy_event;
+  }
+  return buf_[(head_ + offset) % max_size_];
+}
+
 namespace {
 float DegToRad(float degrees) {
   return M_PI * degrees / 180.0;
@@ -200,6 +231,7 @@ ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg)
       last_movement_timestamp_(0.0),
       last_swipe_timestamp_(0.0),
       current_gesture_type_(kGestureTypeNull),
+      scroll_buffer_(3),
       tap_enable_(prop_reg, "Tap Enable", false),
       tap_timeout_(prop_reg, "Tap Timeout", 0.2),
       inter_tap_timeout_(prop_reg, "Inter-Tap Timeout", 0.1),
@@ -253,8 +285,7 @@ ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg)
                                   tanf(DegToRad(50.0))),  // 50 deg. from horiz.
       horizontal_scroll_snap_slope_(prop_reg, "Horizontal Scroll Snap Slope",
                                     tanf(DegToRad(30.0))), // 30 deg.
-      fling_minimum_velocity_(prop_reg, "Fling Minimum Velocity",
-                              25.0) {  // 25 mm/sec minimum fling.
+      fling_stationary_distance_(prop_reg, "Fling Stationary Distance", 1.0) {
   memset(&prev_state_, 0, sizeof(prev_state_));
 }
 
@@ -1151,6 +1182,17 @@ void ImmediateInterpreter::UpdateButtons(const HardwareState& hwstate) {
   }
 }
 
+namespace {
+float IncreasingMagnitude(float dist, float dt,
+                          float prev_dist, float prev_dt) {
+  return fabsf(dist) * prev_dt > fabsf(prev_dist) * dt;
+}
+float DecreasingMagnitude(float dist, float dt,
+                          float prev_dist, float prev_dt) {
+  return fabsf(dist) * prev_dt < fabsf(prev_dist) * dt;
+}
+}  // namespace {}
+
 void ImmediateInterpreter::FillResultGesture(
     const HardwareState& hwstate,
     const set<short, kMaxGesturingFingers>& fingers) {
@@ -1226,10 +1268,11 @@ void ImmediateInterpreter::FillResultGesture(
       else if (fabsf(dy) > vertical_scroll_snap_slope_.val_ * fabsf(dx))
         dx = 0.0;  // snap to vertical
 
+      if (prev_scroll_fingers_ != fingers) {
+        scroll_buffer_.Clear();
+      }
       prev_scroll_fingers_ = fingers;
-      prev_scroll_dx_ = dx;
-      prev_scroll_dy_ = dy;
-      prev_scroll_dt_ = hwstate.timestamp - prev_state_.timestamp;
+      scroll_buffer_.Insert(dx, dy, hwstate.timestamp - prev_state_.timestamp);
       if (max_mag_sq > 0) {
         result_ = Gesture(kGestureScroll,
                           prev_state_.timestamp,
@@ -1241,22 +1284,60 @@ void ImmediateInterpreter::FillResultGesture(
       break;
     }
     case kGestureTypeFling: {
-      float vx = prev_scroll_dx_ / prev_scroll_dt_;
-      float vy = prev_scroll_dy_ / prev_scroll_dt_;
+      ScrollEvent out = { 0.0, 0.0, 0.0 };
 
-      // By subtracting the minimum velocity we make initial flings
-      // less abrupt.
-      if (vy > 0) {
-        if (vy < fling_minimum_velocity_.val_)
-          vy = 0;
-        else
-          vy -= fling_minimum_velocity_.val_;
-      } else if (vy < 0) {
-        if (vy > -fling_minimum_velocity_.val_)
-          vy = 0;
-        else
-          vy += fling_minimum_velocity_.val_;
+      bool did_first_pass = false;
+      bool increasing_magnitude = false;
+      bool decreasing_magnitude = false;
+
+      for (ssize_t i = scroll_buffer_.Size() - 1; i >= 0; i--) {
+        const ScrollEvent& history = scroll_buffer_.Get(i);
+        const bool first = !did_first_pass;
+        did_first_pass = true;
+        if (fabsf(history.dx) < fling_stationary_distance_.val_ &&
+            fabsf(history.dy) < fling_stationary_distance_.val_) {
+          ScrollEvent zero = { 0.0, 0.0, 0.0 };
+          out = zero;
+          continue;
+        }
+        if (first || (history.dx * out.dx < 0 || history.dy * out.dy < 0)) {
+          // first or change in direction
+          out = history;
+          continue;
+        }
+        const bool kPrimaryVertical = fabsf(history.dy) > fabsf(history.dx);
+        const bool kPrimaryHorizontal = fabsf(history.dx) > fabsf(history.dy);
+        if ((kPrimaryVertical && IncreasingMagnitude(history.dy, history.dt,
+                                                     out.dy, out.dt)) ||
+            (kPrimaryHorizontal && IncreasingMagnitude(history.dx, history.dt,
+                                                       out.dx, out.dt))) {
+          decreasing_magnitude = false;
+          if (increasing_magnitude) {  // if previously increasing magnitude
+            out = history;
+            continue;
+          }
+          increasing_magnitude = true;
+        } else {
+          increasing_magnitude = false;
+        }
+        if ((kPrimaryVertical && DecreasingMagnitude(history.dy, history.dt,
+                                                     out.dy, out.dt)) ||
+            (kPrimaryHorizontal && DecreasingMagnitude(history.dx, history.dt,
+                                                       out.dx, out.dt))) {
+          increasing_magnitude = false;
+          if (decreasing_magnitude) {  // if previously decreasing magnitude
+            out = history;
+            continue;
+          }
+          decreasing_magnitude = true;
+        } else {
+          decreasing_magnitude = false;
+        }
+        out = ScrollEvent::Add(out, history);
       }
+
+      float vx = out.dt ? (out.dx / out.dt) : 0.0;
+      float vy = out.dt ? (out.dy / out.dt) : 0.0;
 
       if (vx || vy) {
         result_ = Gesture(kGestureFling,
