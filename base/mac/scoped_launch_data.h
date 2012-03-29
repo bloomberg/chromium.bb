@@ -1,9 +1,9 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_MAC_SCOPED_LAUNCH_DATA_H_
-#define CHROME_BROWSER_MAC_SCOPED_LAUNCH_DATA_H_
+#ifndef BASE_MAC_SCOPED_LAUNCH_DATA_H_
+#define BASE_MAC_SCOPED_LAUNCH_DATA_H_
 #pragma once
 
 #include <launch.h>
@@ -13,7 +13,8 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 
-namespace launchd {
+namespace base {
+namespace mac {
 
 // Just like scoped_ptr<> but for launch_data_t.
 class ScopedLaunchData {
@@ -69,6 +70,7 @@ class ScopedLaunchData {
   DISALLOW_COPY_AND_ASSIGN(ScopedLaunchData);
 };
 
-}  // namespace launchd
+}  // namespace mac
+}  // namespace base
 
-#endif  // CHROME_BROWSER_MAC_SCOPED_LAUNCH_DATA_H_
+#endif  // BASE_MAC_SCOPED_LAUNCH_DATA_H_

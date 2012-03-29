@@ -10,12 +10,12 @@
 #include <signal.h>
 
 #include "base/logging.h"
+#include "base/mac/launchd.h"
 #include "base/mac/mac_logging.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/sys_string_conversions.h"
-#include "chrome/browser/mac/launchd.h"
 
 extern "C" {
 
@@ -176,7 +176,7 @@ void Restart() {
     // Doing this via launchd using the proper job label is the safest way to
     // handle the restart. Unlike "killall Dock", looking this up via launchd
     // guarantees that only the right process will be targeted.
-    pid = launchd::PIDForJob("com.apple.Dock.agent");
+    pid = base::mac::PIDForJob("com.apple.Dock.agent");
   } else {
     // On Leopard, the Dock doesn't have a known fixed job label name as it
     // does on Snow Leopard and Lion because it's not launched as a launch

@@ -1,17 +1,14 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/mac/launchd.h"
-
-#include <launch.h>
+#include "base/mac/launchd.h"
 
 #include "base/logging.h"
-#include "chrome/browser/mac/scoped_launch_data.h"
+#include "base/mac/scoped_launch_data.h"
 
-namespace launchd {
-
-namespace {
+namespace base {
+namespace mac {
 
 // MessageForJob sends a single message to launchd with a simple dictionary
 // mapping |operation| to |job_label|, and returns the result of calling
@@ -45,8 +42,6 @@ launch_data_t MessageForJob(const std::string& job_label,
   return launch_msg(message);
 }
 
-}  // namespace
-
 pid_t PIDForJob(const std::string& job_label) {
   ScopedLaunchData response(MessageForJob(job_label, LAUNCH_KEY_GETJOB));
   if (!response) {
@@ -65,10 +60,8 @@ pid_t PIDForJob(const std::string& job_label) {
 
   launch_data_t pid_data = launch_data_dict_lookup(response,
                                                    LAUNCH_JOBKEY_PID);
-  if (!pid_data) {
-    LOG(ERROR) << "PIDForJob: no pid";
-    return -1;
-  }
+  if (!pid_data)
+    return 0;
 
   if (launch_data_get_type(pid_data) != LAUNCH_DATA_INTEGER) {
     LOG(ERROR) << "PIDForJob: expected integer";
@@ -78,4 +71,5 @@ pid_t PIDForJob(const std::string& job_label) {
   return launch_data_get_integer(pid_data);
 }
 
-}  // namespace launchd
+}  // namespace mac
+}  // namespace base
