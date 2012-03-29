@@ -35,6 +35,10 @@
 #include "ui/base/x/x11_util_internal.h"
 #endif
 
+#if defined(OS_WIN)
+#include "content/common/sandbox_policy.h"
+#endif
+
 using WebKit::WebBindings;
 
 using webkit::npapi::WebPluginResourceClient;
@@ -129,10 +133,9 @@ void WebPluginProxy::WillDestroyWindow(gfx::PluginWindowHandle window) {
 #if defined(OS_WIN)
 void WebPluginProxy::SetWindowlessPumpEvent(HANDLE pump_messages_event) {
   HANDLE pump_messages_event_for_renderer = NULL;
-  DuplicateHandle(GetCurrentProcess(), pump_messages_event,
-                  channel_->renderer_handle(),
-                  &pump_messages_event_for_renderer,
-                  0, FALSE, DUPLICATE_SAME_ACCESS);
+  sandbox::BrokerDuplicateHandle(pump_messages_event, channel_->peer_pid(),
+                                 &pump_messages_event_for_renderer,
+                                 0, DUPLICATE_SAME_ACCESS);
   DCHECK(pump_messages_event_for_renderer != NULL);
   Send(new PluginHostMsg_SetWindowlessPumpEvent(
       route_id_, pump_messages_event_for_renderer));
@@ -470,25 +473,17 @@ void WebPluginProxy::CreateCanvasFromHandle(
     const TransportDIB::Handle& dib_handle,
     const gfx::Rect& window_rect,
     scoped_ptr<skia::PlatformCanvas>* canvas_out) {
-  // Create a canvas that will reference the shared bits. We have to handle
-  // errors here since we're mapping a large amount of memory that may not fit
-  // in our address space, or go wrong in some other way.
-  HANDLE section;
-  DuplicateHandle(channel_->renderer_handle(), dib_handle, GetCurrentProcess(),
-                  &section,
-                  STANDARD_RIGHTS_REQUIRED | FILE_MAP_READ | FILE_MAP_WRITE,
-                  FALSE, 0);
   scoped_ptr<skia::PlatformCanvas> canvas(new skia::PlatformCanvas);
   if (!canvas->initialize(
           window_rect.width(),
           window_rect.height(),
           true,
-          section)) {
+          dib_handle)) {
     canvas_out->reset();
   }
   canvas_out->reset(canvas.release());
   // The canvas does not own the section so we need to close it now.
-  CloseHandle(section);
+  CloseHandle(dib_handle);
 }
 
 void WebPluginProxy::SetWindowlessBuffers(

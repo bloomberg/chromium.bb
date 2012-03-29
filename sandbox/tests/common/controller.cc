@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -51,6 +51,13 @@ std::wstring MakePathToSysWow64(const wchar_t* name, bool is_obj_man_path) {
   return full_path;
 }
 
+bool IsProcessRunning(HANDLE process) {
+  DWORD exit_code = 0;
+  if (::GetExitCodeProcess(process, &exit_code))
+    return exit_code == STILL_ACTIVE;
+  return false;
+}
+
 }  // namespace
 
 namespace sandbox {
@@ -81,11 +88,13 @@ BrokerServices* GetBroker() {
 }
 
 TestRunner::TestRunner(JobLevel job_level, TokenLevel startup_token,
-                       TokenLevel main_token) : is_init_(false) {
+                       TokenLevel main_token)
+    : is_init_(false), is_async_(false), target_process_id_(0) {
   Init(job_level, startup_token, main_token);
 }
 
-TestRunner::TestRunner() : is_init_(false) {
+TestRunner::TestRunner()
+    : is_init_(false), is_async_(false), target_process_id_(0) {
   Init(JOB_LOCKDOWN, USER_RESTRICTED_SAME_ACCESS, USER_LOCKDOWN);
 }
 
@@ -95,6 +104,8 @@ void TestRunner::Init(JobLevel job_level, TokenLevel startup_token,
   policy_ = NULL;
   timeout_ = kDefaultTimeout;
   state_ = AFTER_REVERT;
+  is_async_= false;
+  target_process_id_ = 0;
 
   broker_ = GetBroker();
   if (!broker_)
@@ -115,6 +126,9 @@ TargetPolicy* TestRunner::GetPolicy() {
 }
 
 TestRunner::~TestRunner() {
+  if (target_process_)
+    ::TerminateProcess(target_process_, 0);
+
   if (policy_)
     policy_->Release();
 }
@@ -177,6 +191,14 @@ int TestRunner::InternalRunTest(const wchar_t* command) {
   if (!is_init_)
     return SBOX_TEST_FAILED_TO_RUN_TEST;
 
+  // For simplicity TestRunner supports only one process per instance.
+  if (target_process_) {
+    if (IsProcessRunning(target_process_))
+      return SBOX_TEST_FAILED_TO_RUN_TEST;
+    target_process_.Close();
+    target_process_id_ = 0;
+  }
+
   // Get the path to the sandboxed process.
   wchar_t prog_name[MAX_PATH];
   GetModuleFileNameW(NULL, prog_name, MAX_PATH);
@@ -197,6 +219,14 @@ int TestRunner::InternalRunTest(const wchar_t* command) {
     return SBOX_TEST_FAILED_TO_RUN_TEST;
 
   ::ResumeThread(target.hThread);
+
+  // For an asynchronous run we don't bother waiting.
+  if (is_async_) {
+    target_process_.Set(target.hProcess);
+    target_process_id_ = target.dwProcessId;
+    ::CloseHandle(target.hThread);
+    return SBOX_TEST_SUCCEEDED;
+  }
 
   if (::IsDebuggerPresent()) {
     // Don't kill the target process on a time-out while we are debugging.

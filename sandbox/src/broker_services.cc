@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -184,6 +184,10 @@ DWORD WINAPI BrokerServicesBase::TargetEventsThread(PVOID param) {
 
         case JOB_OBJECT_MSG_EXIT_PROCESS:
         case JOB_OBJECT_MSG_ABNORMAL_EXIT_PROCESS: {
+          {
+            AutoLock lock(&broker->lock_);
+            broker->child_process_ids_.erase(reinterpret_cast<DWORD>(ovl));
+          }
           --target_counter;
           if (0 == target_counter)
             ::SetEvent(no_targets);
@@ -292,6 +296,7 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
   // Save the tracker because in cleanup we might need to force closing
   // the Jobs.
   tracker_list_.push_back(tracker);
+  child_process_ids_.insert(process_info.dwProcessId);
 
   // We return the caller a duplicate of the process handle so they
   // can close it at will.
@@ -310,6 +315,11 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
 ResultCode BrokerServicesBase::WaitForAllTargets() {
   ::WaitForSingleObject(no_targets_, INFINITE);
   return SBOX_ALL_OK;
+}
+
+bool BrokerServicesBase::IsActiveTarget(DWORD process_id) {
+  AutoLock lock(&lock_);
+  return child_process_ids_.find(process_id) != child_process_ids_.end();
 }
 
 }  // namespace sandbox

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,8 @@
 #include "base/logging.h"
 #include "sandbox/src/filesystem_dispatcher.h"
 #include "sandbox/src/filesystem_policy.h"
+#include "sandbox/src/handle_dispatcher.h"
+#include "sandbox/src/handle_policy.h"
 #include "sandbox/src/job.h"
 #include "sandbox/src/interception.h"
 #include "sandbox/src/named_pipe_dispatcher.h"
@@ -96,6 +98,9 @@ PolicyBase::PolicyBase()
   dispatcher = new RegistryDispatcher(this);
   ipc_targets_[IPC_NTCREATEKEY_TAG] = dispatcher;
   ipc_targets_[IPC_NTOPENKEY_TAG] = dispatcher;
+
+  dispatcher = new HandleDispatcher(this);
+  ipc_targets_[IPC_DUPLICATEHANDLEPROXY_TAG] = dispatcher;
 }
 
 PolicyBase::~PolicyBase() {
@@ -109,6 +114,7 @@ PolicyBase::~PolicyBase() {
   delete ipc_targets_[IPC_NTOPENTHREAD_TAG];
   delete ipc_targets_[IPC_CREATEEVENT_TAG];
   delete ipc_targets_[IPC_NTCREATEKEY_TAG];
+  delete ipc_targets_[IPC_DUPLICATEHANDLEPROXY_TAG];
   delete policy_maker_;
   delete policy_;
   ::DeleteCriticalSection(&lock_);
@@ -315,6 +321,13 @@ ResultCode PolicyBase::AddRule(SubSystem subsystem, Semantics semantics,
     }
     case SUBSYS_REGISTRY: {
       if (!RegistryPolicy::GenerateRules(pattern, semantics, policy_maker_)) {
+        NOTREACHED();
+        return SBOX_ERROR_BAD_PARAMS;
+      }
+      break;
+    }
+    case SUBSYS_HANDLES: {
+      if (!HandlePolicy::GenerateRules(pattern, semantics, policy_maker_)) {
         NOTREACHED();
         return SBOX_ERROR_BAD_PARAMS;
       }

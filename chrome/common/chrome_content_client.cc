@@ -417,6 +417,14 @@ bool ChromeContentClient::SandboxPlugin(CommandLine* command_line,
     return false;
   }
 
+  // Add policy for proxy window pump.
+  if (policy->AddRule(sandbox::TargetPolicy::SUBSYS_HANDLES,
+                      sandbox::TargetPolicy::HANDLES_DUP_ANY,
+                      L"Event") != sandbox::SBOX_ALL_OK) {
+    NOTREACHED();
+    return false;
+  }
+
   // Allow Talk's camera control.
   base::win::RegKey talk_key(HKEY_CURRENT_USER,
                              L"Software\\Google\\Google Talk Plugin",

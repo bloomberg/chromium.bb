@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -128,7 +128,8 @@ class TargetPolicy {
     SUBSYS_NAMED_PIPES,       // Creation of named pipes.
     SUBSYS_PROCESS,           // Creation of child processes.
     SUBSYS_REGISTRY,          // Creation and opening of registry keys.
-    SUBSYS_SYNC               // Creation of named sync objects.
+    SUBSYS_SYNC,              // Creation of named sync objects.
+    SUBSYS_HANDLES            // Duplication of handles to other processes.
   };
 
   // Allowable semantics when a rule is matched.
@@ -139,6 +140,8 @@ class TargetPolicy {
     FILES_ALLOW_QUERY,     // Allows access to query the attributes of a file.
     FILES_ALLOW_DIR_ANY,   // Allows open or create with directory semantics
                            // only.
+    HANDLES_DUP_ANY,       // Allows duplicating handles opened with any
+                           // access permissions.
     NAMEDPIPES_ALLOW_ANY,  // Allows creation of a named pipe.
     PROCESS_MIN_EXEC,      // Allows to create a process with minimal rights
                            // over the resulting process and thread handles.

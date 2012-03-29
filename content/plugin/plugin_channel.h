@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,7 +36,6 @@ class PluginChannel : public NPChannelBase {
   virtual bool Send(IPC::Message* msg) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
-  base::ProcessHandle renderer_handle() const { return renderer_handle_; }
   int renderer_id() { return renderer_id_; }
 
   virtual int GenerateRouteID() OVERRIDE;
@@ -59,7 +58,6 @@ class PluginChannel : public NPChannelBase {
 
  protected:
   // IPC::Channel::Listener implementation:
-  virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
   virtual void OnChannelError() OVERRIDE;
 
   virtual void CleanUp() OVERRIDE;
@@ -87,9 +85,6 @@ class PluginChannel : public NPChannelBase {
                        base::Time begin_time);
 
   std::vector<scoped_refptr<WebPluginDelegateStub> > plugin_stubs_;
-
-  // Handle to the renderer process who is on the other side of the channel.
-  base::ProcessHandle renderer_handle_;
 
   // The id of the renderer who is on the other side of the channel.
   int renderer_id_;
