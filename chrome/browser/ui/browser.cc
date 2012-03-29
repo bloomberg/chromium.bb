@@ -2385,9 +2385,8 @@ void Browser::ShowAvatarMenu() {
 
 void Browser::ShowHistoryTab() {
   content::RecordAction(UserMetricsAction("ShowHistory"));
-  browser::NavigateParams params(GetSingletonTabNavigateParams(
-      GURL(std::string(chrome::kChromeUIUberURL) +
-           chrome::kChromeUIHistoryHost)));
+  browser::NavigateParams params(
+      GetSingletonTabNavigateParams(GURL(chrome::kChromeUIHistoryURL)));
   params.path_behavior = browser::NavigateParams::IGNORE_AND_NAVIGATE;
   ShowSingletonTabOverwritingNTP(params);
 }

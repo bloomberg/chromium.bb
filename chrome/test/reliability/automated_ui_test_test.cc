@@ -430,6 +430,6 @@ TEST_F(AutomatedUITestBase, MAYBE_ShowHistory) {
   ASSERT_TRUE(GetActiveTab()->GetCurrentURL(&url));
   ASSERT_EQ(
       GURL(std::string(chrome::kChromeUIUberURL) +
-          chrome::kChromeUIHistoryHost),
+          chrome::kChromeUIHistoryHost + "/"),
       url);
 }

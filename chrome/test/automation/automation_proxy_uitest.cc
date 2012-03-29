@@ -535,7 +535,9 @@ TEST_F(AutomationProxyTest, AcceleratorHistory) {
 
   ASSERT_TRUE(window->RunCommand(IDC_SHOW_HISTORY));
 
-  EXPECT_EQ("chrome://chrome/history", GetActiveTabURL().spec());
+  EXPECT_EQ(std::string(chrome::kChromeUIUberURL) +
+                chrome::kChromeUIHistoryHost + "/",
+            GetActiveTabURL().spec());
 }
 
 class AutomationProxyTest4 : public UITest {
