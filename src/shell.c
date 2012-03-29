@@ -2101,8 +2101,6 @@ shell_init(struct weston_compositor *ec)
 	shell->compositor = ec;
 	shell->shell.lock = lock;
 	shell->shell.unlock = unlock;
-	shell->shell.map = map;
-	shell->shell.configure = configure;
 	shell->shell.destroy = shell_destroy;
 
 	wl_list_init(&shell->backgrounds);

@@ -106,11 +106,19 @@ tablet_shell_set_state(struct tablet_shell *shell, int state)
 }
 
 static void
-tablet_shell_map(struct weston_shell *base, struct weston_surface *surface,
-		       int32_t width, int32_t height, int32_t sx, int32_t sy)
+tablet_shell_surface_configure(struct weston_surface *surface,
+			       int32_t sx, int32_t sy)
 {
 	struct tablet_shell *shell =
-		container_of(base, struct tablet_shell, shell);
+		container_of(surface->compositor->shell,
+			     struct tablet_shell, shell);
+	int32_t width, height;
+
+	if (weston_surface_is_mapped(surface))
+		return;
+
+	width = surface->buffer->width;
+	height = surface->buffer->height;
 
 	weston_surface_configure(surface, 0, 0, width, height);
 
@@ -139,26 +147,6 @@ tablet_shell_map(struct weston_shell *base, struct weston_surface *surface,
 
 	wl_list_insert(&shell->compositor->surface_list, &surface->link);
 	weston_surface_assign_output(surface);
-}
-
-static void
-tablet_shell_configure(struct weston_shell *base,
-			     struct weston_surface *surface,
-			     GLfloat x, GLfloat y,
-			     int32_t width, int32_t height)
-{
-	weston_surface_configure(surface, x, y, width, height);
-}
-
-static void
-tablet_shell_surface_configure(struct weston_surface *es, int32_t sx,
-			       int32_t sy)
-{
-	struct weston_shell *shell = es->compositor->shell;
-
-	if (!weston_surface_is_mapped(es))
-		tablet_shell_map(shell, es, es->buffer->width,
-				 es->buffer->height, sx, sy);
 }
 
 static void
@@ -576,8 +564,6 @@ shell_init(struct weston_compositor *compositor)
 
 	shell->shell.lock = tablet_shell_lock;
 	shell->shell.unlock = tablet_shell_unlock;
-	shell->shell.map = tablet_shell_map;
-	shell->shell.configure = tablet_shell_configure;
 	shell->shell.destroy = tablet_shell_destroy;
 
 	weston_layer_init(&shell->homescreen_layer,
