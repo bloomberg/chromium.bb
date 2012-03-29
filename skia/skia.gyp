@@ -440,8 +440,6 @@
 
         '../third_party/skia/src/images/bmpdecoderhelper.cpp',
         '../third_party/skia/src/images/bmpdecoderhelper.h',
-        '../third_party/skia/src/images/SkBitmap_RLEPixels.h',
-        '../third_party/skia/src/images/SkCreateRLEPixelRef.cpp',
         #'../third_party/skia/src/images/SkFDStream.cpp',
         #'../third_party/skia/src/images/SkFlipPixelRef.cpp',
         '../third_party/skia/src/images/SkImageDecoder.cpp',
