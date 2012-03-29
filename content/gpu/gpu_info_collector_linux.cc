@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -184,21 +184,23 @@ bool CollectGraphicsInfo(content::GPUInfo* gpu_info) {
   gpu_info->finalized = true;
   bool rt = CollectGraphicsInfoGL(gpu_info);
 
-  if (gpu_info->vendor_id == 0x1002) {  // ATI
-    std::string ati_driver_version = CollectDriverVersionATI();
-    if (ati_driver_version != "") {
-      gpu_info->driver_vendor = "ATI / AMD";
-      gpu_info->driver_version = ati_driver_version;
-    }
-  }
-
   return rt;
 }
 
 bool CollectPreliminaryGraphicsInfo(content::GPUInfo* gpu_info) {
   DCHECK(gpu_info);
 
-  return CollectVideoCardInfo(gpu_info);
+  bool rt = CollectVideoCardInfo(gpu_info);
+
+  if (gpu_info->vendor_id == 0x1002) {  // ATI
+    std::string ati_driver_version = CollectDriverVersionATI();
+    if (!ati_driver_version.empty()) {
+      gpu_info->driver_vendor = "ATI / AMD";
+      gpu_info->driver_version = ati_driver_version;
+    }
+  }
+
+  return rt;
 }
 
 bool CollectVideoCardInfo(content::GPUInfo* gpu_info) {
