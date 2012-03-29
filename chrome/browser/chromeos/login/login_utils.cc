@@ -1037,6 +1037,7 @@ std::string LoginUtilsImpl::GetOffTheRecordCommandLine(
   static const char* kForwardSwitches[] = {
       switches::kCompressSystemFeedback,
       switches::kDeviceManagementUrl,
+      switches::kDisableAccelerated2dCanvas,
       switches::kDisableAcceleratedPlugins,
       switches::kDisableLoginAnimations,
       switches::kDisableSeccompSandbox,
