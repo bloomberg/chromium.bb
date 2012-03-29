@@ -180,6 +180,7 @@ void InProcessBrowserLayoutTest::RunLayoutTestInternal(
   ui_test_utils::TitleWatcher title_watcher(
       browser()->GetSelectedWebContents(), expected_title);
   ui_test_utils::NavigateToURL(browser(), url);
+  LOG(INFO) << "Navigation completed, now waiting for title.";
   string16 final_title = title_watcher.WaitAndGetTitle();
   EXPECT_EQ(expected_title, final_title);
 

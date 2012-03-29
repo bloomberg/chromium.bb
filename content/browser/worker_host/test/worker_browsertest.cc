@@ -4,6 +4,7 @@
 
 #include "base/bind.h"
 #include "base/file_path.h"
+#include "base/logging.h"
 #include "base/path_service.h"
 #include "base/stringprintf.h"
 #include "base/string_util.h"
@@ -395,6 +396,7 @@ IN_PROC_BROWSER_TEST_F(WorkerTest, LimitTotal) {
   // Adding 1 so that we cause some workers to be queued.
   int tab_count = (total_workers / max_workers_per_tab) + 1;
   for (int i = 1; i < tab_count; ++i) {
+    LOG(INFO) << "LimitTotal creating tab";
     ui_test_utils::NavigateToURLWithDisposition(
         browser(), GURL(url.spec() + StringPrintf("&client_id=%d", i)),
         NEW_FOREGROUND_TAB,
@@ -402,7 +404,9 @@ IN_PROC_BROWSER_TEST_F(WorkerTest, LimitTotal) {
   }
 
   // Check that we didn't create more than the max number of workers.
+  LOG(INFO) << "LimitTotal calling WaitForWorkerProcessCount";
   ASSERT_TRUE(WaitForWorkerProcessCount(total_workers));
+  LOG(INFO) << "LimitTotal WaitForWorkerProcessCount returned";
 
   // Now close a page and check that the queued workers were started.
   const FilePath kGoogleDir(FILE_PATH_LITERAL("google"));
@@ -410,7 +414,9 @@ IN_PROC_BROWSER_TEST_F(WorkerTest, LimitTotal) {
   url = GURL(ui_test_utils::GetTestUrl(kGoogleDir, kGoogleFile));
   ui_test_utils::NavigateToURL(browser(), url);
 
+  LOG(INFO) << "LimitTotal calling WaitForWorkerProcessCount";
   ASSERT_TRUE(WaitForWorkerProcessCount(total_workers));
+  LOG(INFO) << "LimitTotal WaitForWorkerProcessCount returned";
 }
 
 // Flaky, http://crbug.com/59786.
