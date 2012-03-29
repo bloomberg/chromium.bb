@@ -12,7 +12,6 @@
 #include "ui/aura/monitor_manager.h"
 #include "ui/aura/root_window_observer.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_observer.h"
 
 namespace ash {
 namespace internal {
@@ -24,8 +23,7 @@ namespace internal {
 // TODO(oshima): gfx::Screen needs to return translated coordinates
 // if the root window is translated. crbug.com/119268.
 class ASH_EXPORT MultiMonitorManager : public aura::MonitorManager,
-                                       public aura::RootWindowObserver,
-                                       public aura::WindowObserver {
+                                       public aura::RootWindowObserver {
  public:
   MultiMonitorManager();
   virtual ~MultiMonitorManager();
@@ -52,9 +50,6 @@ class ASH_EXPORT MultiMonitorManager : public aura::MonitorManager,
   // RootWindowObserver overrides:
   virtual void OnRootWindowResized(const aura::RootWindow* root,
                                    const gfx::Size& new_size) OVERRIDE;
-
-  // WindowObserver overrides:
-  virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
 
  private:
   typedef std::vector<aura::Monitor*> Monitors;

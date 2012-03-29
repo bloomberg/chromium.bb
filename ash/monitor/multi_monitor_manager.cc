@@ -45,8 +45,7 @@ MultiMonitorManager::MultiMonitorManager() {
 }
 
 MultiMonitorManager::~MultiMonitorManager() {
-  // All monitors must have been deleted when root windows are deleted.
-  DCHECK(!monitors_.size());
+  STLDeleteContainerPointers(monitors_.begin(), monitors_.end());
 }
 
 // static
@@ -95,10 +94,9 @@ void MultiMonitorManager::OnNativeMonitorsChanged(
     // even if it doesn't exit.
     while (monitors_.size() > new_monitors.size() && monitors_.size() > 1) {
       Monitor* monitor = monitors_.back();
-      // Monitor object is deleted in OnWindowDestroying.
       NotifyMonitorRemoved(monitor);
-      DCHECK(find(monitors_.begin(), monitors_.end(), monitor) ==
-             monitors_.end());
+      monitors_.erase(std::find(monitors_.begin(), monitors_.end(), monitor));
+      delete monitor;
     }
   }
 }
@@ -106,7 +104,8 @@ void MultiMonitorManager::OnNativeMonitorsChanged(
 RootWindow* MultiMonitorManager::CreateRootWindowForMonitor(
     Monitor* monitor) {
   RootWindow* root_window = new RootWindow(monitor->bounds());
-  root_window->AddObserver(this);
+  // No need to remove RootWindowObserver because
+  // the MonitorManager object outlives RootWindow objects.
   root_window->AddRootWindowObserver(this);
   root_window->SetProperty(kMonitorKey, monitor);
   return root_window;
@@ -150,17 +149,6 @@ void MultiMonitorManager::OnRootWindowResized(const aura::RootWindow* root,
     monitor->set_size(root->GetHostSize());
     NotifyBoundsChanged(monitor);
   }
-}
-
-void MultiMonitorManager::OnWindowDestroying(Window* window) {
-  RootWindow* root = static_cast<RootWindow*>(window);
-  root->RemoveObserver(this);
-  // Don't remove RootWindowObserver because the observer list in
-  // RootWindowObserver class has already been destroyed by this time.
-
-  Monitor* monitor = window->GetProperty(kMonitorKey);
-  monitors_.erase(std::find(monitors_.begin(), monitors_.end(), monitor));
-  delete monitor;
 }
 
 void MultiMonitorManager::Init() {

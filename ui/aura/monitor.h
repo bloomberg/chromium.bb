@@ -16,6 +16,7 @@ namespace aura {
 class AURA_EXPORT Monitor {
  public:
   Monitor();
+  ~Monitor();
 
   // Sets/gets monitor's bounds in |gfx::screen|'s coordinates,
   // which is relative to the primary screen's origin.

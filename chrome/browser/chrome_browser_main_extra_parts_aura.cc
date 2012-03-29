@@ -11,5 +11,6 @@ ChromeBrowserMainExtraPartsAura::ChromeBrowserMainExtraPartsAura()
 }
 
 void ChromeBrowserMainExtraPartsAura::PostMainMessageLoopRun() {
-  aura::Env::DeleteInstance();
+  // aura::Env instance is deleted in BrowserProcessImpl::StartTearDown
+  // after the metrics service is deleted.
 }

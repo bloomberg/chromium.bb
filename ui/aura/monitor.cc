@@ -9,6 +9,9 @@ namespace aura {
 Monitor::Monitor() {
 }
 
+Monitor::~Monitor() {
+}
+
 gfx::Rect Monitor::GetWorkAreaBounds() const {
   // TODO(oshima): For m19, work area/monitor bounds has (0,0) origin
   // because it's simpler and enough. Fix this when real multi monitor
