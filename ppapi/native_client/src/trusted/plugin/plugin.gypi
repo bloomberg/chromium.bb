@@ -66,8 +66,6 @@
         ],
         'libraries': [
           '-ldl',
-          '-lX11',
-          '-lXt',
         ],
       }],
       ['OS=="mac"', {

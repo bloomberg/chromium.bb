@@ -108,7 +108,7 @@ common_libs = [
 
 os_libs = [ ]
 if plugin_env.Bit('linux'):
-  os_libs += ['dl', 'Xt', 'X11', 'crypto']
+  os_libs += ['dl', 'crypto']
 
 if plugin_env.Bit('windows'):
   os_libs += ['gdi32', 'user32', ]
