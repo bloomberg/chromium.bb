@@ -1006,7 +1006,7 @@
    bug_83345 (Needs_Annotation)
    Memcheck:Leak
    ...
-   fun:_ZN4base23LeakyLazyInstanceTraits*NewEPv
+   fun:_ZN4base*23LeakyLazyInstanceTraits*NewEPv
    fun:_ZN4base12LazyInstance*LeakyLazyInstanceTraits*PointerEv
 }
 {
