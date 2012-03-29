@@ -298,8 +298,6 @@
                 '-fno-exceptions',
                 '-Wall',
                 '-fPIC',
-              ],
-              'cflags_cc': [
                 '--sysroot=<(sysroot)',
               ],
               'ldflags': [
