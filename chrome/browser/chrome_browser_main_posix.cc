@@ -288,6 +288,10 @@ void ChromeBrowserMainPartsPosix::ShowMissingLocaleMessageBox() {
 #elif defined(TOOLKIT_USES_GTK)
   ChromeBrowserMainExtraPartsGtk::ShowMessageBox(
       chrome_browser::kMissingLocaleDataMessage);
+#elif defined(USE_AURA)
+  // TODO(port): We may want a views based message dialog here eventually, but
+  // for now, crash.
+  NOTREACHED();
 #else
 #error "Need MessageBox implementation."
 #endif
