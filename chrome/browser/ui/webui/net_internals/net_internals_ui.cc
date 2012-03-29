@@ -867,6 +867,10 @@ void NetInternalsMessageHandler::IOThreadImpl::OnGetHostResolverInfo(
 
   DictionaryValue* dict = new DictionaryValue();
 
+  base::Value* dns_config = context->host_resolver()->GetDnsConfigAsValue();
+  if (dns_config)
+    dict->Set("dns_config", dns_config);
+
   dict->SetInteger(
       "default_address_family",
       static_cast<int>(context->host_resolver()->GetDefaultAddressFamily()));
