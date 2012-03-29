@@ -11,7 +11,7 @@
     }
   },
   "platform_app": true,
-  "permissions": ["experimental", "identity"],
+  "permissions": ["experimental"],
   "background": {"scripts": ["test.js"]},
   "oauth2": {
     "client_id": "dummy_client_id",

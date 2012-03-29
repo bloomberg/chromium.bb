@@ -82,9 +82,6 @@
   "history": {
     "extension_types": ["extension", "packaged_app", "platform_app"]
   },
-  "identity": {
-    "extension_types": ["platform_app"]
-  },
   "idle": {
     "extension_types": ["extension", "packaged_app", "platform_app"]
   },
