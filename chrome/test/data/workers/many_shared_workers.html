@@ -1,4 +1,7 @@
 <html>
+<head>
+<script src="worker_utils.js"></script>
+</head>
 <body>
 <div id=result></div>
 <script>
@@ -28,9 +31,9 @@ function createWorker(i) {
     workers_created++;
     log("worker " + worker_id + " started - num_clients = " + event.data);
     if (workers_created == num_workers) {
-       // created the last worker
-       log("SUCCESS: all workers created");
-       document.cookie = "status=OK";
+      // created the last worker
+      log("SUCCESS: all workers created");
+      onSuccess();
     }
   }
 }

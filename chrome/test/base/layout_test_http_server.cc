@@ -10,6 +10,7 @@
 #include "base/process_util.h"
 #include "base/string_number_conversions.h"
 #include "content/public/common/content_paths.h"
+#include "net/test/python_utils.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
@@ -22,7 +23,10 @@ bool PrepareCommandLine(CommandLine* cmd_line) {
   if (!PathService::Get(base::DIR_SOURCE_ROOT, &src_path))
     return false;
 
-  cmd_line->SetProgram(FilePath(FILE_PATH_LITERAL("python")));
+  FilePath python_runtime;
+  if (!GetPythonRunTime(&python_runtime))
+    return false;
+  cmd_line->SetProgram(python_runtime);
 
   FilePath script_path(src_path);
   script_path = script_path.AppendASCII("third_party");

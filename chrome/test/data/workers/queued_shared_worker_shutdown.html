@@ -1,4 +1,7 @@
 <html>
+<head>
+<script src="worker_utils.js"></script>
+</head>
 <body>
 <div id=result></div>
 <script>
@@ -38,7 +41,7 @@ function createWorker(i) {
     } else if (workers_created == (num_workers+2)) {
        // created the last worker
        log("SUCCESS: queued worker created");
-       document.cookie = "status=OK";
+       onSuccess();
     }
   }
 }

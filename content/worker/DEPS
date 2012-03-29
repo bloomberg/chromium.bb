@@ -1,8 +1,4 @@
 include_rules = [
-  "-chrome",
-  "+chrome/app", # For UI test
-  "+chrome/test", # For UI test
-  "+content/browser/worker_host",  # For UI test.
   "+sandbox/src",
   "+webkit/appcache",
   "+webkit/glue",

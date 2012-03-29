@@ -82,6 +82,7 @@ enum BrowserTestWaitFlags {
   BROWSER_TEST_WAIT_FOR_BROWSER = 1 << 0,     // Wait for a new browser.
   BROWSER_TEST_WAIT_FOR_TAB = 1 << 1,         // Wait for a new tab.
   BROWSER_TEST_WAIT_FOR_NAVIGATION = 1 << 2,  // Wait for navigation to finish.
+  BROWSER_TEST_WAIT_FOR_AUTH = 1 << 3,        // Wait for auth prompt.
 
   BROWSER_TEST_MASK = BROWSER_TEST_WAIT_FOR_BROWSER |
                       BROWSER_TEST_WAIT_FOR_TAB |

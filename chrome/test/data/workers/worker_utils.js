@@ -33,6 +33,5 @@ function onFinished(result) {
     statusPanel.innerHTML = result;
   }
 
-  var cookie = "status=" + result + "; path=/";
-  document.cookie = cookie;
+  document.title = result;
 }

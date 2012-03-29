@@ -34,6 +34,8 @@ class LayoutTestHttpServer {
   // failures.
   bool Stop() WARN_UNUSED_RESULT;
 
+  int port() const { return port_; }
+
  private:
   FilePath root_directory_;  // Root directory of the server.
 

@@ -435,12 +435,18 @@ static void NavigateToURLWithDispositionBlockUntilNavigationsComplete(
       content::NOTIFICATION_TAB_ADDED,
       content::NotificationService::AllSources());
 
+  WindowedNotificationObserver auth_observer(
+      chrome::NOTIFICATION_AUTH_NEEDED,
+      content::NotificationService::AllSources());
+
   browser->OpenURL(OpenURLParams(
       url, Referrer(), disposition, content::PAGE_TRANSITION_TYPED, false));
   if (browser_test_flags & BROWSER_TEST_WAIT_FOR_BROWSER)
     browser = WaitForBrowserNotInSet(initial_browsers);
   if (browser_test_flags & BROWSER_TEST_WAIT_FOR_TAB)
     tab_added_observer.Wait();
+  if (browser_test_flags & BROWSER_TEST_WAIT_FOR_AUTH)
+    auth_observer.Wait();
   if (!(browser_test_flags & BROWSER_TEST_WAIT_FOR_NAVIGATION)) {
     // Some other flag caused the wait prior to this.
     return;

@@ -1,4 +1,7 @@
 <html>
+<head>
+<script src="worker_utils.js"></script>
+</head>
 <body>
 <div id=result></div>
 <script>
@@ -23,7 +26,7 @@ function workerStarted(event) {
 function sharedWorkerStarted(event) {
   log ("shared worker created");
   sharedWorker.port.postMessage("close");
-  document.cookie = "status=OK";
+  onSuccess();
 }
 </script>
 

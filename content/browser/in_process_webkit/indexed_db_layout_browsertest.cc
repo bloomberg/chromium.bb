@@ -8,7 +8,7 @@
 class IndexedDBLayoutTest : public InProcessBrowserLayoutTest {
  public:
   IndexedDBLayoutTest() : InProcessBrowserLayoutTest(
-      FilePath().AppendASCII("storage").AppendASCII("indexeddb")) {
+      FilePath(), FilePath().AppendASCII("storage").AppendASCII("indexeddb")) {
   }
 
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
