@@ -60,6 +60,8 @@ const FilePath::CharType kGDataCacheTmpDownloadsDir[] =
     FILE_PATH_LITERAL("tmp/downloads");
 const FilePath::CharType kGDataCacheTmpDocumentsDir[] =
     FILE_PATH_LITERAL("tmp/documents");
+const FilePath::CharType kFirstFeedFile[] =
+    FILE_PATH_LITERAL("first_feed.json");
 const FilePath::CharType kLastFeedFile[] = FILE_PATH_LITERAL("last_feed.json");
 const char kGDataFileSystemToken[] = "GDataFileSystemToken";
 const FilePath::CharType kAccountMetadataFile[] =
@@ -574,7 +576,8 @@ void GDataFileSystem::FindFileByPathAsync(
   if (root_->origin() == UNINITIALIZED) {
     // Load root feed from this disk cache. Upon completion, kick off server
     // fetching.
-    LoadRootFeedFromCache(search_file_path,
+    LoadRootFeedFromCache(FEED_CHUNK_INITIAL,
+                          search_file_path,
                           true,     // should_load_from_server
                           callback);
     return;
@@ -616,6 +619,7 @@ void GDataFileSystem::LoadFeedFromServer(
       base::Bind(&GDataFileSystem::OnGetDocuments,
                  GetWeakPtrForCurrentThread(),
                  search_file_path,
+                 FEED_CHUNK_INITIAL,
                  base::Passed(&feed_list),
                  callback));
 }
@@ -1734,6 +1738,7 @@ void GDataFileSystem::OnCreateDirectoryCompleted(
 
 void GDataFileSystem::OnGetDocuments(
     const FilePath& search_file_path,
+    FeedChunkType chunk_type,
     scoped_ptr<ListValue> feed_list,
     const FindFileCallback& callback,
     GDataErrorCode status,
@@ -1802,6 +1807,7 @@ void GDataFileSystem::OnGetDocuments(
     }
   }
 
+  ListValue* original_feed_list = feed_list.get();
   if (has_more_data) {
     // Don't report to initial callback if we were fetching the first chunk of
     // uninitialized root feed, because we already reported. Instead, just
@@ -1814,22 +1820,34 @@ void GDataFileSystem::OnGetDocuments(
         base::Bind(&GDataFileSystem::OnGetDocuments,
                    GetWeakPtrForCurrentThread(),
                    search_file_path,
+                   FEED_CHUNK_REST,
                    base::Passed(&feed_list),
                    continue_callback));
-  } else {
+  }
+
+  if (!has_more_data || chunk_type == FEED_CHUNK_INITIAL) {
     // Save completed feed in meta cache.
-    scoped_ptr<base::Value> feed_list_value(feed_list.release());
-    SaveFeed(feed_list_value.Pass(), FilePath(kLastFeedFile));
+    scoped_ptr<base::Value> feed_list_value(
+        chunk_type == FEED_CHUNK_INITIAL ?
+            original_feed_list->DeepCopy() : feed_list.release());
+    SaveFeed(feed_list_value.Pass(), GetCachedFeedFileName(chunk_type));
   }
 }
 
+FilePath GDataFileSystem::GetCachedFeedFileName(
+    FeedChunkType chunk_type) const {
+  return FilePath(chunk_type == FEED_CHUNK_INITIAL ?
+                      kFirstFeedFile : kLastFeedFile);
+}
+
 void GDataFileSystem::LoadRootFeedFromCache(
+    FeedChunkType chunk_type,
     const FilePath& search_file_path,
     bool should_load_from_server,
     const FindFileCallback& callback) {
   base::PlatformFileError* error =
       new base::PlatformFileError(base::PLATFORM_FILE_OK);
-  base::ListValue* feed_list = new base::ListValue;
+  ListValue* feed_list = new ListValue();
 
   // Post a task without the sequence token, as this doesn't have to be
   // sequenced with other tasks, and can take long if the feed is large.
@@ -1838,11 +1856,12 @@ void GDataFileSystem::LoadRootFeedFromCache(
       FROM_HERE,
       base::Bind(&GDataFileSystem::LoadRootFeedOnIOThreadPool,
                  cache_paths_[GDataRootDirectory::CACHE_TYPE_META].Append(
-                     kLastFeedFile),
+                     GetCachedFeedFileName(chunk_type)),
                  error,
                  feed_list),
       base::Bind(&GDataFileSystem::OnLoadRootFeed,
                  GetWeakPtrForCurrentThread(),
+                 chunk_type,
                  search_file_path,
                  should_load_from_server,
                  callback,
@@ -1851,6 +1870,7 @@ void GDataFileSystem::LoadRootFeedFromCache(
 }
 
 void GDataFileSystem::OnLoadRootFeed(
+    FeedChunkType chunk_type,
     const FilePath& search_file_path,
     bool should_load_from_server,
     const FindFileCallback& in_callback,
@@ -1859,11 +1879,25 @@ void GDataFileSystem::OnLoadRootFeed(
   DCHECK(error);
   DCHECK(feed_list);
 
+  {
+    base::AutoLock lock(lock_);
+    // If we have already received updates from the server, bail out.
+    if (root_->origin() == FROM_SERVER)
+      return;
+  }
+
+  // Update directory structure only if everything is OK and we haven't yet
+  // received the feed from the server yet.
   if (*error == base::PLATFORM_FILE_OK) {
     *error = UpdateDirectoryWithDocumentFeed(
         feed_list,
         FROM_CACHE);
   }
+
+  // If this was the remaining part of cached feed, there is nothing else
+  // that we should go here.
+  if (chunk_type == FEED_CHUNK_REST)
+    return;
 
   FindFileCallback callback = in_callback;
   // If we got feed content from cache, try search over it.
@@ -1873,6 +1907,15 @@ void GDataFileSystem::OnLoadRootFeed(
     // this search branch already.
     FindFileByPathOnCallingThread(search_file_path, callback);
     callback.Reset();
+  }
+
+  // If the first chunk was ok, get the rest of the feed from disk cache if
+  // we haven't fetched content from the server in the meantime.
+  if (*error == base::PLATFORM_FILE_OK) {
+    LoadRootFeedFromCache(FEED_CHUNK_REST,
+                          search_file_path,
+                          false,     // should_load_from_server
+                          callback);
   }
 
   if (!should_load_from_server)
@@ -1887,6 +1930,7 @@ void GDataFileSystem::OnLoadRootFeed(
       base::Bind(&GDataFileSystem::OnGetDocuments,
                  GetWeakPtrForCurrentThread(),
                  search_file_path,
+                 FEED_CHUNK_INITIAL,
                  base::Passed(&server_feed_list),
                  callback));
 }

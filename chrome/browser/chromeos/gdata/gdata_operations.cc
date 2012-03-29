@@ -50,8 +50,10 @@ const char kUploadContentLength[] = "X-Upload-Content-Length: ";
 // Use smaller 'page' size while debugging to ensure we hit feed reload
 // almost always. Be careful not to use something too small on account that
 // have many items because server side 503 error might kick in.
+const int kMaxDocumentsPerFirstFeed = 200;
 const int kMaxDocumentsPerFeed = 1000;
 #else
+const int kMaxDocumentsPerFirstFeed = 200;
 const int kMaxDocumentsPerFeed = 1000;
 #endif
 
@@ -74,22 +76,24 @@ const char kUserContentScope[] = "https://docs.googleusercontent.com/";
 // Adds additional parameters for API version, output content type and to show
 // folders in the feed are added to document feed URLs.
 GURL AddStandardUrlParams(const GURL& url) {
-  GURL result = chrome_browser_net::AppendQueryParameter(url, "v", "3");
-  result = chrome_browser_net::AppendQueryParameter(result, "alt", "json");
+  GURL result =
+      chrome_browser_net::AppendOrReplaceQueryParameter(url, "v", "3");
+  result =
+      chrome_browser_net::AppendOrReplaceQueryParameter(result, "alt", "json");
   return result;
 }
 
 // Adds additional parameters for API version, output content type and to show
 // folders in the feed are added to document feed URLs.
-GURL AddFeedUrlParams(const GURL& url) {
+GURL AddFeedUrlParams(const GURL& url, int num_items_to_fetch) {
   GURL result = AddStandardUrlParams(url);
-  result = chrome_browser_net::AppendQueryParameter(result,
+  result = chrome_browser_net::AppendOrReplaceQueryParameter(result,
                                                     "showfolders",
                                                     "true");
-  result = chrome_browser_net::AppendQueryParameter(
+  result = chrome_browser_net::AppendOrReplaceQueryParameter(
       result,
       "max-results",
-      base::StringPrintf("%d", kMaxDocumentsPerFeed));
+      base::StringPrintf("%d", num_items_to_fetch));
   return result;
 }
 
@@ -422,9 +426,9 @@ void GetDocumentsOperation::SetUrl(const GURL& url) {
 
 GURL GetDocumentsOperation::GetURL() const {
   if (!override_url_.is_empty())
-    return AddFeedUrlParams(override_url_);
+    return AddFeedUrlParams(override_url_, kMaxDocumentsPerFeed);
 
-  return AddFeedUrlParams(GURL(kGetDocumentListURL));
+  return AddFeedUrlParams(GURL(kGetDocumentListURL), kMaxDocumentsPerFirstFeed);
 }
 
 //========================= GetAccountMetadataOperation ========================
@@ -758,7 +762,7 @@ InitiateUploadOperation::InitiateUploadOperation(
                             profile),
       callback_(callback),
       params_(params),
-      initiate_upload_url_(chrome_browser_net::AppendQueryParameter(
+      initiate_upload_url_(chrome_browser_net::AppendOrReplaceQueryParameter(
           params.resumable_create_media_link,
           kUploadParamConvertKey,
           kUploadParamConvertValue)) {

@@ -495,6 +495,14 @@ class GDataFileSystem : public GDataFileSystemInterface {
     DIRECTORY_ALREADY_PRESENT,
   };
 
+  // Document feed chunk type.
+  enum FeedChunkType {
+    // The very first part of content we fetch (i.e. first 200 items),
+    FEED_CHUNK_INITIAL,
+    // The rest of the feed that excludes FEED_CHUNK_INITIAL,
+    FEED_CHUNK_REST
+  };
+
   // Defines set of parameters passes to intermediate callbacks during
   // execution of CreateDirectory() method.
   struct CreateDirectoryParams {
@@ -674,6 +682,7 @@ class GDataFileSystem : public GDataFileSystemInterface {
   // the content of the refreshed directory object and continue initially
   // started FindFileByPath() request.
   void OnGetDocuments(const FilePath& search_file_path,
+                      FeedChunkType chunk_type,
                       scoped_ptr<base::ListValue> feed_list,
                       const FindFileCallback& callback,
                       GDataErrorCode status,
@@ -811,11 +820,15 @@ class GDataFileSystem : public GDataFileSystemInterface {
   void LoadFeedFromServer(const FilePath& search_file_path,
                           const FindFileCallback& callback);
 
+  // Returns file name for cached feed given feed |chunk_type|.
+  FilePath GetCachedFeedFileName(FeedChunkType chunk_type) const;
+
   // Starts root feed load from the cache. If successful, it will try to find
   // the file upon retrieval completion. In addition to that, it will
   // initate retrieval of the root feed from the server if
   // |should_load_from_server| is set.
-  void LoadRootFeedFromCache(const FilePath& search_file_path,
+  void LoadRootFeedFromCache(FeedChunkType chunk_type,
+                             const FilePath& search_file_path,
                              bool should_load_from_server,
                              const FindFileCallback& callback);
 
@@ -827,7 +840,8 @@ class GDataFileSystem : public GDataFileSystemInterface {
                                          base::ListValue* feed_list);
 
   // Callback for handling root directory refresh from the cache.
-  void OnLoadRootFeed(const FilePath& search_file_path,
+  void OnLoadRootFeed(FeedChunkType chunk_type,
+                      const FilePath& search_file_path,
                       bool should_load_from_server,
                       const FindFileCallback& callback,
                       base::PlatformFileError* error,
