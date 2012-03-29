@@ -173,8 +173,8 @@ class RTCVideoDecoderTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(RTCVideoDecoderTest);
 };
 
-const int RTCVideoDecoderTest::kWidth = 176;
-const int RTCVideoDecoderTest::kHeight = 144;
+const int RTCVideoDecoderTest::kWidth = 640;
+const int RTCVideoDecoderTest::kHeight = 480;
 const char* RTCVideoDecoderTest::kUrl = "media://remote/0";
 const PipelineStatistics RTCVideoDecoderTest::kStatistics;
 

@@ -31,7 +31,7 @@ using media::VideoDecoder;
 RTCVideoDecoder::RTCVideoDecoder(MessageLoop* message_loop,
                                  const std::string& url)
     : message_loop_(message_loop),
-      visible_size_(176, 144),
+      visible_size_(640, 480),
       url_(url),
       state_(kUnInitialized),
       got_first_frame_(false) {
