@@ -71,7 +71,11 @@ function onLoad() {
         fn: function() { remoting.askPinDialog.showForPin(); } },
       { event: 'click', id: 'stop-daemon', fn: stopDaemon },
       { event: 'submit', id: 'access-code-form', fn: sendAccessCode },
-      { event: 'submit', id: 'pin-form', fn: connectHostWithPin }
+      { event: 'submit', id: 'pin-form', fn: connectHostWithPin },
+      { event: 'click', id: 'get-started-it2me',
+        fn: remoting.showIt2MeUiAndSave },
+      { event: 'click', id: 'get-started-me2me',
+        fn: remoting.showMe2MeUiAndSave }
   ];
 
   for (var i = 0; i < actions.length; ++i) {

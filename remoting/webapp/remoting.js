@@ -51,6 +51,9 @@ remoting.init = function() {
     document.getElementById('current-email').innerText = email;
   }
 
+  remoting.showOrHideIt2MeUi();
+  remoting.showOrHideMe2MeUi();
+
   // The plugin's onFocus handler sends a paste command to |window|, because
   // it can't send one to the plugin element itself.
   window.addEventListener('paste', pluginGotPaste_, false);

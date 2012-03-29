@@ -219,6 +219,8 @@ h1.icon-label {
   color: #aaa;
   font-family: "Open sans", "Ariel", sans-serif;
   line-height: 24px;
+  display: inline-block;
+  margin-__MSG_@@bidi_start_edge__: 10px;
 }
 
 h2 {
@@ -255,8 +257,8 @@ section {
   padding: 20px 30px 20px 30px;
   border-radius: 3px;
   box-shadow: 0 2px 5px rgba(0,0,0,0.07);
+  position: relative;
 }
-
 
 .access-code-digit-group {
   /*
@@ -304,14 +306,20 @@ section {
 }
 
 .expiring {
-    color: #900 !important;
+  color: #900 !important;
 }
 
-.icon-label {
-  display: inline-block;
-  vertical-align: top;
-  margin-__MSG_@@bidi_start_edge__: 10px;
+.infographic {
+  position: absolute;
+  right: 22px;
+  top: 24px;
 }
+
+.infographic-description {
+  height: 80px;
+  width: 400px;
+  padding-top: 2em;
+};
 
 .information-box {
   background-color: #f9edbe;

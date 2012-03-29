@@ -186,6 +186,10 @@
     "message": "Full screen",
     "description": "Menu option for toggle full-screen mode. Equivalent to using the Wrench menu to do the same thing."
   },
+  "GET_STARTED": {
+    "message": "Get started",
+    "description": "Button displayed underneath explanatory text for app features. Clicking causes the text, infographic and the button itself to be replaced by the actual UI for that feature."
+  },
   "HELP": {
     "message": "Help",
     "description": "Help link, displayed in the top-left (assuming ltr layout) corner of the main screen. Clicking this takes the user to our FAQ."
@@ -242,9 +246,17 @@
     "message": "Once they enter the code your sharing session will begin.",
     "description": "Instructions shown below the access code when it is ready to be conveyed to the client."
   },
+  "IT2ME_FIRST_RUN": {
+    "message": "User-to-user screen sharing&mdash;perfect for remote technical support.",
+    "description": "Description of the 'IT2Me' remote support functionality, displayed until the user clicks a 'get started' button, at which point it is replaced by the actual UI for that functionality."
+  },
   "LABEL_CONNECTED": {
     "message": "Connected:",
     "description": "String displayed in front of the host when a connection is active informing the client user who they are connected to."
+  },
+  "ME2ME_FIRST_RUN": {
+    "message": "Access your own computer from anywhere.",
+    "description": "Description of the 'Me2Me' remote access functionality, displayed until the user clicks a 'get started' button, at which point it is replaced by the actual UI for that functionality."
   },
   "MESSAGE_GENERATING": {
     "message": "Generating access code\u2026",

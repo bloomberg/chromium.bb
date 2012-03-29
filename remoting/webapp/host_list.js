@@ -200,20 +200,6 @@ remoting.HostList.prototype.display = function() {
     l10n.localizeElementFromTag(this.errorDiv_, this.lastError_);
   }
   this.errorDiv_.hidden = (this.lastError_ == '');
-
-  this.showOrHide_(this.hosts_.length != 0 || this.lastError_ != '');
-};
-
-/**
- * Show or hide the host-list UI.
- *
- * @param {boolean} show True to show the UI, or false to hide it.
- * @return {void} Nothing.
- * @private
- */
-remoting.HostList.prototype.showOrHide_ = function(show) {
-  var parent = /** @type {Element} */ (this.table_.parentNode);
-  parent.hidden = !show;
 };
 
 /**
@@ -238,8 +224,6 @@ remoting.HostList.prototype.deleteHost_ = function(hostTableEntry) {
         function() {}, '', headers);
   }
   remoting.oauth2.callWithToken(deleteHost);
-
-  this.showOrHide_(this.hostTableEntries_.length != 0);
 };
 
 /**

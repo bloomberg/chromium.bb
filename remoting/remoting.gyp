@@ -166,6 +166,8 @@
       'resources/chromoting128.png',
       'resources/disclosure_arrow_down.png',
       'resources/disclosure_arrow_right.png',
+      'resources/infographic_my_computers.png',
+      'resources/infographic_remote_assistance.png',
       'resources/tick.png',
     ],
   },
