@@ -163,15 +163,16 @@ class Strace(object):
     def _handle_file(self, pid, filepath, result):
       if result.startswith('-1'):
         return
+      old_filepath = filepath
       if not filepath.startswith('/'):
-        filepath2 = os.path.join(self._cwd[pid], filepath)
-        logging.debug('_handle_file(%d, %s) -> %s' % (pid, filepath, filepath2))
-        filepath = filepath2
-      else:
-        logging.debug('_handle_file(%d, %s)' % (pid, filepath))
-
+        filepath = os.path.join(self._cwd[pid], filepath)
       if self.blacklist(filepath):
         return
+      if old_filepath != filepath:
+        logging.debug(
+            '_handle_file(%d, %s) -> %s' % (pid, old_filepath, filepath))
+      else:
+        logging.debug('_handle_file(%d, %s)' % (pid, filepath))
       if filepath not in self.files and filepath not in self.non_existent:
         if os.path.isfile(filepath):
           self.files.add(filepath)
@@ -634,15 +635,26 @@ def extract_directories(files, root):
   return sorted(files)
 
 
-def trace_inputs(
-    logfile, cmd, root_dir, gyp_proj_dir, product_dir, force_trace):
+def trace_inputs(logfile, cmd, root_dir, cwd_dir, product_dir, force_trace):
   """Tries to load the logs if available. If not, trace the test.
 
   Symlinks are not processed at all.
+
+  Arguments:
+  - logfile:     Absolute path to the OS-specific trace.
+  - cmd:         Command list to run.
+  - root_dir:    Base directory where the files we care about live.
+  - cwd_dir:     Cwd to use to start the process, relative to the root_dir
+                 directory.
+  - product_dir: Directory containing the executables built by the build
+                 process, relative to the root_dir directory. It is used to
+                 properly replace paths with <(PRODUCT_DIR) for gyp output.
+  - force_trace: Will force to trace unconditionally even if a trace already
+                 exist.
   """
   logging.debug(
       'trace_inputs(%s, %s, %s, %s, %s, %s)' % (
-        logfile, cmd, root_dir, gyp_proj_dir, product_dir, force_trace))
+        logfile, cmd, root_dir, cwd_dir, product_dir, force_trace))
 
   # It is important to have unambiguous path.
   assert os.path.isabs(root_dir), root_dir
@@ -650,11 +662,14 @@ def trace_inputs(
   assert (
       (os.path.isfile(logfile) and not force_trace) or os.path.isabs(cmd[0])
       ), cmd[0]
+  assert not cwd_dir or not os.path.isabs(cwd_dir), cwd_dir
+  assert not product_dir or not os.path.isabs(product_dir), product_dir
+
   # Resolve any symlink
   root_dir = os.path.realpath(root_dir)
 
   def print_if(txt):
-    if gyp_proj_dir is None:
+    if cwd_dir is None:
       print(txt)
 
   if sys.platform == 'linux2':
@@ -670,9 +685,9 @@ def trace_inputs(
       os.remove(logfile)
     print_if('Tracing... %s' % cmd)
     cwd = root_dir
-    # TODO(maruel): If --gyp is specified, use it as the cwd.
-    #if gyp_proj_dir:
-    #  cwd = os.path.join(cwd, gyp_proj_dir)
+    # Use the proper relative directory.
+    if cwd_dir:
+      cwd = os.path.join(cwd, cwd_dir)
     returncode = api.gen_trace(cmd, cwd, logfile)
     if returncode and not force_trace:
       return returncode
@@ -700,7 +715,7 @@ def trace_inputs(
   for f in simplified:
     print_if('  %s' % f)
 
-  if gyp_proj_dir is not None:
+  if cwd_dir is not None:
     def cleanuppath(x):
       """Cleans up a relative path."""
       if x:
@@ -711,7 +726,8 @@ def trace_inputs(
         x += '/'
       return x
 
-    gyp_proj_dir = cleanuppath(gyp_proj_dir)
+    # Both are relative directories to root_dir.
+    cwd_dir = cleanuppath(cwd_dir)
     product_dir = cleanuppath(product_dir)
 
     def fix(f):
@@ -719,9 +735,10 @@ def trace_inputs(
       logging.debug('fix(%s)' % f)
       if product_dir and f.startswith(product_dir):
         return '<(PRODUCT_DIR)/%s' % f[len(product_dir):]
-      elif gyp_proj_dir and f.startswith(gyp_proj_dir):
-        # May be empty if the whole directory containing the gyp file is needed.
-        return f[len(gyp_proj_dir):] or './'
+      elif cwd_dir and f.startswith(cwd_dir):
+        # cwd_dir is usually the directory containing the gyp file. It may be
+        # empty if the whole directory containing the gyp file is needed.
+        return f[len(cwd_dir):] or './'
       else:
         return '<(DEPTH)/%s' % f
 
@@ -751,8 +768,9 @@ def main():
       '-v', '--verbose', action='count', default=0, help='Use multiple times')
   parser.add_option('-l', '--log', help='Log file')
   parser.add_option(
-      '-g', '--gyp',
-      help='When specified, outputs the inputs files in a way compatible for '
+      '-c', '--cwd',
+      help='Signal to start the process from this relative directory. When '
+           'specified, outputs the inputs files in a way compatible for '
            'gyp processing. Should be set to the relative path containing the '
            'gyp file, e.g. \'chrome\' or \'net\'')
   parser.add_option(
@@ -785,7 +803,7 @@ def main():
       os.path.abspath(options.log),
       args,
       options.root_dir,
-      options.gyp,
+      options.cwd,
       options.product_dir,
       options.force)
 

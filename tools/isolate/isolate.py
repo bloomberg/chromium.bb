@@ -294,7 +294,7 @@ def MODEtrace(
       cmd,
       indir,
       relative_cwd,
-      os.path.dirname(resultfile),  # Guesswork here.
+      os.path.relpath(os.path.dirname(resultfile), indir),  # Guesswork here.
       False)
 
 

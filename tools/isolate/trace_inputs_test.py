@@ -33,29 +33,40 @@ class TraceInputs(unittest.TestCase):
   def setUp(self):
     self.tempdir = tempfile.mkdtemp()
     self.log = os.path.join(self.tempdir, 'log')
+    os.chdir(ROOT_DIR)
 
   def tearDown(self):
     shutil.rmtree(self.tempdir)
 
-  def _execute(self, args):
+  def _execute(self, is_gyp):
     cmd = [
-      sys.executable, os.path.join(ROOT_DIR, 'trace_inputs.py'),
+      sys.executable, os.path.join('..', 'trace_inputs.py'),
       '--log', self.log,
       '--root-dir', ROOT_DIR,
-    ] + args
+    ]
+    if is_gyp:
+      cmd.extend(
+          [
+            '--cwd', 'data',
+            '--product', '.',  # Not tested.
+          ])
+    cmd.append(os.path.join('..', 'trace_inputs_test.py'))
+    if is_gyp:
+      # When the gyp argument is not specified, the command is started from
+      # --root-dir directory.
+      cmd.append('--child-gyp')
+    else:
+      # When the gyp argument is specified, the command is started from --cwd
+      # directory.
+      cmd.append('--child')
+
+    cwd = 'data'
     p = subprocess.Popen(
-        cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, cwd=ROOT_DIR)
+        cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, cwd=cwd)
     out = p.communicate()[0]
     if p.returncode:
-      raise CalledProcessError(p.returncode, cmd, out, ROOT_DIR)
+      raise CalledProcessError(p.returncode, cmd, out, cwd)
     return out
-
-  @staticmethod
-  def _gyp():
-    return [
-      '--gyp', os.path.join('data', 'trace_inputs'),
-      '--product', '.',  # Not tested.
-    ]
 
   def test_trace(self):
     if sys.platform not in ('linux2', 'darwin'):
@@ -67,7 +78,7 @@ class TraceInputs(unittest.TestCase):
       "  trace_inputs.py",
       "  trace_inputs_test.py",
     ]
-    actual = self._execute(['trace_inputs_test.py', '--child1']).splitlines()
+    actual = self._execute(False).splitlines()
     self.assertTrue(actual[0].startswith('Tracing... ['))
     self.assertTrue(actual[1].startswith('Loading traces... '))
     self.assertTrue(actual[2].startswith('Total: '))
@@ -89,22 +100,38 @@ class TraceInputs(unittest.TestCase):
         "      '<(DEPTH)/trace_inputs_test.py',\n"
         "    ],\n"
         "    'isolate_dirs': [\n"
-        "      './',\n"
+        "      'trace_inputs/',\n"
         "    ],\n"
         "  },\n"
         "},\n")
-    actual = self._execute(self._gyp() + ['trace_inputs_test.py', '--child1'])
+    actual = self._execute(True)
     self.assertEquals(expected, actual)
 
 
-def child1():
-  print 'child1'
-  # Implicitly force file opening.
-  import trace_inputs  # pylint: disable=W0612
+def child():
+  """When the gyp argument is not specified, the command is started from
+  --root-dir directory.
+  """
+  print 'child'
+  # Force file opening with a non-normalized path.
+  open(os.path.join('data', '..', 'trace_inputs.py'), 'rb').close()
   # Do not wait for the child to exit.
   # Use relative directory.
   subprocess.Popen(
       ['python', 'child2.py'], cwd=os.path.join('data', 'trace_inputs'))
+  return 0
+
+
+def child_gyp():
+  """When the gyp argument is specified, the command is started from --cwd
+  directory.
+  """
+  print 'child_gyp'
+  # Force file opening.
+  open(os.path.join('..', 'trace_inputs.py'), 'rb').close()
+  # Do not wait for the child to exit.
+  # Use relative directory.
+  subprocess.Popen(['python', 'child2.py'], cwd='trace_inputs')
   return 0
 
 
@@ -116,8 +143,10 @@ def main():
   if len(sys.argv) == 1:
     unittest.main()
 
-  if sys.argv[1] == '--child1':
-    return child1()
+  if sys.argv[1] == '--child':
+    return child()
+  if sys.argv[1] == '--child-gyp':
+    return child_gyp()
 
   unittest.main()
 
