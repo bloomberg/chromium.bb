@@ -49,6 +49,7 @@
 #include "ui/gfx/gl/gl_implementation.h"
 #include "ui/gfx/gl/gl_surface.h"
 #include "webkit/appcache/web_application_cache_host_impl.h"
+#include "webkit/fileapi/isolated_context.h"
 #include "webkit/glue/user_agent.h"
 #include "webkit/glue/webkit_constants.h"
 #include "webkit/glue/webkit_glue.h"
@@ -679,6 +680,17 @@ void OpenFileSystem(WebFrame* frame, WebFileSystem::Type type,
   SimpleFileSystem* fileSystem = static_cast<SimpleFileSystem*>(
       test_environment->webkit_platform_support()->fileSystem());
   fileSystem->OpenFileSystem(frame, type, size, create, callbacks);
+}
+
+WebKit::WebString RegisterIsolatedFileSystem(
+    const WebKit::WebVector<WebKit::WebString>& filenames) {
+  std::set<FilePath> files;
+  for (size_t i = 0; i < filenames.size(); ++i)
+    files.insert(webkit_glue::WebStringToFilePath(filenames[i]));
+  std::string filesystemId =
+      fileapi::IsolatedContext::GetInstance()->RegisterIsolatedFileSystem(
+          files);
+  return UTF8ToUTF16(filesystemId);
 }
 
 // Keyboard code
