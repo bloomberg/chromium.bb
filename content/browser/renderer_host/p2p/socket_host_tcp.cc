@@ -88,7 +88,7 @@ void P2PSocketHostTcp::OnConnected(int result) {
     return;
   }
 
-  if (socket_->SetSendBufferSize(kMaxSendBufferSize)) {
+  if (!socket_->SetSendBufferSize(kMaxSendBufferSize)) {
     LOG(WARNING) << "Failed to set send buffer size for TCP socket.";
   }
 
