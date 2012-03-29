@@ -85,7 +85,7 @@ void OmniboxUIHandler::OnResultChanged(bool default_match_changed) {
 
 // For details on the format of the DictionaryValue that this function
 // populates, see the comments by OnResultChanged().
-void OmniboxUIHandler::AddResultToDictionary(const std::string prefix,
+void OmniboxUIHandler::AddResultToDictionary(const std::string& prefix,
                                              ACMatches::const_iterator it,
                                              ACMatches::const_iterator end,
                                              base::DictionaryValue* output) {

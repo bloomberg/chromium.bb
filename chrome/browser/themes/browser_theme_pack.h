@@ -66,7 +66,7 @@ class BrowserThemePack : public base::RefCountedThreadSafe<
   // implementation should be threadsafe because neither thread will write to
   // |image_memory_| and the worker thread will keep a reference to prevent
   // destruction.
-  bool WriteToDisk(FilePath path) const;
+  bool WriteToDisk(const FilePath& path) const;
 
   // If this theme specifies data for the corresponding |id|, return true and
   // write the corresponding value to the output parameter. These functions

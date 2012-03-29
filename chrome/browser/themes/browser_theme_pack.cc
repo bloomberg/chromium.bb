@@ -425,7 +425,7 @@ scoped_refptr<BrowserThemePack> BrowserThemePack::BuildFromDataPack(
   return pack;
 }
 
-bool BrowserThemePack::WriteToDisk(FilePath path) const {
+bool BrowserThemePack::WriteToDisk(const FilePath& path) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   // Add resources for each of the property arrays.
   RawDataForWriting resources;

@@ -55,7 +55,7 @@ class OmniboxUIHandler : public AutocompleteControllerDelegate,
   // Helper function for OnResultChanged().
   // Takes an iterator over AutocompleteMatches and packages them into
   // the DictionaryValue output, all stored under the given prefix.
-  void AddResultToDictionary(const std::string prefix,
+  void AddResultToDictionary(const std::string& prefix,
                              ACMatches::const_iterator result_it,
                              ACMatches::const_iterator end,
                              base::DictionaryValue* output);

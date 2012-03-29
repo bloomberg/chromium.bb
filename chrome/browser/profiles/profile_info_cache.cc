@@ -734,7 +734,7 @@ std::string ProfileInfoCache::CacheKeyFromProfilePath(
 }
 
 std::vector<std::string>::iterator ProfileInfoCache::FindPositionForProfile(
-    std::string search_key,
+    const std::string& search_key,
     const string16& search_name) {
   string16 search_name_l = base::i18n::ToLower(search_name);
   for (size_t i = 0; i < GetNumberOfProfiles(); ++i) {
