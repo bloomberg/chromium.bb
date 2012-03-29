@@ -213,10 +213,11 @@ class PrefsTest(pyauto.PyUITest):
     self.PerformActionOnInfobar('accept', infobar_index=0)  # Allow tracking.
     # Get the hostname pattern (e.g. http://127.0.0.1:57622).
     hostname_pattern = (
-        '/'.join(self.GetHttpURLForDataPath('').split('/')[0:3]) + '/')
+        '/'.join(self.GetHttpURLForDataPath('').split('/')[0:3]))
     self.assertEqual(
-        {hostname_pattern: {hostname_pattern: 1}},  # Allow the hostname.
-        self.GetPrefsInfo().Prefs(pyauto.kGeolocationContentSettings))
+        # Allow the hostname.
+        {hostname_pattern+','+hostname_pattern: {'geolocation': 1}},
+        self.GetPrefsInfo().Prefs(pyauto.kContentSettingsPatternPairs))
 
   def testDismissedInfobarSavesNoEntry(self):
     """Verify dismissing infobar does not save an exception entry."""
@@ -227,7 +228,7 @@ class PrefsTest(pyauto.PyUITest):
     self.assertTrue(self.WaitForInfobarCount(1))
     self.PerformActionOnInfobar('dismiss', infobar_index=0)
     self.assertEqual(
-        {}, self.GetPrefsInfo().Prefs(pyauto.kGeolocationContentSettings))
+        {}, self.GetPrefsInfo().Prefs(pyauto.kContentSettingsPatternPairs))
 
   def testGeolocationBlockedWhenTrackingDenied(self):
     """Verify geolocations is blocked when tracking is denied.
@@ -251,10 +252,11 @@ class PrefsTest(pyauto.PyUITest):
         msg='Behavior is "%s" when it should be BLOCKED.'  % behavior)
     # Get the hostname pattern (e.g. http://127.0.0.1:57622).
     hostname_pattern = (
-        '/'.join(self.GetHttpURLForDataPath('').split('/')[0:3]) + '/')
+        '/'.join(self.GetHttpURLForDataPath('').split('/')[0:3]))
     self.assertEqual(
-        {hostname_pattern: {hostname_pattern: 2}},  # Block the hostname.
-        self.GetPrefsInfo().Prefs(pyauto.kGeolocationContentSettings))
+        # Block the hostname.
+        {hostname_pattern+','+hostname_pattern: {'geolocation': 2}},
+        self.GetPrefsInfo().Prefs(pyauto.kContentSettingsPatternPairs))
 
   def _CheckForVisibleImage(self, tab_index=0, windex=0):
     """Checks whether or not an image is visible on the webpage.
