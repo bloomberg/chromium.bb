@@ -11,6 +11,7 @@
 #include "base/memory/singleton.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "base/stringprintf.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/values.h"
@@ -47,6 +48,7 @@
 #include "content/public/common/url_fetcher.h"
 #include "grit/browser_resources.h"
 #include "net/base/escape.h"
+#include "net/base/load_flags.h"
 #include "net/url_request/url_request_status.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -155,14 +157,14 @@ const LanguageCodeSynonym kLanguageCodeSynonyms[] = {
 
 const char* const kTranslateScriptURL =
     "https://translate.google.com/translate_a/element.js?"
-    "cb=cr.googleTranslate.onTranslateElementLoad";
+    "cb=cr.googleTranslate.onTranslateElementLoad&hl=%s";
 const char* const kTranslateScriptHeader =
     "Google-Translate-Element-Mode: library";
 const char* const kReportLanguageDetectionErrorURL =
     // TODO(palmer): bug 112236. Make this https://.
     "http://translate.google.com/translate_error";
 const char* const kLanguageListFetchURL =
-    "https://translate.googleapis.com/translate_a/l?client=chrome&cb=sl";
+    "https://translate.googleapis.com/translate_a/l?client=chrome&cb=sl&hl=%s";
 const int kMaxRetryLanguageListFetch = 5;
 const int kTranslateScriptExpirationDelayDays = 1;
 
@@ -807,8 +809,13 @@ void TranslateManager::FetchLanguageListFromTranslateServer(
     return;
   }
 
+  std::string language_list_fetch_url = base::StringPrintf(
+      kLanguageListFetchURL,
+      GetLanguageCode(g_browser_process->GetApplicationLocale()).c_str());
   language_list_request_pending_.reset(content::URLFetcher::Create(
-      1, GURL(kLanguageListFetchURL), content::URLFetcher::GET, this));
+      1, GURL(language_list_fetch_url), content::URLFetcher::GET, this));
+  language_list_request_pending_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
+                                               net::LOAD_DO_NOT_SAVE_COOKIES);
   language_list_request_pending_->SetRequestContext(
       g_browser_process->system_request_context());
   language_list_request_pending_->SetMaxRetries(kMaxRetryLanguageListFetch);
@@ -824,8 +831,13 @@ void TranslateManager::RequestTranslateScript() {
   if (translate_script_request_pending_.get() != NULL)
     return;
 
+  std::string translate_script_url = base::StringPrintf(
+      kTranslateScriptURL,
+      GetLanguageCode(g_browser_process->GetApplicationLocale()).c_str());
   translate_script_request_pending_.reset(content::URLFetcher::Create(
-      0, GURL(kTranslateScriptURL), content::URLFetcher::GET, this));
+      0, GURL(translate_script_url), content::URLFetcher::GET, this));
+  translate_script_request_pending_->SetLoadFlags(
+      net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES);
   translate_script_request_pending_->SetRequestContext(
       g_browser_process->system_request_context());
   translate_script_request_pending_->SetExtraRequestHeaders(
