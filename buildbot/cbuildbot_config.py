@@ -25,6 +25,7 @@ BUILD_TYPE_DUMP_ORDER = [
     constants.CHROOT_BUILDER_TYPE,
     constants.CHROOT_BUILDER_BOARD,
     constants.CHROME_PFQ_TYPE,
+    constants.PFQ_TYPE,
     constants.REFRESH_PACKAGES_TYPE]
 
 
@@ -403,6 +404,15 @@ full = _config(
   git_sync=True,
 )
 
+pfq = _config(
+  build_type=constants.PFQ_TYPE,
+  important=True,
+  uprev=True,
+  overlays='public',
+  manifest_version=True,
+  trybot_list=True,
+)
+
 paladin = _config(
   important=True,
   build_type=constants.PALADIN_TYPE,
@@ -592,8 +602,16 @@ _config.add_raw_config('x86-generic-asan',
 # Internal Builds
 #
 
+internal_pfq = internal.derive(pfq, overlays='private')
+internal_pfq_branch = internal_pfq.derive(overlays='both')
 internal_paladin = internal.derive(paladin, overlays='private')
 internal_incremental = internal.derive(incremental, overlays='both')
+
+internal_pfq_branch.add_config('x86-alex-pre-flight-branch',
+  master=True,
+  push_overlays='both',
+  boards=['x86-alex'],
+)
 
 internal_arm_paladin = internal_paladin.derive(arm)
 
