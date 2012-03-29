@@ -57,7 +57,7 @@ void AddPrerenderOnUI(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   prerender::PrerenderManager* prerender_manager =
       prerender::FindPrerenderManagerUsingRenderProcessId(render_process_id);
-  if (!prerender_manager || !prerender_manager->is_enabled())
+  if (!prerender_manager)
     return;
 
   prerender_manager->AddPrerenderFromLinkRelPrerender(render_process_id,

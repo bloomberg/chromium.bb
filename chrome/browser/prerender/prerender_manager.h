@@ -147,10 +147,6 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
       content::WebContents* web_contents,
       const GURL& url);
 
-  // Returns whether prerendering is currently enabled for this manager.
-  // Must be called on the UI thread.
-  bool is_enabled() const;
-
   // Set whether prerendering is currently enabled for this manager.
   // Must be called on the UI thread.
   // If |enabled| is false, existing prerendered pages will still persist until
@@ -394,6 +390,10 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   void RecordFinalStatus(Origin origin,
                          uint8 experiment_id,
                          FinalStatus final_status) const;
+
+  // Returns whether prerendering is currently enabled for this manager.
+  // Must be called on the UI thread.
+  bool IsEnabled() const;
 
   // The configuration.
   Config config_;
