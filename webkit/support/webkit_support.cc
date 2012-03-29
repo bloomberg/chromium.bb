@@ -90,14 +90,11 @@ void UnitTestAssertHandler(const std::string& str) {
   FAIL() << str;
 }
 
-void InitLogging(bool enable_gp_fault_error_box) {
-  logging::SetLogAssertHandler(UnitTestAssertHandler);
-
+void InitLogging() {
 #if defined(OS_WIN)
   if (!::IsDebuggerPresent()) {
-    UINT new_flags = SEM_FAILCRITICALERRORS | SEM_NOOPENFILEERRORBOX;
-    if (!enable_gp_fault_error_box)
-      new_flags |= SEM_NOGPFAULTERRORBOX;
+    UINT new_flags = SEM_FAILCRITICALERRORS | SEM_NOOPENFILEERRORBOX
+        | SEM_NOGPFAULTERRORBOX;
 
     // Preserve existing error mode, as discussed at
     // http://blogs.msdn.com/oldnewthing/archive/2004/07/27/198410.aspx
@@ -138,10 +135,12 @@ class TestEnvironment {
 
   TestEnvironment(bool unit_test_mode,
                   base::AtExitManager* existing_at_exit_manager) {
-    if (!unit_test_mode) {
+    if (unit_test_mode) {
+      logging::SetLogAssertHandler(UnitTestAssertHandler);
+    } else {
       // The existing_at_exit_manager must be not NULL.
       at_exit_manager_.reset(existing_at_exit_manager);
-      InitLogging(false);
+      InitLogging();
     }
     main_message_loop_.reset(new MessageLoopType);
     // TestWebKitPlatformSupport must be instantiated after MessageLoopType.
