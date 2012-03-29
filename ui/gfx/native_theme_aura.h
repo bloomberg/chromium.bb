@@ -6,13 +6,9 @@
 #define UI_GFX_NATIVE_THEME_AURA_H_
 #pragma once
 
-#include <map>
-
+#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "ui/gfx/native_theme_base.h"
-#include "ui/gfx/rect.h"
-
-class SkBitmap;
 
 namespace gfx {
 
@@ -43,13 +39,6 @@ class NativeThemeAura : public NativeThemeBase {
                                    Part part,
                                    State state,
                                    const gfx::Rect& rect) const OVERRIDE;
-
-  SkBitmap* GetHorizontalBitmapNamed(int resource_id) const;
-
-  // Cached images. Resource loader caches all retrieved bitmaps and keeps
-  // ownership of the pointers.
-  typedef std::map<int, SkBitmap*> SkImageMap;
-  mutable SkImageMap horizontal_bitmaps_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeThemeAura);
 };

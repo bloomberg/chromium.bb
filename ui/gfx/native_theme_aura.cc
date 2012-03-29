@@ -4,10 +4,10 @@
 
 #include "ui/gfx/native_theme_aura.h"
 
-#include "base/basictypes.h"
 #include "base/logging.h"
 #include "grit/gfx_resources.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 #include "ui/gfx/skbitmap_operations.h"
 
@@ -131,7 +131,7 @@ void NativeThemeAura::PaintScrollbarTrack(
     State state,
     const ScrollbarTrackExtraParams& extra_params,
     const gfx::Rect& rect) const {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   if (part == kScrollbarVerticalTrack) {
     int center_offset = 0;
     int center_height = rect.height();
@@ -200,13 +200,17 @@ void NativeThemeAura::PaintScrollbarTrack(
 }
 
 void NativeThemeAura::PaintArrowButton(SkCanvas* canvas,
-    const gfx::Rect& rect, Part part, State state) const {
+                                       const gfx::Rect& rect,
+                                       Part part,
+                                       State state) const {
   DCHECK(rect.IsEmpty());
 }
 
 void NativeThemeAura::PaintScrollbarThumb(SkCanvas* canvas,
-    Part part, State state, const gfx::Rect& rect) const {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+                                          Part part,
+                                          State state,
+                                          const gfx::Rect& rect) const {
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   if (part == kScrollbarVerticalThumb) {
     int top_resource_id =
         state == kHovered ? IDR_SCROLL_THUMB_VERTICAL_TOP_H :
