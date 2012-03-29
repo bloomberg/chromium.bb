@@ -36,6 +36,7 @@ $(builddir)/en-US/%: $(srcdir)/en_US/% en-US/ProtocolSpec.xml $(publican_sources
 Wayland: $(publican_targets)
 	$(AM_V_GEN)$(PUBLICAN) build --lang en-US --format html,pdf \
 		--config $(srcdir)/publican.cfg
+	@touch Wayland
 
 CLEANFILES = en-US/ProtocolSpec.xml $(publican_targets)
 
