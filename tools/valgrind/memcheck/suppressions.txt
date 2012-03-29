@@ -5723,20 +5723,11 @@
    fun:_ZN5gdata25GDataSystemServiceFactory13GetForProfileEP7Profile
    fun:_ZN22FileBrowserEventRouter23ObserveFileSystemEventsEv
    fun:_ZN16ExtensionService16InitEventRoutersEv
-   fun:_ZN11ProfileImpl14InitExtensionsEb
-   fun:_ZN14ProfileManager22DoFinalInitForServicesEP7Profileb
-   fun:_ZN14ProfileManager11DoFinalInitEP7Profileb
-   fun:_ZN14ProfileManager10AddProfileEP7Profile
-   fun:_ZN14ProfileManager10GetProfileERK8FilePath
-   fun:_ZN14ProfileManager17GetDefaultProfileERK8FilePath
-   fun:_ZN14ProfileManager17GetDefaultProfileEv
-   fun:_ZN22ChromeLauncherDelegateC1EP7ProfilePN3ash13LauncherModelE
-   fun:_ZN19ChromeShellDelegate22CreateLauncherDelegateEPN3ash13LauncherModelE
-   fun:_ZN3ash8LauncherC1EPN4aura6WindowE
-   fun:_ZN3ash5Shell14CreateLauncherEv
-   fun:_ZN3ash5Shell4InitEv
-   fun:_ZN3ash5Shell14CreateInstanceEPNS_13ShellDelegateE
-   fun:_ZN30ChromeBrowserMainExtraPartsAsh14PreProfileInitEv
+   fun:_ZN16ExtensionService15InitAfterImportEv
+   fun:_ZN16ExtensionService7ObserveEiRKN7content18NotificationSourceERKNS0_19NotificationDetailsE
+   fun:_ZN23NotificationServiceImpl6NotifyEiRKN7content18NotificationSourceERKNS0_19NotificationDetailsE
+   fun:_ZN14ProfileManager16OnImportFinishedEP7Profile
+   fun:_ZN22ChromeBrowserMainParts25PreMainMessageLoopRunImplEv
 }
 {
    bug_120146
