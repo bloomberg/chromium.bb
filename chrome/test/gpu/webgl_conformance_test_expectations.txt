@@ -25,6 +25,13 @@
 103759 MAC WIN LINUX : conformance_more_functions_texImage2DHTML = FAIL
 103759 MAC WIN LINUX : conformance_more_functions_texSubImage2DHTML = FAIL
 
+UNFILED MAC WIN LINUX : conformance_glsl_misc_shader_with_conditional_scoping = FAIL
+UNFILED MAC WIN LINUX : conformance_glsl_misc_shader_with_do_scoping = FAIL
+UNFILED MAC WIN LINUX : conformance_glsl_misc_shader_with_for_scoping = FAIL
+UNFILED MAC WIN LINUX : conformance_glsl_misc_shader_with_functional_scoping = FAIL
+UNFILED MAC WIN LINUX : conformance_glsl_misc_shader_with_hex_int_constant_macro = FAIL
+UNFILED MAC WIN LINUX : conformance_glsl_misc_shader_with_vec4_vec3_vec4_conditional = FAIL
+
 113695 MAC WIN LINUX : conformance_misc_instanceof_test = FAIL
 
 UNFILED MAC WIN LINUX : conformance_textures_origin_clean_conformance = FAIL
