@@ -973,7 +973,9 @@ cr.define('ntp', function() {
       // be 1/3 down the page.
       var numTiles = this.tileCount +
           (this.isCurrentDragTarget && !this.withinPageDrag_ ? 1 : 0);
-      var numRows = Math.ceil(numTiles / layout.numRowTiles);
+      // Minimum of 1 row (this can come into play when there is an app install
+      // hint hiding the webstore tile, and there are no other tiles).
+      var numRows = Math.max(1, Math.ceil(numTiles / layout.numRowTiles));
       var usedHeight = layout.rowHeight * numRows;
       // 60 matches the top padding of tile-page (which acts as the minimum).
       var newMargin = document.documentElement.clientHeight / 3 -
