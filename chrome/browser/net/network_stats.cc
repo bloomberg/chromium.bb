@@ -9,6 +9,7 @@
 #include "base/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
+#include "base/rand_util.h"
 #include "base/stringprintf.h"
 #include "base/threading/platform_thread.h"
 #include "base/time.h"
@@ -75,6 +76,9 @@ static const uint32 kPayloadStart = kPayloadSizeEnd;
 // the <encoded_payload> in "echo response".
 static const uint32 kEncodedPayloadStart = kKeyEnd;
 
+// HistogramPortSelector and kPorts should be kept in sync.
+static const int32 kPorts[] = {53, 80, 587, 6121, 8080, 999999};
+
 // NetworkStats methods and members.
 NetworkStats::NetworkStats()
     : load_size_(0),
@@ -91,11 +95,12 @@ NetworkStats::~NetworkStats() {
 
 bool NetworkStats::Start(net::HostResolver* host_resolver,
                          const net::HostPortPair& server_host_port_pair,
+                         HistogramPortSelector histogram_port,
                          uint32 bytes_to_send,
                          const net::CompletionCallback& finished_callback) {
   DCHECK(bytes_to_send);   // We should have data to send.
 
-  Initialize(bytes_to_send, finished_callback);
+  Initialize(bytes_to_send, histogram_port, finished_callback);
 
   net::HostResolver::RequestInfo request(server_host_port_pair);
   int rv = host_resolver->Resolve(
@@ -109,14 +114,19 @@ bool NetworkStats::Start(net::HostResolver* host_resolver,
 }
 
 void NetworkStats::Initialize(
-    uint32 bytes_to_send, const net::CompletionCallback& finished_callback) {
+    uint32 bytes_to_send,
+    HistogramPortSelector histogram_port,
+    const net::CompletionCallback& finished_callback) {
   DCHECK(bytes_to_send);   // We should have data to send.
+  DCHECK_LE(bytes_to_send, kLargeTestBytesToSend);
 
   load_size_ = bytes_to_send;
   bytes_to_send_ = kVersionLength + kChecksumLength + kPayloadSizeLength +
       load_size_;
   bytes_to_read_ = kVersionLength + kChecksumLength + kPayloadSizeLength +
       kKeyLength + load_size_;
+
+  histogram_port_ = histogram_port;
   finished_callback_ = finished_callback;
 }
 
@@ -178,10 +188,11 @@ bool NetworkStats::ReadComplete(int result) {
 
   // No more data to read.
   if (!bytes_to_read_ || result == 0) {
-    if (VerifyBytes())
-      Finish(SUCCESS, net::OK);
+    Status status = VerifyBytes();
+    if (status == SUCCESS)
+      Finish(status, net::OK);
     else
-      Finish(READ_VERIFY_FAILED, net::ERR_INVALID_RESPONSE);
+      Finish(status, net::ERR_INVALID_RESPONSE);
     return true;
   }
   return false;
@@ -286,6 +297,33 @@ void NetworkStats::OnReadDataTimeout() {
   Finish(READ_TIMED_OUT, net::ERR_INVALID_ARGUMENT);
 }
 
+uint32 NetworkStats::GetChecksum(const char* message, uint32 message_length) {
+  // Calculate the <checksum> of the <message>.
+  uint32 sum = 0;
+  for (uint32 i = 0; i < message_length; ++i)
+    sum += message[i];
+  return sum;
+}
+
+void NetworkStats::Crypt(const char* key,
+                         uint32 key_length,
+                         const char* data,
+                         uint32 data_length,
+                         char* encoded_data) {
+  // Decrypt the data by looping through the |data| and XOR each byte with the
+  // |key| to get the decoded byte. Append the decoded byte to the
+  // |encoded_data|.
+  for (uint32 data_index = 0, key_index = 0;
+       data_index < data_length;
+       ++data_index) {
+    char data_byte = data[data_index];
+    char key_byte = key[key_index];
+    char encoded_byte = data_byte ^ key_byte;
+    encoded_data[data_index] = encoded_byte;
+    key_index = (key_index + 1) % key_length;
+  }
+}
+
 void NetworkStats::GetEchoRequest(net::IOBuffer* io_buffer) {
   // Copy the <version> into the io_buffer starting from the kVersionStart
   // position.
@@ -300,9 +338,7 @@ void NetworkStats::GetEchoRequest(net::IOBuffer* io_buffer) {
   stream_.GetBytes(buffer, load_size_);
 
   // Calculate the <checksum> of the <payload>.
-  uint32 sum = 0;
-  for (uint32 i = 0; i < load_size_; ++i)
-    sum += buffer[i];
+  uint32 sum = GetChecksum(buffer, load_size_);
 
   // Copy the <checksum> into the io_buffer starting from the kChecksumStart
   // position.
@@ -319,42 +355,133 @@ void NetworkStats::GetEchoRequest(net::IOBuffer* io_buffer) {
   memcpy(buffer, payload_size.c_str(), kPayloadSizeLength);
 }
 
-bool NetworkStats::VerifyBytes() {
+NetworkStats::Status NetworkStats::VerifyBytes() {
   // If the "echo response" doesn't have enough bytes, then return false.
-  if (encoded_message_.length() < kEncodedPayloadStart)
-    return false;
+  if (encoded_message_.length() <= kVersionStart)
+    return ZERO_LENGTH_ERROR;
+  if (encoded_message_.length() <= kChecksumStart)
+    return NO_CHECKSUM_ERROR;
+  if (encoded_message_.length() <= kPayloadSizeStart)
+    return NO_PAYLOAD_SIZE_ERROR;
+  if (encoded_message_.length() <= kKeyStart)
+    return NO_KEY_ERROR;
+  if (encoded_message_.length() <= kEncodedPayloadStart)
+    return NO_PAYLOAD_ERROR;
 
   // Extract the |key| from the "echo response".
   std::string key_string = encoded_message_.substr(kKeyStart, kKeyLength);
   const char* key = key_string.c_str();
   int key_value = atoi(key);
   if (key_value < kKeyMinValue || key_value > kKeyMaxValue)
-    return false;
+    return INVALID_KEY_ERROR;
 
   std::string encoded_payload =
       encoded_message_.substr(kEncodedPayloadStart);
   const char* encoded_data = encoded_payload.c_str();
   uint32 message_length = encoded_payload.length();
   message_length = std::min(message_length, kMaxMessage);
-  // We should get back all the data we had sent.
-  if (message_length != load_size_)
-    return false;
+  if (message_length < load_size_)
+    return TOO_SHORT_PAYLOAD;
+  if (message_length > load_size_)
+    return TOO_LONG_PAYLOAD;
 
-  // Decrypt the data by looping through the |encoded_data| and XOR each byte
-  // with the |key| to get the decoded byte. Append the decoded byte to the
-  // |decoded_data|.
+  // Decode/decrypt the |encoded_data| into |decoded_data|.
   char decoded_data[kMaxMessage + 1];
-  for (uint32 data_index = 0, key_index = 0;
-       data_index < message_length;
-       ++data_index) {
-    char encoded_byte = encoded_data[data_index];
-    char key_byte = key[key_index];
-    char decoded_byte = encoded_byte ^ key_byte;
-    decoded_data[data_index] = decoded_byte;
-    key_index = (key_index + 1) % kKeyLength;
+  DCHECK_LE(message_length, kMaxMessage);
+  memset(decoded_data, 0, kMaxMessage + 1);
+  Crypt(key, kKeyLength, encoded_data, message_length, decoded_data);
+
+  // Calculate the <checksum> of the <decoded_data>.
+  uint32 sum = GetChecksum(decoded_data, message_length);
+  // Extract the |checksum| from the "echo response".
+  std::string checksum_string =
+      encoded_message_.substr(kChecksumStart, kChecksumLength);
+  const char* checksum = checksum_string.c_str();
+  uint32 checksum_value = atoi(checksum);
+  if (checksum_value != sum)
+    return INVALID_CHECKSUM;
+
+  stream_.Reset();
+  if (!stream_.VerifyBytes(decoded_data, message_length))
+    return PATTERN_CHANGED;
+
+  return SUCCESS;
+}
+
+// static
+void NetworkStats::GetHistogramNames(const ProtocolValue& protocol,
+                                     HistogramPortSelector port,
+                                     uint32 load_size,
+                                     int result,
+                                     std::string* rtt_histogram_name,
+                                     std::string* status_histogram_name) {
+  CHECK_GE(port, PORT_53);
+  CHECK_LE(port, HISTOGRAM_PORT_MAX);
+
+  // Build <protocol> string.
+  const char* kTcpString = "TCP";
+  const char* kUdpString = "UDP";
+  const char* protocol_string;
+  if (protocol == PROTOCOL_TCP)
+    protocol_string = kTcpString;
+  else
+    protocol_string = kUdpString;
+
+  // Build <load_size> string.
+  const char* kSmallLoadString = "100B";
+  const char* kLargeLoadString = "1K";
+  const char* load_size_string;
+  if (load_size == kSmallTestBytesToSend)
+    load_size_string = kSmallLoadString;
+  else
+    load_size_string = kLargeLoadString;
+
+  // Build "NetConnectivity.<protocol>.<port>.Success.<load_size>.RTT"
+  // histogram name. Total number of histograms are 2*5*2.
+  if (result == net::OK) {
+    *rtt_histogram_name = base::StringPrintf(
+        "NetConnectivity.%s.%d.Success.%s.RTT",
+        protocol_string,
+        kPorts[port],
+        load_size_string);
   }
 
-  return stream_.VerifyBytes(decoded_data, message_length);
+  // Build "NetConnectivity.<protocol>.<port>.Status.<load_size>" histogram
+  // name. Total number of histograms are 2*5*2.
+  *status_histogram_name =  base::StringPrintf(
+      "NetConnectivity.%s.%d.Status.%s",
+      protocol_string,
+      kPorts[port],
+      load_size_string);
+}
+
+void NetworkStats::RecordHistograms(const ProtocolValue& protocol,
+                                    const Status& status,
+                                    int result) {
+  base::TimeDelta duration = base::TimeTicks::Now() - start_time();
+
+  std::string rtt_histogram_name;
+  std::string status_histogram_name;
+  GetHistogramNames(protocol,
+                    histogram_port_,
+                    load_size_,
+                    result,
+                    &rtt_histogram_name,
+                    &status_histogram_name);
+
+  if (result == net::OK) {
+    base::Histogram* rtt_histogram = base::Histogram::FactoryTimeGet(
+        rtt_histogram_name,
+        base::TimeDelta::FromMilliseconds(10),
+        base::TimeDelta::FromSeconds(60), 50,
+        base::Histogram::kUmaTargetedHistogramFlag);
+    rtt_histogram->AddTime(duration);
+  }
+
+  base::Histogram* status_histogram = base::LinearHistogram::FactoryGet(
+      status_histogram_name, 1, STATUS_MAX, STATUS_MAX+1,
+      base::Histogram::kUmaTargetedHistogramFlag);
+  status_histogram->Add(status);
 }
 
 // UDPStatsClient methods and members.
@@ -408,24 +535,7 @@ bool UDPStatsClient::ReadComplete(int result) {
 }
 
 void UDPStatsClient::Finish(Status status, int result) {
-  base::TimeDelta duration = base::TimeTicks::Now() - start_time();
-  if (load_size() == kSmallTestBytesToSend) {
-    if (result == net::OK)
-      UMA_HISTOGRAM_TIMES("NetConnectivity.UDP.Success.100B.RTT", duration);
-    else
-      UMA_HISTOGRAM_TIMES("NetConnectivity.UDP.Fail.100B.RTT", duration);
-
-    UMA_HISTOGRAM_ENUMERATION(
-        "NetConnectivity.UDP.Status.100B", status, STATUS_MAX);
-  } else {
-    if (result == net::OK)
-      UMA_HISTOGRAM_TIMES("NetConnectivity.UDP.Success.1K.RTT", duration);
-    else
-      UMA_HISTOGRAM_TIMES("NetConnectivity.UDP.Fail.1K.RTT", duration);
-
-    UMA_HISTOGRAM_ENUMERATION(
-        "NetConnectivity.UDP.Status.1K", status, STATUS_MAX);
-  }
+  RecordHistograms(PROTOCOL_UDP, status, result);
 
   DoFinishCallback(result);
 
@@ -481,24 +591,7 @@ bool TCPStatsClient::ReadComplete(int result) {
 }
 
 void TCPStatsClient::Finish(Status status, int result) {
-  base::TimeDelta duration = base::TimeTicks::Now() - start_time();
-  if (load_size() == kSmallTestBytesToSend) {
-    if (result == net::OK)
-      UMA_HISTOGRAM_TIMES("NetConnectivity.TCP.Success.100B.RTT", duration);
-    else
-      UMA_HISTOGRAM_TIMES("NetConnectivity.TCP.Fail.100B.RTT", duration);
-
-    UMA_HISTOGRAM_ENUMERATION(
-        "NetConnectivity.TCP.Status.100B", status, STATUS_MAX);
-  } else {
-    if (result == net::OK)
-      UMA_HISTOGRAM_TIMES("NetConnectivity.TCP.Success.1K.RTT", duration);
-    else
-      UMA_HISTOGRAM_TIMES("NetConnectivity.TCP.Fail.1K.RTT", duration);
-
-    UMA_HISTOGRAM_ENUMERATION(
-        "NetConnectivity.TCP.Status.1K", status, STATUS_MAX);
-  }
+  RecordHistograms(PROTOCOL_TCP, status, result);
 
   DoFinishCallback(result);
 
@@ -537,16 +630,26 @@ void CollectNetworkStats(const std::string& network_stats_server,
   CR_DEFINE_STATIC_LOCAL(scoped_refptr<base::FieldTrial>, trial, ());
   static bool collect_stats = false;
 
+  static uint32 kTCPTestingPort;
+  static uint32 kUDPTestingPort;
+  static NetworkStats::HistogramPortSelector histogram_port;
+
   if (!trial.get()) {
     // Set up a field trial to collect network stats for UDP and TCP.
     const base::FieldTrial::Probability kDivisor = 1000;
 
-    // Enable the connectivity testing for 0.5% of the users.
+    // Enable the connectivity testing for 0.5% of the users in stable channel.
     base::FieldTrial::Probability probability_per_group = 5;
 
     chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
     if (channel == chrome::VersionInfo::CHANNEL_CANARY)
       probability_per_group = kDivisor;
+    else if (channel == chrome::VersionInfo::CHANNEL_DEV)
+      // Enable the connectivity testing for 10% of the users in dev channel.
+      probability_per_group = 100;
+    else if (channel == chrome::VersionInfo::CHANNEL_BETA)
+      // Enable the connectivity testing for 5% of the users in beta channel.
+      probability_per_group = 50;
 
     // After October 30, 2012 builds, it will always be in default group
     // (disable_network_stats).
@@ -558,6 +661,17 @@ void CollectNetworkStats(const std::string& network_stats_server,
                                                  probability_per_group);
     if (trial->group() == collect_stats_group)
       collect_stats = true;
+
+    if (collect_stats) {
+      // Pick a port randomly from the set of TCP/UDP echo server ports
+      // specified in |kPorts|.
+      histogram_port = static_cast<NetworkStats::HistogramPortSelector>(
+          base::RandInt(NetworkStats::PORT_53, NetworkStats::PORT_8080));
+      DCHECK_GE(histogram_port, NetworkStats::PORT_53);
+      DCHECK_LE(histogram_port, NetworkStats::PORT_8080);
+      kTCPTestingPort = kPorts[histogram_port];
+      kUDPTestingPort = kPorts[histogram_port];
+    }
   }
 
   if (!collect_stats)
@@ -571,11 +685,6 @@ void CollectNetworkStats(const std::string& network_stats_server,
 
   ++number_of_tests_done;
 
-  // |network_stats_server| echo TCP and UDP servers listen on the following
-  // ports.
-  uint32 kTCPTestingPort = 80;
-  uint32 kUDPTestingPort = 53;
-
   net::HostResolver* host_resolver = io_thread->globals()->host_resolver.get();
   DCHECK(host_resolver);
 
@@ -583,25 +692,25 @@ void CollectNetworkStats(const std::string& network_stats_server,
 
   UDPStatsClient* small_udp_stats = new UDPStatsClient();
   small_udp_stats->Start(
-      host_resolver, udp_server_address, kSmallTestBytesToSend,
-      net::CompletionCallback());
+      host_resolver, udp_server_address, histogram_port,
+      kSmallTestBytesToSend, net::CompletionCallback());
 
   UDPStatsClient* large_udp_stats = new UDPStatsClient();
   large_udp_stats->Start(
-      host_resolver, udp_server_address, kLargeTestBytesToSend,
-      net::CompletionCallback());
+      host_resolver, udp_server_address, histogram_port,
+      kLargeTestBytesToSend, net::CompletionCallback());
 
   net::HostPortPair tcp_server_address(network_stats_server, kTCPTestingPort);
 
   TCPStatsClient* small_tcp_client = new TCPStatsClient();
   small_tcp_client->Start(
-      host_resolver, tcp_server_address, kSmallTestBytesToSend,
-      net::CompletionCallback());
+      host_resolver, tcp_server_address, histogram_port,
+      kSmallTestBytesToSend, net::CompletionCallback());
 
   TCPStatsClient* large_tcp_client = new TCPStatsClient();
   large_tcp_client->Start(
-      host_resolver, tcp_server_address, kLargeTestBytesToSend,
-      net::CompletionCallback());
+      host_resolver, tcp_server_address, histogram_port,
+      kLargeTestBytesToSend, net::CompletionCallback());
 }
 
 }  // namespace chrome_browser_net
