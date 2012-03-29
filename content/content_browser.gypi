@@ -826,6 +826,7 @@
       ],
       'dependencies': [
         '../base/base.gyp:closure_blocks_leopard_compat',
+        '../third_party/sudden_motion_sensor/sudden_motion_sensor.gyp:sudden_motion_sensor',
       ],
     }, { # OS!="mac"
       'dependencies': [
