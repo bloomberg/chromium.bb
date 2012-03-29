@@ -92,6 +92,19 @@ GURL GetOriginURLFromIdentifier(const std::string& origin_identifier);
 // Returns an empty string if the |type| is invalid.
 std::string GetFileSystemTypeString(FileSystemType type);
 
+// Encodes |file_path| to a string.
+// Following conditions should be held:
+//  - StringToFilePath(FilePathToString(path)) == path
+//  - StringToFilePath(FilePathToString(path) + "/" + "SubDirectory") ==
+//    path.AppendASCII("SubDirectory");
+//
+// TODO(tzik): Replace CreateFilePath and FilePathToString in
+// third_party/leveldatabase/env_chromium.cc with them.
+std::string FilePathToString(const FilePath& file_path);
+
+// Decode a file path from |file_path_string|.
+FilePath StringToFilePath(const std::string& file_path_string);
+
 }  // namespace fileapi
 
 #endif  // WEBKIT_FILEAPI_FILE_SYSTEM_UTIL_H_

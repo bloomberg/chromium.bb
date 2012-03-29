@@ -39,7 +39,7 @@ class FileSystemOriginDatabase {
 
   // Only one instance of FileSystemOriginDatabase should exist for a given path
   // at a given time.
-  explicit FileSystemOriginDatabase(const FilePath& path);
+  explicit FileSystemOriginDatabase(const FilePath& file_system_directory);
   ~FileSystemOriginDatabase();
 
   bool HasOriginPath(const std::string& origin);
@@ -57,13 +57,20 @@ class FileSystemOriginDatabase {
   void DropDatabase();
 
  private:
-  bool Init();
+  enum RecoveryOption {
+    REPAIR_ON_CORRUPTION,
+    DELETE_ON_CORRUPTION,
+    FAIL_ON_CORRUPTION,
+  };
+
+  bool Init(RecoveryOption recovery_option);
+  bool RepairDatabase(const std::string& db_path);
   void HandleError(const tracked_objects::Location& from_here,
                    const leveldb::Status& status);
   void ReportInitStatus(const leveldb::Status& status);
   bool GetLastPathNumber(int* number);
 
-  std::string path_;
+  FilePath file_system_directory_;
   scoped_ptr<leveldb::DB> db_;
   base::Time last_reported_time_;
   DISALLOW_COPY_AND_ASSIGN(FileSystemOriginDatabase);

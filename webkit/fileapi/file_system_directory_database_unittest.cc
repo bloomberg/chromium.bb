@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,9 +29,10 @@ class FileSystemDirectoryDatabaseTest : public testing::Test {
   }
 
   void InitDatabase() {
+    // First reset() is to avoid multiple database instance for single
+    // directory at once.
     db_.reset();
-    FilePath path = base_.path().AppendASCII("db");
-    db_.reset(new FileSystemDirectoryDatabase(path));
+    db_.reset(new FileSystemDirectoryDatabase(base_.path()));
   }
 
   bool AddFileInfo(FileId parent_id, const FilePath::StringType& name) {

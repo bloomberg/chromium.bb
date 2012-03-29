@@ -31,9 +31,6 @@ namespace {
 
 const int64 kFlushDelaySeconds = 10 * 60;  // 10 minutes
 
-const char kOriginDatabaseName[] = "Origins";
-const char kDirectoryDatabaseName[] = "Paths";
-
 void InitFileInfo(
     FileSystemDirectoryDatabase::FileInfo* file_info,
     FileSystemDirectoryDatabase::FileId parent_id,
@@ -991,7 +988,6 @@ bool ObfuscatedFileUtil::DestroyDirectoryDatabase(
     return true;
   if (!file_util::DirectoryExists(path))
     return true;
-  path = path.AppendASCII(kDirectoryDatabaseName);
   return FileSystemDirectoryDatabase::DestroyDatabase(path);
 }
 
@@ -1202,7 +1198,6 @@ FileSystemDirectoryDatabase* ObfuscatedFileUtil::GetDirectoryDatabase(
     }
   }
   MarkUsed();
-  path = path.AppendASCII(kDirectoryDatabaseName);
   FileSystemDirectoryDatabase* database = new FileSystemDirectoryDatabase(path);
   directories_[key] = database;
   return database;
@@ -1262,8 +1257,7 @@ bool ObfuscatedFileUtil::InitOriginDatabase(bool create) {
       return false;
     }
     origin_database_.reset(
-        new FileSystemOriginDatabase(
-            file_system_directory_.AppendASCII(kOriginDatabaseName)));
+        new FileSystemOriginDatabase(file_system_directory_));
   }
   return true;
 }

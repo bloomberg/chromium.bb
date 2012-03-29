@@ -56,7 +56,8 @@ class FileSystemDirectoryDatabase {
     base::Time modification_time;
   };
 
-  explicit FileSystemDirectoryDatabase(const FilePath& path);
+  explicit FileSystemDirectoryDatabase(
+      const FilePath& filesystem_data_directory);
   ~FileSystemDirectoryDatabase();
 
   bool GetChildWithName(
@@ -88,7 +89,12 @@ class FileSystemDirectoryDatabase {
   static bool DestroyDatabase(const FilePath& path);
 
  private:
-  bool Init();
+  enum RecoveryOption {
+    DELETE_ON_CORRUPTION,
+    FAIL_ON_CORRUPTION,
+  };
+
+  bool Init(RecoveryOption recovery_option);
   void ReportInitStatus(const leveldb::Status& status);
   bool StoreDefaultValues();
   bool GetLastFileId(FileId* file_id);
@@ -99,7 +105,7 @@ class FileSystemDirectoryDatabase {
   void HandleError(const tracked_objects::Location& from_here,
                    const leveldb::Status& status);
 
-  std::string path_;
+  FilePath filesystem_data_directory_;
   scoped_ptr<leveldb::DB> db_;
   base::Time last_reported_time_;
   DISALLOW_COPY_AND_ASSIGN(FileSystemDirectoryDatabase);
