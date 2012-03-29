@@ -223,6 +223,38 @@
     ['OS=="win"', {
       'targets': [
         {
+          'target_name': 'remoting_host_controller',
+          'type': 'executable',
+          'variables': { 'enable_wexit_time_destructors': 1, },
+          'defines' : [
+            '_ATL_APARTMENT_THREADED',
+            '_ATL_NO_AUTOMATIC_NAMESPACE',
+            '_ATL_CSTRING_EXPLICIT_CONSTRUCTORS',
+            'STRICT',
+          ],
+          'include_dirs': [
+            '<(INTERMEDIATE_DIR)',
+          ],
+          'dependencies': [
+            'remoting_version_resources',
+          ],
+          'sources': [
+            'host/elevated_controller.idl',
+            'host/elevated_controller.rc',
+            'host/elevated_controller_module_win.cc',
+            'host/elevated_controller_win.cc',
+            'host/elevated_controller_win.h',
+            '<(SHARED_INTERMEDIATE_DIR)/remoting_version/elevated_controller_version.rc'
+          ],
+          'msvs_settings': {
+            'VCLinkerTool': {
+              'AdditionalOptions': ["/MANIFESTUAC:level='requireAdministrator'"],
+              # 2 == /SUBSYSTEM:WINDOWS
+              'SubSystem': '2',
+            },
+          },
+        },  # end of target 'remoting_host_controller'
+        {
           'target_name': 'remoting_service',
           'type': 'executable',
           'variables': { 'enable_wexit_time_destructors': 1, },
@@ -278,6 +310,7 @@
             ],
           },
           'sources': [
+            'host/elevated_controller.ver',
             'host/host_service.ver',
             'host/plugin/host_plugin.ver',
             'host/remoting_me2me_host.ver',
@@ -337,6 +370,7 @@
           'target_name': 'remoting_host_installation',
           'type': 'none',
           'dependencies': [
+            'remoting_host_controller',
             'remoting_service',
             'remoting_me2me_host',
           ],

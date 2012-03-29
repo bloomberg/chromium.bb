@@ -10,6 +10,14 @@
   <?define OmahaAppid = "{b210701e-ffc4-49e3-932b-370728c72662}" ?>
   <?define UpgradeCode = "2b21f767-e157-4fa6-963c-55834c1433a6" ?>
 
+  <?define ControllerAppid = "{4ff35d5e-d226-4550-9248-03e7779e67de}" ?>
+  <?define ControllerBinary = "remoting_host_controller.exe" ?>
+  <?define ControllerClass = "ElevatedController Class" ?>
+  <?define ControllerClsid = "{430a9403-8176-4733-afdc-0b325a8fda84}" ?>
+  <?define ControllerProgid =
+    "ChromotingElevatedController.ElevatedController" ?>
+  <?define ControllerTypelib = "{9d9a5a2c-576e-4acd-9c75-aabff74b205d}" ?>
+
   <?ifndef FileSource ?>
     <?error FileSource must be defined ?>
   <?endif?>
@@ -124,15 +132,158 @@
                          Value="$(var.ChromotingHost)"/>
         </RegistryKey>
       </Component>
+
+      <Component Id="service_controller"
+                 Guid="a559f5ba-4b11-4a6e-a1e9-70d9166cb8fc">
+        <File Id="$(var.ControllerBinary)"
+              DiskId="1"
+              Name="$(var.ControllerBinary)"
+              Vital="yes"/>
+
+        <RegistryKey Root="HKLM"
+                     Key="SOFTWARE\Classes">
+          <RegistryKey Key="AppId">
+            <RegistryKey Key="$(var.ControllerAppid)" Action="create">
+              <RegistryValue Type="string"
+                             Value="ChromotingElevatedController"/>
+            </RegistryKey>
+
+            <RegistryKey Key="$(var.ControllerBinary)" Action="create">
+              <RegistryValue Type="string"
+                             Name="AppID"
+                             Value="$(var.ControllerAppid)"/>
+            </RegistryKey>
+          </RegistryKey>
+
+          <RegistryKey Key="$(var.ControllerProgid)" Action="create">
+            <RegistryValue Type="string"
+                           Value="$(var.ControllerClass)"/>
+
+            <RegistryKey Key="CLSID" Action="create">
+              <RegistryValue Type="string"
+                             Value="$(var.ControllerClsid)"/>
+            </RegistryKey>
+
+            <RegistryKey Key="CurVer" Action="create">
+              <RegistryValue Type="string"
+                             Value="$(var.ControllerProgid).1"/>
+            </RegistryKey>
+          </RegistryKey>
+
+          <RegistryKey Key="$(var.ControllerProgid).1" Action="create">
+            <RegistryValue Type="string"
+                           Value="$(var.ControllerClass)"/>
+
+            <RegistryKey Key="CLSID" Action="create">
+              <RegistryValue Type="string"
+                             Value="$(var.ControllerClsid)"/>
+            </RegistryKey>
+          </RegistryKey>
+
+          <RegistryKey Key="CLSID">
+            <RegistryKey Key="$(var.ControllerClsid)" Action="create">
+              <RegistryValue Type="string"
+                             Value="$(var.ControllerClass)"/>
+
+              <RegistryValue Type="string"
+                             Name="AppID"
+                             Value="$(var.ControllerAppid)"/>
+
+              <RegistryValue Type="string"
+                             Name="LocalizedString"
+                             Value="@[#$(var.ControllerBinary)],-100"/>
+
+              <RegistryKey Key="LocalServer32" Action="create">
+                <RegistryValue Type="string"
+                               Value="[#$(var.ControllerBinary)]"/>
+              </RegistryKey>
+
+              <RegistryKey Key="ProgID" Action="create">
+                <RegistryValue Type="string"
+                               Value="$(var.ControllerProgid).1"/>
+              </RegistryKey>
+
+              <RegistryKey Key="TypeLib" Action="create">
+                <RegistryValue Type="string"
+                               Value="$(var.ControllerTypelib)"/>
+              </RegistryKey>
+
+              <RegistryKey Key="VersionIndependentProgID" Action="create">
+                <RegistryValue Type="string"
+                               Value="$(var.ControllerProgid)"/>
+              </RegistryKey>
+
+              <RegistryKey Key="Elevation" Action="create">
+                <RegistryValue Type="integer"
+                               Name="Enabled"
+                               Value="1"/>
+              </RegistryKey>
+            </RegistryKey>
+          </RegistryKey>
+
+          <RegistryKey Key="Interface">
+            <RegistryKey Key="{e6c5f02a-2486-4bf0-b13f-f39be260b917}"
+                         Action="create">
+              <RegistryKey Key="ProxyStubClsid32" Action="create">
+                <RegistryValue Type="string"
+                               Value="{00020424-0000-0000-C000-000000000046}"/>
+              </RegistryKey>
+
+              <RegistryKey Key="TypeLib" Action="create">
+                <RegistryValue Type="string"
+                               Value="$(var.ControllerTypelib)"/>
+              </RegistryKey>
+            </RegistryKey>
+
+            <RegistryKey Key="{3ca3adb6-2dea-4c74-b267-610fef11e4ff}"
+                         Action="create">
+              <RegistryKey Key="ProxyStubClsid32" Action="create">
+                <RegistryValue Type="string"
+                               Value="{00020424-0000-0000-C000-000000000046}"/>
+              </RegistryKey>
+
+              <RegistryKey Key="TypeLib" Action="create">
+                <RegistryValue Type="string"
+                               Value="$(var.ControllerTypelib)"/>
+              </RegistryKey>
+            </RegistryKey>
+          </RegistryKey>
+
+          <RegistryKey Key="Typelib">
+            <RegistryKey Key="$(var.ControllerTypelib)" Action="create">
+              <RegistryKey Key="1.0" Action="create">
+                <RegistryKey Key="0" Action="create">
+                  <RegistryKey Key="win32" Action="create">
+                    <RegistryValue Type="string"
+                                   Value="[#$(var.ControllerBinary)]"/>
+                  </RegistryKey>
+                </RegistryKey>
+
+                <RegistryKey Key="FLAGS" Action="create">
+                  <RegistryValue Type="string"
+                                 Value="0"/>
+                </RegistryKey>
+
+                <RegistryKey Key="HELPDIR" Action="create">
+                  <RegistryValue Type="string"
+                                 Value="[chromoting]"/>
+                </RegistryKey>
+              </RegistryKey>
+            </RegistryKey>
+          </RegistryKey>
+        </RegistryKey>
+
+      </Component>
     </DirectoryRef>
 
     <UIRef Id="WixUI_ErrorProgressText" />
 
     <Feature Id="chromoting_host" Level="1" Title="$(var.ChromotingHost)">
+      <ComponentRef Id="omaha_registration"/>
       <ComponentRef Id="remoting_service.exe"/>
       <ComponentRef Id="remoting_me2me_host.exe"/>
       <ComponentRef Id="sas.dll"/>
-      <ComponentRef Id="omaha_registration"/>
+      <ComponentRef Id="service_controller"/>
     </Feature>
 
   </Product>

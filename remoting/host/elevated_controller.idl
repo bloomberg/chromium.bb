@@ -1,0 +1,66 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+import "oaidl.idl";
+import "ocidl.idl";
+
+typedef enum DaemonState {
+  DAEMON_STATE_STOPPED,
+  DAEMON_STATE_STARTING,
+  DAEMON_STATE_STARTED,
+  DAEMON_STATE_STOPPING
+} DaemonState;
+
+[
+  object,
+  uuid(e6c5f02a-2486-4bf0-b13f-f39be260b917),
+  dual,
+  nonextensible,
+  helpstring("IDaemonControl Interface"),
+  pointer_default(unique)
+]
+interface IDaemonControl: IDispatch {
+  [ propget, id(1), helpstring("Returns current state of the daemon.") ]
+  HRESULT State([out, retval] DaemonState* state_out);
+
+  [ id(2), helpstring("Reads the daemon configuration.") ]
+  HRESULT ReadConfig([out, retval] BSTR* config_out);
+
+  [ id(3), helpstring("Writes the daemon configuration.") ]
+  HRESULT WriteConfig([in] BSTR config);
+
+  [ id(4), helpstring("Starts the daemon.") ]
+  HRESULT StartDaemon();
+
+  [ id(5), helpstring("Stops the daemon.") ]
+  HRESULT StopDaemon();
+};
+
+[
+  uuid(9d9a5a2c-576e-4acd-9c75-aabff74b205d),
+  version(1.0),
+  helpstring("Chromoting Elevated Controller 1.0 Type Library")
+]
+library ChromotingElevatedControllerLib {
+  importlib("stdole2.tlb");
+
+  [
+    uuid(3ca3adb6-2dea-4c74-b267-610fef11e4ff),
+    dual,
+    helpstring("IDaemonEvents Interface")
+  ]
+  interface IDaemonEvents: IDispatch {
+    [ id(1), helpstring("method OnStateChange") ]
+    void OnStateChange([in] DaemonState state);
+  };
+
+  [
+    uuid(430a9403-8176-4733-afdc-0b325a8fda84),
+    helpstring("ElevatedController Class")
+  ]
+  coclass ElevatedController {
+    [default] interface IDaemonControl;
+    [default, source] interface IDaemonEvents;
+  };
+};
