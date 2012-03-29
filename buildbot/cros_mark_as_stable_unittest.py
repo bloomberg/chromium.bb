@@ -45,7 +45,7 @@ class NonClassTests(mox.MoxTestBase):
     cros_mark_as_stable._DoWeHaveLocalCommits(
         self._branch, 'gerrit/master').AndReturn(True)
     cros_mark_as_stable._SimpleRunCommand('git log --format=format:%s%n%n%b ' +
-                          self._tracking_branch + '..').AndReturn(git_log)
+        'gerrit/master..%s' % self._branch).AndReturn(git_log)
     cros_build_lib.CreatePushBranch('merge_branch', '.')
     cros_mark_as_stable._SimpleRunCommand('git merge --squash %s' %
                                           self._branch)

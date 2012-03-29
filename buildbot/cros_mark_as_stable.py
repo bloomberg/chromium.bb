@@ -150,7 +150,7 @@ def PushChange(stable_branch, tracking_branch, dryrun, cwd='.'):
     return
 
   description = _SimpleRunCommand('git log --format=format:%s%n%n%b ' +
-                                  tracking_branch + '..')
+      '%s/%s..%s' % (remote, push_branch, stable_branch))
   description = 'Marking set of ebuilds as stable\n\n%s' % description
   cros_build_lib.Info('Using description %s' % description)
   cros_build_lib.CreatePushBranch(constants.MERGE_BRANCH, cwd)
