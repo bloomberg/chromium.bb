@@ -97,10 +97,14 @@
         'build_glibc': 0,
         'build_newlib': 1,
         'sources': ['<@(irt_sources)', '<@(irt_browser)'],
-         'link_flags': [
-           '-r',
-           '-nostartfiles',
-         ],
+        'conditions': [
+          ['target_arch == "x64" or target_arch == "ia32"', {
+            'link_flags': [
+             '-r',
+             '-nostartfiles',
+            ],
+          }],
+        ],
       },
       'dependencies': [
         '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
