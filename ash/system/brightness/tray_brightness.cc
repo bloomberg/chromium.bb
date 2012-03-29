@@ -141,11 +141,9 @@ void TrayBrightness::GetInitialBrightness() {
   BrightnessControlDelegate* delegate =
       Shell::GetInstance()->accelerator_controller()->
       brightness_control_delegate();
-  if (!delegate) {
-    LOG(WARNING) << "Unable to get initial brightness; "
-                 << "BrightnessControlDelegate not yet created";
+  // Worrisome, but happens in unit tests, so don't log anything.
+  if (!delegate)
     return;
-  }
   delegate->GetBrightnessPercent(
       base::Bind(&TrayBrightness::HandleInitialBrightness,
                  weak_ptr_factory_.GetWeakPtr()));
