@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/chromeos/chromeos_version.h"
 #include "base/message_loop.h"
-#include "base/synchronization/waitable_event.h"
+#include "chrome/browser/chromeos/dbus/blocking_method_caller.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
@@ -24,54 +24,15 @@ namespace {
   DCHECK_EQ(std::string(method_name), __FUNCTION__);                  \
   dbus::MethodCall method_call_name(cryptohome::kCryptohomeInterface, \
                                     method_name);
-
-// Calls PopBool with |reader|.  This method is used to create callbacks.
-bool PopBool(bool* output, dbus::MessageReader* reader) {
-  return reader->PopBool(output);
-}
-
-// Calls PopString with |reader|.  This method is used to create callbacks.
-bool PopString(std::string* output, dbus::MessageReader* reader) {
-  return reader->PopString(output);
-}
-
-// Get array of bytes as vector.
-// This method is used to create callbacks.
-bool PopArrayOfBytesAsVector(std::vector<uint8>* output,
-                             dbus::MessageReader* reader) {
-  uint8* bytes = NULL;
-  size_t length = 0;
-  if (!reader->PopArrayOfBytes(&bytes, &length))
-    return false;
-  output->assign(bytes, bytes + length);
-  return true;
-}
-
-// Does nothing.
-// This method is used to create callbacks to call functions without result.
-bool PopNothing(dbus::MessageReader*) {
-  return true;
-}
-
-// Runs |popper1| and |popper2|.  This method is used to create callbacks to
-// call functions with multiple results.
-bool PopTwoValues(base::Callback<bool(dbus::MessageReader* reader)> popper1,
-                  base::Callback<bool(dbus::MessageReader* reader)> popper2,
-                  dbus::MessageReader* reader) {
-  return popper1.Run(reader) && popper2.Run(reader);
-}
-
 // The CryptohomeClient implementation.
 class CryptohomeClientImpl : public CryptohomeClient {
  public:
   explicit CryptohomeClientImpl(dbus::Bus* bus)
-      : bus_(bus),
-        proxy_(bus->GetObjectProxy(
+      : proxy_(bus->GetObjectProxy(
             cryptohome::kCryptohomeServiceName,
             dbus::ObjectPath(cryptohome::kCryptohomeServicePath))),
         weak_ptr_factory_(this),
-        on_blocking_method_call_(false /* manual_reset */,
-                                 false /* initially_signaled */) {
+        blocking_method_caller_(bus, proxy_) {
     proxy_->ConnectToSignal(
         cryptohome::kCryptohomeInterface,
         cryptohome::kSignalAsyncCallStatus,
@@ -95,13 +56,13 @@ class CryptohomeClientImpl : public CryptohomeClient {
   // CryptohomeClient override.
   virtual bool IsMounted(bool* is_mounted) OVERRIDE {
     INITIALIZE_METHOD_CALL(method_call, cryptohome::kCryptohomeIsMounted);
-    return CallMethodAndBlock(&method_call, base::Bind(&PopBool, is_mounted));
+    return CallBoolMethodAndBlock(&method_call, is_mounted);
   }
 
   // CryptohomeClient override.
   virtual bool Unmount(bool *success) OVERRIDE {
     INITIALIZE_METHOD_CALL(method_call, cryptohome::kCryptohomeUnmount);
-    return CallMethodAndBlock(&method_call, base::Bind(&PopBool, success));
+    return CallBoolMethodAndBlock(&method_call, success);
   }
 
   // CryptohomeClient override.
@@ -149,8 +110,17 @@ class CryptohomeClientImpl : public CryptohomeClient {
   // CryptohomeClient override.
   virtual bool GetSystemSalt(std::vector<uint8>* salt) OVERRIDE {
     INITIALIZE_METHOD_CALL(method_call, cryptohome::kCryptohomeGetSystemSalt);
-    return CallMethodAndBlock(&method_call,
-                              base::Bind(&PopArrayOfBytesAsVector, salt));
+    scoped_ptr<dbus::Response> response(
+        blocking_method_caller_.CallMethodAndBlock(&method_call));
+    if (!response.get())
+      return false;
+    dbus::MessageReader reader(response.get());
+    uint8* bytes = NULL;
+    size_t length = 0;
+    if (!reader.PopArrayOfBytes(&bytes, &length))
+      return false;
+    salt->assign(bytes, bytes + length);
+    return true;
   }
 
   // CryptohomeClient override.
@@ -184,7 +154,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
   // CryptohomeClient override.
   virtual bool TpmIsReady(bool* ready) OVERRIDE {
     INITIALIZE_METHOD_CALL(method_call, cryptohome::kCryptohomeTpmIsReady);
-    return CallMethodAndBlock(&method_call, base::Bind(&PopBool, ready));
+    return CallBoolMethodAndBlock(&method_call, ready);
   }
 
   // CryptohomeClient override.
@@ -205,39 +175,48 @@ class CryptohomeClientImpl : public CryptohomeClient {
     // different from the D-Bus method name (TpmIsEnabled).
     dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
                                  cryptohome::kCryptohomeTpmIsEnabled);
-    return CallMethodAndBlock(&method_call, base::Bind(&PopBool, enabled));
+    return CallBoolMethodAndBlock(&method_call, enabled);
   }
 
   // CryptohomeClient override.
   virtual bool TpmGetPassword(std::string* password) OVERRIDE {
     INITIALIZE_METHOD_CALL(method_call, cryptohome::kCryptohomeTpmGetPassword);
-    return CallMethodAndBlock(&method_call, base::Bind(&PopString, password));
+    scoped_ptr<dbus::Response> response(
+        blocking_method_caller_.CallMethodAndBlock(&method_call));
+    if (!response.get())
+      return false;
+    dbus::MessageReader reader(response.get());
+    return reader.PopString(password);
   }
 
   // CryptohomeClient override.
   virtual bool TpmIsOwned(bool* owned) OVERRIDE {
     INITIALIZE_METHOD_CALL(method_call, cryptohome::kCryptohomeTpmIsOwned);
-    return CallMethodAndBlock(&method_call, base::Bind(&PopBool, owned));
+    return CallBoolMethodAndBlock(&method_call, owned);
   }
 
   // CryptohomeClient override.
   virtual bool TpmIsBeingOwned(bool* owning) OVERRIDE {
     INITIALIZE_METHOD_CALL(method_call, cryptohome::kCryptohomeTpmIsBeingOwned);
-    return CallMethodAndBlock(&method_call, base::Bind(&PopBool, owning));
+    return CallBoolMethodAndBlock(&method_call, owning);
   }
 
   // CryptohomeClient override.
   virtual bool TpmCanAttemptOwnership() OVERRIDE {
     INITIALIZE_METHOD_CALL(method_call,
                            cryptohome::kCryptohomeTpmCanAttemptOwnership);
-    return CallMethodAndBlock(&method_call, base::Bind(&PopNothing));
+    scoped_ptr<dbus::Response> response(
+        blocking_method_caller_.CallMethodAndBlock(&method_call));
+    return response.get() != NULL;
   }
 
   // CryptohomeClient override.
   virtual bool TpmClearStoredPassword() OVERRIDE {
     INITIALIZE_METHOD_CALL(method_call,
                            cryptohome::kCryptohomeTpmClearStoredPassword);
-    return CallMethodAndBlock(&method_call, base::Bind(&PopNothing));
+    scoped_ptr<dbus::Response> response(
+        blocking_method_caller_.CallMethodAndBlock(&method_call));
+    return response.get() != NULL;
   }
 
   // CryptohomeClient override.
@@ -274,15 +253,17 @@ class CryptohomeClientImpl : public CryptohomeClient {
                            cryptohome::kCryptohomeInstallAttributesGet);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(name);
-    if (!CallMethodAndBlock(
-            &method_call,
-            base::Bind(&PopTwoValues,
-                       base::Bind(&PopArrayOfBytesAsVector, value),
-                       base::Bind(&PopBool, successful)))) {
-      value->clear();
-      *successful = false;
+    scoped_ptr<dbus::Response> response(
+        blocking_method_caller_.CallMethodAndBlock(&method_call));
+    if (!response.get())
       return false;
-    }
+    dbus::MessageReader reader(response.get());
+    uint8* bytes = NULL;
+    size_t length = 0;
+    if (!reader.PopArrayOfBytes(&bytes, &length) ||
+        !reader.PopBool(successful))
+      return false;
+    value->assign(bytes, bytes + length);
     return true;
   }
 
@@ -295,28 +276,28 @@ class CryptohomeClientImpl : public CryptohomeClient {
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(name);
     writer.AppendArrayOfBytes(value.data(), value.size());
-    return CallMethodAndBlock(&method_call, base::Bind(&PopBool, successful));
+    return CallBoolMethodAndBlock(&method_call, successful);
   }
 
   // CryptohomeClient override.
   virtual bool InstallAttributesFinalize(bool* successful) OVERRIDE {
     INITIALIZE_METHOD_CALL(method_call,
                            cryptohome::kCryptohomeInstallAttributesFinalize);
-    return CallMethodAndBlock(&method_call, base::Bind(&PopBool, successful));
+    return CallBoolMethodAndBlock(&method_call, successful);
   }
 
   // CryptohomeClient override.
   virtual bool InstallAttributesIsReady(bool* is_ready) OVERRIDE {
     INITIALIZE_METHOD_CALL(method_call,
                            cryptohome::kCryptohomeInstallAttributesIsReady);
-    return CallMethodAndBlock(&method_call, base::Bind(&PopBool, is_ready));
+    return CallBoolMethodAndBlock(&method_call, is_ready);
   }
 
   // CryptohomeClient override.
   virtual bool InstallAttributesIsInvalid(bool* is_invalid) OVERRIDE {
     INITIALIZE_METHOD_CALL(method_call,
                            cryptohome::kCryptohomeInstallAttributesIsInvalid);
-    return CallMethodAndBlock(&method_call, base::Bind(&PopBool, is_invalid));
+    return CallBoolMethodAndBlock(&method_call, is_invalid);
   }
 
   // CryptohomeClient override.
@@ -324,25 +305,10 @@ class CryptohomeClientImpl : public CryptohomeClient {
   {
     INITIALIZE_METHOD_CALL(
         method_call, cryptohome::kCryptohomeInstallAttributesIsFirstInstall);
-    return CallMethodAndBlock(&method_call,
-                              base::Bind(&PopBool, is_first_install));
+    return CallBoolMethodAndBlock(&method_call, is_first_install);
   }
 
  private:
-  // A utility class to ensure the WaitableEvent is signaled.
-  class WaitableEventSignaler {
-   public:
-    explicit WaitableEventSignaler(base::WaitableEvent* event) : event_(event) {
-    }
-
-    ~WaitableEventSignaler() {
-      event_->Signal();
-    }
-
-   private:
-    base::WaitableEvent* event_;
-  };
-
   // Handles the result of AsyncXXX methods.
   void OnAsyncMethodCall(AsyncMethodCallback callback,
                          dbus::Response* response) {
@@ -357,37 +323,15 @@ class CryptohomeClientImpl : public CryptohomeClient {
     callback.Run(async_id);
   }
 
-  // Calls the method and block until it returns.
-  // |callback| is called with the result on the DBus thread.
-  bool CallMethodAndBlock(dbus::MethodCall* method_call,
-                          base::Callback<bool(dbus::MessageReader*)> callback) {
-    WaitableEventSignaler* signaler =
-        new WaitableEventSignaler(&on_blocking_method_call_);
-    bool success = false;
-    bus_->PostTaskToDBusThread(
-        FROM_HERE,
-        base::Bind(&CryptohomeClientImpl::CallMethodAndBlockInternal,
-                   base::Unretained(this),
-                   base::Owned(signaler),
-                   &success,
-                   method_call,
-                   callback));
-    on_blocking_method_call_.Wait();
-    return success;
-  }
-
-  // This method is a part of CallMethodAndBlock implementation.
-  void CallMethodAndBlockInternal(
-      WaitableEventSignaler* signaler,
-      bool* success,
-      dbus::MethodCall* method_call,
-      base::Callback<bool(dbus::MessageReader*)> callback) {
-    scoped_ptr<dbus::Response> response(proxy_->CallMethodAndBlock(
-        method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT));
-    if (response.get()) {
-      dbus::MessageReader reader(response.get());
-      *success = callback.Run(&reader);
-    }
+  // Calls a method with a bool value reult and block.
+  bool CallBoolMethodAndBlock(dbus::MethodCall* method_call,
+                              bool* result) {
+    scoped_ptr<dbus::Response> response(
+        blocking_method_caller_.CallMethodAndBlock(method_call));
+    if (!response.get())
+      return false;
+    dbus::MessageReader reader(response.get());
+    return reader.PopBool(result);
   }
 
   // Handles responses for methods with a bool value result.
@@ -447,10 +391,9 @@ class CryptohomeClientImpl : public CryptohomeClient {
         signal << " failed.";
   }
 
-  dbus::Bus* bus_;
   dbus::ObjectProxy* proxy_;
   base::WeakPtrFactory<CryptohomeClientImpl> weak_ptr_factory_;
-  base::WaitableEvent on_blocking_method_call_;
+  BlockingMethodCaller blocking_method_caller_;
   AsyncCallStatusHandler async_call_status_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(CryptohomeClientImpl);

@@ -464,6 +464,8 @@
         'browser/chromeos/cryptohome/async_method_caller.h',
         'browser/chromeos/customization_document.cc',
         'browser/chromeos/customization_document.h',
+        'browser/chromeos/dbus/blocking_method_caller.cc',
+        'browser/chromeos/dbus/blocking_method_caller.h',
         'browser/chromeos/dbus/bluetooth_adapter_client.cc',
         'browser/chromeos/dbus/bluetooth_adapter_client.h',
         'browser/chromeos/dbus/bluetooth_agent_service_provider.cc',
