@@ -68,9 +68,6 @@ cr.define('login', function() {
       $('add-user-header-bar-item').hidden = !!lockedPod;
       $('sign-out-user-item').hidden = !lockedPod;
       if (lockedPod) {
-        var focusPod = function() {
-          podRow.focusPod(lockedPod);
-        };
         // TODO(altimofeev): empirically I investigated that focus isn't
         // set correctly if following CSS rules are present:
         //
@@ -82,26 +79,37 @@ cr.define('login', function() {
         // }
         //
         // Workaround is either delete these rules or delay the focus setting.
-        window.setTimeout(focusPod, 0);
+        var self = this;
+        lockedPod.addEventListener('webkitTransitionEnd', function f(e) {
+          if (e.target == lockedPod) {
+            podRow.focusPod(lockedPod);
+            lockedPod.removeEventListener(f);
+            // Delay the accountPickerReady signal so that if there are any
+            // timeouts waiting to fire we can process these first. This was
+            // causing crbug.com/112218 as the account pod was sometimes focuse
+            // using focusPod (which resets the password) after the test code
+            // set the password.
+            self.onShow();
+          }
+        });
+      } else {
+        this.onShow();
       }
+    },
 
-      if (this.firstShown_) {
-        this.firstShown_ = false;
-        // TODO(nkostylev): Enable animation back when session start jank
-        // is reduced. See http://crosbug.com/11116 http://crosbug.com/18307
-        // $('pod-row').startInitAnimation();
+    /**
+     * Event handler invoked when the page is shown and ready.
+     */
+    onShow: function() {
+      if (!this.firstShown_) return;
+      this.firstShown_ = false;
+      // TODO(nkostylev): Enable animation back when session start jank
+      // is reduced. See http://crosbug.com/11116 http://crosbug.com/18307
+      // $('pod-row').startInitAnimation();
 
-        // Delay the accountPickerReady signal so that if there are any
-        // timeouts waiting to fire we can process these first. This was
-        // causing crbug.com/112218 as the account pod was sometimes focused
-        // using focusPod (which resets the password) after the test code set
-        // the password.
-        // TODO(altimofeev): Call it after animation has stoped when animation
-        // is enabled.
-        window.setTimeout(function() {
-              chrome.send('accountPickerReady', []);
-            }, 0);
-      }
+      // TODO(altimofeev): Call it after animation has stoped when animation
+      // is enabled.
+      chrome.send('accountPickerReady');
     },
 
      /**
