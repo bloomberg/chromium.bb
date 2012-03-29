@@ -397,6 +397,16 @@ void ChromeLauncherDelegate::CreateNewWindow() {
 
 void ChromeLauncherDelegate::ItemClicked(const ash::LauncherItem& item) {
   DCHECK(id_to_item_map_.find(item.id) != id_to_item_map_.end());
+  LauncherUpdater* updater = id_to_item_map_[item.id].updater;
+  if (updater) {
+    views::Widget* widget =
+        views::Widget::GetWidgetForNativeView(updater->window());
+    if (widget && widget->IsActive()) {
+      widget->Minimize();
+      return;
+    }
+    // else case, fall through to show window.
+  }
   Open(item.id);
 }
 
