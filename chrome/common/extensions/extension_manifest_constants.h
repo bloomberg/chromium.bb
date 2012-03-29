@@ -16,7 +16,6 @@ namespace extension_manifest_keys {
   extern const char kAllFrames[];
   extern const char kAltKey[];
   extern const char kApp[];
-  extern const char kBackground[];
   extern const char kBackgroundAllowJsAccess[];
   extern const char kBackgroundPage[];
   extern const char kBackgroundPageLegacy[];
