@@ -15,6 +15,7 @@
 
 namespace {
 const char kExtensionId[] = "ext1";
+const char kExtensionId2[] = "ext2";
 const char kRuleId1[] = "rule1";
 const char kRuleId2[] = "rule2";
 
@@ -138,6 +139,92 @@ TEST_F(WebRequestRulesRegistryTest, AddRulesImpl) {
   EXPECT_EQ(1u, matches.size());
   EXPECT_TRUE(matches.find(std::make_pair(kExtensionId, kRuleId2)) !=
       matches.end());
+}
+
+TEST_F(WebRequestRulesRegistryTest, RemoveRulesImpl) {
+  scoped_refptr<WebRequestRulesRegistry> registry(new WebRequestRulesRegistry);
+  std::string error;
+
+  // Setup RulesRegistry to contain two rules.
+  std::vector<linked_ptr<RulesRegistry::Rule> > rules_to_add;
+  rules_to_add.push_back(CreateRule1());
+  rules_to_add.push_back(CreateRule2());
+  error = registry->AddRules(kExtensionId, rules_to_add);
+  EXPECT_TRUE(error.empty());
+
+  // Verify initial state.
+  std::vector<linked_ptr<RulesRegistry::Rule> > registered_rules;
+  registry->GetAllRules(kExtensionId, &registered_rules);
+  EXPECT_EQ(2u, registered_rules.size());
+
+  // Remove first rule.
+  std::vector<std::string> rules_to_remove;
+  rules_to_remove.push_back(kRuleId1);
+  error = registry->RemoveRules(kExtensionId, rules_to_remove);
+  EXPECT_TRUE(error.empty());
+
+  // Verify that only one rule is left.
+  registered_rules.clear();
+  registry->GetAllRules(kExtensionId, &registered_rules);
+  EXPECT_EQ(1u, registered_rules.size());
+
+  // Now rules_to_remove contains both rules, i.e. one that does not exist in
+  // the rules registry anymore. Effectively we only remove the second rule.
+  rules_to_remove.push_back(kRuleId2);
+  error = registry->RemoveRules(kExtensionId, rules_to_remove);
+  EXPECT_TRUE(error.empty());
+
+  // Verify that everything is gone.
+  registered_rules.clear();
+  registry->GetAllRules(kExtensionId, &registered_rules);
+  EXPECT_EQ(0u, registered_rules.size());
+
+  EXPECT_TRUE(registry->IsEmpty());
+}
+
+TEST_F(WebRequestRulesRegistryTest, RemoveAllRulesImpl) {
+  scoped_refptr<WebRequestRulesRegistry> registry(new WebRequestRulesRegistry);
+  std::string error;
+
+  // Setup RulesRegistry to contain two rules, one for each extension.
+  std::vector<linked_ptr<RulesRegistry::Rule> > rules_to_add(1);
+  rules_to_add[0] = CreateRule1();
+  error = registry->AddRules(kExtensionId, rules_to_add);
+  EXPECT_TRUE(error.empty());
+
+  rules_to_add[0] = CreateRule2();
+  error = registry->AddRules(kExtensionId2, rules_to_add);
+  EXPECT_TRUE(error.empty());
+
+  // Verify initial state.
+  std::vector<linked_ptr<RulesRegistry::Rule> > registered_rules;
+  registry->GetAllRules(kExtensionId, &registered_rules);
+  EXPECT_EQ(1u, registered_rules.size());
+  registered_rules.clear();
+  registry->GetAllRules(kExtensionId2, &registered_rules);
+  EXPECT_EQ(1u, registered_rules.size());
+
+  // Remove rule of first extension.
+  error = registry->RemoveAllRules(kExtensionId);
+  EXPECT_TRUE(error.empty());
+
+  // Verify that only the first rule is deleted.
+  registered_rules.clear();
+  registry->GetAllRules(kExtensionId, &registered_rules);
+  EXPECT_EQ(0u, registered_rules.size());
+  registered_rules.clear();
+  registry->GetAllRules(kExtensionId2, &registered_rules);
+  EXPECT_EQ(1u, registered_rules.size());
+
+  // Test removing rules if none exist.
+  error = registry->RemoveAllRules(kExtensionId);
+  EXPECT_TRUE(error.empty());
+
+  // Remove rule from second extension.
+  error = registry->RemoveAllRules(kExtensionId2);
+  EXPECT_TRUE(error.empty());
+
+  EXPECT_TRUE(registry->IsEmpty());
 }
 
 }  // namespace extensions

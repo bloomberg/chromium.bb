@@ -29,7 +29,7 @@ std::string RulesRegistryWithCache::AddRules(
   for (std::vector<linked_ptr<Rule> >::const_iterator i =
       rules.begin(); i != rules.end(); ++i) {
     const RuleId& rule_id = *((*i)->id);
-    RulesDictionaryKey key = make_pair(extension_id, rule_id);
+    RulesDictionaryKey key(extension_id, rule_id);
     if (rules_.find(key) != rules_.end())
       return StringPrintf(kDuplicateRuleId, rule_id.c_str());
   }
@@ -43,7 +43,7 @@ std::string RulesRegistryWithCache::AddRules(
   for (std::vector<linked_ptr<Rule> >::const_iterator i =
       rules.begin(); i != rules.end(); ++i) {
     const RuleId& rule_id = *((*i)->id);
-    RulesDictionaryKey key = make_pair(extension_id, rule_id);
+    RulesDictionaryKey key(extension_id, rule_id);
     rules_[key] = *i;
   }
   return kSuccess;
@@ -62,7 +62,7 @@ std::string RulesRegistryWithCache::RemoveRules(
   // Commit removal of rules from |rules_| on success.
   for (std::vector<std::string>::const_iterator i =
       rule_identifiers.begin(); i != rule_identifiers.end(); ++i) {
-    RulesDictionaryKey lookup_key = make_pair(extension_id, *i);
+    RulesDictionaryKey lookup_key(extension_id, *i);
     rules_.erase(lookup_key);
   }
   return kSuccess;
@@ -96,7 +96,7 @@ std::string RulesRegistryWithCache::GetRules(
 
   for (std::vector<std::string>::const_iterator i = rule_identifiers.begin();
       i != rule_identifiers.end(); ++i) {
-    RulesDictionaryKey lookup_key = make_pair(extension_id, *i);
+    RulesDictionaryKey lookup_key(extension_id, *i);
     RulesDictionary::iterator entry = rules_.find(lookup_key);
     if (entry != rules_.end())
       out->push_back(entry->second);

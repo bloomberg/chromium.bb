@@ -163,6 +163,12 @@ TEST(SubstringSetMatcherTest, RegisterAndRemove) {
   EXPECT_EQ(1u, matches.size());
   EXPECT_TRUE(matches.end() != matches.find(1));
   EXPECT_TRUE(matches.end() == matches.find(2));
+
+  patterns.clear();
+  patterns.push_back(&pattern_1);
+  patterns.push_back(&pattern_3);
+  matcher.UnregisterPatterns(patterns);
+  EXPECT_TRUE(matcher.IsEmpty());
 }
 
 TEST(SubstringSetMatcherTest, TestEmptyMatcher) {

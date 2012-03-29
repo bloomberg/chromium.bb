@@ -152,6 +152,7 @@ TEST(URLMatcherConditionFactoryTest, TestSingletonProperty) {
   // ForgetUnusedPatterns.
   SubstringPattern::ID old_id_1 = c1.substring_pattern()->id();
   factory.ForgetUnusedPatterns(std::set<SubstringPattern::ID>());
+  EXPECT_TRUE(factory.IsEmpty());
   URLMatcherCondition c4 = factory.CreateHostEqualsCondition("www.google.com");
   EXPECT_NE(old_id_1, c4.substring_pattern()->id());
 }
@@ -385,6 +386,8 @@ TEST(URLMatcherTest, FullTest) {
   matcher.RemoveConditionSets(remove1);
   EXPECT_EQ(0u, matcher.MatchURL(url1).size());
   EXPECT_EQ(0u, matcher.MatchURL(url2).size());
+
+  EXPECT_TRUE(matcher.IsEmpty());
 
   // The cached singleton in matcher.condition_factory_ should be destroyed to
   // free memory.

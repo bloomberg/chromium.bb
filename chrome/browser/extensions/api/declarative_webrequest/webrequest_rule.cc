@@ -58,7 +58,7 @@ scoped_ptr<WebRequestRule> WebRequestRule::Create(
     return error_result.Pass();
   }
 
-  GlobalRuleId rule_id = make_pair(extension_id, *(rule->id));
+  GlobalRuleId rule_id(extension_id, *(rule->id));
   return scoped_ptr<WebRequestRule>(
       new WebRequestRule(rule_id, conditions.Pass(), actions.Pass()));
 }

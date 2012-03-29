@@ -68,6 +68,9 @@ class SubstringSetMatcher {
   bool Match(const std::string& text,
              std::set<SubstringPattern::ID>* matches) const;
 
+  // Returns true if this object retains no allocated data. Only for debugging.
+  bool IsEmpty() const;
+
  private:
   // A node of an Aho Corasick Tree. This is implemented according to
   // http://www.cs.uku.fi/~kilpelai/BSA05/lectures/slides04.pdf

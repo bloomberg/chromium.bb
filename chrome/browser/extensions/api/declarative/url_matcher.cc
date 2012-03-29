@@ -344,6 +344,10 @@ void URLMatcherConditionFactory::ForgetUnusedPatterns(
   }
 }
 
+bool URLMatcherConditionFactory::IsEmpty() const {
+  return pattern_singletons_.empty();
+}
+
 URLMatcherCondition URLMatcherConditionFactory::CreateCondition(
     URLMatcherCondition::Criterion criterion,
     const std::string& pattern) {
@@ -478,6 +482,16 @@ std::set<URLMatcherConditionSet::ID> URLMatcher::MatchURL(const GURL& url) {
   }
 
   return result;
+}
+
+bool URLMatcher::IsEmpty() const {
+  return condition_factory_.IsEmpty() &&
+      url_matcher_condition_sets_.empty() &&
+      substring_match_triggers_.empty() &&
+      full_url_matcher_.IsEmpty() &&
+      url_component_matcher_.IsEmpty() &&
+      registered_full_url_patterns_.empty() &&
+      registered_url_component_patterns_.empty();
 }
 
 void URLMatcher::UpdateSubstringSetMatcher(bool full_url_conditions) {

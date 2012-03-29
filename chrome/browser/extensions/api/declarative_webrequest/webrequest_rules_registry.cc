@@ -95,16 +95,59 @@ std::string WebRequestRulesRegistry::AddRulesImpl(
 std::string WebRequestRulesRegistry::RemoveRulesImpl(
     const std::string& extension_id,
     const std::vector<std::string>& rule_identifiers) {
-  return "TODO";
+  // URLMatcherConditionSet IDs that can be removed from URLMatcher.
+  std::vector<URLMatcherConditionSet::ID> remove_from_url_matcher;
+
+  for (std::vector<std::string>::const_iterator i = rule_identifiers.begin();
+       i != rule_identifiers.end(); ++i) {
+    WebRequestRule::GlobalRuleId rule_id(extension_id, *i);
+
+    // Skip unknown rules.
+    RulesMap::iterator webrequest_rules_entry = webrequest_rules_.find(rule_id);
+    if (webrequest_rules_entry == webrequest_rules_.end())
+      continue;
+
+    // Remove all triggers but collect their IDs.
+    std::vector<URLMatcherConditionSet> condition_sets;
+    WebRequestRule* rule = webrequest_rules_entry->second.get();
+    rule->conditions().GetURLMatcherConditionSets(&condition_sets);
+    for (std::vector<URLMatcherConditionSet>::iterator j =
+         condition_sets.begin(); j != condition_sets.end(); ++j) {
+      remove_from_url_matcher.push_back(j->id());
+      rule_triggers_.erase(j->id());
+    }
+
+    // Remove reference to actual rule.
+    webrequest_rules_.erase(webrequest_rules_entry);
+  }
+
+  // Clear URLMatcher based on condition_set_ids that are not needed any more.
+  url_matcher_.RemoveConditionSets(remove_from_url_matcher);
+
+  return "";
 }
 
 std::string WebRequestRulesRegistry::RemoveAllRulesImpl(
     const std::string& extension_id) {
-  return "TODO";
+  // Search all identifiers of rules that belong to extension |extension_id|.
+  std::vector<std::string> rule_identifiers;
+  for (RulesMap::iterator i = webrequest_rules_.begin();
+       i != webrequest_rules_.end(); ++i) {
+    const WebRequestRule::GlobalRuleId& global_rule_id = i->first;
+    if (global_rule_id.first == extension_id)
+      rule_identifiers.push_back(global_rule_id.second);
+  }
+
+  return RemoveRulesImpl(extension_id, rule_identifiers);
 }
 
 content::BrowserThread::ID WebRequestRulesRegistry::GetOwnerThread() const {
   return content::BrowserThread::IO;
+}
+
+bool WebRequestRulesRegistry::IsEmpty() const {
+  return rule_triggers_.empty() && webrequest_rules_.empty() &&
+      url_matcher_.IsEmpty();
 }
 
 }  // namespace extensions

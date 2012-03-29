@@ -69,6 +69,9 @@ class WebRequestRulesRegistry : public RulesRegistryWithCache {
       const std::string& extension_id) OVERRIDE;
   virtual content::BrowserThread::ID GetOwnerThread() const OVERRIDE;
 
+  // Returns true if this object retains no allocated data. Only for debugging.
+  bool IsEmpty() const;
+
  private:
   // Map that tells us which WebRequestRule may match under the condition that
   // the URLMatcherConditionSet::ID was returned by the |url_matcher_|.
