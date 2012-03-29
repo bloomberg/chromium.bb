@@ -1810,23 +1810,3 @@
    fun:base::Thread::ThreadMain
    fun:base::::ThreadFunc
 }
-{
-   bug_120353_a
-   Heapcheck:Leak
-   ...
-   fun:gdata::GDataFileSystemTest*
-}
-{
-   bug_120353_b
-   Heapcheck:Leak
-   ...
-   fun:gdata::GDataFileSystem::OnFileDownloaded
-}
-{
-   bug_120726
-   Heapcheck:Leak
-   fun:MessageLoop::MessageLoop
-   fun:MessageLoopForUI::MessageLoopForUI
-   fun:GDataFileSystemTest
-   fun:GDataFileSystemTest_GetFile_FromGData_Test
-}

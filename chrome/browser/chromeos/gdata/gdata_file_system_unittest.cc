@@ -158,6 +158,14 @@ class GDataFileSystemTest : public testing::Test {
     file_system_->ShutdownOnUIThread();
     delete file_system_;
     file_system_ = NULL;
+
+    // Run the remaining tasks on the main thread, so that reply tasks (2nd
+    // callback of PostTaskAndReply) are run. Otherwise, there will be a leak
+    // from PostTaskAndReply() as it deletes an internal object when the
+    // reply task is run. Note that actual reply tasks (functions passed to
+    // the 2nd callback of PostTaskAndReply) will be canceled, as these are
+    // bound to weak pointers, which are invalidated in ShutdownOnUIThread().
+    message_loop_.RunAllPending();
   }
 
   // Loads test json file as root ("/gdata") element.
