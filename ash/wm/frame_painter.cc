@@ -546,6 +546,8 @@ bool FramePainter::UseSoloWindowHeader(aura::Window* ignore) const {
     return false;
   const aura::Window* default_container = Shell::GetInstance()->GetContainer(
       internal::kShellWindowId_DefaultContainer);
+  if (!default_container)
+    return false;  // Shutting down. See crbug.com/120786.
   int normal_window_count = 0;
   const aura::Window::Windows& windows = default_container->children();
   for (aura::Window::Windows::const_iterator it = windows.begin();
