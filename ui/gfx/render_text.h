@@ -212,7 +212,8 @@ class UI_EXPORT RenderText {
   // |GetTextDirection()|, not the direction of a particular run.
   VisualCursorDirection GetVisualDirectionOfLogicalEnd();
 
-  // Get the size in pixels of the entire string.
+  // Get the size in pixels of the entire string. For the height, this will
+  // return the maximum height among the different fonts in the text runs.
   virtual Size GetStringSize() = 0;
 
   void Draw(Canvas* canvas);

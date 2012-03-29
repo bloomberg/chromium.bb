@@ -167,7 +167,6 @@ std::map<std::string, std::vector<Font> > RenderTextWin::cached_linked_fonts_;
 
 RenderTextWin::RenderTextWin()
     : RenderText(),
-      string_width_(0),
       needs_layout_(false) {
   memset(&script_control_, 0, sizeof(script_control_));
   memset(&script_state_, 0, sizeof(script_state_));
@@ -190,8 +189,7 @@ base::i18n::TextDirection RenderTextWin::GetTextDirection() {
 
 Size RenderTextWin::GetStringSize() {
   EnsureLayout();
-  // TODO(msw): Use the largest font instead of the default font?
-  return Size(string_width_, GetFont().GetHeight());
+  return string_size_;
 }
 
 SelectionModel RenderTextWin::FindCursorPosition(const Point& point) {
@@ -507,7 +505,7 @@ void RenderTextWin::DrawVisualText(Canvas* canvas) {
 void RenderTextWin::ItemizeLogicalText() {
   STLDeleteContainerPointers(runs_.begin(), runs_.end());
   runs_.clear();
-  string_width_ = 0;
+  string_size_ = Size();
   if (text().empty())
     return;
 
@@ -665,6 +663,8 @@ void RenderTextWin::LayoutVisualText() {
       }
     }
     DCHECK(SUCCEEDED(hr));
+    string_size_.set_height(std::max(string_size_.height(),
+                                     run->font.GetHeight()));
 
     if (run->glyph_count > 0) {
       run->advance_widths.reset(new int[run->glyph_count]);
@@ -707,7 +707,7 @@ void RenderTextWin::LayoutVisualText() {
     run->width = abc.abcA + abc.abcB + abc.abcC;
     preceding_run_widths += run->width;
   }
-  string_width_ = preceding_run_widths;
+  string_size_.set_width(preceding_run_widths);
 }
 
 const std::vector<Font>* RenderTextWin::GetLinkedFonts(const Font& font) const {

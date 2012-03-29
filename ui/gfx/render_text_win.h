@@ -119,7 +119,7 @@ class RenderTextWin : public RenderText {
   SCRIPT_STATE script_state_;
 
   std::vector<internal::TextRun*> runs_;
-  int string_width_;
+  Size string_size_;
 
   scoped_array<int> visual_to_logical_;
   scoped_array<int> logical_to_visual_;

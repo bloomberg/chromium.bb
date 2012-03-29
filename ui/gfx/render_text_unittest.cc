@@ -911,23 +911,36 @@ TEST_F(RenderTextTest, MoveLeftRightByWordInChineseText) {
   render_text->MoveCursor(WORD_BREAK, CURSOR_RIGHT, false);
   EXPECT_EQ(6U, render_text->cursor_position());
 }
+#endif
 
-TEST_F(RenderTextTest, StringWidthTest) {
+TEST_F(RenderTextTest, StringSizeSanity) {
+  scoped_ptr<RenderText> render_text(RenderText::CreateRenderText());
+  render_text->SetText(UTF8ToUTF16("Hello World"));
+  const Size string_size = render_text->GetStringSize();
+  EXPECT_GT(string_size.width(), 0);
+  EXPECT_GT(string_size.height(), 0);
+}
+
+// TODO(asvitkine): The below use pattern doesn't currently work on Windows
+//                  because the new style doesn't affect the HFONT we pass to
+//                  Uniscribe. (This doesn't affect canvas_skia.cc's use.)
+#if !defined(OS_WIN)
+TEST_F(RenderTextTest, StringSizeBoldWidth) {
   scoped_ptr<RenderText> render_text(RenderText::CreateRenderText());
   render_text->SetText(UTF8ToUTF16("Hello World"));
 
-  // Check that width is valid
-  int width = render_text->GetStringSize().width();
-  EXPECT_GT(width, 0);
+  const int plain_width = render_text->GetStringSize().width();
+  EXPECT_GT(plain_width, 0);
 
   // Apply a bold style and check that the new width is greater.
   StyleRange bold;
   bold.font_style |= gfx::Font::BOLD;
   render_text->set_default_style(bold);
   render_text->ApplyDefaultStyle();
-  EXPECT_GT(render_text->GetStringSize().width(), width);
-}
 
+  const int bold_width = render_text->GetStringSize().width();
+  EXPECT_GT(bold_width, plain_width);
+}
 #endif
 
 TEST_F(RenderTextTest, CursorBoundsInReplacementMode) {
