@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/string_split.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/shell/shell_network_delegate.h"
 #include "net/base/cert_verifier.h"
 #include "net/base/default_server_bound_cert_store.h"
 #include "net/base/host_resolver.h"
@@ -49,8 +50,9 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
 
   if (!url_request_context_) {
     url_request_context_ = new net::URLRequestContext();
+    network_delegate_.reset(new ShellNetworkDelegate);
+    url_request_context_->set_network_delegate(network_delegate_.get());
     storage_.reset(new net::URLRequestContextStorage(url_request_context_));
-
     storage_->set_cookie_store(new net::CookieMonster(NULL, NULL));
     storage_->set_server_bound_cert_service(new net::ServerBoundCertService(
         new net::DefaultServerBoundCertStore(NULL)));
@@ -92,7 +94,7 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
         "", // ssl_session_cache_shard
         url_request_context_->ssl_config_service(),
         url_request_context_->http_auth_handler_factory(),
-        NULL,  // network_delegate
+        url_request_context_->network_delegate(),
         url_request_context_->http_server_properties(),
         NULL,
         main_backend);

@@ -16,6 +16,7 @@ class MessageLoop;
 
 namespace net {
 class HostResolver;
+class NetworkDelegate;
 class ProxyConfigService;
 class URLRequestContextStorage;
 }
@@ -46,6 +47,7 @@ class ShellURLRequestContextGetter : public net::URLRequestContextGetter {
 
   scoped_refptr<net::URLRequestContext> url_request_context_;
   scoped_ptr<net::URLRequestContextStorage> storage_;
+  scoped_ptr<net::NetworkDelegate> network_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellURLRequestContextGetter);
 };

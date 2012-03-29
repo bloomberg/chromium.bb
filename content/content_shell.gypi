@@ -87,6 +87,8 @@
         'shell/shell_main_delegate.h',
         'shell/shell_messages.cc',
         'shell/shell_messages.h',
+        'shell/shell_network_delegate.cc',
+        'shell/shell_network_delegate.h',
         'shell/shell_render_process_observer.cc',
         'shell/shell_render_process_observer.h',
         'shell/shell_render_view_host_observer.cc',
