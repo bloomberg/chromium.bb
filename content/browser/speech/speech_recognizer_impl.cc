@@ -57,7 +57,6 @@ bool DetectClipping(const speech::AudioChunk& chunk) {
   return false;
 }
 
-void OnAudioClosed(AudioInputController*) {}
 }  // namespace
 
 SpeechRecognizer* SpeechRecognizer::Create(
@@ -302,6 +301,8 @@ void SpeechRecognizerImpl::HandleOnData(scoped_refptr<AudioChunk> raw_audio) {
     StopAudioCapture();
 }
 
+void SpeechRecognizerImpl::OnAudioClosed(AudioInputController*) {}
+
 void SpeechRecognizerImpl::OnSpeechRecognitionEngineResult(
     const content::SpeechRecognitionResult& result) {
   // Guard against the listener freeing us until we finish our job.
@@ -331,7 +332,8 @@ void SpeechRecognizerImpl::CloseAudioControllerAsynchronously() {
   // purpose of such callback is to keep the audio controller refcounted until
   // Close has completed (in the audio thread) and automatically destroy it
   // afterwards (upon return from OnAudioClosed).
-  audio_controller_->Close(base::Bind(&OnAudioClosed, audio_controller_));
+  audio_controller_->Close(base::Bind(&SpeechRecognizerImpl::OnAudioClosed,
+                                      this, audio_controller_));
   audio_controller_ = NULL;  // The controller is still refcounted by Bind.
 }
 

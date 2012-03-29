@@ -85,6 +85,8 @@ class CONTENT_EXPORT SpeechRecognizerImpl
   // Handles OnData in the IO thread.
   void HandleOnData(scoped_refptr<AudioChunk> raw_audio);
 
+  void OnAudioClosed(media::AudioInputController*);
+
   // Helper method which closes the audio controller and frees it asynchronously
   // without blocking the IO thread.
   void CloseAudioControllerAsynchronously();
