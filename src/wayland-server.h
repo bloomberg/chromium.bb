@@ -124,17 +124,6 @@ struct wl_buffer {
 	struct wl_resource resource;
 	int32_t width, height;
 	uint32_t busy_count;
-	void *user_data;
-};
-
-struct wl_shm_callbacks {
-	void (*buffer_created)(struct wl_buffer *buffer);
-
-	void (*buffer_damaged)(struct wl_buffer *buffer,
-			      int32_t x, int32_t y,
-			      int32_t width, int32_t height);
-
-	void (*buffer_destroyed)(struct wl_buffer *buffer);
 };
 
 struct wl_listener {
@@ -270,10 +259,6 @@ void wl_resource_post_no_memory(struct wl_resource *resource);
 #include "wayland-server-protocol.h"
 
 void
-wl_display_post_frame(struct wl_display *display, struct wl_surface *surface,
-		      uint32_t msecs);
-
-void
 wl_client_add_resource(struct wl_client *client,
 		       struct wl_resource *resource);
 
@@ -321,8 +306,6 @@ wl_input_device_set_selection(struct wl_input_device *device,
 			      struct wl_data_source *source,
 			      uint32_t time);
 
-
-struct wl_shm;
 
 void *
 wl_shm_buffer_get_data(struct wl_buffer *buffer);
