@@ -49,8 +49,8 @@ EXTRA_ENV = {
 
   # These are just the dependencies in the native link.
   'LD_ARGS_normal':
-    '${USE_IRT_SHIM ? ${LD_ARGS_IRT_SHIM}} ' +
     '${CRTBEGIN} ${ld_inputs} ' +
+    '${USE_IRT_SHIM ? ${LD_ARGS_IRT_SHIM}} ' +
     '${STATIC ? --start-group} ' +
     '${USE_DEFAULTLIBS ? ${DEFAULTLIBS}} ' +
     '${STATIC ? --end-group} ' +
