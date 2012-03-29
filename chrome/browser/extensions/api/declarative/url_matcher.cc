@@ -445,6 +445,10 @@ void URLMatcher::RemoveConditionSets(
   UpdateInternalDatastructures();
 }
 
+void URLMatcher::ClearUnusedConditionSets() {
+  UpdateConditionFactory();
+}
+
 std::set<URLMatcherConditionSet::ID> URLMatcher::MatchURL(const GURL& url) {
   // Find all IDs of SubstringPatterns that match |url|.
   // See URLMatcherConditionFactory for the canonicalization of URLs and the

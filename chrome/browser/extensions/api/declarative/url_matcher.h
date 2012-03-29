@@ -221,6 +221,9 @@ class URLMatcher {
   void RemoveConditionSets(
       const std::vector<URLMatcherConditionSet::ID>& condition_set_ids);
 
+  // Removes all unused condition sets from the ConditionFactory.
+  void ClearUnusedConditionSets();
+
   // Returns the IDs of all URLMatcherConditionSet that match to this |url|.
   std::set<URLMatcherConditionSet::ID> MatchURL(const GURL& url);
 
