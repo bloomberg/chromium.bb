@@ -51,7 +51,7 @@ class CONTENT_EXPORT VideoCaptureImpl
   struct DIBBuffer;
 
   VideoCaptureImpl(media::VideoCaptureSessionId id,
-                   scoped_refptr<base::MessageLoopProxy> ml_proxy,
+                   base::MessageLoopProxy* capture_message_loop_proxy,
                    VideoCaptureMessageFilter* filter);
   virtual ~VideoCaptureImpl();
 
@@ -81,7 +81,8 @@ class CONTENT_EXPORT VideoCaptureImpl
   bool ClientHasDIB();
 
   scoped_refptr<VideoCaptureMessageFilter> message_filter_;
-  scoped_refptr<base::MessageLoopProxy> ml_proxy_;
+  scoped_refptr<base::MessageLoopProxy> capture_message_loop_proxy_;
+  scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;
   int device_id_;
 
   // Pool of DIBs.
