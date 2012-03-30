@@ -31,7 +31,7 @@ namespace internal {
 class ASH_EXPORT PhantomWindowController : public ui::AnimationDelegate {
  public:
   explicit PhantomWindowController(aura::Window* window);
-  ~PhantomWindowController();
+  virtual ~PhantomWindowController();
 
   // Bounds last passed to Show().
   const gfx::Rect& bounds() const { return bounds_; }
