@@ -667,9 +667,9 @@ void EglRenderingVDAClient::CreateDecoder() {
     return;
 
   // Configure the decoder.
-  media::VideoDecodeAccelerator::Profile profile = media::H264PROFILE_BASELINE;
+  media::VideoCodecProfile profile = media::H264PROFILE_BASELINE;
   if (profile_ != -1)
-    profile = static_cast<media::VideoDecodeAccelerator::Profile>(profile_);
+    profile = static_cast<media::VideoCodecProfile>(profile_);
   CHECK(decoder_->Initialize(profile));
 }
 

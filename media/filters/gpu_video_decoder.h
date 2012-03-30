@@ -36,7 +36,7 @@ class MEDIA_EXPORT GpuVideoDecoder
    public:
     // Caller owns returned pointer.
     virtual VideoDecodeAccelerator* CreateVideoDecodeAccelerator(
-        VideoDecodeAccelerator::Profile, VideoDecodeAccelerator::Client*) = 0;
+        VideoCodecProfile, VideoDecodeAccelerator::Client*) = 0;
 
     // Allocate & delete native textures.
     virtual bool CreateTextures(int32 count, const gfx::Size& size,

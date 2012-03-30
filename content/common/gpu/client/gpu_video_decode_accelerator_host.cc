@@ -56,7 +56,8 @@ bool GpuVideoDecodeAcceleratorHost::OnMessageReceived(const IPC::Message& msg) {
   return handled;
 }
 
-bool GpuVideoDecodeAcceleratorHost::Initialize(Profile profile) {
+bool GpuVideoDecodeAcceleratorHost::Initialize(
+    media::VideoCodecProfile profile) {
   NOTREACHED();
   return true;
 }

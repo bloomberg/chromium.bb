@@ -522,7 +522,7 @@ DXVAVideoDecodeAccelerator::~DXVAVideoDecodeAccelerator() {
   client_ = NULL;
 }
 
-bool DXVAVideoDecodeAccelerator::Initialize(Profile) {
+bool DXVAVideoDecodeAccelerator::Initialize(media::VideoCodecProfile) {
   DCHECK(CalledOnValidThread());
 
   RETURN_AND_NOTIFY_ON_FAILURE(pre_sandbox_init_done_,
@@ -1039,4 +1039,3 @@ void DXVAVideoDecodeAccelerator::NotifyPictureReady(
   if (state_ != kUninitialized && client_)
     client_->PictureReady(picture);
 }
-
