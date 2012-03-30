@@ -494,6 +494,8 @@
         'browser/chromeos/dbus/flimflam_ipconfig_client.h',
         'browser/chromeos/dbus/flimflam_network_client.cc',
         'browser/chromeos/dbus/flimflam_network_client.h',
+        'browser/chromeos/dbus/flimflam_profile_client.cc',
+        'browser/chromeos/dbus/flimflam_profile_client.h',
         'browser/chromeos/dbus/image_burner_client.cc',
         'browser/chromeos/dbus/image_burner_client.h',
         'browser/chromeos/dbus/introspectable_client.cc',

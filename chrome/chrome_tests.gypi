@@ -116,6 +116,8 @@
         'browser/chromeos/dbus/mock_flimflam_ipconfig_client.h',
         'browser/chromeos/dbus/mock_flimflam_network_client.cc',
         'browser/chromeos/dbus/mock_flimflam_network_client.h',
+        'browser/chromeos/dbus/mock_flimflam_profile_client.cc',
+        'browser/chromeos/dbus/mock_flimflam_profile_client.h',
         'browser/chromeos/dbus/mock_image_burner_client.cc',
         'browser/chromeos/dbus/mock_image_burner_client.h',
         'browser/chromeos/dbus/mock_introspectable_client.cc',
