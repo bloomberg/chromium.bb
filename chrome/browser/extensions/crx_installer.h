@@ -110,6 +110,8 @@ class CrxInstaller
   const GURL& download_url() const { return download_url_; }
   void set_download_url(const GURL& val) { download_url_ = val; }
 
+  const FilePath& source_file() const { return source_file_; }
+
   Extension::Location install_source() const { return install_source_; }
   void set_install_source(Extension::Location source) {
     install_source_ = source;

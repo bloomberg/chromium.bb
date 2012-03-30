@@ -5,6 +5,7 @@
 #include "chrome/browser/policy/app_pack_updater.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/file_util.h"
 #include "base/location.h"
 #include "base/stl_util.h"
@@ -14,6 +15,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros_settings.h"
 #include "chrome/browser/chromeos/cros_settings_names.h"
+#include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/external_extension_loader.h"
 #include "chrome/browser/extensions/external_extension_provider_impl.h"
 #include "chrome/browser/extensions/updater/extension_downloader.h"
@@ -22,8 +24,8 @@
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
-
-// TODO(joaodasilva): remove files from the cache when the crx fails validation.
+#include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_source.h"
 
 using content::BrowserThread;
 using file_util::FileEnumerator;
@@ -87,7 +89,7 @@ AppPackUpdater::AppPackUpdater(net::URLRequestContextGetter* request_context,
   } else if (connector->GetDeviceMode() == DEVICE_MODE_UNKNOWN &&
              connector->device_cloud_policy_subsystem()) {
     // Not enrolled yet, listen for enrollment.
-    registrar_.reset(new CloudPolicySubsystem::ObserverRegistrar(
+    policy_registrar_.reset(new CloudPolicySubsystem::ObserverRegistrar(
         connector->device_cloud_policy_subsystem(), this));
   } else {
     // Linger as a stub.
@@ -128,6 +130,10 @@ void AppPackUpdater::SetScreenSaverUpdateCallback(
 void AppPackUpdater::Init() {
   worker_pool_token_ = BrowserThread::GetBlockingPool()->GetSequenceToken();
   chromeos::CrosSettings::Get()->AddSettingsObserver(chromeos::kAppPack, this);
+  notification_registrar_.Add(
+      this,
+      chrome::NOTIFICATION_EXTENSION_INSTALL_ERROR,
+      content::NotificationService::AllBrowserContextsAndSources());
   LoadPolicy();
 }
 
@@ -135,7 +141,7 @@ void AppPackUpdater::OnPolicyStateChanged(
     CloudPolicySubsystem::PolicySubsystemState state,
     CloudPolicySubsystem::ErrorDetails error_details) {
   if (state == CloudPolicySubsystem::SUCCESS) {
-    registrar_.reset();
+    policy_registrar_.reset();
     Init();
   }
 }
@@ -143,10 +149,20 @@ void AppPackUpdater::OnPolicyStateChanged(
 void AppPackUpdater::Observe(int type,
                              const content::NotificationSource& source,
                              const content::NotificationDetails& details) {
-  DCHECK_EQ(type, chrome::NOTIFICATION_SYSTEM_SETTING_CHANGED);
-  DCHECK_EQ(chromeos::kAppPack,
-            *content::Details<const std::string>(details).ptr());
-  LoadPolicy();
+  switch (type) {
+    case chrome::NOTIFICATION_SYSTEM_SETTING_CHANGED:
+      DCHECK_EQ(chromeos::kAppPack,
+                *content::Details<const std::string>(details).ptr());
+      LoadPolicy();
+      break;
+
+    case chrome::NOTIFICATION_EXTENSION_INSTALL_ERROR:
+      OnCrxInstallFailed(content::Source<CrxInstaller>(source).ptr());
+      break;
+
+    default:
+      NOTREACHED();
+  }
 }
 
 void AppPackUpdater::LoadPolicy() {
@@ -486,6 +502,30 @@ void AppPackUpdater::OnCacheEntryInstalled(const std::string& id,
     entry.path = path;
     entry.cached_version = version;
     UpdateExtensionLoader();
+  }
+}
+
+void AppPackUpdater::OnCrxInstallFailed(CrxInstaller* installer) {
+  FilePath path = installer->source_file();
+
+  // Search for |path| in |cached_extensions_|, and delete it if found.
+  for (CacheEntryMap::iterator it = cached_extensions_.begin();
+       it != cached_extensions_.end(); ++it) {
+    if (it->second.path == path.value()) {
+      LOG(ERROR) << "AppPack extension at " << path.value() << " failed to "
+                 << "install, deleting it.";
+      cached_extensions_.erase(it);
+      UpdateExtensionLoader();
+
+      // The file will be downloaded again on the next restart.
+      BrowserThread::PostTask(
+          BrowserThread::FILE, FROM_HERE,
+          base::Bind(base::IgnoreResult(file_util::Delete), path, true));
+
+      // Don't try to DownloadMissingExtensions() from here,
+      // since it can cause a fail/retry loop.
+      break;
+    }
   }
 }
 

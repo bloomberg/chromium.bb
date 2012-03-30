@@ -19,7 +19,9 @@
 #include "chrome/browser/extensions/updater/extension_downloader_delegate.h"
 #include "chrome/browser/policy/cloud_policy_subsystem.h"
 #include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
+class CrxInstaller;
 class ExternalExtensionLoader;
 class FilePath;
 class GURL;
@@ -163,6 +165,10 @@ class AppPackUpdater : public CloudPolicySubsystem::Observer,
                              const std::string& path,
                              const std::string& version);
 
+  // Handles failure to install CRX files. The file is deleted if it came from
+  // the cache.
+  void OnCrxInstallFailed(CrxInstaller* installer);
+
   // Helper to post blocking IO tasks to the blocking pool.
   void PostBlockingTask(const tracked_objects::Location& from_here,
                         const base::Closure& task);
@@ -175,7 +181,10 @@ class AppPackUpdater : public CloudPolicySubsystem::Observer,
 
   // Observes updates to the |device_cloud_policy_subsystem_|, to detect
   // device enrollment.
-  scoped_ptr<CloudPolicySubsystem::ObserverRegistrar> registrar_;
+  scoped_ptr<CloudPolicySubsystem::ObserverRegistrar> policy_registrar_;
+
+  // Observes failures to install CRX files.
+  content::NotificationRegistrar notification_registrar_;
 
   // Unique sequence token so that tasks posted by the AppPackUpdater are
   // executed sequentially in the blocking pool.
