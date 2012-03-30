@@ -48,9 +48,37 @@ PPB_VideoDecoder_Impl::~PPB_VideoDecoder_Impl() {
 // Convert PP_VideoDecoder_Profile to media::VideoCodecProfile.
 static media::VideoCodecProfile PPToMediaProfile(
     const PP_VideoDecoder_Profile pp_profile) {
-  // TODO(fischman,vrk): this assumes the enum values in the two Profile types
-  // match up exactly.  Add a COMPILE_ASSERT for this somewhere.
-  return static_cast<media::VideoCodecProfile>(pp_profile);
+  switch (pp_profile) {
+    case PP_VIDEODECODER_H264PROFILE_NONE:
+      // HACK: PPAPI contains a bogus "none" h264 profile that doesn't
+      // correspond to anything in h.264; but a number of released chromium
+      // versions silently promoted this to Baseline profile, so we retain that
+      // behavior here.  Fall through.
+    case PP_VIDEODECODER_H264PROFILE_BASELINE:
+      return media::H264PROFILE_BASELINE;
+    case PP_VIDEODECODER_H264PROFILE_MAIN:
+      return media::H264PROFILE_MAIN;
+    case PP_VIDEODECODER_H264PROFILE_EXTENDED:
+      return media::H264PROFILE_EXTENDED;
+    case PP_VIDEODECODER_H264PROFILE_HIGH:
+      return media::H264PROFILE_HIGH;
+    case PP_VIDEODECODER_H264PROFILE_HIGH10PROFILE:
+      return media::H264PROFILE_HIGH10PROFILE;
+    case PP_VIDEODECODER_H264PROFILE_HIGH422PROFILE:
+      return media::H264PROFILE_HIGH422PROFILE;
+    case PP_VIDEODECODER_H264PROFILE_HIGH444PREDICTIVEPROFILE:
+      return media::H264PROFILE_HIGH444PREDICTIVEPROFILE;
+    case PP_VIDEODECODER_H264PROFILE_SCALABLEBASELINE:
+      return media::H264PROFILE_SCALABLEBASELINE;
+    case PP_VIDEODECODER_H264PROFILE_SCALABLEHIGH:
+      return media::H264PROFILE_SCALABLEHIGH;
+    case PP_VIDEODECODER_H264PROFILE_STEREOHIGH:
+      return media::H264PROFILE_STEREOHIGH;
+    case PP_VIDEODECODER_H264PROFILE_MULTIVIEWHIGH:
+      return media::H264PROFILE_MULTIVIEWHIGH;
+    default:
+      return media::VIDEO_CODEC_PROFILE_UNKNOWN;
+  }
 }
 
 // static
