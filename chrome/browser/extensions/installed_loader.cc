@@ -184,6 +184,7 @@ void InstalledLoader::LoadAllExtensions() {
   int theme_count = 0;
   int page_action_count = 0;
   int browser_action_count = 0;
+  int disabled_for_permissions_count = 0;
   const ExtensionSet* extensions = extension_service_->extensions();
   ExtensionSet::const_iterator ex;
   for (ex = extensions->begin(); ex != extensions->end(); ++ex) {
@@ -251,6 +252,15 @@ void InstalledLoader::LoadAllExtensions() {
     extension_service_->RecordPermissionMessagesHistogram(
         *ex, "Extensions.Permissions_Load");
   }
+  const ExtensionSet* disabled_extensions =
+      extension_service_->disabled_extensions();
+  for (ex = disabled_extensions->begin();
+       ex != disabled_extensions->end(); ++ex) {
+    if (extension_service_->extension_prefs()->
+        DidExtensionEscalatePermissions((*ex)->id())) {
+      ++disabled_for_permissions_count;
+    }
+  }
   UMA_HISTOGRAM_COUNTS_100("Extensions.LoadApp",
                            app_user_count + app_external_count);
   UMA_HISTOGRAM_COUNTS_100("Extensions.LoadAppUser", app_user_count);
@@ -268,6 +278,8 @@ void InstalledLoader::LoadAllExtensions() {
   UMA_HISTOGRAM_COUNTS_100("Extensions.LoadPageAction", page_action_count);
   UMA_HISTOGRAM_COUNTS_100("Extensions.LoadBrowserAction",
                            browser_action_count);
+  UMA_HISTOGRAM_COUNTS_100("Extensions.DisabledForPermissions",
+                           disabled_for_permissions_count);
 }
 
 int InstalledLoader::GetCreationFlags(const ExtensionInfo* info) {
