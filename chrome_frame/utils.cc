@@ -35,6 +35,7 @@
 #include "chrome_frame/html_utils.h"
 #include "chrome_frame/navigation_constraints.h"
 #include "chrome_frame/policy_settings.h"
+#include "chrome_frame/registry_list_preferences_holder.h"
 #include "chrome_frame/simple_resource_loader.h"
 #include "googleurl/src/gurl.h"
 #include "googleurl/src/url_canon.h"
@@ -47,25 +48,27 @@ using base::win::RegKey;
 
 // Note that these values are all lower case and are compared to
 // lower-case-transformed values.
-const wchar_t kMetaTag[] = L"meta";
-const wchar_t kHttpEquivAttribName[] = L"http-equiv";
-const wchar_t kContentAttribName[] = L"content";
-const wchar_t kXUACompatValue[] = L"x-ua-compatible";
-const wchar_t kBodyTag[] = L"body";
-const wchar_t kChromeContentPrefix[] = L"chrome=";
 const char kGCFProtocol[] = "gcf";
-const wchar_t kChromeProtocolPrefix[] = L"gcf:";
+const wchar_t kBodyTag[] = L"body";
+const wchar_t kContentAttribName[] = L"content";
+const wchar_t kChromeContentPrefix[] = L"chrome=";
 const wchar_t kChromeMimeType[] = L"application/chromepage";
-const wchar_t kPatchProtocols[] = L"PatchProtocols";
+const wchar_t kChromeProtocolPrefix[] = L"gcf:";
+const wchar_t kHttpEquivAttribName[] = L"http-equiv";
+const wchar_t kIexploreProfileName[] = L"iexplore";
+const wchar_t kMetaTag[] = L"meta";
+const wchar_t kRundllProfileName[] = L"rundll32";
+const wchar_t kXUACompatValue[] = L"x-ua-compatible";
+
+// Registry key and value names related to Chrome Frame configuration options.
+const wchar_t kAllowUnsafeURLs[] = L"AllowUnsafeURLs";
 const wchar_t kChromeFrameConfigKey[] = L"Software\\Google\\ChromeFrame";
+const wchar_t kEnableBuggyBhoIntercept[] = L"EnableBuggyBhoIntercept";
+const wchar_t kEnableGCFRendererByDefault[] = L"IsDefaultRenderer";
+const wchar_t kExcludeUAFromDomainList[] = L"ExcludeUAFromDomain";
+const wchar_t kPatchProtocols[] = L"PatchProtocols";
 const wchar_t kRenderInGCFUrlList[] = L"RenderInGcfUrls";
 const wchar_t kRenderInHostUrlList[] = L"RenderInHostUrls";
-const wchar_t kEnableGCFRendererByDefault[] = L"IsDefaultRenderer";
-const wchar_t kIexploreProfileName[] = L"iexplore";
-const wchar_t kRundllProfileName[] = L"rundll32";
-
-const wchar_t kAllowUnsafeURLs[] = L"AllowUnsafeURLs";
-const wchar_t kEnableBuggyBhoIntercept[] = L"EnableBuggyBhoIntercept";
 
 static const wchar_t kChromeFramePersistNPAPIReg[] = L"PersistNPAPIReg";
 
@@ -112,6 +115,14 @@ namespace {
 // living instance only.
 base::LazyInstance<base::ThreadLocalPointer<IBrowserService> >
     g_tls_browser_for_cf_navigation = LAZY_INSTANCE_INITIALIZER;
+
+// Holds the cached preferences for the per-url render type settings.
+base::LazyInstance<RegistryListPreferencesHolder>::Leaky
+    g_render_type_for_url_holder;
+
+// Holds the cached preferences for the per-url user agent filter.
+base::LazyInstance<RegistryListPreferencesHolder>::Leaky
+    g_user_agent_filter_holder;
 
 }  // end anonymous namespace
 
@@ -174,7 +185,7 @@ HRESULT UtilRegisterTypeLib(ITypeLib* typelib,
                                                     OLECHAR FAR* full_path,
                                                     OLECHAR FAR* help_dir);
   LPCSTR function_name =
-    for_current_user_only ? "RegisterTypeLibForUser" : "RegisterTypeLib";
+      for_current_user_only ? "RegisterTypeLibForUser" : "RegisterTypeLib";
   RegisterTypeLibPrototype reg_tlb =
       reinterpret_cast<RegisterTypeLibPrototype>(
           GetProcAddress(GetModuleHandle(_T("oleaut32.dll")),
@@ -716,42 +727,63 @@ RendererType RendererTypeForUrl(const std::wstring& url) {
         RENDERER_TYPE_CHROME_OPT_IN_URL : RENDERER_TYPE_UNDETERMINED;
   }
 
-  RegKey config_key;
-  if (config_key.Open(HKEY_CURRENT_USER, kChromeFrameConfigKey,
-                      KEY_READ) != ERROR_SUCCESS) {
-    return RENDERER_TYPE_UNDETERMINED;
-  }
+  // TODO(robertshield): Move this into a holder-type class that listens
+  // for reg change events as well.
+  static int render_in_cf_by_default = FALSE;
 
-  RendererType renderer_type = RENDERER_TYPE_UNDETERMINED;
-
-  const wchar_t* url_list_name = NULL;
-  int render_in_cf_by_default = FALSE;
-  config_key.ReadValueDW(kEnableGCFRendererByDefault,
-                         reinterpret_cast<DWORD*>(&render_in_cf_by_default));
-  if (render_in_cf_by_default) {
-    url_list_name = kRenderInHostUrlList;
-    renderer_type = RENDERER_TYPE_CHROME_DEFAULT_RENDERER;
-  } else {
-    url_list_name = kRenderInGCFUrlList;
-  }
-
-  bool match_found = false;
-  base::win::RegistryValueIterator url_list(config_key.Handle(), url_list_name);
-  while (!match_found && url_list.Valid()) {
-    if (MatchPattern(url, url_list.Name())) {
-      match_found = true;
+  RegistryListPreferencesHolder& render_type_for_url_holder =
+      g_render_type_for_url_holder.Get();
+  if (!render_type_for_url_holder.Valid()) {
+    const wchar_t* url_list_name = kRenderInGCFUrlList;
+    if (IsGcfDefaultRenderer()) {
+      url_list_name = kRenderInHostUrlList;
+      render_in_cf_by_default = TRUE;
     } else {
-      ++url_list;
+      render_in_cf_by_default = FALSE;
     }
-  }
 
-  if (match_found) {
+    render_type_for_url_holder.Init(HKEY_CURRENT_USER,
+                                    kChromeFrameConfigKey,
+                                    url_list_name);
+  }
+  DCHECK(render_type_for_url_holder.Valid());
+
+  RendererType renderer_type =
+      render_in_cf_by_default ? RENDERER_TYPE_CHROME_DEFAULT_RENDERER :
+                                RENDERER_TYPE_UNDETERMINED;
+
+  if (render_type_for_url_holder.ListMatches(url)) {
     renderer_type = render_in_cf_by_default ?
       RENDERER_TYPE_UNDETERMINED :
       RENDERER_TYPE_CHROME_OPT_IN_URL;
   }
 
   return renderer_type;
+}
+
+bool ShouldRemoveUAForUrl(const string16& url) {
+  // TODO(robertshield): Wire up the stuff in PolicySettings here so the value
+  // can be specified via group policy.
+  // TODO(robertshield): Add a default list of exclusions here for site with
+  // known bad UA parsing.
+  RegistryListPreferencesHolder& user_agent_filter_holder =
+      g_user_agent_filter_holder.Get();
+  if (!user_agent_filter_holder.Valid()) {
+    user_agent_filter_holder.Init(HKEY_CURRENT_USER,
+                                  kChromeFrameConfigKey,
+                                  kExcludeUAFromDomainList);
+  }
+  DCHECK(user_agent_filter_holder.Valid());
+
+  return user_agent_filter_holder.ListMatches(url);
+}
+
+RegistryListPreferencesHolder& GetRendererTypePreferencesHolderForTesting() {
+  return g_render_type_for_url_holder.Get();
+}
+
+RegistryListPreferencesHolder& GetUserAgentPreferencesHolderForTesting() {
+  return g_user_agent_filter_holder.Get();
 }
 
 HRESULT NavigateBrowserToMoniker(IUnknown* browser, IMoniker* moniker,

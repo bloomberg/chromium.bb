@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -81,9 +81,11 @@ class SimpleBindStatusCallback : public CComObjectRootEx<CComSingleThreadModel>,
     return E_NOTIMPL;
   }
 };
-}  // end namespace
 
-std::string AppendCFUserAgentString(LPCWSTR headers,
+// Returns the full user agent header from the HTTP header strings passed to
+// IHttpNegotiate::BeginningTransaction. Looks first in |additional_headers|
+// and if it can't be found there looks in |headers|.
+std::string GetUserAgentFromHeaders(LPCWSTR headers,
                                     LPCWSTR additional_headers) {
   using net::HttpUtil;
 
@@ -107,52 +109,85 @@ std::string AppendCFUserAgentString(LPCWSTR headers,
       user_agent_value = original_it.values();
   }
 
+  return user_agent_value;
+}
+
+// Removes the named header |field| from a set of headers. |field| must be
+// lower-case.
+std::string ExcludeFieldFromHeaders(const std::string& old_headers,
+                                    const char* field) {
+  using net::HttpUtil;
+  std::string new_headers;
+  new_headers.reserve(old_headers.size());
+  HttpUtil::HeadersIterator headers_iterator(old_headers.begin(),
+                                             old_headers.end(), "\r\n");
+  while (headers_iterator.GetNext()) {
+    if (!LowerCaseEqualsASCII(headers_iterator.name_begin(),
+                              headers_iterator.name_end(),
+                              field)) {
+      new_headers.append(headers_iterator.name_begin(),
+                         headers_iterator.name_end());
+      new_headers += ": ";
+      new_headers.append(headers_iterator.values_begin(),
+                         headers_iterator.values_end());
+      new_headers += "\r\n";
+    }
+  }
+
+  return new_headers;
+}
+
+std::string MutateCFUserAgentString(LPCWSTR headers,
+                                    LPCWSTR additional_headers,
+                                    bool add_user_agent) {
+  std::string user_agent_value(GetUserAgentFromHeaders(headers,
+                                                       additional_headers));
+
   // Use the default "User-Agent" if none was provided.
   if (user_agent_value.empty())
     user_agent_value = http_utils::GetDefaultUserAgent();
 
   // Now add chromeframe to it.
-  user_agent_value = http_utils::AddChromeFrameToUserAgentValue(
-      user_agent_value);
+  user_agent_value = add_user_agent ?
+      http_utils::AddChromeFrameToUserAgentValue(user_agent_value) :
+      http_utils::RemoveChromeFrameFromUserAgentValue(user_agent_value);
 
-  // Build new headers, skip the existing user agent value from
-  // existing headers.
-  std::string new_headers;
-  headers_iterator.Reset();
-  while (headers_iterator.GetNext()) {
-    std::string name(headers_iterator.name());
-    if (!LowerCaseEqualsASCII(name, kLowerCaseUserAgent)) {
-      new_headers += name + ": " + headers_iterator.values() + "\r\n";
-    }
-  }
-
-  new_headers += "User-Agent: " + user_agent_value;
-  new_headers += "\r\n";
-  return new_headers;
+  // Build a new set of additional headers, skipping the existing user agent
+  // value if present.
+  return ReplaceOrAddUserAgent(additional_headers, user_agent_value);
 }
 
+}  // end namespace
+
+
+std::string AppendCFUserAgentString(LPCWSTR headers,
+                                    LPCWSTR additional_headers) {
+  return MutateCFUserAgentString(headers, additional_headers, true);
+}
+
+
+// Looks for a user agent header found in |headers| or |additional_headers|
+// then returns |additional_headers| with a modified user agent header that does
+// not include the chromeframe token.
+std::string RemoveCFUserAgentString(LPCWSTR headers,
+                                    LPCWSTR additional_headers) {
+  return MutateCFUserAgentString(headers, additional_headers, false);
+}
+
+
+// Unconditionally adds the specified |user_agent_value| to the given set of
+// |headers|, removing any that were already there.
 std::string ReplaceOrAddUserAgent(LPCWSTR headers,
                                   const std::string& user_agent_value) {
-  using net::HttpUtil;
-
   std::string new_headers;
   if (headers) {
     std::string ascii_headers(WideToASCII(headers));
-
-    // Extract "User-Agent" from the headers.
-    HttpUtil::HeadersIterator headers_iterator(ascii_headers.begin(),
-                                               ascii_headers.end(), "\r\n");
-
     // Build new headers, skip the existing user agent value from
     // existing headers.
-    while (headers_iterator.GetNext()) {
-      std::string name(headers_iterator.name());
-      if (!LowerCaseEqualsASCII(name, kLowerCaseUserAgent)) {
-        new_headers += name + ": " + headers_iterator.values() + "\r\n";
-      }
-    }
+    new_headers = ExcludeFieldFromHeaders(ascii_headers, kLowerCaseUserAgent);
   }
-  new_headers += "User-Agent: " + user_agent_value;
+  new_headers += "User-Agent: ";
+  new_headers += user_agent_value;
   new_headers += "\r\n";
   return new_headers;
 }
@@ -231,14 +266,18 @@ HRESULT HttpNegotiatePatch::BeginningTransaction(
   }
   if (modify_user_agent_) {
     std::string updated_headers;
+
     if (IsGcfDefaultRenderer() &&
         RendererTypeForUrl(url) == RENDERER_TYPE_CHROME_DEFAULT_RENDERER) {
       // Replace the user-agent header with Chrome's.
       updated_headers = ReplaceOrAddUserAgent(*additional_headers,
                                               http_utils::GetChromeUserAgent());
+    } else if (ShouldRemoveUAForUrl(url)) {
+      updated_headers = RemoveCFUserAgentString(headers, *additional_headers);
     } else {
       updated_headers = AppendCFUserAgentString(headers, *additional_headers);
     }
+
     *additional_headers = reinterpret_cast<wchar_t*>(::CoTaskMemRealloc(
         *additional_headers,
         (updated_headers.length() + 1) * sizeof(wchar_t)));

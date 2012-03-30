@@ -1,16 +1,18 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include <atlbase.h>
 #include <atlcom.h>
 
+#include "base/string16.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/scoped_bstr.h"
 #include "base/win/scoped_comptr.h"
 #include "chrome_frame/http_negotiate.h"
 #include "chrome_frame/html_utils.h"
+#include "chrome_frame/registry_list_preferences_holder.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"
 #include "chrome_frame/utils.h"
 #include "gtest/gtest.h"
@@ -65,17 +67,17 @@ TEST_F(HttpNegotiateTest, BeginningTransaction) {
               static_cast<IHttpNegotiate*>(
                   &test_http)))[kBeginningTransactionIndex]);
 
-  std::wstring cf_ua(
+  string16 cf_ua(
       ASCIIToWide(http_utils::GetDefaultUserAgentHeaderWithCFTag()));
-  std::wstring cf_tag(
+  string16 cf_tag(
       ASCIIToWide(http_utils::GetChromeFrameUserAgent()));
 
-  EXPECT_NE(std::wstring::npos, cf_ua.find(L"chromeframe/"));
+  EXPECT_NE(string16::npos, cf_ua.find(L"chromeframe/"));
 
   struct TestCase {
-    const std::wstring original_headers_;
-    const std::wstring delegate_additional_;
-    const std::wstring expected_additional_;
+    const string16 original_headers_;
+    const string16 delegate_additional_;
+    const string16 expected_additional_;
     HRESULT delegate_return_value_;
   } test_cases[] = {
     { L"Accept: */*\r\n",
@@ -116,11 +118,81 @@ TEST_F(HttpNegotiateTest, BeginningTransaction) {
 
     if (additional) {
       // Check against the expected additional headers.
-      EXPECT_EQ(test.expected_additional_, std::wstring(additional));
+      EXPECT_EQ(test.expected_additional_, string16(additional));
       ::CoTaskMemFree(additional);
     }
   }
 }
+
+TEST_F(HttpNegotiateTest, BeginningTransactionUARemoval) {
+  static const int kBeginningTransactionIndex = 3;
+  CComObjectStackEx<TestHttpNegotiate> test_http;
+  IHttpNegotiate_BeginningTransaction_Fn original =
+      reinterpret_cast<IHttpNegotiate_BeginningTransaction_Fn>(
+          (*reinterpret_cast<void***>(
+              static_cast<IHttpNegotiate*>(
+                  &test_http)))[kBeginningTransactionIndex]);
+
+  string16 nocf_ua(
+      ASCIIToWide(http_utils::RemoveChromeFrameFromUserAgentValue(
+          http_utils::GetDefaultUserAgentHeaderWithCFTag())));
+  string16 cf_ua(
+      ASCIIToWide(http_utils::AddChromeFrameToUserAgentValue(
+          WideToASCII(nocf_ua))));
+
+  EXPECT_EQ(string16::npos, nocf_ua.find(L"chromeframe/"));
+  EXPECT_NE(string16::npos, cf_ua.find(L"chromeframe/"));
+
+  string16 ua_url(L"www.withua.com");
+  string16 no_ua_url(L"www.noua.com");
+
+  RegistryListPreferencesHolder& ua_holder =
+      GetUserAgentPreferencesHolderForTesting();
+  ua_holder.AddStringForTesting(no_ua_url);
+
+  struct TestCase {
+    const string16 url_;
+    const string16 original_headers_;
+    const string16 delegate_additional_;
+    const string16 expected_additional_;
+  } test_cases[] = {
+    { ua_url,
+      L"",
+      L"Accept: */*\r\n" + cf_ua + L"\r\n",
+      L"Accept: */*\r\n" + cf_ua + L"\r\n" },
+    { ua_url,
+      L"",
+      L"Accept: */*\r\n" + nocf_ua + L"\r\n",
+      L"Accept: */*\r\n" + cf_ua + L"\r\n" },
+    { no_ua_url,
+      L"",
+      L"Accept: */*\r\n" + cf_ua + L"\r\n",
+      L"Accept: */*\r\n" + nocf_ua + L"\r\n" },
+    { no_ua_url,
+      L"",
+      L"Accept: */*\r\n" + nocf_ua + L"\r\n",
+      L"Accept: */*\r\n" + nocf_ua + L"\r\n" },
+  };
+
+  for (int i = 0; i < arraysize(test_cases); ++i) {
+    TestCase& test = test_cases[i];
+    wchar_t* additional = NULL;
+    test_http.beginning_transaction_ret_ = S_OK;
+    test_http.additional_headers_ = test.delegate_additional_.c_str();
+    HttpNegotiatePatch::BeginningTransaction(original, &test_http,
+        test.url_.c_str(), test.original_headers_.c_str(), 0,
+        &additional);
+    EXPECT_TRUE(additional != NULL);
+
+    if (additional) {
+      // Check against the expected additional headers.
+      EXPECT_EQ(test.expected_additional_, string16(additional))
+          << "Iteration: " << i;
+      ::CoTaskMemFree(additional);
+    }
+  }
+}
+
 
 class TestInternetProtocolSink
     : public CComObjectRootEx<CComMultiThreadModel>,
@@ -175,13 +247,13 @@ END_COM_MAP()
     return status_;
   }
 
-  const std::wstring& last_status_text() const {
+  const string16& last_status_text() const {
     return status_text_;
   }
 
  protected:
   ULONG status_;
-  std::wstring status_text_;
+  string16 status_text_;
   base::win::ScopedComPtr<IWebBrowser2> browser_;
 };
 

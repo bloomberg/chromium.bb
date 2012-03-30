@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -127,10 +127,15 @@ class HTMLScanner {
 
 namespace http_utils {
 
-// Adds "chromeframe/x.y" to the end of the User-Agent string (x.y is the
-// version).  If the cf tag has already been added to the string,
-// the original string is returned.
+// Adds "chromeframe/a.b.c.d" to the User-Agent string (a.b.c.d is the version).
+// If the cf tag has already been added to the string, the original string is
+// returned.
 std::string AddChromeFrameToUserAgentValue(const std::string& value);
+
+// Removes "chromeframe/a.b.c.d" from the User-Agent string (a.b.c.d is the
+// version).  If the cf tag is not present in the string, the original string is
+// returned.
+std::string RemoveChromeFrameFromUserAgentValue(const std::string& value);
 
 // Fetches the user agent from urlmon and adds chrome frame to the
 // comment section.

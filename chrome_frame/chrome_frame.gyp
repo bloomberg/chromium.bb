@@ -732,6 +732,8 @@
         'ready_mode/ready_mode.cc',
         'ready_mode/ready_mode.h',
         'register_bho.rgs',
+        'registry_list_preferences_holder.cc',
+        'registry_list_preferences_holder.h',
         'stream_impl.cc',
         'stream_impl.h',
         'urlmon_bind_status_callback.h',

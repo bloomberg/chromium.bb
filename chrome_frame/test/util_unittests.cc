@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include "base/win/registry.h"
 #include "chrome_frame/navigation_constraints.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"
+#include "chrome_frame/registry_list_preferences_holder.h"
 #include "chrome_frame/utils.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
@@ -452,6 +453,11 @@ TEST_F(UtilTests, RendererTypeForUrlTest) {
   DWORD saved_default_renderer = 0;
   config_key.ReadValueDW(kEnableGCFRendererByDefault, &saved_default_renderer);
 
+  // We need to manually reset the holder between checks.
+  // TODO(robertshield): Remove this when the RegistryWatcher is wired up.
+  RegistryListPreferencesHolder& renderer_type_preferences_holder =
+      GetRendererTypePreferencesHolderForTesting();
+
   // Make sure the host is the default renderer.
   config_key.WriteValue(kEnableGCFRendererByDefault, static_cast<DWORD>(0));
   EXPECT_FALSE(IsGcfDefaultRenderer());
@@ -459,6 +465,7 @@ TEST_F(UtilTests, RendererTypeForUrlTest) {
   opt_for_gcf.DeleteValue(kTestFilter);  // Just in case this exists
   EXPECT_EQ(RENDERER_TYPE_UNDETERMINED, RendererTypeForUrl(kTestUrl));
   opt_for_gcf.WriteValue(kTestFilter, L"");
+  renderer_type_preferences_holder.ResetForTesting();
   EXPECT_EQ(RENDERER_TYPE_CHROME_OPT_IN_URL, RendererTypeForUrl(kTestUrl));
 
   // Now set GCF as the default renderer.
@@ -466,15 +473,19 @@ TEST_F(UtilTests, RendererTypeForUrlTest) {
   EXPECT_TRUE(IsGcfDefaultRenderer());
 
   opt_for_host.DeleteValue(kTestFilter);  // Just in case this exists
+  renderer_type_preferences_holder.ResetForTesting();
   EXPECT_EQ(RENDERER_TYPE_CHROME_DEFAULT_RENDERER,
             RendererTypeForUrl(kTestUrl));
   opt_for_host.WriteValue(kTestFilter, L"");
+  renderer_type_preferences_holder.ResetForTesting();
   EXPECT_EQ(RENDERER_TYPE_UNDETERMINED, RendererTypeForUrl(kTestUrl));
 
   // Cleanup.
   opt_for_gcf.DeleteValue(kTestFilter);
   opt_for_host.DeleteValue(kTestFilter);
   config_key.WriteValue(kEnableGCFRendererByDefault, saved_default_renderer);
+  renderer_type_preferences_holder.ResetForTesting();
+  RendererTypeForUrl(L"");
 }
 
 TEST_F(UtilTests, XUaCompatibleDirectiveTest) {

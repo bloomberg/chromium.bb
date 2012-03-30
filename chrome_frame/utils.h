@@ -15,33 +15,36 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
+#include "base/string16.h"
 #include "base/threading/thread.h"
 #include "base/win/scoped_comptr.h"
 #include "googleurl/src/gurl.h"
 #include "ui/gfx/rect.h"
 
 class FilePath;
+class RegistryListPreferencesHolder;
 interface IBrowserService;
 interface IWebBrowser2;
 struct ContextMenuModel;
 
 // utils.h : Various utility functions and classes
-
-extern const wchar_t kChromeContentPrefix[];
 extern const char kGCFProtocol[];
-extern const wchar_t kChromeProtocolPrefix[];
-extern const wchar_t kChromeFrameHeadlessMode[];
-extern const wchar_t kChromeFrameAccessibleMode[];
-extern const wchar_t kChromeFrameUnpinnedMode[];
+
 extern const wchar_t kAllowUnsafeURLs[];
-extern const wchar_t kEnableBuggyBhoIntercept[];
-extern const wchar_t kChromeMimeType[];
+extern const wchar_t kChromeContentPrefix[];
+extern const wchar_t kChromeFrameAccessibleMode[];
 extern const wchar_t kChromeFrameAttachTabPattern[];
 extern const wchar_t kChromeFrameConfigKey[];
+extern const wchar_t kChromeFrameHeadlessMode[];
+extern const wchar_t kChromeFrameUnpinnedMode[];
+extern const wchar_t kChromeMimeType[];
+extern const wchar_t kChromeProtocolPrefix[];
+extern const wchar_t kEnableBuggyBhoIntercept[];
+extern const wchar_t kEnableGCFRendererByDefault[];
+extern const wchar_t kExcludeUAFromDomainList[];
+extern const wchar_t kIexploreProfileName[];
 extern const wchar_t kRenderInGCFUrlList[];
 extern const wchar_t kRenderInHostUrlList[];
-extern const wchar_t kEnableGCFRendererByDefault[];
-extern const wchar_t kIexploreProfileName[];
 extern const wchar_t kRundllProfileName[];
 extern const wchar_t kUseBackgroundThreadForSubResources[];
 
@@ -271,6 +274,18 @@ bool IsGcfDefaultRenderer();
 // - RENDERER_TYPE_CHROME_DEFAULT_RENDERER
 // - RENDERER_TYPE_CHROME_OPT_IN_URL
 RendererType RendererTypeForUrl(const std::wstring& url);
+
+// Check if we should try to remove the CF user agent based on registry
+// settings.
+bool ShouldRemoveUAForUrl(const string16& url);
+
+// Testing methods that return the backing stores behind RendererTypeForUrl and
+// ShouldRemoveUAForUrl. Intended to allow unit testing code that calls the
+// above methods.
+// TODO(robertshield): All of the FooForUrl code should be removed from here
+// and further refactored.
+RegistryListPreferencesHolder& GetRendererTypePreferencesHolderForTesting();
+RegistryListPreferencesHolder& GetUserAgentPreferencesHolderForTesting();
 
 // A shortcut for QueryService
 template <typename T>

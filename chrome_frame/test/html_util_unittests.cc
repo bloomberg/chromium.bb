@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -319,79 +319,96 @@ TEST_F(HtmlUtilUnittest, IEConditionalCommentNonTerminatedTest) {
   ASSERT_EQ(2, boo_tag_list.size());
 }
 
-TEST_F(HtmlUtilUnittest, AddChromeFrameToUserAgentValue) {
-  struct TestCase {
-    std::string input_;
-    std::string expected_;
-  } test_cases[] = {
-    {
-      "", ""
-    }, {
-      "Mozilla/4.7 [en] (WinNT; U)",
-      "Mozilla/4.7 [en] (WinNT; U; chromeframe/0.0.0.0)"
-    }, {
-      "Mozilla/4.0 (compatible; MSIE 5.01; Windows NT)",
-      "Mozilla/4.0 (compatible; MSIE 5.01; Windows NT; chromeframe/0.0.0.0)"
-    }, {
-      "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.0; T312461; "
-          ".NET CLR 1.1.4322)",
-      "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.0; T312461; "
-          ".NET CLR 1.1.4322; chromeframe/0.0.0.0)"
-    }, {
-      "Mozilla/4.0 (compatible; MSIE 5.0; Windows NT 4.0) Opera 5.11 [en]",
-      "Mozilla/4.0 (compatible; MSIE 5.0; Windows NT 4.0; chromeframe/0.0.0.0) "
-          "Opera 5.11 [en]"
-    }, {
-      "Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0)",
-      "Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0; "
-          "chromeframe/0.0.0.0)"
-    }, {
-      "Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.0.2) "
-          "Gecko/20030208 Netscape/7.02",
-      "Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.0.2; "
-          "chromeframe/0.0.0.0) Gecko/20030208 Netscape/7.02"
-    }, {
-      "Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.6) Gecko/20040612 "
-          "Firefox/0.8",
-      "Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.6; chromeframe/0.0.0.0) "
-          "Gecko/20040612 Firefox/0.8"
-    }, {
-      "Mozilla/5.0 (compatible; Konqueror/3.2; Linux) (KHTML, like Gecko)",
-      "Mozilla/5.0 (compatible; Konqueror/3.2; Linux; chromeframe/0.0.0.0) "
-          "(KHTML, like Gecko)"
-    }, {
-      "Lynx/2.8.4rel.1 libwww-FM/2.14 SSL-MM/1.4.1 OpenSSL/0.9.6h",
-      "Lynx/2.8.4rel.1 libwww-FM/2.14 SSL-MM/1.4.1 "
-          "OpenSSL/0.9.6h chromeframe/0.0.0.0",
-    }, {
-      "Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.7.10) "
-          "Gecko/20050716 Firefox/1.0.6",
-      "Mozilla/5.0 (X11; U; Linux i686 (x86_64; chromeframe/0.0.0.0); en-US; "
-          "rv:1.7.10) Gecko/20050716 Firefox/1.0.6"
-    }, {
-      "Invalid/1.1 ((((((",
-      "Invalid/1.1 (((((( chromeframe/0.0.0.0",
-    }, {
-      "Invalid/1.1 ()))))",
-      "Invalid/1.1 ( chromeframe/0.0.0.0)))))",
-    }, {
-      "Strange/1.1 ()",
-      "Strange/1.1 ( chromeframe/0.0.0.0)",
-    }
-  };
+struct UserAgentTestCase {
+  std::string input_;
+  std::string expected_;
+} user_agent_test_cases[] = {
+  {
+    "", ""
+  }, {
+    "Mozilla/4.7 [en] (WinNT; U)",
+    "Mozilla/4.7 [en] (WinNT; U; chromeframe/0.0.0.0)"
+  }, {
+    "Mozilla/4.0 (compatible; MSIE 5.01; Windows NT)",
+    "Mozilla/4.0 (compatible; MSIE 5.01; Windows NT; chromeframe/0.0.0.0)"
+  }, {
+    "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.0; T312461; "
+        ".NET CLR 1.1.4322)",
+    "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.0; T312461; "
+        ".NET CLR 1.1.4322; chromeframe/0.0.0.0)"
+  }, {
+    "Mozilla/4.0 (compatible; MSIE 5.0; Windows NT 4.0) Opera 5.11 [en]",
+    "Mozilla/4.0 (compatible; MSIE 5.0; Windows NT 4.0; chromeframe/0.0.0.0) "
+        "Opera 5.11 [en]"
+  }, {
+    "Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0)",
+    "Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0; "
+        "chromeframe/0.0.0.0)"
+  }, {
+    "Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.0.2) "
+        "Gecko/20030208 Netscape/7.02",
+    "Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.0.2; "
+        "chromeframe/0.0.0.0) Gecko/20030208 Netscape/7.02"
+  }, {
+    "Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.6) Gecko/20040612 "
+        "Firefox/0.8",
+    "Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.6; chromeframe/0.0.0.0) "
+        "Gecko/20040612 Firefox/0.8"
+  }, {
+    "Mozilla/5.0 (compatible; Konqueror/3.2; Linux) (KHTML, like Gecko)",
+    "Mozilla/5.0 (compatible; Konqueror/3.2; Linux; chromeframe/0.0.0.0) "
+        "(KHTML, like Gecko)"
+  }, {
+    "Lynx/2.8.4rel.1 libwww-FM/2.14 SSL-MM/1.4.1 OpenSSL/0.9.6h",
+    "Lynx/2.8.4rel.1 libwww-FM/2.14 SSL-MM/1.4.1 "
+        "OpenSSL/0.9.6h chromeframe/0.0.0.0",
+  }, {
+    "Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.7.10) "
+        "Gecko/20050716 Firefox/1.0.6",
+    "Mozilla/5.0 (X11; U; Linux i686 (x86_64; chromeframe/0.0.0.0); en-US; "
+        "rv:1.7.10) Gecko/20050716 Firefox/1.0.6"
+  }, {
+    "Invalid/1.1 ((((((",
+    "Invalid/1.1 (((((( chromeframe/0.0.0.0",
+  }, {
+    "Invalid/1.1 ()))))",
+    "Invalid/1.1 ( chromeframe/0.0.0.0)))))",
+  }, {
+    "Strange/1.1 ()",
+    "Strange/1.1 ( chromeframe/0.0.0.0)",
+  }
+};
 
-  for (int i = 0; i < arraysize(test_cases); ++i) {
+TEST_F(HtmlUtilUnittest, AddChromeFrameToUserAgentValue) {
+  for (int i = 0; i < arraysize(user_agent_test_cases); ++i) {
     std::string new_ua(
-        http_utils::AddChromeFrameToUserAgentValue(test_cases[i].input_));
-    EXPECT_EQ(test_cases[i].expected_, new_ua);
+        http_utils::AddChromeFrameToUserAgentValue(
+            user_agent_test_cases[i].input_));
+    EXPECT_EQ(user_agent_test_cases[i].expected_, new_ua);
   }
 
   // Now do the same test again, but test that we don't add the chromeframe
   // tag if we've already added it.
-  for (int i = 0; i < arraysize(test_cases); ++i) {
-    std::string ua(test_cases[i].expected_);
+  for (int i = 0; i < arraysize(user_agent_test_cases); ++i) {
+    std::string ua(user_agent_test_cases[i].expected_);
     std::string new_ua(http_utils::AddChromeFrameToUserAgentValue(ua));
-    EXPECT_EQ(test_cases[i].expected_, new_ua);
+    EXPECT_EQ(user_agent_test_cases[i].expected_, new_ua);
+  }
+}
+
+TEST_F(HtmlUtilUnittest, RemoveChromeFrameFromUserAgentValue) {
+  for (int i = 0; i < arraysize(user_agent_test_cases); ++i) {
+    std::string new_ua(
+        http_utils::RemoveChromeFrameFromUserAgentValue(
+            user_agent_test_cases[i].expected_));
+    EXPECT_EQ(user_agent_test_cases[i].input_, new_ua);
+  }
+
+  // Also test that we don't modify the UA if chromeframe is not present.
+  for (int i = 0; i < arraysize(user_agent_test_cases); ++i) {
+    std::string ua(user_agent_test_cases[i].input_);
+    std::string new_ua(http_utils::RemoveChromeFrameFromUserAgentValue(ua));
+    EXPECT_EQ(user_agent_test_cases[i].input_, new_ua);
   }
 }
 
