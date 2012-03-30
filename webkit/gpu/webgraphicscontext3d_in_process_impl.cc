@@ -1223,6 +1223,9 @@ void WebGraphicsContext3DInProcessImpl::getShaderiv(
   glGetShaderiv(shader, pname, value);
 }
 
+DELEGATE_TO_GL_4(getShaderPrecisionFormat, GetShaderPrecisionFormat,
+                 WGC3Denum, WGC3Denum, WGC3Dint*, WGC3Dint*)
+
 WebString WebGraphicsContext3DInProcessImpl::getShaderInfoLog(WebGLId shader) {
   makeContextCurrent();
 

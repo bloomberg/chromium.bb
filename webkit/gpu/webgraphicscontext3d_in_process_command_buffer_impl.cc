@@ -1221,6 +1221,9 @@ WebKit::WebString WebGraphicsContext3DInProcessCommandBufferImpl::
   return res;
 }
 
+DELEGATE_TO_GL_4(getShaderPrecisionFormat, GetShaderPrecisionFormat,
+                 WGC3Denum, WGC3Denum, WGC3Dint*, WGC3Dint*)
+
 WebKit::WebString WebGraphicsContext3DInProcessCommandBufferImpl::
     getShaderSource(WebGLId shader) {
   ClearContext();
