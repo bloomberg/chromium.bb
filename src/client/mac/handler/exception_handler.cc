@@ -364,7 +364,8 @@ bool ExceptionHandler::WriteMinidumpWithException(int exception_type,
     // destructor is executed, closing the newly created minidump file.
     if (!dump_path_.empty()) {
       MinidumpGenerator md(mach_task_self(),
-                           report_current_thread ? NULL : mach_thread_self());
+                           report_current_thread ? MACH_PORT_NULL :
+                                                   mach_thread_self());
       if (exception_type && exception_code) {
         // If this is a real exception, give the filter (if any) a chance to
         // decide if this should be sent.
