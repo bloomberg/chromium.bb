@@ -193,9 +193,11 @@ cr.define('options', function() {
    * Pushes the current page onto the history stack, overriding the last page
    * if it is the generic chrome://settings/.
    * @param {boolean} replace If true, allow no history events to be created.
+   * @param {object=} opt_params A bag of optional params, including:
+   *     {boolean} ignoreHash Whether to include the hash or not.
    * @private
    */
-  OptionsPage.updateHistoryState_ = function(replace) {
+  OptionsPage.updateHistoryState_ = function(replace, opt_params) {
     var page = this.getTopmostVisiblePage();
     var path = window.location.pathname + window.location.hash;
     if (path)
@@ -207,10 +209,11 @@ cr.define('options', function() {
       return;
     }
 
+    var hash = opt_params && opt_params.ignoreHash ? '' : window.location.hash;
+
     // If settings are embedded, tell the outer page to set its "path" to the
     // inner frame's path.
-    var outerPath = (page == this.getDefaultPage() ? '' : page.name) +
-                    window.location.hash;
+    var outerPath = (page == this.getDefaultPage() ? '' : page.name) + hash;
     uber.invokeMethodOnParent('setPath', {path: outerPath});
 
     // If there is no path, the current location is chrome://settings/.
@@ -220,7 +223,7 @@ cr.define('options', function() {
     historyFunction.call(window.history,
                          {pageName: page.name},
                          page.title,
-                         '/' + page.name + window.location.hash);
+                         '/' + page.name + hash);
 
     // Update tab title.
     this.setTitle_(page.title);
@@ -288,7 +291,7 @@ cr.define('options', function() {
     overlay.visible = false;
 
     if (overlay.didClosePage) overlay.didClosePage();
-    this.updateHistoryState_(false);
+    this.updateHistoryState_(false, {ignoreHash: true});
   };
 
   /**
