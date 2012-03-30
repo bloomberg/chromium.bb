@@ -188,8 +188,8 @@ scons-tests () {
   fi
 
   local pexe_mode=""
-  if ${pexe}; then
-    pexe_mode="pnacl_stop_with_pexe=1"
+  if ! ${pexe}; then
+    pexe_mode="pnacl_generate_pexe=0"
   fi
 
   local modeflags=$(get-mode-flags ${mode})
