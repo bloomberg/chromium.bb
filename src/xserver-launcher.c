@@ -775,7 +775,7 @@ weston_wm_read_data_source(int fd, uint32_t mask, void *data)
 	wm->source_data.size = current + len;
 	if (wm->source_data.size >= incr_chunk_size) {
 		if (!wm->incr) {
-			fprintf(stderr, "got %d bytes, starting incr\n",
+			fprintf(stderr, "got %zu bytes, starting incr\n",
 				wm->source_data.size);
 			wm->incr = 1;
 			xcb_change_property(wm->conn,
@@ -790,13 +790,13 @@ weston_wm_read_data_source(int fd, uint32_t mask, void *data)
 			wl_event_source_remove(wm->property_source);
 			weston_wm_send_selection_notify(wm, wm->selection_request.property);
 		} else if (wm->selection_property_set) {
-			fprintf(stderr, "got %d bytes, waiting for "
+			fprintf(stderr, "got %zu bytes, waiting for "
 				"property delete\n", wm->source_data.size);
 
 			wm->flush_property_on_delete = 1;
 			wl_event_source_remove(wm->property_source);
 		} else {
-			fprintf(stderr, "got %d bytes, "
+			fprintf(stderr, "got %zu bytes, "
 				"property deleted, seting new property\n",
 				wm->source_data.size);
 			weston_wm_flush_source_data(wm);
@@ -816,10 +816,10 @@ weston_wm_read_data_source(int fd, uint32_t mask, void *data)
 
 		wm->flush_property_on_delete = 1;
 		if (wm->selection_property_set) {
-			fprintf(stderr, "got %d bytes, waiting for "
+			fprintf(stderr, "got %zu bytes, waiting for "
 				"property delete\n", wm->source_data.size);
 		} else {
-			fprintf(stderr, "got %d bytes, "
+			fprintf(stderr, "got %zu bytes, "
 				"property deleted, seting new property\n",
 				wm->source_data.size);
 			weston_wm_flush_source_data(wm);
@@ -869,7 +869,7 @@ weston_wm_send_incr_chunk(struct weston_wm *wm)
 
 	wm->selection_property_set = 0;
 	if (wm->flush_property_on_delete) {
-		fprintf(stderr, "setting new property, %d bytes\n",
+		fprintf(stderr, "setting new property, %zu bytes\n",
 			wm->source_data.size);
 		wm->flush_property_on_delete = 0;
 		length = weston_wm_flush_source_data(wm);
