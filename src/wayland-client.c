@@ -499,8 +499,8 @@ handle_event(struct wl_display *display,
 WL_EXPORT void
 wl_display_iterate(struct wl_display *display, uint32_t mask)
 {
-	uint32_t p[2], object, opcode, size;
-	int len;
+	uint32_t p[2], object;
+	int len, opcode, size;
 
 	mask &= display->mask;
 	if (mask == 0) {
@@ -512,7 +512,7 @@ wl_display_iterate(struct wl_display *display, uint32_t mask)
 	len = wl_connection_data(display->connection, mask);
 
 	while (len > 0) {
-		if (len < sizeof p)
+		if ((size_t) len < sizeof p)
 			break;
 		
 		wl_connection_copy(display->connection, p, sizeof p);
