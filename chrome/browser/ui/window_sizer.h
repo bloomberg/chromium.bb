@@ -47,12 +47,13 @@ class WindowSizer {
 
   // WindowSizer owns |state_provider| and will create a default
   // MonitorInfoProvider using the physical screen.
-  explicit WindowSizer(StateProvider* state_provider);
+  WindowSizer(StateProvider* state_provider, const Browser* browser);
 
   // WindowSizer owns |state_provider| and |monitor_info_provider|.
   // It will use the supplied monitor info provider. Used only for testing.
   WindowSizer(StateProvider* state_provider,
-              MonitorInfoProvider* monitor_info_provider);
+              MonitorInfoProvider* monitor_info_provider,
+              const Browser* browser);
 
   virtual ~WindowSizer();
 
@@ -119,12 +120,12 @@ class WindowSizer {
   // size based on monitor size, etc.
   void GetDefaultWindowBounds(gfx::Rect* default_bounds) const;
 
-  // Adjusts |bounds| to be visible onscreen, biased toward the work area of the
-  // monitor containing |other_bounds|.  Despite the name, this doesn't
+  // Adjusts |bounds| to be visible on-screen, biased toward the work area of
+  // the monitor containing |other_bounds|.  Despite the name, this doesn't
   // guarantee the bounds are fully contained within this monitor's work rect;
   // it just tried to ensure the edges are visible on _some_ work rect.
   // If |saved_work_area| is non-empty, it is used to determine whether the
-  // monitor cofiguration has changed. If it has, bounds are repositioned and
+  // monitor configuration has changed. If it has, bounds are repositioned and
   // resized if necessary to make them completely contained in the current work
   // area.
   void AdjustBoundsToBeVisibleOnMonitorContaining(
@@ -132,9 +133,19 @@ class WindowSizer {
       const gfx::Rect& saved_work_area,
       gfx::Rect* bounds) const;
 
+  // Determines the position and size for a window as it gets created. This
+  // will be called before DetermineWindowBounds. It will return true when the
+  // function was setting the bounds structure to the desired size. Otherwise
+  // another algorithm should get used to determine the correct bounds.
+  bool GetBoundsIgnoringPreviousState(const gfx::Rect& specified_bounds,
+                                      gfx::Rect* bounds) const;
+
   // Providers for persistent storage and monitor metrics.
   scoped_ptr<StateProvider> state_provider_;
   scoped_ptr<MonitorInfoProvider> monitor_info_provider_;
+
+  // Note that this browser handle might be NULL.
+  const Browser* browser_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowSizer);
 };

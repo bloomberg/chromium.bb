@@ -124,15 +124,18 @@ class DefaultStateProvider : public WindowSizer::StateProvider {
 ///////////////////////////////////////////////////////////////////////////////
 // WindowSizer, public:
 
-WindowSizer::WindowSizer(StateProvider* state_provider)
+WindowSizer::WindowSizer(StateProvider* state_provider, const Browser* browser)
     : state_provider_(state_provider),
-      monitor_info_provider_(new DefaultMonitorInfoProvider) {
+      monitor_info_provider_(new DefaultMonitorInfoProvider),
+      browser_(browser) {
 }
 
 WindowSizer::WindowSizer(StateProvider* state_provider,
-                         MonitorInfoProvider* monitor_info_provider)
+                         MonitorInfoProvider* monitor_info_provider,
+                         const Browser* browser)
     : state_provider_(state_provider),
-      monitor_info_provider_(monitor_info_provider) {
+      monitor_info_provider_(monitor_info_provider),
+      browser_(browser) {
 }
 
 WindowSizer::~WindowSizer() {
@@ -143,7 +146,7 @@ void WindowSizer::GetBrowserWindowBounds(const std::string& app_name,
                                          const gfx::Rect& specified_bounds,
                                          const Browser* browser,
                                          gfx::Rect* window_bounds) {
-  const WindowSizer sizer(new DefaultStateProvider(app_name, browser));
+  const WindowSizer sizer(new DefaultStateProvider(app_name, browser), browser);
   sizer.DetermineWindowBounds(specified_bounds, window_bounds);
 }
 
@@ -154,6 +157,8 @@ void WindowSizer::DetermineWindowBounds(const gfx::Rect& specified_bounds,
                                         gfx::Rect* bounds) const {
   *bounds = specified_bounds;
   if (bounds->IsEmpty()) {
+    if (GetBoundsIgnoringPreviousState(specified_bounds, bounds))
+      return;
     // See if there's saved placement information.
     if (!GetLastWindowBounds(bounds)) {
       if (!GetSavedWindowBounds(bounds)) {
@@ -188,6 +193,7 @@ bool WindowSizer::GetSavedWindowBounds(gfx::Rect* bounds) const {
   return true;
 }
 
+#if !defined(USE_ASH)
 void WindowSizer::GetDefaultWindowBounds(gfx::Rect* default_bounds) const {
   DCHECK(default_bounds);
   DCHECK(monitor_info_provider_.get());
@@ -221,6 +227,7 @@ void WindowSizer::GetDefaultWindowBounds(gfx::Rect* default_bounds) const {
                           kWindowTilePixels + work_area.y(),
                           default_width, default_height);
 }
+#endif // defined(USE_ASH)
 
 void WindowSizer::AdjustBoundsToBeVisibleOnMonitorContaining(
     const gfx::Rect& other_bounds,
@@ -295,3 +302,11 @@ void WindowSizer::AdjustBoundsToBeVisibleOnMonitorContaining(
   bounds->set_x(std::max(min_x, std::min(max_x, bounds->x())));
 #endif  // defined(OS_MACOSX)
 }
+
+#if !defined(USE_ASH)
+bool WindowSizer::GetBoundsIgnoringPreviousState(
+    const gfx::Rect& specified_bounds,
+    gfx::Rect* bounds) const {
+  return false;
+}
+#endif
