@@ -41,7 +41,7 @@ namespace ash {
 
 namespace {
 
-const int kPaddingFromRightEdgeOfScreen = 16;
+const int kPaddingFromRightEdgeOfScreen = 15;
 const int kPaddingFromBottomOfScreen = 10;
 
 const int kAnimationDurationForPopupMS = 200;
