@@ -20,15 +20,17 @@ namespace webkit_media {
 // Constructs and adds the default audio/video decoders to |filter_collection|.
 static void AddDefaultDecodersToCollection(
     media::MessageLoopFactory* message_loop_factory,
-    media::FilterCollection* filter_collection) {
+    media::FilterCollection* filter_collection,
+    scoped_refptr<media::FFmpegVideoDecoder>* ffmpeg_video_decoder) {
   filter_collection->AddAudioDecoder(new media::FFmpegAudioDecoder(
       base::Bind(&media::MessageLoopFactory::GetMessageLoop,
                  base::Unretained(message_loop_factory),
                  "AudioDecoderThread")));
-  filter_collection->AddVideoDecoder(new media::FFmpegVideoDecoder(
+  *ffmpeg_video_decoder = new media::FFmpegVideoDecoder(
       base::Bind(&media::MessageLoopFactory::GetMessageLoop,
                  base::Unretained(message_loop_factory),
-                 "VideoDecoderThread")));
+                 "VideoDecoderThread"));
+  filter_collection->AddVideoDecoder(*ffmpeg_video_decoder);
 }
 
 bool BuildMediaStreamCollection(const WebKit::WebURL& url,
@@ -65,11 +67,13 @@ bool BuildMediaStreamCollection(const WebKit::WebURL& url,
   return true;
 }
 
-bool BuildMediaSourceCollection(const WebKit::WebURL& url,
-                                const WebKit::WebURL& media_source_url,
-                                media::ChunkDemuxerClient* client,
-                                media::MessageLoopFactory* message_loop_factory,
-                                media::FilterCollection* filter_collection) {
+bool BuildMediaSourceCollection(
+    const WebKit::WebURL& url,
+    const WebKit::WebURL& media_source_url,
+    media::ChunkDemuxerClient* client,
+    media::MessageLoopFactory* message_loop_factory,
+    media::FilterCollection* filter_collection,
+    scoped_refptr<media::FFmpegVideoDecoder>* video_decoder) {
   if (media_source_url.isEmpty() || url != media_source_url)
     return false;
 
@@ -77,19 +81,23 @@ bool BuildMediaSourceCollection(const WebKit::WebURL& url,
       new media::ChunkDemuxerFactory(client));
   filter_collection->SetDemuxerFactory(demuxer_factory.Pass());
 
-  AddDefaultDecodersToCollection(message_loop_factory, filter_collection);
+  AddDefaultDecodersToCollection(message_loop_factory, filter_collection,
+                                 video_decoder);
   return true;
 }
 
-void BuildDefaultCollection(const scoped_refptr<media::DataSource>& data_source,
-                            media::MessageLoopFactory* message_loop_factory,
-                            media::FilterCollection* filter_collection) {
+void BuildDefaultCollection(
+    const scoped_refptr<media::DataSource>& data_source,
+    media::MessageLoopFactory* message_loop_factory,
+    media::FilterCollection* filter_collection,
+    scoped_refptr<media::FFmpegVideoDecoder>* video_decoder) {
   scoped_ptr<media::DemuxerFactory> demuxer_factory(
       new media::FFmpegDemuxerFactory(
           data_source, message_loop_factory->GetMessageLoop("PipelineThread")));
   filter_collection->SetDemuxerFactory(demuxer_factory.Pass());
 
-  AddDefaultDecodersToCollection(message_loop_factory, filter_collection);
+  AddDefaultDecodersToCollection(message_loop_factory, filter_collection,
+                                 video_decoder);
 }
 
 }  // webkit_media

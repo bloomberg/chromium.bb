@@ -11,6 +11,7 @@
 #include "base/synchronization/lock.h"
 #include "media/base/pipeline.h"
 #include "media/filters/chunk_demuxer_client.h"
+#include "media/filters/ffmpeg_video_decoder.h"
 #include "webkit/media/buffered_data_source.h"
 #include "webkit/media/skcanvas_video_renderer.h"
 
@@ -52,6 +53,14 @@ class WebMediaPlayerProxy
   // ownership of the VideoFrame http://crbug.com/108435
   void set_frame_provider(media::VideoRendererBase* frame_provider) {
     frame_provider_ = frame_provider;
+  }
+
+  void set_video_decoder(
+      const scoped_refptr<media::FFmpegVideoDecoder>& video_decoder) {
+    video_decoder_ = video_decoder;
+  }
+  const scoped_refptr<media::FFmpegVideoDecoder>& video_decoder() {
+    return video_decoder_;
   }
 
   // Methods for Filter -> WebMediaPlayerImpl communication.
@@ -119,6 +128,7 @@ class WebMediaPlayerProxy
   scoped_refptr<BufferedDataSource> data_source_;
   scoped_refptr<media::VideoRendererBase> frame_provider_;
   SkCanvasVideoRenderer video_renderer_;
+  scoped_refptr<media::FFmpegVideoDecoder> video_decoder_;
 
   base::Lock lock_;
   int outstanding_repaints_;
