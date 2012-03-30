@@ -56,6 +56,10 @@ class DebugInfoEventListener : public sync_api::SyncManager::Observer,
   // DebugInfoGetter Implementation.
   virtual void GetAndClearDebugInfo(sync_pb::DebugInfo* debug_info) OVERRIDE;
 
+  // Functions to set cryptographer state.
+  void SetCrytographerHasPendingKeys(bool pending_keys);
+  void SetCryptographerReady(bool ready);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(DebugInfoEventListenerTest, VerifyEventsAdded);
   FRIEND_TEST_ALL_PREFIXES(DebugInfoEventListenerTest, VerifyQueueSize);
@@ -68,6 +72,12 @@ class DebugInfoEventListener : public sync_api::SyncManager::Observer,
   // True indicates we had to drop one or more events to keep our limit of
   // |kMaxEntries|.
   bool events_dropped_;
+
+  // Cryptographer has keys that are not yet decrypted.
+  bool cryptographer_has_pending_keys_;
+
+  // Cryptographer is initialized and does not have pending keys.
+  bool cryptographer_ready_;
 
   DISALLOW_COPY_AND_ASSIGN(DebugInfoEventListener);
 };

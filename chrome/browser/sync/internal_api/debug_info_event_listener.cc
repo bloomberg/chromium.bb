@@ -8,7 +8,9 @@ using browser_sync::sessions::SyncSessionSnapshot;
 namespace sync_api {
 
 DebugInfoEventListener::DebugInfoEventListener()
-    : events_dropped_(false) {
+    : events_dropped_(false),
+      cryptographer_has_pending_keys_(false),
+      cryptographer_ready_(false) {
 }
 
 DebugInfoEventListener::~DebugInfoEventListener() {
@@ -103,6 +105,15 @@ void DebugInfoEventListener::OnActionableError(
   CreateAndAddEvent(sync_pb::DebugEventInfo::ACTIONABLE_ERROR);
 }
 
+void DebugInfoEventListener::SetCrytographerHasPendingKeys(bool pending_keys) {
+  cryptographer_has_pending_keys_ = pending_keys;
+}
+
+void DebugInfoEventListener::SetCryptographerReady(bool ready) {
+  cryptographer_ready_ = ready;
+}
+
+
 void DebugInfoEventListener::GetAndClearDebugInfo(
     sync_pb::DebugInfo* debug_info) {
   DCHECK(events_.size() <= sync_api::kMaxEntries);
@@ -114,6 +125,9 @@ void DebugInfoEventListener::GetAndClearDebugInfo(
   }
 
   debug_info->set_events_dropped(events_dropped_);
+  debug_info->set_cryptographer_ready(cryptographer_ready_);
+  debug_info->set_cryptographer_has_pending_keys(
+      cryptographer_has_pending_keys_);
 
   events_dropped_ = false;
 }

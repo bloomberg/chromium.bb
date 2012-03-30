@@ -354,6 +354,8 @@ class SyncManager::SyncInternal
 
   TimeDelta GetNudgeDelayTimeDelta(const ModelType& model_type);
 
+  void NotifyCryptographerState(Cryptographer* cryptographer);
+
   // See SyncManager::Shutdown* for information.
   void StopSyncingForShutdown(const base::Closure& callback);
   void ShutdownOnSyncThread();
@@ -1117,8 +1119,7 @@ void SyncManager::SyncInternal::UpdateCryptographerAndNigoriCallback(
       // Make sure the nigori node has the up to date encryption info.
       UpdateNigoriEncryptionState(cryptographer, &node);
 
-      allstatus_.SetCryptographerReady(cryptographer->is_ready());
-      allstatus_.SetCryptoHasPendingKeys(cryptographer->has_pending_keys());
+      NotifyCryptographerState(cryptographer);
       allstatus_.SetEncryptedTypes(cryptographer->GetEncryptedTypes());
 
       success = cryptographer->is_ready();
@@ -1130,6 +1131,17 @@ void SyncManager::SyncInternal::UpdateCryptographerAndNigoriCallback(
   if (success)
     RefreshEncryption();
   done_callback.Run();
+}
+
+void SyncManager::SyncInternal::NotifyCryptographerState(
+    Cryptographer * cryptographer) {
+  // TODO(lipalani): Explore the possibility of hooking this up to
+  // SyncManager::Observer and making |AllStatus| a listener for that.
+  allstatus_.SetCryptographerReady(cryptographer->is_ready());
+  allstatus_.SetCryptoHasPendingKeys(cryptographer->has_pending_keys());
+  debug_info_event_listener_.SetCryptographerReady(cryptographer->is_ready());
+  debug_info_event_listener_.SetCrytographerHasPendingKeys(
+      cryptographer->has_pending_keys());
 }
 
 void SyncManager::SyncInternal::StartSyncingNormally() {
@@ -1504,8 +1516,7 @@ void SyncManager::SyncInternal::FinishSetPassphrase(
     WriteTransaction* trans,
     WriteNode* nigori_node) {
   Cryptographer* cryptographer = trans->GetCryptographer();
-  allstatus_.SetCryptographerReady(cryptographer->is_ready());
-  allstatus_.SetCryptoHasPendingKeys(cryptographer->has_pending_keys());
+  NotifyCryptographerState(cryptographer);
 
   // It's possible we need to change the bootstrap token even if we failed to
   // set the passphrase (for example if we need to preserve the new GAIA
@@ -2051,8 +2062,7 @@ void SyncManager::SyncInternal::OnSyncEngineEvent(
                                                sync_pb::EncryptedData()));
       }
 
-      allstatus_.SetCryptographerReady(cryptographer->is_ready());
-      allstatus_.SetCryptoHasPendingKeys(cryptographer->has_pending_keys());
+      NotifyCryptographerState(cryptographer);
       allstatus_.SetEncryptedTypes(cryptographer->GetEncryptedTypes());
     }
 
