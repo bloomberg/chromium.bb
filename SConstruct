@@ -781,7 +781,8 @@ tests_to_disable_qemu = set([
     # http://code.google.com/p/nativeclient/issues/detail?id=2142
     'run_nacl_semaphore_test',
     'run_nacl_tls_unittest',
-    # run_srpc_message_untrusted_test seems flaky on QEMU
+    # The next 2 tests seem flaky on QEMU
+    'run_srpc_manifest_file_test',
     'run_srpc_message_untrusted_test',
     'run_thread_stack_alloc_test',
     'run_thread_test',
