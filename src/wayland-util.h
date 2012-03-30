@@ -37,8 +37,6 @@ extern "C" {
 #endif
 
 #define ARRAY_LENGTH(a) (sizeof (a) / sizeof (a)[0])
-#define ALIGN(n, a) ( ((n) + ((a) - 1)) & ~((a) - 1) )
-#define DIV_ROUNDUP(n, a) ( ((n) + ((a) - 1)) / (a) )
 
 #define container_of(ptr, type, member) ({				\
 	const __typeof__( ((type *)0)->member ) *__mptr = (ptr);	\

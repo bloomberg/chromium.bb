@@ -39,6 +39,8 @@
 #include "wayland-util.h"
 #include "wayland-private.h"
 
+#define DIV_ROUNDUP(n, a) ( ((n) + ((a) - 1)) / (a) )
+
 struct wl_buffer {
 	char data[4096];
 	int head, tail;
