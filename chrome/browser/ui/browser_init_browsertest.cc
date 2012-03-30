@@ -139,6 +139,10 @@ IN_PROC_BROWSER_TEST_F(BrowserInitTest, OpenURLsPopup) {
   BrowserList::RemoveObserver(&observer);
 }
 
+// We don't do non-process-startup browser launches on ChromeOS.
+// Session restore for process-startup browser launches is tested
+// in session_restore_uitest.
+#if !defined(OS_CHROMEOS)
 // Verify that startup URLs are honored when the process already exists but has
 // no tabbed browser windows (eg. as if the process is running only due to a
 // background application.
@@ -332,6 +336,8 @@ IN_PROC_BROWSER_TEST_F(BrowserInitTest, OpenAppShortcutPanel) {
 
 #endif  // !defined(OS_MACOSX)
 
+#endif  // !defined(OS_CHROMEOS)
+
 IN_PROC_BROWSER_TEST_F(BrowserInitTest, ReadingWasRestartedAfterRestart) {
   // Tests that BrowserInit::WasRestarted reads and resets the preference
   // kWasRestarted correctly.
@@ -354,6 +360,7 @@ IN_PROC_BROWSER_TEST_F(BrowserInitTest, ReadingWasRestartedAfterNormalStart) {
   EXPECT_FALSE(BrowserInit::WasRestarted());
 }
 
+#if !defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(BrowserInitTest, StartupURLsForTwoProfiles) {
   Profile* default_profile = browser()->profile();
 
@@ -672,3 +679,4 @@ IN_PROC_BROWSER_TEST_F(BrowserInitTest, ProfilesLaunchedAfterCrash) {
   EXPECT_EQ(1U, new_browser->GetTabContentsWrapperAt(0)->infobar_tab_helper()->
             infobar_count());
 }
+#endif  // !OS_CHROMEOS

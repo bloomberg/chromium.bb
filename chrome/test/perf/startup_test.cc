@@ -316,7 +316,7 @@ void StartupTest::RunPerfTestWithManyTabs(const char* graph, const char* trace,
     // Start the browser with these urls so we can save the session and exit.
     UITest::SetUp();
     // Set flags to ensure profile is saved and can be restored.
-#if defined(OS_MACOSX)
+#if defined(OS_CHROMEOS) || defined(OS_MACOSX)
     set_shutdown_type(ProxyLauncher::USER_QUIT);
 #endif
     clear_profile_ = false;

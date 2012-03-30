@@ -71,7 +71,7 @@ const bool kShowOtherBrowsersInAboutMemory = true;
 const bool kAlwaysOpenIncognitoWindow = false;
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_CHROMEOS) || defined(OS_MACOSX)
 const bool kBrowserAliveWithNoWindows = true;
 #else
 const bool kBrowserAliveWithNoWindows = false;

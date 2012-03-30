@@ -8,6 +8,7 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sessions/session_restore.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_service_factory.h"
@@ -18,6 +19,7 @@
 #include "chrome/browser/ui/browser_init.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -61,6 +63,51 @@ class SessionRestoreTest : public InProcessBrowserTest {
     return InProcessBrowserTest::SetUpUserDataDirectory();
   }
 };
+
+#if defined(OS_CHROMEOS)
+// Verify that session restore does not occur when a user opens a browser window
+// when no other browser windows are open on ChromeOS.
+// TODO(pkotwicz): Add test which doesn't open incognito browser once
+// disable-zero-browsers-open-for-tests is removed.
+// (http://crbug.com/119175)
+// TODO(pkotwicz): Mac should have the behavior outlined by this test. It should
+// not do session restore if an incognito window is already open.
+// (http://crbug.com/120927)
+IN_PROC_BROWSER_TEST_F(SessionRestoreTest, NoSessionRestoreNewWindowChromeOS) {
+  // Turn on session restore.
+  SessionStartupPref pref(SessionStartupPref::LAST);
+  SessionStartupPref::SetStartupPref(browser()->profile(), pref);
+
+  GURL url(ui_test_utils::GetTestUrl(
+      FilePath(FilePath::kCurrentDirectory),
+      FilePath(FILE_PATH_LITERAL("title1.html"))));
+
+  // Add a single tab.
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  Browser* incognito_browser = CreateIncognitoBrowser();
+  incognito_browser->AddBlankTab(true);
+  incognito_browser->window()->Show();
+
+  // Close the normal browser. After this we only have the incognito window
+  // open.
+  CloseBrowserSynchronously(browser());
+
+  // Create a new window, which should open NTP.
+  ui_test_utils::BrowserAddedObserver browser_added_observer;
+  incognito_browser->NewWindow();
+  Browser* new_browser = browser_added_observer.WaitForSingleNewBrowser();
+
+  ASSERT_TRUE(new_browser);
+  EXPECT_EQ(1, new_browser->tab_count());
+  EXPECT_EQ(GURL(chrome::kChromeUINewTabURL),
+            new_browser->GetWebContentsAt(0)->GetURL());
+}
+#endif  // OS_CHROMEOS
+
+#if !defined(OS_CHROMEOS)
+// This test does not apply to ChromeOS as it does not do session restore when
+// a new window is opened.
 
 #if defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
 // Crashes on Linux Views: http://crbug.com/39476
@@ -109,6 +156,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest,
   // And the first url should be url.
   EXPECT_EQ(url, new_browser->GetWebContentsAt(0)->GetURL());
 }
+#endif  // !OS_CHROMEOS
 
 IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreIndividualTabFromWindow) {
   GURL url1(ui_test_utils::GetTestUrl(
@@ -199,6 +247,10 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, WindowWithOneTab) {
   EXPECT_EQ(0U, service->entries().size());
 }
 
+#if !defined(OS_CHROMEOS)
+// This test does not apply to ChromeOS as ChromeOS does not do session
+// restore when a new window is open.
+
 // Verifies we remember the last browser window when closing the last
 // non-incognito window while an incognito window is open.
 IN_PROC_BROWSER_TEST_F(SessionRestoreTest, IncognitotoNonIncognito) {
@@ -231,6 +283,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, IncognitotoNonIncognito) {
   ASSERT_TRUE(new_browser);
   EXPECT_EQ(url, new_browser->GetWebContentsAt(0)->GetURL());
 }
+#endif  // !OS_CHROMEOS
 
 IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreForeignTab) {
   Profile* profile = browser()->profile();

@@ -493,19 +493,22 @@ void SessionService::Init() {
 }
 
 bool SessionService::ShouldNewWindowStartSession() {
+  // ChromeOS and OSX have different ideas of application lifetime than
+  // the other platforms.
+  // On ChromeOS opening a new window should never start a new session.
+#if !defined(OS_CHROMEOS)
   if (!has_open_trackable_browsers_ &&
       !BrowserInit::InSynchronousProfileLaunch() &&
       !SessionRestore::IsRestoring(profile())
 #if defined(OS_MACOSX)
-      // OSX has a fairly different idea of application lifetime than the
-      // other platforms. We need to check that we aren't opening a window
+      // On OSX, a new window should not start a new session if it was opened
       // from the dock or the menubar.
       && !app_controller_mac::IsOpeningNewWindow()
-#endif
+#endif  // OS_MACOSX
       ) {
     return true;
   }
-
+#endif  // !OS_CHROMEOS
   return false;
 }
 
