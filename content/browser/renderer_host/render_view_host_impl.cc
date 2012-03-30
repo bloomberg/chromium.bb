@@ -41,7 +41,6 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
-#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host_delegate.h"
 #include "content/public/browser/render_view_host_observer.h"
 #include "content/public/browser/user_metrics.h"
@@ -416,17 +415,14 @@ void RenderViewHostImpl::SwapOut(int new_render_process_host_id,
 
 void RenderViewHostImpl::OnSwapOutACK() {
   // Stop the hang monitor now that the unload handler has finished.
-  is_waiting_for_unload_ack_ = false;
   StopHangMonitorTimeout();
+  is_waiting_for_unload_ack_ = false;
   delegate_->SwappedOut(this);
 }
 
 void RenderViewHostImpl::WasSwappedOut() {
-  // If we are still waiting on the unload handler to be run, we consider
-  // the process hung and we should terminate it if there are no other tabs
-  // using the process. If there are other views using this process, the
-  // unresponsive renderer timeout will catch it.
-  bool hung = is_waiting_for_unload_ack_;
+  // Don't bother reporting hung state anymore.
+  StopHangMonitorTimeout();
 
   // Now that we're no longer the active RVH in the tab, start filtering out
   // most IPC messages.  Usually the renderer will have stopped sending
@@ -435,43 +431,6 @@ void RenderViewHostImpl::WasSwappedOut() {
   // We filter them out, as long as that won't cause problems (e.g., we
   // still allow synchronous messages through).
   SetSwappedOut(true);
-
-  // Don't bother reporting hung state anymore.
-  StopHangMonitorTimeout();
-
-  // If we are not running the renderer in process and no other tab is using
-  // the hung process, kill it, assuming it is a real process (unit tests don't
-  // have real processes).
-  if (hung) {
-    base::ProcessHandle process_handle = GetProcess()->GetHandle();
-    int views = 0;
-
-    // Count the number of listeners for the process, which is equivalent to
-    // views using the process as of this writing.
-    content::RenderProcessHost::RenderWidgetHostsIterator iter(
-        GetProcess()->GetRenderWidgetHostsIterator());
-    for (; !iter.IsAtEnd(); iter.Advance())
-      ++views;
-
-    if (!content::RenderProcessHost::run_renderer_in_process() &&
-        process_handle && views <= 1) {
-      // We expect the delegate for this RVH to be TabContents, as it is the
-      // only class that swaps out render view hosts on navigation.
-      DCHECK(delegate_->GetRenderViewType() == content::VIEW_TYPE_TAB_CONTENTS);
-
-      // Kill the process only if TabContents sets SuddenTerminationAllowed,
-      // which indicates that the timer has expired.
-      // This is not the case if we load data URLs or about:blank. The reason
-      // is that there is no network requests and this code is hit without
-      // setting the unresponsiveness timer. This allows a corner case where a
-      // navigation to a data URL will leave a process running, if the
-      // beforeunload handler completes fine, but the unload handler hangs.
-      // At this time, the complexity to solve this edge case is not worthwhile.
-      if (SuddenTerminationAllowed()) {
-        base::KillProcess(process_handle, content::RESULT_CODE_HUNG, false);
-      }
-    }
-  }
 
   // Inform the renderer that it can exit if no one else is using it.
   Send(new ViewMsg_WasSwappedOut(GetRoutingID()));
@@ -499,9 +458,9 @@ void RenderViewHostImpl::ClosePage() {
 }
 
 void RenderViewHostImpl::ClosePageIgnoringUnloadEvents() {
+  StopHangMonitorTimeout();
   is_waiting_for_beforeunload_ack_ = false;
   is_waiting_for_unload_ack_ = false;
-  StopHangMonitorTimeout();
 
   sudden_termination_allowed_ = true;
   delegate_->Close(this);
@@ -939,18 +898,6 @@ bool RenderViewHostImpl::IsRenderView() const {
   return true;
 }
 
-// During cross-site navigation, we have hang monitors on beforeunload and
-// unload events. If we are asked to stop the hang monitors while waiting for
-// these events, we must not do it. Otherwise, we will never detect slow or
-// unresponsive beforeunload and unload events. (The hang monitor is most
-// frequently stopped by input events.)
-void RenderViewHostImpl::StopHangMonitorTimeout() {
-  if (is_waiting_for_beforeunload_ack_ || is_waiting_for_unload_ack_)
-    return;
-
-  RenderWidgetHostImpl::StopHangMonitorTimeout();
-}
-
 void RenderViewHostImpl::CreateNewWindow(
     int route_id,
     const ViewHostMsg_CreateWindow_Params& params) {
@@ -1363,16 +1310,14 @@ void RenderViewHostImpl::OnMsgShouldCloseACK(
     bool proceed,
     const base::TimeTicks& renderer_before_unload_start_time,
     const base::TimeTicks& renderer_before_unload_end_time) {
+  StopHangMonitorTimeout();
   // If this renderer navigated while the beforeunload request was in flight, we
   // may have cleared this state in OnMsgNavigate, in which case we can ignore
   // this message.
-  if (!is_waiting_for_beforeunload_ack_ || is_swapped_out_) {
-    StopHangMonitorTimeout();
+  if (!is_waiting_for_beforeunload_ack_ || is_swapped_out_)
     return;
-  }
 
   is_waiting_for_beforeunload_ack_ = false;
-  StopHangMonitorTimeout();
 
   RenderViewHostDelegate::RendererManagement* management_delegate =
       delegate_->GetRendererManagementDelegate();

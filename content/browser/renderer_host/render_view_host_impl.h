@@ -355,7 +355,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   virtual void ForwardKeyboardEvent(
       const NativeWebKeyboardEvent& key_event) OVERRIDE;
   virtual gfx::Rect GetRootWindowResizerRect() const OVERRIDE;
-  virtual void StopHangMonitorTimeout() OVERRIDE;
 
   // Creates a new RenderView with the given route id.
   void CreateNewWindow(int route_id,
