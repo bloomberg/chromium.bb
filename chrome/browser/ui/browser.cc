@@ -1108,7 +1108,7 @@ gfx::Rect Browser::GetSavedWindowBounds() const {
 ui::WindowShowState Browser::GetSavedWindowShowState() const {
   // Only tabbed browsers use the command line or preference state, with the
   // exception of devtools.
-  bool show_state = !is_type_tabbed();
+  bool show_state = !is_type_tabbed() && !is_devtools();
 
 #if defined(USE_AURA)
   // Apps save state on aura.
