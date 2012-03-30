@@ -442,5 +442,35 @@
         },  # target content_shell_helper_app
       ],
     }],  # OS=="mac"
-  ],
+    ['OS=="android"', {
+      'targets': [
+        {
+          'target_name': 'content_shell_apk',
+          'type': 'none',
+          'actions': [
+            {
+              'action_name': 'content_shell_apk',
+              'inputs': [
+                '<(DEPTH)/content/shell/android/content_shell_apk.xml',
+                '<!@(find shell/android/java -name "*.java")',
+              ],
+              'outputs': [
+                # Awkwardly, we build a Debug APK even when gyp is in
+                # Release mode.  I don't think it matters (e.g. we're
+                # probably happy to not codesign) but naming should be
+                # fixed.
+                '<(PRODUCT_DIR)/ContentShell-debug.apk',
+              ],
+              'action': [
+                'ant',
+                '-DPRODUCT_DIR=<(PRODUCT_DIR)',
+                '-buildfile',
+                '<(DEPTH)/content/shell/android/content_shell_apk.xml',
+              ]
+            }
+          ],
+        },
+      ],
+    }],  # OS=="android"
+  ]
 }
