@@ -662,8 +662,15 @@ TEST_PPAPI_IN_PROCESS(Var)
 TEST_PPAPI_OUT_OF_PROCESS(Var)
 TEST_PPAPI_NACL_VIA_HTTP(Var)
 
+// Flaky on mac, http://crbug.com/121107
+#if defined(OS_MACOSX)
+#define MAYBE_VarDeprecated DISABLED_VarDeprecated
+#else
+#define MAYBE_VarDeprecated VarDeprecated
+#endif
+
 TEST_PPAPI_IN_PROCESS(VarDeprecated)
-TEST_PPAPI_OUT_OF_PROCESS(VarDeprecated)
+TEST_PPAPI_OUT_OF_PROCESS(MAYBE_VarDeprecated)
 
 // Windows defines 'PostMessage', so we have to undef it.
 #ifdef PostMessage
