@@ -24,6 +24,10 @@
           # .cc, .h, and .mm files under nacl that are used on all
           # platforms, including both 32-bit and 64-bit Windows.
           # Test files are also not included.
+          'nacl/nacl_ipc_adapter.cc',
+          'nacl/nacl_ipc_adapter.h',
+          'nacl/nacl_ipc_manager.cc',
+          'nacl/nacl_ipc_manager.h',
           'nacl/nacl_main.cc',
           'nacl/nacl_main_platform_delegate.h',
           'nacl/nacl_main_platform_delegate_linux.cc',

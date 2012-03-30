@@ -57,6 +57,17 @@ class IPC_EXPORT Message : public Pickle {
     PRIORITY_HIGH
   };
 
+  // Bit values used in the flags field.
+  enum {
+    PRIORITY_MASK     = 0x0003,  // Low 2 bits of store the priority value.
+    SYNC_BIT          = 0x0004,
+    REPLY_BIT         = 0x0008,
+    REPLY_ERROR_BIT   = 0x0010,
+    UNBLOCK_BIT       = 0x0020,
+    PUMPING_MSGS_BIT  = 0x0040,
+    HAS_SENT_TIME_BIT = 0x0080,
+  };
+
   virtual ~Message();
 
   Message();
@@ -78,6 +89,9 @@ class IPC_EXPORT Message : public Pickle {
   }
 
   // True if this is a synchronous message.
+  void set_sync() {
+    header()->flags |= SYNC_BIT;
+  }
   bool is_sync() const {
     return (header()->flags & SYNC_BIT) != 0;
   }
@@ -132,6 +146,10 @@ class IPC_EXPORT Message : public Pickle {
 
   void set_routing_id(int32 new_id) {
     header()->routing = new_id;
+  }
+
+  uint32 flags() const {
+    return header()->flags;
   }
 
   template<class T, class S>
@@ -208,21 +226,6 @@ class IPC_EXPORT Message : public Pickle {
   friend class Channel;
   friend class MessageReplyDeserializer;
   friend class SyncMessage;
-
-  void set_sync() {
-    header()->flags |= SYNC_BIT;
-  }
-
-  // flags
-  enum {
-    PRIORITY_MASK   = 0x0003,
-    SYNC_BIT        = 0x0004,
-    REPLY_BIT       = 0x0008,
-    REPLY_ERROR_BIT = 0x0010,
-    UNBLOCK_BIT     = 0x0020,
-    PUMPING_MSGS_BIT= 0x0040,
-    HAS_SENT_TIME_BIT = 0x0080,
-  };
 
 #pragma pack(push, 4)
   struct Header : Pickle::Header {
