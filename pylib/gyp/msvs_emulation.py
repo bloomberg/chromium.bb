@@ -257,6 +257,7 @@ class MsvsSettings(object):
     ld('OptimizeReferences', map={'1': 'NOREF', '2': 'REF'}, prefix='/OPT:')
     ld('EnableCOMDATFolding', map={'1': 'NOICF', '2': 'ICF'}, prefix='/OPT:')
     ld('LinkTimeCodeGeneration', map={'1': '/LTCG'})
+    ld('IgnoreDefaultLibraryNames', prefix='/NODEFAULTLIB:')
     # TODO(scottmg): This should sort of be somewhere else (not really a flag).
     ld('AdditionalDependencies', prefix='')
     # TODO(scottmg): These too.
