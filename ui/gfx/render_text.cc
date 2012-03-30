@@ -376,9 +376,10 @@ void RenderText::SetObscured(bool obscured) {
 }
 
 void RenderText::SetDisplayRect(const Rect& r) {
+  if (r.width() != display_rect_.width())
+    ResetLayout();
   display_rect_ = r;
   cached_bounds_and_offset_valid_ = false;
-  ResetLayout();
 }
 
 void RenderText::SetCursorPosition(size_t position) {
