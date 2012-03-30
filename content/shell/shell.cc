@@ -4,6 +4,7 @@
 
 #include "content/shell/shell.h"
 
+#include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
@@ -23,6 +24,8 @@ static const int kTestWindowHeight = 600;
 namespace content {
 
 std::vector<Shell*> Shell::windows_;
+
+bool Shell::quit_message_loop_ = true;
 
 Shell::Shell(WebContents* web_contents)
     : WebContentsObserver(web_contents),
@@ -45,6 +48,9 @@ Shell::~Shell() {
       break;
     }
   }
+
+  if (windows_.empty() && quit_message_loop_)
+    MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
 }
 
 Shell* Shell::CreateShell(WebContents* web_contents) {
@@ -58,6 +64,14 @@ Shell* Shell::CreateShell(WebContents* web_contents) {
 
   shell->PlatformResizeSubViews();
   return shell;
+}
+
+void Shell::CloseAllWindows() {
+  AutoReset<bool> auto_reset(&quit_message_loop_, false);
+  std::vector<Shell*> open_windows(windows_);
+  for (size_t i = 0; i < open_windows.size(); ++i)
+    open_windows[i]->Close();
+  MessageLoop::current()->RunAllPending();
 }
 
 Shell* Shell::FromRenderViewHost(RenderViewHost* rvh) {

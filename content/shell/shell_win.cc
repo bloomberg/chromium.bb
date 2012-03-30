@@ -7,7 +7,6 @@
 #include <windows.h>
 #include <commctrl.h>
 
-#include "base/message_loop.h"
 #include "base/string_piece.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/resource_util.h"
@@ -182,6 +181,10 @@ void Shell::PlatformResizeSubViews() {
              rc.bottom - kURLBarHeight, TRUE);
 }
 
+void Shell::Close() {
+  DestroyWindow(window_);
+}
+
 ATOM Shell::RegisterWindowClass() {
   WNDCLASSEX wcex = {
       sizeof(WNDCLASSEX),
@@ -236,8 +239,6 @@ LRESULT CALLBACK Shell::WndProc(HWND hwnd, UINT message, WPARAM wParam,
     }
     case WM_DESTROY: {
       delete shell;
-      if (windows_.empty())
-        MessageLoop::current()->Quit();
       return 0;
     }
 

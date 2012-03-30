@@ -44,6 +44,7 @@ class Shell : public WebContentsDelegate,
   void Reload();
   void Stop();
   void UpdateNavigationControls();
+  void Close();
 
   // Do one time initialization at application startup.
   static void PlatformInitialize();
@@ -59,6 +60,9 @@ class Shell : public WebContentsDelegate,
 
   // Returns the Shell object corresponding to the given RenderViewHost.
   static Shell* FromRenderViewHost(RenderViewHost* rvh);
+
+  // Closes all windows and returns. This runs a message loop.
+  static void CloseAllWindows();
 
   // Closes all windows and exits.
   static void PlatformExit();
@@ -177,6 +181,10 @@ class Shell : public WebContentsDelegate,
   // A container of all the open windows. We use a vector so we can keep track
   // of ordering.
   static std::vector<Shell*> windows_;
+
+  // True if the destructur of Shell should post a quit closure on the current
+  // message loop if the destructed Shell object was the last one.
+  static bool quit_message_loop_;
 };
 
 }  // namespace content

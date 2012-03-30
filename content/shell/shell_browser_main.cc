@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/threading/thread_restrictions.h"
 #include "content/public/browser/browser_main_runner.h"
 #include "content/shell/shell.h"
 #include "content/shell/shell_browser_context.h"
@@ -31,7 +32,11 @@ GURL GetURLForLayoutTest(const char* test_name) {
   }
   // TODO(jochen): use pixel_hash and timeout.
   GURL test_url = webkit_support::CreateURLForPathOrURL(path_or_url);
-  webkit_support::SetCurrentDirectoryForFileURL(test_url);
+  {
+    // We're outside of the message loop here, and this is a test.
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    webkit_support::SetCurrentDirectoryForFileURL(test_url);
+  }
   return test_url;
 }
 
@@ -69,7 +74,8 @@ int ShellBrowserMain(const content::MainFunctionParams& parameters) {
                                       MSG_ROUTING_NONE,
                                       NULL);
       main_runner_->Run();
-      // TODO(jochen): Figure out a way to close shell.
+
+      content::Shell::CloseAllWindows();
     }
     exit_code = 0;
   } else {

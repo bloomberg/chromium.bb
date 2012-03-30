@@ -43,6 +43,9 @@ class ShellBrowserContext : public BrowserContext {
   virtual quota::SpecialStoragePolicy* GetSpecialStoragePolicy() OVERRIDE;
 
  private:
+  // Performs initialization of the ShellBrowserContext while IO is still
+  // allowed on the current thread.
+  void InitWhileIOAllowed();
 
   FilePath path_;
   scoped_ptr<ResourceContext> resource_context_;

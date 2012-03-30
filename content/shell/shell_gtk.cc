@@ -8,7 +8,6 @@
 #include <gtk/gtk.h>
 
 #include "base/logging.h"
-#include "base/message_loop.h"
 #include "base/string_piece.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/native_web_keyboard_event.h"
@@ -178,6 +177,10 @@ void Shell::PlatformResizeSubViews() {
   SizeTo(content_width_, content_height_);
 }
 
+void Shell::Close() {
+  gtk_widget_destroy(GTK_WIDGET(window_));
+}
+
 void Shell::OnBackButtonClicked(GtkWidget* widget) {
   GoBackOrForward(-1);
 }
@@ -205,12 +208,6 @@ void Shell::OnURLEntryActivate(GtkWidget* entry) {
 // Callback for when the main window is destroyed.
 gboolean Shell::OnWindowDestroyed(GtkWidget* window) {
   delete this;
-
-  if (windows_.empty()) {
-    MessageLoop::current()->PostTask(FROM_HERE,
-                                     MessageLoop::QuitClosure());
-  }
-
   return FALSE;  // Don't stop this message.
 }
 

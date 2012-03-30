@@ -87,6 +87,7 @@ class ShellSpeechRecognitionPreferences : public SpeechRecognitionPreferences {
 ShellBrowserContext::ShellBrowserContext(
     ShellBrowserMainParts* shell_main_parts)
     : shell_main_parts_(shell_main_parts) {
+  InitWhileIOAllowed();
 }
 
 ShellBrowserContext::~ShellBrowserContext() {
@@ -96,10 +97,7 @@ ShellBrowserContext::~ShellBrowserContext() {
   }
 }
 
-FilePath ShellBrowserContext::GetPath() {
-  if (!path_.empty())
-    return path_;
-
+void ShellBrowserContext::InitWhileIOAllowed() {
 #if defined(OS_WIN)
   CHECK(PathService::Get(base::DIR_LOCAL_APP_DATA, &path_));
   path_ = path_.Append(std::wstring(L"content_shell"));
@@ -118,7 +116,9 @@ FilePath ShellBrowserContext::GetPath() {
 
   if (!file_util::PathExists(path_))
     file_util::CreateDirectory(path_);
+}
 
+FilePath ShellBrowserContext::GetPath() {
   return path_;
 }
 
