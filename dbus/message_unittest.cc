@@ -5,6 +5,7 @@
 #include "dbus/message.h"
 
 #include "base/basictypes.h"
+#include "base/eintr_wrapper.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "dbus/object_path.h"
@@ -92,6 +93,39 @@ TEST(MessageTest, AppendAndPopBasicDataTypes) {
   EXPECT_DOUBLE_EQ(8.0, double_value);
   EXPECT_EQ("string", string_value);
   EXPECT_EQ(dbus::ObjectPath("/object/path"), object_path_value);
+}
+
+// Check all basic types can be properly written and read.
+TEST(MessageTest, AppendAndPopFileDescriptor) {
+  if (!dbus::kDBusTypeUnixFdIsSupported) {
+    LOG(WARNING) << "FD passing is not supported";
+    return;
+  }
+
+  scoped_ptr<dbus::Response> message(dbus::Response::CreateEmpty());
+  dbus::MessageWriter writer(message.get());
+
+  // Append stdout.
+  dbus::FileDescriptor temp(1);
+  writer.AppendFileDescriptor(temp);
+
+  dbus::FileDescriptor fd_value;
+
+  dbus::MessageReader reader(message.get());
+  ASSERT_TRUE(reader.HasMoreData());
+  ASSERT_TRUE(reader.PopFileDescriptor(&fd_value));
+  ASSERT_FALSE(reader.HasMoreData());
+
+  // Stdout should be returned but we cannot check the descriptor
+  // value because stdout will be dup'd.  Instead check st_rdev
+  // which should be identical.
+  struct stat sb_stdout;
+  int status_stdout = HANDLE_EINTR(fstat(1, &sb_stdout));
+  ASSERT_TRUE(status_stdout >= 0);
+  struct stat sb_fd;
+  int status_fd = HANDLE_EINTR(fstat(fd_value.value(), &sb_fd));
+  ASSERT_TRUE(status_fd >= 0);
+  EXPECT_EQ(sb_stdout.st_rdev, sb_fd.st_rdev);
 }
 
 // Check all variant types can be properly written and read.

@@ -23,6 +23,8 @@
         'bus.h',
         'exported_object.cc',
         'exported_object.h',
+        'file_descriptor.cc',
+        'file_descriptor.h',
         'message.cc',
         'message.h',
         'object_path.cc',

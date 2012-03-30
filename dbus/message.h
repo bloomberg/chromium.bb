@@ -11,6 +11,7 @@
 #include <dbus/dbus.h>
 
 #include "base/basictypes.h"
+#include "dbus/file_descriptor.h"
 #include "dbus/object_path.h"
 
 namespace google {
@@ -26,6 +27,14 @@ namespace dbus {
 
 class MessageWriter;
 class MessageReader;
+
+// DBUS_TYPE_UNIX_FD was added in D-Bus version 1.4
+#if defined(DBUS_TYPE_UNIX_FD)
+const bool kDBusTypeUnixFdIsSupported = true;
+#else
+const bool kDBusTypeUnixFdIsSupported = false;
+#define DBUS_TYPE_UNIX_FD      ((int) 'h')
+#endif
 
 // Message is the base class of D-Bus message types. Client code must use
 // sub classes such as MethodCall and Response instead.
@@ -67,6 +76,7 @@ class Message {
     STRUCT = DBUS_TYPE_STRUCT,
     DICT_ENTRY = DBUS_TYPE_DICT_ENTRY,
     VARIANT = DBUS_TYPE_VARIANT,
+    UNIX_FD = DBUS_TYPE_UNIX_FD,
   };
 
   // Returns the type of the message. Returns MESSAGE_INVALID if
@@ -268,6 +278,7 @@ class MessageWriter {
   void AppendDouble(double value);
   void AppendString(const std::string& value);
   void AppendObjectPath(const ObjectPath& value);
+  void AppendFileDescriptor(const FileDescriptor& value);
 
   // Opens an array. The array contents can be added to the array with
   // |sub_writer|. The client code must close the array with
@@ -377,6 +388,7 @@ class MessageReader {
   bool PopDouble(double* value);
   bool PopString(std::string* value);
   bool PopObjectPath(ObjectPath* value);
+  bool PopFileDescriptor(FileDescriptor* value);
 
   // Sets up the given message reader to read an array at the current
   // iterator position.

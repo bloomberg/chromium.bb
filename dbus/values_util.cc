@@ -163,6 +163,11 @@ Value* PopDataAsValue(MessageReader* reader) {
         result = Value::CreateStringValue(value.value());
       break;
     }
+    case Message::UNIX_FD: {
+      // Cannot distinguish a file descriptor from an int
+      NOTREACHED();
+      break;
+    }
     case Message::ARRAY: {
       MessageReader sub_reader(NULL);
       if (reader->PopArray(&sub_reader)) {

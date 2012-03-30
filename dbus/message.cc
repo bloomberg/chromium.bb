@@ -9,6 +9,7 @@
 #include "base/basictypes.h"
 #include "base/format_macros.h"
 #include "base/logging.h"
+#include "base/platform_file.h"
 #include "base/stringprintf.h"
 #include "dbus/object_path.h"
 #include "third_party/protobuf/src/google/protobuf/message_lite.h"
@@ -197,6 +198,16 @@ std::string Message::ToStringInternal(const std::string& indent,
           return kBrokenMessage;
         output += indent + "variant ";
         output += ToStringInternal(indent + "  ", &sub_reader);
+        break;
+      }
+      case UNIX_FD: {
+        CHECK(kDBusTypeUnixFdIsSupported);
+
+        FileDescriptor file_descriptor;
+        if (!reader->PopFileDescriptor(&file_descriptor))
+          return kBrokenMessage;
+        output += indent + "fd#" +
+                  base::StringPrintf("%d", file_descriptor.value()) + "\n";
         break;
       }
       default:
@@ -677,6 +688,19 @@ void MessageWriter::AppendVariantOfBasic(int dbus_type, const void* value) {
   CloseContainer(&variant_writer);
 }
 
+void MessageWriter::AppendFileDescriptor(const FileDescriptor& value) {
+  CHECK(kDBusTypeUnixFdIsSupported);
+
+  base::PlatformFileInfo info;
+  int fd = value.value();
+  bool ok = base::GetPlatformFileInfo(fd, &info);
+  if (!ok || info.is_directory) {
+    // NB: sending a directory potentially enables sandbox escape
+    LOG(FATAL) << "Attempt to pass invalid file descriptor";
+  }
+  AppendBasic(DBUS_TYPE_UNIX_FD, &fd);
+}
+
 //
 // MessageReader implementation.
 //
@@ -934,6 +958,26 @@ bool MessageReader::PopVariantOfBasic(int dbus_type, void* value) {
   if (!PopVariant(&variant_reader))
     return false;
   return variant_reader.PopBasic(dbus_type, value);
+}
+
+bool MessageReader::PopFileDescriptor(FileDescriptor* value) {
+  CHECK(kDBusTypeUnixFdIsSupported);
+
+  int fd = -1;
+  const bool success = PopBasic(DBUS_TYPE_UNIX_FD, &fd);
+  if (!success)
+    return false;
+
+  base::PlatformFileInfo info;
+  bool ok = base::GetPlatformFileInfo(fd, &info);
+  if (!ok || info.is_directory) {
+    base::ClosePlatformFile(fd);
+    // NB: receiving a directory potentially enables sandbox escape
+    LOG(FATAL) << "Attempt to receive invalid file descriptor";
+    return false;  // NB: not reached
+  }
+  value->PutValue(fd);
+  return true;
 }
 
 }  // namespace dbus
