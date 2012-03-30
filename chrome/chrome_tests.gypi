@@ -1964,6 +1964,7 @@
         'browser/ui/gtk/status_icons/status_tray_gtk_unittest.cc',
         'browser/ui/gtk/tabs/tab_renderer_gtk_unittest.cc',
         'browser/ui/gtk/theme_service_gtk_unittest.cc',
+        'browser/ui/intents/web_intent_inline_disposition_delegate_unittest.cc',
         'browser/ui/intents/web_intent_picker_model_unittest.cc',
         'browser/ui/intents/web_intent_picker_unittest.cc',
         'browser/ui/intents/web_intents_model_unittest.cc',
