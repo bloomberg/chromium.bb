@@ -47,7 +47,7 @@ class SettingsView : public views::View {
   virtual ~SettingsView() {}
 
   // Overridden from views::View.
-  bool OnKeyPressed(const views::KeyEvent& event) {
+  virtual bool OnKeyPressed(const views::KeyEvent& event) OVERRIDE {
     if (event.key_code() == ui::VKEY_SPACE ||
         event.key_code() == ui::VKEY_RETURN) {
       ash::Shell::GetInstance()->tray_delegate()->ShowSettings();

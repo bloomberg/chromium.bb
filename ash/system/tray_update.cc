@@ -42,6 +42,16 @@ class UpdateView : public views::View {
   virtual ~UpdateView() {}
 
  private:
+  // Overridden from views::View.
+  virtual bool OnKeyPressed(const views::KeyEvent& event) OVERRIDE {
+    if (event.key_code() == ui::VKEY_SPACE ||
+        event.key_code() == ui::VKEY_RETURN) {
+      ash::Shell::GetInstance()->tray_delegate()->RequestRestart();
+      return true;
+    }
+    return false;
+  }
+
   virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE {
     ash::Shell::GetInstance()->tray_delegate()->RequestRestart();
     return true;
