@@ -132,7 +132,7 @@ LinuxDumper::ElfFileIdentifierForMapping(const MappingInfo& mapping,
 }
 
 void*
-LinuxDumper::FindBeginningOfLinuxGateSharedLibrary(const pid_t pid) const {
+LinuxDumper::FindBeginningOfLinuxGateSharedLibrary(pid_t pid) const {
   char auxv_path[NAME_MAX];
   if (!BuildProcPath(auxv_path, pid, "auxv"))
     return NULL;
@@ -159,6 +159,32 @@ LinuxDumper::FindBeginningOfLinuxGateSharedLibrary(const pid_t pid) const {
   return NULL;
 }
 
+void*
+LinuxDumper::FindEntryPoint(pid_t pid) const {
+  char auxv_path[NAME_MAX];
+  if (!BuildProcPath(auxv_path, pid, "auxv"))
+    return NULL;
+
+  int fd = sys_open(auxv_path, O_RDONLY, 0);
+  if (fd < 0) {
+    return NULL;
+  }
+
+  // Find the AT_ENTRY entry
+  elf_aux_entry one_aux_entry;
+  while (sys_read(fd,
+                  &one_aux_entry,
+                  sizeof(elf_aux_entry)) == sizeof(elf_aux_entry) &&
+         one_aux_entry.a_type != AT_NULL) {
+    if (one_aux_entry.a_type == AT_ENTRY) {
+      close(fd);
+      return reinterpret_cast<void*>(one_aux_entry.a_un.a_val);
+    }
+  }
+  close(fd);
+  return NULL;
+}
+
 bool LinuxDumper::EnumerateMappings() {
   char maps_path[NAME_MAX];
   if (!BuildProcPath(maps_path, pid_, "maps"))
@@ -171,6 +197,10 @@ bool LinuxDumper::EnumerateMappings() {
   // of mappings.
   const void* linux_gate_loc;
   linux_gate_loc = FindBeginningOfLinuxGateSharedLibrary(pid_);
+  // Although the initial executable is usually the first mapping, it's not
+  // guaranteed (see http://crosbug.com/25355); therefore, try to use the
+  // actual entry point to find the mapping.
+  const void* entry_point_loc = FindEntryPoint(pid_);
 
   const int fd = sys_open(maps_path, O_RDONLY, 0);
   if (fd < 0)
@@ -219,7 +249,25 @@ bool LinuxDumper::EnumerateMappings() {
             if (l < sizeof(module->name))
               memcpy(module->name, name, l);
           }
-          mappings_.push_back(module);
+          // If this is the entry-point mapping, and it's not already the
+          // first one, then we need to make it be first.  This is because
+          // the minidump format assumes the first module is the one that
+          // corresponds to the main executable (as codified in
+          // processor/minidump.cc:MinidumpModuleList::GetMainModule()).
+          if (entry_point_loc &&
+              (entry_point_loc >=
+                  reinterpret_cast<void*>(module->start_addr)) &&
+              (entry_point_loc <
+                  reinterpret_cast<void*>(module->start_addr+module->size)) &&
+              !mappings_.empty()) {
+            // push the module onto the front of the list.
+            mappings_.resize(mappings_.size() + 1);
+            for (size_t idx = mappings_.size() - 1; idx > 0; idx--)
+              mappings_[idx] = mappings_[idx - 1];
+            mappings_[0] = module;
+          } else {
+            mappings_.push_back(module);
+          }
         }
       }
     }

@@ -178,7 +178,9 @@ class LinuxDumper {
   // [vdso], but we can't guarantee that it's the only virtual dynamic
   // shared object.  Parsing the auxilary vector for AT_SYSINFO_EHDR
   // is the safest way to go.)
-  void* FindBeginningOfLinuxGateSharedLibrary(const pid_t pid) const;
+  void* FindBeginningOfLinuxGateSharedLibrary(pid_t pid) const;
+  // Utility method to find the entry point location.
+  void* FindEntryPoint(pid_t pid) const;
 
   uintptr_t crash_address() const { return crash_address_; }
   void set_crash_address(uintptr_t crash_address) {
