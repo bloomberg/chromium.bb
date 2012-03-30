@@ -12,6 +12,7 @@
 
 #include "base/message_pump_x.h"
 #include "base/stl_util.h"
+#include "base/stringprintf.h"
 #include "ui/aura/cursor.h"
 #include "ui/aura/dispatcher_linux.h"
 #include "ui/aura/env.h"
@@ -320,6 +321,13 @@ RootWindowHostLinux::RootWindowHostLinux(const gfx::Rect& bounds)
                                           &black, &black, 0, 0);
   if (RootWindow::hide_host_cursor())
     XDefineCursor(xdisplay_, x_root_window_, invisible_cursor_);
+
+  // crbug.com/120229 - set the window title so gtalk can find the primary root
+  // window to broadcast.
+  // TODO(jhorwich) Remove this once Chrome supports window-based broadcasting.
+  static int root_window_number = 0;
+  std::string name = StringPrintf("aura_root_%d", root_window_number++);
+  XStoreName(xdisplay_, xwindow_, name.c_str());
 }
 
 RootWindowHostLinux::~RootWindowHostLinux() {
