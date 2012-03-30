@@ -79,13 +79,16 @@ class ChromeTestLauncherDelegate : public test_launcher::TestLauncherDelegate {
       new_command_line.AppendSwitchNative((*iter).first, (*iter).second);
     }
 
+    // Clean up previous temp dir.
+    if (!temp_dir_.path().empty() && !temp_dir_.Delete())
+      LOG(ERROR) << "Error deleting previous temp profile directory";
+
     // Create a new user data dir and pass it to the child.
-    ScopedTempDir temp_dir;
-    if (!temp_dir.CreateUniqueTempDir() || !temp_dir.IsValid()) {
+    if (!temp_dir_.CreateUniqueTempDir() || !temp_dir_.IsValid()) {
       LOG(ERROR) << "Error creating temp profile directory";
       return false;
     }
-    new_command_line.AppendSwitchPath(switches::kUserDataDir, temp_dir.path());
+    new_command_line.AppendSwitchPath(switches::kUserDataDir, temp_dir_.path());
 
     // file:// access for ChromeOS.
     new_command_line.AppendSwitch(switches::kAllowFileAccess);
@@ -95,6 +98,8 @@ class ChromeTestLauncherDelegate : public test_launcher::TestLauncherDelegate {
   }
 
  private:
+  ScopedTempDir temp_dir_;
+
   DISALLOW_COPY_AND_ASSIGN(ChromeTestLauncherDelegate);
 };
 
