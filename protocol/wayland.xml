@@ -165,7 +165,7 @@
       <arg name="fd" type="fd"/>
       <arg name="width" type="int"/>
       <arg name="height" type="int"/>
-      <arg name="stride" type="uint"/>
+      <arg name="stride" type="int"/>
       <arg name="format" type="uint"/>
     </request>
 
