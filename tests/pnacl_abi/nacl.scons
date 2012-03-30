@@ -25,10 +25,9 @@ TESTS = ['small_structs_by_value.c',
          'vaarg.c',
          ]
 
-frontend = env['PNACL_FRONTEND']
-if frontend == 'clang':
-  # Enable when Clang's bitcode output is correct and stable
-  Return()
+# TODO(jvoung): add a proper bug
+# Enable when Clang's bitcode output is correct and stable
+Return()
 
 for src in TESTS:
    name = src.split('.')[0]

@@ -263,16 +263,8 @@ def _SetEnvForPnacl(env, root):
   else:
     pnacl_translate = binprefix + 'translate' + binext
 
-  frontend = env['PNACL_FRONTEND']
-  if frontend == 'clang':
-    pnacl_cc = binprefix + 'clang' + binext
-    pnacl_cxx = binprefix + 'clang++' + binext
-  elif frontend == 'dragonegg':
-    pnacl_cc = binprefix + 'dgcc' + binext
-    pnacl_cxx = binprefix + 'dg++' + binext
-  else:
-    print "Unknown frontend"
-    sys.exit(-1)
+  pnacl_cc = binprefix + 'clang' + binext
+  pnacl_cxx = binprefix + 'clang++' + binext
 
   pnacl_ld = binprefix + 'ld' + binext
   pnacl_nativeld = binprefix + 'nativeld' + binext
@@ -382,19 +374,6 @@ def PNaClForceNative(env):
   env['SHLINK'] = '${LINK}'
   if env.Bit('built_elsewhere'):
     env.Replace(CC='true', CXX='true', ASPP='true', LINK='true', LD='true')
-
-# Get an environment for a different frontend when in
-# PNaCl mode.
-def PNaClChangeFrontend(env, frontend):
-  assert(env.Bit('bitcode'))
-  assert(frontend in ('clang','dragonegg'))
-
-  # This is kind of a hack.
-  alt_env = env.Clone()
-  alt_env['PNACL_FRONTEND'] = frontend
-  alt_env = alt_env.Clone(tools = ['naclsdk'])
-  return alt_env
-
 
 # Get an environment for nacl-gcc when in PNaCl mode.
 def PNaClGetNNaClEnv(env):
@@ -545,7 +524,6 @@ def generate(env):
   env.AddMethod(AddBiasForPNaCl)
   env.AddMethod(PNaClForceNative)
   env.AddMethod(PNaClGetNNaClEnv)
-  env.AddMethod(PNaClChangeFrontend)
 
   sdk_mode = SCons.Script.ARGUMENTS.get('naclsdk_mode', 'download')
 

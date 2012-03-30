@@ -164,8 +164,6 @@ ACCEPTABLE_ARGUMENTS = set([
     'libdir',
     # Where to install trusted-code binaries for public (SDK) consumption.
     'bindir',
-    # PNaCl Frontend Compiler
-    'pnacl_frontend',
   ])
 
 
@@ -1013,18 +1011,6 @@ def MakeArchSpecificEnv():
   if env.Bit('target_arm') and not env.Bit('bitcode'):
     # This has always been a silent default on ARM.
     env.SetBits('bitcode')
-
-  pnacl_frontend = ARGUMENTS.get('pnacl_frontend', '')
-  if pnacl_frontend not in ('','clang','dragonegg'):
-    print "\n ERROR: pnacl_frontend must be clang or dragonegg"
-    sys.exit(-1)
-  if pnacl_frontend and not env.Bit('bitcode'):
-    print "\n ERROR: pnacl_frontend does not make sense without bitcode=1\n"
-    sys.exit(-1)
-  if env.Bit('bitcode') and not pnacl_frontend:
-    # Set default frontend for PNaCl
-    pnacl_frontend = 'clang'
-  env['PNACL_FRONTEND'] = pnacl_frontend
 
   # Determine where the object files go
   if BUILD_NAME == TARGET_NAME:
@@ -3170,11 +3156,10 @@ if nacl_env.Bit('bitcode'):
   # optimizations at link time
   nacl_env.Append(LINKFLAGS=['-O3'])
 
-if nacl_env.Bit('bitcode') and nacl_env.Bit('translate_fast'):
-  nacl_env.Append(LINKFLAGS=['-Xlinker', '-translate-fast'])
+  if nacl_env.Bit('translate_fast'):
+    nacl_env.Append(LINKFLAGS=['-Xlinker', '-translate-fast'])
 
-# When the compiler is clang, base/ code uses the "override" keyword.
-if nacl_env['PNACL_FRONTEND'] == 'clang':
+  # With pnacl's clang base/ code uses the "override" keyword.
   nacl_env.Append(CXXFLAGS=['-Wno-c++11-extensions'])
 
 # We use a special environment for building the IRT image because it must
@@ -3204,8 +3189,9 @@ target_variant_map = [
 for variant_bit, variant_suffix in target_variant_map:
   if nacl_env.Bit(variant_bit):
     nacl_env['TARGET_VARIANT'] += '-' + variant_suffix
+
 if nacl_env.Bit('bitcode'):
-  nacl_env['TARGET_VARIANT'] += '-' + nacl_env['PNACL_FRONTEND']
+  nacl_env['TARGET_VARIANT'] += '-clang'
 
 if nacl_env.Bit('irt'):
   # Since the default linking layout is compatible with IRT loading now,
