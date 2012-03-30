@@ -573,8 +573,6 @@ class BuildBoardStage(bs.BuilderStage):
         continue
 
       env = {}
-      if self._build_config['gcc_46']:
-        env['GCC_PV'] = '4.6.0'
 
       if self._options.clobber:
         env['IGNORE_PREFLIGHT_BINHOST'] = '1'

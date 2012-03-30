@@ -146,10 +146,6 @@ _settings = dict(
 # latest_toolchain -- Use the newest ebuilds for all the toolchain packages.
   latest_toolchain=False,
 
-# gcc_46 -- Use gcc-4.6 to build ChromeOS. Only works when
-# latest_toolchain=True.
-  gcc_46=False,
-
 # chroot_replace -- wipe and replace chroot, but not source.
   chroot_replace=False,
 

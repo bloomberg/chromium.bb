@@ -130,14 +130,6 @@ class CBuildBotTest(mox.MoxTestBase):
           config['build_type'] in cbuildbot_config.BUILD_TYPE_DUMP_ORDER,
           'Config %s: has unexpected build_type value.' % build_name)
 
-  def testGccDependancy(self):
-    """Verify we don't set gcc_46 without also setting latest_toolchain."""
-
-    for build_name, config in cbuildbot_config.config.iteritems():
-      self.assertFalse(
-          config['gcc_46'] and not config['latest_toolchain'],
-          'Config %s: has gcc_46 without latest_toolchain.' % build_name)
-
   def testBuildToRun(self):
     """Verify we don't try to run tests without building them."""
 
