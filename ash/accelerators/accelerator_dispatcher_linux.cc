@@ -12,7 +12,6 @@
 #endif
 
 #include "ash/accelerators/accelerator_controller.h"
-#include "ash/ime/event.h"
 #include "ash/shell.h"
 #include "ui/aura/env.h"
 #include "ui/aura/event.h"
@@ -48,7 +47,7 @@ base::MessagePumpDispatcher::DispatchStatus AcceleratorDispatcher::Dispatch(
       if (accelerator_controller->Process(accelerator))
         return EVENT_PROCESSED;
 
-      accelerator.set_type(TranslatedKeyEvent(xev, false).type());
+      accelerator.set_type(aura::TranslatedKeyEvent(xev, false).type());
       if (accelerator_controller->Process(accelerator))
         return EVENT_PROCESSED;
     }

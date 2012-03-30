@@ -16,6 +16,7 @@
 #include "ui/views/widget/native_widget_private.h"
 
 namespace aura {
+class RootWindow;
 class Window;
 }
 namespace gfx {
@@ -34,6 +35,8 @@ class VIEWS_EXPORT NativeWidgetAura : public internal::NativeWidgetPrivate,
  public:
   explicit NativeWidgetAura(internal::NativeWidgetDelegate* delegate);
   virtual ~NativeWidgetAura();
+
+  static void set_aura_desktop_hax() { g_aura_desktop_hax = true; }
 
   // TODO(beng): Find a better place for this, and the similar method on
   //             NativeWidgetWin.
@@ -167,6 +170,7 @@ class VIEWS_EXPORT NativeWidgetAura : public internal::NativeWidgetPrivate,
 
   internal::NativeWidgetDelegate* delegate_;
 
+  scoped_ptr<aura::RootWindow> root_window_;
   aura::Window* window_;
 
   // See class documentation for Widget in widget.h for a note about ownership.
@@ -190,6 +194,8 @@ class VIEWS_EXPORT NativeWidgetAura : public internal::NativeWidgetPrivate,
 
   scoped_ptr<DropHelper> drop_helper_;
   int last_drop_operation_;
+
+  static bool g_aura_desktop_hax;
 
   DISALLOW_COPY_AND_ASSIGN(NativeWidgetAura);
 };

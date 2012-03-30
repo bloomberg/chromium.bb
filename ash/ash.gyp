@@ -79,8 +79,6 @@
         'drag_drop/drag_image_view.h',
         'focus_cycler.cc',
         'focus_cycler.h',
-        'ime/event.cc',
-        'ime/event.h',
         'ime/input_method_event_filter.cc',
         'ime/input_method_event_filter.h',
         'key_rewriter_delegate.h',

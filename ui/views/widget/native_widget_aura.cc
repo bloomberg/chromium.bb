@@ -9,9 +9,13 @@
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/client/dispatcher_client.h"
 #include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/client/window_move_client.h"
 #include "ui/aura/client/window_types.h"
+#include "ui/aura/desktop/desktop_activation_client.h"
+#include "ui/aura/desktop/desktop_dispatcher_client.h"
+#include "ui/aura/desktop/desktop_root_window_event_filter.h"
 #include "ui/aura/env.h"
 #include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
@@ -37,6 +41,8 @@
 #endif
 
 namespace views {
+
+bool NativeWidgetAura::g_aura_desktop_hax = false;
 
 namespace {
 
@@ -127,6 +133,7 @@ class NativeWidgetAura::ActiveWindowObserver : public aura::WindowObserver {
 
 NativeWidgetAura::NativeWidgetAura(internal::NativeWidgetDelegate* delegate)
     : delegate_(delegate),
+      root_window_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(window_(new aura::Window(this))),
       ownership_(Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET),
       ALLOW_THIS_IN_INITIALIZER_LIST(close_widget_factory_(this)),
@@ -160,6 +167,25 @@ gfx::Font NativeWidgetAura::GetWindowTitleFont() {
 
 void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
   ownership_ = params.ownership;
+  // TODO(erg): What kind of windows do we want to have their own root windows?
+  if (g_aura_desktop_hax) {
+    gfx::Rect bounds = params.bounds;
+    if (bounds.IsEmpty()) {
+      // We must pass some non-zero value when we initialize a RootWindow. This
+      // will probably be SetBounds()ed soon.
+      bounds.set_size(gfx::Size(100, 100));
+    }
+    root_window_.reset(new aura::RootWindow(bounds));
+    root_window_->SetEventFilter(
+        new aura::DesktopRootWindowEventFilter(root_window_.get()));
+
+    aura::client::SetActivationClient(
+        root_window_.get(),
+        new aura::DesktopActivationClient(root_window_.get()));
+    aura::client::SetDispatcherClient(root_window_.get(),
+                                      new aura::DesktopDispatcherClient);
+  }
+
   window_->set_user_data(this);
   window_->SetType(GetAuraWindowTypeForWidgetType(params.type));
   window_->SetProperty(aura::client::kShowStateKey, params.show_state);
@@ -171,7 +197,9 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
     window_->Show();
 
   delegate_->OnNativeWidgetCreated();
-  if (params.child) {
+  if (root_window_.get()) {
+    window_->SetParent(root_window_.get());
+  } else if (params.child) {
     window_->SetParent(params.GetParent());
   } else {
     // Set up the transient child before the window is added. This way the
@@ -179,19 +207,29 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
     gfx::NativeView parent = params.GetParent();
     if (parent && parent->type() != aura::client::WINDOW_TYPE_UNKNOWN) {
       parent->AddTransientChild(window_);
-      parent = NULL;
+
+      // TODO(erg): The StackingClient interface implies that there is only a
+      // single root window. Solving this would require setting a stacking
+      // client per root window instead. For now, we hax our way around this by
+      // forcing the parent to be the root window instead of passing NULL as
+      // the parent which will dispatch to the stacking client.
+      if (g_aura_desktop_hax)
+        parent = parent->GetRootWindow();
+      else
+        parent = NULL;
     }
     // SetAlwaysOnTop before SetParent so that always-on-top container is used.
     SetAlwaysOnTop(params.keep_on_top);
     window_->SetParent(parent);
   }
+
   // Wait to set the bounds until we have a parent. That way we can know our
   // true state/bounds (the LayoutManager may enforce a particular
   // state/bounds).
   if (IsMaximized())
     SetRestoreBounds(window_, params.bounds);
   else
-    window_->SetBounds(params.bounds);
+    SetBounds(params.bounds);
   window_->set_ignore_events(!params.accept_events);
   can_activate_ = params.can_activate;
   DCHECK(GetWidget()->GetRootView());
@@ -207,6 +245,9 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
   }
 
   aura::client::SetActivationDelegate(window_, this);
+
+  if (root_window_.get())
+    root_window_->ShowRootWindow();
 }
 
 NonClientFrameView* NativeWidgetAura::CreateNonClientFrameView() {
@@ -407,7 +448,15 @@ gfx::Rect NativeWidgetAura::GetRestoredBounds() const {
   return restore_bounds ? *restore_bounds : window_->bounds();
 }
 
-void NativeWidgetAura::SetBounds(const gfx::Rect& bounds) {
+void NativeWidgetAura::SetBounds(const gfx::Rect& in_bounds) {
+  gfx::Rect bounds = in_bounds;
+
+  if (root_window_.get() && !bounds.IsEmpty()) {
+    root_window_->SetHostBounds(bounds);
+    bounds.set_x(0);
+    bounds.set_y(0);
+  }
+
   window_->SetBounds(bounds);
 }
 

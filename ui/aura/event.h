@@ -260,6 +260,26 @@ class AURA_EXPORT KeyEvent : public Event {
   uint16 unmodified_character_;
 };
 
+// A key event which is translated by an input method (IME).
+// For example, if an IME receives a KeyEvent(ui::VKEY_SPACE), and it does not
+// consume the key, the IME usually generates and dispatches a
+// TranslatedKeyEvent(ui::VKEY_SPACE) event. If the IME receives a KeyEvent and
+// it does consume the event, it might dispatch a
+// TranslatedKeyEvent(ui::VKEY_PROCESSKEY) event as defined in the DOM spec.
+class AURA_EXPORT TranslatedKeyEvent : public aura::KeyEvent {
+ public:
+  TranslatedKeyEvent(const base::NativeEvent& native_event, bool is_char);
+
+  // Used for synthetic events such as a VKEY_PROCESSKEY key event.
+  TranslatedKeyEvent(bool is_press,
+                     ui::KeyboardCode key_code,
+                     int flags);
+
+  // Changes the type() of the object from ET_TRANSLATED_KEY_* to ET_KEY_* so
+  // that RenderWidgetHostViewAura and NativeWidgetAura could handle the event.
+  void ConvertToKeyEvent();
+};
+
 class AURA_EXPORT DropTargetEvent : public LocatedEvent {
  public:
   DropTargetEvent(const ui::OSExchangeData& data,

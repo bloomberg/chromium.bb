@@ -650,6 +650,12 @@
             },
           },
         }],
+        ['use_aura==1', {
+          'dependencies': [
+            '../gfx/compositor/compositor.gyp:compositor',
+            '../gfx/compositor/compositor.gyp:compositor_test_support',
+          ],
+        }],
       ],
     },  # target_name: views_examples_lib
   ],

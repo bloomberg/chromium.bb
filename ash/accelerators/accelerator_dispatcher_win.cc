@@ -5,7 +5,6 @@
 #include "ash/accelerators/accelerator_dispatcher.h"
 
 #include "ash/accelerators/accelerator_controller.h"
-#include "ash/ime/event.h"
 #include "ash/shell.h"
 #include "ui/aura/env.h"
 #include "ui/aura/event.h"
@@ -40,7 +39,7 @@ bool AcceleratorDispatcher::Dispatch(const MSG& msg) {
         accelerator.set_type(ui::ET_KEY_RELEASED);
       if (accelerator_controller->Process(accelerator))
         return true;
-      accelerator.set_type(TranslatedKeyEvent(msg, false).type());
+      accelerator.set_type(aura::TranslatedKeyEvent(msg, false).type());
       if (accelerator_controller->Process(accelerator))
         return true;
     }

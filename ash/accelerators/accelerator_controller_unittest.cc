@@ -4,7 +4,6 @@
 
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/caps_lock_delegate.h"
-#include "ash/ime/event.h"
 #include "ash/ime_control_delegate.h"
 #include "ash/screenshot_delegate.h"
 #include "ash/shell.h"
@@ -393,15 +392,15 @@ TEST_F(AcceleratorControllerTest, ProcessOnce) {
   // The accelerator is processed only once.
 #if defined(OS_WIN)
   MSG msg1 = { NULL, WM_KEYDOWN, ui::VKEY_A, 0 };
-  TranslatedKeyEvent key_event1(msg1, false);
+  aura::TranslatedKeyEvent key_event1(msg1, false);
   EXPECT_TRUE(Shell::GetRootWindow()->DispatchKeyEvent(&key_event1));
 
   MSG msg2 = { NULL, WM_CHAR, L'A', 0 };
-  TranslatedKeyEvent key_event2(msg2, true);
+  aura::TranslatedKeyEvent key_event2(msg2, true);
   EXPECT_FALSE(Shell::GetRootWindow()->DispatchKeyEvent(&key_event2));
 
   MSG msg3 = { NULL, WM_KEYUP, ui::VKEY_A, 0 };
-  TranslatedKeyEvent key_event3(msg3, false);
+  aura::TranslatedKeyEvent key_event3(msg3, false);
   EXPECT_FALSE(Shell::GetRootWindow()->DispatchKeyEvent(&key_event3));
 #elif defined(USE_X11)
   XEvent key_event;
@@ -409,17 +408,17 @@ TEST_F(AcceleratorControllerTest, ProcessOnce) {
                               ui::VKEY_A,
                               0,
                               &key_event);
-  TranslatedKeyEvent key_event1(&key_event, false);
+  aura::TranslatedKeyEvent key_event1(&key_event, false);
   EXPECT_TRUE(Shell::GetRootWindow()->DispatchKeyEvent(&key_event1));
 
-  TranslatedKeyEvent key_event2(&key_event, true);
+  aura::TranslatedKeyEvent key_event2(&key_event, true);
   EXPECT_FALSE(Shell::GetRootWindow()->DispatchKeyEvent(&key_event2));
 
   ui::InitXKeyEventForTesting(ui::ET_KEY_RELEASED,
                               ui::VKEY_A,
                               0,
                               &key_event);
-  TranslatedKeyEvent key_event3(&key_event, false);
+  aura::TranslatedKeyEvent key_event3(&key_event, false);
   EXPECT_FALSE(Shell::GetRootWindow()->DispatchKeyEvent(&key_event3));
 #endif
   EXPECT_EQ(1, target.accelerator_pressed_count());
