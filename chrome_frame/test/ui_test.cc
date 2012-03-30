@@ -960,7 +960,7 @@ TEST_F(ContextMenuTest, FLAKY_CFTxtFieldRedo) {
   LaunchIEAndNavigate(context_menu_page_url);
 }
 
-TEST_F(ContextMenuTest, CFBackForward) {
+TEST_F(ContextMenuTest, FLAKY_CFBackForward) {
   std::wstring page1 = GetLinkPageUrl();
   std::wstring title1 = GetLinkPageTitle();
   std::wstring page2 = GetSimplePageUrl();
