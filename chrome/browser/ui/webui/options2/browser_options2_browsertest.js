@@ -19,6 +19,13 @@ BrowserOptionsWebUITest.prototype = {
 };
 
 // Test opening the browser options has correct location.
-TEST_F('BrowserOptionsWebUITest', 'testOpenBrowserOptions', function() {
+// Times out on Mac debug only. See http://crbug.com/121030
+GEN('#if defined(OS_MACOSX) && !defined(NDEBUG)');
+GEN('#define MAYBE_testOpenBrowserOptions ' +
+    'DISABLED_testOpenBrowserOptions');
+GEN('#else');
+GEN('#define MAYBE_testOpenBrowserOptions testOpenBrowserOptions');
+GEN('#endif  // defined(OS_MACOSX)');
+TEST_F('BrowserOptionsWebUITest', 'MAYBE_testOpenBrowserOptions', function() {
   assertEquals(this.browsePreload, document.location.href);
 });
