@@ -2,35 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/file_path.h"
-#include "chrome/test/base/layout_test_http_server.h"
-#include "chrome/test/ui/ui_layout_test.h"
+#include "content/test/layout_browsertest.h"
 
-class AppCacheUITest : public UILayoutTest {
+class AppCacheLayoutTest : public InProcessBrowserLayoutTest {
  public:
-  void RunAppCacheTests(const char* tests[], int num_tests) {
-    FilePath http_test_dir;
-    http_test_dir = http_test_dir.AppendASCII("http");
-    http_test_dir = http_test_dir.AppendASCII("tests");
-
-    FilePath appcache_test_dir;
-    appcache_test_dir = appcache_test_dir.AppendASCII("appcache");
-    InitializeForLayoutTest(http_test_dir, appcache_test_dir, kHttpPort);
-
-    LayoutTestHttpServer http_server(new_http_root_dir_, kHttpPort);
-    ASSERT_TRUE(http_server.Start());
-    for (int i = 0; i < num_tests; ++i)
-      RunLayoutTest(tests[i], kHttpPort);
-    ASSERT_TRUE(http_server.Stop());
+  AppCacheLayoutTest() : InProcessBrowserLayoutTest(
+      FilePath().AppendASCII("http").AppendASCII("tests"),
+      FilePath().AppendASCII("appcache"),
+      -1) {
   }
 
  protected:
-  virtual ~AppCacheUITest() {}
+  virtual ~AppCacheLayoutTest() {}
 };
 
 // Flaky and slow, hence disabled: http://crbug.com/54717
 // The tests that don't depend on PHP should be less flaky.
-TEST_F(AppCacheUITest, DISABLED_AppCacheLayoutTests_NoPHP) {
+IN_PROC_BROWSER_TEST_F(AppCacheLayoutTest, DISABLED_NoPHP) {
   static const char* kNoPHPTests[] = {
       "404-manifest.html",
       "404-resource.html",
@@ -66,12 +54,13 @@ TEST_F(AppCacheUITest, DISABLED_AppCacheLayoutTests_NoPHP) {
   // https://bugs.webkit.org/show_bug.cgi?id=49104
   // "foreign-fallback.html"
 
-  RunAppCacheTests(kNoPHPTests, arraysize(kNoPHPTests));
+  for (size_t i = 0; i < arraysize(kNoPHPTests); ++i)
+    RunHttpLayoutTest(kNoPHPTests[i]);
 }
 
 // Flaky: http://crbug.com/54717
 // Lighty/PHP is not reliable enough on windows.
-TEST_F(AppCacheUITest, DISABLED_AppCacheLayoutTests_PHP) {
+IN_PROC_BROWSER_TEST_F(AppCacheLayoutTest, DISABLED_PHP) {
   static const char* kPHPTests[] = {
       "auth.html",
       "fallback.html",
@@ -103,5 +92,6 @@ TEST_F(AppCacheUITest, DISABLED_AppCacheLayoutTests_PHP) {
   // "local-content.html",
   // "max-size.html", we use a different quota scheme
 
-  RunAppCacheTests(kPHPTests, arraysize(kPHPTests));
+  for (size_t i = 0; i < arraysize(kPHPTests); ++i)
+    RunHttpLayoutTest(kPHPTests[i]);
 }
