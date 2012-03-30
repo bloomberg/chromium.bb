@@ -1743,6 +1743,12 @@ def PPAPIGraphics3DIsBroken(env):
 pre_base_env.AddMethod(PPAPIGraphics3DIsBroken)
 
 
+def RemovePrefix(string, prefix):
+  if not string.startswith(prefix):
+    raise AssertionError('%r does not start with %r' % (string, prefix))
+  return string[len(prefix):]
+
+
 def PyAutoTester(env, target, test, files=[], log_verbosity=2,
                  extra_chrome_flags=[], args=[]):
   if 'TRUSTED_ENV' not in env:
@@ -1750,7 +1756,10 @@ def PyAutoTester(env, target, test, files=[], log_verbosity=2,
 
   env = env.Clone()
   SetupBrowserEnv(env)
-  extra_deps = files + [env.ChromeBinary()]
+  extra_deps = [env.ChromeBinary()]
+  files_subdir = '${STAGING_DIR}/%s.files' % target
+  for dep_file in files:
+    extra_deps.append(env.Replicate(files_subdir, dep_file))
 
   if env.Bit('host_mac'):
     # On Mac, remove 'Chromium.app/Contents/MacOS/Chromium' from the path.
@@ -1818,11 +1827,10 @@ def PyAutoTester(env, target, test, files=[], log_verbosity=2,
   osenv.append('NACL_ENABLE_PPAPI_DEV=1')
 
   # Construct a relative path to the staging directory from where pyauto's HTTP
-  # server should serve files. The relative path is the portion of $STAGING_DIR
-  # that follows $MAIN_DIR, prefixed with 'native_client'.
+  # server should serve files.
   main_dir = env.subst('${MAIN_DIR}')
-  staging_dir = env.subst('${STAGING_DIR}')
-  http_data_dir = 'native_client' + staging_dir.replace(main_dir, '')
+  http_data_dir = ('native_client' +
+                   RemovePrefix(env.subst(files_subdir), main_dir))
 
   command = (GetHeadlessPrefix(env) + pyauto_python +
              ['-u', test, pyautolib_dir,
