@@ -375,7 +375,8 @@
     'tests': [],
     'automation': ['kkania@chromium.org',
                    'robertshield@chromium.org'],
-    'chrome_frame': ['amit@chromium.org', 'robertshield@chromium.org'],
+    'chrome_frame': ['amit@chromium.org', 'grt+watch@chromium.org',
+                     'robertshield@chromium.org'],
     'nacl': ['native-client-reviews@googlegroups.com'],
     'appcache': ['michaeln@chromium.org'],
     'gpu': ['apatrick@chromium.org'],
@@ -456,5 +457,6 @@
     'metrics': ['jar@chromium.org',
                 'isherman@chromium.org',
                 'mad@chromium.org'],
+    'installer': ['grt+watch@chromium.org'],
   },
 }
