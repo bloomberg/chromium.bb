@@ -288,7 +288,7 @@ class NinjaWriter:
       self.ninja.newline()
     return targets[0]
 
-  def WriteSpec(self, spec, config_name):
+  def WriteSpec(self, spec, config_name, generator_flags):
     """The main entry point for NinjaWriter: write the build rules for a spec.
 
     Returns a Target object, which represents the output paths for this spec.
@@ -306,7 +306,8 @@ class NinjaWriter:
     if self.flavor == 'mac':
       self.xcode_settings = gyp.xcode_emulation.XcodeSettings(spec)
     if self.flavor == 'win':
-      self.msvs_settings = gyp.msvs_emulation.MsvsSettings(spec)
+      self.msvs_settings = gyp.msvs_emulation.MsvsSettings(spec,
+                                                           generator_flags)
 
     # Compute predepends for all rules.
     # actions_depends is the dependencies this target depends on before running
@@ -434,8 +435,10 @@ class NinjaWriter:
       description = self.GenerateDescription('ACTION',
                                              action.get('message', None),
                                              name)
+      is_cygwin = (self.msvs_settings.IsRuleRunUnderCygwin(action)
+                   if self.flavor == 'win' else False)
       rule_name = self.WriteNewNinjaRule(name, action['action'], description,
-                                         env=env)
+                                         is_cygwin, env=env)
 
       inputs = [self.GypPathToNinja(i, env) for i in action['inputs']]
       if int(action.get('process_outputs_as_sources', False)):
@@ -464,7 +467,9 @@ class NinjaWriter:
           'RULE',
           rule.get('message', None),
           ('%s ' + generator_default_variables['RULE_INPUT_PATH']) % name)
-      rule_name = self.WriteNewNinjaRule(name, args, description)
+      is_cygwin = (self.msvs_settings.IsRuleRunUnderCygwin(rule)
+                   if self.flavor == 'win' else False)
+      rule_name = self.WriteNewNinjaRule(name, args, description, is_cygwin)
 
       # TODO: if the command references the outputs directly, we should
       # simplify it to just use $out.
@@ -478,6 +483,11 @@ class NinjaWriter:
         for var in special_locals:
           if ('${%s}' % var) in argument:
             needed_variables.add(var)
+
+      def cygwin_munge(path):
+        if is_cygwin:
+          return path.replace('\\', '/')
+        return path
 
       # For each source file, write an edge that generates all the outputs.
       for source in rule.get('rule_sources', []):
@@ -498,19 +508,19 @@ class NinjaWriter:
         extra_bindings = []
         for var in needed_variables:
           if var == 'root':
-            extra_bindings.append(('root', root))
+            extra_bindings.append(('root', cygwin_munge(root)))
           elif var == 'dirname':
-            extra_bindings.append(('dirname', dirname))
+            extra_bindings.append(('dirname', cygwin_munge(dirname)))
           elif var == 'source':
             # '$source' is a parameter to the rule action, which means
             # it shouldn't be converted to a Ninja path.  But we don't
             # want $!PRODUCT_DIR in there either.
             source_expanded = self.ExpandSpecial(source, self.base_to_build)
-            extra_bindings.append(('source', source_expanded))
+            extra_bindings.append(('source', cygwin_munge(source_expanded)))
           elif var == 'ext':
             extra_bindings.append(('ext', ext))
           elif var == 'name':
-            extra_bindings.append(('name', basename))
+            extra_bindings.append(('name', cygwin_munge(basename)))
           else:
             assert var == None, repr(var)
 
@@ -953,7 +963,7 @@ class NinjaWriter:
       values = []
     self.ninja.variable(var, ' '.join(values))
 
-  def WriteNewNinjaRule(self, name, args, description, env={}):
+  def WriteNewNinjaRule(self, name, args, description, is_cygwin, env={}):
     """Write out a new ninja "rule" statement for a given command.
 
     Returns the name of the new rule."""
@@ -973,15 +983,22 @@ class NinjaWriter:
     # cd into the directory before running, and adjust paths in
     # the arguments to point to the proper locations.
     if self.flavor == 'win':
-      cd = 'cmd /s /c "cd %s && ' % self.build_to_base
+      cd = 'cmd /s /c "'
+      if not is_cygwin:
+        # cd command added by BuildCygwinBashCommandLine in cygwin case.
+        cd += 'cd %s && ' % self.build_to_base
     else:
       cd = 'cd %s; ' % self.build_to_base
     args = [self.ExpandSpecial(arg, self.base_to_build) for arg in args]
     env = self.ComputeExportEnvString(env)
     if self.flavor == 'win':
-      # TODO(scottmg): Respect msvs_cygwin setting here.
-      # If there's no command, fake one to match the dangling |&&| above.
-      command = gyp.msvs_emulation.EncodeRspFileList(args) or 'cmd /c'
+      args = [self.msvs_settings.ConvertVSMacros(a) for a in args]
+      if is_cygwin:
+        command = self.msvs_settings.BuildCygwinBashCommandLine(
+            args, self.build_to_base)
+      else:
+        # If there's no command, fake one to match the dangling |&&| above.
+        command = gyp.msvs_emulation.EncodeRspFileList(args) or 'cmd /c'
     else:
       command = gyp.common.EncodePOSIXShellList(args)
     if env:
@@ -1001,6 +1018,8 @@ class NinjaWriter:
 
 def CalculateVariables(default_variables, params):
   """Calculate additional variables for use in the build (called by gyp)."""
+  global generator_additional_non_configuration_keys
+  global generator_additional_path_sections
   cc_target = os.environ.get('CC.target', os.environ.get('CC', 'cc'))
   flavor = gyp.common.GetFlavor(params)
   if flavor == 'mac':
@@ -1014,10 +1033,8 @@ def CalculateVariables(default_variables, params):
     # Copy additional generator configuration data from Xcode, which is shared
     # by the Mac Ninja generator.
     import gyp.generator.xcode as xcode_generator
-    global generator_additional_non_configuration_keys
     generator_additional_non_configuration_keys = getattr(xcode_generator,
         'generator_additional_non_configuration_keys', [])
-    global generator_additional_path_sections
     generator_additional_path_sections = getattr(xcode_generator,
         'generator_additional_path_sections', [])
     global generator_extra_sources_for_rules
@@ -1031,12 +1048,17 @@ def CalculateVariables(default_variables, params):
     default_variables['SHARED_LIB_PREFIX'] = ''
     default_variables['SHARED_LIB_SUFFIX'] = '.dll'
     generator_flags = params.get('generator_flags', {})
-    msvs_version = gyp.MSVSVersion.SelectVisualStudioVersion(
-        generator_flags.get('msvs_version', 'auto'))
-    # Stash msvs_version for later (so we don't have to probe the system twice).
-    params['msvs_version'] = msvs_version
+
+    # Copy additional generator configuration data from VS, which is shared
+    # by the Windows Ninja generator.
+    import gyp.generator.msvs as msvs_generator
+    generator_additional_non_configuration_keys = getattr(msvs_generator,
+        'generator_additional_non_configuration_keys', [])
+    generator_additional_path_sections = getattr(msvs_generator,
+        'generator_additional_path_sections', [])
 
     # Set a variable so conditions can be based on msvs_version.
+    msvs_version = gyp.msvs_emulation.GetVSVersion(generator_flags)
     default_variables['MSVS_VERSION'] = msvs_version.ShortName()
 
     # To determine processor word size on Windows, in addition to checking
@@ -1308,7 +1330,7 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
                          flavor, abs_build_dir=abs_build_dir)
     master_ninja.subninja(output_file)
 
-    target = writer.WriteSpec(spec, config_name)
+    target = writer.WriteSpec(spec, config_name, generator_flags)
     if target:
       target_outputs[qualified_target] = target
       if qualified_target in all_targets:

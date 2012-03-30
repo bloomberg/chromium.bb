@@ -105,30 +105,35 @@ class MsvsSettings(object):
   msvs_settings field). They largely correpond to the VS2008 IDE DOM. This
   class helps map those settings to command line options."""
 
-  def __init__(self, spec):
+  def __init__(self, spec, generator_flags):
     self.spec = spec
+    self.vs_version = GetVSVersion(generator_flags)
 
     supported_fields = [
-        'msvs_configuration_attributes',
-        'msvs_settings',
-        'msvs_system_include_dirs',
-        'msvs_disabled_warnings',
+        ('msvs_configuration_attributes', dict),
+        ('msvs_settings', dict),
+        ('msvs_system_include_dirs', list),
+        ('msvs_disabled_warnings', list),
         ]
     configs = spec['configurations']
-    for field in supported_fields:
+    for field, default in supported_fields:
       setattr(self, field, {})
       for configname, config in configs.iteritems():
-        getattr(self, field)[configname] = config.get(field, {})
+        getattr(self, field)[configname] = config.get(field, default())
 
-  def _ConvertVSMacros(self, s):
+    self.msvs_cygwin_dirs = spec.get('msvs_cygwin_dirs', ['.'])
+
+  def ConvertVSMacros(self, s):
     """Convert from VS macro names to something equivalent."""
     if '$' in s:
       replacements = {
-          '$(VSInstallDir)': os.environ.get('VSInstallDir') + '\\',
-          '$(VCInstallDir)': os.environ.get('VCInstallDir') + '\\',
-          '$(DXSDK_DIR)': os.environ.get('DXSDK_DIR') + '\\',
+          '$(VSInstallDir)': self.vs_version.Path(),
+          '$(VCInstallDir)': os.path.join(self.vs_version.Path(), 'VC'),
           '$(OutDir)\\': '',
       }
+      dxsdk_dir = os.environ.get('DXSDK_DIR')
+      if dxsdk_dir:
+        replacements['$(DXSDK_DIR)'] = dxsdk_dir + '\\'
       for old, new in replacements.iteritems():
         s = s.replace(old, new)
     return s
@@ -173,7 +178,7 @@ class MsvsSettings(object):
   def GetSystemIncludes(self, config):
     """Returns the extra set of include paths that are used for the Windows
     SDK and similar."""
-    return [self._ConvertVSMacros(p)
+    return [self.ConvertVSMacros(p)
             for p in self.msvs_system_include_dirs[config]]
 
   def GetComputedDefines(self, config):
@@ -290,6 +295,31 @@ class MsvsSettings(object):
 
     return ldflags
 
+  def BuildCygwinBashCommandLine(self, args, path_to_base):
+    """Build a command line that runs args via cygwin bash. We assume that all
+    incoming paths are in Windows normpath'd form, so they need to be
+    converted to posix style for the part of the command line that's passed to
+    bash. We also have to do some Visual Studio macro emulation here because
+    various rules use magic VS names for things. Also note that rules that
+    contain ninja variables cannot be fixed here (for example ${source}), so
+    the outer generator needs to make sure that the paths that are written out
+    are in posix style, if the command line will be used here."""
+    cygwin_dir = os.path.normpath(
+        os.path.join(path_to_base, self.msvs_cygwin_dirs[0]))
+    cd = ('cd %s' % path_to_base).replace('\\', '/')
+    args = [a.replace('\\', '/') for a in args]
+    args = ["'%s'" % a.replace("'", "\\'") for a in args]
+    bash_cmd = ' '.join(args)
+    cmd = (
+        'call "%s\\setup_env.bat" && set CYGWIN=nontsec && ' % cygwin_dir +
+        'bash -c "%s ; %s"' % (cd, bash_cmd))
+    return cmd
+
+  def IsRuleRunUnderCygwin(self, rule):
+    """Determine if an action should be run under cygwin. If the variable is
+    unset, or set to 1 we use cygwin."""
+    return int(rule.get('msvs_cygwin_shell',
+                        self.spec.get('msvs_cygwin_shell', 1))) != 0
 
 vs_version = None
 def GetVSVersion(generator_flags):
