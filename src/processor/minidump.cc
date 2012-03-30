@@ -2483,7 +2483,7 @@ const MinidumpModule* MinidumpModuleList::GetMainModule() const {
 
   // The main code module is the first one present in a minidump file's
   // MDRawModuleList.
-  return GetModuleAtSequence(0);
+  return GetModuleAtIndex(0);
 }
 
 
