@@ -1538,7 +1538,7 @@ FileManager.prototype = {
         var entry =
             this.getRootEntry_(this.rootsList_.selectionModel.selectedIndex);
 
-        this.unmountVolume_(entry.toURL());
+        this.unmountVolume_(entry);
         return;
 
       case 'format':
@@ -1964,7 +1964,7 @@ FileManager.prototype = {
       eject.className = 'root-eject';
       eject.addEventListener('click', function(event) {
         event.stopPropagation();
-        this.unmountVolume_(entry.toURL());
+        this.unmountVolume_(entry);
       }.bind(this));
       // Block other mouse handlers.
       eject.addEventListener('mouseup', function(e) { e.stopPropagation() });
@@ -1995,9 +1995,9 @@ FileManager.prototype = {
    * Unmounts device.
    * @param {string} url The url of removable storage to unmount.
    */
-  FileManager.prototype.unmountVolume_ = function(url) {
-    this.unmountRequests_.push(url);
-    chrome.fileBrowserPrivate.removeMount(url);
+  FileManager.prototype.unmountVolume_ = function(entry) {
+    this.unmountRequests_.push(entry.fullPath);
+    chrome.fileBrowserPrivate.removeMount(entry.toURL());
   };
 
   FileManager.prototype.styleGDataItem_ = function(entry, element) {
@@ -2734,7 +2734,7 @@ FileManager.prototype = {
 
       if (event.eventType == 'unmount') {
         // Unmount request finished - remove it.
-        var index = self.unmountRequests_.indexOf(event.sourceUrl);
+        var index = self.unmountRequests_.indexOf(event.mountPath);
         if (index != -1) {
           self.unmountRequests_.splice(index, 1);
           if (event.status != 'success')
