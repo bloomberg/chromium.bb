@@ -579,6 +579,10 @@ class BuildBoardStage(bs.BuilderStage):
 
       latest_toolchain = self._build_config['latest_toolchain']
 
+      if latest_toolchain:
+        env['USE'] = 'git_gcc'
+        env['GCC_GITHASH'] = 'gcc.gnu.org/branches/google/main'
+
       commands.SetupBoard(self._build_root,
                           board=board_to_build,
                           usepkg=self._build_config['usepkg_setup_board'],
