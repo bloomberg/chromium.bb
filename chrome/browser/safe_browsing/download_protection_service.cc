@@ -15,6 +15,7 @@
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "base/time.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/signature_util.h"
@@ -355,11 +356,12 @@ class DownloadProtectionService::CheckClientDownloadRequest
 
     // Compute features from the file contents. Note that we record histograms
     // based on the result, so this runs regardless of whether the pingbacks
-    // are enabled.  Since we do blocking I/O, this happens on the file thread.
-    BrowserThread::PostTask(
-        BrowserThread::FILE,
+    // are enabled.  Since we do blocking I/O, offload this to a worker thread.
+    // The task does not need to block shutdown.
+    BrowserThread::GetBlockingPool()->PostWorkerTaskWithShutdownBehavior(
         FROM_HERE,
-        base::Bind(&CheckClientDownloadRequest::ExtractFileFeatures, this));
+        base::Bind(&CheckClientDownloadRequest::ExtractFileFeatures, this),
+        base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
 
     // If the request takes too long we cancel it.
     BrowserThread::PostDelayedTask(
@@ -473,7 +475,6 @@ class DownloadProtectionService::CheckClientDownloadRequest
   }
 
   void ExtractFileFeatures() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
     signature_util_->CheckSignature(info_.local_file, &signature_info_);
     bool is_signed = (signature_info_.certificate_chain_size() > 0);
     if (is_signed) {

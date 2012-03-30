@@ -17,6 +17,7 @@
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/string_number_conversions.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/signature_util.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
@@ -114,8 +115,6 @@ class DownloadProtectionServiceTest : public testing::Test {
     // to test that we're on the correct thread work.
     io_thread_.reset(new content::TestBrowserThread(BrowserThread::IO));
     ASSERT_TRUE(io_thread_->Start());
-    file_thread_.reset(new content::TestBrowserThread(BrowserThread::FILE));
-    ASSERT_TRUE(file_thread_->Start());
     sb_service_ = new StrictMock<MockSafeBrowsingService>();
     sb_service_->Initialize();
     signature_util_ = new StrictMock<MockSignatureUtil>();
@@ -141,7 +140,6 @@ class DownloadProtectionServiceTest : public testing::Test {
     FlushThreadMessageLoops();
     sb_service_ = NULL;
     io_thread_.reset();
-    file_thread_.reset();
     ui_thread_.reset();
   }
 
@@ -176,7 +174,7 @@ class DownloadProtectionServiceTest : public testing::Test {
 
   // Flushes any pending tasks in the message loops of all threads.
   void FlushThreadMessageLoops() {
-    FlushMessageLoop(BrowserThread::FILE);
+    BrowserThread::GetBlockingPool()->FlushForTesting();
     FlushMessageLoop(BrowserThread::IO);
     msg_loop_.RunAllPending();
   }
@@ -262,7 +260,6 @@ class DownloadProtectionServiceTest : public testing::Test {
   MessageLoop msg_loop_;
   scoped_ptr<DownloadProtectionService::DownloadCheckResult> result_;
   scoped_ptr<content::TestBrowserThread> io_thread_;
-  scoped_ptr<content::TestBrowserThread> file_thread_;
   scoped_ptr<content::TestBrowserThread> ui_thread_;
   FilePath testdata_path_;
 };
