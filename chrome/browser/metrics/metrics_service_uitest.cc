@@ -60,7 +60,7 @@ class MetricsServiceTest : public UITest {
 
 // Flakily fails on chromeos only.  http://crbug.com/120925
 #if defined(OS_CHROMEOS)
-#define MAYBE_CloseRenderersNormally DISABLED_CloseRenderersNormally
+#define MAYBE_CloseRenderersNormally FLAKY_CloseRenderersNormally
 #else
 #define MAYBE_CloseRenderersNormally CloseRenderersNormally
 #endif
