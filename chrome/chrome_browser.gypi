@@ -1315,7 +1315,6 @@
         'browser/intents/cws_intents_registry_factory.h',
         'browser/intents/default_web_intent_service.cc',
         'browser/intents/default_web_intent_service.h',
-        'browser/intents/internal/api_key_internal.cc',
         'browser/intents/register_intent_handler_helper.cc',
         'browser/intents/register_intent_handler_infobar_delegate.cc',
         'browser/intents/register_intent_handler_infobar_delegate.h',
@@ -1832,7 +1831,6 @@
         'browser/protector/default_search_provider_change.cc',
         'browser/protector/histograms.cc',
         'browser/protector/histograms.h',
-        'browser/protector/internal/keys_internal.cc',
         'browser/protector/keys.cc',
         'browser/protector/keys.h',
         'browser/protector/prefs_backup_invalid_change.cc',
@@ -4051,14 +4049,13 @@
           ],
         }],
         ['branding=="Chrome"', {
+          'sources': [
+            'browser/intents/internal/api_key_internal.cc',
+            'browser/protector/internal/keys_internal.cc',
+          ],
           'sources!': [
             'browser/intents/api_key.cc',
             'browser/protector/keys.cc',
-          ],
-        }, {  # branding!="Chrome"
-          'sources!': [
-            'browser/intents/internal/api_key_internal.cc',
-            'browser/protector/internal/keys_internal.cc',
           ],
         }],
         ['debug_devtools==1', {
