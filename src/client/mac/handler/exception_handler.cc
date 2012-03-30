@@ -744,7 +744,7 @@ bool ExceptionHandler::Teardown() {
   }
 
   handler_thread_ = NULL;
-  handler_port_ = NULL;
+  handler_port_ = MACH_PORT_NULL;
   pthread_mutex_destroy(&minidump_write_mutex_);
 
   return result == KERN_SUCCESS;

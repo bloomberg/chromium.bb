@@ -394,7 +394,7 @@ uint64_t DynamicImages::GetDyldAllImageInfosPointer() {
     mach_msg_type_number_t count = TASK_DYLD_INFO_COUNT;
     if (task_info(task_, TASK_DYLD_INFO, (task_info_t)&task_dyld_info,
                   &count) != KERN_SUCCESS) {
-      return NULL;
+      return 0;
     }
 
     return (uint64_t)task_dyld_info.all_image_info_addr;
