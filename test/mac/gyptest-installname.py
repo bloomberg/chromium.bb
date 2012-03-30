@@ -54,6 +54,14 @@ if sys.platform == 'darwin':
       'Versions/A/My Other Framework'):
     test.fail_test()
 
+  if (GetInstallname('libexplicit_installname_with_base.dylib') !=
+      '/usr/local/lib/libexplicit_installname_with_base.dylib'):
+    test.fail_test()
+
+  if (GetInstallname('libexplicit_installname_with_explicit_base.dylib') !=
+      '@executable_path/../libexplicit_installname_with_explicit_base.dylib'):
+    test.fail_test()
+
   if (GetInstallname('libboth_base_and_installname.dylib') !=
       'Still trapped in a dynamiclib factory'):
     test.fail_test()

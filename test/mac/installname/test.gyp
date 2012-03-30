@@ -54,6 +54,23 @@
       },
     },
     {
+      'target_name': 'explicit_installname_with_base',
+      'type': 'shared_library',
+      'sources': [ 'file.c' ],
+      'xcode_settings': {
+        'LD_DYLIB_INSTALL_NAME': '$(DYLIB_INSTALL_NAME_BASE:standardizepath)/$(EXECUTABLE_PATH)',
+      },
+    },
+    {
+      'target_name': 'explicit_installname_with_explicit_base',
+      'type': 'shared_library',
+      'sources': [ 'file.c' ],
+      'xcode_settings': {
+        'DYLIB_INSTALL_NAME_BASE': '@executable_path/..',
+        'LD_DYLIB_INSTALL_NAME': '$(DYLIB_INSTALL_NAME_BASE:standardizepath)/$(EXECUTABLE_PATH)',
+      },
+    },
+    {
       'target_name': 'executable',
       'type': 'executable',
       'sources': [ 'main.c' ],
