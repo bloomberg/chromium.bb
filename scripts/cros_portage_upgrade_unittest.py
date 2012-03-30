@@ -2017,6 +2017,7 @@ class RunBoardTest(CpuTestBase):
     root = os.path.dirname(mocked_upgrader._upstream_repo).AndReturn('root')
     name = os.path.basename(mocked_upgrader._upstream_repo).AndReturn('name')
     os.path.basename('origin/gentoo').AndReturn('gentoo')
+    os.path.exists(mocked_upgrader._upstream_git).AndReturn(False)
     mocked_upgrader._RunGit(root,
                             ['clone', '--branch', 'gentoo',
                              cpu.Upgrader.PORTAGE_GIT_URL, name])

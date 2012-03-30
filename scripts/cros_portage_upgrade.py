@@ -132,6 +132,7 @@ class Upgrader(object):
                '_upgrade_cnt',  # Num pkg upgrades in this run (all boards)
                '_upgrade_deep', # Boolean indicating upgrade_deep requested
                '_upstream',     # User-provided path to upstream repo
+               '_upstream_git', # Path to local upstream portage repo
                '_upstream_repo',# Path to upstream portage repo
                '_unstable_ok',  # Boolean to allow unstable upstream also
                '_verbose',      # Boolean
@@ -151,6 +152,8 @@ class Upgrader(object):
     self._upstream_repo = options.upstream
     if not self._upstream_repo:
       self._upstream_repo = self.UPSTREAM_TMP_REPO
+    self._upstream_git = os.path.join(options.srcroot, 'third_party',
+                                      self.UPSTREAM_OVERLAY_NAME, '.git')
     self._cros_overlay = os.path.join(options.srcroot, 'third_party',
                                       self.CROS_OVERLAY_NAME)
 
@@ -1522,9 +1525,11 @@ class Upgrader(object):
                     self._upstream_repo)
         root = os.path.dirname(self._upstream_repo)
         name = os.path.basename(self._upstream_repo)
-        self._RunGit(root, ['clone',
-                            '--branch', os.path.basename(self.ORIGIN_GENTOO),
-                            self.PORTAGE_GIT_URL, name])
+        args = ['clone', '--branch', os.path.basename(self.ORIGIN_GENTOO)]
+        if os.path.exists(self._upstream_git):
+          args += ['--reference', self._upstream_git]
+        args += [self.PORTAGE_GIT_URL, name]
+        self._RunGit(root, args)
 
         # Create a README file to explain its presence.
         with open(self._upstream_repo + '-README', 'w') as f:
