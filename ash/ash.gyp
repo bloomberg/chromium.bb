@@ -64,6 +64,8 @@
         'app_list/app_list_view_delegate.h',
         'app_list/drop_shadow_label.cc',
         'app_list/drop_shadow_label.h',
+        'app_list/icon_cache.cc',
+        'app_list/icon_cache.h',
         'ash_switches.cc',
         'ash_switches.h',
         'caps_lock_delegate.h',

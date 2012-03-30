@@ -5,6 +5,7 @@
 #include "ash/app_list/app_list.h"
 
 #include "ash/app_list/app_list_view.h"
+#include "ash/app_list/icon_cache.h"
 #include "ash/shell_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
@@ -46,10 +47,12 @@ ui::Layer* GetLayer(views::Widget* widget) {
 // AppList, public:
 
 AppList::AppList() : is_visible_(false), view_(NULL) {
+  IconCache::CreateInstance();
 }
 
 AppList::~AppList() {
   ResetView();
+  IconCache::DeleteInstance();
 }
 
 void AppList::SetVisible(bool visible) {
@@ -80,6 +83,8 @@ void AppList::SetView(AppListView* view) {
   DCHECK(view_ == NULL);
 
   if (is_visible_) {
+    IconCache::GetInstance()->MarkAllEntryUnused();
+
     view_ = view;
     views::Widget* widget = view_->GetWidget();
     widget->AddObserver(this);
@@ -105,6 +110,8 @@ void AppList::ResetView() {
   Shell::GetInstance()->RemoveRootWindowEventFilter(this);
   widget->GetNativeView()->GetRootWindow()->RemoveRootWindowObserver(this);
   view_ = NULL;
+
+  IconCache::GetInstance()->PurgeAllUnused();
 }
 
 void AppList::ScheduleAnimation() {
