@@ -379,21 +379,6 @@ bool PathProvider(int key, FilePath* result) {
 #endif
       break;
 
-#if defined(OS_MACOSX)
-    case DIR_DEPRECATED_EXTERNAL_EXTENSIONS:
-      // TODO(skerner): Reading external extensions from a file inside the
-      // app budle causes several problems.  Once users have a chance to
-      // migrate, remove this path.  crbug/67203
-      if (!PathService::Get(base::DIR_EXE, &cur))
-        return false;
-
-      cur = cur.DirName();
-      cur = cur.Append(FILE_PATH_LITERAL("Extensions"));
-      create_dir = false;
-
-      break;
-#endif
-
     case chrome::DIR_DEFAULT_APPS:
 #if defined(OS_MACOSX)
       cur = base::mac::FrameworkBundlePath();

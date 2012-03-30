@@ -101,24 +101,6 @@ DictionaryValue* ExternalPrefExtensionLoader::ReadJsonPrefsFile() {
 
   JSONFileValueSerializer serializer(json_file);
   DictionaryValue* parsed_json_prefs = ExtractPrefs(json_file, &serializer);
-
-#if defined(OS_MACOSX)
-  if (base_path_key_ == chrome::DIR_DEPRECATED_EXTERNAL_EXTENSIONS &&
-      parsed_json_prefs->size() > 0) {
-    LOG(WARNING) << "Deprecated external extension source " << json_file.value()
-                 << " is used to install some CRX files.  This source will be "
-                 << "removed in version 19.  See http://code.google.com/chrome"
-                 << "/extensions/external_extensions.html#preferences for "
-                 << "documentation of other supported paths.";
-
-    for (DictionaryValue::key_iterator crx_id = parsed_json_prefs->begin_keys();
-         crx_id != parsed_json_prefs->end_keys(); ++crx_id) {
-      LOG(WARNING) << "External CRX install for ID " << *crx_id
-                   << " is from a deprecated source.";
-    }
-  }
-#endif  // defined(OS_MACOSX)
-
   return parsed_json_prefs;
 }
 
@@ -129,19 +111,6 @@ void ExternalPrefExtensionLoader::LoadOnFileThread() {
   if (!prefs_.get())
     prefs_.reset(new DictionaryValue());
 
-  // We want to deprecate the external extensions file inside the app
-  // bundle on mac os.  Use a histogram to see how many extensions
-  // are installed using the deprecated path, and how many are installed
-  // from the supported path.  We can use this data to measure the
-  // effectiveness of asking developers to use the new path, or any
-  // automatic migration methods we implement.
-#if defined(OS_MACOSX)
-  // The deprecated path only exists on mac for now.
-  if (base_path_key_ == chrome::DIR_DEPRECATED_EXTERNAL_EXTENSIONS) {
-    UMA_HISTOGRAM_COUNTS_100("Extensions.DepricatedExternalJsonCount",
-                             prefs_->size());
-  }
-#endif  // defined(OS_MACOSX)
   if (base_path_key_ == chrome::DIR_EXTERNAL_EXTENSIONS) {
     UMA_HISTOGRAM_COUNTS_100("Extensions.ExternalJsonCount",
                              prefs_->size());

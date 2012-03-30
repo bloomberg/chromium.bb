@@ -317,21 +317,6 @@ void ExternalExtensionProviderImpl::CreateExternalProviders(
               Extension::EXTERNAL_PREF_DOWNLOAD,
               Extension::NO_FLAGS)));
 
-#if defined(OS_MACOSX)
-  // Support old path to external extensions file as we migrate to the
-  // new one.  See crbug/67203.
-  provider_list->push_back(
-      linked_ptr<ExternalExtensionProviderInterface>(
-          new ExternalExtensionProviderImpl(
-              service,
-              new ExternalPrefExtensionLoader(
-                  chrome::DIR_DEPRECATED_EXTERNAL_EXTENSIONS,
-                  ExternalPrefExtensionLoader::NONE),
-              Extension::EXTERNAL_PREF,
-              Extension::EXTERNAL_PREF_DOWNLOAD,
-              Extension::NO_FLAGS)));
-#endif
-
 #if defined(OS_CHROMEOS) || defined (OS_MACOSX)
   // Define a per-user source of external extensions.
   // On Chrome OS, this serves as a source for OEM customization.

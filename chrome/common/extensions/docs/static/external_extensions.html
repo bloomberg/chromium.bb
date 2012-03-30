@@ -106,8 +106,9 @@ or <code>/home/share/extension.crx</code>.)
         For all users: <code>/Library/Application Support/Google/Chrome/External Extensions/</code>
     <p>The external extensions file for all users is read only if every directory in the path is owned by the user <code>root</code>, has the group <code>admin</code> or <code>wheel</code>, and is not world writable.  The path must also be free of symbolic links.  These restrictions prevent an unprivileged user from causing extensions to be installed for all users.  See <a href="#troubleshooting">troubleshooting</a> for details.</p>
     <p class="note">
-    <b>Note:</b> The above path for all users was added in Chrome 16.  Prior versions used a different path, which is now deprecated:
-    <code>/Applications/Google Chrome.app/Contents/Extensions/</code> .</p>
+    <b>Note:</b> The above path for all users was added in Chrome 16.  Prior versions used a different path:<br/>
+     <code>/Applications/Google Chrome.app/Contents/Extensions/</code>
+     This path was deprecated in version 17.  Support was removed in version 20.  Use one of the paths above instead.</p>
   </dd>
 
   <dt> Linux: </dt>
