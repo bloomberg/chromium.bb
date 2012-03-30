@@ -9,6 +9,7 @@
 #define GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_UTILS_H_
 
 #include <string>
+#include <vector>
 
 #include "../common/types.h"
 #include "gpu/command_buffer/common/gles2_utils_export.h"
@@ -145,6 +146,25 @@ class GLES2_UTILS_EXPORT GLES2Util {
 
   int num_compressed_texture_formats_;
   int num_shader_binary_formats_;
+};
+
+class GLES2_UTILS_EXPORT ContextCreationAttribParser {
+ public:
+  ContextCreationAttribParser();
+  bool Parse(const std::vector<int32>& attribs);
+
+  // -1 if invalid or unspecified.
+  int32 alpha_size_;
+  int32 blue_size_;
+  int32 green_size_;
+  int32 red_size_;
+  int32 depth_size_;
+  int32 stencil_size_;
+  int32 samples_;
+  int32 sample_buffers_;
+  bool buffer_preserved_;
+  bool share_resources_;
+  bool bind_generates_resource_;
 };
 
 }  // namespace gles2

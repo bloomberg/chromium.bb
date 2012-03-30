@@ -330,7 +330,7 @@ bool ContentGLContext::Initialize(bool onscreen,
   g_gles2_initializer.Get();
 
   bool share_resources = true;
-  bool bind_generates_resources = true;
+  bool bind_generates_resources = false;
   std::vector<int32> attribs;
   while (attrib_list) {
     int32 attrib = *attrib_list++;
@@ -354,16 +354,20 @@ bool ContentGLContext::Initialize(bool onscreen,
         bind_generates_resources = !!(*attrib_list++);
         break;
       case NONE:
-        attribs.push_back(attrib);
         attrib_list = NULL;
         break;
       default:
         last_error_ = BAD_ATTRIBUTE;
-        attribs.push_back(NONE);
         attrib_list = NULL;
         break;
     }
   }
+
+  attribs.push_back(SHARE_RESOURCES);
+  attribs.push_back(share_resources);
+  attribs.push_back(BIND_GENERATES_RESOURCES);
+  attribs.push_back(bind_generates_resources);
+  attribs.push_back(NONE);
 
   // Create a proxy to a command buffer in the GPU process.
   if (onscreen) {

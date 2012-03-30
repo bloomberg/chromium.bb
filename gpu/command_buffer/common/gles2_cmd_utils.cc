@@ -626,6 +626,97 @@ std::string GLES2Util::GetQualifiedEnumString(
   return GetStringEnum(value);
 }
 
+ContextCreationAttribParser::ContextCreationAttribParser()
+  : alpha_size_(-1),
+    blue_size_(-1),
+    green_size_(-1),
+    red_size_(-1),
+    depth_size_(-1),
+    stencil_size_(-1),
+    samples_(-1),
+    sample_buffers_(-1),
+    buffer_preserved_(true),
+    share_resources_(false),
+    bind_generates_resource_(true) {
+}
+
+bool ContextCreationAttribParser::Parse(const std::vector<int32>& attribs) {
+  // From <EGL/egl.h>.
+  const int32 EGL_ALPHA_SIZE = 0x3021;
+  const int32 EGL_BLUE_SIZE = 0x3022;
+  const int32 EGL_GREEN_SIZE = 0x3023;
+  const int32 EGL_RED_SIZE = 0x3024;
+  const int32 EGL_DEPTH_SIZE = 0x3025;
+  const int32 EGL_STENCIL_SIZE = 0x3026;
+  const int32 EGL_SAMPLES = 0x3031;
+  const int32 EGL_SAMPLE_BUFFERS = 0x3032;
+  const int32 EGL_NONE = 0x3038;
+  const int32 EGL_SWAP_BEHAVIOR = 0x3093;
+  const int32 EGL_BUFFER_PRESERVED = 0x3094;
+
+  // Chromium only.
+  const int32 SHARE_RESOURCES           = 0x10000;
+  const int32 BIND_GENERATES_RESOURCES  = 0x10001;
+
+  for (size_t i = 0; i < attribs.size(); i += 2) {
+    const int32 attrib = attribs[i];
+    if (i + 1 >= attribs.size()) {
+      if (attrib == EGL_NONE) {
+        return true;
+      }
+
+      GPU_DLOG(ERROR) << "Missing value after context creation attribute: "
+                      << attrib;
+      return false;
+    }
+
+    const int32 value = attribs[i+1];
+    switch (attrib) {
+      case EGL_ALPHA_SIZE:
+        alpha_size_ = value;
+        break;
+      case EGL_BLUE_SIZE:
+        blue_size_ = value;
+        break;
+      case EGL_GREEN_SIZE:
+        green_size_ = value;
+        break;
+      case EGL_RED_SIZE:
+        red_size_ = value;
+        break;
+      case EGL_DEPTH_SIZE:
+        depth_size_ = value;
+        break;
+      case EGL_STENCIL_SIZE:
+        stencil_size_ = value;
+        break;
+      case EGL_SAMPLES:
+        samples_ = value;
+        break;
+      case EGL_SAMPLE_BUFFERS:
+        sample_buffers_ = value;
+        break;
+      case EGL_SWAP_BEHAVIOR:
+        buffer_preserved_ = value == EGL_BUFFER_PRESERVED;
+        break;
+      case SHARE_RESOURCES:
+        share_resources_ = value != 0;
+        break;
+      case BIND_GENERATES_RESOURCES:
+        bind_generates_resource_ = value != 0;
+        break;
+      case EGL_NONE:
+        // Terminate list, even if more attributes.
+        return true;
+      default:
+        GPU_DLOG(ERROR) << "Invalid context creation attribute: " << attrib;
+        return false;
+    }
+  }
+
+  return true;
+}
+
 #include "../common/gles2_cmd_utils_implementation_autogen.h"
 
 }  // namespace gles2
