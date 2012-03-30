@@ -27,6 +27,7 @@ using content::WebContents;
 #define MAYBE_WebNavigationFailures DISABLED_WebNavigationFailures
 #define MAYBE_WebNavigationForwardBack DISABLED_WebNavigationForwardBack
 #define MAYBE_WebNavigationClientRedirect DISABLED_WebNavigationClientRedirect
+#define MAYBE_WebNavigationGetFrame DISABLED_WebNavigationGetFrame
 #define MAYBE_WebNavigationSimpleLoad DISABLED_WebNavigationSimpleLoad
 #define MAYBE_WebNavigationReferenceFragment \
     DISABLED_WebNavigationReferenceFragment
@@ -36,6 +37,7 @@ using content::WebContents;
 #define MAYBE_WebNavigationFailures WebNavigationFailures
 #define MAYBE_WebNavigationForwardBack WebNavigationForwardBack
 #define MAYBE_WebNavigationClientRedirect WebNavigationClientRedirect
+#define MAYBE_WebNavigationGetFrame WebNavigationGetFrame
 #define MAYBE_WebNavigationSimpleLoad WebNavigationSimpleLoad
 #define MAYBE_WebNavigationReferenceFragment WebNavigationReferenceFragment
 #define MAYBE_WebNavigationOpenTab WebNavigationOpenTab
@@ -72,7 +74,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigation) {
       RunExtensionSubtest("webnavigation", "test_api.html")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationGetFrame) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_WebNavigationGetFrame) {
   FrameNavigationState::set_allow_extension_scheme(true);
 
   CommandLine::ForCurrentProcess()->AppendSwitch(
