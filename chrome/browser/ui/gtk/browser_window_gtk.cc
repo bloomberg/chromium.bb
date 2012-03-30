@@ -62,6 +62,7 @@
 #include "chrome/browser/ui/gtk/infobars/infobar_gtk.h"
 #include "chrome/browser/ui/gtk/location_bar_view_gtk.h"
 #include "chrome/browser/ui/gtk/nine_box.h"
+#include "chrome/browser/ui/gtk/password_generation_bubble_gtk.h"
 #include "chrome/browser/ui/gtk/reload_button_gtk.h"
 #include "chrome/browser/ui/gtk/status_bubble_gtk.h"
 #include "chrome/browser/ui/gtk/tab_contents_container_gtk.h"
@@ -1273,6 +1274,18 @@ void BrowserWindowGtk::ShowAvatarBubble(WebContents* web_contents,
 void BrowserWindowGtk::ShowAvatarBubbleFromAvatarButton() {
   if (titlebar_->avatar_button())
     titlebar_->avatar_button()->ShowAvatarBubble();
+}
+
+void BrowserWindowGtk::ShowPasswordGenerationBubble(const gfx::Rect& rect) {
+  WebContents* web_contents = browser_->GetSelectedWebContents();
+  if (!web_contents || !web_contents->GetContentNativeView()) {
+    return;
+  }
+
+  new PasswordGenerationBubbleGtk(rect,
+                                  web_contents->GetContentNativeView(),
+                                  browser()->profile(),
+                                  web_contents->GetRenderViewHost());
 }
 
 void BrowserWindowGtk::ConfirmBrowserCloseWithPendingDownloads() {

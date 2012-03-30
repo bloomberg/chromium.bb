@@ -3022,6 +3022,8 @@
         'browser/ui/gtk/overflow_button.cc',
         'browser/ui/gtk/overflow_button.h',
         'browser/ui/gtk/page_info_bubble_gtk.cc',
+        'browser/ui/gtk/password_generation_bubble_gtk.cc',
+        'browser/ui/gtk/password_generation_bubble_gtk.h',
         'browser/ui/gtk/process_singleton_dialog.cc',
         'browser/ui/gtk/process_singleton_dialog.h',
         'browser/ui/gtk/reload_button_gtk.cc',

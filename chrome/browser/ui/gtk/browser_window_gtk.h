@@ -178,6 +178,7 @@ class BrowserWindowGtk : public BrowserWindow,
   virtual void ShowAvatarBubble(content::WebContents* web_contents,
                                 const gfx::Rect& rect) OVERRIDE;
   virtual void ShowAvatarBubbleFromAvatarButton() OVERRIDE;
+  virtual void ShowPasswordGenerationBubble(const gfx::Rect& rect) OVERRIDE;
 
   // Overridden from NotificationObserver:
   virtual void Observe(int type,
