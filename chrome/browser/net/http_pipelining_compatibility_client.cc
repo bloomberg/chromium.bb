@@ -281,8 +281,15 @@ HttpPipeliningCompatibilityClient::Status ProcessStatsResponse(
 
 namespace {
 
-void DeleteClient(HttpPipeliningCompatibilityClient* client, int rv) {
+void DeleteClient(HttpPipeliningCompatibilityClient* client) {
   delete client;
+}
+
+void DelayedDeleteClient(HttpPipeliningCompatibilityClient* client, int rv) {
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(&DeleteClient, client));
 }
 
 void CollectPipeliningCapabilityStatsOnIOThread(
@@ -350,7 +357,7 @@ void CollectPipeliningCapabilityStatsOnIOThread(
   HttpPipeliningCompatibilityClient* client =
       new HttpPipeliningCompatibilityClient;
   client->Start(pipeline_test_server, requests, true,
-                base::Bind(&DeleteClient, client),
+                base::Bind(&DelayedDeleteClient, client),
                 url_request_context_getter->GetURLRequestContext());
 }
 
