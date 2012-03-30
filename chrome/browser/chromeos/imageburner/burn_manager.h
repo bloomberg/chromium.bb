@@ -160,8 +160,9 @@ class BurnManager : content::URLFetcherDelegate {
   class Delegate : public base::SupportsWeakPtr<Delegate> {
    public:
     virtual void OnImageDirCreated(bool success) = 0;
-    virtual void OnConfigFileFetched(const ConfigFile& config_file,
-                                     bool success) = 0;
+    virtual void OnConfigFileFetched(bool success,
+                                     const std::string& image_file_name,
+                                     const GURL& image_download_url) = 0;
   };
 
   class Observer {
@@ -237,16 +238,16 @@ class BurnManager : content::URLFetcherDelegate {
   void OnImageDirCreated(Delegate* delegate, bool success);
   void ConfigFileFetched(bool fetched, const std::string& content);
 
-  bool config_file_fetched() const { return !config_file_.empty(); }
-
   base::WeakPtrFactory<BurnManager> weak_ptr_factory_;
 
   FilePath image_dir_;
   FilePath target_device_path_;
   FilePath target_file_path_;
 
-  ConfigFile config_file_;
   GURL config_file_url_;
+  bool config_file_fetched_;
+  std::string image_file_name_;
+  GURL image_download_url_;
   std::vector<base::WeakPtr<Delegate> > downloaders_;
 
   scoped_ptr<StateMachine> state_machine_;
