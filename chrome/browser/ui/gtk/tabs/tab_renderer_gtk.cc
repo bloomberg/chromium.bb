@@ -1018,9 +1018,6 @@ CustomDrawButton* TabRendererGtk::MakeCloseButton() {
   CustomDrawButton* button = new CustomDrawButton(IDR_TAB_CLOSE,
       IDR_TAB_CLOSE_P, IDR_TAB_CLOSE_H, IDR_TAB_CLOSE);
 
-  gtk_widget_set_tooltip_text(button->widget(),
-      l10n_util::GetStringUTF8(IDS_TOOLTIP_CLOSE_TAB).c_str());
-
   g_signal_connect(button->widget(), "clicked",
                    G_CALLBACK(OnCloseButtonClickedThunk), this);
   g_signal_connect(button->widget(), "button-release-event",

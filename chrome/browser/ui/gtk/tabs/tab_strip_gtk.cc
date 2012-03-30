@@ -31,6 +31,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
+#include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
 #include "grit/ui_resources.h"
@@ -39,6 +40,7 @@
 #include "ui/base/dragdrop/gtk_dnd_util.h"
 #include "ui/base/gtk/gtk_compat.h"
 #include "ui/base/gtk/gtk_screen_util.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/gtk_util.h"
 #include "ui/gfx/image/image.h"
@@ -2240,6 +2242,9 @@ void TabStripGtk::PaintOnlyFavicons(GdkEventExpose* event,
 CustomDrawButton* TabStripGtk::MakeNewTabButton() {
   CustomDrawButton* button = new CustomDrawButton(IDR_NEWTAB_BUTTON,
       IDR_NEWTAB_BUTTON_P, IDR_NEWTAB_BUTTON_H, 0);
+
+  gtk_widget_set_tooltip_text(button->widget(),
+      l10n_util::GetStringUTF8(IDS_TOOLTIP_NEW_TAB).c_str());
 
   // Let the middle mouse button initiate clicks as well.
   gtk_util::SetButtonTriggersNavigation(button->widget());

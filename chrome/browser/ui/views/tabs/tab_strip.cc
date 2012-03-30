@@ -1105,6 +1105,8 @@ void TabStrip::Init() {
 
 void TabStrip::InitTabStripButtons() {
   newtab_button_ = new NewTabButton(this, this);
+  newtab_button_->SetTooltipText(
+      l10n_util::GetStringUTF16(IDS_TOOLTIP_NEW_TAB));
   newtab_button_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_ACCNAME_NEWTAB));
   AddChildView(newtab_button_);

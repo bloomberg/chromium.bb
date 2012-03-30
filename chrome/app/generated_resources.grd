@@ -5991,6 +5991,9 @@ Because search results are requested even while you're typing your query, your d
       <message name="IDS_TOOLTIP_LOCATION_ICON" desc="The tooltip for location icon in the omnibox">
         View site information
       </message>
+      <message name="IDS_TOOLTIP_NEW_TAB" desc="The tooltip for the new tab button">
+        New tab
+      </message>
 
       <!--Accessible name/action strings-->
       <message name="IDS_ACCESSIBLE_INCOGNITO_WINDOW_TITLE_FORMAT" desc="The format for the accessible title of an incognito window">
