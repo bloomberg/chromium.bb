@@ -54,6 +54,9 @@ class BaseDownloadItemModel {
   // Is this considered a dangerous download?
   virtual bool IsDangerous() = 0;
 
+  // Get the description of the given interrupt |reason|.
+  static string16 InterruptReasonMessage(int reason);
+
   content::DownloadItem* download() { return download_; }
 
  protected:

@@ -224,3 +224,64 @@ bool DownloadItemModel::IsMalicious() {
 bool DownloadItemModel::IsDangerous() {
   return download_->GetSafetyState() == DownloadItem::DANGEROUS;
 }
+
+// static
+string16 BaseDownloadItemModel::InterruptReasonMessage(int reason) {
+  int string_id = 0;
+  string16 status_text;
+
+  switch (reason) {
+    case content::DOWNLOAD_INTERRUPT_REASON_NONE:
+      break;
+    case content::DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED:
+      string_id = IDS_DOWNLOAD_INTERRUPTED_DESCRIPTION_ACCESS_DENIED;
+      break;
+    case content::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE:
+      string_id = IDS_DOWNLOAD_INTERRUPTED_DESCRIPTION_DISK_FULL;
+      break;
+    case content::DOWNLOAD_INTERRUPT_REASON_FILE_NAME_TOO_LONG:
+      string_id = IDS_DOWNLOAD_INTERRUPTED_DESCRIPTION_PATH_TOO_LONG;
+      break;
+    case content::DOWNLOAD_INTERRUPT_REASON_FILE_TOO_LARGE:
+      string_id = IDS_DOWNLOAD_INTERRUPTED_DESCRIPTION_FILE_TOO_LARGE;
+      break;
+    case content::DOWNLOAD_INTERRUPT_REASON_FILE_VIRUS_INFECTED:
+      string_id = IDS_DOWNLOAD_INTERRUPTED_DESCRIPTION_VIRUS;
+      break;
+    case content::DOWNLOAD_INTERRUPT_REASON_FILE_TRANSIENT_ERROR:
+      string_id = IDS_DOWNLOAD_INTERRUPTED_DESCRIPTION_TEMPORARY_PROBLEM;
+      break;
+    case content::DOWNLOAD_INTERRUPT_REASON_NETWORK_TIMEOUT:
+      string_id = IDS_DOWNLOAD_INTERRUPTED_DESCRIPTION_NETWORK_TIMEOUT;
+      break;
+    case content::DOWNLOAD_INTERRUPT_REASON_NETWORK_DISCONNECTED:
+      string_id = IDS_DOWNLOAD_INTERRUPTED_DESCRIPTION_NETWORK_DISCONNECTED;
+      break;
+    case content::DOWNLOAD_INTERRUPT_REASON_NETWORK_SERVER_DOWN:
+      string_id = IDS_DOWNLOAD_INTERRUPTED_DESCRIPTION_SERVER_DOWN;
+      break;
+    case content::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED:
+      string_id = IDS_DOWNLOAD_INTERRUPTED_DESCRIPTION_NETWORK_ERROR;
+      break;
+    case content::DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT:
+      string_id = IDS_DOWNLOAD_INTERRUPTED_DESCRIPTION_NO_FILE;
+      break;
+    case content::DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED:
+      string_id = IDS_DOWNLOAD_INTERRUPTED_DESCRIPTION_SERVER_PROBLEM;
+      break;
+    case content::DOWNLOAD_INTERRUPT_REASON_USER_SHUTDOWN:
+    case content::DOWNLOAD_INTERRUPT_REASON_CRASH:
+      string_id = IDS_DOWNLOAD_INTERRUPTED_DESCRIPTION_SHUTDOWN;
+      break;
+    case content::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED:
+      string_id = IDS_DOWNLOAD_STATUS_CANCELED;
+      break;
+    default:
+      string_id = IDS_DOWNLOAD_INTERRUPTED_STATUS;
+      break;
+  }
+
+  status_text = l10n_util::GetStringUTF16(string_id);
+
+  return status_text;
+}

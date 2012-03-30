@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -158,7 +158,7 @@ class DownloadItemView : public views::ButtonListener,
   void SetState(State body_state, State drop_down_state);
 
   // Whether we are in the dangerous mode.
-  bool IsShowingWarningDialog() {
+  bool IsShowingWarningDialog() const {
     return mode_ == DANGEROUS_MODE || mode_ == MALICIOUS_MODE;
   }
 
@@ -222,7 +222,7 @@ class DownloadItemView : public views::ButtonListener,
   // The font used to print the file name and status.
   gfx::Font font_;
 
-  // The tooltip.
+  // The tooltip.  Only displayed when not showing a warning dialog.
   string16 tooltip_text_;
 
   // The current state (normal, hot or pushed) of the body and drop-down.

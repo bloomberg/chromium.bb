@@ -13,6 +13,7 @@
 #include "base/i18n/break_iterator.h"
 #include "base/i18n/rtl.h"
 #include "base/metrics/histogram.h"
+#include "base/stringprintf.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
@@ -182,6 +183,8 @@ DownloadItemView::DownloadItemView(DownloadItem* download,
   malicious_mode_body_image_set_ = normal_body_image_set;
 
   LoadIcon();
+
+  // Initial tooltip value.
   tooltip_text_ = download_->GetFileNameToReportUser().LossyDisplayName();
 
   font_ = ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::BaseFont);
@@ -251,6 +254,20 @@ void DownloadItemView::OnExtractIconComplete(IconManager::Handle handle,
 void DownloadItemView::OnDownloadUpdated(DownloadItem* download) {
   DCHECK(download == download_);
 
+  string16 old_tip = tooltip_text_;
+  content::DownloadInterruptReason reason = download_->GetLastReason();
+
+  if ((download_->GetState() == DownloadItem::INTERRUPTED) &&
+      (reason != content::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED)) {
+    // Use two lines: The file name, and the message.
+    tooltip_text_ = download_->GetFileNameToReportUser().LossyDisplayName();
+    tooltip_text_ += ASCIIToUTF16("\n");
+    // The message is localized.
+    tooltip_text_ += DownloadItemModel::InterruptReasonMessage(reason);
+  } else {
+    tooltip_text_ = download_->GetFileNameToReportUser().LossyDisplayName();
+  }
+
   if (IsShowingWarningDialog() && !model_->IsDangerous()) {
     // We have been approved.
     ClearWarningDialog();
@@ -301,6 +318,10 @@ void DownloadItemView::OnDownloadUpdated(DownloadItem* download) {
     }
     status_text_ = status_text;
   }
+
+  if (old_tip != tooltip_text_)
+    TooltipTextChanged();
+
   UpdateAccessibleName();
 
   // We use the parent's (DownloadShelfView's) SchedulePaint, since there
@@ -517,10 +538,13 @@ bool DownloadItemView::OnKeyPressed(const views::KeyEvent& event) {
 
 bool DownloadItemView::GetTooltipText(const gfx::Point& p,
                                       string16* tooltip) const {
-  if (tooltip_text_.empty())
+  if (IsShowingWarningDialog()) {
+    tooltip->clear();
     return false;
+  }
 
   tooltip->assign(tooltip_text_);
+
   return true;
 }
 
@@ -988,11 +1012,12 @@ void DownloadItemView::ClearWarningDialog() {
 
   // We need to load the icon now that the download_ has the real path.
   LoadIcon();
-  tooltip_text_ = download_->GetFileNameToReportUser().LossyDisplayName();
 
   // Force the shelf to layout again as our size has changed.
   parent_->Layout();
   parent_->SchedulePaint();
+
+  TooltipTextChanged();
 }
 
 void DownloadItemView::ShowWarningDialog() {
@@ -1001,7 +1026,6 @@ void DownloadItemView::ShowWarningDialog() {
 
   body_state_ = NORMAL;
   drop_down_state_ = NORMAL;
-  tooltip_text_.clear();
   if (mode_ == DANGEROUS_MODE) {
     save_button_ = new views::NativeTextButton(
         this, model_->GetWarningConfirmButtonText());
@@ -1030,6 +1054,7 @@ void DownloadItemView::ShowWarningDialog() {
   AddChildView(dangerous_download_label_);
   SizeLabelToMinWidth();
   UpdateDropDownButtonPosition();
+  TooltipTextChanged();
 }
 
 gfx::Size DownloadItemView::GetButtonSize() {
