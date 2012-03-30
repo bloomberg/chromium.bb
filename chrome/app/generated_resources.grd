@@ -4489,9 +4489,16 @@ Update checks have repeatedly failed for the extension "<ph name="EXTENSION_NAME
       <message name="IDS_EXTENSIONS_VISIT_WEBSITE" desc="The link for visiting the extension's gallery page.">
         View in Web Store
       </message>
-      <message name="IDS_EXTENSIONS_RELOAD" desc="The link for reloading extensions.">
-        Reload
-      </message>
+      <if expr="is_macosx">
+        <message name="IDS_EXTENSIONS_RELOAD" desc="The link for reloading extensions.">
+          Reload (⌘R)
+        </message>
+      </if>
+      <if expr="not is_macosx">
+        <message name="IDS_EXTENSIONS_RELOAD" desc="The link for reloading extensions.">
+          Reload (Ctrl+R)
+        </message>
+      </if>
       <message name="IDS_EXTENSIONS_OPTIONS_LINK" desc="The button text for the options button.">
         Options
       </message>

@@ -30,6 +30,7 @@
 #include "chrome/common/chrome_view_type.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_icon_set.h"
+#include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/notification_service.h"
@@ -277,6 +278,12 @@ void ExtensionSettingsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_UNINSTALL));
 }
 
+void ExtensionSettingsHandler::NavigateToPendingEntry(const GURL& url,
+    content::NavigationController::ReloadType reload_type) {
+  if (reload_type != content::NavigationController::NO_RELOAD)
+    ReloadUnpackedExtensions();
+}
+
 void ExtensionSettingsHandler::RegisterMessages() {
   extension_service_ = Profile::FromWebUI(web_ui())->GetOriginalProfile()->
       GetExtensionService();
@@ -411,6 +418,21 @@ void ExtensionSettingsHandler::ExtensionUninstallCanceled() {
   extension_id_prompting_ = "";
 }
 
+void ExtensionSettingsHandler::ReloadUnpackedExtensions() {
+  const ExtensionSet* extensions = extension_service_->extensions();
+  std::vector<const Extension*> unpacked_extensions;
+  for (ExtensionSet::const_iterator extension = extensions->begin();
+       extension != extensions->end(); ++extension) {
+    if ((*extension)->location() == Extension::LOAD)
+      unpacked_extensions.push_back(*extension);
+  }
+
+  for (std::vector<const Extension*>::iterator iter =
+       unpacked_extensions.begin(); iter != unpacked_extensions.end(); ++iter) {
+    extension_service_->ReloadExtension((*iter)->id());
+  }
+}
+
 void ExtensionSettingsHandler::HandleRequestExtensionsData(
     const ListValue* args) {
   DictionaryValue results;
@@ -460,6 +482,7 @@ void ExtensionSettingsHandler::HandleRequestExtensionsData(
 
   web_ui()->CallJavascriptFunction("ExtensionSettings.returnExtensionsData",
                                    results);
+  content::WebContentsObserver::Observe(web_ui()->GetWebContents());
 
   MaybeRegisterForNotifications();
 }
@@ -541,7 +564,7 @@ void ExtensionSettingsHandler::HandleEnableIncognitoMessage(
   // updated the UI to reflect the change, and b) we want the yellow warning
   // text to stay until the user has left the page.
   //
-  // TODO(aa): This creates crapiness in some cases. For example, in a main
+  // TODO(aa): This creates crappiness in some cases. For example, in a main
   // window, when toggling this, the browser action will flicker because it gets
   // unloaded, then reloaded. It would be better to have a dedicated
   // notification for this case.

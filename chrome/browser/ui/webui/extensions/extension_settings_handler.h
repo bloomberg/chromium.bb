@@ -16,9 +16,11 @@
 #include "chrome/browser/extensions/extension_warning_set.h"
 #include "chrome/browser/ui/select_file_dialog.h"
 #include "chrome/common/extensions/extension_resource.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "googleurl/src/gurl.h"
 
@@ -38,10 +40,10 @@ class ListValue;
 struct ExtensionPage {
   ExtensionPage(const GURL& url, int render_process_id, int render_view_id,
                 bool incognito)
-    : url(url),
-      render_process_id(render_process_id),
-      render_view_id(render_view_id),
-      incognito(incognito) {}
+      : url(url),
+        render_process_id(render_process_id),
+        render_view_id(render_view_id),
+        incognito(incognito) {}
   GURL url;
   int render_process_id;
   int render_view_id;
@@ -51,6 +53,7 @@ struct ExtensionPage {
 // Extension Settings UI handler.
 class ExtensionSettingsHandler : public content::WebUIMessageHandler,
                                  public content::NotificationObserver,
+                                 public content::WebContentsObserver,
                                  public SelectFileDialog::Listener,
                                  public ExtensionUninstallDialog::Delegate {
  public:
@@ -68,6 +71,12 @@ class ExtensionSettingsHandler : public content::WebUIMessageHandler,
       const ExtensionWarningSet* warning_set);
 
   void GetLocalizedValues(base::DictionaryValue* localized_strings);
+
+  // content::WebContentsObserver implementation, which reloads all unpacked
+  // extensions whenever chrome://extensions is reloaded.
+  virtual void NavigateToPendingEntry(
+      const GURL& url,
+      content::NavigationController::ReloadType reload_type) OVERRIDE;
 
  private:
   // WebUIMessageHandler implementation.
@@ -89,6 +98,9 @@ class ExtensionSettingsHandler : public content::WebUIMessageHandler,
   // notification about uninstall confirmation dialog selections.
   virtual void ExtensionUninstallAccepted() OVERRIDE;
   virtual void ExtensionUninstallCanceled() OVERRIDE;
+
+  // Helper method that reloads all unpacked extensions.
+  void ReloadUnpackedExtensions();
 
   // Callback for "requestExtensionsData" message.
   void HandleRequestExtensionsData(const base::ListValue* args);
