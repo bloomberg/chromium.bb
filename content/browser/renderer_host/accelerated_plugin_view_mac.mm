@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "content/browser/renderer_host/render_widget_host_view_mac.h"
+#import "content/public/browser/accelerated_window_interface.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/gfx/gl/gl_context.h"
 #include "ui/gfx/gl/gl_switches.h"
@@ -185,10 +186,12 @@ using content::BrowserThread;
   // Inform the window hosting this accelerated view that it needs to be
   // transparent.
   if (![self isHiddenOrHasHiddenAncestor]) {
-    if ([[self window] respondsToSelector:@selector(underlaySurfaceRemoved)])
-      [static_cast<id>([self window]) underlaySurfaceRemoved];
-    if ([newWindow respondsToSelector:@selector(underlaySurfaceAdded)])
-      [static_cast<id>(newWindow) underlaySurfaceAdded];
+    if ([[self window] conformsToProtocol:@protocol(UnderlayableSurface)]) {
+      [static_cast<id<UnderlayableSurface> >([self window])
+          underlaySurfaceRemoved];
+    }
+    if ([newWindow conformsToProtocol:@protocol(UnderlayableSurface)])
+      [static_cast<id<UnderlayableSurface> >(newWindow) underlaySurfaceAdded];
   }
 }
 
@@ -196,8 +199,9 @@ using content::BrowserThread;
   TRACE_EVENT0("browser", "AcceleratedPluginView::viewDidHide");
   [super viewDidHide];
 
-  if ([[self window] respondsToSelector:@selector(underlaySurfaceRemoved)]) {
-    [static_cast<id>([self window]) underlaySurfaceRemoved];
+  if ([[self window] conformsToProtocol:@protocol(UnderlayableSurface)]) {
+    [static_cast<id<UnderlayableSurface> >([self window])
+        underlaySurfaceRemoved];
   }
 }
 
@@ -210,8 +214,8 @@ using content::BrowserThread;
     [self initOpenGLContext];
   }
 
-  if ([[self window] respondsToSelector:@selector(underlaySurfaceRemoved)]) {
-    [static_cast<id>([self window]) underlaySurfaceAdded];
+  if ([[self window] conformsToProtocol:@protocol(UnderlayableSurface)]) {
+    [static_cast<id<UnderlayableSurface> >([self window]) underlaySurfaceAdded];
   }
 }
 

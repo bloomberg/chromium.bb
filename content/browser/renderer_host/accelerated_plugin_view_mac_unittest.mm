@@ -1,14 +1,15 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "content/browser/renderer_host/accelerated_plugin_view_mac.h"
 
 #include "base/logging.h"
+#import "content/public/browser/accelerated_window_interface.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
-@interface UnderlayCountingWindow : NSWindow {
+@interface UnderlayCountingWindow : NSWindow<UnderlayableSurface> {
  @private
   int underlayCount_;
 }

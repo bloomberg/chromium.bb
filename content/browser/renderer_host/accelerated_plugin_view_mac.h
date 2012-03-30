@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,13 +12,6 @@
 #include "ui/gfx/native_widget_types.h"
 
 class RenderWidgetHostViewMac;
-
-// Informal protocol implemented by windows that need to be informed explicitly
-// about underlay surfaces.
-@interface NSObject (UnderlayableSurface)
-- (void)underlaySurfaceAdded;
-- (void)underlaySurfaceRemoved;
-@end
 
 // This subclass of NSView hosts the output of accelerated plugins on
 // the page.

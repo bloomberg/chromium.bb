@@ -11,11 +11,46 @@
 #import "base/memory/scoped_nsobject.h"
 #include "base/string_piece.h"
 #include "base/sys_string_conversions.h"
+#import "content/public/browser/accelerated_window_interface.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/shell/resource.h"
 #include "googleurl/src/gurl.h"
+
+@interface ShellWindow : NSWindow<UnderlayableSurface> {
+ @private
+  int underlaySurfaceCount_;
+}
+
+// Informs the window that an underlay surface has been added/removed. The
+// window is non-opaque while underlay surfaces are present.
+- (void)underlaySurfaceAdded;
+- (void)underlaySurfaceRemoved;
+
+@end
+
+@implementation ShellWindow
+
+- (void)underlaySurfaceAdded {
+  DCHECK_GE(underlaySurfaceCount_, 0);
+  ++underlaySurfaceCount_;
+
+  // We're having the OpenGL surface render under the window, so the window
+  // needs to be not opaque.
+  if (underlaySurfaceCount_ == 1)
+    [self setOpaque:NO];
+}
+
+- (void)underlaySurfaceRemoved {
+  --underlaySurfaceCount_;
+  DCHECK_GE(underlaySurfaceCount_, 0);
+
+  if (underlaySurfaceCount_ == 0)
+    [self setOpaque:YES];
+}
+
+@end
 
 // Receives notification that the window is closing so that it can start the
 // tear-down process. Is responsible for deleting itself when done.
@@ -142,13 +177,14 @@ void Shell::PlatformSetIsLoading(bool loading) {
 
 void Shell::PlatformCreateWindow(int width, int height) {
   NSRect initial_window_bounds = NSMakeRect(0, 0, width, height);
-  window_ = [[NSWindow alloc] initWithContentRect:initial_window_bounds
-                                        styleMask:(NSTitledWindowMask |
-                                                   NSClosableWindowMask |
-                                                   NSMiniaturizableWindowMask |
-                                                   NSResizableWindowMask )
-                                          backing:NSBackingStoreBuffered
-                                            defer:NO];
+  window_ =
+      [[ShellWindow alloc] initWithContentRect:initial_window_bounds
+                                     styleMask:(NSTitledWindowMask |
+                                                NSClosableWindowMask |
+                                                NSMiniaturizableWindowMask |
+                                                NSResizableWindowMask )
+                                       backing:NSBackingStoreBuffered
+                                         defer:NO];
   [window_ setTitle:kWindowTitle];
   NSView* content = [window_ contentView];
 
