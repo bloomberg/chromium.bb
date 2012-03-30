@@ -516,6 +516,8 @@
         'browser/chromeos/dbus/update_engine_client.h',
         'browser/chromeos/disks/disk_mount_manager.cc',
         'browser/chromeos/disks/disk_mount_manager.h',
+        'browser/chromeos/enrollment_dialog_view.cc',
+        'browser/chromeos/enrollment_dialog_view.h',
         'browser/chromeos/enterprise_extension_observer.cc',
         'browser/chromeos/enterprise_extension_observer.h',
         'browser/chromeos/extensions/bluetooth_event_router.cc',

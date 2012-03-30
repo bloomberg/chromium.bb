@@ -9,6 +9,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/onc_constants.h"
+#include "chrome/browser/chromeos/enrollment_dialog_view.h"
 #include "chrome/common/net/x509_certificate_model.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -24,6 +25,7 @@
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
+#include "ui/views/widget/widget.h"
 
 namespace {
 
@@ -306,6 +308,9 @@ bool VPNConfigView::Login() {
       case PROVIDER_TYPE_MAX:
         break;
     }
+    vpn->SetEnrollmentDelegate(
+        EnrollmentDialogView::CreateEnrollmentDelegate(
+            GetWidget()->GetNativeWindow()));
     cros->ConnectToVirtualNetwork(vpn);
   }
   // Connection failures are responsible for updating the UI, including
