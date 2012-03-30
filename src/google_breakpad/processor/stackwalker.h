@@ -54,7 +54,7 @@ class MinidumpContext;
 class SourceLineResolverInterface;
 struct StackFrame;
 class SymbolSupplier;
-class SystemInfo;
+struct SystemInfo;
 
 using std::set;
 
