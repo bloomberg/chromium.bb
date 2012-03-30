@@ -18,8 +18,10 @@
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/url_constants.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/content_client.h"
 #include "grit/chromium_strings.h"
@@ -201,6 +203,25 @@ void HelpHandler::RegisterMessages() {
 #endif
 }
 
+void HelpHandler::Observe(int type, const content::NotificationSource& source,
+                          const content::NotificationDetails& details) {
+  switch (type) {
+    case chrome::NOTIFICATION_UPGRADE_RECOMMENDED: {
+      // A version update is installed and ready to go. Refresh the UI so the
+      // correct state will be shown.
+      version_updater_->CheckForUpdate(
+          base::Bind(&HelpHandler::SetUpdateStatus, base::Unretained(this))
+#if defined(OS_MACOSX)
+          , base::Bind(&HelpHandler::SetPromotionState, base::Unretained(this))
+#endif
+          );
+      break;
+    }
+    default:
+      NOTREACHED();
+  }
+}
+
 void HelpHandler::OnPageLoaded(const ListValue* args) {
 #if defined(OS_CHROMEOS)
   // Version information is loaded from a callback
@@ -227,6 +248,9 @@ void HelpHandler::OnPageLoaded(const ListValue* args) {
   version_updater_->GetReleaseChannel(
       base::Bind(&HelpHandler::OnReleaseChannel, base::Unretained(this)));
 #endif
+
+  registrar_.Add(this, chrome::NOTIFICATION_UPGRADE_RECOMMENDED,
+                 content::NotificationService::AllSources());
 }
 
 #if defined(OS_MACOSX)
