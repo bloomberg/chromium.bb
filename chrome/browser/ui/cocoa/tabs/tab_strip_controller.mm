@@ -493,6 +493,7 @@ private:
     [[[view animationForKey:@"frameOrigin"] delegate] invalidate];
   }
   [[NSNotificationCenter defaultCenter] removeObserver:self];
+  [tabStripView_ removeAllToolTips];
   [super dealloc];
 }
 
