@@ -8,7 +8,6 @@
 #include <pango/pango.h>
 
 #include <algorithm>
-#include <map>
 #include <string>
 
 #include "base/logging.h"
@@ -34,35 +33,6 @@ namespace {
 // GNOME/KDE is a non-scalable one. The name should be listed in the
 // IsFallbackFontAllowed function in skia/ext/SkFontHost_fontconfig_direct.cpp.
 const char* kFallbackFontFamilyName = "sans";
-
-// Retrieves the pango metrics for a pango font description. Caches the metrics
-// and never frees them. The metrics objects are relatively small and
-// very expensive to look up.
-PangoFontMetrics* GetPangoFontMetrics(PangoFontDescription* desc) {
-  static std::map<int, PangoFontMetrics*>* desc_to_metrics = NULL;
-  static PangoContext* context = NULL;
-
-  if (!context) {
-    context = gfx::GetPangoContext();
-    pango_context_set_language(context, pango_language_get_default());
-  }
-
-  if (!desc_to_metrics) {
-    desc_to_metrics = new std::map<int, PangoFontMetrics*>();
-  }
-
-  int desc_hash = pango_font_description_hash(desc);
-  std::map<int, PangoFontMetrics*>::iterator i =
-      desc_to_metrics->find(desc_hash);
-
-  if (i == desc_to_metrics->end()) {
-    PangoFontMetrics* metrics = pango_context_get_metrics(context, desc, NULL);
-    (*desc_to_metrics)[desc_hash] = metrics;
-    return metrics;
-  } else {
-    return i->second;
-  }
-}
 
 // Returns the available font family that best (in FontConfig's eyes) matches
 // the supplied list of family names.

@@ -9,6 +9,10 @@
 #include <pango/pango.h>
 #include <pango/pangocairo.h>
 
+#include <algorithm>
+#include <map>
+#include <vector>
+
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "ui/gfx/canvas.h"
@@ -456,6 +460,30 @@ size_t GetPangoFontSizeInPixels(PangoFontDescription* pango_font) {
     size_in_pixels = size_in_pixels * GetPixelsInPoint() / PANGO_SCALE;
   }
   return size_in_pixels;
+}
+
+PangoFontMetrics* GetPangoFontMetrics(PangoFontDescription* desc) {
+  static std::map<int, PangoFontMetrics*>* desc_to_metrics = NULL;
+  static PangoContext* context = NULL;
+
+  if (!context) {
+    context = GetPangoContext();
+    pango_context_set_language(context, pango_language_get_default());
+  }
+
+  if (!desc_to_metrics)
+    desc_to_metrics = new std::map<int, PangoFontMetrics*>();
+
+  const int desc_hash = pango_font_description_hash(desc);
+  std::map<int, PangoFontMetrics*>::iterator i =
+      desc_to_metrics->find(desc_hash);
+
+  if (i == desc_to_metrics->end()) {
+    PangoFontMetrics* metrics = pango_context_get_metrics(context, desc, NULL);
+    desc_to_metrics->insert(std::make_pair(desc_hash, metrics));
+    return metrics;
+  }
+  return i->second;
 }
 
 }  // namespace gfx

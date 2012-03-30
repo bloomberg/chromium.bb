@@ -94,6 +94,11 @@ void DrawPangoTextUnderline(cairo_t* cr,
 // Returns the size in pixels for the specified |pango_font|.
 size_t GetPangoFontSizeInPixels(PangoFontDescription* pango_font);
 
+// Retrieves the Pango metrics for a Pango font description. Caches the metrics
+// and never frees them. The metrics objects are relatively small and very
+// expensive to look up.
+PangoFontMetrics* GetPangoFontMetrics(PangoFontDescription* desc);
+
 }  // namespace gfx
 
 #endif  // UI_GFX_PANGO_UTIL_H_
