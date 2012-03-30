@@ -82,6 +82,7 @@
         'shell/shell_javascript_dialog_creator.cc',
         'shell/shell_javascript_dialog_creator.h',
         'shell/shell_javascript_dialog_mac.mm',
+        'shell/shell_javascript_dialog_win.cc',
         'shell/shell_javascript_dialog.h',
         'shell/shell_main_delegate.cc',
         'shell/shell_main_delegate.h',
@@ -261,6 +262,9 @@
           ],
         }],
         ['OS=="win"', {
+          'sources': [
+            'shell/shell.rc',
+          ],
           'configurations': {
             'Debug_Base': {
               'msvs_settings': {

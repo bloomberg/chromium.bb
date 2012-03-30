@@ -26,7 +26,7 @@ void ShellJavaScriptDialogCreator::RunJavaScriptDialog(
     const string16& default_prompt_text,
     const DialogClosedCallback& callback,
     bool* did_suppress_message) {
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) || defined(OS_WIN)
   *did_suppress_message = false;
 
   if (dialog_.get()) {
@@ -56,7 +56,7 @@ void ShellJavaScriptDialogCreator::RunBeforeUnloadDialog(
     const string16& message_text,
     bool is_reload,
     const DialogClosedCallback& callback) {
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) || defined(OS_WIN)
   if (dialog_.get()) {
     // Seriously!?
     callback.Run(true, string16());
@@ -81,7 +81,7 @@ void ShellJavaScriptDialogCreator::RunBeforeUnloadDialog(
 
 void ShellJavaScriptDialogCreator::ResetJavaScriptState(
     WebContents* web_contents) {
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) || defined(OS_WIN)
   if (dialog_.get()) {
     dialog_->Cancel();
     dialog_.reset();
@@ -92,7 +92,7 @@ void ShellJavaScriptDialogCreator::ResetJavaScriptState(
 }
 
 void ShellJavaScriptDialogCreator::DialogClosed(ShellJavaScriptDialog* dialog) {
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) || defined(OS_WIN)
   DCHECK_EQ(dialog, dialog_.get());
   dialog_.reset();
 #else

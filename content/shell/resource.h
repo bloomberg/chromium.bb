@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,10 +13,16 @@
 #define IDM_CLOSE_WINDOW          106
 #define IDM_NEW_WINDOW            107
 #define IDC_CONTENTSHELL          109
+#define IDD_ALERT                 130
+#define IDD_CONFIRM               131
+#define IDD_PROMPT                132
 #define IDC_NAV_BACK              1001
 #define IDC_NAV_FORWARD           1002
 #define IDC_NAV_RELOAD            1003
 #define IDC_NAV_STOP              1004
+#define IDC_PROMPTEDIT            1005
+#define IDC_DIALOGTEXT            1006
+
 #ifndef IDC_STATIC
 #define IDC_STATIC                -1
 #endif

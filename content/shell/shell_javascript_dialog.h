@@ -42,7 +42,14 @@ class ShellJavaScriptDialog {
 #if defined(OS_MACOSX)
   ShellJavaScriptDialogHelper* helper_;  // owned
   NSAlert* alert_; // weak, owned by |helper_|.
-#endif  // defined(OS_MACOSX)
+#elif defined(OS_WIN)
+  ui::JavascriptMessageType message_type_;
+  HWND dialog_win_;
+  string16 message_text_;
+  string16 default_prompt_text_;
+  static INT_PTR CALLBACK DialogProc(HWND dialog, UINT message, WPARAM wparam,
+                                     LPARAM lparam);
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(ShellJavaScriptDialog);
 };
