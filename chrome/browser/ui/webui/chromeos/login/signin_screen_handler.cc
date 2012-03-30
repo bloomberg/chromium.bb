@@ -153,8 +153,11 @@ class NetworkStateInformer
   // CaptivePortalWindowProxyDelegate implementation:
   virtual void OnPortalDetected() OVERRIDE;
 
-  // Returns active network id.
-  std::string active_network_id() { return active_network_; }
+  // Returns active network's service path. It can be used to uniquely
+  // identify the network.
+  std::string active_network_service_path() {
+    return active_network_service_path_;
+  }
 
   bool is_online() { return state_ == ONLINE; }
 
@@ -167,7 +170,7 @@ class NetworkStateInformer
 
   content::NotificationRegistrar registrar_;
   base::hash_set<std::string> observers_;
-  std::string active_network_;
+  std::string active_network_service_path_;
   ConnectionType last_network_type_;
   std::string network_name_;
   State state_;
@@ -236,36 +239,26 @@ void NetworkStateInformer::OnPortalDetected() {
 }
 
 bool NetworkStateInformer::UpdateState(NetworkLibrary* cros) {
-  if (cros->active_network())
-    last_network_type_ = cros->active_network()->type();
+  State new_state = OFFLINE;
+  std::string new_active_network_service_path;
+  network_name_.clear();
 
-  State new_state;
-  std::string new_active_network;
-  if (!cros->Connected()) {
-    new_state = OFFLINE;
-    network_name_.clear();
-  } else {
-    const Network* active_network = cros->active_network();
-    if (active_network) {
-      new_active_network = active_network->unique_id();
-      network_name_ = active_network->name();
-      if (active_network->restricted_pool()) {
-        new_state = CAPTIVE_PORTAL;
-      } else {
-        new_state = ONLINE;
-      }
-    } else {
-      // Bogus network situation:
-      // Connected() returns true but no active network.
-      new_state = OFFLINE;
-      NOTREACHED();
-    }
+  const Network* active_network = cros->active_network();
+  if (active_network) {
+    if (active_network->online())
+      new_state = ONLINE;
+    else if (active_network->restricted_pool())
+      new_state = CAPTIVE_PORTAL;
+
+    new_active_network_service_path = active_network->service_path();
+    network_name_ = active_network->name();
+    last_network_type_ = active_network->type();
   }
 
   bool updated = (new_state != state_) ||
-      (active_network_ != new_active_network);
+      (active_network_service_path_ != new_active_network_service_path);
   state_ = new_state;
-  active_network_ = new_active_network;
+  active_network_service_path_ = new_active_network_service_path;
 
   if (updated && state_ == ONLINE)
     handler_->OnNetworkReady();
@@ -591,7 +584,7 @@ void SigninScreenHandler::ShowSigninScreenIfReady() {
   if (gaia_silent_load_ &&
       (!network_state_informer_->is_online() ||
        gaia_silent_load_network_ !=
-           network_state_informer_->active_network_id())) {
+           network_state_informer_->active_network_service_path())) {
     // Network has changed. Force Gaia reload.
     gaia_silent_load_ = false;
     // Gaia page will be realoded, so focus isn't stolen anymore.
@@ -1026,7 +1019,8 @@ void SigninScreenHandler::MaybePreloadAuthExtension() {
       !dns_clear_task_running_ &&
       network_state_informer_->is_online()) {
     gaia_silent_load_ = true;
-    gaia_silent_load_network_ = network_state_informer_->active_network_id();
+    gaia_silent_load_network_ =
+        network_state_informer_->active_network_service_path();
     LoadAuthExtension(true, true, false);
   }
 }
