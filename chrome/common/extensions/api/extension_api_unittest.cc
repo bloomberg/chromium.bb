@@ -26,7 +26,6 @@ TEST(ExtensionAPI, IsPrivileged) {
   EXPECT_TRUE(extension_api.IsPrivileged("extension.lastError"));
 
   // Default unknown names to privileged for paranoia's sake.
-  EXPECT_TRUE(extension_api.IsPrivileged(""));
   EXPECT_TRUE(extension_api.IsPrivileged("<unknown-namespace>"));
   EXPECT_TRUE(extension_api.IsPrivileged("extension.<unknown-member>"));
 
