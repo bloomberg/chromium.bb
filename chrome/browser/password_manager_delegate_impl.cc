@@ -133,10 +133,8 @@ void PasswordManagerDelegateImpl::AddSavePasswordInfoBarIfPermitted(
     PasswordFormManager* form_to_save) {
   // Don't show the password manager infobar if this form is for a google
   // account and we are going to show the one-click singin infobar.
-  // For now, one-click signin is fully implemented only on windows.  When
-  // the feature is finally implemented on mac and linux, will need to add
-  // OS_MACOSX and OS_LINUX.
-#if defined(OS_WIN)
+  // For now, one-click signin is fully implemented only on windows.
+#if defined(ENABLE_ONE_CLICK_SIGNIN)
   GURL realm(form_to_save->realm());
   if (realm == GURL(GaiaUrls::GetInstance()->gaia_login_form_realm()) &&
       OneClickSigninHelper::CanOffer(tab_contents_->web_contents(), true)) {
