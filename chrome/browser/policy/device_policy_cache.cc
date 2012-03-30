@@ -524,6 +524,12 @@ void DevicePolicyCache::DecodeReportingPolicies(
                     POLICY_SCOPE_MACHINE,
                     Value::CreateBooleanValue(container.report_boot_mode()));
     }
+    if (container.has_report_location()) {
+      policies->Set(key::kReportDeviceLocation,
+                    POLICY_LEVEL_MANDATORY,
+                    POLICY_SCOPE_MACHINE,
+                    Value::CreateBooleanValue(container.report_location()));
+    }
   }
 }
 
@@ -582,6 +588,14 @@ void DevicePolicyCache::DecodeGenericPolicies(
                     POLICY_LEVEL_MANDATORY,
                     POLICY_SCOPE_MACHINE,
                     Value::CreateBooleanValue(container.update_disabled()));
+    }
+
+    if (container.has_target_version_prefix()) {
+      policies->Set(key::kDeviceTargetVersionPrefix,
+                    POLICY_LEVEL_MANDATORY,
+                    POLICY_SCOPE_MACHINE,
+                    Value::CreateStringValue(
+                        container.target_version_prefix()));
     }
   }
 

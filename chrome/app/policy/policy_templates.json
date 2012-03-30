@@ -112,7 +112,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 141
+#   For your editing convenience: highest ID currently used: 143
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -2327,6 +2327,20 @@
       If the policy is not set, or set to false, the state of the dev switch will not be reported.''',
     },
     {
+      'name': 'ReportDeviceLocation',
+      'type': 'main',
+      'supported_on': ['chrome_os:20-'],
+      'device_only': True,
+      'features': {'dynamic_refresh': True},
+      'future': True,
+      'example_value': False,
+      'id': 143,
+      'caption': '''Report device location''',
+      'desc': '''Report the geographic location of the device.
+
+      If the policy is not set, or set to false, the location will not be reported.''',
+    },
+    {
       'name': 'DeviceUserWhitelist',
       'type': 'list',
       'supported_on': ['chrome_os:12-'],
@@ -2548,6 +2562,25 @@
       'desc': '''Disables automatic updates when set to True.
 
       <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> devices automatically check for updates when this setting is not configured or set to False.''',
+    },
+    {
+      'name': 'DeviceTargetVersionPrefix',
+      'type': 'string',
+      'supported_on': ['chrome_os:19-'],
+      'device_only': True,
+      'features': {'dynamic_refresh': True},
+      'example_value': '1412.',
+      'id': 142,
+      'caption': '''Target Auto Update Version''',
+      'desc': '''Sets a target version for Auto Updates.
+
+      Specifies the prefix of a target version <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> should update to. If the device is running a version that's before the specified prefix, it will update to the latest version with the given prefix. If the device is already on a later version, there is no effect (i.e. no downgrades are performed) and the device will remain on the current version. The prefix format works component-wise as is demonstrated in the following example:
+
+      "" (or not configured): update to latest version available.
+      "1412.": update to any minor version of 1412 (e.g. 1412.24.34 or 1412.60.2)
+      "1412.2.": update to any minor version of 1412.2 (e.g. 1412.2.34 or 1412.2.2)
+      "1412.24.34": update to this specific version only
+      '''
     },
     {
       'name': 'BackgroundModeEnabled',

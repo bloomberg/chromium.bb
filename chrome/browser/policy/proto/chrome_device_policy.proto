@@ -95,10 +95,13 @@ message DeviceReportingProto {
   optional bool report_version_info = 1;
   optional bool report_activity_times = 2;
   optional bool report_boot_mode = 3;
+  optional bool report_location = 4;
 }
 
 message EphemeralUsersEnabledProto {
-  // Determines whether users should be treated as ephemeral.
+  // Determines whether users should be treated as ephemeral. In ephemeral users
+  // mode, no cryptohome is created for the user, but a tmpfs mount is used
+  // instead such that upon logout all user state is discarded.
   optional bool ephemeral_users_enabled = 1;
 }
 
