@@ -116,6 +116,18 @@ void QueryLinkedFontsFromRegistry(const gfx::Font& font,
   key.Close();
 }
 
+// Changes |font| to have the specified |font_size| and |font_style| if it does
+// not already. Only considers bold and italic styles, since the underlined
+// style has no effect on glyph shaping.
+void DeriveFontIfNecessary(int font_size, int font_style, gfx::Font* font) {
+  const int kStyleMask = (gfx::Font::BOLD | gfx::Font::ITALIC);
+  const int current_style = (font->GetStyle() & kStyleMask);
+  const int target_style = (font_style & kStyleMask);
+  const int current_size = font->GetFontSize();
+  if (current_style != target_style || current_size != font_size)
+    *font = font->DeriveFont(font_size - current_size, font_style);
+}
+
 }  // namespace
 
 namespace gfx {
@@ -544,6 +556,7 @@ void RenderTextWin::ItemizeLogicalText() {
     run->range.set_start(run_break);
     run->font = GetFont();
     run->font_style = style->font_style;
+    DeriveFontIfNecessary(run->font.GetFontSize(), run->font_style, &run->font);
     run->foreground = style->foreground;
     run->strike = style->strike;
     run->diagonal_strike = style->diagonal_strike;
@@ -574,7 +587,8 @@ void RenderTextWin::LayoutVisualText() {
     const wchar_t* run_text = &(text()[run->range.start()]);
     bool tried_fallback = false;
     size_t linked_font_index = 0;
-    const std::vector<gfx::Font>* linked_fonts = NULL;
+    const std::vector<Font>* linked_fonts = NULL;
+    const int font_size = run->font.GetFontSize();
 
     // Select the font desired for glyph generation.
     SelectObject(cached_hdc_, run->font.GetNativeFont());
@@ -630,6 +644,7 @@ void RenderTextWin::LayoutVisualText() {
 
         // Try the next linked font.
         run->font = linked_fonts->at(linked_font_index++);
+        DeriveFontIfNecessary(font_size, run->font_style, &run->font);
         ScriptFreeCache(&run->script_cache);
         SelectObject(cached_hdc_, run->font.GetNativeFont());
       } else if (hr == USP_E_SCRIPT_NOT_IN_FONT) {
@@ -653,6 +668,7 @@ void RenderTextWin::LayoutVisualText() {
         // TODO(msw): support RenderText's font_list().
         if (ChooseFallbackFont(cached_hdc_, run->font, run_text, run_length,
                                &run->font)) {
+          DeriveFontIfNecessary(font_size, run->font_style, &run->font);
           ScriptFreeCache(&run->script_cache);
           SelectObject(cached_hdc_, run->font.GetNativeFont());
         }

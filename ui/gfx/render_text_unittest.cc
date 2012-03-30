@@ -921,10 +921,6 @@ TEST_F(RenderTextTest, StringSizeSanity) {
   EXPECT_GT(string_size.height(), 0);
 }
 
-// TODO(asvitkine): The below use pattern doesn't currently work on Windows
-//                  because the new style doesn't affect the HFONT we pass to
-//                  Uniscribe. (This doesn't affect canvas_skia.cc's use.)
-#if !defined(OS_WIN)
 TEST_F(RenderTextTest, StringSizeBoldWidth) {
   scoped_ptr<RenderText> render_text(RenderText::CreateRenderText());
   render_text->SetText(UTF8ToUTF16("Hello World"));
@@ -941,7 +937,35 @@ TEST_F(RenderTextTest, StringSizeBoldWidth) {
   const int bold_width = render_text->GetStringSize().width();
   EXPECT_GT(bold_width, plain_width);
 }
-#endif
+
+TEST_F(RenderTextTest, StringSizeHeight) {
+  struct {
+    string16 text;
+  } cases[] = {
+    { WideToUTF16(L"Hello World!") },  // English
+    { WideToUTF16(L"\x6328\x62f6") },  // Japanese
+    { WideToUTF16(L"\x0915\x093f") },  // Hindi
+    { WideToUTF16(L"\x05e0\x05b8") },  // Hebrew
+  };
+
+  Font default_font;
+  Font larger_font = default_font.DeriveFont(24, default_font.GetStyle());
+  EXPECT_GT(larger_font.GetHeight(), default_font.GetHeight());
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); i++) {
+    scoped_ptr<RenderText> render_text(RenderText::CreateRenderText());
+    render_text->SetFontList(FontList(default_font));
+    render_text->SetText(cases[i].text);
+
+    const int height1 = render_text->GetStringSize().height();
+    EXPECT_GT(height1, 0);
+
+    // Check that setting the larger font increases the height.
+    render_text->SetFontList(FontList(larger_font));
+    const int height2 = render_text->GetStringSize().height();
+    EXPECT_GT(height2, height1);
+  }
+}
 
 TEST_F(RenderTextTest, CursorBoundsInReplacementMode) {
   scoped_ptr<RenderText> render_text(RenderText::CreateRenderText());
