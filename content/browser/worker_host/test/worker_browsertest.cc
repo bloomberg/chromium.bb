@@ -8,6 +8,7 @@
 #include "base/path_service.h"
 #include "base/stringprintf.h"
 #include "base/string_util.h"
+#include "base/sys_info.h"
 #include "base/test/test_timeouts.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/browser.h"
@@ -380,7 +381,12 @@ IN_PROC_BROWSER_TEST_F(WorkerTest, LimitPerPage) {
 }
 
 // http://crbug.com/36800
-IN_PROC_BROWSER_TEST_F(WorkerTest, DISABLED_LimitTotal) {
+IN_PROC_BROWSER_TEST_F(WorkerTest, LimitTotal) {
+  if (base::SysInfo::AmountOfPhysicalMemoryMB() < 8192) {
+    LOG(INFO) << "WorkerTest.LimitTotal not running because it needs 8 GB RAM.";
+    return;
+  }
+
   int max_workers_per_tab = WorkerServiceImpl::kMaxWorkersPerTabWhenSeparate;
   int total_workers = WorkerServiceImpl::kMaxWorkersWhenSeparate;
 
@@ -392,7 +398,6 @@ IN_PROC_BROWSER_TEST_F(WorkerTest, DISABLED_LimitTotal) {
   // Adding 1 so that we cause some workers to be queued.
   int tab_count = (total_workers / max_workers_per_tab) + 1;
   for (int i = 1; i < tab_count; ++i) {
-    LOG(INFO) << "LimitTotal creating tab";
     ui_test_utils::NavigateToURLWithDisposition(
         browser(), GURL(url.spec() + StringPrintf("&client_id=%d", i)),
         NEW_FOREGROUND_TAB,
@@ -400,9 +405,7 @@ IN_PROC_BROWSER_TEST_F(WorkerTest, DISABLED_LimitTotal) {
   }
 
   // Check that we didn't create more than the max number of workers.
-  LOG(INFO) << "LimitTotal calling WaitForWorkerProcessCount";
   ASSERT_TRUE(WaitForWorkerProcessCount(total_workers));
-  LOG(INFO) << "LimitTotal WaitForWorkerProcessCount returned";
 
   // Now close a page and check that the queued workers were started.
   const FilePath kGoogleDir(FILE_PATH_LITERAL("google"));
@@ -410,9 +413,7 @@ IN_PROC_BROWSER_TEST_F(WorkerTest, DISABLED_LimitTotal) {
   url = GURL(ui_test_utils::GetTestUrl(kGoogleDir, kGoogleFile));
   ui_test_utils::NavigateToURL(browser(), url);
 
-  LOG(INFO) << "LimitTotal calling WaitForWorkerProcessCount";
   ASSERT_TRUE(WaitForWorkerProcessCount(total_workers));
-  LOG(INFO) << "LimitTotal WaitForWorkerProcessCount returned";
 }
 
 // Flaky, http://crbug.com/59786.
