@@ -31,6 +31,8 @@
 #include <linux/vt.h>
 #include <linux/major.h>
 #include <sys/ioctl.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 #include "compositor.h"
 

@@ -20,6 +20,8 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <libudev.h>
+
 void
 evdev_add_devices(struct udev *udev, struct weston_input_device
 		  *input_base);
