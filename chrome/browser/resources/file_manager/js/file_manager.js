@@ -1192,7 +1192,8 @@ FileManager.prototype = {
    *                   selection.
    */
   FileManager.prototype.canExecute_ = function(commandId) {
-    var readonly = this.directoryModel_.readonly;
+    var readonly = this.directoryModel_.readonly ||
+        (this.isOnGData() && this.isOffline());
     var path = this.directoryModel_.currentEntry.fullPath;
     switch (commandId) {
       case 'copy':
@@ -2011,7 +2012,8 @@ FileManager.prototype = {
       if (entry.gdata_.isHosted) {
         element.classList.add('gdata-hosted');
       }
-      if (this.isAvaliableOffline_(entry.gdata_, this.getFileType(entry))) {
+      if (entry.isDirectory ||
+          this.isAvaliableOffline_(entry.gdata_, this.getFileType(entry))) {
         element.classList.add('gdata-present');
       }
     }.bind(this));
@@ -2151,6 +2153,9 @@ FileManager.prototype = {
     var doc = this.document_;
     var div = doc.createElement('div');
     div.className = 'offline';
+
+    if (entry.isDirectory)
+      return div;
 
     var checkbox = doc.createElement('input');
     checkbox.type = 'checkbox';
