@@ -173,6 +173,10 @@ void BluetoothOptionsHandler::InitializePage() {
   // Show or hide the bluetooth settings and update the checkbox based
   // on the current present/powered state.
   AdapterPresentChanged(adapter_.get(), adapter_->IsPresent());
+  // Automatically start device discovery if the "Add Bluetooth Device"
+  // overlay is visible.
+  web_ui()->CallJavascriptFunction(
+      "options.BluetoothOptions.updateDiscovery");
 }
 
 void BluetoothOptionsHandler::EnableChangeCallback(

@@ -74,6 +74,17 @@ cr.define('options', function() {
     }
   };
 
+  /**
+   * Automatically start the device discovery process if the
+   * "Add device" dialog is visible.
+   */
+  BluetoothOptions.updateDiscovery = function() {
+    var page = BluetoothOptions.getInstance();
+    if (page && page.visible) {
+      chrome.send('findBluetoothDevices');
+    }
+  }
+
   // Export
   return {
     BluetoothOptions: BluetoothOptions

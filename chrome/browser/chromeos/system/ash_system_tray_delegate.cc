@@ -511,11 +511,9 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   }
 
   virtual void AddBluetoothDevice() OVERRIDE {
-    // Opening the device dialog does not actually start the discovery process.
-    // So make an explicit call to start it.
+    // Open the Bluetooth device dialog, which automatically starts the
+    // discovery process.
     GetAppropriateBrowser()->OpenAddBluetoothDeviceDialog();
-    bluetooth_adapter_->SetDiscovering(true,
-                                       base::Bind(&BluetoothDiscoveryFailure));
   }
 
   virtual void ToggleAirplaneMode() OVERRIDE {
