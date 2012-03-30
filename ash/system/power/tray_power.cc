@@ -103,6 +103,7 @@ class PowerPopupView : public views::Label {
  public:
   PowerPopupView() {
     SetHorizontalAlignment(ALIGN_RIGHT);
+    SetMultiLine(true);
     UpdateText();
   }
 
