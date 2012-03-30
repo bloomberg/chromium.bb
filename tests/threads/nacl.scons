@@ -9,12 +9,6 @@ Import('env')
 # NOTE: the default setting of 10k rounds is too slow on ARM
 EXTRA_ARGS = ['100']
 
-# BUG: http://code.google.com/p/nativeclient/issues/detail?id=2437
-# NOTE(jasonwkim): [2010/08/31 13:49:46 PDT (Tuesday)]
-# small_thread_test has problem with arm/qemu (also fails on x86-32-pnacl)
-arm_qemu = env.Bit('target_arm') and env.UsingEmulator()
-
-
 if env.IsRunningUnderValgrind():
   EXTRA_ARGS = ['20']
 
@@ -50,11 +44,10 @@ node = env.CommandSelLdrTestNacl(
 # NOTE: this should be a pretty slow test, but its been sped up
 # to not tickle bug 853
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_thread_test',
-                       is_broken=arm_qemu or
 # TODO(khim): reenable it when cause of failure on 32bit Windows glibc
 # will be found.
 # See: http://code.google.com/p/nativeclient/issues/detail?id=1690
-                                 ('TRUSTED_ENV' in env and
+                       is_broken=('TRUSTED_ENV' in env and
                                   env['TRUSTED_ENV'].Bit('windows') and
                                   env.Bit('build_x86_32') and
                                   env.Bit('nacl_glibc')))
@@ -187,8 +180,7 @@ node = env.CommandSelLdrTestNacl('many_threads_sequential_test.out',
                                  many_threads_sequential_nexe)
 env.AddNodeToTestSuite(node,
                        ['small_tests'],
-                       'run_many_threads_sequential_test',
-                       is_broken=arm_qemu)
+                       'run_many_threads_sequential_test')
 
 mutex_leak_nexe = env.ComponentProgram('mutex_leak', ['mutex_leak.c'],
                                        EXTRA_LIBS=['${PTHREAD_LIBS}',

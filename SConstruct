@@ -317,8 +317,11 @@ def SetUpArgumentBits(env):
   BitFromArgument(env, 'use_sandboxed_translator', default=False,
     desc='use pnacl sandboxed translator for linking (not available for arm)')
 
-  BitFromArgument(env, 'pnacl_generate_pexe', default=False,
+  BitFromArgument(env, 'pnacl_generate_pexe', default=env.Bit('bitcode'),
     desc='use pnacl to generate pexes and translate in a separate step')
+
+  BitFromArgument(env, 'translate_in_build_step', default=True,
+    desc='Run translation during build phase (e.g. if do_not_run_tests=1)')
 
   # This only controls whether the sandboxed translator is itself dynamically
   # linked, not whether it generates dynamic nexes (or links against glibc)
@@ -380,6 +383,11 @@ def SetUpArgumentBits(env):
       print "pre_base_env['ENV']['SYSROOT']=", sysroot
   #########################################################################
 
+  # PNaCl sanity checks
+  if ((env.Bit('pnacl_generate_pexe') or env.Bit('use_sandboxed_translator'))
+      and not env.Bit('bitcode')):
+    raise ValueError("pnacl_generate_pexe and use_sandboxed_translator"
+                        "don't make sense without bitcode")
 
 def CrosChrootHasGclient():
   # BUG=http://code.google.com/p/nativeclient/issues/detail?id=2455
@@ -757,6 +765,32 @@ tests_to_disable = set([
     'run_ppapi_emu_file_test',
 ])
 
+tests_to_disable_qemu = set([
+    # These tests do not work under QEMU but do work on hardware. They should
+    # not be marked as 'broken' because then they would not get built as part
+    # of a test target (e.g. small_tests) with do_not_run_tests=1. They
+    # should be skipped instead, so that they build but do not run.
+    # TODO(dschuff) some of these tests appear to work with the new QMEU.
+    # find out which
+    # http://code.google.com/p/nativeclient/issues/detail?id=2437
+    'run_atomic_ops_test',
+    'run_atomic_ops_nexe_test',
+    'run_egyptian_cotton_test',
+    'run_gio_shm_unbounded_test',
+    'run_many_threads_sequential_test',
+    'run_mmap_atomicity_test',
+    'run_mmap_test',
+    # http://code.google.com/p/nativeclient/issues/detail?id=2142
+    'run_nacl_semaphore_test',
+    'run_nacl_tls_unittest',
+    # run_srpc_message_untrusted_test seems flaky on QEMU
+    'run_srpc_message_untrusted_test',
+    'run_thread_stack_alloc_test',
+    'run_thread_test',
+    'run_tool_tests',
+    'run_trusted_mmap_test',
+])
+
 if ARGUMENTS.get('disable_tests', '') != '':
   tests_to_disable.update(ARGUMENTS['disable_tests'].split(','))
 
@@ -768,6 +802,9 @@ def ShouldSkipTest(env, node_name):
   # don't *build* on some platforms need to be omitted in another way.
 
   if node_name in tests_to_disable:
+    return True
+
+  if env.UsingEmulator() and node_name in tests_to_disable_qemu:
     return True
 
   # Retrieve list of tests to skip on this platform
@@ -804,7 +841,7 @@ def AddNodeToTestSuite(env, node, suite_name, node_name=None, is_broken=False,
       print '*** BROKEN ', display_name
     BROKEN_TEST_COUNT += 1
     env.Alias('broken_tests', node)
-  elif ShouldSkipTest(env, node_name):
+  elif ShouldSkipTest(env, node_name) and not env.Bit('do_not_run_tests'):
     print '*** SKIPPING ', GetPlatformString(env), ':', display_name
     env.Alias('broken_tests', node)
   else:
@@ -2010,7 +2047,9 @@ def CommandSelLdrTestNacl(env, name, nexe,
       env['TRUSTED_ENV'].Bit('windows')):
     return []
 
-  if env.Bit('pnacl_generate_pexe') and env['NACL_BUILD_FAMILY'] != 'TRUSTED':
+  if (env.Bit('pnacl_generate_pexe') and
+      env['NACL_BUILD_FAMILY'] != 'TRUSTED' and
+      (env.Bit('translate_in_build_step') or not env.Bit('do_not_run_tests'))):
     # The nexe is actually a pexe.  Translate it before we run it.
     nexe = GetTranslatedNexe(env, nexe)
   command = [nexe]

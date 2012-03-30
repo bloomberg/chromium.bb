@@ -64,7 +64,8 @@ test_node = env.AutoDepsCommand(
      env.File('${SCONSTRUCT_DIR}/tools/file_cmp_test.py'),
      outfile,
      env.File('redir_test.stdout')],
-    [node, env.File(outfile)])
+    [node, env.File(outfile)],
+    disabled=env.Bit('do_not_run_tests'))
 
 env.AddNodeToTestSuite(test_node,
                        ['small_tests', 'sel_ldr_tests'],
@@ -76,7 +77,8 @@ test_node = env.AutoDepsCommand(
      env.File('${SCONSTRUCT_DIR}/tools/file_cmp_test.py'),
      errfile,
      env.File('redir_test.stderr')],
-    [node, env.File(errfile)])
+    [node, env.File(errfile)],
+    disabled=env.Bit('do_not_run_tests'))
 
 env.AddNodeToTestSuite(test_node,
                        ['small_tests', 'sel_ldr_tests'],

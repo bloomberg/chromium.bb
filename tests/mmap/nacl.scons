@@ -22,25 +22,18 @@ node = env.CommandSelLdrTestNacl(
     # '-e' enables exception handling for testing unreadable pages.
     sel_ldr_flags=['-a', '-e'] + extra_flags)
 
-# BUG: http://code.google.com/p/nativeclient/issues/detail?id=2437
 env.AddNodeToTestSuite(node,
-                       ['small_tests', 'sel_ldr_tests'],
-                       'run_mmap_test',
-                       is_broken=env.Bit('target_arm') and env.UsingEmulator())
+                       ['small_tests', 'sel_ldr_tests'], 'run_mmap_test')
 
 mmap_atomicity_nexe = env.ComponentProgram(
     'mmap_atomicity', 'mmap_atomicity.c',
     EXTRA_LIBS=['${PTHREAD_LIBS}', '${NONIRT_LIBS}'])
 node = env.CommandSelLdrTestNacl(
     'mmap_atomicity_test.out', mmap_atomicity_nexe)
-# * Multi-threading is oddly broken under ARM QEMU.  Our test's child
-#   thread never runs.  It appears to be starved by the main thread.
 # * This test is extremely slow on the memcheck bot, which eventually
 #   times out, so it is disabled there.  This may be a consequence of
 #   running under a VM, since running the test on memcheck locally is
 #   fast enough.
-# BUG: http://code.google.com/p/nativeclient/issues/detail?id=2437
-is_broken = ((env.Bit('target_arm') and env.UsingEmulator())
-             or env.Bit('running_on_valgrind'))
+is_broken = env.Bit('running_on_valgrind')
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_mmap_atomicity_test',
                        is_broken=is_broken)

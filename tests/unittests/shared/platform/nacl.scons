@@ -15,8 +15,4 @@ node = env.CommandSelLdrTestNacl('atomic_ops_test.out',
                                  args=['25'],
                                  size='medium')
 
-# NOTE: the arm emulator does not handle atomic ops properly
-# http://code.google.com/p/nativeclient/issues/detail?id=2437
-env.AddNodeToTestSuite(node, ['medium_tests'],
-                       'run_atomic_ops_nexe_test',
-                       is_broken=env.Bit('target_arm') and env.UsingEmulator())
+env.AddNodeToTestSuite(node, ['medium_tests'], 'run_atomic_ops_nexe_test')

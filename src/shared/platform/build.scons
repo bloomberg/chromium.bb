@@ -129,11 +129,7 @@ nacl_semaphore_test_exe = env.ComponentProgram('nacl_semaphore_test',
 node = env.CommandTest('nacl_semaphore_test.out',
                        command=[nacl_semaphore_test_exe])
 
-# BUG: http://code.google.com/p/nativeclient/issues/detail?id=2142
-env.AddNodeToTestSuite(node,
-                       ['small_tests'],
-                       'run_nacl_semaphore_test',
-                       is_broken=env.Bit('target_arm') and env.UsingEmulator())
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_nacl_semaphore_test')
 
 
 nacl_host_dir_test_exe = env.ComponentProgram('nacl_host_dir_test',

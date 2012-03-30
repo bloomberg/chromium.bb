@@ -343,6 +343,8 @@ def _SetEnvForPnacl(env, root):
     env.Replace(CC='true', CXX='true', LINK='true', AR='true',
                 RANLIB='true', AS='true', LD='true',
                 STRIP='true', INSTALL=FakeInstall)
+    if env.Bit('translate_in_build_step'):
+      env.Replace(TRANSLATE='true')
 
 
 def _SetEnvForSdkManually(env):

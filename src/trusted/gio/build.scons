@@ -83,9 +83,7 @@ if ((not env.Bit('coverage_enabled') or not env.Bit('windows')) and
       command=[gio_shm_unbounded_test_exe,])
   env.Requires(gio_shm_unbounded_test_exe, crt)
 
-  is_broken = env.Bit('target_arm') and env.UsingEmulator()
-  env.AddNodeToTestSuite(node, ['small_tests'], 'run_gio_shm_unbounded_test',
-                         is_broken=is_broken)
+  env.AddNodeToTestSuite(node, ['small_tests'], 'run_gio_shm_unbounded_test')
 
   gio_nacl_desc_test_exe = env.ComponentProgram(
       'gio_nacl_desc_test',

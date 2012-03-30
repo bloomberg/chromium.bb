@@ -75,6 +75,26 @@ install-lkgr-toolchains() {
   gclient runhooks --force
 }
 
+# Generate filenames for arm bot uploads and downloads
+NAME_ARM_UPLOAD() {
+  echo -n "${BUILDBOT_BUILDERNAME}/${BUILDBOT_GOT_REVISION}"
+}
+
+NAME_ARM_DOWNLOAD() {
+  echo -n "${BUILDBOT_TRIGGERED_BY_BUILDERNAME}/${BUILDBOT_GOT_REVISION}"
+}
+
+NAME_ARM_TRY_UPLOAD() {
+  echo -n "${BUILDBOT_BUILDERNAME}/"
+  echo -n "${BUILDBOT_SLAVENAME}/"
+  echo -n "${BUILDBOT_BUILDNUMBER}"
+}
+NAME_ARM_TRY_DOWNLOAD() {
+  echo -n "${BUILDBOT_TRIGGERED_BY_BUILDERNAME}/"
+  echo -n "${BUILDBOT_TRIGGERED_BY_SLAVENAME}/"
+  echo -n "${BUILDBOT_TRIGGERED_BY_BUILDNUMBER}"
+}
+
 # Tar up the executables which are shipped to the arm HW bots
 archive-for-hw-bots() {
   local name=$1
@@ -83,8 +103,8 @@ archive-for-hw-bots() {
   echo "@@@BUILD_STEP tar_generated_binaries@@@"
   # clean out a bunch of files that are not needed
   find scons-out/ \
-    \( -name '*.o' -o -name '*.bc' \) \
-    -print0 | xargs -0 rm -f
+    \( -name '*.o' -o -name '*.bc' -o -name 'test_results' \) \
+    -print0 | xargs -0 rm -rf
 
   # delete nexes from pexe mode directories to force translation
   # TODO(dschuff) enable this once we can translate on the hw bots
@@ -176,7 +196,8 @@ build-sbtc-prerequisites() {
   ${SCONS_COMMON} platform=${platform} sel_ldr sel_universal irt_core
 }
 
-single-scons-test() {
+# Run a single invocation of scons as its own buildbot stage and handle errors
+scons-stage() {
   local platform=$1
   local extra=$2
   local test=$3
@@ -185,59 +206,32 @@ single-scons-test() {
   ${SCONS_COMMON} ${extra} platform=${platform} ${test} || handle-error
 }
 
-single-browser-test() {
+# Do separate stages with parallel build and sequential test. Callers should
+# pass -jN as part of $extra
+scons-build-test() {
   local platform=$1
   local extra=$2
   local test=$3
   echo "@@@BUILD_STEP scons [${platform}] [$(cap-length ${test})] \
 [$(relevant ${extra})]@@@"
-  ${SCONS_COMMON} ${extra} browser_headless=1 SILENT=1 platform=${platform} \
+  ${SCONS_COMMON} ${extra} do_not_run_tests=1 platform=${platform} \
     ${test} || handle-error
+  # -j1 overrides any -jM in extra
+  ${SCONS_COMMON} ${extra} -j1 platform=${platform} ${test} || handle-error
 }
 
-scons-tests() {
+single-browser-test() {
   local platform=$1
   local extra=$2
   local test=$3
-
-  single-scons-test ${platform} "${extra}" "${test}"
-  # Run the scons PIC tests on ARM only, since
-  # the GlibC scons tests already test PIC mode for X86.
-  # BUG= http://code.google.com/p/nativeclient/issues/detail?id=1081
-  if [ "${platform}" == arm ]; then
-    single-scons-test ${platform} "${extra} nacl_pic=1" "${test}"
-  fi
-
-  # Full test suite of translator for ARM is too flaky on QEMU
-  # http://code.google.com/p/nativeclient/issues/detail?id=2581
-  # run only a subset below
-  if [ "${platform}" != arm ]; then
-    build-sbtc-prerequisites ${platform}
-    scons-tests-translator ${platform} "${extra}" "${test}"
-  fi
-}
-
-scons-tests-translator() {
-  local platform=$1
-  local extra=$2
-  local test=$3
-
-  single-scons-test ${platform} "${extra} use_sandboxed_translator=1" "${test}"
-}
-
-scons-tests-no-translator() {
-  local platform=$1
-  local extra=$2
-  local test=$3
-  single-scons-test ${platform} "${extra}" "${test}"
-  single-scons-test ${platform} "${extra} nacl_pic=1" "${test}"
+  scons-stage ${platform} "${extra} browser_headless=1 SILENT=1" ${test}
 }
 
 browser-tests() {
   local platform=$1
   local extra=$2
   local test="chrome_browser_tests"
-  single-browser-test ${platform} "${extra}" "${test}"
+  single-browser-test ${platform} "${extra} pnacl_generate_pexe=0" "${test}"
   if [[ "${platform}" == arm ]] || \
     [[ "${extra}" =~ --nacl_glibc ]]; then
     # Skip ARM until we have chrome binaries for ARM available.
@@ -272,115 +266,92 @@ run_inbrowser_test_runner \
 run_inbrowser_exception_test \
 run_pm_manifest_file_chrome_browser_test \
 run_irt_manifest_file_chrome_browser_test"
-    local pexe_mode="pnacl_generate_pexe=1"
     single-browser-test ${platform} \
-      "${extra} do_not_run_tests=1 ${pexe_mode}" "${pexe_tests}"
-    single-browser-test ${platform} "${extra} ${pexe_mode}" "${pexe_tests}"
+      "${extra} do_not_run_tests=1" "${pexe_tests}"
+    single-browser-test ${platform} "${extra}" "${pexe_tests}"
   fi
 }
 
-######################################################################
-# NOTE: these trybots are expected to diverge some more hence the code
-#       duplication
-mode-trybot-arm() {
+# This function is shared between x86-32 and x86-64. All building and testing
+# is done on the same bot. Try runs are identical to buildbot runs
+mode-buildbot-x86() {
+  local bits=$1
   FAIL_FAST=false
   clobber
   install-lkgr-toolchains
-  scons-tests "arm" "--mode=opt-host,nacl -j8 -k" "smoke_tests"
-  build-sbtc-prerequisites "arm"
-  # Full test suite of translator for ARM is too flaky on QEMU
-  # http://code.google.com/p/nativeclient/issues/detail?id=2581
-  # Running a subset here (and skipping in scons-test() itself).
-  scons-tests-translator "arm" "--mode=opt-host,nacl -j4 -k" "toolchain_tests"
-  browser-tests "arm" "--mode=opt-host,nacl -k"
-  ad-hoc-shared-lib-tests "arm"
+
+  # For now, just build what we want to test, until pexe nmf issues are solved
+  scons-build-test "x86-${bits}" "--mode=opt-host,nacl -j8 -k" "smoke_tests"
+
+  # Build and run non-pexe tests
+  # For now, build everything until nmf dependency issues are resolved
+  scons-stage "x86-${bits}" "--mode=opt-host,nacl -j8 -k pnacl_generate_pexe=0"\
+    ""
+  scons-stage "x86-${bits}" "--mode=opt-host,nacl -k pnacl_generate_pexe=0" \
+    "nonpexe_tests"
+
+  # sandboxed translation
+  build-sbtc-prerequisites x86-${bits}
+  scons-build-test "x86-${bits}" "--mode=opt-host,nacl -j8 -k \
+    use_sandboxed_translator=1" "smoke_tests"
+
+  browser-tests "x86-${bits}" "--mode=opt-host,nacl -k"
 }
 
-mode-trybot-x8632() {
-  FAIL_FAST=false
-  clobber
-  install-lkgr-toolchains
-  scons-tests "x86-32" "--mode=opt-host,nacl -j8 -k" "smoke_tests"
-  browser-tests "x86-32" "--mode=opt-host,nacl -k"
-}
-
-mode-trybot-x8664() {
-  FAIL_FAST=false
-  clobber
-  install-lkgr-toolchains
-  scons-tests "x86-64" "--mode=opt-host,nacl -j8 -k" "smoke_tests"
-  browser-tests "x86-64" "--mode=opt-host,nacl -k"
-}
-
-mode-buildbot-x8632() {
-  FAIL_FAST=false
-  clobber
-  install-lkgr-toolchains
-  # First build everything
-  scons-tests "x86-32" "--mode=opt-host,nacl -j8 -k" ""
-  # Then test (not all nexes which are build are also tested)
-  scons-tests "x86-32" "--mode=opt-host,nacl -k" "smoke_tests"
-  browser-tests "x86-32" "--mode=opt-host,nacl -k"
-}
-
-mode-buildbot-x8664() {
-  FAIL_FAST=false
-  clobber
-  install-lkgr-toolchains
-  # First build everything
-  scons-tests "x86-64" "--mode=opt-host,nacl -j8 -k" ""
-  # Then test (not all nexes which are build are also tested)
-  scons-tests "x86-64" "--mode=opt-host,nacl -k" "smoke_tests"
-  browser-tests "x86-64" "--mode=opt-host,nacl -k"
-}
-
-NAME_ARM_UPLOAD() {
-  echo -n "${BUILDBOT_BUILDERNAME}/${BUILDBOT_GOT_REVISION}"
-}
-
-NAME_ARM_DOWNLOAD() {
-  echo -n "${BUILDBOT_TRIGGERED_BY_BUILDERNAME}/${BUILDBOT_GOT_REVISION}"
-}
-
-NAME_ARM_TRY_UPLOAD() {
-  echo -n "${BUILDBOT_BUILDERNAME}/"
-  echo -n "${BUILDBOT_SLAVENAME}/"
-  echo -n "${BUILDBOT_BUILDNUMBER}"
-}
-NAME_ARM_TRY_DOWNLOAD() {
-  echo -n "${BUILDBOT_TRIGGERED_BY_BUILDERNAME}/"
-  echo -n "${BUILDBOT_TRIGGERED_BY_SLAVENAME}/"
-  echo -n "${BUILDBOT_TRIGGERED_BY_BUILDNUMBER}"
-}
-
+# QEMU upload bot runs this function, and the hardware download bot runs
+# mode-buildbot-arm-hw
 mode-buildbot-arm() {
   FAIL_FAST=false
   local mode=$1
+  local qemuflags="${mode} -j8 -k"
 
   clobber
   install-lkgr-toolchains
 
   gyp-arm-build Release
 
-  scons-tests "arm" "${mode} -j8 -k" ""
-  # Run all 3 test suites in a single scons invocation to minimize
-  # processing time of *.scons files
-  scons-tests "arm" "${mode} -k" "small_tests medium_tests large_tests"
+  scons-build-test "arm" "${qemuflags}" "small_tests medium_tests large_tests"
+  scons-build-test "arm" "${qemuflags} nacl_pic=1" \
+    "small_tests medium_tests large_tests"
 
-  build-sbtc-prerequisites "arm"
-
-  # Run tests in pexe mode
-  scons-tests-no-translator "arm" "${mode} -j4 -k pnacl_generate_pexe=1" \
-    "toolchain_tests"
-  scons-tests-translator "arm" \
-    "${mode} -j4 -k pnacl_generate_pexe=1" "toolchain_tests"
+  # non-pexe tests
+  scons-stage "arm" "${mode} ${qemuflags} pnacl_generate_pexe=0" "nonpexe_tests"
 
   # Full test suite of translator for ARM is too flaky on QEMU
   # http://code.google.com/p/nativeclient/issues/detail?id=2581
-  # Running a subset here (and skipping in scons-test() itself).
-  scons-tests-translator "arm" "${mode} -j4 -k" "toolchain_tests"
+  # Run a subset here.
+  # For now just do toolchain_tests as we have been.
+  # TODO(dschuff): Enable more sandboxed tests on hardware
+  build-sbtc-prerequisites "arm"
+
+  scons-build-test "arm" \
+    "${qemuflags} use_sandboxed_translator=1 translate_in_build_step=0" \
+    "toolchain_tests"
+
   browser-tests "arm" "${mode}"
   ad-hoc-shared-lib-tests "arm"
+}
+
+mode-buildbot-arm-hw() {
+  FAIL_FAST=false
+  local mode=$1
+  local hwflags="${mode} -j2 -k naclsdk_validate=0 built_elsewhere=1"
+
+  scons-stage "arm" "${hwflags}" "small_tests medium_tests large_tests"
+  scons-stage "arm" "${hwflags} pnacl_generate_pexe=0" \
+    "nonpexe_tests"
+  scons-stage "arm" \
+    "${hwflags} use_sandboxed_translator=1 translate_in_build_step=0" \
+    "toolchain_tests"
+  browser-tests "arm" "${hwflags}"
+}
+
+mode-trybot-qemu() {
+  # For now, just run the qemu build but don't upload anything.
+  # TODO(dschuff) split the try functionality such that the uploading
+  # bot will not run (many) tests, and the non-uploading bot will run
+  # tests under qemu. This should hopefully reduce cycle time.
+  mode-buildbot-arm "--mode=opt-host,nacl"
 }
 
 mode-buildbot-arm-dbg() {
@@ -396,16 +367,6 @@ mode-buildbot-arm-opt() {
 mode-buildbot-arm-try() {
   mode-buildbot-arm "--mode=opt-host,nacl"
   archive-for-hw-bots $(NAME_ARM_TRY_UPLOAD) try
-}
-
-mode-buildbot-arm-hw() {
-  FAIL_FAST=false
-  local flags="naclsdk_validate=0 built_elsewhere=1 $1"
-  scons-tests-no-translator "arm" "${flags} -k -j2" \
-     "small_tests medium_tests large_tests"
-  scons-tests-translator "arm" "${flags} -k -j2 pnacl_generate_pexe=1" \
-    "toolchain_tests"
-  browser-tests "arm" "${flags}"
 }
 
 # NOTE: the hw bots are too slow to build stuff on so we just
@@ -445,14 +406,14 @@ test-all-newlib() {
 
   # First build everything.
   echo "@@@BUILD_STEP scons build @@@"
-  scons-tests "arm" "--mode=opt-host,nacl -j${concur}" ""
-  scons-tests "x86-32" "--mode=opt-host,nacl -j${concur}" ""
-  scons-tests "x86-64" "--mode=opt-host,nacl -j${concur}" ""
+  scons-stage "arm" "--mode=opt-host,nacl -j${concur}" ""
+  scons-stage "x86-32" "--mode=opt-host,nacl -j${concur}" ""
+  scons-stage "x86-64" "--mode=opt-host,nacl -j${concur}" ""
   # Then test everything.
   echo "@@@BUILD_STEP scons smoke_tests @@@"
-  scons-tests "arm" "--mode=opt-host,nacl -j${concur}" "smoke_tests"
-  scons-tests "x86-32" "--mode=opt-host,nacl -j${concur}" "smoke_tests"
-  scons-tests "x86-64" "--mode=opt-host,nacl -j${concur}" "smoke_tests"
+  scons-stage "arm" "--mode=opt-host,nacl -j${concur}" "smoke_tests"
+  scons-stage "x86-32" "--mode=opt-host,nacl -j${concur}" "smoke_tests"
+  scons-stage "x86-64" "--mode=opt-host,nacl -j${concur}" "smoke_tests"
   # browser tests are run with -j1 on the bots
   browser-tests "arm" "--verbose --mode=opt-host,nacl -j1"
   browser-tests "x86-32" "--verbose --mode=opt-host,nacl -j1"

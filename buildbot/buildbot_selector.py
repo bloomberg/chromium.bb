@@ -103,9 +103,9 @@ BOT_ASSIGNMENT = {
     'oneiric_32-newlib-arm_hw-pnacl-panda-opt':
         'bash buildbot/buildbot_pnacl.sh mode-buildbot-arm-hw-opt',
     'lucid_64-newlib-x86_32-pnacl':
-        'bash buildbot/buildbot_pnacl.sh mode-buildbot-x8632',
+        'bash buildbot/buildbot_pnacl.sh mode-buildbot-x86 32',
     'lucid_64-newlib-x86_64-pnacl':
-        'bash buildbot/buildbot_pnacl.sh mode-buildbot-x8664',
+        'bash buildbot/buildbot_pnacl.sh mode-buildbot-x86 64',
     # PNaCl Spec
     'lucid_64-newlib-arm_qemu-pnacl-spec':
         'bash buildbot/buildbot_spec2k.sh pnacl-arm',
@@ -195,11 +195,11 @@ BOT_ASSIGNMENT = {
     'nacl-arm_hw_perf_panda':
         'bash buildbot/buildbot_pnacl.sh mode-buildbot-arm-hw-try',
     'nacl-lucid_64-newlib-arm_qemu-pnacl':
-        'bash buildbot/buildbot_pnacl.sh mode-trybot-arm',
+        'bash buildbot/buildbot_pnacl.sh mode-trybot-qemu',
     'nacl-lucid_64-newlib-x86_32-pnacl':
-        'bash buildbot/buildbot_pnacl.sh mode-trybot-x8632',
+        'bash buildbot/buildbot_pnacl.sh mode-buildbot-x86 32',
     'nacl-lucid_64-newlib-x86_64-pnacl':
-        'bash buildbot/buildbot_pnacl.sh mode-trybot-x8664',
+        'bash buildbot/buildbot_pnacl.sh mode-buildbot-x86 64',
     # Pnacl spec2k trybots
     'nacl-lucid_64-newlib-arm_qemu-pnacl-spec':
         'bash buildbot/buildbot_spec2k.sh pnacl-trybot-arm',

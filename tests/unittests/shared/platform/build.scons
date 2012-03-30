@@ -30,8 +30,4 @@ node = env.CommandTest(
     command=[atomic_ops_test_exe, '25'],
     size='medium')
 
-# NOTE: the arm emulator does not handle atomic ops properly
-# BUG: http://code.google.com/p/nativeclient/issues/detail?id=2437
-env.AddNodeToTestSuite(node, ['medium_tests'],
-                       'run_atomic_ops_test',
-                       is_broken=env.Bit('target_arm') and env.UsingEmulator())
+env.AddNodeToTestSuite(node, ['medium_tests'], 'run_atomic_ops_test')
