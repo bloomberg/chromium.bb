@@ -3179,6 +3179,7 @@ sdk-irt-shim() {
             bitcode=1 \
             platform=x86-64 \
             naclsdk_validate=0 \
+            pnacl_generate_pexe=0 \
             --verbose \
             pnacl_irt_shim
   local out_dir_prefix="${SCONS_OUT}"/nacl-x86-64-pnacl-clang
