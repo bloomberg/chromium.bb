@@ -365,6 +365,8 @@ const char kBgscanShortIntervalProperty[] = "BgscanShortInterval";
 const char kDBusConnectionProperty[] = "DBus.Connection";
 const char kDBusObjectProperty[] = "DBus.Object";
 const char kBgscanSignalThresholdProperty[] = "BgscanSignalThreshold";
+// The name of the network interface, ie. wlan0, eth0, etc.
+const char kInterfaceProperty[] = "Interface";
 
 // Flimflam Cellular Device property names.
 const char kCarrierProperty[] = "Cellular.Carrier";
