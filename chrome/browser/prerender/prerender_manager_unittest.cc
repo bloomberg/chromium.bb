@@ -586,4 +586,16 @@ TEST_F(PrerenderManagerTest, CancelOmniboxDoesNotRemoveLinkTest) {
   EXPECT_NE(null, prerender_manager()->FindEntry(url));
 }
 
+TEST_F(PrerenderManagerTest, OmniboxNotAllowedWhenDisabled) {
+  prerender_manager()->set_enabled(false);
+  EXPECT_FALSE(prerender_manager()->AddPrerenderFromOmnibox(
+      GURL("http://www.example.com"), NULL));
+}
+
+TEST_F(PrerenderManagerTest, LinkRelNotAllowedWhenDisabled) {
+  prerender_manager()->set_enabled(false);
+  EXPECT_FALSE(prerender_manager()->AddSimplePrerender(
+      GURL("http://www.example.com")));
+}
+
 }  // namespace prerender
