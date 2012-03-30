@@ -454,5 +454,16 @@ TEST_F(ActivationControllerTest, NoAutoActivateMinimizedWindow) {
   EXPECT_TRUE(wm::IsWindowMinimized(w1.get()));
 }
 
+// Verifies that a window with a hidden layer can be activated.
+TEST_F(ActivationControllerTest, ActivateWithHiddenLayer) {
+  aura::test::TestWindowDelegate wd;
+  scoped_ptr<aura::Window> w1(aura::test::CreateTestWindowWithDelegate(
+    &wd, -1, gfx::Rect(50, 50, 50, 50), NULL));
+
+  EXPECT_TRUE(wm::CanActivateWindow(w1.get()));
+  w1->layer()->SetVisible(false);
+  EXPECT_TRUE(wm::CanActivateWindow(w1.get()));
+}
+
 }  // namespace test
 }  // namespace ash

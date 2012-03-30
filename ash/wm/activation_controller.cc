@@ -66,13 +66,31 @@ bool HasModalTransientChild(aura::Window* window) {
   return false;
 }
 
+// See description in VisibilityMatches.
+enum ActivateVisibilityType {
+  TARGET_VISIBILITY,
+  CURRENT_VISIBILITY,
+};
+
+// Used by CanActivateWindowWithEvent() to test the visibility of a window.
+// This is used by two distinct code paths:
+// . when activating from an event we only care about the actual visibility.
+// . when activating because of a keyboard accelerator, in which case we
+//   care about the TargetVisibility.
+bool VisibilityMatches(aura::Window* window, ActivateVisibilityType type) {
+  bool visible = (type == CURRENT_VISIBILITY) ? window->IsVisible() :
+      window->TargetVisibility();
+  return visible || wm::IsWindowMinimized(window);
+}
+
 // Returns true if |window| can be activated or deactivated.
 // A window manager typically defines some notion of "top level window" that
 // supports activation/deactivation.
 bool CanActivateWindowWithEvent(aura::Window* window,
-                                const aura::Event* event) {
+                                const aura::Event* event,
+                                ActivateVisibilityType visibility_type) {
   return window &&
-      (window->IsVisible() || wm::IsWindowMinimized(window)) &&
+      VisibilityMatches(window, visibility_type) &&
       (!aura::client::GetActivationDelegate(window) ||
         aura::client::GetActivationDelegate(window)->ShouldActivate(event)) &&
       SupportsChildActivation(window->parent());
@@ -116,7 +134,7 @@ aura::Window* ActivationController::GetActivatableWindow(
   aura::Window* parent = window->parent();
   aura::Window* child = window;
   while (parent) {
-    if (CanActivateWindowWithEvent(child, event))
+    if (CanActivateWindowWithEvent(child, event, CURRENT_VISIBILITY))
       return child;
     // If |child| isn't activatable, but has transient parent, trace
     // that path instead.
@@ -129,7 +147,7 @@ aura::Window* ActivationController::GetActivatableWindow(
 }
 
 bool ActivationController::CanActivateWindow(aura::Window* window) const {
-  return CanActivateWindowWithEvent(window, NULL) &&
+  return CanActivateWindowWithEvent(window, NULL, TARGET_VISIBILITY) &&
          !HasModalTransientChild(window);
 }
 
@@ -152,7 +170,8 @@ aura::Window* ActivationController::GetActiveWindow() {
 
 bool ActivationController::OnWillFocusWindow(aura::Window* window,
                                              const aura::Event* event) {
-  return CanActivateWindowWithEvent(GetActivatableWindow(window, event), event);
+  return CanActivateWindowWithEvent(
+      GetActivatableWindow(window, event), event, CURRENT_VISIBILITY);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -219,7 +238,7 @@ void ActivationController::ActivateWindowWithEvent(aura::Window* window,
     return;
   // The stacking client may impose rules on what window configurations can be
   // activated or deactivated.
-  if (window && !CanActivateWindowWithEvent(window, event))
+  if (window && !CanActivateWindowWithEvent(window, event, CURRENT_VISIBILITY))
     return;
 
   // Restore minimized window. This needs to be done before CanReceiveEvents()
@@ -296,7 +315,7 @@ aura::Window* ActivationController::GetTopmostWindowToActivateInContainer(
        i != container->children().rend();
        ++i) {
     if (*i != ignore &&
-        CanActivateWindowWithEvent(*i, NULL) &&
+        CanActivateWindowWithEvent(*i, NULL, CURRENT_VISIBILITY) &&
         !wm::IsWindowMinimized(*i))
       return *i;
   }
