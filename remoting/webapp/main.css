@@ -155,7 +155,7 @@ button:hover:not([disabled]) {
 /*------------------------------------------------------------------
 Component: Text Field
 ------------------------------------------------------------------*/
-input[type=text] {
+input {
     height: 29px;
     line-height: 27px;
     padding-left: 8px;
@@ -165,15 +165,20 @@ input[type=text] {
     vertical-align: top;
     -webkit-border-radius: 1px;
 }
-input[type=text]:hover {
+input:hover {
     border: 1px solid #b9b9b9;
     border-top: 1px solid #a0a0a0;
     -webkit-box-shadow: inset 0px 1px 2px rgba(0,0,0,0.1);
 }
-input[type=text]:focus {
+input:focus {
     -webkit-box-shadow: inset 0px 1px 2px rgba(0,0,0,0.3);
     outline: none;
     border: 1px solid #4d90fe;
+}
+
+label {
+  line-height: 29px;
+  font-weight: bold;
 }
 
 /*------------------------------------------------------------------
@@ -244,11 +249,6 @@ html {
   cursor: default;
 }
 
-label {
-  color: black;
-  font-weight: bold;
-}
-
 section, #webapp-description {
   width: 690px;
   margin: 30px auto;
@@ -281,6 +281,10 @@ section {
 
 .clickable {
   cursor: pointer;
+}
+
+.button-row {
+  display: -webkit-box;
 }
 
 .selectable {
@@ -441,17 +445,16 @@ button {
   margin-top: 24px;
 }
 
-#host-setup-dialog {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 380px;
-  height: 180px;
-  margin-left: -200px;
-  border: 1px solid black;
-  background-color: #fff;
-  padding: 0 20px;
+#ask-pin-form label {
+  min-width: 120px;
+  text-align: __MSG_@@bidi_end_edge__;
+  display: inline-block;
 }
+
+#ask-pin-form > div {
+  margin-bottom: 8px;
+}
+
 
 #cancel-connect-button, #cancel-share-button {
   float: __MSG_@@bidi_end_edge__;
@@ -482,6 +485,10 @@ button {
   height: 100%;
   background-color: #fff;
   opacity: 0.75;
+}
+
+#host-setup-dialog {
+  width: 460px;
 }
 
 #host-plugin-container {

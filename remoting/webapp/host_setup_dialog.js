@@ -149,8 +149,8 @@ remoting.HostSetupDialog.prototype.updateState_ = function() {
   }
   /** @param {string} tag */
   function showDoneMessage(tag) {
-    var errorDiv = document.getElementById('host-setup-done-message');
-    l10n.localizeElementFromTag(errorDiv, tag);
+    var messageDiv = document.getElementById('host-setup-done-message');
+    l10n.localizeElementFromTag(messageDiv, tag);
     remoting.setMode(remoting.AppMode.HOST_SETUP_DONE);
   }
   /** @param {string} tag */

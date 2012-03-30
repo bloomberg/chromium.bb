@@ -75,7 +75,13 @@ function onLoad() {
       { event: 'click', id: 'get-started-it2me',
         fn: remoting.showIt2MeUiAndSave },
       { event: 'click', id: 'get-started-me2me',
-        fn: remoting.showMe2MeUiAndSave }
+        fn: remoting.showMe2MeUiAndSave },
+      { event: 'click', id: 'daemon-pin-cancel',
+        fn: function() { remoting.setMode(remoting.AppMode.HOME); } },
+      { event: 'click', id: 'host-config-done-dismiss',
+        fn: function() { remoting.setMode(remoting.AppMode.HOME); } },
+      { event: 'click', id: 'host-config-error-dismiss',
+        fn: function() { remoting.setMode(remoting.AppMode.HOME); } }
   ];
 
   for (var i = 0; i < actions.length; ++i) {

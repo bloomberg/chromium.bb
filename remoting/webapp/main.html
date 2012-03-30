@@ -139,39 +139,30 @@ found in the LICENSE file.
           </div>
         </div>
         <div id="me2me-content">
-          <div id="host-list"></div>
-          <div id="host-list-error" class="error-state"></div>
+          <div id="host-list" hidden></div>
+          <div id="host-list-error" class="error-state" hidden></div>
           <div id="daemon-control" data-daemon-state="enabled disabled" hidden>
-            <table class="host-list-table">
-              <!-- TODO(jamiewalch): Rewrite this using flex boxes and apply the
-                   host-offline style if the daemon is not running -->
-              <tr>
-                <td class="host-list-main-icon">
-                  <img src="icon_host.png">
-                </td>
-                <td class="host-list-label">
-                  <span id="this-computer-name"
-                        data-daemon-state="enabled">
-                    My computer <!-- Placeholder until daemon mode is finished -->
-                  </span>
-                  <span i18n-content="HOME_DAEMON_START_MESSAGE"
-                        data-daemon-state="disabled">
-                  </span>
-                </td>
-                <td class="mode-select-button-column">
-                  <button type="button"
-                          id="stop-daemon"
-                          i18n-content="HOME_DAEMON_STOP_BUTTON"
-                          data-daemon-state="enabled">
-                  </button>
-                  <button type="button"
-                          id="start-daemon"
-                          i18n-content="HOME_DAEMON_START_BUTTON"
-                          data-daemon-state="disabled">
-                  </button>
-                </td>
-              </tr>
-            </table>
+            <div id="daemon-controller-ui" class="section-row">
+              <img src="icon_host.png" class="host-list-main-icon">
+              <div class="box-spacer"
+                   i18n-content="HOME_DAEMON_START_MESSAGE"
+                   data-daemon-state="disabled"></div>
+              <div id="this-computer-name"
+                   class="box-spacer"
+                   data-daemon-state="enabled">
+                My computer
+              </div>
+              <button type="button"
+                      id="stop-daemon"
+                      i18n-content="HOME_DAEMON_STOP_BUTTON"
+                      data-daemon-state="enabled">
+              </button>
+              <button type="button"
+                      id="start-daemon"
+                      i18n-content="HOME_DAEMON_START_BUTTON"
+                      data-daemon-state="disabled">
+              </button>
+            </div>
             <div data-daemon-state="enabled">
               <span i18n-content="HOME_DAEMON_ACTIVE_MESSAGE"></span>
               <a id="change-daemon-pin"
@@ -193,28 +184,49 @@ found in the LICENSE file.
 
       <div class="box-spacer"></div>
 
-      <div id="host-setup-dialog" data-ui-mode="home.host-setup" hidden>
-        <p i18n-content="HOST_SETUP_DIALOG_DESCRIPTION"></p>
-        <form id="ask-pin-form" data-ui-mode="home.host-setup.ask-pin"
-              action="" hidden>
-          <label for="daemon-pin-input"
-                 i18n-content="ASK_PIN_DIALOG_LABEL"></label>
-          <input id="daemon-pin-entry" type="password">
-          <br>
-          <label for="daemon-pin-confirm"
-                 i18n-content="ASK_PIN_DIALOG_CONFIRM_LABEL"></label>
-          <input id="daemon-pin-confirm" type="password">
-          <button id="daemon-pin-ok" type="submit" i18n-content="OK"></button>
+      <div id="host-setup-dialog"
+           class="kd-modaldialog"
+           data-ui-mode="home.host-setup">
+        <p class="message" i18n-content="HOST_SETUP_DIALOG_DESCRIPTION"></p>
+        <form id="ask-pin-form"
+              data-ui-mode="home.host-setup.ask-pin"
+              action="">
+          <div>
+            <label for="daemon-pin-input"
+                   i18n-content="ASK_PIN_DIALOG_LABEL"
+                   class="box-spacer"></label>
+            <input id="daemon-pin-entry" type="password">
+          </div>
+          <div>
+            <label for="daemon-pin-confirm"
+                   i18n-content="ASK_PIN_DIALOG_CONFIRM_LABEL"></label>
+            <input id="daemon-pin-confirm" type="password">
+          </div>
+          <div class="button-row">
+            <div class="box-spacer"></div>
+            <button id="daemon-pin-ok" type="submit" i18n-content="OK">
+            </button>
+            <button id="daemon-pin-cancel" type="button" i18n-content="CANCEL">
+            </button>
+          </div>
         </form>
         <div data-ui-mode="home.host-setup.processing" hidden>
           <img src="spinner.gif">
-          <span id="host-setup-processing-message" class="message"></span>
+          <span id="host-setup-processing-message"></span>
         </div>
         <div data-ui-mode="home.host-setup.done" hidden>
-          <span id="host-setup-done-message" class="message"></span>
+          <div id="host-setup-done-message" class="message"></div>
+          <div class="button-row">
+            <div class="box-spacer"></div>
+            <button id="host-config-done-dismiss" i18n-content="OK"></button>
+          </div>
         </div>
         <div data-ui-mode="home.host-setup.error" hidden>
-          <span id="host-setup-error-message" class="error-state"></span>
+          <div id="host-setup-error-message" class="error-state"></div>
+          <div class="button-row">
+            <div class="box-spacer"></div>
+            <button id="host-config-error-dismiss" i18n-content="OK"></button>
+          </div>
         </div>
       </div> <!-- host-setup-dialog -->
 

@@ -17,3 +17,6 @@ Document.prototype.webkitIsFullScreen;
 
 /** @return {void} Nothing. */
 Element.prototype.webkitRequestFullScreen = function() {};
+
+/** @type {{getRandomValues: function(Uint16Array):void}} */
+Window.prototype.crypto;

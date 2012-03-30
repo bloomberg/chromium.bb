@@ -58,6 +58,12 @@ remoting.DaemonPlugin.prototype.updateDom = function() {
       break;
   }
   remoting.updateModalUi(match, 'data-daemon-state');
+  var element = document.getElementById('daemon-controller-ui');
+  if (match == 'enabled') {
+    element.classList.remove('host-offline');
+  } else {
+    element.classList.add('host-offline');
+  }
 };
 
 /**
