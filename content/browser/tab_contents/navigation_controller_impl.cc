@@ -281,7 +281,10 @@ void NavigationControllerImpl::ReloadInternal(bool check_for_repost,
     // the reload must happen in a new process.
     // The new entry must have a new page_id and site instance, so it behaves
     // as new navigation (which happens to clear forward history).
-    if (site_instance->HasWrongProcessForURL(entry->GetURL())) {
+    // Tabs that are discarded due to low memory conditions may not have a site
+    // instance, and should not be treated as a cross-site reload.
+    if (site_instance &&
+        site_instance->HasWrongProcessForURL(entry->GetURL())) {
       // Create a navigation entry that resembles the current one, but do not
       // copy page id, site instance, and content state.
       NavigationEntryImpl* nav_entry = NavigationEntryImpl::FromNavigationEntry(
