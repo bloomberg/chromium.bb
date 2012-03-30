@@ -91,9 +91,7 @@ std::string ExampleNativeThemeButton::MessWithState() {
   return base::StringPrintf(message, ++count_);
 }
 
-void ExampleNativeThemeButton::ItemChanged(Combobox* combo_box,
-                                           int prev_index,
-                                           int new_index) {
+void ExampleNativeThemeButton::OnSelectedIndexChanged(Combobox* combobox) {
   SchedulePaint();
 }
 

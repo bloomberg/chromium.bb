@@ -54,10 +54,9 @@ void Combobox::SetSelectedIndex(int index) {
 }
 
 void Combobox::SelectionChanged() {
-  int prev_selected_index = selected_index_;
   selected_index_ = native_wrapper_->GetSelectedIndex();
   if (listener_)
-    listener_->ItemChanged(this, prev_selected_index, selected_index_);
+    listener_->OnSelectedIndexChanged(this);
   if (GetWidget()) {
     GetWidget()->NotifyAccessibilityEvent(
         this, ui::AccessibilityTypes::EVENT_VALUE_CHANGED, false);

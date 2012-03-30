@@ -228,15 +228,12 @@ void VPNConfigView::ButtonPressed(views::Button* sender,
                                   const views::Event& event) {
 }
 
-void VPNConfigView::ItemChanged(views::Combobox* combo_box,
-                                int prev_index, int new_index) {
-  if (prev_index == new_index)
-    return;
-  if (combo_box == provider_type_combobox_) {
-    provider_type_ = static_cast<ProviderType>(new_index);
+void VPNConfigView::OnSelectedIndexChanged(views::Combobox* combobox) {
+  if (combobox == provider_type_combobox_) {
+    provider_type_ = static_cast<ProviderType>(combobox->selected_index());
     UpdateControls();
-  } else if (combo_box == user_cert_combobox_ ||
-             combo_box == server_ca_cert_combobox_) {
+  } else if (combobox == user_cert_combobox_ ||
+             combobox == server_ca_cert_combobox_) {
     // Do nothing.
   } else {
     NOTREACHED();

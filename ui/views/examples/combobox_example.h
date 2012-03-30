@@ -39,9 +39,7 @@ class ComboboxExample : public ExampleBase, public ComboboxListener {
 
  private:
   // Overridden from ComboboxListener:
-  virtual void ItemChanged(Combobox* combo_box,
-                           int prev_index,
-                           int new_index) OVERRIDE;
+  virtual void OnSelectedIndexChanged(Combobox* combobox) OVERRIDE;
 
   ComboboxModelExample combobox_model_;
   Combobox* combobox_;

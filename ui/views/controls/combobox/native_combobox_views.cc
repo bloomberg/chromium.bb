@@ -55,8 +55,8 @@ namespace views {
 const char NativeComboboxViews::kViewClassName[] =
     "views/NativeComboboxViews";
 
-NativeComboboxViews::NativeComboboxViews(Combobox* combo_box)
-    : combobox_(combo_box),
+NativeComboboxViews::NativeComboboxViews(Combobox* combobox)
+    : combobox_(combobox),
       text_border_(new FocusableBorder()),
       disclosure_arrow_(ui::ResourceBundle::GetSharedInstance().GetImageNamed(
           IDR_DISCLOSURE_ARROW).ToSkBitmap()),

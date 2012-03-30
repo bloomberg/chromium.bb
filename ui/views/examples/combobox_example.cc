@@ -41,12 +41,10 @@ void ComboboxExample::CreateExampleView(View* container) {
   container->AddChildView(combobox_);
 }
 
-void ComboboxExample::ItemChanged(Combobox* combo_box,
-                                  int prev_index,
-                                  int new_index) {
-  DCHECK_EQ(combobox_, combo_box);
-  PrintStatus("Selected: %s",
-              UTF16ToUTF8(combobox_model_.GetItemAt(new_index)).c_str());
+void ComboboxExample::OnSelectedIndexChanged(Combobox* combobox) {
+  DCHECK_EQ(combobox_, combobox);
+  PrintStatus("Selected: %s", UTF16ToUTF8(combobox_model_.GetItemAt(
+      combobox->selected_index())).c_str());
 }
 
 }  // namespace examples

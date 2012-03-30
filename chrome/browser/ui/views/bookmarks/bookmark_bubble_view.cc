@@ -286,12 +286,9 @@ void BookmarkBubbleView::LinkClicked(views::Link* source, int event_flags) {
   StartFade(false);
 }
 
-void BookmarkBubbleView::ItemChanged(views::Combobox* combo_box,
-                                     int prev_index,
-                                     int new_index) {
-  if (new_index + 1 == parent_model_.GetItemCount()) {
-    content::RecordAction(
-        UserMetricsAction("BookmarkBubble_EditFromCombobox"));
+void BookmarkBubbleView::OnSelectedIndexChanged(views::Combobox* combobox) {
+  if (combobox->selected_index() + 1 == parent_model_.GetItemCount()) {
+    content::RecordAction(UserMetricsAction("BookmarkBubble_EditFromCombobox"));
     ShowEditor();
   }
 }

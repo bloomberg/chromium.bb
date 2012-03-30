@@ -53,9 +53,7 @@ class WifiConfigView : public ChildNetworkConfigView,
                              const views::Event& event) OVERRIDE;
 
   // views::ComboboxListener:
-  virtual void ItemChanged(views::Combobox* combo_box,
-                           int prev_index,
-                           int new_index) OVERRIDE;
+  virtual void OnSelectedIndexChanged(views::Combobox* combobox) OVERRIDE;
 
   // CertLibrary::Observer:
   virtual void OnCertificatesLoaded(bool initial_load) OVERRIDE;

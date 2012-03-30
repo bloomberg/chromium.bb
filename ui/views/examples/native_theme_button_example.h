@@ -40,9 +40,7 @@ class ExampleNativeThemeButton : public CustomButton,
   virtual void OnPaintBackground(gfx::Canvas* canvas)  OVERRIDE;
 
   // Overridden from ComboboxListener:
-  virtual void ItemChanged(Combobox* combo_box,
-                           int prev_index,
-                           int new_index) OVERRIDE;
+  virtual void OnSelectedIndexChanged(Combobox* combobox) OVERRIDE;
 
   // Overridden from NativeThemeDelegate:
   virtual gfx::NativeTheme::Part GetThemePart() const OVERRIDE;

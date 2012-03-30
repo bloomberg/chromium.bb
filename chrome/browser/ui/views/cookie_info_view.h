@@ -69,9 +69,7 @@ class CookieInfoView : public views::View,
                                     views::View* child) OVERRIDE;
 
   // views::ComboboxListener:
-  virtual void ItemChanged(views::Combobox* combo_box,
-                           int prev_index,
-                           int new_index) OVERRIDE;
+  virtual void OnSelectedIndexChanged(views::Combobox* combobox) OVERRIDE;
 
   // ui::ComboboxModel:
   virtual int GetItemCount() const OVERRIDE;

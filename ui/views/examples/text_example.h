@@ -45,9 +45,7 @@ class TextExample : public ExampleBase,
   virtual void ButtonPressed(Button* button, const Event& event) OVERRIDE;
 
   // Overridden from ComboboxListener:
-  virtual void ItemChanged(Combobox* combo_box,
-                           int prev_index,
-                           int new_index) OVERRIDE;
+  virtual void OnSelectedIndexChanged(Combobox* combobox) OVERRIDE;
 
   class TextExampleView;
   // The content of the scroll view.

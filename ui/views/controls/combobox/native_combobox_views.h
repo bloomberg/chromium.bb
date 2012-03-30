@@ -28,7 +28,7 @@ class NativeComboboxViews : public views::View,
  public:
   static const char kViewClassName[];
 
-  explicit NativeComboboxViews(Combobox* combo_box);
+  explicit NativeComboboxViews(Combobox* combobox);
   virtual ~NativeComboboxViews();
 
   // views::View overrides:

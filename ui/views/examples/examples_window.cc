@@ -116,13 +116,12 @@ class ExamplesWindowContents : public WidgetDelegateView,
   }
 
   // Overridden from ComboboxListener:
-  virtual void ItemChanged(Combobox* combo_box,
-                           int prev_index,
-                           int new_index) OVERRIDE {
-    DCHECK(combo_box && combo_box == combobox_);
-    DCHECK(new_index < combobox_model_.GetItemCount());
+  virtual void OnSelectedIndexChanged(Combobox* combobox) OVERRIDE {
+    DCHECK_EQ(combobox, combobox_);
+    DCHECK(combobox->selected_index() < combobox_model_.GetItemCount());
     example_shown_->RemoveAllChildViews(false);
-    example_shown_->AddChildView(combobox_model_.GetItemViewAt(new_index));
+    example_shown_->AddChildView(combobox_model_.GetItemViewAt(
+        combobox->selected_index()));
     example_shown_->RequestFocus();
     SetStatus(std::string());
     Layout();

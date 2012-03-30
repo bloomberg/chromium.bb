@@ -139,12 +139,10 @@ void CookieInfoView::ViewHierarchyChanged(bool is_add,
 ///////////////////////////////////////////////////////////////////////////////
 // CookieInfoView, views::ComboboxListener overrides.
 
-void CookieInfoView::ItemChanged(views::Combobox* combo_box,
-                                 int prev_index,
-                                 int new_index) {
-  DCHECK(combo_box == expires_value_combobox_);
+void CookieInfoView::OnSelectedIndexChanged(views::Combobox* combobox) {
+  DCHECK_EQ(combobox, expires_value_combobox_);
   if (delegate_)
-    delegate_->ModifyExpireDate(new_index != 0);
+    delegate_->ModifyExpireDate(combobox->selected_index() != 0);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

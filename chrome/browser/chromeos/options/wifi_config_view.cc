@@ -571,11 +571,8 @@ void WifiConfigView::ButtonPressed(views::Button* sender,
   }
 }
 
-void WifiConfigView::ItemChanged(views::Combobox* combo_box,
-                                 int prev_index, int new_index) {
-  if (new_index == prev_index)
-    return;
-  if (combo_box == security_combobox_) {
+void WifiConfigView::OnSelectedIndexChanged(views::Combobox* combobox) {
+  if (combobox == security_combobox_) {
     bool passphrase_enabled = PassphraseActive();
     passphrase_label_->SetEnabled(passphrase_enabled);
     passphrase_textfield_->SetEnabled(passphrase_enabled &&
@@ -583,9 +580,9 @@ void WifiConfigView::ItemChanged(views::Combobox* combo_box,
     if (!passphrase_enabled)
       passphrase_textfield_->SetText(string16());
     RefreshShareCheckbox();
-  } else if (combo_box == user_cert_combobox_) {
+  } else if (combobox == user_cert_combobox_) {
     RefreshShareCheckbox();
-  } else if (combo_box == eap_method_combobox_) {
+  } else if (combobox == eap_method_combobox_) {
     RefreshEapFields();
   }
   UpdateDialogButtons();
