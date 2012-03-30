@@ -15,9 +15,18 @@
 namespace browser_sync {
 
 void ChromeReportUnrecoverableError() {
-  // This currently works on windows platform but is disabled for now.
   // TODO(lipalani): Add this for other platforms as well.
-  // TODO(lipalani) : Re-enable error reporting on trunk.
+#if defined(OS_WIN)
+  // Get the breakpad pointer from chrome.exe
+  typedef void (__cdecl *DumpProcessFunction)();
+  DumpProcessFunction DumpProcess = reinterpret_cast<DumpProcessFunction>(
+      ::GetProcAddress(::GetModuleHandle(
+                       chrome::kBrowserProcessExecutableName),
+                       "DumpProcessWithoutCrash"));
+  if (DumpProcess)
+    DumpProcess();
+#endif  // OS_WIN
+
 }
 
 }  // namespace browser_sync
