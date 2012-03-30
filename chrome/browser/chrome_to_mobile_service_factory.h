@@ -7,22 +7,21 @@
 #pragma once
 
 #include "base/memory/singleton.h"
-#include "chrome/browser/profiles/refcounted_profile_keyed_service_factory.h"
+#include "chrome/browser/profiles/profile_keyed_service_factory.h"
 
 class ChromeToMobileService;
 
-class ChromeToMobileServiceFactory
-    : public RefcountedProfileKeyedServiceFactory {
+class ChromeToMobileServiceFactory : public ProfileKeyedServiceFactory {
  public:
   // Get the singleton ChromeToMobileServiceFactory instance.
   static ChromeToMobileServiceFactory* GetInstance();
 
   // Get |profile|'s ChromeToMobileService, creating one if needed.
-  static scoped_refptr<ChromeToMobileService> GetForProfile(Profile* profile);
+  static ChromeToMobileService* GetForProfile(Profile* profile);
 
  protected:
-  // RefcountedProfileKeyedServiceFactory overrides:
-  virtual scoped_refptr<RefcountedProfileKeyedService> BuildServiceInstanceFor(
+  // ProfileKeyedServiceFactory overrides:
+  virtual ProfileKeyedService* BuildServiceInstanceFor(
       Profile* profile) const OVERRIDE;
 
  private:

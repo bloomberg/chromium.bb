@@ -1187,8 +1187,10 @@ void LocationBarViewGtk::ShowStarBubble(const GURL& url,
 }
 
 void LocationBarViewGtk::ShowChromeToMobileBubble() {
-  ChromeToMobileBubbleGtk::Show(GTK_IMAGE(chrome_to_mobile_image_),
-                                browser_->profile());
+  Profile* profile = browser_->profile();
+  ChromeToMobileServiceFactory::GetForProfile(profile)->
+      RequestMobileListUpdate();
+  ChromeToMobileBubbleGtk::Show(GTK_IMAGE(chrome_to_mobile_image_), profile);
 }
 
 void LocationBarViewGtk::SetStarred(bool starred) {
@@ -1222,7 +1224,8 @@ void LocationBarViewGtk::UpdateChromeToMobileIcon() {
 
   Profile* profile = browser_->profile();
   bool enabled = !toolbar_model_->input_in_progress() &&
-      ChromeToMobileServiceFactory::GetForProfile(profile)->HasDevices();
+      profile->IsSyncAccessible() &&
+      !ChromeToMobileServiceFactory::GetForProfile(profile)->mobiles().empty();
   gtk_widget_set_visible(chrome_to_mobile_view_.get(), enabled);
   command_updater_->UpdateCommandEnabled(IDC_CHROME_TO_MOBILE_PAGE, enabled);
 }

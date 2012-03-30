@@ -16,7 +16,6 @@ class MockChromeToMobileService : public ChromeToMobileService {
   // A utility function to add mock devices.
   void AddDevices(size_t count);
 
-  MOCK_METHOD0(RequestMobileListUpdate, void());
   MOCK_METHOD1(GenerateSnapshot, void(base::WeakPtr<Observer> observer));
   MOCK_METHOD3(SendToMobile, void(const string16& mobile_id,
                                   const FilePath& snapshot,
@@ -95,7 +94,6 @@ class ChromeToMobileBubbleControllerTest : public CocoaTest {
 };
 
 TEST_F(ChromeToMobileBubbleControllerTest, OneDevice) {
-  EXPECT_CALL(service_, RequestMobileListUpdate()).Times(1);
   EXPECT_CALL(service_, GenerateSnapshot(testing::_)).Times(1);
 
   service_.AddDevices(1);
@@ -104,7 +102,6 @@ TEST_F(ChromeToMobileBubbleControllerTest, OneDevice) {
 }
 
 TEST_F(ChromeToMobileBubbleControllerTest, TwoDevices) {
-  EXPECT_CALL(service_, RequestMobileListUpdate()).Times(1);
   EXPECT_CALL(service_, GenerateSnapshot(testing::_)).Times(1);
 
   service_.AddDevices(2);
@@ -113,7 +110,6 @@ TEST_F(ChromeToMobileBubbleControllerTest, TwoDevices) {
 }
 
 TEST_F(ChromeToMobileBubbleControllerTest, ThreeDevices) {
-  EXPECT_CALL(service_, RequestMobileListUpdate()).Times(1);
   EXPECT_CALL(service_, GenerateSnapshot(testing::_)).Times(1);
 
   service_.AddDevices(3);
@@ -123,7 +119,6 @@ TEST_F(ChromeToMobileBubbleControllerTest, ThreeDevices) {
 
 TEST_F(ChromeToMobileBubbleControllerTest, SendWithoutSnapshot) {
   FilePath path;
-  EXPECT_CALL(service_, RequestMobileListUpdate()).Times(1);
   EXPECT_CALL(service_, GenerateSnapshot(testing::_)).Times(1);
   EXPECT_CALL(service_, SendToMobile(testing::_, path, testing::_)).Times(1);
 
@@ -134,7 +129,6 @@ TEST_F(ChromeToMobileBubbleControllerTest, SendWithoutSnapshot) {
 
 TEST_F(ChromeToMobileBubbleControllerTest, SendWithSnapshot) {
   FilePath path("path.mht");
-  EXPECT_CALL(service_, RequestMobileListUpdate()).Times(1);
   EXPECT_CALL(service_, GenerateSnapshot(testing::_)).Times(1);
   EXPECT_CALL(service_, SendToMobile(testing::_, path, testing::_)).Times(1);
 

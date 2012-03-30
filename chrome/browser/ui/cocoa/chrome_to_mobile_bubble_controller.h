@@ -45,6 +45,8 @@ class ChromeToMobileBubbleNotificationBridge
       SEL selector);
   virtual ~ChromeToMobileBubbleNotificationBridge() {}
 
+  void CloseBubble();
+
   // content::NotificationObserver override:
   virtual void Observe(int type,
                        const content::NotificationSource& source,

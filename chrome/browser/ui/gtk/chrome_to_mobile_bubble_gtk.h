@@ -75,8 +75,7 @@ class ChromeToMobileBubbleGtk : public BubbleDelegateGtk,
 
   base::WeakPtrFactory<ChromeToMobileBubbleGtk> weak_ptr_factory_;
 
-  // The Chrome To Mobile service associated with this bubble.
-  ChromeToMobileService* service_;
+  Profile* profile_;
 
   // Support members for getting theme colors and theme change notifications.
   ThemeServiceGtk* theme_service_;

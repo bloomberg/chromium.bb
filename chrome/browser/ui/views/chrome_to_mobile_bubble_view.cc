@@ -241,7 +241,8 @@ void ChromeToMobileBubbleView::Init() {
   cs->AddColumn(GridLayout::LEADING, GridLayout::TRAILING, 0,
                 GridLayout::USE_PREF, 0, 0);
 
-  std::vector<DictionaryValue*> mobiles = service_->mobiles();
+  std::vector<DictionaryValue*> mobiles =
+      ChromeToMobileServiceFactory::GetForProfile(profile_)->mobiles();
   DCHECK_GT(mobiles.size(), 0U);
 
   views::Label* title_label = new views::Label();
@@ -308,16 +309,14 @@ ChromeToMobileBubbleView::ChromeToMobileBubbleView(views::View* anchor_view,
                                                    Profile* profile)
     : BubbleDelegateView(anchor_view, views::BubbleBorder::TOP_RIGHT),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
-      service_(ChromeToMobileServiceFactory::GetForProfile(profile)),
+      profile_(profile),
       selected_mobile_(NULL),
       send_copy_(NULL),
       send_(NULL),
       cancel_(NULL) {
   // Generate the MHTML snapshot now to report its size in the bubble.
-  service_->GenerateSnapshot(weak_ptr_factory_.GetWeakPtr());
-
-  // Request a mobile device list update.
-  service_->RequestMobileListUpdate();
+  ChromeToMobileServiceFactory::GetForProfile(profile)->
+      GenerateSnapshot(weak_ptr_factory_.GetWeakPtr());
 }
 
 void ChromeToMobileBubbleView::HandleButtonPressed(views::Button* sender) {
@@ -336,8 +335,9 @@ void ChromeToMobileBubbleView::HandleButtonPressed(views::Button* sender) {
 void ChromeToMobileBubbleView::Send() {
   string16 mobile_id;
   selected_mobile_->GetString("id", &mobile_id);
-  FilePath snapshot = send_copy_->checked() ? snapshot_path_ : FilePath();
-  service_->SendToMobile(mobile_id, snapshot, weak_ptr_factory_.GetWeakPtr());
+  ChromeToMobileServiceFactory::GetForProfile(profile_)->SendToMobile(
+      mobile_id, send_copy_->checked() ? snapshot_path_ : FilePath(),
+      weak_ptr_factory_.GetWeakPtr());
 
   // Update the view's contents to show the "Sending..." progress animation.
   cancel_->SetEnabled(false);

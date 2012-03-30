@@ -11,12 +11,11 @@
 #include <vector>
 
 #include "base/file_util.h"
-#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_temp_dir.h"
 #include "base/string16.h"
 #include "base/timer.h"
-#include "chrome/browser/profiles/refcounted_profile_keyed_service.h"
+#include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/common/net/gaia/oauth2_access_token_consumer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -34,7 +33,8 @@ class DictionaryValue;
 
 // ChromeToMobileService connects to the cloud print service to enumerate
 // compatible mobiles owned by its profile and send URLs and MHTML snapshots.
-class ChromeToMobileService : public RefcountedProfileKeyedService,
+// The mobile list updates regularly, and explicitly by RequestMobileListUpdate.
+class ChromeToMobileService : public ProfileKeyedService,
                               public content::URLFetcherDelegate,
                               public content::NotificationObserver,
                               public OAuth2AccessTokenConsumer {
@@ -78,15 +78,11 @@ class ChromeToMobileService : public RefcountedProfileKeyedService,
   explicit ChromeToMobileService(Profile* profile);
   virtual ~ChromeToMobileService();
 
-  // Returns true if the service has found any registered mobile devices.
-  bool HasDevices();
-
   // Get the list of mobile devices.
-  const std::vector<base::DictionaryValue*>& mobiles();
+  const std::vector<base::DictionaryValue*>& mobiles() { return mobiles_; }
 
   // Request an updated mobile device list, request auth first if needed.
-  // Virtual for unit test mocking.
-  virtual void RequestMobileListUpdate();
+  void RequestMobileListUpdate();
 
   // Callback with an MHTML snapshot of the profile's selected WebContents.
   // Virtual for unit test mocking.
@@ -97,9 +93,6 @@ class ChromeToMobileService : public RefcountedProfileKeyedService,
   virtual void SendToMobile(const string16& mobile_id,
                             const FilePath& snapshot,
                             base::WeakPtr<Observer> observer);
-
-  // RefcountedProfileKeyedService method.
-  virtual void ShutdownOnUIThread() OVERRIDE;
 
   // content::URLFetcherDelegate method.
   virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
@@ -126,13 +119,9 @@ class ChromeToMobileService : public RefcountedProfileKeyedService,
   // Virtual for unit test mocking.
   virtual void RefreshAccessToken();
 
-  // Request account information to limit cloud print access to existing users.
-  void RequestAccountInfo();
-
   // Send the cloud print URLFetcher search request.
   void RequestSearch();
 
-  void HandleAccountInfoResponse();
   void HandleSearchResponse();
   void HandleSubmitResponse(const content::URLFetcher* source);
 
@@ -146,11 +135,10 @@ class ChromeToMobileService : public RefcountedProfileKeyedService,
   std::string access_token_;
 
   // The list of mobile devices retrieved from the cloud print service.
-  ScopedVector<base::DictionaryValue> mobiles_;
+  std::vector<base::DictionaryValue*> mobiles_;
 
-  // The temporary directory for MHTML snapshot files and its validity flag.
+  // The temporary directory for MHTML snapshot files.
   ScopedTempDir temp_dir_;
-  bool temp_dir_valid_;
 
   // Map URLFetchers to observers for reporting OnSendComplete.
   typedef std::map<const content::URLFetcher*, base::WeakPtr<Observer> >
@@ -160,10 +148,6 @@ class ChromeToMobileService : public RefcountedProfileKeyedService,
   // The pending OAuth access token request and a timer for retrying on failure.
   scoped_ptr<OAuth2AccessTokenFetcher> access_token_fetcher_;
   base::OneShotTimer<ChromeToMobileService> auth_retry_timer_;
-
-  // The pending account information request and the cloud print access flag.
-  scoped_ptr<content::URLFetcher> account_info_request_;
-  bool cloud_print_accessible_;
 
   // The pending mobile device search request; and the time of the last request.
   scoped_ptr<content::URLFetcher> search_request_;
