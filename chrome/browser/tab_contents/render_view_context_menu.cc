@@ -1909,15 +1909,6 @@ bool RenderViewContextMenu::IsDevCommandEnabled(int id) const {
           prefs::kWebKitGlobalJavascriptEnabled) ||
           command_line->HasSwitch(switches::kDisableJavaScript))
         return false;
-#if defined(OS_MACOSX)
-    } else {
-      // Disable dev tools for popup extensions for Mac OS X builds, as the
-      // extension popups for these builds do not support dynamically inspecting
-      // the popups.
-      // TODO(benwells): Add support for these builds and remove this #if.
-      if (!extension->is_platform_app())
-        return false;
-#endif
     }
 
     // Don't enable the web inspector if the developer tools are disabled via
