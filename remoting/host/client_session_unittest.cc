@@ -70,21 +70,21 @@ MATCHER_P2(EqualsClipboardEvent, m, d, "") {
 
 TEST_F(ClientSessionTest, ClipboardStubFilter) {
   protocol::ClipboardEvent clipboard_event1;
-  clipboard_event1.set_mime_type(kMimeTypeText);
+  clipboard_event1.set_mime_type(kMimeTypeTextUtf8);
   clipboard_event1.set_data("a");
 
   protocol::ClipboardEvent clipboard_event2;
-  clipboard_event2.set_mime_type(kMimeTypeText);
+  clipboard_event2.set_mime_type(kMimeTypeTextUtf8);
   clipboard_event2.set_data("b");
 
   protocol::ClipboardEvent clipboard_event3;
-  clipboard_event3.set_mime_type(kMimeTypeText);
+  clipboard_event3.set_mime_type(kMimeTypeTextUtf8);
   clipboard_event3.set_data("c");
 
   InSequence s;
   EXPECT_CALL(session_event_handler_, OnSessionAuthenticated(_));
   EXPECT_CALL(host_event_stub_, InjectClipboardEvent(EqualsClipboardEvent(
-      kMimeTypeText, "b")));
+      kMimeTypeTextUtf8, "b")));
 
   // This event should not get through to the clipboard stub,
   // because the client isn't authenticated yet.

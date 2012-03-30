@@ -23,7 +23,8 @@ remoting.Clipboard = function() {
  * @enum {string}
  */
 remoting.Clipboard.prototype.ItemTypes = {
-  TEXT_TYPE: 'text/plain'
+  TEXT_TYPE: 'text/plain',
+  TEXT_UTF8_TYPE: 'text/plain; charset=UTF-8'
 };
 
 /**
@@ -45,16 +46,21 @@ remoting.Clipboard.prototype.toHost = function(clipboardData) {
   if (!clipboardData || !clipboardData.types || !clipboardData.getData) {
     return;
   }
-  var textType = 'text/plain';
+  if (!remoting.clientSession || !remoting.clientSession.plugin) {
+    return;
+  }
+  var plugin = remoting.clientSession.plugin;
   for (var i = 0; i < clipboardData.types.length; i++) {
     var type = clipboardData.types[i];
+    // The browser presents text clipboard items as 'text/plain'.
     if (type == this.ItemTypes.TEXT_TYPE) {
       var item = clipboardData.getData(type);
       if (!item) {
         item = "";
       }
       if (item != this.recentItemText) {
-        // TODO(simonmorris): Pass the clipboard text item to the plugin.
+        // The plugin's JSON reader emits UTF-8.
+        plugin.sendClipboardItem(this.ItemTypes.TEXT_UTF8_TYPE, item);
         this.recentItemText = item;
       }
     }

@@ -86,7 +86,7 @@ class ChromotingInstance :
 
   // Plugin API version. This should be incremented whenever the API
   // interface changes.
-  static const int kApiVersion = 5;
+  static const int kApiVersion = 6;
 
   // Backward-compatibility version used by for the messaging
   // interface. Should be updated whenever we remove support for
@@ -129,6 +129,7 @@ class ChromotingInstance :
   void Disconnect();
   void OnIncomingIq(const std::string& iq);
   void ReleaseAllKeys();
+  void SendClipboardItem(const std::string& mime_type, const std::string& item);
 
   // Return statistics record by ChromotingClient.
   // If no connection is currently active then NULL will be returned.

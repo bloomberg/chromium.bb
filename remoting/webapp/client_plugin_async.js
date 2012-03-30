@@ -66,7 +66,7 @@ remoting.ClientPluginAsync = function(plugin) {
  * @const
  * @private
  */
-remoting.ClientPluginAsync.prototype.API_VERSION_ = 5;
+remoting.ClientPluginAsync.prototype.API_VERSION_ = 6;
 
 /**
  * The oldest API version that we support.
@@ -273,4 +273,20 @@ remoting.ClientPluginAsync.prototype.releaseAllKeys = function() {
  */
 remoting.ClientPluginAsync.prototype.getPerfStats = function() {
   return this.perfStats_;
+};
+
+/**
+ * Sends a clipboard item to the host.
+ *
+ * @param {string} mimeType The MIME type of the clipboard item.
+ * @param {string} item The clipboard item.
+ */
+remoting.ClientPluginAsync.prototype.sendClipboardItem =
+    function(mimeType, item) {
+  if (this.plugin.apiVersion < 6) {
+    return;
+  }
+  this.plugin.postMessage(JSON.stringify(
+      { method: 'sendClipboardItem',
+        data: { mimeType: mimeType, item: item }}));
 };

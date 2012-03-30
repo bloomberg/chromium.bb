@@ -25,7 +25,7 @@ extern const char kVideoRtpChannelName[];
 extern const char kVideoRtcpChannelName[];
 
 // MIME types for the clipboard.
-extern const char kMimeTypeText[];
+extern const char kMimeTypeTextUtf8[];
 
 }  // namespace remoting
 

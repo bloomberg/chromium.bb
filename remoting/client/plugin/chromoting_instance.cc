@@ -25,6 +25,7 @@
 #include "ppapi/cpp/rect.h"
 // TODO(wez): Remove this when crbug.com/86353 is complete.
 #include "ppapi/cpp/private/var_private.h"
+#include "remoting/base/constants.h"
 #include "remoting/base/util.h"
 #include "remoting/client/client_config.h"
 #include "remoting/client/chromoting_client.h"
@@ -248,6 +249,15 @@ void ChromotingInstance::HandleMessage(const pp::Var& message) {
     OnIncomingIq(iq);
   } else if (method == "releaseAllKeys") {
     ReleaseAllKeys();
+  } else if (method == "sendClipboardItem") {
+    std::string mime_type;
+    std::string item;
+    if (!data->GetString("mimeType", &mime_type) ||
+        !data->GetString("item", &item)) {
+      LOG(ERROR) << "Invalid sendClipboardItem() data.";
+      return;
+    }
+    SendClipboardItem(mime_type, item);
   }
 }
 
@@ -393,6 +403,11 @@ void ChromotingInstance::ReleaseAllKeys() {
   if (key_event_tracker_.get()) {
     key_event_tracker_->ReleaseAllKeys();
   }
+}
+
+void ChromotingInstance::SendClipboardItem(const std::string& mime_type,
+                                           const std::string& item) {
+  // TODO(simonmorris): Plumb this in to a ClipboardStub.
 }
 
 ChromotingStats* ChromotingInstance::GetStats() {

@@ -96,3 +96,11 @@ remoting.ClientPlugin.prototype.releaseAllKeys = function() {};
  * @return {remoting.ClientSession.PerfStats} The connection statistics.
  */
 remoting.ClientPlugin.prototype.getPerfStats = function() {};
+
+/**
+ * Sends a clipboard item to the host.
+ *
+ * @param {string} mimeType The MIME type of the clipboard item.
+ * @param {string} item The clipboard item.
+ */
+remoting.ClientPlugin.prototype.sendClipboardItem = function(mimeType, item) {};

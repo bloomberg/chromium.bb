@@ -218,3 +218,13 @@ remoting.ClientPluginV1.prototype.getPerfStats = function() {
            renderLatency: this.plugin.videoRenderLatency,
            roundtripLatency: this.plugin.roundTripLatency };
 };
+
+/**
+ * This dummy method exists only so that this class implements ClientPlugin.
+ *
+ * @param {string} mimeType The MIME type of the clipboard item.
+ * @param {string} item The clipboard item.
+ */
+remoting.ClientPluginV1.prototype.sendClipboardItem = function(mimeType, item) {
+  return;
+};
