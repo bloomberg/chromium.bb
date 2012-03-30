@@ -42,7 +42,7 @@ class OmxVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
   OmxVideoDecodeAccelerator(media::VideoDecodeAccelerator::Client* client);
 
   // media::VideoDecodeAccelerator implementation.
-  bool Initialize(Profile profile) OVERRIDE;
+  bool Initialize(media::VideoCodecProfile profile) OVERRIDE;
   void Decode(const media::BitstreamBuffer& bitstream_buffer) OVERRIDE;
   virtual void AssignPictureBuffers(
       const std::vector<media::PictureBuffer>& buffers) OVERRIDE;

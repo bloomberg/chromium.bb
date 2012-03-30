@@ -41,7 +41,7 @@ class CONTENT_EXPORT RendererGpuVideoDecoderFactories
       WebGraphicsContext3DCommandBufferImpl* wgc3dcbi);
 
   virtual media::VideoDecodeAccelerator* CreateVideoDecodeAccelerator(
-      media::VideoDecodeAccelerator::Profile profile,
+      media::VideoCodecProfile profile,
       media::VideoDecodeAccelerator::Client* client) OVERRIDE;
 
   virtual bool CreateTextures(int32 count, const gfx::Size& size,
@@ -68,7 +68,7 @@ class CONTENT_EXPORT RendererGpuVideoDecoderFactories
   // AsyncCreateSharedMemory runs on the renderer thread and the rest run on
   // |message_loop_|.
   void AsyncCreateVideoDecodeAccelerator(
-      media::VideoDecodeAccelerator::Profile profile,
+      media::VideoCodecProfile profile,
       media::VideoDecodeAccelerator::Client* client,
       media::VideoDecodeAccelerator** vda,
       base::WaitableEvent* waiter);

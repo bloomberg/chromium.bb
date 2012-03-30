@@ -141,7 +141,7 @@ static void InitParam(const OmxVideoDecodeAccelerator& dec, T* param) {
   param->nSize = sizeof(T);
 }
 
-bool OmxVideoDecodeAccelerator::Initialize(Profile profile) {
+bool OmxVideoDecodeAccelerator::Initialize(media::VideoCodecProfile profile) {
   DCHECK_EQ(message_loop_, MessageLoop::current());
 
   RETURN_ON_FAILURE((profile >= media::H264PROFILE_MIN &&

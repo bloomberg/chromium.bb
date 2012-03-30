@@ -46,7 +46,7 @@ class GpuVideoDecodeAccelerator
   // |init_done_msg| when done.
   // The renderer process handle is valid as long as we have a channel between
   // GPU process and the renderer.
-  void Initialize(const media::VideoDecodeAccelerator::Profile profile,
+  void Initialize(const media::VideoCodecProfile profile,
                   IPC::Message* init_done_msg,
                   base::ProcessHandle renderer_process);
 

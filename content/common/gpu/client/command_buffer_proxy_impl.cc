@@ -424,7 +424,7 @@ void CommandBufferProxyImpl::SetNotifyRepaintTask(const base::Closure& task) {
 
 scoped_refptr<GpuVideoDecodeAcceleratorHost>
 CommandBufferProxyImpl::CreateVideoDecoder(
-    media::VideoDecodeAccelerator::Profile profile,
+    media::VideoCodecProfile profile,
     media::VideoDecodeAccelerator::Client* client) {
   int decoder_route_id;
   if (!Send(new GpuCommandBufferMsg_CreateVideoDecoder(route_id_, profile,
