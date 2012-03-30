@@ -9,6 +9,7 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
+#include "ui/base/animation/slide_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/compositor/scoped_layer_animation_settings.h"
@@ -82,11 +83,16 @@ void PhantomWindowController::Show(const gfx::Rect& bounds) {
   if (bounds == bounds_)
     return;
   bounds_ = bounds;
-  if (phantom_widget_.get()) {
-    phantom_widget_->SetBounds(bounds);
-    return;
+  if (!phantom_widget_.get()) {
+    // Show the phantom at the bounds of the window. We'll animate to the target
+    // bounds.
+    start_bounds_ = window_->bounds();
+    CreatePhantomWidget(start_bounds_);
+  } else {
+    start_bounds_ = phantom_widget_->GetWindowScreenBounds();
   }
-  ShowNow();
+  animation_.reset(new ui::SlideAnimation(this));
+  animation_->Show();
 }
 
 void PhantomWindowController::Hide() {
@@ -97,34 +103,35 @@ bool PhantomWindowController::IsShowing() const {
   return phantom_widget_.get() != NULL;
 }
 
-void PhantomWindowController::ShowNow() {
-  if (!phantom_widget_.get()) {
-    phantom_widget_.reset(new views::Widget);
-    views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
-    params.transparent = true;
-    params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-    // This is used by FrameMaximizeButton to highlight the launcher button,
-    // make sure the phantom appears over the launcher.
-    params.parent =
-        Shell::GetInstance()->GetContainer(kShellWindowId_LauncherContainer);
-    params.can_activate = false;
-    params.keep_on_top = true;
-    phantom_widget_->set_focus_on_creation(false);
-    phantom_widget_->Init(params);
-    phantom_widget_->SetVisibilityChangedAnimationsEnabled(false);
-    phantom_widget_->GetNativeWindow()->SetName("PhantomWindow");
-    views::View* content_view = new views::View;
-    views::Painter* painter = static_cast<views::Painter*>(new EdgePainter);
-    content_view->set_background(
-        views::Background::CreateBackgroundPainter(true, painter));
-    phantom_widget_->SetContentsView(content_view);
-    phantom_widget_->SetBounds(bounds_);
-    phantom_widget_->StackAbove(window_);
-    phantom_widget_->Show();
-    return;
-  }
+void PhantomWindowController::AnimationProgressed(
+    const ui::Animation* animation) {
+  phantom_widget_->SetBounds(
+      animation->CurrentValueBetween(start_bounds_, bounds_));
+}
 
-  phantom_widget_->SetBounds(bounds_);
+void PhantomWindowController::CreatePhantomWidget(const gfx::Rect& bounds) {
+  DCHECK(!phantom_widget_.get());
+  phantom_widget_.reset(new views::Widget);
+  views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
+  params.transparent = true;
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  // PhantomWindowController is used by FrameMaximizeButton to highlight the
+  // launcher button. Put the phantom in the same window as the launcher so that
+  // the phantom is visible.
+  params.parent =
+      Shell::GetInstance()->GetContainer(kShellWindowId_LauncherContainer);
+  params.can_activate = false;
+  params.keep_on_top = true;
+  phantom_widget_->set_focus_on_creation(false);
+  phantom_widget_->Init(params);
+  phantom_widget_->SetVisibilityChangedAnimationsEnabled(false);
+  phantom_widget_->GetNativeWindow()->SetName("PhantomWindow");
+  views::View* content_view = new views::View;
+  content_view->set_background(
+      views::Background::CreateBackgroundPainter(true, new EdgePainter));
+  phantom_widget_->SetContentsView(content_view);
+  phantom_widget_->SetBounds(bounds);
+  phantom_widget_->StackAbove(window_);
   phantom_widget_->Show();
   // Fade the window in.
   ui::Layer* layer = phantom_widget_->GetNativeWindow()->layer();

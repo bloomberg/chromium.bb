@@ -7,6 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/timer.h"
 #include "ui/views/controls/button/image_button.h"
 
 namespace views {
@@ -53,6 +54,7 @@ class ASH_EXPORT FrameMaximizeButton : public views::ImageButton {
     SNAP_RIGHT,
     SNAP_MAXIMIZE,
     SNAP_MINIMIZE,
+    SNAP_RESTORE,
     SNAP_NONE
   };
 
@@ -62,6 +64,10 @@ class ASH_EXPORT FrameMaximizeButton : public views::ImageButton {
   // Installs/uninstalls an EventFilter to track when escape is pressed.
   void InstallEventFilter();
   void UninstallEventFilter();
+
+  // Updates the snap position from the current location. This is invoked by
+  // |update_timer_|.
+  void UpdateSnapFromCursorScreenPoint();
 
   // Updates |snap_type_| based on a mouse drag.
   void UpdateSnap(const gfx::Point& location);
@@ -108,6 +114,8 @@ class ASH_EXPORT FrameMaximizeButton : public views::ImageButton {
   scoped_ptr<internal::SnapSizer> snap_sizer_;
 
   scoped_ptr<EscapeEventFilter> escape_event_filter_;
+
+  base::OneShotTimer<FrameMaximizeButton> update_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameMaximizeButton);
 };

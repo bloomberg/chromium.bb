@@ -25,6 +25,13 @@ using ash::internal::SnapSizer;
 
 namespace ash {
 
+namespace {
+
+// Delay before forcing an update of the snap location.
+const int kUpdateDelayMS = 400;
+
+}
+
 // EscapeEventFilter is installed on the RootWindow to track when the escape key
 // is pressed. We use an EventFilter for this as the FrameMaximizeButton
 // normally does not get focus.
@@ -116,6 +123,10 @@ bool FrameMaximizeButton::OnMousePressed(const views::MouseEvent& event) {
     snap_type_ = SNAP_NONE;
     press_location_ = event.location();
     exceeded_drag_threshold_ = false;
+    update_timer_.Start(
+        FROM_HERE,
+        base::TimeDelta::FromMilliseconds(kUpdateDelayMS),
+        this, &FrameMaximizeButton::UpdateSnapFromCursorScreenPoint);
   }
   ImageButton::OnMousePressed(event);
   return true;
@@ -144,6 +155,7 @@ bool FrameMaximizeButton::OnMouseDragged(const views::MouseEvent& event) {
 }
 
 void FrameMaximizeButton::OnMouseReleased(const views::MouseEvent& event) {
+  update_timer_.Stop();
   UninstallEventFilter();
   bool should_snap = is_snap_enabled_;
   is_snap_enabled_ = false;
@@ -184,6 +196,7 @@ SkBitmap FrameMaximizeButton::GetImageToPaint() {
           id = IDR_AURA_WINDOW_MAXIMIZED_RESTORE_SNAP_RIGHT_P;
           break;
         case SNAP_MAXIMIZE:
+        case SNAP_RESTORE:
         case SNAP_NONE:
           id = IDR_AURA_WINDOW_MAXIMIZED_RESTORE_SNAP_P;
           break;
@@ -202,6 +215,7 @@ SkBitmap FrameMaximizeButton::GetImageToPaint() {
           id = IDR_AURA_WINDOW_MAXIMIZED_SNAP_RIGHT_P;
           break;
         case SNAP_MAXIMIZE:
+        case SNAP_RESTORE:
         case SNAP_NONE:
           id = IDR_AURA_WINDOW_MAXIMIZED_SNAP_P;
           break;
@@ -225,6 +239,7 @@ void FrameMaximizeButton::Cancel() {
   is_snap_enabled_ = false;
   phantom_window_.reset();
   snap_sizer_.reset();
+  update_timer_.Stop();
   SchedulePaint();
 }
 
@@ -237,6 +252,16 @@ void FrameMaximizeButton::InstallEventFilter() {
 
 void FrameMaximizeButton::UninstallEventFilter() {
   escape_event_filter_.reset(NULL);
+}
+
+void FrameMaximizeButton::UpdateSnapFromCursorScreenPoint() {
+  // If the drag threshold has been exceeded the snap location is up to date.
+  if (exceeded_drag_threshold_)
+    return;
+  exceeded_drag_threshold_ = true;
+  gfx::Point cursor_point(gfx::Screen::GetCursorScreenPoint());
+  ConvertPointFromScreen(this, &cursor_point);
+  UpdateSnap(cursor_point);
 }
 
 void FrameMaximizeButton::UpdateSnap(const gfx::Point& location) {
@@ -282,16 +307,14 @@ FrameMaximizeButton::SnapType FrameMaximizeButton::SnapTypeForLocation(
   int delta_x = location.x() - press_location_.x();
   int delta_y = location.y() - press_location_.y();
   if (!views::View::ExceededDragThreshold(delta_x, delta_y))
-    return AllowMaximize() ? SNAP_MAXIMIZE : SNAP_NONE;
+    return AllowMaximize() ? SNAP_MAXIMIZE : SNAP_RESTORE;
   else if (delta_x < 0 && delta_y > delta_x && delta_y < -delta_x)
     return is_left_right_enabled_ ? SNAP_LEFT : SNAP_NONE;
   else if (delta_x > 0 && delta_y > -delta_x && delta_y < delta_x)
     return is_left_right_enabled_ ? SNAP_RIGHT : SNAP_NONE;
   else if (delta_y > 0)
     return SNAP_MINIMIZE;
-  else if (AllowMaximize())
-    return SNAP_MAXIMIZE;
-  return SNAP_NONE;
+  return AllowMaximize() ? SNAP_MAXIMIZE : SNAP_RESTORE;
 }
 
 gfx::Rect FrameMaximizeButton::BoundsForType(SnapType type) const {
@@ -313,7 +336,11 @@ gfx::Rect FrameMaximizeButton::BoundsForType(SnapType type) const {
       }
       return launcher->widget()->GetWindowScreenBounds();
     }
-    default:
+    case SNAP_RESTORE: {
+      const gfx::Rect* restore = GetRestoreBounds(window);
+      return restore ? *restore : frame_->GetWidget()->GetWindowScreenBounds();
+    }
+    case SNAP_NONE:
       NOTREACHED();
   }
   return gfx::Rect();
@@ -344,7 +371,10 @@ void FrameMaximizeButton::Snap() {
     case SNAP_MINIMIZE:
       frame_->GetWidget()->Minimize();
       break;
-    default:
+    case SNAP_RESTORE:
+      frame_->GetWidget()->Restore();
+      break;
+    case SNAP_NONE:
       NOTREACHED();
   }
 }
