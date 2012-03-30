@@ -220,21 +220,23 @@ void NativeThemeButtonExample::CreateExampleView(View* container) {
 
   layout->StartRow(0, 0);
   layout->AddView(new Label(ASCIIToUTF16("Part:")));
-  Combobox* cb_part = new Combobox(
+  combobox_model_part_.reset(
       new ExampleComboboxModel(kParts, arraysize(kParts)));
-  cb_part->SetSelectedIndex(0);
-  layout->AddView(cb_part);
+  Combobox* combobox_part = new Combobox(combobox_model_part_.get());
+  combobox_part->SetSelectedIndex(0);
+  layout->AddView(combobox_part);
 
   layout->StartRow(0, 0);
   layout->AddView(new Label(ASCIIToUTF16("State:")));
-  Combobox* cb_state = new Combobox(
+  combobox_model_state_.reset(
       new ExampleComboboxModel(kStates, arraysize(kStates)));
-  cb_state->SetSelectedIndex(0);
-  layout->AddView(cb_state);
+  Combobox* combobox_state = new Combobox(combobox_model_state_.get());
+  combobox_state->SetSelectedIndex(0);
+  layout->AddView(combobox_state);
 
   layout->AddPaddingRow(0, 32);
 
-  button_ = new ExampleNativeThemeButton(this, cb_part, cb_state);
+  button_ = new ExampleNativeThemeButton(this, combobox_part, combobox_state);
 
   column_set = layout->AddColumnSet(1);
   column_set->AddPaddingColumn(0, 16);

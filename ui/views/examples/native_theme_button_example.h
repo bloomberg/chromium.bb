@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,18 +7,20 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "ui/gfx/native_theme.h"
 #include "ui/views/controls/button/custom_button.h"
 #include "ui/views/controls/combobox/combobox_listener.h"
 #include "ui/views/examples/example_base.h"
 #include "ui/views/native_theme_delegate.h"
-#include "ui/views/native_theme_painter.h"
 
 namespace views {
 class Combobox;
 class NativeThemePainter;
 
 namespace examples {
+
+class ExampleComboboxModel;
 
 // A subclass of button to test native theme rendering.
 class ExampleNativeThemeButton : public CustomButton,
@@ -42,7 +44,7 @@ class ExampleNativeThemeButton : public CustomButton,
                            int prev_index,
                            int new_index) OVERRIDE;
 
-  // Overridden from NativeThemePainter::Delegate:
+  // Overridden from NativeThemeDelegate:
   virtual gfx::NativeTheme::Part GetThemePart() const OVERRIDE;
   virtual gfx::Rect GetThemePaintRect() const OVERRIDE;
   virtual gfx::NativeTheme::State GetThemeState(
@@ -79,8 +81,10 @@ class NativeThemeButtonExample : public ExampleBase, public ButtonListener {
   // Overridden from ButtonListener:
   virtual void ButtonPressed(Button* sender, const Event& event) OVERRIDE;
 
-  // The only control in this test.
   ExampleNativeThemeButton* button_;
+
+  scoped_ptr<ExampleComboboxModel> combobox_model_part_;
+  scoped_ptr<ExampleComboboxModel> combobox_model_state_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeThemeButtonExample);
 };
