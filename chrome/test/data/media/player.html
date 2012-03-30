@@ -28,8 +28,7 @@ if (url_parts.length > 1) {
       player = document.getElementById('player');
 
       // Install event handlers.
-      InstallEventHandler('error',
-                          'document.title = "ERROR = " + player.error.code');
+      InstallEventHandler('error', 'document.title = "ERROR"');
       InstallEventHandler('playing', 'document.title = "PLAYING"');
 
       // Starts the player.

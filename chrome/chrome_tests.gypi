@@ -791,7 +791,6 @@
         # New tests should be browser_tests. browser_tests are sharded and are
         # less flakier.
         'app/chrome_main_uitest.cc',
-        'browser/audio_layout_uitest.cc',
         'browser/browser_encoding_uitest.cc',
         'browser/custom_handlers/custom_handlers_uitest.cc',
         'browser/download/save_page_uitest.cc',
@@ -801,7 +800,6 @@
         'browser/iframe_uitest.cc',
         'browser/images_uitest.cc',
         'browser/locale_tests_uitest.cc',
-        'browser/media_uitest.cc',
         'browser/metrics/metrics_service_uitest.cc',
         'browser/net/load_timing_observer_uitest.cc',
         'browser/prefs/pref_service_uitest.cc',
@@ -2958,6 +2956,7 @@
         '../content/browser/accessibility/dump_accessibility_tree_helper_win.cc',
         '../content/browser/accessibility/renderer_accessibility_browsertest.cc',
         '../content/browser/appcache/appcache_browsertest.cc',
+        '../content/browser/audio_browsertest.cc',
         '../content/browser/child_process_security_policy_browsertest.cc',
         '../content/browser/device_orientation/device_orientation_browsertest.cc',
         '../content/browser/download/mhtml_generation_browsertest.cc',
@@ -2965,6 +2964,7 @@
         '../content/browser/in_process_webkit/indexed_db_browsertest.cc',
         '../content/browser/in_process_webkit/indexed_db_layout_browsertest.cc',
         '../content/browser/indexed_db/idbbindingutilities_browsertest.cc',
+        '../content/browser/media_browsertest.cc',
         '../content/browser/plugin_data_remover_impl_browsertest.cc',
         '../content/browser/plugin_service_impl_browsertest.cc',
         '../content/browser/renderer_host/render_process_host_browsertest.cc',
