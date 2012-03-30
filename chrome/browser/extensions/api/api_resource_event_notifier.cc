@@ -4,9 +4,13 @@
 
 #include "chrome/browser/extensions/api/api_resource_event_notifier.h"
 
+#include "base/bind.h"
 #include "base/json/json_writer.h"
 #include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/profiles/profile.h"
+#include "content/public/browser/browser_thread.h"
+
+using content::BrowserThread;
 
 namespace events {
 // TODO(miket): This should be generic, but at the moment only socket sends
@@ -77,7 +81,17 @@ void APIResourceEventNotifier::SendEventWithResultCode(
 }
 
 void APIResourceEventNotifier::DispatchEvent(DictionaryValue* event) {
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(
+          &APIResourceEventNotifier::DispatchEventOnUIThread, this, event));
+}
+
+void APIResourceEventNotifier::DispatchEventOnUIThread(
+    DictionaryValue* event) {
   ListValue args;
+
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   args.Set(0, event);
   std::string json_args;

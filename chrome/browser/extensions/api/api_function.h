@@ -9,6 +9,8 @@
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/extensions/api/api_resource.h"
 
+class ExtensionService;
+
 namespace extensions {
 
 class APIResourceController;
@@ -43,6 +45,8 @@ class AsyncIOAPIFunction : public AsyncExtensionFunction {
  private:
   void WorkOnIOThread();
   void RespondOnUIThread();
+
+  ExtensionService* extension_service_;
 };
 
 }  // namespace extensions

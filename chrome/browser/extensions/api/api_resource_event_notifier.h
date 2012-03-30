@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/memory/ref_counted.h"
 #include "base/values.h"
 #include "googleurl/src/gurl.h"
 
@@ -36,7 +37,8 @@ extern const char kSrcIdKey[];
 
 // APIResourceEventNotifier knows how to send an event to a specific app's
 // onEvent handler. It handles all platform-API events.
-class APIResourceEventNotifier {
+class APIResourceEventNotifier
+    : public base::RefCountedThreadSafe<APIResourceEventNotifier> {
  public:
   APIResourceEventNotifier(ExtensionEventRouter* router,
                            Profile* profile,
@@ -53,6 +55,7 @@ class APIResourceEventNotifier {
 
  private:
   void DispatchEvent(DictionaryValue* event);
+  void DispatchEventOnUIThread(DictionaryValue* event);
   DictionaryValue* CreateAPIResourceEvent(APIResourceEventType event_type);
 
   void SendEventWithResultCode(APIResourceEventType event_type,

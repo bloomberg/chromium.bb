@@ -7,7 +7,7 @@
 #pragma once
 
 #include "base/basictypes.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ref_counted.h"
 
 namespace extensions {
 
@@ -33,7 +33,7 @@ class APIResource {
 
  private:
   APIResourceType api_resource_type_;
-  scoped_ptr<APIResourceEventNotifier> event_notifier_;
+  scoped_refptr<APIResourceEventNotifier> event_notifier_;
 
   friend class APIResourceController;
   DISALLOW_COPY_AND_ASSIGN(APIResource);

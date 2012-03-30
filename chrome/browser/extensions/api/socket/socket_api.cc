@@ -23,7 +23,7 @@ const char kUDPOption[] = "udp";
 const char kSocketNotFoundError[] = "Socket not found";
 
 SocketCreateFunction::SocketCreateFunction()
-    : src_id_(-1) {
+    : src_id_(-1), event_notifier_(NULL) {
 }
 
 bool SocketCreateFunction::Prepare() {
@@ -35,7 +35,6 @@ bool SocketCreateFunction::Prepare() {
                                                &address_));
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(argument_position++,
                                                 &port_));
-  src_id_ = ExtractSrcId(argument_position);
 
   if (socket_type_string == kTCPOption)
     socket_type_ = kSocketTypeTCP;
@@ -43,16 +42,19 @@ bool SocketCreateFunction::Prepare() {
     socket_type_ = kSocketTypeUDP;
   else
     return false;
+
+  src_id_ = ExtractSrcId(argument_position);
+  event_notifier_ = CreateEventNotifier(src_id_);
+
   return true;
 }
 
 void SocketCreateFunction::Work() {
-  APIResourceEventNotifier* event_notifier = CreateEventNotifier(src_id_);
   Socket* socket = NULL;
   if (socket_type_ == kSocketTypeTCP) {
-    socket = new TCPSocket(address_, port_, event_notifier);
+    socket = new TCPSocket(address_, port_, event_notifier_);
   } else {
-    socket = new UDPSocket(address_, port_, event_notifier);
+    socket = new UDPSocket(address_, port_, event_notifier_);
   }
   DCHECK(socket);
   DCHECK(socket->IsValid());

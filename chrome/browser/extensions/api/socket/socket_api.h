@@ -13,6 +13,7 @@
 namespace extensions {
 
 class APIResourceController;
+class APIResourceEventNotifier;
 
 extern const char kBytesWrittenKey[];
 extern const char kSocketIdKey[];
@@ -44,6 +45,7 @@ class SocketCreateFunction : public AsyncIOAPIFunction {
   SocketType socket_type_;
   std::string address_;
   int port_;
+  APIResourceEventNotifier* event_notifier_;
 
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.socket.create")
 };

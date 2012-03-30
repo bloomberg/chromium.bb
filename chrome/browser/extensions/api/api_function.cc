@@ -16,6 +16,9 @@ using content::BrowserThread;
 namespace extensions {
 
 bool AsyncIOAPIFunction::RunImpl() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  extension_service_ = profile()->GetExtensionService();
+
   if (!Prepare()) {
     return false;
   }
@@ -59,13 +62,17 @@ int AsyncIOAPIFunction::ExtractSrcId(size_t argument_position) {
 }
 
 APIResourceEventNotifier* AsyncIOAPIFunction::CreateEventNotifier(int src_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return new APIResourceEventNotifier(
       profile()->GetExtensionEventRouter(), profile(), extension_id(),
       src_id, source_url());
 }
 
 APIResourceController* AsyncIOAPIFunction::controller() {
-  return profile()->GetExtensionService()->api_resource_controller();
+  // ExtensionService's APIResourceController is set exactly once, long before
+  // this code is reached, so it's safe to access it on either the IO or UI
+  // thread.
+  return extension_service_->api_resource_controller();
 }
 
 }  // namespace extensions
