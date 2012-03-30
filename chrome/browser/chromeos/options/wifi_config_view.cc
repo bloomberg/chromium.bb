@@ -10,7 +10,6 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/cros/onc_constants.h"
-#include "chrome/browser/chromeos/enrollment_dialog_view.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -25,7 +24,6 @@
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
-#include "ui/views/widget/widget.h"
 
 namespace chromeos {
 
@@ -666,9 +664,6 @@ bool WifiConfigView::Login() {
         wifi->SetPassphrase(passphrase);
     }
     bool share_default = (wifi->profile_type() != PROFILE_USER);
-    wifi->SetEnrollmentDelegate(
-        EnrollmentDialogView::CreateEnrollmentDelegate(
-            GetWidget()->GetNativeWindow()));
     cros->ConnectToWifiNetwork(wifi, GetShareNetwork(share_default));
     // Connection failures are responsible for updating the UI, including
     // reopening dialogs.

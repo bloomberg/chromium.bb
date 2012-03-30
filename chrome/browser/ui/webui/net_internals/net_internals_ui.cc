@@ -1255,16 +1255,9 @@ void NetInternalsMessageHandler::OnImportONCFile(const ListValue* list) {
   }
 
   std::string error;
-  chromeos::NetworkLibrary* cros_network =
-      chromeos::CrosLibrary::Get()->GetNetworkLibrary();
-  cros_network->LoadOncNetworks(onc_blob, passcode,
-                                chromeos::NetworkUIData::ONC_SOURCE_USER_IMPORT,
-                                &error);
-
-  // Now that we've added the networks, we need to rescan them so they'll be
-  // available from the menu more immediately.
-  cros_network->RequestNetworkScan();
-
+  chromeos::CrosLibrary::Get()->GetNetworkLibrary()->
+      LoadOncNetworks(onc_blob, passcode,
+                      chromeos::NetworkUIData::ONC_SOURCE_USER_IMPORT, &error);
   SendJavascriptCommand("receivedONCFileParse",
                         Value::CreateStringValue(error));
 }

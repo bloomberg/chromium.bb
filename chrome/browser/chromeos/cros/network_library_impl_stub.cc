@@ -100,28 +100,6 @@ void NetworkLibraryImplStub::Init() {
   wifi3->set_passphrase_required(true);
   AddStubNetwork(wifi3, PROFILE_USER);
 
-  WifiNetwork* wifi_cert_pattern = new WifiNetwork("wifi_cert_pattern");
-  wifi_cert_pattern->set_name("Fake WiFi CertPattern 802.1x");
-  wifi_cert_pattern->set_strength(50);
-  wifi_cert_pattern->set_connectable(false);
-  wifi_cert_pattern->set_encryption(SECURITY_8021X);
-  wifi_cert_pattern->SetEAPMethod(EAP_METHOD_TLS);
-  wifi_cert_pattern->SetEAPUseSystemCAs(true);
-  wifi_cert_pattern->SetEAPIdentity("user@example.com");
-  wifi_cert_pattern->SetEAPPhase2Auth(EAP_PHASE_2_AUTH_AUTO);
-  wifi_cert_pattern->set_client_cert_type(CLIENT_CERT_TYPE_PATTERN);
-  CertificatePattern pattern;
-  IssuerSubjectPattern subject;
-  subject.set_organization("Google Inc");
-  pattern.set_subject(subject);
-  std::vector<std::string> enrollment_uris;
-  enrollment_uris.push_back("http://www.google.com/chromebook");
-  pattern.set_enrollment_uri_list(enrollment_uris);
-  wifi_cert_pattern->set_client_cert_pattern(pattern);
-  wifi_cert_pattern->set_eap_save_credentials(true);
-
-  AddStubNetwork(wifi_cert_pattern, PROFILE_USER);
-
   WifiNetwork* wifi4 = new WifiNetwork("wifi4");
   wifi4->set_name("Fake WiFi4 802.1x");
   wifi4->set_strength(50);
@@ -589,7 +567,7 @@ bool NetworkLibraryImplStub::IsCellularAlwaysInRoaming() {
 }
 
 void NetworkLibraryImplStub::RequestNetworkScan() {
-  // This is triggered by user interaction, so set a network connect delay.
+  // This is triggered by user interaction, so set a network conenct delay.
   const int kConnectDelayMs = 4 * 1000;
   connect_delay_ms_ = kConnectDelayMs;
   SignalNetworkManagerObservers();

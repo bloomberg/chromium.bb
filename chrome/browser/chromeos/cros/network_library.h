@@ -15,7 +15,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/singleton.h"
-#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/string16.h"
 #include "base/timer.h"
@@ -279,29 +278,29 @@ class NetworkDevice {
   DISALLOW_COPY_AND_ASSIGN(NetworkDevice);
 };
 
-// A virtual class that can be used to handle certificate enrollment URIs when
-// encountered.  Also used by unit tests to avoid opening browser windows
-// when testing.
-class EnrollmentDelegate {
- public:
-  EnrollmentDelegate() {}
-  virtual ~EnrollmentDelegate() {}
-
-  // Implemented to handle a given certificate enrollment URI.  Returns false
-  // if the enrollment URI doesn't use a scheme that we can handle, and in
-  // that case, this will be called for any remaining enrollment URIs.
-  // If enrollment succeeds, then the enrollment handler must run
-  // |post_action| to finish connecting.
-  virtual void Enroll(const std::vector<std::string>& uri_list,
-                      const base::Closure& post_action) = 0;
- private:
-  DISALLOW_COPY_AND_ASSIGN(EnrollmentDelegate);
-};
-
 // Contains data common to all network service types.
 class Network {
  public:
   virtual ~Network();
+
+  // A virtual class that can be used to handle certificate enrollment URIs when
+  // encountered.  Also used by unit tests to avoid opening browser windows
+  // when testing.
+  class EnrollmentHandler {
+   public:
+    EnrollmentHandler() {}
+    virtual ~EnrollmentHandler() {}
+
+    // Implemented to handle a given certificate enrollment URI.  Returns false
+    // if the enrollment URI doesn't use a scheme that we can handle, and in
+    // that case, this will be called for any remaining enrollment URIs.
+    // If enrollment succeeds, then the enrollment handler must run
+    // |post_action| to finish connecting.
+    virtual void Enroll(const std::vector<std::string>& uri_list,
+                        const base::Closure& post_action) = 0;
+   private:
+    DISALLOW_COPY_AND_ASSIGN(EnrollmentHandler);
+  };
 
   // Test API for accessing setters in tests.
   class TestApi {
@@ -429,8 +428,8 @@ class Network {
 
   // Adopts the given enrollment handler to handle any certificate enrollment
   // URIs encountered during network connection.
-  void SetEnrollmentDelegate(EnrollmentDelegate* delegate) {
-    enrollment_delegate_.reset(delegate);
+  void SetEnrollmentHandler(EnrollmentHandler* handler) {
+    enrollment_handler_.reset(handler);
   }
 
   virtual bool UpdateStatus(const std::string& key,
@@ -486,8 +485,8 @@ class Network {
     return ui_data_.certificate_type();
   }
 
-  EnrollmentDelegate* enrollment_delegate() const {
-    return enrollment_delegate_.get();
+  EnrollmentHandler* enrollment_handler() const {
+    return enrollment_handler_.get();
   }
 
  private:
@@ -513,8 +512,6 @@ class Network {
                            TestLoadWifiCertificatePattern);
   FRIEND_TEST_ALL_PREFIXES(OncNetworkParserTest,
                            TestLoadVPNCertificatePattern);
-  FRIEND_TEST_ALL_PREFIXES(NetworkLibraryStubTest, NetworkConnectOncWifi);
-  FRIEND_TEST_ALL_PREFIXES(NetworkLibraryStubTest, NetworkConnectOncVPN);
 
   // Use these functions at your peril.  They are used by the various
   // parsers to set state, and really shouldn't be used by anything else
@@ -567,7 +564,7 @@ class Network {
   bool save_credentials_;  // save passphrase and EAP credentials to disk.
   std::string proxy_config_;  // ProxyConfig property in flimflam.
   ProxyOncConfig proxy_onc_config_;  // Only used for parsing ONC proxy value.
-  scoped_ptr<EnrollmentDelegate> enrollment_delegate_;
+  scoped_ptr<EnrollmentHandler> enrollment_handler_;
 
   // Unique identifier, set the first time the network is parsed.
   std::string unique_id_;
@@ -722,14 +719,12 @@ class VirtualNetwork : public Network {
     group_name_ = group_name;
   }
 
-  // Matches the client certificate pattern by checking to see if a certificate
-  // exists that meets the pattern criteria. If it finds one, it sets the
-  // appropriate network property. If not, it passes |connect| to the
-  // EnrollmentDelegate to do something with the enrollment URI (e.g. launch a
-  // dialog) to install the certificate, and then invoke |connect|. If
-  // |allow_enroll| is false, then the enrollment handler will not be invoked in
-  // the case of a missing certificate.
-  void MatchCertificatePattern(bool allow_enroll, const base::Closure& connect);
+  // Matches the client certificate pattern by checking to see if a
+  // certificate exists that meets the pattern criteria.  If it finds one,
+  // it sets the appropriate network property. If not, it passes |connect| to
+  // the EnrollmentHandler to do something with the enrollment URI (e.g. launch
+  // a dialog) to install the certificate, and then invoke |connect|.
+  void MatchCertificatePattern(const base::Closure& connect);
 
  // Network overrides.
   virtual void EraseCredentials() OVERRIDE;
@@ -750,9 +745,6 @@ class VirtualNetwork : public Network {
   std::string user_passphrase_;
   bool user_passphrase_required_;
   std::string group_name_;
-
-  // Weak pointer factory for wrapping pointers to this network in callbacks.
-  base::WeakPtrFactory<VirtualNetwork> weak_pointer_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(VirtualNetwork);
 };
@@ -1078,14 +1070,12 @@ class WifiNetwork : public WirelessNetwork {
     eap_save_credentials_ = save_credentials;
   }
 
-  // Matches the client certificate pattern by checking to see if a certificate
-  // exists that meets the pattern criteria. If it finds one, it sets the
-  // appropriate network property. If not, it passes |connect| to the
-  // EnrollmentDelegate to do something with the enrollment URI (e.g. launch a
-  // dialog) to install the certificate, and then invoke |connect|. If
-  // |allow_enroll| is false, then the enrollment handler will not be invoked in
-  // the case of a missing certificate.
-  void MatchCertificatePattern(bool allow_enroll, const base::Closure& connect);
+  // Matches the client certificate pattern by checking to see if a
+  // certificate exists that meets the pattern criteria.  If it finds one,
+  // it sets the appropriate network property. If not, it passes |connect| to
+  // the EnrollmentHandler to do something with the enrollment URI (e.g. launch
+  // a dialog) to install the certificate, and then invoke |connect|.
+  void MatchCertificatePattern(const base::Closure& connect);
 
   // Network overrides.
   virtual void EraseCredentials() OVERRIDE;
@@ -1109,9 +1099,6 @@ class WifiNetwork : public WirelessNetwork {
   // Internal state (not stored in flimflam).
   // Passphrase set by user (stored for UI).
   std::string user_passphrase_;
-
-  // Weak pointer factory for wrapping pointers to this network in callbacks.
-  base::WeakPtrFactory<WifiNetwork> weak_pointer_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WifiNetwork);
 };

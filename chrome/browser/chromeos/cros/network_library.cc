@@ -520,8 +520,7 @@ VirtualNetwork::VirtualNetwork(const std::string& service_path)
       provider_type_(PROVIDER_TYPE_L2TP_IPSEC_PSK),
       // Assume PSK and user passphrase are not available initially
       psk_passphrase_required_(true),
-      user_passphrase_required_(true),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_pointer_factory_(this)) {
+      user_passphrase_required_(true) {
 }
 
 VirtualNetwork::~VirtualNetwork() {}
@@ -542,11 +541,11 @@ bool VirtualNetwork::RequiresUserProfile() const {
   return true;
 }
 
-void VirtualNetwork::AttemptConnection(const base::Closure& connect) {
+void VirtualNetwork::AttemptConnection(const base::Closure& closure) {
   if (client_cert_type() == CLIENT_CERT_TYPE_PATTERN) {
-    MatchCertificatePattern(true, connect);
+    MatchCertificatePattern(closure);
   } else {
-    connect.Run();
+    closure.Run();
   }
 }
 
@@ -700,12 +699,11 @@ void VirtualNetwork::SetCertificateSlotAndPin(
   }
 }
 
-void VirtualNetwork::MatchCertificatePattern(bool allow_enroll,
-                                             const base::Closure& connect) {
+void VirtualNetwork::MatchCertificatePattern(const base::Closure& closure) {
   DCHECK(client_cert_type() == CLIENT_CERT_TYPE_PATTERN);
   DCHECK(!client_cert_pattern().Empty());
   if (client_cert_pattern().Empty()) {
-    connect.Run();
+    closure.Run();
     return;
   }
 
@@ -722,23 +720,15 @@ void VirtualNetwork::MatchCertificatePattern(bool allow_enroll,
                         client_cert_id, &client_cert_id_);
     }
   } else {
-    if (allow_enroll && enrollment_delegate()) {
-      // Wrap the closure in another callback so that we can retry the
-      // certificate match again before actually connecting.
-      base::Closure wrapped_connect =
-          base::Bind(&VirtualNetwork::MatchCertificatePattern,
-                     weak_pointer_factory_.GetWeakPtr(),
-                     false,
-                     connect);
-
-     enrollment_delegate()->Enroll(client_cert_pattern().enrollment_uri_list(),
-                                   wrapped_connect);
-      // Enrollment delegate will take care of running the closure at the
+    if (enrollment_handler()) {
+      enrollment_handler()->Enroll(client_cert_pattern().enrollment_uri_list(),
+                                   closure);
+      // Enrollment handler will take care of running the closure at the
       // appropriate time, if the user doesn't cancel.
       return;
     }
   }
-  connect.Run();
+  closure.Run();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1166,8 +1156,7 @@ WifiNetwork::WifiNetwork(const std::string& service_path)
       eap_method_(EAP_METHOD_UNKNOWN),
       eap_phase_2_auth_(EAP_PHASE_2_AUTH_AUTO),
       eap_use_system_cas_(true),
-      eap_save_credentials_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_pointer_factory_(this)) {
+      eap_save_credentials_(false) {
 }
 
 WifiNetwork::~WifiNetwork() {}
@@ -1414,11 +1403,11 @@ bool WifiNetwork::RequiresUserProfile() const {
   return true;
 }
 
-void WifiNetwork::AttemptConnection(const base::Closure& connect) {
+void WifiNetwork::AttemptConnection(const base::Closure& closure) {
   if (client_cert_type() == CLIENT_CERT_TYPE_PATTERN) {
-    MatchCertificatePattern(true, connect);
+    MatchCertificatePattern(closure);
   } else {
-    connect.Run();
+    closure.Run();
   }
 }
 
@@ -1426,12 +1415,11 @@ void WifiNetwork::SetCertificatePin(const std::string& pin) {
   SetOrClearStringProperty(flimflam::kEapPinProperty, pin, NULL);
 }
 
-void WifiNetwork::MatchCertificatePattern(bool allow_enroll,
-                                          const base::Closure& connect) {
+void WifiNetwork::MatchCertificatePattern(const base::Closure& closure) {
   DCHECK(client_cert_type() == CLIENT_CERT_TYPE_PATTERN);
   DCHECK(!client_cert_pattern().Empty());
   if (client_cert_pattern().Empty()) {
-    connect.Run();
+    closure.Run();
     return;
   }
 
@@ -1441,23 +1429,15 @@ void WifiNetwork::MatchCertificatePattern(bool allow_enroll,
     SetEAPClientCertPkcs11Id(
         x509_certificate_model::GetPkcs11Id(matching_cert->os_cert_handle()));
   } else {
-    if (allow_enroll && enrollment_delegate()) {
-      // Wrap the closure in another callback so that we can retry the
-      // certificate match again before actually connecting.
-      base::Closure wrapped_connect =
-          base::Bind(&WifiNetwork::MatchCertificatePattern,
-                     weak_pointer_factory_.GetWeakPtr(),
-                     false,
-                     connect);
-
-      enrollment_delegate()->Enroll(client_cert_pattern().enrollment_uri_list(),
-                                    wrapped_connect);
-      // Enrollment delegate should take care of running the closure at the
+    if (enrollment_handler()) {
+      enrollment_handler()->Enroll(client_cert_pattern().enrollment_uri_list(),
+                                   closure);
+      // Enrollment handler should take care of running the closure at the
       // appropriate time, if the user doesn't cancel.
       return;
     }
   }
-  connect.Run();
+  closure.Run();
 }
 
 // static

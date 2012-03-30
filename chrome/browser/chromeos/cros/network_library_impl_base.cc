@@ -735,6 +735,16 @@ void NetworkLibraryImplBase::NetworkConnectStartWifi(
     std::string tpm_pin = GetTpmPin();
     if (!tpm_pin.empty())
       wifi->SetCertificatePin(tpm_pin);
+
+    // For certificate patterns, we have to delay the connect start.
+    if (wifi->client_cert_type() == CLIENT_CERT_TYPE_PATTERN) {
+      wifi->MatchCertificatePattern(
+          base::Bind(&NetworkLibraryImplBase::NetworkConnectStart,
+                     notify_manager_weak_factory_.GetWeakPtr(),
+                     wifi,
+                     profile_type));
+      return;
+    }
   }
   NetworkConnectStart(wifi, profile_type);
 }
@@ -747,6 +757,15 @@ void NetworkLibraryImplBase::NetworkConnectStartVPN(VirtualNetwork* vpn) {
   if (!tpm_pin.empty()) {
     std::string tpm_slot = GetTpmSlot();
     vpn->SetCertificateSlotAndPin(tpm_slot, tpm_pin);
+  }
+  // Resolve any certificate pattern.
+  if (vpn->client_cert_type() == CLIENT_CERT_TYPE_PATTERN) {
+    vpn->MatchCertificatePattern(
+        base::Bind(&NetworkLibraryImplBase::NetworkConnectStart,
+                   notify_manager_weak_factory_.GetWeakPtr(),
+                   vpn,
+                   PROFILE_NONE));
+    return;
   }
   NetworkConnectStart(vpn, PROFILE_NONE);
 }
