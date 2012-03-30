@@ -34,6 +34,8 @@
 
 #include "matrix.h"
 #include "../shared/config-parser.h"
+#include "weston-egl-ext.h"
+
 
 struct weston_transform {
 	struct weston_matrix matrix;

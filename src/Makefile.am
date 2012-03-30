@@ -22,7 +22,8 @@ weston_SOURCES =			\
 	util.c					\
 	matrix.c				\
 	matrix.h				\
-	weston-launch.h
+	weston-launch.h				\
+	weston-egl-ext.h
 
 if BUILD_WESTON_LAUNCH
 weston_launch = weston-launch
