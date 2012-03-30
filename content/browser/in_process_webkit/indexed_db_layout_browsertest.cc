@@ -44,7 +44,6 @@ static const char* kComplexTests[] = {
 
 static const char* kIndexTests[] = {
   "deleteIndex.html",
-  "index-basics-workers.html",
   "index-count.html",
   "index-cursor.html",  // Locally takes ~6s compared to <1 for the others.
   "index-get-key-argument-required.html",
@@ -96,7 +95,11 @@ IN_PROC_BROWSER_TEST_F(IndexedDBLayoutTest, ComplexTests) {
 }
 
 // Generally slow, and frequently times out. http://crbug.com/120924
-IN_PROC_BROWSER_TEST_F(IndexedDBLayoutTest, FLAKY_IndexTests) {
+IN_PROC_BROWSER_TEST_F(IndexedDBLayoutTest, FAILS_IndexBasicsWorkersTest) {
+  RunLayoutTest("index-basics-workers.html");
+}
+
+IN_PROC_BROWSER_TEST_F(IndexedDBLayoutTest, IndexTests) {
   RunLayoutTests(kIndexTests);
 }
 
