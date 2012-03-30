@@ -272,7 +272,9 @@ data_source_send(void *data, struct wl_data_source *source,
 	dnd_flower_message.x_offset = dnd_drag->x_offset;
 	dnd_flower_message.y_offset = dnd_drag->y_offset;
 
-	write(fd, &dnd_flower_message, sizeof dnd_flower_message);
+	if (write(fd, &dnd_flower_message, sizeof dnd_flower_message) < 0)
+		abort();
+
 	close(fd);
 }
 

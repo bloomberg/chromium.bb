@@ -157,7 +157,7 @@ read_func(png_structp png, png_bytep data, png_size_t size)
 {
 	FILE *fp = png_get_io_ptr(png);
 
-	if (fread(data, 1, size, fp) < 0)
+	if (fread(data, 1, size, fp) != size)
 		png_error(png, NULL);
 }
 
@@ -356,7 +356,9 @@ load_image(const char *filename)
 	if (fp == NULL)
 		return NULL;
 
-	fread(header, sizeof header, 1, fp);
+	if (fread(header, sizeof header, 1, fp) != 1)
+		return NULL;
+
 	rewind(fp);
 	for (i = 0; i < ARRAY_LENGTH(loaders); i++) {
 		if (memcmp(header, loaders[i].header,

@@ -1984,7 +1984,9 @@ data_offer_receive_data(struct data_offer *offer, const char *mime_type,
 {
 	int p[2];
 
-	pipe2(p, O_CLOEXEC);
+	if (pipe2(p, O_CLOEXEC) == -1)
+		return;
+
 	wl_data_offer_receive(offer->offer, mime_type, p[1]);
 	close(p[1]);
 
