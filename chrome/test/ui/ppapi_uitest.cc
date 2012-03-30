@@ -742,9 +742,16 @@ TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(MAYBE_FileIO_ReadWriteSetLength)
 TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(MAYBE_FileIO_TouchQuery)
 TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(MAYBE_FileIO_WillWriteWillSetLength)
 
+// PPAPINaclTest.FileIO_ParallelReads is flaky on Mac. http://crbug.com/121104
+#if defined(OS_MACOSX)
+#define MAYBE_FileIO_ParallelReads DISABLED_FileIO_ParallelReads
+#else
+#define MAYBE_FileIO_ParallelReads FileIO_ParallelReads
+#endif
+
 TEST_PPAPI_NACL_VIA_HTTP(FileIO_Open)
 TEST_PPAPI_NACL_VIA_HTTP(FileIO_AbortCalls)
-TEST_PPAPI_NACL_VIA_HTTP(FileIO_ParallelReads)
+TEST_PPAPI_NACL_VIA_HTTP(MAYBE_FileIO_ParallelReads)
 TEST_PPAPI_NACL_VIA_HTTP(FileIO_ParallelWrites)
 TEST_PPAPI_NACL_VIA_HTTP(FileIO_NotAllowMixedReadWrite)
 TEST_PPAPI_NACL_VIA_HTTP(MAYBE_FileIO_TouchQuery)
