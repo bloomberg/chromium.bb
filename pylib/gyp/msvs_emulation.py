@@ -260,6 +260,9 @@ class MsvsSettings(object):
     ld('TargetMachine', map={'1': 'X86', '17': 'X64'}, prefix='/MACHINE:')
     ld('AdditionalLibraryDirectories', prefix='/LIBPATH:')
     ld('DelayLoadDLLs', prefix='/DELAYLOAD:')
+    out = self._Setting(('VCLinkerTool', 'OutputFile'), config, prefix='/OUT:')
+    if out:
+      ldflags.append(self.ConvertVSMacros(out))
     ld('AdditionalOptions', prefix='')
     ld('SubSystem', map={'1': 'CONSOLE', '2': 'WINDOWS'}, prefix='/SUBSYSTEM:')
     ld('LinkIncremental', map={'1': ':NO', '2': ''}, prefix='/INCREMENTAL')

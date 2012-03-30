@@ -1207,20 +1207,22 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
     master_ninja.rule(
         'alink',
         description='LIB $out',
-        command='$ar /nologo /ignore:4221 $libflags /OUT:$out @$out.rsp',
+        command='$ar /nologo /ignore:4221 /OUT:$out @$out.rsp $libflags',
         rspfile='$out.rsp',
         rspfile_content='$in')
     dlldesc = 'LINK(DLL) $dll and $implib'
-    dllcmd = ('$ld /nologo /IMPLIB:$implib /DLL $ldflags /OUT:$dll '
-               '/PDB:$dll.pdb $libs @$dll.rsp')
+    dllcmd = ('$ld /nologo /IMPLIB:$implib /DLL /OUT:$dll '
+               '/PDB:$dll.pdb $libs @$dll.rsp $ldflags')
     master_ninja.rule('solink', description=dlldesc, command=dllcmd,
                       rspfile='$dll.rsp', rspfile_content='$in')
     master_ninja.rule('solink_module', description=dlldesc, command=dllcmd,
                       rspfile='$dll.rsp', rspfile_content='$in')
+    # Note that ldflags goes at the end so that it has the option of
+    # overriding default settings earlier in the command line.
     master_ninja.rule(
         'link',
         description='LINK $out',
-        command=('$ld /nologo $ldflags /OUT:$out /PDB:$out.pdb $in $libs'))
+        command=('$ld /nologo /OUT:$out /PDB:$out.pdb $in $libs $ldflags'))
   else:
     master_ninja.rule(
       'objc',
