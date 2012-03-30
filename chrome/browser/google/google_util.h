@@ -14,6 +14,8 @@
 
 class GURL;
 
+// This namespace provides various helpers around handling Google-related URLs
+// and state relating to Google Chrome distributions (such as RLZ).
 namespace google_util {
 
 extern const char kLinkDoctorBaseURL[];
@@ -38,12 +40,16 @@ bool GetBrand(std::string* brand);
 // install. Returns false if the information is not available.
 bool GetReactivationBrand(std::string* brand);
 
+// WARNING: The following IsGoogleXXX() functions use heuristics to rule out
+// "obviously false" answers.  They do NOT guarantee that the string in question
+// is actually on a Google-owned domain, just that it looks plausible.  If you
+// need to restrict some behavior to only happen on Google's officially-owned
+// domains, use TransportSecurityState::IsGooglePinnedProperty() instead.
+
 // True if |host| is "[www.]google.<TLD>" with a valid TLD.
 bool IsGoogleHostname(const std::string& host);
-
 // True if |url| represents a valid Google home page URL.
 bool IsGoogleHomePageUrl(const std::string& url);
-
 // True if |url| represents a valid Google search URL.
 bool IsGoogleSearchUrl(const std::string& url);
 
