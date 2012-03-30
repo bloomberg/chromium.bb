@@ -14,23 +14,18 @@ RendererMainPlatformDelegate::~RendererMainPlatformDelegate() {
 }
 
 void RendererMainPlatformDelegate::PlatformInitialize() {
-  NOTIMPLEMENTED();
 }
 
 void RendererMainPlatformDelegate::PlatformUninitialize() {
-  NOTIMPLEMENTED();
 }
 
 bool RendererMainPlatformDelegate::InitSandboxTests(bool no_sandbox) {
-  NOTIMPLEMENTED();
   return true;
 }
 
 bool RendererMainPlatformDelegate::EnableSandbox() {
-  NOTIMPLEMENTED();
   return true;
 }
 
 void RendererMainPlatformDelegate::RunSandboxTests() {
-  NOTIMPLEMENTED();
 }
