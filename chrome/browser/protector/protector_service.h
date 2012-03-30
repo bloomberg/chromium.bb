@@ -130,15 +130,6 @@ class ProtectorService : public ProfileKeyedService,
   DISALLOW_COPY_AND_ASSIGN(ProtectorService);
 };
 
-// Signs string value with protector's key.
-std::string SignSetting(const std::string& value);
-
-// Returns true if the signature is valid for the specified key.
-bool IsSettingValid(const std::string& value, const std::string& signature);
-
-// Whether the Protector feature is enabled.
-bool IsEnabled();
-
 }  // namespace protector
 
 #endif  // CHROME_BROWSER_PROTECTOR_PROTECTOR_SERVICE_H_

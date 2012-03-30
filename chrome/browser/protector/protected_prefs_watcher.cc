@@ -15,7 +15,7 @@
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/protector/histograms.h"
-#include "chrome/browser/protector/protector_service.h"
+#include "chrome/browser/protector/protector_utils.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_service.h"

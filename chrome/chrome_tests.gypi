@@ -2510,6 +2510,11 @@
             'browser/plugin_finder_unittest.cc',
           ],
         }],
+        ['enable_protector_service==0', {
+          'sources/': [
+            ['exclude', '^browser/protector/'],
+          ],
+        }],
         ['toolkit_views==1', {
           'dependencies': [
             '../ui/views/views.gyp:views',

@@ -79,6 +79,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/protector/protector_service.h"
 #include "chrome/browser/protector/protector_service_factory.h"
+#include "chrome/browser/protector/protector_utils.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -2528,10 +2529,12 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
   browser_handler_map["PerformActionOnSearchEngine"] =
       &TestingAutomationProvider::PerformActionOnSearchEngine;
 
+#if defined(ENABLE_PROTECTOR_SERVICE)
   browser_handler_map["GetProtectorState"] =
       &TestingAutomationProvider::GetProtectorState;
   browser_handler_map["PerformProtectorAction"] =
       &TestingAutomationProvider::PerformProtectorAction;
+#endif
 
   browser_handler_map["SetWindowDimensions"] =
       &TestingAutomationProvider::SetWindowDimensions;
@@ -3453,6 +3456,7 @@ void TestingAutomationProvider::PerformActionOnSearchEngine(
   }
 }
 
+#if defined(ENABLE_PROTECTOR_SERVICE)
 // Sample json output: { "enabled": true,
 //                       "showing_change": false }
 void TestingAutomationProvider::GetProtectorState(
@@ -3497,6 +3501,7 @@ void TestingAutomationProvider::PerformProtectorAction(
     return reply.SendError("Invalid 'action' value");
   reply.SendSuccess(NULL);
 }
+#endif  // defined(ENABLE_PROTECTOR_SERVICE)
 
 // Sample json input: { "command": "GetLocalStatePrefsInfo" }
 // Refer chrome/test/pyautolib/prefs_info.py for sample json output.

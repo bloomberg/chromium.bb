@@ -15,7 +15,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/history/history_database.h"
 #include "chrome/browser/protector/histograms.h"
-#include "chrome/browser/protector/protector_service.h"
+#include "chrome/browser/protector/protector_utils.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "googleurl/src/gurl.h"
 #include "sql/statement.h"

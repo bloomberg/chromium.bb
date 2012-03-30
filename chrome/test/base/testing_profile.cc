@@ -542,12 +542,14 @@ WebDataService* TestingProfile::GetWebDataServiceWithoutCreating() {
 }
 
 void TestingProfile::SetPrefService(PrefService* prefs) {
+#if defined(ENABLE_PROTECTOR_SERVICE)
   // ProtectorService binds itself very closely to the PrefService at the moment
   // of Profile creation and watches pref changes to update their backup.
   // For tests that replace the PrefService after TestingProfile creation,
   // ProtectorService is disabled to prevent further invalid memory accesses.
   protector::ProtectorServiceFactory::GetInstance()->
       SetTestingFactory(this, NULL);
+#endif
   prefs_.reset(prefs);
 }
 

@@ -25,6 +25,7 @@
 #include "chrome/browser/protector/base_setting_change.h"
 #include "chrome/browser/protector/protector_service.h"
 #include "chrome/browser/protector/protector_service_factory.h"
+#include "chrome/browser/protector/protector_utils.h"
 #include "chrome/browser/rlz/rlz.h"
 #include "chrome/browser/search_engines/search_host_to_urls_map.h"
 #include "chrome/browser/search_engines/search_terms_data.h"
@@ -628,6 +629,7 @@ void TemplateURLService::OnWebDataServiceRequestDone(
   if (new_resource_keyword_version && service_.get())
     service_->SetBuiltinKeywordVersion(new_resource_keyword_version);
 
+#if defined(ENABLE_PROTECTOR_SERVICE)
   // Don't do anything if the default search provider has been changed since the
   // check at the beginning (overridden by Sync).
   if (is_default_search_hijacked &&
@@ -650,6 +652,7 @@ void TemplateURLService::OnWebDataServiceRequestDone(
       SetDefaultSearchProviderNoNotify(default_search_provider_);
     }
   }
+#endif
 
   NotifyObservers();
   NotifyLoaded();

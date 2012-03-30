@@ -184,7 +184,9 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
   PinnedTabServiceFactory::GetInstance();
 #endif
   PluginPrefsFactory::GetInstance();
+#if defined(ENABLE_PROTECTOR_SERVICE)
   protector::ProtectorServiceFactory::GetInstance();
+#endif
   prerender::PrerenderManagerFactory::GetInstance();
   ProfileSyncServiceFactory::GetInstance();
   SessionServiceFactory::GetInstance();
