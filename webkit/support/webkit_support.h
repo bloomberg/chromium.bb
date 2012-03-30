@@ -12,7 +12,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDevToolsAgentClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebFileSystem.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebGraphicsContext3D.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 
 namespace WebKit {
@@ -215,10 +214,6 @@ WebKit::WebURL GetDevToolsPathAsURL();
 // - FileSystem
 void OpenFileSystem(WebKit::WebFrame* frame, WebKit::WebFileSystem::Type type,
     long long size, bool create, WebKit::WebFileSystemCallbacks* callbacks);
-
-// Returns a filesystem ID for the newly created isolated filesystem.
-WebKit::WebString RegisterIsolatedFileSystem(
-    const WebKit::WebVector<WebKit::WebString>& filenames);
 
 // -------- Keyboard code
 enum {
