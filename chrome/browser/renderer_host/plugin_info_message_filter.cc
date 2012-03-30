@@ -26,44 +26,7 @@
 #include "chrome/browser/plugin_installer.h"
 #endif
 
-#if defined(OS_WIN)
-// These includes are only necessary for the PluginInfobarExperiment.
-#include "chrome/common/attrition_experiments.h"
-#include "chrome/installer/util/google_update_settings.h"
-#endif
-
 using content::PluginService;
-
-namespace {
-
-// Override the behavior of the security infobars for plugins. Only
-// operational on windows and only for a small slice of the of the
-// UMA opted-in population.
-void PluginInfobarExperiment(bool* allow_outdated,
-                             bool* always_authorize) {
-#if !defined(OS_WIN)
-  return;
-#else
- std::wstring client_value;
- if (!GoogleUpdateSettings::GetClient(&client_value))
-   return;
- if (client_value == attrition_experiments::kPluginNoBlockNoOOD) {
-   *always_authorize = true;
-   *allow_outdated = true;
- } else if (client_value == attrition_experiments::kPluginNoBlockDoOOD) {
-   *always_authorize = true;
-   *allow_outdated = false;
- } else if (client_value == attrition_experiments::kPluginDoBlockNoOOD) {
-   *always_authorize = false;
-   *allow_outdated = true;
- } else if (client_value == attrition_experiments::kPluginDoBlockDoOOD) {
-   *always_authorize = false;
-   *allow_outdated = false;
- }
-#endif
-}
-
-}  // namespace
 
 PluginInfoMessageFilter::Context::Context(int render_process_id,
                                           Profile* profile)
@@ -197,8 +160,6 @@ void PluginInfoMessageFilter::Context::DecidePluginStatus(
 
   bool allow_outdated = allow_outdated_plugins_.GetValue();
   bool always_authorize = always_authorize_plugins_.GetValue();
-
-  PluginInfobarExperiment(&allow_outdated, &always_authorize);
 
   // Check if the plug-in is outdated.
   if (group->IsVulnerable(plugin) && !allow_outdated) {
