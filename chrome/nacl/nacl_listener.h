@@ -33,6 +33,8 @@ class NaClListener : public IPC::Channel::Listener {
 
  private:
   void OnStartSelLdr(std::vector<nacl::FileDescriptor> handles,
+                     const std::string& validation_cache_key,
+                     const std::string& version,
                      bool enable_exception_handling);
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
 

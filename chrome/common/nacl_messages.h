@@ -20,8 +20,10 @@
 // NaClProcess messages
 // These are messages sent between the browser and the NaCl process.
 // Tells the NaCl process to start.
-IPC_MESSAGE_CONTROL2(NaClProcessMsg_Start,
+IPC_MESSAGE_CONTROL4(NaClProcessMsg_Start,
                      std::vector<nacl::FileDescriptor> /* sockets */,
+                     std::string /* validation_cache_key */,
+                     std::string /* version */,
                      bool /* enable_exception_handling */)
 
 // Tells the NaCl broker to launch a NaCl loader process.

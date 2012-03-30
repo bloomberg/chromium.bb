@@ -159,6 +159,8 @@ bool NaClListener::OnMessageReceived(const IPC::Message& msg) {
 }
 
 void NaClListener::OnStartSelLdr(std::vector<nacl::FileDescriptor> handles,
+                                 const std::string& validation_cache_key,
+                                 const std::string& version,
                                  bool enable_exception_handling) {
   struct NaClChromeMainArgs *args = NaClChromeMainArgsCreate();
   if (args == NULL) {
@@ -194,9 +196,7 @@ void NaClListener::OnStartSelLdr(std::vector<nacl::FileDescriptor> handles,
     LOG(INFO) << "NaCl validation cache enabled.";
     // The cache structure is not freed and exists until the NaCl process exits.
     args->validation_cache = CreateValidationCache(
-        new BrowserValidationDBProxy(this),
-        // TODO(ncbray) plumb through real keys and versions.
-        "bogus key for HMAC....", "bogus version");
+        new BrowserValidationDBProxy(this), validation_cache_key, version);
   }
 
   CHECK(handles.size() == 1);

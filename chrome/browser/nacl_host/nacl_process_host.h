@@ -73,7 +73,7 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
   virtual void OnProcessLaunched() OVERRIDE;
 
   void IrtReady();
-  void SendStart(base::PlatformFile irt_file);
+  void SendStart();
 
   // Message handlers for validation caching.
   void OnQueryKnownToValidate(const std::string& signature, bool* result);

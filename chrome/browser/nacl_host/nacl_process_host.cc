@@ -14,6 +14,7 @@
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
+#include "base/rand_util.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/windows_version.h"
@@ -23,6 +24,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/nacl_cmd_line.h"
 #include "chrome/common/nacl_messages.h"
@@ -197,6 +199,12 @@ class NaClBrowser {
   // Path to IRT. Available even before IRT is loaded.
   const FilePath& GetIrtFilePath();
 
+  // Get the key used for HMACing validation signatures.  This should be a
+  // string of cryptographically secure random bytes.
+  const std::string& GetValidatorCacheKey() const {
+    return validator_cache_key_;
+  }
+
   // Is the validation signature in the database?
   bool QueryKnownToValidate(const std::string& signature);
 
@@ -211,13 +219,18 @@ class NaClBrowser {
   typedef base::HashingMRUCache<std::string, bool> ValidationCacheType;
   ValidationCacheType validation_cache_;
 
+  std::string validator_cache_key_;
+
   friend struct DefaultSingletonTraits<NaClBrowser>;
 
   NaClBrowser()
       : irt_platform_file_(base::kInvalidPlatformFileValue),
         irt_filepath_(),
         // For the moment, choose an arbitrary cache size.
-        validation_cache_(200) {
+        validation_cache_(200),
+        // TODO(ncbray) persist this key along with the cache.
+        // Key size is equal to the block size (not the digest size) of SHA256.
+        validator_cache_key_(base::RandBytesAsString(64)) {
     InitIrtFilePath();
   }
 
@@ -615,7 +628,7 @@ void NaClProcessHost::OnProcessLaunched() {
 
   if (nacl_browser->IrtAvailable()) {
     // The IRT is already open.  Away we go.
-    SendStart(nacl_browser->IrtFile());
+    SendStart();
   } else {
     // We're waiting for the IRT to be open.
     if (!nacl_browser->MakeIrtAvailable(
@@ -630,7 +643,7 @@ void NaClProcessHost::IrtReady() {
   NaClBrowser* nacl_browser = NaClBrowser::GetInstance();
 
   if (nacl_browser->IrtAvailable()) {
-    SendStart(nacl_browser->IrtFile());
+    SendStart();
   } else {
     LOG(ERROR) << "Cannot launch NaCl process after IRT file open failed";
     delete this;
@@ -736,7 +749,9 @@ static bool SendHandleToSelLdr(
   return true;
 }
 
-void NaClProcessHost::SendStart(base::PlatformFile irt_file) {
+void NaClProcessHost::SendStart() {
+  NaClBrowser* nacl_browser = NaClBrowser::GetInstance();
+  base::PlatformFile irt_file = nacl_browser->IrtFile();
   CHECK_NE(irt_file, base::kInvalidPlatformFileValue);
 
   std::vector<nacl::FileDescriptor> handles_for_renderer;
@@ -840,8 +855,14 @@ void NaClProcessHost::SendStart(base::PlatformFile irt_file) {
   handles_for_sel_ldr.push_back(memory_fd);
 #endif
 
+  // Sending the version string over IPC avoids linkage issues in cases where
+  // NaCl is not compiled into the main Chromium executable or DLL.
+  chrome::VersionInfo version_info;
   IPC::Message* start_message =
-      new NaClProcessMsg_Start(handles_for_sel_ldr, enable_exception_handling_);
+      new NaClProcessMsg_Start(handles_for_sel_ldr,
+                               nacl_browser->GetValidatorCacheKey(),
+                               version_info.CreateVersionString(),
+                               enable_exception_handling_);
 #if defined(OS_WIN)
   if (debug_context_ != NULL) {
     debug_context_->SetStartMessage(start_message);
