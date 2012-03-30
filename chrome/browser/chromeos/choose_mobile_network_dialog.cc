@@ -29,17 +29,11 @@ namespace chromeos {
 
 // static
 void ChooseMobileNetworkDialog::ShowDialog(gfx::NativeWindow owning_window) {
-  Profile* profile;
-  Browser* browser = NULL;
-  if (UserManager::Get()->IsUserLoggedIn()) {
-    browser = BrowserList::GetLastActive();
-    DCHECK(browser);
-    profile = browser->profile();
-  } else {
-    profile = ProfileManager::GetDefaultProfile();
-  }
+  Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
   HtmlDialogView* html_view =
-      new HtmlDialogView(profile, browser, new ChooseMobileNetworkDialog);
+      new HtmlDialogView(profile,
+                         BrowserList::GetLastActive(),
+                         new ChooseMobileNetworkDialog);
   html_view->InitDialog();
   views::Widget::CreateWindowWithParent(html_view, owning_window);
   html_view->GetWidget()->Show();
