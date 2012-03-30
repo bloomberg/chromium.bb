@@ -16,25 +16,32 @@ import pyauto
 class PolicyTest(policy_base.PolicyTestBase):
   """Tests that the effects of policies are being enforced as expected."""
 
-  def _GetPrefIsManagedError(self, pref, val):
+  def _GetPrefIsManagedError(self, pref, expected_value):
     """Verify the managed preferences cannot be modified.
 
     Args:
       pref: The preference key that you want to modify.
-      val: Current value of the preference.
+      expected_value: Current value of the preference.
 
     Returns:
       Error message if any, None if pref is successfully managed.
     """
     # Check if the current value of the preference is set as expected.
-    if self.GetPrefsInfo().Prefs(pref) == None:
-      return 'Preference %s is not registered.' % pref
-    elif self.GetPrefsInfo().Prefs(pref) != val:
+    local_state_pref_value = self.GetLocalStatePrefsInfo().Prefs(pref)
+    profile_pref_value = self.GetPrefsInfo().Prefs(pref)
+    actual_value = (profile_pref_value if profile_pref_value is not None else
+                    local_state_pref_value)
+    if actual_value is None:
+      return 'Preference %s is not registered.'  % pref
+    elif actual_value != expected_value:
       return ('Preference value "%s" does not match policy value "%s".' %
-              (self.GetPrefsInfo().Prefs(pref), val))
-    # If the preference is locked, this should throw an exception.
+              (actual_value, expected_value))
+    # If the preference is managed, this should throw an exception.
     try:
-      self.SetPrefs(pref, val)
+      if profile_pref_value is not None:
+        self.SetPrefs(pref, expected_value)
+      else:
+        self.SetLocalStatePrefs(pref, expected_value)
     except pyauto_errors.JSONInterfaceError, e:
       if str(e) != 'pref is managed. cannot be changed.':
         return str(e)

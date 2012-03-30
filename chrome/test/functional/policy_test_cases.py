@@ -42,11 +42,10 @@ class PolicyPrefsTestCases(object):
     'HomepageIsNewTabPage':
         ('kHomePageIsNewTabPage', True, [HOMEPAGE], OS_ALL),
     # TODO(joaodasilva): Couldn't verify on linux.
-    # This pref comes from local_state. http://crbug.com/121066
-    'DefaultBrowserSettingEnabled': (None, False, [], ['win', 'mac', 'linux']),
+    'DefaultBrowserSettingEnabled':
+        ('kDefaultBrowserSettingEnabled', False, [], ['win', 'mac', 'linux']),
     # TODO(joaodasilva): Test this on windows.
-    # This pref comes from local_state. http://crbug.com/121066
-    'ApplicationLocaleValue': (None, '', [], ['win']),
+    'ApplicationLocaleValue': ('kApplicationLocale', '', [], ['win']),
     'AlternateErrorPagesEnabled':
         ('kAlternateErrorPagesEnabled', False, [BROWSER], OS_ALL),
     'SearchSuggestEnabled':
@@ -54,18 +53,16 @@ class PolicyPrefsTestCases(object):
     'DnsPrefetchingEnabled':
         ('kNetworkPredictionEnabled', False, [BROWSER], OS_ALL),
     'DisableSpdy': ('kDisableSpdy', True, [], OS_ALL),
-    # This pref comes from local_state. http://crbug.com/121066
-    'DisabledSchemes': (None, ['file'], [], OS_ALL),
+    'DisabledSchemes': ('kDisabledSchemes', ['file'], [], OS_ALL),
     'JavascriptEnabled': (None, False, [CONTENT], OS_ALL),
     'IncognitoEnabled': (None, False, [], OS_ALL),
     'IncognitoModeAvailability': (None, 1, [], OS_ALL),
     'SavingBrowserHistoryDisabled':
         ('kSavingBrowserHistoryDisabled', True, [], OS_ALL),
     'RemoteAccessClientFirewallTraversal': (None, True, [], OS_ALL),
-    # This pref comes from local_state. http://crbug.com/121066
-    'RemoteAccessHostFirewallTraversal': (None, True, [], OS_ALL),
-    # This pref comes from local_state. http://crbug.com/121066
-    'PrintingEnabled': (None, False, [], OS_ALL),
+    'RemoteAccessHostFirewallTraversal':
+        ('kRemoteAccessHostFirewallTraversal', True, [], OS_ALL),
+    'PrintingEnabled': ('kPrintingEnabled', False, [], OS_ALL),
     # Note: supported_on is empty for this policy.
     'CloudPrintProxyEnabled': ('kCloudPrintProxyEnabled', True, [], []),
     'CloudPrintSubmitEnabled':
@@ -73,8 +70,8 @@ class PolicyPrefsTestCases(object):
     'SafeBrowsingEnabled': ('kSafeBrowsingEnabled', False, [BROWSER], OS_ALL),
     # TODO(joaodasilva): This is only in place on official builds, but the
     # SetUserCloudPolicy call is a nop on official builds. Should be BROWSER.
-    # This pref comes from local_state. http://crbug.com/121066
-    'MetricsReportingEnabled': (None, False, [], OS_ALL),
+    'MetricsReportingEnabled':
+        ('kMetricsReportingEnabled', False, [], OS_ALL),
     'PasswordManagerEnabled':
         ('kPasswordManagerEnabled', False, [BROWSER], OS_ALL),
     # TODO(joaodasilva): Should be PASSWORDS too. http://crbug.com/97749
@@ -85,15 +82,14 @@ class PolicyPrefsTestCases(object):
     'EnabledPlugins': ('kPluginsEnabledPlugins', ['Flash'], [], OS_ALL),
     'DisabledPluginsExceptions':
         ('kPluginsDisabledPluginsExceptions', ['Flash'], [], OS_ALL),
-    # This pref comes from local_state. http://crbug.com/121066
-    'DisablePluginFinder': (None, True, [], OS_ALL),
+    'DisablePluginFinder': ('kDisablePluginFinder', True, [], OS_ALL),
     # TODO(joaodasilva): Should be PERSONAL. http://crbug.com/97749
     'SyncDisabled': (None, True, [], OS_ALL),
     'UserDataDir':
         (None, '${users}/${user_name}/chrome-test', [], ['win', 'mac']),
-    # This pref comes from local_state. http://crbug.com/121066
     'DiskCacheDir':
-        (None, '${user_home}/test-cache', [], ['win', 'mac', 'linux']),
+        ('kDiskCacheSize', '${user_home}/test-cache', [],
+         ['win', 'mac', 'linux']),
     'DiskCacheSize': (None, 100, [], ['win', 'mac', 'linux']),
     'MediaCacheSize': ('kMediaCacheSize', 200, [], ['win', 'mac', 'linux']),
     'DownloadDirectory': (None, '${user_home}/test-downloads', [BROWSER],
@@ -111,26 +107,24 @@ class PolicyPrefsTestCases(object):
     'ProxyBypassList': (None, 'localhost', [], ['win', 'mac', 'linux']),
     # Note: this policy is only used internally for now.
     'ProxySettings': (None, {}, [], []),
-    # This pref comes from local_state. http://crbug.com/121066
-    'EnableOriginBoundCerts': (None, False, [], ['win', 'mac', 'linux']),
-    # This pref comes from local_state. http://crbug.com/121066
-    'DisableSSLRecordSplitting': (None, False, [], OS_ALL),
-    # This pref comes from local_state. http://crbug.com/121066
-    'EnableOnlineRevocationChecks': (None, False, [], OS_ALL),
-    # This pref comes from local_state. http://crbug.com/121066
-    'AuthSchemes': (None, 'AuthSchemes', [], OS_ALL),
-    # This pref comes from local_state. http://crbug.com/121066
-    'DisableAuthNegotiateCnameLookup': (None, True, [], OS_ALL),
-    # This pref comes from local_state. http://crbug.com/121066
-    'EnableAuthNegotiatePort': (None, False, [], OS_ALL),
-    # This pref comes from local_state. http://crbug.com/121066
-    'AuthServerWhitelist': (None, 'localhost', [], OS_ALL),
-    # This pref comes from local_state. http://crbug.com/121066
-    'AuthNegotiateDelegateWhitelist': (None, 'localhost', [], OS_ALL),
+    'EnableOriginBoundCerts':
+        ('kEnableOriginBoundCerts', False, [], ['win', 'mac', 'linux']),
+    'DisableSSLRecordSplitting':
+        ('kDisableSSLRecordSplitting', False, [], OS_ALL),
+    'EnableOnlineRevocationChecks':
+        ('kCertRevocationCheckingEnabled', False, [], OS_ALL),
+    'AuthSchemes': ('kAuthSchemes', 'AuthSchemes', [], OS_ALL),
+    'DisableAuthNegotiateCnameLookup':
+        ('kDisableAuthNegotiateCnameLookup', True, [], OS_ALL),
+    'EnableAuthNegotiatePort':
+        ('kEnableAuthNegotiatePort', False, [], OS_ALL),
+    'AuthServerWhitelist': ('kAuthServerWhitelist', 'localhost', [], OS_ALL),
+    'AuthNegotiateDelegateWhitelist':
+        ('kAuthNegotiateDelegateWhitelist', 'localhost', [], OS_ALL),
     'GSSAPILibraryName':
         ('kGSSAPILibraryName', 'libwhatever.so', [], ['mac', 'linux']),
-    # This pref comes from local_state. http://crbug.com/121066
-    'AllowCrossOriginAuthPrompt': (None, False, [], ['win', 'mac', 'linux']),
+    'AllowCrossOriginAuthPrompt':
+        ('kAllowCrossOriginAuthPrompt', False, [], ['win', 'mac', 'linux']),
     'ExtensionInstallBlacklist':
         ('kExtensionInstallDenyList', ['*'], [], OS_ALL),
     'ExtensionInstallWhitelist':
@@ -214,9 +208,9 @@ class PolicyPrefsTestCases(object):
     'AlwaysAuthorizePlugins': ('kPluginsAlwaysAuthorize', True, [], OS_ALL),
     'BookmarkBarEnabled': ('kShowBookmarkBar', False, [BROWSER], OS_ALL),
     'EditBookmarksEnabled': ('kEditBookmarksEnabled', False, [], OS_ALL),
-    # This pref comes from local_state. http://crbug.com/121066
     'AllowFileSelectionDialogs':
-        (None, False, [BROWSER], ['win', 'mac', 'linux']),
+        ('kAllowFileSelectionDialogs', False, [BROWSER],
+         ['win', 'mac', 'linux']),
     'ImportBookmarks':
         ('kImportBookmarks', False, [], ['win', 'mac', 'linux']),
     'ImportHistory':
@@ -227,28 +221,28 @@ class PolicyPrefsTestCases(object):
         ('kImportSearchEngine', False, [], ['win', 'mac', 'linux']),
     'ImportSavedPasswords':
         ('kImportSavedPasswords', False, [], ['win', 'mac', 'linux']),
-    # This pref comes from local_state. http://crbug.com/121066
-    'MaxConnectionsPerProxy': (None, 32, [], OS_ALL),
+    'MaxConnectionsPerProxy': ('kMaxConnectionsPerProxy', 32, [], OS_ALL),
     'HideWebStorePromo': ('kNtpHideWebStorePromo', True, [], OS_ALL),
     'URLBlacklist': ('kUrlBlacklist', ['google.com'], [], OS_ALL),
     'URLWhitelist': ('kUrlWhitelist', ['google.com'], [], OS_ALL),
     'EnterpriseWebStoreURL': ('kEnterpriseWebStoreURL', '', [], OS_ALL),
     'EnterpriseWebStoreName': ('kEnterpriseWebStoreName', '', [], OS_ALL),
     'EnableMemoryInfo': ('kEnableMemoryInfo', True, [], OS_ALL),
-    # This pref comes from local_state. http://crbug.com/121066
-    'DisablePrintPreview': (None, True, [], ['win', 'mac', 'linux']),
-    # This pref comes from local_state. http://crbug.com/121066
-    'BackgroundModeEnabled': (None, True, [BROWSER], ['win', 'linux']),
+    'DisablePrintPreview':
+        ('kPrintPreviewDisabled', True, [], ['win', 'mac', 'linux']),
+    'BackgroundModeEnabled':
+        ('kBackgroundModeEnabled', True, [BROWSER], ['win', 'linux']),
 
     # ChromeOS-only policies:
+    # TODO(frankf): Add prefs for these after crosbug.com/28756 is fixed.
     'ChromeOsLockOnIdleSuspend':
-        ('kEnableScreenLock', True, [BROWSER], ['chromeos']),
+        (None, True, [BROWSER], ['chromeos']),
     'PolicyRefreshRate':
-        ('kUserPolicyRefreshRate', 300000, [], ['chromeos']),
+        (None, 300000, [], ['chromeos']),
     'OpenNetworkConfiguration': (None, '', [], ['chromeos']),
-    'GDataDisabled': ('kDisableGData', True, [], ['chromeos']),
+    'GDataDisabled': (None, True, [], ['chromeos']),
     'GDataDisabledOverCellular':
-        ('kDisableGDataOverCellular', True, [], ['chromeos']),
+        (None, True, [], ['chromeos']),
 
     # ChromeOS Device policies:
     'DevicePolicyRefreshRate': (None, 300000, [], ['chromeos']),
