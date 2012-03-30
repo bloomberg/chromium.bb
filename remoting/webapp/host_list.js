@@ -190,7 +190,7 @@ remoting.HostList.prototype.display = function() {
     // If the host has never sent a heartbeat, then there will be no jabberId.
     if (host.hostName && host.hostId && host.status && host.publicKey) {
       var hostTableEntry = new remoting.HostTableEntry();
-      hostTableEntry.init(host, onRename, onDelete);
+      hostTableEntry.create(host, onRename, onDelete);
       this.hostTableEntries_[i] = hostTableEntry;
       this.table_.appendChild(hostTableEntry.tableRow);
     }
