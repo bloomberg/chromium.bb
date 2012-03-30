@@ -23,6 +23,7 @@
 #include "chrome/browser/autofill/test_autofill_external_delegate.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/tab_contents/test_tab_contents_wrapper.h"
@@ -486,6 +487,19 @@ class TestAutofillManager : public AutofillManager {
     submitted_form_signature_ = submitted_form.FormSignature();
   }
 
+  virtual void SendPasswordSyncStateToRenderer(
+      content::RenderViewHost* host, bool enabled) OVERRIDE {
+    sent_states_.push_back(enabled);
+  }
+
+  const std::vector<bool>& GetSentStates() {
+    return sent_states_;
+  }
+
+  void ClearSentStates() {
+    sent_states_.clear();
+  }
+
   const std::string GetSubmittedFormSignature() {
     return submitted_form_signature_;
   }
@@ -527,6 +541,7 @@ class TestAutofillManager : public AutofillManager {
 
   std::string submitted_form_signature_;
   std::vector<FieldTypeSet> expected_submitted_field_types_;
+  std::vector<bool> sent_states_;
 
   DISALLOW_COPY_AND_ASSIGN(TestAutofillManager);
 };
@@ -565,6 +580,10 @@ class AutofillManagerTest : public TabContentsWrapperTestHarness {
   virtual void TearDown() OVERRIDE {
     file_thread_.Stop();
     TabContentsWrapperTestHarness::TearDown();
+  }
+
+  void UpdatePasswordSyncState() {
+    autofill_manager_->UpdatePasswordSyncState(NULL);
   }
 
   void GetAutofillSuggestions(int query_id,
@@ -651,6 +670,10 @@ class AutofillManagerTest : public TabContentsWrapperTestHarness {
 
     process()->sink().ClearMessages();
     return true;
+  }
+
+  ProfileSyncService* GetProfileSyncService() {
+    return autofill_manager_->sync_service_;
   }
 
  protected:
@@ -2860,6 +2883,44 @@ TEST_F(AutofillManagerTest, DeterminePossibleFieldTypesForUpload) {
 
   autofill_manager_->set_expected_submitted_field_types(expected_types);
   FormSubmitted(form);
+}
+
+TEST_F(AutofillManagerTest, UpdatePasswordSyncState) {
+  // Allow this test to control what should get synced.
+  profile()->GetPrefs()->SetBoolean(prefs::kSyncKeepEverythingSynced, false);
+
+  // Sync some things, but not passwords. Shouldn't send anything since
+  // password generation is disabled by default.
+  ProfileSyncService* sync_service = GetProfileSyncService();
+  sync_service->SetSyncSetupCompleted();
+  syncable::ModelTypeSet preferred_set;
+  preferred_set.Put(syncable::EXTENSIONS);
+  preferred_set.Put(syncable::PREFERENCES);
+  sync_service->ChangePreferredDataTypes(preferred_set);
+  syncable::ModelTypeSet new_set = sync_service->GetPreferredDataTypes();
+  UpdatePasswordSyncState();
+  EXPECT_EQ(0u, autofill_manager_->GetSentStates().size());
+
+  // Now sync passwords.
+  preferred_set.Put(syncable::PASSWORDS);
+  sync_service->ChangePreferredDataTypes(preferred_set);
+  UpdatePasswordSyncState();
+  EXPECT_EQ(1u, autofill_manager_->GetSentStates().size());
+  EXPECT_EQ(true, autofill_manager_->GetSentStates()[0]);
+  autofill_manager_->ClearSentStates();
+
+  // Add some additional synced state. Nothing should be sent.
+  preferred_set.Put(syncable::THEMES);
+  sync_service->ChangePreferredDataTypes(preferred_set);
+  UpdatePasswordSyncState();
+  EXPECT_EQ(0u, autofill_manager_->GetSentStates().size());
+
+  // Disable syncing. This should be sent.
+  sync_service->DisableForUser();
+  UpdatePasswordSyncState();
+  EXPECT_EQ(1u, autofill_manager_->GetSentStates().size());
+  EXPECT_EQ(false, autofill_manager_->GetSentStates()[0]);
+  autofill_manager_->ClearSentStates();
 }
 
 namespace {

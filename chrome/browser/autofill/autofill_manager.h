@@ -22,6 +22,7 @@
 #include "chrome/browser/autofill/autofill_download.h"
 #include "chrome/browser/autofill/field_types.h"
 #include "chrome/browser/autofill/form_structure.h"
+#include "chrome/browser/sync/profile_sync_service_observer.h"
 #include "content/public/browser/web_contents_observer.h"
 
 class AutofillExternalDelegate;
@@ -31,6 +32,7 @@ class AutofillMetrics;
 class CreditCard;
 class PersonalDataManager;
 class PrefService;
+class ProfileSyncService;
 class TabContentsWrapper;
 
 struct ViewHostMsg_FrameNavigate_Params;
@@ -58,6 +60,7 @@ struct FormField;
 // forms.
 class AutofillManager : public content::WebContentsObserver,
                         public AutofillDownloadManager::Observer,
+                        public ProfileSyncServiceObserver,
                         public base::RefCounted<AutofillManager> {
  public:
   explicit AutofillManager(TabContentsWrapper* tab_contents);
@@ -107,6 +110,11 @@ class AutofillManager : public content::WebContentsObserver,
   // Reset cache.
   void Reset();
 
+  // Informs the renderers of the current password sync state for use in
+  // password generation. This is a separate function to aid with testing.
+  virtual void SendPasswordSyncStateToRenderer(content::RenderViewHost* host,
+                                               bool enabled);
+
   // Logs quality metrics for the |submitted_form| and uploads the form data
   // to the crowdsourcing server, if appropriate.
   virtual void UploadFormDataAsyncCallback(
@@ -143,6 +151,7 @@ class AutofillManager : public content::WebContentsObserver,
 
  private:
   // content::WebContentsObserver:
+  virtual void RenderViewCreated(content::RenderViewHost* host) OVERRIDE;
   virtual void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) OVERRIDE;
@@ -151,6 +160,17 @@ class AutofillManager : public content::WebContentsObserver,
   // AutofillDownloadManager::Observer:
   virtual void OnLoadedServerPredictions(
       const std::string& response_xml) OVERRIDE;
+
+  // ProfileSyncServiceObserver:
+  virtual void OnStateChanged() OVERRIDE;
+
+  // Register as an observer with the sync service.
+  void RegisterWithSyncService();
+
+  // Determines what the current state of password sync is, and if it has
+  // changed from password_sync_enabled_. If it has changed, it notifies
+  // the renderers of this change via SendPasswordSyncStateToRenderer.
+  void UpdatePasswordSyncState(content::RenderViewHost* host);
 
   void OnFormsSeen(const std::vector<webkit::forms::FormData>& forms,
                    const base::TimeTicks& timestamp);
@@ -303,6 +323,13 @@ class AutofillManager : public content::WebContentsObserver,
   // When the user first interacted with a potentially fillable form on this
   // page.
   base::TimeTicks initial_interaction_timestamp_;
+  // If password sync is enabled. We cache this value so that we don't
+  // spam the renderer with messages during startup when the sync state
+  // is changing rapidly.
+  bool password_sync_enabled_;
+  // The ProfileSyncService associated with this tab. This may be NULL in
+  // testing.
+  ProfileSyncService* sync_service_;
 
   // Our copy of the form data.
   ScopedVector<FormStructure> form_structures_;
