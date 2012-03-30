@@ -54,6 +54,7 @@
 #include "ui/base/win/mouse_wheel_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/button_drag_utils.h"
+#include "ui/views/controls/menu/menu_2.h"
 #include "ui/views/controls/textfield/native_textfield_win.h"
 #include "ui/views/widget/widget.h"
 
