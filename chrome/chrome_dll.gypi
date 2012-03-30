@@ -60,7 +60,6 @@
                 # up actual Chromium functionality into this .dll.
                 'chrome_resources.gyp:chrome_resources',
                 'chrome_version_resources',
-                'installer_util_strings',
                 '../content/content.gyp:content_worker',
                 '../crypto/crypto.gyp:crypto',
                 '../printing/printing.gyp:printing',
