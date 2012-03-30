@@ -234,11 +234,23 @@ class MsvsSettings(object):
     lib('AdditionalOptions')
     return libflags
 
+  def _GetDefFileAsLdflags(self, spec, ldflags, gyp_to_build_path):
+    """.def files get implicitly converted to a ModuleDefinitionFile for the
+    linker in the VS generator. Emulate that behaviour here."""
+    def_file = ''
+    if spec['type'] in ('shared_library', 'loadable_module', 'executable'):
+      def_files = [s for s in spec.get('sources', []) if s.endswith('.def')]
+      if len(def_files) == 1:
+        ldflags.append('/DEF:"%s"' % gyp_to_build_path(def_files[0]))
+      elif len(def_files) > 1:
+        raise Exception("Multiple .def files")
+
   def GetLdflags(self, config, product_dir, gyp_to_build_path):
     """Returns the flags that need to be added to link commands."""
     ldflags = []
     ld = self._GetWrapper(self, self.msvs_settings[config],
                           'VCLinkerTool', append=ldflags)
+    self._GetDefFileAsLdflags(self.spec, ldflags, gyp_to_build_path)
     ld('GenerateDebugInformation', map={'true': '/DEBUG'})
     ld('TargetMachine', map={'1': 'X86', '17': 'X64'}, prefix='/MACHINE:')
     ld('AdditionalLibraryDirectories', prefix='/LIBPATH:')
