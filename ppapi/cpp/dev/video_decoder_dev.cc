@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -48,7 +48,7 @@ void VideoDecoder_Dev::AssignPictureBuffers(
 
 int32_t VideoDecoder_Dev::Decode(
     const PP_VideoBitstreamBuffer_Dev& bitstream_buffer,
-    CompletionCallback callback) {
+    const CompletionCallback& callback) {
   if (!has_interface<PPB_VideoDecoder_Dev>())
     return callback.MayForce(PP_ERROR_NOINTERFACE);
   return get_interface<PPB_VideoDecoder_Dev>()->Decode(
@@ -62,7 +62,7 @@ void VideoDecoder_Dev::ReusePictureBuffer(int32_t picture_buffer_id) {
       pp_resource(), picture_buffer_id);
 }
 
-int32_t VideoDecoder_Dev::Flush(CompletionCallback callback) {
+int32_t VideoDecoder_Dev::Flush(const CompletionCallback& callback) {
   if (!has_interface<PPB_VideoDecoder_Dev>())
     return callback.MayForce(PP_ERROR_NOINTERFACE);
   return get_interface<PPB_VideoDecoder_Dev>()->Flush(
