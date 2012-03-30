@@ -2847,6 +2847,7 @@
         'browser/ui/cocoa/applescript/window_applescript_test.mm',
         'browser/ui/find_bar/find_bar_host_browsertest.cc',
         'browser/ui/global_error_service_browsertest.cc',
+        'browser/ui/gtk/one_click_signin_bubble_gtk_browsertest.cc',
         'browser/ui/gtk/view_id_util_browsertest.cc',
         'browser/ui/intents/web_intent_picker_controller_browsertest.cc',
         'browser/ui/login/login_prompt_browsertest.cc',
@@ -3009,6 +3010,7 @@
       'conditions': [
         ['enable_one_click_signin==0', {
           'sources!': [
+            'browser/ui/gtk/one_click_signin_bubble_gtk_browsertest.cc',
             'browser/ui/views/sync/one_click_signin_bubble_view_browsertest.cc',
           ]
         }],

@@ -62,6 +62,7 @@
 #include "chrome/browser/ui/gtk/infobars/infobar_gtk.h"
 #include "chrome/browser/ui/gtk/location_bar_view_gtk.h"
 #include "chrome/browser/ui/gtk/nine_box.h"
+#include "chrome/browser/ui/gtk/one_click_signin_bubble_gtk.h"
 #include "chrome/browser/ui/gtk/password_generation_bubble_gtk.h"
 #include "chrome/browser/ui/gtk/reload_button_gtk.h"
 #include "chrome/browser/ui/gtk/status_bubble_gtk.h"
@@ -1083,9 +1084,8 @@ void BrowserWindowGtk::ShowChromeToMobileBubble() {
 void BrowserWindowGtk::ShowOneClickSigninBubble(
       const base::Closure& learn_more_callback,
       const base::Closure& advanced_callback) {
-  // TODO(rogerta): will be implemented when the one-click feature is done on
-  // linux.
-  NOTIMPLEMENTED();
+  ignore_result(new OneClickSigninBubbleGtk(this, learn_more_callback,
+                                            advanced_callback));
 }
 #endif
 
