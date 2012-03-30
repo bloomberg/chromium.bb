@@ -79,7 +79,6 @@ UNFILED WIN7 INTEL : conformance_textures_texture_complete = FAIL
 UNFILED WIN7 INTEL : conformance_textures_texture_formats_test = FAIL
 UNFILED WIN7 INTEL : conformance_textures_texture_mips = FAIL
 UNFILED WIN7 INTEL : conformance_textures_texture_npot = FAIL
-UNFILED WIN7 INTEL : conformance_textures_texture_size = FAIL
 UNFILED WIN7 INTEL : conformance_textures_texture_size_cube_maps = FAIL
 UNFILED WIN7 INTEL : conformance_glsl_functions_glsl_function_asin = FAIL
 UNFILED WIN7 INTEL : conformance_glsl_variables_gl_fragcoord = FAIL
@@ -99,7 +98,6 @@ UNFILED MAC INTEL : conformance_glsl_functions_glsl_function_smoothstep_gentype 
 UNFILED MAC INTEL : conformance_glsl_variables_gl_pointcoord = FAIL
 UNFILED MAC INTEL : conformance_limits_gl_max_texture_dimensions = FAIL
 UNFILED MAC INTEL : conformance_rendering_line_loop_tri_fan = FAIL
-UNFILED MAC INTEL : conformance_textures_texture_size = FAIL
 
 UNFILED MAC AMD : conformance_attribs_gl_vertex_attrib = FAIL
 UNFILED MAC AMD : conformance_attribs_gl_vertexattribpointer_offsets = FAIL
@@ -132,15 +130,13 @@ UNFILED LINUX INTEL : conformance_glsl_functions_glsl_function_cos = FAIL
 
 UNFILED LINUX AMD : conformance_misc_object_deletion_behaviour = FAIL
 UNFILED LINUX AMD : conformance_textures_texture_mips = FAIL
-UNFILED LINUX AMD : conformance_textures_texture_size = FAIL
 
-////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 //
 //  Temprory entries: they should be removed once the bugs are fixed.
 //
-////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 129819 WIN7 LINUX DEBUG : conformance_context_context_lost = FAIL
-121139 WIN LINUX : conformance_textures_texture_size = FAIL
-121139 MAC AMD : conformance_textures_texture_size = FAIL
+121139 MAC WIN LINUX : conformance_textures_texture_size = FAIL
 
