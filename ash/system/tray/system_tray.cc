@@ -448,7 +448,6 @@ SystemTray::SystemTray()
   set_border(views::Border::CreateEmptyBorder(0, 0,
         kPaddingFromBottomOfScreen, kPaddingFromRightEdgeOfScreen));
   set_notify_enter_exit_on_child(true);
-  set_focusable(true);
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
   AddChildView(container_);
 
@@ -575,19 +574,7 @@ void SystemTray::ShowItems(std::vector<SystemTrayItem*>& items,
   bubble_->Show();
 }
 
-bool SystemTray::OnKeyPressed(const views::KeyEvent& event) {
-  if (event.key_code() == ui::VKEY_SPACE ||
-      event.key_code() == ui::VKEY_RETURN) {
-    if (popup_ && bubble_ && !bubble_->detailed())
-      popup_->Hide();
-    else
-      ShowDefaultView();
-    return true;
-  }
-  return false;
-}
-
-bool SystemTray::OnMousePressed(const views::MouseEvent& event) {
+bool SystemTray::PerformAction(const views::Event& event) {
   // If we're already showing the default view, hide it; otherwise, show it
   // (and hide any popup that's currently shown).
   if (popup_ && bubble_ && !bubble_->detailed())

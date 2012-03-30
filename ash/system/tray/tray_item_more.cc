@@ -20,7 +20,6 @@ namespace internal {
 
 TrayItemMore::TrayItemMore(SystemTrayItem* owner)
     : owner_(owner) {
-  set_focusable(true);
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal,
       kTrayPopupPaddingHorizontal, 0, kTrayPopupPaddingBetweenItems));
 
@@ -60,6 +59,11 @@ void TrayItemMore::ReplaceIcon(views::View* view) {
   AddChildViewAt(view, 0);
 }
 
+bool TrayItemMore::PerformAction(const views::Event& event) {
+  owner_->PopupDetailedView(0, true);
+  return true;
+}
+
 void TrayItemMore::Layout() {
   // Let the box-layout do the layout first. Then move the '>' arrow to right
   // align.
@@ -78,20 +82,6 @@ void TrayItemMore::Layout() {
     bounds.set_width(more_->x() - kTrayPopupPaddingBetweenItems - label_->x());
     label_->SetBoundsRect(bounds);
   }
-}
-
-bool TrayItemMore::OnKeyPressed(const views::KeyEvent& event) {
-  if (event.key_code() == ui::VKEY_SPACE ||
-      event.key_code() == ui::VKEY_RETURN) {
-    owner_->PopupDetailedView(0, true);
-    return true;
-  }
-  return false;
-}
-
-bool TrayItemMore::OnMousePressed(const views::MouseEvent& event) {
-  owner_->PopupDetailedView(0, true);
-  return true;
 }
 
 void TrayItemMore::GetAccessibleState(ui::AccessibleViewState* state) {

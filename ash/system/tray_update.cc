@@ -19,10 +19,9 @@
 
 namespace {
 
-class UpdateView : public views::View {
+class UpdateView : public ash::internal::ActionableView {
  public:
   UpdateView() {
-    set_focusable(true);
     SetLayoutManager(new
         views::BoxLayout(views::BoxLayout::kHorizontal,
         ash::kTrayPopupPaddingHorizontal, 0,
@@ -42,17 +41,8 @@ class UpdateView : public views::View {
   virtual ~UpdateView() {}
 
  private:
-  // Overridden from views::View.
-  virtual bool OnKeyPressed(const views::KeyEvent& event) OVERRIDE {
-    if (event.key_code() == ui::VKEY_SPACE ||
-        event.key_code() == ui::VKEY_RETURN) {
-      ash::Shell::GetInstance()->tray_delegate()->RequestRestart();
-      return true;
-    }
-    return false;
-  }
-
-  virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE {
+  // Overridden from ActionableView.
+  virtual bool PerformAction(const views::Event& event) OVERRIDE {
     ash::Shell::GetInstance()->tray_delegate()->RequestRestart();
     return true;
   }

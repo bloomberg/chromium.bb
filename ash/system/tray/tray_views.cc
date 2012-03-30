@@ -43,12 +43,33 @@ gfx::Size FixedSizedImageView::GetPreferredSize() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// ActionableView
+
+ActionableView::ActionableView() {
+  set_focusable(true);
+}
+
+ActionableView::~ActionableView() {
+}
+
+bool ActionableView::OnKeyPressed(const views::KeyEvent& event) {
+  if (event.key_code() == ui::VKEY_SPACE ||
+      event.key_code() == ui::VKEY_RETURN) {
+    return PerformAction(event);
+  }
+  return false;
+}
+
+bool ActionableView::OnMousePressed(const views::MouseEvent& event) {
+  return PerformAction(event);
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // HoverHighlightView
 
 HoverHighlightView::HoverHighlightView(ViewClickListener* listener)
     : listener_(listener) {
   set_notify_enter_exit_on_child(true);
-  set_focusable(true);
 }
 
 HoverHighlightView::~HoverHighlightView() {
@@ -88,18 +109,7 @@ void HoverHighlightView::SetAccessibleName(const string16& name) {
   accessible_name_ = name;
 }
 
-bool HoverHighlightView::OnKeyPressed(const views::KeyEvent& event) {
-  if (event.key_code() == ui::VKEY_SPACE ||
-      event.key_code() == ui::VKEY_RETURN) {
-    if (!listener_)
-      return false;
-    listener_->ClickedOn(this);
-    return true;
-  }
-  return false;
-}
-
-bool HoverHighlightView::OnMousePressed(const views::MouseEvent& event) {
+bool HoverHighlightView::PerformAction(const views::Event& event) {
   if (!listener_)
     return false;
   listener_->ClickedOn(this);

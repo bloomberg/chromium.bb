@@ -37,6 +37,28 @@ class FixedSizedImageView : public views::ImageView {
   DISALLOW_COPY_AND_ASSIGN(FixedSizedImageView);
 };
 
+// A focusable view that performs an action when user clicks on it, or presses
+// enter or space when focused.
+class ActionableView : public views::View {
+ public:
+  ActionableView();
+
+  virtual ~ActionableView();
+
+ protected:
+  // Performs an action when user clicks on the view (on mouse-press event), or
+  // presses a key when this view is in focus. Returns true if the event has
+  // been handled and an action was performed. Returns false otherwise.
+  virtual bool PerformAction(const views::Event& event) = 0;
+
+  // Overridden from views::View.
+  virtual bool OnKeyPressed(const views::KeyEvent& event) OVERRIDE;
+  virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ActionableView);
+};
+
 class ViewClickListener {
  public:
   virtual ~ViewClickListener() {}
@@ -45,7 +67,7 @@ class ViewClickListener {
 
 // A view that changes background color on hover, and triggers a callback in the
 // associated ViewClickListener on click.
-class HoverHighlightView : public views::View {
+class HoverHighlightView : public ActionableView {
  public:
   explicit HoverHighlightView(ViewClickListener* listener);
   virtual ~HoverHighlightView();
@@ -63,9 +85,10 @@ class HoverHighlightView : public views::View {
   void SetAccessibleName(const string16& name);
 
  private:
+  // Overridden from ActionableView.
+  virtual bool PerformAction(const views::Event& event) OVERRIDE;
+
   // Overridden from views::View.
-  virtual bool OnKeyPressed(const views::KeyEvent& event) OVERRIDE;
-  virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE;
   virtual void OnMouseEntered(const views::MouseEvent& event) OVERRIDE;
   virtual void OnMouseExited(const views::MouseEvent& event) OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;

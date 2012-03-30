@@ -24,7 +24,7 @@
 
 namespace {
 
-class SettingsView : public views::View {
+class SettingsView : public ash::internal::ActionableView {
  public:
   SettingsView() {
     SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal,
@@ -40,24 +40,12 @@ class SettingsView : public views::View {
     label_ = new views::Label(rb.GetLocalizedString(
           IDS_ASH_STATUS_TRAY_SETTINGS_AND_HELP));
     AddChildView(label_);
-
-    set_focusable(true);
   }
 
   virtual ~SettingsView() {}
 
-  // Overridden from views::View.
-  virtual bool OnKeyPressed(const views::KeyEvent& event) OVERRIDE {
-    if (event.key_code() == ui::VKEY_SPACE ||
-        event.key_code() == ui::VKEY_RETURN) {
-      ash::Shell::GetInstance()->tray_delegate()->ShowSettings();
-      return true;
-    }
-    return false;
-  }
-
-  // Overridden from views::View.
-  virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE {
+  // Overridden from ash::internal::ActionableView.
+  virtual bool PerformAction(const views::Event& event) OVERRIDE {
     ash::Shell::GetInstance()->tray_delegate()->ShowSettings();
     return true;
   }

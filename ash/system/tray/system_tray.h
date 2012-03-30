@@ -8,8 +8,10 @@
 
 #include "ash/launcher/background_animator.h"
 #include "ash/ash_export.h"
+#include "ash/system/tray/tray_views.h"
 #include "ash/system/user/login_status.h"
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/message_pump_observer.h"
 #include "base/memory/scoped_vector.h"
 #include "ui/views/view.h"
@@ -38,7 +40,8 @@ class SystemTrayBackground;
 class SystemTrayBubble;
 }
 
-class ASH_EXPORT SystemTray : public views::View,
+class ASH_EXPORT SystemTray : NON_EXPORTED_BASE(
+                                  public internal::ActionableView),
                               public views::Widget::Observer,
                               public internal::BackgroundAnimatorDelegate,
                               public base::MessagePumpObserver {
@@ -120,9 +123,10 @@ class ASH_EXPORT SystemTray : public views::View,
                  bool details,
                  bool activate);
 
+  // Overridden from internal::ActionableView.
+  virtual bool PerformAction(const views::Event& event) OVERRIDE;
+
   // Overridden from views::View.
-  virtual bool OnKeyPressed(const views::KeyEvent& event) OVERRIDE;
-  virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE;
   virtual void OnMouseEntered(const views::MouseEvent& event) OVERRIDE;
   virtual void OnMouseExited(const views::MouseEvent& event) OVERRIDE;
   virtual void AboutToRequestFocusFromTabTraversal(bool reverse) OVERRIDE;
