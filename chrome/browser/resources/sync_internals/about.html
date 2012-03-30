@@ -91,12 +91,14 @@ table#aboutDetails tr[highlighted]:nth-child(odd) {
 </div>
 
 <div class="column">
-  <h2>Actionable Error</h2>
-  <table id="actionableError">
-    <tr jsselect="actionable_error">
-      <td jscontent="stat_name"/>
-      <td jscontent="stat_value"/>
-    </tr>
-  </table>
+  <p jsdisplay="actionable_error_detected">
+    <h2 jsdisplay="actionable_error_detected">Actionable Error</h2>
+    <table id="actionableError">
+      <tr jsselect="actionable_error">
+        <td jscontent="stat_name"/>
+        <td jscontent="stat_value"/>
+      </tr>
+    </table>
+  </p>
 </div>
 </div>

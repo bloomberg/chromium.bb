@@ -647,18 +647,28 @@ void ConstructAboutInformation(ProfileSyncService* service,
     }
 
     // Now set the actionable errors.
-    ListValue* actionable_error = new ListValue();
-    strings->Set("actionable_error", actionable_error);
-    sync_ui_util::AddStringSyncDetails(actionable_error, "Error Type",
-        browser_sync::GetSyncErrorTypeString(
-            full_status.sync_protocol_error.error_type));
-    sync_ui_util::AddStringSyncDetails(actionable_error, "Action",
-        browser_sync::GetClientActionString(
-            full_status.sync_protocol_error.action));
-    sync_ui_util::AddStringSyncDetails(actionable_error, "url",
-        full_status.sync_protocol_error.url);
-    sync_ui_util::AddStringSyncDetails(actionable_error, "Error Description",
-        full_status.sync_protocol_error.error_description);
+    if ((full_status.sync_protocol_error.error_type !=
+         browser_sync::UNKNOWN_ERROR) &&
+        (full_status.sync_protocol_error.error_type !=
+         browser_sync::SYNC_SUCCESS)) {
+      strings->Set("actionable_error_detected",
+                   base::Value::CreateBooleanValue(true));
+      ListValue* actionable_error = new ListValue();
+      strings->Set("actionable_error", actionable_error);
+      sync_ui_util::AddStringSyncDetails(actionable_error, "Error Type",
+          browser_sync::GetSyncErrorTypeString(
+              full_status.sync_protocol_error.error_type));
+      sync_ui_util::AddStringSyncDetails(actionable_error, "Action",
+          browser_sync::GetClientActionString(
+              full_status.sync_protocol_error.action));
+      sync_ui_util::AddStringSyncDetails(actionable_error, "url",
+          full_status.sync_protocol_error.url);
+      sync_ui_util::AddStringSyncDetails(actionable_error, "Error Description",
+          full_status.sync_protocol_error.error_description);
+   } else {
+     strings->Set("actionable_error_detected",
+                  base::Value::CreateBooleanValue(false));
+   }
 
     const FailedDatatypesHandler& failed_datatypes_handler =
         service->failed_datatypes_handler();
