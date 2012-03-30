@@ -3780,7 +3780,7 @@ FileManager.prototype = {
 
   FileManager.prototype.onFileChanged_ = function(event) {
     // We receive a lot of events even in folders we are not interested in.
-    if (event.fileUrl == this.getCurrentDirectoryURL())
+    if (encodeURI(event.fileUrl) == this.getCurrentDirectoryURL())
       this.directoryModel_.rescanLater();
   };
 
