@@ -528,6 +528,11 @@ name=http://code.google.com/p/drmemory/issues/detail?id=476 i
 ...
 CRYPT32.dll!CryptProtectData
 
+LEAK
+name=http://code.google.com/p/drmemory/issues/detail?id=476 j
+...
+CRYPT32.dll!CryptExportPublicKeyInfoEx
+
 UNINITIALIZED READ
 name=http://code.google.com/p/drmemory/issues/detail?id=502 a
 system call NtSecureConnectPort parameter #3
@@ -919,11 +924,12 @@ name=http://code.google.com/p/drmemory/issues/detail?id=841 d
 ...
 CRYPTNET.dll!I_CryptNetGetConnectivity
 
+# Often missing a ntdll.dll!KiUserCallbackDispatcher frame.
 UNINITIALIZED READ
 name=http://code.google.com/p/drmemory/issues/detail?id=810
 instruction=test   %edx %edx
 USER32.dll!GetClassLongW
-ntdll.dll!KiUserCallbackDispatcher
+...
 *!ui::CenterAndSizeWindow
 
 UNINITIALIZED READ
@@ -997,8 +1003,9 @@ name=http://crbug.com/86301
 # Leak in a binary copy of Firefox 3's NSS dll.  Not much we can do about it.
 LEAK
 name=Firefox 3 NSS dll leak
-nspr4.dll!...
-*!NSSDecryptor::Free
+nspr4.dll!*
+...
+*!NSSDecryptor::~NSSDecryptor
 
 # We get uninit reports inside GMock when it prints the bytes of references to
 # partially initialized objects passed to unexpected method calls.
