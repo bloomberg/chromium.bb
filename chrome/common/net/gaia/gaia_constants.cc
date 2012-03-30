@@ -20,8 +20,6 @@ const char kPicasaService[] = "lh2";
 // Service/scope names for sync.
 const char kSyncService[] = "chromiumsync";
 
-// Service name for XMPP Google Talk.
-const char kTalkService[] = "talk";
 // Service name for remoting.
 const char kRemotingService[] = "chromoting";
 // Service name for cloud print.

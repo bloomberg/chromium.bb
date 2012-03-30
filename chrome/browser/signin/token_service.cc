@@ -4,6 +4,7 @@
 
 #include "chrome/browser/signin/token_service.h"
 
+#include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/string_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -18,18 +19,18 @@
 
 using content::BrowserThread;
 
-// Unfortunately kNumServices must be defined in the .h.
-// TODO(chron): Sync doesn't use the TalkToken anymore so we can stop
-//              requesting it.
-const char* TokenService::kServices[] = {
+namespace {
+
+// List of services that are capable of ClientLogin-based authentication.
+const char* kServices[] = {
   GaiaConstants::kGaiaService,
   GaiaConstants::kSyncService,
-  GaiaConstants::kTalkService,
   GaiaConstants::kDeviceManagementService,
-  GaiaConstants::kLSOService,
+  GaiaConstants::kLSOService
 };
 
-const char* kUnusedServiceScope = "unused-service-scope";
+}  // namespace
+
 
 TokenService::TokenService()
     : profile_(NULL),
@@ -37,6 +38,9 @@ TokenService::TokenService()
       tokens_loaded_(false) {
   // Allow constructor to be called outside the UI thread, so it can be mocked
   // out for unit tests.
+
+  COMPILE_ASSERT(arraysize(kServices) == arraysize(fetchers_),
+                 kServices_and_fetchers_dont_have_same_size);
 }
 
 TokenService::~TokenService() {
@@ -48,7 +52,6 @@ TokenService::~TokenService() {
 
 void TokenService::Initialize(const char* const source,
                               Profile* profile) {
-
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!source_.empty()) {
     // Already initialized.
@@ -86,7 +89,7 @@ void TokenService::ResetCredentialsInMemory() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Terminate any running fetchers. Callbacks will not return.
-  for (int i = 0; i < kNumServices; ++i) {
+  for (size_t i = 0; i < arraysize(kServices); ++i) {
     fetchers_[i].reset();
   }
 
@@ -110,7 +113,7 @@ void TokenService::UpdateCredentials(
   SaveAuthTokenToDB(GaiaConstants::kGaiaSid, credentials.sid);
 
   // Cancel any currently running requests.
-  for (int i = 0; i < kNumServices; i++) {
+  for (size_t i = 0; i < arraysize(kServices); i++) {
     fetchers_[i].reset();
   }
 }
@@ -140,7 +143,7 @@ bool TokenService::TokensLoadedFromDB() const {
 
 // static
 int TokenService::GetServiceIndex(const std::string& service) {
-  for (int i = 0; i < kNumServices; ++i) {
+  for (size_t i = 0; i < arraysize(kServices); ++i) {
     if (kServices[i] == service)
       return i;
   }
@@ -162,7 +165,7 @@ const std::string& TokenService::GetLsid() const {
 void TokenService::StartFetchingTokens() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(AreCredentialsValid());
-  for (int i = 0; i < kNumServices; i++) {
+  for (size_t i = 0; i < arraysize(kServices); i++) {
     fetchers_[i].reset(new GaiaAuthFetcher(this, source_, getter_));
     fetchers_[i]->StartIssueAuthToken(credentials_.sid,
                                       credentials_.lsid,
@@ -196,6 +199,12 @@ const std::string& TokenService::GetOAuth2LoginRefreshToken() const {
 
 const std::string& TokenService::GetOAuth2LoginAccessToken() const {
   return GetTokenForService(GaiaConstants::kGaiaOAuth2LoginAccessToken);
+}
+
+// static
+void TokenService::GetServiceNamesForTesting(std::vector<std::string>* names) {
+  names->resize(arraysize(kServices));
+  std::copy(kServices, kServices + arraysize(kServices), names->begin());
 }
 
 // Note that this can fire twice or more for any given service.
@@ -307,7 +316,7 @@ void TokenService::LoadTokensIntoMemory(
     const std::map<std::string, std::string>& db_tokens,
     std::map<std::string, std::string>* in_memory_tokens) {
 
-  for (int i = 0; i < kNumServices; i++) {
+  for (size_t i = 0; i < arraysize(kServices); i++) {
     LoadSingleTokenIntoMemory(db_tokens, in_memory_tokens, kServices[i]);
   }
   LoadSingleTokenIntoMemory(db_tokens, in_memory_tokens,

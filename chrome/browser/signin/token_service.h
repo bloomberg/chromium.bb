@@ -38,6 +38,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
@@ -178,6 +179,10 @@ class TokenService : public GaiaAuthConsumer,
 
  private:
 
+  // Gets the list of all service names for which tokens will be retrieved.
+  // This method is meant only for tests.
+  static void GetServiceNamesForTesting(std::vector<std::string>* names);
+
   void FireTokenAvailableNotification(const std::string& service,
                                       const std::string& auth_token);
 
@@ -215,14 +220,12 @@ class TokenService : public GaiaAuthConsumer,
   // Credentials from ClientLogin for Issuing auth tokens.
   GaiaAuthConsumer::ClientLoginResult credentials_;
 
-  // Size of array of services capable of ClientLogin-based authentication.
-  // This value must be defined here.
-  static const int kNumServices = 5;
-  // List of services that are capable of ClientLogin-based authentication.
-  static const char* kServices[kNumServices];
   // A bunch of fetchers suitable for ClientLogin token issuing. We don't care
-  // about the ordering, nor do we care which is for which service.
-  scoped_ptr<GaiaAuthFetcher> fetchers_[kNumServices];
+  // about the ordering, nor do we care which is for which service.  The
+  // number of entries in this array must match the number of entries in the
+  // kServices array declared in the cc file.  If not, a compile time error
+  // will occur.
+  scoped_ptr<GaiaAuthFetcher> fetchers_[4];
 
   // Map from service to token.
   std::map<std::string, std::string> token_map_;

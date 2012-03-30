@@ -240,7 +240,6 @@ TEST_F(TokenServiceTest, OnTokenSuccess) {
   // Don't "start fetching", just go ahead and issue the callback.
   service_->OnIssueAuthTokenSuccess(GaiaConstants::kSyncService, "token");
   EXPECT_TRUE(service_->HasTokenForService(GaiaConstants::kSyncService));
-  EXPECT_FALSE(service_->HasTokenForService(GaiaConstants::kTalkService));
   // Gaia returns the entire result as the token so while this is a shared
   // result with ClientLogin, it doesn't matter, we should still get it back.
   EXPECT_EQ(service_->GetTokenForService(GaiaConstants::kSyncService), "token");
@@ -256,11 +255,9 @@ TEST_F(TokenServiceTest, Reset) {
   EXPECT_TRUE(service_->HasTokenForService(GaiaConstants::kSyncService));
   EXPECT_EQ(service_->GetTokenForService(GaiaConstants::kSyncService),
             "eraseme");
-  EXPECT_FALSE(service_->HasTokenForService(GaiaConstants::kTalkService));
 
   service_->ResetCredentialsInMemory();
   EXPECT_FALSE(service_->HasTokenForService(GaiaConstants::kSyncService));
-  EXPECT_FALSE(service_->HasTokenForService(GaiaConstants::kTalkService));
   EXPECT_FALSE(service_->HasLsid());
 
   // Now start using it again.
@@ -269,11 +266,8 @@ TEST_F(TokenServiceTest, Reset) {
   service_->StartFetchingTokens();
 
   service_->OnIssueAuthTokenSuccess(GaiaConstants::kSyncService, "token");
-  service_->OnIssueAuthTokenSuccess(GaiaConstants::kTalkService, "token3");
 
   EXPECT_EQ(service_->GetTokenForService(GaiaConstants::kSyncService), "token");
-  EXPECT_EQ(service_->GetTokenForService(GaiaConstants::kTalkService),
-            "token3");
 }
 
 TEST_F(TokenServiceTest, FullIntegration) {
@@ -283,20 +277,16 @@ TEST_F(TokenServiceTest, FullIntegration) {
     MockURLFetcherFactory<MockFetcher> factory;
     factory.set_results(result);
     EXPECT_FALSE(service_->HasTokenForService(GaiaConstants::kSyncService));
-    EXPECT_FALSE(service_->HasTokenForService(GaiaConstants::kTalkService));
     service_->StartFetchingTokens();
   }
 
   EXPECT_TRUE(service_->HasTokenForService(GaiaConstants::kSyncService));
-  EXPECT_TRUE(service_->HasTokenForService(GaiaConstants::kTalkService));
   // Gaia returns the entire result as the token so while this is a shared
   // result with ClientLogin, it doesn't matter, we should still get it back.
   EXPECT_EQ(service_->GetTokenForService(GaiaConstants::kSyncService), result);
-  EXPECT_EQ(service_->GetTokenForService(GaiaConstants::kTalkService), result);
 
   service_->ResetCredentialsInMemory();
   EXPECT_FALSE(service_->HasTokenForService(GaiaConstants::kSyncService));
-  EXPECT_FALSE(service_->HasTokenForService(GaiaConstants::kTalkService));
 }
 
 TEST_F(TokenServiceTest, LoadTokensIntoMemoryBasic) {
@@ -310,13 +300,14 @@ TEST_F(TokenServiceTest, LoadTokensIntoMemoryBasic) {
   EXPECT_TRUE(memory_tokens.empty());
   EXPECT_EQ(0U, success_tracker_.size());
 
-  std::string service;
-  std::string token;
-  for (int i = 0; i < TokenService::kNumServices; ++i) {
-    service = TokenService::kServices[i];
+  std::vector<std::string> services;
+  TokenService::GetServiceNamesForTesting(&services);
+  for (std::vector<std::string>::const_iterator i = services.begin();
+       i != services.end(); ++i) {
+    const std::string& service = *i;
     TestLoadSingleToken(&db_tokens, &memory_tokens, service);
   }
-  service = GaiaConstants::kGaiaOAuth2LoginRefreshToken;
+  std::string service = GaiaConstants::kGaiaOAuth2LoginRefreshToken;
   TestLoadSingleToken(&db_tokens, &memory_tokens, service);
   service = GaiaConstants::kGaiaOAuth2LoginAccessToken;
   TestLoadSingleToken(&db_tokens, &memory_tokens, service);
@@ -372,7 +363,6 @@ TEST_F(TokenServiceTest, WebDBLoadIntegration) {
 
   EXPECT_EQ(1U, success_tracker_.size());
   EXPECT_TRUE(service_->HasTokenForService(GaiaConstants::kSyncService));
-  EXPECT_FALSE(service_->HasTokenForService(GaiaConstants::kTalkService));
   EXPECT_TRUE(service_->HasLsid());
 }
 
@@ -395,7 +385,6 @@ TEST_F(TokenServiceTest, MultipleLoadResetIntegration) {
 
   EXPECT_EQ(1U, success_tracker_.size());
   EXPECT_TRUE(service_->HasTokenForService(GaiaConstants::kSyncService));
-  EXPECT_FALSE(service_->HasTokenForService(GaiaConstants::kTalkService));
   EXPECT_TRUE(service_->HasLsid());
 
   // Reset it one more time so there's no surprises.

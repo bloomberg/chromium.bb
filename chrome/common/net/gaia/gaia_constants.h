@@ -16,7 +16,6 @@ extern const char kChromeSource[];
 // Gaia services for requesting
 extern const char kGaiaService[];  // uber token
 extern const char kPicasaService[];
-extern const char kTalkService[];
 extern const char kSyncService[];
 extern const char kRemotingService[];
 extern const char kCloudPrintService[];
