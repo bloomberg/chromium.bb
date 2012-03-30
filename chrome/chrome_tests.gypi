@@ -1957,7 +1957,6 @@
         'browser/ui/gtk/gtk_chrome_shrinkable_hbox_unittest.cc',
         'browser/ui/gtk/gtk_util_unittest.cc',
         'browser/ui/gtk/omnibox/omnibox_popup_view_gtk_unittest.cc',
-        'browser/ui/gtk/one_click_signin_dialog_gtk_unittest.cc',
         'browser/ui/gtk/reload_button_gtk_unittest.cc',
         'browser/ui/gtk/status_icons/status_tray_gtk_unittest.cc',
         'browser/ui/gtk/tabs/tab_renderer_gtk_unittest.cc',
@@ -2157,7 +2156,6 @@
           'sources!': [
             'browser/ui/cocoa/one_click_signin_bubble_controller_unittest.mm',
             'browser/ui/cocoa/one_click_signin_dialog_controller_unittest.mm',
-            'browser/ui/gtk/one_click_signin_dialog_gtk_unittest.cc',
           ]
         }],
         ['disable_nacl==1', {
