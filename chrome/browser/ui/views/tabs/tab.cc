@@ -66,7 +66,12 @@ static const int kCloseButtonVertFuzz = 1;
 static const int kCloseButtonVertFuzz = 0;
 #endif
 static const int kTabIconSize = gfx::kFaviconSize;
+// Additional horizontal offset for close button relative to title text.
+#if defined(USE_ASH)
+static const int kCloseButtonHorzFuzz = 7;
+#else
 static const int kCloseButtonHorzFuzz = 5;
+#endif
 static const int kTouchModeMinimumWidth = 160;
 
 // When a non-mini-tab becomes a mini-tab the width of the tab animates. If
