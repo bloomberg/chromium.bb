@@ -141,8 +141,8 @@ void wl_list_insert_list(struct wl_list *list, struct wl_list *other);
 	     pos = __wl_container_of(pos->member.prev, pos, member))
 
 struct wl_array {
-	uint32_t size;
-	uint32_t alloc;
+	size_t size;
+	size_t alloc;
 	void *data;
 };
 
@@ -153,7 +153,7 @@ struct wl_array {
 
 void wl_array_init(struct wl_array *array);
 void wl_array_release(struct wl_array *array);
-void *wl_array_add(struct wl_array *array, int size);
+void *wl_array_add(struct wl_array *array, size_t size);
 void wl_array_copy(struct wl_array *array, struct wl_array *source);
 
 #ifdef  __cplusplus

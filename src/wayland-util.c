@@ -97,9 +97,9 @@ wl_array_release(struct wl_array *array)
 }
 
 WL_EXPORT void *
-wl_array_add(struct wl_array *array, int size)
+wl_array_add(struct wl_array *array, size_t size)
 {
-	int alloc;
+	size_t alloc;
 	void *data, *p;
 
 	if (array->alloc > 0)
