@@ -119,8 +119,15 @@ dyncode_demand_alloc_test_nexe = env.ComponentProgram(
 test_suites = ['small_tests', 'sel_ldr_tests', 'dynamic_load_tests',
                'nonpexe_tests']
 
+sel_ldr_flags = []
+if env.Bit('target_arm') and env.UsingEmulator():
+  sel_ldr_flags.extend(['-E', 'UNDER_QEMU_ARM=1'])
+if env.IsRunningUnderValgrind():
+  sel_ldr_flags.extend(['-E', 'RUNNING_ON_VALGRIND=1'])
+
 node = env.CommandSelLdrTestNacl('dynamic_load_test.out',
-                                 dynamic_load_test_nexe)
+                                 dynamic_load_test_nexe,
+                                 sel_ldr_flags=sel_ldr_flags)
 env.AddNodeToTestSuite(node, test_suites, 'run_dynamic_load_test')
 
 node = env.CommandSelLdrTestNacl(

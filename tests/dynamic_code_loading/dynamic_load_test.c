@@ -381,6 +381,33 @@ void test_deleting_code() {
   rc = nacl_dyncode_delete(load_area, sizeof(buf));
   assert(rc == -1);
   assert(errno == EFAULT);
+
+  /* We should be able to load new code at the same address.  This
+     assumes that no other threads are running, otherwise this request
+     can be rejected.
+
+     This fails under ARM QEMU.  QEMU will flush its instruction
+     translation cache based on writes to the same virtual address,
+     but it ignores our explicit cache flush system calls.  Valgrind
+     has a similar problem, except that there is no cache flush system
+     call on x86. */
+  if (getenv("UNDER_QEMU_ARM") != NULL ||
+      getenv("RUNNING_ON_VALGRIND") != NULL) {
+    printf("Skipping loading new code under emulator\n");
+  } else {
+    printf("Testing loading new code...\n");
+    copy_and_pad_fragment(buf, sizeof(buf), &template_func_replacement,
+                          &template_func_replacement_end);
+    rc = nacl_dyncode_create(load_area, buf, sizeof(buf));
+    assert(rc == 0);
+    func = (int (*)()) (uintptr_t) load_area;
+    rc = func();
+    assert(rc == 4321);
+
+    rc = nacl_dyncode_delete(load_area, sizeof(buf));
+    assert(rc == 0);
+    assert(load_area[0] != buf[0]);
+  }
 }
 
 /* nacl_dyncode_delete() succeeds trivially on the empty range. */

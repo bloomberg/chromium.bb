@@ -1005,6 +1005,14 @@ int32_t NaClTextSysDyncode_Delete(struct NaClAppThread *natp,
     /* make it so no new threads can enter target region */
     ReplaceBundleHeadsWithHalts(mapped_addr, size, nap->bundle_size);
 
+    /*
+     * Flush the instruction cache.  In principle this is needed for
+     * security on ARM so that, when new code is loaded, it is not
+     * possible for it to jump to stale code that remains in the
+     * icache.
+     */
+    NaClFlushCacheForDoublyMappedCode(mapped_addr, (uint8_t *) dest_addr, size);
+
     NaclTextMapClearCacheIfNeeded(nap, dest, size);
 
     /* increment and record the generation deletion was requested */
