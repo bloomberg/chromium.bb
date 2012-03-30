@@ -800,6 +800,10 @@ void Shell::ToggleAppList() {
   app_list_->SetVisible(!app_list_->IsVisible());
 }
 
+bool Shell::GetAppListTargetVisibility() const {
+  return app_list_.get() && app_list_->GetTargetVisibility();
+}
+
 bool Shell::IsScreenLocked() const {
   return !delegate_.get() || delegate_->IsScreenLocked();
 }

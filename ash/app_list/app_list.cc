@@ -8,6 +8,7 @@
 #include "ash/shell_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
+#include "ash/wm/shelf_layout_manager.h"
 #include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
@@ -57,6 +58,10 @@ void AppList::SetVisible(bool visible) {
     return;
 
   is_visible_ = visible;
+
+  // App list needs to know the new shelf layout in order to calculate its
+  // UI layout when AppListView visibility changes.
+  Shell::GetInstance()->shelf()->UpdateAutoHideState();
 
   if (view_) {
     ScheduleAnimation();

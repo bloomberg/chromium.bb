@@ -396,6 +396,9 @@ ShelfLayoutManager::AutoHideState ShelfLayoutManager::CalculateAutoHideState(
     return AUTO_HIDE_HIDDEN;
 
   Shell* shell = Shell::GetInstance();
+  if (shell->GetAppListTargetVisibility())
+    return AUTO_HIDE_SHOWN;
+
   if (shell->tray() && shell->tray()->should_show_launcher())
     return AUTO_HIDE_SHOWN;
 

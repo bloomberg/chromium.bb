@@ -139,6 +139,9 @@ class ASH_EXPORT Shell {
   // Toggles app list.
   void ToggleAppList();
 
+  // Returns app list target visibility.
+  bool GetAppListTargetVisibility() const;
+
   // Returns true if the screen is locked.
   bool IsScreenLocked() const;
 

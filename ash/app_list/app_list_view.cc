@@ -8,8 +8,10 @@
 #include "ash/app_list/app_list_model.h"
 #include "ash/app_list/app_list_model_view.h"
 #include "ash/app_list/app_list_view_delegate.h"
+#include "ash/screen_ash.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
+#include "ash/wm/shelf_layout_manager.h"
 #include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/screen.h"
@@ -117,8 +119,10 @@ void AppListView::Layout() {
     return;
 
   // Gets work area rect, which is in screen coordinates.
-  gfx::Rect workarea = gfx::Screen::GetMonitorWorkAreaNearestWindow(
-      GetWidget()->GetNativeView());
+  gfx::Rect workarea = Shell::GetInstance()->shelf()->IsVisible() ?
+      ScreenAsh::GetUnmaximizedWorkAreaBounds(GetWidget()->GetNativeView()) :
+      gfx::Screen::GetMonitorWorkAreaNearestWindow(
+          GetWidget()->GetNativeView());
 
   // Converts |workarea| into view's coordinates.
   gfx::Point origin(workarea.origin());
