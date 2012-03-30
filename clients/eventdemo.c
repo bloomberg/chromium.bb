@@ -86,7 +86,7 @@ struct eventdemo {
 	struct widget *widget;
 	struct display *display;
 
-	unsigned int x, y, w, h;
+	int x, y, w, h;
 };
 
 /**

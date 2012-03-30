@@ -168,7 +168,7 @@ dnd_redraw_handler(struct widget *widget, void *data)
 	struct rectangle allocation;
 	cairo_t *cr;
 	cairo_surface_t *surface;
-	int i;
+	unsigned int i;
 
 	surface = window_get_surface(dnd->window);
 	cr = cairo_create(surface);
@@ -206,7 +206,7 @@ keyboard_focus_handler(struct window *window,
 static int
 dnd_add_item(struct dnd *dnd, struct item *item)
 {
-	int i;
+	unsigned int i;
 
 	for (i = 0; i < ARRAY_LENGTH(dnd->items); i++) {
 		if (dnd->items[i] == 0) {
@@ -222,7 +222,7 @@ dnd_get_item(struct dnd *dnd, int32_t x, int32_t y)
 {
 	struct item *item;
 	struct rectangle allocation;
-	int i;
+	unsigned int i;
 
 	widget_get_allocation(dnd->widget, &allocation);
 
@@ -369,7 +369,7 @@ dnd_button_handler(struct widget *widget,
 	struct display *display;
 	struct wl_compositor *compositor;
 	struct wl_buffer *buffer;
-	int i;
+	unsigned int i;
 
 	widget_get_allocation(dnd->widget, &allocation);
 	input_get_position(input, &x, &y);
@@ -518,8 +518,9 @@ static struct dnd *
 dnd_create(struct display *display)
 {
 	struct dnd *dnd;
-	int i, x, y;
+	int x, y;
 	int32_t width, height;
+	unsigned int i;
 
 	dnd = malloc(sizeof *dnd);
 	if (dnd == NULL)

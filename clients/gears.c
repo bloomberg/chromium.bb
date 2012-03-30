@@ -63,7 +63,7 @@ struct gear_template {
 	GLfloat tooth_depth;
 };
 
-const static struct gear_template gear_templates[] = {
+static const struct gear_template gear_templates[] = {
 	{ { 0.8, 0.1, 0.0, 1.0 }, 1.0, 4.0, 1.0, 20, 0.7 },
 	{ { 0.0, 0.8, 0.2, 1.0 }, 0.5, 2.0, 2.0, 10, 0.7 },
 	{ { 0.2, 0.2, 1.0, 1.0 }, 1.3, 2.0, 0.5, 10, 0.7 }, 

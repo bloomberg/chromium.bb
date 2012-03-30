@@ -212,7 +212,7 @@ hash_table_lookup(struct hash_table *ht, uint32_t hash)
 }
 
 static void
-hash_table_rehash(struct hash_table *ht, int new_size_index)
+hash_table_rehash(struct hash_table *ht, unsigned int new_size_index)
 {
 	struct hash_table old_ht;
 	struct hash_entry *table, *entry;

@@ -166,7 +166,7 @@ struct input {
 	struct wl_input_device *input_device;
 	struct window *pointer_focus;
 	struct window *keyboard_focus;
-	uint32_t current_pointer_image;
+	int current_pointer_image;
 	uint32_t modifiers;
 	int32_t sx, sy;
 	struct wl_list link;

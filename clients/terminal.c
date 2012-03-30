@@ -95,7 +95,7 @@ init_state_machine(struct utf8_state_machine *machine)
 }
 
 static enum utf8_state
-utf8_next_char(struct utf8_state_machine *machine, char c)
+utf8_next_char(struct utf8_state_machine *machine, unsigned char c)
 {
 	switch(machine->state) {
 	case utf8state_start:
@@ -861,7 +861,7 @@ terminal_send_selection(struct terminal *terminal, int fd)
 struct glyph_run {
 	struct terminal *terminal;
 	cairo_t *cr;
-	int count;
+	unsigned int count;
 	union decoded_attr attr;
 	cairo_glyph_t glyphs[256], *g;
 };
@@ -1864,7 +1864,7 @@ escape_append_utf8(struct terminal *terminal, union utf8_char utf8)
 static void
 terminal_data(struct terminal *terminal, const char *data, size_t length)
 {
-	int i;
+	unsigned int i;
 	union utf8_char utf8;
 	enum utf8_state parser_state;
 

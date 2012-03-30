@@ -1276,7 +1276,7 @@ surface_set_input_region(struct wl_client *client,
 	weston_compositor_schedule_repaint(surface->compositor);
 }
 
-const static struct wl_surface_interface surface_interface = {
+static const struct wl_surface_interface surface_interface = {
 	surface_destroy,
 	surface_attach,
 	surface_damage,
@@ -1378,7 +1378,7 @@ compositor_create_region(struct wl_client *client,
 	wl_client_add_resource(client, &region->resource);
 }
 
-const static struct wl_compositor_interface compositor_interface = {
+static const struct wl_compositor_interface compositor_interface = {
 	compositor_create_surface,
 	compositor_create_region
 };
@@ -1904,7 +1904,7 @@ input_device_attach(struct wl_client *client,
 		       0, 0, buffer->width, buffer->height);
 }
 
-const static struct wl_input_device_interface input_device_interface = {
+static const struct wl_input_device_interface input_device_interface = {
 	input_device_attach,
 };
 
@@ -2514,11 +2514,11 @@ int main(int argc, char *argv[])
 	char *socket_name = NULL;
 	char *config_file;
 
-	const const struct config_key shell_config_keys[] = {
+	const struct config_key shell_config_keys[] = {
 		{ "type", CONFIG_KEY_STRING, &shell },
 	};
 
-	const const struct config_section cs[] = {
+	const struct config_section cs[] = {
 		{ "shell",
 		  shell_config_keys, ARRAY_LENGTH(shell_config_keys) },
 	};

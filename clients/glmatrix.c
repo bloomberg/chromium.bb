@@ -257,7 +257,7 @@ reset_strip (ModeInfo *mi, strip *s)
         (i < GRID_SIZE-5) &&   /* display approx. once per 5 strips */
 	!(random() % (GRID_SIZE-5)*5))
       {
-	int j;
+        unsigned int j;
 	char text[80];
         time_t now = time ((time_t *) 0);
         struct tm *tm = localtime (&now);

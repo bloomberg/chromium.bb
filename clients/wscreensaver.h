@@ -39,8 +39,8 @@ struct ModeInfo {
 	struct widget *widget;
 
 	int instance_number;
-	unsigned width;
-	unsigned height;
+	int width;
+	int height;
 
 	unsigned long polygon_count;
 	int fps_p;

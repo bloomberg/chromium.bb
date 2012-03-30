@@ -554,7 +554,7 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 	xcb_focus_in_event_t *focus_in;
 	xcb_atom_t atom;
 	uint32_t *k;
-	int i, set;
+	uint32_t i, set;
 
 	prev = NULL;
 	while (x11_compositor_next_event(c, &event, mask)) {
@@ -740,7 +740,7 @@ x11_compositor_get_resources(struct x11_compositor *c)
 	xcb_intern_atom_reply_t *reply;
 	xcb_pixmap_t pixmap;
 	xcb_gc_t gc;
-	int i;
+	unsigned int i;
 	uint8_t data[] = { 0, 0, 0, 0 };
 
 	for (i = 0; i < ARRAY_LENGTH(atoms); i++)

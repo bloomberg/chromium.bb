@@ -170,7 +170,10 @@ AC_ARG_ENABLE(tests,
 AM_CONDITIONAL(BUILD_TESTS, test x$enable_tests = xyes)
 
 if test "x$GCC" = "xyes"; then
-	GCC_CFLAGS="-Wall -g -Wstrict-prototypes -Wmissing-prototypes -fvisibility=hidden"
+	GCC_CFLAGS="-Wall -Wextra -Wstrict-prototypes -Wmissing-prototypes \
+		-Wno-unused-parameter -Wno-missing-field-initializers \
+		-g -fvisibility=hidden"
+
 fi
 AC_SUBST(GCC_CFLAGS)
 

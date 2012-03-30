@@ -1181,7 +1181,7 @@ static void
 surface_opacity_binding(struct wl_input_device *device, uint32_t time,
 	       uint32_t key, uint32_t button, uint32_t axis, int32_t value, void *data)
 {
-	int step = 15;
+	uint32_t step = 15;
 	struct shell_surface *shsurf;
 	struct weston_surface *surface =
 		(struct weston_surface *) device->pointer_focus;

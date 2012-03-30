@@ -155,7 +155,8 @@ dump_property(struct weston_wm *wm, xcb_atom_t property,
 	int32_t *incr_value;
 	const char *text_value, *name;
 	xcb_atom_t *atom_value;
-	int i, width, len;
+	int width, len;
+	uint32_t i;
 
 	width = fprintf(stderr, "  %s: ", get_atom_name(wm->conn, property));
 	if (reply == NULL) {
@@ -295,7 +296,7 @@ weston_wm_get_selection_targets(struct weston_wm *wm)
 	xcb_get_property_reply_t *reply;
 	xcb_atom_t *value;
 	char **p;
-	int i;
+	uint32_t i;
 
 	cookie = xcb_get_property(wm->conn,
 				  1, /* delete */
@@ -609,7 +610,7 @@ weston_wm_handle_map_notify(struct weston_wm *wm, xcb_generic_event_t *event)
 	void *p;
 	uint32_t *xid;
 	xcb_atom_t *atom;
-	int i;
+	uint32_t i;
 
 	fprintf(stderr, "XCB_MAP_NOTIFY (window %d)\n", map_notify->window);
 
@@ -668,7 +669,7 @@ weston_wm_handle_map_notify(struct weston_wm *wm, xcb_generic_event_t *event)
 	weston_wm_activate(wm, window, XCB_TIME_CURRENT_TIME);
 }
 
-static const int incr_chunk_size = 64 * 1024;
+static const size_t incr_chunk_size = 64 * 1024;
 
 static void
 weston_wm_send_selection_notify(struct weston_wm *wm, xcb_atom_t property)
@@ -1174,7 +1175,7 @@ wxs_wm_get_resources(struct weston_wm *wm)
 	xcb_xfixes_query_version_reply_t *xfixes_reply;
 	xcb_intern_atom_cookie_t cookies[ARRAY_LENGTH(atoms)];
 	xcb_intern_atom_reply_t *reply;
-	int i;
+	uint32_t i;
 
 	xcb_prefetch_extension_data (wm->conn, &xcb_xfixes_id);
 

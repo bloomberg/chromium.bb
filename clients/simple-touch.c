@@ -166,7 +166,7 @@ touch_paint(struct touch *touch, int32_t x, int32_t y, int32_t id)
 		0xffff00ff,
 	};
 
-	if (id < ARRAY_LENGTH(colors))
+	if (id < (int32_t) ARRAY_LENGTH(colors))
 		c = colors[id];
 	else
 		c = 0xffffffff;

@@ -382,7 +382,7 @@ page_flip_handler(int fd, unsigned int frame,
 static int
 drm_surface_format_supported(struct drm_sprite *s, uint32_t format)
 {
-	int i;
+	uint32_t i;
 
 	for (i = 0; i < s->count_formats; i++)
 		if (s->formats[i] == format)
@@ -991,7 +991,7 @@ drm_set_backlight(struct weston_output *output_base, uint32_t value)
 	if (!output->backlight)
 		return;
 
-	if (value < 0 || value > 255)
+	if (value > 255)
 		return;
 
 	max_brightness = backlight_get_max_brightness(output->backlight);
@@ -1182,7 +1182,7 @@ create_sprites(struct drm_compositor *ec)
 	struct drm_sprite *sprite;
 	drmModePlaneRes *plane_res;
 	drmModePlane *plane;
-	int i;
+	uint32_t i;
 
 	plane_res = drmModeGetPlaneResources(ec->drm.fd);
 	if (!plane_res) {
@@ -1249,7 +1249,7 @@ destroy_sprites(struct drm_compositor *compositor)
 }
 
 static int
-create_outputs(struct drm_compositor *ec, int option_connector,
+create_outputs(struct drm_compositor *ec, uint32_t option_connector,
 	       struct udev_device *drm_device)
 {
 	drmModeConnector *connector;
