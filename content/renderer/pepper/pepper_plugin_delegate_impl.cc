@@ -52,6 +52,7 @@
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/render_widget_fullscreen_pepper.h"
 #include "content/renderer/renderer_clipboard_client.h"
+#include "content/renderer/renderer_restrict_dispatch_group.h"
 #include "content/renderer/webplugin_delegate_proxy.h"
 #include "ipc/ipc_channel_handle.h"
 #include "media/video/capture/video_capture_proxy.h"
@@ -125,7 +126,8 @@ class HostDispatcherWrapper
       dispatcher_delegate_.reset();
       return false;
     }
-    dispatcher_->channel()->SetRestrictDispatchToSameChannel(true);
+    dispatcher_->channel()->SetRestrictDispatchChannelGroup(
+        content::kRendererRestrictDispatchGroup_Pepper);
     return true;
   }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -62,6 +62,10 @@ class SyncMessage;
 class IPC_EXPORT SyncChannel : public ChannelProxy,
                                public base::WaitableEventWatcher::Delegate {
  public:
+  enum RestrictDispatchGroup {
+    kRestrictDispatchGroup_None = 0,
+  };
+
   // Creates and initializes a sync channel. If create_pipe_now is specified,
   // the channel will be initialized synchronously.
   SyncChannel(const IPC::ChannelHandle& channel_handle,
@@ -88,16 +92,22 @@ class IPC_EXPORT SyncChannel : public ChannelProxy,
     sync_messages_with_no_timeout_allowed_ = value;
   }
 
-  // Sets this channel to only dispatch its incoming unblocking messages when it
-  // is itself blocked on sending a sync message, not when other channels are.
+  // Sets the dispatch group for this channel, to only allow re-entrant dispatch
+  // of messages to other channels in the same group.
   //
   // Normally, any unblocking message coming from any channel can be dispatched
   // when any (possibly other) channel is blocked on sending a message. This is
   // needed in some cases to unblock certain loops (e.g. necessary when some
   // processes share a window hierarchy), but may cause re-entrancy issues in
   // some cases where such loops are not possible. This flags allows the tagging
-  // of some particular channels to not re-enter in such cases.
-  void SetRestrictDispatchToSameChannel(bool value);
+  // of some particular channels to only re-enter in known correct cases.
+  //
+  // Incoming messages on channels belonging to a group that is not
+  // kRestrictDispatchGroup_None will only be dispatched while a sync message is
+  // being sent on a channel of the *same* group.
+  // Incoming messages belonging to the kRestrictDispatchGroup_None group (the
+  // default) will be dispatched in any case.
+  void SetRestrictDispatchChannelGroup(int group);
 
  protected:
   class ReceivedSyncMsgQueue;
@@ -146,8 +156,13 @@ class IPC_EXPORT SyncChannel : public ChannelProxy,
       return received_sync_msgs_;
     }
 
-    void set_restrict_dispatch(bool value) { restrict_dispatch_ = value; }
-    bool restrict_dispatch() const { return restrict_dispatch_; }
+    void set_restrict_dispatch_group(int group) {
+      restrict_dispatch_group_ = group;
+    }
+
+    int restrict_dispatch_group() const {
+      return restrict_dispatch_group_;
+    }
 
    private:
     virtual ~SyncContext();
@@ -176,7 +191,7 @@ class IPC_EXPORT SyncChannel : public ChannelProxy,
 
     base::WaitableEvent* shutdown_event_;
     base::WaitableEventWatcher shutdown_watcher_;
-    bool restrict_dispatch_;
+    int restrict_dispatch_group_;
   };
 
  private:

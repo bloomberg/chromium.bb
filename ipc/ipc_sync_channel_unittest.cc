@@ -1192,9 +1192,11 @@ namespace {
 
 class RestrictedDispatchServer : public Worker {
  public:
-  RestrictedDispatchServer(WaitableEvent* sent_ping_event)
+  RestrictedDispatchServer(WaitableEvent* sent_ping_event,
+                           WaitableEvent* wait_event)
       : Worker("restricted_channel", Channel::MODE_SERVER),
-        sent_ping_event_(sent_ping_event) { }
+        sent_ping_event_(sent_ping_event),
+        wait_event_(wait_event) { }
 
   void OnDoPing(int ping) {
     // Send an asynchronous message that unblocks the caller.
@@ -1207,12 +1209,18 @@ class RestrictedDispatchServer : public Worker {
         FROM_HERE, base::Bind(&RestrictedDispatchServer::OnPingSent, this));
   }
 
+  void OnPingTTL(int ping, int* out) {
+    *out = ping;
+    wait_event_->Wait();
+  }
+
   base::Thread* ListenerThread() { return Worker::ListenerThread(); }
 
  private:
   bool OnMessageReceived(const Message& message) {
     IPC_BEGIN_MESSAGE_MAP(RestrictedDispatchServer, message)
      IPC_MESSAGE_HANDLER(SyncChannelTestMsg_NoArgs, OnNoArgs)
+     IPC_MESSAGE_HANDLER(SyncChannelTestMsg_PingTTL, OnPingTTL)
      IPC_MESSAGE_HANDLER(SyncChannelTestMsg_Done, Done)
     IPC_END_MESSAGE_MAP()
     return true;
@@ -1224,12 +1232,22 @@ class RestrictedDispatchServer : public Worker {
 
   void OnNoArgs() { }
   WaitableEvent* sent_ping_event_;
+  WaitableEvent* wait_event_;
 };
 
 class NonRestrictedDispatchServer : public Worker {
  public:
-  NonRestrictedDispatchServer()
-      : Worker("non_restricted_channel", Channel::MODE_SERVER) {}
+  NonRestrictedDispatchServer(WaitableEvent* signal_event)
+      : Worker("non_restricted_channel", Channel::MODE_SERVER),
+        signal_event_(signal_event) {}
+
+  base::Thread* ListenerThread() { return Worker::ListenerThread(); }
+
+  void OnDoPingTTL(int ping) {
+    int value = 0;
+    Send(new SyncChannelTestMsg_PingTTL(ping, &value));
+    signal_event_->Signal();
+  }
 
  private:
   bool OnMessageReceived(const Message& message) {
@@ -1241,23 +1259,26 @@ class NonRestrictedDispatchServer : public Worker {
   }
 
   void OnNoArgs() { }
+  WaitableEvent* signal_event_;
 };
 
 class RestrictedDispatchClient : public Worker {
  public:
   RestrictedDispatchClient(WaitableEvent* sent_ping_event,
                            RestrictedDispatchServer* server,
+                           NonRestrictedDispatchServer* server2,
                            int* success)
       : Worker("restricted_channel", Channel::MODE_CLIENT),
         ping_(0),
         server_(server),
+        server2_(server2),
         success_(success),
         sent_ping_event_(sent_ping_event) {}
 
   void Run() {
     // Incoming messages from our channel should only be dispatched when we
     // send a message on that same channel.
-    channel()->SetRestrictDispatchToSameChannel(true);
+    channel()->SetRestrictDispatchChannelGroup(1);
 
     server_->ListenerThread()->message_loop()->PostTask(
         FROM_HERE, base::Bind(&RestrictedDispatchServer::OnDoPing, server_, 1));
@@ -1268,7 +1289,7 @@ class RestrictedDispatchClient : public Worker {
     else
       LOG(ERROR) << "Send failed to dispatch incoming message on same channel";
 
-    scoped_ptr<SyncChannel> non_restricted_channel(new SyncChannel(
+    non_restricted_channel_.reset(new SyncChannel(
         "non_restricted_channel", Channel::MODE_CLIENT, this,
         ipc_thread().message_loop_proxy(), true, shutdown_event()));
 
@@ -1283,7 +1304,7 @@ class RestrictedDispatchClient : public Worker {
     // without hooking into the internals of SyncChannel. I haven't seen it in
     // practice (i.e. not setting SetRestrictDispatchToSameChannel does cause
     // the following to fail).
-    non_restricted_channel->Send(new SyncChannelTestMsg_NoArgs);
+    non_restricted_channel_->Send(new SyncChannelTestMsg_NoArgs);
     if (ping_ == 1)
       ++*success_;
     else
@@ -1295,8 +1316,20 @@ class RestrictedDispatchClient : public Worker {
     else
       LOG(ERROR) << "Send failed to dispatch incoming message on same channel";
 
-    non_restricted_channel->Send(new SyncChannelTestMsg_Done);
-    non_restricted_channel.reset();
+    // Check that the incoming message on the non-restricted channel is
+    // dispatched when sending on the restricted channel.
+    server2_->ListenerThread()->message_loop()->PostTask(
+        FROM_HERE,
+        base::Bind(&NonRestrictedDispatchServer::OnDoPingTTL, server2_, 3));
+    int value = 0;
+    Send(new SyncChannelTestMsg_PingTTL(4, &value));
+    if (ping_ == 3 && value == 4)
+      ++*success_;
+    else
+      LOG(ERROR) << "Send failed to dispatch message from unrestricted channel";
+
+    non_restricted_channel_->Send(new SyncChannelTestMsg_Done);
+    non_restricted_channel_.reset();
     Send(new SyncChannelTestMsg_Done);
     Done();
   }
@@ -1305,6 +1338,7 @@ class RestrictedDispatchClient : public Worker {
   bool OnMessageReceived(const Message& message) {
     IPC_BEGIN_MESSAGE_MAP(RestrictedDispatchClient, message)
      IPC_MESSAGE_HANDLER(SyncChannelTestMsg_Ping, OnPing)
+     IPC_MESSAGE_HANDLER_DELAY_REPLY(SyncChannelTestMsg_PingTTL, OnPingTTL)
     IPC_END_MESSAGE_MAP()
     return true;
   }
@@ -1313,27 +1347,40 @@ class RestrictedDispatchClient : public Worker {
     ping_ = ping;
   }
 
+  void OnPingTTL(int ping, IPC::Message* reply) {
+    ping_ = ping;
+    // This message comes from the NonRestrictedDispatchServer, we have to send
+    // the reply back manually.
+    SyncChannelTestMsg_PingTTL::WriteReplyParams(reply, ping);
+    non_restricted_channel_->Send(reply);
+  }
+
   int ping_;
   RestrictedDispatchServer* server_;
+  NonRestrictedDispatchServer* server2_;
   int* success_;
   WaitableEvent* sent_ping_event_;
+  scoped_ptr<SyncChannel> non_restricted_channel_;
 };
 
 }  // namespace
 
 TEST_F(IPCSyncChannelTest, RestrictedDispatch) {
   WaitableEvent sent_ping_event(false, false);
-
+  WaitableEvent wait_event(false, false);
   RestrictedDispatchServer* server =
-      new RestrictedDispatchServer(&sent_ping_event);
+      new RestrictedDispatchServer(&sent_ping_event, &wait_event);
+  NonRestrictedDispatchServer* server2 =
+      new NonRestrictedDispatchServer(&wait_event);
+
   int success = 0;
   std::vector<Worker*> workers;
-  workers.push_back(new NonRestrictedDispatchServer);
   workers.push_back(server);
-  workers.push_back(
-      new RestrictedDispatchClient(&sent_ping_event, server, &success));
+  workers.push_back(server2);
+  workers.push_back(new RestrictedDispatchClient(
+      &sent_ping_event, server, server2, &success));
   RunTest(workers);
-  EXPECT_EQ(3, success);
+  EXPECT_EQ(4, success);
 }
 
 //-----------------------------------------------------------------------------
@@ -1388,7 +1435,7 @@ class RestrictedDispatchDeadlockServer : public Worker {
   }
 
   void Run() {
-    channel()->SetRestrictDispatchToSameChannel(true);
+    channel()->SetRestrictDispatchChannelGroup(1);
     server_ready_event_->Signal();
   }
 
@@ -1592,6 +1639,114 @@ TEST_F(IPCSyncChannelTest, RestrictedDispatchDeadlock) {
   workers.push_back(client1);
 
   RunTest(workers);
+}
+
+//-----------------------------------------------------------------------------
+
+// This test case inspired by crbug.com/120530
+// We create 4 workers that pipe to each other W1->W2->W3->W4->W1 then we send a
+// message that recurses through 3, 4 or 5 steps to make sure, say, W1 can
+// re-enter when called from W4 while it's sending a message to W2.
+// The first worker drives the whole test so it must be treated specially.
+namespace {
+
+class RestrictedDispatchPipeWorker : public Worker {
+ public:
+  RestrictedDispatchPipeWorker(
+      const std::string &channel1,
+      WaitableEvent* event1,
+      const std::string &channel2,
+      WaitableEvent* event2,
+      int group,
+      int* success)
+      : Worker(channel1, Channel::MODE_SERVER),
+        event1_(event1),
+        event2_(event2),
+        other_channel_name_(channel2),
+        group_(group),
+        success_(success) {
+  }
+
+  void OnPingTTL(int ping, int* ret) {
+    *ret = 0;
+    if (!ping)
+      return;
+    other_channel_->Send(new SyncChannelTestMsg_PingTTL(ping - 1, ret));
+    ++*ret;
+  }
+
+  void OnDone() {
+    if (is_first())
+      return;
+    other_channel_->Send(new SyncChannelTestMsg_Done);
+    other_channel_.reset();
+    Done();
+  }
+
+  void Run() {
+    channel()->SetRestrictDispatchChannelGroup(group_);
+    if (is_first())
+      event1_->Signal();
+    event2_->Wait();
+    other_channel_.reset(new SyncChannel(
+        other_channel_name_, Channel::MODE_CLIENT, this,
+        ipc_thread().message_loop_proxy(), true, shutdown_event()));
+    other_channel_->SetRestrictDispatchChannelGroup(group_);
+    if (!is_first()) {
+      event1_->Signal();
+      return;
+    }
+    *success_ = 0;
+    int value = 0;
+    OnPingTTL(3, &value);
+    *success_ += (value == 3);
+    OnPingTTL(4, &value);
+    *success_ += (value == 4);
+    OnPingTTL(5, &value);
+    *success_ += (value == 5);
+    other_channel_->Send(new SyncChannelTestMsg_Done);
+    other_channel_.reset();
+    Done();
+  }
+
+  bool is_first() { return !!success_; }
+
+ private:
+  bool OnMessageReceived(const Message& message) {
+    IPC_BEGIN_MESSAGE_MAP(RestrictedDispatchPipeWorker, message)
+     IPC_MESSAGE_HANDLER(SyncChannelTestMsg_PingTTL, OnPingTTL)
+     IPC_MESSAGE_HANDLER(SyncChannelTestMsg_Done, OnDone)
+    IPC_END_MESSAGE_MAP()
+    return true;
+  }
+
+  scoped_ptr<SyncChannel> other_channel_;
+  WaitableEvent* event1_;
+  WaitableEvent* event2_;
+  std::string other_channel_name_;
+  int group_;
+  int* success_;
+};
+
+}  // namespace
+
+TEST_F(IPCSyncChannelTest, RestrictedDispatch4WayDeadlock) {
+  int success = 0;
+  std::vector<Worker*> workers;
+  WaitableEvent event0(true, false);
+  WaitableEvent event1(true, false);
+  WaitableEvent event2(true, false);
+  WaitableEvent event3(true, false);
+  workers.push_back(new RestrictedDispatchPipeWorker(
+        "channel0", &event0, "channel1", &event1, 1, &success));
+  workers.push_back(new RestrictedDispatchPipeWorker(
+        "channel1", &event1, "channel2", &event2, 2, NULL));
+  workers.push_back(new RestrictedDispatchPipeWorker(
+        "channel2", &event2, "channel3", &event3, 3, NULL));
+  workers.push_back(new RestrictedDispatchPipeWorker(
+        "channel3", &event3, "channel0", &event0, 4, NULL));
+  RunTest(workers);
+  EXPECT_EQ(3, success);
 }
 
 //-----------------------------------------------------------------------------

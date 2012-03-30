@@ -103,8 +103,9 @@ class SyncChannel::ReceivedSyncMsgQueue :
           first_time = false;
         }
         for (; it != message_queue_.end(); it++) {
-          if (!it->context->restrict_dispatch() ||
-              it->context == dispatching_context) {
+          int message_group = it->context->restrict_dispatch_group();
+          if (message_group == kRestrictDispatchGroup_None ||
+              message_group == dispatching_context->restrict_dispatch_group()) {
             message = it->message;
             context = it->context;
             it = message_queue_.erase(it);
@@ -228,7 +229,7 @@ SyncChannel::SyncContext::SyncContext(
     : ChannelProxy::Context(listener, ipc_thread),
       received_sync_msgs_(ReceivedSyncMsgQueue::AddContext()),
       shutdown_event_(shutdown_event),
-      restrict_dispatch_(false) {
+      restrict_dispatch_group_(kRestrictDispatchGroup_None) {
 }
 
 SyncChannel::SyncContext::~SyncContext() {
@@ -408,8 +409,8 @@ SyncChannel::SyncChannel(
 SyncChannel::~SyncChannel() {
 }
 
-void SyncChannel::SetRestrictDispatchToSameChannel(bool value) {
-  sync_context()->set_restrict_dispatch(value);
+void SyncChannel::SetRestrictDispatchChannelGroup(int group) {
+  sync_context()->set_restrict_dispatch_group(group);
 }
 
 bool SyncChannel::Send(Message* message) {
