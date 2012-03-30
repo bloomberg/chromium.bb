@@ -492,6 +492,8 @@
         'browser/chromeos/dbus/dbus_thread_manager.h',
         'browser/chromeos/dbus/flimflam_ipconfig_client.cc',
         'browser/chromeos/dbus/flimflam_ipconfig_client.h',
+        'browser/chromeos/dbus/flimflam_client_helper.cc',
+        'browser/chromeos/dbus/flimflam_client_helper.h',
         'browser/chromeos/dbus/flimflam_network_client.cc',
         'browser/chromeos/dbus/flimflam_network_client.h',
         'browser/chromeos/dbus/flimflam_profile_client.cc',
