@@ -134,3 +134,13 @@ UNFILED LINUX AMD : conformance_misc_object_deletion_behaviour = FAIL
 UNFILED LINUX AMD : conformance_textures_texture_mips = FAIL
 UNFILED LINUX AMD : conformance_textures_texture_size = FAIL
 
+////////////////////////////////////////////////////////////////////////////////////////
+//
+//  Temprory entries: they should be removed once the bugs are fixed.
+//
+////////////////////////////////////////////////////////////////////////////////////////
+
+129819 WIN7 LINUX DEBUG : conformance_context_context_lost = FAIL
+121139 WIN LINUX : conformance_textures_texture_size = FAIL
+121139 MAC AMD : conformance_textures_texture_size = FAIL
+
