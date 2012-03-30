@@ -1257,8 +1257,7 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
     master_ninja.rule(
       'copy',
       description='COPY $in $out',
-      command='cmd /c mklink /h $out $in >nul || mklink /h /j $out $in >nul || '
-              'python gyp-win-tool recursive-mirror $in $out')
+      command='python gyp-win-tool recursive-mirror $in $out')
   else:
     master_ninja.rule(
       'stamp',
