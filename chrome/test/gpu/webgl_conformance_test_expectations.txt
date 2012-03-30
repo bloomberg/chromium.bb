@@ -128,6 +128,8 @@ UNFILED LINUX INTEL : conformance_glsl_variables_gl_pointcoord = FAIL
 UNFILED LINUX INTEL : conformance_extensions_webgl_compressed_texture_s3tc = FAIL
 UNFILED LINUX INTEL : conformance_glsl_samplers_glsl_function_texture2dlod = FAIL
 
+UNFILED LINUX INTEL : conformance_glsl_functions_glsl_function_cos = FAIL
+
 UNFILED LINUX AMD : conformance_misc_object_deletion_behaviour = FAIL
 UNFILED LINUX AMD : conformance_textures_texture_mips = FAIL
 UNFILED LINUX AMD : conformance_textures_texture_size = FAIL
