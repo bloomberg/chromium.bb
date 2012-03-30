@@ -25,8 +25,10 @@
 #include "ui/views/widget/widget_delegate.h"
 
 #if defined(USE_AURA)
+#include "ui/aura/env.h"
 #include "ui/aura/monitor_manager.h"
 #include "ui/aura/root_window.h"
+#include "ui/aura/test/single_monitor_manager.h"
 #include "ui/aura/test/test_screen.h"
 #include "ui/aura/test/test_stacking_client.h"
 #endif
@@ -126,6 +128,8 @@ class AccessibilityEventRouterViewsTest
   virtual void SetUp() {
     views::ViewsDelegate::views_delegate = new AccessibilityViewsDelegate();
 #if defined(USE_AURA)
+    aura::Env::GetInstance()->SetMonitorManager(
+        new aura::test::SingleMonitorManager);
     root_window_.reset(
         aura::MonitorManager::CreateRootWindowForPrimaryMonitor());
     gfx::Screen::SetInstance(new aura::TestScreen(root_window_.get()));

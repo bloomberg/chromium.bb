@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/aura/single_monitor_manager.h"
+#include "ui/aura/test/single_monitor_manager.h"
 
 #include <string>
 
@@ -14,7 +14,7 @@
 #include "ui/gfx/rect.h"
 
 namespace aura {
-namespace internal {
+namespace test {
 
 using std::string;
 
@@ -99,5 +99,5 @@ void SingleMonitorManager::Update(const gfx::Size size) {
   monitor_->set_size(size);
 }
 
-}  // namespace inernal
+}  // namespace test
 }  // namespace aura

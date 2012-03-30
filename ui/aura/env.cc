@@ -4,7 +4,7 @@
 
 #include "ui/aura/env.h"
 #include "ui/aura/env_observer.h"
-#include "ui/aura/single_monitor_manager.h"
+#include "ui/aura/monitor_manager.h"
 #include "ui/aura/root_window_host.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/compositor/compositor.h"
@@ -77,7 +77,6 @@ void Env::Init() {
 #if defined(USE_X11)
   monitor_change_observer_.reset(new internal::MonitorChangeObserverX11);
 #endif
-  SetMonitorManager(new internal::SingleMonitorManager);
   ui::Compositor::Initialize(false);
 }
 

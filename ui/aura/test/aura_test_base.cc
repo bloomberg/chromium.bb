@@ -7,8 +7,8 @@
 #include "ui/aura/env.h"
 #include "ui/aura/gestures/gesture_configuration.h"
 #include "ui/aura/monitor_manager.h"
-#include "ui/aura/single_monitor_manager.h"
 #include "ui/aura/root_window.h"
+#include "ui/aura/test/single_monitor_manager.h"
 #include "ui/aura/test/test_screen.h"
 #include "ui/aura/test/test_stacking_client.h"
 #include "ui/aura/ui_controls_aura.h"
@@ -44,6 +44,7 @@ void AuraTestBase::SetUp() {
   GestureConfiguration::set_rail_break_proportion(15);
   GestureConfiguration::set_rail_start_proportion(2);
 
+  Env::GetInstance()->SetMonitorManager(new SingleMonitorManager);
   root_window_.reset(Env::GetInstance()->monitor_manager()->
                      CreateRootWindowForPrimaryMonitor());
   gfx::Screen::SetInstance(new aura::TestScreen(root_window_.get()));
