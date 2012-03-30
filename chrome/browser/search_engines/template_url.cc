@@ -83,22 +83,330 @@ static const char kDefaultCount[] = "10";
 // Used if the parameter kOutputEncodingParameter is required.
 static const char kOutputEncodingType[] = "UTF-8";
 
-TemplateURLRef::TemplateURLRef()
-    : prepopulated_(false) {
+
+// TemplateURLRef -------------------------------------------------------------
+
+TemplateURLRef::TemplateURLRef(TemplateURL* owner)
+    : owner_(owner),
+      prepopulated_(false) {
+  DCHECK(owner_);
   Set(std::string());
 }
 
-TemplateURLRef::TemplateURLRef(const std::string& url)
-    : prepopulated_(false) {
+TemplateURLRef::TemplateURLRef(TemplateURL* owner, const std::string& url)
+    : owner_(owner),
+      prepopulated_(false) {
+  DCHECK(owner_);
   Set(url);
+}
+
+TemplateURLRef::~TemplateURLRef() {
+}
+
+bool TemplateURLRef::SupportsReplacement() const {
+  UIThreadSearchTermsData search_terms_data;
+  return SupportsReplacementUsingTermsData(search_terms_data);
+}
+
+bool TemplateURLRef::SupportsReplacementUsingTermsData(
+    const SearchTermsData& search_terms_data) const {
+  ParseIfNecessaryUsingTermsData(search_terms_data);
+  return valid_ && supports_replacements_;
+}
+
+std::string TemplateURLRef::ReplaceSearchTerms(
+    const string16& terms,
+    int accepted_suggestion,
+    const string16& original_query_for_suggestion) const {
+  return ReplaceSearchTermsUsingProfile(NULL, terms, accepted_suggestion,
+                                        original_query_for_suggestion);
+}
+
+std::string TemplateURLRef::ReplaceSearchTermsUsingProfile(
+    Profile* profile,
+    const string16& terms,
+    int accepted_suggestion,
+    const string16& original_query_for_suggestion) const {
+  UIThreadSearchTermsData search_terms_data;
+  search_terms_data.set_profile(profile);
+  return ReplaceSearchTermsUsingTermsData(terms, accepted_suggestion,
+      original_query_for_suggestion, search_terms_data);
+}
+
+std::string TemplateURLRef::ReplaceSearchTermsUsingTermsData(
+    const string16& terms,
+    int accepted_suggestion,
+    const string16& original_query_for_suggestion,
+    const SearchTermsData& search_terms_data) const {
+  ParseIfNecessaryUsingTermsData(search_terms_data);
+  if (!valid_)
+    return std::string();
+
+  if (replacements_.empty())
+    return parsed_url_;
+
+  // Determine if the search terms are in the query or before. We're escaping
+  // space as '+' in the former case and as '%20' in the latter case.
+  bool is_in_query = true;
+  for (Replacements::iterator i = replacements_.begin();
+       i != replacements_.end(); ++i) {
+    if (i->type == SEARCH_TERMS) {
+      string16::size_type query_start = parsed_url_.find('?');
+      is_in_query = query_start != string16::npos &&
+          (static_cast<string16::size_type>(i->index) > query_start);
+      break;
+    }
+  }
+
+  string16 encoded_terms;
+  string16 encoded_original_query;
+  std::string input_encoding;
+  // Encode the search terms so that we know the encoding.
+  for (std::vector<std::string>::const_iterator i(
+           owner_->input_encodings().begin());
+       i != owner_->input_encodings().end(); ++i) {
+    if (net::EscapeQueryParamValue(terms, i->c_str(), is_in_query,
+        &encoded_terms)) {
+      if (is_in_query && !original_query_for_suggestion.empty()) {
+        net::EscapeQueryParamValue(original_query_for_suggestion, i->c_str(),
+                                   true, &encoded_original_query);
+      }
+      input_encoding = *i;
+      break;
+    }
+  }
+  if (input_encoding.empty()) {
+    encoded_terms = net::EscapeQueryParamValueUTF8(terms, is_in_query);
+    if (is_in_query && !original_query_for_suggestion.empty()) {
+      encoded_original_query =
+          net::EscapeQueryParamValueUTF8(original_query_for_suggestion, true);
+    }
+    input_encoding = "UTF-8";
+  }
+
+  std::string url = parsed_url_;
+
+  // replacements_ is ordered in ascending order, as such we need to iterate
+  // from the back.
+  for (Replacements::reverse_iterator i = replacements_.rbegin();
+       i != replacements_.rend(); ++i) {
+    switch (i->type) {
+      case ENCODING:
+        url.insert(i->index, input_encoding);
+        break;
+
+      case GOOGLE_ACCEPTED_SUGGESTION:
+        if (accepted_suggestion == NO_SUGGESTION_CHOSEN)
+          url.insert(i->index, "aq=f&");
+        else if (accepted_suggestion != NO_SUGGESTIONS_AVAILABLE)
+          url.insert(i->index,
+                     base::StringPrintf("aq=%d&", accepted_suggestion));
+        break;
+
+      case GOOGLE_BASE_URL:
+        url.insert(i->index, search_terms_data.GoogleBaseURLValue());
+        break;
+
+      case GOOGLE_BASE_SUGGEST_URL:
+        url.insert(i->index, search_terms_data.GoogleBaseSuggestURLValue());
+        break;
+
+      case GOOGLE_INSTANT_ENABLED:
+        url.insert(i->index, search_terms_data.InstantEnabledParam());
+        break;
+
+      case GOOGLE_INSTANT_FIELD_TRIAL_GROUP:
+        url.insert(i->index, search_terms_data.InstantFieldTrialUrlParam());
+        break;
+
+      case GOOGLE_ORIGINAL_QUERY_FOR_SUGGESTION:
+        if (accepted_suggestion >= 0)
+          url.insert(i->index, "oq=" + UTF16ToUTF8(encoded_original_query) +
+                               "&");
+        break;
+
+      case GOOGLE_RLZ: {
+        // On platforms that don't have RLZ, we still want this branch
+        // to happen so that we replace the RLZ template with the
+        // empty string.  (If we don't handle this case, we hit a
+        // NOTREACHED below.)
+#if defined(ENABLE_RLZ)
+        string16 rlz_string = search_terms_data.GetRlzParameterValue();
+        if (!rlz_string.empty()) {
+          url.insert(i->index, "rlz=" + UTF16ToUTF8(rlz_string) + "&");
+        }
+#endif
+        break;
+      }
+
+      case GOOGLE_SEARCH_FIELDTRIAL_GROUP:
+        if (AutocompleteFieldTrial::InSuggestFieldTrial()) {
+          // Add something like sugexp=chrome,mod=5 to the URL request.
+          url.insert(i->index, "sugexp=chrome,mod=" +
+              AutocompleteFieldTrial::GetSuggestGroupName() + "&");
+        }
+        break;
+
+      case GOOGLE_UNESCAPED_SEARCH_TERMS: {
+        std::string unescaped_terms;
+        base::UTF16ToCodepage(terms, input_encoding.c_str(),
+                              base::OnStringConversionError::SKIP,
+                              &unescaped_terms);
+        url.insert(i->index, std::string(unescaped_terms.begin(),
+                                         unescaped_terms.end()));
+        break;
+      }
+
+      case LANGUAGE:
+        url.insert(i->index, search_terms_data.GetApplicationLocale());
+        break;
+
+      case SEARCH_TERMS:
+        url.insert(i->index, UTF16ToUTF8(encoded_terms));
+        break;
+
+      default:
+        NOTREACHED();
+        break;
+    }
+  }
+
+  return url;
+}
+
+bool TemplateURLRef::IsValid() const {
+  UIThreadSearchTermsData search_terms_data;
+  return IsValidUsingTermsData(search_terms_data);
+}
+
+bool TemplateURLRef::IsValidUsingTermsData(
+    const SearchTermsData& search_terms_data) const {
+  ParseIfNecessaryUsingTermsData(search_terms_data);
+  return valid_;
+}
+
+string16 TemplateURLRef::DisplayURL() const {
+  ParseIfNecessary();
+  if (!valid_ || replacements_.empty())
+    return UTF8ToUTF16(url_);
+
+  string16 result = UTF8ToUTF16(url_);
+  ReplaceSubstringsAfterOffset(&result, 0,
+                               ASCIIToUTF16(kSearchTermsParameterFull),
+                               ASCIIToUTF16(kDisplaySearchTerms));
+
+  ReplaceSubstringsAfterOffset(
+      &result, 0,
+      ASCIIToUTF16(kGoogleUnescapedSearchTermsParameterFull),
+      ASCIIToUTF16(kDisplayUnescapedSearchTerms));
+
+  return result;
+}
+
+// static
+std::string TemplateURLRef::DisplayURLToURLRef(
+    const string16& display_url) {
+  string16 result = display_url;
+  ReplaceSubstringsAfterOffset(&result, 0, ASCIIToUTF16(kDisplaySearchTerms),
+                               ASCIIToUTF16(kSearchTermsParameterFull));
+  ReplaceSubstringsAfterOffset(
+      &result, 0,
+      ASCIIToUTF16(kDisplayUnescapedSearchTerms),
+      ASCIIToUTF16(kGoogleUnescapedSearchTermsParameterFull));
+  return UTF16ToUTF8(result);
+}
+
+const std::string& TemplateURLRef::GetHost() const {
+  ParseIfNecessary();
+  return host_;
+}
+
+const std::string& TemplateURLRef::GetPath() const {
+  ParseIfNecessary();
+  return path_;
+}
+
+const std::string& TemplateURLRef::GetSearchTermKey() const {
+  ParseIfNecessary();
+  return search_term_key_;
+}
+
+string16 TemplateURLRef::SearchTermToString16(const std::string& term) const {
+  const std::vector<std::string>& encodings = owner_->input_encodings();
+  string16 result;
+
+  std::string unescaped = net::UnescapeURLComponent(
+      term,
+      net::UnescapeRule::REPLACE_PLUS_WITH_SPACE |
+      net::UnescapeRule::URL_SPECIAL_CHARS);
+  for (size_t i = 0; i < encodings.size(); ++i) {
+    if (base::CodepageToUTF16(unescaped, encodings[i].c_str(),
+                              base::OnStringConversionError::FAIL, &result))
+      return result;
+  }
+
+  // Always fall back on UTF-8 if it works.
+  if (base::CodepageToUTF16(unescaped, base::kCodepageUTF8,
+                            base::OnStringConversionError::FAIL, &result))
+    return result;
+
+  // When nothing worked, just use the escaped text. We have no idea what the
+  // encoding is. We need to substitute spaces for pluses ourselves since we're
+  // not sending it through an unescaper.
+  result = UTF8ToUTF16(term);
+  std::replace(result.begin(), result.end(), '+', ' ');
+  return result;
+}
+
+bool TemplateURLRef::HasGoogleBaseURLs() const {
+  ParseIfNecessary();
+  for (size_t i = 0; i < replacements_.size(); ++i) {
+    if ((replacements_[i].type == GOOGLE_BASE_URL) ||
+        (replacements_[i].type == GOOGLE_BASE_SUGGEST_URL))
+      return true;
+  }
+  return false;
+}
+
+// static
+bool TemplateURLRef::SameUrlRefs(const TemplateURLRef* ref1,
+                                 const TemplateURLRef* ref2) {
+  return ref1 == ref2 || (ref1 && ref2 && ref1->url() == ref2->url());
+}
+
+void TemplateURLRef::CollectRLZMetrics() const {
+#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+  ParseIfNecessary();
+  for (size_t i = 0; i < replacements_.size(); ++i) {
+    // We are interesed in searches that were supposed to send the RLZ token.
+    if (replacements_[i].type == GOOGLE_RLZ) {
+      std::string brand;
+      // We only have RLZ tocken on a branded browser version.
+      if (google_util::GetBrand(&brand) && !brand.empty() &&
+           !google_util::IsOrganic(brand)) {
+        // Now we know we should have had RLZ token check if there was one.
+        if (url().find("rlz=") != std::string::npos)
+          content::RecordAction(UserMetricsAction("SearchWithRLZ"));
+        else
+          content::RecordAction(UserMetricsAction("SearchWithoutRLZ"));
+      }
+      return;
+    }
+  }
+#endif
+}
+
+void TemplateURLRef::InvalidateCachedValues() const {
+  supports_replacements_ = valid_ = parsed_ = false;
+  host_.clear();
+  path_.clear();
+  search_term_key_.clear();
+  replacements_.clear();
 }
 
 void TemplateURLRef::Set(const std::string& url) {
   url_ = url;
   InvalidateCachedValues();
-}
-
-TemplateURLRef::~TemplateURLRef() {
 }
 
 bool TemplateURLRef::ParseParameter(size_t start,
@@ -271,345 +579,14 @@ void TemplateURLRef::ParseHostAndSearchTermKey(
   }
 }
 
-std::string TemplateURLRef::ReplaceSearchTerms(
-    const TemplateURL& host,
-    const string16& terms,
-    int accepted_suggestion,
-    const string16& original_query_for_suggestion) const {
-  return ReplaceSearchTermsUsingProfile(NULL, host, terms, accepted_suggestion,
-                                        original_query_for_suggestion);
-}
-
-std::string TemplateURLRef::ReplaceSearchTermsUsingProfile(
-    Profile* profile,
-    const TemplateURL& host,
-    const string16& terms,
-    int accepted_suggestion,
-    const string16& original_query_for_suggestion) const {
-  UIThreadSearchTermsData search_terms_data;
-  search_terms_data.set_profile(profile);
-  return ReplaceSearchTermsUsingTermsData(host, terms, accepted_suggestion,
-      original_query_for_suggestion, search_terms_data);
-}
-
-std::string TemplateURLRef::ReplaceSearchTermsUsingTermsData(
-    const TemplateURL& host,
-    const string16& terms,
-    int accepted_suggestion,
-    const string16& original_query_for_suggestion,
-    const SearchTermsData& search_terms_data) const {
-  ParseIfNecessaryUsingTermsData(search_terms_data);
-  if (!valid_)
-    return std::string();
-
-  if (replacements_.empty())
-    return parsed_url_;
-
-  // Determine if the search terms are in the query or before. We're escaping
-  // space as '+' in the former case and as '%20' in the latter case.
-  bool is_in_query = true;
-  for (Replacements::iterator i = replacements_.begin();
-       i != replacements_.end(); ++i) {
-    if (i->type == SEARCH_TERMS) {
-      string16::size_type query_start = parsed_url_.find('?');
-      is_in_query = query_start != string16::npos &&
-          (static_cast<string16::size_type>(i->index) > query_start);
-      break;
-    }
-  }
-
-  string16 encoded_terms;
-  string16 encoded_original_query;
-  std::string input_encoding;
-  // Encode the search terms so that we know the encoding.
-  for (std::vector<std::string>::const_iterator i(
-           host.input_encodings().begin());
-       i != host.input_encodings().end(); ++i) {
-    if (net::EscapeQueryParamValue(terms, i->c_str(), is_in_query,
-        &encoded_terms)) {
-      if (is_in_query && !original_query_for_suggestion.empty()) {
-        net::EscapeQueryParamValue(original_query_for_suggestion, i->c_str(),
-                                   true, &encoded_original_query);
-      }
-      input_encoding = *i;
-      break;
-    }
-  }
-  if (input_encoding.empty()) {
-    encoded_terms = net::EscapeQueryParamValueUTF8(terms, is_in_query);
-    if (is_in_query && !original_query_for_suggestion.empty()) {
-      encoded_original_query =
-          net::EscapeQueryParamValueUTF8(original_query_for_suggestion, true);
-    }
-    input_encoding = "UTF-8";
-  }
-
-  std::string url = parsed_url_;
-
-  // replacements_ is ordered in ascending order, as such we need to iterate
-  // from the back.
-  for (Replacements::reverse_iterator i = replacements_.rbegin();
-       i != replacements_.rend(); ++i) {
-    switch (i->type) {
-      case ENCODING:
-        url.insert(i->index, input_encoding);
-        break;
-
-      case GOOGLE_ACCEPTED_SUGGESTION:
-        if (accepted_suggestion == NO_SUGGESTION_CHOSEN)
-          url.insert(i->index, "aq=f&");
-        else if (accepted_suggestion != NO_SUGGESTIONS_AVAILABLE)
-          url.insert(i->index,
-                     base::StringPrintf("aq=%d&", accepted_suggestion));
-        break;
-
-      case GOOGLE_BASE_URL:
-        url.insert(i->index, search_terms_data.GoogleBaseURLValue());
-        break;
-
-      case GOOGLE_BASE_SUGGEST_URL:
-        url.insert(i->index, search_terms_data.GoogleBaseSuggestURLValue());
-        break;
-
-      case GOOGLE_INSTANT_ENABLED:
-        url.insert(i->index, search_terms_data.InstantEnabledParam());
-        break;
-
-      case GOOGLE_INSTANT_FIELD_TRIAL_GROUP:
-        url.insert(i->index, search_terms_data.InstantFieldTrialUrlParam());
-        break;
-
-      case GOOGLE_ORIGINAL_QUERY_FOR_SUGGESTION:
-        if (accepted_suggestion >= 0)
-          url.insert(i->index, "oq=" + UTF16ToUTF8(encoded_original_query) +
-                               "&");
-        break;
-
-      case GOOGLE_RLZ: {
-        // On platforms that don't have RLZ, we still want this branch
-        // to happen so that we replace the RLZ template with the
-        // empty string.  (If we don't handle this case, we hit a
-        // NOTREACHED below.)
-#if defined(ENABLE_RLZ)
-        string16 rlz_string = search_terms_data.GetRlzParameterValue();
-        if (!rlz_string.empty()) {
-          url.insert(i->index, "rlz=" + UTF16ToUTF8(rlz_string) + "&");
-        }
-#endif
-        break;
-      }
-
-      case GOOGLE_SEARCH_FIELDTRIAL_GROUP:
-        if (AutocompleteFieldTrial::InSuggestFieldTrial()) {
-          // Add something like sugexp=chrome,mod=5 to the URL request.
-          url.insert(i->index, "sugexp=chrome,mod=" +
-              AutocompleteFieldTrial::GetSuggestGroupName() + "&");
-        }
-        break;
-
-      case GOOGLE_UNESCAPED_SEARCH_TERMS: {
-        std::string unescaped_terms;
-        base::UTF16ToCodepage(terms, input_encoding.c_str(),
-                              base::OnStringConversionError::SKIP,
-                              &unescaped_terms);
-        url.insert(i->index, std::string(unescaped_terms.begin(),
-                                         unescaped_terms.end()));
-        break;
-      }
-
-      case LANGUAGE:
-        url.insert(i->index, search_terms_data.GetApplicationLocale());
-        break;
-
-      case SEARCH_TERMS:
-        url.insert(i->index, UTF16ToUTF8(encoded_terms));
-        break;
-
-      default:
-        NOTREACHED();
-        break;
-    }
-  }
-
-  return url;
-}
-
-bool TemplateURLRef::SupportsReplacement() const {
-  UIThreadSearchTermsData search_terms_data;
-  return SupportsReplacementUsingTermsData(search_terms_data);
-}
-
-bool TemplateURLRef::SupportsReplacementUsingTermsData(
-    const SearchTermsData& search_terms_data) const {
-  ParseIfNecessaryUsingTermsData(search_terms_data);
-  return valid_ && supports_replacements_;
-}
-
-bool TemplateURLRef::IsValid() const {
-  UIThreadSearchTermsData search_terms_data;
-  return IsValidUsingTermsData(search_terms_data);
-}
-
-bool TemplateURLRef::IsValidUsingTermsData(
-    const SearchTermsData& search_terms_data) const {
-  ParseIfNecessaryUsingTermsData(search_terms_data);
-  return valid_;
-}
-
-string16 TemplateURLRef::DisplayURL() const {
-  ParseIfNecessary();
-  if (!valid_ || replacements_.empty())
-    return UTF8ToUTF16(url_);
-
-  string16 result = UTF8ToUTF16(url_);
-  ReplaceSubstringsAfterOffset(&result, 0,
-                               ASCIIToUTF16(kSearchTermsParameterFull),
-                               ASCIIToUTF16(kDisplaySearchTerms));
-
-  ReplaceSubstringsAfterOffset(
-      &result, 0,
-      ASCIIToUTF16(kGoogleUnescapedSearchTermsParameterFull),
-      ASCIIToUTF16(kDisplayUnescapedSearchTerms));
-
-  return result;
-}
-
-// static
-std::string TemplateURLRef::DisplayURLToURLRef(
-    const string16& display_url) {
-  string16 result = display_url;
-  ReplaceSubstringsAfterOffset(&result, 0, ASCIIToUTF16(kDisplaySearchTerms),
-                               ASCIIToUTF16(kSearchTermsParameterFull));
-  ReplaceSubstringsAfterOffset(
-      &result, 0,
-      ASCIIToUTF16(kDisplayUnescapedSearchTerms),
-      ASCIIToUTF16(kGoogleUnescapedSearchTermsParameterFull));
-  return UTF16ToUTF8(result);
-}
-
-const std::string& TemplateURLRef::GetHost() const {
-  ParseIfNecessary();
-  return host_;
-}
-
-const std::string& TemplateURLRef::GetPath() const {
-  ParseIfNecessary();
-  return path_;
-}
-
-const std::string& TemplateURLRef::GetSearchTermKey() const {
-  ParseIfNecessary();
-  return search_term_key_;
-}
-
-string16 TemplateURLRef::SearchTermToString16(const TemplateURL& host,
-                                              const std::string& term) const {
-  const std::vector<std::string>& encodings = host.input_encodings();
-  string16 result;
-
-  std::string unescaped = net::UnescapeURLComponent(
-      term,
-      net::UnescapeRule::REPLACE_PLUS_WITH_SPACE |
-      net::UnescapeRule::URL_SPECIAL_CHARS);
-  for (size_t i = 0; i < encodings.size(); ++i) {
-    if (base::CodepageToUTF16(unescaped, encodings[i].c_str(),
-                              base::OnStringConversionError::FAIL, &result))
-      return result;
-  }
-
-  // Always fall back on UTF-8 if it works.
-  if (base::CodepageToUTF16(unescaped, base::kCodepageUTF8,
-                            base::OnStringConversionError::FAIL, &result))
-    return result;
-
-  // When nothing worked, just use the escaped text. We have no idea what the
-  // encoding is. We need to substitute spaces for pluses ourselves since we're
-  // not sending it through an unescaper.
-  result = UTF8ToUTF16(term);
-  std::replace(result.begin(), result.end(), '+', ' ');
-  return result;
-}
-
-bool TemplateURLRef::HasGoogleBaseURLs() const {
-  ParseIfNecessary();
-  for (size_t i = 0; i < replacements_.size(); ++i) {
-    if ((replacements_[i].type == GOOGLE_BASE_URL) ||
-        (replacements_[i].type == GOOGLE_BASE_SUGGEST_URL))
-      return true;
-  }
-  return false;
-}
-
-// static
-bool TemplateURLRef::SameUrlRefs(const TemplateURLRef* ref1,
-                                 const TemplateURLRef* ref2) {
-  return ref1 == ref2 || (ref1 && ref2 && ref1->url() == ref2->url());
-}
-
-void TemplateURLRef::CollectRLZMetrics() const {
-#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
-  ParseIfNecessary();
-  for (size_t i = 0; i < replacements_.size(); ++i) {
-    // We are interesed in searches that were supposed to send the RLZ token.
-    if (replacements_[i].type == GOOGLE_RLZ) {
-      std::string brand;
-      // We only have RLZ tocken on a branded browser version.
-      if (google_util::GetBrand(&brand) && !brand.empty() &&
-           !google_util::IsOrganic(brand)) {
-        // Now we know we should have had RLZ token check if there was one.
-        if (url().find("rlz=") != std::string::npos)
-          content::RecordAction(UserMetricsAction("SearchWithRLZ"));
-        else
-          content::RecordAction(UserMetricsAction("SearchWithoutRLZ"));
-      }
-      return;
-    }
-  }
-#endif
-}
-
-void TemplateURLRef::InvalidateCachedValues() const {
-  supports_replacements_ = valid_ = parsed_ = false;
-  host_.clear();
-  path_.clear();
-  search_term_key_.clear();
-  replacements_.clear();
-}
 
 // TemplateURL ----------------------------------------------------------------
 
-// static
-GURL TemplateURL::GenerateFaviconURL(const GURL& url) {
-  DCHECK(url.is_valid());
-  GURL::Replacements rep;
-
-  const char favicon_path[] = "/favicon.ico";
-  int favicon_path_len = arraysize(favicon_path) - 1;
-
-  rep.SetPath(favicon_path, url_parse::Component(0, favicon_path_len));
-  rep.ClearUsername();
-  rep.ClearPassword();
-  rep.ClearQuery();
-  rep.ClearRef();
-  return url.ReplaceComponents(rep);
-}
-
-// static
-bool TemplateURL::SupportsReplacement(const TemplateURL* turl) {
-  UIThreadSearchTermsData search_terms_data;
-  return SupportsReplacementUsingTermsData(turl, search_terms_data);
-}
-
-// static
-bool TemplateURL::SupportsReplacementUsingTermsData(
-    const TemplateURL* turl,
-    const SearchTermsData& search_terms_data) {
-  return turl && turl->url() &&
-      turl->url()->SupportsReplacementUsingTermsData(search_terms_data);
-}
-
 TemplateURL::TemplateURL()
-    : autogenerate_keyword_(false),
+    : url_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      suggestions_url_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      instant_url_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      autogenerate_keyword_(false),
       keyword_generated_(false),
       show_in_default_list_(false),
       safe_for_autoreplace_(false),
@@ -624,6 +601,9 @@ TemplateURL::TemplateURL()
 
 TemplateURL::TemplateURL(const TemplateURL& other)
     : short_name_(other.short_name_),
+      url_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      suggestions_url_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      instant_url_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       originating_url_(other.originating_url_),
       keyword_(other.keyword_),
       autogenerate_keyword_(other.autogenerate_keyword_),
@@ -667,18 +647,34 @@ TemplateURL& TemplateURL::operator=(const TemplateURL& other) {
 TemplateURL::~TemplateURL() {
 }
 
+// static
+GURL TemplateURL::GenerateFaviconURL(const GURL& url) {
+  DCHECK(url.is_valid());
+  GURL::Replacements rep;
+
+  const char favicon_path[] = "/favicon.ico";
+  int favicon_path_len = arraysize(favicon_path) - 1;
+
+  rep.SetPath(favicon_path, url_parse::Component(0, favicon_path_len));
+  rep.ClearUsername();
+  rep.ClearPassword();
+  rep.ClearQuery();
+  rep.ClearRef();
+  return url.ReplaceComponents(rep);
+}
+
 string16 TemplateURL::AdjustedShortNameForLocaleDirection() const {
   string16 bidi_safe_short_name = short_name_;
   base::i18n::AdjustStringForLocaleDirection(&bidi_safe_short_name);
   return bidi_safe_short_name;
 }
 
-void TemplateURL::SetSuggestionsURL(const std::string& url) {
-  suggestions_url_.Set(url);
-}
-
 void TemplateURL::SetURL(const std::string& url) {
   url_.Set(url);
+}
+
+void TemplateURL::SetSuggestionsURL(const std::string& url) {
+  suggestions_url_.Set(url);
 }
 
 void TemplateURL::SetInstantURL(const std::string& url) {
@@ -732,6 +728,16 @@ void TemplateURL::InvalidateCachedValues() const {
     keyword_.clear();
     keyword_generated_ = false;
   }
+}
+
+bool TemplateURL::SupportsReplacement() const {
+  UIThreadSearchTermsData search_terms_data;
+  return SupportsReplacementUsingTermsData(search_terms_data);
+}
+
+bool TemplateURL::SupportsReplacementUsingTermsData(
+    const SearchTermsData& search_terms_data) const {
+  return url_.SupportsReplacementUsingTermsData(search_terms_data);
 }
 
 std::string TemplateURL::GetExtensionId() const {

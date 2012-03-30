@@ -228,8 +228,7 @@ GURL TemplateURLService::GenerateSearchURLUsingTermsData(
     return GURL(search_ref->url());
 
   return GURL(search_ref->ReplaceSearchTermsUsingTermsData(
-      *t_url, ASCIIToUTF16(kReplacementTerm),
-      TemplateURLRef::NO_SUGGESTIONS_AVAILABLE,
+      ASCIIToUTF16(kReplacementTerm), TemplateURLRef::NO_SUGGESTIONS_AVAILABLE,
       string16(), search_terms_data));
 }
 
@@ -1388,9 +1387,8 @@ void TemplateURLService::UpdateKeywordSearchTermsForURL(
           query_terms.find(search_ref->GetSearchTermKey());
       if (terms_iterator != query_terms.end() &&
           !terms_iterator->second.empty()) {
-        SetKeywordSearchTermsForURL(
-            *i, row.url(), search_ref->SearchTermToString16(*(*i),
-            terms_iterator->second));
+        SetKeywordSearchTermsForURL(*i, row.url(),
+            search_ref->SearchTermToString16(terms_iterator->second));
       }
     }
   }

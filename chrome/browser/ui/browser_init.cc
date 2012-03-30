@@ -1635,8 +1635,8 @@ std::vector<GURL> BrowserInit::GetURLsFromCommandLine(
         DCHECK(search_url->SupportsReplacement());
         string16 search_term = param.LossyDisplayName().substr(2);
         urls.push_back(GURL(search_url->ReplaceSearchTermsUsingProfile(
-            profile, *default_provider, search_term,
-            TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, string16())));
+            profile, search_term, TemplateURLRef::NO_SUGGESTIONS_AVAILABLE,
+            string16())));
         continue;
       }
     }

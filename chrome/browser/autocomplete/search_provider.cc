@@ -183,7 +183,7 @@ void SearchProvider::Start(const AutocompleteInput& input,
   const TemplateURL* default_provider =
       TemplateURLServiceFactory::GetForProfile(profile_)->
       GetDefaultSearchProvider();
-  if (!TemplateURL::SupportsReplacement(default_provider))
+  if (default_provider && !default_provider->SupportsReplacement())
     default_provider = NULL;
 
   if (keyword_provider == default_provider)
@@ -459,7 +459,7 @@ content::URLFetcher* SearchProvider::CreateSuggestFetcher(
   DCHECK(suggestions_url->SupportsReplacement());
   content::URLFetcher* fetcher = content::URLFetcher::Create(id,
       GURL(suggestions_url->ReplaceSearchTermsUsingProfile(
-          profile_, provider, text, TemplateURLRef::NO_SUGGESTIONS_AVAILABLE,
+          profile_, text, TemplateURLRef::NO_SUGGESTIONS_AVAILABLE,
           string16())),
       content::URLFetcher::GET, this);
   fetcher->SetRequestContext(profile_->GetRequestContext());
@@ -904,7 +904,7 @@ void SearchProvider::AddMatchToMap(const string16& query_string,
   const TemplateURLRef* const search_url = provider.url();
   DCHECK(search_url->SupportsReplacement());
   match.destination_url = GURL(search_url->ReplaceSearchTermsUsingProfile(
-      profile_, provider, query_string, accepted_suggestion, input_text));
+      profile_, query_string, accepted_suggestion, input_text));
 
   // Search results don't look like URLs.
   match.transition = is_keyword ?

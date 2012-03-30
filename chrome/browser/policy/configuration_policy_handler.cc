@@ -595,10 +595,12 @@ bool DefaultSearchPolicyHandler::DefaultSearchURLIsValid(
     const Value** url_value,
     std::string* url_string) {
   *url_value = policies.GetValue(key::kDefaultSearchProviderSearchURL);
+  if (!*url_value || !(*url_value)->GetAsString(url_string))
+    return false;
+  TemplateURL t_url;
   SearchTermsData search_terms_data;
-  return *url_value && (*url_value)->GetAsString(url_string) &&
-      TemplateURLRef(*url_string).SupportsReplacementUsingTermsData(
-          search_terms_data);
+  return TemplateURLRef(&t_url, *url_string).SupportsReplacementUsingTermsData(
+      search_terms_data);
 }
 
 void DefaultSearchPolicyHandler::EnsureStringPrefExists(

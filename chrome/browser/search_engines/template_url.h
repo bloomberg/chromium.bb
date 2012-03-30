@@ -50,10 +50,8 @@ class TemplateURLRef {
     NO_SUGGESTIONS_AVAILABLE = -2,
   };
 
-  TemplateURLRef();
-
-  explicit TemplateURLRef(const std::string& url);
-
+  explicit TemplateURLRef(TemplateURL* owner);
+  TemplateURLRef(TemplateURL* owner, const std::string& url);
   ~TemplateURLRef();
 
   // Returns true if this URL supports replacement.
@@ -64,14 +62,11 @@ class TemplateURLRef {
       const SearchTermsData& search_terms_data) const;
 
   // Returns a string that is the result of replacing the search terms in
-  // the url with the specified value.
+  // the url with the specified value.  We use our owner's input encoding.
   //
   // If this TemplateURLRef does not support replacement (SupportsReplacement
   // returns false), an empty string is returned.
-  //
-  // The TemplateURL is used to determine the input encoding for the term.
   std::string ReplaceSearchTerms(
-      const TemplateURL& host,
       const string16& terms,
       int accepted_suggestion,
       const string16& original_query_for_suggestion) const;
@@ -81,7 +76,6 @@ class TemplateURLRef {
   // params, and so can use ReplaceSearchTerms instead.
   std::string ReplaceSearchTermsUsingProfile(
       Profile* profile,
-      const TemplateURL& host,
       const string16& terms,
       int accepted_suggestion,
       const string16& original_query_for_suggestion) const;
@@ -90,7 +84,6 @@ class TemplateURLRef {
   // the data for some search terms. Most of the time ReplaceSearchTerms should
   // be called.
   std::string ReplaceSearchTermsUsingTermsData(
-      const TemplateURL& host,
       const string16& terms,
       int accepted_suggestion,
       const string16& original_query_for_suggestion,
@@ -123,10 +116,8 @@ class TemplateURLRef {
   // the key of the search term, otherwise this returns an empty string.
   const std::string& GetSearchTermKey() const;
 
-  // Converts the specified term in the encoding of the host TemplateURL to a
-  // string16.
-  string16 SearchTermToString16(const TemplateURL& host,
-                                const std::string& term) const;
+  // Converts the specified term in our owner's encoding to a string16.
+  string16 SearchTermToString16(const std::string& term) const;
 
   // Returns true if this TemplateURLRef has a replacement term of
   // {google:baseURL} or {google:baseSuggestURL}.
@@ -220,6 +211,9 @@ class TemplateURLRef {
   void ParseHostAndSearchTermKey(
       const SearchTermsData& search_terms_data) const;
 
+  // The TemplateURL that contains us.  This should outlive us.
+  TemplateURL* owner_;
+
   // The raw URL. Where as this contains all the terms (such as {searchTerms}),
   // parsed_url_ has them all stripped out.
   std::string url_;
@@ -256,24 +250,15 @@ class TemplateURLRef {
 // Describes the relevant portions of a single OSD document.
 class TemplateURL {
  public:
-  // Generates a favicon URL from the specified url.
-  static GURL GenerateFaviconURL(const GURL& url);
-
-  // Returns true if |turl| is non-null and has a search URL that supports
-  // replacement.
-  static bool SupportsReplacement(const TemplateURL* turl);
-
-  // Like SupportsReplacement but usable on threads other than the UI thread.
-  static bool SupportsReplacementUsingTermsData(
-      const TemplateURL* turl,
-      const SearchTermsData& search_terms_data);
-
   TemplateURL();
 
   TemplateURL(const TemplateURL& other);
   TemplateURL& operator=(const TemplateURL& other);
 
   ~TemplateURL();
+
+  // Generates a favicon URL from the specified url.
+  static GURL GenerateFaviconURL(const GURL& url);
 
   // A short description of the template. This is the name we show to the user
   // in various places that use keywords. For example, the location bar shows
@@ -287,15 +272,6 @@ class TemplateURL {
   // displayed even if it is LTR and the UI is RTL.
   string16 AdjustedShortNameForLocaleDirection() const;
 
-  // URL providing JSON results. This is typically used to provide suggestions
-  // as your type. If NULL, this url does not support suggestions.
-  // Be sure and check the resulting TemplateURLRef for SupportsReplacement
-  // before using.
-  void SetSuggestionsURL(const std::string& url);
-  const TemplateURLRef* suggestions_url() const {
-    return suggestions_url_.url().empty() ? NULL : &suggestions_url_;
-  }
-
   // Parameterized URL for providing the results. This may be NULL.
   // Be sure and check the resulting TemplateURLRef for SupportsReplacement
   // before using.
@@ -304,6 +280,15 @@ class TemplateURL {
   // returns NULL if a url element was not specified.
   const TemplateURLRef* url() const {
     return url_.url().empty() ? NULL : &url_;
+  }
+
+  // URL providing JSON results. This is typically used to provide suggestions
+  // as your type. If NULL, this url does not support suggestions.
+  // Be sure and check the resulting TemplateURLRef for SupportsReplacement
+  // before using.
+  void SetSuggestionsURL(const std::string& url);
+  const TemplateURLRef* suggestions_url() const {
+    return suggestions_url_.url().empty() ? NULL : &suggestions_url_;
   }
 
   // Parameterized URL for instant results. This may be NULL.  Be sure and check
@@ -426,11 +411,18 @@ class TemplateURL {
   void SetPrepopulateId(int id);
   int prepopulate_id() const { return prepopulate_id_; }
 
-  std::string GetExtensionId() const;
-  bool IsExtensionKeyword() const;
-
   const std::string& sync_guid() const { return sync_guid_; }
   void set_sync_guid(const std::string& guid) { sync_guid_ = guid; }
+
+  // Returns true if |url| supports replacement.
+  bool SupportsReplacement() const;
+
+  // Like SupportsReplacement but usable on threads other than the UI thread.
+  bool SupportsReplacementUsingTermsData(
+      const SearchTermsData& search_terms_data) const;
+
+  std::string GetExtensionId() const;
+  bool IsExtensionKeyword() const;
 
  private:
   friend void MergeEnginesFromPrepopulateData(
@@ -453,8 +445,8 @@ class TemplateURL {
   void set_id(TemplateURLID id) { id_ = id; }
 
   string16 short_name_;
-  TemplateURLRef suggestions_url_;
   TemplateURLRef url_;
+  TemplateURLRef suggestions_url_;
   TemplateURLRef instant_url_;
   GURL originating_url_;
   mutable string16 keyword_;

@@ -296,9 +296,10 @@ void AutocompleteMatch::GetKeywordUIState(string16* keyword,
 }
 
 string16 AutocompleteMatch::GetSubstitutingExplicitlyInvokedKeyword() const {
-  return ((transition == content::PAGE_TRANSITION_KEYWORD) &&
-      TemplateURL::SupportsReplacement(GetTemplateURL())) ?
-      keyword : string16();
+  if (transition != content::PAGE_TRANSITION_KEYWORD)
+    return string16();
+  const TemplateURL* t_url = GetTemplateURL();
+  return (t_url && t_url->SupportsReplacement()) ? keyword : string16();
 }
 
 const TemplateURL* AutocompleteMatch::GetTemplateURL() const {

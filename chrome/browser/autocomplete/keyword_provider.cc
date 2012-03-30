@@ -149,7 +149,8 @@ const TemplateURL* KeywordProvider::GetSubstitutingTemplateURLForInput(
   model->Load();
 
   const TemplateURL* template_url = model->GetTemplateURLForKeyword(keyword);
-  return TemplateURL::SupportsReplacement(template_url) ? template_url : NULL;
+  return (template_url && template_url->SupportsReplacement()) ?
+      template_url : NULL;
 }
 
 string16 KeywordProvider::GetKeywordForText(
@@ -166,7 +167,7 @@ string16 KeywordProvider::GetKeywordForText(
   // Don't provide a keyword if it doesn't support replacement.
   const TemplateURL* const template_url =
       url_service->GetTemplateURLForKeyword(keyword);
-  if (!TemplateURL::SupportsReplacement(template_url))
+  if (!template_url || !template_url->SupportsReplacement())
     return string16();
 
   // Don't provide a keyword for inactive/disabled extension keywords.
@@ -242,7 +243,7 @@ void KeywordProvider::Start(const AutocompleteInput& input,
 
   for (std::vector<string16>::iterator i(keyword_matches.begin());
        i != keyword_matches.end(); ) {
-    const TemplateURL* template_url(model->GetTemplateURLForKeyword(*i));
+    const TemplateURL* template_url = model->GetTemplateURLForKeyword(*i);
 
     // Prune any extension keywords that are disallowed in incognito mode (if
     // we're incognito), or disabled.
@@ -260,8 +261,8 @@ void KeywordProvider::Start(const AutocompleteInput& input,
     }
 
     // Prune any substituting keywords if there is no substitution.
-    if (TemplateURL::SupportsReplacement(template_url) &&
-        remaining_input.empty() && !input.allow_exact_keyword_match()) {
+    if (template_url->SupportsReplacement() && remaining_input.empty() &&
+        !input.allow_exact_keyword_match()) {
       i = keyword_matches.erase(i);
       continue;
     }
@@ -395,7 +396,7 @@ void KeywordProvider::FillInURLAndContents(
     // fixup to make the URL valid if necessary.
     DCHECK(element_ref->SupportsReplacement());
     match->destination_url = GURL(element_ref->
-        ReplaceSearchTermsUsingProfile(profile, *element, remaining_input,
+        ReplaceSearchTermsUsingProfile(profile, remaining_input,
             TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, string16()));
     std::vector<size_t> content_param_offsets;
     match->contents.assign(l10n_util::GetStringFUTF16(message_id,

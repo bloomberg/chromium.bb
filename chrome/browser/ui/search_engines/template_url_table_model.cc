@@ -275,7 +275,7 @@ void TemplateURLTableModel::ModifyTemplateURL(int index,
   template_url_service_->RemoveObserver(this);
   template_url_service_->ResetTemplateURL(template_url, title, keyword, url);
   if (template_url_service_->GetDefaultSearchProvider() == template_url &&
-      !TemplateURL::SupportsReplacement(template_url)) {
+      !template_url->SupportsReplacement()) {
     // The entry was the default search provider, but the url has been modified
     // so that it no longer supports replacement. Reset the default search
     // provider so that it doesn't point to a bogus entry.

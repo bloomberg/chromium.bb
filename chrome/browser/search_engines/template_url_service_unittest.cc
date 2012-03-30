@@ -937,7 +937,7 @@ TEST_F(TemplateURLServiceTest, ChangeGoogleBaseValue) {
   EXPECT_TRUE(model()->GetTemplateURLForHost("google.com") == NULL);
   EXPECT_EQ("google.co.uk", t_url->url()->GetHost());
   EXPECT_EQ(ASCIIToUTF16("google.co.uk"), t_url->keyword());
-  EXPECT_EQ("http://google.co.uk/?q=x", t_url->url()->ReplaceSearchTerms(*t_url,
+  EXPECT_EQ("http://google.co.uk/?q=x", t_url->url()->ReplaceSearchTerms(
       ASCIIToUTF16("x"), TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, string16()));
 }
 
@@ -976,7 +976,7 @@ TEST_F(TemplateURLServiceTest, GenerateVisitOnKeyword) {
   HistoryService* history =
       test_util_.profile()->GetHistoryService(Profile::EXPLICIT_ACCESS);
   history->AddPage(
-      GURL(t_url->url()->ReplaceSearchTerms(*t_url, ASCIIToUTF16("blah"),
+      GURL(t_url->url()->ReplaceSearchTerms(ASCIIToUTF16("blah"),
           TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, string16())),
       NULL, 0, GURL(), content::PAGE_TRANSITION_KEYWORD,
       history::RedirectList(), history::SOURCE_BROWSED, false);
