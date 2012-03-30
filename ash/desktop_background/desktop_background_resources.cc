@@ -27,8 +27,8 @@ const ash::WallpaperInfo kDefaultWallpapers[] = {
         IDR_AURA_WALLPAPERS_1_NATURE0,
         IDR_AURA_WALLPAPERS_1_NATURE0_THUMB,
         ash::CENTER_CROPPED,
-        "Romain Guy",
-        "http://www.curious-creature.org"
+        "Kathy Collins / Getty Images",
+        "http://www.gettyimages.com"
     },
     {
         IDR_AURA_WALLPAPERS_1_NATURE1,
