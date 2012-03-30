@@ -115,7 +115,7 @@ void GpuVideoDecodeAccelerator::NotifyError(
 }
 
 void GpuVideoDecodeAccelerator::Initialize(
-    const media::VideoCodecProfile profile,
+    const media::VideoDecodeAccelerator::Profile profile,
     IPC::Message* init_done_msg,
     base::ProcessHandle renderer_process) {
   DCHECK(!video_decode_accelerator_.get());

@@ -45,12 +45,12 @@ PPB_VideoDecoder_Impl::PPB_VideoDecoder_Impl(PP_Instance instance)
 PPB_VideoDecoder_Impl::~PPB_VideoDecoder_Impl() {
 }
 
-// Convert PP_VideoDecoder_Profile to media::VideoCodecProfile.
-static media::VideoCodecProfile PPToMediaProfile(
+// Convert PP_VideoDecoder_Profile to media::VideoDecodeAccelerator::Profile.
+static media::VideoDecodeAccelerator::Profile PPToMediaProfile(
     const PP_VideoDecoder_Profile pp_profile) {
   // TODO(fischman,vrk): this assumes the enum values in the two Profile types
   // match up exactly.  Add a COMPILE_ASSERT for this somewhere.
-  return static_cast<media::VideoCodecProfile>(pp_profile);
+  return static_cast<media::VideoDecodeAccelerator::Profile>(pp_profile);
 }
 
 // static

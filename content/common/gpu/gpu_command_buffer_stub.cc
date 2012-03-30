@@ -549,7 +549,7 @@ void GpuCommandBufferStub::ReportState() {
 }
 
 void GpuCommandBufferStub::OnCreateVideoDecoder(
-    media::VideoCodecProfile profile,
+    media::VideoDecodeAccelerator::Profile profile,
     IPC::Message* reply_message) {
   int decoder_route_id = channel_->GenerateRouteID();
   GpuCommandBufferMsg_CreateVideoDecoder::WriteReplyParams(

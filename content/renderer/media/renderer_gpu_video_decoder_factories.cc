@@ -44,7 +44,7 @@ void RendererGpuVideoDecoderFactories::AsyncGetContext(
 
 media::VideoDecodeAccelerator*
 RendererGpuVideoDecoderFactories::CreateVideoDecodeAccelerator(
-    media::VideoCodecProfile profile,
+    media::VideoDecodeAccelerator::Profile profile,
     media::VideoDecodeAccelerator::Client* client) {
   DCHECK_NE(MessageLoop::current(), message_loop_);
   media::VideoDecodeAccelerator* vda = NULL;
@@ -57,7 +57,7 @@ RendererGpuVideoDecoderFactories::CreateVideoDecodeAccelerator(
 }
 
 void RendererGpuVideoDecoderFactories::AsyncCreateVideoDecodeAccelerator(
-      media::VideoCodecProfile profile,
+      media::VideoDecodeAccelerator::Profile profile,
       media::VideoDecodeAccelerator::Client* client,
       media::VideoDecodeAccelerator** vda,
       base::WaitableEvent* waiter) {

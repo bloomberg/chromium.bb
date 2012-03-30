@@ -45,7 +45,7 @@ class CONTENT_EXPORT DXVAVideoDecodeAccelerator
   virtual ~DXVAVideoDecodeAccelerator();
 
   // media::VideoDecodeAccelerator implementation.
-  virtual bool Initialize(media::VideoCodecProfile) OVERRIDE;
+  virtual bool Initialize(Profile) OVERRIDE;
   virtual void Decode(const media::BitstreamBuffer& bitstream_buffer) OVERRIDE;
   virtual void AssignPictureBuffers(
       const std::vector<media::PictureBuffer>& buffers) OVERRIDE;
@@ -210,3 +210,4 @@ class CONTENT_EXPORT DXVAVideoDecodeAccelerator
 };
 
 #endif  // CONTENT_COMMON_GPU_MEDIA_DXVA_VIDEO_DECODE_ACCELERATOR_H_
+

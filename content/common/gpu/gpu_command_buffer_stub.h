@@ -189,7 +189,7 @@ class GpuCommandBufferStub
   void OnGetTransferBuffer(int32 id, IPC::Message* reply_message);
 
   void OnCreateVideoDecoder(
-      media::VideoCodecProfile profile,
+      media::VideoDecodeAccelerator::Profile profile,
       IPC::Message* reply_message);
   void OnDestroyVideoDecoder(int32 decoder_route_id);
 

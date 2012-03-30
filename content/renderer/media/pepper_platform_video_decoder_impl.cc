@@ -24,7 +24,7 @@ PlatformVideoDecoderImpl::PlatformVideoDecoderImpl(
 
 PlatformVideoDecoderImpl::~PlatformVideoDecoderImpl() {}
 
-bool PlatformVideoDecoderImpl::Initialize(media::VideoCodecProfile profile) {
+bool PlatformVideoDecoderImpl::Initialize(Profile profile) {
   // TODO(vrk): Support multiple decoders.
   if (decoder_)
     return true;

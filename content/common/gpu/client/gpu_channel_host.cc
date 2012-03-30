@@ -218,7 +218,7 @@ CommandBufferProxy* GpuChannelHost::CreateViewCommandBuffer(
 
 GpuVideoDecodeAcceleratorHost* GpuChannelHost::CreateVideoDecoder(
     int command_buffer_route_id,
-    media::VideoCodecProfile profile,
+    media::VideoDecodeAccelerator::Profile profile,
     media::VideoDecodeAccelerator::Client* client) {
   AutoLock lock(context_lock_);
   ProxyMap::iterator it = proxies_.find(command_buffer_route_id);

@@ -63,7 +63,7 @@ class CommandBufferProxyImpl :
   virtual void SetChannelErrorCallback(const base::Closure& callback) OVERRIDE;
   virtual void SetNotifyRepaintTask(const base::Closure& callback) OVERRIDE;
   virtual scoped_refptr<GpuVideoDecodeAcceleratorHost> CreateVideoDecoder(
-      media::VideoCodecProfile profile,
+      media::VideoDecodeAccelerator::Profile profile,
       media::VideoDecodeAccelerator::Client* client) OVERRIDE;
   virtual void SetOnConsoleMessageCallback(
       const GpuConsoleMessageCallback& callback) OVERRIDE;

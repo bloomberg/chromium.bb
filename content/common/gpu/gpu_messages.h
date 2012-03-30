@@ -144,7 +144,7 @@ IPC_ENUM_TRAITS(content::CauseForGpuLaunch)
 IPC_ENUM_TRAITS(gfx::GpuPreference)
 IPC_ENUM_TRAITS(gpu::error::ContextLostReason)
 
-IPC_ENUM_TRAITS(media::VideoCodecProfile)
+IPC_ENUM_TRAITS(media::VideoDecodeAccelerator::Profile)
 
 //------------------------------------------------------------------------------
 // GPU Messages
@@ -405,7 +405,7 @@ IPC_SYNC_MESSAGE_ROUTED1_2(GpuCommandBufferMsg_GetTransferBuffer,
 
 // Create and initialize a hardware video decoder, returning its new route_id.
 IPC_SYNC_MESSAGE_ROUTED1_1(GpuCommandBufferMsg_CreateVideoDecoder,
-                           media::VideoCodecProfile /* profile */,
+                           media::VideoDecodeAccelerator::Profile /* profile */,
                            int /* route_id */)
 
 // Release all resources held by the named hardware video decoder.

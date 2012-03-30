@@ -67,7 +67,7 @@ class CommandBufferProxy : public gpu::CommandBuffer {
   // the GPU process, even if this returns non-NULL. In this case the client is
   // notified of an error later.
   virtual scoped_refptr<GpuVideoDecodeAcceleratorHost> CreateVideoDecoder(
-      media::VideoCodecProfile profile,
+      media::VideoDecodeAccelerator::Profile profile,
       media::VideoDecodeAccelerator::Client* client) = 0;
 
   virtual void SetOnConsoleMessageCallback(
