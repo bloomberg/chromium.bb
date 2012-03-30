@@ -32,8 +32,8 @@ void GetTopSitesFunction::OnMostVisitedURLsAvailable(
   scoped_ptr<base::ListValue> pages_value(new ListValue);
   for (size_t i = 0; i < data.size(); i++) {
     const history::MostVisitedURL& url = data[i];
-    DictionaryValue* page_value = new DictionaryValue();
     if (!url.url.is_empty()) {
+      DictionaryValue* page_value = new DictionaryValue();
       page_value->SetString("url", url.url.spec());
       if (url.title.empty())
         page_value->SetString("title", url.url.spec());
