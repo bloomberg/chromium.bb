@@ -6,10 +6,6 @@
   min-width: 500px;
 }
 
-#clearBrowserDataOverlay > .content-area label {
-  margin: 5px 0;
-}
-
 #clear-data-checkboxes {
   -webkit-padding-start: 8px;
   margin: 5px 0;

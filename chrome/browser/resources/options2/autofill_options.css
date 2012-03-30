@@ -11,6 +11,10 @@
   position: absolute;
 }
 
+#autofill-options list {
+  min-height: 172px;
+}
+
 .autofill-list-item {
   -webkit-box-flex: 1;
   -webkit-padding-start: 8px;
