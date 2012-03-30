@@ -6,8 +6,8 @@
 # This data is in a separate file so that src/chrome/app/policy/PRESUBMIT.py
 # can load it too without having to load pyautolib.
 
-import pyauto_functional  # must come before pyauto.
-import pyauto
+# DO NOT import pyauto from here! This file is required to run a presubmit
+# scripts that will always fail if pyautolib isn't available, which is common.
 
 
 class PolicyPrefsTestCases(object):
