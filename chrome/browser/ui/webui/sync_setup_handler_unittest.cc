@@ -345,6 +345,8 @@ TEST_F(SyncSetupHandlerTest, HandleGaiaAuthFailure) {
       .WillRepeatedly(Return(false));
   EXPECT_CALL(*mock_pss_, unrecoverable_error_detected())
       .WillRepeatedly(Return(false));
+  EXPECT_CALL(*mock_pss_, HasSyncSetupCompleted())
+      .WillRepeatedly(Return(false));
   // Open the web UI.
   handler_->OpenSyncSetup(false);
   // Fake a failed signin attempt.
@@ -372,6 +374,8 @@ TEST_F(SyncSetupHandlerTest, HandleCaptcha) {
   EXPECT_CALL(*mock_pss_, AreCredentialsAvailable())
       .WillRepeatedly(Return(false));
   EXPECT_CALL(*mock_pss_, unrecoverable_error_detected())
+      .WillRepeatedly(Return(false));
+  EXPECT_CALL(*mock_pss_, HasSyncSetupCompleted())
       .WillRepeatedly(Return(false));
   // Open the web UI.
   handler_->OpenSyncSetup(false);
@@ -508,6 +512,8 @@ TEST_F(SyncSetupHandlerTest, TestSyncEverything) {
   list_args.Append(new StringValue(args));
   EXPECT_CALL(*mock_pss_, IsPassphraseRequiredForDecryption())
       .WillRepeatedly(Return(false));
+  EXPECT_CALL(*mock_pss_, IsPassphraseRequired())
+      .WillRepeatedly(Return(false));
   SetupInitializedProfileSyncService();
   EXPECT_CALL(*mock_pss_, OnUserChoseDatatypes(true, _));
   handler_->HandleConfigure(&list_args);
@@ -534,6 +540,8 @@ TEST_F(SyncSetupHandlerTest, TurnOnEncryptAll) {
   ListValue list_args;
   list_args.Append(new StringValue(args));
   EXPECT_CALL(*mock_pss_, IsPassphraseRequiredForDecryption())
+      .WillRepeatedly(Return(false));
+  EXPECT_CALL(*mock_pss_, IsPassphraseRequired())
       .WillRepeatedly(Return(false));
   SetupInitializedProfileSyncService();
   EXPECT_CALL(*mock_pss_, EnableEncryptEverything());
@@ -562,6 +570,8 @@ TEST_F(SyncSetupHandlerTest, TestPassphraseStillRequired) {
   ListValue list_args;
   list_args.Append(new StringValue(args));
   EXPECT_CALL(*mock_pss_, IsPassphraseRequiredForDecryption())
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(*mock_pss_, IsPassphraseRequired())
       .WillRepeatedly(Return(true));
   EXPECT_CALL(*mock_pss_, IsUsingSecondaryPassphrase())
       .WillRepeatedly(Return(false));
@@ -595,8 +605,8 @@ TEST_F(SyncSetupHandlerTest, SuccessfullySetPassphrase) {
   list_args.Append(new StringValue(args));
   // Act as if an encryption passphrase is required the first time, then never
   // again after that.
+  EXPECT_CALL(*mock_pss_, IsPassphraseRequired()).WillOnce(Return(true));
   EXPECT_CALL(*mock_pss_, IsPassphraseRequiredForDecryption())
-      .WillOnce(Return(true))
       .WillRepeatedly(Return(false));
   EXPECT_CALL(*mock_pss_, IsUsingSecondaryPassphrase())
       .WillRepeatedly(Return(false));
@@ -629,6 +639,8 @@ TEST_F(SyncSetupHandlerTest, SelectCustomEncryption) {
   ListValue list_args;
   list_args.Append(new StringValue(args));
   EXPECT_CALL(*mock_pss_, IsPassphraseRequiredForDecryption())
+      .WillRepeatedly(Return(false));
+  EXPECT_CALL(*mock_pss_, IsPassphraseRequired())
       .WillRepeatedly(Return(false));
   EXPECT_CALL(*mock_pss_, IsUsingSecondaryPassphrase())
       .WillRepeatedly(Return(false));
@@ -663,6 +675,8 @@ TEST_F(SyncSetupHandlerTest, UnsuccessfullySetPassphrase) {
   list_args.Append(new StringValue(args));
   EXPECT_CALL(*mock_pss_, IsPassphraseRequiredForDecryption())
       .WillRepeatedly(Return(true));
+  EXPECT_CALL(*mock_pss_, IsPassphraseRequired())
+      .WillRepeatedly(Return(true));
   EXPECT_CALL(*mock_pss_, IsUsingSecondaryPassphrase())
       .WillRepeatedly(Return(false));
   SetupInitializedProfileSyncService();
@@ -695,6 +709,8 @@ TEST_F(SyncSetupHandlerTest, TestSyncOnlyBookmarks) {
   list_args.Append(new StringValue(args));
   EXPECT_CALL(*mock_pss_, IsPassphraseRequiredForDecryption())
       .WillRepeatedly(Return(false));
+  EXPECT_CALL(*mock_pss_, IsPassphraseRequired())
+      .WillRepeatedly(Return(false));
   SetupInitializedProfileSyncService();
   syncable::ModelTypeSet types;
   types.Put(syncable::BOOKMARKS);
@@ -723,6 +739,8 @@ TEST_F(SyncSetupHandlerTest, TestSyncAllManually) {
   list_args.Append(new StringValue(args));
   EXPECT_CALL(*mock_pss_, IsPassphraseRequiredForDecryption())
       .WillRepeatedly(Return(false));
+  EXPECT_CALL(*mock_pss_, IsPassphraseRequired())
+      .WillRepeatedly(Return(false));
   SetupInitializedProfileSyncService();
   EXPECT_CALL(*mock_pss_,
               OnUserChoseDatatypes(false, ModelTypeSetMatches(GetAllTypes())));
@@ -732,7 +750,7 @@ TEST_F(SyncSetupHandlerTest, TestSyncAllManually) {
 }
 
 TEST_F(SyncSetupHandlerTest, ShowSyncSetup) {
-  EXPECT_CALL(*mock_pss_, IsPassphraseRequiredForDecryption())
+  EXPECT_CALL(*mock_pss_, IsPassphraseRequired())
       .WillRepeatedly(Return(false));
   EXPECT_CALL(*mock_pss_, IsUsingSecondaryPassphrase())
       .WillRepeatedly(Return(false));
@@ -745,7 +763,7 @@ TEST_F(SyncSetupHandlerTest, ShowSyncSetup) {
 }
 
 TEST_F(SyncSetupHandlerTest, ShowSetupSyncEverything) {
-  EXPECT_CALL(*mock_pss_, IsPassphraseRequiredForDecryption())
+  EXPECT_CALL(*mock_pss_, IsPassphraseRequired())
       .WillRepeatedly(Return(false));
   EXPECT_CALL(*mock_pss_, IsUsingSecondaryPassphrase())
       .WillRepeatedly(Return(false));
@@ -775,7 +793,7 @@ TEST_F(SyncSetupHandlerTest, ShowSetupSyncEverything) {
 }
 
 TEST_F(SyncSetupHandlerTest, ShowSetupManuallySyncAll) {
-  EXPECT_CALL(*mock_pss_, IsPassphraseRequiredForDecryption())
+  EXPECT_CALL(*mock_pss_, IsPassphraseRequired())
       .WillRepeatedly(Return(false));
   EXPECT_CALL(*mock_pss_, IsUsingSecondaryPassphrase())
       .WillRepeatedly(Return(false));
@@ -806,7 +824,7 @@ TEST_F(SyncSetupHandlerTest, ShowSetupManuallySyncAll) {
 // TODO(atwilson): Change this test to try individually syncing every data type
 // not just bookmarks (http://crbug.com/119653).
 TEST_F(SyncSetupHandlerTest, ShowSetupSyncOnlyBookmarks) {
-  EXPECT_CALL(*mock_pss_, IsPassphraseRequiredForDecryption())
+  EXPECT_CALL(*mock_pss_, IsPassphraseRequired())
       .WillRepeatedly(Return(false));
   EXPECT_CALL(*mock_pss_, IsUsingSecondaryPassphrase())
       .WillRepeatedly(Return(false));
@@ -839,7 +857,7 @@ TEST_F(SyncSetupHandlerTest, ShowSetupSyncOnlyBookmarks) {
 }
 
 TEST_F(SyncSetupHandlerTest, ShowSetupGaiaPassphraseRequired) {
-  EXPECT_CALL(*mock_pss_, IsPassphraseRequiredForDecryption())
+  EXPECT_CALL(*mock_pss_, IsPassphraseRequired())
       .WillRepeatedly(Return(true));
   EXPECT_CALL(*mock_pss_, IsUsingSecondaryPassphrase())
       .WillRepeatedly(Return(false));
@@ -858,7 +876,7 @@ TEST_F(SyncSetupHandlerTest, ShowSetupGaiaPassphraseRequired) {
 }
 
 TEST_F(SyncSetupHandlerTest, ShowSetupCustomPassphraseRequired) {
-  EXPECT_CALL(*mock_pss_, IsPassphraseRequiredForDecryption())
+  EXPECT_CALL(*mock_pss_, IsPassphraseRequired())
       .WillRepeatedly(Return(true));
   EXPECT_CALL(*mock_pss_, IsUsingSecondaryPassphrase())
       .WillRepeatedly(Return(true));
@@ -877,7 +895,7 @@ TEST_F(SyncSetupHandlerTest, ShowSetupCustomPassphraseRequired) {
 }
 
 TEST_F(SyncSetupHandlerTest, ShowSetupEncryptAll) {
-  EXPECT_CALL(*mock_pss_, IsPassphraseRequiredForDecryption())
+  EXPECT_CALL(*mock_pss_, IsPassphraseRequired())
       .WillRepeatedly(Return(false));
   EXPECT_CALL(*mock_pss_, IsUsingSecondaryPassphrase())
       .WillRepeatedly(Return(false));

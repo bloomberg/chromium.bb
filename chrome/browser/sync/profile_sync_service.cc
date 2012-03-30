@@ -468,7 +468,7 @@ void ProfileSyncService::ShutdownImpl(bool sync_disabled) {
   expect_sync_configuration_aborted_ = false;
   is_auth_in_progress_ = false;
   backend_initialized_ = false;
-  cached_passphrases_ = CachedPassphrases();
+  cached_passphrase_.clear();
   encryption_pending_ = false;
   encrypt_everything_ = false;
   encrypted_types_ = browser_sync::Cryptographer::SensitiveTypes();
@@ -635,6 +635,11 @@ void ProfileSyncService::OnBackendInitialized(
   backend_initialized_ = true;
 
   sync_js_controller_.AttachJsBackend(js_backend);
+
+  // If we have a cached passphrase use it to decrypt/encrypt data now that the
+  // backend is initialized. We want to call this before notifying observers in
+  // case this operation affects the "passphrase required" status.
+  ConsumeCachedPassphraseIfPossible();
 
   // The very first time the backend initializes is effectively the first time
   // we can say we successfully "synced".  last_synced_time_ will only be null
@@ -831,48 +836,17 @@ void ProfileSyncService::OnPassphraseRequired(
            << sync_api::PassphraseRequiredReasonToString(reason);
   passphrase_required_reason_ = reason;
 
-  // First try supplying gaia password as the passphrase.
-  if (!cached_passphrases_.gaia_passphrase.empty()) {
-    std::string gaia_passphrase = cached_passphrases_.gaia_passphrase;
-    cached_passphrases_.gaia_passphrase.clear();
-    DVLOG(1) << "Attempting gaia passphrase.";
-    if (!backend_->IsUsingExplicitPassphrase()) {
-      // The passphrase will be re-cached if the syncer isn't ready.
-      SetEncryptionPassphrase(gaia_passphrase, IMPLICIT);
-      return;
-    }
-  }
-
-  // If the above failed then try the custom passphrase the user might have
-  // entered in setup.
-  if (!cached_passphrases_.explicit_passphrase.empty()) {
-    // TODO(atwilson): Remove the cached explicit passphrase. Setup will not let
-    // you specify a passphrase until after the nigori node is downloaded.
-    // See http://crbug.com/95269
-    std::string explicit_passphrase = cached_passphrases_.explicit_passphrase;
-    cached_passphrases_.explicit_passphrase.clear();
-    if (backend_->IsUsingExplicitPassphrase()) {
-      DVLOG(1) << "Attempting explicit passphrase.";
-      // The passphrase will be re-cached if the syncer isn't ready.
-      if (SetDecryptionPassphrase(explicit_passphrase))
-        return;
-    }
-  }
-
-  // If no passphrase is required (due to not having any encrypted data types
-  // enabled), just act as if we don't have any passphrase error. We still
-  // track the auth error in passphrase_required_reason_ in case the user later
-  // re-enables an encrypted data type.
-  if (!IsPassphraseRequiredForDecryption()) {
-    DVLOG(1) << "Decrypting and no encrypted datatypes enabled"
-             << ", accepted passphrase.";
-    ResolvePassphraseRequired();
-  }
+  // Notify observers that the passphrase status may have changed.
   NotifyObservers();
 }
 
 void ProfileSyncService::OnPassphraseAccepted() {
   DVLOG(1) << "Received OnPassphraseAccepted.";
+  // If we are not using an explicit passphrase, and we have a cache of the gaia
+  // password, use it for encryption at this point.
+  DCHECK(cached_passphrase_.empty()) <<
+      "Passphrase no longer required but there is still a cached passphrase";
+
   // Reset passphrase_required_reason_ since we know we no longer require the
   // passphrase. We do this here rather than down in ResolvePassphraseRequired()
   // because that can be called by OnPassphraseRequired() if no encrypted data
@@ -889,21 +863,6 @@ void ProfileSyncService::OnPassphraseAccepted() {
                                   sync_api::CONFIGURE_REASON_RECONFIGURATION);
   }
 
-  ResolvePassphraseRequired();
-}
-
-void ProfileSyncService::ResolvePassphraseRequired() {
-  DCHECK(!IsPassphraseRequiredForDecryption());
-
-  // If we are not using an explicit passphrase, and we have a cache of the gaia
-  // password, use it for encryption at this point.
-  if (!IsUsingSecondaryPassphrase() &&
-      !cached_passphrases_.gaia_passphrase.empty()) {
-    SetEncryptionPassphrase(cached_passphrases_.gaia_passphrase, IMPLICIT);
-  }
-
-  // Don't hold on to a passphrase in raw form longer than needed.
-  cached_passphrases_ = CachedPassphrases();
   NotifyObservers();
 }
 
@@ -1278,40 +1237,57 @@ void ProfileSyncService::DeactivateDataType(syncable::ModelType type) {
   backend_->DeactivateDataType(type);
 }
 
+void ProfileSyncService::ConsumeCachedPassphraseIfPossible() {
+  // If no cached passphrase, or sync backend hasn't started up yet, just exit.
+  // If the backend isn't running yet, OnBackendInitialized() will call this
+  // method again after the backend starts up.
+  if (cached_passphrase_.empty() || !sync_initialized())
+    return;
+
+  // Backend is up and running, so we can consume the cached passphrase.
+  std::string passphrase = cached_passphrase_;
+  cached_passphrase_.clear();
+
+  // If we need a passphrase to decrypt data, try the cached passphrase.
+  if (passphrase_required_reason() == sync_api::REASON_DECRYPTION) {
+    if (SetDecryptionPassphrase(passphrase)) {
+      DVLOG(1) << "Cached passphrase successfully decrypted pending keys";
+      return;
+    }
+  }
+
+  // If we get here, we don't have pending keys (or at least, the passphrase
+  // doesn't decrypt them) - just try to re-encrypt using the encryption
+  // passphrase.
+  if (!IsUsingSecondaryPassphrase())
+    SetEncryptionPassphrase(passphrase, IMPLICIT);
+}
+
 void ProfileSyncService::SetEncryptionPassphrase(const std::string& passphrase,
                                                  PassphraseType type) {
+  // This should only be called when the backend has been initialized.
+  DCHECK(sync_initialized());
+  DCHECK(!(type == IMPLICIT && IsUsingSecondaryPassphrase())) <<
+      "Data is already encrypted using an explicit passphrase";
+  DCHECK(!(type == EXPLICIT && IsPassphraseRequired())) <<
+      "Cannot switch to an explicit passphrase if a passphrase is required";
+
   if (type == EXPLICIT)
     UMA_HISTOGRAM_BOOLEAN("Sync.CustomPassphrase", true);
 
-  if (ShouldPushChanges() || IsPassphraseRequired()) {
-    if (type == IMPLICIT && backend_->IsUsingExplicitPassphrase()) {
-      // This should only happen when you re-auth (or when you log in on
-      // ChromeOS).
-      DVLOG(1) << "Ignoring implicit passphrase, explicit passphrase already "
-               << "set.";
-      return;
-    }
-    DVLOG(1) << "Setting " << (type == EXPLICIT ? "explicit" : "implicit")
-             << " passphrase for encryption.";
-    backend_->SetEncryptionPassphrase(passphrase, type == EXPLICIT);
-  } else {
-    if (type == IMPLICIT) {
-      DVLOG(1) << "Caching gaia passphrase.";
-      cached_passphrases_.gaia_passphrase = passphrase;
-    } else {
-      NOTREACHED();
-    }
-  }
+  DVLOG(1) << "Setting " << (type == EXPLICIT ? "explicit" : "implicit")
+           << " passphrase for encryption.";
+  backend_->SetEncryptionPassphrase(passphrase, type == EXPLICIT);
 }
 
 bool ProfileSyncService::SetDecryptionPassphrase(
     const std::string& passphrase) {
-  if (ShouldPushChanges() || IsPassphraseRequired()) {
+  if (IsPassphraseRequired()) {
     DVLOG(1) << "Setting passphrase for decryption.";
     return backend_->SetDecryptionPassphrase(passphrase);
   } else {
-    NOTREACHED() << "SetDecryptionPassphrase must not be called when both "
-                    "ShouldPushChanges() and IsPassphraseRequired() are false.";
+    NOTREACHED() << "SetDecryptionPassphrase must not be called when "
+                    "IsPassphraseRequired() is false.";
     return false;
   }
 }
@@ -1366,6 +1342,10 @@ void ProfileSyncService::Observe(int type,
       break;
     }
     case chrome::NOTIFICATION_SYNC_CONFIGURE_DONE: {
+      // We should have cleared our cached passphrase before we get here (in
+      // OnBackendInitialized()).
+      DCHECK(cached_passphrase_.empty());
+
       DataTypeManager::ConfigureResult* result =
           content::Details<DataTypeManager::ConfigureResult>(details).ptr();
 
@@ -1424,16 +1404,6 @@ void ProfileSyncService::Observe(int type,
       DCHECK(!(IsPassphraseRequiredForDecryption() &&
                !IsEncryptedDatatypeEnabled()));
 
-      // Ensure we consume any cached gaia passphrase now that we've finished
-      // setting up. SetEncryptionPassphrase will drop any implicit passphrases
-      // if an explicit passphrase has already been set, so this is safe.
-      if (!cached_passphrases_.gaia_passphrase.empty()) {
-        std::string gaia_passphrase = cached_passphrases_.gaia_passphrase;
-        cached_passphrases_.gaia_passphrase.clear();
-        DVLOG(1) << "Consuming cached gaia passphrase.";
-        SetEncryptionPassphrase(gaia_passphrase, IMPLICIT);
-      }
-
       // This must be done before we start syncing with the server to avoid
       // sending unencrypted data up on a first time sync.
       if (encryption_pending_)
@@ -1451,15 +1421,14 @@ void ProfileSyncService::Observe(int type,
       const GoogleServiceSigninSuccessDetails* successful =
           content::Details<const GoogleServiceSigninSuccessDetails>(
               details).ptr();
-      // We cannot override a previously set explicit passphrase with an
-      // implicit one.
-      // TODO(sync): This is the only place where SetEncryptionPassphrase may be
-      // called before the backend is initialized. It makes sense for this to be
-      // the place where we cache the gaia password, rather than in
-      // SetEncryptionPassphrase. http://crbug.com/95269.
-      if (!successful->password.empty())
-        SetEncryptionPassphrase(successful->password, IMPLICIT);
-
+      DCHECK(!successful->password.empty());
+      if (!sync_prefs_.IsStartSuppressed()) {
+        cached_passphrase_ = successful->password;
+        // Try to consume the passphrase we just cached. If the sync backend
+        // is not running yet, the passphrase will remain cached until the
+        // backend starts up.
+        ConsumeCachedPassphraseIfPossible();
+      }
       if (!sync_initialized() ||
           GetAuthError().state() != GoogleServiceAuthError::NONE) {
         // Track the fact that we're still waiting for auth to complete.

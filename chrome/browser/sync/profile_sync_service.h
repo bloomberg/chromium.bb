@@ -568,6 +568,12 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // OnPassphraseRequired() but no data types are enabled).
   void ResolvePassphraseRequired();
 
+  // During initial signin, ProfileSyncService caches the user's signin
+  // passphrase so it can be used to encrypt/decrypt data after sync starts up.
+  // This routine is invoked once the backend has started up to use the
+  // cached passphrase and clear it out when it is done.
+  void ConsumeCachedPassphraseIfPossible();
+
   // If |delete_sync_data_folder| is true, then this method will delete all
   // previous "Sync Data" folders. (useful if the folder is partial/corrupt).
   void InitializeBackend(bool delete_sync_data_folder);
@@ -672,11 +678,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // yet have a backend to send it to.  This happens during initialization as
   // we don't StartUp until we have a valid token, which happens after valid
   // credentials were provided.
-  struct CachedPassphrases {
-    std::string explicit_passphrase;
-    std::string gaia_passphrase;
-  };
-  CachedPassphrases cached_passphrases_;
+  std::string cached_passphrase_;
 
   // Keep track of where we are in a server clear operation
   ClearServerDataState clear_server_data_state_;

@@ -376,8 +376,10 @@ void SyncSetupHandler::DisplayConfigureSync(bool show_advanced) {
   args.SetBoolean("syncAllDataTypes", sync_prefs.HasKeepEverythingSynced());
   args.SetBoolean("encryptAllData", service->EncryptEverythingEnabled());
   args.SetBoolean("usePassphrase", service->IsUsingSecondaryPassphrase());
-  args.SetBoolean("show_passphrase",
-                  service->IsPassphraseRequiredForDecryption());
+  // We call IsPassphraseRequired() here, instead of calling
+  // IsPassphraseRequiredForDecryption(), because we want to show the passphrase
+  // UI even if no encrypted data types are enabled.
+  args.SetBoolean("show_passphrase", service->IsPassphraseRequired());
 
   StringValue page("configure");
   web_ui()->CallJavascriptFunction(
@@ -559,6 +561,11 @@ void SyncSetupHandler::TryLogin(const std::string& username,
     return;
   }
 
+  // The user has submitted credentials, which indicates they don't want to
+  // suppress start up anymore. We do this before starting the signin process,
+  // so the ProfileSyncService knows to listen to the cached password.
+  GetSyncService()->UnsuppressAndStart();
+
   // Kick off a sign-in through the signin manager.
   signin->StartSignIn(username,
                       password,
@@ -568,9 +575,6 @@ void SyncSetupHandler::TryLogin(const std::string& username,
 
 void SyncSetupHandler::GaiaCredentialsValid() {
   DCHECK(IsActiveLogin());
-  // The user has submitted credentials, which indicates they don't want to
-  // suppress start up anymore.
-  GetSyncService()->UnsuppressAndStart();
 
   // Gaia credentials are valid - update the UI.
   DisplayGaiaSuccessAndSettingUp();
@@ -639,12 +643,18 @@ void SyncSetupHandler::HandleConfigure(const ListValue* args) {
   if (configuration.encrypt_all)
     service->EnableEncryptEverything();
 
+  bool passphrase_failed = false;
   if (!configuration.passphrase.empty()) {
-    if (service->IsPassphraseRequiredForDecryption()) {
+    // We call IsPassphraseRequired() here (instead of
+    // IsPassphraseRequiredForDecryption()) because the user may try to enter
+    // a passphrase even though no encrypted data types are enabled.
+    if (service->IsPassphraseRequired()) {
       // If we have pending keys, try to decrypt them with the provided
-      // passphrase. We don't care if this succeeds or fails since we check
-      // the result below by calling IsPassphraseRequiredForDecryption().
-      ignore_result(service->SetDecryptionPassphrase(configuration.passphrase));
+      // passphrase. We track if this succeeds or fails because a failed
+      // decryption should result in an error even if there aren't any encrypted
+      // data types.
+      passphrase_failed =
+          !service->SetDecryptionPassphrase(configuration.passphrase);
     } else {
       // OK, the user sent us a passphrase, but we don't have pending keys. So
       // it either means that the pending keys were resolved somehow since the
@@ -666,11 +676,13 @@ void SyncSetupHandler::HandleConfigure(const ListValue* args) {
   // Need to call IsPassphraseRequiredForDecryption() *after* calling
   // OnUserChoseDatatypes() because the user may have just disabled the
   // encrypted datatypes.
-  if (service->IsPassphraseRequiredForDecryption()) {
-    // User didn't enter a valid passphrase, but we need one - go whine to them.
+  if (passphrase_failed || service->IsPassphraseRequiredForDecryption()) {
+    // We need a passphrase, or the user's attempt to set a passphrase failed -
+    // prompt them again.
     DisplayConfigureSync(true);
   } else {
-    // Configuration is complete.
+    // No passphrase is required from the user so mark the configuration as
+    // complete and close the sync setup overlay.
     ConfigureSyncDone();
   }
 
