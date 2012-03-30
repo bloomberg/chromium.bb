@@ -72,22 +72,14 @@ class PasswordGenerationManagerTest : public ChromeRenderViewTest {
   DISALLOW_COPY_AND_ASSIGN(PasswordGenerationManagerTest);
 };
 
-const char kSigninFormHTML[] =
-    "<FORM name = 'blah' action = 'www.random.com/'> "
-    "  <INPUT type = 'text' id = 'username'/> "
-    "  <INPUT type = 'password' id = 'password'/> "
-    "  <INPUT type = 'submit' value = 'LOGIN' />"
-    "</FORM>";
-
-const char kAccountCreationFormHTML[] =
-    "<FORM name = 'blah' action = 'www.random.com/'> "
-    "  <INPUT type = 'text' id = 'username'/> "
-    "  <INPUT type = 'password' id = 'first_password'/> "
-    "  <INPUT type = 'password' id = 'second_password'/> "
-    "  <INPUT type = 'submit' value = 'LOGIN' />"
-    "</FORM>";
 
 TEST_F(PasswordGenerationManagerTest, DetectionTest) {
+  const char kSigninFormHTML[] =
+      "<FORM name = 'blah' action = 'www.random.com/'> "
+      "  <INPUT type = 'text' id = 'username'/> "
+      "  <INPUT type = 'password' id = 'password'/> "
+      "  <INPUT type = 'submit' value = 'LOGIN' />"
+      "</FORM>";
   LoadHTML(kSigninFormHTML);
 
   WebDocument document = GetMainFrame()->document();
@@ -97,9 +89,16 @@ TEST_F(PasswordGenerationManagerTest, DetectionTest) {
   WebInputElement password_element = element.to<WebInputElement>();
   EXPECT_EQ(0u, generation_manager_->messages().size());
 
+  const char kAccountCreationFormHTML[] =
+      "<FORM name = 'blah' action = 'www.random.com/'> "
+      "  <INPUT type = 'text' id = 'username'/> "
+      "  <INPUT type = 'password' id = 'first_password'/> "
+      "  <INPUT type = 'password' id = 'second_password'/> "
+      "  <INPUT type = 'submit' value = 'LOGIN' />"
+      "</FORM>";
   LoadHTML(kAccountCreationFormHTML);
 
-  // We don't do anything yet because the feature is disabled.
+  // We don't autofill at first.
   document = GetMainFrame()->document();
   element = document.getElementById(WebString::fromUTF8("first_password"));
   ASSERT_FALSE(element.isNull());
@@ -109,24 +108,8 @@ TEST_F(PasswordGenerationManagerTest, DetectionTest) {
   ASSERT_FALSE(element.isNull());
   WebInputElement second_password_element = element.to<WebInputElement>();
   EXPECT_EQ(0u, generation_manager_->messages().size());
-  SetFocused(first_password_element.to<WebNode>());
-  EXPECT_EQ(0u, generation_manager_->messages().size());
 
-  // Pretend like sync was enabled.
-  AutofillMsg_PasswordSyncEnabled msg(0, true);
-  generation_manager_->OnMessageReceived(msg);
-
-  // Now we will send a message once the first password feld is focused.
-  LoadHTML(kAccountCreationFormHTML);
-  document = GetMainFrame()->document();
-  element = document.getElementById(WebString::fromUTF8("first_password"));
-  ASSERT_FALSE(element.isNull());
-  first_password_element = element.to<WebInputElement>();
-  EXPECT_EQ(0u, generation_manager_->messages().size());
-  element = document.getElementById(WebString::fromUTF8("second_password"));
-  ASSERT_FALSE(element.isNull());
-  second_password_element = element.to<WebInputElement>();
-  EXPECT_EQ(0u, generation_manager_->messages().size());
+  // After first element is focused, then we autofill.
   SetFocused(first_password_element.to<WebNode>());
   EXPECT_EQ(1u, generation_manager_->messages().size());
   EXPECT_EQ(AutofillHostMsg_ShowPasswordGenerationPopup::ID,
@@ -134,9 +117,13 @@ TEST_F(PasswordGenerationManagerTest, DetectionTest) {
 }
 
 TEST_F(PasswordGenerationManagerTest, FillTest) {
-  // Make sure that we are enabled before loading HTML.
-  AutofillMsg_PasswordSyncEnabled enabled_msg(0, true);
-  generation_manager_->OnMessageReceived(enabled_msg);
+  const char kAccountCreationFormHTML[] =
+      "<FORM name = 'blah' action = 'www.random.com/'> "
+      "  <INPUT type = 'text' id = 'username'/> "
+      "  <INPUT type = 'password' id = 'first_password'/> "
+      "  <INPUT type = 'password' id = 'second_password'/> "
+      "  <INPUT type = 'submit' value = 'LOGIN' />"
+      "</FORM>";
   LoadHTML(kAccountCreationFormHTML);
 
   WebDocument document = GetMainFrame()->document();

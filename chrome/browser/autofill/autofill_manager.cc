@@ -35,8 +35,6 @@
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -185,17 +183,13 @@ AutofillManager::AutofillManager(TabContentsWrapper* tab_contents)
       user_did_type_(false),
       user_did_autofill_(false),
       user_did_edit_autofilled_field_(false),
-      password_sync_enabled_(false),
       external_delegate_(NULL) {
   // |personal_data_| is NULL when using test-enabled WebContents.
   personal_data_ = PersonalDataManagerFactory::GetForProfile(
       tab_contents->profile()->GetOriginalProfile());
-  RegisterWithSyncService();
 }
 
 AutofillManager::~AutofillManager() {
-  if (sync_service_ && sync_service_->HasObserver(this))
-    sync_service_->RemoveObserver(this);
 }
 
 // static
@@ -218,40 +212,6 @@ void AutofillManager::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterDoublePref(prefs::kAutofillNegativeUploadRate,
                             kAutofillNegativeUploadRateDefaultValue,
                             PrefService::UNSYNCABLE_PREF);
-}
-
-void AutofillManager::RegisterWithSyncService() {
-  sync_service_ = ProfileSyncServiceFactory::GetForProfile(
-      tab_contents_wrapper_->profile());
-  if (sync_service_)
-    sync_service_->AddObserver(this);
-}
-
-void AutofillManager::SendPasswordSyncStateToRenderer(
-    content::RenderViewHost* host, bool enabled) {
-  host->Send(new AutofillMsg_PasswordSyncEnabled(host->GetRoutingID(),
-                                                 enabled));
-}
-
-void AutofillManager::UpdatePasswordSyncState(content::RenderViewHost* host) {
-  if (!sync_service_)
-    return;
-
-  syncable::ModelTypeSet sync_set = sync_service_->GetPreferredDataTypes();
-  bool new_password_sync_enabled = (sync_service_->HasSyncSetupCompleted() &&
-                                    sync_set.Has(syncable::PASSWORDS));
-  if (new_password_sync_enabled != password_sync_enabled_) {
-    password_sync_enabled_ = new_password_sync_enabled;
-    SendPasswordSyncStateToRenderer(host, password_sync_enabled_);
-  }
-}
-
-void AutofillManager::RenderViewCreated(content::RenderViewHost* host) {
-  UpdatePasswordSyncState(host);
-}
-
-void AutofillManager::OnStateChanged() {
-  UpdatePasswordSyncState(web_contents()->GetRenderViewHost());
 }
 
 void AutofillManager::DidNavigateMainFrame(
@@ -796,10 +756,8 @@ AutofillManager::AutofillManager(TabContentsWrapper* tab_contents,
       user_did_type_(false),
       user_did_autofill_(false),
       user_did_edit_autofilled_field_(false),
-      password_sync_enabled_(false),
       external_delegate_(NULL) {
   DCHECK(tab_contents);
-  RegisterWithSyncService();
 }
 
 void AutofillManager::set_metric_logger(const AutofillMetrics* metric_logger) {
