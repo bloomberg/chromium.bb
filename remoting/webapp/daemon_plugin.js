@@ -22,10 +22,13 @@ remoting.DaemonPlugin = function() {
 remoting.DaemonPlugin.State = {
   NOT_IMPLEMENTED: -1,
   NOT_INSTALLED: 0,
-  STOPPED: 1,
-  STARTED: 2,
-  START_FAILED: 3,
-  UNKNOWN: 4
+  INSTALLING: 1,
+  STOPPED: 2,
+  STARTING: 3,
+  STARTED: 4,
+  STOPPING: 5,
+  START_FAILED: 6,
+  UNKNOWN: 7
 };
 
 /** @return {remoting.DaemonPlugin.State} The current state of the daemon. */

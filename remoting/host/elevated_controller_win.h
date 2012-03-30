@@ -9,8 +9,10 @@
 #include <atlcom.h>
 #include <atlctl.h>
 
+#include "remoting/base/scoped_sc_handle_win.h"
+
 // MIDL-generated declarations.
-#include <elevated_controller.h>
+#include "elevated_controller.h"
 
 namespace remoting {
 
@@ -18,10 +20,7 @@ class ATL_NO_VTABLE ElevatedControllerWin
     : public ATL::CComObjectRootEx<ATL::CComSingleThreadModel>,
       public ATL::CComCoClass<ElevatedControllerWin, &CLSID_ElevatedController>,
       public ATL::IDispatchImpl<IDaemonControl, &IID_IDaemonControl,
-                                &LIBID_ChromotingElevatedControllerLib, 1, 0>,
-      public ATL::IConnectionPointContainerImpl<ElevatedControllerWin>,
-      public ATL::IConnectionPointImpl<ElevatedControllerWin,
-                                       &IID_IDaemonEvents> {
+                                &LIBID_ChromotingElevatedControllerLib, 1, 0> {
  public:
   ElevatedControllerWin();
 
@@ -29,26 +28,20 @@ class ATL_NO_VTABLE ElevatedControllerWin
   void FinalRelease();
 
   // IDaemonControl implementation.
-  STDMETHOD(get_State)(DaemonState* state_out);
-  STDMETHOD(ReadConfig)(BSTR* config_out);
-  STDMETHOD(WriteConfig)(BSTR config);
+  STDMETHOD(GetConfig)(BSTR* config_out);
+  STDMETHOD(SetConfig)(BSTR config);
   STDMETHOD(StartDaemon)();
   STDMETHOD(StopDaemon)();
 
-  // Fires IDaemonEvents::OnStateChange notification.
-  HRESULT FireOnStateChange(DaemonState state);
-
   DECLARE_NO_REGISTRY()
+
+ private:
+  HRESULT OpenService(ScopedScHandle* service_out);
 
   BEGIN_COM_MAP(ElevatedControllerWin)
     COM_INTERFACE_ENTRY(IDaemonControl)
     COM_INTERFACE_ENTRY(IDispatch)
-    COM_INTERFACE_ENTRY(IConnectionPointContainer)
   END_COM_MAP()
-
-  BEGIN_CONNECTION_POINT_MAP(ElevatedControllerWin)
-    CONNECTION_POINT_ENTRY(IID_IDaemonEvents)
-  END_CONNECTION_POINT_MAP()
 
   DECLARE_PROTECT_FINAL_CONSTRUCT()
 };

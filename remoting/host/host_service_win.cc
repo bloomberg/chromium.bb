@@ -34,8 +34,6 @@ using base::StringPrintf;
 
 namespace {
 
-// Service name.
-const char kServiceName[] = "chromoting";
 // TODO(alexeypa): investigate and migrate this over to Chrome's i18n framework.
 const char kMuiStringFormat[] = "@%ls,-%d";
 const char kServiceDependencies[] = "";
@@ -104,7 +102,7 @@ HostService::HostService() :
   console_session_id_(kInvalidSession),
   message_loop_(NULL),
   run_routine_(&HostService::RunAsService),
-  service_name_(ASCIIToUTF16(kServiceName)),
+  service_name_(UTF8ToUTF16(kWindowsServiceName)),
   service_status_handle_(0),
   shutting_down_(false),
   stopped_event_(true, false) {

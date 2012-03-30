@@ -25,24 +25,30 @@ class DaemonController {
     // implemented. The web-app will not show the corresponding UI. This value
     // will eventually be deprecated or removed.
     STATE_NOT_IMPLEMENTED = -1,
-    // The daemon process is not installed. This is functionally equivalent
-    // to STATE_STOPPED, but the start method is expected to be significantly
+    // The daemon is not installed. This is functionally equivalent to
+    // STATE_STOPPED, but the start method is expected to be significantly
     // slower, and might involve user interaction. It might be appropriate to
     // indicate this in the UI.
     STATE_NOT_INSTALLED = 0,
-    // The daemon process is installed but not running. Call Start to start it.
-    STATE_STOPPED = 1,
+    // The daemon is being installed.
+    STATE_INSTALLING = 1,
+    // The daemon is installed but not running. Call Start to start it.
+    STATE_STOPPED = 2,
+    // The daemon process is starting.
+    STATE_STARTING = 3,
     // The daemon process is running. Call Start again to change the PIN or
     // Stop to stop it.
-    STATE_STARTED = 2,
+    STATE_STARTED = 4,
+    // The daemon process is stopping.
+    STATE_STOPPING = 5,
     // The previous Start operation failed. This is functionally equivalent
     // to STATE_STOPPED, but the UI should report an error in this state.
     // This state should not persist across restarts of the NPAPI process.
-    STATE_START_FAILED = 3,
+    STATE_START_FAILED = 6,
     // The state cannot be determined. This could indicate that the plugin
     // has not been provided with sufficient information, for example, the
     // user for which to query state on a multi-user system.
-    STATE_UNKNOWN = 4
+    STATE_UNKNOWN = 7
   };
 
   // The callback for GetConfig(). |config| is set to NULL in case of

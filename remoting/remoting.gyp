@@ -238,9 +238,12 @@
             '<(INTERMEDIATE_DIR)',
           ],
           'dependencies': [
+            '../base/base.gyp:base',
             'remoting_version_resources',
           ],
           'sources': [
+            'host/branding.cc',
+            'host/branding.h',
             'host/elevated_controller.idl',
             'host/elevated_controller.rc',
             'host/elevated_controller_module_win.cc',
@@ -515,6 +518,8 @@
         '../third_party/npapi/npapi.gyp:npapi',
       ],
       'sources': [
+        'host/branding.cc',
+        'host/branding.h',
         'host/it2me_host_user_interface.cc',
         'host/it2me_host_user_interface.h',
         'host/plugin/daemon_controller.h',
@@ -569,7 +574,11 @@
             '../ipc/ipc.gyp:ipc',
             'remoting_version_resources',
           ],
+          'include_dirs': [
+            '<(INTERMEDIATE_DIR)',
+          ],
           'sources': [
+            'host/elevated_controller.idl',
             'host/plugin/host_plugin.def',
             'host/plugin/host_plugin.rc',
             '<(SHARED_INTERMEDIATE_DIR)/remoting_version/host_plugin_version.rc'
