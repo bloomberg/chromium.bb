@@ -16,7 +16,7 @@ import pyauto
 class PolicyTest(policy_base.PolicyTestBase):
   """Tests that the effects of policies are being enforced as expected."""
 
-  def _GetPrefIsLockedError(self, pref, val):
+  def _GetPrefIsManagedError(self, pref, val):
     """Verify the managed preferences cannot be modified.
 
     Args:
@@ -24,7 +24,7 @@ class PolicyTest(policy_base.PolicyTestBase):
       val: Current value of the preference.
 
     Returns:
-      Error message if any, None if pref is successfully locked.
+      Error message if any, None if pref is successfully managed.
     """
     # Check if the current value of the preference is set as expected.
     if self.GetPrefsInfo().Prefs(pref) == None:
@@ -35,11 +35,13 @@ class PolicyTest(policy_base.PolicyTestBase):
     # If the preference is locked, this should throw an exception.
     try:
       self.SetPrefs(pref, val)
-    except pyauto_errors.JSONInterfaceError:
-      pass
+    except pyauto_errors.JSONInterfaceError, e:
+      if str(e) != 'pref is managed. cannot be changed.':
+        return str(e)
+      else:
+        return None
     else:
       return 'Preference can be set even though a policy is in effect.'
-    return None
 
   # TODO(frankf): Move tests dependending on this to plugins.py.
   def _GetPluginPID(self, plugin_name):
@@ -111,7 +113,7 @@ class PolicyTest(policy_base.PolicyTestBase):
       if not pref or self.GetPlatform() not in os:
         continue
       self.SetPolicies({policy: value})
-      error = self._GetPrefIsLockedError(getattr(pyauto, pref), value)
+      error = self._GetPrefIsManagedError(getattr(pyauto, pref), value)
       if error:
         fails.append('%s: %s' % (policy, error))
       total += 1
@@ -460,13 +462,14 @@ class PolicyTest(policy_base.PolicyTestBase):
     self.assertFalse(translate_info['page_translated'])
     self.assertTrue(translate_info['can_translate_page'])
     self.assertTrue('translate_bar' in translate_info)
-    self.assertFalse(self._GetPrefIsLockedError(pyauto.kEnableTranslate, True))
+    self.assertFalse(self._GetPrefIsManagedError(pyauto.kEnableTranslate, True))
     policy = {'TranslateEnabled': False}
     self.SetPolicies(policy)
     self.assertFalse(self.GetPrefsInfo().Prefs(pyauto.kEnableTranslate))
     self.NavigateToURL(url)
     self.assertFalse(self.WaitForInfobarCount(1))
-    self.assertFalse(self._GetPrefIsLockedError(pyauto.kEnableTranslate, False))
+    self.assertFalse(self._GetPrefIsManagedError(pyauto.kEnableTranslate,
+                                                 False))
 
   def testDefaultSearchProviderOptions(self):
     """Verify a default search is performed when using omnibox."""
@@ -486,7 +489,7 @@ class PolicyTest(policy_base.PolicyTestBase):
     }
     self.SetPolicies(policy)
     self.assertFalse(
-        self._GetPrefIsLockedError(pyauto.kDefaultSearchProviderEnabled, True))
+        self._GetPrefIsManagedError(pyauto.kDefaultSearchProviderEnabled, True))
     intranet_engine = [x for x in self.GetSearchEngineInfo()
                        if x['keyword'] == 'mis']
     self.assertTrue(intranet_engine)
@@ -500,7 +503,8 @@ class PolicyTest(policy_base.PolicyTestBase):
     }
     self.SetPolicies(policy)
     self.assertFalse(
-        self._GetPrefIsLockedError(pyauto.kDefaultSearchProviderEnabled, False))
+        self._GetPrefIsManagedError(pyauto.kDefaultSearchProviderEnabled,
+                                    False))
     self.SetOmniboxText('deli')
     self.WaitUntilOmniboxQueryDone()
     self.assertRaises(pyauto.JSONInterfaceError,
