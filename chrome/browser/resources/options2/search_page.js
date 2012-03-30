@@ -31,7 +31,6 @@ cr.define('options', function() {
       // While this isn't all that desirable, it's the only sure-fire way of
       // making sure the bubbles stay in the correct location as sections
       // may dynamically change size at any time.
-      var self = this;
       this.intervalId = setInterval(this.updatePosition.bind(this), 250);
     },
 
@@ -127,43 +126,13 @@ cr.define('options', function() {
       // Call base class implementation to start preference initialization.
       OptionsPage.prototype.initializePage.call(this);
 
-      var self = this;
-
-      var searchField = $('search-field');
-      this.searchField = searchField;
+      this.searchField = $('search-field');
 
       // Handle search events. (No need to throttle, WebKit's search field
       // will do that automatically.)
-      searchField.onsearch = function(e) {
-        self.setSearchText_(this.value);
-      };
-
-      // We update the history stack every time the search field blurs. This way
-      // we get a history entry for each search, roughly, but not each letter
-      // typed.
-      searchField.onblur = function(e) {
-        var query = SearchPage.canonicalizeQuery(searchField.value);
-        if (!query)
-          return;
-
-        // Don't push the same page onto the history stack more than once (if
-        // the user clicks in the search field and away several times).
-        var currentHash = location.hash;
-        var newHash = '#' + escape(query);
-        if (currentHash == newHash)
-          return;
-
-        // If there is no hash on the current URL, the history entry has no
-        // search query. Replace the history entry with no search with an entry
-        // that does have a search. Otherwise, add it onto the history stack.
-        var historyFunction = currentHash ? window.history.pushState :
-                                            window.history.replaceState;
-        historyFunction.call(
-            window.history,
-            {pageName: self.name},
-            self.title,
-            '/' + self.name + newHash);
-      };
+      this.searchField.onsearch = function(e) {
+        this.setSearchText_(e.currentTarget.value);
+      }.bind(this);
 
       // Install handler for key presses.
       document.addEventListener('keydown',
@@ -231,9 +200,6 @@ cr.define('options', function() {
           for (var i = 0, section; section = this.advancedSections_[i]; i++)
             $('settings').appendChild(section);
         }
-      } else {
-        // Just wipe out any active search text since it's no longer relevant.
-        this.searchField.value = '';
       }
 
       var pagesToSearch = this.getSearchablePages_();
@@ -295,13 +261,18 @@ cr.define('options', function() {
       // Cleanup the search query string.
       text = SearchPage.canonicalizeQuery(text);
 
+      // Set the hash on the current page, and the enclosing uber page
+      var hash = text ? '#' + encodeURIComponent(text) : '';
+      window.location.hash = hash;
+      uber.invokeMethodOnParent('setPath', {path: this.name + hash});
+
       // Toggle the search page if necessary.
-      if (text.length) {
+      if (text) {
         if (!this.searchActive_)
-          OptionsPage.navigateToPage(this.name);
+          OptionsPage.showPageByName(this.name, false);
       } else {
         if (this.searchActive_)
-          OptionsPage.showDefaultPage();
+          OptionsPage.showPageByName(OptionsPage.getDefaultPage().name, false);
 
         this.insideSetSearchText_ = false;
         return;
