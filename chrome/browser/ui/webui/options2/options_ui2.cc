@@ -59,6 +59,7 @@
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/system/pointer_device_observer.h"
 #include "chrome/browser/ui/webui/options2/chromeos/accounts_options_handler2.h"
 #include "chrome/browser/ui/webui/options2/chromeos/bluetooth_options_handler2.h"
 #include "chrome/browser/ui/webui/options2/chromeos/change_picture_options_handler2.h"
@@ -116,7 +117,7 @@ class OptionsUIHTMLSource : public ChromeURLDataManager::DataSource {
   virtual std::string GetMimeType(const std::string&) const;
 
  private:
-   // Localized strings collection.
+  // Localized strings collection.
   scoped_ptr<DictionaryValue> localized_strings_;
 
   DISALLOW_COPY_AND_ASSIGN(OptionsUIHTMLSource);
@@ -220,7 +221,10 @@ OptionsUI::OptionsUI(content::WebUI* web_ui)
   AddOptionsPageUIHandler(localized_strings, core_handler);
 
   AddOptionsPageUIHandler(localized_strings, new AutofillOptionsHandler());
-  AddOptionsPageUIHandler(localized_strings, new BrowserOptionsHandler());
+
+  BrowserOptionsHandler* browser_options_handler = new BrowserOptionsHandler();
+  AddOptionsPageUIHandler(localized_strings, browser_options_handler);
+
   AddOptionsPageUIHandler(localized_strings, new ClearBrowserDataHandler());
   AddOptionsPageUIHandler(localized_strings, new ContentSettingsHandler());
   AddOptionsPageUIHandler(localized_strings, new CookiesViewHandler());
@@ -257,8 +261,11 @@ OptionsUI::OptionsUI(content::WebUI* web_ui)
                           new chromeos::options2::LanguageMozcHandler());
   AddOptionsPageUIHandler(localized_strings,
                           new chromeos::options2::LanguagePinyinHandler());
-  AddOptionsPageUIHandler(localized_strings,
-                          new chromeos::options2::PointerHandler());
+
+  chromeos::options2::PointerHandler* pointer_handler =
+      new chromeos::options2::PointerHandler();
+  AddOptionsPageUIHandler(localized_strings, pointer_handler);
+
   AddOptionsPageUIHandler(
       localized_strings,
       new chromeos::options2::VirtualKeyboardManagerHandler());
@@ -297,14 +304,18 @@ OptionsUI::OptionsUI(content::WebUI* web_ui)
   chromeos::options2::UserImageSource* user_image_source =
       new chromeos::options2::UserImageSource();
   profile->GetChromeURLDataManager()->AddDataSource(user_image_source);
+
+  pointer_device_observer_.reset(
+      new chromeos::system::PointerDeviceObserver());
+  pointer_device_observer_->AddObserver(browser_options_handler);
+  pointer_device_observer_->AddObserver(pointer_handler);
 #endif
 }
 
 OptionsUI::~OptionsUI() {
-  // Uninitialize all registered handlers. The base class owns them and it will
-  // eventually delete them. Skip over the generic handler.
+  // Uninitialize all registered handlers. Deleted by WebUIImpl.
   for (size_t i = 0; i < handlers_.size(); ++i)
-   handlers_[i]->Uninitialize();
+    handlers_[i]->Uninitialize();
 }
 
 void OptionsUI::RenderViewCreated(RenderViewHost* render_view_host) {
@@ -370,6 +381,10 @@ void OptionsUI::InitializeHandlers() {
   // do various things like show/hide sections and send data to the Javascript.
   for (size_t i = 0; i < handlers_.size(); ++i)
     handlers_[i]->InitializePage();
+
+#if defined(OS_CHROMEOS)
+  pointer_device_observer_->Init();
+#endif
 }
 
 void OptionsUI::AddOptionsPageUIHandler(DictionaryValue* localized_strings,

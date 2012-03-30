@@ -18,9 +18,11 @@
 #include "chrome/browser/ui/webui/options2/options_ui2.h"
 #include "ui/base/models/table_model_observer.h"
 
-#if !defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/system/pointer_device_observer.h"
+#else
 #include "chrome/browser/prefs/pref_set_observer.h"
-#endif  // !defined(OS_CHROMEOS)
+#endif  // defined(OS_CHROMEOS)
 
 class AutocompleteController;
 class CloudPrintSetupHandler;
@@ -36,6 +38,9 @@ class BrowserOptionsHandler
       public ProfileSyncServiceObserver,
       public SelectFileDialog::Listener,
       public ShellIntegration::DefaultWebClientObserver,
+#if defined(OS_CHROMEOS)
+      public chromeos::system::PointerDeviceObserver::Observer,
+#endif
       public TemplateURLServiceObserver {
  public:
   BrowserOptionsHandler();
@@ -70,6 +75,12 @@ class BrowserOptionsHandler
 
   // CloudPrintSetupHandler::Delegate implementation.
   virtual void OnCloudPrintSetupClosed() OVERRIDE;
+
+#if defined(OS_CHROMEOS)
+  // PointerDeviceObserver::Observer implementation.
+  virtual void TouchpadExists(bool exists) OVERRIDE;
+  virtual void MouseExists(bool exists) OVERRIDE;
+#endif
 
   // Makes this the default browser. Called from WebUI.
   void BecomeDefaultBrowser(const base::ListValue* args);

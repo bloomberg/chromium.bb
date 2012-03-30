@@ -1179,6 +1179,49 @@ cr.define('options', function() {
     },
 
     /**
+     * Show/hide mouse settings slider.
+     * @private
+     */
+    showMouseControls_: function(show) {
+      $('mouse-settings').hidden = !show;
+      this.updatePointerSettingsText_();
+    },
+
+    /**
+     * Show/hide touchpad settings slider.
+     * @private
+     */
+    showTouchpadControls_: function(show) {
+      $('touchpad-settings').hidden = !show;
+      this.updatePointerSettingsText_();
+    },
+
+    /**
+    * Update pointer settings buttons text content to say mouse settings,
+    * touchpad settings or mouse/touchpad settings as appropriate.
+    * @private
+    */
+    updatePointerSettingsText_: function() {
+      $('pointer-settings-button').hidden = false;
+      if ($('touchpad-settings').hidden) {
+        if ($('mouse-settings').hidden) {
+          $('pointer-settings-button').hidden = true;
+        } else {
+          $('pointer-settings-button').textContent =
+              localStrings.getString('mouseSettingsButtonTitle');
+        }
+      } else {
+        if ($('mouse-settings').hidden) {
+          $('pointer-settings-button').textContent =
+              localStrings.getString('touchpadSettingsButtonTitle');
+        } else {
+          $('pointer-settings-button').textContent =
+              localStrings.getString('touchpadMouseSettingsButtonTitle');
+        }
+      }
+    },
+
+    /**
      * Activate the bluetooth settings section on the System settings page.
      * @private
      */
@@ -1301,6 +1344,8 @@ cr.define('options', function() {
     'setupProxySettingsSection',
     'setVirtualKeyboardCheckboxState',
     'showBluetoothSettings',
+    'showMouseControls',
+    'showTouchpadControls',
     'updateAccountPicture',
     'updateAutoLaunchState',
     'updateDefaultBrowserState',

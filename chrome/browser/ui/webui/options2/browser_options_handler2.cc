@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/options2/browser_options_handler2.h"
 
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/bind.h"
@@ -277,13 +278,19 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
     { "datetimeTitle", IDS_OPTIONS_SETTINGS_SECTION_TITLE_DATETIME },
     { "deviceGroupDescription", IDS_OPTIONS_DEVICE_GROUP_DESCRIPTION },
     { "deviceGroupPointer", IDS_OPTIONS2_DEVICE_GROUP_POINTER_SECTION },
+    { "mouseSpeed", IDS_OPTIONS2_SETTINGS_MOUSE_SPEED_DESCRIPTION },
+    { "touchpadSpeed", IDS_OPTIONS2_SETTINGS_TOUCHPAD_SPEED_DESCRIPTION },
     { "enableScreenlock", IDS_OPTIONS_ENABLE_SCREENLOCKER_CHECKBOX },
     { "internetOptionsButtonTitle", IDS_OPTIONS_INTERNET_OPTIONS_BUTTON_TITLE },
     { "keyboardSettingsButtonTitle",
       IDS_OPTIONS2_DEVICE_GROUP_KEYBOARD_SETTINGS_BUTTON_TITLE },
     { "manageAccountsButtonTitle", IDS_OPTIONS_ACCOUNTS_BUTTON_TITLE },
-    { "pointerSettingsButtonTitle",
-      IDS_OPTIONS2_DEVICE_GROUP_POINTER_SETTINGS_BUTTON_TITLE },
+    { "touchpadSettingsButtonTitle",
+        IDS_OPTIONS_POINTER_TOUCHPAD_OVERLAY_TITLE },
+    { "mouseSettingsButtonTitle",
+        IDS_OPTIONS_POINTER_MOUSE_OVERLAY_TITLE },
+    { "touchpadMouseSettingsButtonTitle",
+        IDS_OPTIONS_POINTER_TOUCHPAD_MOUSE_OVERLAY_TITLE },
     { "sectionTitleDevice", IDS_OPTIONS_DEVICE_GROUP_NAME },
     { "sectionTitleInternet", IDS_OPTIONS_INTERNET_OPTIONS_GROUP_LABEL },
     { "syncOverview", IDS_SYNC_OVERVIEW },
@@ -1050,6 +1057,18 @@ void BrowserOptionsHandler::OnCloudPrintSetupClosed() {
     SetupCloudPrintConnectorSection();
 #endif
 }
+
+#if defined(OS_CHROMEOS)
+void BrowserOptionsHandler::TouchpadExists(bool exists) {
+  base::FundamentalValue val(exists);
+  web_ui()->CallJavascriptFunction("BrowserOptions.showTouchpadControls", val);
+}
+
+void BrowserOptionsHandler::MouseExists(bool exists) {
+  base::FundamentalValue val(exists);
+  web_ui()->CallJavascriptFunction("BrowserOptions.showMouseControls", val);
+}
+#endif
 
 void BrowserOptionsHandler::HandleAutoOpenButton(const ListValue* args) {
   content::RecordAction(UserMetricsAction("Options_ResetAutoOpenFiles"));

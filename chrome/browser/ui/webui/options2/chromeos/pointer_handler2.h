@@ -8,37 +8,28 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/device_hierarchy_observer.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/ui/webui/options2/options_ui2.h"
+#include "chrome/browser/chromeos/system/pointer_device_observer.h"
 
 namespace chromeos {
 namespace options2 {
 
 // Pointer settings overlay page UI handler.
-class PointerHandler : public ::options2::OptionsPageUIHandler,
-                       public chromeos::DeviceHierarchyObserver,
-                       public base::SupportsWeakPtr<PointerHandler> {
+class PointerHandler
+    : public ::options2::OptionsPageUIHandler,
+      public chromeos::system::PointerDeviceObserver::Observer {
  public:
   PointerHandler();
   virtual ~PointerHandler();
 
   // OptionsPageUIHandler implementation.
   virtual void GetLocalizedValues(DictionaryValue* localized_strings) OVERRIDE;
-  virtual void InitializeHandler() OVERRIDE;
-  virtual void InitializePage() OVERRIDE;
-
-  // DeviceHierarchyObserver implementation.
-  virtual void DeviceHierarchyChanged() OVERRIDE;
 
  private:
-  // Check for input devices.
-  void CheckTouchpadExists();
-  void CheckMouseExists();
-
-  // Callback for input device checks.
-  void TouchpadExists(bool* exists);
-  void MouseExists(bool* exists);
+  // PointerDeviceObserver implementation.
+  virtual void TouchpadExists(bool exists) OVERRIDE;
+  virtual void MouseExists(bool exists) OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(PointerHandler);
 };

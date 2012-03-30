@@ -20,6 +20,14 @@
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
+#if defined(OS_CHROMEOS)
+namespace chromeos {
+namespace system {
+class PointerDeviceObserver;
+}  // namespace system
+}  // namespace chromeos
+#endif
+
 namespace options2 {
 
 // The base class handler of Javascript messages of options pages.
@@ -126,6 +134,11 @@ class OptionsUI : public content::WebUIController,
   bool initialized_handlers_;
 
   std::vector<OptionsPageUIHandler*> handlers_;
+
+#if defined(OS_CHROMEOS)
+  scoped_ptr<chromeos::system::PointerDeviceObserver>
+      pointer_device_observer_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(OptionsUI);
 };

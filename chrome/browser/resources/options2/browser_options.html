@@ -85,14 +85,19 @@
     <h3 i18n-content="sectionTitleDevice"></h3>
     <div>
       <span i18n-content="deviceGroupDescription"></span>
-      <div class="settings-row">
-        <span class="option-name" i18n-content="deviceGroupPointer"></span>
+      <div id="touchpad-settings" class="settings-row" hidden>
+        <span class="option-name" i18n-content="touchpadSpeed"></span>
         <input id="sensitivity-range" type="range" min="1" max="5"
             pref="settings.touchpad.sensitivity2" class="touch-slider">
       </div>
+      <div id="mouse-settings" class="settings-row" hidden>
+        <span class="option-name" i18n-content="mouseSpeed"></span>
+        <input id="sensitivity-range" type="range" min="1" max="5"
+            pref="settings.mouse.sensitivity2" class="touch-slider">
+      </div>
       <div class="settings-row">
         <button id="pointer-settings-button"
-            i18n-content="pointerSettingsButtonTitle">
+            i18n-content="touchpadMouseSettingsButtonTitle">
         </button>
         <button id="keyboard-settings-button"
             i18n-content="keyboardSettingsButtonTitle">
