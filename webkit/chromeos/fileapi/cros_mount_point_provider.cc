@@ -4,6 +4,7 @@
 
 #include "webkit/chromeos/fileapi/cros_mount_point_provider.h"
 
+#include "base/chromeos/chromeos_version.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
@@ -26,21 +27,10 @@ namespace {
 
 const char kChromeUIScheme[] = "chrome";
 
-// Copied from chrome/browser/chromeos/system/runtime_environment.h
-// TODO(satorux): oshima is now moving the function to 'base/chromeos'.
-// Use the one in 'base/chromeos' once it's done.
-bool IsRunningOnChromeOS() {
-  // Check if the user name is chronos. Note that we don't go with
-  // getuid() + getpwuid_r() as it may end up reading /etc/passwd, which
-  // can be expensive.
-  const char* user = getenv("USER");
-  return user && strcmp(user, "chronos") == 0;
-}
-
 // Returns the home directory path, or an empty string if the home directory
 // is not found.
 std::string GetHomeDirectory() {
-  if (IsRunningOnChromeOS())
+  if (base::chromeos::IsRunningOnChromeOS())
     return "/home/chronos/user";
 
   const char* home = getenv("HOME");
