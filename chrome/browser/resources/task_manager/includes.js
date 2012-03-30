@@ -18,12 +18,10 @@ var script = [
   'local_strings.js',
   'i18n_template.js',
 
-  'event_tracker.js',
   'util.js',
   'cr.js',
   'cr/ui.js',
   'cr/event_target.js',
-  'cr/ui/touch_handler.js',
   'cr/ui/array_data_model.js',
   'cr/ui/list_item.js',
   'cr/ui/list_selection_model.js',

@@ -67,86 +67,75 @@ cr.define('cr.ui', function() {
      * Initializes the element.
      */
     decorate: function() {
-      this.eventTracker_ = new EventTracker();
-      this.touchHandler_ = new cr.ui.TouchHandler(this);
-      this.eventTracker_.add(this, cr.ui.TouchHandler.EventType.TOUCH_START,
-                             this.handleTouchHandlerTouchStart_.bind(this),
-                             true);
-      this.eventTracker_.add(this, cr.ui.TouchHandler.EventType.DRAG_START,
-                             this.handleTouchHandlerDragStart_.bind(this),
-                             true);
-      // We use TouchHandler to generate events for mouse input as well.
-      this.touchHandler_.enable(/* opt_capture */ true, /* opt_mouse */ true);
+      this.addEventListener('mousedown', this.handleMouseDown_.bind(this),
+                            true);
     },
 
     /**
-     * Handles the TouchHandler generated TOUCH_START event which starts the
-     * dragging of the splitter.
-     * @param {!Event} e The TouchHandler generated TOUCH_START event.
-     * @private
+     * Starts the dragging of the splitter. Adds listeners for mouse move and
+     * mouse up events and calls splitter drag start handler.
+     * @param {!Event} e The mouse event that started the drag.
      */
-    handleTouchHandlerTouchStart_: function(e) {
-      // Default action is to start selection and to move focus.
-      e.preventDefault();
-      e.enableDrag = true;
-    },
+    startDrag: function(e) {
+      if (!this.boundHandleMouseMove_) {
+        this.boundHandleMouseMove_ = this.handleMouseMove_.bind(this);
+        this.boundHandleMouseUp_ = this.handleMouseUp_.bind(this);
+      }
 
-    /**
-     * Starts the dragging of the splitter. Adds listeners for TouchHandler
-     * generated DRAG_MOVE and TOUCH_END events and calls splitter drag start
-     * handler.
-     * @param {!Event} e The TouchHandler generated DRAG_START event that
-     *     started the drag.
-     */
-    handleTouchHandlerDragStart_: function(e) {
       var doc = this.ownerDocument;
 
-      this.eventTracker_.add(this, cr.ui.TouchHandler.EventType.DRAG_MOVE,
-                             this.handleTouchHandlerDragMove_.bind(this),
-                             true);
-      this.eventTracker_.add(this, cr.ui.TouchHandler.EventType.TOUCH_END,
-                             this.handleTouchHandlerDragEnd_.bind(this),
-                             true);
-      this.eventTracker_.remove(this, cr.ui.TouchHandler.EventType.TOUCH_START);
-      this.eventTracker_.remove(this, cr.ui.TouchHandler.EventType.DRAG_START);
+      // Use capturing events on the document to get events when the mouse
+      // leaves the document.
+      doc.addEventListener('mousemove',this.boundHandleMouseMove_, true);
+      doc.addEventListener('mouseup', this.boundHandleMouseUp_, true);
 
       this.startX_ = e.clientX;
       this.handleSplitterDragStart();
     },
 
     /**
-     * Handles the TouchHandler generated DRAG_MOVE event which moves the
-     * splitter as the user moves the mouse or finger. Calls splitter drag
-     * move handler.
-     * @param {!Event} e The TouchHandler generated DRAG_MOVE event.
+     * Ends the dragging of the splitter. Removes listeners set in startDrag
+     * and calls splitter drag end handler.
+     */
+    endDrag: function() {
+      var doc = this.ownerDocument;
+      doc.removeEventListener('mousemove', this.boundHandleMouseMove_, true);
+      doc.removeEventListener('mouseup', this.boundHandleMouseUp_, true);
+      this.handleSplitterDragEnd();
+    },
+
+    /**
+     * Handles the mousedown event which starts the dragging of the splitter.
+     * @param {!Event} e The mouse event.
      * @private
      */
-    handleTouchHandlerDragMove_: function(e) {
-      var rtl = this.ownerDocument.defaultView.getComputedStyle(this)
-          .direction == 'rtl';
+    handleMouseDown_: function(e) {
+      this.startDrag(e);
+      // Default action is to start selection and to move focus.
+      e.preventDefault();
+    },
+
+    /**
+     * Handles the mousemove event which moves the splitter as the user moves
+     * the mouse. Calls splitter drag move handler.
+     * @param {!Event} e The mouse event.
+     * @private
+     */
+    handleMouseMove_: function(e) {
+      var rtl = this.ownerDocument.defaultView.getComputedStyle(this).
+          direction == 'rtl';
       var dirMultiplier = rtl ? -1 : 1;
       var deltaX = dirMultiplier * (e.clientX - this.startX_);
       this.handleSplitterDragMove(deltaX);
     },
 
     /**
-     * Handles the TouchHandler generated DRAG_END event which ends the
-     * dragging of the splitter.
-     * @param {!Event} e The TouchHandler generated DRAG_END event.
+     * Handles the mouse up event which ends the dragging of the splitter.
+     * @param {!Event} e The mouse event.
      * @private
      */
-    handleTouchHandlerDragEnd_: function(e) {
-      // Default action is to start selection and to move focus.
-      e.preventDefault();
-      this.eventTracker_.remove(this, cr.ui.TouchHandler.EventType.DRAG_MOVE);
-      this.eventTracker_.remove(this, cr.ui.TouchHandler.EventType.TOUCH_END);
-      this.eventTracker_.add(this, cr.ui.TouchHandler.EventType.TOUCH_START,
-                             this.handleTouchHandlerTouchStart_.bind(this),
-                             true);
-      this.eventTracker_.add(this, cr.ui.TouchHandler.EventType.DRAG_START,
-                             this.handleTouchHandlerDragStart_.bind(this),
-                             true);
-      this.handleSplitterDragEnd();
+    handleMouseUp_: function(e) {
+      this.endDrag();
     },
 
     /**
@@ -186,7 +175,7 @@ cr.define('cr.ui', function() {
           doc.defaultView.getComputedStyle(leftComponent).width);
       if (this.startWidth_ != computedWidth)
         cr.dispatchSimpleEvent(this, 'resize');
-    }
+    },
   };
 
   return {
