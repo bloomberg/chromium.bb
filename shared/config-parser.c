@@ -78,6 +78,8 @@ handle_key(const struct config_key *key, const char *value)
 		assert(0);
 		break;
 	}
+
+	return -1;
 }
 
 int
