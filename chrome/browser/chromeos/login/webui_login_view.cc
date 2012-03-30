@@ -257,6 +257,13 @@ void WebUILoginView::ChildPreferredSizeChanged(View* child) {
   SchedulePaint();
 }
 
+void WebUILoginView::AboutToRequestFocusFromTabTraversal(bool reverse) {
+  // Return the focus to the web contents.
+  webui_login_->dom_contents()->web_contents()->
+      FocusThroughTabTraversal(reverse);
+  GetWidget()->Activate();
+}
+
 // Overridden from StatusAreaButton::Delegate:
 
 bool WebUILoginView::ShouldExecuteStatusAreaCommand(

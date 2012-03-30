@@ -92,6 +92,7 @@ class WebUILoginView : public views::WidgetDelegateView,
   virtual void Layout() OVERRIDE;
   virtual void OnLocaleChanged() OVERRIDE;
   virtual void ChildPreferredSizeChanged(View* child) OVERRIDE;
+  virtual void AboutToRequestFocusFromTabTraversal(bool reverse) OVERRIDE;
 
   // Overridden from StatusAreaButton::Delegate:
   virtual bool ShouldExecuteStatusAreaCommand(

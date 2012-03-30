@@ -613,8 +613,8 @@ void SystemTray::OnMouseExited(const views::MouseEvent& event) {
 
 void SystemTray::AboutToRequestFocusFromTabTraversal(bool reverse) {
   views::View* v = GetNextFocusableView();
-  if (v && v->GetWidget())
-    v->GetWidget()->Activate();
+  if (v)
+    v->AboutToRequestFocusFromTabTraversal(reverse);
 }
 
 void SystemTray::GetAccessibleState(ui::AccessibleViewState* state) {

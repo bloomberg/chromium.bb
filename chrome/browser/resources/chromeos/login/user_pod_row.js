@@ -145,6 +145,12 @@ cr.define('login', function() {
      * @private
      */
     handlePasswordKeyPress_: function(e) {
+      // When tabbing from the system tray a tab key press is received. Suppress
+      // this so as not to type a tab character into the password field.
+      if (e.keyCode == 9) {
+        e.preventDefault();
+        return;
+      }
       this.passwordEmpty = false;
     },
 
