@@ -39,7 +39,7 @@ select {
   /* Without this rule, chromeos button text is too high on the button. */
   padding-top: 3px;
 </if>
-<if expr="is_macosx or is_win">
+<if expr="is_win">
   /* The following platform-specific rule is necessary to get adjacent
    * buttons, text inputs, and so forth to align on their borders while also
    * aligning on the text's baselines. */
@@ -101,7 +101,7 @@ input:not([type]) {
   height: 2em;
   margin: 0;
   padding: 3px;
-<if expr="is_win">
+<if expr="is_win or is_macosx">
   /* For better alignment between adjacent buttons and inputs. */
   padding-bottom: 4px;
 </if>
