@@ -107,7 +107,6 @@ class MsvsSettings(object):
 
   def __init__(self, spec):
     self.spec = spec
-    self.configname = None
 
     supported_fields = [
         'msvs_configuration_attributes',
@@ -158,15 +157,17 @@ class MsvsSettings(object):
       return self.parent._GetAndMunge(self.field, self.base_path + [name],
           default=None, prefix=prefix, append=self.append, map=map)
 
-  def Setting(self, path, default=None, prefix='', append=None, map=None):
+  def _Setting(self, path, config,
+              default=None, prefix='', append=None, map=None):
     """_GetAndMunge for msvs_settings."""
     return self._GetAndMunge(
-        self.msvs_settings[self.configname], path, default, prefix, append, map)
+        self.msvs_settings[config], path, default, prefix, append, map)
 
-  def ConfigAttrib(self, path, default=None, prefix='', append=None, map=None):
+  def _ConfigAttrib(self, path, config,
+                   default=None, prefix='', append=None, map=None):
     """_GetAndMunge for msvs_configuration_attributes."""
     return self._GetAndMunge(
-        self.msvs_configuration_attributes[self.configname],
+        self.msvs_configuration_attributes[config],
         path, default, prefix, append, map)
 
   def GetSystemIncludes(self, config):
@@ -178,15 +179,13 @@ class MsvsSettings(object):
   def GetComputedDefines(self, config):
     """Returns the set of defines that are injected to the defines list based
     on other VS settings."""
-    self.configname = config
     defines = []
-    if self.ConfigAttrib(['CharacterSet']) == '1':
+    if self._ConfigAttrib(['CharacterSet'], config) == '1':
       defines.extend(('_UNICODE', 'UNICODE'))
-    if self.ConfigAttrib(['CharacterSet']) == '2':
+    if self._ConfigAttrib(['CharacterSet'], config) == '2':
       defines.append('_MBCS')
-    defines.extend(self.Setting(('VCCLCompilerTool', 'PreprocessorDefinitions'),
-                                default=[]))
-    self.configname = None
+    defines.extend(self._Setting(
+        ('VCCLCompilerTool', 'PreprocessorDefinitions'), config, default=[]))
     return defines
 
   def GetCflags(self, config):
@@ -226,15 +225,13 @@ class MsvsSettings(object):
   def GetLibFlags(self, config, spec):
     """Returns the flags that need to be added to lib commands."""
     libflags = []
-    self.configname = config
     lib = self._GetWrapper(self, self.msvs_settings[config],
                           'VCLibrarianTool', append=libflags)
-    libpaths = self.Setting(('VCLibrarianTool', 'AdditionalLibraryDirectories'),
-                            default=[])
+    libpaths = self._Setting(
+        ('VCLibrarianTool', 'AdditionalLibraryDirectories'), config, default=[])
     libpaths = [os.path.normpath(self._ConvertVSMacros(p)) for p in libpaths]
     libflags.extend(['/LIBPATH:"' + p + '"' for p in libpaths])
     lib('AdditionalOptions')
-    self.configname = None
     return libflags
 
   def GetLdflags(self, config, product_dir, gyp_to_build_path):
