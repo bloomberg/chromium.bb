@@ -31,7 +31,7 @@ if (env.Bit('nacl_static_link') and
     exe_list.append('dynamic_modify_browser_test')
 
 
-def AddTest(env, test_name, exe_list):
+def AddTest(env, test_name, exe_list, parallel=False):
   test_files = [env.File('${STAGING_DIR}/%s${PROGSUFFIX}'
                          % env.ProgramNameForNmf(exe_name))
                 for exe_name in exe_list]
@@ -54,7 +54,8 @@ def AddTest(env, test_name, exe_list):
       '%s.out' % test_name, url='test_runner.html',
       nmf_names=exe_list,
       files=[env.File('test_runner.html')] + test_files,
-      map_files=[('nmf_test_list.js', nmf_list_js)])
+      map_files=[('nmf_test_list.js', nmf_list_js)],
+      test_args=[('parallel', int(parallel))])
 
   # Disabled on Valgrind because of multiple nexes.
   # TODO(eugenis): enable when Valgrind learns to autodetect the nexe name
@@ -64,7 +65,8 @@ def AddTest(env, test_name, exe_list):
                                    not env.Bit('irt'))
 
 
-AddTest(env, 'run_inbrowser_test_runner', exe_list)
+AddTest(env, 'run_inbrowser_test_runner', exe_list, parallel=False)
+AddTest(env, 'run_inbrowser_test_runner_parallel', exe_list, parallel=True)
 
 # "exception_test" is added as a separate test so that it can be
 # separately enabled or disabled from the Chromium side.

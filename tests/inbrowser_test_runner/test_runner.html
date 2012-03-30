@@ -40,9 +40,14 @@ function addTest(tester, url) {
     var div = document.createElement('div');
     div.appendChild(embed);
 
+    var cleanup = function() {
+      document.getElementById('scratch_space').removeChild(div);
+    };
+
     // Set up an event listener for success messages.
     div.addEventListener('message', function(message_event) {
       status.assertEqual(message_event.data, 'passed');
+      cleanup();
       status.pass();
     }, true);
 
@@ -54,10 +59,12 @@ function addTest(tester, url) {
     }), true);
 
     div.addEventListener('error', status.wrap(function(e) {
+      cleanup();
       status.fail(embed.lastError);
     }), true);
 
     div.addEventListener('crash', status.wrap(function(e) {
+      cleanup();
       status.fail(embed.lastError);
     }), true);
 
@@ -73,7 +80,14 @@ var tester = new Tester();
 for (var i = 0; i < G_NMF_TEST_LIST.length; i++) {
   addTest(tester, G_NMF_TEST_LIST[i]);
 }
-tester.runParallel();
+
+var args = getTestArguments({'parallel': '0'});
+
+if (parseInt(args['parallel'])) {
+  tester.runParallel();
+} else {
+  tester.run();
+}
 
 </script>
 </body>
