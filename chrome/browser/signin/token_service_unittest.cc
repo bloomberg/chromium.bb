@@ -138,8 +138,6 @@ class TokenServiceTest : public TokenServiceTestHarness {
 };
 
 TEST_F(TokenServiceTest, SanityCheck) {
-  EXPECT_TRUE(service_->HasLsid());
-  EXPECT_EQ(service_->GetLsid(), "lsid");
   EXPECT_FALSE(service_->HasTokenForService("nonexistent service"));
   EXPECT_FALSE(service_->TokensLoadedFromDB());
 }
@@ -258,11 +256,9 @@ TEST_F(TokenServiceTest, Reset) {
 
   service_->ResetCredentialsInMemory();
   EXPECT_FALSE(service_->HasTokenForService(GaiaConstants::kSyncService));
-  EXPECT_FALSE(service_->HasLsid());
 
   // Now start using it again.
   service_->UpdateCredentials(credentials_);
-  EXPECT_TRUE(service_->HasLsid());
   service_->StartFetchingTokens();
 
   service_->OnIssueAuthTokenSuccess(GaiaConstants::kSyncService, "token");
@@ -363,7 +359,6 @@ TEST_F(TokenServiceTest, WebDBLoadIntegration) {
 
   EXPECT_EQ(1U, success_tracker_.size());
   EXPECT_TRUE(service_->HasTokenForService(GaiaConstants::kSyncService));
-  EXPECT_TRUE(service_->HasLsid());
 }
 
 TEST_F(TokenServiceTest, MultipleLoadResetIntegration) {
@@ -372,7 +367,6 @@ TEST_F(TokenServiceTest, MultipleLoadResetIntegration) {
   service_->ResetCredentialsInMemory();
   success_tracker_.Reset();
   EXPECT_FALSE(service_->HasTokenForService(GaiaConstants::kSyncService));
-  EXPECT_FALSE(service_->HasLsid());
 
   EXPECT_FALSE(service_->TokensLoadedFromDB());
   service_->LoadTokensFromDB();
@@ -385,7 +379,6 @@ TEST_F(TokenServiceTest, MultipleLoadResetIntegration) {
 
   EXPECT_EQ(1U, success_tracker_.size());
   EXPECT_TRUE(service_->HasTokenForService(GaiaConstants::kSyncService));
-  EXPECT_TRUE(service_->HasLsid());
 
   // Reset it one more time so there's no surprises.
   service_->ResetCredentialsInMemory();
@@ -398,7 +391,6 @@ TEST_F(TokenServiceTest, MultipleLoadResetIntegration) {
 
   EXPECT_EQ(1U, success_tracker_.size());
   EXPECT_TRUE(service_->HasTokenForService(GaiaConstants::kSyncService));
-  EXPECT_TRUE(service_->HasLsid());
 }
 
 #ifndef NDEBUG

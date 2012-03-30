@@ -154,14 +154,6 @@ bool TokenService::AreCredentialsValid() const {
   return !credentials_.lsid.empty() && !credentials_.sid.empty();
 }
 
-bool TokenService::HasLsid() const {
-  return !credentials_.lsid.empty();
-}
-
-const std::string& TokenService::GetLsid() const {
-  return credentials_.lsid;
-}
-
 void TokenService::StartFetchingTokens() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(AreCredentialsValid());
