@@ -3222,12 +3222,6 @@
    fun:_ZN7fileapi18FileWriterDelegate14OnDataReceivedEi
 }
 {
-   bug_80458_b
-   Memcheck:Uninitialized
-   fun:_ZN22ThumbnailGeneratorTest18ClassifyFirstPixelERK8SkBitmap
-   fun:_ZN47ThumbnailGeneratorTest_DiscardBackingStore_Test8TestBodyEv
-}
-{
    bug_80462_a
    Memcheck:Leak
    fun:malloc
