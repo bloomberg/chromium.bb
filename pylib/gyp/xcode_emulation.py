@@ -447,41 +447,49 @@ class XcodeSettings(object):
     if not install_name and install_base:
       install_name = default_install_name
 
-    if install_name:
-      # Hardcode support for the variables used in chromium for now, to unblock
-      # people using the make build.
-      if '$' in install_name:
-        assert install_name in ('$(DYLIB_INSTALL_NAME_BASE:standardizepath)/'
-            '$(WRAPPER_NAME)/$(PRODUCT_NAME)', default_install_name), (
-            'Variables in LD_DYLIB_INSTALL_NAME are not generally supported yet'
-            ' in target \'%s\' (got \'%s\')' %
-                (self.spec['target_name'], install_name))
-        # I'm not quite sure what :standardizepath does. Just call normpath(),
-        # but don't let @executable_path/../foo collapse to foo.
-        if '/' in install_base:
-          prefix, rest = '', install_base
-          if install_base.startswith('@'):
-            prefix, rest = install_base.split('/', 1)
-          rest = os.path.normpath(rest)  # :standardizepath
-          install_base = os.path.join(prefix, rest)
+    if self.spec['type'] == 'shared_library':
+      if install_name:
+        # Hardcode support for the variables used in chromium for now, to
+        # unblock people using the make build.
+        if '$' in install_name:
+          assert install_name in ('$(DYLIB_INSTALL_NAME_BASE:standardizepath)/'
+              '$(WRAPPER_NAME)/$(PRODUCT_NAME)', default_install_name), (
+              'Variables in LD_DYLIB_INSTALL_NAME are not generally supported '
+              'yet in target \'%s\' (got \'%s\')' %
+                  (self.spec['target_name'], install_name))
+          # I'm not quite sure what :standardizepath does. Just call normpath(),
+          # but don't let @executable_path/../foo collapse to foo.
+          if '/' in install_base:
+            prefix, rest = '', install_base
+            if install_base.startswith('@'):
+              prefix, rest = install_base.split('/', 1)
+            rest = os.path.normpath(rest)  # :standardizepath
+            install_base = os.path.join(prefix, rest)
 
-        install_name = install_name.replace(
-            '$(DYLIB_INSTALL_NAME_BASE:standardizepath)', install_base)
+          install_name = install_name.replace(
+              '$(DYLIB_INSTALL_NAME_BASE:standardizepath)', install_base)
+          if self._IsBundle():
+            # These are only valid for bundles, hence the |if|.
+            install_name = install_name.replace(
+                '$(WRAPPER_NAME)', self.GetWrapperName())
+            install_name = install_name.replace(
+                '$(PRODUCT_NAME)', self.GetProductName())
+          else:
+            assert '$(WRAPPER_NAME)' not in install_name
+            assert '$(PRODUCT_NAME)' not in install_name
+
+          install_name = install_name.replace(
+              '$(EXECUTABLE_PATH)', self.GetExecutablePath())
+      else:
         if self._IsBundle():
-          # These are only valid for bundles, hence the |if|.
-          install_name = install_name.replace(
-              '$(WRAPPER_NAME)', self.GetWrapperName())
-          install_name = install_name.replace(
-              '$(PRODUCT_NAME)', self.GetProductName())
+          folder = '/Library/Frameworks'
         else:
-          assert '$(WRAPPER_NAME)' not in install_name
-          assert '$(PRODUCT_NAME)' not in install_name
+          folder = '/usr/local/lib'
+        install_name = os.path.join(folder, self.GetExecutablePath())
 
-        install_name = install_name.replace(
-            '$(EXECUTABLE_PATH)', self.GetExecutablePath())
-
-      install_name = install_name.replace(' ', r'\ ')
-      ldflags.append('-install_name ' + install_name)
+      if install_name:
+        install_name = install_name.replace(' ', r'\ ')
+        ldflags.append('-install_name ' + install_name)
 
     self.configname = None
     return ldflags

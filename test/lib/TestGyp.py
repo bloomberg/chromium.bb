@@ -373,7 +373,13 @@ class TestGypMake(TestGypBase):
     configuration = self.configuration_dirname()
     libdir = os.path.join('out', configuration, 'lib')
     # TODO(piman): when everything is cross-compile safe, remove lib.target
-    os.environ['LD_LIBRARY_PATH'] = libdir + '.host:' + libdir + '.target'
+    if sys.platform == 'darwin':
+      # Mac puts target shared libraries right in the product directory.
+      configuration = self.configuration_dirname()
+      os.environ['DYLD_LIBRARY_PATH'] = (
+          libdir + '.host:' + os.path.join('out', configuration))
+    else:
+      os.environ['LD_LIBRARY_PATH'] = libdir + '.host:' + libdir + '.target'
     # Enclosing the name in a list avoids prepending the original dir.
     program = [self.built_file_path(name, type=self.EXECUTABLE, **kw)]
     return self.run(program=program, *args, **kw)
@@ -532,10 +538,8 @@ class TestGypNinja(TestGypOnMSToolchain):
     # Enclosing the name in a list avoids prepending the original dir.
     program = [self.built_file_path(name, type=self.EXECUTABLE, **kw)]
     if sys.platform == 'darwin':
-      libdir = os.path.join('out', 'Default')
-      if self.configuration:
-        libdir = os.path.join('out', self.configuration)
-      os.environ['DYLD_LIBRARY_PATH'] = libdir
+      configuration = self.configuration_dirname()
+      os.environ['DYLD_LIBRARY_PATH'] = os.path.join('out', configuration)
     return self.run(program=program, *args, **kw)
 
   def built_file_path(self, name, type=None, **kw):
