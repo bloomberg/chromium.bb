@@ -208,8 +208,13 @@ bool DaemonControllerMac::RunToolScriptAsRoot(const char* command) {
     return false;
   }
 
-  // TODO(lambroslambrou): Check permissions and ownership of tool script, and
-  // use sandbox-exec to minimize exposure - http://crbug.com/120903
+  if (!file_util::VerifyPathControlledByAdmin(FilePath(kStartStopTool))) {
+    LOG(ERROR) << "Security check failed for: " << kStartStopTool;
+    return false;
+  }
+
+  // TODO(lambroslambrou): Use sandbox-exec to minimize exposure -
+  // http://crbug.com/120903
   const char* arguments[] = { command, NULL };
   int exit_status;
   OSStatus status = base::mac::ExecuteWithPrivilegesAndWait(
