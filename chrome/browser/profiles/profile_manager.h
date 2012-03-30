@@ -33,7 +33,6 @@ class NewProfileLauncher;
 class ProfileInfoCache;
 
 class ProfileManager : public base::NonThreadSafe,
-                       public BrowserList::Observer,
                        public content::NotificationObserver,
                        public Profile::Delegate {
  public:
@@ -117,11 +116,6 @@ class ProfileManager : public base::NonThreadSafe,
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
-
-  // BrowserList::Observer implementation.
-  virtual void OnBrowserAdded(const Browser* browser) OVERRIDE;
-  virtual void OnBrowserRemoved(const Browser* browser) OVERRIDE;
-  virtual void OnBrowserSetLastActive(const Browser* browser) OVERRIDE;
 
   // Indicate that an import process will run for the next created Profile.
   void SetWillImport();
@@ -315,6 +309,25 @@ class ProfileManager : public base::NonThreadSafe,
   // observing the ProfileInfoCache.
   scoped_ptr<ProfileShortcutManagerWin> profile_shortcut_manager_;
 #endif
+
+#if !defined(OS_ANDROID)
+  class BrowserListObserver : public BrowserList::Observer {
+   public:
+    explicit BrowserListObserver(ProfileManager* manager);
+    virtual ~BrowserListObserver();
+
+    // BrowserList::Observer implementation.
+    virtual void OnBrowserAdded(const Browser* browser) OVERRIDE;
+    virtual void OnBrowserRemoved(const Browser* browser) OVERRIDE;
+    virtual void OnBrowserSetLastActive(const Browser* browser) OVERRIDE;
+
+   private:
+    ProfileManager* profile_manager_;
+    DISALLOW_COPY_AND_ASSIGN(BrowserListObserver);
+  };
+
+  BrowserListObserver browser_list_observer_;
+#endif  // !defined(OS_ANDROID)
 
   // For keeping track of the last active profiles.
   std::map<Profile*, int> browser_counts_;
