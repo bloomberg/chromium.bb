@@ -54,7 +54,6 @@ void WrenchMenuModel::Build() {
   AddItem(IDC_VIEW_BACKGROUND_PAGES,
       l10n_util::GetStringFUTF16(IDS_VIEW_BACKGROUND_PAGES,
           num_background_pages));
-  AddItem(IDC_UPGRADE_DIALOG, l10n_util::GetStringUTF16(IDS_UPDATE_NOW));
   AddItem(IDC_VIEW_INCOMPATIBILITIES,
       l10n_util::GetStringUTF16(IDS_VIEW_INCOMPATIBILITIES));
 

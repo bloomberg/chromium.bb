@@ -149,7 +149,7 @@ class ToolbarView : public views::AccessiblePaneView,
 
  private:
   // Returns true if we should show the upgrade recommended dot.
-  bool IsUpgradeRecommended();
+  bool ShouldShowUpgradeRecommended();
 
   // Returns true if we should show the background page badge.
   bool ShouldShowBackgroundPageBadge();
