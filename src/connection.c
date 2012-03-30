@@ -458,7 +458,7 @@ wl_connection_vmarshal(struct wl_connection *connection,
 
 			s = va_arg(ap, const char *);
 			length = s ? strlen(s) + 1: 0;
-			if (end - p < DIV_ROUNDUP(length, sizeof *p) + 1)
+			if (p + DIV_ROUNDUP(length, sizeof *p) + 1 > end)
 				goto err;
 			*p++ = length;
 
@@ -508,7 +508,7 @@ wl_connection_vmarshal(struct wl_connection *connection,
 				*p++ = 0;
 				break;
 			}
-			if (end - p < DIV_ROUNDUP(array->size, sizeof *p) + 1)
+			if (p + DIV_ROUNDUP(array->size, sizeof *p) + 1 > end)
 				goto err;
 			*p++ = array->size;
 			memcpy(p, array->data, array->size);
@@ -573,7 +573,7 @@ wl_connection_demarshal(struct wl_connection *connection,
 	uint32_t *p, *next, *end, length;
 	int *fd;
 	char *extra, **s;
-	int i, count, extra_space;
+	unsigned int i, count, extra_space;
 	struct wl_object **object;
 	struct wl_array **array;
 	struct wl_closure *closure = &connection->receive_closure;
