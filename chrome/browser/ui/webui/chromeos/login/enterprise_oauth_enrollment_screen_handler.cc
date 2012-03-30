@@ -9,6 +9,7 @@
 #include "base/callback.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/net/gaia/gaia_oauth_fetcher.h"
 #include "chrome/browser/policy/auto_enrollment_client.h"
@@ -136,7 +137,7 @@ void EnterpriseOAuthEnrollmentScreenHandler::Show() {
   std::string user;
   is_auto_enrollment_ = controller_ && controller_->IsAutoEnrollment(&user);
   if (is_auto_enrollment_)
-    user_ = user;
+    user_ = Authenticator::Sanitize(user);
   enrollment_failed_once_ = false;
 
   DoShow();
@@ -407,11 +408,13 @@ void EnterpriseOAuthEnrollmentScreenHandler::HandleCompleteLogin(
     return;
   }
 
-  if (!value->GetString(0, &user_)) {
+  std::string user;
+  if (!value->GetString(0, &user)) {
     NOTREACHED() << "Invalid user parameter from UI.";
     return;
   }
 
+  user_ = Authenticator::Sanitize(user);
   EnrollAfterLogin();
 }
 

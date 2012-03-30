@@ -22,6 +22,7 @@
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
+#include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/browser/chromeos/login/captive_portal_window_proxy.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/user.h"
@@ -78,17 +79,6 @@ const int kMaxUsers = 5;
 const char kReasonNetworkChanged[] = "network changed";
 const char kReasonProxyChanged[] = "proxy changed";
 const char kReasonPortalDetected[] = "portal detected";
-
-// Sanitize emails. Currently, it only ensures all emails have a domain.
-std::string SanitizeEmail(const std::string& email) {
-  std::string sanitized(email);
-
-  // Apply a default domain if necessary.
-  if (sanitized.find('@') == std::string::npos)
-    sanitized += kDefaultDomain;
-
-  return sanitized;
-}
 
 // The Task posted to PostTaskAndReply in StartClearingDnsCache on the IO
 // thread.
@@ -685,7 +675,7 @@ void SigninScreenHandler::HandleCompleteLogin(const base::ListValue* args) {
     return;
   }
 
-  typed_email = SanitizeEmail(typed_email);
+  typed_email = Authenticator::Sanitize(typed_email);
   delegate_->SetDisplayEmail(typed_email);
   delegate_->CompleteLogin(typed_email, password);
 }
@@ -702,7 +692,7 @@ void SigninScreenHandler::HandleAuthenticateUser(const base::ListValue* args) {
     return;
   }
 
-  username = SanitizeEmail(username);
+  username = Authenticator::Sanitize(username);
   delegate_->Login(username, password);
 }
 

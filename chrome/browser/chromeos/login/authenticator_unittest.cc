@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -61,6 +61,15 @@ TEST(AuthenticatorTest, EmailAddressIgnorePlusSuffix) {
 TEST(AuthenticatorTest, EmailAddressIgnoreMultiPlusSuffix) {
   const char multi_plus[] = "user+cc+bcc@what.com";
   EXPECT_EQ(multi_plus, Authenticator::Canonicalize(multi_plus));
+}
+
+TEST(AuthenticatorTest, SanitizeMissingDomain) {
+  EXPECT_EQ("nodomain@gmail.com", Authenticator::Sanitize("nodomain"));
+}
+
+TEST(AuthenticatorTest, SanitizeExistingDomain) {
+  const char existing[] = "test@example.com";
+  EXPECT_EQ(existing, Authenticator::Sanitize(existing));
 }
 
 }  // namespace chromeos

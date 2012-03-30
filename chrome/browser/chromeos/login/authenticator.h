@@ -23,9 +23,6 @@ namespace chromeos {
 // consumer_->OnPasswordChangeDetected() on the UI thread.
 class Authenticator : public base::RefCountedThreadSafe<Authenticator> {
  public:
-  // A domain which requires special-case parsing in canonicalization.
-  static const char kSpecialCaseDomain[];
-
   explicit Authenticator(LoginStatusConsumer* consumer);
   virtual ~Authenticator();
 
@@ -99,6 +96,10 @@ class Authenticator : public base::RefCountedThreadSafe<Authenticator> {
   // For example, c.masone+abc@gmail.com == cMaSone@gmail.com, per
   // http://mail.google.com/support/bin/answer.py?hl=en&ctx=mail&answer=10313#
   static std::string Canonicalize(const std::string& email_address);
+
+  // Sanitize emails. Currently, it only ensures all emails have a domain by
+  // adding gmail.com if no domain is present.
+  static std::string Sanitize(const std::string& email_address);
 
  protected:
   LoginStatusConsumer* consumer_;
