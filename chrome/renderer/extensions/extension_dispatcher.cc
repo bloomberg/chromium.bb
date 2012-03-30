@@ -534,8 +534,6 @@ void ExtensionDispatcher::DidCreateScriptContext(
     case Feature::BLESSED_EXTENSION_CONTEXT:
     case Feature::UNBLESSED_EXTENSION_CONTEXT:
     case Feature::CONTENT_SCRIPT_CONTEXT: {
-      module_system->Require("json_schema");
-      module_system->Require("event_bindings");
       module_system->Require("miscellaneous_bindings");
       module_system->Require("schema_generated_bindings");
       module_system->Require("apitest");
