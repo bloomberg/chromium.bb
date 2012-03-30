@@ -4431,14 +4431,16 @@
                 '..',
                 '<(sysroot)/usr/include/python<(python_ver)',
               ],
-              'dependencies': [
-                '../build/linux/system.gyp:gtk',
-              ],
               'link_settings': {
                 'libraries': [
                   '-lpython<(python_ver)',
                 ],
               },
+            }],
+            ['toolkit_uses_gtk == 1', {
+              'dependencies': [
+                '../build/linux/system.gyp:gtk',
+              ],
             }],
             ['OS=="mac"', {
               'include_dirs': [
