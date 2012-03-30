@@ -5199,19 +5199,23 @@ TEST_F(GLES2DecoderManualInitTest, BindGeneratesResourceFalse) {
 
   BindTexture cmd1;
   cmd1.Init(GL_TEXTURE_2D, kInvalidClientId);
-  EXPECT_NE(error::kNoError, ExecuteCmd(cmd1));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd1));
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
 
   BindBuffer cmd2;
   cmd2.Init(GL_ARRAY_BUFFER, kInvalidClientId);
-  EXPECT_NE(error::kNoError, ExecuteCmd(cmd2));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd2));
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
 
   BindFramebuffer cmd3;
   cmd3.Init(GL_FRAMEBUFFER, kInvalidClientId);
-  EXPECT_NE(error::kNoError, ExecuteCmd(cmd3));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd3));
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
 
   BindRenderbuffer cmd4;
   cmd4.Init(GL_RENDERBUFFER, kInvalidClientId);
-  EXPECT_NE(error::kNoError, ExecuteCmd(cmd4));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd4));
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
 }
 
 TEST_F(GLES2DecoderManualInitTest, CreateStreamTextureCHROMIUM) {
