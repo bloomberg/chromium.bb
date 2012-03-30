@@ -126,9 +126,7 @@ class ExtensionHost : public content::WebContentsDelegate,
 
   // ExtensionFunctionDispatcher::Delegate
   virtual content::WebContents* GetAssociatedWebContents() const OVERRIDE;
-  void set_associated_web_contents(content::WebContents* web_contents) {
-    associated_web_contents_ = web_contents;
-  }
+  void SetAssociatedWebContents(content::WebContents* web_contents);
 
   // Returns true if the render view is initialized and didn't crash.
   bool IsRenderViewLive() const;

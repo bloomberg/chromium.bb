@@ -184,6 +184,16 @@ WebContents* ExtensionHost::GetAssociatedWebContents() const {
   return associated_web_contents_;
 }
 
+void ExtensionHost::SetAssociatedWebContents(
+    content::WebContents* web_contents) {
+  associated_web_contents_ = web_contents;
+  if (web_contents) {
+    registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+                   content::Source<WebContents>(associated_web_contents_));
+  }
+}
+
+
 content::RenderProcessHost* ExtensionHost::render_process_host() const {
   return render_view_host()->GetProcess();
 }
@@ -285,6 +295,12 @@ void ExtensionHost::Observe(int type,
       if (extension_ ==
           content::Details<UnloadedExtensionInfo>(details)->extension) {
         extension_ = NULL;
+      }
+      break;
+    case content::NOTIFICATION_WEB_CONTENTS_DESTROYED:
+      if (content::Source<WebContents>(source).ptr() ==
+          associated_web_contents_) {
+        associated_web_contents_ = NULL;
       }
       break;
     default:

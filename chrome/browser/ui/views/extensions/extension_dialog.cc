@@ -62,7 +62,7 @@ ExtensionDialog* ExtensionDialog::Show(
   ExtensionHost* host = CreateExtensionHost(url, browser, NULL);
   if (!host)
     return NULL;
-  host->set_associated_web_contents(web_contents);
+  host->SetAssociatedWebContents(web_contents);
 
   return ExtensionDialog::ShowInternal(url, browser, host, width, height,
                                        false, title, observer);
