@@ -97,7 +97,11 @@ void ConfigurationPolicyProvider::FixDeprecatedPolicies(PolicyMap* policies) {
       policies->Erase(kProxyPolicies[i]);
     }
   }
-  if (!proxy_settings->empty() && !policies->Get(key::kProxySettings)) {
+  // Sets the new |proxy_settings| if kProxySettings isn't set yet, or if the
+  // new priority is higher.
+  const PolicyMap::Entry* existing = policies->Get(key::kProxySettings);
+  if (!proxy_settings->empty() &&
+      (!existing || current_priority.has_higher_priority_than(*existing))) {
     policies->Set(key::kProxySettings,
                   current_priority.level,
                   current_priority.scope,

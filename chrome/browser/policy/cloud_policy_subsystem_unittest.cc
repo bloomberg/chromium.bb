@@ -104,11 +104,10 @@ class CloudPolicySubsystemTestBase : public testing::Test {
  public:
   CloudPolicySubsystemTestBase()
       : ui_thread_(BrowserThread::UI, &loop_),
-        io_thread_(BrowserThread::IO, &loop_) {
-  }
+        file_thread_(BrowserThread::FILE, &loop_),
+        io_thread_(BrowserThread::IO, &loop_) {}
 
-  virtual ~CloudPolicySubsystemTestBase() {
-  }
+  virtual ~CloudPolicySubsystemTestBase() {}
 
  protected:
   void StopMessageLoop() {
@@ -250,6 +249,7 @@ class CloudPolicySubsystemTestBase : public testing::Test {
 
   MessageLoop loop_;
   content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread file_thread_;
   content::TestBrowserThread io_thread_;
 
   scoped_ptr<EventLogger> logger_;

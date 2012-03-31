@@ -11,7 +11,6 @@
 #include "base/path_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/policy/cloud_policy_provider.h"
-#include "chrome/browser/policy/cloud_policy_provider_impl.h"
 #include "chrome/browser/policy/cloud_policy_subsystem.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"
 #include "chrome/browser/policy/policy_service_impl.h"
@@ -111,19 +110,28 @@ void BrowserPolicyConnector::Init() {
   managed_platform_provider_.reset(CreateManagedPlatformProvider());
   recommended_platform_provider_.reset(CreateRecommendedPlatformProvider());
 
-  managed_cloud_provider_.reset(new CloudPolicyProviderImpl(
-      this,
-      GetChromePolicyDefinitionList(),
-      POLICY_LEVEL_MANDATORY));
-  recommended_cloud_provider_.reset(new CloudPolicyProviderImpl(
-      this,
-      GetChromePolicyDefinitionList(),
-      POLICY_LEVEL_RECOMMENDED));
-
 #if defined(OS_CHROMEOS)
+  // The CloudPolicyProvider blocks asynchronous Profile creation until a login
+  // is performed. This is used to ensure that the Profile's PrefService sees
+  // managed preferences on managed Chrome OS devices. However, this also
+  // prevents creation of new Profiles in Desktop Chrome. The implementation of
+  // cloud policy on the Desktop requires a refactoring of the cloud provider,
+  // but for now it just isn't created.
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kDeviceManagementUrl)) {
+    managed_cloud_provider_.reset(new CloudPolicyProvider(
+        this,
+        GetChromePolicyDefinitionList(),
+        POLICY_LEVEL_MANDATORY));
+    recommended_cloud_provider_.reset(new CloudPolicyProvider(
+        this,
+        GetChromePolicyDefinitionList(),
+        POLICY_LEVEL_RECOMMENDED));
+  }
+
   InitializeDevicePolicy();
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableONCPolicy)) {
+  if (command_line->HasSwitch(switches::kEnableONCPolicy)) {
     network_configuration_updater_.reset(
         new NetworkConfigurationUpdater(
             managed_cloud_provider_.get(),
@@ -320,10 +328,8 @@ void BrowserPolicyConnector::InitializeUserPolicy(
         new UserPolicyTokenCache(user_data_store_.get(),
                                  policy_cache_dir.Append(kTokenCacheFile)));
 
-    // Prepending user caches meaning they will take precedence of device policy
-    // caches.
-    managed_cloud_provider_->PrependCache(user_policy_cache);
-    recommended_cloud_provider_->PrependCache(user_policy_cache);
+    managed_cloud_provider_->SetUserPolicyCache(user_policy_cache);
+    recommended_cloud_provider_->SetUserPolicyCache(user_policy_cache);
     user_cloud_policy_subsystem_.reset(new CloudPolicySubsystem(
         user_data_store_.get(),
         user_policy_cache));
@@ -457,8 +463,8 @@ void BrowserPolicyConnector::InitializeDevicePolicy() {
         new DevicePolicyCache(device_data_store_.get(),
                               install_attributes_.get());
 
-    managed_cloud_provider_->AppendCache(device_policy_cache);
-    recommended_cloud_provider_->AppendCache(device_policy_cache);
+    managed_cloud_provider_->SetDevicePolicyCache(device_policy_cache);
+    recommended_cloud_provider_->SetDevicePolicyCache(device_policy_cache);
 
     device_cloud_policy_subsystem_.reset(new CloudPolicySubsystem(
         device_data_store_.get(),

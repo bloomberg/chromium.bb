@@ -46,9 +46,10 @@ UserPolicyDiskCache::UserPolicyDiskCache(
 
 void UserPolicyDiskCache::Load() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  BrowserThread::PostTask(
+  bool ret = BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&UserPolicyDiskCache::LoadOnFileThread, this));
+  DCHECK(ret);
 }
 
 void UserPolicyDiskCache::Store(

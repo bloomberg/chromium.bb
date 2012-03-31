@@ -1597,8 +1597,6 @@
         'browser/policy/cloud_policy_data_store.h',
         'browser/policy/cloud_policy_provider.cc',
         'browser/policy/cloud_policy_provider.h',
-        'browser/policy/cloud_policy_provider_impl.cc',
-        'browser/policy/cloud_policy_provider_impl.h',
         'browser/policy/cloud_policy_subsystem.cc',
         'browser/policy/cloud_policy_subsystem.h',
         'browser/policy/config_dir_policy_provider.cc',
