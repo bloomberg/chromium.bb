@@ -13,9 +13,8 @@
 #include "chrome/browser/profiles/profile_io_data.h"
 
 namespace chrome_browser_net {
-class HttpServerPropertiesManager;
 class Predictor;
-}
+}  // namespace chrome_browser_net
 
 namespace net {
 class HttpServerProperties;
@@ -100,8 +99,6 @@ class ProfileImplIOData : public ProfileIOData {
     DISALLOW_COPY_AND_ASSIGN(Handle);
   };
 
-  net::HttpServerProperties* http_server_properties() const;
-
  private:
   friend class base::RefCountedThreadSafe<ProfileImplIOData>;
 
@@ -140,9 +137,6 @@ class ProfileImplIOData : public ProfileIOData {
 
   // Lazy initialization params.
   mutable scoped_ptr<LazyParams> lazy_params_;
-
-  mutable scoped_ptr<chrome_browser_net::HttpServerPropertiesManager>
-      http_server_properties_manager_;
 
   mutable scoped_refptr<ChromeURLRequestContext> media_request_context_;
 

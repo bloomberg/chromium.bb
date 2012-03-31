@@ -29,6 +29,7 @@
 #include "chrome/browser/net/chrome_fraudulent_certificate_reporter.h"
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
+#include "chrome/browser/net/http_server_properties_manager.h"
 #include "chrome/browser/net/proxy_service_factory.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/policy/url_blacklist_manager.h"
@@ -364,6 +365,16 @@ DesktopNotificationService* ProfileIOData::GetNotificationService() const {
   return notification_service_;
 }
 #endif
+
+chrome_browser_net::HttpServerPropertiesManager*
+    ProfileIOData::http_server_properties_manager() const {
+  return http_server_properties_manager_.get();
+}
+
+void ProfileIOData::set_http_server_properties_manager(
+    chrome_browser_net::HttpServerPropertiesManager* manager) const {
+  http_server_properties_manager_.reset(manager);
+}
 
 ProfileIOData::ResourceContext::ResourceContext(ProfileIOData* io_data)
     : io_data_(io_data) {

@@ -38,7 +38,7 @@ void ClearNetworkingHistorySinceOnIOThread(
     ProfileImplIOData* io_data, base::Time time) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   io_data->transport_security_state()->DeleteSince(time);
-  io_data->http_server_properties()->Clear();
+  io_data->http_server_properties_manager()->Clear();
 }
 
 }  // namespace
@@ -75,8 +75,8 @@ ProfileImplIOData::Handle::~Handle() {
     iter->second->CleanupOnUIThread();
   }
 
-  if (io_data_->http_server_properties_manager_.get())
-    io_data_->http_server_properties_manager_->ShutdownOnUIThread();
+  if (io_data_->http_server_properties_manager())
+    io_data_->http_server_properties_manager()->ShutdownOnUIThread();
   io_data_->ShutdownOnUIThread();
 }
 
@@ -229,7 +229,7 @@ void ProfileImplIOData::Handle::LazyInitialize() const {
   // below try to get the ResourceContext pointer.
   initialized_ = true;
   PrefService* pref_service = profile_->GetPrefs();
-  io_data_->http_server_properties_manager_.reset(
+  io_data_->set_http_server_properties_manager(
       new chrome_browser_net::HttpServerPropertiesManager(pref_service));
   ChromeNetworkDelegate::InitializeReferrersEnabled(
       io_data_->enable_referrers(), pref_service);
@@ -279,8 +279,8 @@ void ProfileImplIOData::LazyInitializeInternal(
   ApplyProfileParamsToContext(media_request_context_);
   ApplyProfileParamsToContext(extensions_context);
 
-  if (http_server_properties_manager_.get())
-    http_server_properties_manager_->InitializeOnIOThread();
+  if (http_server_properties_manager())
+    http_server_properties_manager()->InitializeOnIOThread();
 
   main_context->set_transport_security_state(transport_security_state());
   media_request_context_->set_transport_security_state(
@@ -294,8 +294,9 @@ void ProfileImplIOData::LazyInitializeInternal(
   main_context->set_network_delegate(network_delegate());
   media_request_context_->set_network_delegate(network_delegate());
 
-  main_context->set_http_server_properties(http_server_properties());
-  media_request_context_->set_http_server_properties(http_server_properties());
+  main_context->set_http_server_properties(http_server_properties_manager());
+  media_request_context_->set_http_server_properties(
+      http_server_properties_manager());
 
   main_context->set_host_resolver(
       io_thread_globals->host_resolver.get());
@@ -432,10 +433,6 @@ void ProfileImplIOData::LazyInitializeInternal(
       new chrome_browser_net::ConnectInterceptor(predictor_.get()));
 
   lazy_params_.reset();
-}
-
-net::HttpServerProperties* ProfileImplIOData::http_server_properties() const {
-  return http_server_properties_manager_.get();
 }
 
 scoped_refptr<ChromeURLRequestContext>
