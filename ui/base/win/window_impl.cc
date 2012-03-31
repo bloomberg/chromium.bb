@@ -134,10 +134,13 @@ void WindowImpl::Init(HWND parent, const gfx::Rect& bounds) {
 
   // Ensures the parent we have been passed is valid, otherwise CreateWindowEx
   // will fail.
+  HWND original_parent = parent;
   if (parent && !::IsWindow(parent)) {
     NOTREACHED() << "invalid parent window specified.";
     parent = NULL;
   }
+  CHECK((window_style() & WS_CHILD) == 0 || parent) <<
+      " WS_CHILD must have a non-NULL parent " << original_parent;
 
   int x, y, width, height;
   if (bounds.IsEmpty()) {

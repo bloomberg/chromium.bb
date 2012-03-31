@@ -50,7 +50,13 @@ class TempParent : public ui::WindowImpl {
   }
 
  private:
+  // Explicitly do nothing in Close. We do this as some external apps may get a
+  // handle to this window and attempt to close it.
+  void OnClose() {
+  }
+
   BEGIN_MSG_MAP_EX(TabContentsViewWin)
+    MSG_WM_CLOSE(OnClose)
   END_MSG_MAP()
 };
 
