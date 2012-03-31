@@ -63,11 +63,6 @@ bool DataSourceLogger::IsStreaming() {
   return streaming;
 }
 
-void DataSourceLogger::SetPreload(media::Preload preload) {
-  VLOG(1) << "SetPreload(" << preload << ")";
-  data_source_->SetPreload(preload);
-}
-
 void DataSourceLogger::SetBitrate(int bitrate) {
   VLOG(1) << "SetBitrate(" << bitrate << ")";
   data_source_->SetBitrate(bitrate);

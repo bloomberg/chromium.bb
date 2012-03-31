@@ -190,20 +190,6 @@ void Pipeline::SetVolume(float volume) {
   }
 }
 
-Preload Pipeline::GetPreload() const {
-  base::AutoLock auto_lock(lock_);
-  return preload_;
-}
-
-void Pipeline::SetPreload(Preload preload) {
-  base::AutoLock auto_lock(lock_);
-  preload_ = preload;
-  if (running_ && !tearing_down_) {
-    message_loop_->PostTask(FROM_HERE, base::Bind(
-        &Pipeline::PreloadChangedTask, this, preload));
-  }
-}
-
 base::TimeDelta Pipeline::GetCurrentTime() const {
   base::AutoLock auto_lock(lock_);
   return GetCurrentTime_Locked();
@@ -324,7 +310,6 @@ void Pipeline::ResetState() {
   total_bytes_      = 0;
   natural_size_.SetSize(0, 0);
   volume_           = 1.0f;
-  preload_          = AUTO;
   playback_rate_    = 0.0f;
   pending_playback_rate_ = 0.0f;
   status_           = PIPELINE_OK;
@@ -732,7 +717,6 @@ void Pipeline::InitializeTask(PipelineStatus last_stage_status) {
 
     // Initialization was successful, we are now considered paused, so it's safe
     // to set the initial playback rate and volume.
-    PreloadChangedTask(GetPreload());
     PlaybackRateChangedTask(GetPlaybackRate());
     VolumeChangedTask(GetVolume());
 
@@ -842,15 +826,6 @@ void Pipeline::VolumeChangedTask(float volume) {
 
   if (audio_renderer_)
     audio_renderer_->SetVolume(volume);
-}
-
-void Pipeline::PreloadChangedTask(Preload preload) {
-  DCHECK_EQ(MessageLoop::current(), message_loop_);
-  if (!running_ || tearing_down_)
-    return;
-
-  if (demuxer_)
-    demuxer_->SetPreload(preload);
 }
 
 void Pipeline::SeekTask(base::TimeDelta time,

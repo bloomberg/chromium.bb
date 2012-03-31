@@ -367,7 +367,7 @@ void WebMediaPlayerImpl::setVisible(bool visible) {
 
 #define COMPILE_ASSERT_MATCHING_ENUM(webkit_name, chromium_name) \
     COMPILE_ASSERT(static_cast<int>(WebKit::WebMediaPlayer::webkit_name) == \
-                   static_cast<int>(media::chromium_name), \
+                   static_cast<int>(webkit_media::chromium_name), \
                    mismatching_enums)
 COMPILE_ASSERT_MATCHING_ENUM(None, NONE);
 COMPILE_ASSERT_MATCHING_ENUM(MetaData, METADATA);
@@ -376,7 +376,11 @@ COMPILE_ASSERT_MATCHING_ENUM(Auto, AUTO);
 void WebMediaPlayerImpl::setPreload(WebKit::WebMediaPlayer::Preload preload) {
   DCHECK_EQ(main_loop_, MessageLoop::current());
 
-  pipeline_->SetPreload(static_cast<media::Preload>(preload));
+  if (proxy_ && proxy_->data_source()) {
+    // XXX: Why do I need to use webkit_media:: prefix? clang complains!
+    proxy_->data_source()->SetPreload(
+        static_cast<webkit_media::Preload>(preload));
+  }
 }
 
 bool WebMediaPlayerImpl::totalBytesKnown() {

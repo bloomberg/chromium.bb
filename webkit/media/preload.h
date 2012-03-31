@@ -1,11 +1,11 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_BASE_PRELOAD_H_
-#define MEDIA_BASE_PRELOAD_H_
+#ifndef WEBKIT_MEDIA_PRELOAD_H_
+#define WEBKIT_MEDIA_PRELOAD_H_
 
-namespace media {
+namespace webkit_media {
 
 // Used to specify video preload states. They are "hints" to the browser about
 // how aggressively the browser should load and buffer data.
@@ -20,6 +20,6 @@ enum Preload {
   AUTO,
 };
 
-}  // namespace media
+}  // namespace webkit_media
 
-#endif  // MEDIA_BASE_PRELOAD_H_
+#endif  // WEBKIT_MEDIA_PRELOAD_H_

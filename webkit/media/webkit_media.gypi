@@ -26,6 +26,7 @@
         'filter_helpers.cc',
         'filter_helpers.h',
         'media_stream_client.h',
+        'preload.h',
         'skcanvas_video_renderer.cc',
         'skcanvas_video_renderer.h',
         'webmediaplayer_delegate.h',

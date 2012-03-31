@@ -42,7 +42,7 @@ BufferedDataSource::BufferedDataSource(
       stopped_on_render_loop_(false),
       media_is_paused_(true),
       media_has_played_(false),
-      preload_(media::AUTO),
+      preload_(AUTO),
       cache_miss_retries_left_(kNumCacheMissRetries),
       bitrate_(0),
       playback_rate_(0.0),
@@ -108,6 +108,11 @@ void BufferedDataSource::Initialize(
       frame_);
 }
 
+void BufferedDataSource::SetPreload(Preload preload) {
+  DCHECK(MessageLoop::current() == render_loop_);
+  preload_ = preload;
+}
+
 bool BufferedDataSource::HasSingleOrigin() {
   DCHECK(MessageLoop::current() == render_loop_);
   DCHECK(initialize_cb_.is_null() && loader_.get())
@@ -139,11 +144,6 @@ void BufferedDataSource::Stop(const base::Closure& closure) {
 void BufferedDataSource::SetPlaybackRate(float playback_rate) {
   render_loop_->PostTask(FROM_HERE, base::Bind(
       &BufferedDataSource::SetPlaybackRateTask, this, playback_rate));
-}
-
-void BufferedDataSource::SetPreload(media::Preload preload) {
-  render_loop_->PostTask(FROM_HERE, base::Bind(
-      &BufferedDataSource::SetPreloadTask, this, preload));
 }
 
 void BufferedDataSource::SetBitrate(int bitrate) {
@@ -277,11 +277,6 @@ void BufferedDataSource::SetPlaybackRateTask(float playback_rate) {
   loader_->UpdateDeferStrategy(strategy);
 }
 
-void BufferedDataSource::SetPreloadTask(media::Preload preload) {
-  DCHECK(MessageLoop::current() == render_loop_);
-  preload_ = preload;
-}
-
 void BufferedDataSource::SetBitrateTask(int bitrate) {
   DCHECK(MessageLoop::current() == render_loop_);
   DCHECK(loader_.get());
@@ -295,7 +290,7 @@ BufferedDataSource::ChooseDeferStrategy() {
   DCHECK(MessageLoop::current() == render_loop_);
   // If the page indicated preload=metadata, then load exactly what is needed
   // needed for starting playback.
-  if (!media_has_played_ && preload_ == media::METADATA)
+  if (!media_has_played_ && preload_ == METADATA)
     return BufferedResourceLoader::kReadThenDefer;
 
   // If the playback has started (at which point the preload value is ignored)

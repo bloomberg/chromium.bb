@@ -162,7 +162,7 @@ class BufferedDataSourceTest : public testing::Test {
     return loader()->active_loader_->loader_.get();
   }
 
-  media::Preload preload() { return data_source_->preload_; }
+  Preload preload() { return data_source_->preload_; }
   BufferedResourceLoader::DeferStrategy defer_strategy() {
     return loader()->defer_strategy_;
   }
@@ -371,7 +371,7 @@ TEST_F(BufferedDataSourceTest, DefaultValues) {
   InitializeWith206Response();
 
   // Ensure we have sane values for default loading scenario.
-  EXPECT_EQ(media::AUTO, preload());
+  EXPECT_EQ(AUTO, preload());
   EXPECT_EQ(BufferedResourceLoader::kThresholdDefer, defer_strategy());
 
   EXPECT_EQ(0, data_source_bitrate());

@@ -14,6 +14,7 @@
 #include "media/base/data_source.h"
 #include "media/base/pipeline_status.h"
 #include "webkit/media/buffered_resource_loader.h"
+#include "webkit/media/preload.h"
 
 class MessageLoop;
 
@@ -43,6 +44,9 @@ class BufferedDataSource : public media::DataSource {
   void Initialize(const GURL& url,
                   const media::PipelineStatusCB& status_cb);
 
+  // Adjusts the buffering algorithm based on the given preload value.
+  void SetPreload(Preload preload);
+
   // Returns true if the media resource has a single origin, false otherwise.
   // Only valid to call after Initialize() has completed.
   //
@@ -66,7 +70,6 @@ class BufferedDataSource : public media::DataSource {
                     const media::DataSource::ReadCB& read_cb) OVERRIDE;
   virtual bool GetSize(int64* size_out) OVERRIDE;
   virtual bool IsStreaming() OVERRIDE;
-  virtual void SetPreload(media::Preload preload) OVERRIDE;
   virtual void SetBitrate(int bitrate) OVERRIDE;
 
  protected:
@@ -94,9 +97,6 @@ class BufferedDataSource : public media::DataSource {
   // to determine whether we are going from pause to play and play to pause,
   // and signals the buffered resource loader accordingly.
   void SetPlaybackRateTask(float playback_rate);
-
-  // This task saves the preload value for the media.
-  void SetPreloadTask(media::Preload preload);
 
   // Tells |loader_| the bitrate of the media.
   void SetBitrateTask(int bitrate);
@@ -211,7 +211,7 @@ class BufferedDataSource : public media::DataSource {
 
   // This variable holds the value of the preload attribute for the video
   // element.
-  media::Preload preload_;
+  Preload preload_;
 
   // Number of cache miss retries left.
   int cache_miss_retries_left_;

@@ -104,7 +104,6 @@ class PipelineTest : public ::testing::Test {
     mocks_->demuxer()->SetTotalAndBufferedBytesAndDuration(
         kTotalBytes, kBufferedBytes, duration);
     EXPECT_CALL(*mocks_->demuxer(), SetPlaybackRate(0.0f));
-    EXPECT_CALL(*mocks_->demuxer(), SetPreload(AUTO));
     EXPECT_CALL(*mocks_->demuxer(), Seek(mocks_->demuxer()->GetStartTime(), _))
         .WillOnce(Invoke(&RunPipelineStatusCB));
     EXPECT_CALL(*mocks_->demuxer(), Stop(_))
@@ -749,7 +748,6 @@ static void TestNoCallsAfterError(
   // Make calls on pipeline after error has occurred.
   pipeline->SetPlaybackRate(0.5f);
   pipeline->SetVolume(0.5f);
-  pipeline->SetPreload(AUTO);
 
   // No additional tasks should be queued as a result of these calls.
   message_loop->AssertIdle();
