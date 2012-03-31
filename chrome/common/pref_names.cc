@@ -459,6 +459,9 @@ const char kNaturalScroll[] = "settings.touchpad.natural_scroll";
 const char kPrimaryMouseButtonRight[] = "settings.mouse.primary_right";
 
 // A integer pref for the touchpad sensitivity.
+const char kMouseSensitivity[] = "settings.mouse.sensitivity2";
+
+// A integer pref for the touchpad sensitivity.
 const char kTouchpadSensitivity[] = "settings.touchpad.sensitivity2";
 
 // A boolean pref set to true if time should be displayed in 24-hour clock.

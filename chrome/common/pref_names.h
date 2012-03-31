@@ -167,6 +167,7 @@ extern const char kAudioVolumePercent[];
 extern const char kTapToClickEnabled[];
 extern const char kNaturalScroll[];
 extern const char kPrimaryMouseButtonRight[];
+extern const char kMouseSensitivity[];
 extern const char kTouchpadSensitivity[];
 extern const char kUse24HourClock[];
 extern const char kDisableGData[];

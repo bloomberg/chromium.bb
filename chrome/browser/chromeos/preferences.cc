@@ -95,6 +95,9 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
                                false,
                                PrefService::UNSYNCABLE_PREF);
   }
+  prefs->RegisterIntegerPref(prefs::kMouseSensitivity,
+                             3,
+                             PrefService::UNSYNCABLE_PREF);
   prefs->RegisterIntegerPref(prefs::kTouchpadSensitivity,
                              3,
                              PrefService::UNSYNCABLE_PREF);
@@ -253,7 +256,8 @@ void Preferences::Init(PrefService* prefs) {
   tap_to_click_enabled_.Init(prefs::kTapToClickEnabled, prefs, this);
   natural_scroll_.Init(prefs::kNaturalScroll, prefs, this);
   accessibility_enabled_.Init(prefs::kSpokenFeedbackEnabled, prefs, this);
-  sensitivity_.Init(prefs::kTouchpadSensitivity, prefs, this);
+  mouse_sensitivity_.Init(prefs::kMouseSensitivity, prefs, this);
+  touchpad_sensitivity_.Init(prefs::kTouchpadSensitivity, prefs, this);
   use_24hour_clock_.Init(prefs::kUse24HourClock, prefs, this);
   disable_gdata_.Init(prefs::kDisableGData, prefs, this);
   disable_gdata_over_cellular_.Init(prefs::kDisableGDataOverCellular,
@@ -363,9 +367,20 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
     else
       UMA_HISTOGRAM_BOOLEAN("Touchpad.NaturalScroll.Started", enabled);
   }
+  if (!pref_name || *pref_name == prefs::kMouseSensitivity) {
+    const int sensitivity = mouse_sensitivity_.GetValue();
+    system::mouse_settings::SetSensitivity(sensitivity);
+    if (pref_name) {
+      UMA_HISTOGRAM_CUSTOM_COUNTS(
+          "Mouse.Sensitivity.Changed", sensitivity, 1, 5, 5);
+    } else {
+      UMA_HISTOGRAM_CUSTOM_COUNTS(
+          "Mouse.Sensitivity.Started", sensitivity, 1, 5, 5);
+    }
+  }
   if (!pref_name || *pref_name == prefs::kTouchpadSensitivity) {
-    const int sensitivity = sensitivity_.GetValue();
-    system::pointer_settings::SetSensitivity(sensitivity);
+    const int sensitivity = touchpad_sensitivity_.GetValue();
+    system::touchpad_settings::SetSensitivity(sensitivity);
     if (pref_name) {
       UMA_HISTOGRAM_CUSTOM_COUNTS(
           "Touchpad.Sensitivity.Changed", sensitivity, 1, 5, 5);

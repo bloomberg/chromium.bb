@@ -9,16 +9,12 @@
 namespace chromeos {
 namespace system {
 
-namespace pointer_settings {
-
-// Sets the pointer sensitivity in the range [1, 5].
-void SetSensitivity(int value);
-
-}  // namespace pointer_settings
-
 namespace touchpad_settings {
 
 bool TouchpadExists();
+
+// Sets the touchpad sensitivity in the range [1, 5].
+void SetSensitivity(int value);
 
 // Turns tap to click on / off.
 void SetTapToClick(bool enabled);
@@ -28,6 +24,9 @@ void SetTapToClick(bool enabled);
 namespace mouse_settings {
 
 bool MouseExists();
+
+// Sets the mouse sensitivity in the range [1, 5].
+void SetSensitivity(int value);
 
 void SetPrimaryButtonRight(bool right);
 

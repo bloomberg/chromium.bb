@@ -92,7 +92,8 @@ class Preferences : public content::NotificationObserver {
   BooleanPrefMember vert_edge_scroll_enabled_;
   BooleanPrefMember accessibility_enabled_;
   IntegerPrefMember speed_factor_;
-  IntegerPrefMember sensitivity_;
+  IntegerPrefMember mouse_sensitivity_;
+  IntegerPrefMember touchpad_sensitivity_;
   BooleanPrefMember primary_mouse_button_right_;
   BooleanPrefMember use_24hour_clock_;
   BooleanPrefMember disable_gdata_;
