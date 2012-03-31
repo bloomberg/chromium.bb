@@ -8,6 +8,7 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "crypto/rsa_private_key.h"
+#include "net/base/cert_test_util.h"
 #include "remoting/protocol/authenticator.h"
 #include "remoting/protocol/channel_authenticator.h"
 #include "remoting/protocol/fake_session.h"
@@ -31,12 +32,7 @@ AuthenticatorTestBase::~AuthenticatorTestBase() {
 }
 
 void AuthenticatorTestBase::SetUp() {
-  FilePath certs_dir;
-  PathService::Get(base::DIR_SOURCE_ROOT, &certs_dir);
-  certs_dir = certs_dir.AppendASCII("net");
-  certs_dir = certs_dir.AppendASCII("data");
-  certs_dir = certs_dir.AppendASCII("ssl");
-  certs_dir = certs_dir.AppendASCII("certificates");
+  FilePath certs_dir(net::GetTestCertsDirectory());
 
   FilePath cert_path = certs_dir.AppendASCII("unittest.selfsigned.der");
   ASSERT_TRUE(file_util::ReadFileToString(cert_path, &host_cert_));

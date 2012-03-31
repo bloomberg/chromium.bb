@@ -20,6 +20,7 @@
 #include "crypto/scoped_nss_types.h"
 #include "net/base/cert_database.h"
 #include "net/base/cert_status_flags.h"
+#include "net/base/cert_test_util.h"
 #include "net/base/cert_verify_proc.h"
 #include "net/base/cert_verify_result.h"
 #include "net/base/crypto_module.h"
@@ -77,13 +78,9 @@ class CertDatabaseNSSTest : public testing::Test {
 
   static bool ReadCertIntoList(const std::string& name,
                                CertificateList* certs) {
-    std::string cert_data = ReadTestFile(name);
-    if (cert_data.empty())
-      return false;
-
-    X509Certificate* cert = X509Certificate::CreateFromBytes(
-        cert_data.data(), cert_data.size());
-    if (!cert)
+    scoped_refptr<X509Certificate> cert(
+        ImportCertFromFile(GetTestCertsDirectory(), name));
+    if (!cert.get())
       return false;
 
     certs->push_back(cert);
@@ -110,18 +107,6 @@ class CertDatabaseNSSTest : public testing::Test {
   CertDatabase cert_db_;
 
  private:
-  // Returns a FilePath object representing the src/net/data/ssl/certificates
-  // directory in the source tree.
-  static FilePath GetTestCertsDirectory() {
-    FilePath certs_dir;
-    PathService::Get(base::DIR_SOURCE_ROOT, &certs_dir);
-    certs_dir = certs_dir.AppendASCII("net");
-    certs_dir = certs_dir.AppendASCII("data");
-    certs_dir = certs_dir.AppendASCII("ssl");
-    certs_dir = certs_dir.AppendASCII("certificates");
-    return certs_dir;
-  }
-
   static bool CleanupSlotContents(PK11SlotInfo* slot) {
     CertDatabase cert_db;
     bool ok = true;
@@ -269,11 +254,9 @@ TEST_F(CertDatabaseNSSTest, ImportFromPKCS12InvalidFile) {
 }
 
 TEST_F(CertDatabaseNSSTest, ImportCACert_SSLTrust) {
-  std::string cert_data = ReadTestFile("root_ca_cert.crt");
-
-  CertificateList certs =
-      X509Certificate::CreateCertificateListFromBytes(
-          cert_data.data(), cert_data.size(), X509Certificate::FORMAT_AUTO);
+  CertificateList certs = CreateCertificateListFromFile(
+      GetTestCertsDirectory(), "root_ca_cert.crt",
+      X509Certificate::FORMAT_AUTO);
   ASSERT_EQ(1U, certs.size());
   EXPECT_FALSE(certs[0]->os_cert_handle()->isperm);
 
@@ -301,11 +284,9 @@ TEST_F(CertDatabaseNSSTest, ImportCACert_SSLTrust) {
 }
 
 TEST_F(CertDatabaseNSSTest, ImportCACert_EmailTrust) {
-  std::string cert_data = ReadTestFile("root_ca_cert.crt");
-
-  CertificateList certs =
-      X509Certificate::CreateCertificateListFromBytes(
-          cert_data.data(), cert_data.size(), X509Certificate::FORMAT_AUTO);
+  CertificateList certs = CreateCertificateListFromFile(
+      GetTestCertsDirectory(), "root_ca_cert.crt",
+      X509Certificate::FORMAT_AUTO);
   ASSERT_EQ(1U, certs.size());
   EXPECT_FALSE(certs[0]->os_cert_handle()->isperm);
 
@@ -332,11 +313,9 @@ TEST_F(CertDatabaseNSSTest, ImportCACert_EmailTrust) {
 }
 
 TEST_F(CertDatabaseNSSTest, ImportCACert_ObjSignTrust) {
-  std::string cert_data = ReadTestFile("root_ca_cert.crt");
-
-  CertificateList certs =
-      X509Certificate::CreateCertificateListFromBytes(
-          cert_data.data(), cert_data.size(), X509Certificate::FORMAT_AUTO);
+  CertificateList certs = CreateCertificateListFromFile(
+      GetTestCertsDirectory(), "root_ca_cert.crt",
+      X509Certificate::FORMAT_AUTO);
   ASSERT_EQ(1U, certs.size());
   EXPECT_FALSE(certs[0]->os_cert_handle()->isperm);
 
@@ -363,11 +342,9 @@ TEST_F(CertDatabaseNSSTest, ImportCACert_ObjSignTrust) {
 }
 
 TEST_F(CertDatabaseNSSTest, ImportCA_NotCACert) {
-  std::string cert_data = ReadTestFile("google.single.pem");
-
-  CertificateList certs =
-      X509Certificate::CreateCertificateListFromBytes(
-          cert_data.data(), cert_data.size(), X509Certificate::FORMAT_AUTO);
+  CertificateList certs = CreateCertificateListFromFile(
+      GetTestCertsDirectory(), "google.single.pem",
+      X509Certificate::FORMAT_AUTO);
   ASSERT_EQ(1U, certs.size());
   EXPECT_FALSE(certs[0]->os_cert_handle()->isperm);
 
@@ -495,10 +472,9 @@ TEST_F(CertDatabaseNSSTest, ImportCACertHierarchyTree) {
 }
 
 TEST_F(CertDatabaseNSSTest, ImportCACertNotHierarchy) {
-  std::string cert_data = ReadTestFile("root_ca_cert.crt");
-  CertificateList certs =
-      X509Certificate::CreateCertificateListFromBytes(
-          cert_data.data(), cert_data.size(), X509Certificate::FORMAT_AUTO);
+  CertificateList certs = CreateCertificateListFromFile(
+      GetTestCertsDirectory(), "root_ca_cert.crt",
+      X509Certificate::FORMAT_AUTO);
   ASSERT_EQ(1U, certs.size());
   ASSERT_TRUE(ReadCertIntoList("dod_ca_13_cert.der", &certs));
   ASSERT_TRUE(ReadCertIntoList("dod_ca_17_cert.der", &certs));
@@ -528,10 +504,9 @@ TEST_F(CertDatabaseNSSTest, DISABLED_ImportServerCert) {
   // Need to import intermediate cert for the verify of google cert, otherwise
   // it will try to fetch it automatically with cert_pi_useAIACertFetch, which
   // will cause OCSPCreateSession on the main thread, which is not allowed.
-  std::string cert_data = ReadTestFile("google.chain.pem");
-  CertificateList certs =
-      X509Certificate::CreateCertificateListFromBytes(
-          cert_data.data(), cert_data.size(), X509Certificate::FORMAT_AUTO);
+  CertificateList certs = CreateCertificateListFromFile(
+      GetTestCertsDirectory(), "google.chain.pem",
+      X509Certificate::FORMAT_AUTO);
   ASSERT_EQ(2U, certs.size());
 
   CertDatabase::ImportCertFailureList failed;
