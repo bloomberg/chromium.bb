@@ -272,7 +272,6 @@ void RenderWidget::Resize(const gfx::Size& new_size,
 
   if (size_ != new_size) {
     // TODO(darin): We should not need to reset this here.
-    SetHidden(false);
     needs_repainting_on_restore_ = false;
 
     size_ = new_size;
