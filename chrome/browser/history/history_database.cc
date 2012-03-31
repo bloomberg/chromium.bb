@@ -28,7 +28,7 @@ namespace {
 // Current version number. We write databases at the "current" version number,
 // but any previous version that can read the "compatible" one can make do with
 // or database without *too* many bad effects.
-static const int kCurrentVersionNumber = 21;
+static const int kCurrentVersionNumber = 20;
 static const int kCompatibleVersionNumber = 16;
 static const char kEarlyExpirationThresholdKey[] = "early_expiration_threshold";
 
@@ -309,17 +309,6 @@ sql::InitStatus HistoryDatabase::EnsureCurrentVersion(
     // Set a key indicating we need to migrate thumbnails. When successfull the
     // key is removed (ThumbnailMigrationDone).
     meta_table_.SetValue(kNeedsThumbnailMigrationKey, 1);
-  }
-
-  if (cur_version == 20) {
-    // This is the version prior to adding the visit_duration field in visits
-    // database. We need to migrate the database.
-    if (!MigrateVisitsWithoutDuration()) {
-      LOG(WARNING) << "Unable to update history database to version 21.";
-      return sql::INIT_FAILURE;
-    }
-    ++cur_version;
-    meta_table_.SetVersionNumber(cur_version);
   }
 
   // When the version is too old, we just try to continue anyway, there should

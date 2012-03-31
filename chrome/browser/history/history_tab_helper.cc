@@ -171,21 +171,3 @@ HistoryService* HistoryTabHelper::GetHistoryService() {
 
   return profile->GetHistoryService(Profile::IMPLICIT_ACCESS);
 }
-
-void HistoryTabHelper::WebContentsDestroyed(WebContents* tab) {
-  // We update the history for this URL.
-  // The content returned from web_contents() has been destroyed by now.
-  // We need to use tab value directly.
-  Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
-  if (profile->IsOffTheRecord())
-    return;
-
-  HistoryService* hs = profile->GetHistoryService(Profile::IMPLICIT_ACCESS);
-  if (hs) {
-    NavigationEntry* entry = tab->GetController().GetLastCommittedEntry();
-    if (entry) {
-      hs->UpdateWithPageEndTime(tab, entry->GetPageID(), tab->GetURL(),
-                                base::Time::Now());
-    }
-  }
-}

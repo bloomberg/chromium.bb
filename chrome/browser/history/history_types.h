@@ -237,12 +237,6 @@ class VisitRow {
   // change.
   bool is_indexed;
 
-  // Record how much time a user has this visit starting from the user
-  // opened this visit to the user closed or ended this visit.
-  // This includes both active and inactive time as long as
-  // the visit was present.
-  base::TimeDelta visit_duration;
-
   // Compares two visits based on dates, for sorting.
   bool operator<(const VisitRow& other) {
     return visit_time < other.visit_time;

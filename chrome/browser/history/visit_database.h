@@ -188,10 +188,6 @@ class VisitDatabase {
   // hasn't happened yet.
   static bool FillVisitVector(sql::Statement& statement, VisitVector* visits);
 
-  // Called by the derived classes to migrate the older visits table which
-  // don't have visit_duration column yet.
-  bool MigrateVisitsWithoutDuration();
-
  private:
 
   DISALLOW_COPY_AND_ASSIGN(VisitDatabase);
