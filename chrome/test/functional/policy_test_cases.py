@@ -71,7 +71,7 @@ class PolicyPrefsTestCases(object):
     # TODO(joaodasilva): This is only in place on official builds, but the
     # SetUserCloudPolicy call is a nop on official builds. Should be BROWSER.
     'MetricsReportingEnabled':
-        ('kMetricsReportingEnabled', False, [], OS_ALL),
+        ('kMetricsReportingEnabled', False, [], ['win', 'mac', 'linux']),
     'PasswordManagerEnabled':
         ('kPasswordManagerEnabled', False, [BROWSER], OS_ALL),
     # TODO(joaodasilva): Should be PASSWORDS too. http://crbug.com/97749
