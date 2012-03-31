@@ -11,6 +11,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "chrome/browser/chromeos/dbus/dbus_client_implementation_type.h"
 
 namespace dbus {
 class Bus;
@@ -46,7 +47,8 @@ class CryptohomeClient {
 
   // Factory function, creates a new instance and returns ownership.
   // For normal usage, access the singleton via DBusThreadManager::Get().
-  static CryptohomeClient* Create(dbus::Bus* bus);
+  static CryptohomeClient* Create(DBusClientImplementationType type,
+                                  dbus::Bus* bus);
 
   // Sets AsyncCallStatus signal handler.
   // |handler| is called when results for AsyncXXX methods are returned.

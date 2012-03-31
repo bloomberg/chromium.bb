@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/dbus/cryptohome_client.h"
 
 #include "base/bind.h"
-#include "base/chromeos/chromeos_version.h"
 #include "base/message_loop.h"
 #include "chrome/browser/chromeos/dbus/blocking_method_caller.h"
 #include "dbus/bus.h"
@@ -631,11 +630,12 @@ CryptohomeClient::CryptohomeClient() {}
 CryptohomeClient::~CryptohomeClient() {}
 
 // static
-CryptohomeClient* CryptohomeClient::Create(dbus::Bus* bus) {
-  if (base::chromeos::IsRunningOnChromeOS())
+CryptohomeClient* CryptohomeClient::Create(DBusClientImplementationType type,
+                                           dbus::Bus* bus) {
+  if (type == REAL_DBUS_CLIENT_IMPLEMENTATION)
     return new CryptohomeClientImpl(bus);
-  else
-    return new CryptohomeClientStubImpl();
+  DCHECK_EQ(STUB_DBUS_CLIENT_IMPLEMENTATION, type);
+  return new CryptohomeClientStubImpl();
 }
 
 }  // namespace chromeos

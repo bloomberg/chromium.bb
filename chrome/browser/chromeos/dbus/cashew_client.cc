@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/dbus/cashew_client.h"
 
 #include "base/bind.h"
-#include "base/chromeos/chromeos_version.h"
 #include "base/values.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
@@ -119,11 +118,12 @@ CashewClient::CashewClient() {}
 CashewClient::~CashewClient() {}
 
 // static
-CashewClient* CashewClient::Create(dbus::Bus* bus) {
-  if (base::chromeos::IsRunningOnChromeOS())
+CashewClient* CashewClient::Create(DBusClientImplementationType type,
+                                   dbus::Bus* bus) {
+  if (type == REAL_DBUS_CLIENT_IMPLEMENTATION)
     return new CashewClientImpl(bus);
-  else
-    return new CashewClientStubImpl();
+  DCHECK_EQ(STUB_DBUS_CLIENT_IMPLEMENTATION, type);
+  return new CashewClientStubImpl();
 }
 
 }  // namespace chromeos

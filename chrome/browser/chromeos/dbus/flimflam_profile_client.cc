@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/dbus/flimflam_profile_client.h"
 
 #include "base/bind.h"
-#include "base/chromeos/chromeos_version.h"
 #include "base/message_loop.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
@@ -219,11 +218,13 @@ FlimflamProfileClient::FlimflamProfileClient() {}
 FlimflamProfileClient::~FlimflamProfileClient() {}
 
 // static
-FlimflamProfileClient* FlimflamProfileClient::Create(dbus::Bus* bus) {
-  if (base::chromeos::IsRunningOnChromeOS())
+FlimflamProfileClient* FlimflamProfileClient::Create(
+    DBusClientImplementationType type,
+    dbus::Bus* bus) {
+  if (type == REAL_DBUS_CLIENT_IMPLEMENTATION)
     return new FlimflamProfileClientImpl(bus);
-  else
-    return new FlimflamProfileClientStubImpl();
+  DCHECK_EQ(STUB_DBUS_CLIENT_IMPLEMENTATION, type);
+  return new FlimflamProfileClientStubImpl();
 }
 
 }  // namespace chromeos

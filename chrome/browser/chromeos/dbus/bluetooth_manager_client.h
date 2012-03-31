@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/dbus/bluetooth_property.h"
+#include "chrome/browser/chromeos/dbus/dbus_client_implementation_type.h"
 #include "dbus/object_path.h"
 
 namespace dbus {
@@ -83,7 +84,8 @@ class BluetoothManagerClient {
                            const AdapterCallback& callback) = 0;
 
   // Creates the instance.
-  static BluetoothManagerClient* Create(dbus::Bus* bus);
+  static BluetoothManagerClient* Create(DBusClientImplementationType type,
+                                        dbus::Bus* bus);
 
  protected:
   BluetoothManagerClient();

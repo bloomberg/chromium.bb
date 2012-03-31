@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "chrome/browser/chromeos/dbus/dbus_client_implementation_type.h"
 
 #if defined(USE_ASH)
 #include "ash/system/power/power_supply_status.h"
@@ -186,7 +187,8 @@ class PowerManagerClient {
       PowerStateRequestIdCallback callback) = 0;
 
   // Creates the instance.
-  static PowerManagerClient* Create(dbus::Bus* bus);
+  static PowerManagerClient* Create(DBusClientImplementationType type,
+                                    dbus::Bus* bus);
 
   virtual ~PowerManagerClient();
 

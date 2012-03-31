@@ -488,6 +488,7 @@
         'browser/chromeos/dbus/cryptohome_client.h',
         'browser/chromeos/dbus/cros_dbus_service.cc',
         'browser/chromeos/dbus/cros_dbus_service.h',
+        'browser/chromeos/dbus/dbus_client_implementation_type.h',
         'browser/chromeos/dbus/dbus_thread_manager.cc',
         'browser/chromeos/dbus/dbus_thread_manager.h',
         'browser/chromeos/dbus/flimflam_ipconfig_client.cc',

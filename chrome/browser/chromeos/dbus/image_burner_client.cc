@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/dbus/image_burner_client.h"
 
 #include "base/bind.h"
-#include "base/chromeos/chromeos_version.h"
 #include "base/compiler_specific.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
@@ -156,12 +155,12 @@ ImageBurnerClient::~ImageBurnerClient() {
 }
 
 // static
-ImageBurnerClient* ImageBurnerClient::Create(dbus::Bus* bus) {
-  if (base::chromeos::IsRunningOnChromeOS()) {
+ImageBurnerClient* ImageBurnerClient::Create(DBusClientImplementationType type,
+                                             dbus::Bus* bus) {
+  if (type == REAL_DBUS_CLIENT_IMPLEMENTATION)
     return new ImageBurnerClientImpl(bus);
-  } else {
-    return new ImageBurnerClientStubImpl();
-  }
+  DCHECK_EQ(STUB_DBUS_CLIENT_IMPLEMENTATION, type);
+  return new ImageBurnerClientStubImpl();
 }
 
 }  // chromeos

@@ -11,6 +11,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "chrome/browser/chromeos/dbus/dbus_client_implementation_type.h"
 
 namespace base {
 class ListValue;
@@ -35,7 +36,8 @@ class CashewClient {
 
   // Factory function, creates a new instance and returns ownership.
   // For normal usage, access the singleton via DBusThreadManager::Get().
-  static CashewClient* Create(dbus::Bus* bus);
+  static CashewClient* Create(DBusClientImplementationType type,
+                              dbus::Bus* bus);
 
   // Sets DataPlansUpdate signal handler.
   virtual void SetDataPlansUpdateHandler(DataPlansUpdateHandler handler) = 0;

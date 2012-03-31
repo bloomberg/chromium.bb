@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "chrome/browser/chromeos/dbus/dbus_client_implementation_type.h"
 #include "chrome/browser/chromeos/dbus/flimflam_client_helper.h"
 
 namespace base {
@@ -41,7 +42,8 @@ class FlimflamNetworkClient {
 
   // Factory function, creates a new instance which is owned by the caller.
   // For normal usage, access the singleton via DBusThreadManager::Get().
-  static FlimflamNetworkClient* Create(dbus::Bus* bus);
+  static FlimflamNetworkClient* Create(DBusClientImplementationType type,
+                                       dbus::Bus* bus);
 
   // Sets PropertyChanged signal handler.
   virtual void SetPropertyChangedHandler(

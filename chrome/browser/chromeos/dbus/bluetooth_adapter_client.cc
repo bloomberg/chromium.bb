@@ -7,7 +7,6 @@
 #include <map>
 
 #include "base/bind.h"
-#include "base/chromeos/chromeos_version.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "chrome/browser/chromeos/dbus/bluetooth_device_client.h"
@@ -798,13 +797,13 @@ BluetoothAdapterClient::~BluetoothAdapterClient() {
 }
 
 BluetoothAdapterClient* BluetoothAdapterClient::Create(
+    DBusClientImplementationType type,
     dbus::Bus* bus,
     BluetoothManagerClient* manager_client) {
-  if (base::chromeos::IsRunningOnChromeOS()) {
+  if (type == REAL_DBUS_CLIENT_IMPLEMENTATION)
     return new BluetoothAdapterClientImpl(bus, manager_client);
-  } else {
-    return new BluetoothAdapterClientStubImpl();
-  }
+  DCHECK_EQ(STUB_DBUS_CLIENT_IMPLEMENTATION, type);
+  return new BluetoothAdapterClientStubImpl();
 }
 
 }  // namespace chromeos

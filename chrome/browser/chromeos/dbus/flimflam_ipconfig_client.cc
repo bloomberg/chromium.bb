@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/dbus/flimflam_ipconfig_client.h"
 
 #include "base/bind.h"
-#include "base/chromeos/chromeos_version.h"
 #include "base/message_loop.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
@@ -269,11 +268,13 @@ FlimflamIPConfigClient::FlimflamIPConfigClient() {}
 FlimflamIPConfigClient::~FlimflamIPConfigClient() {}
 
 // static
-FlimflamIPConfigClient* FlimflamIPConfigClient::Create(dbus::Bus* bus) {
-  if (base::chromeos::IsRunningOnChromeOS())
+FlimflamIPConfigClient* FlimflamIPConfigClient::Create(
+    DBusClientImplementationType type,
+    dbus::Bus* bus) {
+  if (type == REAL_DBUS_CLIENT_IMPLEMENTATION)
     return new FlimflamIPConfigClientImpl(bus);
-  else
-    return new FlimflamIPConfigClientStubImpl();
+  DCHECK_EQ(STUB_DBUS_CLIENT_IMPLEMENTATION, type);
+  return new FlimflamIPConfigClientStubImpl();
 }
 
 }  // namespace chromeos

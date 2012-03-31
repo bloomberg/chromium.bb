@@ -12,6 +12,7 @@
 #include "base/observer_list.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/dbus/bluetooth_property.h"
+#include "chrome/browser/chromeos/dbus/dbus_client_implementation_type.h"
 #include "dbus/object_path.h"
 
 namespace dbus {
@@ -78,7 +79,8 @@ class BluetoothInputClient {
                           const InputCallback& callback) = 0;
 
   // Creates the instance.
-  static BluetoothInputClient* Create(dbus::Bus* bus,
+  static BluetoothInputClient* Create(DBusClientImplementationType type,
+                                      dbus::Bus* bus,
                                       BluetoothAdapterClient* adapter_client);
 
  protected:

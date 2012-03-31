@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
 
+#include "base/chromeos/chromeos_version.h"
 #include "base/threading/thread.h"
 #include "chrome/browser/chromeos/dbus/bluetooth_adapter_client.h"
 #include "chrome/browser/chromeos/dbus/bluetooth_device_client.h"
@@ -11,6 +12,7 @@
 #include "chrome/browser/chromeos/dbus/bluetooth_manager_client.h"
 #include "chrome/browser/chromeos/dbus/bluetooth_node_client.h"
 #include "chrome/browser/chromeos/dbus/cashew_client.h"
+#include "chrome/browser/chromeos/dbus/dbus_client_implementation_type.h"
 #include "chrome/browser/chromeos/dbus/cros_disks_client.h"
 #include "chrome/browser/chromeos/dbus/cryptohome_client.h"
 #include "chrome/browser/chromeos/dbus/flimflam_ipconfig_client.h"
@@ -46,50 +48,57 @@ class DBusThreadManagerImpl : public DBusThreadManager {
         dbus_thread_->message_loop_proxy();
     system_bus_ = new dbus::Bus(system_bus_options);
 
+    // Determine whether we use stub or real client implementations.
+    const DBusClientImplementationType client_type =
+        base::chromeos::IsRunningOnChromeOS() ?
+        REAL_DBUS_CLIENT_IMPLEMENTATION : STUB_DBUS_CLIENT_IMPLEMENTATION;
+
     // Create the bluetooth clients.
     bluetooth_manager_client_.reset(BluetoothManagerClient::Create(
-        system_bus_.get()));
+        client_type, system_bus_.get()));
     bluetooth_adapter_client_.reset(BluetoothAdapterClient::Create(
-        system_bus_.get(), bluetooth_manager_client_.get()));
+        client_type, system_bus_.get(), bluetooth_manager_client_.get()));
     bluetooth_device_client_.reset(BluetoothDeviceClient::Create(
-        system_bus_.get(), bluetooth_adapter_client_.get()));
+        client_type, system_bus_.get(), bluetooth_adapter_client_.get()));
     bluetooth_input_client_.reset(BluetoothInputClient::Create(
-        system_bus_.get(), bluetooth_adapter_client_.get()));
+        client_type, system_bus_.get(), bluetooth_adapter_client_.get()));
     bluetooth_node_client_.reset(BluetoothNodeClient::Create(
-        system_bus_.get(), bluetooth_device_client_.get()));
+        client_type, system_bus_.get(), bluetooth_device_client_.get()));
     // Create the Cashew client.
-    cashew_client_.reset(CashewClient::Create(system_bus_.get()));
+    cashew_client_.reset(CashewClient::Create(client_type, system_bus_.get()));
     // Create the cros-disks client.
     cros_disks_client_.reset(
-        CrosDisksClient::Create(system_bus_.get()));
+        CrosDisksClient::Create(client_type, system_bus_.get()));
     // Create the Cryptohome client.
     cryptohome_client_.reset(
-        CryptohomeClient::Create(system_bus_.get()));
+        CryptohomeClient::Create(client_type, system_bus_.get()));
     // Create the Flimflam IPConfig client.
     flimflam_ipconfig_client_.reset(
-        FlimflamIPConfigClient::Create(system_bus_.get()));
+        FlimflamIPConfigClient::Create(client_type, system_bus_.get()));
     // Create the Flimflam Network client.
     flimflam_network_client_.reset(
-        FlimflamNetworkClient::Create(system_bus_.get()));
+        FlimflamNetworkClient::Create(client_type, system_bus_.get()));
     // Create the Flimflam Profile client.
     flimflam_profile_client_.reset(
-        FlimflamProfileClient::Create(system_bus_.get()));
+        FlimflamProfileClient::Create(client_type, system_bus_.get()));
     // Create the image burner client.
-    image_burner_client_.reset(ImageBurnerClient::Create(system_bus_.get()));
+    image_burner_client_.reset(ImageBurnerClient::Create(client_type,
+                                                         system_bus_.get()));
     // Create the introspectable object client.
     introspectable_client_.reset(
-        IntrospectableClient::Create(system_bus_.get()));
+        IntrospectableClient::Create(client_type, system_bus_.get()));
     // Create the power manager client.
-    power_manager_client_.reset(PowerManagerClient::Create(system_bus_.get()));
+    power_manager_client_.reset(PowerManagerClient::Create(client_type,
+                                                           system_bus_.get()));
     // Create the session manager client.
     session_manager_client_.reset(
-        SessionManagerClient::Create(system_bus_.get()));
+        SessionManagerClient::Create(client_type, system_bus_.get()));
     // Create the speech synthesizer client.
     speech_synthesizer_client_.reset(
-        SpeechSynthesizerClient::Create(system_bus_.get()));
+        SpeechSynthesizerClient::Create(client_type, system_bus_.get()));
     // Create the update engine client.
     update_engine_client_.reset(
-        UpdateEngineClient::Create(system_bus_.get()));
+        UpdateEngineClient::Create(client_type, system_bus_.get()));
   }
 
   virtual ~DBusThreadManagerImpl() {

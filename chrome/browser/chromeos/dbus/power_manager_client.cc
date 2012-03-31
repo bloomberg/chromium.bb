@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/chromeos/chromeos_version.h"
 #include "base/format_macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
@@ -639,12 +638,13 @@ PowerManagerClient::PowerManagerClient() {
 PowerManagerClient::~PowerManagerClient() {
 }
 
-PowerManagerClient* PowerManagerClient::Create(dbus::Bus* bus) {
-  if (base::chromeos::IsRunningOnChromeOS()) {
+PowerManagerClient* PowerManagerClient::Create(
+    DBusClientImplementationType type,
+    dbus::Bus* bus) {
+  if (type == REAL_DBUS_CLIENT_IMPLEMENTATION)
     return new PowerManagerClientImpl(bus);
-  } else {
-    return new PowerManagerClientStubImpl();
-  }
+  DCHECK_EQ(STUB_DBUS_CLIENT_IMPLEMENTATION, type);
+  return new PowerManagerClientStubImpl();
 }
 
 }  // namespace chromeos

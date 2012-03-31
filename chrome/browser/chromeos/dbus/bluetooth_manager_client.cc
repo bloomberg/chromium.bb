@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/dbus/bluetooth_manager_client.h"
 
 #include "base/bind.h"
-#include "base/chromeos/chromeos_version.h"
 #include "base/logging.h"
 #include "chrome/browser/chromeos/dbus/bluetooth_property.h"
 #include "dbus/bus.h"
@@ -305,12 +304,13 @@ BluetoothManagerClient::BluetoothManagerClient() {
 BluetoothManagerClient::~BluetoothManagerClient() {
 }
 
-BluetoothManagerClient* BluetoothManagerClient::Create(dbus::Bus* bus) {
-  if (base::chromeos::IsRunningOnChromeOS()) {
+BluetoothManagerClient* BluetoothManagerClient::Create(
+    DBusClientImplementationType type,
+    dbus::Bus* bus) {
+  if (type == REAL_DBUS_CLIENT_IMPLEMENTATION)
     return new BluetoothManagerClientImpl(bus);
-  } else {
-    return new BluetoothManagerClientStubImpl();
-  }
+  DCHECK_EQ(STUB_DBUS_CLIENT_IMPLEMENTATION, type);
+  return new BluetoothManagerClientStubImpl();
 }
 
 }  // namespace chromeos

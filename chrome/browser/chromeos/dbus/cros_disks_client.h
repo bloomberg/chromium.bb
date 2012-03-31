@@ -11,6 +11,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "chrome/browser/chromeos/dbus/dbus_client_implementation_type.h"
 
 namespace dbus {
 class Bus;
@@ -215,7 +216,8 @@ class CrosDisksClient {
 
   // Factory function, creates a new instance and returns ownership.
   // For normal usage, access the singleton via DBusThreadManager::Get().
-  static CrosDisksClient* Create(dbus::Bus* bus);
+  static CrosDisksClient* Create(DBusClientImplementationType type,
+                                 dbus::Bus* bus);
 
  protected:
   // Create() should be used instead.

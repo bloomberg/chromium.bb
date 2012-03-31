@@ -12,6 +12,7 @@
 #include "base/observer_list.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/dbus/bluetooth_property.h"
+#include "chrome/browser/chromeos/dbus/dbus_client_implementation_type.h"
 #include "dbus/object_path.h"
 
 namespace dbus {
@@ -64,7 +65,8 @@ class BluetoothNodeClient {
   virtual Properties* GetProperties(const dbus::ObjectPath& object_path) = 0;
 
   // Creates the instance.
-  static BluetoothNodeClient* Create(dbus::Bus* bus,
+  static BluetoothNodeClient* Create(DBusClientImplementationType type,
+                                     dbus::Bus* bus,
                                      BluetoothDeviceClient* device_client);
 
  protected:

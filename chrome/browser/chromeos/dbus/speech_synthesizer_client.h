@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "chrome/browser/chromeos/dbus/dbus_client_implementation_type.h"
 
 namespace dbus {
 class Bus;
@@ -42,7 +43,8 @@ class SpeechSynthesizerClient {
 
   // Factory function, creates a new instance and returns ownership.
   // For normal usage, access the singleton via DBusThreadManager::Get().
-  static SpeechSynthesizerClient* Create(dbus::Bus* bus);
+  static SpeechSynthesizerClient* Create(DBusClientImplementationType type,
+                                         dbus::Bus* bus);
 
   // Constants to be used with the properties argument to Speak.
   static const char kSpeechPropertyLocale[];

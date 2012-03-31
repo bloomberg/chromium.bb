@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "base/observer_list.h"
+#include "chrome/browser/chromeos/dbus/dbus_client_implementation_type.h"
 
 #include <string>
 
@@ -71,7 +72,8 @@ class SessionManagerClient {
                            StorePolicyCallback callback) = 0;
 
   // Creates the instance.
-  static SessionManagerClient* Create(dbus::Bus* bus);
+  static SessionManagerClient* Create(DBusClientImplementationType type,
+                                      dbus::Bus* bus);
 
   virtual ~SessionManagerClient();
 

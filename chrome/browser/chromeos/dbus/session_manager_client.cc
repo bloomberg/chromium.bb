@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/chromeos/chromeos_version.h"
 #include "base/string_util.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
@@ -310,12 +309,13 @@ SessionManagerClient::SessionManagerClient() {
 SessionManagerClient::~SessionManagerClient() {
 }
 
-SessionManagerClient* SessionManagerClient::Create(dbus::Bus* bus) {
-  if (base::chromeos::IsRunningOnChromeOS()) {
+SessionManagerClient* SessionManagerClient::Create(
+    DBusClientImplementationType type,
+    dbus::Bus* bus) {
+  if (type == REAL_DBUS_CLIENT_IMPLEMENTATION)
     return new SessionManagerClientImpl(bus);
-  } else {
-    return new SessionManagerClientStubImpl();
-  }
+  DCHECK_EQ(STUB_DBUS_CLIENT_IMPLEMENTATION, type);
+  return new SessionManagerClientStubImpl();
 }
 
 }  // namespace chromeos

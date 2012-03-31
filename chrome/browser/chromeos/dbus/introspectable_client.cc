@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/chromeos/chromeos_version.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
@@ -106,12 +105,13 @@ IntrospectableClient::~IntrospectableClient() {
 }
 
 // static
-IntrospectableClient* IntrospectableClient::Create(dbus::Bus* bus) {
-  if (base::chromeos::IsRunningOnChromeOS()) {
+IntrospectableClient* IntrospectableClient::Create(
+    DBusClientImplementationType type,
+    dbus::Bus* bus) {
+  if (type == REAL_DBUS_CLIENT_IMPLEMENTATION)
     return new IntrospectableClientImpl(bus);
-  } else {
-    return new IntrospectableClientStubImpl();
-  }
+  DCHECK_EQ(STUB_DBUS_CLIENT_IMPLEMENTATION, type);
+  return new IntrospectableClientStubImpl();
 }
 
 }  // namespace chromeos

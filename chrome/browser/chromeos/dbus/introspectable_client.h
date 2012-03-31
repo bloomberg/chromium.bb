@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "chrome/browser/chromeos/dbus/dbus_client_implementation_type.h"
 #include "dbus/object_path.h"
 
 namespace dbus {
@@ -41,7 +42,8 @@ class IntrospectableClient {
                           const IntrospectCallback& callback) = 0;
 
   // Creates the instance
-  static IntrospectableClient* Create(dbus::Bus* bus);
+  static IntrospectableClient* Create(DBusClientImplementationType type,
+                                      dbus::Bus* bus);
 
  protected:
   IntrospectableClient();

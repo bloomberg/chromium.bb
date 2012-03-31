@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/chromeos/chromeos_version.h"
 #include "base/string_util.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
@@ -279,12 +278,13 @@ UpdateEngineClient::EmptyUpdateCheckCallback() {
 }
 
 // static
-UpdateEngineClient* UpdateEngineClient::Create(dbus::Bus* bus) {
-  if (base::chromeos::IsRunningOnChromeOS()) {
+UpdateEngineClient* UpdateEngineClient::Create(
+    DBusClientImplementationType type,
+    dbus::Bus* bus) {
+  if (type == REAL_DBUS_CLIENT_IMPLEMENTATION)
     return new UpdateEngineClientImpl(bus);
-  } else {
-    return new UpdateEngineClientStubImpl();
-  }
+  DCHECK_EQ(STUB_DBUS_CLIENT_IMPLEMENTATION, type);
+  return new UpdateEngineClientStubImpl();
 }
 
 }  // namespace chromeos
