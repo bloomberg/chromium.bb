@@ -327,7 +327,7 @@ class HistoryTest(pyauto.PyUITest):
     Also, make sure that existing history tab is activated.
     """
     command_line = self.GetBrowserInfo()['properties']['command_line_string']
-    history_url = 'chrome://chrome/history'
+    history_url = 'chrome://chrome/history/'
 
     # Invoke History.
     self.RunCommand(pyauto.IDC_SHOW_HISTORY)
@@ -352,8 +352,9 @@ class HistoryTest(pyauto.PyUITest):
         history_url, tab1url,
         msg='Tab 1: History page not expected.')
 
-    self.assertEqual('History', self.GetActiveTabTitle(),
-                     msg='History page is not activated.')
+    self.assertTrue(
+        self.WaitUntil(lambda: 'History' == self.GetActiveTabTitle()),
+        msg='History page is not activated.')
 
 
 if __name__ == '__main__':
