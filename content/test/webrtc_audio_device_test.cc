@@ -88,7 +88,8 @@ ACTION_P(QuitMessageLoop, loop_or_proxy) {
 }  // end namespace
 
 WebRTCAudioDeviceTest::WebRTCAudioDeviceTest()
-    : render_thread_(NULL), audio_util_callback_(NULL) {
+    : render_thread_(NULL), audio_util_callback_(NULL),
+      has_input_devices_(false), has_output_devices_(false) {
 }
 
 WebRTCAudioDeviceTest::~WebRTCAudioDeviceTest() {}
@@ -170,6 +171,9 @@ void WebRTCAudioDeviceTest::InitializeIOThread(const char* thread_name) {
   test_request_context_ = new TestURLRequestContext();
   resource_context_->set_request_context(test_request_context_.get());
   media_observer_.reset(new MockMediaObserver());
+
+  has_input_devices_ = audio_manager_->HasAudioInputDevices();
+  has_output_devices_ = audio_manager_->HasAudioOutputDevices();
 
   // Create an IPC channel that handles incoming messages on the IO thread.
   CreateChannel(thread_name);
