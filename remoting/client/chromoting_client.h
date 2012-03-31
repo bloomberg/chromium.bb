@@ -16,6 +16,7 @@
 #include "remoting/client/chromoting_stats.h"
 #include "remoting/client/chromoting_view.h"
 #include "remoting/protocol/client_stub.h"
+#include "remoting/protocol/clipboard_stub.h"
 #include "remoting/protocol/connection_to_host.h"
 #include "remoting/protocol/input_stub.h"
 #include "remoting/protocol/video_stub.h"
@@ -31,6 +32,7 @@ class RectangleUpdateDecoder;
 // TODO(sergeyu): Move VideoStub implementation to RectangleUpdateDecoder.
 class ChromotingClient : public protocol::ConnectionToHost::HostEventCallback,
                          public protocol::ClientStub,
+                         public protocol::ClipboardStub,
                          public protocol::VideoStub {
  public:
   // Objects passed in are not owned by this class.
@@ -48,6 +50,10 @@ class ChromotingClient : public protocol::ConnectionToHost::HostEventCallback,
 
   // Return the stats recorded by this client.
   ChromotingStats* GetStats();
+
+  // ClipboardStub implementation.
+  virtual void InjectClipboardEvent(const protocol::ClipboardEvent& event)
+      OVERRIDE;
 
   // ConnectionToHost::HostEventCallback implementation.
   virtual void OnConnectionState(

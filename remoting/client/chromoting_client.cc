@@ -61,7 +61,7 @@ void ChromotingClient::Start(scoped_refptr<XmppProxy> xmpp_proxy) {
 
   connection_->Connect(xmpp_proxy, config_.local_jid, config_.host_jid,
                        config_.host_public_key, authenticator.Pass(),
-                       this, this, this);
+                       this, this, this, this);
 
   if (!view_->Initialize()) {
     ClientDone();
@@ -102,6 +102,12 @@ void ChromotingClient::ClientDone() {
 
 ChromotingStats* ChromotingClient::GetStats() {
   return &stats_;
+}
+
+void ChromotingClient::InjectClipboardEvent(
+    const protocol::ClipboardEvent& event) {
+  // TODO(simonmorris): Pass the clipboard event to the webapp.
+  return;
 }
 
 void ChromotingClient::ProcessVideoPacket(scoped_ptr<VideoPacket> packet,

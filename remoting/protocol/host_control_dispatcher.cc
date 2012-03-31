@@ -34,6 +34,12 @@ void HostControlDispatcher::OnInitialized() {
   writer_->Init(channel(), BufferedSocketWriter::WriteFailedCallback());
 }
 
+void HostControlDispatcher::InjectClipboardEvent(const ClipboardEvent& event) {
+  ControlMessage message;
+  message.mutable_clipboard_event()->CopyFrom(event);
+  writer_->Write(SerializeAndFrameMessage(message), base::Closure());
+}
+
 void HostControlDispatcher::OnMessageReceived(
     scoped_ptr<ControlMessage> message, const base::Closure& done_task) {
   DCHECK(clipboard_stub_);

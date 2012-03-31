@@ -8,6 +8,7 @@
 #include "base/memory/ref_counted.h"
 #include "remoting/protocol/channel_dispatcher_base.h"
 #include "remoting/protocol/client_stub.h"
+#include "remoting/protocol/clipboard_stub.h"
 #include "remoting/protocol/message_reader.h"
 
 namespace net {
@@ -18,29 +19,30 @@ namespace remoting {
 namespace protocol {
 
 class BufferedSocketWriter;
-class ClipboardStub;
 class ControlMessage;
 class HostStub;
 class Session;
 
 // HostControlDispatcher dispatches incoming messages on the control
-// channel to HostStub or ClipboardStub, and also implements ClientStub for
-// outgoing messages.
-class HostControlDispatcher : public ChannelDispatcherBase, public ClientStub {
+// channel to HostStub or ClipboardStub, and also implements ClientStub and
+// ClipboardStub for outgoing messages.
+class HostControlDispatcher : public ChannelDispatcherBase, public ClientStub,
+                              public ClipboardStub {
  public:
   HostControlDispatcher();
   virtual ~HostControlDispatcher();
 
+  // ClipboardStub implementation.
+  virtual void InjectClipboardEvent(const ClipboardEvent& event) OVERRIDE;
+
   // Sets the ClipboardStub that will be called for each incoming clipboard
-  // message. Doesn't take ownership of |clipboard_stub|, which must outlive
-  // the dispatcher.
+  // message. |clipboard_stub| must outlive this object.
   void set_clipboard_stub(ClipboardStub* clipboard_stub) {
     clipboard_stub_ = clipboard_stub;
   }
 
-  // Sets HostStub that will be called for each incoming control
-  // message. Doesn't take ownership of |host_stub|. It must outlive
-  // this dispatcher.
+  // Sets the HostStub that will be called for each incoming control
+  // message. |host_stub| must outlive this object.
   void set_host_stub(HostStub* host_stub) { host_stub_ = host_stub; }
 
  protected:

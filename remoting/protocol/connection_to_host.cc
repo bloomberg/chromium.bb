@@ -16,6 +16,7 @@
 #include "remoting/protocol/client_control_dispatcher.h"
 #include "remoting/protocol/client_event_dispatcher.h"
 #include "remoting/protocol/client_stub.h"
+#include "remoting/protocol/clipboard_stub.h"
 #include "remoting/protocol/errors.h"
 #include "remoting/protocol/jingle_session_manager.h"
 #include "remoting/protocol/pepper_transport_factory.h"
@@ -35,6 +36,7 @@ ConnectionToHost::ConnectionToHost(
       allow_nat_traversal_(allow_nat_traversal),
       event_callback_(NULL),
       client_stub_(NULL),
+      clipboard_stub_(NULL),
       video_stub_(NULL),
       state_(CONNECTING),
       error_(OK) {
@@ -54,9 +56,11 @@ void ConnectionToHost::Connect(scoped_refptr<XmppProxy> xmpp_proxy,
                                scoped_ptr<Authenticator> authenticator,
                                HostEventCallback* event_callback,
                                ClientStub* client_stub,
+                               ClipboardStub* clipboard_stub,
                                VideoStub* video_stub) {
   event_callback_ = event_callback;
   client_stub_ = client_stub;
+  clipboard_stub_ = clipboard_stub;
   video_stub_ = video_stub;
   authenticator_ = authenticator.Pass();
 
@@ -165,6 +169,7 @@ void ConnectionToHost::OnSessionStateChange(
       control_dispatcher_->Init(session_.get(), base::Bind(
           &ConnectionToHost::OnChannelInitialized, base::Unretained(this)));
       control_dispatcher_->set_client_stub(client_stub_);
+      control_dispatcher_->set_clipboard_stub(clipboard_stub_);
 
       event_dispatcher_.reset(new ClientEventDispatcher());
       event_dispatcher_->Init(session_.get(), base::Bind(

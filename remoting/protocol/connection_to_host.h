@@ -37,6 +37,7 @@ class Authenticator;
 class ClientControlDispatcher;
 class ClientEventDispatcher;
 class ClientStub;
+class ClipboardStub;
 class HostStub;
 class InputStub;
 class SessionConfig;
@@ -73,6 +74,7 @@ class ConnectionToHost : public SignalStrategy::Listener,
                        scoped_ptr<Authenticator> authenticator,
                        HostEventCallback* event_callback,
                        ClientStub* client_stub,
+                       ClipboardStub* clipboard_stub,
                        VideoStub* video_stub);
 
   virtual void Disconnect(const base::Closure& shutdown_task);
@@ -128,6 +130,7 @@ class ConnectionToHost : public SignalStrategy::Listener,
 
   // Stub for incoming messages.
   ClientStub* client_stub_;
+  ClipboardStub* clipboard_stub_;
   VideoStub* video_stub_;
 
   scoped_ptr<SignalStrategy> signal_strategy_;
