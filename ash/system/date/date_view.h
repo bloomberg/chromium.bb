@@ -6,6 +6,7 @@
 #define ASH_SYSTEM_DATE_DATE_VIEW_H_
 #pragma once
 
+#include "ash/system/tray/tray_views.h"
 #include "base/i18n/time_formatting.h"
 #include "base/timer.h"
 #include "ui/views/view.h"
@@ -19,7 +20,7 @@ namespace internal {
 namespace tray {
 
 // This view is used for both the TrayDate tray icon and the TrayPower popup.
-class DateView : public views::View {
+class DateView : public ActionableView {
  public:
   enum TimeType {
     TIME,
@@ -31,13 +32,18 @@ class DateView : public views::View {
   void UpdateTimeFormat();
   views::Label* label() const { return label_; }
 
-  void set_actionable(bool actionable) { actionable_ = actionable; }
+  // Sets whether the view is actionable. An actionable date view gives visual
+  // feedback on hover, can be focused by keyboard, and clicking/pressing space
+  // or enter on the view shows date-related settings.
+  void SetActionable(bool actionable);
 
   void UpdateText();
 
  private:
+  // Overridden from ActionableView.
+  virtual bool PerformAction(const views::Event& event) OVERRIDE;
+
   // Overridden from views::View.
-  virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE;
   virtual void OnMouseEntered(const views::MouseEvent& event) OVERRIDE;
   virtual void OnMouseExited(const views::MouseEvent& event) OVERRIDE;
   virtual void OnLocaleChanged() OVERRIDE;

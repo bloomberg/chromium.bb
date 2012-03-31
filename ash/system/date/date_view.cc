@@ -61,6 +61,7 @@ DateView::DateView(TimeType type)
   label_->SetBackgroundColor(SkColorSetARGB(0, 255, 255, 255));
   UpdateText();
   AddChildView(label_);
+  set_focusable(actionable_);
 }
 
 DateView::~DateView() {
@@ -70,6 +71,11 @@ DateView::~DateView() {
 void DateView::UpdateTimeFormat() {
   hour_type_ = ash::Shell::GetInstance()->tray_delegate()->GetHourClockType();
   UpdateText();
+}
+
+void DateView::SetActionable(bool actionable) {
+  actionable_ = actionable;
+  set_focusable(actionable_);
 }
 
 void DateView::UpdateText() {
@@ -111,7 +117,7 @@ void DateView::UpdateText() {
       &DateView::UpdateText);
 }
 
-bool DateView::OnMousePressed(const views::MouseEvent& event) {
+bool DateView::PerformAction(const views::Event& event) {
   if (!actionable_)
     return false;
 

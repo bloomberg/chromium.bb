@@ -173,7 +173,7 @@ views::View* TrayPower::CreateTrayView(user::LoginStatus status) {
 views::View* TrayPower::CreateDefaultView(user::LoginStatus status) {
   date_.reset(new tray::DateView(tray::DateView::DATE));
   if (status != user::LOGGED_IN_NONE && status != user::LOGGED_IN_LOCKED)
-    date_->set_actionable(true);
+    date_->SetActionable(true);
 
   views::View* container = new views::View;
   views::BoxLayout* layout = new views::BoxLayout(views::BoxLayout::kHorizontal,
