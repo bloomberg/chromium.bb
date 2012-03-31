@@ -95,6 +95,49 @@
     return port;
   };
 
+  function dispatchOnRequest(portId, channelName, sender,
+                             sourceExtensionId, targetExtensionId,
+                             isExternal) {
+    var requestEvent = (isExternal ?
+        chrome.extension.onRequestExternal : chrome.extension.onRequest);
+    if (requestEvent.hasListeners()) {
+      var port = chromeHidden.Port.createPort(portId, channelName);
+      port.onMessage.addListener(function(request) {
+        var responseCallback = function(response) {
+          if (port) {
+            port.postMessage(response);
+            port.destroy_();
+            port = null;
+          } else {
+            // We nulled out port when sending the response, and now the page
+            // is trying to send another response for the same request.
+            var errorMsg =
+                "Cannot send a response more than once per " +
+                "chrome.extension.onRequest listener per document (message " +
+                "was sent by extension " + sourceExtensionId;
+            if (sourceExtensionId != targetExtensionId) {
+              errorMsg += " for extension " + targetExtensionId;
+            }
+            errorMsg += ").";
+            chrome.extension.lastError = {"message": errorMsg};
+            console.error("Could not send response: " + errorMsg);
+          }
+        };
+        // In case the extension never invokes the responseCallback, and also
+        // doesn't keep a reference to it, we need to clean up the port. Do
+        // so by attaching to the garbage collection of the responseCallback
+        // using some native hackery.
+        BindToGC(responseCallback, function() {
+          if (port) {
+            port.destroy_();
+            port = null;
+          }
+        });
+        requestEvent.dispatch(request, sender, responseCallback);
+      });
+    }
+  }
+
   // Called by native code when a channel has been opened to this context.
   chromeHidden.Port.dispatchOnConnect = function(portId, channelName, tab,
                                                  sourceExtensionId,
@@ -118,43 +161,8 @@
 
     // Special case for sendRequest/onRequest.
     if (channelName == chromeHidden.kRequestChannel) {
-      var requestEvent = (isExternal ?
-          chrome.extension.onRequestExternal : chrome.extension.onRequest);
-      if (requestEvent.hasListeners()) {
-        var port = chromeHidden.Port.createPort(portId, channelName);
-        port.onMessage.addListener(function(request) {
-          var responseCallback = function(response) {
-            if (port) {
-              port.postMessage(response);
-              port = null;
-            } else {
-              // We nulled out port when sending the response, and now the page
-              // is trying to send another response for the same request.
-              var errorMsg =
-                  "Cannot send a response more than once per " +
-                  "chrome.extension.onRequest listener per document (message " +
-                  "was sent by extension " + sourceExtensionId;
-              if (sourceExtensionId != targetExtensionId) {
-                errorMsg += " for extension " + targetExtensionId;
-              }
-              errorMsg += ").";
-              chrome.extension.lastError = {"message": errorMsg};
-              console.error("Could not send response: " + errorMsg);
-            }
-          };
-          // In case the extension never invokes the responseCallback, and also
-          // doesn't keep a reference to it, we need to clean up the port. Do
-          // so by attaching to the garbage collection of the responseCallback
-          // using some native hackery.
-          BindToGC(responseCallback, function() {
-            if (port) {
-              port.disconnect();
-              port = null;
-            }
-          });
-          requestEvent.dispatch(request, sender, responseCallback);
-        });
-      }
+      dispatchOnRequest(portId, channelName, sender,
+                        sourceExtensionId, targetExtensionId, isExternal);
       return;
     }
 
