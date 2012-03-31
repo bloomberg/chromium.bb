@@ -16,7 +16,7 @@ class ShareGroupTest : public testing::Test {
  protected:
 
   virtual void SetUp() {
-    share_group_ = ShareGroup::Ref(new ShareGroup(false, false));
+    share_group_ = ShareGroup::Ref(new ShareGroup());
   }
 
   virtual void TearDown() {
