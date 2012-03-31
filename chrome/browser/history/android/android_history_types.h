@@ -19,6 +19,7 @@ class Statement;
 namespace history {
 
 typedef int64 AndroidURLID;
+typedef int64 SearchTermID;
 
 // Wraps all columns needed to support android.provider.Browser.BookmarkColumns.
 // It is used in insert() and update() to specify the columns need to insert or
@@ -206,6 +207,14 @@ class SearchRow {
 
   static SearchColumnID GetSearchColumnID(const std::string& name);
 
+  SearchTermID id() const {
+    return id_;
+  }
+  void set_id(SearchTermID id) {
+    set_value_explicitly(SearchRow::ID);
+    id_ = id;
+  }
+
   const string16& search_term() const {
     return search_term_;
   }
@@ -248,7 +257,7 @@ class SearchRow {
     values_set_.insert(id);
   }
 
-  int64 id_;
+  SearchTermID id_;
   string16 search_term_;
   base::Time search_time_;
   GURL url_;
@@ -262,10 +271,8 @@ class SearchRow {
 
 // Defines the row stored in android_urls table.
 struct AndroidURLRow {
-  AndroidURLRow()
-      :id(0),
-       url_id(0) {
-  }
+  AndroidURLRow();
+  ~AndroidURLRow();
 
   // The unique id of the row
   AndroidURLID id;
@@ -273,6 +280,19 @@ struct AndroidURLRow {
   URLID url_id;
   // The orignal URL string passed in by client.
   std::string raw_url;
+};
+
+// Defines the row of keyword_cache table.
+struct SearchTermRow {
+  SearchTermRow();
+  ~SearchTermRow();
+
+  // The unique id of the row.
+  SearchTermID id;
+  // The keyword.
+  string16 term;
+  // The last visit time.
+  base::Time last_visit_time;
 };
 
 // This class wraps the sql statement and favicon column index in statement if

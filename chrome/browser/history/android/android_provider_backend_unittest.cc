@@ -1081,4 +1081,365 @@ TEST_F(AndroidProviderBackendTest, UpdateFavicon) {
                                                       NULL));
 }
 
+TEST_F(AndroidProviderBackendTest, UpdateSearchTermTable) {
+  ASSERT_EQ(sql::INIT_OK, history_db_.Init(history_db_name_, bookmark_temp_));
+  ASSERT_EQ(sql::INIT_OK, thumbnail_db_.Init(thumbnail_db_name_, NULL,
+                                             &history_db_));
+  scoped_ptr<AndroidProviderBackend> backend(
+      new AndroidProviderBackend(android_cache_db_name_, &history_db_,
+                                 &thumbnail_db_, &bookmark_model_, &delegate_));
+  // Insert a keyword search item to verify if the update succeeds.
+  BookmarkRow row1;
+  row1.set_raw_url("cnn.com");
+  row1.set_url(GURL("http://cnn.com"));
+  row1.set_last_visit_time(Time::Now() - TimeDelta::FromDays(1));
+  row1.set_title(UTF8ToUTF16("cnn"));
+  ASSERT_TRUE(backend->InsertBookmark(row1));
+  string16 term = UTF8ToUTF16("Search term 1");
+  URLID url_id = history_db_.GetRowForURL(row1.url(), NULL);
+  ASSERT_TRUE(url_id);
+  ASSERT_TRUE(history_db_.SetKeywordSearchTermsForURL(url_id, 1, term));
+  ASSERT_TRUE(backend->UpdateSearchTermTable());
+  SearchTermRow keyword_cache;
+  SearchTermID id = history_db_.GetSearchTerm(term, &keyword_cache);
+  ASSERT_TRUE(id);
+  EXPECT_EQ(term, keyword_cache.term);
+  EXPECT_EQ(ToMilliseconds(row1.last_visit_time()),
+            ToMilliseconds(keyword_cache.last_visit_time));
+
+  // Add another row.
+  BookmarkRow row2;
+  row2.set_raw_url("google.com");
+  row2.set_url(GURL("http://google.com"));
+  row2.set_last_visit_time(Time::Now() - TimeDelta::FromDays(2));
+  row2.set_title(UTF8ToUTF16("cnn"));
+  ASSERT_TRUE(backend->InsertBookmark(row2));
+  url_id = history_db_.GetRowForURL(row2.url(), NULL);
+  ASSERT_TRUE(url_id);
+  string16 term2 = UTF8ToUTF16("Search term 2");
+  ASSERT_TRUE(history_db_.SetKeywordSearchTermsForURL(url_id, 1, term2));
+  ASSERT_TRUE(backend->UpdateSearchTermTable());
+  SearchTermID search_id1 = history_db_.GetSearchTerm(term,
+                                                           &keyword_cache);
+  // The id shouldn't changed.
+  ASSERT_EQ(id, search_id1);
+  EXPECT_EQ(term, keyword_cache.term);
+  EXPECT_EQ(ToMilliseconds(row1.last_visit_time()),
+            ToMilliseconds(keyword_cache.last_visit_time));
+  // Verify the row just inserted.
+  SearchTermID id2 = history_db_.GetSearchTerm(term2, &keyword_cache);
+  ASSERT_TRUE(id2);
+  EXPECT_EQ(term2, keyword_cache.term);
+  EXPECT_EQ(ToMilliseconds(row2.last_visit_time()),
+            ToMilliseconds(keyword_cache.last_visit_time));
+
+  // Add 3rd row and associate it with term.
+  BookmarkRow row3;
+  row3.set_raw_url("search.com");
+  row3.set_url(GURL("http://search.com"));
+  row3.set_last_visit_time(Time::Now());
+  row3.set_title(UTF8ToUTF16("search"));
+  ASSERT_TRUE(backend->InsertBookmark(row3));
+  url_id = history_db_.GetRowForURL(row3.url(), NULL);
+  ASSERT_TRUE(url_id);
+  ASSERT_TRUE(history_db_.SetKeywordSearchTermsForURL(url_id, 1, term));
+  ASSERT_TRUE(backend->UpdateSearchTermTable());
+  // Verify id not changed and last_visit_time updated.
+  ASSERT_EQ(search_id1, history_db_.GetSearchTerm(term, &keyword_cache));
+  EXPECT_EQ(ToMilliseconds(row3.last_visit_time()),
+            ToMilliseconds(keyword_cache.last_visit_time));
+  // The id of term2 wasn't changed.
+  EXPECT_EQ(id2, history_db_.GetSearchTerm(term2, NULL));
+
+  // Remove the term.
+  ASSERT_TRUE(history_db_.DeleteKeywordSearchTerm(term));
+  ASSERT_TRUE(backend->UpdateSearchTermTable());
+  // The cache of term should removed.
+  ASSERT_FALSE(history_db_.GetSearchTerm(term, NULL));
+  // The id of term2 wasn't changed.
+  EXPECT_EQ(id2, history_db_.GetSearchTerm(term2, NULL));
+}
+
+TEST_F(AndroidProviderBackendTest, QuerySearchTerms) {
+  ASSERT_EQ(sql::INIT_OK, history_db_.Init(history_db_name_, bookmark_temp_));
+  ASSERT_EQ(sql::INIT_OK, thumbnail_db_.Init(thumbnail_db_name_, NULL,
+                                             &history_db_));
+  scoped_ptr<AndroidProviderBackend> backend(
+      new AndroidProviderBackend(android_cache_db_name_, &history_db_,
+                                 &thumbnail_db_, &bookmark_model_, &delegate_));
+  // Insert a keyword search item to verify if we can find it.
+  BookmarkRow row1;
+  row1.set_raw_url("cnn.com");
+  row1.set_url(GURL("http://cnn.com"));
+  row1.set_last_visit_time(Time::Now() - TimeDelta::FromDays(1));
+  row1.set_title(UTF8ToUTF16("cnn"));
+  ASSERT_TRUE(backend->InsertBookmark(row1));
+  string16 term = UTF8ToUTF16("Search term 1");
+  URLID url_id = history_db_.GetRowForURL(row1.url(), NULL);
+  ASSERT_TRUE(url_id);
+  ASSERT_TRUE(history_db_.SetKeywordSearchTermsForURL(url_id, 1, term));
+
+  std::vector<SearchRow::SearchColumnID> projections;
+  projections.push_back(SearchRow::ID);
+  projections.push_back(SearchRow::SEARCH_TERM);
+  projections.push_back(SearchRow::SEARCH_TIME);
+  scoped_ptr<AndroidStatement> statement(backend->QuerySearchTerms(
+      projections, std::string(), std::vector<string16>(), std::string()));
+  ASSERT_TRUE(statement.get());
+  ASSERT_TRUE(statement->statement()->Step());
+  EXPECT_TRUE(statement->statement()->ColumnInt64(0));
+  EXPECT_EQ(term, statement->statement()->ColumnString16(1));
+  EXPECT_EQ(ToMilliseconds(row1.last_visit_time()),
+            statement->statement()->ColumnInt64(2));
+  EXPECT_FALSE(statement->statement()->Step());
+}
+
+TEST_F(AndroidProviderBackendTest, UpdateSearchTerms) {
+  ASSERT_EQ(sql::INIT_OK, history_db_.Init(history_db_name_, bookmark_temp_));
+  ASSERT_EQ(sql::INIT_OK, thumbnail_db_.Init(thumbnail_db_name_, NULL,
+                                             &history_db_));
+  scoped_ptr<AndroidProviderBackend> backend(
+      new AndroidProviderBackend(android_cache_db_name_, &history_db_,
+                                 &thumbnail_db_, &bookmark_model_, &delegate_));
+  // Insert a keyword.
+  BookmarkRow row1;
+  row1.set_raw_url("cnn.com");
+  row1.set_url(GURL("http://cnn.com"));
+  row1.set_last_visit_time(Time::Now() - TimeDelta::FromDays(1));
+  row1.set_title(UTF8ToUTF16("cnn"));
+  ASSERT_TRUE(backend->InsertBookmark(row1));
+  string16 term = UTF8ToUTF16("Search term 1");
+  URLID url_id = history_db_.GetRowForURL(row1.url(), NULL);
+  ASSERT_TRUE(url_id);
+  ASSERT_TRUE(history_db_.SetKeywordSearchTermsForURL(url_id, 1, term));
+
+  // Get the SearchTermID of the row we just inserted.
+  std::vector<SearchRow::SearchColumnID> projections;
+  projections.push_back(SearchRow::ID);
+  projections.push_back(SearchRow::SEARCH_TIME);
+  projections.push_back(SearchRow::SEARCH_TERM);
+  std::vector<string16> args;
+  args.push_back(term);
+  scoped_ptr<AndroidStatement> statement(backend->QuerySearchTerms(
+      projections, "search = ?", args, std::string()));
+  ASSERT_TRUE(statement.get());
+  ASSERT_TRUE(statement->statement()->Step());
+  SearchTermID id = statement->statement()->ColumnInt64(0);
+  ASSERT_TRUE(id);
+  EXPECT_FALSE(statement->statement()->Step());
+
+  // Update the search term and time.
+  string16 update_term = UTF8ToUTF16("Update search term");
+  args.clear();
+  args.push_back(term);
+  SearchRow search_row;
+  search_row.set_search_term(update_term);
+  search_row.set_url(GURL("http://google.com"));
+  search_row.set_template_url_id(1);
+  search_row.set_search_time(Time::Now() - TimeDelta::FromHours(1));
+  int update_count = 0;
+  ASSERT_TRUE(backend->UpdateSearchTerms(search_row, "search = ?", args,
+                                         &update_count));
+  EXPECT_EQ(1, update_count);
+
+  // Verify if the search term updated.
+  // The origin term should be removed.
+  std::vector<KeywordSearchTermRow> rows;
+  ASSERT_TRUE(history_db_.GetKeywordSearchTermRows(term, &rows));
+  EXPECT_TRUE(rows.empty());
+  // The new term should be inserted.
+  ASSERT_TRUE(history_db_.GetKeywordSearchTermRows(update_term, &rows));
+  ASSERT_EQ(1u, rows.size());
+  // The history of urls shouldn't be removed.
+  ASSERT_TRUE(history_db_.GetRowForURL(row1.url(), NULL));
+  // The new URL is inserted.
+  ASSERT_TRUE(history_db_.GetRowForURL(search_row.url(), NULL));
+
+  // Verfiy the AndoridSearchID isn't changed.
+  args.clear();
+  args.push_back(update_term);
+  statement.reset(backend->QuerySearchTerms(projections, "search = ?", args,
+                                            std::string()));
+  ASSERT_TRUE(statement.get());
+  ASSERT_TRUE(statement->statement()->Step());
+  // The id didn't change.
+  EXPECT_EQ(id, statement->statement()->ColumnInt64(0));
+  // The search time was updated.
+  EXPECT_EQ(ToMilliseconds(search_row.search_time()),
+            statement->statement()->ColumnInt64(1));
+  // The search term was updated.
+  EXPECT_EQ(update_term, statement->statement()->ColumnString16(2));
+  EXPECT_FALSE(statement->statement()->Step());
+
+  // Only update the search time.
+  SearchRow update_time;
+  update_time.set_search_time(Time::Now());
+  // Update it by id.
+  args.clear();
+  std::ostringstream oss;
+  oss << id;
+  args.push_back(UTF8ToUTF16(oss.str()));
+  update_count = 0;
+  ASSERT_TRUE(backend->UpdateSearchTerms(update_time, "_id = ?", args,
+                                         &update_count));
+  EXPECT_EQ(1, update_count);
+
+  // Verify the update.
+  statement.reset(backend->QuerySearchTerms(projections, "_id = ?", args,
+                                            std::string()));
+  ASSERT_TRUE(statement.get());
+  ASSERT_TRUE(statement->statement()->Step());
+  // The id didn't change.
+  EXPECT_EQ(id, statement->statement()->ColumnInt64(0));
+  // The search time was updated.
+  EXPECT_EQ(ToMilliseconds(update_time.search_time()),
+            statement->statement()->ColumnInt64(1));
+  // The search term didn't change.
+  EXPECT_EQ(update_term, statement->statement()->ColumnString16(2));
+  EXPECT_FALSE(statement->statement()->Step());
+}
+
+TEST_F(AndroidProviderBackendTest, DeleteSearchTerms) {
+  ASSERT_EQ(sql::INIT_OK, history_db_.Init(history_db_name_, bookmark_temp_));
+  ASSERT_EQ(sql::INIT_OK, thumbnail_db_.Init(thumbnail_db_name_, NULL,
+                                             &history_db_));
+  scoped_ptr<AndroidProviderBackend> backend(
+      new AndroidProviderBackend(android_cache_db_name_, &history_db_,
+                                 &thumbnail_db_, &bookmark_model_, &delegate_));
+  // Insert a keyword.
+  BookmarkRow row1;
+  row1.set_raw_url("cnn.com");
+  row1.set_url(GURL("http://cnn.com"));
+  row1.set_last_visit_time(Time::Now() - TimeDelta::FromDays(1));
+  row1.set_title(UTF8ToUTF16("cnn"));
+  ASSERT_TRUE(backend->InsertBookmark(row1));
+  string16 term = UTF8ToUTF16("Search term 1");
+  URLID url_id = history_db_.GetRowForURL(row1.url(), NULL);
+  ASSERT_TRUE(url_id);
+  ASSERT_TRUE(history_db_.SetKeywordSearchTermsForURL(url_id, 1, term));
+
+  // Get the SearchTermID of the row we just inserted.
+  std::vector<SearchRow::SearchColumnID> projections;
+  projections.push_back(SearchRow::ID);
+  projections.push_back(SearchRow::SEARCH_TIME);
+  projections.push_back(SearchRow::SEARCH_TERM);
+  std::vector<string16> args;
+  args.push_back(term);
+  scoped_ptr<AndroidStatement> statement(backend->QuerySearchTerms(
+      projections, "search = ?", args, std::string()));
+  ASSERT_TRUE(statement.get());
+  ASSERT_TRUE(statement->statement()->Step());
+  SearchTermID id1 = statement->statement()->ColumnInt64(0);
+  ASSERT_TRUE(id1);
+  EXPECT_FALSE(statement->statement()->Step());
+
+  // Insert a keyword.
+  BookmarkRow row2;
+  row2.set_raw_url("google.com");
+  row2.set_url(GURL("http://google.com"));
+  row2.set_last_visit_time(Time::Now() - TimeDelta::FromDays(1));
+  row2.set_title(UTF8ToUTF16("google"));
+  ASSERT_TRUE(backend->InsertBookmark(row2));
+  string16 term2 = UTF8ToUTF16("Search term 2");
+  URLID url_id2 = history_db_.GetRowForURL(row2.url(), NULL);
+  ASSERT_TRUE(url_id2);
+  ASSERT_TRUE(history_db_.SetKeywordSearchTermsForURL(url_id2, 1, term2));
+
+  // Get the SearchTermID of the row we just inserted.
+  projections.clear();
+  projections.push_back(SearchRow::ID);
+  projections.push_back(SearchRow::SEARCH_TIME);
+  projections.push_back(SearchRow::SEARCH_TERM);
+  args.clear();
+  args.push_back(term2);
+  statement.reset(backend->QuerySearchTerms(projections, "search = ?", args,
+                                            std::string()));
+  ASSERT_TRUE(statement.get());
+  ASSERT_TRUE(statement->statement()->Step());
+  SearchTermID id2 = statement->statement()->ColumnInt64(0);
+  ASSERT_TRUE(id2);
+  EXPECT_FALSE(statement->statement()->Step());
+
+  // Delete the first one.
+  args.clear();
+  args.push_back(term);
+  int deleted_count = 0;
+  ASSERT_TRUE(backend->DeleteSearchTerms("search = ?", args, &deleted_count));
+  EXPECT_EQ(1, deleted_count);
+  std::vector<KeywordSearchTermRow> rows;
+  ASSERT_TRUE(history_db_.GetKeywordSearchTermRows(term, &rows));
+  EXPECT_TRUE(rows.empty());
+  // Verify we can't get the first term.
+  args.clear();
+  std::ostringstream oss;
+  oss << id1;
+  args.push_back(UTF8ToUTF16(oss.str()));
+  statement.reset(backend->QuerySearchTerms(projections, "_id = ?", args,
+                                            std::string()));
+  ASSERT_TRUE(statement.get());
+  EXPECT_FALSE(statement->statement()->Step());
+
+  // The second one is still there.
+  args.clear();
+  std::ostringstream oss1;
+  oss1 << id2;
+  args.push_back(UTF8ToUTF16(oss1.str()));
+  statement.reset(backend->QuerySearchTerms(projections, "_id = ?", args,
+                                            std::string()));
+  ASSERT_TRUE(statement.get());
+  EXPECT_TRUE(statement->statement()->Step());
+  EXPECT_EQ(id2, statement->statement()->ColumnInt64(0));
+  EXPECT_FALSE(statement->statement()->Step());
+
+  // Remove all search terms in no condition.
+  deleted_count = 0;
+  args.clear();
+  ASSERT_TRUE(backend->DeleteSearchTerms(std::string(), args, &deleted_count));
+  EXPECT_EQ(1, deleted_count);
+
+  // Verify the second one was removed.
+  args.clear();
+  args.push_back(UTF8ToUTF16(oss1.str()));
+  statement.reset(backend->QuerySearchTerms(projections, "_id = ?", args,
+                                            std::string()));
+  ASSERT_TRUE(statement.get());
+  EXPECT_FALSE(statement->statement()->Step());
+}
+
+TEST_F(AndroidProviderBackendTest, InsertSearchTerm) {
+  ASSERT_EQ(sql::INIT_OK, history_db_.Init(history_db_name_, bookmark_temp_));
+  ASSERT_EQ(sql::INIT_OK, thumbnail_db_.Init(thumbnail_db_name_, NULL,
+                                             &history_db_));
+  scoped_ptr<AndroidProviderBackend> backend(
+      new AndroidProviderBackend(android_cache_db_name_, &history_db_,
+                                 &thumbnail_db_, &bookmark_model_, &delegate_));
+  SearchRow search_row;
+  search_row.set_search_term(UTF8ToUTF16("google"));
+  search_row.set_url(GURL("http://google.com"));
+  search_row.set_template_url_id(1);
+  search_row.set_search_time(Time::Now() - TimeDelta::FromHours(1));
+
+  SearchTermID id = backend->InsertSearchTerm(search_row);
+  ASSERT_TRUE(id);
+
+  std::vector<SearchRow::SearchColumnID> projections;
+  projections.push_back(SearchRow::ID);
+  projections.push_back(SearchRow::SEARCH_TIME);
+  projections.push_back(SearchRow::SEARCH_TERM);
+  std::vector<string16> args;
+  std::ostringstream oss;
+  oss << id;
+  args.push_back(UTF8ToUTF16(oss.str()));
+  scoped_ptr<AndroidStatement> statement(backend->QuerySearchTerms(
+      projections, "_id = ?", args, std::string()));
+  ASSERT_TRUE(statement.get());
+  ASSERT_TRUE(statement->statement()->Step());
+  EXPECT_EQ(id, statement->statement()->ColumnInt64(0));
+  EXPECT_EQ(ToMilliseconds(search_row.search_time()),
+            statement->statement()->ColumnInt64(1));
+  EXPECT_EQ(search_row.search_term(),
+            statement->statement()->ColumnString16(2));
+  EXPECT_FALSE(statement->statement()->Step());
+}
+
 }  // namespace history

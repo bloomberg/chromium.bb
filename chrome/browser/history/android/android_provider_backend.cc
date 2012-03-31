@@ -45,6 +45,12 @@ const char * kURLUpdateClause =
         "(SELECT url as visit_url, min(visit_time) as created_time"
         " FROM visits GROUP BY url) ON (visit_url = urls.id) ";
 
+const char* kSearchTermUpdateClause =
+    "SELECT keyword_search_terms.term, max(urls.last_visit_time) "
+    "FROM keyword_search_terms JOIN urls ON "
+        "(keyword_search_terms.url_id = urls.id) "
+    "GROUP BY keyword_search_terms.term";
+
 void BindStatement(const std::vector<string16>& selection_args,
                    sql::Statement* statement,
                    int* col_index) {
@@ -395,6 +401,165 @@ bool AndroidProviderBackend::DeleteBookmarks(
   return true;
 }
 
+AndroidStatement* AndroidProviderBackend::QuerySearchTerms(
+    const std::vector<SearchRow::SearchColumnID>& projections,
+    const std::string& selection,
+    const std::vector<string16>& selection_args,
+    const std::string& sort_order) {
+  if (projections.empty())
+    return NULL;
+
+  if (!EnsureInitializedAndUpdated())
+    return NULL;
+
+  std::string sql;
+  sql.append("SELECT ");
+  AppendSearchResultColumn(projections, &sql);
+  sql.append(" FROM android_cache_db.search_terms ");
+
+  if (!selection.empty()) {
+    sql.append(" WHERE ");
+    sql.append(selection);
+  }
+
+  if (!sort_order.empty()) {
+    sql.append(" ORDER BY ");
+    sql.append(sort_order);
+  }
+
+  scoped_ptr<sql::Statement> statement(new sql::Statement(
+      db_->GetUniqueStatement(sql.c_str())));
+  int count = 0;
+  BindStatement(selection_args, statement.get(), &count);
+  if (!statement->is_valid()) {
+    LOG(ERROR) << db_->GetErrorMessage();
+    return NULL;
+  }
+  sql::Statement* result = statement.release();
+  return new AndroidStatement(result, -1);
+}
+
+bool AndroidProviderBackend::UpdateSearchTerms(
+    const SearchRow& row,
+    const std::string& selection,
+    const std::vector<string16>& selection_args,
+    int* update_count) {
+  if (!EnsureInitializedAndUpdated())
+    return false;
+
+  SearchTerms search_terms;
+  if (!GetSelectedSearchTerms(selection, selection_args, &search_terms))
+    return false;
+
+  // We can not update search term if multiple row selected.
+  if (row.is_value_set_explicitly(SearchRow::SEARCH_TERM) &&
+      search_terms.size() > 1)
+    return false;
+
+  *update_count = search_terms.size();
+
+  if (search_terms.empty())
+    return true;
+
+  if (row.is_value_set_explicitly(SearchRow::SEARCH_TERM)) {
+    SearchTermRow search_term_row;
+    SearchRow search_row = row;
+    if (!history_db_->GetSearchTerm(search_terms[0], &search_term_row))
+      return false;
+
+    search_term_row.term = search_row.search_term();
+    if (!search_row.is_value_set_explicitly(SearchRow::SEARCH_TIME))
+      search_row.set_search_time(search_term_row.last_visit_time);
+    else
+      search_term_row.last_visit_time = search_row.search_time();
+
+    // Delete the original search term.
+    if (!history_db_->DeleteKeywordSearchTerm(search_terms[0]))
+      return false;
+
+    // Add the new one.
+    if (!AddSearchTerm(search_row))
+      return false;
+
+    // Update the cache table so the id will not be changed.
+    if (!history_db_->UpdateSearchTerm(search_term_row.id, search_term_row))
+      return false;
+
+     return true;
+  }
+
+  for (SearchTerms::const_iterator i = search_terms.begin();
+       i != search_terms.end(); ++i) {
+    SearchTermRow search_term_row;
+    if (!history_db_->GetSearchTerm(*i, &search_term_row))
+      return false;
+
+    // Check whether the given search time less than the existing one.
+    if (search_term_row.last_visit_time > row.search_time())
+      return false;
+
+    std::vector<KeywordSearchTermRow> search_term_rows;
+    if (!history_db_->GetKeywordSearchTermRows(*i, &search_term_rows) ||
+        search_term_rows.empty())
+      return false;
+
+    // Actually only search_time update. As there might multiple URLs
+    // asocciated with the keyword, Just update the first one's last_visit_time.
+    URLRow url_row;
+    if (!history_db_->GetURLRow(search_term_rows[0].url_id, &url_row))
+      return false;
+
+    BookmarkRow bookmark_row;
+    bookmark_row.set_last_visit_time(row.search_time());
+    TableIDRow table_id_row;
+    table_id_row.url_id = url_row.id();
+    TableIDRows table_id_rows;
+    table_id_rows.push_back(table_id_row);
+    if (!urls_handler_->Update(bookmark_row, table_id_rows))
+      return false;
+
+    if (!visit_handler_->Update(bookmark_row, table_id_rows))
+      return false;
+  }
+  return true;
+}
+
+SearchTermID AndroidProviderBackend::InsertSearchTerm(
+    const SearchRow& values) {
+  if (!EnsureInitializedAndUpdated())
+    return 0;
+
+  if (!AddSearchTerm(values))
+    return 0;
+
+  SearchTermID id = history_db_->GetSearchTerm(values.search_term(), NULL);
+  if (!id)
+    // Note the passed in Time() will be changed in UpdateSearchTermTable().
+    id = history_db_->AddSearchTerm(values.search_term(), Time());
+  return id;
+}
+
+bool AndroidProviderBackend::DeleteSearchTerms(
+    const std::string& selection,
+    const std::vector<string16>& selection_args,
+    int * deleted_count) {
+  SearchTerms rows;
+  if (!GetSelectedSearchTerms(selection, selection_args, &rows))
+    return false;
+
+  *deleted_count = rows.size();
+  if (rows.empty())
+    return true;
+
+  for (SearchTerms::const_iterator i = rows.begin(); i != rows.end(); ++i)
+    if (!history_db_->DeleteKeywordSearchTerm(*i))
+      return false;
+  // We don't delete the rows in search_terms table, as once the
+  // search_terms table is updated with keyword_search_terms, all
+  // keyword cache not found in the keyword_search_terms will be removed.
+  return true;
+}
+
 bool AndroidProviderBackend::EnsureInitializedAndUpdated() {
   if (!initialized_) {
     if (!Init())
@@ -444,6 +609,11 @@ bool AndroidProviderBackend::UpdateTables() {
 
   if (!UpdateFavicon()) {
     LOG(ERROR) << "Update of the icons failed";
+    return false;
+  }
+
+  if (!UpdateSearchTermTable()) {
+    LOG(ERROR) << "Update of the search_terms failed";
     return false;
   }
   return true;
@@ -531,6 +701,29 @@ bool AndroidProviderBackend::UpdateFavicon() {
   return true;
 }
 
+bool AndroidProviderBackend::UpdateSearchTermTable() {
+  sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE,
+                                                   kSearchTermUpdateClause));
+  while (statement.Step()) {
+    string16 term = statement.ColumnString16(0);
+    Time last_visit_time = Time::FromInternalValue(statement.ColumnInt64(1));
+    SearchTermRow search_term_row;
+    if (history_db_->GetSearchTerm(term, &search_term_row) &&
+        search_term_row.last_visit_time != last_visit_time) {
+      search_term_row.last_visit_time = last_visit_time;
+      if (!history_db_->UpdateSearchTerm(search_term_row.id, search_term_row))
+        return false;
+    } else {
+      if (!history_db_->AddSearchTerm(term, last_visit_time))
+        return false;
+    }
+  }
+  if (!history_db_->DeleteUnusedSearchTerms())
+    return false;
+
+  return true;
+}
+
 int AndroidProviderBackend::AppendBookmarkResultColumn(
     const std::vector<BookmarkRow::BookmarkColumnID>& projections,
     std::string* result_column) {
@@ -582,6 +775,46 @@ bool AndroidProviderBackend::GetSelectedURLs(
     rows->push_back(row);
   }
   return true;
+}
+
+bool AndroidProviderBackend::GetSelectedSearchTerms(
+    const std::string& selection,
+    const std::vector<string16>& selection_args,
+    SearchTerms* rows) {
+  std::string sql("SELECT search "
+                  "FROM android_cache_db.search_terms ");
+  if (!selection.empty()) {
+    sql.append(" WHERE ");
+    sql.append(selection);
+  }
+  sql::Statement statement(db_->GetUniqueStatement(sql.c_str()));
+  int count = 0;
+  BindStatement(selection_args, &statement, &count);
+  if (!statement.is_valid()) {
+    LOG(ERROR) << db_->GetErrorMessage();
+    return false;
+  }
+  while (statement.Step()) {
+    rows->push_back(statement.ColumnString16(0));
+  }
+  return true;
+}
+
+void AndroidProviderBackend::AppendSearchResultColumn(
+    const std::vector<SearchRow::SearchColumnID>& projections,
+    std::string* result_column) {
+  bool first = true;
+  int index = 0;
+  for (std::vector<SearchRow::SearchColumnID>::const_iterator i =
+           projections.begin(); i != projections.end(); ++i) {
+    if (first)
+      first = false;
+    else
+      result_column->append(", ");
+
+    result_column->append(SearchRow::GetAndroidName(*i));
+    index++;
+  }
 }
 
 bool AndroidProviderBackend::SimulateUpdateURL(
@@ -748,6 +981,57 @@ void AndroidProviderBackend::BroadcastNotifications(
        i != notifications.end(); ++i) {
     delegate_->BroadcastNotifications(i->type, i->detail);
   }
+}
+
+bool AndroidProviderBackend::AddSearchTerm(const SearchRow& values) {
+  DCHECK(values.is_value_set_explicitly(SearchRow::SEARCH_TERM));
+  DCHECK(values.is_value_set_explicitly(SearchRow::TEMPLATE_URL));
+  DCHECK(values.is_value_set_explicitly(SearchRow::URL));
+
+  URLRow url_row;
+  BookmarkRow bookmark_row;
+  // Android CTS test BrowserTest.testAccessSearches allows insert the same
+  // seach term multiple times, and just search time need updated.
+  if (history_db_->GetRowForURL(values.url(), &url_row)) {
+    // Already exist, Add a visit.
+    if (values.is_value_set_explicitly(SearchRow::SEARCH_TIME))
+      bookmark_row.set_last_visit_time(values.search_time());
+    else
+      bookmark_row.set_visit_count(url_row.visit_count() + 1);
+    TableIDRows table_id_rows;
+    TableIDRow table_id_row;
+    table_id_row.url = values.url();
+    table_id_row.url_id = url_row.id();
+    table_id_rows.push_back(table_id_row);
+    if (!urls_handler_->Update(bookmark_row, table_id_rows))
+      return false;
+    if (!visit_handler_->Update(bookmark_row, table_id_rows))
+      return false;
+
+    if (!history_db_->GetKeywordSearchTermRow(url_row.id(), NULL))
+      if (!history_db_->SetKeywordSearchTermsForURL(url_row.id(),
+               values.template_url_id(), values.search_term()))
+        return false;
+  } else {
+    bookmark_row.set_raw_url(values.url().spec());
+    bookmark_row.set_url(values.url());
+    if (values.is_value_set_explicitly(SearchRow::SEARCH_TIME))
+      bookmark_row.set_last_visit_time(values.search_time());
+
+    if (!urls_handler_->Insert(&bookmark_row))
+      return false;
+
+    if (!visit_handler_->Insert(&bookmark_row))
+      return false;
+
+    if (!android_urls_handler_->Insert(&bookmark_row))
+      return false;
+
+    if (!history_db_->SetKeywordSearchTermsForURL(bookmark_row.url_id(),
+                          values.template_url_id(), values.search_term()))
+      return false;
+  }
+  return true;
 }
 
 }  // namespace history

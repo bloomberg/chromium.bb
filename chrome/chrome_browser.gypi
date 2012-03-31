@@ -1129,6 +1129,8 @@
         'browser/history/android/bookmark_model_sql_handler.h',
         'browser/history/android/favicon_sql_handler.cc',
         'browser/history/android/favicon_sql_handler.h',
+        'browser/history/android/sql_handler.cc',
+        'browser/history/android/sql_handler.h',
         'browser/history/android/urls_sql_handler.cc',
         'browser/history/android/urls_sql_handler.h',
         'browser/history/android/visit_sql_handler.cc',

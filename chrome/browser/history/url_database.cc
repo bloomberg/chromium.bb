@@ -386,6 +386,12 @@ bool URLDatabase::CreateKeywordSearchTermsIndices() {
     return false;
   }
 
+  // For query or deletion by term.
+  if (!GetDB().Execute(
+          "CREATE INDEX IF NOT EXISTS keyword_search_terms_index3 ON "
+          "keyword_search_terms (term)")) {
+    return false;
+  }
   return true;
 }
 
@@ -439,6 +445,26 @@ bool URLDatabase::GetKeywordSearchTermRow(URLID url_id,
   return true;
 }
 
+bool URLDatabase::GetKeywordSearchTermRows(
+    const string16& term,
+    std::vector<KeywordSearchTermRow>* rows) {
+  sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
+      "SELECT keyword_id, url_id FROM keyword_search_terms WHERE term=?"));
+  statement.BindString16(0, term);
+
+  if (!statement.is_valid())
+    return false;
+
+  while (statement.Step()) {
+    KeywordSearchTermRow row;
+    row.url_id = statement.ColumnInt64(1);
+    row.keyword_id = statement.ColumnInt64(0);
+    row.term = term;
+    rows->push_back(row);
+  }
+  return true;
+}
+
 void URLDatabase::DeleteAllSearchTermsForKeyword(
     TemplateURLID keyword_id) {
   DCHECK(keyword_id);
@@ -486,6 +512,14 @@ void URLDatabase::GetMostRecentKeywordSearchTerms(
     visit.time = base::Time::FromInternalValue(statement.ColumnInt64(2));
     matches->push_back(visit);
   }
+}
+
+bool URLDatabase::DeleteKeywordSearchTerm(const string16& term) {
+  sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
+      "DELETE FROM keyword_search_terms WHERE term=?"));
+  statement.BindString16(0, term);
+
+  return statement.Run();
 }
 
 bool URLDatabase::DropStarredIDFromURLs() {

@@ -116,6 +116,21 @@ SearchRow::SearchColumnID SearchRow::GetSearchColumnID(
     return i->second;
 }
 
+AndroidURLRow::AndroidURLRow()
+    : id(0),
+      url_id(0) {
+}
+
+AndroidURLRow::~AndroidURLRow() {
+}
+
+SearchTermRow::SearchTermRow()
+    : id(0) {
+}
+
+SearchTermRow::~SearchTermRow() {
+}
+
 AndroidStatement::AndroidStatement(sql::Statement* statement, int favicon_index)
     : statement_(statement),
       favicon_index_(favicon_index) {

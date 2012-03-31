@@ -267,4 +267,80 @@ TEST_F(URLDatabaseTest, IconMappingEnumerator) {
   ASSERT_FALSE(e.GetNextIconMapping(&icon_mapping));
 }
 
+// Test GetKeywordSearchTermRows and DeleteSearchTerm
+TEST_F(URLDatabaseTest, GetAndDeleteKeywordSearchTermByTerm) {
+  URLRow url_info1(GURL("http://www.google.com/"));
+  url_info1.set_title(UTF8ToUTF16("Google"));
+  url_info1.set_visit_count(4);
+  url_info1.set_typed_count(2);
+  url_info1.set_last_visit(Time::Now() - TimeDelta::FromDays(1));
+  url_info1.set_hidden(false);
+  URLID url_id1 = AddURL(url_info1);
+  ASSERT_NE(0, url_id1);
+
+  // Add a keyword visit.
+  TemplateURLID keyword_id = 100;
+  string16 keyword = UTF8ToUTF16("visit");
+  ASSERT_TRUE(SetKeywordSearchTermsForURL(url_id1, keyword_id, keyword));
+
+  URLRow url_info2(GURL("https://www.google.com/"));
+  url_info2.set_title(UTF8ToUTF16("Google"));
+  url_info2.set_visit_count(4);
+  url_info2.set_typed_count(2);
+  url_info2.set_last_visit(Time::Now() - TimeDelta::FromDays(1));
+  url_info2.set_hidden(false);
+  URLID url_id2 = AddURL(url_info2);
+  ASSERT_NE(0, url_id2);
+  // Add the same keyword for url_info2.
+  ASSERT_TRUE(SetKeywordSearchTermsForURL(url_id2, keyword_id, keyword));
+
+  // Add another URL for different keyword.
+  URLRow url_info3(GURL("https://www.google.com/search"));
+  url_info3.set_title(UTF8ToUTF16("Google"));
+  url_info3.set_visit_count(4);
+  url_info3.set_typed_count(2);
+  url_info3.set_last_visit(Time::Now() - TimeDelta::FromDays(1));
+  url_info3.set_hidden(false);
+  URLID url_id3 = AddURL(url_info3);
+  ASSERT_NE(0, url_id3);
+  string16 keyword2 = UTF8ToUTF16("Search");
+
+  ASSERT_TRUE(SetKeywordSearchTermsForURL(url_id3, keyword_id, keyword2));
+
+  // We should get 2 rows for |keyword|.
+  std::vector<KeywordSearchTermRow> rows;
+  ASSERT_TRUE(GetKeywordSearchTermRows(keyword, &rows));
+  ASSERT_EQ(2u, rows.size());
+  if (rows[0].url_id == url_id1) {
+    EXPECT_EQ(keyword, rows[0].term);
+    EXPECT_EQ(keyword, rows[1].term);
+    EXPECT_EQ(url_id2, rows[1].url_id);
+  } else {
+    EXPECT_EQ(keyword, rows[0].term);
+    EXPECT_EQ(url_id1, rows[1].url_id);
+    EXPECT_EQ(keyword, rows[1].term);
+    EXPECT_EQ(url_id2, rows[0].url_id);
+  }
+
+  // We should get 1 row for |keyword2|.
+  rows.clear();
+  ASSERT_TRUE(GetKeywordSearchTermRows(keyword2, &rows));
+  ASSERT_EQ(1u, rows.size());
+  EXPECT_EQ(keyword2, rows[0].term);
+  EXPECT_EQ(url_id3, rows[0].url_id);
+
+  // Delete all rows have keyword.
+  ASSERT_TRUE(DeleteKeywordSearchTerm(keyword));
+  rows.clear();
+  // We should still find keyword2.
+  ASSERT_TRUE(GetKeywordSearchTermRows(keyword2, &rows));
+  ASSERT_EQ(1u, rows.size());
+  EXPECT_EQ(keyword2, rows[0].term);
+  EXPECT_EQ(url_id3, rows[0].url_id);
+  rows.clear();
+  // No row for keyword.
+  ASSERT_TRUE(GetKeywordSearchTermRows(keyword, &rows));
+  EXPECT_TRUE(rows.empty());
+}
+
 }  // namespace history

@@ -5,27 +5,17 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/scoped_temp_dir.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/history/android/android_cache_database.h"
+#include "chrome/browser/history/android/android_time.h"
 #include "chrome/browser/history/history_database.h"
 #include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using base::Time;
+using base::TimeDelta;
+
 namespace history {
-
-class SimpleAndroidCacheDatabase : public AndroidCacheDatabase {
- public:
-  explicit SimpleAndroidCacheDatabase(sql::Connection* connection)
-      :db_(connection) {
-  }
-
- protected:
-  sql::Connection& GetDB() {
-    return *db_;
-  }
-
- private:
-  sql::Connection* db_;
-};
 
 class AndroidCacheDatabaseTest : public testing::Test {
  public:
@@ -38,25 +28,69 @@ class AndroidCacheDatabaseTest : public testing::Test {
   virtual void SetUp() {
     // Get a temporary directory for the test DB files.
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    main_db_name_ = temp_dir_.path().AppendASCII("history.db");
+    FilePath history_db_name_ = temp_dir_.path().AppendASCII("history.db");
     android_cache_db_name_ = temp_dir_.path().AppendASCII(
         "TestAndroidCache.db");
+    ASSERT_EQ(sql::INIT_OK, history_db_.Init(history_db_name_,
+                                             temp_dir_.path()));
+    ASSERT_EQ(sql::INIT_OK,
+              history_db_.InitAndroidCacheDatabase(android_cache_db_name_));
   }
 
   ScopedTempDir temp_dir_;
   FilePath android_cache_db_name_;
-  FilePath main_db_name_;
+  HistoryDatabase history_db_;
 };
 
 TEST_F(AndroidCacheDatabaseTest, InitAndroidCacheDatabase) {
-  sql::Connection connection;
-  ASSERT_TRUE(connection.Open(main_db_name_));
-  SimpleAndroidCacheDatabase android_cache_db(&connection);
-  EXPECT_EQ(sql::INIT_OK,
-            android_cache_db.InitAndroidCacheDatabase(android_cache_db_name_));
-  // Try to run a sql against the table to verify it exists.
-  EXPECT_TRUE(connection.Execute(
+  // Try to run a sql against the table to verify them exist.
+  AndroidCacheDatabase* cache_db =
+      static_cast<AndroidCacheDatabase*>(&history_db_);
+  EXPECT_TRUE(cache_db->GetDB().Execute(
       "DELETE FROM android_cache_db.bookmark_cache"));
+  EXPECT_TRUE(cache_db->GetDB().Execute(
+      "DELETE FROM android_cache_db.search_terms"));
+}
+
+TEST_F(AndroidCacheDatabaseTest, SearchTermsTable) {
+  // Test AddSearchTerm.
+  Time search_time1 = Time::Now() - TimeDelta::FromDays(1);
+  string16 search_term1(UTF8ToUTF16("search term 1"));
+  SearchTermID id1 = history_db_.AddSearchTerm(search_term1, search_time1);
+  ASSERT_TRUE(id1);
+  SearchTermRow row1;
+  ASSERT_EQ(id1, history_db_.GetSearchTerm(search_term1, &row1));
+  EXPECT_EQ(search_term1, row1.term);
+  EXPECT_EQ(ToMilliseconds(search_time1),
+            ToMilliseconds(row1.last_visit_time));
+  EXPECT_EQ(id1, row1.id);
+
+  // Test UpdateSearchTerm.
+  SearchTermRow update_row1;
+  update_row1.term = (UTF8ToUTF16("update search term1"));
+  update_row1.last_visit_time = Time::Now();
+  ASSERT_TRUE(history_db_.UpdateSearchTerm(id1, update_row1));
+  EXPECT_EQ(id1, history_db_.GetSearchTerm(update_row1.term, &row1));
+  EXPECT_EQ(update_row1.term, row1.term);
+  EXPECT_EQ(ToMilliseconds(update_row1.last_visit_time),
+            ToMilliseconds(row1.last_visit_time));
+  EXPECT_EQ(id1, row1.id);
+
+  Time search_time2 = Time::Now() - TimeDelta::FromHours(1);
+  string16 search_term2(UTF8ToUTF16("search term 2"));
+  SearchTermID id2 = history_db_.AddSearchTerm(search_term2, search_time2);
+  ASSERT_TRUE(id2);
+  ASSERT_TRUE(history_db_.SetKeywordSearchTermsForURL(1, 1, search_term2));
+  ASSERT_TRUE(history_db_.DeleteUnusedSearchTerms());
+
+  // The search_term1 was removed.
+  EXPECT_FALSE(history_db_.GetSearchTerm(update_row1.term, NULL));
+  // The search_term2 should still in the table.
+  ASSERT_EQ(id2, history_db_.GetSearchTerm(search_term2, &row1));
+  EXPECT_EQ(id2, row1.id);
+  EXPECT_EQ(ToMilliseconds(search_time2),
+            ToMilliseconds(row1.last_visit_time));
+  EXPECT_EQ(search_term2, row1.term);
 }
 
 }  // namespace history

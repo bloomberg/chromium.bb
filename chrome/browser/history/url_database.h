@@ -197,9 +197,14 @@ class URLDatabase {
                                    TemplateURLID keyword_id,
                                    const string16& term);
 
-  // Looks up a keyword search term given a url id. Fills row with the data.
-  // Returns true on success and false otherwise.
+  // Looks up a keyword search term given a url id. Returns all the search terms
+  // in |rows|. Returns true on success.
   bool GetKeywordSearchTermRow(URLID url_id, KeywordSearchTermRow* row);
+
+  // Looks up all keyword search terms given a term, Fills the rows with data.
+  // Returns true on success and false otherwise.
+  bool GetKeywordSearchTermRows(const string16& term,
+                                std::vector<KeywordSearchTermRow>* rows);
 
   // Deletes all search terms for the specified keyword that have been added by
   // way of SetKeywordSearchTermsForURL.
@@ -212,6 +217,9 @@ class URLDatabase {
       const string16& prefix,
       int max_count,
       std::vector<KeywordSearchTermVisit>* matches);
+
+  // Deletes all searches matching |term|.
+  bool DeleteKeywordSearchTerm(const string16& term);
 
   // Migration -----------------------------------------------------------------
 

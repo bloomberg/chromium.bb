@@ -30,6 +30,9 @@ sql::InitStatus AndroidCacheDatabase::InitAndroidCacheDatabase(
   if (!CreateBookmarkCacheTable())
     return sql::INIT_FAILURE;
 
+  if (!CreateSearchTermsTable())
+    return sql::INIT_FAILURE;
+
   return sql::INIT_OK;
 }
 
@@ -103,6 +106,71 @@ bool AndroidCacheDatabase::SetFaviconID(URLID url_id, FaviconID favicon_id) {
   return true;
 }
 
+SearchTermID AndroidCacheDatabase::AddSearchTerm(
+    const string16& term,
+    const base::Time& last_visit_time) {
+  sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
+      "INSERT INTO android_cache_db.search_terms (search, "
+      "date) VALUES (?, ?)"));
+
+  statement.BindString16(0, term);
+  statement.BindInt64(1, ToMilliseconds(last_visit_time));
+
+  if (!statement.Run()) {
+    LOG(ERROR) << GetDB().GetErrorMessage();
+    return 0;
+  }
+
+  return GetDB().GetLastInsertRowId();
+}
+
+bool AndroidCacheDatabase::UpdateSearchTerm(SearchTermID id,
+                                            const SearchTermRow& row) {
+  sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
+      "UPDATE android_cache_db.search_terms "
+      "SET search = ?, date = ? "
+      "WHERE _id = ?"
+      ));
+  statement.BindString16(0, row.term);
+  statement.BindInt64(1, ToMilliseconds(row.last_visit_time));
+  statement.BindInt64(2, id);
+
+  return statement.Run();
+}
+
+SearchTermID AndroidCacheDatabase::GetSearchTerm(const string16& term,
+                                                 SearchTermRow* row) {
+  sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
+      "SELECT _id, search, date "
+      "FROM android_cache_db.search_terms "
+      "WHERE search = ?"
+      ));
+  if (!statement.is_valid()) {
+    LOG(ERROR) << GetDB().GetErrorMessage();
+    return 0;
+  }
+  statement.BindString16(0, term);
+  if (!statement.Step())
+    return 0;
+
+  if (row) {
+    row->id = statement.ColumnInt64(0);
+    row->term = statement.ColumnString16(1);
+    row->last_visit_time = MillisecondsToTime(statement.ColumnInt64(2));
+  }
+  return statement.ColumnInt64(0);
+}
+
+bool AndroidCacheDatabase::DeleteUnusedSearchTerms() {
+  sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
+      "DELETE FROM android_cache_db.search_terms "
+      "WHERE search NOT IN (SELECT DISTINCT term FROM keyword_search_terms)"
+      ));
+  if (!statement.is_valid())
+    return false;
+  return statement.Run();
+}
+
 bool AndroidCacheDatabase::CreateDatabase(const FilePath& db_name) {
   db_name_ = db_name;
   if (file_util::PathExists(db_name_))
@@ -151,6 +219,33 @@ bool AndroidCacheDatabase::CreateBookmarkCacheTable() {
   sql.assign("CREATE INDEX ");
   sql.append("android_cache_db.bookmark_cache_url_id_idx ON "
              "bookmark_cache(url_id)");
+  if (!GetDB().Execute(sql.c_str())) {
+    LOG(ERROR) << GetDB().GetErrorMessage();
+    return false;
+  }
+  return true;
+}
+
+bool AndroidCacheDatabase::CreateSearchTermsTable() {
+  const char* name = "android_cache_db.search_terms";
+
+  // The table's column name matchs Android's definition.
+  std::string sql;
+  sql.append("CREATE TABLE ");
+  sql.append(name);
+  sql.append("("
+             "_id INTEGER PRIMARY KEY,"
+             "date INTEGER NOT NULL,"   // last visit time in millisecond.
+             "search LONGVARCHAR NOT NULL)");   // The actual search term.
+
+  if (!GetDB().Execute(sql.c_str())) {
+    LOG(ERROR) << GetDB().GetErrorMessage();
+    return false;
+  }
+
+  sql.assign("CREATE INDEX "
+             "android_cache_db.search_terms_term_idx ON "
+             "search_terms(search)");
   if (!GetDB().Execute(sql.c_str())) {
     LOG(ERROR) << GetDB().GetErrorMessage();
     return false;
