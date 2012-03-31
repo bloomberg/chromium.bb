@@ -13,8 +13,7 @@
 namespace chromeos {
 namespace system {
 
-class PointerDeviceObserver
-    : public DeviceHierarchyObserver {
+class PointerDeviceObserver : public DeviceHierarchyObserver {
  public:
   PointerDeviceObserver();
   virtual ~PointerDeviceObserver();
@@ -39,6 +38,9 @@ class PointerDeviceObserver
  private:
   // DeviceHierarchyObserver implementation.
   virtual void DeviceHierarchyChanged() OVERRIDE;
+  virtual void DeviceAdded(int device_id) OVERRIDE {}
+  virtual void DeviceRemoved(int device_id) OVERRIDE {}
+  virtual void DeviceKeyPressedOrReleased(int device_id) OVERRIDE {}
 
   // Check for input devices.
   void CheckTouchpadExists();

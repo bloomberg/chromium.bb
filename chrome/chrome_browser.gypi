@@ -3274,6 +3274,8 @@
         'browser/ui/views/ash/gesture_prefs_aura.cc',
         'browser/ui/views/ash/ime_controller_chromeos.cc',
         'browser/ui/views/ash/ime_controller_chromeos.h',
+        'browser/ui/views/ash/key_rewriter.cc',
+        'browser/ui/views/ash/key_rewriter.h',
         'browser/ui/views/ash/launcher/chrome_launcher_delegate.cc',
         'browser/ui/views/ash/launcher/chrome_launcher_delegate.h',
         'browser/ui/views/ash/launcher/launcher_app_icon_loader.cc',

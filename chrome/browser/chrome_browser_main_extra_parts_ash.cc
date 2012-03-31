@@ -7,11 +7,13 @@
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/ash_switches.h"
 #include "ash/shell.h"
+#include "ash/wm/key_rewriter_event_filter.h"
 #include "base/command_line.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/views/ash/caps_lock_handler.h"
 #include "chrome/browser/ui/views/ash/chrome_shell_delegate.h"
+#include "chrome/browser/ui/views/ash/key_rewriter.h"
 #include "chrome/browser/ui/views/ash/screen_orientation_listener.h"
 #include "chrome/browser/ui/views/ash/screenshot_taker.h"
 #include "chrome/browser/ui/views/ash/status_area_host_aura.h"
@@ -49,6 +51,8 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
 
   // Shell takes ownership of ChromeShellDelegate.
   ash::Shell* shell = ash::Shell::CreateInstance(new ChromeShellDelegate);
+  shell->key_rewriter_filter()->SetKeyRewriterDelegate(
+      scoped_ptr<ash::KeyRewriterDelegate>(new KeyRewriter).Pass());
   shell->accelerator_controller()->SetScreenshotDelegate(
       scoped_ptr<ash::ScreenshotDelegate>(new ScreenshotTaker).Pass());
 #if defined(OS_CHROMEOS)
