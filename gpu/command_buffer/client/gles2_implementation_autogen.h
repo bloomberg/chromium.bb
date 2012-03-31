@@ -206,8 +206,8 @@ GLuint CreateProgram() {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << this << "] glCreateProgram(" << ")");
   GLuint client_id;
-  id_handlers_[id_namespaces::kProgramsAndShaders]->
-      MakeIds(0, 1, &client_id);
+  GetIdHandler(id_namespaces::kProgramsAndShaders)->
+      MakeIds(this, 0, 1, &client_id);
   helper_->CreateProgram(client_id);
   GPU_CLIENT_LOG("returned " << client_id);
   return client_id;
@@ -217,8 +217,8 @@ GLuint CreateShader(GLenum type) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << this << "] glCreateShader(" << GLES2Util::GetStringShaderType(type) << ")");  // NOLINT
   GLuint client_id;
-  id_handlers_[id_namespaces::kProgramsAndShaders]->
-      MakeIds(0, 1, &client_id);
+  GetIdHandler(id_namespaces::kProgramsAndShaders)->
+      MakeIds(this, 0, 1, &client_id);
   helper_->CreateShader(type, client_id);
   GPU_CLIENT_LOG("returned " << client_id);
   return client_id;
@@ -402,8 +402,8 @@ void GenBuffers(GLsizei n, GLuint* buffers) {
     return;
   }
   GPU_CLIENT_SINGLE_THREAD_CHECK();
-  id_handlers_[id_namespaces::kBuffers]->
-      MakeIds(0, n, buffers);
+  GetIdHandler(id_namespaces::kBuffers)->
+      MakeIds(this, 0, n, buffers);
   helper_->GenBuffersImmediate(n, buffers);
   GPU_CLIENT_LOG_CODE_BLOCK({
     for (GLsizei i = 0; i < n; ++i) {
@@ -425,8 +425,8 @@ void GenFramebuffers(GLsizei n, GLuint* framebuffers) {
     return;
   }
   GPU_CLIENT_SINGLE_THREAD_CHECK();
-  id_handlers_[id_namespaces::kFramebuffers]->
-      MakeIds(0, n, framebuffers);
+  GetIdHandler(id_namespaces::kFramebuffers)->
+      MakeIds(this, 0, n, framebuffers);
   helper_->GenFramebuffersImmediate(n, framebuffers);
   GPU_CLIENT_LOG_CODE_BLOCK({
     for (GLsizei i = 0; i < n; ++i) {
@@ -442,8 +442,8 @@ void GenRenderbuffers(GLsizei n, GLuint* renderbuffers) {
     return;
   }
   GPU_CLIENT_SINGLE_THREAD_CHECK();
-  id_handlers_[id_namespaces::kRenderbuffers]->
-      MakeIds(0, n, renderbuffers);
+  GetIdHandler(id_namespaces::kRenderbuffers)->
+      MakeIds(this, 0, n, renderbuffers);
   helper_->GenRenderbuffersImmediate(n, renderbuffers);
   GPU_CLIENT_LOG_CODE_BLOCK({
     for (GLsizei i = 0; i < n; ++i) {
@@ -459,8 +459,8 @@ void GenTextures(GLsizei n, GLuint* textures) {
     return;
   }
   GPU_CLIENT_SINGLE_THREAD_CHECK();
-  id_handlers_[id_namespaces::kTextures]->
-      MakeIds(0, n, textures);
+  GetIdHandler(id_namespaces::kTextures)->
+      MakeIds(this, 0, n, textures);
   helper_->GenTexturesImmediate(n, textures);
   GPU_CLIENT_LOG_CODE_BLOCK({
     for (GLsizei i = 0; i < n; ++i) {
@@ -1416,8 +1416,8 @@ void GenQueriesEXT(GLsizei n, GLuint* queries) {
     return;
   }
   GPU_CLIENT_SINGLE_THREAD_CHECK();
-  id_handlers_[id_namespaces::kQueries]->
-      MakeIds(0, n, queries);
+  GetIdHandler(id_namespaces::kQueries)->
+      MakeIds(this, 0, n, queries);
   helper_->GenQueriesEXTImmediate(n, queries);
   GPU_CLIENT_LOG_CODE_BLOCK({
     for (GLsizei i = 0; i < n; ++i) {
