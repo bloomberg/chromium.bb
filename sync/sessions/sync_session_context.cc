@@ -11,6 +11,9 @@
 namespace browser_sync {
 namespace sessions {
 
+const unsigned int kMaxMessagesToRecord = 10;
+const unsigned int kMaxMessageSizeToRecord = 5 * 1024;
+
 SyncSessionContext::SyncSessionContext(
     ServerConnectionManager* connection_manager,
     syncable::Directory* directory,
@@ -25,7 +28,8 @@ SyncSessionContext::SyncSessionContext(
       extensions_activity_monitor_(extensions_activity_monitor),
       notifications_enabled_(false),
       max_commit_batch_size_(kDefaultMaxCommitBatchSize),
-      debug_info_getter_(debug_info_getter) {
+      debug_info_getter_(debug_info_getter),
+      traffic_recorder_(kMaxMessagesToRecord, kMaxMessageSizeToRecord) {
   std::vector<SyncEngineEventListener*>::const_iterator it;
   for (it = listeners.begin(); it != listeners.end(); ++it)
     listeners_.AddObserver(*it);
@@ -36,7 +40,8 @@ SyncSessionContext::SyncSessionContext()
       directory_(NULL),
       registrar_(NULL),
       extensions_activity_monitor_(NULL),
-      debug_info_getter_(NULL) {
+      debug_info_getter_(NULL),
+      traffic_recorder_(kMaxMessagesToRecord, kMaxMessageSizeToRecord) {
 }
 
 SyncSessionContext::~SyncSessionContext() {

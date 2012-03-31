@@ -35,16 +35,12 @@ void LogData(const T& data,
 void LogClientToServerMessage(const sync_pb::ClientToServerMessage& msg) {
   LogData(msg, &ClientToServerMessageToValue,
           "******Client To Server Message******");
-  // TODO(lipalani) : Store the data (minus specifics)
-  // in a circular buffer in memory.
 }
 
 void LogClientToServerResponse(
     const sync_pb::ClientToServerResponse& response) {
   LogData(response, &ClientToServerResponseToValue,
           "******Server Response******");
-  // TODO(lipalani) : Store the data (minus specifics)
-  // in a circular buffer in memory.
 }
 
 }  // namespace browser_sync
