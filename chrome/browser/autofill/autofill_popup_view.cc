@@ -23,6 +23,7 @@ AutofillPopupView::AutofillPopupView(
     content::WebContents* web_contents,
     AutofillExternalDelegate* external_delegate)
     : external_delegate_(external_delegate),
+      separator_index_(0),
       selected_line_(kNoSelection) {
   if (!web_contents)
     return;
