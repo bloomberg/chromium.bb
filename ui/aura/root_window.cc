@@ -355,6 +355,11 @@ void RootWindow::OnWindowTransformed(Window* window, bool contained_mouse) {
   }
 }
 
+void RootWindow::OnKeyboardMappingChanged() {
+  FOR_EACH_OBSERVER(RootWindowObserver, observers_,
+                    OnKeyboardMappingChanged(this));
+}
+
 void RootWindow::AddRootWindowObserver(RootWindowObserver* observer) {
   observers_.AddObserver(observer);
 }

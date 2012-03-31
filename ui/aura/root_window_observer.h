@@ -25,6 +25,9 @@ class AURA_EXPORT RootWindowObserver {
   // Invoked when a window is focused.
   virtual void OnWindowFocused(Window* window) {}
 
+  // Invoked when the keyboard mapping has changed.
+  virtual void OnKeyboardMappingChanged(const RootWindow* root) {}
+
  protected:
   virtual ~RootWindowObserver() {}
 };

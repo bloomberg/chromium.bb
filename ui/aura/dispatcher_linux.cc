@@ -37,6 +37,18 @@ base::MessagePumpDispatcher::DispatchStatus DispatcherLinux::Dispatch(
     ui::UpdateDeviceList();
     return EVENT_PROCESSED;
   }
+
+  // MappingNotify events (meaning that the keyboard or pointer buttons have
+  // been remapped) aren't associated with a window; send them to all
+  // dispatchers.
+  if (xev->type == MappingNotify) {
+    for (DispatchersMap::const_iterator it = dispatchers_.begin();
+         it != dispatchers_.end(); ++it) {
+      it->second->Dispatch(xev);
+    }
+    return EVENT_PROCESSED;
+  }
+
   MessageLoop::Dispatcher* dispatcher = GetDispatcherForXEvent(xev);
   return dispatcher ? dispatcher->Dispatch(xev) : EVENT_IGNORED;
 }

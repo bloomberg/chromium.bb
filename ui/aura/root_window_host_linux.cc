@@ -467,6 +467,7 @@ base::MessagePumpDispatcher::DispatchStatus RootWindowHostLinux::Dispatch(
         case MappingModifier:
         case MappingKeyboard:
           XRefreshKeyboardMapping(&xev->xmapping);
+          root_window_->OnKeyboardMappingChanged();
           break;
         case MappingPointer:
           ui::UpdateButtonMap();

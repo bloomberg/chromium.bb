@@ -150,17 +150,21 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   // Invoked when |window| is being destroyed.
   void OnWindowDestroying(Window* window);
 
-  // Invokved when |window|'s bounds is changed. |contained_mouse| indicates if
+  // Invoked when |window|'s bounds have changed. |contained_mouse| indicates if
   // the bounds before change contained the |last_moust_location()|.
   void OnWindowBoundsChanged(Window* window, bool contained_mouse);
 
-  // Invokved when |window|'s visibility is changed.
+  // Invoked when |window|'s visibility is changed.
   void OnWindowVisibilityChanged(Window* window, bool is_visible);
 
-  // Invokved when |window|'s tranfrom has changed. |contained_mouse|
+  // Invoked when |window|'s tranfrom has changed. |contained_mouse|
   // indicates if the bounds before change contained the
   // |last_moust_location()|.
   void OnWindowTransformed(Window* window, bool contained_mouse);
+
+  // Invoked when the keyboard mapping (in X11 terms: the mapping between
+  // keycodes and keysyms) has changed.
+  void OnKeyboardMappingChanged();
 
   // Add/remove observer. There is no need to remove the observer if
   // the root window is being deleted. In particular, you SHOULD NOT remove
