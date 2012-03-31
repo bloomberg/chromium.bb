@@ -113,6 +113,11 @@ void InstantController::Enable(Profile* profile) {
   if (!service)
     return;
 
+  base::Histogram* histogram = base::LinearHistogram::FactoryGet(
+      "Instant.Preference" + InstantFieldTrial::GetGroupName(profile), 1, 2, 3,
+      base::Histogram::kUmaTargetedHistogramFlag);
+  histogram->Add(1);
+
   service->SetBoolean(prefs::kInstantEnabledOnce, true);
   service->SetBoolean(prefs::kInstantEnabled, true);
   service->SetBoolean(prefs::kInstantConfirmDialogShown, true);
@@ -135,10 +140,10 @@ void InstantController::Disable(Profile* profile) {
                                 delta.InMinutes(), 1, 60 * 24 * 10, 50);
   }
 
-  base::Histogram* histogram = base::Histogram::FactoryGet(
-      "Instant.OptOut" + InstantFieldTrial::GetGroupName(profile), 1, 1000000,
-      50, base::Histogram::kUmaTargetedHistogramFlag);
-  histogram->Add(1);
+  base::Histogram* histogram = base::LinearHistogram::FactoryGet(
+      "Instant.Preference" + InstantFieldTrial::GetGroupName(profile), 1, 2, 3,
+      base::Histogram::kUmaTargetedHistogramFlag);
+  histogram->Add(0);
 
   service->SetBoolean(prefs::kInstantEnabledOnce, true);
   service->SetBoolean(prefs::kInstantEnabled, false);

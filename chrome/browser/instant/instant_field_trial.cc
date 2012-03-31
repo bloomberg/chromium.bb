@@ -39,6 +39,19 @@ void InstantFieldTrial::Activate() {
   g_hidden  = trial->AppendGroup("Hidden",  960);  // 96%
   g_silent  = trial->AppendGroup("Silent",   10);  //  1%
   g_control = trial->AppendGroup("Control",  10);  //  1%
+
+  int group = 0;
+  if (trial->group() == g_instant)
+    group = 1;
+  else if (trial->group() == g_suggest)
+    group = 2;
+  else if (trial->group() == g_hidden)
+    group = 3;
+  else if (trial->group() == g_silent)
+    group = 4;
+  else if (trial->group() == g_control)
+    group = 5;
+  UMA_HISTOGRAM_ENUMERATION("Instant.FieldTrial.Size", group, 6);
 }
 
 // static
@@ -47,32 +60,55 @@ InstantFieldTrial::Group InstantFieldTrial::GetGroup(Profile* profile) {
   if (command_line->HasSwitch(switches::kInstantFieldTrial)) {
     std::string switch_value =
         command_line->GetSwitchValueASCII(switches::kInstantFieldTrial);
+    Group group = INACTIVE;
     if (switch_value == switches::kInstantFieldTrialInstant)
-      return INSTANT;
-    if (switch_value == switches::kInstantFieldTrialSuggest)
-      return SUGGEST;
-    if (switch_value == switches::kInstantFieldTrialHidden)
-      return HIDDEN;
-    if (switch_value == switches::kInstantFieldTrialSilent)
-      return SILENT;
-    if (switch_value == switches::kInstantFieldTrialControl)
-      return CONTROL;
-    return INACTIVE;
+      group = INSTANT;
+    else if (switch_value == switches::kInstantFieldTrialSuggest)
+      group = SUGGEST;
+    else if (switch_value == switches::kInstantFieldTrialHidden)
+      group = HIDDEN;
+    else if (switch_value == switches::kInstantFieldTrialSilent)
+      group = SILENT;
+    else if (switch_value == switches::kInstantFieldTrialControl)
+      group = CONTROL;
+    UMA_HISTOGRAM_ENUMERATION("Instant.FieldTrial.Reason", 1, 10);
+    return group;
   }
 
   const int group = base::FieldTrialList::FindValue("Instant");
   if (group == base::FieldTrial::kNotFinalized ||
       group == base::FieldTrial::kDefaultGroupNumber) {
+    UMA_HISTOGRAM_ENUMERATION("Instant.FieldTrial.Reason", 2, 10);
     return INACTIVE;
   }
 
   const PrefService* prefs = profile ? profile->GetPrefs() : NULL;
-  if (!prefs || profile->IsOffTheRecord() ||
-      prefs->GetBoolean(prefs::kInstantEnabledOnce) ||
-      !prefs->GetBoolean(prefs::kSearchSuggestEnabled) ||
-      prefs->IsManagedPreference(prefs::kInstantEnabled)) {
+  if (!prefs) {
+    UMA_HISTOGRAM_ENUMERATION("Instant.FieldTrial.Reason", 3, 10);
     return INACTIVE;
   }
+
+  if (profile->IsOffTheRecord()) {
+    UMA_HISTOGRAM_ENUMERATION("Instant.FieldTrial.Reason", 4, 10);
+    return INACTIVE;
+  }
+
+  if (prefs->GetBoolean(prefs::kInstantEnabledOnce)) {
+    UMA_HISTOGRAM_ENUMERATION("Instant.FieldTrial.Reason", 5, 10);
+    return INACTIVE;
+  }
+
+  if (!prefs->GetBoolean(prefs::kSearchSuggestEnabled)) {
+    UMA_HISTOGRAM_ENUMERATION("Instant.FieldTrial.Reason", 6, 10);
+    return INACTIVE;
+  }
+
+  if (prefs->IsManagedPreference(prefs::kInstantEnabled)) {
+    UMA_HISTOGRAM_ENUMERATION("Instant.FieldTrial.Reason", 7, 10);
+    return INACTIVE;
+  }
+
+  UMA_HISTOGRAM_ENUMERATION("Instant.FieldTrial.Reason", 0, 10);
 
   if (group == g_instant)
     return INSTANT;
