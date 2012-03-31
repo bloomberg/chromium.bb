@@ -23,7 +23,7 @@
 namespace ash {
 
 PanelFrameView::PanelFrameView(views::Widget* frame)
-  : frame_painter_(new FramePainter) {
+    : frame_painter_(new FramePainter) {
   close_button_ = new views::ImageButton(this);
   close_button_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_APP_ACCNAME_CLOSE));
@@ -34,7 +34,8 @@ PanelFrameView::PanelFrameView(views::Widget* frame)
       l10n_util::GetStringUTF16(IDS_APP_ACCNAME_MINIMIZE));
   AddChildView(minimize_button_);
 
-  frame_painter_->Init(frame, NULL, minimize_button_, close_button_);
+  frame_painter_->Init(frame, NULL, minimize_button_, close_button_,
+                       FramePainter::SIZE_BUTTON_MINIMIZES);
 }
 
 PanelFrameView::~PanelFrameView() {

@@ -182,10 +182,6 @@ This file contains the strings for ash.
         Pull down to minimize, left or right to tile
       </message>
 
-      <message name="IDS_FRAME_MAXIMIZE_BUTTON_NO_SIDE_SNAP_TOOLTIP" desc="Tooltip for the maximize/restore button in window frames in aura when side snap is not allowed">
-        Pull down to minimize
-      </message>
-
       <!-- Status tray items -->
       <message name="IDS_ASH_STATUS_TRAY_ACCESSIBLE_NAME" desc="The accessible name of the status tray.">
         Status tray

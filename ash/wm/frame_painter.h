@@ -54,14 +54,21 @@ class ASH_EXPORT FramePainter : public aura::WindowObserver,
     INACTIVE
   };
 
+  // What happens when the |size_button_| is pressed.
+  enum SizeButtonBehavior {
+    SIZE_BUTTON_MINIMIZES,
+    SIZE_BUTTON_MAXIMIZES
+  };
+
   FramePainter();
   virtual ~FramePainter();
 
   // |frame| and buttons are used for layout and are not owned.
   void Init(views::Widget* frame,
             views::View* window_icon,
-            views::ImageButton* maximize_button,
-            views::ImageButton* close_button);
+            views::ImageButton* size_button,
+            views::ImageButton* close_button,
+            SizeButtonBehavior behavior);
 
   // Helpers for views::NonClientFrameView implementations.
   gfx::Rect GetBoundsForClientView(int top_height,
@@ -128,7 +135,7 @@ class ASH_EXPORT FramePainter : public aura::WindowObserver,
   // Not owned
   views::Widget* frame_;
   views::View* window_icon_;  // May be NULL.
-  views::ImageButton* maximize_button_;
+  views::ImageButton* size_button_;
   views::ImageButton* close_button_;
   aura::Window* window_;
 
@@ -150,6 +157,8 @@ class ASH_EXPORT FramePainter : public aura::WindowObserver,
 
   gfx::Rect header_frame_bounds_;
   scoped_ptr<ui::SlideAnimation> crossfade_animation_;
+
+  SizeButtonBehavior size_button_behavior_;
 
   DISALLOW_COPY_AND_ASSIGN(FramePainter);
 };

@@ -133,7 +133,7 @@ std::set<FramePainter*>* FramePainter::instances_ = NULL;
 FramePainter::FramePainter()
     : frame_(NULL),
       window_icon_(NULL),
-      maximize_button_(NULL),
+      size_button_(NULL),
       close_button_(NULL),
       window_(NULL),
       button_separator_(NULL),
@@ -146,7 +146,8 @@ FramePainter::FramePainter()
       previous_opacity_(0),
       crossfade_theme_frame_(NULL),
       crossfade_opacity_(0),
-      crossfade_animation_(NULL) {
+      crossfade_animation_(NULL),
+      size_button_behavior_(SIZE_BUTTON_MAXIMIZES) {
   if (!instances_)
     instances_ = new std::set<FramePainter*>();
   instances_->insert(this);
@@ -162,15 +163,17 @@ FramePainter::~FramePainter() {
 void FramePainter::Init(views::Widget* frame,
                         views::View* window_icon,
                         views::ImageButton* maximize_button,
-                        views::ImageButton* close_button) {
+                        views::ImageButton* close_button,
+                        SizeButtonBehavior behavior) {
   DCHECK(frame);
   // window_icon may be NULL.
   DCHECK(maximize_button);
   DCHECK(close_button);
   frame_ = frame;
   window_icon_ = window_icon;
-  maximize_button_ = maximize_button;
+  size_button_ = maximize_button;
   close_button_ = close_button;
+  size_button_behavior_ = behavior;
 
   // Window frame image parts.
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
@@ -258,8 +261,8 @@ int FramePainter::NonClientHitTest(views::NonClientFrameView* view,
   if (close_button_->visible() &&
       close_button_->GetMirroredBounds().Contains(point))
     return HTCLOSE;
-  if (maximize_button_->visible() &&
-      maximize_button_->GetMirroredBounds().Contains(point))
+  if (size_button_->visible() &&
+      size_button_->GetMirroredBounds().Contains(point))
     return HTMAXBUTTON;
 
   // Caption is a safe default.
@@ -274,7 +277,7 @@ gfx::Size FramePainter::GetMinimumSize(views::NonClientFrameView* view) {
   // Ensure we have enough space for the window icon and buttons.  We allow
   // the title string to collapse to zero width.
   int title_width = GetTitleOffsetX() +
-      maximize_button_->width() +
+      size_button_->width() +
       button_separator_->width() +
       close_button_->width();
   if (title_width > min_size.width())
@@ -410,7 +413,7 @@ void FramePainter::PaintTitleBar(views::NonClientFrameView* view,
     gfx::Rect title_bounds(
         title_x,
         kTitleOffsetY,
-        std::max(0, maximize_button_->x() - kTitleLogoSpacing - title_x),
+        std::max(0, size_button_->x() - kTitleLogoSpacing - title_x),
         title_font.GetHeight());
     canvas->DrawStringInt(delegate->GetWindowTitle(),
                           title_font,
@@ -431,7 +434,8 @@ void FramePainter::LayoutHeader(views::NonClientFrameView* view,
                     IDR_AURA_WINDOW_MAXIMIZED_CLOSE,
                     IDR_AURA_WINDOW_MAXIMIZED_CLOSE_H,
                     IDR_AURA_WINDOW_MAXIMIZED_CLOSE_P);
-    SetButtonImages(maximize_button_,
+    // TODO: need images for SIZE_BUTTON_MINIMIZES.
+    SetButtonImages(size_button_,
                     IDR_AURA_WINDOW_MAXIMIZED_RESTORE,
                     IDR_AURA_WINDOW_MAXIMIZED_RESTORE_H,
                     IDR_AURA_WINDOW_MAXIMIZED_RESTORE_P);
@@ -440,7 +444,8 @@ void FramePainter::LayoutHeader(views::NonClientFrameView* view,
                     IDR_AURA_WINDOW_CLOSE,
                     IDR_AURA_WINDOW_CLOSE_H,
                     IDR_AURA_WINDOW_CLOSE_P);
-    SetButtonImages(maximize_button_,
+    // TODO: need images for SIZE_BUTTON_MINIMIZES.
+    SetButtonImages(size_button_,
                     IDR_AURA_WINDOW_MAXIMIZE,
                     IDR_AURA_WINDOW_MAXIMIZE_H,
                     IDR_AURA_WINDOW_MAXIMIZE_P);
@@ -453,12 +458,13 @@ void FramePainter::LayoutHeader(views::NonClientFrameView* view,
       close_size.width(),
       close_size.height());
 
-  gfx::Size maximize_size = maximize_button_->GetPreferredSize();
-  maximize_button_->SetBounds(
-      close_button_->x() - button_separator_->width() - maximize_size.width(),
+  gfx::Size size_button_size = size_button_->GetPreferredSize();
+  size_button_->SetBounds(
+      close_button_->x() - button_separator_->width() -
+          size_button_size.width(),
       close_button_->y(),
-      maximize_size.width(),
-      maximize_size.height());
+      size_button_size.width(),
+      size_button_size.height());
 
   if (window_icon_)
     window_icon_->SetBoundsRect(

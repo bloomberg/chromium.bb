@@ -36,11 +36,6 @@ class ASH_EXPORT FrameMaximizeButton : public views::ImageButton {
   virtual void OnMouseReleased(const views::MouseEvent& event) OVERRIDE;
   virtual void OnMouseCaptureLost() OVERRIDE;
 
-  // Sets is_left_right_enabled_ and updates tooltip.
-  void SetIsLeftRightEnabled(bool e);
-
-  void set_is_maximize_enabled(bool e) { is_maximize_enabled_ = e; }
-
  protected:
   // ImageButton overrides:
   virtual SkBitmap GetImageToPaint() OVERRIDE;
@@ -72,9 +67,6 @@ class ASH_EXPORT FrameMaximizeButton : public views::ImageButton {
   // Updates |snap_type_| based on a mouse drag.
   void UpdateSnap(const gfx::Point& location);
 
-  // Returns true if maximizing is allowed.
-  bool AllowMaximize() const;
-
   // Returns the type of snap based on the specified location.
   SnapType SnapTypeForLocation(const gfx::Point& location) const;
 
@@ -97,10 +89,6 @@ class ASH_EXPORT FrameMaximizeButton : public views::ImageButton {
   // Is snapping enabled? Set on press so that in drag we know whether we
   // should show the snap locations.
   bool is_snap_enabled_;
-
-  // Selectively enable/disable button functionality.
-  bool is_left_right_enabled_;
-  bool is_maximize_enabled_;
 
   // Did the user drag far enough to trigger snapping?
   bool exceeded_drag_threshold_;
