@@ -4,33 +4,26 @@
  * found in the LICENSE file.
  */
 
+#include "native_client/src/trusted/service_runtime/win/debug_exception_handler.h"
+
 #include <stddef.h>
 #include <stdio.h>
 #include <windows.h>
 
 #include "native_client/src/trusted/service_runtime/arch/sel_ldr_arch.h"
-#include "native_client/src/trusted/service_runtime/include/sys/nacl_exception.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
+#include "native_client/src/trusted/service_runtime/nacl_exception.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/sel_rt.h"
 #include "native_client/src/trusted/service_runtime/sel_util.h"
-#include "native_client/src/trusted/service_runtime/win/debug_exception_handler.h"
 #include "native_client/src/trusted/service_runtime/win/thread_handle_map.h"
 
 
 static int HandleBreakpointException(HANDLE thread_handle);
 static int HandleException(HANDLE process_handle, DWORD windows_thread_id,
                            HANDLE thread_handle);
-
-struct ExceptionFrame {
-  nacl_reg_t return_addr;
-#if NACL_BUILD_SUBARCH == 32
-  uint32_t context_ptr;
-#endif
-  struct NaClExceptionContext context;
-};
 
 
 static BOOL GetAddrProtection(HANDLE process_handle, uintptr_t addr,
@@ -318,7 +311,7 @@ static BOOL HandleException(HANDLE process_handle, DWORD windows_thread_id,
   uint32_t exception_stack;
   uint32_t exception_frame_end;
   uint32_t exception_flag;
-  struct ExceptionFrame new_stack;
+  struct NaClExceptionFrame new_stack;
   /*
    * natp_remote points into the debuggee process's address space, so
    * cannot be dereferenced directly.  We use a pointer type for the
@@ -424,14 +417,15 @@ static BOOL HandleException(HANDLE process_handle, DWORD windows_thread_id,
    * Calculate the position of the exception stack frame, with
    * suitable alignment.
    */
-  exception_stack -= sizeof(struct ExceptionFrame) - NACL_STACK_PAD_BELOW_ALIGN;
+  exception_stack -=
+      sizeof(struct NaClExceptionFrame) - NACL_STACK_PAD_BELOW_ALIGN;
   exception_stack = exception_stack & ~NACL_STACK_ALIGN_MASK;
   exception_stack -= NACL_STACK_PAD_BELOW_ALIGN;
   /*
    * Ensure that the exception frame would be written within the
    * bounds of untrusted address space.
    */
-  exception_frame_end = exception_stack + sizeof(struct ExceptionFrame);
+  exception_frame_end = exception_stack + sizeof(struct NaClExceptionFrame);
   if (exception_frame_end < exception_stack) {
     /* Unsigned overflow. */
     return FALSE;
@@ -442,7 +436,7 @@ static BOOL HandleException(HANDLE process_handle, DWORD windows_thread_id,
 
   new_stack.return_addr = 0;
   context_user_addr = exception_stack +
-      offsetof(struct ExceptionFrame, context);
+      offsetof(struct NaClExceptionFrame, context);
 #if NACL_BUILD_SUBARCH == 32
   new_stack.context_ptr = context_user_addr;
   new_stack.context.prog_ctr = context.Eip;
@@ -458,8 +452,8 @@ static BOOL HandleException(HANDLE process_handle, DWORD windows_thread_id,
   new_stack.context.frame_ptr = (uint32_t) context.Rbp;
 #endif
   if (!WRITE_MEM(process_handle,
-                 (struct ExceptionFrame *) (app_copy.mem_start
-                                            + exception_stack),
+                 (struct NaClExceptionFrame *) (app_copy.mem_start
+                                                + exception_stack),
                  &new_stack)) {
     return FALSE;
   }

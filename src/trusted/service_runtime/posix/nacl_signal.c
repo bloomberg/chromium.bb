@@ -15,24 +15,14 @@
 #include "native_client/src/shared/platform/nacl_exit.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/service_runtime/arch/sel_ldr_arch.h"
-#include "native_client/src/trusted/service_runtime/include/sys/nacl_exception.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
+#include "native_client/src/trusted/service_runtime/nacl_exception.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
 #include "native_client/src/trusted/service_runtime/nacl_signal.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/sel_rt.h"
 
-
-struct ExceptionFrame {
-#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86
-  nacl_reg_t return_addr;
-# if NACL_BUILD_SUBARCH == 32
-  uint32_t context_ptr;  /* Function argument */
-# endif
-#endif
-  struct NaClExceptionContext context;
-};
 
 /*
  * This module is based on the Posix signal model.  See:
@@ -192,7 +182,7 @@ static int DispatchToUntrustedHandler(struct NaClAppThread *natp,
                                       struct NaClSignalContext *regs) {
   struct NaClApp *nap = natp->nap;
   uintptr_t frame_addr;
-  volatile struct ExceptionFrame *frame;
+  volatile struct NaClExceptionFrame *frame;
   uint32_t new_stack_ptr;
   uintptr_t context_user_addr;
   /*
@@ -217,18 +207,20 @@ static int DispatchToUntrustedHandler(struct NaClAppThread *natp,
     new_stack_ptr = natp->exception_stack;
   }
   /* Allocate space for the stack frame, and ensure its alignment. */
-  new_stack_ptr -= sizeof(struct ExceptionFrame) - NACL_STACK_PAD_BELOW_ALIGN;
+  new_stack_ptr -=
+      sizeof(struct NaClExceptionFrame) - NACL_STACK_PAD_BELOW_ALIGN;
   new_stack_ptr = new_stack_ptr & ~NACL_STACK_ALIGN_MASK;
   new_stack_ptr -= NACL_STACK_PAD_BELOW_ALIGN;
   frame_addr = NaClUserToSysAddrRange(nap, new_stack_ptr,
-                                      sizeof(struct ExceptionFrame));
+                                      sizeof(struct NaClExceptionFrame));
   if (frame_addr == kNaClBadAddress) {
     /* We cannot write the stack frame. */
     return 0;
   }
-  context_user_addr = new_stack_ptr + offsetof(struct ExceptionFrame, context);
+  context_user_addr = new_stack_ptr + offsetof(struct NaClExceptionFrame,
+                                               context);
 
-  frame = (struct ExceptionFrame *) frame_addr;
+  frame = (struct NaClExceptionFrame *) frame_addr;
   frame->context.prog_ctr = (uint32_t) regs->prog_ctr;
   frame->context.stack_ptr = (uint32_t) regs->stack_ptr;
 

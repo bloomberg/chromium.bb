@@ -20,10 +20,10 @@
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/service_runtime/arch/sel_ldr_arch.h"
-#include "native_client/src/trusted/service_runtime/include/sys/nacl_exception.h"
 #include "native_client/src/trusted/service_runtime/nacl_app.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
+#include "native_client/src/trusted/service_runtime/nacl_exception.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
 #include "native_client/src/trusted/service_runtime/nacl_switch_to_app.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
@@ -50,13 +50,6 @@ boolean_t nacl_exc_server(
  *     EXC_MASK_ARITHMETIC
  *     EXC_MASK_BREAKPOINT
  */
-
-/* TODO(bradnelson): merge this into a common location. */
-struct ExceptionFrame {
-  uint32_t return_addr;
-  uint32_t context_ptr;
-  struct NaClExceptionContext context;
-};
 
 struct MachExceptionParameters {
   mach_msg_type_number_t count;
@@ -90,7 +83,7 @@ static int HandleException(mach_port_t thread_port,
   uint32_t nacl_thread_index;
   struct NaClApp *nap;
   struct NaClAppThread *natp;
-  struct ExceptionFrame frame;
+  struct NaClExceptionFrame frame;
   uintptr_t frame_addr_user;
   uintptr_t frame_addr_sys;
 
@@ -162,13 +155,14 @@ static int HandleException(mach_port_t thread_port,
   }
 
   /* Align stack frame properly. */
-  frame_addr_user -= sizeof(struct ExceptionFrame) - NACL_STACK_PAD_BELOW_ALIGN;
+  frame_addr_user -=
+      sizeof(struct NaClExceptionFrame) - NACL_STACK_PAD_BELOW_ALIGN;
   frame_addr_user &= ~NACL_STACK_ALIGN_MASK;
   frame_addr_user -= NACL_STACK_PAD_BELOW_ALIGN;
 
   /* Convert from user to system space. */
   frame_addr_sys = NaClUserToSysAddrRange(
-      nap, frame_addr_user, sizeof(struct ExceptionFrame));
+      nap, frame_addr_user, sizeof(struct NaClExceptionFrame));
   if (frame_addr_sys == kNaClBadAddress) {
     return 0;
   }
@@ -176,7 +170,7 @@ static int HandleException(mach_port_t thread_port,
   /* Set up the stack frame for the handler invocation. */
   frame.return_addr = 0;
   frame.context_ptr = frame_addr_user +
-                      offsetof(struct ExceptionFrame, context);
+                      offsetof(struct NaClExceptionFrame, context);
   frame.context.prog_ctr = regs.uts.ts32.__eip;
   frame.context.stack_ptr = regs.uts.ts32.__esp;
   frame.context.frame_ptr = regs.uts.ts32.__ebp;

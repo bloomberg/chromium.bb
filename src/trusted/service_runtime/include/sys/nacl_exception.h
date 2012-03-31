@@ -19,10 +19,10 @@ struct NaClExceptionContext {
   uint32_t frame_ptr;
   /*
    * Pad this up to an even multiple of 8 bytes so this struct will add
-   * a predictable amount of space to the various ExceptionFrame structures
-   * used on each platform. This allows us to verify stack layout with dead
-   * reckoning, without access to the ExceptionFrame structure used to set up
-   * the call stack.
+   * a predictable amount of space to struct NaClExceptionFrame.  This
+   * allows us to verify stack layout with dead reckoning, without
+   * access to the NaClExceptionFrame structure used to set up the
+   * call stack.
    */
   uint32_t pad;
 };
