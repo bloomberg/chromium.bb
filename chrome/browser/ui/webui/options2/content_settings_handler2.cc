@@ -287,10 +287,10 @@ void ContentSettingsHandler::GetLocalizedValues(
                 IDS_CONTENT_SETTINGS_TITLE);
   localized_strings->SetBoolean("enable_web_intents",
                                 web_intents::IsWebIntentsEnabled());
+  // TODO(marja): clean up the options UI after the decision on the session
+  // restore changes has stabilized.
   localized_strings->SetBoolean(
-      "enable_restore_session_state",
-      !CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableRestoreSessionState));
+      "enable_restore_session_state", false);
 }
 
 void ContentSettingsHandler::InitializeHandler() {

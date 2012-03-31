@@ -107,10 +107,13 @@ cr.define('options', function() {
       };
 
       // Session restore.
+      // TODO(marja): clean up the options UI after the decision on the session
+      // restore changes has stabilized. For now, only the startup option is
+      // renamed to "continue where I left off", but the session related content
+      // settings are not disabled or overridden (because
+      // templateData.enable_restore_session_state is forced to false).
       this.sessionRestoreEnabled_ = templateData.enable_restore_session_state;
       if (this.sessionRestoreEnabled_) {
-        $('old-startup-last-text').hidden = true;
-        $('new-startup-last-text').hidden = false;
         $('startup-restore-session').onchange = function(event) {
           if (!BrowserOptions.getInstance().maybeShowSessionRestoreDialog_()) {
             // The dialog is not shown; handle the event normally.

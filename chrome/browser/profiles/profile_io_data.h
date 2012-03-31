@@ -264,6 +264,7 @@ class ProfileIOData {
   mutable BooleanPrefMember enable_referrers_;
   mutable BooleanPrefMember clear_local_state_on_exit_;
   mutable BooleanPrefMember safe_browsing_enabled_;
+  // TODO(marja): Remove session_startup_pref_ if no longer needed.
   mutable IntegerPrefMember session_startup_pref_;
 
   // Pointed to by NetworkDelegate.

@@ -560,15 +560,13 @@ ProfileImpl::~ProfileImpl() {
       chrome::NOTIFICATION_PROFILE_DESTROYED,
       content::Source<Profile>(this),
       content::NotificationService::NoDetails());
-  // Save the session state if we're going to restore the session during the
-  // next startup.
   SessionStartupPref pref = SessionStartupPref::GetStartupPref(this);
-  if (pref.type == SessionStartupPref::LAST) {
-    if (session_restore_enabled_)
-      BrowserContext::SaveSessionState(this);
-  } else if (clear_local_state_on_exit_) {
+  // Honor the "clear local state" setting. If it's not set, keep the session
+  // data if we're going to continue the session upon startup.
+  if (clear_local_state_on_exit_)
     BrowserContext::ClearLocalOnDestruction(this);
-  }
+  else if (session_restore_enabled_ && pref.type == SessionStartupPref::LAST)
+    BrowserContext::SaveSessionState(this);
 
   StopCreateSessionServiceTimer();
 

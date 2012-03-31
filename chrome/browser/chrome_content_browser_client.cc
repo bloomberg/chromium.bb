@@ -911,17 +911,7 @@ bool ChromeContentBrowserClient::AllowSaveLocalState(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
 
-  if (!io_data->clear_local_state_on_exit()->GetValue())
-    return true;
-
-  // Disable clearing the local state on exit if the browsing session is going
-  // to be restored on the next startup.
-  SessionStartupPref::Type startup_pref =
-      SessionStartupPref::PrefValueToType(
-          io_data->session_startup_pref()->GetValue());
-  return (startup_pref == SessionStartupPref::LAST &&
-          !CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kDisableRestoreSessionState));
+  return !io_data->clear_local_state_on_exit()->GetValue();
 }
 
 bool ChromeContentBrowserClient::AllowWorkerDatabase(
