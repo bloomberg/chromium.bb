@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,8 +16,8 @@ namespace pp {
 
 namespace {
 
-template <> const char* interface_name<PPB_FileSystem>() {
-  return PPB_FILESYSTEM_INTERFACE;
+template <> const char* interface_name<PPB_FileSystem_1_0>() {
+  return PPB_FILESYSTEM_INTERFACE_1_0;
 }
 
 }  // namespace
@@ -27,17 +27,17 @@ FileSystem::FileSystem() {
 
 FileSystem::FileSystem(const InstanceHandle& instance,
                        PP_FileSystemType type) {
-  if (!has_interface<PPB_FileSystem>())
+  if (!has_interface<PPB_FileSystem_1_0>())
     return;
-  PassRefFromConstructor(get_interface<PPB_FileSystem>()->Create(
+  PassRefFromConstructor(get_interface<PPB_FileSystem_1_0>()->Create(
       instance.pp_instance(), type));
 }
 
 int32_t FileSystem::Open(int64_t expected_size,
                          const CompletionCallback& cc) {
-  if (!has_interface<PPB_FileSystem>())
+  if (!has_interface<PPB_FileSystem_1_0>())
     return cc.MayForce(PP_ERROR_NOINTERFACE);
-  return get_interface<PPB_FileSystem>()->Open(
+  return get_interface<PPB_FileSystem_1_0>()->Open(
       pp_resource(), expected_size, cc.pp_completion_callback());
 }
 
