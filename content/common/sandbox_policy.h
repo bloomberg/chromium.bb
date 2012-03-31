@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,9 +15,19 @@ class FilePath;
 namespace sandbox {
 
 class BrokerServices;
+class TargetServices;
 
-CONTENT_EXPORT void InitBrokerServices(
+CONTENT_EXPORT bool InitBrokerServices(
     sandbox::BrokerServices* broker_services);
+
+CONTENT_EXPORT bool InitTargetServices(
+    sandbox::TargetServices* target_services);
+
+CONTENT_EXPORT bool BrokerDuplicateHandle(HANDLE source_handle,
+                                          DWORD target_process_id,
+                                          HANDLE* target_handle,
+                                          DWORD desired_access,
+                                          DWORD options);
 
 // Starts a sandboxed process with the given directory unsandboxed
 // and returns a handle to it.

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -46,6 +46,11 @@ class TargetServicesBase : public TargetServices {
   virtual ResultCode Init();
   virtual void LowerToken();
   virtual ProcessState* GetState();
+  virtual ResultCode DuplicateHandle(HANDLE source_handle,
+                                     DWORD target_process_id,
+                                     HANDLE* target_handle,
+                                     DWORD desired_access,
+                                     DWORD options);
 
   // Factory method.
   static TargetServicesBase* GetInstance();

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,7 +25,8 @@ bool InitializeSandbox(
     // broken. This has to run before threads and windows are created.
     sandbox::BrokerServices* broker_services = sandbox_info->broker_services;
     if (broker_services) {
-      sandbox::InitBrokerServices(broker_services);
+      if (!sandbox::InitBrokerServices(broker_services))
+        return false;
       if (!command_line.HasSwitch(switches::kNoSandbox)) {
         bool use_winsta = !command_line.HasSwitch(
             switches::kDisableAltWinstation);
@@ -57,7 +58,7 @@ bool InitializeSandbox(
     if (!target_services)
       return true;
   }
-  return (sandbox::SBOX_ALL_OK == target_services->Init());
+  return sandbox::InitTargetServices(target_services);
 }
 
 }  // namespace content
