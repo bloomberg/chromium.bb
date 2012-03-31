@@ -268,12 +268,10 @@ bool ExtensionAPI::IsPrivileged(const std::string& full_name) {
     std::vector<std::string> split;
     base::SplitString(full_name, '.', &split);
     std::reverse(split.begin(), split.end());
-    CHECK(!split.empty());  // |full_name| was empty or only whitespace.
 
     api_name = split.back();
     split.pop_back();
     if (api_name == "experimental") {
-      CHECK(!split.empty());  // |full_name| was "experimental" alone.
       api_name += "." + split.back();
       split.pop_back();
     }
