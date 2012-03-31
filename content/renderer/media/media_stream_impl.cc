@@ -22,8 +22,9 @@
 #include "content/renderer/p2p/socket_dispatcher.h"
 #include "jingle/glue/thread_wrapper.h"
 #include "media/base/message_loop_factory.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebMediaStreamDescriptor.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaStreamRegistry.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebMediaStreamDescriptor.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebMediaStreamSource.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
 
