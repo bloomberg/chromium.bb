@@ -940,6 +940,7 @@ dtls_RehandshakeCleanup(sslSocket *ss)
     dtls_CancelTimer(ss);
     ssl3_DestroyCipherSpec(ss->ssl3.pwSpec, PR_FALSE);
     ss->ssl3.hs.sendMessageSeq = 0;
+    ss->ssl3.hs.recvMessageSeq = 0;
 }
 
 /* Set the MTU to the next step less than or equal to the
