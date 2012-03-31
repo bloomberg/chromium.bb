@@ -19,7 +19,8 @@
 
 // Rows, in order, of the visit table.
 #define HISTORY_VISIT_ROW_FIELDS \
-  " id,url,visit_time,from_visit,transition,segment_id,is_indexed "
+    " id,url,visit_time,from_visit,transition,segment_id,is_indexed," \
+    "visit_duration "
 
 namespace history {
 
@@ -39,7 +40,8 @@ bool VisitDatabase::InitVisitTable() {
         "transition INTEGER DEFAULT 0 NOT NULL,"
         "segment_id INTEGER,"
         // True when we have indexed data for this visit.
-        "is_indexed BOOLEAN)"))
+        "is_indexed BOOLEAN,"
+        "visit_duration INTEGER DEFAULT 0 NOT NULL)"))
       return false;
   } else if (!GetDB().DoesColumnExist("visits", "is_indexed")) {
     // Old versions don't have the is_indexed column, we can just add that and
@@ -102,6 +104,8 @@ void VisitDatabase::FillVisitRow(sql::Statement& statement, VisitRow* visit) {
   visit->transition = content::PageTransitionFromInt(statement.ColumnInt(4));
   visit->segment_id = statement.ColumnInt64(5);
   visit->is_indexed = !!statement.ColumnInt(6);
+  visit->visit_duration =
+      base::TimeDelta::FromInternalValue(statement.ColumnInt64(7));
 }
 
 // static
@@ -122,14 +126,15 @@ bool VisitDatabase::FillVisitVector(sql::Statement& statement,
 VisitID VisitDatabase::AddVisit(VisitRow* visit, VisitSource source) {
   sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "INSERT INTO visits "
-      "(url, visit_time, from_visit, transition, segment_id, is_indexed) "
-      "VALUES (?,?,?,?,?,?)"));
+      "(url, visit_time, from_visit, transition, segment_id, is_indexed, "
+      "visit_duration) VALUES (?,?,?,?,?,?,?)"));
   statement.BindInt64(0, visit->url_id);
   statement.BindInt64(1, visit->visit_time.ToInternalValue());
   statement.BindInt64(2, visit->referring_visit);
   statement.BindInt64(3, visit->transition);
   statement.BindInt64(4, visit->segment_id);
   statement.BindInt64(5, visit->is_indexed);
+  statement.BindInt64(6, visit->visit_duration.ToInternalValue());
 
   if (!statement.Run()) {
     VLOG(0) << "Failed to execute visit insert statement:  "
@@ -148,7 +153,7 @@ VisitID VisitDatabase::AddVisit(VisitRow* visit, VisitSource source) {
 
     if (!statement1.Run()) {
       VLOG(0) << "Failed to execute visit_source insert statement:  "
-              << "url_id = " << visit->visit_id;
+              << "id = " << visit->visit_id;
       return 0;
     }
   }
@@ -208,15 +213,16 @@ bool VisitDatabase::UpdateVisitRow(const VisitRow& visit) {
 
   sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "UPDATE visits SET "
-      "url=?,visit_time=?,from_visit=?,transition=?,segment_id=?,is_indexed=? "
-      "WHERE id=?"));
+      "url=?,visit_time=?,from_visit=?,transition=?,segment_id=?,is_indexed=?,"
+      "visit_duration=? WHERE id=?"));
   statement.BindInt64(0, visit.url_id);
   statement.BindInt64(1, visit.visit_time.ToInternalValue());
   statement.BindInt64(2, visit.referring_visit);
   statement.BindInt64(3, visit.transition);
   statement.BindInt64(4, visit.segment_id);
   statement.BindInt64(5, visit.is_indexed);
-  statement.BindInt64(6, visit.visit_id);
+  statement.BindInt64(6, visit.visit_duration.ToInternalValue());
+  statement.BindInt64(7, visit.visit_id);
 
   return statement.Run();
 }
@@ -534,6 +540,22 @@ void VisitDatabase::GetVisitsSource(const VisitVector& visits,
       sources->insert(source_entry);
     }
   }
+}
+
+bool VisitDatabase::MigrateVisitsWithoutDuration() {
+  if (!GetDB().DoesTableExist("visits")) {
+    NOTREACHED() << " Visits table should exist before migration";
+    return false;
+  }
+
+  if (!GetDB().DoesColumnExist("visits", "visit_duration")) {
+    // Old versions don't have the visit_duration column, we modify the table
+    // to add that field.
+    if (!GetDB().Execute("ALTER TABLE visits "
+        "ADD COLUMN visit_duration INTEGER DEFAULT 0 NOT NULL"))
+      return false;
+  }
+  return true;
 }
 
 }  // namespace history
