@@ -485,7 +485,14 @@ void GeolocationInfoBarQueueController::Observe(
     const content::NotificationDetails& details) {
   DCHECK_EQ(chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED, type);
   // We will receive this notification for all infobar closures, so we need to
-  // check whether this is the geolocation infobar we're tracking.
+  // check whether this is the geolocation infobar we're tracking. Note that the
+  // InfoBarContainer (if any) may have received this notification before us and
+  // caused the delegate to be deleted, so it's not safe to dereference the
+  // contents of the delegate. The address of the delegate, however, is OK to
+  // use to find the PendingInfoBarRequest to remove because
+  // pending_infobar_requests_ will not have received any new entries between
+  // the NotificationService's call to InfoBarContainer::Observe and this
+  // method.
   InfoBarDelegate* delegate =
       content::Details<InfoBarRemovedDetails>(details)->first;
   for (PendingInfoBarRequests::iterator i = pending_infobar_requests_.begin();
