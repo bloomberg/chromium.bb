@@ -146,7 +146,7 @@ void ExtensionContextMenuModel::ExecuteCommand(int command_id) {
       break;
     }
     case MANAGE: {
-      browser_->ShowOptionsTab(chrome::kExtensionsSubPage);
+      browser_->ShowExtensionsTab();
       break;
     }
     case INSPECT_POPUP: {

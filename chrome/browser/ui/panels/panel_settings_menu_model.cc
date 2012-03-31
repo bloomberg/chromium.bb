@@ -102,7 +102,7 @@ void PanelSettingsMenuModel::ExecuteCommand(int command_id) {
       extension_uninstall_dialog_->ConfirmUninstall(extension);
       break;
     case COMMAND_MANAGE:
-      browser->ShowOptionsTab(chrome::kExtensionsSubPage);
+      browser->ShowExtensionsTab();
       break;
     default:
       NOTREACHED();

@@ -275,7 +275,7 @@ int CurrentTabId() {
       break;
     }
     case kExtensionContextManage: {
-      browser->ShowOptionsTab(chrome::kExtensionsSubPage);
+      browser->ShowExtensionsTab();
       break;
     }
     case kExtensionContextInspect: {

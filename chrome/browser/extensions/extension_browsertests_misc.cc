@@ -907,9 +907,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_OptionsPage) {
   ASSERT_EQ(1u, service->extensions()->size());
 
   // Go to the Extension Settings page and click the Options button.
-  ui_test_utils::NavigateToURL(
-      browser(), GURL(std::string(chrome::kChromeUISettingsURL) +
-                      chrome::kExtensionsSubPage));
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIExtensionsURL));
   TabStripModel* tab_strip = browser()->tabstrip_model();
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(
       browser()->GetSelectedWebContents()->GetRenderViewHost(), L"",

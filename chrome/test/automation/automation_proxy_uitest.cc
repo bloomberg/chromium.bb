@@ -526,7 +526,9 @@ TEST_F(AutomationProxyTest, MAYBE_AcceleratorExtensions) {
 
   ASSERT_TRUE(window->RunCommand(IDC_MANAGE_EXTENSIONS));
 
-  EXPECT_EQ("chrome://chrome/extensions", GetActiveTabURL().spec());
+  EXPECT_EQ(GURL(std::string(chrome::kChromeUIUberURL) +
+                chrome::kChromeUIExtensionsHost + "/"),
+            GetActiveTabURL());
 }
 
 TEST_F(AutomationProxyTest, AcceleratorHistory) {
@@ -535,9 +537,9 @@ TEST_F(AutomationProxyTest, AcceleratorHistory) {
 
   ASSERT_TRUE(window->RunCommand(IDC_SHOW_HISTORY));
 
-  EXPECT_EQ(std::string(chrome::kChromeUIUberURL) +
-                chrome::kChromeUIHistoryHost + "/",
-            GetActiveTabURL().spec());
+  EXPECT_EQ(GURL(std::string(chrome::kChromeUIUberURL) +
+                chrome::kChromeUIHistoryHost + "/"),
+            GetActiveTabURL());
 }
 
 class AutomationProxyTest4 : public UITest {

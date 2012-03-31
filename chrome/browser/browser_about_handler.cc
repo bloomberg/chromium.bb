@@ -121,16 +121,16 @@ bool WillHandleBrowserAboutURL(GURL* url,
   } else if (host == chrome::kChromeUIExtensionsHost) {
     host = chrome::kChromeUIUberHost;
     path = chrome::kChromeUIExtensionsHost + url->path();
-  } else if (host == chrome::kChromeUIHistoryHost) {
-    host = chrome::kChromeUIUberHost;
-    path = chrome::kChromeUIHistoryHost + url->path();
   // Redirect chrome://settings/extensions.
-  // TODO(csilv): Fix all code paths for this page once Uber page is enabled
-  // permanently.
+  // TODO(csilv): Remove this URL after M22 (legacy URL).
   } else if (host == chrome::kChromeUISettingsHost &&
       url->path() == std::string("/") + chrome::kExtensionsSubPage) {
     host = chrome::kChromeUIUberHost;
     path = chrome::kChromeUIExtensionsHost;
+  // Redirect chrome://history.
+  } else if (host == chrome::kChromeUIHistoryHost) {
+    host = chrome::kChromeUIUberHost;
+    path = chrome::kChromeUIHistoryHost + url->path();
   // Redirect chrome://settings
   } else if (host == chrome::kChromeUISettingsHost) {
     host = chrome::kChromeUIUberHost;

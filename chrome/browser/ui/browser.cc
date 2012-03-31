@@ -290,10 +290,8 @@ GURL UrlForExtension(const Extension* extension, const GURL& override_url) {
   // For extensions lacking launch urls, determine a reasonable fallback.
   if (!url.is_valid()) {
     url = extension->options_url();
-    if (!url.is_valid()) {
-      url = GURL(std::string(chrome::kChromeUISettingsURL) +
-                 chrome::kExtensionsSubPage);
-    }
+    if (!url.is_valid())
+      url = GURL(chrome::kChromeUIExtensionsURL);
   }
 
   return url;
@@ -2407,9 +2405,8 @@ void Browser::ShowDownloadsTab() {
 
 void Browser::ShowExtensionsTab() {
   content::RecordAction(UserMetricsAction("ShowExtensions"));
-  browser::NavigateParams params(GetSingletonTabNavigateParams(
-      GURL(std::string(chrome::kChromeUIUberURL) +
-           chrome::kChromeUIExtensionsHost)));
+  browser::NavigateParams params(
+      GetSingletonTabNavigateParams(GURL(chrome::kChromeUIExtensionsURL)));
   params.path_behavior = browser::NavigateParams::IGNORE_AND_NAVIGATE;
   ShowSingletonTabOverwritingNTP(params);
 }
@@ -2435,23 +2432,15 @@ void Browser::ShowBrokenPageTab(WebContents* contents) {
 }
 
 void Browser::ShowOptionsTab(const std::string& sub_page) {
-  std::string url;
-  if (sub_page == chrome::kExtensionsSubPage) {
-    url = std::string(chrome::kChromeUIUberURL) +
-        chrome::kChromeUIExtensionsHost;
+  std::string url = std::string(chrome::kChromeUISettingsURL) + sub_page;
 #if defined(OS_CHROMEOS)
-  } else if (sub_page.find(chrome::kInternetOptionsSubPage, 0) !=
-             std::string::npos) {
+  if (sub_page.find(chrome::kInternetOptionsSubPage, 0) != std::string::npos) {
     std::string::size_type loc = sub_page.find("?", 0);
     std::string network_page = loc != std::string::npos ?
         sub_page.substr(loc) : std::string();
-    url = std::string(chrome::kChromeUIUberURL) +
-        chrome::kChromeUISettingsHost + network_page;
-#endif
-  } else {
-    url = std::string(chrome::kChromeUIUberURL) +
-        chrome::kChromeUISettingsHost + '/' + sub_page;
+    url = std::string(chrome::kChromeUISettingsURL) + network_page;
   }
+#endif
   browser::NavigateParams params(GetSingletonTabNavigateParams(GURL(url)));
   params.path_behavior = browser::NavigateParams::IGNORE_AND_NAVIGATE;
   ShowSingletonTabOverwritingNTP(params);
@@ -2484,8 +2473,8 @@ void Browser::OpenInstantConfirmDialog() {
 void Browser::OpenAboutChromeDialog() {
   content::RecordAction(UserMetricsAction("AboutChrome"));
 #if !defined(OS_WIN)
-  GURL url = GURL(chrome::kChromeUIUberURL);
-  browser::NavigateParams params(GetSingletonTabNavigateParams(url));
+  browser::NavigateParams params(
+      GetSingletonTabNavigateParams(GURL(chrome::kChromeUIUberURL)));
   params.path_behavior = browser::NavigateParams::IGNORE_AND_NAVIGATE;
   ShowSingletonTabOverwritingNTP(params);
 #else
