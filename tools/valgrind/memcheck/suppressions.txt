@@ -5685,13 +5685,6 @@
    fun:_ZN3net16HostResolverImpl3Job18OnProcTaskCompleteEiRKNS_11AddressListE
 }
 {
-   bug_118336
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN47SelectFileDialogExtensionTest_SelfDeleting_Test8TestBodyEv
-}
-{
    bug_118890_a
    Memcheck:Leak
    ...
