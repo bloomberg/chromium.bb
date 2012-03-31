@@ -836,7 +836,6 @@
         'test/ui/named_interface_uitest.cc',
         'test/ui/npapi_uitest.cc',
         'test/ui/sandbox_uitests.cc',
-        '../content/browser/in_process_webkit/dom_storage_uitest.cc',
         '../content/browser/renderer_host/resource_dispatcher_host_uitest.cc',
         # DON'T ADD NEW FILES! SEE NOTE AT TOP OF SECTION.
       ],
@@ -2963,6 +2962,7 @@
         '../content/browser/device_orientation/device_orientation_browsertest.cc',
         '../content/browser/download/mhtml_generation_browsertest.cc',
         '../content/browser/fileapi/file_system_browsertest.cc',
+        '../content/browser/in_process_webkit/dom_storage_browsertest.cc',
         '../content/browser/in_process_webkit/indexed_db_browsertest.cc',
         '../content/browser/in_process_webkit/indexed_db_layout_browsertest.cc',
         '../content/browser/indexed_db/idbbindingutilities_browsertest.cc',
