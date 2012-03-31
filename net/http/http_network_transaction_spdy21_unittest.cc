@@ -174,7 +174,7 @@ class HttpNetworkTransactionSpdy21Test : public PlatformTest {
   };
 
   virtual void SetUp() {
-    SpdySession::set_default_protocol(SSLClientSocket::kProtoSPDY21);
+    SpdySession::set_default_protocol(kProtoSPDY21);
     NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();
     MessageLoop::current()->RunAllPending();
   }
@@ -2170,7 +2170,7 @@ TEST_F(HttpNetworkTransactionSpdy21Test, HttpsProxySpdyGet) {
   session_deps.socket_factory.AddSocketDataProvider(spdy_data.get());
 
   SSLSocketDataProvider ssl(ASYNC, OK);
-  ssl.SetNextProto(SSLClientSocket::kProtoSPDY21);
+  ssl.SetNextProto(kProtoSPDY21);
   session_deps.socket_factory.AddSSLSocketDataProvider(&ssl);
 
   TestCompletionCallback callback1;
@@ -2254,7 +2254,7 @@ TEST_F(HttpNetworkTransactionSpdy21Test, HttpsProxySpdyGetWithProxyAuth) {
   session_deps.socket_factory.AddSocketDataProvider(data.get());
 
   SSLSocketDataProvider ssl(ASYNC, OK);
-  ssl.SetNextProto(SSLClientSocket::kProtoSPDY21);
+  ssl.SetNextProto(kProtoSPDY21);
   session_deps.socket_factory.AddSSLSocketDataProvider(&ssl);
 
   TestCompletionCallback callback1;
@@ -2349,11 +2349,11 @@ TEST_F(HttpNetworkTransactionSpdy21Test, HttpsProxySpdyConnectHttps) {
   session_deps.socket_factory.AddSocketDataProvider(spdy_data.get());
 
   SSLSocketDataProvider ssl(ASYNC, OK);
-  ssl.SetNextProto(SSLClientSocket::kProtoSPDY21);
+  ssl.SetNextProto(kProtoSPDY21);
   session_deps.socket_factory.AddSSLSocketDataProvider(&ssl);
   SSLSocketDataProvider ssl2(ASYNC, OK);
   ssl2.was_npn_negotiated = false;
-  ssl2.protocol_negotiated = SSLClientSocket::kProtoUnknown;
+  ssl2.protocol_negotiated = kProtoUnknown;
   session_deps.socket_factory.AddSSLSocketDataProvider(&ssl2);
 
   TestCompletionCallback callback1;
@@ -2428,11 +2428,11 @@ TEST_F(HttpNetworkTransactionSpdy21Test, HttpsProxySpdyConnectSpdy) {
   session_deps.socket_factory.AddSocketDataProvider(spdy_data.get());
 
   SSLSocketDataProvider ssl(ASYNC, OK);
-  ssl.SetNextProto(SSLClientSocket::kProtoSPDY21);
+  ssl.SetNextProto(kProtoSPDY21);
   session_deps.socket_factory.AddSSLSocketDataProvider(&ssl);
   SSLSocketDataProvider ssl2(ASYNC, OK);
-  ssl2.SetNextProto(SSLClientSocket::kProtoSPDY21);
-  ssl2.protocol_negotiated = SSLClientSocket::kProtoSPDY21;
+  ssl2.SetNextProto(kProtoSPDY21);
+  ssl2.protocol_negotiated = kProtoSPDY21;
   session_deps.socket_factory.AddSSLSocketDataProvider(&ssl2);
 
   TestCompletionCallback callback1;
@@ -2492,10 +2492,10 @@ TEST_F(HttpNetworkTransactionSpdy21Test, HttpsProxySpdyConnectFailure) {
   session_deps.socket_factory.AddSocketDataProvider(spdy_data.get());
 
   SSLSocketDataProvider ssl(ASYNC, OK);
-  ssl.SetNextProto(SSLClientSocket::kProtoSPDY21);
+  ssl.SetNextProto(kProtoSPDY21);
   session_deps.socket_factory.AddSSLSocketDataProvider(&ssl);
   SSLSocketDataProvider ssl2(ASYNC, OK);
-  ssl2.SetNextProto(SSLClientSocket::kProtoSPDY21);
+  ssl2.SetNextProto(kProtoSPDY21);
   session_deps.socket_factory.AddSSLSocketDataProvider(&ssl2);
 
   TestCompletionCallback callback1;
@@ -4597,7 +4597,7 @@ TEST_F(HttpNetworkTransactionSpdy21Test, RedirectOfHttpsConnectViaSpdyProxy) {
           data_reads, arraysize(data_reads),
           data_writes, arraysize(data_writes)));
   SSLSocketDataProvider proxy_ssl(ASYNC, OK);  // SSL to the proxy
-  proxy_ssl.SetNextProto(SSLClientSocket::kProtoSPDY21);
+  proxy_ssl.SetNextProto(kProtoSPDY21);
 
   session_deps.socket_factory.AddSocketDataProvider(data.get());
   session_deps.socket_factory.AddSSLSocketDataProvider(&proxy_ssl);
@@ -4716,7 +4716,7 @@ TEST_F(HttpNetworkTransactionSpdy21Test,
           data_reads, arraysize(data_reads),
           data_writes, arraysize(data_writes)));
   SSLSocketDataProvider proxy_ssl(ASYNC, OK);  // SSL to the proxy
-  proxy_ssl.SetNextProto(SSLClientSocket::kProtoSPDY21);
+  proxy_ssl.SetNextProto(kProtoSPDY21);
 
   session_deps.socket_factory.AddSocketDataProvider(data.get());
   session_deps.socket_factory.AddSSLSocketDataProvider(&proxy_ssl);
@@ -4826,7 +4826,7 @@ TEST_F(HttpNetworkTransactionSpdy21Test, BasicAuthSpdyProxy) {
   session_deps.socket_factory.AddSocketDataProvider(spdy_data.get());
   // Negotiate SPDY to the proxy
   SSLSocketDataProvider proxy(ASYNC, OK);
-  proxy.SetNextProto(SSLClientSocket::kProtoSPDY21);
+  proxy.SetNextProto(kProtoSPDY21);
   session_deps.socket_factory.AddSSLSocketDataProvider(&proxy);
   // Vanilla SSL to the server
   SSLSocketDataProvider server(ASYNC, OK);
@@ -6904,7 +6904,7 @@ TEST_F(HttpNetworkTransactionSpdy21Test,
   session_deps.socket_factory.AddSocketDataProvider(&first_transaction);
 
   SSLSocketDataProvider ssl(ASYNC, OK);
-  ssl.SetNextProto(SSLClientSocket::kProtoSPDY21);
+  ssl.SetNextProto(kProtoSPDY21);
   session_deps.socket_factory.AddSSLSocketDataProvider(&ssl);
 
   scoped_ptr<SpdyFrame> req(ConstructSpdyGet(NULL, 0, false, 1, LOWEST));
@@ -7003,7 +7003,7 @@ TEST_F(HttpNetworkTransactionSpdy21Test, AlternateProtocolWithSpdyLateBinding) {
   session_deps.socket_factory.AddSocketDataProvider(&hanging_socket);
 
   SSLSocketDataProvider ssl(ASYNC, OK);
-  ssl.SetNextProto(SSLClientSocket::kProtoSPDY21);
+  ssl.SetNextProto(kProtoSPDY21);
   session_deps.socket_factory.AddSSLSocketDataProvider(&ssl);
 
   scoped_ptr<SpdyFrame> req1(ConstructSpdyGet(NULL, 0, false, 1, LOWEST));
@@ -7109,7 +7109,7 @@ TEST_F(HttpNetworkTransactionSpdy21Test, StallAlternateProtocolForNpnSpdy) {
   session_deps.socket_factory.AddSocketDataProvider(&first_transaction);
 
   SSLSocketDataProvider ssl(ASYNC, OK);
-  ssl.SetNextProto(SSLClientSocket::kProtoSPDY21);
+  ssl.SetNextProto(kProtoSPDY21);
   session_deps.socket_factory.AddSSLSocketDataProvider(&ssl);
 
   MockConnect never_finishing_connect(SYNCHRONOUS, ERR_IO_PENDING);
@@ -7242,7 +7242,7 @@ TEST_F(HttpNetworkTransactionSpdy21Test,
   session_deps.socket_factory.AddSocketDataProvider(&first_transaction);
 
   SSLSocketDataProvider ssl(ASYNC, OK);
-  ssl.SetNextProto(SSLClientSocket::kProtoSPDY21);
+  ssl.SetNextProto(kProtoSPDY21);
   session_deps.socket_factory.AddSSLSocketDataProvider(&ssl);
 
   scoped_ptr<SpdyFrame> req(ConstructSpdyGet(NULL, 0, false, 1, LOWEST));
@@ -7346,7 +7346,7 @@ TEST_F(HttpNetworkTransactionSpdy21Test,
   session_deps.socket_factory.AddSocketDataProvider(&first_transaction);
 
   SSLSocketDataProvider ssl(ASYNC, OK);
-  ssl.SetNextProto(SSLClientSocket::kProtoSPDY21);
+  ssl.SetNextProto(kProtoSPDY21);
   session_deps.socket_factory.AddSSLSocketDataProvider(&ssl);
 
   scoped_ptr<SpdyFrame> req(ConstructSpdyGet(NULL, 0, false, 1, LOWEST));
@@ -8181,7 +8181,7 @@ TEST_F(HttpNetworkTransactionSpdy21Test, NpnWithHttpOverSSL) {
   SSLSocketDataProvider ssl(ASYNC, OK);
   ssl.next_proto_status = SSLClientSocket::kNextProtoNegotiated;
   ssl.next_proto = "http/1.1";
-  ssl.protocol_negotiated = SSLClientSocket::kProtoHTTP11;
+  ssl.protocol_negotiated = kProtoHTTP11;
 
   session_deps.socket_factory.AddSSLSocketDataProvider(&ssl);
 
@@ -8229,7 +8229,7 @@ TEST_F(HttpNetworkTransactionSpdy21Test, SpdyPostNPNServerHangup) {
   request.load_flags = 0;
 
   SSLSocketDataProvider ssl(ASYNC, OK);
-  ssl.SetNextProto(SSLClientSocket::kProtoSPDY21);
+  ssl.SetNextProto(kProtoSPDY21);
   session_deps.socket_factory.AddSSLSocketDataProvider(&ssl);
 
   scoped_ptr<SpdyFrame> req(ConstructSpdyGet(NULL, 0, false, 1, LOWEST));
@@ -8360,7 +8360,7 @@ TEST_F(HttpNetworkTransactionSpdy21Test, SpdyAlternateProtocolThroughProxy) {
                             data_writes_2, arraysize(data_writes_2)));
 
   SSLSocketDataProvider ssl(ASYNC, OK);
-  ssl.SetNextProto(SSLClientSocket::kProtoSPDY21);
+  ssl.SetNextProto(kProtoSPDY21);
 
   MockConnect never_finishing_connect(SYNCHRONOUS, ERR_IO_PENDING);
   StaticSocketDataProvider hanging_non_alternate_protocol_socket(
@@ -8641,7 +8641,7 @@ TEST_F(HttpNetworkTransactionSpdy21Test, PreconnectWithExistingSpdySession) {
   session_deps.socket_factory.AddSocketDataProvider(spdy_data.get());
 
   SSLSocketDataProvider ssl(ASYNC, OK);
-  ssl.SetNextProto(SSLClientSocket::kProtoSPDY21);
+  ssl.SetNextProto(kProtoSPDY21);
   session_deps.socket_factory.AddSSLSocketDataProvider(&ssl);
 
   scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps));
@@ -9078,7 +9078,7 @@ TEST_F(HttpNetworkTransactionSpdy21Test, UseIPConnectionPooling) {
   pool_peer.DisableDomainAuthenticationVerification();
 
   SSLSocketDataProvider ssl(ASYNC, OK);
-  ssl.SetNextProto(SSLClientSocket::kProtoSPDY21);
+  ssl.SetNextProto(kProtoSPDY21);
   session_deps.socket_factory.AddSSLSocketDataProvider(&ssl);
 
   scoped_ptr<SpdyFrame> host1_req(ConstructSpdyGet(
@@ -9229,7 +9229,7 @@ TEST_F(HttpNetworkTransactionSpdy21Test,
   pool_peer.DisableDomainAuthenticationVerification();
 
   SSLSocketDataProvider ssl(ASYNC, OK);
-  ssl.SetNextProto(SSLClientSocket::kProtoSPDY21);
+  ssl.SetNextProto(kProtoSPDY21);
   session_deps.socket_factory.AddSSLSocketDataProvider(&ssl);
 
   scoped_ptr<SpdyFrame> host1_req(ConstructSpdyGet(

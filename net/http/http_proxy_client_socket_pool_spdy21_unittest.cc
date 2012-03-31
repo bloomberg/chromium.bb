@@ -175,7 +175,7 @@ class HttpProxyClientSocketPoolSpdy21Test : public TestWithHttpParam {
   }
 
   void InitializeSpdySsl() {
-    ssl_data_->SetNextProto(SSLClientSocket::kProtoSPDY21);
+    ssl_data_->SetNextProto(kProtoSPDY21);
   }
 
   HttpNetworkSession* CreateNetworkSession() {

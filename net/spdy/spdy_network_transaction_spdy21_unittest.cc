@@ -39,7 +39,7 @@ class SpdyNetworkTransactionSpdy21Test
  protected:
 
   virtual void SetUp() {
-    SpdySession::set_default_protocol(SSLClientSocket::kProtoSPDY21);
+    SpdySession::set_default_protocol(kProtoSPDY21);
     google_get_request_initialized_ = false;
     google_post_request_initialized_ = false;
     google_chunked_post_request_initialized_ = false;
@@ -231,7 +231,7 @@ class SpdyNetworkTransactionSpdy21Test
       linked_ptr<SSLSocketDataProvider> ssl_(
           new SSLSocketDataProvider(ASYNC, OK));
       if (test_type_ == SPDYNPN) {
-        ssl_->SetNextProto(SSLClientSocket::kProtoSPDY21);
+        ssl_->SetNextProto(kProtoSPDY21);
       }
       ssl_vector_.push_back(ssl_);
       if (test_type_ == SPDYNPN || test_type_ == SPDYSSL)
@@ -256,7 +256,7 @@ class SpdyNetworkTransactionSpdy21Test
       linked_ptr<SSLSocketDataProvider> ssl_(
           new SSLSocketDataProvider(ASYNC, OK));
       if (test_type_ == SPDYNPN) {
-        ssl_->SetNextProto(SSLClientSocket::kProtoSPDY21);
+        ssl_->SetNextProto(kProtoSPDY21);
       }
       ssl_vector_.push_back(ssl_);
       if (test_type_ == SPDYNPN || test_type_ == SPDYSSL) {
