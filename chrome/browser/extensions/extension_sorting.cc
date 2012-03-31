@@ -505,7 +505,11 @@ void ExtensionSorting::SyncIfNeeded(const std::string& extension_id) {
         extension_service_->GetInstalledExtension(extension_id);
 
     if (ext) {
-      CHECK(ext->is_app());
+      // It is possible for old extension to have ordinal values, but they
+      // shouldn't so we clear them.
+      if (!ext->is_app())
+        ClearOrdinals(extension_id);
+
       extension_service_->SyncExtensionChangeIfNeeded(*ext);
     }
   }
