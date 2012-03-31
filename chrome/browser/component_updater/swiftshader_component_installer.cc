@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/base_paths.h"
 #include "base/compiler_specific.h"
+#include "base/cpu.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/logging.h"
@@ -211,6 +212,10 @@ void RegisterSwiftShaderPath(ComponentUpdateService* cus) {
 
 void RegisterSwiftShaderComponent(ComponentUpdateService* cus) {
 #if defined(ENABLE_SWIFTSHADER)
+  base::CPU cpu;
+
+  if (!cpu.has_sse2())
+    return;
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
       base::Bind(&RegisterSwiftShaderPath, cus));
 #endif
