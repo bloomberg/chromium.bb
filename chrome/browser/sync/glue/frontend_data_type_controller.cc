@@ -156,9 +156,13 @@ void FrontendDataTypeController::FinishStart(StartResult result) {
 
 void FrontendDataTypeController::Stop() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  State prev_state = state_;
+  state_ = STOPPING;
+
   // If Stop() is called while Start() is waiting for the datatype model to
   // load, abort the start.
-  if (state_ == MODEL_STARTING) {
+  if (prev_state == MODEL_STARTING) {
     StartFailed(ABORTED, SyncError());
     // We can just return here since we haven't performed association if we're
     // still in MODEL_STARTING.
