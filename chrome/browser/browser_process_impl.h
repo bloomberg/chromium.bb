@@ -158,6 +158,9 @@ class BrowserProcessImpl : public BrowserProcess,
   bool created_watchdog_thread_;
   scoped_ptr<WatchDogThread> watchdog_thread_;
 
+  // Must be destroyed after |local_state_|.
+  scoped_ptr<policy::PolicyService> policy_service_;
+
   bool created_profile_manager_;
   scoped_ptr<ProfileManager> profile_manager_;
 
@@ -174,7 +177,6 @@ class BrowserProcessImpl : public BrowserProcess,
 
   bool created_browser_policy_connector_;
   scoped_ptr<policy::BrowserPolicyConnector> browser_policy_connector_;
-  scoped_ptr<policy::PolicyService> policy_service_;
 
   scoped_refptr<printing::PrintPreviewTabController>
       print_preview_tab_controller_;

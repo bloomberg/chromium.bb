@@ -145,9 +145,11 @@ void ConfigurationPolicyObserverRegistrar::OnUpdatePolicy(
 void ConfigurationPolicyObserverRegistrar::OnProviderGoingAway(
     ConfigurationPolicyProvider* provider) {
   DCHECK_EQ(provider_, provider);
-  observer_->OnProviderGoingAway(provider_);
+  // The |observer_| might delete |this| during this callback. Don't touch any
+  // of |this| field's after it returns.
   provider_->RemoveObserver(this);
   provider_ = NULL;
+  observer_->OnProviderGoingAway(provider);
 }
 
 }  // namespace policy

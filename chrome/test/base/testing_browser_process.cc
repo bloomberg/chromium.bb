@@ -8,6 +8,7 @@
 #include "chrome/browser/google/google_url_tracker.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
+#include "chrome/browser/policy/policy_service_impl.h"
 #include "chrome/browser/policy/policy_service_stub.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prerender/prerender_tracker.h"
@@ -72,13 +73,14 @@ policy::BrowserPolicyConnector*
 }
 
 policy::PolicyService* TestingBrowserProcess::policy_service() {
+  if (!policy_service_.get()) {
 #if defined(ENABLE_CONFIGURATION_POLICY)
-  return browser_policy_connector()->GetPolicyService();
+    policy_service_.reset(browser_policy_connector()->CreatePolicyService());
 #else
-  if (!policy_service_.get())
     policy_service_.reset(new policy::PolicyServiceStub());
-  return policy_service_.get();
 #endif
+  }
+  return policy_service_.get();
 }
 
 IconManager* TestingBrowserProcess::icon_manager() {

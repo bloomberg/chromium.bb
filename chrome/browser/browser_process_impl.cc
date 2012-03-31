@@ -41,6 +41,7 @@
 #include "chrome/browser/net/sdch_dictionary_fetcher.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
+#include "chrome/browser/policy/policy_service_impl.h"
 #include "chrome/browser/policy/policy_service_stub.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -425,13 +426,14 @@ policy::BrowserPolicyConnector* BrowserProcessImpl::browser_policy_connector() {
 }
 
 policy::PolicyService* BrowserProcessImpl::policy_service() {
+  if (!policy_service_.get()) {
 #if defined(ENABLE_CONFIGURATION_POLICY)
-  return browser_policy_connector()->GetPolicyService();
+    policy_service_.reset(browser_policy_connector()->CreatePolicyService());
 #else
-  if (!policy_service_.get())
     policy_service_.reset(new policy::PolicyServiceStub());
-  return policy_service_.get();
 #endif
+  }
+  return policy_service_.get();
 }
 
 IconManager* BrowserProcessImpl::icon_manager() {

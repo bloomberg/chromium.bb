@@ -120,14 +120,6 @@ void BrowserPolicyConnector::Init() {
       GetChromePolicyDefinitionList(),
       POLICY_LEVEL_RECOMMENDED));
 
-  // |providers| in decreasing order of priority.
-  PolicyServiceImpl::Providers providers;
-  providers.push_back(managed_platform_provider_.get());
-  providers.push_back(managed_cloud_provider_.get());
-  providers.push_back(recommended_platform_provider_.get());
-  providers.push_back(recommended_cloud_provider_.get());
-  policy_service_.reset(new PolicyServiceImpl(providers));
-
 #if defined(OS_CHROMEOS)
   InitializeDevicePolicy();
 
@@ -168,8 +160,18 @@ ConfigurationPolicyProvider*
   return recommended_cloud_provider_.get();
 }
 
-PolicyService* BrowserPolicyConnector::GetPolicyService() const {
-  return policy_service_.get();
+PolicyService* BrowserPolicyConnector::CreatePolicyService() const {
+  // |providers| in decreasing order of priority.
+  PolicyServiceImpl::Providers providers;
+  if (managed_platform_provider_.get())
+    providers.push_back(managed_platform_provider_.get());
+  if (managed_cloud_provider_.get())
+    providers.push_back(managed_cloud_provider_.get());
+  if (recommended_platform_provider_.get())
+    providers.push_back(recommended_platform_provider_.get());
+  if (recommended_cloud_provider_.get())
+    providers.push_back(recommended_cloud_provider_.get());
+  return new PolicyServiceImpl(providers);
 }
 
 void BrowserPolicyConnector::RegisterForDevicePolicy(
