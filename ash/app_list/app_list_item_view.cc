@@ -7,6 +7,7 @@
 #include "ash/app_list/app_list_item_model.h"
 #include "ash/app_list/app_list_model_view.h"
 #include "ash/app_list/drop_shadow_label.h"
+#include "ash/app_list/icon_cache.h"
 #include "base/bind.h"
 #include "base/message_loop.h"
 #include "base/synchronization/cancellation_flag.h"
@@ -260,15 +261,20 @@ void AppListItemView::UpdateIcon() {
 
   CancelPendingIconOperation();
 
-  // Schedule resize and shadow generation.
-  icon_op_ = new IconOperation(icon, icon_size_);
-  base::WorkerPool::PostTaskAndReply(
-      FROM_HERE,
-      base::Bind(&IconOperation::Run, icon_op_),
-      base::Bind(&AppListItemView::ApplyShadow,
-                 apply_shadow_factory_.GetWeakPtr(),
-                 icon_op_),
-      true /* task_is_slow */);
+  SkBitmap shadow;
+  if (IconCache::GetInstance()->Get(icon, icon_size_, &shadow)) {
+    icon_->SetImage(shadow);
+  } else {
+    // Schedule resize and shadow generation.
+    icon_op_ = new IconOperation(icon, icon_size_);
+    base::WorkerPool::PostTaskAndReply(
+        FROM_HERE,
+        base::Bind(&IconOperation::Run, icon_op_),
+        base::Bind(&AppListItemView::ApplyShadow,
+                   apply_shadow_factory_.GetWeakPtr(),
+                   icon_op_),
+        true /* task_is_slow */);
+  }
 }
 
 void AppListItemView::CancelPendingIconOperation() {
@@ -282,6 +288,7 @@ void AppListItemView::CancelPendingIconOperation() {
 
 void AppListItemView::ApplyShadow(scoped_refptr<IconOperation> op) {
   icon_->SetImage(op->bitmap());
+  IconCache::GetInstance()->Put(model_->icon(), icon_size_, op->bitmap());
 
   DCHECK(op.get() == icon_op_.get());
   icon_op_ = NULL;
