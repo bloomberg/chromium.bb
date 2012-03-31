@@ -5,6 +5,7 @@
 #include "content/test/test_launcher.h"
 
 #include "base/command_line.h"
+#include "base/file_util.h"
 #include "base/logging.h"
 #include "base/scoped_temp_dir.h"
 #include "chrome/app/chrome_main_delegate.h"
@@ -80,8 +81,12 @@ class ChromeTestLauncherDelegate : public test_launcher::TestLauncherDelegate {
     }
 
     // Clean up previous temp dir.
-    if (!temp_dir_.path().empty() && !temp_dir_.Delete())
+    // We Take() the directory and delete it ourselves so that the next
+    // CreateUniqueTempDir will succeed even if deleting the directory fails.
+    if (!temp_dir_.path().empty() &&
+        !file_util::Delete(temp_dir_.Take(), true)) {
       LOG(ERROR) << "Error deleting previous temp profile directory";
+    }
 
     // Create a new user data dir and pass it to the child.
     if (!temp_dir_.CreateUniqueTempDir() || !temp_dir_.IsValid()) {
