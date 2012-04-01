@@ -32,6 +32,7 @@
 #include "sync/engine/syncer_proto_util.h"
 #include "sync/engine/syncer_util.h"
 #include "sync/engine/syncproto.h"
+#include "sync/engine/traffic_recorder.h"
 #include "sync/protocol/bookmark_specifics.pb.h"
 #include "sync/protocol/nigori_specifics.pb.h"
 #include "sync/protocol/preference_specifics.pb.h"
@@ -114,7 +115,11 @@ class SyncerTest : public testing::Test,
                    public ModelSafeWorkerRegistrar,
                    public SyncEngineEventListener {
  protected:
-  SyncerTest() : syncer_(NULL), saw_syncer_event_(false) {}
+  SyncerTest()
+      : syncer_(NULL),
+        saw_syncer_event_(false),
+        traffic_recorder_(0, 0) {
+}
 
   // SyncSession::Delegate implementation.
   virtual void OnSilencedUntil(const base::TimeTicks& silenced_until) OVERRIDE {
@@ -209,7 +214,8 @@ class SyncerTest : public testing::Test,
     context_.reset(
         new SyncSessionContext(
             mock_server_.get(), directory(), this,
-            &extensions_activity_monitor_, listeners, NULL));
+            &extensions_activity_monitor_, listeners, NULL,
+            &traffic_recorder_));
     ASSERT_FALSE(context_->resolver());
     syncer_ = new Syncer();
     session_.reset(MakeSession());
@@ -512,6 +518,7 @@ class SyncerTest : public testing::Test,
   scoped_refptr<ModelSafeWorker> worker_;
 
   syncable::ModelTypeSet enabled_datatypes_;
+  browser_sync::TrafficRecorder traffic_recorder_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncerTest);
 };

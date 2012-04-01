@@ -20,7 +20,8 @@ SyncSessionContext::SyncSessionContext(
     ModelSafeWorkerRegistrar* model_safe_worker_registrar,
     ExtensionsActivityMonitor* extensions_activity_monitor,
     const std::vector<SyncEngineEventListener*>& listeners,
-    DebugInfoGetter* debug_info_getter)
+    DebugInfoGetter* debug_info_getter,
+    browser_sync::TrafficRecorder* traffic_recorder)
     : resolver_(NULL),
       connection_manager_(connection_manager),
       directory_(directory),
@@ -29,7 +30,7 @@ SyncSessionContext::SyncSessionContext(
       notifications_enabled_(false),
       max_commit_batch_size_(kDefaultMaxCommitBatchSize),
       debug_info_getter_(debug_info_getter),
-      traffic_recorder_(kMaxMessagesToRecord, kMaxMessageSizeToRecord) {
+      traffic_recorder_(traffic_recorder) {
   std::vector<SyncEngineEventListener*>::const_iterator it;
   for (it = listeners.begin(); it != listeners.end(); ++it)
     listeners_.AddObserver(*it);
@@ -41,7 +42,7 @@ SyncSessionContext::SyncSessionContext()
       registrar_(NULL),
       extensions_activity_monitor_(NULL),
       debug_info_getter_(NULL),
-      traffic_recorder_(kMaxMessagesToRecord, kMaxMessageSizeToRecord) {
+      traffic_recorder_(NULL) {
 }
 
 SyncSessionContext::~SyncSessionContext() {

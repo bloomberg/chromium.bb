@@ -98,7 +98,7 @@ class SyncSchedulerTest : public testing::Test {
     context_ = new SyncSessionContext(
         connection_.get(), directory(), registrar_.get(),
         &extensions_activity_monitor_,
-        std::vector<SyncEngineEventListener*>(), NULL);
+        std::vector<SyncEngineEventListener*>(), NULL, NULL);
     context_->set_notifications_enabled(true);
     context_->set_account_name("Test");
     scheduler_.reset(

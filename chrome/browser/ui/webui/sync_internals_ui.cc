@@ -58,6 +58,8 @@ ChromeWebUIDataSource* CreateSyncInternalsHTMLSource() {
   source->add_resource_path("search.js", IDR_SYNC_INTERNALS_SEARCH_JS);
   source->add_resource_path("node_browser.js",
                             IDR_SYNC_INTERNALS_NODE_BROWSER_JS);
+  source->add_resource_path("traffic.js",
+                            IDR_SYNC_INTERNALS_TRAFFIC_JS);
   source->set_default_resource(IDR_SYNC_INTERNALS_INDEX_HTML);
   return source;
 }

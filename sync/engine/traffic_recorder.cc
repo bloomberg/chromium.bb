@@ -39,6 +39,58 @@ TrafficRecorder::TrafficRecorder(unsigned int max_messages,
 TrafficRecorder::~TrafficRecorder() {
 }
 
+namespace {
+const char* GetMessageTypeString(TrafficRecorder::TrafficMessageType type) {
+  switch(type) {
+    case TrafficRecorder::CLIENT_TO_SERVER_MESSAGE:
+      return "Request";
+    case TrafficRecorder::CLIENT_TO_SERVER_RESPONSE:
+      return "Response";
+    default:
+      NOTREACHED();
+      return "";
+  }
+}
+}
+
+DictionaryValue* TrafficRecorder::TrafficRecord::ToValue() const {
+  scoped_ptr<DictionaryValue> value;
+  if (truncated) {
+    value.reset(new DictionaryValue());
+    value->SetString("message_type",
+                     GetMessageTypeString(message_type));
+    value->SetBoolean("truncated", true);
+  } else if (message_type == TrafficRecorder::CLIENT_TO_SERVER_MESSAGE) {
+    sync_pb::ClientToServerMessage message_proto;
+    if (message_proto.ParseFromString(message))
+      value.reset(
+          ClientToServerMessageToValue(message_proto,
+                                       false /* include_specifics */));
+  } else if (message_type == TrafficRecorder::CLIENT_TO_SERVER_RESPONSE) {
+    sync_pb::ClientToServerResponse message_proto;
+    if (message_proto.ParseFromString(message))
+      value.reset(
+          ClientToServerResponseToValue(message_proto,
+                                        false /* include_specifics */));
+  } else {
+    NOTREACHED();
+  }
+
+  return value.release();
+}
+
+
+ListValue* TrafficRecorder::ToValue() const {
+  scoped_ptr<ListValue> value(new ListValue());
+  std::deque<TrafficRecord>::const_iterator it;
+  for (it = records_.begin(); it != records_.end(); ++it) {
+    const TrafficRecord& record = *it;
+    value->Append(record.ToValue());
+  }
+
+  return value.release();
+}
+
 
 void TrafficRecorder::AddTrafficToQueue(TrafficRecord* record) {
   records_.resize(records_.size() + 1);

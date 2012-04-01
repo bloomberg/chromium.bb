@@ -43,6 +43,10 @@ chrome/test/functional/special_tabs.py. -->
      same height no matter which tab is selected. */
   min-height: 650px;
 }
+
+#traffic-dump {
+ font-size: 120%;
+}
 </style>
 
 <tabbox id="sync-page">
@@ -53,6 +57,7 @@ chrome/test/functional/special_tabs.py. -->
     <tab>Events</tab>
     <tab>Sync Node Browser</tab>
     <tab>Search</tab>
+    <tab>Traffic</tab>
   </tabs>
   <tabpanels>
     <tabpanel>
@@ -72,6 +77,9 @@ chrome/test/functional/special_tabs.py. -->
     </tabpanel>
     <tabpanel>
       <include src="search.html" />
+    </tabpanel>
+    <tabpanel>
+      <include src="traffic.html" />
     </tabpanel>
   </tabpanels>
 </tabbox>

@@ -136,6 +136,9 @@ var syncFunctions = [
   'getNotificationState',
   'getNotificationInfo',
 
+  // Client server communication logging functions.
+  'getClientServerTraffic',
+
   // Node lookup functions.  See chrome/browser/sync/engine/syncapi.h
   // for docs.
   'getRootNodeDetails',

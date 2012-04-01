@@ -40,3 +40,4 @@ TEST(TrafficRecorderTest, MaxMessageSizeTest) {
 }
 
 }  //namespace browser_sync
+

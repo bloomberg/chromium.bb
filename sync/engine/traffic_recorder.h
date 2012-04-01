@@ -11,6 +11,7 @@
 
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
+#include "base/values.h"
 #include "sync/protocol/sync.pb.h"
 
 namespace sync_pb {
@@ -42,6 +43,7 @@ class TrafficRecorder {
                   bool truncated);
     TrafficRecord();
     ~TrafficRecord();
+    DictionaryValue* ToValue() const;
   };
 
   TrafficRecorder(unsigned int max_messages, unsigned int max_message_size);
@@ -50,6 +52,7 @@ class TrafficRecorder {
   void RecordClientToServerMessage(const sync_pb::ClientToServerMessage& msg);
   void RecordClientToServerResponse(
       const sync_pb::ClientToServerResponse& response);
+  ListValue* ToValue() const;
 
   const std::deque<TrafficRecord>& records() {
     return records_;

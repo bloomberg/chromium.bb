@@ -30,6 +30,7 @@
       <include name="IDR_SYNC_INTERNALS_NOTIFICATIONS_JS"  file="sync_internals/notifications.js" type="BINDATA" />
       <include name="IDR_SYNC_INTERNALS_SEARCH_JS"  file="sync_internals/search.js" type="BINDATA" />
       <include name="IDR_SYNC_INTERNALS_NODE_BROWSER_JS"  file="sync_internals/node_browser.js" type="BINDATA" />
+      <include name="IDR_SYNC_INTERNALS_TRAFFIC_JS"  file="sync_internals/traffic.js" type="BINDATA" />
     </includes>
   </release>
 </grit>

@@ -15,6 +15,7 @@
 #include "base/message_loop.h"
 #include "sync/engine/model_changing_syncer_command.h"
 #include "sync/engine/model_safe_worker.h"
+#include "sync/engine/traffic_recorder.h"
 #include "sync/sessions/debug_info_getter.h"
 #include "sync/sessions/sync_session.h"
 #include "sync/sessions/sync_session_context.h"
@@ -126,7 +127,8 @@ class SyncerCommandTestBase : public testing::Test,
             mock_server_.get(), directory(),
             registrar(), &extensions_activity_monitor_,
             std::vector<SyncEngineEventListener*>(),
-            &mock_debug_info_getter_));
+            &mock_debug_info_getter_,
+            &traffic_recorder_));
     context_->set_account_name(directory()->name());
     ClearSession();
   }
@@ -199,6 +201,7 @@ class SyncerCommandTestBase : public testing::Test,
   ModelSafeRoutingInfo routing_info_;
   NiceMock<MockDebugInfoGetter> mock_debug_info_getter_;
   FakeExtensionsActivityMonitor extensions_activity_monitor_;
+  TrafficRecorder traffic_recorder_;
   DISALLOW_COPY_AND_ASSIGN(SyncerCommandTestBase);
 };
 

@@ -56,7 +56,8 @@ class SyncSessionContext {
                      ModelSafeWorkerRegistrar* model_safe_worker_registrar,
                      ExtensionsActivityMonitor* extensions_activity_monitor,
                      const std::vector<SyncEngineEventListener*>& listeners,
-                     DebugInfoGetter* debug_info_getter);
+                     DebugInfoGetter* debug_info_getter,
+                     browser_sync::TrafficRecorder* traffic_recorder);
 
   // Empty constructor for unit tests.
   SyncSessionContext();
@@ -125,7 +126,7 @@ class SyncSessionContext {
   syncable::ModelTypeSet GetThrottledTypes() const;
 
   browser_sync::TrafficRecorder* traffic_recorder() {
-    return &traffic_recorder_;
+    return traffic_recorder_;
   }
 
  private:
@@ -182,8 +183,7 @@ class SyncSessionContext {
   // unthrottled.
   UnthrottleTimes unthrottle_times_;
 
-  // TODO(lipalani): Move the creation of this to |SyncManager|.
-  browser_sync::TrafficRecorder traffic_recorder_;
+  browser_sync::TrafficRecorder* traffic_recorder_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncSessionContext);
 };

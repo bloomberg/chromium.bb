@@ -43,7 +43,7 @@ class SyncSessionTest : public testing::Test,
     context_.reset(
         new SyncSessionContext(
             NULL, NULL, this, &extensions_activity_monitor_,
-            std::vector<SyncEngineEventListener*>(), NULL));
+            std::vector<SyncEngineEventListener*>(), NULL, NULL));
     routes_.clear();
     routes_[syncable::BOOKMARKS] = GROUP_UI;
     routes_[syncable::AUTOFILL] = GROUP_DB;

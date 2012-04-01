@@ -6,8 +6,11 @@
 
 namespace browser_sync {
 
+const unsigned int kMaxMessages = 10;
+const unsigned int kMaxMessageSize = 5 * 1024;
 
-SyncerCommandTestBase::SyncerCommandTestBase() {
+SyncerCommandTestBase::SyncerCommandTestBase()
+    : traffic_recorder_(kMaxMessages, kMaxMessageSize) {
 }
 
 SyncerCommandTestBase::~SyncerCommandTestBase() {
