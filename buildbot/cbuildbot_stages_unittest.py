@@ -314,7 +314,8 @@ class BuildBoardTest(AbstractStageTest):
                         usepkg=False,
                         latest_toolchain=False,
                         extra_env={},
-                        profile=None)
+                        profile=None,
+                        chroot_upgrade=False)
 
     self.mox.ReplayAll()
     self.RunStage()
@@ -342,7 +343,8 @@ class BuildBoardTest(AbstractStageTest):
                         usepkg=False,
                         latest_toolchain=False,
                         extra_env={},
-                        profile=self.build_config['profile'])
+                        profile=self.build_config['profile'],
+                        chroot_upgrade=False)
 
     self.mox.ReplayAll()
     self.RunStage()
@@ -371,7 +373,8 @@ class BuildBoardTest(AbstractStageTest):
                         usepkg=False,
                         latest_toolchain=False,
                         extra_env={},
-                        profile='smock')
+                        profile='smock',
+                        chroot_upgrade=False)
 
     self.mox.ReplayAll()
     self.RunStage()
@@ -415,7 +418,8 @@ class BuildBoardTest(AbstractStageTest):
                         usepkg=self.build_config['usepkg_setup_board'],
                         latest_toolchain=self.build_config['latest_toolchain'],
                         extra_env={},
-                        profile=None)
+                        profile=None,
+                        chroot_upgrade=False)
 
     self.mox.ReplayAll()
     self.RunStage()
