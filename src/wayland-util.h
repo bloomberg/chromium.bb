@@ -140,6 +140,14 @@ void wl_list_insert_list(struct wl_list *list, struct wl_list *other);
 	     &pos->member != (head);					\
 	     pos = __wl_container_of(pos->member.prev, pos, member))
 
+#define wl_list_for_each_reverse_safe(pos, tmp, head, member)		\
+	for (pos = 0, tmp = 0, 						\
+	     pos = __wl_container_of((head)->prev, pos, member),	\
+	     tmp = __wl_container_of((pos)->member.prev, tmp, member);	\
+	     &pos->member != (head);					\
+	     pos = tmp,							\
+	     tmp = __wl_container_of(pos->member.prev, tmp, member))
+
 struct wl_array {
 	size_t size;
 	size_t alloc;
