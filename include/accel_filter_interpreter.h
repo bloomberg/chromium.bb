@@ -60,7 +60,7 @@ class AccelFilterInterpreter : public Interpreter {
   static const size_t kMaxAccelCurves = 5;
 
   // curves for sensitivity 1..5
-  CurveSegment move_curves_[kMaxAccelCurves][kMaxCurveSegs];
+  CurveSegment point_curves_[kMaxAccelCurves][kMaxCurveSegs];
   CurveSegment scroll_curves_[kMaxAccelCurves][kMaxCurveSegs];
 
   // Custom curves

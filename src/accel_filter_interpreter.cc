@@ -35,27 +35,36 @@ AccelFilterInterpreter::AccelFilterInterpreter(PropRegistry* prop_reg,
   // 4: y = 32x/30   (x < 32), x^2/30   (x < 150), linear with same slope after
   // 5: y = 32x/25   (x < 32), x^2/25   (x < 150), linear with same slope after
 
-  const float divisors[] = { 0.0, // unused
-                             60.0, 37.5, 30.0, 25.0 };  // used
+  const float point_divisors[] = { 0.0, // unused
+                                   60.0, 37.5, 30.0, 25.0 };  // used
 
 
   // i starts as 1 b/c we skip the first slot, since the default is fine for it.
   for (size_t i = 1; i < kMaxAccelCurves; ++i) {
-    const float divisor = divisors[i];
+    const float divisor = point_divisors[i];
     const float linear_until_x = 32.0;
     const float init_slope = linear_until_x / divisor;
-    move_curves_[i][0] = CurveSegment(linear_until_x, 0, init_slope, 0);
+    point_curves_[i][0] = CurveSegment(linear_until_x, 0, init_slope, 0);
     const float x_border = 150;
-    move_curves_[i][1] = CurveSegment(x_border, 1 / divisor, 0, 0);
+    point_curves_[i][1] = CurveSegment(x_border, 1 / divisor, 0, 0);
     const float slope = x_border * 2 / divisor;
     const float y_at_border = x_border * x_border / divisor;
     const float icept = y_at_border - slope * x_border;
-    move_curves_[i][2] = CurveSegment(INFINITY, 0, slope, icept);
+    point_curves_[i][2] = CurveSegment(INFINITY, 0, slope, icept);
   }
 
+  const float scroll_divisors[] = { 0.0, // unused
+                                    90.0, 60.0, 37.5, 30.0 };  // used
+  // Our scrolling curves are the following.
+  // x = input speed of movement (mm/s, always >= 0), y = output speed (mm/s)
+  // 1: y = x (No acceleration)
+  // 2: y = 32x/60   (x < 32), x^2/90   (x < 150), linear (initial slope) after.
+  // 3: y = 32x/60   (x < 32), x^2/60   (x < 150), linear (initial slope) after.
+  // 4: y = 32x/37.5 (x < 32), x^2/37.5 (x < 150), linear (initial slope) after.
+  // 5: y = 32x/30   (x < 32), x^2/30   (x < 150), linear (initial slope) after.
   // i starts as 1 b/c we skip the first slot, since the default is fine for it.
   for (size_t i = 1; i < kMaxAccelCurves; ++i) {
-    const float divisor = divisors[i];
+    const float divisor = scroll_divisors[i];
     const float linear_until_x = 32.0;
     const float init_slope = linear_until_x / divisor;
     scroll_curves_[i][0] = CurveSegment(linear_until_x, 0, init_slope, 0);
@@ -140,7 +149,7 @@ void AccelFilterInterpreter::ScaleGesture(Gesture* gs) {
       scale_out_x = dx = &gs->details.move.dx;
       scale_out_y = dy = &gs->details.move.dy;
       if (sensitivity_.val_ >= 1 && sensitivity_.val_ <= 5) {
-        segs = move_curves_[sensitivity_.val_ - 1];
+        segs = point_curves_[sensitivity_.val_ - 1];
       } else {
         segs = custom_point_;
         ParseCurveString(custom_point_str_.val_,
