@@ -77,7 +77,9 @@ class SyncSetupHandler : public options2::OptionsPageUIHandler,
   // to the "advanced settings" dialog, otherwise we give the user the simpler
   // "Sync Everything" dialog. Overridden by subclasses to allow them to skip
   // the sync setup dialog if desired.
-  virtual void DisplayConfigureSync(bool show_advanced);
+  // If |passphrase_failed| is true, then the user previously tried to enter an
+  // invalid passphrase.
+  virtual void DisplayConfigureSync(bool show_advanced, bool passphrase_failed);
 
   // Called when we are done configuring sync (so we want to close the dialog
   // and start syncing).

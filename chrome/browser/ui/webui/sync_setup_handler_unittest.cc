@@ -689,6 +689,13 @@ TEST_F(SyncSetupHandlerTest, UnsuccessfullySetPassphrase) {
   handler_->HandleConfigure(&list_args);
 
   ExpectConfig();
+
+  // Make sure we display an error message to the user due to the failed
+  // passphrase.
+  const TestWebUI::CallData& data = web_ui_.call_data()[0];
+  DictionaryValue* dictionary;
+  ASSERT_TRUE(data.arg2->GetAsDictionary(&dictionary));
+  CheckBool(dictionary, "passphrase_failed", true);
 }
 
 TEST_F(SyncSetupHandlerTest, TestSyncOnlyBookmarks) {
@@ -789,6 +796,7 @@ TEST_F(SyncSetupHandlerTest, ShowSetupSyncEverything) {
   CheckBool(dictionary, "typed_urls_registered", true);
   CheckBool(dictionary, "show_passphrase", false);
   CheckBool(dictionary, "usePassphrase", false);
+  CheckBool(dictionary, "passphrase_failed", false);
   CheckBool(dictionary, "encryptAllData", false);
 }
 
@@ -873,6 +881,7 @@ TEST_F(SyncSetupHandlerTest, ShowSetupGaiaPassphraseRequired) {
   ASSERT_TRUE(data.arg2->GetAsDictionary(&dictionary));
   CheckBool(dictionary, "show_passphrase", true);
   CheckBool(dictionary, "usePassphrase", false);
+  CheckBool(dictionary, "passphrase_failed", false);
 }
 
 TEST_F(SyncSetupHandlerTest, ShowSetupCustomPassphraseRequired) {
@@ -892,6 +901,7 @@ TEST_F(SyncSetupHandlerTest, ShowSetupCustomPassphraseRequired) {
   ASSERT_TRUE(data.arg2->GetAsDictionary(&dictionary));
   CheckBool(dictionary, "show_passphrase", true);
   CheckBool(dictionary, "usePassphrase", true);
+  CheckBool(dictionary, "passphrase_failed", false);
 }
 
 TEST_F(SyncSetupHandlerTest, ShowSetupEncryptAll) {

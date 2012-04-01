@@ -449,8 +449,8 @@ cr.define('options', function() {
       // Warn the user about their incorrect passphrase if we need a passphrase
       // and the passphrase field is non-empty (meaning they tried to set it
       // previously but failed).
-      $('incorrect-passphrase').hidden = !(args['usePassphrase'] &&
-          $('choose-data-types-form').passphrase.value);
+      $('incorrect-passphrase').hidden =
+          !(args['usePassphrase'] && args['passphrase_failed']);
 
       $('sync-passphrase-warning').hidden = false;
       $('passphrase').focus();

@@ -340,7 +340,8 @@ void SyncSetupHandler::GetStaticLocalizedValues(
   RegisterTitle(localized_strings, "syncSetupOverlay", IDS_SYNC_SETUP_TITLE);
 }
 
-void SyncSetupHandler::DisplayConfigureSync(bool show_advanced) {
+void SyncSetupHandler::DisplayConfigureSync(bool show_advanced,
+                                            bool passphrase_failed) {
   // Should only be called if user is signed in, so no longer need our
   // SigninTracker.
   signin_tracker_.reset();
@@ -372,6 +373,7 @@ void SyncSetupHandler::DisplayConfigureSync(bool show_advanced) {
     args.SetBoolean("sync_" + key_name, preferred_types.Has(kDataTypes[i]));
   }
   browser_sync::SyncPrefs sync_prefs(GetProfile()->GetPrefs());
+  args.SetBoolean("passphrase_failed", passphrase_failed);
   args.SetBoolean("showSyncEverythingPage", !show_advanced);
   args.SetBoolean("syncAllDataTypes", sync_prefs.HasKeepEverythingSynced());
   args.SetBoolean("encryptAllData", service->EncryptEverythingEnabled());
@@ -603,7 +605,7 @@ void SyncSetupHandler::SigninSuccess() {
   if (GetSyncService()->HasSyncSetupCompleted())
     DisplayGaiaSuccessAndClose();
   else
-    DisplayConfigureSync(false);
+    DisplayConfigureSync(false, false);
 }
 
 void SyncSetupHandler::HandleConfigure(const ListValue* args) {
@@ -679,7 +681,7 @@ void SyncSetupHandler::HandleConfigure(const ListValue* args) {
   if (passphrase_failed || service->IsPassphraseRequiredForDecryption()) {
     // We need a passphrase, or the user's attempt to set a passphrase failed -
     // prompt them again.
-    DisplayConfigureSync(true);
+    DisplayConfigureSync(true, passphrase_failed);
   } else {
     // No passphrase is required from the user so mark the configuration as
     // complete and close the sync setup overlay.
@@ -791,7 +793,7 @@ void SyncSetupHandler::OpenSyncSetup(bool force_login) {
   if (!force_login && service->HasSyncSetupCompleted()) {
     // User is already logged in. They must have brought up the config wizard
     // via the "Advanced..." button or the wrench menu.
-    DisplayConfigureSync(true);
+    DisplayConfigureSync(true, false);
   } else {
     // User is not logged in - need to display login UI.
     DisplayGaiaLogin(false);

@@ -127,12 +127,13 @@ void SyncPromoHandler::RecordSignin() {
   sync_promo_trial::RecordUserSignedIn(web_ui());
 }
 
-void SyncPromoHandler::DisplayConfigureSync(bool show_advanced) {
+void SyncPromoHandler::DisplayConfigureSync(bool show_advanced,
+                                            bool passphrase_failed) {
   ProfileSyncService* service = GetSyncService();
   DCHECK(service);
   if (service->IsPassphraseRequired()) {
     // If a passphrase is required then we must show the configure pane.
-    SyncSetupHandler::DisplayConfigureSync(true);
+    SyncSetupHandler::DisplayConfigureSync(true, passphrase_failed);
   } else {
     // If no passphrase is required then skip the configure pane and sync
     // everything by default. This makes the first run experience simpler.
