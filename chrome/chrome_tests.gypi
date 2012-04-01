@@ -2168,6 +2168,7 @@
         }],
         ['disable_nacl==1', {
           'sources!':[
+            'nacl/nacl_ipc_adapter_unittest.cc',
             'nacl/nacl_validation_query_unittest.cc',
           ],
         }],
