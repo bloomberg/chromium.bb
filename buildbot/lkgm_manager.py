@@ -186,7 +186,8 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     with open(manifest, 'w+') as manifest_file:
       manifest_dom.writexml(manifest_file)
 
-  def CreateNewCandidate(self, validation_pool=None, retries=3):
+  def CreateNewCandidate(self, validation_pool=None,
+                         retries=manifest_version.NUM_RETRIES):
     """Creates, syncs to, and returns the next candidate manifest.
 
       Args:
@@ -255,7 +256,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     else:
       raise manifest_version.GenerateBuildSpecException(last_error)
 
-  def GetLatestCandidate(self, retries=5):
+  def GetLatestCandidate(self, retries=manifest_version.NUM_RETRIES):
     """Gets and syncs to the next candiate manifest.
       Args:
         retries: Number of retries for updating the status
@@ -349,7 +350,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
 
     return builder_statuses
 
-  def PromoteCandidate(self, retries=5):
+  def PromoteCandidate(self, retries=manifest_version.NUM_RETRIES):
     """Promotes the current LKGM candidate to be a real versioned LKGM."""
     assert self.current_version, 'No current manifest exists.'
 

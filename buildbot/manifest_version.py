@@ -23,6 +23,7 @@ logging.basicConfig(level=logging.DEBUG, format=logging_format,
                     datefmt=date_format)
 
 PUSH_BRANCH = 'temp_auto_checkin_branch'
+NUM_RETRIES = 20
 
 class VersionUpdateException(Exception):
   """Exception gets thrown for failing to update the version file"""
@@ -552,7 +553,7 @@ class BuildSpecsManager(object):
     self.cros_source.Sync(repository.RepoRepository.DEFAULT_MANIFEST,
                           cleanup=False)
 
-  def GetNextBuildSpec(self, retries=5):
+  def GetNextBuildSpec(self, retries=NUM_RETRIES):
     """Returns a path to the next manifest to build.
 
       Args:
@@ -625,7 +626,7 @@ class BuildSpecsManager(object):
     _PushGitChanges(self.manifest_dir, commit_message,
                     dry_run=self.dry_run)
 
-  def UpdateStatus(self, success, retries=5):
+  def UpdateStatus(self, success, retries=NUM_RETRIES):
     """Updates the status of the build for the current build spec.
     Args:
       success: True for success, False for failure
