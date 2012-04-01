@@ -122,10 +122,12 @@ void PolicyMap::GetDifferingKeys(const PolicyMap& other,
 void PolicyMap::FilterLevel(PolicyLevel level) {
   PolicyMapType::iterator iter(map_.begin());
   while (iter != map_.end()) {
-    if (iter->second.level != level)
+    if (iter->second.level != level) {
+      delete iter->second.value;
       map_.erase(iter++);
-    else
+    } else {
       ++iter;
+    }
   }
 }
 
