@@ -2713,7 +2713,9 @@ ListValue* TestingAutomationProvider::GetInfobarsInfo(WebContents* wc) {
     InfoBarDelegate* infobar = infobar_helper->GetInfoBarDelegateAt(i);
     if (infobar->AsConfirmInfoBarDelegate()) {
       // Also covers ThemeInstalledInfoBarDelegate.
-      if (infobar->AsSavePasswordInfoBarDelegate()) {
+      if (infobar->AsOneClickLoginInfoBarDelegate()) {
+        infobar_item->SetString("type", "oneclicklogin_infobar");
+      } else if (infobar->AsSavePasswordInfoBarDelegate()) {
         infobar_item->SetString("type", "password_infobar");
       } else if (infobar->AsRegisterProtocolHandlerInfoBarDelegate()) {
         infobar_item->SetString("type", "rph_infobar");

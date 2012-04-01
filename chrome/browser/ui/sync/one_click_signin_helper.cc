@@ -42,8 +42,6 @@
 #include "webkit/forms/password_form.h"
 #include "webkit/forms/password_form_dom_manager.h"
 
-namespace {
-
 // The infobar asking the user if they want to use one-click sign in.
 class OneClickLoginInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
@@ -62,6 +60,9 @@ class OneClickLoginInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
   virtual bool Accept() OVERRIDE;
   virtual bool Cancel() OVERRIDE;
+
+  virtual OneClickLoginInfoBarDelegate*
+      AsOneClickLoginInfoBarDelegate() OVERRIDE;
 
   // Set the profile preference to turn off one-click sign in so that it won't
   // show again in this profile.
@@ -178,6 +179,11 @@ bool OneClickLoginInfoBarDelegate::Cancel() {
   return true;
 }
 
+OneClickLoginInfoBarDelegate*
+OneClickLoginInfoBarDelegate::AsOneClickLoginInfoBarDelegate() {
+    return this;
+}
+
 void OneClickLoginInfoBarDelegate::DisableOneClickSignIn() {
   PrefService* pref_service =
       TabContentsWrapper::GetCurrentWrapperForContents(
@@ -189,8 +195,6 @@ void OneClickLoginInfoBarDelegate::RecordHistogramAction(int action) {
   UMA_HISTOGRAM_ENUMERATION("AutoLogin.Reverse", action,
                             one_click_signin::HISTOGRAM_MAX);
 }
-
-}  // namespace
 
 // static
 bool OneClickSigninHelper::CanOffer(content::WebContents* web_contents,

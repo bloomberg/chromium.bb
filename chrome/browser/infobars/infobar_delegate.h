@@ -17,6 +17,7 @@ class InfoBarTabHelper;
 class InsecureContentInfoBarDelegate;
 class LinkInfoBarDelegate;
 class MediaStreamInfoBarDelegate;
+class OneClickLoginInfoBarDelegate;
 class PluginInstallerInfoBarDelegate;
 class RegisterProtocolHandlerInfoBarDelegate;
 class SavePasswordInfoBarDelegate;
@@ -91,6 +92,7 @@ class InfoBarDelegate {
   virtual InsecureContentInfoBarDelegate* AsInsecureContentInfoBarDelegate();
   virtual LinkInfoBarDelegate* AsLinkInfoBarDelegate();
   virtual MediaStreamInfoBarDelegate* AsMediaStreamInfobarDelegate();
+  virtual OneClickLoginInfoBarDelegate* AsOneClickLoginInfoBarDelegate();
   virtual RegisterProtocolHandlerInfoBarDelegate*
       AsRegisterProtocolHandlerInfoBarDelegate();
   virtual SavePasswordInfoBarDelegate* AsSavePasswordInfoBarDelegate();

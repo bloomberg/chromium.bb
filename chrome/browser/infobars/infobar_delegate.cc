@@ -67,6 +67,11 @@ MediaStreamInfoBarDelegate* InfoBarDelegate::AsMediaStreamInfobarDelegate() {
   return NULL;
 }
 
+OneClickLoginInfoBarDelegate*
+    InfoBarDelegate::AsOneClickLoginInfoBarDelegate() {
+  return NULL;
+}
+
 SavePasswordInfoBarDelegate* InfoBarDelegate::AsSavePasswordInfoBarDelegate() {
   return NULL;
 }
