@@ -368,8 +368,9 @@ class TestValidationPool(mox.MoxTestBase):
     pool.SubmitChange(patch1)
     helper.IsChangeCommitted(patch1.id, False).AndReturn(False)
     pool.HandleCouldNotSubmit(patch1)
+    result = cros_build_lib.CommandResult(cmd='cmd', returncode=1)
     pool.SubmitChange(patch2).AndRaise(
-        cros_build_lib.RunCommandError('Failed to submit', 'cmd', 1))
+        cros_build_lib.RunCommandError('Failed to submit', result))
     pool.HandleCouldNotSubmit(patch2)
     pool.SubmitChange(patch3)
     helper.IsChangeCommitted(patch3.id, False).AndReturn(True)

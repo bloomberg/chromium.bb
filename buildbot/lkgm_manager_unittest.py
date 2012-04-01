@@ -249,10 +249,10 @@ class LKGMManagerTest(mox.MoxTestBase):
     lkgm_manager.LKGMManager.RefreshManifestCheckout()
     cros_lib.CreatePushBranch(mox.IgnoreArg(), mox.IgnoreArg(), sync=False)
     lkgm_manager.LKGMManager.SetInFlight(most_recent_candidate.VersionString())
+    result = cros_lib.CommandResult(cmd=['git', 'push'], returncode=2)
     lkgm_manager.LKGMManager.PushSpecChanges(
         mox.StrContains(most_recent_candidate.VersionString())).AndRaise(
-        cros_lib.RunCommandError(mox.IgnoreArg(), mox.IgnoreArg(),
-                                 mox.IgnoreArg()))
+        cros_lib.RunCommandError('Failed to run command', result))
 
     lkgm_manager.LKGMManager.SetInFlight(most_recent_candidate.VersionString())
     lkgm_manager.LKGMManager.PushSpecChanges(

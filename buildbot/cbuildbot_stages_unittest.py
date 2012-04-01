@@ -559,7 +559,8 @@ class HWTestStageTest(AbstractStageTest):
     self.mox.StubOutWithMock(bs.BuilderStage, '_HandleExceptionAsWarning')
     build = '%s/%s' % (self.bot_id,
                        self.archive_stage_mock.GetVersion().AndReturn('ver'))
-    error = cros_lib.RunCommandError('HWTests failed', 'run_hw_tests', 2)
+    result = cros_lib.CommandResult(cmd='run_hw_tests', returncode=2)
+    error = cros_lib.RunCommandError('HWTests failed', result)
     commands.RunHWTestSuite(build,
                             self.suite,
                             self._current_board,
@@ -1125,11 +1126,13 @@ class BuildStagesResultsTest(unittest.TestCase):
     results_lib.Results.Record('Pass', results_lib.Results.SUCCESS, time=1)
     results_lib.Results.Record('Pass2', results_lib.Results.SUCCESS, time=2)
     results_lib.Results.Record('Fail', self.failException, time=3)
+    result = cros_lib.CommandResult(cmd=['/bin/false', '/nosuchdir'],
+                                    returncode=2)
     results_lib.Results.Record(
         'FailRunCommand',
         cros_lib.RunCommandError(
             'Command "/bin/false /nosuchdir" failed.\n',
-            ['/bin/false', '/nosuchdir'], error_code=2), time=4)
+            result), time=4)
 
     results = StringIO.StringIO()
 
@@ -1167,11 +1170,13 @@ class BuildStagesResultsTest(unittest.TestCase):
     results_lib.Results.Record('Pass2', results_lib.Results.SUCCESS, time=2)
     results_lib.Results.Record('Fail', self.failException,
                                'failException Msg\nLine 2', time=3)
+    result = cros_lib.CommandResult(cmd=['/bin/false', '/nosuchdir'],
+                                    returncode=2)
     results_lib.Results.Record(
         'FailRunCommand',
         cros_lib.RunCommandError(
             'Command "/bin/false /nosuchdir" failed.\n',
-            ['/bin/false', '/nosuchdir'], error_code=2),
+            result),
         'FailRunCommand msg', time=4)
 
     results = StringIO.StringIO()
