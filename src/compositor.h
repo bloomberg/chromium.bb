@@ -336,6 +336,7 @@ struct weston_surface {
 	 * are the sx and sy paramerters supplied to surface::attach .
 	 */
 	void (*configure)(struct weston_surface *es, int32_t sx, int32_t sy);
+	void *private;
 };
 
 void

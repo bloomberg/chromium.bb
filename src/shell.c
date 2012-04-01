@@ -519,8 +519,12 @@ shell_surface_set_maximized(struct wl_client *client,
 	shsurf->type = SHELL_SURFACE_MAXIMIZED;
 }
 
+static void
+black_surface_configure(struct weston_surface *es, int32_t sx, int32_t sy);
+
 static struct weston_surface *
 create_black_surface(struct weston_compositor *ec,
+		     struct weston_surface *fs_surface,
 		     GLfloat x, GLfloat y, int w, int h)
 {
 	struct weston_surface *surface = NULL;
@@ -531,6 +535,8 @@ create_black_surface(struct weston_compositor *ec,
 		return NULL;
 	}
 
+	surface->configure = black_surface_configure;
+	surface->private = fs_surface;
 	weston_surface_configure(surface, x, y, w, h);
 	weston_surface_set_color(surface, 0.0, 0.0, 0.0, 1);
 	return surface;
@@ -551,6 +557,7 @@ shell_configure_fullscreen(struct shell_surface *shsurf)
 	if (!shsurf->fullscreen.black_surface)
 		shsurf->fullscreen.black_surface =
 			create_black_surface(surface->compositor,
+					     surface,
 					     output->x, output->y,
 					     output->current->width,
 					     output->current->height);
@@ -1410,6 +1417,7 @@ activate(struct weston_shell *base, struct weston_surface *es,
 {
 	struct wl_shell *shell = container_of(base, struct wl_shell, shell);
 	struct weston_compositor *compositor = shell->compositor;
+	struct weston_surface *surf, *prev;
 
 	weston_surface_activate(es, device, time);
 
@@ -1430,12 +1438,40 @@ activate(struct weston_shell *base, struct weston_surface *es,
 		break;
 	case SHELL_SURFACE_FULLSCREEN:
 		/* should on top of panels */
+		shell_stack_fullscreen(get_shell_surface(es));
 		break;
 	default:
+                /* move the fullscreen surfaces down into the toplevel layer */
+		if (!wl_list_empty(&shell->fullscreen_layer.surface_list)) {
+			wl_list_for_each_reverse_safe(surf,
+						      prev, 
+					              &shell->fullscreen_layer.surface_list, 
+						      layer_link)
+				weston_surface_restack(surf,
+						       &shell->toplevel_layer.surface_list); 
+		}
+
 		weston_surface_restack(es,
 				       &shell->toplevel_layer.surface_list);
 		break;
 	}
+}
+
+/* no-op func for checking black surface */
+static void
+black_surface_configure(struct weston_surface *es, int32_t sx, int32_t sy)
+{
+}
+
+static bool 
+is_black_surface (struct weston_surface *es, struct weston_surface **fs_surface)
+{
+	if (es->configure == black_surface_configure) {
+		if (fs_surface)
+			*fs_surface = (struct weston_surface *)es->private;
+		return true;
+	}
+	return false;
 }
 
 static void
@@ -1452,13 +1488,8 @@ click_to_activate_binding(struct wl_input_device *device,
 	if (!focus)
 		return;
 
-	upper = container_of(focus->link.prev, struct weston_surface, link);
-	if (focus->link.prev != &compositor->surface_list &&
-	    get_shell_surface_type(upper) == SHELL_SURFACE_FULLSCREEN) {
-		printf("%s: focus is black surface, raise its fullscreen surface\n", __func__);
-		shell_stack_fullscreen(get_shell_surface(upper));
+	if (is_black_surface(focus, &upper))
 		focus = upper;
-	}
 
 	if (state && device->pointer_grab == &device->default_pointer_grab)
 		activate(compositor->shell, focus, wd, time);
