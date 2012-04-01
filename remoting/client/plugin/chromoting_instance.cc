@@ -249,6 +249,21 @@ void ChromotingInstance::HandleMessage(const pp::Var& message) {
     OnIncomingIq(iq);
   } else if (method == "releaseAllKeys") {
     ReleaseAllKeys();
+  } else if (method == "injectKeyEvent") {
+    int usb_keycode = 0;
+    bool is_pressed = false;
+    if (!data->GetInteger("usb_keycode", &usb_keycode) ||
+        !data->GetBoolean("pressed", &is_pressed)) {
+      LOG(ERROR) << "Invalid injectKeyEvent.";
+      return;
+    }
+
+    protocol::KeyEvent event;
+    event.set_usb_keycode(usb_keycode);
+    event.set_pressed(is_pressed);
+    // Even though new hosts will ignore keycode, it's a required field.
+    event.set_keycode(0);
+    InjectKeyEvent(event);
   } else if (method == "sendClipboardItem") {
     std::string mime_type;
     std::string item;
@@ -400,9 +415,13 @@ void ChromotingInstance::OnIncomingIq(const std::string& iq) {
 }
 
 void ChromotingInstance::ReleaseAllKeys() {
-  if (key_event_tracker_.get()) {
+  if (key_event_tracker_.get())
     key_event_tracker_->ReleaseAllKeys();
-  }
+}
+
+void ChromotingInstance::InjectKeyEvent(const protocol::KeyEvent& event) {
+  if (key_event_tracker_.get())
+    key_event_tracker_->InjectKeyEvent(event);
 }
 
 void ChromotingInstance::SendClipboardItem(const std::string& mime_type,

@@ -28,6 +28,7 @@
 #include "remoting/base/scoped_thread_proxy.h"
 #include "remoting/client/client_context.h"
 #include "remoting/client/plugin/pepper_plugin_thread_delegate.h"
+#include "remoting/proto/event.pb.h"
 #include "remoting/protocol/connection_to_host.h"
 
 namespace base {
@@ -129,6 +130,7 @@ class ChromotingInstance :
   void Disconnect();
   void OnIncomingIq(const std::string& iq);
   void ReleaseAllKeys();
+  void InjectKeyEvent(const protocol::KeyEvent& event);
   void SendClipboardItem(const std::string& mime_type, const std::string& item);
 
   // Return statistics record by ChromotingClient.

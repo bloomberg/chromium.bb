@@ -91,6 +91,14 @@ remoting.ClientPlugin.prototype.setScaleToFit =
 remoting.ClientPlugin.prototype.releaseAllKeys = function() {};
 
 /**
+ * Send a key event to the host.
+ *
+ * @param {number} usb_keycode The USB-style code of the key to inject.
+ * @param {boolean} pressed True to inject a key press, False for a release.
+ */
+remoting.ClientPlugin.prototype.injectKey = function() {};
+
+/**
  * Returns an associative array with a set of stats for this connection.
  *
  * @return {remoting.ClientSession.PerfStats} The connection statistics.
