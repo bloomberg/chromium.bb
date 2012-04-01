@@ -1950,6 +1950,12 @@ switcher_next(struct switcher *switcher)
 		default:
 			break;
 		}
+
+		if (is_black_surface(surface, NULL)) {
+			surface->alpha = 64;
+			surface->geometry.dirty = 1;
+			weston_surface_damage(surface);
+		}
 	}
 
 	if (next == NULL)
@@ -1964,6 +1970,9 @@ switcher_next(struct switcher *switcher)
 
 	switcher->current = next;
 	next->alpha = 255;
+
+	if (get_shell_surface_type(switcher->current) == SHELL_SURFACE_FULLSCREEN)
+		get_shell_surface(switcher->current)->fullscreen.black_surface->alpha = 255;
 }
 
 static void
