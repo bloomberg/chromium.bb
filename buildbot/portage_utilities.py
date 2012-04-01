@@ -117,10 +117,9 @@ class EBuild(object):
       cros_build_lib.Info(message)
 
   @classmethod
-  def _RunCommand(cls, command):
-    command_result = cros_build_lib.RunCommand(
-      command, redirect_stdout=True, print_cmd=cls.VERBOSE, shell=True)
-    return command_result.output
+  def _RunCommand(cls, command, **kwargs):
+    return cros_build_lib.RunCommandCaptureOutput(
+        command, print_cmd=cls.VERBOSE, **kwargs).output
 
   def IsSticky(self):
     """Returns True if the ebuild is sticky."""
@@ -245,14 +244,14 @@ class EBuild(object):
     fileinput.close()
 
   def GetSourcePath(self, srcroot):
-    """Get the commit id for this ebuild."""
+    """Get the project and path for this ebuild."""
     # Grab and evaluate CROS_WORKON variables from this ebuild.
     cmd = ('export CROS_WORKON_LOCALNAME="%s" CROS_WORKON_PROJECT="%s"; '
            'eval $(grep -E "^CROS_WORKON" %s) && '
            'echo $CROS_WORKON_PROJECT '
            '$CROS_WORKON_LOCALNAME/$CROS_WORKON_SUBDIR'
            % (self._pkgname, self._pkgname, self._unstable_ebuild_path))
-    project, subdir = self._RunCommand(cmd).split()
+    project, subdir = self._RunCommand(cmd, shell=True).split()
 
     # Calculate srcdir.
     if self._category == 'chromeos-base':
@@ -261,31 +260,27 @@ class EBuild(object):
       dir_ = 'third_party'
 
     subdir_path = os.path.join(srcroot, dir_, subdir)
-    return project, os.path.realpath(subdir_path)
 
-  def GetCommitId(self, srcroot):
-    """Get the commit id for this ebuild."""
-    project, srcdir = self.GetSourcePath(srcroot)
-
-    if not os.path.isdir(srcdir):
+    if not os.path.isdir(subdir_path):
       cros_build_lib.Die('Source repository %s '
-                         'for package %s does not exist.' % (
-                            srcdir, self.package))
+                         'for project %s does not exist.' % (
+                            subdir_path, self._pkgname))
 
     # Verify that we're grabbing the commit id from the right project name.
-    # NOTE: chromeos-kernel has the wrong project name, so it fails this
-    # check.
-    # TODO(davidjames): Fix the project name in the chromeos-kernel ebuild.
-    cmd = ('cd %s && ( git config --get remote.cros.projectname || '
-           'git config --get remote.cros-internal.projectname )') % srcdir
-    actual_project = self._RunCommand(cmd).rstrip()
-    if project not in (actual_project, 'chromeos-kernel'):
+    cmd = ('git config --get remote.cros.projectname || '
+           'git config --get remote.cros-internal.projectname')
+    real_project = self._RunCommand(cmd, cwd=subdir_path, shell=True).rstrip()
+    if project != real_project:
       cros_build_lib.Die('Project name mismatch for %s '
                          '(found %s, expected %s)' % (
-                             srcdir, actual_project, project))
+                             srcdir, real_project, project))
 
+    return project, os.path.realpath(subdir_path)
+
+  def GetCommitId(self, srcdir):
+    """Get the commit id for this ebuild."""
     # Get commit id.
-    output = self._RunCommand('cd %s && git rev-parse HEAD' % srcdir)
+    output = self._RunCommand(['git', 'rev-parse', 'HEAD'], cwd=srcdir)
     if not output:
       cros_build_lib.Die('Cannot determine HEAD commit for %s' % srcdir)
     return output.rstrip()
@@ -306,7 +301,7 @@ class EBuild(object):
 
     # The chromeos-version script will output a usable raw version number,
     # or nothing in case of error or no available version
-    output = self._RunCommand(' '.join([vers_script, srcdir])).strip()
+    output = self._RunCommand([vers_script, srcdir]).strip()
 
     if not output:
       cros_build_lib.Die('Package %s has a chromeos-version.sh script but '
@@ -351,7 +346,8 @@ class EBuild(object):
       cros_build_lib.Die('Missing unstable ebuild: %s' %
                          self._unstable_ebuild_path)
 
-    commit_id = self.GetCommitId(srcroot)
+    srcdir = self.GetSourcePath(srcroot)[1]
+    commit_id = self.GetCommitId(srcdir)
     self.MarkAsStable(self._unstable_ebuild_path,
                       new_stable_ebuild_path,
                       'CROS_WORKON_COMMIT', commit_id, redirect_file)
@@ -362,11 +358,11 @@ class EBuild(object):
       return None
     else:
       self._Print('Adding new stable ebuild to git')
-      self._RunCommand('git add %s' % new_stable_ebuild_path)
+      self._RunCommand(['git', 'add', new_stable_ebuild_path])
 
       if self.is_stable:
         self._Print('Removing old ebuild from git')
-        self._RunCommand('git rm %s' % old_ebuild_path)
+        self._RunCommand(['git', 'rm', old_ebuild_path])
 
       message = _GIT_COMMIT_MESSAGE % (self.package, commit_id)
       self.CommitChange(message)

@@ -24,6 +24,7 @@ from chromite.buildbot import patch as cros_patch
 from chromite.buildbot import gerrit_helper
 from chromite.buildbot import portage_utilities
 
+# pylint: disable=W0212,E1120
 
 class _Package(object):
   def __init__(self, package):
@@ -94,56 +95,17 @@ class EBuildTest(mox.MoxTestBase):
 
   def testGetCommitId(self):
     fake_sources = '/path/to/sources'
-    fake_category = 'test_category'
-    fake_package = 'test_package'
-    fake_ebuild_path = os.path.join(fake_sources, 'overlay',
-                                    fake_category, fake_package,
-                                    fake_package + '-9999.ebuild')
-    fake_ebuild = self._makeFakeEbuild(fake_ebuild_path)
-    self.mox.UnsetStubs()
-
     fake_hash = '24ab3c9f6d6b5c744382dba2ca8fb444b9808e9f'
-    fake_project = 'chromiumos/third_party/test_project'
-    fake_subdir = 'test_project/'
+    fake_ebuild_path = '/path/to/test_package/test_package-9999.ebuild'
+    fake_ebuild = self._makeFakeEbuild(fake_ebuild_path)
 
-    # We expect Die() will not be called; mock it out so that if
-    # we're wrong, it won't just terminate the test.
-    self.mox.StubOutWithMock(portage_utilities.cros_build_lib, 'Die')
-    self.mox.StubOutWithMock(portage_utilities.os.path, 'isdir')
-    self.mox.StubOutWithMock(
-        portage_utilities.cros_build_lib, 'RunCommand')
-
-    # The first RunCommand does 'grep' magic on the ebuild.
-    result1 = _DummyCommandResult(' '.join([fake_project, fake_subdir]))
-    portage_utilities.cros_build_lib.RunCommand(
+    # git rev-parse HEAD
+    self.mox.StubOutWithMock(cros_build_lib, 'RunCommandCaptureOutput')
+    result = _DummyCommandResult(fake_hash)
+    cros_build_lib.RunCommandCaptureOutput(
         mox.IgnoreArg(),
-        print_cmd=fake_ebuild.VERBOSE,
-        redirect_stdout=True,
-        shell=True).AndReturn(result1)
-
-    # ... the result is used to construct a path, which the EBuild
-    # code expects to be a directory.  The path passes through
-    # os.path.realpath(), which strips the trailing '/' from
-    # fake_subdir.
-    expected_dir = os.path.join(
-        fake_sources, 'third_party', fake_subdir[0:-1])
-    portage_utilities.os.path.isdir(expected_dir).AndReturn(True)
-
-    # ... the next RunCommand does 'git config --get ...'
-    result2 = _DummyCommandResult(fake_project)
-    portage_utilities.cros_build_lib.RunCommand(
-        mox.IgnoreArg(),
-        print_cmd=fake_ebuild.VERBOSE,
-        redirect_stdout=True,
-        shell=True).AndReturn(result2)
-
-    # ... and the final RunCommand does 'git rev-parse HEAD'
-    result3 = _DummyCommandResult(fake_hash)
-    portage_utilities.cros_build_lib.RunCommand(
-        mox.IgnoreArg(),
-        print_cmd=fake_ebuild.VERBOSE,
-        redirect_stdout=True,
-        shell=True).AndReturn(result3)
+        cwd=mox.IgnoreArg(),
+        print_cmd=portage_utilities.EBuild.VERBOSE).AndReturn(result)
 
     self.mox.ReplayAll()
     test_hash = fake_ebuild.GetCommitId(fake_sources)
@@ -160,8 +122,8 @@ class StubEBuild(portage_utilities.EBuild):
   def _ReadEBuild(self, path):
     pass
 
-  def GetCommitId(self, srcroot):
-    if srcroot == '/sources':
+  def GetCommitId(self, srcpath):
+    if srcpath == '/sources/platform/test_project':
       return 'my_id'
     else:
       return 'you_lose'
@@ -184,21 +146,24 @@ class EBuildRevWorkonTest(mox.MoxTestBase):
     self.m_ebuild = StubEBuild(ebuild_path)
     self.revved_ebuild_path = package_name + '-r2.ebuild'
 
-  def createRevWorkOnMocks(self, ebuild_content):
-    self.mox.StubOutWithMock(portage_utilities.os.path, 'exists')
-    self.mox.StubOutWithMock(portage_utilities.cros_build_lib, 'Die')
+  def createRevWorkOnMocks(self, ebuild_content, rev):
+    self.mox.StubOutWithMock(os.path, 'exists')
+    self.mox.StubOutWithMock(cros_build_lib, 'Die')
     self.mox.StubOutWithMock(portage_utilities.shutil, 'copyfile')
-    self.mox.StubOutWithMock(portage_utilities.os, 'unlink')
+    self.mox.StubOutWithMock(os, 'unlink')
     self.mox.StubOutWithMock(portage_utilities.EBuild, '_RunCommand')
     self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
     self.mox.StubOutWithMock(portage_utilities.filecmp, 'cmp')
     self.mox.StubOutWithMock(portage_utilities.fileinput, 'input')
     self.mox.StubOutWithMock(portage_utilities.EBuild, 'GetVersion')
+    self.mox.StubOutWithMock(portage_utilities.EBuild, 'GetSourcePath')
 
+    retval = ('platform/test_project', '/sources/platform/test_project')
+    portage_utilities.EBuild.GetSourcePath('/sources').AndReturn(retval)
     portage_utilities.EBuild.GetVersion('/sources', '0.0.1').AndReturn('0.0.1')
 
     ebuild_9999 = self.m_ebuild._unstable_ebuild_path
-    portage_utilities.os.path.exists(ebuild_9999).AndReturn(True)
+    os.path.exists(ebuild_9999).AndReturn(True)
 
     # These calls come from MarkAsStable()
     portage_utilities.shutil.copyfile(ebuild_9999, self.revved_ebuild_path)
@@ -212,33 +177,34 @@ class EBuildRevWorkonTest(mox.MoxTestBase):
     m_file.write('src_unpack(){}\n')
     # MarkAsStable() returns here
 
-    return m_file
-
-  def testRevWorkOnEBuild(self):
-    m_file = self.createRevWorkOnMocks(self._mock_ebuild)
     portage_utilities.filecmp.cmp(self.m_ebuild.ebuild_path,
                                   self.revved_ebuild_path,
-                                  shallow=False).AndReturn(False)
-    portage_utilities.EBuild._RunCommand(
-      'git add ' + self.revved_ebuild_path)
-    portage_utilities.EBuild._RunCommand(
-      'git rm ' + self.m_ebuild.ebuild_path)
-    message = portage_utilities._GIT_COMMIT_MESSAGE % (
-      self.m_ebuild.package, 'my_id')
-    cros_build_lib.RunCommand(
-        ['git', 'commit', '-a', '-m', message], cwd='.', print_cmd=False)
+                                  shallow=False).AndReturn(not rev)
+    if rev:
+      portage_utilities.EBuild._RunCommand(
+        ['git', 'add', self.revved_ebuild_path])
+      if self.m_ebuild.is_stable:
+        portage_utilities.EBuild._RunCommand(
+          ['git', 'rm', self.m_ebuild.ebuild_path])
+      message = portage_utilities._GIT_COMMIT_MESSAGE % (
+        self.m_ebuild.package, 'my_id')
+      cros_build_lib.RunCommand(
+          ['git', 'commit', '-a', '-m', message], cwd='.', print_cmd=False)
+    else:
+      os.unlink(self.revved_ebuild_path)
 
+    return m_file
+
+
+  def testRevWorkOnEBuild(self):
+    m_file = self.createRevWorkOnMocks(self._mock_ebuild, rev=True)
     self.mox.ReplayAll()
     result = self.m_ebuild.RevWorkOnEBuild('/sources', redirect_file=m_file)
     self.mox.VerifyAll()
     self.assertEqual(result, 'category/test_package-0.0.1-r2')
 
   def testRevUnchangedEBuild(self):
-    m_file = self.createRevWorkOnMocks(self._mock_ebuild)
-    portage_utilities.filecmp.cmp(self.m_ebuild.ebuild_path,
-                                  self.revved_ebuild_path,
-                                  shallow=False).AndReturn(True)
-    portage_utilities.os.unlink(self.revved_ebuild_path)
+    m_file = self.createRevWorkOnMocks(self._mock_ebuild, rev=False)
 
     self.mox.ReplayAll()
     result = self.m_ebuild.RevWorkOnEBuild('/sources', redirect_file=m_file)
@@ -252,17 +218,7 @@ class EBuildRevWorkonTest(mox.MoxTestBase):
     self.m_ebuild.is_stable = False
 
     m_file = self.createRevWorkOnMocks(
-      self._mock_ebuild[0:1] + self._mock_ebuild[2:])
-    portage_utilities.filecmp.cmp(self.m_ebuild.ebuild_path,
-                                  self.revved_ebuild_path,
-                                  shallow=False).AndReturn(False)
-    portage_utilities.EBuild._RunCommand(
-      'git add ' + self.revved_ebuild_path)
-    message = portage_utilities._GIT_COMMIT_MESSAGE % (
-      self.m_ebuild.package, 'my_id')
-
-    cros_build_lib.RunCommand(
-        ['git', 'commit', '-a', '-m', message], cwd='.', print_cmd=False)
+      self._mock_ebuild[0:1] + self._mock_ebuild[2:], rev=True)
 
     self.mox.ReplayAll()
     result = self.m_ebuild.RevWorkOnEBuild('/sources', redirect_file=m_file)
@@ -285,7 +241,7 @@ class EBuildRevWorkonTest(mox.MoxTestBase):
     ebuild1.package = 'test/project'
 
     # Mimics the behavior of BuildEBuildDictionary.
-    def addEBuild(overlay_dict, *other_args):
+    def addEBuild(overlay_dict, *_other_args):
       overlay_dict['public_overlay'] = [ebuild1]
 
     self.mox.StubOutWithMock(portage_utilities, 'BuildEBuildDictionary')
@@ -402,13 +358,13 @@ class BuildEBuildDictionaryTest(mox.MoxTestBase):
 
   def setUp(self):
     mox.MoxTestBase.setUp(self)
-    self.mox.StubOutWithMock(portage_utilities.os, 'walk')
+    self.mox.StubOutWithMock(os, 'walk')
     self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
     self.package = 'chromeos-base/test_package'
     self.root = '/overlay/chromeos-base/test_package'
     self.package_path = self.root + '/test_package-0.0.1.ebuild'
     paths = [[self.root, [], []]]
-    portage_utilities.os.walk("/overlay").AndReturn(paths)
+    os.walk("/overlay").AndReturn(paths)
     self.mox.StubOutWithMock(portage_utilities, '_FindUprevCandidates')
 
 

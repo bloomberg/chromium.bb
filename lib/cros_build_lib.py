@@ -1066,14 +1066,13 @@ def RunCommandCaptureOutput(cmd, **kwds):
   """Wrapper for RunCommand that captures output.
 
   This wrapper calls RunCommand with redirect_stdout=True and
-  combine_stdout_stderr=True. This is for convenience.
+  redirect_stderr=True. This is for convenience.
 
   Arguments:
     cmd: The command to run.
     kwds: Optional args passed to RunCommand; see RunCommand for specifics.
   """
-  return RunCommand(cmd, redirect_stdout=True, combine_stdout_stderr=True,
-                    **kwds)
+  return RunCommand(cmd, redirect_stdout=True, redirect_stderr=True, **kwds)
 
 
 def GetInput(prompt):
