@@ -126,43 +126,45 @@ class EBuild(object):
     return self.is_stable and self.current_revision == 0
 
   @classmethod
-  def UpdateEBuild(cls, ebuild_path, commit_keyword, commit_value,
-                   redirect_file=None, make_stable=True):
+  def UpdateEBuild(cls, ebuild_path, variables, redirect_file=None,
+                   make_stable=True):
     """Static function that updates WORKON information in the ebuild.
 
     This function takes an ebuild_path and updates WORKON information.
 
     Args:
       ebuild_path:  The path of the ebuild.
-      commit_keyword: Keyword to update with a commit hash.
-      commit_value: Value to set the above keyword to.
+      variables: Dictionary of variables to update in ebuild.
       redirect_file:  Optionally redirect output of new ebuild somewhere else.
       make_stable:  Actually make the ebuild stable.
     """
+    written = False
     for line in fileinput.input(ebuild_path, inplace=1):
       # Has to be done here to get changes to sys.stdout from fileinput.input.
       if not redirect_file:
         redirect_file = sys.stdout
-      if line.startswith('KEYWORDS'):
-        # Actually mark this file as stable by removing ~'s.
-        if make_stable:
-          redirect_file.write(line.replace('~', ''))
-        else:
-          redirect_file.write(line)
-      elif line.startswith('EAPI'):
-        # Always add new commit_id after EAPI definition.
+
+      # Always add variables at the top of the ebuild, before any un-commented
+      # lines.
+      if not written and not line.startswith('#'):
+        for key, value in sorted(variables.items()):
+          redirect_file.write('%s="%s"\n' % (key, value))
+        written = True
+
+      # Mark KEYWORDS as stable by removing ~'s.
+      if line.startswith('KEYWORDS=') and make_stable:
+        line = line.replace('~', '')
+
+      varname, eq, _ = line.partition('=')
+      if not (eq == '=' and varname.strip() in variables):
+        # Don't write out the old value of the variable.
         redirect_file.write(line)
-        if commit_keyword and commit_value:
-          redirect_file.write('%s="%s"\n' % (commit_keyword, commit_value))
-      elif not line.startswith(commit_keyword):
-        # Skip old commit_keyword definition.
-        redirect_file.write(line)
+
     fileinput.close()
 
   @classmethod
   def MarkAsStable(cls, unstable_ebuild_path, new_stable_ebuild_path,
-                   commit_keyword, commit_value, redirect_file=None,
-                   make_stable=True):
+                   variables, redirect_file=None, make_stable=True):
     """Static function that creates a revved stable ebuild.
 
     This function assumes you have already figured out the name of the new
@@ -174,14 +176,13 @@ class EBuild(object):
       unstable_ebuild_path: The path to the unstable ebuild.
       new_stable_ebuild_path:  The path you want to use for the new stable
         ebuild.
-      commit_keyword: Keyword to update with a commit hash.
-      commit_value: Value to set the above keyword to.
+      variables: Dictionary of variables to update in ebuild.
       redirect_file:  Optionally redirect output of new ebuild somewhere else.
       make_stable:  Actually make the ebuild stable.
     """
     shutil.copyfile(unstable_ebuild_path, new_stable_ebuild_path)
-    EBuild.UpdateEBuild(new_stable_ebuild_path, commit_keyword, commit_value,
-                        redirect_file, make_stable)
+    EBuild.UpdateEBuild(new_stable_ebuild_path, variables, redirect_file,
+                        make_stable)
 
   # TODO: Modify cros_mark_as_stable to no longer require chdir's and remove the
   # default '.' behavior from this method.
@@ -273,16 +274,26 @@ class EBuild(object):
     if project != real_project:
       cros_build_lib.Die('Project name mismatch for %s '
                          '(found %s, expected %s)' % (
-                             srcdir, real_project, project))
+                             subdir_path, real_project, project))
 
     return project, os.path.realpath(subdir_path)
 
   def GetCommitId(self, srcdir):
     """Get the commit id for this ebuild."""
-    # Get commit id.
     output = self._RunCommand(['git', 'rev-parse', 'HEAD'], cwd=srcdir)
     if not output:
       cros_build_lib.Die('Cannot determine HEAD commit for %s' % srcdir)
+    return output.rstrip()
+
+  def GetTreeId(self, srcdir):
+    """Get the SHA1 of the source tree for this ebuild.
+
+    Unlike the commit hash, the SHA1 of the source tree is unaffected by the
+    history of the repository, or by commit messages.
+    """
+    output = self._RunCommand(['git', 'log', '-1', '--format=%T'], cwd=srcdir)
+    if not output:
+      cros_build_lib.Die('Cannot determine HEAD tree hash for %s' % srcdir)
     return output.rstrip()
 
   def GetVersion(self, srcroot, default):
@@ -348,9 +359,10 @@ class EBuild(object):
 
     srcdir = self.GetSourcePath(srcroot)[1]
     commit_id = self.GetCommitId(srcdir)
-    self.MarkAsStable(self._unstable_ebuild_path,
-                      new_stable_ebuild_path,
-                      'CROS_WORKON_COMMIT', commit_id, redirect_file)
+    variables = dict(CROS_WORKON_COMMIT=commit_id,
+                     CROS_WORKON_TREE=self.GetTreeId(srcdir))
+    self.MarkAsStable(self._unstable_ebuild_path, new_stable_ebuild_path,
+                      variables, redirect_file)
 
     old_ebuild_path = self.ebuild_path
     if filecmp.cmp(old_ebuild_path, new_stable_ebuild_path, shallow=False):
@@ -413,8 +425,8 @@ class EBuild(object):
       for ebuild in ebuilds_for_change:
         logging.info('Updating ebuild for project %s with commit hash %s',
                      ebuild.package, latest_sha1)
-        EBuild.UpdateEBuild(ebuild.ebuild_path, 'CROS_WORKON_COMMIT',
-                            latest_sha1)
+        EBuild.UpdateEBuild(ebuild.ebuild_path,
+                            dict(CROS_WORKON_COMMIT=latest_sha1))
 
     for overlay in modified_overlays:
       # For commits to repos that merge, there won't actually be any changes.

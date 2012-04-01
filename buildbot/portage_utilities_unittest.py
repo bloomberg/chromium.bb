@@ -123,7 +123,7 @@ class StubEBuild(portage_utilities.EBuild):
     pass
 
   def GetCommitId(self, srcpath):
-    if srcpath == '/sources/platform/test_project':
+    if srcpath == 'p1_path':
       return 'my_id'
     else:
       return 'you_lose'
@@ -157,10 +157,12 @@ class EBuildRevWorkonTest(mox.MoxTestBase):
     self.mox.StubOutWithMock(portage_utilities.fileinput, 'input')
     self.mox.StubOutWithMock(portage_utilities.EBuild, 'GetVersion')
     self.mox.StubOutWithMock(portage_utilities.EBuild, 'GetSourcePath')
+    self.mox.StubOutWithMock(portage_utilities.EBuild, 'GetTreeId')
 
-    retval = ('platform/test_project', '/sources/platform/test_project')
-    portage_utilities.EBuild.GetSourcePath('/sources').AndReturn(retval)
+    portage_utilities.EBuild.GetSourcePath('/sources').AndReturn(
+        ('fake_project1', 'p1_path'))
     portage_utilities.EBuild.GetVersion('/sources', '0.0.1').AndReturn('0.0.1')
+    portage_utilities.EBuild.GetTreeId('p1_path').AndReturn('treehash')
 
     ebuild_9999 = self.m_ebuild._unstable_ebuild_path
     os.path.exists(ebuild_9999).AndReturn(True)
@@ -171,8 +173,9 @@ class EBuildRevWorkonTest(mox.MoxTestBase):
     m_file = self.mox.CreateMock(file)
     portage_utilities.fileinput.input(self.revved_ebuild_path,
                                       inplace=1).AndReturn(ebuild_content)
-    m_file.write('EAPI=2\n')
     m_file.write('CROS_WORKON_COMMIT="my_id"\n')
+    m_file.write('CROS_WORKON_TREE="treehash"\n')
+    m_file.write('EAPI=2\n')
     m_file.write('KEYWORDS=\"x86 arm\"\n')
     m_file.write('src_unpack(){}\n')
     # MarkAsStable() returns here
@@ -282,7 +285,7 @@ class EBuildRevWorkonTest(mox.MoxTestBase):
                                   patch1.tracking_branch).AndReturn('sha1')
 
     portage_utilities.EBuild.UpdateEBuild(ebuild1.ebuild_path,
-                                          'CROS_WORKON_COMMIT', 'sha1')
+                                          dict(CROS_WORKON_COMMIT='sha1'))
     portage_utilities.EBuild.GitRepoHasChanges('public_overlay').AndReturn(True)
     portage_utilities.EBuild.CommitChange(mox.IgnoreArg(),
                                           overlay='public_overlay')
