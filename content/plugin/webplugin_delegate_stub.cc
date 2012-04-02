@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/string_number_conversions.h"
+#include "content/common/npobject_stub.h"
 #include "content/common/plugin_messages.h"
 #include "content/plugin/plugin_channel.h"
 #include "content/plugin/plugin_thread.h"
@@ -30,13 +31,7 @@ using webkit::npapi::WebPlugin;
 using webkit::npapi::WebPluginResourceClient;
 
 static void DestroyWebPluginAndDelegate(
-    base::WeakPtr<NPObjectStub> scriptable_object,
-    webkit::npapi::WebPluginDelegateImpl* delegate,
-    WebPlugin* webplugin) {
-  // The plugin may not expect us to try to release the scriptable object
-  // after calling NPP_Destroy on the instance, so delete the stub now.
-  if (scriptable_object.get())
-    scriptable_object->DeleteSoon();
+    webkit::npapi::WebPluginDelegateImpl* delegate, WebPlugin* webplugin) {
   // WebPlugin must outlive WebPluginDelegate.
   if (delegate)
     delegate->PluginDestroyed();
@@ -63,12 +58,10 @@ WebPluginDelegateStub::~WebPluginDelegateStub() {
     // The delegate or an npobject is in the callstack, so don't delete it
     // right away.
     MessageLoop::current()->PostNonNestableTask(FROM_HERE,
-        base::Bind(&DestroyWebPluginAndDelegate, plugin_scriptable_object_,
-                   delegate_, webplugin_));
+        base::Bind(&DestroyWebPluginAndDelegate, delegate_, webplugin_));
   } else {
     // Safe to delete right away.
-    DestroyWebPluginAndDelegate(
-        plugin_scriptable_object_, delegate_, webplugin_);
+    DestroyWebPluginAndDelegate(delegate_, webplugin_);
   }
 }
 
@@ -289,13 +282,11 @@ void WebPluginDelegateStub::OnGetPluginScriptableObject(int* route_id) {
   }
 
   *route_id = channel_->GenerateRouteID();
-  // We will delete the stub immediately before calling PluginDestroyed on the
-  // delegate. It will delete itself sooner if the proxy tells it that it has
-  // been released, or if the channel to the proxy is closed.
-  NPObjectStub* scriptable_stub = new NPObjectStub(
+  // The stub will delete itself when the proxy tells it that it's released, or
+  // otherwise when the channel is closed.
+  new NPObjectStub(
       object, channel_.get(), *route_id, webplugin_->containing_window(),
       page_url_);
-  plugin_scriptable_object_ = scriptable_stub->AsWeakPtr();
 
   // Release ref added by GetPluginScriptableObject (our stub holds its own).
   WebBindings::releaseObject(object);
