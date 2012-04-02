@@ -137,27 +137,24 @@ remoting.clearOAuth2 = function() {
   remoting.setMode(remoting.AppMode.UNAUTHENTICATED);
 };
 
-// TODO(simonmorris): If possible, make the next two functions return void.
-
 /**
  * Callback function called when the browser window gets a paste operation.
  *
  * @param {Event} eventUncast
- * @return {boolean}
+ * @return {void} Nothing.
  */
 function pluginGotPaste_(eventUncast) {
   var event = /** @type {remoting.ClipboardEvent} */ eventUncast;
   if (event && event.clipboardData) {
     remoting.clipboard.toHost(event.clipboardData);
   }
-  return false;
 }
 
 /**
  * Callback function called when the browser window gets a copy operation.
  *
  * @param {Event} eventUncast
- * @return {boolean}
+ * @return {void} Nothing.
  */
 function pluginGotCopy_(eventUncast) {
   var event = /** @type {remoting.ClipboardEvent} */ eventUncast;
@@ -167,7 +164,6 @@ function pluginGotCopy_(eventUncast) {
       event.preventDefault();
     }
   }
-  return false;
 }
 
 /**
