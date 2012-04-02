@@ -11,6 +11,8 @@
     '<(DEPTH)/third_party/khronos',
   ],
   'sources': [
+    'ipc/command_buffer_proxy.h',
+    'ipc/command_buffer_proxy.cc',
     'ipc/gpu_command_buffer_traits.cc',
     'ipc/gpu_command_buffer_traits.h',
   ],

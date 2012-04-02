@@ -12,7 +12,7 @@
 #include <queue>
 #include <string>
 
-#include "content/common/gpu/client/command_buffer_proxy.h"
+#include "gpu/ipc/command_buffer_proxy.h"
 
 #include "base/callback.h"
 #include "base/memory/linked_ptr.h"
@@ -45,6 +45,16 @@ class CommandBufferProxyImpl :
   CommandBufferProxyImpl(GpuChannelHost* channel, int route_id);
   virtual ~CommandBufferProxyImpl();
 
+  // Sends an IPC message to create a GpuVideoDecodeAccelerator. Creates and
+  // returns a pointer to a GpuVideoDecodeAcceleratorHost.
+  // Returns NULL on failure to create the GpuVideoDecodeAcceleratorHost.
+  // Note that the GpuVideoDecodeAccelerator may still fail to be created in
+  // the GPU process, even if this returns non-NULL. In this case the client is
+  // notified of an error later.
+  scoped_refptr<GpuVideoDecodeAcceleratorHost> CreateVideoDecoder(
+      media::VideoCodecProfile profile,
+      media::VideoDecodeAccelerator::Client* client);
+
   // IPC::Channel::Listener implementation:
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void OnChannelError() OVERRIDE;
@@ -62,9 +72,6 @@ class CommandBufferProxyImpl :
                          uint32 parent_texture_id) OVERRIDE;
   virtual void SetChannelErrorCallback(const base::Closure& callback) OVERRIDE;
   virtual void SetNotifyRepaintTask(const base::Closure& callback) OVERRIDE;
-  virtual scoped_refptr<GpuVideoDecodeAcceleratorHost> CreateVideoDecoder(
-      media::VideoCodecProfile profile,
-      media::VideoDecodeAccelerator::Client* client) OVERRIDE;
   virtual void SetOnConsoleMessageCallback(
       const GpuConsoleMessageCallback& callback) OVERRIDE;
 

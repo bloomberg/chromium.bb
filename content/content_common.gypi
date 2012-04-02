@@ -162,7 +162,6 @@
     'common/geolocation_messages.h',
     'common/geoposition.cc',
     'common/geoposition.h',
-    'common/gpu/client/command_buffer_proxy.h',
     'common/gpu/client/command_buffer_proxy_impl.cc',
     'common/gpu/client/command_buffer_proxy_impl.h',
     'common/gpu/client/gl_helper.cc',

@@ -2,18 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_GPU_CLIENT_COMMAND_BUFFER_PROXY_H_
-#define CONTENT_COMMON_GPU_CLIENT_COMMAND_BUFFER_PROXY_H_
+#ifndef GPU_IPC_COMMAND_BUFFER_PROXY_H_
+#define GPU_IPC_COMMAND_BUFFER_PROXY_H_
 #pragma once
-
-#if defined(ENABLE_GPU)
 
 #include <string>
 
 #include "base/callback.h"
-#include "base/memory/linked_ptr.h"
-#include "base/memory/scoped_ptr.h"
-#include "content/common/gpu/client/gpu_video_decode_accelerator_host.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "gpu/command_buffer/common/command_buffer_shared.h"
 
@@ -21,7 +16,7 @@ struct GpuMemoryAllocationForRenderer;
 
 // Client side proxy that forwards messages synchronously to a
 // CommandBufferStub.
-class CommandBufferProxy : public gpu::CommandBuffer {
+class GPU_EXPORT CommandBufferProxy : public gpu::CommandBuffer {
  public:
   typedef base::Callback<void(
       const std::string& msg, int id)> GpuConsoleMessageCallback;
@@ -60,16 +55,6 @@ class CommandBufferProxy : public gpu::CommandBuffer {
   // and needs to be repainted. Takes ownership of task.
   virtual void SetNotifyRepaintTask(const base::Closure& callback) = 0;
 
-  // Sends an IPC message to create a GpuVideoDecodeAccelerator. Creates and
-  // returns a pointer to a GpuVideoDecodeAcceleratorHost.
-  // Returns NULL on failure to create the GpuVideoDecodeAcceleratorHost.
-  // Note that the GpuVideoDecodeAccelerator may still fail to be created in
-  // the GPU process, even if this returns non-NULL. In this case the client is
-  // notified of an error later.
-  virtual scoped_refptr<GpuVideoDecodeAcceleratorHost> CreateVideoDecoder(
-      media::VideoCodecProfile profile,
-      media::VideoDecodeAccelerator::Client* client) = 0;
-
   virtual void SetOnConsoleMessageCallback(
       const GpuConsoleMessageCallback& callback) = 0;
 
@@ -77,6 +62,4 @@ class CommandBufferProxy : public gpu::CommandBuffer {
   DISALLOW_COPY_AND_ASSIGN(CommandBufferProxy);
 };
 
-#endif  // ENABLE_GPU
-
-#endif  // CONTENT_COMMON_GPU_CLIENT_COMMAND_BUFFER_PROXY_H_
+#endif  // GPU_IPC_COMMAND_BUFFER_PROXY_H_

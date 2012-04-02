@@ -23,7 +23,6 @@
 #include "base/metrics/histogram.h"
 #include "base/synchronization/lock.h"
 #include "content/common/gpu/gpu_memory_allocation.h"
-#include "content/common/gpu/client/command_buffer_proxy.h"
 #include "content/common/gpu/client/gpu_channel_host.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
@@ -31,6 +30,7 @@
 #include "gpu/command_buffer/client/gles2_lib.h"
 #include "gpu/command_buffer/client/transfer_buffer.h"
 #include "gpu/command_buffer/common/constants.h"
+#include "gpu/ipc/command_buffer_proxy.h"
 #include "webkit/glue/gl_bindings_skia_cmd_buffer.h"
 
 static base::LazyInstance<base::Lock>::Leaky

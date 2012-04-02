@@ -28,6 +28,7 @@
 #include "ui/gfx/size.h"
 
 class CommandBufferProxy;
+class CommandBufferProxyImpl;
 struct GPUCreateCommandBufferConfig;
 class GURL;
 class TransportTextureService;
@@ -190,7 +191,7 @@ class GpuChannelHost : public IPC::Message::Sender,
   scoped_refptr<MessageFilter> channel_filter_;
 
   // Used to look up a proxy from its routing id.
-  typedef base::hash_map<int, CommandBufferProxy*> ProxyMap;
+  typedef base::hash_map<int, CommandBufferProxyImpl*> ProxyMap;
   ProxyMap proxies_;
 
   // A lock to guard against concurrent access to members like the proxies map

@@ -29,16 +29,66 @@ PpapiCommandBufferProxy::~PpapiCommandBufferProxy() {
   }
 }
 
-void PpapiCommandBufferProxy::SetChannelErrorCallback(
-    const base::Closure& callback) {
-  channel_error_callback_ = callback;
-}
-
 void PpapiCommandBufferProxy::ReportChannelError() {
   if (!channel_error_callback_.is_null()) {
     channel_error_callback_.Run();
     channel_error_callback_.Reset();
   }
+}
+
+int PpapiCommandBufferProxy::GetRouteID() const {
+  NOTIMPLEMENTED();
+  return 0;
+}
+
+bool PpapiCommandBufferProxy::Echo(const base::Closure& callback) {
+  NOTIMPLEMENTED();
+  return false;
+}
+
+bool PpapiCommandBufferProxy::SetSurfaceVisible(bool visible) {
+  NOTIMPLEMENTED();
+  return true;
+}
+
+bool PpapiCommandBufferProxy::DiscardBackbuffer() {
+  NOTIMPLEMENTED();
+  return true;
+}
+
+bool PpapiCommandBufferProxy::EnsureBackbuffer() {
+  NOTIMPLEMENTED();
+  return true;
+}
+
+void PpapiCommandBufferProxy::SetMemoryAllocationChangedCallback(
+      const base::Callback<void(const GpuMemoryAllocationForRenderer&)>&
+          callback) {
+  NOTIMPLEMENTED();
+}
+
+bool PpapiCommandBufferProxy::SetParent(
+    CommandBufferProxy* parent_command_buffer,
+    uint32 parent_texture_id) {
+  // TODO(fsamuel): Need a proper implementation of this to support offscreen
+  // contexts in the guest renderer (WebGL, canvas, etc).
+  NOTIMPLEMENTED();
+  return false;
+}
+
+void PpapiCommandBufferProxy::SetChannelErrorCallback(
+    const base::Closure& callback) {
+  channel_error_callback_ = callback;
+}
+
+void PpapiCommandBufferProxy::SetNotifyRepaintTask(
+    const base::Closure& callback) {
+  NOTIMPLEMENTED();
+}
+
+void PpapiCommandBufferProxy::SetOnConsoleMessageCallback(
+    const GpuConsoleMessageCallback& callback) {
+  NOTIMPLEMENTED();
 }
 
 bool PpapiCommandBufferProxy::Initialize() {
