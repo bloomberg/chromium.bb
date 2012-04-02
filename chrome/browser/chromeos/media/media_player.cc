@@ -10,6 +10,7 @@
 #include "chrome/browser/chromeos/extensions/file_manager_util.h"
 #include "chrome/browser/chromeos/extensions/media_player_event_router.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -139,7 +140,7 @@ void MediaPlayer::PopupMediaPlayer(Browser* creator) {
                          kPopupWidth,
                          kPopupHeight);
 
-  Profile* profile = BrowserList::GetLastActive()->profile();
+  Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
   mediaplayer_browser_ = Browser::CreateForApp(Browser::TYPE_PANEL,
                                                kMediaPlayerAppName,
                                                bounds,

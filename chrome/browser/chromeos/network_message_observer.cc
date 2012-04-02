@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/notifications/balloon_view_host.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/pref_names.h"
@@ -27,11 +28,8 @@ namespace {
 // Returns prefs::kShowPlanNotifications in the profile of the last active
 // browser. If there is no active browser, returns true.
 bool ShouldShowMobilePlanNotifications() {
-  Browser* browser = BrowserList::GetLastActive();
-  if (!browser || !browser->profile())
-    return true;
-
-  PrefService* prefs = browser->profile()->GetPrefs();
+  Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
+  PrefService* prefs = profile->GetPrefs();
   return prefs->GetBoolean(prefs::kShowPlanNotifications);
 }
 
@@ -81,15 +79,14 @@ bool NetworkMessageObserver::IsApplicableBackupPlan(
 }
 
 void NetworkMessageObserver::OpenMobileSetupPage(const ListValue* args) {
-  Browser* browser = BrowserList::GetLastActive();
-  if (browser)
-    browser->OpenMobilePlanTabAndActivate();
+  Browser* browser = Browser::GetOrCreateTabbedBrowser(
+      ProfileManager::GetDefaultProfileOrOffTheRecord());
+  browser->OpenMobilePlanTabAndActivate();
 }
 
 void NetworkMessageObserver::OpenMoreInfoPage(const ListValue* args) {
-  Browser* browser = BrowserList::GetLastActive();
-  if (!browser)
-    return;
+  Browser* browser = Browser::GetOrCreateTabbedBrowser(
+      ProfileManager::GetDefaultProfileOrOffTheRecord());
   chromeos::NetworkLibrary* lib =
       chromeos::CrosLibrary::Get()->GetNetworkLibrary();
   const chromeos::CellularNetwork* cellular = lib->cellular_network();
