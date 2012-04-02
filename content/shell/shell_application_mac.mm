@@ -5,6 +5,9 @@
 #include "content/shell/shell_application_mac.h"
 
 #include "base/auto_reset.h"
+#include "content/shell/shell.h"
+#include "content/shell/shell_browser_context.h"
+#include "googleurl/src/gurl.h"
 
 @implementation ShellCrApplication
 
@@ -19,6 +22,14 @@
 
 - (void)setHandlingSendEvent:(BOOL)handlingSendEvent {
   handlingSendEvent_ = handlingSendEvent;
+}
+
+- (IBAction)newDocument:(id)sender {
+  content::Shell::CreateNewWindow(content::ShellBrowserContext::GetInstance(),
+                                  GURL("about:blank"),
+                                  NULL,
+                                  MSG_ROUTING_NONE,
+                                  NULL);
 }
 
 @end

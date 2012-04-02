@@ -14,7 +14,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/geolocation_permission_context.h"
 #include "content/public/browser/speech_recognition_preferences.h"
-#include "content/shell/shell_browser_main_parts.h"
 #include "content/shell/shell_download_manager_delegate.h"
 #include "content/shell/shell_resource_context.h"
 #include "content/shell/shell_url_request_context_getter.h"
@@ -84,9 +83,11 @@ class ShellSpeechRecognitionPreferences : public SpeechRecognitionPreferences {
 
 }  // namespace
 
-ShellBrowserContext::ShellBrowserContext(
-    ShellBrowserMainParts* shell_main_parts)
-    : shell_main_parts_(shell_main_parts) {
+ShellBrowserContext* ShellBrowserContext::GetInstance() {
+  return Singleton<ShellBrowserContext>::get();
+}
+
+ShellBrowserContext::ShellBrowserContext() {
   InitWhileIOAllowed();
 }
 

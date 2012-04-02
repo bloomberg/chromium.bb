@@ -10,6 +10,7 @@
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/singleton.h"
 #include "content/public/browser/browser_context.h"
 
 class DownloadManager;
@@ -18,13 +19,11 @@ namespace content {
 
 class DownloadManagerDelegate;
 class ResourceContext;
-class ShellBrowserMainParts;
 class ShellDownloadManagerDelegate;
 
 class ShellBrowserContext : public BrowserContext {
  public:
-  explicit ShellBrowserContext(ShellBrowserMainParts* shell_main_parts);
-  virtual ~ShellBrowserContext();
+  static ShellBrowserContext* GetInstance();
 
   // BrowserContext implementation.
   virtual FilePath GetPath() OVERRIDE;
@@ -43,6 +42,10 @@ class ShellBrowserContext : public BrowserContext {
   virtual quota::SpecialStoragePolicy* GetSpecialStoragePolicy() OVERRIDE;
 
  private:
+  ShellBrowserContext();
+  virtual ~ShellBrowserContext();
+  friend struct DefaultSingletonTraits<ShellBrowserContext>;
+
   // Performs initialization of the ShellBrowserContext while IO is still
   // allowed on the current thread.
   void InitWhileIOAllowed();
@@ -54,8 +57,6 @@ class ShellBrowserContext : public BrowserContext {
   scoped_refptr<net::URLRequestContextGetter> url_request_getter_;
   scoped_refptr<GeolocationPermissionContext> geolocation_permission_context_;
   scoped_refptr<SpeechRecognitionPreferences> speech_recognition_preferences_;
-
-  ShellBrowserMainParts* shell_main_parts_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellBrowserContext);
 };

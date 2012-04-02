@@ -20,6 +20,8 @@
 // CrAppControlProtocol:
 - (void)setHandlingSendEvent:(BOOL)handlingSendEvent;
 
+- (IBAction)newDocument:(id)sender;
+
 @end
 
 #endif  // CONTENT_SHELL_SHELL_APPLICATION_MAC_H_
