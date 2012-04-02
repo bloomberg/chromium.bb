@@ -678,12 +678,8 @@ FileManager.prototype = {
                                     function (e) { e.preventDefault() });
 
     this.document_.addEventListener('paste', this.onPaste_.bind(this));
-    // HACK(serya): 'paste'/'beforepaste' must be used.
-    // But 'beforepaste' is apparently broken.
-    var iframe = this.document_.querySelector('#command-dispatcher');
-    this.commandProbbingDoc_ = iframe.contentDocument;
-    this.commandProbbingDoc_.addEventListener('paste',
-        this.onBeforePaste_.bind(this));
+    this.document_.addEventListener('beforepaste',
+                                    this.onBeforePaste_.bind(this));
     this.document_.addEventListener('cut', this.onCut_.bind(this));
     this.document_.addEventListener('beforecut', this.onBeforeCut_.bind(this));
 
@@ -1203,8 +1199,11 @@ FileManager.prototype = {
       case 'paste':
         // HACK(serya): return this.document_.queryCommandEnabled('paste')
         // should be used.
-        this.commandProbbingDoc_.execCommand('paste');
-        return !this.commands_.paste.disabled;
+        var result;
+        this.simulateCommand_('paste', function(event) {
+          result = this.canPasteOrDrop_(event.clipboardData);
+        }.bind(this));
+        return result;
 
       case 'rename':
         return (// Initialized to the point where we have a current directory
@@ -1238,6 +1237,19 @@ FileManager.prototype = {
         return entry && DirectoryModel.getRootType(entry.fullPath) ==
                         DirectoryModel.RootType.REMOVABLE;
     }
+  };
+
+  /**
+   * Allows to simulate commands to get access to clipboard.
+   * @param {string} command 'copy', 'cut' or 'paste'.
+   * @param {Function} handler Event handler.
+   */
+  FileManager.prototype.simulateCommand_ = function(command, handler) {
+    var iframe = this.document_.querySelector('#command-dispatcher');
+    var doc = iframe.contentDocument;
+    doc.addEventListener(command, handler);
+    doc.execCommand(command);
+    doc.removeEventListener(command, handler);
   };
 
   FileManager.prototype.getRootEntry_ = function(index) {
@@ -1371,7 +1383,10 @@ FileManager.prototype = {
   FileManager.prototype.setupDragAndDrop_ = function(list) {
     list.addEventListener('dragstart', this.onDragStart_.bind(this));
     list.addEventListener('dragend', this.onDragEnd_.bind(this));
+    list.addEventListener('drag', this.onDrag_.bind(this));
     list.addEventListener('dragover', this.onDragOver_.bind(this));
+    list.addEventListener('dragenter', this.onDragEnter_.bind(this));
+    list.addEventListener('dragleave', this.onDragLeave_.bind(this));
     list.addEventListener('drop', this.onDrop_.bind(this));
   };
 
@@ -1385,16 +1400,27 @@ FileManager.prototype = {
       listItem.style.zIndex = length - i;
       container.appendChild(listItem);
     }
-
-    this.cutOrCopyToClipboard_(dt, false);
-
     dt.setDragImage(container, 0, 0);
-    dt.effectAllowed = 'copyMove';
+
+    if (this.canCopyOrDrag_(dt)) {
+      if (this.canCutOrDrag_(dt))
+        this.cutOrCopyToClipboard_(dt, 'copyMove');
+      else
+        this.cutOrCopyToClipboard_(dt, 'copy');
+    } else {
+      event.preventDefault();
+    }
   };
 
   FileManager.prototype.onDragEnd_ = function(event) {
     var container = this.document_.querySelector('#drag-image-container');
     container.textContent = '';
+    this.setDropTarget_(null);
+  };
+
+  FileManager.prototype.onDrag_ = function(event) {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'copy';
   };
 
   FileManager.prototype.onDragOver_ = function(event) {
@@ -1403,11 +1429,59 @@ FileManager.prototype = {
     }
   };
 
+  FileManager.prototype.onDragEnter_ = function(event) {
+    var item = this.findListItemForNode_(event.target);
+    this.dragEnterCount_++;
+
+    this.setDropTarget_(item, event.dataTransfer);
+  };
+
+  FileManager.prototype.onDragLeave_ = function(event) {
+    if (this.dragEnterCount_-- == 0)
+      this.setDropTarget_(null);
+  };
+
   FileManager.prototype.onDrop_ = function(event) {
-    if (!this.canPasteOrDrop_(event.dataTransfer))
+    console.log('drop: ', event.dataTransfer.dropEffect);
+    var item = this.findListItemForNode_(event.target);
+    var dropTarget = item ?
+       this.directoryModel_.fileList.item(item.listIndex) : null;
+    if (dropTarget && !dropTarget.isDirectory)
+      dropTarget = null;
+    if (!this.canPasteOrDrop_(event.dataTransfer, dropTarget))
       return;
     event.preventDefault();
-    this.pasteFromClipboard_(event.dataTransfer);
+    this.pasteFromClipboard_(event.dataTransfer, dropTarget);
+    if (this.dropTarget_) {
+      var target = this.dropTarget_;
+      this.blinkListItem_(this.dropTarget_);
+      this.setDropTarget_(null);
+    }
+  };
+
+  FileManager.prototype.setDropTarget_ = function(listItem, opt_dataTransfer) {
+    if (this.dropTarget_ == listItem)
+      return;
+
+    if (listItem) {
+      var entry = this.directoryModel_.fileList.item(listItem.listIndex);
+      if (entry.isDirectory &&
+          (!opt_dataTransfer ||
+           this.canPasteOrDrop_(opt_dataTransfer, entry))) {
+        listItem.classList.add('accepts');
+      }
+    } else {
+      this.dragEnterCount_ = 0;
+    }
+    if (this.dropTarget_ && this.dropTarget_.classList.contains('accepts')) {
+      var oldDropTarget = this.dropTarget_;
+      var self = this;
+      setTimeout(function() {
+        if (oldDropTarget != self.dropTarget_)
+          oldDropTarget.classList.remove('accepts');
+      }, 0);
+    }
+    this.dropTarget_ = listItem;
   };
 
   FileManager.prototype.initButter_ = function() {
@@ -3222,18 +3296,14 @@ FileManager.prototype = {
       var selectedIndex = this.selection.indexes[i];
       var listItem = this.currentList_.getListItemByIndex(selectedIndex);
       if (listItem)
-        listItem.classList.add('blink');
+        this.blinkListItem_(listItem);
     }
+  };
 
-    var self = this;
-
+  FileManager.prototype.blinkListItem_ = function(listItem) {
+    listItem.classList.add('blink');
     setTimeout(function() {
-        for (var i = 0; i < self.selection.entries.length; i++) {
-          var selectedIndex = self.selection.indexes[i];
-          var listItem = self.currentList_.getListItemByIndex(selectedIndex);
-          if (listItem)
-            listItem.classList.remove('blink');
-        }
+      listItem.classList.remove('blink');
     }, 100);
   };
 
@@ -3241,29 +3311,35 @@ FileManager.prototype = {
    * Write the current selection to system clipboard.
    *
    * @param {Clipboard} clipboard Clipboard from the event.
-   * @param {boolean} isCut True if the current command is cut.
+   * @param {string} effectAllowed Value must be valid for the
+   *     |dataTransfer.effectAllowed| property ('move', 'copy', 'copyMove').
    */
-  FileManager.prototype.cutOrCopyToClipboard_ = function(clipboard, isCut) {
-    var directories  = '';
-    var files = '';
+  FileManager.prototype.cutOrCopyToClipboard_ = function(dataTransfer,
+                                                         effectAllowed) {
+    var directories  = [];
+    var files = [];
     for(var i = 0, entry; i < this.selection.entries.length; i++) {
       entry = this.selection.entries[i];
       if (entry.isDirectory)
-        directories += entry.fullPath + '\n';
+        directories.push(entry.fullPath);
       else
-        files += entry.fullPath + '\n';
+        files.push(entry.fullPath);
     }
 
-    clipboard.setData('fs/isCut', isCut.toString());
-    clipboard.setData('fs/isOnGData', this.isOnGData());
-    clipboard.setData('fs/sourceDir',
-                                  this.directoryModel_.currentEntry.fullPath);
-    clipboard.setData('fs/directories', directories);
-    clipboard.setData('fs/files', files);
+    // Tag to check it's filemanager data.
+    dataTransfer.setData('fs/tag', 'filemanager-data');
+
+    dataTransfer.setData('fs/isOnGData', this.isOnGData());
+    dataTransfer.setData('fs/sourceDir',
+                         this.directoryModel_.currentEntry.fullPath);
+    dataTransfer.setData('fs/directories', directories.join('\n'));
+    dataTransfer.setData('fs/files', files.join('\n'));
+    dataTransfer.effectAllowed = effectAllowed;
+    dataTransfer.setData('fs/effectallowed', effectAllowed);
 
     var files = this.selection.files;
     for(var i = 0; i < files.length; i++) {
-      clipboard.items.add(files[i]);
+      dataTransfer.items.add(files[i]);
     }
   }
 
@@ -3273,7 +3349,7 @@ FileManager.prototype = {
       return;
     }
     event.preventDefault();
-    this.cutOrCopyToClipboard_(event.clipboardData, false);
+    this.cutOrCopyToClipboard_(event.clipboardData, 'copy');
     this.blinkSelection();
   };
 
@@ -3287,13 +3363,12 @@ FileManager.prototype = {
   };
 
   FileManager.prototype.onCut_ = function(event) {
-    if (!this.document_.activeElement.tagName == 'INPUT' ||
-        this.canCutOrDrag_()) {
+    if (this.document_.activeElement.tagName == 'INPUT' ||
+        !this.canCutOrDrag_()) {
       return;
     }
     event.preventDefault();
-    this.cutOrCopyToClipboard_(event.clipboardData, true);
-
+    this.cutOrCopyToClipboard_(event.clipboardData, 'move');
     this.blinkSelection();
   };
 
@@ -3313,52 +3388,81 @@ FileManager.prototype = {
       return;
     }
     event.preventDefault();
-    this.pasteFromClipboard_(event.clipboardData);
+    var effect = this.pasteFromClipboard_(event.clipboardData);
+
+    // On cut, we clear the clipboard after the file is pasted/moved so we don't
+    // try to move/delete the original file again.
+    if (effect == 'move') {
+      this.simulateCommand_('cut', function(event) {
+        event.preventDefault();
+        event.clipboardData.setData('fs/clear', '');
+      });
+    }
   };
 
   FileManager.prototype.onBeforePaste_ = function(event) {
-    // TODO(serya) should be:
-    // event.returnValue = !this.canPasteOrDrop_(event.clipboardData);
-    this.commands_.paste.disabled =
-        !this.canPasteOrDrop_(event.clipboardData);
+    // queryCommandEnabled returns true if event.returnValue is false.
+    event.returnValue = !this.canPasteOrDrop_(event.clipboardData);
   };
 
-  FileManager.prototype.canPasteOrDrop_ = function(clipboardData) {
-    var ro = this.directoryModel_.readonly;
-    return !ro && !!clipboardData.getData('fs/isCut');
+  FileManager.prototype.canPasteOrDrop_ = function(dataTransfer, opt_entry) {
+    if (this.directoryModel_.readonly)
+      return false;  // assure destination entry is in the current directory.
+
+    if (!dataTransfer.types || dataTransfer.types.indexOf('fs/tag') == -1)
+      return false;  // Unsupported type of content.
+    if (dataTransfer.getData('fs/tag') == '') {
+      // Data protected. Other checks are not possible but it makes sense to
+      // let the user try.
+      return true;
+    }
+
+    var directories = dataTransfer.getData('fs/directories').split('\n').
+                      filter(function(d) { return d != ''; });
+
+    var destinationPath = (opt_entry || this.directoryModel_.currentEntry).
+                          fullPath;
+    for (var i = 0; i < directories.length; i++) {
+      if (destinationPath.substr(0, directories[i].length) == directories[i])
+        return false;  // recursive paste.
+    }
+
+    return true;
   };
 
   /**
    * Queue up a file copy operation based on the current system clipboard.
    */
-  FileManager.prototype.pasteFromClipboard_ = function(clipboard) {
+  FileManager.prototype.pasteFromClipboard_ = function(dataTransfer,
+                                                       opt_destination) {
+    var destination = opt_destination || this.directoryModel_.currentEntry;
+
+    // effectAllowed set in copy/pase handlers stay uninitialized. DnD handlers
+    // work fine.
+    var effectAllowed = dataTransfer.effectAllowed != 'uninitialized' ?
+        dataTransfer.effectAllowed : dataTransfer.getData('fs/effectallowed');
+
+    var toMove = effectAllowed == 'move' ||
+        (effectAllowed == 'copyMove' && dataTransfer.dropEffect != 'copy');
+
     var operationInfo = {
-      isCut: clipboard.getData('fs/isCut'),
-      isOnGData: clipboard.getData('fs/isOnGData'),
-      sourceDir: clipboard.getData('fs/sourceDir'),
-      directories: clipboard.getData('fs/directories'),
-      files: clipboard.getData('fs/files')
+      isCut: String(toMove),
+      isOnGData: dataTransfer.getData('fs/isOnGData'),
+      sourceDir: dataTransfer.getData('fs/sourceDir'),
+      directories: dataTransfer.getData('fs/directories'),
+      files: dataTransfer.getData('fs/files')
     };
 
-    this.copyManager_.paste(operationInfo,
-                            this.directoryModel_.currentEntry,
-                            this.isOnGData(),
-                            this.filesystem_.root);
-
-    var clearClipboard = function (event) {
-      event.preventDefault();
-      event.clipboardData.setData('fs/clear', '');
+    if (!toMove || operationInfo.sourceDir != destination.fullPath) {
+      this.copyManager_.paste(operationInfo,
+                              destination,
+                              this.isOnGData(),
+                              this.filesystem_.root);
+    } else {
+      console.log('Ignore move into the same folder');
     }
 
-    // On cut, we clear the clipboard after the file is pasted/moved so we don't
-    // try to move/delete the original file again.
-    if (operationInfo.isCut == 'true') {
-      this.document_.removeEventListener('cut', this.onCutBound_);
-      this.document_.addEventListener('cut', clearClipboard);
-      this.document_.execCommand('cut');
-      this.document_.removeEventListener('cut', clearClipboard);
-      this.document_.addEventListener('cut', this.onCutBound_);
-    }
+    return toMove ? 'move' : 'copy';
   };
 
   /**

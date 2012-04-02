@@ -614,11 +614,13 @@ div.img-container > img {
   border-color: #e0e9f7;
 }
 
+.list-container list > .accepts[selected],
 .list-container list > [selected]:hover,
 .list-container grid > [selected]:hover {
   background-color: #c1d3ec;
 }
 
+.list-container list > .accepts,
 .list-container list > :hover,
 .list-container grid > :hover {
   background-color: #f2f6fa;
