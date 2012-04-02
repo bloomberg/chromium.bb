@@ -406,9 +406,6 @@ const char kInstantEnabled[] = "instant.enabled";
 // Boolean pref indicating if instant was ever enabled.
 const char kInstantEnabledOnce[] = "instant.enabled_once";
 
-// Time when instant was last enabled.
-const char kInstantEnabledTime[] = "instant.enabled_time";
-
 // Used to maintain instant promo keys. See PromoCounter for details of subkeys
 // that are used.
 const char kInstantPromo[] = "instant.promo";

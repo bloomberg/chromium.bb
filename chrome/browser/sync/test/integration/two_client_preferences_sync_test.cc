@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -184,18 +184,15 @@ IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest, kEnableInstant) {
   ASSERT_TRUE(BooleanPrefMatches(prefs::kInstantConfirmDialogShown));
   ASSERT_TRUE(BooleanPrefMatches(prefs::kInstantEnabled));
   ASSERT_TRUE(BooleanPrefMatches(prefs::kInstantEnabledOnce));
-  ASSERT_TRUE(Int64PrefMatches(prefs::kInstantEnabledTime));
 
   ChangeBooleanPref(0, prefs::kInstantConfirmDialogShown);
   ChangeBooleanPref(0, prefs::kInstantEnabled);
   ChangeBooleanPref(0, prefs::kInstantEnabledOnce);
-  ChangeInt64Pref(0, prefs::kInstantEnabledTime, 1);
 
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
   ASSERT_TRUE(BooleanPrefMatches(prefs::kInstantConfirmDialogShown));
   ASSERT_TRUE(BooleanPrefMatches(prefs::kInstantEnabled));
   ASSERT_TRUE(BooleanPrefMatches(prefs::kInstantEnabledOnce));
-  ASSERT_TRUE(Int64PrefMatches(prefs::kInstantEnabledTime));
 }
 
 // TCM ID - 3611311.

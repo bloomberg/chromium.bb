@@ -69,31 +69,12 @@ void InstantController::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kInstantEnabledOnce,
                              false,
                              PrefService::SYNCABLE_PREF);
-  prefs->RegisterInt64Pref(prefs::kInstantEnabledTime,
-                           false,
-                           PrefService::SYNCABLE_PREF);
   PromoCounter::RegisterUserPrefs(prefs, prefs::kInstantPromo);
 }
 
 // static
 void InstantController::RecordMetrics(Profile* profile) {
-  if (!IsEnabled(profile))
-    return;
-
-  PrefService* service = profile->GetPrefs();
-  if (service) {
-    int64 enable_time = service->GetInt64(prefs::kInstantEnabledTime);
-    if (!enable_time) {
-      service->SetInt64(prefs::kInstantEnabledTime,
-                        base::Time::Now().ToInternalValue());
-    } else {
-      base::TimeDelta delta =
-          base::Time::Now() - base::Time::FromInternalValue(enable_time);
-      // Histogram from 1 hour to 30 days.
-      UMA_HISTOGRAM_CUSTOM_COUNTS("Instant.EnabledTime.Predictive",
-                                  delta.InHours(), 1, 30 * 24, 50);
-    }
-  }
+  UMA_HISTOGRAM_ENUMERATION("Instant.Status", IsEnabled(profile), 2);
 }
 
 // static
@@ -121,8 +102,6 @@ void InstantController::Enable(Profile* profile) {
   service->SetBoolean(prefs::kInstantEnabledOnce, true);
   service->SetBoolean(prefs::kInstantEnabled, true);
   service->SetBoolean(prefs::kInstantConfirmDialogShown, true);
-  service->SetInt64(prefs::kInstantEnabledTime,
-                    base::Time::Now().ToInternalValue());
 }
 
 // static
@@ -130,15 +109,6 @@ void InstantController::Disable(Profile* profile) {
   PrefService* service = profile->GetPrefs();
   if (!service || !IsEnabled(profile))
     return;
-
-  int64 enable_time = service->GetInt64(prefs::kInstantEnabledTime);
-  if (enable_time) {
-    base::TimeDelta delta =
-        base::Time::Now() - base::Time::FromInternalValue(enable_time);
-    // Histogram from 1 minute to 10 days.
-    UMA_HISTOGRAM_CUSTOM_COUNTS("Instant.TimeToDisable.Predictive",
-                                delta.InMinutes(), 1, 60 * 24 * 10, 50);
-  }
 
   base::Histogram* histogram = base::LinearHistogram::FactoryGet(
       "Instant.Preference" + InstantFieldTrial::GetGroupName(profile), 1, 2, 3,
