@@ -109,68 +109,6 @@ DictionaryValue* ConvertGHashTable(GHashTable* ghash) {
   return dict;
 }
 
-GValue* ConvertBoolToGValue(bool b) {
-  GValue* gvalue = new GValue();
-  g_value_init(gvalue, G_TYPE_BOOLEAN);
-  g_value_set_boolean(gvalue, b);
-  return gvalue;
-}
-
-GValue* ConvertIntToGValue(int i) {
-  // Converting to a 32-bit signed int type in particular, since
-  // that's what flimflam expects in its DBus API
-  GValue* gvalue = new GValue();
-  g_value_init(gvalue, G_TYPE_INT);
-  g_value_set_int(gvalue, i);
-  return gvalue;
-}
-
-GValue* ConvertStringToGValue(const std::string& s) {
-  GValue* gvalue = new GValue();
-  g_value_init(gvalue, G_TYPE_STRING);
-  g_value_set_string(gvalue, s.c_str());
-  return gvalue;
-}
-
-GValue* ConvertDictionaryValueToGValue(const DictionaryValue* dict) {
-  GHashTable* ghash =
-      g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
-  for (DictionaryValue::key_iterator it = dict->begin_keys();
-       it != dict->end_keys(); ++it) {
-    std::string key = *it;
-    std::string val;
-    if (!dict->GetString(key, &val)) {
-      NOTREACHED() << "Invalid type in dictionary, key: " << key;
-      continue;
-    }
-    g_hash_table_insert(ghash,
-                        g_strdup(const_cast<char*>(key.c_str())),
-                        g_strdup(const_cast<char*>(val.c_str())));
-  }
-  GValue* gvalue = new GValue();
-  g_value_init(gvalue, DBUS_TYPE_G_STRING_STRING_HASHTABLE);
-  g_value_set_boxed(gvalue, ghash);
-  return gvalue;
-}
-
-GHashTable* ConvertDictionaryValueToGValueMap(const DictionaryValue* dict) {
-  GHashTable* ghash =
-      g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
-  for (DictionaryValue::key_iterator it = dict->begin_keys();
-       it != dict->end_keys(); ++it) {
-    std::string key = *it;
-    Value* val = NULL;
-    if (dict->GetWithoutPathExpansion(key, &val)) {
-      g_hash_table_insert(ghash,
-                          g_strdup(const_cast<char*>(key.c_str())),
-                          NetworkLibraryImplCros::ConvertValueToGValue(val));
-    } else {
-      VLOG(2) << "Could not insert key " << key << " into hash";
-    }
-  }
-  return ghash;
-}
-
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////
@@ -378,16 +316,7 @@ void NetworkLibraryImplCros::ConfigureServiceCallback(
 
 void NetworkLibraryImplCros::CallConfigureService(const std::string& identifier,
                                                   const DictionaryValue* info) {
-  GHashTable* ghash = ConvertDictionaryValueToGValueMap(info);
-  if (VLOG_IS_ON(2)) {
-    scoped_ptr<DictionaryValue> dict(ConvertGHashTable(ghash));
-    std::string dict_json;
-    base::JSONWriter::WriteWithOptions(static_cast<Value*>(dict.get()),
-                                       base::JSONWriter::OPTIONS_PRETTY_PRINT,
-                                       &dict_json);
-    VLOG(2) << "ConfigureService will be called on:" << dict_json;
-  }
-  CrosConfigureService(identifier.c_str(), ghash,
+  CrosConfigureService(identifier.c_str(), *info,
                        ConfigureServiceCallback, this);
 }
 
@@ -500,9 +429,8 @@ void NetworkLibraryImplCros::CallDeleteRememberedNetwork(
 
 void NetworkLibraryImplCros::SetCheckPortalList(
     const std::string& check_portal_list) {
-  scoped_ptr<GValue> gvalue(ConvertStringToGValue(check_portal_list));
-  CrosSetNetworkManagerPropertyGValue(flimflam::kCheckPortalListProperty,
-                                      gvalue.get());
+  base::StringValue value(check_portal_list);
+  CrosSetNetworkManagerProperty(flimflam::kCheckPortalListProperty, value);
 }
 
 void NetworkLibraryImplCros::SetDefaultCheckPortalList() {
@@ -637,10 +565,10 @@ void NetworkLibraryImplCros::SetCellularDataRoamingAllowed(bool new_value) {
         "w/o cellular device.";
     return;
   }
-  scoped_ptr<GValue> gvalue(ConvertBoolToGValue(new_value));
-  CrosSetNetworkDevicePropertyGValue(
-      cellular->device_path().c_str(),
-      flimflam::kCellularAllowRoamingProperty, gvalue.get());
+  base::FundamentalValue value(new_value);
+  CrosSetNetworkDeviceProperty(cellular->device_path().c_str(),
+                               flimflam::kCellularAllowRoamingProperty,
+                               value);
 }
 
 bool NetworkLibraryImplCros::IsCellularAlwaysInRoaming() {
@@ -807,9 +735,9 @@ void NetworkLibraryImplCros::SetIPConfig(const NetworkIPConfig& ipconfig) {
     if (ipconfig_static) {
       // Save any changed details.
       if (ipconfig.address != ipconfig_static->address) {
-        scoped_ptr<GValue> gvalue(ConvertStringToGValue(ipconfig.address));
-        CrosSetNetworkIPConfigPropertyGValue(
-            ipconfig_static->path, flimflam::kAddressProperty, gvalue.get());
+        base::StringValue value(ipconfig.address);
+        CrosSetNetworkIPConfigProperty(ipconfig_static->path,
+                                       flimflam::kAddressProperty, value);
       }
       if (ipconfig.netmask != ipconfig_static->netmask) {
         int prefixlen = ipconfig.GetPrefixLength();
@@ -817,22 +745,20 @@ void NetworkLibraryImplCros::SetIPConfig(const NetworkIPConfig& ipconfig) {
           VLOG(1) << "IP config prefixlen is invalid for netmask "
                   << ipconfig.netmask;
         } else {
-          scoped_ptr<GValue> gvalue(ConvertIntToGValue(prefixlen));
-          CrosSetNetworkIPConfigPropertyGValue(
-              ipconfig_static->path,
-              flimflam::kPrefixlenProperty, gvalue.get());
+          base::FundamentalValue value(prefixlen);
+          CrosSetNetworkIPConfigProperty(ipconfig_static->path,
+                                         flimflam::kPrefixlenProperty, value);
         }
       }
       if (ipconfig.gateway != ipconfig_static->gateway) {
-        scoped_ptr<GValue> gvalue(ConvertStringToGValue(ipconfig.gateway));
-        CrosSetNetworkIPConfigPropertyGValue(
-            ipconfig_static->path, flimflam::kGatewayProperty, gvalue.get());
+        base::StringValue value(ipconfig.gateway);
+        CrosSetNetworkIPConfigProperty(ipconfig_static->path,
+                                       flimflam::kGatewayProperty, value);
       }
       if (ipconfig.name_servers != ipconfig_static->name_servers) {
-        scoped_ptr<GValue> gvalue(ConvertStringToGValue(ipconfig.name_servers));
-        CrosSetNetworkIPConfigPropertyGValue(
-            ipconfig_static->path,
-            flimflam::kNameServersProperty, gvalue.get());
+        base::StringValue value(ipconfig.name_servers);
+        CrosSetNetworkIPConfigProperty(ipconfig_static->path,
+                                       flimflam::kNameServersProperty, value);
       }
       // Remove dhcp ip config if there is one.
       if (ipconfig_dhcp)
@@ -1438,43 +1364,6 @@ void NetworkLibraryImplCros::NetworkDeviceUpdate(
       networklib->ParseNetworkDevice(std::string(device_path), *(dict.get()));
     }
   }
-}
-
-// static
-GValue* NetworkLibraryImplCros::ConvertValueToGValue(const Value* value) {
-  switch (value->GetType()) {
-    case Value::TYPE_BOOLEAN: {
-      bool out;
-      if (value->GetAsBoolean(&out))
-        return ConvertBoolToGValue(out);
-      break;
-    }
-    case Value::TYPE_INTEGER: {
-      int out;
-      if (value->GetAsInteger(&out))
-        return ConvertIntToGValue(out);
-      break;
-    }
-    case Value::TYPE_STRING: {
-      std::string out;
-      if (value->GetAsString(&out))
-        return ConvertStringToGValue(out);
-      break;
-    }
-    case Value::TYPE_DICTIONARY: {
-      const DictionaryValue* dict = static_cast<const DictionaryValue*>(value);
-      return ConvertDictionaryValueToGValue(dict);
-    }
-    case Value::TYPE_NULL:
-    case Value::TYPE_DOUBLE:
-    case Value::TYPE_BINARY:
-    case Value::TYPE_LIST:
-      // Other Value types shouldn't be passed through this mechanism.
-      NOTREACHED() << "Unconverted Value of type: " << value->GetType();
-      return new GValue();
-  }
-  NOTREACHED() << "Value conversion failed, type: " << value->GetType();
-  return new GValue();
 }
 
 void NetworkLibraryImplCros::ParseNetworkDevice(const std::string& device_path,

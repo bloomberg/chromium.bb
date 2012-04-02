@@ -132,9 +132,6 @@ class NetworkLibraryImplCros : public NetworkLibraryImplBase  {
   static void NetworkDeviceUpdate(
       void* object, const char* device_path, GHashTable* ghash);
 
-  // Converts a Value to a GValue.
-  static GValue* ConvertValueToGValue(const Value* value);
-
  private:
   // This processes all Manager update messages.
   void NetworkManagerStatusChanged(const char* key, const Value* value);

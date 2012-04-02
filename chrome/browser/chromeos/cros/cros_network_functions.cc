@@ -4,16 +4,134 @@
 
 #include "chrome/browser/chromeos/cros/cros_network_functions.h"
 
+#include <dbus/dbus-glib.h>
+
+#include "base/memory/scoped_ptr.h"
+#include "base/values.h"
+
 namespace chromeos {
+
+namespace {
+
+// Converts a Value to a GValue.
+GValue* ConvertValueToGValue(const Value* value);
+
+// Converts a bool to a GValue.
+GValue* ConvertBoolToGValue(bool b) {
+  GValue* gvalue = new GValue();
+  g_value_init(gvalue, G_TYPE_BOOLEAN);
+  g_value_set_boolean(gvalue, b);
+  return gvalue;
+}
+
+// Converts an int to a GValue.
+GValue* ConvertIntToGValue(int i) {
+  // Converting to a 32-bit signed int type in particular, since
+  // that's what flimflam expects in its DBus API
+  GValue* gvalue = new GValue();
+  g_value_init(gvalue, G_TYPE_INT);
+  g_value_set_int(gvalue, i);
+  return gvalue;
+}
+
+// Converts a string to a GValue.
+GValue* ConvertStringToGValue(const std::string& s) {
+  GValue* gvalue = new GValue();
+  g_value_init(gvalue, G_TYPE_STRING);
+  g_value_set_string(gvalue, s.c_str());
+  return gvalue;
+}
+
+// Converts a DictionaryValue to a GValue containing a string-to-value
+// GHashTable.
+GValue* ConvertDictionaryValueToGValue(const DictionaryValue* dict) {
+  GHashTable* ghash =
+      g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
+  for (DictionaryValue::key_iterator it = dict->begin_keys();
+       it != dict->end_keys(); ++it) {
+    std::string key = *it;
+    std::string val;
+    if (!dict->GetString(key, &val)) {
+      NOTREACHED() << "Invalid type in dictionary, key: " << key;
+      continue;
+    }
+    g_hash_table_insert(ghash,
+                        g_strdup(const_cast<char*>(key.c_str())),
+                        g_strdup(const_cast<char*>(val.c_str())));
+  }
+  GValue* gvalue = new GValue();
+  g_value_init(gvalue, DBUS_TYPE_G_STRING_STRING_HASHTABLE);
+  g_value_set_boxed(gvalue, ghash);
+  return gvalue;
+}
+
+// Converts a DictionaryValue to a string-to-string GHashTable.
+GHashTable* ConvertDictionaryValueToGValueMap(const DictionaryValue* dict) {
+  GHashTable* ghash =
+      g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
+  for (DictionaryValue::key_iterator it = dict->begin_keys();
+       it != dict->end_keys(); ++it) {
+    std::string key = *it;
+    Value* val = NULL;
+    if (dict->GetWithoutPathExpansion(key, &val)) {
+      g_hash_table_insert(ghash,
+                          g_strdup(const_cast<char*>(key.c_str())),
+                          ConvertValueToGValue(val));
+    } else {
+      VLOG(2) << "Could not insert key " << key << " into hash";
+    }
+  }
+  return ghash;
+}
+
+GValue* ConvertValueToGValue(const Value* value) {
+  switch (value->GetType()) {
+    case Value::TYPE_BOOLEAN: {
+      bool out;
+      if (value->GetAsBoolean(&out))
+        return ConvertBoolToGValue(out);
+      break;
+    }
+    case Value::TYPE_INTEGER: {
+      int out;
+      if (value->GetAsInteger(&out))
+        return ConvertIntToGValue(out);
+      break;
+    }
+    case Value::TYPE_STRING: {
+      std::string out;
+      if (value->GetAsString(&out))
+        return ConvertStringToGValue(out);
+      break;
+    }
+    case Value::TYPE_DICTIONARY: {
+      const DictionaryValue* dict = static_cast<const DictionaryValue*>(value);
+      return ConvertDictionaryValueToGValue(dict);
+    }
+    case Value::TYPE_NULL:
+    case Value::TYPE_DOUBLE:
+    case Value::TYPE_BINARY:
+    case Value::TYPE_LIST:
+      // Other Value types shouldn't be passed through this mechanism.
+      NOTREACHED() << "Unconverted Value of type: " << value->GetType();
+      return new GValue();
+  }
+  NOTREACHED() << "Value conversion failed, type: " << value->GetType();
+  return new GValue();
+}
+
+}  // namespace
 
 bool CrosActivateCellularModem(const char* service_path, const char* carrier) {
   return chromeos::ActivateCellularModem(service_path, carrier);
 }
 
-void CrosSetNetworkServicePropertyGValue(const char* service_path,
-                                         const char* property,
-                                         const GValue* gvalue) {
-  chromeos::SetNetworkServicePropertyGValue(service_path, property, gvalue);
+void CrosSetNetworkServiceProperty(const char* service_path,
+                                   const char* property,
+                                   const base::Value& value) {
+  scoped_ptr<GValue> gvalue(ConvertValueToGValue(&value));
+  chromeos::SetNetworkServicePropertyGValue(service_path, property,
+                                            gvalue.get());
 }
 
 void CrosClearNetworkServiceProperty(const char* service_path,
@@ -21,21 +139,25 @@ void CrosClearNetworkServiceProperty(const char* service_path,
   chromeos::ClearNetworkServiceProperty(service_path, property);
 }
 
-void CrosSetNetworkDevicePropertyGValue(const char* device_path,
-                                        const char* property,
-                                        const GValue* gvalue) {
-  chromeos::SetNetworkDevicePropertyGValue(device_path, property, gvalue);
+void CrosSetNetworkDeviceProperty(const char* device_path,
+                                  const char* property,
+                                  const base::Value& value) {
+  scoped_ptr<GValue> gvalue(ConvertValueToGValue(&value));
+  chromeos::SetNetworkDevicePropertyGValue(device_path, property, gvalue.get());
 }
 
-void CrosSetNetworkIPConfigPropertyGValue(const char* ipconfig_path,
-                                          const char* property,
-                                          const GValue* gvalue) {
-  chromeos::SetNetworkIPConfigPropertyGValue(ipconfig_path, property, gvalue);
+void CrosSetNetworkIPConfigProperty(const char* ipconfig_path,
+                                    const char* property,
+                                    const base::Value& value) {
+  scoped_ptr<GValue> gvalue(ConvertValueToGValue(&value));
+  chromeos::SetNetworkIPConfigPropertyGValue(ipconfig_path, property,
+                                             gvalue.get());
 }
 
-void CrosSetNetworkManagerPropertyGValue(const char* property,
-                                         const GValue* gvalue) {
-  chromeos::SetNetworkManagerPropertyGValue(property, gvalue);
+void CrosSetNetworkManagerProperty(const char* property,
+                                   const base::Value& value) {
+  scoped_ptr<GValue> gvalue(ConvertValueToGValue(&value));
+  chromeos::SetNetworkManagerPropertyGValue(property, gvalue.get());
 }
 
 void CrosDeleteServiceFromProfile(const char* profile_path,
@@ -242,10 +364,11 @@ void CrosFreeDeviceNetworkList(DeviceNetworkList* network_list) {
 }
 
 void CrosConfigureService(const char* identifier,
-                          const GHashTable* properties,
+                          const base::DictionaryValue& properties,
                           NetworkActionCallback callback,
                           void* object) {
-  chromeos::ConfigureService(identifier, properties, callback, object);
+  GHashTable* ghash = ConvertDictionaryValueToGValueMap(&properties);
+  chromeos::ConfigureService(identifier, ghash, callback, object);
 }
 
 }  // namespace chromeos

@@ -5,14 +5,19 @@
 #ifndef CHROME_BROWSER_CHROMEOS_CROS_CROS_NETWORK_FUNCTIONS_H_
 #define CHROME_BROWSER_CHROMEOS_CROS_CROS_NETWORK_FUNCTIONS_H_
 
-#include "third_party/cros/chromeos_network.h"
-
-namespace chromeos {
-
 // This header is introduced to make it easy to switch from chromeos_network.cc
 // to Chrome's own DBus code.  crosbug.com/16557
 // All calls to functions in chromeos_network.h should be made through
 // functions provided by this header.
+
+#include "third_party/cros/chromeos_network.h"
+
+namespace base {
+class DictionaryValue;
+class Value;
+}
+
+namespace chromeos {
 
 // Activates the cellular modem specified by |service_path| with carrier
 // specified by |carrier|.
@@ -22,32 +27,32 @@ namespace chromeos {
 bool CrosActivateCellularModem(const char* service_path, const char* carrier);
 
 
-// Sets a property of a service to the provided value
+// Sets a property of a service to the provided value.
 // Success is indicated by the receipt of a matching PropertyChanged signal.
-void CrosSetNetworkServicePropertyGValue(const char* service_path,
-                                         const char* property,
-                                         const GValue* gvalue);
+void CrosSetNetworkServiceProperty(const char* service_path,
+                                   const char* property,
+                                   const base::Value& value);
 
 // Clears a property of a service.
 void CrosClearNetworkServiceProperty(const char* service_path,
                                      const char* property);
 
-// Sets a property of a device to the provided value
+// Sets a property of a device to the provided value.
 // Success is indicated by the receipt of a matching PropertyChanged signal.
-void CrosSetNetworkDevicePropertyGValue(const char* device_path,
-                                        const char* property,
-                                        const GValue* gvalue);
+void CrosSetNetworkDeviceProperty(const char* device_path,
+                                  const char* property,
+                                  const base::Value& value);
 
-// Sets a property of an ip config to the provided value
+// Sets a property of an ip config to the provided value.
 // Success is indicated by the receipt of a matching PropertyChanged signal.
-void CrosSetNetworkIPConfigPropertyGValue(const char* ipconfig_path,
-                                          const char* property,
-                                          const GValue* gvalue);
+void CrosSetNetworkIPConfigProperty(const char* ipconfig_path,
+                                    const char* property,
+                                    const base::Value& value);
 
 // Sets a property of a manager to the provided value.
 // Success is indicated by the receipt of a matching PropertyChanged signal.
-void CrosSetNetworkManagerPropertyGValue(const char* property,
-                                         const GValue* gvalue);
+void CrosSetNetworkManagerProperty(const char* property,
+                                   const base::Value& value);
 
 // Deletes a remembered service from a profile.
 void CrosDeleteServiceFromProfile(const char* profile_path,
@@ -238,7 +243,7 @@ void CrosFreeDeviceNetworkList(DeviceNetworkList* network_list);
 // specified by the calling code; it is ignored by libcros and flimflam,
 // except to pass it back in |callback| as |path|.
 void CrosConfigureService(const char* identifier,
-                          const GHashTable* properties,
+                          const base::DictionaryValue& properties,
                           NetworkActionCallback callback,
                           void* object);
 

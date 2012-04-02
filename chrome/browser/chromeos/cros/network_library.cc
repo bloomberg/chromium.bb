@@ -305,10 +305,7 @@ void Network::SetValueProperty(const char* prop, Value* value) {
   DCHECK(value);
   if (!EnsureCrosLoaded())
     return;
-  scoped_ptr<GValue> gvalue(
-      NetworkLibraryImplCros::ConvertValueToGValue(value));
-  CrosSetNetworkServicePropertyGValue(
-      service_path_.c_str(), prop, gvalue.get());
+  CrosSetNetworkServiceProperty(service_path_.c_str(), prop, *value);
 }
 
 void Network::ClearProperty(const char* prop) {
