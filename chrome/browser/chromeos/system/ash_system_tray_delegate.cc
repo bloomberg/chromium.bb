@@ -402,7 +402,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   virtual void GetAvailableNetworks(
       std::vector<ash::NetworkIconInfo>* list) OVERRIDE {
     NetworkLibrary* crosnet = CrosLibrary::Get()->GetNetworkLibrary();
-    crosnet->RequestNetworkScan();
 
     // Ethernet.
     if (crosnet->ethernet_available() && crosnet->ethernet_enabled()) {
