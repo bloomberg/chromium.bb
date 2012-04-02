@@ -37,7 +37,7 @@ void RendererGpuVideoDecoderFactories::AsyncGetContext(
     WebGraphicsContext3DCommandBufferImpl* wgc3dcbi,
     base::WaitableEvent* waiter) {
   wgc3dcbi->makeContextCurrent();
-  context_ = wgc3dcbi->context()->AsWeakPtr();
+  context_ = wgc3dcbi->AsWeakPtr();
   if (waiter)
     waiter->Signal();
 }

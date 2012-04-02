@@ -429,7 +429,8 @@ class PepperPluginDelegateImpl
       webkit::ppapi::PluginModule* plugin_module);
 
   // Implementation of PepperParentContextProvider.
-  virtual ContentGLContext* GetParentContextForPlatformContext3D() OVERRIDE;
+  virtual WebGraphicsContext3DCommandBufferImpl*
+      GetParentContextForPlatformContext3D() OVERRIDE;
 
   MouseLockDispatcher::LockTarget* GetOrCreateLockTargetAdapter(
       webkit::ppapi::PluginInstance* instance);

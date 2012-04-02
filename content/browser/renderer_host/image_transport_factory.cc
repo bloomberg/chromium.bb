@@ -17,6 +17,7 @@
 #include "content/common/gpu/client/command_buffer_proxy.h"
 #include "content/common/gpu/client/gpu_channel_host.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
+#include "content/common/gpu/gpu_process_launch_causes.h"
 #include "content/public/common/content_switches.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebGraphicsContext3D.h"
 #include "ui/gfx/compositor/compositor.h"
@@ -251,8 +252,14 @@ class GpuProcessTransportFactory : public ui::ContextFactory,
     GpuChannelHostFactory* factory = BrowserGpuChannelHostFactory::instance();
     scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context(
         new WebGraphicsContext3DCommandBufferImpl(
-            data->surface_id, GURL(), factory, data->swap_client->AsWeakPtr()));
-    if (!context->Initialize(attrs))
+            data->surface_id,
+            GURL(),
+            factory,
+            data->swap_client->AsWeakPtr()));
+    if (!context->Initialize(
+        attrs,
+        false,
+        content::CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE))
       return NULL;
     return context.release();
   }
@@ -279,10 +286,9 @@ class GpuProcessTransportFactory : public ui::ContextFactory,
       data = CreatePerCompositorData(compositor);
     gfx::GLSurfaceHandle handle = gfx::GLSurfaceHandle(
         gfx::kNullPluginWindow, true);
-    ContentGLContext* context = data->shared_context->content_gl_context();
-    handle.parent_gpu_process_id = context->GetGPUProcessID();
-    handle.parent_client_id = context->GetChannelID();
-    handle.parent_context_id = context->GetContextID();
+    handle.parent_gpu_process_id = data->shared_context->GetGPUProcessID();
+    handle.parent_client_id = data->shared_context->GetChannelID();
+    handle.parent_context_id = data->shared_context->GetContextID();
     handle.parent_texture_id[0] = data->shared_context->createTexture();
     handle.parent_texture_id[1] = data->shared_context->createTexture();
     // Finish is overkill, but flush semantics don't apply cross-channel.
@@ -298,10 +304,9 @@ class GpuProcessTransportFactory : public ui::ContextFactory,
          it != per_compositor_data_.end(); ++it) {
       PerCompositorData* data = it->second;
       DCHECK(data);
-      ContentGLContext* context = data->shared_context->content_gl_context();
-      int gpu_process_id = context->GetGPUProcessID();
-      uint32 client_id = context->GetChannelID();
-      uint32 context_id = context->GetContextID();
+      int gpu_process_id = data->shared_context->GetGPUProcessID();
+      uint32 client_id = data->shared_context->GetChannelID();
+      uint32 context_id = data->shared_context->GetContextID();
       if (surface.parent_gpu_process_id == gpu_process_id &&
           surface.parent_client_id == client_id &&
           surface.parent_context_id == context_id) {
@@ -391,8 +396,14 @@ class GpuProcessTransportFactory : public ui::ContextFactory,
     WebKit::WebGraphicsContext3D::Attributes attrs;
     attrs.shareResources = true;
     data->shared_context.reset(new WebGraphicsContext3DCommandBufferImpl(
-          data->surface_id, GURL(), factory, data->swap_client->AsWeakPtr()));
-    if (!data->shared_context->Initialize(attrs)) {
+          data->surface_id,
+          GURL(),
+          factory,
+          data->swap_client->AsWeakPtr()));
+    if (!data->shared_context->Initialize(
+        attrs,
+        false,
+        content::CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE)) {
       // If we can't recreate contexts, we won't be able to show the UI. Better
       // crash at this point.
       LOG(FATAL) << "Failed to initialize compositor shared context.";

@@ -1585,9 +1585,15 @@ WebGraphicsContext3D* RenderViewImpl::createGraphicsContext3D(
 
     scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context(
         new WebGraphicsContext3DCommandBufferImpl(
-            surface_id(), url, RenderThreadImpl::current(), AsWeakPtr()));
+            surface_id(),
+            url,
+            RenderThreadImpl::current(),
+            AsWeakPtr()));
 
-    if (!context->Initialize(attributes))
+    if (!context->Initialize(
+            attributes,
+            false /* bind generates resources */,
+            content::CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE))
       return NULL;
     context_is_web_graphics_context_3d_command_buffer_impl_ = true;
     return context.release();

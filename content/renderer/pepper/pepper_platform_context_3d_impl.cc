@@ -5,14 +5,15 @@
 #include "content/renderer/pepper/pepper_platform_context_3d_impl.h"
 
 #include "base/bind.h"
-#include "content/common/gpu/client/content_gl_context.h"
 #include "content/common/gpu/client/gpu_channel_host.h"
 #include "content/common/gpu/client/command_buffer_proxy.h"
+#include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/renderer/pepper/pepper_parent_context_provider.h"
 #include "content/renderer/render_thread_impl.h"
 #include "googleurl/src/gurl.h"
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
+#include "ppapi/c/pp_graphics_3d.h"
 #include "ui/gfx/gl/gpu_preference.h"
 
 #ifdef ENABLE_GPU
@@ -63,7 +64,7 @@ bool PlatformContext3DImpl::Init(const int32* attrib_list) {
   bool retry = false;
   gfx::GpuPreference gpu_preference = gfx::PreferDiscreteGpu;
 
-  // Note similar code in WebGraphicsContext3DCommandBufferImpl::initialize.
+  // Note similar code in PP_GRAPHICS3DATTRIB_initialize.
   do {
     channel_ = render_thread->EstablishGpuChannelSync(
         content::CAUSE_FOR_GPU_LAUNCH_PEPPERPLATFORMCONTEXT3DIMPL_INITIALIZE);
@@ -90,16 +91,16 @@ bool PlatformContext3DImpl::Init(const int32* attrib_list) {
   // we do not need to filter for width and height here.
   if (attrib_list) {
     for (const int32_t* attr = attrib_list;
-         attr[0] != ContentGLContext::NONE;
+         attr[0] != PP_GRAPHICS3DATTRIB_NONE;
          attr += 2) {
       switch (attr[0]) {
-        case ContentGLContext::WIDTH:
+        case PP_GRAPHICS3DATTRIB_WIDTH:
           surface_size.set_width(attr[1]);
           break;
-        case ContentGLContext::HEIGHT:
+        case PP_GRAPHICS3DATTRIB_HEIGHT:
           surface_size.set_height(attr[1]);
           break;
-        case ContentGLContext::ALPHA_SIZE:
+        case PP_GRAPHICS3DATTRIB_ALPHA_SIZE:
           has_alpha_ = attr[1] > 0;
         // fall-through
         default:
@@ -108,7 +109,7 @@ bool PlatformContext3DImpl::Init(const int32* attrib_list) {
           break;
       }
     }
-    attribs.push_back(ContentGLContext::NONE);
+    attribs.push_back(PP_GRAPHICS3DATTRIB_NONE);
   }
 
   command_buffer_ = channel_->CreateOffscreenCommandBuffer(
@@ -131,7 +132,7 @@ bool PlatformContext3DImpl::Init(const int32* attrib_list) {
   // Fetch the parent context now, after any potential shutdown of the
   // channel due to GPU switching, and creation of the Pepper 3D
   // context with the discrete GPU preference.
-  ContentGLContext* parent_context =
+  WebGraphicsContext3DCommandBufferImpl* parent_context =
       parent_context_provider_->GetParentContextForPlatformContext3D();
   if (!parent_context)
     return false;

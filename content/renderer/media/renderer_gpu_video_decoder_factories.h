@@ -81,7 +81,7 @@ class CONTENT_EXPORT RendererGpuVideoDecoderFactories
 
   MessageLoop* message_loop_;
   scoped_refptr<GpuChannelHost> gpu_channel_host_;
-  base::WeakPtr<ContentGLContext> context_;
+  base::WeakPtr<WebGraphicsContext3DCommandBufferImpl> context_;
   DISALLOW_IMPLICIT_CONSTRUCTORS(RendererGpuVideoDecoderFactories);
 };
 

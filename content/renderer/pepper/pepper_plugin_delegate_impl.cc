@@ -23,7 +23,6 @@
 #include "content/common/child_thread.h"
 #include "content/common/fileapi/file_system_dispatcher.h"
 #include "content/common/fileapi/file_system_messages.h"
-#include "content/common/gpu/client/content_gl_context.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/common/pepper_file_messages.h"
 #include "content/common/pepper_plugin_registry.h"
@@ -1565,7 +1564,7 @@ int PepperPluginDelegateImpl::GetSessionID(PP_DeviceType_Dev type,
 #endif
 }
 
-ContentGLContext*
+WebGraphicsContext3DCommandBufferImpl*
 PepperPluginDelegateImpl::GetParentContextForPlatformContext3D() {
   WebGraphicsContext3DCommandBufferImpl* context =
       static_cast<WebGraphicsContext3DCommandBufferImpl*>(
@@ -1575,10 +1574,7 @@ PepperPluginDelegateImpl::GetParentContextForPlatformContext3D() {
   if (!context->makeContextCurrent() || context->isContextLost())
     return NULL;
 
-  ContentGLContext* parent_context = context->context();
-  if (!parent_context)
-    return NULL;
-  return parent_context;
+  return context;
 }
 
 MouseLockDispatcher::LockTarget*

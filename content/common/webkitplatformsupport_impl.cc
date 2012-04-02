@@ -67,7 +67,10 @@ WebKitPlatformSupportImpl::createOffscreenGraphicsContext3D(
     scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context(
         new WebGraphicsContext3DCommandBufferImpl(
             0, GURL(), factory, null_client));
-    if (!context->Initialize(attributes))
+    if (!context->Initialize(
+        attributes,
+        false,
+        CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE))
       return NULL;
     return context.release();
   }

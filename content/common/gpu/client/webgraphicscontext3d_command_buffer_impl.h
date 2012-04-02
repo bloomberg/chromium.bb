@@ -9,9 +9,10 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "content/common/gpu/client/content_gl_context.h"
+#include "content/common/gpu/gpu_process_launch_causes.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebGraphicsContext3D.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
@@ -23,11 +24,18 @@
 #define FLIP_FRAMEBUFFER_VERTICALLY
 #endif
 
+class CommandBufferProxy;
 class GpuChannelHost;
 class GpuChannelHostFactory;
+struct GpuMemoryAllocationForRenderer;
+
 
 namespace gpu {
+
+class TransferBuffer;
+
 namespace gles2 {
+class GLES2CmdHelper;
 class GLES2Implementation;
 }
 }
@@ -59,16 +67,60 @@ class WebGraphicsContext3DSwapBuffersClient {
 class WebGraphicsContext3DErrorMessageCallback;
 
 class WebGraphicsContext3DCommandBufferImpl
-    : public WebKit::WebGraphicsContext3D {
+    : public WebKit::WebGraphicsContext3D,
+      public base::SupportsWeakPtr<WebGraphicsContext3DCommandBufferImpl> {
  public:
   WebGraphicsContext3DCommandBufferImpl(
       int surface_id,
       const GURL& active_url,
       GpuChannelHostFactory* factory,
       const base::WeakPtr<WebGraphicsContext3DSwapBuffersClient>& swap_client);
+
   virtual ~WebGraphicsContext3DCommandBufferImpl();
 
-  bool Initialize(const Attributes& attributes);
+  bool Initialize(const Attributes& attributes,
+                  bool bind_generates_resources,
+                  content::CauseForGpuLaunch cause);
+
+  // The following 3 IDs let one uniquely identify this context.
+  // Gets the GPU process ID for this context.
+  int GetGPUProcessID();
+
+  // Gets the channel ID for this context.
+  int GetChannelID();
+
+  // Gets the context ID (relative to the channel).
+  int GetContextID();
+
+  CommandBufferProxy* GetCommandBufferProxy() { return command_buffer_; }
+
+  gpu::gles2::GLES2Implementation* GetImplementation() { return gl_; }
+
+  // Return true if GPU process reported context lost or there was a
+  // problem communicating with the GPU process.
+  bool IsCommandBufferContextLost();
+
+  // Create a WebGraphicsContext3DCommandBufferImpl that renders directly to a
+  // view. The view and the associated window must not be destroyed until
+  // the returned ContentGLContext has been destroyed, otherwise the GPU process
+  // might attempt to render to an invalid window handle.
+  //
+  // NOTE: on Mac OS X, this entry point is only used to set up the
+  // accelerated compositor's output. On this platform, we actually pass
+  // a gfx::PluginWindowHandle in place of the gfx::NativeViewId,
+  // because the facility to allocate a fake PluginWindowHandle is
+  // already in place. We could add more entry points and messages to
+  // allocate both fake PluginWindowHandles and NativeViewIds and map
+  // from fake NativeViewIds to PluginWindowHandles, but this seems like
+  // unnecessary complexity at the moment.
+  static WebGraphicsContext3DCommandBufferImpl* CreateViewContext(
+      GpuChannelHostFactory* factory,
+      int32 surface_id,
+      const char* allowed_extensions,
+      const WebGraphicsContext3D::Attributes& attributes,
+      bool bind_generates_resources,
+      const GURL& active_url,
+      content::CauseForGpuLaunch cause);
 
   //----------------------------------------------------------------------
   // WebGraphicsContext3D methods
@@ -468,10 +520,9 @@ class WebGraphicsContext3DCommandBufferImpl
 
   virtual WebKit::WebString getTranslatedShaderSourceANGLE(WebGLId shader);
 
-  ContentGLContext* context() { return context_; }
-
   virtual void setContextLostCallback(
       WebGraphicsContext3D::WebGraphicsContextLostCallback* callback);
+
   virtual WGC3Denum getGraphicsResetStatusARB();
 
   virtual void setErrorMessageCallback(
@@ -499,25 +550,72 @@ class WebGraphicsContext3DCommandBufferImpl
   virtual void getQueryObjectuivEXT(
       WebGLId query, WGC3Denum pname, WGC3Duint* params);
 
-  ContentGLContext* content_gl_context() const { return context_; }
-
  protected:
 #if WEBKIT_USING_SKIA
   virtual GrGLInterface* onCreateGrGLInterface();
 #endif
 
  private:
+  // These are the same error codes as used by EGL.
+  enum Error {
+    SUCCESS               = 0x3000,
+    BAD_ATTRIBUTE         = 0x3004,
+    CONTEXT_LOST          = 0x300E
+  };
+  // WebGraphicsContext3DCommandBufferImpl configuration attributes. Those in
+  // the 16-bit range are the same as used by EGL. Those outside the 16-bit
+  // range are unique to Chromium. Attributes are matched using a closest fit
+  // algorithm.
+  enum Attribute {
+    ALPHA_SIZE                = 0x3021,
+    BLUE_SIZE                 = 0x3022,
+    GREEN_SIZE                = 0x3023,
+    RED_SIZE                  = 0x3024,
+    DEPTH_SIZE                = 0x3025,
+    STENCIL_SIZE              = 0x3026,
+    SAMPLES                   = 0x3031,
+    SAMPLE_BUFFERS            = 0x3032,
+    HEIGHT                    = 0x3056,
+    WIDTH                     = 0x3057,
+    NONE                      = 0x3038,  // Attrib list = terminator
+    SHARE_RESOURCES           = 0x10000,
+    BIND_GENERATES_RESOURCES  = 0x10001
+  };
   friend class WebGraphicsContext3DErrorMessageCallback;
 
   // Initialize the underlying GL context. May be called multiple times; second
   // and subsequent calls are ignored. Must be called from the thread that is
   // going to use this object to issue GL commands (which might not be the main
   // thread).
-  bool MaybeInitializeGL();
+  bool MaybeInitializeGL(const char* allowed_extensions);
+
+  bool InitializeCommandBuffer(
+      bool onscreen,
+      const char* allowed_extensions);
+
+  bool SetParent(WebGraphicsContext3DCommandBufferImpl* parent_context);
+
+  void Destroy();
+
+  // Create a CommandBufferProxy that renders directly to a view. The view and
+  // the associated window must not be destroyed until the returned
+  // CommandBufferProxy has been destroyed, otherwise the GPU process might
+  // attempt to render to an invalid window handle.
+  //
+  // NOTE: on Mac OS X, this entry point is only used to set up the
+  // accelerated compositor's output. On this platform, we actually pass
+  // a gfx::PluginWindowHandle in place of the gfx::NativeViewId,
+  // because the facility to allocate a fake PluginWindowHandle is
+  // already in place. We could add more entry points and messages to
+  // allocate both fake PluginWindowHandles and NativeViewIds and map
+  // from fake NativeViewIds to PluginWindowHandles, but this seems like
+  // unnecessary complexity at the moment.
+  bool CreateContext(bool onscreen,
+                     const char* allowed_extensions);
 
   // SwapBuffers callback.
   void OnSwapBuffersComplete();
-  virtual void OnContextLost(ContentGLContext::ContextLostReason reason);
+  virtual void OnContextLost();
   virtual void OnErrorMessage(const std::string& message, int id);
 
   // Check if we should call into the swap client. We can only do that on the
@@ -532,11 +630,6 @@ class WebGraphicsContext3DCommandBufferImpl
 
   // The channel factory to talk to the GPU process
   GpuChannelHostFactory* factory_;
-
-  // The context we use for OpenGL rendering.
-  ContentGLContext* context_;
-  // The GLES2Implementation we use for OpenGL rendering.
-  gpu::gles2::GLES2Implementation* gl_;
 
   bool visible_;
   bool free_command_buffer_when_invisible_;
@@ -579,6 +672,17 @@ class WebGraphicsContext3DCommandBufferImpl
                       unsigned int width,
                       unsigned int height);
 #endif
+
+  bool initialized_;
+  WebGraphicsContext3DCommandBufferImpl* parent_;
+  uint32 parent_texture_id_;
+  CommandBufferProxy* command_buffer_;
+  gpu::gles2::GLES2CmdHelper* gles2_helper_;
+  gpu::TransferBuffer* transfer_buffer_;
+  gpu::gles2::GLES2Implementation* gl_;
+  Error last_error_;
+  int frame_number_;
+  bool bind_generates_resources_;
 };
 
 #endif  // CONTENT_COMMON_GPU_CLIENT_WEBGRAPHICSCONTEXT3D_COMMAND_BUFFER_IMPL_H_

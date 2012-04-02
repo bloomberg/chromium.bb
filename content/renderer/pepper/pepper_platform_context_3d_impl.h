@@ -9,6 +9,7 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 
 #ifdef ENABLE_GPU
@@ -48,7 +49,7 @@ class PlatformContext3DImpl
 
   // Implicitly weak pointer; must outlive this instance.
   PepperParentContextProvider* parent_context_provider_;
-  base::WeakPtr<ContentGLContext> parent_context_;
+  base::WeakPtr<WebGraphicsContext3DCommandBufferImpl> parent_context_;
   scoped_refptr<GpuChannelHost> channel_;
   unsigned int parent_texture_id_;
   bool has_alpha_;

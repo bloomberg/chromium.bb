@@ -26,7 +26,10 @@
 #include "content/common/gpu/client/command_buffer_proxy.h"
 #include "content/common/gpu/client/gpu_channel_host.h"
 #include "content/public/common/content_switches.h"
+#include "gpu/command_buffer/client/gles2_cmd_helper.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
+#include "gpu/command_buffer/client/gles2_lib.h"
+#include "gpu/command_buffer/client/transfer_buffer.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "webkit/glue/gl_bindings_skia_cmd_buffer.h"
 
@@ -42,6 +45,35 @@ void ClearSharedContexts() {
   g_all_shared_contexts.Pointer()->clear();
 }
 
+const int32 kCommandBufferSize = 1024 * 1024;
+// TODO(kbr): make the transfer buffer size configurable via context
+// creation attributes.
+const size_t kStartTransferBufferSize = 1 * 1024 * 1024;
+const size_t kMinTransferBufferSize = 1 * 256 * 1024;
+const size_t kMaxTransferBufferSize = 16 * 1024 * 1024;
+
+// Singleton used to initialize and terminate the gles2 library.
+class GLES2Initializer {
+ public:
+  GLES2Initializer() {
+    gles2::Initialize();
+  }
+
+  ~GLES2Initializer() {
+    gles2::Terminate();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(GLES2Initializer);
+};
+
+////////////////////////////////////////////////////////////////////////////////
+
+base::LazyInstance<GLES2Initializer> g_gles2_initializer =
+    LAZY_INSTANCE_INITIALIZER;
+
+////////////////////////////////////////////////////////////////////////////////
+
 } // namespace anonymous
 
 class WebGraphicsContext3DErrorMessageCallback
@@ -49,20 +81,20 @@ class WebGraphicsContext3DErrorMessageCallback
  public:
   WebGraphicsContext3DErrorMessageCallback(
       WebGraphicsContext3DCommandBufferImpl* context)
-      : context_(context) {
+      : graphics_context_(context) {
   }
 
   virtual void OnErrorMessage(const char* msg, int id) OVERRIDE;
 
  private:
-  WebGraphicsContext3DCommandBufferImpl* context_;
+  WebGraphicsContext3DCommandBufferImpl* graphics_context_;
 
   DISALLOW_COPY_AND_ASSIGN(WebGraphicsContext3DErrorMessageCallback);
 };
 
 void WebGraphicsContext3DErrorMessageCallback::OnErrorMessage(
     const char* msg, int id) {
-  context_->OnErrorMessage(msg, id);
+  graphics_context_->OnErrorMessage(msg, id);
 }
 
 WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl(
@@ -72,8 +104,6 @@ WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl(
     const base::WeakPtr<WebGraphicsContext3DSwapBuffersClient>& swap_client)
     : initialize_failed_(false),
       factory_(factory),
-      context_(NULL),
-      gl_(NULL),
       visible_(false),
       free_command_buffer_when_invisible_(false),
       host_(NULL),
@@ -89,7 +119,16 @@ WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl(
       cached_width_(0),
       cached_height_(0),
       bound_fbo_(0),
-      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      initialized_(false),
+      parent_(NULL),
+      parent_texture_id_(0),
+      command_buffer_(NULL),
+      gles2_helper_(NULL),
+      transfer_buffer_(NULL),
+      gl_(NULL),
+      frame_number_(0),
+      bind_generates_resources_(false) {
 }
 
 WebGraphicsContext3DCommandBufferImpl::
@@ -109,13 +148,20 @@ WebGraphicsContext3DCommandBufferImpl::
     base::AutoLock lock(g_all_shared_contexts_lock.Get());
     g_all_shared_contexts.Pointer()->erase(this);
   }
-  delete context_;
+  Destroy();
 }
 
 bool WebGraphicsContext3DCommandBufferImpl::Initialize(
-    const WebGraphicsContext3D::Attributes& attributes) {
-  DCHECK(!context_);
+    const WebGraphicsContext3D::Attributes& attributes,
+    bool bind_generates_resources,
+    content::CauseForGpuLaunch cause) {
   TRACE_EVENT0("gpu", "WebGfxCtx3DCmdBfrImpl::initialize");
+
+  attributes_ = attributes;
+  bind_generates_resources_ = bind_generates_resources;
+  if (command_buffer_)
+    return true;
+
   if (!factory_)
     return false;
 
@@ -126,9 +172,7 @@ bool WebGraphicsContext3DCommandBufferImpl::Initialize(
 
   // Note similar code in Pepper PlatformContext3DImpl::Init.
   do {
-    host_ = factory_->EstablishGpuChannelSync(
-        content::
-        CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE);
+    host_ = factory_->EstablishGpuChannelSync(cause);
     if (!host_)
       return false;
     DCHECK(host_->state() == GpuChannelHost::kConnected);
@@ -147,85 +191,38 @@ bool WebGraphicsContext3DCommandBufferImpl::Initialize(
     }
   } while (retry);
 
-  attributes_ = attributes;
   return true;
 }
 
-bool WebGraphicsContext3DCommandBufferImpl::MaybeInitializeGL() {
-  if (context_)
+bool WebGraphicsContext3DCommandBufferImpl::MaybeInitializeGL(
+    const char* allowed_extensions) {
+  if (initialized_)
     return true;
+
   if (initialize_failed_)
     return false;
 
   TRACE_EVENT0("gpu", "WebGfxCtx3DCmdBfrImpl::MaybeInitializeGL");
 
-  // Convert WebGL context creation attributes into ContentGLContext / EGL size
-  // requests.
-  const int alpha_size = attributes_.alpha ? 8 : 0;
-  const int depth_size = attributes_.depth ? 24 : 0;
-  const int stencil_size = attributes_.stencil ? 8 : 0;
-  const int samples = attributes_.antialias ? 4 : 0;
-  const int sample_buffers = attributes_.antialias ? 1 : 0;
-  const int32 attribs[] = {
-    ContentGLContext::ALPHA_SIZE, alpha_size,
-    ContentGLContext::DEPTH_SIZE, depth_size,
-    ContentGLContext::STENCIL_SIZE, stencil_size,
-    ContentGLContext::SAMPLES, samples,
-    ContentGLContext::SAMPLE_BUFFERS, sample_buffers,
-    ContentGLContext::SHARE_RESOURCES, attributes_.shareResources ? 1 : 0,
-    ContentGLContext::BIND_GENERATES_RESOURCES, 0,
-    ContentGLContext::NONE,
-  };
-
   const char* preferred_extensions = "*";
 
-  // We need to lock g_all_shared_contexts until after ContentGLContext::Create
-  // to ensure that the context we picked for our share group isn't deleted.
-  // (There's also a lock in our destructor.)
-  {
-    base::AutoLock lock(g_all_shared_contexts_lock.Get());
-    ContentGLContext* share_group = NULL;
-    if (attributes_.shareResources) {
-      share_group = g_all_shared_contexts.Pointer()->empty() ?
-          NULL : (*g_all_shared_contexts.Pointer()->begin())->context_;
-    }
-
-    if (surface_id_) {
-      context_ = ContentGLContext::CreateViewContext(
-          host_,
-          surface_id_,
-          share_group,
-          preferred_extensions,
-          attribs,
-          active_url_,
-          gpu_preference_);
-    } else {
-      context_ = ContentGLContext::CreateOffscreenContext(
-          host_,
-          gfx::Size(1, 1),
-          share_group,
-          preferred_extensions,
-          attribs,
-          active_url_,
-          gpu_preference_);
-    }
-  }
-
-  if (!context_)
+  if (!CreateContext(surface_id_ != 0,
+                     allowed_extensions ?
+                         allowed_extensions : preferred_extensions)) {
+    Destroy();
     return false;
-
-  gl_ = context_->GetImplementation();
+  }
 
   // TODO(twiz):  This code is too fragile in that it assumes that only WebGL
   // contexts will request noExtensions.
   if (gl_ && attributes_.noExtensions)
     gl_->EnableFeatureCHROMIUM("webgl_enable_glsl_webgl_validation");
 
-  context_->SetContextLostCallback(
+  command_buffer_->SetChannelErrorCallback(
       base::Bind(&WebGraphicsContext3DCommandBufferImpl::OnContextLost,
                  weak_ptr_factory_.GetWeakPtr()));
 
-  context_->GetCommandBufferProxy()->SetOnConsoleMessageCallback(
+  command_buffer_->SetOnConsoleMessageCallback(
       base::Bind(&WebGraphicsContext3DCommandBufferImpl::OnErrorMessage,
                  weak_ptr_factory_.GetWeakPtr()));
 
@@ -258,18 +255,120 @@ bool WebGraphicsContext3DCommandBufferImpl::MaybeInitializeGL() {
     g_all_shared_contexts.Pointer()->insert(this);
   }
 
-  context_->SetMemoryAllocationChangedCallback(base::Bind(
+  command_buffer_->SetMemoryAllocationChangedCallback(base::Bind(
       &WebGraphicsContext3DCommandBufferImpl::OnMemoryAllocationChanged,
       weak_ptr_factory_.GetWeakPtr()));
 
   visible_ = true;
+  initialized_ = true;
+  return true;
+}
+
+bool WebGraphicsContext3DCommandBufferImpl::InitializeCommandBuffer(
+    bool onscreen,
+    const char* allowed_extensions) {
+  if (!host_)
+    return false;
+  // We need to lock g_all_shared_contexts to ensure that the context we picked
+  // for our share group isn't deleted.
+  // (There's also a lock in our destructor.)
+  base::AutoLock lock(g_all_shared_contexts_lock.Get());
+  CommandBufferProxy* share_group = NULL;
+  if (attributes_.shareResources) {
+    WebGraphicsContext3DCommandBufferImpl* share_group_context =
+        g_all_shared_contexts.Pointer()->empty() ?
+            NULL : *g_all_shared_contexts.Pointer()->begin();
+    share_group = share_group_context ?
+        share_group_context->command_buffer_ : NULL;
+  }
+
+  std::vector<int32> attribs;
+  attribs.push_back(ALPHA_SIZE);
+  attribs.push_back(attributes_.alpha ? 8 : 0);
+  attribs.push_back(DEPTH_SIZE);
+  attribs.push_back(attributes_.depth ? 24 : 0);
+  attribs.push_back(STENCIL_SIZE);
+  attribs.push_back(attributes_.stencil ? 8 : 0);
+  attribs.push_back(SAMPLES);
+  attribs.push_back(attributes_.antialias ? 4 : 0);
+  attribs.push_back(SAMPLE_BUFFERS);
+  attribs.push_back(attributes_.antialias ? 1 : 0);
+  attribs.push_back(NONE);
+
+  // Create a proxy to a command buffer in the GPU process.
+  if (onscreen) {
+    command_buffer_ = host_->CreateViewCommandBuffer(
+        surface_id_,
+        share_group,
+        allowed_extensions,
+        attribs,
+        active_url_,
+        gpu_preference_);
+  } else {
+    command_buffer_ = host_->CreateOffscreenCommandBuffer(
+        gfx::Size(1, 1),
+        share_group,
+        allowed_extensions,
+        attribs,
+        active_url_,
+        gpu_preference_);
+  }
+
+  if (!command_buffer_)
+    return false;
+
+  // Initialize the command buffer.
+  return command_buffer_->Initialize();
+}
+
+bool WebGraphicsContext3DCommandBufferImpl::CreateContext(
+    bool onscreen,
+    const char* allowed_extensions) {
+
+  // Ensure the gles2 library is initialized first in a thread safe way.
+  g_gles2_initializer.Get();
+
+  if (!command_buffer_ &&
+      !InitializeCommandBuffer(onscreen,
+                               allowed_extensions)) {
+    return false;
+  }
+
+  // Create the GLES2 helper, which writes the command buffer protocol.
+  gles2_helper_ = new gpu::gles2::GLES2CmdHelper(command_buffer_);
+  if (!gles2_helper_->Initialize(kCommandBufferSize))
+    return false;
+
+  // Create a transfer buffer used to copy resources between the renderer
+  // process and the GPU process.
+  transfer_buffer_ = new gpu::TransferBuffer(gles2_helper_);
+
+  // Create the object exposing the OpenGL API.
+  gl_ = new gpu::gles2::GLES2Implementation(
+      gles2_helper_,
+      NULL,
+      transfer_buffer_,
+      attributes_.shareResources,
+      bind_generates_resources_);
+
+  if (!gl_->Initialize(
+      kStartTransferBufferSize,
+      kMinTransferBufferSize,
+      kMaxTransferBufferSize)) {
+    return false;
+  }
+
   return true;
 }
 
 bool WebGraphicsContext3DCommandBufferImpl::makeContextCurrent() {
-  if (!MaybeInitializeGL())
+  if (!MaybeInitializeGL(NULL))
     return false;
-  return ContentGLContext::MakeCurrent(context_);
+  gles2::SetGLContext(gl_);
+  if (command_buffer_->GetLastError() != gpu::error::kNoError)
+    return false;
+
+  return true;
 }
 
 int WebGraphicsContext3DCommandBufferImpl::width() {
@@ -288,21 +387,118 @@ bool WebGraphicsContext3DCommandBufferImpl::setParentContext(
     WebGraphicsContext3D* parent_context) {
   WebGraphicsContext3DCommandBufferImpl* parent_context_impl =
       static_cast<WebGraphicsContext3DCommandBufferImpl*>(parent_context);
-  return context_->SetParent(
-      parent_context_impl ? parent_context_impl->context() : NULL);
+  return SetParent(parent_context_impl);
+}
+
+bool WebGraphicsContext3DCommandBufferImpl::SetParent(
+    WebGraphicsContext3DCommandBufferImpl* new_parent) {
+  if (parent_ == new_parent)
+    return true;
+
+  // Allocate a texture ID with respect to the parent and change the parent.
+  uint32 new_parent_texture_id = 0;
+  if (command_buffer_) {
+    if (new_parent) {
+      // Flush any remaining commands in the parent context to make sure the
+      // texture id accounting stays consistent.
+      int32 token = new_parent->gles2_helper_->InsertToken();
+      new_parent->gles2_helper_->WaitForToken(token);
+      new_parent_texture_id =
+        new_parent->gl_->MakeTextureId();
+
+      if (!command_buffer_->SetParent(new_parent->command_buffer_,
+                                      new_parent_texture_id)) {
+        new_parent->gl_->FreeTextureId(parent_texture_id_);
+        return false;
+      }
+    } else {
+      if (!command_buffer_->SetParent(NULL, 0))
+        return false;
+    }
+  }
+
+  // Free the previous parent's texture ID.
+  if (parent_ && parent_texture_id_ != 0) {
+    // Flush any remaining commands in the parent context to make sure the
+    // texture id accounting stays consistent.
+    gpu::gles2::GLES2Implementation* parent_gles2 =
+        parent_->gl_;
+    parent_gles2->helper()->CommandBufferHelper::Finish();
+    parent_gles2->FreeTextureId(parent_texture_id_);
+  }
+
+  if (new_parent) {
+    parent_ = new_parent;
+    parent_texture_id_ = new_parent_texture_id;
+  } else {
+    parent_ = NULL;
+    parent_texture_id_ = 0;
+  }
+
+  return true;
+}
+
+void WebGraphicsContext3DCommandBufferImpl::Destroy() {
+  SetParent(NULL);
+
+  if (gl_) {
+    // First flush the context to ensure that any pending frees of resources
+    // are completed. Otherwise, if this context is part of a share group,
+    // those resources might leak. Also, any remaining side effects of commands
+    // issued on this context might not be visible to other contexts in the
+    // share group.
+    gl_->Flush();
+
+    delete gl_;
+    gl_ = NULL;
+  }
+
+  if (transfer_buffer_) {
+    delete transfer_buffer_;
+    transfer_buffer_ = NULL;
+  }
+
+  delete gles2_helper_;
+  gles2_helper_ = NULL;
+
+  if (host_ && command_buffer_) {
+    host_->DestroyCommandBuffer(command_buffer_);
+    command_buffer_ = NULL;
+  }
+
+  host_ = NULL;
+}
+
+int WebGraphicsContext3DCommandBufferImpl::GetGPUProcessID() {
+  return host_ ? host_->gpu_process_id() : 0;
+}
+
+int WebGraphicsContext3DCommandBufferImpl::GetChannelID() {
+  return host_ ? host_->client_id() : 0;
+}
+
+int WebGraphicsContext3DCommandBufferImpl::GetContextID() {
+  return command_buffer_->GetRouteID();
 }
 
 WebGLId WebGraphicsContext3DCommandBufferImpl::getPlatformTextureId() {
-  return context_->GetParentTextureId();
+  return parent_texture_id_;
 }
 
 void WebGraphicsContext3DCommandBufferImpl::prepareTexture() {
+  TRACE_EVENT1("gpu",
+                "WebGraphicsContext3DCommandBufferImpl::SwapBuffers",
+                "frame", frame_number_);
+  frame_number_++;
   // Copies the contents of the off-screen render target into the texture
   // used by the compositor.
   if (ShouldUseSwapClient())
     swap_client_->OnViewContextSwapBuffersPosted();
-  context_->SwapBuffers();
-  context_->Echo(base::Bind(
+
+  if (command_buffer_->GetLastState().error == gpu::error::kNoError)
+    gl_->SwapBuffers();
+
+  command_buffer_->Echo(base::Bind(
       &WebGraphicsContext3DCommandBufferImpl::OnSwapBuffersComplete,
       weak_ptr_factory_.GetWeakPtr()));
 #if defined(OS_MACOSX)
@@ -320,7 +516,7 @@ void WebGraphicsContext3DCommandBufferImpl::postSubBufferCHROMIUM(
   if (ShouldUseSwapClient())
     swap_client_->OnViewContextSwapBuffersPosted();
   gl_->PostSubBufferCHROMIUM(x, y, width, height);
-  context_->Echo(base::Bind(
+  command_buffer_->Echo(base::Bind(
       &WebGraphicsContext3DCommandBufferImpl::OnSwapBuffersComplete,
       weak_ptr_factory_.GetWeakPtr()));
 }
@@ -449,7 +645,7 @@ void WebGraphicsContext3DCommandBufferImpl::setVisibilityCHROMIUM(
     bool visible) {
   gl_->Flush();
   visible_ = visible;
-  context_->SetSurfaceVisible(visible);
+  command_buffer_->SetSurfaceVisible(visible);
   if (!visible)
     gl_->FreeEverything();
 }
@@ -457,12 +653,12 @@ void WebGraphicsContext3DCommandBufferImpl::setVisibilityCHROMIUM(
 void WebGraphicsContext3DCommandBufferImpl::discardFramebufferEXT(
     WGC3Denum target, WGC3Dsizei numAttachments, const WGC3Denum* attachments) {
   gl_->Flush();
-  context_->DiscardBackbuffer();
+  command_buffer_->DiscardBackbuffer();
 }
 
 void WebGraphicsContext3DCommandBufferImpl::ensureFramebufferCHROMIUM() {
   gl_->Flush();
-  context_->EnsureBackbuffer();
+  command_buffer_->EnsureBackbuffer();
 }
 
 void WebGraphicsContext3DCommandBufferImpl::
@@ -795,7 +991,7 @@ WGC3Denum WebGraphicsContext3DCommandBufferImpl::getError() {
 
 bool WebGraphicsContext3DCommandBufferImpl::isContextLost() {
   return initialize_failed_ ||
-      (context_ && context_->IsCommandBufferContextLost()) ||
+      (command_buffer_ && IsCommandBufferContextLost()) ||
       context_lost_reason_ != GL_NO_ERROR;
 }
 
@@ -1191,12 +1387,45 @@ void WebGraphicsContext3DCommandBufferImpl::setContextLostCallback(
 }
 
 WGC3Denum WebGraphicsContext3DCommandBufferImpl::getGraphicsResetStatusARB() {
-  if (context_->IsCommandBufferContextLost() &&
+  if (IsCommandBufferContextLost() &&
       context_lost_reason_ == GL_NO_ERROR) {
     return GL_UNKNOWN_CONTEXT_RESET_ARB;
   }
 
   return context_lost_reason_;
+}
+
+bool WebGraphicsContext3DCommandBufferImpl::IsCommandBufferContextLost() {
+  // If the channel shut down unexpectedly, let that supersede the
+  // command buffer's state.
+  if (host_ && host_->state() == GpuChannelHost::kLost)
+    return true;
+  gpu::CommandBuffer::State state = command_buffer_->GetLastState();
+  return state.error == gpu::error::kLostContext;
+}
+
+// static
+WebGraphicsContext3DCommandBufferImpl*
+    WebGraphicsContext3DCommandBufferImpl::CreateViewContext (
+      GpuChannelHostFactory* factory,
+      int32 surface_id,
+      const char* allowed_extensions,
+      const WebGraphicsContext3D::Attributes& attributes,
+      bool bind_generates_resources,
+      const GURL& active_url,
+      content::CauseForGpuLaunch cause) {
+  WebGraphicsContext3DCommandBufferImpl* context =
+      new WebGraphicsContext3DCommandBufferImpl(
+          surface_id,
+          active_url,
+          factory,
+          base::WeakPtr<WebGraphicsContext3DSwapBuffersClient>());
+  if (!context->Initialize(attributes, bind_generates_resources, cause) ||
+      !context->MaybeInitializeGL(allowed_extensions)) {
+    delete context;
+    return NULL;
+  }
+  return context;
 }
 
 void WebGraphicsContext3DCommandBufferImpl::
@@ -1237,13 +1466,13 @@ GrGLInterface* WebGraphicsContext3DCommandBufferImpl::onCreateGrGLInterface() {
 
 namespace {
 
-WGC3Denum convertReason(ContentGLContext::ContextLostReason reason) {
+WGC3Denum convertReason(gpu::error::ContextLostReason reason) {
   switch (reason) {
-  case ContentGLContext::kGuilty:
+  case gpu::error::kGuilty:
     return GL_GUILTY_CONTEXT_RESET_ARB;
-  case ContentGLContext::kInnocent:
+  case gpu::error::kInnocent:
     return GL_INNOCENT_CONTEXT_RESET_ARB;
-  case ContentGLContext::kUnknown:
+  case gpu::error::kUnknown:
     return GL_UNKNOWN_CONTEXT_RESET_ARB;
   }
 
@@ -1253,9 +1482,9 @@ WGC3Denum convertReason(ContentGLContext::ContextLostReason reason) {
 
 }  // anonymous namespace
 
-void WebGraphicsContext3DCommandBufferImpl::OnContextLost(
-    ContentGLContext::ContextLostReason reason) {
-  context_lost_reason_ = convertReason(reason);
+void WebGraphicsContext3DCommandBufferImpl::OnContextLost() {
+  context_lost_reason_ = convertReason(
+      command_buffer_->GetLastState().context_lost_reason);
   if (context_lost_callback_) {
     context_lost_callback_->onContextLost();
   }
