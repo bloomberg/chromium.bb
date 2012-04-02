@@ -58,6 +58,11 @@ remoting.ClientPlugin.prototype.isHiQualityScalingSupported =
     function() {};
 
 /**
+ * @return {boolean} True if the plugin supports the injectKeyEvent API.
+ */
+remoting.ClientPlugin.prototype.isInjectKeyEventSupported = function() {};
+
+/**
  * Must be called for each incoming stanza received from the host.
  * @param {string} iq Incoming IQ stanza.
  */
@@ -96,7 +101,8 @@ remoting.ClientPlugin.prototype.releaseAllKeys = function() {};
  * @param {number} usbKeycode The USB-style code of the key to inject.
  * @param {boolean} pressed True to inject a key press, False for a release.
  */
-remoting.ClientPlugin.prototype.injectKey = function(usbKeycode, pressed) {};
+remoting.ClientPlugin.prototype.injectKeyEvent =
+    function(usbKeycode, pressed) {};
 
 /**
  * Returns an associative array with a set of stats for this connection.

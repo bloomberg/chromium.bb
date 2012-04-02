@@ -207,6 +207,13 @@ remoting.ClientPluginAsync.prototype.isHiQualityScalingSupported = function() {
 };
 
 /**
+ * @return {boolean} True if the plugin supports the injectKeyEvent API.
+ */
+remoting.ClientPluginAsync.prototype.isInjectKeyEventSupported = function() {
+  return this.pluginApiVersion_ >= 6;
+};
+
+/**
  * @param {string} iq Incoming IQ stanza.
  */
 remoting.ClientPluginAsync.prototype.onIncomingIq = function(iq) {
@@ -272,7 +279,7 @@ remoting.ClientPluginAsync.prototype.releaseAllKeys = function() {
  * @param {number} usbKeycode The USB-style code of the key to inject.
  * @param {boolean} pressed True to inject a key press, False for a release.
  */
-remoting.ClientPluginAsync.prototype.injectKey =
+remoting.ClientPluginAsync.prototype.injectKeyEvent =
     function(usbKeycode, pressed) {
   this.plugin.postMessage(JSON.stringify(
       { method: 'injectKeyEvent', data: {
