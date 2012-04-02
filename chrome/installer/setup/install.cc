@@ -87,133 +87,142 @@ void CopyPreferenceFileForFirstRun(const InstallerState& installer_state,
 //
 // If the shortcuts do not exist, the function does not recreate them during
 // update.
-bool CreateOrUpdateChromeShortcuts(const InstallerState& installer_state,
+void CreateOrUpdateChromeShortcuts(const InstallerState& installer_state,
                                    const FilePath& setup_path,
                                    const Version& new_version,
                                    installer::InstallStatus install_status,
                                    const Product& product,
                                    bool create_all_shortcut,
                                    bool alt_shortcut) {
-  // TODO(benwells): Don't make any shortcut creation in this function
-  // contingent on earlier shortcut creation operations succeeding (except
-  // where necessary e.g. pinning the start menu shortcut requires the
-  // start menu to be created successfully).
   // TODO(tommi): Change this function to use WorkItemList.
   DCHECK(product.is_chrome());
 
-  FilePath shortcut_path;
-  int dir_enum = installer_state.system_install() ?
-      base::DIR_COMMON_START_MENU : base::DIR_START_MENU;
-  if (!PathService::Get(dir_enum, &shortcut_path)) {
-    LOG(ERROR) << "Failed to get location for shortcut.";
-    return false;
-  }
-
+  // Information used for all shortcut types
   BrowserDistribution* browser_dist = product.distribution();
-
-  // The location of Start->Programs->Google Chrome folder
   const std::wstring product_name(browser_dist->GetAppShortCutName());
   const std::wstring product_desc(browser_dist->GetAppDescription());
-  shortcut_path = shortcut_path.Append(product_name);
-
-  // Create/update Chrome link (points to chrome.exe) & Uninstall Chrome link
-  // (which points to setup.exe) under this folder only if:
-  // - This is a new install or install repair
-  // OR
-  // - The shortcut already exists in case of updates (user may have deleted
-  //   shortcuts since our install. So on updates we only update if shortcut
-  //   already exists)
-  bool ret = true;
-  FilePath chrome_link(shortcut_path);  // Chrome link (launches Chrome)
-  chrome_link = chrome_link.Append(product_name + L".lnk");
   // Chrome link target
   FilePath chrome_exe(
       installer_state.target_path().Append(installer::kChromeExe));
 
-  if ((install_status == installer::FIRST_INSTALL_SUCCESS) ||
-      (install_status == installer::INSTALL_REPAIRED)) {
-    if (!file_util::PathExists(shortcut_path))
-      file_util::CreateDirectoryW(shortcut_path);
-
-    VLOG(1) << "Creating shortcut to " << chrome_exe.value() << " at "
-            << chrome_link.value();
-    ret = ShellUtil::UpdateChromeShortcut(browser_dist, chrome_exe.value(),
-        chrome_link.value(), L"", product_desc, chrome_exe.value(),
-        browser_dist->GetIconIndex(), true);
-
-    if (ret && base::win::GetVersion() >= base::win::VERSION_WIN7) {
-      VLOG(1) << "Pinning new shortcut at " << chrome_link.value()
-              << " to taskbar";
-      // Ignore the return value of pinning, as we don't want later shortcut
-      // creation dependent on this.
-      file_util::TaskbarPinShortcutLink(chrome_link.value().c_str());
-    }
-  } else if (file_util::PathExists(chrome_link)) {
-    VLOG(1) << "Updating shortcut at " << chrome_link.value()
-            << " to point to " << chrome_exe.value();
-    ret = ShellUtil::UpdateChromeShortcut(browser_dist, chrome_exe.value(),
-        chrome_link.value(), L"", product_desc, chrome_exe.value(),
-        browser_dist->GetIconIndex(), false);
+  // Create Start Menu shortcuts.
+  // The location of Start->Programs->Google Chrome folder
+  FilePath start_menu_folder_path;
+  int dir_enum = installer_state.system_install() ?
+      base::DIR_COMMON_START_MENU : base::DIR_START_MENU;
+  if (!PathService::Get(dir_enum, &start_menu_folder_path)) {
+    LOG(ERROR) << "Failed to get location for shortcut.";
   } else {
-    VLOG(1)
-        << "not first or repaired install, link file doesn't exist. status: "
-        << install_status;
-  }
+    start_menu_folder_path = start_menu_folder_path.Append(product_name);
 
-  // Create/update uninstall link if we are not an MSI install. MSI
-  // installations are, for the time being, managed only through the
-  // Add/Remove Programs dialog.
-  // TODO(robertshield): We could add a shortcut to msiexec /X {GUID} here.
-  if (ret && !installer_state.is_msi()) {
-    FilePath uninstall_link(shortcut_path);  // Uninstall Chrome link
-    uninstall_link = uninstall_link.Append(
-        browser_dist->GetUninstallLinkName() + L".lnk");
+    // Create/update Chrome link (points to chrome.exe) & Uninstall Chrome link
+    // (which points to setup.exe) under this folder only if:
+    // - This is a new install or install repair
+    // OR
+    // - The shortcut already exists in case of updates (user may have deleted
+    //   shortcuts since our install. So on updates we only update if shortcut
+    //   already exists)
+
+    // Chrome link (launches Chrome)
+    FilePath chrome_link(start_menu_folder_path.Append(product_name + L".lnk"));
+
     if ((install_status == installer::FIRST_INSTALL_SUCCESS) ||
-        (install_status == installer::INSTALL_REPAIRED) ||
-        (file_util::PathExists(uninstall_link))) {
-      if (!file_util::PathExists(shortcut_path))
-        file_util::CreateDirectory(shortcut_path);
+        (install_status == installer::INSTALL_REPAIRED)) {
+      if (!file_util::PathExists(start_menu_folder_path))
+        file_util::CreateDirectoryW(start_menu_folder_path);
 
-      FilePath setup_exe(installer_state.GetInstallerDirectory(new_version)
-          .Append(setup_path.BaseName()));
+      VLOG(1) << "Creating shortcut to " << chrome_exe.value() << " at "
+              << chrome_link.value();
+      if (ShellUtil::UpdateChromeShortcut(browser_dist, chrome_exe.value(),
+              chrome_link.value(), L"", product_desc, chrome_exe.value(),
+              browser_dist->GetIconIndex(), true)) {
+        if (base::win::GetVersion() >= base::win::VERSION_WIN7) {
+          VLOG(1) << "Pinning new shortcut at " << chrome_link.value()
+                  << " to taskbar";
+          if (!file_util::TaskbarPinShortcutLink(chrome_link.value().c_str())) {
+            LOG(ERROR) << "Failed to pin shortcut to taskbar: "
+                       << chrome_link.value();
+          }
+        }
+      } else {
+        LOG(ERROR) << "Failed to create start menu shortcut at "
+                   << chrome_link.value();
+      }
+    } else if (file_util::PathExists(chrome_link)) {
+      VLOG(1) << "Updating shortcut at " << chrome_link.value()
+              << " to point to " << chrome_exe.value();
+      if (!ShellUtil::UpdateChromeShortcut(browser_dist, chrome_exe.value(),
+              chrome_link.value(), L"", product_desc, chrome_exe.value(),
+              browser_dist->GetIconIndex(), false)) {
+        LOG(ERROR) << "Failed to update start menu shortcut at "
+                   << chrome_link.value();
+      }
+    } else {
+      VLOG(1) << "No Start Menu shortcut to update (status: " << install_status
+              << ").";
+    }
 
-      CommandLine arguments(CommandLine::NO_PROGRAM);
-      AppendUninstallCommandLineFlags(installer_state, product, &arguments);
-      VLOG(1) << "Creating/updating uninstall link at "
-              << uninstall_link.value();
-      ret = file_util::CreateShortcutLink(setup_exe.value().c_str(),
-          uninstall_link.value().c_str(),
-          NULL,
-          arguments.GetCommandLineString().c_str(),
-          NULL,
-          setup_exe.value().c_str(),
-          0,
-          NULL);
+    // Create/update uninstall link if we are not an MSI install. MSI
+    // installations are, for the time being, managed only through the
+    // Add/Remove Programs dialog.
+    // TODO(robertshield): We could add a shortcut to msiexec /X {GUID} here.
+    if (!installer_state.is_msi()) {
+      // Uninstall Chrome link
+      FilePath uninstall_link(start_menu_folder_path.Append(
+          browser_dist->GetUninstallLinkName() + L".lnk"));
+      if ((install_status == installer::FIRST_INSTALL_SUCCESS) ||
+          (install_status == installer::INSTALL_REPAIRED) ||
+          (file_util::PathExists(uninstall_link))) {
+        if (!file_util::PathExists(start_menu_folder_path))
+          file_util::CreateDirectory(start_menu_folder_path);
+
+        FilePath setup_exe(installer_state.GetInstallerDirectory(new_version)
+            .Append(setup_path.BaseName()));
+
+        CommandLine arguments(CommandLine::NO_PROGRAM);
+        AppendUninstallCommandLineFlags(installer_state, product, &arguments);
+        VLOG(1) << "Creating/updating uninstall link at "
+                << uninstall_link.value();
+        if (!file_util::CreateShortcutLink(setup_exe.value().c_str(),
+                uninstall_link.value().c_str(), NULL,
+                arguments.GetCommandLineString().c_str(), NULL,
+                setup_exe.value().c_str(), 0, NULL)) {
+          LOG(ERROR) << "Failed to create/update uninstall link in start menu "
+                     << " at " << uninstall_link.value();
+        }
+      }
     }
   }
 
-  // Update Desktop and Quick Launch shortcuts. If --create-new-shortcuts
+  // Update Desktop and Quick Launch shortcuts. If --create-all-shortcuts
   // is specified we want to create them, otherwise we update them only if
   // they exist.
-  if (ret) {
-    ShellUtil::ShellChange desktop_level = ShellUtil::CURRENT_USER;
-    int quick_launch_levels = ShellUtil::CURRENT_USER;
-    if (installer_state.system_install()) {
-      desktop_level = ShellUtil::SYSTEM_LEVEL;
-      quick_launch_levels |= ShellUtil::SYSTEM_LEVEL;
-    }
-    ret = ShellUtil::CreateChromeDesktopShortcut(browser_dist,
-        chrome_exe.value(), product_desc, L"", L"", chrome_exe.value(),
-        browser_dist->GetIconIndex(), desktop_level, alt_shortcut,
-        create_all_shortcut);
-    if (ret) {
-      ret = ShellUtil::CreateChromeQuickLaunchShortcut(
-          browser_dist, chrome_exe.value(), quick_launch_levels,
-          create_all_shortcut);
-    }
+  ShellUtil::ShellChange desktop_level = ShellUtil::CURRENT_USER;
+  int quick_launch_levels = ShellUtil::CURRENT_USER;
+  if (installer_state.system_install()) {
+    desktop_level = ShellUtil::SYSTEM_LEVEL;
+    quick_launch_levels |= ShellUtil::SYSTEM_LEVEL;
   }
 
-  return ret;
+  VLOG(1) << "Creating/updating desktop shortcut for " << chrome_exe.value()
+          << " will create new: " << create_all_shortcut;
+  if (!ShellUtil::CreateChromeDesktopShortcut(browser_dist,
+          chrome_exe.value(), product_desc, L"", L"", chrome_exe.value(),
+          browser_dist->GetIconIndex(), desktop_level, alt_shortcut,
+          create_all_shortcut)) {
+    LOG(WARNING) << "Did not create/update desktop shortcut for "
+                 << chrome_exe.value();
+  }
+
+  VLOG(1) << "Creating/updating quick launch shortcut for "
+          << chrome_exe.value() << " will create new: "
+          << create_all_shortcut;
+  if (!ShellUtil::CreateChromeQuickLaunchShortcut(
+          browser_dist, chrome_exe.value(), quick_launch_levels,
+          create_all_shortcut)) {
+    LOG(WARNING) << "Did not create/update quick launch shortcut for "
+                 << chrome_exe.value();
+  }
 }
 
 void RegisterChromeOnMachine(const InstallerState& installer_state,
@@ -401,11 +410,9 @@ InstallStatus InstallOrUpdateProduct(
                     &create_all_shortcut);
       bool alt_shortcut = false;
       prefs.GetBool(master_preferences::kAltShortcutText, &alt_shortcut);
-      if (!CreateOrUpdateChromeShortcuts(installer_state, setup_path,
-                                         new_version, result, *chrome_install,
-                                         create_all_shortcut, alt_shortcut)) {
-        PLOG(WARNING) << "Failed to create/update start menu shortcut.";
-      }
+      CreateOrUpdateChromeShortcuts(installer_state, setup_path,
+                                    new_version, result, *chrome_install,
+                                    create_all_shortcut, alt_shortcut);
 
       bool make_chrome_default = false;
       prefs.GetBool(master_preferences::kMakeChromeDefault,
