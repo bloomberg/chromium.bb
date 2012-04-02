@@ -158,6 +158,12 @@ void RendererClipboardClient::ReadHTML(ui::Clipboard::Buffer buffer,
                                     fragment_end));
 }
 
+void RendererClipboardClient::ReadRTF(ui::Clipboard::Buffer buffer,
+                                      std::string* result) {
+  RenderThreadImpl::current()->Send(
+      new ClipboardHostMsg_ReadRTF(buffer, result));
+}
+
 void RendererClipboardClient::ReadImage(ui::Clipboard::Buffer buffer,
                                         std::string* data) {
   base::SharedMemoryHandle image_handle;

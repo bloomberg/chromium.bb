@@ -12,7 +12,9 @@
 #include "base/utf_string_conversions.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_flash_clipboard.h"
+#include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/var.h"
+#include "ppapi/shared_impl/var_tracker.h"
 #include "webkit/glue/clipboard_client.h"
 #include "webkit/glue/scoped_clipboard_writer_glue.h"
 #include "webkit/plugins/ppapi/common.h"
@@ -92,11 +94,13 @@ PP_Bool PPB_Flash_Clipboard_Impl::IsFormatAvailable(
     case PP_FLASH_CLIPBOARD_FORMAT_HTML:
       return BoolToPPBool(client_->IsFormatAvailable(
           ui::Clipboard::GetHtmlFormatType(), buffer_type));
+    case PP_FLASH_CLIPBOARD_FORMAT_RTF:
+      return BoolToPPBool(client_->IsFormatAvailable(
+          ui::Clipboard::GetRtfFormatType(), buffer_type));
     case PP_FLASH_CLIPBOARD_FORMAT_INVALID:
       break;
   }
 
-  NOTREACHED();
   return PP_FALSE;
 }
 
@@ -150,11 +154,16 @@ PP_Var PPB_Flash_Clipboard_Impl::ReadData(
                         &fragment_end);
       return StringVar::StringToPPVar(UTF16ToUTF8(html_stdstr));
     }
+    case PP_FLASH_CLIPBOARD_FORMAT_RTF: {
+      std::string result;
+      client_->ReadRTF(buffer_type, &result);
+      return ::ppapi::PpapiGlobals::Get()->GetVarTracker()->
+          MakeArrayBufferPPVar(result.size(), result.data());
+    }
     case PP_FLASH_CLIPBOARD_FORMAT_INVALID:
       break;
   }
 
-  NOTREACHED();
   return PP_MakeUndefined();
 }
 
@@ -185,11 +194,23 @@ int32_t PPB_Flash_Clipboard_Impl::WriteDataItem(
       scw->WriteHTML(UTF8ToUTF16(text_string->value()), "");
       return PP_OK;
     }
+    case PP_FLASH_CLIPBOARD_FORMAT_RTF: {
+      ::ppapi::ArrayBufferVar* rtf_data =
+          ::ppapi::ArrayBufferVar::FromPPVar(data);
+      if (!rtf_data)
+        return PP_ERROR_BADARGUMENT;
+
+      if (rtf_data->ByteLength() > kMaxClipboardWriteSize)
+        return PP_ERROR_NOSPACE;
+
+      scw->WriteRTF(std::string(static_cast<char*>(rtf_data->Map()),
+                                rtf_data->ByteLength()));
+      return PP_OK;
+    }
     case PP_FLASH_CLIPBOARD_FORMAT_INVALID:
       break;
   }
 
-  NOTREACHED();
   return PP_ERROR_BADARGUMENT;
 }
 

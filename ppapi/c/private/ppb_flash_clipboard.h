@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_flash_clipboard.idl modified Thu Feb 23 23:15:40 2012. */
+/* From private/ppb_flash_clipboard.idl modified Wed Mar 28 16:49:38 2012. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_FLASH_CLIPBOARD_H_
 #define PPAPI_C_PRIVATE_PPB_FLASH_CLIPBOARD_H_
@@ -53,10 +53,21 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_Flash_Clipboard_Type, 4);
 typedef enum {
   /** Indicates an invalid or unsupported clipboard data format. */
   PP_FLASH_CLIPBOARD_FORMAT_INVALID = 0,
-  /** Indicates plain text clipboard data. */
+  /**
+   * Indicates plaintext clipboard data. The format expected/returned is a
+   * <code>PP_VARTYPE_STRING</code>.
+   */
   PP_FLASH_CLIPBOARD_FORMAT_PLAINTEXT = 1,
-  /** Indicates HTML clipboard data. */
-  PP_FLASH_CLIPBOARD_FORMAT_HTML = 2
+  /**
+   * Indicates HTML clipboard data. The format expected/returned is a
+   * <code>PP_VARTYPE_STRING</code>.
+   */
+  PP_FLASH_CLIPBOARD_FORMAT_HTML = 2,
+  /**
+   * Indicates RTF clipboard data. The format expected/returned is a
+   * <code>PP_VARTYPE_ARRAY_BUFFER</code>.
+   */
+  PP_FLASH_CLIPBOARD_FORMAT_RTF = 3
 } PP_Flash_Clipboard_Format;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_Flash_Clipboard_Format, 4);
 /**

@@ -59,6 +59,9 @@ class ClipboardClient {
                         GURL* url, uint32* fragment_start,
                         uint32* fragment_end) = 0;
 
+  // Reads RTF from the clipboard, if available.
+  virtual void ReadRTF(ui::Clipboard::Buffer buffer, std::string* result) = 0;
+
   // Reads and image from the clipboard, if available.
   virtual void ReadImage(ui::Clipboard::Buffer buffer, std::string* data) = 0;
 

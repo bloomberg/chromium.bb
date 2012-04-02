@@ -43,6 +43,7 @@ class ClipboardMessageFilter : public content::BrowserMessageFilter {
   void OnReadAsciiText(ui::Clipboard::Buffer buffer, std::string* result);
   void OnReadHTML(ui::Clipboard::Buffer buffer, string16* markup, GURL* url,
                   uint32* fragment_start, uint32* fragment_end);
+  void OnReadRTF(ui::Clipboard::Buffer buffer, std::string* result);
   void OnReadImage(ui::Clipboard::Buffer buffer, IPC::Message* reply_msg);
   void OnReadImageReply(const SkBitmap& bitmap, IPC::Message* reply_msg);
   void OnReadCustomData(ui::Clipboard::Buffer buffer,

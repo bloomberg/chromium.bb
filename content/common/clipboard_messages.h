@@ -70,6 +70,9 @@ IPC_SYNC_MESSAGE_CONTROL1_4(ClipboardHostMsg_ReadHTML,
                             GURL /* url */,
                             uint32 /* fragment start */,
                             uint32 /* fragment end */)
+IPC_SYNC_MESSAGE_CONTROL1_1(ClipboardHostMsg_ReadRTF,
+                            ui::Clipboard::Buffer /* buffer */,
+                            std::string /* result */)
 IPC_SYNC_MESSAGE_CONTROL1_2(ClipboardHostMsg_ReadImage,
                             ui::Clipboard::Buffer /* buffer */,
                             base::SharedMemoryHandle /* PNG-encoded image */,

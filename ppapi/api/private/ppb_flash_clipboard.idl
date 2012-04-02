@@ -40,10 +40,21 @@ enum PP_Flash_Clipboard_Type {
 enum PP_Flash_Clipboard_Format {
   /** Indicates an invalid or unsupported clipboard data format. */
   PP_FLASH_CLIPBOARD_FORMAT_INVALID = 0,
-  /** Indicates plain text clipboard data. */
+  /**
+   * Indicates plaintext clipboard data. The format expected/returned is a
+   * <code>PP_VARTYPE_STRING</code>.
+   */
   PP_FLASH_CLIPBOARD_FORMAT_PLAINTEXT = 1,
-  /** Indicates HTML clipboard data. */
-  PP_FLASH_CLIPBOARD_FORMAT_HTML = 2
+  /**
+   * Indicates HTML clipboard data. The format expected/returned is a
+   * <code>PP_VARTYPE_STRING</code>.
+   */
+  PP_FLASH_CLIPBOARD_FORMAT_HTML = 2,
+  /**
+   * Indicates RTF clipboard data. The format expected/returned is a
+   * <code>PP_VARTYPE_ARRAY_BUFFER</code>.
+   */
+  PP_FLASH_CLIPBOARD_FORMAT_RTF = 3
 };
 
 /**

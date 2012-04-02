@@ -4,12 +4,15 @@
 
 #include "ppapi/tests/test_flash_clipboard.h"
 
+#include <algorithm>
 #include <vector>
 
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/point.h"
 #include "ppapi/cpp/private/flash_clipboard.h"
+#include "ppapi/cpp/var.h"
+#include "ppapi/cpp/var_array_buffer.h"
 #include "ppapi/tests/testing_instance.h"
 
 REGISTER_TEST_CASE(FlashClipboard);
@@ -27,21 +30,26 @@ TestFlashClipboard::TestFlashClipboard(TestingInstance* instance)
 void TestFlashClipboard::RunTests(const std::string& filter) {
   RUN_TEST(ReadWritePlainText, filter);
   RUN_TEST(ReadWriteHTML, filter);
+  RUN_TEST(ReadWriteRTF, filter);
   RUN_TEST(ReadWriteMultipleFormats, filter);
   RUN_TEST(Clear, filter);
+  RUN_TEST(InvalidFormat, filter);
 }
 
-std::string TestFlashClipboard::ReadStringVar(
-    PP_Flash_Clipboard_Format format) {
+bool TestFlashClipboard::ReadStringVar(
+    PP_Flash_Clipboard_Format format,
+    std::string* result) {
   pp::Var text;
   bool success = pp::flash::Clipboard::ReadData(
       instance_,
       PP_FLASH_CLIPBOARD_TYPE_STANDARD,
       format,
       &text);
-  if (success && text.is_string())
-    return text.AsString();
-  return std::string();
+  if (success && text.is_string()) {
+    *result = text.AsString();
+    return true;
+  }
+  return false;
 }
 
 bool TestFlashClipboard::WriteStringVar(PP_Flash_Clipboard_Format format,
@@ -74,7 +82,9 @@ bool TestFlashClipboard::IsFormatAvailableMatches(
 
 bool TestFlashClipboard::ReadPlainTextMatches(const std::string& expected) {
   for (int i = 0; i < kMaxIntervals; ++i) {
-    if (ReadStringVar(PP_FLASH_CLIPBOARD_FORMAT_PLAINTEXT) == expected)
+    std::string result;
+    bool success = ReadStringVar(PP_FLASH_CLIPBOARD_FORMAT_PLAINTEXT, &result);
+    if (success && result == expected)
       return true;
 
     PlatformSleep(kIntervalMs);
@@ -84,11 +94,11 @@ bool TestFlashClipboard::ReadPlainTextMatches(const std::string& expected) {
 
 bool TestFlashClipboard::ReadHTMLMatches(const std::string& expected) {
   for (int i = 0; i < kMaxIntervals; ++i) {
-    std::string result = ReadStringVar(PP_FLASH_CLIPBOARD_FORMAT_HTML);
+    std::string result;
+    bool success = ReadStringVar(PP_FLASH_CLIPBOARD_FORMAT_HTML, &result);
     // Markup is inserted around the copied html, so just check that
     // the pasted string contains the copied string.
-    bool match = result.find(expected) != std::string::npos;
-    if (match)
+    if (success && result.find(expected) != std::string::npos)
       return true;
 
     PlatformSleep(kIntervalMs);
@@ -111,6 +121,41 @@ std::string TestFlashClipboard::TestReadWriteHTML() {
   ASSERT_TRUE(WriteStringVar(PP_FLASH_CLIPBOARD_FORMAT_HTML, input));
   ASSERT_TRUE(IsFormatAvailableMatches(PP_FLASH_CLIPBOARD_FORMAT_HTML, true));
   ASSERT_TRUE(ReadHTMLMatches(input));
+
+  PASS();
+}
+
+std::string TestFlashClipboard::TestReadWriteRTF() {
+  std::string rtf_string =
+        "{\\rtf1\\ansi{\\fonttbl\\f0\\fswiss Helvetica;}\\f0\\pard\n"
+        "This is some {\\b bold} text.\\par\n"
+        "}";
+  pp::VarArrayBuffer array_buffer(rtf_string.size());
+  char *bytes = static_cast<char*>(array_buffer.Map());
+  std::copy(rtf_string.data(), rtf_string.data() + rtf_string.size(), bytes);
+  std::vector<PP_Flash_Clipboard_Format> formats_vector(1,
+      PP_FLASH_CLIPBOARD_FORMAT_RTF);
+  std::vector<pp::Var> data_vector(1, array_buffer);
+  ASSERT_TRUE(pp::flash::Clipboard::WriteData(
+      instance_,
+      PP_FLASH_CLIPBOARD_TYPE_STANDARD,
+      formats_vector,
+      data_vector));
+
+  ASSERT_TRUE(IsFormatAvailableMatches(PP_FLASH_CLIPBOARD_FORMAT_RTF, true));
+
+  pp::Var rtf_result;
+  ASSERT_TRUE(pp::flash::Clipboard::ReadData(
+        instance_,
+        PP_FLASH_CLIPBOARD_TYPE_STANDARD,
+        PP_FLASH_CLIPBOARD_FORMAT_RTF,
+        &rtf_result));
+  ASSERT_TRUE(rtf_result.is_array_buffer());
+  pp::VarArrayBuffer array_buffer_result(rtf_result);
+  ASSERT_TRUE(array_buffer_result.ByteLength() == array_buffer.ByteLength());
+  char *bytes_result = static_cast<char*>(array_buffer_result.Map());
+  ASSERT_TRUE(std::equal(bytes, bytes + array_buffer.ByteLength(),
+      bytes_result));
 
   PASS();
 }
@@ -150,6 +195,17 @@ std::string TestFlashClipboard::TestClear() {
   ASSERT_TRUE(success);
   ASSERT_TRUE(IsFormatAvailableMatches(PP_FLASH_CLIPBOARD_FORMAT_PLAINTEXT,
                                        false));
+
+  PASS();
+}
+
+std::string TestFlashClipboard::TestInvalidFormat() {
+  PP_Flash_Clipboard_Format invalid_format =
+      static_cast<PP_Flash_Clipboard_Format>(-1);
+  ASSERT_FALSE(WriteStringVar(invalid_format, "text"));
+  ASSERT_TRUE(IsFormatAvailableMatches(invalid_format, false));
+  std::string unused;
+  ASSERT_FALSE(ReadStringVar(invalid_format, &unused));
 
   PASS();
 }

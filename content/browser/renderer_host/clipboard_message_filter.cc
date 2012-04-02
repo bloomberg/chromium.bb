@@ -73,6 +73,7 @@ bool ClipboardMessageFilter::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER(ClipboardHostMsg_ReadText, OnReadText)
     IPC_MESSAGE_HANDLER(ClipboardHostMsg_ReadAsciiText, OnReadAsciiText)
     IPC_MESSAGE_HANDLER(ClipboardHostMsg_ReadHTML, OnReadHTML)
+    IPC_MESSAGE_HANDLER(ClipboardHostMsg_ReadRTF, OnReadRTF)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ClipboardHostMsg_ReadImage, OnReadImage)
     IPC_MESSAGE_HANDLER(ClipboardHostMsg_ReadCustomData, OnReadCustomData)
 #if defined(OS_MACOSX)
@@ -177,6 +178,11 @@ void ClipboardMessageFilter::OnReadHTML(
   GetClipboard()->ReadHTML(buffer, markup, &src_url_str, fragment_start,
                            fragment_end);
   *url = GURL(src_url_str);
+}
+
+void ClipboardMessageFilter::OnReadRTF(
+    ui::Clipboard::Buffer buffer, std::string* result) {
+  GetClipboard()->ReadRTF(buffer, result);
 }
 
 void ClipboardMessageFilter::OnReadImage(

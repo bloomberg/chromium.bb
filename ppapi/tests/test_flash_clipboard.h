@@ -20,7 +20,7 @@ class TestFlashClipboard : public TestCase {
 
  private:
   // Helpers.
-  std::string ReadStringVar(PP_Flash_Clipboard_Format format);
+  bool ReadStringVar(PP_Flash_Clipboard_Format format, std::string* result);
   bool WriteStringVar(PP_Flash_Clipboard_Format format,
                       const std::string& text);
   bool IsFormatAvailableMatches(PP_Flash_Clipboard_Format format,
@@ -31,8 +31,10 @@ class TestFlashClipboard : public TestCase {
   // Tests.
   std::string TestReadWritePlainText();
   std::string TestReadWriteHTML();
+  std::string TestReadWriteRTF();
   std::string TestReadWriteMultipleFormats();
   std::string TestClear();
+  std::string TestInvalidFormat();
 };
 
 #endif  // PAPPI_TESTS_TEST_FLASH_FULLSCREEN_H_

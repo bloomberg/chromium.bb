@@ -29,7 +29,8 @@ bool IsValidClipboardType(PP_Flash_Clipboard_Type clipboard_type) {
 bool IsValidClipboardFormat(PP_Flash_Clipboard_Format format) {
   // Purposely excludes |PP_FLASH_CLIPBOARD_FORMAT_INVALID|.
   return format == PP_FLASH_CLIPBOARD_FORMAT_PLAINTEXT ||
-         format == PP_FLASH_CLIPBOARD_FORMAT_HTML;
+         format == PP_FLASH_CLIPBOARD_FORMAT_HTML ||
+         format == PP_FLASH_CLIPBOARD_FORMAT_RTF;
 }
 
 }  // namespace
@@ -85,6 +86,11 @@ int32_t PPB_Flash_Clipboard_Proxy::WriteData(
     const PP_Var data_items[]) {
   if (!IsValidClipboardType(clipboard_type))
     return PP_ERROR_BADARGUMENT;
+
+  for (size_t i = 0; i < data_item_count; ++i) {
+    if (!IsValidClipboardFormat(formats[i]))
+      return PP_ERROR_BADARGUMENT;
+  }
 
   std::vector<int> formats_vector(formats, formats + data_item_count);
 
