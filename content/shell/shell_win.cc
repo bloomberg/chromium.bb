@@ -60,6 +60,10 @@ base::StringPiece Shell::PlatformResourceProvider(int key) {
 }
 
 void Shell::PlatformExit() {
+  std::vector<Shell*> windows = windows_;
+  for (std::vector<Shell*>::iterator it = windows.begin();
+       it != windows.end(); ++it)
+    DestroyWindow((*it)->window_);
 }
 
 void Shell::PlatformCleanUp() {
