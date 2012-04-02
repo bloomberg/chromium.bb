@@ -1,0 +1,11 @@
+#!/bin/bash
+# Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# This is a simple wrapper around ./google_appengine/dev_appserver.py
+
+ARGS=$@
+HOST=$(hostname | awk -F. '{print $1}')
+
+/usr/bin/python2.5 ./google_appengine/dev_appserver.py --address=${HOST} ${ARGS}
