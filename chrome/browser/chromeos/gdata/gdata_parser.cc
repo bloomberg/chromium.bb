@@ -749,10 +749,13 @@ const char AccountMetadataFeed::kQuotaBytesTotalField[] =
     "entry.gd$quotaBytesTotal.$t";
 const char AccountMetadataFeed::kQuotaBytesUsedField[] =
     "entry.gd$quotaBytesUsed.$t";
+const char AccountMetadataFeed::kLargestChangestampField[] =
+    "entry.docs$largestChangestamp.value";
 
 AccountMetadataFeed::AccountMetadataFeed()
     : quota_bytes_total_(0),
-      quota_bytes_used_(0) {
+      quota_bytes_used_(0),
+      largest_changestamp_(0) {
 }
 
 AccountMetadataFeed::~AccountMetadataFeed() {
@@ -767,6 +770,10 @@ void AccountMetadataFeed::RegisterJSONConverter(
   converter->RegisterCustomField<int>(kQuotaBytesUsedField,
                                       &AccountMetadataFeed::quota_bytes_used_,
                                       &base::StringToInt);
+  converter->RegisterCustomField<int>(
+      kLargestChangestampField,
+      &AccountMetadataFeed::largest_changestamp_,
+      &base::StringToInt);
 }
 
 // static

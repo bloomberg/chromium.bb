@@ -557,6 +557,10 @@ class AccountMetadataFeed {
     return quota_bytes_used_;
   }
 
+  int largest_changestamp() const {
+    return largest_changestamp_;
+  }
+
   // Registers the mapping between JSON field names and the members in
   // this class.
   static void RegisterJSONConverter(
@@ -571,9 +575,11 @@ class AccountMetadataFeed {
 
   int quota_bytes_total_;
   int quota_bytes_used_;
+  int largest_changestamp_;
 
   static const char kQuotaBytesTotalField[];
   static const char kQuotaBytesUsedField[];
+  static const char kLargestChangestampField[];
 
   DISALLOW_COPY_AND_ASSIGN(AccountMetadataFeed);
 };

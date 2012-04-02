@@ -254,6 +254,7 @@ TEST_F(GDataParserTest, AccountMetadataFeedParser) {
       AccountMetadataFeed::CreateFrom(document.get()));
   EXPECT_EQ(1234, feed->quota_bytes_used());
   EXPECT_EQ(12345, feed->quota_bytes_total());
+  EXPECT_EQ(654321, feed->largest_changestamp());
 }
 
 // Test file extension checking in DocumentEntry::HasDocumentExtension().
