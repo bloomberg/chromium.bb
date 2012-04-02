@@ -257,10 +257,10 @@ void LocationBarView::Init() {
         ChromeToMobileService::IsChromeToMobileEnabled()) {
       chrome_to_mobile_view_ = new ChromeToMobileView(this, command_updater_);
       AddChildView(chrome_to_mobile_view_);
-      ChromeToMobileService* service =
+      scoped_refptr<ChromeToMobileService> service =
           ChromeToMobileServiceFactory::GetForProfile(profile_);
       service->RequestMobileListUpdate();
-      chrome_to_mobile_view_->SetVisible(!service->mobiles().empty());
+      chrome_to_mobile_view_->SetVisible(service->HasDevices());
     }
   }
 
@@ -340,11 +340,9 @@ void LocationBarView::Update(const WebContents* tab_for_state_restoring) {
   if (star_view_)
     star_view_->SetVisible(star_enabled);
 
-  bool chrome_to_mobile_enabled = chrome_to_mobile_view_ &&
-      !model_->input_in_progress() && profile_->IsSyncAccessible() &&
-      !ChromeToMobileServiceFactory::GetForProfile(profile_)->mobiles().empty();
-  command_updater_->UpdateCommandEnabled(IDC_CHROME_TO_MOBILE_PAGE,
-                                         chrome_to_mobile_enabled);
+  bool enabled = chrome_to_mobile_view_ && !model_->input_in_progress() &&
+      ChromeToMobileServiceFactory::GetForProfile(profile_)->HasDevices();
+  command_updater_->UpdateCommandEnabled(IDC_CHROME_TO_MOBILE_PAGE, enabled);
 
   RefreshContentSettingViews();
   RefreshPageActionViews();
@@ -443,10 +441,7 @@ void LocationBarView::ShowStarBubble(const GURL& url, bool newly_bookmarked) {
 }
 
 void LocationBarView::ShowChromeToMobileBubble() {
-  ChromeToMobileServiceFactory::GetForProfile(profile_)->
-      RequestMobileListUpdate();
-  browser::ShowChromeToMobileBubbleView(chrome_to_mobile_view_,
-                                        profile_);
+  browser::ShowChromeToMobileBubbleView(chrome_to_mobile_view_, profile_);
 }
 
 gfx::Point LocationBarView::GetLocationEntryOrigin() const {

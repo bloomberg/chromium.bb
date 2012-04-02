@@ -24,6 +24,9 @@ class MockChromeToMobileService : public ChromeToMobileService {
   ~MockChromeToMobileService();
 
   MOCK_METHOD0(RefreshAccessToken, void());
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockChromeToMobileService);
 };
 
 MockChromeToMobileService::MockChromeToMobileService()
@@ -31,31 +34,47 @@ MockChromeToMobileService::MockChromeToMobileService()
 
 MockChromeToMobileService::~MockChromeToMobileService() {}
 
-class ChromeToMobileServiceTest : public testing::Test {};
+class ChromeToMobileServiceTest : public testing::Test {
+ public:
+  ChromeToMobileServiceTest();
+  virtual ~ChromeToMobileServiceTest();
+
+  virtual void SetUp() OVERRIDE {
+    service_ = new MockChromeToMobileService();
+  }
+
+ protected:
+  scoped_refptr<MockChromeToMobileService> service_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ChromeToMobileServiceTest);
+};
+
+ChromeToMobileServiceTest::ChromeToMobileServiceTest() {}
+
+ChromeToMobileServiceTest::~ChromeToMobileServiceTest() {}
 
 // Ensure that RefreshAccessToken is not called for irrelevant notifications.
 TEST_F(ChromeToMobileServiceTest, IgnoreIrrelevantNotifications) {
-  MockChromeToMobileService service;
-  EXPECT_CALL(service, RefreshAccessToken()).Times(0);
+  EXPECT_CALL(*service_.get(), RefreshAccessToken()).Times(0);
 
   // Send dummy service/token details (should not refresh token).
   DummyNotificationSource dummy_source;
   TokenService::TokenAvailableDetails dummy_details(kDummyString, kDummyString);
-  service.Observe(chrome::NOTIFICATION_TOKEN_AVAILABLE,
+  service_->Observe(chrome::NOTIFICATION_TOKEN_AVAILABLE,
       content::Source<DummyNotificationSource>(&dummy_source),
       content::Details<TokenService::TokenAvailableDetails>(&dummy_details));
 }
 
 // Ensure that RefreshAccessToken is called on the proper notification.
 TEST_F(ChromeToMobileServiceTest, AuthenticateOnTokenAvailable) {
-  MockChromeToMobileService service;
-  EXPECT_CALL(service, RefreshAccessToken()).Times(1);
+  EXPECT_CALL(*service_.get(), RefreshAccessToken()).Times(1);
 
   // Send a Gaia OAuth2 Login service dummy token (should refresh token).
   DummyNotificationSource dummy_source;
   TokenService::TokenAvailableDetails login_details(
       GaiaConstants::kGaiaOAuth2LoginRefreshToken, kDummyString);
-  service.Observe(chrome::NOTIFICATION_TOKEN_AVAILABLE,
+  service_->Observe(chrome::NOTIFICATION_TOKEN_AVAILABLE,
       content::Source<DummyNotificationSource>(&dummy_source),
       content::Details<TokenService::TokenAvailableDetails>(&login_details));
 }

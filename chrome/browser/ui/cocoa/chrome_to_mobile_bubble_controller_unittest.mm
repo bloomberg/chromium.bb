@@ -16,6 +16,7 @@ class MockChromeToMobileService : public ChromeToMobileService {
   // A utility function to add mock devices.
   void AddDevices(size_t count);
 
+  MOCK_METHOD0(RequestMobileListUpdate, void());
   MOCK_METHOD1(GenerateSnapshot, void(base::WeakPtr<Observer> observer));
   MOCK_METHOD3(SendToMobile, void(const string16& mobile_id,
                                   const FilePath& snapshot,
@@ -34,7 +35,10 @@ namespace {
 
 class ChromeToMobileBubbleControllerTest : public CocoaTest {
  public:
-  ChromeToMobileBubbleControllerTest() : controller_(NULL) {}
+  ChromeToMobileBubbleControllerTest()
+    : controller_(NULL),
+      service_(new MockChromeToMobileService()) {
+  }
 
   virtual void TearDown() {
     [controller_ close];
@@ -44,7 +48,7 @@ class ChromeToMobileBubbleControllerTest : public CocoaTest {
   void CreateBubble() {
     // The controller cleans up after itself when the window closes.
     controller_ = [[ChromeToMobileBubbleController alloc]
-        initWithParentWindow:test_window() service:&service_];
+        initWithParentWindow:test_window() service:service_];
     window_ = [controller_ window];
     [controller_ showWindow:nil];
   }
@@ -90,49 +94,56 @@ class ChromeToMobileBubbleControllerTest : public CocoaTest {
 
   ChromeToMobileBubbleController* controller_;  // Weak, owns self.
   NSWindow* window_;  // Weak, owned by controller.
-  MockChromeToMobileService service_;
+  scoped_refptr<MockChromeToMobileService> service_;
 };
 
 TEST_F(ChromeToMobileBubbleControllerTest, OneDevice) {
-  EXPECT_CALL(service_, GenerateSnapshot(testing::_)).Times(1);
+  EXPECT_CALL(*service_.get(), RequestMobileListUpdate()).Times(1);
+  EXPECT_CALL(*service_.get(), GenerateSnapshot(testing::_)).Times(1);
 
-  service_.AddDevices(1);
+  service_->AddDevices(1);
   CreateBubble();
   CheckWindow(/*radio_buttons=*/0);
 }
 
 TEST_F(ChromeToMobileBubbleControllerTest, TwoDevices) {
-  EXPECT_CALL(service_, GenerateSnapshot(testing::_)).Times(1);
+  EXPECT_CALL(*service_.get(), RequestMobileListUpdate()).Times(1);
+  EXPECT_CALL(*service_.get(), GenerateSnapshot(testing::_)).Times(1);
 
-  service_.AddDevices(2);
+  service_->AddDevices(2);
   CreateBubble();
   CheckWindow(/*radio_buttons=*/2);
 }
 
 TEST_F(ChromeToMobileBubbleControllerTest, ThreeDevices) {
-  EXPECT_CALL(service_, GenerateSnapshot(testing::_)).Times(1);
+  EXPECT_CALL(*service_.get(), RequestMobileListUpdate()).Times(1);
+  EXPECT_CALL(*service_.get(), GenerateSnapshot(testing::_)).Times(1);
 
-  service_.AddDevices(3);
+  service_->AddDevices(3);
   CreateBubble();
   CheckWindow(/*radio_buttons=*/3);
 }
 
 TEST_F(ChromeToMobileBubbleControllerTest, SendWithoutSnapshot) {
   FilePath path;
-  EXPECT_CALL(service_, GenerateSnapshot(testing::_)).Times(1);
-  EXPECT_CALL(service_, SendToMobile(testing::_, path, testing::_)).Times(1);
+  EXPECT_CALL(*service_.get(), RequestMobileListUpdate()).Times(1);
+  EXPECT_CALL(*service_.get(), GenerateSnapshot(testing::_)).Times(1);
+  EXPECT_CALL(*service_.get(),
+              SendToMobile(testing::_, path, testing::_)).Times(1);
 
-  service_.AddDevices(1);
+  service_->AddDevices(1);
   CreateBubble();
   [controller_ send:nil];
 }
 
 TEST_F(ChromeToMobileBubbleControllerTest, SendWithSnapshot) {
   FilePath path("path.mht");
-  EXPECT_CALL(service_, GenerateSnapshot(testing::_)).Times(1);
-  EXPECT_CALL(service_, SendToMobile(testing::_, path, testing::_)).Times(1);
+  EXPECT_CALL(*service_.get(), RequestMobileListUpdate()).Times(1);
+  EXPECT_CALL(*service_.get(), GenerateSnapshot(testing::_)).Times(1);
+  EXPECT_CALL(*service_.get(),
+              SendToMobile(testing::_, path, testing::_)).Times(1);
 
-  service_.AddDevices(1);
+  service_->AddDevices(1);
   CreateBubble();
   ChromeToMobileBubbleNotificationBridge* bridge = [controller_ bridge];
   bridge->SnapshotGenerated(path, 1);
