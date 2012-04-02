@@ -341,7 +341,7 @@
     'valgrind': ['bruening+watch@chromium.org',
                  'glider+watch@chromium.org',
                  'timurrrr+watch@chromium.org'],
-    'base': ['brettw-cc@chromium.org'],
+    'base': ['brettw-cc@chromium.org', 'erikwright@chromium.org'],
     'browser_main': ['brettw-cc@chromium.org'],
     'browser_resources': ['arv@chromium.org'],
     'bubble': ['alicet@chromium.org', 'msw+watch@chromium.org'],
