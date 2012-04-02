@@ -9,14 +9,15 @@
 
 namespace history {
 
-// Android use the millisecond as time unit, the below 2 methods are used
-// convert between millisecond and base::Time.
-inline base::Time MillisecondsToTime(int64 milliseconds) {
+// Android's system time is the milliseconds since January 1, 1970 00:00:00 UTC,
+// the below 2 methods are used convert between base::Time and the milliseconds
+// stored in database.
+inline base::Time FromDatabaseTime(int64 milliseconds) {
   return base::TimeDelta::FromMilliseconds(milliseconds) +
       base::Time::UnixEpoch();
 }
 
-inline int64 ToMilliseconds(const base::Time& time) {
+inline int64 ToDatabaseTime(const base::Time& time) {
   return (time - base::Time::UnixEpoch()).InMilliseconds();
 }
 

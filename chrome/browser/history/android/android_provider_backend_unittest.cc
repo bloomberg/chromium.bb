@@ -145,8 +145,8 @@ class AndroidProviderBackendTest : public testing::Test {
 
     while (statement.Step()) {
       BookmarkCacheRow row;
-      row.create_time_ = MillisecondsToTime(statement.ColumnInt64(0));
-      row.last_visit_time_ = MillisecondsToTime(statement.ColumnInt64(1));
+      row.create_time_ = FromDatabaseTime(statement.ColumnInt64(0));
+      row.last_visit_time_ = FromDatabaseTime(statement.ColumnInt64(1));
       row.url_id_ = statement.ColumnInt64(2);
       row.bookmark_ = statement.ColumnBool(3);
       row.favicon_id_ = statement.ColumnInt64(4);
@@ -245,14 +245,14 @@ TEST_F(AndroidProviderBackendTest, UpdateTables) {
   ASSERT_EQ(2u, bookmark_cache_rows.size());
   std::vector<BookmarkCacheRow>::const_iterator j = bookmark_cache_rows.begin();
   EXPECT_EQ(url_id1, j->url_id_);
-  EXPECT_EQ(ToMilliseconds(last_visited1), ToMilliseconds(j->last_visit_time_));
-  EXPECT_EQ(ToMilliseconds(created1), ToMilliseconds(j->create_time_));
+  EXPECT_EQ(ToDatabaseTime(last_visited1), ToDatabaseTime(j->last_visit_time_));
+  EXPECT_EQ(ToDatabaseTime(created1), ToDatabaseTime(j->create_time_));
   EXPECT_EQ(0, j->favicon_id_);
   EXPECT_TRUE(j->bookmark_);
   j++;
   EXPECT_EQ(url_id2, j->url_id_);
-  EXPECT_EQ(ToMilliseconds(last_visited2), ToMilliseconds(j->last_visit_time_));
-  EXPECT_EQ(ToMilliseconds(created2), ToMilliseconds(j->create_time_));
+  EXPECT_EQ(ToDatabaseTime(last_visited2), ToDatabaseTime(j->last_visit_time_));
+  EXPECT_EQ(ToDatabaseTime(created2), ToDatabaseTime(j->create_time_));
   EXPECT_NE(0, j->favicon_id_);
   EXPECT_FALSE(j->bookmark_);
 
@@ -280,8 +280,8 @@ TEST_F(AndroidProviderBackendTest, UpdateTables) {
   ASSERT_EQ(1u, bookmark_cache_rows.size());
   j = bookmark_cache_rows.begin();
   EXPECT_EQ(url_id1, j->url_id_);
-  EXPECT_EQ(ToMilliseconds(last_visited1), ToMilliseconds(j->last_visit_time_));
-  EXPECT_EQ(ToMilliseconds(created1), ToMilliseconds(j->create_time_));
+  EXPECT_EQ(ToDatabaseTime(last_visited1), ToDatabaseTime(j->last_visit_time_));
+  EXPECT_EQ(ToDatabaseTime(created1), ToDatabaseTime(j->create_time_));
   EXPECT_EQ(0, j->favicon_id_);
   EXPECT_TRUE(j->bookmark_);
 }
@@ -368,9 +368,9 @@ TEST_F(AndroidProviderBackendTest, QueryBookmarks) {
   ASSERT_TRUE(statement->statement()->Step());
   ASSERT_EQ(url1, GURL(statement->statement()->ColumnString(1)));
   EXPECT_EQ(title1, statement->statement()->ColumnString16(2));
-  EXPECT_EQ(ToMilliseconds(created1),
+  EXPECT_EQ(ToDatabaseTime(created1),
             statement->statement()->ColumnInt64(3));
-  EXPECT_EQ(ToMilliseconds(last_visited1),
+  EXPECT_EQ(ToDatabaseTime(last_visited1),
             statement->statement()->ColumnInt64(4));
   EXPECT_EQ(3, statement->statement()->ColumnInt(5));
   EXPECT_EQ(6, statement->favicon_index());
@@ -381,9 +381,9 @@ TEST_F(AndroidProviderBackendTest, QueryBookmarks) {
   ASSERT_TRUE(statement->statement()->Step());
   EXPECT_EQ(title2, statement->statement()->ColumnString16(2));
   ASSERT_EQ(url2, GURL(statement->statement()->ColumnString(1)));
-  EXPECT_EQ(ToMilliseconds(created2),
+  EXPECT_EQ(ToDatabaseTime(created2),
             statement->statement()->ColumnInt64(3));
-  EXPECT_EQ(ToMilliseconds(last_visited2),
+  EXPECT_EQ(ToDatabaseTime(last_visited2),
             statement->statement()->ColumnInt64(4));
   EXPECT_EQ(3, statement->statement()->ColumnInt(5));
   std::vector<unsigned char> favicon2;
@@ -469,9 +469,9 @@ TEST_F(AndroidProviderBackendTest, InsertBookmark) {
   ASSERT_TRUE(statement->statement()->Step());
   ASSERT_EQ(row1.raw_url(), statement->statement()->ColumnString(1));
   EXPECT_EQ(row1.title(), statement->statement()->ColumnString16(2));
-  EXPECT_EQ(ToMilliseconds(row1.created()),
+  EXPECT_EQ(ToDatabaseTime(row1.created()),
             statement->statement()->ColumnInt64(3));
-  EXPECT_EQ(ToMilliseconds(row1.last_visit_time()),
+  EXPECT_EQ(ToDatabaseTime(row1.last_visit_time()),
             statement->statement()->ColumnInt64(4));
   EXPECT_EQ(row1.visit_count(), statement->statement()->ColumnInt(5));
   EXPECT_EQ(6, statement->favicon_index());
@@ -485,9 +485,9 @@ TEST_F(AndroidProviderBackendTest, InsertBookmark) {
   ASSERT_TRUE(statement->statement()->Step());
   EXPECT_EQ(row2.title(), statement->statement()->ColumnString16(2));
   EXPECT_EQ(row2.url(), GURL(statement->statement()->ColumnString(1)));
-  EXPECT_EQ(ToMilliseconds(row2.last_visit_time()),
+  EXPECT_EQ(ToDatabaseTime(row2.last_visit_time()),
             statement->statement()->ColumnInt64(3));
-  EXPECT_EQ(ToMilliseconds(row2.last_visit_time()),
+  EXPECT_EQ(ToDatabaseTime(row2.last_visit_time()),
             statement->statement()->ColumnInt64(4));
   EXPECT_EQ(1, statement->statement()->ColumnInt(5));
   EXPECT_EQ(6, statement->favicon_index());
@@ -571,9 +571,9 @@ TEST_F(AndroidProviderBackendTest, DeleteBookmarks) {
 
   EXPECT_EQ(row2.title(), statement->statement()->ColumnString16(2));
   EXPECT_EQ(row2.url(), GURL(statement->statement()->ColumnString(1)));
-  EXPECT_EQ(ToMilliseconds(row2.last_visit_time()),
+  EXPECT_EQ(ToDatabaseTime(row2.last_visit_time()),
             statement->statement()->ColumnInt64(3));
-  EXPECT_EQ(ToMilliseconds(row2.last_visit_time()),
+  EXPECT_EQ(ToDatabaseTime(row2.last_visit_time()),
             statement->statement()->ColumnInt64(4));
   EXPECT_EQ(1, statement->statement()->ColumnInt(5));
   EXPECT_EQ(6, statement->favicon_index());
@@ -763,8 +763,8 @@ TEST_F(AndroidProviderBackendTest, UpdateURL) {
   ASSERT_EQ(1u, delegate_.modified_details()->changed_urls.size());
   EXPECT_EQ(update_row1.url(),
             delegate_.modified_details()->changed_urls[0].url());
-  EXPECT_EQ(ToMilliseconds(row1.last_visit_time()),
-            ToMilliseconds(
+  EXPECT_EQ(ToDatabaseTime(row1.last_visit_time()),
+            ToDatabaseTime(
                 delegate_.modified_details()->changed_urls[0].last_visit()));
   EXPECT_EQ(row1.title(),
             delegate_.modified_details()->changed_urls[0].title());
@@ -780,8 +780,8 @@ TEST_F(AndroidProviderBackendTest, UpdateURL) {
   URLRow new_row;
   EXPECT_TRUE(history_db_.GetRowForURL(update_row1.url(), &new_row));
   EXPECT_EQ(10, new_row.visit_count());
-  EXPECT_EQ(ToMilliseconds(row1.last_visit_time()),
-            ToMilliseconds(new_row.last_visit()));
+  EXPECT_EQ(ToDatabaseTime(row1.last_visit_time()),
+            ToDatabaseTime(new_row.last_visit()));
   visits.clear();
   EXPECT_TRUE(history_db_.GetVisitsForURL(new_row.id(), &visits));
   EXPECT_EQ(10u, visits.size());
@@ -818,8 +818,8 @@ TEST_F(AndroidProviderBackendTest, UpdateURL) {
   ASSERT_EQ(1u, delegate_.modified_details()->changed_urls.size());
   EXPECT_EQ(update_row2.url(),
             delegate_.modified_details()->changed_urls[0].url());
-  EXPECT_EQ(ToMilliseconds(update_row2.last_visit_time()),
-            ToMilliseconds(
+  EXPECT_EQ(ToDatabaseTime(update_row2.last_visit_time()),
+            ToDatabaseTime(
                 delegate_.modified_details()->changed_urls[0].last_visit()));
   EXPECT_EQ(update_row2.visit_count(),
             delegate_.modified_details()->changed_urls[0].visit_count());
@@ -903,8 +903,8 @@ TEST_F(AndroidProviderBackendTest, UpdateVisitCount) {
   ASSERT_EQ(1u, delegate_.modified_details()->changed_urls.size());
   EXPECT_EQ(row1.url(),
             delegate_.modified_details()->changed_urls[0].url());
-  EXPECT_EQ(ToMilliseconds(row1.last_visit_time()),
-            ToMilliseconds(
+  EXPECT_EQ(ToDatabaseTime(row1.last_visit_time()),
+            ToDatabaseTime(
                 delegate_.modified_details()->changed_urls[0].last_visit()));
   EXPECT_EQ(update_row1.visit_count(),
             delegate_.modified_details()->changed_urls[0].visit_count());
@@ -984,8 +984,8 @@ TEST_F(AndroidProviderBackendTest, UpdateLastVisitTime) {
   ASSERT_EQ(1u, delegate_.modified_details()->changed_urls.size());
   EXPECT_EQ(row1.url(),
             delegate_.modified_details()->changed_urls[0].url());
-  EXPECT_EQ(ToMilliseconds(update_row1.last_visit_time()),
-            ToMilliseconds(
+  EXPECT_EQ(ToDatabaseTime(update_row1.last_visit_time()),
+            ToDatabaseTime(
                 delegate_.modified_details()->changed_urls[0].last_visit()));
   EXPECT_FALSE(delegate_.favicon_details());
 
@@ -1104,8 +1104,8 @@ TEST_F(AndroidProviderBackendTest, UpdateSearchTermTable) {
   SearchTermID id = history_db_.GetSearchTerm(term, &keyword_cache);
   ASSERT_TRUE(id);
   EXPECT_EQ(term, keyword_cache.term);
-  EXPECT_EQ(ToMilliseconds(row1.last_visit_time()),
-            ToMilliseconds(keyword_cache.last_visit_time));
+  EXPECT_EQ(ToDatabaseTime(row1.last_visit_time()),
+            ToDatabaseTime(keyword_cache.last_visit_time));
 
   // Add another row.
   BookmarkRow row2;
@@ -1124,14 +1124,14 @@ TEST_F(AndroidProviderBackendTest, UpdateSearchTermTable) {
   // The id shouldn't changed.
   ASSERT_EQ(id, search_id1);
   EXPECT_EQ(term, keyword_cache.term);
-  EXPECT_EQ(ToMilliseconds(row1.last_visit_time()),
-            ToMilliseconds(keyword_cache.last_visit_time));
+  EXPECT_EQ(ToDatabaseTime(row1.last_visit_time()),
+            ToDatabaseTime(keyword_cache.last_visit_time));
   // Verify the row just inserted.
   SearchTermID id2 = history_db_.GetSearchTerm(term2, &keyword_cache);
   ASSERT_TRUE(id2);
   EXPECT_EQ(term2, keyword_cache.term);
-  EXPECT_EQ(ToMilliseconds(row2.last_visit_time()),
-            ToMilliseconds(keyword_cache.last_visit_time));
+  EXPECT_EQ(ToDatabaseTime(row2.last_visit_time()),
+            ToDatabaseTime(keyword_cache.last_visit_time));
 
   // Add 3rd row and associate it with term.
   BookmarkRow row3;
@@ -1146,8 +1146,8 @@ TEST_F(AndroidProviderBackendTest, UpdateSearchTermTable) {
   ASSERT_TRUE(backend->UpdateSearchTermTable());
   // Verify id not changed and last_visit_time updated.
   ASSERT_EQ(search_id1, history_db_.GetSearchTerm(term, &keyword_cache));
-  EXPECT_EQ(ToMilliseconds(row3.last_visit_time()),
-            ToMilliseconds(keyword_cache.last_visit_time));
+  EXPECT_EQ(ToDatabaseTime(row3.last_visit_time()),
+            ToDatabaseTime(keyword_cache.last_visit_time));
   // The id of term2 wasn't changed.
   EXPECT_EQ(id2, history_db_.GetSearchTerm(term2, NULL));
 
@@ -1189,7 +1189,7 @@ TEST_F(AndroidProviderBackendTest, QuerySearchTerms) {
   ASSERT_TRUE(statement->statement()->Step());
   EXPECT_TRUE(statement->statement()->ColumnInt64(0));
   EXPECT_EQ(term, statement->statement()->ColumnString16(1));
-  EXPECT_EQ(ToMilliseconds(row1.last_visit_time()),
+  EXPECT_EQ(ToDatabaseTime(row1.last_visit_time()),
             statement->statement()->ColumnInt64(2));
   EXPECT_FALSE(statement->statement()->Step());
 }
@@ -1265,7 +1265,7 @@ TEST_F(AndroidProviderBackendTest, UpdateSearchTerms) {
   // The id didn't change.
   EXPECT_EQ(id, statement->statement()->ColumnInt64(0));
   // The search time was updated.
-  EXPECT_EQ(ToMilliseconds(search_row.search_time()),
+  EXPECT_EQ(ToDatabaseTime(search_row.search_time()),
             statement->statement()->ColumnInt64(1));
   // The search term was updated.
   EXPECT_EQ(update_term, statement->statement()->ColumnString16(2));
@@ -1292,7 +1292,7 @@ TEST_F(AndroidProviderBackendTest, UpdateSearchTerms) {
   // The id didn't change.
   EXPECT_EQ(id, statement->statement()->ColumnInt64(0));
   // The search time was updated.
-  EXPECT_EQ(ToMilliseconds(update_time.search_time()),
+  EXPECT_EQ(ToDatabaseTime(update_time.search_time()),
             statement->statement()->ColumnInt64(1));
   // The search term didn't change.
   EXPECT_EQ(update_term, statement->statement()->ColumnString16(2));
@@ -1435,7 +1435,7 @@ TEST_F(AndroidProviderBackendTest, InsertSearchTerm) {
   ASSERT_TRUE(statement.get());
   ASSERT_TRUE(statement->statement()->Step());
   EXPECT_EQ(id, statement->statement()->ColumnInt64(0));
-  EXPECT_EQ(ToMilliseconds(search_row.search_time()),
+  EXPECT_EQ(ToDatabaseTime(search_row.search_time()),
             statement->statement()->ColumnInt64(1));
   EXPECT_EQ(search_row.search_term(),
             statement->statement()->ColumnString16(2));

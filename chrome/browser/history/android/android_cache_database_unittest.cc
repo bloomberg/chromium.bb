@@ -61,8 +61,8 @@ TEST_F(AndroidCacheDatabaseTest, SearchTermsTable) {
   SearchTermRow row1;
   ASSERT_EQ(id1, history_db_.GetSearchTerm(search_term1, &row1));
   EXPECT_EQ(search_term1, row1.term);
-  EXPECT_EQ(ToMilliseconds(search_time1),
-            ToMilliseconds(row1.last_visit_time));
+  EXPECT_EQ(ToDatabaseTime(search_time1),
+            ToDatabaseTime(row1.last_visit_time));
   EXPECT_EQ(id1, row1.id);
 
   // Test UpdateSearchTerm.
@@ -72,8 +72,8 @@ TEST_F(AndroidCacheDatabaseTest, SearchTermsTable) {
   ASSERT_TRUE(history_db_.UpdateSearchTerm(id1, update_row1));
   EXPECT_EQ(id1, history_db_.GetSearchTerm(update_row1.term, &row1));
   EXPECT_EQ(update_row1.term, row1.term);
-  EXPECT_EQ(ToMilliseconds(update_row1.last_visit_time),
-            ToMilliseconds(row1.last_visit_time));
+  EXPECT_EQ(ToDatabaseTime(update_row1.last_visit_time),
+            ToDatabaseTime(row1.last_visit_time));
   EXPECT_EQ(id1, row1.id);
 
   Time search_time2 = Time::Now() - TimeDelta::FromHours(1);
@@ -88,8 +88,8 @@ TEST_F(AndroidCacheDatabaseTest, SearchTermsTable) {
   // The search_term2 should still in the table.
   ASSERT_EQ(id2, history_db_.GetSearchTerm(search_term2, &row1));
   EXPECT_EQ(id2, row1.id);
-  EXPECT_EQ(ToMilliseconds(search_time2),
-            ToMilliseconds(row1.last_visit_time));
+  EXPECT_EQ(ToDatabaseTime(search_time2),
+            ToDatabaseTime(row1.last_visit_time));
   EXPECT_EQ(search_term2, row1.term);
 }
 

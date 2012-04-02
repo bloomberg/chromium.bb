@@ -845,9 +845,9 @@ bool AndroidProviderBackend::SimulateUpdateURL(
     return false;
 
   BookmarkRow new_row;
-  new_row.set_last_visit_time(MillisecondsToTime(
+  new_row.set_last_visit_time(FromDatabaseTime(
       statement->statement()->ColumnInt64(0)));
-  new_row.set_created(MillisecondsToTime(
+  new_row.set_created(FromDatabaseTime(
       statement->statement()->ColumnInt64(1)));
   new_row.set_visit_count(statement->statement()->ColumnInt(2));
   new_row.set_title(statement->statement()->ColumnString16(3));
