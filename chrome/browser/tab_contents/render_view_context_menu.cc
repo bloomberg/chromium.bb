@@ -859,8 +859,13 @@ void RenderViewContextMenu::AppendPageItems() {
 
   menu_model_.AddItemWithStringId(IDC_VIEW_SOURCE,
                                   IDS_CONTENT_CONTEXT_VIEWPAGESOURCE);
-  menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_VIEWPAGEINFO,
-                                  IDS_CONTENT_CONTEXT_VIEWPAGEINFO);
+  // Only add View Page Info if there's a browser.  This is a temporary thing
+  // while View Page Info crashes Chrome Frame; see http://crbug.com/120901.
+  // TODO(grt) Remove this once page info is back for Chrome Frame.
+  if (!external_) {
+    menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_VIEWPAGEINFO,
+                                    IDS_CONTENT_CONTEXT_VIEWPAGEINFO);
+  }
 }
 
 void RenderViewContextMenu::AppendFrameItems() {
@@ -872,8 +877,13 @@ void RenderViewContextMenu::AppendFrameItems() {
   //   IDS_CONTENT_CONTEXT_PRINTFRAME
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_VIEWFRAMESOURCE,
                                   IDS_CONTENT_CONTEXT_VIEWFRAMESOURCE);
-  menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_VIEWFRAMEINFO,
-                                  IDS_CONTENT_CONTEXT_VIEWFRAMEINFO);
+  // Only add View Frame Info if there's a browser.  This is a temporary thing
+  // while View Frame Info crashes Chrome Frame; see http://crbug.com/120901.
+  // TODO(grt) Remove this once frame info is back for Chrome Frame.
+  if (!external_) {
+    menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_VIEWFRAMEINFO,
+                                    IDS_CONTENT_CONTEXT_VIEWFRAMEINFO);
+  }
 }
 
 void RenderViewContextMenu::AppendCopyItem() {
