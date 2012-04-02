@@ -20,6 +20,9 @@
 #include "chrome/browser/ui/cocoa/window_restore_utils.h"
 #endif
 
+using protector::ProtectedPrefsWatcher;
+using protector::ProtectorServiceFactory;
+
 namespace {
 
 // For historical reasons the enum and value registered in the prefs don't line
@@ -177,24 +180,18 @@ SessionStartupPref::Type SessionStartupPref::PrefValueToType(int pref_value) {
 
 // static
 bool SessionStartupPref::DidStartupPrefChange(Profile* profile) {
-  PrefService* prefs = profile->GetPrefs();
-  protector::ProtectedPrefsWatcher* prefs_watcher =
-      protector::ProtectorServiceFactory::GetForProfile(profile)->
-          GetPrefsWatcher();
-  if (!TypeIsManaged(prefs) &&
+  ProtectedPrefsWatcher* prefs_watcher =
+      ProtectorServiceFactory::GetForProfile(profile)->GetPrefsWatcher();
+  if (prefs_watcher->DidPrefChange(prefs::kRestoreOnStartup))
+    return true;
 #if defined(OS_MACOSX)
-      // On Mac OS, default value for |kRestoreOnStartup| depends on system
-      // settings and may be different from one run to another.
-      !prefs->FindPreference(prefs::kRestoreOnStartup)->IsDefaultValue() &&
+  // On Mac OS, default value for |kRestoreOnStartup| depends on system
+  // settings and may be different from one run to another.
+  PrefService* prefs = profile->GetPrefs();
+  if (prefs->FindPreference(prefs::kRestoreOnStartup)->IsDefaultValue())
+    return false;
 #endif
-      prefs_watcher->DidPrefChange(prefs::kRestoreOnStartup)) {
-    return true;
-  }
-  if (!URLsAreManaged(prefs) &&
-      prefs_watcher->DidPrefChange(prefs::kURLsToRestoreOnStartup)) {
-    return true;
-  }
-  return false;
+  return prefs_watcher->DidPrefChange(prefs::kRestoreOnStartup);
 }
 
 // static

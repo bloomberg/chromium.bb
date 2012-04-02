@@ -90,6 +90,8 @@ bool ProtectedPrefsWatcher::DidPrefChange(const std::string& path) const {
   const PrefService::Preference* new_pref =
       profile_->GetPrefs()->FindPreference(path.c_str());
   DCHECK(new_pref);
+  if (new_pref->IsManaged())
+    return false;
   return !backup_value->Equals(new_pref->GetValue());
 }
 
