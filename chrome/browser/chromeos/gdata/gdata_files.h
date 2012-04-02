@@ -36,6 +36,10 @@ typedef base::Callback<void(base::PlatformFileError error,
 // Directory content origin.
 enum ContentOrigin {
   UNINITIALIZED,
+  // Directory content is currently loading from somewhere.  needs to wait.
+  INITIALIZING,
+  // Directory content is initialized, but during refreshing.
+  REFRESHING,
   // Directory content is initialized from disk cache.
   FROM_CACHE,
   // Directory content is initialized from the direct server response.

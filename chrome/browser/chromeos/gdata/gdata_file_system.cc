@@ -343,6 +343,26 @@ void RunGetCacheStateCallbackHelper(
     callback.Run(*error, *cache_state);
 }
 
+// The class to wait for the initial load of root feed and runs the callback
+// after the initialization.
+class InitialLoadObserver : public GDataFileSystemInterface::Observer {
+ public:
+  InitialLoadObserver(GDataFileSystemInterface* file_system,
+                      const base::Closure& callback)
+      : file_system_(file_system), callback_(callback) {}
+
+  virtual void OnInitialLoadFinished() OVERRIDE {
+    if (!callback_.is_null())
+      base::MessageLoopProxy::current()->PostTask(FROM_HERE, callback_);
+    file_system_->RemoveObserver(this);
+    base::MessageLoopProxy::current()->DeleteSoon(FROM_HERE, this);
+  }
+
+ private:
+  GDataFileSystemInterface* file_system_;
+  base::Closure callback_;
+};
+
 }  // namespace
 
 // FindFileDelegate class implementation.
@@ -573,9 +593,21 @@ void GDataFileSystem::FindFileByPathAsync(
     const FilePath& search_file_path,
     const FindFileCallback& callback) {
   base::AutoLock lock(lock_);
-  if (root_->origin() == UNINITIALIZED) {
+  if (root_->origin() == INITIALIZING) {
+    // If root feed is not initialized but the initilization process has
+    // already started, add an observer to execute the remaining task after
+    // the end of the initialization.
+    AddObserver(new InitialLoadObserver(
+        this,
+        base::Bind(&GDataFileSystem::FindFileByPathOnCallingThread,
+                   GetWeakPtrForCurrentThread(),
+                   search_file_path,
+                   callback)));
+    return;
+  } else if (root_->origin() == UNINITIALIZED) {
     // Load root feed from this disk cache. Upon completion, kick off server
     // fetching.
+    root_->set_origin(INITIALIZING);
     LoadRootFeedFromCache(FEED_CHUNK_INITIAL,
                           search_file_path,
                           true,     // should_load_from_server
@@ -584,6 +616,7 @@ void GDataFileSystem::FindFileByPathAsync(
   } else if (root_->NeedsRefresh()) {
     // If content is stale or from disk from cache, fetch content from
     // the server.
+    root_->set_origin(REFRESHING);
     LoadFeedFromServer(search_file_path, callback);
     return;
   }
@@ -1778,7 +1811,7 @@ void GDataFileSystem::OnGetDocuments(
   bool initial_read = false;
   {
     base::AutoLock lock(lock_);
-    initial_read = root_->origin() == UNINITIALIZED;
+    initial_read = root_->origin() == INITIALIZING;
   }
 
   bool has_more_data = current_feed->GetNextFeedURL(&next_feed_url) &&
@@ -1912,6 +1945,8 @@ void GDataFileSystem::OnLoadRootFeed(
   // If the first chunk was ok, get the rest of the feed from disk cache if
   // we haven't fetched content from the server in the meantime.
   if (*error == base::PLATFORM_FILE_OK) {
+    base::AutoLock lock(lock_);
+    root_->set_origin(REFRESHING);
     LoadRootFeedFromCache(FEED_CHUNK_REST,
                           search_file_path,
                           false,     // should_load_from_server
@@ -1920,6 +1955,12 @@ void GDataFileSystem::OnLoadRootFeed(
 
   if (!should_load_from_server)
     return;
+
+  {
+    base::AutoLock lock(lock_);
+    if (root_->origin() != INITIALIZING)
+      root_->set_origin(REFRESHING);
+  }
 
   // Kick of the retreival of the feed from server. If we have previously
   // |reported| to the original callback, then we just need to refresh the
@@ -2273,7 +2314,8 @@ base::PlatformFileError GDataFileSystem::UpdateDirectoryWithDocumentFeed(
   base::AutoLock lock(lock_);
   // Don't send directory content change notification while performing
   // the initial content retreival.
-  bool should_nofify = root_->origin() != UNINITIALIZED;
+  bool should_notify_directory_changed = root_->origin() != INITIALIZING;
+  bool should_notify_initial_load = root_->origin() == INITIALIZING;
 
   root_->set_origin(origin);
   root_->set_refresh_time(base::Time::Now());
@@ -2374,8 +2416,10 @@ base::PlatformFileError GDataFileSystem::UpdateDirectoryWithDocumentFeed(
     dir->AddFile(file.release());
   }
 
-  if (should_nofify)
+  if (should_notify_directory_changed)
     NotifyDirectoryChanged(root_->GetFilePath());
+  if (should_notify_initial_load)
+    NotifyInitialLoadFinished();
 
   return base::PLATFORM_FILE_OK;
 }
@@ -2445,6 +2489,20 @@ void GDataFileSystem::NotifyDirectoryChanged(const FilePath& directory_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // Notify the observers that content of |directory_path| has been changed.
   FOR_EACH_OBSERVER(Observer, observers_, OnDirectoryChanged(directory_path));
+}
+
+void GDataFileSystem::NotifyInitialLoadFinished() {
+  DVLOG(1) << "Initial load finished";
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    BrowserThread::PostTask(
+        BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(&GDataFileSystem::NotifyInitialLoadFinished, ui_weak_ptr_));
+    return;
+  }
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  // Notify the observers that root directory has been initialized.
+  FOR_EACH_OBSERVER(Observer, observers_, OnInitialLoadFinished());
 }
 
 base::PlatformFileError GDataFileSystem::AddNewDirectory(

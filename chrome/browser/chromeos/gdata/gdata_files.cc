@@ -249,6 +249,10 @@ void GDataDirectory::RemoveChildren() {
 }
 
 bool GDataDirectory::NeedsRefresh() const {
+  // Already refreshing by someone else.
+  if (origin_ == REFRESHING)
+    return false;
+
   // Refresh is needed for content read from disk cache or stale content.
   if (origin_ == FROM_CACHE)
     return true;
