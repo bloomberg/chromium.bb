@@ -287,7 +287,7 @@ bool GLHelper::CopyTextureToImpl::CopyTextureTo(WebKit::WebGLId src_texture,
                                                 const gfx::Size& src_size,
                                                 const gfx::Size& dst_size,
                                                 unsigned char* out) {
-  ScopedFramebuffer dst_framebuffer(context_, context_->createTexture());
+  ScopedFramebuffer dst_framebuffer(context_, context_->createFramebuffer());
   ScopedTexture dst_texture(context_, context_->createTexture());
   {
     ScopedFramebufferBinder<GL_DRAW_FRAMEBUFFER> framebuffer_binder(
