@@ -228,3 +228,13 @@ remoting.ClientPluginV1.prototype.getPerfStats = function() {
 remoting.ClientPluginV1.prototype.sendClipboardItem = function(mimeType, item) {
   return;
 };
+
+/**
+ * This dummy method exists only so that this class implements ClientPlugin.
+ *
+ * @param {number} usb_keycode The USB-style code of the key to inject.
+ * @param {boolean} pressed True to inject a key press, False for a release.
+ */
+remoting.ClientPluginV1.prototype.injectKey = function(usb_keycode, pressed) {
+  return;
+};
