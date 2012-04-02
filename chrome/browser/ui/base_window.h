@@ -12,6 +12,8 @@ namespace gfx {
 class Rect;
 }
 
+class SkRegion;
+
 // This API needs to be implemented by any window that might be accessed
 // through chrome.windows or chrome.tabs (e.g. browser windows and panels).
 
@@ -61,6 +63,13 @@ class BaseWindow {
 
   // Sets the window's size and position to the specified values.
   virtual void SetBounds(const gfx::Rect& bounds) = 0;
+
+  // The specified region will act like the window's caption area, meaning that
+  // the user will be able to move the window by dragging in that area. (On
+  // Windows, they will also be able to maximize the window by double-clicking
+  // it, and show the system menu by right-clicking it.)
+  // Currently only implemented by ShellWindow.
+  virtual void SetDraggableRegion(SkRegion* region) = 0;
 
   // Flashes the taskbar item associated with this window.
   // Set |flash| to true to initiate flashing, false to stop flashing.

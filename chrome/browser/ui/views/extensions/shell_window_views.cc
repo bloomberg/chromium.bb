@@ -197,6 +197,11 @@ void ShellWindowViews::SetBounds(const gfx::Rect& bounds) {
   GetWidget()->SetBounds(bounds);
 }
 
+void ShellWindowViews::SetDraggableRegion(SkRegion* region) {
+  caption_region_.Set(region);
+  OnViewWasResized();
+}
+
 void ShellWindowViews::FlashFrame(bool flash) {
   window_->FlashFrame(flash);
 }
@@ -270,8 +275,10 @@ void ShellWindowViews::OnViewWasResized() {
   SetWindowRgn(host_->view()->native_view(), path.CreateNativeRegion(), 1);
 
   SkRegion* rgn = new SkRegion;
-  rgn->op(0, 0, width, 20, SkRegion::kUnion_Op);
+  if (caption_region_.Get())
+    rgn->op(*caption_region_.Get(), SkRegion::kUnion_Op);
   if (!GetWidget()->IsMaximized()) {
+    rgn->op(0, 0, width, kResizeBorderWidth, SkRegion::kUnion_Op);
     rgn->op(0, 0, kResizeBorderWidth, height, SkRegion::kUnion_Op);
     rgn->op(width - kResizeBorderWidth, 0, width, height, SkRegion::kUnion_Op);
     rgn->op(0, height - kResizeBorderWidth, width, height, SkRegion::kUnion_Op);

@@ -137,6 +137,10 @@ void ShellWindowGtk::SetBounds(const gfx::Rect& bounds) {
   gtk_window_resize(window_, bounds.width(), bounds.height());
 }
 
+void ShellWindowGtk::SetDraggableRegion(SkRegion* region) {
+  // TODO: implement
+}
+
 void ShellWindowGtk::FlashFrame(bool flash) {
   gtk_window_set_urgency_hint(window_, flash);
 }

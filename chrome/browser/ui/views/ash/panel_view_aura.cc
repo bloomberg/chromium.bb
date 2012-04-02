@@ -408,6 +408,10 @@ void PanelViewAura::SetBounds(const gfx::Rect& bounds) {
   GetWidget()->SetBounds(bounds);
 }
 
+void PanelViewAura::SetDraggableRegion(SkRegion* region) {
+  NOTIMPLEMENTED();
+}
+
 void PanelViewAura::FlashFrame(bool flash) {
   // TODO(stevenjb): Implement
   NOTIMPLEMENTED();

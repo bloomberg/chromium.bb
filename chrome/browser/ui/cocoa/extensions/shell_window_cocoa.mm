@@ -136,6 +136,10 @@ void ShellWindowCocoa::SetBounds(const gfx::Rect& bounds) {
   [window() setFrame:cocoa_bounds display:YES];
 }
 
+void ShellWindowCocoa::SetDraggableRegion(SkRegion* region) {
+  // TODO: implement
+}
+
 void ShellWindowCocoa::FlashFrame(bool flash) {
   if (flash) {
     attention_request_id_ = [NSApp requestUserAttention:NSInformationalRequest];

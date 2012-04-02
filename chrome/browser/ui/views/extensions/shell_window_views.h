@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/browser/ui/views/extensions/extension_view.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/scoped_sk_region.h"
 #include "ui/views/widget/widget_delegate.h"
 
 class ExtensionHost;
@@ -34,6 +35,7 @@ class ShellWindowViews : public ShellWindow,
   virtual void Minimize() OVERRIDE;
   virtual void Restore() OVERRIDE;
   virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE;
+  virtual void SetDraggableRegion(SkRegion* region) OVERRIDE;
   virtual void FlashFrame(bool flash) OVERRIDE;
   virtual bool IsAlwaysOnTop() const OVERRIDE;
 
@@ -55,6 +57,8 @@ class ShellWindowViews : public ShellWindow,
   virtual ~ShellWindowViews();
 
   views::Widget* window_;
+
+  gfx::ScopedSkRegion caption_region_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellWindowViews);
 };

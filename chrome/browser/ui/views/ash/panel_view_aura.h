@@ -88,6 +88,7 @@ class PanelViewAura : public views::NativeViewHost,
   virtual void Minimize() OVERRIDE;
   virtual void Restore() OVERRIDE;
   virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE;
+  virtual void SetDraggableRegion(SkRegion* region) OVERRIDE;
   virtual void FlashFrame(bool flash) OVERRIDE;
   virtual bool IsAlwaysOnTop() const OVERRIDE;
 
