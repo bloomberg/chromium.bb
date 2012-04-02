@@ -1463,15 +1463,17 @@ pre_base_env.AddMethod(ProgramNameForNmf)
 
 
 def GenerateSimpleManifest(env, dest_file, exe_name):
-  static_manifest = GenerateSimpleManifestStaticLink(
-      env, '%s.static' % dest_file, exe_name)
   if env.Bit('pnacl_generate_pexe'):
+    static_manifest = GenerateSimpleManifestStaticLink(
+        env, '%s.static' % dest_file, exe_name)
     return GenerateManifestPnacl(env, dest_file, static_manifest,
                                  '${STAGING_DIR}/%s.pexe' %
                                  env.ProgramNameForNmf(exe_name))
   elif env.Bit('nacl_static_link'):
-    return static_manifest
+    return GenerateSimpleManifestStaticLink(env, dest_file, exe_name)
   else:
+    static_manifest = GenerateSimpleManifestStaticLink(
+        env, '%s.static' % dest_file, exe_name)
     return GenerateManifestDynamicLink(
         env, dest_file, '%s.tmp_lib_list' % dest_file, static_manifest,
         '${STAGING_DIR}/%s.nexe' % env.ProgramNameForNmf(exe_name))
@@ -1750,7 +1752,7 @@ def RemovePrefix(string, prefix):
   return string[len(prefix):]
 
 
-def PyAutoTester(env, target, test, files=[], log_verbosity=2,
+def PyAutoTester(env, target, test, files=[], nmf_names=[], log_verbosity=2,
                  extra_chrome_flags=[], args=[]):
   if 'TRUSTED_ENV' not in env:
     return []
@@ -1761,6 +1763,9 @@ def PyAutoTester(env, target, test, files=[], log_verbosity=2,
   files_subdir = '${STAGING_DIR}/%s.files' % target
   for dep_file in files:
     extra_deps.append(env.Replicate(files_subdir, dep_file))
+  for nmf_name in nmf_names:
+    dest_nmf = '%s/%s.nmf' % (files_subdir, nmf_name)
+    extra_deps.append(GenerateSimpleManifest(env, dest_nmf, nmf_name))
 
   if env.Bit('host_mac'):
     # On Mac, remove 'Chromium.app/Contents/MacOS/Chromium' from the path.
