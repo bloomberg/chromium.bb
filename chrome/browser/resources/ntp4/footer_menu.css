@@ -45,6 +45,11 @@
   z-index: 10;
 }
 
+.footer-menu,
+.footer-menu-context-menu {
+  min-width: 150px;
+}
+
 /* TODO(dubroy): Unify this with tile page scrollbar. */
 .footer-menu::-webkit-scrollbar-button {
   display: none;
@@ -105,6 +110,18 @@
   margin-top: 4px;
 }
 
+/* Used to add additional details to a section header */
+.footer-menu section h3 .details {
+  color: rgb(151, 156, 160);
+  font-style: italic;
+  font-weight: normal;
+}
+
+.footer-menu section h3 .details:before {
+  content: '\2013';  /* En-dash character. */
+  margin: 0 0.5em;
+}
+
 html[dir='rtl'] .footer-menu-item {
   background: no-repeat 100% 50%;
 }
@@ -127,4 +144,15 @@ html[dir='rtl'] .footer-menu-item {
   display: inline-block;
   height: 9px;
   width: 9px;
+}
+
+.footer-menu-context-menu {
+  /* Needs to be above .footer-menu. */
+  z-index: 11;
+}
+
+.footer-menu hr {
+  background-color: rgb(217, 217, 217);
+  border: 0;
+  height: 1px;
 }

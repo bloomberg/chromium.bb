@@ -8,6 +8,7 @@
 
 #include <vector>
 
+#include "base/time.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sync/glue/session_model_associator.h"
 #include "content/public/browser/notification_observer.h"
@@ -40,6 +41,9 @@ class ForeignSessionHandler : public content::WebUIMessageHandler,
   // Returns true if tab sync is enabled for this profile, otherwise false.
   bool IsTabSyncEnabled();
 
+  // Returns a string used to show the user when a session was last modified.
+  string16 FormatSessionTime(const base::Time& time);
+
   // Determines which session is to be opened, and then calls
   // OpenForeignSession, to begin the process of opening a new browser window.
   // This is a javascript callback handler.
@@ -49,6 +53,12 @@ class ForeignSessionHandler : public content::WebUIMessageHandler,
   // This is a javascript callback handler, and it is also called when the sync
   // model has changed and the new tab page needs to reflect the changes.
   void HandleGetForeignSessions(const ListValue* args);
+
+  // Delete a foreign session. This will remove it from the list of foreign
+  // sessions on all devices. It will reappear if the session is re-activated
+  // on the original device.
+  // This is a javascript callback handler.
+  void HandleDeleteForeignSession(const ListValue* args);
 
   // Helper methods to create JSON compatible objects from Session objects.
   bool SessionTabToValue(const SessionTab& tab, DictionaryValue* dictionary);

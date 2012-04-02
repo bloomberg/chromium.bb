@@ -12,7 +12,6 @@
 #include "base/string16.h"
 #include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
-#include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/defaults.h"
@@ -363,6 +362,8 @@ void NTPResourceCache::CreateNewTabHTML() {
   localized_strings.SetBoolean("isSuggestionsPageEnabled",
       NewTabUI::IsSuggestionsPageEnabled());
   localized_strings.SetBoolean("showApps", NewTabUI::ShouldShowApps());
+  localized_strings.SetString("hideSessionMenuItemText",
+      l10n_util::GetStringUTF16(IDS_POLICY_HIDE));
 
 #if defined(OS_CHROMEOS)
   localized_strings.SetString("expandMenu",

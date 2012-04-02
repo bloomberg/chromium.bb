@@ -9,6 +9,7 @@
 #include <vector>
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/i18n/time_formatting.h"
 #include "base/memory/scoped_vector.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
@@ -20,6 +21,7 @@
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/time_format.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
@@ -53,6 +55,9 @@ void ForeignSessionHandler::RegisterMessages() {
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("openForeignSession",
       base::Bind(&ForeignSessionHandler::HandleOpenForeignSession,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("deleteForeignSession",
+      base::Bind(&ForeignSessionHandler::HandleDeleteForeignSession,
                  base::Unretained(this)));
 }
 
@@ -104,6 +109,11 @@ bool ForeignSessionHandler::IsTabSyncEnabled() {
   return service && service->GetSessionModelAssociator();
 }
 
+string16 ForeignSessionHandler::FormatSessionTime(const base::Time& time) {
+  // Return a time like "1 hour ago", "2 days ago", etc.
+  return TimeFormat::TimeElapsed(base::Time::Now() - time);
+}
+
 void ForeignSessionHandler::HandleGetForeignSessions(const ListValue* args) {
   SessionModelAssociator* associator = GetModelAssociator();
   std::vector<const SyncedSession*> sessions;
@@ -119,6 +129,8 @@ void ForeignSessionHandler::HandleGetForeignSessions(const ListValue* args) {
       scoped_ptr<DictionaryValue> session_data(new DictionaryValue());
       session_data->SetString("tag", session->session_tag);
       session_data->SetString("name", session->session_name);
+      session_data->SetString("modifiedTime",
+                              FormatSessionTime(session->modified_time));
       scoped_ptr<ListValue> window_list(new ListValue());
       for (SyncedSession::SyncedWindowMap::const_iterator it =
            session->windows.begin(); it != session->windows.end(); ++it) {
@@ -138,8 +150,7 @@ void ForeignSessionHandler::HandleGetForeignSessions(const ListValue* args) {
                                    tab_sync_enabled);
 }
 
-void ForeignSessionHandler::HandleOpenForeignSession(
-    const ListValue* args) {
+void ForeignSessionHandler::HandleOpenForeignSession(const ListValue* args) {
   size_t num_args = args->GetSize();
   // Expect either 2 or 8 args. For restoring an entire window, only
   // two arguments are required -- the session tag and the window id.
@@ -152,7 +163,7 @@ void ForeignSessionHandler::HandleOpenForeignSession(
     return;
   }
 
-  // Extract the machine tag (always provided).
+  // Extract the session tag (always provided).
   std::string session_string_value;
   if (!args->GetString(0, &session_string_value)) {
     LOG(ERROR) << "Failed to extract session tag.";
@@ -207,6 +218,20 @@ void ForeignSessionHandler::HandleOpenForeignSession(
         iter_begin + 1);
     SessionRestore::RestoreForeignSessionWindows(profile, iter_begin, iter_end);
   }
+}
+
+void ForeignSessionHandler::HandleDeleteForeignSession(const ListValue* args) {
+  if (args->GetSize() != 1U) {
+    LOG(ERROR) << "Wrong number of args to deleteForeignSession";
+    return;
+  }
+
+  // Get the session tag argument (required).
+  std::string session_tag = UTF16ToUTF8(ExtractStringValue(args));
+
+  SessionModelAssociator* associator = GetModelAssociator();
+  if (associator)
+    associator->DeleteForeignSession(session_tag);
 }
 
 bool ForeignSessionHandler::SessionTabToValue(
