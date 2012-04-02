@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,7 +24,7 @@ static bool HandleViewSource(GURL* url,
     static const char* const allowed_sub_schemes[] = {
       chrome::kHttpScheme, chrome::kHttpsScheme, chrome::kFtpScheme,
       chrome::kChromeDevToolsScheme, chrome::kChromeUIScheme,
-      chrome::kFileScheme
+      chrome::kFileScheme, chrome::kFileSystemScheme
     };
 
     bool is_sub_scheme_allowed = false;

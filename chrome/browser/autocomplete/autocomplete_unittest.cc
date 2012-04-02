@@ -495,6 +495,12 @@ TEST_F(AutocompleteTest, InputType) {
     { ASCIIToUTF16("[2001:dB8::1]"), AutocompleteInput::URL },
     { ASCIIToUTF16("192.168.0.256"), AutocompleteInput::QUERY },
     { ASCIIToUTF16("[foo.com]"), AutocompleteInput::QUERY },
+    { ASCIIToUTF16("filesystem:http://a.com/t/bar"), AutocompleteInput::URL },
+    { ASCIIToUTF16("filesystem:http:foo"), AutocompleteInput::URL },
+    { ASCIIToUTF16("filesystem:file://"), AutocompleteInput::URL },
+    { ASCIIToUTF16("filesystem:http"), AutocompleteInput::URL },
+    { ASCIIToUTF16("filesystem:"), AutocompleteInput::URL },
+    { ASCIIToUTF16("ftp:"), AutocompleteInput::URL },
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(input_cases); ++i) {

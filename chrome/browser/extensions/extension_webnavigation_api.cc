@@ -49,6 +49,7 @@ const char* kValidSchemes[] = {
   chrome::kFtpScheme,
   chrome::kJavaScriptScheme,
   chrome::kDataScheme,
+  chrome::kFileSystemScheme,
 };
 
 // Returns the frame ID as it will be passed to the extension:
