@@ -175,11 +175,11 @@ class MsvsSettings(object):
         self.msvs_configuration_attributes[config],
         path, default, prefix, append, map)
 
-  def GetSystemIncludes(self, config):
-    """Returns the extra set of include paths that are used for the Windows
-    SDK and similar."""
-    return [self.ConvertVSMacros(p)
-            for p in self.msvs_system_include_dirs[config]]
+  def AdjustIncludeDirs(self, include_dirs, config):
+    """Updates include_dirs to expand VS specific paths, and adds the system
+    include dirs used for platform SDK and similar."""
+    includes = include_dirs + self.msvs_system_include_dirs[config]
+    return [self.ConvertVSMacros(p) for p in includes]
 
   def GetComputedDefines(self, config):
     """Returns the set of defines that are injected to the defines list based

@@ -594,7 +594,6 @@ class NinjaWriter:
       self.ninja.variable('ld', '$ld_target')
 
     extra_defines = []
-    extra_includes = []
     if self.flavor == 'mac':
       cflags = self.xcode_settings.GetCflags(config_name)
       cflags_c = self.xcode_settings.GetCflagsC(config_name)
@@ -608,7 +607,6 @@ class NinjaWriter:
       cflags_c = self.msvs_settings.GetCflagsC(config_name)
       cflags_cc = self.msvs_settings.GetCflagsCC(config_name)
       extra_defines = self.msvs_settings.GetComputedDefines(config_name)
-      extra_includes = self.msvs_settings.GetSystemIncludes(config_name)
     else:
       cflags = config.get('cflags', [])
       cflags_c = config.get('cflags_c', [])
@@ -618,7 +616,10 @@ class NinjaWriter:
     self.WriteVariableList('defines',
         [QuoteShellArgument(ninja_syntax.escape('-D' + d), self.flavor)
          for d in defines])
-    include_dirs = config.get('include_dirs', []) + extra_includes
+    include_dirs = config.get('include_dirs', [])
+    if self.flavor == 'win':
+      include_dirs = self.msvs_settings.AdjustIncludeDirs(include_dirs,
+                                                          config_name)
     self.WriteVariableList('includes',
         [QuoteShellArgument('-I' + self.GypPathToNinja(i), self.flavor)
          for i in include_dirs])
