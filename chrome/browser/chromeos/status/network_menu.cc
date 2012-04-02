@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/choose_mobile_network_dialog.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/enrollment_dialog_view.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/mobile_config.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
 #include "chrome/browser/chromeos/sim_dialog_delegate.h"
@@ -1041,6 +1042,9 @@ void NetworkMenu::RunMenu(views::View* source) {
 }
 
 void NetworkMenu::ShowTabbedNetworkSettings(const Network* network) const {
+  if (!UserManager::Get()->IsUserLoggedIn())
+    return;
+
   DCHECK(network);
   Browser* browser = Browser::GetOrCreateTabbedBrowser(
       ProfileManager::GetDefaultProfileOrOffTheRecord());
