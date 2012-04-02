@@ -174,15 +174,15 @@ GlobalMenuBar::GlobalMenuBar(Browser* browser)
         browser_->command_updater()->IsCommandEnabled(it->first));
 
     // Set the accelerator for each menu item.
-    const ui::AcceleratorGtk* accelerator_gtk =
-        AcceleratorsGtk::GetInstance()->GetPrimaryAcceleratorForCommand(
-            it->first);
-    if (accelerator_gtk) {
+    AcceleratorsGtk* accelerators = AcceleratorsGtk::GetInstance();
+    const ui::AcceleratorGtk* accelerator =
+        accelerators->GetPrimaryAcceleratorForCommand(it->first);
+    if (accelerator) {
       gtk_widget_add_accelerator(it->second,
                                  "activate",
                                  dummy_accel_group_,
-                                 accelerator_gtk->GetGdkKeyCode(),
-                                 accelerator_gtk->gdk_modifier_type(),
+                                 accelerator->GetGdkKeyCode(),
+                                 accelerator->gdk_modifier_type(),
                                  GTK_ACCEL_VISIBLE);
     }
 

@@ -4,8 +4,9 @@
 
 #include "chrome/browser/ui/gtk/browser_actions_toolbar_gtk.h"
 
-#include <algorithm>
 #include <gtk/gtk.h>
+
+#include <algorithm>
 #include <vector>
 
 #include "base/bind.h"
@@ -31,8 +32,8 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_action.h"
+#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"

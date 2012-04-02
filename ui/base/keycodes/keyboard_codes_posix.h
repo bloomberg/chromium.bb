@@ -34,7 +34,7 @@
 
 namespace ui {
 
-typedef enum {
+enum KeyboardCode {
   VKEY_BACK = 0x08,
   VKEY_TAB = 0x09,
   VKEY_BACKTAB = 0x0A,
@@ -211,7 +211,7 @@ typedef enum {
   // unassigned.
   VKEY_BRIGHTNESS_DOWN = 0xD8,
   VKEY_BRIGHTNESS_UP = 0xD9
-} KeyboardCode;
+};
 
 }  // namespace ui
 

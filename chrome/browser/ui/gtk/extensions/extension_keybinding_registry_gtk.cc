@@ -8,6 +8,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension.h"
+#include "ui/base/keycodes/keyboard_code_conversion_gtk.h"
 
 ExtensionKeybindingRegistryGtk::ExtensionKeybindingRegistryGtk(
     Profile* profile, gfx::NativeWindow window)
