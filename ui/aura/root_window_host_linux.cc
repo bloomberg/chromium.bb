@@ -319,6 +319,8 @@ RootWindowHostLinux::RootWindowHostLinux(const gfx::Rect& bounds)
                                        nodata, 8, 8);
   invisible_cursor_ = XCreatePixmapCursor(xdisplay_, blank, blank,
                                           &black, &black, 0, 0);
+  XFreePixmap(xdisplay_, blank);
+
   if (RootWindow::hide_host_cursor())
     XDefineCursor(xdisplay_, x_root_window_, invisible_cursor_);
 
