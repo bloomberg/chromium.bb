@@ -93,10 +93,10 @@ remoting.ClientPlugin.prototype.releaseAllKeys = function() {};
 /**
  * Send a key event to the host.
  *
- * @param {number} usb_keycode The USB-style code of the key to inject.
+ * @param {number} usbKeycode The USB-style code of the key to inject.
  * @param {boolean} pressed True to inject a key press, False for a release.
  */
-remoting.ClientPlugin.prototype.injectKey = function(usb_keycode, pressed) {};
+remoting.ClientPlugin.prototype.injectKey = function(usbKeycode, pressed) {};
 
 /**
  * Returns an associative array with a set of stats for this connection.

@@ -269,14 +269,14 @@ remoting.ClientPluginAsync.prototype.releaseAllKeys = function() {
 /**
  * Send a key event to the host.
  *
- * @param {number} usb_keycode The USB-style code of the key to inject.
+ * @param {number} usbKeycode The USB-style code of the key to inject.
  * @param {boolean} pressed True to inject a key press, False for a release.
  */
 remoting.ClientPluginAsync.prototype.injectKey =
-    function(usb_keycode, pressed) {
+    function(usbKeycode, pressed) {
   this.plugin.postMessage(JSON.stringify(
       { method: 'injectKeyEvent', data: {
-          'usb_keycode': usb_keycode,
+          'usb_keycode': usbKeycode,
           'pressed': pressed}
       }));
 };
