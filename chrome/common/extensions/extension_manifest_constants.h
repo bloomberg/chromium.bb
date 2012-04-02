@@ -103,6 +103,7 @@ namespace extension_manifest_keys {
   extern const char kShiftKey[];
   extern const char kShortcutKey[];
   extern const char kSignature[];
+  extern const char kSuggestedKey[];
   extern const char kTheme[];
   extern const char kThemeColors[];
   extern const char kThemeDisplayProperties[];
@@ -137,6 +138,11 @@ namespace extension_manifest_values {
   extern const char kIntentDispositionWindow[];
   extern const char kIntentDispositionInline[];
   extern const char kIsolatedStorage[];
+  extern const char kKeybindingPlatformChromeOs[];
+  extern const char kKeybindingPlatformDefault[];
+  extern const char kKeybindingPlatformLinux[];
+  extern const char kKeybindingPlatformMac[];
+  extern const char kKeybindingPlatformWin[];
   extern const char kLaunchContainerPanel[];
   extern const char kLaunchContainerShell[];
   extern const char kLaunchContainerTab[];
@@ -226,6 +232,8 @@ namespace extension_manifest_errors {
   extern const char kInvalidKeyBinding[];
   extern const char kInvalidKeyBindingDescription[];
   extern const char kInvalidKeyBindingDictionary[];
+  extern const char kInvalidKeyBindingMissingPlatform[];
+  extern const char kInvalidKeyBindingUnknownPlatform[];
   extern const char kInvalidLaunchContainer[];
   extern const char kInvalidLaunchContainerForNonPlatform[];
   extern const char kInvalidLaunchContainerForPlatform[];

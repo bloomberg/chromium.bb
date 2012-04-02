@@ -95,6 +95,7 @@ const char kRunAt[] = "run_at";
 const char kShiftKey[] = "shiftKey";
 const char kShortcutKey[] = "shortcutKey";
 const char kSignature[] = "signature";
+const char kSuggestedKey[] = "suggested_key";
 const char kTheme[] = "theme";
 const char kThemeColors[] = "colors";
 const char kThemeDisplayProperties[] = "properties";
@@ -122,16 +123,21 @@ const char kWebURLs[] = "app.urls";
 }  // namespace extension_manifest_keys
 
 namespace extension_manifest_values {
-const char kBrowserActionKeybindingEvent[] = "browserAction";
+const char kBrowserActionKeybindingEvent[] = "_execute_browser_action";
 const char kIncognitoSplit[] = "split";
 const char kIncognitoSpanning[] = "spanning";
 const char kIntentDispositionWindow[] = "window";
 const char kIntentDispositionInline[] = "inline";
 const char kIsolatedStorage[] = "storage";
+const char kKeybindingPlatformChromeOs[] = "chromeos";
+const char kKeybindingPlatformDefault[] = "default";
+const char kKeybindingPlatformLinux[] = "linux";
+const char kKeybindingPlatformMac[] = "mac";
+const char kKeybindingPlatformWin[] = "windows";
 const char kRunAtDocumentStart[] = "document_start";
 const char kRunAtDocumentEnd[] = "document_end";
 const char kRunAtDocumentIdle[] = "document_idle";
-const char kPageActionKeybindingEvent[] = "pageAction";
+const char kPageActionKeybindingEvent[] = "_execute_page_action";
 const char kPageActionTypeTab[] = "tab";
 const char kPageActionTypePermanent[] = "permanent";
 const char kLaunchContainerPanel[] = "panel";
@@ -292,11 +298,17 @@ const char kInvalidJsList[] =
 const char kInvalidKey[] =
     "Value 'key' is missing or invalid.";
 const char kInvalidKeyBinding[] =
-    "Invalid value for 'commands[*].key':";
+     "Invalid value for 'commands[*].*': *.";
 const char kInvalidKeyBindingDescription[] =
     "Invalid value for 'commands[*].description'.";
 const char kInvalidKeyBindingDictionary[] =
     "Contents of 'commands[*]' invalid.";
+const char kInvalidKeyBindingMissingPlatform[] =
+    "Could not find key specification for 'command[*].*': Either specify a key "
+    "for '*', or specify a default key.";
+const char kInvalidKeyBindingUnknownPlatform[] =
+    "Unknown platform for 'command[*]': *. Valid values are: 'windows', 'mac'"
+    " 'chromeos', 'linux' and 'default'.";
 const char kInvalidLaunchContainer[] =
     "Invalid value for 'app.launch.container'.";
 const char kInvalidLaunchContainerForNonPlatform[] =

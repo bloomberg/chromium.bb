@@ -28,16 +28,14 @@ void ExtensionKeybindingRegistryViews::AddExtensionKeybinding(
     const Extension* extension) {
   // Add all the keybindings (except pageAction and browserAction, which are
   // handled elsewhere).
-  const std::vector<Extension::ExtensionKeybinding> commands =
-      extension->keybindings();
-  for (size_t i = 0; i < commands.size(); ++i) {
-    if (ShouldIgnoreCommand(commands[i].command_name()))
-      continue;
-
-    event_targets_[commands[i].accelerator()] =
-        std::make_pair(extension->id(), commands[i].command_name());
+  const Extension::CommandMap& commands = extension->named_commands();
+  Extension::CommandMap::const_iterator iter = commands.begin();
+  for (; iter != commands.end(); ++iter) {
+    event_targets_[iter->second.accelerator()] =
+        std::make_pair(extension->id(), iter->second.command_name());
     focus_manager_->RegisterAccelerator(
-        commands[i].accelerator(), ui::AcceleratorManager::kHighPriority, this);
+        iter->second.accelerator(),
+        ui::AcceleratorManager::kHighPriority, this);
   }
 }
 

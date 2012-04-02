@@ -13,8 +13,8 @@
     "default_icon": "icon.png"
   },
   "commands": {
-    "pageAction": {
-      "key": "Ctrl+Shift+F",
+    "_execute_page_action": {
+      "suggested_key": "Ctrl+Shift+F",
       "description": ""
     }
   }

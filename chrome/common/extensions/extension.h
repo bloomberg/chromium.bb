@@ -167,10 +167,16 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     const std::string& description() const { return description_; }
 
    private:
+    ui::Accelerator ParseImpl(const std::string& shortcut,
+                              const std::string& platform_key,
+                              int index,
+                              string16* error);
     std::string command_name_;
     ui::Accelerator accelerator_;
     std::string description_;
   };
+
+  typedef std::map<std::string, ExtensionKeybinding> CommandMap;
 
   struct TtsVoice {
     // Define out of line constructor/destructor to please Clang.
@@ -564,8 +570,14 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   const std::vector<InputComponentInfo>& input_components() const {
     return input_components_;
   }
-  const std::vector<ExtensionKeybinding>& keybindings() const {
-    return commands_;
+  const ExtensionKeybinding* browser_action_command() const {
+    return browser_action_command_.get();
+  }
+  const ExtensionKeybinding* page_action_command() const {
+    return page_action_command_.get();
+  }
+  const CommandMap& named_commands() const {
+    return named_commands_;
   }
   bool has_background_page() const {
     return background_url_.is_valid() || !background_scripts_.empty();
@@ -920,7 +932,9 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   std::vector<InputComponentInfo> input_components_;
 
   // Optional list of commands (keyboard shortcuts).
-  std::vector<ExtensionKeybinding> commands_;
+  scoped_ptr<ExtensionKeybinding> browser_action_command_;
+  scoped_ptr<ExtensionKeybinding> page_action_command_;
+  CommandMap named_commands_;
 
   // Optional list of web accessible extension resources.
   base::hash_set<std::string> web_accessible_resources_;

@@ -43,17 +43,17 @@ void ExtensionKeybindingRegistryGtk::AddExtensionKeybinding(
     const Extension* extension) {
   // Add all the keybindings (except pageAction and browserAction, which are
   // handled elsewhere).
-  const std::vector<Extension::ExtensionKeybinding> commands =
-      extension->keybindings();
-  for (size_t i = 0; i < commands.size(); ++i) {
-    ui::AcceleratorGtk accelerator(commands[i].accelerator().key_code(),
-                                   commands[i].accelerator().IsShiftDown(),
-                                   commands[i].accelerator().IsCtrlDown(),
-                                   commands[i].accelerator().IsAltDown());
+  const Extension::CommandMap& commands = extension->named_commands();
+  Extension::CommandMap::const_iterator iter = commands.begin();
+  for (; iter != commands.end(); ++iter) {
+    ui::AcceleratorGtk accelerator(iter->second.accelerator().key_code(),
+                                   iter->second.accelerator().IsShiftDown(),
+                                   iter->second.accelerator().IsCtrlDown(),
+                                   iter->second.accelerator().IsAltDown());
     event_targets_[accelerator] =
-        std::make_pair(extension->id(), commands[i].command_name());
+        std::make_pair(extension->id(), iter->second.command_name());
 
-    if (ShouldIgnoreCommand(commands[i].command_name()))
+    if (ShouldIgnoreCommand(iter->second.command_name()))
       continue;
 
     if (!accel_group_) {

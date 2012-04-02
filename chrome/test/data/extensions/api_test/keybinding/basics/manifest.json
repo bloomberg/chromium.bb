@@ -14,12 +14,20 @@
   },
   "commands": {
     "toggle-feature": {
-      "key": "  Ctrl - Shift  - Y  ",
+      "suggested_key": {
+        "windows": "Ctrl+Shift+Y",
+        "mac": "Command+Shift+Y",
+        "linux": "Ctrl+Shift+Y",
+        "chromeos": "Ctrl+Shift+Y",
+        "default": "Ctrl+Shift+Y"
+      },
       "description": "Toggle feature foo"
     },
-    "browserAction": {
-      "key": "Ctrl+Shift+F",
-      "description": ""
+    "_execute_browser_action": {
+      "suggested_key": {
+        "mac": "Command+Shift+F",
+        "default": "Ctrl+Shift+F"
+      }
     }
   }
 }

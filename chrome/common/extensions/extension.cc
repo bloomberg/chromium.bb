@@ -245,37 +245,32 @@ Extension::OAuth2Info::~OAuth2Info() {}
 Extension::ExtensionKeybinding::ExtensionKeybinding() {}
 Extension::ExtensionKeybinding::~ExtensionKeybinding() {}
 
-bool Extension::ExtensionKeybinding::Parse(DictionaryValue* command,
-                                           const std::string& command_name,
-                                           int index,
-                                           string16* error) {
-  DCHECK(!command_name.empty());
-  std::string key_binding;
-  if (!command->GetString(keys::kKey, &key_binding) ||
-      key_binding.empty()) {
+ui::Accelerator Extension::ExtensionKeybinding::ParseImpl(
+    const std::string& shortcut,
+    const std::string& platform_key,
+    int index,
+    string16* error) {
+  if (platform_key != values::kKeybindingPlatformWin &&
+      platform_key != values::kKeybindingPlatformMac &&
+      platform_key != values::kKeybindingPlatformChromeOs &&
+      platform_key != values::kKeybindingPlatformLinux &&
+      platform_key != values::kKeybindingPlatformDefault) {
     *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
-        errors::kInvalidKeyBinding,
+        errors::kInvalidKeyBindingUnknownPlatform,
         base::IntToString(index),
-        "Missing");
-    return false;
+        platform_key);
+    return ui::Accelerator();
   }
 
-  std::string original_keybinding = key_binding;
-  // Normalize '-' to '+'.
-  ReplaceSubstringsAfterOffset(&key_binding, 0, "-", "+");
-  // Remove all spaces.
-  ReplaceSubstringsAfterOffset(&key_binding, 0, " ", "");
-  // And finally, lower-case it.
-  key_binding = StringToLowerASCII(key_binding);
-
   std::vector<std::string> tokens;
-  base::SplitString(key_binding, '+', &tokens);
+  base::SplitString(shortcut, '+', &tokens);
   if (tokens.size() < 2 || tokens.size() > 3) {
     *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
         errors::kInvalidKeyBinding,
         base::IntToString(index),
-        original_keybinding);
-    return false;
+        platform_key,
+        shortcut);
+    return ui::Accelerator();
   }
 
   // Now, parse it into an accelerator.
@@ -284,27 +279,32 @@ bool Extension::ExtensionKeybinding::Parse(DictionaryValue* command,
   bool shift = false;
   ui::KeyboardCode key = ui::VKEY_UNKNOWN;
   for (size_t i = 0; i < tokens.size(); i++) {
-    if (tokens[i] == "ctrl") {
+    if (tokens[i] == "Ctrl") {
       ctrl = true;
-    } else if (tokens[i] == "alt") {
+    } else if (tokens[i] == "Alt") {
       alt = true;
-    } else if (tokens[i] == "shift") {
+    } else if (tokens[i] == "Shift") {
       shift = true;
+    } else if (tokens[i] == "Command" && platform_key == "mac") {
+      // TODO(finnur): Implement for Mac.
+    } else if (tokens[i] == "Option" && platform_key == "mac") {
+      // TODO(finnur): Implement for Mac.
     } else if (tokens[i].size() == 1 &&
-               tokens[i][0] >= 'a' && tokens[i][0] <= 'z') {
+               tokens[i][0] >= 'A' && tokens[i][0] <= 'Z') {
       if (key != ui::VKEY_UNKNOWN) {
         // Multiple key assignments.
         key = ui::VKEY_UNKNOWN;
         break;
       }
 
-      key = static_cast<ui::KeyboardCode>(ui::VKEY_A + (tokens[i][0] - 'a'));
+      key = static_cast<ui::KeyboardCode>(ui::VKEY_A + (tokens[i][0] - 'A'));
     } else {
       *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
           errors::kInvalidKeyBinding,
           base::IntToString(index),
-          original_keybinding);
-      return false;
+          platform_key,
+          shortcut);
+      return ui::Accelerator();
     }
   }
 
@@ -315,26 +315,124 @@ bool Extension::ExtensionKeybinding::Parse(DictionaryValue* command,
     *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
         errors::kInvalidKeyBinding,
         base::IntToString(index),
-        original_keybinding);
-    return false;
+        platform_key,
+        shortcut);
+    return ui::Accelerator();
   }
 
-  accelerator_ = ui::Accelerator(key, shift, ctrl, alt);
+  return ui::Accelerator(key, shift, ctrl, alt);
+}
 
-  if (command_name !=
-          extension_manifest_values::kPageActionKeybindingEvent &&
-      command_name !=
-          extension_manifest_values::kBrowserActionKeybindingEvent) {
-    if (!command->GetString(keys::kDescription, &description_) ||
-        description_.empty()) {
+bool Extension::ExtensionKeybinding::Parse(DictionaryValue* command,
+                                           const std::string& command_name,
+                                           int index,
+                                           string16* error) {
+  DCHECK(!command_name.empty());
+
+  // We'll build up a map of platform-to-shortcut suggestions.
+  std::map<const std::string, std::string> suggestions;
+
+  // First try to parse the |suggested_key| as a dictionary.
+  DictionaryValue* suggested_key_dict;
+  if (command->GetDictionary(keys::kSuggestedKey, &suggested_key_dict)) {
+    DictionaryValue::key_iterator iter = suggested_key_dict->begin_keys();
+    for ( ; iter != suggested_key_dict->end_keys(); ++iter) {
+      // For each item in the dictionary, extract the platforms specified.
+      std::string suggested_key_string;
+      if (suggested_key_dict->GetString(*iter, &suggested_key_string) &&
+          !suggested_key_string.empty()) {
+        // Found a platform, add it to the suggestions list.
+        suggestions[*iter] = suggested_key_string;
+      } else {
+        *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
+            errors::kInvalidKeyBinding,
+            base::IntToString(index),
+            keys::kSuggestedKey,
+            "Missing");
+        return false;
+      }
+    }
+  } else {
+    // No dictionary was found, fall back to using just a string, so developers
+    // don't have to specify a dictionary if they just want to use one default
+    // for all platforms.
+    std::string suggested_key_string;
+    if (command->GetString(keys::kSuggestedKey, &suggested_key_string) &&
+        !suggested_key_string.empty()) {
+      // If only a signle string is provided, it must be default for all.
+      suggestions["default"] = suggested_key_string;
+    } else {
       *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
-          errors::kInvalidKeyBindingDescription,
-          base::IntToString(index));
-      return false;
+          errors::kInvalidKeyBinding,
+          base::IntToString(index),
+          keys::kSuggestedKey,
+          "Missing");
+       return false;
     }
   }
 
-  command_name_ = command_name;
+  std::string platform =
+#if defined(OS_WIN)
+      values::kKeybindingPlatformWin;
+#elif defined(OS_MACOSX)
+      values::kKeybindingPlatformMac;
+#elif defined(OS_CHROMEOS)
+      values::kKeybindingPlatformChromeOs;
+#elif defined(OS_LINUX)
+      values::kKeybindingPlatformLinux;
+#else
+      "";
+#endif
+
+  std::string key = platform;
+  if (suggestions.find(key) == suggestions.end())
+    key = values::kKeybindingPlatformDefault;
+  if (suggestions.find(key) == suggestions.end()) {
+    *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
+        errors::kInvalidKeyBindingMissingPlatform,
+        base::IntToString(index),
+        keys::kSuggestedKey,
+        platform);
+    return false;  // No platform specified and no fallback. Bail.
+  }
+
+  // For developer convenience, we parse all the suggestions (and complain about
+  // errors for platforms other than the current one) but use only what we need.
+  std::map<const std::string, std::string>::const_iterator iter =
+      suggestions.begin();
+  for ( ; iter != suggestions.end(); ++iter) {
+    // Note that we pass iter->first to pretend we are on a platform we're not
+    // on.
+    ui::Accelerator accelerator =
+        ParseImpl(iter->second, iter->first, index, error);
+    if (accelerator.key_code() == ui::VKEY_UNKNOWN) {
+      *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
+          errors::kInvalidKeyBinding,
+          base::IntToString(index),
+          iter->first,
+          iter->second);
+      return false;
+    }
+
+    if (iter->first == key) {
+      // This platform is our platform, so grab this key.
+      accelerator_ = accelerator;
+      command_name_ = command_name;
+
+      if (command_name !=
+              extension_manifest_values::kPageActionKeybindingEvent &&
+          command_name !=
+              extension_manifest_values::kBrowserActionKeybindingEvent) {
+        if (!command->GetString(keys::kDescription, &description_) ||
+            description_.empty()) {
+          *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
+              errors::kInvalidKeyBindingDescription,
+              base::IntToString(index));
+          return false;
+        }
+      }
+    }
+  }
   return true;
 }
 
@@ -1542,11 +1640,20 @@ bool Extension::LoadCommands(string16* error) {
         return false;
       }
 
-      ExtensionKeybinding binding;
-      if (!binding.Parse(command, *iter, command_index, error))
+      scoped_ptr<Extension::ExtensionKeybinding> binding(
+          new ExtensionKeybinding());
+      if (!binding->Parse(command, *iter, command_index, error))
         return false;  // |error| already set.
 
-      commands_.push_back(binding);
+      std::string command_name = binding->command_name();
+      if (command_name == values::kPageActionKeybindingEvent) {
+        page_action_command_.reset(binding.release());
+      } else if (command_name == values::kBrowserActionKeybindingEvent) {
+        browser_action_command_.reset(binding.release());
+      } else {
+        if (command_name[0] != '_')  // All commands w/underscore are reserved.
+          named_commands_[command_name] = *binding.release();
+      }
     }
   }
   return true;

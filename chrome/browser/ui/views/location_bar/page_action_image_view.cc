@@ -61,18 +61,12 @@ PageActionImageView::PageActionImageView(LocationBarView* owner,
 
   set_accessibility_focusable(true);
 
-  // Iterate through all the keybindings and see if one is assigned to the
-  // pageAction.
-  const std::vector<Extension::ExtensionKeybinding>& commands =
-      extension->keybindings();
-  for (size_t i = 0; i < commands.size(); ++i) {
-    if (commands[i].command_name() ==
-        extension_manifest_values::kPageActionKeybindingEvent) {
-      keybinding_.reset(new ui::Accelerator(commands[i].accelerator()));
-      owner_->GetFocusManager()->RegisterAccelerator(
-          *keybinding_.get(), ui::AcceleratorManager::kHighPriority, this);
-      break;
-    }
+  const Extension::ExtensionKeybinding* page_action_command =
+      extension->page_action_command();
+  if (page_action_command) {
+    keybinding_.reset(new ui::Accelerator(page_action_command->accelerator()));
+    owner_->GetFocusManager()->RegisterAccelerator(
+        *keybinding_.get(), ui::AcceleratorManager::kHighPriority, this);
   }
 }
 

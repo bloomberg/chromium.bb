@@ -24,7 +24,8 @@
     "extension_types": ["extension", "packaged_app"]
   },
   "commands": {
-    "extension_types": "all"
+    "extension_types": "all",
+    "min_manifest_version": 2
   },
   "content_security_policy": {
     "extension_types": ["extension", "packaged_app", "platform_app"]

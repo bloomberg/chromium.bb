@@ -8,7 +8,8 @@ or sending a command to the extension.
 <h2 id="manifest">Manifest</h2>
 <p>
 In addition to the "experimental" permission you must declare the "keybinding"
-permission in your extension's manifest to use this API.
+permission in your extension's manifest to use this API and set manifest_version
+to (at least) 2.
 </p>
 
 <pre>{
@@ -33,23 +34,34 @@ AltGr key.</p>
   ...
 <b>  "commands": {
     "toggle-feature-foo": {
-      "key": "Ctrl+Shift+Y",
+      "suggested_key": {
+        "default": "Ctrl+Shift+Y",
+        "mac": "Command+Shift+Y"
+      },
       "description": "Toggle feature foo"
     },
-    "browserAction": {
-      "key": "Ctrl+Shift+B"
+    "_execute_browser_action": {
+      "suggested_key": {
+        "windows": "Ctrl+Shift+Y",
+        "mac": "Command+Shift+Y",
+        "chromeos": "Ctrl+Shift+U",
+        "linux": "Ctrl+Shift+J"
+      }
     },
-    "pageAction": {
-      "key": "Alt+P"
+    "_execute_page_action": {
+      "suggested_key": {
+        "default": "Ctrl+E"
+        "windows": "Alt+P",
+        "mac": "Option+P",
+      }
     }
-
   }</b>,
   ...
 }</pre>
 
 <p>In your background page, you can bind a handler to each of the commands
-defined in the manifest (except for 'browserAction' and 'pageAction') via
-onCommand.addListener. For example:</p>
+defined in the manifest (except for '_execute_browser_action' and
+'_execute_page_action') via onCommand.addListener. For example:</p>
 
 <pre>
 chrome.experimental.keybinding.onCommand.addListener(function(command) {
@@ -57,9 +69,10 @@ chrome.experimental.keybinding.onCommand.addListener(function(command) {
 });
 </pre>
 
-<p>The 'browserAction' and 'pageAction' commands are reserved for the action of
-opening your extension's popups. They won't normally generate events that you
-can handle. If you need to take action based on your popup opening, consider
-listening for an 'onDomReady' event inside your popup's code.
+<p>The '_execute_browser_action' and '_execute_page_action' commands are
+reserved for the action of opening your extension's popups. They won't normally
+generate events that you can handle. If you need to take action based on your
+popup opening, consider listening for an 'onDomReady' event inside your popup's
+code.
 </p>
 <!-- END AUTHORED CONTENT -->

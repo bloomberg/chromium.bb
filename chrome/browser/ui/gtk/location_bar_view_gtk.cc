@@ -1709,21 +1709,15 @@ void LocationBarViewGtk::PageActionViewGtk::ConnectPageActionAccelerator() {
       extensions->GetByID(page_action_->extension_id());
   window_ = owner_->browser()->window()->GetNativeHandle();
 
-  // Iterate through all the keybindings and see if one is assigned to the
-  // pageAction.
-  const std::vector<Extension::ExtensionKeybinding>& commands =
-      extension->keybindings();
-  for (size_t i = 0; i < commands.size(); ++i) {
-    if (commands[i].command_name() !=
-        extension_manifest_values::kPageActionKeybindingEvent)
-      continue;
-
+  const Extension::ExtensionKeybinding* command =
+      extension->page_action_command();
+  if (command) {
     // Found the browser action shortcut command, register it.
     keybinding_.reset(new ui::AcceleratorGtk(
-        commands[i].accelerator().key_code(),
-        commands[i].accelerator().IsShiftDown(),
-        commands[i].accelerator().IsCtrlDown(),
-        commands[i].accelerator().IsAltDown()));
+        command->accelerator().key_code(),
+        command->accelerator().IsShiftDown(),
+        command->accelerator().IsCtrlDown(),
+        command->accelerator().IsAltDown()));
 
     accel_group_ = gtk_accel_group_new();
     gtk_window_add_accel_group(window_, accel_group_);
@@ -1740,7 +1734,6 @@ void LocationBarViewGtk::PageActionViewGtk::ConnectPageActionAccelerator() {
     registrar_.Add(this,
                    chrome::NOTIFICATION_WINDOW_CLOSED,
                    content::Source<GtkWindow>(window_));
-    break;
   }
 }
 

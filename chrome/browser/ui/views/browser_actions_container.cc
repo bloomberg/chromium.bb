@@ -117,18 +117,13 @@ void BrowserActionButton::ViewHierarchyChanged(
       UpdateState();
     }
 
-    // Iterate through all the keybindings and see if one is assigned to the
-    // browserAction.
-    const std::vector<Extension::ExtensionKeybinding>& commands =
-        extension_->keybindings();
-    for (size_t i = 0; i < commands.size(); ++i) {
-      if (commands[i].command_name() ==
-          extension_manifest_values::kBrowserActionKeybindingEvent) {
-        keybinding_.reset(new ui::Accelerator(commands[i].accelerator()));
-        panel_->GetFocusManager()->RegisterAccelerator(
-            *keybinding_.get(), ui::AcceleratorManager::kHighPriority, this);
-        break;
-      }
+    const Extension::ExtensionKeybinding* browser_action_command =
+        extension_->browser_action_command();
+    if (browser_action_command) {
+      keybinding_.reset(new ui::Accelerator(
+          browser_action_command->accelerator()));
+      panel_->GetFocusManager()->RegisterAccelerator(
+          *keybinding_.get(), ui::AcceleratorManager::kHighPriority, this);
     }
   }
 
