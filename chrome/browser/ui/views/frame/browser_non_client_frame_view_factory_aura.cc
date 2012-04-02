@@ -19,7 +19,9 @@ BrowserNonClientFrameView* CreateBrowserNonClientFrameView(
   }
 
   // If this is an app window and it's maximized, use the special frame_view.
-  if (browser_view->browser()->is_app() && browser_view->IsMaximized())
+  if (browser_view->browser()->is_app() &&
+      browser_view->browser()->app_type() != Browser::APP_TYPE_CHILD &&
+      browser_view->IsMaximized())
     return new AppNonClientFrameViewAura(frame, browser_view);
 
   // Default is potentially translucent fancy frames.
