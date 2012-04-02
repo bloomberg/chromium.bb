@@ -25,9 +25,258 @@
 
 namespace chrome_browser_net {
 
-HttpPipeliningCompatibilityClient::HttpPipeliningCompatibilityClient()
-    : num_finished_(0),
+static const int kCanaryRequestId = 999;
+
+namespace {
+
+// There is one Request per RequestInfo passed in to Start() above.
+class Request : public internal::PipelineTestRequest,
+                public net::URLRequest::Delegate {
+ public:
+  Request(int request_id,
+          const std::string& base_url,
+          const RequestInfo& info,
+          internal::PipelineTestRequest::Delegate* delegate,
+          net::URLRequestContext* url_request_context);
+
+  virtual ~Request() {}
+
+  virtual void Start() OVERRIDE;
+
+ protected:
+  // Called when this request has determined its result. Returns the result to
+  // the |client_|.
+  virtual void Finished(internal::PipelineTestRequest::Status result);
+
+  const std::string& response() const { return response_; }
+
+  internal::PipelineTestRequest::Delegate* delegate() { return delegate_; }
+
+ private:
+  // Called when a response can be read. Reads bytes into |response_| until it
+  // consumes the entire response or it encounters an error.
+  void DoRead();
+
+  // Called when all bytes have been received. Compares the |response_| to
+  // |info_|'s expected response.
+  virtual void DoReadFinished();
+
+  // net::URLRequest::Delegate interface
+  virtual void OnReceivedRedirect(net::URLRequest* request,
+                                  const GURL& new_url,
+                                  bool* defer_redirect) OVERRIDE;
+  virtual void OnSSLCertificateError(net::URLRequest* request,
+                                     const net::SSLInfo& ssl_info,
+                                     bool fatal) OVERRIDE;
+  virtual void OnResponseStarted(net::URLRequest* request) OVERRIDE;
+  virtual void OnReadCompleted(net::URLRequest* request,
+                               int bytes_read) OVERRIDE;
+
+  internal::PipelineTestRequest::Delegate* delegate_;
+  const int request_id_;
+  scoped_ptr<net::URLRequest> url_request_;
+  const RequestInfo info_;
+  scoped_refptr<net::IOBuffer> read_buffer_;
+  std::string response_;
+  int response_code_;
+};
+
+Request::Request(int request_id,
+                 const std::string& base_url,
+                 const RequestInfo& info,
+                 internal::PipelineTestRequest::Delegate* delegate,
+                 net::URLRequestContext* url_request_context)
+    : delegate_(delegate),
+      request_id_(request_id),
+      url_request_(new net::URLRequest(GURL(base_url + info.filename), this)),
+      info_(info),
+      response_code_(0) {
+  url_request_->set_context(url_request_context);
+  url_request_->set_load_flags(net::LOAD_BYPASS_CACHE |
+                               net::LOAD_DISABLE_CACHE |
+                               net::LOAD_DO_NOT_SAVE_COOKIES |
+                               net::LOAD_DO_NOT_SEND_COOKIES |
+                               net::LOAD_DO_NOT_PROMPT_FOR_LOGIN |
+                               net::LOAD_DO_NOT_SEND_AUTH_DATA);
+}
+
+void Request::Start() {
+  url_request_->Start();
+}
+
+void Request::OnReceivedRedirect(
+    net::URLRequest* request,
+    const GURL& new_url,
+    bool* defer_redirect) {
+  *defer_redirect = true;
+  request->Cancel();
+  Finished(STATUS_REDIRECTED);
+}
+
+void Request::OnSSLCertificateError(
+    net::URLRequest* request,
+    const net::SSLInfo& ssl_info,
+    bool fatal) {
+  Finished(STATUS_CERT_ERROR);
+}
+
+void Request::OnResponseStarted(net::URLRequest* request) {
+  response_code_ = request->GetResponseCode();
+  if (response_code_ != 200) {
+    Finished(STATUS_BAD_RESPONSE_CODE);
+    return;
+  }
+  const net::HttpVersion required_version(1, 1);
+  if (request->response_info().headers->GetParsedHttpVersion() <
+      required_version) {
+    Finished(STATUS_BAD_HTTP_VERSION);
+    return;
+  }
+  read_buffer_ = new net::IOBuffer(info_.expected_response.length());
+  DoRead();
+}
+
+void Request::OnReadCompleted(net::URLRequest* request, int bytes_read) {
+  if (bytes_read == 0) {
+    DoReadFinished();
+  } else if (bytes_read < 0) {
+    Finished(STATUS_NETWORK_ERROR);
+  } else {
+    response_.append(read_buffer_->data(), bytes_read);
+    if (response_.length() <= info_.expected_response.length()) {
+      DoRead();
+    } else if (response_.find(info_.expected_response) == 0) {
+      Finished(STATUS_TOO_LARGE);
+    } else {
+      Finished(STATUS_CONTENT_MISMATCH);
+    }
+  }
+}
+
+void Request::DoRead() {
+  int bytes_read = 0;
+  if (url_request_->Read(read_buffer_.get(), info_.expected_response.length(),
+                         &bytes_read)) {
+    OnReadCompleted(url_request_.get(), bytes_read);
+  }
+}
+
+void Request::DoReadFinished() {
+  if (response_.length() != info_.expected_response.length()) {
+    if (info_.expected_response.find(response_) == 0) {
+      Finished(STATUS_TOO_SMALL);
+    } else {
+      Finished(STATUS_CONTENT_MISMATCH);
+    }
+  } else if (response_ == info_.expected_response) {
+    Finished(STATUS_SUCCESS);
+  } else {
+    Finished(STATUS_CONTENT_MISMATCH);
+  }
+}
+
+void Request::Finished(internal::PipelineTestRequest::Status result) {
+  const net::URLRequestStatus status = url_request_->status();
+  url_request_.reset();
+  if (response_code_ > 0) {
+    delegate()->ReportResponseCode(request_id_, response_code_);
+  }
+  if (status.status() == net::URLRequestStatus::FAILED) {
+    // Network errors trump all other status codes, because network errors can
+    // be detected by the network stack even with real content. If we determine
+    // that all pipelining errors can be detected by the network stack, then we
+    // don't need to worry about broken proxies.
+    delegate()->ReportNetworkError(request_id_, status.error());
+    delegate()->OnRequestFinished(request_id_, STATUS_NETWORK_ERROR);
+  } else {
+    delegate()->OnRequestFinished(request_id_, result);
+  }
+  // WARNING: We may be deleted at this point.
+}
+
+// A special non-pipelined request sent before pipelining begins to test basic
+// HTTP connectivity.
+class CanaryRequest : public Request {
+ public:
+  CanaryRequest(int request_id,
+               const std::string& base_url,
+               const RequestInfo& info,
+               internal::PipelineTestRequest::Delegate* delegate,
+               net::URLRequestContext* url_request_context)
+      : Request(request_id, base_url, info, delegate, url_request_context) {
+  }
+
+  virtual ~CanaryRequest() {}
+
+ private:
+  virtual void Finished(
+      internal::PipelineTestRequest::Status result) OVERRIDE {
+    delegate()->OnCanaryFinished(result);
+  }
+};
+
+// A special request that parses a /stats.txt response from the test server.
+class StatsRequest : public Request {
+ public:
+  // Note that |info.expected_response| is only used to determine the correct
+  // length of the response. The exact string content isn't used.
+  StatsRequest(int request_id,
+               const std::string& base_url,
+               const RequestInfo& info,
+               internal::PipelineTestRequest::Delegate* delegate,
+               net::URLRequestContext* url_request_context)
+      : Request(request_id, base_url, info, delegate, url_request_context) {
+  }
+
+  virtual ~StatsRequest() {}
+
+ private:
+  virtual void DoReadFinished() OVERRIDE {
+    internal::PipelineTestRequest::Status status =
+        internal::ProcessStatsResponse(response());
+    Finished(status);
+  }
+};
+
+class RequestFactory : public internal::PipelineTestRequest::Factory {
+ public:
+  virtual internal::PipelineTestRequest* NewRequest(
+      int request_id,
+      const std::string& base_url,
+      const RequestInfo& info,
+      internal::PipelineTestRequest::Delegate* delegate,
+      net::URLRequestContext* url_request_context,
+      internal::PipelineTestRequest::Type request_type) OVERRIDE {
+    switch (request_type) {
+      case internal::PipelineTestRequest::TYPE_PIPELINED:
+        return new Request(request_id, base_url, info, delegate,
+                           url_request_context);
+
+      case internal::PipelineTestRequest::TYPE_CANARY:
+        return new CanaryRequest(request_id, base_url, info, delegate,
+                                 url_request_context);
+
+      case internal::PipelineTestRequest::TYPE_STATS:
+        return new StatsRequest(request_id, base_url, info, delegate,
+                                url_request_context);
+
+      default:
+        NOTREACHED();
+        return NULL;
+    }
+  }
+};
+
+}  // anonymous namespace
+
+HttpPipeliningCompatibilityClient::HttpPipeliningCompatibilityClient(
+    internal::PipelineTestRequest::Factory* factory)
+    : factory_(factory),
+      num_finished_(0),
       num_succeeded_(0) {
+  if (!factory_.get()) {
+    factory_.reset(new RequestFactory);
+  }
 }
 
 HttpPipeliningCompatibilityClient::~HttpPipeliningCompatibilityClient() {
@@ -36,7 +285,7 @@ HttpPipeliningCompatibilityClient::~HttpPipeliningCompatibilityClient() {
 void HttpPipeliningCompatibilityClient::Start(
     const std::string& base_url,
     std::vector<RequestInfo>& requests,
-    bool collect_server_stats,
+    Options options,
     const net::CompletionCallback& callback,
     net::URLRequestContext* url_request_context) {
   net::HttpNetworkSession* old_session =
@@ -55,10 +304,12 @@ void HttpPipeliningCompatibilityClient::Start(
 
   finished_callback_ = callback;
   for (size_t i = 0; i < requests.size(); ++i) {
-    requests_.push_back(new Request(i, base_url, requests[i], this,
-                                    url_request_context_.get()));
+    requests_.push_back(factory_->NewRequest(
+        i, base_url, requests[i], this, url_request_context_.get(),
+        internal::PipelineTestRequest::TYPE_PIPELINED));
   }
-  if (collect_server_stats) {
+  if (options == PIPE_TEST_COLLECT_SERVER_STATS ||
+      options == PIPE_TEST_CANARY_AND_STATS) {
     RequestInfo info;
     info.filename = "stats.txt";
     // This is just to determine the expected length of the response.
@@ -66,19 +317,56 @@ void HttpPipeliningCompatibilityClient::Start(
     // exact length.
     info.expected_response =
         "were_all_requests_http_1_1:1,max_pipeline_depth:5";
-    requests_.push_back(new StatsRequest(requests.size(), base_url, info, this,
-                                         url_request_context_.get()));
+    requests_.push_back(factory_->NewRequest(
+        requests.size(), base_url, info, this, url_request_context_.get(),
+        internal::PipelineTestRequest::TYPE_STATS));
+  }
+  if (options == PIPE_TEST_RUN_CANARY_REQUEST ||
+      options == PIPE_TEST_CANARY_AND_STATS) {
+    RequestInfo info;
+    info.filename = "index.html";
+    info.expected_response =
+        "\nThis is a test server operated by Google. It's used by Google "
+        "Chrome to test\nproxies for compatibility with HTTP pipelining. More "
+        "information can be found\nhere:\n\nhttp://dev.chromium.org/developers/"
+        "design-documents/network-stack/http-pipelining\n\nSource code can be "
+        "found here:\n\nhttp://code.google.com/p/http-pipelining-test/\n";
+    canary_request_.reset(factory_->NewRequest(
+        kCanaryRequestId, base_url, info, this, url_request_context,
+        internal::PipelineTestRequest::TYPE_CANARY));
+    canary_request_->Start();
+  } else {
+    StartTestRequests();
   }
 }
 
-void HttpPipeliningCompatibilityClient::OnRequestFinished(int request_id,
-                                                          Status status) {
+void HttpPipeliningCompatibilityClient::StartTestRequests() {
+  for (size_t i = 0; i < requests_.size(); ++i) {
+    requests_[i]->Start();
+  }
+}
+
+void HttpPipeliningCompatibilityClient::OnCanaryFinished(
+    internal::PipelineTestRequest::Status status) {
+  bool success = (status == internal::PipelineTestRequest::STATUS_SUCCESS);
+  UMA_HISTOGRAM_BOOLEAN("NetConnectivity.Pipeline.CanarySuccess", success);
+  if (success) {
+    StartTestRequests();
+  } else {
+    finished_callback_.Run(0);
+  }
+}
+
+void HttpPipeliningCompatibilityClient::OnRequestFinished(
+    int request_id, internal::PipelineTestRequest::Status status) {
   // The CACHE_HISTOGRAM_* macros are used, because they allow dynamic metric
   // names.
   CACHE_HISTOGRAM_ENUMERATION(GetMetricName(request_id, "Status"),
-                              status, STATUS_MAX);
+                              status,
+                              internal::PipelineTestRequest::STATUS_MAX);
+
   ++num_finished_;
-  if (status == SUCCESS) {
+  if (status == internal::PipelineTestRequest::STATUS_SUCCESS) {
     ++num_succeeded_;
   }
   if (num_finished_ == requests_.size()) {
@@ -106,142 +394,9 @@ std::string HttpPipeliningCompatibilityClient::GetMetricName(
                             request_id, description);
 }
 
-HttpPipeliningCompatibilityClient::Request::Request(
-    int request_id,
-    const std::string& base_url,
-    const RequestInfo& info,
-    HttpPipeliningCompatibilityClient* client,
-    net::URLRequestContext* url_request_context)
-    : request_id_(request_id),
-      request_(new net::URLRequest(GURL(base_url + info.filename), this)),
-      info_(info),
-      client_(client) {
-  request_->set_context(url_request_context);
-  request_->set_load_flags(net::LOAD_BYPASS_CACHE |
-                           net::LOAD_DISABLE_CACHE |
-                           net::LOAD_DO_NOT_SAVE_COOKIES |
-                           net::LOAD_DO_NOT_SEND_COOKIES |
-                           net::LOAD_DO_NOT_PROMPT_FOR_LOGIN |
-                           net::LOAD_DO_NOT_SEND_AUTH_DATA);
-  request_->Start();
-}
-
-HttpPipeliningCompatibilityClient::Request::~Request() {
-}
-
-void HttpPipeliningCompatibilityClient::Request::OnReceivedRedirect(
-    net::URLRequest* request,
-    const GURL& new_url,
-    bool* defer_redirect) {
-  *defer_redirect = true;
-  request->Cancel();
-  Finished(REDIRECTED);
-}
-
-void HttpPipeliningCompatibilityClient::Request::OnSSLCertificateError(
-    net::URLRequest* request,
-    const net::SSLInfo& ssl_info,
-    bool fatal) {
-  Finished(CERT_ERROR);
-}
-
-void HttpPipeliningCompatibilityClient::Request::OnResponseStarted(
-    net::URLRequest* request) {
-  int response_code = request->GetResponseCode();
-  if (response_code > 0) {
-    client_->ReportResponseCode(request_id_, response_code);
-  }
-  if (response_code == 200) {
-    const net::HttpVersion required_version(1, 1);
-    if (request->response_info().headers->GetParsedHttpVersion() <
-        required_version) {
-      Finished(BAD_HTTP_VERSION);
-    } else {
-      read_buffer_ = new net::IOBuffer(info_.expected_response.length());
-      DoRead();
-    }
-  } else {
-    Finished(BAD_RESPONSE_CODE);
-  }
-}
-
-void HttpPipeliningCompatibilityClient::Request::OnReadCompleted(
-    net::URLRequest* request,
-    int bytes_read) {
-  if (bytes_read == 0) {
-    DoReadFinished();
-  } else if (bytes_read < 0) {
-    Finished(NETWORK_ERROR);
-  } else {
-    response_.append(read_buffer_->data(), bytes_read);
-    if (response_.length() <= info_.expected_response.length()) {
-      DoRead();
-    } else if (response_.find(info_.expected_response) == 0) {
-      Finished(TOO_LARGE);
-    } else {
-      Finished(CONTENT_MISMATCH);
-    }
-  }
-}
-
-void HttpPipeliningCompatibilityClient::Request::DoRead() {
-  int bytes_read = 0;
-  if (request_->Read(read_buffer_.get(), info_.expected_response.length(),
-                     &bytes_read)) {
-    OnReadCompleted(request_.get(), bytes_read);
-  }
-}
-
-void HttpPipeliningCompatibilityClient::Request::DoReadFinished() {
-  if (response_.length() != info_.expected_response.length()) {
-    if (info_.expected_response.find(response_) == 0) {
-      Finished(TOO_SMALL);
-    } else {
-      Finished(CONTENT_MISMATCH);
-    }
-  } else if (response_ == info_.expected_response) {
-    Finished(SUCCESS);
-  } else {
-    Finished(CONTENT_MISMATCH);
-  }
-}
-
-void HttpPipeliningCompatibilityClient::Request::Finished(Status result) {
-  const net::URLRequestStatus status = request_->status();
-  request_.reset();
-  if (status.status() == net::URLRequestStatus::FAILED) {
-    // Network errors trump all other status codes, because network errors can
-    // be detected by the network stack even with real content. If we determine
-    // that all pipelining errors can be detected by the network stack, then we
-    // don't need to worry about broken proxies.
-    client_->ReportNetworkError(request_id_, status.error());
-    client_->OnRequestFinished(request_id_, NETWORK_ERROR);
-  } else {
-    client_->OnRequestFinished(request_id_, result);
-  }
-  // WARNING: We may be deleted at this point.
-}
-
-HttpPipeliningCompatibilityClient::StatsRequest::StatsRequest(
-    int request_id,
-    const std::string& base_url,
-    const RequestInfo& info,
-    HttpPipeliningCompatibilityClient* client,
-    net::URLRequestContext* url_request_context)
-    : Request(request_id, base_url, info, client, url_request_context) {
-}
-
-HttpPipeliningCompatibilityClient::StatsRequest::~StatsRequest() {
-}
-
-void HttpPipeliningCompatibilityClient::StatsRequest::DoReadFinished() {
-  Status status = internal::ProcessStatsResponse(response());
-  Finished(status);
-}
-
 namespace internal {
 
-HttpPipeliningCompatibilityClient::Status ProcessStatsResponse(
+internal::PipelineTestRequest::Status ProcessStatsResponse(
     const std::string& response) {
   bool were_all_requests_http_1_1 = false;
   int max_pipeline_depth = 0;
@@ -250,14 +405,14 @@ HttpPipeliningCompatibilityClient::Status ProcessStatsResponse(
   base::SplitStringIntoKeyValuePairs(response, ':', ',', &kv_pairs);
 
   if (kv_pairs.size() != 2) {
-    return HttpPipeliningCompatibilityClient::CORRUPT_STATS;
+    return internal::PipelineTestRequest::STATUS_CORRUPT_STATS;
   }
 
   for (size_t i = 0; i < kv_pairs.size(); ++i) {
     const std::string& key = kv_pairs[i].first;
     int value;
     if (!base::StringToInt(kv_pairs[i].second, &value)) {
-      return HttpPipeliningCompatibilityClient::CORRUPT_STATS;
+      return internal::PipelineTestRequest::STATUS_CORRUPT_STATS;
     }
 
     if (key == "were_all_requests_http_1_1") {
@@ -265,7 +420,7 @@ HttpPipeliningCompatibilityClient::Status ProcessStatsResponse(
     } else if (key == "max_pipeline_depth") {
       max_pipeline_depth = value;
     } else {
-      return HttpPipeliningCompatibilityClient::CORRUPT_STATS;
+      return internal::PipelineTestRequest::STATUS_CORRUPT_STATS;
     }
   }
 
@@ -274,7 +429,7 @@ HttpPipeliningCompatibilityClient::Status ProcessStatsResponse(
   UMA_HISTOGRAM_ENUMERATION("NetConnectivity.Pipeline.Depth",
                             max_pipeline_depth, 6);
 
-  return HttpPipeliningCompatibilityClient::SUCCESS;
+  return internal::PipelineTestRequest::STATUS_SUCCESS;
 }
 
 }  // namespace internal
@@ -327,36 +482,37 @@ void CollectPipeliningCapabilityStatsOnIOThread(
     return;
   }
 
-  std::vector<HttpPipeliningCompatibilityClient::RequestInfo> requests;
+  std::vector<RequestInfo> requests;
 
-  HttpPipeliningCompatibilityClient::RequestInfo info0;
+  RequestInfo info0;
   info0.filename = "alphabet.txt";
   info0.expected_response = "abcdefghijklmnopqrstuvwxyz";
   requests.push_back(info0);
 
-  HttpPipeliningCompatibilityClient::RequestInfo info1;
+  RequestInfo info1;
   info1.filename = "cached.txt";
   info1.expected_response = "azbycxdwevfugthsirjqkplomn";
   requests.push_back(info1);
 
-  HttpPipeliningCompatibilityClient::RequestInfo info2;
+  RequestInfo info2;
   info2.filename = "reverse.txt";
   info2.expected_response = "zyxwvutsrqponmlkjihgfedcba";
   requests.push_back(info2);
 
-  HttpPipeliningCompatibilityClient::RequestInfo info3;
+  RequestInfo info3;
   info3.filename = "chunked.txt";
   info3.expected_response = "chunkedencodingisfun";
   requests.push_back(info3);
 
-  HttpPipeliningCompatibilityClient::RequestInfo info4;
+  RequestInfo info4;
   info4.filename = "cached.txt";
   info4.expected_response = "azbycxdwevfugthsirjqkplomn";
   requests.push_back(info4);
 
   HttpPipeliningCompatibilityClient* client =
-      new HttpPipeliningCompatibilityClient;
-  client->Start(pipeline_test_server, requests, true,
+      new HttpPipeliningCompatibilityClient(NULL);
+  client->Start(pipeline_test_server, requests,
+                HttpPipeliningCompatibilityClient::PIPE_TEST_CANARY_AND_STATS,
                 base::Bind(&DelayedDeleteClient, client),
                 url_request_context_getter->GetURLRequestContext());
 }

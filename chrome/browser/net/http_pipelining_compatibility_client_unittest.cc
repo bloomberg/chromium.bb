@@ -19,6 +19,7 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_test_util.h"
 #include "net/test/test_server.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chrome_browser_net {
@@ -26,6 +27,7 @@ namespace chrome_browser_net {
 namespace {
 
 static const char* const kHistogramNames[] = {
+  "NetConnectivity.Pipeline.CanarySuccess",
   "NetConnectivity.Pipeline.Depth",
   "NetConnectivity.Pipeline.AllHTTP11",
   "NetConnectivity.Pipeline.Success",
@@ -41,6 +43,7 @@ static const char* const kHistogramNames[] = {
 };
 
 enum HistogramField {
+  FIELD_CANARY,
   FIELD_DEPTH,
   FIELD_HTTP_1_1,
   FIELD_NETWORK_ERROR,
@@ -49,7 +52,25 @@ enum HistogramField {
   FIELD_SUCCESS,
 };
 
+class MockFactory : public internal::PipelineTestRequest::Factory {
+ public:
+  MOCK_METHOD6(NewRequest, internal::PipelineTestRequest*(
+      int, const std::string&, const RequestInfo&,
+      internal::PipelineTestRequest::Delegate*, net::URLRequestContext*,
+      internal::PipelineTestRequest::Type));
+};
+
+class MockRequest : public internal::PipelineTestRequest {
+ public:
+  MOCK_METHOD0(Start, void());
+};
+
 using content::BrowserThread;
+using testing::_;
+using testing::Field;
+using testing::Invoke;
+using testing::Return;
+using testing::StrEq;
 
 class HttpPipeliningCompatibilityClientTest : public testing::Test {
  public:
@@ -83,12 +104,12 @@ class HttpPipeliningCompatibilityClientTest : public testing::Test {
   }
 
   void RunTest(
-      std::vector<HttpPipeliningCompatibilityClient::RequestInfo> requests,
-      bool collect_stats) {
-    HttpPipeliningCompatibilityClient client;
+      std::vector<RequestInfo> requests,
+      HttpPipeliningCompatibilityClient::Options options) {
+    HttpPipeliningCompatibilityClient client(NULL);
     net::TestCompletionCallback callback;
     client.Start(test_server_.GetURL("").spec(),
-                 requests, collect_stats, callback.callback(),
+                 requests, options, callback.callback(),
                  context_->GetURLRequestContext());
     callback.WaitForResult();
   }
@@ -98,6 +119,10 @@ class HttpPipeliningCompatibilityClientTest : public testing::Test {
     const char* name;
 
     switch (field) {
+      case FIELD_CANARY:
+        name = "NetConnectivity.Pipeline.CanarySuccess";
+        break;
+
       case FIELD_DEPTH:
         name = "NetConnectivity.Pipeline.Depth";
         break;
@@ -207,200 +232,205 @@ std::map<std::string, base::Histogram*>
     HttpPipeliningCompatibilityClientTest::histograms_;
 
 TEST_F(HttpPipeliningCompatibilityClientTest, Success) {
-  HttpPipeliningCompatibilityClient::RequestInfo info;
+  RequestInfo info;
   info.filename = "files/alphabet.txt";
   info.expected_response = "abcdefghijklmnopqrstuvwxyz";
-  std::vector<HttpPipeliningCompatibilityClient::RequestInfo> requests;
+  std::vector<RequestInfo> requests;
   requests.push_back(info);
 
-  RunTest(requests, false);
+  RunTest(requests, HttpPipeliningCompatibilityClient::PIPE_TEST_DEFAULTS);
 
   ExpectHistogramCount(1, true, FIELD_SUCCESS);
   ExpectHistogramCount(0, 0, FIELD_DEPTH);
   ExpectHistogramCount(0, 0, FIELD_HTTP_1_1);
   ExpectRequestHistogramCount(
-      1, HttpPipeliningCompatibilityClient::SUCCESS, 0, FIELD_STATUS);
+      1, internal::PipelineTestRequest::STATUS_SUCCESS, 0, FIELD_STATUS);
   ExpectRequestHistogramCount(0, 0, 0, FIELD_NETWORK_ERROR);
   ExpectRequestHistogramCount(1, 200, 0, FIELD_RESPONSE_CODE);
 }
 
 TEST_F(HttpPipeliningCompatibilityClientTest, TooSmall) {
-  HttpPipeliningCompatibilityClient::RequestInfo info;
+  RequestInfo info;
   info.filename = "files/alphabet.txt";
   info.expected_response = "abcdefghijklmnopqrstuvwxyz26";
-  std::vector<HttpPipeliningCompatibilityClient::RequestInfo> requests;
+  std::vector<RequestInfo> requests;
   requests.push_back(info);
 
-  RunTest(requests, false);
+  RunTest(requests, HttpPipeliningCompatibilityClient::PIPE_TEST_DEFAULTS);
 
   ExpectHistogramCount(1, false, FIELD_SUCCESS);
   ExpectRequestHistogramCount(
-      1, HttpPipeliningCompatibilityClient::TOO_SMALL, 0, FIELD_STATUS);
+      1, internal::PipelineTestRequest::STATUS_TOO_SMALL, 0, FIELD_STATUS);
   ExpectRequestHistogramCount(0, 0, 0, FIELD_NETWORK_ERROR);
   ExpectRequestHistogramCount(1, 200, 0, FIELD_RESPONSE_CODE);
 }
 
 TEST_F(HttpPipeliningCompatibilityClientTest, TooLarge) {
-  HttpPipeliningCompatibilityClient::RequestInfo info;
+  RequestInfo info;
   info.filename = "files/alphabet.txt";
   info.expected_response = "abc";
-  std::vector<HttpPipeliningCompatibilityClient::RequestInfo> requests;
+  std::vector<RequestInfo> requests;
   requests.push_back(info);
 
-  RunTest(requests, false);
+  RunTest(requests, HttpPipeliningCompatibilityClient::PIPE_TEST_DEFAULTS);
 
   ExpectHistogramCount(1, false, FIELD_SUCCESS);
   ExpectRequestHistogramCount(
-      1, HttpPipeliningCompatibilityClient::TOO_LARGE, 0, FIELD_STATUS);
+      1, internal::PipelineTestRequest::STATUS_TOO_LARGE, 0, FIELD_STATUS);
   ExpectRequestHistogramCount(0, 0, 0, FIELD_NETWORK_ERROR);
   ExpectRequestHistogramCount(1, 200, 0, FIELD_RESPONSE_CODE);
 }
 
 TEST_F(HttpPipeliningCompatibilityClientTest, Mismatch) {
-  HttpPipeliningCompatibilityClient::RequestInfo info;
+  RequestInfo info;
   info.filename = "files/alphabet.txt";
   info.expected_response = "zyxwvutsrqponmlkjihgfedcba";
-  std::vector<HttpPipeliningCompatibilityClient::RequestInfo> requests;
+  std::vector<RequestInfo> requests;
   requests.push_back(info);
 
-  RunTest(requests, false);
+  RunTest(requests, HttpPipeliningCompatibilityClient::PIPE_TEST_DEFAULTS);
 
   ExpectHistogramCount(1, false, FIELD_SUCCESS);
   ExpectRequestHistogramCount(
-      1, HttpPipeliningCompatibilityClient::CONTENT_MISMATCH, 0, FIELD_STATUS);
+      1, internal::PipelineTestRequest::STATUS_CONTENT_MISMATCH,
+      0, FIELD_STATUS);
   ExpectRequestHistogramCount(0, 0, 0, FIELD_NETWORK_ERROR);
   ExpectRequestHistogramCount(1, 200, 0, FIELD_RESPONSE_CODE);
 }
 
 TEST_F(HttpPipeliningCompatibilityClientTest, Redirect) {
-  HttpPipeliningCompatibilityClient::RequestInfo info;
+  RequestInfo info;
   info.filename = "server-redirect?http://foo.bar/asdf";
   info.expected_response = "shouldn't matter";
-  std::vector<HttpPipeliningCompatibilityClient::RequestInfo> requests;
+  std::vector<RequestInfo> requests;
   requests.push_back(info);
 
-  RunTest(requests, false);
+  RunTest(requests, HttpPipeliningCompatibilityClient::PIPE_TEST_DEFAULTS);
 
   ExpectHistogramCount(1, false, FIELD_SUCCESS);
   ExpectRequestHistogramCount(
-      1, HttpPipeliningCompatibilityClient::REDIRECTED, 0, FIELD_STATUS);
+      1, internal::PipelineTestRequest::STATUS_REDIRECTED, 0, FIELD_STATUS);
   ExpectRequestHistogramCount(0, 0, 0, FIELD_NETWORK_ERROR);
   ExpectRequestHistogramCount(0, 0, 0, FIELD_RESPONSE_CODE);
 }
 
 TEST_F(HttpPipeliningCompatibilityClientTest, AuthRequired) {
-  HttpPipeliningCompatibilityClient::RequestInfo info;
+  RequestInfo info;
   info.filename = "auth-basic";
   info.expected_response = "shouldn't matter";
-  std::vector<HttpPipeliningCompatibilityClient::RequestInfo> requests;
+  std::vector<RequestInfo> requests;
   requests.push_back(info);
 
-  RunTest(requests, false);
+  RunTest(requests, HttpPipeliningCompatibilityClient::PIPE_TEST_DEFAULTS);
 
   ExpectHistogramCount(1, false, FIELD_SUCCESS);
   ExpectRequestHistogramCount(
-      1, HttpPipeliningCompatibilityClient::BAD_RESPONSE_CODE, 0, FIELD_STATUS);
+      1, internal::PipelineTestRequest::STATUS_BAD_RESPONSE_CODE,
+      0, FIELD_STATUS);
   ExpectRequestHistogramCount(0, 0, 0, FIELD_NETWORK_ERROR);
   ExpectRequestHistogramCount(1, 401, 0, FIELD_RESPONSE_CODE);
 }
 
 TEST_F(HttpPipeliningCompatibilityClientTest, NoContent) {
-  HttpPipeliningCompatibilityClient::RequestInfo info;
+  RequestInfo info;
   info.filename = "nocontent";
   info.expected_response = "shouldn't matter";
-  std::vector<HttpPipeliningCompatibilityClient::RequestInfo> requests;
+  std::vector<RequestInfo> requests;
   requests.push_back(info);
 
-  RunTest(requests, false);
+  RunTest(requests, HttpPipeliningCompatibilityClient::PIPE_TEST_DEFAULTS);
 
   ExpectHistogramCount(1, false, FIELD_SUCCESS);
   ExpectRequestHistogramCount(
-      1, HttpPipeliningCompatibilityClient::BAD_RESPONSE_CODE, 0, FIELD_STATUS);
+      1, internal::PipelineTestRequest::STATUS_BAD_RESPONSE_CODE,
+      0, FIELD_STATUS);
   ExpectRequestHistogramCount(0, 0, 0, FIELD_NETWORK_ERROR);
   ExpectRequestHistogramCount(1, 204, 0, FIELD_RESPONSE_CODE);
 }
 
 TEST_F(HttpPipeliningCompatibilityClientTest, CloseSocket) {
-  HttpPipeliningCompatibilityClient::RequestInfo info;
+  RequestInfo info;
   info.filename = "close-socket";
   info.expected_response = "shouldn't matter";
-  std::vector<HttpPipeliningCompatibilityClient::RequestInfo> requests;
+  std::vector<RequestInfo> requests;
   requests.push_back(info);
 
-  RunTest(requests, false);
+  RunTest(requests, HttpPipeliningCompatibilityClient::PIPE_TEST_DEFAULTS);
 
   ExpectHistogramCount(1, false, FIELD_SUCCESS);
   ExpectRequestHistogramCount(
-      1, HttpPipeliningCompatibilityClient::NETWORK_ERROR, 0, FIELD_STATUS);
+      1, internal::PipelineTestRequest::STATUS_NETWORK_ERROR, 0, FIELD_STATUS);
   ExpectRequestHistogramCount(
       1, -net::ERR_EMPTY_RESPONSE, 0, FIELD_NETWORK_ERROR);
   ExpectRequestHistogramCount(0, 0, 0, FIELD_RESPONSE_CODE);
 }
 
 TEST_F(HttpPipeliningCompatibilityClientTest, OldHttpVersion) {
-  HttpPipeliningCompatibilityClient::RequestInfo info;
+  RequestInfo info;
   info.filename = "http-1.0";
   info.expected_response = "abcdefghijklmnopqrstuvwxyz";
-  std::vector<HttpPipeliningCompatibilityClient::RequestInfo> requests;
+  std::vector<RequestInfo> requests;
   requests.push_back(info);
 
-  RunTest(requests, false);
+  RunTest(requests, HttpPipeliningCompatibilityClient::PIPE_TEST_DEFAULTS);
 
   ExpectHistogramCount(1, false, FIELD_SUCCESS);
   ExpectRequestHistogramCount(
-      1, HttpPipeliningCompatibilityClient::BAD_HTTP_VERSION, 0, FIELD_STATUS);
+      1, internal::PipelineTestRequest::STATUS_BAD_HTTP_VERSION,
+      0, FIELD_STATUS);
   ExpectRequestHistogramCount(0, 0, 0, FIELD_NETWORK_ERROR);
   ExpectRequestHistogramCount(1, 200, 0, FIELD_RESPONSE_CODE);
 }
 
 TEST_F(HttpPipeliningCompatibilityClientTest, MultipleRequests) {
-  std::vector<HttpPipeliningCompatibilityClient::RequestInfo> requests;
+  std::vector<RequestInfo> requests;
 
-  HttpPipeliningCompatibilityClient::RequestInfo info1;
+  RequestInfo info1;
   info1.filename = "files/alphabet.txt";
   info1.expected_response = "abcdefghijklmnopqrstuvwxyz";
   requests.push_back(info1);
 
-  HttpPipeliningCompatibilityClient::RequestInfo info2;
+  RequestInfo info2;
   info2.filename = "close-socket";
   info2.expected_response = "shouldn't matter";
   requests.push_back(info2);
 
-  HttpPipeliningCompatibilityClient::RequestInfo info3;
+  RequestInfo info3;
   info3.filename = "auth-basic";
   info3.expected_response = "shouldn't matter";
   requests.push_back(info3);
 
-  RunTest(requests, true);
+  RunTest(requests,
+          HttpPipeliningCompatibilityClient::PIPE_TEST_COLLECT_SERVER_STATS);
 
   ExpectHistogramCount(1, false, FIELD_SUCCESS);
 
   ExpectRequestHistogramCount(
-      1, HttpPipeliningCompatibilityClient::SUCCESS, 0, FIELD_STATUS);
+      1, internal::PipelineTestRequest::STATUS_SUCCESS, 0, FIELD_STATUS);
   ExpectRequestHistogramCount(0, 0, 0, FIELD_NETWORK_ERROR);
   ExpectRequestHistogramCount(1, 200, 0, FIELD_RESPONSE_CODE);
 
   ExpectRequestHistogramCount(
-      1, HttpPipeliningCompatibilityClient::NETWORK_ERROR, 1, FIELD_STATUS);
+      1, internal::PipelineTestRequest::STATUS_NETWORK_ERROR, 1, FIELD_STATUS);
   ExpectRequestHistogramCount(
       1, -net::ERR_PIPELINE_EVICTION, 1, FIELD_NETWORK_ERROR);
   ExpectRequestHistogramCount(0, 0, 1, FIELD_RESPONSE_CODE);
 
   ExpectRequestHistogramCount(
-      1, HttpPipeliningCompatibilityClient::NETWORK_ERROR, 2, FIELD_STATUS);
+      1, internal::PipelineTestRequest::STATUS_NETWORK_ERROR, 2, FIELD_STATUS);
   ExpectRequestHistogramCount(
       1, -net::ERR_PIPELINE_EVICTION, 2, FIELD_NETWORK_ERROR);
   ExpectRequestHistogramCount(0, 0, 2, FIELD_RESPONSE_CODE);
 
   ExpectRequestHistogramCount(
-      1, HttpPipeliningCompatibilityClient::NETWORK_ERROR, 3, FIELD_STATUS);
+      1, internal::PipelineTestRequest::STATUS_NETWORK_ERROR, 3, FIELD_STATUS);
   ExpectRequestHistogramCount(
       1, -net::ERR_PIPELINE_EVICTION, 3, FIELD_NETWORK_ERROR);
   ExpectRequestHistogramCount(0, 0, 3, FIELD_RESPONSE_CODE);
 }
 
 TEST_F(HttpPipeliningCompatibilityClientTest, StatsOk) {
-  EXPECT_EQ(HttpPipeliningCompatibilityClient::SUCCESS,
+  EXPECT_EQ(internal::PipelineTestRequest::STATUS_SUCCESS,
             internal::ProcessStatsResponse(
                 "max_pipeline_depth:3,were_all_requests_http_1_1:0"));
   ExpectHistogramCount(1, 3, FIELD_DEPTH);
@@ -408,7 +438,7 @@ TEST_F(HttpPipeliningCompatibilityClientTest, StatsOk) {
 }
 
 TEST_F(HttpPipeliningCompatibilityClientTest, StatsIndifferentToOrder) {
-  EXPECT_EQ(HttpPipeliningCompatibilityClient::SUCCESS,
+  EXPECT_EQ(internal::PipelineTestRequest::STATUS_SUCCESS,
             internal::ProcessStatsResponse(
                 "were_all_requests_http_1_1:1,max_pipeline_depth:2"));
   ExpectHistogramCount(1, 2, FIELD_DEPTH);
@@ -416,7 +446,7 @@ TEST_F(HttpPipeliningCompatibilityClientTest, StatsIndifferentToOrder) {
 }
 
 TEST_F(HttpPipeliningCompatibilityClientTest, StatsBadField) {
-  EXPECT_EQ(HttpPipeliningCompatibilityClient::CORRUPT_STATS,
+  EXPECT_EQ(internal::PipelineTestRequest::STATUS_CORRUPT_STATS,
             internal::ProcessStatsResponse(
                 "foo:3,were_all_requests_http_1_1:1"));
   ExpectHistogramCount(0, 0, FIELD_DEPTH);
@@ -424,10 +454,107 @@ TEST_F(HttpPipeliningCompatibilityClientTest, StatsBadField) {
 }
 
 TEST_F(HttpPipeliningCompatibilityClientTest, StatsTooShort) {
-  EXPECT_EQ(HttpPipeliningCompatibilityClient::CORRUPT_STATS,
+  EXPECT_EQ(internal::PipelineTestRequest::STATUS_CORRUPT_STATS,
             internal::ProcessStatsResponse("were_all_requests_http_1_1:1"));
   ExpectHistogramCount(0, 0, FIELD_DEPTH);
   ExpectHistogramCount(0, 0, FIELD_HTTP_1_1);
+}
+
+TEST_F(HttpPipeliningCompatibilityClientTest, WaitForCanary) {
+  MockFactory* factory = new MockFactory;
+  HttpPipeliningCompatibilityClient client(factory);
+
+  MockRequest* request = new MockRequest;
+  base::Closure request_cb = base::Bind(
+      &internal::PipelineTestRequest::Delegate::OnRequestFinished,
+      base::Unretained(&client), 0,
+      internal::PipelineTestRequest::STATUS_SUCCESS);
+
+  MockRequest* canary = new MockRequest;
+  base::Closure canary_cb = base::Bind(
+      &internal::PipelineTestRequest::Delegate::OnCanaryFinished,
+      base::Unretained(&client), internal::PipelineTestRequest::STATUS_SUCCESS);
+
+  EXPECT_CALL(*factory, NewRequest(
+      0, _, Field(&RequestInfo::filename, StrEq("request.txt")), _, _,
+      internal::PipelineTestRequest::TYPE_PIPELINED))
+      .Times(1)
+      .WillOnce(Return(request));
+  EXPECT_CALL(*factory, NewRequest(
+      999, _, Field(&RequestInfo::filename, StrEq("index.html")), _, _,
+      internal::PipelineTestRequest::TYPE_CANARY))
+      .Times(1)
+      .WillOnce(Return(canary));
+
+  EXPECT_CALL(*canary, Start())
+      .Times(1)
+      .WillOnce(Invoke(&canary_cb, &base::Closure::Run));
+  EXPECT_CALL(*request, Start())
+      .Times(1)
+      .WillOnce(Invoke(&request_cb, &base::Closure::Run));
+
+  std::vector<RequestInfo> requests;
+
+  RequestInfo info1;
+  info1.filename = "request.txt";
+  requests.push_back(info1);
+
+  net::TestCompletionCallback callback;
+  client.Start("http://base/", requests,
+               HttpPipeliningCompatibilityClient::PIPE_TEST_RUN_CANARY_REQUEST,
+               callback.callback(), context_->GetURLRequestContext());
+  callback.WaitForResult();
+
+  ExpectHistogramCount(1, true, FIELD_CANARY);
+  ExpectHistogramCount(1, true, FIELD_SUCCESS);
+  ExpectRequestHistogramCount(
+      1, internal::PipelineTestRequest::STATUS_SUCCESS, 0, FIELD_STATUS);
+}
+
+TEST_F(HttpPipeliningCompatibilityClientTest, CanaryFailure) {
+  MockFactory* factory = new MockFactory;
+  HttpPipeliningCompatibilityClient client(factory);
+
+  MockRequest* request = new MockRequest;
+
+  MockRequest* canary = new MockRequest;
+  base::Closure canary_cb = base::Bind(
+      &internal::PipelineTestRequest::Delegate::OnCanaryFinished,
+      base::Unretained(&client),
+      internal::PipelineTestRequest::STATUS_REDIRECTED);
+
+  EXPECT_CALL(*factory, NewRequest(
+      0, _, Field(&RequestInfo::filename, StrEq("request.txt")), _, _,
+      internal::PipelineTestRequest::TYPE_PIPELINED))
+      .Times(1)
+      .WillOnce(Return(request));
+  EXPECT_CALL(*factory, NewRequest(
+      999, _, Field(&RequestInfo::filename, StrEq("index.html")), _, _,
+      internal::PipelineTestRequest::TYPE_CANARY))
+      .Times(1)
+      .WillOnce(Return(canary));
+
+  EXPECT_CALL(*canary, Start())
+      .Times(1)
+      .WillOnce(Invoke(&canary_cb, &base::Closure::Run));
+  EXPECT_CALL(*request, Start())
+      .Times(0);
+
+  std::vector<RequestInfo> requests;
+
+  RequestInfo info1;
+  info1.filename = "request.txt";
+  requests.push_back(info1);
+
+  net::TestCompletionCallback callback;
+  client.Start("http://base/", requests,
+               HttpPipeliningCompatibilityClient::PIPE_TEST_RUN_CANARY_REQUEST,
+               callback.callback(), context_->GetURLRequestContext());
+  callback.WaitForResult();
+
+  ExpectHistogramCount(1, false, FIELD_CANARY);
+  ExpectHistogramCount(0, false, FIELD_SUCCESS);
+  ExpectHistogramCount(0, true, FIELD_SUCCESS);
 }
 
 }  // anonymous namespace
