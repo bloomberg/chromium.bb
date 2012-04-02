@@ -60,8 +60,9 @@ class PolicyPrefsTestCases(object):
     'SavingBrowserHistoryDisabled':
         ('kSavingBrowserHistoryDisabled', True, [], OS_ALL),
     'RemoteAccessClientFirewallTraversal': (None, True, [], OS_ALL),
+    # TODO(frankf): Enable on all OS after crbug.com/121066 is fixed.
     'RemoteAccessHostFirewallTraversal':
-        ('kRemoteAccessHostFirewallTraversal', True, [], OS_ALL),
+        ('kRemoteAccessHostFirewallTraversal', True, [], []),
     'PrintingEnabled': ('kPrintingEnabled', False, [], OS_ALL),
     # Note: supported_on is empty for this policy.
     'CloudPrintProxyEnabled': ('kCloudPrintProxyEnabled', True, [], []),
@@ -87,9 +88,10 @@ class PolicyPrefsTestCases(object):
     'SyncDisabled': (None, True, [], OS_ALL),
     'UserDataDir':
         (None, '${users}/${user_name}/chrome-test', [], ['win', 'mac']),
+    # TODO(frankf): Enable on win, mac, linux after crbug.com/121066 is fixed.
     'DiskCacheDir':
         ('kDiskCacheSize', '${user_home}/test-cache', [],
-         ['win', 'mac', 'linux']),
+         []),
     'DiskCacheSize': (None, 100, [], ['win', 'mac', 'linux']),
     'MediaCacheSize': ('kMediaCacheSize', 200, [], ['win', 'mac', 'linux']),
     'DownloadDirectory': (None, '${user_home}/test-downloads', [BROWSER],
