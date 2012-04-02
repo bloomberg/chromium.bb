@@ -9,7 +9,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/automation/automation_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
-#include "chrome/test/ui/ui_layout_test.h"
+#include "chrome/test/ui/ui_test.h"
 #include "net/base/escape.h"
 #include "net/test/test_server.h"
 
