@@ -3084,6 +3084,8 @@
         'browser/ui/gtk/task_manager_gtk.h',
         'browser/ui/gtk/theme_service_gtk.cc',
         'browser/ui/gtk/theme_service_gtk.h',
+        'browser/ui/gtk/throbber_gtk.cc',
+        'browser/ui/gtk/throbber_gtk.h',
         'browser/ui/gtk/unity_service.cc',
         'browser/ui/gtk/unity_service.h',
         'browser/ui/gtk/update_recommended_dialog.cc',

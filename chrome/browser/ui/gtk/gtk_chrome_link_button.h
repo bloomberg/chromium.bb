@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,9 +39,11 @@ struct _GtkChromeLinkButton {
   GtkWidget* label;
   gchar* normal_markup;
   gchar* pressed_markup;
-  gboolean is_normal;
+  gchar* insensitive_markup;
+  GtkStateType label_state;
   gchar normal_color[9];
   gchar* native_markup;
+  gchar* insensitive_native_markup;
   gboolean using_native_theme;
   GdkCursor* hand_cursor;
   gchar* text;

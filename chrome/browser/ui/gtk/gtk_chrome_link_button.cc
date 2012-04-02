@@ -11,6 +11,7 @@
 #include "ui/gfx/gtk_util.h"
 
 static const gchar* kLinkMarkup = "<u><span color=\"%s\">%s</span></u>";
+static const gchar* kInsensitiveLinkMarkup = "<span color=\"%s\">%s</span>";
 
 namespace {
 
@@ -42,6 +43,8 @@ static void gtk_chrome_link_button_destroy_text_resources(
   button->normal_markup = NULL;
   g_free(button->pressed_markup);
   button->pressed_markup = NULL;
+  g_free(button->insensitive_markup);
+  button->insensitive_markup = NULL;
 
   g_free(button->text);
   button->text = NULL;
@@ -64,20 +67,35 @@ static void gtk_chrome_link_button_set_text(GtkChromeLinkButton* button) {
   button->normal_markup = NULL;
   g_free(button->pressed_markup);
   button->pressed_markup = NULL;
+  g_free(button->insensitive_markup);
+  button->insensitive_markup = NULL;
 
   gchar* text = button->text;
   gboolean uses_markup = button->uses_markup;
+
+  GtkStyle* style = gtk_rc_get_style(button->label);
+  GdkColor insensitive_color = style->fg[GTK_STATE_INSENSITIVE];
+  gchar insensitive_color_spec[9];
+  snprintf(insensitive_color_spec, 9, "#%02X%02X%02X",
+           insensitive_color.red / 257, insensitive_color.green / 257,
+           insensitive_color.blue / 257);
 
   if (!uses_markup) {
     button->normal_markup = g_markup_printf_escaped(kLinkMarkup,
                                                     button->normal_color,
                                                     text);
     button->pressed_markup = g_markup_printf_escaped(kLinkMarkup, "red", text);
+    button->insensitive_markup = g_markup_printf_escaped(kInsensitiveLinkMarkup,
+                                                         insensitive_color_spec,
+                                                         text);
   } else {
     button->normal_markup = g_strdup_printf(kLinkMarkup, button->normal_color,
                                             text);
 
     button->pressed_markup = g_strdup_printf(kLinkMarkup, "red", text);
+    button->insensitive_markup = g_strdup_printf(kInsensitiveLinkMarkup,
+                                                 insensitive_color_spec,
+                                                 text);
   }
 
   // Get the current GTK theme's link button text color.
@@ -120,16 +138,25 @@ static gboolean gtk_chrome_link_button_expose(GtkWidget* widget,
                                               GdkEventExpose* event) {
   GtkChromeLinkButton* button = GTK_CHROME_LINK_BUTTON(widget);
   GtkWidget* label = button->label;
+  GtkStateType widget_state = gtk_widget_get_state(widget);
 
-  if (gtk_widget_get_state(widget) == GTK_STATE_ACTIVE && button->is_normal) {
-    gtk_label_set_markup(GTK_LABEL(label), button->pressed_markup);
-    button->is_normal = FALSE;
-  } else if (gtk_widget_get_state(widget) != GTK_STATE_ACTIVE &&
-             !button->is_normal) {
-    gtk_label_set_markup(GTK_LABEL(label),
-        button->using_native_theme ? button->native_markup :
-                                     button->normal_markup);
-    button->is_normal = TRUE;
+  if (widget_state != button->label_state) {
+    switch (widget_state) {
+      case GTK_STATE_NORMAL:
+        gtk_label_set_markup(GTK_LABEL(label),
+            button->using_native_theme ? button->native_markup :
+                                         button->normal_markup);
+        break;
+      case GTK_STATE_ACTIVE:
+        gtk_label_set_markup(GTK_LABEL(label), button->pressed_markup);
+        break;
+      case GTK_STATE_INSENSITIVE:
+        gtk_label_set_markup(GTK_LABEL(label), button->insensitive_markup);
+        break;
+      default:
+        break;
+    }
+    button->label_state = widget_state;
   }
 
   // Draw the link inside the button.
@@ -195,7 +222,7 @@ static void gtk_chrome_link_button_init(GtkChromeLinkButton* button) {
   button->label = gtk_label_new(NULL);
   button->normal_markup = NULL;
   button->pressed_markup = NULL;
-  button->is_normal = TRUE;
+  button->label_state = GTK_STATE_NORMAL;
   strncpy(button->normal_color, "blue", 9);
   button->native_markup = NULL;
   button->using_native_theme = TRUE;

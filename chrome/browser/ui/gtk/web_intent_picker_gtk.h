@@ -27,6 +27,7 @@ class CustomDrawButton;
 class GURL;
 class TabContentsContainerGtk;
 class TabContentsWrapper;
+class ThrobberGtk;
 class WebIntentPickerDelegate;
 
 // Gtk implementation of WebIntentPicker.
@@ -43,6 +44,8 @@ class WebIntentPickerGtk : public WebIntentPicker,
 
   // WebIntentPicker implementation.
   virtual void Close() OVERRIDE;
+  virtual void OnExtensionInstallSuccess(const std::string& id) OVERRIDE;
+  virtual void OnExtensionInstallFailure(const std::string& id) OVERRIDE;
 
   // WebIntentPickerModelObserver implementation.
   virtual void OnModelChanged(WebIntentPickerModel* model) OVERRIDE;
@@ -90,6 +93,16 @@ class WebIntentPickerGtk : public WebIntentPicker,
   // Update the suggested extension table from |model_|.
   void UpdateSuggestedExtensions();
 
+  // Enables/disables all service buttons and extension suggestions.
+  void SetWidgetsEnabled(bool enabled);
+
+  // Adds a throbber to the extension at |index|. Returns the alignment widget
+  // containing the throbber.
+  GtkWidget* AddThrobberToExtensionAt(size_t index);
+
+  // Removes the added throbber.
+  void RemoveThrobber();
+
   // Create a new widget displaying |rating| as 5 star images. Rating should be
   // in the range [0, 5].
   GtkWidget* CreateStarsWidget(double rating);
@@ -123,6 +136,9 @@ class WebIntentPickerGtk : public WebIntentPicker,
 
   // A button to close the picker.
   scoped_ptr<CustomDrawButton> close_button_;
+
+  // The throbber to display when installing an extension.
+  scoped_ptr<ThrobberGtk> throbber_;
 
   // A weak pointer to the constrained window.
   ConstrainedWindowGtk* window_;
