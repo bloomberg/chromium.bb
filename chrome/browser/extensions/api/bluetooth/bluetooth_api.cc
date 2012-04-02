@@ -30,6 +30,13 @@ bool BluetoothIsPoweredFunction::RunImpl() {
   return true;
 }
 
+bool BluetoothGetAddressFunction::RunImpl() {
+  const chromeos::BluetoothAdapter *adapter =
+      profile()->GetExtensionService()->bluetooth_event_router()->adapter();
+  result_.reset(Value::CreateStringValue(adapter->address()));
+  return false;
+}
+
 #else
 
 // -----------------------------------------------------------------------------
@@ -41,6 +48,11 @@ bool BluetoothIsAvailableFunction::RunImpl() {
 }
 
 bool BluetoothIsPoweredFunction::RunImpl() {
+  NOTREACHED() << "Not implemented yet";
+  return false;
+}
+
+bool BluetoothGetAddressFunction::RunImpl() {
   NOTREACHED() << "Not implemented yet";
   return false;
 }
@@ -63,11 +75,6 @@ bool BluetoothSetOutOfBandPairingDataFunction::RunImpl() {
 }
 
 bool BluetoothGetOutOfBandPairingDataFunction::RunImpl() {
-  NOTREACHED() << "Not implemented yet";
-  return false;
-}
-
-bool BluetoothGetAddressFunction::RunImpl() {
   NOTREACHED() << "Not implemented yet";
   return false;
 }

@@ -23,6 +23,12 @@ class BluetoothIsPoweredFunction : public SyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.bluetooth.isPowered")
 };
 
+class BluetoothGetAddressFunction : public SyncExtensionFunction {
+ public:
+  virtual bool RunImpl() OVERRIDE;
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.bluetooth.getAddress")
+};
+
 class BluetoothDisconnectFunction : public AsyncExtensionFunction {
  public:
   virtual bool RunImpl() OVERRIDE;
@@ -48,12 +54,6 @@ class BluetoothGetOutOfBandPairingDataFunction : public AsyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME(
       "experimental.bluetooth.getOutOfBandPairingData")
-};
-
-class BluetoothGetAddressFunction : public AsyncExtensionFunction {
- public:
-  virtual bool RunImpl() OVERRIDE;
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.bluetooth.getAddress")
 };
 
 class BluetoothWriteFunction : public AsyncExtensionFunction {
