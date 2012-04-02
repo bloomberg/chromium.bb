@@ -699,14 +699,6 @@
    fun:::MessageLoopRelay::ProcessOnTargetThread
 }
 {
-   bug_57910
-   Heapcheck:Leak
-   fun:inflateInit2_
-   fun:remoting::DecompressorZlib::InitStream
-   fun:remoting::DecompressorZlib::Reset
-   fun:~DecompressorZlib
-}
-{
    bug_58474_a
    Heapcheck:Leak
    ...
