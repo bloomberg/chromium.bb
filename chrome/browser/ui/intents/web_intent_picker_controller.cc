@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/webstore_installer.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/intents/default_web_intent_service.h"
@@ -397,8 +398,15 @@ void WebIntentPickerController::OnFaviconDataAvailable(
 
 void WebIntentPickerController::OnCWSIntentServicesAvailable(
     const CWSIntentsRegistry::IntentExtensionList& extensions) {
+  ExtensionServiceInterface* extension_service =
+      wrapper_->profile()->GetExtensionService();
   for (size_t i = 0; i < extensions.size(); ++i) {
     const CWSIntentsRegistry::IntentExtensionInfo& info = extensions[i];
+    if (extension_service->GetExtensionById(UTF16ToUTF8(info.id),
+                                            true)) {  // Include disabled.
+      continue;
+    }
+
     picker_model_->AddSuggestedExtension(
         info.name,
         info.id,
