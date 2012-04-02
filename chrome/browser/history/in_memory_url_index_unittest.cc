@@ -9,7 +9,6 @@
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
-#include "base/scoped_temp_dir.h"
 #include "base/string_util.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
@@ -26,8 +25,6 @@
 #include "sql/transaction.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using content::BrowserThread;
-
 // The test version of the history url database table ('url') is contained in
 // a database file created from a text file('url_history_provider_test.db.txt').
 // The only difference between this table and a live 'urls' table from a
@@ -40,54 +37,6 @@ using content::BrowserThread;
 // processed when creating the test database.
 
 namespace history {
-
-// -----------------------------------------------------------------------------
-
-// Observer class so the unit tests can wait while the cache is being saved.
-class CacheFileSaverObserver : public InMemoryURLIndex::SaveCacheObserver {
- public:
-  explicit CacheFileSaverObserver(MessageLoop* loop);
-  virtual void OnCacheSaveFinished(bool succeeded) OVERRIDE;
-
-  MessageLoop* loop_;
-  bool succeeded_;
-  DISALLOW_COPY_AND_ASSIGN(CacheFileSaverObserver);
-};
-
-CacheFileSaverObserver::CacheFileSaverObserver(MessageLoop* loop)
-    : loop_(loop),
-      succeeded_(false) {
-  DCHECK(loop);
-}
-
-void CacheFileSaverObserver::OnCacheSaveFinished(bool succeeded) {
-  succeeded_ = succeeded;
-  loop_->Quit();
-}
-
-// Observer class so the unit tests can wait while the cache is being restored.
-class CacheFileReaderObserver : public InMemoryURLIndex::RestoreCacheObserver {
- public:
-  explicit CacheFileReaderObserver(MessageLoop* loop);
-  virtual void OnCacheRestoreFinished(bool succeeded) OVERRIDE;
-
-  MessageLoop* loop_;
-  bool succeeded_;
-  DISALLOW_COPY_AND_ASSIGN(CacheFileReaderObserver);
-};
-
-CacheFileReaderObserver::CacheFileReaderObserver(MessageLoop* loop)
-    : loop_(loop),
-      succeeded_(false) {
-  DCHECK(loop);
-}
-
-void CacheFileReaderObserver::OnCacheRestoreFinished(bool succeeded) {
-  succeeded_ = succeeded;
-  loop_->Quit();
-}
-
-// -----------------------------------------------------------------------------
 
 class InMemoryURLIndexTest : public testing::Test {
  public:
@@ -124,13 +73,8 @@ class InMemoryURLIndexTest : public testing::Test {
 
   // Pass-through functions to simplify our friendship with InMemoryURLIndex.
   URLIndexPrivateData* GetPrivateData() const;
-  void ClearPrivateData();
-  void set_history_dir(const FilePath& dir_path);
   bool GetCacheFilePath(FilePath* file_path) const;
-  void PostRestoreFromCacheFileTask();
-  void PostSaveToCacheFileTask();
-  const std::set<std::string>& scheme_whitelist();
-
+  void ClearHistoryDir() const;
 
   // Pass-through functions to simplify our friendship with URLIndexPrivateData.
   bool UpdateURL(const URLRow& row);
@@ -161,16 +105,8 @@ sql::Connection& InMemoryURLIndexTest::GetDB() {
 }
 
 URLIndexPrivateData* InMemoryURLIndexTest::GetPrivateData() const {
-  DCHECK(url_index_->private_data());
-  return url_index_->private_data();
-}
-
-void InMemoryURLIndexTest::ClearPrivateData() {
-  return url_index_->ClearPrivateData();
-}
-
-void InMemoryURLIndexTest::set_history_dir(const FilePath& dir_path) {
-  return url_index_->set_history_dir(dir_path);
+  DCHECK(url_index_->private_data_.get());
+  return url_index_->private_data_.get();
 }
 
 bool InMemoryURLIndexTest::GetCacheFilePath(FilePath* file_path) const {
@@ -178,25 +114,16 @@ bool InMemoryURLIndexTest::GetCacheFilePath(FilePath* file_path) const {
   return url_index_->GetCacheFilePath(file_path);
 }
 
-void InMemoryURLIndexTest::PostRestoreFromCacheFileTask() {
-  url_index_->PostRestoreFromCacheFileTask();
-}
-
-void InMemoryURLIndexTest::PostSaveToCacheFileTask() {
-  url_index_->PostSaveToCacheFileTask();
-}
-
-const std::set<std::string>& InMemoryURLIndexTest::scheme_whitelist() {
-  return url_index_->scheme_whitelist();
+void InMemoryURLIndexTest::ClearHistoryDir() const {
+  url_index_->history_dir_.clear();
 }
 
 bool InMemoryURLIndexTest::UpdateURL(const URLRow& row) {
-  return GetPrivateData()->UpdateURL(row, url_index_->languages_,
-                                     url_index_->scheme_whitelist_);
+  return url_index_->private_data_->UpdateURL(row);
 }
 
 bool InMemoryURLIndexTest::DeleteURL(const GURL& url) {
-  return GetPrivateData()->DeleteURL(url);
+  return url_index_->private_data_->DeleteURL(url);
 }
 
 void InMemoryURLIndexTest::SetUp() {
@@ -387,7 +314,7 @@ void InMemoryURLIndexTest::ExpectPrivateDataEqual(
       expected_info != expected.history_info_map_.end(); ++expected_info) {
     HistoryInfoMap::const_iterator actual_info =
         actual.history_info_map_.find(expected_info->first);
-    ASSERT_NE(actual_info, actual.history_info_map_.end());
+    ASSERT_TRUE(actual_info != actual.history_info_map_.end());
     const URLRow& expected_row(expected_info->second);
     const URLRow& actual_row(actual_info->second);
     EXPECT_EQ(expected_row.visit_count(), actual_row.visit_count());
@@ -402,7 +329,7 @@ void InMemoryURLIndexTest::ExpectPrivateDataEqual(
       ++expected_starts) {
     WordStartsMap::const_iterator actual_starts =
         actual.word_starts_map_.find(expected_starts->first);
-    ASSERT_NE(actual_starts, actual.word_starts_map_.end());
+    ASSERT_TRUE(actual_starts != actual.word_starts_map_.end());
     const RowWordStarts& expected_word_starts(expected_starts->second);
     const RowWordStarts& actual_word_starts(actual_starts->second);
     EXPECT_EQ(expected_word_starts.url_word_starts_.size(),
@@ -432,7 +359,8 @@ FilePath::StringType LimitedInMemoryURLIndexTest::TestDBName() const {
 TEST_F(LimitedInMemoryURLIndexTest, Initialization) {
   // Verify that the database contains the expected number of items, which
   // is the pre-filtered count, i.e. all of the items.
-  sql::Statement statement(GetDB().GetUniqueStatement("SELECT * FROM urls;"));
+  sql::Connection& db(GetDB());
+  sql::Statement statement(db.GetUniqueStatement("SELECT * FROM urls;"));
   ASSERT_TRUE(statement.is_valid());
   uint64 row_count = 0;
   while (statement.Step()) ++row_count;
@@ -441,7 +369,7 @@ TEST_F(LimitedInMemoryURLIndexTest, Initialization) {
       new InMemoryURLIndex(&profile_, FilePath(), "en,ja,hi,zh"));
   url_index_->Init();
   url_index_->RebuildFromHistory(history_database_);
-  URLIndexPrivateData& private_data(*GetPrivateData());
+  URLIndexPrivateData& private_data(*(url_index_->private_data_));
 
   // history_info_map_ should have the same number of items as were filtered.
   EXPECT_EQ(1U, private_data.history_info_map_.size());
@@ -910,95 +838,73 @@ TEST_F(InMemoryURLIndexTest, WhitelistedURLs) {
   };
 
   URLIndexPrivateData& private_data(*GetPrivateData());
-  const std::set<std::string>& whitelist(scheme_whitelist());
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(data); ++i) {
     GURL url(data[i].url_spec);
     EXPECT_EQ(data[i].expected_is_whitelisted,
-              private_data.URLSchemeIsWhitelisted(url, whitelist));
+              private_data.URLSchemeIsWhitelisted(url));
   }
 }
 
 TEST_F(InMemoryURLIndexTest, CacheSaveRestore) {
-  ScopedTempDir temp_directory;
-  ASSERT_TRUE(temp_directory.CreateUniqueTempDir());
-  set_history_dir(temp_directory.path());
+  // Part 1: Save the cache to a protobuf, restore it, and compare the results.
+  in_memory_url_index::InMemoryURLIndexCacheItem index_cache;
+  URLIndexPrivateData& expected(*GetPrivateData());
 
-  URLIndexPrivateData& private_data(*GetPrivateData());
+  // Capture our private data so we can later compare for equality.
+  URLIndexPrivateData actual(expected);
 
-  // Ensure that there is really something there to be saved.
-  EXPECT_FALSE(private_data.word_list_.empty());
-  // available_words_ will already be empty since we have freshly built the
-  // data set for this test.
-  EXPECT_TRUE(private_data.available_words_.empty());
-  EXPECT_FALSE(private_data.word_map_.empty());
-  EXPECT_FALSE(private_data.char_word_map_.empty());
-  EXPECT_FALSE(private_data.word_id_history_map_.empty());
-  EXPECT_FALSE(private_data.history_id_word_map_.empty());
-  EXPECT_FALSE(private_data.history_info_map_.empty());
+  actual.SavePrivateData(&index_cache);
 
-  // Capture the current private data for later comparison to restored data.
-  scoped_refptr<URLIndexPrivateData> old_data(private_data.Duplicate());
+  // Version check: Make sure this version actually has the word starts.
+  EXPECT_TRUE(index_cache.has_word_starts_map());
 
-  // Save then restore our private data.
-  CacheFileSaverObserver save_observer(&message_loop_);
-  url_index_->set_save_cache_observer(&save_observer);
-  PostSaveToCacheFileTask();
-  message_loop_.Run();
-  EXPECT_TRUE(save_observer.succeeded_);
+  // Save the size of the resulting cache for later versioning comparison.
+  std::string data;
+  EXPECT_TRUE(index_cache.SerializeToString(&data));
+  size_t current_version_cache_size = data.size();
 
-  // Clear and then prove it's clear before restoring.
-  ClearPrivateData();
-  EXPECT_TRUE(private_data.word_list_.empty());
-  EXPECT_TRUE(private_data.available_words_.empty());
-  EXPECT_TRUE(private_data.word_map_.empty());
-  EXPECT_TRUE(private_data.char_word_map_.empty());
-  EXPECT_TRUE(private_data.word_id_history_map_.empty());
-  EXPECT_TRUE(private_data.history_id_word_map_.empty());
-  EXPECT_TRUE(private_data.history_info_map_.empty());
+  // Prove that there is really something there.
+  ExpectPrivateDataNotEmpty(actual);
 
-  CacheFileReaderObserver read_observer(&message_loop_);
-  url_index_->set_restore_cache_observer(&read_observer);
-  PostRestoreFromCacheFileTask();
-  message_loop_.Run();
-  EXPECT_TRUE(read_observer.succeeded_);
+  // Clear and then prove it's clear.
+  actual.Clear();
+  ExpectPrivateDataEmpty(actual);
 
-  URLIndexPrivateData& new_data(*GetPrivateData());
+  // Restore the cache.
+  EXPECT_TRUE(actual.RestorePrivateData(index_cache));
+  EXPECT_EQ(kCurrentCacheFileVersion, actual.restored_cache_version_);
 
-  // Compare the captured and restored for equality.
-  EXPECT_EQ(old_data->word_list_.size(), new_data.word_list_.size());
-  EXPECT_EQ(old_data->word_map_.size(), new_data.word_map_.size());
-  EXPECT_EQ(old_data->char_word_map_.size(), new_data.char_word_map_.size());
-  EXPECT_EQ(old_data->word_id_history_map_.size(),
-            new_data.word_id_history_map_.size());
-  EXPECT_EQ(old_data->history_id_word_map_.size(),
-            new_data.history_id_word_map_.size());
-  EXPECT_EQ(old_data->history_info_map_.size(),
-            new_data.history_info_map_.size());
-  // WordList must be index-by-index equal.
-  size_t count = old_data->word_list_.size();
-  for (size_t i = 0; i < count; ++i)
-    EXPECT_EQ(old_data->word_list_[i], new_data.word_list_[i]);
+  // Compare the restored and expected for equality.
+  ExpectPrivateDataEqual(expected, actual);
 
-  ExpectMapOfContainersIdentical(old_data->char_word_map_,
-                                 new_data.char_word_map_);
-  ExpectMapOfContainersIdentical(old_data->word_id_history_map_,
-                                 new_data.word_id_history_map_);
-  ExpectMapOfContainersIdentical(old_data->history_id_word_map_,
-                                 new_data.history_id_word_map_);
+  // Part 2: Save an older version of the cache, restore it, and verify that the
+  // reversioned portions are as expected.
+  URLIndexPrivateData older(expected);
+  in_memory_url_index::InMemoryURLIndexCacheItem older_cache;
+  older.set_saved_cache_version(0);
+  older.SavePrivateData(&older_cache);
 
-  for (HistoryInfoMap::const_iterator expected =
-       old_data->history_info_map_.begin();
-       expected != old_data->history_info_map_.end(); ++expected) {
-    HistoryInfoMap::const_iterator actual =
-        new_data.history_info_map_.find(expected->first);
-    ASSERT_FALSE(new_data.history_info_map_.end() == actual);
-    const URLRow& expected_row(expected->second);
-    const URLRow& actual_row(actual->second);
-    EXPECT_EQ(expected_row.visit_count(), actual_row.visit_count());
-    EXPECT_EQ(expected_row.typed_count(), actual_row.typed_count());
-    EXPECT_EQ(expected_row.last_visit(), actual_row.last_visit());
-    EXPECT_EQ(expected_row.url(), actual_row.url());
-  }
+  // Version check: Make sure this version does not have the word starts.
+  EXPECT_FALSE(older_cache.has_word_starts_map());
+
+  // Since we shouldn't have saved the word starts information for the version
+  // 0 save immediately above, the cache should be a bit smaller.
+  std::string older_data;
+  EXPECT_TRUE(older_cache.SerializeToString(&older_data));
+  size_t old_version_file_size = older_data.size();
+  EXPECT_LT(old_version_file_size, current_version_cache_size);
+  EXPECT_NE(data, older_data);
+
+  // Clear and then prove it's clear.
+  older.Clear();
+  ExpectPrivateDataEmpty(older);
+
+  // Restore the cache.
+  EXPECT_TRUE(older.RestorePrivateData(older_cache));
+  EXPECT_EQ(0, older.restored_cache_version_);
+
+  // Compare the restored and expected for equality.
+  ExpectPrivateDataEqual(expected, older);
 }
 
 class InMemoryURLIndexCacheTest : public testing::Test {
@@ -1007,10 +913,6 @@ class InMemoryURLIndexCacheTest : public testing::Test {
 
  protected:
   virtual void SetUp() OVERRIDE;
-
-  // Pass-through functions to simplify our friendship with InMemoryURLIndex.
-  void set_history_dir(const FilePath& dir_path);
-  bool GetCacheFilePath(FilePath* file_path) const;
 
   ScopedTempDir temp_dir_;
   scoped_ptr<InMemoryURLIndex> url_index_;
@@ -1023,22 +925,13 @@ void InMemoryURLIndexCacheTest::SetUp() {
       new InMemoryURLIndex(NULL, path, "en,ja,hi,zh"));
 }
 
-void InMemoryURLIndexCacheTest::set_history_dir(const FilePath& dir_path) {
-  return url_index_->set_history_dir(dir_path);
-}
-
-bool InMemoryURLIndexCacheTest::GetCacheFilePath(FilePath* file_path) const {
-  DCHECK(file_path);
-  return url_index_->GetCacheFilePath(file_path);
-}
-
 TEST_F(InMemoryURLIndexCacheTest, CacheFilePath) {
   FilePath expectedPath =
       temp_dir_.path().Append(FILE_PATH_LITERAL("History Provider Cache"));
   std::vector<FilePath::StringType> expected_parts;
   expectedPath.GetComponents(&expected_parts);
   FilePath full_file_path;
-  ASSERT_TRUE(GetCacheFilePath(&full_file_path));
+  ASSERT_TRUE(url_index_->GetCacheFilePath(&full_file_path));
   std::vector<FilePath::StringType> actual_parts;
   full_file_path.GetComponents(&actual_parts);
   ASSERT_EQ(expected_parts.size(), actual_parts.size());
@@ -1046,7 +939,7 @@ TEST_F(InMemoryURLIndexCacheTest, CacheFilePath) {
   for (size_t i = 0; i < count; ++i)
     EXPECT_EQ(expected_parts[i], actual_parts[i]);
   // Must clear the history_dir_ to satisfy the dtor's DCHECK.
-  set_history_dir(FilePath());
+  url_index_->history_dir_.clear();
 }
 
 }  // namespace history

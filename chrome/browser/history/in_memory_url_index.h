@@ -15,8 +15,8 @@
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/gtest_prod_util.h"
-#include "base/memory/ref_counted.h"
-#include "base/memory/weak_ptr.h"
+#include "base/memory/linked_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/history_provider_util.h"
@@ -24,6 +24,7 @@
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/in_memory_url_index_types.h"
+#include "chrome/browser/history/in_memory_url_index_cache.pb.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "sql/connection.h"
@@ -49,24 +50,6 @@ struct URLVisitedDetails;
 struct URLsModifiedDetails;
 struct URLsDeletedDetails;
 
-// A RefCountedThreadSafe class that manages a bool used for passing around
-// success when saving the persistent data for the InMemoryURLIndex in a cache.
-class RefCountedBool : public base::RefCountedThreadSafe<RefCountedBool> {
- public:
-  explicit RefCountedBool(bool value) : value_(value) {}
-
-  bool value() const { return value_; }
-  void set_value(bool value) { value_ = value; }
-
- private:
-  friend class base::RefCountedThreadSafe<RefCountedBool>;
-  virtual ~RefCountedBool();
-
-  bool value_;
-
-  DISALLOW_COPY_AND_ASSIGN(RefCountedBool);
-};
-
 // The URL history source.
 // Holds portions of the URL database in memory in an indexed form.  Used to
 // quickly look up matching URLs for a given query string.  Used by
@@ -86,33 +69,8 @@ class RefCountedBool : public base::RefCountedThreadSafe<RefCountedBool> {
 // will eliminate such words except in the case where a single character
 // is being searched on and which character occurs as the second char16 of a
 // multi-char16 instance.
-class InMemoryURLIndex : public content::NotificationObserver,
-                         public base::SupportsWeakPtr<InMemoryURLIndex> {
+class InMemoryURLIndex : public content::NotificationObserver {
  public:
-  // Defines an abstract class which is notified upon completion of restoring
-  // the index's private data either by reading from the cache file or by
-  // rebuilding from the history database.
-  class RestoreCacheObserver {
-   public:
-    virtual ~RestoreCacheObserver();
-
-    // Callback that lets the observer know that the restore operation has
-    // completed. |succeeded| indicates if the restore was successful. This is
-    // called on the UI thread.
-    virtual void OnCacheRestoreFinished(bool succeeded) = 0;
-  };
-
-  // Defines an abstract class which is notified upon completion of saving
-  // the index's private data to the cache file.
-  class SaveCacheObserver {
-   public:
-    virtual ~SaveCacheObserver();
-
-    // Callback that lets the observer know that the save succeeded.
-    // This is called on the UI thread.
-    virtual void OnCacheSaveFinished(bool succeeded) = 0;
-  };
-
   // |profile|, which may be NULL during unit testing, is used to register for
   // history changes. |history_dir| is a path to the directory containing the
   // history database within the profile wherein the cache and transaction
@@ -138,21 +96,11 @@ class InMemoryURLIndex : public content::NotificationObserver,
   // refer to that class.
   ScoredHistoryMatches HistoryItemsForTerms(const string16& term_string);
 
-  // Sets the optional observers for completion of restoral and saving of the
-  // index's private data.
-  void set_restore_cache_observer(
-      RestoreCacheObserver* restore_cache_observer) {
-    restore_cache_observer_ = restore_cache_observer;
-  }
-  void set_save_cache_observer(SaveCacheObserver* save_cache_observer) {
-    save_cache_observer_ = save_cache_observer;
-  }
-
  private:
   friend class ::HistoryQuickProviderTest;
   friend class InMemoryURLIndexTest;
-  friend class InMemoryURLIndexCacheTest;
   FRIEND_TEST_ALL_PREFIXES(LimitedInMemoryURLIndexTest, Initialization);
+  FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexCacheTest, CacheFilePath);
 
   // Creating one of me without a history path is not allowed (tests excepted).
   InMemoryURLIndex();
@@ -160,10 +108,7 @@ class InMemoryURLIndex : public content::NotificationObserver,
   // HistoryDBTask used to rebuild our private data from the history database.
   class RebuildPrivateDataFromHistoryDBTask : public HistoryDBTask {
    public:
-    explicit RebuildPrivateDataFromHistoryDBTask(
-        InMemoryURLIndex* index,
-        const std::string& languages,
-        const std::set<std::string>& scheme_whitelist);
+    explicit RebuildPrivateDataFromHistoryDBTask(InMemoryURLIndex* index);
     virtual ~RebuildPrivateDataFromHistoryDBTask();
 
     virtual bool RunOnDBThread(HistoryBackend* backend,
@@ -172,10 +117,8 @@ class InMemoryURLIndex : public content::NotificationObserver,
 
    private:
     InMemoryURLIndex* index_;  // Call back to this index at completion.
-    std::string languages_;  // Languages for word-breaking.
-    std::set<std::string> scheme_whitelist_;  // Schemes to be indexed.
     bool succeeded_;  // Indicates if the rebuild was successful.
-    scoped_refptr<URLIndexPrivateData> data_;  // The rebuilt private data.
+    scoped_ptr<URLIndexPrivateData> data_;  // The rebuilt private data.
 
     DISALLOW_COPY_AND_ASSIGN(RebuildPrivateDataFromHistoryDBTask);
   };
@@ -192,49 +135,33 @@ class InMemoryURLIndex : public content::NotificationObserver,
 
   // Restores the index's private data from the cache file stored in the
   // profile directory.
-  void PostRestoreFromCacheFileTask();
+  void RestoreFromCacheFile();
+
+  // Restores private_data_ from the given |path|. Runs on the UI thread.
+  // Provided for unit testing so that a test cache file can be used.
+  void DoRestoreFromCacheFile(const FilePath& path);
 
   // Schedules a history task to rebuild our private data from the history
   // database.
   void ScheduleRebuildFromHistory();
 
   // Callback used by RebuildPrivateDataFromHistoryDBTask to signal completion
-  // or rebuilding our private data from the history database. |succeeded|
-  // will be true if the rebuild was successful. |data| will point to a new
-  // instanceof the private data just rebuilt.
-  void DoneRebuidingPrivateDataFromHistoryDB(
-      bool succeeded,
-      scoped_refptr<URLIndexPrivateData> private_data);
+  // or rebuilding our private data from the history database. |data| points to
+  // a new instance of the private data just rebuilt. This callback is only
+  // called upon a successful restore from the history database.
+  void DoneRebuidingPrivateDataFromHistoryDB(URLIndexPrivateData* data);
 
   // Rebuilds the history index from the history database in |history_db|.
   // Used for unit testing only.
   void RebuildFromHistory(HistoryDatabase* history_db);
 
-  // Determines if the private data was successfully reloaded from the cache
-  // file or if the private data must be rebuilt from the history database.
-  // |private_data_ptr|'s data will be NULL if the cache file load failed. If
-  // successful, sets the private data and notifies any
-  // |restore_cache_observer_|. Otherwise, kicks off a rebuild from the history
-  // database.
-  void OnCacheLoadDone(
-    scoped_refptr<URLIndexPrivateData> private_data_ptr);
-
-  // Callback function that sets the private data from the just-restored-from-
-  // file |private_data|. Notifies any |restore_cache_observer_| that the
-  // restore has succeeded.
-  void OnCacheRestored(URLIndexPrivateData* private_data);
-
-  // Posts a task to cache the index private data and write the cache file to
-  // the profile directory.
-  void PostSaveToCacheFileTask();
+  // Caches the index private data and writes the cache file to the profile
+  // directory.
+  void SaveToCacheFile();
 
   // Saves private_data_ to the given |path|. Runs on the UI thread.
   // Provided for unit testing so that a test cache file can be used.
   void DoSaveToCacheFile(const FilePath& path);
-
-  // Notifies the observer, if any, of the success of the private data caching.
-  // |succeeded| is true on a successful save.
-  void OnCacheSaveDone(scoped_refptr<RefCountedBool> succeeded);
 
   // Handles notifications of history changes.
   virtual void Observe(int notification_type,
@@ -246,15 +173,8 @@ class InMemoryURLIndex : public content::NotificationObserver,
   void OnURLsModified(const URLsModifiedDetails* details);
   void OnURLsDeleted(const URLsDeletedDetails* details);
 
-  // Sets the directory wherein the cache file will be maintained.
-  // For unit test usage only.
-  void set_history_dir(const FilePath& dir_path) { history_dir_ = dir_path; }
-
   // Returns a pointer to our private data. For unit testing only.
   URLIndexPrivateData* private_data() { return private_data_.get(); }
-
-  // Returns the set of whitelisted schemes. For unit testing only.
-  const std::set<std::string>& scheme_whitelist() { return scheme_whitelist_; }
 
   // The profile, may be null when testing.
   Profile* profile_;
@@ -264,24 +184,14 @@ class InMemoryURLIndex : public content::NotificationObserver,
   // should never be empty.
   FilePath history_dir_;
 
-  // Languages used during the word-breaking process during indexing.
-  std::string languages_;
-
-  // Only URLs with a whitelisted scheme are indexed.
-  std::set<std::string> scheme_whitelist_;
-
   // The index's durable private data.
-  scoped_refptr<URLIndexPrivateData> private_data_;
-
-  // Observers to notify upon restoral or save of the private data cache.
-  RestoreCacheObserver* restore_cache_observer_;
-  SaveCacheObserver* save_cache_observer_;
-
-  CancelableRequestConsumer cache_reader_consumer_;
-  content::NotificationRegistrar registrar_;
+  scoped_ptr<URLIndexPrivateData> private_data_;
 
   // Set to true once the shutdown process has begun.
   bool shutdown_;
+
+  CancelableRequestConsumer cache_reader_consumer_;
+  content::NotificationRegistrar registrar_;
 
   // Set to true when changes to the index have been made and the index needs
   // to be cached. Set to false when the index has been cached. Used as a
