@@ -181,7 +181,6 @@ AppNonClientFrameViewAura::AppNonClientFrameViewAura(
 AppNonClientFrameViewAura::~AppNonClientFrameViewAura() {
   if (control_widget_)
     control_widget_->Close();
-  control_widget_ = NULL;
   mouse_watcher_.Stop();
 }
 
@@ -231,6 +230,7 @@ void AppNonClientFrameViewAura::OnMouseEntered(
   if (!control_widget_) {
     control_widget_ = new views::Widget;
     views::Widget::InitParams params(views::Widget::InitParams::TYPE_CONTROL);
+    control_widget_->AddObserver(this);
     params.parent = browser_view()->GetNativeHandle();
     params.transparent = true;
     control_widget_->Init(params);
@@ -264,6 +264,11 @@ void AppNonClientFrameViewAura::MouseMovedOutOfHost() {
   layer->SetOpacity(0);
 }
 
+void AppNonClientFrameViewAura::OnWidgetClosing(views::Widget* widget) {
+  DCHECK_EQ(control_widget_, widget);
+  control_widget_ = NULL;
+}
+
 gfx::Rect AppNonClientFrameViewAura::GetControlBounds() const {
   gfx::Size preferred = control_view_->GetPreferredSize();
   gfx::Point location(width() - preferred.width(), 0);
@@ -276,7 +281,6 @@ gfx::Rect AppNonClientFrameViewAura::GetControlBounds() const {
 void AppNonClientFrameViewAura::Close() {
   if (control_widget_)
     control_widget_->Close();
-  control_widget_ = NULL;
   mouse_watcher_.Stop();
   frame()->Close();
 }
@@ -284,7 +288,6 @@ void AppNonClientFrameViewAura::Close() {
 void AppNonClientFrameViewAura::Restore() {
   if (control_widget_)
     control_widget_->Close();
-  control_widget_ = NULL;
   mouse_watcher_.Stop();
   frame()->Restore();
 }
