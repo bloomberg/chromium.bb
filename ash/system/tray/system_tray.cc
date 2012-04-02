@@ -56,6 +56,8 @@ const int kShadowHeight = 3;
 const int kLeftPadding = 4;
 const int kBottomLineHeight = 1;
 
+const int kTrayIconHeight = 29;
+
 const SkColor kShadowColor = SkColorSetARGB(25, 0, 0, 0);
 
 const SkColor kTrayBackgroundAlpha = 100;
@@ -88,7 +90,9 @@ class TrayItemContainer : public views::View {
   }
 
   virtual gfx::Size GetPreferredSize() OVERRIDE {
-    return child_->GetPreferredSize();
+    gfx::Size size = child_->GetPreferredSize();
+    size.set_height(kTrayIconHeight);
+    return size;
   }
 
   virtual void ChildPreferredSizeChanged(views::View* child) OVERRIDE {
