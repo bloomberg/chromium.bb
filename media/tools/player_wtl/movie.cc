@@ -14,14 +14,14 @@
 #include "media/base/message_loop_factory.h"
 #include "media/base/pipeline.h"
 #include "media/filters/ffmpeg_audio_decoder.h"
-#include "media/filters/ffmpeg_demuxer_factory.h"
+#include "media/filters/ffmpeg_demuxer.h"
 #include "media/filters/ffmpeg_video_decoder.h"
 #include "media/filters/file_data_source.h"
 #include "media/filters/null_audio_renderer.h"
 #include "media/filters/video_renderer_base.h"
 
 using media::FFmpegAudioDecoder;
-using media::FFmpegDemuxerFactory;
+using media::FFmpegDemuxer;
 using media::FFmpegVideoDecoder;
 using media::FileDataSource;
 using media::FilterCollection;
@@ -78,8 +78,8 @@ bool Movie::Open(const wchar_t* url, VideoRendererBase* video_renderer) {
 
   // Create filter collection.
   scoped_ptr<FilterCollection> collection(new FilterCollection());
-  collection->SetDemuxerFactory(scoped_ptr<DemuxerFactory>(
-      new FFmpegDemuxerFactory(data_source, pipeline_loop)));
+  collection->SetDemuxer(new FFmpegDemuxer(
+      pipeline_loop, data_source, true));
   collection->AddAudioDecoder(new FFmpegAudioDecoder(
       base::Bind(&MessageLoopFactory::GetMessageLoop,
                  base::Unretained(message_loop_factory_.get()),
@@ -97,7 +97,6 @@ bool Movie::Open(const wchar_t* url, VideoRendererBase* video_renderer) {
   media::PipelineStatusNotification note;
   pipeline_->Start(
       collection.Pass(),
-      url_utf8,
       media::PipelineStatusCB(),
       media::PipelineStatusCB(),
       media::NetworkEventCB(),

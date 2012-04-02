@@ -205,7 +205,7 @@ class WebMediaPlayerImpl
   void DataSourceInitialized(const GURL& gurl, media::PipelineStatus status);
 
   // Finishes starting the pipeline due to a call to load().
-  void StartPipeline(const GURL& gurl);
+  void StartPipeline();
 
   // Helpers that set the network/ready state and notifies the client if
   // they've changed.

@@ -51,8 +51,8 @@ int main(int argc, char** argv) {
   MessageLoop loop;
   media::PipelineStatusCB quitter = base::Bind(&QuitMessageLoop, &loop);
   scoped_refptr<media::FFmpegDemuxer> demuxer(
-      new media::FFmpegDemuxer(&loop, true));
-  demuxer->Initialize(file_data_source, quitter);
+      new media::FFmpegDemuxer(&loop, file_data_source, true));
+  demuxer->Initialize(quitter);
   loop.Run();
 
   demuxer->Seek(base::TimeDelta::FromMilliseconds(seek_target_ms), quitter);

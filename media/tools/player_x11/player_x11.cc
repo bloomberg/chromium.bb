@@ -24,7 +24,7 @@
 #include "media/base/pipeline.h"
 #include "media/base/video_frame.h"
 #include "media/filters/ffmpeg_audio_decoder.h"
-#include "media/filters/ffmpeg_demuxer_factory.h"
+#include "media/filters/ffmpeg_demuxer.h"
 #include "media/filters/ffmpeg_video_decoder.h"
 #include "media/filters/file_data_source.h"
 #include "media/filters/null_audio_renderer.h"
@@ -109,8 +109,8 @@ bool InitPipeline(MessageLoop* message_loop,
   // Create our filter factories.
   scoped_ptr<media::FilterCollection> collection(
       new media::FilterCollection());
-  collection->SetDemuxerFactory(scoped_ptr<media::DemuxerFactory>(
-      new media::FFmpegDemuxerFactory(data_source, message_loop)));
+  collection->SetDemuxer(new media::FFmpegDemuxer(
+      message_loop, data_source, true));
   collection->AddAudioDecoder(new media::FFmpegAudioDecoder(
       base::Bind(&media::MessageLoopFactory::GetMessageLoop,
                  base::Unretained(message_loop_factory),
@@ -133,7 +133,7 @@ bool InitPipeline(MessageLoop* message_loop,
   *pipeline = new media::Pipeline(message_loop, new media::MediaLog());
   media::PipelineStatusNotification note;
   (*pipeline)->Start(
-      collection.Pass(), "", media::PipelineStatusCB(),
+      collection.Pass(), media::PipelineStatusCB(),
       media::PipelineStatusCB(), media::NetworkEventCB(),
       note.Callback());
 

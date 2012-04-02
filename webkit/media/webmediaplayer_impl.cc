@@ -221,7 +221,7 @@ void WebMediaPlayerImpl::load(const WebKit::WebURL& url) {
   if (BuildMediaStreamCollection(url, media_stream_client_,
                                  message_loop_factory_.get(),
                                  filter_collection_.get())) {
-    StartPipeline(gurl);
+    StartPipeline();
     return;
   }
 
@@ -231,8 +231,8 @@ void WebMediaPlayerImpl::load(const WebKit::WebURL& url) {
                                  message_loop_factory_.get(),
                                  filter_collection_.get(),
                                  &video_decoder)) {
-    StartPipeline(gurl);
     proxy_->set_video_decoder(video_decoder);
+    StartPipeline();
     return;
   }
 
@@ -827,20 +827,24 @@ void WebMediaPlayerImpl::DataSourceInitialized(
     return;
   }
 
+  // TODO(scherkus): this is leftover from removing DemuxerFactory -- instead
+  // our DataSource should report this information. See http://crbug.com/120426
+  bool local_source = !gurl.SchemeIs("http") && !gurl.SchemeIs("https");
+
   scoped_refptr<media::FFmpegVideoDecoder> video_decoder;
   BuildDefaultCollection(proxy_->data_source(),
+                         local_source,
                          message_loop_factory_.get(),
                          filter_collection_.get(),
                          &video_decoder);
   proxy_->set_video_decoder(video_decoder);
-  StartPipeline(gurl);
+  StartPipeline();
 }
 
-void WebMediaPlayerImpl::StartPipeline(const GURL& gurl) {
+void WebMediaPlayerImpl::StartPipeline() {
   started_ = true;
   pipeline_->Start(
       filter_collection_.Pass(),
-      gurl.spec(),
       base::Bind(&WebMediaPlayerProxy::PipelineEndedCallback, proxy_.get()),
       base::Bind(&WebMediaPlayerProxy::PipelineErrorCallback, proxy_.get()),
       base::Bind(&WebMediaPlayerProxy::NetworkEventCallback, proxy_.get()),

@@ -89,7 +89,6 @@ Pipeline::~Pipeline() {
 }
 
 void Pipeline::Start(scoped_ptr<FilterCollection> collection,
-                     const std::string& url,
                      const PipelineStatusCB& ended_cb,
                      const PipelineStatusCB& error_cb,
                      const NetworkEventCB& network_cb,
@@ -100,7 +99,7 @@ void Pipeline::Start(scoped_ptr<FilterCollection> collection,
   running_ = true;
   message_loop_->PostTask(FROM_HERE, base::Bind(
       &Pipeline::StartTask, this, base::Passed(&collection),
-      url, ended_cb, error_cb, network_cb, start_cb));
+      ended_cb, error_cb, network_cb, start_cb));
 }
 
 void Pipeline::Stop(const base::Closure& stop_cb) {
@@ -593,7 +592,6 @@ void Pipeline::OnUpdateStatistics(const PipelineStatistics& stats) {
 }
 
 void Pipeline::StartTask(scoped_ptr<FilterCollection> filter_collection,
-                         const std::string& url,
                          const PipelineStatusCB& ended_cb,
                          const PipelineStatusCB& error_cb,
                          const NetworkEventCB& network_cb,
@@ -601,7 +599,6 @@ void Pipeline::StartTask(scoped_ptr<FilterCollection> filter_collection,
   DCHECK_EQ(MessageLoop::current(), message_loop_);
   DCHECK_EQ(kCreated, state_);
   filter_collection_ = filter_collection.Pass();
-  url_ = url;
   ended_cb_ = ended_cb;
   error_cb_ = error_cb;
   network_cb_ = network_cb;
@@ -1088,25 +1085,27 @@ void Pipeline::InitializeDemuxer() {
   DCHECK_EQ(MessageLoop::current(), message_loop_);
   DCHECK(IsPipelineOk());
 
-  filter_collection_->GetDemuxerFactory()->Build(
-      url_, base::Bind(&Pipeline::OnDemuxerBuilt, this));
-}
-
-void Pipeline::OnDemuxerBuilt(PipelineStatus status, Demuxer* demuxer) {
-  if (MessageLoop::current() != message_loop_) {
-    message_loop_->PostTask(FROM_HERE, base::Bind(
-        &Pipeline::OnDemuxerBuilt, this, status, make_scoped_refptr(demuxer)));
+  demuxer_ = filter_collection_->GetDemuxer();
+  if (!demuxer_) {
+    SetError(PIPELINE_ERROR_REQUIRED_FILTER_MISSING);
     return;
   }
 
-  demuxer_ = demuxer;
+  demuxer_->set_host(this);
+  demuxer_->Initialize(base::Bind(&Pipeline::OnDemuxerInitialized, this));
+}
+
+void Pipeline::OnDemuxerInitialized(PipelineStatus status) {
+  if (MessageLoop::current() != message_loop_) {
+    message_loop_->PostTask(FROM_HERE, base::Bind(
+        &Pipeline::OnDemuxerInitialized, this, status));
+    return;
+  }
+
   if (status != PIPELINE_OK) {
     SetError(status);
     return;
   }
-
-  CHECK(demuxer_) << "Null demuxer encountered despite PIPELINE_OK.";
-  demuxer_->set_host(this);
 
   {
     base::AutoLock auto_lock(lock_);

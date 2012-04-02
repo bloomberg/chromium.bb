@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,7 +20,6 @@ function assert(bool) {
 var canPlaySeen = false;
 var playingSeen = false;
 var canPlayThroughSeen = false;
-var stalledSeen = false;
 var loadStartSeen = false;
 var hasError = false;
 
@@ -49,16 +48,16 @@ function mediaEventHandler(e) {
       loadStartSeen = true;
       break;
     case 'stalled':
-      assert(loadStartSeen);
-      stalledSeen = true;
+      // We should never see a stalled event during the display portion of the
+      // test.
+      assert(false);
       break;
   }
 
-  var stallDone = !testNetworkEvents || stalledSeen;
   var progressDone = (willPlay && canPlayThroughSeen && playingSeen) ||
       (!willPlay && canPlayThroughSeen && !playingSeen);
 
-  if (stallDone && progressDone)
+  if (progressDone)
     document.title = 'PASS';
 }
 
