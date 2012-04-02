@@ -15,16 +15,18 @@
 #define CONTENT_COMMON_NET_URL_FETCHER_IMPL_H_
 #pragma once
 
+#include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/message_loop.h"
-#include "base/time.h"
+#include "content/common/content_export.h"
 #include "content/public/common/url_fetcher.h"
 
 namespace content {
+class URLFetcherCore;
+class URLFetcherDelegate;
 class URLFetcherFactory;
-}
+}  // namespace content
 
-class CONTENT_EXPORT URLFetcherImpl : public content::URLFetcher{
+class CONTENT_EXPORT URLFetcherImpl : public content::URLFetcher {
  public:
   // |url| is the URL to send the request to.
   // |request_type| is the type of request to make.
@@ -48,7 +50,7 @@ class CONTENT_EXPORT URLFetcherImpl : public content::URLFetcher{
       const std::string& extra_request_headers) OVERRIDE;
   virtual void AddExtraRequestHeader(const std::string& header_line) OVERRIDE;
   virtual void GetExtraRequestHeaders(
-      net::HttpRequestHeaders* headers) OVERRIDE;
+      net::HttpRequestHeaders* headers) const OVERRIDE;
   virtual void SetRequestContext(
       net::URLRequestContextGetter* request_context_getter) OVERRIDE;
   virtual void AssociateWithRenderView(const GURL& first_party_for_cookies,
@@ -84,24 +86,8 @@ class CONTENT_EXPORT URLFetcherImpl : public content::URLFetcher{
   static void CancelAll();
 
  protected:
-  // How should the response be stored?
-  enum ResponseDestinationType {
-    STRING,  // Default: In a std::string
-    PERMANENT_FILE,  // Write to a permanent file.
-    TEMP_FILE,  // Write to a temporary file.
-  };
-
   // Returns the delegate.
   content::URLFetcherDelegate* delegate() const;
-
-  // Used by tests.
-  const std::string& upload_data() const;
-
-  // Used by tests.
-  void set_was_fetched_via_proxy(bool flag);
-
-  // Used by tests.
-  void set_response_headers(scoped_refptr<net::HttpResponseHeaders> headers);
 
  private:
   friend class ScopedURLFetcherFactory;
@@ -121,8 +107,7 @@ class CONTENT_EXPORT URLFetcherImpl : public content::URLFetcher{
   // NOTE: for safety, this should only be used through ScopedURLFetcherFactory!
   static void set_factory(content::URLFetcherFactory* factory);
 
-  class Core;
-  scoped_refptr<Core> core_;
+  const scoped_refptr<content::URLFetcherCore> core_;
 
   DISALLOW_COPY_AND_ASSIGN(URLFetcherImpl);
 };

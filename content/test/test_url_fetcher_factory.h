@@ -77,7 +77,7 @@ class TestURLFetcher : public content::URLFetcher {
       const std::string& extra_request_headers) OVERRIDE;
   virtual void AddExtraRequestHeader(const std::string& header_line) OVERRIDE;
   virtual void GetExtraRequestHeaders(
-      net::HttpRequestHeaders* headers) OVERRIDE;
+      net::HttpRequestHeaders* headers) const OVERRIDE;
   virtual void SetRequestContext(
       net::URLRequestContextGetter* request_context_getter) OVERRIDE;
   virtual void AssociateWithRenderView(const GURL& first_party_for_cookies,
