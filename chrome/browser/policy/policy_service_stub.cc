@@ -24,7 +24,7 @@ const PolicyMap* PolicyServiceStub::GetPolicies(
   return NULL;
 };
 
-bool PolicyServiceStub:IsInitializationComplete() const {
+bool PolicyServiceStub::IsInitializationComplete() const {
   return true;
 }
 
