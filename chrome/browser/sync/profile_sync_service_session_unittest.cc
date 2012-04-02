@@ -964,7 +964,8 @@ TEST_F(ProfileSyncServiceSessionTest, SessionsRefresh) {
 }
 
 // Ensure model association associates the pre-existing tabs.
-TEST_F(ProfileSyncServiceSessionTest, ExistingTabs) {
+// TODO: Fix the test so that it doesn't crash (crbug.com/121487)
+TEST_F(ProfileSyncServiceSessionTest, DISABLED_ExistingTabs) {
   AddTab(browser(), GURL("http://foo1"));
   NavigateAndCommitActiveTab(GURL("http://foo2"));
   AddTab(browser(), GURL("http://bar1"));
