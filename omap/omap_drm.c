@@ -102,7 +102,7 @@ int omap_set_param(struct omap_device *dev, uint64_t param, uint64_t value)
 static struct omap_bo * omap_bo_new_impl(struct omap_device *dev,
 		union omap_gem_size size, uint32_t flags)
 {
-	struct omap_bo *bo;
+	struct omap_bo *bo = NULL;
 	struct drm_omap_gem_new req = {
 			.size = size,
 			.flags = flags,
