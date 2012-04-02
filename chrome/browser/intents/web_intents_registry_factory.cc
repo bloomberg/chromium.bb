@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/intents/web_intents_registry.h"
 #include "chrome/browser/intents/web_intents_registry_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -18,7 +19,7 @@ WebIntentsRegistryFactory::WebIntentsRegistryFactory()
                                  ProfileDependencyManager::GetInstance()) {
   // TODO(erg): For Shutdown() order, we need to:
   //     DependsOn(WebDataServiceFactory::GetInstance());
-  //     DependsOn(ExtensionServiceFactory::GetInstance());
+  DependsOn(ExtensionSystemFactory::GetInstance());
 }
 
 WebIntentsRegistryFactory::~WebIntentsRegistryFactory() {

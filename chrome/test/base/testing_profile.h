@@ -132,18 +132,6 @@ class TestingProfile : public Profile {
   // Blocks until TempalteURLService finishes loading.
   void BlockUntilTemplateURLServiceLoaded();
 
-  // Creates an ExtensionProcessManager. If not invoked, the
-  // ExtensionProcessManager is NULL.
-  void CreateExtensionProcessManager();
-
-  // Creates an ExtensionService initialized with the testing profile and
-  // returns it. The profile keeps its own copy of a scoped_refptr to the
-  // ExtensionService to make sure that is still alive to be notified when the
-  // profile is destroyed.
-  ExtensionService* CreateExtensionService(const CommandLine* command_line,
-                                           const FilePath& install_directory,
-                                           bool autoupdate_enabled);
-
   TestingPrefService* GetTestingPrefService();
 
   // content::BrowserContext
@@ -180,17 +168,15 @@ class TestingProfile : public Profile {
   virtual bool HasOffTheRecordProfile() OVERRIDE;
   virtual Profile* GetOriginalProfile() OVERRIDE;
   virtual VisitedLinkMaster* GetVisitedLinkMaster() OVERRIDE;
+  virtual ExtensionPrefValueMap* GetExtensionPrefValueMap() OVERRIDE;
   virtual ExtensionService* GetExtensionService() OVERRIDE;
   virtual UserScriptMaster* GetUserScriptMaster() OVERRIDE;
-  virtual ExtensionDevToolsManager* GetExtensionDevToolsManager() OVERRIDE;
   virtual ExtensionProcessManager* GetExtensionProcessManager() OVERRIDE;
-  virtual ExtensionMessageService* GetExtensionMessageService() OVERRIDE;
   virtual ExtensionEventRouter* GetExtensionEventRouter() OVERRIDE;
   void SetExtensionSpecialStoragePolicy(
       ExtensionSpecialStoragePolicy* extension_special_storage_policy);
   virtual ExtensionSpecialStoragePolicy*
       GetExtensionSpecialStoragePolicy() OVERRIDE;
-  virtual LazyBackgroundTaskQueue* GetLazyBackgroundTaskQueue() OVERRIDE;
   virtual FaviconService* GetFaviconService(ServiceAccessType access) OVERRIDE;
   virtual HistoryService* GetHistoryService(ServiceAccessType access) OVERRIDE;
   virtual HistoryService* GetHistoryServiceWithoutCreating() OVERRIDE;
@@ -241,7 +227,6 @@ class TestingProfile : public Profile {
   virtual base::Time GetStartTime() const OVERRIDE;
   virtual ProtocolHandlerRegistry* GetProtocolHandlerRegistry() OVERRIDE;
   virtual void MarkAsCleanShutdown() OVERRIDE {}
-  virtual void InitExtensions(bool extensions_enabled) OVERRIDE {}
   virtual void InitPromoResources() OVERRIDE {}
   virtual void InitRegisteredProtocolHandlers() OVERRIDE {}
 
@@ -267,7 +252,6 @@ class TestingProfile : public Profile {
   // history service processes all pending requests.
   void BlockUntilHistoryProcessesPendingRequests();
 
-  virtual ExtensionInfoMap* GetExtensionInfoMap() OVERRIDE;
   virtual PromoCounter* GetInstantPromoCounter() OVERRIDE;
   virtual ChromeURLDataManager* GetChromeURLDataManager() OVERRIDE;
   virtual chrome_browser_net::Predictor* GetNetworkPredictor() OVERRIDE;
@@ -348,16 +332,6 @@ class TestingProfile : public Profile {
 
   FilePath last_selected_directory_;
   scoped_refptr<history::TopSites> top_sites_;  // For history and thumbnails.
-
-  // The Extension Preferences. Only created if CreateExtensionService is
-  // invoked.
-  scoped_ptr<ExtensionPrefs> extension_prefs_;
-
-  scoped_ptr<ExtensionService> extension_service_;
-
-  scoped_ptr<ExtensionProcessManager> extension_process_manager_;
-
-  scoped_ptr<ExtensionPrefValueMap> extension_pref_value_map_;
 
   scoped_refptr<ExtensionSpecialStoragePolicy>
       extension_special_storage_policy_;

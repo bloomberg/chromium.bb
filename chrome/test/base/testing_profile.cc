@@ -20,6 +20,9 @@
 #include "chrome/browser/extensions/extension_pref_value_map.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
+#include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/extension_system_factory.h"
+#include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/geolocation/chrome_geolocation_permission_context.h"
 #include "chrome/browser/history/history.h"
@@ -195,6 +198,9 @@ TestingProfile::TestingProfile(const FilePath& path,
 }
 
 void TestingProfile::Init() {
+  ExtensionSystemFactory::GetInstance()->SetTestingFactory(
+      this, TestExtensionSystem::Build);
+
   profile_dependency_manager_->CreateProfileServices(this, true);
 
 #if defined(ENABLE_NOTIFICATIONS)
@@ -386,39 +392,6 @@ void TestingProfile::BlockUntilTemplateURLServiceLoaded() {
   turl_service_load_observer.Wait();
 }
 
-void TestingProfile::CreateExtensionProcessManager() {
-  extension_process_manager_.reset(ExtensionProcessManager::Create(this));
-}
-
-ExtensionService* TestingProfile::CreateExtensionService(
-    const CommandLine* command_line,
-    const FilePath& install_directory,
-    bool autoupdate_enabled) {
-  // Extension pref store, created for use by |extension_prefs_|.
-
-  extension_pref_value_map_.reset(new ExtensionPrefValueMap);
-
-  bool extensions_disabled =
-      command_line && command_line->HasSwitch(switches::kDisableExtensions);
-
-  // Note that the GetPrefs() creates a TestingPrefService, therefore
-  // the extension controlled pref values set in extension_prefs_
-  // are not reflected in the pref service. One would need to
-  // inject a new ExtensionPrefStore(extension_pref_value_map_.get(), false).
-  extension_prefs_.reset(
-      new ExtensionPrefs(GetPrefs(),
-                         install_directory,
-                         extension_pref_value_map_.get()));
-  extension_prefs_->Init(extensions_disabled);
-  extension_service_.reset(new ExtensionService(this,
-                                                command_line,
-                                                install_directory,
-                                                extension_prefs_.get(),
-                                                autoupdate_enabled,
-                                                true));
-  return extension_service_.get();
-}
-
 FilePath TestingProfile::GetPath() {
   return profile_path_;
 }
@@ -466,28 +439,24 @@ VisitedLinkMaster* TestingProfile::GetVisitedLinkMaster() {
   return NULL;
 }
 
+ExtensionPrefValueMap* TestingProfile::GetExtensionPrefValueMap() {
+  return NULL;
+}
+
 ExtensionService* TestingProfile::GetExtensionService() {
-  return extension_service_.get();
+  return ExtensionSystemFactory::GetForProfile(this)->extension_service();
 }
 
 UserScriptMaster* TestingProfile::GetUserScriptMaster() {
-  return NULL;
-}
-
-ExtensionDevToolsManager* TestingProfile::GetExtensionDevToolsManager() {
-  return NULL;
+  return ExtensionSystemFactory::GetForProfile(this)->user_script_master();
 }
 
 ExtensionProcessManager* TestingProfile::GetExtensionProcessManager() {
-  return extension_process_manager_.get();
-}
-
-ExtensionMessageService* TestingProfile::GetExtensionMessageService() {
-  return NULL;
+  return ExtensionSystemFactory::GetForProfile(this)->process_manager();
 }
 
 ExtensionEventRouter* TestingProfile::GetExtensionEventRouter() {
-  return NULL;
+  return ExtensionSystemFactory::GetForProfile(this)->event_router();
 }
 
 void TestingProfile::SetExtensionSpecialStoragePolicy(
@@ -500,10 +469,6 @@ TestingProfile::GetExtensionSpecialStoragePolicy() {
   if (!extension_special_storage_policy_.get())
     extension_special_storage_policy_ = new ExtensionSpecialStoragePolicy(NULL);
   return extension_special_storage_policy_.get();
-}
-
-LazyBackgroundTaskQueue* TestingProfile::GetLazyBackgroundTaskQueue() {
-  return NULL;
 }
 
 FaviconService* TestingProfile::GetFaviconService(ServiceAccessType access) {
@@ -590,8 +555,10 @@ net::URLRequestContextGetter* TestingProfile::GetRequestContext() {
 
 net::URLRequestContextGetter* TestingProfile::GetRequestContextForRenderProcess(
     int renderer_child_id) {
-  if (extension_service_.get()) {
-    const Extension* installed_app = extension_service_->
+  ExtensionService* extension_service =
+      ExtensionSystemFactory::GetForProfile(this)->extension_service();
+  if (extension_service) {
+    const Extension* installed_app = extension_service->
         GetInstalledAppForRenderer(renderer_child_id);
     if (installed_app != NULL && installed_app->is_storage_isolated())
       return GetRequestContextForIsolatedApp(installed_app->id());
@@ -730,10 +697,6 @@ void TestingProfile::BlockUntilHistoryProcessesPendingRequests() {
   CancelableRequestConsumer consumer;
   history_service_->ScheduleDBTask(new QuittingHistoryDBTask(), &consumer);
   MessageLoop::current()->Run();
-}
-
-ExtensionInfoMap* TestingProfile::GetExtensionInfoMap() {
-  return NULL;
 }
 
 PromoCounter* TestingProfile::GetInstantPromoCounter() {

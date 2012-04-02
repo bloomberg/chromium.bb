@@ -46,6 +46,8 @@
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
@@ -927,7 +929,7 @@ void AutomationProvider::ExecuteExtensionActionInActiveTabAsync(
   const Extension* extension = GetEnabledExtension(extension_handle);
   ExtensionService* service = profile_->GetExtensionService();
   ExtensionMessageService* message_service =
-      profile_->GetExtensionMessageService();
+      ExtensionSystemFactory::GetForProfile(profile_)->message_service();
   Browser* browser = browser_tracker_->GetResource(browser_handle);
   if (extension && service && message_service && browser) {
     int tab_id = ExtensionTabUtil::GetTabId(browser->GetSelectedWebContents());

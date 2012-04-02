@@ -147,6 +147,8 @@
         'browser/extensions/test_extension_prefs.h',
         'browser/extensions/test_extension_service.cc',
         'browser/extensions/test_extension_service.h',
+        'browser/extensions/test_extension_system.cc',
+        'browser/extensions/test_extension_system.h',
         'browser/mock_browsing_data_appcache_helper.cc',
         'browser/mock_browsing_data_appcache_helper.h',
         'browser/mock_browsing_data_cookie_helper.cc',

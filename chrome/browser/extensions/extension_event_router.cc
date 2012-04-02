@@ -15,6 +15,8 @@
 #include "chrome/browser/extensions/extension_processes_api.h"
 #include "chrome/browser/extensions/extension_processes_api_constants.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/extensions/lazy_background_task_queue.h"
 #include "chrome/browser/extensions/process_map.h"
@@ -101,7 +103,8 @@ void ExtensionEventRouter::DispatchEvent(IPC::Message::Sender* ipc_sender,
 
 ExtensionEventRouter::ExtensionEventRouter(Profile* profile)
     : profile_(profile),
-      extension_devtools_manager_(profile->GetExtensionDevToolsManager()) {
+      extension_devtools_manager_(
+          ExtensionSystemFactory::GetForProfile(profile)->devtools_manager()) {
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
                  content::NotificationService::AllSources());
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
@@ -393,7 +396,8 @@ void ExtensionEventRouter::MaybeLoadLazyBackgroundPage(
     return;
 
   if (!CanDispatchEventNow(profile, extension)) {
-    profile->GetLazyBackgroundTaskQueue()->AddPendingTask(
+    ExtensionSystemFactory::GetForProfile(profile)->
+        lazy_background_task_queue()->AddPendingTask(
         profile, extension->id(),
         base::Bind(&ExtensionEventRouter::DispatchPendingEvent,
                    base::Unretained(this), event));

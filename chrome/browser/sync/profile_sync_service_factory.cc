@@ -8,6 +8,7 @@
 #include "base/memory/singleton.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
+#include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
@@ -52,6 +53,7 @@ ProfileSyncServiceFactory::ProfileSyncServiceFactory()
   DependsOn(GlobalErrorServiceFactory::GetInstance());
   DependsOn(SigninManagerFactory::GetInstance());
   DependsOn(PasswordStoreFactory::GetInstance());
+  DependsOn(ExtensionSystemFactory::GetInstance());
 
   // The following have not been converted to ProfileKeyedServices yet, and for
   // now they are explicitly destroyed after the ProfileDependencyManager is
@@ -62,7 +64,6 @@ ProfileSyncServiceFactory::ProfileSyncServiceFactory()
   // DependsOn(HistoryServiceFactory::GetInstance());
   // DependsOn(BookmarkBarModelFactory::GetInstance());
   // DependsOn(FaviconServiceFactory::GetInstance());
-  // DependsOn(ExtensionServiceFactory::GetInstance());
 }
 
 ProfileSyncServiceFactory::~ProfileSyncServiceFactory() {

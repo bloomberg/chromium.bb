@@ -20,8 +20,11 @@
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_sync_data.h"
+#include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/extensions/test_extension_prefs.h"
 #include "chrome/browser/extensions/test_extension_service.h"
+#include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/extensions/updater/extension_downloader.h"
 #include "chrome/browser/extensions/updater/extension_downloader_delegate.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
@@ -983,17 +986,21 @@ class ExtensionUpdaterTest : public testing::Test {
     // service, not on our mock |service|.  This allows us to fake
     // the CrxInstaller actions we want.
     TestingProfile profile;
-    profile.CreateExtensionService(
-        CommandLine::ForCurrentProcess(),
-        FilePath(),
-        false);
-    profile.GetExtensionService()->set_extensions_enabled(true);
-    profile.GetExtensionService()->set_show_extensions_prompts(false);
+    static_cast<TestExtensionSystem*>(
+        ExtensionSystemFactory::GetForProfile(&profile))->
+        CreateExtensionService(
+            CommandLine::ForCurrentProcess(),
+            FilePath(),
+            false);
+    ExtensionService* extension_service =
+        ExtensionSystemFactory::GetForProfile(&profile)->extension_service();
+    extension_service->set_extensions_enabled(true);
+    extension_service->set_show_extensions_prompts(false);
 
     scoped_refptr<CrxInstaller> fake_crx1(
-        CrxInstaller::Create(profile.GetExtensionService(), NULL));
+        CrxInstaller::Create(extension_service, NULL));
     scoped_refptr<CrxInstaller> fake_crx2(
-        CrxInstaller::Create(profile.GetExtensionService(), NULL));
+        CrxInstaller::Create(extension_service, NULL));
 
     if (updates_start_running) {
       // Add fake CrxInstaller to be returned by service.UpdateExtension().

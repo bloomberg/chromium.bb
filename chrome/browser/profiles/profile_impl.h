@@ -22,8 +22,7 @@
 #include "content/public/browser/notification_registrar.h"
 
 class ExtensionNavigationObserver;
-class ExtensionPrefs;
-class ExtensionPrefValueMap;
+class ExtensionSystem;
 class NetPrefObserver;
 class PrefService;
 class PromoResourceService;
@@ -75,15 +74,13 @@ class ProfileImpl : public Profile,
   virtual history::TopSites* GetTopSites() OVERRIDE;
   virtual history::TopSites* GetTopSitesWithoutCreating() OVERRIDE;
   virtual VisitedLinkMaster* GetVisitedLinkMaster() OVERRIDE;
-  virtual UserScriptMaster* GetUserScriptMaster() OVERRIDE;
+  virtual ExtensionPrefValueMap* GetExtensionPrefValueMap() OVERRIDE;
   virtual ExtensionService* GetExtensionService() OVERRIDE;
-  virtual ExtensionDevToolsManager* GetExtensionDevToolsManager() OVERRIDE;
+  virtual UserScriptMaster* GetUserScriptMaster() OVERRIDE;
   virtual ExtensionProcessManager* GetExtensionProcessManager() OVERRIDE;
-  virtual ExtensionMessageService* GetExtensionMessageService() OVERRIDE;
   virtual ExtensionEventRouter* GetExtensionEventRouter() OVERRIDE;
   virtual ExtensionSpecialStoragePolicy*
       GetExtensionSpecialStoragePolicy() OVERRIDE;
-  virtual LazyBackgroundTaskQueue* GetLazyBackgroundTaskQueue() OVERRIDE;
   virtual FaviconService* GetFaviconService(ServiceAccessType sat) OVERRIDE;
   virtual GAIAInfoUpdateService* GetGAIAInfoUpdateService() OVERRIDE;
   virtual HistoryService* GetHistoryService(ServiceAccessType sat) OVERRIDE;
@@ -99,11 +96,6 @@ class ProfileImpl : public Profile,
       GetRequestContextForExtensions() OVERRIDE;
   virtual net::URLRequestContextGetter* GetRequestContextForIsolatedApp(
       const std::string& app_id) OVERRIDE;
-  virtual void RegisterExtensionWithRequestContexts(
-      const Extension* extension) OVERRIDE;
-  virtual void UnregisterExtensionWithRequestContexts(
-      const std::string& extension_id,
-      const extension_misc::UnloadedExtensionReason reason) OVERRIDE;
   virtual net::SSLConfigService* GetSSLConfigService() OVERRIDE;
   virtual HostContentSettingsMap* GetHostContentSettingsMap() OVERRIDE;
   virtual UserStyleSheetWatcher* GetUserStyleSheetWatcher() OVERRIDE;
@@ -112,12 +104,10 @@ class ProfileImpl : public Profile,
   virtual bool IsSameProfile(Profile* profile) OVERRIDE;
   virtual base::Time GetStartTime() const OVERRIDE;
   virtual void MarkAsCleanShutdown() OVERRIDE;
-  virtual void InitExtensions(bool extensions_enabled) OVERRIDE;
   virtual void InitPromoResources() OVERRIDE;
   virtual void InitRegisteredProtocolHandlers() OVERRIDE;
   virtual FilePath last_selected_directory() OVERRIDE;
   virtual void set_last_selected_directory(const FilePath& path) OVERRIDE;
-  virtual ExtensionInfoMap* GetExtensionInfoMap() OVERRIDE;
   virtual PromoCounter* GetInstantPromoCounter() OVERRIDE;
   virtual ChromeURLDataManager* GetChromeURLDataManager() OVERRIDE;
   virtual chrome_browser_net::Predictor* GetNetworkPredictor() OVERRIDE;
@@ -174,8 +164,6 @@ class ProfileImpl : public Profile,
 
   void EnsureSessionServiceCreated();
 
-  ExtensionPrefValueMap* GetExtensionPrefValueMap();
-
   void UpdateProfileUserNameCache();
 
 
@@ -208,24 +196,6 @@ class ProfileImpl : public Profile,
   scoped_ptr<VisitedLinkEventListener> visited_link_event_listener_;
   scoped_ptr<VisitedLinkMaster> visited_link_master_;
   ProfileImplIOData::Handle io_data_;
-  // Keep extension_prefs_ on top of extension_service_ because the latter
-  // maintains a pointer to the first and shall be destructed first.
-  scoped_ptr<ExtensionPrefs> extension_prefs_;
-  scoped_ptr<ExtensionService> extension_service_;
-  scoped_refptr<UserScriptMaster> user_script_master_;
-  scoped_refptr<ExtensionDevToolsManager> extension_devtools_manager_;
-  // extension_info_map_ needs to outlive extension_process_manager_.
-  scoped_refptr<ExtensionInfoMap> extension_info_map_;
-  // |extension_process_manager_| must be destroyed before |io_data_|.
-  // While |extension_process_manager_| still lives, we handle incoming
-  // resource requests from extension processes and those require access
-  // to the ResourceContext owned by |io_data_|.
-  scoped_ptr<ExtensionProcessManager> extension_process_manager_;
-  // This is a dependency of ExtensionMessageService and ExtensionEventRouter.
-  scoped_ptr<LazyBackgroundTaskQueue> lazy_background_task_queue_;
-  scoped_ptr<ExtensionMessageService> extension_message_service_;
-  scoped_ptr<ExtensionEventRouter> extension_event_router_;
-  scoped_ptr<ExtensionNavigationObserver> extension_navigation_observer_;
   scoped_refptr<ExtensionSpecialStoragePolicy>
       extension_special_storage_policy_;
   scoped_ptr<NetPrefObserver> net_pref_observer_;
