@@ -59,9 +59,9 @@ const int kTitlebarTopAndBottomEdgeThickness = 2;
 const int kIconLeftSpacing = 2;
 // The icon never shrinks below 16 px on a side.
 const int kIconMinimumSize = 16;
-// There is a 4 px gap between the icon and the title text.
-const int kIconTitleSpacing = 4;
-// There is a 5 px gap between the title text and the caption buttons.
+// The space between the window icon and the title text.
+const int kTitleIconOffsetX = 4;
+// The space between the title text and the caption buttons.
 const int kTitleCaptionSpacing = 5;
 
 #if defined(USE_AURA)
@@ -209,7 +209,8 @@ void CustomFrameView::ResetWindowControls() {
 }
 
 void CustomFrameView::UpdateWindowIcon() {
-  window_icon_->SchedulePaint();
+  if (window_icon_)
+    window_icon_->SchedulePaint();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -501,15 +502,16 @@ void CustomFrameView::LayoutWindowControls() {
 }
 
 void CustomFrameView::LayoutTitleBar() {
-  // The window title is based on the calculated icon position, even when there
-  // is no icon.
+  // The window title position is calculated based on the icon position, even
+  // when there is no icon.
   gfx::Rect icon_bounds(IconBounds());
-  if (frame_->widget_delegate()->ShouldShowWindowIcon())
+  bool show_window_icon = window_icon_ != NULL;
+  if (show_window_icon)
     window_icon_->SetBoundsRect(icon_bounds);
 
-  // Size the title.
-  int title_x = frame_->widget_delegate()->ShouldShowWindowIcon() ?
-      icon_bounds.right() + kIconTitleSpacing : icon_bounds.x();
+  // The offset between the window left edge and the title text.
+  int title_x = show_window_icon ? icon_bounds.right() + kTitleIconOffsetX
+                                 : icon_bounds.x();
   int title_height = GetTitleFont().GetHeight();
   // We bias the title position so that when the difference between the icon and
   // title heights is odd, the extra pixel of the title is above the vertical
