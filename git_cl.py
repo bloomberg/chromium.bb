@@ -800,9 +800,11 @@ def CMDstatus(parser, args):
     branches = RunGit(['for-each-ref', '--format=%(refname)', 'refs/heads'])
     if branches:
       print 'Branches associated with reviews:'
-      for branch in sorted(branches.splitlines()):
-        cl = Changelist(branchref=branch)
-        print "  %10s: %s" % (cl.GetBranch(), cl.GetIssue())
+      changes = (Changelist(branchref=b) for b in branches.splitlines())
+      branches = dict((cl.GetBranch(), cl.GetIssue()) for cl in changes)
+      alignment = max(5, max(len(b) for b in branches))
+      for branch in sorted(branches):
+        print "  %*s: %s" % (alignment, branch, branches[branch])
 
   cl = Changelist()
   if options.field:
