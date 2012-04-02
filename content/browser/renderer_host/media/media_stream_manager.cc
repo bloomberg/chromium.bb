@@ -101,7 +101,7 @@ struct MediaStreamManager::DeviceRequest {
 // static
 MediaStreamManager* MediaStreamManager::GetForResourceContext(
     content::ResourceContext* resource_context,
-    media::AudioManager* audio_manager) {
+    AudioManager* audio_manager) {
   MediaStreamManager* rv = static_cast<MediaStreamManager*>(
       resource_context->GetUserData(kMediaStreamManagerKeyName));
   if (!rv) {
@@ -111,7 +111,7 @@ MediaStreamManager* MediaStreamManager::GetForResourceContext(
   return rv;
 }
 
-MediaStreamManager::MediaStreamManager(media::AudioManager* audio_manager)
+MediaStreamManager::MediaStreamManager(AudioManager* audio_manager)
     : ALLOW_THIS_IN_INITIALIZER_LIST(
           device_settings_(new MediaStreamDeviceSettings(this))),
       enumeration_in_progress_(content::NUM_MEDIA_STREAM_DEVICE_TYPES, false),

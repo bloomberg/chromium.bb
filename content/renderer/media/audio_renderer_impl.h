@@ -129,7 +129,7 @@ class CONTENT_EXPORT AudioRendererImpl
   // than nothing.
   base::Time earliest_end_time_;
 
-  media::AudioParameters audio_parameters_;
+  AudioParameters audio_parameters_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioRendererImpl);
 };

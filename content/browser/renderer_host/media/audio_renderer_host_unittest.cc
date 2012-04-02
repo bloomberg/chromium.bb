@@ -43,7 +43,7 @@ static bool IsRunningHeadless() {
 class MockAudioRendererHost : public AudioRendererHost {
  public:
   explicit MockAudioRendererHost(
-      media::AudioManager* audio_manager,
+      AudioManager* audio_manager,
       content::MediaObserver* media_observer)
       : AudioRendererHost(audio_manager, media_observer),
         shared_memory_length_(0) {
@@ -161,7 +161,7 @@ class AudioRendererHostTest : public testing::Test {
                                            message_loop_.get()));
     ui_thread_.reset(new BrowserThreadImpl(BrowserThread::UI,
                                            message_loop_.get()));
-    audio_manager_.reset(media::AudioManager::Create());
+    audio_manager_.reset(AudioManager::Create());
     observer_.reset(new MockMediaObserver());
     host_ = new MockAudioRendererHost(audio_manager_.get(), observer_.get());
 
@@ -195,16 +195,15 @@ class AudioRendererHostTest : public testing::Test {
     EXPECT_CALL(*host_, OnStreamCreated(kStreamId, _))
         .WillOnce(QuitMessageLoop(message_loop_.get()));
 
-    media::AudioParameters::Format format;
+    AudioParameters::Format format;
     if (mock_stream_)
-      format = media::AudioParameters::AUDIO_MOCK;
+      format = AudioParameters::AUDIO_MOCK;
     else
-      format = media::AudioParameters::AUDIO_PCM_LINEAR;
+      format = AudioParameters::AUDIO_PCM_LINEAR;
 
-    media::AudioParameters params(
-        format, CHANNEL_LAYOUT_STEREO,
-        media::AudioParameters::kAudioCDSampleRate, 16,
-        media::AudioParameters::kAudioCDSampleRate / 10);
+    AudioParameters params(format, CHANNEL_LAYOUT_STEREO,
+                           AudioParameters::kAudioCDSampleRate, 16,
+                           AudioParameters::kAudioCDSampleRate / 10);
 
     // Send a create stream message to the audio output stream and wait until
     // we receive the created message.
@@ -280,7 +279,7 @@ class AudioRendererHostTest : public testing::Test {
   }
 
   // Called on the main thread.
-  static void PostQuitOnAudioThread(media::AudioManager* audio_manager,
+  static void PostQuitOnAudioThread(AudioManager* audio_manager,
                                     MessageLoop* message_loop) {
     audio_manager->GetMessageLoop()->PostTask(FROM_HERE,
         base::Bind(&PostQuitMessageLoop, message_loop));
@@ -291,7 +290,7 @@ class AudioRendererHostTest : public testing::Test {
   // current thread. It is used to synchronize with the audio thread when we are
   // closing an audio stream.
   void SyncWithAudioThread() {
-    // Don't use scoped_refptr to addref the media::AudioManager when posting
+    // Don't use scoped_refptr to addref the AudioManager when posting
     // to the thread that itself owns.
     message_loop_->PostTask(
         FROM_HERE, base::Bind(&PostQuitOnAudioThread,
@@ -311,7 +310,7 @@ class AudioRendererHostTest : public testing::Test {
   scoped_ptr<MessageLoop> message_loop_;
   scoped_ptr<BrowserThreadImpl> io_thread_;
   scoped_ptr<BrowserThreadImpl> ui_thread_;
-  scoped_ptr<media::AudioManager> audio_manager_;
+  scoped_ptr<AudioManager> audio_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioRendererHostTest);
 };
@@ -362,8 +361,7 @@ TEST_F(AudioRendererHostTest, SetVolume) {
 
   // Expect the volume is set.
   if (IsRunningHeadless()) {
-    EXPECT_EQ(0.5,
-              media::FakeAudioOutputStream::GetCurrentFakeStream()->volume());
+    EXPECT_EQ(0.5, FakeAudioOutputStream::GetCurrentFakeStream()->volume());
   }
   Close();
 }

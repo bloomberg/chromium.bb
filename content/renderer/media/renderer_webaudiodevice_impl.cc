@@ -8,8 +8,7 @@ using WebKit::WebAudioDevice;
 using WebKit::WebVector;
 
 RendererWebAudioDeviceImpl::RendererWebAudioDeviceImpl(
-    const media::AudioParameters& params,
-    WebAudioDevice::RenderCallback* callback)
+    const AudioParameters& params, WebAudioDevice::RenderCallback* callback)
     : is_running_(false),
       client_callback_(callback) {
   audio_device_ = new AudioDevice(params, this);

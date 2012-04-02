@@ -26,7 +26,7 @@ struct MediaStreamDispatcherHost::StreamRequest {
 MediaStreamDispatcherHost::MediaStreamDispatcherHost(
     content::ResourceContext* resource_context,
     int render_process_id,
-    media::AudioManager* audio_manager)
+    AudioManager* audio_manager)
     : resource_context_(resource_context),
       render_process_id_(render_process_id),
       audio_manager_(audio_manager) {

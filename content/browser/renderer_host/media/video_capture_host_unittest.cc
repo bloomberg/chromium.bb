@@ -72,7 +72,7 @@ class DumpVideo {
 class MockVideoCaptureHost : public VideoCaptureHost {
  public:
   MockVideoCaptureHost(content::ResourceContext* resource_context,
-                       media::AudioManager* audio_manager)
+                       AudioManager* audio_manager)
       : VideoCaptureHost(resource_context, audio_manager),
         return_buffers_(false),
         dump_video_(false) {}
@@ -205,7 +205,7 @@ class VideoCaptureHostTest : public testing::Test {
     io_thread_.reset(new BrowserThreadImpl(BrowserThread::IO,
                                            message_loop_.get()));
 
-    audio_manager_.reset(media::AudioManager::Create());
+    audio_manager_.reset(AudioManager::Create());
 
 #ifndef TEST_REAL_CAPTURE_DEVICE
     media_stream::MediaStreamManager::GetForResourceContext(
@@ -246,7 +246,7 @@ class VideoCaptureHostTest : public testing::Test {
   // Called on the main thread.
   static void PostQuitOnVideoCaptureManagerThread(
       MessageLoop* message_loop, content::ResourceContext* resource_context,
-      media:: AudioManager* audio_manager) {
+      AudioManager* audio_manager) {
     media_stream::MediaStreamManager* manager =
         media_stream::MediaStreamManager::GetForResourceContext(
             resource_context, audio_manager);
@@ -362,7 +362,7 @@ class VideoCaptureHostTest : public testing::Test {
   scoped_ptr<MessageLoop> message_loop_;
   scoped_ptr<BrowserThreadImpl> ui_thread_;
   scoped_ptr<BrowserThreadImpl> io_thread_;
-  scoped_ptr<media::AudioManager> audio_manager_;
+  scoped_ptr<AudioManager> audio_manager_;
   content::MockResourceContext resource_context_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureHostTest);

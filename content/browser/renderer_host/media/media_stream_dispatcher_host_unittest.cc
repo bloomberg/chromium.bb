@@ -37,7 +37,7 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost {
  public:
   MockMediaStreamDispatcherHost(content::ResourceContext* resource_context,
                                 MessageLoop* message_loop,
-                                media::AudioManager* audio_manager)
+                                AudioManager* audio_manager)
       : MediaStreamDispatcherHost(resource_context, kProcessId, audio_manager),
         message_loop_(message_loop) {}
   virtual ~MockMediaStreamDispatcherHost() {}
@@ -153,7 +153,7 @@ class MediaStreamDispatcherHostTest : public testing::Test {
     io_thread_.reset(new BrowserThreadImpl(BrowserThread::IO,
                                            message_loop_.get()));
 
-    audio_manager_.reset(media::AudioManager::Create());
+    audio_manager_.reset(AudioManager::Create());
 
     // Make sure we use fake devices to avoid long delays.
     MediaStreamManager::GetForResourceContext(
@@ -201,7 +201,7 @@ class MediaStreamDispatcherHostTest : public testing::Test {
   scoped_ptr<MessageLoop> message_loop_;
   scoped_ptr<BrowserThreadImpl> ui_thread_;
   scoped_ptr<BrowserThreadImpl> io_thread_;
-  scoped_ptr<media::AudioManager> audio_manager_;
+  scoped_ptr<AudioManager> audio_manager_;
   content::MockResourceContext resource_context_;
 };
 

@@ -22,7 +22,6 @@ struct SpeechRecognitionResult;
 
 namespace media {
 class AudioInputController;
-class AudioManager;
 }
 
 namespace speech {
@@ -92,10 +91,10 @@ class CONTENT_EXPORT SpeechRecognizerImpl
   // without blocking the IO thread.
   void CloseAudioControllerAsynchronously();
 
-  void SetAudioManagerForTesting(media::AudioManager* audio_manager);
+  void SetAudioManagerForTesting(AudioManager* audio_manager);
 
   content::SpeechRecognitionEventListener* listener_;
-  media::AudioManager* testing_audio_manager_;
+  AudioManager* testing_audio_manager_;
   scoped_ptr<SpeechRecognitionEngine> recognition_engine_;
   Endpointer endpointer_;
   scoped_refptr<media::AudioInputController> audio_controller_;

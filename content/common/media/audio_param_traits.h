@@ -9,15 +9,13 @@
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_param_traits.h"
 
-namespace media {
 class AudioParameters;
-}
 
 namespace IPC {
 
 template <>
-struct ParamTraits<media::AudioParameters> {
-  typedef media::AudioParameters param_type;
+struct ParamTraits<AudioParameters> {
+  typedef AudioParameters param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, PickleIterator* iter, param_type* r);
   static void Log(const param_type& p, std::string* l);

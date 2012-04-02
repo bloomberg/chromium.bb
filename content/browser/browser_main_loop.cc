@@ -206,7 +206,7 @@ void ImmediateShutdownAndExitProcess() {
 }
 
 // static
-media::AudioManager* BrowserMainLoop::GetAudioManager() {
+AudioManager* BrowserMainLoop::GetAudioManager() {
   return g_current_browser_main_loop->audio_manager_.get();
 }
 
@@ -327,7 +327,7 @@ void BrowserMainLoop::MainMessageLoopStart() {
   hi_res_timer_manager_.reset(new HighResolutionTimerManager);
 
   network_change_notifier_.reset(net::NetworkChangeNotifier::Create());
-  audio_manager_.reset(media::AudioManager::Create());
+  audio_manager_.reset(AudioManager::Create());
   online_state_observer_.reset(new BrowserOnlineStateObserver);
 
 #if defined(OS_WIN)

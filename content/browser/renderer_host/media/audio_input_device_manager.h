@@ -21,9 +21,7 @@
 #include "content/common/media/media_stream_options.h"
 #include "media/audio/audio_device_name.h"
 
-namespace media {
 class AudioManager;
-}
 
 namespace media_stream {
 
@@ -41,7 +39,7 @@ class CONTENT_EXPORT AudioInputDeviceManager
   static const int kInvalidSessionId;
   static const char kInvalidDeviceId[];
 
-  explicit AudioInputDeviceManager(media::AudioManager* audio_manager);
+  explicit AudioInputDeviceManager(AudioManager* audio_manager);
 
   // MediaStreamProvider implementation, called on IO thread.
   virtual void Register(MediaStreamProviderListener* listener) OVERRIDE;
@@ -74,7 +72,7 @@ class CONTENT_EXPORT AudioInputDeviceManager
   typedef std::map<int, media::AudioDeviceName> AudioInputDeviceMap;
   AudioInputDeviceMap devices_;
   // TODO(tommi): Is it necessary to store this as a member?
-  media::AudioManager* audio_manager_;
+  AudioManager* audio_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioInputDeviceManager);
 };

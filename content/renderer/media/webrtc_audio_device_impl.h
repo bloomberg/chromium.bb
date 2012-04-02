@@ -416,8 +416,8 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl
   webrtc::AudioTransport* audio_transport_callback_;
 
   // Cached values of utilized audio parameters. Platform dependent.
-  media::AudioParameters input_audio_parameters_;
-  media::AudioParameters output_audio_parameters_;
+  AudioParameters input_audio_parameters_;
+  AudioParameters output_audio_parameters_;
 
   // Cached value of the current audio delay on the input/capture side.
   int input_delay_ms_;

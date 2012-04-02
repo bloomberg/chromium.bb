@@ -692,7 +692,7 @@ void RenderMessageFilter::OnGetHardwareBufferSize(uint32* buffer_size) {
 void RenderMessageFilter::OnGetHardwareInputSampleRate(int* sample_rate) {
   // TODO(henrika): add support for all available input devices.
   *sample_rate = media::GetAudioInputHardwareSampleRate(
-      media::AudioManagerBase::kDefaultDeviceId);
+      AudioManagerBase::kDefaultDeviceId);
 }
 
 void RenderMessageFilter::OnGetHardwareSampleRate(int* sample_rate) {
@@ -703,7 +703,7 @@ void RenderMessageFilter::OnGetHardwareInputChannelLayout(
     ChannelLayout* layout) {
   // TODO(henrika): add support for all available input devices.
   *layout = media::GetAudioInputHardwareChannelLayout(
-      media::AudioManagerBase::kDefaultDeviceId);
+      AudioManagerBase::kDefaultDeviceId);
 }
 
 void RenderMessageFilter::OnDownloadUrl(const IPC::Message& message,

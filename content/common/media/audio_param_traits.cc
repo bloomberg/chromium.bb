@@ -7,8 +7,6 @@
 #include "base/stringprintf.h"
 #include "media/audio/audio_parameters.h"
 
-using media::AudioParameters;
-
 namespace IPC {
 
 void ParamTraits<AudioParameters>::Write(Message* m,

@@ -76,10 +76,6 @@
 #include "media/audio/audio_parameters.h"
 #include "media/base/audio_renderer_sink.h"
 
-namespace media {
-class AudioParameters;
-}
-
 class CONTENT_EXPORT AudioDevice
     : NON_EXPORTED_BASE(public media::AudioRendererSink),
       public AudioMessageFilter::Delegate,
@@ -90,11 +86,11 @@ class CONTENT_EXPORT AudioDevice
   // Minimal constructor where Initialize() must be called later.
   AudioDevice();
 
-  AudioDevice(const media::AudioParameters& params, RenderCallback* callback);
+  AudioDevice(const AudioParameters& params, RenderCallback* callback);
 
   // AudioRendererSink implementation.
 
-  virtual void Initialize(const media::AudioParameters& params,
+  virtual void Initialize(const AudioParameters& params,
                           RenderCallback* callback) OVERRIDE;
   // Starts audio playback.
   virtual void Start() OVERRIDE;
@@ -136,7 +132,7 @@ class CONTENT_EXPORT AudioDevice
   // The following methods are tasks posted on the IO thread that needs to
   // be executed on that thread. They interact with AudioMessageFilter and
   // sends IPC messages on that thread.
-  void InitializeOnIOThread(const media::AudioParameters& params);
+  void InitializeOnIOThread(const AudioParameters& params);
   void PlayOnIOThread();
   void PauseOnIOThread(bool flush);
   void ShutDownOnIOThread();
@@ -148,7 +144,7 @@ class CONTENT_EXPORT AudioDevice
   // If the IO loop dies before we do, we shut down the audio thread from here.
   virtual void WillDestroyCurrentMessageLoop() OVERRIDE;
 
-  media::AudioParameters audio_parameters_;
+  AudioParameters audio_parameters_;
 
   RenderCallback* callback_;
 

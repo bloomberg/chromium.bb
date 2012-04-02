@@ -10,15 +10,12 @@
 #include "content/public/browser/browser_message_filter.h"
 #include "net/url_request/url_request_context_getter.h"
 
+class AudioManager;
 struct InputTagSpeechHostMsg_StartRecognition_Params;
 
 namespace content {
 class SpeechRecognitionPreferences;
 struct SpeechRecognitionResult;
-}
-
-namespace media {
-class AudioManager;
 }
 
 namespace speech {
@@ -37,7 +34,7 @@ class CONTENT_EXPORT InputTagSpeechDispatcherHost
       int render_process_id,
       net::URLRequestContextGetter* context_getter,
       content::SpeechRecognitionPreferences* recognition_preferences,
-      media::AudioManager* audio_manager);
+      AudioManager* audio_manager);
 
   // Methods called by SpeechRecognitionManagerImpl.
   void SetRecognitionResult(int caller_id,
@@ -69,7 +66,7 @@ class CONTENT_EXPORT InputTagSpeechDispatcherHost
 
   scoped_refptr<net::URLRequestContextGetter> context_getter_;
   scoped_refptr<content::SpeechRecognitionPreferences> recognition_preferences_;
-  media::AudioManager* audio_manager_;
+  AudioManager* audio_manager_;
 
   static SpeechRecognitionManagerImpl* manager_;
 

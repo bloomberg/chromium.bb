@@ -53,15 +53,13 @@
 #include "media/audio/audio_output_controller.h"
 #include "media/audio/simple_sources.h"
 
+class AudioManager;
+class AudioParameters;
+
 namespace content {
 class MediaObserver;
 class ResourceContext;
 }  // namespace content
-
-namespace media {
-class AudioManager;
-class AudioParameters;
-}
 
 class CONTENT_EXPORT AudioRendererHost
     : public content::BrowserMessageFilter,
@@ -91,7 +89,7 @@ class CONTENT_EXPORT AudioRendererHost
   typedef std::map<int, AudioEntry*> AudioEntryMap;
 
   // Called from UI thread from the owner of this object.
-  AudioRendererHost(media::AudioManager* audio_manager,
+  AudioRendererHost(AudioManager* audio_manager,
                     content::MediaObserver* media_observer);
 
   // content::BrowserMessageFilter implementation.
@@ -123,7 +121,7 @@ class CONTENT_EXPORT AudioRendererHost
   // Creates an audio output stream with the specified format. If this call is
   // successful this object would keep an internal entry of the stream for the
   // required properties.
-  void OnCreateStream(int stream_id, const media::AudioParameters& params);
+  void OnCreateStream(int stream_id, const AudioParameters& params);
 
   // Play the audio stream referenced by |stream_id|.
   void OnPlayStream(int stream_id);
@@ -180,7 +178,7 @@ class CONTENT_EXPORT AudioRendererHost
   // A map of stream IDs to audio sources.
   AudioEntryMap audio_entries_;
 
-  media::AudioManager* audio_manager_;
+  AudioManager* audio_manager_;
   content::MediaObserver* media_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioRendererHost);

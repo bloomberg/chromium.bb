@@ -118,7 +118,7 @@ InputTagSpeechDispatcherHost::InputTagSpeechDispatcherHost(
     int render_process_id,
     net::URLRequestContextGetter* context_getter,
     content::SpeechRecognitionPreferences* recognition_preferences,
-    media::AudioManager* audio_manager)
+    AudioManager* audio_manager)
     : render_process_id_(render_process_id),
       may_have_pending_requests_(false),
       context_getter_(context_getter),

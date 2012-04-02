@@ -14,8 +14,6 @@
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_parameters.h"
 
-namespace media {
-
 class AudioManagerAndroid;
 
 // Implements PCM audio output support for Android using the AudioTrack API.
@@ -69,7 +67,5 @@ class AudioTrackOutputStream : public AudioOutputStream {
 
   DISALLOW_COPY_AND_ASSIGN(AudioTrackOutputStream);
 };
-
-}  // namespace media
 
 #endif  // MEDIA_AUDIO_ANDROID_AUDIO_TRACK_OUTPUT_ANDROID_H_

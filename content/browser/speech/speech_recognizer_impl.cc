@@ -23,7 +23,6 @@ using content::SpeechRecognitionEventListener;
 using content::SpeechRecognitionResult;
 using content::SpeechRecognizer;
 using media::AudioInputController;
-using media::AudioManager;
 
 namespace {
 
@@ -138,12 +137,13 @@ void SpeechRecognizerImpl::StartRecognition() {
   endpointer_.SetEnvironmentEstimationMode();
 
   AudioManager* audio_manager = (testing_audio_manager_ != NULL) ?
-      testing_audio_manager_ : BrowserMainLoop::GetAudioManager();
+                                 testing_audio_manager_ :
+                                 BrowserMainLoop::GetAudioManager();
   const int samples_per_packet = kAudioSampleRate *
       GoogleOneShotRemoteEngine::kAudioPacketIntervalMs / 1000;
-  media::AudioParameters params(
-      media::AudioParameters::AUDIO_PCM_LINEAR, kChannelLayout,
-      kAudioSampleRate, kNumBitsPerAudioSample, samples_per_packet);
+  AudioParameters params(AudioParameters::AUDIO_PCM_LINEAR, kChannelLayout,
+                         kAudioSampleRate, kNumBitsPerAudioSample,
+                         samples_per_packet);
   audio_controller_ = AudioInputController::Create(audio_manager, this, params);
   DCHECK(audio_controller_.get());
   VLOG(1) << "SpeechRecognizer starting record.";

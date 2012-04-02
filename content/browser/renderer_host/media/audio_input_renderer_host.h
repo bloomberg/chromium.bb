@@ -68,10 +68,8 @@ namespace content {
 class ResourceContext;
 }
 
-namespace media {
 class AudioManager;
 class AudioParameters;
-}
 
 class CONTENT_EXPORT AudioInputRendererHost
     : public content::BrowserMessageFilter,
@@ -101,7 +99,7 @@ class CONTENT_EXPORT AudioInputRendererHost
 
   // Called from UI thread from the owner of this object.
   AudioInputRendererHost(content::ResourceContext* resource_context,
-                         media::AudioManager* audio_manager);
+                         AudioManager* audio_manager);
 
   // content::BrowserMessageFilter implementation.
   virtual void OnChannelClosing() OVERRIDE;
@@ -141,7 +139,7 @@ class CONTENT_EXPORT AudioInputRendererHost
   // successful this object would keep an internal entry of the stream for the
   // required properties.
   void OnCreateStream(int stream_id,
-                      const media::AudioParameters& params,
+                      const AudioParameters& params,
                       const std::string& device_id,
                       bool automatic_gain_control);
 
@@ -199,7 +197,7 @@ class CONTENT_EXPORT AudioInputRendererHost
 
   // Used to get an instance of AudioInputDeviceManager.
   content::ResourceContext* resource_context_;
-  media::AudioManager* audio_manager_;
+  AudioManager* audio_manager_;
 
   // A map of stream IDs to audio sources.
   typedef std::map<int, AudioEntry*> AudioEntryMap;

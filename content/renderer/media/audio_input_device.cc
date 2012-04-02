@@ -21,7 +21,7 @@
 class AudioInputDevice::AudioThreadCallback
     : public AudioDeviceThread::Callback {
  public:
-  AudioThreadCallback(const media::AudioParameters& audio_parameters,
+  AudioThreadCallback(const AudioParameters& audio_parameters,
                       base::SharedMemoryHandle memory,
                       int memory_length,
                       CaptureCallback* capture_callback);
@@ -37,7 +37,7 @@ class AudioInputDevice::AudioThreadCallback
   DISALLOW_COPY_AND_ASSIGN(AudioThreadCallback);
 };
 
-AudioInputDevice::AudioInputDevice(const media::AudioParameters& params,
+AudioInputDevice::AudioInputDevice(const AudioParameters& params,
                                    CaptureCallback* callback,
                                    CaptureEventHandler* event_handler)
     : ScopedLoopObserver(ChildProcess::current()->io_message_loop()),
@@ -117,8 +117,7 @@ void AudioInputDevice::InitializeOnIOThread() {
   // and create the stream when getting a OnDeviceReady() callback.
   if (!session_id_) {
     Send(new AudioInputHostMsg_CreateStream(
-        stream_id_, audio_parameters_,
-        media::AudioManagerBase::kDefaultDeviceId,
+        stream_id_, audio_parameters_, AudioManagerBase::kDefaultDeviceId,
         agc_is_enabled_));
   } else {
     Send(new AudioInputHostMsg_StartDevice(stream_id_, session_id_));
@@ -298,7 +297,7 @@ void AudioInputDevice::WillDestroyCurrentMessageLoop() {
 
 // AudioInputDevice::AudioThreadCallback
 AudioInputDevice::AudioThreadCallback::AudioThreadCallback(
-    const media::AudioParameters& audio_parameters,
+    const AudioParameters& audio_parameters,
     base::SharedMemoryHandle memory,
     int memory_length,
     CaptureCallback* capture_callback)
@@ -317,10 +316,10 @@ void AudioInputDevice::AudioThreadCallback::Process(int pending_data) {
   // The shared memory represents parameters, size of the data buffer and the
   // actual data buffer containing audio data. Map the memory into this
   // structure and parse out parameters and the data area.
-  media::AudioInputBuffer* buffer =
-      reinterpret_cast<media::AudioInputBuffer*>(shared_memory_.memory());
+  AudioInputBuffer* buffer =
+      reinterpret_cast<AudioInputBuffer*>(shared_memory_.memory());
   uint32 size = buffer->params.size;
-  DCHECK_EQ(size, memory_length_ - sizeof(media::AudioInputBufferParameters));
+  DCHECK_EQ(size, memory_length_ - sizeof(AudioInputBufferParameters));
   double volume = buffer->params.volume;
 
   int audio_delay_milliseconds = pending_data / bytes_per_ms_;

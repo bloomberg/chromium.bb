@@ -23,7 +23,7 @@ using media::AudioRendererSink;
 class AudioDevice::AudioThreadCallback
     : public AudioDeviceThread::Callback {
  public:
-  AudioThreadCallback(const media::AudioParameters& audio_parameters,
+  AudioThreadCallback(const AudioParameters& audio_parameters,
                       base::SharedMemoryHandle memory,
                       int memory_length,
                       AudioRendererSink::RenderCallback* render_callback);
@@ -49,7 +49,7 @@ AudioDevice::AudioDevice()
   filter_ = RenderThreadImpl::current()->audio_message_filter();
 }
 
-AudioDevice::AudioDevice(const media::AudioParameters& params,
+AudioDevice::AudioDevice(const AudioParameters& params,
                          RenderCallback* callback)
     : ScopedLoopObserver(ChildProcess::current()->io_message_loop()),
       audio_parameters_(params),
@@ -61,7 +61,7 @@ AudioDevice::AudioDevice(const media::AudioParameters& params,
   filter_ = RenderThreadImpl::current()->audio_message_filter();
 }
 
-void AudioDevice::Initialize(const media::AudioParameters& params,
+void AudioDevice::Initialize(const AudioParameters& params,
                              RenderCallback* callback) {
   CHECK_EQ(0, stream_id_) <<
       "AudioDevice::Initialize() must be called before Start()";
@@ -130,7 +130,7 @@ void AudioDevice::GetVolume(double* volume) {
   *volume = volume_;
 }
 
-void AudioDevice::InitializeOnIOThread(const media::AudioParameters& params) {
+void AudioDevice::InitializeOnIOThread(const AudioParameters& params) {
   DCHECK(message_loop()->BelongsToCurrentThread());
   // Make sure we don't create the stream more than once.
   DCHECK_EQ(0, stream_id_);
@@ -262,7 +262,7 @@ void AudioDevice::WillDestroyCurrentMessageLoop() {
 // AudioDevice::AudioThreadCallback
 
 AudioDevice::AudioThreadCallback::AudioThreadCallback(
-    const media::AudioParameters& audio_parameters,
+    const AudioParameters& audio_parameters,
     base::SharedMemoryHandle memory,
     int memory_length,
     media::AudioRendererSink::RenderCallback* render_callback)

@@ -61,7 +61,7 @@ bool AudioRendererImpl::OnInitialize(int bits_per_channel,
   // Please see: http://code.google.com/p/chromium/issues/detail?id=103627
   // for more details.
   audio_parameters_.Reset(
-      media::AudioParameters::AUDIO_PCM_LINEAR,
+      AudioParameters::AUDIO_PCM_LINEAR,
       channel_layout, sample_rate, bits_per_channel,
       audio_hardware::GetHighLatencyOutputBufferSize(sample_rate));
 
