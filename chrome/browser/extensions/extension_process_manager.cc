@@ -17,6 +17,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_view_type.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -38,28 +39,6 @@ using content::RenderViewHost;
 using content::SiteInstance;
 
 namespace {
-
-// Accessors for an extension's lazy_keepalive_count - one for each virtual
-// profile.
-static base::LazyInstance<base::PropertyAccessor<int> >
-    g_property_accessor = LAZY_INSTANCE_INITIALIZER;
-static base::LazyInstance<base::PropertyAccessor<int> >
-    g_property_accessor_incognito = LAZY_INSTANCE_INITIALIZER;
-
-int& GetLazyKeepaliveCount(Profile* profile, const Extension* extension) {
-  base::PropertyBag* bag =
-      profile->GetExtensionService()->GetPropertyBag(extension);
-
-  base::LazyInstance<base::PropertyAccessor<int> >& accessor =
-      profile->IsOffTheRecord() ?
-          g_property_accessor_incognito : g_property_accessor;
-  int* count = accessor.Get().GetProperty(bag);
-  if (!count) {
-    accessor.Get().SetProperty(bag, 0);
-    count = accessor.Get().GetProperty(bag);
-  }
-  return *count;
-}
 
 std::string GetExtensionID(RenderViewHost* render_view_host) {
   // This works for both apps and extensions because the site has been
@@ -111,6 +90,24 @@ static void CreateBackgroundHostsForProfileStartup(
 }
 
 }  // namespace
+
+struct ExtensionProcessManager::BackgroundPageData {
+  // The count of things keeping the lazy background page alive.
+  int lazy_keepalive_count;
+
+  // This is used with the ShouldUnload message, to ensure that the extension
+  // remained idle between sending the message and receiving the ack.
+  int close_sequence_id;
+
+  // True if the page responded to the ShouldUnload message and is currently
+  // dispatching the unload event. We use this to ignore any activity
+  // generated during the unload event that would otherwise keep the
+  // extension alive.
+  bool is_closing;
+
+  BackgroundPageData()
+      : lazy_keepalive_count(0), close_sequence_id(0), is_closing(false) {}
+};
 
 //
 // ExtensionProcessManager
@@ -380,7 +377,7 @@ int ExtensionProcessManager::GetLazyKeepaliveCount(const Extension* extension) {
   if (!extension->has_lazy_background_page())
     return 0;
 
-  return ::GetLazyKeepaliveCount(GetProfile(), extension);
+  return background_page_data_[extension->id()].lazy_keepalive_count;
 }
 
 int ExtensionProcessManager::IncrementLazyKeepaliveCount(
@@ -388,7 +385,7 @@ int ExtensionProcessManager::IncrementLazyKeepaliveCount(
   if (!extension->has_lazy_background_page())
     return 0;
 
-  int& count = ::GetLazyKeepaliveCount(GetProfile(), extension);
+  int& count = background_page_data_[extension->id()].lazy_keepalive_count;
   if (++count == 1)
     OnLazyBackgroundPageActive(extension->id());
 
@@ -400,7 +397,7 @@ int ExtensionProcessManager::DecrementLazyKeepaliveCount(
   if (!extension->has_lazy_background_page())
     return 0;
 
-  int& count = ::GetLazyKeepaliveCount(GetProfile(), extension);
+  int& count = background_page_data_[extension->id()].lazy_keepalive_count;
   DCHECK_GT(count, 0);
   if (--count == 0)
     OnLazyBackgroundPageIdle(extension->id());
@@ -411,22 +408,40 @@ int ExtensionProcessManager::DecrementLazyKeepaliveCount(
 void ExtensionProcessManager::OnLazyBackgroundPageIdle(
     const std::string& extension_id) {
   ExtensionHost* host = GetBackgroundHostForExtension(extension_id);
-  if (host)
-    host->SendShouldClose();
+  if (host && !background_page_data_[extension_id].is_closing) {
+    // Tell the renderer we are about to close. This is a simple ping that the
+    // renderer will respond to. The purpose is to control sequencing: if the
+    // extension remains idle until the renderer responds with an ACK, then we
+    // know that the extension process is ready to shut down.
+    host->render_view_host()->Send(new ExtensionMsg_ShouldUnload(
+        extension_id, ++background_page_data_[extension_id].close_sequence_id));
+  }
 }
 
 void ExtensionProcessManager::OnLazyBackgroundPageActive(
     const std::string& extension_id) {
   ExtensionHost* host = GetBackgroundHostForExtension(extension_id);
-  if (host)
-    host->CancelShouldClose();
+  if (host && !background_page_data_[extension_id].is_closing) {
+    // Cancel the current close sequence by changing the close_sequence_id,
+    // which causes us to ignore the next ShouldUnloadAck.
+    ++background_page_data_[extension_id].close_sequence_id;
+  }
 }
 
-void ExtensionProcessManager::OnShouldCloseAck(
+void ExtensionProcessManager::OnShouldUnloadAck(
      const std::string& extension_id, int sequence_id) {
   ExtensionHost* host = GetBackgroundHostForExtension(extension_id);
+  if (host &&
+      sequence_id == background_page_data_[extension_id].close_sequence_id) {
+    background_page_data_[extension_id].is_closing = true;
+    host->render_view_host()->Send(new ExtensionMsg_Unload(extension_id));
+  }
+}
+
+void ExtensionProcessManager::OnUnloadAck(const std::string& extension_id) {
+  ExtensionHost* host = GetBackgroundHostForExtension(extension_id);
   if (host)
-    host->OnShouldCloseAck(sequence_id);
+    CloseBackgroundHost(host);
 }
 
 void ExtensionProcessManager::OnNetworkRequestStarted(
@@ -479,13 +494,15 @@ void ExtensionProcessManager::Observe(
           break;
         }
       }
+      background_page_data_.erase(extension->id());
       break;
     }
 
     case chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED: {
       ExtensionHost* host = content::Details<ExtensionHost>(details).ptr();
       all_hosts_.erase(host);
-      background_hosts_.erase(host);
+      if (background_hosts_.erase(host))
+        background_page_data_.erase(host->extension()->id());
       break;
     }
 

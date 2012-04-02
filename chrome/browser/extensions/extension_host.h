@@ -94,21 +94,6 @@ class ExtensionHost : public content::WebContentsDelegate,
   // Helper variant of the above for cases where no Browser is present.
   void CreateViewWithoutBrowser();
 
-  // Send a message to the renderer to notify it we are about to close.
-  // This is a simple ping that the renderer will respond to. The purpose
-  // is to control sequencing: if the extension remains idle until the renderer
-  // responds with an ACK, then we know that the extension process is ready to
-  // shut down.
-  void SendShouldClose();
-
-  // Cancels the current close sequence. Any future Close ACKs will be ignored
-  // (unless SendShouldClose is called again).
-  void CancelShouldClose();
-
-  // Handles the close ACK. The sequence ID lets us identify whether we have
-  // cancelled this close sequence.
-  void OnShouldCloseAck(int sequence_id);
-
   const Extension* extension() const { return extension_; }
   const std::string& extension_id() const { return extension_id_; }
   content::WebContents* host_contents() const { return host_contents_.get(); }
@@ -258,10 +243,6 @@ class ExtensionHost : public content::WebContentsDelegate,
 
   // Used to measure how long it's been since the host was created.
   PerfTimer since_created_;
-
-  // A unique ID associated with each call to ShouldClose. This allows us
-  // to differentiate which ShouldClose message the renderer is responding to.
-  int close_sequence_id_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionHost);
 };

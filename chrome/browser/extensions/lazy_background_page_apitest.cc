@@ -366,6 +366,23 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, Messaging) {
   EXPECT_FALSE(pm->GetBackgroundHostForExtension(last_loaded_extension_id_));
 }
 
+// Tests that the lazy background page receives the unload event when we
+// close it, and that it can execute simple API calls that don't require an
+// asynchronous response.
+IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, OnUnload) {
+  ASSERT_TRUE(LoadExtensionAndWait("on_unload"));
+
+  // Lazy Background Page has been shut down.
+  ExtensionProcessManager* pm =
+      browser()->profile()->GetExtensionProcessManager();
+  EXPECT_FALSE(pm->GetBackgroundHostForExtension(last_loaded_extension_id_));
+
+  // The browser action has a new title.
+  BrowserActionTestUtil browser_action(browser());
+  ASSERT_EQ(1, browser_action.NumberOfBrowserActions());
+  EXPECT_EQ("Success", browser_action.GetTooltip(0));
+}
+
 // TODO: background page with timer.
 // TODO: background page that interacts with popup.
 // TODO: background page with menu.

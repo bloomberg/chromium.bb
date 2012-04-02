@@ -81,6 +81,9 @@ namespace {
 
 static const int64 kInitialExtensionIdleHandlerDelayMs = 5*1000;
 static const int64 kMaxExtensionIdleHandlerDelayMs = 5*60*1000;
+static const char kEventDispatchFunction[] = "Event.dispatchJSON";
+static const char kOnUnloadEvent[] =
+    "experimental.extension.onBackgroundPageUnloadingSoon";
 
 class ChromeHiddenNativeHandler : public NativeHandler {
  public:
@@ -175,7 +178,8 @@ bool ExtensionDispatcher::OnControlMessageReceived(
     IPC_MESSAGE_HANDLER(ExtensionMsg_UpdatePermissions, OnUpdatePermissions)
     IPC_MESSAGE_HANDLER(ExtensionMsg_UpdateUserScripts, OnUpdateUserScripts)
     IPC_MESSAGE_HANDLER(ExtensionMsg_UsingWebRequestAPI, OnUsingWebRequestAPI)
-    IPC_MESSAGE_HANDLER(ExtensionMsg_ShouldClose, OnShouldClose)
+    IPC_MESSAGE_HANDLER(ExtensionMsg_ShouldUnload, OnShouldUnload)
+    IPC_MESSAGE_HANDLER(ExtensionMsg_Unload, OnUnload)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -247,7 +251,7 @@ void ExtensionDispatcher::OnMessageInvoke(const std::string& extension_id,
   const Extension* extension = extensions_.GetByID(extension_id);
   // Tell the browser process that the event is dispatched and we're idle.
   if (extension && extension->has_lazy_background_page() &&
-      function_name == "Event.dispatchJSON") { // may always be true
+      function_name == kEventDispatchFunction) {
     RenderThread::Get()->Send(
         new ExtensionHostMsg_ExtensionEventAck(extension_id));
   }
@@ -730,10 +734,25 @@ void ExtensionDispatcher::OnUsingWebRequestAPI(
   webrequest_other_ = other;
 }
 
-void ExtensionDispatcher::OnShouldClose(const std::string& extension_id,
-                                        int sequence_id) {
+void ExtensionDispatcher::OnShouldUnload(const std::string& extension_id,
+                                         int sequence_id) {
   RenderThread::Get()->Send(
-      new ExtensionHostMsg_ShouldCloseAck(extension_id, sequence_id));
+      new ExtensionHostMsg_ShouldUnloadAck(extension_id, sequence_id));
+}
+
+void ExtensionDispatcher::OnUnload(const std::string& extension_id) {
+  // Dispatch the unload event. This doesn't go through the standard event
+  // dispatch machinery because it requires special handling. We need to let
+  // the browser know when we are starting and stopping the event dispatch, so
+  // that it still considers the extension idle despite any activity the unload
+  // event creates.
+  ListValue args;
+  args.Set(0, Value::CreateStringValue(kOnUnloadEvent));
+  args.Set(1, Value::CreateStringValue("[]"));
+  v8_context_set_.DispatchChromeHiddenMethod(
+      extension_id, kEventDispatchFunction, args, NULL, GURL());
+
+  RenderThread::Get()->Send(new ExtensionHostMsg_UnloadAck(extension_id));
 }
 
 Feature::Context ExtensionDispatcher::ClassifyJavaScriptContext(

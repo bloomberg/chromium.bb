@@ -199,6 +199,8 @@
             <ol>
               <li>
                 <a href="#event-onInstalled">onInstalled</a>
+              </li><li>
+                <a href="#event-onUnload">onUnload</a>
               </li>
             </ol>
           </li>
@@ -235,6 +237,21 @@
               </div>
               <div class="description">
                 <p>Fired when the extension is first installed.</p>
+                <!-- LISTENER PARAMETERS -->
+                <!-- EXTRA PARAMETERS -->
+                <!-- LISTENER RETURN VALUE -->
+                <dl>
+                </dl>
+              </div> <!-- /description -->
+            </div><div class="apiItem">
+              <a name="event-onUnload"></a>
+              <h4>onUnload</h4>
+              <div class="summary">
+                <!-- Note: intentionally longer 80 columns -->
+                <span class="subdued">chrome.experimental.extension.</span><span>onUnload</span><span class="subdued">.addListener</span>(function(<span></span>) <span class="subdued">{...}</span><span></span>);
+              </div>
+              <div class="description">
+                <p>Sent to the transient background page just before it is unloaded. This gives the extension opportunity to do some clean up. Note that since the page is unloading, any asynchronous operations started while handling this event are not guaranteed to complete.</p>
                 <!-- LISTENER PARAMETERS -->
                 <!-- EXTRA PARAMETERS -->
                 <!-- LISTENER RETURN VALUE -->

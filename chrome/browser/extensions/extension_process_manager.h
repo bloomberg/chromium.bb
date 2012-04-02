@@ -97,9 +97,12 @@ class ExtensionProcessManager : public content::NotificationObserver {
   int IncrementLazyKeepaliveCount(const Extension* extension);
   int DecrementLazyKeepaliveCount(const Extension* extension);
 
-  // Handles a response to the ShouldClose message, used for lazy background
+  // Handles a response to the ShouldUnload message, used for lazy background
   // pages.
-  void OnShouldCloseAck(const std::string& extension_id, int sequence_id);
+  void OnShouldUnloadAck(const std::string& extension_id, int sequence_id);
+
+  // Same as above, for the Unload message.
+  void OnUnloadAck(const std::string& extension_id);
 
   // Tracks network requests for a given RenderViewHost, used to know
   // when network activity is idle for lazy background pages.
@@ -143,6 +146,11 @@ class ExtensionProcessManager : public content::NotificationObserver {
   scoped_refptr<content::SiteInstance> site_instance_;
 
  private:
+  // Extra information we keep for each extension's background page.
+  struct BackgroundPageData;
+  typedef std::string ExtensionId;
+  typedef std::map<ExtensionId, BackgroundPageData> BackgroundPageDataMap;
+
   // Contains all extension-related RenderViewHost instances for all extensions.
   // We also keep a cache of the host's view type, because that information
   // is not accessible at registration/deregistration time.
@@ -166,6 +174,8 @@ class ExtensionProcessManager : public content::NotificationObserver {
   // associated with a WebContents. This allows us to gather information that
   // was not available when the host was first registered.
   void UpdateRegisteredRenderView(content::RenderViewHost* render_view_host);
+
+  BackgroundPageDataMap background_page_data_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionProcessManager);
 };

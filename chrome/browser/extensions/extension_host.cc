@@ -132,8 +132,7 @@ ExtensionHost::ExtensionHost(const Extension* extension,
       ALLOW_THIS_IN_INITIALIZER_LIST(
           extension_function_dispatcher_(profile_, this)),
       extension_host_type_(host_type),
-      associated_web_contents_(NULL),
-      close_sequence_id_(0) {
+      associated_web_contents_(NULL) {
   host_contents_.reset(WebContents::Create(
       profile_, site_instance, MSG_ROUTING_NONE, NULL, NULL));
   content::WebContentsObserver::Observe(host_contents_.get());
@@ -224,25 +223,6 @@ void ExtensionHost::CreateRenderViewNow() {
     DCHECK(IsRenderViewLive());
     profile_->GetExtensionService()->DidCreateRenderViewForBackgroundPage(this);
   }
-}
-
-void ExtensionHost::SendShouldClose() {
-  CHECK(extension()->has_lazy_background_page());
-  render_view_host()->Send(new ExtensionMsg_ShouldClose(
-      extension()->id(), ++close_sequence_id_));
-  // TODO(mpcomplete): start timeout
-}
-
-void ExtensionHost::CancelShouldClose() {
-  CHECK(extension()->has_lazy_background_page());
-  ++close_sequence_id_;
-}
-
-void ExtensionHost::OnShouldCloseAck(int sequence_id) {
-  CHECK(extension()->has_lazy_background_page());
-  if (sequence_id != close_sequence_id_)
-    return;
-  Close();
 }
 
 const Browser* ExtensionHost::GetBrowser() const {

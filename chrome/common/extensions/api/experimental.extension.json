@@ -10,6 +10,11 @@
         "name": "onInstalled",
         "type": "function",
         "description": "Fired when the extension is first installed."
+      },
+      {
+        "name": "onBackgroundPageUnloadingSoon",
+        "type": "function",
+        "description": "Sent to the transient background page just before it is unloaded. This gives the extension opportunity to do some clean up. Note that since the page is unloading, any asynchronous operations started while handling this event are not guaranteed to complete."
       }
     ]
   }

@@ -428,11 +428,16 @@ void ExtensionEventRouter::IncrementInFlightEvents(
 
 void ExtensionEventRouter::OnExtensionEventAck(
     Profile* profile, const std::string& extension_id) {
-  const Extension* extension =
-      profile->GetExtensionService()->extensions()->GetByID(extension_id);
-  if (extension && extension->has_lazy_background_page()) {
+  // Don't decrement the count if the background page has gone away. This can
+  // happen if the event was dispatched while unloading the page.
+  // TODO(mpcomplete): This might be insufficient.. what if the page goes away
+  // and comes back before we get the ack? Then we'll have an imbalanced
+  // keepalive count.
+  ExtensionHost* host = profile->GetExtensionProcessManager()->
+      GetBackgroundHostForExtension(extension_id);
+  if (host && host->extension()->has_lazy_background_page()) {
     profile->GetExtensionProcessManager()->DecrementLazyKeepaliveCount(
-        extension);
+        host->extension());
   }
 }
 
