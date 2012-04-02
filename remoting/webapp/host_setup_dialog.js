@@ -316,7 +316,7 @@ remoting.HostSetupDialog.prototype.pollDaemonState_ = function() {
   var retry = false;  // Set to true if we haven't finished yet.
   switch (state) {
     case remoting.DaemonPlugin.State.NOT_INSTALLED:
-    case remoting.DaemonPlugin.State.INSTALLED:
+    case remoting.DaemonPlugin.State.INSTALLING:
     case remoting.DaemonPlugin.State.STOPPED:
     case remoting.DaemonPlugin.State.STARTING:
       retry = true;
