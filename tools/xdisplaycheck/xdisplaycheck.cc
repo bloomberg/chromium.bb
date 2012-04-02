@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -34,19 +34,22 @@ void Sleep(int duration_ms) {
 }
 
 int main(int argc, char* argv[]) {
-  int kNumTries = 50;
+  int kNumTries = 50;  // 49*48/2 * 10 = 12.25s of waiting
   Display* display = NULL;
-  for (int i = 0; i < kNumTries; ++i) {
+  int tries;
+  for (tries = 0; tries < kNumTries; ++tries) {
     display = XOpenDisplay(NULL);
     if (display)
       break;
-    Sleep(100);
+    Sleep(10 * tries);
   }
 
   if (!display) {
     fprintf(stderr, "Failed to connect to %s\n", XDisplayName(NULL));
     return -1;
   }
+
+  fprintf(stderr, "Connected after %d retries\n", tries);
 
 #if defined(USE_AURA)
   // Check for XInput2
@@ -69,6 +72,9 @@ int main(int argc, char* argv[]) {
   XIDeviceInfo* devices = XIQueryDevice(display, XIAllDevices, &count);
   if (devices)
     XIFreeDeviceInfo(devices);
+
+  fprintf(stderr,
+      "XInput2 verified initially sane on %s.\n", XDisplayName(NULL));
 #endif
 
   return 0;
