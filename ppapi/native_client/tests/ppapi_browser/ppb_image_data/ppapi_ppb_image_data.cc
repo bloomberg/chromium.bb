@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -274,10 +274,8 @@ void TestMapUnmap() {
 
 // Stress testing of a large number of resources.
 void TestStress() {
-  // TODO(nfullagar): Increase the number of resources once the cause of the
-  // stress test flake is fixed.
   const int kManyResources = 100;
-  const int kManyLargeResources = 100;
+  const int kManyLargeResources = 1000;
   PP_Resource image_data[kManyResources];
   PP_Resource large_image_data;
   PP_ImageDataFormat format = PPBImageData()->GetNativeImageDataFormat();
@@ -294,21 +292,30 @@ void TestStress() {
       EXPECT(image_data[j] != image_data[i]);
     }
     EXPECT(PP_TRUE == PPBImageData()->IsImageData(image_data[i]));
-    EXPECT(NULL != PPBImageData()->Map(image_data[i]));
+    uint32_t* pixel_ptr = NULL;
+    pixel_ptr = static_cast<uint32_t*>(PPBImageData()->Map(image_data[i]));
+    EXPECT(NULL != pixel_ptr);
+    // Attempt to write first pixel.
+    pixel_ptr[0] = 0;
   }
 
   // A large number of create-map-unmap-release large images.
   // Only one large image exists at a time; make sure memory space isn't
-  // exhausted.
-  // TODO(nfullagar): Some platforms (notably 32-bit ones) are unable to
-  // recycle a large number of large resources. This might be related to:
-  // http://code.google.com/p/chromium/issues/detail?id=87445
+  // exhausted.  See issue:
+  // http://code.google.com/p/chromium/issues/detail?id=120728
   for (int i = 0; i < kManyLargeResources; i++) {
     large_image_data = PPBImageData()->Create(pp_instance(), format,
         &kLargeImageSize, PP_TRUE);
     EXPECT(large_image_data != kInvalidResource);
     EXPECT(PP_TRUE == PPBImageData()->IsImageData(large_image_data));
-    EXPECT(NULL != PPBImageData()->Map(large_image_data));
+    uint32_t* pixel_ptr = NULL;
+    pixel_ptr = static_cast<uint32_t*>(PPBImageData()->Map(large_image_data));
+    EXPECT(NULL != pixel_ptr);
+    // Scatter write across many pixels in the large image.
+    const int scatter_delta = 16;
+    for (int y = 0; y < kLargeImageSize.height; y += scatter_delta)
+      for (int x = 0; x < kLargeImageSize.width; x += scatter_delta)
+        pixel_ptr[y * kLargeImageSize.width + x] = 0;
     PPBImageData()->Unmap(large_image_data);
     PPBCore()->ReleaseResource(large_image_data);
     EXPECT(PP_FALSE == PPBImageData()->IsImageData(large_image_data));
