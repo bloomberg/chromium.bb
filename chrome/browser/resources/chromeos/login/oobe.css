@@ -27,7 +27,7 @@ button {
 #outer-container {
   -webkit-box-align: center;
   -webkit-box-pack: center;
-  bottom: 40px;  /* Leave space for the header bar */
+  bottom: 41px;  /* Leave space for the header bar */
   display: -webkit-box;
   left: 0;
   position: absolute;

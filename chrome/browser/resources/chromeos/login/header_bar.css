@@ -35,7 +35,8 @@
 }
 
 #shutdown-header-bar-item {
-  -webkit-padding-start: 8px;
+  -webkit-padding-after: 7px;
+  -webkit-padding-start: 9px;
   cursor: pointer;
   display: inline-block;
   height: 34px;
