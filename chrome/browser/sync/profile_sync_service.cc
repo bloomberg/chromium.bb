@@ -1277,6 +1277,15 @@ void ProfileSyncService::SetEncryptionPassphrase(const std::string& passphrase,
 
   DVLOG(1) << "Setting " << (type == EXPLICIT ? "explicit" : "implicit")
            << " passphrase for encryption.";
+  if (passphrase_required_reason_ == sync_api::REASON_ENCRYPTION) {
+    // REASON_ENCRYPTION implies that the cryptographer does not have pending
+    // keys. Hence, as long as we're not trying to do an invalid passphrase
+    // change (e.g. explicit -> explicit or explicit -> implicit), we know this
+    // will succeed. If for some reason a new encryption key arrives via
+    // sync later, the SBH will trigger another OnPassphraseRequired().
+    passphrase_required_reason_ = sync_api::REASON_PASSPHRASE_NOT_REQUIRED;
+    NotifyObservers();
+  }
   backend_->SetEncryptionPassphrase(passphrase, type == EXPLICIT);
 }
 
