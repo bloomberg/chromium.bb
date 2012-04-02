@@ -485,8 +485,8 @@ bool GestureSequence::TouchDown(const TouchEvent& event,
   AppendTapDownGestureEvent(point, gestures);
   long_press_timer_->Start(
       FROM_HERE,
-      base::TimeDelta::FromSeconds(
-          GestureConfiguration::long_press_time_in_seconds()),
+      base::TimeDelta::FromMilliseconds(
+          GestureConfiguration::long_press_time_in_seconds() * 1000),
       this,
       &GestureSequence::AppendLongPressGestureEvent);
   return true;
