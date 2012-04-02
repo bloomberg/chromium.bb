@@ -318,7 +318,7 @@ FileManager.prototype = {
 
     function callback(success, metadata) {
       entry.cachedMtime_ = metadata.modificationTime;
-      entry.cachedSize_ = (entry.isFile && metadata.size) || -1;
+      entry.cachedSize_ = entry.isFile ? (metadata.size || 0) : -1;
       if (success && successCallback) successCallback(entry);
       if (!success && opt_errorCallback) opt_errorCallback();
     }
@@ -2218,6 +2218,7 @@ FileManager.prototype = {
       fileCount: 0,
       directoryCount: 0,
       bytes: 0,
+      showBytes: false,
       iconType: null,
       indexes: this.currentList_.selectionModel.selectedIndexes,
       files: [],
@@ -2294,6 +2295,7 @@ FileManager.prototype = {
           continue;
         } else {
           selection.bytes += entry.cachedSize_;
+          selection.showBytes |= this.getFileType(entry).type != 'hosted';
         }
         // File object must be prepeared in advance for clipboard operations
         // (copy, paste and drag). Clipboard object closes for write after
@@ -2321,6 +2323,7 @@ FileManager.prototype = {
         // here, just in case the selection has changed since this summarization
         // began.
         selection.bytes += fileEntry.cachedSize_;
+        selection.showBytes |= self.getFileType(fileEntry).type != 'hosted';
       }
 
       if (pendingFiles.length) {
@@ -3369,15 +3372,20 @@ FileManager.prototype = {
       // We dont want to change the string during preview panel animating away.
       return;
     } else if (selection.fileCount == 1 && selection.directoryCount == 0) {
-      text = selection.entries[0].name + ', ' + bytes;
+      text = selection.entries[0].name;
+      if (selection.showBytes) text += ', ' + bytes;
     } else if (selection.fileCount == 0 && selection.directoryCount == 1) {
       text = selection.entries[0].name;
     } else if (selection.directoryCount == 0) {
       text = strf('MANY_FILES_SELECTED', selection.fileCount, bytes);
+      // TODO(dgozman): change the string to not contain ", $2".
+      if (!selection.showBytes) text = text.substring(0, text.lastIndexOf(','));
     } else if (selection.fileCount == 0) {
       text = strf('MANY_DIRECTORIES_SELECTED', selection.directoryCount);
     } else {
       text = strf('MANY_ENTRIES_SELECTED', selection.totalCount, bytes);
+      // TODO(dgozman): change the string to not contain ", $2".
+      if (!selection.showBytes) text = text.substring(0, text.lastIndexOf(','));
     }
     this.previewSummary_.textContent = text;
   };
