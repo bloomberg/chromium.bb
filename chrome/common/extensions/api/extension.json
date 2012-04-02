@@ -88,10 +88,11 @@
       },
       {
         "name": "sendRequest",
+        "nodoc": true,
         "type": "function",
         "allowAmbiguousOptionalArguments": true,
         "unprivileged": true,
-        "description": "Sends a single request to other listeners within the extension. Similar to chrome.extension.connect, but only sends a single request with an optional response. The <a href='extension.html#event-onRequest'>chrome.extension.onRequest</a> event is fired in each page of the extension.",
+        "description": "Deprecated: Please use sendMessage.",
         "parameters": [
           {"type": "string", "name": "extensionId", "optional": true, "description": "The extension ID of the extension you want to connect to. If omitted, default is your own extension."},
           { "type": "any", "name": "request" },
@@ -104,6 +105,29 @@
                 "name": "response",
                 "type": "any",
                 "description": "The JSON response object sent by the handler of the request. If an error occurs while connecting to the extension, the callback will be called with no arguments and <a href='extension.html#property-lastError'>chrome.extension.lastError</a> will be set to the error message."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "sendMessage",
+        "type": "function",
+        "allowAmbiguousOptionalArguments": true,
+        "unprivileged": true,
+        "description": "Sends a single message to other listeners within the extension. Similar to chrome.extension.connect, but only sends a single message with an optional response. The <a href='extension.html#event-onMessage'>chrome.extension.onMessage</a> event is fired in each page of the extension.",
+        "parameters": [
+          {"type": "string", "name": "extensionId", "optional": true, "description": "The extension ID of the extension you want to connect to. If omitted, default is your own extension."},
+          { "type": "any", "name": "message" },
+          {
+            "type": "function",
+            "name": "responseCallback",
+            "optional": true,
+            "parameters": [
+              {
+                "name": "response",
+                "type": "any",
+                "description": "The JSON response object sent by the handler of the message. If an error occurs while connecting to the extension, the callback will be called with no arguments and <a href='extension.html#property-lastError'>chrome.extension.lastError</a> will be set to the error message."
               }
             ]
           }
@@ -249,10 +273,11 @@
       },
       {
         "name": "onRequest",
+        "nodoc": true,
         "type": "function",
         "anonymous": true,
         "unprivileged": true,
-        "description": "Fired when a request is sent from either an extension process or a content script.",
+        "description": "Deprecated: please use onMessage.",
         "parameters": [
           {"name": "request", "type": "any", "description": "The request sent by the calling script."},
           {"name": "sender", "$ref": "MessageSender" },
@@ -261,14 +286,60 @@
       },
       {
         "name": "onRequestExternal",
+        "nodoc": true,
         "type": "function",
         "anonymous": true,
-        "description": "Fired when a request is sent from another extension.",
+        "description": "Deprecated: please use onMessageExternal.",
         "parameters": [
           {"name": "request", "type": "any", "description": "The request sent by the calling script."},
           {"name": "sender", "$ref": "MessageSender" },
           {"name": "sendResponse", "type": "function", "description": "Function to call when you have a response. The argument should be any JSON-ifiable object, or undefined if there is no response." }
         ]
+      },
+      {
+        "name": "onMessage",
+        "type": "function",
+        "anonymous": true,
+        "unprivileged": true,
+        "description": "Fired when a message is sent from either an extension process or a content script.",
+        "parameters": [
+          {
+            "name": "details",
+            "type": "object",
+            "properties": {
+              "message": { "type": "any", "description": "The message sent by the calling script."},
+              "sender": { "$ref": "MessageSender" },
+              "sendResponse": { "type": "function", "description": "Function to call (at most once) when you have a response. The argument should be any JSON-ifiable object. If you have more than one <code>onMessage</code> listener in the same document, then only one may send a response. This function becomes invalid when the event listener returns, unless you return true from the event listener to indicate you wish to send a response asynchronously (this will keep the message channel open to the other end until <code>sendResponse</code> is called)." }
+            }
+          }
+        ],
+        "returns": {
+          "type": "boolean",
+          "optional": "true",
+          "description": "Return true from the event listener if you wish to call <code>sendResponse</code> after the event listener returns."
+        }
+      },
+      {
+        "name": "onMessageExternal",
+        "type": "function",
+        "anonymous": true,
+        "description": "Fired when a message is sent from another extension.",
+        "parameters": [
+          {
+            "name": "details",
+            "type": "object",
+            "properties": {
+              "message": { "type": "any", "description": "The message sent by the calling script."},
+              "sender": { "$ref": "MessageSender" },
+              "sendResponse": { "type": "function", "description": "Function to call (at most once) when you have a response. The argument should be any JSON-ifiable object. If you have more than one <code>onMessage</code> listener in the same document, then only one may send a response. This function becomes invalid when the event listener returns, unless you return true from the event listener to indicate you wish to send a response asynchronously (this will keep the message channel open to the other end until <code>sendResponse</code> is called)." }
+            }
+          }
+        ],
+        "returns": {
+          "type": "boolean",
+          "optional": "true",
+          "description": "Return true from the event listener if you wish to call <code>sendResponse</code> after the event listener returns."
+        }
       }
     ]
   }

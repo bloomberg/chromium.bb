@@ -115,8 +115,10 @@
         if (eventArgumentMassagers[name])
           eventArgumentMassagers[name](args);
       }
-      return attachedNamedEvents[name].dispatch.apply(
+      var result = attachedNamedEvents[name].dispatch.apply(
           attachedNamedEvents[name], args);
+      if (result && result.validationErrors)
+        return result.validationErrors;
     }
   };
 
@@ -193,16 +195,21 @@
     var args = Array.prototype.slice.call(arguments);
     var validationErrors = this.validate_(args);
     if (validationErrors) {
-      return validationErrors;
+      return {validationErrors: validationErrors};
     }
+    var results = [];
     for (var i = 0; i < this.listeners_.length; i++) {
       try {
-        this.listeners_[i].apply(null, args);
+        var result = this.listeners_[i].apply(null, args);
+        if (result !== undefined)
+          results.push(result);
       } catch (e) {
         console.error("Error in event handler for '" + this.eventName_ +
                       "': " + e.stack);
       }
     }
+    if (results.length)
+      return {results: results};
   };
 
   // Attaches this event object to its name.  Only one object can have a given

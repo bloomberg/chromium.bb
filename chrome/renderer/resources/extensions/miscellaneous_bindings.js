@@ -20,8 +20,10 @@
   var manifestVersion;
   var extensionId;
 
-  // The reserved channel name for the sendRequest API.
+  // The reserved channel name for the sendRequest/sendMessage APIs.
+  // Note: sendRequest is deprecated.
   chromeHidden.kRequestChannel = "chrome.extension.sendRequest";
+  chromeHidden.kMessageChannel = "chrome.extension.sendMessage";
 
   // Map of port IDs to port object.
   var ports = {};
@@ -95,14 +97,43 @@
     return port;
   };
 
+  // Helper function for dispatchOnRequest.
+  function handleSendRequestError(isSendMessage, responseCallbackPreserved,
+                                  sourceExtensionId, targetExtensionId) {
+    var errorMsg;
+    var eventName = (isSendMessage  ?
+        "chrome.extension.onMessage" : "chrome.extension.onRequest");
+    if (isSendMessage && !responseCallbackPreserved) {
+      errorMsg =
+          "The " + eventName + " listener must return true if you want to" +
+          " send a response after the listener returns ";
+    } else {
+      errorMsg =
+          "Cannot send a response more than once per " + eventName +
+          " listener per document";
+    }
+    errorMsg += " (message was sent by extension " + sourceExtensionId;
+    if (sourceExtensionId != targetExtensionId)
+      errorMsg += " for extension " + targetExtensionId;
+    errorMsg += ").";
+    chrome.extension.lastError = {"message": errorMsg};
+    console.error("Could not send response: " + errorMsg);
+  }
+
+  // Helper function for dispatchOnConnect
   function dispatchOnRequest(portId, channelName, sender,
                              sourceExtensionId, targetExtensionId,
                              isExternal) {
-    var requestEvent = (isExternal ?
-        chrome.extension.onRequestExternal : chrome.extension.onRequest);
+    var isSendMessage = channelName == chromeHidden.kMessageChannel;
+    var requestEvent = (isSendMessage ?
+       (isExternal ?
+           chrome.extension.onMessageExternal : chrome.extension.onMessage) :
+       (isExternal ?
+           chrome.extension.onRequestExternal : chrome.extension.onRequest));
     if (requestEvent.hasListeners()) {
       var port = chromeHidden.Port.createPort(portId, channelName);
       port.onMessage.addListener(function(request) {
+        var responseCallbackPreserved = false;
         var responseCallback = function(response) {
           if (port) {
             port.postMessage(response);
@@ -111,16 +142,8 @@
           } else {
             // We nulled out port when sending the response, and now the page
             // is trying to send another response for the same request.
-            var errorMsg =
-                "Cannot send a response more than once per " +
-                "chrome.extension.onRequest listener per document (message " +
-                "was sent by extension " + sourceExtensionId;
-            if (sourceExtensionId != targetExtensionId) {
-              errorMsg += " for extension " + targetExtensionId;
-            }
-            errorMsg += ").";
-            chrome.extension.lastError = {"message": errorMsg};
-            console.error("Could not send response: " + errorMsg);
+              handleSendRequestError(isSendMessage, responseCallbackPreserved,
+                                     sourceExtensionId, targetExtensionId);
           }
         };
         // In case the extension never invokes the responseCallback, and also
@@ -133,7 +156,19 @@
             port = null;
           }
         });
-        requestEvent.dispatch(request, sender, responseCallback);
+          if (!isSendMessage) {
+            requestEvent.dispatch(request, sender, responseCallback);
+          } else {
+            var rv = requestEvent.dispatch(request, sender, responseCallback);
+            responseCallbackPreserved =
+                rv && rv.results && rv.results.indexOf(true) > -1;
+            if (!responseCallbackPreserved) {
+              // If they didn't access the response callback, they're not
+              // going to send a response, so clean up the port immediately.
+              port.destroy_();
+              port = null;
+            }
+          }
       });
       return true;
     }
@@ -161,8 +196,9 @@
       tab = chromeHidden.JSON.parse(tab);
     var sender = {tab: tab, id: sourceExtensionId};
 
-    // Special case for sendRequest/onRequest.
-    if (channelName == chromeHidden.kRequestChannel) {
+    // Special case for sendRequest/onRequest and sendMessage/onMessage.
+    if (channelName == chromeHidden.kRequestChannel ||
+        channelName == chromeHidden.kMessageChannel) {
       return dispatchOnRequest(portId, channelName, sender,
                                sourceExtensionId, targetExtensionId,
                                isExternal);
@@ -214,6 +250,43 @@
       port.onMessage.dispatch(msg, port);
     }
   };
+
+  // Shared implementation used by tabs.sendMessage and extension.sendMessage.
+  chromeHidden.Port.sendMessageImpl = function(port, request,
+                                               responseCallback) {
+    port.postMessage(request);
+
+    if (port.name == chromeHidden.kMessageChannel && !responseCallback) {
+      // TODO(mpcomplete): Do this for the old sendRequest API too, after
+      // verifying it doesn't break anything.
+      // Go ahead and disconnect immediately if the sender is not expecting
+      // a response.
+      port.disconnect();
+      return;
+    }
+
+    // Ensure the callback exists for the older sendRequest API.
+    if (!responseCallback)
+      responseCallback = function() {};
+
+    port.onDisconnect.addListener(function() {
+      // For onDisconnects, we only notify the callback if there was an error
+      try {
+        if (chrome.extension.lastError)
+          responseCallback();
+      } finally {
+        port = null;
+      }
+    });
+    port.onMessage.addListener(function(response) {
+      try {
+        responseCallback(response);
+      } finally {
+        port.disconnect();
+        port = null;
+      }
+    });
+  }
 
   // This function is called on context initialization for both content scripts
   // and extension contexts.

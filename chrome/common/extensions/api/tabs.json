@@ -92,9 +92,10 @@
       },
       {
         "name": "sendRequest",
+        "nodoc": true,
         "nocompile": true,
         "type": "function",
-        "description": "Sends a single request to the content script(s) in the specified tab, with an optional callback to run when a response is sent back.  The <a href='extension.html#event-onRequest'>chrome.extension.onRequest</a> event is fired in each content script running in the specified tab for the current extension.",
+        "description": "Deprecated: Please use sendMessage.",
         "parameters": [
           {
             "type": "integer",
@@ -114,6 +115,35 @@
                 "name": "response",
                 "type": "any",
                 "description": "The JSON response object sent by the handler of the request. If an error occurs while connecting to the specified tab, the callback will be called with no arguments and <a href='extension.html#property-lastError'>chrome.extension.lastError</a> will be set to the error message."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "sendMessage",
+        "nocompile": true,
+        "type": "function",
+        "description": "Sends a single message to the content script(s) in the specified tab, with an optional callback to run when a response is sent back.  The <a href='extension.html#event-onMessage'>chrome.extension.onMessage</a> event is fired in each content script running in the specified tab for the current extension.",
+        "parameters": [
+          {
+            "type": "integer",
+            "name": "tabId",
+            "minimum": 0
+          },
+          {
+            "type": "any",
+            "name": "message"
+          },
+          {
+            "type": "function",
+            "name": "responseCallback",
+            "optional": true,
+            "parameters": [
+              {
+                "name": "response",
+                "type": "any",
+                "description": "The JSON response object sent by the handler of the message. If an error occurs while connecting to the specified tab, the callback will be called with no arguments and <a href='extension.html#property-lastError'>chrome.extension.lastError</a> will be set to the error message."
               }
             ]
           }

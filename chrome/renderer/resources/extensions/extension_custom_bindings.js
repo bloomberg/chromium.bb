@@ -52,59 +52,48 @@ chromeHidden.registerCustomHook('extension',
     return 'chrome-extension://' + extensionId + path;
   });
 
-  apiFunctions.setUpdateArgumentsPreValidate('sendRequest', function() {
+  function sendMessageUpdateArguments(functionName) {
     // Align missing (optional) function arguments with the arguments that
     // schema validation is expecting, e.g.
     //   extension.sendRequest(req)     -> extension.sendRequest(null, req)
     //   extension.sendRequest(req, cb) -> extension.sendRequest(null, req, cb)
-    var lastArg = arguments.length - 1;
+    var args = Array.prototype.splice.call(arguments, 1);  // skip functionName
+    var lastArg = args.length - 1;
 
     // responseCallback (last argument) is optional.
     var responseCallback = null;
-    if (typeof(arguments[lastArg]) == 'function')
-      responseCallback = arguments[lastArg--];
+    if (typeof(args[lastArg]) == 'function')
+      responseCallback = args[lastArg--];
 
     // request (second argument) is required.
-    var request = arguments[lastArg--];
+    var request = args[lastArg--];
 
     // targetId (first argument, extensionId in the manfiest) is optional.
     var targetId = null;
     if (lastArg >= 0)
-      targetId = arguments[lastArg--];
+      targetId = args[lastArg--];
 
     if (lastArg != -1)
-      throw new Error('Invalid arguments to sendRequest.');
+      throw new Error('Invalid arguments to ' + functionName + '.');
     return [targetId, request, responseCallback];
-  });
+  }
+  apiFunctions.setUpdateArgumentsPreValidate('sendRequest',
+      sendMessageUpdateArguments.bind(null, 'sendRequest'));
+  apiFunctions.setUpdateArgumentsPreValidate('sendMessage',
+      sendMessageUpdateArguments.bind(null, 'sendMessage'));
 
   apiFunctions.setHandleRequest('sendRequest',
                                 function(targetId, request, responseCallback) {
-    if (!targetId)
-      targetId = extensionId;
-    if (!responseCallback)
-      responseCallback = function() {};
+    var port = chrome.extension.connect(targetId || extensionId,
+                                        {name: chromeHidden.kRequestChannel});
+    chromeHidden.Port.sendMessageImpl(port, request, responseCallback);
+  });
 
-    var connectInfo = { name: chromeHidden.kRequestChannel };
-    var port = chrome.extension.connect(targetId, connectInfo);
-
-    port.postMessage(request);
-    port.onDisconnect.addListener(function() {
-      // For onDisconnects, we only notify the callback if there was an error
-      try {
-        if (chrome.extension.lastError)
-          responseCallback();
-      } finally {
-        port = null;
-      }
-    });
-    port.onMessage.addListener(function(response) {
-      try {
-        responseCallback(response);
-      } finally {
-        port.disconnect();
-        port = null;
-      }
-    });
+  apiFunctions.setHandleRequest('sendMessage',
+                                function(targetId, message, responseCallback) {
+    var port = chrome.extension.connect(targetId || extensionId,
+                                        {name: chromeHidden.kMessageChannel});
+    chromeHidden.Port.sendMessageImpl(port, message, responseCallback);
   });
 
   apiFunctions.setUpdateArgumentsPreValidate('connect', function() {

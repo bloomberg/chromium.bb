@@ -23,22 +23,13 @@ chromeHidden.registerCustomHook('tabs', function(bindingsAPI, extensionId) {
 
   apiFunctions.setHandleRequest('sendRequest',
                                 function(tabId, request, responseCallback) {
-    var port = chrome.tabs.connect(tabId,
-                                   {name: chromeHidden.kRequestChannel});
-    port.postMessage(request);
-    port.onDisconnect.addListener(function() {
-      // For onDisconnects, we only notify the callback if there was an error.
-      if (chrome.extension.lastError && responseCallback)
-        responseCallback();
-    });
-    port.onMessage.addListener(function(response) {
-      try {
-        if (responseCallback)
-          responseCallback(response);
-      } finally {
-        port.disconnect();
-        port = null;
-      }
-    });
+    var port = chrome.tabs.connect(tabId, {name: chromeHidden.kRequestChannel});
+    chromeHidden.Port.sendMessageImpl(port, request, responseCallback);
+  });
+
+  apiFunctions.setHandleRequest('sendMessage',
+                                function(tabId, message, responseCallback) {
+    var port = chrome.tabs.connect(tabId, {name: chromeHidden.kMessageChannel});
+    chromeHidden.Port.sendMessageImpl(port, message, responseCallback);
   });
 });
