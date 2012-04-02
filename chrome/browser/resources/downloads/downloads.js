@@ -387,6 +387,7 @@ Download.prototype.update = function(download) {
   this.state_ = download.state;
   this.fileExternallyRemoved_ = download.file_externally_removed;
   this.dangerType_ = download.danger_type;
+  this.lastReasonDescription_ = download.last_reason_text;
 
   this.since_ = download.since_string;
   this.date_ = download.date_string;
@@ -424,6 +425,8 @@ Download.prototype.update = function(download) {
     } else if (this.nodeFileName_.textContent != this.fileName_) {
       this.nodeFileName_.textContent = this.fileName_;
     }
+    if (this.state_ == Download.States.INTERRUPTED)
+      this.nodeFileName_.classList.add('interrupted');
 
     showInline(this.nodeFileLink_,
                this.state_ == Download.States.COMPLETE &&
@@ -530,7 +533,7 @@ Download.prototype.getStatusText_ = function() {
           'danger_file_desc' : 'danger_url_desc';
       return localStrings.getString(desc);
     case Download.States.INTERRUPTED:
-      return localStrings.getString('status_interrupted');
+      return this.lastReasonDescription_;
     case Download.States.COMPLETE:
       return this.fileExternallyRemoved_ ?
           localStrings.getString('status_removed') : '';

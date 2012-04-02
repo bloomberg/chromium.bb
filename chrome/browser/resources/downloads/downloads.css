@@ -121,6 +121,10 @@ html[dir=rtl] .progress {
   word-break: break-all;
 }
 
+.interrupted {
+  color: red;
+}
+
 .download .status {
   color: #999;
   white-space: nowrap;

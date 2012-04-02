@@ -496,6 +496,9 @@ DictionaryValue* CreateDownloadItemValue(DownloadItem* download, int id) {
         static_cast<int>(download->PercentComplete()));
     file_value->SetInteger("received",
         static_cast<int>(download->GetReceivedBytes()));
+    file_value->SetString("last_reason_text",
+        BaseDownloadItemModel::InterruptReasonMessage(
+            download->GetLastReason()));
   } else if (download->IsCancelled()) {
     file_value->SetString("state", "CANCELLED");
   } else if (download->IsComplete()) {

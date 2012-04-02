@@ -12,6 +12,7 @@
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/common/time_format.h"
 #include "content/public/browser/download_danger_type.h"
+#include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_item.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -70,7 +71,9 @@ string16 DownloadItemModel::GetStatusText() {
                       TimeFormat::TimeRemaining(remaining);
   }
 
+  string16 size_text;
   string16 status_text;
+  content::DownloadInterruptReason reason;
   switch (download_->GetState()) {
     case DownloadItem::IN_PROGRESS:
 #if defined(OS_CHROMEOS)
@@ -127,9 +130,18 @@ string16 DownloadItemModel::GetStatusText() {
     case DownloadItem::REMOVING:
       break;
     case DownloadItem::INTERRUPTED:
-      status_text = l10n_util::GetStringFUTF16(IDS_DOWNLOAD_STATUS_INTERRUPTED,
+      reason = download_->GetLastReason();
+      status_text = InterruptReasonStatusMessage(reason);
+      if (total <= 0) {
+        size_text = ui::FormatBytes(size);
+      } else {
+        size_text = l10n_util::GetStringFUTF16(IDS_DOWNLOAD_RECEIVED_SIZE,
                                                simple_size,
                                                simple_total);
+      }
+      size_text = size_text + ASCIIToUTF16(" ");
+      if (reason != content::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED)
+        status_text = size_text + status_text;
       break;
     default:
       NOTREACHED();
@@ -223,6 +235,62 @@ bool DownloadItemModel::IsMalicious() {
 
 bool DownloadItemModel::IsDangerous() {
   return download_->GetSafetyState() == DownloadItem::DANGEROUS;
+}
+
+// static
+string16 BaseDownloadItemModel::InterruptReasonStatusMessage(int reason) {
+  int string_id = 0;
+
+  switch (reason) {
+    case content::DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED:
+      string_id = IDS_DOWNLOAD_INTERRUPTED_STATUS_ACCESS_DENIED;
+      break;
+    case content::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE:
+      string_id = IDS_DOWNLOAD_INTERRUPTED_STATUS_DISK_FULL;
+      break;
+    case content::DOWNLOAD_INTERRUPT_REASON_FILE_NAME_TOO_LONG:
+      string_id = IDS_DOWNLOAD_INTERRUPTED_STATUS_PATH_TOO_LONG;
+      break;
+    case content::DOWNLOAD_INTERRUPT_REASON_FILE_TOO_LARGE:
+      string_id = IDS_DOWNLOAD_INTERRUPTED_STATUS_FILE_TOO_LARGE;
+      break;
+    case content::DOWNLOAD_INTERRUPT_REASON_FILE_VIRUS_INFECTED:
+      string_id = IDS_DOWNLOAD_INTERRUPTED_STATUS_VIRUS;
+      break;
+    case content::DOWNLOAD_INTERRUPT_REASON_FILE_TRANSIENT_ERROR:
+      string_id = IDS_DOWNLOAD_INTERRUPTED_STATUS_TEMPORARY_PROBLEM;
+      break;
+    case content::DOWNLOAD_INTERRUPT_REASON_NETWORK_TIMEOUT:
+      string_id = IDS_DOWNLOAD_INTERRUPTED_STATUS_NETWORK_TIMEOUT;
+      break;
+    case content::DOWNLOAD_INTERRUPT_REASON_NETWORK_DISCONNECTED:
+      string_id = IDS_DOWNLOAD_INTERRUPTED_STATUS_NETWORK_DISCONNECTED;
+      break;
+    case content::DOWNLOAD_INTERRUPT_REASON_NETWORK_SERVER_DOWN:
+      string_id = IDS_DOWNLOAD_INTERRUPTED_STATUS_SERVER_DOWN;
+      break;
+    case content::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED:
+      string_id = IDS_DOWNLOAD_INTERRUPTED_STATUS_NETWORK_ERROR;
+      break;
+    case content::DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT:
+      string_id = IDS_DOWNLOAD_INTERRUPTED_STATUS_NO_FILE;
+      break;
+    case content::DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED:
+      string_id = IDS_DOWNLOAD_INTERRUPTED_STATUS_SERVER_PROBLEM;
+      break;
+    case content::DOWNLOAD_INTERRUPT_REASON_USER_SHUTDOWN:
+    case content::DOWNLOAD_INTERRUPT_REASON_CRASH:
+      string_id = IDS_DOWNLOAD_INTERRUPTED_STATUS_SHUTDOWN;
+      break;
+    case content::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED:
+      string_id = IDS_DOWNLOAD_STATUS_CANCELED;
+      break;
+    default:
+      string_id = IDS_DOWNLOAD_INTERRUPTED_STATUS;
+      break;
+  }
+
+  return l10n_util::GetStringUTF16(string_id);
 }
 
 // static
