@@ -139,6 +139,74 @@ instr_out(struct drm_intel_decode *ctx, unsigned int index,
 }
 
 static int
+decode_MI_WAIT_FOR_EVENT(struct drm_intel_decode *ctx)
+{
+	const char *cc_wait;
+	int cc_shift = 0;
+	uint32_t data = ctx->data[0];
+
+	if (ctx->gen <= 5)
+		cc_shift = 9;
+	else
+		cc_shift = 16;
+
+	switch ((data >> cc_shift) & 0x1f) {
+	case 1:
+		cc_wait = ", cc wait 1";
+		break;
+	case 2:
+		cc_wait = ", cc wait 2";
+		break;
+	case 3:
+		cc_wait = ", cc wait 3";
+		break;
+	case 4:
+		cc_wait = ", cc wait 4";
+		break;
+	case 5:
+		cc_wait = ", cc wait 4";
+		break;
+	default:
+		cc_wait = "";
+		break;
+	}
+
+	if (ctx->gen <= 5) {
+		instr_out(ctx, 0, "MI_WAIT_FOR_EVENT%s%s%s%s%s%s%s%s%s%s%s%s%s%s\n",
+			  data & (1<<18)? ", pipe B start vblank wait": "",
+			  data & (1<<17)? ", pipe A start vblank wait": "",
+			  data & (1<<16)? ", overlay flip pending wait": "",
+			  data & (1<<14)? ", pipe B hblank wait": "",
+			  data & (1<<13)? ", pipe A hblank wait": "",
+			  cc_wait,
+			  data & (1<<8)? ", plane C pending flip wait": "",
+			  data & (1<<7)? ", pipe B vblank wait": "",
+			  data & (1<<6)? ", plane B pending flip wait": "",
+			  data & (1<<5)? ", pipe B scan line wait": "",
+			  data & (1<<4)? ", fbc idle wait": "",
+			  data & (1<<3)? ", pipe A vblank wait": "",
+			  data & (1<<2)? ", plane A pending flip wait": "",
+			  data & (1<<1)? ", plane A scan line wait": "");
+	} else {
+		instr_out(ctx, 0, "MI_WAIT_FOR_EVENT%s%s%s%s%s%s%s%s%s%s%s%s\n",
+			  data & (1<<20)? ", sprite C pending flip wait": "", /* ivb */
+			  cc_wait,
+			  data & (1<<13)? ", pipe B hblank wait": "",
+			  data & (1<<11)? ", pipe B vblank wait": "",
+			  data & (1<<10)? ", sprite B pending flip wait": "",
+			  data & (1<<9)? ", plane B pending flip wait": "",
+			  data & (1<<8)? ", plane B scan line wait": "",
+			  data & (1<<5)? ", pipe A hblank wait": "",
+			  data & (1<<3)? ", pipe A vblank wait": "",
+			  data & (1<<2)? ", sprite A pending flip wait": "",
+			  data & (1<<1)? ", plane A pending flip wait": "",
+			  data & (1<<0)? ", plane A scan line wait": "");
+	}
+
+	return 1;
+}
+
+static int
 decode_mi(struct drm_intel_decode *ctx)
 {
 	unsigned int opcode, len = -1;
@@ -151,6 +219,7 @@ decode_mi(struct drm_intel_decode *ctx)
 		unsigned int min_len;
 		unsigned int max_len;
 		const char *name;
+		int (*func)(struct drm_intel_decode *ctx);
 	} opcodes_mi[] = {
 		{ 0x08, 0, 1, 1, "MI_ARB_ON_OFF" },
 		{ 0x0a, 0, 1, 1, "MI_BATCH_BUFFER_END" },
@@ -169,11 +238,11 @@ decode_mi(struct drm_intel_decode *ctx)
 		{ 0x21, 0x3f, 3, 4, "MI_STORE_DATA_INDEX" },
 		{ 0x24, 0x3f, 3, 3, "MI_STORE_REGISTER_MEM" },
 		{ 0x02, 0, 1, 1, "MI_USER_INTERRUPT" },
-		{ 0x03, 0, 1, 1, "MI_WAIT_FOR_EVENT" },
+		{ 0x03, 0, 1, 1, "MI_WAIT_FOR_EVENT", decode_MI_WAIT_FOR_EVENT },
 		{ 0x16, 0x7f, 3, 3, "MI_SEMAPHORE_MBOX" },
 		{ 0x26, 0x1f, 3, 4, "MI_FLUSH_DW" },
 		{ 0x0b, 0, 1, 1, "MI_SUSPEND_FLUSH"},
-	};
+	}, *opcode_mi = NULL;
 
 	/* check instruction length */
 	for (opcode = 0; opcode < sizeof(opcodes_mi) / sizeof(opcodes_mi[0]);
@@ -192,9 +261,13 @@ decode_mi(struct drm_intel_decode *ctx)
 						opcodes_mi[opcode].max_len);
 				}
 			}
+			opcode_mi = &opcodes_mi[opcode];
 			break;
 		}
 	}
+
+	if (opcode_mi && opcode_mi->func)
+		return opcode_mi->func(ctx);
 
 	switch ((data[0] & 0x1f800000) >> 23) {
 	case 0x0a:
