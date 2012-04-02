@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,21 +16,19 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 TestingPrefServiceBase::TestingPrefServiceBase(
-    TestingPrefStore* managed_platform_prefs,
+    TestingPrefStore* managed_prefs,
     TestingPrefStore* user_prefs,
-    TestingPrefStore* recommended_platform_prefs,
+    TestingPrefStore* recommended_prefs,
     DefaultPrefStore* default_store,
     PrefModelAssociator* pref_sync_associator,
     PrefNotifierImpl* pref_notifier)
     : PrefService(pref_notifier,
                   new PrefValueStore(
-                      managed_platform_prefs,
-                      NULL,
+                      managed_prefs,
                       NULL,
                       NULL,
                       user_prefs,
-                      recommended_platform_prefs,
-                      NULL,
+                      recommended_prefs,
                       default_store,
                       pref_sync_associator,
                       pref_notifier),
@@ -38,24 +36,24 @@ TestingPrefServiceBase::TestingPrefServiceBase(
                   default_store,
                   pref_sync_associator,
                   false),
-      managed_platform_prefs_(managed_platform_prefs),
+      managed_prefs_(managed_prefs),
       user_prefs_(user_prefs),
-      recommended_platform_prefs_(recommended_platform_prefs) {
+      recommended_prefs_(recommended_prefs) {
 }
 
 TestingPrefServiceBase::~TestingPrefServiceBase() {
 }
 
 const Value* TestingPrefServiceBase::GetManagedPref(const char* path) const {
-  return GetPref(managed_platform_prefs_, path);
+  return GetPref(managed_prefs_, path);
 }
 
 void TestingPrefServiceBase::SetManagedPref(const char* path, Value* value) {
-  SetPref(managed_platform_prefs_, path, value);
+  SetPref(managed_prefs_, path, value);
 }
 
 void TestingPrefServiceBase::RemoveManagedPref(const char* path) {
-  RemovePref(managed_platform_prefs_, path);
+  RemovePref(managed_prefs_, path);
 }
 
 const Value* TestingPrefServiceBase::GetUserPref(const char* path) const {
@@ -72,16 +70,16 @@ void TestingPrefServiceBase::RemoveUserPref(const char* path) {
 
 const Value* TestingPrefServiceBase::GetRecommendedPref(
     const char* path) const {
-  return GetPref(recommended_platform_prefs_, path);
+  return GetPref(recommended_prefs_, path);
 }
 
 void TestingPrefServiceBase::SetRecommendedPref(
     const char* path, Value* value) {
-  SetPref(recommended_platform_prefs_, path, value);
+  SetPref(recommended_prefs_, path, value);
 }
 
 void TestingPrefServiceBase::RemoveRecommendedPref(const char* path) {
-  RemovePref(recommended_platform_prefs_, path);
+  RemovePref(recommended_prefs_, path);
 }
 
 const Value* TestingPrefServiceBase::GetPref(TestingPrefStore* pref_store,

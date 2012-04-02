@@ -34,14 +34,13 @@ class PolicyServiceImpl : public PolicyService,
   virtual void AddObserver(PolicyDomain domain,
                            const std::string& component_id,
                            PolicyService::Observer* observer) OVERRIDE;
-
   virtual void RemoveObserver(PolicyDomain domain,
                               const std::string& component_id,
                               PolicyService::Observer* observer) OVERRIDE;
-
   virtual const PolicyMap* GetPolicies(
       PolicyDomain domain,
       const std::string& component_id) const OVERRIDE;
+  virtual bool IsInitializationComplete() const OVERRIDE;
 
  private:
   struct Entry;
@@ -72,6 +71,9 @@ class PolicyServiceImpl : public PolicyService,
 
   // Maps each policy namespace to its current policies.
   EntryMap entries_;
+
+  // True if all the providers are initialized.
+  bool initialization_complete_;
 
   DISALLOW_COPY_AND_ASSIGN(PolicyServiceImpl);
 };

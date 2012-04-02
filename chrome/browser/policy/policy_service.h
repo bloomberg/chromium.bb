@@ -31,11 +31,17 @@ class PolicyService {
   class Observer {
    public:
     virtual ~Observer() {}
+
     // Invoked whenever policies for the |domain|, |component_id| namespace are
     // modified. This is only invoked for changes that happen after AddObserver
     // is called.
     virtual void OnPolicyUpdated(PolicyDomain domain,
                                  const std::string& component_id) = 0;
+
+    // Invoked at most once, when the PolicyService becomes ready. If
+    // IsInitializationComplete() is false, then this will be invoked once all
+    // the policy providers are ready.
+    virtual void OnPolicyServiceInitialized() {}
   };
 
   virtual ~PolicyService() {}
@@ -52,6 +58,18 @@ class PolicyService {
   virtual const PolicyMap* GetPolicies(
       PolicyDomain domain,
       const std::string& component_id) const = 0;
+
+  // The PolicyService loads policy from several sources, and some require
+  // asynchronous loads. IsInitializationComplete() returns true once all
+  // sources have loaded their policies. It is safe to read policy from the
+  // PolicyService even if IsInitializationComplete() is false; there will be an
+  // OnPolicyUpdated() notification once new policies become available.
+  //
+  // OnPolicyServiceInitialized() is called when IsInitializationComplete()
+  // becomes true, which happens at most once. If IsInitializationComplete() is
+  // already true when an Observer is registered, then that Observer will not
+  // have a OnPolicyServiceInitialized() notification.
+  virtual bool IsInitializationComplete() const = 0;
 };
 
 }  // namespace policy

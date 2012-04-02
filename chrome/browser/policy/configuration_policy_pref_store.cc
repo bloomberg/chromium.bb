@@ -15,7 +15,6 @@
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/configuration_policy_handler_list.h"
 #include "chrome/browser/policy/policy_error_map.h"
-#include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/prefs/pref_value_map.h"
 #include "content/public/browser/browser_thread.h"
 #include "policy/policy_constants.h"
@@ -40,20 +39,17 @@ void LogErrors(PolicyErrorMap* errors) {
 }  // namespace
 
 ConfigurationPolicyPrefStore::ConfigurationPolicyPrefStore(
-    ConfigurationPolicyProvider* provider)
-    : provider_(provider),
-      initialization_complete_(false) {
-  if (provider_) {
-    // Read initial policy.
-    prefs_.reset(CreatePreferencesFromPolicies());
-    registrar_.Init(provider_, this);
-    initialization_complete_ = provider_->IsInitializationComplete();
-  } else {
-    initialization_complete_ = true;
-  }
+    PolicyService* service,
+    PolicyLevel level)
+    : policy_service_(service),
+      level_(level) {
+  // Read initial policy.
+  prefs_.reset(CreatePreferencesFromPolicies());
+  policy_service_->AddObserver(POLICY_DOMAIN_CHROME, "", this);
 }
 
 ConfigurationPolicyPrefStore::~ConfigurationPolicyPrefStore() {
+  policy_service_->RemoveObserver(POLICY_DOMAIN_CHROME, "", this);
 }
 
 void ConfigurationPolicyPrefStore::AddObserver(PrefStore::Observer* observer) {
@@ -70,7 +66,7 @@ size_t ConfigurationPolicyPrefStore::NumberOfObservers() const {
 }
 
 bool ConfigurationPolicyPrefStore::IsInitializationComplete() const {
-  return initialization_complete_;
+  return policy_service_->IsInitializationComplete();
 }
 
 PrefStore::ReadResult
@@ -85,50 +81,34 @@ ConfigurationPolicyPrefStore::GetValue(const std::string& key,
   return PrefStore::READ_OK;
 }
 
-void ConfigurationPolicyPrefStore::OnUpdatePolicy(
-    ConfigurationPolicyProvider* provider) {
+void ConfigurationPolicyPrefStore::OnPolicyUpdated(
+    PolicyDomain domain,
+    const std::string& component_id) {
+  DCHECK_EQ(POLICY_DOMAIN_CHROME, domain);
+  DCHECK_EQ("", component_id);
   Refresh();
 }
 
-void ConfigurationPolicyPrefStore::OnProviderGoingAway(
-    ConfigurationPolicyProvider* provider) {
-  provider_ = NULL;
+void ConfigurationPolicyPrefStore::OnPolicyServiceInitialized() {
+  FOR_EACH_OBSERVER(PrefStore::Observer, observers_,
+                    OnInitializationCompleted(true));
 }
 
 // static
 ConfigurationPolicyPrefStore*
-ConfigurationPolicyPrefStore::CreateManagedPlatformPolicyPrefStore() {
-  return new ConfigurationPolicyPrefStore(
-      g_browser_process->browser_policy_connector()->
-          GetManagedPlatformProvider());
+ConfigurationPolicyPrefStore::CreateMandatoryPolicyPrefStore() {
+  return new ConfigurationPolicyPrefStore(g_browser_process->policy_service(),
+                                          POLICY_LEVEL_MANDATORY);
 }
 
 // static
 ConfigurationPolicyPrefStore*
-ConfigurationPolicyPrefStore::CreateManagedCloudPolicyPrefStore() {
-  return new ConfigurationPolicyPrefStore(
-      g_browser_process->browser_policy_connector()->GetManagedCloudProvider());
-}
-
-// static
-ConfigurationPolicyPrefStore*
-ConfigurationPolicyPrefStore::CreateRecommendedPlatformPolicyPrefStore() {
-  return new ConfigurationPolicyPrefStore(
-      g_browser_process->browser_policy_connector()->
-          GetRecommendedPlatformProvider());
-}
-
-// static
-ConfigurationPolicyPrefStore*
-ConfigurationPolicyPrefStore::CreateRecommendedCloudPolicyPrefStore() {
-  return new ConfigurationPolicyPrefStore(
-      g_browser_process->browser_policy_connector()->
-          GetRecommendedCloudProvider());
+ConfigurationPolicyPrefStore::CreateRecommendedPolicyPrefStore() {
+  return new ConfigurationPolicyPrefStore(g_browser_process->policy_service(),
+                                          POLICY_LEVEL_RECOMMENDED);
 }
 
 void ConfigurationPolicyPrefStore::Refresh() {
-  if (!provider_)
-    return;
   scoped_ptr<PrefValueMap> new_prefs(CreatePreferencesFromPolicies());
   std::vector<std::string> changed_prefs;
   new_prefs->GetDifferingKeys(prefs_.get(), &changed_prefs);
@@ -141,27 +121,25 @@ void ConfigurationPolicyPrefStore::Refresh() {
     FOR_EACH_OBSERVER(PrefStore::Observer, observers_,
                       OnPrefValueChanged(*pref));
   }
-
-  // Update the initialization flag.
-  if (!initialization_complete_ &&
-      provider_->IsInitializationComplete()) {
-    initialization_complete_ = true;
-    FOR_EACH_OBSERVER(PrefStore::Observer, observers_,
-                      OnInitializationCompleted(true));
-  }
 }
 
 PrefValueMap* ConfigurationPolicyPrefStore::CreatePreferencesFromPolicies() {
-  PolicyMap policies;
-  if (!provider_->Provide(&policies))
-    DLOG(WARNING) << "Failed to get policy from provider.";
-
   scoped_ptr<PrefValueMap> prefs(new PrefValueMap);
+  const PolicyMap* policies =
+      policy_service_->GetPolicies(POLICY_DOMAIN_CHROME, "");
+  if (!policies)
+    return prefs.release();
+  PolicyMap filtered_policies;
+  filtered_policies.CopyFrom(*policies);
+  filtered_policies.FilterLevel(level_);
+
   scoped_ptr<PolicyErrorMap> errors(new PolicyErrorMap);
 
   const ConfigurationPolicyHandlerList* handler_list =
       g_browser_process->browser_policy_connector()->GetHandlerList();
-  handler_list->ApplyPolicySettings(policies, prefs.get(), errors.get());
+  handler_list->ApplyPolicySettings(filtered_policies,
+                                    prefs.get(),
+                                    errors.get());
 
   // Retrieve and log the errors once the UI loop is ready. This is only an
   // issue during startup.

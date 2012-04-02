@@ -31,30 +31,22 @@ class PrefStore;
 class PrefValueStore {
  public:
   // In decreasing order of precedence:
-  //   |managed_platform_prefs| contains all managed platform (non-cloud policy)
-  //        preference values.
-  //   |managed_cloud_prefs| contains all managed cloud policy preference
-  //        values.
+  //   |managed_prefs| contains all preferences from mandatory policies.
   //   |extension_prefs| contains preference values set by extensions.
   //   |command_line_prefs| contains preference values set by command-line
   //        switches.
   //   |user_prefs| contains all user-set preference values.
-  //   |recommended_platform_prefs| contains all recommended platform policy
-  //        preference values.
-  //   |recommended_cloud_prefs| contains all recommended cloud policy
-  //        preference values.
+  //   |recommended_prefs| contains all preferences from recommended policies.
   //   |default_prefs| contains application-default preference values. It must
   //        be non-null if any preferences are to be registered.
   //
   // |pref_notifier| facilitates broadcasting preference change notifications
   // to the world.
-  PrefValueStore(PrefStore* managed_platform_prefs,
-                 PrefStore* managed_cloud_prefs,
+  PrefValueStore(PrefStore* managed_prefs,
                  PrefStore* extension_prefs,
                  PrefStore* command_line_prefs,
                  PrefStore* user_prefs,
-                 PrefStore* recommended_platform_prefs,
-                 PrefStore* recommended_cloud_prefs,
+                 PrefStore* recommended_prefs,
                  PrefStore* default_prefs,
                  PrefModelAssociator* pref_sync_associator,
                  PrefNotifier* pref_notifier);
@@ -62,13 +54,11 @@ class PrefValueStore {
 
   // Creates a clone of this PrefValueStore with PrefStores overwritten
   // by the parameters passed, if unequal NULL.
-  PrefValueStore* CloneAndSpecialize(PrefStore* managed_platform_prefs,
-                                     PrefStore* managed_cloud_prefs,
+  PrefValueStore* CloneAndSpecialize(PrefStore* managed_prefs,
                                      PrefStore* extension_prefs,
                                      PrefStore* command_line_prefs,
                                      PrefStore* user_prefs,
-                                     PrefStore* recommended_platform_prefs,
-                                     PrefStore* recommended_cloud_prefs,
+                                     PrefStore* recommended_prefs,
                                      PrefStore* default_prefs,
                                      PrefModelAssociator* pref_sync_associator,
                                      PrefNotifier* pref_notifier);
@@ -110,30 +100,23 @@ class PrefValueStore {
 
  private:
   // PrefStores must be listed here in order from highest to lowest priority.
-  //   MANAGED_PLATFORM contains all managed preference values that are
-  //       provided by a platform-specific policy mechanism (e.g. Windows
-  //       Group Policy).
-  //   MANAGED_CLOUD contains all managed preference values supplied
-  //       by the device management server (cloud policy).
+  //   MANAGED contains all managed preference values that are provided by
+  //      mandatory policies (e.g. Windows Group Policy or cloud policy).
   //   EXTENSION contains preference values set by extensions.
   //   COMMAND_LINE contains preference values set by command-line switches.
   //   USER contains all user-set preference values.
-  //   RECOMMENDED_PLATFORM contains all recommended (policy) preference values
-  //      that are provided by a platform-specific policy mechanism.
-  //   RECOMMENDED_CLOUD contains all recommended (policy) preference values
-  //      that are provided by the device management server (cloud policy).
+  //   RECOMMENDED contains all preferences that are provided by recommended
+  //      policies.
   //   DEFAULT contains all application default preference values.
   enum PrefStoreType {
     // INVALID_STORE is not associated with an actual PrefStore but used as
     // an invalid marker, e.g. as a return value.
     INVALID_STORE = -1,
-    MANAGED_PLATFORM_STORE = 0,
-    MANAGED_CLOUD_STORE,
+    MANAGED_STORE = 0,
     EXTENSION_STORE,
     COMMAND_LINE_STORE,
     USER_STORE,
-    RECOMMENDED_PLATFORM_STORE,
-    RECOMMENDED_CLOUD_STORE,
+    RECOMMENDED_STORE,
     DEFAULT_STORE,
     PREF_STORE_TYPE_MAX = DEFAULT_STORE
   };

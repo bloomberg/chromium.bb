@@ -134,19 +134,13 @@ PrefService* PrefService::CreatePrefService(const FilePath& pref_filename,
 #endif
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
-  ConfigurationPolicyPrefStore* managed_platform =
-      ConfigurationPolicyPrefStore::CreateManagedPlatformPolicyPrefStore();
-  ConfigurationPolicyPrefStore* managed_cloud =
-      ConfigurationPolicyPrefStore::CreateManagedCloudPolicyPrefStore();
-  ConfigurationPolicyPrefStore* recommended_platform =
-      ConfigurationPolicyPrefStore::CreateRecommendedPlatformPolicyPrefStore();
-  ConfigurationPolicyPrefStore* recommended_cloud =
-      ConfigurationPolicyPrefStore::CreateRecommendedCloudPolicyPrefStore();
+  ConfigurationPolicyPrefStore* managed =
+      ConfigurationPolicyPrefStore::CreateMandatoryPolicyPrefStore();
+  ConfigurationPolicyPrefStore* recommended =
+      ConfigurationPolicyPrefStore::CreateRecommendedPolicyPrefStore();
 #else
-  ConfigurationPolicyPrefStore* managed_platform = NULL;
-  ConfigurationPolicyPrefStore* managed_cloud = NULL;
-  ConfigurationPolicyPrefStore* recommended_platform = NULL;
-  ConfigurationPolicyPrefStore* recommended_cloud = NULL;
+  ConfigurationPolicyPrefStore* managed = NULL;
+  ConfigurationPolicyPrefStore* recommended = NULL;
 #endif  // ENABLE_CONFIGURATION_POLICY
 
   CommandLinePrefStore* command_line =
@@ -162,13 +156,11 @@ PrefService* PrefService::CreatePrefService(const FilePath& pref_filename,
   return new PrefService(
       pref_notifier,
       new PrefValueStore(
-          managed_platform,
-          managed_cloud,
+          managed,
           extension_prefs,
           command_line,
           user,
-          recommended_platform,
-          recommended_cloud,
+          recommended,
           default_pref_store,
           pref_sync_associator,
           pref_notifier),
@@ -188,13 +180,11 @@ PrefService* PrefService::CreateIncognitoPrefService(
   return new PrefService(
       pref_notifier,
       pref_value_store_->CloneAndSpecialize(
-          NULL,  // managed_platform_prefs
-          NULL,  // managed_cloud_prefs
+          NULL,  // managed
           incognito_extension_prefs,
           NULL,  // command_line_prefs
           incognito_pref_store,
-          NULL,  // recommended_platform_prefs
-          NULL,  // recommended_cloud_prefs
+          NULL,  // recommended
           default_store_.get(),
           NULL,  // pref_sync_associator
           pref_notifier),

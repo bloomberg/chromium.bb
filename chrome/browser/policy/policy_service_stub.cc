@@ -24,4 +24,8 @@ const PolicyMap* PolicyServiceStub::GetPolicies(
   return NULL;
 };
 
+bool PolicyServiceStub:IsInitializationComplete() const {
+  return true;
+}
+
 }  // namespace policy

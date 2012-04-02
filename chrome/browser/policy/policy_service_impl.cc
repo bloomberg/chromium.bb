@@ -21,6 +21,7 @@ struct PolicyServiceImpl::ProviderData {
 };
 
 PolicyServiceImpl::PolicyServiceImpl(const Providers& providers) {
+  initialization_complete_ = true;
   for (size_t i = 0; i < providers.size(); ++i) {
     ConfigurationPolicyProvider* provider = providers[i];
     ProviderData* data = new ProviderData;
@@ -28,6 +29,8 @@ PolicyServiceImpl::PolicyServiceImpl(const Providers& providers) {
     data->registrar.Init(provider, this);
     if (provider->IsInitializationComplete())
       provider->Provide(&data->policies);
+    else
+      initialization_complete_ = false;
     providers_.push_back(data);
   }
   // There are no observers yet, but calls to GetPolicies() should already get
@@ -66,6 +69,10 @@ const PolicyMap* PolicyServiceImpl::GetPolicies(
   PolicyNamespace ns = std::make_pair(domain, component_id);
   EntryMap::const_iterator it = entries_.find(ns);
   return it == entries_.end() ? NULL : &it->second->policies;
+}
+
+bool PolicyServiceImpl::IsInitializationComplete() const {
+  return initialization_complete_;
 }
 
 void PolicyServiceImpl::OnUpdatePolicy(ConfigurationPolicyProvider* provider) {
@@ -130,6 +137,25 @@ void PolicyServiceImpl::MergeAndTriggerUpdates() {
     FOR_EACH_OBSERVER(PolicyService::Observer,
                       entry->observers,
                       OnPolicyUpdated(POLICY_DOMAIN_CHROME, ""));
+  }
+
+  // Check if all providers became initialized just now, if they weren't before.
+  if (!initialization_complete_) {
+    initialization_complete_ = true;
+    for (ProviderList::iterator iter = providers_.begin();
+         iter != providers_.end(); ++iter) {
+      if (!(*iter)->provider->IsInitializationComplete()) {
+        initialization_complete_ = false;
+        break;
+      }
+    }
+    if (initialization_complete_) {
+      for (EntryMap::iterator i = entries_.begin(); i != entries_.end(); ++i) {
+        FOR_EACH_OBSERVER(PolicyService::Observer,
+                          i->second->observers,
+                          OnPolicyServiceInitialized());
+      }
+    }
   }
 }
 

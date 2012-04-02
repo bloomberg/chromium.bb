@@ -12,22 +12,24 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/values.h"
-#include "chrome/browser/policy/configuration_policy_provider.h"
+#include "chrome/browser/policy/policy_map.h"
+#include "chrome/browser/policy/policy_service.h"
 #include "chrome/common/pref_store.h"
 
 class PrefValueMap;
 
 namespace policy {
 
-// An implementation of PrefStore that bridges policy settings as read from a
-// ConfigurationPolicyProvider to preferences.
+// An implementation of PrefStore that bridges policy settings as read from the
+// PolicyService to preferences. Converts POLICY_DOMAIN_CHROME policies a given
+// PolicyLevel to their corresponding preferences.
 class ConfigurationPolicyPrefStore
     : public PrefStore,
-      public ConfigurationPolicyProvider::Observer {
+      public PolicyService::Observer {
  public:
-  // The ConfigurationPolicyPrefStore does not take ownership of the
-  // passed-in |provider|.
-  explicit ConfigurationPolicyPrefStore(ConfigurationPolicyProvider* provider);
+  // Does not take ownership of |service|. Only policies of the given |level|
+  // will be mapped.
+  ConfigurationPolicyPrefStore(PolicyService* service, PolicyLevel level);
   virtual ~ConfigurationPolicyPrefStore();
 
   // PrefStore methods:
@@ -38,47 +40,38 @@ class ConfigurationPolicyPrefStore
   virtual ReadResult GetValue(const std::string& key,
                               const Value** result) const OVERRIDE;
 
-  // ConfigurationPolicyProvider::Observer methods:
-  virtual void OnUpdatePolicy(ConfigurationPolicyProvider* provider) OVERRIDE;
-  virtual void OnProviderGoingAway(
-      ConfigurationPolicyProvider* provider) OVERRIDE;
+  // PolicyService::Observer methods:
+  virtual void OnPolicyUpdated(PolicyDomain domain,
+                               const std::string& component_id) OVERRIDE;
+  virtual void OnPolicyServiceInitialized() OVERRIDE;
 
-  // Creates a ConfigurationPolicyPrefStore that reads managed platform policy.
-  static ConfigurationPolicyPrefStore* CreateManagedPlatformPolicyPrefStore();
+  // Creates a ConfigurationPolicyPrefStore that only provides policies that
+  // have POLICY_LEVEL_MANDATORY level.
+  static ConfigurationPolicyPrefStore* CreateMandatoryPolicyPrefStore();
 
-  // Creates a ConfigurationPolicyPrefStore that reads managed cloud policy.
-  static ConfigurationPolicyPrefStore* CreateManagedCloudPolicyPrefStore();
-
-  // Creates a ConfigurationPolicyPrefStore that reads recommended platform
-  // policy.
-  static ConfigurationPolicyPrefStore*
-      CreateRecommendedPlatformPolicyPrefStore();
-
-  // Creates a ConfigurationPolicyPrefStore that reads recommended cloud policy.
-  static ConfigurationPolicyPrefStore* CreateRecommendedCloudPolicyPrefStore();
+  // Creates a ConfigurationPolicyPrefStore that only provides policies that
+  // have POLICY_LEVEL_RECOMMENDED level.
+  static ConfigurationPolicyPrefStore* CreateRecommendedPolicyPrefStore();
 
  private:
-  // Refreshes policy information, rereading policy from the provider and
+  // Refreshes policy information, rereading policy from the policy service and
   // sending out change notifications as appropriate.
   void Refresh();
 
   // Returns a new PrefValueMap containing the preference values that correspond
-  // to the policies currently provided by |provider_|.
+  // to the policies currently provided by the policy service.
   PrefValueMap* CreatePreferencesFromPolicies();
 
-  // The policy provider from which policy settings are read.
-  ConfigurationPolicyProvider* provider_;
+  // The PolicyService from which policy settings are read.
+  PolicyService* policy_service_;
 
-  // Initialization status as reported by the policy provider the last time we
-  // queried it.
-  bool initialization_complete_;
+  // The policy level that this PrefStore uses.
+  PolicyLevel level_;
 
   // Current policy preferences.
   scoped_ptr<PrefValueMap> prefs_;
 
   ObserverList<PrefStore::Observer, true> observers_;
-
-  ConfigurationPolicyObserverRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(ConfigurationPolicyPrefStore);
 };

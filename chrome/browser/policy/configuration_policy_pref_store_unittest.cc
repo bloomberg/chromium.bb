@@ -9,6 +9,8 @@
 #include "chrome/browser/policy/configuration_policy_handler.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/policy/mock_configuration_policy_provider.h"
+#include "chrome/browser/policy/policy_map.h"
+#include "chrome/browser/policy/policy_service_impl.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prefs/proxy_config_dictionary.h"
 #include "chrome/common/content_settings.h"
@@ -38,22 +40,25 @@ class PolicyAndPref {
   const char* pref_name_;
 };
 
-template<typename TESTBASE>
-class ConfigurationPolicyPrefStoreTestBase : public TESTBASE {
+class ConfigurationPolicyPrefStoreTest : public testing::Test {
  protected:
-  ConfigurationPolicyPrefStoreTestBase()
-      : provider_(),
-        store_(new ConfigurationPolicyPrefStore(&provider_)) {}
+  ConfigurationPolicyPrefStoreTest() {
+    PolicyServiceImpl::Providers providers;
+    providers.push_back(&provider_);
+    policy_service_.reset(new PolicyServiceImpl(providers));
+    store_ = new ConfigurationPolicyPrefStore(policy_service_.get(),
+                                              POLICY_LEVEL_MANDATORY);
+  }
 
   MockConfigurationPolicyProvider provider_;
+  scoped_ptr<PolicyServiceImpl> policy_service_;
   scoped_refptr<ConfigurationPolicyPrefStore> store_;
 };
 
 // Test cases for list-valued policy settings.
 class ConfigurationPolicyPrefStoreListTest
-    : public ConfigurationPolicyPrefStoreTestBase<
-                 testing::TestWithParam<PolicyAndPref> > {
-};
+    : public ConfigurationPolicyPrefStoreTest,
+      public testing::WithParamInterface<PolicyAndPref> {};
 
 TEST_P(ConfigurationPolicyPrefStoreListTest, GetDefault) {
   EXPECT_EQ(PrefStore::READ_NO_VALUE,
@@ -65,7 +70,7 @@ TEST_P(ConfigurationPolicyPrefStoreListTest, SetValue) {
   in_value->Append(base::Value::CreateStringValue("test1"));
   in_value->Append(base::Value::CreateStringValue("test2,"));
   provider_.AddMandatoryPolicy(GetParam().policy_name(), in_value);
-  store_->OnUpdatePolicy(&provider_);
+  provider_.RefreshPolicies();
   const base::Value* value = NULL;
   EXPECT_EQ(PrefStore::READ_OK,
             store_->GetValue(GetParam().pref_name(), &value));
@@ -100,9 +105,8 @@ INSTANTIATE_TEST_CASE_P(
 
 // Test cases for string-valued policy settings.
 class ConfigurationPolicyPrefStoreStringTest
-    : public ConfigurationPolicyPrefStoreTestBase<
-                 testing::TestWithParam<PolicyAndPref> > {
-};
+    : public ConfigurationPolicyPrefStoreTest,
+      public testing::WithParamInterface<PolicyAndPref> {};
 
 TEST_P(ConfigurationPolicyPrefStoreStringTest, GetDefault) {
   EXPECT_EQ(PrefStore::READ_NO_VALUE,
@@ -113,7 +117,7 @@ TEST_P(ConfigurationPolicyPrefStoreStringTest, SetValue) {
   provider_.AddMandatoryPolicy(GetParam().policy_name(),
                                base::Value::CreateStringValue(
                                    "http://chromium.org"));
-  store_->OnUpdatePolicy(&provider_);
+  provider_.RefreshPolicies();
   const base::Value* value = NULL;
   EXPECT_EQ(PrefStore::READ_OK,
             store_->GetValue(GetParam().pref_name(), &value));
@@ -150,9 +154,8 @@ INSTANTIATE_TEST_CASE_P(
 
 // Test cases for boolean-valued policy settings.
 class ConfigurationPolicyPrefStoreBooleanTest
-    : public ConfigurationPolicyPrefStoreTestBase<
-                 testing::TestWithParam<PolicyAndPref> > {
-};
+    : public ConfigurationPolicyPrefStoreTest,
+      public testing::WithParamInterface<PolicyAndPref> {};
 
 TEST_P(ConfigurationPolicyPrefStoreBooleanTest, GetDefault) {
   EXPECT_EQ(PrefStore::READ_NO_VALUE,
@@ -162,7 +165,7 @@ TEST_P(ConfigurationPolicyPrefStoreBooleanTest, GetDefault) {
 TEST_P(ConfigurationPolicyPrefStoreBooleanTest, SetValue) {
   provider_.AddMandatoryPolicy(GetParam().policy_name(),
                                base::Value::CreateBooleanValue(false));
-  store_->OnUpdatePolicy(&provider_);
+  provider_.RefreshPolicies();
   const base::Value* value = NULL;
   EXPECT_EQ(PrefStore::READ_OK,
             store_->GetValue(GetParam().pref_name(), &value));
@@ -174,7 +177,7 @@ TEST_P(ConfigurationPolicyPrefStoreBooleanTest, SetValue) {
 
   provider_.AddMandatoryPolicy(GetParam().policy_name(),
                                base::Value::CreateBooleanValue(true));
-  store_->OnUpdatePolicy(&provider_);
+  provider_.RefreshPolicies();
   value = NULL;
   EXPECT_EQ(PrefStore::READ_OK,
             store_->GetValue(GetParam().pref_name(), &value));
@@ -284,9 +287,8 @@ INSTANTIATE_TEST_CASE_P(
 
 // Test cases for integer-valued policy settings.
 class ConfigurationPolicyPrefStoreIntegerTest
-    : public ConfigurationPolicyPrefStoreTestBase<
-                 testing::TestWithParam<PolicyAndPref> > {
-};
+    : public ConfigurationPolicyPrefStoreTest,
+      public testing::WithParamInterface<PolicyAndPref> {};
 
 TEST_P(ConfigurationPolicyPrefStoreIntegerTest, GetDefault) {
   EXPECT_EQ(PrefStore::READ_NO_VALUE,
@@ -296,7 +298,7 @@ TEST_P(ConfigurationPolicyPrefStoreIntegerTest, GetDefault) {
 TEST_P(ConfigurationPolicyPrefStoreIntegerTest, SetValue) {
   provider_.AddMandatoryPolicy(GetParam().policy_name(),
                                base::Value::CreateIntegerValue(2));
-  store_->OnUpdatePolicy(&provider_);
+  provider_.RefreshPolicies();
   const base::Value* value = NULL;
   EXPECT_EQ(PrefStore::READ_OK,
             store_->GetValue(GetParam().pref_name(), &value));
@@ -331,18 +333,18 @@ INSTANTIATE_TEST_CASE_P(
                       prefs::kMaxConnectionsPerProxy)));
 
 // Test cases for the proxy policy settings.
-class ConfigurationPolicyPrefStoreProxyTest : public testing::Test {
+class ConfigurationPolicyPrefStoreProxyTest
+    : public ConfigurationPolicyPrefStoreTest {
  protected:
   // Verify that all the proxy prefs are set to the specified expected values.
-  static void VerifyProxyPrefs(
-      const ConfigurationPolicyPrefStore& store,
+  void VerifyProxyPrefs(
       const std::string& expected_proxy_server,
       const std::string& expected_proxy_pac_url,
       const std::string& expected_proxy_bypass_list,
       const ProxyPrefs::ProxyMode& expected_proxy_mode) {
     const base::Value* value = NULL;
     ASSERT_EQ(PrefStore::READ_OK,
-              store.GetValue(prefs::kProxy, &value));
+              store_->GetValue(prefs::kProxy, &value));
     ASSERT_EQ(base::Value::TYPE_DICTIONARY, value->GetType());
     ProxyConfigDictionary dict(
         static_cast<const base::DictionaryValue*>(value));
@@ -372,252 +374,212 @@ class ConfigurationPolicyPrefStoreProxyTest : public testing::Test {
 };
 
 TEST_F(ConfigurationPolicyPrefStoreProxyTest, ManualOptions) {
-  MockConfigurationPolicyProvider provider;
-  provider.AddMandatoryPolicy(
+  provider_.AddMandatoryPolicy(
       key::kProxyBypassList,
       base::Value::CreateStringValue("http://chromium.org/override"));
-  provider.AddMandatoryPolicy(key::kProxyServer,
-                              base::Value::CreateStringValue("chromium.org"));
-  provider.AddMandatoryPolicy(
+  provider_.AddMandatoryPolicy(key::kProxyServer,
+                               base::Value::CreateStringValue("chromium.org"));
+  provider_.AddMandatoryPolicy(
       key::kProxyServerMode,
       base::Value::CreateIntegerValue(
           ProxyPolicyHandler::PROXY_MANUALLY_CONFIGURED_PROXY_SERVER_MODE));
+  provider_.RefreshPolicies();
 
-  scoped_refptr<ConfigurationPolicyPrefStore> store(
-      new ConfigurationPolicyPrefStore(&provider));
   VerifyProxyPrefs(
-      *store, "chromium.org", "", "http://chromium.org/override",
+      "chromium.org", "", "http://chromium.org/override",
       ProxyPrefs::MODE_FIXED_SERVERS);
 }
 
 TEST_F(ConfigurationPolicyPrefStoreProxyTest, ManualOptionsReversedApplyOrder) {
-  MockConfigurationPolicyProvider provider;
-  provider.AddMandatoryPolicy(
+  provider_.AddMandatoryPolicy(
       key::kProxyServerMode,
       base::Value::CreateIntegerValue(
           ProxyPolicyHandler::PROXY_MANUALLY_CONFIGURED_PROXY_SERVER_MODE));
-  provider.AddMandatoryPolicy(
+  provider_.AddMandatoryPolicy(
       key::kProxyBypassList,
       base::Value::CreateStringValue("http://chromium.org/override"));
-  provider.AddMandatoryPolicy(
+  provider_.AddMandatoryPolicy(
       key::kProxyServer,
       base::Value::CreateStringValue("chromium.org"));
-  scoped_refptr<ConfigurationPolicyPrefStore> store(
-      new ConfigurationPolicyPrefStore(&provider));
+  provider_.RefreshPolicies();
+
   VerifyProxyPrefs(
-      *store, "chromium.org", "", "http://chromium.org/override",
+      "chromium.org", "", "http://chromium.org/override",
       ProxyPrefs::MODE_FIXED_SERVERS);
 }
 
 TEST_F(ConfigurationPolicyPrefStoreProxyTest, ManualOptionsInvalid) {
-  MockConfigurationPolicyProvider provider;
-  provider.AddMandatoryPolicy(
+  provider_.AddMandatoryPolicy(
       key::kProxyServerMode,
       base::Value::CreateIntegerValue(
           ProxyPolicyHandler::PROXY_MANUALLY_CONFIGURED_PROXY_SERVER_MODE));
+  provider_.RefreshPolicies();
 
-  scoped_refptr<ConfigurationPolicyPrefStore> store(
-      new ConfigurationPolicyPrefStore(&provider));
   const base::Value* value = NULL;
-  EXPECT_EQ(PrefStore::READ_NO_VALUE, store->GetValue(prefs::kProxy, &value));
+  EXPECT_EQ(PrefStore::READ_NO_VALUE, store_->GetValue(prefs::kProxy, &value));
 }
 
 
 TEST_F(ConfigurationPolicyPrefStoreProxyTest, NoProxyServerMode) {
-  MockConfigurationPolicyProvider provider;
-  provider.AddMandatoryPolicy(
+  provider_.AddMandatoryPolicy(
       key::kProxyServerMode,
       base::Value::CreateIntegerValue(ProxyPolicyHandler::PROXY_SERVER_MODE));
-
-  scoped_refptr<ConfigurationPolicyPrefStore> store(
-      new ConfigurationPolicyPrefStore(&provider));
-  VerifyProxyPrefs(*store, "", "", "", ProxyPrefs::MODE_DIRECT);
+  provider_.RefreshPolicies();
+  VerifyProxyPrefs("", "", "", ProxyPrefs::MODE_DIRECT);
 }
 
 TEST_F(ConfigurationPolicyPrefStoreProxyTest, NoProxyModeName) {
-  MockConfigurationPolicyProvider provider;
-  provider.AddMandatoryPolicy(
+  provider_.AddMandatoryPolicy(
       key::kProxyMode,
       base::Value::CreateStringValue(ProxyPrefs::kDirectProxyModeName));
-
-  scoped_refptr<ConfigurationPolicyPrefStore> store(
-      new ConfigurationPolicyPrefStore(&provider));
-  VerifyProxyPrefs(*store, "", "", "", ProxyPrefs::MODE_DIRECT);
+  provider_.RefreshPolicies();
+  VerifyProxyPrefs("", "", "", ProxyPrefs::MODE_DIRECT);
 }
 
 TEST_F(ConfigurationPolicyPrefStoreProxyTest, AutoDetectProxyServerMode) {
-  MockConfigurationPolicyProvider provider;
-  provider.AddMandatoryPolicy(
+  provider_.AddMandatoryPolicy(
       key::kProxyServerMode,
       base::Value::CreateIntegerValue(
           ProxyPolicyHandler::PROXY_AUTO_DETECT_PROXY_SERVER_MODE));
-
-  scoped_refptr<ConfigurationPolicyPrefStore> store(
-      new ConfigurationPolicyPrefStore(&provider));
-  VerifyProxyPrefs(*store, "", "", "", ProxyPrefs::MODE_AUTO_DETECT);
+  provider_.RefreshPolicies();
+  VerifyProxyPrefs("", "", "", ProxyPrefs::MODE_AUTO_DETECT);
 }
 
 TEST_F(ConfigurationPolicyPrefStoreProxyTest, AutoDetectProxyModeName) {
-  MockConfigurationPolicyProvider provider;
-  provider.AddMandatoryPolicy(
+  provider_.AddMandatoryPolicy(
       key::kProxyMode,
       base::Value::CreateStringValue(ProxyPrefs::kAutoDetectProxyModeName));
-
-  scoped_refptr<ConfigurationPolicyPrefStore> store(
-      new ConfigurationPolicyPrefStore(&provider));
-  VerifyProxyPrefs(*store, "", "", "", ProxyPrefs::MODE_AUTO_DETECT);
+  provider_.RefreshPolicies();
+  VerifyProxyPrefs("", "", "", ProxyPrefs::MODE_AUTO_DETECT);
 }
 
 TEST_F(ConfigurationPolicyPrefStoreProxyTest, PacScriptProxyMode) {
-  MockConfigurationPolicyProvider provider;
-  provider.AddMandatoryPolicy(
+  provider_.AddMandatoryPolicy(
       key::kProxyPacUrl,
       base::Value::CreateStringValue("http://short.org/proxy.pac"));
-  provider.AddMandatoryPolicy(
+  provider_.AddMandatoryPolicy(
       key::kProxyMode,
       base::Value::CreateStringValue(ProxyPrefs::kPacScriptProxyModeName));
-
-  scoped_refptr<ConfigurationPolicyPrefStore> store(
-      new ConfigurationPolicyPrefStore(&provider));
-  VerifyProxyPrefs(*store, "", "http://short.org/proxy.pac", "",
+  provider_.RefreshPolicies();
+  VerifyProxyPrefs("", "http://short.org/proxy.pac", "",
                    ProxyPrefs::MODE_PAC_SCRIPT);
 }
 
 TEST_F(ConfigurationPolicyPrefStoreProxyTest, PacScriptProxyModeInvalid) {
-  MockConfigurationPolicyProvider provider;
-  provider.AddMandatoryPolicy(
+  provider_.AddMandatoryPolicy(
       key::kProxyMode,
       base::Value::CreateStringValue(ProxyPrefs::kPacScriptProxyModeName));
-
-  scoped_refptr<ConfigurationPolicyPrefStore> store(
-      new ConfigurationPolicyPrefStore(&provider));
+  provider_.RefreshPolicies();
   const base::Value* value = NULL;
-  EXPECT_EQ(PrefStore::READ_NO_VALUE, store->GetValue(prefs::kProxy, &value));
+  EXPECT_EQ(PrefStore::READ_NO_VALUE, store_->GetValue(prefs::kProxy, &value));
 }
 
 // Regression test for http://crbug.com/78016, CPanel returns empty strings
 // for unset properties.
 TEST_F(ConfigurationPolicyPrefStoreProxyTest, PacScriptProxyModeBug78016) {
-  MockConfigurationPolicyProvider provider;
-  provider.AddMandatoryPolicy(key::kProxyServer,
-                              base::Value::CreateStringValue(""));
-  provider.AddMandatoryPolicy(
+  provider_.AddMandatoryPolicy(key::kProxyServer,
+                               base::Value::CreateStringValue(""));
+  provider_.AddMandatoryPolicy(
       key::kProxyPacUrl,
       base::Value::CreateStringValue("http://short.org/proxy.pac"));
-  provider.AddMandatoryPolicy(
+  provider_.AddMandatoryPolicy(
       key::kProxyMode,
       base::Value::CreateStringValue(ProxyPrefs::kPacScriptProxyModeName));
-
-  scoped_refptr<ConfigurationPolicyPrefStore> store(
-      new ConfigurationPolicyPrefStore(&provider));
-  VerifyProxyPrefs(*store, "", "http://short.org/proxy.pac", "",
+  provider_.RefreshPolicies();
+  VerifyProxyPrefs("", "http://short.org/proxy.pac", "",
                    ProxyPrefs::MODE_PAC_SCRIPT);
 }
 
 TEST_F(ConfigurationPolicyPrefStoreProxyTest, UseSystemProxyServerMode) {
-  MockConfigurationPolicyProvider provider;
-  provider.AddMandatoryPolicy(
+  provider_.AddMandatoryPolicy(
       key::kProxyServerMode,
       base::Value::CreateIntegerValue(
           ProxyPolicyHandler::PROXY_USE_SYSTEM_PROXY_SERVER_MODE));
-
-  scoped_refptr<ConfigurationPolicyPrefStore> store(
-      new ConfigurationPolicyPrefStore(&provider));
-  VerifyProxyPrefs(*store, "", "", "", ProxyPrefs::MODE_SYSTEM);
+  provider_.RefreshPolicies();
+  VerifyProxyPrefs("", "", "", ProxyPrefs::MODE_SYSTEM);
 }
 
 TEST_F(ConfigurationPolicyPrefStoreProxyTest, UseSystemProxyMode) {
-  MockConfigurationPolicyProvider provider;
-  provider.AddMandatoryPolicy(
+  provider_.AddMandatoryPolicy(
       key::kProxyMode,
       base::Value::CreateStringValue(ProxyPrefs::kSystemProxyModeName));
-
-  scoped_refptr<ConfigurationPolicyPrefStore> store(
-      new ConfigurationPolicyPrefStore(&provider));
-  VerifyProxyPrefs(*store, "", "", "", ProxyPrefs::MODE_SYSTEM);
+  provider_.RefreshPolicies();
+  VerifyProxyPrefs("", "", "", ProxyPrefs::MODE_SYSTEM);
 }
 
 TEST_F(ConfigurationPolicyPrefStoreProxyTest,
        ProxyModeOverridesProxyServerMode) {
-  MockConfigurationPolicyProvider provider;
-  provider.AddMandatoryPolicy(
+  provider_.AddMandatoryPolicy(
       key::kProxyServerMode,
       base::Value::CreateIntegerValue(ProxyPolicyHandler::PROXY_SERVER_MODE));
-  provider.AddMandatoryPolicy(
+  provider_.AddMandatoryPolicy(
       key::kProxyMode,
       base::Value::CreateStringValue(ProxyPrefs::kAutoDetectProxyModeName));
-
-  scoped_refptr<ConfigurationPolicyPrefStore> store(
-      new ConfigurationPolicyPrefStore(&provider));
-  VerifyProxyPrefs(*store, "", "", "", ProxyPrefs::MODE_AUTO_DETECT);
+  provider_.RefreshPolicies();
+  VerifyProxyPrefs("", "", "", ProxyPrefs::MODE_AUTO_DETECT);
 }
 
 TEST_F(ConfigurationPolicyPrefStoreProxyTest, ProxyInvalid) {
+  // No mode expects all three parameters being set.
+  provider_.AddMandatoryPolicy(
+      key::kProxyPacUrl,
+      base::Value::CreateStringValue("http://short.org/proxy.pac"));
+  provider_.AddMandatoryPolicy(
+      key::kProxyBypassList,
+      base::Value::CreateStringValue("http://chromium.org/override"));
+  provider_.AddMandatoryPolicy(
+      key::kProxyServer,
+      base::Value::CreateStringValue("chromium.org"));
   for (int i = 0; i < ProxyPolicyHandler::MODE_COUNT; ++i) {
-    MockConfigurationPolicyProvider provider;
-    provider.AddMandatoryPolicy(key::kProxyServerMode,
-                                base::Value::CreateIntegerValue(i));
-    // No mode expects all three parameters being set.
-    provider.AddMandatoryPolicy(
-        key::kProxyPacUrl,
-        base::Value::CreateStringValue("http://short.org/proxy.pac"));
-    provider.AddMandatoryPolicy(
-        key::kProxyBypassList,
-        base::Value::CreateStringValue("http://chromium.org/override"));
-    provider.AddMandatoryPolicy(key::kProxyServer,
-                                base::Value::CreateStringValue("chromium.org"));
-
-    scoped_refptr<ConfigurationPolicyPrefStore> store(
-        new ConfigurationPolicyPrefStore(&provider));
+    provider_.AddMandatoryPolicy(key::kProxyServerMode,
+                                 base::Value::CreateIntegerValue(i));
+    provider_.RefreshPolicies();
     const base::Value* value = NULL;
     EXPECT_EQ(PrefStore::READ_NO_VALUE,
-              store->GetValue(prefs::kProxy, &value));
+              store_->GetValue(prefs::kProxy, &value));
   }
 }
 
-class ConfigurationPolicyPrefStoreDefaultSearchTest : public testing::Test {
-};
+class ConfigurationPolicyPrefStoreDefaultSearchTest
+    : public ConfigurationPolicyPrefStoreTest {};
 
 // Checks that if the policy for default search is valid, i.e. there's a
 // search URL, that all the elements have been given proper defaults.
 TEST_F(ConfigurationPolicyPrefStoreDefaultSearchTest, MinimallyDefined) {
   const char* const search_url = "http://test.com/search?t={searchTerms}";
-  MockConfigurationPolicyProvider provider;
-  provider.AddMandatoryPolicy(key::kDefaultSearchProviderEnabled,
-                              base::Value::CreateBooleanValue(true));
-  provider.AddMandatoryPolicy(key::kDefaultSearchProviderSearchURL,
-                              base::Value::CreateStringValue(search_url));
-
-  scoped_refptr<ConfigurationPolicyPrefStore> store(
-      new ConfigurationPolicyPrefStore(&provider));
+  provider_.AddMandatoryPolicy(key::kDefaultSearchProviderEnabled,
+                               base::Value::CreateBooleanValue(true));
+  provider_.AddMandatoryPolicy(key::kDefaultSearchProviderSearchURL,
+                               base::Value::CreateStringValue(search_url));
+  provider_.RefreshPolicies();
 
   const base::Value* value = NULL;
   EXPECT_EQ(PrefStore::READ_OK,
-            store->GetValue(prefs::kDefaultSearchProviderSearchURL, &value));
+            store_->GetValue(prefs::kDefaultSearchProviderSearchURL, &value));
   EXPECT_TRUE(base::StringValue(search_url).Equals(value));
 
   EXPECT_EQ(PrefStore::READ_OK,
-            store->GetValue(prefs::kDefaultSearchProviderName, &value));
+            store_->GetValue(prefs::kDefaultSearchProviderName, &value));
   EXPECT_TRUE(base::StringValue("test.com").Equals(value));
 
   EXPECT_EQ(PrefStore::READ_OK,
-            store->GetValue(prefs::kDefaultSearchProviderKeyword, &value));
+            store_->GetValue(prefs::kDefaultSearchProviderKeyword, &value));
   EXPECT_TRUE(base::StringValue("test.com").Equals(value));
 
   EXPECT_EQ(PrefStore::READ_OK,
-            store->GetValue(prefs::kDefaultSearchProviderSuggestURL, &value));
+            store_->GetValue(prefs::kDefaultSearchProviderSuggestURL, &value));
   EXPECT_TRUE(base::StringValue(std::string()).Equals(value));
 
   EXPECT_EQ(PrefStore::READ_OK,
-            store->GetValue(prefs::kDefaultSearchProviderIconURL, &value));
+            store_->GetValue(prefs::kDefaultSearchProviderIconURL, &value));
   EXPECT_TRUE(base::StringValue(std::string()).Equals(value));
 
   EXPECT_EQ(PrefStore::READ_OK,
-            store->GetValue(prefs::kDefaultSearchProviderEncodings, &value));
+            store_->GetValue(prefs::kDefaultSearchProviderEncodings, &value));
   EXPECT_TRUE(base::StringValue(std::string()).Equals(value));
 
   EXPECT_EQ(PrefStore::READ_OK,
-            store->GetValue(prefs::kDefaultSearchProviderInstantURL, &value));
+            store_->GetValue(prefs::kDefaultSearchProviderInstantURL, &value));
   EXPECT_TRUE(base::StringValue(std::string()).Equals(value));
 }
 
@@ -632,47 +594,44 @@ TEST_F(ConfigurationPolicyPrefStoreDefaultSearchTest, FullyDefined) {
   base::ListValue* encodings = new base::ListValue();
   encodings->Append(base::Value::CreateStringValue("UTF-16"));
   encodings->Append(base::Value::CreateStringValue("UTF-8"));
-  MockConfigurationPolicyProvider provider;
-  provider.AddMandatoryPolicy(key::kDefaultSearchProviderEnabled,
-                              base::Value::CreateBooleanValue(true));
-  provider.AddMandatoryPolicy(key::kDefaultSearchProviderSearchURL,
-                              base::Value::CreateStringValue(search_url));
-  provider.AddMandatoryPolicy(key::kDefaultSearchProviderName,
-                              base::Value::CreateStringValue(name));
-  provider.AddMandatoryPolicy(key::kDefaultSearchProviderKeyword,
-                              base::Value::CreateStringValue(keyword));
-  provider.AddMandatoryPolicy(key::kDefaultSearchProviderSuggestURL,
-                              base::Value::CreateStringValue(suggest_url));
-  provider.AddMandatoryPolicy(key::kDefaultSearchProviderIconURL,
-                              base::Value::CreateStringValue(icon_url));
-  provider.AddMandatoryPolicy(key::kDefaultSearchProviderEncodings, encodings);
-
-  scoped_refptr<ConfigurationPolicyPrefStore> store(
-      new ConfigurationPolicyPrefStore(&provider));
+  provider_.AddMandatoryPolicy(key::kDefaultSearchProviderEnabled,
+                               base::Value::CreateBooleanValue(true));
+  provider_.AddMandatoryPolicy(key::kDefaultSearchProviderSearchURL,
+                               base::Value::CreateStringValue(search_url));
+  provider_.AddMandatoryPolicy(key::kDefaultSearchProviderName,
+                               base::Value::CreateStringValue(name));
+  provider_.AddMandatoryPolicy(key::kDefaultSearchProviderKeyword,
+                               base::Value::CreateStringValue(keyword));
+  provider_.AddMandatoryPolicy(key::kDefaultSearchProviderSuggestURL,
+                               base::Value::CreateStringValue(suggest_url));
+  provider_.AddMandatoryPolicy(key::kDefaultSearchProviderIconURL,
+                               base::Value::CreateStringValue(icon_url));
+  provider_.AddMandatoryPolicy(key::kDefaultSearchProviderEncodings, encodings);
+  provider_.RefreshPolicies();
 
   const base::Value* value = NULL;
   EXPECT_EQ(PrefStore::READ_OK,
-            store->GetValue(prefs::kDefaultSearchProviderSearchURL, &value));
+            store_->GetValue(prefs::kDefaultSearchProviderSearchURL, &value));
   EXPECT_TRUE(base::StringValue(search_url).Equals(value));
 
   EXPECT_EQ(PrefStore::READ_OK,
-            store->GetValue(prefs::kDefaultSearchProviderName, &value));
+            store_->GetValue(prefs::kDefaultSearchProviderName, &value));
   EXPECT_TRUE(base::StringValue(name).Equals(value));
 
   EXPECT_EQ(PrefStore::READ_OK,
-            store->GetValue(prefs::kDefaultSearchProviderKeyword, &value));
+            store_->GetValue(prefs::kDefaultSearchProviderKeyword, &value));
   EXPECT_TRUE(base::StringValue(keyword).Equals(value));
 
   EXPECT_EQ(PrefStore::READ_OK,
-            store->GetValue(prefs::kDefaultSearchProviderSuggestURL, &value));
+            store_->GetValue(prefs::kDefaultSearchProviderSuggestURL, &value));
   EXPECT_TRUE(base::StringValue(suggest_url).Equals(value));
 
   EXPECT_EQ(PrefStore::READ_OK,
-            store->GetValue(prefs::kDefaultSearchProviderIconURL, &value));
+            store_->GetValue(prefs::kDefaultSearchProviderIconURL, &value));
   EXPECT_TRUE(base::StringValue(icon_url).Equals(value));
 
   EXPECT_EQ(PrefStore::READ_OK,
-            store->GetValue(prefs::kDefaultSearchProviderEncodings, &value));
+            store_->GetValue(prefs::kDefaultSearchProviderEncodings, &value));
   EXPECT_TRUE(base::StringValue("UTF-16;UTF-8").Equals(value));
 }
 
@@ -686,34 +645,31 @@ TEST_F(ConfigurationPolicyPrefStoreDefaultSearchTest, MissingUrl) {
   base::ListValue* encodings = new base::ListValue();
   encodings->Append(base::Value::CreateStringValue("UTF-16"));
   encodings->Append(base::Value::CreateStringValue("UTF-8"));
-  MockConfigurationPolicyProvider provider;
-  provider.AddMandatoryPolicy(key::kDefaultSearchProviderEnabled,
-                              base::Value::CreateBooleanValue(true));
-  provider.AddMandatoryPolicy(key::kDefaultSearchProviderName,
-                              base::Value::CreateStringValue(name));
-  provider.AddMandatoryPolicy(key::kDefaultSearchProviderKeyword,
-                              base::Value::CreateStringValue(keyword));
-  provider.AddMandatoryPolicy(key::kDefaultSearchProviderSuggestURL,
-                              base::Value::CreateStringValue(suggest_url));
-  provider.AddMandatoryPolicy(key::kDefaultSearchProviderIconURL,
-                              base::Value::CreateStringValue(icon_url));
-  provider.AddMandatoryPolicy(key::kDefaultSearchProviderEncodings, encodings);
-
-  scoped_refptr<ConfigurationPolicyPrefStore> store(
-      new ConfigurationPolicyPrefStore(&provider));
+  provider_.AddMandatoryPolicy(key::kDefaultSearchProviderEnabled,
+                               base::Value::CreateBooleanValue(true));
+  provider_.AddMandatoryPolicy(key::kDefaultSearchProviderName,
+                               base::Value::CreateStringValue(name));
+  provider_.AddMandatoryPolicy(key::kDefaultSearchProviderKeyword,
+                               base::Value::CreateStringValue(keyword));
+  provider_.AddMandatoryPolicy(key::kDefaultSearchProviderSuggestURL,
+                               base::Value::CreateStringValue(suggest_url));
+  provider_.AddMandatoryPolicy(key::kDefaultSearchProviderIconURL,
+                               base::Value::CreateStringValue(icon_url));
+  provider_.AddMandatoryPolicy(key::kDefaultSearchProviderEncodings, encodings);
+  provider_.RefreshPolicies();
 
   EXPECT_EQ(PrefStore::READ_NO_VALUE,
-            store->GetValue(prefs::kDefaultSearchProviderSearchURL, NULL));
+            store_->GetValue(prefs::kDefaultSearchProviderSearchURL, NULL));
   EXPECT_EQ(PrefStore::READ_NO_VALUE,
-            store->GetValue(prefs::kDefaultSearchProviderName, NULL));
+            store_->GetValue(prefs::kDefaultSearchProviderName, NULL));
   EXPECT_EQ(PrefStore::READ_NO_VALUE,
-            store->GetValue(prefs::kDefaultSearchProviderKeyword, NULL));
+            store_->GetValue(prefs::kDefaultSearchProviderKeyword, NULL));
   EXPECT_EQ(PrefStore::READ_NO_VALUE,
-            store->GetValue(prefs::kDefaultSearchProviderSuggestURL, NULL));
+            store_->GetValue(prefs::kDefaultSearchProviderSuggestURL, NULL));
   EXPECT_EQ(PrefStore::READ_NO_VALUE,
-            store->GetValue(prefs::kDefaultSearchProviderIconURL, NULL));
+            store_->GetValue(prefs::kDefaultSearchProviderIconURL, NULL));
   EXPECT_EQ(PrefStore::READ_NO_VALUE,
-            store->GetValue(prefs::kDefaultSearchProviderEncodings, NULL));
+            store_->GetValue(prefs::kDefaultSearchProviderEncodings, NULL));
 }
 
 // Checks that if the default search policy is invalid, that no elements of the
@@ -727,61 +683,56 @@ TEST_F(ConfigurationPolicyPrefStoreDefaultSearchTest, Invalid) {
   base::ListValue* encodings = new base::ListValue();
   encodings->Append(base::Value::CreateStringValue("UTF-16"));
   encodings->Append(base::Value::CreateStringValue("UTF-8"));
-  MockConfigurationPolicyProvider provider;
-  provider.AddMandatoryPolicy(key::kDefaultSearchProviderEnabled,
-                              base::Value::CreateBooleanValue(true));
-  provider.AddMandatoryPolicy(key::kDefaultSearchProviderSearchURL,
-                              base::Value::CreateStringValue(bad_search_url));
-  provider.AddMandatoryPolicy(key::kDefaultSearchProviderName,
-                              base::Value::CreateStringValue(name));
-  provider.AddMandatoryPolicy(key::kDefaultSearchProviderKeyword,
-                              base::Value::CreateStringValue(keyword));
-  provider.AddMandatoryPolicy(key::kDefaultSearchProviderSuggestURL,
-                              base::Value::CreateStringValue(suggest_url));
-  provider.AddMandatoryPolicy(key::kDefaultSearchProviderIconURL,
-                              base::Value::CreateStringValue(icon_url));
-  provider.AddMandatoryPolicy(key::kDefaultSearchProviderEncodings, encodings);
-
-  scoped_refptr<ConfigurationPolicyPrefStore> store(
-      new ConfigurationPolicyPrefStore(&provider));
+  provider_.AddMandatoryPolicy(key::kDefaultSearchProviderEnabled,
+                               base::Value::CreateBooleanValue(true));
+  provider_.AddMandatoryPolicy(key::kDefaultSearchProviderSearchURL,
+                               base::Value::CreateStringValue(bad_search_url));
+  provider_.AddMandatoryPolicy(key::kDefaultSearchProviderName,
+                               base::Value::CreateStringValue(name));
+  provider_.AddMandatoryPolicy(key::kDefaultSearchProviderKeyword,
+                               base::Value::CreateStringValue(keyword));
+  provider_.AddMandatoryPolicy(key::kDefaultSearchProviderSuggestURL,
+                               base::Value::CreateStringValue(suggest_url));
+  provider_.AddMandatoryPolicy(key::kDefaultSearchProviderIconURL,
+                               base::Value::CreateStringValue(icon_url));
+  provider_.AddMandatoryPolicy(key::kDefaultSearchProviderEncodings, encodings);
+  provider_.RefreshPolicies();
 
   EXPECT_EQ(PrefStore::READ_NO_VALUE,
-            store->GetValue(prefs::kDefaultSearchProviderSearchURL, NULL));
+            store_->GetValue(prefs::kDefaultSearchProviderSearchURL, NULL));
   EXPECT_EQ(PrefStore::READ_NO_VALUE,
-            store->GetValue(prefs::kDefaultSearchProviderName, NULL));
+            store_->GetValue(prefs::kDefaultSearchProviderName, NULL));
   EXPECT_EQ(PrefStore::READ_NO_VALUE,
-            store->GetValue(prefs::kDefaultSearchProviderKeyword, NULL));
+            store_->GetValue(prefs::kDefaultSearchProviderKeyword, NULL));
   EXPECT_EQ(PrefStore::READ_NO_VALUE,
-            store->GetValue(prefs::kDefaultSearchProviderSuggestURL, NULL));
+            store_->GetValue(prefs::kDefaultSearchProviderSuggestURL, NULL));
   EXPECT_EQ(PrefStore::READ_NO_VALUE,
-            store->GetValue(prefs::kDefaultSearchProviderIconURL, NULL));
+            store_->GetValue(prefs::kDefaultSearchProviderIconURL, NULL));
   EXPECT_EQ(PrefStore::READ_NO_VALUE,
-            store->GetValue(prefs::kDefaultSearchProviderEncodings, NULL));
+            store_->GetValue(prefs::kDefaultSearchProviderEncodings, NULL));
 }
 
 // Checks that if the default search policy is invalid, that no elements of the
 // default search policy will be present.
 TEST_F(ConfigurationPolicyPrefStoreDefaultSearchTest, Disabled) {
-  MockConfigurationPolicyProvider provider;
-  provider.AddMandatoryPolicy(key::kDefaultSearchProviderEnabled,
-                              base::Value::CreateBooleanValue(false));
-
-  scoped_refptr<ConfigurationPolicyPrefStore> store(
-      new ConfigurationPolicyPrefStore(&provider));
+  provider_.AddMandatoryPolicy(key::kDefaultSearchProviderEnabled,
+                               base::Value::CreateBooleanValue(false));
+  provider_.RefreshPolicies();
 
   const base::Value* value = NULL;
   EXPECT_EQ(PrefStore::READ_OK,
-            store->GetValue(prefs::kDefaultSearchProviderEnabled, &value));
+            store_->GetValue(prefs::kDefaultSearchProviderEnabled, &value));
   base::FundamentalValue expected_enabled(false);
   EXPECT_TRUE(base::Value::Equals(&expected_enabled, value));
   EXPECT_EQ(PrefStore::READ_OK,
-            store->GetValue(prefs::kDefaultSearchProviderSearchURL, &value));
+            store_->GetValue(prefs::kDefaultSearchProviderSearchURL, &value));
   base::StringValue expected_search_url("");
   EXPECT_TRUE(base::Value::Equals(&expected_search_url, value));
 }
 
 // Tests Incognito mode availability preference setting.
-class ConfigurationPolicyPrefStoreIncognitoModeTest : public testing::Test {
+class ConfigurationPolicyPrefStoreIncognitoModeTest
+    : public ConfigurationPolicyPrefStoreTest {
  protected:
   static const int kIncognitoModeAvailabilityNotSet = -1;
 
@@ -804,7 +755,7 @@ class ConfigurationPolicyPrefStoreIncognitoModeTest : public testing::Test {
           key::kIncognitoModeAvailability,
           base::Value::CreateIntegerValue(availability));
     }
-    store_ = new ConfigurationPolicyPrefStore(&provider_);
+    provider_.RefreshPolicies();
   }
 
   void VerifyValues(IncognitoModePrefs::Availability availability) {
@@ -813,9 +764,6 @@ class ConfigurationPolicyPrefStoreIncognitoModeTest : public testing::Test {
               store_->GetValue(prefs::kIncognitoModeAvailability, &value));
     EXPECT_TRUE(base::FundamentalValue(availability).Equals(value));
   }
-
-  MockConfigurationPolicyProvider provider_;
-  scoped_refptr<ConfigurationPolicyPrefStore> store_;
 };
 
 // The following testcases verify that if the obsolete IncognitoEnabled
@@ -876,8 +824,7 @@ TEST_F(ConfigurationPolicyPrefStoreIncognitoModeTest,
 
 // Test cases for the Sync policy setting.
 class ConfigurationPolicyPrefStoreSyncTest
-    : public ConfigurationPolicyPrefStoreTestBase<testing::Test> {
-};
+    : public ConfigurationPolicyPrefStoreTest {};
 
 TEST_F(ConfigurationPolicyPrefStoreSyncTest, Default) {
   EXPECT_EQ(PrefStore::READ_NO_VALUE,
@@ -887,7 +834,7 @@ TEST_F(ConfigurationPolicyPrefStoreSyncTest, Default) {
 TEST_F(ConfigurationPolicyPrefStoreSyncTest, Enabled) {
   provider_.AddMandatoryPolicy(key::kSyncDisabled,
                                base::Value::CreateBooleanValue(false));
-  store_->OnUpdatePolicy(&provider_);
+  provider_.RefreshPolicies();
   // Enabling Sync should not set the pref.
   EXPECT_EQ(PrefStore::READ_NO_VALUE,
             store_->GetValue(prefs::kSyncManaged, NULL));
@@ -896,7 +843,7 @@ TEST_F(ConfigurationPolicyPrefStoreSyncTest, Enabled) {
 TEST_F(ConfigurationPolicyPrefStoreSyncTest, Disabled) {
   provider_.AddMandatoryPolicy(key::kSyncDisabled,
                                base::Value::CreateBooleanValue(true));
-  store_->OnUpdatePolicy(&provider_);
+  provider_.RefreshPolicies();
   // Sync should be flagged as managed.
   const base::Value* value = NULL;
   EXPECT_EQ(PrefStore::READ_OK, store_->GetValue(prefs::kSyncManaged, &value));
@@ -910,8 +857,7 @@ TEST_F(ConfigurationPolicyPrefStoreSyncTest, Disabled) {
 // Test cases for how the DownloadDirectory and AllowFileSelectionDialogs policy
 // influence the PromptForDownload preference.
 class ConfigurationPolicyPrefStorePromptDownloadTest
-    : public ConfigurationPolicyPrefStoreTestBase<testing::Test> {
-};
+    : public ConfigurationPolicyPrefStoreTest {};
 
 TEST_F(ConfigurationPolicyPrefStorePromptDownloadTest, Default) {
   EXPECT_EQ(PrefStore::READ_NO_VALUE,
@@ -924,7 +870,7 @@ TEST_F(ConfigurationPolicyPrefStorePromptDownloadTest, SetDownloadDirectory) {
             store_->GetValue(prefs::kPromptForDownload, NULL));
   provider_.AddMandatoryPolicy(key::kDownloadDirectory,
                                base::Value::CreateStringValue(""));
-  store_->OnUpdatePolicy(&provider_);
+  provider_.RefreshPolicies();
 
   // Setting a DownloadDirectory should disable the PromptForDownload pref.
   const base::Value* value = NULL;
@@ -944,7 +890,7 @@ TEST_F(ConfigurationPolicyPrefStorePromptDownloadTest,
             store_->GetValue(prefs::kPromptForDownload, NULL));
   provider_.AddMandatoryPolicy(key::kAllowFileSelectionDialogs,
                                base::Value::CreateBooleanValue(true));
-  store_->OnUpdatePolicy(&provider_);
+  provider_.RefreshPolicies();
 
   // Allowing file-selection dialogs should not influence the PromptForDownload
   // pref.
@@ -958,7 +904,7 @@ TEST_F(ConfigurationPolicyPrefStorePromptDownloadTest,
             store_->GetValue(prefs::kPromptForDownload, NULL));
   provider_.AddMandatoryPolicy(key::kAllowFileSelectionDialogs,
                                base::Value::CreateBooleanValue(false));
-  store_->OnUpdatePolicy(&provider_);
+  provider_.RefreshPolicies();
 
   // Disabling file-selection dialogs should disable the PromptForDownload pref.
   const base::Value* value = NULL;
@@ -973,8 +919,7 @@ TEST_F(ConfigurationPolicyPrefStorePromptDownloadTest,
 
 // Test cases for the Autofill policy setting.
 class ConfigurationPolicyPrefStoreAutofillTest
-    : public ConfigurationPolicyPrefStoreTestBase<testing::Test> {
-};
+    : public ConfigurationPolicyPrefStoreTest {};
 
 TEST_F(ConfigurationPolicyPrefStoreAutofillTest, Default) {
   EXPECT_EQ(PrefStore::READ_NO_VALUE,
@@ -984,7 +929,7 @@ TEST_F(ConfigurationPolicyPrefStoreAutofillTest, Default) {
 TEST_F(ConfigurationPolicyPrefStoreAutofillTest, Enabled) {
   provider_.AddMandatoryPolicy(key::kAutoFillEnabled,
                                base::Value::CreateBooleanValue(true));
-  store_->OnUpdatePolicy(&provider_);
+  provider_.RefreshPolicies();
   // Enabling Autofill should not set the pref.
   EXPECT_EQ(PrefStore::READ_NO_VALUE,
             store_->GetValue(prefs::kAutofillEnabled, NULL));
@@ -993,7 +938,7 @@ TEST_F(ConfigurationPolicyPrefStoreAutofillTest, Enabled) {
 TEST_F(ConfigurationPolicyPrefStoreAutofillTest, Disabled) {
   provider_.AddMandatoryPolicy(key::kAutoFillEnabled,
                                base::Value::CreateBooleanValue(false));
-  store_->OnUpdatePolicy(&provider_);
+  provider_.RefreshPolicies();
   // Disabling Autofill should switch the pref to managed.
   const base::Value* value = NULL;
   EXPECT_EQ(PrefStore::READ_OK,
@@ -1007,7 +952,7 @@ TEST_F(ConfigurationPolicyPrefStoreAutofillTest, Disabled) {
 
 // Exercises the policy refresh mechanism.
 class ConfigurationPolicyPrefStoreRefreshTest
-    : public ConfigurationPolicyPrefStoreTestBase<testing::Test> {
+    : public ConfigurationPolicyPrefStoreTest {
  protected:
   virtual void SetUp() {
     store_->AddObserver(&observer_);
@@ -1029,19 +974,19 @@ TEST_F(ConfigurationPolicyPrefStoreRefreshTest, Refresh) {
   provider_.AddMandatoryPolicy(
       key::kHomepageLocation,
       base::Value::CreateStringValue("http://www.chromium.org"));
-  store_->OnUpdatePolicy(&provider_);
+  provider_.RefreshPolicies();
   Mock::VerifyAndClearExpectations(&observer_);
   EXPECT_EQ(PrefStore::READ_OK,
             store_->GetValue(prefs::kHomePage, &value));
   EXPECT_TRUE(base::StringValue("http://www.chromium.org").Equals(value));
 
   EXPECT_CALL(observer_, OnPrefValueChanged(_)).Times(0);
-  store_->OnUpdatePolicy(&provider_);
+  provider_.RefreshPolicies();
   Mock::VerifyAndClearExpectations(&observer_);
 
   EXPECT_CALL(observer_, OnPrefValueChanged(prefs::kHomePage)).Times(1);
   provider_.RemovePolicy(key::kHomepageLocation);
-  store_->OnUpdatePolicy(&provider_);
+  provider_.RefreshPolicies();
   Mock::VerifyAndClearExpectations(&observer_);
   EXPECT_EQ(PrefStore::READ_NO_VALUE,
             store_->GetValue(prefs::kHomePage, NULL));
@@ -1055,15 +1000,14 @@ TEST_F(ConfigurationPolicyPrefStoreRefreshTest, Initialization) {
   provider_.SetInitializationComplete(true);
   EXPECT_FALSE(store_->IsInitializationComplete());
 
-  store_->OnUpdatePolicy(&provider_);
+  provider_.RefreshPolicies();
   Mock::VerifyAndClearExpectations(&observer_);
   EXPECT_TRUE(store_->IsInitializationComplete());
 }
 
 // Tests for policies that don't quite fit the previous patterns.
 class ConfigurationPolicyPrefStoreOthersTest
-    : public ConfigurationPolicyPrefStoreTestBase<testing::Test> {
-};
+    : public ConfigurationPolicyPrefStoreTest {};
 
 TEST_F(ConfigurationPolicyPrefStoreOthersTest, JavascriptEnabled) {
   // This is a boolean policy, but affects an integer preference.
@@ -1071,12 +1015,12 @@ TEST_F(ConfigurationPolicyPrefStoreOthersTest, JavascriptEnabled) {
             store_->GetValue(prefs::kManagedDefaultJavaScriptSetting, NULL));
   provider_.AddMandatoryPolicy(key::kJavascriptEnabled,
                                base::Value::CreateBooleanValue(true));
-  store_->OnUpdatePolicy(&provider_);
+  provider_.RefreshPolicies();
   EXPECT_EQ(PrefStore::READ_NO_VALUE,
             store_->GetValue(prefs::kManagedDefaultJavaScriptSetting, NULL));
   provider_.AddMandatoryPolicy(key::kJavascriptEnabled,
                                base::Value::CreateBooleanValue(false));
-  store_->OnUpdatePolicy(&provider_);
+  provider_.RefreshPolicies();
   const base::Value* value = NULL;
   EXPECT_EQ(PrefStore::READ_OK,
             store_->GetValue(prefs::kManagedDefaultJavaScriptSetting, &value));
@@ -1088,7 +1032,7 @@ TEST_F(ConfigurationPolicyPrefStoreOthersTest, JavascriptEnabledOverridden) {
             store_->GetValue(prefs::kManagedDefaultJavaScriptSetting, NULL));
   provider_.AddMandatoryPolicy(key::kJavascriptEnabled,
                                base::Value::CreateBooleanValue(false));
-  store_->OnUpdatePolicy(&provider_);
+  provider_.RefreshPolicies();
   const base::Value* value = NULL;
   EXPECT_EQ(PrefStore::READ_OK,
             store_->GetValue(prefs::kManagedDefaultJavaScriptSetting, &value));
@@ -1097,7 +1041,7 @@ TEST_F(ConfigurationPolicyPrefStoreOthersTest, JavascriptEnabledOverridden) {
   provider_.AddMandatoryPolicy(
       key::kDefaultJavaScriptSetting,
       base::Value::CreateIntegerValue(CONTENT_SETTING_ALLOW));
-  store_->OnUpdatePolicy(&provider_);
+  provider_.RefreshPolicies();
   EXPECT_EQ(PrefStore::READ_OK,
             store_->GetValue(prefs::kManagedDefaultJavaScriptSetting, &value));
   EXPECT_TRUE(base::FundamentalValue(CONTENT_SETTING_ALLOW).Equals(value));
