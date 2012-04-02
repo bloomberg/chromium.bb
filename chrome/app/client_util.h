@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,6 +16,9 @@ namespace sandbox {
   struct SandboxInterfaceInfo;
 }
 
+// Gets the path of the current exe with a trailing backslash.
+std::wstring GetExecutablePath();
+
 // Implements the common aspects of loading chrome.dll for both chrome and
 // chromium scenarios, which are in charge of implementing two abstract
 // methods: GetRegistryPath() and OnBeforeLaunch().
@@ -31,13 +34,12 @@ class MainDllLoader {
   // upon termination.
   int Launch(HINSTANCE instance, sandbox::SandboxInterfaceInfo* sbox_info);
 
+  // Look into the registry to find the latest version.
+  std::wstring GetVersion();
+
   // Launches a new instance of the browser if the current instance in
   // persistent mode an upgrade is detected.
   void RelaunchChromeBrowserWithNewCommandLineIfNeeded();
-
-  // Derived classes must return the relative registry path that holds the
-  // most current version of chrome.dll.
-  virtual std::wstring GetRegistryPath() = 0;
 
   // Called after chrome.dll has been loaded but before the entry point
   // is invoked. Derived classes can implement custom actions here.
@@ -52,6 +54,10 @@ class MainDllLoader {
   }
 
  protected:
+  // Derived classes must return the relative registry path that holds the
+  // most current version of chrome.dll.
+  virtual std::wstring GetRegistryPath() = 0;
+
   HMODULE Load(std::wstring* out_version, std::wstring* out_file);
 
  private:
