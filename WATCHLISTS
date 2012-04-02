@@ -184,7 +184,7 @@
         'chrome/browser/ui/webui/ntp/.*',
     },
     'cookie_monster': {
-      'filepath': 'net/base/cookie_.*|'\
+      'filepath': 'net/cookies/.*|'\
         'chrome/browser/net/sqlite_persistent_cookie_store.*',
     },
     'autofill': {
