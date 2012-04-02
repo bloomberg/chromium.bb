@@ -320,7 +320,7 @@
                   '--lib-dirs', '>(lib_dirs) ',
                    '--compile_flags', '>@(compile_flags)',
                   '>@(defines)', '-DNACL_BUILD_SUBARCH=32',
-                  '--link_flags', '-B<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib32 >(link_flags)',
+                  '--link_flags', '-B<(SHARED_INTERMEDIATE_DIR)/tc_newlib/libarm >(link_flags)',
                   '>@(sources)',
                 ],
               },

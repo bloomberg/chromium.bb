@@ -77,8 +77,6 @@
                '--pnacl-allow-native',
                '-arch', 'arm',
                '-Wt,-mtls-use-call',
-               # TODO(olonho): rethink
-               '-L<(SHARED_INTERMEDIATE_DIR)/tc_newlib/libarm',
              ],
            },
          ],
