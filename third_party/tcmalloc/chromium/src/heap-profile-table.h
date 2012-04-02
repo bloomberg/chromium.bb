@@ -198,6 +198,7 @@ class HeapProfileTable {
   void ClearMMapData();
 
  private:
+  friend class DeepHeapProfile;
 
   // data types ----------------------------
 
