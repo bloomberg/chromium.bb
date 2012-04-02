@@ -150,17 +150,15 @@ class PanelBrowserFrameView : public BrowserNonClientFrameView,
   void UpdateControlStyles(PaintState paint_state);
 
   // Custom draw the frame.
-  void PaintFrameBorder(gfx::Canvas* canvas);
+  void PaintFrameBackground(gfx::Canvas* canvas);
+  void PaintFrameEdge(gfx::Canvas* canvas);
   void PaintClientEdge(gfx::Canvas* canvas);
 
   // Called by MouseWatcher to notify if the mouse enters or leaves the window.
   void OnMouseEnterOrLeaveWindow(bool mouse_entered);
 
   // Retrieves the drawing metrics based on the current painting state.
-  SkColor GetDefaultTitleColor(PaintState paint_state) const;
   SkColor GetTitleColor(PaintState paint_state) const;
-  const SkPaint& GetDefaultFrameTheme(PaintState paint_state) const;
-  SkColor GetFrameColor(PaintState paint_state) const;
   SkBitmap* GetFrameTheme(PaintState paint_state) const;
 
   // Make settings button visible if either of the conditions is met:
@@ -168,7 +166,7 @@ class PanelBrowserFrameView : public BrowserNonClientFrameView,
   // 2) The mouse is over the panel.
   void UpdateSettingsButtonVisibility(bool active, bool cursor_in_view);
 
-  bool UsingDefaultTheme() const;
+  bool UsingDefaultTheme(PaintState paint_state) const;
 
   const Extension* GetExtension() const;
 

@@ -173,15 +173,19 @@ struct EdgeResources {
   }
 };
 
-SkPaint* CreateGradientPaint(SkColor start_color, SkColor end_color) {
+SkBitmap* CreateGradientBitmap(SkColor start_color, SkColor end_color) {
+  int gradient_size = kResizableBorderThickness +
+      kResizableClientEdgeThickness + kTitlebarHeight;
   SkShader* shader = gfx::CreateGradientShader(
-      0, kTitlebarHeight, start_color, end_color);
-  SkPaint* paint = new SkPaint();
-  paint->setStyle(SkPaint::kFill_Style);
-  paint->setAntiAlias(true);
-  paint->setShader(shader);
+      0, gradient_size, start_color, end_color);
+  SkPaint paint;
+  paint.setStyle(SkPaint::kFill_Style);
+  paint.setAntiAlias(true);
+  paint.setShader(shader);
   shader->unref();
-  return paint;
+  gfx::Canvas canvas(gfx::Size(1, gradient_size), true);
+  canvas.DrawRect(gfx::Rect(0, 0, 1, gradient_size), paint);
+  return new SkBitmap(canvas.ExtractBitmap());
 }
 
 const ButtonResources& GetSettingsButtonResources() {
@@ -235,31 +239,31 @@ const gfx::Font& GetTitleFont() {
   return *font;
 }
 
-const SkPaint& GetActiveBackgroundDefaultPaint() {
-  static SkPaint* paint = NULL;
-  if (!paint) {
-    paint = CreateGradientPaint(kActiveBackgroundDefaultColorStart,
-                                kActiveBackgroundDefaultColorEnd);
+SkBitmap* GetActiveBackgroundDefaultBitmap() {
+  static SkBitmap* bitmap = NULL;
+  if (!bitmap) {
+    bitmap = CreateGradientBitmap(kActiveBackgroundDefaultColorStart,
+                                  kActiveBackgroundDefaultColorEnd);
   }
-  return *paint;
+  return bitmap;
 }
 
-const SkPaint& GetInactiveBackgroundDefaultPaint() {
-  static SkPaint* paint = NULL;
-  if (!paint) {
-    paint = CreateGradientPaint(kInactiveBackgroundDefaultColorStart,
-                                kInactiveBackgroundDefaultColorEnd);
+SkBitmap* GetInactiveBackgroundDefaultBitmap() {
+  static SkBitmap* bitmap = NULL;
+  if (!bitmap) {
+    bitmap = CreateGradientBitmap(kInactiveBackgroundDefaultColorStart,
+                                  kInactiveBackgroundDefaultColorEnd);
   }
-  return *paint;
+  return bitmap;
 }
 
-const SkPaint& GetAttentionBackgroundDefaultPaint() {
-  static SkPaint* paint = NULL;
-  if (!paint) {
-    paint = CreateGradientPaint(kAttentionBackgroundDefaultColorStart,
-                                kAttentionBackgroundDefaultColorEnd);
+SkBitmap* GetAttentionBackgroundDefaultBitmap() {
+  static SkBitmap* bitmap = NULL;
+  if (!bitmap) {
+    bitmap = CreateGradientBitmap(kAttentionBackgroundDefaultColorStart,
+                                  kAttentionBackgroundDefaultColorEnd);
   }
-  return *paint;
+  return bitmap;
 }
 
 bool IsHitTestValueForResizing(int hc) {
@@ -510,7 +514,8 @@ void PanelBrowserFrameView::OnPaint(gfx::Canvas* canvas) {
     paint_state = PAINT_AS_INACTIVE;
 
   UpdateControlStyles(paint_state);
-  PaintFrameBorder(canvas);
+  PaintFrameBackground(canvas);
+  PaintFrameEdge(canvas);
   PaintClientEdge(canvas);
 }
 
@@ -753,89 +758,47 @@ gfx::Size PanelBrowserFrameView::IconOnlySize() const {
   return gfx::Size(IconOnlyWidth(), NonClientTopBorderHeight());
 }
 
-bool PanelBrowserFrameView::UsingDefaultTheme() const {
+bool PanelBrowserFrameView::UsingDefaultTheme(PaintState paint_state) const {
+  // No theme is provided for attention painting.
+  if (paint_state == PAINT_FOR_ATTENTION)
+    return true;
+
   ThemeService* theme_service = ThemeServiceFactory::GetForProfile(
       panel_browser_view_->panel()->browser()->profile());
   return theme_service->UsingDefaultTheme();
 }
 
-SkColor PanelBrowserFrameView::GetDefaultTitleColor(
-    PaintState paint_state) const {
-  switch (paint_state) {
-    case PAINT_AS_INACTIVE:
-      return kActiveTitleTextDefaultColor;
-    case PAINT_AS_ACTIVE:
-      return kInactiveTitleTextDefaultColor;
-    case PAINT_FOR_ATTENTION:
-      return kAttentionTitleTextDefaultColor;
-    default:
-      NOTREACHED();
-      return SkColor();
-  }
-}
-
 SkColor PanelBrowserFrameView::GetTitleColor(PaintState paint_state) const {
+  bool use_default = UsingDefaultTheme(paint_state);
   switch (paint_state) {
     case PAINT_AS_INACTIVE:
-      return SkColorSetA(
+      return use_default ? kActiveTitleTextDefaultColor: SkColorSetA(
           GetThemeProvider()->GetColor(ThemeService::COLOR_BACKGROUND_TAB_TEXT),
           kInactiveAlphaBlending);
     case PAINT_AS_ACTIVE:
-      return GetThemeProvider()->GetColor(ThemeService::COLOR_TAB_TEXT);
+      return use_default ? kActiveTitleTextDefaultColor :
+          GetThemeProvider()->GetColor(ThemeService::COLOR_TAB_TEXT);
     case PAINT_FOR_ATTENTION:
       return kAttentionTitleTextDefaultColor;
     default:
       NOTREACHED();
       return SkColor();
-  }
-}
-
-const SkPaint& PanelBrowserFrameView::GetDefaultFrameTheme(
-    PaintState paint_state) const {
-  switch (paint_state) {
-    case PAINT_AS_INACTIVE:
-      return GetInactiveBackgroundDefaultPaint();
-    case PAINT_AS_ACTIVE:
-      return GetActiveBackgroundDefaultPaint();
-    case PAINT_FOR_ATTENTION:
-      return GetAttentionBackgroundDefaultPaint();
-    default:
-      NOTREACHED();
-      return GetInactiveBackgroundDefaultPaint();
-  }
-}
-
-SkColor PanelBrowserFrameView::GetFrameColor(PaintState paint_state) const {
-  bool use_default_color = UsingDefaultTheme();
-  ui::ThemeProvider* theme_provider = GetThemeProvider();
-  switch (paint_state) {
-    case PAINT_AS_INACTIVE: {
-      return use_default_color ? kInactiveBackgroundDefaultColorEnd :
-          theme_provider->GetColor(ThemeService::COLOR_FRAME_INACTIVE);
-    } case PAINT_AS_ACTIVE: {
-      return use_default_color ? kActiveBackgroundDefaultColorEnd :
-          theme_provider->GetColor(ThemeService::COLOR_FRAME);
-    } case PAINT_FOR_ATTENTION: {
-      return kAttentionBackgroundDefaultColorEnd;
-    } default: {
-      NOTREACHED();
-      return SkColor();
-    }
   }
 }
 
 SkBitmap* PanelBrowserFrameView::GetFrameTheme(PaintState paint_state) const {
+  bool use_default = UsingDefaultTheme(paint_state);
   switch (paint_state) {
     case PAINT_AS_INACTIVE:
-      return GetThemeProvider()->GetBitmapNamed(IDR_THEME_TAB_BACKGROUND);
+      return use_default ? GetInactiveBackgroundDefaultBitmap() :
+          GetThemeProvider()->GetBitmapNamed(IDR_THEME_TAB_BACKGROUND);
     case PAINT_AS_ACTIVE:
-      return GetThemeProvider()->GetBitmapNamed(IDR_THEME_TOOLBAR);
+      return use_default ? GetActiveBackgroundDefaultBitmap() :
+          GetThemeProvider()->GetBitmapNamed(IDR_THEME_TOOLBAR);
     case PAINT_FOR_ATTENTION:
-      // Background color for drawing attention is same regardless of the
-      // theme. GetDefaultFrameTheme should be used.
+      return GetAttentionBackgroundDefaultBitmap();
     default:
-      NOTREACHED();
-      return NULL;
+      return GetInactiveBackgroundDefaultBitmap();
   }
 }
 
@@ -855,21 +818,36 @@ void PanelBrowserFrameView::UpdateControlStyles(PaintState paint_state) {
                                GetCloseButtonResources().mask_image);
 }
 
-void PanelBrowserFrameView::PaintFrameBorder(gfx::Canvas* canvas) {
-  // Fill with the frame color first so we have a constant background for
-  // areas not covered by the theme image.
-  canvas->FillRect(gfx::Rect(0, 0, width(), height()),
-                   GetFrameColor(paint_state_));
+void PanelBrowserFrameView::PaintFrameBackground(gfx::Canvas* canvas) {
+  int top_area_height = NonClientTopBorderHeight();
+  int thickness = NonClientBorderThickness();
+  SkBitmap* bitmap = GetFrameTheme(paint_state_);
 
-  // Paint the background using the theme.
-  if (paint_state_ == PAINT_FOR_ATTENTION || UsingDefaultTheme()) {
-    const SkPaint& paint = GetDefaultFrameTheme(paint_state_);
-    canvas->DrawRect(gfx::Rect(0, 0, width(), kTitlebarHeight), paint);
-  } else {
-    SkBitmap* bitmap = GetFrameTheme(paint_state_);
-    canvas->TileImageInt(*bitmap, 0, 0, width(), bitmap->height());
-  }
+  // Top area, including title-bar.
+  canvas->TileImageInt(*bitmap, 0, 0, width(), top_area_height);
 
+  // For all the non-client area below titlebar, we paint it by using the last
+  // line from the theme bitmap, instead of using the frame color provided
+  // in the theme because the frame color in some themes is very different from
+  // the tab colors we use to render the titlebar and it can produce abrupt
+  // transition which looks bad.
+
+  // Left border, below title-bar.
+  canvas->DrawBitmapInt(*bitmap, 0, top_area_height - 1, thickness, 1,
+      0, top_area_height, thickness, height() - top_area_height, false);
+
+  // Right border, below title-bar.
+  canvas->DrawBitmapInt(*bitmap, (width() % bitmap->width()) - thickness,
+      top_area_height - 1, thickness, 1,
+      width() - thickness, top_area_height,
+      thickness, height() - top_area_height, false);
+
+  // Bottom border.
+  canvas->DrawBitmapInt(*bitmap, 0, top_area_height - 1, bitmap->width(), 1,
+      0, height() - thickness, width(), thickness, false);
+}
+
+void PanelBrowserFrameView::PaintFrameEdge(gfx::Canvas* canvas) {
 #if defined(USE_AURA)
   // Aura recognizes aura::client::WINDOW_TYPE_PANEL and will draw the
   // appropriate frame and shadow. See ash/wm/shadow_controller.h.
