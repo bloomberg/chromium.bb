@@ -53,10 +53,6 @@ class ExtensionMessageService : public content::NotificationObserver {
   struct MessageChannel;
   struct MessagePort;
 
-  // Javascript function name constants.
-  static const char kDispatchOnConnect[];
-  static const char kDispatchOnDisconnect[];
-
   // Allocates a pair of port ids.
   // NOTE: this can be called from any thread.
   static void AllocatePortIdPair(int* port1, int* port2);
@@ -83,7 +79,7 @@ class ExtensionMessageService : public content::NotificationObserver {
 
   // Closes the message channel associated with the given port, and notifies
   // the other side.
-  void CloseChannel(int port_id);
+  void CloseChannel(int port_id, bool connection_error);
 
   // Sends a message from a renderer to the given port.
   void PostMessageFromRenderer(int port_id, const std::string& message);
@@ -105,7 +101,7 @@ class ExtensionMessageService : public content::NotificationObserver {
   bool OpenChannelImpl(const OpenChannelParams& params);
 
   void CloseChannelImpl(MessageChannelMap::iterator channel_iter,
-                        int port_id,
+                        int port_id, bool connection_error,
                         bool notify_other_port);
 
   // content::NotificationObserver interface.
@@ -127,8 +123,8 @@ class ExtensionMessageService : public content::NotificationObserver {
   void PendingOpenChannel(const OpenChannelParams& params,
                           int source_process_id,
                           ExtensionHost* host);
-  void PendingCloseChannel(int port_id, ExtensionHost*) {
-    CloseChannel(port_id);
+  void PendingCloseChannel(int port_id, bool connection_error, ExtensionHost*) {
+    CloseChannel(port_id, connection_error);
   }
   void PendingPostMessage(int port_id,
                           const std::string& message,

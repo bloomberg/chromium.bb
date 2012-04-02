@@ -33,6 +33,18 @@ class MiscellaneousBindings {
   // Creates an instance of the extension.
   static ChromeV8Extension* Get(ExtensionDispatcher* dispatcher);
 
+  // Dispatches the Port.onConnect content script messaging event to some
+  // contexts in |contexts|. If |restrict_to_render_view| is specified, only
+  // contexts in that render view will receive the message.
+  static void DispatchOnConnect(
+      const ChromeV8ContextSet::ContextSet& contexts,
+      int target_port_id,
+      const std::string& channel_name,
+      const std::string& tab_json,
+      const std::string& source_extension_id,
+      const std::string& target_extension_id,
+      content::RenderView* restrict_to_render_view);
+
   // Delivers a message sent using content script messaging to some of the
   // contexts in |bindings_context_set|. If |restrict_to_render_view| is
   // specified, only contexts in that render view will receive the message.
@@ -40,6 +52,14 @@ class MiscellaneousBindings {
       const ChromeV8ContextSet::ContextSet& context_set,
       int target_port_id,
       const std::string& message,
+      content::RenderView* restrict_to_render_view);
+
+  // Dispatches the Port.onDisconnect event in response to the channel being
+  // closed.
+  static void DispatchOnDisconnect(
+      const ChromeV8ContextSet::ContextSet& context_set,
+      int port_id,
+      bool connection_error,
       content::RenderView* restrict_to_render_view);
 };
 

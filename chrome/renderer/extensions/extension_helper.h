@@ -69,8 +69,14 @@ class ExtensionHelper
                                 const base::ListValue& args,
                                 const GURL& event_url,
                                 bool user_gesture);
+  void OnExtensionDispatchOnConnect(int target_port_id,
+                                    const std::string& channel_name,
+                                    const std::string& tab_json,
+                                    const std::string& source_extension_id,
+                                    const std::string& target_extension_id);
   void OnExtensionDeliverMessage(int target_port_id,
                                  const std::string& message);
+  void OnExtensionDispatchOnDisconnect(int port_id, bool connection_error);
   void OnExecuteCode(const ExtensionMsg_ExecuteCode_Params& params);
   void OnGetApplicationInfo(int page_id);
   void OnNotifyRendererViewType(content::ViewType view_type);

@@ -168,7 +168,10 @@ bool ExtensionDispatcher::OnControlMessageReceived(
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ExtensionDispatcher, message)
     IPC_MESSAGE_HANDLER(ExtensionMsg_MessageInvoke, OnMessageInvoke)
+    IPC_MESSAGE_HANDLER(ExtensionMsg_DispatchOnConnect, OnDispatchOnConnect)
     IPC_MESSAGE_HANDLER(ExtensionMsg_DeliverMessage, OnDeliverMessage)
+    IPC_MESSAGE_HANDLER(ExtensionMsg_DispatchOnDisconnect,
+                        OnDispatchOnDisconnect)
     IPC_MESSAGE_HANDLER(ExtensionMsg_SetFunctionNames, OnSetFunctionNames)
     IPC_MESSAGE_HANDLER(ExtensionMsg_Loaded, OnLoaded)
     IPC_MESSAGE_HANDLER(ExtensionMsg_Unloaded, OnUnloaded)
@@ -257,12 +260,33 @@ void ExtensionDispatcher::OnMessageInvoke(const std::string& extension_id,
   }
 }
 
+void ExtensionDispatcher::OnDispatchOnConnect(
+    int target_port_id,
+    const std::string& channel_name,
+    const std::string& tab_json,
+    const std::string& source_extension_id,
+    const std::string& target_extension_id) {
+  MiscellaneousBindings::DispatchOnConnect(
+      v8_context_set_.GetAll(),
+      target_port_id, channel_name, tab_json,
+      source_extension_id, target_extension_id,
+      NULL);  // All render views.
+}
+
 void ExtensionDispatcher::OnDeliverMessage(int target_port_id,
                                            const std::string& message) {
   MiscellaneousBindings::DeliverMessage(
       v8_context_set_.GetAll(),
       target_port_id,
       message,
+      NULL);  // All render views.
+}
+
+void ExtensionDispatcher::OnDispatchOnDisconnect(int port_id,
+                                                bool connection_error) {
+  MiscellaneousBindings::DispatchOnDisconnect(
+      v8_context_set_.GetAll(),
+      port_id, connection_error,
       NULL);  // All render views.
 }
 

@@ -22,22 +22,19 @@ static const char kTestingExtensionId[] = "oooooooooooooooooooooooooooooooo";
 void DispatchOnConnect(const ChromeV8ContextSet& v8_context_set,
                        int source_port_id, const std::string& name,
                        const std::string& tab_json) {
-  ListValue args;
-  args.Set(0, Value::CreateIntegerValue(source_port_id));
-  args.Set(1, Value::CreateStringValue(name));
-  args.Set(2, Value::CreateStringValue(tab_json));
-  args.Set(3, Value::CreateStringValue(kTestingExtensionId));
-  args.Set(4, Value::CreateStringValue(kTestingExtensionId));
-  v8_context_set.DispatchChromeHiddenMethod(
-      "", ExtensionMessageService::kDispatchOnConnect, args, NULL, GURL());
+  MiscellaneousBindings::DispatchOnConnect(
+      v8_context_set.GetAll(),
+      source_port_id, name, tab_json,
+      kTestingExtensionId, kTestingExtensionId,
+      NULL);
 }
 
 void DispatchOnDisconnect(const ChromeV8ContextSet& v8_context_set,
                           int source_port_id) {
-  ListValue args;
-  args.Set(0, Value::CreateIntegerValue(source_port_id));
-  v8_context_set.DispatchChromeHiddenMethod(
-      "", ExtensionMessageService::kDispatchOnDisconnect, args, NULL, GURL());
+  MiscellaneousBindings::DispatchOnDisconnect(
+      v8_context_set.GetAll(),
+      source_port_id, false,
+      NULL);
 }
 
 }

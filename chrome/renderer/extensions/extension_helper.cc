@@ -117,7 +117,11 @@ bool ExtensionHelper::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(ExtensionHelper, message)
     IPC_MESSAGE_HANDLER(ExtensionMsg_Response, OnExtensionResponse)
     IPC_MESSAGE_HANDLER(ExtensionMsg_MessageInvoke, OnExtensionMessageInvoke)
+    IPC_MESSAGE_HANDLER(ExtensionMsg_DispatchOnConnect,
+                        OnExtensionDispatchOnConnect)
     IPC_MESSAGE_HANDLER(ExtensionMsg_DeliverMessage, OnExtensionDeliverMessage)
+    IPC_MESSAGE_HANDLER(ExtensionMsg_DispatchOnDisconnect,
+                        OnExtensionDispatchOnDisconnect)
     IPC_MESSAGE_HANDLER(ExtensionMsg_ExecuteCode, OnExecuteCode)
     IPC_MESSAGE_HANDLER(ExtensionMsg_GetApplicationInfo, OnGetApplicationInfo)
     IPC_MESSAGE_HANDLER(ExtensionMsg_UpdateBrowserWindowId,
@@ -207,12 +211,33 @@ void ExtensionHelper::OnExtensionMessageInvoke(const std::string& extension_id,
       extension_id, function_name, args, render_view(), event_url);
 }
 
+void ExtensionHelper::OnExtensionDispatchOnConnect(
+    int target_port_id,
+    const std::string& channel_name,
+    const std::string& tab_json,
+    const std::string& source_extension_id,
+    const std::string& target_extension_id) {
+  MiscellaneousBindings::DispatchOnConnect(
+      extension_dispatcher_->v8_context_set().GetAll(),
+      target_port_id, channel_name, tab_json,
+      source_extension_id, target_extension_id,
+      render_view());
+}
+
 void ExtensionHelper::OnExtensionDeliverMessage(int target_id,
                                                 const std::string& message) {
   MiscellaneousBindings::DeliverMessage(
       extension_dispatcher_->v8_context_set().GetAll(),
       target_id,
       message,
+      render_view());
+}
+
+void ExtensionHelper::OnExtensionDispatchOnDisconnect(int port_id,
+                                                      bool connection_error) {
+  MiscellaneousBindings::DispatchOnDisconnect(
+      extension_dispatcher_->v8_context_set().GetAll(),
+      port_id, connection_error,
       render_view());
 }
 

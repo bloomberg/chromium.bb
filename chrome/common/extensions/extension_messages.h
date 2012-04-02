@@ -325,8 +325,9 @@ IPC_MESSAGE_ROUTED2(ExtensionHostMsg_PostMessage,
 
 // Send a message to an extension process.  The handle is the value returned
 // by ViewHostMsg_OpenChannelTo*.
-IPC_MESSAGE_CONTROL1(ExtensionHostMsg_CloseChannel,
-                     int /* port_id */)
+IPC_MESSAGE_CONTROL2(ExtensionHostMsg_CloseChannel,
+                     int /* port_id */,
+                     bool /* connection_error */)
 
 // Used to get the extension message bundle.
 IPC_SYNC_MESSAGE_CONTROL1_1(ExtensionHostMsg_GetMessageBundle,
@@ -388,7 +389,19 @@ IPC_MESSAGE_ROUTED3(ExtensionMsg_GetAppNotifyChannelResponse,
                     std::string /* error */,
                     int32 /* callback_id */)
 
+// Dispatch the Port.onConnect event for message channels.
+IPC_MESSAGE_ROUTED5(ExtensionMsg_DispatchOnConnect,
+                    int /* target_port_id */,
+                    std::string /* channel_name */,
+                    std::string /* tab_json */,
+                    std::string /* source_extension_id */,
+                    std::string /* target_extension_id */)
+
 // Deliver a message sent with ExtensionHostMsg_PostMessage.
 IPC_MESSAGE_ROUTED2(ExtensionMsg_DeliverMessage,
                     int /* target_port_id */,
                     std::string /* message */)
+
+IPC_MESSAGE_ROUTED2(ExtensionMsg_DispatchOnDisconnect,
+                    int /* port_id */,
+                    bool /* connection_error */)

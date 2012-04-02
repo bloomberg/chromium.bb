@@ -135,7 +135,9 @@
         });
         requestEvent.dispatch(request, sender, responseCallback);
       });
+      return true;
     }
+    return false;
   }
 
   // Called by native code when a channel has been opened to this context.
@@ -147,9 +149,9 @@
     // channels were opened to and from the same process, closing one would
     // close both.
     if (targetExtensionId != extensionId)
-      return;  // not for us
+      return false;  // not for us
     if (ports[getOppositePortId(portId)])
-      return;  // this channel was opened by us, so ignore it
+      return false;  // this channel was opened by us, so ignore it
 
     // Determine whether this is coming from another extension, so we can use
     // the right event.
@@ -161,9 +163,9 @@
 
     // Special case for sendRequest/onRequest.
     if (channelName == chromeHidden.kRequestChannel) {
-      dispatchOnRequest(portId, channelName, sender,
-                        sourceExtensionId, targetExtensionId, isExternal);
-      return;
+      return dispatchOnRequest(portId, channelName, sender,
+                               sourceExtensionId, targetExtensionId,
+                               isExternal);
     }
 
     var connectEvent = (isExternal ?
@@ -175,7 +177,9 @@
         port.tab = port.sender.tab;
 
       connectEvent.dispatch(port);
+      return true;
     }
+    return false;
   };
 
   // Called by native code when a channel has been closed.

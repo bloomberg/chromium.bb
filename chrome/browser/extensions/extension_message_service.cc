@@ -84,11 +84,6 @@ struct ExtensionMessageService::OpenChannelParams {
         channel_name(channel_name) {}
 };
 
-const char ExtensionMessageService::kDispatchOnConnect[] =
-    "Port.dispatchOnConnect";
-const char ExtensionMessageService::kDispatchOnDisconnect[] =
-    "Port.dispatchOnDisconnect";
-
 namespace {
 
 static base::StaticAtomicSequenceNumber g_next_channel_id;
@@ -99,37 +94,22 @@ static void DispatchOnConnect(const ExtensionMessageService::MessagePort& port,
                               const std::string& tab_json,
                               const std::string& source_extension_id,
                               const std::string& target_extension_id) {
-  ListValue args;
-  args.Set(0, Value::CreateIntegerValue(dest_port_id));
-  args.Set(1, Value::CreateStringValue(channel_name));
-  args.Set(2, Value::CreateStringValue(tab_json));
-  args.Set(3, Value::CreateStringValue(source_extension_id));
-  args.Set(4, Value::CreateStringValue(target_extension_id));
-  CHECK(port.process);
-  port.process->Send(
-      new ExtensionMsg_MessageInvoke(
-          port.routing_id,
-          target_extension_id,
-          ExtensionMessageService::kDispatchOnConnect, args, GURL(),
-          false));  // Not a user gesture
+  port.process->Send(new ExtensionMsg_DispatchOnConnect(
+      port.routing_id, dest_port_id, channel_name,
+      tab_json, source_extension_id, target_extension_id));
 }
 
 static void DispatchOnDisconnect(
     const ExtensionMessageService::MessagePort& port, int source_port_id,
     bool connection_error) {
-  ListValue args;
-  args.Set(0, Value::CreateIntegerValue(source_port_id));
-  args.Set(1, Value::CreateBooleanValue(connection_error));
-  port.process->Send(new ExtensionMsg_MessageInvoke(port.routing_id,
-      "", ExtensionMessageService::kDispatchOnDisconnect, args, GURL(),
-      false));  // Not a user gesture
+  port.process->Send(new ExtensionMsg_DispatchOnDisconnect(
+      port.routing_id, source_port_id, connection_error));
 }
 
 static void DispatchOnMessage(const ExtensionMessageService::MessagePort& port,
                               const std::string& message, int target_port_id) {
-  port.process->Send(
-      new ExtensionMsg_DeliverMessage(
-          port.routing_id, target_port_id, message));
+  port.process->Send(new ExtensionMsg_DeliverMessage(
+      port.routing_id, target_port_id, message));
 }
 
 static content::RenderProcessHost* GetExtensionProcess(
@@ -325,7 +305,7 @@ bool ExtensionMessageService::OpenChannelImpl(const OpenChannelParams& params) {
   return true;
 }
 
-void ExtensionMessageService::CloseChannel(int port_id) {
+void ExtensionMessageService::CloseChannel(int port_id, bool connection_error) {
   // Note: The channel might be gone already, if the other side closed first.
   int channel_id = GET_CHANNEL_ID(port_id);
   MessageChannelMap::iterator it = channels_.find(channel_id);
@@ -335,23 +315,24 @@ void ExtensionMessageService::CloseChannel(int port_id) {
       lazy_background_task_queue_->AddPendingTask(
           pending->second.first, pending->second.second,
           base::Bind(&ExtensionMessageService::PendingCloseChannel,
-                     base::Unretained(this), port_id));
+                     base::Unretained(this), port_id, connection_error));
     }
     return;
   }
-  CloseChannelImpl(it, port_id, true);
+  CloseChannelImpl(it, port_id, connection_error, true);
 }
 
 void ExtensionMessageService::CloseChannelImpl(
     MessageChannelMap::iterator channel_iter, int closing_port_id,
-    bool notify_other_port) {
+    bool connection_error, bool notify_other_port) {
   MessageChannel* channel = channel_iter->second;
 
   // Notify the other side.
   if (notify_other_port) {
     const MessagePort& port = IS_OPENER_PORT_ID(closing_port_id) ?
         channel->receiver : channel->opener;
-    DispatchOnDisconnect(port, GET_OPPOSITE_PORT_ID(closing_port_id), false);
+    DispatchOnDisconnect(port, GET_OPPOSITE_PORT_ID(closing_port_id),
+                         connection_error);
   }
 
   // Balance the addrefs in OpenChannelImpl.
@@ -421,10 +402,10 @@ void ExtensionMessageService::OnProcessClosed(
 
     if (current->second->opener.process == process) {
       CloseChannelImpl(current, GET_CHANNEL_OPENER_ID(current->first),
-                       notify_other_port);
+                       false, notify_other_port);
     } else if (current->second->receiver.process == process) {
       CloseChannelImpl(current, GET_CHANNEL_RECEIVERS_ID(current->first),
-                       notify_other_port);
+                       false, notify_other_port);
     }
   }
 }
