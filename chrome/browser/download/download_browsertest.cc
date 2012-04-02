@@ -2467,68 +2467,60 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadDangerousBlobData) {
   EXPECT_EQ(1u, observer->NumDangerousDownloadsSeen());
 }
 
-IN_PROC_BROWSER_TEST_F(DownloadTest, TestFileDataBlocker) {
+IN_PROC_BROWSER_TEST_F(DownloadTest, TestDataBlocker) {
   ASSERT_TRUE(InitialSetup(false));
   FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
-  GURL urls[] = {
-    // file: URL
-    OriginFileUrl(file),
+  GURL url("data:application/octet-stream,abcdefghijklmnop%01%02%03l");
 
-    // data: URL
-    GURL("data:application/octet-stream,abcdefghijklmnop%01%02%03l")
-  };
+  // Navigate & block until navigation is done.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), url, CURRENT_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
 
-  for (size_t i = 0; i < arraysize(urls); i++) {
-    // Navigate & block until navigation is done.
-    ui_test_utils::NavigateToURLWithDisposition(
-        browser(), urls[i], CURRENT_TAB,
-        ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  // Do a round trip to the IO thread to increase chances of any download
+  // showing up on the UI thread.
+  // Using DownloadTestFlushObserver is overkill, but it'll do the job.
+  scoped_refptr<DownloadTestFlushObserver> flush_observer(
+      new DownloadTestFlushObserver(
+          DownloadManagerForBrowser(browser())));
+  flush_observer->WaitForFlush();
 
-    // Do a round trip to the IO thread to increase chances of any download
-    // showing up on the UI thread.
-    // Using DownloadTestFlushObserver is overkill, but it'll do the job.
-    scoped_refptr<DownloadTestFlushObserver> flush_observer(
-        new DownloadTestFlushObserver(
-            DownloadManagerForBrowser(browser())));
-    flush_observer->WaitForFlush();
+  // Confirm no downloads
+  std::vector<DownloadItem*> downloads;
+  GetDownloads(browser(), &downloads);
+  EXPECT_EQ(0u, downloads.size());
 
-    // Confirm no downloads
-    std::vector<DownloadItem*> downloads;
-    GetDownloads(browser(), &downloads);
-    EXPECT_EQ(0u, downloads.size());
+  DownloadManagerForBrowser(browser())->RemoveAllDownloads();
 
-    DownloadManagerForBrowser(browser())->RemoveAllDownloads();
+  // Try the same thing with a direct download.  Also check that the
+  // callback gives the right error.
+  WebContents* web_contents = browser()->GetSelectedWebContents();
+  ASSERT_TRUE(web_contents);
+  scoped_refptr<DownloadTestItemCreationObserver> creation_observer(
+      new DownloadTestItemCreationObserver);
+  // Only for cleanup if a download is actually created.
+  DownloadTestObserverTerminal backup_observer(
+      DownloadManagerForBrowser(browser()),
+      1,
+      false,
+      DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL);
 
-    // Try the same thing with a direct download.  Also check that the
-    // callback gives the right error.
-    WebContents* web_contents = browser()->GetSelectedWebContents();
-    ASSERT_TRUE(web_contents);
-    scoped_refptr<DownloadTestItemCreationObserver> creation_observer(
-        new DownloadTestItemCreationObserver);
-    // Only for cleanup if a download is actually created.
-    DownloadTestObserverTerminal backup_observer(
-        DownloadManagerForBrowser(browser()),
-        1,
-        false,
-        DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL);
+  DownloadManagerForBrowser(browser())->DownloadUrl(
+      url, GURL(), "", false, -1, content::DownloadSaveInfo(),
+      web_contents, creation_observer->callback());
 
-    DownloadManagerForBrowser(browser())->DownloadUrl(
-        urls[i], GURL(), "", false, -1, content::DownloadSaveInfo(),
-        web_contents, creation_observer->callback());
+  creation_observer->WaitForDownloadItemCreation();
 
-    creation_observer->WaitForDownloadItemCreation();
+  EXPECT_FALSE(creation_observer->succeeded());
+  EXPECT_EQ(net::ERR_DISALLOWED_URL_SCHEME, creation_observer->error());
+  EXPECT_EQ(content::DownloadId::Invalid(), creation_observer->download_id());
+  downloads.clear();
+  GetDownloads(browser(), &downloads);
+  EXPECT_EQ(0u, downloads.size());
 
-    EXPECT_FALSE(creation_observer->succeeded());
-    EXPECT_EQ(net::ERR_DISALLOWED_URL_SCHEME, creation_observer->error());
-    EXPECT_EQ(content::DownloadId::Invalid(), creation_observer->download_id());
-    downloads.clear();
-    GetDownloads(browser(), &downloads);
-    EXPECT_EQ(0u, downloads.size());
-
-    if (creation_observer->succeeded()) {
-      // Wait until the download is done.  We don't care how it's finished.
-      backup_observer.WaitForFinished();
-    }
-    DownloadManagerForBrowser(browser())->RemoveAllDownloads();
+  if (creation_observer->succeeded()) {
+    // Wait until the download is done.  We don't care how it's finished.
+    backup_observer.WaitForFinished();
   }
+  DownloadManagerForBrowser(browser())->RemoveAllDownloads();
 }

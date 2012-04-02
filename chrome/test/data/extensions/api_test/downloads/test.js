@@ -709,11 +709,15 @@ chrome.test.getConfig(function(testConfig) {
           chrome.test.callbackFail("net::ERR_DISALLOWED_URL_SCHEME"));
     },
 
-    function downloadDontAllowFileURLs() {
-      // We block downloading from file URLs.
+    function downloadAllowFileURLs() {
+      // Valid file URLs are valid URLs.
+      var downloadId = getNextId();
+      console.debug(downloadId);
       downloads.download(
           {'url': 'file:///'},
-          chrome.test.callbackFail("net::ERR_DISALLOWED_URL_SCHEME"));
+          chrome.test.callback(function(id) {
+              chrome.test.assertEq(downloadId, id);
+            }));
     },
 
     // TODO(benjhayden): Set up a test ftp server.
