@@ -196,6 +196,24 @@ Downloads.prototype.scheduleIconLoad = function(elem, iconURL) {
     loadNext();
 };
 
+/**
+ * Whether the displayed list needs to be updated
+ * @param {Array} array of download nodes
+ * @return {boolean} If the displayed list is to be updated
+ */
+Downloads.prototype.isUpdateNeeded = function(downloads) {
+  var size = 0;
+  for (var i in this.downloads_)
+    size++;
+  if (size != downloads.length)
+    return true;
+  for (var i in this.downloads_) {
+    if(this.downloads_[i].url_ != downloads[i].url)
+      return true;
+  }
+  return false;
+};
+
 ///////////////////////////////////////////////////////////////////////////////
 // Download
 /**
@@ -615,7 +633,6 @@ function load() {
   localStrings = new LocalStrings();
   downloads = new Downloads();
   $('term').focus();
-  $('term').setAttribute('aria-labelledby', 'search-submit');
   setSearch('');
 
   var clearAllLink = $('clear-all');
@@ -631,19 +648,17 @@ function load() {
   $('search-link').onclick = function(e) {
     setSearch('');
     e.preventDefault();
+    $('term').value = '';
     return false;
   };
 
-  $('search-form').onsubmit = function(e) {
-    setSearch(this.term.value);
-    e.preventDefault();
-    return false;
+  $('term').onsearch = function(e) {
+    setSearch(this.value);
   };
 }
 
 function setSearch(searchText) {
   fifo_results.length = 0;
-  downloads.clear();
   downloads.setSearchText(searchText);
   chrome.send('getDownloads', [searchText.toString()]);
 }
@@ -662,11 +677,13 @@ function clearAll() {
  * downloads are added or removed.
  */
 function downloadsList(results) {
-  if (resultsTimeout)
-    clearTimeout(resultsTimeout);
-  fifo_results.length = 0;
-  downloads.clear();
-  downloadUpdated(results);
+  if (downloads && downloads.isUpdateNeeded(results)) {
+    if (resultsTimeout)
+      clearTimeout(resultsTimeout);
+    fifo_results.length = 0;
+    downloads.clear();
+    downloadUpdated(results);
+  }
   downloads.updateSummary();
 }
 
