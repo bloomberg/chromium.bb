@@ -1,9 +1,9 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_AUDIO_AUDIO_TRACK_OUTPUT_ANDROID_H_
-#define MEDIA_AUDIO_AUDIO_TRACK_OUTPUT_ANDROID_H_
+#ifndef MEDIA_AUDIO_ANDROID_AUDIO_TRACK_OUTPUT_ANDROID_H_
+#define MEDIA_AUDIO_ANDROID_AUDIO_TRACK_OUTPUT_ANDROID_H_
 
 #include <jni.h>
 #include <string>
@@ -68,4 +68,4 @@ class AudioTrackOutputStream : public AudioOutputStream {
   DISALLOW_COPY_AND_ASSIGN(AudioTrackOutputStream);
 };
 
-#endif  // MEDIA_AUDIO_AUDIO_TRACK_OUTPUT_ANDROID_H_
+#endif  // MEDIA_AUDIO_ANDROID_AUDIO_TRACK_OUTPUT_ANDROID_H_
