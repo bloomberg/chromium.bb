@@ -93,7 +93,7 @@ bool PepperPlatformAudioInputImpl::Initialize(
   plugin_delegate_ = plugin_delegate;
   client_ = client;
 
-  params_.Reset(AudioParameters::AUDIO_PCM_LINEAR, CHANNEL_LAYOUT_MONO,
+  params_.Reset(media::AudioParameters::AUDIO_PCM_LINEAR, CHANNEL_LAYOUT_MONO,
                 sample_rate, 16, frames_per_buffer);
 
   if (device_id.empty()) {
@@ -127,7 +127,8 @@ void PepperPlatformAudioInputImpl::InitializeOnIOThread(int session_id) {
   if (!session_id) {
     // We will be notified by OnStreamCreated().
     filter_->Send(new AudioInputHostMsg_CreateStream(
-        stream_id_, params_, AudioManagerBase::kDefaultDeviceId, false));
+        stream_id_, params_,
+        media::AudioManagerBase::kDefaultDeviceId, false));
   } else {
     // We will be notified by OnDeviceReady().
     filter_->Send(new AudioInputHostMsg_StartDevice(stream_id_, session_id));

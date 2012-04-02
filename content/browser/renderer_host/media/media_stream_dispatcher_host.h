@@ -30,7 +30,7 @@ class CONTENT_EXPORT MediaStreamDispatcherHost
  public:
   MediaStreamDispatcherHost(content::ResourceContext* resource_context,
                             int render_process_id,
-                            AudioManager* audio_manager);
+                            media::AudioManager* audio_manager);
   virtual ~MediaStreamDispatcherHost();
 
   // MediaStreamRequester implementation.
@@ -80,7 +80,7 @@ class CONTENT_EXPORT MediaStreamDispatcherHost
 
   content::ResourceContext* resource_context_;
   int render_process_id_;
-  AudioManager* audio_manager_;
+  media::AudioManager* audio_manager_;
 
   struct StreamRequest;
   typedef std::map<std::string, StreamRequest> StreamMap;

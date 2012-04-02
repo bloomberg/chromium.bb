@@ -20,12 +20,16 @@
 using content::BrowserThread;
 using content::BrowserThreadImpl;
 using media::AudioInputController;
+using media::AudioInputStream;
+using media::AudioManager;
+using media::AudioOutputStream;
+using media::AudioParameters;
 using media::TestAudioInputController;
 using media::TestAudioInputControllerFactory;
 
 namespace {
 
-class MockAudioManager : public AudioManagerBase {
+class MockAudioManager : public media::AudioManagerBase {
  public:
   MockAudioManager() {
     audio_thread_.reset(new base::Thread("MockAudioThread"));
@@ -40,7 +44,7 @@ class MockAudioManager : public AudioManagerBase {
       media::AudioDeviceNames* device_names) OVERRIDE {}
   virtual AudioOutputStream* MakeAudioOutputStream(
         const AudioParameters& params) OVERRIDE {
-    return FakeAudioOutputStream::MakeFakeStream(this, params);
+    return media::FakeAudioOutputStream::MakeFakeStream(this, params);
   }
   virtual AudioOutputStream* MakeAudioOutputStreamProxy(
         const AudioParameters& params) OVERRIDE {
@@ -49,7 +53,7 @@ class MockAudioManager : public AudioManagerBase {
   }
   virtual AudioInputStream* MakeAudioInputStream(
         const AudioParameters& params, const std::string& device_id) OVERRIDE {
-    return FakeAudioInputStream::MakeFakeStream(this, params);
+    return media::FakeAudioInputStream::MakeFakeStream(this, params);
   }
   virtual AudioOutputStream* MakeLinearOutputStream(
       const AudioParameters& params) OVERRIDE {

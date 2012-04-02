@@ -20,7 +20,6 @@
 #include "third_party/webrtc/common_types.h"
 
 class AudioInputRendererHost;
-class AudioManager;
 class AudioRendererHost;
 class RenderThreadImpl;
 class WebRTCMockRenderProcess;
@@ -36,6 +35,10 @@ class ContentRendererClient;
 class MockResourceContext;
 class ResourceContext;
 class TestBrowserThread;
+}
+
+namespace media {
+class AudioManager;
 }
 
 namespace media_stream {
@@ -166,7 +169,7 @@ class WebRTCAudioDeviceTest
   scoped_ptr<WebRTCMockRenderProcess> mock_process_;
   scoped_ptr<MockMediaObserver> media_observer_;
   scoped_ptr<media_stream::MediaStreamManager> media_stream_manager_;
-  scoped_ptr<AudioManager> audio_manager_;
+  scoped_ptr<media::AudioManager> audio_manager_;
   scoped_ptr<content::MockResourceContext> resource_context_;
   scoped_refptr<net::URLRequestContext> test_request_context_;
   scoped_ptr<IPC::Channel> channel_;

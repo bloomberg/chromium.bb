@@ -13,11 +13,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "media/base/message_loop_factory.h"
 
-class AudioManager;
 template <typename T> struct DefaultSingletonTraits;
 
 namespace media {
 
+class AudioManager;
 class Pipeline;
 class VideoRendererBase;
 

@@ -73,7 +73,7 @@ void RenderAudioSourceProvider::GetVolume(double* volume) {
 }
 
 void RenderAudioSourceProvider::Initialize(
-    const AudioParameters& params, RenderCallback* renderer) {
+    const media::AudioParameters& params, RenderCallback* renderer) {
   base::AutoLock auto_lock(sink_lock_);
   CHECK(!is_initialized_);
   renderer_ = renderer;

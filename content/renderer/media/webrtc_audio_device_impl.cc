@@ -11,6 +11,8 @@
 #include "content/renderer/render_thread_impl.h"
 #include "media/audio/audio_util.h"
 
+using media::AudioParameters;
+
 static const int64 kMillisecondsBetweenProcessCalls = 5000;
 static const double kMaxVolumeLevel = 255.0;
 

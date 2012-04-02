@@ -170,9 +170,9 @@ void AudioDeviceThread::Thread::Run() {
 
 // AudioDeviceThread::Callback implementation
 
-AudioDeviceThread::Callback::Callback(const AudioParameters& audio_parameters,
-                                      base::SharedMemoryHandle memory,
-                                      int memory_length)
+AudioDeviceThread::Callback::Callback(
+    const media::AudioParameters& audio_parameters,
+    base::SharedMemoryHandle memory, int memory_length)
     : audio_parameters_(audio_parameters),
       samples_per_ms_(audio_parameters.sample_rate() / 1000),
       bytes_per_ms_(audio_parameters.channels() *

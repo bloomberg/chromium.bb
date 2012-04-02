@@ -14,7 +14,6 @@
 #include "ui/base/win/scoped_ole_initializer.h"
 #endif
 
-class AudioManager;
 class BrowserOnlineStateObserver;
 class CommandLine;
 class HighResolutionTimerManager;
@@ -23,6 +22,10 @@ class SystemMessageWindowWin;
 
 namespace base {
 class SystemMonitor;
+}
+
+namespace media {
+class AudioManager;
 }
 
 namespace net {
@@ -66,7 +69,7 @@ class BrowserMainLoop {
   int GetResultCode() const { return result_code_; }
 
   // Can be called on any thread.
-  static AudioManager* GetAudioManager();
+  static media::AudioManager* GetAudioManager();
 
  private:
   // For ShutdownThreadsAndCleanUp.
@@ -89,7 +92,7 @@ class BrowserMainLoop {
   scoped_ptr<base::SystemMonitor> system_monitor_;
   scoped_ptr<HighResolutionTimerManager> hi_res_timer_manager_;
   scoped_ptr<net::NetworkChangeNotifier> network_change_notifier_;
-  scoped_ptr<AudioManager> audio_manager_;
+  scoped_ptr<media::AudioManager> audio_manager_;
   // Per-process listener for online state changes.
   scoped_ptr<BrowserOnlineStateObserver> online_state_observer_;
 #if defined(OS_WIN)

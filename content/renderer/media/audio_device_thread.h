@@ -35,7 +35,7 @@ class CONTENT_EXPORT AudioDeviceThread {
   // AudioDevice thread.
   class Callback {
    public:
-    Callback(const AudioParameters& audio_parameters,
+    Callback(const media::AudioParameters& audio_parameters,
              base::SharedMemoryHandle memory,
              int memory_length);
     virtual ~Callback();
@@ -54,7 +54,7 @@ class CONTENT_EXPORT AudioDeviceThread {
     // Protected so that derived classes can access directly.
     // The variables are 'const' since values are calculated/set in the
     // constructor and must never change.
-    const AudioParameters audio_parameters_;
+    const media::AudioParameters audio_parameters_;
     const int samples_per_ms_;
     const int bytes_per_ms_;
 

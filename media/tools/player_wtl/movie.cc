@@ -20,13 +20,6 @@
 #include "media/filters/null_audio_renderer.h"
 #include "media/filters/video_renderer_base.h"
 
-using media::FFmpegAudioDecoder;
-using media::FFmpegDemuxer;
-using media::FFmpegVideoDecoder;
-using media::FileDataSource;
-using media::FilterCollection;
-using media::Pipeline;
-
 namespace media {
 
 Movie::Movie()

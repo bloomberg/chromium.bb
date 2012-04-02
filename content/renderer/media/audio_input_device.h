@@ -118,7 +118,8 @@ class CONTENT_EXPORT AudioInputDevice
   };
 
   // Methods called on main render thread -------------------------------------
-  AudioInputDevice(const AudioParameters& params, CaptureCallback* callback,
+  AudioInputDevice(const media::AudioParameters& params,
+                   CaptureCallback* callback,
                    CaptureEventHandler* event_handler);
   virtual ~AudioInputDevice();
 
@@ -184,7 +185,7 @@ class CONTENT_EXPORT AudioInputDevice
   virtual void WillDestroyCurrentMessageLoop() OVERRIDE;
 
   // Format
-  AudioParameters audio_parameters_;
+  media::AudioParameters audio_parameters_;
 
   CaptureCallback* callback_;
   CaptureEventHandler* event_handler_;

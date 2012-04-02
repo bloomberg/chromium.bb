@@ -37,7 +37,7 @@ static Display* g_display = NULL;
 static Window g_window = 0;
 static bool g_running = false;
 
-AudioManager* g_audio_manager = NULL;
+media::AudioManager* g_audio_manager = NULL;
 
 media::VideoRendererBase* g_video_renderer = NULL;
 
@@ -238,7 +238,7 @@ int main(int argc, char** argv) {
     return 1;
   }
 
-  scoped_ptr<AudioManager> audio_manager(AudioManager::Create());
+  scoped_ptr<media::AudioManager> audio_manager(media::AudioManager::Create());
   g_audio_manager = audio_manager.get();
 
   logging::InitLogging(

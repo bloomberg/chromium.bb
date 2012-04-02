@@ -114,7 +114,7 @@ void SpeechRecognitionManagerImpl::ShowAudioInputSettings() {
     return;
   }
 
-  AudioManager* audio_manager = BrowserMainLoop::GetAudioManager();
+  media::AudioManager* audio_manager = BrowserMainLoop::GetAudioManager();
   DCHECK(audio_manager->CanShowAudioInputSettings());
   if (audio_manager->CanShowAudioInputSettings())
     audio_manager->ShowAudioInputSettings();
