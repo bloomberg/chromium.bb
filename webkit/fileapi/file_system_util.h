@@ -17,9 +17,11 @@ namespace fileapi {
 extern const char kPersistentDir[];
 extern const char kTemporaryDir[];
 extern const char kExternalDir[];
+extern const char kIsolatedDir[];
 extern const char kPersistentName[];
 extern const char kTemporaryName[];
 extern const char kExternalName[];
+extern const char kIsolatedName[];
 
 // Cracks the given filesystem |url| and populates |origin_url|, |type|
 // and |file_path|.  Returns true if the given |url| is a valid filesystem

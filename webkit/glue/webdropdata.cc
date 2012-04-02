@@ -124,9 +124,6 @@ WebDragData WebDropData::ToDragData() const {
   WebDragData result;
   result.initialize();
   result.setItems(item_list);
-#ifdef WEBKIT_DRAG_DROP_SUPPORT_FILESYSTEM
-  // TODO(kinuko): remove this ifdef once we update the WebKit API.
   result.setFilesystemId(filesystem_id);
-#endif
   return result;
 }

@@ -8,6 +8,7 @@
 
 #include "base/file_path.h"
 #include "base/logging.h"
+#include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "googleurl/src/gurl.h"
@@ -21,16 +22,18 @@ namespace fileapi {
 
 const char kPersistentDir[] = "/persistent/";
 const char kTemporaryDir[] = "/temporary/";
+const char kIsolatedDir[] = "/isolated/";
 const char kExternalDir[] = "/external/";
 
 const char kPersistentName[] = "Persistent";
 const char kTemporaryName[] = "Temporary";
+const char kIsolatedName[] = "Isolated";
 const char kExternalName[] = "External";
 
 bool CrackFileSystemURL(const GURL& url, GURL* origin_url, FileSystemType* type,
                         FilePath* file_path) {
   GURL origin;
-  FileSystemType file_system_type;
+  FileSystemType file_system_type = kFileSystemTypeUnknown;
 
   if (url.scheme() != "filesystem")
     return false;
@@ -64,18 +67,26 @@ bool CrackFileSystemURL(const GURL& url, GURL* origin_url, FileSystemType* type,
   std::string path = net::UnescapeURLComponent(bare_url.path(),
       net::UnescapeRule::SPACES | net::UnescapeRule::URL_SPECIAL_CHARS |
       net::UnescapeRule::CONTROL_CHARS);
-  if (path.compare(0, strlen(kPersistentDir), kPersistentDir) == 0) {
-    file_system_type = kFileSystemTypePersistent;
-    path = path.substr(strlen(kPersistentDir));
-  } else if (path.compare(0, strlen(kTemporaryDir), kTemporaryDir) == 0) {
-    file_system_type = kFileSystemTypeTemporary;
-    path = path.substr(strlen(kTemporaryDir));
-  } else if (path.compare(0, strlen(kExternalDir), kExternalDir) == 0) {
-    file_system_type = kFileSystemTypeExternal;
-    path = path.substr(strlen(kExternalDir));
-  } else {
-    return false;
+
+  const struct {
+    FileSystemType type;
+    const char* dir;
+  } kValidTypes[] = {
+    { kFileSystemTypePersistent, kPersistentDir },
+    { kFileSystemTypeTemporary, kTemporaryDir },
+    { kFileSystemTypeIsolated, kIsolatedDir },
+    { kFileSystemTypeExternal, kExternalDir },
+  };
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kValidTypes); ++i) {
+    if (StartsWithASCII(path, kValidTypes[i].dir, true)) {
+      file_system_type = kValidTypes[i].type;
+      path = path.substr(strlen(kValidTypes[i].dir));
+      break;
+    }
   }
+
+  if (file_system_type == kFileSystemTypeUnknown)
+    return false;
 
   // Ensure the path is relative.
   while (!path.empty() && path[0] == '/')
@@ -143,18 +154,20 @@ GURL GetFileSystemRootURI(const GURL& origin_url, FileSystemType type) {
   switch (type) {
   case kFileSystemTypeTemporary:
     path += (kTemporaryDir + 1);  // We don't want the leading slash.
-    break;
+    return GURL(path);
   case kFileSystemTypePersistent:
     path += (kPersistentDir + 1);  // We don't want the leading slash.
-    break;
+    return GURL(path);
   case kFileSystemTypeExternal:
     path += (kExternalDir + 1);  // We don't want the leading slash.
-    break;
-  default:
+    return GURL(path);
+  case kFileSystemTypeIsolated:
+    // Falling through; we won't call this for isolated filesystems.
+  case kFileSystemTypeUnknown:
     NOTREACHED();
-    return GURL();
   }
-  return GURL(path);
+  NOTREACHED();
+  return GURL();
 }
 
 std::string GetFileSystemName(const GURL& origin_url, FileSystemType type) {

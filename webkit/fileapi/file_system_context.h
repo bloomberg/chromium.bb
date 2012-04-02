@@ -32,6 +32,7 @@ class FileSystemOperationInterface;
 class FileSystemOptions;
 class FileSystemPathManager;
 class FileSystemQuotaUtil;
+class IsolatedMountPointProvider;
 class SandboxMountPointProvider;
 
 struct DefaultContextDeleter;
@@ -122,6 +123,7 @@ class FileSystemContext
 
   // Mount point providers.
   scoped_ptr<SandboxMountPointProvider> sandbox_provider_;
+  scoped_ptr<IsolatedMountPointProvider> isolated_provider_;
   scoped_ptr<ExternalFileSystemMountPointProvider> external_provider_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(FileSystemContext);

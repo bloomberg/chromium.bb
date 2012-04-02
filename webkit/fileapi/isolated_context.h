@@ -56,14 +56,20 @@ class IsolatedContext {
 
   // Cracks the given |virtual_path| (which should look like
   // "/<filesystem_id>/<relative_path>") and populates the |filesystem_id|
-  // and |platform_path| if the embedded <filesystem_id> is registered
-  // to this context.
+  // and |platform_path| if the embedded <filesystem_id> is registerred
+  // to this context.  |root_path| is also populated to have the platform
+  // root (toplevel) path for the |virtual_path|
+  // (i.e. |platform_path| = |root_path| + <relative_path>).
+  //
   // Returns false if the given virtual_path or the cracked filesystem_id
   // is not valid.
-  // Note that |platform_path| is set to an empty path if |virtual_path| has no
-  // <relative_path> part (i.e. pointing to the virtual root).
+  //
+  // Note that |root_path| and |platform_path| are set to empty paths if
+  // |virtual_path| has no <relative_path> part (i.e. pointing to
+  // the virtual root).
   bool CrackIsolatedPath(const FilePath& virtual_path,
                          std::string* filesystem_id,
+                         FilePath* root_path,
                          FilePath* platform_path) const;
 
   // Returns a vector of the full paths of the top-level entry paths
@@ -73,8 +79,6 @@ class IsolatedContext {
                         std::vector<FilePath>* paths) const;
 
   // Returns the virtual path that looks like /<filesystem_id>/<relative_path>.
-  // This method is only used by the testing code (as the actual virtual path
-  // in the real code is created in the renderer side).
   FilePath CreateVirtualPath(const std::string& filesystem_id,
                              const FilePath& relative_path) const;
 
@@ -92,7 +96,7 @@ class IsolatedContext {
   // Returns a new filesystem_id.  Called with lock.
   std::string GetNewFileSystemId() const;
 
-  // This lock needs to be obtained when accessing the fileset_.
+  // This lock needs to be obtained when accessing the toplevel_map_.
   mutable base::Lock lock_;
 
   // Maps the toplevel entries to the filesystem id.

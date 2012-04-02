@@ -77,11 +77,13 @@ TEST_F(IsolatedContextTest, RegisterAndRevokeTest) {
     FilePath virtual_path = isolated_context()->CreateVirtualPath(
         id_, kTestPaths[i].BaseName());
     std::string cracked_id;
-    FilePath cracked_path;
+    FilePath root_path, cracked_path;
     ASSERT_TRUE(isolated_context()->CrackIsolatedPath(
-        virtual_path, &cracked_id, &cracked_path));
+        virtual_path, &cracked_id, &root_path, &cracked_path));
     ASSERT_EQ(kTestPaths[i].NormalizePathSeparators().value(),
               cracked_path.value());
+    ASSERT_TRUE(fileset_.find(root_path.NormalizePathSeparators())
+                != fileset_.end());
     ASSERT_EQ(id_, cracked_id);
   }
 
@@ -123,14 +125,16 @@ TEST_F(IsolatedContextTest, CrackWithRelativePaths) {
       FilePath virtual_path = isolated_context()->CreateVirtualPath(
           id_, kTestPaths[i].BaseName().Append(relatives[j].path));
       std::string cracked_id;
-      FilePath cracked_path;
+      FilePath root_path, cracked_path;
       if (!relatives[j].valid) {
         ASSERT_FALSE(isolated_context()->CrackIsolatedPath(
-            virtual_path, &cracked_id, &cracked_path));
+            virtual_path, &cracked_id, &root_path, &cracked_path));
         continue;
       }
       ASSERT_TRUE(isolated_context()->CrackIsolatedPath(
-          virtual_path, &cracked_id, &cracked_path));
+          virtual_path, &cracked_id, &root_path, &cracked_path));
+      ASSERT_TRUE(fileset_.find(root_path.NormalizePathSeparators())
+                  != fileset_.end());
       ASSERT_EQ(kTestPaths[i].Append(relatives[j].path)
                     .NormalizePathSeparators().value(),
                 cracked_path.value());
@@ -141,7 +145,7 @@ TEST_F(IsolatedContextTest, CrackWithRelativePaths) {
 
 TEST_F(IsolatedContextTest, TestWithVirtualRoot) {
   std::string cracked_id;
-  FilePath cracked_path;
+  FilePath root_path, cracked_path;
   const FilePath root(FPL("/"));
 
   // Trying to crack virtual root "/" returns true but with empty cracked path
@@ -149,7 +153,7 @@ TEST_F(IsolatedContextTest, TestWithVirtualRoot) {
   // that has no corresponding platform directory.
   FilePath virtual_path = isolated_context()->CreateVirtualPath(id_, root);
   ASSERT_TRUE(isolated_context()->CrackIsolatedPath(
-      virtual_path, &cracked_id, &cracked_path));
+      virtual_path, &cracked_id, &root_path, &cracked_path));
   ASSERT_EQ(FPL(""), cracked_path.value());
   ASSERT_EQ(id_, cracked_id);
 
@@ -158,7 +162,7 @@ TEST_F(IsolatedContextTest, TestWithVirtualRoot) {
   virtual_path = isolated_context()->CreateVirtualPath(
       id_, FilePath(FPL("foo")));
   ASSERT_FALSE(isolated_context()->CrackIsolatedPath(
-      virtual_path, &cracked_id, &cracked_path));
+      virtual_path, &cracked_id, &root_path, &cracked_path));
 }
 
 }  // namespace fileapi

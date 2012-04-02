@@ -55,6 +55,7 @@ void IsolatedContext::RevokeIsolatedFileSystem(
 
 bool IsolatedContext::CrackIsolatedPath(const FilePath& virtual_path,
                                         std::string* filesystem_id,
+                                        FilePath* root_path,
                                         FilePath* platform_path) const {
   DCHECK(filesystem_id);
   DCHECK(platform_path);
@@ -87,6 +88,8 @@ bool IsolatedContext::CrackIsolatedPath(const FilePath& virtual_path,
   if (found == found_toplevels->second.end())
     return false;
   FilePath path = found->second;
+  if (root_path)
+    *root_path = path;
   for (size_t i = 2; i < components.size(); ++i) {
     path = path.Append(components[i]);
   }
@@ -97,6 +100,7 @@ bool IsolatedContext::CrackIsolatedPath(const FilePath& virtual_path,
 bool IsolatedContext::GetTopLevelPaths(std::string filesystem_id,
                                        std::vector<FilePath>* paths) const {
   DCHECK(paths);
+  base::AutoLock locker(lock_);
   IDToPathMap::const_iterator found = toplevel_map_.find(filesystem_id);
   if (found == toplevel_map_.end())
     return false;

@@ -119,8 +119,9 @@ class FileSystemOperation : public FileSystemOperationInterface {
 
   // Only MountPointProviders or testing class can create a
   // new operation directly.
-  friend class SandboxMountPointProvider;
   friend class FileSystemTestHelper;
+  friend class IsolatedMountPointProvider;
+  friend class SandboxMountPointProvider;
   friend class chromeos::CrosMountPointProvider;
 
   friend class FileSystemOperationTest;
