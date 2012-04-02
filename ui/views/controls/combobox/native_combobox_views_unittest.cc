@@ -162,6 +162,12 @@ TEST_F(NativeComboboxViewsTest, KeyTest) {
   EXPECT_EQ(combobox_->selected_index(), 2);
   SendKeyEvent(ui::VKEY_LEFT);
   EXPECT_EQ(combobox_->selected_index(), 2);
+  SendKeyEvent(ui::VKEY_UP);
+  EXPECT_EQ(combobox_->selected_index(), 1);
+  SendKeyEvent(ui::VKEY_PRIOR);
+  EXPECT_EQ(combobox_->selected_index(), 0);
+  SendKeyEvent(ui::VKEY_NEXT);
+  EXPECT_EQ(combobox_->selected_index(), model_->GetItemCount() - 1);
 }
 
 // Check that if a combobox is disabled before it has a native wrapper, then the

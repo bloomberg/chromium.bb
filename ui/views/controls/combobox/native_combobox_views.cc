@@ -6,8 +6,6 @@
 
 #include <algorithm>
 
-#include "base/command_line.h"
-#include "base/utf_string_conversions.h"
 #include "grit/ui_resources.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/models/combobox_model.h"
@@ -89,33 +87,33 @@ bool NativeComboboxViews::OnMouseDragged(const views::MouseEvent& mouse_event) {
 
 bool NativeComboboxViews::OnKeyPressed(const views::KeyEvent& key_event) {
   // TODO(oshima): handle IME.
-  DCHECK(key_event.type() == ui::ET_KEY_PRESSED);
+  DCHECK_EQ(key_event.type(), ui::ET_KEY_PRESSED);
 
   // Check if we are in the default state (-1) and set to first item.
-  if(selected_index_ == -1)
+  if (selected_index_ == -1)
     selected_index_ = 0;
 
   int new_index = selected_index_;
   switch (key_event.key_code()) {
-    // Move to the next element if any.
+    // Move to the next item if any.
     case ui::VKEY_DOWN:
       if (new_index < (combobox_->model()->GetItemCount() - 1))
         new_index++;
       break;
 
-    // Move to the end of the list,
+    // Move to the end of the list.
     case ui::VKEY_END:
     case ui::VKEY_NEXT:
       new_index = combobox_->model()->GetItemCount() - 1;
       break;
 
-    // Move to the top of the list.
+    // Move to the beginning of the list.
    case ui::VKEY_HOME:
    case ui::VKEY_PRIOR:
       new_index = 0;
       break;
 
-    // move to the previous element if any
+    // Move to the previous item if any.
     case ui::VKEY_UP:
       if (new_index > 0)
         new_index--;

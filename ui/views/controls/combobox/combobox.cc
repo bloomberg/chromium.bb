@@ -131,7 +131,7 @@ void Combobox::GetAccessibleState(ui::AccessibleViewState* state) {
   state->name = accessible_name_;
   state->value = model_->GetItemAt(selected_index_);
   state->index = selected_index_;
-  state->count = model()->GetItemCount();
+  state->count = model_->GetItemCount();
 }
 
 void Combobox::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
