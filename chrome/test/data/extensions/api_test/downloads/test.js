@@ -5,8 +5,8 @@
 // downloads api test
 // browser_tests.exe --gtest_filter=DownloadsApiTest.Downloads
 
-// Uncomment this when the apitest is re-enabled.
-// console.debug = function() {};
+// Comment this out to enable debugging.
+console.debug = function() {};
 
 function debugObject(obj) {
   for (var property in obj) {

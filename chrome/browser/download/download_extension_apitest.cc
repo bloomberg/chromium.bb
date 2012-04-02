@@ -26,7 +26,6 @@ class DownloadsApiTest : public ExtensionApiTest {
   ScopedTempDir tmpdir;
 };
 
-// http://crbug.com/101170
 IN_PROC_BROWSER_TEST_F(DownloadsApiTest, DownloadsApiTest) {
   SetUpTempDownloadsDir();
   ASSERT_TRUE(StartTestServer());
