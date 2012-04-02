@@ -27,6 +27,8 @@ const char kInitStatusHistogramLabel[] = "FileSystem.OriginDatabaseInit";
 enum InitStatus {
   INIT_STATUS_OK = 0,
   INIT_STATUS_CORRUPTION,
+  INIT_STATUS_IO_ERROR,
+  INIT_STATUS_UNKNOWN_ERROR,
   INIT_STATUS_MAX
 };
 
@@ -178,9 +180,15 @@ void FileSystemOriginDatabase::ReportInitStatus(const leveldb::Status& status) {
   if (status.ok()) {
     UMA_HISTOGRAM_ENUMERATION(kInitStatusHistogramLabel,
                               INIT_STATUS_OK, INIT_STATUS_MAX);
-  } else {
+  } else if (status.IsCorruption()) {
     UMA_HISTOGRAM_ENUMERATION(kInitStatusHistogramLabel,
                               INIT_STATUS_CORRUPTION, INIT_STATUS_MAX);
+  } else if (status.IsIOError()) {
+    UMA_HISTOGRAM_ENUMERATION(kInitStatusHistogramLabel,
+                              INIT_STATUS_IO_ERROR, INIT_STATUS_MAX);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION(kInitStatusHistogramLabel,
+                              INIT_STATUS_UNKNOWN_ERROR, INIT_STATUS_MAX);
   }
 }
 
