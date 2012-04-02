@@ -162,11 +162,12 @@ void WebRtcAudioDeviceImpl::Capture(const std::vector<float*>& audio_data,
   DCHECK_LE(channels, input_channels());
   uint32_t new_mic_level = 0;
 
-  // Interleave, scale, and clip input to int16 and store result in
+  // Interleave, scale, and clip input to int and store result in
   // a local byte buffer.
-  media::InterleaveFloatToInt16(audio_data,
-                                input_buffer_.get(),
-                                number_of_frames);
+  media::InterleaveFloatToInt(audio_data,
+                              input_buffer_.get(),
+                              number_of_frames,
+                              input_audio_parameters_.bits_per_sample() / 8);
 
   int samples_per_sec = input_sample_rate();
   if (samples_per_sec == 44100) {
