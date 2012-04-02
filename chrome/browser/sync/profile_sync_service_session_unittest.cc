@@ -921,14 +921,8 @@ TEST_F(ProfileSyncServiceSessionTest, StaleSessionRefresh) {
 
 // Test that tabs with nothing but "chrome://*" and "file://*" navigations are
 // not be synced.
-#if defined(OS_WIN) || defined(OS_CHROMEOS)
-// This test is crashing on windows and ChromeOS occasionally:
-// http://crbug.com/116097
-#define MAYBE_ValidTabs DISABLED_ValidTabs
-#else
-#define MAYBE_ValidTabs ValidTabs
-#endif
-TEST_F(ProfileSyncServiceSessionTest, MAYBE_ValidTabs) {
+// This test is crashing occasionally: http://crbug.com/116097
+TEST_F(ProfileSyncServiceSessionTest, DISABLED_ValidTabs) {
   CreateRootHelper create_root(this);
   ASSERT_TRUE(StartSyncService(create_root.callback(), false));
   ASSERT_TRUE(create_root.success());
