@@ -108,7 +108,7 @@ class LKGMManagerTest(mox.MoxTestBase):
     self.tmpmandir = tempfile.mkdtemp()
     self.manager = lkgm_manager.LKGMManager(
       repo, self.manifest_repo, self.build_name, constants.PFQ_TYPE,
-      'branch', dry_run=True)
+      'branch', force=False, dry_run=True)
     self.manager.manifest_dir = self.tmpmandir
     self.manager.lkgm_path = os.path.join(self.tmpmandir,
                                           self.manager.LKGM_PATH)

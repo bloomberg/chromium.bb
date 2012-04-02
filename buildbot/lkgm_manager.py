@@ -121,7 +121,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
   LKGM_PATH = 'LKGM/lkgm.xml'
 
   def __init__(self, source_repo, manifest_repo, build_name,
-               build_type, incr_type, dry_run=True):
+               build_type, incr_type, force, dry_run=True):
     """Initialize an LKGM Manager.
 
     Args:
@@ -130,7 +130,8 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     """
     super(LKGMManager, self).__init__(
         source_repo=source_repo, manifest_repo=manifest_repo,
-        build_name=build_name, incr_type=incr_type, dry_run=dry_run)
+        build_name=build_name, incr_type=incr_type, force=force,
+        dry_run=dry_run)
 
     self.lkgm_path = os.path.join(self.manifest_dir, self.LKGM_PATH)
     self.compare_versions_fn = _LKGMCandidateInfo.VersionCompare
@@ -230,7 +231,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
         # If we don't have any valid changes to test, make sure the checkout
         # is at least different.
         if ((not validation_pool or not validation_pool.changes) and
-            self.HasCheckoutBeenBuilt()):
+            not self.force and self.HasCheckoutBeenBuilt()):
           return None
 
         # Check whether the latest spec available in manifest-versions is

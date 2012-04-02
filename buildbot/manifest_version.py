@@ -335,13 +335,14 @@ class BuildSpecsManager(object):
   LONG_MAX_TIMEOUT_SECONDS = 1200
 
   def __init__(self, source_repo, manifest_repo, build_name,
-               incr_type, dry_run=True):
+               incr_type, force, dry_run=True):
     """Initializes a build specs manager.
     Args:
       source_repo: Repository object for the source code.
       manifest_repo:  Manifest repository for manifest versions / buildspecs.
       build_name: Identifier for the build.  Must match cbuildbot_config.
       incr_type: part of the version to increment. 'patch or branch'
+      force: Create a new manifest even if there are no changes.
       dry_run: Whether we actually commit changes we make or not.
     """
     self.cros_source = source_repo
@@ -350,6 +351,7 @@ class BuildSpecsManager(object):
     self.manifest_repo = manifest_repo
     self.build_name = build_name
     self.incr_type = incr_type
+    self.force = force
     self.dry_run = dry_run
 
     # Directories and specifications are set once we load the specs.
@@ -570,7 +572,7 @@ class BuildSpecsManager(object):
         self.RefreshManifestCheckout()
         self.InitializeManifestVariables(version_info)
 
-        if self.HasCheckoutBeenBuilt():
+        if not self.force and self.HasCheckoutBeenBuilt():
           return None
 
         cros_lib.CreatePushBranch(PUSH_BRANCH, self.manifest_dir, sync=False)

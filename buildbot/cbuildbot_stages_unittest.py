@@ -140,7 +140,7 @@ class ManifestVersionedSyncStageTest(AbstractStageTest):
       self.source_repo, self.tmpdir, self.branch)
     self.manager = manifest_version.BuildSpecsManager(
       repo, self.manifest_version_url, self.build_name,
-      self.incr_type, dry_run=True)
+      self.incr_type, force=False, dry_run=True)
 
     stages.ManifestVersionedSyncStage.manifest_manager = self.manager
 
@@ -234,7 +234,7 @@ class LKGMCandidateSyncCompletionStage(AbstractStageTest):
       self.source_repo, self.tmpdir, self.branch)
     self.manager = lkgm_manager.LKGMManager(
       repo, self.manifest_version_url, self.build_name,
-      self.build_type, incr_type='branch', dry_run=True)
+      self.build_type, incr_type='branch', force=False, dry_run=True)
 
   def ConstructStage(self):
     return stages.LKGMCandidateSyncCompletionStage(self.options,

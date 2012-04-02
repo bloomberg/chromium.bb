@@ -183,7 +183,8 @@ class BuildSpecsManagerTest(mox.MoxTestBase):
     repo = repository.RepoRepository(
       self.source_repo, self.tmpdir, self.branch)
     self.manager = manifest_version.BuildSpecsManager(
-      repo, self.manifest_repo, self.build_name, self.incr_type, dry_run=True)
+      repo, self.manifest_repo, self.build_name, self.incr_type, False,
+      dry_run=True)
 
     # Change default to something we clean up.
     self.tmpmandir = tempfile.mkdtemp()

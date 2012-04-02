@@ -130,6 +130,9 @@ class CBuildBotTest(mox.MoxTestBase):
       self.assertFalse(
           config['chrome_rev'] == constants.CHROME_REV_LOCAL,
           'Config %s: has unexpected chrome_rev_local value.' % build_name)
+      if config['chrome_rev']:
+        self.assertTrue(cbuildbot_config.IsPFQType(config['build_type']),
+          'Config %s: has chrome_rev but is not a PFQ.' % build_name)
 
   def testValidVMTestType(self):
     """Verify vm_tests has an expected value"""
