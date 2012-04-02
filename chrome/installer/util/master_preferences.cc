@@ -27,7 +27,8 @@ bool GetGURLFromValue(const Value* in_value, GURL* out_value) {
   if (!in_value || !out_value)
     return false;
   std::string url;
-  in_value->GetAsString(&url);
+  if (!in_value->GetAsString(&url))
+    return false;
   GURL gurl(url);
   *out_value = gurl;
   return true;
