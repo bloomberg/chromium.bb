@@ -2260,7 +2260,7 @@ FileManager.prototype = {
           selection.iconType = 'unknown';
       }
 
-      if (thumbnailCount < MAX_PREVIEW_THUMBAIL_COUNT && entry.isFile) {
+      if (thumbnailCount < MAX_PREVIEW_THUMBAIL_COUNT) {
         var box = this.document_.createElement('div');
         var imageLoadCalback = thumbnailCount == 0 &&
                                this.initThumbnailZoom_.bind(this, box);
