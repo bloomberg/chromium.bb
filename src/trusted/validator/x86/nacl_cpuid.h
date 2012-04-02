@@ -127,7 +127,7 @@ void NaClSetCPUFeature(NaClCPUFeaturesX86 *features, NaClCPUFeatureID id,
                        int state);
 
 /* Query whether a feature is supported. */
-static INLINE int NaClGetCPUFeature(NaClCPUFeaturesX86 *features,
+static INLINE int NaClGetCPUFeature(const NaClCPUFeaturesX86 *features,
                                     NaClCPUFeatureID id) {
   return features->data[id];
 }
@@ -144,6 +144,12 @@ void NaClGetCurrentCPUFeatures(NaClCPUFeaturesX86 *cpu_features);
 
 /* Returns true if CPUID is defined, and the CPU is supported. */
 int NaClArchSupported(const NaClCPUFeaturesX86 *features);
+
+/* Update cpu_features to only include features in the fixed x86 model.
+ * Returns 1 if cpu_features includes all features required by the model.
+ * Otherwise returns 0.
+ */
+int NaClFixCPUFeatures(NaClCPUFeaturesX86 *cpu_features);
 
 EXTERN_C_END
 

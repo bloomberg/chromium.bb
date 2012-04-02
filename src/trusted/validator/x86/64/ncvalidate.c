@@ -38,6 +38,7 @@ static NaClValidationStatus NaClApplyValidatorSilently_x86_64(
     uint8_t *data,
     size_t size,
     int bundle_size,
+    int readonly_text,
     const NaClCPUFeaturesX86 *cpu_features,
     struct NaClValidationCache *cache) {
   struct NaClValidatorState *vstate;
@@ -71,6 +72,12 @@ static NaClValidationStatus NaClApplyValidatorSilently_x86_64(
   NaClValidateSegment(data, guest_addr, size, vstate);
   status =
       NaClValidatesOk(vstate) ? NaClValidationSucceeded : NaClValidationFailed;
+  if (NaClValidatorDidStubOut(vstate) && readonly_text) {
+    /* TODO(bradchen): prevent stubout writes from happening;
+     * fail inside validator.
+     */
+    status = NaClValidationFailed;
+  }
 
   if (query != NULL) {
     /* Don't cache the result if the code is modified. */
@@ -106,6 +113,7 @@ NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidator, x86, 64) (
     uint8_t *data,
     size_t size,
     int bundle_size,
+    int readonly_text,
     const NaClCPUFeaturesX86 *cpu_features,
     struct NaClValidationCache *cache) {
   NaClValidationStatus status = NaClValidationFailedNotImplemented;
@@ -116,7 +124,8 @@ NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidator, x86, 64) (
     switch (kind) {
       case NaClApplyCodeValidation:
         status = NaClApplyValidatorSilently_x86_64(
-            guest_addr, data, size, bundle_size, cpu_features, cache);
+            guest_addr, data, size, bundle_size,
+            readonly_text, cpu_features, cache);
         break;
       case NaClApplyValidationDoStubout:
         status = NaClApplyValidatorStubout_x86_64(

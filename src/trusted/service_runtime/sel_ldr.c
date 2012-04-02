@@ -22,17 +22,13 @@
 #include "native_client/src/shared/platform/nacl_time.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 
-
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
 #include "native_client/src/trusted/desc/nacl_desc_conn_cap.h"
 #include "native_client/src/trusted/desc/nacl_desc_imc.h"
 #include "native_client/src/trusted/desc/nacl_desc_io.h"
 #include "native_client/src/trusted/desc/nrd_xfer.h"
-
 #include "native_client/src/trusted/fault_injection/fault_injection.h"
-
 #include "native_client/src/trusted/handle_pass/ldr_handle.h"
-
 #include "native_client/src/trusted/gio/gio_nacl_desc.h"
 #include "native_client/src/trusted/gio/gio_shm.h"
 #include "native_client/src/trusted/service_runtime/arch/sel_ldr_arch.h"
@@ -49,19 +45,14 @@
 #include "native_client/src/trusted/service_runtime/nacl_syscall_common.h"
 #include "native_client/src/trusted/service_runtime/nacl_syscall_handlers.h"
 #include "native_client/src/trusted/service_runtime/nacl_valgrind_hooks.h"
+#include "native_client/src/trusted/service_runtime/name_service/default_name_service.h"
+#include "native_client/src/trusted/service_runtime/name_service/name_service.h"
 #include "native_client/src/trusted/service_runtime/sel_addrspace.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/sel_memory.h"
-
-#include "native_client/src/trusted/service_runtime/name_service/default_name_service.h"
-#include "native_client/src/trusted/service_runtime/name_service/name_service.h"
-
 #include "native_client/src/trusted/service_runtime/sel_ldr_thread_interface.h"
-#include "native_client/src/trusted/threading/nacl_thread_interface.h"
-
 #include "native_client/src/trusted/simple_service/nacl_simple_rservice.h"
 #include "native_client/src/trusted/simple_service/nacl_simple_service.h"
-
 #include "native_client/src/trusted/threading/nacl_thread_interface.h"
 
 static int IsEnvironmentVariableSet(char const *env_name) {
@@ -77,7 +68,9 @@ int NaClAppWithSyscallTableCtor(struct NaClApp               *nap,
   struct NaClDescEffectorLdr  *effp;
 
   /* Get the set of features that the CPU we're running on supports. */
+  /* These may be adjusted later in sel_main.c for fixed-feature CPU mode. */
   NaClGetCurrentCPUFeatures(&nap->cpu_features);
+  nap->fixed_feature_cpu_mode = 0;
 
   /* The validation cache will be injected later, if it exists. */
   nap->validation_cache = NULL;

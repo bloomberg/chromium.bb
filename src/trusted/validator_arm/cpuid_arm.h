@@ -27,4 +27,9 @@ static INLINE void NaClClearCPUFeatures(NaClCPUFeaturesArm *cpu_features) {
   UNREFERENCED_PARAMETER(cpu_features);
 }
 
+static INLINE int NaClFixCPUFeatures(NaClCPUFeaturesArm *cpu_features) {
+  UNREFERENCED_PARAMETER(cpu_features);
+  return 1;
+}
+
 #endif /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_ARM_CPUID_ARM_H */

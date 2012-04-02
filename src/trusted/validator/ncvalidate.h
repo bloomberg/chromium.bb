@@ -23,6 +23,10 @@
  * Hence, for example, NACL_SUBARCH_NAME(ApplyValidator, x86, 64)
  * would generate the function name NaCL_ApplyValidator_x86_64.
  */
+/* TODO(bradchen): Cleanup the interface to the validator. There
+ * are too many combinations of different calls and input parameters,
+ * making this interface hard to understand and hard to modify.
+ */
 
 #include "native_client/src/include/nacl_base.h"
 #include "native_client/src/shared/utils/types.h"
@@ -101,7 +105,9 @@ typedef enum NaClApplyValidationKind {
  *    data - The contents of the code segment to be validated.
  *    size - The size of the code segment to be validated.
  *    bundle_size - The number of bytes in a code bundle.
+ *    readonly_text - If code should be considered read-only.
  *    cpu_features - The CPU features to support while validating.
+ *    cache - Pointer to NaCl validation cache.
  */
 extern NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidator,
                                               NACL_TARGET_ARCH,
@@ -112,6 +118,7 @@ extern NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidator,
     uint8_t                 *data,
     size_t                  size,
     int                     bundle_size,
+    int                     readonly_text,
     const NaClCPUFeatures   *cpu_features,
     struct NaClValidationCache *cache);
 

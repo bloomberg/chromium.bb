@@ -1,0 +1,124 @@
+# -*- python -*-
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# Tests for Native Client fixed-feature CPU mode. The fixed-feature CPU
+# mode requires SSE and disallows MMX and x87. By fixing the instruction set
+# it allows exclusion of the CPUID instruction and use of a read-only text
+# segment. See http://code.google.com/p/nativeclient/issues/detail?id=2684
+Import('env')
+
+# Do not run these tests with pexes, assuming they are portable, since
+# they use inline assembler.
+if env.Bit('pnacl_generate_pexe'):
+  Return()
+
+if 'TRUSTED_ENV' not in env:
+  Return()
+
+# The fixed feature CPU mode is currently x86 specific
+if env.Bit('target_arm'):
+  Return()
+
+# For speed, SConstruct disables the validator (using '-cc') for
+# Valgrind+nacl-glibc tests, which breaks one test below.
+# TODO(bradchen): Consolidate into env.ValidationIsDisabled()
+is_validation_disabled = env.IsRunningUnderValgrind() and env.Bit('nacl_glibc')
+
+# The next sequence of conditionals captures the status test on various
+# NaCl configurations. At this point many of the '-Z' configurations fail
+# due to MMX or x87 instructions that are included in shared runtime
+# components. The production fixed-function toolchain must remove these
+# problems.
+if env.Bit('tests_use_irt'):
+  # 32-bit irt newlib: has x87 instructions
+  # 64-bit irt newlib: requires MMX
+  expect_null_Z_status=1
+  expect_sse_Z_status=1
+  expect_x87_Z_status=1
+elif env.Bit('nacl_glibc'):
+  if env.Bit('target_x86_32'):
+    # Validation fails with code 127 when dynamic linking
+    expect_null_Z_status=127
+    expect_sse_Z_status=127
+    expect_x87_Z_status=127
+  elif env.Bit('target_x86_64'):
+    # 64-bit glibc: fails, runnable-ld.so requires RDTSC, x87
+    expect_null_Z_status=1
+    expect_sse_Z_status=1
+    expect_x87_Z_status=1
+else:
+  if env.Bit('target_x86_32'):
+    # 32-bit newlib: passes
+    expect_null_Z_status=0
+    expect_sse_Z_status=1
+    expect_x87_Z_status=1
+  elif env.Bit('target_x86_64'):
+    # 64-bit newlib: requires MMX, CLFLUSH, FXSR
+    expect_null_Z_status=1
+    expect_sse_Z_status=1
+    expect_x87_Z_status=1
+
+test_suites = ['small_tests', 'sel_ldr_tests', 'validator_tests']
+ff_null_nexe = env.ComponentProgram('ff_null', 'ff_null.c',
+                                    EXTRA_LIBS=['${NONIRT_LIBS}'])
+node = env.CommandSelLdrTestNacl('ff_null.out', ff_null_nexe)
+env.AddNodeToTestSuite(node, test_suites, 'run_ff_null_test')
+
+node = env.CommandSelLdrTestNacl(
+    'ff_null_Z.out', ff_null_nexe,
+    exit_status=expect_null_Z_status,
+    sel_ldr_flags=['-Z'])
+env.AddNodeToTestSuite(node, test_suites, 'run_ff_null_Z_test',
+                       is_broken=is_validation_disabled)
+
+# The bitcode compiler doesn't support -mfpmath=387 or -mfpmath=sse
+if not env.Bit('bitcode'):
+  sse_env = env.Clone()
+  sse_env.Append(CCFLAGS=['-mfpmath=sse', '-msse'])
+  sse_o = sse_env.ComponentObject('ff_hello_world_sse.o', 'ff_hello_world.c')
+
+  ff_hello_world_sse_nexe = sse_env.ComponentProgram(
+      'ff_hello_world_sse',
+      'ff_hello_world_sse.o',
+      EXTRA_LIBS=['${NONIRT_LIBS}'])
+
+  node = env.CommandSelLdrTestNacl(
+      'ff_hello_world_sse.out', ff_hello_world_sse_nexe,
+      stdout_golden=env.File('ff_hello_world.stdout'))
+  env.AddNodeToTestSuite(node, test_suites, 'run_ff_sse_test')
+
+  # ff_hello_world_sse should succeed in fixed function CPU mode
+  # It fails due to conditions noted above.
+  node = env.CommandSelLdrTestNacl(
+      'ff_hello_world_sse_Z.out', ff_hello_world_sse_nexe,
+      exit_status=expect_sse_Z_status,
+      sel_ldr_flags=['-Z'])
+  env.AddNodeToTestSuite(node, test_suites, 'run_ff_sse_Z_test',
+                         is_broken=is_validation_disabled)
+
+# NOTE: -mfpmath=387 does not work for x86-64. See:
+# http://code.google.com/p/nativeclient/issues/detail?id=2692
+if not env.Bit('target_x86_64') and not env.Bit('bitcode'):
+  x87_env = env.Clone()
+  x87_env.Append(CCFLAGS=['-mfpmath=387'])
+  x87_o = x87_env.ComponentObject('ff_hello_world_x87.o', 'ff_hello_world.c')
+  ff_hello_world_x87_nexe = x87_env.ComponentProgram(
+      'ff_hello_world_x87',
+      'ff_hello_world_x87.o',
+      EXTRA_LIBS=['${NONIRT_LIBS}'])
+
+  # ff_hello_world_x87 should pass in default mode
+  node = env.CommandSelLdrTestNacl(
+      'ff_hello_world_x87.out', ff_hello_world_x87_nexe,
+      stdout_golden=env.File('ff_hello_world.stdout'))
+  env.AddNodeToTestSuite(node, test_suites, 'run_ff_x87_test')
+
+  # ff_hello_world_x87 should fail in fixed function CPU mode
+  node = env.CommandSelLdrTestNacl(
+      'ff_hello_world_x87_Z.out', ff_hello_world_x87_nexe,
+      exit_status=expect_x87_Z_status,
+      sel_ldr_flags=['-Z'])
+  env.AddNodeToTestSuite(node, test_suites, 'run_ff_x87_Z_test',
+                         is_broken=is_validation_disabled)

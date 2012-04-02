@@ -20,6 +20,7 @@
 #include <stdlib.h>
 
 #include "native_client/src/include/portability_io.h"
+#include "native_client/src/shared/platform/nacl_log.h"
 
 /*
  * TODO(bradchen): consolidate to use one debug print mechanism.
@@ -415,4 +416,66 @@ void NaClGetCurrentCPUFeatures(NaClCPUFeaturesX86 *cpu_features) {
   NaClCPUData cpu_data;
   NaClCPUDataGet(&cpu_data);
   GetCPUFeatures(&cpu_data, cpu_features);
+}
+
+/* This array defines the CPU feature model for fixed-feature CPU
+ * mode. We currently require the same set of features for both
+ * 32- and 64-bit x86 CPUs, intended to be supported by most/all
+ * post-Pentium III CPUs. This set may be something we need to
+ * revisit in the future.
+ */
+const int kFixedFeatureCPUModel[NaClCPUFeature_Max] = {
+  0, /* NaClCPUFeature_x87 */
+  0, /* NaClCPUFeature_MMX */
+  1, /* NaClCPUFeature_SSE */
+  1, /* NaClCPUFeature_SSE2 */
+  1, /* NaClCPUFeature_SSE3 */
+  0, /* NaClCPUFeature_SSSE3 */
+  0, /* NaClCPUFeature_SSE41 */
+  0, /* NaClCPUFeature_SSE42 */
+  0, /* NaClCPUFeature_MOVBE */
+  0, /* NaClCPUFeature_POPCNT */
+  1, /* NaClCPUFeature_CX8 */
+  1, /* NaClCPUFeature_CX16 */
+  1, /* NaClCPUFeature_CMOV */
+  0, /* NaClCPUFeature_MON */
+  1, /* NaClCPUFeature_FXSR */
+  1, /* NaClCPUFeature_CLFLUSH */
+  0, /* NaClCPUFeature_MSR */
+  1, /* NaClCPUFeature_TSC */
+  0, /* NaClCPUFeature_VME */
+  0, /* NaClCPUFeature_PSN */
+  0, /* NaClCPUFeature_VMX */
+  0, /* NaClCPUFeature_OSXSAVE */
+  0, /* NaClCPUFeature_AVX */
+  0, /* NaClCPUFeature_3DNOW */  /* AMD-specific */
+  0, /* NaClCPUFeature_EMMX */   /* AMD-specific */
+  0, /* NaClCPUFeature_E3DNOW */ /* AMD-specific */
+  0, /* NaClCPUFeature_LZCNT */  /* AMD-specific */
+  0, /* NaClCPUFeature_SSE4A */  /* AMD-specific */
+  0, /* NaClCPUFeature_LM */
+  0, /* NaClCPUFeature_SVM */    /* AMD-specific */
+};
+
+int NaClFixCPUFeatures(NaClCPUFeaturesX86 *cpu_features) {
+  NaClCPUFeatureID fid;
+  int rvalue = 1;
+
+  for (fid = 0; fid < NaClCPUFeature_Max; fid++) {
+    if (kFixedFeatureCPUModel[fid]) {
+      if (!NaClGetCPUFeature(cpu_features, fid)) {
+        /* This CPU is missing a required feature. */
+        NaClLog(LOG_ERROR,
+                "This CPU is missing a feature required by fixed-mode: %s\n",
+                NaClGetCPUFeatureName(fid));
+        rvalue = 0;  /* set return value to indicate failure */
+      }
+    } else {
+      /* Feature is not in the fixed model.
+       * Ensure cpu_features does not have it either.
+       */
+      NaClSetCPUFeature(cpu_features, fid, 0);
+    }
+  }
+  return rvalue;
 }

@@ -53,6 +53,14 @@ int NaClValidateCode(struct NaClApp *nap, uintptr_t guest_addr,
     cache = NULL;
   }
 
+  /* As fixed feature mode implies the text should be readonly, and
+   * stubout mode implies updating the text, disallow their use together.
+   */
+  if (nap->validator_stub_out_mode && nap->fixed_feature_cpu_mode) {
+    NaClLog(LOG_FATAL,
+            "stub_out_mode and fixed_feature_cpu_mode are incompatible\n");
+    return LOAD_VALIDATION_FAILED;
+  }
   if (nap->validator_stub_out_mode) {
     /* Validation caching is currently incompatible with stubout. */
     cache = NULL;
@@ -65,7 +73,9 @@ int NaClValidateCode(struct NaClApp *nap, uintptr_t guest_addr,
                                    sb_kind,
                                    NaClApplyValidationDoStubout,
                                    guest_addr, data, size,
-                                   nap->bundle_size, &nap->cpu_features,
+                                   nap->bundle_size,
+                                   FALSE, /* text is not read-only */
+                                   &nap->cpu_features,
                                    cache);
   }
   if (status == NaClValidationSucceeded) {
@@ -75,7 +85,9 @@ int NaClValidateCode(struct NaClApp *nap, uintptr_t guest_addr,
                                    sb_kind,
                                    NaClApplyCodeValidation,
                                    guest_addr, data, size,
-                                   nap->bundle_size, &nap->cpu_features,
+                                   nap->bundle_size,
+                                   nap->fixed_feature_cpu_mode,
+                                   &nap->cpu_features,
                                    cache);
   }
   return NaClValidateStatus(status);
@@ -86,6 +98,7 @@ int NaClValidateCodeReplacement(struct NaClApp *nap, uintptr_t guest_addr,
                                 size_t size) {
   enum NaClSBKind sb_kind = NACL_SB_DEFAULT;
   if (nap->validator_stub_out_mode) return LOAD_BAD_FILE;
+  if (nap->fixed_feature_cpu_mode) return LOAD_BAD_FILE;
 
   if ((guest_addr % nap->bundle_size) != 0 ||
       (size % nap->bundle_size) != 0) {
@@ -104,6 +117,12 @@ int NaClCopyCode(struct NaClApp *nap, uintptr_t guest_addr,
                  uint8_t *data_old, uint8_t *data_new,
                  size_t size) {
   enum NaClSBKind sb_kind = NACL_SB_DEFAULT;
+  /* Fixed-feature mode disables any code copying for now. Currently
+   * the only use of NaClCodeCopy() seems to be for dynamic code
+   * modification, which should fail in NaClValidateCodeReplacement()
+   * before reaching this.
+   */
+  if (nap->fixed_feature_cpu_mode) return LOAD_BAD_FILE;
   return NaClValidateStatus(
       NACL_SUBARCH_NAME(ApplyValidatorCopy,
                         NACL_TARGET_ARCH,

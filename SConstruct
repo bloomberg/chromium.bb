@@ -3344,6 +3344,7 @@ irt_variant_tests = [
 #    'tests/fault_injection/nacl.scons',
     'tests/fib/nacl.scons',
     'tests/file/nacl.scons',
+    'tests/fixedfeaturecpu/nacl.scons',
     'tests/gc_instrumentation/nacl.scons',
     'tests/glibc_file64_test/nacl.scons',
     'tests/glibc_static_test/nacl.scons',

@@ -136,7 +136,7 @@ class ValidationCachingInterfaceTests : public ::testing::Test {
                                  NACL_SB_DEFAULT,
                                  NaClApplyCodeValidation,
                                  0, code_buffer, 32,
-                                 bundle_size, &cpu_features,
+                                 bundle_size, FALSE, &cpu_features,
                                  &cache);
   }
 };
@@ -158,7 +158,7 @@ TEST_F(ValidationCachingInterfaceTests, NoCache) {
                             NACL_SB_DEFAULT,
                             NaClApplyCodeValidation,
                             0, code_buffer, CODE_SIZE,
-                            bundle_size, &cpu_features,
+                            bundle_size, FALSE, &cpu_features,
                             NULL);
   EXPECT_EQ(NaClValidationSucceeded, status);
 }

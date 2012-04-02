@@ -145,6 +145,7 @@ static void PrintUsage() {
           " -s safely stub out non-validating instructions\n"
           " -Q disable platform qualification (dangerous!)\n"
           " -E <name=value>|<name> set an environment variable\n"
+          " -Z use fixed feature x86 CPU mode\n"
           );  /* easier to add new flags/lines */
 }
 
@@ -196,6 +197,7 @@ int main(int  argc,
   int                           handle_signals = 0;
   int                           exception_handling_requested = 0;
   int                           enable_exception_handling = 0;
+  int                           fixed_feature_cpu_mode = 0;
   struct NaClPerfCounter        time_all_main;
   const char                    **envp;
   struct NaClEnvCleanser        env_cleanser;
@@ -249,7 +251,7 @@ int main(int  argc,
 #if NACL_LINUX
                        "+D:"
 #endif
-                       "aB:ceE:f:Fgh:i:Il:Qr:RsSvw:X:")) != -1) {
+                       "aB:ceE:f:Fgh:i:Il:Qr:RsSvw:X:Z")) != -1) {
     switch (opt) {
       case 'e':
         exception_handling_requested = 1;
@@ -356,6 +358,9 @@ int main(int  argc,
         if (!DynArraySet(&env_vars, env_vars.num_entries, optarg)) {
           NaClLog(LOG_FATAL, "Adding item to env_vars failed\n");
         }
+        break;
+      case 'Z':
+        fixed_feature_cpu_mode = 1;
         break;
       default:
         fprintf(stderr, "ERROR: unknown option: [%c]\n\n", opt);
@@ -503,6 +508,16 @@ int main(int  argc,
   state.validator_stub_out_mode = stub_out_mode;
   state.enable_debug_stub = enable_debug_stub;
   state.enable_exception_handling = enable_exception_handling;
+  if (fixed_feature_cpu_mode) {
+    NaClLog(LOG_WARNING, "Enabling Fixed-Feature CPU Mode\n");
+    state.fixed_feature_cpu_mode = 1;
+    if (!NaClFixCPUFeatures(&state.cpu_features)) {
+      NaClLog(LOG_ERROR,
+              "This CPU lacks features required by "
+              "fixed-function CPU mode.\n");
+      goto done_file_dtor;
+    }
+  }
 
   nap = &state;
   errcode = LOAD_OK;

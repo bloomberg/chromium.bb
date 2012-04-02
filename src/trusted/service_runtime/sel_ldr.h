@@ -299,6 +299,7 @@ struct NaClApp {
 
 
   NaClCPUFeatures           cpu_features;
+  int                       fixed_feature_cpu_mode;
   struct NaClValidationCache *validation_cache;
   int                       ignore_validator_result;
   int                       skip_validator;
