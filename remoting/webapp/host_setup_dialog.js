@@ -207,6 +207,9 @@ remoting.HostSetupDialog.prototype.registerHost_ = function() {
   }
 
   var newHostId = generateUuid();
+  // TODO(jamiewalch): Create an unprivileged API to get the host id from the
+  // plugin instead of storing it locally (crbug.com/121518).
+  window.localStorage.setItem('me2me-host-id', newHostId);
 
   /** @param {string} privateKey
    *  @param {XMLHttpRequest} xhr */
