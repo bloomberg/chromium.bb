@@ -44,6 +44,9 @@ class UI_EXPORT ScopedClipboardWriter {
   // useful if the HTML fragment contains relative links.
   void WriteHTML(const string16& markup, const std::string& source_url);
 
+  // Adds RTF to the clipboard.
+  void WriteRTF(const std::string& rtf_data);
+
   // Adds a bookmark to the clipboard.
   void WriteBookmark(const string16& bookmark_title,
                      const std::string& url);

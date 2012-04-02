@@ -14,6 +14,7 @@ namespace {
 // Various format we support.
 const char kPlainTextFormat[] = "text";
 const char kHTMLFormat[] = "html";
+const char kRTFFormat[] = "rtf";
 const char kBitmapFormat[] = "bitmap";
 const char kWebKitSmartPasteFormat[] = "webkit_smart";
 const char kBookmarkFormat[] = "bookmark";
@@ -85,6 +86,9 @@ void Clipboard::ReadHTML(Clipboard::Buffer buffer,
                          uint32* fragment_end) const {
 }
 
+void Clipboard::ReadRTF(Buffer buffer, std::string* result) const {
+}
+
 SkBitmap Clipboard::ReadImage(Buffer buffer) const {
   return SkBitmap();
 }
@@ -132,6 +136,12 @@ const Clipboard::FormatType& Clipboard::GetHtmlFormatType() {
 }
 
 // static
+const Clipboard::FormatType& Clipboard::GetRtfFormatType() {
+  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kRTFFormat));
+  return type;
+}
+
+// static
 const Clipboard::FormatType& Clipboard::GetBitmapFormatType() {
   CR_DEFINE_STATIC_LOCAL(FormatType, type, (kBitmapFormat));
   return type;
@@ -150,6 +160,9 @@ void Clipboard::WriteHTML(const char* markup_data,
                           size_t markup_len,
                           const char* url_data,
                           size_t url_len) {
+}
+
+void Clipboard::WriteRTF(const char* rtf_data, size_t data_len) {
 }
 
 void Clipboard::WriteBookmark(const char* title_data, size_t title_len,

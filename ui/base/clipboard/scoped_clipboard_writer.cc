@@ -55,6 +55,16 @@ void ScopedClipboardWriter::WriteHTML(const string16& markup,
   objects_[Clipboard::CBF_HTML] = parameters;
 }
 
+void ScopedClipboardWriter::WriteRTF(const std::string& rtf_data) {
+  if (rtf_data.empty())
+    return;
+
+  Clipboard::ObjectMapParams parameters;
+  parameters.push_back(Clipboard::ObjectMapParam(rtf_data.begin(),
+                                                 rtf_data.end()));
+  objects_[Clipboard::CBF_RTF] = parameters;
+}
+
 void ScopedClipboardWriter::WriteBookmark(const string16& bookmark_title,
                                           const std::string& url) {
   if (bookmark_title.empty() || url.empty())

@@ -78,6 +78,7 @@ const char Clipboard::kMimeTypeText[] = "text/plain";
 const char Clipboard::kMimeTypeURIList[] = "text/uri-list";
 const char Clipboard::kMimeTypeDownloadURL[] = "downloadurl";
 const char Clipboard::kMimeTypeHTML[] = "text/html";
+const char Clipboard::kMimeTypeRTF[] = "text/rtf";
 const char Clipboard::kMimeTypePNG[] = "image/png";
 
 void Clipboard::DispatchObject(ObjectType type, const ObjectMapParams& params) {
@@ -103,6 +104,10 @@ void Clipboard::DispatchObject(ObjectType type, const ObjectMapParams& params) {
       } else if (params.size() == 1) {
         WriteHTML(&(params[0].front()), params[0].size(), NULL, 0);
       }
+      break;
+
+    case CBF_RTF:
+      WriteRTF(&(params[0].front()), params[0].size());
       break;
 
     case CBF_BOOKMARK:

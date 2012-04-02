@@ -173,6 +173,12 @@ FORMATETC* ClipboardUtil::GetHtmlFormat() {
   return &format;
 }
 
+FORMATETC* ClipboardUtil::GetRtfFormat() {
+  static UINT cf = RegisterClipboardFormat(L"Rich Text Format");
+  static FORMATETC format = {cf, 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL};
+  return &format;
+}
+
 FORMATETC* ClipboardUtil::GetTextHtmlFormat() {
   static UINT cf = RegisterClipboardFormat(L"text/html");
   static FORMATETC format = {cf, 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL};

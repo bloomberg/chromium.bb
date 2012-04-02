@@ -122,6 +122,10 @@ void Clipboard::WriteHTML(const char* markup_data,
   [pb setString:html_fragment forType:NSHTMLPboardType];
 }
 
+void Clipboard::WriteRTF(const char* rtf_data, size_t data_len) {
+  WriteData(GetRtfFormatType(), rtf_data, data_len);
+}
+
 void Clipboard::WriteBookmark(const char* title_data,
                               size_t title_len,
                               const char* url_data,
@@ -255,6 +259,8 @@ void Clipboard::ReadAvailableTypes(Clipboard::Buffer buffer,
     types->push_back(UTF8ToUTF16(kMimeTypeText));
   if (IsFormatAvailable(Clipboard::GetHtmlFormatType(), buffer))
     types->push_back(UTF8ToUTF16(kMimeTypeHTML));
+  if (IsFormatAvailable(Clipboard::GetRtfFormatType(), buffer))
+    types->push_back(UTF8ToUTF16(kMimeTypeRTF));
   if ([NSImage canInitWithPasteboard:GetPasteboard()])
     types->push_back(UTF8ToUTF16(kMimeTypePNG));
   *contains_filenames = false;
@@ -320,6 +326,13 @@ void Clipboard::ReadHTML(Clipboard::Buffer buffer, string16* markup,
   *fragment_start = 0;
   DCHECK(markup->length() <= kuint32max);
   *fragment_end = static_cast<uint32>(markup->length());
+}
+
+void Clipboard::ReadRTF(Buffer buffer, std::string* result) const {
+  DCHECK(CalledOnValidThread());
+  DCHECK_EQ(buffer, BUFFER_STANDARD);
+
+  return ReadData(GetRtfFormatType(), result);
 }
 
 SkBitmap Clipboard::ReadImage(Buffer buffer) const {
@@ -435,6 +448,12 @@ const Clipboard::FormatType& Clipboard::GetFilenameWFormatType() {
 // static
 const Clipboard::FormatType& Clipboard::GetHtmlFormatType() {
   CR_DEFINE_STATIC_LOCAL(FormatType, type, (NSHTMLPboardType));
+  return type;
+}
+
+// static
+const Clipboard::FormatType& Clipboard::GetRtfFormatType() {
+  CR_DEFINE_STATIC_LOCAL(FormatType, type, (NSRTFPboardType));
   return type;
 }
 

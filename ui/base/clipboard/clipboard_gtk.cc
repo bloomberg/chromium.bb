@@ -322,6 +322,10 @@ void Clipboard::WriteHTML(const char* markup_data,
   InsertMapping(kMimeTypeHTML, data, total_len);
 }
 
+void Clipboard::WriteRTF(const char* rtf_data, size_t data_len) {
+  WriteData(GetRtfFormatType(), rtf_data, data_len);
+}
+
 // Write an extra flavor that signifies WebKit was the last to modify the
 // pasteboard. This flavor has no data.
 void Clipboard::WriteWebSmartPaste() {
@@ -447,6 +451,8 @@ void Clipboard::ReadAvailableTypes(Clipboard::Buffer buffer,
     types->push_back(UTF8ToUTF16(kMimeTypeText));
   if (IsFormatAvailable(GetHtmlFormatType(), buffer))
     types->push_back(UTF8ToUTF16(kMimeTypeHTML));
+  if (IsFormatAvailable(GetRtfFormatType(), buffer))
+    types->push_back(UTF8ToUTF16(kMimeTypeRTF));
   if (IsFormatAvailable(GetBitmapFormatType(), buffer))
     types->push_back(UTF8ToUTF16(kMimeTypePNG));
   *contains_filenames = false;
@@ -545,6 +551,11 @@ void Clipboard::ReadHTML(Clipboard::Buffer buffer, string16* markup,
   gtk_selection_data_free(data);
 }
 
+void Clipboard::ReadRTF(Buffer buffer, std::string* result) const {
+  DCHECK(CalledOnValidThread());
+  ReadData(GetRtfFormatType(), result);
+}
+
 SkBitmap Clipboard::ReadImage(Buffer buffer) const {
   DCHECK(CalledOnValidThread());
   ScopedGObject<GdkPixbuf>::Type pixbuf(
@@ -627,6 +638,12 @@ const Clipboard::FormatType& Clipboard::GetPlainTextWFormatType() {
 // static
 const Clipboard::FormatType& Clipboard::GetHtmlFormatType() {
   CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypeHTML));
+  return type;
+}
+
+// static
+const Clipboard::FormatType& Clipboard::GetRtfFormatType() {
+  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypeRTF));
   return type;
 }
 

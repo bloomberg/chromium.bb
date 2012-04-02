@@ -245,6 +245,10 @@ void Clipboard::WriteHTML(const char* markup_data,
   WriteToClipboard(ClipboardUtil::GetHtmlFormat()->cfFormat, glob);
 }
 
+void Clipboard::WriteRTF(const char* rtf_data, size_t data_len) {
+  WriteData(GetRtfFormatType(), rtf_data, data_len);
+}
+
 void Clipboard::WriteBookmark(const char* title_data,
                               size_t title_len,
                               const char* url_data,
@@ -391,13 +395,16 @@ void Clipboard::ReadAvailableTypes(Clipboard::Buffer buffer,
     return;
   }
 
-  const FORMATETC* textFormat = ClipboardUtil::GetPlainTextFormat();
-  const FORMATETC* htmlFormat = ClipboardUtil::GetHtmlFormat();
+  const FORMATETC* text_format = ClipboardUtil::GetPlainTextFormat();
+  const FORMATETC* html_format = ClipboardUtil::GetHtmlFormat();
+  const FORMATETC* rtf_format = ClipboardUtil::GetRtfFormat();
   types->clear();
-  if (::IsClipboardFormatAvailable(textFormat->cfFormat))
+  if (::IsClipboardFormatAvailable(text_format->cfFormat))
     types->push_back(UTF8ToUTF16(kMimeTypeText));
-  if (::IsClipboardFormatAvailable(htmlFormat->cfFormat))
+  if (::IsClipboardFormatAvailable(html_format->cfFormat))
     types->push_back(UTF8ToUTF16(kMimeTypeHTML));
+  if (::IsClipboardFormatAvailable(rtf_format->cfFormat))
+      types->push_back(UTF8ToUTF16(kMimeTypeRTF));
   if (::IsClipboardFormatAvailable(CF_DIB))
     types->push_back(UTF8ToUTF16(kMimeTypePNG));
   *contains_filenames = false;
@@ -511,6 +518,12 @@ void Clipboard::ReadHTML(Clipboard::Buffer buffer, string16* markup,
                                              &offsets));
   *fragment_start = static_cast<uint32>(offsets[0]);
   *fragment_end = static_cast<uint32>(offsets[1]);
+}
+
+void Clipboard::ReadRTF(Buffer buffer, std::string* result) const {
+  DCHECK_EQ(buffer, BUFFER_STANDARD);
+
+  ReadData(GetRtfFormatType(), result);
 }
 
 SkBitmap Clipboard::ReadImage(Buffer buffer) const {
@@ -736,6 +749,16 @@ const Clipboard::FormatType& Clipboard::GetHtmlFormatType() {
       FormatType,
       type,
       (ClipboardUtil::GetHtmlFormat()->cfFormat));
+  return type;
+}
+
+// MS RTF Format
+// static
+const Clipboard::FormatType& Clipboard::GetRtfFormatType() {
+  CR_DEFINE_STATIC_LOCAL(
+      FormatType,
+      type,
+      (ClipboardUtil::GetRtfFormat()->cfFormat));
   return type;
 }
 

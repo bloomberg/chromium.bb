@@ -31,6 +31,8 @@ class UI_EXPORT ClipboardUtil {
   static FORMATETC* GetFilenameWFormat();
   // MS HTML Format
   static FORMATETC* GetHtmlFormat();
+  // MS RTF Format
+  static FORMATETC* GetRtfFormat();
   // Firefox text/html
   static FORMATETC* GetTextHtmlFormat();
   static FORMATETC* GetCFHDropFormat();

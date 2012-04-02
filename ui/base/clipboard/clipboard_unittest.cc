@@ -115,6 +115,27 @@ TEST_F(ClipboardTest, HTMLTest) {
 #endif  // defined(OS_WIN)
 }
 
+TEST_F(ClipboardTest, RTFTest) {
+  Clipboard clipboard;
+
+  std::string rtf =
+      "{\\rtf1\\ansi{\\fonttbl\\f0\\fswiss Helvetica;}\\f0\\pard\n"
+      "This is some {\\b bold} text.\\par\n"
+      "}";
+
+  {
+    ScopedClipboardWriter clipboard_writer(&clipboard,
+                                           Clipboard::BUFFER_STANDARD);
+    clipboard_writer.WriteRTF(rtf);
+  }
+
+  EXPECT_TRUE(clipboard.IsFormatAvailable(Clipboard::GetRtfFormatType(),
+                                          Clipboard::BUFFER_STANDARD));
+  std::string result;
+  clipboard.ReadRTF(Clipboard::BUFFER_STANDARD, &result);
+  EXPECT_EQ(rtf, result);
+}
+
 #if defined(TOOLKIT_USES_GTK)
 TEST_F(ClipboardTest, MultipleBufferTest) {
   Clipboard clipboard;
