@@ -15,15 +15,25 @@ script.
 This script assumes that Chrome is already running on the local machine with
 flag '--remote-debugging-port=9222' to enable remote debugging on port 9222.
 
-To use this module, create an instance of class RemoteInspectorClient, then
-call the appropriate function in that class to perform the desired action.  For
-example, to take v8 heap snapshots from a pyauto test:
+To use this module, first create an instance of class RemoteInspectorClient;
+doing this sets up a connection to Chrome's remote inspector.  Then call the
+appropriate functions on that object to perform the desired actions with the
+remote inspector.  When done, call Stop() on the RemoteInspectorClient object
+to stop communication with the remote inspector.
+
+For example, to take v8 heap snapshots from a pyauto test:
 
 import remote_inspector_client
 my_client = remote_inspector_client.RemoteInspectorClient()
 snapshot_info = my_client.HeapSnapshot()
 // Do some stuff...
 new_snapshot_info = my_client.HeapSnapshot()
+my_client.Stop()
+
+It is expected that a test will only use one instance of RemoteInspectorClient
+at a time.  If a second instance is instantiated, a RuntimeError will be raised.
+RemoteInspectorClient could be made into a singleton in the future if the need
+for it arises.
 """
 
 import asyncore
@@ -38,129 +48,6 @@ import threading
 import time
 import urllib2
 import urlparse
-
-
-class _V8HeapSnapshotParser(object):
-  """Parses v8 heap snapshot data.
-
-  Public Methods:
-    ParseSnapshotData: A static method that parses v8 heap snapshot data and
-                       returns a dictionary of the summarized results.
-  """
-  _CHILD_TYPES = ['context', 'element', 'property', 'internal', 'hidden',
-                  'shortcut', 'weak']
-  _NODE_TYPES = ['hidden', 'array', 'string', 'object', 'code', 'closure',
-                 'regexp', 'number', 'native', 'synthetic']
-
-  @staticmethod
-  def ParseSnapshotData(raw_data):
-    """Parses raw v8 heap snapshot data and returns the summarized results.
-
-    The raw heap snapshot data is represented as a JSON object with the
-    following keys: 'snapshot', 'nodes', and 'strings'.
-
-    The 'snapshot' value provides the 'title' and 'uid' attributes for the
-    snapshot.  For example:
-    { u'title': u'org.webkit.profiles.user-initiated.1', u'uid': 1}
-
-    The 'nodes' value is a list of node information from the v8 heap, with a
-    special first element that describes the node serialization layout (see
-    HeapSnapshotJSONSerializer::SerializeNodes).  All other list elements
-    contain information about nodes in the v8 heap, according to the
-    serialization layout.
-
-    The 'strings' value is a list of strings, indexed by values in the 'nodes'
-    list to associate nodes with strings.
-
-    Args:
-      raw_data: A string representing the raw v8 heap snapshot data.
-
-    Returns:
-      A dictionary containing the summarized v8 heap snapshot data:
-      {
-        'total_v8_node_count': integer,  # Total number of nodes in the v8 heap.
-        'total_shallow_size': integer, # Total heap size, in bytes.
-      }
-    """
-    total_node_count = 0
-    total_shallow_size = 0
-    constructors = {}
-
-    # TODO(dennisjeffrey): The following line might be slow, especially on
-    # ChromeOS.  Investigate faster alternatives.
-    heap = simplejson.loads(raw_data)
-
-    index = 1  # Bypass the special first node list item.
-    node_list = heap['nodes']
-    while index < len(node_list):
-      node_type = node_list[index]
-      node_name = node_list[index + 1]
-      node_id = node_list[index + 2]
-      node_self_size = node_list[index + 3]
-      node_retained_size = node_list[index + 4]
-      node_dominator = node_list[index + 5]
-      node_children_count = node_list[index + 6]
-      index += 7
-
-      node_children = []
-      for i in range(node_children_count):
-        child_type = node_list[index]
-        child_type_string = _V8HeapSnapshotParser._CHILD_TYPES[int(child_type)]
-        child_name_index = node_list[index + 1]
-        child_to_node = node_list[index + 2]
-        index += 3
-
-        child_info = {
-          'type': child_type_string,
-          'name_or_index': child_name_index,
-          'to_node': child_to_node,
-        }
-        node_children.append(child_info)
-
-      # Get the constructor string for this node so nodes can be grouped by
-      # constructor.
-      # See HeapSnapshot.js: WebInspector.HeapSnapshotNode.prototype.
-      type_string = _V8HeapSnapshotParser._NODE_TYPES[int(node_type)]
-      constructor_name = None
-      if type_string == 'hidden':
-        constructor_name = '(system)'
-      elif type_string == 'object':
-        constructor_name = heap['strings'][int(node_name)]
-      elif type_string == 'native':
-        pos = heap['strings'][int(node_name)].find('/')
-        if pos >= 0:
-          constructor_name = heap['strings'][int(node_name)][:pos].rstrip()
-        else:
-          constructor_name = heap['strings'][int(node_name)]
-      elif type_string == 'code':
-        constructor_name = '(compiled code)'
-      else:
-        constructor_name = '(' + type_string + ')'
-
-      node_obj = {
-        'type': type_string,
-        'name': heap['strings'][int(node_name)],
-        'id': node_id,
-        'self_size': node_self_size,
-        'retained_size': node_retained_size,
-        'dominator': node_dominator,
-        'children_count': node_children_count,
-        'children': node_children,
-      }
-
-      if constructor_name not in constructors:
-        constructors[constructor_name] = []
-      constructors[constructor_name].append(node_obj)
-
-      total_node_count += 1
-      total_shallow_size += node_self_size
-
-    # TODO(dennisjeffrey): Have this function also return more detailed v8
-    # heap snapshot data when a need for it arises (e.g., using |constructors|).
-    result = {}
-    result['total_v8_node_count'] = total_node_count
-    result['total_shallow_size'] = total_shallow_size
-    return result
 
 
 class _DevToolsSocketRequest(object):
@@ -178,10 +65,10 @@ class _DevToolsSocketRequest(object):
     id: A unique integer id associated with this request.
     params: A dictionary of input parameters associated with this request.
     results: A dictionary of relevant results obtained from the remote Chrome
-             instance that are associated with this request.
-    is_complete: A boolean indicating whether or not this request has been sent
-                 and all relevant results for it have been obtained (i.e., this
-                 value is True only if all results for this request are known).
+        instance that are associated with this request.
+    is_fulfilled: A boolean indicating whether or not this request has been sent
+        and all relevant results for it have been obtained (i.e., this value is
+        True only if all results for this request are known).
   """
   def __init__(self, method, message_id):
     """Initialize.
@@ -189,13 +76,13 @@ class _DevToolsSocketRequest(object):
     Args:
       method: The string method name for this request.
       message_id: An integer id for this request, which is assumed to be unique
-                  from among all requests.
+          from among all requests.
     """
     self.method = method
     self.id = message_id
     self.params = {}
     self.results = {}
-    self.is_complete = False
+    self.is_fulfilled = False
 
   def __repr__(self):
     json_dict = {}
@@ -209,22 +96,17 @@ class _DevToolsSocketRequest(object):
 class _DevToolsSocketClient(asyncore.dispatcher):
   """Client that communicates with a remote Chrome instance via sockets.
 
-  This class works in conjunction with the _RemoteInspectorBaseThread class
-  to communicate with a remote Chrome instance following the remote debugging
+  This class works in conjunction with the _RemoteInspectorThread class to
+  communicate with a remote Chrome instance following the remote debugging
   communication protocol in WebKit.  This class performs the lower-level work
   of socket communication.
 
-  Public Methods:
-    SendMessage: Causes a specified message to be sent to the remote Chrome
-                 instance.
-
   Public Attributes:
     handshake_done: A boolean indicating whether or not the client has completed
-                    the required protocol handshake with the remote Chrome
-                    instance.
-    inspector_thread: An instance of the _RemoteInspectorBaseThread class that
-                      is working together with this class to communicate with a
-                      remote Chrome instance.
+        the required protocol handshake with the remote Chrome instance.
+    inspector_thread: An instance of the _RemoteInspectorThread class that is
+        working together with this class to communicate with a remote Chrome
+        instance.
   """
   def __init__(self, verbose, show_socket_messages, hostname, port, path):
     """Initialize.
@@ -232,8 +114,8 @@ class _DevToolsSocketClient(asyncore.dispatcher):
     Args:
       verbose: A boolean indicating whether or not to use verbose logging.
       show_socket_messages: A boolean indicating whether or not to show the
-                            socket messages sent/received when communicating
-                            with the remote Chrome instance.
+          socket messages sent/received when communicating with the remote
+          Chrome instance.
       hostname: The string hostname of the DevToolsSocket to which to connect.
       port: The integer port number of the DevToolsSocket to which to connect.
       path: The string path of the DevToolsSocket to which to connect.
@@ -274,7 +156,7 @@ class _DevToolsSocketClient(asyncore.dispatcher):
 
     Args:
       msg: A string message to be sent; assumed to be a JSON message in proper
-           format according to the remote debugging protocol in WebKit.
+          format according to the remote debugging protocol in WebKit.
     """
     # According to the communication protocol, each request message sent over
     # the wire must begin with '\x00' and end with '\xff'.
@@ -369,11 +251,11 @@ class _DevToolsSocketClient(asyncore.dispatcher):
   def handle_error(self):
     """Called when an exception is raised; overridden from asyncore."""
     self.close()
-    self.inspector_thread.NotifySocketClientException()
+    self.inspector_thread.ClientSocketExceptionOccurred()
     asyncore.dispatcher.handle_error(self)
 
 
-class _RemoteInspectorBaseThread(threading.Thread):
+class _RemoteInspectorThread(threading.Thread):
   """Manages communication using Chrome's remote inspector protocol.
 
   This class works in conjunction with the _DevToolsSocketClient class to
@@ -381,52 +263,27 @@ class _RemoteInspectorBaseThread(threading.Thread):
   communication protocol in WebKit.  This class performs the higher-level work
   of managing request and reply messages, whereas _DevToolsSocketClient handles
   the lower-level work of socket communication.
-
-  This base class should be subclassed for each different type of action that
-  needs to be performed using the remote inspector (e.g., take a v8 heap
-  snapshot, force a garbage collect):
-
-    * Each subclass should override the run() method to customize the work done
-      by the thread, making sure to call self._client.close() when done.
-    * If overriding __init__ in a subclass, the base class __init__ must also be
-      invoked.
-    * The HandleReply() function should be overridden if special handling needs
-      to be performed using the reply messages received from the remote Chrome
-      instance.
-
-  Public Methods:
-    NotifySocketClientException: Notifies the current object that the
-                                 _DevToolsSocketClient encountered an exception.
-                                 Called by the _DevToolsSocketClient.
-    NotifyReply: Notifies the current object of a reply message that has been
-                 received from the remote Chrome instance (which would have been
-                 sent in response to an earlier request).  Called by the
-                 _DevToolsSocketClient.
-    HandleReply: Processes a reply message received from the remote Chrome
-                 instance.  Should be overridden by a subclass if special
-                 result handling needs to be performed.
-    run: Starts the thread of execution for this object.  Invoked implicitly
-         by calling the start() method on this object.  Should be overridden
-         by a subclass, and should call self._client.close() when done.
   """
   def __init__(self, tab_index, verbose, show_socket_messages):
     """Initialize.
 
     Args:
       tab_index: The integer index of the tab in the remote Chrome instance to
-                 use for snapshotting.
+          use for snapshotting.
       verbose: A boolean indicating whether or not to use verbose logging.
       show_socket_messages: A boolean indicating whether or not to show the
-                            socket messages sent/received when communicating
-                            with the remote Chrome instance.
+          socket messages sent/received when communicating with the remote
+          Chrome instance.
     """
     threading.Thread.__init__(self)
-    self._logger = logging.getLogger('_RemoteInspectorBaseThread')
+    self._logger = logging.getLogger('_RemoteInspectorThread')
     self._logger.setLevel([logging.WARNING, logging.DEBUG][verbose])
 
     self._killed = False
-    self._next_request_id = 1
     self._requests = []
+    self._action_queue = []
+    self._action_specific_callback = None  # Callback only for current action.
+    self._general_callbacks = []  # General callbacks that can be long-lived.
 
     # Create a DevToolsSocket client and wait for it to complete the remote
     # debugging protocol handshake with the remote Chrome instance.
@@ -440,9 +297,9 @@ class _RemoteInspectorBaseThread(threading.Thread):
         break
       asyncore.loop(timeout=1, count=1, use_poll=True)
 
-  def NotifySocketClientException(self):
+  def ClientSocketExceptionOccurred(self):
     """Notifies that the _DevToolsSocketClient encountered an exception."""
-    self._killed = True
+    self.Kill()
 
   def NotifyReply(self, msg):
     """Notifies of a reply message received from the remote Chrome instance.
@@ -455,31 +312,83 @@ class _RemoteInspectorBaseThread(threading.Thread):
     reply_dict = simplejson.loads(msg)
     if 'result' in reply_dict:
       # This is the result message associated with a previously-sent request.
-      request = self._GetRequestWithId(reply_dict['id'])
+      request = self.GetRequestWithId(reply_dict['id'])
       if request:
-        request.is_complete = True
-    self.HandleReply(reply_dict)
-
-  def HandleReply(self, reply_dict):
-    """Processes a reply message received from the remote Chrome instance.
-
-    Override this function to specially handle reply messages from the remote
-    Chrome instance.
-
-    Args:
-      reply_dict: A dictionary representing the reply message received from the
-                  remote Chrome instance.
-    """
-    pass
+        request.is_fulfilled = True
+    # Notify callbacks of this message received from the remote inspector.
+    if self._action_specific_callback:
+      self._action_specific_callback(reply_dict)
+    if self._general_callbacks:
+      for callback in self._general_callbacks:
+        callback(reply_dict)
 
   def run(self):
-    """Start this thread; overridden from threading.Thread.
+    """Start this thread; overridden from threading.Thread."""
+    while not self._killed:
+      if self._action_queue:
+        # There's a request to the remote inspector that needs to be processed.
+        messages, callback = self._action_queue.pop(0)
+        self._action_specific_callback = callback
 
-    Should be overridden in a subclass.
-    """
+        # Prepare the request list.
+        for message_id, message in enumerate(messages):
+          self._requests.append(
+              _DevToolsSocketRequest(message, message_id))
+
+        # Send out each request.  Wait until each request is complete before
+        # sending the next request.
+        for request in self._requests:
+          self._FillInParams(request)
+          self._client.SendMessage(str(request))
+          while not request.is_fulfilled:
+            if self._killed:
+              self._client.close()
+              return
+            time.sleep(0.1)
+
+        # Clean up so things are ready for the next request.
+        self._requests = []
+        self._action_specific_callback = None
+
+      time.sleep(0.1)
     self._client.close()
 
-  def _GetRequestWithId(self, request_id):
+  def Kill(self):
+    """Notify this thread that it should stop executing."""
+    self._killed = True
+
+  def PerformAction(self, request_messages, reply_message_callback):
+    """Notify this thread of an action to perform using the remote inspector.
+
+    Args:
+      request_messages: A list of strings representing the requests to make
+          using the remote inspector.
+      reply_message_callback: A callable to be invoked any time a message is
+          received from the remote inspector while the current action is
+          being performed.  The callable should accept a single argument,
+          which is a dictionary representing a message received.
+    """
+    self._action_queue.append((request_messages, reply_message_callback))
+
+  def AddMessageCallback(self, callback):
+    """Add a callback to invoke for messages received from the remote inspector.
+
+    Args:
+      callback: A callable to be invoked any time a message is received from the
+          remote inspector.  The callable should accept a single argument, which
+          is a dictionary representing a message received.
+    """
+    self._general_callbacks.append(callback)
+
+  def RemoveMessageCallback(self, callback):
+    """Remove a callback from the set of those to invoke for messages received.
+
+    Args:
+      callback: A callable to remove from consideration.
+    """
+    self._general_callbacks.remove(callback)
+
+  def GetRequestWithId(self, request_id):
     """Identifies the request with the specified id.
 
     Args:
@@ -494,19 +403,22 @@ class _RemoteInspectorBaseThread(threading.Thread):
       return found_request[0]
     return None
 
-  def _GetFirstIncompleteRequest(self, method):
-    """Identifies the first incomplete request with the given method name.
+  def GetFirstUnfulfilledRequest(self, method):
+    """Identifies the first unfulfilled request with the given method name.
+
+    An unfulfilled request is one for which all relevant reply messages have
+    not yet been received from the remote inspector.
 
     Args:
       method: The string method name of the request for which to search.
 
     Returns:
-      The first request object in the request list that is not yet complete and
-      is also associated with the given method name, or
+      The first request object in the request list that is not yet fulfilled
+      and is also associated with the given method name, or
       None if no such request object can be found.
     """
     for request in self._requests:
-      if not request.is_complete and request.method == method:
+      if not request.is_fulfilled and request.method == method:
         return request
     return None
 
@@ -515,6 +427,10 @@ class _RemoteInspectorBaseThread(threading.Thread):
 
     This function finds the latest request with the specified method that
     occurs before the given reference request.
+
+    Args:
+      ref_req: A reference request from which to start looking.
+      method: The string method name of the request for which to search.
 
     Returns:
       The latest _DevToolsSocketRequest object with the specified method,
@@ -600,91 +516,395 @@ class _RemoteInspectorBaseThread(threading.Thread):
              'path': parsed.path})
 
 
-class _PerformanceSnapshotterThread(_RemoteInspectorBaseThread):
-  """Manages communication with a remote Chrome to take v8 heap snapshots.
+class _RemoteInspectorDriverThread(threading.Thread):
+  """Drives the communication service with the remote inspector."""
 
-  Public Attributes:
-    collected_heap_snapshot_data: A dictionary containing the information for a
-                                  taken v8 heap snapshot.
+  def __init__(self):
+    """Initialize."""
+    threading.Thread.__init__(self)
+
+  def run(self):
+    """Drives the communication service with the remote inspector."""
+    try:
+      while asyncore.socket_map:
+        asyncore.loop(timeout=1, count=1, use_poll=True)
+    except KeyboardInterrupt:
+      pass
+
+
+class _V8HeapSnapshotParser(object):
+  """Parses v8 heap snapshot data."""
+  _CHILD_TYPES = ['context', 'element', 'property', 'internal', 'hidden',
+                  'shortcut', 'weak']
+  _NODE_TYPES = ['hidden', 'array', 'string', 'object', 'code', 'closure',
+                 'regexp', 'number', 'native', 'synthetic']
+
+  @staticmethod
+  def ParseSnapshotData(raw_data):
+    """Parses raw v8 heap snapshot data and returns the summarized results.
+
+    The raw heap snapshot data is represented as a JSON object with the
+    following keys: 'snapshot', 'nodes', and 'strings'.
+
+    The 'snapshot' value provides the 'title' and 'uid' attributes for the
+    snapshot.  For example:
+    { u'title': u'org.webkit.profiles.user-initiated.1', u'uid': 1}
+
+    The 'nodes' value is a list of node information from the v8 heap, with a
+    special first element that describes the node serialization layout (see
+    HeapSnapshotJSONSerializer::SerializeNodes).  All other list elements
+    contain information about nodes in the v8 heap, according to the
+    serialization layout.
+
+    The 'strings' value is a list of strings, indexed by values in the 'nodes'
+    list to associate nodes with strings.
+
+    Args:
+      raw_data: A string representing the raw v8 heap snapshot data.
+
+    Returns:
+      A dictionary containing the summarized v8 heap snapshot data:
+      {
+        'total_v8_node_count': integer,  # Total number of nodes in the v8 heap.
+        'total_shallow_size': integer, # Total heap size, in bytes.
+      }
+    """
+    total_node_count = 0
+    total_shallow_size = 0
+    constructors = {}
+
+    # TODO(dennisjeffrey): The following line might be slow, especially on
+    # ChromeOS.  Investigate faster alternatives.
+    heap = simplejson.loads(raw_data)
+
+    index = 1  # Bypass the special first node list item.
+    node_list = heap['nodes']
+    while index < len(node_list):
+      node_type = node_list[index]
+      node_name = node_list[index + 1]
+      node_id = node_list[index + 2]
+      node_self_size = node_list[index + 3]
+      node_retained_size = node_list[index + 4]
+      node_dominator = node_list[index + 5]
+      node_children_count = node_list[index + 6]
+      index += 7
+
+      node_children = []
+      for i in xrange(node_children_count):
+        child_type = node_list[index]
+        child_type_string = _V8HeapSnapshotParser._CHILD_TYPES[int(child_type)]
+        child_name_index = node_list[index + 1]
+        child_to_node = node_list[index + 2]
+        index += 3
+
+        child_info = {
+          'type': child_type_string,
+          'name_or_index': child_name_index,
+          'to_node': child_to_node,
+        }
+        node_children.append(child_info)
+
+      # Get the constructor string for this node so nodes can be grouped by
+      # constructor.
+      # See HeapSnapshot.js: WebInspector.HeapSnapshotNode.prototype.
+      type_string = _V8HeapSnapshotParser._NODE_TYPES[int(node_type)]
+      constructor_name = None
+      if type_string == 'hidden':
+        constructor_name = '(system)'
+      elif type_string == 'object':
+        constructor_name = heap['strings'][int(node_name)]
+      elif type_string == 'native':
+        pos = heap['strings'][int(node_name)].find('/')
+        if pos >= 0:
+          constructor_name = heap['strings'][int(node_name)][:pos].rstrip()
+        else:
+          constructor_name = heap['strings'][int(node_name)]
+      elif type_string == 'code':
+        constructor_name = '(compiled code)'
+      else:
+        constructor_name = '(' + type_string + ')'
+
+      node_obj = {
+        'type': type_string,
+        'name': heap['strings'][int(node_name)],
+        'id': node_id,
+        'self_size': node_self_size,
+        'retained_size': node_retained_size,
+        'dominator': node_dominator,
+        'children_count': node_children_count,
+        'children': node_children,
+      }
+
+      if constructor_name not in constructors:
+        constructors[constructor_name] = []
+      constructors[constructor_name].append(node_obj)
+
+      total_node_count += 1
+      total_shallow_size += node_self_size
+
+    # TODO(dennisjeffrey): Have this function also return more detailed v8
+    # heap snapshot data when a need for it arises (e.g., using |constructors|).
+    result = {}
+    result['total_v8_node_count'] = total_node_count
+    result['total_shallow_size'] = total_shallow_size
+    return result
+
+
+# TODO(dennisjeffrey): The "verbose" option used in this file should re-use
+# pyauto's verbose flag.
+class RemoteInspectorClient(object):
+  """Main class for interacting with Chrome's remote inspector.
+
+  Upon initialization, a socket connection to Chrome's remote inspector will
+  be established.  Users of this class should call Stop() to close the
+  connection when it's no longer needed.
+
+  Public Methods:
+    Stop: Close the connection to the remote inspector.  Should be called when
+        a user is done using this module.
+    HeapSnapshot: Takes a v8 heap snapshot and returns the summarized data.
+    GetMemoryObjectCounts: Retrieves memory object count information.
+    CollectGarbage: Forces a garbage collection.
+    StartTimelineEventMonitoring: Starts monitoring for timeline events.
+    StopTimelineEventMonitoring: Stops monitoring for timeline events.
   """
-  _HEAP_SNAPSHOT_MESSAGES = [
-    'Page.getResourceTree',
-    'Debugger.enable',
-    'Profiler.clearProfiles',
-    'Profiler.takeHeapSnapshot',
-    'Profiler.getProfile',
-  ]
-
-  def __init__(self, tab_index, verbose, show_socket_messages):
+  # TODO(dennisjeffrey): Allow a user to specify a window index too (not just a
+  # tab index), when running through PyAuto.
+  def __init__(self, tab_index=0, verbose=False, show_socket_messages=False):
     """Initialize.
 
     Args:
       tab_index: The integer index of the tab in the remote Chrome instance to
-                 use for snapshotting.
+                 which to connect.  Defaults to 0 (the first tab).
       verbose: A boolean indicating whether or not to use verbose logging.
       show_socket_messages: A boolean indicating whether or not to show the
                             socket messages sent/received when communicating
                             with the remote Chrome instance.
     """
-    _RemoteInspectorBaseThread.__init__(self, tab_index, verbose,
-                                        show_socket_messages)
+    self._tab_index = tab_index
+    self._verbose = verbose
+    self._show_socket_messages = show_socket_messages
+
+    self._timeline_started = False
+
+    logging.basicConfig()
+    self._logger = logging.getLogger('RemoteInspectorClient')
+    self._logger.setLevel([logging.WARNING, logging.DEBUG][verbose])
+
+    # Start up a thread for long-term communication with the remote inspector.
+    self._remote_inspector_thread = _RemoteInspectorThread(
+        tab_index, verbose, show_socket_messages)
+    self._remote_inspector_thread.start()
+    # At this point, a connection has already been made to the remote inspector.
+
+    # This thread calls asyncore.loop, which activates the channel service.
+    self._remote_inspector_driver_thread = _RemoteInspectorDriverThread()
+    self._remote_inspector_driver_thread.start()
+
+  def __del__(self):
+    """Called on destruction of this object."""
+    self.Stop()
+
+  def Stop(self):
+    """Stop/close communication with the remote inspector."""
+    if self._remote_inspector_thread:
+      self._remote_inspector_thread.Kill()
+      self._remote_inspector_thread.join()
+      self._remote_inspector_thread = None
+    if self._remote_inspector_driver_thread:
+      self._remote_inspector_driver_thread.join()
+      self._remote_inspector_driver_thread = None
+
+  def HeapSnapshot(self):
+    """Takes a v8 heap snapshot.
+
+    Returns:
+      A dictionary containing the summarized information for a single v8 heap
+      snapshot that was taken:
+      {
+        'url': string,  # URL of the webpage that was snapshotted.
+        'total_v8_node_count': integer,  # Total number of nodes in the v8 heap.
+        'total_heap_size': integer,  # Total v8 heap size (number of bytes).
+      }
+    """
+    HEAP_SNAPSHOT_MESSAGES = [
+      'Page.getResourceTree',
+      'Debugger.enable',
+      'Profiler.clearProfiles',
+      'Profiler.takeHeapSnapshot',
+      'Profiler.getProfile',
+    ]
 
     self._current_heap_snapshot = []
     self._url = ''
-    self.collected_heap_snapshot_data = {}
-    self.last_snapshot_start_time = 0
+    self._collected_heap_snapshot_data = {}
 
-  def HandleReply(self, reply_dict):
-    """Processes a reply message received from the remote Chrome instance.
+    def HandleReply(reply_dict):
+      """Processes a reply message received from the remote Chrome instance.
+
+      Args:
+        reply_dict: A dictionary object representing the reply message received
+                     from the remote inspector.
+      """
+      if 'result' in reply_dict:
+        # This is the result message associated with a previously-sent request.
+        request = self._remote_inspector_thread.GetRequestWithId(
+            reply_dict['id'])
+        if 'frameTree' in reply_dict['result']:
+          self._url = reply_dict['result']['frameTree']['frame']['url']
+      elif 'method' in reply_dict:
+        # This is an auxiliary message sent from the remote Chrome instance.
+        if reply_dict['method'] == 'Profiler.addProfileHeader':
+          snapshot_req = (
+              self._remote_inspector_thread.GetFirstUnfulfilledRequest(
+                  'Profiler.takeHeapSnapshot'))
+          if snapshot_req:
+            snapshot_req.results['uid'] = reply_dict['params']['header']['uid']
+        elif reply_dict['method'] == 'Profiler.addHeapSnapshotChunk':
+          self._current_heap_snapshot.append(reply_dict['params']['chunk'])
+        elif reply_dict['method'] == 'Profiler.finishHeapSnapshot':
+          # A heap snapshot has been completed.  Analyze and output the data.
+          self._logger.debug('Heap snapshot taken: %s', self._url)
+          # TODO(dennisjeffrey): Parse the heap snapshot on-the-fly as the data
+          # is coming in over the wire, so we can avoid storing the entire
+          # snapshot string in memory.
+          self._logger.debug('Now analyzing heap snapshot...')
+          parser = _V8HeapSnapshotParser()
+          time_start = time.time()
+          raw_snapshot_data = ''.join(self._current_heap_snapshot)
+          self._logger.debug('Raw snapshot data size: %.2f MB',
+                             len(raw_snapshot_data) / (1024.0 * 1024.0))
+          result = parser.ParseSnapshotData(raw_snapshot_data)
+          self._logger.debug('Time to parse data: %.2f sec',
+                             time.time() - time_start)
+          num_nodes = result['total_v8_node_count']
+          total_size = result['total_shallow_size']
+          total_size_str = self._ConvertByteCountToHumanReadableString(
+              total_size)
+
+          self._collected_heap_snapshot_data = {
+              'url': self._url,
+              'total_v8_node_count': num_nodes,
+              'total_heap_size': total_size}
+
+    # Tell the remote inspector to take a v8 heap snapshot, then wait until
+    # the snapshot information is available to return.
+    self._remote_inspector_thread.PerformAction(HEAP_SNAPSHOT_MESSAGES,
+                                                HandleReply)
+    while not self._collected_heap_snapshot_data:
+      time.sleep(0.1)
+    return self._collected_heap_snapshot_data
+
+  def GetMemoryObjectCounts(self):
+    """Retrieves memory object count information.
+
+    Returns:
+      A dictionary containing the memory object count information:
+      {
+        'DOMNodeCount': integer,  # Total number of DOM nodes.
+        'EventListenerCount': integer,  # Total number of event listeners.
+      }
+    """
+    MEMORY_COUNT_MESSAGES = [
+      'Memory.getDOMNodeCount',
+    ]
+
+    self._event_listener_count = None
+    self._dom_node_count = None
+
+    def HandleReply(reply_dict):
+      """Processes a reply message received from the remote Chrome instance.
+
+      Args:
+        reply_dict: A dictionary object representing the reply message received
+                    from the remote Chrome instance.
+      """
+      if 'result' in reply_dict and 'domGroups' in reply_dict['result']:
+        event_listener_count = 0
+        dom_node_count = 0
+        dom_group_list = reply_dict['result']['domGroups']
+        for dom_group in dom_group_list:
+          listener_array = dom_group['listenerCount']
+          for listener in listener_array:
+            event_listener_count += listener['count']
+          dom_node_array = dom_group['nodeCount']
+          for dom_element in dom_node_array:
+            dom_node_count += dom_element['count']
+        self._event_listener_count = event_listener_count
+        self._dom_node_count = dom_node_count
+
+    # Tell the remote inspector to collect memory count info, then wait until
+    # that information is available to return.
+    self._remote_inspector_thread.PerformAction(MEMORY_COUNT_MESSAGES,
+                                                HandleReply)
+    while not self._event_listener_count or not self._dom_node_count:
+      time.sleep(0.1)
+    return {
+      'DOMNodeCount': self._dom_node_count,
+      'EventListenerCount': self._event_listener_count,
+    }
+
+  def CollectGarbage(self):
+    """Forces a garbage collection."""
+    COLLECT_GARBAGE_MESSAGES = [
+      'Profiler.collectGarbage',
+    ]
+
+    # Tell the remote inspector to do a garbage collect.  We can return
+    # immediately, since there is no result for which to wait.
+    self._remote_inspector_thread.PerformAction(COLLECT_GARBAGE_MESSAGES, None)
+
+  def StartTimelineEventMonitoring(self, event_callback):
+    """Starts timeline event monitoring.
 
     Args:
-      reply_dict: A dictionary object representing the reply message received
-                   from the remote inspector.
+      event_callback: A callable to invoke whenever a timeline event is observed
+          from the remote inspector.  The callable should take a single input,
+          which is a dictionary containing the detailed information of a
+          timeline event.
     """
-    if 'result' in reply_dict:
-      # This is the result message associated with a previously-sent request.
-      request = self._GetRequestWithId(reply_dict['id'])
-      if 'frameTree' in reply_dict['result']:
-        self._url = reply_dict['result']['frameTree']['frame']['url']
-    elif 'method' in reply_dict:
-      # This is an auxiliary message sent from the remote Chrome instance.
-      if reply_dict['method'] == 'Profiler.addProfileHeader':
-        snapshot_req = self._GetFirstIncompleteRequest(
-            'Profiler.takeHeapSnapshot')
-        if snapshot_req:
-          snapshot_req.results['uid'] = reply_dict['params']['header']['uid']
-      elif reply_dict['method'] == 'Profiler.addHeapSnapshotChunk':
-        self._current_heap_snapshot.append(reply_dict['params']['chunk'])
-      elif reply_dict['method'] == 'Profiler.finishHeapSnapshot':
-        # A heap snapshot has been completed.  Analyze and output the data.
-        self._logger.debug('Heap snapshot taken: %s', self._url)
-        self._logger.debug('Time to request snapshot raw data: %.2f sec',
-                           time.time() - self.last_snapshot_start_time)
-        # TODO(dennisjeffrey): Parse the heap snapshot on-the-fly as the data
-        # is coming in over the wire, so we can avoid storing the entire
-        # snapshot string in memory.
-        self._logger.debug('Now analyzing heap snapshot...')
-        parser = _V8HeapSnapshotParser()
-        time_start = time.time()
-        raw_snapshot_data = ''.join(self._current_heap_snapshot)
-        self._logger.debug('Raw snapshot data size: %.2f MB',
-                           len(raw_snapshot_data) / (1024.0 * 1024.0))
-        result = parser.ParseSnapshotData(raw_snapshot_data)
-        self._logger.debug('Time to parse data: %.2f sec',
-                           time.time() - time_start)
-        num_nodes = result['total_v8_node_count']
-        total_size = result['total_shallow_size']
-        total_size_str = self._ConvertBytesToHumanReadableString(total_size)
-        timestamp = time.time()
+    if self._timeline_started:
+      self._logger.warning('Timeline monitoring already started.')
+      return
+    TIMELINE_MESSAGES = [
+      'Timeline.start',
+    ]
 
-        self.collected_heap_snapshot_data = {
-            'url': self._url,
-            'timestamp': timestamp,
-            'total_v8_node_count': num_nodes,
-            'total_heap_size': total_size}
+    self._event_callback = event_callback
 
-  @staticmethod
-  def _ConvertBytesToHumanReadableString(num_bytes):
+    def HandleReply(reply_dict):
+      """Processes a reply message received from the remote Chrome instance.
+
+      Args:
+        reply_dict: A dictionary object representing the reply message received
+                    from the remote Chrome instance.
+      """
+      if reply_dict.get('method') == 'Timeline.eventRecorded':
+        self._event_callback(reply_dict['params']['record'])
+
+    # Tell the remote inspector to start the timeline.  We can return
+    # immediately, since there is no result for which to wait.
+    self._timeline_callback = HandleReply
+    self._remote_inspector_thread.AddMessageCallback(self._timeline_callback)
+    self._remote_inspector_thread.PerformAction(TIMELINE_MESSAGES, None)
+    self._timeline_started = True
+
+  def StopTimelineEventMonitoring(self):
+    """Stops timeline event monitoring."""
+    if not self._timeline_started:
+      self._logger.warning('Timeline monitoring already stopped.')
+      return
+    TIMELINE_MESSAGES = [
+      'Timeline.stop',
+    ]
+
+    # Tell the remote inspector to stop the timeline.  We can return
+    # immediately, since there is no result for which to wait.
+    self._remote_inspector_thread.RemoveMessageCallback(self._timeline_callback)
+    self._remote_inspector_thread.PerformAction(TIMELINE_MESSAGES, None)
+    self._timeline_started = False
+
+  def _ConvertByteCountToHumanReadableString(self, num_bytes):
     """Converts an integer number of bytes into a human-readable string.
 
     Args:
@@ -699,236 +919,3 @@ class _PerformanceSnapshotterThread(_RemoteInspectorBaseThread):
       return '%.2f KB' % (num_bytes / 1024.0)
     else:
       return '%.2f MB' % (num_bytes / 1048576.0)
-
-  def run(self):
-    """Start _PerformanceSnapshotterThread; overridden from threading.Thread."""
-    self.last_snapshot_start_time = time.time()
-    self._logger.debug('Taking heap snapshot...')
-
-    # Prepare the request list.
-    for message in self._HEAP_SNAPSHOT_MESSAGES:
-      self._requests.append(
-          _DevToolsSocketRequest(message, self._next_request_id))
-      self._next_request_id += 1
-
-    # Send out each request.  Wait until each request is complete before sending
-    # the next request.
-    for request in self._requests:
-      self._FillInParams(request)
-      self._client.SendMessage(str(request))
-      while not request.is_complete:
-        if self._killed:
-          self._client.close()
-          return
-        time.sleep(0.1)
-    self._client.close()
-
-
-class _GarbageCollectThread(_RemoteInspectorBaseThread):
-  """Manages communication with a remote Chrome to force a garbage collect."""
-
-  _COLLECT_GARBAGE_MESSAGES = [
-    'Profiler.collectGarbage',
-  ]
-
-  def run(self):
-    """Start _GarbageCollectThread; overridden from threading.Thread."""
-    if self._killed:
-      return
-
-    # Prepare the request list.
-    for message in self._COLLECT_GARBAGE_MESSAGES:
-      self._requests.append(
-          _DevToolsSocketRequest(message, self._next_request_id))
-      self._next_request_id += 1
-
-    # Send out each request.  Wait until each request is complete before sending
-    # the next request.
-    for request in self._requests:
-      self._FillInParams(request)
-      self._client.SendMessage(str(request))
-      while not request.is_complete:
-        if self._killed:
-          return
-        time.sleep(0.1)
-    self._client.close()
-
-
-class _MemoryCountThread(_RemoteInspectorBaseThread):
-  """Manages communication with a remote Chrome to get memory count info."""
-
-  _MEMORY_COUNT_MESSAGES = [
-    'Memory.getDOMNodeCount',
-  ]
-
-  def HandleReply(self, reply_dict):
-    """Processes a reply message received from the remote Chrome instance.
-
-    Args:
-      reply_dict: A dictionary object representing the reply message received
-                  from the remote Chrome instance.
-    """
-    if 'result' in reply_dict and 'domGroups' in reply_dict['result']:
-      dom_group_list = reply_dict['result']['domGroups']
-      for dom_group in dom_group_list:
-        listener_array = dom_group['listenerCount']
-        for listener in listener_array:
-          self.event_listener_count += listener['count']
-        dom_node_array = dom_group['nodeCount']
-        for dom_element in dom_node_array:
-          self.dom_node_count += dom_element['count']
-
-  def run(self):
-    """Start _MemoryCountThread; overridden from threading.Thread."""
-    if self._killed:
-      return
-
-    self.dom_node_count = 0
-    self.event_listener_count = 0
-
-    # Prepare the request list.
-    for message in self._MEMORY_COUNT_MESSAGES:
-      self._requests.append(
-          _DevToolsSocketRequest(message, self._next_request_id))
-      self._next_request_id += 1
-
-    # Send out each request.  Wait until each request is complete before sending
-    # the next request.
-    for request in self._requests:
-      self._FillInParams(request)
-      self._client.SendMessage(str(request))
-      while not request.is_complete:
-        if self._killed:
-          return
-        time.sleep(0.1)
-    self._client.close()
-
-
-# TODO(dennisjeffrey): The "verbose" option used in this file should re-use
-# pyauto's verbose flag.
-class RemoteInspectorClient(object):
-  """Main class for taking v8 heap snapshots.
-
-  Public Methods:
-    HeapSnapshot: Takes a v8 heap snapshot and returns the summarized data.
-    GarbageCollect: Forces a garbage collection.
-    GetMemoryObjectCounts: Retrieves memory object count information.
-  """
-  # TODO(dennisjeffrey): Allow a user to specify a window index too (not just a
-  # tab index), when running through PyAuto.
-  def __init__(self, tab_index=0, verbose=False, show_socket_messages=False):
-    """Initialize.
-
-    Args:
-      tab_index: The integer index of the tab in the remote Chrome instance to
-                 use for snapshotting.  Defaults to 0 (the first tab).
-      verbose: A boolean indicating whether or not to use verbose logging.
-      show_socket_messages: A boolean indicating whether or not to show the
-                            socket messages sent/received when communicating
-                            with the remote Chrome instance.
-    """
-    self._tab_index = tab_index
-    self._verbose = verbose
-    self._show_socket_messages = show_socket_messages
-
-    logging.basicConfig()
-    self._logger = logging.getLogger('RemoteInspectorClient')
-    self._logger.setLevel([logging.WARNING, logging.DEBUG][verbose])
-
-  def HeapSnapshot(self):
-    """Takes a v8 heap snapshot.
-
-    Returns:
-      A dictionary containing the summarized information for a single v8 heap
-      snapshot that was taken:
-      {
-        'url': string,  # URL of the webpage that was snapshotted.
-        'timestamp': float,  # Time when snapshot taken (seconds since epoch).
-        'total_v8_node_count': integer,  # Total number of nodes in the v8 heap.
-        'total_heap_size': integer,  # Total heap size (number of bytes).
-      }
-    """
-    snapshotter_thread = _PerformanceSnapshotterThread(
-        self._tab_index, self._verbose, self._show_socket_messages)
-    snapshotter_thread.start()
-    try:
-      while asyncore.socket_map:
-        if not snapshotter_thread.is_alive():
-          break
-        asyncore.loop(timeout=1, count=1, use_poll=True)
-    except KeyboardInterrupt:
-      pass
-    snapshotter_thread.join()
-    return snapshotter_thread.collected_heap_snapshot_data
-
-  def GarbageCollect(self):
-    """Forces a garbage collection."""
-    gc_thread = _GarbageCollectThread(self._tab_index, self._verbose,
-                                      self._show_socket_messages)
-    gc_thread.start()
-    try:
-      while asyncore.socket_map:
-        if not gc_thread.is_alive():
-          break
-        asyncore.loop(timeout=1, count=1, use_poll=True)
-    except KeyboardInterrupt:
-      pass
-    gc_thread.join()
-
-  def GetMemoryObjectCounts(self):
-    """Retrieves memory object count information.
-
-    Returns:
-      A dictionary containing the memory object count information:
-      {
-        'DOMNodeCount': integer,  # Total number of DOM nodes.
-        'EventListenerCount': integer,  # Total number of event listeners.
-      }
-    """
-    mem_count_thread = _MemoryCountThread(self._tab_index, self._verbose,
-                                          self._show_socket_messages)
-    mem_count_thread.start()
-    try:
-      while asyncore.socket_map:
-        if not mem_count_thread.is_alive():
-          break
-        asyncore.loop(timeout=1, count=1, use_poll=True)
-    except KeyboardInterrupt:
-      pass
-    mem_count_thread.join()
-    result = {
-      'DOMNodeCount': mem_count_thread.dom_node_count,
-      'EventListenerCount': mem_count_thread.event_listener_count,
-    }
-    return result
-
-
-def main():
-  """Main function to enable running this script from the command line."""
-  # Process command-line arguments.
-  parser = optparse.OptionParser()
-  parser.add_option(
-      '-t', '--tab-index', dest='tab_index', type='int', default=0,
-      help='Index of the tab to snapshot. Defaults to 0 (first tab).')
-  parser.add_option(
-      '-s', '--show-socket-messages', dest='show_socket_messages',
-      default=False, action='store_true',
-      help='Show the socket messages sent/received when communicating with '
-           'the remote Chrome instance.')
-  parser.add_option(
-      '-v', '--verbose', dest='verbose', default=False, action='store_true',
-      help='Use verbose logging.')
-
-  options, args = parser.parse_args()
-
-  my_client = RemoteInspectorClient(
-      tab_index=options.tab_index, verbose=options.verbose,
-      show_socket_messages=options.show_socket_messages)
-
-  print 'Taking heap snapshot...'
-  pp = pprint.PrettyPrinter(indent=2)
-  pp.pprint(my_client.HeapSnapshot())
-
-
-if __name__ == '__main__':
-  sys.exit(main())

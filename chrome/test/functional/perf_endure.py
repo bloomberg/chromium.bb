@@ -47,8 +47,10 @@ class ChromeEndureBaseTest(perf.BasePerfTest):
                  self._get_perf_stats_interval)
 
     # Set up a remote inspector client associated with tab 0.
+    logging.info('Setting up connection to remote inspector...')
     self._remote_inspector_client = (
         remote_inspector_client.RemoteInspectorClient())
+    logging.info('Connection to remote inspector set up successfully.')
 
     self._dom_node_count_results = []
     self._event_listener_count_results = []
@@ -58,6 +60,12 @@ class ChromeEndureBaseTest(perf.BasePerfTest):
     self._test_start_time = 0
     self._num_errors = 0
     self._iteration_num = 0
+
+  def tearDown(self):
+    logging.info('Terminating connection to remote inspector...')
+    self._remote_inspector_client.Stop()
+    logging.info('Connection to remote inspector terminated.')
+    perf.BasePerfTest.tearDown(self)  # Must be done at end of this function.
 
   def ExtraChromeFlags(self):
     """Ensures Chrome is launched with custom flags.
