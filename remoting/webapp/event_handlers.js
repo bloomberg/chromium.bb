@@ -40,10 +40,6 @@ function onLoad() {
   var doAuthRedirect = function() {
     remoting.oauth2.doAuthRedirect();
   };
-  var stopDaemon = function() {
-    remoting.daemonPlugin.stop();
-    remoting.daemonPlugin.updateDom();
-  };
   /** @type {Array.<{event: string, id: string, fn: function(Event):void}>} */
   var actions = [
       { event: 'click', id: 'clear-oauth', fn: remoting.clearOAuth2 },
@@ -69,7 +65,8 @@ function onLoad() {
         fn: function() { remoting.hostSetupDialog.showForStart(); } },
       { event: 'click', id: 'change-daemon-pin',
         fn: function() { remoting.hostSetupDialog.showForPin(); } },
-      { event: 'click', id: 'stop-daemon', fn: stopDaemon },
+      { event: 'click', id: 'stop-daemon',
+        fn: function() { remoting.hostSetupDialog.showForStop(); } },
       { event: 'submit', id: 'access-code-form', fn: sendAccessCode },
       { event: 'submit', id: 'pin-form', fn: connectHostWithPin },
       { event: 'click', id: 'get-started-it2me',

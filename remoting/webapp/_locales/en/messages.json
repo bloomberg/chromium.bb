@@ -235,12 +235,32 @@
     "description": "Message shown after access to local computer has been enabled successfully."
   },
   "HOST_SETUP_STARTING": {
-    "message": "Enabling remote connections for this computer.",
+    "message": "enabling remote connections for this computer\u2026",
     "description": "Message shown when local machine is being registered in the directory and when starting the host."
   },
+  "HOST_SETUP_STOP_FAILED": {
+    "message": "Failed to disable remote access to this computer. Please try again later.",
+    "description": "Message shown after we've failed to stop the host."
+  },
+  "HOST_SETUP_STOPPED": {
+    "message": "Remote connections for this computer have been disabled.",
+    "description": "Message shown after host has been stopped."
+  },
+  "HOST_SETUP_STOPPING": {
+    "message": "disabling remote connections for this computer\u2026",
+    "description": "Message shown when host is being stopped on the local machine."
+  },
+  "HOST_SETUP_UPDATED_PIN": {
+    "message": "PIN has been updated.",
+    "description": "Message shown after changing PIN for the local computer."
+  },
   "HOST_SETUP_UPDATING_PIN": {
-    "message": "PIN for this computer is being updated.",
+    "message": "PIN for this computer is being updated\u2026",
     "description": "Message shown while changing PIN for the local computer."
+  },
+  "HOST_SETUP_UPDATE_PIN_FAILED": {
+    "message": "Failed to update the PIN. Please try again later.",
+    "description": "Message shown we fail to update PIN for the local computer."
   },
   "HOME_SHARE_BUTTON": {
     "message": "Share",

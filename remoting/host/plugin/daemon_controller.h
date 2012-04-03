@@ -41,14 +41,25 @@ class DaemonController {
     STATE_STARTED = 4,
     // The daemon process is stopping.
     STATE_STOPPING = 5,
-    // The previous Start operation failed. This is functionally equivalent
-    // to STATE_STOPPED, but the UI should report an error in this state.
-    // This state should not persist across restarts of the NPAPI process.
-    STATE_START_FAILED = 6,
     // The state cannot be determined. This could indicate that the plugin
     // has not been provided with sufficient information, for example, the
     // user for which to query state on a multi-user system.
-    STATE_UNKNOWN = 7
+    STATE_UNKNOWN = 6
+  };
+
+  // Enum used for completion callback.
+  enum AsyncResult {
+    RESULT_OK = 0,
+
+    // The operation has FAILED.
+    RESULT_FAILED = 1,
+
+    // User has cancelled the action (e.g. rejected UAC prompt).
+    // TODO(sergeyu): Current implementations don't return this value.
+    RESULT_CANCELLED = 2,
+
+    // TODO(sergeyu): Add more error codes when we know how to handle
+    // them in the webapp.
   };
 
   // The callback for GetConfig(). |config| is set to NULL in case of
@@ -59,6 +70,10 @@ class DaemonController {
   // private keys.
   typedef base::Callback<void (scoped_ptr<base::DictionaryValue> config)>
       GetConfigCallback;
+
+  // Callback used for asynchronous operations, e.g. when
+  // starting/stopping the service.
+  typedef base::Callback<void (AsyncResult result)> CompletionCallback;
 
   virtual ~DaemonController() {}
 
@@ -74,16 +89,16 @@ class DaemonController {
   // after configuration is read.
   virtual void GetConfig(const GetConfigCallback& callback) = 0;
 
-  // Start the daemon process. Since this may require that the daemon be
-  // downloaded and installed, Start may return before the daemon process
-  // is actually running--poll GetState until the state is STATE_STARTED
-  // or STATE_START_FAILED.
+  // Start the daemon process. This may require that the daemon be
+  // downloaded and installed. |done_callback| is called when the
+  // operation is finished or fails.
   //
   // TODO(sergeyu): This method writes config and starts the host -
   // these two steps are merged for simplicity. Consider splitting it
   // into SetConfig() and Start() once we have basic host setup flow
   // working.
-  virtual void SetConfigAndStart(scoped_ptr<base::DictionaryValue> config) = 0;
+  virtual void SetConfigAndStart(scoped_ptr<base::DictionaryValue> config,
+                                 const CompletionCallback& done_callback) = 0;
 
   // Set the PIN for accessing this host, which should be expressed as a
   // UTF8-encoded string. It is permitted to call SetPin when the daemon
@@ -91,7 +106,8 @@ class DaemonController {
   // does not satisfy complexity requirements.
   //
   // TODO(sergeyu): Add callback to be called after PIN is updated.
-  virtual void SetPin(const std::string& pin) = 0;
+  virtual void SetPin(const std::string& pin,
+                      const CompletionCallback& done_callback) = 0;
 
   // Stop the daemon process. It is permitted to call Stop while the daemon
   // process is being installed, in which case the installation should be
@@ -99,9 +115,9 @@ class DaemonController {
   // daemon process is not started automatically upon successful installation.
   // As with Start, Stop may return before the operation is complete--poll
   // GetState until the state is STATE_STOPPED.
-  virtual void Stop() = 0;
+  virtual void Stop(const CompletionCallback& done_callback) = 0;
 
-  static DaemonController* Create();
+  static scoped_ptr<DaemonController> Create();
 };
 
 }  // namespace remoting

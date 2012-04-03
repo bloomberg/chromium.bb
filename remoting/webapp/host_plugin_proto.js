@@ -34,8 +34,10 @@ remoting.HostPlugin.prototype.getHostName = function() {};
 remoting.HostPlugin.prototype.generateKeyPair = function(callback) {};
 
 /** @param {string} pin The new PIN.
+ *  @param {function(remoting.DaemonPlugin.AsyncResult):void} callback
+ *     Callback to be called when finished.
  *  @return {void} Nothing. */
-remoting.HostPlugin.prototype.setDaemonPin = function(pin) {};
+remoting.HostPlugin.prototype.setDaemonPin = function(pin, callback) {};
 
 /** @param {function(string):void} callback Callback to be called for
  *  the config.
@@ -43,11 +45,15 @@ remoting.HostPlugin.prototype.setDaemonPin = function(pin) {};
 remoting.HostPlugin.prototype.getDaemonConfig = function(callback) {};
 
 /** @param {string} config Host configuration.
+ *  @param {function(remoting.DaemonPlugin.AsyncResult):void} callback
+ *     Callback to be called when finished.
  *  @return {void} Nothing. */
-remoting.HostPlugin.prototype.startDaemon = function(config) {};
+remoting.HostPlugin.prototype.startDaemon = function(config, callback) {};
 
-/** @return {void} Nothing. */
-remoting.HostPlugin.prototype.stopDaemon = function() {};
+/** @param {function(remoting.DaemonPlugin.AsyncResult):void} callback
+ *     Callback to be called when finished.
+ *  @return {void} Nothing. */
+remoting.HostPlugin.prototype.stopDaemon = function(callback) {};
 
 /** @type {number} */ remoting.HostPlugin.prototype.state;
 

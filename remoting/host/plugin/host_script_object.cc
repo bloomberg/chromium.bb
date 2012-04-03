@@ -633,17 +633,30 @@ bool HostNPScriptObject::GenerateKeyPair(const NPVariant* args,
 bool HostNPScriptObject::SetDaemonPin(const NPVariant* args,
                                       uint32_t arg_count,
                                       NPVariant* result) {
-  if (arg_count != 1) {
-    SetException("startDaemon: bad number of arguments");
+  if (arg_count != 2) {
+    SetException("setDaemonPin: bad number of arguments");
     return false;
   }
-  if (NPVARIANT_IS_STRING(args[0])) {
-    daemon_controller_->SetPin(StringFromNPVariant(args[0]));
-    return true;
-  } else {
-    SetException("startDaemon: unexpected type for argument 1");
+
+  if (!NPVARIANT_IS_STRING(args[0])) {
+    SetException("setDaemonPin: unexpected type for argument 1");
     return false;
   }
+  std::string new_pin = StringFromNPVariant(args[0]);
+
+  NPObject* callback_obj = ObjectFromNPVariant(args[1]);
+  if (!callback_obj) {
+    SetException("setDaemonPin: invalid callback parameter");
+    return false;
+  }
+
+  callback_obj = g_npnetscape_funcs->retainobject(callback_obj);
+
+  daemon_controller_->SetPin(
+      new_pin, base::Bind(
+          &HostNPScriptObject::InvokeAsyncResultCallback,
+          base::Unretained(this), callback_obj));
+  return true;
 }
 
 bool HostNPScriptObject::GetDaemonConfig(const NPVariant* args,
@@ -674,7 +687,7 @@ bool HostNPScriptObject::GetDaemonConfig(const NPVariant* args,
 bool HostNPScriptObject::StartDaemon(const NPVariant* args,
                                      uint32_t arg_count,
                                      NPVariant* result) {
-  if (arg_count != 1) {
+  if (arg_count != 2) {
     SetException("startDaemon: bad number of arguments");
     return false;
   }
@@ -689,19 +702,40 @@ bool HostNPScriptObject::StartDaemon(const NPVariant* args,
     return false;
   }
 
+  NPObject* callback_obj = ObjectFromNPVariant(args[1]);
+  if (!callback_obj) {
+    SetException("startDaemon: invalid callback parameter");
+    return false;
+  }
+
+  callback_obj = g_npnetscape_funcs->retainobject(callback_obj);
+
   daemon_controller_->SetConfigAndStart(
-      scoped_ptr<base::DictionaryValue>(config_dict));
+      scoped_ptr<base::DictionaryValue>(config_dict),
+      base::Bind(&HostNPScriptObject::InvokeAsyncResultCallback,
+                 base::Unretained(this), callback_obj));
   return true;
 }
 
 bool HostNPScriptObject::StopDaemon(const NPVariant* args,
                                     uint32_t arg_count,
                                     NPVariant* result) {
-  if (arg_count != 0) {
-    SetException("startDaemon: bad number of arguments");
+  if (arg_count != 1) {
+    SetException("stopDaemon: bad number of arguments");
     return false;
   }
-  daemon_controller_->Stop();
+
+  NPObject* callback_obj = ObjectFromNPVariant(args[0]);
+  if (!callback_obj) {
+    SetException("stopDaemon: invalid callback parameter");
+    return false;
+  }
+
+  callback_obj = g_npnetscape_funcs->retainobject(callback_obj);
+
+  daemon_controller_->Stop(
+      base::Bind(&HostNPScriptObject::InvokeAsyncResultCallback,
+                 base::Unretained(this), callback_obj));
   return true;
 }
 
@@ -973,6 +1007,24 @@ void HostNPScriptObject::InvokeGenerateKeyPairCallback(
   InvokeAndIgnoreResult(callback, params, arraysize(params));
   g_npnetscape_funcs->releasevariantvalue(&(params[0]));
   g_npnetscape_funcs->releasevariantvalue(&(params[1]));
+  g_npnetscape_funcs->releaseobject(callback);
+}
+
+void HostNPScriptObject::InvokeAsyncResultCallback(
+    NPObject* callback,
+    DaemonController::AsyncResult result) {
+  if (!plugin_message_loop_proxy_->BelongsToCurrentThread()) {
+    plugin_message_loop_proxy_->PostTask(
+        FROM_HERE, base::Bind(
+            &HostNPScriptObject::InvokeAsyncResultCallback,
+            base::Unretained(this), callback, result));
+    return;
+  }
+
+  NPVariant result_var;
+  INT32_TO_NPVARIANT(static_cast<int32>(result), result_var);
+  InvokeAndIgnoreResult(callback, &result_var, 1);
+  g_npnetscape_funcs->releasevariantvalue(&result_var);
   g_npnetscape_funcs->releaseobject(callback);
 }
 

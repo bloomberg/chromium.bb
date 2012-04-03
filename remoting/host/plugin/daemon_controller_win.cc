@@ -14,7 +14,6 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
-#include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -65,41 +64,31 @@ class DaemonControllerWin : public remoting::DaemonController {
   virtual State GetState() OVERRIDE;
   virtual void GetConfig(const GetConfigCallback& callback) OVERRIDE;
   virtual void SetConfigAndStart(
-      scoped_ptr<base::DictionaryValue> config) OVERRIDE;
-  virtual void SetPin(const std::string& pin) OVERRIDE;
-  virtual void Stop() OVERRIDE;
+      scoped_ptr<base::DictionaryValue> config,
+      const CompletionCallback& done_callback) OVERRIDE;
+  virtual void SetPin(const std::string& pin,
+                      const CompletionCallback& done_callback) OVERRIDE;
+  virtual void Stop(const CompletionCallback& done_callback) OVERRIDE;
 
  private:
+  // Converts a Windows service status code to a Daemon state.
+  static State ConvertToDaemonState(DWORD service_state);
+
+  // Converts HRESULT to the AsyncResult.
+  static AsyncResult HResultToAsyncResult(HRESULT hr);
+
   // Opens the Chromoting service returning its handle in |service_out|.
   DWORD OpenService(ScopedScHandle* service_out);
 
   // The functions that actually do the work. They should be called in
   // the context of |worker_thread_|;
   void DoGetConfig(const GetConfigCallback& callback);
-  void DoSetConfigAndStart(scoped_ptr<base::DictionaryValue> config);
-  void DoStop();
-
-  // Converts a Windows service status code to a Daemon state.
-  static State ConvertToDaemonState(DWORD service_state);
+  void DoSetConfigAndStart(scoped_ptr<base::DictionaryValue> config,
+                           const CompletionCallback& done_callback);
+  void DoStop(const CompletionCallback& done_callback);
 
   // The worker thread used for servicing long running operations.
   ComThread worker_thread_;
-
-  // The lock protecting access to all data members below.
-  base::Lock lock_;
-
-  // The error occurred during the last transition.
-  HRESULT last_error_;
-
-  // The daemon state reported to the JavaScript code.
-  State state_;
-
-  // The state that should never be reported to JS unless there is an error.
-  // For instance, when Start() is called, the state of the service doesn't
-  // switch to "starting" immediately. This could lead to JS interpreting
-  // "stopped" as a failure to start the service.
-  // TODO(alexeypa): remove this variable once JS interface supports callbacks.
-  State forbidden_state_;
 
   DISALLOW_COPY_AND_ASSIGN(DaemonControllerWin);
 };
@@ -150,13 +139,9 @@ bool ComThread::Start() {
 }
 
 DaemonControllerWin::DaemonControllerWin()
-    : last_error_(S_OK),
-      state_(STATE_UNKNOWN),
-      forbidden_state_(STATE_UNKNOWN),
-      worker_thread_(kDaemonControllerThreadName) {
+    : worker_thread_(kDaemonControllerThreadName) {
   if (!worker_thread_.Start()) {
-    // N.B. Start() does not report the error code returned by the system.
-    last_error_ = E_FAIL;
+    LOG(FATAL) << "Failed to start the Daemon Controller worker thread.";
   }
 }
 
@@ -170,41 +155,24 @@ remoting::DaemonController::State DaemonControllerWin::GetState() {
   ScopedScHandle service;
   DWORD error = OpenService(&service);
 
-  if (error == ERROR_SUCCESS) {
-    SERVICE_STATUS status;
-    if (::QueryServiceStatus(service, &status)) {
-      State new_state = ConvertToDaemonState(status.dwCurrentState);
-
-      base::AutoLock lock(lock_);
-      // TODO(alexeypa): Remove |forbidden_state_| hack once JS interface
-      // supports callbacks.
-      if (forbidden_state_ != new_state || FAILED(last_error_)) {
-        state_ = new_state;
+  switch (error) {
+    case ERROR_SUCCESS: {
+      SERVICE_STATUS status;
+      if (::QueryServiceStatus(service, &status)) {
+        return ConvertToDaemonState(status.dwCurrentState);
+      } else {
+        LOG_GETLASTERROR(ERROR)
+            << "Failed to query the state of the '" << kWindowsServiceName
+            << "' service";
+        return STATE_UNKNOWN;
       }
-
-      // TODO(alexeypa): Remove this hack once JS nicely reports errors.
-      if (FAILED(last_error_)) {
-        state_ = STATE_START_FAILED;
-      }
-
-      return state_;
-    } else {
-      error = GetLastError();
-      LOG_GETLASTERROR(ERROR)
-          << "Failed to query the state of the '" << kWindowsServiceName
-          << "' service";
+      break;
     }
+    case ERROR_SERVICE_DOES_NOT_EXIST:
+      return STATE_NOT_IMPLEMENTED;
+    default:
+      return STATE_UNKNOWN;
   }
-
-  base::AutoLock lock(lock_);
-  if (error == ERROR_SERVICE_DOES_NOT_EXIST) {
-    state_ = STATE_NOT_IMPLEMENTED;
-  } else {
-    last_error_ = HRESULT_FROM_WIN32(error);
-    state_ = STATE_UNKNOWN;
-  }
-
-  return state_;
 }
 
 void DaemonControllerWin::GetConfig(const GetConfigCallback& callback) {
@@ -215,38 +183,62 @@ void DaemonControllerWin::GetConfig(const GetConfigCallback& callback) {
 }
 
 void DaemonControllerWin::SetConfigAndStart(
-    scoped_ptr<base::DictionaryValue> config) {
-  base::AutoLock lock(lock_);
+    scoped_ptr<base::DictionaryValue> config,
+    const CompletionCallback& done_callback) {
 
-  // TODO(alexeypa): Implement on-demand installation.
-  if (state_ == STATE_STOPPED) {
-    last_error_ = S_OK;
-    forbidden_state_ = STATE_STOPPED;
-    state_ = STATE_STARTING;
-    worker_thread_.message_loop_proxy()->PostTask(
-        FROM_HERE,
-        base::Bind(&DaemonControllerWin::DoSetConfigAndStart,
-                   base::Unretained(this), base::Passed(&config)));
-  }
+  worker_thread_.message_loop_proxy()->PostTask(
+      FROM_HERE, base::Bind(
+          &DaemonControllerWin::DoSetConfigAndStart, base::Unretained(this),
+          base::Passed(&config), done_callback));
 }
 
-void DaemonControllerWin::SetPin(const std::string& pin) {
+void DaemonControllerWin::SetPin(const std::string& pin,
+                                 const CompletionCallback& done_callback) {
   NOTIMPLEMENTED();
+  done_callback.Run(RESULT_FAILED);
 }
 
-void DaemonControllerWin::Stop() {
-  base::AutoLock lock(lock_);
+void DaemonControllerWin::Stop(const CompletionCallback& done_callback) {
+  worker_thread_.message_loop_proxy()->PostTask(
+      FROM_HERE, base::Bind(
+          &DaemonControllerWin::DoStop, base::Unretained(this),
+          done_callback));
+}
 
-  if (state_ == STATE_STARTING ||
-      state_ == STATE_STARTED ||
-      state_ == STATE_STOPPING) {
-    last_error_ = S_OK;
-    forbidden_state_ = STATE_STARTED;
-    state_ = STATE_STOPPING;
-    worker_thread_.message_loop_proxy()->PostTask(
-        FROM_HERE,
-        base::Bind(&DaemonControllerWin::DoStop, base::Unretained(this)));
+// static
+remoting::DaemonController::State DaemonControllerWin::ConvertToDaemonState(
+    DWORD service_state) {
+  switch (service_state) {
+  case SERVICE_RUNNING:
+    return STATE_STARTED;
+
+  case SERVICE_CONTINUE_PENDING:
+  case SERVICE_START_PENDING:
+    return STATE_STARTING;
+    break;
+
+  case SERVICE_PAUSE_PENDING:
+  case SERVICE_STOP_PENDING:
+    return STATE_STOPPING;
+    break;
+
+  case SERVICE_PAUSED:
+  case SERVICE_STOPPED:
+    return STATE_STOPPED;
+    break;
+
+  default:
+    NOTREACHED();
+    return STATE_UNKNOWN;
   }
+}
+
+// static
+DaemonController::AsyncResult DaemonControllerWin::HResultToAsyncResult(
+    HRESULT hr) {
+  // TODO(sergeyu): Report other errors to the webapp once it knows
+  // how to handle them.
+  return FAILED(hr) ? RESULT_FAILED : RESULT_OK;
 }
 
 DWORD DaemonControllerWin::OpenService(ScopedScHandle* service_out) {
@@ -312,12 +304,12 @@ void DaemonControllerWin::DoGetConfig(const GetConfigCallback& callback) {
 }
 
 void DaemonControllerWin::DoSetConfigAndStart(
-    scoped_ptr<base::DictionaryValue> config) {
+    scoped_ptr<base::DictionaryValue> config,
+    const CompletionCallback& done_callback) {
   IDaemonControl* control = NULL;
   HRESULT hr = worker_thread_.ActivateElevatedController(&control);
   if (FAILED(hr)) {
-    base::AutoLock lock(lock_);
-    last_error_ = hr;
+    done_callback.Run(HResultToAsyncResult(hr));
     return;
   }
 
@@ -327,75 +319,38 @@ void DaemonControllerWin::DoSetConfigAndStart(
 
   BSTR host_config = ::SysAllocString(UTF8ToUTF16(file_content).c_str());
   if (host_config == NULL) {
-    base::AutoLock lock(lock_);
-    last_error_ = E_OUTOFMEMORY;
+    done_callback.Run(HResultToAsyncResult(E_OUTOFMEMORY));
     return;
   }
 
   hr = control->SetConfig(host_config);
   ::SysFreeString(host_config);
   if (FAILED(hr)) {
-    base::AutoLock lock(lock_);
-    last_error_ = hr;
+    done_callback.Run(HResultToAsyncResult(hr));
     return;
   }
 
   // Start daemon.
   hr = control->StartDaemon();
-  if (FAILED(hr)) {
-    base::AutoLock lock(lock_);
-    last_error_ = hr;
-  }
+  done_callback.Run(HResultToAsyncResult(hr));
 }
 
-void DaemonControllerWin::DoStop() {
+void DaemonControllerWin::DoStop(const CompletionCallback& done_callback) {
   IDaemonControl* control = NULL;
   HRESULT hr = worker_thread_.ActivateElevatedController(&control);
   if (FAILED(hr)) {
-    base::AutoLock lock(lock_);
-    last_error_ = hr;
+    done_callback.Run(HResultToAsyncResult(hr));
     return;
   }
 
   hr = control->StopDaemon();
-  if (FAILED(hr)) {
-    base::AutoLock lock(lock_);
-    last_error_ = hr;
-  }
-}
-
-// static
-remoting::DaemonController::State DaemonControllerWin::ConvertToDaemonState(
-    DWORD service_state) {
-  switch (service_state) {
-  case SERVICE_RUNNING:
-    return STATE_STARTED;
-
-  case SERVICE_CONTINUE_PENDING:
-  case SERVICE_START_PENDING:
-    return STATE_STARTING;
-    break;
-
-  case SERVICE_PAUSE_PENDING:
-  case SERVICE_STOP_PENDING:
-    return STATE_STOPPING;
-    break;
-
-  case SERVICE_PAUSED:
-  case SERVICE_STOPPED:
-    return STATE_STOPPED;
-    break;
-
-  default:
-    NOTREACHED();
-    return STATE_UNKNOWN;
-  }
+  done_callback.Run(HResultToAsyncResult(hr));
 }
 
 }  // namespace
 
-DaemonController* remoting::DaemonController::Create() {
-  return new DaemonControllerWin();
+scoped_ptr<DaemonController> remoting::DaemonController::Create() {
+  return scoped_ptr<DaemonController>(new DaemonControllerWin());
 }
 
 }  // namespace remoting

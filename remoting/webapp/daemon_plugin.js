@@ -16,8 +16,8 @@ remoting.DaemonPlugin = function() {
   this.container_.appendChild(this.plugin_);
 };
 
-// Note that the values in this enum are copied from daemon_controller.h and
-// must be kept in sync.
+// Note that the values in the enums below are copied from
+// daemon_controller.h and must be kept in sync.
 /** @enum {number} */
 remoting.DaemonPlugin.State = {
   NOT_IMPLEMENTED: -1,
@@ -27,8 +27,14 @@ remoting.DaemonPlugin.State = {
   STARTING: 3,
   STARTED: 4,
   STOPPING: 5,
-  START_FAILED: 6,
-  UNKNOWN: 7
+  UNKNOWN: 6
+};
+
+/** @enum {number} */
+remoting.DaemonPlugin.AsyncResult = {
+  OK: 0,
+  FAILED: 1,
+  CANCELLED: 2
 };
 
 /** @return {remoting.DaemonPlugin.State} The current state of the daemon. */
@@ -56,7 +62,6 @@ remoting.DaemonPlugin.prototype.updateDom = function() {
       break;
     case remoting.DaemonPlugin.State.STOPPED:
     case remoting.DaemonPlugin.State.NOT_INSTALLED:
-    case remoting.DaemonPlugin.State.START_FAILED:
       match = 'disabled';
       break;
   }
@@ -98,26 +103,32 @@ remoting.DaemonPlugin.prototype.getConfig = function(callback) {
 /**
  * Start the daemon process.
  * @param {string} config Host config.
+ * @param {function(remoting.DaemonPlugin.AsyncResult):void} callback
+ *     Callback to be called when finished.
  * @return {void} Nothing.
  */
-remoting.DaemonPlugin.prototype.start = function(config) {
-  this.plugin_.startDaemon(config);
+remoting.DaemonPlugin.prototype.start = function(config, callback) {
+  this.plugin_.startDaemon(config, callback);
 };
 
 /**
  * Stop the daemon process.
+ * @param {function(remoting.DaemonPlugin.AsyncResult):void} callback
+ *     Callback to be called when finished.
  * @return {void} Nothing.
  */
-remoting.DaemonPlugin.prototype.stop = function() {
-  this.plugin_.stopDaemon();
+remoting.DaemonPlugin.prototype.stop = function(callback) {
+  this.plugin_.stopDaemon(callback);
 };
 
 /**
  * @param {string} pin The new PIN for the daemon process.
+ * @param {function(remoting.DaemonPlugin.AsyncResult):void} callback
+ *     Callback to be called when finished.
  * @return {void} Nothing.
  */
-remoting.DaemonPlugin.prototype.setPin = function(pin) {
-  this.plugin_.setDaemonPin(pin);
+remoting.DaemonPlugin.prototype.setPin = function(pin, callback) {
+  this.plugin_.setDaemonPin(pin, callback);
 };
 
 /** @type {remoting.DaemonPlugin} */

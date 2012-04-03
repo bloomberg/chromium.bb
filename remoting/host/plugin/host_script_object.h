@@ -23,6 +23,7 @@
 #include "remoting/host/host_key_pair.h"
 #include "remoting/host/host_status_observer.h"
 #include "remoting/host/log_to_server.h"
+#include "remoting/host/plugin/daemon_controller.h"
 #include "remoting/host/plugin/host_plugin_utils.h"
 #include "remoting/host/ui_strings.h"
 #include "third_party/npapi/bindings/npapi.h"
@@ -32,7 +33,6 @@
 namespace remoting {
 
 class ChromotingHost;
-class DaemonController;
 class DesktopEnvironment;
 class It2MeHostUserInterface;
 class MutableHostConfig;
@@ -130,6 +130,7 @@ class HostNPScriptObject : public HostStatusObserver {
 
   // Set the PIN for Me2Me. Args are:
   //   string pin
+  //   function(number) done_callback
   bool SetDaemonPin(const NPVariant* args,
                     uint32_t arg_count,
                     NPVariant* result);
@@ -144,11 +145,13 @@ class HostNPScriptObject : public HostStatusObserver {
 
   // Start the daemon process with the specified config. Args are:
   //   string config
+  //   function(number) done_callback
   bool StartDaemon(const NPVariant* args,
                    uint32_t arg_count,
                    NPVariant* result);
 
-  // Stop the daemon process. No arguments.
+  // Stop the daemon process. Args are:
+  //   function(number) done_callback
   bool StopDaemon(const NPVariant* args, uint32_t arg_count, NPVariant* result);
 
   //////////////////////////////////////////////////////////
@@ -205,6 +208,12 @@ class HostNPScriptObject : public HostStatusObserver {
   void InvokeGenerateKeyPairCallback(NPObject* callback,
                                      const std::string& private_key,
                                      const std::string& public_key);
+
+
+  // Callback handler for SetConfigAndStart(), Stop() and SetPin() in
+  // DaemonController.
+  void InvokeAsyncResultCallback(NPObject* callback,
+                                 DaemonController::AsyncResult result);
 
   // Callback handler for DaemonController::GetConfig().
   void InvokeGetDaemonConfigCallback(NPObject* callback,

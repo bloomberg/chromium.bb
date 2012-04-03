@@ -19,7 +19,6 @@
 #include "base/mac/mac_logging.h"
 #include "base/mac/scoped_authorizationref.h"
 #include "base/mac/scoped_launch_data.h"
-#include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
 #include "base/values.h"
 #include "remoting/host/json_host_config.h"
@@ -55,34 +54,31 @@ class DaemonControllerMac : public remoting::DaemonController {
   virtual State GetState() OVERRIDE;
   virtual void GetConfig(const GetConfigCallback& callback) OVERRIDE;
   virtual void SetConfigAndStart(
-      scoped_ptr<base::DictionaryValue> config) OVERRIDE;
-  virtual void SetPin(const std::string& pin) OVERRIDE;
-  virtual void Stop() OVERRIDE;
+      scoped_ptr<base::DictionaryValue> config,
+      const CompletionCallback& done_callback) OVERRIDE;
+  virtual void SetPin(const std::string& pin,
+                      const CompletionCallback& done_callback) OVERRIDE;
+  virtual void Stop(const CompletionCallback& done_callback) OVERRIDE;
 
  private:
   void DoGetConfig(const GetConfigCallback& callback);
-  void DoSetConfigAndStart(scoped_ptr<base::DictionaryValue> config);
-  void DoStop();
+  void DoSetConfigAndStart(scoped_ptr<base::DictionaryValue> config,
+                           const CompletionCallback& done_callback);
+  void DoStop(const CompletionCallback& done_callback);
 
   bool RunToolScriptAsRoot(const char* command);
   bool StopService();
 
   // The API for gaining root privileges is blocking (it prompts the user for
-  // a password).  Since Start() and Stop() must not block the main thread, they
+  // a password). Since Start() and Stop() must not block the main thread, they
   // need to post their tasks to a separate thread.
   base::Thread auth_thread_;
-
-  // This distinguishes between STATE_START_FAILED and STATE_STOPPED in
-  // GetState().
-  bool start_failed_;
-  base::Lock start_failed_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(DaemonControllerMac);
 };
 
 DaemonControllerMac::DaemonControllerMac()
-    : auth_thread_("Auth thread"),
-      start_failed_(false) {
+    : auth_thread_("Auth thread") {
   auth_thread_.Start();
 }
 
@@ -104,9 +100,7 @@ DaemonController::State DaemonControllerMac::GetState() {
     return DaemonController::STATE_NOT_IMPLEMENTED;
   } else if (job_pid == 0) {
     // Service is stopped, or a start attempt failed.
-    base::AutoLock lock(start_failed_lock_);
-    return start_failed_ ? DaemonController::STATE_START_FAILED :
-        DaemonController::STATE_STOPPED;
+    return DaemonController::STATE_STOPPED;
   } else {
     return DaemonController::STATE_STARTED;
   }
@@ -122,26 +116,24 @@ void DaemonControllerMac::GetConfig(const GetConfigCallback& callback) {
 }
 
 void DaemonControllerMac::SetConfigAndStart(
-    scoped_ptr<base::DictionaryValue> config) {
-  {
-    base::AutoLock lock(start_failed_lock_);
-    start_failed_ = false;
-  }
-
+    scoped_ptr<base::DictionaryValue> config,
+    const CompletionCallback& done_callback) {
   auth_thread_.message_loop_proxy()->PostTask(
-      FROM_HERE,
-      base::Bind(&DaemonControllerMac::DoSetConfigAndStart,
-                 base::Unretained(this), base::Passed(&config)));
+      FROM_HERE, base::Bind(
+          &DaemonControllerMac::DoSetConfigAndStart, base::Unretained(this),
+          base::Passed(&config), done_callback));
 }
 
-void DaemonControllerMac::SetPin(const std::string& pin) {
+void DaemonControllerMac::SetPin(const std::string& pin,
+                                 const CompletionCallback& done_callback) {
   NOTIMPLEMENTED();
+  done_callback.Run(RESULT_FAILED);
 }
 
-void DaemonControllerMac::Stop() {
+void DaemonControllerMac::Stop(const CompletionCallback& done_callback) {
   auth_thread_.message_loop_proxy()->PostTask(
-      FROM_HERE,
-      base::Bind(&DaemonControllerMac::DoStop, base::Unretained(this)));
+      FROM_HERE, base::Bind(
+          &DaemonControllerMac::DoStop, base::Unretained(this), done_callback));
 }
 
 void DaemonControllerMac::DoGetConfig(const GetConfigCallback& callback) {
@@ -163,7 +155,8 @@ void DaemonControllerMac::DoGetConfig(const GetConfigCallback& callback) {
 }
 
 void DaemonControllerMac::DoSetConfigAndStart(
-    scoped_ptr<base::DictionaryValue> config) {
+    scoped_ptr<base::DictionaryValue> config,
+    const CompletionCallback& done_callback) {
   // JsonHostConfig doesn't provide a way to save on the current thread, wait
   // for completion, and know whether the save succeeded.  Instead, use
   // base::JSONWriter directly.
@@ -175,28 +168,28 @@ void DaemonControllerMac::DoSetConfigAndStart(
                            file_content.size()) !=
       static_cast<int>(file_content.size())) {
     LOG(ERROR) << "Failed to write config file: " << kHostConfigFile;
-    base::AutoLock lock(start_failed_lock_);
-    start_failed_ = true;
+    done_callback.Run(RESULT_FAILED);
     return;
   }
 
   // Creating the trigger file causes launchd to start the service, so the
   // extra step performed in DoStop() is not necessary here.
-  if (!RunToolScriptAsRoot("--enable")) {
-    base::AutoLock lock(start_failed_lock_);
-    start_failed_ = true;
-  }
+  bool result = RunToolScriptAsRoot("--enable");
+  done_callback.Run(result ? RESULT_OK : RESULT_FAILED);
 }
 
-void DaemonControllerMac::DoStop() {
-  if (!RunToolScriptAsRoot("--disable"))
+void DaemonControllerMac::DoStop(const CompletionCallback& done_callback) {
+  if (!RunToolScriptAsRoot("--disable")) {
+    done_callback.Run(RESULT_FAILED);
     return;
+  }
 
   // Deleting the trigger file does not cause launchd to stop the service.
   // Since the service is running for the local user's desktop (not as root),
   // it has to be stopped for that user.  This cannot easily be done in the
   // shell-script running as root, so it is done here instead.
-  StopService();
+  bool result = StopService();
+  done_callback.Run(result ? RESULT_OK : RESULT_FAILED);
 }
 
 bool DaemonControllerMac::RunToolScriptAsRoot(const char* command) {
@@ -258,8 +251,8 @@ bool DaemonControllerMac::StopService() {
 
 }  // namespace
 
-DaemonController* remoting::DaemonController::Create() {
-  return new DaemonControllerMac();
+scoped_ptr<DaemonController> remoting::DaemonController::Create() {
+  return scoped_ptr<DaemonController>(new DaemonControllerMac());
 }
 
 }  // namespace remoting

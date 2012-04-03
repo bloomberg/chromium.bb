@@ -7,6 +7,7 @@
 #include <unistd.h>
 
 #include "base/basictypes.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/environment.h"
@@ -15,6 +16,7 @@
 #include "base/logging.h"
 #include "base/process_util.h"
 #include "base/string_split.h"
+#include "base/threading/thread.h"
 #include "base/values.h"
 
 namespace remoting {
@@ -40,15 +42,27 @@ class DaemonControllerLinux : public remoting::DaemonController {
   virtual State GetState() OVERRIDE;
   virtual void GetConfig(const GetConfigCallback& callback) OVERRIDE;
   virtual void SetConfigAndStart(
-      scoped_ptr<base::DictionaryValue> config) OVERRIDE;
-  virtual void SetPin(const std::string& pin) OVERRIDE;
-  virtual void Stop() OVERRIDE;
+      scoped_ptr<base::DictionaryValue> config,
+      const CompletionCallback& done_callback) OVERRIDE;
+  virtual void SetPin(const std::string& pin,
+                      const CompletionCallback& done_callback) OVERRIDE;
+  virtual void Stop(const CompletionCallback& done_callback) OVERRIDE;
 
  private:
+  void DoSetConfigAndStart(scoped_ptr<base::DictionaryValue> config,
+                           const CompletionCallback& done_callback);
+  void DoSetPin(const std::string& pin,
+                const CompletionCallback& done_callback);
+  void DoStop(const CompletionCallback& done_callback);
+
+  base::Thread file_io_thread_;
+
   DISALLOW_COPY_AND_ASSIGN(DaemonControllerLinux);
 };
 
-DaemonControllerLinux::DaemonControllerLinux() {
+DaemonControllerLinux::DaemonControllerLinux()
+    : file_io_thread_("DaemonControllerFileIO") {
+  file_io_thread_.Start();
 }
 
 // TODO(jamiewalch): We'll probably be able to do a better job of
@@ -123,41 +137,78 @@ void DaemonControllerLinux::GetConfig(const GetConfigCallback& callback) {
 }
 
 void DaemonControllerLinux::SetConfigAndStart(
-    scoped_ptr<base::DictionaryValue> config) {
+    scoped_ptr<base::DictionaryValue> config,
+    const CompletionCallback& done_callback) {
+  // base::Unretained() is safe because we control lifetime of the thread.
+  file_io_thread_.message_loop()->PostTask(FROM_HERE, base::Bind(
+      &DaemonControllerLinux::DoSetConfigAndStart, base::Unretained(this),
+      base::Passed(&config), done_callback));
+}
+
+void DaemonControllerLinux::SetPin(const std::string& pin,
+                                   const CompletionCallback& done_callback) {
+  file_io_thread_.message_loop()->PostTask(FROM_HERE, base::Bind(
+      &DaemonControllerLinux::DoSetPin, base::Unretained(this),
+      pin, done_callback));
+}
+
+void DaemonControllerLinux::Stop(const CompletionCallback& done_callback) {
+  file_io_thread_.message_loop()->PostTask(FROM_HERE, base::Bind(
+      &DaemonControllerLinux::DoStop, base::Unretained(this),
+      done_callback));
+}
+
+void DaemonControllerLinux::DoSetConfigAndStart(
+    scoped_ptr<base::DictionaryValue> config,
+    const CompletionCallback& done_callback) {
   std::vector<std::string> args;
   args.push_back("--explicit-config");
   std::string config_json;
   base::JSONWriter::Write(config.get(), &config_json);
   args.push_back(config_json);
-  // TODO(sergeyu): Set state to START_FAILED if RunScript() fails.
   std::vector<std::string> no_args;
-  RunScript(args, NULL);
+  int exit_code = 0;
+  AsyncResult result;
+  if (RunScript(args, &exit_code)) {
+    result = (exit_code == 0) ? RESULT_OK : RESULT_FAILED;
+  } else {
+    result = RESULT_FAILED;
+  }
+  done_callback.Run(result);
 }
 
-void DaemonControllerLinux::SetPin(const std::string& pin) {
+void DaemonControllerLinux::DoSetPin(const std::string& pin,
+                                     const CompletionCallback& done_callback) {
   std::vector<std::string> args;
   args.push_back("--explicit-pin");
   args.push_back(pin);
   int exit_code = 0;
-  RunScript(args, &exit_code);
+  AsyncResult result;
+  if (RunScript(args, &exit_code)) {
+    result = (exit_code == 0) ? RESULT_OK : RESULT_FAILED;
+  } else {
+    result = RESULT_FAILED;
+  }
+  done_callback.Run(result);
 }
 
-// TODO(jamiewalch): If Stop is called after Start but before GetState returns
-// STARTED, then it should prevent the daemon from starting; currently it will
-// just fail silently.
-void DaemonControllerLinux::Stop() {
+void DaemonControllerLinux::DoStop(const CompletionCallback& done_callback) {
   std::vector<std::string> args;
   args.push_back("--stop");
-  // TODO(jamiewalch): Make Stop asynchronous like start once there's UI in the
-  // web-app to support it.
   int exit_code = 0;
-  RunScript(args, &exit_code);
+  AsyncResult result;
+  if (RunScript(args, &exit_code)) {
+    result = (exit_code == 0) ? RESULT_OK : RESULT_FAILED;
+  } else {
+    result = RESULT_FAILED;
+  }
+  done_callback.Run(result);
 }
 
 }  // namespace
 
-DaemonController* remoting::DaemonController::Create() {
-  return new DaemonControllerLinux();
+scoped_ptr<DaemonController> remoting::DaemonController::Create() {
+  return scoped_ptr<DaemonController>(new DaemonControllerLinux());
 }
 
 }  // namespace remoting
