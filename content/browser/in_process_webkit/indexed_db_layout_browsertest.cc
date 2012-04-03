@@ -94,8 +94,10 @@ IN_PROC_BROWSER_TEST_F(IndexedDBLayoutTest, ComplexTests) {
   RunLayoutTests(kComplexTests);
 }
 
-// Generally slow, and frequently times out. http://crbug.com/120924
+// Frequently times out, sometimes due to webkit assertion failure.
+// http://crbug.com/120924
 IN_PROC_BROWSER_TEST_F(IndexedDBLayoutTest, FAILS_IndexBasicsWorkersTest) {
+  RunLayoutTest("deleteIndex.html");
   RunLayoutTest("index-basics-workers.html");
 }
 
