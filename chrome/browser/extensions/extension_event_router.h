@@ -182,10 +182,6 @@ class ExtensionEventRouter : public content::NotificationObserver {
       const Extension* extension,
       const linked_ptr<ExtensionEvent>& event);
 
-  // Dispatch may be delayed if the extension has a lazy background page.
-  bool CanDispatchEventNow(Profile* profile,
-                           const Extension* extension);
-
   // Track of the number of dispatched events that have not yet sent an
   // ACK from the renderer.
   void IncrementInFlightEvents(Profile* profile, const Extension* extension);

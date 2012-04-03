@@ -395,27 +395,15 @@ void ExtensionEventRouter::MaybeLoadLazyBackgroundPage(
   if (!CanDispatchEventToProfile(profile, extension, event, &event_args))
     return;
 
-  if (!CanDispatchEventNow(profile, extension)) {
-    ExtensionSystemFactory::GetForProfile(profile)->
-        lazy_background_task_queue()->AddPendingTask(
+  LazyBackgroundTaskQueue* queue =
+      ExtensionSystemFactory::GetForProfile(profile)->
+          lazy_background_task_queue();
+  if (queue->ShouldEnqueueTask(profile, extension)) {
+    queue->AddPendingTask(
         profile, extension->id(),
         base::Bind(&ExtensionEventRouter::DispatchPendingEvent,
                    base::Unretained(this), event));
   }
-}
-
-bool ExtensionEventRouter::CanDispatchEventNow(
-     Profile* profile, const Extension* extension) {
-  DCHECK(extension);
-  if (extension->has_lazy_background_page()) {
-    ExtensionProcessManager* pm = profile->GetExtensionProcessManager();
-    ExtensionHost* background_host =
-        pm->GetBackgroundHostForExtension(extension->id());
-    if (!background_host || !background_host->did_stop_loading())
-      return false;
-  }
-
-  return true;
 }
 
 void ExtensionEventRouter::IncrementInFlightEvents(

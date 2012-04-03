@@ -162,7 +162,7 @@
             var rv = requestEvent.dispatch(request, sender, responseCallback);
             responseCallbackPreserved =
                 rv && rv.results && rv.results.indexOf(true) > -1;
-            if (!responseCallbackPreserved) {
+            if (!responseCallbackPreserved && port) {
               // If they didn't access the response callback, they're not
               // going to send a response, so clean up the port immediately.
               port.destroy_();

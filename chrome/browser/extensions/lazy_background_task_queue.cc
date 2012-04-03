@@ -34,6 +34,20 @@ LazyBackgroundTaskQueue::LazyBackgroundTaskQueue(Profile* profile)
 LazyBackgroundTaskQueue::~LazyBackgroundTaskQueue() {
 }
 
+bool LazyBackgroundTaskQueue::ShouldEnqueueTask(
+    Profile* profile, const Extension* extension) {
+  DCHECK(extension);
+  if (extension->has_lazy_background_page()) {
+    ExtensionProcessManager* pm = profile->GetExtensionProcessManager();
+    ExtensionHost* background_host =
+        pm->GetBackgroundHostForExtension(extension->id());
+    if (!background_host || !background_host->did_stop_loading())
+      return true;
+  }
+
+  return false;
+}
+
 void LazyBackgroundTaskQueue::AddPendingTask(
     Profile* profile,
     const std::string& extension_id,

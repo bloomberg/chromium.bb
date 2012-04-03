@@ -210,9 +210,10 @@ void ExtensionMessageService::OpenChannelToExtension(
                            source_extension_id, target_extension_id,
                            channel_name);
 
-  // If the target process doesn't exist, it might be a lazy background page.
-  // In that case, queue up the task and load the page.
-  if (!receiver.process && MaybeAddPendingOpenChannelTask(profile, params))
+  // The target might be a lazy background page. In that case, we have to check
+  // if it is loaded and ready, and if not, queue up the task and load the
+  // page.
+  if (MaybeAddPendingOpenChannelTask(profile, params))
     return;
 
   OpenChannelImpl(params);
@@ -422,12 +423,15 @@ bool ExtensionMessageService::MaybeAddPendingOpenChannelTask(
     // will use.
     if (!extension->incognito_split_mode())
       profile = profile->GetOriginalProfile();
-    lazy_background_task_queue_->AddPendingTask(profile, extension_id,
-        base::Bind(&ExtensionMessageService::PendingOpenChannel,
-                   base::Unretained(this), params, params.source->GetID()));
-    pending_channels_[GET_CHANNEL_ID(params.receiver_port_id)] =
-        PendingChannel(profile, extension_id);
-    return true;
+
+    if (lazy_background_task_queue_->ShouldEnqueueTask(profile, extension)) {
+      lazy_background_task_queue_->AddPendingTask(profile, extension_id,
+          base::Bind(&ExtensionMessageService::PendingOpenChannel,
+                     base::Unretained(this), params, params.source->GetID()));
+      pending_channels_[GET_CHANNEL_ID(params.receiver_port_id)] =
+          PendingChannel(profile, extension_id);
+      return true;
+    }
   }
 
   return false;

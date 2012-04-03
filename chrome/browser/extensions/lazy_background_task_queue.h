@@ -15,6 +15,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
+class Extension;
 class ExtensionHost;
 class Profile;
 
@@ -30,6 +31,10 @@ class LazyBackgroundTaskQueue : public content::NotificationObserver {
 
   explicit LazyBackgroundTaskQueue(Profile* profile);
   virtual ~LazyBackgroundTaskQueue();
+
+  // Returns true if the task should be added to the queue (that is, if the
+  // extension has a lazy background page that isn't ready yet).
+  bool ShouldEnqueueTask(Profile* profile, const Extension* extension);
 
   // Adds a task to the queue for a given extension. If this is the first
   // task added for the extension, its lazy background page will be loaded.
