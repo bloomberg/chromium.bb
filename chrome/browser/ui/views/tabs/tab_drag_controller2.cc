@@ -927,6 +927,8 @@ void TabDragController2::Detach() {
     }
   }
 
+  attached_tabstrip_->DraggedTabsDetached();
+
   attached_tabstrip_ = NULL;
 }
 

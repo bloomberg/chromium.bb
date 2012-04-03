@@ -332,6 +332,9 @@ class TabStrip : public AbstractTabStripView,
   // Used by TabDragController when the user starts or stops dragging tabs.
   void StartedDraggingTabs(const std::vector<BaseTab*>& tabs);
 
+  // Invoked when TabDragController detaches a set of tabs.
+  void DraggedTabsDetached();
+
   // Used by TabDragController when the user stops dragging tabs.
   void StoppedDraggingTabs(const std::vector<BaseTab*>& tabs);
 

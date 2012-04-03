@@ -459,6 +459,8 @@ void TabStrip::AddTabAt(int model_index, const TabRendererData& data) {
 }
 
 void TabStrip::MoveTab(int from_model_index, int to_model_index) {
+  BaseTab* last_tab = tab_data_.back().tab;
+
   int from_tab_data_index = ModelIndexToTabIndex(from_model_index);
   BaseTab* tab = tab_data_[from_tab_data_index].tab;
   tab_data_.erase(tab_data_.begin() + from_tab_data_index);
@@ -468,6 +470,11 @@ void TabStrip::MoveTab(int from_model_index, int to_model_index) {
   tab_data_.insert(tab_data_.begin() + to_tab_data_index, data);
 
   StartMoveTabAnimation();
+
+  if (TabDragController::IsAttachedTo(this) &&
+      (last_tab != tab_data_.back().tab || tab_data_.back().tab->dragging())) {
+    newtab_button_->SetVisible(false);
+  }
 }
 
 void TabStrip::RemoveTabAt(int model_index) {
@@ -1168,6 +1175,14 @@ void TabStrip::StartRemoveTabAnimation(int model_index) {
   // ownership of RemoveTabDelegate.
   bounds_animator_.SetAnimationDelegate(tab, new RemoveTabDelegate(this, tab),
                                         true);
+
+  // Don't animate the new tab button when dragging tabs. Otherwise it looks
+  // like the new tab button magically appears from beyond the end of the tab
+  // strip.
+  if (TabDragController::IsAttachedTo(this)) {
+    bounds_animator_.StopAnimatingView(newtab_button_);
+    newtab_button_->SetBoundsRect(newtab_button_bounds_);
+  }
 }
 
 void TabStrip::StopAnimating(bool layout) {
@@ -1230,6 +1245,9 @@ void TabStrip::LayoutDraggedTabsAt(const std::vector<BaseTab*>& tabs,
     LayoutDraggedTabsAtWithStacking(active_tab, location);
     return;
   }
+  // Immediately hide the new tab button if the last tab is being dragged.
+  if (tab_data_.back().tab->dragging())
+    newtab_button_->SetVisible(false);
   std::vector<gfx::Rect> bounds;
   CalculateBoundsForDraggedTabs(tabs, &bounds);
   DCHECK_EQ(tabs.size(), bounds.size());
@@ -1297,6 +1315,10 @@ void TabStrip::RemoveAndDeleteTab(BaseTab* tab) {
 }
 
 void TabStrip::StartedDraggingTabs(const std::vector<BaseTab*>& tabs) {
+  // Hide the new tab button immediately if we didn't originate the drag.
+  if (!drag_controller_.get())
+    newtab_button_->SetVisible(false);
+
   PrepareForAnimation();
 
   // Reset dragging state of existing tabs.
@@ -1318,6 +1340,10 @@ void TabStrip::StartedDraggingTabs(const std::vector<BaseTab*>& tabs) {
     tabs[i]->SetBoundsRect(ideal_bounds(tab_data_index));
   }
   SchedulePaint();
+}
+
+void TabStrip::DraggedTabsDetached() {
+  newtab_button_->SetVisible(true);
 }
 
 void TabStrip::StoppedDraggingTabs(const std::vector<BaseTab*>& tabs) {
@@ -1353,6 +1379,8 @@ void TabStrip::OwnDragController(TabDragController* controller) {
 }
 
 void TabStrip::DestroyDragController() {
+  if (newtab_button_)
+    newtab_button_->SetVisible(true);
   drag_controller_.reset();
 }
 

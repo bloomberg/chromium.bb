@@ -964,6 +964,7 @@ void DefaultTabDragController::Detach() {
   // Create the dragged view.
   CreateDraggedView(tab_data, drag_bounds);
 
+  attached_tabstrip_->DraggedTabsDetached();
   attached_tabstrip_ = NULL;
 }
 
