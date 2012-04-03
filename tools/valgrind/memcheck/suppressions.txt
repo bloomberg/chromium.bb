@@ -5622,6 +5622,24 @@
    fun:_ZN5gdata15GDataFileSystem14OnLoadRootFeedENS0_13FeedChunkTypeERK8FilePathbRKN4base8CallbackIFvNS5_17PlatformFileErrorES4_PNS_13GDataFileBaseEEEEPS7_PNS5_9ListValueE
 }
 
+{
+   bug_121571_a
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN7fileapi27FileSystemURLRequestJobTest17TestRequestHelperERK4GURLPKN3net18HttpRequestHeadersEb
+   fun:_ZN7fileapi27FileSystemURLRequestJobTest11TestRequestERK4GURL
+   fun:_ZN7fileapi12_GLOBAL__N_143FileSystemURLRequestJobTest_InvalidURL_Test8TestBodyEv
+}
+
+{
+   bug_121571_b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN7fileapi30FileSystemDirURLRequestJobTest17TestRequestHelperERK4GURLb
+   fun:_ZN7fileapi30FileSystemDirURLRequestJobTest11TestRequestERK4GURL
+   fun:_ZN7fileapi12_GLOBAL__N_146FileSystemDirURLRequestJobTest_InvalidURL_Test8TestBodyEv
+}
+
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
 
