@@ -7,6 +7,7 @@
 0x4da52e00bdfac86a	AboutFlags_cloud-print-proxy
 0xc5ec36aaa32ceff4	AboutFlags_confirm-to-quit
 0x4e8fe1c674de45dd	AboutFlags_conflicting-modules-check
+0x4ebeea0717b98e89	AboutFlags_disable-chrome-to-mobile
 0xe9d2339d6b9225c7	AboutFlags_disable-outdated-plugins
 0xf73b5212b48e2a75	AboutFlags_disable-print-preview
 0xdddbf34cee2c636c	AboutFlags_dns-server
