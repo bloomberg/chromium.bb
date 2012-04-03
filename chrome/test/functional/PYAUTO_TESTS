@@ -208,6 +208,8 @@
       '-https.SSLTest.testSSLCertAuthorityOK',
       # crbug.com/114244
       '-imports.ImportsTest.testImportSafariDataTwice',
+      # crbug.com/121484
+      '-multiprofile.MultiprofileTest.test20NewProfiles',
       '-ntp.NTPTest.testLaunchAppNewWindow',  # crbug.com/79812
       # Causes browser crash.  crbug.com/93548
       '-notifications.NotificationsTest.testIncognitoNotification',
