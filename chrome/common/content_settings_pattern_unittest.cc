@@ -73,6 +73,7 @@ TEST(ContentSettingsPatternTest, FromURL) {
 
   pattern = ContentSettingsPattern::FromURL(GURL("https://www.google.com:443"));
   EXPECT_TRUE(pattern.Matches(GURL("https://www.google.com")));
+  EXPECT_TRUE(pattern.Matches(GURL("https://foo.www.google.com")));
   EXPECT_TRUE(pattern.Matches(GURL("https://www.google.com:443")));
   EXPECT_FALSE(pattern.Matches(GURL("https://www.google.com:444")));
   EXPECT_FALSE(pattern.Matches(GURL("http://www.google.com:443")));
@@ -87,6 +88,49 @@ TEST(ContentSettingsPatternTest, FromURL) {
   pattern = ContentSettingsPattern::FromURL(GURL("file:///foo/bar.html"));
   EXPECT_TRUE(pattern.IsValid());
   EXPECT_EQ("file:///foo/bar.html", pattern.ToString());
+}
+
+TEST(ContentSettingsPatternTest, FilesystemUrls) {
+  ContentSettingsPattern pattern =
+      ContentSettingsPattern::FromURL(GURL("http://www.google.com"));
+  EXPECT_TRUE(pattern.Matches(
+      GURL("filesystem:http://www.google.com/temporary/")));
+  EXPECT_TRUE(pattern.Matches(
+      GURL("filesystem:http://foo.www.google.com/temporary/")));
+  EXPECT_TRUE(pattern.Matches(
+      GURL("filesystem:http://www.google.com:80/temporary/")));
+  EXPECT_TRUE(pattern.Matches(
+      GURL("filesystem:http://www.google.com:81/temporary/")));
+
+  pattern = ContentSettingsPattern::FromURL(GURL("https://www.google.com"));
+  EXPECT_TRUE(pattern.Matches(
+      GURL("filesystem:https://www.google.com/temporary/")));
+  EXPECT_TRUE(pattern.Matches(
+      GURL("filesystem:https://www.google.com:443/temporary/")));
+  EXPECT_TRUE(pattern.Matches(
+      GURL("filesystem:https://foo.www.google.com/temporary/")));
+  EXPECT_FALSE(pattern.Matches(
+      GURL("filesystem:https://www.google.com:81/temporary/")));
+
+  // A pattern from a filesystem URLs is equivalent to a pattern from the inner
+  // URL of the filesystem URL.
+  ContentSettingsPattern pattern2 = ContentSettingsPattern::FromURL(
+      GURL("filesystem:https://www.google.com/temporary/"));
+  EXPECT_EQ(ContentSettingsPattern::IDENTITY, pattern.Compare(pattern2));
+
+  EXPECT_STREQ("https://[*.]www.google.com:443", pattern2.ToString().c_str());
+
+  pattern =
+      ContentSettingsPattern::FromURL(
+          GURL("filesystem:file:///temporary/foo/bar"));
+  EXPECT_TRUE(pattern.Matches(GURL("filesystem:file:///temporary/")));
+  EXPECT_TRUE(pattern.Matches(GURL("filesystem:file:///temporary/test.txt")));
+  EXPECT_TRUE(pattern.Matches(GURL("file:///temporary")));
+  EXPECT_FALSE(pattern.Matches(GURL("file://foo/bar")));
+  pattern2 =
+      ContentSettingsPattern::FromURL(
+          GURL("filesystem:file:///persistent/foo2/bar2"));
+  EXPECT_EQ(ContentSettingsPattern::IDENTITY, pattern.Compare(pattern2));
 }
 
 TEST(ContentSettingsPatternTest, FromURLNoWildcard) {
@@ -114,8 +158,21 @@ TEST(ContentSettingsPatternTest, FromURLNoWildcard) {
   EXPECT_TRUE(pattern.Matches(GURL("https://www.example.com")));
   EXPECT_FALSE(pattern.Matches(GURL("http://foo.www.example.com")));
 
-  pattern = ContentSettingsPattern::FromURLNoWildcard(
-      GURL("https://www.example.com"));
+   // Pattern for filesystem URLs
+  pattern =
+      ContentSettingsPattern::FromURLNoWildcard(
+          GURL("filesystem:http://www.google.com/temporary/"));
+  EXPECT_TRUE(pattern.IsValid());
+  EXPECT_TRUE(pattern.Matches(GURL("http://www.google.com")));
+  EXPECT_FALSE(pattern.Matches(GURL("http://foo.www.google.com")));
+  EXPECT_TRUE(pattern.Matches(
+      GURL("filesystem:http://www.google.com/persistent/")));
+  EXPECT_FALSE(pattern.Matches(
+      GURL("filesystem:https://www.google.com/persistent/")));
+  EXPECT_FALSE(pattern.Matches(
+      GURL("filesystem:https://www.google.com:81/temporary/")));
+  EXPECT_FALSE(pattern.Matches(
+      GURL("filesystem:https://foo.www.google.com/temporary/")));
 }
 
 TEST(ContentSettingsPatternTest, Wildcard) {

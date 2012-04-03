@@ -95,6 +95,7 @@ AutocompleteInput::AutocompleteInput(const string16& text,
   if (((type_ == UNKNOWN) || (type_ == REQUESTED_URL) || (type_ == URL)) &&
       canonicalized_url.is_valid() &&
       (!canonicalized_url.IsStandard() || canonicalized_url.SchemeIsFile() ||
+       canonicalized_url.SchemeIsFileSystem() ||
        !canonicalized_url.host().empty()))
     canonicalized_url_ = canonicalized_url;
 
@@ -164,6 +165,14 @@ AutocompleteInput::Type AutocompleteInput::Parse(
     // either case, |parsed_scheme| will tell us that this is a file URL, but
     // |parts->scheme| might be empty, e.g. if the user typed "C:\foo".
     return URL;
+  }
+
+  if (LowerCaseEqualsASCII(parsed_scheme, chrome::kFileSystemScheme)) {
+    // This could theoretically be a strange search, but let's check.
+    // If it's got an inner_url with a scheme, it's a URL, whether it's valid or
+    // not.
+    if (parts->inner_parsed() && parts->inner_parsed()->scheme.is_valid())
+      return URL;
   }
 
   // If the user typed a scheme, and it's HTTP or HTTPS, we know how to parse it
@@ -455,6 +464,9 @@ void AutocompleteInput::ParseForEmphasizeComponents(
         host->reset();
       }
     }
+  } else if (LowerCaseEqualsASCII(scheme_str, chrome::kFileSystemScheme) &&
+             parts.inner_parsed() && parts.inner_parsed()->scheme.is_valid()) {
+    *host = parts.inner_parsed()->host;
   }
 }
 

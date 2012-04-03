@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -412,6 +412,13 @@ std::string URLFixerUpper::SegmentURL(const std::string& text,
            url_parse::Component(0, static_cast<int>(scheme.length())))))
     return scheme;
 
+  if (scheme == chrome::kFileSystemScheme) {
+    // Have the GURL parser do the heavy lifting for us.
+    url_parse::ParseFileSystemURL(text.data(),
+        static_cast<int>(text.length()), parts);
+    return scheme;
+  }
+
   if (parts->scheme.is_valid()) {
     // Have the GURL parser do the heavy lifting for us.
     url_parse::ParseStandardURL(text.data(), static_cast<int>(text.length()),
@@ -477,6 +484,13 @@ GURL URLFixerUpper::FixupURL(const std::string& text,
   // We handle the file scheme separately.
   if (scheme == chrome::kFileScheme)
     return GURL(parts.scheme.is_valid() ? text : FixupPath(text));
+
+  // We handle the filesystem scheme separately.
+  if (scheme == chrome::kFileSystemScheme) {
+    if (parts.inner_parsed() && parts.inner_parsed()->scheme.is_valid())
+      return GURL(text);
+    return GURL();
+  }
 
   // Parse and rebuild about: and chrome: URLs, except about:blank.
   bool chrome_url = !LowerCaseEqualsASCII(trimmed, chrome::kAboutBlankURL) &&

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -48,10 +48,6 @@ class BrowsingDataLocalStorageHelper
         int64 size,
         base::Time last_modified);
     ~LocalStorageInfo();
-
-    bool IsFileSchemeData() {
-      return protocol == chrome::kFileScheme;
-    }
 
     std::string protocol;
     std::string host;

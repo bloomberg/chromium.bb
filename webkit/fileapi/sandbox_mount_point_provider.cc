@@ -654,6 +654,9 @@ bool SandboxMountPointProvider::IsAllowedScheme(const GURL& url) const {
   // only if --allow-file-access-from-files flag is given.
   if (url.SchemeIs("http") || url.SchemeIs("https"))
     return true;
+  if (url.SchemeIsFileSystem())
+    return url.inner_url() && IsAllowedScheme(*url.inner_url());
+
   for (size_t i = 0;
        i < file_system_options_.additional_allowed_schemes().size();
        ++i) {

@@ -14,7 +14,7 @@ This component extension test does the following:
 
 var cleanupError = 'Got unexpected error while cleaning up test directory.';
 
-// Class specified by the client runnig the TestRunner.
+// Class specified by the client running the TestRunner.
 // |expectedTasks| should contain list of actions defined for abc files defined
 //     by filesystem_handler part of the test.
 // |fileVerifierFunction| method that will verify test results received from the
@@ -86,7 +86,9 @@ TestExpectations.prototype.verifyTasks = function(tasks,
     patterns = patterns.sort();
     expectedPatterns = expectedPatterns.sort();
     for (var j = 0; j < patterns.length; ++j) {
-      if (patterns[j] != expectedPatterns[j]) {
+      var translatedPattern = expectedPatterns[j].replace(
+          /^filesystem:/, "chrome-extension://*/");
+      if (patterns[j] != translatedPattern) {
         errorCallback({message: 'Wrong patterns set for task ' +
                                 taskName + '. ' +
                                 'Got: ' + patterns +
