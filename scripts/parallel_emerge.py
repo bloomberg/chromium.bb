@@ -285,18 +285,10 @@ class DepGraphGenerator(object):
       os.environ["ACCEPT_PROPERTIES"] = opts["--accept-properties"]
 
     # If we're installing packages to the board, and we're not using the
-    # official flag, we can enable the following optimization:
-    #  1) Disable vardb locks. This is safe because we only run up to one
-    #     instance of parallel_emerge in parallel.
-    #  2) Don't update the environment until the end of the build. This is
-    #     safe because board packages don't need to run during the build --
-    #     they're cross-compiled, so our CPU architecture doesn't support them
-    #     anyway.
-    # TODO(davidjames): Check whether this optimization still helps.
+    # official flag, we can disable vardb locks. This is safe because we
+    # only run up to one instance of parallel_emerge in parallel.
     if self.board and os.environ.get("CHROMEOS_OFFICIAL") != "1":
       os.environ.setdefault("PORTAGE_LOCKS", "false")
-      extra_features = " no-env-update"
-      os.environ["FEATURES"] = os.environ.get("FEATURES", "") + extra_features
 
     # Now that we've setup the necessary environment variables, we can load the
     # emerge config from disk.
@@ -1612,17 +1604,6 @@ def main(argv):
   scheduler = EmergeQueue(deps_graph, emerge, deps.package_db, deps.show_output)
   scheduler.Run()
   scheduler = None
-
-  # Update environment (library cache, symlinks, etc.)
-  if deps.board and "--pretend" not in emerge.opts:
-    # Turn off env-update suppression used above for disabling
-    # env-update during merging.
-    os.environ["FEATURES"] += " -no-env-update"
-    # Also kick the existing settings should they be reused...
-    if hasattr(portage, 'settings'):
-      portage.settings.unlock()
-      portage.settings.features.discard('no-env-update')
-    portage.env_update()
 
   # If we already upgraded portage, we don't need to do so again. But we do
   # need to upgrade the rest of the packages. So we'll go ahead and do that.
