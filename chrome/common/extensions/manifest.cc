@@ -38,7 +38,7 @@ bool Manifest::ValidateManifest(string16* error) const {
       continue;
     }
 
-    Feature::Availability result = feature->IsAvailableToManifest(
+    Feature::Availability result = feature->IsAvailable(
         extension_id_, GetType(), Feature::ConvertLocation(location_),
         GetManifestVersion());
     if (result != Feature::IS_AVAILABLE) {
@@ -155,7 +155,7 @@ bool Manifest::CanAccessKey(const std::string& key) const {
   if (!feature.get())
     return false;
 
-  return Feature::IS_AVAILABLE == feature->IsAvailableToManifest(
+  return Feature::IS_AVAILABLE == feature->IsAvailable(
       extension_id_, GetType(), Feature::ConvertLocation(location_),
       GetManifestVersion());
 }

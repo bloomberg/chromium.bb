@@ -251,7 +251,7 @@ ExtensionFunction* ExtensionFunctionDispatcher::CreateExtensionFunction(
     return NULL;
   }
 
-  if (ExtensionAPI::GetSharedInstance()->IsPrivileged(params.name) &&
+  if (ExtensionAPI::GetInstance()->IsPrivileged(params.name) &&
       !process_map.Contains(extension->id(), requesting_process_id)) {
     LOG(ERROR) << "Extension API called from incorrect process "
                << requesting_process_id

@@ -51,7 +51,6 @@ void ParseSet(const DictionaryValue* value,
   if (!value->GetList(property, &list_value))
     return;
 
-  set->clear();
   for (size_t i = 0; i < list_value->GetSize(); ++i) {
     std::string str_val;
     CHECK(list_value->GetString(i, &str_val)) << property << " " << i;
@@ -77,7 +76,6 @@ void ParseEnum(const DictionaryValue* value,
   std::string string_value;
   if (!value->GetString(property, &string_value))
     return;
-
   ParseEnum(string_value, enum_value, mapping);
 }
 
@@ -86,11 +84,6 @@ void ParseEnumSet(const DictionaryValue* value,
                   const std::string& property,
                   std::set<T>* enum_set,
                   const std::map<std::string, T>& mapping) {
-  if (!value->HasKey(property))
-    return;
-
-  enum_set->clear();
-
   std::string property_string;
   if (value->GetString(property, &property_string)) {
     if (property_string == "all") {
@@ -123,27 +116,28 @@ Feature::Feature()
     max_manifest_version_(0) {
 }
 
-Feature::Feature(const Feature& other)
-    : whitelist_(other.whitelist_),
-      extension_types_(other.extension_types_),
-      contexts_(other.contexts_),
-      location_(other.location_),
-      platform_(other.platform_),
-      min_manifest_version_(other.min_manifest_version_),
-      max_manifest_version_(other.max_manifest_version_) {
-}
-
 Feature::~Feature() {
 }
 
-bool Feature::Equals(const Feature& other) const {
-  return whitelist_ == other.whitelist_ &&
-      extension_types_ == other.extension_types_ &&
-      contexts_ == other.contexts_ &&
-      location_ == other.location_ &&
-      platform_ == other.platform_ &&
-      min_manifest_version_ == other.min_manifest_version_ &&
-      max_manifest_version_ == other.max_manifest_version_;
+// static
+scoped_ptr<Feature> Feature::Parse(const DictionaryValue* value) {
+  scoped_ptr<Feature> feature(new Feature());
+
+  ParseSet(value, "whitelist", feature->whitelist());
+  ParseEnumSet<Extension::Type>(value, "extension_types",
+                                feature->extension_types(),
+                                g_mappings.Get().extension_types);
+  ParseEnumSet<Context>(value, "contexts", feature->contexts(),
+                        g_mappings.Get().contexts);
+  ParseEnum<Location>(value, "location", &feature->location_,
+                      g_mappings.Get().locations);
+  ParseEnum<Platform>(value, "platform", &feature->platform_,
+                      g_mappings.Get().platforms);
+
+  value->GetInteger("min_manifest_version", &feature->min_manifest_version_);
+  value->GetInteger("max_manifest_version", &feature->max_manifest_version_);
+
+  return feature.Pass();
 }
 
 // static
@@ -161,20 +155,6 @@ Feature::Location Feature::ConvertLocation(Extension::Location location) {
     return COMPONENT_LOCATION;
   else
     return UNSPECIFIED_LOCATION;
-}
-
-void Feature::Parse(const DictionaryValue* value) {
-  ParseSet(value, "whitelist", &whitelist_);
-  ParseEnumSet<Extension::Type>(value, "extension_types", &extension_types_,
-                                g_mappings.Get().extension_types);
-  ParseEnumSet<Context>(value, "contexts", &contexts_,
-                        g_mappings.Get().contexts);
-  ParseEnum<Location>(value, "location", &location_,
-                      g_mappings.Get().locations);
-  ParseEnum<Platform>(value, "platform", &platform_,
-                      g_mappings.Get().platforms);
-  value->GetInteger("min_manifest_version", &min_manifest_version_);
-  value->GetInteger("max_manifest_version", &max_manifest_version_);
 }
 
 std::string Feature::GetErrorMessage(Feature::Availability result) {
@@ -204,12 +184,12 @@ std::string Feature::GetErrorMessage(Feature::Availability result) {
   }
 }
 
-Feature::Availability Feature::IsAvailableToManifest(
-    const std::string& extension_id,
-    Extension::Type type,
-    Location location,
-    int manifest_version,
-    Platform platform) const {
+Feature::Availability Feature::IsAvailable(const std::string& extension_id,
+                                           Extension::Type type,
+                                           Location location,
+                                           Context context,
+                                           Platform platform,
+                                           int manifest_version) {
   // Component extensions can access any feature.
   if (location == COMPONENT_LOCATION)
     return IS_AVAILABLE;
@@ -235,6 +215,11 @@ Feature::Availability Feature::IsAvailableToManifest(
     return INVALID_TYPE;
   }
 
+  if (!contexts_.empty() &&
+      contexts_.find(context) == contexts_.end()) {
+    return INVALID_CONTEXT;
+  }
+
   if (location_ != UNSPECIFIED_LOCATION && location_ != location)
     return INVALID_LOCATION;
 
@@ -246,27 +231,6 @@ Feature::Availability Feature::IsAvailableToManifest(
 
   if (max_manifest_version_ != 0 && manifest_version > max_manifest_version_)
     return INVALID_MAX_MANIFEST_VERSION;
-
-  return IS_AVAILABLE;
-}
-
-Feature::Availability Feature::IsAvailableToContext(
-    const Extension* extension,
-    Feature::Context context,
-    Feature::Platform platform) const {
-  Availability result = IsAvailableToManifest(
-      extension->id(),
-      extension->GetType(),
-      ConvertLocation(extension->location()),
-      extension->manifest_version(),
-      platform);
-  if (result != IS_AVAILABLE)
-    return result;
-
-  if (!contexts_.empty() &&
-      contexts_.find(context) == contexts_.end()) {
-    return INVALID_CONTEXT;
-  }
 
   return IS_AVAILABLE;
 }

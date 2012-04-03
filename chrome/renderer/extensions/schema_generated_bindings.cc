@@ -89,7 +89,7 @@ v8::Handle<v8::Value> SchemaGeneratedBindings::GetExtensionAPIDefinition(
     // The minimal set of APIs that tests need.
     apis->insert("extension");
   } else {
-    apis = ExtensionAPI::GetSharedInstance()->GetAPIsForContext(
+    apis = ExtensionAPI::GetInstance()->GetAPIsForContext(
         v8_context->context_type(),
         extension_dispatcher()->extensions()->GetByID(extension_id),
         UserScriptSlave::GetDataSourceURLForFrame(v8_context->web_frame()));

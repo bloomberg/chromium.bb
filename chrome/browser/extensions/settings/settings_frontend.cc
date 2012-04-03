@@ -106,7 +106,7 @@ size_t GetStringAsInteger(
 SettingsStorageQuotaEnforcer::Limits GetLimitsFromExtensionAPI(
     const std::string& storage_area_id) {
   const DictionaryValue* storage_schema =
-      ExtensionAPI::GetSharedInstance()->GetSchema("storage");
+      ExtensionAPI::GetInstance()->GetSchema("storage");
   CHECK(storage_schema);
 
   DictionaryValue* properties = NULL;

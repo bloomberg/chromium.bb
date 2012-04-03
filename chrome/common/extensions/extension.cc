@@ -3314,11 +3314,7 @@ bool Extension::ParsePermissions(const char* key,
         CHECK(feature.get());
 
         extensions::Feature::Availability availability =
-            feature->IsAvailableToManifest(
-                id(),
-                GetType(),
-                extensions::Feature::ConvertLocation(location()),
-                manifest_version());
+            feature->IsAvailable(this);
         if (availability != extensions::Feature::IS_AVAILABLE) {
           // We special case hosted apps because some old versions of Chrome did
           // not return errors here and we ended up with extensions in the store
