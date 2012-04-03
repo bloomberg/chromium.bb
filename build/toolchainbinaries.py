@@ -16,13 +16,11 @@ PLATFORM_MAPPING = {
     'windows': {
         'x86-32': ['win_x86',
                    'win_x86_newlib',
-                   # When the pnacl windows tests are enabled, uncomment this.
-                   # 'pnacl_win_x86_32',
+                   'pnacl_win_x86_32',
                    'pnacl_translator'],
         'x86-64': ['win_x86',
                    'win_x86_newlib',
-                   # When the pnacl windows tests are enabled, uncomment this.
-                   # 'pnacl_win_x86_32',
+                   'pnacl_win_x86_32',
                    'pnacl_translator'],
     },
     'linux': {
