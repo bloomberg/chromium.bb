@@ -28,6 +28,7 @@
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
+#include "ui/views/focus/focus_search.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
 
@@ -49,6 +50,45 @@ static const int kButtonHeight = 48;
 static const int kButtonSpacing = 4;
 
 namespace {
+
+// Custom FocusSearch used to navigate the launcher in the order items are in
+// the ViewModel.
+class LauncherFocusSearch : public views::FocusSearch {
+ public:
+  LauncherFocusSearch(ViewModel* view_model)
+      : FocusSearch(NULL, true, true),
+        view_model_(view_model) {}
+  virtual ~LauncherFocusSearch() {}
+
+  // views::FocusSearch overrides:
+  virtual View* FindNextFocusableView(
+      View* starting_view,
+      bool reverse,
+      Direction direction,
+      bool check_starting_view,
+      views::FocusTraversable** focus_traversable,
+      View** focus_traversable_view) OVERRIDE {
+    int index = view_model_->GetIndexOfView(starting_view);
+    if (index == -1)
+      return view_model_->view_at(0);
+
+    if (reverse) {
+      --index;
+      if (index < 0)
+        index = view_model_->view_size() - 1;
+    } else {
+      ++index;
+      if (index >= view_model_->view_size())
+        index = 0;
+    }
+    return view_model_->view_at(index);
+  }
+
+ private:
+  ViewModel* view_model_;
+
+  DISALLOW_COPY_AND_ASSIGN(LauncherFocusSearch);
+};
 
 // ui::SimpleMenuModel::Delegate implementation that remembers the id of the
 // menu that was activated.
@@ -224,6 +264,7 @@ LauncherView::LauncherView(LauncherModel* model, LauncherDelegate* delegate)
   DCHECK(model_);
   bounds_animator_.reset(new views::BoundsAnimator(this));
   set_context_menu_controller(this);
+  focus_search_.reset(new LauncherFocusSearch(view_model_.get()));
 }
 
 LauncherView::~LauncherView() {
@@ -284,6 +325,21 @@ bool LauncherView::IsShowingMenu() const {
        launcher_menu_runner_->IsRunning());
 #endif
   return false;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// LauncherView, FocusTraversable implementation:
+
+views::FocusSearch* LauncherView::GetFocusSearch() {
+  return focus_search_.get();
+}
+
+views::FocusTraversable* LauncherView::GetFocusTraversableParent() {
+  return parent()->GetFocusTraversable();
+}
+
+View* LauncherView::GetFocusTraversableParentView() {
+  return this;
 }
 
 void LauncherView::LayoutToIdealBounds() {
@@ -604,6 +660,10 @@ gfx::Size LauncherView::GetPreferredSize() {
 
 void LauncherView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   LayoutToIdealBounds();
+}
+
+views::FocusTraversable* LauncherView::GetPaneFocusTraversable() {
+  return this;
 }
 
 void LauncherView::LauncherItemAdded(int model_index) {

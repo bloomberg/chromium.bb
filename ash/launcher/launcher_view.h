@@ -13,6 +13,7 @@
 #include "ash/launcher/launcher_model_observer.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/focus/focus_manager.h"
 #include "ui/views/view.h"
 
 namespace views {
@@ -36,7 +37,8 @@ class ASH_EXPORT LauncherView : public views::View,
                                 public LauncherModelObserver,
                                 public views::ButtonListener,
                                 public LauncherButtonHost,
-                                public views::ContextMenuController {
+                                public views::ContextMenuController,
+                                public views::FocusTraversable {
  public:
   // Use the api in this class for testing only.
   class ASH_EXPORT TestAPI {
@@ -66,6 +68,11 @@ class ASH_EXPORT LauncherView : public views::View,
 
   // Returns true if we're showing a menu.
   bool IsShowingMenu() const;
+
+  // Overridden from FocusTraversable:
+  virtual views::FocusSearch* GetFocusSearch() OVERRIDE;
+  virtual FocusTraversable* GetFocusTraversableParent() OVERRIDE;
+  virtual View* GetFocusTraversableParentView() OVERRIDE;
 
  private:
   class FadeOutAnimationDelegate;
@@ -124,6 +131,7 @@ class ASH_EXPORT LauncherView : public views::View,
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
+  virtual FocusTraversable* GetPaneFocusTraversable() OVERRIDE;
 
   // Overridden from LauncherModelObserver:
   virtual void LauncherItemAdded(int model_index) OVERRIDE;
@@ -181,6 +189,8 @@ class ASH_EXPORT LauncherView : public views::View,
 
   // Used for the context menu of a particular item.
   LauncherID context_menu_id_;
+
+  scoped_ptr<views::FocusSearch> focus_search_;
 
 #if !defined(OS_MACOSX)
   scoped_ptr<views::MenuRunner> overflow_menu_runner_;
