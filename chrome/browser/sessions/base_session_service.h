@@ -179,9 +179,6 @@ class BaseSessionService : public CancelableRequestProvider,
   // The profile. This may be null during testing.
   Profile* profile_;
 
-  // Path to read from. This is only used if profile_ is NULL.
-  const FilePath& path_;
-
   // The backend.
   scoped_refptr<SessionBackend> backend_;
 

@@ -73,7 +73,6 @@ BaseSessionService::BaseSessionService(SessionType type,
                                        Profile* profile,
                                        const FilePath& path)
     : profile_(profile),
-      path_(path),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       pending_reset_(false),
       commands_since_reset_(0),
@@ -85,8 +84,7 @@ BaseSessionService::BaseSessionService(SessionType type,
     save_post_data_ =
         !command_line->HasSwitch(switches::kDisableRestoreSessionState);
   }
-  backend_ = new SessionBackend(type,
-      profile_ ? profile_->GetPath() : path_);
+  backend_ = new SessionBackend(type, profile_ ? profile_->GetPath() : path);
   DCHECK(backend_.get());
 
   RunTaskOnBackendThread(FROM_HERE,
