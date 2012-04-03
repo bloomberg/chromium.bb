@@ -1144,6 +1144,8 @@
         'protocol/message_reader.h',
         'protocol/negotiating_authenticator.cc',
         'protocol/negotiating_authenticator.h',
+        'protocol/pepper_network_manager.cc',
+        'protocol/pepper_network_manager.h',
         'protocol/pepper_transport_factory.cc',
         'protocol/pepper_transport_factory.h',
         'protocol/pepper_transport_socket_adapter.cc',
