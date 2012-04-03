@@ -492,6 +492,14 @@ class TabStripModel : public content::NotificationObserver {
   static bool ContextMenuCommandToBrowserCommand(int cmd_id, int* browser_cmd);
 
  private:
+   // Used when making selection notifications.
+  enum NotifyTypes {
+    NOTIFY_DEFAULT,
+
+    // The selection is changing from a user gesture.
+    NOTIFY_USER_GESTURE,
+  };
+
   // Gets the set of tab indices whose domain matches the tab at |index|.
   void GetIndicesWithSameDomain(int index, std::vector<int>* indices);
 
@@ -536,22 +544,27 @@ class TabStripModel : public content::NotificationObserver {
 
   TabContentsWrapper* GetContentsAt(int index) const;
 
-  // Notifies the observers if the active tab has changed. If |old_contents| is
-  // non-null a TabDeactivated notification is sent right before sending
-  // ActiveTabChanged notification.
+  // Notifies the observers if the active tab is being deactivated.
+  void NotifyIfTabDeactivated(TabContentsWrapper* contents);
+
+  // Notifies the observers if the active tab has changed.
   void NotifyIfActiveTabChanged(TabContentsWrapper* old_contents,
-                                bool user_gesture);
+                                NotifyTypes notify_types);
 
   // Notifies the observers if the active tab or the tab selection has changed.
-  // If |old_contents| is non-null a TabDeactivated notification is sent right
-  // before sending ActiveTabChanged notification. |old_model| is a snapshot of
-  // |selection_model_| before the change.
-  // Note: This function might end up sending 0 to 3 notifications in the
-  // following order: TabDeactivated, ActiveTabChanged, TabSelectionChanged.
+  // |old_model| is a snapshot of |selection_model_| before the change.
+  // Note: This function might end up sending 0 to 2 notifications in the
+  // following order: ActiveTabChanged, TabSelectionChanged.
   void NotifyIfActiveOrSelectionChanged(
       TabContentsWrapper* old_contents,
-      bool user_gesture,
+      NotifyTypes notify_types,
       const TabStripSelectionModel& old_model);
+
+  // Sets the selection to |new_model| and notifies any observers.
+  // Note: This function might end up sending 0 to 3 notifications in the
+  // following order: TabDeactivated, ActiveTabChanged, TabSelectionChanged.
+  void SetSelection(const TabStripSelectionModel& new_model,
+                    NotifyTypes notify_types);
 
   // Returns the number of New Tab tabs in the TabStripModel.
   int GetNewTabCount() const;
