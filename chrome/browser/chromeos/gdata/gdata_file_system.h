@@ -801,10 +801,12 @@ class GDataFileSystem : public GDataFileSystemInterface {
   DocumentFeed* ParseDocumentFeed(base::Value* feed_data);
 
   // Updates whole directory structure feeds collected in |feed_list|.
-  // On success, returns PLATFORM_FILE_OK.
+  // On success, returns PLATFORM_FILE_OK. Record file statistics as UMA
+  // histograms if |should_record_statistics| is true.
   base::PlatformFileError UpdateDirectoryWithDocumentFeed(
       base::ListValue* feed_list,
-      ContentOrigin origin);
+      ContentOrigin origin,
+      bool should_record_statistics);
 
   // Converts |entry_value| into GFileDocument instance and adds it
   // to virtual file system at |directory_path|.

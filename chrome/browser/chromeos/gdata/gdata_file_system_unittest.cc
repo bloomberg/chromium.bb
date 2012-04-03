@@ -210,8 +210,9 @@ class GDataFileSystemTest : public testing::Test {
   // |value|.
   bool UpdateContent(ListValue* list) {
     GURL unused;
+    const bool should_record_statistics = false;
     return file_system_->UpdateDirectoryWithDocumentFeed(
-        list, FROM_SERVER) == base::PLATFORM_FILE_OK;
+        list, FROM_SERVER, should_record_statistics) == base::PLATFORM_FILE_OK;
   }
 
   bool RemoveFile(const FilePath& file_path) {
