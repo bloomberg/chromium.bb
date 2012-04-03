@@ -119,13 +119,8 @@ views::View* CryptoModulePasswordDialogView::GetContentsView() {
 
 string16 CryptoModulePasswordDialogView::GetDialogButtonLabel(
     ui::DialogButton button) const {
-  if (button == ui::DIALOG_BUTTON_OK)
-    return UTF8ToUTF16(l10n_util::GetStringUTF8(
-        IDS_CRYPTO_MODULE_AUTH_DIALOG_OK_BUTTON_LABEL));
-  else if (button == ui::DIALOG_BUTTON_CANCEL)
-    return UTF8ToUTF16(l10n_util::GetStringUTF8(IDS_CANCEL));
-  const string16 empty;
-  return empty;
+  return l10n_util::GetStringUTF16(button == ui::DIALOG_BUTTON_OK ?
+      IDS_CRYPTO_MODULE_AUTH_DIALOG_OK_BUTTON_LABEL : IDS_CANCEL);
 }
 
 bool CryptoModulePasswordDialogView::Accept() {
@@ -154,8 +149,7 @@ void CryptoModulePasswordDialogView::ContentsChanged(
 }
 
 string16 CryptoModulePasswordDialogView::GetWindowTitle() const {
-  return UTF8ToUTF16(l10n_util::GetStringUTF8(
-      IDS_CRYPTO_MODULE_AUTH_DIALOG_TITLE));
+  return l10n_util::GetStringUTF16(IDS_CRYPTO_MODULE_AUTH_DIALOG_TITLE);
 }
 
 void ShowCryptoModulePasswordDialog(
@@ -165,8 +159,7 @@ void ShowCryptoModulePasswordDialog(
     const std::string& server,
     const CryptoModulePasswordCallback& callback) {
   CryptoModulePasswordDialogView* dialog =
-      new CryptoModulePasswordDialogView(
-          slot_name, reason, server, callback);
+      new CryptoModulePasswordDialogView(slot_name, reason, server, callback);
   views::Widget::CreateWindowWithParent(dialog, NULL)->Show();
 }
 
