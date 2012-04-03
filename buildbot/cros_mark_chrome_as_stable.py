@@ -386,9 +386,13 @@ def MarkChromeEBuildAsStable(stable_candidate, unstable_ebuild, chrome_rev,
                                    constants.CHROME_REV_SPEC,
                                    constants.CHROME_REV_LOCAL]
 
+  chrome_variables = dict()
+  if commit:
+    chrome_variables[_CHROME_SVN_TAG] = commit
+
   portage_utilities.EBuild.MarkAsStable(
       unstable_ebuild.ebuild_path, new_ebuild_path,
-      {_CHROME_SVN_TAG: commit}, make_stable=mark_stable)
+      chrome_variables, make_stable=mark_stable)
   new_ebuild = ChromeEBuild(new_ebuild_path)
 
   # Determine whether this is ebuild is redundant.

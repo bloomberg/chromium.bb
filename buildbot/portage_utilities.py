@@ -148,6 +148,7 @@ class EBuild(object):
       # lines.
       if not written and not line.startswith('#'):
         for key, value in sorted(variables.items()):
+          assert key is not None and value is not None
           redirect_file.write('%s="%s"\n' % (key, value))
         written = True
 
