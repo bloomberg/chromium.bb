@@ -139,15 +139,13 @@ void AudioInputRendererHost::DoCompleteCreation(
 void AudioInputRendererHost::DoSendRecordingMessage(
     media::AudioInputController* controller) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-  // TODO(henrika): TBI?
-  NOTIMPLEMENTED();
+  // TODO(henrika): See crbug.com/115262 for details on why this method
+  // should be implemented.
 }
 
 void AudioInputRendererHost::DoSendPausedMessage(
     media::AudioInputController* controller) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
   // TODO(henrika): TBI?
   NOTREACHED();
 }
