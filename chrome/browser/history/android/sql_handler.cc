@@ -22,7 +22,7 @@ SQLHandler::~SQLHandler() {
 }
 
 bool SQLHandler::HasColumnIn(const BookmarkRow& row) {
-  for (std::set<BookmarkRow::BookmarkColumnID>::iterator i =
+  for (std::set<BookmarkRow::BookmarkColumnID>::const_iterator i =
            columns_.begin(); i != columns_.end(); ++i) {
     if (row.is_value_set_explicitly(*i))
       return true;

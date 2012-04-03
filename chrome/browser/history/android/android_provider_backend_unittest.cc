@@ -448,8 +448,8 @@ TEST_F(AndroidProviderBackendTest, InsertBookmark) {
             delegate_.modified_details()->changed_urls[0].title());
   ASSERT_TRUE(delegate_.favicon_details());
   ASSERT_EQ(1u, delegate_.favicon_details()->urls.size());
-  ASSERT_NE(delegate_.favicon_details()->urls.end(),
-            delegate_.favicon_details()->urls.find(row2.url()));
+  ASSERT_TRUE(delegate_.favicon_details()->urls.end() !=
+              delegate_.favicon_details()->urls.find(row2.url()));
 
   // Set url1 as bookmark.
   AddBookmark(row1.url());
@@ -546,8 +546,8 @@ TEST_F(AndroidProviderBackendTest, DeleteBookmarks) {
   EXPECT_FALSE(delegate_.modified_details());
   EXPECT_EQ(1u, delegate_.deleted_details()->rows.size());
   EXPECT_EQ(1u, delegate_.deleted_details()->urls.size());
-  EXPECT_NE(delegate_.deleted_details()->urls.end(),
-            delegate_.deleted_details()->urls.find(row1.url()));
+  EXPECT_TRUE(delegate_.deleted_details()->urls.end() !=
+              delegate_.deleted_details()->urls.find(row1.url()));
   EXPECT_EQ(row1.url(), delegate_.deleted_details()->rows[0].url());
   EXPECT_EQ(row1.last_visit_time(),
             delegate_.deleted_details()->rows[0].last_visit());
@@ -595,8 +595,8 @@ TEST_F(AndroidProviderBackendTest, DeleteBookmarks) {
   EXPECT_FALSE(delegate_.modified_details());
   EXPECT_EQ(1u, delegate_.deleted_details()->rows.size());
   EXPECT_EQ(1u, delegate_.deleted_details()->urls.size());
-  EXPECT_NE(delegate_.deleted_details()->urls.end(),
-            delegate_.deleted_details()->urls.find(row2.url()));
+  EXPECT_TRUE(delegate_.deleted_details()->urls.end() !=
+              delegate_.deleted_details()->urls.find(row2.url()));
   EXPECT_EQ(row2.url(), delegate_.deleted_details()->rows[0].url());
   EXPECT_EQ(row2.last_visit_time(),
             delegate_.deleted_details()->rows[0].last_visit());
@@ -604,8 +604,8 @@ TEST_F(AndroidProviderBackendTest, DeleteBookmarks) {
             delegate_.deleted_details()->rows[0].title());
   ASSERT_TRUE(delegate_.favicon_details());
   ASSERT_EQ(1u, delegate_.favicon_details()->urls.size());
-  ASSERT_NE(delegate_.favicon_details()->urls.end(),
-            delegate_.favicon_details()->urls.find(row2.url()));
+  ASSERT_TRUE(delegate_.favicon_details()->urls.end() !=
+              delegate_.favicon_details()->urls.find(row2.url()));
 
   ASSERT_EQ(1, deleted_count);
   scoped_ptr<AndroidStatement> statement1(backend->QueryBookmarks(projections,
@@ -752,8 +752,8 @@ TEST_F(AndroidProviderBackendTest, UpdateURL) {
   ASSERT_TRUE(delegate_.deleted_details());
   EXPECT_EQ(1u, delegate_.deleted_details()->rows.size());
   EXPECT_EQ(1u, delegate_.deleted_details()->urls.size());
-  EXPECT_NE(delegate_.deleted_details()->urls.end(),
-            delegate_.deleted_details()->urls.find(row1.url()));
+  EXPECT_TRUE(delegate_.deleted_details()->urls.end() !=
+              delegate_.deleted_details()->urls.find(row1.url()));
   EXPECT_EQ(row1.url(), delegate_.deleted_details()->rows[0].url());
   EXPECT_EQ(row1.last_visit_time(),
             delegate_.deleted_details()->rows[0].last_visit());
@@ -807,8 +807,8 @@ TEST_F(AndroidProviderBackendTest, UpdateURL) {
   ASSERT_TRUE(delegate_.deleted_details());
   EXPECT_EQ(1u, delegate_.deleted_details()->rows.size());
   EXPECT_EQ(1u, delegate_.deleted_details()->urls.size());
-  EXPECT_NE(delegate_.deleted_details()->urls.end(),
-            delegate_.deleted_details()->urls.find(row2.url()));
+  EXPECT_TRUE(delegate_.deleted_details()->urls.end() !=
+              delegate_.deleted_details()->urls.find(row2.url()));
   EXPECT_EQ(row2.url(), delegate_.deleted_details()->rows[0].url());
   EXPECT_EQ(row2.last_visit_time(),
             delegate_.deleted_details()->rows[0].last_visit());
@@ -825,10 +825,10 @@ TEST_F(AndroidProviderBackendTest, UpdateURL) {
             delegate_.modified_details()->changed_urls[0].visit_count());
   ASSERT_TRUE(delegate_.favicon_details());
   ASSERT_EQ(2u, delegate_.favicon_details()->urls.size());
-  ASSERT_NE(delegate_.favicon_details()->urls.end(),
-            delegate_.favicon_details()->urls.find(row2.url()));
-  ASSERT_NE(delegate_.favicon_details()->urls.end(),
-            delegate_.favicon_details()->urls.find(update_row2.url()));
+  ASSERT_TRUE(delegate_.favicon_details()->urls.end() !=
+              delegate_.favicon_details()->urls.find(row2.url()));
+  ASSERT_TRUE(delegate_.favicon_details()->urls.end() !=
+              delegate_.favicon_details()->urls.find(update_row2.url()));
 
   EXPECT_EQ(1, update_count);
   // We shouldn't find orignal url anymore.
@@ -1047,8 +1047,8 @@ TEST_F(AndroidProviderBackendTest, UpdateFavicon) {
   EXPECT_FALSE(delegate_.modified_details());
   ASSERT_TRUE(delegate_.favicon_details());
   ASSERT_EQ(1u, delegate_.favicon_details()->urls.size());
-  ASSERT_NE(delegate_.favicon_details()->urls.end(),
-            delegate_.favicon_details()->urls.find(row1.url()));
+  ASSERT_TRUE(delegate_.favicon_details()->urls.end() !=
+              delegate_.favicon_details()->urls.find(row1.url()));
 
   IconMapping icon_mapping;
   EXPECT_TRUE(thumbnail_db_.GetIconMappingForPageURL(row1.url(), FAVICON,
@@ -1074,8 +1074,8 @@ TEST_F(AndroidProviderBackendTest, UpdateFavicon) {
   EXPECT_FALSE(delegate_.modified_details());
   ASSERT_TRUE(delegate_.favicon_details());
   ASSERT_EQ(1u, delegate_.favicon_details()->urls.size());
-  ASSERT_NE(delegate_.favicon_details()->urls.end(),
-            delegate_.favicon_details()->urls.find(row1.url()));
+  ASSERT_TRUE(delegate_.favicon_details()->urls.end() !=
+              delegate_.favicon_details()->urls.find(row1.url()));
 
   EXPECT_FALSE(thumbnail_db_.GetIconMappingForPageURL(row1.url(), FAVICON,
                                                       NULL));
