@@ -421,5 +421,9 @@
   "WARNING_NAT_DISABLED": {
     "message": "NOTE: Policy settings permit connections only between computers within your network.",
     "description": "Message displayed at the bottom of the host screen if local policy dictates that NAT traversal is disabled, meaning that connections outside the local network will not work."
+  },
+  "WHY_IS_THIS_SAFE": {
+    "message": "Why is this safe?",
+    "description": "Help link displayed when the user enables the host on this computer. Clicking this link opens a page that explains why this operation is safe."
   }
 }
