@@ -14,6 +14,8 @@ remoting.DaemonPlugin = function() {
   /** @type {HTMLElement} @private */
   this.container_ = document.getElementById('daemon-plugin-container');
   this.container_.appendChild(this.plugin_);
+  /** @type {remoting.Host?} */
+  this.localHost = null;
 };
 
 // Note that the values in the enums below are copied from
@@ -66,18 +68,39 @@ remoting.DaemonPlugin.prototype.updateDom = function() {
       break;
   }
   remoting.updateModalUi(match, 'data-daemon-state');
-  var element = document.getElementById('daemon-controller-ui');
+  var element = document.getElementById('this-host-connect');
   if (match == 'enabled') {
     element.classList.remove('host-offline');
+    element.classList.add('clickable');
   } else {
     element.classList.add('host-offline');
+    element.classList.remove('clickable');
+    element.title = '';
   }
+};
+
+/**
+ * Set tool-tips for the 'connect' action. We can't just set this on the
+ * parent element because the button has no tool-tip, and therefore would
+ * inherit connectStr.
+ *
+ * return {void} Nothing.
+ */
+remoting.DaemonPlugin.prototype.setTooltips = function() {
+  var connectStr = '';
+  if (this.localHost) {
+    chrome.i18n.getMessage(/*i18n-content*/'TOOLTIP_CONNECT',
+                           this.localHost.hostName);
+  }
+  document.getElementById('this-host-name').title = connectStr;
+  document.getElementById('this-host-icon').title = connectStr;
+  document.getElementById('this-host-spacer').title = connectStr;
 };
 
 /**
  * Generates new host key pair.
  * @param {function(string,string):void} callback Callback for the
- * generated key pair.
+ *     generated key pair.
  * @return {void} Nothing.
  */
 remoting.DaemonPlugin.prototype.generateKeyPair = function(callback) {
@@ -129,6 +152,57 @@ remoting.DaemonPlugin.prototype.stop = function(callback) {
  */
 remoting.DaemonPlugin.prototype.setPin = function(pin, callback) {
   this.plugin_.setDaemonPin(pin, callback);
+};
+
+/**
+ * Set the remoting.Host instance (retrieved from the Chromoting service)
+ * that corresponds to the local computer, if any.
+ *
+ * @param {remoting.Host?} host The host, or null if not registered.
+ * @return {void} Nothing.
+ */
+remoting.DaemonPlugin.prototype.setHost = function(host) {
+  this.localHost = host;
+  this.setTooltips();
+  /** @type {remoting.DaemonPlugin} */
+  var that = this;
+  if (host) {
+    /** @param {remoting.HostTableEntry} host */
+    var renameHost = function(host) {
+      remoting.hostList.renameHost(host);
+      that.setTooltips();
+    };
+    /** @type {remoting.HostTableEntry} @private */
+    this.hostTableEntry_ = new remoting.HostTableEntry();
+    this.hostTableEntry_.init(host,
+                              document.getElementById('this-host-connect'),
+                              document.getElementById('this-host-name'),
+                              document.getElementById('this-host-rename'),
+                              renameHost);
+  } else {
+    this.hostTableEntry_ = null;
+  }
+};
+
+/**
+ * Update the internal state so that the local host can be correctly filtered
+ * out of the host list.
+ *
+ * @param {remoting.HostList} hostList The new host list, returned by the
+ *     Chromoting service.
+ * @param {function():void} onDone Completion callback. TODO(jamiewalch): For
+ *     now, this is synchronous and reads the host id from local storage. In
+ *     the future, it will asynchronously read the host id from the plugin
+ *     (crbug.com/121518).
+ */
+remoting.DaemonPlugin.prototype.onHostListRefresh = function(hostList, onDone) {
+  var hostId = window.localStorage.getItem('me2me-host-id');
+  if (hostId && typeof(hostId) == 'string') {
+    this.setHost(hostList.getHostForId(/** @type{string} */(hostId)));
+  } else {
+    this.setHost(null);
+  }
+  onDone();
 };
 
 /** @type {remoting.DaemonPlugin} */

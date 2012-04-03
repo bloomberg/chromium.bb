@@ -142,20 +142,27 @@ found in the LICENSE file.
           <div id="host-list" hidden></div>
           <div id="host-list-error" class="error-state" hidden></div>
           <div id="daemon-control" data-daemon-state="enabled disabled" hidden>
-            <div id="daemon-controller-ui" class="section-row">
-              <img src="icon_host.png" class="host-list-main-icon">
+            <div id="this-host-connect" class="section-row clickable">
+              <img id="this-host-icon"
+                   src="icon_host.png"
+                   class="host-list-main-icon">
               <div class="box-spacer"
                    i18n-content="HOME_DAEMON_START_MESSAGE"
                    data-daemon-state="disabled"></div>
-              <div id="this-computer-name"
-                   class="box-spacer"
+              <div id="this-host-name"
                    data-daemon-state="enabled">
-                My computer
+              </div>
+              <div id="this-host-spacer" class="box-spacer">
+                <img id="this-host-rename"
+                     class="host-list-edit host-list-rename-icon"
+                     src="icon_pencil.png"
+                     data-daemon-state="enabled">
               </div>
               <button type="button"
                       id="stop-daemon"
                       i18n-content="HOME_DAEMON_STOP_BUTTON"
-                      data-daemon-state="enabled">
+                      data-daemon-state="enabled"
+                      title="">
               </button>
               <button type="button"
                       id="start-daemon"

@@ -34,9 +34,6 @@ function onLoad() {
     remoting.connectMe2MeWithPin();
     event.preventDefault();
   };
-  var cancelPinEntry = function() {
-    remoting.initDaemonUi();
-  }
   var doAuthRedirect = function() {
     remoting.oauth2.doAuthRedirect();
   };
@@ -53,7 +50,7 @@ function onLoad() {
       { event: 'click', id: 'client-finished-it2me-button',
         fn: goFinishedIt2Me },
       { event: 'click', id: 'client-finished-me2me-button', fn: goHome },
-      { event: 'click', id: 'cancel-pin-entry-button', fn: cancelPinEntry },
+      { event: 'click', id: 'cancel-pin-entry-button', fn: goHome },
       { event: 'click', id: 'client-reconnect-button', fn: reload },
       { event: 'click', id: 'cancel-access-code-button',
         fn: remoting.cancelConnect },

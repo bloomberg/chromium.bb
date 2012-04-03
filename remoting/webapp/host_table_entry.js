@@ -44,7 +44,7 @@ remoting.HostTableEntry = function() {
   this.hostNameCell_ = null;
   /** @type {function(remoting.HostTableEntry):void} @private */
   this.onRename_ = function(host) {};
-  /** @type {function(remoting.HostTableEntry):void} @private */
+  /** @type {undefined|function(remoting.HostTableEntry):void} @private */
   this.onDelete_ = function(host) {};
   // References to event handlers so that they can be removed.
   /** @type {function():void} @private */
@@ -96,8 +96,8 @@ remoting.HostTableEntry.prototype.create = function(host, onRename, onDelete) {
   deleteButton.src = 'icon_cross.png';
   tableRow.appendChild(deleteButton);
 
-  this.init(host, onRename, onDelete, tableRow, hostNameCell,
-            editButton, deleteButton);
+  this.init(host, tableRow, hostNameCell, editButton, onRename,
+            deleteButton, onDelete);
 };
 
 
@@ -106,24 +106,24 @@ remoting.HostTableEntry.prototype.create = function(host, onRename, onDelete) {
  * up event handlers.
  *
  * @param {remoting.Host} host The host, as obtained from Apiary.
- * @param {function(remoting.HostTableEntry):void} onRename Callback for
- *     rename operations.
- * @param {function(remoting.HostTableEntry):void} onDelete Callback for
- *     delete operations.
  * @param {HTMLElement} tableRow The top-level <div> for the table entry.
  * @param {HTMLElement} hostNameCell The element containing the host name.
  * @param {HTMLElement} editButton The <img> containing the pencil icon for
  *     editing the host name.
+ * @param {function(remoting.HostTableEntry):void} onRename Callback for
+ *     rename operations.
  * @param {HTMLElement=} opt_deleteButton The <img> containing the cross icon
  *     for deleting the host, if present.
+ * @param {function(remoting.HostTableEntry):void=} opt_onDelete Callback for
+ *     delete operations.
  * @return {void} Nothing.
  */
 remoting.HostTableEntry.prototype.init = function(
-    host, onRename, onDelete, tableRow, hostNameCell,
-    editButton, opt_deleteButton) {
+    host, tableRow, hostNameCell, editButton, onRename,
+    opt_deleteButton, opt_onDelete) {
   this.host = host;
   this.onRename_ = onRename;
-  this.onDelete_ = onDelete;
+  this.onDelete_ = opt_onDelete;
   this.tableRow = tableRow;
   this.hostNameCell_ = hostNameCell;
 
@@ -147,7 +147,7 @@ remoting.HostTableEntry.prototype.init = function(
   }
   var hostUrl = chrome.extension.getURL('main.html') +
       '?mode=me2me&hostId=' + encodeURIComponent(host.hostId);
-  this.onConnectReference_ = function() { window.location.replace(hostUrl); };
+  this.onConnectReference_ = function() { window.location.assign(hostUrl); };
 
   this.updateOnlineStatus();
 };
@@ -283,7 +283,6 @@ remoting.HostTableEntry.prototype.removeEditBox_ = function() {
     // onblur will fire when the edit box is removed, so remove the hook.
     editBox.removeEventListener('blur', this.onBlurReference_, false);
   }
-  this.hostNameCell_.innerHTML = '';  // Remove the edit box.
   this.setHostName_();
 };
 
@@ -301,6 +300,7 @@ remoting.HostTableEntry.prototype.setHostName_ = function() {
                                                     this.host.hostName);
   }
   hostNameNode.classList.add('host-list-label');
+  this.hostNameCell_.innerHTML = '';  // Remove previous contents (if any).
   this.hostNameCell_.appendChild(hostNameNode);
 };
 

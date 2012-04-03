@@ -161,9 +161,10 @@ remoting.HostList.prototype.parseHostListResponse_ = function(xhr, onDone) {
 /**
  * Display the list of hosts or error condition.
  *
+ * @param {string?} thisHostId The id of this host, or null if not registered.
  * @return {void} Nothing.
  */
-remoting.HostList.prototype.display = function() {
+remoting.HostList.prototype.display = function(thisHostId) {
   this.table_.innerHTML = '';
   this.errorDiv_.innerText = '';
   this.hostTableEntries_ = [];
@@ -175,7 +176,7 @@ remoting.HostList.prototype.display = function() {
   /**
    * @param {remoting.HostTableEntry} hostTableEntry The entry being renamed.
    */
-  var onRename = function(hostTableEntry) { that.renameHost_(hostTableEntry); }
+  var onRename = function(hostTableEntry) { that.renameHost(hostTableEntry); }
   /**
    * @param {remoting.HostTableEntry} hostTableEntry The entry beign deleted.
    */
@@ -186,9 +187,11 @@ remoting.HostList.prototype.display = function() {
   for (var i = 0; i < this.hosts_.length; ++i) {
     /** @type {remoting.Host} */
     var host = this.hosts_[i];
-    // Validate the entry to make sure it has all the fields we expect.
-    // If the host has never sent a heartbeat, then there will be no jabberId.
-    if (host.hostName && host.hostId && host.status && host.publicKey) {
+    // Validate the entry to make sure it has all the fields we expect and is
+    // not the local host (which is displayed separately). NB: if the host has
+    // never sent a heartbeat, then there will be no jabberId.
+    if (host.hostName && host.hostId && host.status && host.publicKey &&
+        host.hostId != thisHostId) {
       var hostTableEntry = new remoting.HostTableEntry();
       hostTableEntry.create(host, onRename, onDelete);
       this.hostTableEntries_[i] = hostTableEntry;
@@ -230,9 +233,8 @@ remoting.HostList.prototype.deleteHost_ = function(hostTableEntry) {
  * Prepare a host for renaming by replacing its name with an edit box.
  * @param {remoting.HostTableEntry} hostTableEntry The host to be renamed.
  * @return {void} Nothing.
- * @private
  */
-remoting.HostList.prototype.renameHost_ = function(hostTableEntry) {
+remoting.HostList.prototype.renameHost = function(hostTableEntry) {
   for (var i = 0; i < this.hosts_.length; ++i) {
     if (this.hosts_[i].hostId == hostTableEntry.host.hostId) {
       this.hosts_[i].hostName = hostTableEntry.host.hostName;
