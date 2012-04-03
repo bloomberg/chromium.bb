@@ -1401,6 +1401,7 @@ TESTS_ENVIRONMENT =
 
 @LINUX_HOST_TRUE@src_client_linux_linux_client_unittest_LDADD = \
 @LINUX_HOST_TRUE@	src/client/linux/handler/exception_handler.o \
+@LINUX_HOST_TRUE@	src/client/linux/log/log.o \
 @LINUX_HOST_TRUE@	src/client/linux/crash_generation/crash_generation_client.o \
 @LINUX_HOST_TRUE@	src/client/linux/minidump_writer/linux_dumper.o \
 @LINUX_HOST_TRUE@	src/client/linux/minidump_writer/linux_core_dumper.o \

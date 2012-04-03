@@ -314,6 +314,7 @@ src_client_linux_linux_client_unittest_CPPFLAGS = \
 	-I$(top_srcdir)/src/testing
 src_client_linux_linux_client_unittest_LDADD = \
 	src/client/linux/handler/exception_handler.o \
+	src/client/linux/log/log.o \
 	src/client/linux/crash_generation/crash_generation_client.o \
 	src/client/linux/minidump_writer/linux_dumper.o \
 	src/client/linux/minidump_writer/linux_core_dumper.o \
