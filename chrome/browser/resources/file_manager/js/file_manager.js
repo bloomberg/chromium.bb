@@ -1813,14 +1813,16 @@ FileManager.prototype = {
    * thumbnail list item.
    */
   FileManager.prototype.renderCheckbox_ = function(entry) {
+    function stopEventPropagation(event) {
+      event.stopPropagation();
+    }
     var input = this.document_.createElement('input');
     input.setAttribute('type', 'checkbox');
     input.setAttribute('tabindex', -1);
     input.className = 'file-checkbox common';
-    input.addEventListener('mousedown',
-                           this.onCheckboxMouseDownUp_.bind(this));
-    input.addEventListener('mouseup',
-                           this.onCheckboxMouseDownUp_.bind(this));
+    input.addEventListener('mousedown', stopEventPropagation);
+    input.addEventListener('mouseup', stopEventPropagation);
+    input.addEventListener('dblclick', stopEventPropagation);
     input.addEventListener('click',
                            this.onCheckboxClick_.bind(this));
 
@@ -3503,38 +3505,10 @@ FileManager.prototype = {
     this.directoryModel_.changeDirectory(event.srcElement.path);
   };
 
-  FileManager.prototype.onCheckboxMouseDownUp_ = function(event) {
-    // If exactly one file is selected and its checkbox is *not* clicked,
-    // then this should be treated as a "normal" click (ie. the previous
-    // selection should be cleared).
-    if (this.selection.totalCount == 1 && this.selection.entries[0].isFile) {
-      var selectedIndex = this.selection.indexes[0];
-      var listItem = this.currentList_.getListItemByIndex(selectedIndex);
-      var checkbox = listItem.querySelector('input[type="checkbox"]');
-      if (!checkbox.checked)
-        return;
-    }
-
-    // Otherwise, treat clicking on a checkbox the same as a ctrl-click.
-    // The default properties of event.ctrlKey make it read-only, but
-    // don't prevent deletion, so we delete first, then set it true.
-    delete event.ctrlKey;
-    event.ctrlKey = true;
-  };
-
   FileManager.prototype.onCheckboxClick_ = function(event) {
-    if (event.shiftKey) {
-      // Something about the timing of shift-clicks causes the checkbox
-      // to get selected and then very quickly unselected.  It appears that
-      // we forcibly select the checkbox as part of onSelectionChanged, and
-      // then the default action of this click event fires and toggles the
-      // checkbox back off.
-      //
-      // Since we're going to force checkboxes into the correct state for any
-      // multi-selection, we can prevent this shift click from toggling the
-      // checkbox and avoid the trouble.
-      event.preventDefault();
-    }
+    var sm = this.directoryModel_.fileListSelection;
+    var listItem = this.findListItemForEvent_(event);
+    sm.setIndexSelected(listItem.listIndex, event.target.checked);
   };
 
   FileManager.prototype.onPinClick_ = function(checkbox, entry, event) {
