@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_GFX_RANGE_H_
-#define UI_GFX_RANGE_H_
+#ifndef UI_BASE_RANGE_RANGE_H_
+#define UI_BASE_RANGE_RANGE_H_
+#pragma once
 
 #include <iosfwd>
 
@@ -111,4 +112,4 @@ UI_EXPORT std::ostream& operator<<(std::ostream& out, const ui::Range& range);
 
 }  // namespace gfx
 
-#endif  // UI_GFX_RANGE_H_
+#endif  // UI_BASE_RANGE_RANGE_H_
