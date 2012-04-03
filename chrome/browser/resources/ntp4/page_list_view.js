@@ -293,6 +293,13 @@ cr.define('ntp', function() {
     },
 
     /**
+     * Tracks whether apps have been loaded at least once.
+     * @type {boolean}
+     * @private
+     */
+    appsLoaded_: false,
+
+    /**
      * Callback invoked by chrome with the apps available.
      *
      * Note that calls to this function can occur at any time, not just in
@@ -387,7 +394,14 @@ cr.define('ntp', function() {
 
       logEvent('apps.layout: ' + (Date.now() - startTime));
 
-      cr.dispatchSimpleEvent(document, 'sectionready', true, true);
+      // Tell the slider about the pages and mark the current page.
+      this.updateSliderCards();
+      this.cardSlider.currentCardValue.navigationDot.classList.add('selected');
+
+      if (!this.appsLoaded_) {
+        this.appsLoaded_ = true;
+        cr.dispatchSimpleEvent(document, 'sectionready', true, true);
+      }
     },
 
     /**

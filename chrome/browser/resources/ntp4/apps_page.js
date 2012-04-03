@@ -315,6 +315,7 @@ cr.define('ntp', function() {
         this.appImg_.classList.remove('invisible');
         this.appImgSrc_ = null;
       }
+
       this.classList.remove('icon-loading');
     },
 
