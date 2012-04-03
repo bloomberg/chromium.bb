@@ -2574,7 +2574,7 @@
    fun:_ZN3IPC17SyncMessageSchema*
 }
 {
-   bug_70327_b
+   bug_70327
    Memcheck:Leak
    ...
    fun:shaper_font_cache_insert

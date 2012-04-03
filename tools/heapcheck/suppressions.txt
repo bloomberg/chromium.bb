@@ -140,6 +140,13 @@
    Heapcheck:Leak
    fun:_IO_getdelim
 }
+{
+   bug_119677
+   Heapcheck:Leak
+   fun:XRRRootToScreen
+   fun:??
+   fun:MonitorChangeObserverX11
+}
 
 #-----------------------------------------------------------------------
 # 2. intentional unit test errors, or stuff that is somehow a false positive
@@ -1208,6 +1215,67 @@
    bug_91174
    Heapcheck:Leak
    fun:DownloadManager::OnPathExistenceAvailable
+}
+{
+   bug_90013_a
+   Heapcheck:Leak
+   fun:??
+   ...
+   fun:pango_fc_font*
+   ...
+   fun:gfx::RenderTextLinux::*
+}
+{
+   bug_90013_b
+   Heapcheck:Leak
+   ...
+   fun:??
+   fun:??
+   fun:??
+   ...
+   fun:pango_fc_font_*
+}
+{
+   bug_90013_c
+   Heapcheck:Leak
+   fun:??
+   fun:??
+   fun:??
+   fun:??
+   fun:??
+   fun:??
+   fun:??
+   fun:??
+   fun:??
+   fun:??
+   fun:??
+   fun:??
+   fun:??
+   fun:??
+   fun:??
+   fun:??
+   fun:??
+   fun:??
+   fun:??
+   fun:??
+   fun:??
+   fun:??
+}
+{
+   bug_90013_d
+   Heapcheck:Leak
+   fun:??
+   fun:??
+   fun:??
+   fun:??
+   ...
+   fun:XML_ParseBuffer
+   fun:??
+   fun:??
+   fun:??
+   fun:??
+   ...
+   fun:PlatformFontPango
 }
 {
    bug_91491
