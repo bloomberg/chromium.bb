@@ -60,14 +60,17 @@ class Feature {
     INVALID_LOCATION,
     INVALID_PLATFORM,
     INVALID_MIN_MANIFEST_VERSION,
-    INVALID_MAX_MANIFEST_VERSION
+    INVALID_MAX_MANIFEST_VERSION,
+    NOT_PRESENT,
+    DEPENDENCY_NOT_PRESENT
   };
 
   Feature();
-  ~Feature();
+  Feature(const Feature& other);
+  virtual ~Feature();
 
-  // Parses a feature from its JSON representation.
-  static scoped_ptr<Feature> Parse(const DictionaryValue* value);
+  const std::string& name() const { return name_; }
+  void set_name(const std::string& name) { name_ = name; }
 
   // Gets the platform the code is currently running on.
   static Platform GetCurrentPlatform();
@@ -95,43 +98,45 @@ class Feature {
     max_manifest_version_ = max_manifest_version;
   }
 
-  // Returns true if the feature is available to the specified extension. Use
-  // this overload for features that are not associated with a specific context.
-  Availability IsAvailable(const Extension* extension) {
-    return IsAvailable(extension, UNSPECIFIED_CONTEXT);
-  }
+  // Parses the JSON representation of a feature into the fields of this object.
+  // Unspecified values in the JSON are not modified in the object. This allows
+  // us to implement inheritance by parsing one value after another.
+  void Parse(const DictionaryValue* value);
 
-  // Returns true if the feature is available to the specified extension, in the
-  // specified context type.
-  Availability IsAvailable(const Extension* extension, Context context) {
-    return IsAvailable(extension->id(), extension->GetType(),
-                       ConvertLocation(extension->location()), context,
-                       GetCurrentPlatform(),
-                       extension->manifest_version());
-  }
+  // Returns true if the feature contains the same values as another.
+  bool Equals(const Feature& other) const;
 
-  // Returns true if the feature is available to extensions with the specified
-  // properties. Use this overload for features that are not associated with a
-  // specific context, and when a full Extension object is not available.
-  Availability IsAvailable(const std::string& extension_id,
-                           Extension::Type type, Location location,
-                           int manifest_version) {
-    return IsAvailable(extension_id, type, location, UNSPECIFIED_CONTEXT,
-                       GetCurrentPlatform(), manifest_version);
+  // Returns true if the feature is available to be parsed into a new extension
+  // manifest.
+  Availability IsAvailableToManifest(const std::string& extension_id,
+                                     Extension::Type type,
+                                     Location location,
+                                     int manifest_version) const {
+    return IsAvailableToManifest(extension_id, type, location, manifest_version,
+                                 GetCurrentPlatform());
   }
+  Availability IsAvailableToManifest(const std::string& extension_id,
+                                     Extension::Type type,
+                                     Location location,
+                                     int manifest_version,
+                                     Platform platform) const;
 
-  // Returns true if the feature is available to extensions with the specified
-  // properties, in the specified context type, and on the specified platform.
-  // This overload is mainly used for testing.
-  Availability IsAvailable(const std::string& extension_id,
-                           Extension::Type type, Location location,
-                           Context context, Platform platform,
-                           int manifest_version);
+  // Returns true if the feature is available to be used in the specified
+  // extension and context.
+  Availability IsAvailableToContext(const Extension* extension,
+                                    Context context) const {
+    return IsAvailableToContext(extension, context, GetCurrentPlatform());
+  }
+  virtual Availability IsAvailableToContext(const Extension* extension,
+                                            Context context,
+                                            Platform platform) const;
 
   // Returns an error message for an Availability code.
   std::string GetErrorMessage(Availability result);
 
  private:
+  std::string name_;
+
   // For clarify and consistency, we handle the default value of each of these
   // members the same way: it matches everything. It is up to the higher level
   // code that reads Features out of static data to validate that data and set
@@ -143,8 +148,6 @@ class Feature {
   Platform platform_;  // we only care about chromeos/not-chromeos now
   int min_manifest_version_;
   int max_manifest_version_;
-
-  DISALLOW_COPY_AND_ASSIGN(Feature);
 };
 
 }  // namespace extensions
