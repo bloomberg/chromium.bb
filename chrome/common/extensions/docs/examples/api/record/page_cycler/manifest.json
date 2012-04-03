@@ -1,0 +1,17 @@
+{
+  "name": "Page Cycler",
+  "version": "0.0",
+  "description": "Page Cycler UI",
+  "app": {
+    "launch": {
+      "local_path": "page_cycler.html"
+    }
+  },
+  "icons": {
+    "128": "page_cycler_icon.png",
+    "16": "page_cycler_icon_16.png"
+  },
+  "permissions": [
+    "experimental"
+  ]
+}

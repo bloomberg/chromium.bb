@@ -107,8 +107,8 @@
     "chrome.experimental.devtools.console.getMessages": "experimental.devtools.console.html#method-getMessages",
     "chrome.experimental.devtools.console.onMessageAdded": "experimental.devtools.console.html#event-onMessageAdded",
     "chrome.experimental.downloads.download": "experimental.downloads.html#method-download",
+    "chrome.experimental.extension.onBackgroundPageUnloadingSoon": "experimental.extension.html#event-onBackgroundPageUnloadingSoon",
     "chrome.experimental.extension.onInstalled": "experimental.extension.html#event-onInstalled",
-    "chrome.experimental.extension.onUnload": "experimental.extension.html#event-onUnload",
     "chrome.experimental.fontSettings.getDefaultFixedFontSize": "experimental.fontSettings.html#method-getDefaultFixedFontSize",
     "chrome.experimental.fontSettings.getDefaultFontSize": "experimental.fontSettings.html#method-getDefaultFontSize",
     "chrome.experimental.fontSettings.getFontList": "experimental.fontSettings.html#method-getFontList",
@@ -149,10 +149,7 @@
     "chrome.extension.onConnectExternal": "extension.html#event-onConnectExternal",
     "chrome.extension.onMessage": "extension.html#event-onMessage",
     "chrome.extension.onMessageExternal": "extension.html#event-onMessageExternal",
-    "chrome.extension.onRequest": "extension.html#event-onRequest",
-    "chrome.extension.onRequestExternal": "extension.html#event-onRequestExternal",
     "chrome.extension.sendMessage": "extension.html#method-sendMessage",
-    "chrome.extension.sendRequest": "extension.html#method-sendRequest",
     "chrome.extension.setUpdateUrlData": "extension.html#method-setUpdateUrlData",
     "chrome.fileBrowserHandler.onExecute": "fileBrowserHandler.html#event-onExecute",
     "chrome.history.addUrl": "history.html#method-addUrl",
@@ -243,7 +240,6 @@
     "chrome.tabs.reload": "tabs.html#method-reload",
     "chrome.tabs.remove": "tabs.html#method-remove",
     "chrome.tabs.sendMessage": "tabs.html#method-sendMessage",
-    "chrome.tabs.sendRequest": "tabs.html#method-sendRequest",
     "chrome.tabs.update": "tabs.html#method-update",
     "chrome.topSites.get": "topSites.html#method-get",
     "chrome.tts.getVoices": "tts.html#method-getVoices",
@@ -538,10 +534,7 @@
     {
       "api_calls": [
         "chrome.experimental.devtools.audits.addCategory",
-        "chrome.extension.onRequest",
-        "chrome.extension.sendRequest",
-        "chrome.tabs.executeScript",
-        "chrome.tabs.sendRequest"
+        "chrome.tabs.executeScript"
       ],
       "crx_path": null,
       "description": "Extends the Developer Tools, adding an audit category that finds broken links on the inspected page.",
@@ -560,7 +553,7 @@
         "http:\/\/",
         "https:\/\/"
       ],
-      "search_string": "BROKEN LINKS EXTENDS THE DEVELOPER TOOLS, ADDING AN AUDIT CATEGORY THAT FINDS BROKEN LINKS ON THE INSPECTED PAGE. BACKGROUND_PAGE DEVTOOLS_PAGE EXPERIMENTAL TABS CHROME.EXPERIMENTAL.DEVTOOLS.AUDITS.ADDCATEGORY CHROME.EXTENSION.ONREQUEST CHROME.EXTENSION.SENDREQUEST CHROME.TABS.EXECUTESCRIPT CHROME.TABS.SENDREQUEST",
+      "search_string": "BROKEN LINKS EXTENDS THE DEVELOPER TOOLS, ADDING AN AUDIT CATEGORY THAT FINDS BROKEN LINKS ON THE INSPECTED PAGE. BACKGROUND_PAGE DEVTOOLS_PAGE EXPERIMENTAL TABS CHROME.EXPERIMENTAL.DEVTOOLS.AUDITS.ADDCATEGORY CHROME.TABS.EXECUTESCRIPT",
       "source_files": [
         "background.js",
         "content.js",
@@ -679,8 +672,6 @@
         "chrome.bookmarks.onMoved",
         "chrome.bookmarks.onRemoved",
         "chrome.extension.getBackgroundPage",
-        "chrome.extension.onRequest",
-        "chrome.extension.sendRequest",
         "chrome.tabs.get",
         "chrome.tabs.onAttached",
         "chrome.tabs.onCreated",
@@ -709,7 +700,7 @@
         "http:\/\/",
         "https:\/\/"
       ],
-      "search_string": "CHROME SOUNDS ENJOY A MORE MAGICAL AND IMMERSIVE EXPERIENCE WHEN BROWSING THE WEB USING THE POWER OF SOUND. BACKGROUND_PAGE BOOKMARKS OPTIONS_PAGE TABS CHROME.BOOKMARKS.ONCREATED CHROME.BOOKMARKS.ONMOVED CHROME.BOOKMARKS.ONREMOVED CHROME.EXTENSION.GETBACKGROUNDPAGE CHROME.EXTENSION.ONREQUEST CHROME.EXTENSION.SENDREQUEST CHROME.TABS.GET CHROME.TABS.ONATTACHED CHROME.TABS.ONCREATED CHROME.TABS.ONDETACHED CHROME.TABS.ONMOVED CHROME.TABS.ONREMOVED CHROME.TABS.ONUPDATED CHROME.WINDOWS.ONCREATED CHROME.WINDOWS.ONFOCUSCHANGED CHROME.WINDOWS.ONREMOVED",
+      "search_string": "CHROME SOUNDS ENJOY A MORE MAGICAL AND IMMERSIVE EXPERIENCE WHEN BROWSING THE WEB USING THE POWER OF SOUND. BACKGROUND_PAGE BOOKMARKS OPTIONS_PAGE TABS CHROME.BOOKMARKS.ONCREATED CHROME.BOOKMARKS.ONMOVED CHROME.BOOKMARKS.ONREMOVED CHROME.EXTENSION.GETBACKGROUNDPAGE CHROME.TABS.GET CHROME.TABS.ONATTACHED CHROME.TABS.ONCREATED CHROME.TABS.ONDETACHED CHROME.TABS.ONMOVED CHROME.TABS.ONREMOVED CHROME.TABS.ONUPDATED CHROME.WINDOWS.ONCREATED CHROME.WINDOWS.ONFOCUSCHANGED CHROME.WINDOWS.ONREMOVED",
       "source_files": [
         "bg.js",
         "content.js",
@@ -930,8 +921,6 @@
     {
       "api_calls": [
         "chrome.experimental.downloads.download",
-        "chrome.extension.onRequest",
-        "chrome.extension.sendRequest",
         "chrome.tabs.executeScript",
         "chrome.tabs.query",
         "chrome.windows.get",
@@ -953,7 +942,7 @@
         "http:\/\/",
         "https:\/\/"
       ],
-      "search_string": "DOWNLOAD SELECTED LINKS SELECT LINKS ON A PAGE AND DOWNLOAD THEM. BROWSER_ACTION EXPERIMENTAL TABS CHROME.EXPERIMENTAL.DOWNLOADS.DOWNLOAD CHROME.EXTENSION.ONREQUEST CHROME.EXTENSION.SENDREQUEST CHROME.TABS.EXECUTESCRIPT CHROME.TABS.QUERY CHROME.WINDOWS.GET CHROME.WINDOWS.GETCURRENT",
+      "search_string": "DOWNLOAD SELECTED LINKS SELECT LINKS ON A PAGE AND DOWNLOAD THEM. BROWSER_ACTION EXPERIMENTAL TABS CHROME.EXPERIMENTAL.DOWNLOADS.DOWNLOAD CHROME.TABS.EXECUTESCRIPT CHROME.TABS.QUERY CHROME.WINDOWS.GET CHROME.WINDOWS.GETCURRENT",
       "source_files": [
         "manifest.json",
         "popup.html",
@@ -1026,8 +1015,6 @@
       "api_calls": [
         "chrome.devtools.network.getHAR",
         "chrome.devtools.network.onRequestFinished",
-        "chrome.extension.onRequest",
-        "chrome.extension.sendRequest",
         "chrome.tabs.executeScript"
       ],
       "crx_path": null,
@@ -1046,7 +1033,7 @@
         "http:\/\/",
         "https:\/\/"
       ],
-      "search_string": "FIREPHP FOR CHROME EXTENDS THE DEVELOPER TOOLS, ADDING SUPPORT FOR PARSING FIREPHP MESSAGES FROM SERVER BACKGROUND_PAGE DEVTOOLS_PAGE TABS CHROME.DEVTOOLS.NETWORK.GETHAR CHROME.DEVTOOLS.NETWORK.ONREQUESTFINISHED CHROME.EXTENSION.ONREQUEST CHROME.EXTENSION.SENDREQUEST CHROME.TABS.EXECUTESCRIPT",
+      "search_string": "FIREPHP FOR CHROME EXTENDS THE DEVELOPER TOOLS, ADDING SUPPORT FOR PARSING FIREPHP MESSAGES FROM SERVER BACKGROUND_PAGE DEVTOOLS_PAGE TABS CHROME.DEVTOOLS.NETWORK.GETHAR CHROME.DEVTOOLS.NETWORK.ONREQUESTFINISHED CHROME.TABS.EXECUTESCRIPT",
       "source_files": [
         "background.js",
         "devtools.html",
@@ -1094,8 +1081,6 @@
         "chrome.browserAction.setIcon",
         "chrome.browserAction.setTitle",
         "chrome.extension.getBackgroundPage",
-        "chrome.extension.onRequest",
-        "chrome.extension.sendRequest",
         "chrome.i18n.getMessage",
         "chrome.tabs.create",
         "chrome.tabs.get",
@@ -1119,7 +1104,7 @@
         "http:\/\/",
         "https:\/\/"
       ],
-      "search_string": "GOOGLE CALENDAR CHECKER (BY GOOGLE) QUICKLY SEE THE TIME UNTIL YOUR NEXT MEETING FROM ANY OF YOUR CALENDARS. CLICK ON THE BUTTON TO BE TAKEN TO YOUR CALENDAR. BACKGROUND_PAGE BROWSER_ACTION OPTIONS_PAGE TABS CHROME.BROWSERACTION.ONCLICKED CHROME.BROWSERACTION.SETBADGEBACKGROUNDCOLOR CHROME.BROWSERACTION.SETBADGETEXT CHROME.BROWSERACTION.SETICON CHROME.BROWSERACTION.SETTITLE CHROME.EXTENSION.GETBACKGROUNDPAGE CHROME.EXTENSION.ONREQUEST CHROME.EXTENSION.SENDREQUEST CHROME.I18N.GETMESSAGE CHROME.TABS.CREATE CHROME.TABS.GET CHROME.TABS.ONUPDATED CHROME.TABS.UPDATE",
+      "search_string": "GOOGLE CALENDAR CHECKER (BY GOOGLE) QUICKLY SEE THE TIME UNTIL YOUR NEXT MEETING FROM ANY OF YOUR CALENDARS. CLICK ON THE BUTTON TO BE TAKEN TO YOUR CALENDAR. BACKGROUND_PAGE BROWSER_ACTION OPTIONS_PAGE TABS CHROME.BROWSERACTION.ONCLICKED CHROME.BROWSERACTION.SETBADGEBACKGROUNDCOLOR CHROME.BROWSERACTION.SETBADGETEXT CHROME.BROWSERACTION.SETICON CHROME.BROWSERACTION.SETTITLE CHROME.EXTENSION.GETBACKGROUNDPAGE CHROME.I18N.GETMESSAGE CHROME.TABS.CREATE CHROME.TABS.GET CHROME.TABS.ONUPDATED CHROME.TABS.UPDATE",
       "source_files": [
         "_locales\/ar\/messages.json",
         "_locales\/bg\/messages.json",
@@ -1450,8 +1435,6 @@
     },
     {
       "api_calls": [
-        "chrome.extension.onRequest",
-        "chrome.extension.sendRequest",
         "chrome.tabs.get",
         "chrome.tabs.update"
       ],
@@ -1467,7 +1450,7 @@
       "packaged_app": false,
       "path": "examples\/api\/tabs\/pin\/",
       "protocols": [],
-      "search_string": "KEYBOARD PIN CREATES A KEYBOARD SHORTCUT (C + SHIFT + P) TO TOGGLE THE PINNED STATE OF THE CURRENTLY SELECTED TAB BACKGROUND_PAGE TABS CHROME.EXTENSION.ONREQUEST CHROME.EXTENSION.SENDREQUEST CHROME.TABS.GET CHROME.TABS.UPDATE",
+      "search_string": "KEYBOARD PIN CREATES A KEYBOARD SHORTCUT (C + SHIFT + P) TO TOGGLE THE PINNED STATE OF THE CURRENTLY SELECTED TAB BACKGROUND_PAGE TABS CHROME.TABS.GET CHROME.TABS.UPDATE",
       "source_files": [
         "background.js",
         "inject.js",
@@ -1515,13 +1498,11 @@
     {
       "api_calls": [
         "chrome.extension.getBackgroundPage",
-        "chrome.extension.onRequest",
         "chrome.pageAction.hide",
         "chrome.pageAction.setTitle",
         "chrome.pageAction.show",
         "chrome.tabs.get",
-        "chrome.tabs.onUpdated",
-        "chrome.tabs.sendRequest"
+        "chrome.tabs.onUpdated"
       ],
       "crx_path": null,
       "description": "Finds addresses in the web page you're on and pops up a map window.",
@@ -1539,7 +1520,7 @@
         "https:\/\/",
         "https:\/\/"
       ],
-      "search_string": "MAPPY FINDS ADDRESSES IN THE WEB PAGE YOURE ON AND POPS UP A MAP WINDOW. BACKGROUND_PAGE PAGE_ACTION TABS CHROME.EXTENSION.GETBACKGROUNDPAGE CHROME.EXTENSION.ONREQUEST CHROME.PAGEACTION.HIDE CHROME.PAGEACTION.SETTITLE CHROME.PAGEACTION.SHOW CHROME.TABS.GET CHROME.TABS.ONUPDATED CHROME.TABS.SENDREQUEST",
+      "search_string": "MAPPY FINDS ADDRESSES IN THE WEB PAGE YOURE ON AND POPS UP A MAP WINDOW. BACKGROUND_PAGE PAGE_ACTION TABS CHROME.EXTENSION.GETBACKGROUNDPAGE CHROME.PAGEACTION.HIDE CHROME.PAGEACTION.SETTITLE CHROME.PAGEACTION.SHOW CHROME.TABS.GET CHROME.TABS.ONUPDATED",
       "source_files": [
         "background.js",
         "manifest.json",
@@ -1584,10 +1565,8 @@
     {
       "api_calls": [
         "chrome.extension.onConnect",
-        "chrome.extension.onRequest",
         "chrome.tabs.connect",
-        "chrome.tabs.get",
-        "chrome.tabs.sendRequest"
+        "chrome.tabs.get"
       ],
       "crx_path": null,
       "description": "Times how long it takes to send a message to a content script and back.",
@@ -1601,7 +1580,7 @@
       "packaged_app": false,
       "path": "examples\/api\/messaging\/timer\/",
       "protocols": [],
-      "search_string": "MESSAGE TIMER TIMES HOW LONG IT TAKES TO SEND A MESSAGE TO A CONTENT SCRIPT AND BACK. BROWSER_ACTION TABS CHROME.EXTENSION.ONCONNECT CHROME.EXTENSION.ONREQUEST CHROME.TABS.CONNECT CHROME.TABS.GET CHROME.TABS.SENDREQUEST",
+      "search_string": "MESSAGE TIMER TIMES HOW LONG IT TAKES TO SEND A MESSAGE TO A CONTENT SCRIPT AND BACK. BROWSER_ACTION TABS CHROME.EXTENSION.ONCONNECT CHROME.TABS.CONNECT CHROME.TABS.GET",
       "source_files": [
         "manifest.json",
         "page.js",
@@ -1822,8 +1801,6 @@
     },
     {
       "api_calls": [
-        "chrome.extension.onRequest",
-        "chrome.extension.sendRequest",
         "chrome.pageAction.show"
       ],
       "crx_path": null,
@@ -1838,7 +1815,7 @@
       "packaged_app": false,
       "path": "examples\/api\/pageAction\/pageaction_by_content\/",
       "protocols": [],
-      "search_string": "PAGE ACTION BY CONTENT SHOWS A PAGE ACTION FOR HTML PAGES CONTAINING THE WORD SANDWICH BACKGROUND_PAGE PAGE_ACTION CHROME.EXTENSION.ONREQUEST CHROME.EXTENSION.SENDREQUEST CHROME.PAGEACTION.SHOW",
+      "search_string": "PAGE ACTION BY CONTENT SHOWS A PAGE ACTION FOR HTML PAGES CONTAINING THE WORD SANDWICH BACKGROUND_PAGE PAGE_ACTION CHROME.PAGEACTION.SHOW",
       "source_files": [
         "background.js",
         "contentscript.js",
@@ -1931,6 +1908,29 @@
       ],
       "source_hash": "c570c40b63675b8a8718cb843aabab4ed0ea575a",
       "zip_path": "examples\/extensions\/benchmark.zip"
+    },
+    {
+      "api_calls": [],
+      "crx_path": null,
+      "description": "Page Cycler UI",
+      "features": [
+        "experimental"
+      ],
+      "icon": "page_cycler_icon.png",
+      "id": "579b7b1b54553eb5f2e8e7d2bf21bd61c855952e",
+      "name": "Page Cycler",
+      "packaged_app": true,
+      "path": "examples\/api\/record\/page_cycler\/",
+      "protocols": [],
+      "search_string": "PAGE CYCLER PAGE CYCLER UI EXPERIMENTAL",
+      "source_files": [
+        "manifest.json",
+        "page_cycler.css",
+        "page_cycler.html",
+        "page_cycler.js"
+      ],
+      "source_hash": "673e5774d52cd6dbf1c53266f4f5757f120add2b",
+      "zip_path": "examples\/api\/record\/page_cycler.zip"
     },
     {
       "api_calls": [
@@ -2043,8 +2043,6 @@
         "chrome.browserAction.setBadgeText",
         "chrome.browserAction.setTitle",
         "chrome.extension.isAllowedIncognitoAccess",
-        "chrome.extension.onRequest",
-        "chrome.extension.sendRequest",
         "chrome.i18n.getMessage",
         "chrome.proxy.onProxyError"
       ],
@@ -2061,7 +2059,7 @@
       "packaged_app": false,
       "path": "examples\/extensions\/proxy_configuration\/",
       "protocols": [],
-      "search_string": "PROXY EXTENSION API SAMPLE SET CHROME-SPECIFIC PROXIES; A DEMONSTRATION OF CHROMES PROXY API BACKGROUND_PAGE BROWSER_ACTION PROXY CHROME.BROWSERACTION.SETBADGEBACKGROUNDCOLOR CHROME.BROWSERACTION.SETBADGETEXT CHROME.BROWSERACTION.SETTITLE CHROME.EXTENSION.ISALLOWEDINCOGNITOACCESS CHROME.EXTENSION.ONREQUEST CHROME.EXTENSION.SENDREQUEST CHROME.I18N.GETMESSAGE CHROME.PROXY.ONPROXYERROR",
+      "search_string": "PROXY EXTENSION API SAMPLE SET CHROME-SPECIFIC PROXIES; A DEMONSTRATION OF CHROMES PROXY API BACKGROUND_PAGE BROWSER_ACTION PROXY CHROME.BROWSERACTION.SETBADGEBACKGROUNDCOLOR CHROME.BROWSERACTION.SETBADGETEXT CHROME.BROWSERACTION.SETTITLE CHROME.EXTENSION.ISALLOWEDINCOGNITOACCESS CHROME.I18N.GETMESSAGE CHROME.PROXY.ONPROXYERROR",
       "source_files": [
         "_locales\/en\/messages.json",
         "background.js",
@@ -2123,9 +2121,7 @@
     },
     {
       "api_calls": [
-        "chrome.experimental.infobars.show",
-        "chrome.extension.onRequest",
-        "chrome.extension.sendRequest"
+        "chrome.experimental.infobars.show"
       ],
       "crx_path": null,
       "description": "Shows an infobar on pages which contain the word 'sandwich'",
@@ -2139,7 +2135,7 @@
       "packaged_app": false,
       "path": "examples\/api\/infobars\/sandwichbar\/",
       "protocols": [],
-      "search_string": "SANDWICHBAR SHOWS AN INFOBAR ON PAGES WHICH CONTAIN THE WORD SANDWICH BACKGROUND_PAGE EXPERIMENTAL CHROME.EXPERIMENTAL.INFOBARS.SHOW CHROME.EXTENSION.ONREQUEST CHROME.EXTENSION.SENDREQUEST",
+      "search_string": "SANDWICHBAR SHOWS AN INFOBAR ON PAGES WHICH CONTAIN THE WORD SANDWICH BACKGROUND_PAGE EXPERIMENTAL CHROME.EXPERIMENTAL.INFOBARS.SHOW",
       "source_files": [
         "background.js",
         "contentscript.js",
@@ -2189,11 +2185,8 @@
         "chrome.browserAction.onClicked",
         "chrome.browserAction.setIcon",
         "chrome.extension.getURL",
-        "chrome.extension.onRequest",
-        "chrome.extension.sendRequest",
         "chrome.tabs.create",
         "chrome.tabs.executeScript",
-        "chrome.tabs.sendRequest",
         "chrome.tts.getVoices",
         "chrome.tts.speak",
         "chrome.tts.stop",
@@ -2216,7 +2209,7 @@
       "packaged_app": false,
       "path": "examples\/extensions\/speak_selection\/",
       "protocols": [],
-      "search_string": "SPEAK SELECTION SPEAKS THE CURRENT SELECTION OUT LOUD. <ALL_URLS> BACKGROUND_PAGE BROWSER_ACTION OPTIONS_PAGE TABS TTS CHROME.BROWSERACTION.ONCLICKED CHROME.BROWSERACTION.SETICON CHROME.EXTENSION.GETURL CHROME.EXTENSION.ONREQUEST CHROME.EXTENSION.SENDREQUEST CHROME.TABS.CREATE CHROME.TABS.EXECUTESCRIPT CHROME.TABS.SENDREQUEST CHROME.TTS.GETVOICES CHROME.TTS.SPEAK CHROME.TTS.STOP CHROME.WINDOWS.GET CHROME.WINDOWS.GETALL",
+      "search_string": "SPEAK SELECTION SPEAKS THE CURRENT SELECTION OUT LOUD. <ALL_URLS> BACKGROUND_PAGE BROWSER_ACTION OPTIONS_PAGE TABS TTS CHROME.BROWSERACTION.ONCLICKED CHROME.BROWSERACTION.SETICON CHROME.EXTENSION.GETURL CHROME.TABS.CREATE CHROME.TABS.EXECUTESCRIPT CHROME.TTS.GETVOICES CHROME.TTS.SPEAK CHROME.TTS.STOP CHROME.WINDOWS.GET CHROME.WINDOWS.GETALL",
       "source_files": [
         "background.js",
         "content_script.js",
@@ -2527,8 +2520,6 @@
     },
     {
       "api_calls": [
-        "chrome.extension.onRequest",
-        "chrome.extension.sendRequest",
         "chrome.i18n.getMessage",
         "chrome.webNavigation.onBeforeNavigate",
         "chrome.webNavigation.onCommitted",
@@ -2551,7 +2542,7 @@
       "packaged_app": false,
       "path": "examples\/api\/webNavigation\/basic\/",
       "protocols": [],
-      "search_string": "WEBNAVIGATION TECH DEMO DEMONSTRATION OF THE WEBNAVIGATION EXTENSION API. BACKGROUND_PAGE BROWSER_ACTION EXTENSION WEBNAVIGATION CHROME.EXTENSION.ONREQUEST CHROME.EXTENSION.SENDREQUEST CHROME.I18N.GETMESSAGE CHROME.WEBNAVIGATION.ONBEFORENAVIGATE CHROME.WEBNAVIGATION.ONCOMMITTED CHROME.WEBNAVIGATION.ONCOMPLETED CHROME.WEBNAVIGATION.ONCREATEDNAVIGATIONTARGET CHROME.WEBNAVIGATION.ONERROROCCURRED CHROME.WEBNAVIGATION.ONREFERENCEFRAGMENTUPDATED",
+      "search_string": "WEBNAVIGATION TECH DEMO DEMONSTRATION OF THE WEBNAVIGATION EXTENSION API. BACKGROUND_PAGE BROWSER_ACTION EXTENSION WEBNAVIGATION CHROME.I18N.GETMESSAGE CHROME.WEBNAVIGATION.ONBEFORENAVIGATE CHROME.WEBNAVIGATION.ONCOMMITTED CHROME.WEBNAVIGATION.ONCOMPLETED CHROME.WEBNAVIGATION.ONCREATEDNAVIGATIONTARGET CHROME.WEBNAVIGATION.ONERROROCCURRED CHROME.WEBNAVIGATION.ONREFERENCEFRAGMENTUPDATED",
       "source_files": [
         "_locales\/en\/messages.json",
         "background.js",
