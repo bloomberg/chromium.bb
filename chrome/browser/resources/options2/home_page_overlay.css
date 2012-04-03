@@ -3,5 +3,7 @@
  * found in the LICENSE file. */
 
 #homepage-url-field {
+  display: inline-block;
   margin-left: 10px;
+  width: 225px;
 }
