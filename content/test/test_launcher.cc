@@ -22,6 +22,8 @@
 #include "base/test/test_timeouts.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
+#include "content/public/app/startup_helper_win.h"
+#include "content/public/common/sandbox_init.h"
 #include "content/test/browser_test.h"
 #include "net/base/escape.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -46,9 +48,6 @@ const char kTestShardIndex[] = "GTEST_SHARD_INDEX";
 // The default output file for XML output.
 const FilePath::CharType kDefaultOutputFile[] = FILE_PATH_LITERAL(
     "test_detail.xml");
-
-// Name of the empty test below.
-const char kEmptyTestName[] = "InProcessBrowserTest.Empty";
 
 // Quit test execution after this number of tests has timed out.
 const int kMaxTimeouts = 5;  // 45s timeout * (5 + 1) = 270s max run time.
@@ -557,6 +556,8 @@ void PrintUsage() {
 
 }  // namespace
 
+const char kEmptyTestName[] = "InProcessBrowserTest.Empty";
+
 const char kGTestFilterFlag[] = "gtest_filter";
 const char kGTestHelpFlag[]   = "gtest_help";
 const char kGTestListTestsFlag[] = "gtest_list_tests";
@@ -598,17 +599,9 @@ int LaunchTests(TestLauncherDelegate* launcher_delegate,
       command_line->HasSwitch(kGTestHelpFlag)) {
 #if defined(OS_WIN)
     if (command_line->HasSwitch(kSingleProcessTestsFlag)) {
-      // This is the browser process, so setup the sandbox broker.
-      sandbox::BrokerServices* broker_services =
-          sandbox::SandboxFactory::GetBrokerServices();
-      if (broker_services) {
-        sandbox::InitBrokerServices(broker_services);
-        // Precreate the desktop and window station used by the renderers.
-        sandbox::TargetPolicy* policy = broker_services->CreatePolicy();
-        sandbox::ResultCode result = policy->CreateAlternateDesktop(true);
-        CHECK(sandbox::SBOX_ERROR_FAILED_TO_SWITCH_BACK_WINSTATION != result);
-        policy->Release();
-      }
+      sandbox::SandboxInterfaceInfo sandbox_info;
+      content::InitializeSandboxInfo(&sandbox_info);
+      content::InitializeSandbox(&sandbox_info);
     }
 #endif
     return launcher_delegate->RunTestSuite(argc, argv);
