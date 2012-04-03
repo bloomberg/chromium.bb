@@ -211,11 +211,7 @@ remoting.ClientSession.prototype.createClientPlugin_ = function(container, id) {
  * Callback function called when the plugin element gets focus.
  */
 remoting.ClientSession.prototype.pluginGotFocus_ = function() {
-  // It would be cleaner to send a paste command to the plugin element,
-  // but that's not supported.
-  /** @type {function(string): void } */
-  document.execCommand;
-  document.execCommand("paste");
+  remoting.clipboard.initiateToHost();
 };
 
 /**

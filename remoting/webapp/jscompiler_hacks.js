@@ -9,6 +9,9 @@
 /** @type Array.<HTMLElement> */
 Document.prototype.all;
 
+/** @type {function(string): void} */
+Document.prototype.execCommand = function(command) {};
+
 /** @return {void} Nothing. */
 Document.prototype.webkitCancelFullScreen = function() {};
 

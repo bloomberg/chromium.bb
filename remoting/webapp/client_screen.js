@@ -200,6 +200,7 @@ function onClientStateChange_(oldState, newState) {
       remoting.setMode(remoting.AppMode.IN_SESSION);
       remoting.toolbar.center();
       remoting.toolbar.preview();
+      remoting.clipboard.startSession();
       updateStatistics_();
     }
 

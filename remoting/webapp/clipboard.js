@@ -46,6 +46,32 @@ remoting.Clipboard.prototype.itemFromHostText = "";
 remoting.Clipboard.prototype.itemFromHostTextPending = false;
 
 /**
+ * @private
+ * @type {boolean}
+ */
+remoting.Clipboard.prototype.blockOneClipboardSend_ = false;
+
+/**
+ * Notifies this object that a session has started.
+ *
+ * @return {void} Nothing.
+ */
+remoting.Clipboard.prototype.startSession = function() {
+  // Clear the store of items sent and received. Those items now relate to a
+  // previous session.
+  this.itemToHostText = "";
+  this.itemFromHostText = "";
+  this.itemFromHostTextPending = false;
+
+  // Do a paste operation, but make sure the resulting clipboard data isn't sent
+  // to the host. This stops the host seeing items that were placed on the
+  // clipboard before the session began. The user may not have intended such
+  // items to be sent to the host.
+  this.blockOneClipboardSend_ = true;
+  this.initiateToHost();
+};
+
+/**
  * Accepts a clipboard from the OS, and sends any changed clipboard items to
  * the host.
  *
@@ -74,12 +100,15 @@ remoting.Clipboard.prototype.toHost = function(clipboardData) {
       // And don't send an item that we received from the host: if we do, we
       // may send the same item to and fro indefinitely.
       if ((item != this.itemToHostText) && (item != this.itemFromHostText)) {
-        // The plugin's JSON reader emits UTF-8.
-        plugin.sendClipboardItem(this.ItemTypes.TEXT_UTF8_TYPE, item);
+        if (!this.blockOneClipboardSend_) {
+          // The plugin's JSON reader emits UTF-8.
+          plugin.sendClipboardItem(this.ItemTypes.TEXT_UTF8_TYPE, item);
+        }
         this.itemToHostText = item;
       }
     }
   }
+  this.blockOneClipboardSend_ = false;
 };
 
 /**
@@ -101,7 +130,7 @@ remoting.Clipboard.prototype.fromHost = function(mimeType, item) {
   }
   this.itemFromHostText = item;
   this.itemFromHostTextPending = true;
-  document.execCommand("copy");
+  this.initiateToOs();
 };
 
 /**
@@ -122,6 +151,34 @@ remoting.Clipboard.prototype.toOs = function(clipboardData) {
   clipboardData.setData(this.ItemTypes.TEXT_TYPE, this.itemFromHostText);
   this.itemFromHostTextPending = false;
   return true;
+};
+
+/**
+ * Initiates the process of sending any fresh items on the OS clipboard, to the
+ * host.
+ *
+ * This method makes the browser fire a paste event, which provides access to
+ * the OS clipboard. That event will be caught by a handler in the document,
+ * which will call toHost().
+ */
+remoting.Clipboard.prototype.initiateToHost = function() {
+  // It would be cleaner to send a paste command to the plugin element,
+  // but that's not supported.
+  document.execCommand("paste");
+};
+
+/**
+ * Initiates the process of sending any items freshly received from the host,
+ * to the OS clipboard.
+ *
+ * This method makes the browser fire a copy event, which provides access to
+ * the OS clipboard. That event will be caught by a handler in the document,
+ * which will call toOs().
+ */
+remoting.Clipboard.prototype.initiateToOs = function() {
+  // It would be cleaner to send a paste command to the plugin element,
+  // but that's not supported.
+  document.execCommand("copy");
 };
 
 /** @type {remoting.Clipboard} */
