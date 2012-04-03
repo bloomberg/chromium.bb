@@ -2003,7 +2003,7 @@ bool Extension::LoadWebIntentAction(const std::string& action_name,
   if (href.empty()) {
     if (is_hosted_app()) {
       href = launch_web_url();
-    } else if (is_packaged_app()) {
+    } else if (is_packaged_app() || is_platform_app()) {
       href = launch_local_path();
     }
   }
