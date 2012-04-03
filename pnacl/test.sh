@@ -153,14 +153,16 @@ get-mode-flags() {
     modeflags="nacl_pic=1"
     ;;
   glibc)
-    modeflags="--nacl_glibc"
+    # Disable pexe mode with glibc for now. This will result in running the
+    # nonpexe tests twice but there aren't too many of them.
+    modeflags="--nacl_glibc pnacl_generate_pexe=0"
     ;;
   sbtc-glibc)
     # Note "sbtc-glibc" just happens to be the order in which the modes
     # are slapped onto the scons-out name. E.g.,
     # nacl-x86-32-pnacl-sbtc-glibc-clang
     # This affects the scons-clean() function.
-    modeflags="--nacl_glibc use_sandboxed_translator=1"
+    modeflags="--nacl_glibc use_sandboxed_translator=1 pnacl_generate_pexe=0"
     ;;
   *)
     echo "Unknown mode" 1>&2
@@ -179,32 +181,25 @@ get-mode-flags() {
 scons-tests () {
   local arch="$1"
   local mode="$2"
-  local pexe="$3"
-  shift 3
+  shift 2
   scons-clean ${arch} ${mode}
 
   if [ ${mode} == "sbtc" ]; then
     build-sbtc-prerequisites "${arch}"
   fi
 
-  local pexe_mode=""
-  if ! ${pexe}; then
-    pexe_mode="pnacl_generate_pexe=0"
-  fi
-
   local modeflags=$(get-mode-flags ${mode})
   if has-target-name "$@" ; then
-    # If a specific test was named, we may either:
-    # (a) with a single invocation build and run the test, or
-    # (b) use separate invocations to build a pexe, then run the test.
-    if ${pexe}; then
-      RunScons ${arch} ${modeflags} "do_not_run_tests=1" ${pexe_mode} "$@"
-    fi
-    RunScons ${arch} ${modeflags} ${pexe_mode} "$@"
+    # By default this uses pexe mode (except where not supported) but this
+    # can be overridden
+    RunScons ${arch} ${modeflags} "$@"
   else
-    # Without specific tests named, we first build then run smoke_tests.
-    RunScons ${arch} ${modeflags} ${pexe_mode} "$@"
-    RunScons ${arch} ${modeflags} ${pexe_mode} "$@" smoke_tests
+    # For now, mostly just duplicate mode-buildbot-x86 in buildbot_pnacl.sh
+    # (but don't bother separating build/run for now) until we
+    # converge on exactly what we want
+    RunScons ${arch} ${modeflags} "$@" smoke_tests
+    # nonpexe tests
+    RunScons ${arch} ${modeflags} pnacl_generate_pexe=0 "$@" nonpexe_tests
   fi
 }
 
@@ -220,34 +215,30 @@ browser-tests() {
     "${arch}" "--mode=opt-host,nacl -j1 ${extra}"
 }
 
-test-arm()        { scons-tests arm newlib false "$@" ; }
-test-x86-32()     { scons-tests x86-32 newlib false "$@" ; }
-test-x86-64()     { scons-tests x86-64 newlib false "$@" ; }
+test-arm()        { scons-tests arm newlib "$@" ; }
+test-x86-32()     { scons-tests x86-32 newlib "$@" ; }
+test-x86-64()     { scons-tests x86-64 newlib "$@" ; }
 
-test-arm-newlib()    { scons-tests arm newlib false "$@" ; }
-test-x86-32-newlib() { scons-tests x86-32 newlib false "$@" ; }
-test-x86-64-newlib() { scons-tests x86-64 newlib false "$@" ; }
+test-arm-newlib()    { scons-tests arm newlib "$@" ; }
+test-x86-32-newlib() { scons-tests x86-32 newlib "$@" ; }
+test-x86-64-newlib() { scons-tests x86-64 newlib "$@" ; }
 
 # ARM PIC is tested independently because there is no GlibC for ARM yet.
 # BUG= http://code.google.com/p/nativeclient/issues/detail?id=1081
-test-arm-pic()    { scons-tests arm pic false "$@" ; }
+test-arm-pic()    { scons-tests arm pic "$@" ; }
 
-test-arm-sbtc()    { scons-tests arm sbtc false "$@" ; }
-test-x86-32-sbtc() { scons-tests x86-32 sbtc false "$@" ; }
-test-x86-64-sbtc() { scons-tests x86-64 sbtc false "$@" ; }
+test-arm-sbtc()    { scons-tests arm sbtc "$@" ; }
+test-x86-32-sbtc() { scons-tests x86-32 sbtc "$@" ; }
+test-x86-64-sbtc() { scons-tests x86-64 sbtc "$@" ; }
 
-# NOTE: this is untested...
-test-arm-sbtc-pexe()    { scons-tests arm sbtc true "$@" ; }
-test-x86-32-sbtc-pexe() { scons-tests x86-32 sbtc true "$@" ; }
-test-x86-64-sbtc-pexe() { scons-tests x86-64 sbtc true "$@" ; }
 
-test-arm-glibc()    { scons-tests arm glibc false "$@" ; }
-test-x86-32-glibc() { scons-tests x86-32 glibc false "$@" ; }
-test-x86-64-glibc() { scons-tests x86-64 glibc false "$@" ; }
+test-arm-glibc()    { scons-tests arm glibc "$@" ; }
+test-x86-32-glibc() { scons-tests x86-32 glibc "$@" ; }
+test-x86-64-glibc() { scons-tests x86-64 glibc "$@" ; }
 
-test-arm-sbtc-glibc()    { scons-tests arm sbtc-glibc false "$@" ; }
-test-x86-32-sbtc-glibc() { scons-tests x86-32 sbtc-glibc false "$@" ; }
-test-x86-64-sbtc-glibc() { scons-tests x86-64 sbtc-glibc false "$@" ; }
+test-arm-sbtc-glibc()    { scons-tests arm sbtc-glibc "$@" ; }
+test-x86-32-sbtc-glibc() { scons-tests x86-32 sbtc-glibc "$@" ; }
+test-x86-64-sbtc-glibc() { scons-tests x86-64 sbtc-glibc "$@" ; }
 
 test-arm-browser()    { browser-tests "arm" "" ; }
 test-x86-32-browser() { browser-tests "x86-32" "" ; }
