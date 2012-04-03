@@ -135,6 +135,46 @@
     </request>
   </interface>
 
+  <interface name="wl_shm_pool" version="1">
+    <description summary="a shared memory pool">
+      The wl_shm_pool object encapsulates a piece of memory shared
+      between the compsitor and client.  Through the wl_shm_pool
+      object, the client can allocate shared memory wl_buffer objects.
+      The objects will share the same underlying mapped memory.
+      Reusing the mapped memory avoids the setup/teardown overhead and
+      is useful when interactively resizing a surface or for many
+      small buffers.
+    </description>
+
+    <request name="create_buffer">
+      <description summary="create wl_buffer from pool">
+	Create a wl_buffer from the pool.  The buffer is created a
+	offset bytes into the pool and has width and height as
+	specified.  The stride arguments specifies the number of bytes
+	from beginning of one row to the beginning of the next.  The
+	format is the pixel format of the buffer and must be one of
+	those advertised through the wl_shm.format event.
+
+	A buffer will keep a reference to the pool it was created from
+	so it is valid to destroy the pool immediatedly after creating
+	a buffer from it.
+      </description>
+
+      <arg name="id" type="new_id" interface="wl_buffer"/>
+      <arg name="offset" type="int"/>
+      <arg name="width" type="int"/>
+      <arg name="height" type="int"/>
+      <arg name="stride" type="int"/>
+      <arg name="format" type="uint"/>
+    </request>
+
+    <request name="destroy" type="destructor">
+      <description summary="destroy the pool">
+	Destroy the pool.
+      </description>
+    </request>
+  </interface>
+
   <interface name="wl_shm" version="1">
     <description summary="shared memory support">
       Support for shared memory buffers.
@@ -151,22 +191,17 @@
       <entry name="xrgb8888" value="1"/>
     </enum>
 
-    <request name="create_buffer">
-      <description summary="create a wl_buffer">
-	Transfer a shm buffer to the server.  The allocated buffer
-	would include at least stride * height bytes starting at the
-	beginning of fd.  The file descriptor is transferred over the
-	socket using AF_UNIX magical features. width, height, stride
-	and format describe the respective properties of the pixel
-	data contained in the buffer.
+    <request name="create_pool">
+      <description summary="create a shm pool">
+	This creates wl_shm_pool object, which can be used to create
+	shared memory based wl_buffer objects.  The server will mmap
+	size bytes of the passed fd, to use as backing memory for then
+	pool.
       </description>
 
-      <arg name="id" type="new_id" interface="wl_buffer"/>
+      <arg name="id" type="new_id" interface="wl_shm_pool"/>
       <arg name="fd" type="fd"/>
-      <arg name="width" type="int"/>
-      <arg name="height" type="int"/>
-      <arg name="stride" type="int"/>
-      <arg name="format" type="uint"/>
+      <arg name="size" type="int"/>
     </request>
 
     <event name="format">

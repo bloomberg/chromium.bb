@@ -33,12 +33,31 @@
 
 #include "wayland-server.h"
 
+struct wl_shm_pool {
+	struct wl_resource resource;
+	int refcount;
+	char *data;
+	int size;
+};
+
 struct wl_shm_buffer {
 	struct wl_buffer buffer;
 	int32_t stride;
 	uint32_t format;
 	void *data;
+	struct wl_shm_pool *pool;
 };
+
+static void
+shm_pool_unref(struct wl_shm_pool *pool)
+{
+	pool->refcount--;
+	if (pool->refcount)
+		return;
+
+	munmap(pool->data, pool->size);
+	free(pool);
+}
 
 static void
 destroy_buffer(struct wl_resource *resource)
@@ -46,8 +65,8 @@ destroy_buffer(struct wl_resource *resource)
 	struct wl_shm_buffer *buffer =
 		container_of(resource, struct wl_shm_buffer, buffer.resource);
 
-	munmap(buffer->data, buffer->stride * buffer->buffer.height);
-
+	if (buffer->pool)
+		shm_pool_unref(buffer->pool);
 	free(buffer);
 }
 
@@ -61,43 +80,14 @@ static const struct wl_buffer_interface shm_buffer_interface = {
 	shm_buffer_destroy
 };
 
-static struct wl_shm_buffer *
-wl_shm_buffer_init(struct wl_client *client, uint32_t id,
-		   int32_t width, int32_t height,
-		   int32_t stride, uint32_t format, void *data)
-{
-	struct wl_shm_buffer *buffer;
-
-	buffer = calloc(1, sizeof *buffer);
-	if (buffer == NULL)
-		return NULL;
-
-	buffer->buffer.width = width;
-	buffer->buffer.height = height;
-	buffer->format = format;
-	buffer->stride = stride;
-	buffer->data = data;
-
-	buffer->buffer.resource.object.id = id;
-	buffer->buffer.resource.object.interface = &wl_buffer_interface;
-	buffer->buffer.resource.object.implementation = (void (**)(void))
-		&shm_buffer_interface;
-
-	buffer->buffer.resource.data = buffer;
-	buffer->buffer.resource.client = client;
-	buffer->buffer.resource.destroy = destroy_buffer;
-
-	return buffer;
-}
-
 static void
-shm_create_buffer(struct wl_client *client, struct wl_resource *resource,
-		  uint32_t id, int fd, int32_t width, int32_t height,
-		  int32_t stride, uint32_t format)
+shm_pool_create_buffer(struct wl_client *client, struct wl_resource *resource,
+		       uint32_t id, int32_t offset,
+		       int32_t width, int32_t height,
+		       int32_t stride, uint32_t format)
 {
+	struct wl_shm_pool *pool = resource->data;
 	struct wl_shm_buffer *buffer;
-	void *data;
-
 
 	switch (format) {
 	case WL_SHM_FORMAT_ARGB8888:
@@ -107,43 +97,111 @@ shm_create_buffer(struct wl_client *client, struct wl_resource *resource,
 		wl_resource_post_error(resource,
 				       WL_SHM_ERROR_INVALID_FORMAT,
 				       "invalid format");
-		close(fd);
 		return;
 	}
 
-	if (width < 0 || height < 0 || stride < width) {
+	if (offset < 0 || width <= 0 || height <= 0 || stride < width ||
+	    INT32_MAX / stride <= height ||
+	    offset > pool->size - stride * height) {
 		wl_resource_post_error(resource,
 				       WL_SHM_ERROR_INVALID_STRIDE,
 				       "invalid width, height or stride (%dx%d, %u)",
 				       width, height, stride);
+		return;
+	}
+
+	buffer = malloc(sizeof *buffer);
+	if (buffer == NULL) {
+		wl_resource_post_no_memory(resource);
+		return;
+	}
+
+	buffer->buffer.width = width;
+	buffer->buffer.height = height;
+	buffer->format = format;
+	buffer->stride = stride;
+	buffer->data = pool->data + offset;
+	buffer->pool = pool;
+	pool->refcount++;
+
+	buffer->buffer.resource.object.id = id;
+	buffer->buffer.resource.object.interface = &wl_buffer_interface;
+	buffer->buffer.resource.object.implementation = (void (**)(void))
+		&shm_buffer_interface;
+
+	buffer->buffer.resource.data = buffer;
+	buffer->buffer.resource.client = resource->client;
+	buffer->buffer.resource.destroy = destroy_buffer;
+
+	wl_client_add_resource(client, &buffer->buffer.resource);
+}
+
+static void
+destroy_pool(struct wl_resource *resource)
+{
+	struct wl_shm_pool *pool = resource->data;
+
+	shm_pool_unref(pool);
+}
+
+static void
+shm_pool_destroy(struct wl_client *client, struct wl_resource *resource)
+{
+	wl_resource_destroy(resource, 0);
+}
+
+struct wl_shm_pool_interface shm_pool_interface = {
+	shm_pool_create_buffer,
+	shm_pool_destroy
+};
+
+static void
+shm_create_pool(struct wl_client *client, struct wl_resource *resource,
+		uint32_t id, int fd, int32_t size)
+{
+	struct wl_shm_pool *pool;
+
+	pool = malloc(sizeof *pool);
+	if (pool == NULL) {
+		wl_resource_post_no_memory(resource);
 		close(fd);
 		return;
 	}
 
-	data = mmap(NULL, stride * height,
-		    PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+	if (size <= 0) {
+		wl_resource_post_error(resource,
+				       WL_SHM_ERROR_INVALID_STRIDE,
+				       "invalid size (%d)", size);
+		close(fd);
+		return;
+	}
 
+	pool->refcount = 1;
+	pool->size = size;
+	pool->data = mmap(NULL, size,
+			  PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
 	close(fd);
-	if (data == MAP_FAILED) {
+	if (pool->data == MAP_FAILED) {
 		wl_resource_post_error(resource,
 				       WL_SHM_ERROR_INVALID_FD,
 				       "failed mmap fd %d", fd);
 		return;
 	}
 
-	buffer = wl_shm_buffer_init(client, id,
-				    width, height, stride, format, data);
-	if (buffer == NULL) {
-		munmap(data, stride * height);
-		wl_resource_post_no_memory(resource);
-		return;
-	}
+	pool->resource.object.id = id;
+	pool->resource.object.interface = &wl_shm_pool_interface;
+	pool->resource.object.implementation =
+		(void (**)(void)) &shm_pool_interface;
 
-	wl_client_add_resource(client, &buffer->buffer.resource);
+	pool->resource.data = pool;
+	pool->resource.client = client;
+	pool->resource.destroy = destroy_pool;
+
+	wl_client_add_resource(client, &pool->resource);
 }
 
 static const struct wl_shm_interface shm_interface = {
-	shm_create_buffer
+	shm_create_pool
 };
 
 static void
