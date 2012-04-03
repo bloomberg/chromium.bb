@@ -153,6 +153,10 @@ void CapturerGdi::InvalidateFullScreen() {
 
 void CapturerGdi::CaptureInvalidRegion(
     const CaptureCompletedCallback& callback) {
+  // Force the system to power-up display hardware, if it has been suspended.
+  SetThreadExecutionState(ES_DISPLAY_REQUIRED);
+
+  // Perform the capture.
   CalculateInvalidRegion();
   SkRegion invalid_region;
   helper_.SwapInvalidRegion(&invalid_region);

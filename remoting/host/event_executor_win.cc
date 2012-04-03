@@ -94,10 +94,12 @@ uint16_t UsbKeycodeToWinScancode(uint32_t usb_keycode) {
 }
 
 void EventExecutorWin::HandleKey(const KeyEvent& event) {
-  int key = event.keycode();
-  bool down = event.pressed();
+  // Reset the system idle suspend timeout.
+  SetThreadExecutionState(ES_SYSTEM_REQUIRED);
 
   // Calculate scan code from key event.
+  int key = event.keycode();
+  bool down = event.pressed();
   int scancode = INVALID_KEYCODE;
   if (event.has_usb_keycode() && event.usb_keycode() != 0) {
     scancode = UsbKeycodeToWinScancode(event.usb_keycode());
@@ -138,6 +140,9 @@ void EventExecutorWin::HandleKey(const KeyEvent& event) {
 }
 
 void EventExecutorWin::HandleMouse(const MouseEvent& event) {
+  // Reset the system idle suspend timeout.
+  SetThreadExecutionState(ES_SYSTEM_REQUIRED);
+
   // TODO(garykac) Collapse mouse (x,y) and button events into a single
   // input event when possible.
   if (event.has_x() && event.has_y()) {
