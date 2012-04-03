@@ -271,9 +271,11 @@ void ShelfLayoutManager::OnWindowPropertyChanged(aura::Window* window,
 // ShelfLayoutManager, private:
 
 void ShelfLayoutManager::SetState(VisibilityState visibility_state) {
+  ShellDelegate* delegate = Shell::GetInstance()->delegate();
   State state;
   state.visibility_state = visibility_state;
   state.auto_hide_state = CalculateAutoHideState(visibility_state);
+  state.is_screen_locked = delegate && delegate->IsScreenLocked();
 
   if (state_.Equals(state))
     return;  // Nothing changed.
@@ -383,7 +385,8 @@ void ShelfLayoutManager::UpdateShelfBackground(
 }
 
 bool ShelfLayoutManager::GetLauncherPaintsBackground() const {
-  return window_overlaps_shelf_ || state_.visibility_state == AUTO_HIDE;
+  return (!state_.is_screen_locked && window_overlaps_shelf_) ||
+      state_.visibility_state == AUTO_HIDE;
 }
 
 void ShelfLayoutManager::UpdateAutoHideStateNow() {

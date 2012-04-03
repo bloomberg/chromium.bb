@@ -150,7 +150,9 @@ class ASH_EXPORT ShelfLayoutManager : public aura::LayoutManager,
   };
 
   struct State {
-    State() : visibility_state(VISIBLE), auto_hide_state(AUTO_HIDE_HIDDEN) {}
+    State() : visibility_state(VISIBLE),
+              auto_hide_state(AUTO_HIDE_HIDDEN),
+              is_screen_locked(false) {}
 
     // Returns true if the two states are considered equal. As
     // |auto_hide_state| only matters if |visibility_state| is |AUTO_HIDE|,
@@ -158,11 +160,13 @@ class ASH_EXPORT ShelfLayoutManager : public aura::LayoutManager,
     bool Equals(const State& other) const {
       return other.visibility_state == visibility_state &&
           (visibility_state != AUTO_HIDE ||
-           other.auto_hide_state == auto_hide_state);
+           other.auto_hide_state == auto_hide_state) &&
+          other.is_screen_locked == is_screen_locked;
     }
 
     VisibilityState visibility_state;
     AutoHideState auto_hide_state;
+    bool is_screen_locked;
   };
 
   // Sets the visibility of the shelf to |state|.
