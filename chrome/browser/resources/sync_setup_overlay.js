@@ -86,9 +86,8 @@ cr.define('options', function() {
     getEncryptionRadioCheckedValue_: function() {
       var f = $('choose-data-types-form');
       for (var i = 0; i < f.encrypt.length; ++i) {
-        if (f.encrypt[i].checked) {
+        if (f.encrypt[i].checked)
           return f.encrypt[i].value;
-        }
       }
 
       return undefined;
@@ -154,8 +153,9 @@ cr.define('options', function() {
 
       var f = $('choose-data-types-form');
       if (this.getPassphraseRadioCheckedValue_() != 'explicit' ||
-          $('google-option').disabled)
+          $('google-option').disabled) {
         return true;
+      }
 
       var customPassphrase = $('custom-passphrase');
       if (customPassphrase.value.length == 0) {
@@ -491,6 +491,12 @@ cr.define('options', function() {
       chrome.send('SyncSetupAttachHandler');
     },
 
+    /**
+     * Shows the appropriate sync setup page.
+     * @param {string} page A page of the sync setup to show.
+     * @param {object} args Data from the C++ to forward on to the right
+     *     section.
+     */
     showSyncSetupPage_: function(page, args) {
       this.setThrobbersVisible_(false);
 
@@ -501,15 +507,19 @@ cr.define('options', function() {
 
       this.setInputElementsDisabledState_(false);
 
-      if (page == 'login')
-        this.showGaiaLogin_(args);
-      else if (page == 'configure' || page == 'passphrase')
-        this.showConfigure_(args);
-
+      // NOTE: Because both showGaiaLogin_() and showConfigure_() change the
+      // focus, we need to ensure that the overlay container and dialog aren't
+      // [hidden] (as trying to focus() nodes inside of a [hidden] DOM section
+      // doesn't work).
       if (page == 'done')
         this.closeOverlay_();
       else
         this.showOverlay_();
+
+      if (page == 'login')
+        this.showGaiaLogin_(args);
+      else if (page == 'configure' || page == 'passphrase')
+        this.showConfigure_(args);
     },
 
     /**
@@ -523,14 +533,20 @@ cr.define('options', function() {
         throbbers[i].style.visibility = visible ? 'visible' : 'hidden';
     },
 
+    /**
+     * Set the appropriate focus on the GAIA login section of the overlay.
+     * @private
+     */
     loginSetFocus_: function() {
-      var email = $('gaia-email');
-      var passwd = $('gaia-passwd');
+      var email = this.getLoginEmail_();
       if (email && !email.value) {
         email.focus();
-      } else if (passwd) {
-        passwd.focus();
+        return;
       }
+
+      var passwd = this.getLoginPasswd_();
+      if (passwd)
+        passwd.focus();
     },
 
     /**
