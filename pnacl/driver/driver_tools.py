@@ -10,15 +10,17 @@
 #
 
 import hashlib
+import platform
 import os
 import re
-import subprocess
-import sys
 import signal
-import platform
+import subprocess
+import struct
+import sys
 import tempfile
 import threading
 import Queue
+
 import artools
 import ldtools
 import pathtools
@@ -610,7 +612,7 @@ def GetBasicHeaderData(data):
   """
   if not IsBitcodeWrapperHeader(data):
     raise ValueError('Data is not a bitcode wrapper')
-  llvm_bcversion, offset, size = struct.unpack('<IIII', data)
+  magic, llvm_bcversion, offset, size = struct.unpack('<IIII', data)
   if llvm_bcversion != 0:
     raise ValueError('Data is not a valid bitcode wrapper')
   return offset, size
