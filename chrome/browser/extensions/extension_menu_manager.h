@@ -107,6 +107,7 @@ class ExtensionMenuItem {
   ExtensionMenuItem(const Id& id,
                     const std::string& title,
                     bool checked,
+                    bool enabled,
                     Type type,
                     const ContextList& contexts);
   virtual ~ExtensionMenuItem();
@@ -121,6 +122,7 @@ class ExtensionMenuItem {
   ContextList contexts() const { return contexts_; }
   Type type() const { return type_; }
   bool checked() const { return checked_; }
+  bool enabled() const { return enabled_; }
   const URLPatternSet& document_url_patterns() const {
     return document_url_patterns_;
   }
@@ -132,6 +134,7 @@ class ExtensionMenuItem {
   void set_title(const std::string& new_title) { title_ = new_title; }
   void set_contexts(ContextList contexts) { contexts_ = contexts; }
   void set_type(Type type) { type_ = type; }
+  void set_enabled(bool enabled) { enabled_ = enabled; }
   void set_document_url_patterns(const URLPatternSet& patterns) {
     document_url_patterns_ = patterns;
   }
@@ -172,6 +175,9 @@ class ExtensionMenuItem {
 
   // This should only be true for items of type CHECKBOX or RADIO.
   bool checked_;
+
+  // If the item is enabled or not.
+  bool enabled_;
 
   // In what contexts should the item be shown?
   ContextList contexts_;

@@ -28,12 +28,14 @@ using content::WebContents;
 ExtensionMenuItem::ExtensionMenuItem(const Id& id,
                                      const std::string& title,
                                      bool checked,
+                                     bool enabled,
                                      Type type,
                                      const ContextList& contexts)
     : id_(id),
       title_(title),
       type_(type),
       checked_(checked),
+      enabled_(enabled),
       contexts_(contexts),
       parent_id_(0) {
 }

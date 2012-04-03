@@ -130,6 +130,11 @@
                 "items": {"type": "string"},
                 "optional": true,
                 "description": "Similar to documentUrlPatterns, but lets you filter based on the src attribute of img/audio/video tags and the href of anchor tags."
+              },
+              "enabled": {
+                "type": "boolean",
+                "optional": true,
+                "description": "Whether this context menu item is enabled or disabled. Defaults to true."
               }
             }
           },
@@ -196,6 +201,10 @@
               "targetUrlPatterns": {
                 "type": "array",
                 "items": {"type": "string"},
+                "optional": true
+              },
+              "enabled": {
+                "type": "boolean",
                 "optional": true
               }
             }

@@ -1102,9 +1102,11 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
   // Extension items.
   if (id >= IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST &&
       id <= IDC_EXTENSIONS_CONTEXT_CUSTOM_LAST) {
-    // In the future we may add APIs for extensions to disable items, but for
-    // now all items are implicitly enabled.
-    return true;
+    ExtensionMenuItem* item = GetExtensionMenuItem(id);
+    // If this is the parent menu item, it is always enabled.
+    if (!item)
+      return true;
+    return item->enabled();
   }
 
   if (id >= IDC_CONTENT_CONTEXT_PROTOCOL_HANDLER_FIRST &&

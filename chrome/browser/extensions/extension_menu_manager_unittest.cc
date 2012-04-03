@@ -46,7 +46,7 @@ class ExtensionMenuManagerTest : public testing::Test {
     ExtensionMenuItem::Type type = ExtensionMenuItem::NORMAL;
     ExtensionMenuItem::ContextList contexts(ExtensionMenuItem::ALL);
     ExtensionMenuItem::Id id(NULL, extension->id(), next_id_++);
-    return new ExtensionMenuItem(id, "test", false, type, contexts);
+    return new ExtensionMenuItem(id, "test", false, true, type, contexts);
   }
 
   // Creates and returns a test Extension. The caller does *not* own the return

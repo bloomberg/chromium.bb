@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -190,6 +190,40 @@ class ExtensionContextMenuBrowserTest : public ExtensionBrowserTest {
     scoped_ptr<TestRenderViewContextMenu> menu(
         CreateMenu(browser(), page_url, link_url, frame_url));
     return menu->HasExtensionItemWithLabel(label);
+  }
+
+  // This creates an extension that starts |enabled| and then switches to
+  // |!enabled|.
+  void TestEnabledContextMenu(bool enabled) {
+    ExtensionTestMessageListener begin("begin", true);
+    ExtensionTestMessageListener create("create", true);
+    ExtensionTestMessageListener update("update", false);
+    ASSERT_TRUE(LoadContextMenuExtension("enabled"));
+
+    ASSERT_TRUE(begin.WaitUntilSatisfied());
+
+    if (enabled)
+      begin.Reply("start enabled");
+    else
+      begin.Reply("start disabled");
+
+    // Wait for the extension to tell us it's created an item.
+    ASSERT_TRUE(create.WaitUntilSatisfied());
+    create.Reply("go");
+
+    GURL page_url("http://www.google.com");
+
+    // Create and build our test context menu.
+    scoped_ptr<TestRenderViewContextMenu> menu(
+        CreateMenu(browser(), page_url, GURL(), GURL()));
+
+    // Look for the extension item in the menu, and make sure it's |enabled|.
+    int command_id = IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST;
+    ASSERT_EQ(enabled, menu->IsCommandIdEnabled(command_id));
+
+    // Update the item and make sure it is now |!enabled|.
+    ASSERT_TRUE(update.WaitUntilSatisfied());
+    ASSERT_EQ(!enabled, menu->IsCommandIdEnabled(command_id));
   }
 };
 
@@ -466,4 +500,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionContextMenuBrowserTest, Frames) {
       page_url, GURL(), frame_url, std::string("Page item")));
   ASSERT_TRUE(MenuHasItemWithLabel(
       page_url, GURL(), frame_url, std::string("Frame item")));
+}
+
+// Tests enabling and disabling a context menu item.
+IN_PROC_BROWSER_TEST_F(ExtensionContextMenuBrowserTest, Enabled) {
+  TestEnabledContextMenu(true);
+  TestEnabledContextMenu(false);
 }

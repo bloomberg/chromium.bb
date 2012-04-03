@@ -16,6 +16,7 @@
 const char kCheckedKey[] = "checked";
 const char kContextsKey[] = "contexts";
 const char kDocumentUrlPatternsKey[] = "documentUrlPatterns";
+const char kEnabledKey[] = "enabled";
 const char kGeneratedIdKey[] = "generatedId";
 const char kParentIdKey[] = "parentId";
 const char kTargetUrlPatternsKey[] = "targetUrlPatterns";
@@ -236,8 +237,12 @@ bool CreateContextMenuFunction::RunImpl() {
   if (!ParseChecked(type, *properties, false, &checked))
     return false;
 
+  bool enabled = true;
+  if (properties->HasKey(kEnabledKey))
+    EXTENSION_FUNCTION_VALIDATE(properties->GetBoolean(kEnabledKey, &enabled));
+
   scoped_ptr<ExtensionMenuItem> item(
-      new ExtensionMenuItem(id, title, checked, type, contexts));
+      new ExtensionMenuItem(id, title, checked, enabled, type, contexts));
 
   if (!SetURLPatterns(*properties, item.get()))
     return false;
@@ -317,6 +322,13 @@ bool UpdateContextMenuFunction::RunImpl() {
     if (!item->SetChecked(checked))
       return false;
     radioItemUpdated = true;
+  }
+
+  // Enabled.
+  bool enabled;
+  if (properties->HasKey(kEnabledKey)) {
+    EXTENSION_FUNCTION_VALIDATE(properties->GetBoolean(kEnabledKey, &enabled));
+    item->set_enabled(enabled);
   }
 
   // Contexts.
