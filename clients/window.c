@@ -416,6 +416,8 @@ display_create_egl_image_surface_from_file(struct display *display,
 	struct egl_image_surface_data *data;
 
 	image = load_image(filename);
+	if (image == NULL)
+		return NULL;
 
 	surface = display_create_egl_image_surface(display, 0, rect);
 	if (surface == NULL) {
@@ -562,6 +564,8 @@ display_create_shm_surface_from_file(struct display *display,
 	int size;
 
 	image = load_image(filename);
+	if (image == NULL)
+		return NULL;
 
 	surface = display_create_shm_surface(display, rect, 0, NULL);
 	if (surface == NULL) {
