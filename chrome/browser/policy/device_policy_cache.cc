@@ -122,7 +122,8 @@ DevicePolicyCache::DevicePolicyCache(
     : data_store_(data_store),
       install_attributes_(install_attributes),
       signed_settings_helper_(chromeos::SignedSettingsHelper::Get()),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
+      policy_fetch_pending_(false) {
 }
 
 DevicePolicyCache::DevicePolicyCache(
@@ -132,7 +133,8 @@ DevicePolicyCache::DevicePolicyCache(
     : data_store_(data_store),
       install_attributes_(install_attributes),
       signed_settings_helper_(signed_settings_helper),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
+      policy_fetch_pending_(false) {
 }
 
 DevicePolicyCache::~DevicePolicyCache() {
@@ -190,12 +192,20 @@ bool DevicePolicyCache::SetPolicy(const em::PolicyFetchResponse& policy) {
       base::Bind(&DevicePolicyCache::PolicyStoreOpCompleted,
                  weak_ptr_factory_.GetWeakPtr());
   new StorePolicyOperation(signed_settings_helper_, policy, callback);
+  policy_fetch_pending_ = true;
   return true;
 }
 
 void DevicePolicyCache::SetUnmanaged() {
   LOG(WARNING) << "Tried to set DevicePolicyCache to 'unmanaged'!";
   // This is not supported for DevicePolicyCache.
+}
+
+void DevicePolicyCache::SetFetchingDone() {
+  // Don't send the notification just yet if there is a pending policy
+  // store/reload cycle.
+  if (!policy_fetch_pending_)
+    CloudPolicyCacheBase::SetFetchingDone();
 }
 
 void DevicePolicyCache::OnRetrievePolicyCompleted(
@@ -219,14 +229,15 @@ void DevicePolicyCache::OnRetrievePolicyCompleted(
         InformNotifier(CloudPolicySubsystem::LOCAL_ERROR,
                        CloudPolicySubsystem::POLICY_LOCAL_ERROR);
       }
-      return;
-    }
-    bool ok = SetPolicyInternal(policy, NULL, false);
-    if (ok) {
-      UMA_HISTOGRAM_ENUMERATION(kMetricPolicy, kMetricPolicyFetchOK,
-                                kMetricPolicySize);
+    } else {
+      bool ok = SetPolicyInternal(policy, NULL, false);
+      if (ok) {
+        UMA_HISTOGRAM_ENUMERATION(kMetricPolicy, kMetricPolicyFetchOK,
+                                  kMetricPolicySize);
+      }
     }
   }
+  CheckFetchingDone();
 }
 
 bool DevicePolicyCache::DecodePolicyData(const em::PolicyData& policy_data,
@@ -257,6 +268,7 @@ void DevicePolicyCache::PolicyStoreOpCompleted(
       InformNotifier(CloudPolicySubsystem::LOCAL_ERROR,
                      CloudPolicySubsystem::POLICY_LOCAL_ERROR);
     }
+    CheckFetchingDone();
     return;
   }
   UMA_HISTOGRAM_ENUMERATION(kMetricPolicy, kMetricPolicyStoreSucceeded,
@@ -326,6 +338,13 @@ void DevicePolicyCache::SetTokenAndFlagReady(const std::string& device_token) {
   // finished loading.
   data_store_->SetDeviceToken(device_token, true);
   SetReady();
+}
+
+void DevicePolicyCache::CheckFetchingDone() {
+  if (policy_fetch_pending_) {
+    CloudPolicyCacheBase::SetFetchingDone();
+    policy_fetch_pending_ = false;
+  }
 }
 
 // static
