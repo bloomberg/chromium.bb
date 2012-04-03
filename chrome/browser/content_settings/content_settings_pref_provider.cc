@@ -57,10 +57,13 @@ void ClearSettings(ContentSettingsType type,
     const std::string& pattern_pair(*i);
 
     DictionaryValue* settings = NULL;
-    pattern_pairs->GetDictionaryWithoutPathExpansion(
-        pattern_pair, &settings);
+    if (!pattern_pairs->GetDictionaryWithoutPathExpansion(
+            pattern_pair, &settings)) {
+      return;
+    }
 
-    settings->RemoveWithoutPathExpansion(type_name, NULL);
+    if (settings)
+      settings->RemoveWithoutPathExpansion(type_name, NULL);
   }
 }
 
