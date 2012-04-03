@@ -232,6 +232,8 @@
         #'debug_utils.cc',
         #'debug_utils.h',
         'drag_controller.h',
+        'drag_utils.cc',
+        'drag_utils.h',
         'events/event.cc',
         'events/event.h',
         'events/event_aura.cc',

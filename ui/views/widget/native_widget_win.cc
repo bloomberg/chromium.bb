@@ -35,6 +35,7 @@
 #include "ui/views/accessibility/native_view_accessibility_win.h"
 #include "ui/views/controls/native_control_win.h"
 #include "ui/views/controls/textfield/native_textfield_views.h"
+#include "ui/views/drag_utils.h"
 #include "ui/views/focus/accelerator_handler.h"
 #include "ui/views/focus/view_storage.h"
 #include "ui/views/ime/input_method_win.h"
@@ -1069,10 +1070,7 @@ void NativeWidgetWin::RunShellDrag(View* view,
                                    const ui::OSExchangeData& data,
                                    const gfx::Point& location,
                                    int operation) {
-  scoped_refptr<ui::DragSource> drag_source(new ui::DragSource);
-  DWORD effects;
-  DoDragDrop(ui::OSExchangeDataProviderWin::GetIDataObject(data), drag_source,
-             ui::DragDropTypes::DragOperationToDropEffect(operation), &effects);
+  views::RunShellDrag(NULL, data, location, operation);
 }
 
 void NativeWidgetWin::SchedulePaintInRect(const gfx::Rect& rect) {

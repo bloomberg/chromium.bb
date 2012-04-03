@@ -27,6 +27,7 @@
 #include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/screen.h"
+#include "ui/views/drag_utils.h"
 #include "ui/views/ime/input_method_bridge.h"
 #include "ui/views/widget/drop_helper.h"
 #include "ui/views/widget/native_widget_delegate.h"
@@ -622,16 +623,10 @@ bool NativeWidgetAura::IsAccessibleWidget() const {
 }
 
 void NativeWidgetAura::RunShellDrag(View* view,
-                                   const ui::OSExchangeData& data,
-                                   const gfx::Point& location,
-                                   int operation) {
-  gfx::Point root_location(location);
-  aura::RootWindow* root_window = window_->GetRootWindow();
-  aura::Window::ConvertPointToWindow(window_, root_window, &root_location);
-  if (aura::client::GetDragDropClient(root_window)) {
-    aura::client::GetDragDropClient(root_window)->StartDragAndDrop(data,
-        root_location, operation);
-  }
+                                    const ui::OSExchangeData& data,
+                                    const gfx::Point& location,
+                                    int operation) {
+  views::RunShellDrag(window_, data, location, operation);
 }
 
 void NativeWidgetAura::SchedulePaintInRect(const gfx::Rect& rect) {

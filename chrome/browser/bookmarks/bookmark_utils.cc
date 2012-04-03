@@ -40,8 +40,8 @@
 #endif
 
 #if defined(TOOLKIT_VIEWS)
-#include "ui/base/dragdrop/drag_utils.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
+#include "ui/views/drag_utils.h"
 #include "ui/views/events/event.h"
 #include "ui/views/widget/native_widget.h"
 #include "ui/views/widget/widget.h"
@@ -354,11 +354,16 @@ void DragBookmarks(Profile* profile,
   bool was_nested = MessageLoop::current()->IsNested();
   MessageLoop::current()->SetNestableTasksAllowed(true);
 
+  int operation =
+      ui::DragDropTypes::DRAG_COPY | ui::DragDropTypes::DRAG_MOVE |
+      ui::DragDropTypes::DRAG_LINK;
   views::Widget* widget = views::Widget::GetWidgetForNativeView(view);
   if (widget) {
-    widget->RunShellDrag(NULL, data, gfx::Point(),
-        ui::DragDropTypes::DRAG_COPY | ui::DragDropTypes::DRAG_MOVE |
-        ui::DragDropTypes::DRAG_LINK);
+    widget->RunShellDrag(NULL, data, gfx::Point(), operation);
+  } else {
+    // We hit this case when we're using TabContentsViewWin or
+    // TabContentsViewAura, instead of TabContentsViewViews.
+    views::RunShellDrag(view, data, gfx::Point(), operation);
   }
 
   MessageLoop::current()->SetNestableTasksAllowed(was_nested);
