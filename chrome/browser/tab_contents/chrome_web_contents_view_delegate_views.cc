@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/tab_contents/chrome_web_contents_view_delegate_win.h"
+#include "chrome/browser/tab_contents/chrome_web_contents_view_delegate_views.h"
 
 #include "chrome/browser/browser_shutdown.h"
-#include "chrome/browser/tab_contents/web_drag_bookmark_handler_win.h"
 #include "chrome/browser/ui/constrained_window_tab_helper.h"
 #include "chrome/browser/ui/sad_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
@@ -20,14 +19,21 @@
 #include "ui/views/focus/view_storage.h"
 #include "ui/views/widget/widget.h"
 
-ChromeWebContentsViewDelegateWin::ChromeWebContentsViewDelegateWin(
+#if defined(USE_AURA)
+#include "chrome/browser/tab_contents/web_drag_bookmark_handler_aura.h"
+#include "ui/aura/window.h"
+#else
+#include "chrome/browser/tab_contents/web_drag_bookmark_handler_win.h"
+#endif
+
+ChromeWebContentsViewDelegateViews::ChromeWebContentsViewDelegateViews(
     content::WebContents* web_contents)
     : web_contents_(web_contents) {
   last_focused_view_storage_id_ =
       views::ViewStorage::GetInstance()->CreateStorageID();
 }
 
-ChromeWebContentsViewDelegateWin::~ChromeWebContentsViewDelegateWin() {
+ChromeWebContentsViewDelegateViews::~ChromeWebContentsViewDelegateViews() {
   // Makes sure to remove any stored view we may still have in the ViewStorage.
   //
   // It is possible the view went away before us, so we only do this if the
@@ -39,14 +45,18 @@ ChromeWebContentsViewDelegateWin::~ChromeWebContentsViewDelegateWin() {
 }
 
 content::WebDragDestDelegate*
-    ChromeWebContentsViewDelegateWin::GetDragDestDelegate() {
+    ChromeWebContentsViewDelegateViews::GetDragDestDelegate() {
   // We install a chrome specific handler to intercept bookmark drags for the
   // bookmark manager/extension API.
+#if defined(USE_AURA)
+  bookmark_handler_.reset(new WebDragBookmarkHandlerAura);
+#else
   bookmark_handler_.reset(new WebDragBookmarkHandlerWin);
+#endif
   return bookmark_handler_.get();
 }
 
-bool ChromeWebContentsViewDelegateWin::Focus() {
+bool ChromeWebContentsViewDelegateViews::Focus() {
   TabContentsWrapper* wrapper =
       TabContentsWrapper::GetCurrentWrapperForContents(web_contents_);
   if (wrapper) {
@@ -71,11 +81,11 @@ bool ChromeWebContentsViewDelegateWin::Focus() {
   return false;
 }
 
-void ChromeWebContentsViewDelegateWin::TakeFocus(bool reverse) {
+void ChromeWebContentsViewDelegateViews::TakeFocus(bool reverse) {
   GetFocusManager()->AdvanceFocus(reverse);
 }
 
-void ChromeWebContentsViewDelegateWin::StoreFocus() {
+void ChromeWebContentsViewDelegateViews::StoreFocus() {
   views::ViewStorage* view_storage = views::ViewStorage::GetInstance();
 
   if (view_storage->RetrieveView(last_focused_view_storage_id_) != NULL)
@@ -88,7 +98,7 @@ void ChromeWebContentsViewDelegateWin::StoreFocus() {
     view_storage->StoreView(last_focused_view_storage_id_, focused_view);
 }
 
-void ChromeWebContentsViewDelegateWin::RestoreFocus() {
+void ChromeWebContentsViewDelegateViews::RestoreFocus() {
   views::ViewStorage* view_storage = views::ViewStorage::GetInstance();
   views::View* last_focused_view =
       view_storage->RetrieveView(last_focused_view_storage_id_);
@@ -111,7 +121,7 @@ void ChromeWebContentsViewDelegateWin::RestoreFocus() {
   }
 }
 
-void ChromeWebContentsViewDelegateWin::ShowContextMenu(
+void ChromeWebContentsViewDelegateViews::ShowContextMenu(
     const content::ContextMenuParams& params) {
   context_menu_.reset(new RenderViewContextMenuViews(web_contents_, params));
   context_menu_->Init();
@@ -122,9 +132,15 @@ void ChromeWebContentsViewDelegateWin::ShowContextMenu(
 
   gfx::Point screen_point(params.x, params.y);
 
+#if defined(USE_AURA)
+  gfx::Point view_origin =
+      web_contents_->GetView()->GetNativeView()->GetScreenBounds().origin();
+  screen_point.Offset(view_origin.x(), view_origin.y());
+#else
   POINT temp = screen_point.ToPOINT();
   ClientToScreen(web_contents_->GetView()->GetNativeView(), &temp);
   screen_point = temp;
+#endif
 
   // Enable recursive tasks on the message loop so we can get updates while
   // the context menu is being displayed.
@@ -132,7 +148,7 @@ void ChromeWebContentsViewDelegateWin::ShowContextMenu(
   context_menu_->RunMenuAt(GetTopLevelWidget(), screen_point);
 }
 
-void ChromeWebContentsViewDelegateWin::SizeChanged(const gfx::Size& size) {
+void ChromeWebContentsViewDelegateViews::SizeChanged(const gfx::Size& size) {
   TabContentsWrapper* wrapper =
       TabContentsWrapper::GetCurrentWrapperForContents(web_contents_);
   if (!wrapper)
@@ -142,20 +158,21 @@ void ChromeWebContentsViewDelegateWin::SizeChanged(const gfx::Size& size) {
     sad_tab->SetBounds(gfx::Rect(size));
 }
 
-views::Widget* ChromeWebContentsViewDelegateWin::GetTopLevelWidget() {
-  HWND top_level_window = web_contents_->GetView()->GetTopLevelNativeWindow();
+views::Widget* ChromeWebContentsViewDelegateViews::GetTopLevelWidget() {
+  gfx::NativeWindow top_level_window =
+      web_contents_->GetView()->GetTopLevelNativeWindow();
   if (!top_level_window)
     return NULL;
   return views::Widget::GetWidgetForNativeWindow(top_level_window);
 }
 
 views::FocusManager*
-    ChromeWebContentsViewDelegateWin::GetFocusManager() {
+    ChromeWebContentsViewDelegateViews::GetFocusManager() {
   views::Widget* toplevel_widget = GetTopLevelWidget();
   return toplevel_widget ? toplevel_widget->GetFocusManager() : NULL;
 }
 
-void ChromeWebContentsViewDelegateWin::SetInitialFocus() {
+void ChromeWebContentsViewDelegateViews::SetInitialFocus() {
   if (web_contents_->FocusLocationBarByDefault()) {
     web_contents_->SetFocusToLocationBar(false);
   } else {

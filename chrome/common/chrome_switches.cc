@@ -1363,6 +1363,11 @@ const char kDisableDesktopShortcuts[]       = "disable-desktop-shortcuts";
 const char kTouchDevices[]                  = "touch-devices";
 #endif
 
+#if defined(USE_AURA)
+// Use TabContentsViewAura instead of the default implementation.
+const char kEnableTCVA[]                    = "enable-tcva";
+#endif
+
 #ifndef NDEBUG
 // Enables overriding the path of file manager extension.
 const char kFileManagerExtensionPath[]      = "filemgr-ext-path";

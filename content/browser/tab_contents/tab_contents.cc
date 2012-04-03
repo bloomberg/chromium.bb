@@ -64,7 +64,9 @@
 #include "webkit/glue/web_intent_data.h"
 #include "webkit/glue/webpreferences.h"
 
-#if defined(OS_WIN) && !defined(USE_AURA)
+#if defined(USE_AURA)
+#include "content/browser/tab_contents/tab_contents_view_aura.h"
+#elif defined(OS_WIN)
 #include "content/browser/tab_contents/tab_contents_view_win.h"
 #elif defined(TOOLKIT_GTK)
 #include "content/browser/tab_contents/tab_contents_view_gtk.h"
@@ -281,7 +283,9 @@ TabContents::TabContents(content::BrowserContext* browser_context,
     content::WebContentsViewDelegate* delegate =
         content::GetContentClient()->browser()->GetWebContentsViewDelegate(
             this);
-#if defined(OS_WIN) && !defined(USE_AURA)
+#if defined(USE_AURA)
+    view_.reset(new TabContentsViewAura(this, delegate));
+#elif defined(OS_WIN)
     view_.reset(new TabContentsViewWin(this, delegate));
 #elif defined(TOOLKIT_GTK)
     view_.reset(new content::TabContentsViewGtk(this, delegate));

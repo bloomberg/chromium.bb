@@ -113,8 +113,9 @@
 
 #if defined(USE_AURA)
 #include "chrome/browser/tab_contents/chrome_web_contents_view_delegate_aura.h"
+#include "chrome/browser/tab_contents/chrome_web_contents_view_delegate_views.h"
 #elif defined(OS_WIN)
-#include "chrome/browser/tab_contents/chrome_web_contents_view_delegate_win.h"
+#include "chrome/browser/tab_contents/chrome_web_contents_view_delegate_views.h"
 #endif
 
 #if defined(TOOLKIT_USES_GTK)
@@ -364,9 +365,13 @@ content::BrowserMainParts* ChromeContentBrowserClient::CreateBrowserMainParts(
 content::WebContentsView*
     ChromeContentBrowserClient::OverrideCreateWebContentsView(
         WebContents* web_contents) {
-#if defined(TOOLKIT_VIEWS) && (!defined(OS_WIN) || defined(USE_AURA))
-  return new TabContentsViewViews(web_contents,
-                                  GetWebContentsViewDelegate(web_contents));
+#if defined(USE_AURA)
+  // TODO(beng): remove this once TCVV is gone.
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  if (!command_line.HasSwitch(switches::kEnableTCVA)) {
+    return new TabContentsViewViews(web_contents,
+                                    GetWebContentsViewDelegate(web_contents));
+  }
 #endif
   return NULL;
 }
@@ -374,16 +379,22 @@ content::WebContentsView*
 content::WebContentsViewDelegate*
     ChromeContentBrowserClient::GetWebContentsViewDelegate(
         content::WebContents* web_contents) {
-#if defined(OS_WIN) && !defined(USE_AURA)
-  return new ChromeWebContentsViewDelegateWin(web_contents);
+#if defined(OS_WIN) || defined(USE_AURA)
+// TODO(beng): replace all of this once TCVV is removed.
+#if defined(OS_WIN)
+  return new ChromeWebContentsViewDelegateViews(web_contents);
+#elif defined(USE_AURA)
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kEnableTCVA))
+    return new ChromeWebContentsViewDelegateViews(web_contents);
+  return new ChromeWebContentsViewDelegateAura(web_contents);
+#endif
 #elif defined(TOOLKIT_GTK)
   return new ChromeWebContentsViewDelegateGtk(web_contents);
 #elif defined(OS_MACOSX)
   return
       chrome_web_contents_view_delegate_mac::CreateWebContentsViewDelegateMac(
           web_contents);
-#elif defined(USE_AURA)
-  return new ChromeWebContentsViewDelegateAura(web_contents);
 #else
   return NULL;
 #endif
