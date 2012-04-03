@@ -2913,14 +2913,19 @@ void TestingAutomationProvider::GetBrowserInfo(
     browser_item->SetBoolean("fullscreen",
                              browser->window()->IsFullscreen());
     ListValue* visible_page_actions = new ListValue;
-    LocationBarTesting* loc_bar =
-        browser->window()->GetLocationBar()->GetLocationBarForTesting();
-    size_t page_action_visible_count =
-        static_cast<size_t>(loc_bar->PageActionVisibleCount());
-    for (size_t i = 0; i < page_action_visible_count; ++i) {
-      StringValue* extension_id = new StringValue(
-          loc_bar->GetVisiblePageAction(i)->extension_id());
-      visible_page_actions->Append(extension_id);
+    // Add info about all visible page actions. Skipped on panels, which do not
+    // have a location bar.
+    LocationBar* loc_bar = browser->window()->GetLocationBar();
+    if (loc_bar) {
+      LocationBarTesting* loc_bar_test =
+          loc_bar->GetLocationBarForTesting();
+      size_t page_action_visible_count =
+          static_cast<size_t>(loc_bar_test->PageActionVisibleCount());
+      for (size_t i = 0; i < page_action_visible_count; ++i) {
+        StringValue* extension_id = new StringValue(
+            loc_bar_test->GetVisiblePageAction(i)->extension_id());
+        visible_page_actions->Append(extension_id);
+      }
     }
     browser_item->Set("visible_page_actions", visible_page_actions);
     browser_item->SetInteger("selected_tab", browser->active_index());
@@ -3608,8 +3613,13 @@ void TestingAutomationProvider::GetOmniboxInfo(Browser* browser,
                                                DictionaryValue* args,
                                                IPC::Message* reply_message) {
   scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
+  AutomationJSONReply reply(this, reply_message);
 
   LocationBar* loc_bar = browser->window()->GetLocationBar();
+  if (!loc_bar) {
+    reply.SendError("The specified browser does not have a location bar.");
+    return;
+  }
   OmniboxView* omnibox_view = loc_bar->location_entry();
   AutocompleteEditModel* model = omnibox_view->model();
 
@@ -3638,7 +3648,7 @@ void TestingAutomationProvider::GetOmniboxInfo(Browser* browser,
   properties->SetString("text", omnibox_view->GetText());
   return_value->Set("properties", properties);
 
-  AutomationJSONReply(this, reply_message).SendSuccess(return_value.get());
+  reply.SendSuccess(return_value.get());
 }
 
 // Sample json input: { "command": "SetOmniboxText",
@@ -3654,6 +3664,10 @@ void TestingAutomationProvider::SetOmniboxText(Browser* browser,
   }
   browser->FocusLocationBar();
   LocationBar* loc_bar = browser->window()->GetLocationBar();
+  if (!loc_bar) {
+    reply.SendError("The specified browser does not have a location bar.");
+    return;
+  }
   OmniboxView* omnibox_view = loc_bar->location_entry();
   omnibox_view->model()->OnSetFocus(false);
   omnibox_view->SetUserText(text);
@@ -3675,6 +3689,10 @@ void TestingAutomationProvider::OmniboxMovePopupSelection(
     return;
   }
   LocationBar* loc_bar = browser->window()->GetLocationBar();
+  if (!loc_bar) {
+    reply.SendError("The specified browser does not have a location bar.");
+    return;
+  }
   AutocompleteEditModel* model = loc_bar->location_entry()->model();
   model->OnUpOrDownKeyPressed(count);
   reply.SendSuccess(NULL);
@@ -3687,8 +3705,14 @@ void TestingAutomationProvider::OmniboxAcceptInput(
     IPC::Message* reply_message) {
   NavigationController& controller =
       browser->GetSelectedWebContents()->GetController();
+  LocationBar* loc_bar = browser->window()->GetLocationBar();
+  if (!loc_bar) {
+    AutomationJSONReply(this, reply_message).SendError(
+        "The specified browser does not have a location bar.");
+    return;
+  }
   new OmniboxAcceptNotificationObserver(&controller, this, reply_message);
-  browser->window()->GetLocationBar()->AcceptInput();
+  loc_bar->AcceptInput();
 }
 
 // Sample json input: { "command": "GetInstantInfo" }
