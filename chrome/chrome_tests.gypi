@@ -4415,11 +4415,6 @@
             '<@(pyautolib_sources)',
           ],
           'xcode_settings': {
-            # When generated, pyautolib_wrap.cc includes some swig support
-            # files which, as of swig 1.3.31 that comes with 10.5 and 10.6,
-            # may not compile cleanly at -Wall.
-            'GCC_TREAT_WARNINGS_AS_ERRORS': 'NO',  # -Wno-error
-
             # Link with python2.6. Using -L/usr/lib and -lpython2.6 does not
             # work with the -isysroot argument passed in. Even if it did,
             # the linker shouldn't use any other lib not in the 10.5 sdk.
@@ -4462,6 +4457,17 @@
                   '../third_party/python_26/libs/python26.lib',
                 ],
               }
+            }],
+            ['clang == 1', {
+              'xcode_settings': {
+                'WARNING_CFLAGS': [
+                  # swig creates code with self assignments.
+                  '-Wno-self-assign',
+                ],
+              },
+              'cflags': [
+                '-Wno-self-assign',
+              ],
             }],
           ],
           'actions': [
