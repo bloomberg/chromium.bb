@@ -732,16 +732,12 @@ Point RenderText::GetAlignmentOffset() {
   return Point();
 }
 
-Point RenderText::GetOriginForSkiaDrawing() {
+Point RenderText::GetOriginForDrawing() {
   Point origin(GetTextOrigin());
-  // TODO(msw): Establish a vertical baseline for strings of mixed font heights.
-  const Font& font = GetFont();
-  int height = font.GetHeight();
+  const int height = GetStringSize().height();
   DCHECK_LE(height, display_rect().height());
   // Center the text vertically in the display area.
   origin.Offset(0, (display_rect().height() - height) / 2);
-  // Offset to account for Skia expecting y to be the baseline.
-  origin.Offset(0, font.GetBaseline());
   return origin;
 }
 
