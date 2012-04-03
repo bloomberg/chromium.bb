@@ -142,7 +142,9 @@ Channel::ChannelImpl::ReadState Channel::ChannelImpl::ReadData(
 }
 
 bool Channel::ChannelImpl::WillDispatchInputMessage(Message* msg) {
-  // We don't need to do anything here.
+  // Make sure we get a hello when client validation is required.
+  if (validate_client_)
+    return IsHelloMessage(*msg);
   return true;
 }
 
@@ -157,6 +159,8 @@ void Channel::ChannelImpl::HandleHelloMessage(const Message& msg) {
     listener()->OnChannelError();
     return;
   }
+  // validation completed.
+  validate_client_ = false;
   listener()->OnChannelConnected(claimed_pid);
 }
 
