@@ -133,6 +133,10 @@ struct window {
 
 	cairo_surface_t *cairo_surface, *pending_surface;
 
+	struct wl_shm_pool *pool;
+	size_t pool_size;
+	void *pool_data;
+
 	window_key_handler_t key_handler;
 	window_keyboard_focus_handler_t keyboard_focus_handler;
 	window_data_handler_t data_handler;
@@ -497,12 +501,14 @@ make_shm_pool(struct display *display, int size, void **data)
 
 static cairo_surface_t *
 display_create_shm_surface(struct display *display,
-			   struct rectangle *rectangle, uint32_t flags)
+			   struct rectangle *rectangle, uint32_t flags,
+			   struct window *window)
 {
 	struct shm_surface_data *data;
-	struct wl_shm_pool *pool;
+	struct wl_shm_pool *pool = NULL;
 	uint32_t format;
 	cairo_surface_t *surface;
+	void *map;
 	int stride;
 
 	data = malloc(sizeof *data);
@@ -512,9 +518,15 @@ display_create_shm_surface(struct display *display,
 	stride = cairo_format_stride_for_width (CAIRO_FORMAT_ARGB32,
 						rectangle->width);
 	data->length = stride * rectangle->height;
-	pool = make_shm_pool(display, data->length, &data->map);
+	if (window && window->pool && data->length < window->pool_size) {
+		pool = window->pool;
+		map = window->pool_data;
+	} else {
+		pool = make_shm_pool(display, data->length, &data->map);
+		map = data->map;
+	}
 
-	surface = cairo_image_surface_create_for_data (data->map,
+	surface = cairo_image_surface_create_for_data (map,
 						       CAIRO_FORMAT_ARGB32,
 						       rectangle->width,
 						       rectangle->height,
@@ -533,7 +545,8 @@ display_create_shm_surface(struct display *display,
 						      rectangle->height,
 						      stride, format);
 
-	wl_shm_pool_destroy(pool);
+	if (map == data->map)
+		wl_shm_pool_destroy(pool);
 
 	return surface;
 }
@@ -550,7 +563,7 @@ display_create_shm_surface_from_file(struct display *display,
 
 	image = load_image(filename);
 
-	surface = display_create_shm_surface(display, rect, 0);
+	surface = display_create_shm_surface(display, rect, 0, NULL);
 	if (surface == NULL) {
 		pixman_image_unref(image);
 		return NULL;
@@ -597,7 +610,7 @@ display_create_surface(struct display *display,
 								rectangle);
 	}
 #endif
-	return display_create_shm_surface(display, rectangle, flags);
+	return display_create_shm_surface(display, rectangle, flags, NULL);
 }
 
 static cairo_surface_t *
@@ -867,7 +880,8 @@ window_create_surface(struct window *window)
 #endif
 	case WINDOW_BUFFER_TYPE_SHM:
 		surface = display_create_shm_surface(window->display,
-						     &window->allocation, flags);
+						     &window->allocation,
+						     flags, window);
 		break;
         default:
 		surface = NULL;
@@ -1345,7 +1359,9 @@ frame_button_handler(struct widget *widget,
 {
 	struct frame *frame = data;
 	struct window *window = widget->window;
+	struct display *display = window->display;
 	int location;
+
 	location = frame_get_pointer_location(frame, input->sx, input->sy);
 
 	if (window->display->shell && button == BTN_LEFT && state == 1) {
@@ -1370,6 +1386,18 @@ frame_button_handler(struct widget *widget,
 			if (!window->shell_surface)
 				break;
 			input_ungrab(input, time);
+
+			if (!display->dpy) {
+				/* If we're using shm, allocate a big
+				   pool to create buffers out of while
+				   we resize.  We should probably base
+				   this number on the size of the output. */
+				window->pool_size = 6 * 1024 * 1024;
+				window->pool = make_shm_pool(display,
+							     window->pool_size,
+							     &window->pool_data);
+			}
+
 			wl_shell_surface_resize(window->shell_surface,
 						input_get_input_device(input),
 						time, location);
@@ -1587,6 +1615,14 @@ input_handle_pointer_enter(void *data,
 
 	input->pointer_focus = wl_surface_get_user_data(surface);
 	window = input->pointer_focus;
+
+	if (window->pool) {
+		wl_shm_pool_destroy(window->pool);
+		munmap(window->pool_data, window->pool_size);
+		window->pool = NULL;
+		/* Schedule a redraw to free the pool */
+		window_schedule_redraw(window);
+	}
 
 	input->sx = sx;
 	input->sy = sy;
