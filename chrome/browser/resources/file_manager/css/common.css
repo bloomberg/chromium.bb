@@ -20,10 +20,21 @@ input.common[type='radio'] {
   width: 13px;
 }
 
+input.common[type='checkbox'] {
+  position: relative;
+}
+
 input.common[type='checkbox']:checked::after {
-  content: url('../images/common/check_no_box.png');
-  display: block;
-  left: -5px;
+  background-image: url('../images/common/check_no_box.png');
+  background-position: -3px -4px;
+}
+
+input.common[type='checkbox']::after {
+  content: '';
+  display: -webkit-box;
+  height: 15px;
+  left: -2px;
   position: absolute;
-  top: -6px;
+  top: -2px;
+  width: 17px;
 }
