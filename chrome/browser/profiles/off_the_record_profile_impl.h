@@ -83,7 +83,6 @@ class OffTheRecordProfileImpl : public Profile,
   virtual void InitChromeOSPreferences() OVERRIDE;
 #endif  // defined(OS_CHROMEOS)
   virtual ChromeURLDataManager* GetChromeURLDataManager() OVERRIDE;
-  virtual PromoCounter* GetInstantPromoCounter() OVERRIDE;
 
 #if defined(OS_CHROMEOS)
   virtual void ChangeAppLocale(const std::string& locale,

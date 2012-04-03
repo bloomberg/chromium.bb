@@ -93,12 +93,8 @@ class AutocompletePopupContentsView : public views::View,
 
   scoped_ptr<AutocompletePopupModel> model_;
 
-  // The "Opt-in to Instant" promo view, if there is one.
-  views::View* opt_in_view_;
-
  private:
   class AutocompletePopupWidget;
-  class InstantOptInView;
 
   // Returns true if the model has a match at the specified index.
   bool HasMatchAt(size_t index) const;
@@ -127,10 +123,6 @@ class AutocompletePopupContentsView : public views::View,
 
   // Returns the target bounds given the specified content height.
   gfx::Rect CalculateTargetBounds(int h);
-
-  // Invoked if the user clicks on one of the opt-in buttons. Removes the opt-in
-  // view.
-  void UserPressedOptIn(bool opt_in);
 
   // The popup that contains this view.  We create this, but it deletes itself
   // when its window is destroyed.  This is a WeakPtr because it's possible for

@@ -431,10 +431,6 @@ ChromeURLDataManager* OffTheRecordProfileImpl::GetChromeURLDataManager() {
   return chrome_url_data_manager_.get();
 }
 
-PromoCounter* OffTheRecordProfileImpl::GetInstantPromoCounter() {
-  return NULL;
-}
-
 #if defined(OS_CHROMEOS)
 void OffTheRecordProfileImpl::ChangeAppLocale(const std::string& locale,
                                               AppLocaleChangedVia) {

@@ -268,7 +268,6 @@
                 'app/nibs/ImportProgressDialog.xib',
                 'app/nibs/InfoBar.xib',
                 'app/nibs/InfoBarContainer.xib',
-                'app/nibs/InstantOptIn.xib',
                 'app/nibs/MainMenu.xib',
                 'app/nibs/Notification.xib',
                 'app/nibs/OneClickSigninBubble.xib',

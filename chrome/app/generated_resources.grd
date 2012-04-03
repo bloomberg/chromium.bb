@@ -5536,16 +5536,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
 
       <!-- Instant -->
-      <message name="IDS_INSTANT_OPT_IN_ENABLE" desc="Button shown in the omnibox dropdown for enabling instant">
-        Enable...
-      </message>
-      <message name="IDS_INSTANT_OPT_IN_NO_THANKS" desc="Button shown in the omnibox dropdodown for not enabling instant">
-        No thanks
-      </message>
-      <message name="IDS_INSTANT_OPT_IN_LABEL" desc="Label shown in the omnibox dropdown for enabling instant">
-        Enable Instant for faster searching?
-      </message>
-      <message name="IDS_INSTANT_OPT_IN_MESSAGE" desc="Message shown in the instant opt-in dialog">
+      <message name="IDS_INSTANT_OPT_IN_MESSAGE" desc="Message shown in the instant confirm dialog">
 With Instant enabled and if supported by your default search engine, search results appear instantly as you type queries in the omnibox, and in-line predictions help guide your search.
 
 Because search results are requested even while you're typing your query, your default search engine may be logging these as search queries.

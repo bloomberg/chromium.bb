@@ -699,10 +699,6 @@ void TestingProfile::BlockUntilHistoryProcessesPendingRequests() {
   MessageLoop::current()->Run();
 }
 
-PromoCounter* TestingProfile::GetInstantPromoCounter() {
-  return NULL;
-}
-
 ChromeURLDataManager* TestingProfile::GetChromeURLDataManager() {
   if (!chrome_url_data_manager_.get())
     chrome_url_data_manager_.reset(

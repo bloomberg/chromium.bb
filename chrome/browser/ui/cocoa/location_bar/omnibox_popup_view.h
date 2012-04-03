@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,9 +8,8 @@
 
 #import <Cocoa/Cocoa.h>
 
-// The content view for the omnibox popup.  Supports up to two subviews (the
-// AutocompleteMatrix containing autocomplete results and (optionally) an
-// InstantOptInView.
+// The content view for the omnibox popup. Supports the AutocompleteMatrix
+// subview containing autocomplete results.
 @interface OmniboxPopupView : NSView
 @end
 

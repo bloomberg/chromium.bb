@@ -239,7 +239,7 @@ be available for now. -->
           This site recommends Chromium Frame (already installed).
         </message>
       </if>
-      <message name="IDS_INSTANT_OPT_IN_TITLE" desc="Title of the instant opt-in dialog">
+      <message name="IDS_INSTANT_OPT_IN_TITLE" desc="Title of the instant confirm dialog">
         Instant
       </message>
       <message name="IDS_SESSION_RESTORE_OVERLAY_MESSAGE" desc="Message of the session restore conflicts with content settings dialog">

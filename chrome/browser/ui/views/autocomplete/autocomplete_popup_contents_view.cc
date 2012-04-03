@@ -14,7 +14,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
 #include "chrome/browser/instant/instant_confirm_dialog.h"
-#include "chrome/browser/instant/promo_counter.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
@@ -63,63 +62,6 @@ const int kEditFontAdjust = 0;
 const int kEditFontAdjust = -1;
 #endif
 
-// Horizontal padding between the buttons on the opt in promo.
-const int kOptInButtonPadding = 2;
-
-// Padding around the opt in view.
-const int kOptInLeftPadding = 12;
-const int kOptInRightPadding = 10;
-const int kOptInTopPadding = 6;
-const int kOptInBottomPadding = 5;
-
-// Horizontal/Vertical inset of the promo background.
-const int kOptInBackgroundHInset = 6;
-const int kOptInBackgroundVInset = 2;
-
-// Border for instant opt-in buttons. Consists of two 9 patch painters: one for
-// the normal state, the other for the pressed state.
-class OptInButtonBorder : public views::Border {
- public:
-  OptInButtonBorder() {
-    border_painter_.reset(CreatePainter(IDR_OPT_IN_BUTTON));
-    border_pushed_painter_.reset(CreatePainter(IDR_OPT_IN_BUTTON_P));
-  }
-
-  virtual void Paint(const views::View& view, gfx::Canvas* canvas) const {
-    views::Painter* painter;
-    if (static_cast<const views::CustomButton&>(view).state() ==
-        views::CustomButton::BS_PUSHED) {
-      painter = border_pushed_painter_.get();
-    } else {
-      painter = border_painter_.get();
-    }
-    painter->Paint(canvas, view.size());
-  }
-
-  virtual void GetInsets(gfx::Insets* insets) const {
-    insets->Set(3, 8, 3, 8);
-  }
-
- private:
-  // Creates 9 patch painter from the image with the id |image_id|.
-  views::Painter* CreatePainter(int image_id) {
-    SkBitmap* image =
-        ui::ResourceBundle::GetSharedInstance().GetBitmapNamed(image_id);
-    int w = image->width() / 2;
-    if (image->width() % 2 == 0)
-      w--;
-    int h = image->height() / 2;
-    if (image->height() % 2 == 0)
-      h--;
-    gfx::Insets insets(h, w, h, w);
-    return views::Painter::CreateImagePainter(*image, insets, true);
-  }
-
-  scoped_ptr<views::Painter> border_painter_;
-  scoped_ptr<views::Painter> border_pushed_painter_;
-
-  DISALLOW_COPY_AND_ASSIGN(OptInButtonBorder);
-};
 }  // namespace
 
 class AutocompletePopupContentsView::AutocompletePopupWidget
@@ -133,83 +75,6 @@ class AutocompletePopupContentsView::AutocompletePopupWidget
   DISALLOW_COPY_AND_ASSIGN(AutocompletePopupWidget);
 };
 
-class AutocompletePopupContentsView::InstantOptInView
-    : public views::View,
-      public views::ButtonListener {
- public:
-  InstantOptInView(AutocompletePopupContentsView* contents_view,
-                   const gfx::Font& label_font,
-                   const gfx::Font& button_font)
-      : contents_view_(contents_view),
-        bg_painter_(views::Painter::CreateVerticalGradient(
-                        SkColorSetRGB(255, 242, 183),
-                        SkColorSetRGB(250, 230, 145))) {
-    views::Label* label = new views::Label(
-        l10n_util::GetStringUTF16(IDS_INSTANT_OPT_IN_LABEL));
-    label->SetFont(label_font);
-
-    views::GridLayout* layout = new views::GridLayout(this);
-    layout->SetInsets(kOptInTopPadding, kOptInLeftPadding,
-                      kOptInBottomPadding, kOptInRightPadding);
-    SetLayoutManager(layout);
-
-    const int first_column_set = 1;
-    views::GridLayout::Alignment v_align = views::GridLayout::CENTER;
-    views::ColumnSet* column_set = layout->AddColumnSet(first_column_set);
-    column_set->AddColumn(views::GridLayout::TRAILING, v_align, 1,
-                          views::GridLayout::USE_PREF, 0, 0);
-    column_set->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
-    column_set->AddColumn(views::GridLayout::CENTER, v_align, 0,
-                          views::GridLayout::USE_PREF, 0, 0);
-    column_set->AddPaddingColumn(0, kOptInButtonPadding);
-    column_set->AddColumn(views::GridLayout::CENTER, v_align, 0,
-                          views::GridLayout::USE_PREF, 0, 0);
-    column_set->LinkColumnSizes(2, 4, -1);
-    layout->StartRow(0, first_column_set);
-    layout->AddView(label);
-    layout->AddView(CreateButton(IDS_INSTANT_OPT_IN_ENABLE, button_font));
-    layout->AddView(CreateButton(IDS_INSTANT_OPT_IN_NO_THANKS, button_font));
-  }
-
-  virtual void ButtonPressed(views::Button* sender, const views::Event& event) {
-    contents_view_->UserPressedOptIn(
-        sender->tag() == IDS_INSTANT_OPT_IN_ENABLE);
-    // WARNING: we've been deleted.
-  }
-
-  virtual void OnPaint(gfx::Canvas* canvas) {
-    gfx::Rect paint_rect(GetLocalBounds());
-    paint_rect.Inset(kOptInBackgroundHInset, kOptInBackgroundVInset);
-    canvas->Save();
-    canvas->Translate(paint_rect.origin());
-    bg_painter_->Paint(canvas, paint_rect.size());
-    canvas->DrawRect(gfx::Rect(paint_rect.size()),
-        ThemeService::GetDefaultColor(ThemeService::COLOR_TOOLBAR_SEPARATOR));
-    canvas->Restore();
-  }
-
- private:
-  // Creates and returns a button configured for the opt-in promo.
-  views::View* CreateButton(int id, const gfx::Font& font) {
-    // NOTE: we can't use NativeButton as the popup is a layered window and
-    // native buttons don't draw  in layered windows.
-    // TODO(sky): these buttons look crap. Figure out the right
-    // border/background to use.
-    views::TextButton* button = new views::TextButton(
-        this, l10n_util::GetStringUTF16(id));
-    button->set_border(new OptInButtonBorder());
-    button->set_tag(id);
-    button->SetFont(font);
-    button->set_animate_on_state_change(false);
-    return button;
-  }
-
-  AutocompletePopupContentsView* contents_view_;
-  scoped_ptr<views::Painter> bg_painter_;
-
-  DISALLOW_COPY_AND_ASSIGN(InstantOptInView);
-};
-
 ////////////////////////////////////////////////////////////////////////////////
 // AutocompletePopupContentsView, public:
 
@@ -219,7 +84,6 @@ AutocompletePopupContentsView::AutocompletePopupContentsView(
     AutocompleteEditModel* edit_model,
     views::View* location_bar)
     : model_(new AutocompletePopupModel(this, edit_model)),
-      opt_in_view_(NULL),
       omnibox_view_(omnibox_view),
       profile_(edit_model->profile()),
       location_bar_(location_bar),
@@ -317,10 +181,6 @@ void AutocompletePopupContentsView::UpdatePopupAppearance() {
   // Update the match cached by each row, in the process of doing so make sure
   // we have enough row views.
   size_t child_rv_count = child_count();
-  if (opt_in_view_) {
-    DCHECK_GT(child_rv_count, 0u);
-    child_rv_count--;
-  }
   const size_t result_size = model_->result().size();
   for (size_t i = 0; i < result_size; ++i) {
     AutocompleteResultView* view = static_cast<AutocompleteResultView*>(
@@ -330,16 +190,6 @@ void AutocompletePopupContentsView::UpdatePopupAppearance() {
   }
   for (size_t i = result_size; i < child_rv_count; ++i)
     child_at(i)->SetVisible(false);
-
-  PromoCounter* counter = profile_->GetInstantPromoCounter();
-  if (!opt_in_view_ && counter && counter->ShouldShow(base::Time::Now())) {
-    opt_in_view_ = new InstantOptInView(this, result_bold_font_, result_font_);
-    AddChildView(opt_in_view_);
-  } else if (opt_in_view_ && (!counter ||
-                              !counter->ShouldShow(base::Time::Now()))) {
-    delete opt_in_view_;
-    opt_in_view_ = NULL;
-  }
 
   gfx::Rect new_target_bounds = CalculateTargetBounds(CalculatePopupHeight());
 
@@ -445,16 +295,7 @@ void AutocompletePopupContentsView::Layout() {
 
 views::View* AutocompletePopupContentsView::GetEventHandlerForPoint(
     const gfx::Point& point) {
-  // If there is no opt in view then we want all mouse events. Otherwise, let
-  // any descendants of the opt-in view get mouse events.
-  if (!opt_in_view_)
-    return this;
-
-  views::View* child = views::View::GetEventHandlerForPoint(point);
-  views::View* ancestor = child;
-  while (ancestor && ancestor != opt_in_view_)
-    ancestor = ancestor->parent();
-  return ancestor ? child : this;
+  return this;
 }
 
 bool AutocompletePopupContentsView::OnMousePressed(
@@ -527,8 +368,7 @@ int AutocompletePopupContentsView::CalculatePopupHeight() {
   int popup_height = 0;
   for (size_t i = 0; i < model_->result().size(); ++i)
     popup_height += child_at(i)->GetPreferredSize().height();
-  return popup_height +
-      (opt_in_view_ ? opt_in_view_->GetPreferredSize().height() : 0);
+  return popup_height;
 }
 
 AutocompleteResultView* AutocompletePopupContentsView::CreateResultView(
@@ -697,17 +537,4 @@ gfx::Rect AutocompletePopupContentsView::CalculateTargetBounds(int h) {
   location_bar_bounds.set_origin(location_bar_origin);
   return bubble_border_->GetBounds(
       location_bar_bounds, gfx::Size(location_bar_bounds.width(), h));
-}
-
-void AutocompletePopupContentsView::UserPressedOptIn(bool opt_in) {
-  delete opt_in_view_;
-  opt_in_view_ = NULL;
-  PromoCounter* counter = profile_->GetInstantPromoCounter();
-  DCHECK(counter);
-  counter->Hide();
-  if (opt_in) {
-    browser::ShowInstantConfirmDialogIfNecessary(
-        location_bar_->GetWidget()->GetNativeWindow(), profile_);
-  }
-  UpdatePopupAppearance();
 }

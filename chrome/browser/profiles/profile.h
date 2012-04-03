@@ -362,9 +362,6 @@ class Profile : public content::BrowserContext {
   virtual FilePath last_selected_directory() = 0;
   virtual void set_last_selected_directory(const FilePath& path) = 0;
 
-  // Returns the PromoCounter for Instant, or NULL if not applicable.
-  virtual PromoCounter* GetInstantPromoCounter() = 0;
-
   // Returns the ChromeURLDataManager for this profile.
   virtual ChromeURLDataManager* GetChromeURLDataManager() = 0;
 

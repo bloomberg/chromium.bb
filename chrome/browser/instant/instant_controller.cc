@@ -14,7 +14,6 @@
 #include "chrome/browser/instant/instant_delegate.h"
 #include "chrome/browser/instant/instant_field_trial.h"
 #include "chrome/browser/instant/instant_loader.h"
-#include "chrome/browser/instant/promo_counter.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -69,7 +68,6 @@ void InstantController::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kInstantEnabledOnce,
                              false,
                              PrefService::SYNCABLE_PREF);
-  PromoCounter::RegisterUserPrefs(prefs, prefs::kInstantPromo);
 }
 
 // static
@@ -86,10 +84,6 @@ bool InstantController::IsEnabled(Profile* profile) {
 
 // static
 void InstantController::Enable(Profile* profile) {
-  PromoCounter* promo_counter = profile->GetInstantPromoCounter();
-  if (promo_counter)
-    promo_counter->Hide();
-
   PrefService* service = profile->GetPrefs();
   if (!service)
     return;

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,7 +16,6 @@
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_view.h"
-#import "chrome/browser/ui/cocoa/location_bar/instant_opt_in_controller.h"
 #include "ui/gfx/font.h"
 #include "webkit/glue/window_open_disposition.h"
 
@@ -24,7 +23,6 @@ class AutocompleteEditModel;
 class OmniboxViewMac;
 @class AutocompleteMatrix;
 class AutocompletePopupModel;
-@class InstantOptInController;
 @class NSImage;
 class Profile;
 
@@ -34,17 +32,13 @@ class Profile;
 // TODO(rohitrao): This class is set up in a way that makes testing hard.
 // Refactor and write unittests.  http://crbug.com/9977
 
-class OmniboxPopupViewMac : public AutocompletePopupView,
-                            public InstantOptInControllerDelegate {
+class OmniboxPopupViewMac : public AutocompletePopupView {
  public:
   OmniboxPopupViewMac(OmniboxViewMac* omnibox_view,
                       AutocompleteEditModel* edit_model,
                       Profile* profile,
                       NSTextField* field);
   virtual ~OmniboxPopupViewMac();
-
-  // Implement the InstantOptInControllerDelegate interface.
-  virtual void UserPressedOptIn(bool opt_in) OVERRIDE;
 
   // Implement the AutocompletePopupView interface.
   virtual bool IsOpen() const OVERRIDE;
@@ -132,9 +126,6 @@ class OmniboxPopupViewMac : public AutocompletePopupView,
   // Returns the NSImage that should be used as an icon for the given match.
   NSImage* ImageForMatch(const AutocompleteMatch& match);
 
-  // Returns whether or not to show the instant opt-in prompt.
-  bool ShouldShowInstantOptIn();
-
   OmniboxViewMac* omnibox_view_;
   scoped_ptr<AutocompletePopupModel> model_;
   Profile* profile_;
@@ -142,7 +133,6 @@ class OmniboxPopupViewMac : public AutocompletePopupView,
 
   // Child window containing a matrix which implements the popup.
   scoped_nsobject<NSWindow> popup_;
-  scoped_nsobject<InstantOptInController> opt_in_controller_;
   NSRect targetPopupFrame_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxPopupViewMac);

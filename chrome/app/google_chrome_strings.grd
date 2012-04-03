@@ -162,7 +162,7 @@ Chrome supports. -->
           This site recommends Google Chrome Frame (already installed).
         </message>
       </if>
-      <message name="IDS_INSTANT_OPT_IN_TITLE" desc="Title of the instant opt-in dialog">
+      <message name="IDS_INSTANT_OPT_IN_TITLE" desc="Title of the instant confirm dialog">
         Google Chrome Instant
       </message>
       <!-- Session restore & conflicting content settings -->

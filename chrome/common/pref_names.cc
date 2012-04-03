@@ -406,10 +406,6 @@ const char kInstantEnabled[] = "instant.enabled";
 // Boolean pref indicating if instant was ever enabled.
 const char kInstantEnabledOnce[] = "instant.enabled_once";
 
-// Used to maintain instant promo keys. See PromoCounter for details of subkeys
-// that are used.
-const char kInstantPromo[] = "instant.promo";
-
 // Used to migrate preferences from local state to user preferences to
 // enable multiple profiles.
 // BITMASK with possible values (see browser_prefs.cc for enum):

@@ -108,7 +108,6 @@ class ProfileImpl : public Profile,
   virtual void InitRegisteredProtocolHandlers() OVERRIDE;
   virtual FilePath last_selected_directory() OVERRIDE;
   virtual void set_last_selected_directory(const FilePath& path) OVERRIDE;
-  virtual PromoCounter* GetInstantPromoCounter() OVERRIDE;
   virtual ChromeURLDataManager* GetChromeURLDataManager() OVERRIDE;
   virtual chrome_browser_net::Predictor* GetNetworkPredictor() OVERRIDE;
   virtual void ClearNetworkingHistorySince(base::Time time) OVERRIDE;
@@ -232,11 +231,6 @@ class ProfileImpl : public Profile,
 
   // See GetStartTime for details.
   base::Time start_time_;
-
-#if defined(OS_WIN)
-  bool checked_instant_promo_;
-  scoped_ptr<PromoCounter> instant_promo_counter_;
-#endif
 
   scoped_refptr<history::TopSites> top_sites_;  // For history and thumbnails.
 

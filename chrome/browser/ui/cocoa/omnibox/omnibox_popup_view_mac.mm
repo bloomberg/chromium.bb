@@ -13,12 +13,9 @@
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
 #include "chrome/browser/instant/instant_confirm_dialog.h"
-#include "chrome/browser/instant/promo_counter.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/cocoa/event_utils.h"
 #include "chrome/browser/ui/cocoa/image_utils.h"
-#import "chrome/browser/ui/cocoa/location_bar/instant_opt_in_controller.h"
-#import "chrome/browser/ui/cocoa/location_bar/instant_opt_in_view.h"
 #import "chrome/browser/ui/cocoa/location_bar/omnibox_popup_view.h"
 #include "chrome/browser/ui/cocoa/omnibox/omnibox_view_mac.h"
 #include "grit/theme_resources.h"
@@ -290,7 +287,6 @@ OmniboxPopupViewMac::OmniboxPopupViewMac(OmniboxViewMac* omnibox_view,
       profile_(profile),
       field_(field),
       popup_(nil),
-      opt_in_controller_(nil),
       targetPopupFrame_(NSZeroRect) {
   DCHECK(omnibox_view);
   DCHECK(edit_model);
@@ -486,22 +482,7 @@ void OmniboxPopupViewMac::UpdatePopupAppearance() {
   DCHECK_GT(cellSize.height, 0.0);
   const CGFloat cellHeight = cellSize.height + kCellHeightAdjust;
   [matrix setCellSize:NSMakeSize(matrixWidth, cellHeight)];
-
-  // Add in the instant view if needed and not already present.
-  CGFloat instantHeight = 0;
-  if (ShouldShowInstantOptIn()) {
-    if (!opt_in_controller_.get()) {
-      opt_in_controller_.reset(
-          [[InstantOptInController alloc] initWithDelegate:this]);
-    }
-    [[popup_ contentView] addSubview:[opt_in_controller_ view]];
-    [GetAutocompleteMatrix() setBottomCornersRounded:NO];
-    instantHeight = NSHeight([[opt_in_controller_ view] frame]);
-  } else {
-    [[opt_in_controller_ view] removeFromSuperview];
-    opt_in_controller_.reset(nil);
-    [GetAutocompleteMatrix() setBottomCornersRounded:YES];
-  }
+  [GetAutocompleteMatrix() setBottomCornersRounded:YES];
 
   // Update the selection before placing (and displaying) the window.
   PaintUpdatesNow();
@@ -511,7 +492,7 @@ void OmniboxPopupViewMac::UpdatePopupAppearance() {
   // animation.
   DCHECK_EQ([matrix intercellSpacing].height, 0.0);
   CGFloat matrixHeight = rows * cellHeight;
-  PositionPopup(matrixHeight + instantHeight);
+  PositionPopup(matrixHeight);
 }
 
 gfx::Rect OmniboxPopupViewMac::GetTargetBounds() {
@@ -549,23 +530,6 @@ void OmniboxPopupViewMac::OpenURLForRow(int row, bool force_background) {
   // completes.
   AutocompleteMatch match = model_->result().match_at(row);
   omnibox_view_->OpenMatch(match, disposition, GURL(), row);
-}
-
-void OmniboxPopupViewMac::UserPressedOptIn(bool opt_in) {
-  PromoCounter* counter = profile_->GetInstantPromoCounter();
-  DCHECK(counter);
-  counter->Hide();
-  if (opt_in) {
-    browser::ShowInstantConfirmDialogIfNecessary([field_ window], profile_);
-  }
-
-  // This call will remove and delete |opt_in_controller_|.
-  UpdatePopupAppearance();
-}
-
-bool OmniboxPopupViewMac::ShouldShowInstantOptIn() {
-  PromoCounter* counter = profile_->GetInstantPromoCounter();
-  return (counter && counter->ShouldShow(base::Time::Now()));
 }
 
 @implementation AutocompleteButtonCell

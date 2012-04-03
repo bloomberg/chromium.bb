@@ -87,7 +87,6 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_WIN)
-#include "chrome/browser/instant/promo_counter.h"
 #include "chrome/installer/util/install_util.h"
 #elif defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/enterprise_extension_observer.h"
@@ -228,9 +227,6 @@ ProfileImpl::ProfileImpl(const FilePath& path,
       favicon_service_created_(false),
       created_web_data_service_(false),
       start_time_(Time::Now()),
-#if defined(OS_WIN)
-      checked_instant_promo_(false),
-#endif
       delegate_(delegate),
       predictor_(NULL),
       session_restore_enabled_(false) {
@@ -985,28 +981,6 @@ ChromeURLDataManager* ProfileImpl::GetChromeURLDataManager() {
     chrome_url_data_manager_.reset(new ChromeURLDataManager(
         io_data_.GetChromeURLDataManagerBackendGetter()));
   return chrome_url_data_manager_.get();
-}
-
-PromoCounter* ProfileImpl::GetInstantPromoCounter() {
-#if defined(OS_WIN)
-  // TODO: enable this when we're ready to turn on the promo.
-  /*
-  if (!checked_instant_promo_) {
-    checked_instant_promo_ = true;
-    PrefService* prefs = GetPrefs();
-    if (!prefs->GetBoolean(prefs::kInstantEnabledOnce) &&
-        !InstantController::IsEnabled(this) &&
-        InstallUtil::IsChromeSxSProcess()) {
-      DCHECK(!instant_promo_counter_.get());
-      instant_promo_counter_.reset(
-          new PromoCounter(this, prefs::kInstantPromo, "Instant.Promo", 3, 3));
-    }
-  }
-  */
-  return instant_promo_counter_.get();
-#else
-  return NULL;
-#endif
 }
 
 #if defined(OS_CHROMEOS)

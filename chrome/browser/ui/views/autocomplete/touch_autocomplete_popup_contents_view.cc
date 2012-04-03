@@ -105,8 +105,6 @@ int TouchAutocompletePopupContentsView::CalculatePopupHeight() {
     popup_height = std::max(popup_height,
                             child_at(i)->GetPreferredSize().height());
   }
-  popup_height = std::max(popup_height, opt_in_view_ ?
-      opt_in_view_->GetPreferredSize().height() : 0);
   return popup_height;
 }
 
