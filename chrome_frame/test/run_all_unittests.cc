@@ -15,6 +15,7 @@
 #include "chrome_frame/crash_server_init.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"
 #include "chrome_frame/test/chrome_frame_ui_test_utils.h"
+#include "chrome_frame/test/ie_configurator.h"
 #include "chrome_frame/test/test_scrubber.h"
 #include "chrome_frame/test_utils.h"
 #include "chrome_frame/utils.h"
@@ -75,6 +76,8 @@ int main(int argc, char **argv) {
   // the collector to emit logs if other listeners ADD_FAILURE or EXPECT_*.
   if (!CommandLine::ForCurrentProcess()->HasSwitch(kNoLogCollector))
     logging_win::InstallTestLogCollector(testing::UnitTest::GetInstance());
+
+  chrome_frame_test::InstallIEConfigurator();
 
   chrome_frame_test::InstallTestScrubber(testing::UnitTest::GetInstance());
 

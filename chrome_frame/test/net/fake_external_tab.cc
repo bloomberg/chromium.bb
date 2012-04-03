@@ -514,6 +514,11 @@ void CFUrlRequestUnittestRunner::StartChromeFrameInHostBrowser() {
   base::win::ScopedCOMInitializer com;
   chrome_frame_test::CloseAllIEWindows();
 
+  // Tweak IE settings to make it amenable to testing before launching it.
+  ie_configurator_.reset(chrome_frame_test::CreateConfigurator());
+  if (ie_configurator_.get() != NULL)
+    ie_configurator_->ApplySettings();
+
   test_http_server_.reset(new test_server::SimpleWebServer(kTestServerPort));
   test_http_server_->AddResponse(&chrome_frame_html_);
   std::wstring url(base::StringPrintf(L"http://localhost:%i/chrome_frame",
@@ -541,6 +546,10 @@ void CFUrlRequestUnittestRunner::ShutDownHostBrowser() {
 void CFUrlRequestUnittestRunner::OnIEShutdownFailure() {
   LOG(ERROR) << "Failed to shutdown IE and npchrome_frame cleanly after test "
                 "execution.";
+
+  if (ie_configurator_.get() != NULL)
+    ie_configurator_->RevertSettings();
+
   StopFileLogger(true);
   ::ExitProcess(1);
 }
@@ -597,8 +606,13 @@ void CFUrlRequestUnittestRunner::OnInitialTabLoaded() {
 void CFUrlRequestUnittestRunner::OnProviderDestroyed() {
   if (tests_ran_) {
     StopFileLogger(false);
+
+    if (ie_configurator_.get() != NULL)
+      ie_configurator_->RevertSettings();
+
     if (crash_service_)
       base::KillProcess(crash_service_, 0, false);
+
     ::ExitProcess(test_result());
   } else {
     DLOG(ERROR) << "Automation Provider shutting down before test execution "
@@ -695,6 +709,9 @@ void CFUrlRequestUnittestRunner::OnInitializationTimeout() {
     base::win::ScopedCOMInitializer com;
     chrome_frame_test::CloseAllIEWindows();
   }
+
+  if (ie_configurator_.get() != NULL)
+    ie_configurator_->RevertSettings();
 
   if (crash_service_)
     base::KillProcess(crash_service_, 0, false);

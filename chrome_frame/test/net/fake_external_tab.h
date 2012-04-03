@@ -14,6 +14,7 @@
 #include "base/process.h"
 #include "base/win/scoped_handle.h"
 #include "chrome/browser/browser_process_impl.h"
+#include "chrome_frame/test/ie_configurator.h"
 #include "chrome_frame/test/net/process_singleton_subclass.h"
 #include "chrome_frame/test/net/test_automation_provider.h"
 #include "chrome_frame/test/test_server.h"
@@ -159,6 +160,7 @@ class CFUrlRequestUnittestRunner
   base::CancelableClosure timeout_closure_;
   scoped_ptr<logging_win::FileLogger> file_logger_;
   FilePath log_file_;
+  scoped_ptr<chrome_frame_test::IEConfigurator> ie_configurator_;
 
   DISALLOW_COPY_AND_ASSIGN(CFUrlRequestUnittestRunner);
 };
