@@ -51,29 +51,29 @@ $(OBJD)/decoder-test: \
 $(OBJD)/validator-test: \
     $(OBJD)/validator-x86_32.o $(OBJD)/validator-x86_64.o $(OBJD)/validator-test.o
 
-GEN_DECODER=$(OBJD)/gen-decoder
-$(GEN_DECODER): gen-decoder.cc | $(OUT_DIRS)
-	$(CXX) $(CXXFLAGS) $< -o $(GEN_DECODER)
+GEN_DFA=$(OBJD)/gen-dfa
+$(GEN_DFA): gen-dfa.cc | $(OUT_DIRS)
+	$(CXX) $(CXXFLAGS) $< -o $(GEN_DFA)
 
 $(OBJD)/decoder-x86_32.c: $(OBJD)/decoder-x86_32-instruction-consts.c
 $(OBJD)/decoder-x86_32.c: $(OBJD)/decoder-x86_32-instruction.rl
 $(OBJD)/decoder-x86_32-instruction-consts.c \
-  $(OBJD)/decoder-x86_32-instruction.rl: $(GEN_DECODER) $(INST_DEFS)
-	$(GEN_DECODER) -o $(OBJD)/decoder-x86_32-instruction.rl $(INST_DEFS) \
+  $(OBJD)/decoder-x86_32-instruction.rl: $(GEN_DFA) $(INST_DEFS)
+	$(GEN_DFA) -o $(OBJD)/decoder-x86_32-instruction.rl $(INST_DEFS) \
 	    -d check_access,opcode,parse_operands_states,mark_data_fields
 
 $(OBJD)/decoder-x86_64.c: $(OBJD)/decoder-x86_64-instruction-consts.c
 $(OBJD)/decoder-x86_64.c: $(OBJD)/decoder-x86_64-instruction.rl
 $(OBJD)/decoder-x86_64-instruction-consts.c \
-  $(OBJD)/decoder-x86_64-instruction.rl: $(GEN_DECODER) $(INST_DEFS)
-	$(GEN_DECODER) -o $(OBJD)/decoder-x86_64-instruction.rl $(INST_DEFS) \
+  $(OBJD)/decoder-x86_64-instruction.rl: $(GEN_DFA) $(INST_DEFS)
+	$(GEN_DFA) -o $(OBJD)/decoder-x86_64-instruction.rl $(INST_DEFS) \
 	    -d check_access,opcode,parse_operands_states,mark_data_fields \
 	    -m amd64
 
 $(OBJD)/validator-x86_32.c: $(OBJD)/validator-x86_32-instruction.rl
 $(OBJD)/validator-x86_32-instruction-consts.c \
-  $(OBJD)/validator-x86_32-instruction.rl: $(GEN_DECODER) $(INST_DEFS)
-	$(GEN_DECODER) -o $(OBJD)/validator-x86_32-instruction.rl $(INST_DEFS) \
+  $(OBJD)/validator-x86_32-instruction.rl: $(GEN_DFA) $(INST_DEFS)
+	$(GEN_DFA) -o $(OBJD)/validator-x86_32-instruction.rl $(INST_DEFS) \
 	  -d check_access,opcode,parse_operands,parse_operands_states \
 	  -d instruction_name,mark_data_fields,nacl-forbidden \
 	  -d imm_operand_action,rel_operand_action nops.def
@@ -81,8 +81,8 @@ $(OBJD)/validator-x86_32-instruction-consts.c \
 $(OBJD)/validator-x86_64.c: $(OBJD)/validator-x86_64-instruction-consts.c
 $(OBJD)/validator-x86_64.c: $(OBJD)/validator-x86_64-instruction.rl
 $(OBJD)/validator-x86_64-instruction-consts.c \
-  $(OBJD)/validator-x86_64-instruction.rl: $(GEN_DECODER) $(INST_DEFS)
-	$(GEN_DECODER) -o $(OBJD)/validator-x86_64-instruction.rl $(INST_DEFS) \
+  $(OBJD)/validator-x86_64-instruction.rl: $(GEN_DFA) $(INST_DEFS)
+	$(GEN_DFA) -o $(OBJD)/validator-x86_64-instruction.rl $(INST_DEFS) \
 	  -d opcode,instruction_name,mark_data_fields,rel_operand_action \
 	  -d nacl-forbidden nops.def -m amd64
 
@@ -101,14 +101,14 @@ $(OBJD)/one-instruction-x86_64.dot: one-instruction-x86_64.rl \
 	$(RAGEL) -V -I$(OBJD) $< -o $@
 
 $(OBJD)/one-valid-instruction-x86_32-consts.c \
-    $(OBJD)/one-valid-instruction-x86_32.rl: $(GEN_DECODER) $(INST_DEFS)
-	$(GEN_DECODER) -o $(OBJD)/one-valid-instruction-x86_32.rl $(INST_DEFS) \
+    $(OBJD)/one-valid-instruction-x86_32.rl: $(GEN_DFA) $(INST_DEFS)
+	$(GEN_DFA) -o $(OBJD)/one-valid-instruction-x86_32.rl $(INST_DEFS) \
 	  -d check_access,rex_prefix,vex_prefix,opcode,parse_operands \
 	  -d parse_operands_states
 
 $(OBJD)/one-valid-instruction-x86_64-consts.c \
-    $(OBJD)/one-valid-instruction-x86_64.rl: $(GEN_DECODER) $(INST_DEFS)
-	$(GEN_DECODER) -o $(OBJD)/one-valid-instruction-x86_64.rl $(INST_DEFS) \
+    $(OBJD)/one-valid-instruction-x86_64.rl: $(GEN_DFA) $(INST_DEFS)
+	$(GEN_DFA) -o $(OBJD)/one-valid-instruction-x86_64.rl $(INST_DEFS) \
 	  -d check_access,rex_prefix,vex_prefix,opcode,parse_operands \
 	  -d parse_operands_states -m amd64
 
