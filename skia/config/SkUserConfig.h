@@ -156,6 +156,18 @@
 #define SK_SUPPORT_UNITTEST
 #endif
 
+/* If your system embeds skia and has complex event logging, define this
+   symbol to name a file that maps the following macros to your system's
+   equivalents:
+       SK_TRACE_EVENT0(event)
+       SK_TRACE_EVENT1(event, name1, value1)
+       SK_TRACE_EVENT2(event, name1, value1, name2, value2)
+   src/utils/SkDebugTrace.h has a trivial implementation that writes to
+   the debug output stream. If SK_USER_TRACE_INCLUDE_FILE is not defined,
+   SkTrace.h will define the above three macros to do nothing.
+*/
+#undef SK_USER_TRACE_INCLUDE_FILE
+
 /* If this is not defined, skia dithers gradients. Turning this on will make
    gradients look better, but might have a performance impact. When it's turned
    on, several webkit pixel tests will need to be rebaselined, too.
@@ -236,6 +248,10 @@ typedef unsigned uint32_t;
 // problems. Instead, pipe this through to the logging function as a fatal
 // assertion.
 #define SK_CRASH() SkDebugf_FileLine(__FILE__, __LINE__, true, "SK_CRASH")
+
+// Uncomment the following line to forward skia trace events to Chrome
+// tracing.
+// #define SK_USER_TRACE_INCLUDE_FILE "skia/ext/skia_trace_shim.h"
 
 // ===== End Chrome-specific definitions =====
 

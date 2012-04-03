@@ -719,6 +719,7 @@
         'ext/SkMemory_new_handler.cpp',
         'ext/skia_sandbox_support_win.h',
         'ext/skia_sandbox_support_win.cc',
+        'ext/skia_trace_shim.h',
         'ext/skia_utils_mac.mm',
         'ext/skia_utils_mac.h',
         'ext/skia_utils_win.cc',
