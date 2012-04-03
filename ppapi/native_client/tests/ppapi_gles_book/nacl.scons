@@ -1,5 +1,5 @@
 # -*- python -*-
-# Copyright 2011 The Native Client Authors.  All rights reserved.
+# Copyright 2012 The Native Client Authors.  All rights reserved.
 # Use of this source code is governed by a BSD-style license that can
 # be found in the LICENSE file.
 
@@ -57,8 +57,7 @@ gles_book_examples = {
 }
 
 for demo, sources in gles_book_examples.iteritems():
-    nexe_name = ('ppapi_gles_book_%s_%s'
-                 % (demo, env.get('TARGET_FULLARCH')))
+    nexe_name = env.ProgramNameForNmf('ppapi_gles_book_%s' % demo)
     nmf_name = 'ppapi_gles_book_' + demo + '.nmf'
     nexe = env.ComponentProgram(
         nexe_name,

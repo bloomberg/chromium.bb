@@ -1,5 +1,5 @@
 # -*- python -*-
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -16,7 +16,7 @@ env.Replace(TEST_DIR='${SOURCE_ROOT}/ppapi/native_client/tests/' +
 env.FilterOut(CCFLAGS=['-Werror', '-pedantic'])
 env.Append(CCFLAGS=['-Wformat=0'])
 
-nexe_name = 'ppapi_example_font_${TARGET_FULLARCH}'
+nexe_name = env.ProgramNameForNmf('ppapi_example_font')
 obj = env.ComponentObject(
     'simple_font',
     '$SOURCE_ROOT/ppapi/examples/font/simple_font.cc'
@@ -30,7 +30,7 @@ env.Publish(nexe_name, 'run',
 
 test = env.PPAPIBrowserTester('ppapi_example_font_test.out',
                               url='ppapi_example_font.html',
-                              nmfs=['${TEST_DIR}/ppapi_example_font.nmf'],
+                              nmf_names=['ppapi_example_font'],
                               files=env.ExtractPublishedFiles(nexe_name))
 
 env.AddNodeToTestSuite(test,

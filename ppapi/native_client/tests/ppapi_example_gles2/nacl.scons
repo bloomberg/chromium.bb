@@ -1,5 +1,5 @@
 # -*- python -*-
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -12,7 +12,7 @@ env.Append(CPPPATH=['$SOURCE_ROOT/ppapi/lib/gl/include'])
 env.Replace(TEST_DIR='${SOURCE_ROOT}/ppapi/native_client/tests/' +
                      'ppapi_example_gles2/')
 
-nexe_name = 'ppapi_example_gles2_%s' % env.get('TARGET_FULLARCH')
+nexe_name = env.ProgramNameForNmf('ppapi_example_gles2')
 obj = env.ComponentObject(
     'gles2',
     '$SOURCE_ROOT/ppapi/examples/gles2/gles2.cc'
@@ -26,7 +26,7 @@ env.Publish(nexe_name, 'run',
 
 test = env.PPAPIBrowserTester('ppapi_example_gles2_test.out',
                               url='ppapi_example_gles2.html',
-                              nmfs=['${TEST_DIR}/ppapi_example_gles2.nmf'],
+                              nmf_names=['ppapi_example_gles2'],
                               files=env.ExtractPublishedFiles(nexe_name),
                               args=['--enable_experimental_js'])
 

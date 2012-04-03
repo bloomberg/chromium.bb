@@ -1,5 +1,5 @@
 # -*- python -*-
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -11,7 +11,7 @@ env.Prepend(CPPDEFINES=['XP_UNIX'])
 env.Replace(TEST_DIR='${SOURCE_ROOT}/ppapi/native_client/tests/' +
                      'ppapi_example_post_message/')
 
-nexe_name = 'ppapi_example_post_message_${TARGET_FULLARCH}'
+nexe_name = env.ProgramNameForNmf('ppapi_example_post_message')
 obj = env.ComponentObject(
     'post_message',
     '$SOURCE_ROOT/ppapi/examples/scripting/post_message.cc'
@@ -27,7 +27,7 @@ env.Publish(nexe_name, 'run',
 test = env.PPAPIBrowserTester(
     'ppapi_example_post_message_test.out',
     url='ppapi_example_post_message.html',
-    nmfs=['${TEST_DIR}/ppapi_example_post_message.nmf'],
+    nmf_names=['ppapi_example_post_message'],
     files=env.ExtractPublishedFiles(nexe_name))
 
 env.AddNodeToTestSuite(test,

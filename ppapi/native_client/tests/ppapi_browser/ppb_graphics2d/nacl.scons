@@ -1,5 +1,5 @@
 # -*- python -*-
-# Copyright (c) 2011 The Native Client Authors.  All rights reserved.
+# Copyright (c) 2012 The Native Client Authors.  All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 #
@@ -11,7 +11,7 @@ env.Prepend(CPPDEFINES=['XP_UNIX'])
 env.Replace(TEST_DIR='${SOURCE_ROOT}/ppapi/native_client/tests/ppapi_browser/' +
                      'ppb_graphics2d')
 
-nexe = 'ppapi_ppb_graphics2d_${TARGET_FULLARCH}'
+nexe = env.ProgramNameForNmf('ppapi_ppb_graphics2d')
 env.Alias('ppapi_ppb_graphics2d${PROGSUFFIX}',
           ['$STAGING_DIR/%s${PROGSUFFIX}' % nexe])
 
@@ -33,7 +33,7 @@ dest_copy = env.Publish(nexe, 'run',
 
 node = env.PPAPIBrowserTester('ppapi_ppb_graphics2d_browser_test.out',
                               url='ppapi_ppb_graphics2d.html',
-                              nmfs=['${TEST_DIR}/ppapi_ppb_graphics2d.nmf'],
+                              nmf_names=['ppapi_ppb_graphics2d'],
                               files=[ ppapi_ppb_graphics2d_nexe,
                                       env.File('ppapi_ppb_graphics2d.html')],
                               browser_flags=['--enable-pepper-testing'])

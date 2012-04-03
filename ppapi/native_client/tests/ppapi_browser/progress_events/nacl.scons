@@ -1,5 +1,5 @@
 # -*- python -*-
-# Copyright (c) 2011 The Native Client Authors.  All rights reserved.
+# Copyright (c) 2012 The Native Client Authors.  All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -13,8 +13,7 @@ env.Replace(TEST_DIR='${SOURCE_ROOT}/ppapi/native_client/tests/ppapi_browser/' +
 
 progress_events_sources = env.ComponentObject('ppapi_progress_events.cc'),
 
-progress_events_target = ('ppapi_progress_events_%s' %
-                          env.get('TARGET_FULLARCH'))
+progress_events_target = env.ProgramNameForNmf('ppapi_progress_events')
 env.ComponentProgram(progress_events_target,
                      [progress_events_sources],
                      EXTRA_LIBS=['${PPAPI_LIBS}',
@@ -34,7 +33,7 @@ env.Publish(progress_events_target, 'run', [
 node = env.PPAPIBrowserTester(
     'ppapi_progress_events_browser_test.out',
     url='ppapi_progress_events.html',
-    nmfs=['${TEST_DIR}/ppapi_progress_events.nmf'],
+    nmf_names=['ppapi_progress_events'],
     files=env.ExtractPublishedFiles(progress_events_target))
 
 env.AddNodeToTestSuite(node,

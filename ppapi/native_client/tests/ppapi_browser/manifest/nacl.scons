@@ -1,5 +1,5 @@
 # -*- python -*-
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -13,8 +13,7 @@ env.Replace(TEST_DIR='${SOURCE_ROOT}/ppapi/native_client/tests/ppapi_browser/' +
 
 manifest_good_sources = env.ComponentObject('manifest_good.cc'),
 
-manifest_good_target = ('manifest_good_%s' %
-                        env.get('TARGET_FULLARCH'))
+manifest_good_target = env.ProgramNameForNmf('manifest_good')
 env.ComponentProgram(manifest_good_target,
                      [manifest_good_sources],
                      EXTRA_LIBS=['${PPAPI_LIBS}',
@@ -25,8 +24,7 @@ env.ComponentProgram(manifest_good_target,
 
 manifest_bad_sources = env.ComponentObject('manifest_bad.cc'),
 
-manifest_bad_target = ('manifest_bad_%s' %
-                       env.get('TARGET_FULLARCH'))
+manifest_bad_target = env.ProgramNameForNmf('manifest_bad')
 env.ComponentProgram(manifest_bad_target,
                      [manifest_bad_sources],
                      EXTRA_LIBS=['${PPAPI_LIBS}',

@@ -1,5 +1,5 @@
 # -*- python -*-
-# Copyright (c) 2011 The Chromium Authors.  All rights reserved.
+# Copyright (c) 2012 The Chromium Authors.  All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 #
@@ -11,7 +11,7 @@ env.Prepend(CPPDEFINES=['XP_UNIX'])
 env.Replace(TEST_DIR='${SOURCE_ROOT}/ppapi/native_client/tests/ppapi_browser/' +
                      'ppb_fullscreen')
 
-nexe = 'ppapi_ppb_fullscreen_%s' % env.get('TARGET_FULLARCH')
+nexe = env.ProgramNameForNmf('ppapi_ppb_fullscreen')
 env.Alias('ppapi_ppb_fullscreen${PROGSUFFIX}',
           [ '$STAGING_DIR/%s${PROGSUFFIX}' % nexe ])
 
@@ -30,7 +30,7 @@ env.Publish(nexe, 'run',
              'ppapi_ppb_fullscreen.js'])
 
 node = env.PPAPIBrowserTester('ppapi_ppb_fullscreen_browser_test.out',
-                              nmfs=['${TEST_DIR}/ppapi_ppb_fullscreen.nmf'],
+                              nmf_names=['ppapi_ppb_fullscreen'],
                               url='ppapi_ppb_fullscreen.html',
                               files=env.ExtractPublishedFiles(nexe),
                               browser_flags=['--enable-pepper-testing'])

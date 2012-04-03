@@ -1,5 +1,5 @@
 # -*- python -*-
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -11,7 +11,7 @@ env.Prepend(CPPDEFINES=['XP_UNIX'])
 env.Replace(TEST_DIR='${SOURCE_ROOT}/ppapi/native_client/tests/' +
                      'ppapi_example_audio/')
 
-nexe_name = 'ppapi_example_audio_%s' % env.get('TARGET_FULLARCH')
+nexe_name = env.ProgramNameForNmf('ppapi_example_audio')
 nexe = env.ComponentProgram(nexe_name,
                             [ 'audio.cc' ],
                             EXTRA_LIBS=['${PPAPI_LIBS}',
@@ -27,10 +27,8 @@ env.Publish(nexe_name, 'run',
 
 test = env.PPAPIBrowserTester('ppapi_example_audio_test.out',
                               url='ppapi_example_audio.html#mute',
-                              nmfs=['${TEST_DIR}/ppapi_example_audio.nmf'],
-                              files=[nexe,
-                                     env.File('ppapi_example_audio.nmf'),
-                                     env.File('ppapi_example_audio.html')])
+                              nmf_names=['ppapi_example_audio'],
+                              files=env.ExtractPublishedFiles(nexe_name))
 
 # Though this tests passes locally, it does not pass on the Windows
 # and Linux buildbots, which do not have audio devices.  Although

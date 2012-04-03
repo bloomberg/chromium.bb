@@ -1,5 +1,5 @@
 # -*- python -*-
-# Copyright (c) 2011 The Native Client Authors.  All rights reserved.
+# Copyright (c) 2012 The Native Client Authors.  All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 #
@@ -21,9 +21,9 @@ crash_types = ['via_check_failure',
                'ppapi_off_main_thread']
 published_files = []
 
-nmfs = []
+nmf_names = []
 for crash_type in crash_types:
-  nexe = 'ppapi_crash_%s_%s' % (crash_type, env.get('TARGET_FULLARCH'))
+  nexe = env.ProgramNameForNmf('ppapi_crash_%s' % crash_type)
   env.Alias('ppapi_crash_%s${PROGSUFFIX}' % crash_type,
             ['$STAGING_DIR/%s${PROGSUFFIX}' % nexe])
 
@@ -39,7 +39,7 @@ for crash_type in crash_types:
 # TODO(polina): follow ppapi_browser/bad nacl.scons to publish html only once
 # and to associate all nexes and nmf files with one target that can be
 # referenced in tests/nacl.scons.
-  nmfs.append('${TEST_DIR}/ppapi_crash_%s.nmf' % crash_type)
+  nmf_names.append('ppapi_crash_%s' % crash_type)
   env.Publish(nexe, 'run',
               ['ppapi_crash.html'])
 
@@ -47,7 +47,7 @@ for crash_type in crash_types:
 
 node = env.PPAPIBrowserTester('ppapi_crash_browser_test.out',
                               url='ppapi_crash.html',
-                              nmfs=nmfs,
+                              nmf_names=nmf_names,
                               files=published_files)
 # This test is failing on Windows:
 #   crbug.com/98721

@@ -1,5 +1,5 @@
 # -*- python -*-
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -21,7 +21,7 @@ env.Prepend(CPPDEFINES=['XP_UNIX'])
 env.Replace(TEST_DIR='${SOURCE_ROOT}/ppapi/native_client/tests/' +
                      'ppapi_geturl/')
 
-nexe = 'ppapi_geturl_%s' % env.get('TARGET_FULLARCH')
+nexe = env.ProgramNameForNmf('ppapi_geturl')
 env.Alias('ppapi_geturl${PROGSUFFIX}',
           ['$STAGING_DIR/%s${PROGSUFFIX}' % nexe])
 
@@ -47,7 +47,7 @@ env.Publish(nexe, 'run',
 
 node = env.PPAPIBrowserTester('ppapi_geturl_browser_test.out',
                               url='ppapi_geturl.html',
-                              nmfs=['${TEST_DIR}/ppapi_geturl.nmf'],
+                              nmf_names=['ppapi_geturl'],
                               files=env.ExtractPublishedFiles(nexe),
                               args=['--allow_404'],
                               )

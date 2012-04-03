@@ -1,5 +1,5 @@
 # -*- python -*-
-# Copyright (c) 2011 The Native Client Authors.  All rights reserved.
+# Copyright (c) 2012 The Native Client Authors.  All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 #
@@ -34,7 +34,7 @@ ppapi_bad_files = [
   ]
 ppapi_bad = env.Replicate('${STAGING_DIR}', ppapi_bad_files)
 
-nmfs = []
+nmf_names = []
 # Compile all nexes embedded into the above html
 for kind in [ 'ppp_initialize', 'ppp_initialize_crash',
               'no_ppp_instance', 'get_ppp_instance_crash',
@@ -42,15 +42,15 @@ for kind in [ 'ppp_initialize', 'ppp_initialize_crash',
               'ppp_instance_didcreate', 'ppp_instance_didcreate_crash',
               'event_replay_crash'
               ]:
-  bad_nmf = '${TEST_DIR}/ppapi_bad_%s.nmf' % kind
-  bad_nexe = ('ppapi_bad_%s_%s' % (kind, env.get('TARGET_FULLARCH')))
+  bad_nmf = 'ppapi_bad_%s' % kind
+  bad_nexe = env.ProgramNameForNmf('ppapi_bad_%s' % kind)
   env.ComponentProgram(bad_nexe,
                        ['ppapi_bad_%s.cc' % kind],
                        EXTRA_LIBS=['${PPAPI_LIBS}',
                                    'platform',
                                    'pthread',
                                    'gio'])
-  nmfs.append(bad_nmf)
+  nmf_names.append(bad_nmf)
   ppapi_bad_files.extend(env.ExtractPublishedFiles(bad_nexe))
   env.Depends(ppapi_bad, env.Alias(bad_nexe))
 
@@ -61,7 +61,7 @@ env.Alias('ppapi_bad', ppapi_bad)
 node = env.PPAPIBrowserTester(
     'ppapi_bad_browser_test.out',
     url='ppapi_bad.html',
-    nmfs=nmfs,
+    nmf_names=nmf_names,
     files=[env.File(f) for f in ppapi_bad_files],
     args=['--allow_404'])
 
@@ -72,7 +72,7 @@ env.AddNodeToTestSuite(node,
                        ['chrome_browser_tests'],
                        'run_ppapi_bad_browser_test',
                        is_broken=env.PPAPIBrowserTesterIsBroken() or
-                                 env.Bit('host_windows') or 
+                                 env.Bit('host_windows') or
                                  env.Bit('running_on_valgrind'))
 
 
@@ -121,5 +121,3 @@ env.AddNodeToTestSuite(node,
                        'run_ppapi_bad_native_test',
                        is_broken=env.PPAPIBrowserTesterIsBroken() or
                                  env.Bit('bitcode'))
-
-

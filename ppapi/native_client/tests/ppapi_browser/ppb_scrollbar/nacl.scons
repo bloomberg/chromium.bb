@@ -1,5 +1,5 @@
 # -*- python -*-
-# Copyright (c) 2011 The Native Client Authors.  All rights reserved.
+# Copyright (c) 2012 The Native Client Authors.  All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 #
@@ -10,7 +10,7 @@ env.Prepend(CPPDEFINES=['XP_UNIX'])
 env.Replace(TEST_DIR='${SOURCE_ROOT}/ppapi/native_client/tests/ppapi_browser/' +
                      'ppb_scrollbar')
 
-nexe = 'ppapi_ppb_scrollbar_%s' % env.get('TARGET_FULLARCH')
+nexe = env.ProgramNameForNmf('ppapi_ppb_scrollbar')
 env.Alias('ppapi_ppb_scrollbar${PROGSUFFIX}',
           ['$STAGING_DIR/%s${PROGSUFFIX}' % nexe])
 
@@ -30,7 +30,7 @@ env.Publish(nexe, 'run',
 
 node = env.PPAPIBrowserTester('ppapi_ppb_scrollbar_browser_test.out',
                               url='ppapi_ppb_scrollbar.html',
-                              nmfs=['${TEST_DIR}/ppapi_ppb_scrollbar.nmf'],
+                              nmf_names=['ppapi_ppb_scrollbar'],
                               files=env.ExtractPublishedFiles(nexe))
 
 env.AddNodeToTestSuite(node,

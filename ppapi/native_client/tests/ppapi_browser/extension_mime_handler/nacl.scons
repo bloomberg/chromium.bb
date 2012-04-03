@@ -1,5 +1,5 @@
 # -*- python -*-
-# Copyright (c) 2011 The Native Client Authors.  All rights reserved.
+# Copyright (c) 2012 The Native Client Authors.  All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -10,11 +10,16 @@
 
 Import('env')
 
+# TODO(jvoung): Make a pnacl version of the nmf / or make the pexe generator
+# compatible with CopyLibsForExtension().
+if env.Bit('pnacl_generate_pexe'):
+  Return()
+
 env.Prepend(CPPDEFINES=['XP_UNIX'])
 env.Replace(TEST_DIR='${SOURCE_ROOT}/ppapi/native_client/tests/ppapi_browser/' +
                      'extension_mime_handler')
 
-nexe = 'ppapi_extension_mime_handler_%s' % env.get('TARGET_FULLARCH')
+nexe = env.ProgramNameForNmf('ppapi_extension_mime_handler')
 
 env.ComponentProgram(
     nexe,
