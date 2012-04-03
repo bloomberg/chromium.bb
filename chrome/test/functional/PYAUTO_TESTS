@@ -698,7 +698,6 @@
   'CHROMEOS_PERF': {
     'chromeos': [
       'perf',
-      '-perf.GPUPerfTest',
     ],
   },
 
