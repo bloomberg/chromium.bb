@@ -4,27 +4,36 @@
 
 #include "chrome/browser/extensions/api/bluetooth/bluetooth_api.h"
 
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/extensions/api/experimental.bluetooth.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/bluetooth/bluetooth_adapter.h"
+#include "chrome/browser/chromeos/bluetooth/bluetooth_device.h"
 #include "chrome/browser/chromeos/extensions/bluetooth_event_router.h"
+
+using chromeos::BluetoothAdapter;
+using chromeos::BluetoothDevice;
 #endif
+
+namespace GetDevicesWithService =
+    extensions::api::experimental_bluetooth::GetDevicesWithService;
 
 namespace extensions {
 namespace api {
 
 #if defined(OS_CHROMEOS)
 bool BluetoothIsAvailableFunction::RunImpl() {
-  const chromeos::BluetoothAdapter *adapter =
+  const BluetoothAdapter *adapter =
       profile()->GetExtensionService()->bluetooth_event_router()->adapter();
   result_.reset(Value::CreateBooleanValue(adapter->IsPresent()));
   return true;
 }
 
 bool BluetoothIsPoweredFunction::RunImpl() {
-  const chromeos::BluetoothAdapter *adapter =
+  const BluetoothAdapter *adapter =
       profile()->GetExtensionService()->bluetooth_event_router()->adapter();
   result_.reset(Value::CreateBooleanValue(adapter->IsPowered()));
   return true;
@@ -35,6 +44,33 @@ bool BluetoothGetAddressFunction::RunImpl() {
       profile()->GetExtensionService()->bluetooth_event_router()->adapter();
   result_.reset(Value::CreateStringValue(adapter->address()));
   return false;
+}
+
+bool BluetoothGetDevicesWithServiceFunction::RunImpl() {
+  scoped_ptr<GetDevicesWithService::Params> params(
+      GetDevicesWithService::Params::Create(*args_));
+
+  const BluetoothAdapter *adapter =
+      profile()->GetExtensionService()->bluetooth_event_router()->adapter();
+  BluetoothAdapter::ConstDeviceList devices = adapter->GetDevices();
+
+  ListValue* matches = new ListValue();
+  for (BluetoothAdapter::ConstDeviceList::const_iterator i =
+      devices.begin(); i != devices.end(); ++i) {
+    const BluetoothDevice::ServiceList& services = (*i)->GetServices();
+    for (BluetoothDevice::ServiceList::const_iterator j = services.begin();
+        j != services.end(); ++j) {
+      if (*j == params->service) {
+        experimental_bluetooth::Device device;
+        device.name = UTF16ToUTF8((*i)->GetName());
+        device.address = (*i)->address();
+        matches->Append(device.ToValue().get());
+      }
+    }
+  }
+
+  result_.reset(matches);
+  return true;
 }
 
 #else
@@ -53,6 +89,11 @@ bool BluetoothIsPoweredFunction::RunImpl() {
 }
 
 bool BluetoothGetAddressFunction::RunImpl() {
+  NOTREACHED() << "Not implemented yet";
+  return false;
+}
+
+bool BluetoothGetDevicesWithServiceFunction::RunImpl() {
   NOTREACHED() << "Not implemented yet";
   return false;
 }
@@ -85,11 +126,6 @@ bool BluetoothWriteFunction::RunImpl() {
 }
 
 bool BluetoothConnectFunction::RunImpl() {
-  NOTREACHED() << "Not implemented yet";
-  return false;
-}
-
-bool BluetoothGetDevicesWithServiceFunction::RunImpl() {
   NOTREACHED() << "Not implemented yet";
   return false;
 }

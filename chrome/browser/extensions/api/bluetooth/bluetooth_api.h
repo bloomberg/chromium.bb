@@ -29,6 +29,13 @@ class BluetoothGetAddressFunction : public SyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.bluetooth.getAddress")
 };
 
+class BluetoothGetDevicesWithServiceFunction : public SyncExtensionFunction {
+ public:
+  virtual bool RunImpl() OVERRIDE;
+  DECLARE_EXTENSION_FUNCTION_NAME(
+      "experimental.bluetooth.getDevicesWithService")
+};
+
 class BluetoothDisconnectFunction : public AsyncExtensionFunction {
  public:
   virtual bool RunImpl() OVERRIDE;
@@ -66,13 +73,6 @@ class BluetoothConnectFunction : public AsyncExtensionFunction {
  public:
   virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.bluetooth.connect")
-};
-
-class BluetoothGetDevicesWithServiceFunction : public AsyncExtensionFunction {
- public:
-  virtual bool RunImpl() OVERRIDE;
-  DECLARE_EXTENSION_FUNCTION_NAME(
-      "experimental.bluetooth.getDevicesWithService")
 };
 
 }  // namespace api
