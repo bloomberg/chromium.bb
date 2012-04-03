@@ -28,7 +28,7 @@ deps = {
     'src/chrome/test/data/perf/frame_rate/content':
         Var('git_url') + '/chromium/frame_rate/content.git@c10272c88463efeef6bb19c9ec07c42bc8fe22b9',
     'src/googleurl':
-        Var('git_url') + '/external/google-url.git@12a312ffe289b9e603032cc703923c6461dcee9a',
+        Var('git_url') + '/external/google-url.git@71eba6ebbc74d30c2c861baf67599cf331c95b87',
     'src/native_client':
         Var('git_url') + '/native_client/src/native_client.git@fcdd5e6c68f45cc4da2d395a27369b63f48690b6',
     'src/native_client_sdk/src/site_scons':
