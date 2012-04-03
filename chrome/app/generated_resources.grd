@@ -14085,6 +14085,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_OPTIONS_POINTER_OVERLAY_TITLE" desc="The title for 'Pointer settings' overlay.">
         Pointer settings
       </message>
+      <message name="IDS_OPTIONS_NO_POINTING_DEVICES" desc="Text shown when there is neither a touchpad nor a mouse.">
+        No mouse or touchpad was detected.
+      </message>
       <message name="IDS_OPTIONS_POINTER_MOUSE_OVERLAY_TITLE" desc="The title for 'Pointer settings' overlay for Mouse only.">
         Mouse settings
       </message>

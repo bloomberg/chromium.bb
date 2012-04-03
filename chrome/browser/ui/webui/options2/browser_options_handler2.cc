@@ -285,6 +285,7 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
     { "keyboardSettingsButtonTitle",
       IDS_OPTIONS2_DEVICE_GROUP_KEYBOARD_SETTINGS_BUTTON_TITLE },
     { "manageAccountsButtonTitle", IDS_OPTIONS_ACCOUNTS_BUTTON_TITLE },
+    { "noPointingDevices", IDS_OPTIONS_NO_POINTING_DEVICES },
     { "touchpadSettingsButtonTitle",
         IDS_OPTIONS_POINTER_TOUCHPAD_OVERLAY_TITLE },
     { "mouseSettingsButtonTitle",

@@ -1201,27 +1201,30 @@ cr.define('options', function() {
 
     /**
     * Update pointer settings buttons text content to say mouse settings,
-    * touchpad settings or mouse/touchpad settings as appropriate.
+    * touchpad settings, or mouse/touchpad settings as appropriate. If neither
+    * is available, hides the button and shows "No mouse or touchpad" text.
     * @private
     */
     updatePointerSettingsText_: function() {
-      $('pointer-settings-button').hidden = false;
+      var pointerSettingsButton = $('pointer-settings-button');
+      pointerSettingsButton.hidden = false;
       if ($('touchpad-settings').hidden) {
         if ($('mouse-settings').hidden) {
-          $('pointer-settings-button').hidden = true;
+          pointerSettingsButton.hidden = true;
         } else {
-          $('pointer-settings-button').textContent =
+          pointerSettingsButton.textContent =
               localStrings.getString('mouseSettingsButtonTitle');
         }
       } else {
         if ($('mouse-settings').hidden) {
-          $('pointer-settings-button').textContent =
+          pointerSettingsButton.textContent =
               localStrings.getString('touchpadSettingsButtonTitle');
         } else {
-          $('pointer-settings-button').textContent =
+          pointerSettingsButton.textContent =
               localStrings.getString('touchpadMouseSettingsButtonTitle');
         }
       }
+      $('no-pointing-devices').hidden = !pointerSettingsButton.hidden;
     },
 
     /**
