@@ -26,7 +26,8 @@ class WebRequestAction {
  public:
   // Type identifiers for concrete WebRequestActions.
   enum Type {
-    ACTION_CANCEL_REQUEST
+    ACTION_CANCEL_REQUEST,
+    ACTION_REDIRECT_REQUEST
   };
 
   WebRequestAction();
@@ -92,6 +93,22 @@ class WebRequestCancelAction : public WebRequestAction {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebRequestCancelAction);
+};
+
+// Action that instructs to redirect a network request.
+// TODO(battre): This needs to be expanded to contain information to which
+// URL a request should be redirected.
+class WebRequestRedirectAction : public WebRequestAction {
+ public:
+  WebRequestRedirectAction();
+  virtual ~WebRequestRedirectAction();
+
+  // Implementation of WebRequestAction:
+  virtual int GetStages() const OVERRIDE;
+  virtual Type GetType() const OVERRIDE;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(WebRequestRedirectAction);
 };
 
 // TODO(battre) Implement further actions:

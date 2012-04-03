@@ -15,6 +15,7 @@ namespace {
 // Constants from the JavaScript API.
 const char kInstanceType[] = "instanceType";
 const char kInstanceCancel[] = "experimental.webRequest.CancelRequest";
+const char kInstanceRedirect[] = "experimental.webRequest.RedirectRequest";
 
 // Error messages.
 const char kExpectedDictionary[] = "Expected a dictionary as action.";
@@ -47,9 +48,13 @@ scoped_ptr<WebRequestAction> WebRequestAction::Create(
     return scoped_ptr<WebRequestAction>(NULL);
   }
 
+  // TODO(battre): Change this into a proper factory.
   if (instance_type == kInstanceCancel) {
     *error = "";
     return scoped_ptr<WebRequestAction>(new WebRequestCancelAction);
+  } else if (instance_type == kInstanceRedirect) {
+    *error = "";
+    return scoped_ptr<WebRequestAction>(new WebRequestRedirectAction);
   }
 
   *error = base::StringPrintf(kInvalidInstanceTypeError, instance_type.c_str());
@@ -101,6 +106,22 @@ int WebRequestCancelAction::GetStages() const {
 
 WebRequestAction::Type WebRequestCancelAction::GetType() const {
   return WebRequestAction::ACTION_CANCEL_REQUEST;
+}
+
+//
+// WebRequestRedirectAction
+//
+
+WebRequestRedirectAction::WebRequestRedirectAction() {}
+
+WebRequestRedirectAction::~WebRequestRedirectAction() {}
+
+int WebRequestRedirectAction::GetStages() const {
+  return ON_BEFORE_REQUEST;
+}
+
+WebRequestAction::Type WebRequestRedirectAction::GetType() const {
+  return WebRequestAction::ACTION_REDIRECT_REQUEST;
 }
 
 }  // namespace extensions

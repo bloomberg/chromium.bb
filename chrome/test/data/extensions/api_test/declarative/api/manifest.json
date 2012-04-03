@@ -7,7 +7,6 @@
     "scripts": ["background.js"]
   },
   "permissions": [
-    "experimental",
-    "webRequest"
+    "experimental"
   ]
 }

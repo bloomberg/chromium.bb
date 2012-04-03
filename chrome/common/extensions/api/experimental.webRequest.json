@@ -9,11 +9,86 @@
       {
         "id": "RequestMatcher",
         "type": "object",
-        "description": "Matches network events by various criteria. Experimental junk, do not use!",
+        "description": "Matches network events by various criteria.",
         "properties": {
-          "url": {
+          "host_contains": {
             "type": "string",
-            "description": "Matches for a full URL",
+            "description": "Matches if the host name of the URL contains a specified string.",
+            "optional": true
+          },
+          "host_equals": {
+            "type": "string",
+            "description": "Matches if the host name of the URL is equal to a specified string.",
+            "optional": true
+          },
+          "host_prefix": {
+            "type": "string",
+            "description": "Matches if the host name of the URL starts with a specified string.",
+            "optional": true
+          },
+          "host_suffix": {
+            "type": "string",
+            "description": "Matches if the host name of the URL ends with a specified string.",
+            "optional": true
+          },
+          "path_contains": {
+            "type": "string",
+            "description": "Matches if the path segment of the URL contains a specified string.",
+            "optional": true
+          },
+          "path_equals": {
+            "type": "string",
+            "description": "Matches if the path segment of the URL is equal to a specified string.",
+            "optional": true
+          },
+          "path_prefix": {
+            "type": "string",
+            "description": "Matches if the path segment of the URL starts with a specified string.",
+            "optional": true
+          },
+          "path_suffix": {
+            "type": "string",
+            "description": "Matches if the path segment of the URL ends with a specified string.",
+            "optional": true
+          },
+          "query_equals": {
+            "type": "string",
+            "description": "Matches if the query segment of the URL is equal to a specified string.",
+            "optional": true
+          },
+          "query_prefix": {
+            "type": "string",
+            "description": "Matches if the query segment of the URL starts with a specified string.",
+            "optional": true
+          },
+          "query_suffix": {
+            "type": "string",
+            "description": "Matches if the query segment of the URL ends with a specified string.",
+            "optional": true
+          },
+          "url_suffix": {
+            "type": "string",
+            "description": "Matches if the URL ends with a specified string.",
+            "optional": true
+          },
+          "url_equals": {
+            "type": "string",
+            "description": "Matches if the URL is equal to a specified string.",
+            "optional": true
+          },
+          "url_prefix": {
+            "type": "string",
+            "description": "Matches if the URL starts with a specified string.",
+            "optional": true
+          },
+          "url_suffix": {
+            "type": "string",
+            "description": "Matches if the URL ends with a specified string.",
+            "optional": true
+          },
+          "scheme": {
+            "type": "string",
+            "description": "Matches if the scheme of the URL is equal to a specified string (TODO: this will be expanded to an array).",
             "optional": true
           },
           "instanceType": { "type": "string", "enum": ["experimental.webRequest.RequestMatcher"] }
@@ -21,18 +96,18 @@
       },
       {
         "id": "CancelRequest",
-        "description": "Declarative event action that cancels a network request. Experimental junk, do not use!",
+        "description": "Declarative event action that cancels a network request.",
         "type": "object",
         "properties": {
           "instanceType": { "type": "string", "enum": ["experimental.webRequest.CancelRequest"] }
         }
       },
       {
-        "id": "ModifyRequest",
-        "description": "Declarative event action that modifies a network request. Experimental junk, do not use!",
+        "id": "RedirectRequest",
+        "description": "Declarative event action that redirects a network request. (TODO: add destination)",
         "type": "object",
         "properties": {
-          "instanceType": { "type": "string", "enum": ["experimental.webRequest.ModifyRequest"] }
+          "instanceType": { "type": "string", "enum": ["experimental.webRequest.RedirectRequest"] }
         }
       }
     ],
@@ -45,7 +120,7 @@
           "supportsListeners": false,
           "supportsRules": true,
           "conditions": ["RequestMatcher"],
-          "actions": ["CancelRequest", "ModifyRequest"]
+          "actions": ["CancelRequest", "RedirectRequest"]
         }
       }
     ]
