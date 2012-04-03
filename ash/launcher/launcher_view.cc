@@ -453,6 +453,8 @@ views::View* LauncherView::CreateViewForItem(const LauncherItem& item) {
       button->SetImage(
           views::CustomButton::BS_PUSHED,
           rb.GetImageNamed(IDR_AURA_LAUNCHER_ICON_APPLIST_PUSHED).ToSkBitmap());
+      button->SetAccessibleName(
+          l10n_util::GetStringUTF16(IDS_AURA_APP_LIST_TITLE));
       button->SetTooltipText(
           l10n_util::GetStringUTF16(IDS_AURA_APP_LIST_TITLE));
       view = button;
