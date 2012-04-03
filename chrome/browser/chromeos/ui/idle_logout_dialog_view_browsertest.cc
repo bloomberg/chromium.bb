@@ -81,7 +81,9 @@ IN_PROC_BROWSER_TEST_F(IdleLogoutDialogViewTest, ShowDialogAndClose) {
   ExpectClosedDialog();
 }
 
-IN_PROC_BROWSER_TEST_F(IdleLogoutDialogViewTest, ShowDialogAndCloseView) {
+// TODO(rkc@chromium.org): Fix test on Linux ChromeOS
+// http://crbug.com/121655
+IN_PROC_BROWSER_TEST_F(IdleLogoutDialogViewTest, FAILS_ShowDialogAndCloseView) {
   IdleLogoutDialogView::ShowDialog();
   EXPECT_NO_FATAL_FAILURE(ExpectOpenDialog());
 
@@ -106,8 +108,10 @@ IN_PROC_BROWSER_TEST_F(IdleLogoutDialogViewTest,
   ExpectClosedDialog();
 }
 
+// TODO(rkc@chromium.org): Fix test on Linux ChromeOS
+// http://crbug.com/121655
 IN_PROC_BROWSER_TEST_F(IdleLogoutDialogViewTest,
-                       ShowDialogAndFinishCountdown) {
+                       FAILS_ShowDialogAndFinishCountdown) {
   IdleLogoutDialogView::ShowDialog();
   EXPECT_NO_FATAL_FAILURE(ExpectOpenDialog());
 
