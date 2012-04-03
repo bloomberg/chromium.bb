@@ -215,6 +215,12 @@ are declared in build/common.gypi.
       <message name="IDS_WEBSITE_SETTINGS_PERMISSION_BLOCK" desc="The label used in the permissions dropdowns for the option that denies a permissions. ">
         Block
       </message>
+      <message name="IDS_WEBSITE_SETTINGS_PERMISSION_ASK" desc="The label used in the permissions dropdowns for the option that makes the browser asks for permission. ">
+        Ask
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_PERMISSION_DEFAULT" desc="The label used in the permissions dropdowns for the global browser wide default. ">
+        Global default
+      </message>
       <message name="IDS_WEBSITE_SETTINGS_TYPE_POPUPS" desc="The label used for popups permissions controls in the Website Settings popup.">
         Popups
       </message>
