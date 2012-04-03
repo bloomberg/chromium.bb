@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/json/json_reader.h"
+#include "base/metrics/histogram.h"
 #include "base/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
@@ -19,6 +20,11 @@ using content::BrowserThread;
 using content::URLFetcher;
 
 namespace {
+
+// Used for success ratio histograms. 1 for success, 0 for failure.
+const int kSuccessRatioHistogramFailure = 0;
+const int kSuccessRatioHistogramSuccess = 1;
+const int kSuccessRatioHistogramMaxValue = 2;  // The max value is exclusive.
 
 // Template for optional OAuth2 authorization HTTP header.
 const char kAuthorizationHeaderFormat[] = "Authorization: Bearer %s";
@@ -139,6 +145,11 @@ void AuthOperation::DoCancel() {
 // used to start fetching user data.
 void AuthOperation::OnGetTokenSuccess(const std::string& access_token) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  UMA_HISTOGRAM_ENUMERATION("GData.AuthSuccess",
+                            kSuccessRatioHistogramSuccess,
+                            kSuccessRatioHistogramMaxValue);
+
   callback_.Run(HTTP_SUCCESS, access_token);
   NotifyFinish(GDataOperationRegistry::OPERATION_COMPLETED);
 }
@@ -146,6 +157,11 @@ void AuthOperation::OnGetTokenSuccess(const std::string& access_token) {
 // Callback for OAuth2AccessTokenFetcher on failure.
 void AuthOperation::OnGetTokenFailure(const GoogleServiceAuthError& error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  UMA_HISTOGRAM_ENUMERATION("GData.AuthSuccess",
+                            kSuccessRatioHistogramFailure,
+                            kSuccessRatioHistogramMaxValue);
+
   LOG(WARNING) << "AuthOperation: token request using refresh token failed";
   callback_.Run(HTTP_UNAUTHORIZED, std::string());
   NotifyFinish(GDataOperationRegistry::OPERATION_FAILED);
