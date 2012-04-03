@@ -327,6 +327,8 @@ def main(argv):
   chain.run()
 
   if bitcode_type == 'pexe' and not arch_flag_given:
+    # Add bitcode wrapper header
+    WrapBitcode(output)
     # Mark .pexe files as executable.
     # Some versions of 'configure' expect this.
     SetExecutableMode(output)

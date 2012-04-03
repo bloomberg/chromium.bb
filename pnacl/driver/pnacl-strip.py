@@ -59,6 +59,9 @@ def main(argv):
       f_output = f
     if driver_tools.IsBitcode(f):
       driver_tools.RunWithEnv('${RUN_OPT}', input = f, output = f_output)
+      if not env.getbool('RECURSE'):
+        # Do not wrap if we are called by some other driver component
+        driver_tools.WrapBitcode(f_output)
     elif driver_tools.IsELF(f):
       driver_tools.RunWithEnv('${RUN_STRIP}', input = f, output = f_output)
     else:

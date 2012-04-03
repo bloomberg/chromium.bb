@@ -9,11 +9,24 @@
 # updates the copy in the toolchain/ tree.
 #
 
-from driver_tools import RunWithLog
+import driver_tools
 from driver_env import env
 
+OptOutputPatterns = [
+    # This script only cares about the output file (for bitcode wrapping).
+    # The rest of the args are ignored and passed through to llvm opt
+    (('-o','(.*)'), "env.set('OUTPUT', pathtools.normalize($0))"),
+    ('.*', ""),
+]
+
 def main(argv):
-  return RunOpt(argv)
+  retcode = RunOpt(argv)
+  driver_tools.ParseArgs(argv, OptOutputPatterns)
+  if retcode == 0 and not env.getbool('RECURSE') and env.has('OUTPUT'):
+    # Do not wrap if we are called by some other driver component, or
+    # if the output is going to stdout
+    retcode = driver_tools.WrapBitcode(env.getone('OUTPUT'))
+  return retcode
 
 def get_help(unused_argv):
   RunOpt(['--help'])
@@ -22,7 +35,7 @@ def get_help(unused_argv):
 def RunOpt(args):
   # Binary output may go to stdout
   env.set('ARGS', *args)
-  retcode, _, _ = RunWithLog('"${LLVM_OPT}" ${ARGS}',
-                             errexit=False,
-                             log_stdout=False)
+  retcode, _, _ = driver_tools.RunWithLog('"${LLVM_OPT}" ${ARGS}',
+                                          errexit=False,
+                                          log_stdout=False)
   return retcode

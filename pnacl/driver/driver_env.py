@@ -175,6 +175,7 @@ INITIAL_ENV = {
   'LLVM_DIS'      : '${BASE_LLVM_BIN}/llvm-dis${EXEC_EXT}',
   # llvm-as compiles llvm assembly (.ll) to bitcode (.bc/.po)
   'LLVM_AS'       : '${BASE_LLVM_BIN}/llvm-as${EXEC_EXT}',
+  'LLVM_BCWRAP'   : '${BASE_LLVM_BIN}/bc-wrap${EXEC_EXT}',
 
   # Native LLVM tools
   'LLVM_LLC'      : '${BASE_LLVM_BIN}/llc${EXEC_EXT}',

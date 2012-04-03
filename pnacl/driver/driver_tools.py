@@ -9,6 +9,7 @@
 # updates the copy in the toolchain/ tree.
 #
 
+import hashlib
 import os
 import re
 import subprocess
@@ -27,6 +28,9 @@ from driver_env import env
 # 'driver_log.foo', or split driver_log further
 from driver_log import Log, DriverOpen, DriverClose, StringifyCommand, TempFiles, DriverExit
 from shelltools import shell
+
+LLVM_BITCODE_MAGIC = 'BC\xc0\xde'
+LLVM_WRAPPER_MAGIC = '\xde\xc0\x17\x0b'
 
 def ParseError(s, leftpos, rightpos, msg):
   Log.Error("Parse Error: %s", msg);
@@ -351,14 +355,27 @@ def IsBitcodeDSO(filename):
 def IsBitcodeObject(filename):
   return FileType(filename) == 'po'
 
+def IsBitcodeWrapperHeader(data):
+  return data[:4] == LLVM_WRAPPER_MAGIC
+
+@SimpleCache
+def IsWrappedBitcode(filename):
+  fp = DriverOpen(filename, 'rb')
+  header = fp.read(4)
+  iswbc = IsBitcodeWrapperHeader(header)
+  DriverClose(fp)
+  return iswbc
+
 @SimpleCache
 def IsBitcode(filename):
   fp = DriverOpen(filename, 'rb')
-  header = fp.read(2)
+  header = fp.read(4)
   DriverClose(fp)
-  if header == 'BC':
+  # Raw bitcode
+  if header == LLVM_BITCODE_MAGIC:
     return True
-  return False
+  # Wrapped bitcode
+  return IsBitcodeWrapperHeader(header)
 
 @SimpleCache
 def IsArchive(filename):
@@ -585,6 +602,45 @@ def GetBitcodeType(filename):
     'executable': 'pexe'
   }
   return format_map[metadata['OutputFormat']]
+
+def GetBasicHeaderData(data):
+  """ Extract bitcode offset and size from LLVM bitcode wrapper header.
+      Format is 4-bytes each of [ magic, version, bc offset, bc size, ...
+      (documented at http://llvm.org/docs/BitCodeFormat.html)
+  """
+  if not IsBitcodeWrapperHeader(data):
+    raise ValueError('Data is not a bitcode wrapper')
+  llvm_bcversion, offset, size = struct.unpack('<IIII', data)
+  if llvm_bcversion != 0:
+    raise ValueError('Data is not a valid bitcode wrapper')
+  return offset, size
+
+def WrapBitcode(output):
+  """ Hash the bitcode and insert a wrapper header with the sha1 value.
+      If the bitcode is already wrapped, the old hash is overwritten.
+  """
+  fd = DriverOpen(output, 'rb')
+  maybe_header = fd.read(16)
+  if IsBitcodeWrapperHeader(maybe_header):
+    offset, bytes_left = GetBasicHeaderData(maybe_header)
+    fd.seek(offset)
+  else:
+    offset = 0
+    fd.seek(0, os.SEEK_END)
+    bytes_left = fd.tell()
+    fd.seek(0)
+  # get the hash
+  sha = hashlib.sha1()
+  while bytes_left:
+    block = fd.read(min(bytes_left, 4096))
+    sha.update(block)
+    bytes_left -= len(block)
+  DriverClose(fd)
+  # run bc-wrap
+  retcode,_,_ = Run(' '.join(('${LLVM_BCWRAP}', '-hash',
+                              sha.hexdigest(), output)))
+  return retcode
+
 
 ######################################################################
 #
