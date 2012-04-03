@@ -286,7 +286,7 @@ TEST_F(AndroidProviderBackendTest, UpdateTables) {
   EXPECT_TRUE(j->bookmark_);
 }
 
-TEST_F(AndroidProviderBackendTest, QueryBookmarks) {
+TEST_F(AndroidProviderBackendTest, QueryHistoryAndBookmarks) {
   GURL url1("http://www.cnn.com");
   URLID url_id1 = 0;
   const string16 title1(UTF8ToUTF16("cnn"));
@@ -363,8 +363,9 @@ TEST_F(AndroidProviderBackendTest, QueryBookmarks) {
   projections.push_back(BookmarkRow::FAVICON);
   projections.push_back(BookmarkRow::BOOKMARK);
 
-  scoped_ptr<AndroidStatement> statement(backend->QueryBookmarks(projections,
-      std::string(), std::vector<string16>(), std::string("url ASC")));
+  scoped_ptr<AndroidStatement> statement(backend->QueryHistoryAndBookmarks(
+      projections, std::string(), std::vector<string16>(),
+      std::string("url ASC")));
   ASSERT_TRUE(statement->statement()->Step());
   ASSERT_EQ(url1, GURL(statement->statement()->ColumnString(1)));
   EXPECT_EQ(title1, statement->statement()->ColumnString16(2));
@@ -396,7 +397,7 @@ TEST_F(AndroidProviderBackendTest, QueryBookmarks) {
   EXPECT_FALSE(statement->statement()->Step());
 }
 
-TEST_F(AndroidProviderBackendTest, InsertBookmark) {
+TEST_F(AndroidProviderBackendTest, InsertHistoryAndBookmark) {
   BookmarkRow row1;
   row1.set_raw_url("cnn.com");
   row1.set_url(GURL("http://cnn.com"));
@@ -423,7 +424,7 @@ TEST_F(AndroidProviderBackendTest, InsertBookmark) {
       new AndroidProviderBackend(android_cache_db_name_, &history_db_,
                                  &thumbnail_db_, &bookmark_model_, &delegate_));
 
-  ASSERT_TRUE(backend->InsertBookmark(row1));
+  ASSERT_TRUE(backend->InsertHistoryAndBookmark(row1));
   EXPECT_FALSE(delegate_.deleted_details());
   ASSERT_TRUE(delegate_.modified_details());
   ASSERT_EQ(1u, delegate_.modified_details()->changed_urls.size());
@@ -437,7 +438,7 @@ TEST_F(AndroidProviderBackendTest, InsertBookmark) {
   EXPECT_FALSE(delegate_.favicon_details());
 
   delegate_.ResetDetails();
-  ASSERT_TRUE(backend->InsertBookmark(row2));
+  ASSERT_TRUE(backend->InsertHistoryAndBookmark(row2));
   EXPECT_FALSE(delegate_.deleted_details());
   ASSERT_TRUE(delegate_.modified_details());
   ASSERT_EQ(1u, delegate_.modified_details()->changed_urls.size());
@@ -464,8 +465,9 @@ TEST_F(AndroidProviderBackendTest, InsertBookmark) {
   projections.push_back(BookmarkRow::FAVICON);
   projections.push_back(BookmarkRow::BOOKMARK);
 
-  scoped_ptr<AndroidStatement> statement(backend->QueryBookmarks(projections,
-      std::string(), std::vector<string16>(), std::string("url ASC")));
+  scoped_ptr<AndroidStatement> statement(backend->QueryHistoryAndBookmarks(
+      projections, std::string(), std::vector<string16>(),
+      std::string("url ASC")));
   ASSERT_TRUE(statement->statement()->Step());
   ASSERT_EQ(row1.raw_url(), statement->statement()->ColumnString(1));
   EXPECT_EQ(row1.title(), statement->statement()->ColumnString16(2));
@@ -501,7 +503,7 @@ TEST_F(AndroidProviderBackendTest, InsertBookmark) {
   EXPECT_FALSE(statement->statement()->Step());
 }
 
-TEST_F(AndroidProviderBackendTest, DeleteBookmarks) {
+TEST_F(AndroidProviderBackendTest, DeleteHistoryAndBookmarks) {
   BookmarkRow row1;
   row1.set_raw_url("cnn.com");
   row1.set_url(GURL("http://cnn.com"));
@@ -529,8 +531,8 @@ TEST_F(AndroidProviderBackendTest, DeleteBookmarks) {
       new AndroidProviderBackend(android_cache_db_name_, &history_db_,
                                  &thumbnail_db_, &bookmark_model_, &delegate_));
 
-  ASSERT_TRUE(backend->InsertBookmark(row1));
-  ASSERT_TRUE(backend->InsertBookmark(row2));
+  ASSERT_TRUE(backend->InsertHistoryAndBookmark(row1));
+  ASSERT_TRUE(backend->InsertHistoryAndBookmark(row2));
   // Set url1 as bookmark.
   AddBookmark(row1.url());
 
@@ -538,8 +540,8 @@ TEST_F(AndroidProviderBackendTest, DeleteBookmarks) {
   std::vector<string16> args;
   int deleted_count = 0;
   delegate_.ResetDetails();
-  ASSERT_TRUE(backend->DeleteBookmarks("Favicon IS NULL", args,
-                                       &deleted_count));
+  ASSERT_TRUE(backend->DeleteHistoryAndBookmarks("Favicon IS NULL", args,
+                                                 &deleted_count));
   EXPECT_EQ(1, deleted_count);
   // Verify notifications
   ASSERT_TRUE(delegate_.deleted_details());
@@ -565,8 +567,9 @@ TEST_F(AndroidProviderBackendTest, DeleteBookmarks) {
   projections.push_back(BookmarkRow::FAVICON);
   projections.push_back(BookmarkRow::BOOKMARK);
 
-  scoped_ptr<AndroidStatement> statement(backend->QueryBookmarks(projections,
-      std::string(), std::vector<string16>(), std::string("url ASC")));
+  scoped_ptr<AndroidStatement> statement(backend->QueryHistoryAndBookmarks(
+      projections, std::string(), std::vector<string16>(),
+      std::string("url ASC")));
   ASSERT_TRUE(statement->statement()->Step());
 
   EXPECT_EQ(row2.title(), statement->statement()->ColumnString16(2));
@@ -588,8 +591,8 @@ TEST_F(AndroidProviderBackendTest, DeleteBookmarks) {
   deleted_count = 0;
   // Delete row2.
   delegate_.ResetDetails();
-  ASSERT_TRUE(backend->DeleteBookmarks("bookmark = 0", std::vector<string16>(),
-                                       &deleted_count));
+  ASSERT_TRUE(backend->DeleteHistoryAndBookmarks("bookmark = 0",
+                  std::vector<string16>(), &deleted_count));
   // Verify notifications
   ASSERT_TRUE(delegate_.deleted_details());
   EXPECT_FALSE(delegate_.modified_details());
@@ -608,8 +611,9 @@ TEST_F(AndroidProviderBackendTest, DeleteBookmarks) {
               delegate_.favicon_details()->urls.find(row2.url()));
 
   ASSERT_EQ(1, deleted_count);
-  scoped_ptr<AndroidStatement> statement1(backend->QueryBookmarks(projections,
-      std::string(), std::vector<string16>(), std::string("url ASC")));
+  scoped_ptr<AndroidStatement> statement1(backend->QueryHistoryAndBookmarks(
+      projections, std::string(), std::vector<string16>(),
+      std::string("url ASC")));
   ASSERT_FALSE(statement1->statement()->Step());
 }
 
@@ -632,7 +636,7 @@ TEST_F(AndroidProviderBackendTest, IsValidBookmarkRow) {
   row1.set_visit_count(10);
   row1.set_is_bookmark(true);
   row1.set_title(UTF8ToUTF16("cnn"));
-  EXPECT_FALSE(backend->InsertBookmark(row1));
+  EXPECT_FALSE(backend->InsertHistoryAndBookmark(row1));
 
   // Have different created time and last visit time, but only have 1 visit
   // count.
@@ -642,21 +646,21 @@ TEST_F(AndroidProviderBackendTest, IsValidBookmarkRow) {
   row2.set_last_visit_time(Time::Now() - TimeDelta::FromDays(10));
   row2.set_created(Time::Now() - TimeDelta::FromDays(11));
   row2.set_visit_count(1);
-  EXPECT_FALSE(backend->InsertBookmark(row2));
+  EXPECT_FALSE(backend->InsertHistoryAndBookmark(row2));
 
   // Have created time in the future.
   BookmarkRow row3;
   row3.set_raw_url("http://www.example.com");
   row3.set_url(GURL("http://www.example.com"));
   row3.set_created(Time::Now() + TimeDelta::FromDays(11));
-  EXPECT_FALSE(backend->InsertBookmark(row3));
+  EXPECT_FALSE(backend->InsertHistoryAndBookmark(row3));
 
   // Have last vist time in the future.
   BookmarkRow row4;
   row4.set_raw_url("http://www.example.com");
   row4.set_url(GURL("http://www.example.com"));
   row4.set_last_visit_time(Time::Now() + TimeDelta::FromDays(11));
-  EXPECT_FALSE(backend->InsertBookmark(row4));
+  EXPECT_FALSE(backend->InsertHistoryAndBookmark(row4));
 
   // Created time is larger than last visit time.
   BookmarkRow row5;
@@ -664,7 +668,7 @@ TEST_F(AndroidProviderBackendTest, IsValidBookmarkRow) {
   row5.set_url(GURL("http://www.example.com"));
   row5.set_last_visit_time(Time::Now());
   row5.set_created(Time::Now() + TimeDelta::FromDays(11));
-  EXPECT_FALSE(backend->InsertBookmark(row5));
+  EXPECT_FALSE(backend->InsertHistoryAndBookmark(row5));
 
   // Visit count is zero, and last visit time is not zero.
   BookmarkRow row6;
@@ -672,7 +676,7 @@ TEST_F(AndroidProviderBackendTest, IsValidBookmarkRow) {
   row6.set_url(GURL("http://www.example.com"));
   row6.set_visit_count(0);
   row6.set_last_visit_time(Time::Now());
-  EXPECT_FALSE(backend->InsertBookmark(row6));
+  EXPECT_FALSE(backend->InsertHistoryAndBookmark(row6));
 
   // Visit count is zero, and create time is not zero.
   BookmarkRow row7;
@@ -680,7 +684,7 @@ TEST_F(AndroidProviderBackendTest, IsValidBookmarkRow) {
   row7.set_url(GURL("http://www.example.com"));
   row7.set_visit_count(0);
   row7.set_created(Time::Now());
-  EXPECT_FALSE(backend->InsertBookmark(row7));
+  EXPECT_FALSE(backend->InsertHistoryAndBookmark(row7));
 }
 
 TEST_F(AndroidProviderBackendTest, UpdateURL) {
@@ -710,9 +714,9 @@ TEST_F(AndroidProviderBackendTest, UpdateURL) {
       new AndroidProviderBackend(android_cache_db_name_, &history_db_,
                                  &thumbnail_db_, &bookmark_model_, &delegate_));
 
-  AndroidURLID id1 = backend->InsertBookmark(row1);
+  AndroidURLID id1 = backend->InsertHistoryAndBookmark(row1);
   ASSERT_TRUE(id1);
-  AndroidURLID id2 = backend->InsertBookmark(row2);
+  AndroidURLID id2 = backend->InsertHistoryAndBookmark(row2);
   ASSERT_TRUE(id2);
 
   // Set url1 as bookmark.
@@ -739,15 +743,15 @@ TEST_F(AndroidProviderBackendTest, UpdateURL) {
   update_row1.set_raw_url("newwebiste.com");
   update_row1.set_url(GURL("http://newwebsite.com"));
   update_args.clear();
-  ASSERT_FALSE(backend->UpdateBookmarks(update_row1, std::string(),
-                                        update_args, &update_count));
+  ASSERT_FALSE(backend->UpdateHistoryAndBookmarks(update_row1, std::string(),
+                                                  update_args, &update_count));
 
   // Only update one URL.
   update_args.clear();
   update_args.push_back(UTF8ToUTF16(row1.raw_url()));
   delegate_.ResetDetails();
-  ASSERT_TRUE(backend->UpdateBookmarks(update_row1, "url = ?", update_args,
-                                       &update_count));
+  ASSERT_TRUE(backend->UpdateHistoryAndBookmarks(update_row1, "url = ?",
+                                                 update_args, &update_count));
   // Verify notifications, Update involves insert and delete URLS.
   ASSERT_TRUE(delegate_.deleted_details());
   EXPECT_EQ(1u, delegate_.deleted_details()->rows.size());
@@ -801,8 +805,8 @@ TEST_F(AndroidProviderBackendTest, UpdateURL) {
   update_args.clear();
   update_args.push_back(UTF8ToUTF16(row2.raw_url()));
   delegate_.ResetDetails();
-  ASSERT_TRUE(backend->UpdateBookmarks(update_row2, "url = ?", update_args,
-                                       &update_count));
+  ASSERT_TRUE(backend->UpdateHistoryAndBookmarks(update_row2, "url = ?",
+                                                 update_args, &update_count));
   // Verify notifications, Update involves insert and delete URLS.
   ASSERT_TRUE(delegate_.deleted_details());
   EXPECT_EQ(1u, delegate_.deleted_details()->rows.size());
@@ -883,9 +887,9 @@ TEST_F(AndroidProviderBackendTest, UpdateVisitCount) {
       new AndroidProviderBackend(android_cache_db_name_, &history_db_,
                                  &thumbnail_db_, &bookmark_model_, &delegate_));
 
-  AndroidURLID id1 = backend->InsertBookmark(row1);
+  AndroidURLID id1 = backend->InsertHistoryAndBookmark(row1);
   ASSERT_TRUE(id1);
-  AndroidURLID id2 = backend->InsertBookmark(row2);
+  AndroidURLID id2 = backend->InsertHistoryAndBookmark(row2);
   ASSERT_TRUE(id2);
 
   int update_count;
@@ -895,8 +899,8 @@ TEST_F(AndroidProviderBackendTest, UpdateVisitCount) {
   update_row1.set_visit_count(5);
   update_args.push_back(UTF8ToUTF16(row1.raw_url()));
   delegate_.ResetDetails();
-  ASSERT_TRUE(backend->UpdateBookmarks(update_row1, "url = ?", update_args,
-                                       &update_count));
+  ASSERT_TRUE(backend->UpdateHistoryAndBookmarks(update_row1, "url = ?",
+                                                 update_args, &update_count));
   // Verify notifications, Update involves modified URL.
   EXPECT_FALSE(delegate_.deleted_details());
   ASSERT_TRUE(delegate_.modified_details());
@@ -925,8 +929,8 @@ TEST_F(AndroidProviderBackendTest, UpdateVisitCount) {
   update_row2.set_visit_count(1);
   update_args.clear();
   update_args.push_back(UTF8ToUTF16(row2.raw_url()));
-  ASSERT_TRUE(backend->UpdateBookmarks(update_row2, "url = ?", update_args,
-                                       &update_count));
+  ASSERT_TRUE(backend->UpdateHistoryAndBookmarks(update_row2, "url = ?",
+                                                 update_args, &update_count));
   // All shouldn't have any change.
   URLRow new_row2;
   ASSERT_TRUE(history_db_.GetRowForURL(row2.url(), &new_row2));
@@ -964,9 +968,9 @@ TEST_F(AndroidProviderBackendTest, UpdateLastVisitTime) {
       new AndroidProviderBackend(android_cache_db_name_, &history_db_,
                                  &thumbnail_db_, &bookmark_model_, &delegate_));
 
-  AndroidURLID id1 = backend->InsertBookmark(row1);
+  AndroidURLID id1 = backend->InsertHistoryAndBookmark(row1);
   ASSERT_TRUE(id1);
-  AndroidURLID id2 = backend->InsertBookmark(row2);
+  AndroidURLID id2 = backend->InsertHistoryAndBookmark(row2);
   ASSERT_TRUE(id2);
 
   int update_count;
@@ -976,8 +980,8 @@ TEST_F(AndroidProviderBackendTest, UpdateLastVisitTime) {
   update_row1.set_last_visit_time(Time::Now());
   update_args.push_back(UTF8ToUTF16(row1.raw_url()));
   delegate_.ResetDetails();
-  ASSERT_TRUE(backend->UpdateBookmarks(update_row1, "url = ?", update_args,
-                                       &update_count));
+  ASSERT_TRUE(backend->UpdateHistoryAndBookmarks(update_row1, "url = ?",
+                                                 update_args, &update_count));
   // Verify notifications, Update involves modified URL.
   EXPECT_FALSE(delegate_.deleted_details());
   ASSERT_TRUE(delegate_.modified_details());
@@ -1005,8 +1009,8 @@ TEST_F(AndroidProviderBackendTest, UpdateLastVisitTime) {
   update_row2.set_last_visit_time(Time::Now() - TimeDelta::FromDays(1));
   update_args.clear();
   update_args.push_back(UTF8ToUTF16(row1.raw_url()));
-  ASSERT_FALSE(backend->UpdateBookmarks(update_row2, "url = ?", update_args,
-                                        &update_count));
+  ASSERT_FALSE(backend->UpdateHistoryAndBookmarks(update_row2, "url = ?",
+                                                  update_args, &update_count));
 }
 
 TEST_F(AndroidProviderBackendTest, UpdateFavicon) {
@@ -1026,7 +1030,7 @@ TEST_F(AndroidProviderBackendTest, UpdateFavicon) {
       new AndroidProviderBackend(android_cache_db_name_, &history_db_,
                                  &thumbnail_db_, &bookmark_model_, &delegate_));
 
-  AndroidURLID id1 = backend->InsertBookmark(row1);
+  AndroidURLID id1 = backend->InsertHistoryAndBookmark(row1);
   ASSERT_TRUE(id1);
 
   int update_count;
@@ -1040,8 +1044,8 @@ TEST_F(AndroidProviderBackendTest, UpdateFavicon) {
   update_row1.set_favicon(data);
   update_args.push_back(UTF8ToUTF16(row1.raw_url()));
   delegate_.ResetDetails();
-  ASSERT_TRUE(backend->UpdateBookmarks(update_row1, "url = ?", update_args,
-                                       &update_count));
+  ASSERT_TRUE(backend->UpdateHistoryAndBookmarks(update_row1, "url = ?",
+                                                 update_args, &update_count));
   // Verify notifications.
   EXPECT_FALSE(delegate_.deleted_details());
   EXPECT_FALSE(delegate_.modified_details());
@@ -1067,8 +1071,8 @@ TEST_F(AndroidProviderBackendTest, UpdateFavicon) {
   update_args.clear();
   update_args.push_back(UTF8ToUTF16(row1.raw_url()));
   delegate_.ResetDetails();
-  ASSERT_TRUE(backend->UpdateBookmarks(update_row1, "url = ?", update_args,
-                                       &update_count));
+  ASSERT_TRUE(backend->UpdateHistoryAndBookmarks(update_row1, "url = ?",
+                                                 update_args, &update_count));
   // Verify notifications.
   EXPECT_FALSE(delegate_.deleted_details());
   EXPECT_FALSE(delegate_.modified_details());
@@ -1094,7 +1098,7 @@ TEST_F(AndroidProviderBackendTest, UpdateSearchTermTable) {
   row1.set_url(GURL("http://cnn.com"));
   row1.set_last_visit_time(Time::Now() - TimeDelta::FromDays(1));
   row1.set_title(UTF8ToUTF16("cnn"));
-  ASSERT_TRUE(backend->InsertBookmark(row1));
+  ASSERT_TRUE(backend->InsertHistoryAndBookmark(row1));
   string16 term = UTF8ToUTF16("Search term 1");
   URLID url_id = history_db_.GetRowForURL(row1.url(), NULL);
   ASSERT_TRUE(url_id);
@@ -1113,7 +1117,7 @@ TEST_F(AndroidProviderBackendTest, UpdateSearchTermTable) {
   row2.set_url(GURL("http://google.com"));
   row2.set_last_visit_time(Time::Now() - TimeDelta::FromDays(2));
   row2.set_title(UTF8ToUTF16("cnn"));
-  ASSERT_TRUE(backend->InsertBookmark(row2));
+  ASSERT_TRUE(backend->InsertHistoryAndBookmark(row2));
   url_id = history_db_.GetRowForURL(row2.url(), NULL);
   ASSERT_TRUE(url_id);
   string16 term2 = UTF8ToUTF16("Search term 2");
@@ -1139,7 +1143,7 @@ TEST_F(AndroidProviderBackendTest, UpdateSearchTermTable) {
   row3.set_url(GURL("http://search.com"));
   row3.set_last_visit_time(Time::Now());
   row3.set_title(UTF8ToUTF16("search"));
-  ASSERT_TRUE(backend->InsertBookmark(row3));
+  ASSERT_TRUE(backend->InsertHistoryAndBookmark(row3));
   url_id = history_db_.GetRowForURL(row3.url(), NULL);
   ASSERT_TRUE(url_id);
   ASSERT_TRUE(history_db_.SetKeywordSearchTermsForURL(url_id, 1, term));
@@ -1173,7 +1177,7 @@ TEST_F(AndroidProviderBackendTest, QuerySearchTerms) {
   row1.set_url(GURL("http://cnn.com"));
   row1.set_last_visit_time(Time::Now() - TimeDelta::FromDays(1));
   row1.set_title(UTF8ToUTF16("cnn"));
-  ASSERT_TRUE(backend->InsertBookmark(row1));
+  ASSERT_TRUE(backend->InsertHistoryAndBookmark(row1));
   string16 term = UTF8ToUTF16("Search term 1");
   URLID url_id = history_db_.GetRowForURL(row1.url(), NULL);
   ASSERT_TRUE(url_id);
@@ -1207,7 +1211,7 @@ TEST_F(AndroidProviderBackendTest, UpdateSearchTerms) {
   row1.set_url(GURL("http://cnn.com"));
   row1.set_last_visit_time(Time::Now() - TimeDelta::FromDays(1));
   row1.set_title(UTF8ToUTF16("cnn"));
-  ASSERT_TRUE(backend->InsertBookmark(row1));
+  ASSERT_TRUE(backend->InsertHistoryAndBookmark(row1));
   string16 term = UTF8ToUTF16("Search term 1");
   URLID url_id = history_db_.GetRowForURL(row1.url(), NULL);
   ASSERT_TRUE(url_id);
@@ -1312,7 +1316,7 @@ TEST_F(AndroidProviderBackendTest, DeleteSearchTerms) {
   row1.set_url(GURL("http://cnn.com"));
   row1.set_last_visit_time(Time::Now() - TimeDelta::FromDays(1));
   row1.set_title(UTF8ToUTF16("cnn"));
-  ASSERT_TRUE(backend->InsertBookmark(row1));
+  ASSERT_TRUE(backend->InsertHistoryAndBookmark(row1));
   string16 term = UTF8ToUTF16("Search term 1");
   URLID url_id = history_db_.GetRowForURL(row1.url(), NULL);
   ASSERT_TRUE(url_id);
@@ -1339,7 +1343,7 @@ TEST_F(AndroidProviderBackendTest, DeleteSearchTerms) {
   row2.set_url(GURL("http://google.com"));
   row2.set_last_visit_time(Time::Now() - TimeDelta::FromDays(1));
   row2.set_title(UTF8ToUTF16("google"));
-  ASSERT_TRUE(backend->InsertBookmark(row2));
+  ASSERT_TRUE(backend->InsertHistoryAndBookmark(row2));
   string16 term2 = UTF8ToUTF16("Search term 2");
   URLID url_id2 = history_db_.GetRowForURL(row2.url(), NULL);
   ASSERT_TRUE(url_id2);

@@ -130,7 +130,7 @@ AndroidProviderBackend::AndroidProviderBackend(
 AndroidProviderBackend::~AndroidProviderBackend() {
 }
 
-AndroidStatement* AndroidProviderBackend::QueryBookmarks(
+AndroidStatement* AndroidProviderBackend::QueryHistoryAndBookmarks(
     const std::vector<BookmarkRow::BookmarkColumnID>& projections,
     const std::string& selection,
     const std::vector<string16>& selection_args,
@@ -145,11 +145,11 @@ AndroidStatement* AndroidProviderBackend::QueryBookmarks(
 
   transaction.Commit();
 
-  return QueryBookmarksInternal(projections, selection, selection_args,
-                                sort_order);
+  return QueryHistoryAndBookmarksInternal(projections, selection,
+                                          selection_args, sort_order);
 }
 
-bool AndroidProviderBackend::UpdateBookmarks(
+bool AndroidProviderBackend::UpdateHistoryAndBookmarks(
     const BookmarkRow& row,
     const std::string& selection,
     const std::vector<string16>& selection_args,
@@ -158,8 +158,8 @@ bool AndroidProviderBackend::UpdateBookmarks(
 
   ScopedTransaction transaction(history_db_, thumbnail_db_);
 
-  if (!UpdateBookmarks(row, selection, selection_args, updated_count,
-                       &notifications))
+  if (!UpdateHistoryAndBookmarks(row, selection, selection_args, updated_count,
+                                 &notifications))
     return false;
 
   transaction.Commit();
@@ -167,12 +167,13 @@ bool AndroidProviderBackend::UpdateBookmarks(
   return true;
 }
 
-AndroidURLID AndroidProviderBackend::InsertBookmark(const BookmarkRow& values) {
+AndroidURLID AndroidProviderBackend::InsertHistoryAndBookmark(
+    const BookmarkRow& values) {
   HistoryNotifications notifications;
 
   ScopedTransaction transaction(history_db_, thumbnail_db_);
 
-  AndroidURLID id = InsertBookmark(values, &notifications);
+  AndroidURLID id = InsertHistoryAndBookmark(values, &notifications);
   if (id) {
     transaction.Commit();
     BroadcastNotifications(notifications);
@@ -181,7 +182,7 @@ AndroidURLID AndroidProviderBackend::InsertBookmark(const BookmarkRow& values) {
   return 0;
 }
 
-bool AndroidProviderBackend::DeleteBookmarks(
+bool AndroidProviderBackend::DeleteHistoryAndBookmarks(
     const std::string& selection,
     const std::vector<string16>& selection_args,
     int* deleted_count) {
@@ -189,8 +190,8 @@ bool AndroidProviderBackend::DeleteBookmarks(
 
   ScopedTransaction transaction(history_db_, thumbnail_db_);
 
-  if (!DeleteBookmarks(selection, selection_args, deleted_count,
-                       &notifications))
+  if (!DeleteHistoryAndBookmarks(selection, selection_args, deleted_count,
+                                 &notifications))
     return false;
 
   transaction.Commit();
@@ -233,7 +234,7 @@ void AndroidProviderBackend::ScopedTransaction::Commit() {
   committed_ = true;
 }
 
-bool AndroidProviderBackend::UpdateBookmarks(
+bool AndroidProviderBackend::UpdateHistoryAndBookmarks(
     const BookmarkRow& row,
     const std::string& selection,
     const std::vector<string16>& selection_args,
@@ -309,7 +310,7 @@ bool AndroidProviderBackend::UpdateBookmarks(
   return true;
 }
 
-AndroidURLID AndroidProviderBackend::InsertBookmark(
+AndroidURLID AndroidProviderBackend::InsertHistoryAndBookmark(
     const BookmarkRow& values,
     HistoryNotifications* notifications) {
   if (!IsBookmarkRowValid(values))
@@ -354,7 +355,7 @@ AndroidURLID AndroidProviderBackend::InsertBookmark(
   return row.id();
 }
 
-bool AndroidProviderBackend::DeleteBookmarks(
+bool AndroidProviderBackend::DeleteHistoryAndBookmarks(
     const std::string& selection,
     const std::vector<string16>& selection_args,
     int * deleted_count,
@@ -839,7 +840,7 @@ bool AndroidProviderBackend::SimulateUpdateURL(
   oss << "url_id = " << ids[0].url_id;
 
   scoped_ptr<AndroidStatement> statement;
-  statement.reset(QueryBookmarksInternal(projections, oss.str(),
+  statement.reset(QueryHistoryAndBookmarksInternal(projections, oss.str(),
       std::vector<string16>(), std::string()));
   if (!statement.get() || !statement->statement()->Step())
     return false;
@@ -941,7 +942,7 @@ bool AndroidProviderBackend::SimulateUpdateURL(
   return true;
 }
 
-AndroidStatement* AndroidProviderBackend::QueryBookmarksInternal(
+AndroidStatement* AndroidProviderBackend::QueryHistoryAndBookmarksInternal(
     const std::vector<BookmarkRow::BookmarkColumnID>& projections,
     const std::string& selection,
     const std::vector<string16>& selection_args,

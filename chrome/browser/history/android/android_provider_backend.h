@@ -62,7 +62,7 @@ class AndroidProviderBackend {
   // |selection| is the SQL WHERE clause without 'WHERE'.
   // |selection_args| is the arguments for WHERE clause.
   // |sort_order| is the SQL ORDER clause.
-  AndroidStatement* QueryBookmarks(
+  AndroidStatement* QueryHistoryAndBookmarks(
       const std::vector<BookmarkRow::BookmarkColumnID>& projections,
       const std::string& selection,
       const std::vector<string16>& selection_args,
@@ -74,13 +74,13 @@ class AndroidProviderBackend {
   // |row| is the value to update.
   // |selection| is the SQL WHERE clause without 'WHERE'.
   // |selection_args| is the arguments for the WHERE clause.
-  bool UpdateBookmarks(const BookmarkRow& row,
-                       const std::string& selection,
-                       const std::vector<string16>& selection_args,
-                       int* update_count);
+  bool UpdateHistoryAndBookmarks(const BookmarkRow& row,
+                                 const std::string& selection,
+                                 const std::vector<string16>& selection_args,
+                                 int* update_count);
 
   // Inserts the given values and returns the URLID of the inserted row.
-  AndroidURLID InsertBookmark(const BookmarkRow& values);
+  AndroidURLID InsertHistoryAndBookmark(const BookmarkRow& values);
 
   // Deletes the specified rows and returns the number of the deleted rows in
   // |deleted_count|.
@@ -88,9 +88,9 @@ class AndroidProviderBackend {
   // |selection_args| is the arguments for the WHERE clause.
   //
   // if |selection| is empty all history and bookmarks are deleted.
-  bool DeleteBookmarks(const std::string& selection,
-                       const std::vector<string16>& selection_args,
-                       int* deleted_count);
+  bool DeleteHistoryAndBookmarks(const std::string& selection,
+                                 const std::vector<string16>& selection_args,
+                                 int* deleted_count);
 
   // SearchTerms --------------------------------------------------------------
   //
@@ -134,7 +134,6 @@ class AndroidProviderBackend {
   friend class AndroidProviderBackendTest;
 
   FRIEND_TEST_ALL_PREFIXES(AndroidProviderBackendTest, UpdateTables);
-  FRIEND_TEST_ALL_PREFIXES(AndroidProviderBackendTest, UpdateBookmarks);
   FRIEND_TEST_ALL_PREFIXES(AndroidProviderBackendTest, UpdateSearchTermTable);
 
   struct HistoryNotification {
@@ -186,7 +185,7 @@ class AndroidProviderBackend {
   // |row| is the value to update.
   // |selection| is the SQL WHERE clause without 'WHERE'.
   // |selection_args| is the arguments for the WHERE clause.
-  bool UpdateBookmarks(const BookmarkRow& row,
+  bool UpdateHistoryAndBookmarks(const BookmarkRow& row,
                        const std::string& selection,
                        const std::vector<string16>& selection_args,
                        int* update_count,
@@ -194,8 +193,8 @@ class AndroidProviderBackend {
 
   // Inserts the given values and returns the URLID of the inserted row.
   // The notifications of change is returned in |notifications|.
-  AndroidURLID InsertBookmark(const BookmarkRow& values,
-                              HistoryNotifications* notifications);
+  AndroidURLID InsertHistoryAndBookmark(const BookmarkRow& values,
+                                        HistoryNotifications* notifications);
 
   // Deletes the specified rows and returns the number of the deleted rows in
   // |deleted_count|.
@@ -205,10 +204,10 @@ class AndroidProviderBackend {
   // The notifications of change is returned in |notifications|.
   //
   // if |selection| is empty all history and bookmarks are deleted.
-  bool DeleteBookmarks(const std::string& selection,
-                       const std::vector<string16>& selection_args,
-                       int* deleted_count,
-                       HistoryNotifications* notifications);
+  bool DeleteHistoryAndBookmarks(const std::string& selection,
+                                 const std::vector<string16>& selection_args,
+                                 int* deleted_count,
+                                 HistoryNotifications* notifications);
 
   // Initializes and updates tables if necessary.
   bool EnsureInitializedAndUpdated();
@@ -270,7 +269,7 @@ class AndroidProviderBackend {
 
   // Query bookmark without sync the tables. It should be used after syncing
   // tables.
-  AndroidStatement* QueryBookmarksInternal(
+  AndroidStatement* QueryHistoryAndBookmarksInternal(
       const std::vector<BookmarkRow::BookmarkColumnID>& projections,
       const std::string& selection,
       const std::vector<string16>& selection_args,
