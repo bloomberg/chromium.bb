@@ -109,6 +109,8 @@ bool ContextGroup::Initialize(const DisallowedFeatures& disallowed_features,
     std::string lc_str(::StringToLowerASCII(std::string(vendor_str)));
     bool intel_on_mac = strstr(lc_str.c_str(), "intel");
     if (intel_on_mac) {
+      max_texture_size = std::min(
+        static_cast<GLint>(4096), max_texture_size);
       max_cube_map_texture_size = std::min(
         static_cast<GLint>(512), max_cube_map_texture_size);
     }
