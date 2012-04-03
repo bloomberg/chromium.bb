@@ -82,15 +82,6 @@ readonly PNACL_SUPPORT="${PNACL_ROOT}/support"
 
 readonly THIRD_PARTY="${NACL_ROOT}"/../third_party
 
-readonly GMP_VER=gmp-5.0.2
-readonly THIRD_PARTY_GMP="${THIRD_PARTY}/gmp/${GMP_VER}.tar.bz2"
-
-readonly MPFR_VER=mpfr-3.0.1
-readonly THIRD_PARTY_MPFR="${THIRD_PARTY}/mpfr/${MPFR_VER}.tar.bz2"
-
-readonly MPC_VER=mpc-0.9
-readonly THIRD_PARTY_MPC="${THIRD_PARTY}/mpc/${MPC_VER}.tar.gz"
-
 # The location of Mercurial sources (absolute)
 readonly TC_SRC="${PNACL_ROOT}/src"
 readonly TC_SRC_UPSTREAM="${TC_SRC}/upstream"
@@ -102,15 +93,11 @@ readonly TC_SRC_COMPILER_RT="${TC_SRC}/compiler-rt"
 # LLVM sources (svn)
 readonly TC_SRC_LLVM_MASTER="${TC_SRC}/llvm-master"
 readonly TC_SRC_CLANG="${TC_SRC}/clang"
-readonly TC_SRC_DRAGONEGG="${TC_SRC}/dragonegg"
 
 # Git sources
 readonly PNACL_GIT_ROOT="${PNACL_ROOT}/git"
 readonly TC_SRC_GCC="${PNACL_GIT_ROOT}/gcc"
 readonly TC_SRC_GLIBC="${PNACL_GIT_ROOT}/glibc"
-readonly TC_SRC_GMP="${PNACL_ROOT}/third_party/gmp"
-readonly TC_SRC_MPFR="${PNACL_ROOT}/third_party/mpfr"
-readonly TC_SRC_MPC="${PNACL_ROOT}/third_party/mpc"
 readonly TC_SRC_LIBSTDCPP="${TC_SRC_GCC}/libstdc++-v3"
 
 # Unfortunately, binutils/configure generates this untracked file
@@ -131,10 +118,6 @@ readonly TC_BUILD_BINUTILS_LIBERTY="${TC_BUILD}/binutils-liberty"
 readonly TC_BUILD_NEWLIB="${TC_BUILD}/newlib"
 readonly TC_BUILD_COMPILER_RT="${TC_BUILD}/compiler_rt"
 readonly TC_BUILD_GCC="${TC_BUILD}/gcc"
-readonly TC_BUILD_GMP="${TC_BUILD}/gmp"
-readonly TC_BUILD_MPFR="${TC_BUILD}/mpfr"
-readonly TC_BUILD_MPC="${TC_BUILD}/mpc"
-readonly TC_BUILD_DRAGONEGG="${TC_BUILD}/dragonegg"
 readonly TC_BUILD_LIBELF="${TC_BUILD}/libelf"
 readonly TC_BUILD_LIBELF_SB="${TC_BUILD}/libelf-sb"
 
@@ -176,9 +159,6 @@ readonly NEWLIB_INSTALL_DIR="${INSTALL_NEWLIB}/usr"
 readonly GLIBC_INSTALL_DIR="${INSTALL_GLIBC}/usr"
 readonly LLVM_INSTALL_DIR="${INSTALL_PKG}/llvm"
 readonly GCC_INSTALL_DIR="${INSTALL_PKG}/gcc"
-readonly GMP_INSTALL_DIR="${INSTALL_PKG}/gmp"
-readonly MPFR_INSTALL_DIR="${INSTALL_PKG}/mpfr"
-readonly MPC_INSTALL_DIR="${INSTALL_PKG}/mpc"
 readonly BINUTILS_INSTALL_DIR="${INSTALL_PKG}/binutils"
 readonly BFD_PLUGIN_DIR="${BINUTILS_INSTALL_DIR}/lib/bfd-plugins"
 readonly SYSROOT_DIR="${INSTALL_NEWLIB}/sysroot"
@@ -295,7 +275,6 @@ readonly COMPILER_RT_REV=1a3a6ffb31ea
 readonly LLVM_PROJECT_REV=${LLVM_PROJECT_REV:-152935}
 readonly LLVM_MASTER_REV=${LLVM_PROJECT_REV}
 readonly CLANG_REV=${LLVM_PROJECT_REV}
-readonly DRAGONEGG_REV=${LLVM_PROJECT_REV}
 
 # Repositories
 readonly REPO_UPSTREAM="nacl-llvm-branches.upstream"
@@ -306,7 +285,6 @@ readonly REPO_COMPILER_RT="nacl-llvm-branches.compiler-rt"
 # LLVM repos (svn)
 readonly REPO_LLVM_MASTER="http://llvm.org/svn/llvm-project/llvm/trunk"
 readonly REPO_CLANG="http://llvm.org/svn/llvm-project/cfe/trunk"
-readonly REPO_DRAGONEGG="http://llvm.org/svn/llvm-project/dragonegg/trunk"
 
 CC=${CC:-gcc}
 CXX=${CXX:-g++}
@@ -405,7 +383,6 @@ hg-info-all() {
 update-all() {
   hg-update-upstream
   svn-update-clang
-  svn-update-dragonegg
   hg-update-newlib
   hg-update-binutils
   hg-update-compiler-rt
@@ -602,10 +579,6 @@ svn-update-clang() {
   svn-update-common "clang" ${CLANG_REV} "${TC_SRC_CLANG}"
 }
 
-svn-update-dragonegg() {
-  svn-update-common "dragonegg" ${DRAGONEGG_REV} "${TC_SRC_DRAGONEGG}"
-}
-
 #@ hg-update-newlib      - Update NEWLIB To the stable revision
 hg-update-newlib() {
   # Clean the headers first, so that sanity checks inside
@@ -663,7 +636,6 @@ checkout-all() {
   StepBanner "CHECKOUT-ALL"
   hg-checkout-upstream
   svn-checkout-clang
-  svn-checkout-dragonegg
   hg-checkout-binutils
   hg-checkout-newlib
   hg-checkout-compiler-rt
@@ -687,10 +659,6 @@ svn-checkout-llvm-master() {
 
 svn-checkout-clang() {
   svn-checkout "${REPO_CLANG}" "${TC_SRC_CLANG}" ${CLANG_REV}
-}
-
-svn-checkout-dragonegg() {
-  svn-checkout "${REPO_DRAGONEGG}" "${TC_SRC_DRAGONEGG}" ${DRAGONEGG_REV}
 }
 
 hg-checkout-binutils() {
@@ -1413,300 +1381,9 @@ llvm-install-plugin() {
 
 #########################################################################
 #########################################################################
-# GCC/DragonEgg based front-end
+#     < LIBGCC_EH >
 #########################################################################
 #########################################################################
-
-###############################  GMP  ###############################
-#+ gmp                   - Build and install gmp
-gmp() {
-  gmp-unpack
-  if gmp-needs-configure; then
-    gmp-clean
-    gmp-configure
-  else
-    SkipBanner "GMP" "Already configured"
-  fi
-  gmp-install
-}
-
-gmp-needs-configure() {
-  ! [ -f "${TC_BUILD_GMP}/config.status" ]
-  return $?
-}
-
-gmp-clean() {
-  StepBanner "GMP" "Clean"
-  rm -rf "${TC_BUILD_GMP}"
-}
-
-gmp-unpack() {
-  if ! [ -d "${TC_SRC_GMP}" ]; then
-    mkdir -p "${TC_SRC_GMP}"
-    tar -jxf "${THIRD_PARTY_GMP}" -C "${TC_SRC_GMP}"
-  fi
-}
-
-gmp-configure() {
-  StepBanner "GMP" "Configure"
-  mkdir -p "${TC_BUILD_GMP}"
-  spushd "${TC_BUILD_GMP}"
-  RunWithLog gmp.configure \
-    env -i \
-      PATH="/usr/bin:/bin" \
-      CC="${CC}" \
-      CXX="${CXX}" \
-      "${TC_SRC_GMP}"/${GMP_VER}/configure \
-         --prefix="${GMP_INSTALL_DIR}" \
-         --disable-shared --enable-static
-  spopd
-}
-
-gmp-install() {
-  StepBanner "GMP" "Install"
-  spushd "${TC_BUILD_GMP}"
-  RunWithLog gmp.install \
-    env -i PATH=/usr/bin/:/bin \
-      CC="${CC}" \
-      CXX="${CXX}" \
-      make ${MAKE_OPTS} install
-  spopd
-}
-
-###############################  MPFR  ###############################
-#+ mpfr                  - Build and install mpfr
-mpfr() {
-  mpfr-unpack
-  if mpfr-needs-configure; then
-    mpfr-clean
-    mpfr-configure
-  else
-    SkipBanner "MPFR" "Already configured"
-  fi
-
-  mpfr-install
-}
-
-mpfr-needs-configure() {
-  ! [ -f "${TC_BUILD_MPFR}/config.status" ]
-  return $?
-}
-
-mpfr-clean() {
-  StepBanner "MPFR" "Clean"
-  rm -rf "${TC_BUILD_MPFR}"
-}
-
-mpfr-unpack() {
-  if ! [ -d "${TC_SRC_MPFR}" ]; then
-    mkdir -p "${TC_SRC_MPFR}"
-    tar -jxf "${THIRD_PARTY_MPFR}" -C "${TC_SRC_MPFR}"
-  fi
-}
-
-mpfr-configure() {
-  StepBanner "MPFR" "Configure"
-  mkdir -p "${TC_BUILD_MPFR}"
-  spushd "${TC_BUILD_MPFR}"
-
-  RunWithLog mpfr.configure \
-    env -i \
-      PATH="/usr/bin:/bin" \
-      CC="${CC}" \
-      CXX="${CXX}" \
-      "${TC_SRC_MPFR}"/${MPFR_VER}/configure \
-        --prefix="${MPFR_INSTALL_DIR}" \
-        --with-gmp="${GMP_INSTALL_DIR}" \
-        --disable-shared --enable-static
-  spopd
-}
-
-mpfr-install() {
-  StepBanner "MPFR" "Install"
-  spushd "${TC_BUILD_MPFR}"
-  RunWithLog mpfr.install \
-    env -i PATH=/usr/bin/:/bin \
-      CC="${CC}" \
-      CXX="${CXX}" \
-      make ${MAKE_OPTS} install
-  spopd
-}
-
-###############################  MPC  ###############################
-#+ mpc                   - Build and install mpc
-mpc() {
-  mpc-unpack
-  if mpc-needs-configure; then
-    mpc-clean
-    mpc-configure
-  else
-    SkipBanner "MPC" "Already configured"
-  fi
-  mpc-install
-}
-
-mpc-needs-configure() {
-  ! [ -f "${TC_BUILD_MPC}/config.status" ]
-  return $?
-}
-
-mpc-unpack() {
-  if ! [ -d "${TC_SRC_MPC}" ]; then
-    mkdir -p "${TC_SRC_MPC}"
-    tar -zxf "${THIRD_PARTY_MPC}" -C "${TC_SRC_MPC}"
-  fi
-}
-
-mpc-clean() {
-  StepBanner "MPC" "Clean"
-  rm -rf "${TC_BUILD_MPC}"
-}
-
-mpc-configure() {
-  StepBanner "MPC" "Configure"
-  mkdir -p "${TC_BUILD_MPC}"
-  spushd "${TC_BUILD_MPC}"
-  RunWithLog mpc.configure \
-    env -i \
-      PATH="/usr/bin:/bin" \
-      CC="${CC}" \
-      CXX="${CXX}" \
-      "${TC_SRC_MPC}"/${MPC_VER}/configure \
-        --prefix="${MPC_INSTALL_DIR}" \
-        --with-gmp="${GMP_INSTALL_DIR}" \
-        --with-mpfr="${MPFR_INSTALL_DIR}" \
-        --disable-shared --enable-static
-  spopd
-}
-
-mpc-install() {
-  StepBanner "MPC" "Install"
-  spushd "${TC_BUILD_MPC}"
-  RunWithLog mpc.install \
-    env -i PATH=/usr/bin/:/bin \
-      CC="${CC}" \
-      CXX="${CXX}" \
-      make ${MAKE_OPTS} install
-  spopd
-}
-
-
-##########################  GCC FRONT-END  ############################
-#+ gccfe                 - Build and install the gcc frontend
-gccfe() {
-  StepBanner "GCC FRONTEND"
-  gccfe-deps
-  if gccfe-needs-configure ; then
-    gccfe-clean
-    gccfe-configure
-  else
-    SkipBanner "GCC-FE" "Already configured"
-  fi
-  gccfe-make
-  gccfe-install
-  dragonegg-plugin
-}
-
-gccfe-deps-clean() {
-  gmp-clean
-  mpfr-clean
-  mpc-clean
-}
-
-gccfe-deps() {
-  gmp
-  mpfr
-  mpc
-}
-
-gccfe-needs-configure() {
- [ ! -f "${TC_BUILD_GCC}/config.status" ]
- return $?
-}
-
-gccfe-clean() {
-  StepBanner "GCC-FE" "Clean"
-  rm -rf "${TC_BUILD_GCC}"
-}
-
-gccfe-configure() {
-  StepBanner "GCC-FE" "Configure"
-  mkdir -p "${TC_BUILD_GCC}"
-  spushd "${TC_BUILD_GCC}"
-  RunWithLog gccfe.configure \
-    env -i \
-      PATH="/usr/bin:/bin" \
-      CC="${CC}" \
-      CXX="${CXX}" \
-      ${TC_SRC_GCC}/configure \
-          --prefix="${GCC_INSTALL_DIR}" \
-          --with-gmp="${GMP_INSTALL_DIR}" \
-          --with-mpfr="${MPFR_INSTALL_DIR}" \
-          --with-mpc="${MPC_INSTALL_DIR}" \
-          --disable-libmudflap \
-          --disable-decimal-float \
-          --disable-libssp \
-          --disable-libgomp \
-          --disable-multilib \
-          --disable-libquadmath \
-          --disable-libquadmath-support \
-          --enable-languages=c,c++ \
-          --disable-threads \
-          --disable-libstdcxx-pch \
-          --disable-shared \
-          --without-headers \
-          --enable-lto \
-          --enable-plugin \
-          --target=i686-unknown-linux-gnu
-  spopd
-}
-
-gccfe-make() {
-  StepBanner "GCC-FE" "Make"
-  spushd "${TC_BUILD_GCC}"
-  RunWithLog gccfe.make \
-    env -i \
-      PATH="/usr/bin:/bin" \
-      CC="${CC}" \
-      CXX="${CXX}" \
-      make ${MAKE_OPTS} all-gcc
-  spopd
-}
-
-gccfe-install() {
-  StepBanner "GCC-FE" "Install"
-  rm -rf "${GCC_INSTALL_DIR}"
-  spushd "${TC_BUILD_GCC}"
-  RunWithLog gccfe.install \
-    env -i \
-      PATH="/usr/bin:/bin" \
-      CC="${CC}" \
-      CXX="${CXX}" \
-      make ${MAKE_OPTS} install-gcc
-  spopd
-}
-
-#+-------------------------------------------------------------------------
-#+ dragonegg-plugin      - build and install dragon-egg plugin
-dragonegg-plugin() {
-  StepBanner "DRAGONEGG" "Building and installing plugin"
-  rm -rf "${TC_BUILD_DRAGONEGG}"
-  cp -a "${TC_SRC_DRAGONEGG}" "${TC_BUILD_DRAGONEGG}"
-  spushd "${TC_BUILD_DRAGONEGG}"
-  RunWithLog dragonegg.make \
-    env -i \
-      PATH="/usr/bin:/bin" \
-      PWD="$(pwd)" \
-      CC="${CC}" \
-      CXX="${CXX}" \
-      CFLAGS="-I${GMP_INSTALL_DIR}/include -L${GMP_INSTALL_DIR}/lib" \
-      CXXFLAGS="-I${GMP_INSTALL_DIR}/include -L${GMP_INSTALL_DIR}/lib" \
-      GCC="${GCC_INSTALL_DIR}/bin/i686-unknown-linux-gnu-gcc" \
-      LLVM_CONFIG="${LLVM_INSTALL_DIR}"/bin/llvm-config \
-      make ${MAKE_OPTS}
-  cp dragonegg.so "${GCC_INSTALL_DIR}/lib"
-  spopd
-}
 
 libgcc_eh-all() {
   StepBanner "LIBGCC_EH (from GCC 4.6)"
