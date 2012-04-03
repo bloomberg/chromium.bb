@@ -36,12 +36,19 @@
 #include <list>
 #include <utility>
 
+#include "client/linux/minidump_writer/linux_dumper.h"
 #include "google_breakpad/common/minidump_format.h"
 
 namespace google_breakpad {
 
+class ExceptionHandler;
+
+struct MappingEntry {
+  MappingInfo first;
+  u_int8_t second[sizeof(MDGUID)];
+};
+
 // A list of <MappingInfo, GUID>
-typedef std::pair<struct MappingInfo, u_int8_t[sizeof(MDGUID)]> MappingEntry;
 typedef std::list<MappingEntry> MappingList;
 
 // Write a minidump to the filesystem. This function does not malloc nor use
@@ -62,11 +69,9 @@ bool WriteMinidump(const char* filename, pid_t crashing_process,
                    const void* blob, size_t blob_size,
                    const MappingList& mappings);
 
-// Write a minidump to the filesystem.  Same as above, but uses the given
-// core file and procfs directory to generate the minidump post mortem.
-bool WriteMinidumpFromCore(const char* filename,
-                           const char* core_path,
-                           const char* procfs_override);
+bool WriteMinidump(const char* filename,
+                   const MappingList& mappings,
+                   LinuxDumper* dumper);
 
 }  // namespace google_breakpad
 

@@ -36,10 +36,11 @@
 
 #include <arpa/inet.h>
 #include <assert.h>
-#include <elf.h>
 #if defined(__ANDROID__)
+#include <linux/elf.h>
 #include "client/linux/android_link.h"
 #else
+#include <elf.h>
 #include <link.h>
 #endif
 #include <string.h>

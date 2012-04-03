@@ -90,6 +90,7 @@
 
 #include "common/linux/linux_libc_support.h"
 #include "common/memory.h"
+#include "client/linux/log/log.h"
 #include "client/linux/minidump_writer/linux_dumper.h"
 #include "client/linux/minidump_writer/minidump_writer.h"
 #include "common/linux/guid_creator.h"
@@ -391,14 +392,20 @@ bool ExceptionHandler::GenerateDump(CrashContext *context) {
     // is the write() and read() calls will fail with EBADF
     static const char no_pipe_msg[] = "ExceptionHandler::GenerateDump \
                                        sys_pipe failed:";
-    sys_write(2, no_pipe_msg, sizeof(no_pipe_msg) - 1);
-    sys_write(2, strerror(errno), strlen(strerror(errno)));
-    sys_write(2, "\n", 1);
+    logger::write(no_pipe_msg, sizeof(no_pipe_msg) - 1);
+    logger::write(strerror(errno), strlen(strerror(errno)));
+    logger::write("\n", 1);
   }
 
+#if defined(__ANDROID__)
+  const pid_t child = clone(
+      ThreadEntry, stack, CLONE_FILES | CLONE_FS | CLONE_UNTRACED,
+      &thread_arg);
+#else
   const pid_t child = sys_clone(
       ThreadEntry, stack, CLONE_FILES | CLONE_FS | CLONE_UNTRACED,
       &thread_arg, NULL, NULL, NULL);
+#endif
   int r, status;
   // Allow the child to ptrace us
   sys_prctl(PR_SET_PTRACER, child);
@@ -412,9 +419,9 @@ bool ExceptionHandler::GenerateDump(CrashContext *context) {
 
   if (r == -1) {
     static const char msg[] = "ExceptionHandler::GenerateDump waitpid failed:";
-    sys_write(2, msg, sizeof(msg) - 1);
-    sys_write(2, strerror(errno), strlen(strerror(errno)));
-    sys_write(2, "\n", 1);
+    logger::write(msg, sizeof(msg) - 1);
+    logger::write(strerror(errno), strlen(strerror(errno)));
+    logger::write("\n", 1);
   }
 
   bool success = r != -1 && WIFEXITED(status) && WEXITSTATUS(status) == 0;
@@ -434,9 +441,9 @@ void ExceptionHandler::SendContinueSignalToChild() {
   if(r == -1) {
     static const char msg[] = "ExceptionHandler::SendContinueSignalToChild \
                                sys_write failed:";
-    sys_write(2, msg, sizeof(msg) - 1);
-    sys_write(2, strerror(errno), strlen(strerror(errno)));
-    sys_write(2, "\n", 1);
+    logger::write(msg, sizeof(msg) - 1);
+    logger::write(strerror(errno), strlen(strerror(errno)));
+    logger::write("\n", 1);
   }
 }
 
@@ -449,9 +456,9 @@ void ExceptionHandler::WaitForContinueSignal() {
   if(r == -1) {
     static const char msg[] = "ExceptionHandler::WaitForContinueSignal \
                                sys_read failed:";
-    sys_write(2, msg, sizeof(msg) - 1);
-    sys_write(2, strerror(errno), strlen(strerror(errno)));
-    sys_write(2, "\n", 1);
+    logger::write(msg, sizeof(msg) - 1);
+    logger::write(strerror(errno), strlen(strerror(errno)));
+    logger::write("\n", 1);
   }
 }
 

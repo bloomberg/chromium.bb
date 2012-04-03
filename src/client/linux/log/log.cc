@@ -1,4 +1,4 @@
-// Copyright (c) 2010, Google Inc.
+// Copyright (c) 2012 Google Inc.
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -27,22 +27,22 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// The Android NDK doesn't have link.h. Fortunately, the only thing
-// that Breakpad uses from it is the ElfW macro, so define it here.
+#include "client/linux/log/log.h"
 
-#ifndef GOOGLE_BREAKPAD_CLIENT_LINUX_ANDROID_LINK_H_
-#define GOOGLE_BREAKPAD_CLIENT_LINUX_ANDROID_LINK_H_
-
-// TODO(zhenghao): exec_elf.h conflicts with linux/elf.h.
-// But we still need ELFSIZE.
-//#include <sys/exec_elf.h>
-#include <machine/exec.h>
-#define ELFSIZE ARCH_ELFSIZE
-
-#ifndef ElfW
-#define ElfW(type)	_ElfW (Elf, ELFSIZE, type)
-#define _ElfW(e,w,t)	_ElfW_1 (e, w, _##t)
-#define _ElfW_1(e,w,t)	e##w##t
+#if defined(__ANDROID__)
+#include <android/log.h>
+#else
+#include "third_party/lss/linux_syscall_support.h"
 #endif
 
-#endif  // GOOGLE_BREAKPAD_CLIENT_LINUX_ANDROID_LINK_H_
+namespace logger {
+
+int write(const char* buf, size_t nbytes) {
+#if defined(__ANDROID__)
+  return __android_log_write(ANDROID_LOG_WARN, "google-breakpad", buf);
+#else
+  return sys_write(2, buf, nbytes);
+#endif
+}
+
+}  // namespace logger

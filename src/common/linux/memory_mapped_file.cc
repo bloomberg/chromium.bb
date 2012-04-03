@@ -34,6 +34,9 @@
 
 #include <fcntl.h>
 #include <sys/mman.h>
+#if defined(__ANDROID__)
+#include <sys/stat.h>
+#endif
 #include <unistd.h>
 
 #include "common/memory_range.h"
@@ -59,7 +62,10 @@ bool MemoryMappedFile::Map(const char* path) {
     return false;
   }
 
-#if defined(__x86_64__)
+#if defined(__ANDROID__)
+  struct stat st;
+  if (fstat(fd, &st) != 0) {
+#elif defined(__x86_64__)
   struct kernel_stat st;
   if (sys_fstat(fd, &st) == -1 || st.st_size < 0) {
 #else

@@ -440,7 +440,11 @@ void DwarfCUToModule::FuncHandler::Finish() {
     func->address = low_pc_;
     func->size = high_pc_ - low_pc_;
     func->parameter_size = 0;
-    cu_context_->functions.push_back(func);
+    if (func->address) {
+       // If the function address is zero this is a sign that this function
+       // description is just empty debug data and should just be discarded.
+       cu_context_->functions.push_back(func);
+     }
   } else if (inline_) {
     AbstractOrigin origin(name_);
     cu_context_->file_context->file_private->origins[offset_] = origin;
