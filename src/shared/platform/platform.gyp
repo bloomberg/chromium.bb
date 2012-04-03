@@ -1,6 +1,6 @@
 # -*- python -*-
 #
-# Copyright (c) 2011 The Native Client Authors.  All rights reserved.
+# Copyright (c) 2012 The Native Client Authors.  All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -38,37 +38,37 @@
     'conditions': [
       ['OS=="linux"', {
         'platform_sources': [
-          'linux/condition_variable.c',
-          'linux/lock.c',
           'linux/nacl_clock.c',
-          'linux/nacl_exit.c',
-          'linux/nacl_find_addrsp.c',
-          'linux/nacl_host_desc.c',
           'linux/nacl_host_dir.c',
-          'linux/nacl_secure_random.c',
           'linux/nacl_semaphore.c',
-          'linux/nacl_thread_id.c',
-          'linux/nacl_threads.c',
-          'linux/nacl_time.c',
-          'linux/nacl_timestamp.c',
+          'posix/condition_variable.c',
+          'posix/lock.c',
+          'posix/nacl_exit.c',
+          'posix/nacl_find_addrsp.c',
+          'posix/nacl_host_desc.c',
+          'posix/nacl_secure_random.c',
+          'posix/nacl_thread_id.c',
+          'posix/nacl_threads.c',
+          'posix/nacl_time.c',
+          'posix/nacl_timestamp.c',
         ],
       }],
       ['OS=="mac"', {
         'platform_sources': [
-          'linux/condition_variable.c',
-          'linux/lock.c',
-          'linux/nacl_exit.c',
-          'linux/nacl_find_addrsp.c',
-          'linux/nacl_host_desc.c',
-          'linux/nacl_secure_random.c',
-          'linux/nacl_thread_id.c',
-          'linux/nacl_threads.c',
-          'linux/nacl_time.c',
-          'linux/nacl_timestamp.c',
           'osx/nacl_clock.c',
           'osx/nacl_host_dir.c',
           'osx/nacl_semaphore.c',
           'osx/strnlen_osx.c',
+          'posix/condition_variable.c',
+          'posix/lock.c',
+          'posix/nacl_exit.c',
+          'posix/nacl_find_addrsp.c',
+          'posix/nacl_host_desc.c',
+          'posix/nacl_secure_random.c',
+          'posix/nacl_thread_id.c',
+          'posix/nacl_threads.c',
+          'posix/nacl_time.c',
+          'posix/nacl_timestamp.c',
         ],
       }],
       ['OS=="win"', {
@@ -184,12 +184,12 @@
         'sources': [
           'nacl_check.c',
           'nacl_log.c',
-          'linux/condition_variable.c',
-          'linux/lock.c',
-          'linux/nacl_exit.c',
-          'linux/nacl_thread_id.c',
-          'linux/nacl_threads.c',
-          'linux/nacl_timestamp.c',
+          'posix/condition_variable.c',
+          'posix/lock.c',
+          'posix/nacl_exit.c',
+          'posix/nacl_thread_id.c',
+          'posix/nacl_threads.c',
+          'posix/nacl_timestamp.c',
           'nacl_sync_checked.c',
           'refcount_base.cc',
         ]

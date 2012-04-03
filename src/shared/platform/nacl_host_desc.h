@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -16,7 +16,7 @@
 #include "native_client/src/shared/platform/nacl_sync.h"
 
 #if NACL_LINUX || NACL_OSX
-# include "native_client/src/shared/platform/linux/nacl_host_desc_types.h"
+# include "native_client/src/shared/platform/posix/nacl_host_desc_types.h"
 #elif NACL_WINDOWS
 # include "native_client/src/shared/platform/win/nacl_host_desc_types.h"
 #endif

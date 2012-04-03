@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -15,7 +15,7 @@
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/nacl_time.h"
-#include "native_client/src/shared/platform/linux/nacl_time_types.h"
+#include "native_client/src/shared/platform/posix/nacl_time_types.h"
 
 #include "native_client/src/trusted/service_runtime/linux/nacl_syscall_inl.h"
 

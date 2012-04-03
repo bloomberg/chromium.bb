@@ -13,12 +13,12 @@ if env.Bit('bitcode') and env.Bit('nacl_glibc'):
 platform_inputs = [
     'nacl_check.c',
     'nacl_log.c',
-    'linux/condition_variable.c',
-    'linux/lock.c',
-    'linux/nacl_exit.c',
-    'linux/nacl_thread_id.c',
-    'linux/nacl_threads.c',
-    'linux/nacl_timestamp.c',
+    'posix/condition_variable.c',
+    'posix/lock.c',
+    'posix/nacl_exit.c',
+    'posix/nacl_thread_id.c',
+    'posix/nacl_threads.c',
+    'posix/nacl_timestamp.c',
     'nacl_sync_checked.c',
     'refcount_base.cc',
     ]

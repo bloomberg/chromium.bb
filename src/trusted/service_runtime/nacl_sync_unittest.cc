@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include "native_client/src/include/portability.h"
@@ -13,7 +13,7 @@
 #if NACL_WINDOWS
 # include "native_client/src/shared/platform/win/condition_variable.h"
 #elif NACL_LINUX || NACL_OSX
-# include "native_client/src/shared/platform/linux/condition_variable.h"
+# include "native_client/src/shared/platform/posix/condition_variable.h"
 #endif
 
 #include "gtest/gtest.h"

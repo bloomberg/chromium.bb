@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -23,7 +23,7 @@
 EXTERN_C_BEGIN
 
 #if NACL_LINUX || NACL_OSX || defined(__native_client__)
-# include "native_client/src/shared/platform/linux/nacl_threads_types.h"
+# include "native_client/src/shared/platform/posix/nacl_threads_types.h"
 #elif NACL_WINDOWS
 /*
  * Needed for WINAPI.

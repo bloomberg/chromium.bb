@@ -1,6 +1,6 @@
 # -*- python -*-
 #
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -51,35 +51,35 @@ if env.Bit('windows'):
 elif env.Bit('linux'):
   platform_inputs += [
     'linux/nacl_clock.c',
-    'linux/nacl_exit.c',
-    'linux/nacl_find_addrsp.c',
-    'linux/nacl_host_desc.c',
     'linux/nacl_host_dir.c',
-    'linux/nacl_secure_random.c',
     'linux/nacl_semaphore.c',
-    'linux/nacl_thread_id.c',
-    'linux/nacl_threads.c',
-    'linux/nacl_time.c',
-    'linux/nacl_timestamp.c',
-    'linux/condition_variable.c',
-    'linux/lock.c',
+    'posix/condition_variable.c',
+    'posix/lock.c',
+    'posix/nacl_exit.c',
+    'posix/nacl_find_addrsp.c',
+    'posix/nacl_host_desc.c',
+    'posix/nacl_secure_random.c',
+    'posix/nacl_thread_id.c',
+    'posix/nacl_threads.c',
+    'posix/nacl_time.c',
+    'posix/nacl_timestamp.c',
     ]
 elif env.Bit('mac'):
   platform_inputs += [
     'osx/nacl_clock.c',
-    'linux/nacl_exit.c',
-    'linux/nacl_find_addrsp.c',
-    'linux/nacl_host_desc.c',
-    'linux/nacl_secure_random.c',
-    'linux/nacl_thread_id.c',
-    'linux/nacl_threads.c',
-    'linux/nacl_time.c',
-    'linux/nacl_timestamp.c',
     'osx/nacl_host_dir.c',
     'osx/nacl_semaphore.c',
     'osx/strnlen_osx.c',
-    'linux/condition_variable.c',
-    'linux/lock.c',
+    'posix/condition_variable.c',
+    'posix/lock.c',
+    'posix/nacl_exit.c',
+    'posix/nacl_find_addrsp.c',
+    'posix/nacl_host_desc.c',
+    'posix/nacl_secure_random.c',
+    'posix/nacl_thread_id.c',
+    'posix/nacl_threads.c',
+    'posix/nacl_time.c',
+    'posix/nacl_timestamp.c',
     ]
   time_slop_args += [ '-s', '10' ]
 

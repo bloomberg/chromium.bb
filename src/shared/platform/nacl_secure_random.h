@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -19,7 +19,7 @@
  * TODO(bsy): is there another way to do this?
  */
 #if NACL_LINUX || NACL_OSX
-# include "native_client/src/shared/platform/linux/nacl_secure_random_types.h"
+# include "native_client/src/shared/platform/posix/nacl_secure_random_types.h"
 #elif NACL_WINDOWS
 # include "native_client/src/shared/platform/win/nacl_secure_random_types.h"
 #endif
