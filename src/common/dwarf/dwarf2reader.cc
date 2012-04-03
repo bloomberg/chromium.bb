@@ -1857,20 +1857,14 @@ bool CallFrameInfo::ReadCIEFields(CIE *cie) {
   cie->version = reader_->ReadOneByte(cursor);
   cursor++;
 
-  // If we don't recognize the version, we can't parse any more fields
-  // of the CIE. For DWARF CFI, we handle versions 1 through 3 (there
-  // was never a version 2 of CFI data). For .eh_frame, we handle only
-  // version 1.
-  if (eh_frame_) {
-    if (cie->version != 1) {
-      reporter_->UnrecognizedVersion(cie->offset, cie->version);
-      return false;
-    }
-  } else {
-    if (cie->version < 1 || cie->version > 3) {
-      reporter_->UnrecognizedVersion(cie->offset, cie->version);
-      return false;
-    }
+  // If we don't recognize the version, we can't parse any more fields of the
+  // CIE. For DWARF CFI, we handle versions 1 through 3 (there was never a
+  // version 2 of CFI data). For .eh_frame, we handle versions 1 and 3 as well;
+  // the difference between those versions seems to be the same as for
+  // .debug_frame.
+  if (cie->version < 1 || cie->version > 3) {
+    reporter_->UnrecognizedVersion(cie->offset, cie->version);
+    return false;
   }
 
   const char *augmentation_start = cursor;
