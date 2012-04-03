@@ -13,6 +13,7 @@
 #include "chrome/browser/sync/profile_sync_components_factory.h"
 
 class CommandLine;
+class ExtensionSystem;
 class Profile;
 
 class ProfileSyncComponentsFactoryImpl : public ProfileSyncComponentsFactory {
@@ -62,6 +63,9 @@ class ProfileSyncComponentsFactoryImpl : public ProfileSyncComponentsFactory {
  private:
   Profile* profile_;
   CommandLine* command_line_;
+  // Set on the UI thread (since ExtensionSystemFactory is non-threadsafe);
+  // accessed on both the UI and FILE threads in GetSyncableServiceForType.
+  ExtensionSystem* extension_system_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileSyncComponentsFactoryImpl);
 };

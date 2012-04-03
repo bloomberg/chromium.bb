@@ -6,6 +6,8 @@
 #include "build/build_config.h"
 #include "chrome/browser/extensions/app_notification_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/extensions/settings/settings_frontend.h"
 #include "chrome/browser/prefs/pref_model_associator.h"
 #include "chrome/browser/profiles/profile.h"
@@ -83,7 +85,9 @@ using content::BrowserThread;
 ProfileSyncComponentsFactoryImpl::ProfileSyncComponentsFactoryImpl(
     Profile* profile, CommandLine* command_line)
     : profile_(profile),
-      command_line_(command_line) {
+      command_line_(command_line),
+      extension_system_(
+          ExtensionSystemFactory::GetForProfile(profile)) {
 }
 
 void ProfileSyncComponentsFactoryImpl::RegisterDataTypes(
@@ -234,16 +238,16 @@ base::WeakPtr<SyncableService> ProfileSyncComponentsFactoryImpl::
     }
     case syncable::APPS:
     case syncable::EXTENSIONS:
-      return profile_->GetExtensionService()->AsWeakPtr();
+      return extension_system_->extension_service()->AsWeakPtr();
     case syncable::SEARCH_ENGINES:
       return TemplateURLServiceFactory::GetForProfile(profile_)->AsWeakPtr();
     case syncable::APP_SETTINGS:
     case syncable::EXTENSION_SETTINGS:
-      return profile_->GetExtensionService()->settings_frontend()->
+      return extension_system_->extension_service()->settings_frontend()->
           GetBackendForSync(type)->AsWeakPtr();
     case syncable::APP_NOTIFICATIONS:
-      return profile_->GetExtensionService()->app_notification_manager()->
-          AsWeakPtr();
+      return extension_system_->extension_service()->
+          app_notification_manager()->AsWeakPtr();
     default:
       // The following datatypes still need to be transitioned to the
       // SyncableService API:
