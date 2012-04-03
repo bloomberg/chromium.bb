@@ -32,7 +32,7 @@ class PiGenerator : public pp::Instance {
 
   // Update the graphics context to the new size, and regenerate |pixel_buffer_|
   // to fit the new size as well.
-  virtual void DidChangeView(const pp::Rect& position, const pp::Rect& clip);
+  virtual void DidChangeView(const pp::View& view);
 
   // Called by the browser to handle the postMessage() call in Javascript.
   // The message in this case is expected to contain the string 'paint', and

@@ -179,11 +179,10 @@ bool Pong::Init(uint32_t argc, const char* argn[], const char* argv[]) {
   return true;
 }
 
-void Pong::DidChangeView(const pp::Rect& position,
-                         const pp::Rect& clip) {
+void Pong::DidChangeView(const pp::View& view) {
   pp::Size view_size = view_->GetSize();
   const bool view_was_empty = view_size.IsEmpty();
-  view_->UpdateView(position, clip, this);
+  view_->UpdateView(view.GetRect(), view.GetClipRect(), this);
   if (view_was_empty)
     ResetPositions();
 }

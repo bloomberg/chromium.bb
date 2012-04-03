@@ -96,10 +96,9 @@ PiGenerator::~PiGenerator() {
   pthread_mutex_destroy(&pixel_buffer_mutex_);
 }
 
-void PiGenerator::DidChangeView(const pp::Rect& position,
-                                const pp::Rect& clip) {
-  if (position.size().width() == width() &&
-      position.size().height() == height())
+void PiGenerator::DidChangeView(const pp::View& view) {
+  pp::Rect position = view.GetRect();
+  if (position.size() == pixel_buffer_->size())
     return;  // Size didn't change, no need to update anything.
 
   // Create a new device context with the new size.

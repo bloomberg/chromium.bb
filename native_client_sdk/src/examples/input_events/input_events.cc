@@ -112,8 +112,7 @@ class EventInstance : public pp::Instance {
   }
 
   /// Scrolling the mouse wheel causes a DidChangeView event.
-  void DidChangeView(const pp::Rect& position,
-                     const pp::Rect& clip) {
+  void DidChangeView(const pp::View& view) {
     PostMessage(pp::Var(kDidChangeView));
   }
 

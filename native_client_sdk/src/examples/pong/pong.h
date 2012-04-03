@@ -41,7 +41,7 @@ class Pong : public pp::Instance {
 
   // Update the graphics context to the new size, and regenerate |pixel_buffer_|
   // to fit the new size as well.
-  virtual void DidChangeView(const pp::Rect& position, const pp::Rect& clip);
+  virtual void DidChangeView(const pp::View& view);
 
   virtual bool HandleInputEvent(const pp::InputEvent& event);
 

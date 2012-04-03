@@ -30,7 +30,7 @@ class Tumbler : public pp::Instance {
   virtual bool Init(uint32_t argc, const char* argn[], const char* argv[]);
 
   // Called whenever the in-browser window changes size.
-  virtual void DidChangeView(const pp::Rect& position, const pp::Rect& clip);
+  virtual void DidChangeView(const pp::View& view);
 
   // Called by the browser to handle the postMessage() call in Javascript.
   virtual void HandleMessage(const pp::Var& message);

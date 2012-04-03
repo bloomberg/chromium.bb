@@ -46,8 +46,8 @@ Gamepad::~Gamepad() {
   delete pixel_buffer_;
 }
 
-void Gamepad::DidChangeView(const pp::Rect& position,
-                                const pp::Rect& clip) {
+void Gamepad::DidChangeView(const pp::View& view) {
+  pp::Rect position = view.GetRect();
   if (position.size().width() == width() &&
       position.size().height() == height())
     return;  // Size didn't change, no need to update anything.

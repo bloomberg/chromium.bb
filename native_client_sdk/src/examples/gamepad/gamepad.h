@@ -29,7 +29,7 @@ class Gamepad : public pp::Instance {
 
   // Update the graphics context to the new size, and regenerate |pixel_buffer_|
   // to fit the new size as well.
-  virtual void DidChangeView(const pp::Rect& position, const pp::Rect& clip);
+  virtual void DidChangeView(const pp::View& view);
 
   // Flushes its contents of |pixel_buffer_| to the 2D graphics context.
   void Paint();

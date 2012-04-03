@@ -15,6 +15,7 @@
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/rect.h"
+#include "ppapi/cpp/size.h"
 #include "ppapi/cpp/var.h"
 #include "ppapi/utility/completion_callback_factory.h"
 
@@ -25,8 +26,6 @@ class MouseLockInstance : public pp::Instance, public pp::MouseLock {
   explicit MouseLockInstance(PP_Instance instance)
       : pp::Instance(instance),
         pp::MouseLock(this),
-        width_(0),
-        height_(0),
         mouse_locked_(false),
         waiting_for_flush_completion_(false),
         callback_factory_(this),
@@ -43,7 +42,7 @@ class MouseLockInstance : public pp::Instance, public pp::MouseLock {
   virtual bool HandleInputEvent(const pp::InputEvent& event);
 
   // Called whenever the in-browser window changes size.
-  virtual void DidChangeView(const pp::Rect& position, const pp::Rect& clip);
+  virtual void DidChangeView(const pp::View& view);
 
   // Called by the browser when mouselock is lost.  This happens when the NaCl
   // module exits fullscreen mode.
@@ -71,7 +70,7 @@ class MouseLockInstance : public pp::Instance, public pp::MouseLock {
 
   // Create a new pp::ImageData and paint the graphics that represent the mouse
   // movement in it.  Return the new pp::ImageData.
-  pp::ImageData PaintImage(int width, int height);
+  pp::ImageData PaintImage(const pp::Size& size);
 
   // Fill the image with the backgroud color.
   void ClearToBackground(pp::ImageData* image);
@@ -86,8 +85,7 @@ class MouseLockInstance : public pp::Instance, public pp::MouseLock {
   // Print the printf-style format to the "console" via PostMessage.
   void Log(const char* format, ...);
 
-  int width_;
-  int height_;
+  pp::Size size_;
 
   bool mouse_locked_;
   pp::Point mouse_movement_;

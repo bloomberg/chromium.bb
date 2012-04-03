@@ -89,7 +89,8 @@ void Tumbler::HandleMessage(const pp::Var& message) {
   scripting_bridge_.InvokeMethod(message.AsString());
 }
 
-void Tumbler::DidChangeView(const pp::Rect& position, const pp::Rect& clip) {
+void Tumbler::DidChangeView(const pp::View& view) {
+  pp::Rect position = view.GetRect();
   int cube_width = cube_ ? cube_->width() : 0;
   int cube_height = cube_ ? cube_->height() : 0;
   if (position.size().width() == cube_width &&

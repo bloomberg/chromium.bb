@@ -36,7 +36,7 @@ class Tumbler : public pp::Instance {
   virtual bool Init(uint32_t argc, const char* argn[], const char* argv[]);
 
   // Called whenever the in-browser window changes size.
-  virtual void DidChangeView(const pp::Rect& position, const pp::Rect& clip);
+  virtual void DidChangeView(const pp::View& view);
 
   // Called by the browser when the NaCl canvas gets or loses focus.
   virtual void DidChangeFocus(bool has_focus);
