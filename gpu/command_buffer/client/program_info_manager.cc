@@ -1,9 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "../client/program_info_manager.h"
-#include "../client/atomicops.h"
 #include "../client/gles2_implementation.h"
 
 #include <map>
@@ -194,8 +193,6 @@ class CachedProgramInfoManager : public ProgramInfoManager {
   typedef std::map<GLuint, ProgramInfo> ProgramInfoMap;
 
   ProgramInfoMap program_infos_;
-
-  mutable Lock lock_;
 };
 
 CachedProgramInfoManager::ProgramInfo::UniformInfo::UniformInfo(
@@ -375,7 +372,6 @@ CachedProgramInfoManager::ProgramInfo*
 }
 
 void CachedProgramInfoManager::CreateInfo(GLuint program) {
-  AutoLock auto_lock(lock_);
   DeleteInfo(program);
   std::pair<ProgramInfoMap::iterator, bool> result =
       program_infos_.insert(std::make_pair(program, ProgramInfo()));
@@ -389,7 +385,6 @@ void CachedProgramInfoManager::DeleteInfo(GLuint program) {
 
 bool CachedProgramInfoManager::GetProgramiv(
     GLES2Implementation* gl, GLuint program, GLenum pname, GLint* params) {
-  AutoLock auto_lock(lock_);
   ProgramInfo* info = GetProgramInfo(gl, program);
   if (!info) {
     return false;
@@ -399,7 +394,6 @@ bool CachedProgramInfoManager::GetProgramiv(
 
 GLint CachedProgramInfoManager::GetAttribLocation(
     GLES2Implementation* gl, GLuint program, const char* name) {
-  AutoLock auto_lock(lock_);
   ProgramInfo* info = GetProgramInfo(gl, program);
   if (info) {
     return info->GetAttribLocation(name);
@@ -409,7 +403,6 @@ GLint CachedProgramInfoManager::GetAttribLocation(
 
 GLint CachedProgramInfoManager::GetUniformLocation(
     GLES2Implementation* gl, GLuint program, const char* name) {
-  AutoLock auto_lock(lock_);
   ProgramInfo* info = GetProgramInfo(gl, program);
   if (info) {
     return info->GetUniformLocation(name);
@@ -421,7 +414,6 @@ bool CachedProgramInfoManager::GetActiveAttrib(
     GLES2Implementation* gl,
     GLuint program, GLuint index, GLsizei bufsize, GLsizei* length,
     GLint* size, GLenum* type, char* name) {
-  AutoLock auto_lock(lock_);
   ProgramInfo* info = GetProgramInfo(gl, program);
   if (info) {
     const ProgramInfo::VertexAttribInfo* attrib_info =
@@ -456,7 +448,6 @@ bool CachedProgramInfoManager::GetActiveUniform(
     GLES2Implementation* gl,
     GLuint program, GLuint index, GLsizei bufsize, GLsizei* length,
     GLint* size, GLenum* type, char* name) {
-  AutoLock auto_lock(lock_);
   ProgramInfo* info = GetProgramInfo(gl, program);
   if (info) {
     const ProgramInfo::UniformInfo* uniform_info = info->GetUniformInfo(index);

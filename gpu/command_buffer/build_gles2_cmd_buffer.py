@@ -2761,8 +2761,8 @@ class GENnHandler(TypeHandler):
     for arg in func.GetOriginalArgs():
       arg.WriteClientSideValidationCode(file, func)
     code = """  GPU_CLIENT_SINGLE_THREAD_CHECK();
-  GetIdHandler(id_namespaces::k%(resource_types)s)->
-      MakeIds(this, 0, %(args)s);
+  id_handlers_[id_namespaces::k%(resource_types)s]->
+      MakeIds(0, %(args)s);
   helper_->%(name)sImmediate(%(args)s);
 %(log_code)s
 }
@@ -3011,9 +3011,8 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
     for arg in func.GetOriginalArgs():
       arg.WriteClientSideValidationCode(file, func)
     file.Write("  GLuint client_id;\n")
-    file.Write(
-        "  GetIdHandler(id_namespaces::kProgramsAndShaders)->\n")
-    file.Write("      MakeIds(this, 0, 1, &client_id);\n")
+    file.Write("  id_handlers_[id_namespaces::kProgramsAndShaders]->\n")
+    file.Write("      MakeIds(0, 1, &client_id);\n")
     file.Write("  helper_->%s(%s);\n" %
                (func.name, func.MakeCmdArgString("")))
     file.Write('  GPU_CLIENT_LOG("returned " << client_id);\n')

@@ -19,7 +19,6 @@
 #include "../client/gles2_cmd_helper.h"
 #include "../client/query_tracker.h"
 #include "../client/ring_buffer.h"
-#include "../client/share_group.h"
 #include "gles2_impl_export.h"
 
 #if !defined(NDEBUG) && !defined(__native_client__) && !defined(GLES2_CONFORMANCE_TESTS)  // NOLINT
@@ -84,6 +83,24 @@ class TransferBufferInterface;
 namespace gles2 {
 
 class ClientSideBufferHelper;
+class ProgramInfoManager;
+class ShareGroup;
+
+// Base class for IdHandlers
+class IdHandlerInterface {
+ public:
+  IdHandlerInterface() { }
+  virtual ~IdHandlerInterface() { }
+
+  // Makes some ids at or above id_offset.
+  virtual void MakeIds(GLuint id_offset, GLsizei n, GLuint* ids) = 0;
+
+  // Frees some ids.
+  virtual bool FreeIds(GLsizei n, const GLuint* ids) = 0;
+
+  // Marks an id as used for glBind functions. id = 0 does nothing.
+  virtual bool MarkAsUsedForBind(GLuint id) = 0;
+};
 
 // This class emulates GLES2 over command buffers. It can be used by a client
 // program so that the program does not need deal with shared memory and command
@@ -192,8 +209,15 @@ class GLES2_IMPL_EXPORT GLES2Implementation {
       GLuint program, GLuint index, GLsizei bufsize, GLsizei* length,
       GLint* size, GLenum* type, char* name);
 
-  GLuint MakeTextureId();
-  void FreeTextureId(GLuint id);
+  GLuint MakeTextureId() {
+    GLuint id;
+    id_handlers_[id_namespaces::kTextures]->MakeIds(0, 1, &id);
+    return id;
+  }
+
+  void FreeTextureId(GLuint id) {
+    id_handlers_[id_namespaces::kTextures]->FreeIds(1, &id);
+  }
 
   void SetSharedMemoryChunkSizeMultiple(unsigned int multiple);
 
@@ -430,11 +454,10 @@ class GLES2_IMPL_EXPORT GLES2Implementation {
 
   bool IsExtensionAvailable(const char* ext);
 
-  IdHandlerInterface* GetIdHandler(int id_namespace) const;
-
   GLES2Util util_;
   GLES2CmdHelper* helper_;
   TransferBufferInterface* transfer_buffer_;
+  scoped_ptr<IdHandlerInterface> id_handlers_[id_namespaces::kNumIdNamespaces];
   std::string last_error_;
 
   std::queue<int32> swap_buffers_tokens_;
@@ -486,6 +509,11 @@ class GLES2_IMPL_EXPORT GLES2Implementation {
   // Whether or not to print debugging info.
   bool debug_;
 
+  // Whether or not this context is sharing resources.
+  bool sharing_resources_;
+
+  bool bind_generates_resource_;
+
   // Used to check for single threaded access.
   int use_count_;
 
@@ -505,6 +533,8 @@ class GLES2_IMPL_EXPORT GLES2Implementation {
   MappedTextureMap mapped_textures_;
 
   scoped_ptr<MappedMemoryManager> mapped_memory_;
+
+  scoped_ptr<ProgramInfoManager> program_info_manager_;
 
   scoped_refptr<ShareGroup> share_group_;
 
