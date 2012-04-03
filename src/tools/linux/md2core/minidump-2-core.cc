@@ -48,7 +48,6 @@
 
 #include "client/linux/minidump_writer/minidump_extension_linux.h"
 #include "common/linux/memory_mapped_file.h"
-#include "google_breakpad/common/minidump_cpu_x86.h"
 #include "google_breakpad/common/minidump_format.h"
 #include "third_party/lss/linux_syscall_support.h"
 #include "tools/linux/md2core/minidump_memory_range.h"

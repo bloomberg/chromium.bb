@@ -64,8 +64,6 @@
 
 #include "client/minidump_file_writer.h"
 #include "google_breakpad/common/minidump_format.h"
-#include "google_breakpad/common/minidump_cpu_amd64.h"
-#include "google_breakpad/common/minidump_cpu_x86.h"
 
 #if defined(__ANDROID__)
 #include "client/linux/android_link.h"
