@@ -359,6 +359,25 @@ class PngReadStructDestroyer {
  private:
   png_struct** ps_;
   png_info** pi_;
+  DISALLOW_COPY_AND_ASSIGN(PngReadStructDestroyer);
+};
+
+// Automatically destroys the given write structs on destruction to make
+// cleanup and error handling code cleaner.
+class PngWriteStructDestroyer {
+ public:
+  explicit PngWriteStructDestroyer(png_struct** ps) : ps_(ps), pi_(0) {
+  }
+  ~PngWriteStructDestroyer() {
+    png_destroy_write_struct(ps_, pi_);
+  }
+  void SetInfoStruct(png_info** pi) {
+    pi_ = pi;
+  }
+ private:
+  png_struct** ps_;
+  png_info** pi_;
+  DISALLOW_COPY_AND_ASSIGN(PngWriteStructDestroyer);
 };
 
 bool BuildPNGStruct(const unsigned char* input, size_t input_size,
@@ -746,18 +765,17 @@ bool PNGCodec::EncodeWithCompressionLevel(const unsigned char* input,
                                                 NULL, NULL, NULL);
   if (!png_ptr)
     return false;
+  PngWriteStructDestroyer destroyer(&png_ptr);
   png_info* info_ptr = png_create_info_struct(png_ptr);
-  if (!info_ptr) {
-    png_destroy_write_struct(&png_ptr, NULL);
+  if (!info_ptr)
     return false;
-  }
+  destroyer.SetInfoStruct(&info_ptr);
 
   PngEncoderState state(output);
   bool success = DoLibpngWrite(png_ptr, info_ptr, &state,
                                size.width(), size.height(), row_byte_width,
                                input, compression_level, png_output_color_type,
                                output_color_components, converter, comments);
-  png_destroy_write_struct(&png_ptr, &info_ptr);
 
   return success;
 }
