@@ -1209,32 +1209,6 @@
    Heapcheck:Leak
    fun:DownloadManager::OnPathExistenceAvailable
 }
-# These are temporary suppressions for the CrOS bot to be used until the stacks are fixed.
-{
-   bug_90013_a
-   Heapcheck:Leak
-   ...
-   fun:gtk_views_fixed_new
-}
-{
-   bug_90013_b
-   Heapcheck:Leak
-   ...
-   fun:g_type_class_meta_marshal
-}
-{
-   bug_90013_c
-   Heapcheck:Leak
-   ...
-   fun:find_invisible_char
-}
-# This one is the most scary
-{
-   bug_90013_e
-   Heapcheck:Leak
-   ...
-   fun:??
-}
 {
    bug_91491
    Heapcheck:Leak
@@ -1718,17 +1692,6 @@
    fun:FilePath::Append
    fun:FilePath::AppendASCII
    fun:TraceSubscriberStdioTest_CanWriteDataToFile_Test::TestBody
-}
-{
-   bug_116923
-   Heapcheck:Leak
-   fun:AppLauncherButton
-   fun:ash::internal::LauncherView::CreateViewForItem
-   fun:ash::internal::LauncherView::Init
-   fun:Launcher
-   fun:ash::Shell::Init
-   fun:ash::Shell::CreateInstance
-   fun:chromeos::DesktopNotificationsTest::SetUp
 }
 {
    bug_117389
