@@ -16,6 +16,7 @@
 #include "base/json/json_writer.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
+#include "base/metrics/histogram.h"
 #include "base/platform_file.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -1822,8 +1823,12 @@ void GDataFileSystem::OnGetDocuments(
   // the user as soon as the first chunk arrives, rather than waiting for all
   // chunk to arrive.
   if (initial_read || !has_more_data) {
+    // Record the file statistics if we are to update the directory with the
+    // entire feed.
+    const bool should_record_statistics = !has_more_data;
     error = UpdateDirectoryWithDocumentFeed(feed_list.get(),
-                                            FROM_SERVER);
+                                            FROM_SERVER,
+                                            should_record_statistics);
     if (error != base::PLATFORM_FILE_OK) {
       if (!callback.is_null()) {
         callback.Run(error, FilePath(),
@@ -1924,7 +1929,10 @@ void GDataFileSystem::OnLoadRootFeed(
   if (*error == base::PLATFORM_FILE_OK) {
     *error = UpdateDirectoryWithDocumentFeed(
         feed_list,
-        FROM_CACHE);
+        FROM_CACHE,
+        // We don't record statistics from the feed from the cache, as we do
+        // it from the feed from the server.
+        false);
   }
 
   // If this was the remaining part of cached feed, there is nothing else
@@ -2305,7 +2313,8 @@ DocumentFeed* GDataFileSystem::ParseDocumentFeed(base::Value* feed_data) {
 
 base::PlatformFileError GDataFileSystem::UpdateDirectoryWithDocumentFeed(
     ListValue* feed_list,
-    ContentOrigin origin) {
+    ContentOrigin origin,
+    bool should_record_statistics) {
   DVLOG(1) << "Updating directory with feed from "
            << (origin == FROM_CACHE ? "cache" : "web server");
 
@@ -2328,6 +2337,8 @@ base::PlatformFileError GDataFileSystem::UpdateDirectoryWithDocumentFeed(
   bool first_feed = true;
   base::PlatformFileError error = base::PLATFORM_FILE_OK;
 
+  int num_regular_files = 0;
+  int num_hosted_documents = 0;
   for (ListValue::const_iterator feeds_iter = feed_list->begin();
        feeds_iter != feed_list->end(); ++feeds_iter) {
     scoped_ptr<DocumentFeed> feed(ParseDocumentFeed(*feeds_iter));
@@ -2355,6 +2366,14 @@ base::PlatformFileError GDataFileSystem::UpdateDirectoryWithDocumentFeed(
       // Some document entries don't map into files (i.e. sites).
       if (!file)
         continue;
+      // Count the number of files.
+      GDataFile* as_file = file->AsGDataFile();
+      if (as_file) {
+        if (as_file->is_hosted_document())
+          ++num_hosted_documents;
+        else
+          ++num_regular_files;
+      }
 
       GURL parent_url;
       const Link* parent_link = doc->GetLinkByType(Link::PARENT);
@@ -2420,6 +2439,14 @@ base::PlatformFileError GDataFileSystem::UpdateDirectoryWithDocumentFeed(
     NotifyDirectoryChanged(root_->GetFilePath());
   if (should_notify_initial_load)
     NotifyInitialLoadFinished();
+
+  if (should_record_statistics) {
+    const int num_total_files = num_hosted_documents + num_regular_files;
+    UMA_HISTOGRAM_COUNTS("GData.NumberOfRegularFiles", num_regular_files);
+    UMA_HISTOGRAM_COUNTS("GData.NumberOfHostedDocuments",
+                         num_hosted_documents);
+    UMA_HISTOGRAM_COUNTS("GData.NumberOfTotalFiles", num_total_files);
+  }
 
   return base::PLATFORM_FILE_OK;
 }
