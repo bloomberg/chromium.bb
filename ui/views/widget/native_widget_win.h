@@ -486,8 +486,8 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
   // Lock or unlock the window from being able to redraw itself in response to
   // updates to its invalid region.
   class ScopedRedrawLock;
-  void LockUpdates();
-  void UnlockUpdates();
+  void LockUpdates(bool force);
+  void UnlockUpdates(bool force);
 
   // Determines whether the delegate expects the client size or the window size.
   bool WidgetSizeIsClientSize() const;

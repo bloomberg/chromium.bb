@@ -360,14 +360,15 @@ class NativeWidgetWin::ScopedRedrawLock {
     : widget_(widget),
       native_view_(widget_->GetNativeView()),
       was_visible_(widget_->IsVisible()),
-      cancel_unlock_(false) {
+      cancel_unlock_(false),
+      force_(!(widget_->GetWindowLong(GWL_STYLE) & WS_CAPTION)) {
     if (was_visible_ && ::IsWindow(native_view_))
-      widget_->LockUpdates();
+      widget_->LockUpdates(force_);
   }
 
   ~ScopedRedrawLock() {
     if (!cancel_unlock_ && was_visible_ && ::IsWindow(native_view_))
-      widget_->UnlockUpdates();
+      widget_->UnlockUpdates(force_);
   }
 
   // Cancel the unlock operation, call this if the Widget is being destroyed.
@@ -382,6 +383,8 @@ class NativeWidgetWin::ScopedRedrawLock {
   bool was_visible_;
   // A flag indicating that the unlock operation was canceled.
   bool cancel_unlock_;
+  // If true, perform the redraw lock regardless of Aero state.
+  bool force_;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1214,7 +1217,7 @@ void NativeWidgetWin::OnActivateApp(BOOL active, DWORD thread_id) {
     // disables inactive rendering now.
     delegate_->EnableInactiveRendering();
     // Also update the native frame if it is rendering the non-client area.
-    if (GetWidget()->ShouldUseNativeFrame())
+    if (!remove_standard_frame_ && GetWidget()->ShouldUseNativeFrame())
       DefWindowProcWithRedrawLock(WM_NCACTIVATE, FALSE, 0);
   }
 }
@@ -1304,8 +1307,10 @@ LRESULT NativeWidgetWin::OnCreate(CREATESTRUCT* create_struct) {
   // We should attach IMEs only when we need to input CJK strings.
   ImmAssociateContextEx(hwnd(), NULL, 0);
 
-  if (remove_standard_frame_)
+  if (remove_standard_frame_) {
+    SetWindowLong(GWL_STYLE, GetWindowLong(GWL_STYLE) & ~WS_CAPTION);
     SendFrameChanged(GetNativeView());
+  }
 
   // We need to allow the delegate to size its contents since the window may not
   // receive a size notification when its initial bounds are specified at window
@@ -1656,8 +1661,8 @@ LRESULT NativeWidgetWin::OnNCActivate(BOOL active) {
     return TRUE;
   }
 
-  return DefWindowProcWithRedrawLock(WM_NCACTIVATE,
-                                     inactive_rendering_disabled || active, 0);
+  return DefWindowProcWithRedrawLock(
+      WM_NCACTIVATE, inactive_rendering_disabled || active, 0);
 }
 
 LRESULT NativeWidgetWin::OnNCCalcSize(BOOL mode, LPARAM l_param) {
@@ -2367,19 +2372,19 @@ void NativeWidgetWin::RedrawLayeredWindowContents() {
   skia::EndPlatformPaint(layered_window_contents_->sk_canvas());
 }
 
-void NativeWidgetWin::LockUpdates() {
+void NativeWidgetWin::LockUpdates(bool force) {
   // We skip locked updates when Aero is on for two reasons:
   // 1. Because it isn't necessary
   // 2. Because toggling the WS_VISIBLE flag may occur while the GPU process is
   //    attempting to present a child window's backbuffer onscreen. When these
   //    two actions race with one another, the child window will either flicker
   //    or will simply stop updating entirely.
-  if (!IsAeroGlassEnabled() && ++lock_updates_count_ == 1)
+  if ((force || !IsAeroGlassEnabled()) && ++lock_updates_count_ == 1)
     SetWindowLong(GWL_STYLE, GetWindowLong(GWL_STYLE) & ~WS_VISIBLE);
 }
 
-void NativeWidgetWin::UnlockUpdates() {
-  if (!IsAeroGlassEnabled() && --lock_updates_count_ <= 0) {
+void NativeWidgetWin::UnlockUpdates(bool force) {
+  if ((force || !IsAeroGlassEnabled()) && --lock_updates_count_ <= 0) {
     SetWindowLong(GWL_STYLE, GetWindowLong(GWL_STYLE) | WS_VISIBLE);
     lock_updates_count_ = 0;
   }
