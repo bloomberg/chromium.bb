@@ -26,8 +26,7 @@ class CollectedCookiesWindowControllerTest
   content::TestBrowserThread ui_thread_;
 };
 
-// Test disabled. See crbug.com/119542
-TEST_F(CollectedCookiesWindowControllerTest, DISABLED_Construction) {
+TEST_F(CollectedCookiesWindowControllerTest, Construction) {
   CollectedCookiesWindowController* controller =
       [[CollectedCookiesWindowController alloc]
           initWithTabContentsWrapper:contents_wrapper()];

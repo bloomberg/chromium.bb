@@ -131,7 +131,6 @@ class CannedBrowsingDataLocalStorageHelper
   virtual void StartFetching(
       const base::Callback<void(const std::list<LocalStorageInfo>&)>& callback)
           OVERRIDE;
-  virtual void CancelNotification() OVERRIDE {}
 
  private:
   virtual ~CannedBrowsingDataLocalStorageHelper();

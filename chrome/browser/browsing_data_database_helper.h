@@ -128,7 +128,6 @@ class CannedBrowsingDataDatabaseHelper : public BrowsingDataDatabaseHelper {
   virtual void StartFetching(
       const base::Callback<void(const std::list<DatabaseInfo>&)>& callback)
           OVERRIDE;
-  virtual void CancelNotification() OVERRIDE {}
 
  private:
   struct PendingDatabaseInfo {
