@@ -1049,13 +1049,6 @@ void NetworkMenu::ShowTabbedNetworkSettings(const Network* network) const {
   Browser* browser = Browser::GetOrCreateTabbedBrowser(
       ProfileManager::GetDefaultProfileOrOffTheRecord());
 
-  // In case of a VPN, show the config settings for the connected network.
-  if (network->type() == chromeos::TYPE_VPN) {
-    network = CrosLibrary::Get()->GetNetworkLibrary()->connected_network();
-    if (!network)
-      return;
-  }
-
   std::string network_name(network->name());
   if (network_name.empty() && network->type() == chromeos::TYPE_ETHERNET) {
     network_name = l10n_util::GetStringUTF8(
