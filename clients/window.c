@@ -2785,6 +2785,7 @@ fini_xkb(struct display *display)
 	xkb_free_keymap(display->xkb);
 }
 
+#ifdef HAVE_CAIRO_EGL
 static int
 init_egl(struct display *d)
 {
@@ -2872,6 +2873,7 @@ fini_egl(struct display *display)
 	eglTerminate(display->dpy);
 	eglReleaseThread();
 }
+#endif
 
 static int
 event_mask_update(uint32_t mask, void *data)
@@ -2927,8 +2929,10 @@ display_create(int argc, char *argv[])
 
 	/* Process connection events. */
 	wl_display_iterate(d->display, WL_DISPLAY_READABLE);
+#ifdef HAVE_CAIRO_EGL
 	if (init_egl(d) < 0)
 		return NULL;
+#endif
 
 	d->image_target_texture_2d =
 		(void *) eglGetProcAddress("glEGLImageTargetTexture2DOES");
@@ -2985,7 +2989,9 @@ display_destroy(struct display *display)
 	cairo_surface_destroy(display->shadow);
 	destroy_pointer_surfaces(display);
 
+#ifdef HAVE_CAIRO_EGL
 	fini_egl(display);
+#endif
 
 	if (display->shell)
 		wl_shell_destroy(display->shell);
