@@ -3407,6 +3407,7 @@ nonvariant_tests = [
     #### ALPHABETICALLY SORTED ####
     'tests/barebones/nacl.scons',
     'tests/chrome_extension/nacl.scons',
+    'tests/custom_desc/nacl.scons',
     'tests/exit_status/nacl.scons',
     'tests/imc_shm_mmap/nacl.scons',
     'tests/imc_sockets/nacl.scons',

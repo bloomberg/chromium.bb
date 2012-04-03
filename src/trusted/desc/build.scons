@@ -31,6 +31,7 @@ wrapper_obj = wrapper_env.DualObject('nacl_desc_wrapper.cc')
 nrd_lib_inputs = [
     'nacl_desc_base.c',
     'nacl_desc_cond.c',
+    'nacl_desc_custom.c',
     'nacl_desc_dir.c',
     'nacl_desc_effector_trusted_mem.c',
     'nacl_desc_imc.c',

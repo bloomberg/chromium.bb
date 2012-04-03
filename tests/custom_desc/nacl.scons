@@ -1,0 +1,55 @@
+# -*- python -*-
+# Copyright 2012 The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can
+# be found in the LICENSE file.
+
+Import('env')
+
+if 'TRUSTED_ENV' not in env:
+  Return()
+trusted_env = env['TRUSTED_ENV']
+
+# This duplicates the library list in src/trusted/service_runtime/build.scons.
+# We would not have to do this if we could get Scons to track dependencies
+# between libraries.
+VALIDATOR_LIBS = []
+if trusted_env.Bit('target_x86'):
+  VALIDATOR_LIBS += [trusted_env.NaClTargetArchSuffix('ncvalidate')]
+elif trusted_env.Bit('target_arm'):
+  VALIDATOR_LIBS += ['ncvalidate_arm_v2']
+
+test_host = trusted_env.ComponentProgram(
+    'desc_test_host', ['desc_test_host.c'],
+    EXTRA_LIBS=['sel',
+                'sel_debug_dummy',
+                'manifest_proxy',
+                'simple_service',
+                'thread_interface',
+                'gio_wrapped_desc',
+                'nonnacl_srpc',
+                'nrd_xfer',
+                'nacl_perf_counter',
+                'nacl_base',
+                'imc',
+                'container',
+                'nacl_fault_inject',
+                'platform',
+                'platform_qual_lib',
+                'gio',
+                ] + VALIDATOR_LIBS)
+
+test_guest = env.ComponentProgram(
+    'desc_test_guest', ['desc_test_guest.c'],
+    EXTRA_LIBS=['imc_syscalls', '${NONIRT_LIBS}'])
+
+if env.Bit('pnacl_generate_pexe'):
+  test_guest = env.GetTranslatedNexe(test_guest)
+
+test_command = [test_host, test_guest]
+bootstrap, _ = env.GetBootstrap()
+if bootstrap is not None:
+  test_command = [bootstrap] + test_command
+
+node = env.CommandTest('custom_desc_test.out', test_command)
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_custom_desc_test',
+                       is_broken=not env.Bit('nacl_static_link'))

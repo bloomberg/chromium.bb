@@ -947,6 +947,7 @@ static void NaClLoadModuleRpc(struct NaClSrpcRpc      *rpc,
     case NACL_DESC_QUOTA:
     case NACL_DESC_DEVICE_RNG:
     case NACL_DESC_DEVICE_POSTMESSAGE:
+    case NACL_DESC_CUSTOM:
       /* Unsupported stuff */
       rpc->result = NACL_SRPC_RESULT_APP_ERROR;
       goto cleanup;

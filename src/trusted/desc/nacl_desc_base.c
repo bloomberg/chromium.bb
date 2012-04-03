@@ -133,7 +133,8 @@ int (*NaClDescInternalize[NACL_DESC_TYPE_MAX])(
   NaClDescInternalizeNotImplemented,  /* imc socket */
   NaClDescQuotaInternalize,           /* quota wrapper */
   NaClDescRngInternalize,             /* device: rng */
-  NaClDescInternalizeNotImplemented   /* device: postmessage */
+  NaClDescInternalizeNotImplemented,  /* device: postmessage */
+  NaClDescInternalizeNotImplemented   /* custom */
 };
 
 char const *NaClDescTypeString(enum NaClDescTypeTag type_tag) {
@@ -158,6 +159,7 @@ char const *NaClDescTypeString(enum NaClDescTypeTag type_tag) {
     MAP(NACL_DESC_QUOTA);
     MAP(NACL_DESC_DEVICE_RNG);
     MAP(NACL_DESC_DEVICE_POSTMESSAGE);
+    MAP(NACL_DESC_CUSTOM);
   }
   return "BAD TYPE TAG";
 }

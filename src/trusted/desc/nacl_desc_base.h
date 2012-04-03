@@ -90,7 +90,8 @@ enum NaClDescTypeTag {
   NACL_DESC_IMC_SOCKET,
   NACL_DESC_QUOTA,
   NACL_DESC_DEVICE_RNG,
-  NACL_DESC_DEVICE_POSTMESSAGE
+  NACL_DESC_DEVICE_POSTMESSAGE,
+  NACL_DESC_CUSTOM
   /*
    * Add new NaClDesc subclasses here.
    *
@@ -98,7 +99,7 @@ enum NaClDescTypeTag {
    * also be updated to add new internalization functions.
    */
 };
-#define NACL_DESC_TYPE_MAX      (NACL_DESC_DEVICE_POSTMESSAGE + 1)
+#define NACL_DESC_TYPE_MAX      (NACL_DESC_CUSTOM + 1)
 #define NACL_DESC_TYPE_END_TAG  (0xff)
 
 struct NaClInternalRealHeader {
