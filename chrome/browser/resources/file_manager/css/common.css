@@ -1,31 +1,29 @@
-/*
- * Copyright (c) 2012 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-/*
- * This file contains "borrowed" copy of standard styles. To simplify merging,
+/* This file contains "borrowed" copy of standard styles. To simplify merging,
  * when altering, please preserve original property value by adding comments.
  */
-input.common[type="checkbox"], input.common[type="radio"] {
+input.common[type='checkbox'],
+input.common[type='radio'] {
   -webkit-appearance: none;
-  width: 13px;
-  height: 13px;
-  border: 1px solid #C6C6C6;
-  margin: 0;
   -webkit-border-radius: 1px;
-  border-radius: 1px;
   -webkit-box-sizing: border-box;
+  border: 1px solid #C6C6C6;
+  border-radius: 1px;
   box-sizing: border-box;
   cursor: default;
-/*  position: relative;*/
+  height: 13px;
+  margin: 0;
+  width: 13px;
 }
 
-input.common[type="checkbox"]:checked::after {
+input.common[type='checkbox']:checked::after {
   content: url('../images/common/check_no_box.png');
   display: block;
+  left: -5px;
   position: absolute;
   top: -6px;
-  left: -5px;
 }

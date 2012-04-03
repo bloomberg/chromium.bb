@@ -38,7 +38,7 @@ header {
 }
 
 #print-summary {
-  color: #53637d;
+  color: rgb(83, 99, 125);
   display: block;
   min-height: 30px;
 }
@@ -63,7 +63,8 @@ header {
   width: auto;
 }
 
-.right-column .checkbox, .right-column .radio {
+.right-column .checkbox,
+.right-column .radio {
   margin: 0;
 }
 
@@ -107,8 +108,8 @@ h1 {
   -webkit-padding-start: 16px;
   outline: 0;
   padding-top: 10px;
-  text-decoration: none;
   text-align: start;
+  text-decoration: none;
 }
 
 .preview-link-button:hover:not(:disabled) {
@@ -149,7 +150,7 @@ span.hint.visible {
   -webkit-animation-duration: 200ms;
   -webkit-animation-fill-mode: forwards;
   -webkit-user-select: text;
-  color: #8c1414;
+  color: rgb(140, 20, 20);
   height: auto;
   margin-bottom: -5px;
   margin-top: 5px;
@@ -250,8 +251,8 @@ label {
 }
 
 #copies.invalid {
-  background: #fff0f0;
-  color: #8c1414;
+  background: rgb(255, 240, 240);
+  color: rgb(140, 20, 20);
 }
 
 #increment,
@@ -341,7 +342,7 @@ html[dir='rtl'] #decrement {
    *     pluginFadeOutTransitionDuration = 350ms */
   -webkit-transition-delay: 350ms;
   -webkit-user-select: none;
-  background: #cccccc;
+  background: #ccc;
   height: 100%;
   margin: 0;
   opacity: 1;
@@ -447,7 +448,7 @@ html[dir='rtl'] #decrement {
   color: black;
   display: inline-block;
   font-style: italic;
+  padding: 0 10px;
   text-align: center;
   text-decoration: none;
-  padding: 0 10px;
 }

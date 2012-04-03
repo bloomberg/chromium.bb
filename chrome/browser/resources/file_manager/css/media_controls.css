@@ -1,24 +1,23 @@
-/*
- * Copyright (c) 2012 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
 .media-button {
+  background-position: center center;
+  background-repeat: no-repeat;
+  height: 28px;
   position: relative;
   width: 28px;
-  height: 28px;
-  background-repeat: no-repeat;
-  background-position: center center;
 }
 
 .media-button > div {
-  position: absolute;
-  pointer-events: none;
-  width: 100%;
-  height: 100%;
   -webkit-transition: opacity 100ms linear;
+  height: 100%;
   opacity: 0;
+  pointer-events: none;
+  position: absolute;
+  width: 100%;
 }
 
 .media-button[state='0']:not(.disabled):not(:hover):not(:active) > .state0.normal,
@@ -35,53 +34,53 @@
 
 /* Customize the standard input[type='range']. */
 .custom-slider > input[type='range'] {
-  position: absolute;
   -webkit-appearance: none !important;  /* Hide the default thumb icon. */
+  background: transparent;  /* Hide the standard slider bar */
+  height: 100%;
   left: -2px;  /* Required to align the input element with the parent. */
+  position: absolute;
   top: -2px;
   width: 100%;
-  height: 100%;
-  background: transparent;  /* Hide the standard slider bar */
 }
 
 /* Custom thumb icon. */
 .custom-slider > input[type='range']::-webkit-slider-thumb {
-  position: relative;
   -webkit-appearance: none;
-  z-index: 2;
-  height: 24px;
   background-position: center center;
   background-repeat: no-repeat;
+  height: 24px;
+  position: relative;
+  z-index: 2;
 }
 
 /* Custom slider bar (we hide the standard one). */
 .custom-slider > .bar {
-  position: absolute;
   /* In order to match the horizontal position of the standard slider bar
      left and right must be equal to 1/2 of the thumb icon width. */
-  top: 11px;
-  bottom: 11px;
-  border-width: 1px;
-  border-top-style: solid;
   border-bottom-style: solid;
+  border-top-style: solid;
+  border-width: 1px;
+  bottom: 11px;
   pointer-events: none;  /* Mouse events pass through to the standard input. */
+  position: absolute;
+  top: 11px;
 }
 
 .custom-slider > .bar > .filled,
 .custom-slider > .bar > .cap {
+  border-style: solid;
+  border-width: 1px;
+  bottom: -1px;
   position: absolute;
   top: -1px;
-  bottom: -1px;
-  border-width: 1px;
-  border-style: solid;
 }
 
 /* The filled portion of the slider bar to the left of the thumb. */
 .custom-slider > .bar > .filled {
-  width: 0; /* The element style.width is manipulated from the code. */
-  left: 0;
   border-left-style: none;
   border-right-style: none;
+  left: 0;
+  width: 0; /* The element style.width is manipulated from the code. */
 }
 
 /* Rounded caps to the left and right of the slider bar. */
@@ -91,18 +90,18 @@
 
 /* Left cap is always filled, should be the same color as .filled. */
 .custom-slider > .bar > .cap.left {
-  right: 100%;
+  border-bottom-left-radius: 4px;
   border-right-style: none;
   border-top-left-radius: 4px;
-  border-bottom-left-radius: 4px;
+  right: 100%;
 }
 
 /* Right cap is always not filled. */
 .custom-slider > .bar > .cap.right {
-  left: 100%;
+  border-bottom-right-radius: 4px;
   border-left-style: none;
   border-top-right-radius: 4px;
-  border-bottom-right-radius: 4px;
+  left: 100%;
 }
 
 .custom-slider > .bar,
@@ -119,8 +118,8 @@
 
 .custom-slider.disabled  > .bar > .filled,
 .custom-slider.disabled  > .bar > .cap.left {
-  background-image: none;
   background-color: rgba(0, 0, 0, 0.5);
+  background-image: none;
 }
 
 .custom-slider.disabled  > .bar,
@@ -139,12 +138,12 @@
 
 /* Thin vertical line across the slider bar */
 .custom-slider > .bar > .seek-mark {
-  position: absolute;
-  left: 0;
-  width: 0;
-  top: -1px;
-  bottom: -1px;
   background-color: #202020;
+  bottom: -1px;
+  left: 0;
+  position: absolute;
+  top: -1px;
+  width: 0;
 }
 
 .custom-slider > .bar > .seek-mark.visible {
@@ -157,25 +156,21 @@
 
 /* Text label giving the precise time corresponding to the hover position. */
 .custom-slider > .bar > .seek-mark > .seek-label {
-  position: absolute;
-  left: 0;
-  bottom: 20px;
-
-  font-size: 13px;
-
-  height: 0;
-  -webkit-transition: height 0.15s ease;
-
-  color: white;
+  -webkit-box-align: center;
+  -webkit-box-orient: horizontal;
+  -webkit-box-pack: center;
+  -webkit-transition: height 150ms ease;
   background: #202020;
   border-top-left-radius: 2px;
   border-top-right-radius: 2px;
+  bottom: 20px;
+  color: white;
   display: -webkit-box;
-  -webkit-box-orient: horizontal;
-  -webkit-box-align: center;
-  -webkit-box-pack: center;
-
+  font-size: 13px;
+  height: 0;
+  left: 0;
   overflow: hidden;
+  position: absolute;
 }
 
 .custom-slider > .bar > .seek-mark.visible > .seek-label {
@@ -203,7 +198,7 @@
   background-image: url(../images/media/media_play_down.png);
 }
 
-.media-button.play > .state1.normal{
+.media-button.play > .state1.normal {
   background-image: url(../images/media/media_pause.png);
 }
 
@@ -222,26 +217,26 @@
 /* Time controls: a slider and a text time display. */
 
 .time-controls {
-  height: 100%;
-  display: -webkit-box;
-  -webkit-box-orient: horizontal;
   -webkit-box-align: center;
-  -webkit-box-pack: center;
   -webkit-box-flex: 1;
+  -webkit-box-orient: horizontal;
+  -webkit-box-pack: center;
+  display: -webkit-box;
+  height: 100%;
 }
 
 .custom-slider.progress {
-  position: relative;
-  height: 100%;
-  display: -webkit-box;
   -webkit-box-flex: 1;
+  display: -webkit-box;
+  height: 100%;
   margin-left: -9px;  /* Set the margins at the edges of the slider bar. */
   margin-right: -9px;
+  position: relative;
 }
 
 .custom-slider.progress > input[type='range']::-webkit-slider-thumb {
-  width: 28px;
   background-image: url(../images/media/media_slider_thumb.png);
+  width: 28px;
 }
 
 .custom-slider.progress > input[type='range']::-webkit-slider-thumb:hover {
@@ -264,9 +259,9 @@
 /* Time display. */
 
 .time-controls > .time {
-  position: relative;
   height: 100%;
   margin-left: 15px;
+  position: relative;
 }
 
 .time-controls > .time.disabled {
@@ -279,33 +274,33 @@
 }
 
 .time-controls > .time > .current {
+  -webkit-box-align: center;
+  -webkit-box-orient: horizontal;
+  -webkit-box-pack: end;
+  bottom: 0;
+  color: white;
+  display: -webkit-box;
   position: absolute;
   right: 0;
   top: 0;
-  bottom: 0;
-  display: -webkit-box;
-  -webkit-box-orient: horizontal;
-  -webkit-box-align: center;
-  -webkit-box-pack: end;
-  color: white;
 }
 
 /* Volume controls: sound button and volume slider */
 
 .volume-controls {
-  height: 100%;
-  display: -webkit-box;
-  -webkit-box-orient: horizontal;
   -webkit-box-align: center;
+  -webkit-box-orient: horizontal;
   -webkit-box-pack: center;
+  display: -webkit-box;
+  height: 100%;
 }
 
 /* Sound button */
 
 .media-button.sound {
+  background-position: -2px center;
   margin-left: -4px;
   margin-right: -2px;
-  background-position: -2px center;
 }
 
 .media-button.sound[level='0'] > .normal {
@@ -367,16 +362,16 @@
 /* Volume slider. */
 
 .custom-slider.volume {
-  position: relative;
   height: 100%;
-  width: 60px;
   margin-left: -4px;
   margin-right: -4px;
+  position: relative;
+  width: 60px;
 }
 
 .custom-slider.volume > input[type='range']::-webkit-slider-thumb {
-  width: 20px;
   background-image: url(../images/media/media_volume_slider_thumb.png);
+  width: 20px;
 }
 
 .custom-slider.volume > input[type='range']::-webkit-slider-thumb:hover {
@@ -399,23 +394,18 @@
 /* Horizontal video control bar, all controls in a row. */
 
 .video-controls {
-  pointer-events: auto;
-
+  -webkit-box-align: center;
+  -webkit-box-orient: horizontal;
+  -webkit-box-pack: center;
+  background: #202020;
+  border-radius: 5px;
+  display: -webkit-box;
   font-size: 15px;
   height: 30px;
-  border-radius: 5px;
-
+  opacity: 0.8;
   padding-left: 15px;
   padding-right: 15px;
-
-  opacity: 0.8;
-
-  background: #202020;
-
-  display: -webkit-box;
-  -webkit-box-orient: horizontal;
-  -webkit-box-align: center;
-  -webkit-box-pack: center;
+  pointer-events: auto;
 }
 
 .video-controls .time-controls,
@@ -448,28 +438,24 @@
 }
 
 .playback-state-icon {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 32px;
+  -webkit-transform: scaleX(1) scaleY(1);
+  -webkit-transition-duration: 500ms;
+  -webkit-transition-property: webkit-transform, opacity;
+  -webkit-transition-timing-function: linear;
+  background-color: #202020;
+  background-position: center center;
+  background-repeat: no-repeat;
+  border-radius: 2.5px;
+  display: none;
   height: 32px;
+  left: 50%;
   margin-left: -16px;
   margin-top: -16px;
-  border-radius: 2.5px;
-  pointer-events: none;
-  display: none;
-
-  background-color: #202020;
-  background-repeat: no-repeat;
-  background-position: center center;
-
   opacity: 1;
-  -webkit-transform: scaleX(1) scaleY(1);
-
-  -webkit-transition-property: webkit-transform, opacity;
-  -webkit-transition-duration: 500ms;
-  -webkit-transition-timing-function: linear;
-
+  pointer-events: none;
+  position: absolute;
+  top: 50%;
+  width: 32px;
   z-index: 2;
 }
 
@@ -478,8 +464,8 @@
 }
 
 .playback-state-icon[state] {
-  opacity: 0;
   -webkit-transform: scaleX(3) scaleY(3);
+  opacity: 0;
 }
 
 .playback-state-icon[state='play'] {

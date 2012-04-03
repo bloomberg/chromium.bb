@@ -1,5 +1,4 @@
-/*
- * Copyright (c) 2012 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -64,8 +63,8 @@ input[type='submit'][disabled]:hover {
 }
 
 /* Drop opacity of selected rows to give a visual feedback on copy/cut
- * operation.*/
-.blink{
+ * operation. */
+.blink {
   opacity: 0.8;
 }
 
@@ -73,8 +72,8 @@ input[type='submit'][disabled]:hover {
   -webkit-box-align: end;
   -webkit-box-orient: horizontal;
   -webkit-transform: translate3d(0, 1px, 0);
-  -webkit-transition-property: opacity, -webkit-transform;
   -webkit-transition-duration: 300ms;
+  -webkit-transition-property: opacity, -webkit-transform;
   background-color: rgba(95, 95, 95, 0.17);
   color: #222;
   display: -webkit-box;
@@ -134,13 +133,13 @@ input[type='submit'][disabled]:hover {
 }
 
 .progress-track {
-  -webkit-animation-name: bg;
-  -webkit-animation-duration: 0.8s;
+  -webkit-animation-duration: 800ms;
   -webkit-animation-iteration-count: infinite;
+  -webkit-animation-name: bg;
   -webkit-animation-timing-function: linear;
-  background-color:#ccc;
+  background-color: #ccc;
   background-image: -webkit-linear-gradient(315deg, transparent,
-      transparent 33%, rgba(0,0,0,0.12) 33%, rgba(0,0,0,0.12) 66%,
+      transparent 33%, rgba(0, 0, 0, 0.12) 33%, rgba(0, 0, 0, 0.12) 66%,
       transparent 66%, transparent);
   background-position: 0 0;
   background-repeat: repeat-x;
@@ -149,51 +148,51 @@ input[type='submit'][disabled]:hover {
 }
 
 @-webkit-keyframes bg {
-  0% { background-position:0 0; }
-  100% { background-position:-16px 0; }
+  0% { background-position: 0 0; }
+  100% { background-position: -16px 0; }
 }
 
 /* The top title of the dialog. */
 .dialog-title {
   -webkit-box-sizing: border-box;
   -webkit-padding-start: 15px;
-  background-image: -webkit-linear-gradient(top, #fff,#f6f6f6);
-  border-bottom: 1px #d6d9e3 solid;
-  color: #42506c;
+  background-image: -webkit-linear-gradient(top, #fff, #f6f6f6);
+  border-bottom: 1px rgb(214, 217, 227) solid;
+  color: rgb(66, 80, 108);
   font-size: 15px;
   font-weight: bold;
   height: 32px;
-  padding-top: 8px;
   padding-bottom: 8px;
+  padding-top: 8px;
 }
 
 /* Main part of the dialog between header and footer. */
 .dialog-container {
-  position: relative;
-  display: -webkit-box;
-  -webkit-box-orient: horizontal;
   -webkit-box-align: stretch;
-  overflow: hidden;
   -webkit-box-flex: 1;
+  -webkit-box-orient: horizontal;
+  display: -webkit-box;
+  overflow: hidden;
+  position: relative;
 }
 
 /* List/grid and preview are inside this container. */
 .dialog-main {
-  -webkit-box-flex: 1;
-  display:-webkit-box;
-  -webkit-box-orient: vertical;
   -webkit-box-align: stretch;
+  -webkit-box-flex: 1;
+  -webkit-box-orient: vertical;
+  display: -webkit-box;
 }
 
 /* Roots list at the left. */
 .dialog-sidebar {
-  position: relative;
   -webkit-box-flex: 0;
-  width: 168px;
-  margin-left: -168px;
-  background-color: #e6e6e6;
   -webkit-transition: margin-left 180ms ease;
+  background-color: #e6e6e6;
+  margin-left: -168px;
   overflow: hidden;
+  position: relative;
+  width: 168px;
 }
 
 .dialog-container[sidebar] .dialog-sidebar {
@@ -206,40 +205,38 @@ list.roots-list {
 }
 
 list.roots-list > * {
+  background-color: #e6e6e6;
   border: none;
   border-radius: 0;
   height: 39px;
   margin: 0;
   padding: 0 5px;
-  background-color: #e6e6e6;
 }
 
 list.roots-list > [lead][selected],
 list.roots-list > [lead],
 list.roots-list > [selected],
 list.roots-list > [anchor] {
-  background-color: #ccdbf3;
+  background-color: rgb(204, 219, 243);
   background-image: none;
+  border-bottom: 1px solid rgb(195, 210, 233);
+  border-top: 1px solid rgb(195, 210, 233);
   height: 37px;
-  border-top: 1px solid #c3d2e9;
-  border-bottom: 1px solid #c3d2e9;
 }
 
 list.roots-list > [lead]:hover,
 list.roots-list > [lead][selected]:hover,
 list.roots-list > [selected]:hover,
 list.roots-list > [anchor]:hover {
-  height: 37px !important;
-  background-color: #c1d3ec !important;
-  border-top: 1px solid transparent !important;
+  background-color: rgb(193, 211, 236) !important;
   border-bottom: 1px solid transparent !important;
+  border-top: 1px solid transparent !important;
+  height: 37px !important;
 }
 
-
-
 list.roots-list li.root-item {
-  display: -webkit-box;
   -webkit-box-align: center;
+  display: -webkit-box;
   padding-left: 11px;
 }
 
@@ -261,13 +258,13 @@ li.root-item > .spacer {
 
 .root-label {
   -webkit-padding-start: 38px;
-  background-repeat: no-repeat;
   background-position: left center;
+  background-repeat: no-repeat;
 }
 
 .breadcrumbs .root-label {
-  background-position: left center;
   -webkit-padding-start: 34px;
+  background-position: left center;
 }
 
 .root-label[icon=downloads] {
@@ -310,17 +307,17 @@ li.root-item > .spacer {
 }
 
 div.root-eject {
-  opacity: 0.5;
-  cursor: pointer;
-  width: 20px;
-  height: 20px;
-  margin-right: 3px;
-  margin-bottom: 2px;
+  -webkit-transition: opacity 70ms linear;
   background-image: url('../images/eject.png');
   background-position: center center;
   background-repeat: no-repeat;
   background-size: 10px 8px;
-  -webkit-transition: opacity 70ms linear;
+  cursor: pointer;
+  height: 20px;
+  margin-bottom: 2px;
+  margin-right: 3px;
+  opacity: 0.5;
+  width: 20px;
 }
 
 div.root-eject:hover {
@@ -329,13 +326,13 @@ div.root-eject:hover {
 
 /* Breadcrumbs and things under the title but above the list view. */
 .dialog-header {
-  -webkit-box-orient: horizontal;
   -webkit-box-align: center;
-  display: -webkit-box;
-  margin-right: 10px;
-  margin-bottom: 7px;
-  margin-top: 5px;
+  -webkit-box-orient: horizontal;
   -webkit-transition: all 180ms ease;
+  display: -webkit-box;
+  margin-bottom: 7px;
+  margin-right: 10px;
+  margin-top: 5px;
  }
 
 /* Container for the detail and thumbnail (not implemented yet) list views. */
@@ -345,41 +342,41 @@ div.root-eject:hover {
 
 /* Close sidebar button. */
 div.close-sidebar {
-  cursor: pointer;
-  position: absolute;
-  right: 0;
-  top: 6px;
-  display: none;
-  z-index: 10;
   background-color: white;
-  border: 1px solid #d2d2d2;
-  border-right: none;
-  width: 14px;
-  height: 26px;
   background-image: url('../images/close_sidebar.png');
   background-position: center center;
   background-repeat: no-repeat;
+  border: 1px solid #d2d2d2;
+  border-right: none;
+  cursor: pointer;
+  display: none;
+  height: 26px;
+  position: absolute;
+  right: 0;
+  top: 6px;
+  width: 14px;
+  z-index: 10;
 }
 
 div.close-sidebar:hover {
-  background-color: rgba(240,240,240,1);
+  background-color: rgba(240, 240, 240, 1);
 }
 
 /* Open sidebar button. */
 div.open-sidebar {
-  cursor: pointer;
-  margin-right: 10px;
   background-color: white;
-  margin-top: 1px;
-  width: 15px;
-  height: 28px;
   background-image: url('../images/open_sidebar.png');
   background-position: center center;
   background-repeat: no-repeat;
+  cursor: pointer;
+  height: 28px;
+  margin-right: 10px;
+  margin-top: 1px;
+  width: 15px;
 }
 
 div.open-sidebar:hover {
-  background-color: rgba(240,240,240,1);
+  background-color: rgba(240, 240, 240, 1);
 }
 
 .dialog-container[sidebar] div.open-sidebar {
@@ -392,26 +389,25 @@ div.open-sidebar:hover {
 
 /* Container for the detail and thumbnail list views. */
 .dialog-body {
-  -webkit-box-orient: vertical;
   -webkit-box-flex: 1;
+  -webkit-box-orient: vertical;
+  -webkit-transition: all 180ms ease;
   border-top: 1px solid #d4d4d4;
   display: -webkit-box;
   overflow: hidden;
-  -webkit-transition: all 180ms ease;
 }
 
 .dialog-container[sidebar] .dialog-body {
-  -webkit-border-top-left-radius: 0;
   -webkit-border-bottom-left-radius: 0;
+  -webkit-border-top-left-radius: 0;
 }
 
 /* Container for the ok/cancel buttons. */
 .dialog-footer {
-  -webkit-box-orient: horizontal;
   -webkit-box-align: center;
+  -webkit-box-orient: horizontal;
   display: -webkit-box;
-  margin: 15px;
-  margin-top: 0;
+  margin: 0 15px 15px;
 }
 
 .dialog-footer:not([progress]) .progress-bar,
@@ -426,20 +422,20 @@ div.open-sidebar:hover {
 }
 
 .dialog-footer .progress-bar {
-  -webkit-margin-start: 20px;
   -webkit-margin-end: 20px;
+  -webkit-margin-start: 20px;
 }
 
 /* The container for breadcrumb elements. */
 .breadcrumbs {
-  -webkit-box-orient: horizontal;
+  -webkit-box-align: center;
   -webkit-box-flex: 1;
+  -webkit-box-orient: horizontal;
   -webkit-margin-end: 5px;
   display: -webkit-box;
-  -webkit-box-align: center;
   line-height: 20px;
-  padding-top: 1px;
   overflow: hidden;
+  padding-top: 1px;
 }
 
 .breadcrumbs > [collapsed]:before {
@@ -456,11 +452,11 @@ div.open-sidebar:hover {
 
 /* A single directory name in the list of path breadcrumbs. */
 .breadcrumb-path {
-  color: #265692;
+  color: rgb(38, 86, 146);
   cursor: pointer;
+  overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  overflow: hidden;
 }
 
 /* The final breadcrumb, representing the current directory. */
@@ -472,22 +468,22 @@ div.open-sidebar:hover {
 /* The > arrow between breadcrumbs. */
 
 .breadcrumbs .separator {
-  overflow: hidden;
-  width: 25px;
   background-image: url('../images/breadcrumb-separator.png');
   background-position: center center;
   background-repeat: no-repeat;
   height: 10px;
+  overflow: hidden;
+  width: 25px;
 }
 
 .dialog-header button {
   -webkit-border-radius: 0;
+  background-position: left top;
+  background-repeat: no-repeat;
   border: none;
   height: 28px;
   min-width: 0;
   padding: 0;
-  background-position: left top;
-  background-repeat: no-repeat;
 }
 
 /* button:hover and button[disabled]:hover rules must be override by placing
@@ -495,8 +491,8 @@ div.open-sidebar:hover {
  */
 button.detail-view {
   background-image: url('../images/icon_list_view_off.png');
-  width: 29px;
   border-right: 1px solid #9d9d9d;
+  width: 29px;
 }
 
 button.thumbnail-view {
@@ -513,40 +509,40 @@ button.thumbnail-view[disabled] {
 }
 
 .filelist-panel {
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
   -webkit-box-flex: 1;
+  -webkit-box-orient: vertical;
+  display: -webkit-box;
 }
 
 .list-container {
-  display: -webkit-box;
   -webkit-box-flex: 1;
+  display: -webkit-box;
   position: relative;
 }
 
 .spinner {
-  width: 22px;
-  height: 22px;
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  margin-left: -11px;
-  margin-top: -11px;
   background-image: url(../images/spinner.svg);
   background-size: 100%;
+  height: 22px;
+  left: 50%;
+  margin-left: -11px;
+  margin-top: -11px;
   opacity: 0.5;
+  position: absolute;
+  top: 50%;
+  width: 22px;
 }
 
 .downloads-warning {
-  display: -webkit-box;
-  -webkit-box-orient: horizontal;
-  height: 57px;
-  background-color: #f0f0f0;
-  font-size: 13px;
-  color: #666;
   -webkit-box-align: center;
-  overflow: hidden;
+  -webkit-box-orient: horizontal;
   -webkit-transition: height 70ms linear;
+  background-color: #f0f0f0;
+  color: #666;
+  display: -webkit-box;
+  font-size: 13px;
+  height: 57px;
+  overflow: hidden;
 }
 
 .downloads-warning[hidden] {
@@ -559,46 +555,46 @@ button.thumbnail-view[disabled] {
 }
 
 .downloads-warning div {
-  display: -webkit-box;
   -webkit-box-flex: 1;
+  display: -webkit-box;
 }
 
 /* The cr.ui.Grid representing the detailed file list. */
 .thumbnail-grid {
-  width: 100%;
   overflow-y: auto;
+  width: 100%;
 }
 
 /* An item in the thumbnail view. */
 .thumbnail-item {
-  margin-top: 10px;
+  height: 145px;
   margin-left: 5px;
   margin-right: 5px;  
-  width: 120px;
-  height: 145px;
+  margin-top: 10px;
   text-align: center;
+  width: 120px;
 }
 
-.thumbnail-item > input[type="checkbox"] {
+.thumbnail-item > input[type='checkbox'] {
+  left: 0;
   position: absolute;
   top: 0;
-  left: 0;
 }
 
 /* When changing these properties please preserve these conditions:
    1. width == height (so that the rotated thumbnail does not look off-center)
    2. width % 8 == 0 (to minimize rounding errors in the centering code) */
 div.img-container {
-  position: relative;
-  overflow: hidden;
-  margin: 4px;
-  width: 112px;
   height: 112px;
+  margin: 4px;
+  overflow: hidden;
+  position: relative;
+  width: 112px;
 }
 
 div.img-container > img {
-  position: absolute;
   -webkit-user-drag: none;
+  position: absolute;
 }
 
 .list-container list > *,
@@ -610,21 +606,21 @@ div.img-container > img {
 
 .list-container list > [selected],
 .list-container grid > [selected] {
-  background-color: #cbdbf1;
-  border-color: #e0e9f7;
+  background-color: rgb(203, 219, 241);
+  border-color: rgb(224, 233, 247);
 }
 
 .list-container list > .accepts[selected],
 .list-container list > [selected]:hover,
 .list-container grid > [selected]:hover {
-  background-color: #c1d3ec;
+  background-color: rgb(193, 211, 236);
 }
 
 .list-container list > .accepts,
 .list-container list > :hover,
 .list-container grid > :hover {
-  background-color: #f2f6fa;
-  border-color: #f2f6fa;
+  background-color: rgb(242, 246, 250);
+  border-color: rgb(242, 246, 250);
 }
 
 .table-row-cell .filename-label,
@@ -632,16 +628,16 @@ div.img-container > img {
 /* Show ellipsis in cells. The name column has different structure and overrides
    this rule. */
 .table-row-cell > div {
+  display: block;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  display: block;
 }
 
 /* Text box used for renaming in the detail list. */
 .table-row-cell input.rename {
-  line-height: 20px;
   -webkit-margin-start: -3px;
+  line-height: 20px;
 }
 
 /* Elements that need to be LTR even in an RTL context, but should align
@@ -654,8 +650,8 @@ html[dir='rtl'] .align-end-weakrtl {
 
 input.rename {
   font: inherit;
-  text-align: inherit;
   line-height: 1;
+  text-align: inherit;
 }
 
 .table-row-cell .filename-label,
@@ -669,10 +665,10 @@ input.rename {
 
 /* Text box used for renaming in the thumbnail list. */
 .thumbnail-grid input.rename {
-  -webkit-margin-start: -1px;
-  width: 114px;
-  height: 20px;
   -webkit-box-sizing: border-box;
+  -webkit-margin-start: -1px;
+  height: 20px;
+  width: 114px;
 }
 
 .thumbnail-grid li,
@@ -682,29 +678,28 @@ input.rename {
 
 /* The cr.ui.Table representing the detailed file list. */
 .detail-table {
-  width: 100%;
   border: 0;
+  width: 100%;
 }
 
 /* Bottom pane describing current selection. */
 .preview-panel {
-  -webkit-box-orient: horizontal;
-  display: -webkit-box;
   -webkit-box-align: center;
-  height: 61px;
+  -webkit-box-orient: horizontal;
+  -webkit-transform: translate(0, 0);
   background-color: #F0F0F0;
+  display: -webkit-box;
+  height: 61px;
+  opacity: 1;
   padding: 0 14px;
   position: relative;
   z-index: 3;
-
-  opacity: 1;
-  -webkit-transform: translate(0, 0);
 }
 
 .preview-panel[visibility=hiding] {
   /* Using all seems to cause preview panel and checkbox flicking issue. */
-  -webkit-transition: opacity 220ms ease;
   -webkit-transform: translate(0, 5px);
+  -webkit-transition: opacity 220ms ease;
    opacity: 0;
 }
 
@@ -714,46 +709,44 @@ input.rename {
 }
 
 .preview-thumbnails {
-  display: -webkit-box;
   -webkit-box-orient: horizontal;
+  display: -webkit-box;
   padding-left: 39px;
 }
 
 .preview-thumbnails > div {
-  width: 45px;
   height: 45px;
-  position: relative;
   margin: 0 0 0 -39px;  /* Show 7 pixels of the overlapped image */
+  position: relative;
+  width: 45px;
 }
 
 .preview-thumbnails > div > div.img-container {
+  height: 45px;
   margin: 0;
   width: 45px;
-  height: 45px;
 }
 
 .preview-thumbnails > div {
-  border: 1px solid #fff;
   -webkit-box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
   background-color: #F2F2F2;
+  border: 1px solid #fff;
 }
 
 .preview-thumbnails > div > div.popup {
+  -webkit-transform: translate(0, 3px) scale(0.95);
+  -webkit-transition: all 180ms ease-in;
+  -webkit-transition-delay: 300ms;
+  background-color: #F2F2F2;
   border: 2px solid #fff;
   box-shadow: 0 0 0 1px #F0F0F0,
               0 0 0 2px #D0D0D0,
               2px 2px 6px rgba(0, 0, 0, 0.2);
-  background-color: #F2F2F2;
   margin: 0;
-  z-index: 1;
+  opacity: 0;
   pointer-events: none;
   position: absolute;
-
-  -webkit-transition: all 180ms ease-in;
-  -webkit-transition-delay: 300ms;
-
-  -webkit-transform: translate(0, 3px) scale(0.95);
-  opacity: 0;
+  z-index: 1;
 }
 
 .preview-thumbnails > div:hover > div.popup {
@@ -777,31 +770,31 @@ input.rename {
 /* Container for a table header. */
 .table-header {
   -webkit-box-sizing: border-box;
-  border-bottom: 1px #d2d2d2 solid;
   background-image: -webkit-linear-gradient(top, #f9f9f9, #e8e8e8);
+  border-bottom: 1px #d2d2d2 solid;
   height: 27px;
 }
 
 .table-header-sort-image-desc::after {
   -webkit-padding-start: 13px;
-  color: #888;
   background-image: url(../images/sort_desc.png);
   background-position: center center;
   background-repeat: no-repeat;
+  color: #888;
   content: '\00a0';
   position: relative;
-  top: 0px;
+  top: 0;
 }
 
 .table-header-sort-image-asc::after {
   -webkit-padding-start: 13px;
-  color: #888;
   background-image: url(../images/sort_asc.png);
   background-position: center center;
   background-repeat: no-repeat;
+  color: #888;
   content: '\00a0';
   position: relative;
-  top: 0px;
+  top: 0;
 }
 
 
@@ -839,11 +832,10 @@ input.rename {
 }
 
 #select-all-checkbox {
-  -webkit-margin-start: 0;
   -webkit-margin-end: 6px;
-  margin-top: 0;
+  -webkit-margin-start: 0;
   margin-bottom: 0;
-
+  margin-top: 0;
   /* 1px below text */
   position: relative;
   top: 1px;
@@ -872,8 +864,8 @@ li.thumbnail-item[selected] .file-checkbox {
 
 li.table-row {
   line-height: 38px;
-  padding-top: 1px;
   padding-bottom: 1px;
+  padding-top: 1px;
 }
 
 /* The icon in the name column. */
@@ -886,87 +878,87 @@ li.table-row {
 }
 
 /* Icon for files in the detail list. */
-.detail-icon[iconType="archive"] {
+.detail-icon[iconType='archive'] {
   background-image: url(../images/filetype_archive.png);
 }
 
-.detail-icon[iconType="audio"] {
+.detail-icon[iconType='audio'] {
   background-image: url(../images/filetype_audio.png);
 }
 
-.detail-icon[iconType="device"] {
+.detail-icon[iconType='device'] {
   background-image: url(../images/filetype_device.png);
 }
 
-.detail-icon[iconType="doc"] {
+.detail-icon[iconType='doc'] {
   background-image: url(../images/filetype_doc.png);
 }
 
-.detail-icon[iconType="excel"] {
+.detail-icon[iconType='excel'] {
   background-image: url(../images/filetype_excel.png);
 }
 
-.detail-icon[iconType="folder"] {
+.detail-icon[iconType='folder'] {
   background-image: url(../images/filetype_folder.png);
 }
 
-.detail-icon[iconType="html"] {
+.detail-icon[iconType='html'] {
   background-image: url(../images/filetype_html.png);
 }
 
-.detail-icon[iconType="image"] {
+.detail-icon[iconType='image'] {
   background-image: url(../images/filetype_image.png);
 }
 
-.detail-icon[iconType="pdf"] {
+.detail-icon[iconType='pdf'] {
   background-image: url(../images/filetype_pdf.png);
 }
 
-.detail-icon[iconType="ppt"] {
+.detail-icon[iconType='ppt'] {
   background-image: url(../images/filetype_ppt.png);
 }
 
-.detail-icon[iconType="presentation"] {
+.detail-icon[iconType='presentation'] {
   background-image: url(../images/filetype_presentation.png);
 }
 
-.detail-icon[iconType="spreadsheet"] {
+.detail-icon[iconType='spreadsheet'] {
   background-image: url(../images/filetype_spreadsheet.png);
 }
 
-.detail-icon[iconType="text"] {
+.detail-icon[iconType='text'] {
   background-image: url(../images/filetype_text.png);
 }
 
-.detail-icon[iconType="unreadable"] {
+.detail-icon[iconType='unreadable'] {
   background-image: url(../images/filetype_unreadable_device.png);
 }
 
-.detail-icon[iconType="video"] {
+.detail-icon[iconType='video'] {
   background-image: url(../images/filetype_video.png);
 }
 
-.detail-icon[iconType="word"] {
+.detail-icon[iconType='word'] {
   background-image: url(../images/filetype_word.png);
 }
 
-.detail-icon[iconType="gdoc"] {
+.detail-icon[iconType='gdoc'] {
   background-image: url(../images/filetype_doc.png);
 }
 
-.detail-icon[iconType="gsheet"] {
+.detail-icon[iconType='gsheet'] {
   background-image: url(../images/filetype_spreadsheet.png);
 }
 
-.detail-icon[iconType="gslides"] {
+.detail-icon[iconType='gslides'] {
   background-image: url(../images/filetype_presentation.png);
 }
 
-.detail-icon[iconType="gdraw"] {
+.detail-icon[iconType='gdraw'] {
   background-image: url(../images/filetype_drawing.png);
 }
 
-.detail-icon[iconType="gtable"] {
+.detail-icon[iconType='gtable'] {
   background-image: url(../images/filetype_table.png);
 }
 
@@ -989,14 +981,13 @@ li.table-row {
 }
 
 .preview-img.thumbnail {
-  padding: 1px;
-  border: 1px #666 solid;
   -webkit-background-clip: content-box;
-
   /* Checkboard background to distinguish images with alpha channels, from
    * ../images/preview-background.png
    */
   background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAAlwSFlzAAAOTQAADiYBwNzaZQAAAAd0SU1FB9sDExUSAaQ/5TMAAAAZdEVYdENvbW1lbnQAQ3JlYXRlZCB3aXRoIEdJTVBXgQ4XAAAAQ0lEQVRYw+3VsQkAMQwDQOfJRt7r9/FQ3ilDuAiBUy84UKFVVX8M0t2TenxxOQAAAAAAAAB7+ueZaQIAAAAAAIC3AQceAAfi8EmRSgAAAABJRU5ErkJggg==);
+  border: 1px #666 solid;
+  padding: 1px;
 }
 
 .preview-img[src=''] {
@@ -1009,10 +1000,10 @@ li.table-row {
 }
 
 .metadata-item {
-  -webkit-box-orient: horizontal;
   -webkit-box-flex: 1;
-  display: -webkit-box;
+  -webkit-box-orient: horizontal;
   -webkit-padding-start: 8px;
+  display: -webkit-box;
 }
 
 .metadata-label {
@@ -1024,25 +1015,23 @@ li.table-row {
 }
 
 .delete-button {
-  -webkit-margin-start: 8px;
   -webkit-margin-end: 8px;
+  -webkit-margin-start: 8px;
 }
 
 .task-item {
-  display: -webkit-box;
-  -webkit-box-orient: horizontal;
   -webkit-box-align: center;
+  -webkit-box-orient: horizontal;
+  display: -webkit-box;
+  padding: 5px 10px;
   text-align: left;
-  padding: 5px;
-  -webkit-padding-end: 10px;
-  -webkit-padding-start: 10px;
 }
 
 .task-item > div {
   overflow: hidden;
+  padding-right: 5px;
   text-overflow: ellipsis;
   white-space: nowrap;
-  padding-right: 5px;
 }
 
 .task-item > img {
@@ -1052,12 +1041,12 @@ li.table-row {
 /* The selection summary text at the bottom of the preview pane. */
 .preview-summary {
   -webkit-box-flex: 1;
-  color: #666666;
+  color: #666;
   overflow: hidden;
   padding: 5px;
   text-overflow: ellipsis;
-  white-space: nowrap;
   vertical-align: middle;
+  white-space: nowrap;
 }
 
 .dialog-footer .filename-label {
@@ -1066,32 +1055,32 @@ li.table-row {
   color: #666;
   display: -webkit-box;
   font-weight: bold;
-  padding-top: 4px;
   padding-right: 4px;
+  padding-top: 4px;
 }
 
 .detail-name > * {
-  display: -webkit-box;
   -webkit-box-align: center;
+  display: -webkit-box;
 }
 
 .filename-input {
-  -webkit-box-orient: horizontal;
   -webkit-box-flex: 1;
+  -webkit-box-orient: horizontal;
   display: -webkit-box;
 }
 
 /* A horizontal spring. */
 .horizontal-spacer {
-  -webkit-box-orient: horizontal;
   -webkit-box-flex: 1;
+  -webkit-box-orient: horizontal;
   display: -webkit-box;
 }
 
 /* A vertical spring. */
 .vertical-spacer {
-  -webkit-box-orient: vertical;
   -webkit-box-flex: 1;
+  -webkit-box-orient: vertical;
   display: -webkit-box;
 }
 
@@ -1104,33 +1093,32 @@ li.table-row {
 
 /* Overlay pane covering the entire file manager window (e.g. image editor)*/
 .overlay-pane {
+  border: none;
+  height: 100%;
+  left: 0;
   position: absolute;
   top: 0;
-  left: 0;
   width: 100%;
-  height: 100%;
-  border: none;
   z-index: 100;
 }
 
 /* Invisible container for elements representing files while dragging. */
 #drag-image-container {
-  position: fixed;
-  /* Only nodes in visible viewport will be rendered. */
-  top: 0;
-  left: 0;
-  display: -webkit-box;
   -webkit-box-orient: horizontal;
+  display: -webkit-box;
+  /* Only nodes in visible viewport will be rendered. */
+  left: 0;
   padding-left: 100px;
+  position: fixed;
+  top: 0;
   z-index: -1;  /* below .dialog-container */
 }
 
 #drag-image-container > * {
-  display: inline-block;
-  background-color: #CBDBF1;
-  border-color: #E0E9F7;
+  background-color: rgb(203, 219, 241);
   border: 1px solid white; /* transparent white */
   cursor: default;
+  display: inline-block;
   line-height: 20px;
   margin: 0 0 0 -100px;
   overflow: hidden;
@@ -1148,10 +1136,10 @@ menu.file-context-menu {
   z-index: 4;
 }
 
-input.common.pin[type="checkbox"]:checked::after {
-  position: relative;
+input.common.pin[type='checkbox']:checked::after {
   content: url('../images/pin.png');
   left: 3px;
+  position: relative;
   top: -4px;
 }
 
@@ -1166,14 +1154,14 @@ div.offline > * {
 }
 
 div.shade {
-  position: absolute;
+  /* -webkit-transition: opacity 1000ms linear; */
+  background-color: rgba(255, 255, 255, 0.8);
+  bottom: 0;
   left: 0;
+  opacity: 0;
+  position: absolute;
   right: 0;
   top: 0;
-  bottom: 0;
-  background-color: rgba(255, 255, 255, 0.8);
-  opacity: 0;
-  webkit-transition: opacity 1000ms linear;
 }
 
 div.shade[fadein] {
@@ -1187,8 +1175,8 @@ div.shade[fadein] {
 }
 
 div.unmounted-panel {
-  padding-top: 20px;
   padding-left: 50px;
+  padding-top: 20px;
 }
 
 div.unmounted-panel > * {
@@ -1197,10 +1185,10 @@ div.unmounted-panel > * {
 }
 
 div.unmounted-panel > div {
-  display: -webkit-box;
+  -webkit-box-align: center;
   -webkit-box-orient: horizontal;
   -webkit-box-pack: start;
-  -webkit-box-align: center;
+  display: -webkit-box;
 }
 
 .unmounted-panel > .gdata.loading,
@@ -1211,8 +1199,8 @@ div.unmounted-panel > div {
 
 .unmounted-panel > .gdata.loading {
   background-image: url(../images/spinner.svg);
-  background-repeat: no-repeat;
   background-position: 0 center;
+  background-repeat: no-repeat;
 }
 
 .unmounted-panel:not([loading]) > .gdata.loading,

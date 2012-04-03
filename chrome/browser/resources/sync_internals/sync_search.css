@@ -31,20 +31,19 @@
 }
 
 #sync-results-splitter {
-  background-color: #ebeff9;
+  background-color: rgb(235, 239, 249);
   cursor: col-resize;
-  width: 5px;
 <if expr="is_win">
   /* TODO(akalin): Make the BMM also use this style. */
   cursor: e-resize;
 </if>
+  width: 5px;
 }
 
 #sync-result-details-container {
+  -webkit-box-flex: 1;
   height: 100%;
   overflow: auto;
-  -webkit-box-flex: 1;
-
   /* TODO(akalin): Figure out why this is needed, even with box-flex: 1. */
   width: 100%;
 }

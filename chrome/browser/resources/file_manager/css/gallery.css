@@ -1,32 +1,31 @@
-/*
- * Copyright (c) 2012 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
 body {
-  margin: 0;
   -webkit-user-select: none;
   font-family: Open Sans,Droid Sans Fallback,sans-serif;
   font-size: 84%;
+  margin: 0;
 }
 
 .gallery {
   background: black;
-  position: absolute;
+  bottom: 0;
   left: 0;
+  overflow: hidden;
+  position: absolute;
   right: 0;
   top: 0;
-  bottom: 0;
-  overflow: hidden;
 }
 
 /* Close button */
 .gallery > .close {
+  cursor: pointer;
   position: absolute;
   right: 5px;
   top: 5px;
-  cursor: pointer;
   z-index: 200;
 }
 
@@ -34,12 +33,12 @@ body {
    independently from its parent (which can be dimmed when the crop frame
    overlaps it) */
 .gallery > .close div {
+  background-image: url(../images/gallery/close_x.png);
+  background-position: center center;
+  background-repeat: no-repeat;
+  height: 20px;
   opacity: 0;
   width: 20px;
-  height: 20px;
-  background-image: url(../images/gallery/close_x.png);
-  background-repeat: no-repeat;
-  background-position: center center;
 }
 
 .gallery[tools] > .close div {
@@ -47,18 +46,18 @@ body {
 }
 
 .gallery[tools] > .close div:hover {
-  opacity: 0.7;
   background-color: rgba(81,81,81,1);
+  opacity: 0.7;
 }
 
 /* Image container and canvas elements */
 
 .gallery > .image-container {
-  position: absolute;
-  height: 100%;
-  width: 100%;
   background-color: rgba(0,0,0,1);
   cursor: none;   /* Only visible when the toolbar is active */
+  height: 100%;
+  position: absolute;
+  width: 100%;
 }
 
 .gallery[tools][locked] *,
@@ -99,14 +98,12 @@ body {
 }
 
 .gallery > .image-container > .image {
-  position: absolute;
-  pointer-events: none;
-
-  -webkit-transition-property: -webkit-transform, opacity;
-  -webkit-transition-timing-function: ease-in-out;
-
   /* Keep in sync with ImageView.ANIMATION_DURATION in image_view.js*/
   -webkit-transition-duration: 180ms;
+  -webkit-transition-property: -webkit-transform, opacity;
+  -webkit-transition-timing-function: ease-in-out;
+  pointer-events: none;
+  position: absolute;
 }
 
 .gallery > .image-container > .image[fade] {
@@ -124,30 +121,28 @@ body {
 /* Toolbar */
 
 .gallery > .toolbar {
-  position: absolute;
-  bottom: 0;
-  width: 100%;
-  height: 55px;
-  display: -webkit-box;
+  -webkit-box-align: stretch;
   -webkit-box-orient: horizontal;
   -webkit-box-pack: start;
-  -webkit-box-align: stretch;
+  -webkit-transform: translate(0, 0);
+  -webkit-transition-duration: 300ms;
+  -webkit-transition-property: webkit-transform, opacity;
+  -webkit-transition-timing-function: ease;
   background-color: rgba(18,18,18,0.75);
   border-top: 1px solid rgba(31,31,31,0.75);
-
-  pointer-events: none;
+  bottom: 0;
+  display: -webkit-box;
+  height: 55px;
   opacity: 0;
-  -webkit-transform: translate(0, 0);
-
-  -webkit-transition-property: webkit-transform, opacity;
-  -webkit-transition-duration: 300ms;
-  -webkit-transition-timing-function: ease;
+  pointer-events: none;
+  position: absolute;
+  width: 100%;
 }
 
 .gallery[tools] > .toolbar {
-  pointer-events: auto;
-  opacity: 1;
   -webkit-transform: translate(0, 0);
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .gallery[tools][locked] > .toolbar {
@@ -155,15 +150,15 @@ body {
 }
 
 .gallery .arrow-box {
-  position: absolute;
-  z-index: 100;
-  width: 100%;
+  -webkit-box-align: center;
+  -webkit-box-orient: horizontal;
+  -webkit-box-pack: center;
+  display: -webkit-box;
   height: 100%;
   pointer-events: none;
-  display: -webkit-box;
-  -webkit-box-orient: horizontal;
-  -webkit-box-align: center;
-  -webkit-box-pack: center;
+  position: absolute;
+  width: 100%;
+  z-index: 100;
 }
 
 .gallery .arrow-box .arrow {
@@ -176,34 +171,34 @@ body {
 }
 
 .gallery[tools] .arrow[active] {
-  pointer-events: auto;
   cursor: pointer;
+  pointer-events: auto;
 }
 
 /* The arrow icons are in nested divs so that their opacity can be manipulated
-   independently from their parent (which can be dimmed when the crop frame
-   overlaps it) */
-.gallery .arrow div{
-  width: 105px;
-  height: 193px;
-  background-repeat: no-repeat;
+ * independently from their parent (which can be dimmed when the crop frame
+ * overlaps it) */
+.gallery .arrow div {
   background-position: center center;
+  background-repeat: no-repeat;
+  height: 193px;
   opacity: 0;
+  width: 105px;
 }
 
-.gallery[tools] .arrow[active] div{
+.gallery[tools] .arrow[active] div {
   opacity: 0.25;
 }
 
-.gallery[tools] .arrow[active] div:hover{
+.gallery[tools] .arrow[active] div:hover {
   opacity: 1;
 }
 
-.gallery .arrow.left div{
+.gallery .arrow.left div {
   background-image: url(../images/gallery/arrow_left.png);
 }
 
-.gallery .arrow.right div{
+.gallery .arrow.right div {
   background-image: url(../images/gallery/arrow_right.png);
 }
 
@@ -250,24 +245,24 @@ body {
 }
 
 .gallery .filename-spacer > * {
-  font-family: Open Sans,Droid Sans Fallback,sans-serif;
-  position: absolute;
   background-color: transparent;
-  height: 21px;
-  width: 260px;
   color: white;
+  font-family: Open Sans,Droid Sans Fallback,sans-serif;
+  height: 21px;
+  position: absolute;
+  width: 260px;
 }
 
 .gallery .filename-spacer > input,
 .gallery .filename-spacer > .name {
   border: none;
-  outline: none;
   font-size: 120%;
+  left: 10px;
+  outline: none;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
-  left: 10px;
   top: 5px;
+  white-space: nowrap;
 }
 
 .gallery .filename-spacer > .name:hover {
@@ -278,9 +273,9 @@ body {
 .gallery .filename-spacer > input:focus,
 .gallery .filename-spacer > input:focus:hover {
   background-color: white;
-  color: black;
-  border-right: 1px solid white;
   border-bottom: 1px solid white;
+  border-right: 1px solid white;
+  color: black;
 }
 
 .gallery .filename-spacer > .options {
@@ -290,54 +285,53 @@ body {
 
 .gallery .filename-spacer .saved,
 .gallery .filename-spacer .keep-original {
-  display: none;
-  color: gray;
-  font-size: 90%;
   -webkit-transition: all linear 120ms;
-  pointer-events: none;
+  color: gray;
   cursor: inherit;
+  display: none;
+  font-size: 90%;
   margin-right: 10px;
+  pointer-events: none;
 }
 
 .gallery .filename-spacer .saved[highlighted] {
+  -webkit-transform: scaleX(1.1) scaleY(1.1) rotate(0);
   color: white;
-  -webkit-transform: scaleX(1.1) scaleY(1.1) rotate(0deg);
 }
 
 .gallery .filename-spacer .keep-original[visible] {
-  display: inline-block;
-  cursor: pointer;
   color: white;
+  cursor: pointer;
+  display: inline-block;
   pointer-events: auto;
 }
 
 .gallery .button-spacer {
-  display: -webkit-box;
   -webkit-box-flex: 1;
+  display: -webkit-box;
 }
 
 /* Thumbnails */
 
 .gallery .ribbon-spacer {
-  position: absolute;
-  left: 280px;
-  right: 280px;
-  height: 100%;
-  display: -webkit-box;
+  -webkit-box-align: center;
   -webkit-box-orient: horizontal;
   -webkit-box-pack: center;
-  -webkit-box-align: center;
+  display: -webkit-box;
+  height: 100%;
+  left: 280px;
+  position: absolute;
+  right: 280px;
 }
 
 .gallery .toolbar .ribbon {
-  overflow: hidden;
-  height: 100%;
   -webkit-box-flex: 0;
-  display: -webkit-box;
   -webkit-box-orient: horizontal;
   -webkit-box-pack: start;
-
   -webkit-transition: opacity 180ms linear;
+  display: -webkit-box;
+  height: 100%;
+  overflow: hidden;
   z-index: 0;
 }
 
@@ -346,17 +340,17 @@ body {
 }
 
 .gallery .ribbon-image {
-  display: -webkit-box;
+  -webkit-box-align: center;
   -webkit-box-orient: horizontal;
   -webkit-box-pack: center;
-  -webkit-box-align: center;
-  overflow: hidden;
+  -webkit-transition: margin-left 180ms linear;
+  border: 2px solid rgba(255,255,255,0); /* transparent white */
   cursor: pointer;
-  width: 47px;
+  display: -webkit-box;
   height: 47px;
   margin: 2px;
-  border: 2px solid rgba(255,255,255,0); /* transparent white */
-  -webkit-transition: margin-left 180ms linear;
+  overflow: hidden;
+  width: 47px;
 }
 
 .gallery .ribbon-image[selected] {
@@ -364,40 +358,45 @@ body {
 }
 
 .gallery .toolbar .ribbon.fade-left {
-  -webkit-mask-image: -webkit-linear-gradient(left, rgba(0,0,0,0) 0, rgba(0,0,0,1) 40px);
+  -webkit-mask-image: -webkit-linear-gradient(left, rgba(0, 0, 0, 0) 0,
+                                                    rgba(0, 0, 0, 1) 40px);
 }
 
 .gallery .toolbar .ribbon.fade-right {
-  -webkit-mask-image: -webkit-linear-gradient(right, rgba(0,0,0,0) 0, rgba(0,0,0,1) 40px);
+  -webkit-mask-image: -webkit-linear-gradient(right, rgba(0, 0, 0, 0) 0,
+                                                     rgba(0, 0, 0, 1) 40px);
 }
 
 .gallery .toolbar .ribbon.fade-left.fade-right {
-  -webkit-mask-image: -webkit-linear-gradient(left, rgba(0,0,0,0) 0, rgba(0,0,0,1) 40px, rgba(0,0,0,1) 230px, rgba(0,0,0,0) 100%);
+  -webkit-mask-image: -webkit-linear-gradient(left, rgba(0, 0, 0, 0) 0,
+                                                    rgba(0, 0, 0, 1) 40px,
+                                                    rgba(0, 0, 0, 1) 230px,
+                                                    rgba(0, 0, 0, 0) 100%);
 }
 
 .gallery .image-wrapper {
-  position: relative;
-  overflow: hidden;
-  width: 45px;
+  border: 1px solid rgba(0, 0, 0, 0);  /* transparent black */
   height: 45px;
-  border: 1px solid rgba(0,0,0,0); /* transparent black */
+  overflow: hidden;
+  position: relative;
+  width: 45px;
 }
 
 /* Editor buttons */
 
 .gallery .toolbar .edit-bar {
-  position: absolute;
-  overflow: hidden;
-  pointer-events: none;
-  right: 0;
-  width: 100%;
-  opacity: 0;
-  height: 55px;
-  color: white;
-  display: -webkit-box;
   -webkit-box-orient: horizontal;
   -webkit-box-pack: center;
   -webkit-transition: opacity 180ms linear;
+  color: white;
+  display: -webkit-box;
+  height: 55px;
+  opacity: 0;
+  overflow: hidden;
+  pointer-events: none;
+  position: absolute;
+  right: 0;
+  width: 100%;
 }
 
 .gallery[editing] .toolbar .edit-bar {
@@ -405,33 +404,30 @@ body {
 }
 
 .gallery .edit-main {
-  display: -webkit-box;
   -webkit-box-orient: horizontal;
-  opacity: 0;
   -webkit-transition: opacity 250ms ease-in-out;
+  display: -webkit-box;
+  opacity: 0;
 }
 
 .gallery[editing] .edit-main {
-  pointer-events: auto;
   opacity: 1.0;
+  pointer-events: auto;
 }
 
 .gallery > .toolbar .button {
-  -webkit-box-flex: 0;
-  padding: 0 10px 0 35px;
-  cursor: pointer;
-  margin: 8px 0 7px 3px;
-  height: 40px;
-
-  display: -webkit-box;
-  -webkit-box-orient: horizontal;
   -webkit-box-align: center;
+  -webkit-box-flex: 0;
+  -webkit-box-orient: horizontal;
   -webkit-box-pack: end;
-
-  background-repeat: no-repeat;
   background-position: 5px center;
-
+  background-repeat: no-repeat;
+  cursor: pointer;
+  display: -webkit-box;
+  height: 40px;
+  margin: 8px 0 7px 3px;
   opacity: 0.99;  /* Workaround for http://crosbug.com/21065 */
+  padding: 0 10px 0 35px;
 }
 
 .gallery > .toolbar .button {
@@ -499,13 +495,13 @@ body {
 }
 
 .gallery > .toolbar .button.redo {
-  position: absolute; /* Exclude from center-packing*/
   background-image: url(../images/gallery/icon_redo.png);
+  position: absolute; /* Exclude from center-packing*/
 }
 
 .gallery > .toolbar .button[disabled] {
-  pointer-events: none;
   opacity: 0.5;
+  pointer-events: none;
 }
 
 .gallery > .toolbar .button[hidden] {
@@ -513,9 +509,9 @@ body {
 }
 
 .gallery > .toolbar > .button.edit {
+  background-image: url(../images/gallery/icon_edit.png);
   position: relative;
   z-index: 10;
-  background-image: url(../images/gallery/icon_edit.png);
 }
 
 .gallery > .toolbar > .button.edit[pressed] {
@@ -523,9 +519,9 @@ body {
 }
 
 .gallery > .toolbar > .button.share {
+  background-image: url(../images/gallery/icon_share.png);
   position: relative;
   z-index: 10;
-  background-image: url(../images/gallery/icon_share.png);
 }
 
 .gallery > .toolbar > .button.share[pressed] {
@@ -534,8 +530,8 @@ body {
 
 .gallery[error] > .toolbar .button.edit,
 .gallery[error] > .toolbar .button.share {
-  pointer-events: none;
   opacity: 0.7;
+  pointer-events: none;
 }
 
 .gallery > .toolbar > .button:last-child {
@@ -545,14 +541,14 @@ body {
 /* Secondary toolbar (mode-specific tools) */
 
 .gallery .edit-modal {
-  position: absolute;
-  width: 100%;
-  bottom: 80px;
-  height: 40px;
-  display: -webkit-box;
   -webkit-box-orient: horizontal;
   -webkit-box-pack: center;
+  bottom: 80px;
+  display: -webkit-box;
+  height: 40px;
   pointer-events: none;
+  position: absolute;
+  width: 100%;
 }
 
 .gallery .edit-modal-wrapper[hidden] {
@@ -560,27 +556,25 @@ body {
 }
 
 .gallery .edit-modal-wrapper {
-  color: white;
-  padding-right: 5px;
-  background-color: rgba(0, 0, 0, 0.75);
-  display: -webkit-box;
+  -webkit-box-align: center;
   -webkit-box-orient: horizontal;
   -webkit-box-pack: center;
-  -webkit-box-align: center;
+  background-color: rgba(0, 0, 0, 0.75);
+  color: white;
+  display: -webkit-box;
+  padding-right: 5px;
   pointer-events: auto;
 }
 
 .gallery .edit-modal .label {
+  -webkit-box-align: center;
+  -webkit-box-orient: horizontal;
+  background-position: 20px center;
+  background-repeat: no-repeat;
+  display: -webkit-box;
   height: 20px;
   padding-left: 50px;
   padding-right: 10px;
-
-  display: -webkit-box;
-  -webkit-box-orient: horizontal;
-  -webkit-box-align: center;
-
-  background-repeat: no-repeat;
-  background-position: 20px center;
 }
 
 .gallery .edit-modal .label.brightness {
@@ -588,31 +582,31 @@ body {
 }
 
 .gallery .edit-modal .label.contrast {
-  margin-left: 15px;
   background-image: url(../images/gallery/icon_contrast.png);
+  margin-left: 15px;
 }
 
 .gallery .edit-modal .range {
   -webkit-appearance: none !important;
   height: 3px;
-  margin-top: 1px;
   margin-right: 10px;
+  margin-top: 1px;
 }
 
 .gallery .edit-modal .range::-webkit-slider-thumb {
   -webkit-appearance: none;
-  width: 16px;
-  height: 29px;
   background-image: url(../images/gallery/slider_thumb.png);
+  height: 29px;
+  width: 16px;
 }
 
 /* Crop frame */
 
 .gallery .crop-overlay {
-  position: absolute;
-  pointer-events: none;
-  display: -webkit-box;
   -webkit-box-orient: vertical;
+  display: -webkit-box;
+  pointer-events: none;
+  position: absolute;
 }
 
 .gallery .crop-overlay .shadow {
@@ -620,27 +614,27 @@ body {
 }
 
 .gallery .crop-overlay .middle-box {
-  display: -webkit-box;
-  -webkit-box-orient: horizontal;
   -webkit-box-flex: 1;
+  -webkit-box-orient: horizontal;
+  display: -webkit-box;
 }
 
 .gallery .crop-frame {
-  position: relative;
-  display: -webkit-box;
   -webkit-box-flex: 1;
+  display: -webkit-box;
+  position: relative;
 }
 
-.gallery .crop-frame div{
-  position: absolute;
-  background-color: rgba(255, 255, 255, 1);
+.gallery .crop-frame div {
   -webkit-box-shadow: 0 0 3px rgba(0, 0, 0, 0.75);
+  background-color: rgba(255, 255, 255, 1);
+  position: absolute;
 }
 
 .gallery .crop-frame .horizontal {
+  height: 1px;
   left: 7px;
   right: 7px;
-  height: 1px;
 }
 
 .gallery .crop-frame .horizontal.top {
@@ -652,8 +646,8 @@ body {
 }
 
 .gallery .crop-frame .vertical {
-  top: 7px;
   bottom: 7px;
+  top: 7px;
   width: 1px;
 }
 
@@ -667,8 +661,8 @@ body {
 
 .gallery .crop-frame .corner {
   border-radius: 6px;
-  width: 13px;
   height: 13px;
+  width: 13px;
 }
 
 .gallery .crop-frame .corner.left {
@@ -690,15 +684,13 @@ body {
 /* Prompt/notification panel */
 
 .gallery .prompt-wrapper {
-  position: absolute;
-  pointer-events: none;
-
-  width: 100%;
-  height: 100%;
-
-  display: -webkit-box;
   -webkit-box-orient: horizontal;
   -webkit-box-pack: center;
+  display: -webkit-box;
+  height: 100%;
+  pointer-events: none;
+  position: absolute;
+  width: 100%;
 }
 
 .gallery .prompt-wrapper[pos=top] {
@@ -714,35 +706,29 @@ body {
 }
 
 .gallery .prompt-wrapper > div.dimmable {
-  opacity: 1;
   -webkit-transition: opacity 220ms ease;
+  opacity: 1;
 }
 
 .gallery .prompt {
+  -webkit-box-align: center;
+  -webkit-box-orient: horizontal;
+  -webkit-transition: all 180ms ease;
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
+  display: -webkit-box;
   font-size: 120%;
   height: 40px;
+  opacity: 0;
   padding: 0 20px;
-  color: white;
-  background-color: rgba(0, 0, 0, 0.8);
-
-  display: -webkit-box;
-  -webkit-box-orient: horizontal;
-  -webkit-box-align: center;
-
   position: relative;
   top: 5px;
-  opacity: 0;
-  -webkit-transition: all 180ms ease;
 }
 
-.gallery .prompt[state='fadein'] {
-  top: 0;
-  opacity: 1;
-}
-
+.gallery .prompt[state='fadein'],
 .gallery .prompt[state='fadeout'] {
-  top: 0;
   opacity: 0;
+  top: 0;
 }
 
 .gallery .prompt-wrapper[pos=top] .prompt {
@@ -750,63 +736,62 @@ body {
 }
 
 .gallery .prompt .close {
-  pointer-events: auto;
-  width: 16px;
+  background-image: url(../images/gallery/butterbar_close_x.png);
+  background-position: center center;
+  background-repeat: no-repeat;
   height: 16px;
   margin-left: 16px;
   opacity: 0.65;
-  background-image: url(../images/gallery/butterbar_close_x.png);
-  background-repeat: no-repeat;
-  background-position: center center;
+  pointer-events: auto;
+  width: 16px;
 }
 
 .gallery .prompt .close:hover {
-  opacity: 1.0;
   background-color: rgba(81,81,81,1);
+  opacity: 1.0;
 }
 
-
 .gallery .share-menu {
+  -webkit-border-radius: 1px;
+  -webkit-box-align: stretch;
+  -webkit-box-orient: vertical;
+  -webkit-box-pack: start;
+  -webkit-transition: opacity 500ms ease-in-out;
+  background-color: white;
+  border: 1px solid #7f7f7f;
+  bottom: 60px;
+  display: -webkit-box;
+  opacity: 1.0;
+  padding: 8px;
   position: absolute;
   right: 10px;
-  bottom: 60px;
-  background-color: white;
-  opacity: 1.0;
-  -webkit-transition: opacity 500ms ease-in-out;
-  padding: 8px;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-box-align: stretch;
-  -webkit-box-pack: start;
-  border: 1px solid #7f7f7f;
-  -webkit-border-radius: 1px;
 }
 
 .gallery .share-menu .bubble-point {
   background-image: url(../images/gallery/bubble_point.png);
   background-position: center top;
   background-repeat: no-repeat;
-  position: absolute;
-  width: 20px;
-  height: 8px;
   bottom: -8px;
-  right: 20px;
+  height: 8px;
   padding: 0;
+  position: absolute;
+  right: 20px;
+  width: 20px;
 }
 
 .gallery .share-menu[hidden] {
-  opacity: 0.0;
   bottom: -100%;  /* offscreen so that 'dimmed' attribute does not show it*/
+  opacity: 0.0;
   pointer-events: none;
 }
 
 .gallery .share-menu > div {
-  cursor: pointer;
-  background-color: rgba(0,0,0,0);
-  padding: 5px;
-  display: -webkit-box;
   -webkit-box-align: center;
   -webkit-box-pack: start;
+  background-color: rgba(0,0,0,0);
+  cursor: pointer;
+  display: -webkit-box;
+  padding: 5px;
 }
 
 .gallery .share-menu > div:hover {
@@ -814,23 +799,23 @@ body {
 }
 
 .gallery .share-menu > div > img {
-  margin-right: 5px;
   display: block;
+  margin-right: 5px;
 }
 
 /* Load spinner and error banner */
 
 .gallery .spinner {
-  width: 32px;
+  background-image: url(../images/gallery/spinner_white.svg);
+  background-size: 100%;
   height: 32px;
-  position: absolute;
   left: 50%;
-  top: 50%;
   margin-left: -16px;
   margin-top: -16px;
   opacity: 0.5;
-  background-size: 100%;
-  background-image: url(../images/gallery/spinner_white.svg);
+  position: absolute;
+  top: 50%;
+  width: 32px;
 }
 
 .gallery:not([spinner]) .spinner {
@@ -838,20 +823,18 @@ body {
 }
 
 .gallery .error-banner {
-  color: white;
+  -webkit-box-align: center;
+  -webkit-box-orient: horizontal;
+  -webkit-box-pack: center;
   background-color: rgba(24, 24, 24, 1);
+  background-image: url(../images/media/error.png);
+  background-position: 25px center;
+  background-repeat: no-repeat;
+  color: white;
+  display: -webkit-box;
   height: 54px;
   padding-left: 70px;
   padding-right: 35px;
-
-  display: -webkit-box;
-  -webkit-box-orient: horizontal;
-  -webkit-box-align: center;
-  -webkit-box-pack: center;
-
-  background-image: url(../images/media/error.png);
-  background-repeat: no-repeat;
-  background-position: 25px center;
 }
 
 .gallery:not([error]) .error-banner {
@@ -861,29 +844,29 @@ body {
 /* Video playback support. */
 
 .gallery video {
+  height: 100%;
   position: absolute;
   width: 100%;
-  height: 100%;
 }
 
 .gallery .video-controls-spacer {
-  position: absolute;
-  left: 0;
-  right: 0;
-  height: 30px;
+  -webkit-box-align: center;
+  -webkit-box-orient: horizontal;
+  -webkit-box-pack: center;
   bottom: 60px; /* Just above the toolbar */
   display: -webkit-box;
-  -webkit-box-orient: horizontal;
-  -webkit-box-align: center;
-  -webkit-box-pack: center;
-  pointer-events: none;
+  height: 30px;
+  left: 0;
   opacity: 0;
+  pointer-events: none;
+  position: absolute;
+  right: 0;
 }
 
 .gallery[video] .video-controls-spacer {
   /* Animate opacity on 'tools' attribute toggle. */
   /* Change opacity immediately on 'video' attribute change. */
-  -webkit-transition: opacity 0.28s ease;
+  -webkit-transition: opacity 280ms ease;
 }
 
 .gallery[video][tools] .video-controls-spacer {
@@ -891,13 +874,13 @@ body {
 }
 
 .gallery .video-controls {
-  max-width: 800px;
   display: none;
+  max-width: 800px;
 }
 
 .gallery[video] .video-controls {
-  display: -webkit-box;
   -webkit-box-flex: 1;
+  display: -webkit-box;
 }
 
 .gallery[video] > .toolbar .button.edit,

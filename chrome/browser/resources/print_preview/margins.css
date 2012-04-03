@@ -43,7 +43,7 @@
 }
 
 .margin-box.invalid {
-  background-color: #c11b17;
+  background-color: rgb(193, 27, 23);
 }
 
 .margins-ui-pair {
@@ -67,7 +67,7 @@
 }
 
 .margin-line {
-  border-color: #4080FA;
+  border-color: rgb(64, 128, 250);
   border-style: dashed;
   border-width: 1px;
   pointer-events: none;
@@ -96,6 +96,6 @@
 }
 
 #customized-margins.invisible {
-  pointer-events: none;
   opacity: 0;
+  pointer-events: none;
 }

@@ -1,27 +1,28 @@
-/*
-Copyright (c) 2010 The Chromium Authors. All rights reserved.
-Use of this source code is governed by a BSD-style license that can be
-found in the LICENSE file.
-*/
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
 #info-view {
-  padding: 10px;
-  overflow: auto;
   -webkit-box-flex: 1;
+  overflow: auto;
+  padding: 10px;
 }
+
 #info-view * {
   -webkit-user-select: text;
 }
 
 #info-view[selected] {
-  display: -webkit-box;
   -webkit-box-orient: vertical;
+  display: -webkit-box;
 }
 
 #info-view h3,
 #info-view ul {
-  -webkit-margin-before: 0;
   -webkit-margin-after: 0;
+  -webkit-margin-before: 0;
 }
+
 #info-view > div {
   -webkit-margin-after: 1em;
 }
@@ -31,16 +32,16 @@ found in the LICENSE file.
 }
 
 #info-view table {
-  cursor: text;
   border-collapse: collapse;
+  cursor: text;
 }
 
 #info-view table,
 #info-view th,
 #info-view td {
   border: 1px solid #777;
-  padding-right: 4px;
   padding-left: 4px;
+  padding-right: 4px;
   text-align: top;
 }
 

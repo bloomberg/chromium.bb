@@ -188,9 +188,9 @@ class CssStyleGuideTest(SuperMoxTestBase):
     self.input_api.AffectedFiles(
         include_deletes=False, file_filter=None).AndReturn([self.fake_file])
 
-    # Actual creations of PresubmitError are defined in each test.
+    # Actual creations of PresubmitPromptWarning are defined in each test.
     self.output_api = self.mox.CreateMockAnything()
-    self.mox.StubOutWithMock(self.output_api, 'PresubmitError',
+    self.mox.StubOutWithMock(self.output_api, 'PresubmitPromptWarning',
                              use_mock_anything=True)
 
     author_msg = ('Was the CSS checker useful? '
@@ -202,7 +202,7 @@ class CssStyleGuideTest(SuperMoxTestBase):
 
   def VerifyContentsProducesOutput(self, contents, output):
     self.fake_file.NewContents().AndReturn(contents.splitlines())
-    self.output_api.PresubmitError(
+    self.output_api.PresubmitPromptWarning(
         self.fake_file_name + ':\n' + output.strip()).AndReturn(None)
     self.mox.ReplayAll()
     css_checker.CSSChecker(self.input_api, self.output_api).RunChecks()
@@ -305,6 +305,10 @@ blah /* hey! */
     display: block;
   }}
 
+@-webkit-keyframe blah {
+  100% { height: -500px 0; }
+}
+
 #rule {
   rule: value; }""", """
 - Always put a rule closing brace (}) on a new line.
@@ -346,11 +350,15 @@ html[dir=ltr] body /* TODO(dbeam): Require '' around rtl in future? */ {
 #abcdef-ghij,
 #aaaaaa,
 #bbaacc {
+  background-color: #336699; /* Ignore short hex rule if not gray. */
   color: #999999;
   color: #666;
 }""", """
 - Use abbreviated hex (#rgb) when in form #rrggbb.
-    color: #999999; (replace with #999)""")
+    color: #999999; (replace with #999)
+
+- Use rgb() over #hex when not a shade of gray (like #333).
+    background-color: #336699; (replace with rgb(51, 102, 153))""")
 
   def testCssUseMillisecondsForSmallTimes(self):
     self.VerifyContentsProducesOutput("""
@@ -384,11 +392,16 @@ div,a,
 div,/* Hello! */ span,
 #id.class([dir=rtl):not(.class):any(a, b, d) {
   rule: value;
+}
+
+a,
+div,a {
+  some-other: rule here;
 }""", """
 - One selector per line (what not to do: a, b {}).
     div,a,
-    div, span,""")
-
+    div, span,
+    div,a {""")
 
   def testCssRgbIfNotGray(self):
     self.VerifyContentsProducesOutput("""

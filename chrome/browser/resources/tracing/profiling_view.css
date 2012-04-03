@@ -1,16 +1,17 @@
 /* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
+
 #profiling-view {
+  -webkit-box-flex: 1;
+  -webkit-box-orient: vertical;
   display: -webkit-box;
   padding: 0;
-  -webkit-box-orient: vertical;
-  -webkit-box-flex: 1;
 }
 
 #profiling-view > .control {
-  display: -webkit-box;
   border-bottom: 1px solid #555;
+  display: -webkit-box;
 }
 
 #profiling-view > .control > span {
@@ -25,19 +26,19 @@
 }
 
 #profiling-view > .container {
-  display: -webkit-box;
   -webkit-box-flex: 1;
+  display: -webkit-box;
 }
 
 .profiling-overlay {
-  display: -webkit-box;
   -webkit-box-orient: vertical;
+  display: -webkit-box;
   text-align: center;
 }
 
 .profiling-overlay .raw-text {
-  overflow: auto;
   -webkit-box-flex: 1;
+  overflow: auto;
   wrap: none;
 }
 

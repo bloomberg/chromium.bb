@@ -1,18 +1,18 @@
-/*
-Copyright (c) 2011 The Chromium Authors. All rights reserved.
-Use of this source code is governed by a BSD-style license that can be
-found in the LICENSE file.
-*/
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
 .timeline-view {
-  padding: 0;
-  -webkit-box-orient: vertical;
   -webkit-box-flex: 1;
+  -webkit-box-orient: vertical;
   display: -webkit-box;
+  padding: 0;
 }
 
 .timeline-view > .timeline {
-  display: -webkit-box;
   -webkit-box-flex: 1;
+  display: -webkit-box;
   overflow: auto;
 }
 
@@ -31,9 +31,9 @@ found in the LICENSE file.
 
 .timeline-view .summary-container {
   border-top: 1px solid black;
+  font-family: monospace;
   max-height: 250px;
   min-height: 250px;
-  font-family: monospace;
   overflow: auto;
 }
 

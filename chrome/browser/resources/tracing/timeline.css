@@ -1,5 +1,4 @@
-/*
- * Copyright (c) 2012 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -11,7 +10,7 @@
 
 .timeline-drag-box {
   background-color: rgba(0, 0, 255, 0.25);
-  border: 1px solid #000060
+  border: 1px solid rgb(0, 0, 96);
   font-size: 75%;
   position: fixed;
 }
@@ -37,20 +36,20 @@
   background-color: rgba(255, 255, 255, 1.0);
   border: 1px solid rgba(0, 0, 0, 0.5);
   border-radius: 25%;
-  box-shadow: 0 0 .05em rgba(0,0,0,0.4);
-  color: rgba(0,0,0,1);
+  box-shadow: 0 0 .05em rgba(0, 0, 0, 0.4);
+  color: rgba(0, 0, 0, 1);
 }
 
 .timeline-track-close-button {
-  left: 0px;
+  left: 0;
   position: absolute;
-  top: 0px;
+  top: 0;
 }
 
 .timeline-track-collapse-button {
   left: 15px;
   position: absolute;
-  top: 0px;
+  top: 0;
 }
 
 .timeline-thread-track:not(:first-child) {
@@ -58,13 +57,12 @@
 }
 
 .timeline-canvas-based-track {
-  -webkit-box-orient: horizontal;
   -webkit-box-align: stretch;
+  -webkit-box-orient: horizontal;
   background-color: white;
   display: -webkit-box;
   margin: 0;
-  padding: 0;
-  padding-right: 5px;
+  padding: 0 5px 0 0;
 }
 
 .timeline-canvas-based-track-title {

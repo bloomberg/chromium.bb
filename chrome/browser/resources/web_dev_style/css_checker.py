@@ -68,8 +68,11 @@ class CSSChecker(object):
       return (m and (m.group(1).lower() != m.group(1) or
                      m.group(1).find('_') >= 0))
 
+    # Ignore single frames in a @keyframe, i.e. 0% { margin: 50px; }
+    frame_reg = r'\s*\d+%\s*{\s*[_a-zA-Z0-9-]+:(\s*[_a-zA-Z0-9-]+)+\s*;\s*}\s*'
     def close_brace_on_new_line(line):
-      return (line.find('}') >= 0 and re.search(r'[^ }]', line))
+      return (line.find('}') >= 0 and re.search(r'[^ }]', line) and
+              not re.match(frame_reg, line))
 
     def colons_have_space_after(line):
       return re.search(r':(?!//)\S[^;]+;\s*', line)
@@ -82,7 +85,7 @@ class CSSChecker(object):
                r'(?!.*(?:{.*|,\s*)$)')
     def hex_could_be_shorter(line):
       m = re.search(hex_reg, line)
-      return (m and _collapseable_hex(m.group(1)))
+      return (m and _is_gray(m.group(1)) and _collapseable_hex(m.group(1)))
 
     small_seconds = r'(?:^|[^_a-zA-Z0-9-])(0?\.[0-9]+)s(?!-?[_a-zA-Z0-9-])'
     def milliseconds_for_small_times(line):
@@ -97,7 +100,7 @@ class CSSChecker(object):
     def one_selector_per_line(contents):
       errors = []
       for b in re.finditer(multi_sels, re.sub(any_reg, '', contents)):
-        errors.append('    ' + b.group(1).strip())
+        errors.append('    ' + b.group(1).strip().splitlines()[-1:][0])
       return errors
 
     def rgb_if_not_gray(line):
@@ -209,7 +212,7 @@ class CSSChecker(object):
             file_errors.append('- %s\n%s' %
                 (check['desc'], '\n'.join(check_errors)))
       if file_errors:
-        results.append(self.output_api.PresubmitError(
+        results.append(self.output_api.PresubmitPromptWarning(
             '%s:\n%s' % (f[0], '\n\n'.join(file_errors))))
 
     if results:

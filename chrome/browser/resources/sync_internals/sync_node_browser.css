@@ -33,7 +33,7 @@
 }
 
 #sync-node-splitter {
-  background-color: #ebeff9;
+  background-color: rgb(235, 239, 249);
   cursor: col-resize;
   width: 5px;
 <if expr="is_win">
@@ -57,5 +57,5 @@
 }
 
 #node-browser tr:nth-child(odd) {
-  background: #eff3ff;
+  background: rgb(239, 243, 255);
 }

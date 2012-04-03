@@ -1,48 +1,44 @@
-/*
- * Copyright (c) 2012 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
 body {
-  padding: 0;
   -webkit-user-select: none;
   overflow: hidden;
+  padding: 0;
 }
 
 .audio-player {
-  position: absolute;
+  background-color: #1d1d1d;
+  bottom: 0;
+  color: white;
+  cursor: default;
+  font-family: Open Sans, Droid Sans Fallback, sans-serif;
+  font-size: 10pt;
   left: 0;
+  position: absolute;
   right: 0;
   top: 0;
-  bottom: 0;
-
-  color: white;
-  background-color: #1d1d1d;
-
-  font-family: Open Sans,Droid Sans Fallback,sans-serif;
-  font-size: 10pt;
-
-  cursor: default;
 }
 
 /* Title buttons.
-   In the collapsed/single-track mode they overlap the first track. */
+ * In the collapsed/single-track mode they overlap the first track. */
 
 .title-button {
-  position: absolute;
-  width: 29px;
-  height: 29px;
-  top: 0;
-  opacity: 0.4;
-  cursor: pointer;
-  background-repeat: no-repeat;
   background-position: center center;
+  background-repeat: no-repeat;
+  cursor: pointer;
+  height: 29px;
+  opacity: 0.4;
+  position: absolute;
+  top: 0;
+  width: 29px;
   z-index: 2;
 }
 
 .title-button:hover {
-  background-color: #3c7eff !important;
+  background-color: rgb(60, 126, 255) !important;
   opacity: 1;
 }
 
@@ -52,15 +48,15 @@ body {
 
 /* TODO(kaznacheev): Remove display: none when the audio player is title-less */
 .title-button.close {
+  background-image: url(../images/media/media_close.png);
   display: none;
   right: 0;
-  background-image: url(../images/media/media_close.png);
 }
 
 /* TODO(kaznacheev): Set right: 29px when the audio player is title-less */
 .title-button.collapse {
-  right: 0;
   background-image: url(../images/media/media_collapse.png);
+  right: 0;
 }
 
 .collapsed .title-button.collapse {
@@ -74,28 +70,26 @@ body {
 /* Common properties for track containers. */
 .audio-player > .track-list,
 .audio-player > .track-stack {
-  position: absolute;
-  left: 0;
-  right: 0;
   bottom: 35px;  /* Room for the controls bar. */
+  left: 0;
+  position: absolute;
+  right: 0;
 }
 
 /* Scrollable list of tracks.
-  Displayed in expanded mode if there is more than one track. */
+ * Displayed in expanded mode if there is more than one track. */
 .audio-player > .track-list {
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
   -webkit-box-align: center;
+  -webkit-box-orient: vertical;
   -webkit-box-pack: start;
-
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  display: -webkit-box;
   overflow-x: hidden;
   overflow-y: auto;
 }
 
 /* A single track container.
-  Displayed in the compact mode or when there is only one track. */
+ * Displayed in the compact mode or when there is only one track. */
 .audio-player > .track-stack {
   height: 58px;
 }
@@ -109,13 +103,12 @@ body {
 
 /* Track item. */
 .track {
-  width: 100%;
-  height: 58px;
-
-  display: -webkit-box;
-  -webkit-box-orient: horizontal;
   -webkit-box-align: center;
+  -webkit-box-orient: horizontal;
   -webkit-box-pack: start;
+  display: -webkit-box;
+  height: 58px;
+  width: 100%;
 }
 
 /* In the expanded mode the selected track is highlighted. */
@@ -143,10 +136,10 @@ body {
 }
 
 /* Opacity transition is controlled differently for the text and the artwork.
-   Text transition looks better if fade-in and fade-out go in parallel.
-   For the artwork we start fading out the old icon only after the new one
-   is completely opaque (otherwise when transitioning between identical icons
-   we see some fading because the background transpires). */
+ * Text transition looks better if fade-in and fade-out go in parallel.
+ * For the artwork we start fading out the old icon only after the new one
+ * is completely opaque (otherwise when transitioning between identical icons
+ * we see some fading because the background transpires). */
 .track-stack > .track:not(.selected) .data,
 .track-stack > .track:not(.visible) .art {
   -webkit-transition: opacity 220ms ease-out;
@@ -156,21 +149,21 @@ body {
 /* Track data. */
 
 .track .art {
+  -webkit-box-sizing: border-box;
+  height: 48px;
+  margin: 4px 0 6px 4px;
   position: relative;
   width: 48px;
-  height: 48px;
-  margin: 4px 0px 6px 4px;
-  -webkit-box-sizing: border-box;
 }
 
 .track .art.blank {
-  border: 1px solid #333;
   background-color: #111;
+  border: 1px solid #333;
 }
 
 .track .art img {
-  width: 100%;
   height: 100%;
+  width: 100%;
 }
 
 .track .art.blank img {
@@ -179,8 +172,8 @@ body {
 
 .track .art.error {
   background-image: url(../images/media/error.png);
-  background-repeat: no-repeat;
   background-position: center center;
+  background-repeat: no-repeat;
 }
 
 .noart .track .art {
@@ -188,20 +181,19 @@ body {
 }
 
 .track .data {
-  margin-right: 4px;
-  margin-left: 8px;
-
-  display: -webkit-box;
+  -webkit-box-flex: 1;
   -webkit-box-orient: vertical;
   -webkit-box-pack: center;
-  -webkit-box-flex: 1;
+  display: -webkit-box;
+  margin-left: 8px;
+  margin-right: 4px;
 }
 
 .track .data .data-title,
 .track .data .data-artist {
-  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .track .data .data-title {
@@ -221,28 +213,24 @@ body {
 /* Controls bar. */
 
 .audio-controls {
-  position: absolute;
-
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 30px;
-  padding: 0 0 4px 13px;
-
-  background-color: #2D2D2D;
-
-  display: -webkit-box;
-  -webkit-box-orient: horizontal;
   -webkit-box-align: center;
+  -webkit-box-orient: horizontal;
   -webkit-box-pack: center;
+  background-color: #2D2D2D;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  bottom: 0;
+  display: -webkit-box;
+  height: 30px;
+  left: 0;
+  padding: 0 0 4px 13px;
+  position: absolute;
+  right: 0;
 }
 
 .audio-controls .media-button {
-  width: 29px;
   height: 29px;
   margin-top: 1px;
+  width: 29px;
 }
 
 .audio-controls .media-button.play {
@@ -250,7 +238,7 @@ body {
   margin-right: -8px;
 }
 
-.audio-controls .media-button.play > .state0.normal{
+.audio-controls .media-button.play > .state0.normal {
   background-image: url(../images/media/media_play_audio.png);
 }
 
@@ -323,55 +311,55 @@ body {
 /* Customized scrollbar for the playlist. */
 
 ::-webkit-scrollbar {
-  width: 16px;
   height: 16px;
+  width: 16px;
 }
 
 ::-webkit-scrollbar-button {
-  height: 0px;
-  width: 0px;
+  height: 0;
+  width: 0;
 }
 
 ::-webkit-scrollbar-thumb {
+  -webkit-box-shadow: inset 1px 1px 0 rgba(0, 0, 0, 0.10),
+                      inset 0 -1px 0  rgba(0, 0, 0, 0.07);
+  background-clip: padding-box;
+  background-color: rgba(255, 255, 255, 0.15);
   min-height: 28px;
   padding-top: 100px;
-  background-clip: padding-box;
-  background-color: rgba(255,255,255,0.15);
-  -webkit-box-shadow: inset 1px 1px 0px rgba(0,0,0,0.10),
-                      inset 0px -1px 0px  rgba(0,0,0,0.07);
 }
 
 ::-webkit-scrollbar-thumb:hover {
+  -webkit-box-shadow: inset 1px 1px 1px rgba(0, 0, 0, 0.25);
   background-color: rgba(255,255,255,0.20);
-  -webkit-box-shadow: inset 1px 1px 1px rgba(0,0,0,0.25);
 }
 
 ::-webkit-scrollbar-thumb:active {
-  background-color: rgba(255,255,255,0.25);
-  -webkit-box-shadow: inset 1px 1px 3px rgba(0,0,0,0.35);
+  -webkit-box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.35);
+  background-color: rgba(255, 255, 255, 0.25);
 }
 
 ::-webkit-scrollbar-thumb:vertical {
-  border-top: 0px solid transparent;
-  border-bottom: 0px solid transparent;
-  border-right: 0px solid transparent;
+  border-bottom: 0 solid transparent;
   border-left: 5px solid transparent;
+  border-right: 0 solid transparent;
+  border-top: 0 solid transparent;
 }
 
 ::-webkit-scrollbar-track:hover {
-  background-color: rgba(0,0,0,0.05);
-   -webkit-box-shadow: inset 1px 0px 0px  rgba(0,0,0,0.10);
+  -webkit-box-shadow: inset 1px 0 0 rgba(0, 0, 0, 0.10);
+  background-color: rgba(0, 0, 0, 0.05);
 }
 
 ::-webkit-scrollbar-track:active {
-  background-color: rgba(0,0,0,0.05);
-  -webkit-box-shadow: inset 1px 0px 0px  rgba(0,0,0,0.14),
-                      inset -1px -1px 0px  rgba(0,0,0,0.07);
+  -webkit-box-shadow: inset 1px 0 0 rgba(0, 0, 0, 0.14),
+                      inset -1px -1px 0 rgba(0, 0, 0, 0.07);
+  background-color: rgba(0, 0, 0, 0.05);
 }
 
 ::-webkit-scrollbar-track:vertical {
-  border-right: 0px solid transparent;
-  border-left: 5px solid transparent;
   background-clip: padding-box;
   background-color: transparent;
+  border-left: 5px solid transparent;
+  border-right: 0 solid transparent;
 }

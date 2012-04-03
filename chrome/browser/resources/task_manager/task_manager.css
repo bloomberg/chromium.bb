@@ -1,5 +1,4 @@
-/*
- * Copyright (c) 2012 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -77,8 +76,8 @@ body {
 /* Bullets on the left of row. */
 .table-row > .table-row-cell:first-child:before {
   -webkit-border-radius: 3px;
-  background: #CCCCCC;
-  content: "";
+  background: #ccc;
+  content: '';
   display: block;
   margin: 7px 4px 7px 7px;
   width: 6px;
@@ -143,8 +142,8 @@ body {
 }
 
 #about-memory-link {
+  color: rgb(17, 85, 204);
   padding-left: 2px;
-  color: #1155CC;
 }
 
 /* Container for the ok/cancel buttons. */
