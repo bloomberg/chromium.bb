@@ -9,33 +9,9 @@ Usage:
  ./parallel_emerge [--board=BOARD] [--workon=PKGS]
                    [--force-remote-binary=PKGS] [emerge args] package
 
-Basic operation:
-  Runs 'emerge -p --debug' to display dependencies, and stores a
-  dependency graph. All non-blocked packages are launched in parallel,
-  as 'emerge --nodeps package' with any blocked packages being emerged
-  immediately upon deps being met.
-
-  For this to work effectively, /usr/lib/portage/pym/portage/locks.py
-  must be stubbed out, preventing portage from slowing itself with
-  unneccesary locking, as this script ensures that emerge is run in such
-  a way that common resources are never in conflict. This is controlled
-  by an environment variable PORTAGE_LOCKS set in parallel emerge
-  subprocesses.
-
-  Parallel Emerge unlocks two things during operation, here's what you
-  must do to keep this safe:
-    * Storage dir containing binary packages. - Don't emerge new
-      packages while installing the existing ones.
-    * Portage database - You must not examine deps while modifying the
-      database. Therefore you may only parallelize "-p" read only access,
-      or "--nodeps" write only access.
-  Caveats:
-    * Some ebuild packages have incorrectly specified deps, and running
-      them in parallel is more likely to bring out these failures.
-    * Some ebuilds (especially the build part) have complex dependencies
-      that are not captured well by this script (it may be necessary to
-      install an old package to build, but then install a newer version
-      of the same package for a runtime dep).
+This script runs multiple emerge processes in parallel, using appropriate
+Portage APIs. It is faster than standard emerge because it has a
+multiprocess model instead of an asynchronous model.
 """
 
 import codecs
@@ -80,10 +56,8 @@ from _emerge.main import emerge_main
 from _emerge.main import parse_opts
 from _emerge.Package import Package
 from _emerge.Scheduler import Scheduler
-from _emerge.SetArg import SetArg
 from _emerge.stdout_spinner import stdout_spinner
 from portage._global_updates import _global_updates
-from portage.versions import vercmp
 import portage
 import portage.debug
 
@@ -310,36 +284,19 @@ class DepGraphGenerator(object):
     if "--accept-properties" in opts:
       os.environ["ACCEPT_PROPERTIES"] = opts["--accept-properties"]
 
-    # Portage has two flags for doing collision protection: collision-protect
-    # and protect-owned. The protect-owned feature is enabled by default and
-    # is quite useful: it checks to make sure that we don't have multiple
-    # packages that own the same file. The collision-protect feature is more
-    # strict, and less useful: it fails if it finds a conflicting file, even
-    # if that file was created by an earlier ebuild that failed to install.
-    #
-    # We want to disable collision-protect here because we don't handle
-    # failures during the merge step very well. Sometimes we leave old files
-    # lying around and they cause problems, so for now we disable the flag.
-    # TODO(davidjames): Look for a better solution.
-    features = os.environ.get("FEATURES", "") + " -collision-protect"
-
-    # Install packages in parallel.
-    features = features + " parallel-install"
-
     # If we're installing packages to the board, and we're not using the
-    # official flag, we can enable the following optimizations:
-    #  1) Don't lock during install step. This allows multiple packages to be
-    #     installed at once. This is safe because our board packages do not
-    #     muck with each other during the post-install step.
+    # official flag, we can enable the following optimization:
+    #  1) Disable vardb locks. This is safe because we only run up to one
+    #     instance of parallel_emerge in parallel.
     #  2) Don't update the environment until the end of the build. This is
     #     safe because board packages don't need to run during the build --
     #     they're cross-compiled, so our CPU architecture doesn't support them
     #     anyway.
+    # TODO(davidjames): Check whether this optimization still helps.
     if self.board and os.environ.get("CHROMEOS_OFFICIAL") != "1":
       os.environ.setdefault("PORTAGE_LOCKS", "false")
-      features = features + " -ebuild-locks no-env-update"
-
-    os.environ["FEATURES"] = features
+      extra_features = " no-env-update"
+      os.environ["FEATURES"] = os.environ.get("FEATURES", "") + extra_features
 
     # Now that we've setup the necessary environment variables, we can load the
     # emerge config from disk.
