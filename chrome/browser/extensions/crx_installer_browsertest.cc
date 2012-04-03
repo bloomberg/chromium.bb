@@ -60,13 +60,16 @@ class ExtensionCrxInstallerTest : public ExtensionBrowserTest {
     if (!parsed_manifest)
       return false;
 
-    CrxInstaller::WhitelistEntry* entry = new CrxInstaller::WhitelistEntry;
-    entry->parsed_manifest.reset(parsed_manifest);
-    CrxInstaller::SetWhitelistEntry(id, entry);
+    scoped_ptr<WebstoreInstaller::Approval> approval(
+        new WebstoreInstaller::Approval);
+    approval->extension_id = id;
+    approval->profile = browser()->profile();
+    approval->parsed_manifest.reset(parsed_manifest);
 
     scoped_refptr<CrxInstaller> installer(
         CrxInstaller::Create(service,
-                             mock_install_ui /* ownership transferred */));
+                             mock_install_ui, /* ownership transferred */
+                             approval.get()   /* keep ownership */));
     installer->set_allow_silent_install(true);
     installer->set_is_gallery_install(true);
     installer->InstallCrx(PackExtension(ext_path));
@@ -78,9 +81,12 @@ class ExtensionCrxInstallerTest : public ExtensionBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, Whitelisting) {
 #if !defined(OS_CHROMEOS)
-  // An extension with NPAPI should give a prompt.
-  EXPECT_TRUE(DidWhitelistInstallPrompt("uitest/plugins",
-                                        "hdgllgikmikobbofgnabhfimcfoopgnd"));
+  std::string id = "hdgllgikmikobbofgnabhfimcfoopgnd";
+  ExtensionService* service = browser()->profile()->GetExtensionService();
+
+  // Even whitelisted extensions with NPAPI should not prompt.
+  EXPECT_FALSE(DidWhitelistInstallPrompt("uitest/plugins", id));
+  EXPECT_TRUE(service->GetExtensionById(id, false));
 #endif  // !defined(OS_CHROMEOS)
 }
 

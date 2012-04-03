@@ -44,6 +44,9 @@ using content::NavigationController;
 
 namespace {
 
+// Key used to attach the Approval to the DownloadItem.
+const char kApprovalKey[] = "extensions.webstore_installer";
+
 const char kInvalidIdError[] = "Invalid id";
 const char kNoBrowserError[] = "No browser found";
 const char kDownloadDirectoryError[] = "Could not create download directory";
@@ -116,18 +119,27 @@ void GetDownloadFilePath(
 
 }  // namespace
 
+const WebstoreInstaller::Approval* WebstoreInstaller::GetAssociatedApproval(
+    const DownloadItem& download) {
+  return static_cast<const Approval*>(download.GetExternalData(kApprovalKey));
+}
+
+WebstoreInstaller::Approval::Approval() : profile(NULL) {}
+WebstoreInstaller::Approval::~Approval() {}
 
 WebstoreInstaller::WebstoreInstaller(Profile* profile,
                                      Delegate* delegate,
                                      NavigationController* controller,
                                      const std::string& id,
+                                     scoped_ptr<Approval> approval,
                                      int flags)
     : profile_(profile),
       delegate_(delegate),
       controller_(controller),
       id_(id),
       download_item_(NULL),
-      flags_(flags) {
+      flags_(flags),
+      approval_(approval.release()) {
   download_url_ = GetWebstoreInstallURL(id, flags & FLAG_INLINE_INSTALL ?
       kInlineInstallSource : kDefaultInstallSource);
 
@@ -225,6 +237,8 @@ void WebstoreInstaller::OnDownloadStarted(DownloadId id, net::Error error) {
   content::DownloadManager* download_manager = profile_->GetDownloadManager();
   download_item_ = download_manager->GetActiveDownloadItem(id.local());
   download_item_->AddObserver(this);
+  if (approval_.get())
+    download_item_->SetExternalData(kApprovalKey, approval_.release());
 }
 
 void WebstoreInstaller::OnDownloadUpdated(DownloadItem* download) {

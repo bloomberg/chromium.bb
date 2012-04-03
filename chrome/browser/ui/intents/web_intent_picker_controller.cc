@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/webstore_installer.h"
 #include "chrome/browser/favicon/favicon_service.h"
@@ -279,6 +280,7 @@ void WebIntentPickerController::OnExtensionInstallRequested(
     const std::string& id) {
   scoped_refptr<WebstoreInstaller> installer = new WebstoreInstaller(
       wrapper_->profile(), this, &wrapper_->web_contents()->GetController(), id,
+      scoped_ptr<WebstoreInstaller::Approval>(NULL),
       WebstoreInstaller::FLAG_INLINE_INSTALL);
 
   pending_async_count_++;

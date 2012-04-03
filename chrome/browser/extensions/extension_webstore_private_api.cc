@@ -6,6 +6,8 @@
 
 #include <string>
 
+#include "base/lazy_instance.h"
+#include "base/memory/scoped_vector.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -40,6 +42,44 @@ using content::GpuDataManager;
 using extensions::BundleInstaller;
 
 namespace {
+
+// Holds the Approvals between the time we prompt and start the installs.
+struct PendingApprovals {
+  typedef ScopedVector<WebstoreInstaller::Approval> ApprovalList;
+
+  PendingApprovals();
+  ~PendingApprovals();
+
+  void PushApproval(scoped_ptr<WebstoreInstaller::Approval> approval);
+  scoped_ptr<WebstoreInstaller::Approval> PopApproval(
+      Profile* profile, const std::string& id);
+
+  ApprovalList approvals;
+};
+
+PendingApprovals::PendingApprovals() {}
+PendingApprovals::~PendingApprovals() {}
+
+void PendingApprovals::PushApproval(
+    scoped_ptr<WebstoreInstaller::Approval> approval) {
+  approvals.push_back(approval.release());
+}
+
+scoped_ptr<WebstoreInstaller::Approval> PendingApprovals::PopApproval(
+    Profile* profile, const std::string& id) {
+  for (size_t i = 0; i < approvals.size(); ++i) {
+    WebstoreInstaller::Approval* approval = approvals[i];
+    if (approval->extension_id == id &&
+        profile->IsSameProfile(approval->profile)) {
+      approvals.weak_erase(approvals.begin() + i);
+      return scoped_ptr<WebstoreInstaller::Approval>(approval);
+    }
+  }
+  return scoped_ptr<WebstoreInstaller::Approval>(NULL);
+}
+
+static base::LazyInstance<PendingApprovals> g_pending_approvals =
+    LAZY_INSTANCE_INITIALIZER;
 
 const char kAppInstallBubbleKey[] = "appInstallBubble";
 const char kIconDataKey[] = "iconData";
@@ -361,11 +401,14 @@ void BeginInstallWithManifestFunction::InstallUIProceed() {
   // This gets cleared in CrxInstaller::ConfirmInstall(). TODO(asargent) - in
   // the future we may also want to add time-based expiration, where a whitelist
   // entry is only valid for some number of minutes.
-  CrxInstaller::WhitelistEntry* entry = new CrxInstaller::WhitelistEntry;
-  entry->parsed_manifest.reset(parsed_manifest_.release());
-  entry->localized_name = localized_name_;
-  entry->use_app_installed_bubble = use_app_installed_bubble_;
-  CrxInstaller::SetWhitelistEntry(id_, entry);
+  scoped_ptr<WebstoreInstaller::Approval> approval(
+      new WebstoreInstaller::Approval);
+  approval->extension_id = id_;
+  approval->profile = profile();
+  approval->parsed_manifest.reset(parsed_manifest_.release());
+  approval->use_app_installed_bubble = use_app_installed_bubble_;
+  g_pending_approvals.Get().PushApproval(approval.Pass());
+
   SetResult(ERROR_NONE);
   SendResponse(true);
 
@@ -411,7 +454,9 @@ bool CompleteInstallFunction::RunImpl() {
     return false;
   }
 
-  if (!CrxInstaller::GetWhitelistEntry(id)) {
+  scoped_ptr<WebstoreInstaller::Approval> approval(
+      g_pending_approvals.Get().PopApproval(profile(), id));
+  if (!approval.get()) {
     error_ = ExtensionErrorUtils::FormatErrorMessage(
         kNoPreviousBeginInstallWithManifestError, id);
     return false;
@@ -422,7 +467,7 @@ bool CompleteInstallFunction::RunImpl() {
   scoped_refptr<WebstoreInstaller> installer = new WebstoreInstaller(
       profile(), test_webstore_installer_delegate,
       &(dispatcher()->delegate()->GetAssociatedWebContents()->GetController()),
-      id, WebstoreInstaller::FLAG_NONE);
+      id, approval.Pass(), WebstoreInstaller::FLAG_NONE);
   installer->Start();
 
   return true;
@@ -463,16 +508,18 @@ void SilentlyInstallFunction::OnWebstoreParseSuccess(
   // This lets CrxInstaller bypass the permission confirmation UI for the
   // extension. The whitelist entry gets cleared in
   // CrxInstaller::ConfirmInstall.
-  CrxInstaller::WhitelistEntry* entry = new CrxInstaller::WhitelistEntry;
-  entry->parsed_manifest.reset(parsed_manifest);
-  entry->use_app_installed_bubble = false;
-  entry->skip_post_install_ui = true;
-  CrxInstaller::SetWhitelistEntry(id_, entry);
+  scoped_ptr<WebstoreInstaller::Approval> approval(
+      new WebstoreInstaller::Approval);
+  approval->extension_id = id_;
+  approval->parsed_manifest.reset(parsed_manifest);
+  approval->profile = profile();
+  approval->use_app_installed_bubble = false;
+  approval->skip_post_install_ui = true;
 
   scoped_refptr<WebstoreInstaller> installer = new WebstoreInstaller(
       profile(), this,
       &(dispatcher()->delegate()->GetAssociatedWebContents()->GetController()),
-      id_, WebstoreInstaller::FLAG_NONE);
+      id_, approval.Pass(), WebstoreInstaller::FLAG_NONE);
   installer->Start();
 }
 

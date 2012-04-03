@@ -404,18 +404,18 @@ void WebstoreInlineInstaller::InstallUIProceed() {
     return;
   }
 
-  CrxInstaller::WhitelistEntry* entry = new CrxInstaller::WhitelistEntry;
-
-  entry->parsed_manifest.reset(manifest_.get()->DeepCopy());
-  entry->localized_name = localized_name_;
-  entry->use_app_installed_bubble = true;
-  CrxInstaller::SetWhitelistEntry(id_, entry);
-
   Profile* profile = Profile::FromBrowserContext(
       web_contents()->GetBrowserContext());
 
+  scoped_ptr<WebstoreInstaller::Approval> approval(
+      new WebstoreInstaller::Approval);
+  approval->extension_id = id_;
+  approval->profile = profile;
+  approval->parsed_manifest.reset(manifest_.get()->DeepCopy());
+  approval->use_app_installed_bubble = true;
+
   scoped_refptr<WebstoreInstaller> installer = new WebstoreInstaller(
-      profile, this, &(web_contents()->GetController()), id_,
+      profile, this, &(web_contents()->GetController()), id_, approval.Pass(),
       WebstoreInstaller::FLAG_INLINE_INSTALL);
   installer->Start();
 }

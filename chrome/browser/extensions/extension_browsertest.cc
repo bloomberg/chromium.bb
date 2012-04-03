@@ -173,13 +173,20 @@ FilePath ExtensionBrowserTest::PackExtension(const FilePath& dir_path) {
     return FilePath();
   }
 
-  FilePath pem_path = crx_path.DirName().AppendASCII("temp.pem");
-  if (!file_util::Delete(pem_path, false)) {
-    ADD_FAILURE() << "Failed to delete pem: " << pem_path.value();
-    return FilePath();
+  // Look for PEM files with the same name as the directory.
+  FilePath pem_path = dir_path.ReplaceExtension(FILE_PATH_LITERAL(".pem"));
+  FilePath pem_path_out;
+
+  if (!file_util::PathExists(pem_path)) {
+    pem_path = FilePath();
+    pem_path_out = crx_path.DirName().AppendASCII("temp.pem");
+    if (!file_util::Delete(pem_path_out, false)) {
+      ADD_FAILURE() << "Failed to delete pem: " << pem_path_out.value();
+      return FilePath();
+    }
   }
 
-  return PackExtensionWithOptions(dir_path, crx_path, FilePath(), pem_path);
+  return PackExtensionWithOptions(dir_path, crx_path, pem_path, pem_path_out);
 }
 
 FilePath ExtensionBrowserTest::PackExtensionWithOptions(

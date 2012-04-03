@@ -157,11 +157,22 @@ void BundleInstaller::CompleteInstall(NavigationController* controller,
     if (i->second.state != Item::STATE_PENDING)
       continue;
 
+    // Since we've already confirmed the permissions, create an approval that
+    // lets CrxInstaller bypass the prompt.
+    scoped_ptr<WebstoreInstaller::Approval> approval(
+        new WebstoreInstaller::Approval);
+    approval->extension_id = i->first;
+    approval->profile = profile_;
+    approval->parsed_manifest.reset(parsed_manifests_[i->first]->DeepCopy());
+    approval->use_app_installed_bubble = false;
+    approval->skip_post_install_ui = true;
+
     scoped_refptr<WebstoreInstaller> installer = new WebstoreInstaller(
         profile_,
         this,
         controller,
         i->first,
+        approval.Pass(),
         WebstoreInstaller::FLAG_NONE);
     installer->Start();
   }
@@ -296,18 +307,6 @@ void BundleInstaller::OnWebstoreParseFailure(
 
 void BundleInstaller::InstallUIProceed() {
   approved_ = true;
-  for (ItemMap::iterator i = items_.begin(); i != items_.end(); ++i) {
-    if (i->second.state != Item::STATE_PENDING)
-      continue;
-
-    // Create a whitelist entry for each of the approved extensions.
-    CrxInstaller::WhitelistEntry* entry = new CrxInstaller::WhitelistEntry;
-    entry->parsed_manifest.reset(parsed_manifests_[i->first]->DeepCopy());
-    entry->localized_name = i->second.localized_name;
-    entry->use_app_installed_bubble = false;
-    entry->skip_post_install_ui = true;
-    CrxInstaller::SetWhitelistEntry(i->first, entry);
-  }
   ReportApproved();
 }
 

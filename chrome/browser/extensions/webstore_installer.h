@@ -11,6 +11,8 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/values.h"
 #include "content/public/browser/download_id.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/notification_observer.h"
@@ -45,16 +47,47 @@ class WebstoreInstaller : public content::NotificationObserver,
                                            const std::string& error) = 0;
   };
 
+  // If added to the WebstoreInstaller, an Approval indicates that the user has
+  // already approved the installation and that the CrxInstaller can bypass its
+  // install prompt.
+  struct Approval : public content::DownloadItem::ExternalData {
+    Approval();
+    virtual ~Approval();
+
+    // The extension id that was approved for installation.
+    std::string extension_id;
+
+    // The profile the extension should be installed into.
+    Profile* profile;
+
+    // The expected manifest, before localization.
+    scoped_ptr<base::DictionaryValue> parsed_manifest;
+
+    // Whether to use a bubble notification when an app is installed, instead of
+    // the default behavior of transitioning to the new tab page.
+    bool use_app_installed_bubble;
+
+    // Whether to skip the post install UI like the extension installed bubble.
+    bool skip_post_install_ui;
+  };
+
+  // Gets the Approval associated with the |download|, or NULL if there's none.
+  // Note that the Approval is owned by |download|.
+  static const Approval* GetAssociatedApproval(
+      const content::DownloadItem& download);
+
   // Creates a WebstoreInstaller for downloading and installing the extension
   // with the given |id| from the Chrome Web Store. If |delegate| is not NULL,
   // it will be notified when the install succeeds or fails. The installer will
   // use the specified |controller| to download the extension. Only one
-  // WebstoreInstaller can use a specific controller at any given time.
+  // WebstoreInstaller can use a specific controller at any given time. This
+  // also associates the |approval| with this install.
   // Note: the delegate should stay alive until being called back.
   WebstoreInstaller(Profile* profile,
                     Delegate* delegate,
                     content::NavigationController* controller,
                     const std::string& id,
+                    scoped_ptr<Approval> approval,
                     int flags);
   virtual ~WebstoreInstaller();
 
@@ -100,6 +133,7 @@ class WebstoreInstaller : public content::NotificationObserver,
   // transitions to state REMOVING.
   content::DownloadItem* download_item_;
   int flags_;
+  scoped_ptr<Approval> approval_;
   GURL download_url_;
 };
 

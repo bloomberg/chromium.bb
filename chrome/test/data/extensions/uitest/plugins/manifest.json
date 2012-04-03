@@ -7,6 +7,5 @@
     {"path": "plugin.dll", "public": true},
     {"path": "plugin32.so", "public": true},
     {"path": "plugin64.so", "public": true}
-  ],
-  "key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDj9LZkfWJsVHxsiciugy+jRvNZxg+OXdTL6KZknEUZ9T1cAkeAHiIsedp2ltg/pLnpFx8U7YUG88W4p+PSSkmqMHKPOzav9hIfwTi3FHZUEqWaTs76UUegefdZtZsCA1omSDP7tIClsyWVSnv92njT1FZV/zHj9AmxtinaheQ2WQIDAQAB"
+  ]
 }

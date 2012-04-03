@@ -25,15 +25,17 @@
 #include "chrome/browser/extensions/convert_web_app.h"
 #include "chrome/browser/extensions/default_apps_trial.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
-#include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/permissions_updater.h"
+#include "chrome/browser/extensions/webstore_installer.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_file_util.h"
+#include "chrome/common/extensions/extension_icon_set.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/resource_dispatcher_host.h"
@@ -49,67 +51,27 @@ using content::BrowserThread;
 using content::UserMetricsAction;
 using extensions::PermissionsUpdater;
 
-namespace {
-
-// TODO(jstritar): this whitelist is not profile aware.
-struct Whitelist {
-  Whitelist() {}
-  std::map<std::string, linked_ptr<CrxInstaller::WhitelistEntry> > entries;
-};
-
-static base::LazyInstance<Whitelist>
-    g_whitelisted_install_data = LAZY_INSTANCE_INITIALIZER;
-
-}  // namespace
-
-CrxInstaller::WhitelistEntry::WhitelistEntry()
-    : use_app_installed_bubble(false),
-      skip_post_install_ui(false) {}
-CrxInstaller::WhitelistEntry::~WhitelistEntry() {}
-
 // static
 scoped_refptr<CrxInstaller> CrxInstaller::Create(
     ExtensionService* frontend,
     ExtensionInstallUI* client) {
-  return new CrxInstaller(frontend->AsWeakPtr(), client);
+  return new CrxInstaller(frontend->AsWeakPtr(), client, NULL);
 }
 
 // static
-void CrxInstaller::SetWhitelistEntry(const std::string& id,
-                                     CrxInstaller::WhitelistEntry* entry) {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  Whitelist& data = g_whitelisted_install_data.Get();
-  data.entries[id] = linked_ptr<CrxInstaller::WhitelistEntry>(entry);
-}
-
-// static
-const CrxInstaller::WhitelistEntry* CrxInstaller::GetWhitelistEntry(
-    const std::string& id) {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  Whitelist& data = g_whitelisted_install_data.Get();
-  if (ContainsKey(data.entries, id))
-    return data.entries[id].get();
-  else
-    return NULL;
-}
-
-// static
-CrxInstaller::WhitelistEntry* CrxInstaller::RemoveWhitelistEntry(
-    const std::string& id) {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  Whitelist& data = g_whitelisted_install_data.Get();
-  if (ContainsKey(data.entries, id)) {
-    CrxInstaller::WhitelistEntry* entry = data.entries[id].release();
-    data.entries.erase(id);
-    return entry;
-  }
-  return NULL;
+scoped_refptr<CrxInstaller> CrxInstaller::Create(
+    ExtensionService* frontend,
+    ExtensionInstallUI* client,
+    const WebstoreInstaller::Approval* approval) {
+  return new CrxInstaller(frontend->AsWeakPtr(), client, approval);
 }
 
 CrxInstaller::CrxInstaller(base::WeakPtr<ExtensionService> frontend_weak,
-                           ExtensionInstallUI* client)
+                           ExtensionInstallUI* client,
+                           const WebstoreInstaller::Approval* approval)
     : install_directory_(frontend_weak->install_directory()),
       install_source_(Extension::INTERNAL),
+      approved_(false),
       extensions_enabled_(frontend_weak->extensions_enabled()),
       delete_source_(false),
       create_app_shortcut_(false),
@@ -120,6 +82,19 @@ CrxInstaller::CrxInstaller(base::WeakPtr<ExtensionService> frontend_weak,
       allow_silent_install_(false),
       install_cause_(extension_misc::INSTALL_CAUSE_UNSET),
       creation_flags_(Extension::NO_FLAGS) {
+  if (!approval)
+    return;
+
+  CHECK(profile_->IsSameProfile(approval->profile));
+
+  client_->set_use_app_installed_bubble(approval->use_app_installed_bubble);
+  client_->set_skip_post_install_ui(approval->skip_post_install_ui);
+
+  // Mark the extension as approved, but save the expected manifest and ID
+  // so we can check that they match the CRX's.
+  approved_ = true;
+  expected_manifest_.reset(approval->parsed_manifest->DeepCopy());
+  expected_id_ = approval->extension_id;
 }
 
 CrxInstaller::~CrxInstaller() {
@@ -212,8 +187,10 @@ bool CrxInstaller::AllowInstall(const Extension* extension,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DCHECK(error);
 
-  // Make sure the expected id matches.
-  if (!expected_id_.empty() && expected_id_ != extension->id()) {
+  // Make sure the expected ID matches if one was supplied or if we want to
+  // bypass the prompt.
+  if ((approved_ || !expected_id_.empty()) &&
+      expected_id_ != extension->id()) {
     *error = ASCIIToUTF16(base::StringPrintf(
         "ID in new CRX manifest (%s) does not match expected id (%s)",
         extension->id().c_str(),
@@ -229,6 +206,14 @@ bool CrxInstaller::AllowInstall(const Extension* extension,
         extension->id().c_str(),
         expected_version_->GetString().c_str(),
         extension->version()->GetString().c_str()));
+    return false;
+  }
+
+  // Make sure the manifests match if we want to bypass the prompt.
+  if (approved_ &&
+      (!expected_manifest_.get() ||
+       !expected_manifest_->Equals(original_manifest_.get()))) {
+    *error = l10n_util::GetStringUTF16(IDS_EXTENSION_MANIFEST_INVALID);
     return false;
   }
 
@@ -385,25 +370,7 @@ void CrxInstaller::ConfirmInstall() {
   current_version_ =
       frontend_weak_->extension_prefs()->GetVersionString(extension_->id());
 
-  bool whitelisted = false;
-  scoped_ptr<CrxInstaller::WhitelistEntry> entry(
-      RemoveWhitelistEntry(extension_->id()));
-  if (is_gallery_install() && entry.get() && original_manifest_.get()) {
-    whitelisted = true;
-    if (entry->use_app_installed_bubble)
-      client_->set_use_app_installed_bubble(true);
-    if (entry->skip_post_install_ui)
-      client_->set_skip_post_install_ui(true);
-
-    if (!(original_manifest_->Equals(entry->parsed_manifest.get()))) {
-      ReportFailureFromUIThread(
-          l10n_util::GetStringUTF16(IDS_EXTENSION_MANIFEST_INVALID));
-      return;
-    }
-  }
-
-  if (client_ &&
-      (!allow_silent_install_ || !whitelisted)) {
+  if (client_ && (!allow_silent_install_ || !approved_)) {
     AddRef();  // Balanced in Proceed() and Abort().
     client_->ConfirmInstall(this, extension_.get());
   } else {

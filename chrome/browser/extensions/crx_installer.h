@@ -15,6 +15,7 @@
 #include "base/version.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/sandboxed_extension_unpacker.h"
+#include "chrome/browser/extensions/webstore_installer.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/string_ordinal.h"
 #include "chrome/common/web_apps.h"
@@ -55,40 +56,17 @@ class CrxInstaller
  public:
   // Extensions will be installed into frontend->install_directory(),
   // then registered with |frontend|. Any install UI will be displayed
-  // using |client|. Pass NULL for |client| for silent install.
+  // using |client|. Pass NULL for |client| for silent install
   static scoped_refptr<CrxInstaller> Create(
       ExtensionService* frontend,
       ExtensionInstallUI* client);
 
-  struct WhitelistEntry {
-    WhitelistEntry();
-    ~WhitelistEntry();
-
-    scoped_ptr<base::DictionaryValue> parsed_manifest;
-    std::string localized_name;
-
-    // Whether to use a bubble notification when an app is installed, instead of
-    // the default behavior of transitioning to the new tab page.
-    bool use_app_installed_bubble;
-
-    // Whether to skip the post install UI like the extension installed bubble.
-    bool skip_post_install_ui;
-  };
-
-  // Exempt the next extension install with |id| from displaying a confirmation
-  // prompt, since the user already agreed to the install via
-  // beginInstallWithManifest3. We require that the extension manifest matches
-  // the manifest in |entry|, which is what was used to prompt with. Ownership
-  // of |entry| is transferred here.
-  static void SetWhitelistEntry(const std::string& id, WhitelistEntry* entry);
-
-  // Returns the previously stored manifest from a call to SetWhitelistEntry.
-  static const CrxInstaller::WhitelistEntry* GetWhitelistEntry(
-      const std::string& id);
-
-  // Removes any whitelist data for |id| and returns it. The caller owns
-  // the return value and is responsible for deleting it.
-  static WhitelistEntry* RemoveWhitelistEntry(const std::string& id);
+  // Same as the previous method, except use the |approval| to bypass the
+  // prompt. Note that the caller retains ownership of |approval|.
+  static scoped_refptr<CrxInstaller> Create(
+      ExtensionService* frontend,
+      ExtensionInstallUI* client,
+      const WebstoreInstaller::Approval* approval);
 
   // Install the crx in |source_file|.
   void InstallCrx(const FilePath& source_file);
@@ -177,7 +155,8 @@ class CrxInstaller
   friend class extensions::ExtensionUpdaterTest;
 
   CrxInstaller(base::WeakPtr<ExtensionService> frontend_weak,
-               ExtensionInstallUI* client);
+               ExtensionInstallUI* client,
+               const WebstoreInstaller::Approval* approval);
   virtual ~CrxInstaller();
 
   // Converts the source user script to an extension.
@@ -230,9 +209,19 @@ class CrxInstaller
   // successful. Defaults to INTERNAL.
   Extension::Location install_source_;
 
-  // For updates and external installs we have an ID we're expecting the
-  // extension to contain.
+  // Indicates whether the user has already approved the extension to be
+  // installed. If true, |expected_manifest_| and |expected_id_| must match
+  // those of the CRX.
+  bool approved_;
+
+  // For updates, external and webstore installs we have an ID we're expecting
+  // the extension to contain.
   std::string expected_id_;
+
+  // A parsed copy of the expected manifest, before any transformations like
+  // localization have taken place. If |approved_| is true, then the
+  // extension's manifest must match this for the install to proceed.
+  scoped_ptr<base::DictionaryValue> expected_manifest_;
 
   // If non-NULL, contains the expected version of the extension we're
   // installing.  Important for external sources, where claiming the wrong
