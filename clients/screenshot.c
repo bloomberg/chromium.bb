@@ -89,6 +89,7 @@ static struct wl_buffer *
 create_shm_buffer(int width, int height, void **data_out)
 {
 	char filename[] = "/tmp/wayland-shm-XXXXXX";
+	struct wl_shm_pool *pool;
 	struct wl_buffer *buffer;
 	int fd, size, stride;
 	void *data;
@@ -115,10 +116,11 @@ create_shm_buffer(int width, int height, void **data_out)
 		return NULL;
 	}
 
-	buffer = wl_shm_create_buffer(shm, fd, width, height, stride,
-				      WL_SHM_FORMAT_XRGB8888);
-
+	pool = wl_shm_create_pool(shm, fd, size);
 	close(fd);
+	buffer = wl_shm_pool_create_buffer(pool, 0, width, height, stride,
+					   WL_SHM_FORMAT_XRGB8888);
+	wl_shm_pool_destroy(pool);
 
 	*data_out = data;
 

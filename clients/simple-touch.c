@@ -50,6 +50,7 @@ struct touch {
 static void
 create_shm_buffer(struct touch *touch)
 {
+	struct wl_shm_pool *pool;
 	char filename[] = "/tmp/wayland-shm-XXXXXX";
 	int fd, size, stride;
 
@@ -76,10 +77,12 @@ create_shm_buffer(struct touch *touch)
 		exit(1);
 	}
 
+	pool = wl_shm_create_pool(touch->shm, fd, size);
 	touch->buffer =
-		wl_shm_create_buffer(touch->shm, fd,
-				     touch->width, touch->height, stride,
-				     WL_SHM_FORMAT_ARGB8888);
+		wl_shm_pool_create_buffer(pool, 0,
+					  touch->width, touch->height, stride,
+					  WL_SHM_FORMAT_ARGB8888);
+	wl_shm_pool_destroy(pool);
 
 	close(fd);
 }

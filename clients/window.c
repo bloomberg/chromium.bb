@@ -461,15 +461,49 @@ shm_surface_data_destroy(void *p)
 	munmap(data->map, data->length);
 }
 
+static struct wl_shm_pool *
+make_shm_pool(struct display *display, int size, void **data)
+{
+	char filename[] = "/tmp/wayland-shm-XXXXXX";
+	struct wl_shm_pool *pool;
+	int fd;
+
+	fd = mkstemp(filename);
+	if (fd < 0) {
+		fprintf(stderr, "open %s failed: %m\n", filename);
+		return NULL;
+	}
+	if (ftruncate(fd, size) < 0) {
+		fprintf(stderr, "ftruncate failed: %m\n");
+		close(fd);
+		return NULL;
+	}
+
+	*data = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+	unlink(filename);
+
+	if (*data == MAP_FAILED) {
+		fprintf(stderr, "mmap failed: %m\n");
+		close(fd);
+		return NULL;
+	}
+
+	pool = wl_shm_create_pool(display->shm, fd, size);
+
+	close(fd);
+
+	return pool;
+}
+
 static cairo_surface_t *
 display_create_shm_surface(struct display *display,
 			   struct rectangle *rectangle, uint32_t flags)
 {
 	struct shm_surface_data *data;
+	struct wl_shm_pool *pool;
 	uint32_t format;
 	cairo_surface_t *surface;
-	int stride, fd;
-	char filename[] = "/tmp/wayland-shm-XXXXXX";
+	int stride;
 
 	data = malloc(sizeof *data);
 	if (data == NULL)
@@ -478,26 +512,7 @@ display_create_shm_surface(struct display *display,
 	stride = cairo_format_stride_for_width (CAIRO_FORMAT_ARGB32,
 						rectangle->width);
 	data->length = stride * rectangle->height;
-	fd = mkstemp(filename);
-	if (fd < 0) {
-		fprintf(stderr, "open %s failed: %m\n", filename);
-		return NULL;
-	}
-	if (ftruncate(fd, data->length) < 0) {
-		fprintf(stderr, "ftruncate failed: %m\n");
-		close(fd);
-		return NULL;
-	}
-
-	data->map = mmap(NULL, data->length,
-			 PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-	unlink(filename);
-
-	if (data->map == MAP_FAILED) {
-		fprintf(stderr, "mmap failed: %m\n");
-		close(fd);
-		return NULL;
-	}
+	pool = make_shm_pool(display, data->length, &data->map);
 
 	surface = cairo_image_surface_create_for_data (data->map,
 						       CAIRO_FORMAT_ARGB32,
@@ -513,13 +528,12 @@ display_create_shm_surface(struct display *display,
 	else
 		format = WL_SHM_FORMAT_ARGB8888;
 
-	data->data.buffer = wl_shm_create_buffer(display->shm,
-						 fd,
-						 rectangle->width,
-						 rectangle->height,
-						 stride, format);
+	data->data.buffer = wl_shm_pool_create_buffer(pool, 0,
+						      rectangle->width,
+						      rectangle->height,
+						      stride, format);
 
-	close(fd);
+	wl_shm_pool_destroy(pool);
 
 	return surface;
 }
