@@ -50,7 +50,13 @@
              InstallerVersion="200"
              Manufacturer="$(var.Manufacturer)"/>
 
+    <Condition
+      Message="$(var.ChromotingHost) is only supported on Windows Vista, Windows Server 2008, or higher.">
+      <![CDATA[Installed OR (VersionNT >= 600)]]>
+    </Condition>
+
     <MajorUpgrade
+      AllowSameVersionUpgrades="yes"
       DowngradeErrorMessage="A later version of [ProductName] is already installed. Setup will now exit."
       Schedule="afterInstallInitialize" />
 
