@@ -417,28 +417,6 @@ bool ChromeContentClient::SandboxPlugin(CommandLine* command_line,
     return false;
   }
 
-  // Allow Talk's camera control.
-  base::win::RegKey talk_key(HKEY_CURRENT_USER,
-                             L"Software\\Google\\Google Talk Plugin",
-                             KEY_READ);
-  if (talk_key.Valid()) {
-    string16 install_dir;
-    if (talk_key.ReadValue(L"install_dir", &install_dir) == ERROR_SUCCESS) {
-      if (install_dir[install_dir.size() - 1] != '\\')
-        install_dir.append(L"\\*");
-      else
-        install_dir.append(L"*");
-      // This is not a hard failure because a reparse point in the path can
-      // cause the rule to fail, but we should not abort sandboxing.
-      if (policy->AddRule(sandbox::TargetPolicy::SUBSYS_FILES,
-                          sandbox::TargetPolicy::FILES_ALLOW_READONLY,
-                          install_dir.c_str()) != sandbox::SBOX_ALL_OK) {
-        DVLOG(ERROR) << "Failed adding sandbox rule for Talk plugin";
-      }
-    }
-    talk_key.Close();
-  }
-
   // Spawn the flash broker and apply sandbox policy.
   if (LoadFlashBroker(plugin_path, command_line)) {
     // UI job restrictions break windowless Flash, so just pick up single
