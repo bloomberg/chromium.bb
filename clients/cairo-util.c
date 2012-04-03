@@ -140,6 +140,7 @@ tile_mask(cairo_t *cr, cairo_surface_t *surface,
 
 	cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
 	pattern = cairo_pattern_create_for_surface (surface);
+	cairo_pattern_set_filter(pattern, CAIRO_FILTER_NEAREST);
 
 	for (i = 0; i < 4; i++) {
 		fx = i & 1;
@@ -222,6 +223,7 @@ tile_source(cairo_t *cr, cairo_surface_t *surface,
 
 	cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
 	pattern = cairo_pattern_create_for_surface (surface);
+	cairo_pattern_set_filter(pattern, CAIRO_FILTER_NEAREST);
 	cairo_set_source(cr, pattern);
 	cairo_pattern_destroy(pattern);
 
