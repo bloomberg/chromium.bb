@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,7 +38,7 @@ struct VideoCaptureHost::Entry {
 };
 
 VideoCaptureHost::VideoCaptureHost(content::ResourceContext* resource_context,
-                                   AudioManager* audio_manager)
+                                   media::AudioManager* audio_manager)
     : resource_context_(resource_context),
       audio_manager_(audio_manager) {
 }

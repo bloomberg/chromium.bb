@@ -21,7 +21,8 @@ const char AudioInputDeviceManager::kInvalidDeviceId[] = "";
 // Starting id for the first capture session.
 const int kFirstSessionId = AudioInputDeviceManager::kFakeOpenSessionId + 1;
 
-AudioInputDeviceManager::AudioInputDeviceManager(AudioManager* audio_manager)
+AudioInputDeviceManager::AudioInputDeviceManager(
+    media::AudioManager* audio_manager)
     : listener_(NULL),
       next_capture_session_id_(kFirstSessionId),
       audio_manager_(audio_manager) {
@@ -127,7 +128,7 @@ void AudioInputDeviceManager::Start(
   // the callback immediately.
   if (session_id == kFakeOpenSessionId) {
     event_handler->OnDeviceStarted(session_id,
-                                   AudioManagerBase::kDefaultDeviceId);
+                                   media::AudioManagerBase::kDefaultDeviceId);
     return;
   }
 

@@ -27,7 +27,7 @@ AudioRendererHost::AudioEntry::~AudioEntry() {}
 ///////////////////////////////////////////////////////////////////////////////
 // AudioRendererHost implementations.
 AudioRendererHost::AudioRendererHost(
-    AudioManager* audio_manager,
+    media::AudioManager* audio_manager,
     content::MediaObserver* media_observer)
     : audio_manager_(audio_manager),
       media_observer_(media_observer) {
@@ -192,11 +192,11 @@ bool AudioRendererHost::OnMessageReceived(const IPC::Message& message,
 }
 
 void AudioRendererHost::OnCreateStream(
-    int stream_id, const AudioParameters& params) {
+    int stream_id, const media::AudioParameters& params) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(LookupById(stream_id) == NULL);
 
-  AudioParameters audio_params(params);
+  media::AudioParameters audio_params(params);
   DCHECK_GT(audio_params.frames_per_buffer(), 0);
 
   uint32 buffer_size = audio_params.GetBytesPerBuffer();

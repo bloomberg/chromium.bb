@@ -9,6 +9,8 @@
 #include "base/process_util.h"
 #include "base/shared_memory.h"
 
+namespace media {
+
 AudioInputSyncWriter::AudioInputSyncWriter(base::SharedMemory* shared_memory)
     : shared_memory_(shared_memory) {
 }
@@ -64,3 +66,5 @@ bool AudioInputSyncWriter::PrepareForeignSocketHandle(
 }
 
 #endif
+
+}  // namespace media

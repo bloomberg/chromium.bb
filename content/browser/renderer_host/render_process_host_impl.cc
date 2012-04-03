@@ -471,7 +471,8 @@ void RenderProcessHostImpl::CreateMessageFilters() {
 #if !defined(OS_ANDROID)
   // TODO(dtrainor, klobag): Enable this when content::BrowserMainLoop gets
   // included in Android builds.  Tracked via 115941.
-  AudioManager* audio_manager = content::BrowserMainLoop::GetAudioManager();
+  media::AudioManager* audio_manager =
+      content::BrowserMainLoop::GetAudioManager();
   channel_->AddFilter(new AudioInputRendererHost(
       resource_context, audio_manager));
   channel_->AddFilter(new AudioRendererHost(audio_manager, media_observer));

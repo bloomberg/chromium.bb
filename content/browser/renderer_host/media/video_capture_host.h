@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -45,18 +45,20 @@
 #include "content/public/browser/browser_message_filter.h"
 #include "ipc/ipc_message.h"
 
-class AudioManager;
-
 namespace content {
 class ResourceContext;
 }  // namespace content
+
+namespace media {
+class AudioManager;
+}
 
 class CONTENT_EXPORT VideoCaptureHost
     : public content::BrowserMessageFilter,
       public VideoCaptureControllerEventHandler {
  public:
   explicit VideoCaptureHost(content::ResourceContext* resource_context,
-                            AudioManager* audio_manager);
+                            media::AudioManager* audio_manager);
 
   // content::BrowserMessageFilter implementation.
   virtual void OnChannelClosing() OVERRIDE;
@@ -145,7 +147,7 @@ class CONTENT_EXPORT VideoCaptureHost
 
   // Used to get a pointer to VideoCaptureManager to start/stop capture devices.
   content::ResourceContext* resource_context_;
-  AudioManager* audio_manager_;
+  media::AudioManager* audio_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureHost);
 };

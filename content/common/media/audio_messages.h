@@ -23,7 +23,7 @@
 
 IPC_ENUM_TRAITS(AudioStreamState)
 
-IPC_STRUCT_TRAITS_BEGIN(AudioBuffersState)
+IPC_STRUCT_TRAITS_BEGIN(media::AudioBuffersState)
   IPC_STRUCT_TRAITS_MEMBER(pending_bytes)
   IPC_STRUCT_TRAITS_MEMBER(hardware_delay_bytes)
 IPC_STRUCT_TRAITS_END()
@@ -90,12 +90,12 @@ IPC_MESSAGE_CONTROL2(AudioInputMsg_NotifyDeviceStarted,
 // Request that got sent to browser for creating an audio output stream
 IPC_MESSAGE_CONTROL2(AudioHostMsg_CreateStream,
                      int /* stream_id */,
-                     AudioParameters /* params */)
+                     media::AudioParameters /* params */)
 
 // Request that got sent to browser for creating an audio input stream
 IPC_MESSAGE_CONTROL4(AudioInputHostMsg_CreateStream,
                      int /* stream_id */,
-                     AudioParameters /* params */,
+                     media::AudioParameters /* params */,
                      std::string /* device_id */,
                      bool /* automatic_gain_control */)
 

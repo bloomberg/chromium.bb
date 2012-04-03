@@ -25,7 +25,7 @@ AudioInputRendererHost::AudioEntry::~AudioEntry() {}
 
 AudioInputRendererHost::AudioInputRendererHost(
     content::ResourceContext* resource_context,
-    AudioManager* audio_manager)
+    media::AudioManager* audio_manager)
     : resource_context_(resource_context),
       audio_manager_(audio_manager) {
 }
@@ -114,8 +114,8 @@ void AudioInputRendererHost::DoCompleteCreation(
     return;
   }
 
-  AudioInputSyncWriter* writer =
-      static_cast<AudioInputSyncWriter*>(entry->writer.get());
+  media::AudioInputSyncWriter* writer =
+      static_cast<media::AudioInputSyncWriter*>(entry->writer.get());
 
 #if defined(OS_WIN)
   base::SyncSocket::Handle foreign_socket_handle;
@@ -197,16 +197,15 @@ void AudioInputRendererHost::OnStartDevice(int stream_id, int session_id) {
   audio_input_man->Start(session_id, this);
 }
 
-void AudioInputRendererHost::OnCreateStream(int stream_id,
-                                            const AudioParameters& params,
-                                            const std::string& device_id,
-                                            bool automatic_gain_control) {
+void AudioInputRendererHost::OnCreateStream(
+    int stream_id, const media::AudioParameters& params,
+    const std::string& device_id, bool automatic_gain_control) {
   VLOG(1) << "AudioInputRendererHost::OnCreateStream(stream_id="
           << stream_id << ")";
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(LookupById(stream_id) == NULL);
 
-  AudioParameters audio_params(params);
+  media::AudioParameters audio_params(params);
 
   DCHECK_GT(audio_params.frames_per_buffer(), 0);
   uint32 buffer_size = audio_params.GetBytesPerBuffer();
@@ -214,7 +213,7 @@ void AudioInputRendererHost::OnCreateStream(int stream_id,
   // Create a new AudioEntry structure.
   scoped_ptr<AudioEntry> entry(new AudioEntry());
 
-  uint32 mem_size = sizeof(AudioInputBufferParameters) + buffer_size;
+  uint32 mem_size = sizeof(media::AudioInputBufferParameters) + buffer_size;
 
   // Create the shared memory and share it with the renderer process
   // using a new SyncWriter object.
@@ -224,8 +223,8 @@ void AudioInputRendererHost::OnCreateStream(int stream_id,
     return;
   }
 
-  scoped_ptr<AudioInputSyncWriter> writer(
-      new AudioInputSyncWriter(&entry->shared_memory));
+  scoped_ptr<media::AudioInputSyncWriter> writer(
+      new media::AudioInputSyncWriter(&entry->shared_memory));
 
   if (!writer->Init()) {
     SendErrorMessage(stream_id);

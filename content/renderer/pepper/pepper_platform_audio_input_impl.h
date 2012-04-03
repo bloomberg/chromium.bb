@@ -15,7 +15,10 @@
 #include "media/audio/audio_parameters.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 
+namespace media {
 class AudioParameters;
+}
+
 class PepperPluginDelegateImpl;
 
 // PepperPlatformAudioInputImpl is operated on two threads: the main thread (the
@@ -25,6 +28,7 @@ class PepperPluginDelegateImpl;
 // also sent on the main thread. Internally, this class sends audio input IPC
 // messages and receives AudioInputMessageFilter::Delegate notifications on the
 // I/O thread.
+
 class PepperPlatformAudioInputImpl
     : public webkit::ppapi::PluginDelegate::PlatformAudioInput,
       public AudioInputMessageFilter::Delegate,
@@ -102,7 +106,7 @@ class PepperPlatformAudioInputImpl
   bool shutdown_called_;
 
   // Initialized on the main thread and accessed on the I/O thread afterwards.
-  AudioParameters params_;
+  media::AudioParameters params_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperPlatformAudioInputImpl);
 };

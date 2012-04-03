@@ -83,20 +83,20 @@ bool PepperPlatformAudioOutputImpl::Initialize(
 
   client_ = client;
 
-  AudioParameters::Format format;
+  media::AudioParameters::Format format;
   const int kMaxFramesForLowLatency = 2048;
   // Use the low latency back end if the client request is compatible, and
   // the sample count is low enough to justify using AUDIO_PCM_LOW_LATENCY.
   if (sample_rate == audio_hardware::GetOutputSampleRate() &&
       frames_per_buffer <= kMaxFramesForLowLatency &&
       frames_per_buffer % audio_hardware::GetOutputBufferSize() == 0) {
-    format = AudioParameters::AUDIO_PCM_LOW_LATENCY;
+    format = media::AudioParameters::AUDIO_PCM_LOW_LATENCY;
   } else {
-    format = AudioParameters::AUDIO_PCM_LINEAR;
+    format = media::AudioParameters::AUDIO_PCM_LINEAR;
   }
 
-  AudioParameters params(format, CHANNEL_LAYOUT_STEREO, sample_rate,
-                         16, frames_per_buffer);
+  media::AudioParameters params(format, CHANNEL_LAYOUT_STEREO, sample_rate, 16,
+                                frames_per_buffer);
 
   ChildProcess::current()->io_message_loop()->PostTask(
       FROM_HERE,
@@ -106,7 +106,7 @@ bool PepperPlatformAudioOutputImpl::Initialize(
 }
 
 void PepperPlatformAudioOutputImpl::InitializeOnIOThread(
-    const AudioParameters& params) {
+    const media::AudioParameters& params) {
   stream_id_ = filter_->AddDelegate(this);
   filter_->Send(new AudioHostMsg_CreateStream(stream_id_, params));
 }

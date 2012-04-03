@@ -60,7 +60,7 @@ class RenderAudioSourceProvider
   virtual bool SetVolume(double volume) OVERRIDE;
   virtual void GetVolume(double* volume) OVERRIDE;
   virtual void Initialize(
-      const AudioParameters& params, RenderCallback* renderer) OVERRIDE;
+      const media::AudioParameters& params, RenderCallback* renderer) OVERRIDE;
 
  private:
   // Set to true when Initialize() is called.

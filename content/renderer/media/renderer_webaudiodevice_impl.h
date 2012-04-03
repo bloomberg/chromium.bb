@@ -12,12 +12,15 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebAudioDevice.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
 
+namespace media {
 class AudioParameters;
+}
 
-class RendererWebAudioDeviceImpl : public WebKit::WebAudioDevice,
-                                   public AudioDevice::RenderCallback {
+class RendererWebAudioDeviceImpl
+    : public WebKit::WebAudioDevice,
+      public AudioDevice::RenderCallback {
  public:
-  RendererWebAudioDeviceImpl(const AudioParameters& params,
+  RendererWebAudioDeviceImpl(const media::AudioParameters& params,
                              WebKit::WebAudioDevice::RenderCallback* callback);
   virtual ~RendererWebAudioDeviceImpl();
 
