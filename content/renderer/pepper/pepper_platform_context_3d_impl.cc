@@ -18,6 +18,8 @@
 
 #ifdef ENABLE_GPU
 
+namespace content {
+
 PlatformContext3DImpl::PlatformContext3DImpl(
     PepperParentContextProvider* parent_context_provider)
       : parent_context_provider_(parent_context_provider),
@@ -67,7 +69,7 @@ bool PlatformContext3DImpl::Init(const int32* attrib_list) {
   // Note similar code in PP_GRAPHICS3DATTRIB_initialize.
   do {
     channel_ = render_thread->EstablishGpuChannelSync(
-        content::CAUSE_FOR_GPU_LAUNCH_PEPPERPLATFORMCONTEXT3DIMPL_INITIALIZE);
+        CAUSE_FOR_GPU_LAUNCH_PEPPERPLATFORMCONTEXT3DIMPL_INITIALIZE);
     if (!channel_.get())
       return false;
     DCHECK(channel_->state() == GpuChannelHost::kConnected);
@@ -200,5 +202,7 @@ void PlatformContext3DImpl::OnConsoleMessage(const std::string& msg, int id) {
   if (!console_message_callback_.is_null())
     console_message_callback_.Run(msg, id);
 }
+
+}  // namespace content
 
 #endif  // ENABLE_GPU

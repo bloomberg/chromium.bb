@@ -6,6 +6,8 @@
 
 #include "content/common/child_process.h"
 
+namespace content {
+
 PepperProxyChannelDelegateImpl::~PepperProxyChannelDelegateImpl() {
 }
 
@@ -19,3 +21,5 @@ base::WaitableEvent* PepperProxyChannelDelegateImpl::GetShutdownEvent() {
   DCHECK(ChildProcess::current()) << "Must be in the renderer.";
   return ChildProcess::current()->GetShutDownEvent();
 }
+
+}  // namespace content

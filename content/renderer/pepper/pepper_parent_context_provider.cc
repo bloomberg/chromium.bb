@@ -4,8 +4,12 @@
 
 #include "content/renderer/pepper/pepper_parent_context_provider.h"
 
+namespace content {
+
 PepperParentContextProvider::PepperParentContextProvider() {
 }
 
 PepperParentContextProvider::~PepperParentContextProvider() {
 }
+
+}  // namespace content

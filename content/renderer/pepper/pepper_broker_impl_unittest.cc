@@ -12,6 +12,8 @@
 #include "content/test/mock_render_process.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace content {
+
 class PepperBrokerImplTest : public ::testing::Test {
  protected:
   MessageLoopForIO message_loop_;
@@ -56,3 +58,5 @@ TEST_F(PepperBrokerImplTest, InitSuccess) {
   EXPECT_EQ(0, ::close(fds[0]));
 #endif  // defined(OS_POSIX));
 }
+
+}  // namespace content

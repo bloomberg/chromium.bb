@@ -10,6 +10,8 @@
 
 class WebGraphicsContext3DCommandBufferImpl;
 
+namespace content {
+
 // Defines the mechanism by which a Pepper 3D context fetches its
 // parent context for display to the screen.
 class PepperParentContextProvider {
@@ -24,5 +26,7 @@ class PepperParentContextProvider {
  private:
   DISALLOW_COPY_AND_ASSIGN(PepperParentContextProvider);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_PEPPER_PEPPER_PARENT_CONTEXT_PROVIDER_H_

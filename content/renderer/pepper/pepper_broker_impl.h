@@ -11,8 +11,6 @@
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 #include "webkit/plugins/ppapi/ppb_broker_impl.h"
 
-class PepperPluginDelegateImpl;
-
 namespace IPC {
 struct ChannelHandle;
 }
@@ -28,6 +26,10 @@ namespace ppapi {
 class PluginModule;
 }
 }
+
+namespace content {
+
+class PepperPluginDelegateImpl;
 
 // This object is NOT thread-safe.
 class CONTENT_EXPORT PepperBrokerDispatcherWrapper {
@@ -89,5 +91,7 @@ class PepperBrokerImpl : public webkit::ppapi::PluginDelegate::Broker,
 
   DISALLOW_COPY_AND_ASSIGN(PepperBrokerImpl);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_PEPPER_PEPPER_BROKER_IMPL_H_

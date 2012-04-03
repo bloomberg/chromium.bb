@@ -305,7 +305,7 @@ void RenderWidgetFullscreenPepper::DidChangeCursor(
 webkit::ppapi::PluginDelegate::PlatformContext3D*
 RenderWidgetFullscreenPepper::CreateContext3D() {
 #ifdef ENABLE_GPU
-  return new PlatformContext3DImpl(this);
+  return new content::PlatformContext3DImpl(this);
 #else
   return NULL;
 #endif

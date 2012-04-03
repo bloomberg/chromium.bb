@@ -13,6 +13,8 @@
 #include "content/renderer/media/audio_hardware.h"
 #include "content/renderer/render_thread_impl.h"
 
+namespace content {
+
 PepperPlatformAudioOutputImpl::PepperPlatformAudioOutputImpl()
     : client_(NULL),
       stream_id_(0),
@@ -161,3 +163,5 @@ void PepperPlatformAudioOutputImpl::OnStreamCreated(
                    handle, socket_handle, length));
   }
 }
+
+}  // namespace content

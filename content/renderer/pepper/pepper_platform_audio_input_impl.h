@@ -19,6 +19,8 @@ namespace media {
 class AudioParameters;
 }
 
+namespace content {
+
 class PepperPluginDelegateImpl;
 
 // PepperPlatformAudioInputImpl is operated on two threads: the main thread (the
@@ -110,5 +112,7 @@ class PepperPlatformAudioInputImpl
 
   DISALLOW_COPY_AND_ASSIGN(PepperPlatformAudioInputImpl);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_PEPPER_PEPPER_PLATFORM_AUDIO_INPUT_IMPL_H_

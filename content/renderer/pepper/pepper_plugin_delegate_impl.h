@@ -29,15 +29,8 @@
 #include "webkit/plugins/ppapi/ppb_flash_menu_impl.h"
 
 class FilePath;
-class PepperBrokerImpl;
-class PepperDeviceEnumerationEventHandler;
-class PepperPluginDelegateImpl;
 class RenderViewImpl;
-
-namespace content {
-class GamepadSharedMemoryReader;
-struct CustomContextMenuContext;
-}
+class TransportDIB;
 
 namespace gfx {
 class Point;
@@ -69,13 +62,19 @@ struct WebCompositionUnderline;
 struct WebFileChooserParams;
 }
 
-class TransportDIB;
+namespace content {
+
+struct CustomContextMenuContext;
+class GamepadSharedMemoryReader;
+class PepperBrokerImpl;
+class PepperDeviceEnumerationEventHandler;
+class PepperPluginDelegateImpl;
 
 class PepperPluginDelegateImpl
     : public webkit::ppapi::PluginDelegate,
       public base::SupportsWeakPtr<PepperPluginDelegateImpl>,
       public PepperParentContextProvider,
-      public content::RenderViewObserver {
+      public RenderViewObserver {
  public:
   explicit PepperPluginDelegateImpl(RenderViewImpl* render_view);
   virtual ~PepperPluginDelegateImpl();
@@ -317,9 +316,9 @@ class PepperPluginDelegateImpl
       webkit::ppapi::PPB_Flash_Menu_Impl* menu,
       const gfx::Point& position) OVERRIDE;
   void OnContextMenuClosed(
-      const content::CustomContextMenuContext& custom_context);
+      const CustomContextMenuContext& custom_context);
   void OnCustomContextMenuAction(
-      const content::CustomContextMenuContext& custom_context,
+      const CustomContextMenuContext& custom_context,
       unsigned action);
   void CompleteShowContextMenu(int request_id,
                                bool did_select,
@@ -477,12 +476,14 @@ class PepperPluginDelegateImpl
   // when it is destroyed via InstanceDeleted().
   webkit::ppapi::PluginInstance* last_mouse_event_target_;
 
-  scoped_ptr<content::GamepadSharedMemoryReader> gamepad_shared_memory_reader_;
+  scoped_ptr<GamepadSharedMemoryReader> gamepad_shared_memory_reader_;
 
   scoped_ptr<PepperDeviceEnumerationEventHandler>
       device_enumeration_event_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperPluginDelegateImpl);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_PEPPER_PEPPER_PLUGIN_DELEGATE_IMPL_H_

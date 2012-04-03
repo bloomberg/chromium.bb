@@ -12,6 +12,8 @@
 #include "content/renderer/pepper/pepper_plugin_delegate_impl.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 
+namespace content {
+
 class PepperDeviceEnumerationEventHandler
     : public MediaStreamDispatcherEventHandler,
       public base::SupportsWeakPtr<PepperDeviceEnumerationEventHandler> {
@@ -75,5 +77,7 @@ class PepperDeviceEnumerationEventHandler
 
   DISALLOW_COPY_AND_ASSIGN(PepperDeviceEnumerationEventHandler);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_PEPPER_PEPPER_DEVICE_ENUMERATION_EVENT_HANDLER_H_

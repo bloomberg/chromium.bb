@@ -8,6 +8,8 @@
 #include "base/basictypes.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 
+namespace content {
+
 // Implements the Image2D using a TransportDIB.
 class PepperPlatformImage2DImpl
     : public webkit::ppapi::PluginDelegate::PlatformImage2D {
@@ -35,5 +37,7 @@ class PepperPlatformImage2DImpl
 
   DISALLOW_COPY_AND_ASSIGN(PepperPlatformImage2DImpl);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_PEPPER_PEPPER_PLATFORM_IMAGE_2D_IMPL_H_

@@ -22,8 +22,11 @@ class CommandBuffer;
 
 class CommandBufferProxy;
 class GpuChannelHost;
-class PepperParentContextProvider;
 class ContentGLContext;
+
+namespace content {
+
+class PepperParentContextProvider;
 
 class PlatformContext3DImpl
     : public webkit::ppapi::PluginDelegate::PlatformContext3D {
@@ -58,6 +61,8 @@ class PlatformContext3DImpl
   ConsoleMessageCallback console_message_callback_;
   base::WeakPtrFactory<PlatformContext3DImpl> weak_ptr_factory_;
 };
+
+}  // namespace content
 
 #endif  // ENABLE_GPU
 

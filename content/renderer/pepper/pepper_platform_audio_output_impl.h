@@ -18,6 +18,8 @@ namespace base {
 class MessageLoopProxy;
 }
 
+namespace content {
+
 class PepperPlatformAudioOutputImpl
     : public webkit::ppapi::PluginDelegate::PlatformAudioOutput,
       public AudioMessageFilter::Delegate,
@@ -73,5 +75,7 @@ class PepperPlatformAudioOutputImpl
 
   DISALLOW_COPY_AND_ASSIGN(PepperPlatformAudioOutputImpl);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_PEPPER_PEPPER_PLATFORM_AUDIO_OUTPUT_IMPL_H_

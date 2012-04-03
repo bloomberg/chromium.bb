@@ -7,6 +7,8 @@
 #include "base/logging.h"
 #include "ppapi/shared_impl/ppb_device_ref_shared.h"
 
+namespace content {
+
 namespace {
 
 ppapi::DeviceRefData FromStreamDeviceInfo(
@@ -92,14 +94,14 @@ PepperDeviceEnumerationEventHandler::FromPepperDeviceType(
     PP_DeviceType_Dev type) {
   switch (type) {
     case PP_DEVICETYPE_DEV_INVALID:
-      return content::MEDIA_STREAM_DEVICE_TYPE_NO_SERVICE;
+      return MEDIA_STREAM_DEVICE_TYPE_NO_SERVICE;
     case PP_DEVICETYPE_DEV_AUDIOCAPTURE:
-      return content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE;
+      return MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE;
     case PP_DEVICETYPE_DEV_VIDEOCAPTURE:
-      return content::MEDIA_STREAM_DEVICE_TYPE_VIDEO_CAPTURE;
+      return MEDIA_STREAM_DEVICE_TYPE_VIDEO_CAPTURE;
     default:
       NOTREACHED();
-      return content::MEDIA_STREAM_DEVICE_TYPE_NO_SERVICE;
+      return MEDIA_STREAM_DEVICE_TYPE_NO_SERVICE;
   }
 }
 
@@ -107,11 +109,11 @@ PepperDeviceEnumerationEventHandler::FromPepperDeviceType(
 PP_DeviceType_Dev PepperDeviceEnumerationEventHandler::FromMediaStreamType(
     media_stream::MediaStreamType type) {
   switch (type) {
-    case content::MEDIA_STREAM_DEVICE_TYPE_NO_SERVICE:
+    case MEDIA_STREAM_DEVICE_TYPE_NO_SERVICE:
       return PP_DEVICETYPE_DEV_INVALID;
-    case content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE:
+    case MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE:
       return PP_DEVICETYPE_DEV_AUDIOCAPTURE;
-    case content::MEDIA_STREAM_DEVICE_TYPE_VIDEO_CAPTURE:
+    case MEDIA_STREAM_DEVICE_TYPE_VIDEO_CAPTURE:
       return PP_DEVICETYPE_DEV_VIDEOCAPTURE;
     default:
       NOTREACHED();
@@ -159,3 +161,5 @@ void PepperDeviceEnumerationEventHandler::NotifyDeviceOpened(
 
   callback.Run(request_id, succeeded, label);
 }
+
+}  // namespace content

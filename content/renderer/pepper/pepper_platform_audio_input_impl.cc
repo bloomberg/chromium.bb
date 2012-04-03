@@ -14,6 +14,8 @@
 #include "content/renderer/render_thread_impl.h"
 #include "media/audio/audio_manager_base.h"
 
+namespace content {
+
 PepperPlatformAudioInputImpl::PepperPlatformAudioInputImpl()
     : client_(NULL),
       stream_id_(0),
@@ -274,3 +276,5 @@ void PepperPlatformAudioInputImpl::NotifyStreamCreationFailed() {
   if (client_)
     client_->StreamCreationFailed();
 }
+
+}  // namespace content

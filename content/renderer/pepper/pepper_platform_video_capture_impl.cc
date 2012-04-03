@@ -12,6 +12,8 @@
 #include "content/renderer/render_thread_impl.h"
 #include "media/video/capture/video_capture_proxy.h"
 
+namespace content {
+
 PepperPlatformVideoCaptureImpl::PepperPlatformVideoCaptureImpl(
     const base::WeakPtr<PepperPluginDelegateImpl>& plugin_delegate,
     const std::string& device_id,
@@ -173,3 +175,5 @@ void PepperPlatformVideoCaptureImpl::OnDeviceOpened(int request_id,
   if (handler_)
     handler_->OnInitialized(this, succeeded);
 }
+
+}  // namespace content

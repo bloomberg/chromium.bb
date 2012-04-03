@@ -8,6 +8,8 @@
 #include "base/compiler_specific.h"
 #include "ppapi/proxy/proxy_channel.h"
 
+namespace content {
+
 class PepperProxyChannelDelegateImpl
     : public ppapi::proxy::ProxyChannel::Delegate {
  public:
@@ -17,5 +19,7 @@ class PepperProxyChannelDelegateImpl
   virtual base::MessageLoopProxy* GetIPCMessageLoop() OVERRIDE;
   virtual base::WaitableEvent* GetShutdownEvent() OVERRIDE;
 };
+
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_PEPPER_PEPPER_PROXY_CHANNEL_DELEGATE_IMPL_H_

@@ -19,6 +19,8 @@
 #include <windows.h>
 #endif
 
+namespace content {
+
 namespace {
 
 base::SyncSocket::Handle DuplicateHandle(base::SyncSocket::Handle handle) {
@@ -247,3 +249,4 @@ void PepperBrokerImpl::ConnectPluginToBroker(
   client->BrokerConnected(ppapi::PlatformFileToInt(plugin_handle), result);
 }
 
+}  // namespace content

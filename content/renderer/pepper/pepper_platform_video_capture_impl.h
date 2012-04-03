@@ -15,11 +15,13 @@
 #include "media/video/capture/video_capture.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 
-class PepperPluginDelegateImpl;
-
 namespace media {
 class VideoCaptureHandlerProxy;
 }
+
+namespace content {
+
+class PepperPluginDelegateImpl;
 
 class PepperPlatformVideoCaptureImpl
     : public webkit::ppapi::PluginDelegate::PlatformVideoCapture,
@@ -79,5 +81,7 @@ class PepperPlatformVideoCaptureImpl
 
   DISALLOW_COPY_AND_ASSIGN(PepperPlatformVideoCaptureImpl);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_PEPPER_PEPPER_PLATFORM_VIDEO_CAPTURE_IMPL_H_

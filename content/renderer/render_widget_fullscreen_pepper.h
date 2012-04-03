@@ -29,7 +29,7 @@ class PluginInstance;
 class RenderWidgetFullscreenPepper :
     public RenderWidgetFullscreen,
     public webkit::ppapi::FullscreenContainer,
-    public PepperParentContextProvider,
+    public content::PepperParentContextProvider,
     public WebGraphicsContext3DSwapBuffersClient {
  public:
   static RenderWidgetFullscreenPepper* Create(

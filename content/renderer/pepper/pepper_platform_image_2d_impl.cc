@@ -9,6 +9,8 @@
 #include "content/renderer/render_thread_impl.h"
 #include "ui/gfx/surface/transport_dib.h"
 
+namespace content {
+
 PepperPlatformImage2DImpl::PepperPlatformImage2DImpl(int width,
                                                      int height,
                                                      TransportDIB* dib)
@@ -80,3 +82,5 @@ intptr_t PepperPlatformImage2DImpl::GetSharedMemoryHandle(
 TransportDIB* PepperPlatformImage2DImpl::GetTransportDIB() const {
   return dib_.get();
 }
+
+}  // namespace content

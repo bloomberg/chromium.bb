@@ -1309,7 +1309,7 @@ class RenderViewImpl : public RenderWidget,
 
   // NOTE: pepper_delegate_ should be last member because its constructor calls
   // AddObservers method of RenderViewImpl from c-tor.
-  PepperPluginDelegateImpl pepper_delegate_;
+  content::PepperPluginDelegateImpl pepper_delegate_;
 
   // ---------------------------------------------------------------------------
   // ADDING NEW DATA? Please see if it fits appropriately in one of the above

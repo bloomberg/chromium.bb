@@ -91,6 +91,8 @@
 using WebKit::WebView;
 using WebKit::WebFrame;
 
+namespace content {
+
 namespace {
 
 class HostDispatcherWrapper
@@ -189,7 +191,7 @@ class PluginInstanceLockTarget : public MouseLockDispatcher::LockTarget {
 }  // namespace
 
 PepperPluginDelegateImpl::PepperPluginDelegateImpl(RenderViewImpl* render_view)
-    : content::RenderViewObserver(render_view),
+    : RenderViewObserver(render_view),
       render_view_(render_view),
       has_saved_context_menu_action_(false),
       saved_context_menu_action_(0),
@@ -219,7 +221,7 @@ PepperPluginDelegateImpl::CreatePepperPluginModule(
   // In-process plugins will have always been created up-front to avoid the
   // sandbox restrictions. So getting here implies it doesn't exist or should
   // be out of process.
-  const content::PepperPluginInfo* info =
+  const PepperPluginInfo* info =
       PepperPluginRegistry::GetInstance()->GetInfoForPlugin(webplugin_info);
   if (!info) {
     *pepper_plugin_was_registered = false;
@@ -536,7 +538,7 @@ void PepperPluginDelegateImpl::InstanceDeleted(
 }
 
 SkBitmap* PepperPluginDelegateImpl::GetSadPluginBitmap() {
-  return content::GetContentClient()->renderer()->GetSadPluginBitmap();
+  return GetContentClient()->renderer()->GetSadPluginBitmap();
 }
 
 webkit::ppapi::PluginDelegate::PlatformImage2D*
@@ -1091,7 +1093,7 @@ void PepperPluginDelegateImpl::UnregisterHostResolver(uint32 host_resolver_id) {
 bool PepperPluginDelegateImpl::AddNetworkListObserver(
     webkit_glue::NetworkListObserver* observer) {
 #if defined(ENABLE_P2P_APIS)
-  content::P2PSocketDispatcher* socket_dispatcher =
+  P2PSocketDispatcher* socket_dispatcher =
       render_view_->p2p_socket_dispatcher();
   if (!socket_dispatcher) {
     return false;
@@ -1106,7 +1108,7 @@ bool PepperPluginDelegateImpl::AddNetworkListObserver(
 void PepperPluginDelegateImpl::RemoveNetworkListObserver(
     webkit_glue::NetworkListObserver* observer) {
 #if defined(ENABLE_P2P_APIS)
-  content::P2PSocketDispatcher* socket_dispatcher =
+  P2PSocketDispatcher* socket_dispatcher =
       render_view_->p2p_socket_dispatcher();
   if (socket_dispatcher)
     socket_dispatcher->RemoveNetworkListObserver(observer);
@@ -1129,7 +1131,7 @@ int32_t PepperPluginDelegateImpl::ShowContextMenu(
   int request_id = pending_context_menus_.Add(
       new scoped_refptr<webkit::ppapi::PPB_Flash_Menu_Impl>(menu));
 
-  content::ContextMenuParams params;
+  ContextMenuParams params;
   params.x = position.x();
   params.y = position.y();
   params.custom_context.is_pepper_menu = true;
@@ -1159,7 +1161,7 @@ int32_t PepperPluginDelegateImpl::ShowContextMenu(
 }
 
 void PepperPluginDelegateImpl::OnContextMenuClosed(
-    const content::CustomContextMenuContext& custom_context) {
+    const CustomContextMenuContext& custom_context) {
   int request_id = custom_context.request_id;
   scoped_refptr<webkit::ppapi::PPB_Flash_Menu_Impl>* menu_ptr =
       pending_context_menus_.Lookup(request_id);
@@ -1181,7 +1183,7 @@ void PepperPluginDelegateImpl::OnContextMenuClosed(
 }
 
 void PepperPluginDelegateImpl::OnCustomContextMenuAction(
-    const content::CustomContextMenuContext& custom_context,
+    const CustomContextMenuContext& custom_context,
     unsigned action) {
   // Just save the action.
   DCHECK(!has_saved_context_menu_action_);
@@ -1203,7 +1205,7 @@ gfx::Size PepperPluginDelegateImpl::GetScreenSize() {
 std::string PepperPluginDelegateImpl::GetDefaultEncoding() {
   // TODO(brettw) bug 56615: Somehow get the preference for the default
   // encoding here rather than using the global default for the UI language.
-  return content::GetContentClient()->renderer()->GetDefaultEncoding();
+  return GetContentClient()->renderer()->GetDefaultEncoding();
 }
 
 void PepperPluginDelegateImpl::ZoomLimitsChanged(double minimum_factor,
@@ -1241,7 +1243,7 @@ void PepperPluginDelegateImpl::SaveURLAs(const GURL& url) {
 
 webkit_glue::P2PTransport* PepperPluginDelegateImpl::CreateP2PTransport() {
 #if defined(ENABLE_P2P_APIS)
-  return new content::P2PTransportImpl(render_view_->p2p_socket_dispatcher());
+  return new P2PTransportImpl(render_view_->p2p_socket_dispatcher());
 #else
   return NULL;
 #endif
@@ -1322,7 +1324,7 @@ bool PepperPluginDelegateImpl::IsInFullscreenMode() {
 
 void PepperPluginDelegateImpl::SampleGamepads(WebKit::WebGamepads* data) {
   if (!gamepad_shared_memory_reader_.get())
-    gamepad_shared_memory_reader_.reset(new content::GamepadSharedMemoryReader);
+    gamepad_shared_memory_reader_.reset(new GamepadSharedMemoryReader);
   gamepad_shared_memory_reader_->SampleGamepads(*data);
 }
 
@@ -1603,3 +1605,5 @@ webkit_glue::ClipboardClient*
     PepperPluginDelegateImpl::CreateClipboardClient() const {
   return new RendererClipboardClient;
 }
+
+}  // namespace content
