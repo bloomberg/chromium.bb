@@ -51,8 +51,7 @@ class SchemaBundleGenerator(object):
     c.Append('#include "base/basictypes.h"')
 
     for namespace in self._model.namespaces.values():
-      namespace_name = namespace.name.replace(
-            "experimental.", "")
+      namespace_name = namespace.unix_name.replace("experimental_", "")
       c.Append('#include "chrome/browser/extensions/api/%s/%s_api.h"' % (
           namespace_name, namespace_name))
 

@@ -2,9 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import copy
 import os.path
 import re
-import copy
 
 class Model(object):
   """Model of all namespaces that comprise an API.
@@ -306,9 +306,12 @@ class PropertyType(object):
 def UnixName(name):
   """Returns the unix_style name for a given lowerCamelCase string.
   """
-  name = name.replace('.', '_')
-  return '_'.join([x.lower()
-      for x in re.findall('[A-Z][a-z_]*', name[0].upper() + name[1:])])
+  # First replace any lowerUpper patterns with lower_Upper.
+  s1 = re.sub('([a-z])([A-Z])', r'\1_\2', name)
+  # Now replace any ACMEWidgets patterns with ACME_Widgets
+  s2 = re.sub('([A-Z]+)([A-Z][a-z])', r'\1_\2', s1)
+  # Finally, replace any remaining periods, and make lowercase.
+  return s2.replace('.', '_').lower()
 
 class ParseException(Exception):
   """Thrown when data in the model is invalid."""

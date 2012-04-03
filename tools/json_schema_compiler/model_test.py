@@ -102,5 +102,21 @@ class ModelTest(unittest.TestCase):
     self.assertRaises(AttributeError,
         param.choices[model.PropertyType.INTEGER].SetUnixName, 'breakage')
 
+  def testUnixName(self):
+    expectations = {
+      'foo': 'foo',
+      'fooBar': 'foo_bar',
+      'fooBarBaz': 'foo_bar_baz',
+      'fooBARBaz': 'foo_bar_baz',
+      'fooBAR': 'foo_bar',
+      'FOO': 'foo',
+      'FOOBar': 'foo_bar',
+      'foo.bar': 'foo_bar',
+      'foo.BAR': 'foo_bar',
+      'foo.barBAZ': 'foo_bar_baz'
+      }
+    for name in expectations:
+      self.assertEquals(expectations[name], model.UnixName(name));
+
 if __name__ == '__main__':
   unittest.main()
