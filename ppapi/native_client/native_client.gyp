@@ -29,6 +29,12 @@
                   '<(DEPTH)/native_client/src/untrusted/irt_stub/libppapi.a',
               ],
             },
+            {
+              'destination': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/libarm',
+              'files': [
+                '<(DEPTH)/native_client/src/untrusted/irt_stub/libppapi.a',
+              ],
+            },
           ],
         },
         {
@@ -38,23 +44,47 @@
             'nexe_target': 'nacl_irt',
             'out64': '<(PRODUCT_DIR)/nacl_irt_x86_64.nexe',
             'out32': '<(PRODUCT_DIR)/nacl_irt_x86_32.nexe',
+            'out_arm': '<(PRODUCT_DIR)/nacl_irt_arm.nexe',
             'build_glibc': 0,
             'build_newlib': 1,
             'include_dirs': [
               'lib/gl/include',
               '..',
             ],
-            # Link offsets taken from native_client/build/untrusted.gypi
             'link_flags': [
+              '-Wl,--start-group',
               '-lirt_browser',
               '-lppruntime',
               '-lsrpc',
               '-limc_syscalls',
               '-lplatform',
               '-lgio',
+              '-Wl,--end-group',
               '-lm',
-              '-Wl,--section-start,.rodata=<(NACL_IRT_DATA_START)',
-              '-Wl,-Ttext-segment=<(NACL_IRT_TEXT_START)',
+            ],
+            # See http://code.google.com/p/nativeclient/issues/detail?id=2691.
+            # The PNaCl linker (gold) does not implement the "-Ttext-segment"
+            # option.  However, with the linker for x86, the "-Ttext" option
+            # does not affect the executable's base address.
+            # TODO(olonho): simplify flags handling and avoid duplication
+            # with NaCl logic.
+            'conditions': [
+              ['target_arch!="arm"',
+               {
+                 'link_flags': [
+                   '-Wl,--section-start,.rodata=<(NACL_IRT_DATA_START)',
+                   '-Wl,-Ttext-segment=<(NACL_IRT_TEXT_START)',
+                 ]
+               }, { # target_arch == "arm"
+                 'link_flags': [
+                   '-Wl,--section-start,.rodata=<(NACL_IRT_DATA_START)',
+                   '-Wl,-Ttext=<(NACL_IRT_TEXT_START)',
+                   '--pnacl-allow-native',
+                   '-arch', 'arm',
+                   '-Wt,-mtls-use-call',
+                 ],
+               },
+             ],
             ],
             'sources': [
             ],
@@ -76,6 +106,14 @@
               '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib32/libplatform.a',
               '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib32/libimc_syscalls.a',
               '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib32/libgio.a',
+            ],
+            'extra_deps_arm': [
+              '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/libarm/libppruntime.a',
+              '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/libarm/libirt_browser.a',
+              '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/libarm/libsrpc.a',
+              '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/libarm/libplatform.a',
+              '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/libarm/libimc_syscalls.a',
+              '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/libarm/libgio.a',
             ],
           },
           'dependencies': [

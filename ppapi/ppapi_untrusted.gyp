@@ -57,6 +57,10 @@
           '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib32/libppapi_cpp.a',
           '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib32/libppapi.a',
         ],
+        'extra_deps_arm': [
+          '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/libarm/libppapi_cpp.a',
+          '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/libarm/libppapi.a',
+        ],
         'sources': [
           '<@(test_common_source_files)',
           '<@(test_nacl_source_files)',
