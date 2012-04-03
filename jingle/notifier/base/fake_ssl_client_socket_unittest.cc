@@ -66,6 +66,7 @@ class MockClientSocket : public net::StreamSocket {
   MOCK_CONST_METHOD0(UsingTCPFastOpen, bool());
   MOCK_CONST_METHOD0(NumBytesRead, int64());
   MOCK_CONST_METHOD0(GetConnectTimeMicros, base::TimeDelta());
+  MOCK_CONST_METHOD0(GetNegotiatedProtocol, net::NextProto());
 };
 
 // Break up |data| into a bunch of chunked MockReads/Writes and push

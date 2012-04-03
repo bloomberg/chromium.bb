@@ -278,6 +278,11 @@ base::TimeDelta TransportSocket::GetConnectTimeMicros() const {
   return base::TimeDelta::FromMicroseconds(-1);
 }
 
+net::NextProto TransportSocket::GetNegotiatedProtocol() const {
+  NOTREACHED();
+  return net::kProtoUnknown;
+}
+
 int TransportSocket::Read(net::IOBuffer* buf, int buf_len,
                           const net::CompletionCallback& callback) {
   DCHECK(buf);

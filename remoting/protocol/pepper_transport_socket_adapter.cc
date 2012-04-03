@@ -219,6 +219,11 @@ base::TimeDelta PepperTransportSocketAdapter::GetConnectTimeMicros() const {
   return base::TimeDelta();
 }
 
+net::NextProto PepperTransportSocketAdapter::GetNegotiatedProtocol() const {
+  DCHECK(CalledOnValidThread());
+  NOTIMPLEMENTED();
+  return net::kProtoUnknown;
+}
 
 int PepperTransportSocketAdapter::ProcessCandidates() {
   DCHECK(CalledOnValidThread());

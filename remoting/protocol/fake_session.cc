@@ -159,6 +159,11 @@ base::TimeDelta FakeSocket::GetConnectTimeMicros() const {
   return base::TimeDelta();
 }
 
+net::NextProto FakeSocket::GetNegotiatedProtocol() const {
+  NOTIMPLEMENTED();
+  return net::kProtoUnknown;
+}
+
 FakeUdpSocket::FakeUdpSocket()
     : read_pending_(false),
       input_pos_(0),

@@ -68,6 +68,7 @@ class FakeSocket : public net::StreamSocket {
   virtual bool UsingTCPFastOpen() const OVERRIDE;
   virtual int64 NumBytesRead() const OVERRIDE;
   virtual base::TimeDelta GetConnectTimeMicros() const OVERRIDE;
+  virtual net::NextProto GetNegotiatedProtocol() const OVERRIDE;
 
  private:
   bool read_pending_;

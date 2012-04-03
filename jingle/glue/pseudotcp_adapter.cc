@@ -503,6 +503,11 @@ base::TimeDelta PseudoTcpAdapter::GetConnectTimeMicros() const {
   return base::TimeDelta::FromMicroseconds(-1);
 }
 
+net::NextProto PseudoTcpAdapter::GetNegotiatedProtocol() const {
+  DCHECK(CalledOnValidThread());
+  return net::kProtoUnknown;
+}
+
 void PseudoTcpAdapter::SetAckDelay(int delay_ms) {
   DCHECK(CalledOnValidThread());
   core_->SetAckDelay(delay_ms);

@@ -75,6 +75,7 @@ class FakeSocket : public net::StreamSocket {
   virtual bool UsingTCPFastOpen() const OVERRIDE;
   virtual int64 NumBytesRead() const OVERRIDE;
   virtual base::TimeDelta GetConnectTimeMicros() const OVERRIDE;
+  virtual net::NextProto GetNegotiatedProtocol() const OVERRIDE;
 
  private:
   bool read_pending_;
@@ -217,6 +218,10 @@ int64 FakeSocket::NumBytesRead() const {
 
 base::TimeDelta FakeSocket::GetConnectTimeMicros() const {
   return base::TimeDelta::FromMicroseconds(-1);
+}
+
+net::NextProto FakeSocket::GetNegotiatedProtocol() const {
+  return net::kProtoUnknown;
 }
 
 void CreateRandomPacket(std::vector<char>* packet) {

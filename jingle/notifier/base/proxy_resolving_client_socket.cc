@@ -366,6 +366,13 @@ base::TimeDelta ProxyResolvingClientSocket::GetConnectTimeMicros() const {
   return base::TimeDelta::FromMicroseconds(-1);
 }
 
+net::NextProto ProxyResolvingClientSocket::GetNegotiatedProtocol() const {
+  if (transport_.get() && transport_->socket())
+    return transport_->socket()->GetNegotiatedProtocol();
+  NOTREACHED();
+  return net::kProtoUnknown;
+}
+
 void ProxyResolvingClientSocket::CloseTransportSocket() {
   if (transport_.get() && transport_->socket())
     transport_->socket()->Disconnect();
