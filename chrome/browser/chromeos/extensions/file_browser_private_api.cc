@@ -26,7 +26,6 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/process_map.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -35,7 +34,6 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/file_browser_handler.h"
-#include "chrome/common/pref_names.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -360,7 +358,8 @@ void RequestLocalFileSystemFunction::RespondSuccessOnUIThread(
   // Add gdata mount point immediately when we kick of first instance of file
   // manager. The actual mount event will be sent to UI only when we perform
   // proper authentication.
-  AddGDataMountPoint();
+  if (gdata::util::IsGDataAvailable(profile_))
+    AddGDataMountPoint();
   result_.reset(new DictionaryValue());
   DictionaryValue* dict = reinterpret_cast<DictionaryValue*>(result_.get());
   dict->SetString("name", name);
@@ -1476,7 +1475,7 @@ bool FileDialogStringsFunction::RunImpl() {
 
   ChromeURLDataManager::DataSource::SetFontAndTextDirection(dict);
 
-  if (!profile_->GetPrefs()->GetBoolean(prefs::kDisableGData))
+  if (gdata::util::IsGDataAvailable(profile_))
     dict->SetString("ENABLE_GDATA", "1");
 
   return true;

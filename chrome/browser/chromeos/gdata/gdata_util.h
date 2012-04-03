@@ -44,6 +44,9 @@ FilePath ExtractGDataPath(const FilePath& path);
 void SetPermissionsForGDataCacheFiles(Profile* profile,
                                       int pid,
                                       const FilePath& path);
+
+// Returns true if gdata is currently active with the specified profile.
+bool IsGDataAvailable(Profile* profile);
 }  // namespace util
 }  // namespace gdata
 

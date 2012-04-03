@@ -12,9 +12,13 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/stringprintf.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/libxml_utils.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/browser/chromeos/gdata/gdata_file_system.h"
 #include "chrome/browser/chromeos/gdata/gdata_system_service.h"
+#include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "net/base/escape.h"
 
@@ -129,6 +133,26 @@ void SetPermissionsForGDataCacheFiles(Profile* profile,
     content::ChildProcessSecurityPolicy::GetInstance()->GrantPermissionsForFile(
         pid, cache_paths[i].first, cache_paths[i].second);
   }
+}
+
+bool IsGDataAvailable(Profile* profile) {
+  // We allow GData only in canary and dev channels.  http://crosbug.com/28806
+  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
+  if (channel == chrome::VersionInfo::CHANNEL_BETA ||
+      channel == chrome::VersionInfo::CHANNEL_STABLE)
+    return false;
+
+  // Do not allow GData for incognito windows / guest mode.
+  if (profile->IsOffTheRecord())
+    return false;
+
+  // Disable gdata if preference is set.  This can happen with commandline flag
+  // --disable-gdata or enterprise policy, or probably with user settings too
+  // in the future.
+  if (profile->GetPrefs()->GetBoolean(prefs::kDisableGData))
+    return false;
+
+  return true;
 }
 
 }  // namespace util
