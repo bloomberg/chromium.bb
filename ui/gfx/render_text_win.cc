@@ -521,7 +521,7 @@ void RenderTextWin::DrawVisualText(Canvas* canvas) {
 void RenderTextWin::ItemizeLogicalText() {
   STLDeleteContainerPointers(runs_.begin(), runs_.end());
   runs_.clear();
-  string_size_ = Size();
+  string_size_ = Size(0, GetFont().GetHeight());
   common_baseline_ = 0;
   if (text().empty())
     return;
@@ -582,12 +582,15 @@ void RenderTextWin::ItemizeLogicalText() {
 }
 
 void RenderTextWin::LayoutVisualText() {
-  HRESULT hr = E_FAIL;
+  DCHECK(!runs_.empty());
+
   if (!cached_hdc_)
     cached_hdc_ = CreateCompatibleDC(NULL);
-  std::vector<internal::TextRun*>::const_iterator run_iter;
-  for (run_iter = runs_.begin(); run_iter < runs_.end(); ++run_iter) {
-    internal::TextRun* run = *run_iter;
+
+  HRESULT hr = E_FAIL;
+  string_size_.set_height(0);
+  for (size_t i = 0; i < runs_.size(); ++i) {
+    internal::TextRun* run = runs_[i];
     size_t run_length = run->range.length();
     const wchar_t* run_text = &(text()[run->range.start()]);
     bool tried_fallback = false;
@@ -704,21 +707,19 @@ void RenderTextWin::LayoutVisualText() {
     }
   }
 
-  if (runs_.size() > 0) {
-    // Build the array of bidirectional embedding levels.
-    scoped_array<BYTE> levels(new BYTE[runs_.size()]);
-    for (size_t i = 0; i < runs_.size(); ++i)
-      levels[i] = runs_[i]->script_analysis.s.uBidiLevel;
+  // Build the array of bidirectional embedding levels.
+  scoped_array<BYTE> levels(new BYTE[runs_.size()]);
+  for (size_t i = 0; i < runs_.size(); ++i)
+    levels[i] = runs_[i]->script_analysis.s.uBidiLevel;
 
-    // Get the maps between visual and logical run indices.
-    visual_to_logical_.reset(new int[runs_.size()]);
-    logical_to_visual_.reset(new int[runs_.size()]);
-    hr = ScriptLayout(runs_.size(),
-                      levels.get(),
-                      visual_to_logical_.get(),
-                      logical_to_visual_.get());
-    DCHECK(SUCCEEDED(hr));
-  }
+  // Get the maps between visual and logical run indices.
+  visual_to_logical_.reset(new int[runs_.size()]);
+  logical_to_visual_.reset(new int[runs_.size()]);
+  hr = ScriptLayout(runs_.size(),
+                    levels.get(),
+                    visual_to_logical_.get(),
+                    logical_to_visual_.get());
+  DCHECK(SUCCEEDED(hr));
 
   // Precalculate run width information.
   size_t preceding_run_widths = 0;

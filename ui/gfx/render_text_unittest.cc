@@ -921,6 +921,19 @@ TEST_F(RenderTextTest, StringSizeSanity) {
   EXPECT_GT(string_size.height(), 0);
 }
 
+TEST_F(RenderTextTest, StringSizeEmptyString) {
+  const Font font;
+  scoped_ptr<RenderText> render_text(RenderText::CreateRenderText());
+  render_text->SetFontList(FontList(font));
+
+  render_text->SetText(string16());
+  EXPECT_EQ(font.GetHeight(), render_text->GetStringSize().height());
+  EXPECT_EQ(0, render_text->GetStringSize().width());
+
+  render_text->SetText(UTF8ToUTF16(" "));
+  EXPECT_EQ(font.GetHeight(), render_text->GetStringSize().height());
+}
+
 TEST_F(RenderTextTest, StringSizeBoldWidth) {
   scoped_ptr<RenderText> render_text(RenderText::CreateRenderText());
   render_text->SetText(UTF8ToUTF16("Hello World"));
