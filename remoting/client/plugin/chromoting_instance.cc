@@ -100,6 +100,10 @@ static logging::LogMessageHandlerFunction g_logging_old_handler = NULL;
 static base::LazyInstance<base::Lock>::Leaky
     g_logging_lock = LAZY_INSTANCE_INITIALIZER;
 
+// String sent in the "hello" message to the plugin to describe features.
+const char ChromotingInstance::kApiFeatures[] =
+    "highQualityScaling injectKeyEvent sendClipboardItem";
+
 bool ChromotingInstance::ParseAuthMethods(const std::string& auth_methods_str,
                                           ClientConfig* config) {
   if (auth_methods_str == "v1_token") {
@@ -141,6 +145,7 @@ ChromotingInstance::ChromotingInstance(PP_Instance pp_instance)
   // Send hello message.
   scoped_ptr<base::DictionaryValue> data(new base::DictionaryValue());
   data->SetInteger("apiVersion", kApiVersion);
+  data->SetString("apiFeatures", kApiFeatures);
   data->SetInteger("apiMinVersion", kApiMinMessagingVersion);
   PostChromotingMessage("hello", data.Pass());
 }

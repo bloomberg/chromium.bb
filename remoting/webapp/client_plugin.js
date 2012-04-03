@@ -42,6 +42,23 @@ remoting.ClientPlugin.prototype.initialize = function(onDone) {};
 remoting.ClientPlugin.prototype.isSupportedVersion = function() {};
 
 /**
+ * Set of features for which hasFeature() can be used to test.
+ *
+ * @enum {string}
+ */
+remoting.ClientPlugin.Feature = {
+  HIGH_QUALITY_SCALING: 'highQualityScaling',
+  INJECT_KEY_EVENT: 'injectKeyEvent',
+  SEND_CLIPBOARD_ITEM: 'sendClipboardItem'
+};
+
+/**
+ * @param {remoting.ClientPlugin.Feature} feature The feature to test for.
+ * @return {boolean} True if the plugin supports the named feature.
+ */
+remoting.ClientPlugin.prototype.hasFeature = function(feature) {};
+
+/**
  * @return {Element} HTML element that correspods to the plugin.
  */
 remoting.ClientPlugin.prototype.element = function() {};
@@ -50,17 +67,6 @@ remoting.ClientPlugin.prototype.element = function() {};
  * Deletes the plugin.
  */
 remoting.ClientPlugin.prototype.cleanup = function() {};
-
-/**
- * @return {boolean} True if the plugin supports high-quality scaling.
- */
-remoting.ClientPlugin.prototype.isHiQualityScalingSupported =
-    function() {};
-
-/**
- * @return {boolean} True if the plugin supports the injectKeyEvent API.
- */
-remoting.ClientPlugin.prototype.isInjectKeyEventSupported = function() {};
 
 /**
  * Must be called for each incoming stanza received from the host.

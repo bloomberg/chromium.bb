@@ -89,7 +89,11 @@ class ChromotingInstance :
 
   // Plugin API version. This should be incremented whenever the API
   // interface changes.
-  static const int kApiVersion = 6;
+  static const int kApiVersion = 7;
+
+  // Plugin API features. This allows orthogonal features to be supported
+  // without bumping the API version.
+  static const char kApiFeatures[];
 
   // Backward-compatibility version used by for the messaging
   // interface. Should be updated whenever we remove support for

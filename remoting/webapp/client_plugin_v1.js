@@ -141,10 +141,13 @@ remoting.ClientPluginV1.prototype.isSupportedVersion = function() {
 };
 
 /**
- * @return {boolean} True if the plugin supports high-quality scaling.
+ * @param {remoting.ClientPlugin.Feature} feature The feature to test for.
+ * @return {boolean} True if the plugin supports the named feature.
  */
-remoting.ClientPluginV1.prototype.isHiQualityScalingSupported = function() {
-  return this.plugin.apiVersion >= 3;
+remoting.ClientPluginV1.prototype.hasFeature = function(feature) {
+  if (feature == remoting.ClientPlugin.Feature.HIGH_QUALITY_SCALING)
+    return this.plugin.apiVersion >= 3;
+  return false;
 };
 
 /**

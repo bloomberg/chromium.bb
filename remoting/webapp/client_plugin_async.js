@@ -40,6 +40,8 @@ remoting.ClientPluginAsync = function(plugin) {
 
   /** @type {number} */
   this.pluginApiVersion_ = -1;
+  /** @type {Array.<string>} */
+  this.pluginApiFeatures_ = [];
   /** @type {number} */
   this.pluginApiMinVersion_ = -1;
   /** @type {boolean} */
@@ -97,6 +99,18 @@ remoting.ClientPluginAsync.prototype.handleMessage_ = function(message_str) {
       return;
     }
     this.pluginApiVersion_ = /** @type {number} */ message.data['apiVersion'];
+    if (this.pluginApiVersion_ >= 7) {
+      if (typeof message.data['apiFeatures'] != 'string') {
+        console.error('Received invalid hello message: ' + message_str);
+        return;
+      }
+      this.pluginApiFeatures_ =
+          /** @type {Array.<string>} */ message.data['apiFeatures'].split(' ');
+    } else if (this.pluginApiVersion_ >= 6) {
+      this.pluginApiFeatures_ = ['highQualityScaling', 'injectKeyEvent'];
+    } else {
+      this.pluginApiFeatures_ = ['highQualityScaling'];
+    }
     this.pluginApiMinVersion_ =
         /** @type {number} */ message.data['apiMinVersion'];
     this.helloReceived_ = true;
@@ -210,10 +224,16 @@ remoting.ClientPluginAsync.prototype.isSupportedVersion = function() {
 };
 
 /**
- * @return {boolean} True if the plugin supports high-quality scaling.
+ * @param {remoting.ClientPlugin.Feature} feature The feature to test for.
+ * @return {boolean} True if the plugin supports the named feature.
  */
-remoting.ClientPluginAsync.prototype.isHiQualityScalingSupported = function() {
-  return true;
+remoting.ClientPluginAsync.prototype.hasFeature = function(feature) {
+  if (!this.helloReceived_) {
+    console.error(
+        "hasFeature() is called before the plugin is initialized.");
+    return false;
+  }
+  return this.pluginApiFeatures_.indexOf(feature) > -1;
 };
 
 /**
@@ -315,9 +335,8 @@ remoting.ClientPluginAsync.prototype.getPerfStats = function() {
  */
 remoting.ClientPluginAsync.prototype.sendClipboardItem =
     function(mimeType, item) {
-  if (this.plugin.apiVersion < 6) {
+  if (!this.hasFeature(remoting.ClientPlugin.Feature.SEND_CLIPBOARD_ITEM))
     return;
-  }
   this.plugin.postMessage(JSON.stringify(
       { method: 'sendClipboardItem',
         data: { mimeType: mimeType, item: item }}));
