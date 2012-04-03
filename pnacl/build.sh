@@ -87,6 +87,7 @@ readonly TC_SRC="${PNACL_ROOT}/src"
 readonly TC_SRC_UPSTREAM="${TC_SRC}/upstream"
 readonly TC_SRC_LLVM="${TC_SRC_UPSTREAM}/llvm"
 readonly TC_SRC_BINUTILS="${TC_SRC}/binutils"
+readonly TC_SRC_GOLD="${TC_SRC}/gold"
 readonly TC_SRC_NEWLIB="${TC_SRC}/newlib"
 readonly TC_SRC_COMPILER_RT="${TC_SRC}/compiler-rt"
 
@@ -114,6 +115,7 @@ readonly NEWLIB_INCLUDE_DIR="${TC_SRC_NEWLIB}/newlib-trunk/newlib/libc/include"
 readonly TC_BUILD="${PNACL_ROOT}/build"
 readonly TC_BUILD_LLVM="${TC_BUILD}/llvm"
 readonly TC_BUILD_BINUTILS="${TC_BUILD}/binutils"
+readonly TC_BUILD_GOLD="${TC_BUILD}/gold"
 readonly TC_BUILD_BINUTILS_LIBERTY="${TC_BUILD}/binutils-liberty"
 readonly TC_BUILD_NEWLIB="${TC_BUILD}/newlib"
 readonly TC_BUILD_COMPILER_RT="${TC_BUILD}/compiler_rt"
@@ -270,6 +272,7 @@ readonly UPSTREAM_REV=${UPSTREAM_REV:-567b26101263}
 
 readonly NEWLIB_REV=346ea38d142f
 readonly BINUTILS_REV=8040f022bb25
+readonly GOLD_REV=859053d77fd0
 readonly COMPILER_RT_REV=1a3a6ffb31ea
 
 readonly LLVM_PROJECT_REV=${LLVM_PROJECT_REV:-152935}
@@ -280,6 +283,10 @@ readonly CLANG_REV=${LLVM_PROJECT_REV}
 readonly REPO_UPSTREAM="nacl-llvm-branches.upstream"
 readonly REPO_NEWLIB="nacl-llvm-branches.newlib"
 readonly REPO_BINUTILS="nacl-llvm-branches.binutils"
+# NOTE: this is essentially another binutils repo but a much more
+#       recent revision to pull in all the latest gold changes
+# TODO(robertm): merge the two repos -- ideally when we migrate to git
+readonly REPO_GOLD="nacl-llvm-branches.gold"
 readonly REPO_COMPILER_RT="nacl-llvm-branches.compiler-rt"
 
 # LLVM repos (svn)
@@ -377,6 +384,7 @@ hg-info-all() {
   hg-info "${TC_SRC_UPSTREAM}"   ${UPSTREAM_REV}
   hg-info "${TC_SRC_NEWLIB}"     ${NEWLIB_REV}
   hg-info "${TC_SRC_BINUTILS}"   ${BINUTILS_REV}
+  hg-info "${TC_SRC_GOLD}"       ${GOLD_REV}
   hg-info "${TC_SRC_COMPILER_RT}" ${COMPILER_RT_REV}
 }
 
@@ -385,6 +393,7 @@ update-all() {
   svn-update-clang
   hg-update-newlib
   hg-update-binutils
+  hg-update-gold
   hg-update-compiler-rt
 }
 
@@ -598,6 +607,11 @@ hg-update-binutils() {
   binutils-mess-unhide
 }
 
+#@ hg-update-gold    - Update GOLD to the stable revision
+hg-update-gold() {
+  hg-update-common "gold" ${GOLD_REV} "${TC_SRC_GOLD}"
+}
+
 #@ hg-update-compiler-rt - Update compiler-rt to the stable revision
 hg-update-compiler-rt() {
   hg-update-common "compiler-rt" ${COMPILER_RT_REV} "${TC_SRC_COMPILER_RT}"
@@ -611,6 +625,7 @@ hg-pull-all() {
   hg-pull-upstream
   hg-pull-newlib
   hg-pull-binutils
+  hg-pull-gold
   hg-pull-compiler-rt
 }
 
@@ -626,6 +641,10 @@ hg-pull-binutils() {
   hg-pull "${TC_SRC_BINUTILS}"
 }
 
+hg-pull-gold() {
+  hg-pull "${TC_SRC_GOLD}"
+}
+
 hg-pull-compiler-rt() {
   hg-pull "${TC_SRC_COMPILER_RT}"
 }
@@ -637,6 +656,7 @@ checkout-all() {
   hg-checkout-upstream
   svn-checkout-clang
   hg-checkout-binutils
+  hg-checkout-gold
   hg-checkout-newlib
   hg-checkout-compiler-rt
   if ${PNACL_IN_CROS_CHROOT}; then
@@ -663,6 +683,10 @@ svn-checkout-clang() {
 
 hg-checkout-binutils() {
   hg-checkout ${REPO_BINUTILS} "${TC_SRC_BINUTILS}" ${BINUTILS_REV}
+}
+
+hg-checkout-gold() {
+  hg-checkout ${REPO_GOLD} "${TC_SRC_GOLD}" ${GOLD_REV}
 }
 
 hg-checkout-newlib() {
@@ -2503,6 +2527,88 @@ binutils-sb-install() {
   translate-sb-tool ld
   install-sb-tool ld
   spopd
+}
+#+-------------------------------------------------------------------------
+#+ binutils-gold - Build and install gold (unsandboxed)
+#+                 This is the replacement for the current
+#+                 final linker which is bfd based.
+#+                 It has nothing to do with the bitcode linker
+#+                 which is also gold based.
+binutils-gold() {
+  StepBanner "GOLD-NATIVE" "gold"
+
+  local srcdir="${TC_SRC_GOLD}"
+  assert-dir "${srcdir}" "You need to checkout gold."
+
+  binutils-gold-clean
+  binutils-gold-configure
+  binutils-gold-make
+  binutils-gold-install
+}
+
+# binutils-gold-clean - Clean gold
+binutils-gold-clean() {
+  StepBanner "GOLD-NATIVE" "Clean"
+  local objdir="${TC_BUILD_GOLD}"
+
+  rm -rf "${objdir}"
+  mkdir -p "${objdir}"
+}
+
+# binutils-gold-configure - Configure binutils for gold (unsandboxed)
+binutils-gold-configure() {
+  StepBanner "GOLD-NATIVE" "Configure"
+  local srcdir="${TC_SRC_GOLD}"
+  local objdir="${TC_BUILD_GOLD}"
+
+  mkdir -p "${objdir}"
+  spushd "${objdir}"
+
+  RunWithLog gold.configure \
+    env -i \
+    PATH="/usr/bin:/bin" \
+    CC="${CC}" \
+    CXX="${CXX}" \
+    # NOTE: this configures way too much. Gold is still quite
+    #       entangled with the rest of binutils at least during configure
+    # TODO(robertm): we also build-in all default targets, need to prune
+    #                this, especially for the sandboxed case.
+    ${srcdir}/configure --prefix="${BINUTILS_INSTALL_DIR}" \
+                                      --enable-gold=yes \
+                                      --enable-ld=no \
+                                      --disable-liberty \
+                                      --enable-plugins=no \
+                                      --disable-werror \
+                                      --with-sysroot="${NONEXISTENT_PATH}"
+  # There's no point in setting the correct path as sysroot, because we
+  # want the toolchain to be relocatable. The driver will use ld command-line
+  # option --sysroot= to override this value and set it to the correct path.
+  # However, we need to include --with-sysroot during configure to get this
+  # option. So fill in a non-sense, non-existent path.
+  spopd
+}
+
+# binutils-gold-make - Make binutils (unsandboxed)
+binutils-gold-make() {
+  StepBanner "GOLD-NATIVE" "Make"
+  local objdir="${TC_BUILD_GOLD}"
+
+  spushd "${objdir}"
+  ts-touch-open "${objdir}"
+
+  RunWithLog gold.make \
+      env -i PATH="/usr/bin:/bin" \
+      make ${MAKE_OPTS} all-gold
+
+  ts-touch-commit "${objdir}"
+  spopd
+}
+
+# binutils-gold-install - Install gold
+binutils-gold-install() {
+  StepBanner "GOLD-NATIVE" "Install"
+  local dst=${BINUTILS_INSTALL_DIR}/bin/arm-pc-nacl-ld.alt
+  cp ${TC_BUILD_GOLD}/gold/ld-new ${dst}
 }
 
 #+-------------------------------------------------------------------------
