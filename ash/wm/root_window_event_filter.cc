@@ -46,23 +46,23 @@ gfx::NativeCursor RootWindowEventFilter::CursorForWindowComponent(
     int window_component) {
   switch (window_component) {
     case HTBOTTOM:
-      return aura::kCursorSouthResize;
+      return ui::kCursorSouthResize;
     case HTBOTTOMLEFT:
-      return aura::kCursorSouthWestResize;
+      return ui::kCursorSouthWestResize;
     case HTBOTTOMRIGHT:
-      return aura::kCursorSouthEastResize;
+      return ui::kCursorSouthEastResize;
     case HTLEFT:
-      return aura::kCursorWestResize;
+      return ui::kCursorWestResize;
     case HTRIGHT:
-      return aura::kCursorEastResize;
+      return ui::kCursorEastResize;
     case HTTOP:
-      return aura::kCursorNorthResize;
+      return ui::kCursorNorthResize;
     case HTTOPLEFT:
-      return aura::kCursorNorthWestResize;
+      return ui::kCursorNorthWestResize;
     case HTTOPRIGHT:
-      return aura::kCursorNorthEastResize;
+      return ui::kCursorNorthEastResize;
     default:
-      return aura::kCursorNull;
+      return ui::kCursorNull;
   }
 }
 

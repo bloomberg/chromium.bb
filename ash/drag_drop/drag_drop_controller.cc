@@ -114,7 +114,7 @@ void DragDropController::DragUpdate(aura::Window* target,
                               drag_operation_);
       int op = delegate->OnDragUpdated(e);
        gfx::NativeCursor cursor = (op == ui::DragDropTypes::DRAG_NONE)?
-           aura::kCursorMove : aura::kCursorHand;
+           ui::kCursorMove : ui::kCursorHand;
        Shell::GetRootWindow()->SetCursor(cursor);
     }
   }
@@ -128,7 +128,7 @@ void DragDropController::DragUpdate(aura::Window* target,
 
 void DragDropController::Drop(aura::Window* target,
                               const aura::LocatedEvent& event) {
-  Shell::GetRootWindow()->SetCursor(aura::kCursorPointer);
+  Shell::GetRootWindow()->SetCursor(ui::kCursorPointer);
   aura::client::DragDropDelegate* delegate = NULL;
 
   // |drag_window_| can be NULL if we have just started the drag and have not
@@ -153,7 +153,7 @@ void DragDropController::Drop(aura::Window* target,
 }
 
 void DragDropController::DragCancel() {
-  Shell::GetRootWindow()->SetCursor(aura::kCursorPointer);
+  Shell::GetRootWindow()->SetCursor(ui::kCursorPointer);
   aura::client::DragDropDelegate* delegate = NULL;
   if ((delegate = aura::client::GetDragDropDelegate(drag_window_))) {
     delegate->OnDragExited();

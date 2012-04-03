@@ -15,14 +15,14 @@
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/event_client.h"
 #include "ui/aura/env.h"
-#include "ui/aura/root_window_host.h"
-#include "ui/aura/root_window_observer.h"
 #include "ui/aura/event.h"
 #include "ui/aura/event_filter.h"
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/gestures/gesture_recognizer.h"
 #include "ui/aura/monitor.h"
 #include "ui/aura/monitor_manager.h"
+#include "ui/aura/root_window_host.h"
+#include "ui/aura/root_window_observer.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/base/hit_test.h"
@@ -89,7 +89,7 @@ RootWindow::RootWindow(const gfx::Rect& initial_bounds)
       ALLOW_THIS_IN_INITIALIZER_LIST(schedule_paint_factory_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(event_factory_(this)),
       mouse_button_flags_(0),
-      last_cursor_(kCursorNull),
+      last_cursor_(ui::kCursorNull),
       cursor_shown_(true),
       capture_window_(NULL),
       mouse_pressed_handler_(NULL),

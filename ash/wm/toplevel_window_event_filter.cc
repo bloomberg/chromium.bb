@@ -12,12 +12,12 @@
 #include "ash/wm/window_util.h"
 #include "base/message_loop.h"
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/cursor.h"
 #include "ui/aura/env.h"
 #include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
+#include "ui/base/cursor/cursor.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/screen.h"
@@ -163,7 +163,7 @@ void ToplevelWindowEventFilter::RunMoveLoop(aura::Window* source) {
       root_window, source->parent(), &parent_mouse_location);
   window_resizer_.reset(
       CreateWindowResizer(source, parent_mouse_location, HTCAPTION));
-  source->GetRootWindow()->SetCursor(aura::kCursorPointer);
+  source->GetRootWindow()->SetCursor(ui::kCursorPointer);
 #if !defined(OS_MACOSX)
   MessageLoopForUI* loop = MessageLoopForUI::current();
   MessageLoop::ScopedNestableTaskAllower allow_nested(loop);

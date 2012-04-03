@@ -29,7 +29,7 @@
 #include "ui/views/layout/layout_constants.h"
 
 #if defined(USE_AURA)
-#include "ui/aura/cursor.h"
+#include "ui/base/cursor/cursor.h"
 #endif
 
 // If we don't clamp the maximum width, then very long URLs and titles can make
@@ -88,7 +88,7 @@ void ContentSettingBubbleContents::Favicon::OnMouseReleased(
 gfx::NativeCursor ContentSettingBubbleContents::Favicon::GetCursor(
     const views::MouseEvent& event) {
 #if defined(USE_AURA)
-  return aura::kCursorHand;
+  return ui::kCursorHand;
 #elif defined(OS_WIN)
   static HCURSOR g_hand_cursor = LoadCursor(NULL, IDC_HAND);
   return g_hand_cursor;

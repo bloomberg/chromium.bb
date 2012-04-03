@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,7 +11,7 @@
 #include "ui/views/controls/single_split_view_listener.h"
 
 #if defined(USE_AURA)
-#include "ui/aura/cursor.h"
+#include "ui/base/cursor/cursor.h"
 #endif
 
 namespace views {
@@ -95,7 +95,7 @@ gfx::NativeCursor SingleSplitView::GetCursor(const MouseEvent& event) {
     return gfx::kNullCursor;
 #if defined(USE_AURA)
   return is_horizontal_ ?
-      aura::kCursorEastWestResize : aura::kCursorNorthSouthResize;
+      ui::kCursorEastWestResize : ui::kCursorNorthSouthResize;
 #elif defined(OS_WIN)
   static HCURSOR we_resize_cursor = LoadCursor(NULL, IDC_SIZEWE);
   static HCURSOR ns_resize_cursor = LoadCursor(NULL, IDC_SIZENS);

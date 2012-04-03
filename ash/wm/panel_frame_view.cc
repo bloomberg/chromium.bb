@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/panel_frame_view.h"
 #include "ash/wm/frame_painter.h"
+#include "ash/wm/panel_frame_view.h"
 #include "grit/ui_resources.h"
 #include "grit/ui_strings.h"  // Accessibility names
 #include "third_party/skia/include/core/SkPaint.h"
-#include "ui/base/l10n/l10n_util.h"
-#include "ui/aura/cursor.h"
 #include "ui/base/animation/throb_animation.h"
+#include "ui/base/cursor/cursor.h"
 #include "ui/base/hit_test.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"

@@ -49,7 +49,6 @@
         'client/window_move_client.cc',
         'client/window_move_client.h',
         'client/window_types.h',
-        'cursor.h',
         'desktop/desktop_activation_client.cc',
         'desktop/desktop_activation_client.h',
         'desktop/desktop_dispatcher_client.cc',

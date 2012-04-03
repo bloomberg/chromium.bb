@@ -401,6 +401,8 @@
         'webcursor.h',
         'webcursor_android.cc',
         'webcursor_aura.cc',
+        'webcursor_aurawin.cc',
+        'webcursor_aurax11.cc',
         'webcursor_gtk.cc',
         'webcursor_gtk_data.h',
         'webcursor_mac.mm',
@@ -498,6 +500,11 @@
             'webcursor_mac.mm',
             'webcursor_win.cc',
           ],
+        }],
+        ['use_aura==1 and use_x11==1', {
+          'link_settings': {
+            'libraries': [ '-lXcursor', ],
+          },
         }],
         ['OS!="mac"', {
           'sources/': [['exclude', '_mac\\.(cc|mm)$']],

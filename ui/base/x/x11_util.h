@@ -24,6 +24,7 @@ typedef unsigned long XID;
 typedef unsigned long XSharedMemoryId;  // ShmSeg in the X headers.
 typedef struct _XDisplay Display;
 typedef unsigned long Cursor;
+typedef struct _XcursorImage XcursorImage;
 
 #if defined(TOOLKIT_USES_GTK)
 typedef struct _GdkDrawable GdkWindow;
@@ -75,7 +76,20 @@ const int kCursorClearXCursorCache = -1;
 
 // Returns an X11 Cursor, sharable across the process.
 // |cursor_shape| is an X font cursor shape, see XCreateFontCursor().
-UI_EXPORT Cursor GetXCursor(int cursor_shape);
+UI_EXPORT ::Cursor GetXCursor(int cursor_shape);
+
+#if defined(USE_AURA)
+// Creates a custom X cursor from the image. This takes ownership of image. The
+// caller must not free/modify the image. The refcount of the newly created
+// cursor is set to 1.
+UI_EXPORT ::Cursor CreateReffedCustomXCursor(XcursorImage* image);
+
+// Increases the refcount of the custom cursor.
+UI_EXPORT void RefCustomXCursor(::Cursor cursor);
+
+// Decreases the refcount of the custom cursor, and destroys it if it reaches 0.
+UI_EXPORT void UnrefCustomXCursor(::Cursor cursor);
+#endif
 
 // These functions do not cache their results --------------------------
 

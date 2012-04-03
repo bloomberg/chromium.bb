@@ -15,8 +15,8 @@
 #include "ash/focus_cycler.h"
 #include "ash/ime/input_method_event_filter.h"
 #include "ash/launcher/launcher.h"
-#include "ash/monitor/multi_monitor_manager.h"
 #include "ash/monitor/monitor_controller.h"
+#include "ash/monitor/multi_monitor_manager.h"
 #include "ash/screen_ash.h"
 #include "ash/shell_delegate.h"
 #include "ash/shell_factory.h"
@@ -31,8 +31,8 @@
 #include "ash/system/power/power_supply_status.h"
 #include "ash/system/power/tray_power.h"
 #include "ash/system/settings/tray_settings.h"
-#include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray.h"
+#include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/tray_empty.h"
 #include "ash/system/tray_accessibility.h"
 #include "ash/system/tray_caps_lock.h"
@@ -45,8 +45,8 @@
 #include "ash/wm/dialog_frame_view.h"
 #include "ash/wm/event_client_impl.h"
 #include "ash/wm/key_rewriter_event_filter.h"
-#include "ash/wm/panel_window_event_filter.h"
 #include "ash/wm/panel_layout_manager.h"
+#include "ash/wm/panel_window_event_filter.h"
 #include "ash/wm/partial_screenshot_event_filter.h"
 #include "ash/wm/power_button_controller.h"
 #include "ash/wm/resize_shadow_controller.h"
@@ -64,10 +64,10 @@
 #include "ash/wm/window_modality_controller.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/always_on_top_layout_manager.h"
-#include "ash/wm/workspace_controller.h"
 #include "ash/wm/workspace/workspace_event_filter.h"
 #include "ash/wm/workspace/workspace_layout_manager.h"
 #include "ash/wm/workspace/workspace_manager.h"
+#include "ash/wm/workspace_controller.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "grit/ui_resources.h"
@@ -647,7 +647,7 @@ void Shell::Init() {
   input_method_filter_.reset(new internal::InputMethodEventFilter);
   AddRootWindowEventFilter(input_method_filter_.get());
 
-  root_window->SetCursor(aura::kCursorPointer);
+  root_window->SetCursor(ui::kCursorPointer);
   if (initially_hide_cursor_)
     root_window->ShowCursor(false);
 

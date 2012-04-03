@@ -921,7 +921,7 @@ bool RenderWidgetHostViewAura::OnKeyEvent(aura::KeyEvent* event) {
 
 gfx::NativeCursor RenderWidgetHostViewAura::GetCursor(const gfx::Point& point) {
   if (mouse_locked_)
-    return aura::kCursorNone;
+    return ui::kCursorNone;
   return current_cursor_.GetNativeCursor();
 }
 
@@ -1130,8 +1130,8 @@ void RenderWidgetHostViewAura::UpdateCursorIfOverSelf() {
     return;
 
   gfx::NativeCursor cursor = current_cursor_.GetNativeCursor();
-  if (is_loading_ && cursor == aura::kCursorPointer)
-    cursor = aura::kCursorProgress;
+  if (is_loading_ && cursor == ui::kCursorPointer)
+    cursor = ui::kCursorProgress;
 
   root_window->SetCursor(cursor);
 }

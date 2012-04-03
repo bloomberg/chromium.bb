@@ -13,7 +13,6 @@
 #include "ash/wm/window_util.h"
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/activation_delegate.h"
-#include "ui/aura/cursor.h"
 #include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/aura_test_base.h"
@@ -21,6 +20,7 @@
 #include "ui/aura/test/test_event_filter.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
+#include "ui/base/cursor/cursor.h"
 #include "ui/base/hit_test.h"
 #include "ui/gfx/screen.h"
 
@@ -375,45 +375,49 @@ TEST_F(RootWindowEventFilterTest, MouseEventCursors) {
   aura::MouseEvent move2(ui::ET_MOUSE_MOVED, point2, point2, 0x0);
 
   // Cursor starts as a pointer (set during Shell::Init()).
-  EXPECT_EQ(aura::kCursorPointer, root_window->last_cursor());
+  EXPECT_EQ(ui::kCursorPointer, root_window->last_cursor().native_type());
 
   // Resize edges and corners show proper cursors.
   window_delegate.set_hittest_code(HTBOTTOM);
   root_window->DispatchMouseEvent(&move1);
-  EXPECT_EQ(aura::kCursorSouthResize, root_window->last_cursor());
+  EXPECT_EQ(ui::kCursorSouthResize, root_window->last_cursor().native_type());
 
   window_delegate.set_hittest_code(HTBOTTOMLEFT);
   root_window->DispatchMouseEvent(&move2);
-  EXPECT_EQ(aura::kCursorSouthWestResize, root_window->last_cursor());
+  EXPECT_EQ(ui::kCursorSouthWestResize,
+      root_window->last_cursor().native_type());
 
   window_delegate.set_hittest_code(HTBOTTOMRIGHT);
   root_window->DispatchMouseEvent(&move1);
-  EXPECT_EQ(aura::kCursorSouthEastResize, root_window->last_cursor());
+  EXPECT_EQ(ui::kCursorSouthEastResize,
+      root_window->last_cursor().native_type());
 
   window_delegate.set_hittest_code(HTLEFT);
   root_window->DispatchMouseEvent(&move2);
-  EXPECT_EQ(aura::kCursorWestResize, root_window->last_cursor());
+  EXPECT_EQ(ui::kCursorWestResize, root_window->last_cursor().native_type());
 
   window_delegate.set_hittest_code(HTRIGHT);
   root_window->DispatchMouseEvent(&move1);
-  EXPECT_EQ(aura::kCursorEastResize, root_window->last_cursor());
+  EXPECT_EQ(ui::kCursorEastResize, root_window->last_cursor().native_type());
 
   window_delegate.set_hittest_code(HTTOP);
   root_window->DispatchMouseEvent(&move2);
-  EXPECT_EQ(aura::kCursorNorthResize, root_window->last_cursor());
+  EXPECT_EQ(ui::kCursorNorthResize, root_window->last_cursor().native_type());
 
   window_delegate.set_hittest_code(HTTOPLEFT);
   root_window->DispatchMouseEvent(&move1);
-  EXPECT_EQ(aura::kCursorNorthWestResize, root_window->last_cursor());
+  EXPECT_EQ(ui::kCursorNorthWestResize,
+      root_window->last_cursor().native_type());
 
   window_delegate.set_hittest_code(HTTOPRIGHT);
   root_window->DispatchMouseEvent(&move2);
-  EXPECT_EQ(aura::kCursorNorthEastResize, root_window->last_cursor());
+  EXPECT_EQ(ui::kCursorNorthEastResize,
+      root_window->last_cursor().native_type());
 
   // Client area uses null cursor.
   window_delegate.set_hittest_code(HTCLIENT);
   root_window->DispatchMouseEvent(&move1);
-  EXPECT_EQ(aura::kCursorNull, root_window->last_cursor());
+  EXPECT_EQ(ui::kCursorNull, root_window->last_cursor().native_type());
 }
 
 #if defined(OS_MACOSX)

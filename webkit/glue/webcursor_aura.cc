@@ -6,123 +6,105 @@
 
 #include "base/logging.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCursorInfo.h"
-#include "ui/aura/cursor.h"
+#include "ui/base/cursor/cursor.h"
 
 using WebKit::WebCursorInfo;
 
 gfx::NativeCursor WebCursor::GetNativeCursor() {
   switch (type_) {
     case WebCursorInfo::TypePointer:
-      return aura::kCursorPointer;
+      return ui::kCursorPointer;
     case WebCursorInfo::TypeCross:
-      return aura::kCursorCross;
+      return ui::kCursorCross;
     case WebCursorInfo::TypeHand:
-      return aura::kCursorHand;
+      return ui::kCursorHand;
     case WebCursorInfo::TypeIBeam:
-      return aura::kCursorIBeam;
+      return ui::kCursorIBeam;
     case WebCursorInfo::TypeWait:
-      return aura::kCursorWait;
+      return ui::kCursorWait;
     case WebCursorInfo::TypeHelp:
-      return aura::kCursorHelp;
+      return ui::kCursorHelp;
     case WebCursorInfo::TypeEastResize:
-      return aura::kCursorEastResize;
+      return ui::kCursorEastResize;
     case WebCursorInfo::TypeNorthResize:
-      return aura::kCursorNorthResize;
+      return ui::kCursorNorthResize;
     case WebCursorInfo::TypeNorthEastResize:
-      return aura::kCursorNorthEastResize;
+      return ui::kCursorNorthEastResize;
     case WebCursorInfo::TypeNorthWestResize:
-      return aura::kCursorNorthWestResize;
+      return ui::kCursorNorthWestResize;
     case WebCursorInfo::TypeSouthResize:
-      return aura::kCursorSouthResize;
+      return ui::kCursorSouthResize;
     case WebCursorInfo::TypeSouthEastResize:
-      return aura::kCursorSouthEastResize;
+      return ui::kCursorSouthEastResize;
     case WebCursorInfo::TypeSouthWestResize:
-      return aura::kCursorSouthWestResize;
+      return ui::kCursorSouthWestResize;
     case WebCursorInfo::TypeWestResize:
-      return aura::kCursorWestResize;
+      return ui::kCursorWestResize;
     case WebCursorInfo::TypeNorthSouthResize:
-      return aura::kCursorNorthSouthResize;
+      return ui::kCursorNorthSouthResize;
     case WebCursorInfo::TypeEastWestResize:
-      return aura::kCursorEastWestResize;
+      return ui::kCursorEastWestResize;
     case WebCursorInfo::TypeNorthEastSouthWestResize:
-      return aura::kCursorNorthEastSouthWestResize;
+      return ui::kCursorNorthEastSouthWestResize;
     case WebCursorInfo::TypeNorthWestSouthEastResize:
-      return aura::kCursorNorthWestSouthEastResize;
+      return ui::kCursorNorthWestSouthEastResize;
     case WebCursorInfo::TypeColumnResize:
-      return aura::kCursorColumnResize;
+      return ui::kCursorColumnResize;
     case WebCursorInfo::TypeRowResize:
-      return aura::kCursorRowResize;
+      return ui::kCursorRowResize;
     case WebCursorInfo::TypeMiddlePanning:
-      return aura::kCursorMiddlePanning;
+      return ui::kCursorMiddlePanning;
     case WebCursorInfo::TypeEastPanning:
-      return aura::kCursorEastPanning;
+      return ui::kCursorEastPanning;
     case WebCursorInfo::TypeNorthPanning:
-      return aura::kCursorNorthPanning;
+      return ui::kCursorNorthPanning;
     case WebCursorInfo::TypeNorthEastPanning:
-      return aura::kCursorNorthEastPanning;
+      return ui::kCursorNorthEastPanning;
     case WebCursorInfo::TypeNorthWestPanning:
-      return aura::kCursorNorthWestPanning;
+      return ui::kCursorNorthWestPanning;
     case WebCursorInfo::TypeSouthPanning:
-      return aura::kCursorSouthPanning;
+      return ui::kCursorSouthPanning;
     case WebCursorInfo::TypeSouthEastPanning:
-      return aura::kCursorSouthEastPanning;
+      return ui::kCursorSouthEastPanning;
     case WebCursorInfo::TypeSouthWestPanning:
-      return aura::kCursorSouthWestPanning;
+      return ui::kCursorSouthWestPanning;
     case WebCursorInfo::TypeWestPanning:
-      return aura::kCursorWestPanning;
+      return ui::kCursorWestPanning;
     case WebCursorInfo::TypeMove:
-      return aura::kCursorMove;
+      return ui::kCursorMove;
     case WebCursorInfo::TypeVerticalText:
-      return aura::kCursorVerticalText;
+      return ui::kCursorVerticalText;
     case WebCursorInfo::TypeCell:
-      return aura::kCursorCell;
+      return ui::kCursorCell;
     case WebCursorInfo::TypeContextMenu:
-      return aura::kCursorContextMenu;
+      return ui::kCursorContextMenu;
     case WebCursorInfo::TypeAlias:
-      return aura::kCursorAlias;
+      return ui::kCursorAlias;
     case WebCursorInfo::TypeProgress:
-      return aura::kCursorProgress;
+      return ui::kCursorProgress;
     case WebCursorInfo::TypeNoDrop:
-      return aura::kCursorNoDrop;
+      return ui::kCursorNoDrop;
     case WebCursorInfo::TypeCopy:
-      return aura::kCursorCopy;
+      return ui::kCursorCopy;
     case WebCursorInfo::TypeNone:
-      return aura::kCursorNone;
+      return ui::kCursorNone;
     case WebCursorInfo::TypeNotAllowed:
-      return aura::kCursorNotAllowed;
+      return ui::kCursorNotAllowed;
     case WebCursorInfo::TypeZoomIn:
-      return aura::kCursorZoomIn;
+      return ui::kCursorZoomIn;
     case WebCursorInfo::TypeZoomOut:
-      return aura::kCursorZoomOut;
+      return ui::kCursorZoomOut;
     case WebCursorInfo::TypeGrab:
-      return aura::kCursorGrab;
+      return ui::kCursorGrab;
     case WebCursorInfo::TypeGrabbing:
-      return aura::kCursorGrabbing;
-    case WebCursorInfo::TypeCustom:
-      return aura::kCursorCustom;
+      return ui::kCursorGrabbing;
+    case WebCursorInfo::TypeCustom: {
+      ui::Cursor cursor;
+      cursor.SetPlatformCursor(GetPlatformCursor());
+      return cursor;
+    }
     default:
       NOTREACHED();
       return gfx::kNullCursor;
   }
-}
-
-void WebCursor::InitPlatformData() {
-}
-
-bool WebCursor::SerializePlatformData(Pickle* pickle) const {
-  return true;
-}
-
-bool WebCursor::DeserializePlatformData(PickleIterator* iter) {
-  return true;
-}
-
-bool WebCursor::IsPlatformDataEqual(const WebCursor& other) const {
-  return true;
-}
-
-void WebCursor::CleanupPlatformData() {
-}
-
-void WebCursor::CopyPlatformData(const WebCursor& other) {
 }

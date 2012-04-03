@@ -71,7 +71,9 @@ class WEBKIT_GLUE_EXPORT WebCursor {
   // Returns a native cursor representing the current WebCursor instance.
   gfx::NativeCursor GetNativeCursor();
 
-#if defined(OS_WIN) && !defined(USE_AURA)
+#if defined(USE_AURA)
+  const ui::PlatformCursor GetPlatformCursor();
+#elif defined(OS_WIN)
   // Returns a HCURSOR representing the current WebCursor instance.
   // The ownership of the HCURSOR (does not apply to external cursors) remains
   // with the WebCursor instance.
@@ -143,7 +145,10 @@ class WEBKIT_GLUE_EXPORT WebCursor {
   gfx::Size custom_size_;
   std::vector<char> custom_data_;
 
-#if defined(OS_WIN)
+#if defined(USE_AURA) && defined(USE_X11)
+  // Only used for custom cursors.
+  ui::PlatformCursor platform_cursor_;
+#elif defined(OS_WIN)
   // An externally generated HCURSOR. We assume that it remains valid, i.e we
   // don't attempt to copy the HCURSOR.
   HCURSOR external_cursor_;

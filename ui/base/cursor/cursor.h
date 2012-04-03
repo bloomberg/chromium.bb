@@ -1,12 +1,34 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_AURA_CURSOR_H_
-#define UI_AURA_CURSOR_H_
+#ifndef UI_BASE_CURSOR_CURSOR_H_
+#define UI_BASE_CURSOR_CURSOR_H_
 #pragma once
 
-namespace aura {
+#include "build/build_config.h"
+#include "ui/base/ui_export.h"
+
+namespace gfx {
+class Point;
+class Size;
+}
+
+#if defined(OS_WIN)
+typedef struct HINSTANCE__* HINSTANCE;
+typedef struct HICON__* HICON;
+typedef HICON HCURSOR;
+#endif
+
+namespace ui {
+
+#if defined(OS_WIN)
+typedef ::HCURSOR PlatformCursor;
+#elif defined(USE_X11)
+typedef unsigned long PlatformCursor;
+#else
+typedef void* PlatformCursor;
+#endif
 
 // TODO(jamescook): Once we're on C++0x we could change these constants
 // to an enum and forward declare it in native_widget_types.h.
@@ -14,7 +36,7 @@ namespace aura {
 // Equivalent to a NULL HCURSOR on Windows.
 const int kCursorNull = 0;
 
-// Aura cursors mirror WebKit cursors from WebCursorInfo, but are replicated
+// These cursors mirror WebKit cursors from WebCursorInfo, but are replicated
 // here so we don't introduce a WebKit dependency.
 const int kCursorPointer = 1;
 const int kCursorCross = 2;
@@ -61,6 +83,45 @@ const int kCursorGrab = 42;
 const int kCursorGrabbing = 43;
 const int kCursorCustom = 44;
 
-}  // namespace aura
+// Ref-counted cursor that supports both default and custom cursors.
+class UI_EXPORT Cursor {
+ public:
+  Cursor();
 
-#endif  // UI_AURA_CURSOR_H_
+  // Implicit constructor.
+  Cursor(int type);
+
+  // Allow copy.
+  Cursor(const Cursor& cursor);
+
+  ~Cursor();
+
+  void SetPlatformCursor(const PlatformCursor& platform);
+
+  void RefCustomCursor();
+  void UnrefCustomCursor();
+
+  int native_type() const { return native_type_; }
+  PlatformCursor platform() const { return platform_cursor_; }
+
+  bool operator==(int type) const { return native_type_ == type; }
+  bool operator==(const Cursor& cursor) const {
+    return native_type_ == cursor.native_type_ &&
+           platform_cursor_ == cursor.platform_cursor_;
+  }
+  bool operator!=(int type) const { return native_type_ != type; }
+  bool operator!=(const Cursor& cursor) const {
+    return native_type_ != cursor.native_type_ ||
+           platform_cursor_ != cursor.platform_cursor_;
+  }
+
+ private:
+  // See definitions above.
+  int native_type_;
+
+  PlatformCursor platform_cursor_;
+};
+
+}  // namespace ui
+
+#endif  // UI_BASE_CURSOR_CURSOR_H_

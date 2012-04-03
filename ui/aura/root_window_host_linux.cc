@@ -13,13 +13,13 @@
 #include "base/message_pump_x.h"
 #include "base/stl_util.h"
 #include "base/stringprintf.h"
-#include "ui/aura/cursor.h"
 #include "ui/aura/dispatcher_linux.h"
 #include "ui/aura/env.h"
 #include "ui/aura/event.h"
 #include "ui/aura/monitor.h"
 #include "ui/aura/monitor_manager.h"
 #include "ui/aura/root_window.h"
+#include "ui/base/cursor/cursor.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/touch/touch_factory.h"
 #include "ui/base/x/x11_util.h"
@@ -83,84 +83,86 @@ void CheckXEventForConsistency(XEvent* xevent) {
 
 // Returns X font cursor shape from an Aura cursor.
 int CursorShapeFromNative(gfx::NativeCursor native_cursor) {
-  switch (native_cursor) {
-    case aura::kCursorNull:
+  switch (native_cursor.native_type()) {
+    case ui::kCursorNull:
       return XC_left_ptr;
-    case aura::kCursorPointer:
+    case ui::kCursorPointer:
       return XC_left_ptr;
-    case aura::kCursorCross:
+    case ui::kCursorCross:
       return XC_crosshair;
-    case aura::kCursorHand:
+    case ui::kCursorHand:
       return XC_hand2;
-    case aura::kCursorIBeam:
+    case ui::kCursorIBeam:
       return XC_xterm;
-    case aura::kCursorWait:
+    case ui::kCursorWait:
       return XC_watch;
-    case aura::kCursorHelp:
+    case ui::kCursorHelp:
       return XC_question_arrow;
-    case aura::kCursorEastResize:
+    case ui::kCursorEastResize:
       return XC_right_side;
-    case aura::kCursorNorthResize:
+    case ui::kCursorNorthResize:
       return XC_top_side;
-    case aura::kCursorNorthEastResize:
+    case ui::kCursorNorthEastResize:
       return XC_top_right_corner;
-    case aura::kCursorNorthWestResize:
+    case ui::kCursorNorthWestResize:
       return XC_top_left_corner;
-    case aura::kCursorSouthResize:
+    case ui::kCursorSouthResize:
       return XC_bottom_side;
-    case aura::kCursorSouthEastResize:
+    case ui::kCursorSouthEastResize:
       return XC_bottom_right_corner;
-    case aura::kCursorSouthWestResize:
+    case ui::kCursorSouthWestResize:
       return XC_bottom_left_corner;
-    case aura::kCursorWestResize:
+    case ui::kCursorWestResize:
       return XC_left_side;
-    case aura::kCursorNorthSouthResize:
+    case ui::kCursorNorthSouthResize:
       return XC_sb_v_double_arrow;
-    case aura::kCursorEastWestResize:
+    case ui::kCursorEastWestResize:
       return XC_sb_h_double_arrow;
-    case aura::kCursorNorthEastSouthWestResize:
-    case aura::kCursorNorthWestSouthEastResize:
+    case ui::kCursorNorthEastSouthWestResize:
+    case ui::kCursorNorthWestSouthEastResize:
       // There isn't really a useful cursor available for these.
       return XC_left_ptr;
-    case aura::kCursorColumnResize:
+    case ui::kCursorColumnResize:
       return XC_sb_h_double_arrow;
-    case aura::kCursorRowResize:
+    case ui::kCursorRowResize:
       return XC_sb_v_double_arrow;
-    case aura::kCursorMiddlePanning:
+    case ui::kCursorMiddlePanning:
       return XC_fleur;
-    case aura::kCursorEastPanning:
+    case ui::kCursorEastPanning:
       return XC_sb_right_arrow;
-    case aura::kCursorNorthPanning:
+    case ui::kCursorNorthPanning:
       return XC_sb_up_arrow;
-    case aura::kCursorNorthEastPanning:
+    case ui::kCursorNorthEastPanning:
       return XC_top_right_corner;
-    case aura::kCursorNorthWestPanning:
+    case ui::kCursorNorthWestPanning:
       return XC_top_left_corner;
-    case aura::kCursorSouthPanning:
+    case ui::kCursorSouthPanning:
       return XC_sb_down_arrow;
-    case aura::kCursorSouthEastPanning:
+    case ui::kCursorSouthEastPanning:
       return XC_bottom_right_corner;
-    case aura::kCursorSouthWestPanning:
+    case ui::kCursorSouthWestPanning:
       return XC_bottom_left_corner;
-    case aura::kCursorWestPanning:
+    case ui::kCursorWestPanning:
       return XC_sb_left_arrow;
-    case aura::kCursorMove:
+    case ui::kCursorMove:
       return XC_fleur;
-    case aura::kCursorVerticalText:
-    case aura::kCursorCell:
-    case aura::kCursorContextMenu:
-    case aura::kCursorAlias:
-    case aura::kCursorProgress:
-    case aura::kCursorNoDrop:
-    case aura::kCursorCopy:
-    case aura::kCursorNone:
-    case aura::kCursorNotAllowed:
-    case aura::kCursorZoomIn:
-    case aura::kCursorZoomOut:
-    case aura::kCursorGrab:
-    case aura::kCursorGrabbing:
-    case aura::kCursorCustom:
+    case ui::kCursorVerticalText:
+    case ui::kCursorCell:
+    case ui::kCursorContextMenu:
+    case ui::kCursorAlias:
+    case ui::kCursorProgress:
+    case ui::kCursorNoDrop:
+    case ui::kCursorCopy:
+    case ui::kCursorNone:
+    case ui::kCursorNotAllowed:
+    case ui::kCursorZoomIn:
+    case ui::kCursorZoomOut:
+    case ui::kCursorGrab:
+    case ui::kCursorGrabbing:
       // TODO(jamescook): Need cursors for these.  crbug.com/111650
+      return XC_left_ptr;
+    case ui::kCursorCustom:
+      NOTREACHED();
       return XC_left_ptr;
   }
   NOTREACHED();
@@ -279,7 +281,7 @@ RootWindowHostLinux::RootWindowHostLinux(const gfx::Rect& bounds)
       xdisplay_(base::MessagePumpX::GetDefaultXDisplay()),
       xwindow_(0),
       x_root_window_(DefaultRootWindow(xdisplay_)),
-      current_cursor_(aura::kCursorNull),
+      current_cursor_(ui::kCursorNull),
       cursor_shown_(true),
       bounds_(bounds),
       focus_when_shown_(false),
@@ -563,10 +565,6 @@ void RootWindowHostLinux::SetCursor(gfx::NativeCursor cursor) {
     return;
   current_cursor_ = cursor;
 
-  // Custom web cursors are handled directly.
-  if (cursor == kCursorCustom)
-    return;
-
   if (cursor_shown_)
     SetCursorInternal(cursor);
 }
@@ -575,7 +573,7 @@ void RootWindowHostLinux::ShowCursor(bool show) {
   if (show == cursor_shown_)
     return;
   cursor_shown_ = show;
-  SetCursorInternal(show ? current_cursor_ : kCursorNone);
+  SetCursorInternal(show ? current_cursor_ : ui::kCursorNone);
 }
 
 gfx::Point RootWindowHostLinux::QueryMouseLocation() {
@@ -698,8 +696,10 @@ bool RootWindowHostLinux::IsWindowManagerPresent() {
 
 void RootWindowHostLinux::SetCursorInternal(gfx::NativeCursor cursor) {
   ::Cursor xcursor =
-      cursor == kCursorNone ?
+      cursor == ui::kCursorNone ?
       invisible_cursor_ :
+      cursor == ui::kCursorCustom ?
+      cursor.platform() :
       ui::GetXCursor(CursorShapeFromNative(cursor));
   XDefineCursor(xdisplay_, xwindow_, xcursor);
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,7 @@
 #include "ui/views/controls/resize_area_delegate.h"
 
 #if defined(USE_AURA)
-#include "ui/aura/cursor.h"
+#include "ui/base/cursor/cursor.h"
 #endif
 
 namespace views {
@@ -36,7 +36,7 @@ gfx::NativeCursor ResizeArea::GetCursor(const MouseEvent& event) {
   if (!enabled())
     return gfx::kNullCursor;
 #if defined(USE_AURA)
-  return aura::kCursorEastWestResize;
+  return ui::kCursorEastWestResize;
 #elif defined(OS_WIN)
   static HCURSOR g_resize_cursor = LoadCursor(NULL, IDC_SIZEWE);
   return g_resize_cursor;

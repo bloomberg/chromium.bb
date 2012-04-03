@@ -39,7 +39,7 @@
 #include "ui/views/widget/widget.h"
 
 #if defined(USE_AURA)
-#include "ui/aura/cursor.h"
+#include "ui/base/cursor/cursor.h"
 #endif
 
 namespace {
@@ -265,7 +265,7 @@ gfx::NativeCursor NativeTextfieldViews::GetCursor(const MouseEvent& event) {
   bool drag_event = event.type() == ui::ET_MOUSE_DRAGGED;
   bool text_cursor = !initiating_drag_ && (drag_event || !in_selection);
 #if defined(USE_AURA)
-  return text_cursor ? aura::kCursorIBeam : aura::kCursorNull;
+  return text_cursor ? ui::kCursorIBeam : ui::kCursorNull;
 #elif defined(OS_WIN)
   static HCURSOR ibeam = LoadCursor(NULL, IDC_IBEAM);
   static HCURSOR arrow = LoadCursor(NULL, IDC_ARROW);

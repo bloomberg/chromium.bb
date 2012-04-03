@@ -43,6 +43,8 @@
 // 'views'.
 
 #if defined(USE_AURA)
+#include "ui/base/cursor/cursor.h"
+
 class SkRegion;
 namespace aura {
 class Event;
@@ -102,8 +104,7 @@ class SkBitmap;
 namespace gfx {
 
 #if defined(USE_AURA)
-// See ui/aura/cursor.h for values.
-typedef int NativeCursor;
+typedef ui::Cursor NativeCursor;
 typedef aura::Window* NativeView;
 typedef aura::Window* NativeWindow;
 typedef SkRegion* NativeRegion;
@@ -180,7 +181,11 @@ typedef void* NativeViewAccessible;
 #endif
 
 // A constant value to indicate that gfx::NativeCursor refers to no cursor.
+#if defined(USE_AURA)
+const int kNullCursor = 0;
+#else
 const gfx::NativeCursor kNullCursor = static_cast<gfx::NativeCursor>(NULL);
+#endif
 
 #if defined(OS_MACOSX)
 typedef NSImage NativeImageType;

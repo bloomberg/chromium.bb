@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,7 +16,7 @@
 #include "ui/views/events/event.h"
 
 #if defined(USE_AURA)
-#include "ui/aura/cursor.h"
+#include "ui/base/cursor/cursor.h"
 #endif
 
 namespace views {
@@ -47,7 +47,7 @@ gfx::NativeCursor Link::GetCursor(const MouseEvent& event) {
   if (!enabled())
     return gfx::kNullCursor;
 #if defined(USE_AURA)
-  return aura::kCursorHand;
+  return ui::kCursorHand;
 #elif defined(OS_WIN)
   static HCURSOR g_hand_cursor = LoadCursor(NULL, IDC_HAND);
   return g_hand_cursor;

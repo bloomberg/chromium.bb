@@ -8,9 +8,9 @@
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/partial_screenshot_event_filter.h"
-#include "ui/aura/cursor.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
+#include "ui/base/cursor/cursor.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/view.h"
@@ -71,7 +71,7 @@ void PartialScreenshotView::Cancel() {
 gfx::NativeCursor PartialScreenshotView::GetCursor(
     const views::MouseEvent& event) {
   // Always use "crosshair" cursor.
-  return aura::kCursorCross;
+  return ui::kCursorCross;
 }
 
 void PartialScreenshotView::OnPaint(gfx::Canvas* canvas) {

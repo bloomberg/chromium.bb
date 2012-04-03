@@ -7,7 +7,7 @@
 #pragma once
 
 #include "base/message_loop.h"
-#include "ui/aura/cursor.h"
+#include "ui/base/cursor/cursor.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace gfx {

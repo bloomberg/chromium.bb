@@ -31,16 +31,20 @@
 #include "ui/gfx/size.h"
 
 #if defined(OS_FREEBSD)
-#include <sys/types.h>
 #include <sys/sysctl.h>
+#include <sys/types.h>
+#endif
+
+#if defined(USE_AURA)
+#include <X11/Xcursor/Xcursor.h>
 #endif
 
 #if defined(TOOLKIT_USES_GTK)
 #include <gdk/gdk.h>
 #include <gdk/gdkx.h>
 #include <gtk/gtk.h>
-#include "ui/base/gtk/gtk_compat.h"
 #include "ui/base/gtk/gdk_x_compat.h"
+#include "ui/base/gtk/gtk_compat.h"
 #else
 // TODO(sad): Use the new way of handling X errors when
 // http://codereview.chromium.org/7889040/ lands.
@@ -160,10 +164,10 @@ class XCursorCache {
     Clear();
   }
 
-  Cursor GetCursor(int cursor_shape) {
+  ::Cursor GetCursor(int cursor_shape) {
     // Lookup cursor by attempting to insert a null value, which avoids
     // a second pass through the map after a cache miss.
-    std::pair<std::map<int, Cursor>::iterator, bool> it = cache_.insert(
+    std::pair<std::map<int, ::Cursor>::iterator, bool> it = cache_.insert(
         std::make_pair(cursor_shape, 0));
     if (it.second) {
       Display* display = base::MessagePumpForUI::GetDefaultXDisplay();
@@ -174,7 +178,7 @@ class XCursorCache {
 
   void Clear() {
     Display* display = base::MessagePumpForUI::GetDefaultXDisplay();
-    for (std::map<int, Cursor>::iterator it =
+    for (std::map<int, ::Cursor>::iterator it =
         cache_.begin(); it != cache_.end(); ++it) {
       XFreeCursor(display, it->second);
     }
@@ -183,10 +187,88 @@ class XCursorCache {
 
  private:
   // Maps X11 font cursor shapes to Cursor IDs.
-  std::map<int, Cursor> cache_;
+  std::map<int, ::Cursor> cache_;
 
   DISALLOW_COPY_AND_ASSIGN(XCursorCache);
 };
+
+#if defined(USE_AURA)
+// A process wide singleton cache for custom X cursors.
+class XCustomCursorCache {
+ public:
+  static XCustomCursorCache* GetInstance() {
+    return Singleton<XCustomCursorCache>::get();
+  }
+
+  ::Cursor InstallCustomCursor(XcursorImage* image) {
+    XCustomCursor* custom_cursor = new XCustomCursor(image);
+    ::Cursor xcursor = custom_cursor->cursor();
+    cache_[xcursor] = custom_cursor;
+    return xcursor;
+  }
+
+  void Ref(::Cursor cursor) {
+    cache_[cursor]->Ref();
+  }
+
+  void Unref(::Cursor cursor) {
+    if (cache_[cursor]->Unref())
+      cache_.erase(cursor);
+  }
+
+  void Clear() {
+    cache_.clear();
+  }
+
+ private:
+  friend struct DefaultSingletonTraits<XCustomCursorCache>;
+
+  class XCustomCursor {
+   public:
+    // This takes ownership of the image.
+    XCustomCursor(XcursorImage* image)
+        : image_(image),
+          ref_(1) {
+      cursor_ = XcursorImageLoadCursor(GetXDisplay(), image);
+    }
+
+    ~XCustomCursor() {
+      XcursorImageDestroy(image_);
+      XFreeCursor(GetXDisplay(), cursor_);
+    }
+
+    ::Cursor cursor() const { return cursor_; }
+
+    void Ref() {
+      ++ref_;
+    }
+
+    // Returns true if the cursor was destroyed because of the unref.
+    bool Unref() {
+      if (--ref_ == 0) {
+        delete this;
+        return true;
+      }
+      return false;
+    }
+
+   private:
+    XcursorImage* image_;
+    int ref_;
+    ::Cursor cursor_;
+
+    DISALLOW_COPY_AND_ASSIGN(XCustomCursor);
+  };
+
+  XCustomCursorCache() {}
+  ~XCustomCursorCache() {
+    Clear();
+  }
+
+  std::map< ::Cursor, XCustomCursor*> cache_;
+  DISALLOW_COPY_AND_ASSIGN(XCustomCursorCache);
+};
+#endif  // defined(USE_AURA)
 
 // A singleton object that remembers remappings of mouse buttons.
 class XButtonMap {
@@ -306,7 +388,7 @@ int GetDefaultScreen(Display* display) {
   return XDefaultScreen(display);
 }
 
-Cursor GetXCursor(int cursor_shape) {
+::Cursor GetXCursor(int cursor_shape) {
   CR_DEFINE_STATIC_LOCAL(XCursorCache, cache, ());
 
   if (cursor_shape == kCursorClearXCursorCache) {
@@ -316,6 +398,20 @@ Cursor GetXCursor(int cursor_shape) {
 
   return cache.GetCursor(cursor_shape);
 }
+
+#if defined(USE_AURA)
+::Cursor CreateReffedCustomXCursor(XcursorImage* image) {
+  return XCustomCursorCache::GetInstance()->InstallCustomCursor(image);
+}
+
+void RefCustomXCursor(::Cursor cursor) {
+  XCustomCursorCache::GetInstance()->Ref(cursor);
+}
+
+void UnrefCustomXCursor(::Cursor cursor) {
+  XCustomCursorCache::GetInstance()->Unref(cursor);
+}
+#endif
 
 XID GetX11RootWindow() {
   return DefaultRootWindow(GetXDisplay());
