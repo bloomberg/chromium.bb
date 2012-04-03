@@ -91,7 +91,6 @@ class ProfileImpl : public Profile,
   virtual WebDataService* GetWebDataServiceWithoutCreating() OVERRIDE;
   virtual PrefService* GetPrefs() OVERRIDE;
   virtual PrefService* GetOffTheRecordPrefs() OVERRIDE;
-  virtual TemplateURLFetcher* GetTemplateURLFetcher() OVERRIDE;
   virtual net::URLRequestContextGetter*
       GetRequestContextForExtensions() OVERRIDE;
   virtual net::URLRequestContextGetter* GetRequestContextForIsolatedApp(
@@ -198,7 +197,6 @@ class ProfileImpl : public Profile,
   scoped_refptr<ExtensionSpecialStoragePolicy>
       extension_special_storage_policy_;
   scoped_ptr<NetPrefObserver> net_pref_observer_;
-  scoped_ptr<TemplateURLFetcher> template_url_fetcher_;
   scoped_ptr<BookmarkModel> bookmark_bar_model_;
   scoped_refptr<PromoResourceService> promo_resource_service_;
   scoped_refptr<ProtocolHandlerRegistry> protocol_handler_registry_;

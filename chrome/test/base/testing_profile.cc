@@ -36,7 +36,7 @@
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/protector/protector_service_factory.h"
-#include "chrome/browser/search_engines/template_url_fetcher.h"
+#include "chrome/browser/search_engines/template_url_fetcher_factory.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/speech/chrome_speech_recognition_preferences.h"
@@ -366,10 +366,6 @@ void TestingProfile::BlockUntilTopSitesLoaded() {
   top_sites_loaded_observer.Wait();
 }
 
-void TestingProfile::CreateTemplateURLFetcher() {
-  template_url_fetcher_.reset(new TemplateURLFetcher(this));
-}
-
 static ProfileKeyedService* BuildTemplateURLService(Profile* profile) {
   return new TemplateURLService(profile);
 }
@@ -533,10 +529,6 @@ PrefService* TestingProfile::GetPrefs() {
   return prefs_.get();
 }
 
-TemplateURLFetcher* TestingProfile::GetTemplateURLFetcher() {
-  return template_url_fetcher_.get();
-}
-
 history::TopSites* TestingProfile::GetTopSites() {
   return top_sites_.get();
 }
@@ -577,7 +569,7 @@ void TestingProfile::CreateRequestContext() {
 void TestingProfile::ResetRequestContext() {
   // Any objects holding live URLFetchers should be deleted before the request
   // context is shut down.
-  template_url_fetcher_.reset();
+  TemplateURLFetcherFactory::ShutdownForProfile(this);
 
   request_context_ = NULL;
 }

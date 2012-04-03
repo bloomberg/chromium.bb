@@ -8,6 +8,7 @@
 
 #include "base/memory/scoped_vector.h"
 #include "base/string16.h"
+#include "chrome/browser/profiles/profile_keyed_service.h"
 #include "ui/gfx/native_widget_types.h"
 
 class GURL;
@@ -23,7 +24,7 @@ class WebContents;
 // documents, creating a TemplateURL from the OSDD, and adding the TemplateURL
 // to the TemplateURLService. Downloading is done in the background.
 //
-class TemplateURLFetcher {
+class TemplateURLFetcher : public ProfileKeyedService {
  public:
   enum ProviderType {
     AUTODETECTED_PROVIDER,
@@ -32,7 +33,7 @@ class TemplateURLFetcher {
 
   // Creates a TemplateURLFetcher with the specified Profile.
   explicit TemplateURLFetcher(Profile* profile);
-  ~TemplateURLFetcher();
+  virtual ~TemplateURLFetcher();
 
   // If TemplateURLFetcher is not already downloading the OSDD for osdd_url,
   // it is downloaded. If successful and the result can be parsed, a TemplateURL

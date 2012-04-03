@@ -792,12 +792,6 @@ HistoryService* ProfileImpl::GetHistoryServiceWithoutCreating() {
   return history_service_.get();
 }
 
-TemplateURLFetcher* ProfileImpl::GetTemplateURLFetcher() {
-  if (!template_url_fetcher_.get())
-    template_url_fetcher_.reset(new TemplateURLFetcher(this));
-  return template_url_fetcher_.get();
-}
-
 AutocompleteClassifier* ProfileImpl::GetAutocompleteClassifier() {
   if (!autocomplete_classifier_.get())
     autocomplete_classifier_.reset(new AutocompleteClassifier(this));

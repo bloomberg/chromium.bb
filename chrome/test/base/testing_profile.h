@@ -120,11 +120,6 @@ class TestingProfile : public Profile {
   // Blocks until TopSites finishes loading.
   void BlockUntilTopSitesLoaded();
 
-  // Creates a TemplateURLService. If not invoked the TemplateURLService is
-  // NULL.  Creates a TemplateURLFetcher. If not invoked, the
-  // TemplateURLFetcher is NULL.
-  void CreateTemplateURLFetcher();
-
   // Creates a TemplateURLService. If not invoked, the TemplateURLService is
   // NULL.
   void CreateTemplateURLService();
@@ -194,7 +189,6 @@ class TestingProfile : public Profile {
   // TestingPrefService takes ownership of |prefs|.
   void SetPrefService(PrefService* prefs);
   virtual PrefService* GetPrefs() OVERRIDE;
-  virtual TemplateURLFetcher* GetTemplateURLFetcher() OVERRIDE;
   virtual history::TopSites* GetTopSites() OVERRIDE;
   virtual history::TopSites* GetTopSitesWithoutCreating() OVERRIDE;
 
@@ -304,10 +298,6 @@ class TestingProfile : public Profile {
 
   // The WebDataService.  Only created if CreateWebDataService is invoked.
   scoped_refptr<WebDataService> web_data_service_;
-
-  // The TemplateURLFetcher. Only created if CreateTemplateURLFetcher is
-  // invoked.
-  scoped_ptr<TemplateURLFetcher> template_url_fetcher_;
 
   // Internally, this is a TestURLRequestContextGetter that creates a dummy
   // request context. Currently, only the CookieMonster is hooked up.

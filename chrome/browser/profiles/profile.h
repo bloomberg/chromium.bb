@@ -35,7 +35,6 @@ class PasswordStore;
 class PrefService;
 class PromoCounter;
 class ProtocolHandlerRegistry;
-class TemplateURLFetcher;
 class TestingProfile;
 class UserScriptMaster;
 class UserStyleSheetWatcher;
@@ -304,10 +303,6 @@ class Profile : public content::BrowserContext {
   // for OffTheRecord Profiles.  This PrefService is lazily created the first
   // time that this method is called.
   virtual PrefService* GetOffTheRecordPrefs() = 0;
-
-  // Returns the TemplateURLFetcher for this profile. This is owned by the
-  // profile.
-  virtual TemplateURLFetcher* GetTemplateURLFetcher() = 0;
 
   // Returns the request context used for extension-related requests.  This
   // is only used for a separate cookie store currently.

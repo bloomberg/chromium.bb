@@ -57,7 +57,6 @@ class OffTheRecordProfileImpl : public Profile,
   virtual WebDataService* GetWebDataServiceWithoutCreating() OVERRIDE;
   virtual PrefService* GetPrefs() OVERRIDE;
   virtual PrefService* GetOffTheRecordPrefs() OVERRIDE;
-  virtual TemplateURLFetcher* GetTemplateURLFetcher() OVERRIDE;
   virtual net::URLRequestContextGetter*
       GetRequestContextForExtensions() OVERRIDE;
   virtual net::URLRequestContextGetter* GetRequestContextForIsolatedApp(

@@ -9,6 +9,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_fetcher.h"
+#include "chrome/browser/search_engines/template_url_fetcher_factory.h"
 #include "chrome/browser/search_engines/template_url_fetcher_callbacks.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_test_util.h"
@@ -47,8 +48,8 @@ class TemplateURLFetcherTest : public testing::Test {
     test_util_.SetUp();
     test_util_.StartIOThread();
     ASSERT_TRUE(test_util_.profile());
-    test_util_.profile()->CreateTemplateURLFetcher();
-    ASSERT_TRUE(test_util_.profile()->GetTemplateURLFetcher());
+    ASSERT_TRUE(
+        TemplateURLFetcherFactory::GetForProfile(test_util_.profile()));
 
     test_util_.profile()->CreateRequestContext();
     ASSERT_TRUE(test_util_.profile()->GetRequestContext());
@@ -146,9 +147,10 @@ void TemplateURLFetcherTest::StartDownload(
   // Start the fetch.
   GURL osdd_url = test_server_.GetURL("files/" + osdd_file_name);
   GURL favicon_url;
-  test_util_.profile()->GetTemplateURLFetcher()->ScheduleDownload(
-      keyword, osdd_url, favicon_url, NULL,
-      new TemplateURLFetcherTestCallbacks(this), provider_type);
+  TemplateURLFetcherFactory::GetForProfile(
+      test_util_.profile())->ScheduleDownload(
+          keyword, osdd_url, favicon_url, NULL,
+          new TemplateURLFetcherTestCallbacks(this), provider_type);
 }
 
 void TemplateURLFetcherTest::WaitForDownloadToFinish() {
@@ -214,7 +216,8 @@ TEST_F(TemplateURLFetcherTest, DuplicatesThrownAway) {
                   test_cases[i].provider_type, false);
     ASSERT_EQ(
         1,
-        test_util_.profile()->GetTemplateURLFetcher()->requests_count()) <<
+        TemplateURLFetcherFactory::GetForProfile(
+            test_util_.profile())->requests_count()) <<
         test_cases[i].description;
     ASSERT_EQ(i + 1, static_cast<size_t>(callbacks_destroyed_));
   }

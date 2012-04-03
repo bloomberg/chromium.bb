@@ -274,10 +274,6 @@ PrefService* OffTheRecordProfileImpl::GetOffTheRecordPrefs() {
   return prefs_;
 }
 
-TemplateURLFetcher* OffTheRecordProfileImpl::GetTemplateURLFetcher() {
-  return profile_->GetTemplateURLFetcher();
-}
-
 DownloadManager* OffTheRecordProfileImpl::GetDownloadManager() {
   return DownloadServiceFactory::GetForProfile(this)->GetDownloadManager();
 }
