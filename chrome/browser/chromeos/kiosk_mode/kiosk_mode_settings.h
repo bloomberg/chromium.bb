@@ -29,10 +29,10 @@ namespace chromeos {
 // invalid values.
 class KioskModeSettings {
  public:
+  static KioskModeSettings* Get();
+
   // This method checks if Kiosk Mode is enabled or not.
   virtual bool IsKioskModeEnabled();
-
-  static KioskModeSettings* Get();
 
   // Initialize the settings; this will call the callback once trust is
   // established with the policy settings provider.

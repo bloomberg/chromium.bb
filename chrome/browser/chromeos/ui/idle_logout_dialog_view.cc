@@ -22,12 +22,36 @@
 namespace {
 
 // Global singleton instance of our dialog class.
-IdleLogoutDialogView* g_instance = NULL;
+chromeos::IdleLogoutDialogView* g_instance = NULL;
 
 const int kIdleLogoutDialogMaxWidth = 400;
-const int kCountdownUpdateInterval = 1; // second.
+const int kCountdownUpdateIntervalMs = 1000;
 
 }  // namespace
+
+namespace chromeos {
+
+IdleLogoutSettingsProvider* IdleLogoutDialogView::provider_ = NULL;
+
+////////////////////////////////////////////////////////////////////////////////
+// IdleLogoutSettingsProvider public methods
+IdleLogoutSettingsProvider::IdleLogoutSettingsProvider() {
+}
+
+IdleLogoutSettingsProvider::~IdleLogoutSettingsProvider() {
+}
+
+base::TimeDelta IdleLogoutSettingsProvider::GetCountdownUpdateInterval() {
+  return base::TimeDelta::FromMilliseconds(kCountdownUpdateIntervalMs);
+}
+
+KioskModeSettings* IdleLogoutSettingsProvider::GetKioskModeSettings() {
+  return KioskModeSettings::Get();
+}
+
+void IdleLogoutSettingsProvider::LogoutCurrentUser(IdleLogoutDialogView*) {
+  BrowserList::AttemptUserExit();
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // IdleLogoutDialogView public static methods
@@ -85,37 +109,28 @@ void IdleLogoutDialogView::DeleteDelegate() {
     g_instance = NULL;
   }
 
-  // CallInit succeeded (or was never called) hence it didn't free
-  // this pointer, free it here.
-  if (chromeos::KioskModeSettings::Get()->is_initialized())
-    delete instance_holder_;
-
   delete this;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // IdleLogoutDialog private methods
-IdleLogoutDialogView::IdleLogoutDialogView() : restart_label_(NULL),
-                                               warning_label_(NULL) {
-  instance_holder_ = new IdleLogoutDialogView*(this);
+IdleLogoutDialogView::IdleLogoutDialogView()
+    : restart_label_(NULL),
+      warning_label_(NULL),
+      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+  if (!IdleLogoutDialogView::provider_)
+    IdleLogoutDialogView::provider_ = new IdleLogoutSettingsProvider();
 }
 
 IdleLogoutDialogView::~IdleLogoutDialogView() {
 }
 
-// static
-void IdleLogoutDialogView::CallInit(IdleLogoutDialogView** instance_holder) {
-  if (*instance_holder)
-    (*instance_holder)->Init();
-  else
-    // Our class is gone, free the holder memory.
-    delete instance_holder;
-}
-
 void IdleLogoutDialogView::Init() {
-  if (!chromeos::KioskModeSettings::Get()->is_initialized()) {
-    chromeos::KioskModeSettings::Get()->Initialize(
-        base::Bind(&IdleLogoutDialogView::CallInit, instance_holder_));
+  KioskModeSettings* settings =
+      IdleLogoutDialogView::provider_->GetKioskModeSettings();
+  if (!settings->is_initialized()) {
+    settings->Initialize(base::Bind(&IdleLogoutDialogView::Init,
+                                    weak_ptr_factory_.GetWeakPtr()));
     return;
   }
 
@@ -146,10 +161,14 @@ void IdleLogoutDialogView::Init() {
 }
 
 void IdleLogoutDialogView::Show() {
+  KioskModeSettings* settings =
+        IdleLogoutDialogView::provider_->GetKioskModeSettings();
+
   // Setup the countdown label before showing.
   countdown_end_time_ = base::Time::Now() +
-      chromeos::KioskModeSettings::Get()->GetIdleLogoutWarningDuration();
-  UpdateCountdownTimer();
+      settings->GetIdleLogoutWarningDuration();
+
+  UpdateCountdown();
 
   views::Widget::CreateWindow(this);
   GetWidget()->SetAlwaysOnTop(true);
@@ -157,19 +176,20 @@ void IdleLogoutDialogView::Show() {
 
   // Update countdown every 1 second.
   timer_.Start(FROM_HERE,
-               base::TimeDelta::FromSeconds(kCountdownUpdateInterval),
+               IdleLogoutDialogView::provider_->GetCountdownUpdateInterval(),
                this,
-               &IdleLogoutDialogView::UpdateCountdownTimer);
+               &IdleLogoutDialogView::UpdateCountdown);
 }
 
 void IdleLogoutDialogView::Close() {
   DCHECK(GetWidget());
 
-  timer_.Stop();
+  if (timer_.IsRunning())
+    timer_.Stop();
   GetWidget()->Close();
 }
 
-void IdleLogoutDialogView::UpdateCountdownTimer() {
+void IdleLogoutDialogView::UpdateCountdown() {
   base::TimeDelta logout_warning_time = countdown_end_time_ -
                                         base::Time::Now();
   int64 seconds_left = (logout_warning_time.InMillisecondsF() /
@@ -187,7 +207,21 @@ void IdleLogoutDialogView::UpdateCountdownTimer() {
     restart_label_->SetText(l10n_util::GetStringUTF16(
         IDS_IDLE_LOGOUT_WARNING_RESTART_NOW));
 
-    // Logout the current user.
-    BrowserList::AttemptUserExit();
+    // We're done; stop the timer and logout.
+    timer_.Stop();
+    IdleLogoutDialogView::provider_->LogoutCurrentUser(this);
   }
 }
+
+// static
+IdleLogoutDialogView* IdleLogoutDialogView::current_instance() {
+  return g_instance;
+}
+
+// static
+void IdleLogoutDialogView::set_settings_provider(
+    IdleLogoutSettingsProvider* provider) {
+  provider_ = provider;
+}
+
+}  // namespace chromeos

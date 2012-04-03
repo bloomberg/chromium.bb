@@ -28,6 +28,11 @@ const int KioskModeSettings::kMinIdleLogoutWarningDuration = 1000;  // ms
 static base::LazyInstance<KioskModeSettings> g_kiosk_mode_settings =
     LAZY_INSTANCE_INITIALIZER;
 
+// static
+KioskModeSettings* KioskModeSettings::Get() {
+  return g_kiosk_mode_settings.Pointer();
+}
+
 bool KioskModeSettings::IsKioskModeEnabled() {
   if (g_browser_process) {
     policy::BrowserPolicyConnector* bpc =
@@ -40,11 +45,6 @@ bool KioskModeSettings::IsKioskModeEnabled() {
     return true;
 
   return false;
-}
-
-// static
-KioskModeSettings* KioskModeSettings::Get() {
-  return g_kiosk_mode_settings.Pointer();
 }
 
 void KioskModeSettings::Initialize(const base::Closure& notify_initialized) {

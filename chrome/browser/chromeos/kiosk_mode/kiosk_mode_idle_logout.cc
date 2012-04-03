@@ -27,11 +27,11 @@ const int64 kLoginIdleTimeout = 100; // seconds
 namespace browser {
 
 void ShowIdleLogoutDialog() {
-  IdleLogoutDialogView::ShowDialog();
+  chromeos::IdleLogoutDialogView::ShowDialog();
 }
 
 void CloseIdleLogoutDialog() {
-  IdleLogoutDialogView::CloseDialog();
+  chromeos::IdleLogoutDialogView::CloseDialog();
 }
 
 }  // namespace browser
