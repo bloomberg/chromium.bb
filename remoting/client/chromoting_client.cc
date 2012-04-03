@@ -106,8 +106,7 @@ ChromotingStats* ChromotingClient::GetStats() {
 
 void ChromotingClient::InjectClipboardEvent(
     const protocol::ClipboardEvent& event) {
-  // TODO(simonmorris): Pass the clipboard event to the webapp.
-  return;
+  view_->GetClipboardStub()->InjectClipboardEvent(event);
 }
 
 void ChromotingClient::ProcessVideoPacket(scoped_ptr<VideoPacket> packet,

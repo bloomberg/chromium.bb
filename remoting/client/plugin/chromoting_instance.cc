@@ -476,6 +476,14 @@ void ChromotingInstance::SendPerfStats() {
   PostChromotingMessage("onPerfStats", data.Pass());
 }
 
+void ChromotingInstance::InjectClipboardEvent(
+    const protocol::ClipboardEvent& event) {
+  scoped_ptr<base::DictionaryValue> data(new base::DictionaryValue());
+  data->SetString("mimeType", event.mime_type());
+  data->SetString("item", event.data());
+  PostChromotingMessage("injectClipboardItem", data.Pass());
+}
+
 // static
 void ChromotingInstance::RegisterLogMessageHandler() {
   base::AutoLock lock(g_logging_lock.Get());

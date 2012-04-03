@@ -158,6 +158,16 @@ remoting.ClientPluginAsync.prototype.handleMessage_ = function(message_str) {
     }
     this.perfStats_ =
         /** @type {remoting.ClientSession.PerfStats} */ message.data;
+  } else if (message.method = 'injectClipboardItem') {
+    if (typeof message.data['mimeType'] != 'string' ||
+        typeof message.data['item'] != 'string') {
+      console.error('Received incorrect injectClipboardItem message.');
+      return;
+    }
+    if (remoting.clipboard) {
+      remoting.clipboard.fromHost(message.data['mimeType'],
+                                  message.data['item']);
+    }
   }
 }
 

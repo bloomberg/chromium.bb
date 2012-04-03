@@ -41,6 +41,7 @@ class PepperView : public ChromotingView,
   virtual void SetConnectionState(
       protocol::ConnectionToHost::State state,
       protocol::ErrorCode error) OVERRIDE;
+  virtual protocol::ClipboardStub* GetClipboardStub() OVERRIDE;
 
   // FrameConsumer implementation.
   virtual void ApplyBuffer(const SkISize& view_size,

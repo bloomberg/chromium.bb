@@ -145,6 +145,10 @@ void PepperView::SetConnectionState(protocol::ConnectionToHost::State state,
   }
 }
 
+protocol::ClipboardStub* PepperView::GetClipboardStub() {
+  return instance_;
+}
+
 void PepperView::SetView(const SkISize& view_size, const SkIRect& clip_area) {
   bool view_changed = false;
 

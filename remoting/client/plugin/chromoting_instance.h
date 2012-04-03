@@ -29,6 +29,7 @@
 #include "remoting/client/client_context.h"
 #include "remoting/client/plugin/pepper_plugin_thread_delegate.h"
 #include "remoting/proto/event.pb.h"
+#include "remoting/protocol/clipboard_stub.h"
 #include "remoting/protocol/connection_to_host.h"
 
 namespace base {
@@ -61,6 +62,7 @@ class RectangleUpdateDecoder;
 struct ClientConfig;
 
 class ChromotingInstance :
+      public protocol::ClipboardStub,
       public pp::InstancePrivate,
       public base::SupportsWeakPtr<ChromotingInstance> {
  public:
@@ -116,6 +118,10 @@ class ChromotingInstance :
 
   // pp::InstancePrivate interface.
   virtual pp::Var GetInstanceObject() OVERRIDE;
+
+  // ClipboardStub implementation.
+  virtual void InjectClipboardEvent(const protocol::ClipboardEvent& event)
+      OVERRIDE;
 
   // Called by PepperView.
   void SetDesktopSize(int width, int height);
