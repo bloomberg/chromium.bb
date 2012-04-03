@@ -547,6 +547,9 @@ int FramePainter::GetTitleOffsetX() const {
 }
 
 bool FramePainter::UseSoloWindowHeader(aura::Window* ignore) const {
+  // Maximized windows don't use solo window transparency.
+  if (frame_ && frame_->IsMaximized())
+    return false;
   // In unit tests this can be called after the shell is destroyed.
   if (!Shell::HasInstance())
     return false;
