@@ -256,10 +256,6 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   static gfx::Size GetLocalizedContentsSize(int col_resource_id,
                                             int row_resource_id);
 
-  // Enable/Disable debug paint.
-  static void SetDebugPaintEnabled(bool enabled);
-  static bool IsDebugPaintEnabled();
-
   // Returns true if the specified type requires a NonClientView.
   static bool RequiresNonClientView(InitParams::Type type);
 

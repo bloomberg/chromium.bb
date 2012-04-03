@@ -713,17 +713,7 @@ bool ToolbarView::ShouldShowIncompatibilityWarning() {
 }
 
 int ToolbarView::PopupTopSpacing() const {
-  // TODO(beng): For some reason GetWidget() returns NULL here in some
-  //             unidentified circumstances on ChromeOS. This means GetWidget()
-  //             succeeded but we were (probably) unable to locate a
-  //             NativeWidgetGtk* on it using
-  //             NativeWidget::GetNativeWidgetForNativeView.
-  //             I am throwing in a NULL check for now to stop the hurt, but
-  //             it's possible the crash may just show up somewhere else.
-  const views::Widget* widget = GetWidget();
-  DCHECK(widget) << "If you hit this please talk to beng";
-  return widget && widget->ShouldUseNativeFrame() ?
-      0 : kPopupTopSpacingNonGlass;
+  return GetWidget()->ShouldUseNativeFrame() ? 0 : kPopupTopSpacingNonGlass;
 }
 
 void ToolbarView::LoadImages() {

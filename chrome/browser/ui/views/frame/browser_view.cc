@@ -572,15 +572,6 @@ bool BrowserView::IsPositionInWindowCaption(const gfx::Point& point) {
 // BrowserView, BrowserWindow implementation:
 
 void BrowserView::Show() {
-  // The same fix as in BrowserWindowGtk::Show.
-  //
-  // The Browser must become the active browser when Show() is called.
-  // But, on Gtk, the browser won't be shown until we return to the runloop.
-  // Therefore we need to set the active window here explicitly. otherwise
-  // any calls to BrowserList::GetLastActive() (for example, in bookmark_util),
-  // will return the previous browser.
-  BrowserList::SetLastActive(browser());
-
   // If the window is already visible, just activate it.
   if (frame_->IsVisible()) {
     frame_->Activate();
@@ -808,30 +799,14 @@ void BrowserView::EnterFullscreen(
   if (IsFullscreen())
     return;  // Nothing to do.
 
-#if defined(OS_WIN) || defined(USE_AURA)
   ProcessFullscreen(true, url, bubble_type);
-#else
-  // On Linux/gtk changing fullscreen is async. Ask the window to change it's
-  // fullscreen state, and when done invoke ProcessFullscreen.
-  fullscreen_request_.pending = true;
-  fullscreen_request_.url = url;
-  fullscreen_request_.bubble_type = bubble_type;
-  frame_->SetFullscreen(true);
-#endif
 }
 
 void BrowserView::ExitFullscreen() {
   if (!IsFullscreen())
     return;  // Nothing to do.
 
-#if defined(OS_WIN) || defined(USE_AURA)
   ProcessFullscreen(false, GURL(), FEB_TYPE_NONE);
-#else
-  fullscreen_request_.pending = false;
-  // On Linux changing fullscreen is async. Ask the window to change it's
-  // fullscreen state, and when done invoke ProcessFullscreen.
-  frame_->SetFullscreen(false);
-#endif
 }
 
 void BrowserView::UpdateFullscreenExitBubbleContent(
@@ -2179,10 +2154,7 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
 #endif
 
   // Toggle fullscreen mode.
-#if defined(OS_WIN) || defined(USE_AURA)
   frame_->SetFullscreen(fullscreen);
-#endif  // No need to invoke SetFullscreen for linux/gtk as this code
-        // is executed once we're already fullscreen on linux.
 
   browser_->WindowFullscreenStateChanged();
 

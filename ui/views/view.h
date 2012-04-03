@@ -516,8 +516,8 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Return the cursor that should be used for this view or the default cursor.
   // The event location is in the receiver's coordinate system. The caller is
   // responsible for managing the lifetime of the returned object, though that
-  // lifetime may vary from platform to platform. On Windows, the cursor is a
-  // shared resource, but Gtk destroys the returned cursor after setting it.
+  // lifetime may vary from platform to platform. On Windows and Aura,
+  // the cursor is a shared resource.
   virtual gfx::NativeCursor GetCursor(const MouseEvent& event);
 
   // Convenience to test whether a point is within this view's bounds

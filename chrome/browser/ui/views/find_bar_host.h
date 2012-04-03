@@ -23,7 +23,7 @@ class FindNotificationDetails;
 //
 // The FindBarHost implements the container widget for the
 // find-in-page functionality. It uses the appropriate implementation from
-// find_bar_host_win.cc or find_bar_host_gtk.cc to draw its content and is
+// find_bar_host_win.cc or find_bar_host_aura.cc to draw its content and is
 // responsible for showing, hiding, closing, and moving the widget if needed,
 // for example if the widget is obscuring the selection results. It also
 // receives notifications about the search results and communicates that to

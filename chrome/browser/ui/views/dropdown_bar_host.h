@@ -37,7 +37,7 @@ class Widget;
 //
 // The DropdownBarHost implements the container widget for the UI that
 // is shown at the top of browser contents. It uses the appropriate
-// implementation from dropdown_bar_host_win.cc or dropdown_bar_host_gtk.cc to
+// implementation from dropdown_bar_host_win.cc or dropdown_bar_host_aura.cc to
 // draw its content and is responsible for showing, hiding, animating, closing,
 // and moving the bar if needed, for example if the widget is
 // obscuring the selection results in FindBar.

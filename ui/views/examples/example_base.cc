@@ -19,9 +19,7 @@ void LogStatus(const std::string& status);
 
 namespace {
 
-// Some of GTK based view classes require NativeWidgetGtk in the view
-// parent chain. This class is used to defer the creation of such
-// views until a NativeWidgetGtk is added to the view hierarchy.
+// TODO(oshima): Check if this special container is still necessary.
 class ContainerView : public View {
  public:
   explicit ContainerView(ExampleBase* base)

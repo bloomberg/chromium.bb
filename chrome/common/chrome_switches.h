@@ -387,7 +387,6 @@ extern const char kDisableDesktopShortcuts[];
 #endif
 
 #if defined(TOOLKIT_VIEWS)
-extern const char kDebugViewsPaint[];
 extern const char kTouchDevices[];
 #endif
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,10 +30,10 @@ class Widget;
 // An interface implemented by an object that encapsulates a native input method
 // service provided by the underlying operation system.
 // Because on most systems, the system input method service is bound to
-// individual native window. On Windows, its HWND, on Linux/Gtk, its GdkWindow.
-// And in Views control system, only the top-level NativeWidget has a native
-// window that can get keyboard focus. So this API is designed to be bound to
-// the top-level NativeWidget.
+// individual native window. On Windows, its HWND, on Aura, its
+// ui::aura::Window. And in Views control system, only the top-level
+// NativeWidget has a native window that can get keyboard focus. So this API is
+// designed to be bound to the top-level NativeWidget.
 class VIEWS_EXPORT InputMethod {
  public:
   virtual ~InputMethod() {}

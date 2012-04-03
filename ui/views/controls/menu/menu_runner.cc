@@ -240,8 +240,7 @@ bool MenuRunnerImpl::ShouldShowMnemonics(MenuButton* button) {
   // Show mnemonics if the button has focus or alt is pressed.
   bool show_mnemonics = button ? button->HasFocus() : false;
 #if defined(OS_WIN)
-  // We don't currently need this on gtk as showing the menu gives focus to the
-  // button first.
+  // This is only needed on Windows.
   if (!show_mnemonics)
     show_mnemonics = base::win::IsAltPressed();
 #endif

@@ -201,8 +201,8 @@ TEST_F(FocusManagerTest, CreationForNativeRoot) {
 
 // Tests that the keyup messages are eaten for accelerators.
 // Windows-only, Windows is the only platform that handles accelerators in
-// AcceleratorHandler. NativeWidgetAura/NativeWidgetGtk::OnKeyEvent handles
-// them in other configurations.
+// AcceleratorHandler. NativeWidgetAura::OnKeyEvent handles them in other
+// configurations.
 TEST_F(FocusManagerTest, IgnoreKeyupForAccelerators) {
   FocusManager* focus_manager = GetFocusManager();
   MessageTrackingView* mtv = new MessageTrackingView();

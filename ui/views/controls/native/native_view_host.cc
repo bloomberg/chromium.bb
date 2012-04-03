@@ -14,9 +14,10 @@ namespace views {
 // static
 const char NativeViewHost::kViewClassName[] = "views/NativeViewHost";
 
-#if defined(OS_LINUX)
-// GTK renders the focus.
-// static
+#if defined(USE_AURA)
+// Views implmenetatxion draws the focus.
+// TODO(oshima): Eliminate this flag and consolidate
+// the focus border code.
 const bool NativeViewHost::kRenderNativeControlFocus = false;
 #else
 // static

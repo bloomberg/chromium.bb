@@ -1949,14 +1949,7 @@ void View::RegisterPendingAccelerators() {
     // Some crash reports seem to show that we may get cases where we have no
     // focus manager (see bug #1291225).  This should never be the case, just
     // making sure we don't crash.
-
-    // TODO(jcampan): This fails for a view under NativeWidgetGtk with
-    //                TYPE_CHILD. (see http://crbug.com/21335) reenable
-    //                NOTREACHED assertion and verify accelerators works as
-    //                expected.
-#if defined(OS_WIN)
     NOTREACHED();
-#endif
     return;
   }
   for (std::vector<ui::Accelerator>::const_iterator i(

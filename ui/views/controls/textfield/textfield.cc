@@ -375,11 +375,6 @@ bool Textfield::SkipDefaultKeyEventProcessing(const KeyEvent& e) {
   return false;
 }
 
-void Textfield::OnPaintBackground(gfx::Canvas* canvas) {
-  // Overridden to be public - gtk_views_entry.cc wants to call it.
-  View::OnPaintBackground(canvas);
-}
-
 void Textfield::OnPaintFocusBorder(gfx::Canvas* canvas) {
   if (NativeViewHost::kRenderNativeControlFocus)
     View::OnPaintFocusBorder(canvas);
@@ -453,8 +448,7 @@ void Textfield::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
     if (!views::Widget::IsPureViews()) {
       // TODO(beng): remove this once NativeTextfieldWin subclasses
       // NativeControlWin. This is currently called to perform post-AddChildView
-      // initialization for the wrapper. The GTK version subclasses things
-      // correctly and doesn't need this.
+      // initialization for the wrapper.
       //
       // Remove the include for native_textfield_win.h above when you fix this.
       static_cast<NativeTextfieldWin*>(native_wrapper_)->AttachHack();

@@ -35,9 +35,6 @@ namespace {
 // Set to true if a pure Views implementation is preferred
 bool use_pure_views = false;
 
-// True to enable debug paint that indicates where to be painted.
-bool debug_paint = false;
-
 }  // namespace
 
 namespace views {
@@ -297,16 +294,6 @@ gfx::Size Widget::GetLocalizedContentsSize(int col_resource_id,
                                            int row_resource_id) {
   return gfx::Size(GetLocalizedContentsWidth(col_resource_id),
                    GetLocalizedContentsHeight(row_resource_id));
-}
-
-// static
-void Widget::SetDebugPaintEnabled(bool enabled) {
-  debug_paint = enabled;
-}
-
-// static
-bool Widget::IsDebugPaintEnabled() {
-  return debug_paint;
 }
 
 // static
@@ -1280,12 +1267,8 @@ bool Widget::GetSavedWindowPlacement(gfx::Rect* bounds,
 
 void Widget::ReplaceInputMethod(InputMethod* input_method) {
   input_method_.reset(input_method);
-  // TODO(oshima): Gtk's textfield doesn't need views InputMethod.
-  // Remove this check once gtk is removed.
-  if (input_method) {
-    input_method->set_delegate(native_widget_);
-    input_method->Init(this);
-  }
+  input_method->set_delegate(native_widget_);
+  input_method->Init(this);
 }
 
 namespace internal {

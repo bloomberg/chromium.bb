@@ -71,8 +71,6 @@ void BrowserNonClientFrameView::UpdateAvatarInfo() {
   }
 }
 
-#if defined(OS_WIN)
-// See the comments in the .h file as for why this code is windows-only.
 void BrowserNonClientFrameView::VisibilityChanged(views::View* starting_from,
                                                   bool is_visible) {
   if (!is_visible)
@@ -82,4 +80,3 @@ void BrowserNonClientFrameView::VisibilityChanged(views::View* starting_from,
   // once the window is visible.
   UpdateAvatarInfo();
 }
-#endif

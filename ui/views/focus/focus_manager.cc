@@ -80,8 +80,7 @@ bool FocusManager::OnKeyEvent(const KeyEvent& event) {
 
 #if defined(OS_WIN)
   // If the focused view wants to process the key event as is, let it be.
-  // On Linux we always dispatch key events to the focused view first, so
-  // we should not do this check here. See also NativeWidgetGtk::OnKeyEvent().
+  // This is not used for linux/aura.
   if (focused_view_ && focused_view_->SkipDefaultKeyEventProcessing(event) &&
       !accelerator_manager_->HasPriorityHandler(accelerator))
     return true;

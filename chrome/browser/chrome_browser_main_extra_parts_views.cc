@@ -20,8 +20,4 @@ void ChromeBrowserMainExtraPartsViews::ToolkitInitialized() {
   // display the correct icon.
   if (!views::ViewsDelegate::views_delegate)
     views::ViewsDelegate::views_delegate = new ChromeViewsDelegate;
-
-  // TODO(beng): Move to WidgetImpl and implement on Windows too!
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDebugViewsPaint))
-    views::Widget::SetDebugPaintEnabled(true);
 }
