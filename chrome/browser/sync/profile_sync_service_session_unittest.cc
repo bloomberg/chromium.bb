@@ -726,8 +726,9 @@ TEST_F(ProfileSyncServiceSessionTest, TabNodePoolEmpty) {
   ASSERT_TRUE(model_associator_->tab_pool_.full());
 }
 
+// TODO(jhorwich): Re-enable when crbug.com/121487 addressed
 // Test the TabNodePool when it starts off with nodes
-TEST_F(ProfileSyncServiceSessionTest, TabNodePoolNonEmpty) {
+TEST_F(ProfileSyncServiceSessionTest, DISABLED_TabNodePoolNonEmpty) {
   CreateRootHelper create_root(this);
   ASSERT_TRUE(StartSyncService(create_root.callback(), false));
   ASSERT_TRUE(create_root.success());
@@ -964,7 +965,7 @@ TEST_F(ProfileSyncServiceSessionTest, SessionsRefresh) {
 }
 
 // Ensure model association associates the pre-existing tabs.
-// TODO: Fix the test so that it doesn't crash (crbug.com/121487)
+// TODO(jhorwich): Fix the test so that it doesn't crash (crbug.com/121487)
 TEST_F(ProfileSyncServiceSessionTest, DISABLED_ExistingTabs) {
   AddTab(browser(), GURL("http://foo1"));
   NavigateAndCommitActiveTab(GURL("http://foo2"));
@@ -1007,7 +1008,8 @@ TEST_F(ProfileSyncServiceSessionTest, DISABLED_ExistingTabs) {
       GetEntryAtIndex(1)->GetVirtualURL());
 }
 
-TEST_F(ProfileSyncServiceSessionTest, MissingHeaderAndTab) {
+// TODO(jhorwich): Re-enable when crbug.com/121487 addressed
+TEST_F(ProfileSyncServiceSessionTest, DISABLED_MissingHeaderAndTab) {
   AddTab(browser(), GURL("http://foo1"));
   NavigateAndCommitActiveTab(GURL("http://foo2"));
   AddTab(browser(), GURL("http://bar1"));
@@ -1034,7 +1036,8 @@ TEST_F(ProfileSyncServiceSessionTest, MissingHeaderAndTab) {
   ASSERT_FALSE(error.IsSet());
 }
 
-TEST_F(ProfileSyncServiceSessionTest, MultipleHeaders) {
+// TODO(jhorwich): Re-enable when crbug.com/121487 addressed
+TEST_F(ProfileSyncServiceSessionTest, DISABLED_MultipleHeaders) {
   AddTab(browser(), GURL("http://foo1"));
   NavigateAndCommitActiveTab(GURL("http://foo2"));
   AddTab(browser(), GURL("http://bar1"));
@@ -1062,7 +1065,8 @@ TEST_F(ProfileSyncServiceSessionTest, MultipleHeaders) {
   ASSERT_FALSE(error.IsSet());
 }
 
-TEST_F(ProfileSyncServiceSessionTest, CorruptedForeign) {
+// TODO(jhorwich): Re-enable when crbug.com/121487 addressed
+TEST_F(ProfileSyncServiceSessionTest, DISABLED_CorruptedForeign) {
   AddTab(browser(), GURL("http://foo1"));
   NavigateAndCommitActiveTab(GURL("http://foo2"));
   AddTab(browser(), GURL("http://bar1"));
