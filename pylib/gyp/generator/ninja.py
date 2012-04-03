@@ -1212,8 +1212,9 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
         rspfile='$out.rsp',
         rspfile_content='$in')
     dlldesc = 'LINK(DLL) $dll and $implib'
-    dllcmd = ('$ld /nologo /IMPLIB:$implib /DLL /OUT:$dll '
-               '/PDB:$dll.pdb $libs @$dll.rsp $ldflags')
+    dllcmd = ('python gyp-win-tool link-wrapper '
+              '$ld /nologo /IMPLIB:$implib /DLL /OUT:$dll '
+              '/PDB:$dll.pdb $libs @$dll.rsp $ldflags')
     master_ninja.rule('solink', description=dlldesc, command=dllcmd,
                       rspfile='$dll.rsp', rspfile_content='$in')
     master_ninja.rule('solink_module', description=dlldesc, command=dllcmd,
@@ -1223,7 +1224,8 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
     master_ninja.rule(
         'link',
         description='LINK $out',
-        command=('$ld /nologo /OUT:$out /PDB:$out.pdb $in $libs $ldflags'))
+        command=('python gyp-win-tool link-wrapper '
+                 '$ld /nologo /OUT:$out /PDB:$out.pdb $in $libs $ldflags'))
   else:
     master_ninja.rule(
       'objc',

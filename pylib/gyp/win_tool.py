@@ -11,6 +11,7 @@ These functions are executed via gyp-win-tool when using the ninja generator.
 
 import os
 import shutil
+import subprocess
 import sys
 
 
@@ -49,6 +50,19 @@ class WinTool(object):
     else:
       shutil.copy2(source, dest)
 
+  def ExecLinkWrapper(self, *args):
+    """Filter diagnostic output from link that looks like:
+    '   Creating library ui.dll.lib and object ui.dll.exp'
+    This happens when there are exports from the dll or exe.
+    """
+    popen = subprocess.Popen(args,
+                             stdout=subprocess.PIPE,
+                             stderr=subprocess.STDOUT)
+    out, _ = popen.communicate()
+    for line in out.splitlines():
+      if not line.startswith('   Creating library '):
+        sys.stdout.write(line)
+    return popen.returncode
 
 if __name__ == '__main__':
   sys.exit(main(sys.argv[1:]))
