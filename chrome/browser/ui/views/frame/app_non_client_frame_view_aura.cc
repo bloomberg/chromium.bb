@@ -35,12 +35,13 @@ const int kTopMargin = 1;
 // How long the hover animation takes if uninterrupted.
 const int kHoverFadeDurationMs = 130;
 // The number of pixels within the shadow to draw the buttons.
-const int kShadowStart = 28;
+const int kShadowStart = 16;
+// The size and close buttons are designed to overlap.
+const int kButtonOverlap = 1;
 
 // TODO(pkotwicz): Remove these constants once the IDR_AURA_FULLSCREEN_SHADOW
 // resource is updated.
-const int kShadowWidthStretch = 6;
-const int kShadowHeightStretch = -2;
+const int kShadowHeightStretch = -1;
 }
 
 class AppNonClientFrameViewAura::ControlView
@@ -73,28 +74,28 @@ class AppNonClientFrameViewAura::ControlView
   virtual void Layout() OVERRIDE {
     restore_button_->SetPosition(gfx::Point(kShadowStart, 0));
     close_button_->SetPosition(gfx::Point(kShadowStart +
-        restore_button_->width() + separator_->width(), 0));
+        restore_button_->width() - kButtonOverlap, 0));
   }
 
   virtual void ViewHierarchyChanged(bool is_add, View* parent,
                                     View* child) OVERRIDE {
     if (is_add && child == this) {
       SetButtonImages(restore_button_,
-                      IDR_AURA_WINDOW_MAXIMIZED_RESTORE,
-                      IDR_AURA_WINDOW_MAXIMIZED_RESTORE_H,
-                      IDR_AURA_WINDOW_MAXIMIZED_RESTORE_P);
+                      IDR_AURA_WINDOW_FULLSCREEN_RESTORE,
+                      IDR_AURA_WINDOW_FULLSCREEN_RESTORE_H,
+                      IDR_AURA_WINDOW_FULLSCREEN_RESTORE_P);
       restore_button_->SizeToPreferredSize();
 
       SetButtonImages(close_button_,
-                      IDR_AURA_WINDOW_MAXIMIZED_CLOSE,
-                      IDR_AURA_WINDOW_MAXIMIZED_CLOSE_H,
-                      IDR_AURA_WINDOW_MAXIMIZED_CLOSE_P);
+                      IDR_AURA_WINDOW_FULLSCREEN_CLOSE,
+                      IDR_AURA_WINDOW_FULLSCREEN_CLOSE_H,
+                      IDR_AURA_WINDOW_FULLSCREEN_CLOSE_P);
       close_button_->SizeToPreferredSize();
     }
   }
 
   virtual gfx::Size GetPreferredSize() OVERRIDE {
-    return gfx::Size(shadow_->width() + kShadowWidthStretch,
+    return gfx::Size(shadow_->width(),
                      shadow_->height() + kShadowHeightStretch);
   }
 
@@ -102,13 +103,14 @@ class AppNonClientFrameViewAura::ControlView
     canvas->TileImageInt(*control_base_,
         restore_button_->x(),
         restore_button_->y(),
-        restore_button_->width() + close_button_->width(),
+        restore_button_->width() - kButtonOverlap + close_button_->width(),
         restore_button_->height());
 
     views::View::OnPaint(canvas);
 
+    // Separator overlaps the left edge of the close button.
     canvas->DrawBitmapInt(*separator_,
-                          restore_button_->x() + restore_button_->width(), 0);
+                          close_button_->x(), 0);
     canvas->DrawBitmapInt(*shadow_, 0, kShadowHeightStretch);
   }
 
