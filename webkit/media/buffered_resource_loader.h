@@ -254,9 +254,6 @@ class BufferedResourceLoader : public WebKit::WebURLLoaderClient {
   // Current buffering algorithm in place for resource loading.
   DeferStrategy defer_strategy_;
 
-  // True if a range request was made.
-  bool range_requested_;
-
   // True if Range header is supported.
   bool range_supported_;
 

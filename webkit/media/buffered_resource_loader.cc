@@ -102,7 +102,6 @@ BufferedResourceLoader::BufferedResourceLoader(
     float playback_rate,
     media::MediaLog* media_log)
     : defer_strategy_(strategy),
-      range_requested_(false),
       range_supported_(false),
       saved_forward_capacity_(0),
       url_(url),
@@ -155,12 +154,12 @@ void BufferedResourceLoader::Start(
   request.setTargetType(WebURLRequest::TargetIsMedia);
 
   if (IsRangeRequest()) {
-    range_requested_ = true;
     request.setHTTPHeaderField(
         WebString::fromUTF8(net::HttpRequestHeaders::kRange),
         WebString::fromUTF8(GenerateHeaders(first_byte_position_,
                                             last_byte_position_)));
   }
+
   frame->setReferrerForRequest(request, WebKit::WebURL());
 
   // Disable compression, compression for audio/video doesn't make sense...
@@ -229,6 +228,7 @@ void BufferedResourceLoader::Read(
   // of the file.
   if (instance_size_ != kPositionNotSpecified &&
       instance_size_ <= read_position_) {
+    DVLOG(1) << "Appear to have seeked beyond EOS; returning 0.";
     DoneRead(0);
     return;
   }
@@ -367,7 +367,9 @@ void BufferedResourceLoader::didReceiveResponse(
   if (start_cb_.is_null())
     return;
 
-  bool partial_response = false;
+  // Expected content length can be |kPositionNotSpecified|, in that case
+  // |content_length_| is not specified and this is a streaming response.
+  content_length_ = response.expectedContentLength();
 
   // We make a strong assumption that when we reach here we have either
   // received a response from HTTP/HTTPS protocol or the request was
@@ -376,10 +378,10 @@ void BufferedResourceLoader::didReceiveResponse(
   if (url_.SchemeIs(kHttpScheme) || url_.SchemeIs(kHttpsScheme)) {
     int error = net::OK;
 
-    partial_response = (response.httpStatusCode() == kHttpPartialContent);
+    bool partial_response = (response.httpStatusCode() == kHttpPartialContent);
     bool ok_response = (response.httpStatusCode() == kHttpOK);
 
-    if (range_requested_) {
+    if (IsRangeRequest()) {
       // Check to see whether the server supports byte ranges.
       std::string accept_ranges =
           response.httpHeaderField("Accept-Ranges").utf8();
@@ -395,28 +397,32 @@ void BufferedResourceLoader::didReceiveResponse(
         // We accept a 200 response for a Range:0- request, trusting the
         // Accept-Ranges header, because Apache thinks that's a reasonable thing
         // to return.
+        instance_size_ = content_length_;
       } else {
         error = net::ERR_INVALID_RESPONSE;
       }
-    } else if (response.httpStatusCode() != kHttpOK) {
-      // We didn't request a range but server didn't reply with "200 OK".
-      error = net::ERR_FAILED;
+    } else {
+      instance_size_ = content_length_;
+      if (response.httpStatusCode() != kHttpOK) {
+        // We didn't request a range but server didn't reply with "200 OK".
+        error = net::ERR_FAILED;
+      }
     }
 
     if (error != net::OK) {
       DoneStart(error);
       return;
     }
+
+  } else {
+    CHECK_EQ(instance_size_, kPositionNotSpecified);
+    if (content_length_ != kPositionNotSpecified) {
+      if (first_byte_position_ == kPositionNotSpecified)
+        instance_size_ = content_length_;
+      else if (last_byte_position_ == kPositionNotSpecified)
+        instance_size_ = content_length_ + first_byte_position_;
+    }
   }
-
-  // Expected content length can be |kPositionNotSpecified|, in that case
-  // |content_length_| is not specified and this is a streaming response.
-  content_length_ = response.expectedContentLength();
-
-  // If we have not requested a range or have not received a range, then the
-  // size of the instance is equal to the content length.
-  if (!range_requested_ || !partial_response)
-    instance_size_ = content_length_;
 
   // Calls with a successful response.
   DoneStart(net::OK);

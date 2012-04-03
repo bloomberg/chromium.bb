@@ -834,8 +834,8 @@ void Pipeline::SeekTask(base::TimeDelta time,
   if (state_ != kStarted && state_ != kEnded) {
     // TODO(scherkus): should we run the callback?  I'm tempted to say the API
     // will only execute the first Seek() request.
-    VLOG(1) << "Media pipeline has not started, ignoring seek to "
-            << time.InMicroseconds();
+    DVLOG(1) << "Media pipeline has not started, ignoring seek to "
+             << time.InMicroseconds() << " (current state: " << state_ << ")";
     return;
   }
 

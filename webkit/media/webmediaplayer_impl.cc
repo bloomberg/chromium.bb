@@ -822,6 +822,7 @@ void WebMediaPlayerImpl::DataSourceInitialized(
   DCHECK_EQ(main_loop_, MessageLoop::current());
 
   if (status != media::PIPELINE_OK) {
+    DVLOG(1) << "DataSourceInitialized status: " << status;
     SetNetworkState(WebKit::WebMediaPlayer::FormatError);
     Repaint();
     return;
@@ -855,16 +856,18 @@ void WebMediaPlayerImpl::StartPipeline() {
 void WebMediaPlayerImpl::SetNetworkState(
     WebKit::WebMediaPlayer::NetworkState state) {
   DCHECK_EQ(main_loop_, MessageLoop::current());
-  // Always notify to ensure client has the latest value.
+  DVLOG(1) << "SetNetworkState: " << state;
   network_state_ = state;
+  // Always notify to ensure client has the latest value.
   GetClient()->networkStateChanged();
 }
 
 void WebMediaPlayerImpl::SetReadyState(
     WebKit::WebMediaPlayer::ReadyState state) {
   DCHECK_EQ(main_loop_, MessageLoop::current());
-  // Always notify to ensure client has the latest value.
+  DVLOG(1) << "SetReadyState: " << state;
   ready_state_ = state;
+  // Always notify to ensure client has the latest value.
   GetClient()->readyStateChanged();
 }
 
