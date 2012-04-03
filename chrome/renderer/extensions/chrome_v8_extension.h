@@ -54,12 +54,6 @@ class ChromeV8Extension : public NativeHandler {
   // be an extension URL.
   const ::Extension* GetExtensionForCurrentRenderView() const;
 
-  // Checks that the current context contains an extension that has permission
-  // to execute the specified function. If it does not, a v8 exception is thrown
-  // and the method returns false. Otherwise returns true.
-  bool CheckCurrentContextAccessToExtensionAPI(
-      const std::string& function_name) const;
-
   // Returns the chromeHidden object for the current context.
   static v8::Handle<v8::Value> GetChromeHidden(const v8::Arguments& args);
 

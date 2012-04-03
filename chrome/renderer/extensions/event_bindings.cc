@@ -73,7 +73,9 @@ class ExtensionImpl : public ChromeV8Extension {
       CHECK(context);
       std::string event_name(*v8::String::AsciiValue(args[0]));
 
-      if (!self->CheckCurrentContextAccessToExtensionAPI(event_name))
+      ExtensionDispatcher* extension_dispatcher = self->extension_dispatcher();
+      if (!extension_dispatcher->CheckCurrentContextAccessToExtensionAPI(
+              event_name))
         return v8::Undefined();
 
       EventListenerCounts& listener_counts =

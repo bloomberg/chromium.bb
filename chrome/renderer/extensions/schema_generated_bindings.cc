@@ -11,7 +11,6 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
-#include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
@@ -28,6 +27,7 @@
 #include "chrome/renderer/extensions/chrome_v8_context_set.h"
 #include "chrome/renderer/extensions/event_bindings.h"
 #include "chrome/renderer/extensions/extension_dispatcher.h"
+#include "chrome/renderer/extensions/extension_request_sender.h"
 #include "chrome/renderer/extensions/miscellaneous_bindings.h"
 #include "chrome/renderer/extensions/user_script_slave.h"
 #include "content/public/renderer/render_thread.h"
@@ -35,9 +35,6 @@
 #include "content/public/renderer/v8_value_converter.h"
 #include "grit/common_resources.h"
 #include "grit/renderer_resources.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -51,65 +48,13 @@ using extensions::Feature;
 using WebKit::WebFrame;
 using WebKit::WebSecurityOrigin;
 
-namespace {
-
-// Contains info relevant to a pending API request.
-struct PendingRequest {
- public :
-  PendingRequest(v8::Persistent<v8::Context> context, const std::string& name,
-                 const std::string& extension_id)
-      : context(context), name(name), extension_id(extension_id) {
-  }
-  v8::Persistent<v8::Context> context;
-  std::string name;
-  std::string extension_id;
-};
-
-class PendingRequestMap {
- public:
-  PendingRequestMap() {
-  }
-
-  void InsertRequest(int request_id, PendingRequest* pending_request) {
-    pending_requests_[request_id].reset(pending_request);
-  }
-
-  PendingRequest* GetPendingRequest(int request_id) {
-    PendingRequests::iterator i = pending_requests_.find(request_id);
-    if (i == pending_requests_.end()) {
-      return NULL;
-    }
-    return i->second.get();
-  }
-
-  void RemoveRequest(int request_id) {
-    PendingRequest* request = GetPendingRequest(request_id);
-    if (!request)
-      return;
-    request->context.Dispose();
-    request->context.Clear();
-    pending_requests_.erase(request_id);
-  }
-
- private:
-  typedef std::map<int, linked_ptr<PendingRequest> > PendingRequests;
-  PendingRequests pending_requests_;
-
-  DISALLOW_COPY_AND_ASSIGN(PendingRequestMap);
-};
-
-// TODO(koz): Make this owned by ExtensionDispatcher and pass it into
-// SchemaGeneratedBindings.
-base::LazyInstance<PendingRequestMap> g_pending_requests =
-    LAZY_INSTANCE_INITIALIZER;
-
-}  // namespace
-
 namespace extensions {
 
 SchemaGeneratedBindings::SchemaGeneratedBindings(
-    ExtensionDispatcher* extension_dispatcher)
-    : ChromeV8Extension(extension_dispatcher) {
+    ExtensionDispatcher* extension_dispatcher,
+    ExtensionRequestSender* request_sender)
+    : ChromeV8Extension(extension_dispatcher),
+      request_sender_(request_sender) {
   RouteFunction("GetExtensionAPIDefinition",
                 base::Bind(&SchemaGeneratedBindings::GetExtensionAPIDefinition,
                            base::Unretained(this)));
@@ -161,67 +106,16 @@ v8::Handle<v8::Value> SchemaGeneratedBindings::GetNextRequestId(
 
 v8::Handle<v8::Value> SchemaGeneratedBindings::StartRequestCommon(
     const v8::Arguments& args, ListValue* value_args) {
-
-  const ChromeV8ContextSet& contexts =
-      extension_dispatcher()->v8_context_set();
-  ChromeV8Context* current_context = contexts.GetCurrent();
-  if (!current_context)
-    return v8::Undefined();
-
-  // Get the current RenderView so that we can send a routed IPC message from
-  // the correct source.
-  content::RenderView* renderview = current_context->GetRenderView();
-  if (!renderview)
-    return v8::Undefined();
-
   std::string name = *v8::String::AsciiValue(args[0]);
-  const std::set<std::string>& function_names =
-      extension_dispatcher_->function_names();
-  if (function_names.find(name) == function_names.end()) {
-    NOTREACHED() << "Unexpected function " << name <<
-        ". Did you remember to register it with ExtensionFunctionRegistry?";
-    return v8::Undefined();
-  }
-
-  if (!CheckCurrentContextAccessToExtensionAPI(name))
-    return v8::Undefined();
-
-  GURL source_url;
-  WebSecurityOrigin source_origin;
-  WebFrame* webframe = current_context->web_frame();
-  if (webframe) {
-    source_url = webframe->document().url();
-    source_origin = webframe->document().securityOrigin();
-  }
-
   int request_id = args[2]->Int32Value();
   bool has_callback = args[3]->BooleanValue();
   bool for_io_thread = args[4]->BooleanValue();
 
-  v8::Persistent<v8::Context> v8_context =
-      v8::Persistent<v8::Context>::New(v8::Context::GetCurrent());
-  DCHECK(!v8_context.IsEmpty());
-  g_pending_requests.Get().InsertRequest(request_id, new PendingRequest(
-      v8_context, name, current_context->extension_id()));
-
-  ExtensionHostMsg_Request_Params params;
-  params.name = name;
-  params.arguments.Swap(value_args);
-  params.extension_id = current_context->extension_id();
-  params.source_url = source_url;
-  params.source_origin = source_origin.toString();
-  params.request_id = request_id;
-  params.has_callback = has_callback;
-  params.user_gesture =
-      webframe ? webframe->isProcessingUserGesture() : false;
-  if (for_io_thread) {
-    renderview->Send(new ExtensionHostMsg_RequestForIOThread(
-        renderview->GetRoutingID(), params));
-  } else {
-    renderview->Send(new ExtensionHostMsg_Request(
-        renderview->GetRoutingID(), params));
-  }
-
+  request_sender_->StartRequest(name,
+                                request_id,
+                                has_callback,
+                                for_io_thread,
+                                value_args);
   return v8::Undefined();
 }
 
@@ -308,55 +202,6 @@ v8::Handle<v8::Value> SchemaGeneratedBindings::SetIconCommon(
   list_value.Append(dict);
 
   return StartRequestCommon(args, &list_value);
-}
-
-// static
-void SchemaGeneratedBindings::HandleResponse(const ChromeV8ContextSet& contexts,
-                                             int request_id,
-                                             bool success,
-                                             const std::string& response,
-                                             const std::string& error,
-                                             std::string* extension_id) {
-  PendingRequest* request =
-      g_pending_requests.Get().GetPendingRequest(request_id);
-  if (!request) {
-    // This should not be able to happen since we only remove requests when they
-    // are handled.
-    LOG(ERROR) << "Could not find specified request id: " << request_id;
-    return;
-  }
-
-  ChromeV8Context* v8_context =
-      contexts.GetByV8Context(request->context);
-  if (!v8_context)
-    return;  // The frame went away.
-
-  v8::HandleScope handle_scope;
-  v8::Handle<v8::Value> argv[5];
-  argv[0] = v8::Integer::New(request_id);
-  argv[1] = v8::String::New(request->name.c_str());
-  argv[2] = v8::Boolean::New(success);
-  argv[3] = v8::String::New(response.c_str());
-  argv[4] = v8::String::New(error.c_str());
-
-  v8::Handle<v8::Value> retval;
-  CHECK(v8_context->CallChromeHiddenMethod("handleResponse",
-                                           arraysize(argv),
-                                           argv,
-                                           &retval));
-  // In debug, the js will validate the callback parameters and return a
-  // string if a validation error has occured.
-#ifndef NDEBUG
-  if (!retval.IsEmpty() && !retval->IsUndefined()) {
-    std::string error = *v8::String::AsciiValue(retval);
-    DCHECK(false) << error;
-  }
-#endif
-
-  // Save the extension id before erasing the request.
-  *extension_id = request->extension_id;
-
-  g_pending_requests.Get().RemoveRequest(request_id);
 }
 
 }  // namespace extensions

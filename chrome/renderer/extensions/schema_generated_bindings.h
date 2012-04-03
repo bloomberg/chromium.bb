@@ -11,6 +11,7 @@
 #include "chrome/renderer/extensions/chrome_v8_extension.h"
 
 class ExtensionDispatcher;
+class ExtensionRequestSender;
 class ChromeV8ContextSet;
 class ChromeV8Extension;
 
@@ -31,15 +32,8 @@ namespace extensions {
 // SetIconCommon are in separate classes.
 class SchemaGeneratedBindings : public ChromeV8Extension {
  public:
-  explicit SchemaGeneratedBindings(ExtensionDispatcher* extension_dispatcher);
-
-  // Handles a response to an API request.  Sets |extension_id|.
-  static void HandleResponse(const ChromeV8ContextSet& contexts,
-                             int request_id,
-                             bool success,
-                             const std::string& response,
-                             const std::string& error,
-                             std::string* extension_id);
+  explicit SchemaGeneratedBindings(ExtensionDispatcher* extension_dispatcher,
+                                   ExtensionRequestSender* request_sender);
 
  private:
   v8::Handle<v8::Value> GetExtensionAPIDefinition(const v8::Arguments& args);
@@ -62,6 +56,8 @@ class SchemaGeneratedBindings : public ChromeV8Extension {
   // accepts a canvas ImageData object, so it needs to do extra processing
   // before sending the request to the browser.
   v8::Handle<v8::Value> SetIconCommon(const v8::Arguments& args);
+
+  ExtensionRequestSender* request_sender_;
 
   DISALLOW_COPY_AND_ASSIGN(SchemaGeneratedBindings);
 };

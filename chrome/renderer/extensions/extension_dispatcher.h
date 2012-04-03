@@ -21,8 +21,9 @@
 #include "chrome/renderer/resource_bundle_source_map.h"
 #include "v8/include/v8.h"
 
-class ModuleSystem;
+class ExtensionRequestSender;
 class GURL;
+class ModuleSystem;
 class URLPattern;
 class UserScriptSlave;
 struct ExtensionMsg_Loaded_Params;
@@ -101,6 +102,17 @@ class ExtensionDispatcher : public content::RenderProcessObserver {
   bool IsOtherExtensionWithWebRequestInstalled() const {
     return webrequest_other_;
   }
+
+  void OnExtensionResponse(int request_id,
+                           bool success,
+                           const std::string& response,
+                           const std::string& error);
+
+  // Checks that the current context contains an extension that has permission
+  // to execute the specified function. If it does not, a v8 exception is thrown
+  // and the method returns false. Otherwise returns true.
+  bool CheckCurrentContextAccessToExtensionAPI(
+      const std::string& function_name) const;
 
  private:
   friend class RenderViewTest;
@@ -226,6 +238,9 @@ class ExtensionDispatcher : public content::RenderProcessObserver {
   // Bindings that are defined lazily and have BindingInstallers to install
   // them.
   std::map<std::string, BindingInstaller> lazy_bindings_map_;
+
+  // Sends API requests to the extension host.
+  scoped_ptr<ExtensionRequestSender> request_sender_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionDispatcher);
 };

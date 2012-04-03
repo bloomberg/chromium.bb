@@ -24,6 +24,7 @@
 #include "chrome/renderer/extensions/experimental.socket_custom_bindings.h"
 #include "chrome/renderer/extensions/extension_custom_bindings.h"
 #include "chrome/renderer/extensions/extension_groups.h"
+#include "chrome/renderer/extensions/extension_request_sender.h"
 #include "chrome/renderer/extensions/file_browser_handler_custom_bindings.h"
 #include "chrome/renderer/extensions/file_browser_private_custom_bindings.h"
 #include "chrome/renderer/extensions/i18n_custom_bindings.h"
@@ -156,6 +157,7 @@ ExtensionDispatcher::ExtensionDispatcher()
   }
 
   user_script_slave_.reset(new UserScriptSlave(&extensions_));
+  request_sender_.reset(new ExtensionRequestSender(this, &v8_context_set_));
   PopulateSourceMap();
   PopulateLazyBindingsMap();
 }
@@ -389,7 +391,8 @@ void ExtensionDispatcher::RegisterNativeHandlers(ModuleSystem* module_system,
   module_system->RegisterNativeHandler("miscellaneous_bindings",
       scoped_ptr<NativeHandler>(MiscellaneousBindings::Get(this)));
   module_system->RegisterNativeHandler("schema_generated_bindings",
-      scoped_ptr<NativeHandler>(new SchemaGeneratedBindings(this)));
+      scoped_ptr<NativeHandler>(
+          new SchemaGeneratedBindings(this, request_sender_.get())));
 
   // Custom bindings.
   module_system->RegisterNativeHandler("app",
@@ -796,4 +799,47 @@ Feature::Context ExtensionDispatcher::ClassifyJavaScriptContext(
     return Feature::WEB_PAGE_CONTEXT;
 
   return Feature::UNSPECIFIED_CONTEXT;
+}
+
+void ExtensionDispatcher::OnExtensionResponse(int request_id,
+                                              bool success,
+                                              const std::string& response,
+                                              const std::string& error) {
+  request_sender_->HandleResponse(request_id, success, response, error);
+}
+
+bool ExtensionDispatcher::CheckCurrentContextAccessToExtensionAPI(
+    const std::string& function_name) const {
+  ChromeV8Context* context = v8_context_set().GetCurrent();
+  if (!context) {
+    DLOG(ERROR) << "Not in a v8::Context";
+    return false;
+  }
+
+  const ::Extension* extension = NULL;
+  if (!context->extension_id().empty()) {
+    extension = extensions()->GetByID(context->extension_id());
+  }
+
+  if (!extension || !extension->HasAPIPermission(function_name)) {
+    static const char kMessage[] =
+        "You do not have permission to use '%s'. Be sure to declare"
+        " in your manifest what permissions you need.";
+    std::string error_msg = base::StringPrintf(kMessage, function_name.c_str());
+    v8::ThrowException(
+        v8::Exception::Error(v8::String::New(error_msg.c_str())));
+    return false;
+  }
+
+  if (!IsExtensionActive(extension->id()) &&
+      ExtensionAPI::GetInstance()->IsPrivileged(function_name)) {
+    static const char kMessage[] =
+        "%s can only be used in an extension process.";
+    std::string error_msg = base::StringPrintf(kMessage, function_name.c_str());
+    v8::ThrowException(
+        v8::Exception::Error(v8::String::New(error_msg.c_str())));
+    return false;
+  }
+
+  return true;
 }

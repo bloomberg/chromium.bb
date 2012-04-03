@@ -85,6 +85,8 @@
         'renderer/extensions/extension_helper.h',
         'renderer/extensions/extension_resource_request_policy.cc',
         'renderer/extensions/extension_resource_request_policy.h',
+        'renderer/extensions/extension_request_sender.cc',
+        'renderer/extensions/extension_request_sender.h',
         'renderer/extensions/file_browser_handler_custom_bindings.cc',
         'renderer/extensions/file_browser_handler_custom_bindings.h',
         'renderer/extensions/file_browser_private_custom_bindings.cc',
