@@ -104,6 +104,22 @@ class CBuildBotTest(mox.MoxTestBase):
           'Config %s: push_overlays should be a subset of overlays.' %
               build_name)
 
+  def testOverlayMaster(self):
+    """Verify that only one master is pushing uprevs for each overlay."""
+    masters = {}
+    for build_name, config in cbuildbot_config.config.iteritems():
+      overlays = config['overlays']
+      push_overlays = config['push_overlays']
+      if (overlays and push_overlays and config['uprev'] and config['master']
+          and not build_name.endswith('branch')):
+        other_master = masters.get(push_overlays)
+        err_msg = 'Found two masters for push_overlays=%s: %s and %s'
+        self.assertFalse(other_master,
+            err_msg % (push_overlays, build_name, other_master))
+        masters[push_overlays] = build_name
+    if 'both' in masters:
+      self.assertEquals(len(masters), 1, 'Found too many masters.')
+
   def testChromeRev(self):
     """Verify chrome_rev has an expected value"""
 

@@ -488,6 +488,7 @@ chrome_pfq = _config(
   build_type=constants.CHROME_PFQ_TYPE,
   important=True,
   chrome_tests=True,
+  uprev=False,
   overlays='public',
   manifest_version=True,
 )
