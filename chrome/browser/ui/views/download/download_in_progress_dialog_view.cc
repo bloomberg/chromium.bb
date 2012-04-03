@@ -26,7 +26,8 @@
 
 DownloadInProgressDialogView::DownloadInProgressDialogView(Browser* browser)
     : browser_(browser),
-      product_name_(l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)) {
+      warning_(NULL),
+      explanation_(NULL) {
   int download_count;
   Browser::DownloadClosePreventionType type =
       browser_->OkToCloseWithInProgressDownloads(&download_count);
@@ -133,7 +134,7 @@ ui::ModalType DownloadInProgressDialogView::GetModalType() const {
 }
 
 string16 DownloadInProgressDialogView::GetWindowTitle() const {
-  return product_name_;
+  return l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
 }
 
 views::View* DownloadInProgressDialogView::GetContentsView() {

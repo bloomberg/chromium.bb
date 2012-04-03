@@ -49,8 +49,6 @@ class DownloadInProgressDialogView : public views::DialogDelegateView {
   string16 ok_button_text_;
   string16 cancel_button_text_;
 
-  string16 product_name_;
-
   gfx::Size dialog_dimensions_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadInProgressDialogView);
