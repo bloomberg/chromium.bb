@@ -266,7 +266,7 @@ if ${PNACL_IN_CROS_CHROOT}; then
 fi
 
 # Current milestones in each repo
-readonly UPSTREAM_REV=${UPSTREAM_REV:-a038e2fd683a}
+readonly UPSTREAM_REV=${UPSTREAM_REV:-567b26101263}
 
 readonly NEWLIB_REV=346ea38d142f
 readonly BINUTILS_REV=8040f022bb25

@@ -618,7 +618,7 @@ def GetBasicHeaderData(data):
   return offset, size
 
 def WrapBitcode(output):
-  """ Hash the bitcode and insert a wrapper header with the sha1 value.
+  """ Hash the bitcode and insert a wrapper header with the sha value.
       If the bitcode is already wrapped, the old hash is overwritten.
   """
   fd = DriverOpen(output, 'rb')
@@ -632,13 +632,14 @@ def WrapBitcode(output):
     bytes_left = fd.tell()
     fd.seek(0)
   # get the hash
-  sha = hashlib.sha1()
+  sha = hashlib.sha256()
   while bytes_left:
     block = fd.read(min(bytes_left, 4096))
     sha.update(block)
     bytes_left -= len(block)
   DriverClose(fd)
   # run bc-wrap
+  print 'hash value', sha.hexdigest()
   retcode,_,_ = Run(' '.join(('${LLVM_BCWRAP}', '-hash',
                               sha.hexdigest(), output)))
   return retcode
