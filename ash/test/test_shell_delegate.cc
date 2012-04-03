@@ -51,18 +51,6 @@ AppListViewDelegate* TestShellDelegate::CreateAppListViewDelegate() {
   return NULL;
 }
 
-std::vector<aura::Window*> TestShellDelegate::GetCycleWindowList(
-    CycleSource source) const {
-  // We just use the Shell's default container of windows, so tests can be
-  // written with the usual CreateTestWindowWithId() calls. But window cycling
-  // expects the topmost window at the front of the list, so reverse the order.
-  aura::Window* default_container = Shell::GetInstance()->GetContainer(
-      internal::kShellWindowId_DefaultContainer);
-  std::vector<aura::Window*> windows = default_container->children();
-  std::reverse(windows.begin(), windows.end());
-  return windows;
-}
-
 void TestShellDelegate::StartPartialScreenshot(
     ScreenshotDelegate* screenshot_delegate) {
   if (screenshot_delegate)

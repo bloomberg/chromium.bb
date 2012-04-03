@@ -4,8 +4,11 @@
 
 #include "ash/wm/window_cycle_controller.h"
 
+#include <algorithm>
+
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
+#include "ash/shell_window_ids.h"
 #include "ash/wm/window_cycle_list.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/event.h"
@@ -122,13 +125,28 @@ void WindowCycleController::AltKeyReleased() {
   StopCycling();
 }
 
+// static
+std::vector<aura::Window*> WindowCycleController::BuildWindowList() {
+  aura::Window* default_container = ash::Shell::GetInstance()->GetContainer(
+    ash::internal::kShellWindowId_DefaultContainer);
+  WindowCycleList::WindowList windows = default_container->children();
+  // Removes unfocusable windows.
+  WindowCycleList::WindowList::iterator last =
+      std::remove_if(
+          windows.begin(),
+          windows.end(),
+          std::not1(std::ptr_fun(ash::wm::CanActivateWindow)));
+  windows.erase(last, windows.end());
+  // Window cycling expects the topmost window at the front of the list.
+  std::reverse(windows.begin(), windows.end());
+  return windows;
+}
+
 //////////////////////////////////////////////////////////////////////////////
 // WindowCycleController, private:
 
 void WindowCycleController::StartCycling() {
-  windows_.reset(new WindowCycleList(
-      ash::Shell::GetInstance()->delegate()->GetCycleWindowList(
-          ShellDelegate::SOURCE_KEYBOARD)));
+  windows_.reset(new WindowCycleList(BuildWindowList()));
 }
 
 void WindowCycleController::Step(Direction direction) {

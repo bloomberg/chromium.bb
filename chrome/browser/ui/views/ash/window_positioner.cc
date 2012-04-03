@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/views/ash/window_positioner.h"
 
 #include "ash/shell.h"
-#include "ash/shell_delegate.h"
+#include "ash/wm/window_cycle_controller.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
@@ -95,10 +95,8 @@ gfx::Rect WindowPositioner::NormalPopupPosition(
 gfx::Rect WindowPositioner::SmartPopupPosition(
     const gfx::Rect& old_pos,
     const gfx::Rect& work_area) {
-  // We get a list of all windows.
-  const std::vector<aura::Window*>& windows =
-      ash::Shell::GetInstance()->delegate()->GetCycleWindowList(
-          ash::ShellDelegate::SOURCE_KEYBOARD);
+  const std::vector<aura::Window*> windows =
+      ash::WindowCycleController::BuildWindowList();
 
   std::vector<const gfx::Rect*> regions;
   // Process the window list and check if we can bail immediately.

@@ -33,8 +33,7 @@ WindowCycleList::~WindowCycleList() {
 }
 
 void WindowCycleList::Step(Direction direction) {
-  // Ensure we have more than one window to step to.
-  if (windows_.size() <= 1)
+  if (windows_.empty())
     return;
 
   if (current_index_ == -1) {
@@ -42,6 +41,8 @@ void WindowCycleList::Step(Direction direction) {
     // provided window list.  Just switch to the first (or last) one.
     current_index_ = (direction == FORWARD ? 0 : windows_.size() - 1);
   } else {
+    if (windows_.size() == 1)
+      return;
     // We're in a valid cycle, so step forward or backward.
     current_index_ += (direction == FORWARD ? 1 : -1);
   }

@@ -4,10 +4,7 @@
 
 #include "chrome/browser/ui/views/ash/chrome_shell_delegate.h"
 
-#include <algorithm>
-
 #include "ash/launcher/launcher_types.h"
-#include "ash/shell_window_ids.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/wm/partial_screenshot_view.h"
 #include "ash/wm/window_util.h"
@@ -118,23 +115,6 @@ ash::AppListViewDelegate*
 ChromeShellDelegate::CreateAppListViewDelegate() {
   // Shell will own the created delegate.
   return new AppListViewDelegate;
-}
-
-std::vector<aura::Window*> ChromeShellDelegate::GetCycleWindowList(
-    CycleSource source) const {
-  aura::Window* default_container = ash::Shell::GetInstance()->GetContainer(
-    ash::internal::kShellWindowId_DefaultContainer);
-  std::vector<aura::Window*> windows = default_container->children();
-  // Removes unforcusable windows.
-  std::vector<aura::Window*>::iterator last =
-      std::remove_if(
-          windows.begin(),
-          windows.end(),
-          std::not1(std::ptr_fun(ash::wm::CanActivateWindow)));
-  windows.erase(last, windows.end());
-  // Window cycling expects the topmost window at the front of the list.
-  std::reverse(windows.begin(), windows.end());
-  return windows;
 }
 
 void ChromeShellDelegate::StartPartialScreenshot(

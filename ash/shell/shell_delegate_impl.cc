@@ -68,16 +68,6 @@ ash::AppListViewDelegate* ShellDelegateImpl::CreateAppListViewDelegate() {
   return ash::shell::CreateAppListViewDelegate();
 }
 
-std::vector<aura::Window*> ShellDelegateImpl::GetCycleWindowList(
-    CycleSource source) const {
-  aura::Window* default_container = ash::Shell::GetInstance()->GetContainer(
-      ash::internal::kShellWindowId_DefaultContainer);
-  std::vector<aura::Window*> windows = default_container->children();
-  // Window cycling expects the topmost window at the front of the list.
-  std::reverse(windows.begin(), windows.end());
-  return windows;
-}
-
 void ShellDelegateImpl::StartPartialScreenshot(
     ash::ScreenshotDelegate* screenshot_delegate) {
   ash::PartialScreenshotView::StartPartialScreenshot(screenshot_delegate);

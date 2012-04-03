@@ -47,8 +47,6 @@ class ChromeShellDelegate : public ash::ShellDelegate,
   virtual void Exit() OVERRIDE;
   virtual void NewWindow(bool is_incognito) OVERRIDE;
   virtual ash::AppListViewDelegate* CreateAppListViewDelegate() OVERRIDE;
-  virtual std::vector<aura::Window*> GetCycleWindowList(
-      CycleSource source) const OVERRIDE;
   virtual void StartPartialScreenshot(
       ash::ScreenshotDelegate* screenshot_delegate) OVERRIDE;
   virtual ash::LauncherDelegate* CreateLauncherDelegate(

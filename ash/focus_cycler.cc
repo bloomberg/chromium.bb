@@ -5,13 +5,12 @@
 #include "ash/focus_cycler.h"
 
 #include "ash/shell.h"
-#include "ash/shell_delegate.h"
 #include "ash/system/tray/system_tray.h"
+#include "ash/wm/window_cycle_controller.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/focus/focus_search.h"
 #include "ui/aura/window.h"
 #include "ui/aura/client/activation_client.h"
-
 #include "ui/views/accessible_pane_view.h"
 
 namespace ash {
@@ -62,15 +61,13 @@ void FocusCycler::RotateFocus(Direction direction) {
       break;
 
     if (index == browser_index) {
-      // Activate the browser window.
-      const std::vector<aura::Window*>& windows =
-          Shell::GetInstance()->delegate()->GetCycleWindowList(
-              ShellDelegate::SOURCE_LAUNCHER);
-      if (!windows.empty()) {
-        aura::client::GetActivationClient(windows[0]->GetRootWindow())->
-            ActivateWindow(windows[0]);
-        break;
-      }
+      // Activate the first window.
+      WindowCycleController::Direction window_direction =
+          direction == FORWARD ? WindowCycleController::FORWARD :
+                                 WindowCycleController::BACKWARD;
+      ash::Shell::GetInstance()->window_cycle_controller()->HandleCycleWindow(
+          window_direction, false);
+      break;
     } else {
       if (FocusWidget(widgets_[index]))
         break;

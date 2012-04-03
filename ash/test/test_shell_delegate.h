@@ -26,8 +26,6 @@ class TestShellDelegate : public ShellDelegate {
   virtual void Exit() OVERRIDE;
   virtual void NewWindow(bool incognito) OVERRIDE;
   virtual AppListViewDelegate* CreateAppListViewDelegate() OVERRIDE;
-  virtual std::vector<aura::Window*> GetCycleWindowList(
-      CycleSource source) const OVERRIDE;
   virtual void StartPartialScreenshot(
       ScreenshotDelegate* screenshot_delegate) OVERRIDE;
   virtual LauncherDelegate* CreateLauncherDelegate(

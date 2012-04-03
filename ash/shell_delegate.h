@@ -35,15 +35,6 @@ class UserWallpaperDelegate;
 // Delegate of the Shell.
 class ASH_EXPORT ShellDelegate {
  public:
-  // Source requesting the window list.
-  enum CycleSource {
-    // Windows are going to be used for alt-tab (or F5).
-    SOURCE_KEYBOARD,
-
-    // Windows are going to be cycled from the launcher.
-    SOURCE_LAUNCHER,
-  };
-
   // The Shell owns the delegate.
   virtual ~ShellDelegate() {}
 
@@ -71,14 +62,6 @@ class ASH_EXPORT ShellDelegate {
   // Invoked to create an AppListViewDelegate. Shell takes the ownership of
   // the created delegate.
   virtual AppListViewDelegate* CreateAppListViewDelegate() = 0;
-
-  // Returns a list of windows to cycle with keyboard shortcuts (e.g. alt-tab
-  // or the window switching key).  If |order_by_activity| is true then windows
-  // are returned in most-recently-used order with the currently active window
-  // at the front of the list.  Otherwise any order may be returned.  The list
-  // does not contain NULL pointers.
-  virtual std::vector<aura::Window*> GetCycleWindowList(
-      CycleSource source) const = 0;
 
   // Invoked to start taking partial screenshot.
   virtual void StartPartialScreenshot(

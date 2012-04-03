@@ -1,11 +1,11 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/window_sizer.h"
 
 #include "ash/shell.h"
-#include "ash/shell_delegate.h"
+#include "ash/wm/window_cycle_controller.h"
 #include "ash/wm/window_util.h"
 #include "base/compiler_specific.h"
 #include "chrome/browser/browser_process.h"
@@ -42,9 +42,8 @@ aura::Window* GetTopWindow() {
     return window;
 
   // Get a list of all windows.
-  const std::vector<aura::Window*>& windows =
-      ash::Shell::GetInstance()->delegate()->GetCycleWindowList(
-          ash::ShellDelegate::SOURCE_KEYBOARD);
+  const std::vector<aura::Window*> windows =
+      ash::WindowCycleController::BuildWindowList();
 
   if (windows.empty())
     return NULL;
