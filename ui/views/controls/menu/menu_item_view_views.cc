@@ -75,10 +75,12 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
                         (available_height - font.GetHeight() + 1) / 2, width,
                         font.GetHeight());
   text_bounds.set_x(GetMirroredXForRect(text_bounds));
+  int flags = GetRootMenuItem()->GetDrawStringFlags();
+  if (mode == PB_FOR_DRAG)
+    flags |= gfx::Canvas::NO_SUBPIXEL_RENDERING;
   canvas->DrawStringInt(title(), font, fg_color,
                         text_bounds.x(), text_bounds.y(), text_bounds.width(),
-                        text_bounds.height(),
-                        GetRootMenuItem()->GetDrawStringFlags());
+                        text_bounds.height(), flags);
 
   PaintAccelerator(canvas);
 
