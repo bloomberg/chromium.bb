@@ -441,10 +441,17 @@
               '../build/linux/system.gyp:ssl',
             ],
           },
-          {  # else: OS is not in the above list
+        ],
+        ['os_posix != 1 or OS == "mac"', {
             'sources!': [
               'common/net/x509_certificate_model_nss.cc',
               'common/net/x509_certificate_model_openssl.cc',
+            ],
+          },
+        ],
+        ['OS == "android"', {
+            'dependencies': [
+              '../build/android/system.gyp:ssl',
             ],
           },
         ],
