@@ -5,9 +5,9 @@
 #include "content/browser/renderer_host/accelerated_plugin_view_mac.h"
 
 #include "base/logging.h"
-#import "content/public/browser/accelerated_window_interface.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
+#import "ui/base/cocoa/underlay_opengl_hosting_window.h"
 
 @interface UnderlayCountingWindow : NSWindow<UnderlayableSurface> {
  @private

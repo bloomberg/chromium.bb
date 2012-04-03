@@ -22,6 +22,7 @@
 #include "webkit/glue/webcursor.h"
 
 @class AcceleratedPluginView;
+@class FullscreenWindowManager;
 class RenderWidgetHostViewMac;
 @protocol RenderWidgetHostViewMacDelegate;
 class RenderWidgetHostViewMacEditCommandHelper;
@@ -358,6 +359,10 @@ class RenderWidgetHostViewMac : public content::RenderWidgetHostViewBase {
   // Helper class for managing instances of accelerated plug-ins.
   AcceleratedSurfaceContainerManagerMac plugin_container_manager_;
 
+  NSWindow* pepper_fullscreen_window() const {
+    return pepper_fullscreen_window_;
+  }
+
  private:
   friend class content::RenderWidgetHostView;
 
@@ -412,6 +417,10 @@ class RenderWidgetHostViewMac : public content::RenderWidgetHostViewBase {
   bool needs_gpu_visibility_update_after_repaint_;
 
   gfx::PluginWindowHandle compositing_surface_;
+
+  // The fullscreen window used for pepper flash.
+  scoped_nsobject<NSWindow> pepper_fullscreen_window_;
+  scoped_nsobject<FullscreenWindowManager> fullscreen_window_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewMac);
 };

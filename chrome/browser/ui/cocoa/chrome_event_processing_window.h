@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,11 +9,12 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/memory/scoped_nsobject.h"
+#import "ui/base/cocoa/underlay_opengl_hosting_window.h"
 
 // Override NSWindow to access unhandled keyboard events (for command
 // processing); subclassing NSWindow is the only method to do
 // this.
-@interface ChromeEventProcessingWindow : NSWindow {
+@interface ChromeEventProcessingWindow : UnderlayOpenGLHostingWindow {
  @private
   BOOL redispatchingEvent_;
   BOOL eventHandled_;

@@ -43,6 +43,8 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/mac/WebScreenInfoFactory.h"
 #import "third_party/mozilla/ComplexTextInputPanel.h"
 #include "third_party/skia/include/core/SkColor.h"
+#import "ui/base/cocoa/fullscreen_window_manager.h"
+#import "ui/base/cocoa/underlay_opengl_hosting_window.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 #include "ui/gfx/surface/io_surface_support_mac.h"
@@ -118,6 +120,25 @@ static inline int ToWebKitModifiers(NSUInteger flags) {
 
 // NSEvent subtype for scroll gestures events.
 static const short kIOHIDEventTypeScroll = 6;
+
+// A window subclass that allows the fullscreen window to become main and gain
+// keyboard focus. This is only used for pepper flash. Normal fullscreen is
+// handled by the browser.
+@interface PepperFlashFullscreenWindow : UnderlayOpenGLHostingWindow
+@end
+
+@implementation PepperFlashFullscreenWindow
+
+- (BOOL)canBecomeKeyWindow {
+  return YES;
+}
+
+- (BOOL)canBecomeMainWindow {
+  return YES;
+}
+
+@end
+
 
 namespace {
 
@@ -293,9 +314,37 @@ void RenderWidgetHostViewMac::InitAsPopup(
   [cocoa_view_ setFrame:initial_frame];
 }
 
+// This function creates the fullscreen window and hides the dock and menubar if
+// necessary. Note, this codepath is only used for pepper flash when
+// pp::FlashFullScreen::SetFullscreen() is called. If
+// pp::FullScreen::SetFullscreen() is called then the entire browser window
+// will enter fullscreen instead.
 void RenderWidgetHostViewMac::InitAsFullscreen(
-    RenderWidgetHostView* /*reference_host_view*/) {
-  NOTIMPLEMENTED() << "Full screen not implemented on Mac";
+    RenderWidgetHostView* reference_host_view) {
+  NSWindow* parent_window = nil;
+  if (reference_host_view)
+    parent_window = [reference_host_view->GetNativeView() window];
+  NSScreen* screen = [parent_window screen];
+  if (!screen)
+    screen = [NSScreen mainScreen];
+
+  pepper_fullscreen_window_.reset([[PepperFlashFullscreenWindow alloc]
+      initWithContentRect:[screen frame]
+                styleMask:NSBorderlessWindowMask
+                  backing:NSBackingStoreBuffered
+                    defer:NO]);
+  [pepper_fullscreen_window_ setLevel:NSFloatingWindowLevel];
+  [pepper_fullscreen_window_ setReleasedWhenClosed:NO];
+  [cocoa_view_ setCanBeKeyView:YES];
+  [cocoa_view_ setFrame:[[pepper_fullscreen_window_ contentView] bounds]];
+  [cocoa_view_ setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
+  [[pepper_fullscreen_window_ contentView] addSubview:cocoa_view_];
+
+  fullscreen_window_manager_.reset([[FullscreenWindowManager alloc]
+      initWithWindow:pepper_fullscreen_window_.get()
+       desiredScreen:screen]);
+  [fullscreen_window_manager_ enterFullscreenMode];
+  [pepper_fullscreen_window_ makeKeyAndOrderFront:nil];
 }
 
 RenderWidgetHost* RenderWidgetHostViewMac::GetRenderWidgetHost() const {
@@ -632,6 +681,11 @@ void RenderWidgetHostViewMac::Destroy() {
   [cocoa_view_ retain];
   [cocoa_view_ removeFromSuperview];
   [cocoa_view_ autorelease];
+
+  [fullscreen_window_manager_ exitFullscreenMode];
+  fullscreen_window_manager_.reset();
+  [pepper_fullscreen_window_ close];
+  pepper_fullscreen_window_.reset();
 
   // We get this call just before |render_widget_host_| deletes
   // itself.  But we are owned by |cocoa_view_|, which may be retained
@@ -1486,6 +1540,15 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
   DCHECK(widgetHost);
 
   NativeWebKeyboardEvent event(theEvent);
+
+  // Force fullscreen windows to close on Escape so they won't keep the keyboard
+  // grabbed or be stuck onscreen if the renderer is hanging.
+  if (event.type == NativeWebKeyboardEvent::RawKeyDown &&
+      event.windowsKeyCode == ui::VKEY_ESCAPE &&
+      renderWidgetHostView_->pepper_fullscreen_window()) {
+    widgetHost->Shutdown();
+    return;
+  }
 
   // We only handle key down events and just simply forward other events.
   if ([theEvent type] != NSKeyDown) {

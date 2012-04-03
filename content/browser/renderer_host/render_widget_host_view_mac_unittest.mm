@@ -201,3 +201,8 @@ TEST_F(RenderWidgetHostViewMacTest, TakesFocusOnMouseDownWithAcceleratedView) {
   // Clean up.
   rwhv_mac_->DestroyFakePluginWindowHandle(accelerated_handle);
 }
+
+TEST_F(RenderWidgetHostViewMacTest, Fullscreen) {
+  rwhv_mac_->InitAsFullscreen(NULL);
+  EXPECT_TRUE(rwhv_mac_->pepper_fullscreen_window());
+}
