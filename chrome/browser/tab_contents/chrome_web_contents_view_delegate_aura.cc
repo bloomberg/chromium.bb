@@ -24,22 +24,6 @@ content::WebDragDestDelegate*
   return bookmark_handler_.get();
 }
 
-void ChromeWebContentsViewDelegateAura::StoreFocus() {
-}
-
-void ChromeWebContentsViewDelegateAura::RestoreFocus() {
-}
-
-bool ChromeWebContentsViewDelegateAura::Focus() {
-  return false;
-}
-
-void ChromeWebContentsViewDelegateAura::TakeFocus(bool reverse) {
-}
-
 void ChromeWebContentsViewDelegateAura::ShowContextMenu(
     const content::ContextMenuParams& params) {
-}
-
-void ChromeWebContentsViewDelegateAura::SizeChanged(const gfx::Size& size) {
 }

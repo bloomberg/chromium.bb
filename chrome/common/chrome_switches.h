@@ -390,10 +390,6 @@ extern const char kDisableDesktopShortcuts[];
 extern const char kTouchDevices[];
 #endif
 
-#if defined(USE_AURA)
-extern const char kEnableTCVA[];
-#endif
-
 #ifndef NDEBUG
 extern const char kFileManagerExtensionPath[];
 extern const char kDumpProfileDependencyGraph[];

@@ -664,7 +664,6 @@
     'browser/tab_contents/tab_contents.cc',
     'browser/tab_contents/tab_contents.h',
     'browser/tab_contents/tab_contents_view_aura.cc',
-    'browser/tab_contents/tab_contents_view_aura.h',
     'browser/tab_contents/tab_contents_view_gtk.cc',
     'browser/tab_contents/tab_contents_view_gtk.h',
     'browser/tab_contents/tab_contents_view_helper.cc',
