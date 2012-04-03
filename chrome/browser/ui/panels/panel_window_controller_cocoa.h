@@ -26,6 +26,20 @@
 class PanelBrowserWindowCocoa;
 @class PanelTitlebarViewCocoa;
 
+@interface PanelWindowCocoaImpl : ChromeBrowserWindow {
+  // Panel windows use a higher priority NSWindowLevel to ensure they are always
+  // visible, causing the OS to prefer panel windows when selecting a window
+  // to make the key window. To counter this preference, we override
+  // -[NSWindow:canBecomeKeyWindow] to restrict when the panel can become the
+  // key window to a limited set of scenarios, such as when cycling through
+  // windows, when panels are the only remaining windows, when an event
+  // triggers window activation, etc. The panel may also be prevented from
+  // becoming the key window, regardless of the above scenarios, such as when
+  // a panel is minimized.
+  BOOL canBecomeKey_;  // Defaults to NO.
+}
+@end
+
 @interface PanelWindowControllerCocoa : NSWindowController
                                             <NSWindowDelegate,
                                              NSAnimationDelegate,

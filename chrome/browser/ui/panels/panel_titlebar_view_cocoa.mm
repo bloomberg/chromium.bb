@@ -21,7 +21,6 @@
 #include "ui/gfx/mac/nsimage_cache.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
-const int kRoundedCornerSize = 3;
 const int kButtonPadding = 8;
 const int kIconAndTextPadding = 5;
 
@@ -287,6 +286,7 @@ static NSEvent* MakeMouseEvent(NSEventType type,
   [settingsButton_ setPressedOpacity:1.0];
   [[settingsButton_ cell] setHighlightsBy:NSNoCellMask];
   [self checkMouseAndUpdateSettingsButtonVisibility];
+  [self updateWrenchLayout];
 
   [self updateCloseButtonLayout];
 
@@ -334,6 +334,15 @@ static NSEvent* MakeMouseEvent(NSEventType type,
   return icon_;
 }
 
+- (void)updateWrenchLayout {
+  NSRect bounds = [self bounds];
+  NSRect settingsButtonFrame = [settingsButtonWrapper_ frame];
+  settingsButtonFrame.origin.x = NSWidth(bounds) - NSWidth(settingsButtonFrame);
+  settingsButtonFrame.origin.y =
+      (NSHeight(bounds) - NSHeight(settingsButtonFrame)) / 2;
+  [settingsButtonWrapper_ setFrame:settingsButtonFrame];
+}
+
 - (void)updateCloseButtonLayout {
   NSRect buttonFrame = [closeButton_ frame];
   NSRect bounds = [self bounds];
@@ -358,6 +367,8 @@ static NSEvent* MakeMouseEvent(NSEventType type,
 - (void)updateIconAndTitleLayout {
   NSRect closeButtonFrame = [closeButton_ frame];
   NSRect iconFrame = [icon_ frame];
+  // NSTextField for title_ is set to Layout:Truncate, LineBreaks:TruncateTail
+  // in Interface Builder so it is sized in a single-line mode.
   [title_ sizeToFit];
   NSRect titleFrame = [title_ frame];
   NSRect settingsButtonFrame = [settingsButtonWrapper_ frame];
@@ -403,6 +414,7 @@ static NSEvent* MakeMouseEvent(NSEventType type,
 }
 
 - (void)didChangeFrame:(NSNotification*)notification {
+  [self updateWrenchLayout];
   [self updateIconAndTitleLayout];
 }
 
