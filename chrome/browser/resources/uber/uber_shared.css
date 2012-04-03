@@ -64,7 +64,8 @@ html[dir='rtl'] body.uber-frame header > button {
   right: auto;
 }
 
-body.uber-frame header input,
+body.uber-frame header input[type='search'],
+body.uber-frame header input[type='text'],
 body.uber-frame header button {
   margin: 0;
 }

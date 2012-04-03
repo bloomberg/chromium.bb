@@ -165,13 +165,8 @@ cr.define('options', function() {
                         [extension.id, e.target.checked ? 'true' : 'false']);
           });
         }
-        enable.querySelector('input').checked = extension.enabled;
 
-        // Make sure the checkbox doesn't move around when its value changes.
-        var enableText = node.querySelector('.enable-checkbox-text');
-        enableText.style.minWidth = 0.8 * Math.max(
-            localStrings.getString('extensionSettingsEnabled').length,
-            localStrings.getString('extensionSettingsEnable').length) + 'em';
+        enable.querySelector('input').checked = extension.enabled;
       } else {
         var terminated_reload = node.querySelector('.terminated-reload-link');
         terminated_reload.hidden = false;

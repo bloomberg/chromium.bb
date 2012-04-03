@@ -44,10 +44,16 @@ html.loading * {
   margin: 5px 0;
 }
 
+#extension-settings #page-header {
+  /* These values match the .page values. */
+  -webkit-margin-end: 24px;
+  min-width: 576px;
+}
+
 /* Contents */
 
 #extension-settings {
-  max-width: 718px;
+  max-width: 738px;
 }
 
 #no-extensions-message {
@@ -122,8 +128,15 @@ html[dir='rtl'] .extension-list-item {
   color: rgb(151, 156, 160);
 }
 
+.enable-controls {
+  /* Matches right: position of dev controls toggle. */
+  -webkit-margin-end: 20px;
+  position: relative;
+}
+
 .enable-checkbox-text {
-  -webkit-margin-start: 0.4em;
+  /* Matches width of trash. */
+  -webkit-margin-end: 30px;
 }
 
 .checkbox {
@@ -161,6 +174,12 @@ html[dir='rtl'] .extension-list-item {
   padding: 2px 5px;
 }
 
+#font-measuring-div {
+  /* Remove from the flow and hide. */
+  position: absolute;
+  visibility: hidden;
+}
+
 /* Overlays */
 
 #overlay {
@@ -173,11 +192,19 @@ html[dir='rtl'] .extension-list-item {
 
 /* Trash */
 
-.trash {
+#extension-settings .trash {
   -webkit-transition: opacity 200ms;
   height: 22px;
   opacity: 0.8;
+  position: absolute;
+  right: 0;
+  top: 3px;
   vertical-align: middle;
+}
+
+html[dir='rtl'] #extension-settings .trash {
+  left: 0;
+  right: auto;
 }
 
 .extension-list-item:not(:hover) .trash:not(:focus) {

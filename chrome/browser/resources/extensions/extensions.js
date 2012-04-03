@@ -32,6 +32,8 @@ cr.define('extensions', function() {
     initialize: function() {
       uber.onContentFrameLoaded();
 
+      measureCheckboxStrings();
+
       // Set the title.
       var title = localStrings.getString('extensionSettings');
       uber.invokeMethodOnParent('setTitle', {title: title});
@@ -225,6 +227,36 @@ cr.define('extensions', function() {
                                      'stopInterceptingEvents');
   }
 
+  /**
+   * Utility function to find the width of various UI strings and synchronize
+   * the width of relevant spans. This is crucial for making sure the
+   * Enable/Enabled checkboxes align, as well as the Developer Mode checkbox.
+   */
+  function measureCheckboxStrings() {
+    var trashWidth = 30;
+    var measuringDiv = $('font-measuring-div');
+    measuringDiv.textContent =
+        localStrings.getString('extensionSettingsEnabled');
+    var pxWidth = measuringDiv.clientWidth + trashWidth;
+    measuringDiv.textContent =
+        localStrings.getString('extensionSettingsEnable');
+    pxWidth = Math.max(measuringDiv.clientWidth + trashWidth, pxWidth);
+    measuringDiv.textContent =
+        localStrings.getString('extensionSettingsDeveloperMode');
+    pxWidth = Math.max(measuringDiv.clientWidth, pxWidth);
+
+    var style = document.createElement('style');
+    style.type = 'text/css';
+    style.textContent =
+        '.enable-checkbox-text {' +
+        '  min-width: ' + (pxWidth - trashWidth) + 'px;' +
+        '}' +
+        '#dev-toggle span {' +
+        '  min-width: ' + pxWidth + 'px;' +
+        '}';
+    document.querySelector('head').appendChild(style);
+  }
+
   // Export
   return {
     ExtensionSettings: ExtensionSettings
@@ -233,7 +265,6 @@ cr.define('extensions', function() {
 
 var ExtensionSettings = extensions.ExtensionSettings;
 
-// 'load' seems to have a bad interaction with open_sans.woff.
-window.addEventListener('DOMContentLoaded', function(e) {
+window.addEventListener('load', function(e) {
   ExtensionSettings.getInstance().initialize();
 });
