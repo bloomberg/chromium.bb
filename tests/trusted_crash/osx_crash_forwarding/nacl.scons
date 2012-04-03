@@ -11,6 +11,11 @@ Import('env')
 if not env.Bit('host_mac') or not env.Bit('build_x86_32'):
   Return()
 
+# These tests use nexes built by other tests. Nexes do not get staged in
+# pexe mode, so only run this test in nonpexe mode.
+if env.Bit('pnacl_generate_pexe'):
+  Return()
+
 if 'TRUSTED_ENV' not in env:
   Return()
 trusted_env = env['TRUSTED_ENV']
@@ -49,36 +54,38 @@ untrusted_crash_nexe = env.File('${STAGING_DIR}/crash_test${PROGSUFFIX}')
 trusted_crash_nexe = env.File('${STAGING_DIR}/crash_in_syscall${PROGSUFFIX}')
 is_broken = not env.Bit('nacl_static_link')
 
+test_suites = ['small_tests', 'exception_tests', 'nonpexe_tests',]
+
 node = env.CommandTest('mach_forward_untrusted_crash_test.out',
                        [runner, 'untrusted', untrusted_crash_nexe],
                        declares_exit_status=True)
-env.AddNodeToTestSuite(node, ['small_tests', 'exception_tests',],
+env.AddNodeToTestSuite(node, test_suites,
                        'run_mach_forward_untrusted_crash_test',
                        is_broken=is_broken)
 
 node = env.CommandTest('mach_forward_untrusted_caught_test.out',
                        [runner, 'untrusted_caught', untrusted_caught_nexe],
                        declares_exit_status=True)
-env.AddNodeToTestSuite(node, ['small_tests', 'exception_tests',],
+env.AddNodeToTestSuite(node, test_suites,
                        'run_mach_forward_untrusted_caught_test',
                        is_broken=is_broken)
 
 node = env.CommandTest('mach_forward_trusted_crash_test.out',
                        [runner, 'trusted', trusted_crash_nexe],
                        declares_exit_status=True)
-env.AddNodeToTestSuite(node, ['small_tests', 'exception_tests'],
+env.AddNodeToTestSuite(node, test_suites,
                        'run_mach_forward_trusted_crash_test',
                        is_broken=is_broken)
 
 node = env.CommandTest('mach_unforwarded_trusted_crash_test.out',
                        [runner, 'unforwarded_trusted', trusted_crash_nexe],
                        declares_exit_status=True)
-env.AddNodeToTestSuite(node, ['small_tests', 'exception_tests'],
+env.AddNodeToTestSuite(node, test_suites,
                        'run_mach_unforwarded_trusted_crash_test',
                        is_broken=is_broken)
 
 node = env.CommandTest('mach_forward_early_trusted_crash_test.out',
                        [runner, 'early_trusted'], declares_exit_status=True)
-env.AddNodeToTestSuite(node, ['small_tests', 'exception_tests'],
+env.AddNodeToTestSuite(node, test_suites,
                        'run_mach_forward_early_trusted_crash_test',
                        is_broken=is_broken)
