@@ -100,11 +100,8 @@ TEST_F(KeywordTableTest, Keywords) {
   EXPECT_EQ(keyword.created_by_policy(), restored_keyword->created_by_policy());
   EXPECT_EQ(keyword.usage_count(), restored_keyword->usage_count());
   EXPECT_EQ(keyword.prepopulate_id(), restored_keyword->prepopulate_id());
-  ASSERT_TRUE(restored_keyword->url());
-  EXPECT_EQ(keyword.url()->url(), restored_keyword->url()->url());
-  ASSERT_TRUE(restored_keyword->instant_url());
-  EXPECT_EQ(keyword.instant_url()->url(),
-            restored_keyword->instant_url()->url());
+  EXPECT_EQ(keyword.url(), restored_keyword->url());
+  EXPECT_EQ(keyword.instant_url(), restored_keyword->instant_url());
   EXPECT_EQ(keyword.favicon_url(), restored_keyword->favicon_url());
 
   EXPECT_TRUE(keyword_table->RemoveKeyword(restored_keyword->id()));
@@ -181,13 +178,10 @@ TEST_F(KeywordTableTest, DefaultSearchProviderBackup) {
   EXPECT_EQ(keyword.short_name(), backup_url->short_name());
   EXPECT_EQ(keyword.keyword(), backup_url->keyword());
   EXPECT_EQ(keyword.favicon_url(), backup_url->favicon_url());
-  ASSERT_TRUE(backup_url->url());
-  EXPECT_EQ(keyword.url()->url(), backup_url->url()->url());
+  EXPECT_EQ(keyword.url(), backup_url->url());
   EXPECT_EQ(keyword.safe_for_autoreplace(), backup_url->safe_for_autoreplace());
   EXPECT_EQ(keyword.show_in_default_list(), backup_url->show_in_default_list());
-  ASSERT_TRUE(backup_url->suggestions_url());
-  EXPECT_EQ(keyword.suggestions_url()->url(),
-            backup_url->suggestions_url()->url());
+  EXPECT_EQ(keyword.suggestions_url(), backup_url->suggestions_url());
   EXPECT_FALSE(keyword_table->DidDefaultSearchProviderChange());
 
   // Change the actual setting.
@@ -201,13 +195,10 @@ TEST_F(KeywordTableTest, DefaultSearchProviderBackup) {
   EXPECT_EQ(keyword.short_name(), backup_url->short_name());
   EXPECT_EQ(keyword.keyword(), backup_url->keyword());
   EXPECT_EQ(keyword.favicon_url(), backup_url->favicon_url());
-  ASSERT_TRUE(backup_url->url());
-  EXPECT_EQ(keyword.url()->url(), backup_url->url()->url());
+  EXPECT_EQ(keyword.url(), backup_url->url());
   EXPECT_EQ(keyword.safe_for_autoreplace(), backup_url->safe_for_autoreplace());
   EXPECT_EQ(keyword.show_in_default_list(), backup_url->show_in_default_list());
-  ASSERT_TRUE(backup_url->suggestions_url());
-  EXPECT_EQ(keyword.suggestions_url()->url(),
-            backup_url->suggestions_url()->url());
+  EXPECT_EQ(keyword.suggestions_url(), backup_url->suggestions_url());
   EXPECT_TRUE(keyword_table->DidDefaultSearchProviderChange());
 
   // Change the backup.
@@ -243,13 +234,10 @@ TEST_F(KeywordTableTest, DefaultSearchProviderBackup) {
   EXPECT_EQ(keyword.short_name(), backup_url->short_name());
   EXPECT_EQ(keyword.keyword(), backup_url->keyword());
   EXPECT_EQ(keyword.favicon_url(), backup_url->favicon_url());
-  ASSERT_TRUE(backup_url->url());
-  EXPECT_EQ(keyword.url()->url(), backup_url->url()->url());
+  EXPECT_EQ(keyword.url(), backup_url->url());
   EXPECT_EQ(keyword.safe_for_autoreplace(), backup_url->safe_for_autoreplace());
   EXPECT_EQ(keyword.show_in_default_list(), backup_url->show_in_default_list());
-  ASSERT_TRUE(backup_url->suggestions_url());
-  EXPECT_EQ(keyword.suggestions_url()->url(),
-            backup_url->suggestions_url()->url());
+  EXPECT_EQ(keyword.suggestions_url(), backup_url->suggestions_url());
   EXPECT_TRUE(keyword_table->DidDefaultSearchProviderChange());
 
   // Change keywords backup.
@@ -387,13 +375,9 @@ TEST_F(KeywordTableTest, UpdateKeyword) {
   EXPECT_EQ(keyword.input_encodings(), restored_keyword->input_encodings());
   EXPECT_EQ(keyword.id(), restored_keyword->id());
   EXPECT_EQ(keyword.prepopulate_id(), restored_keyword->prepopulate_id());
-  ASSERT_TRUE(restored_keyword->suggestions_url());
-  EXPECT_EQ(keyword.suggestions_url()->url(),
-            restored_keyword->suggestions_url()->url());
-  ASSERT_TRUE(restored_keyword->instant_url());
+  EXPECT_EQ(keyword.suggestions_url(), restored_keyword->suggestions_url());
   EXPECT_EQ(keyword.favicon_url(), restored_keyword->favicon_url());
-  EXPECT_EQ(keyword.instant_url()->url(),
-            restored_keyword->instant_url()->url());
+  EXPECT_EQ(keyword.instant_url(), restored_keyword->instant_url());
 
   STLDeleteElements(&keywords);
 }

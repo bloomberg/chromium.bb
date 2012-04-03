@@ -498,8 +498,8 @@ void InstantController::UpdateLoader(const TemplateURL* template_url,
 // Returns true if |template_url| is a valid TemplateURL for use by instant.
 bool InstantController::IsValidInstantTemplateURL(
     const TemplateURL* template_url) {
-  return template_url && template_url->instant_url() && template_url->id() &&
-      template_url->instant_url()->SupportsReplacement() &&
+  return template_url && template_url->id() &&
+      template_url->instant_url_ref().SupportsReplacement() &&
       !IsBlacklistedFromInstant(template_url->id());
 }
 

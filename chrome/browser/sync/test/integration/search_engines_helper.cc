@@ -47,26 +47,17 @@ GUIDToTURLMap CreateGUIDToTURLMap(TemplateURLService* service) {
 
 std::string GetTURLInfoString(const TemplateURL* turl) {
   DCHECK(turl);
-  std::string shortname = UTF16ToASCII(turl->short_name());
-  std::string keyword = UTF16ToASCII(turl->keyword());
-  return StringPrintf("TemplateURL: shortname: %s keyword: %s url: %s",
-      shortname.c_str(), keyword.c_str(),
-      (turl->url() ? turl->url()->url().c_str() : "NULL"));
+  return "TemplateURL: shortname: " + UTF16ToASCII(turl->short_name()) +
+      " keyword: " + UTF16ToASCII(turl->keyword()) + " url: " + turl->url();
 }
 
 bool TURLsMatch(const TemplateURL* turl1, const TemplateURL* turl2) {
   CHECK(turl1);
   CHECK(turl2);
 
-  // Either both TemplateURLRefs are NULL or they're both valid and have the
-  // same raw URL value.
-  bool urls_match = ((!turl1->url() && !turl1->url()) ||
-      (turl1->url() && turl2->url() &&
-      turl1->url()->url() == turl2->url()->url()));
-
-  // Compare all major fields.
-  bool result = (urls_match && turl1->keyword() == turl2->keyword() &&
-                 turl1->short_name() == turl2->short_name());
+  bool result = (turl1->url() == turl2->url()) &&
+      (turl1->keyword() == turl2->keyword()) &&
+      (turl1->short_name() == turl2->short_name());
 
   // Print some useful debug info.
   if (!result) {
@@ -148,7 +139,7 @@ bool ServicesMatch(int profile_a, int profile_b) {
                << default_b->keyword();
     return false;
   } else {
-    LOG(INFO) << "A had default with URL: " << default_a->url()->url()
+    LOG(INFO) << "A had default with URL: " << default_a->url()
               << " and keyword: " << default_a->keyword();
   }
 

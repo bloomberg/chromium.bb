@@ -495,8 +495,7 @@ void AutocompleteEditModel::AcceptInput(WindowOpenDisposition disposition,
   }
 
   const TemplateURL* template_url = match.GetTemplateURL();
-  if (template_url && template_url->url() &&
-      template_url->url()->HasGoogleBaseURLs()) {
+  if (template_url && template_url->url_ref().HasGoogleBaseURLs()) {
     GoogleURLTracker::GoogleURLSearchCommitted();
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
     // TODO(pastarmovj): Remove these metrics once we have proven that (close

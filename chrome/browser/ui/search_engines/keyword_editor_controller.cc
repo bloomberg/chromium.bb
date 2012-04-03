@@ -63,10 +63,7 @@ void KeywordEditorController::ModifyTemplateURL(const TemplateURL* template_url,
 
   // Don't do anything if the entry didn't change.
   if ((template_url->short_name() == title) &&
-      (template_url->keyword() == keyword) &&
-      ((url.empty() && !template_url->url()) ||
-       (!url.empty() && template_url->url() &&
-        template_url->url()->url() == url)))
+      (template_url->keyword() == keyword) && (template_url->url() == url))
     return;
 
   table_model_->ModifyTemplateURL(index, title, keyword, url);

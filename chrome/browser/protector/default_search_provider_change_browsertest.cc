@@ -79,7 +79,7 @@ class DefaultSearchProviderChangeTest : public InProcessBrowserTest {
         turl_service_->GetTemplateURLs();
     for (TemplateURLService::TemplateURLVector::const_iterator
          it = urls.begin(); it != urls.end(); ++it) {
-      if ((*it)->url()->url() == search_url)
+      if ((*it)->url() == search_url)
         return *it;
     }
     return NULL;
@@ -257,7 +257,7 @@ IN_PROC_BROWSER_TEST_F(DefaultSearchProviderChangeTest, BackupInvalid) {
   AddAndSetDefault(current_url);
 
   // Prepopulated default search must exist.
-  ASSERT_TRUE(FindTemplateURL(prepopulated_url_->url()->url()));
+  ASSERT_TRUE(FindTemplateURL(prepopulated_url_->url()));
 
   scoped_ptr<BaseSettingChange> change(
       CreateDefaultSearchProviderChange(current_url, NULL));
@@ -265,7 +265,7 @@ IN_PROC_BROWSER_TEST_F(DefaultSearchProviderChangeTest, BackupInvalid) {
   ASSERT_TRUE(change->Init(browser()->profile()));
 
   // Verify that the prepopulated default search is active.
-  EXPECT_EQ(FindTemplateURL(prepopulated_url_->url()->url()),
+  EXPECT_EQ(FindTemplateURL(prepopulated_url_->url()),
             turl_service_->GetDefaultSearchProvider());
 
   // Verify histograms.
@@ -286,7 +286,7 @@ IN_PROC_BROWSER_TEST_F(DefaultSearchProviderChangeTest, BackupInvalid) {
   // Verify that search engine settings are opened by Discard.
   ExpectSettingsOpened(chrome::kSearchEnginesSubPage);
   change->Discard(browser());
-  EXPECT_EQ(FindTemplateURL(prepopulated_url_->url()->url()),
+  EXPECT_EQ(FindTemplateURL(prepopulated_url_->url()),
             turl_service_->GetDefaultSearchProvider());
 
   // Verify that Apply switches back to |current_url|.
@@ -310,7 +310,7 @@ IN_PROC_BROWSER_TEST_F(DefaultSearchProviderChangeTest,
   AddAndSetDefault(current_url);
 
   const TemplateURL* prepopulated_default =
-      FindTemplateURL(prepopulated_url_->url()->url());
+      FindTemplateURL(prepopulated_url_->url());
   // Prepopulated default search must exist, remove it.
   ASSERT_TRUE(prepopulated_default);
   turl_service_->Remove(prepopulated_default);
@@ -321,7 +321,7 @@ IN_PROC_BROWSER_TEST_F(DefaultSearchProviderChangeTest,
   ASSERT_TRUE(change->Init(browser()->profile()));
 
   // Verify that the prepopulated default search is active.
-  EXPECT_EQ(FindTemplateURL(prepopulated_url_->url()->url()),
+  EXPECT_EQ(FindTemplateURL(prepopulated_url_->url()),
             turl_service_->GetDefaultSearchProvider());
 
   // Verify histograms.
@@ -344,7 +344,7 @@ IN_PROC_BROWSER_TEST_F(DefaultSearchProviderChangeTest,
   // Verify that search engine settings are opened by Discard.
   ExpectSettingsOpened(chrome::kSearchEnginesSubPage);
   change->Discard(browser());
-  EXPECT_EQ(FindTemplateURL(prepopulated_url_->url()->url()),
+  EXPECT_EQ(FindTemplateURL(prepopulated_url_->url()),
             turl_service_->GetDefaultSearchProvider());
 
   // Verify that Apply switches back to |current_url|.
@@ -410,7 +410,7 @@ IN_PROC_BROWSER_TEST_F(DefaultSearchProviderChangeTest,
   ASSERT_TRUE(change->Init(browser()->profile()));
 
   // Verify that the prepopulated default search is active.
-  EXPECT_EQ(FindTemplateURL(prepopulated_url_->url()->url()),
+  EXPECT_EQ(FindTemplateURL(prepopulated_url_->url()),
             turl_service_->GetDefaultSearchProvider());
 
   // Verify histograms.
@@ -430,7 +430,7 @@ IN_PROC_BROWSER_TEST_F(DefaultSearchProviderChangeTest,
   // Verify that search engine settings are opened by Discard.
   ExpectSettingsOpened(chrome::kSearchEnginesSubPage);
   change->Discard(browser());
-  EXPECT_EQ(FindTemplateURL(prepopulated_url_->url()->url()),
+  EXPECT_EQ(FindTemplateURL(prepopulated_url_->url()),
             turl_service_->GetDefaultSearchProvider());
 }
 
@@ -444,7 +444,7 @@ IN_PROC_BROWSER_TEST_F(DefaultSearchProviderChangeTest,
 
   // Verify that current search provider is same as the prepopulated default.
   ASSERT_TRUE(current_url);
-  ASSERT_EQ(current_url, FindTemplateURL(prepopulated_url_->url()->url()));
+  ASSERT_EQ(current_url, FindTemplateURL(prepopulated_url_->url()));
 
   scoped_ptr<BaseSettingChange> change(
       CreateDefaultSearchProviderChange(current_url, NULL));

@@ -71,9 +71,9 @@ bool TemplateURLsHaveSamePrefs(const TemplateURL* url1,
       NULL != url2 &&
       url1->short_name() == url2->short_name() &&
       url1->keyword() == url2->keyword() &&
-      TemplateURLRef::SameUrlRefs(url1->url(), url2->url()) &&
-      TemplateURLRef::SameUrlRefs(url1->suggestions_url(),
-                                  url2->suggestions_url()) &&
+      url1->url() == url2->url() &&
+      url1->suggestions_url() == url2->suggestions_url() &&
+      url1->instant_url() == url2->instant_url() &&
       url1->favicon_url() == url2->favicon_url() &&
       url1->safe_for_autoreplace() == url2->safe_for_autoreplace() &&
       url1->show_in_default_list() == url2->show_in_default_list() &&
@@ -219,16 +219,16 @@ GURL TemplateURLService::GenerateSearchURLUsingTermsData(
     const TemplateURL* t_url,
     const SearchTermsData& search_terms_data) {
   DCHECK(t_url);
-  const TemplateURLRef* search_ref = t_url->url();
+  const TemplateURLRef& search_ref = t_url->url_ref();
   // Extension keywords don't have host-based search URLs.
-  if (!search_ref || !search_ref->IsValidUsingTermsData(search_terms_data) ||
+  if (!search_ref.IsValidUsingTermsData(search_terms_data) ||
       t_url->IsExtensionKeyword())
     return GURL();
 
-  if (!search_ref->SupportsReplacementUsingTermsData(search_terms_data))
-    return GURL(search_ref->url());
+  if (!search_ref.SupportsReplacementUsingTermsData(search_terms_data))
+    return GURL(t_url->url());
 
-  return GURL(search_ref->ReplaceSearchTermsUsingTermsData(
+  return GURL(search_ref.ReplaceSearchTermsUsingTermsData(
       ASCIIToUTF16(kReplacementTerm), TemplateURLRef::NO_SUGGESTIONS_AVAILABLE,
       string16(), search_terms_data));
 }
@@ -285,8 +285,8 @@ void TemplateURLService::FindMatchingKeywords(
   // Return vector of matching keywords.
   for (KeywordToTemplateMap::const_iterator i(match_range.first);
        i != match_range.second; ++i) {
-    DCHECK(i->second->url());
-    if (!support_replacement_only || i->second->url()->SupportsReplacement())
+    DCHECK(!i->second->url().empty());
+    if (!support_replacement_only || i->second->url_ref().SupportsReplacement())
       matches->push_back(i->first);
   }
 }
@@ -398,7 +398,8 @@ const TemplateURL* TemplateURLService::GetTemplateURLForExtension(
     const Extension* extension) const {
   for (TemplateURLVector::const_iterator i = template_urls_.begin();
        i != template_urls_.end(); ++i) {
-    if ((*i)->IsExtensionKeyword() && (*i)->url()->GetHost() == extension->id())
+    if ((*i)->IsExtensionKeyword() &&
+        ((*i)->url_ref().GetHost() == extension->id()))
       return *i;
   }
 
@@ -424,9 +425,7 @@ void TemplateURLService::ResetTemplateURL(const TemplateURL* url,
   TemplateURL new_url(*url);
   new_url.set_short_name(title);
   new_url.set_keyword(keyword);
-  if ((new_url.url() && search_url.empty()) ||
-      (!new_url.url() && !search_url.empty()) ||
-      (new_url.url() && new_url.url()->url() != search_url)) {
+  if (new_url.url() != search_url) {
     new_url.SetURL(search_url);
     // The urls have changed, reset the favicon url.
     new_url.set_favicon_url(GURL());
@@ -439,9 +438,7 @@ void TemplateURLService::ResetTemplateURL(const TemplateURL* url,
 
 bool TemplateURLService::CanMakeDefault(const TemplateURL* url) {
   return url != GetDefaultSearchProvider() &&
-      url->url() &&
-      url->url()->SupportsReplacement() &&
-      !is_default_search_managed();
+      url->url_ref().SupportsReplacement() && !is_default_search_managed();
 }
 
 void TemplateURLService::SetDefaultSearchProvider(const TemplateURL* url) {
@@ -977,18 +974,16 @@ SyncData TemplateURLService::CreateSyncDataFromTemplateURL(
   se_specifics->set_short_name(UTF16ToUTF8(turl.short_name()));
   se_specifics->set_keyword(UTF16ToUTF8(turl.keyword()));
   se_specifics->set_favicon_url(turl.favicon_url().spec());
-  se_specifics->set_url(turl.url() ? turl.url()->url() : std::string());
+  se_specifics->set_url(turl.url());
   se_specifics->set_safe_for_autoreplace(turl.safe_for_autoreplace());
   se_specifics->set_originating_url(turl.originating_url().spec());
   se_specifics->set_date_created(turl.date_created().ToInternalValue());
   se_specifics->set_input_encodings(JoinString(turl.input_encodings(), ';'));
   se_specifics->set_show_in_default_list(turl.show_in_default_list());
-  se_specifics->set_suggestions_url(turl.suggestions_url() ?
-      turl.suggestions_url()->url() : std::string());
+  se_specifics->set_suggestions_url(turl.suggestions_url());
   se_specifics->set_prepopulate_id(turl.prepopulate_id());
   se_specifics->set_autogenerate_keyword(turl.autogenerate_keyword());
-  se_specifics->set_instant_url(turl.instant_url() ?
-      turl.instant_url()->url() : std::string());
+  se_specifics->set_instant_url(turl.instant_url());
   se_specifics->set_last_modified(turl.last_modified().ToInternalValue());
   se_specifics->set_sync_guid(turl.sync_guid());
   return SyncData::CreateLocalData(se_specifics->sync_guid(),
@@ -1075,15 +1070,12 @@ void TemplateURLService::Init(const Initializer* initializers,
 
   // Request a server check for the correct Google URL if Google is the
   // default search engine, not in headless mode and not in Chrome Frame.
-  if (initial_default_search_provider_.get()) {
-    const TemplateURLRef* default_provider_ref =
-        initial_default_search_provider_->url();
-    if (default_provider_ref && default_provider_ref->HasGoogleBaseURLs()) {
-      scoped_ptr<base::Environment> env(base::Environment::Create());
-      if (!env->HasVar(env_vars::kHeadless) &&
-          !CommandLine::ForCurrentProcess()->HasSwitch(switches::kChromeFrame))
-        GoogleURLTracker::RequestServerCheck();
-    }
+  if (initial_default_search_provider_.get() &&
+    initial_default_search_provider_->url_ref().HasGoogleBaseURLs()) {
+    scoped_ptr<base::Environment> env(base::Environment::Create());
+    if (!env->HasVar(env_vars::kHeadless) &&
+        !CommandLine::ForCurrentProcess()->HasSwitch(switches::kChromeFrame))
+      GoogleURLTracker::RequestServerCheck();
   }
 }
 
@@ -1188,12 +1180,9 @@ void TemplateURLService::SaveDefaultSearchProviderToPrefs(
   std::string prepopulate_id;
   if (t_url) {
     enabled = true;
-    if (t_url->url())
-      search_url = t_url->url()->url();
-    if (t_url->suggestions_url())
-      suggest_url = t_url->suggestions_url()->url();
-    if (t_url->instant_url())
-      instant_url = t_url->instant_url()->url();
+    search_url = t_url->url();
+    suggest_url = t_url->suggestions_url();
+    instant_url = t_url->instant_url();
     GURL icon_gurl = t_url->favicon_url();
     if (!icon_gurl.is_empty())
       icon_url = icon_gurl.spec();
@@ -1358,7 +1347,7 @@ void TemplateURLService::UpdateKeywordSearchTermsForURL(
 
   for (TemplateURLSet::const_iterator i = urls_for_host->begin();
        i != urls_for_host->end(); ++i) {
-    const TemplateURLRef* search_ref = (*i)->url();
+    const TemplateURLRef& search_ref = (*i)->url_ref();
 
     // Count the URL against a TemplateURL if the host and path of the
     // visited URL match that of the TemplateURL as well as the search term's
@@ -1369,8 +1358,8 @@ void TemplateURLService::UpdateKeywordSearchTermsForURL(
     // particular, GetHost returns an empty string if search_ref doesn't support
     // replacement or isn't valid for use in keyword search terms.
 
-    if (search_ref && search_ref->GetHost() == row.url().host() &&
-        search_ref->GetPath() == path) {
+    if (search_ref.GetHost() == row.url().host() &&
+        search_ref.GetPath() == path) {
       if (!built_terms && !BuildQueryTerms(row.url(), &query_terms)) {
         // No query terms. No need to continue with the rest of the
         // TemplateURLs.
@@ -1387,11 +1376,11 @@ void TemplateURLService::UpdateKeywordSearchTermsForURL(
       }
 
       QueryTerms::iterator terms_iterator =
-          query_terms.find(search_ref->GetSearchTermKey());
+          query_terms.find(search_ref.GetSearchTermKey());
       if (terms_iterator != query_terms.end() &&
           !terms_iterator->second.empty()) {
         SetKeywordSearchTermsForURL(*i, row.url(),
-            search_ref->SearchTermToString16(terms_iterator->second));
+            search_ref.SearchTermToString16(terms_iterator->second));
       }
     }
   }
@@ -1461,9 +1450,8 @@ void TemplateURLService::GoogleBaseURLChanged() {
   bool something_changed = false;
   for (size_t i = 0; i < template_urls_.size(); ++i) {
     const TemplateURL* t_url = template_urls_[i];
-    if ((t_url->url() && t_url->url()->HasGoogleBaseURLs()) ||
-        (t_url->suggestions_url() &&
-         t_url->suggestions_url()->HasGoogleBaseURLs())) {
+    if (t_url->url_ref().HasGoogleBaseURLs() ||
+        t_url->suggestions_url_ref().HasGoogleBaseURLs()) {
       RemoveFromKeywordMapByPointer(t_url);
       t_url->InvalidateCachedValues();
       if (!t_url->keyword().empty())
@@ -1585,8 +1573,7 @@ void TemplateURLService::SetDefaultSearchProviderNoNotify(
     if (service_.get())
       service_.get()->UpdateKeyword(*url);
 
-    const TemplateURLRef* url_ref = url->url();
-    if (url_ref && url_ref->HasGoogleBaseURLs()) {
+    if (url->url_ref().HasGoogleBaseURLs()) {
       GoogleURLTracker::RequestServerCheck();
 #if defined(ENABLE_RLZ)
       // Needs to be evaluated. See http://crbug.com/62328.
@@ -1742,8 +1729,8 @@ string16 TemplateURLService::UniquifyKeyword(const TemplateURL& turl) const {
     return turl.keyword();
 
   // First, try to return the generated keyword for the TemplateURL.
-  string16 keyword_candidate = GenerateKeyword(
-      turl.url() ? GURL(turl.url()->url()) : GURL(), true);
+  GURL gurl(turl.url());
+  string16 keyword_candidate = GenerateKeyword(gurl, true);
   if (!GetTemplateURLForKeyword(keyword_candidate) &&
       !keyword_candidate.empty()) {
     return keyword_candidate;
@@ -1754,7 +1741,7 @@ string16 TemplateURLService::UniquifyKeyword(const TemplateURL& turl) const {
   // keyword and let the user do what they will after our attempt.
   keyword_candidate = turl.keyword();
   do {
-    keyword_candidate.append(UTF8ToUTF16("_"));
+    keyword_candidate.append(ASCIIToUTF16("_"));
   } while (GetTemplateURLForKeyword(keyword_candidate));
 
   return keyword_candidate;
@@ -1798,8 +1785,8 @@ const TemplateURL* TemplateURLService::FindDuplicateOfSyncTemplateURL(
   if (!existing_turl)
     return NULL;
 
-  if (existing_turl->url() && sync_turl.url() &&
-      existing_turl->url()->url() == sync_turl.url()->url()) {
+  if (!existing_turl->url().empty() &&
+      existing_turl->url() == sync_turl.url()) {
     return existing_turl;
   }
   return NULL;
