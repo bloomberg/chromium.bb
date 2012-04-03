@@ -196,12 +196,12 @@ class RealTPMTokenInfoDelegate : public crypto::TPMTokenInfoDelegate {
  private:
   // This method is used to implement RequestIsTokenReady.
   void OnPkcs11IsTpmTokenReady(base::Callback<void(bool result)> callback,
-                               CryptohomeClient::CallStatus call_status,
+                               DBusMethodCallStatus call_status,
                                bool is_tpm_token_ready) const;
 
   // This method is used to implement RequestIsTokenReady.
   void OnPkcs11GetTpmTokenInfo(base::Callback<void(bool result)> callback,
-                               CryptohomeClient::CallStatus call_status,
+                               DBusMethodCallStatus call_status,
                                const std::string& token_name,
                                const std::string& user_pin) const;
 
@@ -253,9 +253,9 @@ void RealTPMTokenInfoDelegate::GetTokenInfo(std::string* token_name,
 
 void RealTPMTokenInfoDelegate::OnPkcs11IsTpmTokenReady(
     base::Callback<void(bool result)> callback,
-    CryptohomeClient::CallStatus call_status,
+    DBusMethodCallStatus call_status,
     bool is_tpm_token_ready) const {
-  if (call_status != CryptohomeClient::SUCCESS || !is_tpm_token_ready) {
+  if (call_status != DBUS_METHOD_CALL_SUCCESS || !is_tpm_token_ready) {
     callback.Run(false);
     return;
   }
@@ -270,10 +270,10 @@ void RealTPMTokenInfoDelegate::OnPkcs11IsTpmTokenReady(
 
 void RealTPMTokenInfoDelegate::OnPkcs11GetTpmTokenInfo(
     base::Callback<void(bool result)> callback,
-    CryptohomeClient::CallStatus call_status,
+    DBusMethodCallStatus call_status,
     const std::string& token_name,
     const std::string& user_pin) const {
-  if (call_status == CryptohomeClient::SUCCESS) {
+  if (call_status == DBUS_METHOD_CALL_SUCCESS) {
     token_name_ = token_name;
     user_pin_ = user_pin;
     token_ready_ = true;

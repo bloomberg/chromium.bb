@@ -395,11 +395,11 @@ class CertLibraryImpl
   }
 
   // This method is used to implement RequestCertificates.
-  void RequestCertificatesInternal(CryptohomeClient::CallStatus call_status,
+  void RequestCertificatesInternal(DBusMethodCallStatus call_status,
                                    bool tpm_is_enabled) {
     CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI))
         << __FUNCTION__ << " should be called on UI thread.";
-    if (call_status != CryptohomeClient::SUCCESS || !tpm_is_enabled) {
+    if (call_status != DBUS_METHOD_CALL_SUCCESS || !tpm_is_enabled) {
       // TPM is not enabled, so proceed with empty tpm token name.
       VLOG(1) << "TPM not available.";
       BrowserThread::PostTask(

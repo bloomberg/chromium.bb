@@ -1050,10 +1050,10 @@ void CertificateManagerHandler::CheckTpmTokenReady(const ListValue* args) {
 }
 
 void CertificateManagerHandler::CheckTpmTokenReadyInternal(
-    chromeos::CryptohomeClient::CallStatus call_status,
+    chromeos::DBusMethodCallStatus call_status,
     bool is_tpm_token_ready) {
   base::FundamentalValue ready(
-      call_status == chromeos::CryptohomeClient::SUCCESS && is_tpm_token_ready);
+      call_status == chromeos::DBUS_METHOD_CALL_SUCCESS && is_tpm_token_ready);
   web_ui()->CallJavascriptFunction("CertificateManager.onCheckTpmTokenReady",
                                    ready);
 }

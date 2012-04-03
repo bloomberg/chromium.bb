@@ -12,6 +12,7 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "chrome/browser/chromeos/dbus/dbus_client_implementation_type.h"
+#include "chrome/browser/chromeos/dbus/dbus_method_call_status.h"
 
 namespace dbus {
 class Bus;
@@ -24,22 +25,17 @@ namespace chromeos {
 // initializes the DBusThreadManager instance.
 class CryptohomeClient {
  public:
-  // An enum to describe whether or not a DBus method call succeeded.
-  enum CallStatus{
-    FAILURE,
-    SUCCESS,
-  };
   // A callback to handle AsyncCallStatus signals.
   typedef base::Callback<void(int async_id, bool return_status, int return_code)
                          > AsyncCallStatusHandler;
   // A callback to handle responses of AsyncXXX methods.
   typedef base::Callback<void(int async_id)> AsyncMethodCallback;
   // A callback to handle responses of methods returning a bool value.
-  typedef base::Callback<void(CallStatus call_status,
+  typedef base::Callback<void(DBusMethodCallStatus call_status,
                               bool result)> BoolMethodCallback;
   // A callback to handle responses of Pkcs11GetTpmTokenInfo method.
   typedef base::Callback<void(
-      CallStatus call_status,
+      DBusMethodCallStatus call_status,
       const std::string& label,
       const std::string& user_pin)> Pkcs11GetTpmTokenInfoCallback;
 

@@ -151,7 +151,7 @@ class CertificateManagerHandler : public OptionsPageUIHandler,
   // Check whether Tpm token is ready and notifiy JS side.
   void CheckTpmTokenReady(const base::ListValue* args);
   void CheckTpmTokenReadyInternal(
-      chromeos::CryptohomeClient::CallStatus call_status,
+      chromeos::DBusMethodCallStatus call_status,
       bool is_tpm_token_ready);
 #endif
 

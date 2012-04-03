@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/chromeos/dbus/dbus_method_call_status.h"
 
 namespace base {
 
@@ -32,12 +33,6 @@ namespace chromeos {
 // A class to help implement Flimflam clients.
 class FlimflamClientHelper {
  public:
-  // An enum to describe whether or not a DBus method call succeeded.
-  enum CallStatus {
-    FAILURE,
-    SUCCESS,
-  };
-
   explicit FlimflamClientHelper(dbus::ObjectProxy* proxy);
 
   virtual ~FlimflamClientHelper();
@@ -47,11 +42,11 @@ class FlimflamClientHelper {
                               const base::Value& value)> PropertyChangedHandler;
 
   // A callback to handle responses for methods without results.
-  typedef base::Callback<void(CallStatus call_status)> VoidCallback;
+  typedef base::Callback<void(DBusMethodCallStatus call_status)> VoidCallback;
 
   // A callback to handle responses for methods with DictionaryValue results.
   typedef base::Callback<void(
-      CallStatus call_status,
+      DBusMethodCallStatus call_status,
       const base::DictionaryValue& result)> DictionaryValueCallback;
 
   // Sets PropertyChanged signal handler.

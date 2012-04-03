@@ -337,33 +337,33 @@ class CryptohomeClientImpl : public CryptohomeClient {
   void OnBoolMethod(BoolMethodCallback callback,
                     dbus::Response* response) {
     if (!response) {
-      callback.Run(FAILURE, false);
+      callback.Run(DBUS_METHOD_CALL_FAILURE, false);
       return;
     }
     dbus::MessageReader reader(response);
     bool result = false;
     if (!reader.PopBool(&result)) {
-      callback.Run(FAILURE, false);
+      callback.Run(DBUS_METHOD_CALL_FAILURE, false);
       return;
     }
-    callback.Run(SUCCESS, result);
+    callback.Run(DBUS_METHOD_CALL_SUCCESS, result);
   }
 
   // Handles responses for Pkcs11GetTpmtTokenInfo.
   void OnPkcs11GetTpmTokenInfo(Pkcs11GetTpmTokenInfoCallback callback,
                                dbus::Response* response) {
     if (!response) {
-      callback.Run(FAILURE, std::string(), std::string());
+      callback.Run(DBUS_METHOD_CALL_FAILURE, std::string(), std::string());
       return;
     }
     dbus::MessageReader reader(response);
     std::string label;
     std::string user_pin;
     if (!reader.PopString(&label) || !reader.PopString(&user_pin)) {
-      callback.Run(FAILURE, std::string(), std::string());
+      callback.Run(DBUS_METHOD_CALL_FAILURE, std::string(), std::string());
       return;
     }
-    callback.Run(SUCCESS, label, user_pin);
+    callback.Run(DBUS_METHOD_CALL_SUCCESS, label, user_pin);
   }
 
   // Handles AsyncCallStatus signal.
@@ -483,8 +483,8 @@ class CryptohomeClientStubImpl : public CryptohomeClient {
 
   // CryptohomeClient override.
   virtual void TpmIsEnabled(BoolMethodCallback callback) OVERRIDE {
-    MessageLoop::current()->PostTask(FROM_HERE,
-                                     base::Bind(callback, SUCCESS, true));
+    MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, true));
   }
 
   // CryptohomeClient override.
@@ -519,22 +519,19 @@ class CryptohomeClientStubImpl : public CryptohomeClient {
   virtual bool TpmClearStoredPassword() OVERRIDE { return true; }
 
   // CryptohomeClient override.
-  virtual void Pkcs11IsTpmTokenReady(base::Callback<void(CallStatus call_status,
-                                                         bool ready)> callback)
-      OVERRIDE {
-    MessageLoop::current()->PostTask(FROM_HERE,
-                                     base::Bind(callback, SUCCESS, true));
+  virtual void Pkcs11IsTpmTokenReady(BoolMethodCallback callback) OVERRIDE {
+    MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, true));
   }
 
   // CryptohomeClient override.
   virtual void Pkcs11GetTpmTokenInfo(
-      base::Callback<void(CallStatus call_status,
-                          const std::string& label,
-                          const std::string& user_pin)> callback) OVERRIDE {
+      Pkcs11GetTpmTokenInfoCallback callback) OVERRIDE {
     const char kStubLabel[] = "Stub TPM Token";
     const char kStubUserPin[] = "012345";
     MessageLoop::current()->PostTask(
-        FROM_HERE, base::Bind(callback, SUCCESS, kStubLabel, kStubUserPin));
+        FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, kStubLabel,
+                              kStubUserPin));
   }
 
   // CryptohomeClient override.

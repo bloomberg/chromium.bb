@@ -83,10 +83,10 @@ void FlimflamClientHelper::OnPropertyChanged(dbus::Signal* signal) {
 void FlimflamClientHelper::OnVoidMethod(const VoidCallback& callback,
                                         dbus::Response* response) {
   if (!response) {
-    callback.Run(FAILURE);
+    callback.Run(DBUS_METHOD_CALL_FAILURE);
     return;
   }
-  callback.Run(SUCCESS);
+  callback.Run(DBUS_METHOD_CALL_SUCCESS);
 }
 
 void FlimflamClientHelper::OnDictionaryValueMethod(
@@ -94,7 +94,7 @@ void FlimflamClientHelper::OnDictionaryValueMethod(
     dbus::Response* response) {
   if (!response) {
     base::DictionaryValue result;
-    callback.Run(FAILURE, result);
+    callback.Run(DBUS_METHOD_CALL_FAILURE, result);
     return;
   }
   dbus::MessageReader reader(response);
@@ -102,10 +102,10 @@ void FlimflamClientHelper::OnDictionaryValueMethod(
   base::DictionaryValue* result = NULL;
   if (!value.get() || !value->GetAsDictionary(&result)) {
     base::DictionaryValue result;
-    callback.Run(FAILURE, result);
+    callback.Run(DBUS_METHOD_CALL_FAILURE, result);
     return;
   }
-  callback.Run(SUCCESS, *result);
+  callback.Run(DBUS_METHOD_CALL_SUCCESS, *result);
 }
 
 }  // namespace chromeos

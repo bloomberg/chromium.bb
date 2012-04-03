@@ -76,9 +76,6 @@ class FlimflamNetworkClientStubImpl : public FlimflamNetworkClient {
 
 }  // namespace
 
-const FlimflamNetworkClient::CallStatus FlimflamNetworkClient::SUCCESS;
-const FlimflamNetworkClient::CallStatus FlimflamNetworkClient::FAILURE;
-
 FlimflamNetworkClient::FlimflamNetworkClient() {}
 
 FlimflamNetworkClient::~FlimflamNetworkClient() {}

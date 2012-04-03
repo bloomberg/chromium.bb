@@ -518,9 +518,9 @@ void FinishCryptohomeDataRequestInternal(
     scoped_refptr<AboutUIHTMLSource> source,
     int refresh,
     int request_id,
-    chromeos::CryptohomeClient::CallStatus call_status,
+    chromeos::DBusMethodCallStatus call_status,
     bool is_tpm_token_ready) {
-  if (call_status != chromeos::CryptohomeClient::SUCCESS)
+  if (call_status != chromeos::DBUS_METHOD_CALL_SUCCESS)
     is_tpm_token_ready = false;
 
   chromeos::CryptohomeLibrary* cryptohome =

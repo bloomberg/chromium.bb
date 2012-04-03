@@ -34,9 +34,6 @@ class FlimflamNetworkClient {
  public:
   typedef FlimflamClientHelper::PropertyChangedHandler PropertyChangedHandler;
   typedef FlimflamClientHelper::DictionaryValueCallback DictionaryValueCallback;
-  typedef FlimflamClientHelper::CallStatus CallStatus;
-  static const CallStatus FAILURE = FlimflamClientHelper::FAILURE;
-  static const CallStatus SUCCESS = FlimflamClientHelper::SUCCESS;
 
   virtual ~FlimflamNetworkClient();
 
