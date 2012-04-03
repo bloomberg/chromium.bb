@@ -1,0 +1,10 @@
+{
+  "name": "A generic empty manifest to use for testing",
+  "version": "1.0",
+  "browser_action": {
+    "default_popup": "/test.html"
+  },
+  "background": {
+    "scripts": ["/test.js"]
+  }
+}

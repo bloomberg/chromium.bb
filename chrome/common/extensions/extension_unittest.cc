@@ -14,8 +14,9 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_action.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_error_utils.h"
+#include "chrome/common/extensions/extension_file_util.h"
+#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"
@@ -175,6 +176,19 @@ TEST(ExtensionTest, GetResourceURLAndPath) {
                                       "bar/../baz.js").spec());
   EXPECT_EQ(extension->url().spec() + "baz.js",
             Extension::GetResourceURL(extension->url(), "../baz.js").spec());
+}
+
+TEST(ExtensionTest, GetAbsolutePathNoError) {
+  scoped_refptr<Extension> extension = LoadManifestStrict("absolute_path",
+      "absolute.json");
+  EXPECT_TRUE(extension.get());
+  std::string err;
+  EXPECT_TRUE(extension_file_util::ValidateExtension(extension.get(), &err));
+
+  EXPECT_EQ(extension->path().AppendASCII("test.html").value(),
+            extension->GetResource("test.html").GetFilePath().value());
+  EXPECT_EQ(extension->path().AppendASCII("test.js").value(),
+            extension->GetResource("test.js").GetFilePath().value());
 }
 
 TEST(ExtensionTest, LoadPageActionHelper) {
