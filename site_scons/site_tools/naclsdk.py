@@ -583,12 +583,12 @@ def generate(env):
       TRANSLATECOM='${TRANSLATE} ${TRANSLATEFLAGS} ${SOURCES} -o ${TARGET}',
   )
 
-  # Windows has a small limit on the command line size.  The linking
+  # Windows has a small limit on the command line size.  The linking and AR
   # commands can get quite large.  So bring in the SCons machinery to put
   # most of a command line into a temporary file and pass it with
   # @filename, which works with gcc.
   if env['PLATFORM'] in ['win32', 'cygwin']:
-    for com in ['LINKCOM', 'SHLINKCOM']:
+    for com in ['LINKCOM', 'SHLINKCOM', 'ARCOM']:
       env[com] = "${TEMPFILE('%s')}" % env[com]
 
   # Get root of the SDK.
