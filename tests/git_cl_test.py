@@ -123,6 +123,7 @@ class TestGitCl(TestCase):
   def _git_upload_calls():
     return [
       ((['git', 'config', 'rietveld.cc'],), ''),
+      ((['git', 'config', 'branch.master.base-url'],), ''),
       ((['git', 'config', '--get-regexp', '^svn-remote\\.'],),
         (('', None), 0)),
       ((['git', 'rev-parse', '--show-cdup'],), ''),

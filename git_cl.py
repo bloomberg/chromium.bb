@@ -411,6 +411,13 @@ or verify this branch is set up to track another (via the --track argument to
                        GIT_INSTRUCTIONS_URL)
     return self._remote
 
+  def GetGitBaseUrlFromConfig(self):
+    """Return the configured base URL from branch.<branchname>.baseurl.
+
+    Returns None if it is not set.
+    """
+    return RunGit(['config', 'branch.%s.base-url' % self.GetBranch()],
+                  error_ok=True).strip()
 
   def GetRemoteUrl(self):
     """Return the configured remote URL, e.g. 'git://example.org/foo.git/'.
@@ -787,6 +794,21 @@ def CMDconfig(parser, args):
   return 0
 
 
+def CMDbaseurl(parser, args):
+  """get or set base-url for this branch"""
+  branchref = RunGit(['symbolic-ref', 'HEAD']).strip()
+  branch = ShortBranchName(branchref)
+  _, args = parser.parse_args(args)
+  if not args:
+    print("Current base-url:")
+    return RunGit(['config', 'branch.%s.base-url' % branch],
+                  error_ok=False).strip()
+  else:
+    print("Setting base-url to %s" % args[0])
+    return RunGit(['config', 'branch.%s.base-url' % branch, args[0]],
+                  error_ok=False).strip()
+
+
 def CMDstatus(parser, args):
   """show status of changelists"""
   parser.add_option('--field',
@@ -982,18 +1004,19 @@ def RietveldUpload(options, args, cl):
 
   # Include the upstream repo's URL in the change -- this is useful for
   # projects that have their source spread across multiple repos.
-  remote_url = None
-  if settings.GetIsGitSvn():
-    # URL is dependent on the current directory.
-    data = RunGit(['svn', 'info'], cwd=settings.GetRoot())
-    if data:
-      keys = dict(line.split(': ', 1) for line in data.splitlines()
-                  if ': ' in line)
-      remote_url = keys.get('URL', None)
-  else:
-    if cl.GetRemoteUrl() and '/' in cl.GetUpstreamBranch():
-      remote_url = (cl.GetRemoteUrl() + '@'
-                    + cl.GetUpstreamBranch().split('/')[-1])
+  remote_url = cl.GetGitBaseUrlFromConfig()
+  if not remote_url:
+    if settings.GetIsGitSvn():
+      # URL is dependent on the current directory.
+      data = RunGit(['svn', 'info'], cwd=settings.GetRoot())
+      if data:
+        keys = dict(line.split(': ', 1) for line in data.splitlines()
+                    if ': ' in line)
+        remote_url = keys.get('URL', None)
+    else:
+      if cl.GetRemoteUrl() and '/' in cl.GetUpstreamBranch():
+        remote_url = (cl.GetRemoteUrl() + '@'
+                      + cl.GetUpstreamBranch().split('/')[-1])
   if remote_url:
     upload_args.extend(['--base_url', remote_url])
 
