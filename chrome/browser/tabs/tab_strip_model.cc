@@ -561,7 +561,7 @@ void TabStripModel::SetTabPinned(int index, bool pinned) {
       NOTREACHED();
       return;
     }
-    // Changing the pinned state of an app tab doesn't effect it's mini-tab
+    // Changing the pinned state of an app tab doesn't affect its mini-tab
     // status.
     contents_data_[index]->pinned = pinned;
   } else {

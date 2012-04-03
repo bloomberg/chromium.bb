@@ -500,7 +500,7 @@ class BrowserView : public BrowserWindow,
   // Invoked to update the necessary things when our fullscreen state changes
   // to |fullscreen|. On Windows this is invoked immediately when we toggle the
   // full screen state. On Linux changing the fullscreen state is async, so we
-  // ask the window to change it's fullscreen state, then when we get
+  // ask the window to change its fullscreen state, then when we get
   // notification that it succeeded this method is invoked.
   // If |url| is not empty, it is the URL of the page that requested fullscreen
   // (via the fullscreen JS API).

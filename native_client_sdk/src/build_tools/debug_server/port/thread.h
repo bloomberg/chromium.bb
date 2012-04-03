@@ -31,7 +31,7 @@ class IThread {
     RUNNING  = 0,  // The thread is currently running
     SUSPENDED= 1,  // The thread has been suspended
     SIGNALED = 2,  // The thread is signaled
-    SYSCALL  = 3   // In a sys call, it's registers can not be modified.
+    SYSCALL  = 3   // In a sys call, its registers can not be modified.
   };
 
   typedef void (*CatchFunc_t)(uint32_t id, int8_t sig, void *cookie);

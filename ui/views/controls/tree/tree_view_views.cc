@@ -391,7 +391,7 @@ void TreeView::TreeNodesRemoved(TreeModel* model,
   }
   if (reset_selection) {
     // selected_node_ is no longer valid (at the time we enter this function
-    // it's model_node() is likely deleted). Explicitly NULL out the field
+    // its model_node() is likely deleted). Explicitly NULL out the field
     // rather than invoking SetSelectedNode() otherwise, we'll try and use a
     // deleted value.
     selected_node_ = NULL;

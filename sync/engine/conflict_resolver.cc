@@ -157,7 +157,7 @@ ConflictResolver::ProcessSimpleConflict(WriteTransaction* trans,
     // with local/server wins.
     //
     // In general, when there are chains of positional conflicts, only the first
-    // item in chain (based on the clients point of view) will have both it's
+    // item in chain (based on the clients point of view) will have both its
     // server prev id and local prev id match. For all the rest the server prev
     // id will be the predecessor of the first item in the chain, and therefore
     // not match the local prev id.
@@ -267,9 +267,9 @@ ConflictResolver::ProcessSimpleConflict(WriteTransaction* trans,
         server_nigori->set_sync_tabs(true);
       }
       // We deliberately leave the server's device information. This client will
-      // add it's own device information on restart.
+      // add its own device information on restart.
       entry.Put(syncable::SPECIFICS, specifics);
-      DVLOG(1) << "Resovling simple conflict, merging nigori nodes: " << entry;
+      DVLOG(1) << "Resolving simple conflict, merging nigori nodes: " << entry;
       status->increment_num_server_overwrites();
       OverwriteServerChanges(trans, &entry);
       UMA_HISTOGRAM_ENUMERATION("Sync.ResolveSimpleConflict",

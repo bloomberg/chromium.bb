@@ -462,7 +462,7 @@ function(threadnames, svgheight) {
           this.totaldiv);
       this.attached = true;
     },
-    // The fatty div will have it's width adjusted based on the zoom level and
+    // The fatty div will have its width adjusted based on the zoom level and
     // the duration of the graph, to get the scrolling correct for the size.
     'zoom': function(curzoom) {
       var width = widthms * curzoom;

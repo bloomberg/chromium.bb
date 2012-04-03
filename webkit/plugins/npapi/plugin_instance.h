@@ -148,7 +148,7 @@ class PluginInstance : public base::RefCountedThreadSafe<PluginInstance> {
   // seekable.
   WebPluginResourceClient* GetRangeRequest(int id);
 
-  // Have the plugin create it's script object.
+  // Have the plugin create its script object.
   NPObject* GetPluginScriptableObject();
 
   // Returns the form value of this instance.

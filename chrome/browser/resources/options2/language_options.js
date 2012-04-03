@@ -583,7 +583,7 @@ cr.define('options', function() {
      * @param {String} languageCode the languageCode to check for deletability.
      */
     languageIsDeletable: function(languageCode) {
-      // Don't allow removing the language if it's as UI language.
+      // Don't allow removing the language if it's a UI language.
       if (languageCode == templateData.prospectiveUiLanguageCode)
         return false;
       return (!cr.isChromeOS ||

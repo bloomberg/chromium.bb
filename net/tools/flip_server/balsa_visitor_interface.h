@@ -26,7 +26,7 @@ class BalsaVisitorInterface {
   // Summary:
   //   This is how the BalsaFrame passes you the raw input which it knows to
   //   be a part of the body. To be clear, every byte of the Balsa which isn't
-  //   part of the header (or it's framing), or trailers will be passed through
+  //   part of the header (or its framing), or trailers will be passed through
   //   this function.  This includes data as well as chunking framing.
   // Arguments:
   //   input - contains the bytes available for read.

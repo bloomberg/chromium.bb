@@ -68,7 +68,7 @@ class SQLitePersistentCookieStorePerfTest : public testing::Test {
       }
     }
     // Replace the store effectively destroying the current one and forcing it
-    // to write it's data to disk.
+    // to write its data to disk.
     store_ = NULL;
     scoped_refptr<base::ThreadTestHelper> helper(
       new base::ThreadTestHelper(

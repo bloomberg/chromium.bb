@@ -220,7 +220,7 @@ TEST_F(WorkspaceWindowResizerTest, AttachedResize_RIGHT_3) {
   EXPECT_EQ("600,300 120x200", window2_->bounds().ToString());
   EXPECT_EQ("720,300 80x200", window3_->bounds().ToString());
 
-  // Move it so much everything ends up at it's min.
+  // Move it so much everything ends up at its min.
   resizer->Drag(CalculateDragPoint(*resizer, 798, 50));
   EXPECT_EQ("100,300 600x300", window_->bounds().ToString());
   EXPECT_EQ("700,300 60x200", window2_->bounds().ToString());
@@ -368,7 +368,7 @@ TEST_F(WorkspaceWindowResizerTest, AttachedResize_BOTTOM_3) {
   EXPECT_EQ("300,600 200x120", window2_->bounds().ToString());
   EXPECT_EQ("300,720 200x80", window3_->bounds().ToString());
 
-  // Move it so much everything ends up at it's min.
+  // Move it so much everything ends up at its min.
   resizer->Drag(CalculateDragPoint(*resizer, 50, 798));
   EXPECT_EQ("300,100 300x600", window_->bounds().ToString());
   EXPECT_EQ("300,700 200x60", window2_->bounds().ToString());

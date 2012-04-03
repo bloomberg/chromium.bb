@@ -147,7 +147,7 @@ BrowserTabStripController::BrowserTabStripController(Browser* browser,
 BrowserTabStripController::~BrowserTabStripController() {
   // When we get here the TabStrip is being deleted. We need to explicitly
   // cancel the menu, otherwise it may try to invoke something on the tabstrip
-  // from it's destructor.
+  // from its destructor.
   if (context_menu_contents_.get())
     context_menu_contents_->Cancel();
 

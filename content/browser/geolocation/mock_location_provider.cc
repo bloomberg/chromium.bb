@@ -62,7 +62,7 @@ void MockLocationProvider::OnPermissionGranted(const GURL& requesting_frame) {
   permission_granted_url_ = requesting_frame;
 }
 
-// Mock location provider that automatically calls back it's client at most
+// Mock location provider that automatically calls back its client at most
 // once, when StartProvider or OnPermissionGranted is called. Use
 // |requires_permission_to_start| to select which event triggers the callback.
 class AutoMockLocationProvider : public MockLocationProvider {

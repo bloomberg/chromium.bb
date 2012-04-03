@@ -68,7 +68,7 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   virtual View* GetExtraView();
 
   // Returns whether the height of the extra view should be at least as tall as
-  // the buttons. The default (false) is to give the extra view it's preferred
+  // the buttons. The default (false) is to give the extra view its preferred
   // height. By returning true the height becomes
   // max(extra_view preferred height, buttons preferred height).
   virtual bool GetSizeExtraViewHeightToButtons();

@@ -98,7 +98,7 @@ TEST_F(SQLiteServerBoundCertStoreTest, KeepOnDestruction) {
 TEST_F(SQLiteServerBoundCertStoreTest, RemoveOnDestruction) {
   store_->SetClearLocalStateOnExit(true);
   // Replace the store effectively destroying the current one and forcing it
-  // to write it's data to disk. Then we can see if after loading it again it
+  // to write its data to disk. Then we can see if after loading it again it
   // is still there.
   store_ = NULL;
   // Make sure we wait until the destructor has run.
@@ -123,7 +123,7 @@ TEST_F(SQLiteServerBoundCertStoreTest, TestPersistence) {
 
   ScopedVector<net::DefaultServerBoundCertStore::ServerBoundCert> certs;
   // Replace the store effectively destroying the current one and forcing it
-  // to write it's data to disk. Then we can see if after loading it again it
+  // to write its data to disk. Then we can see if after loading it again it
   // is still there.
   store_ = NULL;
   scoped_refptr<base::ThreadTestHelper> helper(

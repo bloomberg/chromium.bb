@@ -1290,7 +1290,7 @@ IPC_MESSAGE_ROUTED1(ViewHostMsg_ShowPopup,
 
 // Response from ViewMsg_ScriptEvalRequest. The ID is the parameter supplied
 // to ViewMsg_ScriptEvalRequest. The result has the value returned by the
-// script as it's only element, one of Null, Boolean, Integer, Real, Date, or
+// script as its only element, one of Null, Boolean, Integer, Real, Date, or
 // String.
 IPC_MESSAGE_ROUTED2(ViewHostMsg_ScriptEvalResponse,
                     int  /* id */,

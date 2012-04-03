@@ -75,7 +75,7 @@ size_t SidestepResolverThunk::GetThunkSize() const {
 // the thunk to use a chained interceptor. It uses the fact that
 // SetInternalThunk generates the code to pass as the first parameter whatever
 // it receives as original_function; we let SidestepResolverThunk set this value
-// to it's saved code, and then we change it to our thunk data.
+// to its saved code, and then we change it to our thunk data.
 NTSTATUS SmartSidestepResolverThunk::Setup(const void* target_module,
                                            const void* interceptor_module,
                                            const char* target_name,

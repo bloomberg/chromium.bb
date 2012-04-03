@@ -162,7 +162,7 @@ void ExtensionInstalledBubbleGtk::ShowInternal() {
     reference_widget = location_bar_view->GetPageActionWidget(
         extension_->page_action());
     // glib delays recalculating layout, but we need reference_widget to know
-    // it's coordinates, so we force a check_resize here.
+    // its coordinates, so we force a check_resize here.
     gtk_container_check_resize(GTK_CONTAINER(
         browser_window->GetToolbar()->widget()));
     DCHECK(reference_widget);

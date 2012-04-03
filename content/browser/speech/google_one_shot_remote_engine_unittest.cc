@@ -22,7 +22,7 @@ class GoogleOneShotRemoteEngineTest
   GoogleOneShotRemoteEngineTest()
       : error_(content::SPEECH_RECOGNITION_ERROR_NONE) {}
 
-  // Creates a speech recognition request and invokes it's URL fetcher delegate
+  // Creates a speech recognition request and invokes its URL fetcher delegate
   // with the given test data.
   void CreateAndTestRequest(bool success, const std::string& http_response);
 

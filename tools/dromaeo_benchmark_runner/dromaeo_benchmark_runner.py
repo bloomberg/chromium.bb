@@ -14,7 +14,7 @@ Prerequisites:
 2. Checkout Dromaeo benchmark from
    http://src.chromium.org/svn/trunk/src/chrome/test/data/dromaeo and provide
    local path to it in --dromaeo_home switch.
-3. Create a spreadsheet at http://docs.google.com and specify it's name in
+3. Create a spreadsheet at http://docs.google.com and specify its name in
    --spreadsheet switch
 
 Benchmark results are presented in the following format:

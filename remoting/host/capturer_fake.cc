@@ -110,7 +110,7 @@ void CapturerFake::GenerateImage() {
   if (box_pos_y_ + kBoxHeight >= size_.height() || box_pos_y_ == 0)
     box_speed_y_ = -box_speed_y_;
 
-  // Draw rectangle with the following colors in it's corners:
+  // Draw rectangle with the following colors in its corners:
   //     cyan....yellow
   //     ..............
   //     blue.......red

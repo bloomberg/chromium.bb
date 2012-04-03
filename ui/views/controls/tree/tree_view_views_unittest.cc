@@ -242,7 +242,7 @@ TEST_F(TreeViewViewsTest, TreeNodesRemoved) {
   EXPECT_EQ("root", GetSelectedNodeTitle());
   EXPECT_EQ(4, GetRowCount());
 
-  // Expand b1, then collapse it and remove it's only child, b1. This shouldn't
+  // Expand b1, then collapse it and remove its only child, b1. This shouldn't
   // effect the tree.
   tree_.Expand(GetNodeByTitle("b"));
   tree_.Collapse(GetNodeByTitle("b"));

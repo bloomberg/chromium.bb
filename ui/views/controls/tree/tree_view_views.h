@@ -81,7 +81,7 @@ class VIEWS_EXPORT TreeView : public View,
   ui::TreeModelNode* GetSelectedNode();
 
   // Marks |model_node| as collapsed. This only effects the UI if node and all
-  // it's parents are expanded (IsExpanded(model_node) returns true).
+  // its parents are expanded (IsExpanded(model_node) returns true).
   void Collapse(ui::TreeModelNode* model_node);
 
   // Make sure node and all its parents are expanded.
@@ -178,7 +178,7 @@ class VIEWS_EXPORT TreeView : public View,
 
     // Returns the max width of all descendants (including this node). |indent|
     // is how many pixels each child is indented and |depth| is the depth of
-    // this node from it's parent.
+    // this node from its parent.
     int GetMaxWidth(int indent, int depth);
 
    private:

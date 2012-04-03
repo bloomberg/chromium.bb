@@ -186,7 +186,7 @@ TEST_F(SQLitePersistentCookieStoreTest, TestPersistance) {
   InitializeStore(false);
   AddCookie("A", "B", "http://foo.bar", "/", base::Time::Now());
   // Replace the store effectively destroying the current one and forcing it
-  // to write it's data to disk. Then we can see if after loading it again it
+  // to write its data to disk. Then we can see if after loading it again it
   // is still there.
   DestroyStore();
   // Reload and test for persistence

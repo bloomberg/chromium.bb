@@ -82,7 +82,7 @@ enum {
 - (void)dealloc;
 
 // Can be called from any thread since it does not require an NSRunLoop. However
-// it is not threadsafe to receive concurrent calls until after it's first
+// it is not threadsafe to receive concurrent calls until after a first
 // successful call (to avoid |bundle_| being double initialized)
 - (BOOL)locationDataAvailable;
 

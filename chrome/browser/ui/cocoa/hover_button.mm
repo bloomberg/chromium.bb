@@ -41,7 +41,7 @@
 - (void)mouseDown:(NSEvent*)theEvent {
   self.hoverState = kHoverStateMouseDown;
   // The hover button needs to hold onto itself here for a bit.  Otherwise,
-  // it can be freed while |super mouseDown:| is in it's loop, and the
+  // it can be freed while |super mouseDown:| is in its loop, and the
   // |checkImageState| call will crash.
   // http://crbug.com/28220
   scoped_nsobject<HoverButton> myself([self retain]);

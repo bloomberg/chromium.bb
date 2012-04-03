@@ -50,7 +50,7 @@ struct APPCACHE_EXPORT AppCacheInfoCollection
 
 // Class that manages the application cache service. Sends notifications
 // to many frontends.  One instance per user-profile. Each instance has
-// exclusive access to it's cache_directory on disk.
+// exclusive access to its cache_directory on disk.
 class APPCACHE_EXPORT AppCacheService {
  public:
   // If not using quota management, the proxy may be NULL.

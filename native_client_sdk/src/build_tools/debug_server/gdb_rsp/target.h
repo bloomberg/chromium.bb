@@ -6,7 +6,7 @@
 
 // This module provides interfaces for accessing the debugging state of
 // the target.  The target can use either the thread that took the
-// exception or run in it's own thread.  To respond to the host, the
+// exception or run in its own thread.  To respond to the host, the
 // application must call the run function with a valid Transport
 // which will then be polled for commands.  The target will return
 // from Run when the host disconnects, or requests a continue.

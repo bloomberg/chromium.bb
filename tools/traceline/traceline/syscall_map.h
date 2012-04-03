@@ -8,7 +8,7 @@
 
 // Define a global map used for resolving a syscall number to name.
 // Call CreateSyscallMap() to create a return a std::map<int, const char*>
-// which maps from a system call number to it's function name.
+// which maps from a system call number to its function name.
 
 #ifndef TRACELINE_SYSCALL_MAP_H_
 #define TRACELINE_SYSCALL_MAP_H_

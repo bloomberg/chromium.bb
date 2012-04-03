@@ -407,7 +407,7 @@ cr.define('options', function() {
       if (!cr.isChromeOS) {
         $('cloudPrintConnectorSetupButton').onclick = function(event) {
           if ($('cloudPrintManageButton').style.display == 'none') {
-            // Disable the button, set it's text to the intermediate state.
+            // Disable the button, set its text to the intermediate state.
             $('cloudPrintConnectorSetupButton').textContent =
               localStrings.getString('cloudPrintConnectorEnablingButton');
             $('cloudPrintConnectorSetupButton').disabled = true;

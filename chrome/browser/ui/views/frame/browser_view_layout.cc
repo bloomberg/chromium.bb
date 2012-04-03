@@ -437,7 +437,7 @@ int BrowserViewLayout::GetTopMarginForActiveContent() {
 
 int BrowserViewLayout::LayoutDownloadShelf(int bottom) {
 #if !defined(OS_CHROMEOS) || defined(USE_AURA)
-  // Re-layout the shelf either if it is visible or if it's close animation
+  // Re-layout the shelf either if it is visible or if its close animation
   // is currently running.  ChromiumOS uses ActiveDownloadsUI instead of
   // DownloadShelf.
   if (browser_view_->IsDownloadShelfVisible() ||

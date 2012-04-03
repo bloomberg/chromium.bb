@@ -146,7 +146,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     InitParams();
     explicit InitParams(Type type);
 
-    // If |parent_widget| is non-null, it's native view is returned, otherwise
+    // If |parent_widget| is non-null, its native view is returned, otherwise
     // |parent| is returned.
     gfx::NativeView GetParent() const;
 

@@ -205,7 +205,7 @@ class BrowserTitlebar : public content::NotificationObserver,
   // record.
   bool IsOffTheRecord();
 
-  // Pointers to the browser window that owns us and it's GtkWindow.
+  // Pointers to the browser window that owns us and its GtkWindow.
   BrowserWindowGtk* browser_window_;
   GtkWindow* window_;
 

@@ -243,7 +243,7 @@ bool TooltipManagerWin::SetTooltipPosition(int text_x, int text_y) {
 }
 
 int TooltipManagerWin::CalcTooltipHeight() {
-  // Ask the tooltip for it's font.
+  // Ask the tooltip for its font.
   int height;
   HFONT hfont = reinterpret_cast<HFONT>(
       SendMessage(tooltip_hwnd_, WM_GETFONT, 0, 0));

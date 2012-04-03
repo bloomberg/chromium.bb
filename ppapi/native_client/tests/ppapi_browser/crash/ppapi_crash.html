@@ -44,7 +44,7 @@
                            function(e) { test.fail(); });
           plugin.postMessage(testName);
           // In case the nexe does not crash right away, we will ping it
-          // until we detect that it's death. DidChangeView and other events
+          // until we detect that it's dead. DidChangeView and other events
           // can do this too, but are less reliable.
           if (pingToDetectCrash) {
             function PingBack(message) {

@@ -614,7 +614,7 @@ void TabDragController2::ContinueDragging() {
       // Disable animations so that we don't see a close animation on aero.
       browser_view->GetWidget()->SetVisibilityChangedAnimationsEnabled(false);
       browser_view->GetWidget()->ReleaseMouseCapture();
-      // EndMoveLoop is going to snap the window back to it's original location.
+      // EndMoveLoop is going to snap the window back to its original location.
       // Hide it so users don't see this.
       browser_view->GetWidget()->Hide();
       browser_view->GetWidget()->EndMoveLoop();

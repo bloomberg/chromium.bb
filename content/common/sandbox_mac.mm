@@ -282,7 +282,7 @@ NSString* Sandbox::BuildAllowDirectoryAccessSandboxString(
     SandboxVariableSubstitions* substitutions) {
   // A whitelist is used to determine which directories can be statted
   // This means that in the case of an /a/b/c/d/ directory, we may be able to
-  // stat the leaf directory, but not it's parent.
+  // stat the leaf directory, but not its parent.
   // The extension code in Chrome calls realpath() which fails if it can't call
   // stat() on one of the parent directories in the path.
   // The solution to this is to allow statting the parent directories themselves
@@ -324,7 +324,7 @@ NSString* Sandbox::BuildAllowDirectoryAccessSandboxString(
             subdir_escaped_ns];
   }
 
-  // Finally append the leaf directory.  Unlike it's parents (for which only
+  // Finally append the leaf directory.  Unlike its parents (for which only
   // stat() should be allowed), the leaf directory needs full access.
   (*substitutions)["ALLOWED_DIR"] =
       SandboxSubstring(allowed_dir_canonical.value(),

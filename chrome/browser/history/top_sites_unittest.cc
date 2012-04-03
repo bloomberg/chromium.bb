@@ -1377,7 +1377,7 @@ TEST_F(TopSitesUnloadTest, UnloadWithMigration) {
       data_path.AppendASCII("thumbnails.3.sql"),
       profile()->GetPath().Append(chrome::kThumbnailsFilename)));
 
-  // Create history and block until its loaded.
+  // Create history and block until it's loaded.
   profile()->CreateHistoryService(false, false);
   profile()->BlockUntilHistoryProcessesPendingRequests();
 

@@ -205,7 +205,7 @@ void DatabaseTracker::CloseDatabases(const DatabaseConnections& connections) {
 
   // When being closed by this route, there's a chance that
   // the tracker missed some DatabseModified calls. This method is used
-  // when a renderer crashes to cleanup it's open resources.
+  // when a renderer crashes to cleanup its open resources.
   // We need to examine what we have in connections for the
   // size of each open databases and notify any differences between the
   // actual file sizes now.

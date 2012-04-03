@@ -12,7 +12,7 @@ class Point;
 
 // Abstract interface that provides an offset of a widget. Many pieces of the
 // UI don't need the full BrowserWindowGtk, but just need information about
-// it's position relative to the tabstrip to draw correctly. This interface
+// its position relative to the tabstrip to draw correctly. This interface
 // exists to make it easier to test piece by piece.
 class TabstripOriginProvider {
  public:

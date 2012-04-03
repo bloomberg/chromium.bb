@@ -899,8 +899,8 @@ void GridLayout::SizeRowsAndColumns(bool layout, int width, int height,
                                                  view_state->col_span);
       if (actual_width != view_state->pref_width &&
           !view_state->pref_height_fixed) {
-        // The width this view will get differs from it's preferred. Some Views
-        // pref height varies with it's width; ask for the preferred again.
+        // The width this view will get differs from its preferred. Some Views
+        // pref height varies with its width; ask for the preferred again.
         view_state->pref_height =
             view_state->view->GetHeightForWidth(actual_width);
         view_state->remaining_height = view_state->pref_height;

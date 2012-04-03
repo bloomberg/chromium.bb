@@ -181,7 +181,7 @@ enum CocoaCookieDetailsType {
 
 // -initWithAppCacheInfo: creates a cookie details with the manifest URL plus
 // all of this additional information that is available after an appcache is
-// actually created, including it's creation date, size and last accessed time.
+// actually created, including its creation date, size and last accessed time.
 - (id)initWithAppCacheInfo:(const appcache::AppCacheInfo*)appcacheInfo;
 
 // Used for local storage details in the cookie prompt dialog.

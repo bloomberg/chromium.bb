@@ -51,7 +51,7 @@ TEST_F(BookmarkFolderAppleScriptTest, InsertBookmarkFolder) {
   [bookmarkFolder.get() setTitle:@"foo"];
   [bookmarkBar_.get() insertInBookmarkFolders:bookmarkFolder.get()];
 
-  // Represents the bookmark folder after its added.
+  // Represents the bookmark folder after it's added.
   BookmarkFolderAppleScript* bf =
       [[bookmarkBar_.get() bookmarkFolders] objectAtIndex:2];
   EXPECT_NSEQ(@"foo", [bf title]);
@@ -72,7 +72,7 @@ TEST_F(BookmarkFolderAppleScriptTest, InsertBookmarkFolderAtPosition) {
   [bookmarkFolder.get() setTitle:@"foo"];
   [bookmarkBar_.get() insertInBookmarkFolders:bookmarkFolder.get() atIndex:1];
 
-  // Represents the bookmark folder after its added.
+  // Represents the bookmark folder after it's added.
   BookmarkFolderAppleScript* bf =
       [[bookmarkBar_.get() bookmarkFolders] objectAtIndex:1];
   EXPECT_NSEQ(@"foo", [bf title]);
@@ -126,7 +126,7 @@ TEST_F(BookmarkFolderAppleScriptTest, InsertBookmarkItem) {
   [bookmarkItem.get() setURL:@"http://google.com"];
   [bookmarkBar_.get() insertInBookmarkItems:bookmarkItem.get()];
 
-  // Represents the bookmark item after its added.
+  // Represents the bookmark item after it's added.
   BookmarkItemAppleScript* bi =
       [[bookmarkBar_.get() bookmarkItems] objectAtIndex:3];
   EXPECT_NSEQ(@"Google", [bi title]);

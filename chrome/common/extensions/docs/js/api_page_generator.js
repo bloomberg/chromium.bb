@@ -137,9 +137,9 @@ function extend(obj, obj2) {
 }
 
 /*
- * Main entry point for composing the page. It will fetch it's template,
+ * Main entry point for composing the page. It will fetch its template,
  * the extension api, and attempt to fetch the matching static content.
- * It will insert the static content, if any, prepare it's pageData then
+ * It will insert the static content, if any, prepare its pageData then
  * render the template from |pageData|.
  */
 function renderPage() {
@@ -219,7 +219,7 @@ function fetchSamples() {
 }
 
 /**
- * Fetches |url| and returns it's text contents from the xhr.responseText in
+ * Fetches |url| and returns its text contents from the xhr.responseText in
  * onSuccess(content)
  */
 function fetchContent(url, onSuccess, onError) {

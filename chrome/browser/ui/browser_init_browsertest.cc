@@ -173,7 +173,7 @@ IN_PROC_BROWSER_TEST_F(BrowserInitTest,
   ASSERT_TRUE(launch.Launch(browser()->profile(), std::vector<GURL>(), false));
 
   // This should have created a new browser window.  |browser()| is still
-  // around at this point, even though we've closed it's window.
+  // around at this point, even though we've closed its window.
   Browser* new_browser = NULL;
   ASSERT_NO_FATAL_FAILURE(FindOneOtherBrowser(&new_browser));
 
@@ -407,7 +407,7 @@ IN_PROC_BROWSER_TEST_F(BrowserInitTest, StartupURLsForTwoProfiles) {
   // urls1 were opened in a browser for default_profile, and urls2 were opened
   // in a browser for other_profile.
   Browser* new_browser = NULL;
-  // |browser()| is still around at this point, even though we've closed it's
+  // |browser()| is still around at this point, even though we've closed its
   // window. Thus the browser count for default_profile is 2.
   ASSERT_EQ(2u, BrowserList::GetBrowserCount(default_profile));
   new_browser = FindOneOtherBrowserForProfile(default_profile, browser());

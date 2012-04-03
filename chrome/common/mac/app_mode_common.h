@@ -35,7 +35,7 @@ extern NSString* const kCrAppModeUserDataDirKey;
 // Key for the app's extension path.
 extern NSString* const kCrAppModeExtensionPathKey;
 
-// When the Chrome browser is run, it stores it's location in the defaults
+// When the Chrome browser is run, it stores its location in the defaults
 // system using this key.
 extern NSString* const kLastRunAppBundlePathPrefsKey;
 

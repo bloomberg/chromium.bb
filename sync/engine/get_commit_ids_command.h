@@ -81,7 +81,7 @@ class GetCommitIdsCommand : public SyncerCommand {
                const syncable::Entry& item,
                sessions::OrderedCommitSet* result) const;
 
-  // Adds item and all it's unsynced predecessors to |result| as necessary, as
+  // Adds item and all its unsynced predecessors to |result| as necessary, as
   // long as no item was in conflict.
   // Return values:
   //   False: if there was an entry in conflict.

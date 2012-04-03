@@ -288,7 +288,7 @@ CloudPrintFlowHandler::~CloudPrintFlowHandler() {
 void CloudPrintFlowHandler::SetDialogDelegate(
     CloudPrintHtmlDialogDelegate* delegate) {
   // Even if setting a new WebUI, it means any previous task needs
-  // to be cancelled, it's now invalid.
+  // to be canceled, its now invalid.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   CancelAnyRunningTask();
   dialog_delegate_ = delegate;
@@ -296,7 +296,7 @@ void CloudPrintFlowHandler::SetDialogDelegate(
 
 // Cancels any print data sender we have in flight and removes our
 // reference to it, so when the task that is calling it finishes and
-// removes it's reference, it goes away.
+// removes its reference, it goes away.
 void CloudPrintFlowHandler::CancelAnyRunningTask() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (print_data_sender_.get()) {
@@ -542,7 +542,7 @@ void CloudPrintHtmlDialogDelegate::Init(int width, int height,
 
 CloudPrintHtmlDialogDelegate::~CloudPrintHtmlDialogDelegate() {
   // If the flow_handler_ is about to outlive us because we don't own
-  // it anymore, we need to have it remove it's reference to us.
+  // it anymore, we need to have it remove its reference to us.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   flow_handler_->SetDialogDelegate(NULL);
   if (owns_flow_handler_) {

@@ -7,7 +7,7 @@
 //  the host side of the connection.  The host behaves like a cache, and
 //  is responsible for syncronization of state between the Target and Host.
 //  For example, the Host is responsible for updating the thread context
-//  before restarting the Target, and for updating it's internal array of
+//  before restarting the Target, and for updating its internal array of
 //  threads whenever the Target stops.
 
 #ifndef NATIVE_CLIENT_GDB_RSP_HOST_H_
