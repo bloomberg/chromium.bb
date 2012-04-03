@@ -2743,7 +2743,8 @@ FileManager.prototype = {
   };
 
   FileManager.prototype.isAvaliableOffline_ = function(gdata, type) {
-    return gdata.isPresent || type.offline;
+    return gdata.isPresent ||
+        (type.offlineUrlPattern && gdata.editUrl.match(type.offlineUrlPattern));
   };
 
   FileManager.prototype.isOffline = function() {
