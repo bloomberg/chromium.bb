@@ -50,6 +50,10 @@ const char kAllowRunningInsecureContent[]   = "allow-running-insecure-content";
 // automation testing of the gallery.
 const char kAllowScriptingGallery[]         = "allow-scripting-gallery";
 
+// Disables same-origin check on HTTP resources pushed via a SPDY proxy.
+// The value is the host:port of the trusted proxy.
+const char kAllowSpdyProxyPushAcrossOrigins[] =
+    "allow-spdy-proxy-push-across-origins";
 
 // Prevents Chrome from requiring authorization to run certain widely installed
 // but less commonly used plug-ins.

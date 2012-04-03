@@ -31,6 +31,7 @@ extern const char kAllowNaClSocketAPI[];
 extern const char kAllowOutdatedPlugins[];
 extern const char kAllowRunningInsecureContent[];
 extern const char kAllowScriptingGallery[];
+extern const char kAllowSpdyProxyPushAcrossOrigins[];
 extern const char kAlwaysAuthorizePlugins[];
 extern const char kAppId[];
 extern const char kApp[];
