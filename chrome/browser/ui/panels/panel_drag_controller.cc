@@ -142,6 +142,14 @@ bool PanelDragController::CanDragToDockedStrip(
   target_panel_bounds.set_origin(
       mouse_location.Subtract(offset_from_mouse_location_on_drag_start_));
 
+  // If the target panel bounds is outside the main display area where the
+  // docked strip resides, as in the multi-monitor scenario, we want it to be
+  // still free-floating.
+  gfx::Rect display_area = panel_manager_->display_settings_provider()->
+      GetWorkArea();
+  if (!display_area.Intersects(target_panel_bounds))
+    return false;
+
   // The bottom of the panel should come very close to or fall below the bottom
   // of the docked area.
   if (panel_manager_->docked_strip()->display_area().bottom() -

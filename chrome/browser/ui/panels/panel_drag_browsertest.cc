@@ -1176,7 +1176,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, AttachWithOverflow) {
   //   docked:    P4  P3  P5
   //   overflow:  P6  P7
   gfx::Point drag_to_location(panel5->GetBounds().x() + 10,
-                              panel5->GetBounds().bottom());
+                              panel5->GetBounds().y());
   DragPanelToMouseLocation(panel3, drag_to_location);
   ASSERT_EQ(2, detached_strip->num_panels());
   ASSERT_EQ(3, docked_strip->num_panels());
@@ -1200,7 +1200,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, AttachWithOverflow) {
   //   docked:    P2  P4  P3
   //   overflow:  P5  P6  P7
   gfx::Point drag_to_location2(panel4->GetBounds().right() + 10,
-                               panel4->GetBounds().bottom());
+                               panel4->GetBounds().y());
   DragPanelToMouseLocation(panel2, drag_to_location2);
   ASSERT_EQ(1, detached_strip->num_panels());
   ASSERT_EQ(3, docked_strip->num_panels());
@@ -1222,7 +1222,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, AttachWithOverflow) {
   //   docked:    P2  P4  P1
   //   overflow:  P3  P5  P6  P7
   gfx::Point drag_to_location3(panel3->GetBounds().x() - 10,
-                               panel3->GetBounds().bottom());
+                               panel3->GetBounds().y());
   DragPanelToMouseLocation(panel1, drag_to_location3);
   ASSERT_EQ(0, detached_strip->num_panels());
   ASSERT_EQ(3, docked_strip->num_panels());
