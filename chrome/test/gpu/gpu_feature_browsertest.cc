@@ -192,7 +192,8 @@ IN_PROC_BROWSER_TEST_F(AcceleratedCompositingTest,
   RunTest(url, EXPECT_NO_GPU_PROCESS);
 }
 
-IN_PROC_BROWSER_TEST_F(GpuFeatureTest, WebGLAllowed) {
+// Fails on all platforms: crbug.com/121748 .
+IN_PROC_BROWSER_TEST_F(GpuFeatureTest, DISABLED_WebGLAllowed) {
   GpuFeatureType type = GpuDataManager::GetInstance()->GetGpuFeatureType();
   EXPECT_EQ(type, 0);
 
@@ -301,7 +302,8 @@ class Canvas2DEnabledTest : public GpuFeatureTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(Canvas2DEnabledTest, Canvas2DAllowed) {
+// Fails on all platforms: crbug.com/121748 .
+IN_PROC_BROWSER_TEST_F(Canvas2DEnabledTest, DISABLED_Canvas2DAllowed) {
 #if defined(OS_WIN)
   // Accelerated canvas 2D is not supported on XP.
   GPUTestBotConfig test_bot;
