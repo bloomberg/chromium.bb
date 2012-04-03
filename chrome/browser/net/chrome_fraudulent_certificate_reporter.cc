@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 #include "base/stl_util.h"
 #include "base/time.h"
 #include "chrome/browser/net/cert_logger.pb.h"
+#include "net/base/load_flags.h"
 #include "net/base/ssl_info.h"
 #include "net/base/x509_certificate.h"
 #include "net/url_request/url_request_context.h"
@@ -54,7 +55,10 @@ static std::string BuildReport(
 }
 
 net::URLRequest* ChromeFraudulentCertificateReporter::CreateURLRequest() {
-  return new net::URLRequest(upload_url_, this);
+  net::URLRequest* request = new net::URLRequest(upload_url_, this);
+  request->set_load_flags(net::LOAD_DO_NOT_SEND_COOKIES |
+                          net::LOAD_DO_NOT_SAVE_COOKIES);
+  return request;
 }
 
 void ChromeFraudulentCertificateReporter::SendReport(
