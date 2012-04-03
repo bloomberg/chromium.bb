@@ -701,7 +701,7 @@ IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestRTL,
 //==============================
 
 // http://crbug.com/118477
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || (defined(OS_MACOSX) && defined(GOOGLE_CHROME_BUILD))
 #define MAYBE_TestHelpFrame DISABLED_TestHelpFrame
 #else
 #define MAYBE_TestHelpFrame TestHelpFrame
