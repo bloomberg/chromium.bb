@@ -849,17 +849,6 @@
    fun:GpuProcessHostUIShim::GetForRenderer
 }
 {
-   bug_75023
-   Heapcheck:Leak
-   ...
-   fun:::DefaultFocusManagerFactory::CreateFocusManager
-   fun:views::FocusManagerFactory::Create
-   fun:views::Widget::OnNativeWidgetCreated
-   fun:views::NativeWidgetAura::InitNativeWidget
-   fun:views::Widget::Init
-   fun:views::::NativeWidgetAuraTest_GetClientAreaScreenBounds_Test::TestBody
-}
-{
    bug_76354
    Heapcheck:Leak
    fun:*ViewHostMsg_ResolveProxy
@@ -1188,16 +1177,6 @@
    fun:chromeos::ProxyConfigServiceImplTest::CreateConfigService
 }
 {
-   bug_90154
-   Heapcheck:Leak
-   ...
-   fun:views::NativeWidgetGtk::InitNativeWidget
-   fun:views::Widget::Init
-   fun:NativeTabContentsViewGtk::InitNativeTabContentsView
-   fun:TabContentsViewViews::CreateView
-   fun:TabContents
-}
-{
    bug_90271
    Heapcheck:Leak
    ...
@@ -1248,12 +1227,6 @@
    Heapcheck:Leak
    ...
    fun:find_invisible_char
-}
-{
-   bug_90013_d
-   Heapcheck:Leak
-   ...
-   fun:views::View::*
 }
 # This one is the most scary
 {
