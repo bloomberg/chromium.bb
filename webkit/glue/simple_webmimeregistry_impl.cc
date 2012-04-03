@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,9 +19,7 @@ namespace {
 // Convert a WebString to ASCII, falling back on an empty string in the case
 // of a non-ASCII string.
 std::string ToASCIIOrEmpty(const WebString& string) {
-  if (!IsStringASCII(string))
-    return std::string();
-  return UTF16ToASCII(string);
+  return IsStringASCII(string) ? UTF16ToASCII(string) : std::string();
 }
 
 }  // namespace
@@ -30,43 +28,41 @@ namespace webkit_glue {
 
 WebMimeRegistry::SupportsType SimpleWebMimeRegistryImpl::supportsMIMEType(
     const WebString& mime_type) {
-  if (!net::IsSupportedMimeType(ToASCIIOrEmpty(mime_type).c_str()))
-    return WebMimeRegistry::IsNotSupported;
-  return WebMimeRegistry::IsSupported;
+  return net::IsSupportedMimeType(ToASCIIOrEmpty(mime_type)) ?
+      WebMimeRegistry::IsSupported : WebMimeRegistry::IsNotSupported;
 }
 
 WebMimeRegistry::SupportsType SimpleWebMimeRegistryImpl::supportsImageMIMEType(
     const WebString& mime_type) {
-  if (!net::IsSupportedImageMimeType(ToASCIIOrEmpty(mime_type).c_str()))
-    return WebMimeRegistry::IsNotSupported;
-  return WebMimeRegistry::IsSupported;
+  return net::IsSupportedImageMimeType(ToASCIIOrEmpty(mime_type)) ?
+      WebMimeRegistry::IsSupported : WebMimeRegistry::IsNotSupported;
 }
 
-WebMimeRegistry::SupportsType SimpleWebMimeRegistryImpl::supportsJavaScriptMIMEType(
+WebMimeRegistry::SupportsType
+    SimpleWebMimeRegistryImpl::supportsJavaScriptMIMEType(
     const WebString& mime_type) {
-  if (!net::IsSupportedJavascriptMimeType(ToASCIIOrEmpty(mime_type).c_str()))
-    return WebMimeRegistry::IsNotSupported;
-  return WebMimeRegistry::IsSupported;
+  return net::IsSupportedJavascriptMimeType(ToASCIIOrEmpty(mime_type)) ?
+      WebMimeRegistry::IsSupported : WebMimeRegistry::IsNotSupported;
 }
 
 WebMimeRegistry::SupportsType SimpleWebMimeRegistryImpl::supportsMediaMIMEType(
-    const WebString& mime_type, const WebString& codecs) {
+    const WebString& mime_type,
+    const WebString& codecs) {
   // Not supporting the container is a flat-out no.
-  if (!net::IsSupportedMediaMimeType(ToASCIIOrEmpty(mime_type).c_str()))
+  if (!net::IsSupportedMediaMimeType(ToASCIIOrEmpty(mime_type)))
     return IsNotSupported;
 
   // Check list of strict codecs to see if it is supported.
-  if (net::IsStrictMediaMimeType(ToASCIIOrEmpty(mime_type).c_str())) {
+  if (net::IsStrictMediaMimeType(ToASCIIOrEmpty(mime_type))) {
     // We support the container, but no codecs were specified.
     if (codecs.isNull())
       return MayBeSupported;
 
     // Check if the codecs are a perfect match.
     std::vector<std::string> strict_codecs;
-    net::ParseCodecString(ToASCIIOrEmpty(codecs).c_str(),
-                          &strict_codecs,
+    net::ParseCodecString(ToASCIIOrEmpty(codecs).c_str(), &strict_codecs,
                           false);
-    if (!net::IsSupportedStrictMediaMimeType(ToASCIIOrEmpty(mime_type).c_str(),
+    if (!net::IsSupportedStrictMediaMimeType(ToASCIIOrEmpty(mime_type),
                                              strict_codecs))
       return IsNotSupported;
 
@@ -84,18 +80,18 @@ WebMimeRegistry::SupportsType SimpleWebMimeRegistryImpl::supportsMediaMIMEType(
   return IsSupported;
 }
 
-WebMimeRegistry::SupportsType SimpleWebMimeRegistryImpl::supportsNonImageMIMEType(
+WebMimeRegistry::SupportsType
+    SimpleWebMimeRegistryImpl::supportsNonImageMIMEType(
     const WebString& mime_type) {
-  if (!net::IsSupportedNonImageMimeType(ToASCIIOrEmpty(mime_type).c_str()))
-    return WebMimeRegistry::IsNotSupported;
-  return WebMimeRegistry::IsSupported;
+  return net::IsSupportedNonImageMimeType(ToASCIIOrEmpty(mime_type)) ?
+      WebMimeRegistry::IsSupported : WebMimeRegistry::IsNotSupported;
 }
 
 WebString SimpleWebMimeRegistryImpl::mimeTypeForExtension(
     const WebString& file_extension) {
   std::string mime_type;
-  net::GetMimeTypeFromExtension(
-      WebStringToFilePathString(file_extension), &mime_type);
+  net::GetMimeTypeFromExtension(WebStringToFilePathString(file_extension),
+                                &mime_type);
   return ASCIIToUTF16(mime_type);
 }
 
@@ -110,8 +106,8 @@ WebString SimpleWebMimeRegistryImpl::wellKnownMimeTypeForExtension(
 WebString SimpleWebMimeRegistryImpl::mimeTypeFromFile(
     const WebString& file_path) {
   std::string mime_type;
-  net::GetMimeTypeFromFile(
-      FilePath(WebStringToFilePathString(file_path)), &mime_type);
+  net::GetMimeTypeFromFile(FilePath(WebStringToFilePathString(file_path)),
+                           &mime_type);
   return ASCIIToUTF16(mime_type);
 }
 

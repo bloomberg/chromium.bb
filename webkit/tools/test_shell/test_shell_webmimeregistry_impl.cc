@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,9 +16,7 @@ namespace {
 // Convert a WebString to ASCII, falling back on an empty string in the case
 // of a non-ASCII string.
 std::string ToASCIIOrEmpty(const WebString& string) {
-  if (!IsStringASCII(string))
-    return std::string();
-  return UTF16ToASCII(string);
+  return IsStringASCII(string) ? UTF16ToASCII(string) : std::string();
 }
 
 }  // namespace
@@ -40,15 +38,16 @@ TestShellWebMimeRegistryImpl::TestShellWebMimeRegistryImpl() {
 TestShellWebMimeRegistryImpl::~TestShellWebMimeRegistryImpl() {}
 
 WebMimeRegistry::SupportsType
-TestShellWebMimeRegistryImpl::supportsMediaMIMEType(
-    const WebString& mime_type, const WebString& codecs) {
+    TestShellWebMimeRegistryImpl::supportsMediaMIMEType(
+    const WebString& mime_type,
+    const WebString& codecs) {
   // Not supporting the container is a flat-out no.
-  if (!IsSupportedMediaMimeType(ToASCIIOrEmpty(mime_type).c_str()))
+  if (!IsSupportedMediaMimeType(ToASCIIOrEmpty(mime_type)))
     return IsNotSupported;
 
   // If we don't recognize the codec, it's possible we support it.
   std::vector<std::string> parsed_codecs;
-  net::ParseCodecString(ToASCIIOrEmpty(codecs).c_str(), &parsed_codecs, true);
+  net::ParseCodecString(ToASCIIOrEmpty(codecs), &parsed_codecs, true);
   if (!AreSupportedMediaCodecs(parsed_codecs))
     return MayBeSupported;
 
@@ -64,9 +63,8 @@ bool TestShellWebMimeRegistryImpl::IsSupportedMediaMimeType(
 bool TestShellWebMimeRegistryImpl::AreSupportedMediaCodecs(
     const std::vector<std::string>& codecs) {
   for (size_t i = 0; i < codecs.size(); ++i) {
-    if (codecs_map_.find(codecs[i]) == codecs_map_.end()) {
+    if (codecs_map_.find(codecs[i]) == codecs_map_.end())
       return false;
-    }
   }
-  return true;
+  return !codecs.empty();
 }
