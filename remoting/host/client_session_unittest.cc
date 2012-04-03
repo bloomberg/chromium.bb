@@ -53,6 +53,13 @@ class ClientSessionTest : public testing::Test {
   }
 
  protected:
+  void DisconnectClientSession() {
+    client_session_->Disconnect();
+    // MockSession won't trigger OnConnectionClosed, so fake it.
+    client_session_->OnConnectionClosed(client_session_->connection(),
+                                        protocol::OK);
+  }
+
   SkISize default_screen_size_;
   MessageLoop message_loop_;
   std::string client_jid_;
@@ -83,8 +90,10 @@ TEST_F(ClientSessionTest, ClipboardStubFilter) {
 
   InSequence s;
   EXPECT_CALL(session_event_handler_, OnSessionAuthenticated(_));
+  EXPECT_CALL(session_event_handler_, OnSessionChannelsConnected(_));
   EXPECT_CALL(host_event_stub_, InjectClipboardEvent(EqualsClipboardEvent(
       kMimeTypeTextUtf8, "b")));
+  EXPECT_CALL(session_event_handler_, OnSessionClosed(_));
 
   // This event should not get through to the clipboard stub,
   // because the client isn't authenticated yet.
@@ -93,7 +102,7 @@ TEST_F(ClientSessionTest, ClipboardStubFilter) {
   client_session_->OnConnectionChannelsConnected(client_session_->connection());
   // This event should get through to the clipboard stub.
   client_session_->InjectClipboardEvent(clipboard_event2);
-  client_session_->Disconnect();
+  DisconnectClientSession();
   // This event should not get through to the clipboard stub,
   // because the client has disconnected.
   client_session_->InjectClipboardEvent(clipboard_event3);
@@ -107,8 +116,8 @@ MATCHER_P2(EqualsMouseEvent, x, y, "") {
   return arg.x() == x && arg.y() == y;
 }
 
-MATCHER_P(EqualsMouseUpEvent, button, "") {
-  return arg.button() == button && !arg.button_down();
+MATCHER_P2(EqualsMouseButtonEvent, button, down, "") {
+  return arg.button() == button && arg.button_down() == down;
 }
 
 TEST_F(ClientSessionTest, InputStubFilter) {
@@ -146,6 +155,7 @@ TEST_F(ClientSessionTest, InputStubFilter) {
   EXPECT_CALL(host_event_stub_, InjectKeyEvent(EqualsKeyEvent(2, true)));
   EXPECT_CALL(host_event_stub_, InjectKeyEvent(EqualsKeyEvent(2, false)));
   EXPECT_CALL(host_event_stub_, InjectMouseEvent(EqualsMouseEvent(200, 201)));
+  EXPECT_CALL(session_event_handler_, OnSessionClosed(_));
 
   // These events should not get through to the input stub,
   // because the client isn't authenticated yet.
@@ -157,7 +167,7 @@ TEST_F(ClientSessionTest, InputStubFilter) {
   client_session_->InjectKeyEvent(key_event2_down);
   client_session_->InjectKeyEvent(key_event2_up);
   client_session_->InjectMouseEvent(mouse_event2);
-  client_session_->Disconnect();
+  DisconnectClientSession();
   // These events should not get through to the input stub,
   // because the client has disconnected.
   client_session_->InjectKeyEvent(key_event3);
@@ -176,12 +186,11 @@ TEST_F(ClientSessionTest, LocalInputTest) {
   mouse_event3.set_y(301);
 
   InSequence s;
-  EXPECT_CALL(session_event_handler_,
-              OnSessionAuthenticated(client_session_.get()));
-  EXPECT_CALL(session_event_handler_,
-              OnSessionChannelsConnected(client_session_.get()));
+  EXPECT_CALL(session_event_handler_, OnSessionAuthenticated(_));
+  EXPECT_CALL(session_event_handler_, OnSessionChannelsConnected(_));
   EXPECT_CALL(host_event_stub_, InjectMouseEvent(EqualsMouseEvent(100, 101)));
   EXPECT_CALL(host_event_stub_, InjectMouseEvent(EqualsMouseEvent(200, 201)));
+  EXPECT_CALL(session_event_handler_, OnSessionClosed(_));
 
   client_session_->OnConnectionAuthenticated(client_session_->connection());
   client_session_->OnConnectionChannelsConnected(client_session_->connection());
@@ -197,7 +206,7 @@ TEST_F(ClientSessionTest, LocalInputTest) {
   client_session_->InjectMouseEvent(mouse_event3);
   // TODO(jamiewalch): Verify that remote inputs are re-enabled eventually
   // (via dependency injection, not sleep!)
-  client_session_->Disconnect();
+  DisconnectClientSession();
 }
 
 TEST_F(ClientSessionTest, RestoreEventState) {
@@ -213,16 +222,27 @@ TEST_F(ClientSessionTest, RestoreEventState) {
   mousedown.set_button(protocol::MouseEvent::BUTTON_LEFT);
   mousedown.set_button_down(true);
 
-  client_session_->RecordKeyEvent(key1);
-  client_session_->RecordKeyEvent(key2);
-  client_session_->RecordMouseButtonState(mousedown);
-
+  InSequence s;
+  EXPECT_CALL(session_event_handler_, OnSessionAuthenticated(_));
+  EXPECT_CALL(session_event_handler_, OnSessionChannelsConnected(_));
+  EXPECT_CALL(host_event_stub_, InjectKeyEvent(EqualsKeyEvent(1, true)));
+  EXPECT_CALL(host_event_stub_, InjectKeyEvent(EqualsKeyEvent(2, true)));
+  EXPECT_CALL(host_event_stub_, InjectMouseEvent(EqualsMouseButtonEvent(
+      protocol::MouseEvent::BUTTON_LEFT, true)));
   EXPECT_CALL(host_event_stub_, InjectKeyEvent(EqualsKeyEvent(1, false)));
   EXPECT_CALL(host_event_stub_, InjectKeyEvent(EqualsKeyEvent(2, false)));
-  EXPECT_CALL(host_event_stub_, InjectMouseEvent(EqualsMouseUpEvent(
-      protocol::MouseEvent::BUTTON_LEFT)));
+  EXPECT_CALL(host_event_stub_, InjectMouseEvent(EqualsMouseButtonEvent(
+      protocol::MouseEvent::BUTTON_LEFT, false)));
+  EXPECT_CALL(session_event_handler_, OnSessionClosed(_));
 
-  client_session_->RestoreEventState();
+  client_session_->OnConnectionAuthenticated(client_session_->connection());
+  client_session_->OnConnectionChannelsConnected(client_session_->connection());
+
+  client_session_->InjectKeyEvent(key1);
+  client_session_->InjectKeyEvent(key2);
+  client_session_->InjectMouseEvent(mousedown);
+
+  DisconnectClientSession();
 }
 
 TEST_F(ClientSessionTest, ClampMouseEvents) {
@@ -230,10 +250,9 @@ TEST_F(ClientSessionTest, ClampMouseEvents) {
   EXPECT_CALL(capturer_, size_most_recent())
       .WillRepeatedly(ReturnRef(screen));
 
-  EXPECT_CALL(session_event_handler_,
-              OnSessionAuthenticated(client_session_.get()));
-  EXPECT_CALL(session_event_handler_,
-              OnSessionChannelsConnected(client_session_.get()));
+  EXPECT_CALL(session_event_handler_, OnSessionAuthenticated(_));
+  EXPECT_CALL(session_event_handler_, OnSessionChannelsConnected(_));
+
   client_session_->OnConnectionAuthenticated(client_session_->connection());
   client_session_->OnConnectionChannelsConnected(client_session_->connection());
 

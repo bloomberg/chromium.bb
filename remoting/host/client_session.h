@@ -6,14 +6,17 @@
 #define REMOTING_HOST_CLIENT_SESSION_H_
 
 #include <list>
-#include <set>
 
 #include "base/time.h"
 #include "base/threading/non_thread_safe.h"
+#include "remoting/host/remote_input_filter.h"
 #include "remoting/protocol/clipboard_stub.h"
 #include "remoting/protocol/connection_to_client.h"
 #include "remoting/protocol/host_event_stub.h"
 #include "remoting/protocol/host_stub.h"
+#include "remoting/protocol/input_event_tracker.h"
+#include "remoting/protocol/input_filter.h"
+#include "remoting/protocol/input_stub.h"
 #include "third_party/skia/include/core/SkPoint.h"
 
 namespace remoting {
@@ -97,10 +100,6 @@ class ClientSession : public protocol::HostEventStub,
     return connection_.get();
   }
 
-  void set_awaiting_continue_approval(bool awaiting) {
-    awaiting_continue_approval_ = awaiting;
-  }
-
   const std::string& client_jid() { return client_jid_; }
 
   // Indicate that local mouse activity has been detected. This causes remote
@@ -108,21 +107,11 @@ class ClientSession : public protocol::HostEventStub,
   // have the upper hand in 'pointer wars'.
   void LocalMouseMoved(const SkIPoint& new_pos);
 
-  bool ShouldIgnoreRemoteMouseInput(const protocol::MouseEvent& event) const;
-  bool ShouldIgnoreRemoteKeyboardInput(const protocol::KeyEvent& event) const;
+  // Disable handling of input events from this client. If the client has any
+  // keys or mouse buttons pressed then these will be released.
+  void SetDisableInputs(bool disable_inputs);
 
  private:
-  friend class ClientSessionTest_RestoreEventState_Test;
-
-  // Keep track of input state so that we can clean up the event queue when
-  // the user disconnects.
-  void RecordKeyEvent(const protocol::KeyEvent& event);
-  void RecordMouseButtonState(const protocol::MouseEvent& event);
-
-  // Synthesize KeyUp and MouseUp events so that we can undo these events
-  // when the user disconnects.
-  void RestoreEventState();
-
   EventHandler* event_handler_;
 
   // The connection to the client.
@@ -133,40 +122,23 @@ class ClientSession : public protocol::HostEventStub,
   // The host event stub to which this object delegates.
   protocol::HostEventStub* host_event_stub_;
 
+  // Tracker used to release pressed keys and buttons when disconnecting.
+  protocol::InputEventTracker input_tracker_;
+
+  // Filter used to disable remote inputs during local input activity.
+  RemoteInputFilter remote_input_filter_;
+
+  // Filter used to manage enabling & disabling of client input events.
+  protocol::InputFilter disable_input_filter_;
+
+  // Filter used to disable inputs when we're not authenticated.
+  protocol::InputFilter auth_input_filter_;
+
   // Capturer, used to determine current screen size for ensuring injected
   // mouse events fall within the screen area.
   // TODO(lambroslambrou): Move floor-control logic, and clamping to screen
   // area, out of this class (crbug.com/96508).
   Capturer* capturer_;
-
-  // Whether this client is authenticated.
-  bool authenticated_;
-
-  // Whether this client is fully connected (i.e. all channels are
-  // connected).
-  bool connected_;
-
-  // Whether or not inputs from this client are blocked pending approval from
-  // the host user to continue the connection.
-  bool awaiting_continue_approval_;
-
-  // State to control remote input blocking while the local pointer is in use.
-  uint32 remote_mouse_button_state_;
-
-  // Current location of the mouse pointer. This is used to provide appropriate
-  // coordinates when we release the mouse buttons after a user disconnects.
-  SkIPoint remote_mouse_pos_;
-
-  // Queue of recently-injected mouse positions.  This is used to detect whether
-  // mouse events from the local input monitor are echoes of injected positions,
-  // or genuine mouse movements of a local input device.
-  std::list<SkIPoint> injected_mouse_positions_;
-
-  base::Time latest_local_input_time_;
-
-  // Set of keys that are currently pressed down by the user. This is used so
-  // we can release them if the user disconnects.
-  std::set<int> pressed_keys_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientSession);
 };

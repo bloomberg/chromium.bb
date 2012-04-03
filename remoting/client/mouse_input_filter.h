@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,7 +18,7 @@ namespace remoting {
 // output dimensions, before passing events on to |input_stub|.
 class MouseInputFilter : public protocol::InputStub {
  public:
-  MouseInputFilter(protocol::InputStub* input_stub);
+  explicit MouseInputFilter(protocol::InputStub* input_stub);
   virtual ~MouseInputFilter();
 
   // Specify the input dimensions for mouse events.

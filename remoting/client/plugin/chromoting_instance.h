@@ -44,7 +44,7 @@ namespace remoting {
 
 namespace protocol {
 class ConnectionToHost;
-class KeyEventTracker;
+class InputEventTracker;
 }  // namespace protocol
 
 class ChromotingClient;
@@ -183,7 +183,7 @@ class ChromotingInstance :
 
   scoped_refptr<RectangleUpdateDecoder> rectangle_decoder_;
   scoped_ptr<MouseInputFilter> mouse_input_filter_;
-  scoped_ptr<protocol::KeyEventTracker> key_event_tracker_;
+  scoped_ptr<protocol::InputEventTracker> input_tracker_;
   scoped_ptr<PepperInputHandler> input_handler_;
   scoped_ptr<ChromotingClient> client_;
 

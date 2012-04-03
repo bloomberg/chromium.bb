@@ -38,7 +38,7 @@
 #include "remoting/client/rectangle_update_decoder.h"
 #include "remoting/protocol/connection_to_host.h"
 #include "remoting/protocol/host_stub.h"
-#include "remoting/protocol/key_event_tracker.h"
+#include "remoting/protocol/input_event_tracker.h"
 
 // Windows defines 'PostMessage', so we have to undef it.
 #if defined(PostMessage)
@@ -363,10 +363,10 @@ void ChromotingInstance::Connect(const ClientConfig& config) {
   mouse_input_filter_.reset(
       new MouseInputFilter(host_connection_->input_stub()));
   mouse_input_filter_->set_input_size(view_->get_view_size());
-  key_event_tracker_.reset(
-      new protocol::KeyEventTracker(mouse_input_filter_.get()));
+  input_tracker_.reset(
+      new protocol::InputEventTracker(mouse_input_filter_.get()));
   input_handler_.reset(
-      new PepperInputHandler(key_event_tracker_.get()));
+      new PepperInputHandler(input_tracker_.get()));
 
   LOG(INFO) << "Connecting to " << config.host_jid
             << ". Local jid: " << config.local_jid << ".";
@@ -403,7 +403,7 @@ void ChromotingInstance::Disconnect() {
   }
 
   input_handler_.reset();
-  key_event_tracker_.reset();
+  input_tracker_.reset();
   mouse_input_filter_.reset();
   host_connection_.reset();
 
@@ -415,13 +415,13 @@ void ChromotingInstance::OnIncomingIq(const std::string& iq) {
 }
 
 void ChromotingInstance::ReleaseAllKeys() {
-  if (key_event_tracker_.get())
-    key_event_tracker_->ReleaseAllKeys();
+  if (input_tracker_.get())
+    input_tracker_->ReleaseAll();
 }
 
 void ChromotingInstance::InjectKeyEvent(const protocol::KeyEvent& event) {
-  if (key_event_tracker_.get())
-    key_event_tracker_->InjectKeyEvent(event);
+  if (input_tracker_.get())
+    input_tracker_->InjectKeyEvent(event);
 }
 
 void ChromotingInstance::SendClipboardItem(const std::string& mime_type,

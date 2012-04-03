@@ -343,7 +343,7 @@ void ChromotingHost::PauseSession(bool pause) {
 
   ClientList::iterator client;
   for (client = clients_.begin(); client != clients_.end(); ++client) {
-    (*client)->set_awaiting_continue_approval(pause);
+    (*client)->SetDisableInputs(pause);
   }
 }
 
