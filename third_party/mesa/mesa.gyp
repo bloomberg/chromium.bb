@@ -1,4 +1,4 @@
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -516,6 +516,23 @@
         'MesaLib/src/mesa/vbo/vbo_split.h',
         'MesaLib/src/mesa/vbo/vbo_split_copy.c',
         'MesaLib/src/mesa/vbo/vbo_split_inplace.c',
+      ],
+      'conditions': [
+        ['clang == 1', {
+          'xcode_settings': {
+            'WARNING_CFLAGS': [
+              # Several functions ignore the result of talloc_steal().
+              '-Wno-unused-value',
+              # texenvprogram.c converts '~0' to a bitfield, which causes clang
+              # to warn that -1 is implicitly converted to 255.
+              '-Wno-constant-conversion',
+            ],
+          },
+          'cflags': [
+            '-Wno-unused-value',
+            '-Wno-constant-conversion',
+          ],
+        }],
       ],
     },
     # Building this target will hide the native OpenGL shared library and
