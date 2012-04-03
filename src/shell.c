@@ -1932,6 +1932,7 @@ switcher_next(struct switcher *switcher)
 	struct weston_compositor *compositor = switcher->compositor;
 	struct weston_surface *surface;
 	struct weston_surface *first = NULL, *prev = NULL, *next = NULL;
+	struct shell_surface *shsurf;
 
 	wl_list_for_each(surface, &compositor->surface_list, link) {
 		switch (get_shell_surface_type(surface)) {
@@ -1971,8 +1972,9 @@ switcher_next(struct switcher *switcher)
 	switcher->current = next;
 	next->alpha = 255;
 
-	if (get_shell_surface_type(switcher->current) == SHELL_SURFACE_FULLSCREEN)
-		get_shell_surface(switcher->current)->fullscreen.black_surface->alpha = 255;
+	shsurf = get_shell_surface(switcher->current);
+	if (shsurf && shsurf->type ==SHELL_SURFACE_FULLSCREEN)
+		shsurf->fullscreen.black_surface->alpha = 255;
 }
 
 static void
