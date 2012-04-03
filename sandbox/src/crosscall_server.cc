@@ -138,6 +138,12 @@ CrossCallParamsEx* CrossCallParamsEx::CreateFromBuffer(void* buffer_base,
     copied_params = reinterpret_cast<CrossCallParamsEx*>(backing_mem);
     memcpy(backing_mem, call_params, declared_size);
 
+    // Check params count in case it got changed right before the memcpy.
+    if (copied_params->GetParamsCount() != param_count) {
+      delete [] backing_mem;
+      return NULL;
+    }
+
   } __except(EXCEPTION_EXECUTE_HANDLER) {
     // In case of a windows exception we know it occurred while touching the
     // untrusted buffer so we bail out as is.
