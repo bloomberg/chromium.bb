@@ -59,9 +59,9 @@ void *thread_function(void *data) {
 }
 
 int main(int argc, char *argv[]) {
-  if (argc < 2) {
+  if (argc < 3) {
     fprintf(stderr,
-            "usage: linux_dumper_unittest_helper <pipe fd> <# of threads\n");
+            "usage: linux_dumper_unittest_helper <pipe fd> <# of threads>\n");
     return 1;
   }
   int pipefd = atoi(argv[1]);
@@ -79,7 +79,10 @@ int main(int argc, char *argv[]) {
   }
   // Signal parent that this process has started all threads.
   uint8_t byte = 1;
-  write(pipefd, &byte, sizeof(byte));
+  if (write(pipefd, &byte, sizeof(byte)) != sizeof(byte)) {
+    perror("ERROR: parent notification failed");
+    return 1;
+  }
   thread_function(NULL);
   return 0;
 }
