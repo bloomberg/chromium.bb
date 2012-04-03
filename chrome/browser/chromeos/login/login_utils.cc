@@ -963,7 +963,10 @@ void LoginUtilsImpl::StartSignedInServices(
     // service is lazy-initialized, we need to make sure it has been created.
     ProfileSyncService* sync_service =
         ProfileSyncServiceFactory::GetInstance()->GetForProfile(user_profile);
-    if (sync_service) {
+    // We may not always have a passphrase (for example, on a restart after a
+    // browser crash). Only notify the sync service if we have a passphrase,
+    // so it can do any required re-encryption.
+    if (!password_.empty() && sync_service) {
       GoogleServiceSigninSuccessDetails details(
           signin->GetAuthenticatedUsername(),
           password_);
