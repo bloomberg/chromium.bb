@@ -88,11 +88,10 @@ class PolicyPrefsTestCases(object):
     'SyncDisabled': (None, True, [], OS_ALL),
     'UserDataDir':
         (None, '${users}/${user_name}/chrome-test', [], ['win', 'mac']),
-    # TODO(frankf): Enable on win, mac, linux after crbug.com/121066 is fixed.
     'DiskCacheDir':
-        ('kDiskCacheSize', '${user_home}/test-cache', [],
-         []),
-    'DiskCacheSize': (None, 100, [], ['win', 'mac', 'linux']),
+        ('kDiskCacheDir', '${user_home}/test-cache', [],
+         ['win', 'mac', 'linux']),
+    'DiskCacheSize': ('kDiskCacheSize', 100, [], ['win', 'mac', 'linux']),
     'MediaCacheSize': ('kMediaCacheSize', 200, [], ['win', 'mac', 'linux']),
     'DownloadDirectory': (None, '${user_home}/test-downloads', [BROWSER],
                           ['win', 'mac', 'linux']),
