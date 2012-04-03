@@ -912,7 +912,6 @@ void URLIndexPrivateData::InitializeSchemeWhitelist(
   whitelist->insert(std::string(chrome::kAboutScheme));
   whitelist->insert(std::string(chrome::kChromeUIScheme));
   whitelist->insert(std::string(chrome::kFileScheme));
-  whitelist->insert(std::string(chrome::kFileSystemScheme));
   whitelist->insert(std::string(chrome::kFtpScheme));
   whitelist->insert(std::string(chrome::kHttpScheme));
   whitelist->insert(std::string(chrome::kHttpsScheme));

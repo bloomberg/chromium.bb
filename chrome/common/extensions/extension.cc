@@ -2477,27 +2477,16 @@ FileBrowserHandler* Extension::LoadFileBrowserHandler(
         return NULL;
       }
       StringToLowerASCII(&filter);
-      if (!StartsWithASCII(filter,
-                           std::string(chrome::kFileSystemScheme) + ':',
-                           true)) {
-        *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
-            errors::kInvalidURLPatternError, filter);
-        return NULL;
-      }
-      // The user inputs filesystem:*; we don't actually implement scheme
-      // wildcards in URLPattern, so transform to what will match correctly.
-      filter.replace(0, 11, "chrome-extension://*/");
-      URLPattern pattern(URLPattern::SCHEME_EXTENSION);
-      pattern.set_partial_filesystem_support_hack(true);
+      URLPattern pattern(URLPattern::SCHEME_FILESYSTEM);
       if (pattern.Parse(filter) != URLPattern::PARSE_SUCCESS) {
         *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
             errors::kInvalidURLPatternError, filter);
         return NULL;
       }
       std::string path = pattern.path();
-      bool allowed = path == "/*" || path == "/*.*" ||
-          (path.compare(0, 3, "/*.") == 0 &&
-           path.find_first_of('*', 3) == std::string::npos);
+      bool allowed = path == "*" || path == "*.*" ||
+          (path.compare(0, 2, "*.") == 0 &&
+           path.find_first_of('*', 2) == std::string::npos);
       if (!allowed) {
         *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
             errors::kInvalidURLPatternError, filter);
