@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/external_tab_container_win.h"
+#include "chrome/browser/external_tab/external_tab_container_win.h"
 
 #include <string>
 
@@ -12,6 +12,7 @@
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/win_util.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -533,7 +534,7 @@ void ExternalTabContainer::UpdateTargetURL(WebContents* source,
                                            const GURL& url) {
   Browser::UpdateTargetURLHelper(source, page_id, url);
   if (automation_) {
-    std::wstring url_string = CA2W(url.spec().c_str());
+    string16 url_string = CA2W(url.spec().c_str());
     automation_->Send(
         new AutomationMsg_UpdateTargetUrl(tab_handle_, url_string));
   }

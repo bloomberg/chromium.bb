@@ -91,7 +91,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFindOptions.h"
 
 #if defined(OS_WIN) && !defined(USE_AURA)
-#include "chrome/browser/external_tab_container_win.h"
+#include "chrome/browser/external_tab/external_tab_container_win.h"
 #endif  // defined(OS_WIN)
 
 #if defined(OS_CHROMEOS)
