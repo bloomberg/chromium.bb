@@ -11,11 +11,12 @@ document.write('<link id="incognitothemecss" rel="stylesheet" ' +
 </script>
 </head>
 <body>
-<div class="content" i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
+<div class="content"
+    i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
   <img src="shared/images/otr_icon_standalone.png" class="icon" />
   <span i18n-values=".innerHTML:content"></span>
-  <div style="margin-top:15px">
-    <img src="../../app/theme/extensions_section.png" class="extensionicon" />
+  <div class="extensions-message">
+    <img src="../../app/theme/extensions_section.png" class="extension-icon" />
     <span i18n-values=".innerHTML:extensionsmessage"></span>
   </div>
 </div>
