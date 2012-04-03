@@ -13,16 +13,15 @@ class CommandLine;
 
 namespace test_launcher {
 
+extern const char kEmptyTestName[];
 extern const char kGTestFilterFlag[];
 extern const char kGTestHelpFlag[];
 extern const char kGTestListTestsFlag[];
 extern const char kGTestRepeatFlag[];
 extern const char kGTestRunDisabledTestsFlag[];
 extern const char kGTestOutputFlag[];
-
 extern const char kSingleProcessTestsFlag[];
 extern const char kSingleProcessTestsAndChromeFlag[];
-
 extern const char kHelpFlag[];
 
 class TestLauncherDelegate {

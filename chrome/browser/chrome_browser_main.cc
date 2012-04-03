@@ -1758,6 +1758,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 
   if (parameters().ui_task) {
     // We are in test mode. Run one task and enter the main message loop.
+    process_singleton_->Unlock();
 #if defined(OS_MACOSX)
     if (parameters().autorelease_pool)
       parameters().autorelease_pool->Recycle();
