@@ -5301,6 +5301,33 @@
    fun:_ZN7fileapi12_GLOBAL__N_146FileSystemDirURLRequestJobTest_InvalidURL_Test8TestBodyEv
 }
 
+{
+   bug_121729
+   Memcheck:Leak
+   fun:malloc
+   fun:_ZN3WTF10fastMallocE*
+   fun:_ZN3WTF10RefCountedIN7WebCore10StyleSheetEEnwE*
+   fun:_ZN7WebCore13CSSStyleSheet6createEv
+   fun:_ZN7WebCoreL12parseUASheetERKN3WTF6StringE
+   fun:_ZN7WebCoreL12parseUASheetEPKcj
+   fun:_ZN7WebCoreL19loadViewSourceStyleEv
+   fun:_ZN7WebCore16CSSStyleSelector12matchUARulesERNS0_11MatchResultE
+   fun:_ZN7WebCore16CSSStyleSelector15styleForElementEPNS_7ElementEPNS_11RenderStyleENS_20StyleSharingBehaviorENS_20RuleMatchingBehaviorEPNS_12RenderRegionE
+   fun:_ZN7WebCore16CSSStyleSelectorC1EPNS_8DocumentEb
+   fun:_ZN7WebCore8Document19createStyleSelectorEv
+   fun:_ZN7WebCore8Document13styleSelectorEv
+   fun:_ZN7WebCore7Element16styleForRendererEv
+   fun:_ZN7WebCore19NodeRendererFactory22createRendererIfNeededEv
+   fun:_ZN7WebCore4Node22createRendererIfNeededEv
+   fun:_ZN7WebCore7Element6attachEv
+   fun:_ZN7WebCore22HTMLViewSourceDocument21createContainingTableEv
+   fun:_ZN7WebCore22HTMLViewSourceDocument9addSourceERKN3WTF6StringERNS_9HTMLTokenE
+   fun:_ZN7WebCore20HTMLViewSourceParser13pumpTokenizerEv
+   fun:_ZN7WebCore20HTMLViewSourceParser6appendERKNS_15SegmentedStringE
+   fun:_ZN7WebCore25DecodedDataDocumentParser5flushEPNS_14DocumentWriterE
+   fun:_ZN7WebCore14DocumentWriter27endIfNotLoadingMainResourceEv
+}
+
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
 
