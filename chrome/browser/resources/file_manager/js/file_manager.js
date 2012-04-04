@@ -2242,6 +2242,8 @@ FileManager.prototype = {
 
     if (this.isOnGData()) {
       cacheGDataProps(entry, function(entry) {
+        if (entry.gdata_.isHosted)
+          return;
         checkbox.checked = entry.gdata_.isPinned;
         div.appendChild(checkbox);
       });
@@ -2743,8 +2745,7 @@ FileManager.prototype = {
   };
 
   FileManager.prototype.isAvaliableOffline_ = function(gdata, type) {
-    return gdata.isPresent ||
-        (type.offlineUrlPattern && gdata.editUrl.match(type.offlineUrlPattern));
+    return gdata.isPresent && !gdata.isHosted;
   };
 
   FileManager.prototype.isOffline = function() {

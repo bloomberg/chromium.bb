@@ -72,16 +72,9 @@ FileType.types = [
 
   // Hosted docs.
   {type: 'hosted', icon: 'gdoc', name: 'GDOC_DOCUMENT_FILE_TYPE',
-   pattern: /\.gdoc$/i,
-   // New documents (with paths starting with 'document' are editable offline.
-   // Old documents (with paths starting with 'Doc') are not.
-   offlineUrlPattern: /^https:\/\/docs\.google\.com\/document\//
-  },
+   pattern: /\.gdoc$/i},
   {type: 'hosted', icon: 'gsheet', name: 'GSHEET_DOCUMENT_FILE_TYPE',
-   pattern: /\.gsheet$/i,
-   // All spreadsheets are editable offline.
-   offlineUrlPattern: /.*/
-  },
+   pattern: /\.gsheet$/i},
   {type: 'hosted', icon: 'gslides', name: 'GSLIDES_DOCUMENT_FILE_TYPE',
    pattern: /\.gslides$/i},
   {type: 'hosted', icon: 'gdraw', name: 'GDRAW_DOCUMENT_FILE_TYPE',
