@@ -25,6 +25,10 @@ namespace extensions {
 namespace api {
 
 #if defined(OS_CHROMEOS)
+BluetoothExtensionFunction::BluetoothExtensionFunction() : adapter_(
+    profile()->GetExtensionService()->bluetooth_event_router()->adapter()) {
+}
+
 bool BluetoothIsAvailableFunction::RunImpl() {
   const BluetoothAdapter *adapter =
       profile()->GetExtensionService()->bluetooth_event_router()->adapter();
@@ -50,9 +54,7 @@ bool BluetoothGetDevicesWithServiceFunction::RunImpl() {
   scoped_ptr<GetDevicesWithService::Params> params(
       GetDevicesWithService::Params::Create(*args_));
 
-  const BluetoothAdapter *adapter =
-      profile()->GetExtensionService()->bluetooth_event_router()->adapter();
-  BluetoothAdapter::ConstDeviceList devices = adapter->GetDevices();
+  BluetoothAdapter::ConstDeviceList devices = adapter_->GetDevices();
 
   ListValue* matches = new ListValue();
   for (BluetoothAdapter::ConstDeviceList::const_iterator i =
@@ -74,6 +76,8 @@ bool BluetoothGetDevicesWithServiceFunction::RunImpl() {
 }
 
 #else
+
+BluetoothExtensionFunction::BluetoothExtensionFunction() {}
 
 // -----------------------------------------------------------------------------
 // NIY stubs

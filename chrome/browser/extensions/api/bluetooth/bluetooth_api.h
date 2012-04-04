@@ -8,68 +8,84 @@
 
 #include "chrome/browser/extensions/extension_function.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/bluetooth/bluetooth_adapter.h"
+#endif
+
 namespace extensions {
 namespace api {
 
-class BluetoothIsAvailableFunction : public SyncExtensionFunction {
+class BluetoothExtensionFunction : public SyncExtensionFunction {
+ public:
+  BluetoothExtensionFunction();
+
+ protected:
+#if defined(OS_CHROMEOS)
+  const chromeos::BluetoothAdapter* adapter_;
+#endif
+};
+
+class BluetoothIsAvailableFunction : public BluetoothExtensionFunction {
  public:
   virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.bluetooth.isAvailable")
 };
 
-class BluetoothIsPoweredFunction : public SyncExtensionFunction {
+class BluetoothIsPoweredFunction : public BluetoothExtensionFunction {
  public:
   virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.bluetooth.isPowered")
 };
 
-class BluetoothGetAddressFunction : public SyncExtensionFunction {
+class BluetoothGetAddressFunction : public BluetoothExtensionFunction {
  public:
   virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.bluetooth.getAddress")
 };
 
-class BluetoothGetDevicesWithServiceFunction : public SyncExtensionFunction {
+class BluetoothGetDevicesWithServiceFunction
+    : public BluetoothExtensionFunction {
  public:
   virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME(
       "experimental.bluetooth.getDevicesWithService")
 };
 
-class BluetoothDisconnectFunction : public AsyncExtensionFunction {
+class BluetoothDisconnectFunction : public BluetoothExtensionFunction {
  public:
   virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.bluetooth.disconnect")
 };
 
-class BluetoothReadFunction : public AsyncExtensionFunction {
+class BluetoothReadFunction : public BluetoothExtensionFunction {
  public:
   virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.bluetooth.read")
 };
 
 class BluetoothSetOutOfBandPairingDataFunction
-    : public AsyncExtensionFunction {
+    : public BluetoothExtensionFunction {
  public:
   virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME(
       "experimental.bluetooth.setOutOfBandPairingData")
 };
 
-class BluetoothGetOutOfBandPairingDataFunction : public AsyncExtensionFunction {
+class BluetoothGetOutOfBandPairingDataFunction
+    : public BluetoothExtensionFunction {
  public:
   virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME(
       "experimental.bluetooth.getOutOfBandPairingData")
 };
 
-class BluetoothWriteFunction : public AsyncExtensionFunction {
+class BluetoothWriteFunction : public BluetoothExtensionFunction {
  public:
   virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.bluetooth.write")
 };
 
-class BluetoothConnectFunction : public AsyncExtensionFunction {
+class BluetoothConnectFunction : public BluetoothExtensionFunction {
  public:
   virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.bluetooth.connect")
