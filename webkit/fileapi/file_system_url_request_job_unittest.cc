@@ -214,14 +214,7 @@ net::URLRequestJob* FileSystemURLRequestJobTest::job_ = NULL;
 
 namespace {
 
-// http://crbug.com/121671
-#if defined(OS_WIN)
-#define MAYBE_FileTest DISABLED_FileTest
-#else
-#define MAYBE_FileTest FileTest
-#endif
-
-TEST_F(FileSystemURLRequestJobTest, MAYBE_FileTest) {
+TEST_F(FileSystemURLRequestJobTest, FileTest) {
   WriteFile("file1.dat", kTestFileData, arraysize(kTestFileData) - 1);
   TestRequest(CreateFileSystemURL("file1.dat"));
 
