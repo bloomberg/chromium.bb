@@ -1,3 +1,7 @@
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
 body {
   color: black;
   cursor: default;
@@ -19,8 +23,8 @@ button {
 #about-policy-title {
   -webkit-padding-end: 24px;
   -webkit-user-select: none;
-  border-bottom: 1px solid #c6c9ce;
-  color: #53637d;
+  border-bottom: 1px solid rgb(198, 201, 206);
+  color: rgb(83, 99, 125);
   cursor: pointer;
   font-size: 200%;
   font-weight: normal;
@@ -130,12 +134,12 @@ legend {
 }
 
 #policy-table th {
-  background-color: #dadadd;
+  background-color: rgb(218, 218, 221);
   padding: 10px;
 }
 
 #policy-table td {
-  background-color: #eaeef3;
+  background-color: rgb(234, 238, 243);
   padding: 10px;
   position: relative;
   vertical-align: top;

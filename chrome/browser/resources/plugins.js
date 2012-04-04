@@ -102,8 +102,7 @@ function loadShowDetailsFromPrefs(show_details) {
   document.getElementById('expand').style.display =
       show_details ? 'none' : 'inline';
 
-  document.body.className =
-      show_details ? 'showTmiMode' : 'hideTmiMode';
+  document.body.className = show_details ? 'show-tmi-mode' : 'hide-tmi-mode';
 }
 
 /**
@@ -117,7 +116,7 @@ function returnPluginsData(pluginsData){
   // Set all page content to be visible so we can measure heights.
   bodyContainer.style.visibility = 'hidden';
   body.className = '';
-  var slidables = document.getElementsByClassName('showInTmiMode');
+  var slidables = document.getElementsByClassName('show-in-tmi-mode');
   for (var i = 0; i < slidables.length; i++)
     slidables[i].style.height = 'auto';
 
@@ -172,7 +171,7 @@ function returnPluginsData(pluginsData){
 
   // Explicitly set the height for each element that wants to be "slid" in and
   // out when the tmiModeExpanded is toggled.
-  var slidables = document.getElementsByClassName('showInTmiMode');
+  var slidables = document.getElementsByClassName('show-in-tmi-mode');
   for (var i = 0; i < slidables.length; i++)
     slidables[i].style.height = slidables[i].offsetHeight + 'px';
 
@@ -183,7 +182,7 @@ function returnPluginsData(pluginsData){
      tmiModeExpanded ? 'none' : 'inline';
   bodyContainer.style.visibility = 'visible';
   body.className = tmiModeExpanded ?
-     'showTmiModeInitial' : 'hideTmiModeInitial';
+     'show-tmi-mode-initial' : 'hide-tmi-mode-initial';
 }
 
 /**
@@ -210,7 +209,7 @@ function toggleTmiMode() {
       tmiModeExpanded ? 'none' : 'inline';
 
   document.body.className =
-      tmiModeExpanded ? 'showTmiMode' : 'hideTmiMode';
+      tmiModeExpanded ? 'show-tmi-mode' : 'hide-tmi-mode';
 
   chrome.send('saveShowDetailsToPrefs', [String(tmiModeExpanded)]);
 }

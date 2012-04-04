@@ -1,13 +1,14 @@
 /* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
- */
-html, body {
-  margin: 0;
-  width: 100%;
-  height: 100%;
+ * found in the LICENSE file. */
+
+html,
+body {
   cursor: default;
+  height: 100%;
+  margin: 0;
   overflow: hidden;
+  width: 100%;
 }
 
 list {
@@ -17,33 +18,35 @@ list {
 }
 
 list > * {
-  color: hsl(0, 0%, 70%);
-  padding: 0 3px;
   -webkit-padding-end: 20px;
+  -webkit-padding-start: 3px;
+  color: hsl(0, 0%, 70%);
+  display: -webkit-box;
+  padding-bottom: 0;
+  padding-top: 0;
   text-decoration: none;
   white-space: nowrap;
-  display: -webkit-box;
 }
 
 list > * > * {
-  box-sizing: border-box;
   -webkit-padding-start: 20px;
   background: 0 50% no-repeat;
+  box-sizing: border-box;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: pre; /* Don't collapse whitespace */
 }
 
 list > * > .label {
-  -webkit-transition: all .15s;
+  -webkit-transition: all 150ms;
   color: black;
   display: inline-block; /* We need to use inline-block here due to RTL. */
 }
 
 list > * > .url {
-  display: none;
   -webkit-box-flex: 1;
   direction: ltr; /* URLs always read LTR */
+  display: none;
 }
 
 list > :hover > .url,
@@ -65,22 +68,22 @@ html[dir=rtl] list .label {
 }
 
 list > .folder > .label {
-  background-image: url("../../../../../ui/resources/folder_closed.png");
+  background-image: url('../../../../../ui/resources/folder_closed.png');
 }
 
 /* We need to ensure that even empty labels take up space */
 list > * > .label:empty:after,
 list > * > .url:empty:after {
-  content: " ";
+  content: ' ';
   white-space: pre;
 }
 
 list > .folder > .url:empty:after {
-  content: "";
+  content: '';
 }
 
 list > * > button {
-  -webkit-transition: opacity .15s;
+  -webkit-transition: opacity 150ms;
   background: #fff -webkit-canvas(drop-down-arrow) no-repeat center center;
   border: 1px solid hsl(214, 91%, 85%);
   border-radius: 3px;
@@ -109,31 +112,31 @@ list > * > button[menu-shown] {
 }
 
 html[dir=rtl] list > * > button {
-  right: auto;
   left: 3px;
+  right: auto;
 }
 
 /* Edit mode */
 
 list [editing] .label input,
 list [editing] .url input {
+  -webkit-margin-end: 4px;
+  -webkit-margin-start: -4px;
+  -webkit-padding-end: 3px;
+  -webkit-padding-start: 1px;
   /* Do not inherit the line-height */
   font-family: inherit;
   font-size: inherit;
   font-weight: inherit;
-  margin: 0;
-  -webkit-margin-start: -4px;
-  -webkit-margin-end: 4px;
+  margin-bottom: 0;
+  margin-top: 0;
   max-width: 40%;
-  padding: 0;
-  -webkit-padding-start: 1px;
-  -webkit-padding-end: 3px;
+  padding-bottom: 0;
+  padding-top: 0;
   text-decoration: none;
 }
 
 .tree-item [editing] input {
-  -webkit-margin-start: -3px;
-  -webkit-padding-end: 7px;
   margin: 0;
   padding: 0;
 <if expr="is_macosx">
@@ -155,8 +158,8 @@ list > [editing] {
 list [editing] .label,
 list [editing] .url,
 list [editing] > * {
-  overflow: visible;
   display: inline;
+  overflow: visible;
 }
 
 list [editing] .url {
@@ -166,7 +169,7 @@ list [editing] .url {
 /* end editing */
 
 html[dir=rtl] list > .folder > .label {
-  background-image: url("../../../../../ui/resources/folder_closed_rtl.png");
+  background-image: url('../../../../../ui/resources/folder_closed_rtl.png');
 }
 
 <if expr="is_macosx">
@@ -174,17 +177,17 @@ list > .folder > .label,
 .tree-label,
 .tree-row[may-have-children] > .tree-label,
 .tree-item[expanded] > .tree-row > .tree-label {
-  background-image: url("../../../../app/theme/bookmark_bar_folder_mac.png");
+  background-image: url('../../../../app/theme/bookmark_bar_folder_mac.png');
 }
 </if>
 
 .main {
-  position: absolute;
-  display: -webkit-box;
-  top: 79px;
-  left: 0;
-  right: 0;
   bottom: 0;
+  display: -webkit-box;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 79px;
 }
 
 .main > * {
@@ -192,20 +195,22 @@ list > .folder > .label,
 }
 
 #tree-container {
-  width: 200px;
-  /* min-width and max-width are used by the split pane. */
-  min-width: 50px;
-  max-width: 50%;
-  overflow: auto;
-  box-sizing: border-box;
-  padding: 5px;
+  -webkit-padding-end: 5px;
   -webkit-padding-start: 10px;
+  box-sizing: border-box;
+  /* min-width and max-width are used by the split pane. */
+  max-width: 50%;
+  min-width: 50px;
+  overflow: auto;
+  padding-bottom: 5px;
+  padding-top: 5px;
+  width: 200px;
 }
 
 #tree {
+  display: inline-block;
   min-width: 100%;
   overflow: visible; /* let the container do the scrolling */
-  display: inline-block;
 }
 
 #list {
@@ -215,9 +220,9 @@ list > .folder > .label,
 }
 
 .splitter {
-  width: 5px;
-  background-color: #ebeff9;
+  background-color: rgb(235, 239, 249);
   cursor: e-resize;
+  width: 5px;
 <if expr="is_macosx">
   cursor: col-resize;
 </if>
@@ -225,19 +230,18 @@ list > .folder > .label,
 
 .logo {
   -webkit-appearance: none;
+  background: url('../images/bookmarks_section_32.png') no-repeat 50% 50%;
   border: 0;
-  background: url("../images/bookmarks_section_32.png") no-repeat 50% 50%;
-  width: 32px;
-  height: 32px;
   cursor: pointer;
-  margin: 10px;
   float: left;
+  height: 32px;
+  margin: 10px;
+  width: 32px;
 }
 
 .header form {
   float: left;
-  margin: 14px 2px;
-  margin-bottom: 0;
+  margin: 14px 2px 0 2px;
   width: 171px;
 }
 
@@ -258,53 +262,55 @@ input[type='search'] {
 }
 
 #drop-overlay {
-  position: absolute;
-  display: none;
-  pointer-events: none;
-  border: 1px solid hsl(214, 91%, 85%);;
+  background-color: hsla(214, 91%, 85%, .5);
+  border: 1px solid hsl(214, 91%, 85%);
   border-radius: 3px;
   box-sizing: border-box;
-  background-color: hsla(214, 91%, 85%, .5);
+  display: none;
   overflow: hidden;
+  pointer-events: none;
+  position: absolute;
   z-index: -1;
 }
 
 #drop-overlay.line {
-  border: 3px solid black;
-  border-top-color: transparent;
-  border-bottom-color: transparent;
-  background-color: black;
   background-clip: padding-box;
-  height: 8px;
+  background-color: black;
+  border: 3px solid black;
+  border-bottom-color: transparent;
   border-radius: 0;
+  border-top-color: transparent;
+  height: 8px;
   z-index: 10;
 }
 
 .summary {
-  background-color: #ebeff9;
-  border-top: 1px solid #9cc2ef;
-  padding: 5px 10px;
+  background-color: rgb(235, 239, 249);
+  border-top: 1px solid rgb(156, 194, 239);
   clear: both;
+  padding: 5px 10px;
   white-space: nowrap;
 }
 
 .summary > * {
-  font-size: 100%;
   display: inline-block;
+  font-size: 100%;
   margin: 0;
 }
 
 .summary button {
   -webkit-appearance: none;
+  -webkit-margin-start: 10px;
+  -webkit-padding-end: 11px;
+  -webkit-padding-start: 0;
+  background: -webkit-canvas(drop-down-arrow) right middle no-repeat;
   background: transparent;
   border: 0;
   font: inherit;
-  padding: 0;
-  background: -webkit-canvas(drop-down-arrow) 100% 50% no-repeat;
-  -webkit-padding-end: 11px;
-  -webkit-margin-start: 10px;
+  padding-bottom: 0;
+  padding-top: 0;
 }
 
 html[dir=rtl] .summary button {
-  background-position: 0 50%;
+  background-position: top middle;
 }

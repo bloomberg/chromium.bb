@@ -121,9 +121,9 @@ class CSSChecker(object):
       return ' (replace with #%s)' % (h[0] + h[2] + h[4])
 
     hsl = r'hsl\([^\)]*(?:[, ]|(?<=\())(?:0?\.?)?0%'
-    zeros = (r'[^0-9]0(?:\.0?)?'
-             r'(?:px|em|%|in|cm|mm|pc|pt|ex|deg|g?rad|m?s|k?hz)'
-             r'(?!\s*\{)')
+    zeros = (r'(?:^|\D)'
+             r'(?:\.0|0(?:\.0?|px|em|%|in|cm|mm|pc|pt|ex|deg|g?rad|m?s|k?hz))'
+             r'(?:\D|$)(?!\s*\{)')
     def zero_length_values(line):
       return (re.search(zeros, line) and not re.search(hsl, line))
 

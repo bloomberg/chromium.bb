@@ -1,8 +1,6 @@
-/*
- * Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
- */
+ * found in the LICENSE file. */
 
 * {
   margin: 0;
@@ -25,8 +23,8 @@ body {
 .dialog-title {
   -webkit-box-sizing: border-box;
   background-image: -webkit-linear-gradient(top, #fff, #f6f6f6);
-  border-bottom: 1px #d6d9e3 solid;
-  color: #42506c;
+  border-bottom: 1px rgb(214, 217, 227) solid;
+  color: rgb(66, 80, 108);
   cursor: default;
   font-size: 15px;
   font-weight: bold;

@@ -1,7 +1,6 @@
 /* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
- */
+ * found in the LICENSE file. */
 
 /* This file contains "borrowed" copy of standard styles. To simplify merging,
  * when altering, please preserve original property value by adding comments.
@@ -11,7 +10,7 @@ input.common[type='radio'] {
   -webkit-appearance: none;
   -webkit-border-radius: 1px;
   -webkit-box-sizing: border-box;
-  border: 1px solid #C6C6C6;
+  border: 1px solid #c6c6c6;
   border-radius: 1px;
   box-sizing: border-box;
   cursor: default;

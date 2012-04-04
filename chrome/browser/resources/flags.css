@@ -1,8 +1,6 @@
-/*
- * Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
- */
+ * found in the LICENSE file. */
 
 body {
   margin: 10px;
@@ -17,23 +15,23 @@ a {
 }
 
 div#header {
+  -webkit-padding-start: 0;
+  box-sizing: border-box;
   margin-bottom: 1.05em;
   /* 67px is the height of the header's background image. */
   min-height: 67px;
   overflow: hidden;
   padding-bottom: 20px;
-  -webkit-padding-start: 0;
   padding-top: 20px;
   position: relative;
-  box-sizing: border-box;
 }
 
 #header h1 {
+  -webkit-padding-start: 75px;
   background: url('../../app/theme/flags_section.png') 0 20px no-repeat;
   display: inline;
   margin: 0;
   padding-bottom: 20px;
-  -webkit-padding-start: 75px;
   padding-top: 40px;
 }
 
@@ -44,13 +42,13 @@ html[dir=rtl] #header h1 {
 h1 {
   font-size: 156%;
   font-weight: bold;
-  padding: 0;
   margin: 0;
+  padding: 0;
 }
 
 #blurb-container {
-  padding-bottom: 1.5em;
   font-size: 120%;
+  padding-bottom: 1.5em;
 }
 
 #blurb-warning {
@@ -64,11 +62,11 @@ div.content {
 }
 
 .section-header {
-  background: #ebeff9;
-  border-top: 1px solid #b5c7de;
+  -webkit-padding-start: 5px;
+  background: rgb(235, 239, 249);
+  border-top: 1px solid rgb(181, 199, 222);
   font-size: 99%;
   padding-bottom: 2px;
-  -webkit-padding-start: 5px;
   padding-top: 3px;
   width: 100%;
 }
@@ -86,14 +84,14 @@ div.content {
 }
 
 .vbox-container {
-  display: -webkit-box;
   -webkit-box-orient: vertical;
+  display: -webkit-box;
 }
 
 .wbox {
-  display: -webkit-box;
   -webkit-box-align: stretch;
   -webkit-box-flex: 1;
+  display: -webkit-box;
 }
 
 #top {
@@ -133,21 +131,21 @@ div.content {
 }
 
 .no-experiments {
+  font-size: 1.2em;
   margin: 6em 0 0;
   text-align: center;
-  font-size: 1.2em;
 }
 
 /* Match the indentation of .experiment-text. */
 .experiment-actions {
   -webkit-padding-start: 5px;
-  margin-top: 0.2em;
   margin-bottom: 0.2em;
+  margin-top: 0.2em;
 }
 
 div.needs-restart {
   background: #FFF;
-  border-top: 1px solid #b5c7de;
+  border-top: 1px solid rgb(181, 199, 222);
   bottom: 0;
   /* If you change this, update body.padding-bottom */
   height: 30px;

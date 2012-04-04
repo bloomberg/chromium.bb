@@ -1,7 +1,6 @@
 /* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
- */
+ * found in the LICENSE file. */
 
 /* Styles common to WebUI pages that share the options pages style */
 body {
@@ -32,12 +31,12 @@ a:active {
 }
 
 #main-content {
+  bottom: 0;
   display: -webkit-box;
-  position: absolute;
   left: 0;
+  position: absolute;
   right: 0;
   top: 0;
-  bottom: 0;
 }
 
 #navbar {
@@ -45,12 +44,12 @@ a:active {
 }
 
 #navbar-container {
-  -webkit-border-end: 1px solid #c6c9ce;
+  -webkit-border-end: 1px solid rgb(198, 201, 206);
   background-color: #f1f1f1;
-  position: fixed;
   bottom: 0;
   /* We set both left and right for the sake of RTL. */
   left: 0;
+  position: fixed;
   right: 0;
   top: 0;
   width: 216px;
@@ -69,6 +68,8 @@ html.hide-menu #navbar-container {
 }
 
 .navbar-item {
+  -webkit-padding-end: 24px;
+  -webkit-padding-start: 0;
   border-bottom: 1px solid transparent;
   border-top: 1px solid transparent;
   color: #333;
@@ -76,35 +77,34 @@ html.hide-menu #navbar-container {
   display: block;
   font-size: 105%;
   outline: none;
-  padding: 7px 0;
+  padding-bottom: 7px;
+  padding-top: 7px;
   text-align: end;
   text-shadow: white 0 1px 1px;
-  -webkit-padding-end: 24px;
 }
 
-.navbar-item:focus {
-  border-bottom: 1px solid #8faad9;
-  border-top: 1px solid #8faad9;
+.navbar-item:focus,
+.navbar-item-selected {
+  border-bottom: 1px solid rgb(143, 170, 217);
+  border-top: 1px solid rgb(143, 170, 217);
 }
 
 .navbar-item-selected {
   -webkit-box-shadow: 0 1px 0 #f7f7f7;
-  background-color: #bbcee9;
-  border-bottom: 1px solid #8faad9;
-  border-top: 1px solid #8faad9;
+  background-color: rgb(187, 206, 233);
   color: black;
-  text-shadow: #bbcee9 0 1px 1px;
+  text-shadow: rgb(187, 206, 233) 0 1px 1px;
 }
 
 #mainview {
   -webkit-box-align: stretch;
   -webkit-padding-start: 216px;
+  bottom: 0;
+  left: 0;
   margin: 0;
   position: absolute;
-  left: 0;
   right: 0;
   top: 0;
-  bottom: 0;
   z-index: 1;
 }
 
@@ -191,7 +191,7 @@ html[dir='rtl'] .weakrtl input::-webkit-input-placeholder {
 .page h1 {
   -webkit-padding-end: 24px;
   -webkit-user-select: none;
-  border-bottom: 1px solid #eeeeee;
+  border-bottom: 1px solid #eee;
   color: #333;
   font-size: 200%;
   font-weight: normal;

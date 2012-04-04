@@ -1,7 +1,6 @@
 /* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
- */
+ * found in the LICENSE file. */
 
 #downloads-summary {
   background-color: rgb(235, 239, 249);
@@ -79,13 +78,13 @@ html[dir=rtl] .icon {
 .download.otr > .show-dangerous {
   -webkit-transition: opacity 150ms;
   background: url('../shared/images/otr_icon_standalone.png')
-              no-repeat 100% 100%;
+              no-repeat right bottom;
   opacity: .66;
 }
 
 html[dir=rtl] .download.otr > .safe,
 html[dir=rtl] .download.otr > .show-dangerous {
-  background-position: 0% 100%;
+  background-position: left bottom;
 }
 
 .download.otr > .safe:hover,

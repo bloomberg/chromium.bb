@@ -442,6 +442,9 @@ div,a {
   background-position-y: 0ex;
   border-width: 0em;
   color: hsl(0, 0%, 85%); /* Shouldn't trigger error. */
+  opacity: .0;
+  opacity: 0.0;
+  opacity: 0.;
 }
 
 @page {
@@ -461,6 +464,9 @@ div,a {
     background-position-x: 0em;
     background-position-y: 0ex;
     border-width: 0em;
+    opacity: .0;
+    opacity: 0.0;
+    opacity: 0.;
     border-width: 0mm;
     height: 0cm;
     width: 0in;

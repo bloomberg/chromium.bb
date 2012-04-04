@@ -3,7 +3,8 @@
  * found in the LICENSE file. */
 
 /* Using 100% width within body should exclude margins. */
-html, body {
+html,
+body {
   height: 100%;
   width: 100%;
 }

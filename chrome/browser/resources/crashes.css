@@ -1,3 +1,7 @@
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
 body {
   margin: 20px;
 }
@@ -20,7 +24,7 @@ html[dir=rtl] h1 {
 }
 
 #countBanner {
-  background-color: #ebeffa;
+  background-color: rgb(235, 239, 250);
   border: 1px solid #bbb;
   border-radius: 2px;
   font-size: 100%;
@@ -44,6 +48,6 @@ html[dir=rtl] h1 {
 }
 
 #disabledMode h2 {
-  color: #8d332a;
+  color: rgb(141, 51, 42);
   font-size: 125%;
 }

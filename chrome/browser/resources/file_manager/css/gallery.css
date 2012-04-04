@@ -1,11 +1,10 @@
 /* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
- */
+ * found in the LICENSE file. */
 
 body {
   -webkit-user-select: none;
-  font-family: Open Sans,Droid Sans Fallback,sans-serif;
+  font-family: Open Sans, Droid Sans Fallback, sans-serif;
   font-size: 84%;
   margin: 0;
 }
@@ -46,14 +45,14 @@ body {
 }
 
 .gallery[tools] > .close div:hover {
-  background-color: rgba(81,81,81,1);
+  background-color: rgba(81, 81, 81, 1);
   opacity: 0.7;
 }
 
 /* Image container and canvas elements */
 
 .gallery > .image-container {
-  background-color: rgba(0,0,0,1);
+  background-color: rgba(0, 0, 0, 1);
   cursor: none;   /* Only visible when the toolbar is active */
   height: 100%;
   position: absolute;
@@ -111,11 +110,11 @@ body {
 }
 
 .gallery > .image-container > .image[fade='left'] {
-  -webkit-transform: translate(-40px,0);
+  -webkit-transform: translate(-40px, 0);
 }
 
 .gallery > .image-container > .image[fade='right'] {
-  -webkit-transform: translate(40px,0);
+  -webkit-transform: translate(40px, 0);
 }
 
 /* Toolbar */
@@ -128,8 +127,8 @@ body {
   -webkit-transition-duration: 300ms;
   -webkit-transition-property: webkit-transform, opacity;
   -webkit-transition-timing-function: ease;
-  background-color: rgba(18,18,18,0.75);
-  border-top: 1px solid rgba(31,31,31,0.75);
+  background-color: rgba(18, 18, 18, 0.75);
+  border-top: 1px solid rgba(31, 31, 31, 0.75);
   bottom: 0;
   display: -webkit-box;
   height: 55px;
@@ -247,7 +246,7 @@ body {
 .gallery .filename-spacer > * {
   background-color: transparent;
   color: white;
-  font-family: Open Sans,Droid Sans Fallback,sans-serif;
+  font-family: Open Sans, Droid Sans Fallback, sans-serif;
   height: 21px;
   position: absolute;
   width: 260px;
@@ -344,7 +343,7 @@ body {
   -webkit-box-orient: horizontal;
   -webkit-box-pack: center;
   -webkit-transition: margin-left 180ms linear;
-  border: 2px solid rgba(255,255,255,0); /* transparent white */
+  border: 2px solid rgba(255, 255, 255, 0);  /* transparent white */
   cursor: pointer;
   display: -webkit-box;
   height: 47px;
@@ -354,7 +353,7 @@ body {
 }
 
 .gallery .ribbon-image[selected] {
-  border: 2px solid rgba(255,233,168,1);
+  border: 2px solid rgba(255, 233, 168, 1);
 }
 
 .gallery .toolbar .ribbon.fade-left {
@@ -431,22 +430,22 @@ body {
 }
 
 .gallery > .toolbar .button {
-  background-color: rgba(0,0,0,0);
+  background-color: rgba(0, 0, 0, 0);
   color: white;
 }
 
 .gallery > .toolbar .button:hover {
-  background-color: rgba(31,31,31,1);
+  background-color: rgba(31, 31, 31, 1);
   color: white;
 }
 
 .gallery > .toolbar .button[pressed] {
-  background-color: rgba(240,240,240,1);
+  background-color: rgba(240, 240, 240, 1);
   color: black;
 }
 
 .gallery > .toolbar .button[pressed]:hover {
-  background-color: rgba(240,240,240,1);
+  background-color: rgba(240, 240, 240, 1);
   color: black;
 }
 
@@ -496,7 +495,7 @@ body {
 
 .gallery > .toolbar .button.redo {
   background-image: url(../images/gallery/icon_redo.png);
-  position: absolute; /* Exclude from center-packing*/
+  position: absolute;  /* Exclude from center-packing*/
 }
 
 .gallery > .toolbar .button[disabled] {
@@ -610,7 +609,7 @@ body {
 }
 
 .gallery .crop-overlay .shadow {
-  background-color: rgba(0,0,0,0.65);
+  background-color: rgba(0, 0, 0, 0.65);
 }
 
 .gallery .crop-overlay .middle-box {
@@ -725,7 +724,11 @@ body {
   top: 5px;
 }
 
-.gallery .prompt[state='fadein'],
+.gallery .prompt[state='fadein'] {
+  opacity: 1;
+  top: 0;
+}
+
 .gallery .prompt[state='fadeout'] {
   opacity: 0;
   top: 0;
@@ -747,7 +750,7 @@ body {
 }
 
 .gallery .prompt .close:hover {
-  background-color: rgba(81,81,81,1);
+  background-color: rgba(81, 81, 81, 1);
   opacity: 1.0;
 }
 
@@ -781,21 +784,21 @@ body {
 
 .gallery .share-menu[hidden] {
   bottom: -100%;  /* offscreen so that 'dimmed' attribute does not show it*/
-  opacity: 0.0;
+  opacity: 0;
   pointer-events: none;
 }
 
 .gallery .share-menu > div {
   -webkit-box-align: center;
   -webkit-box-pack: start;
-  background-color: rgba(0,0,0,0);
+  background-color: rgba(0, 0, 0, 0);
   cursor: pointer;
   display: -webkit-box;
   padding: 5px;
 }
 
 .gallery .share-menu > div:hover {
-  background-color: rgba(240,240,240,1);
+  background-color: rgba(240, 240, 240, 1);
 }
 
 .gallery .share-menu > div > img {
@@ -853,7 +856,7 @@ body {
   -webkit-box-align: center;
   -webkit-box-orient: horizontal;
   -webkit-box-pack: center;
-  bottom: 60px; /* Just above the toolbar */
+  bottom: 60px;  /* Just above the toolbar */
   display: -webkit-box;
   height: 30px;
   left: 0;

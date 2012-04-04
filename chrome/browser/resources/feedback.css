@@ -1,12 +1,11 @@
 /* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
- */
+ * found in the LICENSE file. */
 
 .feedback-label {
+  font-weight: 300;
   text-align: start;
   vertical-align: text-top;
-  font-weight: 300;
 }
 
 .feedback-text {
@@ -14,56 +13,53 @@
 }
 
 .feedback-table {
-  width: 40em;
   border-spacing: 0;
+  width: 40em;
 }
 
 .feedback-field {
-  width: 22em;
   border-style: solid;
   border-width: 1px;
+  width: 22em;
 }
 
 .feedback-fieldlabel {
-  width: 13em;
   font-weight: 300;
-}
-
-.feedback-button {
+  width: 13em;
 }
 
 hr {
+  background: #ccc;
   border: none;
   height: 1px;
-  background: #cccccc;
-  margin-top: 10px;
   margin-bottom: 10px;
+  margin-top: 10px;
   width: 40em;
 }
 
 .thumbnail-list {
   -webkit-margin-start: 1em;
-  width: 33.5em;
-  margin-top: 0.5em;
   margin-bottom: 1em;
+  margin-top: 0.5em;
+  width: 33.5em;
 }
 
 .image-thumbnail-container {
-  display: inline-block;
   border: 2px solid white;
   border-radius: 3px;
+  display: inline-block;
   z-index: 0;
 }
 
 .image-thumbnail-container-selected {
-  display: inline-block;
   border: 2px solid green;
   border-radius: 3px;
+  display: inline-block;
   z-index: 0;
 }
 
 .image-thumbnail-container:hover {
-  border: 2px solid #B8DAB0;
+  border: 2px solid rgb(184, 218, 176);
   z-index: 0;
 }
 
@@ -72,11 +68,11 @@ hr {
 }
 
 .image-thumbnail {
-  position: relative;
-  z-index: 1;
+  border: 2px solid white;
   display: inline-block;
   padding: 0;
-  border: 2px solid white;
+  position: relative;
+  z-index: 1;
 }
 
 .image-thumbnail:hover {
@@ -93,14 +89,14 @@ hr {
 }
 
 .image-thumbnail:hover div {
+  background-color: transparent;
+  border: 1px dashed blue;
   display: block;
-  position: absolute;
-  top: 130%;
   left: 0;
   padding: 1px;
-  border: 1px dashed blue;
-  background-color: transparent;
+  position: absolute;
   text-align: center
+  top: 130%;
 }
 
 .image-thumbnail:hover div img {
@@ -109,11 +105,11 @@ hr {
 }
 
 .image-thumbnail-current {
-  position: relative;
-  z-index: 1;
+  border: 2px solid white;
   display: inline-block;
   padding: 0;
-  border: 2px solid white;
+  position: relative;
+  z-index: 1;
 }
 
 .image-thumbnail-current:hover {
@@ -130,26 +126,26 @@ hr {
 }
 
 .image-thumbnail-current:hover div {
+  background-color: transparent;
+  border: 1px dashed blue;
   display: block;
-  position: absolute;
-  top: 130%;
   left: 0;
   padding: 1px;
-  border: 1px dashed blue;
-  background-color: transparent;
+  position: absolute;
   text-align: center
+  top: 130%;
 }
 
 .image-thumbnail-current:hover div img {
+  border: 1px dashed blue;
+  padding: 2px;
   position: absolute;
   width: 400px;
-  padding: 2px;
-  border: 1px dashed blue;
 }
 
 th {
-  padding-top: 10px;
   font-weight: normal;
+  padding-top: 10px;
 }
 
 .formpane {
@@ -170,11 +166,11 @@ th {
 }
 
 #privacy-note {
-  padding-top: 24px;
-  padding-bottom: 10px;
-  text-align: start;
   font-size: 90%;
   font-weight: normal;
   margin: 0;
+  padding-bottom: 10px;
+  padding-top: 24px;
+  text-align: start;
   width: 44em;
 }

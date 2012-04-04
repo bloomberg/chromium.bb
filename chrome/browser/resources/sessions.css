@@ -1,3 +1,7 @@
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
 body {
   margin: 20px;
 }
@@ -19,8 +23,8 @@ html[dir=rtl] h1 {
 }
 
 #magic-summary {
-  background-color: #ebeff9;
-  border-top: 1px solid #9cc2ef;
+  background-color: rgb(235, 239, 249);
+  border-top: 1px solid rgb(156, 194, 239);
   margin-bottom: 6px;
   margin-top: 12px;
   padding: 3px;
@@ -31,8 +35,8 @@ html[dir=rtl] h1 {
 }
 
 #sessions-summary {
-  background-color: #ebeff9;
-  border-top: 1px solid #9cc2ef;
+  background-color: rgb(235, 239, 249);
+  border-top: 1px solid rgb(156, 194, 239);
   margin-bottom: 6px;
   margin-top: 12px;
   padding: 3px;

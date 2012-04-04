@@ -1,13 +1,11 @@
-/*
- * Copyright (c) 2012 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
- */
+ * found in the LICENSE file. */
 
 body {
-  background: #FFFFFF;
-  margin: 10px 15px;
   -webkit-user-select: none;
+  background: white;
+  margin: 10px 15px;
 }
 
 .cloudprint-signup {

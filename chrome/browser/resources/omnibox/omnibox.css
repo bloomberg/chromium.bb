@@ -1,11 +1,10 @@
 /* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
- */
+ * found in the LICENSE file. */
 
 .autocomplete-results-table {
-  margin-bottom: 1.5em;
   border: 1px solid grey;
+  margin-bottom: 1.5em;
 }
 
 .autocomplete-results-table th {

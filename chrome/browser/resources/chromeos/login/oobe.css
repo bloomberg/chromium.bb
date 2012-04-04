@@ -57,22 +57,22 @@ button {
 }
 
 hr.shadow {
-  -webkit-mask: -webkit-linear-gradient(left, rgba(0,0,0,0),
-                                        black 50%, rgba(0,0,0,0));
+  -webkit-mask: -webkit-linear-gradient(left, rgba(0, 0, 0, 0),
+                                        black 50%, rgba(0, 0, 0, 0));
   border: none;
   opacity: 0.3
 }
 
 hr.top {
-  background: -webkit-linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.0));
-  border-top: 1px solid rgba(0,0,0,0.5);
+  background: -webkit-linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0));
+  border-top: 1px solid rgba(0, 0, 0, 0.5);
   height: 4px;
 }
 
 hr.bottom {
   background: -webkit-linear-gradient(bottom,
-                                      rgba(0,0,0,0.2), rgba(0,0,0,0.0));
-  border-bottom: 1px solid rgba(0,0,0,0.5);
+                                      rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0));
+  border-bottom: 1px solid rgba(0, 0, 0, 0.5);
   height: 4px;
   z-index: 0;
 }

@@ -1,13 +1,11 @@
-/*
- * Copyright (c) 2012 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
- */
+ * found in the LICENSE file. */
 
 body {
-  background: #FFFFFF;
-  margin: 10px 15px;
   -webkit-user-select: none;
+  background: white;
+  margin: 10px 15px;
 }
 
 .cloudprint-success-header {
@@ -16,8 +14,8 @@ body {
 }
 
 .cloudprint-success-image {
-  text-align: center;
   margin: 20px;
+  text-align: center;
 }
 
 #message {
@@ -25,25 +23,25 @@ body {
 }
 
 .cloudprint-success-footer {
-  position: fixed;
+  bottom: 0;
   font-size: 1.2em;
-  right: 0px;
-  bottom: 0px;
-  margin-right: 10px;
   margin-bottom: 10px;
+  margin-right: 10px;
+  position: fixed;
+  right: 0;
 }
 
 html[dir='rtl'] .cloudprint-success-footer {
-  text-align: left;
-  left: 0px;
-  bottom: 0px;
+  bottom: 0;
+  left: 0;
   margin-left: 20px;
+  text-align: left;
 }
 
 .button {
 <if expr="is_macosx">
   font-size: 12pt;
 </if>
-  min-width: 87px;
   min-height: 26px;
+  min-width: 87px;
 }
