@@ -58,7 +58,8 @@ class WinTool(object):
     popen = subprocess.Popen(args,
                              stdout=subprocess.PIPE,
                              stderr=subprocess.STDOUT)
-    for line in popen.stdout:
+    out, _ = popen.communicate()
+    for line in out.splitlines():
       if not line.startswith('   Creating library '):
         sys.stdout.write(line)
     return popen.returncode
