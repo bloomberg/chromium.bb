@@ -167,6 +167,7 @@ class NatPolicyLinux : public NatPolicy {
     for (std::set<FilePath>::iterator config_file_iter = files.begin();
          config_file_iter != files.end(); ++config_file_iter) {
       JSONFileValueSerializer deserializer(*config_file_iter);
+      deserializer.set_allow_trailing_comma(true);
       int error_code = 0;
       std::string error_msg;
       scoped_ptr<Value> value(
