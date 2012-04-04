@@ -60,12 +60,14 @@ class InputMethodManager {
         size_t num_active_input_methods) = 0;
 
     // Called when the active input methods are changed.
+    // TODO(yusukes): Remove this method in R20.
     virtual void ActiveInputMethodsChanged(
         InputMethodManager* manager,
         const InputMethodDescriptor& current_input_method,
         size_t num_active_input_methods) = 0;
 
     // Called when the list of properties is changed.
+    // TODO(yusukes): Remove this method in R20.
     virtual void PropertyListChanged(
         InputMethodManager* manager,
         const InputMethodPropertyList& current_ime_properties) = 0;
@@ -87,20 +89,6 @@ class InputMethodManager {
     virtual void CandidateWindowClosed(InputMethodManager* manager) = 0;
   };
 
-  class PreferenceObserver {
-   public:
-    virtual ~PreferenceObserver() {}
-
-    // Called when the preferences have to be updated.
-    virtual void PreferenceUpdateNeeded(
-        InputMethodManager* manager,
-        const InputMethodDescriptor& previous_input_method,
-        const InputMethodDescriptor& current_input_method) = 0;
-
-    // Called by AddObserver() when the first observer is added.
-    virtual void FirstObserverIsAdded(InputMethodManager* obj) = 0;
-  };
-
   class VirtualKeyboardObserver {
    public:
     virtual ~VirtualKeyboardObserver() {}
@@ -120,17 +108,11 @@ class InputMethodManager {
   virtual void AddObserver(Observer* observer) = 0;
   virtual void AddCandidateWindowObserver(
       CandidateWindowObserver* observer) = 0;
-  virtual void AddPreLoginPreferenceObserver(PreferenceObserver* observer) = 0;
-  virtual void AddPostLoginPreferenceObserver(PreferenceObserver* observer) = 0;
   virtual void AddVirtualKeyboardObserver(
       VirtualKeyboardObserver* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
   virtual void RemoveCandidateWindowObserver(
       CandidateWindowObserver* observer) = 0;
-  virtual void RemovePreLoginPreferenceObserver(
-      PreferenceObserver* observer) = 0;
-  virtual void RemovePostLoginPreferenceObserver(
-      PreferenceObserver* observer) = 0;
   virtual void RemoveVirtualKeyboardObserver(
       VirtualKeyboardObserver* observer) = 0;
 

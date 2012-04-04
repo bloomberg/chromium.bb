@@ -132,32 +132,6 @@ class InputMethodManagerImpl : public InputMethodManager,
     candidate_window_observers_.RemoveObserver(observer);
   }
 
-  virtual void AddPreLoginPreferenceObserver(
-      InputMethodManager::PreferenceObserver* observer) {
-    if (!pre_login_preference_observers_.size()) {
-      observer->FirstObserverIsAdded(this);
-    }
-    pre_login_preference_observers_.AddObserver(observer);
-  }
-
-  virtual void RemovePreLoginPreferenceObserver(
-      InputMethodManager::PreferenceObserver* observer) {
-    pre_login_preference_observers_.RemoveObserver(observer);
-  }
-
-  virtual void AddPostLoginPreferenceObserver(
-      InputMethodManager::PreferenceObserver* observer) {
-    if (!post_login_preference_observers_.size()) {
-      observer->FirstObserverIsAdded(this);
-    }
-    post_login_preference_observers_.AddObserver(observer);
-  }
-
-  virtual void RemovePostLoginPreferenceObserver(
-      InputMethodManager::PreferenceObserver* observer) {
-    post_login_preference_observers_.RemoveObserver(observer);
-  }
-
   virtual void AddVirtualKeyboardObserver(VirtualKeyboardObserver* observer) {
     virtual_keyboard_observers_.AddObserver(observer);
   }
@@ -910,23 +884,6 @@ class InputMethodManagerImpl : public InputMethodManager,
     }
   }
 
-  // Ask the first observer to update preferences. We should not ask every
-  // observer to do so. Otherwise, we'll end up updating preferences many times
-  // when many observers are attached (ex. many windows are opened), which is
-  // unnecessary and expensive.
-  bool UpdateInputMethodPreference(
-      ObserverList<PreferenceObserver>* observers) {
-    ObserverListBase<PreferenceObserver>::Iterator it(*observers);
-    PreferenceObserver* first_observer = it.GetNext();
-    if (!first_observer) {
-      return false;
-    }
-    first_observer->PreferenceUpdateNeeded(this,
-                                           previous_input_method_,
-                                           current_input_method_);
-    return true;
-  }
-
   // Changes the current input method from the given input method
   // descriptor.  This function updates states like current_input_method_
   // and notifies observers about the change (that will update the
@@ -942,13 +899,6 @@ class InputMethodManagerImpl : public InputMethodManager,
               current_input_method_.keyboard_layout())) {
         LOG(ERROR) << "Failed to change keyboard layout to "
                    << current_input_method_.keyboard_layout();
-      }
-
-      // Save the input method names to the Pref.
-      if (!UpdateInputMethodPreference(&post_login_preference_observers_)) {
-        // When both pre- and post-login observers are available, only notifies
-        // the latter one.
-        UpdateInputMethodPreference(&pre_login_preference_observers_);
       }
     }
 
@@ -1226,8 +1176,6 @@ class InputMethodManagerImpl : public InputMethodManager,
   ObserverList<InputMethodManager::Observer> observers_;
   ObserverList<InputMethodManager::CandidateWindowObserver>
       candidate_window_observers_;
-  ObserverList<PreferenceObserver> pre_login_preference_observers_;
-  ObserverList<PreferenceObserver> post_login_preference_observers_;
   ObserverList<VirtualKeyboardObserver> virtual_keyboard_observers_;
 
   // The input method which was/is selected.

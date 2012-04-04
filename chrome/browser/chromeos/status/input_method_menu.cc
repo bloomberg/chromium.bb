@@ -13,14 +13,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
-#include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/browser/chromeos/status/status_area_view_chromeos.h"
-#include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/pref_names.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/user_metrics.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -91,13 +84,6 @@ string16 GetLanguageName(const std::string& language_code) {
   return language_name;
 }
 
-PrefService* GetPrefService() {
-  Profile* profile = ProfileManager::GetDefaultProfile();
-  if (profile)
-    return profile->GetPrefs();
-  return NULL;
-}
-
 }  // namespace
 
 namespace chromeos {
@@ -108,10 +94,8 @@ using input_method::InputMethodManager;
 // InputMethodMenu
 
 InputMethodMenu::InputMethodMenu()
-    : initialized_prefs_(false),
-      initialized_observers_(false),
-      input_method_descriptors_(InputMethodManager::GetInstance()->
-                                GetActiveInputMethods()),
+    : input_method_descriptors_(
+        InputMethodManager::GetInstance()->GetActiveInputMethods()),
       model_(new ui::SimpleMenuModel(NULL)),
       ALLOW_THIS_IN_INITIALIZER_LIST(input_method_menu_delegate_(
           new views::MenuModelAdapter(this))),
@@ -122,33 +106,13 @@ InputMethodMenu::InputMethodMenu()
       menu_alignment_(views::MenuItemView::TOPRIGHT) {
   DCHECK(input_method_descriptors_.get() &&
          !input_method_descriptors_->empty());
-
-  // Sync current and previous input methods on Chrome prefs with ibus-daemon.
-  if (StatusAreaViewChromeos::IsBrowserMode())
-    InitializePrefMembers();
-
-  if (StatusAreaViewChromeos::IsLoginMode()) {
-    registrar_.Add(this,
-                   chrome::NOTIFICATION_LOGIN_USER_CHANGED,
-                   content::NotificationService::AllSources());
-    // On Aura status area is not recreated on sign in. Instead, 2 notifications
-    // are sent to Chrome on sign in: NOTIFICATION_LOGIN_USER_CHANGED with
-    // StatusAreaViewChromeos::IsLoginMode() and NOTIFICATION_SESSION_STARTED
-    // with StatusAreaViewChromeos::IsBrowserMode().
-    // In case of Chrome crash, Chrome will be reloaded but IsLoginMode() will
-    // return false at this point so NOTIFICATION_SESSION_STARTED will be
-    // ignored and all initialization will happen in ctor.
-    registrar_.Add(this,
-                   chrome::NOTIFICATION_SESSION_STARTED,
-                   content::NotificationService::AllSources());
-  }
-  AddObservers();
+  AddObserver();
 }
 
 InputMethodMenu::~InputMethodMenu() {
-  // RemoveObservers() is no-op if |this| object is already removed from the
+  // RemoveObserver() is no-op if |this| object is already removed from the
   // observer list
-  RemoveObservers();
+  RemoveObserver();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -177,7 +141,7 @@ bool InputMethodMenu::IsItemCheckedAt(int index) const {
     const input_method::InputMethodDescriptor& input_method
         = input_method_descriptors_->at(index);
     return input_method == InputMethodManager::GetInstance()->
-          GetCurrentInputMethod();
+        GetCurrentInputMethod();
   }
 
   if (GetPropertyIndex(index, &index)) {
@@ -380,25 +344,6 @@ void InputMethodMenu::InputMethodChanged(
   UpdateUIFromInputMethod(current_input_method, num_active_input_methods);
 }
 
-// TODO(yusukes): Move code for handling preferences to chromeos/input_method/.
-void InputMethodMenu::PreferenceUpdateNeeded(
-    InputMethodManager* manager,
-    const input_method::InputMethodDescriptor& previous_input_method,
-    const input_method::InputMethodDescriptor& current_input_method) {
-  if (StatusAreaViewChromeos::IsBrowserMode()) {
-    if (initialized_prefs_) {  // make sure we're not in unit tests.
-      // Sometimes (e.g. initial boot) |previous_input_method.id()| is empty.
-      previous_input_method_pref_.SetValue(previous_input_method.id());
-      current_input_method_pref_.SetValue(current_input_method.id());
-    }
-  } else if (StatusAreaViewChromeos::IsLoginMode()) {
-    if (g_browser_process && g_browser_process->local_state()) {
-      g_browser_process->local_state()->SetString(
-          language_prefs::kPreferredKeyboardLayout, current_input_method.id());
-    }
-  }
-}
-
 void InputMethodMenu::PropertyListChanged(
     InputMethodManager* manager,
     const input_method::InputMethodPropertyList& current_ime_properties) {
@@ -419,29 +364,6 @@ void InputMethodMenu::PropertyListChanged(
         manager->GetCurrentInputMethod();
     size_t num_active_input_methods = manager->GetNumActiveInputMethods();
     UpdateUIFromInputMethod(input_method, num_active_input_methods);
-  }
-}
-
-void InputMethodMenu::FirstObserverIsAdded(InputMethodManager* manager) {
-  // NOTICE: Since this function might be called from the constructor of this
-  // class, it's better to avoid calling virtual functions.
-
-  if (initialized_prefs_ && StatusAreaViewChromeos::IsBrowserMode()) {
-    // Get the input method name in the Preferences file which was in use last
-    // time, and switch to the method. We remember two input method names in the
-    // preference so that the Control+space hot-key could work fine from the
-    // beginning. InputMethodChanged() will be called soon and the indicator
-    // will be updated.
-    const std::string previous_input_method_id =
-        previous_input_method_pref_.GetValue();
-    if (!previous_input_method_id.empty()) {
-      manager->ChangeInputMethod(previous_input_method_id);
-    }
-    const std::string current_input_method_id =
-        current_input_method_pref_.GetValue();
-    if (!current_input_method_id.empty()) {
-      manager->ChangeInputMethod(current_input_method_id);
-    }
   }
 }
 
@@ -597,80 +519,19 @@ string16 InputMethodMenu::GetTextForMenu(
   return text;
 }
 
-void InputMethodMenu::RegisterPrefs(PrefService* local_state) {
-  // We use an empty string here rather than a hardware keyboard layout name
-  // since input_method::GetHardwareInputMethodId() might return a fallback
-  // layout name if local_state->RegisterStringPref(kHardwareKeyboardLayout)
-  // is not called yet.
-  local_state->RegisterStringPref(language_prefs::kPreferredKeyboardLayout,
-                                  "",
-                                  PrefService::UNSYNCABLE_PREF);
-}
-
-void InputMethodMenu::Observe(int type,
-                              const content::NotificationSource& source,
-                              const content::NotificationDetails& details) {
-  if (type == chrome::NOTIFICATION_LOGIN_USER_CHANGED) {
-    // When a user logs in, we should remove |this| object from the observer
-    // list so that PreferenceUpdateNeeded() does not update the local state
-    // anymore.
-    RemoveObservers();
-  }
-  if (type == chrome::NOTIFICATION_SESSION_STARTED) {
-    InitializePrefMembers();
-    AddObservers();
-    InputMethodManager* manager = InputMethodManager::GetInstance();
-    UpdateUIFromInputMethod(manager->GetCurrentInputMethod(),
-                            manager->GetNumActiveInputMethods());
-  }
-}
-
 void InputMethodMenu::SetMinimumWidth(int width) {
   // On the OOBE network selection screen, fixed width menu would be preferable.
   minimum_input_method_menu_width_ = width;
 }
 
-void InputMethodMenu::AddObservers() {
-  if (initialized_observers_)
-    return;
+void InputMethodMenu::AddObserver() {
   InputMethodManager* manager = InputMethodManager::GetInstance();
-  if (StatusAreaViewChromeos::IsLoginMode()) {
-    manager->AddPreLoginPreferenceObserver(this);
-  } else if (StatusAreaViewChromeos::IsBrowserMode()) {
-    manager->AddPostLoginPreferenceObserver(this);
-  }
-  // AddObserver() should be called after AddXXXLoginPreferenceObserver. This is
-  // because when the function is called FirstObserverIsAdded might be called
-  // back, and FirstObserverIsAdded might then might call ChangeInputMethod() in
-  // InputMethodManager. We have to prevent the manager function from calling
-  // callback functions like InputMethodChanged since they touch (yet
-  // uninitialized) UI elements.
   manager->AddObserver(this);
-  initialized_observers_ = true;
 }
 
-void InputMethodMenu::RemoveObservers() {
+void InputMethodMenu::RemoveObserver() {
   InputMethodManager* manager = InputMethodManager::GetInstance();
-  if (StatusAreaViewChromeos::IsLoginMode()) {
-    manager->RemovePreLoginPreferenceObserver(this);
-  } else if (StatusAreaViewChromeos::IsBrowserMode()) {
-    manager->RemovePostLoginPreferenceObserver(this);
-  }
   manager->RemoveObserver(this);
-  initialized_observers_ = false;
-}
-
-void InputMethodMenu::InitializePrefMembers() {
-  if (!initialized_prefs_) {
-    PrefService* pref_service = GetPrefService();
-    if (pref_service) {
-      initialized_prefs_ = true;
-      previous_input_method_pref_.Init(
-          prefs::kLanguagePreviousInputMethod, pref_service, this);
-      current_input_method_pref_.Init(
-          prefs::kLanguageCurrentInputMethod, pref_service, this);
-    }
-  }
 }
 
 }  // namespace chromeos

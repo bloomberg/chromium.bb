@@ -24,7 +24,7 @@ namespace input_method {
 // state.
 class BrowserStateMonitor
     : public content::NotificationObserver,
-      public input_method::InputMethodManager::PreferenceObserver {
+      public input_method::InputMethodManager::Observer {
  public:
   explicit BrowserStateMonitor(InputMethodManager* manager);
   virtual ~BrowserStateMonitor();
@@ -36,15 +36,18 @@ class BrowserStateMonitor
   virtual void UpdateUserPreferences(const std::string& current_input_method);
 
  private:
-  // InputMethodManager::PreferenceObserver implementation.
-  // TODO(yusukes): On R20, use input_method::InputMethodManager::Observer and
-  // remove the PreferenceObserver interface from InputMethodManager.
-  virtual void PreferenceUpdateNeeded(
-      input_method::InputMethodManager* manager,
-      const input_method::InputMethodDescriptor& previous_input_method,
-      const input_method::InputMethodDescriptor& current_input_method) OVERRIDE;
-  virtual void FirstObserverIsAdded(
-      input_method::InputMethodManager* manager) OVERRIDE {}
+  // InputMethodManager::Observer implementation.
+  virtual void InputMethodChanged(
+      InputMethodManager* manager,
+      const InputMethodDescriptor& current_input_method,
+      size_t num_active_input_methods) OVERRIDE;
+  virtual void ActiveInputMethodsChanged(
+      InputMethodManager* manager,
+      const InputMethodDescriptor& current_input_method,
+      size_t num_active_input_methods) OVERRIDE {}
+  virtual void PropertyListChanged(
+      InputMethodManager* manager,
+      const InputMethodPropertyList& current_ime_properties) OVERRIDE {}
 
   // content::NotificationObserver overrides:
   virtual void Observe(int type,

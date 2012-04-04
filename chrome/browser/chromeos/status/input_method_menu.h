@@ -10,10 +10,6 @@
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
-#include "chrome/browser/prefs/pref_member.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/notification_types.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/views/controls/button/menu_button_listener.h"
 #include "ui/views/controls/menu/menu_item_view.h"
@@ -40,9 +36,7 @@ namespace chromeos {
 class InputMethodMenu
     : public views::MenuButtonListener,
       public ui::MenuModel,
-      public input_method::InputMethodManager::Observer,
-      public input_method::InputMethodManager::PreferenceObserver,
-      public content::NotificationObserver {
+      public input_method::InputMethodManager::Observer {
  public:
   InputMethodMenu();
   virtual ~InputMethodMenu();
@@ -85,19 +79,6 @@ class InputMethodMenu
       input_method::InputMethodManager* manager,
       const input_method::InputMethodPropertyList& properties) OVERRIDE;
 
-  // InputMethodManager::PreferenceObserver implementation.
-  virtual void PreferenceUpdateNeeded(
-      input_method::InputMethodManager* manager,
-      const input_method::InputMethodDescriptor& previous_input_method,
-      const input_method::InputMethodDescriptor& current_input_method) OVERRIDE;
-  virtual void FirstObserverIsAdded(
-      input_method::InputMethodManager* manager) OVERRIDE;
-
-  // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
-
   // Specify menu alignment (default TOPRIGHT).
   void set_menu_alignment(views::MenuItemView::AnchorPosition menu_alignment) {
     menu_alignment_ = menu_alignment;
@@ -108,9 +89,6 @@ class InputMethodMenu
 
   // Rebuilds menu model.
   void PrepareMenuModel();
-
-  // Registers input method preferences for the login screen.
-  static void RegisterPrefs(PrefService* local_state);
 
   // Returns a string for the drop-down menu and the tooltip for the indicator.
   // The method is public for unit tests.
@@ -160,22 +138,12 @@ class InputMethodMenu
   // item.
   bool IndexPointsToConfigureImeMenuItem(int index) const;
 
-  // Add / Remove InputMethodManager observers.
-  void AddObservers();
-  void RemoveObservers();
-
-  // Initializes objects for reading/writing Chrome prefs.
-  void InitializePrefMembers();
-
-  bool initialized_prefs_;
-  bool initialized_observers_;
+  // Add / Remove InputMethodManager observer.
+  void AddObserver();
+  void RemoveObserver();
 
   // The current input method list.
   scoped_ptr<input_method::InputMethodDescriptors> input_method_descriptors_;
-
-  // Objects for reading/writing the Chrome prefs.
-  StringPrefMember previous_input_method_pref_;
-  StringPrefMember current_input_method_pref_;
 
   // We borrow ui::SimpleMenuModel implementation to maintain the current
   // content of the pop-up menu. The ui::MenuModel is implemented using this
@@ -190,8 +158,6 @@ class InputMethodMenu
 
   // Menu alignment (default TOPRIGHT).
   views::MenuItemView::AnchorPosition menu_alignment_;
-
-  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(InputMethodMenu);
 };

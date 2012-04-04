@@ -4,8 +4,6 @@
 
 #include "chrome/browser/chromeos/input_method/browser_state_monitor.h"
 
-#include "ash/ash_switches.h"
-#include "base/command_line.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/language_preferences.h"
@@ -32,13 +30,6 @@ BrowserStateMonitor::BrowserStateMonitor(InputMethodManager* manager)
     : manager_(manager),
       state_(InputMethodManager::STATE_LOGIN_SCREEN),
       initialized_(false) {
-  // On R19, when Uber Tray is disabled, the IME status button will update the
-  // Preferences.
-  // TODO(yusukes): Remove all Preferences code from the button on R20.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          ash::switches::kDisableAshUberTray))
-    return;
-
   notification_registrar_.Add(this,
                               chrome::NOTIFICATION_LOGIN_USER_CHANGED,
                               content::NotificationService::AllSources());
@@ -55,13 +46,11 @@ BrowserStateMonitor::BrowserStateMonitor(InputMethodManager* manager)
                               content::NotificationService::AllSources());
 
   // TODO(yusukes): Tell the initial state to the manager.
-  manager_->AddPreLoginPreferenceObserver(this);
-  manager_->AddPostLoginPreferenceObserver(this);
+  manager_->AddObserver(this);
 }
 
 BrowserStateMonitor::~BrowserStateMonitor() {
-  manager_->RemovePostLoginPreferenceObserver(this);
-  manager_->RemovePreLoginPreferenceObserver(this);
+  manager_->RemoveObserver(this);
 }
 
 void BrowserStateMonitor::UpdateLocalState(
@@ -91,10 +80,10 @@ void BrowserStateMonitor::UpdateUserPreferences(
   current_input_method_pref_.SetValue(current_input_method);
 }
 
-void BrowserStateMonitor::PreferenceUpdateNeeded(
-    input_method::InputMethodManager* manager,
-    const input_method::InputMethodDescriptor& previous_input_method,
-    const input_method::InputMethodDescriptor& current_input_method) {
+void BrowserStateMonitor::InputMethodChanged(
+    InputMethodManager* manager,
+    const InputMethodDescriptor& current_input_method,
+    size_t num_active_input_methods) {
   DCHECK_EQ(manager_, manager);
   // Save the new input method id depending on the current browser state.
   switch (state_) {

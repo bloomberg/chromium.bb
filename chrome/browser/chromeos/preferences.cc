@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/preferences.h"
 
-#include "ash/ash_switches.h"
 #include "base/chromeos/chromeos_version.h"
 #include "base/command_line.h"
 #include "base/i18n/time_formatting.h"
@@ -446,8 +445,7 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
   // Do not check |*pref_name| for the two prefs. We're only interested in
   // initial values of the prefs.
   // TODO(yusukes): Remove the second condition on R20.
-  if (!pref_name && !CommandLine::ForCurrentProcess()->HasSwitch(
-          ash::switches::kDisableAshUberTray)) {
+  if (!pref_name) {
     const std::string previous_input_method_id =
         previous_input_method_.GetValue();
     const std::string current_input_method_id =
