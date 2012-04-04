@@ -100,7 +100,6 @@ CustomFrameView::CustomFrameView()
       close_button_(NULL),
       window_icon_(NULL),
       should_show_minmax_buttons_(false),
-      should_show_client_edge_(false),
       frame_background_(new FrameBackground()) {
 }
 
@@ -127,7 +126,6 @@ void CustomFrameView::Init(Widget* frame) {
       IDR_RESTORE, IDR_RESTORE_H, IDR_RESTORE_P);
 
   should_show_minmax_buttons_ = frame_->widget_delegate()->CanMaximize();
-  should_show_client_edge_ = frame_->widget_delegate()->ShouldShowClientEdge();
 
   if (frame_->widget_delegate()->ShouldShowWindowIcon()) {
     window_icon_ = new ImageButton(this);
@@ -291,10 +289,6 @@ int CustomFrameView::IconSize() const {
 #endif
 }
 
-bool CustomFrameView::ShouldShowClientEdge() const {
-  return should_show_client_edge_ && !frame_->IsMaximized();
-}
-
 gfx::Rect CustomFrameView::IconBounds() const {
   int size = IconSize();
   int frame_thickness = FrameBorderThickness();
@@ -318,14 +312,17 @@ gfx::Rect CustomFrameView::IconBounds() const {
   return gfx::Rect(frame_thickness + kIconLeftSpacing, y, size, size);
 }
 
-void CustomFrameView::PaintRestoredFrameBorder(gfx::Canvas* canvas) {
-  // Window frame mode.
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+bool CustomFrameView::ShouldShowClientEdge() const {
+  return !frame_->IsMaximized();
+}
 
+void CustomFrameView::PaintRestoredFrameBorder(gfx::Canvas* canvas) {
   frame_background_->set_frame_color(GetFrameColor());
   const SkBitmap* frame_image = GetFrameBitmap();
   frame_background_->set_theme_bitmap(frame_image);
   frame_background_->set_top_area_height(frame_image->height());
+
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
   frame_background_->SetCornerImages(
       rb.GetImageNamed(IDR_WINDOW_TOP_LEFT_CORNER).ToSkBitmap(),
@@ -342,13 +339,12 @@ void CustomFrameView::PaintRestoredFrameBorder(gfx::Canvas* canvas) {
 }
 
 void CustomFrameView::PaintMaximizedFrameBorder(gfx::Canvas* canvas) {
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-
   const SkBitmap* frame_image = GetFrameBitmap();
   frame_background_->set_theme_bitmap(frame_image);
   frame_background_->set_top_area_height(frame_image->height());
-
   frame_background_->PaintMaximized(canvas, this);
+
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
   // TODO(jamescook): Migrate this into FrameBackground.
   // The bottom of the titlebar actually comes from the top of the Client Edge
@@ -356,21 +352,21 @@ void CustomFrameView::PaintMaximizedFrameBorder(gfx::Canvas* canvas) {
   const SkBitmap* titlebar_bottom = rb.GetImageNamed(
       IDR_APP_TOP_CENTER).ToSkBitmap();
   int edge_height = titlebar_bottom->height() -
-                    (ShouldShowClientEdge() ? kClientEdgeThickness : 0);
+      (ShouldShowClientEdge() ? kClientEdgeThickness : 0);
   canvas->TileImageInt(*titlebar_bottom, 0,
       frame_->client_view()->y() - edge_height, width(), edge_height);
 }
 
 void CustomFrameView::PaintTitleBar(gfx::Canvas* canvas) {
-  WidgetDelegate* d = frame_->widget_delegate();
+  WidgetDelegate* delegate = frame_->widget_delegate();
 
   // It seems like in some conditions we can be asked to paint after the window
   // that contains us is WM_DESTROYed. At this point, our delegate is NULL. The
   // correct long term fix may be to shut down the RootView in WM_DESTROY.
-  if (!d)
+  if (!delegate)
     return;
 
-  canvas->DrawStringInt(d->GetWindowTitle(), GetTitleFont(),
+  canvas->DrawStringInt(delegate->GetWindowTitle(), GetTitleFont(),
                         SK_ColorWHITE, GetMirroredXForRect(title_bounds_),
                         title_bounds_.y(), title_bounds_.width(),
                         title_bounds_.height());

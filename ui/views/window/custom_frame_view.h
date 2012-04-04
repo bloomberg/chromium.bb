@@ -83,7 +83,7 @@ class CustomFrameView : public NonClientFrameView,
   gfx::Rect IconBounds() const;
 
   // Returns true if the client edge should be drawn. This is true if
-  // the window delegate wants a client edge and we are not maxmized.
+  // the window is not maximized.
   bool ShouldShowClientEdge() const;
 
   // Paint various sub-components of this view.
@@ -124,7 +124,6 @@ class CustomFrameView : public NonClientFrameView,
   ImageButton* close_button_;
   ImageButton* window_icon_;
   bool should_show_minmax_buttons_;
-  bool should_show_client_edge_;
 
   // Background painter for the window frame.
   scoped_ptr<FrameBackground> frame_background_;

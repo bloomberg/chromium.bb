@@ -77,10 +77,6 @@ bool WidgetDelegate::ShouldShowWindowTitle() const {
   return true;
 }
 
-bool WidgetDelegate::ShouldShowClientEdge() const {
-  return true;
-}
-
 SkBitmap WidgetDelegate::GetWindowAppIcon() {
   // Use the window icon as app icon by default.
   return GetWindowIcon();
