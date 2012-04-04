@@ -114,14 +114,14 @@ TEST_F(DeviceTokenFetcherTest, FetchToken) {
                              &notifier_);
   EXPECT_CALL(observer_, OnDeviceTokenChanged());
   EXPECT_EQ("", data_store_->device_token());
-  EXPECT_EQ(DEVICE_MODE_UNKNOWN, data_store_->device_mode());
+  EXPECT_EQ(DEVICE_MODE_PENDING, data_store_->device_mode());
   FetchToken(&fetcher, data_store_.get());
   loop_.RunAllPending();
   Mock::VerifyAndClearExpectations(&observer_);
   std::string token = data_store_->device_token();
   EXPECT_NE("", token);
   // User policy registration should not set enrollment mode.
-  EXPECT_EQ(DEVICE_MODE_UNKNOWN, data_store_->device_mode());
+  EXPECT_EQ(DEVICE_MODE_PENDING, data_store_->device_mode());
 
   // Calling FetchToken() again should result in a new token being fetched.
   successful_registration_response_.mutable_register_response()->
@@ -146,7 +146,7 @@ TEST_F(DeviceTokenFetcherTest, FetchDeviceToken) {
   DeviceTokenFetcher fetcher(&service_, cache_.get(), data_store.get(),
                              &notifier_);
   EXPECT_EQ("", data_store->device_token());
-  EXPECT_EQ(DEVICE_MODE_UNKNOWN, data_store->device_mode());
+  EXPECT_EQ(DEVICE_MODE_PENDING, data_store->device_mode());
   FetchToken(&fetcher, data_store.get());
   loop_.RunAllPending();
   EXPECT_NE("", data_store->device_token());
@@ -164,7 +164,7 @@ TEST_F(DeviceTokenFetcherTest, FetchDeviceTokenMissingMode) {
   DeviceTokenFetcher fetcher(&service_, cache_.get(), data_store.get(),
                              &notifier_);
   EXPECT_EQ("", data_store->device_token());
-  EXPECT_EQ(DEVICE_MODE_UNKNOWN, data_store->device_mode());
+  EXPECT_EQ(DEVICE_MODE_PENDING, data_store->device_mode());
   successful_registration_response_.mutable_register_response()->
       clear_enrollment_type();
   FetchToken(&fetcher, data_store.get());

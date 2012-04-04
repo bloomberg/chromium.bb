@@ -60,6 +60,7 @@ class KioskModeSettingsTest : public testing::Test {
   }
 
   void ReInitialize() {
+    KioskModeSettings::Get()->set_initialized(false);
     KioskModeSettings::Get()->Initialize(
         base::Bind(&KioskModeSettingsTest::DoNothing,
                    base::Unretained(this)));

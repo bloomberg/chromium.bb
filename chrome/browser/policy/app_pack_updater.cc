@@ -86,7 +86,8 @@ AppPackUpdater::AppPackUpdater(net::URLRequestContextGetter* request_context,
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                             base::Bind(&AppPackUpdater::Init,
                                        weak_ptr_factory_.GetWeakPtr()));
-  } else if (connector->GetDeviceMode() == DEVICE_MODE_UNKNOWN &&
+  } else if ((connector->GetDeviceMode() == DEVICE_MODE_NOT_SET ||
+              connector->GetDeviceMode() == DEVICE_MODE_PENDING) &&
              connector->device_cloud_policy_subsystem()) {
     // Not enrolled yet, listen for enrollment.
     policy_registrar_.reset(new CloudPolicySubsystem::ObserverRegistrar(

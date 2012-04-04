@@ -87,7 +87,7 @@ TEST_F(EnterpriseInstallAttributesTest, GetDeviceId) {
 }
 
 TEST_F(EnterpriseInstallAttributesTest, GetMode) {
-  EXPECT_EQ(DEVICE_MODE_UNKNOWN,
+  EXPECT_EQ(DEVICE_MODE_NOT_SET,
             install_attributes_.GetMode());
   ASSERT_EQ(EnterpriseInstallAttributes::LOCK_SUCCESS,
             install_attributes_.LockDevice(
@@ -99,7 +99,7 @@ TEST_F(EnterpriseInstallAttributesTest, GetMode) {
 }
 
 TEST_F(EnterpriseInstallAttributesTest, ConsumerDevice) {
-  EXPECT_EQ(DEVICE_MODE_UNKNOWN,
+  EXPECT_EQ(DEVICE_MODE_NOT_SET,
             install_attributes_.GetMode());
   // Lock the attributes empty.
   ASSERT_TRUE(cryptohome_->InstallAttributesFinalize());
@@ -109,7 +109,7 @@ TEST_F(EnterpriseInstallAttributesTest, ConsumerDevice) {
 }
 
 TEST_F(EnterpriseInstallAttributesTest, DeviceLockedFromOlderVersion) {
-  EXPECT_EQ(DEVICE_MODE_UNKNOWN,
+  EXPECT_EQ(DEVICE_MODE_NOT_SET,
             install_attributes_.GetMode());
   // Lock the attributes as if it was done from older Chrome version.
   ASSERT_TRUE(cryptohome_->InstallAttributesSet(kAttrEnterpriseOwned, "true"));

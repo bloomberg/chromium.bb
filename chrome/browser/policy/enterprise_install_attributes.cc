@@ -42,7 +42,8 @@ std::string GetDeviceModeString(DeviceMode mode) {
       return kEnterpiseDeviceMode;
     case DEVICE_MODE_KIOSK:
       return kKioskDeviceMode;
-    case DEVICE_MODE_UNKNOWN:
+    case DEVICE_MODE_PENDING:
+    case DEVICE_MODE_NOT_SET:
       break;
   }
   NOTREACHED() << "Invalid device mode: " << mode;
@@ -59,7 +60,7 @@ DeviceMode GetDeviceModeFromString(
   else if (mode == kKioskDeviceMode)
     return DEVICE_MODE_KIOSK;
   NOTREACHED() << "Unknown device mode string: " << mode;
-  return DEVICE_MODE_UNKNOWN;
+  return DEVICE_MODE_NOT_SET;
 }
 
 }  // namespace
@@ -68,13 +69,14 @@ EnterpriseInstallAttributes::EnterpriseInstallAttributes(
     chromeos::CryptohomeLibrary* cryptohome)
     : cryptohome_(cryptohome),
       device_locked_(false),
-      registration_mode_(DEVICE_MODE_UNKNOWN) {}
+      registration_mode_(DEVICE_MODE_PENDING) {}
 
 EnterpriseInstallAttributes::LockResult EnterpriseInstallAttributes::LockDevice(
     const std::string& user,
     DeviceMode device_mode,
     const std::string& device_id) {
-  CHECK_NE(device_mode, DEVICE_MODE_UNKNOWN);
+  CHECK_NE(device_mode, DEVICE_MODE_PENDING);
+  CHECK_NE(device_mode, DEVICE_MODE_NOT_SET);
 
   // Check for existing lock first.
   if (device_locked_) {
@@ -161,43 +163,44 @@ void EnterpriseInstallAttributes::ReadImmutableAttributes() {
   if (device_locked_)
     return;
 
-  if (cryptohome_ &&
-      cryptohome_->InstallAttributesIsReady() &&
-      !cryptohome_->InstallAttributesIsInvalid() &&
-      !cryptohome_->InstallAttributesIsFirstInstall()) {
-    device_locked_ = true;
-    std::string enterprise_owned;
-    std::string enterprise_user;
-    if (cryptohome_->InstallAttributesGet(kAttrEnterpriseOwned,
-                                          &enterprise_owned) &&
-        cryptohome_->InstallAttributesGet(kAttrEnterpriseUser,
-                                          &enterprise_user) &&
-        enterprise_owned == "true" &&
-        !enterprise_user.empty()) {
-      registration_user_ = enterprise_user;
+  if (cryptohome_ && cryptohome_->InstallAttributesIsReady()) {
+    registration_mode_ = DEVICE_MODE_NOT_SET;
+    if (!cryptohome_->InstallAttributesIsInvalid() &&
+        !cryptohome_->InstallAttributesIsFirstInstall()) {
+      device_locked_ = true;
+      std::string enterprise_owned;
+      std::string enterprise_user;
+      if (cryptohome_->InstallAttributesGet(kAttrEnterpriseOwned,
+                                            &enterprise_owned) &&
+          cryptohome_->InstallAttributesGet(kAttrEnterpriseUser,
+                                            &enterprise_user) &&
+          enterprise_owned == "true" &&
+          !enterprise_user.empty()) {
+        registration_user_ = enterprise_user;
 
-      // Initialize the mode to the legacy enterprise mode here and update below
-      // if more information is present.
-      registration_mode_ = DEVICE_MODE_ENTERPRISE;
+        // Initialize the mode to the legacy enterprise mode here and update
+        // below if more information is present.
+        registration_mode_ = DEVICE_MODE_ENTERPRISE;
 
-      // If we could extract basic setting we should try to extract the extended
-      // ones too. We try to set these to defaults as good as possible if not
-      // present, which could happen for device enrolled in pre-R19 revisions of
-      // the code, before these new attributes were added.
-      if (!cryptohome_->InstallAttributesGet(kAttrEnterpriseDomain,
-                                             &registration_domain_)) {
-        registration_domain_ = ExtractDomainName(registration_user_);
+        // If we could extract basic setting we should try to extract the
+        // extended ones too. We try to set these to defaults as good as
+        // as possible if present, which could happen for device enrolled in
+        // pre 19 revisions of the code, before these new attributes were added.
+        if (!cryptohome_->InstallAttributesGet(kAttrEnterpriseDomain,
+                                               &registration_domain_)) {
+          registration_domain_ = ExtractDomainName(registration_user_);
+        }
+        if (!cryptohome_->InstallAttributesGet(kAttrEnterpriseDeviceId,
+                                               &registration_device_id_)) {
+          registration_device_id_.clear();
+        }
+        std::string mode;
+        if (cryptohome_->InstallAttributesGet(kAttrEnterpriseMode, &mode))
+          registration_mode_ = GetDeviceModeFromString(mode);
+      } else if (enterprise_user.empty() && enterprise_owned != "true") {
+        // |registration_user_| is empty on consumer devices.
+        registration_mode_ = DEVICE_MODE_CONSUMER;
       }
-      if (!cryptohome_->InstallAttributesGet(kAttrEnterpriseDeviceId,
-                                             &registration_device_id_)) {
-        registration_device_id_.clear();
-      }
-      std::string mode;
-      if (cryptohome_->InstallAttributesGet(kAttrEnterpriseMode, &mode))
-        registration_mode_ = GetDeviceModeFromString(mode);
-    } else if (enterprise_user.empty() && enterprise_owned != "true") {
-      // |registration_user_| is empty on consumer devices.
-      registration_mode_ = DEVICE_MODE_CONSUMER;
     }
   }
 }

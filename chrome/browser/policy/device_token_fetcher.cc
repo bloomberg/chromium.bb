@@ -84,7 +84,7 @@ DeviceMode TranslateProtobufDeviceMode(
       return DEVICE_MODE_KIOSK;
   }
   LOG(ERROR) << "Unknown enrollment mode in registration response: " << mode;
-  return  DEVICE_MODE_UNKNOWN;
+  return  DEVICE_MODE_PENDING;
 }
 
 }  // namespace
@@ -211,7 +211,7 @@ void DeviceTokenFetcher::OnTokenFetchCompleted(
             mode = TranslateProtobufDeviceMode(
                 register_response.enrollment_type());
           }
-          if (mode == DEVICE_MODE_UNKNOWN) {
+          if (mode == DEVICE_MODE_PENDING) {
             LOG(ERROR) << "Enrollment mode missing or unknown!";
             SetState(STATE_BAD_ENROLLMENT_MODE);
             return;

@@ -83,7 +83,8 @@ enum DeviceManagementStatus {
 
 // List of modes that the device can be locked into.
 enum DeviceMode {
-  DEVICE_MODE_UNKNOWN,     // The device is not yet enrolled or owned.
+  DEVICE_MODE_PENDING,     // The device mode is not yet available.
+  DEVICE_MODE_NOT_SET,     // The device is not yet enrolled or owned.
   DEVICE_MODE_CONSUMER,    // The device is locally owned as consumer device.
   DEVICE_MODE_ENTERPRISE,  // The device is enrolled as an enterprise device.
   DEVICE_MODE_KIOSK,       // The device is enrolled as kiosk/retail device.

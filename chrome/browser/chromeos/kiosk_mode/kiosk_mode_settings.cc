@@ -13,11 +13,17 @@
 #include "chrome/browser/chromeos/cros_settings.h"
 #include "chrome/browser/chromeos/cros_settings_names.h"
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_screensaver.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/policy/cloud_policy_constants.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_switches.h"
 
 namespace chromeos {
+
+namespace {
+const int kDeviceModeFetchRetryDelayMs = 500;
+}
 
 const int KioskModeSettings::kMaxIdleLogoutTimeout = 600000;  // ms
 const int KioskModeSettings::kMinIdleLogoutTimeout = 5000;  // ms
@@ -34,20 +40,16 @@ KioskModeSettings* KioskModeSettings::Get() {
 }
 
 bool KioskModeSettings::IsKioskModeEnabled() {
-  if (g_browser_process) {
-    policy::BrowserPolicyConnector* bpc =
-        g_browser_process->browser_policy_connector();
-    if (bpc && policy::DEVICE_MODE_KIOSK == bpc->GetDeviceMode())
-        return true;
-  }
-  // In case we've force-enabled kiosk mode.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableKioskMode))
-    return true;
-
-  return false;
+  return is_kiosk_mode_;
 }
 
 void KioskModeSettings::Initialize(const base::Closure& notify_initialized) {
+  // No need to call more than once.
+  if (is_initialized_) {
+    notify_initialized.Run();
+    return;
+  }
+
   CrosSettings* cros_settings = CrosSettings::Get();
   if (!cros_settings->PrepareTrustedValues(
       base::Bind(&KioskModeSettings::Initialize,
@@ -146,9 +148,57 @@ base::TimeDelta KioskModeSettings::GetIdleLogoutWarningDuration() const {
 }
 
 KioskModeSettings::KioskModeSettings() : is_initialized_(false) {
+  // In case we've force-enabled kiosk mode.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableKioskMode)) {
+    is_kiosk_mode_ = true;
+    return;
+  }
+
+  // Precache the value as we know it at construction time to avoid serving
+  // different values to different users.
+  if (g_browser_process) {
+    policy::BrowserPolicyConnector* bpc =
+        g_browser_process->browser_policy_connector();
+    policy::DeviceMode device_mode = bpc->GetDeviceMode();
+    if (device_mode == policy::DEVICE_MODE_KIOSK) {
+      is_kiosk_mode_ = true;
+      return;
+    } else if (device_mode == policy::DEVICE_MODE_PENDING){
+      content::BrowserThread::PostDelayedTask(
+          content::BrowserThread::UI, FROM_HERE,
+          base::Bind(&KioskModeSettings::VerifyModeIsKnown,
+                     base::Unretained(this)),
+          kDeviceModeFetchRetryDelayMs);
+    }
+  }
+  is_kiosk_mode_ = false;
 }
 
 KioskModeSettings::~KioskModeSettings() {
 }
+
+void KioskModeSettings::VerifyModeIsKnown() {
+  if (g_browser_process) {
+    policy::BrowserPolicyConnector* bpc =
+        g_browser_process->browser_policy_connector();
+    policy::DeviceMode device_mode = bpc->GetDeviceMode();
+    // We retry asking for the mode until it becomes known.
+    switch (device_mode) {
+      case policy::DEVICE_MODE_PENDING:
+        content::BrowserThread::PostDelayedTask(
+            content::BrowserThread::UI, FROM_HERE,
+            base::Bind(&KioskModeSettings::VerifyModeIsKnown,
+                       base::Unretained(this)),
+            kDeviceModeFetchRetryDelayMs);
+        break;
+      case policy::DEVICE_MODE_KIOSK:
+        BrowserList::ExitCleanly();
+        break;
+      default:
+        break;
+    }
+  }
+}
+
 
 }  // namespace chromeos

@@ -251,7 +251,7 @@ DeviceMode BrowserPolicyConnector::GetDeviceMode() {
   if (install_attributes_.get())
     return install_attributes_->GetMode();
   else
-    return DEVICE_MODE_UNKNOWN;
+    return DEVICE_MODE_NOT_SET;
 #endif
 
   // We only have the notion of "enterprise" device on ChromeOS for now.
