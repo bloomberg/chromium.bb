@@ -95,6 +95,7 @@ class IMEDetailedView : public views::View,
   }
 
   void AppendIMEList(const IMEInfoList& list) {
+    ime_map_.clear();
     views::View* imes = new views::View;
     imes->SetLayoutManager(new views::BoxLayout(
         views::BoxLayout::kVertical, 0, 0, 1));
@@ -111,6 +112,7 @@ class IMEDetailedView : public views::View,
   }
 
   void AppendIMEProperties(const IMEPropertyInfoList& property_list) {
+    property_map_.clear();
     views::View* properties = new views::View;
     properties->SetLayoutManager(new views::BoxLayout(
         views::BoxLayout::kVertical, 0, 0, 1));
