@@ -76,6 +76,7 @@
 #include "chrome/browser/ui/page_info_bubble.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/task_manager/task_manager_dialog.h"
+#include "chrome/browser/website_settings.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -1132,6 +1133,11 @@ void BrowserWindowGtk::ShowWebsiteSettings(
     const GURL& url,
     const content::SSLStatus& ssl,
     bool show_history) {
+    WebsiteSettings::Show(GetNativeHandle(),
+                          profile,
+                          tab_contents_wrapper,
+                          url,
+                          ssl);
 }
 
 void BrowserWindowGtk::ShowAppMenu() {

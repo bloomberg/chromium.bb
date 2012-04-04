@@ -10,6 +10,7 @@
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_types.h"
 #include "googleurl/src/gurl.h"
+#include "ui/gfx/native_widget_types.h"
 
 namespace content {
 class CertStore;
@@ -59,6 +60,18 @@ class WebsiteSettings {
     // The site is a trusted internal chrome page.
     SITE_IDENTITY_STATUS_INTERNAL_PAGE,
   };
+
+  // Creates a |WebsiteSettingsModel| incl. a |WebsiteSettingsUI| and displays
+  // the UI. The |url| contains the omnibox URL of the currently active tab,
+  // |parent| contains the currently active window, |profile| contains the
+  // currently active profile and |ssl| contains the |SSLStatus| of the
+  // connection to the website in the currently active tab that is wrapped by
+  // the |tab_contents_wrapper|.
+  static void Show(gfx::NativeWindow parent,
+                   Profile* profile,
+                   TabContentsWrapper* tab_contents_wrapper,
+                   const GURL& url,
+                   const content::SSLStatus& ssl);
 
   // Creates a WebsiteSettings for the passed |url| using the given |ssl| status
   // object to determine the status of the site's connection. The

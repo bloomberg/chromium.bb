@@ -403,3 +403,21 @@ void WebsiteSettings::OnSitePermissionChanged(ContentSettingsType type,
   content_settings_->SetWebsiteSetting(
       primary_pattern, secondary_pattern, type, "", value);
 }
+
+// static
+void WebsiteSettings::Show(gfx::NativeWindow parent,
+                           Profile* profile,
+                           TabContentsWrapper* tab_contents_wrapper,
+                           const GURL& url,
+                           const content::SSLStatus& ssl) {
+#if defined(TOOLKIT_USES_GTK)
+  // The WebsiteSettingsModel will delete itself after the UI is closed.
+  new WebsiteSettings(new WebsiteSettingsPopupGtk(parent,
+                                                  profile,
+                                                 tab_contents_wrapper),
+                      profile,
+                      url,
+                      ssl,
+                      content::CertStore::GetInstance());
+#endif
+}
