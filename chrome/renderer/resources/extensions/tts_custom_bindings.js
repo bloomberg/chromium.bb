@@ -9,6 +9,7 @@ var GetNextTTSEventId = ttsNatives.GetNextTTSEventId;
 
 var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
 var sendRequest = require('sendRequest').sendRequest;
+var lazyBG = requireNative('lazy_background_page');
 
 chromeHidden.registerCustomHook('tts', function(api) {
   var apiFunctions = api.apiFunctions;
@@ -25,6 +26,8 @@ chromeHidden.registerCustomHook('tts', function(api) {
                    });
       if (event.isFinalEvent) {
         delete chromeHidden.tts.handlers[event.srcId];
+        // Balanced in 'speak' handler.
+        lazyBG.DecrementKeepaliveCount();
       }
     }
   });
@@ -35,6 +38,9 @@ chromeHidden.registerCustomHook('tts', function(api) {
       var id = GetNextTTSEventId();
       args[1].srcId = id;
       chromeHidden.tts.handlers[id] = args[1].onEvent;
+      // Keep the page alive until the event finishes.
+      // Balanced in eventHandler.
+      lazyBG.IncrementKeepaliveCount();
     }
     sendRequest(this.name, args, this.definition.parameters);
     return id;

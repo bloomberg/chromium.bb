@@ -10,6 +10,7 @@
 #include "base/string_piece.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_view_type.h"
 #include "chrome/common/extensions/api/extension_api.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_messages.h"
@@ -24,6 +25,7 @@
 #include "chrome/renderer/extensions/experimental.socket_custom_bindings.h"
 #include "chrome/renderer/extensions/extension_custom_bindings.h"
 #include "chrome/renderer/extensions/extension_groups.h"
+#include "chrome/renderer/extensions/extension_helper.h"
 #include "chrome/renderer/extensions/extension_request_sender.h"
 #include "chrome/renderer/extensions/file_browser_handler_custom_bindings.h"
 #include "chrome/renderer/extensions/file_browser_private_custom_bindings.h"
@@ -117,6 +119,54 @@ class PrintNativeHandler : public NativeHandler {
 
     LOG(ERROR) << JoinString(components, ',');
     return v8::Undefined();
+  }
+};
+
+class LazyBackgroundPageNativeHandler : public ChromeV8Extension {
+ public:
+  explicit LazyBackgroundPageNativeHandler(ExtensionDispatcher* dispatcher)
+      : ChromeV8Extension(dispatcher) {
+    RouteFunction("IncrementKeepaliveCount",
+        base::Bind(&LazyBackgroundPageNativeHandler::IncrementKeepaliveCount,
+                   base::Unretained(this)));
+    RouteFunction("DecrementKeepaliveCount",
+        base::Bind(&LazyBackgroundPageNativeHandler::DecrementKeepaliveCount,
+                   base::Unretained(this)));
+  }
+
+  v8::Handle<v8::Value> IncrementKeepaliveCount(const v8::Arguments& args) {
+    ChromeV8Context* context =
+        extension_dispatcher()->v8_context_set().GetCurrent();
+    if (IsCurrentContextLazyBackgroundPage(context->extension_id())) {
+      content::RenderThread::Get()->Send(
+          new ExtensionHostMsg_IncrementLazyKeepaliveCount(
+              context->extension_id()));
+    }
+    return v8::Undefined();
+  }
+
+  v8::Handle<v8::Value> DecrementKeepaliveCount(const v8::Arguments& args) {
+    ChromeV8Context* context =
+        extension_dispatcher()->v8_context_set().GetCurrent();
+    if (IsCurrentContextLazyBackgroundPage(context->extension_id())) {
+      content::RenderThread::Get()->Send(
+          new ExtensionHostMsg_DecrementLazyKeepaliveCount(
+              context->extension_id()));
+    }
+    return v8::Undefined();
+  }
+
+ private:
+  bool IsCurrentContextLazyBackgroundPage(const std::string& extension_id) {
+    content::RenderView* render_view = GetCurrentRenderView();
+    if (!render_view)
+      return false;
+
+    ExtensionHelper* helper = ExtensionHelper::Get(render_view);
+    const ::Extension* extension =
+        extension_dispatcher()->extensions()->GetByID(extension_id);
+    return (extension && extension->has_lazy_background_page() &&
+            helper->view_type() == chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE);
   }
 };
 
@@ -540,6 +590,8 @@ void ExtensionDispatcher::DidCreateScriptContext(
       scoped_ptr<NativeHandler>(new ChromeHiddenNativeHandler()));
   module_system->RegisterNativeHandler("print",
       scoped_ptr<NativeHandler>(new PrintNativeHandler()));
+  module_system->RegisterNativeHandler("lazy_background_page",
+      scoped_ptr<NativeHandler>(new LazyBackgroundPageNativeHandler(this)));
 
   int manifest_version = 1;
   if (extension)

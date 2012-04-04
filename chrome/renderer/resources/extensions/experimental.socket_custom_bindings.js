@@ -9,6 +9,7 @@
 
   var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
   var sendRequest = require('sendRequest').sendRequest;
+  var lazyBG = requireNative('lazy_background_page');
 
   chromeHidden.registerCustomHook('experimental.socket', function(api) {
       var apiFunctions = api.apiFunctions;
@@ -19,6 +20,10 @@
             var id = GetNextSocketEventId();
             args[3].srcId = id;
             chromeHidden.socket.handlers[id] = args[3].onEvent;
+
+            // Keep the page alive until the event finishes.
+            // Balanced in eventHandler.
+            lazyBG.IncrementKeepaliveCount();
           }
           sendRequest(this.name, args, this.definition.parameters);
           return id;
@@ -51,6 +56,8 @@
             }
             if (event.isFinalEvent) {
               delete chromeHidden.socket.handlers[event.srcId];
+              // Balanced in 'create' handler.
+              lazyBG.DecrementKeepaliveCount();
             }
           }
         });

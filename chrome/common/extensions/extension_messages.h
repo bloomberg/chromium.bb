@@ -256,6 +256,36 @@ IPC_MESSAGE_CONTROL2(ExtensionMsg_ShouldUnload,
 IPC_MESSAGE_CONTROL1(ExtensionMsg_Unload,
                      std::string /* extension_id */)
 
+// Send to renderer once the installation mentioned on
+// ExtensionHostMsg_InlineWebstoreInstall is complete.
+IPC_MESSAGE_ROUTED3(ExtensionMsg_InlineWebstoreInstallResponse,
+                    int32 /* install id */,
+                    bool /* whether the install was successful */,
+                    std::string /* error */)
+
+// Response to the renderer for ExtensionHostMsg_GetAppNotifyChannel.
+IPC_MESSAGE_ROUTED3(ExtensionMsg_GetAppNotifyChannelResponse,
+                    std::string /* channel_id */,
+                    std::string /* error */,
+                    int32 /* callback_id */)
+
+// Dispatch the Port.onConnect event for message channels.
+IPC_MESSAGE_ROUTED5(ExtensionMsg_DispatchOnConnect,
+                    int /* target_port_id */,
+                    std::string /* channel_name */,
+                    std::string /* tab_json */,
+                    std::string /* source_extension_id */,
+                    std::string /* target_extension_id */)
+
+// Deliver a message sent with ExtensionHostMsg_PostMessage.
+IPC_MESSAGE_ROUTED2(ExtensionMsg_DeliverMessage,
+                    int /* target_port_id */,
+                    std::string /* message */)
+
+IPC_MESSAGE_ROUTED2(ExtensionMsg_DispatchOnDisconnect,
+                    int /* port_id */,
+                    bool /* connection_error */)
+
 // Messages sent from the renderer to the browser.
 
 // A renderer sends this message when an extension process starts an API
@@ -355,12 +385,6 @@ IPC_MESSAGE_ROUTED4(ExtensionHostMsg_InlineWebstoreInstall,
                     std::string /* Web Store item ID */,
                     GURL /* requestor URL */)
 
-// Send to renderer once the installation mentioned above is complete.
-IPC_MESSAGE_ROUTED3(ExtensionMsg_InlineWebstoreInstallResponse,
-                    int32 /* install id */,
-                    bool /* whether the install was successful */,
-                    std::string /* error */)
-
 // Sent by the renderer when an App is requesting permission to send server
 // pushed notifications.
 IPC_MESSAGE_ROUTED4(ExtensionHostMsg_GetAppNotifyChannel,
@@ -383,25 +407,17 @@ IPC_MESSAGE_CONTROL2(ExtensionHostMsg_ShouldUnloadAck,
 IPC_MESSAGE_CONTROL1(ExtensionHostMsg_UnloadAck,
                      std::string /* extension_id */)
 
-// Response to the renderer for the above message.
-IPC_MESSAGE_ROUTED3(ExtensionMsg_GetAppNotifyChannelResponse,
-                    std::string /* channel_id */,
-                    std::string /* error */,
-                    int32 /* callback_id */)
+// Informs the browser to increment the keepalive count for the lazy background
+// page, keeping it alive.
+IPC_MESSAGE_CONTROL1(ExtensionHostMsg_IncrementLazyKeepaliveCount,
+                     std::string /* extension_id */)
 
-// Dispatch the Port.onConnect event for message channels.
-IPC_MESSAGE_ROUTED5(ExtensionMsg_DispatchOnConnect,
-                    int /* target_port_id */,
-                    std::string /* channel_name */,
-                    std::string /* tab_json */,
-                    std::string /* source_extension_id */,
-                    std::string /* target_extension_id */)
+// Informs the browser there is one less thing keeping the lazy background page
+// alive.
+IPC_MESSAGE_CONTROL1(ExtensionHostMsg_DecrementLazyKeepaliveCount,
+                     std::string /* extension_id */)
 
-// Deliver a message sent with ExtensionHostMsg_PostMessage.
-IPC_MESSAGE_ROUTED2(ExtensionMsg_DeliverMessage,
-                    int /* target_port_id */,
-                    std::string /* message */)
-
-IPC_MESSAGE_ROUTED2(ExtensionMsg_DispatchOnDisconnect,
-                    int /* port_id */,
-                    bool /* connection_error */)
+// Fetches a globally unique ID (for the lifetime of the browser) from the
+// browser process.
+IPC_SYNC_MESSAGE_CONTROL0_1(ExtensionHostMsg_GenerateUniqueID,
+                            int /* unique_id */)

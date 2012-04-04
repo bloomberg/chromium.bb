@@ -17,6 +17,7 @@
 #include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/metrics/histogram_synchronizer.h"
@@ -98,6 +99,12 @@ bool ChromeRenderMessageFilter::OnMessageReceived(const IPC::Message& message,
                         OnExtensionRequestForIOThread)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_ShouldUnloadAck,
                         OnExtensionShouldUnloadAck)
+    IPC_MESSAGE_HANDLER(ExtensionHostMsg_IncrementLazyKeepaliveCount,
+                        OnExtensionIncrementLazyKeepaliveCount)
+    IPC_MESSAGE_HANDLER(ExtensionHostMsg_DecrementLazyKeepaliveCount,
+                        OnExtensionDecrementLazyKeepaliveCount)
+    IPC_MESSAGE_HANDLER(ExtensionHostMsg_GenerateUniqueID,
+                        OnExtensionGenerateUniqueID)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_UnloadAck, OnExtensionUnloadAck)
 #if defined(USE_TCMALLOC)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_RendererTcmalloc, OnRendererTcmalloc)
@@ -149,6 +156,8 @@ void ChromeRenderMessageFilter::OverrideThreadForMessage(
     case ExtensionHostMsg_CloseChannel::ID:
     case ExtensionHostMsg_ShouldUnloadAck::ID:
     case ExtensionHostMsg_UnloadAck::ID:
+    case ExtensionHostMsg_IncrementLazyKeepaliveCount::ID:
+    case ExtensionHostMsg_DecrementLazyKeepaliveCount::ID:
     case ChromeViewHostMsg_UpdatedCacheStats::ID:
       *thread = BrowserThread::UI;
       break;
@@ -413,6 +422,37 @@ void ChromeRenderMessageFilter::OnExtensionUnloadAck(
      const std::string& extension_id) {
   if (profile_->GetExtensionProcessManager())
     profile_->GetExtensionProcessManager()->OnUnloadAck(extension_id);
+}
+
+void ChromeRenderMessageFilter::OnExtensionIncrementLazyKeepaliveCount(
+    const std::string& extension_id) {
+  ExtensionService* service =
+      ExtensionSystemFactory::GetForProfile(profile_)->extension_service();
+  ExtensionProcessManager* process_manager =
+      ExtensionSystemFactory::GetForProfile(profile_)->process_manager();
+  if (process_manager && service) {
+    const Extension* extension = service->extensions()->GetByID(extension_id);
+    if (extension)
+      process_manager->IncrementLazyKeepaliveCount(extension);
+  }
+}
+
+void ChromeRenderMessageFilter::OnExtensionDecrementLazyKeepaliveCount(
+    const std::string& extension_id) {
+  ExtensionService* service =
+      ExtensionSystemFactory::GetForProfile(profile_)->extension_service();
+  ExtensionProcessManager* process_manager =
+      ExtensionSystemFactory::GetForProfile(profile_)->process_manager();
+  if (process_manager && service) {
+    const Extension* extension = service->extensions()->GetByID(extension_id);
+    if (extension)
+      process_manager->DecrementLazyKeepaliveCount(extension);
+  }
+}
+
+void ChromeRenderMessageFilter::OnExtensionGenerateUniqueID(int* unique_id) {
+  static int next_unique_id = 1;
+  *unique_id = next_unique_id++;
 }
 
 #if defined(USE_TCMALLOC)
