@@ -109,6 +109,7 @@
       'c/private/ppb_tcp_server_socket_private.h',
       'c/private/ppb_tcp_socket_private.h',
       'c/private/ppb_udp_socket_private.h',
+      'c/private/ppb_x509_certificate_private.h',
 
       # Deprecated interfaces.
       'c/dev/deprecated_bool.h',
@@ -273,6 +274,8 @@
       'cpp/private/udp_socket_private.h',
       'cpp/private/var_private.cc',
       'cpp/private/var_private.h',
+      'cpp/private/x509_certificate_private.cc',
+      'cpp/private/x509_certificate_private.h',
 
       # Trusted interfaces.
       'cpp/trusted/browser_font_trusted.cc',
@@ -441,6 +444,8 @@
       'tests/test_video_decoder.h',
       'tests/test_websocket.cc',
       'tests/test_websocket.h',
+      'tests/test_x509_certificate_private.cc',
+      'tests/test_x509_certificate_private.h',
 
       # Deprecated test cases.
       'tests/test_instance_deprecated.cc',

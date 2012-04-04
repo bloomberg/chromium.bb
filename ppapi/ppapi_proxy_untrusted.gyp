@@ -335,6 +335,7 @@
           'thunk/ppb_view_thunk.cc',
           'thunk/ppb_websocket_thunk.cc',
           'thunk/ppb_widget_thunk.cc',
+          'thunk/ppb_x509_certificate_private_thunk.cc',
           'thunk/ppb_zoom_thunk.cc',
 
           'proxy/broker_dispatcher.cc',

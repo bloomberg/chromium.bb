@@ -56,6 +56,7 @@ class CommandBuffer;
 
 namespace ppapi {
 class PPB_HostResolver_Shared;
+class PPB_X509Certificate_Fields;
 struct DeviceRefData;
 struct HostPortPair;
 struct Preferences;
@@ -512,6 +513,11 @@ class PluginDelegate {
       webkit_glue::NetworkListObserver* observer) = 0;
   virtual void RemoveNetworkListObserver(
       webkit_glue::NetworkListObserver* observer) = 0;
+
+  // For PPB_X509Certificate_Private.
+  virtual bool X509CertificateParseDER(
+      const std::vector<char>& der,
+      ::ppapi::PPB_X509Certificate_Fields* fields) = 0;
 
   // Show the given context menu at the given position (in the plugin's
   // coordinates).

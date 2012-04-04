@@ -801,6 +801,9 @@ TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(Fullscreen)
 TEST_PPAPI_IN_PROCESS(FlashClipboard)
 TEST_PPAPI_OUT_OF_PROCESS(FlashClipboard)
 
+TEST_PPAPI_IN_PROCESS(X509CertificatePrivate)
+TEST_PPAPI_OUT_OF_PROCESS(X509CertificatePrivate)
+
 // http://crbug.com/63239
 #if defined(OS_POSIX)
 #define MAYBE_DirectoryReader DISABLED_DirectoryReader

@@ -1115,6 +1115,15 @@ void PepperPluginDelegateImpl::RemoveNetworkListObserver(
 #endif
 }
 
+bool PepperPluginDelegateImpl::X509CertificateParseDER(
+    const std::vector<char>& der,
+    ppapi::PPB_X509Certificate_Fields* fields) {
+  bool succeeded = false;
+  render_view_->Send(
+      new PpapiHostMsg_PPBX509Certificate_ParseDER(der, &succeeded, fields));
+  return succeeded;
+}
+
 int32_t PepperPluginDelegateImpl::ShowContextMenu(
     webkit::ppapi::PluginInstance* instance,
     webkit::ppapi::PPB_Flash_Menu_Impl* menu,

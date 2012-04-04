@@ -23,6 +23,7 @@ struct PP_NetAddress_Private;
 namespace ppapi {
 
 class HostResource;
+class PPB_X509Certificate_Fields;
 
 namespace proxy {
 
@@ -145,6 +146,14 @@ struct ParamTraits< std::vector<ppapi::PPB_FileRef_CreateInfo> > {
 template<>
 struct ParamTraits<ppapi::proxy::SerializedFlashMenu> {
   typedef ppapi::proxy::SerializedFlashMenu param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
+  static void Log(const param_type& p, std::string* l);
+};
+
+template<>
+struct PPAPI_PROXY_EXPORT ParamTraits<ppapi::PPB_X509Certificate_Fields> {
+  typedef ppapi::PPB_X509Certificate_Fields param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, PickleIterator* iter, param_type* r);
   static void Log(const param_type& p, std::string* l);

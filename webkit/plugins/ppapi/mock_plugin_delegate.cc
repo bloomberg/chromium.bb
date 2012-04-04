@@ -328,6 +328,12 @@ void MockPluginDelegate::RemoveNetworkListObserver(
     webkit_glue::NetworkListObserver* observer) {
 }
 
+bool MockPluginDelegate::X509CertificateParseDER(
+    const std::vector<char>& der,
+    ::ppapi::PPB_X509Certificate_Fields* fields) {
+  return false;
+}
+
 int32_t MockPluginDelegate::ShowContextMenu(
     PluginInstance* instance,
     webkit::ppapi::PPB_Flash_Menu_Impl* menu,

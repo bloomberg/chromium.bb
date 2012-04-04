@@ -41,6 +41,10 @@ namespace IPC {
 struct ChannelHandle;
 }
 
+namespace ppapi {
+class PPB_X509Certificate_Fields;
+}
+
 namespace ui {
 class Range;
 }
@@ -310,6 +314,10 @@ class PepperPluginDelegateImpl
       webkit_glue::NetworkListObserver* observer) OVERRIDE;
   virtual void RemoveNetworkListObserver(
       webkit_glue::NetworkListObserver* observer) OVERRIDE;
+
+  virtual bool X509CertificateParseDER(
+      const std::vector<char>& der,
+      ppapi::PPB_X509Certificate_Fields* fields) OVERRIDE;
 
   virtual int32_t ShowContextMenu(
       webkit::ppapi::PluginInstance* instance,

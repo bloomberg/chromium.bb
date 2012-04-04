@@ -138,6 +138,8 @@
         'proxy/ppb_video_capture_proxy.h',
         'proxy/ppb_video_decoder_proxy.cc',
         'proxy/ppb_video_decoder_proxy.h',
+        'proxy/ppb_x509_certificate_private_proxy.cc',
+        'proxy/ppb_x509_certificate_private_proxy.h',
         'proxy/ppp_class_proxy.cc',
         'proxy/ppp_class_proxy.h',
         'proxy/ppp_graphics_3d_proxy.cc',

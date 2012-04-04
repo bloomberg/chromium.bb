@@ -32,6 +32,7 @@
 #include "ppapi/proxy/ppb_url_loader_proxy.h"
 #include "ppapi/proxy/ppb_video_capture_proxy.h"
 #include "ppapi/proxy/ppb_video_decoder_proxy.h"
+#include "ppapi/proxy/ppb_x509_certificate_private_proxy.h"
 #include "ppapi/shared_impl/api_id.h"
 #include "ppapi/shared_impl/function_group_base.h"
 #include "ppapi/shared_impl/host_resource.h"
@@ -363,6 +364,14 @@ PP_Resource ResourceCreationProxy::CreateWheelInputEvent(
   return (new PPB_InputEvent_Shared(OBJECT_IS_PROXY,
                                     instance, data))->GetReference();
 }
+
+#if !defined(OS_NACL)
+PP_Resource ResourceCreationProxy::CreateX509CertificatePrivate(
+    PP_Instance instance) {
+  return PPB_X509Certificate_Private_Proxy::CreateProxyResource(instance);
+}
+#endif
+
 
 bool ResourceCreationProxy::Send(IPC::Message* msg) {
   return dispatcher()->Send(msg);

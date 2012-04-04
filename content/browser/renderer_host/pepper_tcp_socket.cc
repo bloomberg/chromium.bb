@@ -19,12 +19,14 @@
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/base/single_request_host_resolver.h"
+#include "net/base/x509_certificate.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/socket/tcp_client_socket.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/private/net_address_private_impl.h"
+#include "ppapi/shared_impl/private/ppb_x509_certificate_private_shared.h"
 #include "ppapi/shared_impl/private/tcp_socket_private_impl.h"
 
 using content::BrowserThread;
@@ -200,6 +202,26 @@ void PepperTCPSocket::SendConnectACKError() {
       routing_id_, plugin_dispatcher_id_, socket_id_, false,
       NetAddressPrivateImpl::kInvalidNetAddress,
       NetAddressPrivateImpl::kInvalidNetAddress));
+}
+
+// static
+bool PepperTCPSocket::GetCertificateFields(
+    const net::X509Certificate& cert,
+    ppapi::PPB_X509Certificate_Fields* fields) {
+  // TODO(raymes,rsleevi): Implement this.
+  return true;
+}
+
+// static
+bool PepperTCPSocket::GetCertificateFields(
+    const char* der,
+    uint32_t length,
+    ppapi::PPB_X509Certificate_Fields* fields) {
+  scoped_refptr<net::X509Certificate> cert =
+      net::X509Certificate::CreateFromBytes(der, length);
+  if (!cert.get())
+    return false;
+  return GetCertificateFields(*cert, fields);
 }
 
 void PepperTCPSocket::SendReadACKError() {

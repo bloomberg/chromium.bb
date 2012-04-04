@@ -331,6 +331,8 @@
         '../plugins/ppapi/ppb_websocket_impl.h',
         '../plugins/ppapi/ppb_widget_impl.cc',
         '../plugins/ppapi/ppb_widget_impl.h',
+        '../plugins/ppapi/ppb_x509_certificate_private_impl.cc',
+        '../plugins/ppapi/ppb_x509_certificate_private_impl.h',
         '../plugins/ppapi/quota_file_io.cc',
         '../plugins/ppapi/quota_file_io.h',
         '../plugins/ppapi/resource_creation_impl.cc',

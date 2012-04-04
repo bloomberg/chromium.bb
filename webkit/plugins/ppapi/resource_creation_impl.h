@@ -125,6 +125,8 @@ class ResourceCreationImpl : public ::ppapi::FunctionGroupBase,
       const PP_FloatPoint* wheel_delta,
       const PP_FloatPoint* wheel_ticks,
       PP_Bool scroll_by_page) OVERRIDE;
+  virtual PP_Resource CreateX509CertificatePrivate(
+      PP_Instance instance) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ResourceCreationImpl);

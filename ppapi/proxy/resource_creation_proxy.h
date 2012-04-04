@@ -137,6 +137,8 @@ class ResourceCreationProxy : public InterfaceProxy,
       const PP_FloatPoint* wheel_delta,
       const PP_FloatPoint* wheel_ticks,
       PP_Bool scroll_by_page) OVERRIDE;
+  virtual PP_Resource CreateX509CertificatePrivate(
+      PP_Instance instance) OVERRIDE;
 
   virtual bool Send(IPC::Message* msg) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;

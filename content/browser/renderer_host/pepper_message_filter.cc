@@ -137,7 +137,11 @@ bool PepperMessageFilter::OnMessageReceived(const IPC::Message& msg,
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBNetworkMonitor_Stop,
                         OnNetworkMonitorStop)
 
-    IPC_MESSAGE_UNHANDLED(handled = false)
+    // X509 certificate messages.
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBX509Certificate_ParseDER,
+                        OnX509CertificateParseDER);
+
+  IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
   return handled;
 }
@@ -587,6 +591,16 @@ void PepperMessageFilter::OnNetworkMonitorStop(uint32 plugin_dispatcher_id) {
   network_monitor_ids_.erase(plugin_dispatcher_id);
   if (network_monitor_ids_.empty())
     net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
+}
+
+void PepperMessageFilter::OnX509CertificateParseDER(
+    const std::vector<char>& der,
+    bool* succeeded,
+    ppapi::PPB_X509Certificate_Fields* result) {
+  if (der.size() == 0)
+    *succeeded = false;
+  *succeeded = PepperTCPSocket::GetCertificateFields(&der[0], der.size(),
+                                                     result);
 }
 
 void PepperMessageFilter::GetFontFamiliesComplete(

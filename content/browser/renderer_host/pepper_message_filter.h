@@ -44,6 +44,7 @@ class HostResolver;
 
 namespace ppapi {
 struct HostPortPair;
+class PPB_X509Certificate_Fields;
 }
 
 // This class is used in two contexts, both supporting PPAPI plugins. The first
@@ -201,6 +202,10 @@ class PepperMessageFilter
                              uint32 host_resolver_id,
                              const ppapi::HostPortPair& host_port,
                              const PP_HostResolver_Private_Hint& hint);
+
+  void OnX509CertificateParseDER(const std::vector<char>& der,
+                                 bool* succeeded,
+                                 ppapi::PPB_X509Certificate_Fields* result);
 
   // Callback when the font list has been retrieved on a background thread.
   void GetFontFamiliesComplete(IPC::Message* reply_msg,

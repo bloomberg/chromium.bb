@@ -38,6 +38,7 @@
 #include "webkit/plugins/ppapi/ppb_video_decoder_impl.h"
 #include "webkit/plugins/ppapi/ppb_video_layer_impl.h"
 #include "webkit/plugins/ppapi/ppb_websocket_impl.h"
+#include "webkit/plugins/ppapi/ppb_x509_certificate_private_impl.h"
 #include "webkit/plugins/ppapi/resource_helper.h"
 
 using ppapi::InputEventData;
@@ -344,6 +345,11 @@ PP_Resource ResourceCreationImpl::CreateWheelInputEvent(
 
   return (new PPB_InputEvent_Shared(::ppapi::OBJECT_IS_IMPL,
                                     instance, data))->GetReference();
+}
+
+PP_Resource ResourceCreationImpl::CreateX509CertificatePrivate(
+    PP_Instance instance) {
+  return PPB_X509Certificate_Private_Impl::CreateResource(instance);
 }
 
 }  // namespace ppapi

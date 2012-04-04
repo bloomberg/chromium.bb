@@ -13,6 +13,7 @@
 #include "ppapi/proxy/serialized_var.h"
 #include "ppapi/proxy/serialized_flash_menu.h"
 #include "ppapi/shared_impl/host_resource.h"
+#include "ppapi/shared_impl/private/ppb_x509_certificate_private_shared.h"
 
 namespace IPC {
 
@@ -484,6 +485,27 @@ bool ParamTraits<ppapi::proxy::SerializedFlashMenu>::Read(const Message* m,
 
 // static
 void ParamTraits<ppapi::proxy::SerializedFlashMenu>::Log(const param_type& p,
+                                                         std::string* l) {
+}
+
+// PPB_X509Certificate_Fields --------------------------------------------------
+
+// static
+void ParamTraits<ppapi::PPB_X509Certificate_Fields>::Write(
+    Message* m,
+    const param_type& p) {
+  ParamTraits<ListValue>::Write(m, p.values_);
+}
+
+// static
+bool ParamTraits<ppapi::PPB_X509Certificate_Fields>::Read(const Message* m,
+                                                          PickleIterator* iter,
+                                                          param_type* r) {
+  return ParamTraits<ListValue>::Read(m, iter, &(r->values_));
+}
+
+// static
+void ParamTraits<ppapi::PPB_X509Certificate_Fields>::Log(const param_type& p,
                                                          std::string* l) {
 }
 

@@ -139,6 +139,7 @@ class ResourceCreationAPI {
       const PP_FloatPoint* wheel_delta,
       const PP_FloatPoint* wheel_ticks,
       PP_Bool scroll_by_page) = 0;
+  virtual PP_Resource CreateX509CertificatePrivate(PP_Instance instance) = 0;
 
   static const ApiID kApiID = API_ID_RESOURCE_CREATION;
 };

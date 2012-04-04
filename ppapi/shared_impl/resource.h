@@ -62,7 +62,8 @@
   F(PPB_VideoLayer_API) \
   F(PPB_View_API) \
   F(PPB_WebSocket_API) \
-  F(PPB_Widget_API)
+  F(PPB_Widget_API) \
+  F(PPB_X509Certificate_Private_API)
 
 namespace ppapi {
 

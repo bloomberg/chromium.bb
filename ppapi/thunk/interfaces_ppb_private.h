@@ -13,6 +13,7 @@ PROXIED_API(PPB_Talk_Private)
 PROXIED_API(PPB_TCPServerSocket_Private)
 PROXIED_API(PPB_TCPSocket_Private)
 PROXIED_API(PPB_UDPSocket_Private)
+PROXIED_API(PPB_X509Certificate_Private)
 UNPROXIED_API(PPB_NetworkList_Private)
 PROXIED_API(PPB_NetworkMonitor_Private)
 
@@ -48,6 +49,9 @@ PROXIED_IFACE(PPB_UDPSocket_Private, PPB_UDPSOCKET_PRIVATE_INTERFACE_0_2,
               PPB_UDPSocket_Private_0_2)
 PROXIED_IFACE(PPB_UDPSocket_Private, PPB_UDPSOCKET_PRIVATE_INTERFACE_0_3,
               PPB_UDPSocket_Private_0_3)
+PROXIED_IFACE(PPB_X509Certificate_Private,
+              PPB_X509CERTIFICATE_PRIVATE_INTERFACE_0_1,
+              PPB_X509Certificate_Private_0_1)
 
 PROXIED_IFACE(NoAPIName, PPB_NETWORKLIST_PRIVATE_INTERFACE_0_2,
               PPB_NetworkList_Private_0_2)

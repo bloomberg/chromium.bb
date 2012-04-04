@@ -45,6 +45,7 @@
 #include "ppapi/shared_impl/ppb_url_request_info_shared.h"
 #include "ppapi/shared_impl/ppb_view_shared.h"
 #include "ppapi/shared_impl/private/ppb_host_resolver_shared.h"
+#include "ppapi/shared_impl/private/ppb_x509_certificate_private_shared.h"
 
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT PPAPI_PROXY_EXPORT
@@ -1315,6 +1316,12 @@ IPC_MESSAGE_CONTROL2(PpapiHostMsg_PPBTCPServerSocket_Accept,
                      uint32 /* server_socket_id */)
 IPC_MESSAGE_CONTROL1(PpapiHostMsg_PPBTCPServerSocket_Destroy,
                      uint32 /* socket_id */)
+
+// PPB_X509Certificate_Private
+IPC_SYNC_MESSAGE_CONTROL1_2(PpapiHostMsg_PPBX509Certificate_ParseDER,
+                            std::vector<char> /* der */,
+                            bool /* succeeded */,
+                            ppapi::PPB_X509Certificate_Fields /* result */)
 
 // PPB_Font.
 IPC_SYNC_MESSAGE_CONTROL0_1(PpapiHostMsg_PPBFont_GetFontFamilies,
