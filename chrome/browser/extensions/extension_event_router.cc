@@ -7,10 +7,10 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/values.h"
+#include "chrome/browser/extensions/api/runtime/runtime_api.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api.h"
 #include "chrome/browser/extensions/extension_devtools_manager.h"
 #include "chrome/browser/extensions/extension_host.h"
-#include "chrome/browser/extensions/extension_module.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_processes_api.h"
 #include "chrome/browser/extensions/extension_processes_api_constants.h"
@@ -492,7 +492,8 @@ void ExtensionEventRouter::Observe(
       // Dispatch the onInstalled event.
       const Extension* extension =
           content::Details<const Extension>(details).ptr();
-      ExtensionModuleEventRouter::DispatchOnInstalledEvent(profile_, extension);
+      extensions::RuntimeEventRouter::DispatchOnInstalledEvent(
+          profile_, extension);
       break;
     }
 

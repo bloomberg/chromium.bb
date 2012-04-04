@@ -154,8 +154,6 @@ ExtensionAPI::ExtensionAPI() {
       IDR_EXTENSION_API_JSON_EXPERIMENTAL_DECLARATIVE);
   unloaded_schemas_["experimental.downloads"] = ReadFromResource(
       IDR_EXTENSION_API_JSON_EXPERIMENTAL_DOWNLOADS);
-  unloaded_schemas_["experimental.extension"] = ReadFromResource(
-      IDR_EXTENSION_API_JSON_EXPERIMENTAL_EXTENSION);
   unloaded_schemas_["experimental.fontSettings"] = ReadFromResource(
       IDR_EXTENSION_API_JSON_EXPERIMENTAL_FONTSSETTINGS);
   unloaded_schemas_["experimental.identity"] = ReadFromResource(
@@ -176,6 +174,8 @@ ExtensionAPI::ExtensionAPI() {
       IDR_EXTENSION_API_JSON_EXPERIMENTAL_PROCESSES);
   unloaded_schemas_["experimental.rlz"] = ReadFromResource(
       IDR_EXTENSION_API_JSON_EXPERIMENTAL_RLZ);
+  unloaded_schemas_["experimental.runtime"] = ReadFromResource(
+      IDR_EXTENSION_API_JSON_EXPERIMENTAL_RUNTIME);
   unloaded_schemas_["experimental.serial"] = ReadFromResource(
       IDR_EXTENSION_API_JSON_EXPERIMENTAL_SERIAL);
   unloaded_schemas_["experimental.socket"] = ReadFromResource(

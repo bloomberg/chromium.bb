@@ -18,7 +18,7 @@
     <script type="text/javascript" src="js/api_page_generator.js"></script>
     <script type="text/javascript" src="js/bootstrap.js"></script>
     <script type="text/javascript" src="js/sidebar.js"></script>
-  <meta name="description" content="Documentation for the chrome.experimental.extension module, which is part of the Google Chrome  extension APIs."><title>chrome.experimental.extension - Google Chrome Extensions - Google Code</title></head>
+  <meta name="description" content="Documentation for the chrome.experimental.runtime module, which is part of the Google Chrome  extension APIs."><title>chrome.experimental.runtime - Google Chrome Extensions - Google Code</title></head>
   <body>  <div id="devModeWarning" class="displayModeWarning">
     You are viewing extension docs in chrome via the 'file:' scheme: are you expecting to see local changes when you refresh? You'll need run chrome with --allow-file-access-from-files.
   </div>
@@ -185,14 +185,14 @@
       </script>
     <div class="g-unit" id="gc-pagecontent">
       <div id="pageTitle">
-        <h1 class="page_title">chrome.experimental.extension</h1>
+        <h1 class="page_title">chrome.experimental.runtime</h1>
       </div>
         <!-- TABLE OF CONTENTS -->
         <div id="toc">
           <h2>Contents</h2>
           <ol>
               <li>
-                <a href="#apiReference">API reference: chrome.experimental.extension</a>
+                <a href="#apiReference">API reference: chrome.experimental.runtime</a>
                 <ol>
                   <li>
             <a href="#global-events">Events</a>
@@ -218,7 +218,7 @@
         <!-- API PAGE -->
         <div class="apiPage">
         <a name="apiReference"></a>
-        <h2>API reference: chrome.experimental.extension</h2>
+        <h2>API reference: chrome.experimental.runtime</h2>
           <!-- PROPERTIES -->
            <!-- /apiGroup -->
           <!-- METHODS -->
@@ -233,7 +233,7 @@
               <h4>onBackgroundPageUnloadingSoon</h4>
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.experimental.extension.</span><span>onBackgroundPageUnloadingSoon</span><span class="subdued">.addListener</span>(function(<span></span>) <span class="subdued">{...}</span><span></span>);
+                <span class="subdued">chrome.experimental.runtime.</span><span>onBackgroundPageUnloadingSoon</span><span class="subdued">.addListener</span>(function(<span></span>) <span class="subdued">{...}</span><span></span>);
               </div>
               <div class="description">
                 <p>Sent to the transient background page just before it is unloaded. This gives the extension opportunity to do some clean up. Note that since the page is unloading, any asynchronous operations started while handling this event are not guaranteed to complete.</p>
@@ -248,7 +248,7 @@
               <h4>onInstalled</h4>
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.experimental.extension.</span><span>onInstalled</span><span class="subdued">.addListener</span>(function(<span></span>) <span class="subdued">{...}</span><span></span>);
+                <span class="subdued">chrome.experimental.runtime.</span><span>onInstalled</span><span class="subdued">.addListener</span>(function(<span></span>) <span class="subdued">{...}</span><span></span>);
               </div>
               <div class="description">
                 <p>Fired when the extension is first installed.</p>

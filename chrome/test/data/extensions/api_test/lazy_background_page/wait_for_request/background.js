@@ -15,7 +15,7 @@ function abortRequest() {
   window.domAutomationController.send(true);
 }
 
-chrome.experimental.extension.onInstalled.addListener(function() {
+chrome.experimental.runtime.onInstalled.addListener(function() {
   chrome.test.getConfig(function(config) {
     testServerPort = config.testServer.port;
 

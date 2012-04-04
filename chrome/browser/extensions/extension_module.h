@@ -10,13 +10,6 @@
 
 class ExtensionPrefs;
 
-class ExtensionModuleEventRouter {
- public:
-  // Dispatches the onInstalled event to the given extension.
-  static void DispatchOnInstalledEvent(Profile* profile,
-                                       const Extension* extension);
-};
-
 class SetUpdateUrlDataFunction : public SyncExtensionFunction {
  protected:
   virtual bool RunImpl() OVERRIDE;

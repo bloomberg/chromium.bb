@@ -121,6 +121,8 @@
         'browser/extensions/api/proxy/proxy_api_constants.h',
         'browser/extensions/api/proxy/proxy_api_helpers.cc',
         'browser/extensions/api/proxy/proxy_api_helpers.h',
+        'browser/extensions/api/runtime/runtime_api.cc',
+        'browser/extensions/api/runtime/runtime_api.h',
         'browser/extensions/api/serial/serial_api.cc',
         'browser/extensions/api/serial/serial_api.h',
         'browser/extensions/api/serial/serial_connection.cc',

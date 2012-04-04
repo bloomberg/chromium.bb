@@ -86,7 +86,7 @@ static const int64 kInitialExtensionIdleHandlerDelayMs = 5*1000;
 static const int64 kMaxExtensionIdleHandlerDelayMs = 5*60*1000;
 static const char kEventDispatchFunction[] = "Event.dispatchJSON";
 static const char kOnUnloadEvent[] =
-    "experimental.extension.onBackgroundPageUnloadingSoon";
+    "experimental.runtime.onBackgroundPageUnloadingSoon";
 
 class ChromeHiddenNativeHandler : public NativeHandler {
  public:
