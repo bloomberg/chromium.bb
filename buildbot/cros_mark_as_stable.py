@@ -15,6 +15,7 @@ import constants
 if __name__ == '__main__':
   sys.path.insert(0, constants.SOURCE_ROOT)
 
+from chromite.buildbot import cbuildbot_background as background
 from chromite.buildbot import portage_utilities
 from chromite.lib import cros_build_lib
 
@@ -48,20 +49,29 @@ def CleanStalePackages(boards, package_atoms):
   """
   if package_atoms:
     cros_build_lib.Info('Cleaning up stale packages %s.' % package_atoms)
-    for board in boards:
-      unmerge_board_cmd = ['emerge-%s' % board, '--unmerge']
-      unmerge_board_cmd.extend(package_atoms)
-      cros_build_lib.RunCommand(unmerge_board_cmd)
 
-    unmerge_host_cmd = ['emerge', '--unmerge']
-    unmerge_host_cmd.extend(package_atoms)
-    cros_build_lib.SudoRunCommand(unmerge_host_cmd)
+  # First unmerge all the packages for a board, then eclean it.
+  # We need these two steps to run in order (unmerge/eclean),
+  # but we can let all the boards run in parallel.
+  def _CleanStalePackages(board):
+    if board:
+      suffix = '-' + board
+      runcmd = cros_build_lib.RunCommand
+    else:
+      suffix = ''
+      runcmd = cros_build_lib.SudoRunCommand
 
+    if package_atoms:
+      runcmd(['emerge' + suffix, '-q', '--unmerge'] + package_atoms);
+    runcmd(['eclean' + suffix, '-d', 'packages'],
+           redirect_stdout=True, redirect_stderr=True)
+
+  tasks = []
   for board in boards:
-    cros_build_lib.RunCommand(['eclean-%s' % board, '-d', 'packages'],
-                              redirect_stderr=True)
-  cros_build_lib.SudoRunCommand(['eclean', '-d', 'packages'],
-                            redirect_stderr=True)
+    tasks.append([board])
+  tasks.append([None])
+
+  background.RunTasksInProcessPool(_CleanStalePackages, tasks)
 
 
 def _DoWeHaveLocalCommits(stable_branch, tracking_branch):
