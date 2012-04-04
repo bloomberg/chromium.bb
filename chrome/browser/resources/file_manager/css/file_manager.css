@@ -507,6 +507,21 @@ button.thumbnail-view[disabled] {
   background-image: url('../images/icon_thumb_view_on.png');
 }
 
+button.settings {
+  display: none;
+  margin-left: 8px;
+  width: 57px;
+}
+
+[gdata] button.settings {
+  background-image: url('../images/settings_button.png');
+  display: block;
+}
+
+[gdata] button.settings:active {
+  background-image: url('../images/settings_button_pressed.png');
+}
+
 .filelist-panel {
   -webkit-box-flex: 1;
   -webkit-box-orient: vertical;

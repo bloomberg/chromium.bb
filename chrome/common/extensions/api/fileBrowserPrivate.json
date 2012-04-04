@@ -816,6 +816,40 @@
             ]
           }
         ]
+      },
+      {
+        "name": "getGDataPreferences",
+        "description": "Retrieves File Browser preference.",
+        "parameters": [
+          {
+            "name": "callback",
+            "type": "function",
+            "parameters": [
+              {
+                "name": "result",
+                "type": "object",
+                "properties": {
+                  "cellularDisabled": {"type":"boolean"},
+                  "hostedFilesDisabled": {"type":"boolean"}
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "setGDataPreferences",
+        "description": "Sets File Browser preference.",
+        "parameters": [
+          {
+            "name": "changeInfo",
+            "type": "object",
+            "properties": {
+              "cellularDisabled": {"type":"boolean", "optional":true},
+              "hostedFilesDisabled": {"type":"boolean", "optional":true}
+            }
+          }
+        ]
       }
     ],
     "events": [

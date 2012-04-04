@@ -57,6 +57,7 @@
     <script src="../shared/js/i18n_template.js"></script>
 
     <script src="../shared/js/cr.js"></script>
+    <script src="../shared/js/event_tracker.js"></script>
     <script src="../shared/js/cr/ui.js"></script>
     <script src="../shared/js/cr/event_target.js"></script>
     <script src="../shared/js/cr/ui/array_data_model.js"></script>
@@ -82,6 +83,7 @@
     <script src="../shared/js/cr/ui/position_util.js"></script>
     <script src="../shared/js/cr/ui/menu_item.js"></script>
     <script src="../shared/js/cr/ui/menu.js"></script>
+    <script src="../shared/js/cr/ui/menu_button.js"></script>
     <script src="../shared/js/cr/ui/context_menu_handler.js"></script>
 
     <script src="js/combobutton.js"></script>
@@ -147,6 +149,13 @@
       <menuitem command='#unmount'></menuitem>
       <menuitem command='#format'></menuitem>
     </menu>
+    
+    <menu id=docs-settings>
+      <menuitem id=gdata-sync-settings
+          i18n-content=GDATA_MOBILE_CONNECTION_OPTION></menuitem>
+      <menuitem id=gdata-hosted-settings
+          i18n-content=GDATA_SHOW_HOSTED_FILES_OPTION></menuitem>
+    </menu>
 
     <!-- TODO(bshe): Remove isAura flag after all chromeos use aura. -->
     <if expr="pp_ifdef('use_aura')">
@@ -177,6 +186,8 @@
           <!-- The outter div is a hack to remove margin between buttons. -->
           <div><button class="detail-view" tabindex="4" disabled></button></div>
           <div><button class="thumbnail-view" tabindex="5"></button></div>
+          <div visibleif='this.dialogType_ == "full-page"'><button
+            menu="#docs-settings" class="settings" tabindex="6"></button></div>
         </div>
         <div class=dialog-body>
           <div class=filelist-panel>

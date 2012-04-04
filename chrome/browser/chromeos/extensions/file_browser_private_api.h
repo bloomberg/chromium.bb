@@ -14,6 +14,7 @@
 #include "base/platform_file.h"
 #include "chrome/browser/chromeos/extensions/file_browser_event_router.h"
 #include "chrome/browser/extensions/extension_function.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "googleurl/src/url_util.h"
 
 class GURL;
@@ -565,6 +566,22 @@ class TransferFileFunction : public FileBrowserFunction {
   void OnTransferCompleted(base::PlatformFileError error);
 
   DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.transferFile");
+};
+
+// Read setting value.
+class GetGDataPreferencesFunction : public SyncExtensionFunction {
+ protected:
+  virtual bool RunImpl() OVERRIDE;
+ private:
+  DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.getGDataPreferences");
+};
+
+// Write setting value.
+class SetGDataPreferencesFunction : public SyncExtensionFunction {
+ protected:
+  virtual bool RunImpl() OVERRIDE;
+ private:
+  DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.setGDataPreferences");
 };
 
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_BROWSER_PRIVATE_API_H_

@@ -375,6 +375,8 @@ void ExtensionFunctionRegistry::ResetFunctions() {
   RegisterFunction<GetFileTransfersFunction>();
   RegisterFunction<CancelFileTransfersFunction>();
   RegisterFunction<TransferFileFunction>();
+  RegisterFunction<GetGDataPreferencesFunction>();
+  RegisterFunction<SetGDataPreferencesFunction>();
 
   // Mediaplayer
   RegisterFunction<PlayMediaplayerFunction>();

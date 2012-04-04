@@ -622,6 +622,10 @@ FileManager.prototype = {
         this.dialogDom_.querySelector('.roots-context-menu');
     cr.ui.Menu.decorate(this.rootsContextMenu_);
 
+    this.docsSettingsMenu_ =
+        this.dialogDom_.querySelector('#docs-settings');
+    cr.ui.Menu.decorate(this.docsSettingsMenu_);
+
     this.document_.addEventListener('command', this.onCommand_.bind(this));
   }
 
@@ -659,6 +663,7 @@ FileManager.prototype = {
     this.butter_ = this.dialogDom_.querySelector('.butter-bar');
     this.unmountedPanel_ = this.dialogDom_.querySelector('.unmounted-panel');
 
+    cr.ui.decorate('button[menu]', cr.ui.MenuButton);
     cr.ui.Table.decorate(this.table_);
     cr.ui.Grid.decorate(this.grid_);
 
@@ -715,6 +720,23 @@ FileManager.prototype = {
         'click', this.onDetailViewButtonClick_.bind(this));
     this.dialogDom_.querySelector('button.thumbnail-view').addEventListener(
         'click', this.onThumbnailViewButtonClick_.bind(this));
+
+    this.syncButton = this.dialogDom_.querySelector('#gdata-sync-settings');
+    this.syncButton.addEventListener('click',
+        this.onGDataPrefClick_.bind(this, 'cellularDisabled'));
+
+    this.hostedButton = this.dialogDom_.querySelector('#gdata-hosted-settings');
+    this.hostedButton.addEventListener('click',
+        this.onGDataPrefClick_.bind(this, 'hostedFilesDisabled'));
+
+    chrome.fileBrowserPrivate.getGDataPreferences(
+        function (result) {
+          if (!result.cellularDisabled)
+            this.syncButton.setAttribute('checked', 'checked');
+          if (!result.hostedFilesDisabled)
+            this.hostedButton.setAttribute('checked', 'checked');
+        }.bind(this)
+    );
 
     cr.ui.ComboButton.decorate(this.taskItems_);
     this.taskItems_.addEventListener('select',
@@ -4644,5 +4666,24 @@ FileManager.prototype = {
         setTimeout(doCheck, 1000 * 60);
       }
     }
-  }
+  };
+
+  /**
+   * Handler invoked on preference setting in gdata context menu.
+   * @param {String} pref  The preference to alter.
+   * @param {Event}  event The click event.
+   */
+  FileManager.prototype.onGDataPrefClick_ = function(pref, event) {
+    var oldValue = event.target.hasAttribute('checked');
+    var changeInfo = {};
+    changeInfo[pref] = oldValue;
+
+    chrome.fileBrowserPrivate.setGDataPreferences(changeInfo);
+
+    if (oldValue) {
+      event.target.removeAttribute('checked');
+    } else {
+      event.target.setAttribute('checked', 'checked');
+    }
+  };
 })();

@@ -34,6 +34,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/file_browser_handler.h"
+#include "chrome/common/pref_names.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -1390,6 +1391,9 @@ bool FileDialogStringsFunction::RunImpl() {
   SET_STRING(IDS_FILE_BROWSER, UNSUPPORTED_FILESYSTEM_WARNING);
   SET_STRING(IDS_FILE_BROWSER, FORMATTING_WARNING);
 
+  SET_STRING(IDS_FILE_BROWSER, GDATA_SHOW_HOSTED_FILES_OPTION);
+  SET_STRING(IDS_FILE_BROWSER, GDATA_MOBILE_CONNECTION_OPTION);
+
   SET_STRING(IDS_FILE_BROWSER, SELECT_FOLDER_TITLE);
   SET_STRING(IDS_FILE_BROWSER, SELECT_OPEN_FILE_TITLE);
   SET_STRING(IDS_FILE_BROWSER, SELECT_OPEN_MULTI_FILE_TITLE);
@@ -1930,4 +1934,42 @@ void TransferFileFunction::OnTransferCompleted(
         webkit_glue::PlatformFileErrorToWebFileError(error)));
     SendResponse(false);
   }
+}
+
+// Read setting value.
+bool GetGDataPreferencesFunction::RunImpl() {
+  scoped_ptr<DictionaryValue> value(new DictionaryValue());
+
+  const PrefService* service = profile_->GetPrefs();
+
+  value->SetBoolean("cellularDisabled",
+                    service->GetBoolean(prefs::kDisableGDataOverCellular));
+
+  value->SetBoolean("hostedFilesDisabled",
+                    service->GetBoolean(prefs::kDisableGDataHostedFiles));
+
+  result_.reset(value.release());
+  return true;
+}
+
+// Write setting value.
+bool SetGDataPreferencesFunction::RunImpl() {
+  base::DictionaryValue* value = NULL;
+
+  if (!args_->GetDictionary(0, &value) || !value)
+    return false;
+
+  PrefService* service = profile_->GetPrefs();
+
+  bool tmp;
+
+  if (value->GetBoolean("cellularDisabled", &tmp)) {
+    service->SetBoolean(prefs::kDisableGDataOverCellular, tmp);
+  }
+
+  if (value->GetBoolean("hostedFilesDisabled", &tmp)) {
+    service->SetBoolean(prefs::kDisableGDataHostedFiles, tmp);
+  }
+
+  return true;
 }

@@ -429,6 +429,12 @@ chrome.fileBrowserPrivate = {
       COPY_BUTTON_LABEL: 'Copy',
       CUT_BUTTON_LABEL: 'Cut',
 
+      UNMOUNT_DEVICE_BUTTON_LABEL: 'Unmount',
+      FORMAT_DEVICE_BUTTON_LABEL: 'Format',
+
+      GDATA_MOBILE_CONNECTION_OPTION: 'Do not use mobile data for sync',
+      GDATA_SHOW_HOSTED_FILES_OPTION: 'Show Google Docs files',
+
       PASTE_ITEMS_REMAINING: 'Pasting $1 items',
       PASTE_CANCELLED: 'Paste cancelled.',
       PASTE_TARGET_EXISTS_ERROR: 'Paste failed, item exists: $1',
