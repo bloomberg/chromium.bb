@@ -363,7 +363,8 @@ WebKit::WebGraphicsContext3D* GLHelper::context() const {
 }
 
 void GLHelper::Detach() {
-  copy_texture_to_impl_->Detach();
+  if (copy_texture_to_impl_.get())
+    copy_texture_to_impl_->Detach();
 }
 
 bool GLHelper::CopyTextureTo(WebKit::WebGLId src_texture,
