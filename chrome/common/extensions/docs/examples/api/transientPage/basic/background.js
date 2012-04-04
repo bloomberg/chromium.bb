@@ -18,7 +18,7 @@ sendMessage();
 chrome.browserAction.setBadgeText({text: "ON"});
 console.log("Loaded.");
 
-chrome.experimental.extension.onInstalled.addListener(function() {
+chrome.experimental.runtime.onInstalled.addListener(function() {
   // localStorage is persisted, so it's a good place to keep state that you
   // need to persist across page reloads.
   localStorage.counter = 1;
@@ -64,7 +64,7 @@ chrome.experimental.alarms.onAlarm.addListener(function() {
   alert("Time's up!");
 });
 
-chrome.experimental.extension.onBackgroundPageUnloadingSoon.addListener(
+chrome.experimental.runtime.onBackgroundPageUnloadingSoon.addListener(
     function() {
   chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
     // After the unload event listener runs, the page will unload, so any
