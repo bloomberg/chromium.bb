@@ -264,7 +264,8 @@ class ManifestVersionedSyncStage(SyncStage):
     self._InitializeRepo()
 
     # If chrome_rev is somehow set, fail.
-    assert self._chrome_rev, 'chrome_rev is unsupported on release builders.'
+    assert not self._chrome_rev, \
+        'chrome_rev is unsupported on release builders.'
 
     ManifestVersionedSyncStage.manifest_manager = \
         manifest_version.BuildSpecsManager(
