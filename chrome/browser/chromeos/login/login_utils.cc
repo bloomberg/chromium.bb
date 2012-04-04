@@ -72,6 +72,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "googleurl/src/gurl.h"
+#include "net/base/network_change_notifier.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/cookies/cookie_store.h"
 #include "net/http/http_auth_cache.h"
@@ -541,7 +542,8 @@ class LoginUtilsImpl : public LoginUtils,
         using_oauth_(false),
         has_cookies_(false),
         delegate_(NULL),
-        job_restart_request_(NULL) {
+        job_restart_request_(NULL),
+        should_restore_auth_session_(false) {
     net::NetworkChangeNotifier::AddOnlineStateObserver(this);
   }
 
@@ -663,6 +665,10 @@ class LoginUtilsImpl : public LoginUtils,
 
   // Used to restart Chrome to switch to the guest mode.
   JobRestartRequest* job_restart_request_;
+
+  // True if should restore authentication session when notified about
+  // online state change.
+  bool should_restore_auth_session_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginUtilsImpl);
 };
@@ -1214,7 +1220,23 @@ void LoginUtilsImpl::PrewarmAuthentication() {
 }
 
 void LoginUtilsImpl::RestoreAuthenticationSession(Profile* user_profile) {
-  KickStartAuthentication(user_profile);
+  // We don't need to restore session for demo/guest users.
+  if (!UserManager::Get()->IsUserLoggedIn() ||
+      UserManager::Get()->IsLoggedInAsGuest() ||
+      UserManager::Get()->IsLoggedInAsDemoUser()) {
+    return;
+  }
+
+  if (!net::NetworkChangeNotifier::IsOffline()) {
+    should_restore_auth_session_ = false;
+    KickStartAuthentication(user_profile);
+  } else {
+    // Even if we're online we should wait till initial OnOnlineStateChanged()
+    // call. Otherwise starting fetchers too early may end up cancelling
+    // all request when initial network state is processed.
+    // See http://crbug.com/121643.
+    should_restore_auth_session_ = true;
+  }
 }
 
 void LoginUtilsImpl::KickStartAuthentication(Profile* user_profile) {
@@ -1399,12 +1421,17 @@ void LoginUtilsImpl::OnOAuthVerificationSucceeded(
 
 
 void LoginUtilsImpl::OnOnlineStateChanged(bool online) {
-  // If we come online for the first time after successful offline login,
-  // we need to kick of OAuth token verification process again.
-  if (online && UserManager::Get()->IsUserLoggedIn() &&
-      oauth_login_verifier_.get() &&
-      !oauth_login_verifier_->is_done()) {
-    oauth_login_verifier_->ContinueVerification();
+  if (online && UserManager::Get()->IsUserLoggedIn()) {
+    if (oauth_login_verifier_.get() &&
+        !oauth_login_verifier_->is_done()) {
+      // If we come online for the first time after successful offline login,
+      // we need to kick of OAuth token verification process again.
+      oauth_login_verifier_->ContinueVerification();
+    } else if (should_restore_auth_session_) {
+      should_restore_auth_session_ = false;
+      Profile* user_profile = ProfileManager::GetDefaultProfile();
+      KickStartAuthentication(user_profile);
+    }
   }
 }
 
