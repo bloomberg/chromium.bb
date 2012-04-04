@@ -40,13 +40,17 @@ using content::BrowserThread;
 
 namespace {
 
-const char kTestkOrigin1[] = "http://host1:1/";
-const char kTestkOrigin2[] = "http://host2:1/";
-const char kTestkOrigin3[] = "http://host3:1/";
+const char kTestOrigin1[] = "http://host1:1/";
+const char kTestOrigin2[] = "http://host2:1/";
+const char kTestOrigin3[] = "http://host3:1/";
+const char kTestOriginExt[] = "chrome-extension://abcdefghijklmnopqrstuvwxyz/";
+const char kTestOriginDevTools[] = "chrome-devtools://abcdefghijklmnopqrstuvw/";
 
-const GURL kOrigin1(kTestkOrigin1);
-const GURL kOrigin2(kTestkOrigin2);
-const GURL kOrigin3(kTestkOrigin3);
+const GURL kOrigin1(kTestOrigin1);
+const GURL kOrigin2(kTestOrigin2);
+const GURL kOrigin3(kTestOrigin3);
+const GURL kOriginExt(kTestOriginExt);
+const GURL kOriginDevTools(kTestOriginDevTools);
 
 const quota::StorageType kTemporary = quota::kStorageTypeTemporary;
 const quota::StorageType kPersistent = quota::kStorageTypePersistent;
@@ -302,6 +306,14 @@ class RemoveQuotaManagedDataTester : public BrowsingDataRemoverTester {
     PopulateTestQuotaManagedTemporaryData(manager);
   }
 
+  void PopulateTestQuotaManagedNonBrowsingData(
+      quota::MockQuotaManager* manager) {
+    manager->AddOrigin(kOriginDevTools, kTemporary, kClientFile, base::Time());
+    manager->AddOrigin(kOriginDevTools, kPersistent, kClientFile, base::Time());
+    manager->AddOrigin(kOriginExt, kTemporary, kClientFile, base::Time());
+    manager->AddOrigin(kOriginExt, kPersistent, kClientFile, base::Time());
+  }
+
   void PopulateTestQuotaManagedPersistentData(
       quota::MockQuotaManager* manager) {
     manager->AddOrigin(kOrigin2, kPersistent, kClientFile, base::Time());
@@ -515,7 +527,7 @@ TEST_F(BrowsingDataRemoverTest, RemoveServerBoundCertForever) {
   scoped_ptr<RemoveServerBoundCertTester> tester(
       new RemoveServerBoundCertTester(GetProfile()));
 
-  tester->AddServerBoundCert(kTestkOrigin1);
+  tester->AddServerBoundCert(kTestOrigin1);
   EXPECT_EQ(1, tester->ServerBoundCertCount());
 
   BlockUntilBrowsingDataRemoved(BrowsingDataRemover::EVERYTHING,
@@ -530,8 +542,8 @@ TEST_F(BrowsingDataRemoverTest, RemoveServerBoundCertLastHour) {
       new RemoveServerBoundCertTester(GetProfile()));
 
   base::Time now = base::Time::Now();
-  tester->AddServerBoundCert(kTestkOrigin1);
-  tester->AddServerBoundCertWithTimes(kTestkOrigin2,
+  tester->AddServerBoundCert(kTestOrigin1);
+  tester->AddServerBoundCertWithTimes(kTestOrigin2,
                                       now - base::TimeDelta::FromHours(2),
                                       now);
   EXPECT_EQ(2, tester->ServerBoundCertCount());
@@ -543,7 +555,7 @@ TEST_F(BrowsingDataRemoverTest, RemoveServerBoundCertLastHour) {
   EXPECT_EQ(1, tester->ServerBoundCertCount());
   std::vector<net::ServerBoundCertStore::ServerBoundCert> certs;
   tester->GetCertStore()->GetAllServerBoundCerts(&certs);
-  EXPECT_EQ(kTestkOrigin2, certs[0].server_identifier());
+  EXPECT_EQ(kTestOrigin2, certs[0].server_identifier());
 }
 
 TEST_F(BrowsingDataRemoverTest, RemoveHistoryForever) {
@@ -847,6 +859,33 @@ TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedProtectedSpecificOrigin) {
   EXPECT_TRUE(GetMockManager()->OriginHasData(kOrigin2, kPersistent,
       kClientFile));
   EXPECT_TRUE(GetMockManager()->OriginHasData(kOrigin3, kPersistent,
+      kClientFile));
+}
+
+TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedIgnoreExtensionsAndDevTools) {
+  scoped_ptr<RemoveQuotaManagedDataTester> tester(
+      new RemoveQuotaManagedDataTester());
+  tester->PopulateTestQuotaManagedNonBrowsingData(GetMockManager());
+
+  BlockUntilBrowsingDataRemoved(BrowsingDataRemover::EVERYTHING,
+      BrowsingDataRemover::REMOVE_APPCACHE |
+      BrowsingDataRemover::REMOVE_FILE_SYSTEMS |
+      BrowsingDataRemover::REMOVE_INDEXEDDB |
+      BrowsingDataRemover::REMOVE_WEBSQL, tester.get());
+
+  EXPECT_EQ(BrowsingDataRemover::REMOVE_APPCACHE |
+      BrowsingDataRemover::REMOVE_FILE_SYSTEMS |
+      BrowsingDataRemover::REMOVE_INDEXEDDB |
+      BrowsingDataRemover::REMOVE_WEBSQL, GetRemovalMask());
+
+  // Check that extension and devtools data isn't removed.
+  EXPECT_TRUE(GetMockManager()->OriginHasData(kOriginExt, kTemporary,
+      kClientFile));
+  EXPECT_TRUE(GetMockManager()->OriginHasData(kOriginExt, kPersistent,
+      kClientFile));
+  EXPECT_TRUE(GetMockManager()->OriginHasData(kOriginDevTools, kTemporary,
+      kClientFile));
+  EXPECT_TRUE(GetMockManager()->OriginHasData(kOriginDevTools, kPersistent,
       kClientFile));
 }
 

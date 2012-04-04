@@ -16,6 +16,7 @@
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browsing_data_helper.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -614,6 +615,8 @@ void BrowsingDataRemover::OnGotQuotaManagedOrigins(
   // isn't protected.
   std::set<GURL>::const_iterator origin;
   for (origin = origins.begin(); origin != origins.end(); ++origin) {
+    if (!BrowsingDataHelper::IsValidScheme(origin->scheme()))
+      continue;
     if (special_storage_policy_->IsStorageProtected(origin->GetOrigin()))
       continue;
     if (!remove_origin_.is_empty() && remove_origin_ != origin->GetOrigin())
