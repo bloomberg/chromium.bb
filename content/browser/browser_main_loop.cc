@@ -435,13 +435,19 @@ void BrowserMainLoop::CreateThreads() {
   // Do not allow disk IO from the UI thread.
   base::ThreadRestrictions::SetIOAllowed(false);
 
-  BrowserThread::PostDelayedTask(
-      BrowserThread::IO, FROM_HERE, base::Bind(
-          base::IgnoreResult(&GpuProcessHost::Get),
-          GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
-          content::CAUSE_FOR_GPU_LAUNCH_BROWSER_STARTUP),
-      // Arbitrary delay to avoid allow browser init precious CPU cycles.
-      base::TimeDelta::FromSeconds(5));
+  // When running the GPU thread in-process, avoid optimistically starting it
+  // since creating the GPU thread races against creation of the one-and-only
+  // ChildProcess instance which is created by the renderer thread.
+  if (!parsed_command_line_.HasSwitch(switches::kSingleProcess) &&
+      !parsed_command_line_.HasSwitch(switches::kInProcessGPU)) {
+    BrowserThread::PostDelayedTask(
+        BrowserThread::IO, FROM_HERE, base::Bind(
+            base::IgnoreResult(&GpuProcessHost::Get),
+            GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
+            content::CAUSE_FOR_GPU_LAUNCH_BROWSER_STARTUP),
+        // Arbitrary delay to avoid allow browser init precious CPU cycles.
+        base::TimeDelta::FromSeconds(5));
+  }
 }
 
 void BrowserMainLoop::RunMainMessageLoopParts() {
