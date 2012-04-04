@@ -78,9 +78,9 @@ class ChromeEndureBaseTest(perf.BasePerfTest):
     return (perf.BasePerfTest.ExtraChromeFlags(self) +
             ['--remote-debugging-port=9222'])
 
-  def _RunControlTest(self, webapp_name, tab_title_substring, test_description,
-                      do_scenario):
-    """The main test harness function to run a general control test.
+  def _RunEndureTest(self, webapp_name, tab_title_substring, test_description,
+                     do_scenario):
+    """The main test harness function to run a general Chrome Endure test.
 
     After a test has performed any setup work and has navigated to the proper
     starting webpage, this function should be invoked to run the endurance test.
@@ -324,8 +324,8 @@ class ChromeEndureControlTest(ChromeEndureBaseTest):
       # Just sleep.  Javascript in the webpage itself does the work.
       time.sleep(5)
 
-    self._RunControlTest(self._webapp_name, self._tab_title_substring,
-                         test_description, scenario)
+    self._RunEndureTest(self._webapp_name, self._tab_title_substring,
+                        test_description, scenario)
 
   def testControlAttachDetachDOMTreeWebDriver(self):
     """Use WebDriver to attach and detach a DOM tree from a basic document."""
@@ -350,8 +350,8 @@ class ChromeEndureControlTest(ChromeEndureBaseTest):
       self._ClickElementByXpath(driver, wait, 'id("detach")')
       time.sleep(0.5)
 
-    self._RunControlTest(self._webapp_name, self._tab_title_substring,
-                         test_description, lambda: scenario(driver, wait))
+    self._RunEndureTest(self._webapp_name, self._tab_title_substring,
+                        test_description, lambda: scenario(driver, wait))
 
 
 class ChromeEndureGmailTest(ChromeEndureBaseTest):
@@ -490,8 +490,8 @@ class ChromeEndureGmailTest(ChromeEndureBaseTest):
       self._wait.until(lambda _: not self._GetElement(
                            self._driver.find_element_by_name, 'to'))
 
-    self._RunControlTest(self._webapp_name, self._tab_title_substring,
-                         test_description, scenario)
+    self._RunEndureTest(self._webapp_name, self._tab_title_substring,
+                        test_description, scenario)
 
   # TODO(dennisjeffrey): Remove this test once the Gmail team is done analyzing
   # the results after the test runs for a period of time.
@@ -535,8 +535,8 @@ class ChromeEndureGmailTest(ChromeEndureBaseTest):
       logging.debug('Sleeping 30 seconds.')
       time.sleep(30)
 
-    self._RunControlTest(self._webapp_name, self._tab_title_substring,
-                         test_description, scenario)
+    self._RunEndureTest(self._webapp_name, self._tab_title_substring,
+                        test_description, scenario)
 
   def testGmailAlternateThreadlistConversation(self):
     """Alternates between threadlist view and conversation view.
@@ -577,8 +577,8 @@ class ChromeEndureGmailTest(ChromeEndureBaseTest):
               '//div[text()="Click here to "]'))
       time.sleep(1)
 
-    self._RunControlTest(self._webapp_name, self._tab_title_substring,
-                         test_description, scenario)
+    self._RunEndureTest(self._webapp_name, self._tab_title_substring,
+                        test_description, scenario)
 
   def testGmailAlternateTwoLabels(self):
     """Continuously alternates between two labels.
@@ -616,8 +616,8 @@ class ChromeEndureGmailTest(ChromeEndureBaseTest):
           msg='Timed out waiting for Inbox to appear.')
       time.sleep(1)
 
-    self._RunControlTest(self._webapp_name, self._tab_title_substring,
-                         test_description, scenario)
+    self._RunEndureTest(self._webapp_name, self._tab_title_substring,
+                        test_description, scenario)
 
   def testGmailExpandCollapseConversation(self):
     """Continuously expands/collapses all messages in a conversation.
@@ -667,8 +667,8 @@ class ChromeEndureGmailTest(ChromeEndureBaseTest):
               '[@style="display: none; "]'))
       time.sleep(1)
 
-    self._RunControlTest(self._webapp_name, self._tab_title_substring,
-                         test_description, scenario)
+    self._RunEndureTest(self._webapp_name, self._tab_title_substring,
+                        test_description, scenario)
 
 
 class ChromeEndureDocsTest(ChromeEndureBaseTest):
@@ -728,8 +728,8 @@ class ChromeEndureDocsTest(ChromeEndureBaseTest):
         self._num_errors += 1
       time.sleep(1)
 
-    self._RunControlTest(self._webapp_name, self._tab_title_substring,
-                         test_description, scenario)
+    self._RunEndureTest(self._webapp_name, self._tab_title_substring,
+                        test_description, scenario)
 
 
 class ChromeEndurePlusTest(ChromeEndureBaseTest):
@@ -787,8 +787,8 @@ class ChromeEndurePlusTest(ChromeEndureBaseTest):
         self._num_errors += 1
       time.sleep(1)
 
-    self._RunControlTest(self._webapp_name, self._tab_title_substring,
-                         test_description, scenario)
+    self._RunEndureTest(self._webapp_name, self._tab_title_substring,
+                        test_description, scenario)
 
 
 if __name__ == '__main__':
