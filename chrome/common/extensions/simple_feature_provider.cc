@@ -6,42 +6,27 @@
 
 #include "base/json/json_reader.h"
 #include "base/lazy_instance.h"
-#include "chrome/common/extensions/manifest_feature.h"
-#include "chrome/common/extensions/permission_feature.h"
 #include "grit/common_resources.h"
 #include "ui/base/resource/resource_bundle.h"
-
-namespace extensions {
 
 namespace {
 
 const bool kAllowTrailingComma = false;
 
-template<class FeatureClass>
-Feature* CreateFeature() {
-  return new FeatureClass();
-}
-
 struct Static {
   Static()
       : manifest_features(
-            LoadProvider("manifest",
-                         &CreateFeature<ManifestFeature>,
-                         IDR_EXTENSION_MANIFEST_FEATURES)),
+            LoadProvider("manifest", IDR_EXTENSION_MANIFEST_FEATURES)),
         permission_features(
-            LoadProvider("permissions",
-                         &CreateFeature<PermissionFeature>,
-                         IDR_EXTENSION_PERMISSION_FEATURES)) {
+            LoadProvider("permissions", IDR_EXTENSION_PERMISSION_FEATURES)) {
   }
 
-  scoped_ptr<SimpleFeatureProvider> manifest_features;
-  scoped_ptr<SimpleFeatureProvider> permission_features;
+  scoped_ptr<extensions::SimpleFeatureProvider> manifest_features;
+  scoped_ptr<extensions::SimpleFeatureProvider> permission_features;
 
  private:
-  scoped_ptr<SimpleFeatureProvider> LoadProvider(
-      const std::string& debug_string,
-      SimpleFeatureProvider::FeatureFactory factory,
-      int resource_id) {
+  scoped_ptr<extensions::SimpleFeatureProvider> LoadProvider(
+      const std::string& debug_string, int resource_id) {
     std::string manifest_features =
         ResourceBundle::GetSharedInstance().GetRawDataResource(
             resource_id).as_string();
@@ -54,8 +39,8 @@ struct Static {
     CHECK(value->IsType(Value::TYPE_DICTIONARY)) << debug_string;
     scoped_ptr<DictionaryValue> dictionary_value(
         static_cast<DictionaryValue*>(value));
-    return scoped_ptr<SimpleFeatureProvider>(
-        new SimpleFeatureProvider(dictionary_value.Pass(), factory));
+    return scoped_ptr<extensions::SimpleFeatureProvider>(
+        new extensions::SimpleFeatureProvider(dictionary_value.Pass()));
   }
 };
 
@@ -63,11 +48,11 @@ base::LazyInstance<Static> g_static = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
-SimpleFeatureProvider::SimpleFeatureProvider(scoped_ptr<DictionaryValue> root,
-                                             FeatureFactory factory)
-    : root_(root.release()),
-      factory_(factory ? factory :
-               static_cast<FeatureFactory>(&CreateFeature<Feature>)) {
+namespace extensions {
+
+SimpleFeatureProvider::SimpleFeatureProvider(
+    scoped_ptr<DictionaryValue> root)
+    : root_(root.release()) {
 }
 
 SimpleFeatureProvider::~SimpleFeatureProvider() {
@@ -92,17 +77,20 @@ std::set<std::string> SimpleFeatureProvider::GetAllFeatureNames() const {
   return result;
 }
 
-scoped_ptr<Feature> SimpleFeatureProvider::GetFeature(const std::string& name) {
+scoped_ptr<Feature> SimpleFeatureProvider::GetFeature(
+    const std::string& name) const {
+  scoped_ptr<Feature> feature;
+
   DictionaryValue* description = NULL;
-  if (!root_->GetDictionary(name, &description)) {
-    LOG(ERROR) << name << ": Definition not found.";
+  if (root_->GetDictionary(name, &description))
+    feature = Feature::Parse(description);
+
+  if (!feature.get()) {
+    // Have to use DLOG here because this happens in a lot of unit tests that
+    // use ancient compiled crx files with unknown keys.
+    DLOG(ERROR) << name;
     return scoped_ptr<Feature>();
   }
-
-  scoped_ptr<Feature> feature(new Feature());
-  feature.reset((*factory_)());
-  feature->set_name(name);
-  feature->Parse(description);
 
   if (feature->extension_types()->empty()) {
     LOG(ERROR) << name << ": Simple features must specify atleast one value "

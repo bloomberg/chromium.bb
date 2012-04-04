@@ -317,7 +317,7 @@ void ExtensionEventRouter::DispatchEventToListener(
       listener_profile->GetExtensionService()->process_map();
   // If the event is privileged, only send to extension processes. Otherwise,
   // it's OK to send to normal renderers (e.g., for content scripts).
-  if (ExtensionAPI::GetSharedInstance()->IsPrivileged(event->event_name) &&
+  if (ExtensionAPI::GetInstance()->IsPrivileged(event->event_name) &&
       !process_map->Contains(extension->id(), listener.process->GetID())) {
     return;
   }

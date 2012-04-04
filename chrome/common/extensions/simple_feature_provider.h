@@ -12,20 +12,16 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/common/extensions/feature.h"
-#include "chrome/common/extensions/feature_provider.h"
 
 namespace extensions {
 
 // Reads Features out of a simple JSON file description.
-class SimpleFeatureProvider : public FeatureProvider {
+class SimpleFeatureProvider {
  public:
-  typedef Feature*(*FeatureFactory)();
-
-  // Creates a new SimpleFeatureProvider. Pass null to |factory| to have the
-  // provider create plain old Feature instances.
-  SimpleFeatureProvider(scoped_ptr<DictionaryValue> root,
-                        FeatureFactory factory);
-  virtual ~SimpleFeatureProvider();
+  // Create an instance for an arbitrary hunk of JSON. This is typically used
+  // during tests.
+  explicit SimpleFeatureProvider(scoped_ptr<DictionaryValue> root);
+  ~SimpleFeatureProvider();
 
   // Gets an instance for the _manifest_features.json file that is baked into
   // Chrome as a resource.
@@ -39,12 +35,10 @@ class SimpleFeatureProvider : public FeatureProvider {
   std::set<std::string> GetAllFeatureNames() const;
 
   // Gets the feature |feature_name|, if it exists.
-  virtual scoped_ptr<Feature> GetFeature(
-      const std::string& feature_name) OVERRIDE;
+  scoped_ptr<Feature> GetFeature(const std::string& feature_name) const;
 
  private:
   scoped_ptr<DictionaryValue> root_;
-  FeatureFactory factory_;
 };
 
 }  // namespace extensions

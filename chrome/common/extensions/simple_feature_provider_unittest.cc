@@ -12,79 +12,9 @@ using extensions::SimpleFeatureProvider;
 TEST(SimpleFeatureProvider, ManifestFeatures) {
   SimpleFeatureProvider* provider =
       SimpleFeatureProvider::GetManifestFeatures();
-  scoped_ptr<Feature> feature = provider->GetFeature("description");
+  scoped_ptr<Feature> feature = provider->GetFeature("name");
   ASSERT_TRUE(feature.get());
   EXPECT_EQ(5u, feature->extension_types()->size());
-  EXPECT_EQ(1u, feature->extension_types()->count(Extension::TYPE_EXTENSION));
-  EXPECT_EQ(1u,
-            feature->extension_types()->count(Extension::TYPE_PACKAGED_APP));
-  EXPECT_EQ(1u,
-            feature->extension_types()->count(Extension::TYPE_PLATFORM_APP));
-  EXPECT_EQ(1u, feature->extension_types()->count(Extension::TYPE_HOSTED_APP));
-  EXPECT_EQ(1u, feature->extension_types()->count(Extension::TYPE_THEME));
-
-  DictionaryValue manifest;
-  manifest.SetString("name", "test extension");
-  manifest.SetString("version", "1");
-  manifest.SetString("description", "hello there");
-
-  std::string error;
-  scoped_refptr<const Extension> extension(Extension::Create(
-      FilePath(), Extension::INTERNAL, manifest, Extension::NO_FLAGS,
-      &error));
-
-  ASSERT_TRUE(extension.get());
-  EXPECT_EQ(Feature::IS_AVAILABLE, feature->IsAvailableToContext(
-      extension.get(), Feature::UNSPECIFIED_CONTEXT));
-
-  feature = provider->GetFeature("theme");
-  ASSERT_TRUE(feature.get());
-  EXPECT_EQ(Feature::INVALID_TYPE, feature->IsAvailableToContext(
-      extension.get(), Feature::UNSPECIFIED_CONTEXT));
-
-  feature = provider->GetFeature("devtools_page");
-  ASSERT_TRUE(feature.get());
-  EXPECT_EQ(Feature::NOT_PRESENT, feature->IsAvailableToContext(
-      extension.get(), Feature::UNSPECIFIED_CONTEXT));
-}
-
-TEST(SimpleFeatureProvider, PermissionFeatures) {
-  SimpleFeatureProvider* provider =
-      SimpleFeatureProvider::GetPermissionFeatures();
-  scoped_ptr<Feature> feature = provider->GetFeature("browsingData");
-  ASSERT_TRUE(feature.get());
-  EXPECT_EQ(3u, feature->extension_types()->size());
-  EXPECT_EQ(1u, feature->extension_types()->count(Extension::TYPE_EXTENSION));
-  EXPECT_EQ(1u,
-            feature->extension_types()->count(Extension::TYPE_PACKAGED_APP));
-  EXPECT_EQ(1u,
-            feature->extension_types()->count(Extension::TYPE_PLATFORM_APP));
-
-  DictionaryValue manifest;
-  manifest.SetString("name", "test extension");
-  manifest.SetString("version", "1");
-  ListValue* permissions = new ListValue();
-  manifest.Set("permissions", permissions);
-  permissions->Append(Value::CreateStringValue("browsingData"));
-
-  std::string error;
-  scoped_refptr<const Extension> extension(Extension::Create(
-      FilePath(), Extension::INTERNAL, manifest, Extension::NO_FLAGS,
-      &error));
-
-  ASSERT_TRUE(extension.get());
-  EXPECT_EQ(Feature::IS_AVAILABLE, feature->IsAvailableToContext(
-      extension.get(), Feature::UNSPECIFIED_CONTEXT));
-
-  feature = provider->GetFeature("chromePrivate");
-  ASSERT_TRUE(feature.get());
-  EXPECT_EQ(Feature::NOT_FOUND_IN_WHITELIST, feature->IsAvailableToContext(
-      extension.get(), Feature::UNSPECIFIED_CONTEXT));
-
-  feature = provider->GetFeature("clipboardWrite");
-  ASSERT_TRUE(feature.get());
-  EXPECT_EQ(Feature::NOT_PRESENT, feature->IsAvailableToContext(
-      extension.get(), Feature::UNSPECIFIED_CONTEXT));
 }
 
 TEST(SimpleFeatureProvider, Validation) {
@@ -102,7 +32,7 @@ TEST(SimpleFeatureProvider, Validation) {
   feature2->Set("contexts", contexts);
   value->Set("feature2", feature2);
 
-  SimpleFeatureProvider provider(value.Pass(), NULL);
+  SimpleFeatureProvider provider(value.Pass());
 
   // feature1 won't validate because it lacks an extension type.
   EXPECT_FALSE(provider.GetFeature("feature1").get());
