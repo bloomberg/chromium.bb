@@ -39,7 +39,8 @@ class BalloonViewHost : public ::BalloonViewHost {
 
  private:
   // WebContentsDelegate
-  virtual bool HandleContextMenu(const content::ContextMenuParams& params);
+  virtual bool HandleContextMenu(
+      const content::ContextMenuParams& params) OVERRIDE;
   virtual void WebUISend(content::WebContents* tab,
                          const GURL& source_url,
                          const std::string& name,
