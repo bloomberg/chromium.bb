@@ -9,6 +9,7 @@
 #include <atlbase.h>
 #include <atlcom.h>
 #include <oleacc.h>
+#include <UIAutomationCore.h>
 
 #include <vector>
 
@@ -54,7 +55,9 @@ BrowserAccessibilityWin
       public IServiceProvider,
       public ISimpleDOMDocument,
       public ISimpleDOMNode,
-      public ISimpleDOMText {
+      public ISimpleDOMText,
+      public IAccessibleEx,
+      public IRawElementProviderSimple {
  public:
   BEGIN_COM_MAP(BrowserAccessibilityWin)
     COM_INTERFACE_ENTRY2(IDispatch, IAccessible2)
@@ -72,6 +75,8 @@ BrowserAccessibilityWin
     COM_INTERFACE_ENTRY(ISimpleDOMDocument)
     COM_INTERFACE_ENTRY(ISimpleDOMNode)
     COM_INTERFACE_ENTRY(ISimpleDOMText)
+    COM_INTERFACE_ENTRY(IAccessibleEx)
+    COM_INTERFACE_ENTRY(IRawElementProviderSimple)
   END_COM_MAP()
 
   // Represents a non-static text node in IAccessibleHypertext. This character
@@ -92,7 +97,7 @@ BrowserAccessibilityWin
   // BrowserAccessibility methods.
   //
   CONTENT_EXPORT virtual void PreInitialize();
-CONTENT_EXPORT virtual void PostInitialize();
+  CONTENT_EXPORT virtual void PostInitialize();
   CONTENT_EXPORT virtual void NativeAddReference();
   CONTENT_EXPORT virtual void NativeReleaseReference();
 
@@ -218,7 +223,9 @@ CONTENT_EXPORT virtual void PostInitialize();
                                                 LONG* similar_items_in_group,
                                                 LONG* position_in_group);
 
-  // IAccessible2 methods not implemented.
+  //
+  // IAccessibleEx methods not implemented.
+  //
   CONTENT_EXPORT STDMETHODIMP get_extendedRole(BSTR* extended_role) {
     return E_NOTIMPL;
   }
@@ -247,7 +254,6 @@ CONTENT_EXPORT virtual void PostInitialize();
   //
   // IAccessibleImage methods.
   //
-
   CONTENT_EXPORT STDMETHODIMP get_description(BSTR* description);
 
   CONTENT_EXPORT STDMETHODIMP get_imagePosition(
@@ -691,6 +697,48 @@ CONTENT_EXPORT virtual void PostInitialize();
 
   CONTENT_EXPORT STDMETHODIMP QueryService(REFGUID guidService, REFIID riid,
       void** object);
+
+  // IAccessibleEx methods not implemented.
+  CONTENT_EXPORT STDMETHODIMP GetObjectForChild(long child_id,
+                                                IAccessibleEx** ret) {
+    return E_NOTIMPL;
+  }
+
+  CONTENT_EXPORT STDMETHODIMP GetIAccessiblePair(IAccessible** acc,
+                                                 long* child_id) {
+    return E_NOTIMPL;
+  }
+
+  CONTENT_EXPORT STDMETHODIMP GetRuntimeId(SAFEARRAY** runtime_id) {
+    return E_NOTIMPL;
+  }
+
+  CONTENT_EXPORT STDMETHODIMP ConvertReturnedElement(
+      IRawElementProviderSimple* element,
+      IAccessibleEx** acc) {
+    return E_NOTIMPL;
+  }
+
+  //
+  // IRawElementProviderSimple methods.
+  //
+  // The GetPatternProvider/GetPropertyValue methods need to be implemented for
+  // the on-screen keyboard to show up in Windows 8 metro.
+  CONTENT_EXPORT STDMETHODIMP GetPatternProvider(PATTERNID id,
+                                                 IUnknown** provider);
+  CONTENT_EXPORT STDMETHODIMP GetPropertyValue(PROPERTYID id, VARIANT* ret);
+
+  //
+  // IRawElementProviderSimple methods not implemented
+  //
+  CONTENT_EXPORT STDMETHODIMP get_ProviderOptions(enum ProviderOptions* ret) {
+    return E_NOTIMPL;
+  }
+
+  CONTENT_EXPORT STDMETHODIMP get_HostRawElementProvider(
+      IRawElementProviderSimple** provider) {
+    return E_NOTIMPL;
+  }
 
   //
   // CComObjectRootEx methods.

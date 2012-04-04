@@ -4,11 +4,16 @@
 
 #include "content/browser/accessibility/browser_accessibility_win.h"
 
+#include <UIAutomationClient.h>
+#include <UIAutomationCoreApi.h>
+
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "base/win/accessibility_misc_utils.h"
 #include "base/win/enum_variant.h"
 #include "base/win/scoped_comptr.h"
+#include "base/win/windows_version.h"
 #include "content/browser/accessibility/browser_accessibility_manager_win.h"
 #include "content/common/accessibility_messages.h"
 #include "net/base/escape.h"
@@ -2512,26 +2517,70 @@ STDMETHODIMP BrowserAccessibilityWin::QueryService(
   if (!instance_active_)
     return E_FAIL;
 
-  if (guidService == IID_IAccessible ||
-      guidService == IID_IAccessible2 ||
-      guidService == IID_IAccessibleAction ||
-      guidService == IID_IAccessibleHyperlink ||
-      guidService == IID_IAccessibleHypertext ||
-      guidService == IID_IAccessibleImage ||
-      guidService == IID_IAccessibleTable ||
-      guidService == IID_IAccessibleTable2 ||
-      guidService == IID_IAccessibleTableCell ||
-      guidService == IID_IAccessibleText ||
-      guidService == IID_IAccessibleValue ||
-      guidService == IID_ISimpleDOMDocument ||
-      guidService == IID_ISimpleDOMNode ||
-      guidService == IID_ISimpleDOMText ||
-      guidService == GUID_ISimpleDOM) {
+  if (riid == IID_IAccessible ||
+      riid == IID_IAccessible2 ||
+      riid == IID_IAccessibleAction ||
+      riid == IID_IAccessibleHyperlink ||
+      riid == IID_IAccessibleHypertext ||
+      riid == IID_IAccessibleImage ||
+      riid == IID_IAccessibleTable ||
+      riid == IID_IAccessibleTable2 ||
+      riid == IID_IAccessibleTableCell ||
+      riid == IID_IAccessibleText ||
+      riid == IID_IAccessibleValue ||
+      riid == IID_ISimpleDOMDocument ||
+      riid == IID_ISimpleDOMNode ||
+      riid == IID_ISimpleDOMText ||
+      riid == GUID_ISimpleDOM) {
+    return QueryInterface(riid, object);
+  }
+
+  // We only support the IAccessibleEx interface on Windows 8 and above. This
+  // is needed for the on-screen Keyboard to show up in metro mode, when the
+  // user taps an editable portion on the page.
+  // All methods in the IAccessibleEx interface are unimplemented.
+  if (riid == IID_IAccessibleEx &&
+      base::win::GetVersion() >= base::win::VERSION_WIN8) {
     return QueryInterface(riid, object);
   }
 
   *object = NULL;
   return E_FAIL;
+}
+
+STDMETHODIMP BrowserAccessibilityWin::GetPatternProvider(
+    PATTERNID id, IUnknown** provider) {
+  DVLOG(1) << "In Function: "
+           << __FUNCTION__
+           << " for pattern id: "
+           << id;
+  if (id == UIA_ValuePatternId || id == UIA_TextPatternId) {
+    if (IsEditableText()) {
+      DVLOG(1) << "Returning UIA text provider";
+      base::win::UIATextProvider::CreateTextProvider(true, provider);
+      return S_OK;
+    }
+  }
+  return E_NOTIMPL;
+}
+
+STDMETHODIMP BrowserAccessibilityWin::GetPropertyValue(PROPERTYID id,
+                                                       VARIANT* ret) {
+  DVLOG(1) << "In Function: "
+           << __FUNCTION__
+           << " for property id: "
+           << id;
+  V_VT(ret) = VT_EMPTY;
+  if (id == UIA_ControlTypePropertyId) {
+    if (IsEditableText()) {
+      V_VT(ret) = VT_I4;
+      ret->lVal = UIA_EditControlTypeId;
+      DVLOG(1) << "Returning Edit control type";
+    } else {
+      DVLOG(1) << "Returning empty control type";
+    }
+  }
+  return S_OK;
 }
 
 //

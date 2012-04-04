@@ -6,9 +6,12 @@
 
 #include <atlbase.h>
 #include <atlcom.h>
+#include <UIAutomationClient.h>
 
 #include <vector>
 
+#include "base/win/accessibility_misc_utils.h"
+#include "base/win/windows_version.h"
 #include "third_party/iaccessible2/ia2_api_all.h"
 #include "ui/base/accessibility/accessible_text_utils.h"
 #include "ui/base/accessibility/accessible_view_state.h"
@@ -784,14 +787,67 @@ STDMETHODIMP NativeViewAccessibilityWin::QueryService(
   if (!view_)
     return E_FAIL;
 
-  if (guidService == IID_IAccessible ||
-      guidService == IID_IAccessible2 ||
-      guidService == IID_IAccessibleText) {
+  if (riid == IID_IAccessible ||
+      riid == IID_IAccessible2 ||
+      riid == IID_IAccessibleText)  {
+    return QueryInterface(riid, object);
+  }
+
+  // We only support the IAccessibleEx interface on Windows 8 and above. This
+  // is needed for the On screen Keyboard to show up in metro mode, when the
+  // user taps an editable region in the window.
+  // All methods in the IAccessibleEx interface are unimplemented.
+  if (riid == IID_IAccessibleEx &&
+      base::win::GetVersion() >= base::win::VERSION_WIN8) {
     return QueryInterface(riid, object);
   }
 
   *object = NULL;
   return E_FAIL;
+}
+
+STDMETHODIMP NativeViewAccessibilityWin::GetPatternProvider(
+    PATTERNID id, IUnknown** provider) {
+  DVLOG(1) << "In Function: "
+           << __FUNCTION__
+           << " for pattern id: "
+           << id;
+  if (id == UIA_ValuePatternId || id == UIA_TextPatternId) {
+    ui::AccessibleViewState state;
+    view_->GetAccessibleState(&state);
+    long role = MSAARole(state.role);
+
+    if (role == ROLE_SYSTEM_TEXT) {
+      DVLOG(1) << "Returning UIA text provider";
+      base::win::UIATextProvider::CreateTextProvider(true, provider);
+      return S_OK;
+    }
+  }
+  return E_NOTIMPL;
+}
+
+STDMETHODIMP NativeViewAccessibilityWin::GetPropertyValue(PROPERTYID id,
+                                                           VARIANT* ret) {
+  DVLOG(1) << "In Function: "
+           << __FUNCTION__
+           << " for property id: "
+           << id;
+  if (id == UIA_ControlTypePropertyId) {
+    ui::AccessibleViewState state;
+    view_->GetAccessibleState(&state);
+    long role = MSAARole(state.role);
+    if (role == ROLE_SYSTEM_TEXT) {
+      V_VT(ret) = VT_I4;
+      ret->lVal = UIA_EditControlTypeId;
+      DVLOG(1) << "Returning Edit control type";
+    } else {
+      DVLOG(1) << "Returning empty control type";
+      V_VT(ret) = VT_EMPTY;
+    }
+  } else {
+    V_VT(ret) = VT_EMPTY;
+  }
+  return S_OK;
 }
 
 //
