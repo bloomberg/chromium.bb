@@ -1524,7 +1524,7 @@ bool OncWifiNetworkParser::ParseWifiValue(OncNetworkParser* parser,
       network->set_auto_connect(GetBooleanValue(value));
       return true;
     case PROPERTY_INDEX_HIDDEN_SSID:
-      // Pass this through to connection manager as is.
+      wifi_network->set_hidden_ssid(GetBooleanValue(value));
       return true;
     default:
       break;
