@@ -1094,4 +1094,36 @@ TEST_F(ProfileSyncServiceSessionTest, DISABLED_CorruptedForeign) {
   ASSERT_FALSE(error.IsSet());
 }
 
+// TODO(jhorwich): Re-enable when crbug.com/121487 addressed
+TEST_F(ProfileSyncServiceSessionTest, DISABLED_MissingLocalTabNode) {
+  AddTab(browser(), GURL("http://foo1"));
+  NavigateAndCommitActiveTab(GURL("http://foo2"));
+  AddTab(browser(), GURL("http://bar1"));
+  NavigateAndCommitActiveTab(GURL("http://bar2"));
+  CreateRootHelper create_root(this);
+  ASSERT_TRUE(StartSyncService(create_root.callback(), false));
+  std::string local_tag = model_associator_->GetCurrentMachineTag();
+  SyncError error;
+
+  ASSERT_TRUE(model_associator_->DisassociateModels(&error));
+  {
+    // Delete the first sync tab node.
+    std::string tab_tag = SessionModelAssociator::TabIdToTag(local_tag, 0);
+
+    sync_api::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
+    sync_api::ReadNode root(&trans);
+    root.InitByTagLookup(syncable::ModelTypeToRootTag(syncable::SESSIONS));
+    sync_api::WriteNode tab_node(&trans);
+    ASSERT_TRUE(tab_node.InitByClientTagLookup(syncable::SESSIONS, tab_tag));
+    tab_node.Remove();
+  }
+  ASSERT_TRUE(model_associator_->AssociateModels(&error));
+  ASSERT_FALSE(error.IsSet());
+
+  // Add some more tabs to ensure we don't conflict with the pre-existing tab
+  // node.
+  AddTab(browser(), GURL("http://baz1"));
+  AddTab(browser(), GURL("http://baz2"));
+}
+
 }  // namespace browser_sync

@@ -233,8 +233,9 @@ void SessionChangeProcessor::Observe(
     session_model_associator_->DisassociateModels(&error);
     session_model_associator_->AssociateModels(&error);
     if (error.IsSet()) {
-      error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
-          "Sessions reassociation failed.");
+      error_handler()->OnSingleDatatypeUnrecoverableError(
+          error.location(),
+          error.message());
     }
   }
 }

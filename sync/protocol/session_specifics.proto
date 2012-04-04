@@ -19,6 +19,9 @@ message SessionSpecifics {
   optional string session_tag = 1;
   optional SessionHeader header = 2;
   optional SessionTab tab = 3;
+  
+  // The local tab id used by sync. Unique across all nodes for that client.
+  optional int32 tab_node_id = 4 [default = -1];
 }
 // Properties of session sync objects.
 message SessionHeader {

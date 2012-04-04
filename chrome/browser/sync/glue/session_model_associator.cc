@@ -612,26 +612,28 @@ void SessionModelAssociator::InitializeCurrentSessionName() {
 
 bool SessionModelAssociator::UpdateAssociationsFromSyncModel(
     const sync_api::ReadNode& root,
-    const sync_api::BaseTransaction* trans,
+    sync_api::WriteTransaction* trans,
     SyncError* error) {
   DCHECK(CalledOnValidThread());
   DCHECK(tab_pool_.empty());
+  DCHECK_EQ(local_session_syncid_, sync_api::kInvalidId);
 
   // Iterate through the nodes and associate any foreign sessions.
   int64 id = root.GetFirstChildId();
   while (id != sync_api::kInvalidId) {
-    sync_api::ReadNode sync_node(trans);
+    sync_api::WriteNode sync_node(trans);
     if (!sync_node.InitByIdLookup(id)) {
       error->Reset(FROM_HERE, "Failed to load sync node", model_type());
       return false;
     }
+    int64 next_id = sync_node.GetSuccessorId();
 
     const sync_pb::SessionSpecifics& specifics =
         sync_node.GetSessionSpecifics();
     const base::Time& modification_time = sync_node.GetModificationTime();
     if (specifics.session_tag() != GetCurrentMachineTag()) {
       AssociateForeignSpecifics(specifics, modification_time);
-    } else if (id != local_session_syncid_) {
+    } else {
       // This is previously stored local session information.
       if (specifics.has_header() &&
           local_session_syncid_ == sync_api::kInvalidId) {
@@ -648,14 +650,13 @@ bool SessionModelAssociator::UpdateAssociationsFromSyncModel(
           LOG(WARNING) << "Found local node with no header or tag field.";
         }
 
-        // This is a tab node. We want to track these to reuse them in our free
-        // tab node pool. They will be overwritten eventually, so need to do
-        // anything else.
-        tab_pool_.AddTabNode(id);
+        // TODO(zea): fix this once we add support for reassociating
+        // pre-existing tabs with pre-existing tab nodes. We'll need to load
+        // the tab_node_id and ensure the tab_pool_ keeps track of them.
+        sync_node.Remove();
       }
     }
-
-    id = sync_node.GetSuccessorId();
+    id = next_id;
   }
 
   // After updating from sync model all tabid's should be free.
@@ -957,6 +958,7 @@ int64 SessionModelAssociator::TabNodePool::GetFreeTabNode() {
     tab_node.SetTitle(UTF8ToWide(tab_node_tag));
     sync_pb::SessionSpecifics specifics;
     specifics.set_session_tag(machine_tag_);
+    specifics.set_tab_node_id(tab_node_id);
     tab_node.SetSessionSpecifics(specifics);
 
     // Grow the pool by 1 since we created a new node. We don't actually need

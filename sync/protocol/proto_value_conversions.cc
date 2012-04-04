@@ -351,6 +351,7 @@ DictionaryValue* SessionSpecificsToValue(
   SET_STR(session_tag);
   SET(header, SessionHeaderToValue);
   SET(tab, SessionTabToValue);
+  SET_INT32(tab_node_id);
   return value;
 }
 

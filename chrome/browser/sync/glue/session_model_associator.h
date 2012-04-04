@@ -227,6 +227,7 @@ class SessionModelAssociator
   FRIEND_TEST_ALL_PREFIXES(ProfileSyncServiceSessionTest, TabNodePoolNonEmpty);
   FRIEND_TEST_ALL_PREFIXES(ProfileSyncServiceSessionTest, ValidTabs);
   FRIEND_TEST_ALL_PREFIXES(ProfileSyncServiceSessionTest, ExistingTabs);
+  FRIEND_TEST_ALL_PREFIXES(ProfileSyncServiceSessionTest, MissingLocalTabNode);
   FRIEND_TEST_ALL_PREFIXES(SyncSessionModelAssociatorTest,
                            PopulateSessionHeader);
   FRIEND_TEST_ALL_PREFIXES(SyncSessionModelAssociatorTest,
@@ -376,7 +377,7 @@ class SessionModelAssociator
   // update of the client model. Will associate any foreign sessions as well as
   // keep track of any local tab nodes, adding them to our free tab node pool.
   bool UpdateAssociationsFromSyncModel(const sync_api::ReadNode& root,
-                                       const sync_api::BaseTransaction* trans,
+                                       sync_api::WriteTransaction* trans,
                                        SyncError* error);
 
   // Fills a tab sync node with data from a TabContents object.
