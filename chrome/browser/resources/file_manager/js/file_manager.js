@@ -3533,9 +3533,18 @@ FileManager.prototype = {
       }
       checkbox.checked = entry.gdata_.isPinned = props[0].isPinned;
     }
-
-    chrome.fileBrowserPrivate.pinGDataFile([entry.toURL()],
-                                           checkbox.checked, callback);
+    var pin = checkbox.checked;
+    cacheGDataProps(entry, function(entry) {
+      if (self.isOffline() && pin && !entry.gdata_.isPresent) {
+        // If we are offline, we cannot pin a file that is not already present.
+        checkbox.checked = false;  // Revert the default action.
+        self.alert.showHtml(
+            str('OFFLINE_HEADER'),
+            strf('OFFLINE_MESSAGE', str('OFFLINE_COLUMN_LABEL')));
+        return;
+      }
+      chrome.fileBrowserPrivate.pinGDataFile([entry.toURL()], pin, callback);
+    });
     event.preventDefault();
   };
 
