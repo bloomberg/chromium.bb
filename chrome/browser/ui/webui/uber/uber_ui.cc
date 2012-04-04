@@ -103,7 +103,7 @@ UberUI::UberUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   // the real URL. http://crbug.com/111878.
   NavigationController* controller = &web_ui->GetWebContents()->GetController();
   NavigationEntry* pending_entry = controller->GetPendingEntry();
-  if (pending_entry)
+  if (pending_entry && !pending_entry->IsViewSourceMode())
     pending_entry->SetVirtualURL(GURL());
 
   RegisterSubpage(chrome::kChromeUIExtensionsFrameURL);
