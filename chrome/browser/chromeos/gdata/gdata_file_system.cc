@@ -27,10 +27,14 @@
 #include "chrome/browser/chromeos/gdata/gdata_sync_client.h"
 #include "chrome/browser/chromeos/gdata/gdata_system_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_upload_file_info.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths_internal.h"
+#include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/notification_details.h"
 #include "net/base/mime_util.h"
 #include "webkit/fileapi/file_system_file_util_proxy.h"
 #include "webkit/fileapi/file_system_types.h"
@@ -515,6 +519,7 @@ GDataFileSystem::GDataFileSystem(Profile* profile,
           true /* manual reset */, false /* initially not signaled */)),
       cache_initialization_started_(false),
       num_pending_tasks_(0),
+      hide_hosted_docs_(false),
       ui_weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(
           new base::WeakPtrFactory<GDataFileSystem>(this))),
       ui_weak_ptr_(ui_weak_ptr_factory_->GetWeakPtr()) {
@@ -541,6 +546,11 @@ void GDataFileSystem::Initialize() {
 
   root_.reset(new GDataRootDirectory(this));
   root_->set_file_name(kGDataRootDirectory);
+
+  PrefService* pref_service = profile_->GetPrefs();
+  hide_hosted_docs_ = pref_service->GetBoolean(prefs::kDisableGDataHostedFiles);
+
+  InitializePreferenceObserver();
 }
 
 GDataFileSystem::~GDataFileSystem() {
@@ -2844,6 +2854,40 @@ void GDataFileSystem::AddUploadedFile(const FilePath& virtual_dir_path,
                CacheOperationCallback());
 }
 
+void GDataFileSystem::Observe(int type,
+                              const content::NotificationSource& source,
+                              const content::NotificationDetails& details) {
+  if (type == chrome::NOTIFICATION_PREF_CHANGED) {
+    PrefService* pref_service = profile_->GetPrefs();
+    std::string* pref_name = content::Details<std::string>(details).ptr();
+    if (*pref_name == prefs::kDisableGDataHostedFiles) {
+      SetHideHostedDocuments(
+          pref_service->GetBoolean(prefs::kDisableGDataHostedFiles));
+    }
+  } else {
+    NOTREACHED();
+  }
+}
+
+bool GDataFileSystem::hide_hosted_documents() {
+  base::AutoLock lock(lock_);
+  return hide_hosted_docs_;
+}
+
+void GDataFileSystem::SetHideHostedDocuments(bool hide) {
+  FilePath root_path;
+  {
+    base::AutoLock lock(lock_);
+    if (hide == hide_hosted_docs_)
+      return;
+
+    hide_hosted_docs_ = hide;
+    root_path = root_->GetFilePath();
+  }
+
+  // Kick of directory refresh when this setting changes.
+  NotifyDirectoryChanged(root_path);
+}
 
 //===================== GDataFileSystem: Cache entry points ====================
 
@@ -3929,6 +3973,11 @@ void GDataFileSystem::PostBlockingPoolSequencedTaskAndReply(
                  request_task),
       reply_task);
   DCHECK(posted);
+}
+
+void GDataFileSystem::InitializePreferenceObserver() {
+  pref_registrar_.Init(profile_->GetPrefs());
+  pref_registrar_.Add(prefs::kDisableGDataHostedFiles, this);
 }
 
 }  // namespace gdata

@@ -158,6 +158,7 @@ void GDataFileSystemProxy::ReadDirectory(const GURL& file_url,
       file_path,
       base::Bind(&GDataFileSystemProxy::OnReadDirectory,
                  this,
+                 file_system_->hide_hosted_documents(),
                  proxy,
                  callback));
 }
@@ -248,6 +249,7 @@ void GDataFileSystemProxy::OnGetMetadata(
 }
 
 void GDataFileSystemProxy::OnReadDirectory(
+    bool hide_hosted_documents,
     scoped_refptr<base::MessageLoopProxy> proxy,
     const FileSystemOperationInterface::ReadDirectoryCallback& callback,
     base::PlatformFileError error,
@@ -271,6 +273,12 @@ void GDataFileSystemProxy::OnReadDirectory(
   for (GDataFileCollection::const_iterator iter =
             directory->children().begin();
        iter != directory->children().end(); ++iter) {
+    if (hide_hosted_documents) {
+      GDataFile* file = iter->second->AsGDataFile();
+      if (file && file->is_hosted_document())
+        continue;
+    }
+
     entries.push_back(GDataFileToFileUtilProxyEntry(*(iter->second)));
   }
 

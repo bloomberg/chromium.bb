@@ -24,8 +24,10 @@
 #include "chrome/browser/chromeos/gdata/gdata_params.h"
 #include "chrome/browser/chromeos/gdata/gdata_parser.h"
 #include "chrome/browser/chromeos/gdata/gdata_uploader.h"
+#include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
+#include "content/public/browser/notification_observer.h"
 
 namespace base {
 class WaitableEvent;
@@ -395,10 +397,14 @@ class GDataFileSystemInterface {
                                DocumentEntry* entry,
                                const FilePath& file_content_path,
                                FileOperationType cache_operation) = 0;
+
+  // Returns true if hosted documents should be hidden.
+  virtual bool hide_hosted_documents() = 0;
 };
 
 // The production implementation of GDataFileSystemInterface.
-class GDataFileSystem : public GDataFileSystemInterface {
+class GDataFileSystem : public GDataFileSystemInterface,
+                        public content::NotificationObserver {
  public:
   GDataFileSystem(Profile* profile,
                   DocumentsServiceInterface* documents_service);
@@ -475,6 +481,12 @@ class GDataFileSystem : public GDataFileSystemInterface {
                                DocumentEntry* entry,
                                const FilePath& file_content_path,
                                FileOperationType cache_operation) OVERRIDE;
+  virtual bool hide_hosted_documents() OVERRIDE;
+
+  // content::NotificationObserver implementation.
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   friend class GDataUploader;
@@ -1258,6 +1270,12 @@ class GDataFileSystem : public GDataFileSystemInterface {
                               const std::string& resource_id,
                               const std::string& md5);
 
+  // Changes state of hosted documents visibility, triggers directory refresh.
+  void SetHideHostedDocuments(bool hide);
+
+  // Initializes preference change observer.
+  void InitializePreferenceObserver();
+
   scoped_ptr<GDataRootDirectory> root_;
 
   // This guards regular states.
@@ -1285,6 +1303,11 @@ class GDataFileSystem : public GDataFileSystemInterface {
   // Number of pending tasks on the blocking thread pool.
   int num_pending_tasks_;
   base::Lock num_pending_tasks_lock_;
+
+  // True if hosted documents should be hidden.
+  bool hide_hosted_docs_;
+
+  PrefChangeRegistrar pref_registrar_;
 
   // WeakPtrFactory and WeakPtr bound to the UI thread.
   scoped_ptr<base::WeakPtrFactory<GDataFileSystem> > ui_weak_ptr_factory_;

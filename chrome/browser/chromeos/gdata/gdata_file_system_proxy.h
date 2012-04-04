@@ -75,6 +75,7 @@ class GDataFileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
   // so it is safe to retrieve data from it, but this pointer is not safe to
   // be used outside of this method.
   void OnReadDirectory(
+      bool hide_hosted_documents,
       scoped_refptr<base::MessageLoopProxy> proxy,
       const fileapi::FileSystemOperationInterface::ReadDirectoryCallback&
           callback,
