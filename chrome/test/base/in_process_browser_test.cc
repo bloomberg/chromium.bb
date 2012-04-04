@@ -243,7 +243,8 @@ Browser* InProcessBrowserTest::CreateIncognitoBrowser() {
 }
 
 Browser* InProcessBrowserTest::CreateBrowserForPopup(Profile* profile) {
-  Browser* browser = Browser::CreateForType(Browser::TYPE_POPUP, profile);
+  Browser* browser = Browser::CreateWithParams(
+      Browser::CreateParams(Browser::TYPE_POPUP, profile));
   AddBlankTabAndShow(browser);
   return browser;
 }
@@ -251,11 +252,9 @@ Browser* InProcessBrowserTest::CreateBrowserForPopup(Profile* profile) {
 Browser* InProcessBrowserTest::CreateBrowserForApp(
     const std::string& app_name,
     Profile* profile) {
-  Browser* browser = Browser::CreateForApp(
-      Browser::TYPE_POPUP,
-      app_name,
-      gfx::Rect(),
-      profile);
+  Browser* browser = Browser::CreateWithParams(
+      Browser::CreateParams::CreateForApp(
+          Browser::TYPE_POPUP, app_name, gfx::Rect(), profile));
   AddBlankTabAndShow(browser);
   return browser;
 }

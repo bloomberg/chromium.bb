@@ -123,8 +123,8 @@ IN_PROC_BROWSER_TEST_F(BrowserInitTest, OpenURLsPopup) {
   OpenURLsPopupObserver observer;
   BrowserList::AddObserver(&observer);
 
-  Browser* popup = Browser::CreateForType(Browser::TYPE_POPUP,
-                                          browser()->profile());
+  Browser* popup = Browser::CreateWithParams(
+      Browser::CreateParams(Browser::TYPE_POPUP, browser()->profile()));
   ASSERT_TRUE(popup->is_type_popup());
   ASSERT_EQ(popup, observer.added_browser_);
 

@@ -141,10 +141,11 @@ void MediaPlayer::PopupMediaPlayer(Browser* creator) {
                          kPopupHeight);
 
   Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
-  mediaplayer_browser_ = Browser::CreateForApp(Browser::TYPE_PANEL,
-                                               kMediaPlayerAppName,
-                                               bounds,
-                                               profile);
+  mediaplayer_browser_ = Browser::CreateWithParams(
+      Browser::CreateParams::CreateForApp(Browser::TYPE_PANEL,
+                                          kMediaPlayerAppName,
+                                          bounds,
+                                          profile));
   registrar_.Add(this,
                  chrome::NOTIFICATION_BROWSER_CLOSED,
                  content::Source<Browser>(mediaplayer_browser_));

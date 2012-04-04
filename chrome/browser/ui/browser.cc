@@ -333,12 +333,47 @@ bool AllowPanels(const std::string& app_name) {
 ////////////////////////////////////////////////////////////////////////////////
 // Browser, CreateParams:
 
+Browser::CreateParams::CreateParams()
+    : type(TYPE_TABBED),
+      profile(NULL),
+      initial_show_state(ui::SHOW_STATE_DEFAULT),
+      is_session_restore(false) {
+}
+
 Browser::CreateParams::CreateParams(Type type, Profile* profile)
     : type(type),
       profile(profile),
       app_type(APP_TYPE_HOST),
       initial_show_state(ui::SHOW_STATE_DEFAULT),
       is_session_restore(false) {
+}
+
+// static
+Browser::CreateParams Browser::CreateParams::CreateForApp(
+    Type type,
+    const std::string& app_name,
+    const gfx::Rect& window_bounds,
+    Profile* profile) {
+  DCHECK(type != TYPE_TABBED);
+  DCHECK(!app_name.empty());
+
+  if (type == TYPE_PANEL && !AllowPanels(app_name))
+    type = TYPE_POPUP;
+
+  CreateParams params(type, profile);
+  params.app_name = app_name;
+  params.app_type = APP_TYPE_CHILD;
+  params.initial_bounds = window_bounds;
+
+  return params;
+}
+
+// static
+Browser::CreateParams Browser::CreateParams::CreateForDevTools(
+    Profile* profile) {
+  CreateParams params(TYPE_POPUP, profile);
+  params.app_name = DevToolsWindow::kDevToolsApp;
+  return params;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -527,41 +562,6 @@ Browser* Browser::CreateWithParams(const CreateParams& params) {
 
   browser->InitBrowserWindow();
   return browser;
-}
-
-// static
-Browser* Browser::CreateForType(Type type, Profile* profile) {
-  CreateParams params(type, profile);
-  return CreateWithParams(params);
-}
-
-// static
-Browser* Browser::CreateForApp(Type type,
-                               const std::string& app_name,
-                               const gfx::Rect& window_bounds,
-                               Profile* profile) {
-  DCHECK(type != TYPE_TABBED);
-  DCHECK(!app_name.empty());
-
-  if (type == TYPE_PANEL && !AllowPanels(app_name))
-    type = TYPE_POPUP;
-
-  CreateParams params(type, profile);
-  params.app_name = app_name;
-  params.app_type = APP_TYPE_CHILD;
-  params.initial_bounds = window_bounds;
-  return CreateWithParams(params);
-}
-
-// static
-Browser* Browser::CreateForDevTools(Profile* profile) {
-#if defined(OS_CHROMEOS)
-  CreateParams params(TYPE_TABBED, profile);
-#else
-  CreateParams params(TYPE_POPUP, profile);
-#endif
-  params.app_name = DevToolsWindow::kDevToolsApp;
-  return CreateWithParams(params);
 }
 
 void Browser::InitBrowserWindow() {
@@ -3375,10 +3375,12 @@ void Browser::DuplicateContentsAt(int index) {
     if (is_app()) {
       CHECK(!is_type_popup());
       CHECK(!is_type_panel());
-      browser = Browser::CreateForApp(TYPE_POPUP, app_name_, gfx::Rect(),
-                                      profile_);
+      browser = Browser::CreateWithParams(
+          Browser::CreateParams::CreateForApp(
+              TYPE_POPUP, app_name_, gfx::Rect(),profile_));
     } else if (is_type_popup()) {
-      browser = Browser::CreateForType(TYPE_POPUP, profile_);
+      browser = Browser::CreateWithParams(
+          Browser::CreateParams(TYPE_POPUP, profile_));
     }
 
     // Preserve the size of the original window. The new window has already
@@ -3895,8 +3897,9 @@ void Browser::ConvertContentsToApplication(WebContents* contents) {
   std::string app_name = web_app::GenerateApplicationNameFromURL(url);
 
   DetachContents(contents);
-  Browser* app_browser = Browser::CreateForApp(
-      TYPE_POPUP, app_name, gfx::Rect(), profile_);
+  Browser* app_browser = Browser::CreateWithParams(
+      Browser::CreateParams::CreateForApp(
+          TYPE_POPUP, app_name, gfx::Rect(), profile_));
   TabContentsWrapper* wrapper =
       TabContentsWrapper::GetCurrentWrapperForContents(contents);
   if (!wrapper)
@@ -5591,7 +5594,8 @@ void Browser::ViewSource(TabContentsWrapper* contents,
                                                           view_source_contents,
                                                           add_types);
   } else {
-    Browser* browser = Browser::CreateForType(TYPE_TABBED, profile_);
+    Browser* browser = Browser::CreateWithParams(
+        Browser::CreateParams(TYPE_TABBED, profile_));
 
     // Preserve the size of the original window. The new window has already
     // been given an offset by the OS, so we shouldn't copy the old bounds.

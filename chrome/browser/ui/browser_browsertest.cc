@@ -1510,8 +1510,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest,
 
   // Create a popup (non-main-UI-type) browser. Settings command as well
   // as Extensions should be disabled.
-  Browser* popup_browser = browser()->CreateForType(Browser::TYPE_POPUP,
-                                                    browser()->profile());
+  Browser* popup_browser = browser()->CreateWithParams(
+      Browser::CreateParams(Browser::TYPE_POPUP, browser()->profile()));
   CommandUpdater* popup_command_updater = popup_browser->command_updater();
   EXPECT_FALSE(popup_command_updater->IsCommandEnabled(IDC_MANAGE_EXTENSIONS));
   EXPECT_FALSE(popup_command_updater->IsCommandEnabled(IDC_OPTIONS));
@@ -1525,8 +1525,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest,
 IN_PROC_BROWSER_TEST_F(BrowserTest,
                        DisableOptionsAndImportMenuItemsConsistently) {
   // Create a popup browser.
-  Browser* popup_browser = browser()->CreateForType(Browser::TYPE_POPUP,
-                                                    browser()->profile());
+  Browser* popup_browser = browser()->CreateWithParams(
+      Browser::CreateParams(Browser::TYPE_POPUP, browser()->profile()));
   CommandUpdater* command_updater = popup_browser->command_updater();
   // OPTIONS and IMPORT_SETTINGS are disabled for a non-normal UI.
   EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_OPTIONS));
@@ -1690,8 +1690,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest2, NoTabsInPopups) {
   EXPECT_EQ(1, browser()->tab_count());
 
   // Open a popup browser with a single blank foreground tab.
-  Browser* popup_browser = browser()->CreateForType(Browser::TYPE_POPUP,
-                                                    browser()->profile());
+  Browser* popup_browser = browser()->CreateWithParams(
+      Browser::CreateParams(Browser::TYPE_POPUP, browser()->profile()));
   popup_browser->AddBlankTab(true);
   EXPECT_EQ(1, popup_browser->tab_count());
 
@@ -1707,8 +1707,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest2, NoTabsInPopups) {
   EXPECT_EQ(2, browser()->tab_count());
 
   // Open an app frame browser with a single blank foreground tab.
-  Browser* app_browser =
-      browser()->CreateForApp(L"Test", browser()->profile(), false);
+  Browser* app_browser = browser()->CreateWithParams(
+      Browser::CreateParams::CreateForApp(
+          L"Test", browser()->profile(), false));
   app_browser->AddBlankTab(true);
   EXPECT_EQ(1, app_browser->tab_count());
 
@@ -1725,8 +1726,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest2, NoTabsInPopups) {
   EXPECT_EQ(3, browser()->tab_count());
 
   // Open an app frame popup browser with a single blank foreground tab.
-  Browser* app_popup_browser =
-      browser()->CreateForApp(L"Test", browser()->profile(), false);
+  Browser* app_popup_browser = browser()->CreateWithParams(
+      Browser::CreateParams::CreateForApp(
+          L"Test", browser()->profile(), false));
   app_popup_browser->AddBlankTab(true);
   EXPECT_EQ(1, app_popup_browser->tab_count());
 

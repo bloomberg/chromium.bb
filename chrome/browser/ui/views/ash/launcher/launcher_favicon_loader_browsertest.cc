@@ -77,10 +77,10 @@ class LauncherFaviconLoaderBrowsertest : public InProcessBrowserTest {
   }
 
   void CreatePanelBrowser(const char* url, Browser** result) {
-    Browser* panel_browser =  Browser::CreateForApp(Browser::TYPE_PANEL,
-                                                    "Test Panel",
-                                                    gfx::Rect(),
-                                                    browser()->profile());
+    Browser* panel_browser =  Browser::CreateWithParams(
+        Browser::CreateParams::CreateForApp(
+            Browser::TYPE_PANEL, "Test Panel", gfx::Rect(),
+            browser()->profile()));
     EXPECT_TRUE(panel_browser->is_type_panel());
     ASSERT_EQ(static_cast<void*>(NULL), contents_observer_.get());
     // Load initial tab contents before setting the observer.

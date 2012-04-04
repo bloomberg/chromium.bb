@@ -137,7 +137,8 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest,
 
   // Create a new popup.
   Profile* profile = browser()->profile();
-  Browser* popup = Browser::CreateForType(Browser::TYPE_POPUP, profile);
+  Browser* popup = Browser::CreateWithParams(
+      Browser::CreateParams(Browser::TYPE_POPUP, profile));
   popup->window()->Show();
 
   // Close the browser.

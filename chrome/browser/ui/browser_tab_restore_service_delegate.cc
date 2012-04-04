@@ -85,11 +85,9 @@ TabRestoreServiceDelegate* TabRestoreServiceDelegate::Create(
   if (app_name.empty()) {
     browser = Browser::Create(profile);
   } else {
-    browser = Browser::CreateForApp(
-        Browser::TYPE_POPUP,
-        app_name,
-        gfx::Rect(),
-        profile);
+    browser = Browser::CreateWithParams(
+        Browser::CreateParams::CreateForApp(
+            Browser::TYPE_POPUP, app_name, gfx::Rect(), profile));
   }
   if (browser)
     return browser->tab_restore_service_delegate();

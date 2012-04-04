@@ -66,8 +66,8 @@ class TabCloseableStateWatcherTest : public InProcessBrowserTest {
   Browser* CreatePopupBrowser() {
     // This is mostly duplicated from InPocessBrowserTest::CreateBrowser,
     // except that a popup browser is created here.
-    Browser* popup_browser = Browser::CreateForType(Browser::TYPE_POPUP,
-                                                    browser()->profile());
+    Browser* popup_browser = Browser::CreateWithParams(
+        Browser::CreateParams(Browser::TYPE_POPUP, browser()->profile()));
     AddTabWithURL(popup_browser, ntp_url_);
     popup_browser->window()->Show();
     return popup_browser;

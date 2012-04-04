@@ -61,6 +61,7 @@
 #include "skia/ext/image_operations.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/ui_base_types.h"
 #include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/codec/png_codec.h"
 
@@ -595,17 +596,20 @@ bool CreateWindowFunction::RunImpl() {
 #endif
 
   // Create a new BrowserWindow.
-  Browser* new_window;
+  Browser::CreateParams create_params;
   if (extension_id.empty()) {
-    new_window = Browser::CreateForType(window_type, window_profile);
-    new_window->window()->SetBounds(window_bounds);
+    create_params = Browser::CreateParams(window_type, window_profile);
+    create_params.initial_bounds = window_bounds;
   } else {
-    new_window = Browser::CreateForApp(
+    create_params = Browser::CreateParams::CreateForApp(
         window_type,
         web_app::GenerateApplicationNameFromExtensionId(extension_id),
         (window_type == Browser::TYPE_PANEL ? panel_bounds : popup_bounds),
         window_profile);
   }
+  create_params.initial_show_state = ui::SHOW_STATE_NORMAL;
+  Browser* new_window = Browser::CreateWithParams(create_params);
+
   for (std::vector<GURL>::iterator i = urls.begin(); i != urls.end(); ++i) {
     TabContentsWrapper* tab = new_window->AddSelectedTabWithURL(
         *i, content::PAGE_TRANSITION_LINK);

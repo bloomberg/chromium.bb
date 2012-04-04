@@ -1489,10 +1489,9 @@ class DownloadObserver : public content::DownloadManager::Observer {
 IN_PROC_BROWSER_TEST_F(PanelDownloadTest, Download) {
   Profile* profile = browser()->profile();
   ASSERT_TRUE(CreateDownloadDirectory(profile));
-  Browser* panel_browser = Browser::CreateForApp(Browser::TYPE_PANEL,
-                                                 "PanelTest",
-                                                 gfx::Rect(),
-                                                 profile);
+  Browser* panel_browser = Browser::CreateWithParams(
+      Browser::CreateParams::CreateForApp(
+          Browser::TYPE_PANEL, "PanelTest", gfx::Rect(), profile));
   EXPECT_EQ(2U, BrowserList::size());
   ASSERT_FALSE(browser()->window()->IsDownloadShelfVisible());
   ASSERT_FALSE(panel_browser->window()->IsDownloadShelfVisible());
@@ -1543,10 +1542,9 @@ IN_PROC_BROWSER_TEST_F(PanelDownloadTest, Download) {
 IN_PROC_BROWSER_TEST_F(PanelDownloadTest, MAYBE_DownloadNoTabbedBrowser) {
   Profile* profile = browser()->profile();
   ASSERT_TRUE(CreateDownloadDirectory(profile));
-  Browser* panel_browser = Browser::CreateForApp(Browser::TYPE_PANEL,
-                                                 "PanelTest",
-                                                 gfx::Rect(),
-                                                 profile);
+  Browser* panel_browser = Browser::CreateWithParams(
+      Browser::CreateParams::CreateForApp(
+          Browser::TYPE_PANEL, "PanelTest", gfx::Rect(), profile));
   EXPECT_EQ(2U, BrowserList::size());
   ASSERT_FALSE(browser()->window()->IsDownloadShelfVisible());
   ASSERT_FALSE(panel_browser->window()->IsDownloadShelfVisible());

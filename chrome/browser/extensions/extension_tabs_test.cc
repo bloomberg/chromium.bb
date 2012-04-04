@@ -84,8 +84,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, GetWindow) {
   // minimize/maximize programmatically?
 
   // Popup.
-  Browser* popup_browser =
-      Browser::CreateForType(Browser::TYPE_POPUP, browser()->profile());
+  Browser* popup_browser = Browser::CreateWithParams(
+      Browser::CreateParams(Browser::TYPE_POPUP, browser()->profile()));
   result.reset(utils::ToDictionary(
       utils::RunFunctionAndReturnResult(
           new GetWindowFunction(),
@@ -95,8 +95,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, GetWindow) {
   EXPECT_EQ("popup", utils::GetString(result.get(), "type"));
 
   // Panel.
-  Browser* panel_browser =
-      Browser::CreateForType(Browser::TYPE_PANEL, browser()->profile());
+  Browser* panel_browser = Browser::CreateWithParams(
+      Browser::CreateParams(Browser::TYPE_PANEL, browser()->profile()));
   result.reset(utils::ToDictionary(
       utils::RunFunctionAndReturnResult(
           new GetWindowFunction(),
@@ -476,8 +476,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DontCreateTabInClosingPopupWindow) {
   // Test creates new popup window, closes it right away and then tries to open
   // a new tab in it. Tab should not be opened in the popup window, but in a
   // tabbed browser window.
-  Browser* popup_browser =
-      Browser::CreateForType(Browser::TYPE_POPUP, browser()->profile());
+  Browser* popup_browser = Browser::CreateWithParams(
+      Browser::CreateParams(Browser::TYPE_POPUP, browser()->profile()));
   int window_id = ExtensionTabUtil::GetWindowId(popup_browser);
   popup_browser->CloseWindow();
 

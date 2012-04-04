@@ -325,10 +325,10 @@ Panel* BasePanelBrowserTest::CreatePanelWithParams(
   base::mac::ScopedNSAutoreleasePool autorelease_pool;
 #endif
 
-  Browser* panel_browser = Browser::CreateForApp(Browser::TYPE_PANEL,
-                                                 params.name,
-                                                 params.bounds,
-                                                 browser()->profile());
+  Browser* panel_browser = Browser::CreateWithParams(
+      Browser::CreateParams::CreateForApp(
+          Browser::TYPE_PANEL, params.name, params.bounds,
+          browser()->profile()));
   EXPECT_TRUE(panel_browser->is_type_panel());
 
   if (!params.url.is_empty()) {

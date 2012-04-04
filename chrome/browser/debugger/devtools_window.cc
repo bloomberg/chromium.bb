@@ -377,7 +377,8 @@ void DevToolsWindow::CreateDevToolsBrowser() {
     defaults->SetBoolean("always_on_top", false);
   }
 
-  browser_ = Browser::CreateForDevTools(profile_);
+  browser_ = Browser::CreateWithParams(
+      Browser::CreateParams::CreateForDevTools(profile_));
   browser_->tabstrip_model()->AddTabContents(
       tab_contents_, -1, content::PAGE_TRANSITION_START_PAGE,
       TabStripModel::ADD_ACTIVE);
