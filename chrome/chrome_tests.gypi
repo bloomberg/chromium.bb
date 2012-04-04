@@ -1422,6 +1422,7 @@
         'browser/extensions/api/extension_action/extension_browser_actions_api_unittest.cc',
         'browser/extensions/api/permissions/permissions_api_helpers_unittest.cc',
         'browser/extensions/api/proxy/proxy_api_helpers_unittest.cc',
+        'browser/extensions/api/serial/serial_connection_unittest.cc',
         'browser/extensions/api/socket/tcp_socket_unittest.cc',
         'browser/extensions/api/socket/udp_socket_unittest.cc',
         'browser/extensions/api/web_navigation/web_navigation_unittest.cc',

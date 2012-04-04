@@ -36,4 +36,18 @@ int SerialConnection::Write(const std::string& data) {
   return -1;
 }
 
+// static
+SerialConnection::StringSet SerialConnection::GenerateValidPatterns() {
+  // TODO(miket): implement
+  StringSet valid_patterns;
+  return valid_patterns;
+}
+
+// static
+SerialConnection::StringSet SerialConnection::GenerateValidSerialPortNames() {
+  // TODO(miket): implement
+  StringSet valid_names;
+  return valid_names;
+}
+
 }  // namespace extensions

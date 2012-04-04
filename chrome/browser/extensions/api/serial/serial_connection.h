@@ -6,14 +6,21 @@
 #define CHROME_BROWSER_EXTENSIONS_API_SERIAL_SERIAL_CONNECTION_H_
 #pragma once
 
+#include <set>
 #include <string>
 
+#include "base/gtest_prod_util.h"
 #include "chrome/browser/extensions/api/api_resource.h"
+
+FORWARD_DECLARE_TEST(SerialConnectionTest, ValidPortNamePatterns);
+FORWARD_DECLARE_TEST(SerialConnectionTest, InvalidPortNamePatterns);
 
 namespace extensions {
 
 class APIResourceEventNotifier;
 
+// Encapsulates an open serial port. Platform-specific implementations are in
+// _win and _posix versions of the the .cc file.
 class SerialConnection : public APIResource {
  public:
   SerialConnection(const std::string& port,
@@ -26,9 +33,26 @@ class SerialConnection : public APIResource {
   int Read(unsigned char* byte);
   int Write(const std::string& data);
 
+  typedef std::set<std::string> StringSet;
+
+  // Returns true if the given port name (e.g., "/dev/tty.usbmodemXXX")
+  // matches that of a serial port that exists on this machine.
+  static bool DoesPortExist(const StringSet& port_patterns,
+                            const std::string& port_name);
+
  private:
+  // TODO(miket): expose this functionality via API. Otherwise developers have
+  // to guess at valid names.
+  static StringSet GenerateValidSerialPortNames();
+
+  // Returns a StringSet of patterns to be used with MatchPattern.
+  static StringSet GenerateValidPatterns();
+
   std::string port_;
   int fd_;
+
+  FRIEND_TEST_ALL_PREFIXES(::SerialConnectionTest, ValidPortNamePatterns);
+  FRIEND_TEST_ALL_PREFIXES(::SerialConnectionTest, InvalidPortNamePatterns);
 };
 
 }  // namespace extensions
