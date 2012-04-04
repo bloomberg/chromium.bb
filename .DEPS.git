@@ -34,7 +34,7 @@ deps = {
     'src/native_client_sdk/src/site_scons':
         Var('git_url') + '/native_client/src/native_client/site_scons.git@4535fd2eb4c687198fd9fbab0d8ddd1e110bc130',
     'src/sdch/open-vcdiff':
-        Var('git_url') + '/external/open-vcdiff.git@64fe2324403ea78dbd781073f4e5b34768676e2c',
+        Var('git_url') + '/external/open-vcdiff.git@438f2a5be6d809bc21611a94cd37bfc8c28ceb33',
     'src/seccompsandbox':
         Var('git_url') + '/external/seccompsandbox.git@16a95ccebbef3caed8bfb8f2e667319d61f7d454',
     'src/testing/gmock':
