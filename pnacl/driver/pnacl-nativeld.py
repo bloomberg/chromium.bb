@@ -30,6 +30,10 @@ EXTRA_ENV = {
   'SHARED': '0',
   'STATIC': '0',
   'RELOCATABLE': '0',
+  'USE_GOLD' : '0',
+
+  'BASE_TEXT': '0x20000',
+  'BASE_RODATA': '0x10020000',
 
   'LD_EMUL'        : '${LD_EMUL_%ARCH%}',
   'LD_EMUL_ARM'    : 'armelf_nacl',
@@ -38,13 +42,19 @@ EXTRA_ENV = {
 
    # Intermediate variable LDMODE is used for delaying evaluation.
    # LD_SB is the non-srpc sandboxed tool.
-  'LDMODE'      : '${SANDBOXED ? SB : BFD}',
+  'LDMODE'      : '${SANDBOXED ? SB : ${USE_GOLD ? ALT : BFD}}',
   'LD'          : '${LD_%LDMODE%}',
   # --eh-frame-hdr asks the linker to generate an .eh_frame_hdr section,
   # which is a presorted list of registered frames. This section is
   # used by libgcc_eh/libgcc_s to avoid doing the sort during runtime.
   # http://www.airs.com/blog/archives/462
-  'LD_FLAGS'    : '-nostdlib -m ${LD_EMUL} --eh-frame-hdr ' +
+  #
+  # -Tdata we use this flag to influence the placement of the ro segment
+  # gold has been adjusted accordingly
+  'LD_GOLD_FLAGS': '--rosegment --native-client ' +
+                   '-Tdata=${BASE_RODATA} -Ttext=${BASE_TEXT} ',
+  'LD_FLAGS'    : '${USE_GOLD ? ${LD_GOLD_FLAGS}} ' +
+                  '-nostdlib -m ${LD_EMUL} --eh-frame-hdr ' +
                   '${#LD_SCRIPT ? -T ${LD_SCRIPT}} ' +
                   '${#SONAME ? -soname=${SONAME}} ' +
                   '${STATIC ? -static} ${SHARED ? -shared} ${RELOCATABLE ? -r}',
@@ -95,6 +105,25 @@ EXTRA_ENV = {
 def PassThrough(*args):
   env.append('LD_FLAGS', *args)
 
+def PassThroughSegment(*args):
+  if not env.getbool('USE_GOLD'):
+      PassThrough(*args)
+      return
+  # Note: we conflate '-Ttext' and '--section-start .text=' here
+  # This is not quite right but it is the intention of the tests
+  # using the flags which want to control the placement of the
+  # "rx" and "r" segments
+  if args[0] == '--section-start' and args[1].startswith('.rodata='):
+    env.set('BASE_RODATA', args[1][len('.rodata='):])
+  elif args[0] == '--section-start' and args[1].startswith('.text='):
+    env.set('BASE_TEXT', args[1][len('.text='):])
+  elif args[0].startswith('-Ttext='):
+    env.set('BASE_TEXT', args[0][len('-Ttext='):])
+  elif args[0] == '-Ttext':
+    env.set('BASE_TEXT', args[1])
+  else:
+    Log.Fatal("Bad segment directive '%s'", repr(args))
+
 LDPatterns = [
   ( '-o(.+)',          "env.set('OUTPUT', pathtools.normalize($0))"),
   ( ('-o', '(.+)'),    "env.set('OUTPUT', pathtools.normalize($0))"),
@@ -111,15 +140,15 @@ LDPatterns = [
   ( '-L(.+)',          "env.append('SEARCH_DIRS_USER', $0)"),
   ( ('-L', '(.*)'),    "env.append('SEARCH_DIRS_USER', $0)"),
 
-  ( ('(-Ttext)','(.*)'), PassThrough),
-  ( ('(-Ttext=.*)'),     PassThrough),
+  ( ('(-Ttext)','(.*)'), PassThroughSegment),
+  ( ('(-Ttext=.*)'),     PassThroughSegment),
 
   # This overrides the builtin linker script.
   ( ('-T', '(.*)'),      "env.set('LD_SCRIPT', $0)"),
 
   ( ('(-e)','(.*)'),              PassThrough),
   ( '(--entry=.*)',               PassThrough),
-  ( ('(--section-start)','(.*)'), PassThrough),
+  ( ('(--section-start)','(.*)'), PassThroughSegment),
   ( '-?-soname=(.*)',             "env.set('SONAME', $0)"),
   ( ('(-?-soname)', '(.*)'),      "env.set('SONAME', $1)"),
   ( '(-M)',                       PassThrough),

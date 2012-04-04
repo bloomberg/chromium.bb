@@ -194,8 +194,12 @@ INITIAL_ENV = {
   'AR'             : '${BINUTILS_BASE}ar${EXEC_EXT}',
   'RANLIB'         : '${BINUTILS_BASE}ranlib${EXEC_EXT}',
   'STRIP'          : '${BINUTILS_BASE}strip${EXEC_EXT}',
-  'LD_BFD'         : '${BINUTILS_BASE}ld.bfd${EXEC_EXT}',
+  # bitcode linker
   'LD_GOLD'        : '${BINUTILS_BASE}ld.gold${EXEC_EXT}',
+  # final linker (bfd based)
+  'LD_BFD'         : '${BINUTILS_BASE}ld.bfd${EXEC_EXT}',
+  # alternative final linker (gold based)
+  'LD_ALT'         : '${BINUTILS_BASE}ld.alt${EXEC_EXT}',
 
   # Use the default command line arguments to the sandboxed translator.
   'USE_DEFAULT_CMD_LINE': '1',
