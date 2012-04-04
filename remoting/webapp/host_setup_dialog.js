@@ -98,6 +98,8 @@ remoting.HostSetupDialog = function(daemon) {
   this.daemon_ = daemon;
   this.pinEntry_ = document.getElementById('daemon-pin-entry');
   this.pinConfirm_ = document.getElementById('daemon-pin-confirm');
+  this.pinErrorDiv_ = document.getElementById('daemon-pin-error-div');
+  this.pinErrorMessage_ = document.getElementById('daemon-pin-error-message');
 
   /** @type {remoting.HostSetupFlow} */
   this.flow_ = new remoting.HostSetupFlow([remoting.HostSetupFlow.State.NONE]);
@@ -175,6 +177,7 @@ remoting.HostSetupDialog.prototype.startNewFlow_ = function(sequence) {
   this.flow_ = new remoting.HostSetupFlow(sequence);
   this.pinEntry_.value = '';
   this.pinConfirm_.value = '';
+  this.pinErrorDiv_.hidden = true;
   this.updateState_();
 };
 
@@ -418,9 +421,20 @@ remoting.HostSetupDialog.prototype.onPinSubmit_ = function() {
     console.error('PIN submitted in an invalid state', this.flow_.getState());
     return;
   }
-  // TODO(jamiewalch): Add validation and error checks when we improve the UI.
-  var pin = this.pinEntry_.value;
-  this.flow_.pin = pin;
+  var pin1 = this.pinEntry_.value;
+  var pin2 = this.pinConfirm_.value;
+  if (pin1 != pin2) {
+    l10n.localizeElementFromTag(
+        this.pinErrorMessage_, /*i18n-content*/'PINS_NOT_EQUAL');
+    this.pinErrorDiv_.hidden = false;
+    this.pinEntry_.value = '';
+    this.pinConfirm_.value = '';
+    this.pinEntry_.focus();
+    return;
+  } else {
+    this.pinErrorDiv_.hidden = true;
+  }
+  this.flow_.pin = pin1;
   this.flow_.switchToNextStep(remoting.DaemonPlugin.AsyncResult.OK);
   this.updateState_();
 };

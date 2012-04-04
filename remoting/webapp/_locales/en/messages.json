@@ -368,6 +368,10 @@
       }
     }
   },
+  "PINS_NOT_EQUAL": {
+    "message": "Please enter the same PIN in both boxes.",
+    "description": "Error message displayed to the user if they enter different PINs in the boxes marked 'PIN' and 'retype PIN'."
+  },
   "PRODUCT_DESCRIPTION": {
     "message": "Access other computers or allow another user to access your computer securely over the Internet.",
     "description": "Web-app description. Displayed in Chromium's extensions page."
