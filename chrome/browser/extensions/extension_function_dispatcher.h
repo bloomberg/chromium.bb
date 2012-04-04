@@ -28,6 +28,7 @@ class WebContents;
 }
 
 namespace extensions {
+class ExtensionAPI;
 class ProcessMap;
 }
 
@@ -126,6 +127,7 @@ class ExtensionFunctionDispatcher
       const Extension* extension,
       int requesting_process_id,
       const extensions::ProcessMap& process_map,
+      extensions::ExtensionAPI* api,
       void* profile,
       IPC::Message::Sender* ipc_sender,
       int routing_id);

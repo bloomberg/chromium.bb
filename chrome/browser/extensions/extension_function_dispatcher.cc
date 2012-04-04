@@ -7,6 +7,7 @@
 #include <map>
 
 #include "base/json/json_string_value_serializer.h"
+#include "base/lazy_instance.h"
 #include "base/memory/ref_counted.h"
 #include "base/process_util.h"
 #include "base/values.h"
@@ -38,6 +39,8 @@
 using extensions::ExtensionAPI;
 using content::RenderViewHost;
 using WebKit::WebSecurityOrigin;
+
+namespace {
 
 const char kAccessDenied[] = "access denied";
 const char kQuotaExceeded[] = "quota exceeded";
@@ -80,6 +83,20 @@ void LogFailure(const Extension* extension,
   }
 }
 
+// Separate copy of ExtensionAPI used for IO thread extension functions. We need
+// this because ExtensionAPI has mutable data. It should be possible to remove
+// this once all the extension APIs are updated to the feature system.
+struct Static {
+  Static()
+      : api(extensions::ExtensionAPI::CreateWithDefaultConfiguration()) {
+  }
+  scoped_ptr<extensions::ExtensionAPI> api;
+};
+base::LazyInstance<Static> g_global_io_data = LAZY_INSTANCE_INITIALIZER;
+
+}  // namespace
+
+
 void ExtensionFunctionDispatcher::GetAllFunctionNames(
     std::vector<std::string>* names) {
   ExtensionFunctionRegistry::GetInstance()->GetAllNames(names);
@@ -108,7 +125,9 @@ void ExtensionFunctionDispatcher::DispatchOnIOThread(
 
   scoped_refptr<ExtensionFunction> function(
       CreateExtensionFunction(params, extension, render_process_id,
-                              extension_info_map->process_map(), profile,
+                              extension_info_map->process_map(),
+                              g_global_io_data.Get().api.get(),
+                              profile,
                               ipc_sender, routing_id));
   if (!function) {
     LogFailure(extension, params.name, kAccessDenied);
@@ -191,6 +210,7 @@ void ExtensionFunctionDispatcher::Dispatch(
       CreateExtensionFunction(params, extension,
                               render_view_host->GetProcess()->GetID(),
                               *(service->process_map()),
+                              extensions::ExtensionAPI::GetSharedInstance(),
                               profile(), render_view_host,
                               render_view_host->GetRoutingID()));
   if (!function) {
@@ -242,6 +262,7 @@ ExtensionFunction* ExtensionFunctionDispatcher::CreateExtensionFunction(
     const Extension* extension,
     int requesting_process_id,
     const extensions::ProcessMap& process_map,
+    extensions::ExtensionAPI* api,
     void* profile,
     IPC::Message::Sender* ipc_sender,
     int routing_id) {
@@ -251,7 +272,7 @@ ExtensionFunction* ExtensionFunctionDispatcher::CreateExtensionFunction(
     return NULL;
   }
 
-  if (ExtensionAPI::GetInstance()->IsPrivileged(params.name) &&
+  if (api->IsPrivileged(params.name) &&
       !process_map.Contains(extension->id(), requesting_process_id)) {
     LOG(ERROR) << "Extension API called from incorrect process "
                << requesting_process_id
