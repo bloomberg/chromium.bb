@@ -133,6 +133,18 @@ remoting.disconnect = function() {
 };
 
 /**
+ * Sends a Ctrl-Alt-Del sequence to the remoting client.
+ *
+ * @return {void} Nothing.
+ */
+remoting.sendCtrlAltDel = function() {
+  if (remoting.clientSession) {
+    console.log('Sending Ctrl-Alt-Del.');
+    remoting.clientSession.sendCtrlAltDel();
+  }
+};
+
+/**
  * If WCS was successfully loaded, proceed with the connection, otherwise
  * report an error.
  *

@@ -388,6 +388,14 @@
     "message": "Screen options",
     "description": "Tool-bar button used to access the Full-screen and shrink-to-fit features ('screen' in this context refers to the fact that the options are related to how the remote screen is displayed)."
   },
+  "SEND_CTRL_ALT_DEL": {
+    "message": "Ctrl-Alt-Del",
+    "description": "Label for the client-side menu button that sends a Ctrl-Alt-Del sequence to the host. Clicking this button behaves as if Ctrl, Alt and Del were pressed and then released at the host."
+  },
+  "SEND_KEYS": {
+    "message": "Send keys",
+    "description": "Tool-bar button used to access buttons for pressing and releasing keys or sequences of keys that might not otherwise be available. These are currently limited to Ctrl-Alt-Del, which if pressed at a client would take effect there, rather than being sent to the host as the user expected."
+  },
   "SHRINK_TO_FIT": {
     "message": "Shrink to fit",
     "description": "Menu option for enabling shrink-to-fit. When clicked, the remote desktop will be scaled down so that it fits in the browser window."

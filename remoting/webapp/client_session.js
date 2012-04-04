@@ -71,6 +71,10 @@ remoting.ClientSession = function(hostJid, hostPublicKey, sharedSecret,
   /** @type {function():void} @private */
   this.callToggleFullScreen_ = function() { that.toggleFullScreen_(); };
   /** @type {remoting.MenuButton} @private */
+  this.sendKeysMenu_ = new remoting.MenuButton(
+      document.getElementById('send-keys-menu')
+  );
+  /** @type {remoting.MenuButton} @private */
   this.screenOptionsMenu_ = new remoting.MenuButton(
       document.getElementById('screen-options-menu'),
       function() { that.onShowOptionsMenu_(); }
@@ -273,6 +277,14 @@ remoting.ClientSession.prototype.onPluginInitialized_ =
     return;
   }
 
+  if (!this.plugin.hasFeature(remoting.ClientPlugin.Feature.INJECT_KEY_EVENT) ||
+      this.mode != remoting.ClientSession.Mode.ME2ME) {
+    var sendCadElement = document.getElementById('send-ctrl-alt-del');
+    sendCadElement.hidden = true;
+    var sendKeysElement = document.getElementById('send-keys-menu');
+    sendKeysElement.hidden = true;
+  }
+
   // Enable scale-to-fit if and only if the plugin is new enough for
   // high-quality scaling.
   this.setScaleToFit(this.plugin.hasFeature(
@@ -353,6 +365,20 @@ remoting.ClientSession.prototype.disconnect = function() {
   }
   this.removePlugin();
 };
+
+/**
+ * Sends a Ctrl-Alt-Del sequence to the remoting client.
+ *
+ * @return {void} Nothing.
+ */
+remoting.ClientSession.prototype.sendCtrlAltDel = function() {
+  this.plugin.injectKeyEvent(0x0700e0, true);
+  this.plugin.injectKeyEvent(0x0700e2, true);
+  this.plugin.injectKeyEvent(0x07004c, true);
+  this.plugin.injectKeyEvent(0x07004c, false);
+  this.plugin.injectKeyEvent(0x0700e2, false);
+  this.plugin.injectKeyEvent(0x0700e0, false);
+}
 
 /**
  * Enables or disables the client's scale-to-fit feature.

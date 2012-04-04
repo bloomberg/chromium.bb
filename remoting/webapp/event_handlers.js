@@ -41,6 +41,8 @@ function onLoad() {
   var actions = [
       { event: 'click', id: 'clear-oauth', fn: remoting.clearOAuth2 },
       { event: 'click', id: 'toolbar-disconnect', fn: remoting.disconnect },
+      { event: 'click', id: 'send-ctrl-alt-del',
+        fn: remoting.sendCtrlAltDel },
       { event: 'click', id: 'auth-button', fn: doAuthRedirect },
       { event: 'click', id: 'share-button', fn: remoting.tryShare },
       { event: 'click', id: 'access-mode-button', fn: goEnterAccessCode },
