@@ -28,3 +28,4 @@
 // Right?)
 //
 // EVERYTHING BELOW THIS LINE WILL BE DELETED AT EVERY WEBKIT DEPS ROLL
+BUGWK82993 : fast/dom/error-to-string-stack-overflow.html = TEXT
