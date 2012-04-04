@@ -128,12 +128,12 @@ class HostNPScriptObject : public HostStatusObserver {
                        uint32_t arg_count,
                        NPVariant* result);
 
-  // Set the PIN for Me2Me. Args are:
-  //   string pin
+  // Update host config for Me2Me. Args are:
+  //   string config
   //   function(number) done_callback
-  bool SetDaemonPin(const NPVariant* args,
-                    uint32_t arg_count,
-                    NPVariant* result);
+  bool UpdateDaemonConfig(const NPVariant* args,
+                          uint32_t arg_count,
+                          NPVariant* result);
 
   // Loads daemon config config. The first argument specifies the
   // callback to be called with the config is loaded. The config is

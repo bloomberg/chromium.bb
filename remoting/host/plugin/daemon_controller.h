@@ -100,14 +100,14 @@ class DaemonController {
   virtual void SetConfigAndStart(scoped_ptr<base::DictionaryValue> config,
                                  const CompletionCallback& done_callback) = 0;
 
-  // Set the PIN for accessing this host, which should be expressed as a
-  // UTF8-encoded string. It is permitted to call SetPin when the daemon
-  // is already running. Returns true if successful, or false if the PIN
-  // does not satisfy complexity requirements.
-  //
-  // TODO(sergeyu): Add callback to be called after PIN is updated.
-  virtual void SetPin(const std::string& pin,
-                      const CompletionCallback& done_callback) = 0;
+  // Updates current host configuration with the values specified in
+  // |config|. Following parameters in the config cannot be changed
+  // using this function: host_id, xmpp_login. Implementation must not
+  // change these fields and must return an error if the webapp tries
+  // to change these values. Changes must come to effect before the
+  // call completes.
+  virtual void UpdateConfig(scoped_ptr<base::DictionaryValue> config,
+                            const CompletionCallback& done_callback) = 0;
 
   // Stop the daemon process. It is permitted to call Stop while the daemon
   // process is being installed, in which case the installation should be

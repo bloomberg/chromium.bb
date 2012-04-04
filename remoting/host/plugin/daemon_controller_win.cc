@@ -66,8 +66,8 @@ class DaemonControllerWin : public remoting::DaemonController {
   virtual void SetConfigAndStart(
       scoped_ptr<base::DictionaryValue> config,
       const CompletionCallback& done_callback) OVERRIDE;
-  virtual void SetPin(const std::string& pin,
-                      const CompletionCallback& done_callback) OVERRIDE;
+  virtual void UpdateConfig(scoped_ptr<base::DictionaryValue> config,
+                            const CompletionCallback& done_callback) OVERRIDE;
   virtual void Stop(const CompletionCallback& done_callback) OVERRIDE;
 
  private:
@@ -192,8 +192,9 @@ void DaemonControllerWin::SetConfigAndStart(
           base::Passed(&config), done_callback));
 }
 
-void DaemonControllerWin::SetPin(const std::string& pin,
-                                 const CompletionCallback& done_callback) {
+void DaemonControllerWin::UpdateConfig(
+    scoped_ptr<base::DictionaryValue> config,
+    const CompletionCallback& done_callback) {
   NOTIMPLEMENTED();
   done_callback.Run(RESULT_FAILED);
 }

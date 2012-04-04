@@ -374,7 +374,11 @@ remoting.HostSetupDialog.prototype.updatePin_ = function() {
     flow.switchToNextStep(result);
     that.updateState_();
   }
-  this.daemon_.setPin(this.flow_.pin, onPinUpdated);
+
+  var newConfig = JSON.stringify({
+          host_secret_hash: 'plain:' + window.btoa(flow.pin)
+      });
+  this.daemon_.updateConfig(newConfig, onPinUpdated);
 }
 
 /**

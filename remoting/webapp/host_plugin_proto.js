@@ -33,11 +33,12 @@ remoting.HostPlugin.prototype.getHostName = function() {};
  *  @return {void} Nothing. */
 remoting.HostPlugin.prototype.generateKeyPair = function(callback) {};
 
-/** @param {string} pin The new PIN.
+/** @param {string} config The new config, JSON encoded.
  *  @param {function(remoting.DaemonPlugin.AsyncResult):void} callback
  *     Callback to be called when finished.
  *  @return {void} Nothing. */
-remoting.HostPlugin.prototype.setDaemonPin = function(pin, callback) {};
+remoting.HostPlugin.prototype.updateDaemonConfig =
+    function(config, callback) {};
 
 /** @param {function(string):void} callback Callback to be called for
  *  the config.

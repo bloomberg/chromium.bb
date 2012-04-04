@@ -44,15 +44,15 @@ class DaemonControllerLinux : public remoting::DaemonController {
   virtual void SetConfigAndStart(
       scoped_ptr<base::DictionaryValue> config,
       const CompletionCallback& done_callback) OVERRIDE;
-  virtual void SetPin(const std::string& pin,
-                      const CompletionCallback& done_callback) OVERRIDE;
+  virtual void UpdateConfig(scoped_ptr<base::DictionaryValue> config,
+                            const CompletionCallback& done_callback) OVERRIDE;
   virtual void Stop(const CompletionCallback& done_callback) OVERRIDE;
 
  private:
   void DoSetConfigAndStart(scoped_ptr<base::DictionaryValue> config,
                            const CompletionCallback& done_callback);
-  void DoSetPin(const std::string& pin,
-                const CompletionCallback& done_callback);
+  void DoUpdateConfig(scoped_ptr<base::DictionaryValue> config,
+                      const CompletionCallback& done_callback);
   void DoStop(const CompletionCallback& done_callback);
 
   base::Thread file_io_thread_;
@@ -145,11 +145,12 @@ void DaemonControllerLinux::SetConfigAndStart(
       base::Passed(&config), done_callback));
 }
 
-void DaemonControllerLinux::SetPin(const std::string& pin,
-                                   const CompletionCallback& done_callback) {
+void DaemonControllerLinux::UpdateConfig(
+    scoped_ptr<base::DictionaryValue> config,
+    const CompletionCallback& done_callback) {
   file_io_thread_.message_loop()->PostTask(FROM_HERE, base::Bind(
-      &DaemonControllerLinux::DoSetPin, base::Unretained(this),
-      pin, done_callback));
+      &DaemonControllerLinux::DoUpdateConfig, base::Unretained(this),
+      base::Passed(&config), done_callback));
 }
 
 void DaemonControllerLinux::Stop(const CompletionCallback& done_callback) {
@@ -177,19 +178,11 @@ void DaemonControllerLinux::DoSetConfigAndStart(
   done_callback.Run(result);
 }
 
-void DaemonControllerLinux::DoSetPin(const std::string& pin,
-                                     const CompletionCallback& done_callback) {
-  std::vector<std::string> args;
-  args.push_back("--explicit-pin");
-  args.push_back(pin);
-  int exit_code = 0;
-  AsyncResult result;
-  if (RunScript(args, &exit_code)) {
-    result = (exit_code == 0) ? RESULT_OK : RESULT_FAILED;
-  } else {
-    result = RESULT_FAILED;
-  }
-  done_callback.Run(result);
+void DaemonControllerLinux::DoUpdateConfig(
+    scoped_ptr<base::DictionaryValue> config,
+    const CompletionCallback& done_callback) {
+  NOTIMPLEMENTED();
+  done_callback.Run(RESULT_OK);
 }
 
 void DaemonControllerLinux::DoStop(const CompletionCallback& done_callback) {

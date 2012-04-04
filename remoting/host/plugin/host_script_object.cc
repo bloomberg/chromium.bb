@@ -45,7 +45,7 @@ const char* kFuncNameDisconnect = "disconnect";
 const char* kFuncNameLocalize = "localize";
 const char* kFuncNameGetHostName = "getHostName";
 const char* kFuncNameGenerateKeyPair = "generateKeyPair";
-const char* kFuncNameSetDaemonPin = "setDaemonPin";
+const char* kFuncNameUpdateDaemonConfig = "updateDaemonConfig";
 const char* kFuncNameGetDaemonConfig = "getDaemonConfig";
 const char* kFuncNameStartDaemon = "startDaemon";
 const char* kFuncNameStopDaemon = "stopDaemon";
@@ -152,7 +152,7 @@ bool HostNPScriptObject::HasMethod(const std::string& method_name) {
           method_name == kFuncNameLocalize ||
           method_name == kFuncNameGetHostName ||
           method_name == kFuncNameGenerateKeyPair ||
-          method_name == kFuncNameSetDaemonPin ||
+          method_name == kFuncNameUpdateDaemonConfig ||
           method_name == kFuncNameGetDaemonConfig ||
           method_name == kFuncNameStartDaemon ||
           method_name == kFuncNameStopDaemon);
@@ -183,8 +183,8 @@ bool HostNPScriptObject::Invoke(const std::string& method_name,
     return GetHostName(args, arg_count, result);
   } else if (method_name == kFuncNameGenerateKeyPair) {
     return GenerateKeyPair(args, arg_count, result);
-  } else if (method_name == kFuncNameSetDaemonPin) {
-    return SetDaemonPin(args, arg_count, result);
+  } else if (method_name == kFuncNameUpdateDaemonConfig) {
+    return UpdateDaemonConfig(args, arg_count, result);
   } else if (method_name == kFuncNameGetDaemonConfig) {
     return GetDaemonConfig(args, arg_count, result);
   } else if (method_name == kFuncNameStartDaemon) {
@@ -356,7 +356,7 @@ bool HostNPScriptObject::Enumerate(std::vector<std::string>* values) {
     kFuncNameLocalize,
     kFuncNameGetHostName,
     kFuncNameGenerateKeyPair,
-    kFuncNameSetDaemonPin,
+    kFuncNameUpdateDaemonConfig,
     kFuncNameGetDaemonConfig,
     kFuncNameStartDaemon,
     kFuncNameStopDaemon
@@ -630,32 +630,36 @@ bool HostNPScriptObject::GenerateKeyPair(const NPVariant* args,
   return true;
 }
 
-bool HostNPScriptObject::SetDaemonPin(const NPVariant* args,
-                                      uint32_t arg_count,
-                                      NPVariant* result) {
+bool HostNPScriptObject::UpdateDaemonConfig(const NPVariant* args,
+                                            uint32_t arg_count,
+                                            NPVariant* result) {
   if (arg_count != 2) {
-    SetException("setDaemonPin: bad number of arguments");
+    SetException("updateDaemonConfig: bad number of arguments");
     return false;
   }
 
-  if (!NPVARIANT_IS_STRING(args[0])) {
-    SetException("setDaemonPin: unexpected type for argument 1");
+  std::string config_str = StringFromNPVariant(args[0]);
+  base::Value* config = base::JSONReader::Read(config_str, true);
+  base::DictionaryValue* config_dict;
+
+  if (config_str.empty() || !config || !config->GetAsDictionary(&config_dict)) {
+    delete config;
+    SetException("updateDaemonConfig: bad config parameter");
     return false;
   }
-  std::string new_pin = StringFromNPVariant(args[0]);
 
   NPObject* callback_obj = ObjectFromNPVariant(args[1]);
   if (!callback_obj) {
-    SetException("setDaemonPin: invalid callback parameter");
+    SetException("updateDaemonConfig: invalid callback parameter");
     return false;
   }
 
   callback_obj = g_npnetscape_funcs->retainobject(callback_obj);
 
-  daemon_controller_->SetPin(
-      new_pin, base::Bind(
-          &HostNPScriptObject::InvokeAsyncResultCallback,
-          base::Unretained(this), callback_obj));
+  daemon_controller_->UpdateConfig(
+      scoped_ptr<base::DictionaryValue>(config_dict),
+      base::Bind(&HostNPScriptObject::InvokeAsyncResultCallback,
+                 base::Unretained(this), callback_obj));
   return true;
 }
 

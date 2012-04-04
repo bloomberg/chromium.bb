@@ -145,13 +145,13 @@ remoting.DaemonPlugin.prototype.stop = function(callback) {
 };
 
 /**
- * @param {string} pin The new PIN for the daemon process.
+ * @param {string} config The new host config, JSON encoded.
  * @param {function(remoting.DaemonPlugin.AsyncResult):void} callback
  *     Callback to be called when finished.
  * @return {void} Nothing.
  */
-remoting.DaemonPlugin.prototype.setPin = function(pin, callback) {
-  this.plugin_.setDaemonPin(pin, callback);
+remoting.DaemonPlugin.prototype.updateConfig = function(config, callback) {
+  this.plugin_.updateDaemonConfig(config, callback);
 };
 
 /**
