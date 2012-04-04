@@ -96,6 +96,7 @@ struct weston_output {
 			pixman_region32_t *damage);
 	void (*destroy)(struct weston_output *output);
 	void (*assign_planes)(struct weston_output *output);
+	void (*read_pixels)(struct weston_output *output, void *data);
 
 	/* backlight values are on 0-255 range, where higher is brighter */
 	uint32_t backlight_current;

@@ -344,6 +344,20 @@ x11_output_set_icon(struct x11_compositor *c,
 	pixman_image_unref(image);
 }
 
+static void
+x11_output_read_pixels(struct weston_output *output_base, void *data)
+{
+	struct x11_output *output = (struct x11_output *) output_base;
+	struct x11_compositor *compositor =
+		(struct x11_compositor *) output->base.compositor;
+
+	eglMakeCurrent(compositor->base.display, output->egl_surface,
+			output->egl_surface, compositor->base.context);
+
+	glReadPixels(0, 0, output_base->current->width, output_base->current->height,
+				GL_BGRA_EXT, GL_UNSIGNED_BYTE, data);
+}
+
 static int
 x11_compositor_create_output(struct x11_compositor *c, int x, int y,
 			     int width, int height, int fullscreen)
@@ -454,6 +468,7 @@ x11_compositor_create_output(struct x11_compositor *c, int x, int y,
 	output->base.repaint = x11_output_repaint;
 	output->base.destroy = x11_output_destroy;
 	output->base.assign_planes = NULL;
+	output->base.read_pixels = x11_output_read_pixels;
 	output->base.set_backlight = NULL;
 	output->base.set_dpms = NULL;
 

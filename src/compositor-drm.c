@@ -1047,6 +1047,20 @@ drm_set_dpms(struct weston_output *output_base, enum dpms_enum level)
 	drmModeFreeConnector(connector);
 }
 
+static void
+drm_output_read_pixels(struct weston_output *output_base, void *data)
+{
+	struct drm_output *output = (struct drm_output *) output_base;
+	struct drm_compositor *compositor =
+		(struct drm_compositor *) output->base.compositor;
+
+	eglMakeCurrent(compositor->base.display, output->egl_surface,
+			output->egl_surface, compositor->base.context);
+
+	glReadPixels(0, 0, output_base->current->width, output_base->current->height,
+				GL_BGRA_EXT, GL_UNSIGNED_BYTE, data);
+}
+
 static int
 create_output_for_connector(struct drm_compositor *ec,
 			    drmModeRes *resources,
@@ -1154,6 +1168,7 @@ create_output_for_connector(struct drm_compositor *ec,
 	output->base.repaint = drm_output_repaint;
 	output->base.destroy = drm_output_destroy;
 	output->base.assign_planes = drm_assign_planes;
+	output->base.read_pixels = drm_output_read_pixels;
 	output->base.set_dpms = drm_set_dpms;
 
 	return 0;

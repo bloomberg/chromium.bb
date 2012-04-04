@@ -32,7 +32,7 @@ struct screenshooter {
 	struct weston_compositor *ec;
 	struct wl_global *global;
 	struct wl_client *client;
-	struct weston_process screenshooter_process;
+	struct weston_process process;
 };
 
 static void
@@ -44,7 +44,7 @@ screenshooter_shoot(struct wl_client *client,
 	struct weston_output *output = output_resource->data;
 	struct wl_buffer *buffer = buffer_resource->data;
 	uint8_t *tmp, *d, *s;
-	int32_t stride, i;
+	int32_t buffer_stride, output_stride, i;
 
 	if (!wl_buffer_is_shm(buffer))
 		return;
@@ -53,24 +53,25 @@ screenshooter_shoot(struct wl_client *client,
 	    buffer->height < output->current->height)
 		return;
 
-	stride = wl_shm_buffer_get_stride(buffer);
-	tmp = malloc(stride * buffer->height);
+	buffer_stride = wl_shm_buffer_get_stride(buffer);
+	output_stride = output->current->width * 4;
+	tmp = malloc(output_stride * output->current->height);
 	if (tmp == NULL) {
 		wl_resource_post_no_memory(resource);
 		return;
 	}
 
 	glPixelStorei(GL_PACK_ALIGNMENT, 1);
-	glReadPixels(0, 0, output->current->width, output->current->height,
-		     GL_BGRA_EXT, GL_UNSIGNED_BYTE, tmp);
+	output->read_pixels(output, tmp);
 
-	d = wl_shm_buffer_get_data(buffer);
-	s = tmp + stride * (buffer->height - 1);
+	d = wl_shm_buffer_get_data(buffer) + output->y * buffer_stride +
+							output->x * 4;
+	s = tmp + output_stride * (output->current->height - 1);
 
-	for (i = 0; i < buffer->height; i++) {
-		memcpy(d, s, stride);
-		d += stride;
-		s -= stride;
+	for (i = 0; i < output->current->height; i++) {
+		memcpy(d, s, output_stride);
+		d += buffer_stride;
+		s -= output_stride;
 	}
 
 	free(tmp);
@@ -101,7 +102,7 @@ static void
 screenshooter_sigchld(struct weston_process *process, int status)
 {
 	struct screenshooter *shooter =
-		container_of(process, struct screenshooter, screenshooter_process);
+		container_of(process, struct screenshooter, process);
 
 	shooter->client = NULL;
 }
@@ -116,7 +117,7 @@ screenshooter_binding(struct wl_input_device *device, uint32_t time,
 
 	if (!shooter->client)
 		shooter->client = weston_client_launch(shooter->ec,
-					&shooter->screenshooter_process,
+					&shooter->process,
 					screenshooter_exe, screenshooter_sigchld);
 }
 
