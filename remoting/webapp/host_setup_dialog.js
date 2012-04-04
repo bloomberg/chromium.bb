@@ -245,6 +245,8 @@ remoting.HostSetupDialog.prototype.updateState_ = function() {
 
 /**
  * Registers new host.
+ * TODO(jamiewalch): This doesn't feel like it belongs here. I think it would be
+ * better as a member of daemon_plugin, alongside unregister.
  */
 remoting.HostSetupDialog.prototype.registerHost_ = function() {
   /** @type {remoting.HostSetupDialog} */
@@ -409,6 +411,7 @@ remoting.HostSetupDialog.prototype.stopHost_ = function() {
       return;
     }
 
+    that.daemon_.unregister();
     flow.switchToNextStep(result);
     that.updateState_();
   }

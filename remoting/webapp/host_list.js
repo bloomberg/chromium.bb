@@ -217,13 +217,20 @@ remoting.HostList.prototype.deleteHost_ = function(hostTableEntry) {
   if (index != -1) {
     this.hostTableEntries_.splice(index, 1);
   }
+  remoting.HostList.unregisterHostById(hostTableEntry.host.hostId);
+};
 
+/**
+ * Unregister a host.
+ * @param {string} hostId The id of the host to be removed.
+ * @return {void} Nothing.
+ */
+remoting.HostList.unregisterHostById = function(hostId) {
   /** @param {string} token The OAuth2 token. */
   var deleteHost = function(token) {
     var headers = { 'Authorization': 'OAuth ' + token };
     remoting.xhr.remove(
-        'https://www.googleapis.com/chromoting/v1/@me/hosts/' +
-        hostTableEntry.host.hostId,
+        'https://www.googleapis.com/chromoting/v1/@me/hosts/' + hostId,
         function() {}, '', headers);
   }
   remoting.oauth2.callWithToken(deleteHost);

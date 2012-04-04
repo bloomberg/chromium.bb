@@ -207,5 +207,15 @@ remoting.DaemonPlugin.prototype.onHostListRefresh = function(hostList, onDone) {
   onDone();
 };
 
+/**
+ * Unregister the local host
+ *
+ * @return {void} Nothing.
+ */
+remoting.DaemonPlugin.prototype.unregister = function() {
+  remoting.HostList.unregisterHostById(this.localHost.hostId);
+  window.localStorage.removeItem('me2me-host-id');
+};
+
 /** @type {remoting.DaemonPlugin} */
 remoting.daemonPlugin = null;
