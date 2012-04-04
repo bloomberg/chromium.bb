@@ -10,10 +10,8 @@
 
 #if defined(OS_MACOSX)
 #if __OBJC__
-@class NSAlert;
 @class ShellJavaScriptDialogHelper;
 #else
-class NSAlert;
 class ShellJavaScriptDialogHelper;
 #endif  // __OBJC__
 #endif  // defined(OS_MACOSX)
@@ -41,7 +39,6 @@ class ShellJavaScriptDialog {
 
 #if defined(OS_MACOSX)
   ShellJavaScriptDialogHelper* helper_;  // owned
-  NSAlert* alert_; // weak, owned by |helper_|.
 #elif defined(OS_WIN)
   ui::JavascriptMessageType message_type_;
   HWND dialog_win_;

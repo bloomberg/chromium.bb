@@ -104,29 +104,29 @@ ShellJavaScriptDialog::ShellJavaScriptDialog(
                                                      andCallback:callback];
 
   // Show the modal dialog.
-  alert_ = [helper_ alert];
+  NSAlert* alert = [helper_ alert];
   NSTextField* field = nil;
   if (text_field) {
     field = [helper_ textField];
     [field setStringValue:base::SysUTF16ToNSString(default_prompt_text)];
   }
-  [alert_ setDelegate:helper_];
-  [alert_ setInformativeText:base::SysUTF16ToNSString(message_text)];
-  [alert_ setMessageText:@"Javascript alert"];
-  [alert_ addButtonWithTitle:@"OK"];
+  [alert setDelegate:helper_];
+  [alert setInformativeText:base::SysUTF16ToNSString(message_text)];
+  [alert setMessageText:@"Javascript alert"];
+  [alert addButtonWithTitle:@"OK"];
   if (!one_button) {
-    NSButton* other = [alert_ addButtonWithTitle:@"Cancel"];
+    NSButton* other = [alert addButtonWithTitle:@"Cancel"];
     [other setKeyEquivalent:@"\e"];
   }
 
-  [alert_
+  [alert
       beginSheetModalForWindow:nil  // nil here makes it app-modal
                  modalDelegate:helper_
                 didEndSelector:@selector(alertDidEnd:returnCode:contextInfo:)
                    contextInfo:this];
 
-  if ([alert_ accessoryView])
-    [[alert_ window] makeFirstResponder:[alert_ accessoryView]];
+  if ([alert accessoryView])
+    [[alert window] makeFirstResponder:[alert accessoryView]];
 }
 
 ShellJavaScriptDialog::~ShellJavaScriptDialog() {
