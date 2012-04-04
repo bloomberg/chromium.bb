@@ -18,8 +18,8 @@ OAuthClient::OAuthClient()
       base::Thread::Options(MessageLoop::TYPE_IO, 0));
   file_thread_.StartWithOptions(
       base::Thread::Options(MessageLoop::TYPE_IO, 0));
-  url_request_context_getter_.reset(new URLRequestContextGetter(
-      network_thread_.message_loop(), file_thread_.message_loop()));
+  url_request_context_getter_ = new URLRequestContextGetter(
+      network_thread_.message_loop(), file_thread_.message_loop());
   gaia_oauth_client_.reset(
       new GaiaOAuthClient(kGaiaOAuth2Url, url_request_context_getter_.get()));
 }

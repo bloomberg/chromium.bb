@@ -62,7 +62,7 @@ class OAuthClient : public GaiaOAuthClient::Delegate {
   // that the URLRequestContextGetter is available for other purposes.
   base::Thread network_thread_;
   base::Thread file_thread_;
-  scoped_ptr<URLRequestContextGetter> url_request_context_getter_;
+  scoped_refptr<URLRequestContextGetter> url_request_context_getter_;
   scoped_ptr<GaiaOAuthClient> gaia_oauth_client_;
   std::string refresh_token_;
   OAuthClient::Delegate* delegate_;
