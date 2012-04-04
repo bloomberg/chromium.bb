@@ -40,6 +40,9 @@ AppListView::AppListView(
 }
 
 AppListView::~AppListView() {
+  // Model is going away, so set to NULL before superclass deletes child views.
+  if (model_view_)
+    model_view_->SetModel(NULL);
 }
 
 void AppListView::AnimateShow(int duration_ms) {

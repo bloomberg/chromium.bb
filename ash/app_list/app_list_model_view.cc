@@ -74,13 +74,12 @@ void AppListModelView::CalculateLayout(const gfx::Size& content_size,
 }
 
 void AppListModelView::SetModel(AppListModel* model) {
-  DCHECK(model);
-
   if (model_)
     model_->RemoveObserver(this);
 
   model_ = model;
-  model_->AddObserver(this);
+  if (model_)
+    model_->AddObserver(this);
   Update();
 }
 
