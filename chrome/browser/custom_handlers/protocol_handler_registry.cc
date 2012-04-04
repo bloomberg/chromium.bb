@@ -188,9 +188,7 @@ bool ShouldRemoveHandlersNotInOS() {
   // difference (http://crbug.com/88255).
   return false;
 #else
-  const CommandLine& cmd_line = *CommandLine::ForCurrentProcess();
-  return ShellIntegration::CanSetAsDefaultProtocolClient() &&
-      !cmd_line.HasSwitch(switches::kDisableCustomProtocolOSCheck);
+  return ShellIntegration::CanSetAsDefaultProtocolClient();
 #endif
 }
 

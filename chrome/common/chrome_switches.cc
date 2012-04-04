@@ -278,11 +278,6 @@ const char kDisableCRLSets[]                = "disable-crl-sets";
 // Disables the custom JumpList on Windows 7.
 const char kDisableCustomJumpList[]         = "disable-custom-jumplist";
 
-// Disables checking whether custom protocol handlers are registered with the
-// OS and removing those that are not. This is used during automated testing.
-const char kDisableCustomProtocolOSCheck[]  =
-    "disable-custom-protocol-os-check";
-
 // Disables installation of default apps on first run. This is used during
 // automated testing.
 const char kDisableDefaultApps[]            = "disable-default-apps";

@@ -39,6 +39,8 @@ class TestRenderViewContextMenu : public RenderViewContextMenu {
   }
 };
 
+}  // namespace
+
 class RegisterProtocolHandlerBrowserTest : public InProcessBrowserTest {
  public:
   RegisterProtocolHandlerBrowserTest() { }
@@ -74,13 +76,25 @@ IN_PROC_BROWSER_TEST_F(RegisterProtocolHandlerBrowserTest,
         UTF8ToUTF16(std::string("Test handler")));
   ProtocolHandlerRegistry* registry =
       browser()->profile()->GetProtocolHandlerRegistry();
-
-  GURL url("web+search:testing");
   registry->OnAcceptRegisterProtocolHandler(handler);
   ASSERT_TRUE(registry->IsHandledProtocol("web+search"));
+
+  GURL url("web+search:testing");
   ASSERT_EQ(registry->GetHandlersFor(url.scheme()).size(), (size_t) 1);
   menu.reset(CreateContextMenu(url));
   ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKWITH));
 }
 
-}  // namespace
+IN_PROC_BROWSER_TEST_F(RegisterProtocolHandlerBrowserTest, CustomHandler) {
+  ASSERT_TRUE(test_server()->Start());
+  GURL handler_url = test_server()->GetURL("files/custom_handler_foo.html");
+  ProtocolHandler handler = ProtocolHandler::CreateProtocolHandler(
+        std::string("foo"), handler_url,
+        UTF8ToUTF16(std::string("Test foo Handler")));
+  browser()->profile()->GetProtocolHandlerRegistry()->
+      OnAcceptRegisterProtocolHandler(handler);
+
+  ui_test_utils::NavigateToURL(browser(), GURL("foo:test"));
+
+  ASSERT_EQ(handler_url, browser()->GetSelectedWebContents()->GetURL());
+}
