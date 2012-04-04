@@ -41,6 +41,7 @@ class EventExecutorWin : public EventExecutor {
   virtual void InjectMouseEvent(const MouseEvent& event) OVERRIDE;
 
  private:
+  HKL GetForegroundKeyboardLayout();
   void HandleKey(const KeyEvent& event);
   void HandleMouse(const MouseEvent& event);
 
@@ -93,23 +94,52 @@ uint16_t UsbKeycodeToWinScancode(uint32_t usb_keycode) {
   return INVALID_KEYCODE;
 }
 
+HKL EventExecutorWin::GetForegroundKeyboardLayout() {
+  HKL layout = 0;
+
+  // Can return NULL if a window is losing focus.
+  HWND foreground = GetForegroundWindow();
+  if (foreground) {
+    // Can return 0 if the window no longer exists.
+    DWORD thread_id = GetWindowThreadProcessId(foreground, 0);
+    if (thread_id) {
+      // Can return 0 if the thread no longer exists, or if we're
+      // running on Windows Vista and the window is a command-prompt.
+      layout = GetKeyboardLayout(thread_id);
+    }
+  }
+
+  // If we couldn't determine a layout then use the system default.
+  if (!layout) {
+    SystemParametersInfo(SPI_GETDEFAULTINPUTLANG, 0, &layout, 0);
+  }
+
+  return layout;
+}
+
 void EventExecutorWin::HandleKey(const KeyEvent& event) {
   // Reset the system idle suspend timeout.
   SetThreadExecutionState(ES_SYSTEM_REQUIRED);
 
-  // Calculate scan code from key event.
+  // The mapping between scancodes and VKEY values depends on the foreground
+  // window's current keyboard layout.
+  HKL layout = GetForegroundKeyboardLayout();
+
   int key = event.keycode();
   bool down = event.pressed();
   int scancode = INVALID_KEYCODE;
   if (event.has_usb_keycode() && event.usb_keycode() != 0) {
+    // If the event contains a USB-style code, map to a Windows scancode, and
+    // look up the corresponding VKEY under the foreground layout.
     scancode = UsbKeycodeToWinScancode(event.usb_keycode());
     LOG(INFO) << std::hex << "Host received keycode: " << event.keycode()
             << " usb_keycode: " << event.usb_keycode()
             << " to scancode: " << scancode
             << std::dec;
+    key = MapVirtualKeyEx(scancode, MAPVK_VSC_TO_VK_EX, layout);
   } else {
-    HKL hkl = GetKeyboardLayout(0);
-    scancode = MapVirtualKeyEx(key, MAPVK_VK_TO_VSC_EX, hkl);
+    // If the event provides only a VKEY, determine the corresponding scancode.
+    scancode = MapVirtualKeyEx(key, MAPVK_VK_TO_VSC_EX, layout);
   }
 
   if (scancode == INVALID_KEYCODE)
