@@ -68,8 +68,8 @@ LayoutPluginTester.NPObjectSetException
 
 # This doesn't pass under valgrind, because the valgrind helper prevents us
 # from properly SIGTERMing the browser process.
-# See http://crbug.com/42105
-BrowserTest.SessionEnd
+# See http://crbug.com/39500
+BrowserUITestEnd.SessionEnd
 
 # Fails flakily, http://crbug.com/70323
 AutomatedUITestBase.ShowBookmarkBar
@@ -150,5 +150,3 @@ OutOfProcessPPAPITest.InputEvent
 # Fails on valgrind bots http://crbug.com/96767
 OutOfProcessPPAPITest.FlashFullscreen
 
-# Fails on valgrind bots, Mac and Linux, see http://crbug.com/121959
-BrowserUITestEnd.SessionEnd
