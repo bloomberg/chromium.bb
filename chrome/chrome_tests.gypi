@@ -4310,6 +4310,15 @@
                 '../ui/views/views.gyp:views',
               ],
             }],
+            ['os_posix == 1 and OS != "mac"', {
+              'conditions': [
+                ['linux_use_tcmalloc==1', {
+                  'dependencies': [
+                    '../base/allocator/allocator.gyp:allocator',
+                  ],
+                }],
+              ],
+            }],
           ],
         },
       ],
