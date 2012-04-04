@@ -505,7 +505,8 @@ GLuint GLES2Implementation::MakeTextureId() {
 }
 
 void GLES2Implementation::FreeTextureId(GLuint id) {
-  GetIdHandler(id_namespaces::kTextures)->FreeIds(this, 1, &id);
+  GetIdHandler(id_namespaces::kTextures)->FreeIds(
+      this, 1, &id, &GLES2Implementation::DeleteTexturesStub);
 }
 
 IdHandlerInterface* GLES2Implementation::GetIdHandler(int namespace_id) const {
@@ -1072,29 +1073,40 @@ void GLES2Implementation::GetVertexAttribPointerv(
 
 bool GLES2Implementation::DeleteProgramHelper(GLuint program) {
   if (!GetIdHandler(id_namespaces::kProgramsAndShaders)->FreeIds(
-      this, 1, &program)) {
+      this, 1, &program, &GLES2Implementation::DeleteProgramStub)) {
     SetGLError(
         GL_INVALID_VALUE,
         "glDeleteProgram: id not created by this context.");
     return false;
   }
-  share_group_->program_info_manager()->DeleteInfo(program);
-  helper_->DeleteProgram(program);
   return true;
+}
+
+void GLES2Implementation::DeleteProgramStub(
+    GLsizei n, const GLuint* programs) {
+  GPU_DCHECK_EQ(1, n);
+  share_group_->program_info_manager()->DeleteInfo(programs[0]);
+  helper_->DeleteProgram(programs[0]);
 }
 
 bool GLES2Implementation::DeleteShaderHelper(GLuint shader) {
   if (!GetIdHandler(id_namespaces::kProgramsAndShaders)->FreeIds(
-      this, 1, &shader)) {
+      this, 1, &shader, &GLES2Implementation::DeleteShaderStub)) {
     SetGLError(
         GL_INVALID_VALUE,
         "glDeleteShader: id not created by this context.");
     return false;
   }
-  share_group_->program_info_manager()->DeleteInfo(shader);
-  helper_->DeleteShader(shader);
   return true;
 }
+
+void GLES2Implementation::DeleteShaderStub(
+    GLsizei n, const GLuint* shaders) {
+  GPU_DCHECK_EQ(1, n);
+  share_group_->program_info_manager()->DeleteInfo(shaders[0]);
+  helper_->DeleteShader(shaders[0]);
+}
+
 
 GLint GLES2Implementation::GetAttribLocationHelper(
     GLuint program, const char* name) {
@@ -2212,7 +2224,8 @@ bool GLES2Implementation::IsBufferReservedId(GLuint /* id */) {
 
 void GLES2Implementation::DeleteBuffersHelper(
     GLsizei n, const GLuint* buffers) {
-  if (!GetIdHandler(id_namespaces::kBuffers)->FreeIds(this, n, buffers)) {
+  if (!GetIdHandler(id_namespaces::kBuffers)->FreeIds(
+      this, n, buffers, &GLES2Implementation::DeleteBuffersStub)) {
     SetGLError(
         GL_INVALID_VALUE,
         "glDeleteBuffers: id not created by this context.");
@@ -2226,13 +2239,18 @@ void GLES2Implementation::DeleteBuffersHelper(
       bound_element_array_buffer_id_ = 0;
     }
   }
+}
+
+void GLES2Implementation::DeleteBuffersStub(
+    GLsizei n, const GLuint* buffers) {
   helper_->DeleteBuffersImmediate(n, buffers);
 }
+
 
 void GLES2Implementation::DeleteFramebuffersHelper(
     GLsizei n, const GLuint* framebuffers) {
   if (!GetIdHandler(id_namespaces::kFramebuffers)->FreeIds(
-      this, n, framebuffers)) {
+      this, n, framebuffers, &GLES2Implementation::DeleteFramebuffersStub)) {
     SetGLError(
         GL_INVALID_VALUE,
         "glDeleteFramebuffers: id not created by this context.");
@@ -2243,13 +2261,17 @@ void GLES2Implementation::DeleteFramebuffersHelper(
       bound_framebuffer_ = 0;
     }
   }
+}
+
+void GLES2Implementation::DeleteFramebuffersStub(
+    GLsizei n, const GLuint* framebuffers) {
   helper_->DeleteFramebuffersImmediate(n, framebuffers);
 }
 
 void GLES2Implementation::DeleteRenderbuffersHelper(
     GLsizei n, const GLuint* renderbuffers) {
   if (!GetIdHandler(id_namespaces::kRenderbuffers)->FreeIds(
-      this, n, renderbuffers)) {
+      this, n, renderbuffers, &GLES2Implementation::DeleteRenderbuffersStub)) {
     SetGLError(
         GL_INVALID_VALUE,
         "glDeleteRenderbuffers: id not created by this context.");
@@ -2260,13 +2282,17 @@ void GLES2Implementation::DeleteRenderbuffersHelper(
       bound_renderbuffer_ = 0;
     }
   }
+}
+
+void GLES2Implementation::DeleteRenderbuffersStub(
+    GLsizei n, const GLuint* renderbuffers) {
   helper_->DeleteRenderbuffersImmediate(n, renderbuffers);
 }
 
 void GLES2Implementation::DeleteTexturesHelper(
     GLsizei n, const GLuint* textures) {
   if (!GetIdHandler(id_namespaces::kTextures)->FreeIds(
-      this, n, textures)) {
+      this, n, textures, &GLES2Implementation::DeleteTexturesStub)) {
     SetGLError(
         GL_INVALID_VALUE,
         "glDeleteTextures: id not created by this context.");
@@ -2283,6 +2309,10 @@ void GLES2Implementation::DeleteTexturesHelper(
       }
     }
   }
+}
+
+void GLES2Implementation::DeleteTexturesStub(
+    GLsizei n, const GLuint* textures) {
   helper_->DeleteTexturesImmediate(n, textures);
 }
 
@@ -2795,8 +2825,9 @@ void GLES2Implementation::PostSubBufferCHROMIUM(
 
 void GLES2Implementation::DeleteQueriesEXTHelper(
     GLsizei n, const GLuint* queries) {
+  // TODO(gman): Remove this as queries are not shared resources.
   if (!GetIdHandler(id_namespaces::kQueries)->FreeIds(
-      this, n, queries)) {
+      this, n, queries, &GLES2Implementation::DeleteQueriesStub)) {
     SetGLError(
         GL_INVALID_VALUE,
         "glDeleteTextures: id not created by this context.");
@@ -2830,6 +2861,11 @@ void GLES2Implementation::DeleteQueriesEXTHelper(
     query_tracker_->RemoveQuery(queries[ii]);
   }
   helper_->DeleteQueriesEXTImmediate(n, queries);
+}
+
+// TODO(gman): Remove this. Queries are not shared resources.
+void GLES2Implementation::DeleteQueriesStub(
+    GLsizei /* n */, const GLuint* /* queries */) {
 }
 
 GLboolean GLES2Implementation::IsQueryEXT(GLuint id) {

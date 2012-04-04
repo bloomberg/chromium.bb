@@ -58,15 +58,10 @@ GpuCommandBufferStub::GpuCommandBufferStub(
       parent_stub_for_initialization_(),
       parent_texture_for_initialization_(0),
       watchdog_(watchdog) {
-
-  gpu::gles2::ContextCreationAttribParser creation_attribs;
-  creation_attribs.Parse(attribs);
-
   if (share_group) {
     context_group_ = share_group->context_group_;
   } else {
-    context_group_ = new gpu::gles2::ContextGroup(
-        creation_attribs.bind_generates_resource_);
+    context_group_ = new gpu::gles2::ContextGroup(true);
   }
   if (surface_id != 0)
     surface_state_.reset(new GpuCommandBufferStubBase::SurfaceState(
