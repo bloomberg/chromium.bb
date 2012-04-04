@@ -231,6 +231,7 @@ class NetworkDetailedView : public views::View,
     views::View* networks = new views::View;
     networks->SetLayoutManager(new views::BoxLayout(
         views::BoxLayout::kVertical, 0, 0, 1));
+    network_map_.clear();
     for (size_t i = 0; i < list.size(); i++) {
       HoverHighlightView* container = new HoverHighlightView(this);
       container->AddIconAndLabel(list[i].image,

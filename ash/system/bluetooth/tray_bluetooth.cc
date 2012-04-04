@@ -94,6 +94,7 @@ class BluetoothDetailedView : public views::View,
     views::View* devices = new views::View;
     devices->SetLayoutManager(new views::BoxLayout(
         views::BoxLayout::kVertical, 0, 0, 1));
+    device_map_.clear();
 
     for (size_t i = 0; i < list.size(); i++) {
       HoverHighlightView* container = new HoverHighlightView(this);
