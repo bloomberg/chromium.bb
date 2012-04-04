@@ -397,7 +397,7 @@ class AndroidCommands(object):
 
     All pushed files can be removed by calling RemovePushedFiles().
     """
-    assert os.path.exists(local_path)
+    assert os.path.exists(local_path), 'Local path not found %s' % local_path
     self._pushed_files.append(device_path)
 
     # If the path contents are the same, there's nothing to do.

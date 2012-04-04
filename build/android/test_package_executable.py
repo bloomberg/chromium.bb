@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -154,3 +154,9 @@ class TestPackageExecutable(TestPackage):
         cmd_helper.RunCmd([strip, self.test_suite, '-o', target_name])
     test_binary = '/data/local/' + self.test_suite_basename
     self.adb.PushIfNeeded(target_name, test_binary)
+
+    if self.test_suite_basename == 'ui_unittests':
+      self.adb.PushIfNeeded(self.test_suite_dirname + '/chrome.pak',
+                            '/data/local/tmp/paks/chrome.pak')
+      self.adb.PushIfNeeded(self.test_suite_dirname + '/locales/en-US.pak',
+                            '/data/local/tmp/paks/en-US.pak')
