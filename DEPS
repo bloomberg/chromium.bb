@@ -75,7 +75,7 @@ deps = {
     (Var("googlecode_url") % "seccompsandbox") + "/trunk@178",
 
   "src/sdch/open-vcdiff":
-    (Var("googlecode_url") % "open-vcdiff") + "/trunk@40",
+    (Var("googlecode_url") % "open-vcdiff") + "/trunk@42",
 
   "src/testing/gtest":
     (Var("googlecode_url") % "googletest") + "/trunk@560",
