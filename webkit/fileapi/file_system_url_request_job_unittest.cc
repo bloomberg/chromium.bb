@@ -98,6 +98,7 @@ class FileSystemURLRequestJobTest : public testing::Test {
 
   virtual void TearDown() {
     net::URLRequest::Deprecated::RegisterProtocolFactory("filesystem", NULL);
+    ClearUnusedJob();
   }
 
   void OnValidateFileSystem(base::PlatformFileError result) {
@@ -192,6 +193,13 @@ class FileSystemURLRequestJobTest : public testing::Test {
     net::URLRequestJob* temp = job_;
     job_ = NULL;
     return temp;
+  }
+
+  static void ClearUnusedJob() {
+    if (job_) {
+      scoped_refptr<net::URLRequestJob> deleter = job_;
+      job_ = NULL;
+    }
   }
 
   // Put the message loop at the top, so that it's the last thing deleted.
