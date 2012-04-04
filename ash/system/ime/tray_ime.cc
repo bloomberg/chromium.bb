@@ -156,6 +156,7 @@ class IMEDetailedView : public views::View,
         if (prop_find != property_map_.end()) {
           std::string key = prop_find->second;
           delegate->ActivateIMEProperty(key);
+          GetWidget()->Close();
         }
       }
     }
