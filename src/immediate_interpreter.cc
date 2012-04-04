@@ -184,11 +184,11 @@ int TapRecord::TapType() const {
 }
 
 // static
-ScrollEvent ScrollEvent::Add(const ScrollEvent& left,
-                             const ScrollEvent& right) {
-  ScrollEvent ret = { left.dx + right.dx,
-                      left.dy + right.dy,
-                      left.dt + right.dt };
+ScrollEvent ScrollEvent::Add(const ScrollEvent& evt_a,
+                             const ScrollEvent& evt_b) {
+  ScrollEvent ret = { evt_a.dx + evt_b.dx,
+                      evt_a.dy + evt_b.dy,
+                      evt_a.dt + evt_b.dt };
   return ret;
 }
 
@@ -284,8 +284,7 @@ ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg)
       vertical_scroll_snap_slope_(prop_reg, "Vertical Scroll Snap Slope",
                                   tanf(DegToRad(50.0))),  // 50 deg. from horiz.
       horizontal_scroll_snap_slope_(prop_reg, "Horizontal Scroll Snap Slope",
-                                    tanf(DegToRad(30.0))), // 30 deg.
-      fling_stationary_distance_(prop_reg, "Fling Stationary Distance", 1.0) {
+                                    tanf(DegToRad(30.0))) {  // 30 deg.
   memset(&prev_state_, 0, sizeof(prev_state_));
 }
 
@@ -1183,15 +1182,78 @@ void ImmediateInterpreter::UpdateButtons(const HardwareState& hwstate) {
 }
 
 namespace {
-float IncreasingMagnitude(float dist, float dt,
-                          float prev_dist, float prev_dt) {
+float IncreasingSpeed(float dist, float dt,
+                      float prev_dist, float prev_dt) {
   return fabsf(dist) * prev_dt > fabsf(prev_dist) * dt;
 }
-float DecreasingMagnitude(float dist, float dt,
-                          float prev_dist, float prev_dt) {
+float DecreasingSpeed(float dist, float dt,
+                      float prev_dist, float prev_dt) {
   return fabsf(dist) * prev_dt < fabsf(prev_dist) * dt;
 }
 }  // namespace {}
+
+size_t ImmediateInterpreter::ScrollEventsForFlingCount() const {
+  if (scroll_buffer_.Size() <= 1)
+    return scroll_buffer_.Size();
+  enum Direction { kNone, kUp, kDown, kLeft, kRight };
+  size_t i = 0;
+  Direction prev_direction = kNone;
+  for (; i < scroll_buffer_.Size(); i++) {
+    const ScrollEvent& event = scroll_buffer_.Get(i);
+    if (FloatEq(event.dx, 0.0) && FloatEq(event.dy, 0.0))
+      break;
+    Direction direction;
+    if (fabsf(event.dx) > fabsf(event.dy))
+      direction = event.dx > 0 ? kRight : kLeft;
+    else
+      direction = event.dy > 0 ? kDown : kUp;
+    if (i > 0 && direction != prev_direction)
+      break;
+  }
+  return i;
+}
+
+void ImmediateInterpreter::ComputeFling(ScrollEvent* out) const {
+  ScrollEvent zero = { 0.0, 0.0, 0.0 };
+
+  const size_t count = ScrollEventsForFlingCount();
+  if (count > scroll_buffer_.Size()) {
+    Err("Too few events in scroll buffer");
+    *out = zero;
+    return;
+  }
+
+  if (count > 3) {
+    Err("Unable to handle this many scroll events.");
+    *out = zero;
+    return;
+  }
+
+  if (count < 3) {
+    if (count == 0)
+      *out = zero;
+    else if (count == 1)
+      *out = scroll_buffer_.Get(0);
+    else
+      *out = ScrollEvent::Add(scroll_buffer_.Get(0), scroll_buffer_.Get(1));
+    return;
+  }
+
+  // If we get here, count == 3 && scroll_buffer_.Size() >= 3
+  float speed_sq[count];
+
+  for (size_t i = 0; i < count; i++)
+    speed_sq[i] = scroll_buffer_.Get(i).dx * scroll_buffer_.Get(i).dx +
+        scroll_buffer_.Get(i).dy * scroll_buffer_.Get(i).dy;
+
+  // Always increasing or decreasing? If so, use mose recent
+  if ((speed_sq[0] - speed_sq[1]) * (speed_sq[1] - speed_sq[2]) > 0)
+    *out = scroll_buffer_.Get(0);
+  else  // Add them all together (effectively averaging them)
+    *out = ScrollEvent::Add(ScrollEvent::Add(scroll_buffer_.Get(0),
+                                             scroll_buffer_.Get(1)),
+                            scroll_buffer_.Get(2));
+}
 
 void ImmediateInterpreter::FillResultGesture(
     const HardwareState& hwstate,
@@ -1268,9 +1330,8 @@ void ImmediateInterpreter::FillResultGesture(
       else if (fabsf(dy) > vertical_scroll_snap_slope_.val_ * fabsf(dx))
         dx = 0.0;  // snap to vertical
 
-      if (prev_scroll_fingers_ != fingers) {
+      if (prev_scroll_fingers_ != fingers)
         scroll_buffer_.Clear();
-      }
       prev_scroll_fingers_ = fingers;
       scroll_buffer_.Insert(dx, dy, hwstate.timestamp - prev_state_.timestamp);
       if (max_mag_sq > 0) {
@@ -1284,57 +1345,8 @@ void ImmediateInterpreter::FillResultGesture(
       break;
     }
     case kGestureTypeFling: {
-      ScrollEvent out = { 0.0, 0.0, 0.0 };
-
-      bool did_first_pass = false;
-      bool increasing_magnitude = false;
-      bool decreasing_magnitude = false;
-
-      for (ssize_t i = scroll_buffer_.Size() - 1; i >= 0; i--) {
-        const ScrollEvent& history = scroll_buffer_.Get(i);
-        const bool first = !did_first_pass;
-        did_first_pass = true;
-        if (fabsf(history.dx) < fling_stationary_distance_.val_ &&
-            fabsf(history.dy) < fling_stationary_distance_.val_) {
-          ScrollEvent zero = { 0.0, 0.0, 0.0 };
-          out = zero;
-          continue;
-        }
-        if (first || (history.dx * out.dx < 0 || history.dy * out.dy < 0)) {
-          // first or change in direction
-          out = history;
-          continue;
-        }
-        const bool kPrimaryVertical = fabsf(history.dy) > fabsf(history.dx);
-        const bool kPrimaryHorizontal = fabsf(history.dx) > fabsf(history.dy);
-        if ((kPrimaryVertical && IncreasingMagnitude(history.dy, history.dt,
-                                                     out.dy, out.dt)) ||
-            (kPrimaryHorizontal && IncreasingMagnitude(history.dx, history.dt,
-                                                       out.dx, out.dt))) {
-          decreasing_magnitude = false;
-          if (increasing_magnitude) {  // if previously increasing magnitude
-            out = history;
-            continue;
-          }
-          increasing_magnitude = true;
-        } else {
-          increasing_magnitude = false;
-        }
-        if ((kPrimaryVertical && DecreasingMagnitude(history.dy, history.dt,
-                                                     out.dy, out.dt)) ||
-            (kPrimaryHorizontal && DecreasingMagnitude(history.dx, history.dt,
-                                                       out.dx, out.dt))) {
-          increasing_magnitude = false;
-          if (decreasing_magnitude) {  // if previously decreasing magnitude
-            out = history;
-            continue;
-          }
-          decreasing_magnitude = true;
-        } else {
-          decreasing_magnitude = false;
-        }
-        out = ScrollEvent::Add(out, history);
-      }
+      ScrollEvent out;
+      ComputeFling(&out);
 
       float vx = out.dt ? (out.dx / out.dt) : 0.0;
       float vy = out.dt ? (out.dy / out.dt) : 0.0;
@@ -1363,8 +1375,10 @@ void ImmediateInterpreter::FillResultGesture(
     default:
       result_.type = kGestureTypeNull;
   }
-  if (current_gesture_type_ != kGestureTypeScroll)
+  if (current_gesture_type_ != kGestureTypeScroll) {
+    scroll_buffer_.Clear();
     prev_scroll_fingers_.clear();
+  }
 }
 
 void ImmediateInterpreter::IntWasWritten(IntProperty* prop) {

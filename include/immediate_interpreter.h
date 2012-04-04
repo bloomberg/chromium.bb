@@ -71,7 +71,7 @@ class TapRecord {
 
 struct ScrollEvent {
   float dx, dy, dt;
-  static ScrollEvent Add(const ScrollEvent& left, const ScrollEvent& right);
+  static ScrollEvent Add(const ScrollEvent& evt_a, const ScrollEvent& evt_b);
 };
 class ScrollEventBuffer {
  public:
@@ -245,6 +245,13 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // GESTURES_BUTTON_{LEFT,MIDDLE,RIGHT}.
   int EvaluateButtonType(const HardwareState& hwstate);
 
+  // Returns the number of most recent event events in the scroll_buffer_ that
+  // should be considered for fling. If it returns 0, there should be no fling.
+  size_t ScrollEventsForFlingCount() const;
+
+  // Returns a ScrollEvent that can be turned directly into a fling.
+  void ComputeFling(ScrollEvent* out) const;
+
   // Precondition: current_mode_ is set to the mode based on |hwstate|.
   // Computes the resulting gesture, storing it in result_.
   void FillResultGesture(const HardwareState& hwstate,
@@ -406,8 +413,6 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // are the slopes for the two lines.
   DoubleProperty vertical_scroll_snap_slope_;
   DoubleProperty horizontal_scroll_snap_slope_;
-  // Distances [mm] under this are considered stationary
-  DoubleProperty fling_stationary_distance_;
 };
 
 }  // namespace gestures

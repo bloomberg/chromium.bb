@@ -337,6 +337,116 @@ TEST(ImmediateInterpreterTest, ScrollThenFalseTapTest) {
   EXPECT_LT(timeout, 0.0);
 }
 
+// Tests that a consistent scroll has predictable fling, and that increasing
+// scrolls have a fling as least as fast the second to last scroll.
+TEST(ImmediateInterpreterTest, FlingTest) {
+  ImmediateInterpreter ii(NULL);
+  HardwareProperties hwprops = {
+    0,  // left edge
+    0,  // top edge
+    100,  // right edge
+    100,  // bottom edge
+    1,  // pixels/TP width
+    1,  // pixels/TP height
+    96,  // x screen DPI
+    96,  // y screen DPI
+    2,  // max fingers
+    5,  // max touch
+    0,  // tripletap
+    0,  // semi-mt
+    1  // is button pad
+  };
+
+  FingerState finger_states[] = {
+    // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID
+    // Consistent movement for 4 frames
+    {0, 0, 0, 0, 20, 0, 40, 20, 1, 0},
+    {0, 0, 0, 0, 20, 0, 60, 20, 2, 0},
+
+    {0, 0, 0, 0, 20, 0, 40, 30, 1, 0},
+    {0, 0, 0, 0, 20, 0, 60, 30, 2, 0},
+
+    {0, 0, 0, 0, 20, 0, 40, 40, 1, 0},
+    {0, 0, 0, 0, 20, 0, 60, 40, 2, 0},
+
+    {0, 0, 0, 0, 20, 0, 40, 50, 1, 0},
+    {0, 0, 0, 0, 20, 0, 60, 50, 2, 0},
+
+    // Increasing movement for 4 frames
+    {0, 0, 0, 0, 20, 0, 40, 20, 3, 0},
+    {0, 0, 0, 0, 20, 0, 60, 20, 4, 0},
+
+    {0, 0, 0, 0, 20, 0, 40, 25, 3, 0},
+    {0, 0, 0, 0, 20, 0, 60, 25, 4, 0},
+
+    {0, 0, 0, 0, 20, 0, 40, 35, 3, 0},
+    {0, 0, 0, 0, 20, 0, 60, 35, 4, 0},
+
+    {0, 0, 0, 0, 20, 0, 40, 50, 3, 0},
+    {0, 0, 0, 0, 20, 0, 60, 50, 4, 0},
+  };
+  HardwareState hardware_states[] = {
+    // time, buttons, finger count, touch count, finger states pointer
+    { 0.00, 0, 2, 2, &finger_states[0] },
+    { 1.00, 0, 2, 2, &finger_states[0] },
+    { 1.01, 0, 2, 2, &finger_states[2] },
+    { 1.02, 0, 2, 2, &finger_states[4] },
+    { 1.03, 0, 2, 2, &finger_states[6] },
+    { 1.04, 0, 0, 0, NULL },
+
+    { 3.00, 0, 2, 2, &finger_states[0] },
+    { 4.00, 0, 2, 2, &finger_states[0] },
+    { 4.01, 0, 2, 2, &finger_states[2] },
+    { 4.02, 0, 2, 2, &finger_states[4] },
+    { 4.03, 0, 2, 2, &finger_states[6] },
+    { 4.04, 0, 0, 0, NULL },
+  };
+
+  ii.SetHardwareProperties(hwprops);
+
+  size_t idx = 0;
+
+  // Consistent movement
+  EXPECT_EQ(NULL, ii.SyncInterpret(&hardware_states[idx++], NULL));
+  EXPECT_EQ(NULL, ii.SyncInterpret(&hardware_states[idx++], NULL));
+
+  Gesture* gs = ii.SyncInterpret(&hardware_states[idx++], NULL);
+  ASSERT_NE(reinterpret_cast<Gesture*>(NULL), gs);
+  EXPECT_EQ(kGestureTypeScroll, gs->type);
+  gs = ii.SyncInterpret(&hardware_states[idx++], NULL);
+  ASSERT_NE(reinterpret_cast<Gesture*>(NULL), gs);
+  EXPECT_EQ(kGestureTypeScroll, gs->type);
+  gs = ii.SyncInterpret(&hardware_states[idx++], NULL);
+  ASSERT_NE(reinterpret_cast<Gesture*>(NULL), gs);
+  EXPECT_EQ(kGestureTypeScroll, gs->type);
+  gs = ii.SyncInterpret(&hardware_states[idx++], NULL);
+  ASSERT_NE(reinterpret_cast<Gesture*>(NULL), gs);
+  EXPECT_EQ(kGestureTypeFling, gs->type);
+  EXPECT_FLOAT_EQ(0, gs->details.fling.vx);
+  EXPECT_FLOAT_EQ(10 / 0.01, gs->details.fling.vy);
+
+  // Increasing speed movement
+  gs = ii.SyncInterpret(&hardware_states[idx++], NULL);
+  EXPECT_EQ(reinterpret_cast<Gesture*>(NULL), gs) << gs->String();
+  gs = ii.SyncInterpret(&hardware_states[idx++], NULL);
+  EXPECT_EQ(reinterpret_cast<Gesture*>(NULL), gs) << gs->String();
+
+  gs = ii.SyncInterpret(&hardware_states[idx++], NULL);
+  ASSERT_NE(reinterpret_cast<Gesture*>(NULL), gs);
+  EXPECT_EQ(kGestureTypeScroll, gs->type);
+  gs = ii.SyncInterpret(&hardware_states[idx++], NULL);
+  ASSERT_NE(reinterpret_cast<Gesture*>(NULL), gs);
+  EXPECT_EQ(kGestureTypeScroll, gs->type);
+  gs = ii.SyncInterpret(&hardware_states[idx++], NULL);
+  ASSERT_NE(reinterpret_cast<Gesture*>(NULL), gs);
+  EXPECT_EQ(kGestureTypeScroll, gs->type);
+  gs = ii.SyncInterpret(&hardware_states[idx++], NULL);
+  ASSERT_NE(reinterpret_cast<Gesture*>(NULL), gs);
+  EXPECT_EQ(kGestureTypeFling, gs->type);
+  EXPECT_FLOAT_EQ(0, gs->details.fling.vx);
+  EXPECT_GE(gs->details.fling.vy, 10 / 0.01);
+}
+
 struct HardwareStateAnScrollExpectations {
   HardwareState hs;
   float dx;
