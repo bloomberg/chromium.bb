@@ -101,6 +101,7 @@ NetworkDropdown::NetworkDropdown(content::WebUI* web_ui,
   network_icon_.reset(
       new NetworkMenuIcon(this, NetworkMenuIcon::DROPDOWN_MODE));
   CrosLibrary::Get()->GetNetworkLibrary()->AddNetworkManagerObserver(this);
+  CrosLibrary::Get()->GetNetworkLibrary()->RequestNetworkScan();
   Refresh();
 }
 

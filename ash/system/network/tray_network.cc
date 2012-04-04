@@ -175,6 +175,8 @@ class NetworkDetailedView : public views::View,
     SetLayoutManager(new views::BoxLayout(
         views::BoxLayout::kVertical, 1, 1, 1));
     set_background(views::Background::CreateSolidBackground(kBackgroundColor));
+    SystemTrayDelegate* delegate = Shell::GetInstance()->tray_delegate();
+    delegate->RequestNetworkScan();
     Update();
   }
 

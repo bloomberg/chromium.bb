@@ -398,6 +398,9 @@ class DummySystemTrayDelegate : public SystemTrayDelegate {
     *wifi_mac_address = "66:77:88:99:00:11";
   }
 
+  virtual void RequestNetworkScan() OVERRIDE {
+  }
+
   virtual void AddBluetoothDevice() OVERRIDE {
   }
 

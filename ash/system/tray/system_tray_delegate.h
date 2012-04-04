@@ -179,6 +179,9 @@ class SystemTrayDelegate {
                                    std::string* ethernet_mac_address,
                                    std::string* wifi_mac_address) = 0;
 
+  // Requests network scan when list of networks is opened.
+  virtual void RequestNetworkScan() = 0;
+
   // Shous UI to add a new bluetooth device.
   virtual void AddBluetoothDevice() = 0;
 

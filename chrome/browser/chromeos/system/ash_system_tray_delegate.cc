@@ -515,6 +515,11 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
       network_menu_->ConnectToNetwork(network);
   }
 
+  virtual void RequestNetworkScan() OVERRIDE {
+    NetworkLibrary* crosnet = CrosLibrary::Get()->GetNetworkLibrary();
+    crosnet->RequestNetworkScan();
+  }
+
   virtual void AddBluetoothDevice() OVERRIDE {
     // Open the Bluetooth device dialog, which automatically starts the
     // discovery process.
