@@ -1119,6 +1119,9 @@ void ExtensionPrefs::OnExtensionInstalled(
                         extension->manifest()->value()->DeepCopy());
   }
 
+  // Clear any events that may be registered from a previous install.
+  extension_dict->Remove(kRegisteredEvents, NULL);
+
   if (extension->is_app()) {
     StringOrdinal new_page_ordinal = page_ordinal.IsValid() ?
         page_ordinal : extension_sorting_->GetNaturalAppPageOrdinal();

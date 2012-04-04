@@ -209,14 +209,19 @@ cr.define('options', function() {
         var link = activeViews.querySelector('a');
 
         extension.views.forEach(function(view, i) {
-          var label = view.path + (view.incognito ?
-              ' ' + localStrings.getString('viewIncognito') : '');
+          var label = view.path +
+              (view.incognito ?
+                  ' ' + localStrings.getString('viewIncognito') : '') +
+              (view.renderProcessId == -1 ?
+                  ' ' + localStrings.getString('viewInactive') : '');
           link.textContent = label;
           link.addEventListener('click', function(e) {
             // TODO(estade): remove conversion to string?
             chrome.send('extensionSettingsInspect', [
+              String(extension.id),
               String(view.renderProcessId),
-              String(view.renderViewId)
+              String(view.renderViewId),
+              view.incognito
             ]);
           });
 
@@ -226,7 +231,6 @@ cr.define('options', function() {
           }
         });
       }
-
       this.appendChild(node);
     },
   };

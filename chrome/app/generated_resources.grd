@@ -4473,14 +4473,17 @@ Update checks have repeatedly failed for the extension "<ph name="EXTENSION_NAME
       <message name="IDS_EXTENSIONS_VIEW_INCOGNITO" desc="Text that signifies that the extension view is in an incognito process.">
         (Incognito)
       </message>
+      <message name="IDS_EXTENSIONS_VIEW_INACTIVE" desc="Text that signifies that the extension view is an inactive transient page.">
+        (Inactive)
+      </message>
       <message name="IDS_EXTENSIONS_ID" desc="The ID label in front of the extension ID.">
         ID:
       </message>
       <message name="IDS_EXTENSIONS_PATH" desc="The label in front of the extension load path.">
         Loaded from:
       </message>
-      <message name="IDS_EXTENSIONS_INSPECT_VIEWS" desc="The text for the label in front of the links to inspect active views.">
-        Inspect active views:
+      <message name="IDS_EXTENSIONS_INSPECT_VIEWS" desc="The text for the label in front of the links to inspect views (some of which may not be loaded yet).">
+        Inspect views:
       </message>
       <message name="IDS_EXTENSIONS_ENABLE" desc="The link for enabling extensions.">
         Enable

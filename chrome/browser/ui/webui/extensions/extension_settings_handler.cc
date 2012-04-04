@@ -17,8 +17,12 @@
 #include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_disabled_ui.h"
+#include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/extensions/extension_warning_set.h"
+#include "chrome/browser/extensions/lazy_background_task_queue.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
 #include "chrome/browser/google/google_util.h"
@@ -231,6 +235,8 @@ void ExtensionSettingsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_INSPECT_VIEWS));
   localized_strings->SetString("viewIncognito",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_VIEW_INCOGNITO));
+  localized_strings->SetString("viewInactive",
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_VIEW_INACTIVE));
   localized_strings->SetString("extensionSettingsEnable",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_ENABLE));
   localized_strings->SetString("extensionSettingsEnabled",
@@ -448,7 +454,7 @@ void ExtensionSettingsHandler::HandleRequestExtensionsData(
     if (ShouldShowExtension(*extension)) {
       extensions_list->Append(CreateExtensionDetailValue(
           *extension,
-          GetActivePagesForExtension(*extension),
+          GetInspectablePagesForExtension(*extension, true),
           warnings));
     }
   }
@@ -458,7 +464,7 @@ void ExtensionSettingsHandler::HandleRequestExtensionsData(
     if (ShouldShowExtension(*extension)) {
       extensions_list->Append(CreateExtensionDetailValue(
           *extension,
-          GetActivePagesForExtension(*extension),
+          GetInspectablePagesForExtension(*extension, false),
           warnings));
     }
   }
@@ -497,15 +503,48 @@ void ExtensionSettingsHandler::HandleToggleDeveloperMode(
 }
 
 void ExtensionSettingsHandler::HandleInspectMessage(const ListValue* args) {
+  std::string extension_id;
   std::string render_process_id_str;
   std::string render_view_id_str;
   int render_process_id;
   int render_view_id;
-  CHECK_EQ(2U, args->GetSize());
-  CHECK(args->GetString(0, &render_process_id_str));
-  CHECK(args->GetString(1, &render_view_id_str));
+  bool incognito;
+  CHECK_EQ(4U, args->GetSize());
+  CHECK(args->GetString(0, &extension_id));
+  CHECK(args->GetString(1, &render_process_id_str));
+  CHECK(args->GetString(2, &render_view_id_str));
+  CHECK(args->GetBoolean(3, &incognito));
   CHECK(base::StringToInt(render_process_id_str, &render_process_id));
   CHECK(base::StringToInt(render_view_id_str, &render_view_id));
+
+  if (render_process_id == -1) {
+    // This message is for a lazy background page. Start the page if necessary.
+    const Extension* extension =
+        extension_service_->extensions()->GetByID(extension_id);
+    DCHECK(extension);
+
+    Profile* profile = extension_service_->profile();
+    if (incognito)
+      profile = profile->GetOffTheRecordProfile();
+
+    ExtensionProcessManager* pm = profile->GetExtensionProcessManager();
+    LazyBackgroundTaskQueue* queue =
+        ExtensionSystemFactory::GetForProfile(profile)->
+            lazy_background_task_queue();
+
+    ExtensionHost* host = pm->GetBackgroundHostForExtension(extension->id());
+    if (host) {
+      InspectExtensionHost(host);
+    } else {
+      queue->AddPendingTask(
+          profile, extension->id(),
+          base::Bind(&ExtensionSettingsHandler::InspectExtensionHost,
+                     base::Unretained(this)));
+    }
+
+    return;
+  }
+
   RenderViewHost* host = RenderViewHost::FromID(render_process_id,
                                                 render_view_id);
   if (!host) {
@@ -710,16 +749,24 @@ void ExtensionSettingsHandler::MaybeRegisterForNotifications() {
                              extension_prefs()));
 }
 
-std::vector<ExtensionPage> ExtensionSettingsHandler::GetActivePagesForExtension(
-    const Extension* extension) {
+std::vector<ExtensionPage>
+ExtensionSettingsHandler::GetInspectablePagesForExtension(
+    const Extension* extension, bool extension_is_enabled) {
   std::vector<ExtensionPage> result;
 
   // Get the extension process's active views.
   ExtensionProcessManager* process_manager =
       extension_service_->profile()->GetExtensionProcessManager();
-  GetActivePagesForExtensionProcess(
+  GetInspectablePagesForExtensionProcess(
       process_manager->GetRenderViewHostsForExtension(
           extension->id()), &result);
+
+  // Include a link to start the lazy background page, if applicable.
+  if (extension->has_lazy_background_page() && extension_is_enabled &&
+      !process_manager->GetBackgroundHostForExtension(extension->id())) {
+    result.push_back(
+        ExtensionPage(extension->GetBackgroundURL(), -1, -1, false));
+  }
 
   // Repeat for the incognito process, if applicable.
   if (extension_service_->profile()->HasOffTheRecordProfile() &&
@@ -727,15 +774,21 @@ std::vector<ExtensionPage> ExtensionSettingsHandler::GetActivePagesForExtension(
     ExtensionProcessManager* process_manager =
         extension_service_->profile()->GetOffTheRecordProfile()->
             GetExtensionProcessManager();
-    GetActivePagesForExtensionProcess(
+    GetInspectablePagesForExtensionProcess(
         process_manager->GetRenderViewHostsForExtension(
             extension->id()), &result);
+
+    if (extension->has_lazy_background_page() && extension_is_enabled &&
+        !process_manager->GetBackgroundHostForExtension(extension->id())) {
+      result.push_back(
+          ExtensionPage(extension->GetBackgroundURL(), -1, -1, true));
+    }
   }
 
   return result;
 }
 
-void ExtensionSettingsHandler::GetActivePagesForExtensionProcess(
+void ExtensionSettingsHandler::GetInspectablePagesForExtensionProcess(
     const std::set<RenderViewHost*>& views,
     std::vector<ExtensionPage> *result) {
   for (std::set<RenderViewHost*>::const_iterator iter = views.begin();
@@ -762,4 +815,8 @@ ExtensionSettingsHandler::GetExtensionUninstallDialog() {
         ExtensionUninstallDialog::Create(Profile::FromWebUI(web_ui()), this));
   }
   return extension_uninstall_dialog_.get();
+}
+
+void ExtensionSettingsHandler::InspectExtensionHost(ExtensionHost* host) {
+  DevToolsWindow::OpenDevToolsWindow(host->render_view_host());
 }

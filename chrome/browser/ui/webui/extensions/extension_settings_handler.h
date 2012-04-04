@@ -25,6 +25,7 @@
 #include "googleurl/src/gurl.h"
 
 class Extension;
+class ExtensionHost;
 class ExtensionService;
 class FilePath;
 class PrefService;
@@ -150,16 +151,19 @@ class ExtensionSettingsHandler : public content::WebUIMessageHandler,
   // Register for notifications that we need to reload the page.
   void MaybeRegisterForNotifications();
 
-  // Helper that lists the current active html pages for an extension.
-  std::vector<ExtensionPage> GetActivePagesForExtension(
-      const Extension* extension);
-  void GetActivePagesForExtensionProcess(
+  // Helper that lists the current inspectable html pages for an extension.
+  std::vector<ExtensionPage> GetInspectablePagesForExtension(
+      const Extension* extension, bool extension_is_enabled);
+  void GetInspectablePagesForExtensionProcess(
       const std::set<content::RenderViewHost*>& views,
       std::vector<ExtensionPage> *result);
 
   // Returns the ExtensionUninstallDialog object for this class, creating it if
   // needed.
   ExtensionUninstallDialog* GetExtensionUninstallDialog();
+
+  // Helper to inspect an ExtensionHost after it has been loaded.
+  void InspectExtensionHost(ExtensionHost* host);
 
   // Our model.  Outlives us since it's owned by our containing profile.
   // Note: This may be NULL in unit tests.
