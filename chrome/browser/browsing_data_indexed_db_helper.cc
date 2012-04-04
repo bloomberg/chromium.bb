@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/browsing_data_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/indexed_db_context.h"
@@ -108,8 +109,9 @@ void BrowsingDataIndexedDBHelperImpl::FetchIndexedDBInfoInWebKitThread() {
   for (std::vector<GURL>::const_iterator iter = origins.begin();
        iter != origins.end(); ++iter) {
     const GURL& origin = *iter;
-    if (origin.SchemeIs(chrome::kExtensionScheme))
-      continue;  // Extension state is not considered browsing data.
+    if (!BrowsingDataHelper::HasValidScheme(origin))
+      continue;  // Non-websafe state is not considered browsing data.
+
     indexed_db_info_.push_back(IndexedDBInfo(
         origin,
         indexed_db_context_->GetOriginDiskUsage(origin),
@@ -190,6 +192,9 @@ CannedBrowsingDataIndexedDBHelper* CannedBrowsingDataIndexedDBHelper::Clone() {
 
 void CannedBrowsingDataIndexedDBHelper::AddIndexedDB(
     const GURL& origin, const string16& description) {
+  if (!BrowsingDataHelper::HasValidScheme(origin))
+    return;  // Non-websafe state is not considered browsing data.
+
   base::AutoLock auto_lock(lock_);
   pending_indexed_db_info_.push_back(PendingIndexedDBInfo(origin, description));
 }

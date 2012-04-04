@@ -9,13 +9,14 @@
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/browsing_data_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebCString.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
 
 using content::BrowserContext;
 using content::BrowserThread;
@@ -87,11 +88,9 @@ void BrowsingDataDatabaseHelper::FetchDatabaseInfoOnFileThread() {
   if (tracker_.get() && tracker_->GetAllOriginsInfo(&origins_info)) {
     for (std::vector<webkit_database::OriginInfo>::const_iterator ori =
          origins_info.begin(); ori != origins_info.end(); ++ori) {
-      const std::string origin_identifier(UTF16ToUTF8(ori->GetOrigin()));
-      if (StartsWithASCII(origin_identifier,
-                          std::string(chrome::kExtensionScheme),
-                          true)) {
-        // Extension state is not considered browsing data.
+      const GURL origin(UTF16ToUTF8(ori->GetOrigin()));
+      if (!BrowsingDataHelper::HasValidScheme(origin)) {
+        // Non-websafe state is not considered browsing data.
         continue;
       }
       WebSecurityOrigin web_security_origin =
@@ -107,7 +106,7 @@ void BrowsingDataDatabaseHelper::FetchDatabaseInfoOnFileThread() {
           database_info_.push_back(DatabaseInfo(
                 web_security_origin.host().utf8(),
                 UTF16ToUTF8(*db),
-                origin_identifier,
+                UTF16ToUTF8(ori->GetOrigin()),
                 UTF16ToUTF8(ori->GetDatabaseDescription(*db)),
                 web_security_origin.toString().utf8(),
                 file_info.size,
@@ -180,8 +179,10 @@ void CannedBrowsingDataDatabaseHelper::AddDatabase(
     const std::string& name,
     const std::string& description) {
   base::AutoLock auto_lock(lock_);
-  pending_database_info_.push_back(PendingDatabaseInfo(
-        origin, name, description));
+  if (BrowsingDataHelper::HasValidScheme(origin)) {
+    pending_database_info_.push_back(PendingDatabaseInfo(
+          origin, name, description));
+  }
 }
 
 void CannedBrowsingDataDatabaseHelper::Reset() {

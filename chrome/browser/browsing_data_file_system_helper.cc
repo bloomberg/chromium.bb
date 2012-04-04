@@ -11,6 +11,7 @@
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/browsing_data_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "webkit/fileapi/file_system_context.h"
@@ -124,11 +125,11 @@ void BrowsingDataFileSystemHelperImpl::FetchFileSystemInfoInFileThread() {
           fileapi::kFileSystemTypeTemporary);
 
   GURL current;
+
   while (!(current = origin_enumerator->Next()).is_empty()) {
-    if (current.SchemeIs(chrome::kExtensionScheme)) {
-      // Extension state is not considered browsing data.
-      continue;
-    }
+    if (!BrowsingDataHelper::HasValidScheme(current))
+      continue; // Non-websafe state is not considered browsing data.
+
     // We can call these synchronous methods as we've already verified that
     // we're running on the FILE thread.
     int64 persistent_usage = quota_util->GetOriginUsageOnFileThread(current,
@@ -241,6 +242,9 @@ void CannedBrowsingDataFileSystemHelper::AddFileSystem(
   }
   if (duplicate_origin)
     return;
+
+  if (!BrowsingDataHelper::HasValidScheme(origin))
+    return; // Non-websafe state is not considered browsing data.
 
   file_system_info_.push_back(FileSystemInfo(
       origin,

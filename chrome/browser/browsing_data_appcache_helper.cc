@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "chrome/browser/browsing_data_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
@@ -74,15 +75,15 @@ BrowsingDataAppCacheHelper::~BrowsingDataAppCacheHelper() {}
 
 void BrowsingDataAppCacheHelper::OnFetchComplete(int rv) {
   if (BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    // Filter out appcache info entries for extensions. Extension state is not
-    // considered browsing data.
+    // Filter out appcache info entries for non-websafe schemes. Extension state
+    // and DevTools, for example, are not considered browsing data.
     typedef std::map<GURL, appcache::AppCacheInfoVector> InfoByOrigin;
     InfoByOrigin& origin_map = info_collection_->infos_by_origin;
     for (InfoByOrigin::iterator origin = origin_map.begin();
          origin != origin_map.end();) {
       InfoByOrigin::iterator current = origin;
       ++origin;
-      if (current->first.SchemeIs(chrome::kExtensionScheme))
+      if (!BrowsingDataHelper::HasValidScheme(current->first))
         origin_map.erase(current);
     }
 
@@ -118,6 +119,9 @@ CannedBrowsingDataAppCacheHelper* CannedBrowsingDataAppCacheHelper::Clone() {
 }
 
 void CannedBrowsingDataAppCacheHelper::AddAppCache(const GURL& manifest_url) {
+  if (!BrowsingDataHelper::HasValidScheme(manifest_url))
+    return;  // Ignore non-websafe schemes.
+
   typedef std::map<GURL, appcache::AppCacheInfoVector> InfoByOrigin;
   InfoByOrigin& origin_map = info_collection_->infos_by_origin;
   appcache::AppCacheInfoVector& appcache_infos_ =

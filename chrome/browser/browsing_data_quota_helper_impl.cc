@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/browser/browsing_data_helper.h"
 #include "webkit/quota/quota_manager.h"
 
 using content::BrowserThread;
@@ -88,7 +89,7 @@ void BrowsingDataQuotaHelperImpl::GotOrigins(
   for (std::set<GURL>::const_iterator itr = origins.begin();
        itr != origins.end();
        ++itr)
-    if (!itr->SchemeIs(chrome::kExtensionScheme))
+    if (BrowsingDataHelper::HasValidScheme(*itr))
       pending_hosts_.insert(std::make_pair(itr->host(), type));
 
   DCHECK(type == quota::kStorageTypeTemporary ||

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,9 +10,9 @@
 
 namespace {
 
-typedef testing::Test CannedBrowsingDataDatabaseTest;
+typedef testing::Test CannedBrowsingDataDatabaseHelperTest;
 
-TEST_F(CannedBrowsingDataDatabaseTest, Empty) {
+TEST_F(CannedBrowsingDataDatabaseHelperTest, Empty) {
   TestingProfile profile;
 
   const GURL origin("http://host1:1/");
@@ -24,6 +24,25 @@ TEST_F(CannedBrowsingDataDatabaseTest, Empty) {
   ASSERT_TRUE(helper->empty());
   helper->AddDatabase(origin, db, "");
   ASSERT_FALSE(helper->empty());
+  helper->Reset();
+  ASSERT_TRUE(helper->empty());
+}
+
+TEST_F(CannedBrowsingDataDatabaseHelperTest, IgnoreExtensionsAndDevTools) {
+  TestingProfile profile;
+
+  const GURL origin1("chrome-extension://abcdefghijklmnopqrstuvwxyz/");
+  const GURL origin2("chrome-devtools://abcdefghijklmnopqrstuvwxyz/");
+  const char db[] = "db1";
+
+  scoped_refptr<CannedBrowsingDataDatabaseHelper> helper(
+      new CannedBrowsingDataDatabaseHelper(&profile));
+
+  ASSERT_TRUE(helper->empty());
+  helper->AddDatabase(origin1, db, "");
+  ASSERT_TRUE(helper->empty());
+  helper->AddDatabase(origin2, db, "");
+  ASSERT_TRUE(helper->empty());
   helper->Reset();
   ASSERT_TRUE(helper->empty());
 }

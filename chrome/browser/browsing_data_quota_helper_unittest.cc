@@ -160,7 +160,7 @@ TEST_F(BrowsingDataQuotaHelperTest, FetchData) {
   EXPECT_TRUE(expected == actual);
 }
 
-TEST_F(BrowsingDataQuotaHelperTest, IgnoreExtensions) {
+TEST_F(BrowsingDataQuotaHelperTest, IgnoreExtensionsAndDevTools) {
   const quota::MockOriginData kOrigins[] = {
     {"http://example.com/", quota::kStorageTypeTemporary, 1},
     {"https://example.com/", quota::kStorageTypeTemporary, 10},
@@ -169,6 +169,10 @@ TEST_F(BrowsingDataQuotaHelperTest, IgnoreExtensions) {
     {"chrome-extension://abcdefghijklmnopqrstuvwxyz/",
         quota::kStorageTypeTemporary, 10000},
     {"chrome-extension://abcdefghijklmnopqrstuvwxyz/",
+        quota::kStorageTypePersistent, 100000},
+    {"chrome-devtools://abcdefghijklmnopqrstuvwxyz/",
+        quota::kStorageTypeTemporary, 10000},
+    {"chrome-devtools://abcdefghijklmnopqrstuvwxyz/",
         quota::kStorageTypePersistent, 100000},
   };
 

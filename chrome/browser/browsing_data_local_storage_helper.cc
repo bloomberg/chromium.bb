@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,12 +9,13 @@
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/browsing_data_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/dom_storage_context.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebCString.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "webkit/glue/webkit_glue.h"
 
 using content::BrowserContext;
@@ -101,10 +102,9 @@ void BrowsingDataLocalStorageHelper::FetchLocalStorageInfo(
     WebSecurityOrigin web_security_origin =
         WebSecurityOrigin::createFromDatabaseIdentifier(
             webkit_glue::FilePathToWebString(file_path.BaseName()));
-    if (EqualsASCII(web_security_origin.protocol(), chrome::kExtensionScheme)) {
-      // Extension state is not considered browsing data.
-      continue;
-    }
+    if (!BrowsingDataHelper::IsValidScheme(web_security_origin.protocol()))
+      continue;  // Non-websafe state is not considered browsing data.
+
     base::PlatformFileInfo file_info;
     bool ret = file_util::GetFileInfo(file_path, &file_info);
     if (ret) {
@@ -158,7 +158,8 @@ CannedBrowsingDataLocalStorageHelper::Clone() {
 
 void CannedBrowsingDataLocalStorageHelper::AddLocalStorage(
     const GURL& origin) {
-  pending_local_storage_info_.insert(origin);
+  if (BrowsingDataHelper::HasValidScheme(origin))
+    pending_local_storage_info_.insert(origin);
 }
 
 void CannedBrowsingDataLocalStorageHelper::Reset() {

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -102,5 +102,21 @@ TEST_F(CannedBrowsingDataAppCacheHelperTest, Empty) {
   helper->AddAppCache(manifest);
   ASSERT_FALSE(helper->empty());
   helper->Reset();
+  ASSERT_TRUE(helper->empty());
+}
+
+TEST_F(CannedBrowsingDataAppCacheHelperTest, IgnoreExtensionsAndDevTools) {
+  TestingProfile profile;
+
+  GURL manifest1("chrome-extension://abcdefghijklmnopqrstuvwxyz/manifest.xml");
+  GURL manifest2("chrome-devtools://abcdefghijklmnopqrstuvwxyz/manifest.xml");
+
+  scoped_refptr<CannedBrowsingDataAppCacheHelper> helper(
+      new CannedBrowsingDataAppCacheHelper(&profile));
+
+  ASSERT_TRUE(helper->empty());
+  helper->AddAppCache(manifest1);
+  ASSERT_TRUE(helper->empty());
+  helper->AddAppCache(manifest2);
   ASSERT_TRUE(helper->empty());
 }

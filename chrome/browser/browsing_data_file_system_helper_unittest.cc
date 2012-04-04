@@ -33,9 +33,15 @@ const char kTestOrigin1[] = "http://host1:1/";
 const char kTestOrigin2[] = "http://host2:2/";
 const char kTestOrigin3[] = "http://host3:3/";
 
+// Extensions and Devtools should be ignored.
+const char kTestOriginExt[] = "chrome-extension://abcdefghijklmnopqrstuvwxyz/";
+const char kTestOriginDevTools[] = "chrome-devtools://abcdefghijklmnopqrstuvw/";
+
 const GURL kOrigin1(kTestOrigin1);
 const GURL kOrigin2(kTestOrigin2);
 const GURL kOrigin3(kTestOrigin3);
+const GURL kOriginExt(kTestOriginExt);
+const GURL kOriginDevTools(kTestOriginDevTools);
 
 // TODO(mkwst): Update this size once the discussion in http://crbug.com/86114
 // is concluded.
@@ -296,6 +302,16 @@ TEST_F(BrowsingDataFileSystemHelperTest, CannedAddFileSystem) {
   EXPECT_TRUE(info->has_temporary);
   EXPECT_EQ(0, info->usage_persistent);
   EXPECT_EQ(100, info->usage_temporary);
+}
+
+// Verifies that the CannedBrowsingDataFileSystemHelper correctly ignores
+// extension and devtools schemes.
+TEST_F(BrowsingDataFileSystemHelperTest, IgnoreExtensionsAndDevTools) {
+  ASSERT_TRUE(canned_helper_->empty());
+  canned_helper_->AddFileSystem(kOriginExt, kTemporary, 0);
+  ASSERT_TRUE(canned_helper_->empty());
+  canned_helper_->AddFileSystem(kOriginDevTools, kTemporary, 0);
+  ASSERT_TRUE(canned_helper_->empty());
 }
 
 }  // namespace
