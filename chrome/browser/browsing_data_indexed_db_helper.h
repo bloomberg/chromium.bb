@@ -25,8 +25,7 @@ class Profile;
 // aggregating and deleting browsing data stored in indexed databases.  A
 // client of this class need to call StartFetching from the UI thread to
 // initiate the flow, and it'll be notified by the callback in its UI thread at
-// some later point.  The client must call CancelNotification() if it's
-// destroyed before the callback is notified.
+// some later point.
 class BrowsingDataIndexedDBHelper
     : public base::RefCountedThreadSafe<BrowsingDataIndexedDBHelper> {
  public:
@@ -53,10 +52,6 @@ class BrowsingDataIndexedDBHelper
   virtual void StartFetching(
       const base::Callback<void(const std::list<IndexedDBInfo>&)>&
           callback) = 0;
-  // Cancels the notification callback (i.e., the window that created it no
-  // longer exists).
-  // This must be called only in the UI thread.
-  virtual void CancelNotification() = 0;
   // Requests a single indexed database to be deleted in the WEBKIT thread.
   virtual void DeleteIndexedDB(const GURL& origin) = 0;
 
@@ -93,7 +88,6 @@ class CannedBrowsingDataIndexedDBHelper
   virtual void StartFetching(
       const base::Callback<void(const std::list<IndexedDBInfo>&)>&
           callback) OVERRIDE;
-  virtual void CancelNotification() OVERRIDE;
   virtual void DeleteIndexedDB(const GURL& origin) OVERRIDE {}
 
  private:

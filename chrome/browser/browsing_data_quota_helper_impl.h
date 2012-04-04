@@ -30,7 +30,6 @@ class QuotaManager;
 class BrowsingDataQuotaHelperImpl : public BrowsingDataQuotaHelper {
  public:
   virtual void StartFetching(const FetchResultCallback& callback) OVERRIDE;
-  virtual void CancelNotification() OVERRIDE;
   virtual void RevokeHostQuota(const std::string& host) OVERRIDE;
 
  private:

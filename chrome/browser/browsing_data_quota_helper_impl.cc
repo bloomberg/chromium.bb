@@ -36,10 +36,6 @@ void BrowsingDataQuotaHelperImpl::StartFetching(
   FetchQuotaInfo();
 }
 
-void BrowsingDataQuotaHelperImpl::CancelNotification() {
-  callback_.Reset();
-}
-
 void BrowsingDataQuotaHelperImpl::RevokeHostQuota(const std::string& host) {
   if (!io_thread_->BelongsToCurrentThread()) {
     io_thread_->PostTask(
@@ -146,10 +142,6 @@ void BrowsingDataQuotaHelperImpl::GotHostUsage(const std::string& host,
 }
 
 void BrowsingDataQuotaHelperImpl::OnComplete() {
-  // Check if CancelNotification was called
-  if (callback_.is_null())
-    return;
-
   if (!ui_thread_->BelongsToCurrentThread()) {
     ui_thread_->PostTask(
         FROM_HERE,

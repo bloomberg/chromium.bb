@@ -25,8 +25,6 @@ class URLRequestContextGetter;
 // A client of this class need to call StartFetching from the UI thread to
 // initiate the flow, and it'll be notified by the callback in its UI
 // thread at some later point.
-// The client must call CancelNotification() if it's destroyed before the
-// callback is notified.
 class BrowsingDataCookieHelper
     : public base::RefCountedThreadSafe<BrowsingDataCookieHelper> {
  public:
@@ -37,11 +35,6 @@ class BrowsingDataCookieHelper
   // This must be called only in the UI thread.
   virtual void StartFetching(
       const base::Callback<void(const net::CookieList& cookies)>& callback);
-
-  // Cancels the notification callback (i.e., the window that created it no
-  // longer exists).
-  // This must be called only in the UI thread.
-  virtual void CancelNotification();
 
   // Requests a single cookie to be deleted in the IO thread. This must be
   // called in the UI thread.
@@ -113,7 +106,6 @@ class CannedBrowsingDataCookieHelper : public BrowsingDataCookieHelper {
   // BrowsingDataCookieHelper methods.
   virtual void StartFetching(
       const net::CookieMonster::GetCookieListCallback& callback) OVERRIDE;
-  virtual void CancelNotification() OVERRIDE;
 
  private:
   // Check if the cookie list contains a cookie with the same name,

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,7 +15,6 @@ class MockBrowsingDataAppCacheHelper
   explicit MockBrowsingDataAppCacheHelper(Profile* profile);
 
   virtual void StartFetching(const base::Closure& completion_callback) OVERRIDE;
-  virtual void CancelNotification() OVERRIDE;
   virtual void DeleteAppCacheGroup(const GURL& manifest_url) OVERRIDE;
 
  private:

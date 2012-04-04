@@ -33,7 +33,6 @@ class BrowsingDataIndexedDBHelperImpl : public BrowsingDataIndexedDBHelper {
   virtual void StartFetching(
       const base::Callback<void(const std::list<IndexedDBInfo>&)>&
           callback) OVERRIDE;
-  virtual void CancelNotification() OVERRIDE;
   virtual void DeleteIndexedDB(const GURL& origin) OVERRIDE;
 
  private:
@@ -88,11 +87,6 @@ void BrowsingDataIndexedDBHelperImpl::StartFetching(
           this));
 }
 
-void BrowsingDataIndexedDBHelperImpl::CancelNotification() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  completion_callback_.Reset();
-}
-
 void BrowsingDataIndexedDBHelperImpl::DeleteIndexedDB(
     const GURL& origin) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -126,12 +120,8 @@ void BrowsingDataIndexedDBHelperImpl::FetchIndexedDBInfoInWebKitThread() {
 void BrowsingDataIndexedDBHelperImpl::NotifyInUIThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(is_fetching_);
-  // Note: completion_callback_ mutates only in the UI thread, so it's safe to
-  // test it here.
-  if (!completion_callback_.is_null()) {
-    completion_callback_.Run(indexed_db_info_);
-    completion_callback_.Reset();
-  }
+  completion_callback_.Run(indexed_db_info_);
+  completion_callback_.Reset();
   is_fetching_ = false;
 }
 
@@ -260,16 +250,7 @@ void CannedBrowsingDataIndexedDBHelper::NotifyInUIThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(is_fetching_);
 
-  // Completion_callback_ mutates only in the UI thread, so it's safe to test it
-  // here.
-  if (!completion_callback_.is_null()) {
-    completion_callback_.Run(indexed_db_info_);
-    completion_callback_.Reset();
-  }
-  is_fetching_ = false;
-}
-
-void CannedBrowsingDataIndexedDBHelper::CancelNotification() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  completion_callback_.Run(indexed_db_info_);
   completion_callback_.Reset();
+  is_fetching_ = false;
 }

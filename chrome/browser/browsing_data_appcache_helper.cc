@@ -45,18 +45,6 @@ void BrowsingDataAppCacheHelper::StartFetching(const base::Closure& callback) {
       GetAllAppCacheInfo(info_collection_, appcache_info_callback_.callback());
 }
 
-void BrowsingDataAppCacheHelper::CancelNotification() {
-  if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    completion_callback_.Reset();
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(&BrowsingDataAppCacheHelper::CancelNotification, this));
-    return;
-  }
-
-  appcache_info_callback_.Cancel();
-}
-
 void BrowsingDataAppCacheHelper::DeleteAppCacheGroup(
     const GURL& manifest_url) {
   if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
@@ -96,10 +84,8 @@ void BrowsingDataAppCacheHelper::OnFetchComplete(int rv) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(is_fetching_);
   is_fetching_ = false;
-  if (!completion_callback_.is_null()) {
-    completion_callback_.Run();
-    completion_callback_.Reset();
-  }
+  completion_callback_.Run();
+  completion_callback_.Reset();
 }
 
 CannedBrowsingDataAppCacheHelper::CannedBrowsingDataAppCacheHelper(

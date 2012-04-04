@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,11 +38,6 @@ void BrowsingDataCookieHelper::StartFetching(
       base::Bind(&BrowsingDataCookieHelper::FetchCookiesOnIOThread, this));
 }
 
-void BrowsingDataCookieHelper::CancelNotification() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  completion_callback_.Reset();
-}
-
 void BrowsingDataCookieHelper::DeleteCookie(
     const net::CookieMonster::CanonicalCookie& cookie) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -77,10 +72,8 @@ void BrowsingDataCookieHelper::NotifyInUIThread(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(is_fetching_);
   is_fetching_ = false;
-  if (!completion_callback_.is_null()) {
-    completion_callback_.Run(cookies);
-    completion_callback_.Reset();
-  }
+  completion_callback_.Run(cookies);
+  completion_callback_.Reset();
 }
 
 void BrowsingDataCookieHelper::DeleteCookieOnIOThread(
@@ -158,11 +151,8 @@ bool CannedBrowsingDataCookieHelper::empty() const {
 void CannedBrowsingDataCookieHelper::StartFetching(
     const net::CookieMonster::GetCookieListCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (!callback.is_null())
-    callback.Run(cookie_list_);
+  callback.Run(cookie_list_);
 }
-
-void CannedBrowsingDataCookieHelper::CancelNotification() {}
 
 bool CannedBrowsingDataCookieHelper::DeleteMetchingCookie(
     const net::CookieMonster::CanonicalCookie& add_cookie) {

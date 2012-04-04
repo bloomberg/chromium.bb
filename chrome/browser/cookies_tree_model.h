@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
@@ -668,6 +669,8 @@ class CookiesTreeModel : public ui::TreeNodeModel<CookieTreeNode> {
   // If true, use the CanonicalCookie::Source attribute to group cookies.
   // Otherwise, use the CanonicalCookie::Domain attribute.
   bool use_cookie_source_;
+
+  base::WeakPtrFactory<CookiesTreeModel> weak_ptr_factory_;
 
   friend class CookieTreeAppCacheNode;
   friend class CookieTreeCookieNode;

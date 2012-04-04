@@ -33,7 +33,6 @@ class BrowsingDataFileSystemHelperImpl : public BrowsingDataFileSystemHelper {
   explicit BrowsingDataFileSystemHelperImpl(Profile* profile);
   virtual void StartFetching(const base::Callback<
       void(const std::list<FileSystemInfo>&)>& callback) OVERRIDE;
-  virtual void CancelNotification() OVERRIDE;
   virtual void DeleteFileSystemOrigin(const GURL& origin) OVERRIDE;
 
  private:
@@ -97,11 +96,6 @@ void BrowsingDataFileSystemHelperImpl::StartFetching(
           this));
 }
 
-void BrowsingDataFileSystemHelperImpl::CancelNotification() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  completion_callback_.Reset();
-}
-
 void BrowsingDataFileSystemHelperImpl::DeleteFileSystemOrigin(
     const GURL& origin) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -155,12 +149,8 @@ void BrowsingDataFileSystemHelperImpl::FetchFileSystemInfoInFileThread() {
 void BrowsingDataFileSystemHelperImpl::NotifyOnUIThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(is_fetching_);
-  // completion_callback_ mutates only in the UI thread, so we're safe to test
-  // it here.
-  if (!completion_callback_.is_null()) {
-    completion_callback_.Run(file_system_info_);
-    completion_callback_.Reset();
-  }
+  completion_callback_.Run(file_system_info_);
+  completion_callback_.Reset();
   is_fetching_ = false;
 }
 
@@ -278,14 +268,7 @@ void CannedBrowsingDataFileSystemHelper::StartFetching(
 void CannedBrowsingDataFileSystemHelper::NotifyOnUIThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(is_fetching_);
-  if (!completion_callback_.is_null()) {
-    completion_callback_.Run(file_system_info_);
-    completion_callback_.Reset();
-  }
-  is_fetching_ = false;
-}
-
-void CannedBrowsingDataFileSystemHelper::CancelNotification() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  completion_callback_.Run(file_system_info_);
   completion_callback_.Reset();
+  is_fetching_ = false;
 }

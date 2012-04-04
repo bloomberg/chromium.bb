@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,9 +29,7 @@ class Profile;
 // system data when a client calls StartFetching from the UI thread, and will
 // notify the client via a supplied callback when the data is available.
 // Only one StartFetching task can run at a time: executing StartFetching while
-// another StartFetching task is running will DCHECK. If the client must abort
-// the process before completion (it's destroyed, for example) then it must call
-// CancelNotification.
+// another StartFetching task is running will DCHECK.
 //
 // The client's callback is passed a list of FileSystemInfo objects containing
 // usage information for each origin's temporary and persistent file systems.
@@ -86,11 +84,6 @@ class BrowsingDataFileSystemHelper
   virtual void StartFetching(const base::Callback<
       void(const std::list<FileSystemInfo>&)>& callback) = 0;
 
-  // Cancels the notification callback associated with StartFetching. Clients
-  // that are destroyed before the callback is triggered must call this, and
-  // it must be called only on the UI thread.
-  virtual void CancelNotification() = 0;
-
   // Deletes any temporary or persistent file systems associated with |origin|
   // from the disk. Deletion will occur asynchronously on the FILE thread, but
   // this function must be called only on the UI thread.
@@ -140,7 +133,6 @@ class CannedBrowsingDataFileSystemHelper
   // BrowsingDataFileSystemHelper implementation.
   virtual void StartFetching(const base::Callback<
       void(const std::list<FileSystemInfo>&)>& callback) OVERRIDE;
-  virtual void CancelNotification() OVERRIDE;
 
   // Note that this doesn't actually have an implementation for this canned
   // class. It hasn't been necessary for anything that uses the canned

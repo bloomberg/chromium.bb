@@ -68,11 +68,6 @@ void BrowsingDataDatabaseHelper::StartFetching(
                  this));
 }
 
-void BrowsingDataDatabaseHelper::CancelNotification() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  completion_callback_.Reset();
-}
-
 void BrowsingDataDatabaseHelper::DeleteDatabase(const std::string& origin,
                                                 const std::string& name) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -124,12 +119,8 @@ void BrowsingDataDatabaseHelper::FetchDatabaseInfoOnFileThread() {
 void BrowsingDataDatabaseHelper::NotifyInUIThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(is_fetching_);
-  // Note: completion_callback_ mutates only in the UI thread, so it's safe to
-  // test it here.
-  if (!completion_callback_.is_null()) {
-    completion_callback_.Run(database_info_);
-    completion_callback_.Reset();
-  }
+  completion_callback_.Run(database_info_);
+  completion_callback_.Reset();
   is_fetching_ = false;
   database_info_.clear();
 }

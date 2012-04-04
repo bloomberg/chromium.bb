@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,10 +16,6 @@ MockBrowsingDataIndexedDBHelper::~MockBrowsingDataIndexedDBHelper() {
 void MockBrowsingDataIndexedDBHelper::StartFetching(
     const base::Callback<void(const std::list<IndexedDBInfo>&)>& callback) {
   callback_ = callback;
-}
-
-void MockBrowsingDataIndexedDBHelper::CancelNotification() {
-  callback_.Reset();
 }
 
 void MockBrowsingDataIndexedDBHelper::DeleteIndexedDB(

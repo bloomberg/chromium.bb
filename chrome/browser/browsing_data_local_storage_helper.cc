@@ -72,11 +72,6 @@ void BrowsingDataLocalStorageHelper::StartFetching(
           &BrowsingDataLocalStorageHelper::GetAllStorageFilesCallback, this));
 }
 
-void BrowsingDataLocalStorageHelper::CancelNotification() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  completion_callback_.Reset();
-}
-
 void BrowsingDataLocalStorageHelper::DeleteLocalStorageFile(
     const FilePath& file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -130,10 +125,8 @@ void BrowsingDataLocalStorageHelper::NotifyInUIThread() {
   DCHECK(is_fetching_);
   // Note: completion_callback_ mutates only in the UI thread, so it's safe to
   // test it here.
-  if (!completion_callback_.is_null()) {
-    completion_callback_.Run(local_storage_info_);
-    completion_callback_.Reset();
-  }
+  completion_callback_.Run(local_storage_info_);
+  completion_callback_.Reset();
   is_fetching_ = false;
 }
 

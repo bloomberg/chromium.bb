@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/memory/linked_ptr.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -626,23 +625,24 @@ CookiesTreeModel::CookiesTreeModel(
       file_system_helper_(file_system_helper),
       quota_helper_(quota_helper),
       batch_update_(0),
-      use_cookie_source_(use_cookie_source) {
+      use_cookie_source_(use_cookie_source),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   DCHECK(cookie_helper_);
   cookie_helper_->StartFetching(
       base::Bind(&CookiesTreeModel::OnCookiesModelInfoLoaded,
-                 base::Unretained(this)));
+                 weak_ptr_factory_.GetWeakPtr()));
   DCHECK(database_helper_);
   database_helper_->StartFetching(
       base::Bind(&CookiesTreeModel::OnDatabaseModelInfoLoaded,
-                 base::Unretained(this)));
+                 weak_ptr_factory_.GetWeakPtr()));
   DCHECK(local_storage_helper_);
   local_storage_helper_->StartFetching(
       base::Bind(&CookiesTreeModel::OnLocalStorageModelInfoLoaded,
-                 base::Unretained(this)));
+                 weak_ptr_factory_.GetWeakPtr()));
   if (session_storage_helper_) {
     session_storage_helper_->StartFetching(
         base::Bind(&CookiesTreeModel::OnSessionStorageModelInfoLoaded,
-                   base::Unretained(this)));
+                   weak_ptr_factory_.GetWeakPtr()));
   }
 
   // TODO(michaeln): When all of the UI implementations have been updated, make
@@ -650,43 +650,29 @@ CookiesTreeModel::CookiesTreeModel(
   if (appcache_helper_) {
     appcache_helper_->StartFetching(
         base::Bind(&CookiesTreeModel::OnAppCacheModelInfoLoaded,
-                   base::Unretained(this)));
+                   weak_ptr_factory_.GetWeakPtr()));
   }
 
   if (indexed_db_helper_) {
     indexed_db_helper_->StartFetching(
         base::Bind(&CookiesTreeModel::OnIndexedDBModelInfoLoaded,
-                   base::Unretained(this)));
+                   weak_ptr_factory_.GetWeakPtr()));
   }
 
   if (file_system_helper_) {
     file_system_helper_->StartFetching(
         base::Bind(&CookiesTreeModel::OnFileSystemModelInfoLoaded,
-                   base::Unretained(this)));
+                   weak_ptr_factory_.GetWeakPtr()));
   }
 
   if (quota_helper_) {
     quota_helper_->StartFetching(
         base::Bind(&CookiesTreeModel::OnQuotaModelInfoLoaded,
-                   base::Unretained(this)));
+                   weak_ptr_factory_.GetWeakPtr()));
   }
 }
 
-CookiesTreeModel::~CookiesTreeModel() {
-  cookie_helper_->CancelNotification();
-  database_helper_->CancelNotification();
-  local_storage_helper_->CancelNotification();
-  if (session_storage_helper_)
-    session_storage_helper_->CancelNotification();
-  if (appcache_helper_)
-    appcache_helper_->CancelNotification();
-  if (indexed_db_helper_)
-    indexed_db_helper_->CancelNotification();
-  if (file_system_helper_)
-    file_system_helper_->CancelNotification();
-  if (quota_helper_)
-    quota_helper_->CancelNotification();
-}
+CookiesTreeModel::~CookiesTreeModel() {}
 
 ///////////////////////////////////////////////////////////////////////////////
 // CookiesTreeModel, TreeModel methods (public):
