@@ -44,7 +44,11 @@ class ShellBrowserMainParts : public BrowserMainParts {
   ui::Clipboard* GetClipboard();
   ShellDevToolsDelegate* devtools_delegate() { return devtools_delegate_; }
 
+  ShellBrowserContext* browser_context() { return browser_context_.get(); }
+
  private:
+  scoped_ptr<ShellBrowserContext> browser_context_;
+
   scoped_ptr<ui::Clipboard> clipboard_;
   ShellDevToolsDelegate* devtools_delegate_;
 

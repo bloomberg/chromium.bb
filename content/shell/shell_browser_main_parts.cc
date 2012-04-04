@@ -58,6 +58,8 @@ int ShellBrowserMainParts::PreCreateThreads() {
 }
 
 void ShellBrowserMainParts::PreMainMessageLoopRun() {
+  browser_context_.reset(new ShellBrowserContext(this));
+
   Shell::PlatformInitialize();
   net::NetModule::SetResourceProvider(Shell::PlatformResourceProvider);
 
@@ -69,14 +71,14 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
     if (base::StringToInt(port_str, &port) && port > 0 && port < 65535) {
       devtools_delegate_ = new ShellDevToolsDelegate(
           port,
-          ShellBrowserContext::GetInstance()->GetRequestContext());
+          browser_context_->GetRequestContext());
     } else {
       DLOG(WARNING) << "Invalid http debugger port number " << port;
     }
   }
 
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree)) {
-    Shell::CreateNewWindow(ShellBrowserContext::GetInstance(),
+    Shell::CreateNewWindow(browser_context_.get(),
                            GetStartupURL(),
                            NULL,
                            MSG_ROUTING_NONE,
@@ -87,6 +89,7 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
 void ShellBrowserMainParts::PostMainMessageLoopRun() {
   if (devtools_delegate_)
     devtools_delegate_->Stop();
+  browser_context_.reset();
 }
 
 bool ShellBrowserMainParts::MainMessageLoopRun(int* result_code) {

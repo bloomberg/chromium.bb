@@ -7,7 +7,6 @@
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "content/shell/shell.h"
-#include "content/shell/shell_browser_context.h"
 #include "content/shell/shell_browser_main_parts.h"
 #include "content/shell/shell_devtools_delegate.h"
 #include "content/shell/shell_render_view_host_observer.h"
@@ -349,7 +348,7 @@ crypto::CryptoModuleBlockingPasswordDelegate*
 #endif
 
 ShellBrowserContext* ShellContentBrowserClient::browser_context() {
-  return ShellBrowserContext::GetInstance();
+  return shell_browser_main_parts_->browser_context();
 }
 
 }  // namespace content
