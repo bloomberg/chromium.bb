@@ -1524,7 +1524,7 @@ class PortageStableTest(CpuTestBase):
     # Replay script
     if stashed:
       mocked_upgrader._RunGit(mocked_upgrader._stable_repo,
-                              ['stash', 'pop'],
+                              ['stash', 'pop', '--index'],
                               redirect_stdout=True,
                               combine_stdout_stderr=True)
     self.mox.ReplayAll()

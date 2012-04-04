@@ -675,7 +675,7 @@ class Upgrader(object):
     """Unstash any changes in stable repo."""
     # Only one level of stashing expected/supported.
     if self._stable_repo_stashed:
-      self._RunGit(self._stable_repo, ['stash', 'pop'],
+      self._RunGit(self._stable_repo, ['stash', 'pop', '--index'],
                    redirect_stdout=True, combine_stdout_stderr=True)
       self._stable_repo_stashed = False
 
