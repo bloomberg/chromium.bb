@@ -82,8 +82,7 @@ display_handle_mode(void *data,
 
 	output = wl_output_get_user_data(wl_output);
 
-	if (wl_output == output->output &&
-			(flags & WL_OUTPUT_MODE_CURRENT)) {
+	if (wl_output == output->output && (flags & WL_OUTPUT_MODE_CURRENT)) {
 		output->width = width;
 		output->height = height;
 	}
@@ -172,7 +171,7 @@ int main(int argc, char *argv[])
 	struct wl_buffer *buffer;
 	void *data = NULL;
 	struct screenshooter_output *output, *next;
-	int ss_area_width = 0, ss_area_height = 0, num_outputs = 0;
+	int width = 0, height = 0;
 
 	display = wl_display_connect(NULL);
 	if (display == NULL) {
@@ -190,31 +189,20 @@ int main(int argc, char *argv[])
 	}
 
 	wl_list_for_each(output, &output_list, link) {
-
-		if (!num_outputs) {
-			ss_area_width = output->width + output->offset_x;
-			ss_area_height = output->height + output->offset_y;
-		}
-		else {
-			ss_area_width = MAX(ss_area_width, output->offset_x + output->width);
-			ss_area_height = MAX(ss_area_height, output->offset_y + output->height);
-		}
-		num_outputs++;
+		width = MAX(width, output->offset_x + output->width);
+		height = MAX(height, output->offset_y + output->height);
 	}
 
-	buffer = create_shm_buffer(ss_area_width, ss_area_height, &data);
+	buffer = create_shm_buffer(width, height, &data);
 
-	wl_list_for_each(output, &output_list, link) {
+	wl_list_for_each_safe(output, next, &output_list, link) {
 		screenshooter_shoot(screenshooter, output->output, buffer);
+		free(output);
 	}
 
 	wl_display_roundtrip(display);
 
-	write_png(ss_area_width, ss_area_height, data);
-
-	wl_list_for_each_safe(output, next, &output_list, link) {
-		free(output);
-	}
+	write_png(width, height, data);
 
 	return 0;
 }
