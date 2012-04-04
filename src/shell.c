@@ -130,15 +130,19 @@ struct shell_surface {
 	int force_configure;
 };
 
-struct weston_move_grab {
+struct shell_grab {
 	struct wl_pointer_grab grab;
-	struct weston_surface *surface;
+	struct shell_surface *shsurf;
+	struct wl_listener shsurf_destroy_listener;
+};
+
+struct weston_move_grab {
+	struct shell_grab base;
 	int32_t dx, dy;
 };
 
 struct rotate_grab {
-	struct wl_pointer_grab grab;
-	struct shell_surface *surface;
+	struct shell_grab base;
 	struct weston_matrix rotation;
 	struct {
 		int32_t x;
@@ -147,8 +151,42 @@ struct rotate_grab {
 };
 
 static void
+destroy_shell_grab_shsurf(struct wl_listener *listener,
+			  struct wl_resource *resource, uint32_t time)
+{
+	struct shell_grab *grab;
+
+	grab = container_of(listener, struct shell_grab,
+			    shsurf_destroy_listener);
+
+	grab->shsurf = NULL;
+}
+
+static void
+shell_grab_init(struct shell_grab *grab,
+		const struct wl_pointer_grab_interface *interface,
+		struct shell_surface *shsurf)
+{
+	grab->grab.interface = interface;
+	grab->shsurf = shsurf;
+	grab->shsurf_destroy_listener.func = destroy_shell_grab_shsurf;
+	wl_list_insert(shsurf->resource.destroy_listener_list.prev,
+		       &grab->shsurf_destroy_listener.link);
+
+}
+
+static void
+shell_grab_finish(struct shell_grab *grab)
+{
+	wl_list_remove(&grab->shsurf_destroy_listener.link);
+}
+
+static void
 center_on_output(struct weston_surface *surface,
 		 struct weston_output *output);
+
+static struct shell_surface *
+get_shell_surface(struct weston_surface *surface);
 
 static void
 shell_configuration(struct wl_shell *shell)
@@ -187,7 +225,13 @@ move_grab_motion(struct wl_pointer_grab *grab,
 {
 	struct weston_move_grab *move = (struct weston_move_grab *) grab;
 	struct wl_input_device *device = grab->input_device;
-	struct weston_surface *es = move->surface;
+	struct shell_surface *shsurf = move->base.shsurf;
+	struct weston_surface *es;
+
+	if (!shsurf)
+		return;
+
+	es = shsurf->surface;
 
 	weston_surface_configure(es,
 				 device->x + move->dx,
@@ -199,9 +243,12 @@ static void
 move_grab_button(struct wl_pointer_grab *grab,
 		 uint32_t time, uint32_t button, int32_t state)
 {
+	struct shell_grab *shell_grab = container_of(grab, struct shell_grab,
+						    grab);
 	struct wl_input_device *device = grab->input_device;
 
 	if (device->button_count == 0 && state == 0) {
+		shell_grab_finish(shell_grab);
 		wl_input_device_end_pointer_grab(device, time);
 		free(grab);
 	}
@@ -218,17 +265,22 @@ weston_surface_move(struct weston_surface *es,
 		    struct weston_input_device *wd, uint32_t time)
 {
 	struct weston_move_grab *move;
+	struct shell_surface *shsurf = get_shell_surface(es);
+
+	if (!shsurf)
+		return -1;
 
 	move = malloc(sizeof *move);
 	if (!move)
 		return -1;
 
-	move->grab.interface = &move_grab_interface;
+	shell_grab_init(&move->base, &move_grab_interface, shsurf);
+
 	move->dx = es->geometry.x - wd->input_device.grab_x;
 	move->dy = es->geometry.y - wd->input_device.grab_y;
-	move->surface = es;
 
-	wl_input_device_start_pointer_grab(&wd->input_device, &move->grab, time);
+	wl_input_device_start_pointer_grab(&wd->input_device,
+					   &move->base.grab, time);
 
 	wl_input_device_set_pointer_focus(&wd->input_device, NULL, time, 0, 0);
 
@@ -252,10 +304,9 @@ shell_surface_move(struct wl_client *client, struct wl_resource *resource,
 }
 
 struct weston_resize_grab {
-	struct wl_pointer_grab grab;
+	struct shell_grab base;
 	uint32_t edges;
 	int32_t width, height;
-	struct shell_surface *shsurf;
 };
 
 static void
@@ -268,10 +319,13 @@ resize_grab_motion(struct wl_pointer_grab *grab,
 	int32_t from_x, from_y;
 	int32_t to_x, to_y;
 
-	weston_surface_from_global(resize->shsurf->surface,
+	if (!resize->base.shsurf)
+		return;
+
+	weston_surface_from_global(resize->base.shsurf->surface,
 				   device->grab_x, device->grab_y,
 				   &from_x, &from_y);
-	weston_surface_from_global(resize->shsurf->surface,
+	weston_surface_from_global(resize->base.shsurf->surface,
 				   device->x, device->y, &to_x, &to_y);
 
 	if (resize->edges & WL_SHELL_SURFACE_RESIZE_LEFT) {
@@ -290,7 +344,7 @@ resize_grab_motion(struct wl_pointer_grab *grab,
 		height = resize->height;
 	}
 
-	wl_shell_surface_send_configure(&resize->shsurf->resource,
+	wl_shell_surface_send_configure(&resize->base.shsurf->resource,
 					time, resize->edges, width, height);
 }
 
@@ -298,9 +352,11 @@ static void
 resize_grab_button(struct wl_pointer_grab *grab,
 		   uint32_t time, uint32_t button, int32_t state)
 {
+	struct weston_resize_grab *resize = (struct weston_resize_grab *) grab;
 	struct wl_input_device *device = grab->input_device;
 
 	if (device->button_count == 0 && state == 0) {
+		shell_grab_finish(&resize->base);
 		wl_input_device_end_pointer_grab(device, time);
 		free(grab);
 	}
@@ -330,13 +386,14 @@ weston_surface_resize(struct shell_surface *shsurf,
 	if (!resize)
 		return -1;
 
-	resize->grab.interface = &resize_grab_interface;
+	shell_grab_init(&resize->base, &resize_grab_interface, shsurf);
+
 	resize->edges = edges;
 	resize->width = shsurf->surface->geometry.width;
 	resize->height = shsurf->surface->geometry.height;
-	resize->shsurf = shsurf;
 
-	wl_input_device_start_pointer_grab(&wd->input_device, &resize->grab, time);
+	wl_input_device_start_pointer_grab(&wd->input_device,
+					   &resize->base.grab, time);
 
 	wl_input_device_set_pointer_focus(&wd->input_device, NULL, time, 0, 0);
 
@@ -1261,25 +1318,30 @@ rotate_grab_motion(struct wl_pointer_grab *grab,
 		 uint32_t time, int32_t x, int32_t y)
 {
 	struct rotate_grab *rotate =
-		container_of(grab, struct rotate_grab, grab);
+		container_of(grab, struct rotate_grab, base.grab);
 	struct wl_input_device *device = grab->input_device;
-	struct shell_surface *surface = rotate->surface;
-	struct weston_surface *base_surface = surface->surface;
-	GLfloat cx = 0.5f * base_surface->geometry.width;
-	GLfloat cy = 0.5f * base_surface->geometry.height;
-	GLfloat dx, dy, cposx, cposy, dposx, dposy;
-	GLfloat r;
+	struct shell_surface *shsurf = rotate->base.shsurf;
+	struct weston_surface *surface;
+	GLfloat cx, cy, dx, dy, cposx, cposy, dposx, dposy, r;
+
+	if (!shsurf)
+		return;
+
+	surface = shsurf->surface;
+
+	cx = 0.5f * surface->geometry.width;
+	cy = 0.5f * surface->geometry.height;
 
 	dx = device->x - rotate->center.x;
 	dy = device->y - rotate->center.y;
 	r = sqrtf(dx * dx + dy * dy);
 
-	wl_list_remove(&surface->rotation.transform.link);
-	surface->surface->geometry.dirty = 1;
+	wl_list_remove(&shsurf->rotation.transform.link);
+	shsurf->surface->geometry.dirty = 1;
 
 	if (r > 20.0f) {
 		struct weston_matrix *matrix =
-			&surface->rotation.transform.matrix;
+			&shsurf->rotation.transform.matrix;
 
 		weston_matrix_init(&rotate->rotation);
 		rotate->rotation.d[0] = dx / r;
@@ -1289,35 +1351,35 @@ rotate_grab_motion(struct wl_pointer_grab *grab,
 
 		weston_matrix_init(matrix);
 		weston_matrix_translate(matrix, -cx, -cy, 0.0f);
-		weston_matrix_multiply(matrix, &surface->rotation.rotation);
+		weston_matrix_multiply(matrix, &shsurf->rotation.rotation);
 		weston_matrix_multiply(matrix, &rotate->rotation);
 		weston_matrix_translate(matrix, cx, cy, 0.0f);
 
 		wl_list_insert(
-			&surface->surface->geometry.transformation_list,
-			&surface->rotation.transform.link);
+			&shsurf->surface->geometry.transformation_list,
+			&shsurf->rotation.transform.link);
 	} else {
-		wl_list_init(&surface->rotation.transform.link);
-		weston_matrix_init(&surface->rotation.rotation);
+		wl_list_init(&shsurf->rotation.transform.link);
+		weston_matrix_init(&shsurf->rotation.rotation);
 		weston_matrix_init(&rotate->rotation);
 	}
 
 	/* We need to adjust the position of the surface
 	 * in case it was resized in a rotated state before */
-	cposx = base_surface->geometry.x + cx;
-	cposy = base_surface->geometry.y + cy;
+	cposx = surface->geometry.x + cx;
+	cposy = surface->geometry.y + cy;
 	dposx = rotate->center.x - cposx;
 	dposy = rotate->center.y - cposy;
 	if (dposx != 0.0f || dposy != 0.0f) {
-		weston_surface_set_position(base_surface,
-				base_surface->geometry.x + dposx,
-				base_surface->geometry.y + dposy);
+		weston_surface_set_position(surface,
+					    surface->geometry.x + dposx,
+					    surface->geometry.y + dposy);
 	}
 
 	/* Repaint implies weston_surface_update_transform(), which
 	 * lazily applies the damage due to rotation update.
 	 */
-	weston_compositor_schedule_repaint(surface->surface->compositor);
+	weston_compositor_schedule_repaint(shsurf->surface->compositor);
 }
 
 static void
@@ -1325,13 +1387,15 @@ rotate_grab_button(struct wl_pointer_grab *grab,
 		 uint32_t time, uint32_t button, int32_t state)
 {
 	struct rotate_grab *rotate =
-		container_of(grab, struct rotate_grab, grab);
+		container_of(grab, struct rotate_grab, base.grab);
 	struct wl_input_device *device = grab->input_device;
-	struct shell_surface *surface = rotate->surface;
+	struct shell_surface *shsurf = rotate->base.shsurf;
 
 	if (device->button_count == 0 && state == 0) {
-		weston_matrix_multiply(&surface->rotation.rotation,
-				       &rotate->rotation);
+		if (shsurf)
+			weston_matrix_multiply(&shsurf->rotation.rotation,
+					       &rotate->rotation);
+		shell_grab_finish(&rotate->base);
 		wl_input_device_end_pointer_grab(device, time);
 		free(rotate);
 	}
@@ -1375,15 +1439,14 @@ rotate_binding(struct wl_input_device *device, uint32_t time,
 	if (!rotate)
 		return;
 
-	rotate->grab.interface = &rotate_grab_interface;
-	rotate->surface = surface;
+	shell_grab_init(&rotate->base, &rotate_grab_interface, surface);
 
 	weston_surface_to_global(surface->surface,
 				 surface->surface->geometry.width / 2,
 				 surface->surface->geometry.height / 2,
 				 &rotate->center.x, &rotate->center.y);
 
-	wl_input_device_start_pointer_grab(device, &rotate->grab, time);
+	wl_input_device_start_pointer_grab(device, &rotate->base.grab, time);
 
 	dx = device->x - rotate->center.x;
 	dy = device->y - rotate->center.y;
