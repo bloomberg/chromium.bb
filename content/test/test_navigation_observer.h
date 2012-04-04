@@ -31,12 +31,16 @@ class TestNavigationObserver : public content::NotificationObserver {
   TestNavigationObserver(const content::NotificationSource& source,
                          JsInjectionReadyObserver* js_injection_ready_observer,
                          int number_of_navigations);
+  // Like above but waits for one navigation.
+  explicit TestNavigationObserver(const content::NotificationSource& source);
 
   virtual ~TestNavigationObserver();
 
   // Run |wait_loop_callback| until complete, then run |done_callback|.
   void WaitForObservation(const base::Closure& wait_loop_callback,
                           const base::Closure& done_callback);
+  // Convenient version of the above that runs a nested message loop and waits.
+  void Wait();
 
  protected:
   // Note: |js_injection_ready_observer| is owned by the caller and should be

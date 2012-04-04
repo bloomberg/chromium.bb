@@ -4,6 +4,8 @@
 
 #include "content/test/test_navigation_observer.h"
 
+#include "base/bind.h"
+#include "base/message_loop.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_view_host_observer.h"
@@ -53,6 +55,17 @@ TestNavigationObserver::TestNavigationObserver(
   RegisterAsObserver(source);
 }
 
+TestNavigationObserver::TestNavigationObserver(
+    const content::NotificationSource& source)
+    : navigation_started_(false),
+      navigations_completed_(0),
+      number_of_navigations_(1),
+      js_injection_ready_observer_(NULL),
+      done_(false),
+      running_(false) {
+  RegisterAsObserver(source);
+}
+
 TestNavigationObserver::~TestNavigationObserver() {
 }
 
@@ -65,6 +78,14 @@ void TestNavigationObserver::WaitForObservation(
     done_callback_ = done_callback;
     wait_loop_callback.Run();
   }
+}
+
+void TestNavigationObserver::Wait() {
+  WaitForObservation(
+      base::Bind(&MessageLoop::Run,
+                 base::Unretained(MessageLoop::current())),
+      base::Bind(&MessageLoop::Quit,
+                 base::Unretained(MessageLoop::current())));
 }
 
 TestNavigationObserver::TestNavigationObserver(

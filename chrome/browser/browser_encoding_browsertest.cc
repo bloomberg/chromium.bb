@@ -1,45 +1,66 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#include <string>
 
+#include "base/bind.h"
 #include "base/file_util.h"
 #include "base/scoped_temp_dir.h"
+#include "chrome/browser/character_encoding.h"
+#include "chrome/browser/net/url_request_mock_util.h"
+#include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/test/automation/automation_proxy.h"
-#include "chrome/test/automation/browser_proxy.h"
-#include "chrome/test/automation/tab_proxy.h"
+#include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "chrome/test/ui/ui_test.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_source.h"
+#include "content/public/browser/notification_types.h"
+#include "content/public/browser/web_contents.h"
 #include "content/test/net/url_request_mock_http_job.h"
+#include "content/test/test_navigation_observer.h"
+
+using content::BrowserThread;
 
 static const FilePath::CharType* kTestDir = FILE_PATH_LITERAL("encoding_tests");
 
-class BrowserEncodingTest : public UITest {
+class BrowserEncodingTest : public InProcessBrowserTest {
  protected:
-  BrowserEncodingTest() : UITest() {}
+  BrowserEncodingTest() {}
 
-  // Make sure the content of the page are as expected
-  // after override or auto-detect
-  void CheckFile(const FilePath& generated_file,
-                 const FilePath& expected_result_file,
-                 bool check_equal) {
-    FilePath expected_result_filepath = ui_test_utils::GetTestFilePath(
-        FilePath(kTestDir), expected_result_file);
+  // Saves the current page and verifies that the output matches the expected
+  // result.
+  void SaveAndCompare(const char* filename_to_write, const FilePath& expected) {
+    // Dump the page, the content of dump page should be identical to the
+    // expected result file.
+    FilePath full_file_name = save_dir_.AppendASCII(filename_to_write);
+    // We save the page as way of complete HTML file, which requires a directory
+    // name to save sub resources in it. Although this test file does not have
+    // sub resources, but the directory name is still required.
+    ui_test_utils::WindowedNotificationObserver observer(
+        content::NOTIFICATION_SAVE_PACKAGE_SUCCESSFULLY_FINISHED,
+        content::NotificationService::AllSources());
+    browser()->GetSelectedWebContents()->SavePage(
+        full_file_name, temp_sub_resource_dir_,
+        content::SAVE_PAGE_TYPE_AS_COMPLETE_HTML);
+    observer.Wait();
 
-    ASSERT_TRUE(file_util::PathExists(expected_result_filepath));
-    WaitForGeneratedFileAndCheck(generated_file,
-                                 expected_result_filepath,
-                                 true,  // We do care whether they are equal.
-                                 check_equal,
-                                 true);  // Delete the generated file when done.
+    FilePath expected_file_name = ui_test_utils::GetTestFilePath(
+        FilePath(kTestDir), expected);
+
+    EXPECT_TRUE(file_util::ContentsEqual(full_file_name, expected_file_name));
   }
 
-  virtual void SetUp() {
-    UITest::SetUp();
+  void SetUpOnMainThread() OVERRIDE {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     save_dir_ = temp_dir_.path();
     temp_sub_resource_dir_ = save_dir_.AppendASCII("sub_resource_files");
+
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&chrome_browser_net::SetUrlRequestMocksEnabled, true));
   }
 
   ScopedTempDir temp_dir_;
@@ -54,10 +75,7 @@ class BrowserEncodingTest : public UITest {
 // also necessary.
 
 // http://crbug.com/82616
-#if defined(OS_MACOSX)
-#define TestEncodingAliasMapping DISABLED_TestEncodingAliasMapping
-#endif
-TEST_F(BrowserEncodingTest, TestEncodingAliasMapping) {
+IN_PROC_BROWSER_TEST_F(BrowserEncodingTest, TestEncodingAliasMapping) {
   struct EncodingTestData {
     const char* file_name;
     const char* encoding_name;
@@ -98,25 +116,22 @@ TEST_F(BrowserEncodingTest, TestEncodingAliasMapping) {
   };
   const char* const kAliasTestDir = "alias_mapping";
 
-  scoped_refptr<TabProxy> tab_proxy(GetActiveTab());
-  ASSERT_TRUE(tab_proxy.get());
-
   FilePath test_dir_path = FilePath(kTestDir).AppendASCII(kAliasTestDir);
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kEncodingTestDatas); ++i) {
     FilePath test_file_path(test_dir_path);
     test_file_path = test_file_path.AppendASCII(
         kEncodingTestDatas[i].file_name);
 
-    NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(test_file_path));
+    GURL url = URLRequestMockHTTPJob::GetMockUrl(test_file_path);
+    ui_test_utils::NavigateToURL(browser(), url);
 
-    std::string encoding;
-    EXPECT_TRUE(tab_proxy->GetPageCurrentEncoding(&encoding));
-    EXPECT_EQ(kEncodingTestDatas[i].encoding_name, encoding);
+    EXPECT_EQ(kEncodingTestDatas[i].encoding_name,
+              browser()->GetSelectedWebContents()->GetEncoding());
   }
 }
 
 // Marked as flaky: see  http://crbug.com/44668
-TEST_F(BrowserEncodingTest, DISABLED_TestOverrideEncoding) {
+IN_PROC_BROWSER_TEST_F(BrowserEncodingTest, TestOverrideEncoding) {
   const char* const kTestFileName = "gb18030_with_iso88591_meta.html";
   const char* const kExpectedFileName =
       "expected_gb18030_saved_from_iso88591_meta.html";
@@ -125,40 +140,23 @@ TEST_F(BrowserEncodingTest, DISABLED_TestOverrideEncoding) {
   FilePath test_dir_path = FilePath(kTestDir).AppendASCII(kOverrideTestDir);
   test_dir_path = test_dir_path.AppendASCII(kTestFileName);
   GURL url = URLRequestMockHTTPJob::GetMockUrl(test_dir_path);
-  scoped_refptr<TabProxy> tab_proxy(GetActiveTab());
-  ASSERT_TRUE(tab_proxy.get());
-  ASSERT_TRUE(tab_proxy->NavigateToURL(url));
-  WaitUntilTabCount(1);
-
-  // Get the encoding declared in the page.
-  std::string encoding;
-  EXPECT_TRUE(tab_proxy->GetPageCurrentEncoding(&encoding));
-  EXPECT_EQ(encoding, "ISO-8859-1");
+  ui_test_utils::NavigateToURL(browser(), url);
+  content::WebContents* web_contents = browser()->GetSelectedWebContents();
+  EXPECT_EQ("ISO-8859-1", web_contents->GetEncoding());
 
   // Override the encoding to "gb18030".
-  int64 last_nav_time = 0;
-  EXPECT_TRUE(tab_proxy->GetLastNavigationTime(&last_nav_time));
-  EXPECT_TRUE(tab_proxy->OverrideEncoding("gb18030"));
-  EXPECT_TRUE(tab_proxy->WaitForNavigation(last_nav_time));
+  const std::string selected_encoding =
+      CharacterEncoding::GetCanonicalEncodingNameByAliasName("gb18030");
+  TestNavigationObserver navigation_observer(
+      content::Source<content::NavigationController>(
+          &web_contents->GetController()));
+  web_contents->SetOverrideEncoding(selected_encoding);
+  navigation_observer.Wait();
+  EXPECT_EQ("gb18030", web_contents->GetEncoding());
 
-  // Re-get the encoding of page. It should be gb18030.
-  EXPECT_TRUE(tab_proxy->GetPageCurrentEncoding(&encoding));
-  EXPECT_EQ(encoding, "gb18030");
-
-  // Dump the page, the content of dump page should be identical to the
-  // expected result file.
-  FilePath full_file_name = save_dir_.AppendASCII(kTestFileName);
-  // We save the page as way of complete HTML file, which requires a directory
-  // name to save sub resources in it. Although this test file does not have
-  // sub resources, but the directory name is still required.
-  EXPECT_TRUE(tab_proxy->SavePage(full_file_name, temp_sub_resource_dir_,
-                                  content::SAVE_PAGE_TYPE_AS_COMPLETE_HTML));
-  scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
-  ASSERT_TRUE(browser.get());
-  EXPECT_TRUE(WaitForDownloadShelfVisible(browser.get()));
-  FilePath expected_file_name = FilePath().AppendASCII(kOverrideTestDir);
-  expected_file_name = expected_file_name.AppendASCII(kExpectedFileName);
-  CheckFile(full_file_name, expected_file_name, true);
+  FilePath expected_filename =
+      FilePath().AppendASCII(kOverrideTestDir).AppendASCII(kExpectedFileName);
+  SaveAndCompare(kTestFileName, expected_filename);
 }
 
 // The following encodings are excluded from the auto-detection test because
@@ -175,14 +173,7 @@ TEST_F(BrowserEncodingTest, DISABLED_TestOverrideEncoding) {
 
 // For Hebrew, the expected encoding value is ISO-8859-8-I. See
 // http://crbug.com/2927 for more details.
-// FLAKY / Disabled on CrOS: see http://crbug.com/44666
-#if defined(OS_CHROMEOS)
-#define MAYBE_TestEncodingAutoDetect DISABLED_TestEncodingAutoDetect
-#else
-#define MAYBE_TestEncodingAutoDetect DISABLED_TestEncodingAutoDetect
-#endif
-
-TEST_F(BrowserEncodingTest, MAYBE_TestEncodingAutoDetect) {
+IN_PROC_BROWSER_TEST_F(BrowserEncodingTest, TestEncodingAutoDetect) {
   struct EncodingAutoDetectTestData {
     const char* test_file_name;   // File name of test data.
     const char* expected_result;  // File name of expected results.
@@ -221,7 +212,7 @@ TEST_F(BrowserEncodingTest, MAYBE_TestEncodingAutoDetect) {
         "UTF-8" },
       { "windows-949_with_no_encoding_specified.html",
         "expected_windows-949_saved_from_no_encoding_specified.html",
-        "windows-949" },
+        "windows-949-2000" },
       { "windows-1251_with_no_encoding_specified.html",
         "expected_windows-1251_saved_from_no_encoding_specified.html",
         "windows-1251" },
@@ -239,66 +230,47 @@ TEST_F(BrowserEncodingTest, MAYBE_TestEncodingAutoDetect) {
   // Directory of the files of expected results.
   const char* const kExpectedResultDir = "expected_results";
 
-  // Full path of saved file. full_file_name = save_dir_ + file_name[i];
-  FilePath full_saved_file_name;
-
   FilePath test_dir_path = FilePath(kTestDir).AppendASCII(kAutoDetectDir);
 
-  scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
-  ASSERT_TRUE(browser.get());
   // Set the default charset to one of encodings not supported by the current
   // auto-detector (Please refer to the above comments) to make sure we
   // incorrectly decode the page. Now we use ISO-8859-4.
-  ASSERT_TRUE(browser->SetStringPreference(prefs::kGlobalDefaultCharset,
-                                           "ISO-8859-4"));
-  scoped_refptr<TabProxy> tab(GetActiveTab());
-  ASSERT_TRUE(tab.get());
+  browser()->profile()->GetPrefs()->SetString(
+      prefs::kGlobalDefaultCharset, "ISO-8859-4");
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestDatas);i++) {
+  content::WebContents* web_contents = browser()->GetSelectedWebContents();
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestDatas); ++i) {
+    // Disable auto detect if it is on.
+    browser()->profile()->GetPrefs()->SetBoolean(
+        prefs::kWebKitUsesUniversalDetector, false);
+
     FilePath test_file_path(test_dir_path);
     test_file_path = test_file_path.AppendASCII(kTestDatas[i].test_file_name);
-    GURL url =
-        URLRequestMockHTTPJob::GetMockUrl(test_file_path);
-    ASSERT_TRUE(tab->NavigateToURL(url));
-
-    // Disable auto detect if it is on.
-    EXPECT_TRUE(
-        browser->SetBooleanPreference(prefs::kWebKitUsesUniversalDetector,
-                                      false));
-    EXPECT_TRUE(tab->Reload());
+    GURL url = URLRequestMockHTTPJob::GetMockUrl(test_file_path);
+    ui_test_utils::NavigateToURL(browser(), url);
 
     // Get the encoding used for the page, it must be the default charset we
     // just set.
-    std::string encoding;
-    EXPECT_TRUE(tab->GetPageCurrentEncoding(&encoding));
-    EXPECT_EQ(encoding, "ISO-8859-4");
+    EXPECT_EQ("ISO-8859-4", web_contents->GetEncoding());
 
     // Enable the encoding auto detection.
-    EXPECT_TRUE(browser->SetBooleanPreference(
-        prefs::kWebKitUsesUniversalDetector, true));
-    EXPECT_TRUE(tab->Reload());
+    browser()->profile()->GetPrefs()->SetBoolean(
+        prefs::kWebKitUsesUniversalDetector, true);
+
+    TestNavigationObserver observer(
+        content::Source<content::NavigationController>(
+            &web_contents->GetController()));
+    browser()->Reload(CURRENT_TAB);
+    observer.Wait();
 
     // Re-get the encoding of page. It should return the real encoding now.
-    bool encoding_auto_detect = false;
-    EXPECT_TRUE(
-        browser->GetBooleanPreference(prefs::kWebKitUsesUniversalDetector,
-                                      &encoding_auto_detect));
-    EXPECT_TRUE(encoding_auto_detect);
-    EXPECT_TRUE(tab->GetPageCurrentEncoding(&encoding));
-    EXPECT_EQ(encoding, kTestDatas[i].expected_encoding);
+    EXPECT_EQ(kTestDatas[i].expected_encoding, web_contents->GetEncoding());
 
     // Dump the page, the content of dump page should be equal with our expect
     // result file.
-    full_saved_file_name = save_dir_.AppendASCII(kTestDatas[i].test_file_name);
-    // Full path of expect result file.
-    FilePath expected_result_file_name = FilePath().AppendASCII(kAutoDetectDir);
-    expected_result_file_name = expected_result_file_name.AppendASCII(
-        kExpectedResultDir);
-    expected_result_file_name = expected_result_file_name.AppendASCII(
-        kTestDatas[i].expected_result);
-    EXPECT_TRUE(tab->SavePage(full_saved_file_name, temp_sub_resource_dir_,
-                              content::SAVE_PAGE_TYPE_AS_COMPLETE_HTML));
-    EXPECT_TRUE(WaitForDownloadShelfVisible(browser.get()));
-    CheckFile(full_saved_file_name, expected_result_file_name, true);
+    FilePath expected_result_file_name =
+        FilePath().AppendASCII(kAutoDetectDir).AppendASCII(kExpectedResultDir).
+        AppendASCII(kTestDatas[i].expected_result);
+    SaveAndCompare(kTestDatas[i].test_file_name, expected_result_file_name);
   }
 }

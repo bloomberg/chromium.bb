@@ -790,7 +790,6 @@
         # NOTE: DON'T ADD NEW TESTS HERE!
         # New tests should be browser_tests. browser_tests are sharded and are
         # less flakier.
-        'browser/browser_encoding_uitest.cc',
         'browser/custom_handlers/custom_handlers_uitest.cc',
         'browser/download/save_page_uitest.cc',
         'browser/fast_shutdown_uitest.cc',
@@ -2636,6 +2635,7 @@
         'browser/automation/automation_tab_helper_browsertest.cc',
         'browser/bookmarks/bookmark_extension_apitest.cc',
         'browser/bookmarks/bookmark_manager_extension_apitest.cc',
+        'browser/browser_encoding_browsertest.cc',
         'browser/browsing_data_database_helper_browsertest.cc',
         'browser/browsing_data_helper_browsertest.h',
         'browser/browsing_data_indexed_db_helper_browsertest.cc',
