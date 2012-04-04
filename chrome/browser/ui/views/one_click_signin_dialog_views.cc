@@ -98,15 +98,8 @@ OneClickSigninDialogView::~OneClickSigninDialogView() {
 
 string16 OneClickSigninDialogView::GetDialogButtonLabel(
     ui::DialogButton button) const {
-  switch (button) {
-    case ui::DIALOG_BUTTON_OK:
-      return l10n_util::GetStringUTF16(IDS_ONE_CLICK_SIGNIN_DIALOG_OK_BUTTON);
-    case ui::DIALOG_BUTTON_CANCEL:
-      return l10n_util::GetStringUTF16(IDS_CANCEL);
-    default:
-      NOTREACHED();
-      return string16();
-  }
+  return l10n_util::GetStringUTF16((button == ui::DIALOG_BUTTON_OK) ?
+      IDS_ONE_CLICK_SIGNIN_DIALOG_OK_BUTTON : IDS_CANCEL);
 }
 
 int OneClickSigninDialogView::GetDefaultDialogButton() const {

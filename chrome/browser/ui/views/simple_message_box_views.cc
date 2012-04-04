@@ -94,8 +94,8 @@ int SimpleMessageBoxViews::GetDialogButtons() const {
 
 string16 SimpleMessageBoxViews::GetDialogButtonLabel(
     ui::DialogButton button) const {
-  return button == ui::DIALOG_BUTTON_OK ? l10n_util::GetStringUTF16(IDS_OK)
-                                        : l10n_util::GetStringUTF16(IDS_CLOSE);
+  return l10n_util::GetStringUTF16((button == ui::DIALOG_BUTTON_OK) ?
+      IDS_OK : IDS_CLOSE);
 }
 
 bool SimpleMessageBoxViews::ShouldShowWindowTitle() const {

@@ -26,7 +26,6 @@ class UpdateRecommendedMessageBox : public views::DialogDelegate {
 
  protected:
   // Overridden from views::DialogDelegate:
-  virtual int GetDialogButtons() const OVERRIDE;
   virtual string16 GetDialogButtonLabel(ui::DialogButton button) const OVERRIDE;
 
   // Overridden from views::WidgetDelegate:

@@ -40,16 +40,10 @@ bool UpdateRecommendedMessageBox::Accept() {
   return true;
 }
 
-int UpdateRecommendedMessageBox::GetDialogButtons() const {
-  return ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
-}
-
 string16 UpdateRecommendedMessageBox::GetDialogButtonLabel(
     ui::DialogButton button) const {
-  DCHECK(button == ui::DIALOG_BUTTON_OK || button == ui::DIALOG_BUTTON_CANCEL);
-  return button == ui::DIALOG_BUTTON_OK ?
-      l10n_util::GetStringUTF16(IDS_RELAUNCH_AND_UPDATE) :
-      l10n_util::GetStringUTF16(IDS_NOT_NOW);
+  return l10n_util::GetStringUTF16((button == ui::DIALOG_BUTTON_OK) ?
+      IDS_RELAUNCH_AND_UPDATE : IDS_NOT_NOW);
 }
 
 bool UpdateRecommendedMessageBox::ShouldShowWindowTitle() const {

@@ -164,15 +164,8 @@ ExtensionUninstallDialogDelegateView::~ExtensionUninstallDialogDelegateView() {
 
 string16 ExtensionUninstallDialogDelegateView::GetDialogButtonLabel(
     ui::DialogButton button) const {
-  switch (button) {
-    case ui::DIALOG_BUTTON_OK:
-      return l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_UNINSTALL_BUTTON);
-    case ui::DIALOG_BUTTON_CANCEL:
-      return l10n_util::GetStringUTF16(IDS_CANCEL);
-    default:
-      NOTREACHED();
-      return string16();
-  }
+  return l10n_util::GetStringUTF16((button == ui::DIALOG_BUTTON_OK) ?
+      IDS_EXTENSION_PROMPT_UNINSTALL_BUTTON : IDS_CANCEL);
 }
 
 bool ExtensionUninstallDialogDelegateView::Accept() {

@@ -108,11 +108,8 @@ gfx::Size DownloadInProgressDialogView::GetPreferredSize() {
 
 string16 DownloadInProgressDialogView::GetDialogButtonLabel(
     ui::DialogButton button) const {
-  if (button == ui::DIALOG_BUTTON_OK)
-    return ok_button_text_;
-
-  DCHECK_EQ(ui::DIALOG_BUTTON_CANCEL, button);
-  return cancel_button_text_;
+  return (button == ui::DIALOG_BUTTON_OK) ? ok_button_text_
+                                          : cancel_button_text_;
 }
 
 int DownloadInProgressDialogView::GetDefaultDialogButton() const {
