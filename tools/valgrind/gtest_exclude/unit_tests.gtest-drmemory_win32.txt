@@ -33,7 +33,3 @@ WebsiteSettingsModelTest.*
 # fails with gmock errors
 # http://crbug.com/117796
 SyncNewNonFrontendDataTypeControllerTest.StartAfterSyncShutdown
-
-# fails with Check failed: url.inner_url()
-# http://crbug.com/121600
-FileSystemURLRequestJobTest.FileTestFullSpecifiedRange
