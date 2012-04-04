@@ -812,7 +812,7 @@ TEST_F(SyncableDirectoryTest, TestGetUnsynced) {
 }
 
 TEST_F(SyncableDirectoryTest, TestGetUnappliedUpdates) {
-  Directory::UnappliedUpdateMetaHandles handles;
+  std::vector<int64> handles;
   int64 handle1, handle2;
   const syncable::FullModelTypeSet all_types =
       syncable::FullModelTypeSet::All();

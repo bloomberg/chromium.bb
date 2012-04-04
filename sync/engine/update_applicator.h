@@ -31,8 +31,7 @@ class Cryptographer;
 
 class UpdateApplicator {
  public:
-  typedef syncable::Directory::UnappliedUpdateMetaHandles::iterator
-      UpdateIterator;
+  typedef std::vector<int64>::iterator UpdateIterator;
 
   UpdateApplicator(ConflictResolver* resolver,
                    Cryptographer* cryptographer,

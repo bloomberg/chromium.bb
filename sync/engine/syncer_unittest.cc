@@ -2485,7 +2485,7 @@ TEST_F(SyncerTest, ParentAndChildBothMatch) {
     EXPECT_EQ(1u, children.size());
     directory()->GetChildHandlesById(&trans, parent_id, &children);
     EXPECT_EQ(1u, children.size());
-    Directory::UnappliedUpdateMetaHandles unapplied;
+    std::vector<int64> unapplied;
     directory()->GetUnappliedUpdateMetaHandles(&trans, all_types, &unapplied);
     EXPECT_EQ(0u, unapplied.size());
     syncable::Directory::UnsyncedMetaHandles unsynced;

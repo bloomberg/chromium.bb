@@ -1011,10 +1011,9 @@ class Directory {
 
   // Get all the metahandles for unapplied updates for a given set of
   // server types.
-  typedef std::vector<int64> UnappliedUpdateMetaHandles;
   void GetUnappliedUpdateMetaHandles(BaseTransaction* trans,
                                      FullModelTypeSet server_types,
-                                     UnappliedUpdateMetaHandles* result);
+                                     std::vector<int64>* result);
 
   // Checks tree metadata consistency.
   // If full_scan is false, the function will avoid pulling any entries from the

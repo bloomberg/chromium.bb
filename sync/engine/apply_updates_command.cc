@@ -55,7 +55,7 @@ SyncerError ApplyUpdatesCommand::ModelChangingExecuteImpl(
     }
   }
 
-  syncable::Directory::UnappliedUpdateMetaHandles handles;
+  std::vector<int64> handles;
   dir->GetUnappliedUpdateMetaHandles(
       &trans, server_type_restriction, &handles);
 

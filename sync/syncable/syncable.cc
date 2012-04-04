@@ -1174,7 +1174,7 @@ FullModelTypeSet Directory::GetServerTypesWithUnappliedUpdates(
 void Directory::GetUnappliedUpdateMetaHandles(
     BaseTransaction* trans,
     FullModelTypeSet server_types,
-    UnappliedUpdateMetaHandles* result) {
+    std::vector<int64>* result) {
   result->clear();
   ScopedKernelLock lock(this);
   for (int i = UNSPECIFIED; i < MODEL_TYPE_COUNT; ++i) {
