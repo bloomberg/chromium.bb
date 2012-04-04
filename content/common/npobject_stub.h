@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -41,7 +41,8 @@ class NPObjectStub : public IPC::Channel::Listener,
   // Schedules tear-down of this stub.  The underlying NPObject reference is
   // released, and further invokations form the IPC channel will fail once this
   // call has returned.  Deletion of the stub is deferred to the main loop, in
-  // case it is touched as the stack unwinds.
+  // case it is touched as the stack unwinds.  DeleteSoon() is safe to call
+  // more than once, until control returns to the main loop.
   void DeleteSoon();
 
   // IPC::Message::Sender implementation:
