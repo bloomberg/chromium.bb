@@ -5,6 +5,7 @@
 #include "remoting/client/mouse_input_filter.h"
 
 #include "remoting/proto/event.pb.h"
+#include "remoting/protocol/protocol_mock_objects.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkPoint.h"
@@ -14,19 +15,11 @@ using ::testing::InSequence;
 
 namespace remoting {
 
+using protocol::MockInputStub;
+
 MATCHER_P2(EqualsMouseMoveEvent, x, y, "") {
   return arg.x() == x && arg.y() == y;
 }
-
-class MockInputStub : public protocol::InputStub {
- public:
-  MockInputStub() {}
-
-  MOCK_METHOD1(InjectKeyEvent, void(const protocol::KeyEvent&));
-  MOCK_METHOD1(InjectMouseEvent, void(const protocol::MouseEvent&));
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockInputStub);
-};
 
 static protocol::MouseEvent MouseMoveEvent(int x, int y) {
   protocol::MouseEvent event;

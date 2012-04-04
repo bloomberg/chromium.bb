@@ -6,6 +6,7 @@
 
 #include "remoting/proto/event.pb.h"
 #include "remoting/protocol/input_event_tracker.h"
+#include "remoting/protocol/protocol_mock_objects.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -15,19 +16,12 @@ using ::testing::InSequence;
 
 namespace remoting {
 
+using protocol::MockInputStub;
+using protocol::InputEventTracker;
+
 MATCHER_P2(EqualsKeyEvent, keycode, pressed, "") {
   return arg.keycode() == keycode && arg.pressed() == pressed;
 }
-
-class MockInputStub : public protocol::InputStub {
- public:
-  MockInputStub() {}
-
-  MOCK_METHOD1(InjectKeyEvent, void(const protocol::KeyEvent&));
-  MOCK_METHOD1(InjectMouseEvent, void(const protocol::MouseEvent&));
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockInputStub);
-};
 
 static protocol::MouseEvent MouseMoveEvent(int x, int y) {
   protocol::MouseEvent event;
@@ -46,7 +40,7 @@ static protocol::KeyEvent KeyEvent(int keycode, bool pressed) {
 // Verify that events get through if there is no local activity.
 TEST(RemoteInputFilterTest, NoLocalActivity) {
   MockInputStub mock_stub;
-  protocol::InputEventTracker input_tracker(&mock_stub);
+  InputEventTracker input_tracker(&mock_stub);
   RemoteInputFilter input_filter(&input_tracker);
 
   EXPECT_CALL(mock_stub, InjectMouseEvent(_))
@@ -59,7 +53,7 @@ TEST(RemoteInputFilterTest, NoLocalActivity) {
 // Verify that events get through until there is local activity.
 TEST(RemoteInputFilterTest, MismatchedLocalActivity) {
   MockInputStub mock_stub;
-  protocol::InputEventTracker input_tracker(&mock_stub);
+  InputEventTracker input_tracker(&mock_stub);
   RemoteInputFilter input_filter(&input_tracker);
 
   EXPECT_CALL(mock_stub, InjectMouseEvent(_))
@@ -75,7 +69,7 @@ TEST(RemoteInputFilterTest, MismatchedLocalActivity) {
 // Verify that echos of injected events don't block activity.
 TEST(RemoteInputFilterTest, LocalEchoesOfRemoteActivity) {
   MockInputStub mock_stub;
-  protocol::InputEventTracker input_tracker(&mock_stub);
+  InputEventTracker input_tracker(&mock_stub);
   RemoteInputFilter input_filter(&input_tracker);
 
   EXPECT_CALL(mock_stub, InjectMouseEvent(_))
@@ -90,7 +84,7 @@ TEST(RemoteInputFilterTest, LocalEchoesOfRemoteActivity) {
 // Verify that echos followed by a mismatch blocks activity.
 TEST(RemoteInputFilterTest, LocalEchosAndLocalActivity) {
   MockInputStub mock_stub;
-  protocol::InputEventTracker input_tracker(&mock_stub);
+  InputEventTracker input_tracker(&mock_stub);
   RemoteInputFilter input_filter(&input_tracker);
 
   EXPECT_CALL(mock_stub, InjectMouseEvent(_))
@@ -107,7 +101,7 @@ TEST(RemoteInputFilterTest, LocalEchosAndLocalActivity) {
 // Verify that local activity also causes buttons & keys to be released.
 TEST(RemoteInputFilterTest, LocalActivityReleasesAll) {
   MockInputStub mock_stub;
-  protocol::InputEventTracker input_tracker(&mock_stub);
+  InputEventTracker input_tracker(&mock_stub);
   RemoteInputFilter input_filter(&input_tracker);
 
   EXPECT_CALL(mock_stub, InjectMouseEvent(_))
