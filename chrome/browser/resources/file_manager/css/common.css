@@ -26,6 +26,7 @@ input.common[type='checkbox'] {
 input.common[type='checkbox']:checked::after {
   background-image: url('../images/common/check_no_box.png');
   background-position: -3px -4px;
+  background-repeat: no-repeat;
 }
 
 input.common[type='checkbox']::after {

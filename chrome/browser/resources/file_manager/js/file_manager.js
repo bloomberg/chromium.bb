@@ -1830,21 +1830,27 @@ FileManager.prototype = {
     this.dialogDom_.querySelector('.dialog-title').textContent = dialogTitle;
   };
 
-  /**
-   * Render (and wire up) a checkbox to be used in either a detail or a
-   * thumbnail list item.
-   */
-  FileManager.prototype.renderCheckbox_ = function(entry) {
+  FileManager.prototype.renderCheckbox_ = function() {
     function stopEventPropagation(event) {
       event.stopPropagation();
     }
     var input = this.document_.createElement('input');
     input.setAttribute('type', 'checkbox');
     input.setAttribute('tabindex', -1);
-    input.className = 'file-checkbox common';
+    input.classList.add('common');
     input.addEventListener('mousedown', stopEventPropagation);
     input.addEventListener('mouseup', stopEventPropagation);
     input.addEventListener('dblclick', stopEventPropagation);
+    return input;
+  };
+
+  /**
+   * Render (and wire up) a checkbox to be used in either a detail or a
+   * thumbnail list item.
+   */
+  FileManager.prototype.renderSelectionCheckbox_ = function(entry) {
+    var input = this.renderCheckbox_();
+    input.classList.add('file-checkbox');
     input.addEventListener('click',
                            this.onCheckboxClick_.bind(this));
 
@@ -1978,7 +1984,7 @@ FileManager.prototype = {
     li.className = 'thumbnail-item';
 
     if (this.showCheckboxes_)
-      li.appendChild(this.renderCheckbox_(entry));
+      li.appendChild(this.renderSelectionCheckbox_(entry));
 
     li.appendChild(this.renderThumbnailBox_(entry, false));
     var label = this.renderFileNameLabel_(entry);
@@ -2129,7 +2135,7 @@ FileManager.prototype = {
   FileManager.prototype.renderName_ = function(entry, columnId, table) {
     var label = this.document_.createElement('div');
     if (this.showCheckboxes_)
-      label.appendChild(this.renderCheckbox_(entry));
+      label.appendChild(this.renderSelectionCheckbox_(entry));
     label.appendChild(this.renderIconType_(entry, columnId, table));
     label.entry = entry;
     label.className = 'detail-name';
@@ -2255,10 +2261,8 @@ FileManager.prototype = {
     if (entry.isDirectory)
       return div;
 
-    var checkbox = doc.createElement('input');
-    checkbox.type = 'checkbox';
-    checkbox.className = 'common pin';
-    checkbox.tabIndex = -1;
+    var checkbox = this.renderCheckbox_();
+    checkbox.classList.add('pin');
     checkbox.addEventListener('click',
                               this.onPinClick_.bind(this, checkbox, entry));
 

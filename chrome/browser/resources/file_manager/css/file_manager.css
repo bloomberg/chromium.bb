@@ -1083,7 +1083,8 @@ li.table-row {
   -webkit-margin-end: 3px;
 }
 
-.detail-name > .file-checkbox::before {
+.detail-name > .file-checkbox::before,
+.pin::before {
   /* Invisible area that reacts on mouse events. */
   content: '';
   display: -webkit-box;
@@ -1167,10 +1168,8 @@ menu.file-context-menu {
 }
 
 input.common.pin[type='checkbox']:checked::after {
-  content: url('../images/pin.png');
-  left: 3px;
-  position: relative;
-  top: -4px;
+  background-image: url('../images/pin.png');
+  background-position: 4px 0;
 }
 
 div.offline {
