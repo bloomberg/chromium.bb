@@ -17,6 +17,8 @@ namespace gles2 {
 class GLES2Implementation;
 class ProgramInfoManager;
 
+typedef void (GLES2Implementation::*DeleteFn)(GLsizei n, const GLuint* ids);
+
 // Base class for IdHandlers
 class IdHandlerInterface {
  public:
@@ -33,7 +35,8 @@ class IdHandlerInterface {
 
   // Frees some ids.
   virtual bool FreeIds(
-      GLES2Implementation* gl_impl, GLsizei n, const GLuint* ids) = 0;
+      GLES2Implementation* gl_impl, GLsizei n, const GLuint* ids,
+      DeleteFn delete_fn) = 0;
 
   // Marks an id as used for glBind functions. id = 0 does nothing.
   virtual bool MarkAsUsedForBind(GLuint id) = 0;

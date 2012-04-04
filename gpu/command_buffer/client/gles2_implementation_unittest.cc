@@ -381,32 +381,6 @@ class GLES2ImplementationTest : public testing::Test {
           .RetiresOnSaturation();
       GetNextToken();  // eat the token that starting up will use.
 
-      // Must match StrictSharedIdHandler::kNumIdsToGet.
-      GLuint num_ids = 2048;
-      scoped_array<GLuint> all_ids(new GLuint[num_ids]);
-      if (shared_resources) {
-        if (!bind_generates_resource) {
-          GLuint start = kStartId;
-          GLuint max_num_per = MaxTransferBufferSize() / sizeof(GLuint);
-          GLuint* ids = all_ids.get();
-          for (GLuint ii = 0; ii < num_ids; ++ii) {
-            ids[ii] = start + ii;
-          }
-          while (num_ids) {
-            GLuint num = std::min(num_ids, max_num_per);
-            size_t size = num * sizeof(ids[0]);
-            ExpectedMemoryInfo mem = GetExpectedMemory(size);
-            EXPECT_CALL(*command_buffer(), OnFlush())
-                .WillOnce(SetMemoryFromArray(mem.ptr, ids, size))
-                .RetiresOnSaturation();
-            GetNextToken();
-            start += num;
-            ids += num;
-            num_ids -= num;
-          }
-        }
-      }
-
       gl_.reset(new GLES2Implementation(
           helper_.get(),
           NULL,
@@ -2091,27 +2065,10 @@ TEST_F(GLES2ImplementationTest, TexSubImage2DFlipY) {
       mem2.ptr));
 }
 
-// Test that GenBuffer does not call GenSharedIds.
-// This is because with client side arrays on we know the StrictSharedIdHandler
-// for buffers has already gotten a set of ids
-TEST_F(GLES2ImplementationStrictSharedTest, GenBuffer) {
-  // Starts at + 2 because client side arrays take first 2 ids.
-  GLuint ids[3] = { kStartId + 2, kStartId + 3, kStartId + 4 };
-  struct Cmds {
-    GenBuffersImmediate gen;
-    GLuint data[3];
-  };
-  Cmds expected;
-  expected.gen.Init(arraysize(ids), &ids[0]);
-  gl_->GenBuffers(arraysize(ids), &ids[0]);
-  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
-  EXPECT_NE(0u, ids[0]);
-  EXPECT_NE(0u, ids[1]);
-  EXPECT_NE(0u, ids[2]);
-}
-
 // Binds can not be cached with bind_generates_resource = false because
-// our id might not be valid.
+// our id might not be valid. More specifically if you bind on contextA then
+// delete on contextB the resource is still bound on contextA but GetInterger
+// won't return an id.
 TEST_F(GLES2ImplementationStrictSharedTest, BindsNotCached) {
   struct PNameValue {
     GLenum pname;
@@ -2138,45 +2095,6 @@ TEST_F(GLES2ImplementationStrictSharedTest, BindsNotCached) {
     gl_->GetIntegerv(pv.pname, &v);
     EXPECT_EQ(pv.expected, v);
   }
-}
-
-TEST_F(GLES2ImplementationStrictSharedTest, CanNotDeleteIdsWeDidNotCreate) {
-  GLuint id = 0x12345678;
-
-  ExpectedMemoryInfo result1 =
-      GetExpectedResultMemory(sizeof(GetError::Result));
-  ExpectedMemoryInfo result2 =
-      GetExpectedResultMemory(sizeof(GetError::Result));
-  ExpectedMemoryInfo result3 =
-      GetExpectedResultMemory(sizeof(GetError::Result));
-  ExpectedMemoryInfo result4 =
-      GetExpectedResultMemory(sizeof(GetError::Result));
-  ExpectedMemoryInfo result5 =
-      GetExpectedResultMemory(sizeof(GetError::Result));
-  ExpectedMemoryInfo result6 =
-      GetExpectedResultMemory(sizeof(GetError::Result));
-
-  EXPECT_CALL(*command_buffer(), OnFlush())
-      .WillOnce(SetMemory(result1.ptr, GLuint(GL_NO_ERROR)))
-      .WillOnce(SetMemory(result2.ptr, GLuint(GL_NO_ERROR)))
-      .WillOnce(SetMemory(result3.ptr, GLuint(GL_NO_ERROR)))
-      .WillOnce(SetMemory(result4.ptr, GLuint(GL_NO_ERROR)))
-      .WillOnce(SetMemory(result5.ptr, GLuint(GL_NO_ERROR)))
-      .WillOnce(SetMemory(result6.ptr, GLuint(GL_NO_ERROR)))
-      .RetiresOnSaturation();
-
-  gl_->DeleteBuffers(1, &id);
-  EXPECT_EQ(static_cast<GLenum>(GL_INVALID_VALUE), gl_->GetError());
-  gl_->DeleteFramebuffers(1, &id);
-  EXPECT_EQ(static_cast<GLenum>(GL_INVALID_VALUE), gl_->GetError());
-  gl_->DeleteRenderbuffers(1, &id);
-  EXPECT_EQ(static_cast<GLenum>(GL_INVALID_VALUE), gl_->GetError());
-  gl_->DeleteTextures(1, &id);
-  EXPECT_EQ(static_cast<GLenum>(GL_INVALID_VALUE), gl_->GetError());
-  gl_->DeleteProgram(id);
-  EXPECT_EQ(static_cast<GLenum>(GL_INVALID_VALUE), gl_->GetError());
-  gl_->DeleteShader(id);
-  EXPECT_EQ(static_cast<GLenum>(GL_INVALID_VALUE), gl_->GetError());
 }
 
 TEST_F(GLES2ImplementationTest, CreateStreamTextureCHROMIUM) {
