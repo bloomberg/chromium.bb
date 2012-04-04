@@ -201,10 +201,12 @@ found in the LICENSE file.
               data-ui-mode="home.host-setup.ask-pin"
               action="">
           <div>
-            <label for="daemon-pin-input"
+            <label for="daemon-pin-entry"
                    i18n-content="ASK_PIN_DIALOG_LABEL"
                    class="box-spacer"></label>
-            <input id="daemon-pin-entry" type="password">
+            <input id="daemon-pin-entry"
+                   autofocus="autofocus"
+                   type="password">
           </div>
           <div>
             <label for="daemon-pin-confirm"

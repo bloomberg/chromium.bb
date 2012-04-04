@@ -111,6 +111,14 @@ remoting.HostSetupDialog = function(daemon) {
   };
   var form = document.getElementById('ask-pin-form');
   form.addEventListener('submit', onPinSubmit, false);
+  /** @param {Event} event The event. */
+  var onDaemonPinEntryKeyPress = function(event) {
+    if (event.which == 13) {
+      document.getElementById('daemon-pin-confirm').focus();
+      event.preventDefault();
+    }
+  };
+  this.pinEntry_.addEventListener('keypress', onDaemonPinEntryKeyPress, false);
 };
 
 /**
@@ -165,8 +173,8 @@ remoting.HostSetupDialog.prototype.hide = function() {
  */
 remoting.HostSetupDialog.prototype.startNewFlow_ = function(sequence) {
   this.flow_ = new remoting.HostSetupFlow(sequence);
-  this.pinEntry_.text = '';
-  this.pinConfirm_.text = '';
+  this.pinEntry_.value = '';
+  this.pinConfirm_.value = '';
   this.updateState_();
 };
 
