@@ -39,9 +39,11 @@ class DevToolsFrontendHostDelegate {
   // Opens given |url| in the new tab.
   virtual void OpenInNewTab(const std::string& url) = 0;
 
-  // Shows "Save As..." dialog to save |content|.
-  virtual void SaveToFile(const std::string& suggested_file_name,
-                          const std::string& content) = 0;
+  // Saves given |content| associated with the given |url|. Optionally showing
+  // Save As dialog.
+  virtual void SaveToFile(const std::string& url,
+                          const std::string& content,
+                          bool save_as) = 0;
 
   // This method is called when tab inspected by this devtools frontend is
   // closing.

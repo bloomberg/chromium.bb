@@ -150,9 +150,10 @@ IPC_MESSAGE_ROUTED1(DevToolsHostMsg_OpenInNewTab,
                     std::string /* url */)
 
 // Shows Save As dialog for content.
-IPC_MESSAGE_ROUTED2(DevToolsHostMsg_SaveAs,
-                    std::string /* file_name */,
-                    std::string /* content */)
+IPC_MESSAGE_ROUTED3(DevToolsHostMsg_Save,
+                    std::string /* url */,
+                    std::string /* content */,
+                    bool /* save_as */)
 
 // Updates agent runtime state stored in devtools manager in order to support
 // cross-navigation instrumentation.

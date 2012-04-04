@@ -1446,6 +1446,9 @@ const char kDevToolsHSplitLocation[] = "devtools.split_location";
 // Integer location of the vertical split bar in the browser view.
 const char kDevToolsVSplitLocation[] = "devtools.v_split_location";
 
+// Maps of files edited locally using DevTools.
+const char kDevToolsEditedFiles[] = "devtools.edited_files";
+
 // 64-bit integer serialization of the base::Time when the last sync occurred.
 const char kSyncLastSyncedTime[] = "sync.last_synced_time";
 

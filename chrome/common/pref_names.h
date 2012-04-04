@@ -525,6 +525,7 @@ extern const char kDevToolsOpenDocked[];
 extern const char kDevToolsDockSide[];
 extern const char kDevToolsHSplitLocation[];
 extern const char kDevToolsVSplitLocation[];
+extern const char kDevToolsEditedFiles[];
 
 extern const char kSyncLastSyncedTime[];
 extern const char kSyncHasSetupCompleted[];

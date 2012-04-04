@@ -48,8 +48,9 @@ class DevToolsFrontendHost : public DevToolsClientHost,
   void OnRequestUndockWindow();
   void OnRequestSetDockSide(const std::string& side);
   void OnOpenInNewTab(const std::string& url);
-  void OnSaveAs(const std::string& file_name,
-                const std::string& content);
+  void OnSave(const std::string& url,
+              const std::string& content,
+              bool save_as);
 
   TabContents* tab_contents_;
   DevToolsFrontendHostDelegate* delegate_;

@@ -10,6 +10,8 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
+#include "chrome/browser/debugger/devtools_file_helper.h"
 #include "chrome/browser/debugger/devtools_toggle_action.h"
 #include "content/public/browser/devtools_client_host.h"
 #include "content/public/browser/devtools_frontend_host_delegate.h"
@@ -40,7 +42,8 @@ class WebContents;
 
 class DevToolsWindow : private content::NotificationObserver,
                        private content::WebContentsDelegate,
-                       private content::DevToolsFrontendHostDelegate {
+                       private content::DevToolsFrontendHostDelegate,
+                       private DevToolsFileHelper::Delegate {
  public:
   static const char kDevToolsApp[];
   static void RegisterUserPrefs(PrefService* prefs);
@@ -100,8 +103,8 @@ class DevToolsWindow : private content::NotificationObserver,
                              bool shared_worker_frontend);
   void UpdateTheme();
   void AddDevToolsExtensionsToClient();
-  void CallClientFunction(const string16& function_name,
-                          const base::Value& arg);
+  void CallClientFunction(const std::string& function_name,
+                          const base::Value* arg);
   // Overridden from content::WebContentsDelegate.
   virtual content::WebContents* OpenURLFromTab(
       content::WebContents* source,
@@ -136,8 +139,13 @@ class DevToolsWindow : private content::NotificationObserver,
   virtual void UndockWindow() OVERRIDE;
   virtual void SetDockSide(const std::string& side) OVERRIDE;
   virtual void OpenInNewTab(const std::string& url) OVERRIDE;
-  virtual void SaveToFile(const std::string& suggested_file_name,
-                          const std::string& content) OVERRIDE;
+  virtual void SaveToFile(const std::string& url,
+                          const std::string& content,
+                          bool save_as) OVERRIDE;
+
+  // Overridden from DevToolsFileHelper::Delegate
+  virtual void FileSavedAs(const std::string& url,
+                           const FilePath& path)  OVERRIDE;
 
   void RequestSetDocked(bool docked);
 
@@ -150,6 +158,7 @@ class DevToolsWindow : private content::NotificationObserver,
   DevToolsToggleAction action_on_load_;
   content::NotificationRegistrar registrar_;
   content::DevToolsClientHost* frontend_host_;
+  scoped_ptr<DevToolsFileHelper> file_helper_;
   DISALLOW_COPY_AND_ASSIGN(DevToolsWindow);
 };
 

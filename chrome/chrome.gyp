@@ -200,8 +200,8 @@
       'sources': [
         'browser/debugger/browser_list_tabcontents_provider.cc',
         'browser/debugger/browser_list_tabcontents_provider.h',
-        'browser/debugger/devtools_file_util.cc',
-        'browser/debugger/devtools_file_util.h',
+        'browser/debugger/devtools_file_helper.cc',
+        'browser/debugger/devtools_file_helper.h',
         'browser/debugger/devtools_toggle_action.h',
         'browser/debugger/devtools_window.cc',
         'browser/debugger/devtools_window.h',

@@ -79,11 +79,18 @@ void DevToolsClient::openInNewTab(const WebKit::WebString& url) {
                                         url.utf8()));
 }
 
-void DevToolsClient::saveAs(const WebKit::WebString& file_name,
+void DevToolsClient::saveAs(const WebKit::WebString& url,
                             const WebKit::WebString& content) {
-  Send(new DevToolsHostMsg_SaveAs(routing_id(),
-                                  file_name.utf8(),
-                                  content.utf8()));
+  save(url, content, true);
+}
+
+void DevToolsClient::save(const WebKit::WebString& url,
+                          const WebKit::WebString& content,
+                          bool save_as) {
+  Send(new DevToolsHostMsg_Save(routing_id(),
+                                url.utf8(),
+                                content.utf8(),
+                                save_as));
 }
 
 void DevToolsClient::OnDispatchOnInspectorFrontend(const std::string& message) {
