@@ -569,6 +569,11 @@ ChromeBrowserMainParts::ChromeBrowserMainParts(
   // If we're running tests (ui_task is non-null).
   if (parameters.ui_task)
     browser_defaults::enable_help_app = false;
+
+  // Chrome disallows cookies by default. All code paths that want to use
+  // cookies need to go through one of Chrome's URLRequestContexts which have
+  // a ChromeNetworkDelegate attached that selectively allows cookies again.
+  net::URLRequest::SetDefaultCookiePolicyToBlock();
 }
 
 ChromeBrowserMainParts::~ChromeBrowserMainParts() {
