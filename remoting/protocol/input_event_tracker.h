@@ -34,7 +34,10 @@ class InputEventTracker : public InputStub {
  private:
   protocol::InputStub* input_stub_;
 
-  std::set<int> pressed_keys_;
+  // TODO(wez): Replace this with a set of integers when we deprecate VK codes.
+  typedef bool(*PressedKeyCompareFnPtr)(const KeyEvent&,const KeyEvent&);
+  typedef std::set<KeyEvent,PressedKeyCompareFnPtr> PressedKeySet;
+  PressedKeySet pressed_keys_;
 
   SkIPoint mouse_pos_;
   uint32 mouse_button_state_;

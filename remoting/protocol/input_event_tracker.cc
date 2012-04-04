@@ -10,8 +10,21 @@
 namespace remoting {
 namespace protocol {
 
+static bool PressedKeysLessThan(const KeyEvent& a, const KeyEvent& b) {
+  if ((!a.has_usb_keycode() && !b.has_usb_keycode()) ||
+      (a.usb_keycode() == b.usb_keycode())) {
+    if (a.has_keycode() && b.has_keycode())
+      return a.keycode() < b.keycode();
+    return b.has_keycode();
+  }
+  if (a.has_usb_keycode() && b.has_usb_keycode())
+    return a.usb_keycode() < b.usb_keycode();
+  return b.has_usb_keycode();
+}
+
 InputEventTracker::InputEventTracker(InputStub* input_stub)
     : input_stub_(input_stub),
+      pressed_keys_(&PressedKeysLessThan),
       mouse_pos_(SkIPoint::Make(0, 0)),
       mouse_button_state_(0) {
 }
@@ -20,12 +33,12 @@ InputEventTracker::~InputEventTracker() {
 }
 
 void InputEventTracker::InjectKeyEvent(const KeyEvent& event) {
-  DCHECK(event.has_pressed());
-  DCHECK(event.has_keycode());
-  if (event.pressed()) {
-    pressed_keys_.insert(event.keycode());
-  } else {
-    pressed_keys_.erase(event.keycode());
+  if (event.has_pressed() && (event.has_keycode() || event.has_usb_keycode())) {
+    if (event.pressed()) {
+      pressed_keys_.insert(event);
+    } else {
+      pressed_keys_.erase(event);
+    }
   }
   input_stub_->InjectKeyEvent(event);
 }
@@ -49,10 +62,9 @@ void InputEventTracker::InjectMouseEvent(const MouseEvent& event) {
 }
 
 void InputEventTracker::ReleaseAll() {
-  std::set<int>::iterator i;
+  PressedKeySet::iterator i;
   for (i = pressed_keys_.begin(); i != pressed_keys_.end(); ++i) {
-    KeyEvent event;
-    event.set_keycode(*i);
+    KeyEvent event = *i;
     event.set_pressed(false);
     input_stub_->InjectKeyEvent(event);
   }
