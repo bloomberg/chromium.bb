@@ -1929,7 +1929,7 @@
         "page_cycler.html",
         "page_cycler.js"
       ],
-      "source_hash": "673e5774d52cd6dbf1c53266f4f5757f120add2b",
+      "source_hash": "fd29d00ce92db08df69f70176d24cd9c5febbbef",
       "zip_path": "examples\/api\/record\/page_cycler.zip"
     },
     {
@@ -2435,6 +2435,47 @@
       ],
       "source_hash": "683f9b121326abe7053ea011b27dbd03f5b7b9d7",
       "zip_path": "examples\/api\/permissions\/extension-questions.zip"
+    },
+    {
+      "api_calls": [
+        "chrome.bookmarks.onRemoved",
+        "chrome.browserAction.onClicked",
+        "chrome.browserAction.setBadgeText",
+        "chrome.experimental.alarms.create",
+        "chrome.experimental.alarms.onAlarm",
+        "chrome.experimental.extension.onBackgroundPageUnloadingSoon",
+        "chrome.experimental.extension.onInstalled",
+        "chrome.extension.onMessage",
+        "chrome.extension.sendMessage",
+        "chrome.tabs.executeScript",
+        "chrome.tabs.query",
+        "chrome.tabs.sendMessage"
+      ],
+      "crx_path": null,
+      "description": "Demonstrates usage and features of the transient page",
+      "features": [
+        "background_page",
+        "bookmarks",
+        "browser_action",
+        "experimental",
+        "tabs"
+      ],
+      "icon": null,
+      "id": "7db846942d754cb51d0fd1fcb60a97fa4f1e21ad",
+      "name": "Transient Page Example",
+      "packaged_app": false,
+      "path": "examples\/api\/transientPage\/basic\/",
+      "protocols": [
+        "http:\/\/"
+      ],
+      "search_string": "TRANSIENT PAGE EXAMPLE DEMONSTRATES USAGE AND FEATURES OF THE TRANSIENT PAGE BACKGROUND_PAGE BOOKMARKS BROWSER_ACTION EXPERIMENTAL TABS CHROME.BOOKMARKS.ONREMOVED CHROME.BROWSERACTION.ONCLICKED CHROME.BROWSERACTION.SETBADGETEXT CHROME.EXPERIMENTAL.ALARMS.CREATE CHROME.EXPERIMENTAL.ALARMS.ONALARM CHROME.EXPERIMENTAL.EXTENSION.ONBACKGROUNDPAGEUNLOADINGSOON CHROME.EXPERIMENTAL.EXTENSION.ONINSTALLED CHROME.EXTENSION.ONMESSAGE CHROME.EXTENSION.SENDMESSAGE CHROME.TABS.EXECUTESCRIPT CHROME.TABS.QUERY CHROME.TABS.SENDMESSAGE",
+      "source_files": [
+        "background.js",
+        "content.js",
+        "manifest.json"
+      ],
+      "source_hash": "9683a215d1368a1047072709fdca7b84853d396e",
+      "zip_path": "examples\/api\/transientPage\/basic.zip"
     },
     {
       "api_calls": [

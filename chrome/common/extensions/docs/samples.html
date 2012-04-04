@@ -258,6 +258,7 @@
   "04f5d2ddea95746b0200be1ea223ccb7a748a771": "TALKING ALARM CLOCK A CLOCK WITH TWO CONFIGURABLE ALARMS THAT WILL PLAY A SOUND AND SPEAK A PHRASE OF YOUR CHOICE. BACKGROUND BACKGROUND_PAGE BROWSER_ACTION TTS CHROME.BROWSERACTION.SETICON CHROME.EXTENSION.CONNECT CHROME.EXTENSION.ONCONNECT CHROME.TTS.GETVOICES CHROME.TTS.SPEAK CHROME.TTS.STOP",
   "e1697cacebad05218798bf3e8a0f724517f0e8c3": "TEST SCREENSHOT EXTENSION DEMONSTRATE SCREENSHOT FUNCTIONALITY IN THE CHROME.TABS API. NOTE: ONLY WORKS FOR CODE.GOOGLE.COM BACKGROUND_PAGE BROWSER_ACTION TABS CHROME.BROWSERACTION.ONCLICKED CHROME.EXTENSION.GETURL CHROME.EXTENSION.GETVIEWS CHROME.TABS.CAPTUREVISIBLETAB CHROME.TABS.CREATE CHROME.TABS.ONUPDATED",
   "e8ac89b4015052cf11436985399129c927f972aa": "TOP CHROME EXTENSION QUESTIONS SAMPLE DEMONSTRATION OF THE OPTIONAL PERMISSIONS API. BROWSER_ACTION EXPERIMENTAL OPTIONS_PAGE CHROME.PERMISSIONS.CONTAINS CHROME.PERMISSIONS.ONADDED CHROME.PERMISSIONS.ONREMOVED CHROME.PERMISSIONS.REMOVE CHROME.PERMISSIONS.REQUEST CHROME.TABS.CREATE",
+  "7db846942d754cb51d0fd1fcb60a97fa4f1e21ad": "TRANSIENT PAGE EXAMPLE DEMONSTRATES USAGE AND FEATURES OF THE TRANSIENT PAGE BACKGROUND_PAGE BOOKMARKS BROWSER_ACTION EXPERIMENTAL TABS CHROME.BOOKMARKS.ONREMOVED CHROME.BROWSERACTION.ONCLICKED CHROME.BROWSERACTION.SETBADGETEXT CHROME.EXPERIMENTAL.ALARMS.CREATE CHROME.EXPERIMENTAL.ALARMS.ONALARM CHROME.EXPERIMENTAL.EXTENSION.ONBACKGROUNDPAGEUNLOADINGSOON CHROME.EXPERIMENTAL.EXTENSION.ONINSTALLED CHROME.EXTENSION.ONMESSAGE CHROME.EXTENSION.SENDMESSAGE CHROME.TABS.EXECUTESCRIPT CHROME.TABS.QUERY CHROME.TABS.SENDMESSAGE",
   "1d192cce77438e1a90383a6a3a6b28f29961ffa4": "TTS DEBUG TOOL FOR DEVELOPERS OF CHROME TTS ENGINE EXTENSIONS TO HELP THEM TEST THEIR ENGINES ARE IMPLEMENTING THE API CORRECTLY. TTS CHROME.TTS.GETVOICES CHROME.TTS.SPEAK CHROME.TTS.STOP",
   "3a1baf15462bdae4d886c2da4ff8f35f4e8ce02f": "TTS DEMO DEMO CHROMES SYNTHESIZED TEXT-TO-SPEECH CAPABILITIES. TTS CHROME.TTS.GETVOICES CHROME.TTS.ISSPEAKING CHROME.TTS.SPEAK CHROME.TTS.STOP",
   "b3de91ab04b7d7a2670ca7ee9d740eb42cead0b6": "TYPED URL HISTORY READS YOUR HISTORY, AND SHOWS THE TOP TEN PAGES YOU GO TO BY TYPING THE URL. BROWSER_ACTION HISTORY TABS CHROME.HISTORY.GETVISITS CHROME.HISTORY.SEARCH CHROME.TABS.CREATE",
@@ -3540,6 +3541,70 @@
     <span>
     - <a href="examples/api/permissions/extension-questions.crx">Install extension</a>
     </span>
+  </div>
+</div><div class="sample" id="7db846942d754cb51d0fd1fcb60a97fa4f1e21ad">
+  <img class="icon" src="images/sample-default-icon.png">
+  <h2 class="name">
+    <a href="#7db846942d754cb51d0fd1fcb60a97fa4f1e21ad">Transient Page Example</a>
+  </h2>
+  <p class="metadata features">Uses
+    <span>
+      <strong>background_page</strong><span>, </span>
+    </span><span>
+      <strong>bookmarks</strong><span>, </span>
+    </span><span>
+      <strong>browser_action</strong><span>, </span>
+    </span><span>
+      <strong>experimental</strong>
+      <span> and</span>
+    </span><span>
+      <strong>tabs</strong>
+    </span>
+  </p>
+  <p>Demonstrates usage and features of the transient page</p>
+  <div class="apicalls"><strong>Calls:</strong>
+    <ul>
+      <li>
+        <code><a href="bookmarks.html#event-onRemoved">chrome.bookmarks.onRemoved</a></code>
+      </li><li>
+        <code><a href="browserAction.html#event-onClicked">chrome.browserAction.onClicked</a></code>
+      </li><li>
+        <code><a href="browserAction.html#method-setBadgeText">chrome.browserAction.setBadgeText</a></code>
+      </li><li>
+        <code><a href="experimental.alarms.html#method-create">chrome.experimental.alarms.create</a></code>
+      </li><li>
+        <code><a href="experimental.alarms.html#event-onAlarm">chrome.experimental.alarms.onAlarm</a></code>
+      </li><li>
+        <code><a href="experimental.extension.html#event-onBackgroundPageUnloadingSoon">chrome.experimental.extension.onBackgroundPageUnloadingSoon</a></code>
+      </li><li>
+        <code><a href="experimental.extension.html#event-onInstalled">chrome.experimental.extension.onInstalled</a></code>
+      </li><li>
+        <code><a href="extension.html#event-onMessage">chrome.extension.onMessage</a></code>
+      </li><li>
+        <code><a href="extension.html#method-sendMessage">chrome.extension.sendMessage</a></code>
+      </li><li>
+        <code><a href="tabs.html#method-executeScript">chrome.tabs.executeScript</a></code>
+      </li><li>
+        <code><a href="tabs.html#method-query">chrome.tabs.query</a></code>
+      </li><li>
+        <code><a href="tabs.html#method-sendMessage">chrome.tabs.sendMessage</a></code>
+      </li>
+    </ul>
+  </div>
+  <div class="sourcefiles"><strong>Source files:</strong>
+    <ul>
+      <li>
+        <code><a target="_blank" href="examples/api/transientPage/basic/background.js">background.js</a></code>
+      </li><li>
+        <code><a target="_blank" href="examples/api/transientPage/basic/content.js">content.js</a></code>
+      </li><li>
+        <code><a target="_blank" href="examples/api/transientPage/basic/manifest.json">manifest.json</a></code>
+      </li>
+    </ul>
+  </div>
+  <div>
+    <a href="examples/api/transientPage/basic.zip">Download source</a>
+    <!-- Only show the Install CRX link if a CRX file is provided -->
   </div>
 </div><div class="sample" id="1d192cce77438e1a90383a6a3a6b28f29961ffa4">
   <img class="icon" src="examples/extensions/ttsdebug/128.png">
