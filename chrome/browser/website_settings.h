@@ -2,10 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_WEBSITE_SETTINGS_MODEL_H_
-#define CHROME_BROWSER_WEBSITE_SETTINGS_MODEL_H_
+#ifndef CHROME_BROWSER_WEBSITE_SETTINGS_H_
+#define CHROME_BROWSER_WEBSITE_SETTINGS_H_
 
 #include "base/string16.h"
+#include "base/memory/scoped_ptr.h"
+#include "chrome/common/content_settings.h"
+#include "chrome/common/content_settings_types.h"
 #include "googleurl/src/gurl.h"
 
 namespace content {
@@ -13,13 +16,17 @@ class CertStore;
 struct SSLStatus;
 }
 
+class HostContentSettingsMap;
 class Profile;
 class TabContentsWrapper;
+class WebsiteSettingsUI;
 
-// The |WebsiteSettingsModel| provides information about the connection and the
-// identity of a website. The |WebsiteSettingsModel| is the backend for the
-// WebsiteSettingsUI which displays this information.
-class WebsiteSettingsModel {
+// The |WebsiteSettings| provides information about a website's permissions,
+// connection state and its identity. It owns a UI that displays the
+// information and allows users to change the permissions. |WebsiteSettings|
+// objects must be created on the heap. They destroy themselves after the UI is
+// closed.
+class WebsiteSettings {
  public:
   // Status of a connection to a website.
   enum SiteConnectionStatus {
@@ -53,14 +60,23 @@ class WebsiteSettingsModel {
     SITE_IDENTITY_STATUS_INTERNAL_PAGE,
   };
 
-  // Creates a WebsiteSettingsModel for the passed |url| using the given |ssl|
-  // status object to determine the status of the site's connection.
-  WebsiteSettingsModel(Profile* profile,
-                       const GURL& url,
-                       const content::SSLStatus& ssl,
-                       content::CertStore* cert_store);
+  // Creates a WebsiteSettings for the passed |url| using the given |ssl| status
+  // object to determine the status of the site's connection. The
+  // |WebsiteSettings| takes ownership of the |ui|.
+  WebsiteSettings(WebsiteSettingsUI* ui,
+                  Profile* profile,
+                  const GURL& url,
+                  const content::SSLStatus& ssl,
+                  content::CertStore* cert_store);
 
-  virtual ~WebsiteSettingsModel();
+  // This method is called when the WebsiteSettingsUI is closed. It triggers
+  // the destruction of this |WebsiteSettings| object. So it is not safe to use
+  // this object afterwards. Any pointers to this object will be invalid.
+  void OnUIClosing();
+
+  // This method is called when ever a permission setting is changed.
+  void OnSitePermissionChanged(ContentSettingsType type,
+                               ContentSetting value);
 
   // Accessors.
   SiteConnectionStatus site_connection_status() const {
@@ -84,10 +100,25 @@ class WebsiteSettingsModel {
   }
 
  private:
-  // Initializes the |WebsiteSettingsModel|.
+  ~WebsiteSettings();
+
+  // Initializes the |WebsiteSettings|.
   void Init(Profile* profile,
             const GURL& url,
             const content::SSLStatus& ssl);
+
+  // Sets (presents) the information about the site's permissions in the |ui_|.
+  void PresentSitePermissions();
+
+  // The website settings UI displays information and controls for site
+  // specific data (local stored objects like cookies), site specific
+  // permissions (location, popup, plugin, etc.  permissions) and site specific
+  // information (identity, connection status, etc.).
+  scoped_ptr<WebsiteSettingsUI> ui_;
+
+  // The Omnibox URL of the website for which to display site permissions and
+  // site information.
+  GURL site_url_;
 
   // Status of the website's identity verification check.
   SiteIdentityStatus site_identity_status_;
@@ -112,7 +143,11 @@ class WebsiteSettingsModel {
   // The |CertStore| provides all X509Certificates.
   content::CertStore* cert_store_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebsiteSettingsModel);
+  // The |HostContentSettingsMap| is the service that provides and manages
+  // content settings (aka. site permissions).
+  HostContentSettingsMap* content_settings_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebsiteSettings);
 };
 
-#endif  // CHROME_BROWSER_WEBSITE_SETTINGS_MODEL_H_
+#endif  // CHROME_BROWSER_WEBSITE_SETTINGS_H_

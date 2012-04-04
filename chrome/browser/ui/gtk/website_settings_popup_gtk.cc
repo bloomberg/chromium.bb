@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/gtk/theme_service_gtk.h"
 #include "chrome/browser/ui/gtk/location_bar_view_gtk.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/website_settings.h"
 #include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -28,6 +29,40 @@
 #include "ui/base/resource/resource_bundle.h"
 
 using content::OpenURLParams;
+
+namespace {
+
+std::string PermissionTypeToString(ContentSettingsType type) {
+  switch (type) {
+    case CONTENT_SETTINGS_TYPE_POPUPS:
+      return l10n_util::GetStringUTF8(IDS_WEBSITE_SETTINGS_TYPE_POPUPS);
+    case CONTENT_SETTINGS_TYPE_PLUGINS:
+      return l10n_util::GetStringUTF8(IDS_WEBSITE_SETTINGS_TYPE_PLUGINS);
+    case CONTENT_SETTINGS_TYPE_GEOLOCATION:
+      return l10n_util::GetStringUTF8(IDS_WEBSITE_SETTINGS_TYPE_LOCATION);
+    case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
+      return l10n_util::GetStringUTF8(IDS_WEBSITE_SETTINGS_TYPE_NOTIFICATIONS);
+    default:
+      NOTREACHED();
+      return "";
+  }
+}
+
+std::string PermissionValueToString(ContentSetting value) {
+  switch (value) {
+    case CONTENT_SETTING_ALLOW:
+      return l10n_util::GetStringUTF8(IDS_WEBSITE_SETTINGS_PERMISSION_ALLOW);
+    case CONTENT_SETTING_BLOCK:
+      return l10n_util::GetStringUTF8(IDS_WEBSITE_SETTINGS_PERMISSION_BLOCK);
+    case CONTENT_SETTING_ASK:
+      return l10n_util::GetStringUTF8(IDS_WEBSITE_SETTINGS_PERMISSION_ASK);
+    default:
+      NOTREACHED();
+      return "";
+  }
+}
+
+}  // namespace
 
 WebsiteSettingsPopupGtk::WebsiteSettingsPopupGtk(
     gfx::NativeWindow parent,
@@ -42,7 +77,7 @@ WebsiteSettingsPopupGtk::WebsiteSettingsPopupGtk(
       site_info_contents_(NULL),
       cookies_section_contents_(NULL),
       permissions_section_contents_(NULL),
-      delegate_(NULL) {
+      presenter_(NULL) {
   BrowserWindowGtk* browser_window =
       BrowserWindowGtk::GetBrowserWindowForNativeWindow(parent);
   browser_ = browser_window->browser();
@@ -71,14 +106,14 @@ WebsiteSettingsPopupGtk::WebsiteSettingsPopupGtk(
 WebsiteSettingsPopupGtk::~WebsiteSettingsPopupGtk() {
 }
 
-void WebsiteSettingsPopupGtk::SetDelegate(WebsiteSettingsUIDelegate* delegate) {
-  delegate_ = delegate;
+void WebsiteSettingsPopupGtk::SetPresenter(WebsiteSettings* presenter) {
+  presenter_ = presenter;
 }
 
 void WebsiteSettingsPopupGtk::BubbleClosing(BubbleGtk* bubble,
                                             bool closed_by_escape) {
-  if (delegate_)
-    delegate_->OnUIClosing();
+  if (presenter_)
+    presenter_->OnUIClosing();
 }
 
 void WebsiteSettingsPopupGtk::InitContents() {
@@ -126,7 +161,7 @@ void WebsiteSettingsPopupGtk::ClearContainer(GtkWidget* container) {
   }
 }
 
-void WebsiteSettingsPopupGtk::SetSiteInfo(const std::string site_info) {
+void WebsiteSettingsPopupGtk::SetSiteInfo(const std::string& site_info) {
   DCHECK(site_info_contents_);
   ClearContainer(site_info_contents_);
   GtkWidget* label = theme_service_->BuildLabel(site_info,
@@ -175,7 +210,8 @@ void WebsiteSettingsPopupGtk::SetCookieInfo(
        ++it) {
     GtkWidget* cookies_info = gtk_hbox_new(FALSE, 0);
 
-    GtkWidget* label = theme_service_->BuildLabel(it->text, ui::kGdkBlack);
+    GtkWidget* label = theme_service_->BuildLabel(it->cookie_source,
+                                                  ui::kGdkBlack);
     gtk_label_set_selectable(GTK_LABEL(label), TRUE);
     gtk_util::SetLabelWidth(label, 200);
     // Allow linebreaking in the middle of words if necessary, so that extremely
@@ -224,46 +260,64 @@ void WebsiteSettingsPopupGtk::SetPermissionInfo(
            permission_info_list.begin();
        permission != permission_info_list.end();
        ++permission) {
-    std::string permission_text;
-    switch (permission->type) {
-      case CONTENT_SETTINGS_TYPE_POPUPS:
-        permission_text =
-            l10n_util::GetStringUTF8(IDS_WEBSITE_SETTINGS_TYPE_POPUPS);
-        break;
-      case CONTENT_SETTINGS_TYPE_PLUGINS:
-        permission_text =
-            l10n_util::GetStringUTF8(IDS_WEBSITE_SETTINGS_TYPE_PLUGINS);
-        break;
-      case CONTENT_SETTINGS_TYPE_GEOLOCATION:
-        permission_text =
-            l10n_util::GetStringUTF8(IDS_WEBSITE_SETTINGS_TYPE_LOCATION);
-        break;
-      case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
-        permission_text =
-            l10n_util::GetStringUTF8(IDS_WEBSITE_SETTINGS_TYPE_NOTIFICATIONS);
-        break;
-      default:
-        NOTREACHED();
-        break;
-    }
-    GtkWidget* label = theme_service_->BuildLabel(permission_text,
-                                                  ui::kGdkBlack);
+    // Add a label for the permission type.
+    GtkWidget* label = theme_service_->BuildLabel(
+        PermissionTypeToString(permission->type), ui::kGdkBlack);
     gtk_util::SetLabelWidth(label, 280);
     GtkWidget* hbox = gtk_hbox_new(FALSE, 0);
     gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 0);
 
-    GtkWidget* combo_box = gtk_combo_box_new_text();
-    std::string permission_str =
-        l10n_util::GetStringUTF8(IDS_WEBSITE_SETTINGS_PERMISSION_ALLOW);
-    gtk_combo_box_append_text(GTK_COMBO_BOX(combo_box), permission_str.c_str());
-    permission_str =
-        l10n_util::GetStringUTF8(IDS_WEBSITE_SETTINGS_PERMISSION_BLOCK);
-    gtk_combo_box_append_text(GTK_COMBO_BOX(combo_box), permission_str.c_str());
-    gtk_combo_box_set_active(
-        GTK_COMBO_BOX(combo_box),
-        permission->setting == CONTENT_SETTING_ALLOW ? 0 : 1);
+    GtkListStore* store =
+        gtk_list_store_new(3, G_TYPE_STRING, G_TYPE_INT, G_TYPE_INT);
+    GtkTreeIter iter;
+    // Add option for permission "Allow" to the combobox model.
+    std::string setting_str = PermissionValueToString(CONTENT_SETTING_ALLOW);
+    gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter, 0, setting_str.c_str(), 1,
+                       CONTENT_SETTING_ALLOW, 2, permission->type, -1);
+    // Add option for permission "BLOCK" to the combobox model.
+    setting_str = PermissionValueToString(CONTENT_SETTING_BLOCK);
+    gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter, 0, setting_str.c_str(), 1,
+                       CONTENT_SETTING_BLOCK, 2, permission->type, -1);
+    // Add option for permission "Global Default" to the combobox model.
+    setting_str =
+        l10n_util::GetStringUTF8(IDS_WEBSITE_SETTINGS_PERMISSION_DEFAULT);
+    setting_str += " (" + PermissionValueToString(permission->default_setting);
+    setting_str += ")";
+    gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter, 0, setting_str.c_str(), 1,
+                       CONTENT_SETTING_DEFAULT, 2, permission->type, -1);
+    GtkWidget* combo_box = gtk_combo_box_new_with_model(GTK_TREE_MODEL(store));
+    // Remove reference to the store to prevent leaking.
+    g_object_unref(G_OBJECT(store));
+
+    GtkCellRenderer* cell = gtk_cell_renderer_text_new();
+    gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(combo_box), cell, TRUE );
+    gtk_cell_layout_set_attributes(
+        GTK_CELL_LAYOUT(combo_box), cell, "text", 0, NULL);
+
+    // Select the combobox entry for the currently configured permission value.
+    int active = -1;
+    switch (permission->setting) {
+      case CONTENT_SETTING_DEFAULT: active = 2;
+        break;
+      case CONTENT_SETTING_ALLOW: active = 0;
+        break;
+      case CONTENT_SETTING_BLOCK: active = 1;
+        break;
+      default:
+        NOTREACHED() << "Bad content setting:" << permission->setting;
+        break;
+    }
+    gtk_combo_box_set_active(GTK_COMBO_BOX(combo_box), active);
+
+    // Add change listener to the combobox.
     g_signal_connect(combo_box, "changed",
                      G_CALLBACK(OnPermissionChangedThunk), this);
+    // Once the popup (window) for a combobox is shown, the bubble container
+    // (window) loses it's focus. Therefore it necessary to reset the focus to
+    // the bubble container after the combobox popup is closed.
     g_signal_connect(combo_box, "notify::popup-shown",
                      G_CALLBACK(OnComboBoxShownThunk), this);
     gtk_box_pack_start(GTK_BOX(hbox), combo_box, FALSE, FALSE, 0);
@@ -318,7 +372,17 @@ void WebsiteSettingsPopupGtk::OnPermissionsSettingsLinkClicked(
 }
 
 void WebsiteSettingsPopupGtk::OnPermissionChanged(GtkWidget* widget) {
-  // TODO(markusheintz): Implement once the backend (|WebsiteSettingsUIDelegate|
-  // implmentation which is the |WebsiteSettings| class) provides support for
-  // this.
+  GtkTreeIter it;
+  bool has_active = gtk_combo_box_get_active_iter(GTK_COMBO_BOX(widget), &it);
+  DCHECK(has_active);
+  GtkTreeModel* store =
+      GTK_TREE_MODEL(gtk_combo_box_get_model(GTK_COMBO_BOX(widget)));
+
+  int value = -1;
+  int type = -1;
+  gtk_tree_model_get(store, &it, 1, &value, 2, &type, -1);
+
+  if (presenter_)
+    presenter_->OnSitePermissionChanged(ContentSettingsType(type),
+                                       ContentSetting(value));
 }

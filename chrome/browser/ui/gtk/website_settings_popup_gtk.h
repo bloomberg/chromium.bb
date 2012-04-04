@@ -17,6 +17,7 @@ class BubbleGtk;
 class Profile;
 class TabContentsWrapper;
 class ThemeServiceGtk;
+class WebsiteSettings;
 
 // GTK implementation of the website settings UI. The website settings UI is
 // displayed in a popup that is positioned relative the an anchor element.
@@ -29,8 +30,8 @@ class WebsiteSettingsPopupGtk : public WebsiteSettingsUI,
   virtual ~WebsiteSettingsPopupGtk();
 
   // WebsiteSettingsUI implementations.
-  virtual void SetDelegate(WebsiteSettingsUIDelegate* delegate) OVERRIDE;
-  virtual void SetSiteInfo(const std::string site_info) OVERRIDE;
+  virtual void SetPresenter(WebsiteSettings* presenter) OVERRIDE;
+  virtual void SetSiteInfo(const std::string& site_info) OVERRIDE;
   virtual void SetCookieInfo(const CookieInfoList& cookie_info_list) OVERRIDE;
   virtual void SetPermissionInfo(
       const PermissionInfoList& permission_info_list) OVERRIDE;
@@ -88,7 +89,9 @@ class WebsiteSettingsPopupGtk : public WebsiteSettingsUI,
   // Container for the permissions section content.
   GtkWidget* permissions_section_contents_;
 
-  WebsiteSettingsUIDelegate* delegate_;
+  // The UI translates user actions to specific events and forwards them to the
+  // |presenter_|. The |presenter_| handles these events and updates the UI.
+  WebsiteSettings* presenter_;
 
   DISALLOW_COPY_AND_ASSIGN(WebsiteSettingsPopupGtk);
 };

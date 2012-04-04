@@ -13,54 +13,59 @@
 #include "chrome/common/content_settings_types.h"
 #include "ui/gfx/native_widget_types.h"
 
+class CookieInfoList;
 class GURL;
+class PermissionInfoList;
 class Profile;
 class TabContentsWrapper;
+class WebsiteSettings;
 
 namespace content {
 struct SSLStatus;
 }
 
-class CookieInfoList;
-class PermissionInfoList;
-
-
-class WebsiteSettingsUIDelegate {
- public:
-  virtual ~WebsiteSettingsUIDelegate() {}
-
-  // This method is called when the WebsiteSettingsUI is closed.
-  virtual void OnUIClosing() = 0;
-
-  // This method is called when ever a permission setting is changed.
-  virtual void OnSitePermissionChanged(ContentSettingsType type,
-                                       ContentSetting value) = 0;
-};
-
-// The UI for website settings displays information and controlls for site
-// specific data (local stored objects like cookies), site specific permissions
-// (location, popup, plugin, ... permissions) and site specific information
-// (identity, connection status, ...). |WebsiteSettingsUI| specifies the
-// platform independent interface of the UI.
+// The class |WebsiteSettingsUI| specifies the platform independent
+// interface of the website settings UI. The website settings UI displays
+// information and controls for site specific data (local stored objects like
+// cookies), site specific permissions (location, popup, plugin, etc.
+// permissions) and site specific information (identity, connection status,
+// etc.).
 class WebsiteSettingsUI {
  public:
+  // |CookieInfo| contains information about the cookies from a specific source.
+  // A source can for example be a specific origin or an entire domain.
   struct CookieInfo {
-    std::string text;
+    CookieInfo();
+
+    // String describing the cookie source.
+    std::string cookie_source;
+    // The number of allowed cookies.
     int allowed;
+    // The number of blocked cookies.
     int blocked;
   };
 
+  // |PermissionInfo| contains information about a single permission |type| for
+  // the current website.
   struct PermissionInfo {
+    PermissionInfo();
+
+    // Site permission |type|.
     ContentSettingsType type;
+    // The current value for the permission |type| (e.g. ALLOW or BLOCK).
     ContentSetting setting;
+    // The global default settings for this permission |type|.
+    ContentSetting default_setting;
   };
 
-  virtual ~WebsiteSettingsUI() {}
+  virtual ~WebsiteSettingsUI();
 
-  virtual void SetDelegate(WebsiteSettingsUIDelegate* delegate) = 0;
+  // Sets the |presenter| of the WebsiteSettingsUI that is responsible for
+  // setting the data to display in the UI.
+  virtual void SetPresenter(WebsiteSettings* presenter) = 0;
 
   // Sets site information.
-  virtual void SetSiteInfo(const std::string site_info) = 0;
+  virtual void SetSiteInfo(const std::string& site_info) = 0;
 
   // Sets cookie information.
   virtual void SetCookieInfo(const CookieInfoList& cookie_info_list) = 0;

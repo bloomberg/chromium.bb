@@ -2028,7 +2028,7 @@
         'browser/webdata/web_data_service_unittest.cc',
         'browser/webdata/web_database_migration_unittest.cc',
         'browser/webdata/web_intents_table_unittest.cc',
-        'browser/website_settings_model_unittest.cc',
+        'browser/website_settings_unittest.cc',
         'common/bzip2_unittest.cc',
         'common/child_process_logging_mac_unittest.mm',
         'common/chrome_paths_unittest.cc',

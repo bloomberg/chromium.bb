@@ -2,15 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/website_settings_model.h"
+#include "chrome/browser/website_settings.h"
 
 #include <string>
 #include <vector>
 
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
+#include "base/values.h"
+#include "chrome/browser/content_settings/content_settings_utils.h"
+#include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/ssl_error_info.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/website_settings_ui.h"
+#include "chrome/common/content_settings_pattern.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cert_store.h"
 #include "content/public/common/ssl_status.h"
 #include "content/public/common/url_constants.h"
@@ -23,26 +30,100 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
-WebsiteSettingsModel::WebsiteSettingsModel(Profile* profile,
-                                           const GURL& url,
-                                           const content::SSLStatus& ssl,
-                                           content::CertStore* cert_store)
-    : site_identity_status_(SITE_IDENTITY_STATUS_UNKNOWN),
+#if defined(TOOLKIT_USES_GTK)
+#include "chrome/browser/ui/gtk/website_settings_popup_gtk.h"
+#endif
+
+using content::BrowserThread;
+
+namespace {
+
+ContentSettingsType kPermissionType[] = {
+  CONTENT_SETTINGS_TYPE_POPUPS,
+  CONTENT_SETTINGS_TYPE_PLUGINS,
+  CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+  CONTENT_SETTINGS_TYPE_GEOLOCATION,
+};
+
+}  // namespace
+
+WebsiteSettings::WebsiteSettings(
+    WebsiteSettingsUI* ui,
+    Profile* profile,
+    const GURL& url,
+    const content::SSLStatus& ssl,
+    content::CertStore* cert_store)
+    : ui_(ui),
+      site_url_(url),
+      site_identity_status_(SITE_IDENTITY_STATUS_UNKNOWN),
       site_connection_status_(SITE_CONNECTION_STATUS_UNKNOWN),
-      cert_store_(cert_store)  {
+      cert_store_(cert_store),
+      content_settings_(profile->GetHostContentSettingsMap()) {
+  ui_->SetPresenter(this);
   Init(profile, url, ssl);
   // After initialization the status about the site's connection
   // and it's identity must be available.
   DCHECK_NE(site_identity_status_, SITE_IDENTITY_STATUS_UNKNOWN);
   DCHECK_NE(site_connection_status_, SITE_CONNECTION_STATUS_UNKNOWN);
+
+  // TODO(markusheintz): Add the strings below to the grd file once a decision
+  // has been made about the exact wording.
+  std::string site_info;
+  switch (site_identity_status_) {
+    case WebsiteSettings::SITE_IDENTITY_STATUS_CERT:
+    case WebsiteSettings::SITE_IDENTITY_STATUS_DNSSEC_CERT:
+      site_info = "Identity verified";
+      break;
+    case WebsiteSettings::SITE_IDENTITY_STATUS_EV_CERT:
+      site_info = UTF16ToUTF8(organization_name());
+      site_info += " - Identity verified";
+      break;
+    default:
+      site_info = "Identity not verified";
+      break;
+  }
+  ui_->SetSiteInfo(site_info);
+
+  PresentSitePermissions();
 }
 
-WebsiteSettingsModel::~WebsiteSettingsModel() {
+WebsiteSettings::~WebsiteSettings() {
 }
 
-void WebsiteSettingsModel::Init(Profile* profile,
-                                const GURL& url,
-                                const content::SSLStatus& ssl) {
+void WebsiteSettings::PresentSitePermissions() {
+  PermissionInfoList permission_info_list;
+
+  WebsiteSettingsUI::PermissionInfo permission_info;
+  for (size_t i = 0; i < arraysize(kPermissionType); ++i) {
+    permission_info.type = kPermissionType[i];
+
+    content_settings::SettingInfo info;
+    scoped_ptr<Value> value(content_settings_->GetWebsiteSetting(
+        site_url_, site_url_, permission_info.type, "", &info));
+    DCHECK(value.get());
+    permission_info.setting =
+        content_settings::ValueToContentSetting(value.get());
+
+    if (permission_info.setting != CONTENT_SETTING_ASK) {
+      if (info.primary_pattern == ContentSettingsPattern::Wildcard() &&
+          info.secondary_pattern == ContentSettingsPattern::Wildcard()) {
+        permission_info.default_setting = permission_info.setting;
+        permission_info.setting = CONTENT_SETTING_DEFAULT;
+      } else {
+        permission_info.default_setting =
+            content_settings_->GetDefaultContentSetting(permission_info.type,
+                                                        NULL);
+      }
+      permission_info_list.push_back(permission_info);
+    }
+  }
+
+  ui_->SetPermissionInfo(permission_info_list);
+}
+
+void WebsiteSettings::Init(Profile* profile,
+                           const GURL& url,
+                           const content::SSLStatus& ssl) {
   if (url.SchemeIs(chrome::kChromeUIScheme)) {
     site_identity_status_ = SITE_IDENTITY_STATUS_INTERNAL_PAGE;
     site_identity_details_ =
@@ -259,4 +340,66 @@ void WebsiteSettingsModel::Init(Profile* profile,
           IDS_PAGE_INFO_SECURITY_TAB_RENEGOTIATION_MESSAGE);
     }
   }
+}
+
+void WebsiteSettings::OnUIClosing() {
+  ui_->SetPresenter(NULL);
+  delete this;
+}
+
+void WebsiteSettings::OnSitePermissionChanged(ContentSettingsType type,
+                                              ContentSetting setting) {
+  ContentSettingsPattern primary_pattern;
+  ContentSettingsPattern secondary_pattern;
+  switch (type) {
+    case CONTENT_SETTINGS_TYPE_GEOLOCATION:
+      // TODO(markusheintz): The rule we create here should also change the
+      // location permission for iframed content.
+      primary_pattern = ContentSettingsPattern::FromURLNoWildcard(site_url_);
+      secondary_pattern = ContentSettingsPattern::FromURLNoWildcard(site_url_);
+      break;
+    case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
+      primary_pattern = ContentSettingsPattern::FromURLNoWildcard(site_url_);
+      secondary_pattern = ContentSettingsPattern::Wildcard();
+      break;
+    case CONTENT_SETTINGS_TYPE_PLUGINS:
+    case CONTENT_SETTINGS_TYPE_POPUPS:
+      primary_pattern = ContentSettingsPattern::FromURL(site_url_);
+      secondary_pattern = ContentSettingsPattern::Wildcard();
+      break;
+    default:
+      NOTREACHED() << "ContentSettingsType " << type << "is not supported.";
+      break;
+  }
+
+  // Permission settings are specified via rules. There exists always at least
+  // one rule for the default setting. Get the rule that currently defines
+  // the permission for the given permission |type|. Then test whether the
+  // existing rule is more specific than the rule we are about to create. If
+  // the existing rule is more specific, than change the existing rule instead
+  // of creating a new rule that would be hidden behind the existing rule.
+  content_settings::SettingInfo info;
+  scoped_ptr<Value> v(content_settings_->GetWebsiteSetting(
+      site_url_, site_url_, type, "", &info));
+  DCHECK(info.source == content_settings::SETTING_SOURCE_USER);
+  ContentSettingsPattern::Relation r1 =
+      info.primary_pattern.Compare(primary_pattern);
+  DCHECK(r1 != ContentSettingsPattern::DISJOINT_ORDER_POST &&
+         r1 != ContentSettingsPattern::DISJOINT_ORDER_PRE);
+  if (r1 == ContentSettingsPattern::PREDECESSOR) {
+    primary_pattern = info.primary_pattern;
+  } else if (r1 == ContentSettingsPattern::IDENTITY) {
+    ContentSettingsPattern::Relation r2 =
+        info.secondary_pattern.Compare(secondary_pattern);
+    DCHECK(r2 != ContentSettingsPattern::DISJOINT_ORDER_POST &&
+           r2 != ContentSettingsPattern::DISJOINT_ORDER_PRE);
+    if (r2 == ContentSettingsPattern::PREDECESSOR)
+      secondary_pattern = info.secondary_pattern;
+  }
+
+  Value* value = NULL;
+  if (setting != CONTENT_SETTING_DEFAULT)
+    value = Value::CreateIntegerValue(setting);
+  content_settings_->SetWebsiteSetting(
+      primary_pattern, secondary_pattern, type, "", value);
 }
