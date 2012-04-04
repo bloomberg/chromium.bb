@@ -1476,3 +1476,34 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnAuthRequiredResponses) {
   EXPECT_TRUE(ContainsKey(conflicting_extensions, "extid2"));
   EXPECT_EQ(3u, event_log.size());
 }
+
+TEST(ExtensionWebRequestHelpersTest, TestHideRequestForURL) {
+  const char* sensitive_urls[] = {
+      "http://www.google.com/chrome",
+      "https://www.google.com/chrome",
+      "http://www.google.com/chrome/foobar",
+      "https://www.google.com/chrome/foobar",
+      "http://chrome.google.com",
+      "https://chrome.google.com",
+      "http://client2.google.com",
+      "https://client2.google.com",
+      // No http version of webstore.
+      "https://chrome.google.com/webstore",
+      "http://clients2.google.com/service/update2/crx",
+      "https://clients2.google.com/service/update2/crx",
+      "http://www.gstatic.com/chrome/extensions/blacklist",
+      "https://www.gstatic.com/chrome/extensions/blacklist",
+      "notregisteredscheme://www.foobar.com"
+  };
+  const char* non_sensitive_urls[] = {
+      "http://www.google.com/"
+  };
+  for (size_t i = 0; i < arraysize(sensitive_urls); ++i) {
+    EXPECT_TRUE(helpers::HideRequestForURL(GURL(sensitive_urls[i])))
+        << sensitive_urls[i];
+  }
+  for (size_t i = 0; i < arraysize(non_sensitive_urls); ++i) {
+    EXPECT_FALSE(helpers::HideRequestForURL(GURL(non_sensitive_urls[i])))
+        << non_sensitive_urls[i];
+  }
+}

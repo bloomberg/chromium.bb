@@ -178,6 +178,9 @@ bool MergeOnAuthRequiredResponses(
     std::set<std::string>* conflicting_extensions,
     EventLogEntries* event_log_entries);
 
+// Returns true if requests for |url| shall not be reported to extensions.
+bool HideRequestForURL(const GURL& url);
+
 }  // namespace extension_web_request_api_helpers
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_WEB_REQUEST_WEB_REQUEST_API_HELPERS_H_

@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/api/web_request/web_request_api_helpers.h"
 
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api.h"
 #include "chrome/common/url_constants.h"
@@ -544,6 +545,54 @@ bool MergeOnAuthRequiredResponses(
     }
   }
   return credentials_set;
+}
+
+namespace {
+
+// Returns true if the URL is sensitive and requests to this URL must not be
+// modified/canceled by extensions, e.g. because it is targeted to the webstore
+// to check for updates, extension blacklisting, etc.
+bool IsSensitiveURL(const GURL& url) {
+  bool is_webstore_gallery_url =
+      StartsWithASCII(url.spec(), extension_urls::kGalleryBrowsePrefix, true);
+  bool sensitive_chrome_url = false;
+  if (EndsWith(url.host(), "google.com", true)) {
+    sensitive_chrome_url |= (url.host() == "www.google.com") &&
+                            StartsWithASCII(url.path(), "/chrome", true);
+    sensitive_chrome_url |= (url.host() == "chrome.google.com");
+    if (StartsWithASCII(url.host(), "client", true)) {
+      for (int i = 0; i < 10; ++i) {
+        sensitive_chrome_url |=
+            (StringPrintf("client%d.google.com", i) == url.host());
+      }
+    }
+  }
+  GURL::Replacements replacements;
+  replacements.ClearQuery();
+  replacements.ClearRef();
+  GURL url_without_query = url.ReplaceComponents(replacements);
+  return is_webstore_gallery_url || sensitive_chrome_url ||
+      extension_urls::IsWebstoreUpdateUrl(url_without_query) ||
+      extension_urls::IsBlacklistUpdateUrl(url);
+}
+
+// Returns true if the scheme is one we want to allow extensions to have access
+// to. Extensions still need specific permissions for a given URL, which is
+// covered by CanExtensionAccessURL.
+bool HasWebRequestScheme(const GURL& url) {
+  return (url.SchemeIs(chrome::kAboutScheme) ||
+          url.SchemeIs(chrome::kFileScheme) ||
+          url.SchemeIs(chrome::kFileSystemScheme) ||
+          url.SchemeIs(chrome::kFtpScheme) ||
+          url.SchemeIs(chrome::kHttpScheme) ||
+          url.SchemeIs(chrome::kHttpsScheme) ||
+          url.SchemeIs(chrome::kExtensionScheme));
+}
+
+}  // namespace
+
+bool HideRequestForURL(const GURL& url) {
+  return IsSensitiveURL(url) || !HasWebRequestScheme(url);
 }
 
 }  // namespace extension_web_request_api_helpers
