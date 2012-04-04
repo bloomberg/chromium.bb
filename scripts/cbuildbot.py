@@ -911,7 +911,7 @@ def main(argv):
     tryjob.Submit(dryrun=options.debug)
     print 'Tryjob submitted!'
     print ('Go to %s to view the status of your job.'
-           % tryjob.GetTrybotConsoleLink())
+           % tryjob.GetTrybotWaterfallLink())
     sys.exit(0)
 
   if args:

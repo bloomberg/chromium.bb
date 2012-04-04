@@ -25,6 +25,7 @@ class RemoteTryJob(object):
   SSH_URL = os.path.join(constants.GERRIT_SSH_URL,
                          'chromiumos/tryjobs')
   TRYJOB_DESCRIPTION_VERSION = 1
+  TRYSERVER_URL = 'http://chromegw/p/tryserver.chromiumos'
 
   def __init__(self, options, bots, local_patches):
     """Construct the object.
@@ -129,5 +130,10 @@ class RemoteTryJob(object):
 
   def GetTrybotConsoleLink(self):
     """Get link to the console for the user."""
-    return ('http://chromegw/p/tryserver.chromiumos/console?name=%s'
-            % self.user_email)
+    return ('%s/console?name=%s' % (self.TRYSERVER_URL, self.user_email))
+
+  def GetTrybotWaterfallLink(self):
+    """Get link to the waterfall for the user."""
+    # Note that this will only show the jobs submitted by the user in the last
+    # 24 hours.
+    return ('%s/waterfall?committer=%s' % (self.TRYSERVER_URL, self.user_email))
