@@ -61,7 +61,7 @@ GValue* ConvertDictionaryValueToGValue(const DictionaryValue* dict) {
   }
   GValue* gvalue = new GValue();
   g_value_init(gvalue, DBUS_TYPE_G_STRING_STRING_HASHTABLE);
-  g_value_set_boxed(gvalue, ghash);
+  g_value_take_boxed(gvalue, ghash);
   return gvalue;
 }
 
