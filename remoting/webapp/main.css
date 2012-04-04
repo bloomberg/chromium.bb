@@ -374,7 +374,7 @@ td {
   vertical-align: middle;
 }
 
-.host-online:hover {
+.host-online.clickable:hover {
   background-color: #f2f2f2;
 }
 

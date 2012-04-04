@@ -149,28 +149,36 @@ remoting.HostTableEntry.prototype.init = function(
       '?mode=me2me&hostId=' + encodeURIComponent(host.hostId);
   this.onConnectReference_ = function() { window.location.assign(hostUrl); };
 
-  this.updateOnlineStatus();
+  this.updateStatus();
 };
 
 /**
- * Update the row to reflect the current on-line status of the host.
+ * Update the row to reflect the current status of the host (online/offline and
+ * clickable/unclickable).
  *
+ * @param {boolean=} opt_forEdit True if the status is being updated in order
+ *     to allow the host name to be edited.
  * @return {void} Nothing.
  */
-remoting.HostTableEntry.prototype.updateOnlineStatus = function() {
-  if (this.host.status == 'ONLINE') {
+remoting.HostTableEntry.prototype.updateStatus = function(opt_forEdit) {
+  var clickToConnect = this.host.status == 'ONLINE' && !opt_forEdit;
+  if (clickToConnect) {
     this.tableRow.addEventListener('click', this.onConnectReference_, false);
     this.tableRow.classList.add('clickable');
-    this.tableRow.classList.add('host-online');
-    this.tableRow.classList.remove('host-offline');
     this.tableRow.title = chrome.i18n.getMessage(
         /*i18n-content*/'TOOLTIP_CONNECT', this.host.hostName);
   } else {
     this.tableRow.removeEventListener('click', this.onConnectReference_, false);
     this.tableRow.classList.remove('clickable');
+    this.tableRow.title = '';
+  }
+  var showOffline = this.host.status != 'ONLINE';
+  if (showOffline) {
     this.tableRow.classList.remove('host-online');
     this.tableRow.classList.add('host-offline');
-    this.tableRow.title = '';
+  } else {
+    this.tableRow.classList.add('host-online');
+    this.tableRow.classList.remove('host-offline');
   }
 };
 
@@ -195,6 +203,7 @@ remoting.HostTableEntry.prototype.beginRename_ = function() {
   /** @param {Event} event The keydown event. */
   var onKeydown = function(event) { that.onKeydown_(event); }
   editBox.addEventListener('keydown', onKeydown, false);
+  this.updateStatus(true);
 };
 
 /**
@@ -207,12 +216,10 @@ remoting.HostTableEntry.prototype.commitRename_ = function() {
   if (editBox) {
     if (this.host.hostName != editBox.value) {
       this.host.hostName = editBox.value;
-      if (this.host.status == 'ONLINE') {
-        this.tableRow.title = chrome.i18n.getMessage(
-            /*i18n-content*/'TOOLTIP_CONNECT', this.host.hostName);
-      }
       this.onRename_(this);
     }
+    // Update the tool-top and event handler.
+    this.updateStatus();
     this.removeEditBox_();
   }
 };
