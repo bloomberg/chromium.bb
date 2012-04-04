@@ -567,6 +567,7 @@ GDataFileSystem::~GDataFileSystem() {
 void GDataFileSystem::ShutdownOnUIThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
+  pref_registrar_.RemoveAll();
   // Cancel all the in-flight operations.
   // This asynchronously cancels the URL fetch operations.
   documents_service_->CancelAll();
