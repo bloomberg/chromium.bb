@@ -4,16 +4,16 @@
 
 // Implements the Chrome Extensions WebNavigation API.
 
-#include "chrome/browser/extensions/extension_webnavigation_api.h"
+#include "chrome/browser/extensions/api/web_navigation/web_navigation_api.h"
 
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
 #include "base/string_number_conversions.h"
 #include "base/time.h"
 #include "base/values.h"
+#include "chrome/browser/extensions/api/web_navigation/web_navigation_api_constants.h"
 #include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
-#include "chrome/browser/extensions/extension_webnavigation_api_constants.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/retargeting_details.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
@@ -28,16 +28,17 @@
 #include "content/public/browser/web_contents.h"
 #include "net/base/net_errors.h"
 
-namespace keys = extension_webnavigation_api_constants;
-
 using content::BrowserContext;
 using content::ResourceRedirectDetails;
 using content::WebContents;
 
+namespace extensions {
+
+namespace keys = web_navigation_api_constants;
+
 namespace {
 
-typedef std::map<WebContents*, ExtensionWebNavigationTabObserver*>
-    TabObserverMap;
+typedef std::map<WebContents*, WebNavigationTabObserver*> TabObserverMap;
 static base::LazyInstance<TabObserverMap> g_tab_observer =
     LAZY_INSTANCE_INITIALIZER;
 
@@ -367,9 +368,9 @@ bool FrameNavigationState::GetIsServerRedirected(int64 frame_id) const {
 }
 
 
-// ExtensionWebNavigtionEventRouter -------------------------------------------
+// WebNavigtionEventRouter -------------------------------------------
 
-ExtensionWebNavigationEventRouter::PendingWebContents::PendingWebContents()
+WebNavigationEventRouter::PendingWebContents::PendingWebContents()
     : source_web_contents(NULL),
       source_frame_id(0),
       source_frame_is_main_frame(false),
@@ -377,7 +378,7 @@ ExtensionWebNavigationEventRouter::PendingWebContents::PendingWebContents()
       target_url() {
 }
 
-ExtensionWebNavigationEventRouter::PendingWebContents::PendingWebContents(
+WebNavigationEventRouter::PendingWebContents::PendingWebContents(
     WebContents* source_web_contents,
     int64 source_frame_id,
     bool source_frame_is_main_frame,
@@ -390,14 +391,14 @@ ExtensionWebNavigationEventRouter::PendingWebContents::PendingWebContents(
       target_url(target_url) {
 }
 
-ExtensionWebNavigationEventRouter::PendingWebContents::~PendingWebContents() {}
+WebNavigationEventRouter::PendingWebContents::~PendingWebContents() {}
 
-ExtensionWebNavigationEventRouter::ExtensionWebNavigationEventRouter(
-    Profile* profile) : profile_(profile) {}
+WebNavigationEventRouter::WebNavigationEventRouter(Profile* profile)
+    : profile_(profile) {}
 
-ExtensionWebNavigationEventRouter::~ExtensionWebNavigationEventRouter() {}
+WebNavigationEventRouter::~WebNavigationEventRouter() {}
 
-void ExtensionWebNavigationEventRouter::Init() {
+void WebNavigationEventRouter::Init() {
   if (registrar_.IsEmpty()) {
     registrar_.Add(this,
                    chrome::NOTIFICATION_RETARGETING,
@@ -411,7 +412,7 @@ void ExtensionWebNavigationEventRouter::Init() {
   }
 }
 
-void ExtensionWebNavigationEventRouter::Observe(
+void WebNavigationEventRouter::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
@@ -438,12 +439,11 @@ void ExtensionWebNavigationEventRouter::Observe(
   }
 }
 
-void ExtensionWebNavigationEventRouter::Retargeting(
-    const RetargetingDetails* details) {
+void WebNavigationEventRouter::Retargeting(const RetargetingDetails* details) {
   if (details->source_frame_id == 0)
     return;
-  ExtensionWebNavigationTabObserver* tab_observer =
-      ExtensionWebNavigationTabObserver::Get(details->source_web_contents);
+  WebNavigationTabObserver* tab_observer =
+      WebNavigationTabObserver::Get(details->source_web_contents);
   if (!tab_observer) {
     // If you hit this DCHECK(), please add reproduction steps to
     // http://crbug.com/109464.
@@ -482,7 +482,7 @@ void ExtensionWebNavigationEventRouter::Retargeting(
   }
 }
 
-void ExtensionWebNavigationEventRouter::TabAdded(WebContents* tab) {
+void WebNavigationEventRouter::TabAdded(WebContents* tab) {
   std::map<WebContents*, PendingWebContents>::iterator iter =
       pending_web_contents_.find(tab);
   if (iter == pending_web_contents_.end())
@@ -498,7 +498,7 @@ void ExtensionWebNavigationEventRouter::TabAdded(WebContents* tab) {
   pending_web_contents_.erase(iter);
 }
 
-void ExtensionWebNavigationEventRouter::TabDestroyed(WebContents* tab) {
+void WebNavigationEventRouter::TabDestroyed(WebContents* tab) {
   pending_web_contents_.erase(tab);
   for (std::map<WebContents*, PendingWebContents>::iterator i =
            pending_web_contents_.begin(); i != pending_web_contents_.end(); ) {
@@ -509,10 +509,9 @@ void ExtensionWebNavigationEventRouter::TabDestroyed(WebContents* tab) {
   }
 }
 
-// ExtensionWebNavigationTabObserver ------------------------------------------
+// WebNavigationTabObserver ------------------------------------------
 
-ExtensionWebNavigationTabObserver::ExtensionWebNavigationTabObserver(
-    WebContents* web_contents)
+WebNavigationTabObserver::WebNavigationTabObserver(WebContents* web_contents)
     : WebContentsObserver(web_contents) {
   g_tab_observer.Get().insert(TabObserverMap::value_type(web_contents, this));
   registrar_.Add(this,
@@ -520,16 +519,16 @@ ExtensionWebNavigationTabObserver::ExtensionWebNavigationTabObserver(
                  content::Source<WebContents>(web_contents));
 }
 
-ExtensionWebNavigationTabObserver::~ExtensionWebNavigationTabObserver() {}
+WebNavigationTabObserver::~WebNavigationTabObserver() {}
 
 // static
-ExtensionWebNavigationTabObserver* ExtensionWebNavigationTabObserver::Get(
+WebNavigationTabObserver* WebNavigationTabObserver::Get(
     WebContents* web_contents) {
   TabObserverMap::iterator i = g_tab_observer.Get().find(web_contents);
   return i == g_tab_observer.Get().end() ? NULL : i->second;
 }
 
-void ExtensionWebNavigationTabObserver::Observe(
+void WebNavigationTabObserver::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
@@ -554,7 +553,7 @@ void ExtensionWebNavigationTabObserver::Observe(
   }
 }
 
-void ExtensionWebNavigationTabObserver::DidStartProvisionalLoadForFrame(
+void WebNavigationTabObserver::DidStartProvisionalLoadForFrame(
     int64 frame_id,
     bool is_main_frame,
     const GURL& validated_url,
@@ -581,7 +580,7 @@ void ExtensionWebNavigationTabObserver::DidStartProvisionalLoadForFrame(
       web_contents(), frame_id, is_main_frame, validated_url);
 }
 
-void ExtensionWebNavigationTabObserver::DidCommitProvisionalLoadForFrame(
+void WebNavigationTabObserver::DidCommitProvisionalLoadForFrame(
     int64 frame_id,
     bool is_main_frame,
     const GURL& url,
@@ -620,7 +619,7 @@ void ExtensionWebNavigationTabObserver::DidCommitProvisionalLoadForFrame(
   }
 }
 
-void ExtensionWebNavigationTabObserver::DidFailProvisionalLoad(
+void WebNavigationTabObserver::DidFailProvisionalLoad(
     int64 frame_id,
     bool is_main_frame,
     const GURL& validated_url,
@@ -633,7 +632,7 @@ void ExtensionWebNavigationTabObserver::DidFailProvisionalLoad(
       web_contents(), validated_url, frame_id, is_main_frame, error_code);
 }
 
-void ExtensionWebNavigationTabObserver::DocumentLoadedInFrame(
+void WebNavigationTabObserver::DocumentLoadedInFrame(
     int64 frame_id) {
   if (!navigation_state_.CanSendEvents(frame_id))
     return;
@@ -643,7 +642,7 @@ void ExtensionWebNavigationTabObserver::DocumentLoadedInFrame(
                              frame_id);
 }
 
-void ExtensionWebNavigationTabObserver::DidFinishLoad(
+void WebNavigationTabObserver::DidFinishLoad(
     int64 frame_id,
     const GURL& validated_url,
     bool is_main_frame) {
@@ -658,7 +657,7 @@ void ExtensionWebNavigationTabObserver::DidFinishLoad(
                       frame_id);
 }
 
-void ExtensionWebNavigationTabObserver::DidOpenRequestedURL(
+void WebNavigationTabObserver::DidOpenRequestedURL(
     WebContents* new_contents,
     const GURL& url,
     const content::Referrer& referrer,
@@ -687,7 +686,7 @@ void ExtensionWebNavigationTabObserver::DidOpenRequestedURL(
       url);
 }
 
-void ExtensionWebNavigationTabObserver::WebContentsDestroyed(WebContents* tab) {
+void WebNavigationTabObserver::WebContentsDestroyed(WebContents* tab) {
   g_tab_observer.Get().erase(tab);
   for (FrameNavigationState::const_iterator frame = navigation_state_.begin();
        frame != navigation_state_.end(); ++frame) {
@@ -704,7 +703,7 @@ void ExtensionWebNavigationTabObserver::WebContentsDestroyed(WebContents* tab) {
 }
 
 // See also NavigationController::IsURLInPageNavigation.
-bool ExtensionWebNavigationTabObserver::IsReferenceFragmentNavigation(
+bool WebNavigationTabObserver::IsReferenceFragmentNavigation(
     int64 frame_id,
     const GURL& url) {
   GURL existing_url = navigation_state_.GetUrl(frame_id);
@@ -738,8 +737,8 @@ bool GetFrameFunction::RunImpl() {
   }
 
   WebContents* web_contents = wrapper->web_contents();
-  ExtensionWebNavigationTabObserver* observer =
-      ExtensionWebNavigationTabObserver::Get(web_contents);
+  WebNavigationTabObserver* observer =
+      WebNavigationTabObserver::Get(web_contents);
   DCHECK(observer);
 
   const FrameNavigationState& frame_navigation_state =
@@ -781,8 +780,8 @@ bool GetAllFramesFunction::RunImpl() {
   }
 
   WebContents* web_contents = wrapper->web_contents();
-  ExtensionWebNavigationTabObserver* observer =
-      ExtensionWebNavigationTabObserver::Get(web_contents);
+  WebNavigationTabObserver* observer =
+      WebNavigationTabObserver::Get(web_contents);
   DCHECK(observer);
 
   const FrameNavigationState& navigation_state =
@@ -807,3 +806,5 @@ bool GetAllFramesFunction::RunImpl() {
   result_.reset(resultList);
   return true;
 }
+
+}  // namespace extensions

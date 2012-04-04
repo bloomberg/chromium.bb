@@ -6,11 +6,12 @@
 // implementation.
 
 #include "base/values.h"
-#include "chrome/browser/extensions/extension_webnavigation_api.h"
+#include "chrome/browser/extensions/api/web_navigation/web_navigation_api.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace extensions {
 
 class FrameNavigationStateTest : public ChromeRenderViewHostTestHarness {
 };
@@ -111,3 +112,5 @@ TEST_F(FrameNavigationStateTest, WebSafeScheme) {
   navigation_state.TrackFrame(frame_id, url, true, false);
   EXPECT_FALSE(navigation_state.CanSendEvents(frame_id));
 }
+
+}  // namespace extensions

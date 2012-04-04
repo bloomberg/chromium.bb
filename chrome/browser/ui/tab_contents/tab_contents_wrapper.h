@@ -27,7 +27,6 @@ class ConstrainedWindowTabHelper;
 class CoreTabHelper;
 class DownloadRequestLimiterObserver;
 class ExtensionTabHelper;
-class ExtensionWebNavigationTabObserver;
 class ExternalProtocolObserver;
 class FaviconTabHelper;
 class FindTabHelper;
@@ -57,6 +56,10 @@ class OneClickSigninHelper;
 
 namespace browser_sync {
 class SyncedTabDelegate;
+}
+
+namespace extensions {
+class WebNavigationTabObserver;
 }
 
 namespace prerender {
@@ -261,7 +264,7 @@ class TabContentsWrapper : public content::WebContentsObserver {
 
   scoped_ptr<AlternateErrorPageTabObserver> alternate_error_page_tab_observer_;
   scoped_ptr<DownloadRequestLimiterObserver> download_request_limiter_observer_;
-  scoped_ptr<ExtensionWebNavigationTabObserver> webnavigation_observer_;
+  scoped_ptr<extensions::WebNavigationTabObserver> webnavigation_observer_;
   scoped_ptr<ExternalProtocolObserver> external_protocol_observer_;
   scoped_ptr<OmniboxSearchHint> omnibox_search_hint_;
 #if defined(ENABLE_ONE_CLICK_SIGNIN)

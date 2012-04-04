@@ -5,8 +5,8 @@
 // Defines the Chrome Extensions WebNavigation API functions for observing and
 // intercepting navigation events, as specified in the extension JSON API.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_WEBNAVIGATION_API_H_
-#define CHROME_BROWSER_EXTENSIONS_EXTENSION_WEBNAVIGATION_API_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_API_WEB_NAVIGATION_WEB_NAVIGATION_API_H_
+#define CHROME_BROWSER_EXTENSIONS_API_WEB_NAVIGATION_WEB_NAVIGATION_API_H_
 #pragma once
 
 #include <map>
@@ -21,6 +21,8 @@
 #include "googleurl/src/gurl.h"
 
 struct RetargetingDetails;
+
+namespace extensions {
 
 // Tracks the navigation state of all frames in a given tab currently known to
 // the webNavigation API. It is mainly used to track in which frames an error
@@ -124,16 +126,14 @@ class FrameNavigationState {
 };
 
 // Tab contents observer that forwards navigation events to the event router.
-class ExtensionWebNavigationTabObserver : public content::NotificationObserver,
-                                          public content::WebContentsObserver {
+class WebNavigationTabObserver : public content::NotificationObserver,
+                                 public content::WebContentsObserver {
  public:
-  explicit ExtensionWebNavigationTabObserver(
-      content::WebContents* web_contents);
-  virtual ~ExtensionWebNavigationTabObserver();
+  explicit WebNavigationTabObserver(content::WebContents* web_contents);
+  virtual ~WebNavigationTabObserver();
 
   // Returns the object for the given |tab_contents|.
-  static ExtensionWebNavigationTabObserver* Get(
-      content::WebContents* web_contents);
+  static WebNavigationTabObserver* Get(content::WebContents* web_contents);
 
   const FrameNavigationState& frame_navigation_state() const {
     return navigation_state_;
@@ -186,15 +186,15 @@ class ExtensionWebNavigationTabObserver : public content::NotificationObserver,
   // Used for tracking registrations to redirect notifications.
   content::NotificationRegistrar registrar_;
 
-  DISALLOW_COPY_AND_ASSIGN(ExtensionWebNavigationTabObserver);
+  DISALLOW_COPY_AND_ASSIGN(WebNavigationTabObserver);
 };
 
 // Observes navigation notifications and routes them as events to the extension
 // system.
-class ExtensionWebNavigationEventRouter : public content::NotificationObserver {
+class WebNavigationEventRouter : public content::NotificationObserver {
  public:
-  explicit ExtensionWebNavigationEventRouter(Profile* profile);
-  virtual ~ExtensionWebNavigationEventRouter();
+  explicit WebNavigationEventRouter(Profile* profile);
+  virtual ~WebNavigationEventRouter();
 
   // Invoked by the extensions service once the extension system is fully set
   // up and can start dispatching events to extensions.
@@ -246,7 +246,7 @@ class ExtensionWebNavigationEventRouter : public content::NotificationObserver {
   // The profile that owns us via ExtensionService.
   Profile* profile_;
 
-  DISALLOW_COPY_AND_ASSIGN(ExtensionWebNavigationEventRouter);
+  DISALLOW_COPY_AND_ASSIGN(WebNavigationEventRouter);
 };
 
 // API function that returns the state of a given frame.
@@ -263,4 +263,6 @@ class GetAllFramesFunction : public SyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("webNavigation.getAllFrames")
 };
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_WEBNAVIGATION_API_H_
+}  // namespace extensions
+
+#endif  // CHROME_BROWSER_EXTENSIONS_API_WEB_NAVIGATION_WEB_NAVIGATION_API_H_

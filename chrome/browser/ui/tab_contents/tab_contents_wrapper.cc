@@ -13,7 +13,7 @@
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/download/download_request_limiter_observer.h"
 #include "chrome/browser/extensions/extension_tab_helper.h"
-#include "chrome/browser/extensions/extension_webnavigation_api.h"
+#include "chrome/browser/extensions/api/web_navigation/web_navigation_api.h"
 #include "chrome/browser/external_protocol/external_protocol_observer.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/history/history_tab_helper.h"
@@ -121,7 +121,7 @@ TabContentsWrapper::TabContentsWrapper(WebContents* contents)
   download_request_limiter_observer_.reset(
       new DownloadRequestLimiterObserver(contents));
   webnavigation_observer_.reset(
-      new ExtensionWebNavigationTabObserver(contents));
+      new extensions::WebNavigationTabObserver(contents));
   external_protocol_observer_.reset(new ExternalProtocolObserver(contents));
   if (OmniboxSearchHint::IsEnabled(profile()))
     omnibox_search_hint_.reset(new OmniboxSearchHint(this));

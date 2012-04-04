@@ -59,7 +59,6 @@ class ExtensionPreferenceEventRouter;
 class ExtensionSyncData;
 class ExtensionSystem;
 class ExtensionToolbarModel;
-class ExtensionWebNavigationEventRouter;
 class HistoryExtensionEventRouter;
 class GURL;
 class PendingExtensionManager;
@@ -78,6 +77,7 @@ class ComponentLoader;
 class ExtensionUpdater;
 class RulesRegistryService;
 class SettingsFrontend;
+class WebNavigationEventRouter;
 }
 
 // This is an interface class to encapsulate the dependencies that
@@ -810,7 +810,7 @@ class ExtensionService
 
   scoped_ptr<ExtensionManagementEventRouter> management_event_router_;
 
-  scoped_ptr<ExtensionWebNavigationEventRouter> web_navigation_event_router_;
+  scoped_ptr<extensions::WebNavigationEventRouter> web_navigation_event_router_;
 
 #if defined(OS_CHROMEOS)
   scoped_ptr<chromeos::ExtensionBluetoothEventRouter> bluetooth_event_router_;

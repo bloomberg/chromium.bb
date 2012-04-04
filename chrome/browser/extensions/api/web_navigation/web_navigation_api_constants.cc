@@ -1,10 +1,12 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_webnavigation_api_constants.h"
+#include "chrome/browser/extensions/api/web_navigation/web_navigation_api_constants.h"
 
-namespace extension_webnavigation_api_constants {
+namespace extensions {
+
+namespace web_navigation_api_constants {
 
 const char kErrorKey[] = "error";
 const char kErrorOccurredKey[] = "errorOccurred";
@@ -28,4 +30,6 @@ const char kOnErrorOccurred[] = "webNavigation.onErrorOccurred";
 const char kOnReferenceFragmentUpdated[] =
     "webNavigation.onReferenceFragmentUpdated";
 
-}  // namespace extension_webnavigation_api_constants
+}  // namespace web_navigation_api_constants
+
+}  // namespace extensions

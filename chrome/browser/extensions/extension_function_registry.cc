@@ -19,6 +19,7 @@
 #include "chrome/browser/extensions/api/permissions/permissions_api.h"
 #include "chrome/browser/extensions/api/serial/serial_api.h"
 #include "chrome/browser/extensions/api/socket/socket_api.h"
+#include "chrome/browser/extensions/api/web_navigation/web_navigation_api.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api.h"
 #include "chrome/browser/extensions/execute_code_in_tab_function.h"
 #include "chrome/browser/extensions/extension_chrome_auth_private_api.h"
@@ -40,7 +41,6 @@
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/extensions/extension_test_api.h"
 #include "chrome/browser/extensions/extension_web_socket_proxy_private_api.h"
-#include "chrome/browser/extensions/extension_webnavigation_api.h"
 #include "chrome/browser/extensions/extension_webstore_private_api.h"
 #include "chrome/browser/extensions/settings/settings_api.h"
 #include "chrome/browser/extensions/system/system_api.h"
@@ -329,8 +329,8 @@ void ExtensionFunctionRegistry::ResetFunctions() {
   RegisterFunction<GetWebGLStatusFunction>();
 
   // WebNavigation.
-  RegisterFunction<GetFrameFunction>();
-  RegisterFunction<GetAllFramesFunction>();
+  RegisterFunction<extensions::GetFrameFunction>();
+  RegisterFunction<extensions::GetAllFramesFunction>();
 
   // WebRequest.
   RegisterFunction<WebRequestAddEventListener>();

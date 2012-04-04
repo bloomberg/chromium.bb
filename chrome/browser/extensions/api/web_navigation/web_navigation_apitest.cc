@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/extensions/api/web_navigation/web_navigation_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_webnavigation_api.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/render_view_context_menu.h"
 #include "chrome/browser/ui/browser.h"
@@ -42,6 +42,8 @@ using content::WebContents;
 #define MAYBE_WebNavigationReferenceFragment WebNavigationReferenceFragment
 #define MAYBE_WebNavigationOpenTab WebNavigationOpenTab
 #endif
+
+namespace extensions {
 
 namespace {
 
@@ -197,9 +199,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationUserAction) {
   params.is_editable = false;
   params.media_type = WebKit::WebContextMenuData::MediaTypeNone;
   params.page_url = url;
-  params.frame_id =
-      ExtensionWebNavigationTabObserver::Get(tab)->
-          frame_navigation_state().GetMainFrameID();
+  params.frame_id = WebNavigationTabObserver::Get(tab)->
+      frame_navigation_state().GetMainFrameID();
   params.link_url = extension->GetResourceURL("userAction/b.html");
 
   TestRenderViewContextMenu menu(tab, params);
@@ -318,3 +319,5 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationTargetBlankIncognito) {
 
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
+
+}  // namespace extensions
