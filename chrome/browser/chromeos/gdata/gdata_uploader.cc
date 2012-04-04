@@ -308,7 +308,6 @@ void GDataUploader::OnResumeUploadResponseReceived(
     if (!upload_file_info->completion_callback.is_null()) {
       upload_file_info->completion_callback.Run(base::PLATFORM_FILE_OK,
                                                 upload_file_info);
-      upload_file_info->completion_callback.Reset();
     }
     // TODO(achuith): DeleteUpload() here and let clients call
     // GDataFileSystem::AddUploadedFile.
