@@ -20,6 +20,7 @@
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/scoped_handle.h"
+#include "base/win/scoped_process_information.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
@@ -212,7 +213,7 @@ bool LaunchProcessAsUser(const FilePath& binary,
   string16 application_name = binary.value();
   string16 desktop = ASCIIToUTF16(kDefaultDesktopName);
 
-  PROCESS_INFORMATION process_info;
+  base::win::ScopedProcessInformation process_info;
   STARTUPINFOW startup_info;
 
   memset(&startup_info, 0, sizeof(startup_info));
@@ -229,14 +230,13 @@ bool LaunchProcessAsUser(const FilePath& binary,
                             NULL,
                             NULL,
                             &startup_info,
-                            &process_info)) {
+                            process_info.Receive())) {
     LOG_GETLASTERROR(ERROR) <<
         "Failed to launch a process with a user token";
     return false;
   }
 
-  CloseHandle(process_info.hThread);
-  process_out->set_handle(process_info.hProcess);
+  process_out->set_handle(process_info.TakeProcessHandle());
   return true;
 }
 
