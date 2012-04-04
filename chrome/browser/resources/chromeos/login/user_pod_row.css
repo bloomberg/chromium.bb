@@ -180,7 +180,9 @@ html[dir=rtl] .pod .capslock-hint {
 .remove-user-button {
   -webkit-transition: width 100ms ease-in-out, background 200ms ease-in-out;
   background: url('../../../../../ui/resources/close_bar.png') center center no-repeat;
+  background-color: rgba(255, 255, 255, 0.3);
   border: 0;
+  border-radius: 4px;
   box-shadow: none;
   height: 16px;
   margin: 0;
@@ -189,18 +191,22 @@ html[dir=rtl] .pod .capslock-hint {
   position: absolute;
   right: 14px;
   top: 14px;
+  visibility: hidden;
   width: 16px;
 }
 
+.pod:hover .remove-user-button {
+  visibility: visible;
+}
+
 .remove-user-button:hover {
-  background: url('../../../../../ui/resources/close_bar_h.png') center center no-repeat;
+  background-image: url('../../../../../ui/resources/close_bar_h.png');
   box-shadow: none;
 }
 
 .remove-user-button.active {
   background-color: rgb(233, 73, 73);
   background-image: none;
-  border-radius: 4px;
   color: white;
   font-size: 10px;
   height: initial;
