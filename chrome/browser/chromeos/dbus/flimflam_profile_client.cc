@@ -46,8 +46,7 @@ class FlimflamProfileClientImpl : public FlimflamProfileClient {
                                dbus::Response* response);
 
   dbus::ObjectProxy* proxy_;
-  base::WeakPtrFactory<FlimflamProfileClientImpl> weak_ptr_factory_;
-  PropertyChangedHandler property_changed_handler_;
+  FlimflamClientHelper helper_;
 
   DISALLOW_COPY_AND_ASSIGN(FlimflamProfileClientImpl);
 };
@@ -56,34 +55,24 @@ FlimflamProfileClientImpl::FlimflamProfileClientImpl(dbus::Bus* bus)
     : proxy_(bus->GetObjectProxy(
         flimflam::kFlimflamServiceName,
         dbus::ObjectPath(flimflam::kFlimflamServicePath))),
-      weak_ptr_factory_(this) {
-  proxy_->ConnectToSignal(
-      flimflam::kFlimflamProfileInterface,
-      flimflam::kMonitorPropertyChanged,
-      base::Bind(&FlimflamProfileClientImpl::OnPropertyChanged,
-                 weak_ptr_factory_.GetWeakPtr()),
-      base::Bind(&FlimflamProfileClientImpl::OnSignalConnected,
-                 weak_ptr_factory_.GetWeakPtr()));
+      helper_(proxy_) {
+  helper_.MonitorPropertyChanged(flimflam::kFlimflamProfileInterface);
 }
 
 void FlimflamProfileClientImpl::SetPropertyChangedHandler(
     const PropertyChangedHandler& handler) {
-  property_changed_handler_ = handler;
+  helper_.SetPropertyChangedHandler(handler);
 }
 
 void FlimflamProfileClientImpl::ResetPropertyChangedHandler() {
-  property_changed_handler_.Reset();
+  helper_.ResetPropertyChangedHandler();
 }
 
 void FlimflamProfileClientImpl::GetProperties(
     const DictionaryValueCallback& callback) {
   dbus::MethodCall method_call(flimflam::kFlimflamProfileInterface,
                                flimflam::kGetPropertiesFunction);
-  proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-                     base::Bind(
-                         &FlimflamProfileClientImpl::OnDictionaryValueMethod,
-                         weak_ptr_factory_.GetWeakPtr(),
-                         callback));
+  helper_.CallDictionaryValueMethod(&method_call, callback);
 }
 
 void FlimflamProfileClientImpl::GetEntry(
@@ -93,11 +82,7 @@ void FlimflamProfileClientImpl::GetEntry(
                                flimflam::kGetEntryFunction);
   dbus::MessageWriter writer(&method_call);
   writer.AppendObjectPath(path);
-  proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-                     base::Bind(
-                         &FlimflamProfileClientImpl::OnDictionaryValueMethod,
-                         weak_ptr_factory_.GetWeakPtr(),
-                         callback));
+  helper_.CallDictionaryValueMethod(&method_call, callback);
 }
 
 void FlimflamProfileClientImpl::DeleteEntry(const dbus::ObjectPath& path,
@@ -106,59 +91,7 @@ void FlimflamProfileClientImpl::DeleteEntry(const dbus::ObjectPath& path,
                                flimflam::kDeleteEntryFunction);
   dbus::MessageWriter writer(&method_call);
   writer.AppendObjectPath(path);
-  proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-                     base::Bind(&FlimflamProfileClientImpl::OnVoidMethod,
-                                weak_ptr_factory_.GetWeakPtr(),
-                                callback));
-}
-
-void FlimflamProfileClientImpl::OnSignalConnected(const std::string& interface,
-                                                  const std::string& signal,
-                                                  bool success) {
-  LOG_IF(ERROR, !success) << "Connect to " << interface << " "
-                          << signal << " failed.";
-}
-
-void FlimflamProfileClientImpl::OnPropertyChanged(dbus::Signal* signal) {
-  if (property_changed_handler_.is_null())
-    return;
-
-  dbus::MessageReader reader(signal);
-  std::string name;
-  if (!reader.PopString(&name))
-    return;
-  scoped_ptr<base::Value> value(dbus::PopDataAsValue(&reader));
-  if (!value.get())
-    return;
-  property_changed_handler_.Run(name, *value);
-}
-
-void FlimflamProfileClientImpl::OnVoidMethod(const VoidCallback& callback,
-                                             dbus::Response* response) {
-  if (!response) {
-    callback.Run(FAILURE);
-    return;
-  }
-  callback.Run(SUCCESS);
-}
-
-void FlimflamProfileClientImpl::OnDictionaryValueMethod(
-    const DictionaryValueCallback& callback,
-    dbus::Response* response) {
-  if (!response) {
-    base::DictionaryValue result;
-    callback.Run(FAILURE, result);
-    return;
-  }
-  dbus::MessageReader reader(response);
-  scoped_ptr<base::Value> value(dbus::PopDataAsValue(&reader));
-  base::DictionaryValue* result = NULL;
-  if (!value.get() || !value->GetAsDictionary(&result)) {
-    base::DictionaryValue result;
-    callback.Run(FAILURE, result);
-    return;
-  }
-  callback.Run(SUCCESS, *result);
+  helper_.CallVoidMethod(&method_call, callback);
 }
 
 // A stub implementation of FlimflamProfileClient.
@@ -197,13 +130,15 @@ class FlimflamProfileClientStubImpl : public FlimflamProfileClient {
   // FlimflamProfileClient override.
   virtual void DeleteEntry(const dbus::ObjectPath& path,
                            const VoidCallback& callback) OVERRIDE {
-    MessageLoop::current()->PostTask(FROM_HERE, base::Bind(callback, SUCCESS));
+    MessageLoop::current()->PostTask(FROM_HERE,
+                                     base::Bind(callback,
+                                                DBUS_METHOD_CALL_SUCCESS));
   }
 
  private:
   void PassEmptyDictionaryValue(const DictionaryValueCallback& callback) const {
     base::DictionaryValue dictionary;
-    callback.Run(SUCCESS, dictionary);
+    callback.Run(DBUS_METHOD_CALL_SUCCESS, dictionary);
   }
 
   base::WeakPtrFactory<FlimflamProfileClientStubImpl> weak_ptr_factory_;
