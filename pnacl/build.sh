@@ -138,7 +138,7 @@ readonly INSTALL_GLIBC_BIN="${INSTALL_GLIBC}/bin"
 # the native libraries for bitcode linking.
 # See make-glibc-link() for the primary use of this value.
 # TODO(pdox): Replace with .pso stubs in glibc/lib.
-readonly INSTALL_GLIBC_LIB_ARCH="${INSTALL_ROOT}/glibc/lib-"
+readonly INSTALL_GLIBC_LIB_ARCH="${INSTALL_GLIBC}/lib-"
 
 # Bitcode lib directories. These will soon be split apart.
 # BUG= http://code.google.com/p/nativeclient/issues/detail?id=2452
@@ -187,6 +187,9 @@ readonly PNACL_SIZE="${INSTALL_NEWLIB_BIN}/size"
 readonly PNACL_STRIP="${INSTALL_NEWLIB_BIN}/pnacl-strip"
 readonly ILLEGAL_TOOL="${INSTALL_NEWLIB_BIN}"/pnacl-illegal
 
+# ELF -> PSO stub generator.
+readonly PSO_STUB_GEN="${LLVM_INSTALL_DIR}/bin/pso-stub"
+
 # PNACL_CC_NEUTRAL is pnacl-cc without LibC bias (newlib vs. glibc)
 # This should only be used in conjunction with -E, -c, or -S.
 readonly PNACL_CC_NEUTRAL="${INSTALL_NEWLIB_BIN}/pnacl-clang -nodefaultlibs"
@@ -224,27 +227,6 @@ GetInstallDir() {
   esac
 }
 
-#+ make-glibc-link <arch> <target> <linkname> -
-#+     Create a symbolic link from the GLibC arch-specific lib directory
-#+     to the translator lib directory.
-#+     <arch> can be a single arch, a list, or 'all'.
-make-glibc-link() {
-  local arches="$1"
-  local target="$2"
-  local linkname="$3"
-
-  if [ "${arches}" == "all" ]; then
-    arches="x86-32 x86-64"
-  fi
-
-  local arch
-  for arch in ${arches}; do
-    local dest="${INSTALL_GLIBC_LIB_ARCH}"${arch}
-    mkdir -p "${dest}"
-    ln -sf ../../lib-${arch}/"${target}" "${dest}"/"${linkname}"
-  done
-}
-
 # For a production (release) build, we want the sandboxed
 # translator to only contain the code needed to handle
 # its own architecture. For example, the translator shipped with
@@ -268,7 +250,7 @@ if ${PNACL_IN_CROS_CHROOT}; then
 fi
 
 # Current milestones in each repo
-readonly UPSTREAM_REV=${UPSTREAM_REV:-567b26101263}
+readonly UPSTREAM_REV=${UPSTREAM_REV:-4dd3419f60be}
 
 readonly NEWLIB_REV=346ea38d142f
 readonly BINUTILS_REV=8040f022bb25
@@ -920,6 +902,7 @@ translator() {
   fi
 }
 
+
 # Builds crt1.bc for GlibC, which is just sysdeps/nacl/start.c and csu/init.c
 glibc-crt1() {
   StepBanner "GLIBC" "Building crt1.bc"
@@ -961,6 +944,9 @@ glibc-copy() {
   spopd
   StepBanner "GLIBC" "GLibC version ID is ${ver}"
 
+  ######################################################################
+  # Set up libs for native linking.
+
   # Files to copy from ${naclgcc_base} into the translator library directories
   local LIBS_TO_COPY="libstdc++.so.6 \
                       libc_nonshared.a \
@@ -979,12 +965,21 @@ glibc-copy() {
     cp -a "${naclgcc_base}/lib/"${lib} "${INSTALL_LIB_X8664}"
   done
 
+  ######################################################################
+  # Set up libs for bitcode linking.
+
   # libc.so and libpthread.so are linker scripts
   # Place them in the GLibC arch-specific directory only.
   # They don't need to be in the translator directory.
   # TODO(pdox): These should go in the architecture-independent glibc/lib
   # directory, but they have an OUTPUT_FORMAT statement. Gold might already
   # ignore this.
+  # TODO(jvoung): Perhaps we should just make our own version of these
+  # linker scripts that are architecture independent and refer to the
+  # bitcode stub files and bitcode archives (for libx_nonshared.a).
+  # Also, we need to make a differently named libc.pso and libpthread.pso
+  # that do not clash with the linker scripts / have the linker scripts
+  # refer to these pso stubs instead of the native libs.
   mkdir -p "${INSTALL_GLIBC_LIB_ARCH}"x86-32
   mkdir -p "${INSTALL_GLIBC_LIB_ARCH}"x86-64
   local lib
@@ -995,21 +990,19 @@ glibc-copy() {
     make-glibc-link all ${lib}.so.${ver} ${lib}.so.${ver}
   done
 
-  # Make symlinks for the other libraries.
-  # TODO(pdox): Replace these with .pso stubs.
+  # Make pso stubs for other libraries.
   local lib
   for lib in libdl libm librt; do
-    make-glibc-link all ${lib}.so.${ver} ${lib}-2.9.so
-    make-glibc-link all ${lib}.so.${ver} ${lib}.so
+    make-glibc-pso-stubs ${lib}.so.${ver} ${lib}.pso
+    make-glibc-pso-stubs ${lib}.so.${ver} ${lib}-2.9.pso
   done
-  make-glibc-link all libstdc++.so.6 libstdc++.so
-  make-glibc-link all libstdc++.so.6 libstdc++.so.6.0.13
+  make-glibc-pso-stubs libstdc++.so.6 libstdc++.pso
+  make-glibc-pso-stubs libstdc++.so.6 libstdc++.pso.6.0.13
+  make-glibc-pso-stubs libmemusage.so libmemusage.pso
 
   # BUG= http://code.google.com/p/nativeclient/issues/detail?id=2615
   make-glibc-link all libc_nonshared.a libc_nonshared.a
   make-glibc-link all libpthread_nonshared.a libpthread_nonshared.a
-
-  make-glibc-link all libmemusage.so libmemusage.so
 
   # Copy linker scripts
   # We currently only depend on elf[64]_nacl.x,
@@ -1030,6 +1023,11 @@ glibc-copy() {
   # Create symlinks to make them look the same.
   # TODO(pdox): Make the sonames match in GlibC.
   #             Also, replace these links with PSO stubs.
+  # This is referred to by the libc.so linker script.  Perhaps we could
+  # make a platform agnostic linker script that just points to ld-nacl.pso
+  # and the libc-2.9.pso.  We also need to handle libc_nonshared.a,
+  # as mentioned above.  That could perhaps be built as a bitcode archive.
+  # It just contains fstat, fstat64, etc. anyway.
   for arch in x86-32 x86-64; do
     make-glibc-link ${arch} ld-2.9.so ld-nacl-${arch}.so.1
   done
@@ -1040,6 +1038,46 @@ glibc-copy() {
         "${GLIBC_INSTALL_DIR}"/include
   install-unwind-header
 }
+
+
+#+ make-glibc-link <arch> <target> <linkname> -
+#+     Create a symbolic link from the GLibC arch-specific lib directory
+#+     to the translator lib directory.
+#+     <arch> can be a single arch, a list, or 'all'.
+make-glibc-link() {
+  local arches="$1"
+  local target="$2"
+  local linkname="$3"
+
+  if [ "${arches}" == "all" ]; then
+    arches="x86-32 x86-64"
+  fi
+
+  local arch
+  for arch in ${arches}; do
+    local dest="${INSTALL_GLIBC_LIB_ARCH}"${arch}
+    mkdir -p "${dest}"
+    ln -sf ../../lib-${arch}/"${target}" "${dest}"/"${linkname}"
+  done
+}
+
+#+ make-glibc-pso-stubs <src_native_basename> <dest_stub_basename> -
+#+     Create a pso-stub for GLibC bitcode lib directory based on the native
+#+     .so files in the translator lib directory.
+make-glibc-pso-stubs() {
+  local src_lib=$1
+  local target_lib=$2
+
+  local dest_dir="${INSTALL_LIB_GLIBC}"
+  # For now, pick x86-64 .so as the baseline for our .pso files.
+  local neutral_arch="x86-64"
+  local src_dir="${INSTALL_LIB_NATIVE}${neutral_arch}"
+
+  mkdir -p "${dest_dir}"
+  RunWithLog "glibc.pso_stub_gen" \
+    "${PSO_STUB_GEN}" "${src_dir}/${src_lib}" -o "${dest_dir}/${target_lib}"
+}
+
 
 #@ all                   - Alias for 'everything'
 all() {
@@ -3361,7 +3399,7 @@ verify-pso() {
     VerifyLinkerScript "${psofile}"
   else
     verify-object-llvm "$1"
-    echo "PASS"
+    echo "PASS (bitcode pso)"
     # TODO(pdox): Add a call to pnacl-meta to check for the "shared" property.
   fi
 }
