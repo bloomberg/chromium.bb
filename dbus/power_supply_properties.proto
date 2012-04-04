@@ -30,4 +30,9 @@ message PowerSupplyProperties {
     optional int64 averaged_battery_time_to_empty = 10;
     // Averaged time to battery complete charge, in seconds
     optional int64 averaged_battery_time_to_full = 11;
+    // Set to true when we have just transitioned states and we might
+    // have both a segment of charging and discharging in the
+    // calculation. This is done to signal that the time value maybe
+    // inaccurate.
+    optional bool is_calculating_battery_time = 12 [default = false];
 }
