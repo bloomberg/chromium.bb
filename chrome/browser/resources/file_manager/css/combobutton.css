@@ -5,11 +5,8 @@
 .cr-button {
   -webkit-appearance: none;
   -webkit-user-select: none;
-  background-image: -webkit-linear-gradient(#ededed, #ededed 38%, #dedede);
-  border: 1px solid rgba(0, 0, 0, 0.25);
-  border-radius: 2px;
-  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.08),
-      inset 0 1px 2px rgba(255, 255, 255, 0.75);
+  background-color: #fff;
+  border: 1px solid #ccc;
   color: #444;
   cursor: default;
   font: -webkit-small-control;
@@ -18,15 +15,13 @@
 }
 
 .cr-button:hover {
-  background-image: -webkit-linear-gradient(#f0f0f0, #f0f0f0 38%, #e0e0e0);
-  border-color: rgba(0, 0, 0, 0.3);
-  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.12),
-      inset 0 1px 2px rgba(255, 255, 255, 0.95);
+  border-color: #bbb;
   color: black;
 }
 
 .cr-button:active {
-  background-image: -webkit-linear-gradient(#e7e7e7, #e7e7e7 38%, #d7d7d7);
+  background-color: #f1f1f1;
+  border-color: #bbb;
   box-shadow: none;
   text-shadow: none;
 }

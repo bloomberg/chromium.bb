@@ -716,9 +716,9 @@ FileManager.prototype = {
     this.dialogDom_.querySelector('div.close-sidebar').addEventListener(
         'keypress', this.onToggleSidebarPress_.bind(this));
     this.dialogContainer_ = this.dialogDom_.querySelector('.dialog-container');
-    this.dialogDom_.querySelector('button.detail-view').addEventListener(
+    this.dialogDom_.querySelector('div.detail-view').addEventListener(
         'click', this.onDetailViewButtonClick_.bind(this));
-    this.dialogDom_.querySelector('button.thumbnail-view').addEventListener(
+    this.dialogDom_.querySelector('div.thumbnail-view').addEventListener(
         'click', this.onThumbnailViewButtonClick_.bind(this));
 
     this.syncButton = this.dialogDom_.querySelector('#gdata-sync-settings');
@@ -1310,8 +1310,10 @@ FileManager.prototype = {
       this.table_.style.display = '';
       /** @type {cr.ui.List} */
       this.currentList_ = this.table_.list;
-      this.dialogDom_.querySelector('button.detail-view').disabled = true;
-      this.dialogDom_.querySelector('button.thumbnail-view').disabled = false;
+      this.dialogDom_.querySelector('div.detail-view')
+          .setAttribute('disabled', 'disabled');
+      this.dialogDom_.querySelector('div.thumbnail-view')
+          .removeAttribute('disabled');
     } else if (type == FileManager.ListType.THUMBNAIL) {
       this.grid_.dataModel = this.directoryModel_.fileList;
       this.grid_.selectionModel = this.directoryModel_.fileListSelection;
@@ -1322,8 +1324,10 @@ FileManager.prototype = {
       this.grid_.style.display = '';
       /** @type {cr.ui.List} */
       this.currentList_ = this.grid_;
-      this.dialogDom_.querySelector('button.thumbnail-view').disabled = true;
-      this.dialogDom_.querySelector('button.detail-view').disabled = false;
+      this.dialogDom_.querySelector('div.thumbnail-view')
+          .setAttribute('disabled', 'disabled');
+      this.dialogDom_.querySelector('div.detail-view')
+          .removeAttribute('disabled');
     } else {
       throw new Error('Unknown list type: ' + type);
     }

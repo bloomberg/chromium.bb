@@ -183,9 +183,8 @@
         <div class=dialog-header>
           <div class=open-sidebar tabindex=0 role="button"></div>
           <div class=breadcrumbs></div>
-          <!-- The outter div is a hack to remove margin between buttons. -->
-          <div><button class="detail-view" tabindex="4" disabled></button></div>
-          <div><button class="thumbnail-view" tabindex="5"></button></div>
+          <div class=detail-view role=button tabindex=4 disabled></div>
+          <div class=thumbnail-view role=button tabindex=5></div>
           <div visibleif='this.dialogType_ == "full-page"'><button
             menu="#docs-settings" class="settings" tabindex="6"></button></div>
         </div>

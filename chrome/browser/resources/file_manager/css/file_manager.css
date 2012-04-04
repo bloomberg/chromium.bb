@@ -362,7 +362,7 @@ div.close-sidebar:hover {
 }
 
 /* Open sidebar button. */
-div.open-sidebar {
+div.dialog-header div.open-sidebar {
   background-color: white;
   background-image: url('../images/open_sidebar.png');
   background-position: center center;
@@ -475,42 +475,51 @@ div.open-sidebar:hover {
   width: 25px;
 }
 
-.dialog-header button {
-  -webkit-border-radius: 0;
-  background-position: left top;
+.dialog-header div[role=button] {
+  -webkit-transition: border-color 130ms linear;
+  background-color: transparent;
+  background-position: center center;
   background-repeat: no-repeat;
-  border: none;
-  height: 28px;
-  min-width: 0;
-  padding: 0;
+  border: 1px solid transparent;
+  height: 29px;
+  width: 29px;
+}
+
+.dialog-header div[role=button]:focus {
+  -webkit-transition: border-color 200ms;
+  border-color: rgb(77, 144, 254);
+  outline: none;
+}
+
+.dialog-header div[role=button][disabled],
+.dialog-header div[role=button]:hover,
+.dialog-header div[role=button]:active {
+  border-color: #ddd;
+}
+
+.dialog-header div[role=button][disabled] {
+  background-color: #f1f1f1;
 }
 
 /* button:hover and button[disabled]:hover rules must be override by placing
  * the following four rules after them.
  */
-button.detail-view {
-  background-image: url('../images/icon_list_view_off.png');
-  border-right: 1px solid #9d9d9d;
-  width: 29px;
+div.detail-view {
+  background-image: url('../images/icon_list_view.png');
 }
 
-button.thumbnail-view {
-  background-image: url('../images/icon_thumb_view_off.png');
-  width: 28px;
+div.thumbnail-view {
+  background-image: url('../images/icon_thumb_view.png');
+  margin-left: -1px;
 }
 
-button.detail-view[disabled] {
-  background-image: url('../images/icon_list_view_on.png');
-}
-
-button.thumbnail-view[disabled] {
-  background-image: url('../images/icon_thumb_view_on.png');
-}
 
 button.settings {
   display: none;
   margin-left: 8px;
   width: 57px;
+  /* Temporary solution not to uglify settings button */
+  height:30px;
 }
 
 [gdata] button.settings {
@@ -776,7 +785,7 @@ input.rename {
 
 /* Table splitter element */
 .table-header-splitter {
-  -webkit-border-start: 1px #aaa solid;
+  -webkit-border-start: 1px #d4d4d4 solid;
   background-color: inherit;
   height: 27px;
 }
@@ -784,7 +793,7 @@ input.rename {
 /* Container for a table header. */
 .table-header {
   -webkit-box-sizing: border-box;
-  background-image: -webkit-linear-gradient(top, #f9f9f9, #e8e8e8);
+  background-color: #f5f5f5;
   border-bottom: 1px #d2d2d2 solid;
   height: 27px;
 }
@@ -1037,7 +1046,7 @@ li.table-row {
   -webkit-box-align: center;
   -webkit-box-orient: horizontal;
   display: -webkit-box;
-  padding: 5px 10px;
+  padding: 5px 10px 4px;
   text-align: left;
 }
 

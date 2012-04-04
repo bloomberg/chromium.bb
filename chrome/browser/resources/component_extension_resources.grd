@@ -131,10 +131,12 @@
         <include name="IDR_FILE_MANAGER_IMG_GALLERY_BUTTERBAR_CLOSE_X" file="file_manager/images/gallery/butterbar_close_x.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_IMG_GALLERY_SPINNER" file="file_manager/images/gallery/spinner_white.svg" type="BINDATA" />
 
-        <include name="IDR_FILE_MANAGER_ICON_LIST_VIEW_ON" file="file_manager/images/icon_list_view_on.png" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_ICON_LIST_VIEW_OFF" file="file_manager/images/icon_list_view_off.png" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_ICON_THUMB_VIEW_ON" file="file_manager/images/icon_thumb_view_on.png" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_ICON_THUMB_VIEW_OFF" file="file_manager/images/icon_thumb_view_off.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_ICON_LIST_VIEW" file="file_manager/images/icon_list_view.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_ICON_THUMB_VIEW" file="file_manager/images/icon_thumb_view.png" type="BINDATA" />
+        
+        <include name="IDR_FILE_MANAGER_ICON_GDATA_SETTINGS" file="file_manager/images/settings_button.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_ICON_GDATA_SETTINGS_PRESSED" file="file_manager/images/settings_button_pressed.png" type="BINDATA" />
+
         <include name="IDR_FILE_MANAGER_WARNING_ICON" file="file_manager/images/warning_icon_square_26x26.png" type="BINDATA"/>
 
         <include name="IDR_FILE_MANAGER_BUTTON_ICON_DELETE" file="file_manager/images/button-icon-delete.png" type="BINDATA" />
