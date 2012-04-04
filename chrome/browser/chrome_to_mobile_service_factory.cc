@@ -5,6 +5,7 @@
 #include "chrome/browser/chrome_to_mobile_service_factory.h"
 
 #include "chrome/browser/chrome_to_mobile_service.h"
+#include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/signin/token_service_factory.h"
 
@@ -37,6 +38,7 @@ ChromeToMobileServiceFactory::ChromeToMobileServiceFactory()
         "ChromeToMobileService",
         ProfileDependencyManager::GetInstance()) {
   DependsOn(TokenServiceFactory::GetInstance());
+  DependsOn(CookieSettings::Factory::GetInstance());
 }
 
 ChromeToMobileServiceFactory::~ChromeToMobileServiceFactory() {}

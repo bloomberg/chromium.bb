@@ -12,6 +12,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_url.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/token_service.h"
@@ -356,6 +357,17 @@ void ChromeToMobileService::RequestAccountInfo() {
   std::string url_string = StringPrintf(kAccountInfoURL,
       guid::GenerateGUID().c_str(), kChromeToMobileRequestor);
   GURL url(url_string);
+
+  // Account information is read from the profile's cookie. If cookies are
+  // blocked, access cloud print directly to list any potential devices.
+  scoped_refptr<CookieSettings> cookie_settings =
+      CookieSettings::Factory::GetForProfile(profile_);
+  if (cookie_settings && !cookie_settings->IsReadingCookieAllowed(url, url)) {
+    cloud_print_accessible_ = true;
+    RequestMobileListUpdate();
+    return;
+  }
+
   account_info_request_.reset(
       content::URLFetcher::Create(url, content::URLFetcher::GET, this));
   account_info_request_->SetRequestContext(profile_->GetRequestContext());
