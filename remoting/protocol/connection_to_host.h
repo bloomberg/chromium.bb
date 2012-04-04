@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "remoting/jingle_glue/signal_strategy.h"
 #include "remoting/proto/internal.pb.h"
+#include "remoting/protocol/clipboard_filter.h"
 #include "remoting/protocol/errors.h"
 #include "remoting/protocol/input_filter.h"
 #include "remoting/protocol/message_reader.h"
@@ -81,6 +82,7 @@ class ConnectionToHost : public SignalStrategy::Listener,
 
   virtual const SessionConfig& config();
 
+  virtual ClipboardStub* clipboard_stub();
   virtual InputStub* input_stub();
 
   // SignalStrategy::StatusObserver interface.
@@ -140,6 +142,7 @@ class ConnectionToHost : public SignalStrategy::Listener,
   scoped_ptr<VideoReader> video_reader_;
   scoped_ptr<ClientControlDispatcher> control_dispatcher_;
   scoped_ptr<ClientEventDispatcher> event_dispatcher_;
+  ClipboardFilter clipboard_forwarder_;
   InputFilter event_forwarder_;
 
   // Internal state of the connection.

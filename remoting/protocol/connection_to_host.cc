@@ -45,6 +45,10 @@ ConnectionToHost::ConnectionToHost(
 ConnectionToHost::~ConnectionToHost() {
 }
 
+ClipboardStub* ConnectionToHost::clipboard_stub() {
+  return &clipboard_forwarder_;
+}
+
 InputStub* ConnectionToHost::input_stub() {
   return &event_forwarder_;
 }
@@ -215,7 +219,8 @@ void ConnectionToHost::NotifyIfChannelsReady() {
       event_dispatcher_.get() && event_dispatcher_->is_connected() &&
       video_reader_.get() && video_reader_->is_connected() &&
       state_ == CONNECTING) {
-    // Start forwarding input events to |event_dispatcher_|.
+    // Start forwarding clipboard and input events.
+    clipboard_forwarder_.set_clipboard_stub(control_dispatcher_.get());
     event_forwarder_.set_input_stub(event_dispatcher_.get());
     SetState(CONNECTED, OK);
   }
@@ -229,6 +234,7 @@ void ConnectionToHost::CloseOnError(ErrorCode error) {
 void ConnectionToHost::CloseChannels() {
   control_dispatcher_.reset();
   event_dispatcher_.reset();
+  clipboard_forwarder_.set_clipboard_stub(NULL);
   event_forwarder_.set_input_stub(NULL);
   video_reader_.reset();
 }

@@ -1117,6 +1117,8 @@
         'protocol/client_event_dispatcher.cc',
         'protocol/client_event_dispatcher.h',
         'protocol/client_stub.h',
+        'protocol/clipboard_filter.h',
+        'protocol/clipboard_filter.cc',
         'protocol/clipboard_stub.h',
         'protocol/connection_to_client.cc',
         'protocol/connection_to_client.h',
