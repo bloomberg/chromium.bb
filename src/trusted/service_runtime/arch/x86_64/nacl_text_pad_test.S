@@ -37,7 +37,8 @@ do_digit_10:
         movq %rcx, %rdx
         movq %r8, %rsi
         /* rdi still has descriptor number */
-        call NACL_SYSCALL_ADDR(NACL_sys_write)
+        movq $NACL_SYSCALL_ADDR(NACL_sys_write), %r10
+        naclcall %r10d,%r15
 
         movq %rbp, %rsp
         popq %r11
@@ -69,7 +70,8 @@ do_digit_not_upper:
         movq %rcx, %rdx
         movq %r8, %rsi
         /* rdi still has descriptor number */
-        call NACL_SYSCALL_ADDR(NACL_sys_write)
+        movq $NACL_SYSCALL_ADDR(NACL_sys_write), %r10
+        naclcall %r10d,%r15
 
         movq %rbp, %rsp
         popq %r11
@@ -89,7 +91,8 @@ write_char:
         movq $1, %rdx
         movl %esp, %esi
         /* %rdi retains value */
-        call NACL_SYSCALL_ADDR(NACL_sys_write)
+        movq $NACL_SYSCALL_ADDR(NACL_sys_write), %r10
+        naclcall %r10d,%r15
 
         movq %rbp, %rsp
         popq %r11
@@ -125,7 +128,8 @@ _start:
         call write_char
 
         movq $0, %rdi
-        call NACL_SYSCALL_ADDR(NACL_sys_sysbrk)
+        movq $NACL_SYSCALL_ADDR(NACL_sys_sysbrk), %r10
+        naclcall %r10d,%r15
 
         xorq %r12, %r12  /* r12 holds our eventual exit status */
         cmpl $EXPECTED_BREAK, %eax
@@ -153,7 +157,8 @@ brk_sane:
         movq $12, %rdx
         movq $ro_str, %rsi
         movq $1, %rdi
-        call NACL_SYSCALL_ADDR(NACL_sys_write)
+        movq $NACL_SYSCALL_ADDR(NACL_sys_write), %r10
+        naclcall %r10d,%r15
 
         movq $ro_str, %rsi
         movq $1, %rdi
@@ -179,7 +184,8 @@ ro_sane:
 #endif
 
         movq %r12, %rdi
-        call NACL_SYSCALL_ADDR(NACL_sys_exit)
+        movq $NACL_SYSCALL_ADDR(NACL_sys_exit), %r10
+        naclcall %r10d,%r15
       /*
          * Pad code section to TEXT_EXTEND with 0xf4.
          * This little dance is necessary because llvm mc does not support
