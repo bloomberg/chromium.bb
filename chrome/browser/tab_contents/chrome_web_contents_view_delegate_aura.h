@@ -28,8 +28,13 @@ class ChromeWebContentsViewDelegateAura
 
   // Overridden from WebContentsViewDelegate:
   virtual content::WebDragDestDelegate* GetDragDestDelegate() OVERRIDE;
+  virtual void StoreFocus() OVERRIDE;
+  virtual void RestoreFocus() OVERRIDE;
+  virtual bool Focus() OVERRIDE;
+  virtual void TakeFocus(bool reverse) OVERRIDE;
   virtual void ShowContextMenu(
       const content::ContextMenuParams& params) OVERRIDE;
+  virtual void SizeChanged(const gfx::Size& size) OVERRIDE;
 
  private:
   content::WebContents* web_contents_;

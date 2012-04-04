@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_TAB_CONTENTS_CHROME_WEB_CONTENTS_VIEW_DELEGATE_WIN_H_
-#define CHROME_BROWSER_TAB_CONTENTS_CHROME_WEB_CONTENTS_VIEW_DELEGATE_WIN_H_
+#ifndef CHROME_BROWSER_TAB_CONTENTS_CHROME_WEB_CONTENTS_VIEW_DELEGATE_VIEWS_H_
+#define CHROME_BROWSER_TAB_CONTENTS_CHROME_WEB_CONTENTS_VIEW_DELEGATE_VIEWS_H_
 #pragma once
 
 #include "base/basictypes.h"
@@ -13,10 +13,10 @@
 
 class ConstrainedWindowViews;
 class RenderViewContextMenuViews;
-class WebDragBookmarkHandlerWin;
 
 namespace content {
 class WebContents;
+class WebDragDestDelegate;
 }
 
 namespace views {
@@ -26,11 +26,12 @@ class Widget;
 
 // A chrome specific class that extends TabContentsViewWin with features like
 // constrained windows, which live in chrome.
-class ChromeWebContentsViewDelegateWin
+class ChromeWebContentsViewDelegateViews
     : public content::WebContentsViewDelegate {
  public:
-  explicit ChromeWebContentsViewDelegateWin(content::WebContents* web_contents);
-  virtual ~ChromeWebContentsViewDelegateWin();
+  explicit ChromeWebContentsViewDelegateViews(
+      content::WebContents* web_contents);
+  virtual ~ChromeWebContentsViewDelegateViews();
 
   // Overridden from WebContentsViewDelegate:
   virtual content::WebDragDestDelegate* GetDragDestDelegate() OVERRIDE;
@@ -55,11 +56,11 @@ class ChromeWebContentsViewDelegateWin
   scoped_ptr<RenderViewContextMenuViews> context_menu_;
 
   // The chrome specific delegate that receives events from WebDragDest.
-  scoped_ptr<WebDragBookmarkHandlerWin> bookmark_handler_;
+  scoped_ptr<content::WebDragDestDelegate> bookmark_handler_;
 
   content::WebContents* web_contents_;
 
-  DISALLOW_COPY_AND_ASSIGN(ChromeWebContentsViewDelegateWin);
+  DISALLOW_COPY_AND_ASSIGN(ChromeWebContentsViewDelegateViews);
 };
 
-#endif  // CHROME_BROWSER_TAB_CONTENTS_CHROME_WEB_CONTENTS_VIEW_DELEGATE_WIN_H_
+#endif  // CHROME_BROWSER_TAB_CONTENTS_CHROME_WEB_CONTENTS_VIEW_DELEGATE_VIEWS_H_
