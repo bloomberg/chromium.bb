@@ -234,7 +234,9 @@ cr.define('options', function() {
       $('delete-profile-message').style.backgroundImage = 'url("' +
           profileInfo.iconURL + '")';
 
-      OptionsPage.navigateToPage('manageProfile');
+      // Because this dialog isn't useful when refreshing or as part of the
+      // history, don't create a history entry for it when showing.
+      OptionsPage.showPageByName('manageProfile', false);
     },
   };
 

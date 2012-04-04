@@ -114,7 +114,10 @@ cr.define('options', function() {
       // templateData.enable_restore_session_state is forced to false).
       this.sessionRestoreEnabled_ = templateData.enable_restore_session_state;
       if (this.sessionRestoreEnabled_) {
-        $('startup-restore-session').onchange = function(event) {
+        $('startup-restore-session').onclick = function(event) {
+          if (!event.currentTarget.checked)
+            return;
+
           if (!BrowserOptions.getInstance().maybeShowSessionRestoreDialog_()) {
             // The dialog is not shown; handle the event normally.
             event.currentTarget.savePrefState();
@@ -171,7 +174,7 @@ cr.define('options', function() {
           if (self.instantConfirmDialogShown_)
             chrome.send('enableInstant');
           else
-            OptionsPage.navigateToPage('instantConfirm');
+            OptionsPage.showPageByName('instantConfirm', false);
         } else {
           chrome.send('disableInstant');
         }
@@ -775,7 +778,7 @@ cr.define('options', function() {
       // the dialog yet.
       if (this.userHasSelectedSessionContentSettings_() &&
           this.sessionRestoreDialogShown_ === false) {
-        OptionsPage.navigateToPage('sessionRestoreOverlay');
+        OptionsPage.showPageByName('sessionRestoreOverlay', false);
         return true;
       }
       return false;
