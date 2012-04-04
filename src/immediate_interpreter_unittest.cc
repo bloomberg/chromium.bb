@@ -447,6 +447,64 @@ TEST(ImmediateInterpreterTest, FlingTest) {
   EXPECT_GE(gs->details.fling.vy, 10 / 0.01);
 }
 
+// Tests that fingers that have been present a while, but are stationary,
+// can be evaluated multiple times when they start moving.
+TEST(ImmediateInterpreterTest, DelayedStartScrollTest) {
+  ImmediateInterpreter ii(NULL);
+  HardwareProperties hwprops = {
+    0,  // left edge
+    0,  // top edge
+    100,  // right edge
+    100,  // bottom edge
+    1,  // pixels/TP width
+    1,  // pixels/TP height
+    96,  // x screen DPI
+    96,  // y screen DPI
+    2,  // max fingers
+    5,  // max touch
+    0,  // tripletap
+    0,  // semi-mt
+    1  // is button pad
+  };
+
+  FingerState finger_states[] = {
+    // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID
+    // Consistent movement for 4 frames
+    {0, 0, 0, 0, 20, 0, 40, 95, 1, 0},
+    {0, 0, 0, 0, 20, 0, 60, 95, 2, 0},
+
+    {0, 0, 0, 0, 20, 0, 40, 95, 1, 0},
+    {0, 0, 0, 0, 20, 0, 60, 85, 2, 0},
+
+    {0, 0, 0, 0, 20, 0, 40, 80, 1, 0},
+    {0, 0, 0, 0, 20, 0, 60, 75, 2, 0},
+  };
+  HardwareState hardware_states[] = {
+    // time, buttons, finger count, touch count, finger states pointer
+    { 1.00, 0, 2, 2, &finger_states[0] },
+    { 2.00, 0, 2, 2, &finger_states[0] },
+    { 2.01, 0, 2, 2, &finger_states[2] },
+    { 2.02, 0, 2, 2, &finger_states[4] },
+    { 2.03, 0, 0, 0, NULL },
+  };
+
+  ii.SetHardwareProperties(hwprops);
+
+  size_t idx = 0;
+
+  // Consistent movement
+  EXPECT_EQ(NULL, ii.SyncInterpret(&hardware_states[idx++], NULL));
+  EXPECT_EQ(NULL, ii.SyncInterpret(&hardware_states[idx++], NULL));
+
+  Gesture* gs = ii.SyncInterpret(&hardware_states[idx++], NULL);
+  ASSERT_NE(reinterpret_cast<Gesture*>(NULL), gs);
+  EXPECT_EQ(kGestureTypeMove, gs->type);
+
+  gs = ii.SyncInterpret(&hardware_states[idx++], NULL);
+  ASSERT_NE(reinterpret_cast<Gesture*>(NULL), gs);
+  EXPECT_EQ(kGestureTypeScroll, gs->type);
+}
+
 struct HardwareStateAnScrollExpectations {
   HardwareState hs;
   float dx;

@@ -244,8 +244,12 @@ ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg)
       palm_edge_width_(prop_reg, "Palm Edge Zone Width", 14.0),
       palm_edge_point_speed_(prop_reg, "Palm Edge Zone Min Point Speed", 100.0),
       palm_min_distance_(prop_reg, "Palm Min Distance", 50.0),
+      change_move_distance_(prop_reg, "Change Min Move Distance", 3.0),
       change_timeout_(prop_reg, "Change Timeout", 0.04),
       evaluation_timeout_(prop_reg, "Evaluation Timeout", 0.2),
+      damp_scroll_min_movement_factor_(prop_reg,
+                                       "Damp Scroll Min Move Factor",
+                                       0.2),
       two_finger_pressure_diff_thresh_(prop_reg,
                                        "Two Finger Pressure Diff Thresh",
                                        32.0),
@@ -318,6 +322,7 @@ Gesture* ImmediateInterpreter::SyncInterpret(HardwareState* hwstate,
   UpdateThumbState(*hwstate);
   set<short, kMaxGesturingFingers> gs_fingers = GetGesturingFingers(*hwstate);
 
+  UpdateStartedMovingTime(*hwstate, gs_fingers);
   UpdateButtons(*hwstate);
   UpdateTapGesture(hwstate,
                    gs_fingers,
@@ -548,7 +553,7 @@ void ImmediateInterpreter::UpdateCurrentGestureType(
   } else if (num_gesturing == 1) {
     current_gesture_type_ = kGestureTypeMove;
   } else {
-    if (hwstate.timestamp - changed_time_ < evaluation_timeout_.val_ ||
+    if (hwstate.timestamp - started_moving_time_ < evaluation_timeout_.val_ ||
         current_gesture_type_ == kGestureTypeNull) {
       if (num_gesturing == 2) {
         const FingerState* fingers[] = {
@@ -669,8 +674,9 @@ GestureType ImmediateInterpreter::GetTwoFingerGestureType(
     if (large_dx * small_dx < 0.0)
       return kGestureTypeMove;  // not same direction
     if (dampened_zone_occupied) {
-      // Require damp to move at least 50% as much as non-damp
-      if (fabsf(damp_dx) < 0.5 * fabsf(non_damp_dx)) {
+      // Require damp to move at least some amount with the other finger
+      if (fabsf(damp_dx) <
+          damp_scroll_min_movement_factor_.val_ * fabsf(non_damp_dx)) {
         return kGestureTypeMove;
       }
     }
@@ -684,8 +690,9 @@ GestureType ImmediateInterpreter::GetTwoFingerGestureType(
     if (large_dy * small_dy < 0.0)
       return kGestureTypeMove;
     if (dampened_zone_occupied) {
-      // Require damp to move at least 50% as much as non-damp
-      if (fabsf(damp_dy) < 0.5 * fabsf(non_damp_dy)) {
+      // Require damp to move at least some amount with the other finger
+      if (fabsf(damp_dy) <
+          damp_scroll_min_movement_factor_.val_ * fabsf(non_damp_dy)) {
         return kGestureTypeMove;
       }
     }
@@ -1130,6 +1137,33 @@ int ImmediateInterpreter::EvaluateButtonType(
 
   return TwoFingersGesturing(*finger1, *finger2) ?
       GESTURES_BUTTON_RIGHT : GESTURES_BUTTON_LEFT;
+}
+
+void ImmediateInterpreter::UpdateStartedMovingTime(
+    const HardwareState& hwstate,
+    const set<short, kMaxGesturingFingers>& gs_fingers) {
+  if (started_moving_time_ > changed_time_)
+    return;  // Already started moving
+  const float kMinDistSq =
+      change_move_distance_.val_ * change_move_distance_.val_;
+  for (set<short, kMaxGesturingFingers>::const_iterator
+           it = gs_fingers.begin(), e = gs_fingers.end(); it != e; ++it) {
+    const FingerState* fs = hwstate.GetFingerState(*it);
+    if (!fs) {
+      Err("Missing hardware state!");
+      continue;
+    }
+    if (!MapContainsKey(start_positions_, *it)) {
+      Err("Missing start position!");
+      continue;
+    }
+    const Point& start_position = start_positions_[*it];
+    float dist_sq = DistSqXY(*fs, start_position.x_, start_position.y_);
+    if (dist_sq > kMinDistSq) {
+      started_moving_time_ = hwstate.timestamp;
+      return;
+    }
+  }
 }
 
 void ImmediateInterpreter::UpdateButtons(const HardwareState& hwstate) {

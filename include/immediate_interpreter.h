@@ -237,6 +237,11 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // Called when fingers have changed to fill start_positions_.
   void FillStartPositions(const HardwareState& hwstate);
 
+  // Called to detect if fingers have started moving.
+  void UpdateStartedMovingTime(
+      const HardwareState& hwstate,
+      const set<short, kMaxGesturingFingers>& gs_fingers);
+
   // Updates the internal button state based on the passed in |hwstate|.
   void UpdateButtons(const HardwareState& hwstate);
 
@@ -277,6 +282,9 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
 
   // When fingers change, we record the time
   stime_t changed_time_;
+
+  // When gesturing fingers move after change, we record the time
+  stime_t started_moving_time_;
 
   // When fingers leave, we record the time
   stime_t finger_leave_time_;
@@ -347,10 +355,16 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   DoubleProperty palm_edge_point_speed_;
   // Fingers within this distance of each other aren't palms
   DoubleProperty palm_min_distance_;
+  // Distance [mm] a finger must move after fingers change to count as real
+  // motion
+  DoubleProperty change_move_distance_;
   // Time [s] to block movement after number or identify of fingers change
   DoubleProperty change_timeout_;
   // Time [s] to wait before locking on to a gesture
   DoubleProperty evaluation_timeout_;
+  // A finger in the damp zone must move at least this much as much as
+  // the other finger to count toward a gesture. Should be between 0 and 1.
+  DoubleProperty damp_scroll_min_movement_factor_;
   // If two fingers have a pressure difference greater than diff thresh and
   // the larger is more than diff factor times the smaller, we assume the
   // larger is a thumb.
