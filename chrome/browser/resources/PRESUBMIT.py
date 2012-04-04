@@ -44,6 +44,12 @@ def _CommonChecks(input_api, output_api):
     sys.path.insert(0, resources)
     from web_dev_style import css_checker, js_checker
 
+    # NOTE: This presubmit only scans affected files in this directory or in
+    # subdirectories, that why we don't need to check for .startswith(resources)
+    # here.
+    def is_resource(f):
+      return f.LocalPath().endswith(('.css', '.html', '.js'))
+
     # TODO(dbeam): Remove this directory filter eventually when ready.
     dirs = (
         path.join(resources, 'extensions'),
@@ -53,14 +59,13 @@ def _CommonChecks(input_api, output_api):
         path.join(resources, 'options2'),
         path.join(resources, 'uber'),
     )
-    def file_filter(affected_file):
-      f = affected_file.AbsoluteLocalPath()
-      return (f.startswith(dirs) and f.endswith(('.css', '.html', '.js')))
+    def certain_dirs(f):
+      return is_resource(f) and f.AbsoluteLocalPath().startswith(dirs)
 
     results.extend(css_checker.CSSChecker(input_api, output_api,
-                                          file_filter=file_filter).RunChecks())
+                                          file_filter=is_resource).RunChecks())
     results.extend(js_checker.JSChecker(input_api, output_api,
-                                        file_filter=file_filter).RunChecks())
+                                        file_filter=certain_dirs).RunChecks())
   finally:
     sys.path = old_path
 
