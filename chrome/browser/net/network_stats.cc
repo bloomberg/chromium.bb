@@ -436,20 +436,20 @@ void NetworkStats::GetHistogramNames(const ProtocolValue& protocol,
   else
     load_size_string = kLargeLoadString;
 
-  // Build "NetConnectivity.<protocol>.<port>.Success.<load_size>.RTT"
+  // Build "NetConnectivity.<protocol>.Success.<port>.<load_size>.RTT"
   // histogram name. Total number of histograms are 2*5*2.
   if (result == net::OK) {
     *rtt_histogram_name = base::StringPrintf(
-        "NetConnectivity.%s.%d.Success.%s.RTT",
+        "NetConnectivity.%s.Success.%d.%s.RTT",
         protocol_string,
         kPorts[port],
         load_size_string);
   }
 
-  // Build "NetConnectivity.<protocol>.<port>.Status.<load_size>" histogram
+  // Build "NetConnectivity.<protocol>.Status.<port>.<load_size>" histogram
   // name. Total number of histograms are 2*5*2.
   *status_histogram_name =  base::StringPrintf(
-      "NetConnectivity.%s.%d.Status.%s",
+      "NetConnectivity.%s.Status.%d.%s",
       protocol_string,
       kPorts[port],
       load_size_string);

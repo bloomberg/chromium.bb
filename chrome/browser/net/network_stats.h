@@ -215,9 +215,9 @@ class NetworkStats {
   // This is called by RecordHistograms. It sets the histogram names in
   // |rtt_histogram_name| and |status_histogram_name|.
   // If |result| equals to net::OK, it returns
-  // "NetConnectivity.<protocol>.<port>.Success.<load_size>.RTT" as histogram
+  // "NetConnectivity.<protocol>.Success.<port>.<load_size>.RTT" as histogram
   // name for RTT histogram and
-  // "NetConnectivity.<protocol>.<port>.Status.<load_size>" as histogram name
+  // "NetConnectivity.<protocol>.Status.<port>.<load_size>" as histogram name
   // for status histogram. |protocol| argument sets <protocol> in the histogram
   // name. It would be either TCP or UDP. <port> is the string representation of
   // |histogram_port|. |load_size| argument determines <load_size> in the
