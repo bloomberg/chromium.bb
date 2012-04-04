@@ -607,7 +607,7 @@ class NinjaWriter:
       cflags_c = self.msvs_settings.GetCflagsC(config_name)
       cflags_cc = self.msvs_settings.GetCflagsCC(config_name)
       extra_defines = self.msvs_settings.GetComputedDefines(config_name)
-      self.WriteVariableList('pdbname', self.name + '.pdb')
+      self.WriteVariableList('pdbname', [self.name + '.pdb'])
     else:
       cflags = config.get('cflags', [])
       cflags_c = config.get('cflags_c', [])
@@ -961,6 +961,7 @@ class NinjaWriter:
       return self.GypPathToUniqueOutput(filename, qualified=False)
 
   def WriteVariableList(self, var, values):
+    assert not isinstance(values, str)
     if values is None:
       values = []
     self.ninja.variable(var, ' '.join(values))
