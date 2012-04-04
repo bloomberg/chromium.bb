@@ -2889,35 +2889,12 @@ FileManager.prototype = {
       });
     } else if (id == 'gallery') {
       this.openGallery_(urls);
-    } else if (id == 'view-pdf' || id == 'view-txt' || id == 'install-crx') {
-      chrome.fileBrowserPrivate.viewFiles(urls, 'default', function() {});
-    } else if (id == 'open-hosted') {
-      // TODO (kaznacheev)
-      if (this.isOnGData()) {
-        chrome.fileBrowserPrivate.getGDataFileProperties(urls,
-            function(results) {
-              for (var i = 0; i != results.length; i++) {
-                chrome.tabs.create({
-                  url: results[i].editUrl
-                });
-              }
-            });
-      } else {
-        // Local file. Get the url from the text content.
-        for (var i = 0; i != urls.length; i++) {
-          util.readTextFromFileURL(urls[i], 10000 /* max size*/,
-              function(text) {
-                try {
-                  var json = JSON.parse(text);
-                  if ('url' in json) {
-                    chrome.tabs.create({url: json.url});
-                  }
-                } catch(e) {
-                  console.error(e);
-                }
-              });
-        }
-      }
+    } else if (id == 'view-pdf' || id == 'view-txt' || id == 'install-crx' ||
+        id == 'open-hosted') {
+      chrome.fileBrowserPrivate.viewFiles(urls, 'default', function (success) {
+        if (!success)
+          console.error('chrome.fileBrowserPrivate.viewFiles failed', urls);
+      });
     }
   };
 

@@ -4,6 +4,8 @@
 #include "chrome/browser/chromeos/extensions/file_manager_util.h"
 
 #include "base/bind.h"
+#include "base/file_util.h"
+#include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
@@ -95,6 +97,11 @@ const char* kAVExtensions[] = {
 */
 };
 
+// Keep in sync with 'open-hosted' task handler in the File Browser manifest.
+const char* kGDocsExtensions[] = {
+    ".gdoc", ".gsheet", ".gslides", ".gdraw", ".gtable"
+};
+
 // List of all extensions we want to be shown in histogram that keep track of
 // files that were unsuccessfully tried to be opened.
 // The list has to be synced with histogram values.
@@ -116,6 +123,15 @@ bool IsSupportedBrowserExtension(const char* file_extension) {
 bool IsSupportedAVExtension(const char* file_extension) {
   for (size_t i = 0; i < arraysize(kAVExtensions); i++) {
     if (base::strcasecmp(file_extension, kAVExtensions[i]) == 0) {
+      return true;
+    }
+  }
+  return false;
+}
+
+bool IsSupportedGDocsExtension(const char* file_extension) {
+  for (size_t i = 0; i < arraysize(kGDocsExtensions); i++) {
+    if (base::strcasecmp(file_extension, kGDocsExtensions[i]) == 0) {
       return true;
     }
   }
@@ -202,6 +218,7 @@ class GetFilePropertiesDelegate : public gdata::FindFileDelegate {
 
   const std::string& resource_id() const { return resource_id_; }
   const std::string& file_name() const { return file_name_; }
+  const GURL& edit_url() const { return edit_url_; }
 
  private:
   // GDataFileSystem::FindFileDelegate overrides.
@@ -211,11 +228,13 @@ class GetFilePropertiesDelegate : public gdata::FindFileDelegate {
     if (error == base::PLATFORM_FILE_OK && file && file->AsGDataFile()) {
       resource_id_ = file->AsGDataFile()->resource_id();
       file_name_ = file->AsGDataFile()->file_name();
+      edit_url_ = file->AsGDataFile()->edit_url();
     }
   }
 
   std::string resource_id_;
   std::string file_name_;
+  GURL edit_url_;
 };
 
 }  // namespace
@@ -472,6 +491,58 @@ void ViewFile(const FilePath& full_path, bool enqueue) {
   }
 }
 
+// Reads an entire file into a string. Fails is the file is 4K or longer.
+bool ReadSmallFileToString(const FilePath& path, std::string* contents) {
+  FILE* file = file_util::OpenFile(path, "rb");
+  if (!file) {
+    return false;
+  }
+
+  char buf[1 << 12];  // 4K
+  size_t len = fread(buf, 1, sizeof(buf), file);
+  if (len > 0) {
+    contents->append(buf, len);
+  }
+  file_util::CloseFile(file);
+
+  return len < sizeof(buf);
+}
+
+void OpenUrlOnUIThread(const GURL& url) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  Browser* browser = BrowserList::GetLastActive();
+  if (!browser)
+    return;
+  browser->AddSelectedTabWithURL(url, content::PAGE_TRANSITION_LINK);
+}
+
+// Reads JSON from a Google Docs file, extracts a document url and opens it
+// in a tab.
+void ReadUrlFromGDocOnFileThread(const FilePath& file_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  std::string contents;
+  if (!ReadSmallFileToString(file_path, &contents)) {
+    LOG(ERROR) << "Error reading " << file_path.value();
+    return;
+  }
+
+  scoped_ptr<base::Value> root_value;
+  root_value.reset(
+      base::JSONReader::Read(contents, false /* no trailing comma */));
+
+  DictionaryValue* dictionary_value;
+  std::string edit_url_string;
+  if (!root_value.get() ||
+      !root_value->GetAsDictionary(&dictionary_value) ||
+      !dictionary_value->GetString("url", &edit_url_string)) {
+    LOG(ERROR) << "Invalid JSON in " << file_path.value();
+    return;
+  }
+
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+      base::Bind(OpenUrlOnUIThread, GURL(edit_url_string)));
+}
+
 bool TryViewingFile(const FilePath& full_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -491,10 +562,6 @@ bool TryViewingFile(const FilePath& full_path) {
     // URL.
     // There is nothing we can do if the browser is not present.
     if (gdata::util::GetSpecialRemoteRootPath().IsParent(full_path)) {
-      Browser* browser = BrowserList::GetLastActive();
-      if (!browser)
-        return false;
-
       gdata::GDataSystemService* system_service =
           gdata::GDataSystemServiceFactory::GetForProfile(browser->profile());
       if (!system_service)
@@ -513,6 +580,32 @@ bool TryViewingFile(const FilePath& full_path) {
                                    content::PAGE_TRANSITION_LINK);
     return true;
   }
+
+  if (IsSupportedGDocsExtension(file_extension.data())) {
+    if (gdata::util::GetSpecialRemoteRootPath().IsParent(full_path)) {
+      // The file is on Google Docs. Get the Docs from the GData service.
+      gdata::GDataSystemService* system_service =
+          gdata::GDataSystemServiceFactory::GetForProfile(browser->profile());
+      if (!system_service)
+        return false;
+
+      GetFilePropertiesDelegate delegate;
+      system_service->file_system()->FindFileByPathSync(
+          gdata::util::ExtractGDataPath(full_path), &delegate);
+      if (delegate.edit_url().spec().empty())
+        return false;
+
+      browser->AddSelectedTabWithURL(delegate.edit_url(),
+                                     content::PAGE_TRANSITION_LINK);
+    } else {
+      // The file is local (downloaded from an attachment or otherwise copied).
+      // Parse the file to extract the Docs url and open this url.
+      BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+          base::Bind(&ReadUrlFromGDocOnFileThread, full_path));
+    }
+    return true;
+  }
+
 #if defined(OS_CHROMEOS)
   if (IsSupportedAVExtension(file_extension.data())) {
     MediaPlayer* mediaplayer = MediaPlayer::GetInstance();

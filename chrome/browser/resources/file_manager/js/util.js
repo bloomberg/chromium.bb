@@ -441,33 +441,6 @@ var util = {
   },
 
   /**
-   * Reads the entire file into a text string.
-   *
-   * @param {string} fileUrl
-   * @param {number} maxSize
-   * @param {function(string)} onSuccess
-   * @param {function(Object)} onError
-   */
-  readTextFromFileURL: function(fileUrl, maxSize, onSuccess, onError) {
-    onError = onError || util.flog('Error reading from ' + fileUrl);
-
-    webkitResolveLocalFileSystemURL(fileUrl, onEntry, onError);
-
-    function onEntry(entry) { entry.file(onFile, onError) }
-
-    function onFile(file) {
-      if (file.size > maxSize) {
-        onError('File is too large (' + file.size + 'b)');
-        return;
-      }
-      var fileReader = new FileReader();
-      fileReader.onloadend = function() { onSuccess(fileReader.result) };
-      fileReader.onerror = onError;
-      fileReader.readAsText(file);
-    }
-  },
-
-  /**
    * Write a blob to a file.
    * Truncates the file first, so the previous content is fully overwritten.
    * @param {FileEntry} entry
