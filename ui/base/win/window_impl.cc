@@ -11,6 +11,29 @@
 #include "base/win/wrapped_window_proc.h"
 #include "ui/base/win/hwnd_util.h"
 
+namespace {
+
+extern "C" {
+  typedef HWND (*GetRootWindow)();
+}
+
+HMODULE GetMetroDll() {
+  static HMODULE hm = ::GetModuleHandleA("metro_driver.dll");
+  return hm;
+}
+
+HWND RootWindow(bool is_child_window) {
+  HMODULE metro = GetMetroDll();
+  if (!metro) {
+    return is_child_window ? ::GetDesktopWindow() : HWND_DESKTOP;
+  }
+  GetRootWindow get_root_window =
+      reinterpret_cast<GetRootWindow>(::GetProcAddress(metro, "GetRootWindow"));
+  return get_root_window();
+}
+
+}  // namespace
+
 namespace ui {
 
 static const DWORD kWindowDefaultChildStyle =
@@ -132,15 +155,16 @@ void WindowImpl::Init(HWND parent, const gfx::Rect& bounds) {
   if (window_style_ == 0)
     window_style_ = parent ? kWindowDefaultChildStyle : kWindowDefaultStyle;
 
-  // Ensures the parent we have been passed is valid, otherwise CreateWindowEx
-  // will fail.
-  HWND original_parent = parent;
-  if (parent && !::IsWindow(parent)) {
-    NOTREACHED() << "invalid parent window specified.";
-    parent = NULL;
+  if (parent == HWND_DESKTOP) {
+    // Only non-child windows can have HWND_DESKTOP (0) as their parent.
+    CHECK((window_style_ & WS_CHILD) == 0);
+    parent = RootWindow(false);
+  } else if (parent == ::GetDesktopWindow()) {
+    // Any type of window can have the "Desktop Window" as their parent.
+    parent = RootWindow(true);
+  } else if (parent != HWND_MESSAGE) {
+    CHECK(::IsWindow(parent));
   }
-  CHECK((window_style() & WS_CHILD) == 0 || parent) <<
-      " WS_CHILD must have a non-NULL parent " << original_parent;
 
   int x, y, width, height;
   if (bounds.IsEmpty()) {
