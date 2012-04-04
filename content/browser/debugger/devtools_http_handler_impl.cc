@@ -358,7 +358,7 @@ void DevToolsHttpHandlerImpl::OnJsonRequestUI(
                                               host.c_str(),
                                               i->id));
       std::string devtools_frontend_url = base::StringPrintf(
-          "%s%shost=%s&page=%d",
+          "%s%sws=%s/devtools/page/%d",
           overridden_frontend_url_.c_str(),
           overridden_frontend_url_.find("?") == std::string::npos ? "?" : "&",
           host.c_str(),
