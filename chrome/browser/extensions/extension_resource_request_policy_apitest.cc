@@ -104,13 +104,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest,
       "can_load_icons_from_hosted_apps.html"));
 }
 
-#if defined(OS_CHROMEOS)
-// http://crbug.com/114478 - Audio crashes occasionally on ChromeOS
-#define MAYBE_Audio FLAKY_Audio
-#else
-#define MAYBE_Audio Audio
-#endif
-IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest, MAYBE_Audio) {
+IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest, Audio) {
   EXPECT_TRUE(RunExtensionSubtest(
       "extension_resource_request_policy/extension2",
       "audio.html"));
