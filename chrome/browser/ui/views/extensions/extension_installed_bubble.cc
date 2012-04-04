@@ -99,7 +99,8 @@ class InstalledBubbleContent : public views::View,
         extension_id_(extension->id()),
         bubble_(bubble),
         type_(type),
-        info_(NULL) {
+        info_(NULL),
+        manage_(NULL) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     const gfx::Font& font = rb.GetFont(ResourceBundle::BaseFont);
 
@@ -112,6 +113,23 @@ class InstalledBubbleContent : public views::View,
     icon_->SetImage(*icon);
     AddChildView(icon_);
 
+    // The Extension Installed bubble takes on various forms, depending on the
+    // type of extension installed. In general, though, they are all similar:
+    //
+    // -------------------------
+    // |      | Heading    [X] |
+    // | Icon | Info           |
+    // |      | Extra info     |
+    // -------------------------
+    //
+    // Icon and Heading are always shown.
+    // Info is shown for browser actions, page actions and Omnibox keyword
+    // extensions and might list keyboard shorcut for the former two types.
+    // Extra info is...
+    // ... for Apps: a link that opens the App Install UI.
+    // ... for other types, either a description of how to manage the extension
+    //     or a link to configure the keybinding shortcut (if one exists).
+
     string16 extension_name = UTF8ToUTF16(extension->name());
     base::i18n::AdjustStringForLocaleDirection(&extension_name);
     heading_ = new views::Label(l10n_util::GetStringFUTF16(
@@ -121,10 +139,40 @@ class InstalledBubbleContent : public views::View,
     heading_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
     AddChildView(heading_);
 
+    bool has_keybinding = false;
+
     switch (type_) {
+      case ExtensionInstalledBubble::BROWSER_ACTION: {
+        const Extension::ExtensionKeybinding* browser_action_command =
+            extension->browser_action_command();
+        if (!browser_action_command) {
+          info_ = new views::Label(l10n_util::GetStringUTF16(
+              IDS_EXTENSION_INSTALLED_BROWSER_ACTION_INFO));
+        } else {
+          has_keybinding = true;
+          info_ = new views::Label(l10n_util::GetStringFUTF16(
+              IDS_EXTENSION_INSTALLED_BROWSER_ACTION_INFO_WITH_SHORTCUT,
+              browser_action_command->accelerator().GetShortcutText()));
+        }
+        info_->SetFont(font);
+        info_->SetMultiLine(true);
+        info_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+        AddChildView(info_);
+        break;
+      }
       case ExtensionInstalledBubble::PAGE_ACTION: {
-        info_ = new views::Label(l10n_util::GetStringUTF16(
-            IDS_EXTENSION_INSTALLED_PAGE_ACTION_INFO));
+        const Extension::ExtensionKeybinding* page_action_command =
+            extension->page_action_command();
+        if (!page_action_command) {
+          info_ = new views::Label(l10n_util::GetStringUTF16(
+              IDS_EXTENSION_INSTALLED_PAGE_ACTION_INFO));
+        } else {
+          has_keybinding = true;
+          info_ = new views::Label(l10n_util::GetStringFUTF16(
+              IDS_EXTENSION_INSTALLED_PAGE_ACTION_INFO_WITH_SHORTCUT,
+              page_action_command->accelerator().GetShortcutText()));
+        }
+
         info_->SetFont(font);
         info_->SetMultiLine(true);
         info_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
@@ -156,7 +204,9 @@ class InstalledBubbleContent : public views::View,
         break;
     }
 
-    if (type_ != ExtensionInstalledBubble::APP) {
+    if (has_keybinding) {
+      // TODO(finnur): Show the shortcut link.
+    } else if (type_ != ExtensionInstalledBubble::APP) {
       manage_ = new views::Label(
           l10n_util::GetStringUTF16(IDS_EXTENSION_INSTALLED_MANAGE_INFO));
       manage_->SetFont(font);
@@ -204,8 +254,11 @@ class InstalledBubbleContent : public views::View,
       height += info_->GetHeightForWidth(kRightColumnWidth);
       height += kVertInnerMargin;
     }
-    height += manage_->GetHeightForWidth(kRightColumnWidth);
-    height += kVertOuterMargin;
+
+    if (manage_) {
+      height += manage_->GetHeightForWidth(kRightColumnWidth);
+      height += kVertOuterMargin;
+    }
 
     return gfx::Size(width, std::max(height, kIconSize + 2 * kVertOuterMargin));
   }
@@ -233,11 +286,13 @@ class InstalledBubbleContent : public views::View,
       y += kVertInnerMargin;
     }
 
-    manage_->SizeToFit(kRightColumnWidth);
-    manage_->SetX(x);
-    manage_->SetY(y);
-    y += manage_->height();
-    y += kVertInnerMargin;
+    if (manage_) {
+      manage_->SizeToFit(kRightColumnWidth);
+      manage_->SetX(x);
+      manage_->SetY(y);
+      y += manage_->height();
+      y += kVertInnerMargin;
+    }
 
     gfx::Size sz;
     x += kRightColumnWidth + 2 * views::kPanelHorizMargin + kHorizOuterMargin -
