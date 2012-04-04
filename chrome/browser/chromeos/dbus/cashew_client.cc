@@ -62,6 +62,11 @@ class CashewClientImpl : public CashewClient {
   // Handles DataPlansUpdate signal.
   void OnDataPlansUpdate(dbus::Signal* signal) {
     dbus::MessageReader reader(signal);
+    std::string service;
+    if (!reader.PopString(&service)) {
+      LOG(ERROR) << "Invalid signal: " << signal->ToString();
+      return;
+    }
     scoped_ptr<Value> value(dbus::PopDataAsValue(&reader));
     ListValue* data_plans = NULL;
     if (!value.get() || !value->GetAsList(&data_plans)) {
@@ -69,7 +74,7 @@ class CashewClientImpl : public CashewClient {
       return;
     }
     if (!data_plans_update_handler_.is_null())
-      data_plans_update_handler_.Run(*data_plans);
+      data_plans_update_handler_.Run(service, *data_plans);
   }
 
   // Handles the result of signal connection setup.

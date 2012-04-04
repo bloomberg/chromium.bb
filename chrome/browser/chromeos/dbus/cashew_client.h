@@ -29,7 +29,10 @@ namespace chromeos {
 class CashewClient {
  public:
   // A callback to handle "DataPlansUpdate" signal.
-  typedef base::Callback<void(const base::ListValue& data_plans)>
+  // |service| is the D-Bus path of the cellular service.
+  // (e.g. /service/cellular_0271266ce2ce_310260467781434)
+  typedef base::Callback<void(const std::string& service,
+                              const base::ListValue& data_plans)>
       DataPlansUpdateHandler;
 
   virtual ~CashewClient();
