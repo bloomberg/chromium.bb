@@ -42,7 +42,7 @@ GValue* ConvertStringToGValue(const std::string& s) {
   return gvalue;
 }
 
-// Converts a DictionaryValue to a GValue containing a string-to-value
+// Converts a DictionaryValue to a GValue containing a string-to-string
 // GHashTable.
 GValue* ConvertDictionaryValueToGValue(const DictionaryValue* dict) {
   GHashTable* ghash =
@@ -65,10 +65,17 @@ GValue* ConvertDictionaryValueToGValue(const DictionaryValue* dict) {
   return gvalue;
 }
 
-// Converts a DictionaryValue to a string-to-string GHashTable.
+// Unsets and deletes the GValue.
+void UnsetAndDeleteGValue(gpointer ptr) {
+  GValue* gvalue = static_cast<GValue*>(ptr);
+  g_value_unset(gvalue);
+  delete gvalue;
+}
+
+// Converts a DictionaryValue to a string-to-value GHashTable.
 GHashTable* ConvertDictionaryValueToGValueMap(const DictionaryValue* dict) {
-  GHashTable* ghash =
-      g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
+  GHashTable* ghash = g_hash_table_new_full(g_str_hash, g_str_equal, g_free,
+                                            UnsetAndDeleteGValue);
   for (DictionaryValue::key_iterator it = dict->begin_keys();
        it != dict->end_keys(); ++it) {
     std::string key = *it;
@@ -395,8 +402,8 @@ void CrosConfigureService(const char* identifier,
                           const base::DictionaryValue& properties,
                           NetworkActionCallback callback,
                           void* object) {
-  GHashTable* ghash = ConvertDictionaryValueToGValueMap(&properties);
-  chromeos::ConfigureService(identifier, ghash, callback, object);
+  ScopedGHashTable ghash(ConvertDictionaryValueToGValueMap(&properties));
+  chromeos::ConfigureService(identifier, ghash.get(), callback, object);
 }
 
 }  // namespace chromeos
