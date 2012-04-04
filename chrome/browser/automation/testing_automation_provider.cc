@@ -2388,8 +2388,6 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
       &TestingAutomationProvider::AcceptOrDismissAppModalDialog;
   handler_map["GetChromeDriverAutomationVersion"] =
       &TestingAutomationProvider::GetChromeDriverAutomationVersion;
-  handler_map["UpdateExtensionsNow"] =
-      &TestingAutomationProvider::UpdateExtensionsNow;
   handler_map["IsPageActionVisible"] =
       &TestingAutomationProvider::IsPageActionVisible;
   handler_map["CreateNewAutomationProvider"] =
@@ -2406,6 +2404,8 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
       &TestingAutomationProvider::SetPolicies;
   handler_map["GetPolicyDefinitionList"] =
       &TestingAutomationProvider::GetPolicyDefinitionList;
+  handler_map["RefreshPolicies"] =
+      &TestingAutomationProvider::RefreshPolicies;
   handler_map["InstallExtension"] =
       &TestingAutomationProvider::InstallExtension;
   handler_map["GetExtensionsInfo"] =
@@ -2414,12 +2414,13 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
       &TestingAutomationProvider::UninstallExtensionById;
   handler_map["SetExtensionStateById"] =
       &TestingAutomationProvider::SetExtensionStateById;
-  handler_map["RefreshPolicies"] =
-      &TestingAutomationProvider::RefreshPolicies;
   handler_map["TriggerPageActionById"] =
       &TestingAutomationProvider::TriggerPageActionById;
   handler_map["TriggerBrowserActionById"] =
       &TestingAutomationProvider::TriggerBrowserActionById;
+  handler_map["UpdateExtensionsNow"] =
+      &TestingAutomationProvider::UpdateExtensionsNow;
+
 #if !defined(NO_TCMALLOC) && (defined(OS_LINUX) || defined(OS_CHROMEOS))
   handler_map["HeapProfilerDump"] =
       &TestingAutomationProvider::HeapProfilerDump;
@@ -4496,6 +4497,12 @@ void TestingAutomationProvider::InstallExtension(
     DictionaryValue* args, IPC::Message* reply_message) {
   FilePath::StringType path_string;
   bool with_ui;
+  Browser* browser;
+  std::string error_msg;
+  if (!GetBrowserFromJSONArgs(args, &browser, &error_msg)) {
+    AutomationJSONReply(this, reply_message).SendError(error_msg);
+    return;
+  }
   if (!args->GetString("path", &path_string)) {
     AutomationJSONReply(this, reply_message).SendError(
         "Missing or invalid 'path'");
@@ -4506,8 +4513,9 @@ void TestingAutomationProvider::InstallExtension(
         "Missing or invalid 'with_ui'");
     return;
   }
-  ExtensionService* service = profile()->GetExtensionService();
-  ExtensionProcessManager* manager = profile()->GetExtensionProcessManager();
+  ExtensionService* service = browser->profile()->GetExtensionService();
+  ExtensionProcessManager* manager =
+      browser->profile()->GetExtensionProcessManager();
   if (service && manager) {
     // The observer will delete itself when done.
     new ExtensionReadyNotificationObserver(
@@ -4521,7 +4529,7 @@ void TestingAutomationProvider::InstallExtension(
     // and install it. Otherwise load it as an unpacked extension.
     if (extension_path.MatchesExtension(FILE_PATH_LITERAL(".crx"))) {
       ExtensionInstallUI* client =
-          (with_ui ? new ExtensionInstallUI(profile()) : NULL);
+          (with_ui ? new ExtensionInstallUI(browser->profile()) : NULL);
       scoped_refptr<CrxInstaller> installer(
           CrxInstaller::Create(service, client));
       if (!with_ui)
@@ -4578,7 +4586,13 @@ void TestingAutomationProvider::GetExtensionsInfo(
     DictionaryValue* args,
     IPC::Message* reply_message) {
   AutomationJSONReply reply(this, reply_message);
-  ExtensionService* service = profile()->GetExtensionService();
+  Browser* browser;
+  std::string error_msg;
+  if (!GetBrowserFromJSONArgs(args, &browser, &error_msg)) {
+    reply.SendError(error_msg);
+    return;
+  }
+  ExtensionService* service = browser->profile()->GetExtensionService();
   if (!service) {
     reply.SendError("No extensions service.");
     return;
@@ -4638,11 +4652,17 @@ void TestingAutomationProvider::UninstallExtensionById(
     IPC::Message* reply_message) {
   const Extension* extension;
   std::string error;
-  if (!GetExtensionFromJSONArgs(args, "id", profile(), &extension, &error)) {
+  Browser* browser;
+  if (!GetBrowserFromJSONArgs(args, &browser, &error)) {
     AutomationJSONReply(this, reply_message).SendError(error);
     return;
   }
-  ExtensionService* service = profile()->GetExtensionService();
+  if (!GetExtensionFromJSONArgs(
+          args, "id", browser->profile(), &extension, &error)) {
+    AutomationJSONReply(this, reply_message).SendError(error);
+    return;
+  }
+  ExtensionService* service = browser->profile()->GetExtensionService();
   if (!service) {
     AutomationJSONReply(this, reply_message).SendError(
         "No extensions service.");
@@ -4662,7 +4682,13 @@ void TestingAutomationProvider::SetExtensionStateById(
     IPC::Message* reply_message) {
   const Extension* extension;
   std::string error;
-  if (!GetExtensionFromJSONArgs(args, "id", profile(), &extension, &error)) {
+  Browser* browser;
+  if (!GetBrowserFromJSONArgs(args, &browser, &error)) {
+    AutomationJSONReply(this, reply_message).SendError(error);
+    return;
+  }
+  if (!GetExtensionFromJSONArgs(
+          args, "id", browser->profile(), &extension, &error)) {
     AutomationJSONReply(this, reply_message).SendError(error);
     return;
   }
@@ -4688,8 +4714,9 @@ void TestingAutomationProvider::SetExtensionStateById(
     return;
   }
 
-  ExtensionService* service = profile()->GetExtensionService();
-  ExtensionProcessManager* manager = profile()->GetExtensionProcessManager();
+  ExtensionService* service = browser->profile()->GetExtensionService();
+  ExtensionProcessManager* manager =
+      browser->profile()->GetExtensionProcessManager();
   if (!service) {
     AutomationJSONReply(this, reply_message)
         .SendError("No extensions service or process manager.");
@@ -4742,7 +4769,7 @@ void TestingAutomationProvider::TriggerPageActionById(
   }
   const Extension* extension;
   if (!GetEnabledExtensionFromJSONArgs(
-          args, "id", profile(), &extension, &error)) {
+          args, "id", browser->profile(), &extension, &error)) {
     AutomationJSONReply(this, reply_message).SendError(error);
     return;
   }
@@ -4795,7 +4822,7 @@ void TestingAutomationProvider::TriggerBrowserActionById(
   }
   const Extension* extension;
   if (!GetEnabledExtensionFromJSONArgs(
-          args, "id", profile(), &extension, &error)) {
+          args, "id", browser->profile(), &extension, &error)) {
     AutomationJSONReply(this, reply_message).SendError(error);
     return;
   }
@@ -4844,6 +4871,46 @@ void TestingAutomationProvider::TriggerBrowserActionById(
   } else {
     AutomationJSONReply(this, reply_message).SendSuccess(NULL);
   }
+}
+
+// Sample json input: { "command": "UpdateExtensionsNow" }
+// Sample json output: {}
+void TestingAutomationProvider::UpdateExtensionsNow(
+    DictionaryValue* args,
+    IPC::Message* reply_message) {
+  std::string error;
+  Browser* browser;
+  if (!GetBrowserFromJSONArgs(args, &browser, &error)) {
+    AutomationJSONReply(this, reply_message).SendError(error);
+    return;
+  }
+  ExtensionService* service = browser->profile()->GetExtensionService();
+  if (!service) {
+    AutomationJSONReply(this, reply_message).SendError(
+        "No extensions service.");
+    return;
+  }
+
+  extensions::ExtensionUpdater* updater = service->updater();
+  if (!updater) {
+    AutomationJSONReply(this, reply_message).SendError(
+        "No updater for extensions service.");
+    return;
+  }
+
+  ExtensionProcessManager* manager =
+      browser->profile()->GetExtensionProcessManager();
+  if (!manager) {
+    AutomationJSONReply(this, reply_message).SendError(
+        "No extension process manager.");
+    return;
+  }
+
+  // Create a new observer that waits until the extensions have been fully
+  // updated (we should not send the reply until after all extensions have
+  // been updated).  This observer will delete itself.
+  new ExtensionsUpdatedObserver(manager, this, reply_message);
+  updater->CheckNow();
 }
 
 #if !defined(NO_TCMALLOC) && (defined(OS_LINUX) || defined(OS_CHROMEOS))
@@ -6856,39 +6923,6 @@ void TestingAutomationProvider::ActivateTabJSON(
   reply.SendSuccess(NULL);
 }
 
-// Sample json input: { "command": "UpdateExtensionsNow" }
-// Sample json output: {}
-void TestingAutomationProvider::UpdateExtensionsNow(
-    DictionaryValue* args,
-    IPC::Message* reply_message) {
-  ExtensionService* service = profile()->GetExtensionService();
-  if (!service) {
-    AutomationJSONReply(this, reply_message).SendError(
-        "No extensions service.");
-    return;
-  }
-
-  extensions::ExtensionUpdater* updater = service->updater();
-  if (!updater) {
-    AutomationJSONReply(this, reply_message).SendError(
-        "No updater for extensions service.");
-    return;
-  }
-
-  ExtensionProcessManager* manager = profile()->GetExtensionProcessManager();
-  if (!manager) {
-    AutomationJSONReply(this, reply_message).SendError(
-        "No extension process manager.");
-    return;
-  }
-
-  // Create a new observer that waits until the extensions have been fully
-  // updated (we should not send the reply until after all extensions have
-  // been updated).  This observer will delete itself.
-  new ExtensionsUpdatedObserver(manager, this, reply_message);
-  updater->CheckNow();
-}
-
 void TestingAutomationProvider::IsPageActionVisible(
     base::DictionaryValue* args,
     IPC::Message* reply_message) {
@@ -6900,9 +6934,10 @@ void TestingAutomationProvider::IsPageActionVisible(
     reply.SendError(error);
     return;
   }
+  Browser* browser = automation_util::GetBrowserForTab(tab);
   const Extension* extension;
   if (!GetEnabledExtensionFromJSONArgs(
-          args, "extension_id", profile(), &extension, &error)) {
+          args, "extension_id", browser->profile(), &extension, &error)) {
     reply.SendError(error);
     return;
   }
@@ -6911,7 +6946,6 @@ void TestingAutomationProvider::IsPageActionVisible(
     reply.SendError("Extension doesn't have any page action");
     return;
   }
-  Browser* browser = automation_util::GetBrowserForTab(tab);
   if (!browser) {
     reply.SendError("Tab does not belong to an open browser");
     return;

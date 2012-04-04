@@ -681,6 +681,11 @@ class TestingAutomationProvider : public AutomationProvider,
   void TriggerBrowserActionById(base::DictionaryValue* args,
                                 IPC::Message* reply_message);
 
+  // Auto-updates installed extensions.
+  // Uses the JSON interface for input/output.
+  void UpdateExtensionsNow(base::DictionaryValue* args,
+                           IPC::Message* reply_message);
+
 #if !defined(NO_TCMALLOC) && (defined(OS_LINUX) || defined(OS_CHROMEOS))
   // Dumps a heap profile.
   // It also checks whether the heap profiler is running, or not.
@@ -1364,11 +1369,6 @@ class TestingAutomationProvider : public AutomationProvider,
   //   output: { "version": 1 }
   void GetChromeDriverAutomationVersion(base::DictionaryValue* args,
                                         IPC::Message* message);
-
-  // Auto-updates installed extensions.
-  // Uses the JSON interface for input/output.
-  void UpdateExtensionsNow(base::DictionaryValue* args,
-                           IPC::Message* reply_message);
 
   // Determines whether the extension page action is visible in the given tab.
   // Example:

@@ -1890,221 +1890,6 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     return self._GetResultFromJSONRequest(
         cmd_dict, windex=window_index)['translation_success']
 
-  def InstallExtension(self, extension_path, with_ui=False):
-    """Installs an extension from the given path.
-
-    The path must be absolute and may be a crx file or an unpacked extension
-    directory. Returns the extension ID if successfully installed and loaded.
-    Otherwise, throws an exception. The extension must not already be installed.
-
-    Args:
-      extension_path: The absolute path to the extension to install. If the
-                      extension is packed, it must have a .crx extension.
-      with_ui: Whether the extension install confirmation UI should be shown.
-
-    Returns:
-      The ID of the installed extension.
-
-    Raises:
-      pyauto_errors.JSONInterfaceError if the automation call returns an error.
-    """
-    cmd_dict = {
-        'command': 'InstallExtension',
-        'path': extension_path,
-        'with_ui': with_ui
-    }
-    return self._GetResultFromJSONRequest(cmd_dict, windex=None)['id']
-
-  def GetExtensionsInfo(self):
-    """Returns information about all installed extensions.
-
-    Returns:
-      A list of dictionaries representing each of the installed extensions.
-      Example:
-      [ { u'api_permissions': [u'bookmarks', u'experimental', u'tabs'],
-          u'background_url': u'',
-          u'description': u'Bookmark Manager',
-          u'effective_host_permissions': [u'chrome://favicon/*',
-                                          u'chrome://resources/*'],
-          u'host_permissions': [u'chrome://favicon/*', u'chrome://resources/*'],
-          u'id': u'eemcgdkfndhakfknompkggombfjjjeno',
-          u'is_component': True,
-          u'is_internal': False,
-          u'name': u'Bookmark Manager',
-          u'options_url': u'',
-          u'public_key': u'MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDQcByy+eN9jza\
-                           zWF/DPn7NW47sW7lgmpk6eKc0BQM18q8hvEM3zNm2n7HkJv/R6f\
-                           U+X5mtqkDuKvq5skF6qqUF4oEyaleWDFhd1xFwV7JV+/DU7bZ00\
-                           w2+6gzqsabkerFpoP33ZRIw7OviJenP0c0uWqDWF8EGSyMhB3tx\
-                           qhOtiQIDAQAB',
-          u'version': u'0.1' },
-        { u'api_permissions': [...],
-          u'background_url': u'chrome-extension://\
-                               lkdedmbpkaiahjjibfdmpoefffnbdkli/\
-                               background.html',
-          u'description': u'Extension which lets you read your Facebook news \
-                            feed and wall. You can also post status updates.',
-          u'effective_host_permissions': [...],
-          u'host_permissions': [...],
-          u'id': u'lkdedmbpkaiahjjibfdmpoefffnbdkli',
-          u'name': u'Facebook for Google Chrome',
-          u'options_url': u'',
-          u'public_key': u'...',
-          u'version': u'2.0.9'
-          u'is_enabled': True,
-          u'allowed_in_incognito': True} ]
-    """
-    cmd_dict = {  # Prepare command for the json interface
-      'command': 'GetExtensionsInfo'
-    }
-    return self._GetResultFromJSONRequest(cmd_dict, windex=None)['extensions']
-
-  def UninstallExtensionById(self, id):
-    """Uninstall the extension with the given id.
-
-    Args:
-      id: The string id of the extension.
-
-    Returns:
-      True, if the extension was successfully uninstalled, or
-      False, otherwise.
-    """
-    cmd_dict = {  # Prepare command for the json interface
-      'command': 'UninstallExtensionById',
-      'id': id,
-    }
-    return self._GetResultFromJSONRequest(cmd_dict, windex=None)['success']
-
-  def SetExtensionStateById(self, id, enable, allow_in_incognito):
-    """Set extension state: enable/disable, allow/disallow in incognito mode.
-
-    Args:
-      id: The string id of the extension.
-      enable: A boolean, enable extension.
-      allow_in_incognito: A boolean, allow extension in incognito.
-    """
-    cmd_dict = {  # Prepare command for the json interface
-      'command': 'SetExtensionStateById',
-      'id': id,
-      'enable': enable,
-      'allow_in_incognito': allow_in_incognito,
-    }
-    self._GetResultFromJSONRequest(cmd_dict, windex=None)
-
-  def TriggerPageActionById(self, id, tab_index=0, windex=0):
-    """Trigger page action asynchronously in the active tab.
-
-    The page action icon must be displayed before invoking this function.
-
-    Args:
-      id: The string id of the extension.
-      tab_index: Integer index of the tab to use; defaults to 0 (first tab).
-      windex: Integer index of the browser window to use; defaults to 0
-              (first window).
-    """
-    cmd_dict = {  # Prepare command for the json interface
-      'command': 'TriggerPageActionById',
-      'id': id,
-      'windex': windex,
-      'tab_index': tab_index,
-    }
-    self._GetResultFromJSONRequest(cmd_dict, windex=None)
-
-  def TriggerBrowserActionById(self, id, tab_index=0, windex=0):
-    """Trigger browser action asynchronously in the active tab.
-
-    Args:
-      id: The string id of the extension.
-      tab_index: Integer index of the tab to use; defaults to 0 (first tab).
-      windex: Integer index of the browser window to use; defaults to 0
-              (first window).
-    """
-    cmd_dict = {  # Prepare command for the json interface
-      'command': 'TriggerBrowserActionById',
-      'id': id,
-      'windex': windex,
-      'tab_index': tab_index,
-    }
-    self._GetResultFromJSONRequest(cmd_dict, windex=None)
-
-  def UpdateExtensionsNow(self):
-    """Auto-updates installed extensions.
-
-    Waits until all extensions are updated, loaded, and ready for use.
-    This is equivalent to clicking the "Update extensions now" button on the
-    chrome://extensions page.
-
-    Raises:
-      pyauto_errors.JSONInterfaceError if the automation returns an error.
-    """
-    cmd_dict = {  # Prepare command for the json interface.
-      'command': 'UpdateExtensionsNow',
-    }
-    self._GetResultFromJSONRequest(cmd_dict, windex=None)
-
-  def WaitUntilExtensionViewLoaded(self, name=None, extension_id=None,
-                                   url=None, view_type=None):
-    """Wait for a loaded extension view matching all the given properties.
-
-    If no matching extension views are found, wait for one to be loaded.
-    If there are more than one matching extension view, return one at random.
-    Uses WaitUntil so timeout is capped by automation timeout.
-    Refer to extension_view dictionary returned in GetBrowserInfo()
-    for sample input/output values.
-
-    Args:
-      name: (optional) Name of the extension.
-      extension_id: (optional) ID of the extension.
-      url: (optional) URL of the extension view.
-      view_type: (optional) Type of the extension view.
-        ['EXTENSION_BACKGROUND_PAGE'|'EXTENSION_POPUP'|'EXTENSION_INFOBAR'|
-         'EXTENSION_DIALOG']
-
-    Returns:
-      The 'view' property of the extension view.
-      None, if no view loaded.
-
-    Raises:
-      pyauto_errors.JSONInterfaceError if the automation returns an error.
-    """
-    def _GetExtensionViewLoaded():
-      extension_views = self.GetBrowserInfo()['extension_views']
-      for extension_view in extension_views:
-        if ((name and name != extension_view['name']) or
-            (extension_id and extension_id != extension_view['extension_id']) or
-            (url and url != extension_view['url']) or
-            (view_type and view_type != extension_view['view_type'])):
-          continue
-        if extension_view['loaded']:
-          return extension_view['view']
-      return False
-
-    if self.WaitUntil(lambda: _GetExtensionViewLoaded()):
-      return _GetExtensionViewLoaded()
-    return None
-
-  def WaitUntilExtensionViewClosed(self, view):
-    """Wait for the given extension view to to be closed.
-
-    Uses WaitUntil so timeout is capped by automation timeout.
-    Refer to extension_view dictionary returned by GetBrowserInfo()
-    for sample input value.
-
-    Args:
-      view: 'view' property of extension view.
-
-    Raises:
-      pyauto_errors.JSONInterfaceError if the automation returns an error.
-    """
-    def _IsExtensionViewClosed():
-      extension_views = self.GetBrowserInfo()['extension_views']
-      for extension_view in extension_views:
-        if view == extension_view['view']:
-          return False
-      return True
-
-    return self.WaitUntil(lambda: _IsExtensionViewClosed())
-
   def SelectTranslateOption(self, option, tab_index=0, window_index=0):
     """Selects one of the options in the drop-down menu for the translate bar.
 
@@ -2172,6 +1957,240 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
         lambda tab_index, window_index: self.GetTranslateInfo(
             tab_index=tab_index, window_index=window_index)['page_translated'],
         args=[tab_index, window_index])
+
+  def InstallExtension(self, extension_path, with_ui=False, windex=0):
+    """Installs an extension from the given path.
+
+    The path must be absolute and may be a crx file or an unpacked extension
+    directory. Returns the extension ID if successfully installed and loaded.
+    Otherwise, throws an exception. The extension must not already be installed.
+
+    Args:
+      extension_path: The absolute path to the extension to install. If the
+                      extension is packed, it must have a .crx extension.
+      with_ui: Whether the extension install confirmation UI should be shown.
+      windex: Integer index of the browser window to use; defaults to 0
+              (first window).
+
+    Returns:
+      The ID of the installed extension.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = {
+        'command': 'InstallExtension',
+        'path': extension_path,
+        'with_ui': with_ui,
+        'windex': windex,
+    }
+    return self._GetResultFromJSONRequest(cmd_dict, windex=None)['id']
+
+  def GetExtensionsInfo(self, windex=0):
+    """Returns information about all installed extensions.
+
+    Args:
+      windex: Integer index of the browser window to use; defaults to 0
+              (first window).
+
+    Returns:
+      A list of dictionaries representing each of the installed extensions.
+      Example:
+      [ { u'api_permissions': [u'bookmarks', u'experimental', u'tabs'],
+          u'background_url': u'',
+          u'description': u'Bookmark Manager',
+          u'effective_host_permissions': [u'chrome://favicon/*',
+                                          u'chrome://resources/*'],
+          u'host_permissions': [u'chrome://favicon/*', u'chrome://resources/*'],
+          u'id': u'eemcgdkfndhakfknompkggombfjjjeno',
+          u'is_component': True,
+          u'is_internal': False,
+          u'name': u'Bookmark Manager',
+          u'options_url': u'',
+          u'public_key': u'MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDQcByy+eN9jza\
+                           zWF/DPn7NW47sW7lgmpk6eKc0BQM18q8hvEM3zNm2n7HkJv/R6f\
+                           U+X5mtqkDuKvq5skF6qqUF4oEyaleWDFhd1xFwV7JV+/DU7bZ00\
+                           w2+6gzqsabkerFpoP33ZRIw7OviJenP0c0uWqDWF8EGSyMhB3tx\
+                           qhOtiQIDAQAB',
+          u'version': u'0.1' },
+        { u'api_permissions': [...],
+          u'background_url': u'chrome-extension://\
+                               lkdedmbpkaiahjjibfdmpoefffnbdkli/\
+                               background.html',
+          u'description': u'Extension which lets you read your Facebook news \
+                            feed and wall. You can also post status updates.',
+          u'effective_host_permissions': [...],
+          u'host_permissions': [...],
+          u'id': u'lkdedmbpkaiahjjibfdmpoefffnbdkli',
+          u'name': u'Facebook for Google Chrome',
+          u'options_url': u'',
+          u'public_key': u'...',
+          u'version': u'2.0.9'
+          u'is_enabled': True,
+          u'allowed_in_incognito': True} ]
+    """
+    cmd_dict = {  # Prepare command for the json interface
+      'command': 'GetExtensionsInfo',
+      'windex': windex,
+    }
+    return self._GetResultFromJSONRequest(cmd_dict, windex=None)['extensions']
+
+  def UninstallExtensionById(self, id, windex=0):
+    """Uninstall the extension with the given id.
+
+    Args:
+      id: The string id of the extension.
+      windex: Integer index of the browser window to use; defaults to 0
+              (first window).
+
+    Returns:
+      True, if the extension was successfully uninstalled, or
+      False, otherwise.
+    """
+    cmd_dict = {  # Prepare command for the json interface
+      'command': 'UninstallExtensionById',
+      'id': id,
+      'windex': windex,
+    }
+    return self._GetResultFromJSONRequest(cmd_dict, windex=None)['success']
+
+  def SetExtensionStateById(self, id, enable, allow_in_incognito, windex=0):
+    """Set extension state: enable/disable, allow/disallow in incognito mode.
+
+    Args:
+      id: The string id of the extension.
+      enable: A boolean, enable extension.
+      allow_in_incognito: A boolean, allow extension in incognito.
+      windex: Integer index of the browser window to use; defaults to 0
+              (first window).
+    """
+    cmd_dict = {  # Prepare command for the json interface
+      'command': 'SetExtensionStateById',
+      'id': id,
+      'enable': enable,
+      'allow_in_incognito': allow_in_incognito,
+      'windex': windex,
+    }
+    self._GetResultFromJSONRequest(cmd_dict, windex=None)
+
+  def TriggerPageActionById(self, id, tab_index=0, windex=0):
+    """Trigger page action asynchronously in the active tab.
+
+    The page action icon must be displayed before invoking this function.
+
+    Args:
+      id: The string id of the extension.
+      tab_index: Integer index of the tab to use; defaults to 0 (first tab).
+      windex: Integer index of the browser window to use; defaults to 0
+              (first window).
+    """
+    cmd_dict = {  # Prepare command for the json interface
+      'command': 'TriggerPageActionById',
+      'id': id,
+      'windex': windex,
+      'tab_index': tab_index,
+    }
+    self._GetResultFromJSONRequest(cmd_dict, windex=None)
+
+  def TriggerBrowserActionById(self, id, tab_index=0, windex=0):
+    """Trigger browser action asynchronously in the active tab.
+
+    Args:
+      id: The string id of the extension.
+      tab_index: Integer index of the tab to use; defaults to 0 (first tab).
+      windex: Integer index of the browser window to use; defaults to 0
+              (first window).
+    """
+    cmd_dict = {  # Prepare command for the json interface
+      'command': 'TriggerBrowserActionById',
+      'id': id,
+      'windex': windex,
+      'tab_index': tab_index,
+    }
+    self._GetResultFromJSONRequest(cmd_dict, windex=None)
+
+  def UpdateExtensionsNow(self, windex=0):
+    """Auto-updates installed extensions.
+
+    Waits until all extensions are updated, loaded, and ready for use.
+    This is equivalent to clicking the "Update extensions now" button on the
+    chrome://extensions page.
+
+    Args:
+      windex: Integer index of the browser window to use; defaults to 0
+              (first window).
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation returns an error.
+    """
+    cmd_dict = {  # Prepare command for the json interface.
+      'command': 'UpdateExtensionsNow',
+      'windex': windex,
+    }
+    self._GetResultFromJSONRequest(cmd_dict, windex=None)
+
+  def WaitUntilExtensionViewLoaded(self, name=None, extension_id=None,
+                                   url=None, view_type=None):
+    """Wait for a loaded extension view matching all the given properties.
+
+    If no matching extension views are found, wait for one to be loaded.
+    If there are more than one matching extension view, return one at random.
+    Uses WaitUntil so timeout is capped by automation timeout.
+    Refer to extension_view dictionary returned in GetBrowserInfo()
+    for sample input/output values.
+
+    Args:
+      name: (optional) Name of the extension.
+      extension_id: (optional) ID of the extension.
+      url: (optional) URL of the extension view.
+      view_type: (optional) Type of the extension view.
+        ['EXTENSION_BACKGROUND_PAGE'|'EXTENSION_POPUP'|'EXTENSION_INFOBAR'|
+         'EXTENSION_DIALOG']
+
+    Returns:
+      The 'view' property of the extension view.
+      None, if no view loaded.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation returns an error.
+    """
+    def _GetExtensionViewLoaded():
+      extension_views = self.GetBrowserInfo()['extension_views']
+      for extension_view in extension_views:
+        if ((name and name != extension_view['name']) or
+            (extension_id and extension_id != extension_view['extension_id']) or
+            (url and url != extension_view['url']) or
+            (view_type and view_type != extension_view['view_type'])):
+          continue
+        if extension_view['loaded']:
+          return extension_view['view']
+      return False
+
+    if self.WaitUntil(lambda: _GetExtensionViewLoaded()):
+      return _GetExtensionViewLoaded()
+    return None
+
+  def WaitUntilExtensionViewClosed(self, view):
+    """Wait for the given extension view to to be closed.
+
+    Uses WaitUntil so timeout is capped by automation timeout.
+    Refer to extension_view dictionary returned by GetBrowserInfo()
+    for sample input value.
+
+    Args:
+      view: 'view' property of extension view.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation returns an error.
+    """
+    def _IsExtensionViewClosed():
+      extension_views = self.GetBrowserInfo()['extension_views']
+      for extension_view in extension_views:
+        if view == extension_view['view']:
+          return False
+      return True
+
+    return self.WaitUntil(lambda: _IsExtensionViewClosed())
 
   def FillAutofillProfile(self, profiles=None, credit_cards=None,
                           tab_index=0, window_index=0):

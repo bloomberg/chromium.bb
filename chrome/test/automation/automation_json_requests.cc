@@ -760,6 +760,8 @@ bool SendInstallExtensionJSONRequest(
   dict.SetString("command", "InstallExtension");
   dict.SetString("path", path.value());
   dict.SetBoolean("with_ui", with_ui);
+  // TODO(kkania): Set correct auto_id instead of hardcoding windex.
+  dict.SetInteger("windex", 0);
   DictionaryValue reply_dict;
   if (!SendAutomationJSONRequest(sender, dict, &reply_dict, error))
     return false;
@@ -776,6 +778,8 @@ bool SendGetExtensionsInfoJSONRequest(
     Error* error) {
   DictionaryValue dict;
   dict.SetString("command", "GetExtensionsInfo");
+  // TODO(kkania): Set correct auto_id instead of hardcoding windex.
+  dict.SetInteger("windex", 0);
   DictionaryValue reply_dict;
   if (!SendAutomationJSONRequest(sender, dict, &reply_dict, error))
     return false;
@@ -798,6 +802,8 @@ bool SendIsPageActionVisibleJSONRequest(
   dict.SetString("command", "IsPageActionVisible");
   tab_id.UpdateDictionary(&dict, "auto_id");
   dict.SetString("extension_id", extension_id);
+  // TODO(kkania): Set correct auto_id instead of hardcoding windex.
+  dict.SetInteger("windex", 0);
   DictionaryValue reply_dict;
   if (!SendAutomationJSONRequest(sender, dict, &reply_dict, error))
     return false;
@@ -819,6 +825,8 @@ bool SendSetExtensionStateJSONRequest(
   dict.SetString("id", extension_id);
   dict.SetBoolean("enable", enable);
   dict.SetBoolean("allow_in_incognito", allow_in_incognito);
+  // TODO(kkania): Set correct auto_id instead of hardcoding windex.
+  dict.SetInteger("windex", 0);
   DictionaryValue reply_dict;
   return SendAutomationJSONRequest(sender, dict, &reply_dict, error);
 }
@@ -834,6 +842,7 @@ bool SendClickExtensionButtonJSONRequest(
   else
     dict.SetString("command", "TriggerPageActionById");
   dict.SetString("id", extension_id);
+  // TODO(kkania): Set correct auto_id instead of hardcoding windex.
   dict.SetInteger("windex", 0);
   dict.SetInteger("tab_index", 0);
   DictionaryValue reply_dict;
@@ -847,6 +856,8 @@ bool SendUninstallExtensionJSONRequest(
   DictionaryValue dict;
   dict.SetString("command", "UninstallExtensionById");
   dict.SetString("id", extension_id);
+  // TODO(kkania): Set correct auto_id instead of hardcoding windex.
+  dict.SetInteger("windex", 0);
   DictionaryValue reply_dict;
   if (!SendAutomationJSONRequest(sender, dict, &reply_dict, error))
     return false;
@@ -882,6 +893,7 @@ bool SendSetPreferenceJSONRequest(
     Error* error) {
   DictionaryValue dict;
   dict.SetString("command", "SetPrefs");
+  // TODO(kkania): Set correct auto_id instead of hardcoding windex.
   dict.SetInteger("windex", 0);
   dict.SetString("path", pref);
   dict.Set("value", value);
