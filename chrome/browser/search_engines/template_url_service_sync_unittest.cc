@@ -82,37 +82,28 @@ void RemoveManagedDefaultSearchPreferences(TemplateURLService* turl_service,
   pref_service->RemoveManagedPref(prefs::kDefaultSearchProviderPrepopulateID);
 }
 
+
+// TestChangeProcessor --------------------------------------------------------
+
 // Dummy SyncChangeProcessor used to help review what SyncChanges are pushed
 // back up to Sync.
 class TestChangeProcessor : public SyncChangeProcessor {
  public:
-  TestChangeProcessor() : erroneous_(false) {
-  }
-  virtual ~TestChangeProcessor() { }
+  TestChangeProcessor();
+  virtual ~TestChangeProcessor();
 
   // Store a copy of all the changes passed in so we can examine them later.
   virtual SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
-      const SyncChangeList& change_list) {
-    if (erroneous_)
-      return SyncError(FROM_HERE, "Some error.", syncable::SEARCH_ENGINES);
+      const SyncChangeList& change_list) OVERRIDE;
 
-    change_map_.erase(change_map_.begin(), change_map_.end());
-    for (SyncChangeList::const_iterator iter = change_list.begin();
-        iter != change_list.end(); ++iter) {
-      change_map_[GetGUID(iter->sync_data())] = *iter;
-    }
-
-    return SyncError();
+  bool contains_guid(const std::string& guid) const {
+    return change_map_.count(guid) != 0;
   }
 
-  bool ContainsGUID(const std::string& guid) {
-    return change_map_.find(guid) != change_map_.end();
-  }
-
-  SyncChange GetChangeByGUID(const std::string& guid) {
-    DCHECK(ContainsGUID(guid));
-    return change_map_[guid];
+  SyncChange change_for_guid(const std::string& guid) const {
+    DCHECK(contains_guid(guid));
+    return change_map_.find(guid)->second;
   }
 
   int change_list_size() { return change_map_.size(); }
@@ -127,20 +118,37 @@ class TestChangeProcessor : public SyncChangeProcessor {
   DISALLOW_COPY_AND_ASSIGN(TestChangeProcessor);
 };
 
+TestChangeProcessor::TestChangeProcessor() : erroneous_(false) {
+}
+
+TestChangeProcessor::~TestChangeProcessor() {
+}
+
+SyncError TestChangeProcessor::ProcessSyncChanges(
+    const tracked_objects::Location& from_here,
+    const SyncChangeList& change_list) {
+  if (erroneous_)
+    return SyncError(FROM_HERE, "Some error.", syncable::SEARCH_ENGINES);
+
+  change_map_.erase(change_map_.begin(), change_map_.end());
+  for (SyncChangeList::const_iterator iter = change_list.begin();
+      iter != change_list.end(); ++iter)
+    change_map_[GetGUID(iter->sync_data())] = *iter;
+  return SyncError();
+}
+
+
+// SyncChangeProcessorDelegate ------------------------------------------------
+
 class SyncChangeProcessorDelegate : public SyncChangeProcessor {
  public:
-  explicit SyncChangeProcessorDelegate(SyncChangeProcessor* recipient)
-      : recipient_(recipient) {
-    DCHECK(recipient_);
-  }
-  virtual ~SyncChangeProcessorDelegate() {}
+  explicit SyncChangeProcessorDelegate(SyncChangeProcessor* recipient);
+  virtual ~SyncChangeProcessorDelegate();
 
   // SyncChangeProcessor implementation.
   virtual SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
-      const SyncChangeList& change_list) OVERRIDE {
-    return recipient_->ProcessSyncChanges(from_here, change_list);
-  }
+      const SyncChangeList& change_list) OVERRIDE;
 
  private:
   // The recipient of all sync changes.
@@ -149,29 +157,33 @@ class SyncChangeProcessorDelegate : public SyncChangeProcessor {
   DISALLOW_COPY_AND_ASSIGN(SyncChangeProcessorDelegate);
 };
 
+SyncChangeProcessorDelegate::SyncChangeProcessorDelegate(
+    SyncChangeProcessor* recipient)
+    : recipient_(recipient) {
+  DCHECK(recipient_);
+}
+
+SyncChangeProcessorDelegate::~SyncChangeProcessorDelegate() {
+}
+
+SyncError SyncChangeProcessorDelegate::ProcessSyncChanges(
+    const tracked_objects::Location& from_here,
+    const SyncChangeList& change_list) {
+  return recipient_->ProcessSyncChanges(from_here, change_list);
+}
+
+}  // namespace
+
+
+// TemplateURLServiceSyncTest -------------------------------------------------
+
 class TemplateURLServiceSyncTest : public testing::Test {
  public:
   typedef TemplateURLService::SyncDataMap SyncDataMap;
 
-  TemplateURLServiceSyncTest()
-      : sync_processor_(new TestChangeProcessor),
-        sync_processor_delegate_(new SyncChangeProcessorDelegate(
-            sync_processor_.get())) {}
+  TemplateURLServiceSyncTest();
 
-  virtual void SetUp() {
-    profile_a_.reset(new TestingProfile);
-    TemplateURLServiceFactory::GetInstance()->RegisterUserPrefsOnProfile(
-        profile_a_.get());
-    model_a_.reset(new TemplateURLService(profile_a_.get()));
-    model_a_->Load();
-    profile_b_.reset(new TestingProfile);
-    TemplateURLServiceFactory::GetInstance()->RegisterUserPrefsOnProfile(
-        profile_b_.get());
-    model_b_.reset(new TemplateURLService(profile_b_.get()));
-    model_b_->Load();
-  }
-
-  virtual void TearDown() { }
+  virtual void SetUp() OVERRIDE;
 
   TemplateURLService* model() { return model_a_.get(); }
   // For readability, we redefine an accessor for Model A for use in tests that
@@ -179,121 +191,38 @@ class TemplateURLServiceSyncTest : public testing::Test {
   TemplateURLService* model_a() { return model_a_.get(); }
   TemplateURLService* model_b() { return model_b_.get(); }
   TestChangeProcessor* processor() { return sync_processor_.get(); }
-  scoped_ptr<SyncChangeProcessor> PassProcessor() {
-    return sync_processor_delegate_.PassAs<SyncChangeProcessor>();
-  }
+  scoped_ptr<SyncChangeProcessor> PassProcessor();
 
   // Create a TemplateURL with some test values. The caller owns the returned
   // TemplateURL*.
   TemplateURL* CreateTestTemplateURL(const string16& keyword,
-                                     const std::string& url) const {
-    return CreateTestTemplateURL(keyword, url, std::string());
-  }
-
-  TemplateURL* CreateTestTemplateURL(const string16& keyword,
                                      const std::string& url,
-                                     const std::string& guid) const {
-    return CreateTestTemplateURL(keyword, url, guid, 100);
-  }
-
-  TemplateURL* CreateTestTemplateURL(const string16& keyword,
-                                     const std::string& url,
-                                     const std::string& guid,
-                                     time_t last_mod) const {
-    return CreateTestTemplateURL(keyword, url, guid, last_mod, false);
-  }
-
-  TemplateURL* CreateTestTemplateURL(const string16& keyword,
-                                     const std::string& url,
-                                     const std::string& guid,
-                                     time_t last_mod,
-                                     bool created_by_policy) const {
-    TemplateURL* turl = new TemplateURL();
-    turl->set_short_name(ASCIIToUTF16("unittest"));
-    turl->set_keyword(keyword);
-    turl->set_safe_for_autoreplace(true);
-    turl->set_date_created(Time::FromTimeT(100));
-    turl->set_last_modified(Time::FromTimeT(last_mod));
-    turl->set_created_by_policy(created_by_policy);
-    turl->SetPrepopulateId(999999);
-    if (!guid.empty())
-      turl->set_sync_guid(guid);
-    turl->SetURL(url);
-    turl->set_favicon_url(GURL("http://favicon.url"));
-    return turl;
-  }
+                                     const std::string& guid = std::string(),
+                                     time_t last_mod = 100,
+                                     bool created_by_policy = false) const;
 
   // Verifies the two TemplateURLs are equal.
   // TODO(stevet): Share this with TemplateURLServiceTest.
   void AssertEquals(const TemplateURL& expected,
-                    const TemplateURL& actual) const {
-    ASSERT_TRUE(TemplateURLRef::SameUrlRefs(expected.url(), actual.url()));
-    ASSERT_TRUE(TemplateURLRef::SameUrlRefs(expected.suggestions_url(),
-                                            actual.suggestions_url()));
-    ASSERT_EQ(expected.keyword(), actual.keyword());
-    ASSERT_EQ(expected.short_name(), actual.short_name());
-    ASSERT_EQ(JoinString(expected.input_encodings(), ';'),
-              JoinString(actual.input_encodings(), ';'));
-    ASSERT_EQ(expected.favicon_url(), actual.favicon_url());
-    ASSERT_EQ(expected.safe_for_autoreplace(), actual.safe_for_autoreplace());
-    ASSERT_EQ(expected.show_in_default_list(), actual.show_in_default_list());
-    ASSERT_TRUE(expected.date_created() == actual.date_created());
-    ASSERT_TRUE(expected.last_modified() == actual.last_modified());
-  }
+                    const TemplateURL& actual) const;
 
   // Expect that two SyncDataLists have equal contents, in terms of the
   // sync_guid, keyword, and url fields.
   void AssertEquals(const SyncDataList& data1,
-                    const SyncDataList& data2) const {
-    SyncDataMap map1 = TemplateURLService::CreateGUIDToSyncDataMap(data1);
-    SyncDataMap map2 = TemplateURLService::CreateGUIDToSyncDataMap(data2);
-
-    for (SyncDataMap::const_iterator iter1 = map1.begin();
-        iter1 != map1.end(); iter1++) {
-      SyncDataMap::iterator iter2 = map2.find(iter1->first);
-      if (iter2 != map2.end()) {
-        ASSERT_EQ(GetKeyword(iter1->second), GetKeyword(iter2->second));
-        ASSERT_EQ(GetURL(iter1->second), GetURL(iter2->second));
-        map2.erase(iter2);
-      }
-    }
-    EXPECT_EQ(0U, map2.size());
-  }
+                    const SyncDataList& data2) const;
 
   // Convenience helper for creating SyncChanges. Takes ownership of |turl|.
   SyncChange CreateTestSyncChange(SyncChange::SyncChangeType type,
-                                  TemplateURL* turl) const {
-    // We take control of the TemplateURL so make sure it's cleaned up after
-    // we create data out of it.
-    scoped_ptr<TemplateURL> scoped_turl(turl);
-    return SyncChange(
-        type, TemplateURLService::CreateSyncDataFromTemplateURL(*scoped_turl));
-  }
+                                  TemplateURL* turl) const;
 
   // Helper that creates some initial sync data. We cheat a little by specifying
   // GUIDs for easy identification later. We also make the last_modified times
   // slightly older than CreateTestTemplateURL's default, to test conflict
   // resolution.
-  SyncDataList CreateInitialSyncData() const {
-    SyncDataList list;
-
-    scoped_ptr<TemplateURL> turl(CreateTestTemplateURL(ASCIIToUTF16("key1"),
-        "http://key1.com", "key1", 90));
-    list.push_back(TemplateURLService::CreateSyncDataFromTemplateURL(*turl));
-    turl.reset(CreateTestTemplateURL(ASCIIToUTF16("key2"), "http://key2.com",
-                                     "key2", 90));
-    list.push_back(TemplateURLService::CreateSyncDataFromTemplateURL(*turl));
-    turl.reset(CreateTestTemplateURL(ASCIIToUTF16("key3"), "http://key3.com",
-                                     "key3", 90));
-    list.push_back(TemplateURLService::CreateSyncDataFromTemplateURL(*turl));
-
-    return list;
-  }
+  SyncDataList CreateInitialSyncData() const;
 
   // Syntactic sugar.
-  TemplateURL* Deserialize(const SyncData& sync_data) {
-    return TemplateURLService::CreateTemplateURLFromSyncData(sync_data);
-  }
+  TemplateURL* Deserialize(const SyncData& sync_data);
 
  protected:
   // We keep two TemplateURLServices to test syncing between them.
@@ -309,7 +238,114 @@ class TemplateURLServiceSyncTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(TemplateURLServiceSyncTest);
 };
 
-}  // namespace
+TemplateURLServiceSyncTest::TemplateURLServiceSyncTest()
+    : sync_processor_(new TestChangeProcessor),
+      sync_processor_delegate_(new SyncChangeProcessorDelegate(
+          sync_processor_.get())) {
+}
+
+void TemplateURLServiceSyncTest::SetUp() {
+  profile_a_.reset(new TestingProfile);
+  TemplateURLServiceFactory::GetInstance()->RegisterUserPrefsOnProfile(
+      profile_a_.get());
+  model_a_.reset(new TemplateURLService(profile_a_.get()));
+  model_a_->Load();
+  profile_b_.reset(new TestingProfile);
+  TemplateURLServiceFactory::GetInstance()->RegisterUserPrefsOnProfile(
+      profile_b_.get());
+  model_b_.reset(new TemplateURLService(profile_b_.get()));
+  model_b_->Load();
+}
+
+scoped_ptr<SyncChangeProcessor> TemplateURLServiceSyncTest::PassProcessor() {
+  return sync_processor_delegate_.PassAs<SyncChangeProcessor>();
+}
+
+TemplateURL* TemplateURLServiceSyncTest::CreateTestTemplateURL(
+    const string16& keyword,
+    const std::string& url,
+    const std::string& guid,
+    time_t last_mod,
+    bool created_by_policy) const {
+  TemplateURL* turl = new TemplateURL();
+  turl->set_short_name(ASCIIToUTF16("unittest"));
+  turl->set_keyword(keyword);
+  turl->set_safe_for_autoreplace(true);
+  turl->set_date_created(Time::FromTimeT(100));
+  turl->set_last_modified(Time::FromTimeT(last_mod));
+  turl->set_created_by_policy(created_by_policy);
+  turl->SetPrepopulateId(999999);
+  if (!guid.empty())
+    turl->set_sync_guid(guid);
+  turl->SetURL(url);
+  turl->set_favicon_url(GURL("http://favicon.url"));
+  return turl;
+}
+
+void TemplateURLServiceSyncTest::AssertEquals(const TemplateURL& expected,
+                                              const TemplateURL& actual) const {
+  ASSERT_EQ(expected.short_name(), actual.short_name());
+  ASSERT_EQ(expected.url(), actual.url());
+  ASSERT_EQ(expected.suggestions_url(), actual.suggestions_url());
+  ASSERT_EQ(expected.keyword(), actual.keyword());
+  ASSERT_EQ(expected.show_in_default_list(), actual.show_in_default_list());
+  ASSERT_EQ(expected.safe_for_autoreplace(), actual.safe_for_autoreplace());
+  ASSERT_EQ(expected.favicon_url(), actual.favicon_url());
+  ASSERT_EQ(expected.input_encodings(), actual.input_encodings());
+  ASSERT_EQ(expected.date_created(), actual.date_created());
+  ASSERT_EQ(expected.last_modified(), actual.last_modified());
+}
+
+void TemplateURLServiceSyncTest::AssertEquals(const SyncDataList& data1,
+                                              const SyncDataList& data2) const {
+  SyncDataMap map1 = TemplateURLService::CreateGUIDToSyncDataMap(data1);
+  SyncDataMap map2 = TemplateURLService::CreateGUIDToSyncDataMap(data2);
+
+  for (SyncDataMap::const_iterator iter1 = map1.begin();
+      iter1 != map1.end(); iter1++) {
+    SyncDataMap::iterator iter2 = map2.find(iter1->first);
+    if (iter2 != map2.end()) {
+      ASSERT_EQ(GetKeyword(iter1->second), GetKeyword(iter2->second));
+      ASSERT_EQ(GetURL(iter1->second), GetURL(iter2->second));
+      map2.erase(iter2);
+    }
+  }
+  EXPECT_EQ(0U, map2.size());
+}
+
+SyncChange TemplateURLServiceSyncTest::CreateTestSyncChange(
+    SyncChange::SyncChangeType type,
+    TemplateURL* turl) const {
+  // We take control of the TemplateURL so make sure it's cleaned up after
+  // we create data out of it.
+  scoped_ptr<TemplateURL> scoped_turl(turl);
+  return SyncChange(type,
+      TemplateURLService::CreateSyncDataFromTemplateURL(*scoped_turl));
+}
+
+SyncDataList TemplateURLServiceSyncTest::CreateInitialSyncData() const {
+  SyncDataList list;
+
+  scoped_ptr<TemplateURL> turl(CreateTestTemplateURL(ASCIIToUTF16("key1"),
+      "http://key1.com", "key1", 90));
+  list.push_back(TemplateURLService::CreateSyncDataFromTemplateURL(*turl));
+  turl.reset(CreateTestTemplateURL(ASCIIToUTF16("key2"), "http://key2.com",
+                                   "key2", 90));
+  list.push_back(TemplateURLService::CreateSyncDataFromTemplateURL(*turl));
+  turl.reset(CreateTestTemplateURL(ASCIIToUTF16("key3"), "http://key3.com",
+                                   "key3", 90));
+  list.push_back(TemplateURLService::CreateSyncDataFromTemplateURL(*turl));
+
+  return list;
+}
+
+TemplateURL* TemplateURLServiceSyncTest::Deserialize(
+    const SyncData& sync_data) {
+  return TemplateURLService::CreateTemplateURLFromSyncData(sync_data);
+}
+
+
+// Actual tests ---------------------------------------------------------------
 
 TEST_F(TemplateURLServiceSyncTest, SerializeDeserialize) {
   // Create a TemplateURL and convert it into a sync specific type.
@@ -514,7 +550,7 @@ TEST_F(TemplateURLServiceSyncTest, FindDuplicateOfSyncTemplateURL) {
       model()->FindDuplicateOfSyncTemplateURL(*sync_turl);
   ASSERT_TRUE(dupe_turl);
   EXPECT_EQ(dupe_turl->keyword(), sync_turl->keyword());
-  EXPECT_EQ(dupe_turl->url()->url(), sync_turl->url()->url());
+  EXPECT_EQ(dupe_turl->url(), sync_turl->url());
 }
 
 TEST_F(TemplateURLServiceSyncTest, MergeSyncAndLocalURLDuplicates) {
@@ -597,9 +633,9 @@ TEST_F(TemplateURLServiceSyncTest, MergeInAllNewData) {
   EXPECT_TRUE(model()->GetTemplateURLForKeyword(ASCIIToUTF16("bing.com")));
   // Ensure that Sync received the expected changes.
   EXPECT_EQ(3, processor()->change_list_size());
-  EXPECT_TRUE(processor()->ContainsGUID("abc"));
-  EXPECT_TRUE(processor()->ContainsGUID("def"));
-  EXPECT_TRUE(processor()->ContainsGUID("xyz"));
+  EXPECT_TRUE(processor()->contains_guid("abc"));
+  EXPECT_TRUE(processor()->contains_guid("def"));
+  EXPECT_TRUE(processor()->contains_guid("xyz"));
 }
 
 TEST_F(TemplateURLServiceSyncTest, MergeSyncIsTheSame) {
@@ -654,12 +690,12 @@ TEST_F(TemplateURLServiceSyncTest, MergeUpdateFromSync) {
 
   // Check that the first replaced the initial Google TemplateURL.
   EXPECT_EQ(turl1, model()->GetTemplateURLForGUID("abc"));
-  EXPECT_EQ("http://google.ca", turl1->url()->url());
+  EXPECT_EQ("http://google.ca", turl1->url());
 
   // Check that the second produced an upstream update to the Bing TemplateURL.
   EXPECT_EQ(1, processor()->change_list_size());
-  ASSERT_TRUE(processor()->ContainsGUID("xyz"));
-  SyncChange change = processor()->GetChangeByGUID("xyz");
+  ASSERT_TRUE(processor()->contains_guid("xyz"));
+  SyncChange change = processor()->change_for_guid("xyz");
   EXPECT_TRUE(change.change_type() == SyncChange::ACTION_UPDATE);
   EXPECT_EQ("http://bing.com", GetURL(change.sync_data()));
 }
@@ -690,8 +726,8 @@ TEST_F(TemplateURLServiceSyncTest, MergeAddFromOlderSyncData) {
   // update. The local copy should have received the sync data's GUID.
   EXPECT_TRUE(model()->GetTemplateURLForGUID("key1"));
   // Check changes for the UPDATE.
-  ASSERT_TRUE(processor()->ContainsGUID("key1"));
-  SyncChange key1_change = processor()->GetChangeByGUID("key1");
+  ASSERT_TRUE(processor()->contains_guid("key1"));
+  SyncChange key1_change = processor()->change_for_guid("key1");
   EXPECT_EQ(SyncChange::ACTION_UPDATE, key1_change.change_type());
   EXPECT_FALSE(model()->GetTemplateURLForGUID("aaa"));
 
@@ -703,8 +739,8 @@ TEST_F(TemplateURLServiceSyncTest, MergeAddFromOlderSyncData) {
   EXPECT_EQ(ASCIIToUTF16("key2"), key2->keyword());
   EXPECT_TRUE(model()->GetTemplateURLForGUID("key2"));
   // Check changes for the UPDATE.
-  ASSERT_TRUE(processor()->ContainsGUID("key2"));
-  SyncChange key2_change = processor()->GetChangeByGUID("key2");
+  ASSERT_TRUE(processor()->contains_guid("key2"));
+  SyncChange key2_change = processor()->change_for_guid("key2");
   EXPECT_EQ(SyncChange::ACTION_UPDATE, key2_change.change_type());
   EXPECT_EQ("key2.com", GetKeyword(key2_change.sync_data()));
 
@@ -716,12 +752,12 @@ TEST_F(TemplateURLServiceSyncTest, MergeAddFromOlderSyncData) {
   // Two UPDATEs and two ADDs.
   EXPECT_EQ(4, processor()->change_list_size());
   // Two ADDs should be pushed up to Sync.
-  ASSERT_TRUE(processor()->ContainsGUID("bbb"));
+  ASSERT_TRUE(processor()->contains_guid("bbb"));
   EXPECT_EQ(SyncChange::ACTION_ADD,
-            processor()->GetChangeByGUID("bbb").change_type());
-  ASSERT_TRUE(processor()->ContainsGUID("ccc"));
+            processor()->change_for_guid("bbb").change_type());
+  ASSERT_TRUE(processor()->contains_guid("ccc"));
   EXPECT_EQ(SyncChange::ACTION_ADD,
-            processor()->GetChangeByGUID("ccc").change_type());
+            processor()->change_for_guid("ccc").change_type());
 }
 
 TEST_F(TemplateURLServiceSyncTest, MergeAddFromNewerSyncData) {
@@ -768,12 +804,12 @@ TEST_F(TemplateURLServiceSyncTest, MergeAddFromNewerSyncData) {
   // Two ADDs.
   EXPECT_EQ(2, processor()->change_list_size());
   // Two ADDs should be pushed up to Sync.
-  ASSERT_TRUE(processor()->ContainsGUID("bbb"));
+  ASSERT_TRUE(processor()->contains_guid("bbb"));
   EXPECT_EQ(SyncChange::ACTION_ADD,
-            processor()->GetChangeByGUID("bbb").change_type());
-  ASSERT_TRUE(processor()->ContainsGUID("ccc"));
+            processor()->change_for_guid("bbb").change_type());
+  ASSERT_TRUE(processor()->contains_guid("ccc"));
   EXPECT_EQ(SyncChange::ACTION_ADD,
-            processor()->GetChangeByGUID("ccc").change_type());
+            processor()->change_for_guid("ccc").change_type());
 }
 
 TEST_F(TemplateURLServiceSyncTest, ProcessChangesEmptyModel) {
@@ -823,7 +859,7 @@ TEST_F(TemplateURLServiceSyncTest, ProcessChangesNoConflicts) {
   const TemplateURL* turl = model()->GetTemplateURLForGUID("key2");
   EXPECT_TRUE(turl);
   EXPECT_EQ(ASCIIToUTF16("newkeyword"), turl->keyword());
-  EXPECT_EQ("http://new.com", turl->url()->url());
+  EXPECT_EQ("http://new.com", turl->url());
   EXPECT_FALSE(model()->GetTemplateURLForGUID("key3"));
   EXPECT_TRUE(model()->GetTemplateURLForGUID("key4"));
 }
@@ -901,12 +937,12 @@ TEST_F(TemplateURLServiceSyncTest, ProcessChangesWithConflictsLocalWins) {
   EXPECT_EQ(model()->GetTemplateURLForGUID("key3"),
             model()->GetTemplateURLForKeyword(ASCIIToUTF16("key3")));
 
-  ASSERT_TRUE(processor()->ContainsGUID("aaa"));
+  ASSERT_TRUE(processor()->contains_guid("aaa"));
   EXPECT_EQ(SyncChange::ACTION_UPDATE,
-            processor()->GetChangeByGUID("aaa").change_type());
-  ASSERT_TRUE(processor()->ContainsGUID("key1"));
+            processor()->change_for_guid("aaa").change_type());
+  ASSERT_TRUE(processor()->contains_guid("key1"));
   EXPECT_EQ(SyncChange::ACTION_UPDATE,
-            processor()->GetChangeByGUID("key1").change_type());
+            processor()->change_for_guid("key1").change_type());
 }
 
 TEST_F(TemplateURLServiceSyncTest, ProcessTemplateURLChange) {
@@ -920,8 +956,8 @@ TEST_F(TemplateURLServiceSyncTest, ProcessTemplateURLChange) {
       CreateTestTemplateURL(ASCIIToUTF16("baidu"), "http://baidu.cn", "new");
   model()->Add(new_turl);
   EXPECT_EQ(1, processor()->change_list_size());
-  ASSERT_TRUE(processor()->ContainsGUID("new"));
-  SyncChange change = processor()->GetChangeByGUID("new");
+  ASSERT_TRUE(processor()->contains_guid("new"));
+  SyncChange change = processor()->change_for_guid("new");
   EXPECT_EQ(SyncChange::ACTION_ADD, change.change_type());
   EXPECT_EQ("baidu", GetKeyword(change.sync_data()));
   EXPECT_EQ("http://baidu.cn", GetURL(change.sync_data()));
@@ -929,10 +965,10 @@ TEST_F(TemplateURLServiceSyncTest, ProcessTemplateURLChange) {
   // Change a keyword.
   const TemplateURL* existing_turl = model()->GetTemplateURLForGUID("key1");
   model()->ResetTemplateURL(existing_turl, existing_turl->short_name(),
-                            ASCIIToUTF16("k"), existing_turl->url()->url());
+                            ASCIIToUTF16("k"), existing_turl->url());
   EXPECT_EQ(1, processor()->change_list_size());
-  ASSERT_TRUE(processor()->ContainsGUID("key1"));
-  change = processor()->GetChangeByGUID("key1");
+  ASSERT_TRUE(processor()->contains_guid("key1"));
+  change = processor()->change_for_guid("key1");
   EXPECT_EQ(SyncChange::ACTION_UPDATE, change.change_type());
   EXPECT_EQ("k", GetKeyword(change.sync_data()));
 
@@ -940,8 +976,8 @@ TEST_F(TemplateURLServiceSyncTest, ProcessTemplateURLChange) {
   existing_turl = model()->GetTemplateURLForGUID("key2");
   model()->Remove(existing_turl);
   EXPECT_EQ(1, processor()->change_list_size());
-  ASSERT_TRUE(processor()->ContainsGUID("key2"));
-  change = processor()->GetChangeByGUID("key2");
+  ASSERT_TRUE(processor()->contains_guid("key2"));
+  change = processor()->change_for_guid("key2");
   EXPECT_EQ(SyncChange::ACTION_DELETE, change.change_type());
 }
 

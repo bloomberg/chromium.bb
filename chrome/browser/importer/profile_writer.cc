@@ -255,13 +255,13 @@ static std::string HostPathKeyForURL(const GURL& url) {
 // the TemplateURL is invalid.
 static std::string BuildHostPathKey(const TemplateURL* t_url,
                                     bool try_url_if_invalid) {
-  if (t_url->url()) {
-    if (try_url_if_invalid && !t_url->url()->IsValid())
-      return HostPathKeyForURL(GURL(t_url->url()->url()));
+  if (!t_url->url().empty()) {
+    if (try_url_if_invalid && !t_url->url_ref().IsValid())
+      return HostPathKeyForURL(GURL(t_url->url()));
 
-    if (t_url->url()->SupportsReplacement()) {
+    if (t_url->url_ref().SupportsReplacement()) {
       return HostPathKeyForURL(GURL(
-          t_url->url()->ReplaceSearchTerms(ASCIIToUTF16("x"),
+          t_url->url_ref().ReplaceSearchTerms(ASCIIToUTF16("x"),
               TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, string16())));
     }
   }
@@ -317,7 +317,7 @@ void ProfileWriter::AddKeywords(ScopedVector<TemplateURL> template_urls,
       continue;
 
     // Only add valid TemplateURLs to the model.
-    if ((*i)->url() && (*i)->url()->IsValid()) {
+    if (!(*i)->url().empty() && (*i)->url_ref().IsValid()) {
       model->Add(*i);  // Takes ownership.
       *i = NULL;       // Prevent the vector from deleting *i later.
     }

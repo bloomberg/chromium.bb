@@ -1615,20 +1615,14 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   if (template_url_service) {
     const TemplateURL* url_template =
         template_url_service->GetDefaultSearchProvider();
-    if (url_template) {
-      const TemplateURLRef* urlref = url_template->url();
-      if (urlref) {
-        google_search_default = urlref->HasGoogleBaseURLs();
-      }
-    }
+    google_search_default =
+        url_template && url_template->url_ref().HasGoogleBaseURLs();
   }
 
-  bool google_search_homepage = false;
   PrefService* pref_service = profile_->GetPrefs();
-  if (pref_service) {
-    std::string homepage = pref_service->GetString(prefs::kHomePage);
-    google_search_homepage = google_util::IsGoogleHomePageUrl(homepage);
-  }
+  bool google_search_homepage = pref_service &&
+      google_util::IsGoogleHomePageUrl(
+          pref_service->GetString(prefs::kHomePage));
 
   RLZTracker::InitRlzDelayed(is_first_run_, master_prefs_->ping_delay,
                              google_search_default, google_search_homepage);
@@ -1886,9 +1880,8 @@ void ChromeBrowserMainParts::PostMainMessageLoopRun() {
     // The default engine can be NULL if the administrator has disabled
     // default search.
     SearchEngineType search_engine_type =
-        TemplateURLPrepopulateData::GetEngineType(
-            (default_search_engine && default_search_engine->url()) ?
-            default_search_engine->url()->url() : std::string());
+        TemplateURLPrepopulateData::GetEngineType(default_search_engine ?
+            default_search_engine->url() : std::string());
     // Record the search engine chosen.
     UMA_HISTOGRAM_ENUMERATION("Chrome.SearchSelectExempt", search_engine_type,
                               SEARCH_ENGINE_MAX);

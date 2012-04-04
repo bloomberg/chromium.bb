@@ -149,7 +149,7 @@ void TemplateURLFetcher::RequestDelegate::OnURLFetchComplete(
 
   template_url_.reset(TemplateURLParser::Parse(fetcher_->profile(), data.data(),
                                                data.length(), NULL));
-  if (!template_url_.get() || !template_url_->url()->SupportsReplacement()) {
+  if (!template_url_.get() || !template_url_->url_ref().SupportsReplacement()) {
     fetcher_->RequestCompleted(this);
     // WARNING: RequestCompleted deletes us.
     return;
@@ -183,7 +183,7 @@ void TemplateURLFetcher::RequestDelegate::AddSearchProvider() {
   DCHECK(model->loaded());
 
   const TemplateURL* existing_url = NULL;
-  if (model->CanReplaceKeyword(keyword_, GURL(template_url_->url()->url()),
+  if (model->CanReplaceKeyword(keyword_, GURL(template_url_->url()),
                                &existing_url)) {
     if (existing_url)
       model->Remove(existing_url);

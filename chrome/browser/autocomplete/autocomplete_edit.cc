@@ -495,14 +495,11 @@ void AutocompleteEditModel::AcceptInput(WindowOpenDisposition disposition,
   }
 
   const TemplateURL* template_url = match.GetTemplateURL();
-  if (template_url && template_url->url() &&
-      template_url->url()->HasGoogleBaseURLs()) {
+  if (template_url && template_url->url_ref().HasGoogleBaseURLs()) {
     GoogleURLTracker::GoogleURLSearchCommitted();
-#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
     // TODO(pastarmovj): Remove these metrics once we have proven that (close
     // to) none searches that should have RLZ are sent out without one.
-    template_url->url()->CollectRLZMetrics();
-#endif
+    template_url->url_ref().CollectRLZMetrics();
   }
 
   view_->OpenMatch(match, disposition, alternate_nav_url,

@@ -94,14 +94,13 @@ void AppendParamToQuery(const std::string& key,
   query->append(value);
 }
 
-// Returns true if the ref is null, or the url wrapped by ref is
-// valid with a spec of http/https.
-bool IsHTTPRef(const TemplateURLRef* ref) {
-  if (ref == NULL)
+// Returns true if |url| is empty or is a valid URL with a scheme of HTTP[S].
+bool IsHTTPRef(const std::string& url) {
+  if (url.empty())
     return true;
-  GURL url(ref->url());
-  return (url.is_valid() && (url.SchemeIs(chrome::kHttpScheme) ||
-                             url.SchemeIs(chrome::kHttpsScheme)));
+  GURL gurl(url);
+  return (gurl.is_valid() && (gurl.SchemeIs(chrome::kHttpScheme) ||
+                              gurl.SchemeIs(chrome::kHttpsScheme)));
 }
 
 }  // namespace
@@ -299,7 +298,7 @@ TemplateURL* TemplateURLParsingContext::GetTemplateURL(Profile* profile) {
 
   // If the image was a data URL, use the favicon from the search URL instead.
   // (see TODO inEndElementImpl()).
-  GURL url(url_->url()->url());
+  GURL url(url_->url());
   if (derive_image_from_url_ && url_->favicon_url().is_empty())
     url_->set_favicon_url(TemplateURL::GenerateFaviconURL(url));
 
@@ -414,11 +413,10 @@ void TemplateURLParsingContext::ProcessURLParams() {
   if (!parameter_filter_ && extra_params_.empty())
     return;
 
-  const TemplateURLRef* t_url_ref =
-      is_suggest_url_ ? url_->suggestions_url() : url_->url();
-  if (!t_url_ref)
+  GURL url(is_suggest_url_ ? url_->suggestions_url() : url_->url());
+  if (url.is_empty())
     return;
-  GURL url(t_url_ref->url());
+
   // If there is a parameter filter, parse the existing URL and remove any
   // unwanted parameter.
   std::string new_query;

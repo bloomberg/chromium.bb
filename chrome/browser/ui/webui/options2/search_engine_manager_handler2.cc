@@ -196,7 +196,7 @@ base::DictionaryValue* SearchEngineManagerHandler::CreateDictionaryForEngine(
     index, IDS_SEARCH_ENGINES_EDITOR_DESCRIPTION_COLUMN));
   dict->SetString("keyword", table_model->GetText(
     index, IDS_SEARCH_ENGINES_EDITOR_KEYWORD_COLUMN));
-  dict->SetString("url", template_url->url()->DisplayURL());
+  dict->SetString("url", template_url->url_ref().DisplayURL());
   dict->SetBoolean("urlLocked", template_url->prepopulate_id() > 0);
   GURL icon_url = template_url->favicon_url();
   if (icon_url.is_valid())

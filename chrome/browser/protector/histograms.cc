@@ -45,8 +45,8 @@ const char kProtectorHistogramStartupSettingsTimeout[] =
 const int kProtectorMaxSearchProviderID = SEARCH_ENGINE_MAX;
 
 int GetSearchProviderHistogramID(const TemplateURL* t_url) {
-  return (t_url && t_url->url()) ?
-      TemplateURLPrepopulateData::GetEngineType(t_url->url()->url()) :
+  return t_url ?
+      TemplateURLPrepopulateData::GetEngineType(t_url->url()) :
       SEARCH_ENGINE_NONE;
 }
 

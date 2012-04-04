@@ -82,8 +82,8 @@ class ModelEntry {
     GURL favicon_url = template_url()->favicon_url();
     if (!favicon_url.is_valid()) {
       // The favicon url isn't always set. Guess at one here.
-      if (template_url_->url() && template_url_->url()->IsValid()) {
-        GURL url(template_url_->url()->url());
+      if (template_url_->url_ref().IsValid()) {
+        GURL url(template_url_->url());
         if (url.is_valid())
           favicon_url = TemplateURL::GenerateFaviconURL(url);
       }
