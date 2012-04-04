@@ -334,7 +334,7 @@ AC_SUBST(FC_FONTPATH)
 #
 AC_ARG_WITH(cache-dir,
 	[AC_HELP_STRING([--with-cache-dir=DIR],
-			[Use DIR to store cache files (default LOCALSTATEDIR/cache/fontconfig)])],
+			[Use DIR to store cache files [default=LOCALSTATEDIR/cache/fontconfig]])],
 	fc_cachedir="$withval", fc_cachedir=yes)
 
 case $fc_cachedir in
@@ -356,26 +356,72 @@ FC_FONTDATE=`LC_ALL=C date`
 
 AC_SUBST(FC_FONTDATE)
 
-AC_ARG_WITH(confdir,
-	[AC_HELP_STRING([--with-confdir=DIR],
-			[Use DIR to store configuration files (default SYSCONFDIR/fonts)])],
-	confdir="$withval", confdir=yes)
-
 #
-# Set CONFDIR and FONTCONFIG_PATH
+# Set configuration paths
 #
 
-case "$confdir" in
+AC_ARG_WITH(templatedir,
+	[AC_HELP_STRING([--with-templatedir=DIR],
+			[Use DIR to store the configuration template files [default=DATADIR/fontconfig/conf.avail]])],
+	[templatedir="$withval"],
+	[templatedir=yes])
+AC_ARG_WITH(baseconfigdir,
+	[AC_HELP_STRING([--with-baseconfigdir=DIR],
+			[Use DIR to store the base configuration files [default=SYSCONFDIR/fonts]])],
+	[baseconfigdir="$withval"],
+	[baseconfigdir=yes])
+AC_ARG_WITH(configdir,
+	[AC_HELP_STRING([--with-configdir=DIR],
+			[Use DIR to store active configuration files [default=BASECONFIGDIR/conf.d]])],
+	[configdir="$withval"],
+	[configdir=yes])
+AC_ARG_WITH(xmldir,
+	[AC_HELP_STRING([--with-xmldir=DIR],
+			[Use DIR to store XML schema files [default=DATADIR/xml/fontconfig]])],
+	[xmldir="$withval"],
+	[xmldir=yes])
+
+case "$templatedir" in
 no|yes)
-	confdir='${sysconfdir}'/fonts
+	templatedir='${datadir}'/fontconfig/conf.avail
 	;;
 *)
 	;;
 esac
-AC_SUBST(confdir)
-CONFDIR=${confdir}
-AC_DEFINE_UNQUOTED(CONFDIR, "$CONFDIR",[Font configuration directory])
-AC_SUBST(CONFDIR)
+case "$baseconfigdir" in
+no|yes)
+	baseconfigdir='${sysconfdir}'/fonts
+	;;
+*)
+	;;
+esac
+case "$configdir" in
+no|yes)
+	configdir='${baseconfigdir}'/conf.d
+	;;
+*)
+	;;
+esac
+case "$xmldir" in
+no|yes)
+	xmldir='${datadir}'/xml/fontconfig
+	;;
+*)
+	;;
+esac
+
+TEMPLATEDIR=${templatedir}
+BASECONFIGDIR=${baseconfigdir}
+CONFIGDIR=${configdir}
+XMLDIR=${xmldir}
+AC_SUBST(templatedir)
+AC_SUBST(TEMPLATEDIR)
+AC_SUBST(baseconfigdir)
+AC_SUBST(BASECONFIGDIR)
+AC_SUBST(configdir)
+AC_SUBST(CONFIGDIR)
+AC_SUBST(xmldir)
+AC_SUBST(XMLDIR)
 
 #
 # Let people not build/install docs if they don't have docbook
