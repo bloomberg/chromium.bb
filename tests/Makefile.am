@@ -1,4 +1,4 @@
-SUBDIRS = table_test_corpuses tables doctests harness
+SUBDIRS = tables doctests harness
 
 AM_CPPFLAGS = -I$(top_srcdir)/liblouis
 
@@ -57,7 +57,6 @@ check_PROGRAMS =				\
 dist_check_SCRIPTS = \
 	check_all_tables.pl \
 	check_endless_loop.pl \
-	check_tables_against_corpus.pl \
 	multiple_table_path.pl
 
 # if we have Python and liblouis is configured with ucs4 then we can
