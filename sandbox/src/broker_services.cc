@@ -5,7 +5,10 @@
 #include "sandbox/src/broker_services.h"
 
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/threading/platform_thread.h"
+#include "base/win/scoped_handle.h"
+#include "base/win/scoped_process_information.h"
 #include "sandbox/src/sandbox_policy_base.h"
 #include "sandbox/src/sandbox.h"
 #include "sandbox/src/target_process.h"
@@ -245,14 +248,15 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
 
   // Construct the tokens and the job object that we are going to associate
   // with the soon to be created target process.
-  HANDLE lockdown_token = NULL;
-  HANDLE initial_token = NULL;
-  DWORD win_result = policy_base->MakeTokens(&initial_token, &lockdown_token);
+  base::win::ScopedHandle lockdown_token;
+  base::win::ScopedHandle initial_token;
+  DWORD win_result = policy_base->MakeTokens(initial_token.Receive(),
+                                             lockdown_token.Receive());
   if (ERROR_SUCCESS != win_result)
     return SBOX_ERROR_GENERIC;
 
-  HANDLE job = NULL;
-  win_result = policy_base->MakeJobObject(&job);
+  base::win::ScopedHandle job;
+  win_result = policy_base->MakeJobObject(job.Receive());
   if (ERROR_SUCCESS != win_result)
     return SBOX_ERROR_GENERIC;
 
@@ -266,9 +270,11 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
 
   // Create the TargetProces object and spawn the target suspended. Note that
   // Brokerservices does not own the target object. It is owned by the Policy.
-  PROCESS_INFORMATION process_info = {0};
-  TargetProcess* target = new TargetProcess(initial_token, lockdown_token,
-                                            job, thread_pool_);
+  base::win::ScopedProcessInformation process_info;
+  TargetProcess* target = new TargetProcess(initial_token.Take(),
+                                            lockdown_token.Take(),
+                                            job,
+                                            thread_pool_);
 
   std::wstring desktop = policy_base->GetAlternateDesktop();
 
@@ -276,10 +282,6 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
                               desktop.empty() ? NULL : desktop.c_str(),
                               &process_info);
   if (ERROR_SUCCESS != win_result)
-    return SpawnCleanup(target, win_result);
-
-  if ((INVALID_HANDLE_VALUE == process_info.hProcess) ||
-      (INVALID_HANDLE_VALUE == process_info.hThread))
     return SpawnCleanup(target, win_result);
 
   // Now the policy is the owner of the target.
@@ -290,24 +292,15 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
   // We are going to keep a pointer to the policy because we'll call it when
   // the job object generates notifications using the completion port.
   policy_base->AddRef();
-  JobTracker* tracker = new JobTracker(job, policy_base);
-  if (!AssociateCompletionPort(job, job_port_, tracker))
+  scoped_ptr<JobTracker> tracker(new JobTracker(job.Take(), policy_base));
+  if (!AssociateCompletionPort(tracker->job, job_port_, tracker.get()))
     return SpawnCleanup(target, 0);
   // Save the tracker because in cleanup we might need to force closing
   // the Jobs.
-  tracker_list_.push_back(tracker);
-  child_process_ids_.insert(process_info.dwProcessId);
+  tracker_list_.push_back(tracker.release());
+  child_process_ids_.insert(process_info.process_id());
 
-  // We return the caller a duplicate of the process handle so they
-  // can close it at will.
-  HANDLE dup_process_handle = NULL;
-  if (!::DuplicateHandle(::GetCurrentProcess(), process_info.hProcess,
-                         ::GetCurrentProcess(), &dup_process_handle,
-                         0, FALSE, DUPLICATE_SAME_ACCESS))
-    return SpawnCleanup(target, 0);
-
-  *target_info = process_info;
-  target_info->hProcess = dup_process_handle;
+  *target_info = process_info.Take();
   return SBOX_ALL_OK;
 }
 

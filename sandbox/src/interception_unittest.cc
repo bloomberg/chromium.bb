@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -79,7 +79,13 @@ TEST(InterceptionManagerTest, BufferLayout1) {
   wchar_t exe_name[MAX_PATH];
   ASSERT_NE(0u, GetModuleFileName(NULL, exe_name, MAX_PATH - 1));
 
-  TargetProcess *target = MakeTestTargetProcess(::GetCurrentProcess(),
+  base::win::ScopedHandle current_process;
+  ASSERT_TRUE(
+      ::DuplicateHandle(::GetCurrentProcess(), ::GetCurrentProcess(),
+                        ::GetCurrentProcess(), current_process.Receive(),
+                        0, FALSE, DUPLICATE_SAME_ACCESS));
+
+  TargetProcess *target = MakeTestTargetProcess(current_process.Take(),
                                                 ::GetModuleHandle(exe_name));
 
   InterceptionManager interceptions(target, true);
@@ -166,7 +172,13 @@ TEST(InterceptionManagerTest, BufferLayout2) {
   wchar_t exe_name[MAX_PATH];
   ASSERT_NE(0u, GetModuleFileName(NULL, exe_name, MAX_PATH - 1));
 
-  TargetProcess *target = MakeTestTargetProcess(::GetCurrentProcess(),
+  base::win::ScopedHandle current_process;
+  ASSERT_TRUE(
+      ::DuplicateHandle(::GetCurrentProcess(), ::GetCurrentProcess(),
+                        ::GetCurrentProcess(), current_process.Receive(),
+                        0, FALSE, DUPLICATE_SAME_ACCESS));
+
+  TargetProcess *target = MakeTestTargetProcess(current_process.Take(),
                                                 ::GetModuleHandle(exe_name));
 
   InterceptionManager interceptions(target, true);

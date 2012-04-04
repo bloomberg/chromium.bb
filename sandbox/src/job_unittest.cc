@@ -1,9 +1,10 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 // This file contains unit tests for the job object.
 
+#include "base/win/scoped_process_information.h"
 #include "sandbox/src/job.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -159,11 +160,11 @@ TEST(JobTest, ProcessInJob) {
 
   wchar_t notepad[] = L"notepad";
   STARTUPINFO si = { sizeof(si) };
-  PROCESS_INFORMATION pi = {0};
+  base::win::ScopedProcessInformation pi;
   result = ::CreateProcess(NULL, notepad, NULL, NULL, FALSE, 0, NULL, NULL, &si,
-                           &pi);
+                           pi.Receive());
   ASSERT_TRUE(result);
-  ASSERT_EQ(ERROR_SUCCESS, job.AssignProcessToJob(pi.hProcess));
+  ASSERT_EQ(ERROR_SUCCESS, job.AssignProcessToJob(pi.process_handle()));
 
   // Get the job handle.
   HANDLE job_handle = job.Detach();
@@ -178,9 +179,9 @@ TEST(JobTest, ProcessInJob) {
 
   EXPECT_EQ(1, jbpidl.NumberOfAssignedProcesses);
   EXPECT_EQ(1, jbpidl.NumberOfProcessIdsInList);
-  EXPECT_EQ(pi.dwProcessId, jbpidl.ProcessIdList[0]);
+  EXPECT_EQ(pi.process_id(), jbpidl.ProcessIdList[0]);
 
-  EXPECT_TRUE(::TerminateProcess(pi.hProcess, 0));
+  EXPECT_TRUE(::TerminateProcess(pi.process_handle(), 0));
 
   EXPECT_TRUE(::CloseHandle(job_handle));
 }
