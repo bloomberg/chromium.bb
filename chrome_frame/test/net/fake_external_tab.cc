@@ -551,7 +551,7 @@ void CFUrlRequestUnittestRunner::OnIEShutdownFailure() {
     ie_configurator_->RevertSettings();
 
   StopFileLogger(true);
-  ::ExitProcess(1);
+  ::ExitProcess(0);
 }
 
 // Override virtual void Initialize to not call icu initialize.
