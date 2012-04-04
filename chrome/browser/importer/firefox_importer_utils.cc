@@ -203,11 +203,11 @@ void ParseSearchEnginesFromXMLFiles(const std::vector<FilePath>& xml_files,
     TemplateURL* template_url = TemplateURLParser::Parse(NULL, content.data(),
         content.length(), &param_filter);
     if (template_url) {
-      SearchEnginesMap::iterator iter =
-          search_engine_for_url.find(template_url->url());
+      std::string url = template_url->url()->url();
+      SearchEnginesMap::iterator iter = search_engine_for_url.find(url);
       if (iter == search_engine_for_url.end()) {
         iter = search_engine_for_url.insert(
-            std::make_pair(template_url->url(), template_url)).first;
+            std::make_pair(url, template_url)).first;
       } else {
         // We have already found a search engine with the same URL.  We give
         // priority to the latest one found, as GetSearchEnginesXMLFiles()

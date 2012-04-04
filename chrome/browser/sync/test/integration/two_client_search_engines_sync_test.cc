@@ -153,8 +153,10 @@ IN_PROC_BROWSER_TEST_F(TwoClientSearchEnginesSyncTest, ConflictKeyword) {
   const TemplateURL* turl = GetServiceForProfile(1)->GetTemplateURLForKeyword(
       ASCIIToUTF16("test1"));
   EXPECT_TRUE(turl);
-  GetServiceForProfile(1)->ResetTemplateURL(turl, turl->short_name(),
-                                            ASCIIToUTF16("test0"), turl->url());
+  GetServiceForProfile(1)->ResetTemplateURL(turl,
+                                            turl->short_name(),
+                                            ASCIIToUTF16("test0"),
+                                            turl->url()->url());
 
   ASSERT_TRUE(AwaitQuiescence());
   ASSERT_TRUE(AllServicesMatch());

@@ -50,19 +50,9 @@ class TemplateURLRef {
     NO_SUGGESTIONS_AVAILABLE = -2,
   };
 
-  // Which kind of URL within our owner we are.  This allows us to get at the
-  // correct string field.
-  enum Type {
-    SEARCH,
-    SUGGEST,
-    INSTANT,
-  };
-
-  TemplateURLRef(TemplateURL* owner, Type type);
+  explicit TemplateURLRef(TemplateURL* owner);
+  TemplateURLRef(TemplateURL* owner, const std::string& url);
   ~TemplateURLRef();
-
-  // Returns the raw URL. None of the parameters will have been replaced.
-  std::string GetURL() const;
 
   // Returns true if this URL supports replacement.
   bool SupportsReplacement() const;
@@ -99,6 +89,9 @@ class TemplateURLRef {
       const string16& original_query_for_suggestion,
       const SearchTermsData& search_terms_data) const;
 
+  // Returns the raw URL. None of the parameters will have been replaced.
+  const std::string& url() const { return url_; }
+
   // Returns true if the TemplateURLRef is valid. An invalid TemplateURLRef is
   // one that contains unknown terms, or invalid characters.
   bool IsValid() const;
@@ -129,6 +122,10 @@ class TemplateURLRef {
   // Returns true if this TemplateURLRef has a replacement term of
   // {google:baseURL} or {google:baseSuggestURL}.
   bool HasGoogleBaseURLs() const;
+
+  // Returns true if both refs are NULL or have the same values.
+  static bool SameUrlRefs(const TemplateURLRef* ref1,
+                          const TemplateURLRef* ref2);
 
   // Collects metrics whether searches through Google are sent with RLZ string.
   void CollectRLZMetrics() const;
@@ -175,6 +172,9 @@ class TemplateURLRef {
   // method invalidates any cached values.
   void InvalidateCachedValues() const;
 
+  // Resets the url.
+  void Set(const std::string& url);
+
   // Parses the parameter in url at the specified offset. start/end specify the
   // range of the parameter in the url, including the braces. If the parameter
   // is valid, url is updated to reflect the appropriate parameter. If
@@ -212,10 +212,11 @@ class TemplateURLRef {
       const SearchTermsData& search_terms_data) const;
 
   // The TemplateURL that contains us.  This should outlive us.
-  TemplateURL* const owner_;
+  TemplateURL* owner_;
 
-  // What kind of URL we are.
-  const Type type_;
+  // The raw URL. Where as this contains all the terms (such as {searchTerms}),
+  // parsed_url_ has them all stripped out.
+  std::string url_;
 
   // Whether the URL has been parsed.
   mutable bool parsed_;
@@ -266,22 +267,38 @@ class TemplateURL {
     short_name_ = short_name;
   }
   const string16& short_name() const { return short_name_; }
+
   // An accessor for the short_name, but adjusted so it can be appropriately
   // displayed even if it is LTR and the UI is RTL.
   string16 AdjustedShortNameForLocaleDirection() const;
 
-  // Parameterized URL for providing the results.
+  // Parameterized URL for providing the results. This may be NULL.
+  // Be sure and check the resulting TemplateURLRef for SupportsReplacement
+  // before using.
   void SetURL(const std::string& url);
-  const std::string& url() const { return url_; }
+  // Returns the TemplateURLRef that may be used for search results. This
+  // returns NULL if a url element was not specified.
+  const TemplateURLRef* url() const {
+    return url_.url().empty() ? NULL : &url_;
+  }
 
   // URL providing JSON results. This is typically used to provide suggestions
-  // as you type.
+  // as your type. If NULL, this url does not support suggestions.
+  // Be sure and check the resulting TemplateURLRef for SupportsReplacement
+  // before using.
   void SetSuggestionsURL(const std::string& url);
-  const std::string& suggestions_url() const { return suggestions_url_; }
+  const TemplateURLRef* suggestions_url() const {
+    return suggestions_url_.url().empty() ? NULL : &suggestions_url_;
+  }
 
-  // Parameterized URL for instant results.
+  // Parameterized URL for instant results. This may be NULL.  Be sure and check
+  // the resulting TemplateURLRef for SupportsReplacement before using.
   void SetInstantURL(const std::string& url);
-  const std::string& instant_url() const { return instant_url_; }
+  // Returns the TemplateURLRef that may be used for search results. This
+  // returns NULL if a url element was not specified.
+  const TemplateURLRef* instant_url() const {
+    return instant_url_.url().empty() ? NULL : &instant_url_;
+  }
 
   // URL to the OSD file this came from. May be empty.
   void set_originating_url(const GURL& url) {
@@ -397,12 +414,6 @@ class TemplateURL {
   const std::string& sync_guid() const { return sync_guid_; }
   void set_sync_guid(const std::string& guid) { sync_guid_ = guid; }
 
-  const TemplateURLRef& url_ref() const { return url_ref_; }
-  const TemplateURLRef& suggestions_url_ref() const {
-    return suggestions_url_ref_;
-  }
-  const TemplateURLRef& instant_url_ref() const { return instant_url_ref_; }
-
   // Returns true if |url| supports replacement.
   bool SupportsReplacement() const;
 
@@ -434,9 +445,9 @@ class TemplateURL {
   void set_id(TemplateURLID id) { id_ = id; }
 
   string16 short_name_;
-  std::string url_;
-  std::string suggestions_url_;
-  std::string instant_url_;
+  TemplateURLRef url_;
+  TemplateURLRef suggestions_url_;
+  TemplateURLRef instant_url_;
   GURL originating_url_;
   mutable string16 keyword_;
   bool autogenerate_keyword_;  // If this is set, |keyword_| holds the cached
@@ -458,10 +469,6 @@ class TemplateURL {
   // The primary unique identifier for Sync. This is only set on TemplateURLs
   // that have been associated with Sync.
   std::string sync_guid_;
-
-  TemplateURLRef url_ref_;
-  TemplateURLRef suggestions_url_ref_;
-  TemplateURLRef instant_url_ref_;
 
   // TODO(sky): Add date last parsed OSD file.
 };

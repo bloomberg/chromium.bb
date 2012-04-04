@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -90,7 +90,7 @@ void ShiftOriginY(NSView* view, CGFloat amount) {
     [keywordField_ setStringValue:
         base::SysUTF16ToNSString(templateURL_->keyword())];
     [urlField_ setStringValue:
-        base::SysUTF16ToNSString(templateURL_->url_ref().DisplayURL())];
+        base::SysUTF16ToNSString(templateURL_->url()->DisplayURL())];
     [urlField_ setEnabled:(templateURL_->prepopulate_id() == 0)];
   }
   // When creating a new keyword, this will mark the fields as "invalid" and

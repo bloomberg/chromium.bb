@@ -199,9 +199,13 @@ struct ParamTraits<TemplateURL*> {
   typedef TemplateURL* param_type;
   static void Write(Message* m, const param_type& p) {
     WriteParam(m, p->short_name());
-    WriteParam(m, p->url());
-    WriteParam(m, p->suggestions_url());
-    WriteParam(m, p->instant_url());
+    if (p->suggestions_url()) {
+      WriteParam(m, true);
+      WriteParam(m, p->suggestions_url()->url());
+    } else {
+      WriteParam(m, false);
+    }
+    WriteParam(m, p->url()->url());
     WriteParam(m, p->originating_url());
     WriteParam(m, p->keyword());
     WriteParam(m, p->autogenerate_keyword());
@@ -215,10 +219,12 @@ struct ParamTraits<TemplateURL*> {
     WriteParam(m, p->prepopulate_id());
   }
   static bool Read(const Message* m, PickleIterator* iter, param_type* p) {
+    *p = NULL;
+
     string16 short_name;
-    std::string url;
+    bool includes_suggestions_url;
     std::string suggestions_url;
-    std::string instant_url;
+    std::string url;
     GURL originating_url;
     string16 keyword;
     bool autogenerate_keyword;
@@ -229,36 +235,47 @@ struct ParamTraits<TemplateURL*> {
     base::Time last_modified;
     int usage_count;
     int prepopulate_id;
-    if (!ReadParam(m, iter, &short_name) ||
-        !ReadParam(m, iter, &url) ||
-        !ReadParam(m, iter, &suggestions_url) ||
-        !ReadParam(m, iter, &instant_url) ||
+
+    if (!ReadParam(m, iter, &short_name))
+      return false;
+
+    if (!ReadParam(m, iter, &includes_suggestions_url))
+      return false;
+    if (includes_suggestions_url) {
+        if (!ReadParam(m, iter, &suggestions_url))
+          return false;
+    }
+
+    if (!ReadParam(m, iter, &url) ||
         !ReadParam(m, iter, &originating_url) ||
         !ReadParam(m, iter, &keyword) ||
         !ReadParam(m, iter, &autogenerate_keyword) ||
         !ReadParam(m, iter, &show_in_default_list) ||
-        !ReadParam(m, iter, &safe_for_autoreplace) ||
-        !ReadParam(m, iter, &favicon_url) ||
+        !ReadParam(m, iter, &safe_for_autoreplace))
+      return false;
+
+    scoped_ptr<TemplateURL> turl(new TemplateURL());
+    if (!ReadParam(m, iter, &favicon_url) ||
         !ReadParam(m, iter, &date_created) ||
         !ReadParam(m, iter, &last_modified) ||
         !ReadParam(m, iter, &usage_count) ||
         !ReadParam(m, iter, &prepopulate_id))
       return false;
-    *p = new TemplateURL();
-    (*p)->set_short_name(short_name);
-    (*p)->SetURL(url);
-    (*p)->SetSuggestionsURL(suggestions_url);
-    (*p)->SetInstantURL(suggestions_url);
-    (*p)->set_originating_url(originating_url);
-    (*p)->set_keyword(keyword);
-    (*p)->set_autogenerate_keyword(autogenerate_keyword);
-    (*p)->set_show_in_default_list(show_in_default_list);
-    (*p)->set_safe_for_autoreplace(safe_for_autoreplace);
-    (*p)->set_favicon_url(favicon_url);
-    (*p)->set_date_created(date_created);
-    (*p)->set_last_modified(last_modified);
-    (*p)->set_usage_count(usage_count);
-    (*p)->SetPrepopulateId(prepopulate_id);
+
+    turl->set_short_name(short_name);
+    turl->SetSuggestionsURL(suggestions_url);
+    turl->SetURL(url);
+    turl->set_originating_url(originating_url);
+    turl->set_keyword(keyword);
+    turl->set_autogenerate_keyword(autogenerate_keyword);
+    turl->set_show_in_default_list(show_in_default_list);
+    turl->set_safe_for_autoreplace(safe_for_autoreplace);
+    turl->set_favicon_url(favicon_url);
+    turl->set_date_created(date_created);
+    turl->set_last_modified(last_modified);
+    turl->set_usage_count(usage_count);
+    turl->SetPrepopulateId(prepopulate_id);
+    *p = turl.release();
     return true;
   }
   static void Log(const param_type& p, std::string* l) {

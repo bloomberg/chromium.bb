@@ -3371,14 +3371,14 @@ void TestingAutomationProvider::GetSearchEngineInfo(
     search_engine->SetBoolean("in_default_list", (*it)->ShowInDefaultList());
     search_engine->SetBoolean("is_default",
         (*it) == url_model->GetDefaultSearchProvider());
-    search_engine->SetBoolean("is_valid", (*it)->url_ref().IsValid());
+    search_engine->SetBoolean("is_valid", (*it)->url()->IsValid());
     search_engine->SetBoolean("supports_replacement",
-                              (*it)->url_ref().SupportsReplacement());
-    search_engine->SetString("url", (*it)->url());
-    search_engine->SetString("host", (*it)->url_ref().GetHost());
-    search_engine->SetString("path", (*it)->url_ref().GetPath());
+                              (*it)->url()->SupportsReplacement());
+    search_engine->SetString("url", (*it)->url()->url());
+    search_engine->SetString("host", (*it)->url()->GetHost());
+    search_engine->SetString("path", (*it)->url()->GetPath());
     search_engine->SetString("display_url",
-                             UTF16ToUTF8((*it)->url_ref().DisplayURL()));
+                             UTF16ToUTF8((*it)->url()->DisplayURL()));
     search_engines->Append(search_engine);
   }
   return_value->Set("search_engines", search_engines);

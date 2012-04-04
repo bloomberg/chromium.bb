@@ -54,11 +54,13 @@ class TemplateURLIsSame {
       return false;
     return url->short_name() == other_->short_name() &&
         AreKeywordsSame(url, other_) &&
-        url->url() == other_->url() &&
-        url->suggestions_url() == other_->suggestions_url() &&
-        url->instant_url() == other_->instant_url() &&
-        url->safe_for_autoreplace() == other_->safe_for_autoreplace() &&
+        TemplateURLRef::SameUrlRefs(url->url(), other_->url()) &&
+        TemplateURLRef::SameUrlRefs(url->suggestions_url(),
+                                    other_->suggestions_url()) &&
+        TemplateURLRef::SameUrlRefs(url->instant_url(),
+                                    other_->instant_url()) &&
         url->favicon_url() == other_->favicon_url() &&
+        url->safe_for_autoreplace() == other_->safe_for_autoreplace() &&
         url->show_in_default_list() == other_->show_in_default_list() &&
         url->input_encodings() == other_->input_encodings() &&
         url->prepopulate_id() == other_->prepopulate_id();

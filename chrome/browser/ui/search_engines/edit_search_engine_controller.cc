@@ -42,8 +42,7 @@ bool EditSearchEngineController::IsURLValid(
   // TemplateURL owner because |template_url_| might be NULL and we can't call
   // TemplateURLRef::IsValid() when its owner is NULL.
   TemplateURL t_url;
-  t_url.SetURL(url);
-  const TemplateURLRef& template_ref = t_url.url_ref();
+  TemplateURLRef template_ref(&t_url, url);
   if (!template_ref.IsValid())
     return false;
 
@@ -136,7 +135,7 @@ std::string EditSearchEngineController::GetFixedUpURL(
   // we need to replace the search terms before testing for the scheme.
   TemplateURL t_url;
   t_url.SetURL(url);
-  std::string expanded_url(t_url.url_ref().ReplaceSearchTerms(ASCIIToUTF16("x"),
+  std::string expanded_url(t_url.url()->ReplaceSearchTerms(ASCIIToUTF16("x"),
       TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, string16()));
   url_parse::Parsed parts;
   std::string scheme(URLFixerUpper::SegmentURL(expanded_url, &parts));

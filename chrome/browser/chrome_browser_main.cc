@@ -1886,8 +1886,9 @@ void ChromeBrowserMainParts::PostMainMessageLoopRun() {
     // The default engine can be NULL if the administrator has disabled
     // default search.
     SearchEngineType search_engine_type =
-        TemplateURLPrepopulateData::GetEngineType(default_search_engine ?
-            default_search_engine->url() : std::string());
+        TemplateURLPrepopulateData::GetEngineType(
+            (default_search_engine && default_search_engine->url()) ?
+            default_search_engine->url()->url() : std::string());
     // Record the search engine chosen.
     UMA_HISTOGRAM_ENUMERATION("Chrome.SearchSelectExempt", search_engine_type,
                               SEARCH_ENGINE_MAX);

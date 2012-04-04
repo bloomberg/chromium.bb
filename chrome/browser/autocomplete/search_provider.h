@@ -120,8 +120,7 @@ class SearchProvider : public AutocompleteProvider,
     // Returns true if the keyword provider is valid and has a valid suggest
     // url.
     bool valid_suggest_for_keyword_provider() const {
-      return keyword_provider_ &&
-          !cached_keyword_provider_.suggestions_url().empty();
+      return keyword_provider_ && cached_keyword_provider_.suggestions_url();
     }
 
     // Returns true of the default provider is valid.
@@ -130,8 +129,7 @@ class SearchProvider : public AutocompleteProvider,
     // Returns true if the default provider is valid and has a valid suggest
     // url.
     bool valid_suggest_for_default_provider() const {
-      return default_provider_ &&
-          !cached_default_provider_.suggestions_url().empty();
+      return default_provider_ && cached_default_provider_.suggestions_url();
     }
 
     // Returns true if |from_keyword_provider| is true, or

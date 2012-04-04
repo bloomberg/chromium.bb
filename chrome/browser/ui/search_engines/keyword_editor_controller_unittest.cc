@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -142,7 +142,8 @@ TEST_F(KeywordEditorControllerTest, Add) {
   const TemplateURL* turl = model_->GetTemplateURLs()[0];
   EXPECT_EQ(ASCIIToUTF16("a"), turl->short_name());
   EXPECT_EQ(ASCIIToUTF16("b"), turl->keyword());
-  EXPECT_EQ("http://c", turl->url());
+  ASSERT_TRUE(turl->url() != NULL);
+  EXPECT_EQ("http://c", turl->url()->url());
 }
 
 // Tests modifying a TemplateURL.
@@ -158,7 +159,8 @@ TEST_F(KeywordEditorControllerTest, Modify) {
   VerifyChangeCount(0, 1, 0, 0);
   EXPECT_EQ(ASCIIToUTF16("a1"), turl->short_name());
   EXPECT_EQ(ASCIIToUTF16("b1"), turl->keyword());
-  EXPECT_EQ("http://c1", turl->url());
+  ASSERT_TRUE(turl->url() != NULL);
+  EXPECT_EQ("http://c1", turl->url()->url());
 }
 
 // Tests making a TemplateURL the default search provider.
@@ -197,7 +199,7 @@ TEST_F(KeywordEditorControllerTest, CannotSetDefaultWhileManaged) {
   EXPECT_TRUE(controller_->CanMakeDefault(turl1));
   EXPECT_TRUE(controller_->CanMakeDefault(turl2));
 
-  SimulateDefaultSearchIsManaged(turl2->url());
+  SimulateDefaultSearchIsManaged(turl2->url()->url());
   EXPECT_TRUE(model_->is_default_search_managed());
 
   EXPECT_FALSE(controller_->CanMakeDefault(turl1));
@@ -223,7 +225,7 @@ TEST_F(KeywordEditorControllerTest, EditManagedDefault) {
 
   // Simulate setting a managed default.  This will add another template URL to
   // the model.
-  SimulateDefaultSearchIsManaged(turl2->url());
+  SimulateDefaultSearchIsManaged(turl2->url()->url());
   EXPECT_TRUE(model_->is_default_search_managed());
   EXPECT_TRUE(controller_->CanEdit(turl1));
   EXPECT_TRUE(controller_->CanEdit(turl2));

@@ -86,26 +86,21 @@ static const char kOutputEncodingType[] = "UTF-8";
 
 // TemplateURLRef -------------------------------------------------------------
 
-TemplateURLRef::TemplateURLRef(TemplateURL* owner, Type type)
+TemplateURLRef::TemplateURLRef(TemplateURL* owner)
     : owner_(owner),
-      type_(type),
-      parsed_(false),
-      valid_(false),
-      supports_replacements_(false),
       prepopulated_(false) {
   DCHECK(owner_);
+  Set(std::string());
+}
+
+TemplateURLRef::TemplateURLRef(TemplateURL* owner, const std::string& url)
+    : owner_(owner),
+      prepopulated_(false) {
+  DCHECK(owner_);
+  Set(url);
 }
 
 TemplateURLRef::~TemplateURLRef() {
-}
-
-std::string TemplateURLRef::GetURL() const {
-  switch (type_) {
-    case SEARCH:  return owner_->url();
-    case SUGGEST: return owner_->suggestions_url();
-    case INSTANT: return owner_->instant_url();
-    default:      NOTREACHED(); return std::string();
-  }
 }
 
 bool TemplateURLRef::SupportsReplacement() const {
@@ -292,15 +287,19 @@ bool TemplateURLRef::IsValidUsingTermsData(
 
 string16 TemplateURLRef::DisplayURL() const {
   ParseIfNecessary();
-  string16 result(UTF8ToUTF16(GetURL()));
-  if (valid_ && !replacements_.empty()) {
-    ReplaceSubstringsAfterOffset(&result, 0,
-                                 ASCIIToUTF16(kSearchTermsParameterFull),
-                                 ASCIIToUTF16(kDisplaySearchTerms));
-    ReplaceSubstringsAfterOffset(&result, 0,
-        ASCIIToUTF16(kGoogleUnescapedSearchTermsParameterFull),
-        ASCIIToUTF16(kDisplayUnescapedSearchTerms));
-  }
+  if (!valid_ || replacements_.empty())
+    return UTF8ToUTF16(url_);
+
+  string16 result = UTF8ToUTF16(url_);
+  ReplaceSubstringsAfterOffset(&result, 0,
+                               ASCIIToUTF16(kSearchTermsParameterFull),
+                               ASCIIToUTF16(kDisplaySearchTerms));
+
+  ReplaceSubstringsAfterOffset(
+      &result, 0,
+      ASCIIToUTF16(kGoogleUnescapedSearchTermsParameterFull),
+      ASCIIToUTF16(kDisplayUnescapedSearchTerms));
+
   return result;
 }
 
@@ -369,6 +368,12 @@ bool TemplateURLRef::HasGoogleBaseURLs() const {
   return false;
 }
 
+// static
+bool TemplateURLRef::SameUrlRefs(const TemplateURLRef* ref1,
+                                 const TemplateURLRef* ref2) {
+  return ref1 == ref2 || (ref1 && ref2 && ref1->url() == ref2->url());
+}
+
 void TemplateURLRef::CollectRLZMetrics() const {
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
   ParseIfNecessary();
@@ -397,6 +402,11 @@ void TemplateURLRef::InvalidateCachedValues() const {
   path_.clear();
   search_term_key_.clear();
   replacements_.clear();
+}
+
+void TemplateURLRef::Set(const std::string& url) {
+  url_ = url;
+  InvalidateCachedValues();
 }
 
 bool TemplateURLRef::ParseParameter(size_t start,
@@ -508,7 +518,7 @@ void TemplateURLRef::ParseIfNecessaryUsingTermsData(
     const SearchTermsData& search_terms_data) const {
   if (!parsed_) {
     parsed_ = true;
-    parsed_url_ = ParseURL(GetURL(), &replacements_, &valid_);
+    parsed_url_ = ParseURL(url_, &replacements_, &valid_);
     supports_replacements_ = false;
     if (valid_) {
       bool has_only_one_search_term = false;
@@ -534,7 +544,7 @@ void TemplateURLRef::ParseIfNecessaryUsingTermsData(
 
 void TemplateURLRef::ParseHostAndSearchTermKey(
     const SearchTermsData& search_terms_data) const {
-  std::string url_string(GetURL());
+  std::string url_string = url_;
   ReplaceSubstringsAfterOffset(&url_string, 0,
                                kGoogleBaseURLParameterFull,
                                search_terms_data.GoogleBaseURLValue());
@@ -573,7 +583,10 @@ void TemplateURLRef::ParseHostAndSearchTermKey(
 // TemplateURL ----------------------------------------------------------------
 
 TemplateURL::TemplateURL()
-    : autogenerate_keyword_(false),
+    : url_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      suggestions_url_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      instant_url_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      autogenerate_keyword_(false),
       keyword_generated_(false),
       show_in_default_list_(false),
       safe_for_autoreplace_(false),
@@ -583,19 +596,14 @@ TemplateURL::TemplateURL()
       created_by_policy_(false),
       usage_count_(0),
       prepopulate_id_(0),
-      sync_guid_(guid::GenerateGUID()),
-      url_ref_(ALLOW_THIS_IN_INITIALIZER_LIST(this), TemplateURLRef::SEARCH),
-      suggestions_url_ref_(ALLOW_THIS_IN_INITIALIZER_LIST(this),
-                           TemplateURLRef::SUGGEST),
-      instant_url_ref_(ALLOW_THIS_IN_INITIALIZER_LIST(this),
-                       TemplateURLRef::INSTANT) {
+      sync_guid_(guid::GenerateGUID()) {
 }
 
 TemplateURL::TemplateURL(const TemplateURL& other)
     : short_name_(other.short_name_),
-      url_(other.url_),
-      suggestions_url_(other.suggestions_url_),
-      instant_url_(other.instant_url_),
+      url_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      suggestions_url_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      instant_url_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       originating_url_(other.originating_url_),
       keyword_(other.keyword_),
       autogenerate_keyword_(other.autogenerate_keyword_),
@@ -609,12 +617,7 @@ TemplateURL::TemplateURL(const TemplateURL& other)
       last_modified_(other.last_modified_),
       created_by_policy_(other.created_by_policy_),
       usage_count_(other.usage_count_),
-      sync_guid_(other.sync_guid_),
-      url_ref_(ALLOW_THIS_IN_INITIALIZER_LIST(this), TemplateURLRef::SEARCH),
-      suggestions_url_ref_(ALLOW_THIS_IN_INITIALIZER_LIST(this),
-                           TemplateURLRef::SUGGEST),
-      instant_url_ref_(ALLOW_THIS_IN_INITIALIZER_LIST(this),
-                       TemplateURLRef::INSTANT) {
+      sync_guid_(other.sync_guid_) {
   CopyURLRefs(other);
 }
 
@@ -623,9 +626,7 @@ TemplateURL& TemplateURL::operator=(const TemplateURL& other) {
     return *this;
 
   short_name_ = other.short_name_;
-  url_ = other.url_;
-  suggestions_url_ = other.suggestions_url_;
-  instant_url_ = other.instant_url_;
+  CopyURLRefs(other);
   originating_url_ = other.originating_url_;
   keyword_ = other.keyword_;
   autogenerate_keyword_ = other.autogenerate_keyword_;
@@ -640,7 +641,6 @@ TemplateURL& TemplateURL::operator=(const TemplateURL& other) {
   created_by_policy_ = other.created_by_policy_;
   usage_count_ = other.usage_count_;
   sync_guid_ = other.sync_guid_;
-  CopyURLRefs(other);
   return *this;
 }
 
@@ -670,18 +670,15 @@ string16 TemplateURL::AdjustedShortNameForLocaleDirection() const {
 }
 
 void TemplateURL::SetURL(const std::string& url) {
-  url_ = url;
-  url_ref_.InvalidateCachedValues();
+  url_.Set(url);
 }
 
 void TemplateURL::SetSuggestionsURL(const std::string& url) {
-  suggestions_url_ = url;
-  suggestions_url_ref_.InvalidateCachedValues();
+  suggestions_url_.Set(url);
 }
 
 void TemplateURL::SetInstantURL(const std::string& url) {
-  instant_url_ = url;
-  instant_url_ref_.InvalidateCachedValues();
+  instant_url_.Set(url);
 }
 
 void TemplateURL::set_keyword(const string16& keyword) {
@@ -706,28 +703,27 @@ void TemplateURL::EnsureKeyword() const {
 }
 
 bool TemplateURL::ShowInDefaultList() const {
-  return show_in_default_list() && url_ref_.SupportsReplacement();
+  return show_in_default_list() && url() && url()->SupportsReplacement();
 }
 
 void TemplateURL::CopyURLRefs(const TemplateURL& other) {
-  url_ref_.InvalidateCachedValues();
-  suggestions_url_ref_.InvalidateCachedValues();
-  instant_url_ref_.InvalidateCachedValues();
+  suggestions_url_.Set(other.suggestions_url_.url_);
+  url_.Set(other.url_.url_);
+  instant_url_.Set(other.instant_url_.url_);
   SetPrepopulateId(other.prepopulate_id_);
 }
 
 void TemplateURL::SetPrepopulateId(int id) {
   prepopulate_id_ = id;
   const bool prepopulated = id > 0;
-  suggestions_url_ref_.prepopulated_ = prepopulated;
-  url_ref_.prepopulated_ = prepopulated;
-  instant_url_ref_.prepopulated_ = prepopulated;
+  suggestions_url_.prepopulated_ = prepopulated;
+  url_.prepopulated_ = prepopulated;
+  instant_url_.prepopulated_ = prepopulated;
 }
 
 void TemplateURL::InvalidateCachedValues() const {
-  url_ref_.InvalidateCachedValues();
-  suggestions_url_ref_.InvalidateCachedValues();
-  instant_url_ref_.InvalidateCachedValues();
+  url_.InvalidateCachedValues();
+  suggestions_url_.InvalidateCachedValues();
   if (autogenerate_keyword_) {
     keyword_.clear();
     keyword_generated_ = false;
@@ -741,14 +737,14 @@ bool TemplateURL::SupportsReplacement() const {
 
 bool TemplateURL::SupportsReplacementUsingTermsData(
     const SearchTermsData& search_terms_data) const {
-  return url_ref_.SupportsReplacementUsingTermsData(search_terms_data);
+  return url_.SupportsReplacementUsingTermsData(search_terms_data);
 }
 
 std::string TemplateURL::GetExtensionId() const {
   DCHECK(IsExtensionKeyword());
-  return GURL(url_).host();
+  return GURL(url_.url()).host();
 }
 
 bool TemplateURL::IsExtensionKeyword() const {
-  return GURL(url_).SchemeIs(chrome::kExtensionScheme);
+  return GURL(url_.url()).SchemeIs(chrome::kExtensionScheme);
 }

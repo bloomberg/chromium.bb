@@ -135,9 +135,10 @@ TEST_F(TemplateURLParserTest, TestDictionary) {
   EXPECT_EQ(ASCIIToUTF16("Dictionary.com"), template_url_->short_name());
   EXPECT_EQ(GURL("http://cache.lexico.com/g/d/favicon.ico"),
             template_url_->favicon_url());
-  EXPECT_TRUE(template_url_->url_ref().SupportsReplacement());
+  ASSERT_FALSE(template_url_->url() == NULL);
+  EXPECT_TRUE(template_url_->url()->SupportsReplacement());
   EXPECT_EQ("http://dictionary.reference.com/browse/{searchTerms}?r=75",
-            template_url_->url());
+            template_url_->url()->url());
 }
 
 TEST_F(TemplateURLParserTest, TestMSDN) {
@@ -148,10 +149,11 @@ TEST_F(TemplateURLParserTest, TestMSDN) {
   EXPECT_EQ(ASCIIToUTF16("Search \" MSDN"), template_url_->short_name());
   EXPECT_EQ(GURL("http://search.msdn.microsoft.com/search/favicon.ico"),
             template_url_->favicon_url());
-  EXPECT_TRUE(template_url_->url_ref().SupportsReplacement());
+  ASSERT_FALSE(template_url_->url() == NULL);
+  EXPECT_TRUE(template_url_->url()->SupportsReplacement());
   EXPECT_EQ("http://search.msdn.microsoft.com/search/default.aspx?"
             "Query={searchTerms}&brand=msdn&locale=en-US",
-            template_url_->url());
+            template_url_->url()->url());
 }
 
 TEST_F(TemplateURLParserTest, TestWikipedia) {
@@ -162,14 +164,16 @@ TEST_F(TemplateURLParserTest, TestWikipedia) {
   EXPECT_EQ(ASCIIToUTF16("Wikipedia (English)"), template_url_->short_name());
   EXPECT_EQ(GURL("http://en.wikipedia.org/favicon.ico"),
             template_url_->favicon_url());
-  EXPECT_TRUE(template_url_->url_ref().SupportsReplacement());
+  ASSERT_FALSE(template_url_->url() == NULL);
+  EXPECT_TRUE(template_url_->url()->SupportsReplacement());
   EXPECT_EQ("http://en.wikipedia.org/w/index.php?"
             "title=Special:Search&search={searchTerms}",
-            template_url_->url());
-  EXPECT_TRUE(template_url_->suggestions_url_ref().SupportsReplacement());
+            template_url_->url()->url());
+  ASSERT_FALSE(template_url_->suggestions_url() == NULL);
+  EXPECT_TRUE(template_url_->suggestions_url()->SupportsReplacement());
   EXPECT_EQ("http://en.wikipedia.org/w/api.php?"
             "action=opensearch&search={searchTerms}",
-            template_url_->suggestions_url());
+            template_url_->suggestions_url()->url());
   ASSERT_EQ(2U, template_url_->input_encodings().size());
   EXPECT_EQ("UTF-8", template_url_->input_encodings()[0]);
   EXPECT_EQ("Shift_JIS", template_url_->input_encodings()[1]);
@@ -190,11 +194,12 @@ TEST_F(TemplateURLParserTest, TestFirefoxEbay) {
   ASSERT_NO_FATAL_FAILURE(ParseFile("firefox_ebay.xml", &filter));
   ASSERT_TRUE(template_url_.get());
   EXPECT_EQ(ASCIIToUTF16("eBay"), template_url_->short_name());
-  EXPECT_TRUE(template_url_->url_ref().SupportsReplacement());
+  ASSERT_FALSE(template_url_->url() == NULL);
+  EXPECT_TRUE(template_url_->url()->SupportsReplacement());
   EXPECT_EQ("http://search.ebay.com/search/search.dll?query={searchTerms}&"
             "MfcISAPICommand=GetResult&ht=1&srchdesc=n&maxRecordsReturned=300&"
             "maxRecordsPerPage=50&SortProperty=MetaEndSort",
-            template_url_->url());
+            template_url_->url()->url());
   ASSERT_EQ(1U, template_url_->input_encodings().size());
   EXPECT_EQ("ISO-8859-1", template_url_->input_encodings()[0]);
   EXPECT_EQ(GURL("http://search.ebay.com/favicon.ico"),
@@ -209,9 +214,10 @@ TEST_F(TemplateURLParserTest, TestFirefoxWebster) {
   ASSERT_NO_FATAL_FAILURE(ParseFile("firefox_webster.xml", &filter));
   ASSERT_TRUE(template_url_.get());
   EXPECT_EQ(ASCIIToUTF16("Webster"), template_url_->short_name());
-  EXPECT_TRUE(template_url_->url_ref().SupportsReplacement());
+  ASSERT_FALSE(template_url_->url() == NULL);
+  EXPECT_TRUE(template_url_->url()->SupportsReplacement());
   EXPECT_EQ("http://www.webster.com/cgi-bin/dictionary?va={searchTerms}",
-            template_url_->url());
+            template_url_->url()->url());
   ASSERT_EQ(1U, template_url_->input_encodings().size());
   EXPECT_EQ("ISO-8859-1", template_url_->input_encodings()[0]);
   EXPECT_EQ(GURL("http://www.webster.com/favicon.ico"),
@@ -226,12 +232,13 @@ TEST_F(TemplateURLParserTest, TestFirefoxYahoo) {
   ASSERT_NO_FATAL_FAILURE(ParseFile("firefox_yahoo.xml", &filter));
   ASSERT_TRUE(template_url_.get());
   EXPECT_EQ(ASCIIToUTF16("Yahoo"), template_url_->short_name());
-  EXPECT_TRUE(template_url_->url_ref().SupportsReplacement());
+  ASSERT_FALSE(template_url_->url() == NULL);
+  EXPECT_TRUE(template_url_->url()->SupportsReplacement());
   EXPECT_EQ("http://ff.search.yahoo.com/gossip?"
             "output=fxjson&command={searchTerms}",
-            template_url_->suggestions_url());
+            template_url_->suggestions_url()->url());
   EXPECT_EQ("http://search.yahoo.com/search?p={searchTerms}&ei=UTF-8",
-            template_url_->url());
+            template_url_->url()->url());
   ASSERT_EQ(1U, template_url_->input_encodings().size());
   EXPECT_EQ("UTF-8", template_url_->input_encodings()[0]);
   EXPECT_EQ(GURL("http://search.yahoo.com/favicon.ico"),
@@ -248,10 +255,11 @@ TEST_F(TemplateURLParserTest, TestPostSuggestion) {
   ASSERT_NO_FATAL_FAILURE(ParseFile("post_suggestion.xml", &filter));
   ASSERT_TRUE(template_url_.get());
   EXPECT_EQ(ASCIIToUTF16("Yahoo"), template_url_->short_name());
-  EXPECT_TRUE(template_url_->url_ref().SupportsReplacement());
-  EXPECT_TRUE(template_url_->suggestions_url().empty());
+  ASSERT_FALSE(template_url_->url() == NULL);
+  EXPECT_TRUE(template_url_->url()->SupportsReplacement());
+  EXPECT_TRUE(template_url_->suggestions_url() == NULL);
   EXPECT_EQ("http://search.yahoo.com/search?p={searchTerms}&ei=UTF-8",
-            template_url_->url());
+            template_url_->url()->url());
   ASSERT_EQ(1U, template_url_->input_encodings().size());
   EXPECT_EQ("UTF-8", template_url_->input_encodings()[0]);
   EXPECT_EQ(GURL("http://search.yahoo.com/favicon.ico"),

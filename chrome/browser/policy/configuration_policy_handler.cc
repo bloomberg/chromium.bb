@@ -598,9 +598,9 @@ bool DefaultSearchPolicyHandler::DefaultSearchURLIsValid(
   if (!*url_value || !(*url_value)->GetAsString(url_string))
     return false;
   TemplateURL t_url;
-  t_url.SetURL(*url_string);
   SearchTermsData search_terms_data;
-  return t_url.url_ref().SupportsReplacementUsingTermsData(search_terms_data);
+  return TemplateURLRef(&t_url, *url_string).SupportsReplacementUsingTermsData(
+      search_terms_data);
 }
 
 void DefaultSearchPolicyHandler::EnsureStringPrefExists(

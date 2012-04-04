@@ -27,6 +27,10 @@
 
 namespace {
 
+std::string GetDisplayURL(const TemplateURL& turl) {
+  return turl.url() ? UTF16ToUTF8(turl.url()->DisplayURL()) : std::string();
+}
+
 // Forces text to lowercase when connected to an editable's "insert-text"
 // signal.  (Like views Textfield::STYLE_LOWERCASE.)
 void LowercaseInsertTextHandler(GtkEditable *editable, const gchar *text,
@@ -149,8 +153,7 @@ void EditSearchEngineDialog::Init(GtkWindow* parent_window, Profile* profile) {
         UTF16ToUTF8(controller_->template_url()->keyword()).c_str());
     gtk_entry_set_text(
         GTK_ENTRY(url_entry_),
-        UTF16ToUTF8(controller_->template_url()->url_ref().DisplayURL()).
-            c_str());
+        GetDisplayURL(*controller_->template_url()).c_str());
     // We don't allow users to edit prepopulated URLs.
     gtk_editable_set_editable(
         GTK_EDITABLE(url_entry_),

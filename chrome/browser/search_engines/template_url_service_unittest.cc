@@ -258,17 +258,19 @@ TemplateURL* TemplateURLServiceTest::AddKeywordWithDate(
 
 void TemplateURLServiceTest::AssertEquals(const TemplateURL& expected,
                                           const TemplateURL& actual) {
-  ASSERT_EQ(expected.short_name(), actual.short_name());
-  ASSERT_EQ(expected.url(), actual.url());
-  ASSERT_EQ(expected.suggestions_url(), actual.suggestions_url());
+  ASSERT_TRUE(TemplateURLRef::SameUrlRefs(expected.url(), actual.url()));
+  ASSERT_TRUE(TemplateURLRef::SameUrlRefs(expected.suggestions_url(),
+                                          actual.suggestions_url()));
   ASSERT_EQ(expected.keyword(), actual.keyword());
-  ASSERT_EQ(expected.show_in_default_list(), actual.show_in_default_list());
-  ASSERT_EQ(expected.safe_for_autoreplace(), actual.safe_for_autoreplace());
+  ASSERT_EQ(expected.short_name(), actual.short_name());
+  ASSERT_EQ(JoinString(expected.input_encodings(), ';'),
+            JoinString(actual.input_encodings(), ';'));
   ASSERT_EQ(expected.favicon_url(), actual.favicon_url());
+  ASSERT_EQ(expected.id(), actual.id());
+  ASSERT_EQ(expected.safe_for_autoreplace(), actual.safe_for_autoreplace());
+  ASSERT_EQ(expected.show_in_default_list(), actual.show_in_default_list());
   ASSERT_EQ(expected.date_created(), actual.date_created());
   ASSERT_EQ(expected.last_modified(), actual.last_modified());
-  ASSERT_EQ(expected.input_encodings(), actual.input_encodings());
-  ASSERT_EQ(expected.id(), actual.id());
   ASSERT_EQ(expected.sync_guid(), actual.sync_guid());
 }
 
@@ -276,14 +278,16 @@ void TemplateURLServiceTest::ExpectSimilar(const TemplateURL* expected,
                                            const TemplateURL* actual) {
   ASSERT_TRUE(expected != NULL);
   ASSERT_TRUE(actual != NULL);
-  EXPECT_EQ(expected->short_name(), actual->short_name());
-  EXPECT_EQ(expected->url(), actual->url());
-  EXPECT_EQ(expected->suggestions_url(), actual->suggestions_url());
+  EXPECT_TRUE(TemplateURLRef::SameUrlRefs(expected->url(), actual->url()));
+  EXPECT_TRUE(TemplateURLRef::SameUrlRefs(expected->suggestions_url(),
+                                          actual->suggestions_url()));
   EXPECT_EQ(expected->keyword(), actual->keyword());
-  EXPECT_EQ(expected->show_in_default_list(), actual->show_in_default_list());
-  EXPECT_EQ(expected->safe_for_autoreplace(), actual->safe_for_autoreplace());
+  EXPECT_EQ(expected->short_name(), actual->short_name());
+  EXPECT_EQ(JoinString(expected->input_encodings(), ';'),
+            JoinString(actual->input_encodings(), ';'));
   EXPECT_EQ(expected->favicon_url(), actual->favicon_url());
-  EXPECT_EQ(expected->input_encodings(), actual->input_encodings());
+  EXPECT_EQ(expected->safe_for_autoreplace(), actual->safe_for_autoreplace());
+  EXPECT_EQ(expected->show_in_default_list(), actual->show_in_default_list());
 }
 
 void TemplateURLServiceTest::SetManagedDefaultSearchPreferences(
@@ -339,7 +343,7 @@ TemplateURL* TemplateURLServiceTest::CreateReplaceablePreloadedTemplateURL(
   TemplateURL* t_url = CreatePreloadedTemplateURL(safe_for_autoreplace,
       prepopulated_urls[prepopulated_index]->prepopulate_id());
   *prepopulated_display_url =
-      prepopulated_urls[prepopulated_index]->url_ref().DisplayURL();
+      prepopulated_urls[prepopulated_index]->url()->DisplayURL();
   return t_url;
 }
 
@@ -349,7 +353,7 @@ void TemplateURLServiceTest::TestLoadUpdatingPreloadedURL(
   TemplateURL* t_url = CreateReplaceablePreloadedTemplateURL(false,
       index_offset_from_default, &prepopulated_url);
 
-  string16 original_url = t_url->url_ref().DisplayURL();
+  string16 original_url = t_url->url()->DisplayURL();
   ASSERT_NE(prepopulated_url, original_url);
 
   // Then add it to the model and save it all.
@@ -358,14 +362,14 @@ void TemplateURLServiceTest::TestLoadUpdatingPreloadedURL(
   const TemplateURL* keyword_url =
       model()->GetTemplateURLForKeyword(ASCIIToUTF16("unittest"));
   ASSERT_EQ(t_url, keyword_url);
-  ASSERT_EQ(original_url, keyword_url->url_ref().DisplayURL());
+  ASSERT_EQ(original_url, keyword_url->url()->DisplayURL());
   test_util_.BlockTillServiceProcessesRequests();
 
   // Now reload the model and verify that the merge updates the url.
   test_util_.ResetModel(true);
   keyword_url = model()->GetTemplateURLForKeyword(ASCIIToUTF16("unittest"));
   ASSERT_TRUE(keyword_url != NULL);
-  ASSERT_EQ(prepopulated_url, keyword_url->url_ref().DisplayURL());
+  ASSERT_EQ(prepopulated_url, keyword_url->url()->DisplayURL());
 
   // Wait for any saves to finish.
   test_util_.BlockTillServiceProcessesRequests();
@@ -374,7 +378,7 @@ void TemplateURLServiceTest::TestLoadUpdatingPreloadedURL(
   test_util_.ResetModel(true);
   keyword_url = model()->GetTemplateURLForKeyword(ASCIIToUTF16("unittest"));
   ASSERT_TRUE(keyword_url != NULL);
-  ASSERT_EQ(prepopulated_url, keyword_url->url_ref().DisplayURL());
+  ASSERT_EQ(prepopulated_url, keyword_url->url()->DisplayURL());
 }
 
 void TemplateURLServiceTest::VerifyObserverCount(int expected_changed_count) {
@@ -442,7 +446,7 @@ TEST_F(TemplateURLServiceTest, AddUpdateRemove) {
                             "c");
   ASSERT_EQ(ASCIIToUTF16("a"), loaded_url->short_name());
   ASSERT_EQ(ASCIIToUTF16("b"), loaded_url->keyword());
-  ASSERT_EQ("c", loaded_url->url());
+  ASSERT_EQ("c", loaded_url->url()->url());
   ASSERT_FALSE(loaded_url->safe_for_autoreplace());
   ASSERT_TRUE(model()->CanReplaceKeyword(ASCIIToUTF16("keyword"), GURL(),
                                          NULL));
@@ -649,7 +653,7 @@ TEST_F(TemplateURLServiceTest, Reset) {
   model()->ResetTemplateURL(t_url, new_short_name, new_keyword, new_url);
   ASSERT_EQ(new_short_name, t_url->short_name());
   ASSERT_EQ(new_keyword, t_url->keyword());
-  ASSERT_EQ(new_url, t_url->url());
+  ASSERT_EQ(new_url, t_url->url()->url());
 
   // Make sure the mappings in the model were updated.
   ASSERT_EQ(t_url, model()->GetTemplateURLForKeyword(new_keyword));
@@ -734,7 +738,7 @@ TEST_F(TemplateURLServiceTest, CantReplaceWithSameKeyword) {
   // ResetTemplateURL marks the TemplateURL as unsafe to replace, so it should
   // no longer be replaceable.
   model()->ResetTemplateURL(t_url, t_url->short_name(), t_url->keyword(),
-                            t_url->url());
+                            t_url->url()->url());
 
   ASSERT_FALSE(model()->CanReplaceKeyword(ASCIIToUTF16("foo"),
                                           GURL("http://foo2"), NULL));
@@ -755,7 +759,7 @@ TEST_F(TemplateURLServiceTest, CantReplaceWithSameHosts) {
   // ResetTemplateURL marks the TemplateURL as unsafe to replace, so it should
   // no longer be replaceable.
   model()->ResetTemplateURL(t_url, t_url->short_name(), t_url->keyword(),
-                            t_url->url());
+                            t_url->url()->url());
 
   ASSERT_FALSE(model()->CanReplaceKeyword(ASCIIToUTF16("bar"),
                                           GURL("http://foo.com"), NULL));
@@ -797,9 +801,12 @@ TEST_F(TemplateURLServiceTest, DefaultSearchProviderLoadedFromPrefs) {
   // value are persisted to prefs.
   const TemplateURL* default_turl = model()->GetDefaultSearchProvider();
   ASSERT_TRUE(default_turl);
-  ASSERT_EQ("http://url", default_turl->url());
-  ASSERT_EQ("http://url2", default_turl->suggestions_url());
-  EXPECT_EQ("http://instant", default_turl->instant_url());
+  ASSERT_TRUE(default_turl->url());
+  ASSERT_EQ("http://url", default_turl->url()->url());
+  ASSERT_TRUE(default_turl->suggestions_url());
+  ASSERT_EQ("http://url2", default_turl->suggestions_url()->url());
+  ASSERT_TRUE(default_turl->instant_url());
+  EXPECT_EQ("http://instant", default_turl->instant_url()->url());
   ASSERT_EQ(ASCIIToUTF16("a"), default_turl->short_name());
   ASSERT_EQ(id, default_turl->id());
 
@@ -917,7 +924,7 @@ TEST_F(TemplateURLServiceTest, ChangeGoogleBaseValue) {
       "{google:baseURL}?q={searchTerms}", "http://sugg1", "http://icon1",
       "UTF-8;UTF-16", "name", false, Time(), Time());
   ASSERT_EQ(t_url, model()->GetTemplateURLForHost("google.com"));
-  EXPECT_EQ("google.com", t_url->url_ref().GetHost());
+  EXPECT_EQ("google.com", t_url->url()->GetHost());
   EXPECT_EQ(ASCIIToUTF16("google.com"), t_url->keyword());
 
   // Change the Google base url.
@@ -928,9 +935,9 @@ TEST_F(TemplateURLServiceTest, ChangeGoogleBaseValue) {
   // Make sure the host->TemplateURL map was updated appropriately.
   ASSERT_EQ(t_url, model()->GetTemplateURLForHost("google.co.uk"));
   EXPECT_TRUE(model()->GetTemplateURLForHost("google.com") == NULL);
-  EXPECT_EQ("google.co.uk", t_url->url_ref().GetHost());
+  EXPECT_EQ("google.co.uk", t_url->url()->GetHost());
   EXPECT_EQ(ASCIIToUTF16("google.co.uk"), t_url->keyword());
-  EXPECT_EQ("http://google.co.uk/?q=x", t_url->url_ref().ReplaceSearchTerms(
+  EXPECT_EQ("http://google.co.uk/?q=x", t_url->url()->ReplaceSearchTerms(
       ASCIIToUTF16("x"), TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, string16()));
 }
 
@@ -969,7 +976,7 @@ TEST_F(TemplateURLServiceTest, GenerateVisitOnKeyword) {
   HistoryService* history =
       test_util_.profile()->GetHistoryService(Profile::EXPLICIT_ACCESS);
   history->AddPage(
-      GURL(t_url->url_ref().ReplaceSearchTerms(ASCIIToUTF16("blah"),
+      GURL(t_url->url()->ReplaceSearchTerms(ASCIIToUTF16("blah"),
           TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, string16())),
       NULL, 0, GURL(), content::PAGE_TRANSITION_KEYWORD,
       history::RedirectList(), history::SOURCE_BROWSED, false);

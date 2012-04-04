@@ -61,7 +61,8 @@ void BindURLToStatement(const TemplateURL& url,
   s->BindString(starting_column + 2, url.favicon_url().is_valid() ?
       history::HistoryDatabase::GURLToDatabaseURL(url.favicon_url()) :
       std::string());
-  s->BindString(starting_column + 3, url.url());
+  s->BindString(starting_column + 3,
+                url.url() ? url.url()->url() : std::string());
   s->BindBool(starting_column + 4, url.safe_for_autoreplace());
   s->BindString(starting_column + 5, url.originating_url().is_valid() ?
       history::HistoryDatabase::GURLToDatabaseURL(url.originating_url()) :
@@ -70,12 +71,14 @@ void BindURLToStatement(const TemplateURL& url,
   s->BindInt(starting_column + 7, url.usage_count());
   s->BindString(starting_column + 8, JoinString(url.input_encodings(), ';'));
   s->BindBool(starting_column + 9, url.show_in_default_list());
-  s->BindString(starting_column + 10, url.suggestions_url());
+  s->BindString(starting_column + 10,
+      url.suggestions_url() ? url.suggestions_url()->url() : std::string());
   s->BindInt(starting_column + 11, url.prepopulate_id());
   s->BindInt(starting_column + 12, url.autogenerate_keyword() ? 1 : 0);
   s->BindInt(starting_column + 13, 0);
   s->BindBool(starting_column + 14, url.created_by_policy());
-  s->BindString(starting_column + 15, url.instant_url());
+  s->BindString(starting_column + 15,
+                url.instant_url() ? url.instant_url()->url() : std::string());
   s->BindInt64(starting_column + 16, url.last_modified().ToTimeT());
   s->BindString(starting_column + 17, url.sync_guid());
 }

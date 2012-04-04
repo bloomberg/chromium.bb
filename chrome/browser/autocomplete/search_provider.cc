@@ -455,10 +455,10 @@ content::URLFetcher* SearchProvider::CreateSuggestFetcher(
     int id,
     const TemplateURL& provider,
     const string16& text) {
-  const TemplateURLRef& suggestions_url = provider.suggestions_url_ref();
-  DCHECK(suggestions_url.SupportsReplacement());
+  const TemplateURLRef* const suggestions_url = provider.suggestions_url();
+  DCHECK(suggestions_url->SupportsReplacement());
   content::URLFetcher* fetcher = content::URLFetcher::Create(id,
-      GURL(suggestions_url.ReplaceSearchTermsUsingProfile(
+      GURL(suggestions_url->ReplaceSearchTermsUsingProfile(
           profile_, text, TemplateURLRef::NO_SUGGESTIONS_AVAILABLE,
           string16())),
       content::URLFetcher::GET, this);
@@ -901,9 +901,9 @@ void SearchProvider::AddMatchToMap(const string16& query_string,
                                    input_text))
     match.inline_autocomplete_offset = search_start + input_text.length();
 
-  const TemplateURLRef& search_url = provider.url_ref();
-  DCHECK(search_url.SupportsReplacement());
-  match.destination_url = GURL(search_url.ReplaceSearchTermsUsingProfile(
+  const TemplateURLRef* const search_url = provider.url();
+  DCHECK(search_url->SupportsReplacement());
+  match.destination_url = GURL(search_url->ReplaceSearchTermsUsingProfile(
       profile_, query_string, accepted_suggestion, input_text));
 
   // Search results don't look like URLs.

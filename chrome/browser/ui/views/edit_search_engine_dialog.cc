@@ -28,6 +28,14 @@ using views::ImageView;
 using views::Textfield;
 
 
+namespace {
+// Converts a URL as understood by TemplateURL to one appropriate for display
+// to the user.
+string16 GetDisplayURL(const TemplateURL& turl) {
+  return turl.url() ? turl.url()->DisplayURL() : string16();
+}
+}  // namespace
+
 namespace browser {
 
 void EditSearchEngine(gfx::NativeWindow parent,
@@ -121,8 +129,8 @@ void EditSearchEngineDialog::Init() {
     title_tf_ = CreateTextfield(controller_->template_url()->short_name(),
                                 false);
     keyword_tf_ = CreateTextfield(controller_->template_url()->keyword(), true);
-    url_tf_ = CreateTextfield(
-        controller_->template_url()->url_ref().DisplayURL(), false);
+    url_tf_ = CreateTextfield(GetDisplayURL(*controller_->template_url()),
+                              false);
     // We don't allow users to edit prepopulate URLs. This is done as
     // occasionally we need to update the URL of prepopulated TemplateURLs.
     url_tf_->SetReadOnly(controller_->template_url()->prepopulate_id() != 0);

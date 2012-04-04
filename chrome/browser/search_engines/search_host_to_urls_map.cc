@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -88,8 +88,9 @@ void SearchHostToURLsMap::UpdateGoogleBaseURLs(
     for (TemplateURLSet::const_iterator url_set_iterator = urls.begin();
          url_set_iterator != urls.end(); ++url_set_iterator) {
       const TemplateURL* t_url = *url_set_iterator;
-      if (t_url->url_ref().HasGoogleBaseURLs() ||
-          t_url->suggestions_url_ref().HasGoogleBaseURLs()) {
+      if ((t_url->url() && t_url->url()->HasGoogleBaseURLs()) ||
+          (t_url->suggestions_url() &&
+           t_url->suggestions_url()->HasGoogleBaseURLs())) {
         t_urls_using_base_url.push_back(t_url);
       }
     }

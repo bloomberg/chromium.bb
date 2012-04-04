@@ -191,7 +191,7 @@ class FirefoxObserver : public ProfileWriter,
       for (size_t j = 0; j < arraysize(kFirefox2Keywords); ++j) {
         if (template_urls[i]->keyword() ==
             WideToUTF16Hack(kFirefox2Keywords[j].keyword)) {
-          EXPECT_EQ(kFirefox2Keywords[j].url, template_urls[i]->url());
+          EXPECT_EQ(kFirefox2Keywords[j].url, template_urls[i]->url()->url());
           found = true;
           break;
         }
@@ -341,7 +341,7 @@ class Firefox3Observer : public ProfileWriter,
       for (size_t j = 0; j < arraysize(kFirefox3Keywords); ++j) {
         if (template_urls[i]->keyword() ==
             WideToUTF16Hack(kFirefox3Keywords[j].keyword)) {
-          EXPECT_EQ(kFirefox3Keywords[j].url, template_urls[i]->url());
+          EXPECT_EQ(kFirefox3Keywords[j].url, template_urls[i]->url()->url());
           found = true;
           break;
         }
