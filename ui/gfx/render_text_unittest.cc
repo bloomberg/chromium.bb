@@ -993,27 +993,27 @@ TEST_F(RenderTextTest, CursorBoundsInReplacementMode) {
   EXPECT_EQ(cursor_around_b.right(), cursor_before_c.x());
 }
 
-TEST_F(RenderTextTest, OriginForSkiaDrawing) {
+TEST_F(RenderTextTest, OriginForDrawing) {
   scoped_ptr<RenderText> render_text(RenderText::CreateRenderText());
   render_text->SetText(ASCIIToUTF16("abcdefg"));
   render_text->SetFontList(FontList("Arial, 13px"));
 
   // Set display area's height equals to font height.
-  int font_height = render_text->GetFont().GetHeight();
+  const int font_height = render_text->GetStringSize().height();
   Rect display_rect(0, 0, 100, font_height);
   render_text->SetDisplayRect(display_rect);
 
-  Point origin = render_text->GetOriginForSkiaDrawing();
+  Point origin = render_text->GetOriginForDrawing();
   EXPECT_EQ(origin.x(), 0);
-  EXPECT_EQ(origin.y(), render_text->GetFont().GetBaseline());
+  EXPECT_EQ(origin.y(), 0);
 
   // Set display area's height greater than font height.
   display_rect = Rect(0, 0, 100, font_height + 2);
   render_text->SetDisplayRect(display_rect);
 
-  origin = render_text->GetOriginForSkiaDrawing();
+  origin = render_text->GetOriginForDrawing();
   EXPECT_EQ(origin.x(), 0);
-  EXPECT_EQ(origin.y(), render_text->GetFont().GetBaseline() + 1);
+  EXPECT_EQ(origin.y(), 1);
 }
 
 TEST_F(RenderTextTest, DisplayRectShowsCursorLTR) {

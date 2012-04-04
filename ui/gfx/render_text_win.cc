@@ -179,6 +179,7 @@ std::map<std::string, std::vector<Font> > RenderTextWin::cached_linked_fonts_;
 
 RenderTextWin::RenderTextWin()
     : RenderText(),
+      common_baseline_(0),
       needs_layout_(false) {
   memset(&script_control_, 0, sizeof(script_control_));
   memset(&script_state_, 0, sizeof(script_state_));
@@ -464,7 +465,10 @@ void RenderTextWin::EnsureLayout() {
 void RenderTextWin::DrawVisualText(Canvas* canvas) {
   DCHECK(!needs_layout_);
 
-  Point offset(GetOriginForSkiaDrawing());
+  Point offset(GetOriginForDrawing());
+  // Skia will draw glyphs with respect to the baseline.
+  offset.Offset(0, common_baseline_);
+
   SkScalar x = SkIntToScalar(offset.x());
   SkScalar y = SkIntToScalar(offset.y());
 
@@ -518,6 +522,7 @@ void RenderTextWin::ItemizeLogicalText() {
   STLDeleteContainerPointers(runs_.begin(), runs_.end());
   runs_.clear();
   string_size_ = Size(0, GetFont().GetHeight());
+  common_baseline_ = 0;
   if (text().empty())
     return;
 
@@ -684,6 +689,7 @@ void RenderTextWin::LayoutVisualText() {
     DCHECK(SUCCEEDED(hr));
     string_size_.set_height(std::max(string_size_.height(),
                                      run->font.GetHeight()));
+    common_baseline_ = std::max(common_baseline_, run->font.GetBaseline());
 
     if (run->glyph_count > 0) {
       run->advance_widths.reset(new int[run->glyph_count]);
