@@ -110,33 +110,6 @@ remoting.setMode = function(mode) {
     document.addEventListener('keydown', remoting.ConnectionStats.onKeydown,
                               false);
   }
-  // If entering mode HOME, refresh the host list.
-  if (mode == remoting.AppMode.HOME) {
-    remoting.hostList.refresh(remoting.extractThisHostAndDisplay);
-  }
-};
-
-/**
- * Extract the remoting.Host object corresponding to this host (if any) and
- * display the list.
- *
- * @param {boolean} success True if the host list refresh was successful.
- * @return {void} Nothing.
- */
-remoting.extractThisHostAndDisplay = function(success) {
-  if (success) {
-    var display = function() {
-      var hostId = null;
-      if (remoting.daemonPlugin.localHost) {
-        hostId = remoting.daemonPlugin.localHost.hostId;
-      }
-      remoting.hostList.display(hostId);
-    };
-    remoting.daemonPlugin.onHostListRefresh(remoting.hostList, display);
-  } else {
-    remoting.daemonPlugin.setHost(null);
-    remoting.hostList.display(null);
-  }
 };
 
 /**

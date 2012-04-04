@@ -8,7 +8,7 @@
 var remoting = remoting || {};
 
 function onLoad() {
-  var goHome = function() {
+  var restartWebapp = function() {
     window.location.replace(chrome.extension.getURL('main.html'));
   };
   var goEnterAccessCode = function() {
@@ -18,7 +18,7 @@ function onLoad() {
     if (remoting.currentMode == remoting.AppMode.CLIENT_CONNECT_FAILED_IT2ME) {
       remoting.setMode(remoting.AppMode.CLIENT_UNCONNECTED);
     } else {
-      remoting.setMode(remoting.AppMode.HOME);
+      restartWebapp();
     }
   };
   var reload = function() {
@@ -48,11 +48,11 @@ function onLoad() {
       { event: 'click', id: 'access-mode-button', fn: goEnterAccessCode },
       { event: 'click', id: 'cancel-share-button', fn: remoting.cancelShare },
       { event: 'click', id: 'stop-sharing-button', fn: remoting.cancelShare },
-      { event: 'click', id: 'host-finished-button', fn: goHome },
+      { event: 'click', id: 'host-finished-button', fn: restartWebapp },
       { event: 'click', id: 'client-finished-it2me-button',
         fn: goFinishedIt2Me },
-      { event: 'click', id: 'client-finished-me2me-button', fn: goHome },
-      { event: 'click', id: 'cancel-pin-entry-button', fn: goHome },
+      { event: 'click', id: 'client-finished-me2me-button', fn: restartWebapp },
+      { event: 'click', id: 'cancel-pin-entry-button', fn: restartWebapp },
       { event: 'click', id: 'client-reconnect-button', fn: reload },
       { event: 'click', id: 'cancel-access-code-button',
         fn: remoting.cancelConnect },
