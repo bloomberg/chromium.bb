@@ -21,7 +21,7 @@ cr.define('sync_promo', function() {
   }
 
   // Replicating enum from chrome/common/extensions/extension_constants.h.
-  const actions = (function() {
+  /** @const */ var actions = (function() {
     var i = 0;
     return {
       VIEWED: i++,
@@ -113,7 +113,7 @@ cr.define('sync_promo', function() {
 
       var encryptionHelpClickedAlready = false;
       $('encryption-help-link').addEventListener('click', function() {
-        if (!encryptionHelpClickedAlready )
+        if (!encryptionHelpClickedAlready)
           chrome.send('SyncPromo:UserFlowAction',
                       [actions.ENCRYPTION_HELP_CLICKED]);
         encryptionHelpClickedAlready = true;

@@ -77,6 +77,7 @@ class JSChecker(object):
         path.join(resources, 'net_internals'),
         path.join(resources, 'ntp4'),
         path.join(resources, 'options2'),
+        path.join(resources, 'sync_promo'),
         path.join(resources, 'uber'),
     )
     if filename.startswith(dirs):
