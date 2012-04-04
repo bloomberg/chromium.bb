@@ -149,3 +149,6 @@ OutOfProcessPPAPITest.InputEvent
 
 # Fails on valgrind bots http://crbug.com/96767
 OutOfProcessPPAPITest.FlashFullscreen
+
+# Fails on valgrind bots, Mac and Linux, see http://crbug.com/121959
+BrowserUITestEnd.SessionEnd
