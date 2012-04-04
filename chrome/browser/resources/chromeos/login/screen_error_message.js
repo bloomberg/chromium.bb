@@ -148,10 +148,11 @@ cr.define('login', function() {
       var shouldOverlay = MANAGED_SCREENS.indexOf(currentScreen.id) != -1 &&
           !currentScreen.isLocal;
       var isTimeout = false;
+      var isShown = !offlineMessage.classList.contains('hidden') &&
+          !offlineMessage.classList.contains('faded');
 
       if (reason == ERROR_REASONS.PROXY_CONFIG_CHANGED && shouldOverlay &&
-          !offlineMessage.classList.contains('hidden') &&
-          offlineMessage.classList.contains('show-captive-portal')) {
+          isShown) {
         // Schedules a immediate retry.
         currentScreen.doReload();
         console.log('Retry page load since proxy settings has been changed');
@@ -173,21 +174,28 @@ cr.define('login', function() {
 
       if (!isOnline && shouldOverlay) {
         console.log('Show offline message: state=' + state +
-                    ', network=' + network + ', reason=' + reason,
+                    ', network=' + network + ', reason=' + reason +
                     ', isUnderCaptivePortal=' + isUnderCaptivePortal);
 
 
         offlineMessage.onBeforeShow(lastNetworkType);
 
         if (isUnderCaptivePortal && !isProxyError) {
-          // In case of timeout we're suspecting that network might be
-          // a captive portal but would like to check that first.
-          // Otherwise (signal from flimflam / generate_204 got redirected)
-          // show dialog right away.
-          if (isTimeout)
-            chrome.send('fixCaptivePortal');
-          else
-            chrome.send('showCaptivePortal');
+          // Do not bother a user with obsessive captive portal showing. This
+          // check makes captive portal being shown only once: either when error
+          // screen is shown for the first time or when switching from another
+          // error screen (offline, proxy).
+          if (!isShown ||
+              !offlineMessage.classList.contains('show-captive-portal')) {
+            // In case of timeout we're suspecting that network might be
+            // a captive portal but would like to check that first.
+            // Otherwise (signal from flimflam / generate_204 got redirected)
+            // show dialog right away.
+            if (isTimeout)
+              chrome.send('fixCaptivePortal');
+            else
+              chrome.send('showCaptivePortal');
+          }
         } else {
           chrome.send('hideCaptivePortal');
         }
@@ -226,7 +234,9 @@ cr.define('login', function() {
         chrome.send('hideCaptivePortal');
 
         if (!offlineMessage.classList.contains('faded')) {
-          console.log('Hide offline message.');
+          console.log('Hide offline message. state=' + state +
+                      ', network=' + network + ', reason=' + reason);
+
           offlineMessage.onBeforeHide();
 
           offlineMessage.classList.add('faded');

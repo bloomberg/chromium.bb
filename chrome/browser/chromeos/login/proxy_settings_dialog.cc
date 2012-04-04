@@ -9,8 +9,9 @@
 #include "chrome/browser/chromeos/proxy_config_service_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/common/url_constants.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/url_constants.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -35,6 +36,9 @@ int CalculateSize(int screen_size, int min_comfortable, float desired_ratio) {
 
 namespace chromeos {
 
+// static
+int ProxySettingsDialog::instance_count_ = 0;
+
 ProxySettingsDialog::ProxySettingsDialog(LoginHtmlDialog::Delegate* delegate,
                                          gfx::NativeWindow window)
     : LoginHtmlDialog(
@@ -43,6 +47,9 @@ ProxySettingsDialog::ProxySettingsDialog(LoginHtmlDialog::Delegate* delegate,
           std::wstring(),
           GURL(chrome::kChromeUIProxySettingsURL),
           LoginHtmlDialog::STYLE_BUBBLE) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  ++instance_count_;
+
   gfx::Rect screen_bounds(chromeos::CalculateScreenBounds(gfx::Size()));
   SetDialogSize(CalculateSize(screen_bounds.width(),
                                kProxySettingsDialogReasonableWidth,
@@ -61,6 +68,11 @@ ProxySettingsDialog::ProxySettingsDialog(LoginHtmlDialog::Delegate* delegate,
                                             ASCIIToUTF16(network_name)));
 }
 
+ProxySettingsDialog::~ProxySettingsDialog() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  --instance_count_;
+}
+
 void ProxySettingsDialog::OnDialogClosed(const std::string& json_retval) {
   LoginHtmlDialog::OnDialogClosed(json_retval);
   content::NotificationService::current()->Notify(
@@ -68,6 +80,10 @@ void ProxySettingsDialog::OnDialogClosed(const std::string& json_retval) {
     content::NotificationService::AllSources(),
     content::NotificationService::NoDetails());
   delete this;
+}
+
+bool ProxySettingsDialog::IsShown() {
+  return instance_count_ > 0;
 }
 
 }  // namespace chromeos

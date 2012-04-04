@@ -6,6 +6,7 @@
 
 #include "chrome/browser/chromeos/login/captive_portal_view.h"
 #include "chrome/browser/chromeos/login/helper.h"
+#include "chrome/browser/chromeos/login/proxy_settings_dialog.h"
 #include "chrome/browser/profiles/profile_manager.h"
 
 namespace {
@@ -52,10 +53,17 @@ void CaptivePortalWindowProxy::ShowIfRedirected() {
 }
 
 void CaptivePortalWindowProxy::Show() {
+  if (ProxySettingsDialog::IsShown()) {
+    // ProxySettingsDialog is being shown, don't cover it.
+    Close();
+    return;
+  }
+
   if (!captive_portal_view_.get() || widget_) {
     // Dialog is already shown, do nothing.
     return;
   }
+
   CaptivePortalView* captive_portal_view = captive_portal_view_.release();
   widget_ = views::Widget::CreateWindowWithParent(
       captive_portal_view,

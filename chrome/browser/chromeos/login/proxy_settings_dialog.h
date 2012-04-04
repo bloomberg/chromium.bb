@@ -11,16 +11,25 @@
 
 namespace chromeos {
 
+// Should be used on the UI thread only, because of static |instance_count_|.
 class ProxySettingsDialog : public LoginHtmlDialog {
  public:
+  // Returns whether the dialog is being shown.
+  static bool IsShown();
+
   ProxySettingsDialog(LoginHtmlDialog::Delegate* delegate,
                       gfx::NativeWindow window);
+  virtual ~ProxySettingsDialog();
 
  protected:
   // HtmlDialogUIDelegate implementation.
   virtual void OnDialogClosed(const std::string& json_retval) OVERRIDE;
 
  private:
+  // TODO(altimofeev): consider avoidance static variable by extending current
+  // WebUI/login interfaces.
+  static int instance_count_;
+
   DISALLOW_COPY_AND_ASSIGN(ProxySettingsDialog);
 };
 
