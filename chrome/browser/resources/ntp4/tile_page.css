@@ -164,6 +164,7 @@
 
 .tile > .removing-tile-contents {
   -webkit-animation: blipout 300ms;
+  -webkit-animation-fill-mode: forwards;
   pointer-events: none;
 }
 
