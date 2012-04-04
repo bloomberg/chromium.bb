@@ -40,9 +40,20 @@ class FullscreenController : public base::RefCounted<FullscreenController> {
   virtual ~FullscreenController();
 
   // Querying.
-  bool IsFullscreenForTab() const;
-  bool IsFullscreenForTab(const content::WebContents* tab) const;
+
+  // Returns true if the window is currently fullscreen and was initially
+  // transitioned to fullscreen by a browser (vs tab) mode transition.
+  bool IsFullscreenForBrowser() const;
+
+  // Returns true if fullscreen has been caused by a tab.
+  // The window may still be transitioning, and window_->IsFullscreen()
+  // may still return false.
+  bool IsFullscreenForTabOrPending() const;
   bool IsFullscreenForTabOrPending(const content::WebContents* tab) const;
+
+  // Returns true if the mouse has been locked or a lock request is pending
+  // user confirmation.
+  bool IsMouseLockedOrPending() const;
 
   // Requests.
   void RequestToLockMouse(content::WebContents* tab);

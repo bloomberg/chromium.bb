@@ -984,7 +984,7 @@ void TabContents::ToggleFullscreenMode(bool enter_fullscreen) {
 }
 
 bool TabContents::IsFullscreenForCurrentTab() const {
-  return delegate_ ? delegate_->IsFullscreenForTab(this) : false;
+  return delegate_ ? delegate_->IsFullscreenForTabOrPending(this) : false;
 }
 
 void TabContents::RequestToLockMouse() {

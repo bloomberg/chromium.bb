@@ -131,7 +131,8 @@ JavaScriptDialogCreator* WebContentsDelegate::GetJavaScriptDialogCreator() {
   return NULL;
 }
 
-bool WebContentsDelegate::IsFullscreenForTab(const WebContents* tab) const {
+bool WebContentsDelegate::IsFullscreenForTabOrPending(
+    const WebContents* tab) const {
   return false;
 }
 
