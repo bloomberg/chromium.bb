@@ -86,7 +86,7 @@ void KeyboardOverlayDialogView::ShowDialog(
   chromeos::input_method::InputMethodManager::GetInstance()->DisableHotkeys();
 
   KeyboardOverlayDelegate* delegate = new KeyboardOverlayDelegate(
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_KEYBOARD_OVERLAY_TITLE)));
+      l10n_util::GetStringUTF16(IDS_KEYBOARD_OVERLAY_TITLE));
   KeyboardOverlayDialogView* html_view =
       new KeyboardOverlayDialogView(parent_view->browser()->profile(),
                                     delegate,

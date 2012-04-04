@@ -7,28 +7,22 @@
 
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
 
-
 class HtmlDialogView;
 
 class KeyboardOverlayDelegate : public HtmlDialogUIDelegate {
  public:
-  explicit KeyboardOverlayDelegate(const std::wstring& title);
+  explicit KeyboardOverlayDelegate(const string16& title);
 
-  void set_view(HtmlDialogView* html_view) {
-    view_ = html_view;
-  }
+  HtmlDialogView* view() { return view_; }
+  void set_view(HtmlDialogView* html_view) { view_ = html_view; }
 
-  HtmlDialogView* view() {
-    return view_;
-  }
-
-  // Overridden from HtmlDialogUI::Delegate:
+  // Overridden from HtmlDialogUIDelegate:
   virtual void GetDialogSize(gfx::Size* size) const OVERRIDE;
 
  private:
   virtual ~KeyboardOverlayDelegate();
 
-  // Overridden from HtmlDialogUI::Delegate:
+  // Overridden from HtmlDialogUIDelegate:
   virtual ui::ModalType GetDialogModalType() const OVERRIDE;
   virtual string16 GetDialogTitle() const OVERRIDE;
   virtual GURL GetDialogContentURL() const OVERRIDE;

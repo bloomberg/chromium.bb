@@ -19,13 +19,16 @@
 using content::WebContents;
 using content::WebUIMessageHandler;
 
-static const int kBaseWidth = 1252;
-static const int kBaseHeight = 516;
-static const int kHorizontalMargin = 28;
+namespace {
 
-KeyboardOverlayDelegate::KeyboardOverlayDelegate(
-    const std::wstring& title)
-    : title_(WideToUTF16Hack(title)),
+const int kBaseWidth = 1252;
+const int kBaseHeight = 516;
+const int kHorizontalMargin = 28;
+
+}  // namespace
+
+KeyboardOverlayDelegate::KeyboardOverlayDelegate(const string16& title)
+    : title_(title),
       view_(NULL) {
 }
 
