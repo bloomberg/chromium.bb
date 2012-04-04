@@ -56,7 +56,7 @@ class SpeechSynthesizerClientImpl : public SpeechSynthesizerClient {
                                   weak_ptr_factory_.GetWeakPtr()));
   }
 
-  virtual void IsSpeaking(IsSpeakingCallback callback) OVERRIDE {
+  virtual void IsSpeaking(const IsSpeakingCallback& callback) OVERRIDE {
     dbus::MethodCall method_call(speech_synthesis::kSpeechSynthesizerInterface,
                                  speech_synthesis::kIsSpeaking);
     proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
@@ -85,7 +85,8 @@ class SpeechSynthesizerClientImpl : public SpeechSynthesizerClient {
   }
 
   // Called when a response for IsSpeaking() is received
-  void OnIsSpeaking(IsSpeakingCallback callback, dbus::Response* response) {
+  void OnIsSpeaking(const IsSpeakingCallback& callback,
+                    dbus::Response* response) {
     bool value = false;
     if (response) {
       dbus::MessageReader reader(response);
@@ -109,7 +110,7 @@ class SpeechSynthesizerClientStubImpl : public SpeechSynthesizerClient {
   virtual void Speak(const std::string& text,
                      const std::string& properties) OVERRIDE {}
   virtual void StopSpeaking() OVERRIDE {}
-  virtual void IsSpeaking(IsSpeakingCallback callback) OVERRIDE {
+  virtual void IsSpeaking(const IsSpeakingCallback& callback) OVERRIDE {
     callback.Run(false);
   }
 

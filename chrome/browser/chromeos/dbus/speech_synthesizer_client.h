@@ -39,7 +39,7 @@ class SpeechSynthesizerClient {
 
   // Checks if the engine is currently speaking.
   // |callback| will be called on the origin thread later with the result.
-  virtual void IsSpeaking(IsSpeakingCallback callback) = 0;
+  virtual void IsSpeaking(const IsSpeakingCallback& callback) = 0;
 
   // Factory function, creates a new instance and returns ownership.
   // For normal usage, access the singleton via DBusThreadManager::Get().

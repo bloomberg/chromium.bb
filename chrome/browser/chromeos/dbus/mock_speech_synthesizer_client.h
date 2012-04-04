@@ -19,7 +19,7 @@ class MockSpeechSynthesizerClient : public SpeechSynthesizerClient {
 
   MOCK_METHOD2(Speak, void(const std::string&, const std::string&));
   MOCK_METHOD0(StopSpeaking, void());
-  MOCK_METHOD1(IsSpeaking, void(IsSpeakingCallback));
+  MOCK_METHOD1(IsSpeaking, void(const IsSpeakingCallback&));
 };
 
 }  // namespace chromeos
