@@ -1615,8 +1615,12 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   if (template_url_service) {
     const TemplateURL* url_template =
         template_url_service->GetDefaultSearchProvider();
-    if (url_template)
-      google_search_default = url_template->url_ref().HasGoogleBaseURLs();
+    if (url_template) {
+      const TemplateURLRef* urlref = url_template->url();
+      if (urlref) {
+        google_search_default = urlref->HasGoogleBaseURLs();
+      }
+    }
   }
 
   bool google_search_homepage = false;
