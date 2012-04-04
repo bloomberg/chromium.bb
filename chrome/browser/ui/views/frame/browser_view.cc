@@ -2448,7 +2448,7 @@ void BrowserView::ShowAvatarBubble(WebContents* web_contents,
 
   AvatarMenuBubbleView* bubble = new AvatarMenuBubbleView(this,
       views::BubbleBorder::TOP_RIGHT, bounds, browser_.get());
-  browser::CreateViewsBubble(bubble);
+  views::BubbleDelegateView::CreateBubble(bubble);
   bubble->SetAlignment(views::BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE);
   bubble->Show();
 }
@@ -2474,7 +2474,7 @@ void BrowserView::ShowPasswordGenerationBubble(const gfx::Rect& rect) {
       new PasswordGenerationBubbleView(bounds,
                                        this,
                                        web_contents->GetRenderViewHost());
-  browser::CreateViewsBubble(bubble);
+  views::BubbleDelegateView::CreateBubble(bubble);
   bubble->SetAlignment(views::BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE);
   bubble->Show();
 }

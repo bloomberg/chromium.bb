@@ -111,7 +111,7 @@ void ChromeToMobileBubbleView::ShowBubble(views::View* anchor_view,
   // Show the lit mobile device icon during the bubble's lifetime.
   SetImageViewToId(anchor_view, IDR_MOBILE_LIT);
   bubble_ = new ChromeToMobileBubbleView(anchor_view, profile);
-  browser::CreateViewsBubble(bubble_);
+  views::BubbleDelegateView::CreateBubble(bubble_);
   bubble_->Show();
 }
 

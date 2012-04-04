@@ -81,7 +81,7 @@ void BookmarkBubbleView::ShowBubble(views::View* anchor_view,
 
   bookmark_bubble_ =
       new BookmarkBubbleView(anchor_view, profile, url, newly_bookmarked);
-  browser::CreateViewsBubble(bookmark_bubble_);
+  views::BubbleDelegateView::CreateBubble(bookmark_bubble_);
   bookmark_bubble_->Show();
   // Select the entire title textfield contents when the bubble is first shown.
   bookmark_bubble_->title_tf_->SelectAll();

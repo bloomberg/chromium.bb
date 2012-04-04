@@ -129,7 +129,7 @@ void InvertBubble::MaybeShowInvertBubble(Profile* profile,
       !pref_service->GetBoolean(prefs::kInvertNotificationShown)) {
     pref_service->SetBoolean(prefs::kInvertNotificationShown, true);
     InvertBubbleView* delegate = new InvertBubbleView(profile, anchor_view);
-    browser::CreateViewsBubble(delegate);
+    views::BubbleDelegateView::CreateBubble(delegate);
     delegate->StartFade(true);
   }
 }

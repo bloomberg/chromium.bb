@@ -32,7 +32,7 @@ namespace first_run {
 FirstRunBubble* FirstRunBubble::ShowBubble(Profile* profile,
                                            views::View* anchor_view) {
   FirstRunBubble* delegate = new FirstRunBubble(profile, anchor_view);
-  browser::CreateViewsBubble(delegate);
+  views::BubbleDelegateView::CreateBubble(delegate);
   delegate->StartFade(true);
   return delegate;
 }

@@ -389,7 +389,7 @@ void ToolbarView::ShowPageInfo(content::WebContents* web_contents,
 
 views::Widget* ToolbarView::CreateViewsBubble(
     views::BubbleDelegateView* bubble_delegate) {
-  return browser::CreateViewsBubble(bubble_delegate);
+  return views::BubbleDelegateView::CreateBubble(bubble_delegate);
 }
 
 PageActionImageView* ToolbarView::CreatePageActionImageView(
@@ -764,7 +764,7 @@ void ToolbarView::ShowCriticalNotification() {
 #if defined(OS_WIN)
   CriticalNotificationBubbleView* bubble_delegate =
       new CriticalNotificationBubbleView(app_menu_);
-  browser::CreateViewsBubble(bubble_delegate);
+  views::BubbleDelegateView::CreateBubble(bubble_delegate);
   bubble_delegate->StartFade(true);
 #endif
 }

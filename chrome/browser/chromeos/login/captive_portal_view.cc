@@ -307,7 +307,7 @@ InstantController* CaptivePortalView::GetInstant() {
 
 views::Widget* CaptivePortalView::CreateViewsBubble(
     views::BubbleDelegateView* bubble_delegate) {
-  return browser::CreateViewsBubble(bubble_delegate);
+  return views::BubbleDelegateView::CreateBubble(bubble_delegate);
 }
 
 ContentSettingBubbleModelDelegate*

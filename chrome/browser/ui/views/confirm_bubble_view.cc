@@ -29,7 +29,7 @@ void ConfirmBubbleModel::Show(gfx::NativeView view,
                               const gfx::Point& origin,
                               ConfirmBubbleModel* model) {
   ConfirmBubbleView* bubble_view = new ConfirmBubbleView(origin, model);
-  browser::CreateViewsBubble(bubble_view);
+  views::BubbleDelegateView::CreateBubble(bubble_view);
   bubble_view->Show();
 }
 

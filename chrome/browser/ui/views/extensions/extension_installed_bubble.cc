@@ -449,7 +449,7 @@ void ExtensionInstalledBubble::ShowInternal() {
   SetLayoutManager(new views::FillLayout());
   AddChildView(
       new InstalledBubbleContent(browser_, extension_, type_, &icon_, this));
-  browser::CreateViewsBubble(this);
+  views::BubbleDelegateView::CreateBubble(this);
   StartFade(true);
 }
 

@@ -158,7 +158,7 @@ void AvatarMenuButton::ShowAvatarBubble() {
 
   AvatarMenuBubbleView* bubble = new AvatarMenuBubbleView(this,
       views::BubbleBorder::TOP_LEFT, bounds, browser_);
-  browser::CreateViewsBubble(bubble);
+  views::BubbleDelegateView::CreateBubble(bubble);
   bubble->Show();
 
   ProfileMetrics::LogProfileOpenMethod(ProfileMetrics::ICON_AVATAR_BUBBLE);

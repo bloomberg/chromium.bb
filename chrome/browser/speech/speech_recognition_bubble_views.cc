@@ -366,7 +366,7 @@ void SpeechRecognitionBubbleImpl::Show() {
         browser_view->GetLocationBarView()->location_icon_view() : NULL;
     bubble_ = new SpeechRecognitionBubbleView(delegate_, icon, element_rect_,
                                               GetWebContents());
-    browser::CreateViewsBubble(bubble_);
+    views::BubbleDelegateView::CreateBubble(bubble_);
     UpdateLayout();
   }
   bubble_->Show();

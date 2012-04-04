@@ -109,7 +109,7 @@ class BundleInstalledBubble : public views::BubbleDelegateView,
           BundleInstaller::Item::STATE_FAILED));
     }
 
-    browser::CreateViewsBubble(this);
+    views::BubbleDelegateView::CreateBubble(this);
     StartFade(true);
   }
 

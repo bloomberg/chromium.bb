@@ -179,7 +179,7 @@ ExtensionPopup* ExtensionPopup::ShowPopup(
   ExtensionHost* host = manager->CreatePopupHost(url, browser);
   ExtensionPopup* popup = new ExtensionPopup(browser, host, anchor_view,
       arrow_location, inspect_with_devtools);
-  browser::CreateViewsBubble(popup);
+  views::BubbleDelegateView::CreateBubble(popup);
 
   // If the host had somehow finished loading, then we'd miss the notification
   // and not show.  This seems to happen in single-process mode.

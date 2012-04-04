@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_UI_VIEWS_WINDOW_H_
 #pragma once
 
-#include "chrome/browser/ui/dialog_style.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
 
@@ -27,11 +26,6 @@ views::Widget* CreateFramelessWindowWithParentAndBounds(
     views::WidgetDelegate* delegate,
     gfx::NativeWindow parent,
     const gfx::Rect& bounds);
-
-
-// Create a bubble for a given |delegate|. Takes care of chromeos
-// specific window type setting if needed.
-views::Widget* CreateViewsBubble(views::BubbleDelegateView* delegate);
 
 // Create a bubble that will show even when chromeos screen is locked,
 // for a given |delegate|. Takes care of chromeos specific window

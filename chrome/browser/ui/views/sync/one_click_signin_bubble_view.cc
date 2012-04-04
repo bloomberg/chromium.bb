@@ -44,7 +44,7 @@ void OneClickSigninBubbleView::ShowBubble(
   bubble_view_ =
       new OneClickSigninBubbleView(anchor_view, learn_more_callback,
                                    advanced_callback);
-  browser::CreateViewsBubble(bubble_view_);
+  views::BubbleDelegateView::CreateBubble(bubble_view_);
   bubble_view_->Show();
 }
 

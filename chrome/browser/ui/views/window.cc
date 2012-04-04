@@ -51,12 +51,6 @@ views::Widget* CreateFramelessWindowWithParentAndBounds(
   return widget;
 }
 
-views::Widget* CreateViewsBubble(views::BubbleDelegateView* delegate) {
-  views::Widget* bubble_widget =
-      views::BubbleDelegateView::CreateBubble(delegate);
-  return bubble_widget;
-}
-
 views::Widget* CreateViewsBubbleAboveLockScreen(
     views::BubbleDelegateView* delegate) {
 #if defined(USE_AURA)
