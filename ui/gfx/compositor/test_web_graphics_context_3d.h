@@ -224,6 +224,10 @@ class TestWebGraphicsContext3D : public WebKit::WebGraphicsContext3D {
                            WebKit::WGC3Denum pname,
                            WebKit::WGC3Dint* value);
   virtual WebKit::WebString getShaderInfoLog(WebKit::WebGLId shader);
+  virtual void getShaderPrecisionFormat(WebKit::WGC3Denum shaderType,
+                                        WebKit::WGC3Denum precisionType,
+                                        WebKit::WGC3Dint* range,
+                                        WebKit::WGC3Dint* precision) {}
   virtual WebKit::WebString getShaderSource(WebKit::WebGLId shader);
   virtual WebKit::WebString getString(WebKit::WGC3Denum name);
   virtual void getTexParameterfv(WebKit::WGC3Denum target,
