@@ -2,10 +2,5 @@
   "name": "extension.2",
   "version": "1",
   "manifest_version": 2,
-  "permissions": ["management", "http://google.com" ],
-  "content_script": [{
-    "matches": [ "http://www.example.com/*" ],
-    "js": [ "content_script.js" ],
-    "run_at": "document_start"
-  }]
+  "permissions": ["management", "http://google.com" ]
 }

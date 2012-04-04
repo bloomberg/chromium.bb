@@ -1,0 +1,18 @@
+[
+  {
+    "namespace": "test",
+    "uses_feature_system": true,
+    "extension_types": ["extension"],
+    "contexts": ["blessed_extension"],
+    "functions": [
+      {
+        "name": "foo",
+        "dependencies": ["test2:monkey"]
+      },
+      {
+        "name": "bar",
+        "dependencies": ["api:test.foo"]
+      }
+    ]
+  }
+]

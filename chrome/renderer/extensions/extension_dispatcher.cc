@@ -628,7 +628,7 @@ void ExtensionDispatcher::DidCreateScriptContext(
       // correct APIs, however, until it doesn't have a 2MB overhead we can't
       // load it in every process.
       scoped_ptr<std::set<std::string> > apis =
-        ExtensionAPI::GetInstance()->GetAPIsForContext(
+        ExtensionAPI::GetSharedInstance()->GetAPIsForContext(
             context_type, extension, url_info.url());
       for (std::set<std::string>::iterator i = apis->begin(); i != apis->end();
           ++i) {
@@ -886,7 +886,7 @@ bool ExtensionDispatcher::CheckCurrentContextAccessToExtensionAPI(
   }
 
   if (!IsExtensionActive(extension->id()) &&
-      ExtensionAPI::GetInstance()->IsPrivileged(function_name)) {
+      ExtensionAPI::GetSharedInstance()->IsPrivileged(function_name)) {
     static const char kMessage[] =
         "%s can only be used in an extension process.";
     std::string error_msg = base::StringPrintf(kMessage, function_name.c_str());

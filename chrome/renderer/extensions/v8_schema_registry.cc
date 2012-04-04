@@ -41,7 +41,7 @@ v8::Handle<v8::Object> V8SchemaRegistry::GetSchema(const std::string& api) {
     return maybe_schema->second;
 
   const base::DictionaryValue* schema =
-      ExtensionAPI::GetInstance()->GetSchema(api);
+      ExtensionAPI::GetSharedInstance()->GetSchema(api);
   CHECK(schema) << api;
 
   scoped_ptr<V8ValueConverter> v8_value_converter(V8ValueConverter::create());
