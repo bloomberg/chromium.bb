@@ -4,6 +4,8 @@
 
 #include "remoting/host/elevated_controller_win.h"
 
+#include <sddl.h>
+
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/json/json_reader.h"
@@ -20,30 +22,32 @@
 
 namespace {
 
+// The host configuration file name.
+const FilePath::CharType kConfigFileName[] = FILE_PATH_LITERAL("host.json");
+
+// The extension for the temporary file.
+const FilePath::CharType kTempFileExtension[] = FILE_PATH_LITERAL("json~");
+
+// The host configuration file security descriptor that enables full access to
+// Local System and built-in administrators only.
+const char kConfigFileSecurityDescriptor[] =
+    "O:BA" "G:BA" "D:(A;;GA;;;SY)(A;;GA;;;BA)";
+
+// The maximum size of the configuration file. "1MB ought to be enough" for any
+// reasonable configuration we will ever need. 1MB is low enough to make
+// the probability of out of memory situation fairly low. OOM is still possible
+// and we will crash if it occurs.
+const size_t kMaxConfigFileSize = 1024 * 1024;
+
 // ReadConfig() filters the configuration file stripping all variables except of
 // the following two.
 const char kHostId[] = "host_id";
 const char kXmppLogin[] = "xmpp_login";
 
-// Names of the configuration files.
-const FilePath::CharType kAuthConfigFilename[] = FILE_PATH_LITERAL("auth.json");
-const FilePath::CharType kHostConfigFilename[] = FILE_PATH_LITERAL("host.json");
-
-// TODO(alexeypa): Remove the hardcoded undocumented paths and store
-// the configuration in the registry.
-#ifdef OFFICIAL_BUILD
-const FilePath::CharType kConfigDir[] = FILE_PATH_LITERAL(
-    "config\\systemprofile\\AppData\\Local\\Google\\Chrome Remote Desktop");
-#else
-const FilePath::CharType kConfigDir[] =
-    FILE_PATH_LITERAL("config\\systemprofile\\AppData\\Local\\Chromoting");
-#endif
-
-// Reads and parses a JSON configuration file.
+// Reads and parses the configuration file up to |kMaxConfigFileSize| in
+// size.
 HRESULT ReadConfig(const FilePath& filename,
                    scoped_ptr<base::DictionaryValue>* config_out) {
-  // TODO(alexeypa): Remove 64KB limitation.
-  const size_t kMaxConfigFileSize = 64 * 1024;
 
   // Read raw data from the configuration file.
   base::win::ScopedHandle file(
@@ -58,12 +62,12 @@ HRESULT ReadConfig(const FilePath& filename,
   if (!file.IsValid()) {
     DWORD error = GetLastError();
     LOG_GETLASTERROR(ERROR)
-        << "Failed to read '" << filename.value() << "'";
+        << "Failed to open '" << filename.value() << "'";
     return HRESULT_FROM_WIN32(error);
   }
 
-  std::vector<char> buffer(kMaxConfigFileSize);
-  DWORD size = static_cast<DWORD>(buffer.size());
+  scoped_array<char> buffer(new char[kMaxConfigFileSize]);
+  DWORD size = kMaxConfigFileSize;
   if (!::ReadFile(file, &buffer[0], size, &size, NULL)) {
     DWORD error = GetLastError();
     LOG_GETLASTERROR(ERROR)
@@ -72,7 +76,7 @@ HRESULT ReadConfig(const FilePath& filename,
   }
 
   // Parse the JSON configuration, expecting it to contain a dictionary.
-  std::string file_content(&buffer[0], size);
+  std::string file_content(buffer.get(), size);
   scoped_ptr<base::Value> value(base::JSONReader::Read(file_content, true));
 
   base::DictionaryValue* dictionary;
@@ -85,6 +89,76 @@ HRESULT ReadConfig(const FilePath& filename,
   config_out->reset(dictionary);
   return S_OK;
 }
+
+// Writes the configuration file up to |kMaxConfigFileSize| in size.
+HRESULT WriteConfig(const FilePath& filename,
+                    const char* content,
+                    size_t length) {
+  if (length > kMaxConfigFileSize) {
+      return E_FAIL;
+  }
+
+  // Create a security descriptor for the configuration file.
+  SECURITY_ATTRIBUTES security_attributes;
+  security_attributes.nLength = sizeof(security_attributes);
+  security_attributes.bInheritHandle = FALSE;
+
+  ULONG security_descriptor_length = 0;
+  if (!ConvertStringSecurityDescriptorToSecurityDescriptorA(
+           kConfigFileSecurityDescriptor,
+           SDDL_REVISION_1,
+           reinterpret_cast<PSECURITY_DESCRIPTOR*>(
+               &security_attributes.lpSecurityDescriptor),
+           &security_descriptor_length)) {
+    DWORD error = GetLastError();
+    LOG_GETLASTERROR(ERROR) <<
+        "Failed to create a security descriptor for the configuration file";
+    return HRESULT_FROM_WIN32(error);
+  }
+
+  // Create a temporary file and write configuration to it.
+  FilePath tempname = filename.ReplaceExtension(kTempFileExtension);
+  {
+    base::win::ScopedHandle file(
+        CreateFileW(tempname.value().c_str(),
+                    GENERIC_WRITE,
+                    0,
+                    &security_attributes,
+                    CREATE_ALWAYS,
+                    FILE_FLAG_SEQUENTIAL_SCAN,
+                    NULL));
+
+    if (!file.IsValid()) {
+      DWORD error = GetLastError();
+      LOG_GETLASTERROR(ERROR)
+          << "Failed to create '" << filename.value() << "'";
+      return HRESULT_FROM_WIN32(error);
+    }
+
+    DWORD written;
+    if (!WriteFile(file, content, static_cast<DWORD>(length), &written, NULL)) {
+      DWORD error = GetLastError();
+      LOG_GETLASTERROR(ERROR)
+          << "Failed to write to '" << filename.value() << "'";
+      return HRESULT_FROM_WIN32(error);
+    }
+  }
+
+  // Now that the configuration is stored successfully replace the actual
+  // configuration file.
+  if (!MoveFileExW(tempname.value().c_str(),
+                   filename.value().c_str(),
+                   MOVEFILE_REPLACE_EXISTING)) {
+      DWORD error = GetLastError();
+      LOG_GETLASTERROR(ERROR)
+          << "Failed to rename '" << tempname.value() << "' to '"
+          << filename.value() << "'";
+      return HRESULT_FROM_WIN32(error);
+  }
+
+  return S_OK;
+}
+
 
 } // namespace
 
@@ -101,14 +175,11 @@ void ElevatedControllerWin::FinalRelease() {
 }
 
 STDMETHODIMP ElevatedControllerWin::GetConfig(BSTR* config_out) {
-  FilePath system_profile;
-  PathService::Get(base::DIR_SYSTEM, &system_profile);
+  FilePath config_dir = remoting::GetConfigDir();
 
   // Read the host configuration.
   scoped_ptr<base::DictionaryValue> config;
-  HRESULT hr = ReadConfig(
-      system_profile.Append(kConfigDir).Append(kHostConfigFilename),
-      &config);
+  HRESULT hr = ReadConfig(config_dir.Append(kConfigFileName), &config);
   if (FAILED(hr)) {
     return hr;
   }
@@ -139,11 +210,7 @@ STDMETHODIMP ElevatedControllerWin::GetConfig(BSTR* config_out) {
 
 STDMETHODIMP ElevatedControllerWin::SetConfig(BSTR config) {
   // Determine the config directory path and create it if necessary.
-  // N.B. The configuration files are stored in LocalSystems's profile which is
-  // not readable by non administrators.
-  FilePath system_profile;
-  PathService::Get(base::DIR_SYSTEM, &system_profile);
-  FilePath config_dir = system_profile.Append(kConfigDir);
+  FilePath config_dir = remoting::GetConfigDir();
   if (!file_util::CreateDirectory(config_dir)) {
     return HRESULT_FROM_WIN32(ERROR_ACCESS_DENIED);
   }
@@ -151,25 +218,9 @@ STDMETHODIMP ElevatedControllerWin::SetConfig(BSTR config) {
   std::string file_content = UTF16ToUTF8(
     string16(static_cast<char16*>(config), ::SysStringLen(config)));
 
-  int written = file_util::WriteFile(
-      config_dir.Append(kAuthConfigFilename),
-      file_content.c_str(),
-      file_content.size());
-  if (written != static_cast<int>(file_content.size())) {
-    return HRESULT_FROM_WIN32(ERROR_ACCESS_DENIED);
-  }
-
-  // TODO(alexeypa): Store the authentication and host configurations in a
-  // single file.
-  written = file_util::WriteFile(
-      config_dir.Append(kHostConfigFilename),
-      file_content.c_str(),
-      file_content.size());
-  if (written != static_cast<int>(file_content.size())) {
-    return E_FAIL;
-  }
-
-  return S_OK;
+  return WriteConfig(config_dir.Append(kConfigFileName),
+                     file_content.c_str(),
+                     file_content.size());
 }
 
 STDMETHODIMP ElevatedControllerWin::StartDaemon() {
@@ -210,6 +261,10 @@ STDMETHODIMP ElevatedControllerWin::StopDaemon() {
   }
 
   return S_OK;
+}
+
+STDMETHODIMP ElevatedControllerWin::UpdateConfig(BSTR config) {
+  return E_NOTIMPL;
 }
 
 HRESULT ElevatedControllerWin::OpenService(ScopedScHandle* service_out) {

@@ -42,7 +42,7 @@ FilePath GetConfigDir() {
   FilePath app_data_dir;
 
 #if defined(OS_WIN)
-  PathService::Get(base::DIR_LOCAL_APP_DATA, &app_data_dir);
+  PathService::Get(base::DIR_COMMON_APP_DATA, &app_data_dir);
 #elif defined(OS_MACOSX)
   PathService::Get(base::DIR_APP_DATA, &app_data_dir);
 #else

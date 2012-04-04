@@ -63,18 +63,27 @@
     <Media Id="1" Cabinet="chromoting.cab" EmbedCab="yes"/>
 
     <Directory Id="TARGETDIR" Name="SourceDir">
-      <Directory Id="ProgramFilesFolder" Name="PFiles">
+      <Directory Id="ProgramFilesFolder">
         <?ifdef OfficialBuild ?>
-          <Directory Id="google" Name="Google">
-            <Directory Id="chromoting" Name="Chrome Remote Desktop"/>
+          <Directory Id="program_files_google" Name="Google">
+            <Directory Id="binaries" Name="Chrome Remote Desktop"/>
           </Directory>
         <?else?>
-          <Directory Id="chromoting" Name="Chromoting"/>
+          <Directory Id="binaries" Name="Chromoting"/>
+        <?endif?>
+      </Directory>
+      <Directory Id="CommonAppDataFolder">
+        <?ifdef OfficialBuild ?>
+          <Directory Id="common_app_data_google" Name="Google">
+            <Directory Id="config_files" Name="Chrome Remote Desktop"/>
+          </Directory>
+        <?else?>
+          <Directory Id="config_files" Name="Chromoting"/>
         <?endif?>
       </Directory>
     </Directory>
 
-    <DirectoryRef Id="chromoting" FileSource="$(var.FileSource)">
+    <DirectoryRef Id="binaries" FileSource="$(var.FileSource)">
       <Component Id="sas.dll"
                  Guid="3c33dd97-3750-467f-8ec6-730611d346d4">
         <File Id="sas.dll"
@@ -84,8 +93,8 @@
               Vital="yes"/>
       </Component>
 
-      <Component Id="remoting_service.exe"
-                 Guid="23103839-bb02-4007-b149-998ddd8d7cba">
+      <Component Id="remoting_host"
+                 Guid="8b5f7392-dfa9-4fa3-83ac-87bd6676da50">
         <File Id="remoting_service.exe"
               DiskId="1"
               KeyPath="yes"
@@ -96,9 +105,9 @@
                         Type="ownProcess"
                         Vital="yes"
                         Name="$(var.ServiceName)"
-                        DisplayName="@[chromoting]remoting_service.exe,-101"
-                        Description="@[chromoting]remoting_service.exe,-102"
-                        Arguments="--host-binary=&quot;[chromoting]remoting_me2me_host.exe&quot;"
+                        DisplayName="@[#remoting_service.exe],-101"
+                        Description="@[#remoting_service.exe],-102"
+                        Arguments="--host-binary=&quot;[#remoting_me2me_host.exe]&quot; --auth-config=&quot;[config_files]host.json&quot; --host-config=&quot;[config_files]host.json&quot;"
                         Start="auto"
                         Account="LocalSystem"
                         ErrorControl="ignore"
@@ -109,10 +118,7 @@
                         Remove="uninstall"
                         Name="$(var.ServiceName)"
                         Wait="yes" />
-      </Component>
 
-      <Component Id="remoting_me2me_host.exe"
-                 Guid="0e1889af-f3f8-45a2-b2d0-c719d53c4474">
         <File Id="remoting_me2me_host.exe"
               DiskId="1"
               Name="remoting_me2me_host.exe"
@@ -121,8 +127,8 @@
                           Name="$(var.EventSourceName)"
                           Log="Application"
                           CategoryCount="1"
-                          CategoryMessageFile="[chromoting]remoting_me2me_host.exe"
-                          EventMessageFile="[chromoting]remoting_me2me_host.exe"
+                          CategoryMessageFile="[#remoting_me2me_host.exe]"
+                          EventMessageFile="[#remoting_me2me_host.exe]"
                           SupportsErrors="yes"
                           SupportsInformationals="yes"/>
 
@@ -271,7 +277,7 @@
 
                 <RegistryKey Key="HELPDIR" Action="create">
                   <RegistryValue Type="string"
-                                 Value="[chromoting]"/>
+                                 Value="[binaries]"/>
                 </RegistryKey>
               </RegistryKey>
             </RegistryKey>
@@ -285,8 +291,7 @@
 
     <Feature Id="chromoting_host" Level="1" Title="$(var.ChromotingHost)">
       <ComponentRef Id="omaha_registration"/>
-      <ComponentRef Id="remoting_service.exe"/>
-      <ComponentRef Id="remoting_me2me_host.exe"/>
+      <ComponentRef Id="remoting_host"/>
       <ComponentRef Id="sas.dll"/>
       <ComponentRef Id="service_controller"/>
     </Feature>

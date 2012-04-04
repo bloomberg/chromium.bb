@@ -14,10 +14,12 @@ import "ocidl.idl";
   pointer_default(unique)
 ]
 interface IDaemonControl: IDispatch {
-  [ id(1), helpstring("Reads the daemon configuration.") ]
+  [ id(1), helpstring("Returns a filtered copy of the daemon's configuration "
+                      "stripped of all security-sensitive information.") ]
   HRESULT GetConfig([out, retval] BSTR* config_out);
 
-  [ id(2), helpstring("Writes the daemon configuration.") ]
+  [ id(2), helpstring("Replaces the existing daemon's configuration with "
+                      "the specified settings.") ]
   HRESULT SetConfig([in] BSTR config);
 
   [ id(3), helpstring("Starts the daemon.") ]
@@ -25,6 +27,13 @@ interface IDaemonControl: IDispatch {
 
   [ id(4), helpstring("Stops the daemon.") ]
   HRESULT StopDaemon();
+
+  [ id(5), helpstring("Modifies the existing daemon's configuration by "
+                      "merging it with the specified settings. A subset of "
+                      "items is allowed to be modified using this method. "
+                      "Any read-only settings such as 'host_id' (and some "
+                      "others) are not modified.") ]
+  HRESULT UpdateConfig([in] BSTR config);
 };
 
 [

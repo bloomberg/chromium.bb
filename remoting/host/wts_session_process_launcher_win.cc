@@ -11,6 +11,7 @@
 #include <sddl.h>
 #include <limits>
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/process_util.h"
 #include "base/rand_util.h"
@@ -43,8 +44,12 @@ const char kDefaultDesktopName[] = "winsta0\\default";
 // Match the pipe name prefix used by Chrome IPC channels.
 const char kChromePipeNamePrefix[] = "\\\\.\\pipe\\chrome.";
 
-// Generates the command line of the host process.
-const char kHostProcessCommandLineFormat[] = "\"%ls\" --chromoting-ipc=%ls";
+// The IPC channel name is passed to the host in the command line.
+const char kChromotingIpcSwitchName[] = "chromoting-ipc";
+
+// The command line parameters that should be copied from the service's command
+// line to the host process.
+const char* kCopiedSwitchNames[] = { "auth-config", "host-config" };
 
 // The security descriptor of the Chromoting IPC channel. It gives full access
 // to LocalSystem and denies access by anyone else.
@@ -279,15 +284,18 @@ void WtsSessionProcessLauncher::LaunchProcess() {
         this,
         io_thread_->message_loop_proxy().get()));
 
-    string16 command_line =
-        base::StringPrintf(ASCIIToUTF16(kHostProcessCommandLineFormat).c_str(),
-                           host_binary_.value().c_str(),
-                           channel_name.c_str());
+    // Create the host process command line passing the name of the IPC channel
+    // to use and copying known switches from the service's command line.
+    CommandLine command_line(host_binary_);
+    command_line.AppendSwitchNative(kChromotingIpcSwitchName, channel_name);
+    command_line.CopySwitchesFrom(*CommandLine::ForCurrentProcess(),
+                                  kCopiedSwitchNames,
+                                  _countof(kCopiedSwitchNames));
 
     // Try to launch the process and attach an object watcher to the returned
     // handle so that we get notified when the process terminates.
-    if (LaunchProcessAsUser(host_binary_, command_line, session_token_,
-                            &process_)) {
+    if (LaunchProcessAsUser(host_binary_, command_line.GetCommandLineString(),
+                            session_token_, &process_)) {
       if (process_watcher_.StartWatching(process_.handle(), this)) {
         state_ = StateAttached;
         return;

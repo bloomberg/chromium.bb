@@ -32,6 +32,7 @@ class ATL_NO_VTABLE ElevatedControllerWin
   STDMETHOD(SetConfig)(BSTR config);
   STDMETHOD(StartDaemon)();
   STDMETHOD(StopDaemon)();
+  STDMETHOD(UpdateConfig)(BSTR config);
 
   DECLARE_NO_REGISTRY()
 

@@ -412,7 +412,12 @@
             {
               'rule_name': 'candle',
               'extension': 'wxs',
-              'inputs': [ ],
+              'inputs': [
+                '<(PRODUCT_DIR)/remoting_host_controller.exe',
+                '<(PRODUCT_DIR)/remoting_me2me_host.exe',
+                '<(PRODUCT_DIR)/remoting_service.exe',
+                '<(sas_dll_path)'
+              ],
               'outputs': [
                 '<(INTERMEDIATE_DIR)/<(RULE_INPUT_ROOT).wixobj',
               ],
@@ -437,6 +442,7 @@
               'rule_name': 'light',
               'extension': 'wixobj',
               'inputs': [
+                '<(PRODUCT_DIR)/remoting_host_controller.exe',
                 '<(PRODUCT_DIR)/remoting_me2me_host.exe',
                 '<(PRODUCT_DIR)/remoting_service.exe',
                 '<(sas_dll_path)'
