@@ -33,14 +33,23 @@
 #include "content/public/browser/web_intents_dispatcher.h"
 #include "content/public/common/url_fetcher.h"
 #include "content/public/common/url_fetcher_delegate.h"
+#include "grit/generated_resources.h"
 #include "net/base/load_flags.h"
 #include "skia/ext/image_operations.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/image/image.h"
 #include "webkit/glue/web_intent_service_data.h"
 
 namespace {
+
+const char kShareActionURL[] = "http://webintents.org/share";
+const char kEditActionURL[] = "http://webintents.org/edit";
+const char kViewActionURL[] = "http://webintents.org/view";
+const char kPickActionURL[] = "http://webintents.org/pick";
+const char kSubscribeActionURL[] = "http://webintents.org/subscribe";
+const char kSaveActionURL[] = "http://webintents.org/save";
 
 // Gets the favicon service for the profile in |tab_contents|.
 FaviconService* GetFaviconService(TabContentsWrapper* wrapper) {
@@ -68,6 +77,24 @@ WebIntentPickerModel::Disposition ConvertDisposition(
       NOTREACHED();
       return WebIntentPickerModel::DISPOSITION_WINDOW;
   }
+}
+
+// Returns the action-specific string for |action|.
+string16 GetIntentActionString(const std::string& action) {
+  if (!action.compare(kShareActionURL))
+    return l10n_util::GetStringUTF16(IDS_WEB_INTENTS_ACTION_SHARE);
+  else if (!action.compare(kEditActionURL))
+    return l10n_util::GetStringUTF16(IDS_WEB_INTENTS_ACTION_EDIT);
+  else if (!action.compare(kViewActionURL))
+    return l10n_util::GetStringUTF16(IDS_WEB_INTENTS_ACTION_VIEW);
+  else if (!action.compare(kPickActionURL))
+    return l10n_util::GetStringUTF16(IDS_WEB_INTENTS_ACTION_PICK);
+  else if (!action.compare(kSubscribeActionURL))
+    return l10n_util::GetStringUTF16(IDS_WEB_INTENTS_ACTION_SUBSCRIBE);
+  else if (!action.compare(kSaveActionURL))
+    return l10n_util::GetStringUTF16(IDS_WEB_INTENTS_ACTION_SAVE);
+  else
+    return l10n_util::GetStringUTF16(IDS_INTENT_PICKER_CHOOSE_SERVICE);
 }
 
 // Self-deleting trampoline that forwards a WebIntentsRegistry response to a
@@ -193,6 +220,8 @@ void WebIntentPickerController::ShowDialog(Browser* browser,
     picker_ = WebIntentPicker::Create(browser, wrapper_, this,
                                       picker_model_.get());
   }
+
+  picker_->SetActionString(GetIntentActionString(UTF16ToUTF8(action)));
 
   picker_shown_ = true;
   pending_async_count_+= 2;

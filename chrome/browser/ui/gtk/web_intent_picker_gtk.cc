@@ -149,6 +149,10 @@ void WebIntentPickerGtk::Close() {
     inline_disposition_tab_contents_->web_contents()->OnCloseStarted();
 }
 
+void WebIntentPickerGtk::SetActionString(const string16& action) {
+  gtk_label_set_text(GTK_LABEL(header_label_), UTF16ToUTF8(action).c_str());
+}
+
 void WebIntentPickerGtk::OnExtensionInstallSuccess(const std::string& id) {
   RemoveThrobber();
 }
@@ -356,9 +360,8 @@ void WebIntentPickerGtk::InitContents() {
   GtkWidget* header_hbox = gtk_hbox_new(FALSE, ui::kControlSpacing);
   gtk_box_pack_start(GTK_BOX(contents_), header_hbox, TRUE, TRUE, 0);
 
-  header_label_ = theme_service->BuildLabel(
-      l10n_util::GetStringUTF8(IDS_INTENT_PICKER_CHOOSE_SERVICE).c_str(),
-      ui::kGdkBlack);
+  // Label text will be set in the call to SetActionString().
+  header_label_ = theme_service->BuildLabel(std::string(), ui::kGdkBlack);
   gtk_util::ForceFontSizePixels(header_label_, kHeaderLabelPixelSize);
   gtk_box_pack_start(GTK_BOX(header_hbox), header_label_, TRUE, TRUE, 0);
   gtk_misc_set_alignment(GTK_MISC(header_label_), 0, 0);

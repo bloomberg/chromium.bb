@@ -102,35 +102,32 @@ class WebIntentPickerMock : public WebIntentPicker,
         pending_async_completed_(false) {
   }
 
+  // WebIntentPicker implementation.
+  virtual void Close() OVERRIDE {}
+  virtual void SetActionString(const string16& action) OVERRIDE {}
+  virtual void OnExtensionInstallSuccess(const std::string& id) OVERRIDE {
+    num_extensions_installed_++;
+  }
+  virtual void OnExtensionInstallFailure(const std::string& id) OVERRIDE {}
+  virtual void OnPendingAsyncCompleted() OVERRIDE {
+    StopWaiting();
+  }
+
+  // WebIntentPickerModelObserver implementation.
   virtual void OnModelChanged(WebIntentPickerModel* model) OVERRIDE {
     num_installed_services_ =
         static_cast<int>(model->GetInstalledServiceCount());
   }
-
   virtual void OnFaviconChanged(
       WebIntentPickerModel* model, size_t index) OVERRIDE {
     num_icons_changed_++;
   }
-
   virtual void OnExtensionIconChanged(
       WebIntentPickerModel* model, const string16& extension_id) OVERRIDE {
     num_extension_icons_changed_++;
   }
-
   virtual void OnInlineDisposition(
       WebIntentPickerModel* model, const GURL& url) OVERRIDE {}
-  virtual void Close() OVERRIDE {}
-
-  virtual void OnExtensionInstallSuccess(const std::string& id) OVERRIDE {
-    num_extensions_installed_++;
-  }
-
-  virtual void OnExtensionInstallFailure(const std::string& id) OVERRIDE {
-  }
-
-  virtual void OnPendingAsyncCompleted() OVERRIDE {
-    StopWaiting();
-  }
 
   void Wait() {
     if (!pending_async_completed_) {

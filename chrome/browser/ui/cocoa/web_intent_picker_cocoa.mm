@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/message_loop.h"
+#include "base/sys_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -122,6 +123,10 @@ void WebIntentPickerCocoa::Close() {
 
   if (inline_disposition_tab_contents_.get())
     inline_disposition_tab_contents_->web_contents()->OnCloseStarted();
+}
+
+void WebIntentPickerCocoa::SetActionString(const string16& action_string) {
+  [sheet_controller_ setActionString:base::SysUTF16ToNSString(action_string)];
 }
 
 void WebIntentPickerCocoa::PerformLayout() {

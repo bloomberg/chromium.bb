@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <cstdlib>
 #include <iterator>
+#include <string>
 
 #include "base/command_line.h"
 #include "base/file_util.h"

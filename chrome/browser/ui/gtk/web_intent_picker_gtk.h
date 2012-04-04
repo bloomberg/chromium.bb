@@ -44,6 +44,7 @@ class WebIntentPickerGtk : public WebIntentPicker,
 
   // WebIntentPicker implementation.
   virtual void Close() OVERRIDE;
+  virtual void SetActionString(const string16& action) OVERRIDE;
   virtual void OnExtensionInstallSuccess(const std::string& id) OVERRIDE;
   virtual void OnExtensionInstallFailure(const std::string& id) OVERRIDE;
 

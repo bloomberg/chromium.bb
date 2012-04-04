@@ -554,6 +554,7 @@ class WebIntentPickerViews : public views::ButtonListener,
 
   // WebIntentPicker implementation.
   virtual void Close() OVERRIDE;
+  virtual void SetActionString(const string16& action) OVERRIDE;
   virtual void OnExtensionInstallSuccess(const std::string& id) OVERRIDE;
   virtual void OnExtensionInstallFailure(const std::string& id) OVERRIDE;
 
@@ -596,6 +597,9 @@ class WebIntentPickerViews : public views::ButtonListener,
 
   // A weak pointer to the service button view.
   ServiceButtonsView* service_buttons_;
+
+  // A weak pointer to the action string label.
+  views::Label* action_label_;
 
   // A weak pointer to the header label for the extension suggestions.
   views::Label* suggestions_label_;
@@ -642,6 +646,7 @@ WebIntentPickerViews::WebIntentPickerViews(Browser* browser,
     : delegate_(delegate),
       model_(model),
       service_buttons_(NULL),
+      action_label_(NULL),
       suggestions_label_(NULL),
       extensions_(NULL),
       browser_(browser),
@@ -710,6 +715,10 @@ void WebIntentPickerViews::LinkClicked(views::Link* source, int event_flags) {
 
 void WebIntentPickerViews::Close() {
   window_->CloseConstrainedWindow();
+}
+
+void WebIntentPickerViews::SetActionString(const string16& action) {
+  action_label_->SetText(action);
 }
 
 void WebIntentPickerViews::OnExtensionInstallSuccess(const std::string& id) {
@@ -896,11 +905,10 @@ void WebIntentPickerViews::InitContents() {
 
   // Header row.
   grid_layout->StartRow(0, kHeaderRowColumnSet);
-  views::Label* top_label = new views::Label(
-      l10n_util::GetStringUTF16(IDS_INTENT_PICKER_CHOOSE_SERVICE));
-  top_label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-  top_label->SetFont(rb.GetFont(ResourceBundle::MediumFont));
-  grid_layout->AddView(top_label);
+  action_label_ = new views::Label();
+  action_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  action_label_->SetFont(rb.GetFont(ResourceBundle::MediumFont));
+  grid_layout->AddView(action_label_);
 
 #if defined(USE_CLOSE_BUTTON)
   grid_layout->AddView(CreateCloseButton());

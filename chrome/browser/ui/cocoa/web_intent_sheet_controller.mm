@@ -332,18 +332,17 @@ const CGFloat kTextWidth = kWindowWidth - (kImageSize + kImageSpacing +
   [imageView setImage:nsImage];
   [imageView setImageFrameStyle:NSImageFrameNone];
 
-  NSRect textFrame = NSMakeRect(kFramePadding + kImageSize + kImageSpacing,
-                                offset, kTextWidth, 1);
-  scoped_nsobject<NSTextField> textField(
-        [[NSTextField alloc] initWithFrame:textFrame]);
-  [self configureTextFieldAsLabel:textField.get()];
+  // Create a new text field if we don't have one yet.
+  // TODO(groby): This should not be necessary since the controller sends this
+  // string.
+  if (!actionTextField_.get()) {
+    NSString* nsString =
+        l10n_util::GetNSStringWithFixup(IDS_CHOOSE_INTENT_HANDLER_MESSAGE);
+    [self setActionString:nsString];
+  }
 
-  NSString* nsString =
-      l10n_util::GetNSStringWithFixup(IDS_CHOOSE_INTENT_HANDLER_MESSAGE);
-  [textField setStringValue:nsString];
-  textFrame.size.height +=
-      [GTMUILocalizerAndLayoutTweaker sizeToFitFixedWidthTextField:
-            textField];
+  NSRect textFrame = [actionTextField_ frame];
+  textFrame.origin.y = offset;
 
   NSRect buttonFrame = NSMakeRect(
       kFramePadding + kImageSize + kTextWidth, offset,
@@ -359,10 +358,10 @@ const CGFloat kTextWidth = kWindowWidth - (kImageSize + kImageSpacing +
   textFrame.origin.y += (maxHeight - NSHeight(textFrame)) / 2;
   imageFrame.origin.y += (maxHeight - NSHeight(imageFrame)) / 2;
 
-  [textField setFrame:textFrame];
+  [actionTextField_ setFrame:textFrame];
   [imageView setFrame:imageFrame];
 
-  [subviews addObject:textField.get()];
+  [subviews addObject:actionTextField_.get()];
   [subviews addObject:imageView.get()];
   [subviews addObject:closeButton.get()];
 
@@ -500,6 +499,25 @@ const CGFloat kTextWidth = kWindowWidth - (kImageSize + kImageSpacing +
   // Replace the window's content.
   [[[self window] contentView] setSubviews:
       [NSArray arrayWithObject:contentView]];
+}
+
+- (void)setActionString:(NSString*)actionString {
+  NSRect textFrame;
+  if (!actionTextField_.get()) {
+    textFrame = NSMakeRect(kFramePadding + kImageSize + kImageSpacing, 0,
+                           kTextWidth, 1);
+
+    actionTextField_.reset([[NSTextField alloc] initWithFrame:textFrame]);
+    [self configureTextFieldAsLabel:actionTextField_.get()];
+  } else {
+    textFrame = [actionTextField_ frame];
+  }
+
+  [actionTextField_ setStringValue:actionString];
+  textFrame.size.height +=
+      [GTMUILocalizerAndLayoutTweaker sizeToFitFixedWidthTextField:
+            actionTextField_];
+  [actionTextField_ setFrame: textFrame];
 }
 
 - (void)closeSheet {

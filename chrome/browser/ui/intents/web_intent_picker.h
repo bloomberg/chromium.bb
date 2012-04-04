@@ -7,7 +7,10 @@
 #pragma once
 
 #include <stddef.h>
+#include <string>
 #include <vector>
+
+#include "base/string16.h"
 #include "ui/gfx/size.h"
 
 class Browser;
@@ -31,6 +34,10 @@ class WebIntentPicker {
 
   // Hides the UI for this picker, and destroys its UI.
   virtual void Close() = 0;
+
+  // Sets the action string of the picker, e.g.,
+  // "Which service should be used for sharing?".
+  virtual void SetActionString(const string16& action) = 0;
 
   // Called when an extension is successfully installed via the picker.
   virtual void OnExtensionInstallSuccess(const std::string& id) {}

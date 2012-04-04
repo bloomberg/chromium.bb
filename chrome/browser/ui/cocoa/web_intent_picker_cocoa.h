@@ -9,6 +9,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/string16.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/intents/web_intent_picker.h"
 #include "chrome/browser/ui/intents/web_intent_picker_model.h"
@@ -38,8 +39,9 @@ class WebIntentPickerCocoa : public WebIntentPicker,
   void OnServiceChosen(size_t index);
   void OnExtensionInstallRequested(const std::string& extension_id);
 
-  // WebIntentPicker:
+  // WebIntentPicker implementation.
   virtual void Close() OVERRIDE;
+  virtual void SetActionString(const string16& action) OVERRIDE;
   virtual void OnExtensionInstallSuccess(const std::string& id) OVERRIDE;
   virtual void OnExtensionInstallFailure(const std::string& id) OVERRIDE;
 

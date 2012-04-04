@@ -28,6 +28,8 @@ class WebIntentPickerModel;
 
   // The intent picker data to be rendered. Weak reference.
   WebIntentPickerModel* model_;
+
+  scoped_nsobject<NSTextField> actionTextField_;
 }
 
 // Initialize the constrained dialog, and connect to picker.
@@ -37,6 +39,10 @@ class WebIntentPickerModel;
 - (void)setInlineDispositionTabContents:(TabContentsWrapper*)wrapper;
 
 - (void)performLayoutWithModel:(WebIntentPickerModel*)model;
+
+// Sets the action string of the picker, e.g.,
+// "Which service should be used for sharing?".
+- (void)setActionString:(NSString*)actionString;
 
 // Close the current sheet (and by extension, the constrained dialog).
 - (void)closeSheet;
