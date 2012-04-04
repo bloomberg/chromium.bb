@@ -76,7 +76,10 @@ IBusInputContext* GetInputContext(
 
 // Returns true if |prop| has children.
 bool PropertyHasChildren(IBusProperty* prop) {
-  return prop && prop->sub_props && ibus_prop_list_get(prop->sub_props, 0);
+  return prop && ibus_property_get_sub_props(prop) &&
+      ibus_prop_list_get(
+          // TODO(yusukes): Remove the cast when we migrate to ibus-1.5.
+          const_cast<IBusPropList*>(ibus_property_get_sub_props(prop)), 0);
 }
 
 // This function is called by and FlattenProperty() and converts IBus
@@ -87,75 +90,77 @@ bool ConvertProperty(IBusProperty* ibus_prop,
                      int selection_item_id,
                      InputMethodPropertyList* out_prop_list) {
   DCHECK(ibus_prop);
-  DCHECK(ibus_prop->key);
   DCHECK(out_prop_list);
+
+  const IBusPropType type = ibus_property_get_prop_type(ibus_prop);
+  const IBusPropState state = ibus_property_get_state(ibus_prop);
+  const IBusText* tooltip = ibus_property_get_tooltip(ibus_prop);
+  const IBusText* label = ibus_property_get_label(ibus_prop);
+  const gchar* key = ibus_property_get_key(ibus_prop);
+  DCHECK(key);
 
   // Sanity checks.
   const bool has_sub_props = PropertyHasChildren(ibus_prop);
-  if (has_sub_props && (ibus_prop->type != PROP_TYPE_MENU)) {
+  if (has_sub_props && (type != PROP_TYPE_MENU)) {
     LOG(ERROR) << "The property has sub properties, "
                << "but the type of the property is not PROP_TYPE_MENU";
     return false;
   }
-  if ((!has_sub_props) && (ibus_prop->type == PROP_TYPE_MENU)) {
+  if ((!has_sub_props) && (type == PROP_TYPE_MENU)) {
     // This is usually not an error. ibus-daemon sometimes sends empty props.
     VLOG(1) << "Property list is empty";
     return false;
   }
-  if (ibus_prop->type == PROP_TYPE_SEPARATOR ||
-      ibus_prop->type == PROP_TYPE_MENU) {
+  if (type == PROP_TYPE_SEPARATOR || type == PROP_TYPE_MENU) {
     // This is not an error, but we don't push an item for these types.
     return true;
   }
 
-  const bool is_selection_item = (ibus_prop->type == PROP_TYPE_RADIO);
+  const bool is_selection_item = (type == PROP_TYPE_RADIO);
   selection_item_id = is_selection_item ?
       selection_item_id : InputMethodProperty::kInvalidSelectionItemId;
 
   bool is_selection_item_checked = false;
-  if (ibus_prop->state == PROP_STATE_INCONSISTENT) {
+  if (state == PROP_STATE_INCONSISTENT) {
     LOG(WARNING) << "The property is in PROP_STATE_INCONSISTENT, "
                  << "which is not supported.";
-  } else if ((!is_selection_item) && (ibus_prop->state == PROP_STATE_CHECKED)) {
+  } else if ((!is_selection_item) && (state == PROP_STATE_CHECKED)) {
     LOG(WARNING) << "PROP_STATE_CHECKED is meaningful only if the type is "
                  << "PROP_TYPE_RADIO.";
   } else {
-    is_selection_item_checked = (ibus_prop->state == PROP_STATE_CHECKED);
+    is_selection_item_checked = (state == PROP_STATE_CHECKED);
   }
 
-  if (!ibus_prop->key) {
+  if (!key) {
     LOG(ERROR) << "key is NULL";
   }
-  if (ibus_prop->tooltip && (!ibus_prop->tooltip->text)) {
+  if (tooltip && !tooltip->text) {
     LOG(ERROR) << "tooltip is NOT NULL, but tooltip->text IS NULL: key="
-               << Or(ibus_prop->key, "");
+               << Or(key, "");
   }
-  if (ibus_prop->label && (!ibus_prop->label->text)) {
+  if (label && !label->text) {
     LOG(ERROR) << "label is NOT NULL, but label->text IS NULL: key="
-               << Or(ibus_prop->key, "");
+               << Or(key, "");
   }
 
   // This label will be localized on Chrome side.
   // See src/chrome/browser/chromeos/status/language_menu_l10n_util.h.
-  std::string label =
-      ((ibus_prop->tooltip &&
-        ibus_prop->tooltip->text) ? ibus_prop->tooltip->text : "");
-  if (label.empty()) {
+  std::string label_to_use = ((tooltip && tooltip->text) ? tooltip->text : "");
+  if (label_to_use.empty()) {
     // Usually tooltips are more descriptive than labels.
-    label = (ibus_prop->label && ibus_prop->label->text)
-        ? ibus_prop->label->text : "";
+    label_to_use = (label && label->text) ? label->text : "";
   }
-  if (label.empty()) {
+  if (label_to_use.empty()) {
     // ibus-pinyin has a property whose label and tooltip are empty. Fall back
     // to the key.
-    label = Or(ibus_prop->key, "");
+    label_to_use = Or(key, "");
   }
 
-  out_prop_list->push_back(InputMethodProperty(ibus_prop->key,
-                                       label,
-                                       is_selection_item,
-                                       is_selection_item_checked,
-                                       selection_item_id));
+  out_prop_list->push_back(InputMethodProperty(key,
+                                               label_to_use,
+                                               is_selection_item,
+                                               is_selection_item_checked,
+                                               selection_item_id));
   return true;
 }
 
@@ -174,11 +179,12 @@ bool FlattenProperty(IBusProperty* ibus_prop,
 
   while (!prop_stack.empty()) {
     IBusProperty* prop = prop_stack.top().first;
+    const gchar* key = ibus_property_get_key(prop);
     const int current_selection_item_id = prop_stack.top().second;
     prop_stack.pop();
 
     // Filter out unnecessary properties.
-    if (PropertyKeyIsBlacklisted(prop->key)) {
+    if (PropertyKeyIsBlacklisted(key)) {
       continue;
     }
 
@@ -192,7 +198,9 @@ bool FlattenProperty(IBusProperty* ibus_prop,
     if (PropertyHasChildren(prop)) {
       ++selection_item_id;
       for (int i = 0;; ++i) {
-        IBusProperty* sub_prop = ibus_prop_list_get(prop->sub_props, i);
+        IBusProperty* sub_prop = ibus_prop_list_get(
+            // TODO(yusukes): Remove the cast when we migrate to ibus-1.5.
+            const_cast<IBusPropList*>(ibus_property_get_sub_props(prop)), i);
         if (!sub_prop) {
           break;
         }
@@ -296,29 +304,36 @@ std::string PrintProp(IBusProperty *prop, int tree_level) {
     return "";
   }
 
+  const IBusPropType type = ibus_property_get_prop_type(prop);
+  const IBusPropState state = ibus_property_get_state(prop);
+  const IBusText* tooltip = ibus_property_get_tooltip(prop);
+  const IBusText* label = ibus_property_get_label(prop);
+  const gchar* key = ibus_property_get_key(prop);
+
   std::stringstream stream;
   stream << Spacer(tree_level) << "=========================" << std::endl;
-  stream << Spacer(tree_level) << "key: " << Or(prop->key, "<none>")
-         << std::endl;
-  stream << Spacer(tree_level) << "icon: " << Or(prop->icon, "<none>")
+  stream << Spacer(tree_level) << "key: " << Or(key, "<none>")
          << std::endl;
   stream << Spacer(tree_level) << "label: "
-         << ((prop->label && prop->label->text) ? prop->label->text : "<none>")
+         << ((label && label->text) ? label->text : "<none>")
          << std::endl;
   stream << Spacer(tree_level) << "tooptip: "
-         << ((prop->tooltip && prop->tooltip->text)
-             ? prop->tooltip->text : "<none>") << std::endl;
+         << ((tooltip && tooltip->text)
+             ? tooltip->text : "<none>") << std::endl;
   stream << Spacer(tree_level) << "sensitive: "
-         << (prop->sensitive ? "YES" : "NO") << std::endl;
-  stream << Spacer(tree_level) << "visible: " << (prop->visible ? "YES" : "NO")
+         << (ibus_property_get_sensitive(prop) ? "YES" : "NO") << std::endl;
+  stream << Spacer(tree_level) << "visible: "
+         << (ibus_property_get_visible(prop) ? "YES" : "NO") << std::endl;
+  stream << Spacer(tree_level) << "type: " << PropTypeToString(type)
          << std::endl;
-  stream << Spacer(tree_level) << "type: " << PropTypeToString(prop->type)
-         << std::endl;
-  stream << Spacer(tree_level) << "state: " << PropStateToString(prop->state)
+  stream << Spacer(tree_level) << "state: " << PropStateToString(state)
          << std::endl;
   stream << Spacer(tree_level) << "sub_props: "
          << (PropertyHasChildren(prop) ? "" : "<none>") << std::endl;
-  stream << PrintPropList(prop->sub_props, tree_level + 1);
+  stream << PrintPropList(
+      // TODO(yusukes): Remove the cast when we migrate to ibus-1.5.
+      const_cast<IBusPropList*>(ibus_property_get_sub_props(prop)),
+      tree_level + 1);
   stream << Spacer(tree_level) << "=========================" << std::endl;
 
   return stream.str();
