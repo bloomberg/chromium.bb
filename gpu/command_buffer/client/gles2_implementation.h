@@ -390,15 +390,6 @@ class GLES2_IMPL_EXPORT GLES2Implementation {
   bool DeleteShaderHelper(GLuint shader);
   void DeleteQueriesEXTHelper(GLsizei n, const GLuint* textures);
 
-  void DeleteBuffersStub(GLsizei n, const GLuint* buffers);
-  void DeleteFramebuffersStub(GLsizei n, const GLuint* framebuffers);
-  void DeleteRenderbuffersStub(GLsizei n, const GLuint* renderbuffers);
-  void DeleteTexturesStub(GLsizei n, const GLuint* textures);
-  void DeleteProgramStub(GLsizei n, const GLuint* programs);
-  void DeleteShaderStub(GLsizei n, const GLuint* shaders);
-  // TODO(gman): Remove this as queries are not shared.
-  void DeleteQueriesStub(GLsizei n, const GLuint* queries);
-
   void BufferDataHelper(
       GLenum target, GLsizeiptr size, const void* data, GLenum usage);
   void BufferSubDataHelper(

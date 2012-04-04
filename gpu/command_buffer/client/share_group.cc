@@ -15,11 +15,11 @@ namespace gles2 {
 COMPILE_ASSERT(gpu::kInvalidResource == 0,
                INVALID_RESOURCE_NOT_0_AS_GL_EXPECTS);
 
-// The standard id handler.
-class IdHandler : public IdHandlerInterface {
+// An id handler for non-shared ids.
+class NonSharedIdHandler : public IdHandlerInterface {
  public:
-  IdHandler() { }
-  virtual ~IdHandler() { }
+  NonSharedIdHandler() { }
+  virtual ~NonSharedIdHandler() { }
 
   // Overridden from IdHandlerInterface.
   virtual void Destroy(GLES2Implementation* /* gl_impl */) {
@@ -43,15 +43,11 @@ class IdHandler : public IdHandlerInterface {
 
   // Overridden from IdHandlerInterface.
   virtual bool FreeIds(
-      GLES2Implementation* gl_impl,
-      GLsizei n, const GLuint* ids, DeleteFn delete_fn) {
+      GLES2Implementation* /* gl_impl */,
+      GLsizei n, const GLuint* ids) {
     for (GLsizei ii = 0; ii < n; ++ii) {
       id_allocator_.FreeID(ids[ii]);
     }
-    (gl_impl->*delete_fn)(n, ids);
-    // We need to ensure that the delete call is evaluated on the service side
-    // before any other contexts issue commands using these client ids.
-    gl_impl->helper()->CommandBufferHelper::Flush();
     return true;
   }
 
@@ -63,60 +59,11 @@ class IdHandler : public IdHandlerInterface {
   IdAllocator id_allocator_;
 };
 
-// An id handler that require Gen before Bind.
-class StrictIdHandler : public IdHandlerInterface {
+// An id handler for non-shared ids that are never reused.
+class NonSharedNonReusedIdHandler : public IdHandlerInterface {
  public:
-  StrictIdHandler() { }
-  virtual ~StrictIdHandler() { }
-
-  // Overridden from IdHandlerInterface.
-  virtual void Destroy(GLES2Implementation* /* gl_impl */) {
-  }
-
-  // Overridden from IdHandlerInterface.
-  virtual void MakeIds(
-      GLES2Implementation* /* gl_impl */,
-      GLuint id_offset, GLsizei n, GLuint* ids) {
-    if (id_offset == 0) {
-      for (GLsizei ii = 0; ii < n; ++ii) {
-        ids[ii] = id_allocator_.AllocateID();
-      }
-    } else {
-      for (GLsizei ii = 0; ii < n; ++ii) {
-        ids[ii] = id_allocator_.AllocateIDAtOrAbove(id_offset);
-        id_offset = ids[ii] + 1;
-      }
-    }
-  }
-
-  // Overridden from IdHandlerInterface.
-  virtual bool FreeIds(
-      GLES2Implementation* gl_impl,
-      GLsizei n, const GLuint* ids, DeleteFn delete_fn) {
-    for (GLsizei ii = 0; ii < n; ++ii) {
-      id_allocator_.FreeID(ids[ii]);
-    }
-    (gl_impl->*delete_fn)(n, ids);
-    // We need to ensure that the delete call is evaluated on the service side
-    // before any other contexts issue commands using these client ids.
-    gl_impl->helper()->CommandBufferHelper::Flush();
-    return true;
-  }
-
-  // Overridden from IdHandlerInterface.
-  virtual bool MarkAsUsedForBind(GLuint id) {
-    GPU_DCHECK(id == 0 || id_allocator_.InUse(id));
-    return true;
-  }
- private:
-  IdAllocator id_allocator_;
-};
-
-// An id handler for ids that are never reused.
-class NonReusedIdHandler : public IdHandlerInterface {
- public:
-  NonReusedIdHandler() : last_id_(0) { }
-  virtual ~NonReusedIdHandler() { }
+  NonSharedNonReusedIdHandler() : last_id_(0) { }
+  virtual ~NonSharedNonReusedIdHandler() { }
 
   // Overridden from IdHandlerInterface.
   virtual void Destroy(GLES2Implementation* /* gl_impl */) {
@@ -133,10 +80,9 @@ class NonReusedIdHandler : public IdHandlerInterface {
 
   // Overridden from IdHandlerInterface.
   virtual bool FreeIds(
-      GLES2Implementation* gl_impl,
-      GLsizei n, const GLuint* ids, DeleteFn delete_fn) {
+      GLES2Implementation* /* gl_impl */,
+      GLsizei /* n */, const GLuint* /* ids */) {
     // Ids are never freed.
-    (gl_impl->*delete_fn)(n, ids);
     return true;
   }
 
@@ -172,12 +118,83 @@ class SharedIdHandler : public IdHandlerInterface {
 
   virtual bool FreeIds(
       GLES2Implementation* gl_impl,
-      GLsizei n, const GLuint* ids, DeleteFn delete_fn) {
+      GLsizei n, const GLuint* ids) {
     gl_impl->DeleteSharedIdsCHROMIUM(id_namespace_, n, ids);
-    (gl_impl->*delete_fn)(n, ids);
     // We need to ensure that the delete call is evaluated on the service side
     // before any other contexts issue commands using these client ids.
     gl_impl->helper()->CommandBufferHelper::Flush();
+    return true;
+  }
+
+  virtual bool MarkAsUsedForBind(GLuint /* id */) {
+    // This has no meaning for shared resources.
+    return true;
+  }
+
+ private:
+  id_namespaces::IdNamespaces id_namespace_;
+};
+
+// An id handler for shared ids that requires ids are made before using and
+// that only the context that created the id can delete it.
+// Assumes the service will enforce that non made ids generate an error.
+class StrictSharedIdHandler : public IdHandlerInterface {
+ public:
+  StrictSharedIdHandler(
+      id_namespaces::IdNamespaces id_namespace)
+      : id_namespace_(id_namespace) {
+  }
+
+  virtual ~StrictSharedIdHandler() {
+  }
+
+  // Overridden from IdHandlerInterface.
+  virtual void Destroy(GLES2Implementation* gl_impl) {
+    GPU_DCHECK(gl_impl);
+    // Free all the ids not being used.
+    while (!free_ids_.empty()) {
+      GLuint ids[kNumIdsToGet];
+      int count = 0;
+      while (count < kNumIdsToGet && !free_ids_.empty()) {
+        ids[count++] = free_ids_.front();
+        free_ids_.pop();
+      }
+      gl_impl->DeleteSharedIdsCHROMIUM(id_namespace_, count, ids);
+    }
+  }
+
+  virtual void MakeIds(
+      GLES2Implementation* gl_impl,
+      GLuint id_offset, GLsizei n, GLuint* ids) {
+    GPU_DCHECK(gl_impl);
+    for (GLsizei ii = 0; ii < n; ++ii) {
+      ids[ii] = GetId(gl_impl, id_offset);
+    }
+  }
+
+  virtual bool FreeIds(
+      GLES2Implementation* /* gl_impl */,
+      GLsizei n, const GLuint* ids) {
+    // OpenGL sematics. If any id is bad none of them get freed.
+    for (GLsizei ii = 0; ii < n; ++ii) {
+      GLuint id = ids[ii];
+      if (id != 0) {
+        ResourceIdSet::iterator it = used_ids_.find(id);
+        if (it == used_ids_.end()) {
+          return false;
+        }
+      }
+    }
+    for (GLsizei ii = 0; ii < n; ++ii) {
+      GLuint id = ids[ii];
+      if (id != 0) {
+        ResourceIdSet::iterator it = used_ids_.find(id);
+        if (it != used_ids_.end()) {
+          used_ids_.erase(it);
+          free_ids_.push(id);
+        }
+      }
+    }
     return true;
   }
 
@@ -187,8 +204,34 @@ class SharedIdHandler : public IdHandlerInterface {
   }
 
  private:
+  static const GLsizei kNumIdsToGet = 2048;
+  typedef std::queue<GLuint> ResourceIdQueue;
+  typedef std::set<GLuint> ResourceIdSet;
+
+  GLuint GetId(GLES2Implementation* gl_impl, GLuint id_offset) {
+    GPU_DCHECK(gl_impl);
+    if (free_ids_.empty()) {
+      GLuint ids[kNumIdsToGet];
+      gl_impl->GenSharedIdsCHROMIUM(
+          id_namespace_, id_offset, kNumIdsToGet, ids);
+      for (GLsizei ii = 0; ii < kNumIdsToGet; ++ii) {
+        free_ids_.push(ids[ii]);
+      }
+    }
+    GLuint id = free_ids_.front();
+    free_ids_.pop();
+    used_ids_.insert(id);
+    return id;
+  }
+
   id_namespaces::IdNamespaces id_namespace_;
+  ResourceIdSet used_ids_;
+  ResourceIdQueue free_ids_;
 };
+
+#ifndef _MSC_VER
+const GLsizei StrictSharedIdHandler::kNumIdsToGet;
+#endif
 
 class ThreadSafeIdHandlerWrapper : public IdHandlerInterface {
  public:
@@ -212,10 +255,9 @@ class ThreadSafeIdHandlerWrapper : public IdHandlerInterface {
 
   // Overridden from IdHandlerInterface.
   virtual bool FreeIds(
-      GLES2Implementation* gl_impl, GLsizei n, const GLuint* ids,
-      DeleteFn delete_fn) {
+      GLES2Implementation* gl_impl, GLsizei n, const GLuint* ids) {
     AutoLock auto_lock(lock_);
-    return id_handler_->FreeIds(gl_impl, n, ids, delete_fn);
+    return id_handler_->FreeIds(gl_impl, n, ids);
   }
 
   // Overridden from IdHandlerInterface.
@@ -235,28 +277,29 @@ ShareGroup::ShareGroup(bool share_resources, bool bind_generates_resource)
       gles2_(NULL) {
   GPU_CHECK(ShareGroup::ImplementsThreadSafeReferenceCounting());
 
-  if (bind_generates_resource) {
-    for (int i = 0; i < id_namespaces::kNumIdNamespaces; ++i) {
-      if (i == id_namespaces::kProgramsAndShaders) {
+  if (sharing_resources_) {
+    if (!bind_generates_resource_) {
+      for (int i = 0; i < id_namespaces::kNumIdNamespaces; ++i) {
         id_handlers_[i].reset(new ThreadSafeIdHandlerWrapper(
-            new NonReusedIdHandler()));
-      } else {
+            new StrictSharedIdHandler(
+                static_cast<id_namespaces::IdNamespaces>(i))));
+      }
+    } else {
+      for (int i = 0; i < id_namespaces::kNumIdNamespaces; ++i) {
         id_handlers_[i].reset(new ThreadSafeIdHandlerWrapper(
-            new IdHandler()));
+            new SharedIdHandler(
+                static_cast<id_namespaces::IdNamespaces>(i))));
       }
     }
   } else {
     for (int i = 0; i < id_namespaces::kNumIdNamespaces; ++i) {
-      if (i == id_namespaces::kProgramsAndShaders) {
-        id_handlers_[i].reset(new ThreadSafeIdHandlerWrapper(
-            new NonReusedIdHandler()));
-      } else {
-        id_handlers_[i].reset(new ThreadSafeIdHandlerWrapper(
-            new StrictIdHandler()));
-      }
+      if (i == id_namespaces::kProgramsAndShaders)
+        id_handlers_[i].reset(new NonSharedNonReusedIdHandler);
+      else
+        id_handlers_[i].reset(new NonSharedIdHandler);
     }
   }
-  program_info_manager_.reset(ProgramInfoManager::Create(false));
+  program_info_manager_.reset(ProgramInfoManager::Create(sharing_resources_));
 }
 
 ShareGroup::~ShareGroup() {

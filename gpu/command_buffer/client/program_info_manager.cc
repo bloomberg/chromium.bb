@@ -492,9 +492,8 @@ ProgramInfoManager::ProgramInfoManager() {
 ProgramInfoManager::~ProgramInfoManager() {
 }
 
-ProgramInfoManager* ProgramInfoManager::Create(
-    bool shared_resources_across_processes) {
-  if (shared_resources_across_processes) {
+ProgramInfoManager* ProgramInfoManager::Create(bool shared_resources) {
+  if (shared_resources) {
     return new NonCachedProgramInfoManager();
   } else {
     return new CachedProgramInfoManager();
