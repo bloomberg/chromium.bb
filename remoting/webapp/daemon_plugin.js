@@ -58,24 +58,26 @@ remoting.DaemonPlugin.prototype.updateDom = function() {
   // TODO(sergeyu): This code updates UI state. Does it belong here,
   // or should it moved somewhere else?
   var match = '';
-  switch (this.state()) {
+  var row = document.getElementById('this-host-connect');
+  var state = this.state();
+  switch (state) {
     case remoting.DaemonPlugin.State.STARTED:
-      match = 'enabled';
+      remoting.updateModalUi('enabled', 'data-daemon-state');
+      row.classList.remove('host-offline');
+      row.classList.add('clickable');
       break;
+    case remoting.DaemonPlugin.State.NOT_IMPLEMENTED:
+      document.getElementById('start-daemon').disabled = true;
+      document.getElementById('start-daemon-message').innerText =
+          chrome.i18n.getMessage(
+              /*i18n-content*/'HOME_DAEMON_DISABLED_MESSAGE');
+      // No break;
     case remoting.DaemonPlugin.State.STOPPED:
     case remoting.DaemonPlugin.State.NOT_INSTALLED:
-      match = 'disabled';
+      remoting.updateModalUi('disabled', 'data-daemon-state');
+      row.classList.add('host-offline');
+      row.classList.remove('clickable');
       break;
-  }
-  remoting.updateModalUi(match, 'data-daemon-state');
-  var element = document.getElementById('this-host-connect');
-  if (match == 'enabled') {
-    element.classList.remove('host-offline');
-    element.classList.add('clickable');
-  } else {
-    element.classList.add('host-offline');
-    element.classList.remove('clickable');
-    element.title = '';
   }
 };
 

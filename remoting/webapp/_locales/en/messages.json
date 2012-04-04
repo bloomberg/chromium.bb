@@ -206,6 +206,10 @@
     "message": "Change PIN",
     "description": "Hyperlink displayed immediately after the message indicating that the current computer is accepting remote connectins. Clicking this link allows the user to change the PIN (personal identification number) for accessing this host."
   },
+  "HOME_DAEMON_DISABLED_MESSAGE": {
+    "message": "Sharing this computer for any-time access is not yet supported on this platform\u2026 stay tuned.",
+    "description": "Message displayed when the current computer is not accepting remote connections, instructing the user how to enable them."
+  },
   "HOME_DAEMON_STOP_BUTTON": {
     "message": "Disable remote connections",
     "description": "Button displayed when the current computer is accepting remote connections. Clicking this button causes it to stop accepting remote connections."
