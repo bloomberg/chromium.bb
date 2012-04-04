@@ -296,6 +296,9 @@
         <include name="IDR_AURA_WINDOW_MAXIMIZED_CLOSE" file="aura/window_maximized_close_normal.png" type="BINDATA" />
         <include name="IDR_AURA_WINDOW_MAXIMIZED_CLOSE_H" file="aura/window_maximized_close_hot.png" type="BINDATA" />
         <include name="IDR_AURA_WINDOW_MAXIMIZED_CLOSE_P" file="aura/window_maximized_close_pressed.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_MAXIMIZED_MINIMIZE" file="aura/window_maximized_minimize_normal.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_MAXIMIZED_MINIMIZE_H" file="aura/window_maximized_minimize_hot.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_MAXIMIZED_MINIMIZE_P" file="aura/window_maximized_minimize_pressed.png" type="BINDATA" />
         <include name="IDR_AURA_WINDOW_MAXIMIZED_SNAP_LEFT_P" file="aura/window_maximized_snap_left_p.png" type="BINDATA" />
         <include name="IDR_AURA_WINDOW_MAXIMIZED_SNAP_MINIMIZE_P" file="aura/window_maximized_snap_minimize_p.png" type="BINDATA" />
         <include name="IDR_AURA_WINDOW_MAXIMIZED_SNAP_P" file="aura/window_maximized_snap_p.png" type="BINDATA" />
