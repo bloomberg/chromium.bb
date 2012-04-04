@@ -105,7 +105,7 @@ TEST(AccelFilterInterpreterTest, SimpleTest) {
       // Expect no acceleration
       EXPECT_FLOAT_EQ(4.1, out->details.scroll.dx);
       EXPECT_FLOAT_EQ(-10.3, out->details.scroll.dy);
-    } else {
+    } else if (i > 2) {
       // Expect increasing acceleration
       EXPECT_GT(fabsf(out->details.scroll.dx), fabsf(last_scroll_dx));
       EXPECT_GT(fabsf(out->details.scroll.dy), fabsf(last_scroll_dy));
@@ -119,7 +119,7 @@ TEST(AccelFilterInterpreterTest, SimpleTest) {
       // Expect no acceleration
       EXPECT_FLOAT_EQ(100.1, out->details.fling.vx);
       EXPECT_FLOAT_EQ(-10.3, out->details.fling.vy);
-    } else {
+    } else if (i > 2) {
       // Expect increasing acceleration
       EXPECT_GT(fabsf(out->details.fling.vx), fabsf(last_fling_vx));
       EXPECT_GT(fabsf(out->details.fling.vy), fabsf(last_fling_vy));

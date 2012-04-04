@@ -54,21 +54,21 @@ AccelFilterInterpreter::AccelFilterInterpreter(PropRegistry* prop_reg,
   }
 
   const float scroll_divisors[] = { 0.0, // unused
-                                    90.0, 60.0, 37.5, 30.0 };  // used
+                                    150, 75.0, 56.25, 37.5 };  // used
   // Our scrolling curves are the following.
   // x = input speed of movement (mm/s, always >= 0), y = output speed (mm/s)
   // 1: y = x (No acceleration)
-  // 2: y = 32x/60   (x < 32), x^2/90   (x < 150), linear (initial slope) after.
-  // 3: y = 32x/60   (x < 32), x^2/60   (x < 150), linear (initial slope) after.
-  // 4: y = 32x/37.5 (x < 32), x^2/37.5 (x < 150), linear (initial slope) after.
-  // 5: y = 32x/30   (x < 32), x^2/30   (x < 150), linear (initial slope) after.
+  // 2: y = 75x/150   (x < 75), x^2/150   (x < 600), linear (initial slope).
+  // 3: y = 75x/75    (x < 75), x^2/75    (x < 600), linear (initial slope).
+  // 4: y = 75x/56.25 (x < 75), x^2/56.25 (x < 600), linear (initial slope).
+  // 5: y = 75x/37.5  (x < 75), x^2/37.5  (x < 600), linear (initial slope).
   // i starts as 1 b/c we skip the first slot, since the default is fine for it.
   for (size_t i = 1; i < kMaxAccelCurves; ++i) {
     const float divisor = scroll_divisors[i];
-    const float linear_until_x = 32.0;
+    const float linear_until_x = 75.0;
     const float init_slope = linear_until_x / divisor;
     scroll_curves_[i][0] = CurveSegment(linear_until_x, 0, init_slope, 0);
-    const float x_border = 150;
+    const float x_border = 600;
     scroll_curves_[i][1] = CurveSegment(x_border, 1 / divisor, 0, 0);
     // For scrolling / flinging we level off the speed.
     const float slope = init_slope;
