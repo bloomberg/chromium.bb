@@ -246,6 +246,11 @@ void SearchEngineManagerHandler::EditSearchEngine(const ListValue* args) {
     NOTREACHED();
     return;
   }
+
+  // CHECK()s to track down the cause of crbug.com/121741.
+  CHECK(list_controller_.get());
+  CHECK(list_controller_->table_model());
+
   // Allow -1, which means we are adding a new engine.
   if (index < -1 || index >= list_controller_->table_model()->RowCount())
     return;
