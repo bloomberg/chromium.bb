@@ -74,8 +74,13 @@ class BrowserEncodingTest : public InProcessBrowserTest {
 // encoding name). Webkit layout tests cover some, but testing in the UI test is
 // also necessary.
 
-// http://crbug.com/82616
-IN_PROC_BROWSER_TEST_F(BrowserEncodingTest, TestEncodingAliasMapping) {
+// This test fails frequently on the win_rel trybot. See http://crbug.com/122053
+#if defined(OS_WIN)
+#define MAYBE_TestEncodingAliasMapping DISABLED_TestEncodingAliasMapping
+#else
+#define MAYBE_TestEncodingAliasMapping TestEncodingAliasMapping
+#endif
+IN_PROC_BROWSER_TEST_F(BrowserEncodingTest, MAYBE_TestEncodingAliasMapping) {
   struct EncodingTestData {
     const char* file_name;
     const char* encoding_name;
@@ -173,7 +178,14 @@ IN_PROC_BROWSER_TEST_F(BrowserEncodingTest, TestOverrideEncoding) {
 
 // For Hebrew, the expected encoding value is ISO-8859-8-I. See
 // http://crbug.com/2927 for more details.
-IN_PROC_BROWSER_TEST_F(BrowserEncodingTest, TestEncodingAutoDetect) {
+//
+// This test fails frequently on the win_rel trybot. See http://crbug.com/122053
+#if defined(OS_WIN)
+#define MAYBE_TestEncodingAutoDetect DISABLED_TestEncodingAutoDetect
+#else
+#define MAYBE_TestEncodingAutoDetect TestEncodingAutoDetect
+#endif
+IN_PROC_BROWSER_TEST_F(BrowserEncodingTest, MAYBE_TestEncodingAutoDetect) {
   struct EncodingAutoDetectTestData {
     const char* test_file_name;   // File name of test data.
     const char* expected_result;  // File name of expected results.
