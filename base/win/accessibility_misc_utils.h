@@ -10,13 +10,14 @@
 #include <UIAutomationCore.h>
 
 #include "base/base_export.h"
+#include "base/compiler_specific.h"
 
 namespace base {
 namespace win {
 
   // UIA Text provider implementation for edit controls.
 class BASE_EXPORT UIATextProvider
-    : public CComObjectRootEx<CComMultiThreadModel>,
+    : public NON_EXPORTED_BASE(CComObjectRootEx<CComMultiThreadModel>),
       public IValueProvider,
       public ITextProvider {
  public:
