@@ -254,7 +254,11 @@ void AutofillManager::RenderViewCreated(content::RenderViewHost* host) {
 }
 
 void AutofillManager::OnStateChanged() {
-  UpdatePasswordSyncState(web_contents()->GetRenderViewHost());
+  // It is possible for sync state to change during tab contents destruction.
+  // In this case, we don't need to update the renderer since it's going away.
+  if (web_contents() && web_contents()->GetRenderViewHost()) {
+    UpdatePasswordSyncState(web_contents()->GetRenderViewHost());
+  }
 }
 
 void AutofillManager::DidNavigateMainFrame(
