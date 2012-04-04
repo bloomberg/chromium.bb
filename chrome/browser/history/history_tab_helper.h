@@ -50,6 +50,7 @@ class HistoryTabHelper : public content::WebContentsObserver,
   virtual void DidNavigateAnyFrame(
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) OVERRIDE;
+  virtual void WebContentsDestroyed(content::WebContents* tab) OVERRIDE;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
