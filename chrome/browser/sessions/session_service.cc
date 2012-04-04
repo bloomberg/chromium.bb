@@ -171,7 +171,7 @@ bool MigrateClosedPayload(const SessionCommand& command,
 #if defined(OS_CHROMEOS)
   // Pre M17 versions of chromeos were 32bit. Post M17 is 64 bit. Apparently the
   // 32 bit versions of chrome on pre M17 resulted in a sizeof 12 for the
-  // ClosedPayload, where as post M17 64-bit gives a sizeof 16 (presumaly the
+  // ClosedPayload, where as post M17 64-bit gives a sizeof 16 (presumably the
   // struct is padded).
   if ((command.id() == kCommandWindowClosedObsolete ||
        command.id() == kCommandTabClosedObsolete) &&
