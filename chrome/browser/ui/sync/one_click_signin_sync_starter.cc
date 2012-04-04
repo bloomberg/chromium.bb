@@ -30,6 +30,11 @@ OneClickSigninSyncStarter::OneClickSigninSyncStarter(
   UMA_HISTOGRAM_ENUMERATION("AutoLogin.Reverse", action,
                             one_click_signin::HISTOGRAM_MAX);
 
+  ProfileSyncService* profile_sync_service =
+      ProfileSyncServiceFactory::GetForProfile(profile_);
+  // Let the sync service know that setup is in progress so it doesn't start
+  // syncing until the user has finished any configuration.
+  profile_sync_service->set_setup_in_progress(true);
   SigninManager* manager = SigninManagerFactory::GetForProfile(profile_);
   manager->StartSignInWithCredentials(session_index, email, password);
 }
@@ -42,6 +47,9 @@ void OneClickSigninSyncStarter::GaiaCredentialsValid() {
 
 void OneClickSigninSyncStarter::SigninFailed(
     const GoogleServiceAuthError& error) {
+  ProfileSyncService* profile_sync_service =
+      ProfileSyncServiceFactory::GetForProfile(profile_);
+  profile_sync_service->set_setup_in_progress(false);
   delete this;
 }
 
@@ -52,9 +60,13 @@ void OneClickSigninSyncStarter::SigninSuccess() {
   if (use_default_settings_) {
     // Just kick off the sync machine, no need to configure it first.
     profile_sync_service->SetSyncSetupCompleted();
+    profile_sync_service->set_setup_in_progress(false);
     profile_sync_service->UnsuppressAndStart();
   } else {
-    // Give the user a chance to configure things.
+    // Give the user a chance to configure things. We don't clear the
+    // ProfileSyncService::setup_in_progress flag because we don't want sync
+    // to start up until after the configure UI is displayed (the configure UI
+    // will clear the flag when the user is done setting up sync).
     LoginUIServiceFactory::GetForProfile(profile_)->ShowLoginUI(false);
   }
 

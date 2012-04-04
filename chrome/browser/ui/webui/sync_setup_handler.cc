@@ -347,6 +347,8 @@ void SyncSetupHandler::DisplayConfigureSync(bool show_advanced,
   signin_tracker_.reset();
   configuring_sync_ = true;
   ProfileSyncService* service = GetSyncService();
+  DCHECK(service->sync_initialized()) <<
+      "Cannot configure sync until the sync backend is initialized";
 
   // Setup args for the sync configure screen:
   //   showSyncEverythingPage: false to skip directly to the configure screen
@@ -790,13 +792,30 @@ void SyncSetupHandler::OpenSyncSetup(bool force_login) {
   GetLoginUIService()->SetLoginUI(web_ui());
   service->set_setup_in_progress(true);
 
-  if (!force_login && service->HasSyncSetupCompleted()) {
-    // User is already logged in. They must have brought up the config wizard
-    // via the "Advanced..." button or the wrench menu.
-    DisplayConfigureSync(true, false);
-  } else {
-    // User is not logged in - need to display login UI.
+  // There are several different UI flows that can bring the user here:
+  // 1) Signin promo (passes force_login=true)
+  // 2) Normal signin through options page (AreCredentialsAvailable() will
+  //    return false).
+  // 3) Previously working credentials have expired
+  //    (service->GetAuthError() != NONE).
+  // 4) User is already signed in, but App Notifications needs to force another
+  //    login so it can fetch an oauth token (passes force_login=true)
+  // 5) User clicks [Advanced Settings] button on options page while already
+  //    logged in.
+  // 6) One-click signin (credentials are already available, so should display
+  //    sync configure UI, not login UI).
+  // 7) ChromeOS re-enable after disabling sync.
+  // TODO(kochi): Handle ChromeOS re-enable sync case (http://crosbug/27956).
+  if (force_login ||
+      !service->AreCredentialsAvailable() ||
+      service->GetAuthError().state() != GoogleServiceAuthError::NONE) {
+    // User is not logged in, or login has been specially requested - need to
+    // display login UI (cases 1-4).
     DisplayGaiaLogin(false);
+  } else {
+    // User is already logged in. They must have brought up the config wizard
+    // via the "Advanced..." button or through One-Click signin (cases 5/6).
+    DisplayConfigureSync(true, false);
   }
 
   ShowSetupUI();
