@@ -607,6 +607,7 @@ class NinjaWriter:
       cflags_c = self.msvs_settings.GetCflagsC(config_name)
       cflags_cc = self.msvs_settings.GetCflagsCC(config_name)
       extra_defines = self.msvs_settings.GetComputedDefines(config_name)
+      self.WriteVariableList('pdbname', self.name + '.pdb')
     else:
       cflags = config.get('cflags', [])
       cflags_c = config.get('cflags_c', [])
@@ -1168,7 +1169,7 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
       description='CC $out',
       command=('cmd /s /c "$cc /nologo /showIncludes '
                '@$out.rsp '
-               '$cflags_pch_c /c $in /Fo$out /Fd$out.pdb '
+               '$cflags_pch_c /c $in /Fo$out /Fd$pdbname '
                '| ninja-deplist-helper -q -f cl -o $out.dl"'),
       deplist='$out.dl',
       rspfile='$out.rsp',
@@ -1178,7 +1179,7 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
       description='CXX $out',
       command=('cmd /s /c "$cxx /nologo /showIncludes '
                '@$out.rsp '
-               '$cflags_pch_cc /c $in /Fo$out /Fd$out.pdb '
+               '$cflags_pch_cc /c $in /Fo$out /Fd$pdbname '
                '| ninja-deplist-helper -q -f cl -o $out.dl"'),
       deplist='$out.dl',
       rspfile='$out.rsp',
