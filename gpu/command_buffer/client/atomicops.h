@@ -5,9 +5,46 @@
 #ifndef GPU_COMMAND_BUFFER_CLIENT_ATOMICOPS_H_
 #define GPU_COMMAND_BUFFER_CLIENT_ATOMICOPS_H_
 
+#include "../../gpu_export.h"
+#include "../common/scoped_ptr.h"
+#include "../common/types.h"
+
 namespace gpu {
 
 void MemoryBarrier();
+
+class LockImpl;
+class GPU_EXPORT Lock {
+ public:
+  Lock();
+  ~Lock();
+  void Acquire();
+  void Release();
+  bool Try();
+  void AssertAcquired() const;
+
+ private:
+  scoped_ptr<LockImpl> lock_;
+
+  DISALLOW_COPY_AND_ASSIGN(Lock);
+};
+
+// A helper class that acquires the given Lock while the AutoLock is in scope.
+class GPU_EXPORT AutoLock {
+ public:
+  explicit AutoLock(Lock& lock) : lock_(lock) {
+    lock_.Acquire();
+  }
+
+  ~AutoLock() {
+    lock_.AssertAcquired();
+    lock_.Release();
+  }
+
+ private:
+  Lock& lock_;
+  DISALLOW_COPY_AND_ASSIGN(AutoLock);
+};
 
 }  // namespace gpu
 
