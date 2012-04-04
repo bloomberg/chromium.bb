@@ -61,6 +61,29 @@ class JSChecker(object):
     """
     return start * ' ' + length * '^'
 
+  def _makeErrorOrWarning(self, error_text, filename):
+    """Takes a few lines of text indicating a style violation and turns it into
+       a PresubmitError (if |filename| is in a directory where we've already
+       taken out all the style guide violations) or a PresubmitPromptWarning
+       (if it's in a directory where we haven't done that yet).
+    """
+    # TODO(tbreisacher): Once we've cleaned up the style nits in all of
+    # resources/ we can get rid of this function.
+    path = self.input_api.os_path
+    resources = self.input_api.PresubmitLocalPath()
+    dirs = (
+        path.join(resources, 'extensions'),
+        path.join(resources, 'help'),
+        path.join(resources, 'net_internals'),
+        path.join(resources, 'ntp4'),
+        path.join(resources, 'options2'),
+        path.join(resources, 'uber'),
+    )
+    if filename.startswith(dirs):
+      return self.output_api.PresubmitError(error_text)
+    else:
+      return self.output_api.PresubmitPromptWarning(error_text)
+
   def RunChecks(self):
     """Check for violations of the Chromium JavaScript style guide. See
        http://chromium.org/developers/web-development-style-guide#TOC-JavaScript
@@ -172,7 +195,8 @@ class JSChecker(object):
         error_lines = [
             'Found JavaScript style violations in %s:' %
             f.LocalPath()] + error_lines
-        results.append(self.output_api.PresubmitError('\n'.join(error_lines)))
+        results.append(self._makeErrorOrWarning(
+            '\n'.join(error_lines), f.AbsoluteLocalPath()))
 
     if results:
       results.append(self.output_api.PresubmitNotifyResult(
