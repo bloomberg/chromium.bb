@@ -8,17 +8,17 @@
 
 cr.define('login', function() {
   // Screens that should have offline message overlay.
-  const MANAGED_SCREENS = ['gaia-signin'];
+  /** @const */ var MANAGED_SCREENS = ['gaia-signin'];
 
   // Network state constants.
-  const NET_STATE = {
+  var NET_STATE = {
     OFFLINE: 0,
     ONLINE: 1,
     PORTAL: 2
   };
 
   // Error reasons which are passed to updateState_() method.
-  const ERROR_REASONS = {
+  /** @const */ var ERROR_REASONS = {
     PROXY_AUTH_CANCELLED: 'frame error:111',
     PROXY_CONNECTION_FAILED: 'frame error:130',
     PROXY_CONFIG_CHANGED: 'proxy changed',
@@ -27,18 +27,18 @@ cr.define('login', function() {
   };
 
   // Frame loading errors.
-  const NET_ERROR = {
+  var NET_ERROR = {
     ABORTED_BY_USER: 3
   };
 
   // Link which starts guest session for captive portal fixing.
-  const FIX_CAPTIVE_PORTAL_ID = 'captive-portal-fix-link';
+  /** @const */ var FIX_CAPTIVE_PORTAL_ID = 'captive-portal-fix-link';
 
   // Id of the element which holds current network name.
-  const CURRENT_NETWORK_NAME_ID = 'captive-portal-network-name';
+  /** @const */ var CURRENT_NETWORK_NAME_ID = 'captive-portal-network-name';
 
   // Link which triggers frame reload.
-  const RELOAD_PAGE_ID = 'proxy-error-retry-link';
+  /** @const */ var RELOAD_PAGE_ID = 'proxy-error-retry-link';
 
   /**
    * Creates a new offline message screen div.
@@ -106,7 +106,7 @@ cr.define('login', function() {
           '<a id="error-offline-login-link" class="signin-link" href="#">',
           '</a>');
       $('error-offline-login-link').onclick = function() {
-        chrome.send('offlineLogin', []);
+        chrome.send('offlineLogin');
       };
     },
 
