@@ -467,9 +467,9 @@ void CollectPipeliningCapabilityStatsOnIOThread(
   if (trial) {
     return;
   }
-  // After April 1, 2012, the trial will disable itself.
+  // After April 14, 2012, the trial will disable itself.
   trial = new base::FieldTrial(kTrialName, kDivisor,
-                               "disable_test", 2012, 4, 1);
+                               "disable_test", 2012, 4, 14);
 
   chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
   if (channel == chrome::VersionInfo::CHANNEL_CANARY) {
