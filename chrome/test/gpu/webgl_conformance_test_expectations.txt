@@ -140,3 +140,6 @@ UNFILED LINUX AMD : conformance_textures_texture_mips = FAIL
 129819 WIN7 LINUX DEBUG : conformance_context_context_lost = FAIL
 121139 MAC WIN LINUX : conformance_textures_texture_size = FAIL
 
+// The test was wrong, remove this entry after the next khronos roll.
+UNFILED WIN MAC LINUX : conformance_misc_shader_precision_format = FAIL
+
