@@ -212,7 +212,10 @@ class GDataFileSystemTest : public testing::Test {
     GURL unused;
     const bool should_record_statistics = false;
     return file_system_->UpdateDirectoryWithDocumentFeed(
-        list, FROM_SERVER, should_record_statistics) == base::PLATFORM_FILE_OK;
+        list,
+        FROM_SERVER,
+        should_record_statistics,
+        0) == base::PLATFORM_FILE_OK;
   }
 
   bool RemoveFile(const FilePath& file_path) {
@@ -778,6 +781,7 @@ class GDataFileSystemTest : public testing::Test {
     ReadOnlyFindFileDelegate delegate;
     file_system_->LoadRootFeedFromCache(
         GDataFileSystem::FEED_CHUNK_INITIAL,
+        0,
         FilePath(FILE_PATH_LITERAL("gdata")),
         false,     // load_from_server
         base::Bind(&GDataFileSystemTest::OnExpectToFindFile,
@@ -921,6 +925,9 @@ TEST_F(GDataFileSystemTest, DuplicatedAsyncInitialization) {
       2,
       FilePath(FILE_PATH_LITERAL("gdata")),
       &message_loop_);
+
+  EXPECT_CALL(*mock_doc_service_, GetAccountMetadata(_)).Times(1);
+  EXPECT_CALL(*mock_doc_service_, GetDocuments(Eq(GURL()), _)).Times(1);
 
   file_system_->FindFileByPathAsync(
       FilePath(FILE_PATH_LITERAL("gdata")), callback);

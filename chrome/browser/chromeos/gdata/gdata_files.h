@@ -346,6 +346,11 @@ class GDataRootDirectory : public GDataDirectory {
   explicit GDataRootDirectory(GDataFileSystem* file_system);
   virtual ~GDataRootDirectory();
 
+  // Largest change timestamp that was the source of content for the current
+  // state of the root directory.
+  int largest_changestamp() const { return largest_changestamp_; }
+  void set_largest_changestamp(int value) { largest_changestamp_ = value; }
+
   // GDataFileBase implementation.
 
   virtual GDataRootDirectory* AsGDataRootDirectory() OVERRIDE;
@@ -395,6 +400,8 @@ class GDataRootDirectory : public GDataDirectory {
 
   // Weak pointer to GDataFileSystem that owns us.
   GDataFileSystem* file_system_;
+
+  int largest_changestamp_;
 
   DISALLOW_COPY_AND_ASSIGN(GDataRootDirectory);
 };

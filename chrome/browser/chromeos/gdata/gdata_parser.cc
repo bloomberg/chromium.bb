@@ -764,12 +764,14 @@ AccountMetadataFeed::~AccountMetadataFeed() {
 // static
 void AccountMetadataFeed::RegisterJSONConverter(
     base::JSONValueConverter<AccountMetadataFeed>* converter) {
-  converter->RegisterCustomField<int>(kQuotaBytesTotalField,
-                                      &AccountMetadataFeed::quota_bytes_total_,
-                                      &base::StringToInt);
-  converter->RegisterCustomField<int>(kQuotaBytesUsedField,
-                                      &AccountMetadataFeed::quota_bytes_used_,
-                                      &base::StringToInt);
+  converter->RegisterCustomField<int64>(
+      kQuotaBytesTotalField,
+      &AccountMetadataFeed::quota_bytes_total_,
+      &base::StringToInt64);
+  converter->RegisterCustomField<int64>(
+      kQuotaBytesUsedField,
+      &AccountMetadataFeed::quota_bytes_used_,
+      &base::StringToInt64);
   converter->RegisterCustomField<int>(
       kLargestChangestampField,
       &AccountMetadataFeed::largest_changestamp_,

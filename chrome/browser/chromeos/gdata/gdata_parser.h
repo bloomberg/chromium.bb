@@ -549,11 +549,11 @@ class AccountMetadataFeed {
   // class for the details.
   static AccountMetadataFeed* CreateFrom(base::Value* value);
 
-  int quota_bytes_total() const {
+  int64 quota_bytes_total() const {
     return quota_bytes_total_;
   }
 
-  int quota_bytes_used() const {
+  int64 quota_bytes_used() const {
     return quota_bytes_used_;
   }
 
@@ -573,8 +573,8 @@ class AccountMetadataFeed {
   // Return false if parsing fails.
   bool Parse(base::Value* value);
 
-  int quota_bytes_total_;
-  int quota_bytes_used_;
+  int64 quota_bytes_total_;
+  int64 quota_bytes_used_;
   int largest_changestamp_;
 
   static const char kQuotaBytesTotalField[];

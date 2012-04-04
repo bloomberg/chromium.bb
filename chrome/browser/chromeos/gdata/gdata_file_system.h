@@ -546,6 +546,38 @@ class GDataFileSystem : public GDataFileSystemInterface {
     const GetFileCallback callback;
   };
 
+  // Defines set of parameters sent to callback OnGetDocuments().
+  struct GetDocumentsParams {
+    GetDocumentsParams(const FilePath& search_file_path,
+                       FeedChunkType chunk_type,
+                       int largest_changestamp,
+                       base::ListValue* feed_list,
+                       const FindFileCallback& callback);
+    ~GetDocumentsParams();
+
+    FilePath search_file_path;
+    GDataFileSystem::FeedChunkType chunk_type;
+    int largest_changestamp;
+    scoped_ptr<base::ListValue> feed_list;
+    FindFileCallback callback;
+  };
+
+  // Defines set of parameters sent to callback OnGetDocuments().
+  struct LoadRootFeedParams {
+    LoadRootFeedParams(FilePath search_file_path,
+                       FeedChunkType chunk_type,
+                       int largest_changestamp,
+                       bool should_load_from_server,
+                       const FindFileCallback& callback);
+    ~LoadRootFeedParams();
+
+    FilePath search_file_path;
+    GDataFileSystem::FeedChunkType chunk_type;
+    int largest_changestamp;
+    bool should_load_from_server;
+    const FindFileCallback callback;
+  };
+
   // Callback similar to FileOperationCallback but with a given |file_path|.
   typedef base::Callback<void(base::PlatformFileError error,
                               const FilePath& file_path)>
@@ -684,10 +716,7 @@ class GDataFileSystem : public GDataFileSystemInterface {
   // invoked by StartDirectoryRefresh() completes. This callback will update
   // the content of the refreshed directory object and continue initially
   // started FindFileByPath() request.
-  void OnGetDocuments(const FilePath& search_file_path,
-                      FeedChunkType chunk_type,
-                      scoped_ptr<base::ListValue> feed_list,
-                      const FindFileCallback& callback,
+  void OnGetDocuments(GetDocumentsParams* params,
                       GDataErrorCode status,
                       scoped_ptr<base::Value> data);
 
@@ -784,6 +813,16 @@ class GDataFileSystem : public GDataFileSystemInterface {
   base::PlatformFileError AddFileToDirectoryOnFilesystem(
       const FilePath& file_path, const FilePath& dir_path);
 
+  // Restores account metadata and root feed from cache.
+  void RestoreRootFeedFromCache(const FilePath& search_file_path,
+                                const FindFileCallback& callback);
+
+  // Helper function for loading account metadata during cache restore.
+  void OnLoadCachedMetadata(const FilePath& search_file_path,
+                            const FindFileCallback& callback,
+                            base::PlatformFileError* error,
+                            base::Value* metadata_value);
+
   // Removes a file or directory at |file_path| from another directory at
   // |dir_path| on in-memory snapshot of the file system.
   // Returns PLATFORM_FILE_OK if successful.
@@ -806,7 +845,8 @@ class GDataFileSystem : public GDataFileSystemInterface {
   base::PlatformFileError UpdateDirectoryWithDocumentFeed(
       base::ListValue* feed_list,
       ContentOrigin origin,
-      bool should_record_statistics);
+      bool should_record_statistics,
+      int largest_changestamp);
 
   // Converts |entry_value| into GFileDocument instance and adds it
   // to virtual file system at |directory_path|.
@@ -820,9 +860,25 @@ class GDataFileSystem : public GDataFileSystemInterface {
       GURL* last_dir_content_url,
       FilePath* first_missing_parent_path);
 
+  // Retreives account metadata and determines from the last change timestamp
+  // if the feed content loading from the server needs to be initiated.
+  void ReloadFeedFromServerIfNeeded(const FilePath& search_file_path,
+                                    ContentOrigin initial_origin,
+                                    const FindFileCallback& callback);
+
+  // Helper callback for handling results of metadata retrieval initiated from
+  // ReloadFeedFromServerIfNeeded(). This method makes a decision about fetching
+  // the content of the root feed during the root directory refresh process.
+  void OnGetAccountMetadata(const FilePath& search_file_path,
+                            ContentOrigin initial_origin,
+                            const FindFileCallback& callback,
+                            GDataErrorCode error,
+                            scoped_ptr<base::Value> feed_data);
+
   // Starts root feed load from the server. If successful, it will try to find
   // the file upon retrieval completion.
   void LoadFeedFromServer(const FilePath& search_file_path,
+                          int largest_changestamp,
                           const FindFileCallback& callback);
 
   // Returns file name for cached feed given feed |chunk_type|.
@@ -833,24 +889,20 @@ class GDataFileSystem : public GDataFileSystemInterface {
   // initate retrieval of the root feed from the server if
   // |should_load_from_server| is set.
   void LoadRootFeedFromCache(FeedChunkType chunk_type,
+                             int largest_changestamp,
                              const FilePath& search_file_path,
                              bool should_load_from_server,
                              const FindFileCallback& callback);
 
-  // Loads root feed content from |file_path| on IO thread pool. Upon
-  // completion it will invoke |callback| on thread represented by
-  // |relay_proxy|.
-  static void LoadRootFeedOnIOThreadPool(const FilePath& meta_cache_path,
+  // Loads json file content content from |file_path| on IO thread pool.
+  static void LoadJsonFileOnIOThreadPool(const FilePath& meta_cache_path,
                                          base::PlatformFileError* error,
-                                         base::ListValue* feed_list);
+                                         base::Value* result);
 
   // Callback for handling root directory refresh from the cache.
-  void OnLoadRootFeed(FeedChunkType chunk_type,
-                      const FilePath& search_file_path,
-                      bool should_load_from_server,
-                      const FindFileCallback& callback,
+  void OnLoadRootFeed(LoadRootFeedParams* params,
                       base::PlatformFileError* error,
-                      base::ListValue* feed_list);
+                      base::Value* feed_list_value);
 
   // Saves a collected feed in GCache directory under
   // <user_profile_dir>/GCache/v1/meta/|name| for later reloading when offline.

@@ -16,7 +16,11 @@
 namespace {
 
 // Content refresh time.
+#ifndef NDEBUG
+const int kRefreshTimeInSec = 10;
+#else
 const int kRefreshTimeInSec = 5*60;
+#endif
 
 const char kSlash[] = "/";
 const char kEscapedSlash[] = "\xE2\x88\x95";
@@ -357,7 +361,7 @@ std::string GDataRootDirectory::CacheEntry::ToString() const {
 
 GDataRootDirectory::GDataRootDirectory(GDataFileSystem* file_system)
     : ALLOW_THIS_IN_INITIALIZER_LIST(GDataDirectory(NULL, this)),
-      file_system_(file_system) {
+      file_system_(file_system), largest_changestamp_(0) {
 }
 
 GDataRootDirectory::~GDataRootDirectory() {
