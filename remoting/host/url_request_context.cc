@@ -47,6 +47,9 @@ URLRequestContext::URLRequestContext(
       new net::HttpNetworkLayer(network_session));
 }
 
+URLRequestContext::~URLRequestContext() {
+}
+
 URLRequestContextGetter::URLRequestContextGetter(
     MessageLoop* io_message_loop,
     MessageLoop* file_message_loop)

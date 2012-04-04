@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "net/proxy/proxy_config_service.h"
@@ -28,14 +29,17 @@ class URLRequestContext : public net::URLRequestContext {
   explicit URLRequestContext(net::ProxyConfigService* net_proxy_config_service);
 
  private:
+  virtual ~URLRequestContext();
+
   net::URLRequestContextStorage storage_;
+
+  DISALLOW_COPY_AND_ASSIGN(URLRequestContext);
 };
 
 class URLRequestContextGetter : public net::URLRequestContextGetter {
  public:
   URLRequestContextGetter(MessageLoop* io_message_loop,
                           MessageLoop* file_message_loop);
-  virtual ~URLRequestContextGetter();
 
   // Overridden from net::URLRequestContextGetter:
   virtual net::URLRequestContext* GetURLRequestContext() OVERRIDE;
@@ -43,9 +47,13 @@ class URLRequestContextGetter : public net::URLRequestContextGetter {
       GetIOMessageLoopProxy() const OVERRIDE;
 
  private:
+  virtual ~URLRequestContextGetter();
+
   scoped_refptr<net::URLRequestContext> url_request_context_;
   scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;
   scoped_ptr<net::ProxyConfigService> proxy_config_service_;
+
+  DISALLOW_COPY_AND_ASSIGN(URLRequestContextGetter);
 };
 
 }  // namespace remoting
