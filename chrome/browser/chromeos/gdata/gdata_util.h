@@ -30,6 +30,11 @@ const FilePath& GetSpecialRemoteRootPath();
 GURL GetFileResourceUrl(const std::string& resource_id,
                         const std::string& file_name);
 
+// Given a profile and a gdata_cache_path, return the file resource url.
+void ModifyGDataFileResourceUrl(Profile* profile,
+                                const FilePath& gdata_cache_path,
+                                GURL* url);
+
 // Returns true if the given path is under the GData mount point.
 bool IsUnderGDataMountPoint(const FilePath& path);
 

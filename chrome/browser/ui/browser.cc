@@ -205,6 +205,7 @@
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
 #include "chrome/browser/chromeos/dbus/power_manager_client.h"
+#include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
 #if defined(USE_AURA)
 #include "chrome/browser/extensions/api/terminal/terminal_extension_helper.h"
@@ -4262,7 +4263,7 @@ void Browser::WebIntentDispatch(
       this,
       intents_dispatcher->GetIntent().action,
       intents_dispatcher->GetIntent().type);
-#endif // defined(ENABLE_WEB_INTENTS)
+#endif  // defined(ENABLE_WEB_INTENTS)
 }
 
 void Browser::FindReply(WebContents* tab,
@@ -4381,6 +4382,11 @@ void Browser::URLStarredChanged(TabContentsWrapper* source, bool starred) {
 void Browser::FileSelected(const FilePath& path, int index, void* params) {
   profile_->set_last_selected_directory(path.DirName());
   GURL file_url = net::FilePathToFileURL(path);
+
+#if defined(OS_CHROMEOS)
+  gdata::util::ModifyGDataFileResourceUrl(profile_, path, &file_url);
+#endif
+
   if (file_url.is_empty())
     return;
 

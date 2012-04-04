@@ -56,7 +56,7 @@ bool ParseGDataUrlPath(const std::string& path,
   return true;
 }
 
-}
+}  // namespace
 
 namespace gdata {
 
@@ -85,11 +85,11 @@ struct FileReadContext : public base::RefCountedThreadSafe<FileReadContext> {
 
 class GetFileMimeTypeDelegate : public gdata::FindFileDelegate {
  public:
-  explicit GetFileMimeTypeDelegate() {}
+  GetFileMimeTypeDelegate() {}
   virtual ~GetFileMimeTypeDelegate() {}
 
-  const std::string mime_type() const { return mime_type_; }
-  const std::string file_name() const { return file_name_; }
+  const std::string& mime_type() const { return mime_type_; }
+  const std::string& file_name() const { return file_name_; }
  private:
   // GDataFileSystem::FindFileDelegate overrides.
   virtual void OnDone(base::PlatformFileError error,
@@ -194,7 +194,7 @@ void GDataSource::OnGetFileForResourceId(
 
 void GDataSource::StartFileRead(int request_id,
                                 const FilePath& file_path,
-                                int64 *file_size) {
+                                int64* file_size) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   scoped_refptr<FileReadContext> context(

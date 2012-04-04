@@ -6,6 +6,7 @@
 
 #include <string>
 #include <vector>
+#include <utility>
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
@@ -40,6 +41,31 @@ const int kReadOnlyFilePermissions = base::PLATFORM_FILE_OPEN |
                                      base::PLATFORM_FILE_EXCLUSIVE_READ |
                                      base::PLATFORM_FILE_ASYNC;
 
+class GetFileNameDelegate : public FindFileDelegate {
+ public:
+  GetFileNameDelegate() {}
+  virtual ~GetFileNameDelegate() {}
+
+  const std::string& file_name() const { return file_name_; }
+ private:
+  // GDataFileSystem::FindFileDelegate overrides.
+  virtual void OnDone(base::PlatformFileError error,
+                      const FilePath& directory_path,
+                      GDataFileBase* file) OVERRIDE {
+    if (error == base::PLATFORM_FILE_OK && file && file->AsGDataFile()) {
+      file_name_ = file->AsGDataFile()->file_name();
+    }
+  }
+
+  std::string file_name_;
+};
+
+GDataFileSystem* GetGDataFileSystem(Profile* profile) {
+  GDataSystemService* system_service =
+      GDataSystemServiceFactory::GetForProfile(profile);
+  return system_service ? system_service->file_system() : NULL;
+}
+
 }  // namespace
 
 const FilePath& GetGDataMountPointPath() {
@@ -68,6 +94,21 @@ GURL GetFileResourceUrl(const std::string& resource_id,
       net::EscapePath(file_name).c_str()));
 }
 
+void ModifyGDataFileResourceUrl(Profile* profile,
+                                const FilePath& gdata_cache_path,
+                                GURL* url) {
+  GDataFileSystem* file_system = GetGDataFileSystem(profile);
+  if (file_system &&
+      file_system->GetGDataCacheTmpDirectory().IsParent(gdata_cache_path)) {
+    // This is a gdata cache path. Extract the resource id.
+    const std::string resource_id =
+        gdata_cache_path.BaseName().RemoveExtension().AsUTF8Unsafe();
+    GetFileNameDelegate delegate;
+    file_system->FindFileByResourceIdSync(resource_id, &delegate);
+    *url = gdata::util::GetFileResourceUrl(resource_id, delegate.file_name());
+  }
+}
+
 bool IsUnderGDataMountPoint(const FilePath& path) {
   return GetGDataMountPointPath() == path ||
          GetGDataMountPointPath().IsParent(path);
@@ -93,12 +134,9 @@ FilePath ExtractGDataPath(const FilePath& path) {
 void SetPermissionsForGDataCacheFiles(Profile* profile,
                                       int pid,
                                       const FilePath& path) {
-  GDataSystemService* system_service =
-      GDataSystemServiceFactory::GetForProfile(profile);
-  if (!system_service || !system_service->file_system())
+  GDataFileSystem* file_system = GetGDataFileSystem(profile);
+  if (!file_system)
     return;
-
-  GDataFileSystem* file_system = system_service->file_system();
 
   GDataFileProperties file_properties;
   file_system->GetFileInfoFromPath(path, &file_properties);
