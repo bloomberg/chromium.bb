@@ -121,6 +121,16 @@ class SyncSetupHandler : public options2::OptionsPageUIHandler,
   void DisplayGaiaLoginWithErrorMessage(const string16& error_message,
                                         bool fatal_error);
 
+  // Instead of siging in, prepare requirements for showing the advanced
+  // configuration dialog.
+  void PrepareConfigDialog();
+
+  // Displays spinner-only UI indicating that something is going on in the
+  // background.
+  // TODO(kochi): better to show some message that the user can understand what
+  // is running in the background.
+  void DisplaySpinner();
+
   // Returns true if we're the active login object.
   bool IsActiveLogin() const;
 

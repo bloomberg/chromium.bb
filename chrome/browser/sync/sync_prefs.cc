@@ -173,9 +173,21 @@ std::string SyncPrefs::GetEncryptionBootstrapToken() const {
 
 void SyncPrefs::SetEncryptionBootstrapToken(const std::string& token) {
   DCHECK(non_thread_safe_.CalledOnValidThread());
-  CHECK(pref_service_);
   pref_service_->SetString(prefs::kSyncEncryptionBootstrapToken, token);
 }
+
+#if defined(OS_CHROMEOS)
+std::string SyncPrefs::GetSpareBootstrapToken() const {
+  DCHECK(non_thread_safe_.CalledOnValidThread());
+  return pref_service_ ?
+      pref_service_->GetString(prefs::kSyncSpareBootstrapToken) : "";
+}
+
+void SyncPrefs::SetSpareBootstrapToken(const std::string& token) {
+  DCHECK(non_thread_safe_.CalledOnValidThread());
+  pref_service_->SetString(prefs::kSyncSpareBootstrapToken, token);
+}
+#endif
 
 sync_notifier::InvalidationVersionMap SyncPrefs::GetAllMaxVersions() const {
   DCHECK(non_thread_safe_.CalledOnValidThread());
@@ -398,6 +410,11 @@ void SyncPrefs::RegisterPreferences() {
   pref_service_->RegisterStringPref(prefs::kSyncEncryptionBootstrapToken,
                                     "",
                                     PrefService::UNSYNCABLE_PREF);
+#if defined(OS_CHROMEOS)
+  pref_service_->RegisterStringPref(prefs::kSyncSpareBootstrapToken,
+                                    "",
+                                    PrefService::UNSYNCABLE_PREF);
+#endif
 
   // We will start prompting people about new data types after the launch of
   // SESSIONS - all previously launched data types are treated as if they are

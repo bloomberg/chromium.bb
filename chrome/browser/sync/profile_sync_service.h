@@ -617,6 +617,12 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
       bool sync_everything,
       const syncable::ModelTypeSet chosen_types) const;
 
+#if defined(OS_CHROMEOS)
+  // Refresh spare sync bootstrap token for re-enabling the sync service.
+  // Called on successful sign-in notifications.
+  void RefreshSpareBootstrapToken(const std::string& passphrase);
+#endif
+
   // Factory used to create various dependent objects.
   scoped_ptr<ProfileSyncComponentsFactory> factory_;
 

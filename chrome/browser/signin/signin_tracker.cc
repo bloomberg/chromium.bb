@@ -27,6 +27,24 @@ SigninTracker::SigninTracker(Profile* profile, Observer* observer)
       profile_(profile),
       observer_(observer),
       credentials_valid_(false) {
+  Initialize();
+}
+
+SigninTracker::SigninTracker(Profile* profile,
+                             Observer* observer,
+                             LoginState state)
+    : state_(state),
+      profile_(profile),
+      observer_(observer),
+      credentials_valid_(false) {
+  Initialize();
+}
+
+SigninTracker::~SigninTracker() {
+  ProfileSyncServiceFactory::GetForProfile(profile_)->RemoveObserver(this);
+}
+
+void SigninTracker::Initialize() {
   DCHECK(observer_);
   // Register for notifications from the SigninManager.
   registrar_.Add(this,
@@ -48,12 +66,9 @@ SigninTracker::SigninTracker(Profile* profile, Observer* observer)
   ProfileSyncService* service =
       ProfileSyncServiceFactory::GetForProfile(profile_);
   service->AddObserver(this);
-}
 
-SigninTracker::~SigninTracker() {
-  ProfileSyncService* service =
-      ProfileSyncServiceFactory::GetForProfile(profile_);
-  service->RemoveObserver(this);
+  if (state_ == SERVICES_INITIALIZING)
+    HandleServiceStateChange();
 }
 
 void SigninTracker::Observe(int type,
@@ -163,4 +178,3 @@ bool SigninTracker::AreServicesSignedIn(Profile* profile) {
           service->GetAuthError().state() == GoogleServiceAuthError::NONE &&
           !service->unrecoverable_error_detected());
 }
-

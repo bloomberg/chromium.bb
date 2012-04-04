@@ -213,6 +213,7 @@ class SyncSetupHandlerTest : public testing::Test {
   scoped_ptr<TestingSyncSetupHandler> handler_;
 };
 
+#if !defined(OS_CHROMEOS)
 static void CheckInt(const DictionaryValue* dictionary,
                      const std::string& key,
                      int expected_value) {
@@ -222,6 +223,7 @@ static void CheckInt(const DictionaryValue* dictionary,
   EXPECT_EQ(actual_value, expected_value) <<
       "Mismatch found for " << key;;
 }
+#endif
 
 static void CheckBool(const DictionaryValue* dictionary,
                       const std::string& key,
@@ -245,6 +247,7 @@ static void CheckBool(const DictionaryValue* dictionary,
   return CheckBool(dictionary, key, expected_value, false);
 }
 
+#if !defined(OS_CHROMEOS)
 static void CheckString(const DictionaryValue* dictionary,
                         const std::string& key,
                         const std::string& expected_value,
@@ -260,7 +263,9 @@ static void CheckString(const DictionaryValue* dictionary,
         "Mismatch found for " << key;
   }
 }
+#endif
 
+#if !defined(OS_CHROMEOS)
 // Validates that the expected args are being passed off to javascript.
 static void CheckShowSyncSetupArgs(const DictionaryValue* dictionary,
                                    std::string error_message,
@@ -287,10 +292,12 @@ static void CheckShowSyncSetupArgs(const DictionaryValue* dictionary,
   CheckBool(dictionary, "fatalError", fatal_error, true);
   CheckBool(dictionary, "editable_user", user_is_editable);
 }
+#endif
 
 TEST_F(SyncSetupHandlerTest, Basic) {
 }
 
+#if !defined(OS_CHROMEOS)
 TEST_F(SyncSetupHandlerTest, DisplayBasicLogin) {
   EXPECT_CALL(*mock_pss_, AreCredentialsAvailable())
       .WillRepeatedly(Return(false));
@@ -423,7 +430,10 @@ TEST_F(SyncSetupHandlerTest, HandleFatalError) {
   CheckShowSyncSetupArgs(
       dictionary, "", true, GoogleServiceAuthError::NONE, "", true, "");
 }
+#endif  // !OS_CHROMEOS
 
+#if !defined(OS_CHROMEOS)
+// TODO(kochi): We need equivalent tests for ChromeOS.
 TEST_F(SyncSetupHandlerTest, UnrecoverableErrorInitializingSync) {
   EXPECT_CALL(*mock_pss_, AreCredentialsAvailable())
       .WillRepeatedly(Return(false));
@@ -498,6 +508,7 @@ TEST_F(SyncSetupHandlerTest, GaiaErrorInitializingSync) {
       dictionary, "", false, GoogleServiceAuthError::SERVICE_UNAVAILABLE,
       kTestUser, true, "");
 }
+#endif  // !OS_CHROMEOS
 
 TEST_F(SyncSetupHandlerTest, TestSyncEverything) {
   std::string args =
@@ -774,6 +785,7 @@ TEST_F(SyncSetupHandlerTest, ShowSyncSetup) {
   ExpectConfig();
 }
 
+#if !defined(OS_CHROMEOS)
 TEST_F(SyncSetupHandlerTest, ShowSyncSetupWithAuthError) {
   // Initialize the system to a signed in state, but with an auth error.
   error_ = GoogleServiceAuthError(
@@ -809,6 +821,7 @@ TEST_F(SyncSetupHandlerTest, ShowSyncSetupWithAuthError) {
                          false,
                          "");
 }
+#endif
 
 TEST_F(SyncSetupHandlerTest, ShowSetupSyncEverything) {
   EXPECT_CALL(*mock_pss_, IsPassphraseRequired())

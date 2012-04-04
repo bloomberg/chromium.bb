@@ -33,6 +33,7 @@
 #include "chrome/browser/sync/api/sync_error.h"
 #include "chrome/browser/sync/backend_migrator.h"
 #include "chrome/browser/sync/glue/change_processor.h"
+#include "chrome/browser/sync/glue/chrome_encryptor.h"
 #include "chrome/browser/sync/glue/chrome_report_unrecoverable_error.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/browser/sync/glue/session_data_type_controller.h"
@@ -397,6 +398,13 @@ void ProfileSyncService::StartUp() {
 
   last_synced_time_ = sync_prefs_.GetLastSyncedTime();
 
+#if defined(OS_CHROMEOS)
+  std::string bootstrap_token = sync_prefs_.GetEncryptionBootstrapToken();
+  if (bootstrap_token.empty()) {
+    sync_prefs_.SetEncryptionBootstrapToken(
+        sync_prefs_.GetSpareBootstrapToken());
+  }
+#endif
   CreateBackend();
 
   // Initialize the backend.  Every time we start up a new SyncBackendHost,
@@ -1071,6 +1079,23 @@ void ProfileSyncService::UpdateSelectedTypesHistogram(
   }
 }
 
+#if defined(OS_CHROMEOS)
+void ProfileSyncService::RefreshSpareBootstrapToken(
+    const std::string& passphrase) {
+  browser_sync::ChromeEncryptor encryptor;
+  browser_sync::Cryptographer temp_cryptographer(&encryptor);
+  // The first 2 params (hostname and username) doesn't have any effect here.
+  browser_sync::KeyParams key_params = {"localhost", "dummy", passphrase};
+
+  std::string bootstrap_token;
+  if (!temp_cryptographer.AddKey(key_params)) {
+    NOTREACHED() << "Failed to add key to cryptographer.";
+  }
+  temp_cryptographer.GetBootstrapToken(&bootstrap_token);
+  sync_prefs_.SetSpareBootstrapToken(bootstrap_token);
+}
+#endif
+
 void ProfileSyncService::OnUserChoseDatatypes(bool sync_everything,
     syncable::ModelTypeSet chosen_types) {
   if (!backend_.get() &&
@@ -1438,6 +1463,9 @@ void ProfileSyncService::Observe(int type,
         // backend starts up.
         ConsumeCachedPassphraseIfPossible();
       }
+#if defined(OS_CHROMEOS)
+      RefreshSpareBootstrapToken(successful->password);
+#endif
       if (!sync_initialized() ||
           GetAuthError().state() != GoogleServiceAuthError::NONE) {
         // Track the fact that we're still waiting for auth to complete.

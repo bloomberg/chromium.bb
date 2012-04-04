@@ -492,6 +492,15 @@ void SyncSetupHandler::DisplayGaiaLoginWithErrorMessage(
       "SyncSetupOverlay.showSyncSetupPage", page, args);
 }
 
+// TODO(kochi): Handle error conditions (timeout, other failures).
+void SyncSetupHandler::DisplaySpinner() {
+  configuring_sync_ = true;
+  StringValue page("spinner");
+  DictionaryValue args;
+  web_ui()->CallJavascriptFunction(
+      "SyncSetupOverlay.showSyncSetupPage", page, args);
+}
+
 void SyncSetupHandler::RecordSignin() {
   // By default, do nothing - subclasses can override.
 }
@@ -509,7 +518,9 @@ void SyncSetupHandler::DisplayGaiaSuccessAndSettingUp() {
 void SyncSetupHandler::ShowFatalError() {
   // For now, just send the user back to the login page. Ultimately may want
   // to give different feedback (especially for chromeos).
+#if !defined(OS_CHROMEOS)
   DisplayGaiaLogin(true);
+#endif
 }
 
 void SyncSetupHandler::OnDidClosePage(const ListValue* args) {
@@ -588,7 +599,13 @@ void SyncSetupHandler::SigninFailed(const GoogleServiceAuthError& error) {
   last_signin_error_ = error;
   // Got a failed signin - this is either just a typical auth error, or a
   // sync error (treat sync errors as "fatal errors" - i.e. non-auth errors).
+  // On ChromeOS, this condition should trigger the orange badge on wrench menu
+  // and prompt to sign out.
+#if !defined(OS_CHROMEOS)
   DisplayGaiaLogin(GetSyncService()->unrecoverable_error_detected());
+#else
+  CloseOverlay();
+#endif
 }
 
 Profile* SyncSetupHandler::GetProfile() const {
@@ -758,11 +775,16 @@ void SyncSetupHandler::CloseSyncSetup() {
     // Make sure user isn't left half-logged-in (signed in, but without sync
     // started up). If the user hasn't finished setting up sync, then sign out
     // and shut down sync.
-
     if (sync_service && !sync_service->HasSyncSetupCompleted()) {
       DVLOG(1) << "Signin aborted by user action";
       sync_service->DisableForUser();
+#if !defined(OS_CHROMEOS)
       GetSignin()->SignOut();
+#else
+      // TODO(atwilson): Move this suppression to PSS::DisableForUser()
+      browser_sync::SyncPrefs sync_prefs(GetProfile()->GetPrefs());
+      sync_prefs.SetStartSuppressed(true);
+#endif
     }
   }
 
@@ -805,7 +827,7 @@ void SyncSetupHandler::OpenSyncSetup(bool force_login) {
   // 6) One-click signin (credentials are already available, so should display
   //    sync configure UI, not login UI).
   // 7) ChromeOS re-enable after disabling sync.
-  // TODO(kochi): Handle ChromeOS re-enable sync case (http://crosbug/27956).
+#if !defined(OS_CHROMEOS)
   if (force_login ||
       !service->AreCredentialsAvailable() ||
       service->GetAuthError().state() != GoogleServiceAuthError::NONE) {
@@ -817,8 +839,28 @@ void SyncSetupHandler::OpenSyncSetup(bool force_login) {
     // via the "Advanced..." button or through One-Click signin (cases 5/6).
     DisplayConfigureSync(true, false);
   }
+#else
+  PrepareConfigDialog();
+#endif
 
   ShowSetupUI();
+}
+
+void SyncSetupHandler::PrepareConfigDialog() {
+  // On Chrome OS user is always logged in. Instead of showing login dialog,
+  // show spinner until the backend gets ready to configure sync.
+  ProfileSyncService* service = GetSyncService();
+  if (!service->sync_initialized()) {
+    // To listen to the token available notifications, start SigninTracker.
+    signin_tracker_.reset(
+        new SigninTracker(GetProfile(), this,
+                          SigninTracker::SERVICES_INITIALIZING));
+    service->set_setup_in_progress(true);
+    service->UnsuppressAndStart();
+    DisplaySpinner();
+  } else {
+    DisplayConfigureSync(true, false);
+  }
 }
 
 // Private member functions.

@@ -95,8 +95,16 @@ class SyncPrefs : public base::SupportsWeakPtr<SyncPrefs>,
   // This pref is set outside of sync.
   bool IsManaged() const;
 
+  // Use this encryption bootstrap token once already syncing.
   std::string GetEncryptionBootstrapToken() const;
   void SetEncryptionBootstrapToken(const std::string& token);
+
+#if defined(OS_CHROMEOS)
+  // Use this spare bootstrap token only when setting up sync for the first
+  // time.
+  std::string GetSpareBootstrapToken() const;
+  void SetSpareBootstrapToken(const std::string& token);
+#endif
 
   // InvalidationVersionTracker implementation.
   virtual sync_notifier::InvalidationVersionMap

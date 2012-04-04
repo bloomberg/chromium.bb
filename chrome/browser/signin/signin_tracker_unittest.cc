@@ -274,3 +274,4 @@ TEST_F(SigninTrackerTest, SyncSigninError) {
   tracker_->OnStateChanged();
 }
 
+// TODO(kochi) Add tests with initial state != WATIING_FOR_GAIA_VALIDATION.

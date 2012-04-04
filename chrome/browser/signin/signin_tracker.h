@@ -63,10 +63,18 @@ class SigninTracker : public ProfileSyncServiceObserver,
     virtual void SigninSuccess() = 0;
   };
 
+  // The various states the login process can be in.
+  enum LoginState {
+    WAITING_FOR_GAIA_VALIDATION,
+    SERVICES_INITIALIZING,
+    SIGNIN_COMPLETE
+  };
+
   // Creates a SigninTracker that tracks the signin status on the passed
   // |profile|, and notifies the |observer| on status changes. |observer| must
   // be non-null and must outlive the SigninTracker.
   SigninTracker(Profile* profile, Observer* observer);
+  SigninTracker(Profile* profile, Observer* observer, LoginState state);
   virtual ~SigninTracker();
 
   // content::NotificationObserver implementation.
@@ -85,12 +93,8 @@ class SigninTracker : public ProfileSyncServiceObserver,
   static bool AreServiceTokensLoaded(Profile* profile);
 
  private:
-  // The various states the login process can be in.
-  enum LoginState {
-    WAITING_FOR_GAIA_VALIDATION,
-    SERVICES_INITIALIZING,
-    SIGNIN_COMPLETE
-  };
+  // Initializes this by adding notifications and observers.
+  void Initialize();
 
   // Invoked when one of the services potentially changed its signin status so
   // we can check to see whether we need to notify our observer.
@@ -115,4 +119,3 @@ class SigninTracker : public ProfileSyncServiceObserver,
 };
 
 #endif  // CHROME_BROWSER_SIGNIN_SIGNIN_TRACKER_H_
-

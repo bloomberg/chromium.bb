@@ -51,7 +51,8 @@ cr.define('options', function() {
       $('choose-datatypes-cancel').onclick =
           $('sync-setup-cancel').onclick =
           $('confirm-everything-cancel').onclick =
-          $('stop-syncing-cancel').onclick =  function() {
+          $('stop-syncing-cancel').onclick =
+          $('sync-spinner-cancel').onclick = function() {
         self.closeOverlay_();
       };
       $('confirm-everything-ok').onclick = function() {
@@ -396,6 +397,12 @@ cr.define('options', function() {
       }
     },
 
+    showSpinner_: function() {
+      this.resetPage_('sync-setup-spinner');
+      $('sync-setup-spinner').hidden = false;
+      this.setThrobbersVisible_(true);
+    },
+
     showSyncEverythingPage_: function() {
       $('confirm-sync-preferences').hidden = false;
       $('customize-sync-preferences').hidden = true;
@@ -520,6 +527,8 @@ cr.define('options', function() {
         this.showGaiaLogin_(args);
       else if (page == 'configure' || page == 'passphrase')
         this.showConfigure_(args);
+      else if (page == 'spinner')
+        this.showSpinner_();
     },
 
     /**

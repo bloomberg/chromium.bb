@@ -1642,6 +1642,10 @@ const char kReportDeviceActivityTimes[] = "device_status.report_activity_times";
 // The local state pref that stores device activity times before reporting
 // them to the policy server.
 extern const char kDeviceActivityTimes[] = "device_status.activity_times";
+
+// A string that is used to store first-time sync startup after once sync is
+// disabled. This will be refreshed every sign-in.
+const char kSyncSpareBootstrapToken[] = "sync.spare_bootstrap_token";
 #endif
 
 // Whether there is a Flash version installed that supports clearing LSO data.
