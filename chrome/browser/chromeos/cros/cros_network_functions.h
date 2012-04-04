@@ -10,6 +10,7 @@
 // All calls to functions in chromeos_network.h should be made through
 // functions provided by this header.
 
+#include "base/memory/scoped_ptr.h"
 #include "third_party/cros/chromeos_network.h"
 
 namespace base {
@@ -18,6 +19,40 @@ class Value;
 }
 
 namespace chromeos {
+
+// A class to manage GValue resources.
+class ScopedGValue {
+ public:
+  ScopedGValue();
+  explicit ScopedGValue(GValue* value);
+  ~ScopedGValue();
+
+  // Sets the value.
+  void reset(GValue* value);
+
+  // Returns the value.
+  GValue* get() {return value_.get();}
+
+ private:
+  scoped_ptr<GValue> value_;
+};
+
+// A class to manage GHashTable reference.
+class ScopedGHashTable {
+ public:
+  ScopedGHashTable();
+  explicit ScopedGHashTable(GHashTable* table);
+  ~ScopedGHashTable();
+
+  // Sets the table.
+  void reset(GHashTable* table);
+
+  // Returns the table.
+  GHashTable* get() {return table_;}
+
+ private:
+  GHashTable* table_;
+};
 
 // Activates the cellular modem specified by |service_path| with carrier
 // specified by |carrier|.

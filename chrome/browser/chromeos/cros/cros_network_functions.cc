@@ -122,6 +122,34 @@ GValue* ConvertValueToGValue(const Value* value) {
 
 }  // namespace
 
+ScopedGValue::ScopedGValue() {}
+
+ScopedGValue::ScopedGValue(GValue* value) : value_(value) {}
+
+ScopedGValue::~ScopedGValue() {
+  reset(NULL);
+}
+
+void ScopedGValue::reset(GValue* value) {
+  if (value_.get())
+    g_value_unset(value_.get());
+  value_.reset(value);
+}
+
+ScopedGHashTable::ScopedGHashTable() : table_(NULL) {}
+
+ScopedGHashTable::ScopedGHashTable(GHashTable* table) : table_(table) {}
+
+ScopedGHashTable::~ScopedGHashTable() {
+  reset(NULL);
+}
+
+void ScopedGHashTable::reset(GHashTable* table) {
+  if (table_)
+    g_hash_table_unref(table_);
+  table_ = table;
+}
+
 bool CrosActivateCellularModem(const char* service_path, const char* carrier) {
   return chromeos::ActivateCellularModem(service_path, carrier);
 }
@@ -129,7 +157,7 @@ bool CrosActivateCellularModem(const char* service_path, const char* carrier) {
 void CrosSetNetworkServiceProperty(const char* service_path,
                                    const char* property,
                                    const base::Value& value) {
-  scoped_ptr<GValue> gvalue(ConvertValueToGValue(&value));
+  ScopedGValue gvalue(ConvertValueToGValue(&value));
   chromeos::SetNetworkServicePropertyGValue(service_path, property,
                                             gvalue.get());
 }
@@ -142,21 +170,21 @@ void CrosClearNetworkServiceProperty(const char* service_path,
 void CrosSetNetworkDeviceProperty(const char* device_path,
                                   const char* property,
                                   const base::Value& value) {
-  scoped_ptr<GValue> gvalue(ConvertValueToGValue(&value));
+  ScopedGValue gvalue(ConvertValueToGValue(&value));
   chromeos::SetNetworkDevicePropertyGValue(device_path, property, gvalue.get());
 }
 
 void CrosSetNetworkIPConfigProperty(const char* ipconfig_path,
                                     const char* property,
                                     const base::Value& value) {
-  scoped_ptr<GValue> gvalue(ConvertValueToGValue(&value));
+  ScopedGValue gvalue(ConvertValueToGValue(&value));
   chromeos::SetNetworkIPConfigPropertyGValue(ipconfig_path, property,
                                              gvalue.get());
 }
 
 void CrosSetNetworkManagerProperty(const char* property,
                                    const base::Value& value) {
-  scoped_ptr<GValue> gvalue(ConvertValueToGValue(&value));
+  ScopedGValue gvalue(ConvertValueToGValue(&value));
   chromeos::SetNetworkManagerPropertyGValue(property, gvalue.get());
 }
 
