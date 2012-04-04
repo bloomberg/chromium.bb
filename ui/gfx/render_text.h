@@ -332,9 +332,8 @@ class UI_EXPORT RenderText {
   // Returns display offset based on current text alignment.
   Point GetAlignmentOffset();
 
-  // Returns the origin point for drawing text. Does not account for font
-  // baseline, as needed by Skia.
-  Point GetOriginForDrawing();
+  // Returns the origin point for drawing text via Skia.
+  Point GetOriginForSkiaDrawing();
 
   // Applies fade effects to |renderer|.
   void ApplyFadeEffects(internal::SkiaTextRenderer* renderer);
@@ -355,7 +354,7 @@ class UI_EXPORT RenderText {
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, PasswordCensorship);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, GraphemePositions);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, EdgeSelectionModels);
-  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, OriginForDrawing);
+  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, OriginForSkiaDrawing);
 
   // Set the cursor to |position|, with the caret trailing the previous
   // grapheme, or if there is no previous grapheme, leading the cursor position.

@@ -121,10 +121,6 @@ class RenderTextWin : public RenderText {
   std::vector<internal::TextRun*> runs_;
   Size string_size_;
 
-  // A common vertical baseline for all the text runs. This is computed as the
-  // largest baseline over all the runs' fonts.
-  int common_baseline_;
-
   scoped_array<int> visual_to_logical_;
   scoped_array<int> logical_to_visual_;
 
