@@ -639,7 +639,6 @@ def WrapBitcode(output):
     bytes_left -= len(block)
   DriverClose(fd)
   # run bc-wrap
-  print 'hash value', sha.hexdigest()
   retcode,_,_ = Run(' '.join(('${LLVM_BCWRAP}', '-hash',
                               sha.hexdigest(), output)))
   return retcode
