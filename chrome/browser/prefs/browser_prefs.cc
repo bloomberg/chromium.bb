@@ -32,7 +32,7 @@
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/net/ssl_config_service_manager.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
-#include "chrome/browser/notifications/notification_ui_manager.h"
+#include "chrome/browser/notifications/notification_prefs_manager.h"
 #include "chrome/browser/page_info_model.h"
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/policy/cloud_policy_subsystem.h"
@@ -131,7 +131,7 @@ void RegisterLocalState(PrefService* local_state) {
 #endif
 
 #if defined(ENABLE_NOTIFICATIONS)
-  NotificationUIManager::RegisterPrefs(local_state);
+  NotificationPrefsManager::RegisterPrefs(local_state);
 #endif
 
 #if defined(ENABLE_SAFE_BROWSING)

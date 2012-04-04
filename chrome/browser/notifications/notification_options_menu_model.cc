@@ -15,6 +15,7 @@
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/notifications/notification.h"
+#include "chrome/browser/notifications/notification_prefs_manager.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -64,8 +65,10 @@ CornerSelectionMenuModel::~CornerSelectionMenuModel() {
 }
 
 bool CornerSelectionMenuModel::IsCommandIdChecked(int command_id) const {
-  NotificationUIManager* ui = g_browser_process->notification_ui_manager();
-  BalloonCollection::PositionPreference current = ui->GetPositionPreference();
+  NotificationPrefsManager* prefs =
+      g_browser_process->notification_ui_manager()->prefs_manager();
+  BalloonCollection::PositionPreference current =
+      prefs->GetPositionPreference();
 
   if (command_id == kCornerUpperLeft)
     return (current == BalloonCollection::UPPER_LEFT);
@@ -94,18 +97,19 @@ bool CornerSelectionMenuModel::GetAcceleratorForCommandId(
 }
 
 void CornerSelectionMenuModel::ExecuteCommand(int command_id) {
-  NotificationUIManager* ui = g_browser_process->notification_ui_manager();
+  NotificationPrefsManager* prefs =
+      g_browser_process->notification_ui_manager()->prefs_manager();
 
   if (command_id == kCornerUpperLeft)
-    ui->SetPositionPreference(BalloonCollection::UPPER_LEFT);
+    prefs->SetPositionPreference(BalloonCollection::UPPER_LEFT);
   else if (command_id == kCornerUpperRight)
-    ui->SetPositionPreference(BalloonCollection::UPPER_RIGHT);
+    prefs->SetPositionPreference(BalloonCollection::UPPER_RIGHT);
   else if (command_id == kCornerLowerLeft)
-    ui->SetPositionPreference(BalloonCollection::LOWER_LEFT);
+    prefs->SetPositionPreference(BalloonCollection::LOWER_LEFT);
   else if (command_id == kCornerLowerRight)
-    ui->SetPositionPreference(BalloonCollection::LOWER_RIGHT);
+    prefs->SetPositionPreference(BalloonCollection::LOWER_RIGHT);
   else if (command_id == kCornerDefault)
-    ui->SetPositionPreference(BalloonCollection::DEFAULT_POSITION);
+    prefs->SetPositionPreference(BalloonCollection::DEFAULT_POSITION);
   else
     NOTREACHED();
 }

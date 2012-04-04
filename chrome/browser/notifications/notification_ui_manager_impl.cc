@@ -1,8 +1,8 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/notifications/notification_ui_manager.h"
+#include "chrome/browser/notifications/notification_ui_manager_impl.h"
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -46,7 +46,7 @@ class QueuedNotification {
   DISALLOW_COPY_AND_ASSIGN(QueuedNotification);
 };
 
-NotificationUIManager::NotificationUIManager(PrefService* local_state)
+NotificationUIManagerImpl::NotificationUIManagerImpl(PrefService* local_state)
     : balloon_collection_(NULL),
       is_user_active_(true) {
   registrar_.Add(this, content::NOTIFICATION_APP_TERMINATING,
@@ -57,7 +57,7 @@ NotificationUIManager::NotificationUIManager(PrefService* local_state)
 #endif
 }
 
-NotificationUIManager::~NotificationUIManager() {
+NotificationUIManagerImpl::~NotificationUIManagerImpl() {
   STLDeleteElements(&show_queue_);
 #if defined(OS_MACOSX)
   StopFullScreenMonitor();
@@ -73,19 +73,14 @@ NotificationUIManager* NotificationUIManager::Create(PrefService* local_state) {
 NotificationUIManager* NotificationUIManager::Create(
     PrefService* local_state,
     BalloonCollection* balloons) {
-  NotificationUIManager* instance = new NotificationUIManager(local_state);
+  NotificationUIManagerImpl* instance =
+      new NotificationUIManagerImpl(local_state);
   instance->Initialize(balloons);
   balloons->set_space_change_listener(instance);
   return instance;
 }
 
-// static
-void NotificationUIManager::RegisterPrefs(PrefService* prefs) {
-  prefs->RegisterIntegerPref(prefs::kDesktopNotificationPosition,
-                             BalloonCollection::DEFAULT_POSITION);
-}
-
-void NotificationUIManager::Initialize(
+void NotificationUIManagerImpl::Initialize(
     BalloonCollection* balloon_collection) {
   DCHECK(!balloon_collection_.get());
   DCHECK(balloon_collection);
@@ -95,7 +90,7 @@ void NotificationUIManager::Initialize(
           position_pref_.GetValue()));
 }
 
-void NotificationUIManager::Add(const Notification& notification,
+void NotificationUIManagerImpl::Add(const Notification& notification,
                                 Profile* profile) {
   if (TryReplacement(notification)) {
     return;
@@ -108,7 +103,7 @@ void NotificationUIManager::Add(const Notification& notification,
   CheckAndShowNotifications();
 }
 
-bool NotificationUIManager::CancelById(const std::string& id) {
+bool NotificationUIManagerImpl::CancelById(const std::string& id) {
   // See if this ID hasn't been shown yet.
   NotificationDeque::iterator iter;
   for (iter = show_queue_.begin(); iter != show_queue_.end(); ++iter) {
@@ -121,7 +116,7 @@ bool NotificationUIManager::CancelById(const std::string& id) {
   return balloon_collection_->RemoveById(id);
 }
 
-bool NotificationUIManager::CancelAllBySourceOrigin(const GURL& source) {
+bool NotificationUIManagerImpl::CancelAllBySourceOrigin(const GURL& source) {
   // Same pattern as CancelById, but more complicated than the above
   // because there may be multiple notifications from the same source.
   bool removed = false;
@@ -138,18 +133,26 @@ bool NotificationUIManager::CancelAllBySourceOrigin(const GURL& source) {
   return balloon_collection_->RemoveBySourceOrigin(source) || removed;
 }
 
-void NotificationUIManager::CancelAll() {
+void NotificationUIManagerImpl::CancelAll() {
   STLDeleteElements(&show_queue_);
   balloon_collection_->RemoveAll();
 }
 
-void NotificationUIManager::CheckAndShowNotifications() {
+BalloonCollection* NotificationUIManagerImpl::balloon_collection() {
+  return balloon_collection_.get();
+}
+
+NotificationPrefsManager* NotificationUIManagerImpl::prefs_manager() {
+  return this;
+}
+
+void NotificationUIManagerImpl::CheckAndShowNotifications() {
   CheckUserState();
   if (is_user_active_)
     ShowNotifications();
 }
 
-void NotificationUIManager::CheckUserState() {
+void NotificationUIManagerImpl::CheckUserState() {
   bool is_user_active_previously = is_user_active_;
   is_user_active_ = !CheckIdleStateIsLocked() && !IsFullScreenMode();
   if (is_user_active_ == is_user_active_previously)
@@ -164,11 +167,11 @@ void NotificationUIManager::CheckUserState() {
     // Start a timer to detect the moment at which the user becomes active.
     user_state_check_timer_.Start(FROM_HERE,
         base::TimeDelta::FromSeconds(kUserStatePollingIntervalSeconds), this,
-        &NotificationUIManager::CheckUserState);
+        &NotificationUIManagerImpl::CheckUserState);
   }
 }
 
-void NotificationUIManager::ShowNotifications() {
+void NotificationUIManagerImpl::ShowNotifications() {
   while (!show_queue_.empty() && balloon_collection_->HasSpace()) {
     scoped_ptr<QueuedNotification> queued_notification(show_queue_.front());
     show_queue_.pop_front();
@@ -177,11 +180,12 @@ void NotificationUIManager::ShowNotifications() {
   }
 }
 
-void NotificationUIManager::OnBalloonSpaceChanged() {
+void NotificationUIManagerImpl::OnBalloonSpaceChanged() {
   CheckAndShowNotifications();
 }
 
-bool NotificationUIManager::TryReplacement(const Notification& notification) {
+bool NotificationUIManagerImpl::TryReplacement(
+    const Notification& notification) {
   const GURL& origin = notification.origin_url();
   const string16& replace_id = notification.replace_id();
 
@@ -216,21 +220,21 @@ bool NotificationUIManager::TryReplacement(const Notification& notification) {
 }
 
 BalloonCollection::PositionPreference
-NotificationUIManager::GetPositionPreference() {
+NotificationUIManagerImpl::GetPositionPreference() const {
   LOG(INFO) << "Current position preference: " << position_pref_.GetValue();
 
   return static_cast<BalloonCollection::PositionPreference>(
       position_pref_.GetValue());
 }
 
-void NotificationUIManager::SetPositionPreference(
+void NotificationUIManagerImpl::SetPositionPreference(
     BalloonCollection::PositionPreference preference) {
   LOG(INFO) << "Setting position preference: " << preference;
   position_pref_.SetValue(static_cast<int>(preference));
   balloon_collection_->SetPositionPreference(preference);
 }
 
-void NotificationUIManager::GetQueuedNotificationsForTesting(
+void NotificationUIManagerImpl::GetQueuedNotificationsForTesting(
     std::vector<const Notification*>* notifications) {
   NotificationDeque::const_iterator queued_iter;
   for (queued_iter = show_queue_.begin(); queued_iter != show_queue_.end();
@@ -239,7 +243,7 @@ void NotificationUIManager::GetQueuedNotificationsForTesting(
   }
 }
 
-void NotificationUIManager::Observe(
+void NotificationUIManagerImpl::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
