@@ -6,6 +6,7 @@
   {
     "namespace": "storage",
     "unprivileged": true,
+    "nodoc": true,
     "types": [
       {
         "id": "StorageChange",
