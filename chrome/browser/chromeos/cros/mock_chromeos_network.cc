@@ -42,6 +42,71 @@ void CallMockSetNetworkManagerPropertyGValue(const char* property,
   g_mock_chromeos_network->SetNetworkManagerPropertyGValue(property, gvalue);
 }
 
+// Calls mock RequestNetworkManagerProperties.
+void CallMockRequestNetworkManagerProperties(
+    NetworkPropertiesGValueCallback callback,
+    void* object) {
+  g_mock_chromeos_network->RequestNetworkManagerProperties(callback, object);
+}
+
+// Calls mock RequestNetworkServiceProperties.
+void CallMockRequestNetworkServiceProperties(
+    const char* service_path,
+    NetworkPropertiesGValueCallback callback,
+    void* object) {
+  g_mock_chromeos_network->RequestNetworkServiceProperties(service_path,
+                                                           callback, object);
+}
+
+// Calls mock RequestNetworkDeviceProperties.
+void CallMockRequestNetworkDeviceProperties(
+    const char* device_path,
+    NetworkPropertiesGValueCallback callback,
+    void* object) {
+  g_mock_chromeos_network->RequestNetworkDeviceProperties(device_path,
+                                                          callback, object);
+}
+
+// Calls mock RequestNetworkProfileProperties.
+void CallMockRequestNetworkProfileProperties(
+    const char* profile_path,
+    NetworkPropertiesGValueCallback callback,
+    void* object) {
+  g_mock_chromeos_network->RequestNetworkProfileProperties(profile_path,
+                                                           callback, object);
+}
+
+// Calls mock RequestNetworkProfileEntryProperties.
+void CallMockRequestNetworkProfileEntryProperties(
+    const char* profile_path,
+    const char* profile_entry_path,
+    NetworkPropertiesGValueCallback callback,
+    void* object) {
+  g_mock_chromeos_network->RequestNetworkProfileEntryProperties(
+      profile_path, profile_entry_path, callback, object);
+}
+
+// Calls mock RequestHiddenWifiNetworkProperties.
+void CallMockRequestHiddenWifiNetworkProperties(
+    const char* ssid,
+    const char* security,
+    NetworkPropertiesGValueCallback callback,
+    void* object) {
+  g_mock_chromeos_network->RequestHiddenWifiNetworkProperties(ssid, security,
+                                                              callback, object);
+}
+
+// Calls mock RequestVirtualNetworkProperties.
+void CallMockRequestVirtualNetworkProperties(
+    const char* service_name,
+    const char* server_hostname,
+    const char* provider_type,
+    NetworkPropertiesGValueCallback callback,
+    void* object) {
+  g_mock_chromeos_network->RequestVirtualNetworkProperties(
+      service_name, server_hostname, provider_type, callback, object);
+}
+
 // Calls mock ConfigureService.
 void CallMockConfigureService(const char* identifier,
                               const GHashTable* properties,
@@ -74,6 +139,20 @@ void MockChromeOSNetwork::Initialize() {
       &CallMockSetNetworkIPConfigPropertyGValue;
     chromeos::SetNetworkManagerPropertyGValue =
       &CallMockSetNetworkManagerPropertyGValue;
+    chromeos::RequestNetworkManagerProperties =
+        &CallMockRequestNetworkManagerProperties;
+    chromeos::RequestNetworkServiceProperties =
+        &CallMockRequestNetworkServiceProperties;
+    chromeos::RequestNetworkDeviceProperties =
+        &CallMockRequestNetworkDeviceProperties;
+    chromeos::RequestNetworkProfileProperties =
+        &CallMockRequestNetworkProfileProperties;
+    chromeos::RequestNetworkProfileEntryProperties =
+        &CallMockRequestNetworkProfileEntryProperties;
+    chromeos::RequestHiddenWifiNetworkProperties =
+        &CallMockRequestHiddenWifiNetworkProperties;
+    chromeos::RequestVirtualNetworkProperties =
+        &CallMockRequestVirtualNetworkProperties;
     chromeos::ConfigureService = &CallMockConfigureService;
   } else {
     LOG(ERROR) << "CrosLibrary is initialized.";
@@ -87,6 +166,13 @@ void MockChromeOSNetwork::Shutdown() {
     chromeos::SetNetworkDevicePropertyGValue = NULL;
     chromeos::SetNetworkIPConfigPropertyGValue = NULL;
     chromeos::SetNetworkManagerPropertyGValue = NULL;
+    chromeos::RequestNetworkManagerProperties = NULL;
+    chromeos::RequestNetworkServiceProperties = NULL;
+    chromeos::RequestNetworkDeviceProperties = NULL;
+    chromeos::RequestNetworkProfileProperties = NULL;
+    chromeos::RequestNetworkProfileEntryProperties = NULL;
+    chromeos::RequestHiddenWifiNetworkProperties = NULL;
+    chromeos::RequestVirtualNetworkProperties = NULL;
     chromeos::ConfigureService = NULL;
   } else {
     LOG(ERROR) << "CrosLibrary is initialized.";

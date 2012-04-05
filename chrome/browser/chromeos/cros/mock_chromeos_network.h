@@ -37,6 +37,36 @@ class MockChromeOSNetwork {
   MOCK_METHOD2(SetNetworkManagerPropertyGValue,
                void(const char* property,
                     const GValue* gvalue));
+  MOCK_METHOD2(RequestNetworkManagerProperties,
+               void(NetworkPropertiesGValueCallback callback, void* object));
+  MOCK_METHOD3(RequestNetworkServiceProperties,
+               void(const char* service_path,
+                    NetworkPropertiesGValueCallback callback,
+                    void* object));
+  MOCK_METHOD3(RequestNetworkDeviceProperties,
+               void(const char* device_path,
+                    NetworkPropertiesGValueCallback callback,
+                    void* object));
+  MOCK_METHOD3(RequestNetworkProfileProperties,
+               void(const char* profile_path,
+                    NetworkPropertiesGValueCallback callback,
+                    void* object));
+  MOCK_METHOD4(RequestNetworkProfileEntryProperties,
+               void(const char* profile_path,
+                    const char* profile_entry_path,
+                    NetworkPropertiesGValueCallback callback,
+                    void* object));
+  MOCK_METHOD4(RequestHiddenWifiNetworkProperties,
+               void(const char* ssid,
+                    const char* security,
+                    NetworkPropertiesGValueCallback callback,
+                    void* object));
+  MOCK_METHOD5(RequestVirtualNetworkProperties,
+               void(const char* service_name,
+                    const char* server_hostname,
+                    const char* provider_type,
+                    NetworkPropertiesGValueCallback callback,
+                    void* object));
   MOCK_METHOD4(ConfigureService,
                void(const char* identifier,
                     const GHashTable* properties,

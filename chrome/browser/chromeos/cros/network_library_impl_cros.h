@@ -109,28 +109,38 @@ class NetworkLibraryImplCros : public NetworkLibraryImplBase  {
                                      const char* error_message);
 
   static void WifiServiceUpdateAndConnect(
-      void* object, const char* service_path, GHashTable* ghash);
+      void* object,
+      const char* service_path,
+      const base::DictionaryValue* properties);
   static void VPNServiceUpdateAndConnect(
-      void* object, const char* service_path, GHashTable* ghash);
+      void* object,
+      const char* service_path,
+      const base::DictionaryValue* properties);
 
   static void NetworkManagerStatusChangedHandler(
       void* object, const char* path, const char* key, const GValue* value);
-  static void NetworkManagerUpdate(
-      void* object, const char* manager_path, GHashTable* ghash);
+  static void NetworkManagerUpdate(void* object,
+                                   const char* manager_path,
+                                   const base::DictionaryValue* properties);
 
   static void DataPlanUpdateHandler(
       void* object,
       const char* modem_service_path,
       const chromeos::CellularDataPlanList* data_plan_list);
 
-  static void NetworkServiceUpdate(
-      void* object, const char* service_path, GHashTable* ghash);
+  static void NetworkServiceUpdate(void* object,
+                                   const char* service_path,
+                                   const base::DictionaryValue* properties);
   static void RememberedNetworkServiceUpdate(
-      void* object, const char* service_path, GHashTable* ghash);
-  static void ProfileUpdate(
-      void* object, const char* profile_path, GHashTable* ghash);
-  static void NetworkDeviceUpdate(
-      void* object, const char* device_path, GHashTable* ghash);
+      void* object,
+      const char* service_path,
+      const base::DictionaryValue* properties);
+  static void ProfileUpdate(void* object,
+                            const char* profile_path,
+                            const base::DictionaryValue* properties);
+  static void NetworkDeviceUpdate(void* object,
+                                  const char* device_path,
+                                  const base::DictionaryValue* properties);
 
  private:
   // This processes all Manager update messages.

@@ -10,49 +10,23 @@
 // All calls to functions in chromeos_network.h should be made through
 // functions provided by this header.
 
+#include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "third_party/cros/chromeos_network.h"
 
 namespace base {
+
 class DictionaryValue;
 class Value;
-}
+
+}  // namespace base
 
 namespace chromeos {
 
-// A class to manage GValue resources.
-class ScopedGValue {
- public:
-  ScopedGValue();
-  explicit ScopedGValue(GValue* value);
-  ~ScopedGValue();
-
-  // Sets the value.
-  void reset(GValue* value);
-
-  // Returns the value.
-  GValue* get() {return value_.get();}
-
- private:
-  scoped_ptr<GValue> value_;
-};
-
-// A class to manage GHashTable reference.
-class ScopedGHashTable {
- public:
-  ScopedGHashTable();
-  explicit ScopedGHashTable(GHashTable* table);
-  ~ScopedGHashTable();
-
-  // Sets the table.
-  void reset(GHashTable* table);
-
-  // Returns the table.
-  GHashTable* get() {return table_;}
-
- private:
-  GHashTable* table_;
-};
+// Callback for asynchronous getters.
+typedef base::Callback<void(
+    const char* path,
+    const base::DictionaryValue* properties)> NetworkPropertiesCallback;
 
 // Activates the cellular modem specified by |service_path| with carrier
 // specified by |carrier|.
@@ -148,48 +122,41 @@ void CrosRequestNetworkServiceConnect(const char* service_path,
 
 // Retrieves the latest info for the manager.
 void CrosRequestNetworkManagerProperties(
-    NetworkPropertiesGValueCallback callback,
-    void* object);
+    const NetworkPropertiesCallback& callback);
 
 // Retrieves the latest info for a service.
 void CrosRequestNetworkServiceProperties(
     const char* service_path,
-    NetworkPropertiesGValueCallback callback,
-    void* object);
+    const NetworkPropertiesCallback& callback);
 
 // Retrieves the latest info for a particular device.
 void CrosRequestNetworkDeviceProperties(
     const char* device_path,
-    NetworkPropertiesGValueCallback callback,
-    void* object);
+    const NetworkPropertiesCallback& callback);
 
 // Retrieves the list of remembered services for a profile.
 void CrosRequestNetworkProfileProperties(
     const char* profile_path,
-    NetworkPropertiesGValueCallback callback,
-    void* object);
+    const NetworkPropertiesCallback& callback);
 
 // Retrieves the latest info for a profile service entry.
 void CrosRequestNetworkProfileEntryProperties(
     const char* profile_path,
     const char* profile_entry_path,
-    NetworkPropertiesGValueCallback callback,
-    void* object);
+    const NetworkPropertiesCallback& callback);
 
 // Requests a wifi service not in the network list (i.e. hidden).
 void CrosRequestHiddenWifiNetworkProperties(
     const char* ssid,
     const char* security,
-    NetworkPropertiesGValueCallback callback,
-    void* object);
+    const NetworkPropertiesCallback& callback);
 
 // Requests a new VPN service.
 void CrosRequestVirtualNetworkProperties(
     const char* service_name,
     const char* server_hostname,
     const char* provider_type,
-    NetworkPropertiesGValueCallback callback,
-    void* object);
+    const NetworkPropertiesCallback& callback);
 
 // Disconnects from network service asynchronously.
 void CrosRequestNetworkServiceDisconnect(const char* service_path);

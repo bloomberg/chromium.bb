@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros/cros_network_functions.h"
+#include "chrome/browser/chromeos/cros/gvalue_util.h"
 #include "chrome/browser/chromeos/cros/mock_chromeos_network.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -12,6 +14,20 @@ using ::testing::_;
 using ::testing::Invoke;
 
 namespace chromeos {
+
+namespace {
+
+const char kExamplePath[] = "/foo/bar/baz";
+
+// Expects path and a dictionary value result.
+void ExpectPathAndDictionaryValue(const base::DictionaryValue* expected,
+                                  const char* path,
+                                  const base::DictionaryValue* result) {
+  EXPECT_STREQ(kExamplePath, path);
+  EXPECT_TRUE(expected->Equals(result));
+}
+
+}  // namespace
 
 class CrosNetworkFunctionsTest : public testing::Test {
  public:
@@ -51,6 +67,38 @@ class CrosNetworkFunctionsTest : public testing::Test {
     g_hash_table_ref(argument_ghash_table_.get());
   }
 
+  // Handles call for RequestNetwork*Properties.
+  void OnRequestNetworkProperties2(NetworkPropertiesGValueCallback callback,
+                                   void* object) {
+    callback(object, kExamplePath, result_ghash_table_.get());
+  }
+
+  // Handles call for RequestNetwork*Properties, ignores the first argument.
+  void OnRequestNetworkProperties3(const char* arg1,
+                                   NetworkPropertiesGValueCallback callback,
+                                   void* object) {
+    OnRequestNetworkProperties2(callback, object);
+  }
+
+  // Handles call for RequestNetwork*Properties, ignores the first two
+  // arguments.
+  void OnRequestNetworkProperties4(const char* arg1,
+                                   const char* arg2,
+                                   NetworkPropertiesGValueCallback callback,
+                                   void* object) {
+    OnRequestNetworkProperties2(callback, object);
+  }
+
+  // Handles call for RequestNetwork*Properties, ignores the first three
+  // arguments.
+  void OnRequestNetworkProperties5(const char* arg1,
+                                   const char* arg2,
+                                   const char* arg3,
+                                   NetworkPropertiesGValueCallback callback,
+                                   void* object) {
+    OnRequestNetworkProperties2(callback, object);
+  }
+
   // Does nothing.  Used as an argument.
   static void OnNetworkAction(void* object,
                               const char* path,
@@ -60,6 +108,7 @@ class CrosNetworkFunctionsTest : public testing::Test {
  protected:
   ScopedGValue argument_gvalue_;
   ScopedGHashTable argument_ghash_table_;
+  ScopedGHashTable result_ghash_table_;
 };
 
 TEST_F(CrosNetworkFunctionsTest, CrosSetNetworkServiceProperty) {
@@ -126,6 +175,178 @@ TEST_F(CrosNetworkFunctionsTest, CrosSetNetworkManagerProperty) {
   const base::StringValue value(kString);
   CrosSetNetworkManagerProperty(property, value);
   EXPECT_EQ(kString, g_value_get_string(argument_gvalue_.get()));
+}
+
+TEST_F(CrosNetworkFunctionsTest, CrosRequestNetworkManagerProperties) {
+  const std::string key1 = "key1";
+  const std::string value1 = "value1";
+  const std::string key2 = "key.2.";
+  const std::string value2 = "value2";
+  // Create result value.
+  base::DictionaryValue result;
+  result.SetWithoutPathExpansion(key1, base::Value::CreateStringValue(value1));
+  result.SetWithoutPathExpansion(key2, base::Value::CreateStringValue(value2));
+  result_ghash_table_.reset(
+      ConvertDictionaryValueToStringValueGHashTable(result));
+  // Set expectations.
+  EXPECT_CALL(
+      *MockChromeOSNetwork::Get(),
+      RequestNetworkManagerProperties(_, _))
+      .WillOnce(Invoke(
+          this, &CrosNetworkFunctionsTest::OnRequestNetworkProperties2));
+
+  CrosRequestNetworkManagerProperties(
+      base::Bind(&ExpectPathAndDictionaryValue, &result));
+}
+
+TEST_F(CrosNetworkFunctionsTest, CrosRequestNetworkServiceProperties) {
+  const std::string service_path = "service path";
+  const std::string key1 = "key1";
+  const std::string value1 = "value1";
+  const std::string key2 = "key.2.";
+  const std::string value2 = "value2";
+  // Create result value.
+  base::DictionaryValue result;
+  result.SetWithoutPathExpansion(key1, base::Value::CreateStringValue(value1));
+  result.SetWithoutPathExpansion(key2, base::Value::CreateStringValue(value2));
+  result_ghash_table_.reset(
+      ConvertDictionaryValueToStringValueGHashTable(result));
+  // Set expectations.
+  EXPECT_CALL(
+      *MockChromeOSNetwork::Get(),
+      RequestNetworkServiceProperties(service_path.c_str(), _, _))
+      .WillOnce(Invoke(
+          this, &CrosNetworkFunctionsTest::OnRequestNetworkProperties3));
+
+  CrosRequestNetworkServiceProperties(
+      service_path.c_str(), base::Bind(&ExpectPathAndDictionaryValue, &result));
+}
+
+TEST_F(CrosNetworkFunctionsTest, CrosRequestNetworkDeviceProperties) {
+  const std::string device_path = "device path";
+  const std::string key1 = "key1";
+  const std::string value1 = "value1";
+  const std::string key2 = "key.2.";
+  const std::string value2 = "value2";
+  // Create result value.
+  base::DictionaryValue result;
+  result.SetWithoutPathExpansion(key1, base::Value::CreateStringValue(value1));
+  result.SetWithoutPathExpansion(key2, base::Value::CreateStringValue(value2));
+  result_ghash_table_.reset(
+      ConvertDictionaryValueToStringValueGHashTable(result));
+  // Set expectations.
+  EXPECT_CALL(
+      *MockChromeOSNetwork::Get(),
+      RequestNetworkDeviceProperties(device_path.c_str(), _, _))
+      .WillOnce(Invoke(
+          this, &CrosNetworkFunctionsTest::OnRequestNetworkProperties3));
+
+  CrosRequestNetworkDeviceProperties(
+      device_path.c_str(), base::Bind(&ExpectPathAndDictionaryValue, &result));
+}
+
+TEST_F(CrosNetworkFunctionsTest, CrosRequestNetworkProfileProperties) {
+  const std::string profile_path = "profile path";
+  const std::string key1 = "key1";
+  const std::string value1 = "value1";
+  const std::string key2 = "key.2.";
+  const std::string value2 = "value2";
+  // Create result value.
+  base::DictionaryValue result;
+  result.SetWithoutPathExpansion(key1, base::Value::CreateStringValue(value1));
+  result.SetWithoutPathExpansion(key2, base::Value::CreateStringValue(value2));
+  result_ghash_table_.reset(
+      ConvertDictionaryValueToStringValueGHashTable(result));
+  // Set expectations.
+  EXPECT_CALL(
+      *MockChromeOSNetwork::Get(),
+      RequestNetworkProfileProperties(profile_path.c_str(), _, _))
+      .WillOnce(Invoke(
+          this, &CrosNetworkFunctionsTest::OnRequestNetworkProperties3));
+
+  CrosRequestNetworkProfileProperties(
+      profile_path.c_str(),
+      base::Bind(&ExpectPathAndDictionaryValue, &result));
+}
+
+TEST_F(CrosNetworkFunctionsTest, CrosRequestNetworkProfileEntryProperties) {
+  const std::string profile_path = "profile path";
+  const std::string profile_entry_path = "profile entry path";
+  const std::string key1 = "key1";
+  const std::string value1 = "value1";
+  const std::string key2 = "key.2.";
+  const std::string value2 = "value2";
+  // Create result value.
+  base::DictionaryValue result;
+  result.SetWithoutPathExpansion(key1, base::Value::CreateStringValue(value1));
+  result.SetWithoutPathExpansion(key2, base::Value::CreateStringValue(value2));
+  result_ghash_table_.reset(
+      ConvertDictionaryValueToStringValueGHashTable(result));
+  // Set expectations.
+  EXPECT_CALL(
+      *MockChromeOSNetwork::Get(),
+      RequestNetworkProfileEntryProperties(profile_path.c_str(),
+                                           profile_entry_path.c_str(), _, _))
+      .WillOnce(Invoke(
+          this, &CrosNetworkFunctionsTest::OnRequestNetworkProperties4));
+
+  CrosRequestNetworkProfileEntryProperties(
+      profile_path.c_str(), profile_entry_path.c_str(),
+      base::Bind(&ExpectPathAndDictionaryValue, &result));
+}
+
+TEST_F(CrosNetworkFunctionsTest, CrosRequestHiddenWifiNetworkProperties) {
+  const std::string ssid = "ssid";
+  const std::string security = "security";
+  const std::string key1 = "key1";
+  const std::string value1 = "value1";
+  const std::string key2 = "key.2.";
+  const std::string value2 = "value2";
+  // Create result value.
+  base::DictionaryValue result;
+  result.SetWithoutPathExpansion(key1, base::Value::CreateStringValue(value1));
+  result.SetWithoutPathExpansion(key2, base::Value::CreateStringValue(value2));
+  result_ghash_table_.reset(
+      ConvertDictionaryValueToStringValueGHashTable(result));
+  // Set expectations.
+  EXPECT_CALL(
+      *MockChromeOSNetwork::Get(),
+      RequestHiddenWifiNetworkProperties(ssid.c_str(), security.c_str(), _, _))
+      .WillOnce(Invoke(
+          this, &CrosNetworkFunctionsTest::OnRequestNetworkProperties4));
+
+  CrosRequestHiddenWifiNetworkProperties(
+      ssid.c_str(), security.c_str(),
+      base::Bind(&ExpectPathAndDictionaryValue, &result));
+}
+
+TEST_F(CrosNetworkFunctionsTest, CrosRequestVirtualNetworkProperties) {
+  const std::string service_name = "service name";
+  const std::string server_hostname = "server hostname";
+  const std::string provider_name = "provider name";
+  const std::string key1 = "key1";
+  const std::string value1 = "value1";
+  const std::string key2 = "key.2.";
+  const std::string value2 = "value2";
+  // Create result value.
+  base::DictionaryValue result;
+  result.SetWithoutPathExpansion(key1, base::Value::CreateStringValue(value1));
+  result.SetWithoutPathExpansion(key2, base::Value::CreateStringValue(value2));
+  result_ghash_table_.reset(
+      ConvertDictionaryValueToStringValueGHashTable(result));
+  // Set expectations.
+  EXPECT_CALL(*MockChromeOSNetwork::Get(),
+              RequestVirtualNetworkProperties(service_name.c_str(),
+                                              server_hostname.c_str(),
+                                              provider_name.c_str(), _, _))
+      .WillOnce(Invoke(
+          this, &CrosNetworkFunctionsTest::OnRequestNetworkProperties5));
+
+  CrosRequestVirtualNetworkProperties(
+      service_name.c_str(),
+      server_hostname.c_str(),
+      provider_name.c_str(),
+      base::Bind(&ExpectPathAndDictionaryValue, &result));
 }
 
 TEST_F(CrosNetworkFunctionsTest, CrosConfigureService) {

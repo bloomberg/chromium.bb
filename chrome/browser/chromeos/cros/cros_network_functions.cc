@@ -4,158 +4,40 @@
 
 #include "chrome/browser/chromeos/cros/cros_network_functions.h"
 
-#include <dbus/dbus-glib.h>
-
+#include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/cros/gvalue_util.h"
 
 namespace chromeos {
 
 namespace {
 
-// Converts a Value to a GValue.
-GValue* ConvertValueToGValue(const Value* value);
+// Callback used by OnRequestNetworkProperties.
+typedef base::Callback<void(const char* path,
+                            const base::DictionaryValue* properties)
+                       > OnRequestNetworkPropertiesCallback;
 
-// Converts a bool to a GValue.
-GValue* ConvertBoolToGValue(bool b) {
-  GValue* gvalue = new GValue();
-  g_value_init(gvalue, G_TYPE_BOOLEAN);
-  g_value_set_boolean(gvalue, b);
-  return gvalue;
-}
+// Handles responses for RequestNetwork*Properties functions.
+void OnRequestNetworkProperties(void* object,
+                                const char* path,
+                                GHashTable* properties) {
+  OnRequestNetworkPropertiesCallback* callback =
+      static_cast<OnRequestNetworkPropertiesCallback*>(object);
+  DictionaryValue* properties_dictionary = NULL;
+  if (properties)
+    properties_dictionary =
+        ConvertStringValueGHashTableToDictionaryValue(properties);
 
-// Converts an int to a GValue.
-GValue* ConvertIntToGValue(int i) {
-  // Converting to a 32-bit signed int type in particular, since
-  // that's what flimflam expects in its DBus API
-  GValue* gvalue = new GValue();
-  g_value_init(gvalue, G_TYPE_INT);
-  g_value_set_int(gvalue, i);
-  return gvalue;
-}
+  // Deleters.
+  scoped_ptr<OnRequestNetworkPropertiesCallback> callback_deleter(callback);
+  scoped_ptr<DictionaryValue> properties_dictionary_deleter(
+      properties_dictionary);
 
-// Converts a string to a GValue.
-GValue* ConvertStringToGValue(const std::string& s) {
-  GValue* gvalue = new GValue();
-  g_value_init(gvalue, G_TYPE_STRING);
-  g_value_set_string(gvalue, s.c_str());
-  return gvalue;
-}
-
-// Converts a DictionaryValue to a GValue containing a string-to-string
-// GHashTable.
-GValue* ConvertDictionaryValueToGValue(const DictionaryValue* dict) {
-  GHashTable* ghash =
-      g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
-  for (DictionaryValue::key_iterator it = dict->begin_keys();
-       it != dict->end_keys(); ++it) {
-    std::string key = *it;
-    std::string val;
-    if (!dict->GetString(key, &val)) {
-      NOTREACHED() << "Invalid type in dictionary, key: " << key;
-      continue;
-    }
-    g_hash_table_insert(ghash,
-                        g_strdup(const_cast<char*>(key.c_str())),
-                        g_strdup(const_cast<char*>(val.c_str())));
-  }
-  GValue* gvalue = new GValue();
-  g_value_init(gvalue, DBUS_TYPE_G_STRING_STRING_HASHTABLE);
-  g_value_take_boxed(gvalue, ghash);
-  return gvalue;
-}
-
-// Unsets and deletes the GValue.
-void UnsetAndDeleteGValue(gpointer ptr) {
-  GValue* gvalue = static_cast<GValue*>(ptr);
-  g_value_unset(gvalue);
-  delete gvalue;
-}
-
-// Converts a DictionaryValue to a string-to-value GHashTable.
-GHashTable* ConvertDictionaryValueToGValueMap(const DictionaryValue* dict) {
-  GHashTable* ghash = g_hash_table_new_full(g_str_hash, g_str_equal, g_free,
-                                            UnsetAndDeleteGValue);
-  for (DictionaryValue::key_iterator it = dict->begin_keys();
-       it != dict->end_keys(); ++it) {
-    std::string key = *it;
-    Value* val = NULL;
-    if (dict->GetWithoutPathExpansion(key, &val)) {
-      g_hash_table_insert(ghash,
-                          g_strdup(const_cast<char*>(key.c_str())),
-                          ConvertValueToGValue(val));
-    } else {
-      VLOG(2) << "Could not insert key " << key << " into hash";
-    }
-  }
-  return ghash;
-}
-
-GValue* ConvertValueToGValue(const Value* value) {
-  switch (value->GetType()) {
-    case Value::TYPE_BOOLEAN: {
-      bool out;
-      if (value->GetAsBoolean(&out))
-        return ConvertBoolToGValue(out);
-      break;
-    }
-    case Value::TYPE_INTEGER: {
-      int out;
-      if (value->GetAsInteger(&out))
-        return ConvertIntToGValue(out);
-      break;
-    }
-    case Value::TYPE_STRING: {
-      std::string out;
-      if (value->GetAsString(&out))
-        return ConvertStringToGValue(out);
-      break;
-    }
-    case Value::TYPE_DICTIONARY: {
-      const DictionaryValue* dict = static_cast<const DictionaryValue*>(value);
-      return ConvertDictionaryValueToGValue(dict);
-    }
-    case Value::TYPE_NULL:
-    case Value::TYPE_DOUBLE:
-    case Value::TYPE_BINARY:
-    case Value::TYPE_LIST:
-      // Other Value types shouldn't be passed through this mechanism.
-      NOTREACHED() << "Unconverted Value of type: " << value->GetType();
-      return new GValue();
-  }
-  NOTREACHED() << "Value conversion failed, type: " << value->GetType();
-  return new GValue();
+  callback->Run(path, properties_dictionary);
 }
 
 }  // namespace
-
-ScopedGValue::ScopedGValue() {}
-
-ScopedGValue::ScopedGValue(GValue* value) : value_(value) {}
-
-ScopedGValue::~ScopedGValue() {
-  reset(NULL);
-}
-
-void ScopedGValue::reset(GValue* value) {
-  if (value_.get())
-    g_value_unset(value_.get());
-  value_.reset(value);
-}
-
-ScopedGHashTable::ScopedGHashTable() : table_(NULL) {}
-
-ScopedGHashTable::ScopedGHashTable(GHashTable* table) : table_(table) {}
-
-ScopedGHashTable::~ScopedGHashTable() {
-  reset(NULL);
-}
-
-void ScopedGHashTable::reset(GHashTable* table) {
-  if (table_)
-    g_hash_table_unref(table_);
-  table_ = table;
-}
 
 bool CrosActivateCellularModem(const char* service_path, const char* carrier) {
   return chromeos::ActivateCellularModem(service_path, carrier);
@@ -164,7 +46,7 @@ bool CrosActivateCellularModem(const char* service_path, const char* carrier) {
 void CrosSetNetworkServiceProperty(const char* service_path,
                                    const char* property,
                                    const base::Value& value) {
-  ScopedGValue gvalue(ConvertValueToGValue(&value));
+  ScopedGValue gvalue(ConvertValueToGValue(value));
   chromeos::SetNetworkServicePropertyGValue(service_path, property,
                                             gvalue.get());
 }
@@ -177,21 +59,21 @@ void CrosClearNetworkServiceProperty(const char* service_path,
 void CrosSetNetworkDeviceProperty(const char* device_path,
                                   const char* property,
                                   const base::Value& value) {
-  ScopedGValue gvalue(ConvertValueToGValue(&value));
+  ScopedGValue gvalue(ConvertValueToGValue(value));
   chromeos::SetNetworkDevicePropertyGValue(device_path, property, gvalue.get());
 }
 
 void CrosSetNetworkIPConfigProperty(const char* ipconfig_path,
                                     const char* property,
                                     const base::Value& value) {
-  ScopedGValue gvalue(ConvertValueToGValue(&value));
+  ScopedGValue gvalue(ConvertValueToGValue(value));
   chromeos::SetNetworkIPConfigPropertyGValue(ipconfig_path, property,
                                              gvalue.get());
 }
 
 void CrosSetNetworkManagerProperty(const char* property,
                                    const base::Value& value) {
-  ScopedGValue gvalue(ConvertValueToGValue(&value));
+  ScopedGValue gvalue(ConvertValueToGValue(value));
   chromeos::SetNetworkManagerPropertyGValue(property, gvalue.get());
 }
 
@@ -258,58 +140,79 @@ void CrosRequestNetworkServiceConnect(const char* service_path,
 }
 
 void CrosRequestNetworkManagerProperties(
-    NetworkPropertiesGValueCallback callback,
-    void* object) {
-  chromeos::RequestNetworkManagerProperties(callback, object);
+    const NetworkPropertiesCallback& callback) {
+  // The newly allocated callback will be deleted in OnRequestNetworkProperties.
+  chromeos::RequestNetworkManagerProperties(
+      &OnRequestNetworkProperties,
+      new OnRequestNetworkPropertiesCallback(callback));
 }
 
 void CrosRequestNetworkServiceProperties(
     const char* service_path,
-    NetworkPropertiesGValueCallback callback,
-    void* object) {
-  chromeos::RequestNetworkServiceProperties(service_path, callback, object);
+    const NetworkPropertiesCallback& callback) {
+  // The newly allocated callback will be deleted in OnRequestNetworkProperties.
+  chromeos::RequestNetworkServiceProperties(
+      service_path,
+      &OnRequestNetworkProperties,
+      new OnRequestNetworkPropertiesCallback(callback));
 }
 
 void CrosRequestNetworkDeviceProperties(
     const char* device_path,
-    NetworkPropertiesGValueCallback callback,
-    void* object) {
-  chromeos::RequestNetworkDeviceProperties(device_path, callback, object);
+    const NetworkPropertiesCallback& callback) {
+  // The newly allocated callback will be deleted in OnRequestNetworkProperties.
+  chromeos::RequestNetworkDeviceProperties(
+      device_path,
+      &OnRequestNetworkProperties,
+      new OnRequestNetworkPropertiesCallback(callback));
 }
 
 void CrosRequestNetworkProfileProperties(
     const char* profile_path,
-    NetworkPropertiesGValueCallback callback,
-    void* object) {
-  chromeos::RequestNetworkProfileProperties(profile_path, callback, object);
+    const NetworkPropertiesCallback& callback) {
+  // The newly allocated callback will be deleted in OnRequestNetworkProperties.
+  chromeos::RequestNetworkProfileProperties(
+      profile_path,
+      &OnRequestNetworkProperties,
+      new OnRequestNetworkPropertiesCallback(callback));
 }
 
 void CrosRequestNetworkProfileEntryProperties(
     const char* profile_path,
     const char* profile_entry_path,
-    NetworkPropertiesGValueCallback callback,
-    void* object) {
+    const NetworkPropertiesCallback& callback) {
+  // The newly allocated callback will be deleted in OnRequestNetworkProperties.
   chromeos::RequestNetworkProfileEntryProperties(
-      profile_path, profile_entry_path, callback, object);
+      profile_path,
+      profile_entry_path,
+      &OnRequestNetworkProperties,
+      new OnRequestNetworkPropertiesCallback(callback));
 }
 
 void CrosRequestHiddenWifiNetworkProperties(
     const char* ssid,
     const char* security,
-    NetworkPropertiesGValueCallback callback,
-    void* object) {
+    const NetworkPropertiesCallback& callback) {
+  // The newly allocated callback will be deleted in OnRequestNetworkProperties.
   chromeos::RequestHiddenWifiNetworkProperties(
-      ssid, security, callback, object);
+      ssid,
+      security,
+      &OnRequestNetworkProperties,
+      new OnRequestNetworkPropertiesCallback(callback));
 }
 
 void CrosRequestVirtualNetworkProperties(
     const char* service_name,
     const char* server_hostname,
     const char* provider_type,
-    NetworkPropertiesGValueCallback callback,
-    void* object) {
-  chromeos::RequestVirtualNetworkProperties(service_name, server_hostname,
-                                            provider_type, callback, object);
+    const NetworkPropertiesCallback& callback) {
+  // The newly allocated callback will be deleted in OnRequestNetworkProperties.
+  chromeos::RequestVirtualNetworkProperties(
+      service_name,
+      server_hostname,
+      provider_type,
+      &OnRequestNetworkProperties,
+      new OnRequestNetworkPropertiesCallback(callback));
 }
 
 void CrosRequestNetworkServiceDisconnect(const char* service_path) {
@@ -402,7 +305,8 @@ void CrosConfigureService(const char* identifier,
                           const base::DictionaryValue& properties,
                           NetworkActionCallback callback,
                           void* object) {
-  ScopedGHashTable ghash(ConvertDictionaryValueToGValueMap(&properties));
+  ScopedGHashTable ghash(
+      ConvertDictionaryValueToStringValueGHashTable(properties));
   chromeos::ConfigureService(identifier, ghash.get(), callback, object);
 }
 

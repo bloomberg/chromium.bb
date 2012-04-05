@@ -8,6 +8,7 @@
 #include "base/json/json_writer.h"  // for debug output only.
 #include "base/metrics/histogram.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/cros/gvalue_util.h"
 #include "chrome/browser/chromeos/cros/native_network_constants.h"
 #include "chrome/browser/chromeos/cros/native_network_parser.h"
 #include "chrome/browser/chromeos/cros_settings.h"
@@ -33,80 +34,6 @@ const char kDefaultCheckPortalList[] = "ethernet,wifi,cellular";
 // for string values from libcros.
 std::string SafeString(const char* s) {
   return s ? std::string(s) : std::string();
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// glib
-
-Value* ConvertGlibValue(const GValue* gvalue);
-
-void AppendListElement(const GValue* gvalue, gpointer user_data) {
-  ListValue* list = static_cast<ListValue*>(user_data);
-  Value* value = ConvertGlibValue(gvalue);
-  list->Append(value);
-}
-
-void AppendDictionaryElement(const GValue* keyvalue,
-                             const GValue* gvalue,
-                             gpointer user_data) {
-  DictionaryValue* dict = static_cast<DictionaryValue*>(user_data);
-  std::string key(g_value_get_string(keyvalue));
-  Value* value = ConvertGlibValue(gvalue);
-  dict->SetWithoutPathExpansion(key, value);
-}
-
-Value* ConvertGlibValue(const GValue* gvalue) {
-  if (G_VALUE_HOLDS_STRING(gvalue)) {
-    return Value::CreateStringValue(g_value_get_string(gvalue));
-  } else if (G_VALUE_HOLDS_BOOLEAN(gvalue)) {
-    return Value::CreateBooleanValue(
-        static_cast<bool>(g_value_get_boolean(gvalue)));
-  } else if (G_VALUE_HOLDS_INT(gvalue)) {
-    return Value::CreateIntegerValue(g_value_get_int(gvalue));
-  } else if (G_VALUE_HOLDS_UINT(gvalue)) {
-    return Value::CreateIntegerValue(
-        static_cast<int>(g_value_get_uint(gvalue)));
-  } else if (G_VALUE_HOLDS_UCHAR(gvalue)) {
-    return Value::CreateIntegerValue(
-        static_cast<int>(g_value_get_uchar(gvalue)));
-  } else if (G_VALUE_HOLDS(gvalue, DBUS_TYPE_G_OBJECT_PATH)) {
-    const char* path = static_cast<const char*>(g_value_get_boxed(gvalue));
-    return Value::CreateStringValue(path);
-  } else if (G_VALUE_HOLDS(gvalue, G_TYPE_STRV)) {
-    ListValue* list = new ListValue();
-    for (GStrv strv = static_cast<GStrv>(g_value_get_boxed(gvalue));
-         *strv != NULL; ++strv) {
-      list->Append(Value::CreateStringValue(*strv));
-    }
-    return list;
-  } else if (dbus_g_type_is_collection(G_VALUE_TYPE(gvalue))) {
-    ListValue* list = new ListValue();
-    dbus_g_type_collection_value_iterate(gvalue, AppendListElement, list);
-    return list;
-  } else if (dbus_g_type_is_map(G_VALUE_TYPE(gvalue))) {
-    DictionaryValue* dict = new DictionaryValue();
-    dbus_g_type_map_value_iterate(gvalue, AppendDictionaryElement, dict);
-    return dict;
-  } else if (G_VALUE_HOLDS(gvalue, G_TYPE_VALUE)) {
-    const GValue* bvalue = static_cast<GValue*>(g_value_get_boxed(gvalue));
-    return ConvertGlibValue(bvalue);
-  } else {
-    LOG(ERROR) << "Unrecognized Glib value type: " << G_VALUE_TYPE(gvalue);
-    return Value::CreateNullValue();
-  }
-}
-
-DictionaryValue* ConvertGHashTable(GHashTable* ghash) {
-  DictionaryValue* dict = new DictionaryValue();
-  GHashTableIter iter;
-  gpointer gkey, gvalue;
-  g_hash_table_iter_init(&iter, ghash);
-  while (g_hash_table_iter_next(&iter, &gkey, &gvalue))  {
-    std::string key(static_cast<char*>(gkey));
-    Value* value = ConvertGlibValue(static_cast<GValue*>(gvalue));
-    dict->SetWithoutPathExpansion(key, value);
-  }
-  return dict;
 }
 
 }  // namespace
@@ -142,7 +69,7 @@ void NetworkLibraryImplCros::Init() {
   // First, get the currently available networks. This data is cached
   // on the connman side, so the call should be quick.
   VLOG(1) << "Requesting initial network manager info from libcros.";
-  CrosRequestNetworkManagerProperties(&NetworkManagerUpdate, this);
+  CrosRequestNetworkManagerProperties(base::Bind(&NetworkManagerUpdate, this));
   network_manager_monitor_ =
       CrosMonitorNetworkManagerProperties(
           &NetworkManagerStatusChangedHandler, this);
@@ -209,7 +136,7 @@ void NetworkLibraryImplCros::NetworkStatusChangedHandler(
   DCHECK(networklib);
   if (key == NULL || gvalue == NULL || path == NULL || object == NULL)
     return;
-  scoped_ptr<Value> value(ConvertGlibValue(gvalue));
+  scoped_ptr<Value> value(ConvertGValueToValue(gvalue));
   networklib->UpdateNetworkStatus(std::string(path), std::string(key), *value);
 }
 
@@ -242,7 +169,7 @@ void NetworkLibraryImplCros::NetworkDevicePropertyChangedHandler(
   DCHECK(networklib);
   if (key == NULL || gvalue == NULL || path == NULL || object == NULL)
     return;
-  scoped_ptr<Value> value(ConvertGlibValue(gvalue));
+  scoped_ptr<Value> value(ConvertGValueToValue(gvalue));
   networklib->UpdateNetworkDeviceStatus(std::string(path),
                                         std::string(key),
                                         *value);
@@ -269,8 +196,8 @@ void NetworkLibraryImplCros::UpdateNetworkDeviceStatus(
     // If a device's power state changes, new properties may become defined.
     if (index == PROPERTY_INDEX_POWERED) {
       CrosRequestNetworkDeviceProperties(path.c_str(),
-                                         &NetworkDeviceUpdate,
-                                         this);
+                                         base::Bind(&NetworkDeviceUpdate,
+                                                    this));
     }
   }
 }
@@ -359,15 +286,16 @@ void NetworkLibraryImplCros::CallConnectToNetwork(Network* network) {
 
 // static callback
 void NetworkLibraryImplCros::WifiServiceUpdateAndConnect(
-    void* object, const char* service_path, GHashTable* ghash) {
+    void* object,
+    const char* service_path,
+    const base::DictionaryValue* properties) {
   DCHECK(CrosLibrary::Get()->libcros_loaded());
   NetworkLibraryImplCros* networklib =
       static_cast<NetworkLibraryImplCros*>(object);
   DCHECK(networklib);
-  if (service_path && ghash) {
-    scoped_ptr<DictionaryValue> dict(ConvertGHashTable(ghash));
+  if (service_path && properties) {
     Network* network =
-        networklib->ParseNetwork(std::string(service_path), *(dict.get()));
+        networklib->ParseNetwork(std::string(service_path), *properties);
     DCHECK_EQ(network->type(), TYPE_WIFI);
     networklib->ConnectToWifiNetworkUsingConnectData(
         static_cast<WifiNetwork*>(network));
@@ -381,22 +309,22 @@ void NetworkLibraryImplCros::CallRequestWifiNetworkAndConnect(
   CrosRequestHiddenWifiNetworkProperties(
       ssid.c_str(),
       SecurityToString(security),
-      WifiServiceUpdateAndConnect,
-      this);
+      base::Bind(&WifiServiceUpdateAndConnect, this));
 }
 
 // static callback
 void NetworkLibraryImplCros::VPNServiceUpdateAndConnect(
-    void* object, const char* service_path, GHashTable* ghash) {
+    void* object,
+    const char* service_path,
+    const base::DictionaryValue* properties) {
   DCHECK(CrosLibrary::Get()->libcros_loaded());
   NetworkLibraryImplCros* networklib =
       static_cast<NetworkLibraryImplCros*>(object);
   DCHECK(networklib);
-  if (service_path && ghash) {
+  if (service_path && properties) {
     VLOG(1) << "Connecting to new VPN Service: " << service_path;
-    scoped_ptr<DictionaryValue> dict(ConvertGHashTable(ghash));
     Network* network =
-        networklib->ParseNetwork(std::string(service_path), *(dict.get()));
+        networklib->ParseNetwork(std::string(service_path), *properties);
     DCHECK_EQ(network->type(), TYPE_VPN);
     networklib->ConnectToVirtualNetworkUsingConnectData(
         static_cast<VirtualNetwork*>(network));
@@ -413,8 +341,7 @@ void NetworkLibraryImplCros::CallRequestVirtualNetworkAndConnect(
       service_name.c_str(),
       server_hostname.c_str(),
       ProviderTypeToString(provider_type),
-      VPNServiceUpdateAndConnect,
-      this);
+      base::Bind(&VPNServiceUpdateAndConnect, this));
 }
 
 void NetworkLibraryImplCros::CallDeleteRememberedNetwork(
@@ -595,7 +522,7 @@ void NetworkLibraryImplCros::RequestNetworkScan() {
     cellular_network()->RefreshDataPlansIfNeeded();
   // Make sure all Manager info is up to date. This will also update
   // remembered networks and visible services.
-  CrosRequestNetworkManagerProperties(&NetworkManagerUpdate, this);
+  CrosRequestNetworkManagerProperties(base::Bind(&NetworkManagerUpdate, this));
 }
 
 bool NetworkLibraryImplCros::GetWifiAccessPoints(
@@ -782,7 +709,7 @@ void NetworkLibraryImplCros::NetworkManagerStatusChangedHandler(
   NetworkLibraryImplCros* networklib =
       static_cast<NetworkLibraryImplCros*>(object);
   DCHECK(networklib);
-  scoped_ptr<Value> value(ConvertGlibValue(gvalue));
+  scoped_ptr<Value> value(ConvertGValueToValue(gvalue));
   networklib->NetworkManagerStatusChanged(key, value.get());
 }
 
@@ -883,18 +810,19 @@ void NetworkLibraryImplCros::NetworkManagerStatusChanged(
 
 // static
 void NetworkLibraryImplCros::NetworkManagerUpdate(
-    void* object, const char* manager_path, GHashTable* ghash) {
+    void* object,
+    const char* manager_path,
+    const base::DictionaryValue* properties) {
   DCHECK(CrosLibrary::Get()->libcros_loaded());
   NetworkLibraryImplCros* networklib =
       static_cast<NetworkLibraryImplCros*>(object);
   DCHECK(networklib);
-  if (!ghash) {
+  if (!properties) {
     LOG(ERROR) << "Error retrieving manager properties: " << manager_path;
     return;
   }
   VLOG(1) << "Received NetworkManagerUpdate.";
-  scoped_ptr<DictionaryValue> dict(ConvertGHashTable(ghash));
-  networklib->ParseNetworkManager(*(dict.get()));
+  networklib->ParseNetworkManager(*properties);
 }
 
 void NetworkLibraryImplCros::ParseNetworkManager(const DictionaryValue& dict) {
@@ -1021,8 +949,8 @@ void NetworkLibraryImplCros::UpdateNetworkServiceList(
       network_update_requests_[service_path] = network_priority_order++;
       wifi_scanning_ = true;
       CrosRequestNetworkServiceProperties(service_path.c_str(),
-                                          &NetworkServiceUpdate,
-                                          this);
+                                          base::Bind(&NetworkServiceUpdate,
+                                                     this));
     }
   }
   // Iterate through list of remaining networks that are no longer in the
@@ -1065,25 +993,26 @@ void NetworkLibraryImplCros::UpdateWatchedNetworkServiceList(
     (*iter)->GetAsString(&service_path);
     if (!service_path.empty()) {
       VLOG(1) << "Watched Service: " << service_path;
-      CrosRequestNetworkServiceProperties(service_path.c_str(),
-                                          &NetworkServiceUpdate,
-                                          this);
+      CrosRequestNetworkServiceProperties(
+          service_path.c_str(),
+          base::Bind(&NetworkServiceUpdate, this));
     }
   }
 }
 
 // static
 void NetworkLibraryImplCros::NetworkServiceUpdate(
-    void* object, const char* service_path, GHashTable* ghash) {
+    void* object,
+    const char* service_path,
+    const base::DictionaryValue* properties) {
   DCHECK(CrosLibrary::Get()->libcros_loaded());
   NetworkLibraryImplCros* networklib =
       static_cast<NetworkLibraryImplCros*>(object);
   DCHECK(networklib);
   if (service_path) {
-    if (!ghash)
+    if (!properties)
       return;  // Network no longer in visible list, ignore.
-    scoped_ptr<DictionaryValue> dict(ConvertGHashTable(ghash));
-    networklib->ParseNetwork(std::string(service_path), *(dict.get()));
+    networklib->ParseNetwork(std::string(service_path), *properties);
   }
 }
 
@@ -1177,25 +1106,26 @@ void NetworkLibraryImplCros::RequestRememberedNetworksUpdate() {
     NetworkProfile& profile = *iter;
     VLOG(1) << " Requesting Profile: " << profile.path;
     CrosRequestNetworkProfileProperties(
-        profile.path.c_str(), &ProfileUpdate, this);
+        profile.path.c_str(), base::Bind(&ProfileUpdate, this));
   }
 }
 
 // static
 void NetworkLibraryImplCros::ProfileUpdate(
-    void* object, const char* profile_path, GHashTable* ghash) {
+    void* object,
+    const char* profile_path,
+    const base::DictionaryValue* properties) {
   DCHECK(CrosLibrary::Get()->libcros_loaded());
   NetworkLibraryImplCros* networklib =
       static_cast<NetworkLibraryImplCros*>(object);
   DCHECK(networklib);
-  if (!ghash) {
+  if (!properties) {
     LOG(ERROR) << "Error retrieving profile: " << profile_path;
     return;
   }
   VLOG(1) << "Received ProfileUpdate for: " << profile_path;
-  scoped_ptr<DictionaryValue> dict(ConvertGHashTable(ghash));
   ListValue* entries(NULL);
-  dict->GetList(flimflam::kEntriesProperty, &entries);
+  properties->GetList(flimflam::kEntriesProperty, &entries);
   DCHECK(entries);
   networklib->UpdateRememberedServiceList(profile_path, entries);
 }
@@ -1232,26 +1162,26 @@ void NetworkLibraryImplCros::UpdateRememberedServiceList(
     CrosRequestNetworkProfileEntryProperties(
         profile_path,
         service_path.c_str(),
-        &RememberedNetworkServiceUpdate,
-        this);
+        base::Bind(&RememberedNetworkServiceUpdate, this));
   }
 }
 
 // static
 void NetworkLibraryImplCros::RememberedNetworkServiceUpdate(
-    void* object, const char* service_path, GHashTable* ghash) {
+    void* object,
+    const char* service_path,
+    const base::DictionaryValue* properties) {
   DCHECK(CrosLibrary::Get()->libcros_loaded());
   NetworkLibraryImplCros* networklib =
       static_cast<NetworkLibraryImplCros*>(object);
   DCHECK(networklib);
   if (service_path) {
-    if (!ghash) {
+    if (!properties) {
       // Remembered network no longer exists.
       networklib->DeleteRememberedNetwork(std::string(service_path));
     } else {
-      scoped_ptr<DictionaryValue> dict(ConvertGHashTable(ghash));
       networklib->ParseRememberedNetwork(
-          std::string(service_path), *(dict.get()));
+          std::string(service_path), *properties);
     }
   }
 }
@@ -1306,8 +1236,7 @@ Network* NetworkLibraryImplCros::ParseRememberedNetwork(
           vpn->name().c_str(),
           vpn->server_hostname().c_str(),
           provider_type.c_str(),
-          NetworkServiceUpdate,
-          this);
+          base::Bind(&NetworkServiceUpdate, this));
     }
   }
 
@@ -1335,9 +1264,9 @@ void NetworkLibraryImplCros::UpdateNetworkDeviceList(const ListValue* devices) {
         device_map_[device_path] = found->second;
         old_device_map.erase(found);
       }
-      CrosRequestNetworkDeviceProperties(device_path.c_str(),
-                                         &NetworkDeviceUpdate,
-                                         this);
+      CrosRequestNetworkDeviceProperties(
+          device_path.c_str(),
+          base::Bind(&NetworkDeviceUpdate, this));
     }
   }
   // Delete any old devices that no longer exist.
@@ -1351,18 +1280,19 @@ void NetworkLibraryImplCros::UpdateNetworkDeviceList(const ListValue* devices) {
 
 // static
 void NetworkLibraryImplCros::NetworkDeviceUpdate(
-    void* object, const char* device_path, GHashTable* ghash) {
+    void* object,
+    const char* device_path,
+    const base::DictionaryValue* properties) {
   DCHECK(CrosLibrary::Get()->libcros_loaded());
   NetworkLibraryImplCros* networklib =
       static_cast<NetworkLibraryImplCros*>(object);
   DCHECK(networklib);
   if (device_path) {
-    if (!ghash) {
+    if (!properties) {
       // device no longer exists.
       networklib->DeleteDevice(std::string(device_path));
     } else {
-      scoped_ptr<DictionaryValue> dict(ConvertGHashTable(ghash));
-      networklib->ParseNetworkDevice(std::string(device_path), *(dict.get()));
+      networklib->ParseNetworkDevice(std::string(device_path), *properties);
     }
   }
 }
