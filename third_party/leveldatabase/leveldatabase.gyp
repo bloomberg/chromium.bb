@@ -4,7 +4,7 @@
 
 {
   'variables': {
-    'use_snappy%': 0,
+    'use_snappy%': 1,
   },
   'target_defaults': {
     'defines': [
