@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,33 +11,22 @@
 namespace {
 
 const wchar_t* const kExactMatchCandidates[] = {
-#if defined(GOOGLE_CHROME_BUILD)
   L"am", L"ar", L"bg", L"bn", L"ca", L"cs", L"da", L"de", L"el", L"en-gb",
   L"en-us", L"es", L"es-419", L"et", L"fa", L"fi", L"fil", L"fr", L"gu", L"hi",
   L"hr", L"hu", L"id", L"it", L"iw", L"ja", L"kn", L"ko", L"lt", L"lv", L"ml",
   L"mr", L"nl", L"no", L"pl", L"pt-br", L"pt-pt", L"ro", L"ru", L"sk", L"sl",
   L"sr", L"sv", L"sw", L"ta", L"te", L"th", L"tr", L"uk", L"vi", L"zh-cn",
   L"zh-tw"
-#else
-  L"en-us"
-#endif
 };
 
 const wchar_t* const kAliasMatchCandidates[] = {
-#if defined(GOOGLE_CHROME_BUILD)
   L"he", L"nb", L"tl", L"zh-chs",  L"zh-cht", L"zh-hans", L"zh-hant", L"zh-hk",
   L"zh-mo"
-#else
-  // There is only en-us.
-  L"en-us"
-#endif
 };
 
 const wchar_t* const kWildcardMatchCandidates[] = {
   L"en-AU",
-#if defined(GOOGLE_CHROME_BUILD)
   L"es-CO", L"pt-AB", L"zh-SG"
-#endif
 };
 
 }  // namespace
@@ -57,13 +46,8 @@ TEST(LanguageSelectorTest, AssortedSelections) {
     installer::LanguageSelector instance(
         std::vector<std::wstring>(&candidates[0],
                                   &candidates[arraysize(candidates)]));
-#if defined(GOOGLE_CHROME_BUILD)
     // Expect the exact match to win.
     EXPECT_EQ(L"fr", instance.matched_candidate());
-#else
-    // Expect the exact match to win.
-    EXPECT_EQ(L"en", instance.matched_candidate());
-#endif
   }
   {
     std::wstring candidates[] = {
@@ -82,13 +66,8 @@ TEST(LanguageSelectorTest, AssortedSelections) {
     installer::LanguageSelector instance(
       std::vector<std::wstring>(&candidates[0],
       &candidates[arraysize(candidates)]));
-#if defined(GOOGLE_CHROME_BUILD)
     // Expect the alias match to win.
     EXPECT_EQ(L"zh-SG", instance.matched_candidate());
-#else
-    // Expect the exact match to win.
-    EXPECT_EQ(L"en-GB", instance.matched_candidate());
-#endif
   }
 }
 
@@ -126,8 +105,6 @@ INSTANTIATE_TEST_CASE_P(
     ::testing::ValuesIn(
         &kWildcardMatchCandidates[0],
         &kWildcardMatchCandidates[arraysize(kWildcardMatchCandidates)]));
-
-#if defined(GOOGLE_CHROME_BUILD)
 
 // A fixture for testing aliases that match to an expected translation.  The
 // first member of the tuple is the expected translation, the second is a
@@ -186,4 +163,8 @@ INSTANTIATE_TEST_CASE_P(
         ::testing::Values(L"zh-tw"),
         ::testing::Values(L"zh-cht", L"zh-hant", L"zh-hk", L"zh-mo")));
 
-#endif  // GOOGLE_CHROME_BUILD
+// Test that we can get the name of the default language.
+TEST(LanguageSelectorTest, DefaultLanguageName) {
+  installer::LanguageSelector instance;
+  EXPECT_FALSE(instance.GetLanguageName(instance.offset()).empty());
+}
