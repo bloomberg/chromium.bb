@@ -59,8 +59,7 @@ class NaClProcessHost::DebugContext
   : public base::RefCountedThreadSafe<NaClProcessHost::DebugContext> {
  public:
   DebugContext()
-      : can_send_start_msg_(false),
-        child_process_host_(NULL) {
+      : can_send_start_msg_(false) {
   }
 
   ~DebugContext() {
@@ -70,7 +69,7 @@ class NaClProcessHost::DebugContext
 
   // 6 methods below must be called on Browser::IO thread.
   void SetStartMessage(IPC::Message* start_msg);
-  void SetChildProcessHost(content::ChildProcessHost* child_process_host);
+  void SetNaClProcessHost(base::WeakPtr<NaClProcessHost> nacl_process_host);
   void SetDebugThread(base::Thread* thread_);
 
   // Start message is sent from 2 flows of execution. The first flow is
@@ -99,7 +98,7 @@ class NaClProcessHost::DebugContext
   // Debugger is attached or exception handling is not switched on.
   // This means that start message can be sent to the NaCl process.
   bool can_send_start_msg_;
-  content::ChildProcessHost* child_process_host_;
+  base::WeakPtr<NaClProcessHost> nacl_process_host_;
 };
 
 void NaClProcessHost::DebugContext::AttachDebugger(
@@ -128,9 +127,9 @@ void NaClProcessHost::DebugContext::SetStartMessage(IPC::Message* start_msg) {
   start_msg_.reset(start_msg);
 }
 
-void NaClProcessHost::DebugContext::SetChildProcessHost(
-    content::ChildProcessHost* child_process_host) {
-  child_process_host_ = child_process_host;
+void NaClProcessHost::DebugContext::SetNaClProcessHost(
+    base::WeakPtr<NaClProcessHost> nacl_process_host) {
+  nacl_process_host_ = nacl_process_host;
 }
 
 void NaClProcessHost::DebugContext::SetDebugThread(base::Thread* thread) {
@@ -143,8 +142,8 @@ void NaClProcessHost::DebugContext::AllowToSendStartMsg() {
 
 void NaClProcessHost::DebugContext::SendStartMessage() {
   if (start_msg_.get() && can_send_start_msg_) {
-    if (child_process_host_) {
-      if (!child_process_host_->Send(start_msg_.release())) {
+    if (nacl_process_host_) {
+      if (!nacl_process_host_->Send(start_msg_.release())) {
         LOG(ERROR) << "Failed to send start message";
       }
     }
@@ -321,9 +320,6 @@ NaClProcessHost::~NaClProcessHost() {
 #if defined(OS_WIN)
   if (process_launched_by_broker_) {
     NaClBrokerService::GetInstance()->OnLoaderDied();
-  }
-  if (debug_context_ != NULL) {
-    debug_context_->SetChildProcessHost(NULL);
   }
 #endif
 }
@@ -673,7 +669,7 @@ void NaClProcessHost::OnChannelConnected(int32 peer_pid) {
   if (debug_context_ == NULL) {
     return;
   }
-  debug_context_->SetChildProcessHost(process_->GetHost());
+  debug_context_->SetNaClProcessHost(weak_factory_.GetWeakPtr());
   if (RunningOnWOW64()) {
     if (!NaClBrokerService::GetInstance()->LaunchDebugExceptionHandler(
              this, peer_pid)) {
