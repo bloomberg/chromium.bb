@@ -17,6 +17,7 @@
 #include "chrome/common/extensions/extension_permission_set.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/chrome_render_process_observer.h"
+#include "chrome/renderer/extensions/api_definitions_natives.h"
 #include "chrome/renderer/extensions/app_bindings.h"
 #include "chrome/renderer/extensions/chrome_v8_context.h"
 #include "chrome/renderer/extensions/chrome_v8_extension.h"
@@ -33,7 +34,8 @@
 #include "chrome/renderer/extensions/miscellaneous_bindings.h"
 #include "chrome/renderer/extensions/page_actions_custom_bindings.h"
 #include "chrome/renderer/extensions/page_capture_custom_bindings.h"
-#include "chrome/renderer/extensions/schema_generated_bindings.h"
+#include "chrome/renderer/extensions/send_request_natives.h"
+#include "chrome/renderer/extensions/set_icon_natives.h"
 #include "chrome/renderer/extensions/tabs_custom_bindings.h"
 #include "chrome/renderer/extensions/tts_custom_bindings.h"
 #include "chrome/renderer/extensions/user_script_slave.h"
@@ -55,7 +57,16 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "v8/include/v8.h"
 
+using WebKit::WebDataSource;
+using WebKit::WebDocument;
+using WebKit::WebFrame;
+using WebKit::WebScopedUserGesture;
+using WebKit::WebSecurityPolicy;
+using WebKit::WebString;
+using WebKit::WebVector;
+using WebKit::WebView;
 using content::RenderThread;
+using extensions::ApiDefinitionsNatives;
 using extensions::ContextMenusCustomBindings;
 using extensions::ExperimentalSocketCustomBindings;
 using extensions::ExtensionAPI;
@@ -67,18 +78,11 @@ using extensions::I18NCustomBindings;
 using extensions::MiscellaneousBindings;
 using extensions::PageActionsCustomBindings;
 using extensions::PageCaptureCustomBindings;
-using extensions::SchemaGeneratedBindings;
+using extensions::SendRequestNatives;
+using extensions::SetIconNatives;
 using extensions::TTSCustomBindings;
 using extensions::TabsCustomBindings;
 using extensions::WebRequestCustomBindings;
-using WebKit::WebDataSource;
-using WebKit::WebDocument;
-using WebKit::WebFrame;
-using WebKit::WebSecurityPolicy;
-using WebKit::WebString;
-using WebKit::WebScopedUserGesture;
-using WebKit::WebVector;
-using WebKit::WebView;
 
 namespace {
 
@@ -440,9 +444,14 @@ void ExtensionDispatcher::RegisterNativeHandlers(ModuleSystem* module_system,
       scoped_ptr<NativeHandler>(EventBindings::Get(this)));
   module_system->RegisterNativeHandler("miscellaneous_bindings",
       scoped_ptr<NativeHandler>(MiscellaneousBindings::Get(this)));
-  module_system->RegisterNativeHandler("schema_generated_bindings",
+  module_system->RegisterNativeHandler("apiDefinitions",
+      scoped_ptr<NativeHandler>(new ApiDefinitionsNatives(this)));
+  module_system->RegisterNativeHandler("sendRequest",
       scoped_ptr<NativeHandler>(
-          new SchemaGeneratedBindings(this, request_sender_.get())));
+          new SendRequestNatives(this, request_sender_.get())));
+  module_system->RegisterNativeHandler("setIcon",
+      scoped_ptr<NativeHandler>(
+          new SetIconNatives(this, request_sender_.get())));
 
   // Custom bindings.
   module_system->RegisterNativeHandler("app",

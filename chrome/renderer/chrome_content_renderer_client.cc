@@ -41,7 +41,6 @@
 #include "chrome/renderer/extensions/extension_helper.h"
 #include "chrome/renderer/extensions/extension_resource_request_policy.h"
 #include "chrome/renderer/extensions/miscellaneous_bindings.h"
-#include "chrome/renderer/extensions/schema_generated_bindings.h"
 #include "chrome/renderer/external_extension.h"
 #include "chrome/renderer/loadtimes_extension_bindings.h"
 #include "chrome/renderer/localized_error.h"

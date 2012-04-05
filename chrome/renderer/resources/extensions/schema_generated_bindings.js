@@ -7,8 +7,8 @@
 
   require('json_schema');
   require('event_bindings');
-  var natives = requireNative('schema_generated_bindings');
-  var GetExtensionAPIDefinition = natives.GetExtensionAPIDefinition;
+  var GetExtensionAPIDefinition =
+      requireNative('apiDefinitions').GetExtensionAPIDefinition;
   var sendRequest = require('sendRequest').sendRequest;
 
   var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var SetIconCommon = requireNative('schema_generated_bindings').SetIconCommon;
+var SetIconCommon = requireNative('setIcon').SetIconCommon;
 var sendRequest = require('sendRequest').sendRequest;
 
 function setIcon(details, name, parameters, actionType) {

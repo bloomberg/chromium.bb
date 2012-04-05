@@ -19,7 +19,6 @@
 #include "chrome/renderer/extensions/chrome_v8_context.h"
 #include "chrome/renderer/extensions/extension_dispatcher.h"
 #include "chrome/renderer/extensions/miscellaneous_bindings.h"
-#include "chrome/renderer/extensions/schema_generated_bindings.h"
 #include "chrome/renderer/extensions/user_script_idle_scheduler.h"
 #include "chrome/renderer/extensions/user_script_slave.h"
 #include "content/public/renderer/render_view.h"
@@ -32,7 +31,6 @@
 #include "webkit/glue/resource_fetcher.h"
 
 using extensions::MiscellaneousBindings;
-using extensions::SchemaGeneratedBindings;
 using WebKit::WebConsoleMessage;
 using WebKit::WebDataSource;
 using WebKit::WebFrame;

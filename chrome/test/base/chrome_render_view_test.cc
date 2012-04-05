@@ -15,7 +15,6 @@
 #include "chrome/renderer/extensions/extension_custom_bindings.h"
 #include "chrome/renderer/extensions/extension_dispatcher.h"
 #include "chrome/renderer/extensions/miscellaneous_bindings.h"
-#include "chrome/renderer/extensions/schema_generated_bindings.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/renderer/render_view.h"
@@ -37,7 +36,6 @@
 
 using extensions::ExtensionCustomBindings;
 using extensions::MiscellaneousBindings;
-using extensions::SchemaGeneratedBindings;
 using WebKit::WebFrame;
 using WebKit::WebInputEvent;
 using WebKit::WebMouseEvent;

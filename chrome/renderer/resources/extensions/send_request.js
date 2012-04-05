@@ -3,9 +3,7 @@
 // found in the LICENSE file.
 
 var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
-var sgb = requireNative('schema_generated_bindings');
-var GetNextRequestId = sgb.GetNextRequestId;
-var StartRequest = sgb.StartRequest;
+var natives = requireNative('sendRequest');
 
 // Callback handling.
 var requests = [];
@@ -112,9 +110,9 @@ function sendRequest(functionName, args, argSchemas, opt_args) {
 
   var sargs = opt_args.noStringify ?
       request.args : chromeHidden.JSON.stringify(request.args);
-  var nativeFunction = opt_args.nativeFunction || StartRequest;
+  var nativeFunction = opt_args.nativeFunction || natives.StartRequest;
 
-  var requestId = GetNextRequestId();
+  var requestId = natives.GetNextRequestId();
   request.id = requestId;
   requests[requestId] = request;
   var hasCallback =
