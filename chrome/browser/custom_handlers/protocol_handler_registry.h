@@ -283,6 +283,7 @@ class ProtocolHandlerRegistry
   ProtocolHandlerMap default_handlers_io_;
 
   friend class ProtocolHandlerRegistryTest;
+  friend class RegisterProtocolHandlerBrowserTest;
 
   DISALLOW_COPY_AND_ASSIGN(ProtocolHandlerRegistry);
 };
