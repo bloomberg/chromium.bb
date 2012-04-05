@@ -35,7 +35,7 @@ bool SequencedWorkerPoolTaskRunner::PostDelayedTask(
 }
 
 bool SequencedWorkerPoolTaskRunner::RunsTasksOnCurrentThread() const {
-  return pool_->RunsTasksOnCurrentThread();
+  return pool_->IsRunningSequenceOnCurrentThread(token_);
 }
 
 bool SequencedWorkerPoolTaskRunner::PostNonNestableDelayedTask(
