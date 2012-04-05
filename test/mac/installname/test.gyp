@@ -78,5 +78,16 @@
         'LD_DYLIB_INSTALL_NAME': 'Should be ignored for not shared_lib',
       },
     },
+    # Regression test for http://crbug.com/113918
+    {
+      'target_name': 'install_name_with_info_plist',
+      'type': 'shared_library',
+      'mac_bundle': 1,
+      'sources': [ 'file.c' ],
+      'xcode_settings': {
+        'INFOPLIST_FILE': 'Info.plist',
+        'LD_DYLIB_INSTALL_NAME': '$(DYLIB_INSTALL_NAME_BASE:standardizepath)/$(EXECUTABLE_PATH)',
+      },
+    },
   ],
 }
