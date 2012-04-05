@@ -214,6 +214,9 @@ class BrowserThreadMessageLoopProxy : public base::MessageLoopProxy {
     return BrowserThread::CurrentlyOn(id_);
   }
 
+ protected:
+  virtual ~BrowserThreadMessageLoopProxy() {}
+
  private:
   BrowserThread::ID id_;
   DISALLOW_COPY_AND_ASSIGN(BrowserThreadMessageLoopProxy);

@@ -92,6 +92,8 @@ class JingleMessagePump : public base::MessagePump,
     }
   }
 
+ protected:
+  virtual ~JingleMessagePump() {}
 
  private:
   void ScheduleNextDelayedTask() {
