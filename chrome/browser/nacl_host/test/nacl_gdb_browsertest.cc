@@ -42,10 +42,12 @@ IN_PROC_BROWSER_TEST_F(NaClGdbTest, Empty) {
   // base::LaunchProcess doesn't support creating suspended processes. We need
   // to either add suspended process support to base::LaunchProcess or use
   // Win API.
+#if defined(OS_WIN)
   if (base::win::OSInfo::GetInstance()->wow64_status() ==
       base::win::OSInfo::WOW64_DISABLED) {
     return;
   }
+#endif
   EXPECT_TRUE(file_util::CreateTemporaryFile(&mock_nacl_gdb_file));
   env->SetVar("MOCK_NACL_GDB", mock_nacl_gdb_file.AsUTF8Unsafe());
   RunTestViaHTTP("Empty");

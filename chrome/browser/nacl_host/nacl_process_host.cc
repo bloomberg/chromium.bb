@@ -11,8 +11,11 @@
 #include "base/command_line.h"
 #include "base/memory/mru_cache.h"
 #include "base/memory/singleton.h"
+#include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
+#include "base/string_number_conversions.h"
+#include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/rand_util.h"
 #include "base/stringprintf.h"
@@ -267,6 +270,8 @@ NaClProcessHost::NaClProcessHost(const std::wstring& url)
     :
 #if defined(OS_WIN)
       process_launched_by_broker_(false),
+#elif defined(OS_LINUX)
+      wait_for_nacl_gdb_(false),
 #endif
       reply_msg_(NULL),
       internal_(new NaClInternal()),
@@ -404,17 +409,17 @@ void NaClProcessHost::Launch(
     delete this;
   }
 }
-
+#if defined(OS_WIN)
 scoped_ptr<CommandLine> NaClProcessHost::LaunchWithNaClGdb(
     const FilePath& nacl_gdb,
-    CommandLine* line,
-    const FilePath& manifest_path) {
+    CommandLine* line) {
   CommandLine* cmd_line = new CommandLine(nacl_gdb);
   // We can't use PrependWrapper because our parameters contain spaces.
   cmd_line->AppendArg("--eval-command");
   const FilePath::StringType& irt_path =
       NaClBrowser::GetInstance()->GetIrtFilePath().value();
   cmd_line->AppendArgNative(FILE_PATH_LITERAL("nacl-irt ") + irt_path);
+  FilePath manifest_path = GetManifestPath();
   if (!manifest_path.empty()) {
     cmd_line->AppendArg("--eval-command");
     cmd_line->AppendArgNative(FILE_PATH_LITERAL("nacl-manifest ") +
@@ -426,6 +431,108 @@ scoped_ptr<CommandLine> NaClProcessHost::LaunchWithNaClGdb(
     cmd_line->AppendArgNative(argv[i]);
   }
   return scoped_ptr<CommandLine>(cmd_line);
+}
+#elif defined(OS_LINUX)
+namespace {
+class NaClGdbWatchDelegate : public MessageLoopForIO::Watcher {
+ public:
+  // fd_write_ is used by nacl-gdb via /proc/browser_PID/fd/fd_write_
+  NaClGdbWatchDelegate(int fd_read, int fd_write,
+                       const base::Closure& reply)
+      : fd_read_(fd_read),
+        fd_write_(fd_write),
+        reply_(reply) {}
+
+  ~NaClGdbWatchDelegate() {
+    if (HANDLE_EINTR(close(fd_read_)) != 0)
+      DLOG(ERROR) << "close(fd_read_) failed";
+    if (HANDLE_EINTR(close(fd_write_)) != 0)
+      DLOG(ERROR) << "close(fd_write_) failed";
+  }
+
+  virtual void OnFileCanReadWithoutBlocking(int fd) OVERRIDE;
+  virtual void OnFileCanWriteWithoutBlocking(int fd) OVERRIDE {}
+
+ private:
+  int fd_read_;
+  int fd_write_;
+  base::Closure reply_;
+};
+
+void NaClGdbWatchDelegate::OnFileCanReadWithoutBlocking(int fd) {
+  char buf;
+  if (HANDLE_EINTR(read(fd_read_, &buf, 1)) != 1 || buf != '\0')
+    LOG(ERROR) << "Failed to sync with nacl-gdb";
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, reply_);
+}
+}  // namespace
+
+bool NaClProcessHost::LaunchNaClGdb(base::ProcessId pid) {
+  CommandLine::StringType nacl_gdb =
+      CommandLine::ForCurrentProcess()->GetSwitchValueNative(
+          switches::kNaClGdb);
+  CommandLine::StringVector argv;
+  // We don't support spaces inside arguments in --nacl-gdb switch.
+  base::SplitString(nacl_gdb, static_cast<CommandLine::CharType>(' '), &argv);
+  CommandLine cmd_line(argv);
+  cmd_line.AppendArg("--eval-command");
+  const FilePath::StringType& irt_path =
+      NaClBrowser::GetInstance()->GetIrtFilePath().value();
+  cmd_line.AppendArgNative(FILE_PATH_LITERAL("nacl-irt ") + irt_path);
+  FilePath manifest_path = GetManifestPath();
+  if (!manifest_path.empty()) {
+    cmd_line.AppendArg("--eval-command");
+    cmd_line.AppendArgNative(FILE_PATH_LITERAL("nacl-manifest ") +
+                             manifest_path.value());
+  }
+  cmd_line.AppendArg("--eval-command");
+  cmd_line.AppendArg("attach " + base::IntToString(pid));
+  int fds[2];
+  if (pipe(fds) != 0)
+    return false;
+  // Tell the debugger to send a byte to the writable end of the pipe.
+  // We use a file descriptor in our process because the debugger will be
+  // typically launched in a separate terminal, and a lot of terminals close all
+  // file descriptors before launching external programs.
+  cmd_line.AppendArg("--eval-command");
+  cmd_line.AppendArg("dump binary value /proc/" +
+                     base::IntToString(base::GetCurrentProcId()) +
+                     "/fd/" + base::IntToString(fds[1]) + " (char)0");
+  // wait on fds[0]
+  // If the debugger crashes before attaching to the NaCl process, the user can
+  // release resources by terminating the NaCl loader in Chrome Task Manager.
+  nacl_gdb_watcher_delegate_.reset(
+      new NaClGdbWatchDelegate(
+          fds[0], fds[1],
+          base::Bind(&NaClProcessHost::OnNaClGdbAttached,
+                     weak_factory_.GetWeakPtr())));
+  MessageLoopForIO::current()->WatchFileDescriptor(
+      fds[0],
+      true,
+      MessageLoopForIO::WATCH_READ,
+      &nacl_gdb_watcher_,
+      nacl_gdb_watcher_delegate_.get());
+  return base::LaunchProcess(cmd_line, base::LaunchOptions(), NULL);
+}
+
+void NaClProcessHost::OnNaClGdbAttached() {
+  wait_for_nacl_gdb_ = false;
+  nacl_gdb_watcher_.StopWatchingFileDescriptor();
+  nacl_gdb_watcher_delegate_.reset();
+  OnProcessLaunched();
+}
+#endif
+
+FilePath NaClProcessHost::GetManifestPath() {
+  GURL manifest_url = GURL(process_->GetData().name);
+  const Extension* extension = extension_info_map_->extensions()
+      .GetExtensionOrAppByURL(ExtensionURLInfo(manifest_url));
+  if (extension != NULL && manifest_url.SchemeIs(chrome::kExtensionScheme)) {
+    std::string path = manifest_url.path();
+    TrimString(path, "/", &path);  // Remove first slash
+    return extension->path().AppendASCII(path);
+  }
+  return FilePath();
 }
 
 bool NaClProcessHost::LaunchSelLdr() {
@@ -485,18 +592,10 @@ bool NaClProcessHost::LaunchSelLdr() {
   FilePath nacl_gdb = CommandLine::ForCurrentProcess()->GetSwitchValuePath(
       switches::kNaClGdb);
   if (!nacl_gdb.empty()) {
-    GURL manifest_url = GURL(process_->GetData().name);
-    FilePath manifest_path;
-    const Extension* extension = extension_info_map_->extensions().
-        GetExtensionOrAppByURL(ExtensionURLInfo(manifest_url));
-    if (extension != NULL && manifest_url.SchemeIs(chrome::kExtensionScheme)) {
-      std::string path = manifest_url.path();
-      TrimString(path, "/", &path);  // Remove first slash
-      manifest_path = extension->path().AppendASCII(path);
-    }
+#if defined(OS_WIN)
     cmd_line->AppendSwitch(switches::kNoSandbox);
     scoped_ptr<CommandLine> gdb_cmd_line(
-        LaunchWithNaClGdb(nacl_gdb, cmd_line.get(), manifest_path));
+        LaunchWithNaClGdb(nacl_gdb, cmd_line.get()));
     // We can't use process_->Launch() because OnProcessLaunched will be called
     // with process_->GetData().handle filled by handle of gdb process. This
     // handle will be used to duplicate handles for NaCl process and as
@@ -506,6 +605,9 @@ bool NaClProcessHost::LaunchSelLdr() {
     // OnChannelConnected to get handle of NaCl process from its pid. Then we
     // call OnProcessLaunched.
     return base::LaunchProcess(*gdb_cmd_line, base::LaunchOptions(), NULL);
+#elif defined(OS_LINUX)
+    wait_for_nacl_gdb_ = true;
+#endif
   }
 
   // On Windows we might need to start the broker process to launch a new loader
@@ -620,6 +722,17 @@ void NaClBrowser::OpenIrtLibraryFile() {
 }
 
 void NaClProcessHost::OnProcessLaunched() {
+#if defined(OS_LINUX)
+  if (wait_for_nacl_gdb_) {
+    if (LaunchNaClGdb(base::GetProcId(process_->GetData().handle))) {
+      // OnProcessLaunched will be called with wait_for_nacl_gdb_ = false once
+      // debugger is attached to the program.
+      return;
+    }
+    LOG(ERROR) << "Failed to launch debugger";
+    // Continue execution without debugger.
+  }
+#endif
   NaClBrowser* nacl_browser = NaClBrowser::GetInstance();
 
   if (nacl_browser->IrtAvailable()) {

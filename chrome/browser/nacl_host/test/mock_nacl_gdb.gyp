@@ -3,8 +3,7 @@
 # found in the LICENSE file.
 {
   'conditions': [
-    # TODO(halyavin): Implement this test for Linux.
-    ['disable_nacl==0 and OS=="win"', {
+    ['disable_nacl==0 and (OS=="win" or OS=="linux")', {
       'targets': [
         {
           'target_name': 'mock_nacl_gdb',

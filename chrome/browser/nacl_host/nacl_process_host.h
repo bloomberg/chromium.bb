@@ -12,6 +12,7 @@
 #include "base/file_util_proxy.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/message_loop.h"
 #include "base/process.h"
 #include "chrome/common/nacl_types.h"
 #include "content/public/browser/browser_child_process_host_delegate.h"
@@ -61,10 +62,16 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
   // depends on chrome.gyp (circular dependency).
   struct NaClInternal;
 
+#if defined(OS_WIN)
   // Create command line for launching loader under nacl-gdb.
   scoped_ptr<CommandLine> LaunchWithNaClGdb(const FilePath& nacl_gdb,
-                                            CommandLine* line,
-                                            const FilePath& manifest_path);
+                                            CommandLine* line);
+#elif defined(OS_LINUX)
+  bool LaunchNaClGdb(base::ProcessId pid);
+  void OnNaClGdbAttached();
+#endif
+  // Get path to manifest on local disk if possible.
+  FilePath GetManifestPath();
   bool LaunchSelLdr();
 
   // BrowserChildProcessHostDelegate implementation:
@@ -87,6 +94,10 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
   // This field becomes true when the broker successfully launched
   // the NaCl loader.
   bool process_launched_by_broker_;
+#elif defined(OS_LINUX)
+  bool wait_for_nacl_gdb_;
+  MessageLoopForIO::FileDescriptorWatcher nacl_gdb_watcher_;
+  scoped_ptr<MessageLoopForIO::Watcher> nacl_gdb_watcher_delegate_;
 #endif
   // The ChromeRenderMessageFilter that requested this NaCl process.  We use
   // this for sending the reply once the process has started.

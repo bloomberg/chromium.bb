@@ -3128,8 +3128,7 @@
               '../ppapi/ppapi_untrusted.gyp:ppapi_nacl_tests',
               ],
             }],
-            # TODO(halyavin): Implement this test for linux.
-            ['OS=="win"', {
+            ['OS=="win" or OS=="linux"', {
               'sources': [
                 'browser/nacl_host/test/nacl_gdb_browsertest.cc',
               ],
