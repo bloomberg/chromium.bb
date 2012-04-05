@@ -254,7 +254,7 @@ readonly UPSTREAM_REV=${UPSTREAM_REV:-4dd3419f60be}
 
 readonly NEWLIB_REV=346ea38d142f
 readonly BINUTILS_REV=8040f022bb25
-readonly GOLD_REV=859053d77fd0
+readonly GOLD_REV=f8fafc260117
 readonly COMPILER_RT_REV=1a3a6ffb31ea
 
 readonly LLVM_PROJECT_REV=${LLVM_PROJECT_REV:-152935}
@@ -2600,7 +2600,8 @@ binutils-gold-configure() {
   StepBanner "GOLD-NATIVE" "Configure"
   local srcdir="${TC_SRC_GOLD}"
   local objdir="${TC_BUILD_GOLD}"
-
+  # c.f. pnacl/src/gold/gold/configure.tgt
+  local gold_targets="i686-pc-nacl,x86_64-pc-nacl,arm-pc-nacl"
   mkdir -p "${objdir}"
   spushd "${objdir}"
 
@@ -2609,14 +2610,18 @@ binutils-gold-configure() {
     PATH="/usr/bin:/bin" \
     CC="${CC}" \
     CXX="${CXX}" \
-    # NOTE: this configures way too much. Gold is still quite
-    #       entangled with the rest of binutils at least during configure
-    # TODO(robertm): we also build-in all default targets, need to prune
-    #                this, especially for the sandboxed case.
+    # Gold only really depends on liberty (and not for much).
+    # NOTE: we are still building one unnecessary target: "32bit big-endian"
+    # which is dragged in by targ_extra_big_endian=true in
+    # pnacl/src/gold/gold/configure.tgt
+    # removing it causes undefined symbols during linking of gold.
+    # The potential savings are guesstimated to be 300kB in binary size
     ${srcdir}/configure --prefix="${BINUTILS_INSTALL_DIR}" \
+                                      --enable-targets=${gold_targets} \
                                       --enable-gold=yes \
                                       --enable-ld=no \
-                                      --disable-liberty \
+                                      --disable-intl \
+                                      --disable-bfd \
                                       --enable-plugins=no \
                                       --disable-werror \
                                       --with-sysroot="${NONEXISTENT_PATH}"
