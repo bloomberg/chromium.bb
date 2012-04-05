@@ -41,8 +41,10 @@ class ProfileManager : public base::NonThreadSafe,
   explicit ProfileManager(const FilePath& user_data_dir);
   virtual ~ProfileManager();
 
+#if defined(ENABLE_SESSION_SERVICE)
   // Invokes SessionServiceFactory::ShutdownForProfile() for all profiles.
   static void ShutdownSessionServices();
+#endif
 
   // Physically remove deleted profile directories from disk.
   static void NukeDeletedProfilesFromDisk();

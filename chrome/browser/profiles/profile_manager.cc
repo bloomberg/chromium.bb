@@ -158,6 +158,7 @@ void OnOpenWindowForNewProfile(Profile* profile,
 
 } // namespace
 
+#if defined(ENABLE_SESSION_SERVICE)
 // static
 void ProfileManager::ShutdownSessionServices() {
   ProfileManager* pm = g_browser_process->profile_manager();
@@ -167,6 +168,7 @@ void ProfileManager::ShutdownSessionServices() {
   for (size_t i = 0; i < profiles.size(); ++i)
     SessionServiceFactory::ShutdownForProfile(profiles[i]);
 }
+#endif
 
 // static
 void ProfileManager::NukeDeletedProfilesFromDisk() {

@@ -240,11 +240,13 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
         tab_service->DeleteLastSession();
       }
 
+#if defined(ENABLE_SESSION_SERVICE)
       // We also delete the last session when we delete the history.
       SessionService* session_service =
           SessionServiceFactory::GetForProfile(profile_);
       if (session_service)
         session_service->DeleteLastSession();
+#endif
     }
   }
 

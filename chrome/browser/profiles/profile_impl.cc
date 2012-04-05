@@ -123,8 +123,10 @@ namespace {
 COMPILE_ASSERT(sizeof(ProfileImpl) <= 744u, profile_impl_size_unexpected);
 #endif
 
+#if defined(ENABLE_SESSION_SERVICE)
 // Delay, in milliseconds, before we explicitly create the SessionService.
 static const int kCreateSessionServiceDelayMS = 500;
+#endif
 
 // Text content of README file created in each profile directory. Both %s
 // placeholders must contain the product name. This is not localizable and hence
@@ -232,9 +234,11 @@ ProfileImpl::ProfileImpl(const FilePath& path,
   DCHECK(!path.empty()) << "Using an empty path will attempt to write " <<
                             "profile files to the root directory!";
 
+#if defined(ENABLE_SESSION_SERVICE)
   create_session_service_timer_.Start(FROM_HERE,
       TimeDelta::FromMilliseconds(kCreateSessionServiceDelayMS), this,
       &ProfileImpl::EnsureSessionServiceCreated);
+#endif
 
   // Determine if prefetch is enabled for this profile.
   // If not profile_manager is present, it means we are in a unittest.
@@ -458,7 +462,9 @@ ProfileImpl::~ProfileImpl() {
   else if (session_restore_enabled_ && pref.type == SessionStartupPref::LAST)
     BrowserContext::SaveSessionState(this);
 
+#if defined(ENABLE_SESSION_SERVICE)
   StopCreateSessionServiceTimer();
+#endif
 
   // Remove pref observers
   pref_change_registrar_.RemoveAll();
@@ -961,6 +967,7 @@ void ProfileImpl::Observe(int type,
   }
 }
 
+#if defined(ENABLE_SESSION_SERVICE)
 void ProfileImpl::StopCreateSessionServiceTimer() {
   create_session_service_timer_.Stop();
 }
@@ -968,6 +975,7 @@ void ProfileImpl::StopCreateSessionServiceTimer() {
 void ProfileImpl::EnsureSessionServiceCreated() {
   SessionServiceFactory::GetForProfile(this);
 }
+#endif
 
 ChromeURLDataManager* ProfileImpl::GetChromeURLDataManager() {
   if (!chrome_url_data_manager_.get())

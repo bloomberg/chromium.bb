@@ -154,13 +154,16 @@ class ProfileImpl : public Profile,
   void CreateWebDataService();
   FilePath GetPrefFilePath();
 
+#if defined(ENABLE_SESSION_SERVICE)
   void StopCreateSessionServiceTimer();
+
+  void EnsureSessionServiceCreated();
+#endif
+
 
   void EnsureRequestContextCreated() {
     GetRequestContext();
   }
-
-  void EnsureSessionServiceCreated();
 
   void UpdateProfileUserNameCache();
 
@@ -223,7 +226,9 @@ class ProfileImpl : public Profile,
   // Whether or not the last session exited cleanly. This is set only once.
   bool last_session_exited_cleanly_;
 
+#if defined(ENABLE_SESSION_SERVICE)
   base::OneShotTimer<ProfileImpl> create_session_service_timer_;
+#endif
 
   scoped_ptr<Profile> off_the_record_profile_;
 

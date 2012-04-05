@@ -167,13 +167,7 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
     return;
 
   BackgroundContentsServiceFactory::GetInstance();
-#if !defined(OS_ANDROID)
-  CloudPrintProxyServiceFactory::GetInstance();
-#endif
   CookieSettings::Factory::GetInstance();
-#if defined(ENABLE_NOTIFICATIONS)
-  DesktopNotificationServiceFactory::GetInstance();
-#endif
   DownloadServiceFactory::GetInstance();
   FindBarStateFactory::GetInstance();
   GlobalErrorServiceFactory::GetInstance();
@@ -181,28 +175,34 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
   NTPResourceCacheFactory::GetInstance();
   PasswordStoreFactory::GetInstance();
   PersonalDataManagerFactory::GetInstance();
-#if !defined(OS_ANDROID)
-  PinnedTabServiceFactory::GetInstance();
-#endif
   PluginPrefsFactory::GetInstance();
-#if defined(ENABLE_PROTECTOR_SERVICE)
-  protector::ProtectorServiceFactory::GetInstance();
-#endif
   prerender::PrerenderManagerFactory::GetInstance();
   ProfileSyncServiceFactory::GetInstance();
-  SessionServiceFactory::GetInstance();
   SigninManagerFactory::GetInstance();
-#if defined(ENABLE_INPUT_SPEECH)
-  SpeechInputExtensionManager::InitializeFactory();
-#endif
   SpellCheckFactory::GetInstance();
   TabRestoreServiceFactory::GetInstance();
-#if defined(ENABLE_THEMES)
-  ThemeServiceFactory::GetInstance();
-#endif
   TemplateURLFetcherFactory::GetInstance();
   TemplateURLServiceFactory::GetInstance();
   TokenServiceFactory::GetInstance();
+#if !defined(OS_ANDROID)
+  CloudPrintProxyServiceFactory::GetInstance();
+  PinnedTabServiceFactory::GetInstance();
+#endif
+#if defined(ENABLE_NOTIFICATIONS)
+  DesktopNotificationServiceFactory::GetInstance();
+#endif
+#if defined(ENABLE_PROTECTOR_SERVICE)
+  protector::ProtectorServiceFactory::GetInstance();
+#endif
+#if defined(ENABLE_SESSION_SERVICE)
+  SessionServiceFactory::GetInstance();
+#endif
+#if defined(ENABLE_INPUT_SPEECH)
+  SpeechInputExtensionManager::InitializeFactory();
+#endif
+#if defined(ENABLE_THEMES)
+  ThemeServiceFactory::GetInstance();
+#endif
 #if defined(ENABLE_WEB_INTENTS)
   WebIntentsRegistryFactory::GetInstance();
 #endif

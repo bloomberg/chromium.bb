@@ -2247,6 +2247,11 @@
             ['exclude', '^browser/ui/webui/options2/chromeos/virtual_keyboard_manager_handler2_unittest.cc'],
           ],
         }],
+        ['enable_session_service!=1', {
+          'sources!': [
+            'browser/sessions/session_service_unittest.cc',
+          ],
+        }],
         ['chromeos==1', {
           'sources/': [
             ['exclude', '^browser/password_manager/native_backend_gnome_x_unittest.cc'],
@@ -2475,7 +2480,6 @@
             'browser/browser_commands_unittest.cc',
             'browser/net/gaia/gaia_oauth_fetcher_unittest.cc',
             'browser/profiles/off_the_record_profile_impl_unittest.cc',
-            'browser/sessions/session_service_unittest.cc',
             'browser/sync/profile_sync_service_session_unittest.cc',
             'browser/sync/sync_global_error_unittest.cc',
             'browser/sync/sync_setup_wizard_unittest.cc',

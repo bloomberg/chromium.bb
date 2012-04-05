@@ -4490,6 +4490,15 @@
             ['exclude', '^browser/automation/'],
           ],
         }],
+        ['enable_session_service!=1', {
+          'sources!': [
+            'browser/sessions/session_restore.cc',
+            'browser/sessions/session_service.cc',
+            'browser/sessions/session_service.h',
+            'browser/sessions/session_service_factory.cc',
+            'browser/sessions/session_service_factory.h',
+          ],
+        }],
         ['OS=="android"', {
           'sources': [
             'browser/sync/glue/synced_window_delegate_registry.cc',
@@ -4522,9 +4531,6 @@
             'browser/ui/browser_navigator.cc',
             'browser/ui/browser_tab_restore_service_delegate.cc',
             'browser/ui/sync/browser_synced_window_delegate.cc',
-
-            # Custom implementation of session_restore for Android.
-            'browser/sessions/session_restore.cc',
 
             'browser/ui/sad_tab_helper.cc',
             'browser/ui/webui/certificate_viewer_webui.cc',
