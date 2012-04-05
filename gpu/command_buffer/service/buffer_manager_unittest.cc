@@ -65,6 +65,10 @@ TEST_F(BufferManagerTest, Basic) {
   EXPECT_TRUE(manager_.GetBufferInfo(kClientBuffer2Id) == NULL);
   // Check trying to a remove non-existent buffers does not crash.
   manager_.RemoveBufferInfo(kClientBuffer2Id);
+  // Check that it gets deleted when the last reference is released.
+  EXPECT_CALL(*gl_, DeleteBuffersARB(1, ::testing::Pointee(kServiceBuffer1Id)))
+      .Times(1)
+      .RetiresOnSaturation();
   // Check we can't get the buffer after we remove it.
   manager_.RemoveBufferInfo(kClientBuffer1Id);
   EXPECT_TRUE(manager_.GetBufferInfo(kClientBuffer1Id) == NULL);
@@ -233,6 +237,11 @@ TEST_F(BufferManagerTest, UseDeletedBuffer) {
   manager_.RemoveBufferInfo(kClientBufferId);
   // Use it after removing
   manager_.SetInfo(info, sizeof(data), GL_STATIC_DRAW);
+  // Check that it gets deleted when the last reference is released.
+  EXPECT_CALL(*gl_, DeleteBuffersARB(1, ::testing::Pointee(kServiceBufferId)))
+      .Times(1)
+      .RetiresOnSaturation();
+  info = NULL;
 }
 
 }  // namespace gles2

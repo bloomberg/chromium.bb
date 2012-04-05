@@ -2325,8 +2325,6 @@ void GLES2DecoderImpl::DeleteBuffersHelper(
       if (bound_element_array_buffer_ == buffer) {
         bound_element_array_buffer_ = NULL;
       }
-      GLuint service_id = buffer->service_id();
-      glDeleteBuffersARB(1, &service_id);
       RemoveBufferInfo(client_ids[ii]);
     }
   }
