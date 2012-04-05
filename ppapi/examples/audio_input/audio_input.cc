@@ -209,9 +209,13 @@ class MyInstance : public pp::Instance {
                               uint32_t num_bytes,
                               void* ctx) {
     MyInstance* thiz = static_cast<MyInstance*>(ctx);
-    PP_DCHECK(num_bytes ==
-              thiz->sample_count_ * thiz->channel_count_ * sizeof(int16_t));
+    uint32_t buffer_size =
+        thiz->sample_count_ * thiz->channel_count_ * sizeof(int16_t);
+    PP_DCHECK(num_bytes <= buffer_size);
+    PP_DCHECK(num_bytes % (thiz->channel_count_ * sizeof(int16_t)) == 0);
     memcpy(thiz->samples_, samples, num_bytes);
+    memset(reinterpret_cast<char*>(thiz->samples_) + num_bytes, 0,
+           buffer_size - num_bytes);
   }
 
   void Open(const pp::DeviceRef_Dev& device) {

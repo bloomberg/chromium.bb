@@ -5,6 +5,7 @@
 #include "ppapi/shared_impl/ppb_audio_input_shared.h"
 
 #include "base/logging.h"
+#include "media/audio/audio_parameters.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/ppb_device_ref_shared.h"
@@ -225,13 +226,22 @@ void PPB_AudioInput_Shared::StartThread() {
 }
 
 void PPB_AudioInput_Shared::Run() {
+  // The shared memory represents AudioInputBufferParameters and the actual data
+  // buffer.
+  media::AudioInputBuffer* buffer =
+      static_cast<media::AudioInputBuffer*>(shared_memory_->memory());
+  uint32_t data_buffer_size =
+      shared_memory_size_ - sizeof(media::AudioInputBufferParameters);
   int pending_data;
-  void* buffer = shared_memory_->memory();
 
   while (sizeof(pending_data) == socket_->Receive(&pending_data,
                                                   sizeof(pending_data)) &&
          pending_data >= 0) {
-    audio_input_callback_(buffer, shared_memory_size_, user_data_);
+    // While closing the stream, we may receive buffers whose size is different
+    // from |data_buffer_size|.
+    CHECK_LE(buffer->params.size, data_buffer_size);
+    if (buffer->params.size > 0)
+      audio_input_callback_(&buffer->audio[0], buffer->params.size, user_data_);
   }
 }
 
