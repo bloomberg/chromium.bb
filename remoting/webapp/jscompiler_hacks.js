@@ -18,8 +18,12 @@ Document.prototype.webkitCancelFullScreen = function() {};
 /** @type {boolean} */
 Document.prototype.webkitIsFullScreen;
 
+/** @type {number} */
+Element.ALLOW_KEYBOARD_INPUT;
+
+/** @param {number} flags
 /** @return {void} Nothing. */
-Element.prototype.webkitRequestFullScreen = function() {};
+Element.prototype.webkitRequestFullScreen = function(flags) {};
 
 /** @type {{getRandomValues: function(Uint16Array):void}} */
 Window.prototype.crypto;

@@ -590,7 +590,7 @@ remoting.ClientSession.prototype.toggleFullScreen_ = function() {
   if (document.webkitIsFullScreen) {
     document.webkitCancelFullScreen();
   } else {
-    document.body.webkitRequestFullScreen();
+    document.body.webkitRequestFullScreen(Element.ALLOW_KEYBOARD_INPUT);
   }
 };
 
