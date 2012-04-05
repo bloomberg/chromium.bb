@@ -5,6 +5,7 @@
 #include "webkit/plugins/ppapi/ppb_audio_impl.h"
 
 #include "base/logging.h"
+#include "media/audio/audio_output_controller.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/ppb_audio.h"
 #include "ppapi/c/ppb_audio_config.h"
@@ -52,6 +53,8 @@ PP_Resource PPB_Audio_Impl::Create(PP_Instance instance,
   scoped_refptr<PPB_Audio_Impl> audio(new PPB_Audio_Impl(instance));
   if (!audio->Init(config, audio_callback, user_data))
     return 0;
+  CHECK(media::AudioOutputController::kPauseMark ==
+      ::ppapi::PPB_Audio_Shared::kPauseMark);
   return audio->GetReference();
 }
 

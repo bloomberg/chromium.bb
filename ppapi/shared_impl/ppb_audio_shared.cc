@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,8 @@
 #include "base/logging.h"
 
 namespace ppapi {
+
+const int PPB_Audio_Shared::kPauseMark = -1;
 
 PPB_Audio_Shared::PPB_Audio_Shared()
     : playing_(false),
@@ -86,7 +88,7 @@ void PPB_Audio_Shared::Run() {
 
   while (sizeof(pending_data) ==
       socket_->Receive(&pending_data, sizeof(pending_data)) &&
-      pending_data >= 0) {
+      pending_data != kPauseMark) {
     callback_(buffer, shared_memory_size_, user_data_);
   }
 }

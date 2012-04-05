@@ -3,6 +3,7 @@ include_rules = [
   "+ppapi/shared_impl",
   "+ppapi/thunk",
   "+printing",
+  "+media/audio",
   "+media/video",
   "+ui/base/ime",
   "+ui/base/range",
