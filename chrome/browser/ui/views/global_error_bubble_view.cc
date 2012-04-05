@@ -67,7 +67,7 @@ GlobalErrorBubbleView::GlobalErrorBubbleView(
       browser_(browser),
       error_(error) {
   DCHECK(error_);
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   int resource_id = error_->GetBubbleViewIconResourceID();
   scoped_ptr<views::ImageView> image_view(new views::ImageView());
   image_view->SetImage(rb.GetImageNamed(resource_id).ToSkBitmap());

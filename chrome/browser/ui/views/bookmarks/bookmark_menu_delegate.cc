@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -435,8 +435,8 @@ void BookmarkMenuDelegate::BuildMenuForPermanentNode(
   }
   int id = *next_menu_id;
   (*next_menu_id)++;
-  SkBitmap* folder_icon = ResourceBundle::GetSharedInstance().
-      GetBitmapNamed(IDR_BOOKMARK_BAR_FOLDER);
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  SkBitmap* folder_icon = rb.GetBitmapNamed(IDR_BOOKMARK_BAR_FOLDER);
   MenuItemView* submenu = menu->AppendSubMenuWithIcon(
       id, node->GetTitle(), *folder_icon);
   BuildMenu(node, 0, submenu, next_menu_id);
@@ -448,6 +448,7 @@ void BookmarkMenuDelegate::BuildMenu(const BookmarkNode* parent,
                                      MenuItemView* menu,
                                      int* next_menu_id) {
   DCHECK(parent->empty() || start_child_index < parent->child_count());
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   for (int i = start_child_index; i < parent->child_count(); ++i) {
     const BookmarkNode* node = parent->GetChild(i);
     int id = *next_menu_id;
@@ -456,14 +457,12 @@ void BookmarkMenuDelegate::BuildMenu(const BookmarkNode* parent,
     if (node->is_url()) {
       SkBitmap icon = profile_->GetBookmarkModel()->GetFavicon(node);
       if (icon.width() == 0) {
-        icon = *ResourceBundle::GetSharedInstance().
-            GetBitmapNamed(IDR_DEFAULT_FAVICON);
+        icon = *rb.GetBitmapNamed(IDR_DEFAULT_FAVICON);
       }
       menu->AppendMenuItemWithIcon(id, node->GetTitle(), icon);
       node_to_menu_id_map_[node] = id;
     } else if (node->is_folder()) {
-      SkBitmap* folder_icon = ResourceBundle::GetSharedInstance().
-          GetBitmapNamed(IDR_BOOKMARK_BAR_FOLDER);
+      SkBitmap* folder_icon = rb.GetBitmapNamed(IDR_BOOKMARK_BAR_FOLDER);
       MenuItemView* submenu = menu->AppendSubMenuWithIcon(
           id, node->GetTitle(), *folder_icon);
       node_to_menu_id_map_[node] = id;

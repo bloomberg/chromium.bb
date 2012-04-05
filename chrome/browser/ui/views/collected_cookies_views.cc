@@ -82,7 +82,7 @@ class InfobarView : public views::View {
         kInfobarBorderSize, border_color);
     content_->set_border(border);
 
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     info_image_ = new views::ImageView();
     info_image_->SetImage(rb.GetBitmapNamed(IDR_INFO));
     label_ = new views::Label();

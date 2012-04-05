@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,7 +25,7 @@ void ThemeBackground::Paint(gfx::Canvas* canvas, views::View* view) const {
 
   // Never theme app and popup windows.
   if (!browser_view_->IsBrowserTypeNormal()) {
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     if (browser_view_->IsActive())
       background = rb.GetBitmapNamed(IDR_FRAME);
     else

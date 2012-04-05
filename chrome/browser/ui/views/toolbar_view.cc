@@ -127,8 +127,8 @@ ToolbarView::ToolbarView(Browser* browser)
       DISPLAYMODE_NORMAL : DISPLAYMODE_LOCATION;
 
   if (!kPopupBackgroundEdge) {
-    kPopupBackgroundEdge = ResourceBundle::GetSharedInstance().GetBitmapNamed(
-        IDR_LOCATIONBG_POPUPMODE_EDGE);
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+    kPopupBackgroundEdge = rb.GetBitmapNamed(IDR_LOCATIONBG_POPUPMODE_EDGE);
   }
 
   registrar_.Add(this, chrome::NOTIFICATION_UPGRADE_RECOMMENDED,
@@ -513,7 +513,7 @@ gfx::Size ToolbarView::GetPreferredSize() {
 
     CR_DEFINE_STATIC_LOCAL(SkBitmap, normal_background, ());
     if (normal_background.isNull()) {
-      ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+      ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
       normal_background = *rb.GetBitmapNamed(IDR_CONTENT_TOP_CENTER);
     }
 

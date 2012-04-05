@@ -157,7 +157,7 @@ void BrowserActionButton::UpdateState() {
   if (!icon.isNull()) {
     SkPaint paint;
     paint.setXfermode(SkXfermode::Create(SkXfermode::kSrcOver_Mode));
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
     SkBitmap bg;
     rb.GetBitmapNamed(IDR_BROWSER_ACTION)->copyTo(&bg,
@@ -902,7 +902,7 @@ int BrowserActionsContainer::IconWidth(bool include_padding) {
   static int icon_width = 0;
   if (!initialized) {
     initialized = true;
-    icon_width = ResourceBundle::GetSharedInstance().GetBitmapNamed(
+    icon_width = ui::ResourceBundle::GetSharedInstance().GetBitmapNamed(
         IDR_BROWSER_ACTION)->width();
   }
   return icon_width + (include_padding ? kItemSpacing : 0);
@@ -914,7 +914,7 @@ int BrowserActionsContainer::IconHeight() {
   static int icon_height = 0;
   if (!initialized) {
     initialized = true;
-    icon_height = ResourceBundle::GetSharedInstance().GetBitmapNamed(
+    icon_height = ui::ResourceBundle::GetSharedInstance().GetBitmapNamed(
         IDR_BROWSER_ACTION)->height();
   }
   return icon_height;

@@ -101,8 +101,8 @@ class InstalledBubbleContent : public views::View,
         type_(type),
         info_(NULL),
         manage_(NULL) {
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    const gfx::Font& font = rb.GetFont(ResourceBundle::BaseFont);
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+    const gfx::Font& font = rb.GetFont(ui::ResourceBundle::BaseFont);
 
     // Scale down to 43x43, but allow smaller icons (don't scale up).
     gfx::Size size(icon->width(), icon->height());
@@ -134,7 +134,7 @@ class InstalledBubbleContent : public views::View,
     base::i18n::AdjustStringForLocaleDirection(&extension_name);
     heading_ = new views::Label(l10n_util::GetStringFUTF16(
         IDS_EXTENSION_INSTALLED_HEADING, extension_name));
-    heading_->SetFont(rb.GetFont(ResourceBundle::MediumFont));
+    heading_->SetFont(rb.GetFont(ui::ResourceBundle::MediumFont));
     heading_->SetMultiLine(true);
     heading_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
     AddChildView(heading_);

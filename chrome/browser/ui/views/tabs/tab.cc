@@ -260,7 +260,7 @@ void Tab::OnPaint(gfx::Canvas* canvas) {
   // If the close button color has changed, generate a new one.
   if (!close_button_color_ || title_color != close_button_color_) {
     close_button_color_ = title_color;
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     close_button()->SetBackground(close_button_color_,
         rb.GetBitmapNamed(IDR_TAB_CLOSE),
         rb.GetBitmapNamed(IDR_TAB_CLOSE_MASK));
@@ -635,7 +635,7 @@ void Tab::InitTabResources() {
 // static
 void Tab::LoadTabImages() {
   // We're not letting people override tab images just yet.
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
   tab_alpha_.image_l = rb.GetBitmapNamed(IDR_TAB_ALPHA_LEFT);
   tab_alpha_.image_r = rb.GetBitmapNamed(IDR_TAB_ALPHA_RIGHT);

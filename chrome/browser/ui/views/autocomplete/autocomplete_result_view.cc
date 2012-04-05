@@ -114,7 +114,7 @@ AutocompleteResultView::AutocompleteResultView(
           animation_(new ui::SlideAnimation(this))) {
   CHECK_GE(model_index, 0);
   if (default_icon_size_ == 0) {
-    default_icon_size_ = ResourceBundle::GetSharedInstance().GetBitmapNamed(
+    default_icon_size_ = ui::ResourceBundle::GetSharedInstance().GetBitmapNamed(
         AutocompleteMatch::TypeToIcon(AutocompleteMatch::URL_WHAT_YOU_TYPED))->
         width();
   }
@@ -295,13 +295,13 @@ const SkBitmap* AutocompleteResultView::GetIcon() const {
         break;
     }
   }
-  return ResourceBundle::GetSharedInstance().GetBitmapNamed(icon);
+  return ui::ResourceBundle::GetSharedInstance().GetBitmapNamed(icon);
 }
 
 const SkBitmap* AutocompleteResultView::GetKeywordIcon() const {
   // NOTE: If we ever begin returning icons of varying size, then callers need
   // to ensure that |keyword_icon_| is resized each time its image is reset.
-  return ResourceBundle::GetSharedInstance().GetBitmapNamed(
+  return ui::ResourceBundle::GetSharedInstance().GetBitmapNamed(
       (GetState() == SELECTED) ? IDR_OMNIBOX_TTS_SELECTED : IDR_OMNIBOX_TTS);
 }
 

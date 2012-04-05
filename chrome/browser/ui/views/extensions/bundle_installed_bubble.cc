@@ -130,7 +130,7 @@ class BundleInstalledBubble : public views::BubbleDelegateView,
   }
 
   void AddCloseButton(GridLayout* layout, views::ButtonListener* listener) {
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
     views::ImageButton* button = new views::ImageButton(listener);
     button->SetImage(views::CustomButton::BS_NORMAL,
@@ -143,8 +143,8 @@ class BundleInstalledBubble : public views::BubbleDelegateView,
   }
 
   void AddHeading(GridLayout* layout, const string16& heading) {
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    gfx::Font bold_font = rb.GetFont(ResourceBundle::BaseFont).DeriveFont(
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+    gfx::Font bold_font = rb.GetFont(ui::ResourceBundle::BaseFont).DeriveFont(
         kHeadingFontSizeDelta, gfx::Font::BOLD);
 
     views::Label* heading_label = new views::Label(heading, bold_font);

@@ -167,7 +167,7 @@ LocationBarView::LocationBarView(Profile* profile,
   if (mode_ == NORMAL) {
     painter_.reset(
         views::Painter::CreateImagePainter(
-            *ResourceBundle::GetSharedInstance().GetImageNamed(
+            *ui::ResourceBundle::GetSharedInstance().GetImageNamed(
                 IDR_LOCATION_BAR_BORDER).ToSkBitmap(),
             gfx::Insets(kBorderRoundCornerHeight, kBorderRoundCornerWidth,
                 kBorderRoundCornerHeight, kBorderRoundCornerWidth),
@@ -184,13 +184,12 @@ LocationBarView::~LocationBarView() {
 }
 
 void LocationBarView::Init() {
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   if (mode_ == POPUP) {
-    font_ = ResourceBundle::GetSharedInstance().GetFont(
-        ResourceBundle::BaseFont);
+    font_ = rb.GetFont(ui::ResourceBundle::BaseFont);
   } else {
     // Use a larger version of the system font.
-    font_ = ResourceBundle::GetSharedInstance().GetFont(
-        ResourceBundle::MediumFont);
+    font_ = rb.GetFont(ui::ResourceBundle::MediumFont);
   }
 
   // If this makes the font too big, try to make it smaller so it will fit.
@@ -619,8 +618,9 @@ void LocationBarView::Layout() {
         selected_keyword_view_->SetImage(bitmap);
         selected_keyword_view_->set_is_extension_icon(true);
       } else {
-        selected_keyword_view_->SetImage(*ResourceBundle::GetSharedInstance().
-            GetBitmapNamed(IDR_OMNIBOX_SEARCH));
+        ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+        selected_keyword_view_->SetImage(
+            *rb.GetBitmapNamed(IDR_OMNIBOX_SEARCH));
         selected_keyword_view_->set_is_extension_icon(false);
       }
     }
@@ -901,7 +901,7 @@ void LocationBarView::OnAutocompleteAccept(
 
 void LocationBarView::OnChanged() {
   location_icon_view_->SetImage(
-      ResourceBundle::GetSharedInstance().GetBitmapNamed(
+      ui::ResourceBundle::GetSharedInstance().GetBitmapNamed(
           location_entry_->GetIcon()));
   location_icon_view_->ShowTooltip(!location_entry()->IsEditingOrEmpty());
 

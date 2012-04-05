@@ -190,8 +190,8 @@ ProfileItemView::ProfileItemView(const AvatarMenuModel::Item& item,
   AddChildView(image_view_);
 
   // Add a label to show the profile name.
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  const gfx::Font base_font = rb.GetFont(ResourceBundle::BaseFont);
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  const gfx::Font base_font = rb.GetFont(ui::ResourceBundle::BaseFont);
   const int style = item_.active ? gfx::Font::BOLD : 0;
   const int kNameFontDelta = 1;
   name_label_ = new views::Label(item_.name,

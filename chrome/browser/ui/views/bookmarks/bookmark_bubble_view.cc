@@ -177,8 +177,8 @@ void BookmarkBubbleView::Init() {
       l10n_util::GetStringUTF16(
           newly_bookmarked_ ? IDS_BOOKMARK_BUBBLE_PAGE_BOOKMARKED :
                               IDS_BOOKMARK_BUBBLE_PAGE_BOOKMARK));
-  title_label->SetFont(
-      ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::MediumFont));
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  title_label->SetFont(rb.GetFont(ui::ResourceBundle::MediumFont));
   title_label->SetEnabledColor(SkColorSetRGB(6, 45, 117));
 
   GridLayout* layout = new GridLayout(this);

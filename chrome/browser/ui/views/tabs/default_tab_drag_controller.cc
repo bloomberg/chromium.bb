@@ -92,7 +92,7 @@ class DockView : public views::View {
         outer_rect, SkIntToScalar(kRoundedRectRadius),
         SkIntToScalar(kRoundedRectRadius), paint);
 
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
     SkBitmap* high_icon = rb.GetBitmapNamed(IDR_DOCK_HIGH);
     SkBitmap* wide_icon = rb.GetBitmapNamed(IDR_DOCK_WIDE);

@@ -269,8 +269,8 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
     if (is_bundle_install()) {
       // We need to make the font bold like this, rather than using SetFont,
       // because otherwise SizeToFit mis-judges the width of the line.
-      gfx::Font bold_font = ResourceBundle::GetSharedInstance().GetFont(
-          ResourceBundle::BaseFont).DeriveFont(
+      gfx::Font bold_font = ui::ResourceBundle::GetSharedInstance().GetFont(
+          ui::ResourceBundle::BaseFont).DeriveFont(
               kHeadingFontSizeDelta, gfx::Font::BOLD);
       permissions_header = new views::Label(
           prompt.GetPermissionsHeading(), bold_font);

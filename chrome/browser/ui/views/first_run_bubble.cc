@@ -41,8 +41,8 @@ FirstRunBubble* FirstRunBubble::ShowBubble(Profile* profile,
 }
 
 void FirstRunBubble::Init() {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  const gfx::Font& original_font = rb.GetFont(ResourceBundle::MediumFont);
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  const gfx::Font& original_font = rb.GetFont(ui::ResourceBundle::MediumFont);
 
   views::Label* title = new views::Label(l10n_util::GetStringFUTF16(
       IDS_FR_BUBBLE_TITLE, GetDefaultSearchEngineName(profile_)));

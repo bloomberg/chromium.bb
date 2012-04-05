@@ -71,7 +71,7 @@ AppPanelBrowserFrameView::AppPanelBrowserFrameView(BrowserFrame* frame,
 
   frame->set_frame_type(views::Widget::FRAME_TYPE_FORCE_CUSTOM);
 
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   close_button_->SetImage(views::CustomButton::BS_NORMAL,
                           rb.GetBitmapNamed(IDR_CLOSE_BAR));
   close_button_->SetImage(views::CustomButton::BS_HOT,
@@ -309,7 +309,7 @@ gfx::Rect AppPanelBrowserFrameView::IconBounds() const {
 }
 
 void AppPanelBrowserFrameView::PaintRestoredFrameBorder(gfx::Canvas* canvas) {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
   SkBitmap* top_left_corner = rb.GetBitmapNamed(IDR_WINDOW_TOP_LEFT_CORNER);
   SkBitmap* top_right_corner =
@@ -389,7 +389,7 @@ void AppPanelBrowserFrameView::PaintRestoredFrameBorder(gfx::Canvas* canvas) {
 }
 
 void AppPanelBrowserFrameView::PaintMaximizedFrameBorder(gfx::Canvas* canvas) {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
   SkBitmap* frame_image = rb.GetBitmapNamed(IDR_FRAME_APP_PANEL);
   canvas->TileImageInt(*frame_image, 0, FrameBorderThickness(), width(),
@@ -416,7 +416,7 @@ void AppPanelBrowserFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {
   gfx::Rect client_area_bounds = CalculateClientAreaBounds(width(), height());
   int client_area_top = client_area_bounds.y();
 
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   SkBitmap* top_left = rb.GetBitmapNamed(IDR_APP_TOP_LEFT);
   SkBitmap* top = rb.GetBitmapNamed(IDR_APP_TOP_CENTER);
   SkBitmap* top_right = rb.GetBitmapNamed(IDR_APP_TOP_RIGHT);

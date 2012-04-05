@@ -13,8 +13,8 @@
 #include "base/i18n/break_iterator.h"
 #include "base/i18n/rtl.h"
 #include "base/metrics/histogram.h"
-#include "base/stringprintf.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
@@ -105,7 +105,7 @@ DownloadItemView::DownloadItemView(DownloadItem* download,
   DCHECK(download_);
   download_->AddObserver(this);
 
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
   BodyImageSet normal_body_image_set = {
     rb.GetBitmapNamed(IDR_DOWNLOAD_BUTTON_LEFT_TOP),
@@ -187,7 +187,7 @@ DownloadItemView::DownloadItemView(DownloadItem* download,
   // Initial tooltip value.
   tooltip_text_ = download_->GetFileNameToReportUser().LossyDisplayName();
 
-  font_ = ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::BaseFont);
+  font_ = rb.GetFont(ui::ResourceBundle::BaseFont);
   box_height_ = std::max<int>(2 * kVerticalPadding + font_.GetHeight() +
                                   kVerticalTextPadding + font_.GetHeight(),
                               2 * kVerticalPadding +
@@ -1037,7 +1037,7 @@ void DownloadItemView::ShowWarningDialog() {
   discard_button_->set_ignore_minimum_size(true);
   AddChildView(discard_button_);
 
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   // The dangerous download label text and icon are different under
   // different cases.
   if (mode_ == MALICIOUS_MODE) {

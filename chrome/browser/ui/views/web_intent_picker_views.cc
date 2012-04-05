@@ -104,7 +104,7 @@ StarsView::StarsView(double rating)
     : rating_(rating) {
   const int kSpacing = 1;  // Spacing between stars in pixels.
 
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, kSpacing));
 
@@ -901,13 +901,13 @@ void WebIntentPickerViews::InitContents() {
   indent_cs->AddColumn(GridLayout::FILL, GridLayout::CENTER, 1,
                        GridLayout::USE_PREF, 0, 0);
 
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
   // Header row.
   grid_layout->StartRow(0, kHeaderRowColumnSet);
   action_label_ = new views::Label();
   action_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-  action_label_->SetFont(rb.GetFont(ResourceBundle::MediumFont));
+  action_label_->SetFont(rb.GetFont(ui::ResourceBundle::MediumFont));
   grid_layout->AddView(action_label_);
 
 #if defined(USE_CLOSE_BUTTON)
@@ -962,7 +962,7 @@ void WebIntentPickerViews::SizeToContents() {
 
 #if defined(USE_CLOSE_BUTTON)
 views::ImageButton* WebIntentPickerViews::CreateCloseButton() {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   views::ImageButton* close_button = new views::ImageButton(this);
   close_button->SetImage(views::CustomButton::BS_NORMAL,
                           rb.GetBitmapNamed(IDR_CLOSE_BAR));

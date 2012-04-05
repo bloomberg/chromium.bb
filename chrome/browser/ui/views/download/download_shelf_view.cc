@@ -305,7 +305,7 @@ void DownloadShelfView::ViewHierarchyChanged(bool is_add,
     set_background(views::Background::CreateSolidBackground(
         GetThemeProvider()->GetColor(ThemeService::COLOR_TOOLBAR)));
 
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     arrow_image_ = new views::ImageView();
     arrow_image_->SetImage(rb.GetBitmapNamed(IDR_DOWNLOADS_FAVICON));
     AddChildView(arrow_image_);
@@ -360,7 +360,7 @@ bool DownloadShelfView::CanFitFirstDownloadItem() {
 }
 
 void DownloadShelfView::UpdateButtonColors() {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   if (GetThemeProvider()) {
     close_button_->SetBackground(
         GetThemeProvider()->GetColor(ThemeService::COLOR_TAB_TEXT),

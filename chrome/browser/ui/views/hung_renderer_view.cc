@@ -555,7 +555,7 @@ gfx::Rect HungRendererDialogView::GetDisplayBounds(
 void HungRendererDialogView::InitClass() {
   static bool initialized = false;
   if (!initialized) {
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     frozen_icon_ = rb.GetBitmapNamed(IDR_FROZEN_TAB_ICON);
     initialized = true;
   }

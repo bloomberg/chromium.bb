@@ -255,15 +255,12 @@ void EditSearchEngineDialog::UpdateImageViews() {
 void EditSearchEngineDialog::UpdateImageView(ImageView* image_view,
                                              bool is_valid,
                                              int invalid_message_id) {
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   if (is_valid) {
     image_view->SetTooltipText(string16());
-    image_view->SetImage(
-        ResourceBundle::GetSharedInstance().GetBitmapNamed(
-            IDR_INPUT_GOOD));
+    image_view->SetImage(rb.GetBitmapNamed(IDR_INPUT_GOOD));
   } else {
     image_view->SetTooltipText(l10n_util::GetStringUTF16(invalid_message_id));
-    image_view->SetImage(
-        ResourceBundle::GetSharedInstance().GetBitmapNamed(
-            IDR_INPUT_ALERT));
+    image_view->SetImage(rb.GetBitmapNamed(IDR_INPUT_ALERT));
   }
 }

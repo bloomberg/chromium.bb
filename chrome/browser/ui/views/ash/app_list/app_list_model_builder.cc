@@ -13,8 +13,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/views/ash/app_list/extension_app_item.h"
 #include "chrome/browser/ui/views/ash/launcher/chrome_launcher_delegate.h"
-#include "chrome/common/extensions/extension.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/extensions/extension.h"
 #include "content/public/browser/notification_service.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -33,7 +33,7 @@ class ChromeAppItem : public ChromeAppListItem {
  public:
   ChromeAppItem() : ChromeAppListItem(TYPE_OTHER) {
     SetTitle(l10n_util::GetStringUTF8(IDS_SHORT_PRODUCT_NAME));
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     SetIcon(*rb.GetImageNamed(IDR_PRODUCT_LOGO_128).ToSkBitmap());
   }
 

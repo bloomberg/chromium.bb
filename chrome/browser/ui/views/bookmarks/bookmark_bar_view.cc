@@ -361,8 +361,8 @@ bool BookmarkBarView::testing_ = false;
 // Returns the bitmap to use for starred folders.
 static const SkBitmap& GetFolderIcon() {
   if (!kFolderIcon) {
-    kFolderIcon = ResourceBundle::GetSharedInstance().
-        GetBitmapNamed(IDR_BOOKMARK_BAR_FOLDER);
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+    kFolderIcon = rb.GetBitmapNamed(IDR_BOOKMARK_BAR_FOLDER);
   }
   return *kFolderIcon;
 }
@@ -1117,7 +1117,7 @@ void BookmarkBarView::Init() {
   // UpdateColors(), which will set the appropriate colors for all the objects
   // added in this function.
 
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
   if (!kDefaultFavicon)
     kDefaultFavicon = rb.GetBitmapNamed(IDR_DEFAULT_FAVICON);
@@ -1193,9 +1193,9 @@ MenuButton* BookmarkBarView::CreateOtherBookmarkedButton() {
 }
 
 MenuButton* BookmarkBarView::CreateOverflowButton() {
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   MenuButton* button = new OverFlowButton(this);
-  button->SetIcon(*ResourceBundle::GetSharedInstance().
-                  GetBitmapNamed(IDR_BOOKMARK_BAR_CHEVRONS));
+  button->SetIcon(*rb.GetBitmapNamed(IDR_BOOKMARK_BAR_CHEVRONS));
 
   // The overflow button's image contains an arrow and therefore it is a
   // direction sensitive image and we need to flip it if the UI layout is

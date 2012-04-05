@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,8 +32,8 @@ KeywordHintView::KeywordHintView(Profile* profile) : profile_(profile) {
   trailing_label_ = CreateLabel();
 
   if (!kTabButtonBitmap) {
-    kTabButtonBitmap = ResourceBundle::GetSharedInstance().
-        GetBitmapNamed(IDR_LOCATION_BAR_KEYWORD_HINT_TAB);
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+    kTabButtonBitmap = rb.GetBitmapNamed(IDR_LOCATION_BAR_KEYWORD_HINT_TAB);
   }
 }
 

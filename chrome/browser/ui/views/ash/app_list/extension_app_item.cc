@@ -12,8 +12,8 @@
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/ash/launcher/chrome_launcher_delegate.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_icon_set.h"
@@ -183,7 +183,7 @@ void ExtensionAppItem::LoadImage(const Extension* extension) {
           FilePath().AppendASCII(kComponentExtensionResources[i].name);
       bm_resource_path = bm_resource_path.NormalizePathSeparators();
       if (relative_path == bm_resource_path) {
-        ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+        ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
         int resource = kComponentExtensionResources[i].value;
 
         base::StringPiece contents = rb.GetRawDataResource(resource);
@@ -214,7 +214,7 @@ void ExtensionAppItem::LoadDefaultImage() {
   if (extension && extension->id() == extension_misc::kWebStoreAppId)
       resource = IDR_WEBSTORE_ICON;
 
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   SetIcon(*rb.GetImageNamed(resource).ToSkBitmap());
 }
 

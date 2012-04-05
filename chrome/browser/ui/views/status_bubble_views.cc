@@ -83,9 +83,8 @@ class StatusBubbleViews::StatusView : public views::Label,
         opacity_start_(0),
         opacity_end_(0),
         theme_service_(theme_provider) {
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    gfx::Font font(rb.GetFont(ResourceBundle::BaseFont));
-    SetFont(font);
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+    SetFont(rb.GetFont(ui::ResourceBundle::BaseFont));
   }
 
   virtual ~StatusView() {
@@ -596,8 +595,8 @@ void StatusBubbleViews::Reposition() {
 }
 
 gfx::Size StatusBubbleViews::GetPreferredSize() {
-  return gfx::Size(0, ResourceBundle::GetSharedInstance().GetFont(
-      ResourceBundle::BaseFont).GetHeight() + kTotalVerticalPadding);
+  return gfx::Size(0, ui::ResourceBundle::GetSharedInstance().GetFont(
+      ui::ResourceBundle::BaseFont).GetHeight() + kTotalVerticalPadding);
 }
 
 void StatusBubbleViews::SetBounds(int x, int y, int w, int h) {

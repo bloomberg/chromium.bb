@@ -128,15 +128,15 @@ FullscreenExitBubbleViews::FullscreenExitView::FullscreenExitView(
   set_border(bubble_border);
   set_focusable(false);
 
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   message_label_ = new views::Label();
-  message_label_->SetFont(ResourceBundle::GetSharedInstance().GetFont(
-      ResourceBundle::MediumFont));
+  message_label_->SetFont(rb.GetFont(ui::ResourceBundle::MediumFont));
 
   mouse_lock_exit_instruction_ = new views::Label();
   mouse_lock_exit_instruction_->set_collapse_when_hidden(true);
   mouse_lock_exit_instruction_->SetText(bubble_->GetInstructionText());
   mouse_lock_exit_instruction_->SetFont(
-      ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::MediumFont));
+      rb.GetFont(ui::ResourceBundle::MediumFont));
 
   link_ = new views::Link();
   link_->set_collapse_when_hidden(true);
@@ -146,8 +146,7 @@ FullscreenExitBubbleViews::FullscreenExitView::FullscreenExitView(
   link_->SetText(l10n_util::GetStringUTF16(IDS_EXIT_FULLSCREEN_MODE));
 #endif
   link_->set_listener(this);
-  link_->SetFont(ResourceBundle::GetSharedInstance().GetFont(
-      ResourceBundle::MediumFont));
+  link_->SetFont(rb.GetFont(ui::ResourceBundle::MediumFont));
   link_->SetPressedColor(message_label_->enabled_color());
   link_->SetEnabledColor(message_label_->enabled_color());
   link_->SetVisible(false);

@@ -12,8 +12,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/webui/feedback_ui.h"
 #include "chrome/common/url_constants.h"
-#include "content/public/browser/web_contents.h"
 #include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -49,8 +49,8 @@ SadTabView::SadTabView(WebContents* web_contents, Kind kind)
     : web_contents_(web_contents),
       kind_(kind),
       painted_(false),
-      base_font_(ResourceBundle::GetSharedInstance().GetFont(
-          ResourceBundle::BaseFont)),
+      base_font_(ui::ResourceBundle::GetSharedInstance().GetFont(
+          ui::ResourceBundle::BaseFont)),
       message_(NULL),
       help_link_(NULL),
       feedback_link_(NULL),
@@ -115,7 +115,7 @@ void SadTabView::ViewHierarchyChanged(bool is_add,
   columns->AddPaddingColumn(1, kPadding);
 
   views::ImageView* image = new views::ImageView();
-  image->SetImage(ResourceBundle::GetSharedInstance().GetBitmapNamed(
+  image->SetImage(ui::ResourceBundle::GetSharedInstance().GetBitmapNamed(
       (kind_ == CRASHED) ? IDR_SAD_TAB : IDR_KILLED_TAB));
   layout->StartRowWithPadding(0, column_set_id, 1, kPadding);
   layout->AddView(image);

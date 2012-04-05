@@ -390,7 +390,7 @@ void BaseTab::AdvanceLoadingAnimation(TabRendererData::NetworkState old_state,
   static int waiting_to_loading_frame_count_ratio = 0;
   if (!initialized) {
     initialized = true;
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     SkBitmap loading_animation(*rb.GetBitmapNamed(IDR_THROBBER));
     loading_animation_frame_count =
         loading_animation.width() / loading_animation.height();
@@ -441,7 +441,7 @@ void BaseTab::PaintIcon(gfx::Canvas* canvas) {
     canvas->Save();
     canvas->ClipRect(GetLocalBounds());
     if (should_display_crashed_favicon_) {
-      ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+      ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
       SkBitmap crashed_favicon(*rb.GetBitmapNamed(IDR_SAD_FAVICON));
       bounds.set_y(bounds.y() + favicon_hiding_offset_);
       DrawIconCenter(canvas, crashed_favicon, 0,
@@ -571,8 +571,8 @@ void BaseTab::InitResources() {
   static bool initialized = false;
   if (!initialized) {
     initialized = true;
-    font_ = new gfx::Font(
-        ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::BaseFont));
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+    font_ = new gfx::Font(rb.GetFont(ui::ResourceBundle::BaseFont));
     font_height_ = font_->GetHeight();
   }
 }

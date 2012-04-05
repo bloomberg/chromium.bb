@@ -16,8 +16,8 @@
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
-#include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/accelerators/accelerator.h"
+#include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/controls/button/text_button.h"
@@ -158,7 +158,7 @@ bool CriticalNotificationBubbleView::AcceleratorPressed(
 void CriticalNotificationBubbleView::Init() {
   bubble_created_ = base::Time::Now();
 
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
   views::GridLayout* layout = views::GridLayout::CreatePanel(this);
   layout->SetInsets(0, kInset, kInset, kInset);
@@ -175,12 +175,11 @@ void CriticalNotificationBubbleView::Init() {
   layout->StartRow(0, top_column_set_id);
 
   views::ImageView* image = new views::ImageView();
-  image->SetImage(ResourceBundle::GetSharedInstance().
-       GetBitmapNamed(IDR_UPDATE_MENU3));
+  image->SetImage(rb.GetBitmapNamed(IDR_UPDATE_MENU3));
   layout->AddView(image);
 
   headline_ = new views::Label();
-  headline_->SetFont(rb.GetFont(ResourceBundle::MediumFont));
+  headline_->SetFont(rb.GetFont(ui::ResourceBundle::MediumFont));
   UpdateBubbleHeadline(GetRemainingTime());
   layout->AddView(headline_);
 

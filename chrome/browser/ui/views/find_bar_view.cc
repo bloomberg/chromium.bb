@@ -76,18 +76,18 @@ FindBarView::FindBarView(FindBarHost* host)
       text_box_background_(NULL),
       text_box_background_left_(NULL) {
   set_id(VIEW_ID_FIND_IN_PAGE);
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
   find_text_ = new SearchTextfieldView();
   find_text_->set_id(VIEW_ID_FIND_IN_PAGE_TEXT_FIELD);
-  find_text_->SetFont(rb.GetFont(ResourceBundle::BaseFont));
+  find_text_->SetFont(rb.GetFont(ui::ResourceBundle::BaseFont));
   find_text_->set_default_width_in_chars(kDefaultCharWidth);
   find_text_->SetController(this);
   find_text_->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_FIND));
   AddChildView(find_text_);
 
   match_count_text_ = new views::Label();
-  match_count_text_->SetFont(rb.GetFont(ResourceBundle::BaseFont));
+  match_count_text_->SetFont(rb.GetFont(ui::ResourceBundle::BaseFont));
   match_count_text_->SetHorizontalAlignment(views::Label::ALIGN_CENTER);
   AddChildView(match_count_text_);
 
@@ -483,7 +483,7 @@ FindBarHost* FindBarView::find_bar_host() const {
 }
 
 void FindBarView::OnThemeChanged() {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   if (GetThemeProvider()) {
     close_button_->SetBackground(
         GetThemeProvider()->GetColor(ThemeService::COLOR_TAB_TEXT),

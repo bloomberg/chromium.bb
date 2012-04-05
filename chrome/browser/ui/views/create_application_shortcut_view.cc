@@ -97,8 +97,8 @@ void AppInfoView::Init(const string16& title_text,
   title_ = new views::Label(title_text);
   title_->SetMultiLine(true);
   title_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-  title_->SetFont(ResourceBundle::GetSharedInstance().GetFont(
-      ResourceBundle::BaseFont).DeriveFont(0, gfx::Font::BOLD));
+  title_->SetFont(ui::ResourceBundle::GetSharedInstance().GetFont(
+      ui::ResourceBundle::BaseFont).DeriveFont(0, gfx::Font::BOLD));
 
   if (!description_text.empty()) {
     PrepareDescriptionLabel(description_text);

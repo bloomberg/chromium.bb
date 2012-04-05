@@ -87,7 +87,7 @@ void ConfirmBubbleView::Init() {
   const string16 title_text = model_->GetTitle();
   DCHECK(!title_text.empty());
   views::Label* title_label = new views::Label(title_text);
-  title_label->SetFont(bundle.GetFont(ResourceBundle::MediumFont));
+  title_label->SetFont(bundle.GetFont(ui::ResourceBundle::MediumFont));
   layout->AddView(title_label);
 
   views::ImageButton* close_button = new views::ImageButton(this);

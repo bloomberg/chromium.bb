@@ -141,7 +141,7 @@ AboutChromeView::~AboutChromeView() {
 
 void AboutChromeView::Init() {
   text_direction_is_rtl_ = base::i18n::IsRTL();
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
   // Views we will add to the *parent* of this dialog, since it will display
   // next to the buttons which we don't draw ourselves.
@@ -178,8 +178,8 @@ void AboutChromeView::Init() {
   // Add the dialog labels.
   about_title_label_ = new views::Label(
       l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
-  about_title_label_->SetFont(ResourceBundle::GetSharedInstance().GetFont(
-      ResourceBundle::BaseFont).DeriveFont(18));
+  about_title_label_->SetFont(ui::ResourceBundle::GetSharedInstance().GetFont(
+      ui::ResourceBundle::BaseFont).DeriveFont(18));
   about_title_label_->SetBackgroundColor(SK_ColorWHITE);
   about_title_label_->SetEnabledColor(SK_ColorBLACK);
   AddChildView(about_title_label_);
@@ -197,8 +197,8 @@ void AboutChromeView::Init() {
   version_label_->RemoveBorder();
   version_label_->SetTextColor(SK_ColorBLACK);
   version_label_->SetBackgroundColor(SK_ColorWHITE);
-  version_label_->SetFont(ResourceBundle::GetSharedInstance().GetFont(
-      ResourceBundle::BaseFont));
+  version_label_->SetFont(ui::ResourceBundle::GetSharedInstance().GetFont(
+      ui::ResourceBundle::BaseFont));
   AddChildView(version_label_);
 
   // The copyright URL portion of the main label.
@@ -265,8 +265,8 @@ void AboutChromeView::Init() {
   // Create a label and add the full text so we can query it for the height.
   views::Label dummy_text(full_text);
   dummy_text.SetMultiLine(true);
-  gfx::Font font =
-      ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::BaseFont);
+  gfx::Font font = ui::ResourceBundle::GetSharedInstance().GetFont(
+      ui::ResourceBundle::BaseFont);
 
   // Add up the height of the various elements on the page.
   int height = about_background_logo->height() +
@@ -426,13 +426,13 @@ void AboutChromeView::OnPaint(gfx::Canvas* canvas) {
   // Draw the background image color (and the separator) across the dialog.
   // This will become the background for the logo image at the top of the
   // dialog.
-  SkBitmap* background = ResourceBundle::GetSharedInstance().GetBitmapNamed(
+  SkBitmap* background = ui::ResourceBundle::GetSharedInstance().GetBitmapNamed(
       IDR_ABOUT_BACKGROUND_COLOR);
   canvas->TileImageInt(*background, 0, 0, dialog_dimensions_.width(),
                        background->height());
 
-  gfx::Font font =
-      ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::BaseFont);
+  gfx::Font font = ui::ResourceBundle::GetSharedInstance().GetFont(
+      ui::ResourceBundle::BaseFont);
 
   const gfx::Rect label_bounds = main_text_label_->bounds();
 

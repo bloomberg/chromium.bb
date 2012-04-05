@@ -73,9 +73,9 @@ DownloadInProgressDialogView::DownloadInProgressDialogView(Browser* browser)
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::LEADING, 1,
                         views::GridLayout::USE_PREF, 0, 0);
 
-  gfx::Font bold_font =
-      ResourceBundle::GetSharedInstance().GetFont(
-          ResourceBundle::BaseFont).DeriveFont(0, gfx::Font::BOLD);
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  gfx::Font bold_font = rb.GetFont(
+      ui::ResourceBundle::BaseFont).DeriveFont(0, gfx::Font::BOLD);
   warning_ = new views::Label(warning_text, bold_font);
   warning_->SetMultiLine(true);
   warning_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);

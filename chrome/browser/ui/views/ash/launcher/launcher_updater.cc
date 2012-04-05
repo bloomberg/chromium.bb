@@ -187,15 +187,14 @@ void LauncherUpdater::UpdateLauncher(TabContentsWrapper* tab) {
     else if (item.image.empty())
       item.image = Extension::GetDefaultIcon(true);
   } else {
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     if (tab->favicon_tab_helper()->ShouldDisplayFavicon()) {
       item.image = tab->favicon_tab_helper()->GetFavicon();
       if (item.image.empty()) {
-        item.image = *ResourceBundle::GetSharedInstance().GetBitmapNamed(
-            IDR_DEFAULT_FAVICON);
+        item.image = *rb.GetBitmapNamed(IDR_DEFAULT_FAVICON);
       }
     } else {
-      item.image = *ResourceBundle::GetSharedInstance().GetBitmapNamed(
-          IDR_DEFAULT_FAVICON);
+      item.image = *rb.GetBitmapNamed(IDR_DEFAULT_FAVICON);
     }
   }
   launcher_model()->Set(item_index, item);

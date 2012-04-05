@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -40,8 +40,8 @@ void TabIconView::InitializeIfNeeded() {
         IconUtil::CreateSkBitmapFromHICON(app_icon, gfx::Size(16, 16));
     DestroyIcon(app_icon);
 #else
-    g_default_favicon =
-        ResourceBundle::GetSharedInstance().GetBitmapNamed(IDR_PRODUCT_LOGO_16);
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+    g_default_favicon = rb.GetBitmapNamed(IDR_PRODUCT_LOGO_16);
 #endif
   }
 }
@@ -63,7 +63,7 @@ void TabIconView::Update() {
   if (!initialized) {
     initialized = true;
     SkBitmap throbber(
-        *ResourceBundle::GetSharedInstance().GetBitmapNamed(IDR_THROBBER));
+        *ui::ResourceBundle::GetSharedInstance().GetBitmapNamed(IDR_THROBBER));
     throbber_frame_count = throbber.width() / throbber.height();
   }
 

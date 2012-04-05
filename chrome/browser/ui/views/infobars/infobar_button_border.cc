@@ -13,7 +13,7 @@
 InfoBarButtonBorder::InfoBarButtonBorder() {
   set_vertical_padding(browser_defaults::kInfoBarBorderPaddingVertical);
 
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   BorderImageSet normal_set = {
     rb.GetBitmapNamed(IDR_INFOBARBUTTON_TOP_LEFT_N),
     rb.GetBitmapNamed(IDR_INFOBARBUTTON_TOP_N),

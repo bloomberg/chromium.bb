@@ -35,8 +35,8 @@
 #include "ui/base/touch/touch_mode_support.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/path.h"
-#include "ui/gfx/skbitmap_operations.h"
 #include "ui/gfx/size.h"
+#include "ui/gfx/skbitmap_operations.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/mouse_watcher_view_host.h"
 #include "ui/views/widget/default_theme_provider.h"
@@ -1675,7 +1675,7 @@ int TabStrip::GetDropEffect(const views::DropTargetEvent& event) {
 
 // static
 SkBitmap* TabStrip::GetDropArrowImage(bool is_down) {
-  return ResourceBundle::GetSharedInstance().GetBitmapNamed(
+  return ui::ResourceBundle::GetSharedInstance().GetBitmapNamed(
       is_down ? IDR_TAB_DROP_DOWN : IDR_TAB_DROP_UP);
 }
 

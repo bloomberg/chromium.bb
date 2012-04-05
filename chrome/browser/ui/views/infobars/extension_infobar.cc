@@ -110,7 +110,7 @@ void ExtensionInfoBar::OnImageLoaded(const gfx::Image& image,
 
   const SkBitmap* icon = NULL;
   // Fall back on the default extension icon on failure.
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   if (image.IsEmpty())
     icon = rb.GetBitmapNamed(IDR_EXTENSIONS_SECTION);
   else

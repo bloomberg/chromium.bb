@@ -73,7 +73,7 @@ void CheckboxNativeThemeBorder::GetInsets(gfx::Insets* insets) const {
 void SetImageViewToId(views::View* image_view, int id) {
   views::ImageView* image = static_cast<views::ImageView*>(image_view);
   if (image)
-    image->SetImage(ResourceBundle::GetSharedInstance().GetBitmapNamed(id));
+    image->SetImage(ui::ResourceBundle::GetSharedInstance().GetBitmapNamed(id));
 }
 
 }  // namespace
@@ -244,9 +244,9 @@ void ChromeToMobileBubbleView::Init() {
   std::vector<DictionaryValue*> mobiles = service_->mobiles();
   DCHECK_GT(mobiles.size(), 0U);
 
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   views::Label* title_label = new views::Label();
-  title_label->SetFont(
-      ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::MediumFont));
+  title_label->SetFont(rb.GetFont(ui::ResourceBundle::MediumFont));
   title_label->SetEnabledColor(kTitleColor);
   layout->StartRow(0, single_column_set_id);
   layout->AddView(title_label);

@@ -74,7 +74,7 @@ void ContentSettingImageView::UpdateFromWebContents(WebContents* web_contents) {
     SetVisible(false);
     return;
   }
-  SetImage(ResourceBundle::GetSharedInstance().GetBitmapNamed(
+  SetImage(ui::ResourceBundle::GetSharedInstance().GetBitmapNamed(
       content_setting_image_model_->get_icon()));
   SetTooltipText(UTF8ToUTF16(content_setting_image_model_->get_tooltip()));
   SetVisible(true);
@@ -109,8 +109,8 @@ void ContentSettingImageView::UpdateFromWebContents(WebContents* web_contents) {
     // Initialize animated string. It will be cleared when animation is
     // completed.
     animated_text_ = l10n_util::GetStringUTF16(animated_string_id);
-    text_size_ = ResourceBundle::GetSharedInstance().GetFont(
-        ResourceBundle::MediumFont).GetStringWidth(animated_text_);
+    text_size_ = ui::ResourceBundle::GetSharedInstance().GetFont(
+        ui::ResourceBundle::MediumFont).GetStringWidth(animated_text_);
     text_size_ += 2 * kTextMarginPixels + kIconLeftMargin;
     if (border())
       border()->GetInsets(&saved_insets_);
@@ -214,9 +214,9 @@ void ContentSettingImageView::OnPaint(gfx::Canvas* canvas) {
     views::ImageView::OnPaint(canvas);
 
     // Paint text to the right of the icon.
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     canvas->DrawStringInt(animated_text_,
-        rb.GetFont(ResourceBundle::MediumFont), SK_ColorBLACK,
+        rb.GetFont(ui::ResourceBundle::MediumFont), SK_ColorBLACK,
         GetImageBounds().right() + kTextMarginPixels, y(),
         width() - GetImageBounds().width(), height(),
         gfx::Canvas::TEXT_ALIGN_LEFT | gfx::Canvas::TEXT_VALIGN_MIDDLE);
