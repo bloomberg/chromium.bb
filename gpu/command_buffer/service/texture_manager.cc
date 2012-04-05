@@ -65,17 +65,8 @@ TextureManager::~TextureManager() {
 }
 
 void TextureManager::Destroy(bool have_context) {
-  while (!texture_infos_.empty()) {
-    TextureInfo* info = texture_infos_.begin()->second;
-    if (have_context) {
-      if (!info->IsDeleted() && info->owned_) {
-        GLuint service_id = info->service_id();
-        glDeleteTextures(1, &service_id);
-        info->MarkAsDeleted();
-      }
-    }
-    texture_infos_.erase(texture_infos_.begin());
-  }
+  have_context_ = have_context;
+  texture_infos_.clear();
   GLuint ids[kNumDefaultTextures * 2];
   for (int ii = 0; ii < kNumDefaultTextures; ++ii) {
     TextureInfo* texture = default_textures_[ii].get();
@@ -94,8 +85,12 @@ void TextureManager::Destroy(bool have_context) {
 
 TextureManager::TextureInfo::~TextureInfo() {
   if (manager_) {
+    if (owned_ && manager_->have_context_) {
+      GLuint id = service_id();
+      glDeleteTextures(1, &id);
+    }
+    MarkAsDeleted();
     manager_->StopTracking(this);
-    --manager_->texture_info_count_;
     manager_ = NULL;
   }
 }
@@ -575,7 +570,8 @@ TextureManager::TextureManager(
       num_uncleared_mips_(0),
       texture_info_count_(0),
       mem_represented_(0),
-      last_reported_mem_represented_(1) {
+      last_reported_mem_represented_(1),
+      have_context_(true) {
   for (int ii = 0; ii < kNumDefaultTextures; ++ii) {
     black_texture_ids_[ii] = 0;
   }
@@ -878,7 +874,12 @@ void TextureManager::RemoveTextureInfo(GLuint client_id) {
   }
 }
 
+void TextureManager::StartTracking(TextureManager::TextureInfo* /* texture */) {
+  ++texture_info_count_;
+}
+
 void TextureManager::StopTracking(TextureManager::TextureInfo* texture) {
+  --texture_info_count_;
   if (!texture->CanRender(feature_info_)) {
     DCHECK_NE(0, num_unrenderable_textures_);
     --num_unrenderable_textures_;

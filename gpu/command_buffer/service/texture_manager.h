@@ -61,8 +61,9 @@ class GPU_EXPORT TextureManager {
           stream_texture_(false),
           immutable_(false),
           estimated_size_(0) {
-      if (manager_)
-        ++manager_->texture_info_count_;
+      if (manager_) {
+        manager_->StartTracking(this);
+      }
     }
 
     GLenum min_filter() const {
@@ -273,7 +274,6 @@ class GPU_EXPORT TextureManager {
     bool MarkMipmapsGenerated(const FeatureInfo* feature_info);
 
     void MarkAsDeleted() {
-      service_id_ = 0;
       deleted_ = true;
     }
 
@@ -519,6 +519,7 @@ class GPU_EXPORT TextureManager {
 
   void UpdateMemRepresented();
 
+  void StartTracking(TextureInfo* info);
   void StopTracking(TextureInfo* info);
 
   FeatureInfo::Ref feature_info_;
@@ -542,6 +543,8 @@ class GPU_EXPORT TextureManager {
 
   uint32 mem_represented_;
   uint32 last_reported_mem_represented_;
+
+  bool have_context_;
 
   // Black (0,0,0,1) textures for when non-renderable textures are used.
   // NOTE: There is no corresponding TextureInfo for these textures.

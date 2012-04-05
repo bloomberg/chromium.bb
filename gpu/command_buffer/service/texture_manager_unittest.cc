@@ -86,6 +86,10 @@ TEST_F(TextureManagerTest, Basic) {
   EXPECT_TRUE(manager_.GetTextureInfo(kClient2Id) == NULL);
   // Check trying to a remove non-existent textures does not crash.
   manager_.RemoveTextureInfo(kClient2Id);
+  // Check that it gets deleted when the last reference is released.
+  EXPECT_CALL(*gl_, DeleteTextures(1, ::testing::Pointee(kService1Id)))
+      .Times(1)
+      .RetiresOnSaturation();
   // Check we can't get the texture after we remove it.
   manager_.RemoveTextureInfo(kClient1Id);
   EXPECT_TRUE(manager_.GetTextureInfo(kClient1Id) == NULL);
@@ -318,7 +322,19 @@ class TextureInfoTest : public testing::Test {
   }
 
   virtual void TearDown() {
-    info_ = NULL;
+    if (info_.get()) {
+      GLuint client_id = 0;
+      // If it's not in the manager then setting info_ to NULL will
+      // delete the texture.
+      if (!manager_.GetClientId(info_->service_id(), &client_id)) {
+        // Check that it gets deleted when the last reference is released.
+        EXPECT_CALL(*gl_,
+            DeleteTextures(1, ::testing::Pointee(info_->service_id())))
+            .Times(1)
+            .RetiresOnSaturation();
+      }
+      info_ = NULL;
+    }
     ::gfx::GLInterface::SetGLInterface(NULL);
     gl_.reset();
   }
@@ -861,9 +877,15 @@ TEST_F(TextureInfoTest, SafeUnsafe) {
   manager_.RemoveTextureInfo(kClient2Id);
   EXPECT_TRUE(manager_.HaveUnsafeTextures());
   EXPECT_TRUE(manager_.HaveUnclearedMips());
+  EXPECT_CALL(*gl_, DeleteTextures(1, ::testing::Pointee(kService2Id)))
+      .Times(1)
+      .RetiresOnSaturation();
   info2 = NULL;
   EXPECT_TRUE(manager_.HaveUnsafeTextures());
   EXPECT_TRUE(manager_.HaveUnclearedMips());
+  EXPECT_CALL(*gl_, DeleteTextures(1, ::testing::Pointee(kService3Id)))
+      .Times(1)
+      .RetiresOnSaturation();
   info3 = NULL;
   EXPECT_FALSE(manager_.HaveUnsafeTextures());
   EXPECT_FALSE(manager_.HaveUnclearedMips());
@@ -930,6 +952,9 @@ TEST_F(TextureInfoTest, UseDeletedTexture) {
       GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, false);
   EXPECT_TRUE(manager_.CanRender(info));
   EXPECT_FALSE(manager_.HaveUnrenderableTextures());
+  EXPECT_CALL(*gl_, DeleteTextures(1, ::testing::Pointee(kService2Id)))
+      .Times(1)
+      .RetiresOnSaturation();
   info = NULL;
 }
 

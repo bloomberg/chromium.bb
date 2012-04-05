@@ -2430,7 +2430,6 @@ void GLES2DecoderImpl::DeleteTexturesHelper(
         ReleaseIOSurfaceForTexture(service_id);
       }
 #endif
-      glDeleteTextures(1, &service_id);
       RemoveTextureInfo(client_ids[ii]);
     }
   }
