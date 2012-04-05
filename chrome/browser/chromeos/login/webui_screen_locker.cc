@@ -156,10 +156,6 @@ string16 WebUIScreenLocker::GetConnectedNetworkName() {
   return GetCurrentNetworkName(CrosLibrary::Get()->GetNetworkLibrary());
 }
 
-void WebUIScreenLocker::FixCaptivePortal() {
-  NOTREACHED();
-}
-
 void WebUIScreenLocker::SetDisplayEmail(const std::string& email) {
   NOTREACHED();
 }

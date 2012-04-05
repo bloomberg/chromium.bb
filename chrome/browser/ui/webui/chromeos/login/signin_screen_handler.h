@@ -73,9 +73,6 @@ class SigninScreenHandlerDelegate {
   // Signs out if the screen is currently locked.
   virtual void Signout() = 0;
 
-  // Sign in into Guest session for fixing captive portal issues.
-  virtual void FixCaptivePortal() = 0;
-
   // Create a new Google account.
   virtual void CreateAccount() = 0;
 

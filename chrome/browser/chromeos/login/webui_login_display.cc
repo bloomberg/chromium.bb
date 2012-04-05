@@ -86,6 +86,9 @@ void WebUILoginDisplay::SelectPod(int index) {
 void WebUILoginDisplay::ShowError(int error_msg_id,
                                   int login_attempts,
                                   HelpAppLauncher::HelpTopic help_topic_id) {
+  VLOG(1) << "Show error, error_id: " << error_msg_id
+          << ", attempts:" << login_attempts
+          <<  ", help_topic_id: " << help_topic_id;
   DCHECK(webui_handler_);
 
   std::string error_text;
@@ -120,12 +123,6 @@ void WebUILoginDisplay::ShowError(int error_msg_id,
 
   std::string help_link;
   switch (error_msg_id) {
-    case IDS_LOGIN_ERROR_CAPTIVE_PORTAL:
-      help_link = l10n_util::GetStringUTF8(IDS_LOGIN_FIX_CAPTIVE_PORTAL);
-      break;
-    case IDS_LOGIN_ERROR_CAPTIVE_PORTAL_NO_GUEST_MODE:
-      // No help link is needed.
-      break;
     case IDS_LOGIN_ERROR_AUTHENTICATING_HOSTED:
       help_link = l10n_util::GetStringUTF8(IDS_LEARN_MORE);
       break;
@@ -173,12 +170,6 @@ void WebUILoginDisplay::LoginAsGuest() {
 
 void WebUILoginDisplay::Signout() {
   delegate_->Signout();
-}
-
-void WebUILoginDisplay::FixCaptivePortal() {
-  DCHECK(delegate_);
-  if (delegate_)
-    delegate_->FixCaptivePortal();
 }
 
 void WebUILoginDisplay::CreateAccount() {

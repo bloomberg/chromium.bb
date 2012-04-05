@@ -86,9 +86,6 @@ const char kCreateAccountURL[] =
 const char kChromeVoxTutorialURLPattern[] =
     "http://www.chromevox.com/tutorial/index.html?lang=%s";
 
-// Landing URL when launching Guest mode to fix captive portal.
-const char kCaptivePortalLaunchURL[] = "http://www.google.com/";
-
 // Delay for transferring the auth cache to the system profile.
 const long int kAuthCacheTransferDelayMs = 2000;
 
@@ -277,11 +274,6 @@ void ExistingUserController::CreateAccount() {
 
 string16 ExistingUserController::GetConnectedNetworkName() {
   return GetCurrentNetworkName(CrosLibrary::Get()->GetNetworkLibrary());
-}
-
-void ExistingUserController::FixCaptivePortal() {
-  guest_mode_url_ = GURL(kCaptivePortalLaunchURL);
-  LoginAsGuest();
 }
 
 void ExistingUserController::SetDisplayEmail(const std::string& email) {
@@ -499,29 +491,11 @@ void ExistingUserController::OnLoginFailure(const LoginFailure& failure) {
       else
         ShowError(IDS_LOGIN_ERROR_OFFLINE_FAILED_NETWORK_NOT_CONNECTED, error);
     } else {
-      // Network is connected.
-      const Network* active_network = network->active_network();
       // TODO(nkostylev): Cleanup rest of ClientLogin related code.
       if (failure.reason() == LoginFailure::NETWORK_AUTH_FAILED &&
           failure.error().state() ==
               GoogleServiceAuthError::HOSTED_NOT_ALLOWED) {
         ShowError(IDS_LOGIN_ERROR_AUTHENTICATING_HOSTED, error);
-      } else if ((active_network && active_network->restricted_pool()) ||
-                 (failure.reason() == LoginFailure::NETWORK_AUTH_FAILED &&
-                  failure.error().state() ==
-                      GoogleServiceAuthError::SERVICE_UNAVAILABLE)) {
-        // Use explicit captive portal state (restricted_pool()) or implicit
-        // one.
-        // SERVICE_UNAVAILABLE is generated in 2 cases:
-        // 1. ClientLogin returns ServiceUnavailable code.
-        // 2. Internet connectivity may be behind the captive portal.
-        // Suggesting user to try sign in to a portal in Guest mode.
-        bool allow_guest;
-        cros_settings_->GetBoolean(kAccountsPrefAllowGuest, &allow_guest);
-        if (allow_guest)
-          ShowError(IDS_LOGIN_ERROR_CAPTIVE_PORTAL, error);
-        else
-          ShowError(IDS_LOGIN_ERROR_CAPTIVE_PORTAL_NO_GUEST_MODE, error);
       } else {
         if (!is_known_user)
           ShowError(IDS_LOGIN_ERROR_AUTHENTICATING_NEW, error);
@@ -787,6 +761,8 @@ void ExistingUserController::ShowError(int error_id,
   // for end users, developers can see details string in Chrome logs.
   VLOG(1) << details;
   HelpAppLauncher::HelpTopic help_topic_id;
+  NetworkLibrary* network_library = CrosLibrary::Get()->GetNetworkLibrary();
+  bool is_offline = !network_library || !network_library->Connected();
   switch (login_performer_->error().state()) {
     case GoogleServiceAuthError::CONNECTION_FAILED:
       help_topic_id = HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT_OFFLINE;
@@ -798,7 +774,7 @@ void ExistingUserController::ShowError(int error_id,
       help_topic_id = HelpAppLauncher::HELP_HOSTED_ACCOUNT;
       break;
     default:
-      help_topic_id = login_performer_->login_timed_out() ?
+      help_topic_id = is_offline ?
           HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT_OFFLINE :
           HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT;
       break;
