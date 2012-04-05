@@ -32,7 +32,6 @@
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
-#include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/extensions/extension_web_ui.h"
 #include "chrome/browser/extensions/extension_webkit_preferences.h"
 #include "chrome/browser/geolocation/chrome_access_token_store.h"
@@ -634,7 +633,7 @@ void ChromeContentBrowserClient::SiteInstanceGotProcess(
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&ExtensionInfoMap::RegisterExtensionProcess,
-                 ExtensionSystemFactory::GetForProfile(profile)->info_map(),
+                 ExtensionSystem::Get(profile)->info_map(),
                  extension->id(),
                  site_instance->GetProcess()->GetID(),
                  site_instance->GetId()));
@@ -663,7 +662,7 @@ void ChromeContentBrowserClient::SiteInstanceDeleting(
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&ExtensionInfoMap::UnregisterExtensionProcess,
-                 ExtensionSystemFactory::GetForProfile(profile)->info_map(),
+                 ExtensionSystem::Get(profile)->info_map(),
                  extension->id(),
                  site_instance->GetProcess()->GetID(),
                  site_instance->GetId()));

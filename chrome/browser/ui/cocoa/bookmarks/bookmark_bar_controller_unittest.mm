@@ -13,7 +13,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
-#include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #import "chrome/browser/ui/cocoa/animation_utils.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_constants.h"
@@ -275,7 +274,7 @@ class BookmarkBarControllerTestBase : public CocoaProfileTest {
 
     FilePath extension_dir;
     static_cast<TestExtensionSystem*>(
-        ExtensionSystemFactory::GetForProfile(profile()))->
+        ExtensionSystem::Get(profile()))->
         CreateExtensionService(
             CommandLine::ForCurrentProcess(),
             extension_dir, false);

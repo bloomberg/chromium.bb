@@ -35,7 +35,6 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/browser/extensions/extension_system.h"
-#include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/extensions/user_script_master.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/geolocation/chrome_geolocation_permission_context.h"
@@ -580,19 +579,19 @@ VisitedLinkMaster* ProfileImpl::GetVisitedLinkMaster() {
 }
 
 ExtensionService* ProfileImpl::GetExtensionService() {
-  return ExtensionSystemFactory::GetForProfile(this)->extension_service();
+  return ExtensionSystem::Get(this)->extension_service();
 }
 
 UserScriptMaster* ProfileImpl::GetUserScriptMaster() {
-  return ExtensionSystemFactory::GetForProfile(this)->user_script_master();
+  return ExtensionSystem::Get(this)->user_script_master();
 }
 
 ExtensionProcessManager* ProfileImpl::GetExtensionProcessManager() {
-  return ExtensionSystemFactory::GetForProfile(this)->process_manager();
+  return ExtensionSystem::Get(this)->process_manager();
 }
 
 ExtensionEventRouter* ProfileImpl::GetExtensionEventRouter() {
-  return ExtensionSystemFactory::GetForProfile(this)->event_router();
+  return ExtensionSystem::Get(this)->event_router();
 }
 
 ExtensionSpecialStoragePolicy*
@@ -684,7 +683,7 @@ net::URLRequestContextGetter* ProfileImpl::GetRequestContext() {
 net::URLRequestContextGetter* ProfileImpl::GetRequestContextForRenderProcess(
     int renderer_child_id) {
   ExtensionService* extension_service =
-      ExtensionSystemFactory::GetForProfile(this)->extension_service();
+      ExtensionSystem::Get(this)->extension_service();
   if (extension_service) {
     const Extension* installed_app = extension_service->
         GetInstalledAppForRenderer(renderer_child_id);

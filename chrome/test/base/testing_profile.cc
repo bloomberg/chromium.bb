@@ -440,19 +440,19 @@ ExtensionPrefValueMap* TestingProfile::GetExtensionPrefValueMap() {
 }
 
 ExtensionService* TestingProfile::GetExtensionService() {
-  return ExtensionSystemFactory::GetForProfile(this)->extension_service();
+  return ExtensionSystem::Get(this)->extension_service();
 }
 
 UserScriptMaster* TestingProfile::GetUserScriptMaster() {
-  return ExtensionSystemFactory::GetForProfile(this)->user_script_master();
+  return ExtensionSystem::Get(this)->user_script_master();
 }
 
 ExtensionProcessManager* TestingProfile::GetExtensionProcessManager() {
-  return ExtensionSystemFactory::GetForProfile(this)->process_manager();
+  return ExtensionSystem::Get(this)->process_manager();
 }
 
 ExtensionEventRouter* TestingProfile::GetExtensionEventRouter() {
-  return ExtensionSystemFactory::GetForProfile(this)->event_router();
+  return ExtensionSystem::Get(this)->event_router();
 }
 
 void TestingProfile::SetExtensionSpecialStoragePolicy(
@@ -548,7 +548,7 @@ net::URLRequestContextGetter* TestingProfile::GetRequestContext() {
 net::URLRequestContextGetter* TestingProfile::GetRequestContextForRenderProcess(
     int renderer_child_id) {
   ExtensionService* extension_service =
-      ExtensionSystemFactory::GetForProfile(this)->extension_service();
+      ExtensionSystem::Get(this)->extension_service();
   if (extension_service) {
     const Extension* installed_app = extension_service->
         GetInstalledAppForRenderer(renderer_child_id);

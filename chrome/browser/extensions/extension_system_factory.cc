@@ -52,8 +52,7 @@ bool ExtensionSystemSharedFactory::ServiceRedirectedInIncognito() {
 // ExtensionSystemFactory
 
 // static
-ExtensionSystem* ExtensionSystemFactory::GetForProfile(
-    Profile* profile) {
+ExtensionSystem* ExtensionSystemFactory::GetForProfile(Profile* profile) {
   return static_cast<ExtensionSystem*>(
       GetInstance()->GetServiceForProfile(profile, true));
 }

@@ -46,6 +46,11 @@ ExtensionSystem::ExtensionSystem() {
 ExtensionSystem::~ExtensionSystem() {
 }
 
+// static
+ExtensionSystem* ExtensionSystem::Get(Profile* profile) {
+  return ExtensionSystemFactory::GetForProfile(profile);
+}
+
 //
 // ExtensionSystemImpl::Shared
 //

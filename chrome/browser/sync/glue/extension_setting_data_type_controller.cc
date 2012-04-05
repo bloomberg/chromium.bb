@@ -8,7 +8,6 @@
 #include "base/metrics/histogram.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
-#include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/api/syncable_service.h"
 #include "chrome/browser/sync/glue/generic_change_processor.h"
@@ -55,7 +54,7 @@ bool ExtensionSettingDataTypeController::PostTaskOnBackendThread(
 
 bool ExtensionSettingDataTypeController::StartModels() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  ExtensionSystemFactory::GetForProfile(profile_)->Init(true);
+  ExtensionSystem::Get(profile_)->Init(true);
   return true;
 }
 

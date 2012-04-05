@@ -20,7 +20,6 @@
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
-#include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/extensions/extension_warning_set.h"
 #include "chrome/browser/extensions/lazy_background_task_queue.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
@@ -529,8 +528,7 @@ void ExtensionSettingsHandler::HandleInspectMessage(const ListValue* args) {
 
     ExtensionProcessManager* pm = profile->GetExtensionProcessManager();
     LazyBackgroundTaskQueue* queue =
-        ExtensionSystemFactory::GetForProfile(profile)->
-            lazy_background_task_queue();
+        ExtensionSystem::Get(profile)->lazy_background_task_queue();
 
     ExtensionHost* host = pm->GetBackgroundHostForExtension(extension->id());
     if (host) {

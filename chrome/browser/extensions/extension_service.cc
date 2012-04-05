@@ -55,7 +55,6 @@
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/browser/extensions/extension_sync_data.h"
 #include "chrome/browser/extensions/extension_system.h"
-#include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/extensions/extension_web_ui.h"
 #include "chrome/browser/extensions/external_extension_provider_impl.h"
 #include "chrome/browser/extensions/external_extension_provider_interface.h"
@@ -379,7 +378,7 @@ ExtensionService::ExtensionService(Profile* profile,
                                    bool autoupdate_enabled,
                                    bool extensions_enabled)
     : profile_(profile),
-      system_(ExtensionSystemFactory::GetForProfile(profile)),
+      system_(ExtensionSystem::Get(profile)),
       extension_prefs_(extension_prefs),
       settings_frontend_(extensions::SettingsFrontend::Create(profile)),
       pending_extension_manager_(*ALLOW_THIS_IN_INITIALIZER_LIST(this)),

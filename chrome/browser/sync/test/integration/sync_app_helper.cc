@@ -6,7 +6,6 @@
 
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
-#include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/extensions/extension_sorting.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/test/integration/extensions_helper.h"
@@ -94,9 +93,9 @@ void SyncAppHelper::SetupIfNecessary(SyncTest* test) {
     return;
 
   for (int i = 0; i < test->num_clients(); ++i) {
-    ExtensionSystemFactory::GetForProfile(test->GetProfile(i))->Init(true);
+    ExtensionSystem::Get(test->GetProfile(i))->Init(true);
   }
-  ExtensionSystemFactory::GetForProfile(test->verifier())->Init(true);
+  ExtensionSystem::Get(test->verifier())->Init(true);
 
   setup_completed_ = true;
 }

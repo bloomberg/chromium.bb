@@ -87,7 +87,7 @@ ProfileSyncComponentsFactoryImpl::ProfileSyncComponentsFactoryImpl(
     : profile_(profile),
       command_line_(command_line),
       extension_system_(
-          ExtensionSystemFactory::GetForProfile(profile)) {
+          ExtensionSystem::Get(profile)) {
 }
 
 void ProfileSyncComponentsFactoryImpl::RegisterDataTypes(

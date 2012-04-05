@@ -211,26 +211,26 @@ class Profile : public content::BrowserContext {
   // TODO(yoz): make this a ProfileKeyedService.
   virtual ExtensionPrefValueMap* GetExtensionPrefValueMap() = 0;
 
-  // DEPRECATED. Instead, use ExtensionSystemFactory::extension_service().
+  // DEPRECATED. Instead, use ExtensionSystem::extension_service().
   // Retrieves a pointer to the ExtensionService associated with this
   // profile. The ExtensionService is created at startup.
   // TODO(yoz): remove this accessor (bug 104095).
   virtual ExtensionService* GetExtensionService() = 0;
 
-  // DEPRECATED. Instead, use ExtensionSystemFactory::user_script_master().
+  // DEPRECATED. Instead, use ExtensionSystem::user_script_master().
   // Retrieves a pointer to the UserScriptMaster associated with this
   // profile.  The UserScriptMaster is lazily created the first time
   // that this method is called.
   // TODO(yoz): remove this accessor (bug 104095).
   virtual UserScriptMaster* GetUserScriptMaster() = 0;
 
-  // DEPRECATED. Instead, use ExtensionSystemFactory::process_manager().
+  // DEPRECATED. Instead, use ExtensionSystem::process_manager().
   // Retrieves a pointer to the ExtensionProcessManager associated with this
   // profile.  The instance is created at startup.
   // TODO(yoz): remove this accessor (bug 104095).
   virtual ExtensionProcessManager* GetExtensionProcessManager() = 0;
 
-  // DEPRECATED. Instead, use ExtensionSystemFactory::event_router().
+  // DEPRECATED. Instead, use ExtensionSystem::event_router().
   // Accessor. The instance is created at startup.
   // TODO(yoz): remove this accessor (bug 104095).
   virtual ExtensionEventRouter* GetExtensionEventRouter() = 0;

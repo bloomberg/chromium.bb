@@ -27,7 +27,6 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/browser/extensions/extension_system.h"
-#include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/proxy_service_factory.h"
 #include "chrome/browser/plugin_prefs.h"
@@ -123,7 +122,7 @@ OffTheRecordProfileImpl::~OffTheRecordProfileImpl() {
     io_data_.GetResourceContextNoInit());
 
   ExtensionService* extension_service =
-      ExtensionSystemFactory::GetForProfile(this)->extension_service();
+      ExtensionSystem::Get(this)->extension_service();
   if (extension_service && extension_service->extensions_enabled()) {
     extension_service->extension_prefs()->
         ClearIncognitoSessionOnlyContentSettings();
@@ -198,20 +197,20 @@ ExtensionPrefValueMap* OffTheRecordProfileImpl::GetExtensionPrefValueMap() {
 }
 
 ExtensionService* OffTheRecordProfileImpl::GetExtensionService() {
-  return ExtensionSystemFactory::GetForProfile(this)->extension_service();
+  return ExtensionSystem::Get(this)->extension_service();
 }
 
 UserScriptMaster* OffTheRecordProfileImpl::GetUserScriptMaster() {
-  return ExtensionSystemFactory::GetForProfile(this)->user_script_master();
+  return ExtensionSystem::Get(this)->user_script_master();
 }
 
 ExtensionProcessManager*
     OffTheRecordProfileImpl::GetExtensionProcessManager() {
-  return ExtensionSystemFactory::GetForProfile(this)->process_manager();
+  return ExtensionSystem::Get(this)->process_manager();
 }
 
 ExtensionEventRouter* OffTheRecordProfileImpl::GetExtensionEventRouter() {
-  return ExtensionSystemFactory::GetForProfile(this)->event_router();
+  return ExtensionSystem::Get(this)->event_router();
 }
 
 ExtensionSpecialStoragePolicy*

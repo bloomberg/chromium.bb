@@ -13,7 +13,6 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
@@ -1350,7 +1349,7 @@ TEST_F(TranslateManagerTest, BeforeTranslateExtraButtons) {
   TestingProfile* test_profile =
       static_cast<TestingProfile*>(contents()->GetBrowserContext());
   static_cast<TestExtensionSystem*>(
-      ExtensionSystemFactory::GetForProfile(test_profile))->
+      ExtensionSystem::Get(test_profile))->
       CreateExtensionProcessManager();
   test_profile->set_incognito(true);
   for (int i = 0; i < 8; ++i) {

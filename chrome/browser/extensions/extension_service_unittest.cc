@@ -37,7 +37,6 @@
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/browser/extensions/extension_sync_data.h"
 #include "chrome/browser/extensions/extension_system.h"
-#include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/extensions/external_extension_provider_impl.h"
 #include "chrome/browser/extensions/external_extension_provider_interface.h"
 #include "chrome/browser/extensions/external_pref_extension_loader.h"
@@ -422,7 +421,7 @@ void ExtensionServiceTestBase::InitializeExtensionService(
   profile_.reset(profile);
 
   service_ = static_cast<TestExtensionSystem*>(
-      ExtensionSystemFactory::GetForProfile(profile))->CreateExtensionService(
+      ExtensionSystem::Get(profile))->CreateExtensionService(
           CommandLine::ForCurrentProcess(),
           extensions_install_dir,
           autoupdate_enabled);
@@ -462,7 +461,7 @@ void ExtensionServiceTestBase::InitializeEmptyExtensionService() {
 
 void ExtensionServiceTestBase::InitializeExtensionProcessManager() {
   static_cast<TestExtensionSystem*>(
-      ExtensionSystemFactory::GetForProfile(profile_.get()))->
+      ExtensionSystem::Get(profile_.get()))->
       CreateExtensionProcessManager();
 }
 
@@ -3855,7 +3854,7 @@ TEST(ExtensionServiceTestSimple, Enabledness) {
   // By default, we are enabled.
   command_line.reset(new CommandLine(CommandLine::NO_PROGRAM));
   ExtensionService* service = static_cast<TestExtensionSystem*>(
-      ExtensionSystemFactory::GetForProfile(profile.get()))->
+      ExtensionSystem::Get(profile.get()))->
       CreateExtensionService(
           command_line.get(),
           install_dir,
@@ -3870,7 +3869,7 @@ TEST(ExtensionServiceTestSimple, Enabledness) {
   profile.reset(new TestingProfile());
   command_line->AppendSwitch(switches::kDisableExtensions);
   service = static_cast<TestExtensionSystem*>(
-      ExtensionSystemFactory::GetForProfile(profile.get()))->
+      ExtensionSystem::Get(profile.get()))->
       CreateExtensionService(
           command_line.get(),
           install_dir,
@@ -3884,7 +3883,7 @@ TEST(ExtensionServiceTestSimple, Enabledness) {
   profile.reset(new TestingProfile());
   profile->GetPrefs()->SetBoolean(prefs::kDisableExtensions, true);
   service = static_cast<TestExtensionSystem*>(
-      ExtensionSystemFactory::GetForProfile(profile.get()))->
+      ExtensionSystem::Get(profile.get()))->
       CreateExtensionService(
           command_line.get(),
           install_dir,
@@ -3899,7 +3898,7 @@ TEST(ExtensionServiceTestSimple, Enabledness) {
   profile->GetPrefs()->SetBoolean(prefs::kDisableExtensions, true);
   command_line.reset(new CommandLine(CommandLine::NO_PROGRAM));
   service = static_cast<TestExtensionSystem*>(
-      ExtensionSystemFactory::GetForProfile(profile.get()))->
+      ExtensionSystem::Get(profile.get()))->
       CreateExtensionService(
           command_line.get(),
           install_dir,

@@ -37,6 +37,10 @@ class ExtensionSystem : public ProfileKeyedService {
   ExtensionSystem();
   virtual ~ExtensionSystem();
 
+  // Returns the instance for the given profile, or NULL if none. This is
+  // a convenience wrapper around ExtensionSystemFactory::GetForProfile.
+  static ExtensionSystem* Get(Profile* profile);
+
   // ProfileKeyedService implementation.
   virtual void Shutdown() OVERRIDE {}
 

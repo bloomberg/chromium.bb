@@ -21,7 +21,6 @@
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_sync_data.h"
 #include "chrome/browser/extensions/extension_system.h"
-#include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/extensions/test_extension_prefs.h"
 #include "chrome/browser/extensions/test_extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
@@ -987,13 +986,13 @@ class ExtensionUpdaterTest : public testing::Test {
     // the CrxInstaller actions we want.
     TestingProfile profile;
     static_cast<TestExtensionSystem*>(
-        ExtensionSystemFactory::GetForProfile(&profile))->
+        ExtensionSystem::Get(&profile))->
         CreateExtensionService(
             CommandLine::ForCurrentProcess(),
             FilePath(),
             false);
     ExtensionService* extension_service =
-        ExtensionSystemFactory::GetForProfile(&profile)->extension_service();
+        ExtensionSystem::Get(&profile)->extension_service();
     extension_service->set_extensions_enabled(true);
     extension_service->set_show_extensions_prompts(false);
 
