@@ -319,13 +319,13 @@ bool ServiceProcessState::StateData::WatchExecutable() {
   }
 
   FilePath executable_path = FilePath([exe_path fileSystemRepresentation]);
-  scoped_ptr<ExecFilePathWatcherDelegate> delegate(
+  scoped_refptr<ExecFilePathWatcherDelegate> delegate(
       new ExecFilePathWatcherDelegate);
   if (!delegate->Init(executable_path)) {
     DLOG(ERROR) << "executable_watcher_.Init " << executable_path.value();
     return false;
   }
-  if (!executable_watcher_.Watch(executable_path, delegate.release())) {
+  if (!executable_watcher_.Watch(executable_path, delegate)) {
     DLOG(ERROR) << "executable_watcher_.watch " << executable_path.value();
     return false;
   }
