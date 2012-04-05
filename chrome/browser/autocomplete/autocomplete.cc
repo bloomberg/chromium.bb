@@ -5,6 +5,7 @@
 #include "chrome/browser/autocomplete/autocomplete.h"
 
 #include <algorithm>
+#include <iterator>
 #include <set>
 
 #include "base/basictypes.h"
