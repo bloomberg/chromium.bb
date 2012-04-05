@@ -948,6 +948,34 @@ name=cmd.exe
 ...
 cmd.exe!*
 
+# Possible true system use after free.
+UNADDRESSABLE ACCESS
+name=http://code.google.com/p/drmemory/issues/detail?id=623
+KERNELBASE.dll!TlsGetValue
+OLEAUT32.dll!SysFreeString
+OLEAUT32.dll!SysAllocStringByteLen
+OLEACC.dll!*
+OLEACC.dll!*
+OLEACC.dll!*
+OLEACC.dll!*
+
+# basic_streambuf seems to leak something in creating a std::_Mutex
+LEAK
+name=http://code.google.com/p/drmemory/issues/detail?id=857
+ntdll.dll!...
+ntdll.dll!RtlInitializeCriticalSection
+*!_Mtxinit
+*!std::_Mutex::_Mutex
+*!std::basic_streambuf<*>
+
+# Seems to create a DC, sometimes.  GetTextMetrics returns no pointers, though.
+LEAK
+name=GDI SetBrushOrgEx leak
+GDI32.dll!...
+GDI32.dll!GetTextMetricsW
+*!gfx::PlatformFontWin::CreateHFontRef
+*!gfx::PlatformFontWin::GetBaseFontRef
+
 ###############################################################
 # Benign issues in Chromium
 
