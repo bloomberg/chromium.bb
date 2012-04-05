@@ -209,6 +209,9 @@ void TabStripModel::ReplaceNavigationControllerAt(
 }
 
 TabContentsWrapper* TabStripModel::DiscardTabContentsAt(int index) {
+  // TODO(creis): This logic is severely flawed, since it discards
+  // navigation entries and breaks script connections.  See
+  // http://crbug.com/121453.
   DCHECK(ContainsIndex(index));
   TabContentsWrapper* null_contents =
       new TabContentsWrapper(
@@ -224,6 +227,8 @@ TabContentsWrapper* TabStripModel::DiscardTabContentsAt(int index) {
     // Set the new tab contents to reload this URL when clicked.
     // This also allows the tab to keep drawing the favicon and page title.
     NavigationEntry* new_nav_entry = NavigationEntry::Create(*old_nav_entry);
+    // Restored entries are renumbered from 0.
+    new_nav_entry->SetPageID(0);
     std::vector<NavigationEntry*> entries;
     entries.push_back(new_nav_entry);
     null_contents->web_contents()->GetController().Restore(0, false, &entries);
