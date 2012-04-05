@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,7 +15,7 @@ using views::Widget;
 Widget* CreateDragWidget() {
   Widget* drag_widget = new Widget;
   Widget::InitParams params;
-  params.type = Widget::InitParams::TYPE_TOOLTIP;
+  params.type = Widget::InitParams::TYPE_WINDOW_FRAMELESS;
   params.keep_on_top = true;
   params.accept_events = false;
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
