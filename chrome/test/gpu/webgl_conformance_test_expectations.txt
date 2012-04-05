@@ -137,7 +137,7 @@ UNFILED LINUX AMD : conformance_textures_texture_mips = FAIL
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-129819 WIN7 LINUX MAC DEBUG : conformance_context_context_lost = FAIL
+129819 WIN LINUX MAC DEBUG : conformance_context_context_lost = FAIL
 121139 MAC WIN LINUX : conformance_textures_texture_size = FAIL
 
 120269 LINUX MAC DEBUG : conformance_textures_tex_image_with_format_and_type = FAIL
