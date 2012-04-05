@@ -12,8 +12,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "crypto/nss_util.h"  // crypto::GetTPMTokenInfo() for 802.1X and VPN.
 #include "grit/generated_resources.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
+#include "ui/base/l10n/l10n_util.h"
 
 using content::BrowserThread;
 
@@ -1080,8 +1080,9 @@ bool NetworkLibraryImplBase::LoadOncNetworks(const std::string& onc_blob,
   // networks that are defined in the ONC blob in |network_ids|. They're later
   // used to clean out any previously-existing networks that had been configured
   // through policy but are no longer specified in the updated ONC blob.
-  std::set<std::string> network_ids;
   std::string profile_path(GetProfilePath(GetProfileTypeForSource(source)));
+  std::set<std::string>& network_ids(network_source_map_[source]);
+  network_ids.clear();
   for (std::vector<Network*>::iterator iter(networks.begin());
        iter != networks.end(); ++iter) {
     Network* network = *iter;
@@ -1293,11 +1294,37 @@ void NetworkLibraryImplBase::DeleteNetwork(Network* network) {
   delete network;
 }
 
-void NetworkLibraryImplBase::AddRememberedNetwork(Network* network) {
+bool NetworkLibraryImplBase::ValidateRememberedNetwork(Network* network) {
   std::pair<NetworkMap::iterator, bool> result =
       remembered_network_map_.insert(
           std::make_pair(network->service_path(), network));
   DCHECK(result.second);  // Should only get called with new network.
+
+  // See if this is a policy-configured network that has meanwhile been removed.
+  // This situation may arise when the full list of remembered networks is not
+  // available to LoadOncNetworks(), which can happen due to the asynchronous
+  // communication between flimflam and NetworkLibrary. Just tell flimflam to
+  // delete the network now.
+  const NetworkUIData::ONCSource source = network->ui_data().onc_source();
+  if (source == NetworkUIData::ONC_SOURCE_USER_POLICY ||
+      source == NetworkUIData::ONC_SOURCE_DEVICE_POLICY) {
+    NetworkSourceMap::const_iterator network_id_set(
+        network_source_map_.find(source));
+    if (network_id_set != network_source_map_.end() &&
+        network_id_set->second.find(network->unique_id()) ==
+            network_id_set->second.end()) {
+      DeleteRememberedNetwork(network->service_path());
+      return false;
+    }
+  }
+
+  return true;
+}
+
+bool NetworkLibraryImplBase::ValidateAndAddRememberedNetwork(Network* network) {
+  if (!ValidateRememberedNetwork(network))
+    return false;
+
   if (network->type() == TYPE_WIFI) {
     remembered_wifi_networks_.push_back(
         static_cast<WifiNetwork*>(network));
@@ -1316,13 +1343,14 @@ void NetworkLibraryImplBase::AddRememberedNetwork(Network* network) {
         profile.services.end()) {
       network->set_profile_path(profile.path);
       network->set_profile_type(profile.type);
-      VLOG(1) << "AddRememberedNetwork: " << network->service_path()
+      VLOG(1) << "ValidateAndAddRememberedNetwork: " << network->service_path()
               << " profile: " << profile.path;
       break;
     }
   }
   DCHECK(!network->profile_path().empty())
       << "Service path not in any profile: " << network->service_path();
+  return true;
 }
 
 void NetworkLibraryImplBase::DeleteRememberedNetwork(

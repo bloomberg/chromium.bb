@@ -237,6 +237,8 @@ class NetworkLibraryImplBase : public NetworkLibrary {
   typedef std::map<std::string, NetworkDevice*> NetworkDeviceMap;
   typedef std::map<std::string, CellularDataPlanVector*> CellularDataPlanMap;
   typedef std::map<std::string, const base::DictionaryValue*> NetworkOncMap;
+  typedef std::map<NetworkUIData::ONCSource,
+                   std::set<std::string> > NetworkSourceMap;
 
   struct NetworkProfile {
     NetworkProfile(const std::string& p, NetworkProfileType t)
@@ -309,7 +311,17 @@ class NetworkLibraryImplBase : public NetworkLibrary {
   void UpdateActiveNetwork(Network* network);
   void AddNetwork(Network* network);
   void DeleteNetwork(Network* network);
-  void AddRememberedNetwork(Network* network);
+
+  // Checks whether |network| has meanwhile been pruned by ONC policy. If so,
+  // instructs flimflam to remove the network, deletes |network| and returns
+  // false.
+  bool ValidateRememberedNetwork(Network* network);
+
+  // Adds |network| to the remembered networks data structures and returns true
+  // if ValidateRememberedNetwork(network) returns true. Returns false
+  // otherwise.
+  bool ValidateAndAddRememberedNetwork(Network* network);
+
   void DeleteRememberedNetwork(const std::string& service_path);
   void ClearNetworks();
   void ClearRememberedNetworks();
@@ -462,6 +474,11 @@ class NetworkLibraryImplBase : public NetworkLibrary {
 
   // Holds unique id to ONC mapping.
   NetworkOncMap network_onc_map_;
+
+  // Keeps track of what networks ONC has configured. This is used to weed out
+  // stray networks that flimflam still has on file, but are not known on the
+  // Chrome side.
+  NetworkSourceMap network_source_map_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkLibraryImplBase);
 };

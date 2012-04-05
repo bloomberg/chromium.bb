@@ -360,9 +360,10 @@ void NetworkLibraryImplStub::AddStubRememberedNetwork(Network* network) {
   if (remembered) {
     remembered->set_name(network->name());
     remembered->set_unique_id(network->unique_id());
-    // AddRememberedNetwork will insert the network into the matching profile
-    // and set the profile type + path.
-    AddRememberedNetwork(remembered);
+    // ValidateAndAddRememberedNetwork will insert the network into the matching
+    // profile and set the profile type + path.
+    if (!ValidateAndAddRememberedNetwork(remembered))
+      NOTREACHED();
   }
 }
 

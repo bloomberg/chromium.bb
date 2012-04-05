@@ -1273,7 +1273,8 @@ Network* NetworkLibraryImplCros::ParseRememberedNetwork(
     NativeNetworkParser parser;
     remembered = parser.CreateNetworkFromInfo(service_path, info);
     if (remembered->type() == TYPE_WIFI || remembered->type() == TYPE_VPN) {
-      AddRememberedNetwork(remembered);
+      if (!ValidateAndAddRememberedNetwork(remembered))
+        return NULL;
     } else {
       LOG(WARNING) << "Ignoring remembered network: " << service_path
                    << " Type: " << ConnectionTypeToString(remembered->type());
