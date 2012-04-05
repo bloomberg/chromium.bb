@@ -384,6 +384,40 @@ class NinjaWriter:
     assert self.target.FinalOutput(), output
     return self.target
 
+  def _WinIdlRule(self, source, prebuild, outputs):
+    """Handle the implicit VS .idl rule for one source file. Fills |outputs|
+    with files that are generated."""
+    outdir, output, vars, flags = self.msvs_settings.GetIdlBuildData(
+        source, self.config_name)
+    outdir = self.GypPathToNinja(outdir)
+    def fix_path(path, rel=None):
+      path = os.path.join(outdir, path)
+      dirname, basename = os.path.split(source)
+      root, ext = os.path.splitext(basename)
+      path = self.ExpandRuleVariables(
+          path, root, dirname, source, ext, basename)
+      if rel:
+        path = os.path.relpath(path, rel)
+      return path
+    vars = [(name, fix_path(value, outdir)) for name, value in vars]
+    output = [fix_path(p) for p in output]
+    vars.append(('outdir', outdir))
+    vars.append(('idlflags', flags))
+    input = self.GypPathToNinja(source)
+    self.ninja.build(output, 'idl', input,
+        variables=vars, order_only=prebuild)
+    outputs.extend(output)
+
+  def WriteWinIdlFiles(self, spec, prebuild):
+    """Writes rules to match MSVS's implicit idl handling."""
+    assert self.flavor == 'win'
+    if self.msvs_settings.HasExplicitIdlRules(spec):
+      return []
+    outputs = []
+    for source in filter(lambda x: x.endswith('.idl'), spec['sources']):
+      self._WinIdlRule(source, prebuild, outputs)
+    return outputs
+
   def WriteActionsRulesCopies(self, spec, extra_sources, prebuild,
                               mac_bundle_depends):
     """Write out the Actions, Rules, and Copies steps.  Return a path
@@ -399,6 +433,9 @@ class NinjaWriter:
                                  extra_mac_bundle_resources)
     if 'copies' in spec:
       outputs += self.WriteCopies(spec['copies'], prebuild)
+
+    if 'sources' in spec and self.flavor == 'win':
+      outputs += self.WriteWinIdlFiles(spec, prebuild)
 
     stamp = self.WriteCollapsedDependencies('actions_rules_copies', outputs)
 
@@ -658,7 +695,7 @@ class NinjaWriter:
       elif self.flavor == 'mac' and ext == 'mm':
         command = 'objcxx'
       else:
-        # TODO: should we assert here on unexpected extensions?
+        # Ignore unhandled extensions.
         continue
       input = self.GypPathToNinja(source)
       output = self.GypPathToUniqueOutput(filename + self.obj_ext)
@@ -1185,6 +1222,12 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
       deplist='$out.dl',
       rspfile='$out.rsp',
       rspfile_content='$defines $includes $cflags $cflags_cc')
+    master_ninja.rule(
+      'idl',
+      description='IDL $in',
+      command=('python gyp-win-tool midl-wrapper $outdir '
+               '$tlb $h $dlldata $iid $proxy $in '
+               '$idlflags'))
 
   if flavor != 'mac' and flavor != 'win':
     master_ninja.rule(

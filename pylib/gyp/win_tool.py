@@ -55,12 +55,38 @@ class WinTool(object):
     '   Creating library ui.dll.lib and object ui.dll.exp'
     This happens when there are exports from the dll or exe.
     """
-    popen = subprocess.Popen(args,
-                             stdout=subprocess.PIPE,
-                             stderr=subprocess.STDOUT)
+    popen = subprocess.Popen(
+        args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     out, _ = popen.communicate()
     for line in out.splitlines():
       if not line.startswith('   Creating library '):
+        sys.stdout.write(line)
+    return popen.returncode
+
+  def ExecMidlWrapper(self, outdir, tlb, h, dlldata, iid, proxy, idl, *flags):
+    """Filter noisy filenames output from MIDL compile step that isn't
+    quietable via command line flags.
+    """
+    args = ['midl', '/nologo'] + list(flags) + [
+        '/out', outdir,
+        '/tlb', tlb,
+        '/h', h,
+        '/dlldata', dlldata,
+        '/iid', iid,
+        '/proxy', proxy,
+        idl]
+    popen = subprocess.Popen(
+        args, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    out, _ = popen.communicate()
+    # Filter junk out of stdout, and write filtered versions. Output we want
+    # to filter is pairs of lines that look like this:
+    # Processing C:\Program Files (x86)\Microsoft SDKs\...\include\objidl.idl
+    # objidl.idl
+    lines = out.splitlines()
+    prefix = 'Processing '
+    processing = set(os.path.basename(x) for x in lines if x.startswith(prefix))
+    for line in lines:
+      if not line.startswith(prefix) and line not in processing:
         sys.stdout.write(line)
     return popen.returncode
 

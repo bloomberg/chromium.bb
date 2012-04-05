@@ -130,6 +130,8 @@ class MsvsSettings(object):
           '$(VSInstallDir)': self.vs_version.Path(),
           '$(VCInstallDir)': os.path.join(self.vs_version.Path(), 'VC'),
           '$(OutDir)\\': '',
+          '$(IntDir)': '$!INTERMEDIATE_DIR',
+          '$(InputName)': '${root}',
       }
       dxsdk_dir = os.environ.get('DXSDK_DIR')
       if dxsdk_dir:
@@ -158,9 +160,9 @@ class MsvsSettings(object):
       self.field = field
       self.base_path = [base_path]
       self.append = append
-    def __call__(self, name, map=None, prefix=''):
+    def __call__(self, name, map=None, prefix='', default=None):
       return self.parent._GetAndMunge(self.field, self.base_path + [name],
-          default=None, prefix=prefix, append=self.append, map=map)
+          default=default, prefix=prefix, append=self.append, map=map)
 
   def _Setting(self, path, config,
               default=None, prefix='', append=None, map=None):
@@ -325,6 +327,38 @@ class MsvsSettings(object):
     unset, or set to 1 we use cygwin."""
     return int(rule.get('msvs_cygwin_shell',
                         self.spec.get('msvs_cygwin_shell', 1))) != 0
+
+  def HasExplicitIdlRules(self, spec):
+    """Determine if there's an explicit rule for idl files. When there isn't we
+    need to generate implicit rules to build MIDL .idl files."""
+    for rule in spec.get('rules', []):
+      if rule['extension'] == 'idl' and int(rule.get('msvs_external_rule', 0)):
+        return True
+    return False
+
+  def GetIdlBuildData(self, source, config):
+    """Determine the implicit outputs for an idl file. Returns output
+    directory, outputs, and variables and flags that are required."""
+    midl_get = self._GetWrapper(self, self.msvs_settings[config], 'VCMIDLTool')
+    def midl(name, default=None):
+      return self.ConvertVSMacros(midl_get(name, default=default))
+    tlb = midl('TypeLibraryName', default='${root}.tlb')
+    header = midl('HeaderFileName', default='${root}.h')
+    dlldata = midl('DLLDataFileName', default='dlldata.c')
+    iid = midl('InterfaceIdentifierFileName', default='${root}_i.c')
+    proxy = midl('ProxyFileName', default='${root}_p.c')
+    # Note that .tlb is not included in the outputs as it is not always
+    # generated depending on the content of the input idl file.
+    outdir = midl('OutputDirectory')
+    output = [header, dlldata, iid, proxy]
+    variables = [('tlb', tlb),
+                 ('h', header),
+                 ('dlldata', dlldata),
+                 ('iid', iid),
+                 ('proxy', proxy)]
+    # TODO(scottmg): Are there configuration settings to set these flags?
+    flags = ['/char', 'signed', '/env', 'win32', '/Oicf']
+    return outdir, output, variables, flags
 
 vs_version = None
 def GetVSVersion(generator_flags):
