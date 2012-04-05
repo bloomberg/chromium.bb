@@ -16,12 +16,15 @@
 #include "content/public/browser/notification_registrar.h"
 
 class ExtensionHost;
-class LazyBackgroundTaskQueue;
 class Profile;
 
 namespace content {
 class RenderProcessHost;
 class WebContents;
+}
+
+namespace extensions {
+class LazyBackgroundTaskQueue;
 }
 
 // This class manages message and event passing between renderer processes.
@@ -57,7 +60,7 @@ class ExtensionMessageService : public content::NotificationObserver {
   // NOTE: this can be called from any thread.
   static void AllocatePortIdPair(int* port1, int* port2);
 
-  explicit ExtensionMessageService(LazyBackgroundTaskQueue* queue);
+  explicit ExtensionMessageService(extensions::LazyBackgroundTaskQueue* queue);
   virtual ~ExtensionMessageService();
 
   // Given an extension's ID, opens a channel between the given renderer "port"
@@ -137,7 +140,7 @@ class ExtensionMessageService : public content::NotificationObserver {
   PendingChannelMap pending_channels_;
 
   // Weak pointer. Guaranteed to outlive this class.
-  LazyBackgroundTaskQueue* lazy_background_task_queue_;
+  extensions::LazyBackgroundTaskQueue* lazy_background_task_queue_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionMessageService);
 };

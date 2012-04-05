@@ -87,11 +87,11 @@ void ExtensionFunctionRegistry::ResetFunctions() {
   // Register all functions here.
 
   // Alarms
-  RegisterFunction<AlarmsCreateFunction>();
-  RegisterFunction<AlarmsGetFunction>();
-  RegisterFunction<AlarmsGetAllFunction>();
-  RegisterFunction<AlarmsClearFunction>();
-  RegisterFunction<AlarmsClearAllFunction>();
+  RegisterFunction<extensions::AlarmsCreateFunction>();
+  RegisterFunction<extensions::AlarmsGetFunction>();
+  RegisterFunction<extensions::AlarmsGetAllFunction>();
+  RegisterFunction<extensions::AlarmsClearFunction>();
+  RegisterFunction<extensions::AlarmsClearAllFunction>();
 
   // Windows
   RegisterFunction<GetWindowFunction>();

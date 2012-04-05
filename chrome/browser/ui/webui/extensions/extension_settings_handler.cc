@@ -527,7 +527,7 @@ void ExtensionSettingsHandler::HandleInspectMessage(const ListValue* args) {
       profile = profile->GetOffTheRecordProfile();
 
     ExtensionProcessManager* pm = profile->GetExtensionProcessManager();
-    LazyBackgroundTaskQueue* queue =
+    extensions::LazyBackgroundTaskQueue* queue =
         ExtensionSystem::Get(profile)->lazy_background_task_queue();
 
     ExtensionHost* host = pm->GetBackgroundHostForExtension(extension->id());

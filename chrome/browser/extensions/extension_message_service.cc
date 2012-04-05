@@ -165,7 +165,8 @@ void ExtensionMessageService::AllocatePortIdPair(int* port1, int* port2) {
   *port2 = port2_id;
 }
 
-ExtensionMessageService::ExtensionMessageService(LazyBackgroundTaskQueue* queue)
+ExtensionMessageService::ExtensionMessageService(
+    extensions::LazyBackgroundTaskQueue* queue)
     : lazy_background_task_queue_(queue) {
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
                  content::NotificationService::AllBrowserContextsAndSources());

@@ -83,7 +83,8 @@ void ExtensionSystemImpl::Shared::InitInfoMap() {
 void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
 
-  lazy_background_task_queue_.reset(new LazyBackgroundTaskQueue(profile_));
+  lazy_background_task_queue_.reset(new extensions::LazyBackgroundTaskQueue(
+      profile_));
   extension_event_router_.reset(new ExtensionEventRouter(profile_));
   extension_message_service_.reset(new ExtensionMessageService(
       lazy_background_task_queue_.get()));
@@ -186,7 +187,7 @@ ExtensionInfoMap* ExtensionSystemImpl::Shared::info_map() {
   return extension_info_map_.get();
 }
 
-LazyBackgroundTaskQueue*
+extensions::LazyBackgroundTaskQueue*
 ExtensionSystemImpl::Shared::lazy_background_task_queue() {
   return lazy_background_task_queue_.get();
 }
@@ -267,7 +268,8 @@ ExtensionInfoMap* ExtensionSystemImpl::info_map() {
   return shared_->info_map();
 }
 
-LazyBackgroundTaskQueue* ExtensionSystemImpl::lazy_background_task_queue() {
+extensions::LazyBackgroundTaskQueue*
+ExtensionSystemImpl::lazy_background_task_queue() {
   return shared_->lazy_background_task_queue();
 }
 

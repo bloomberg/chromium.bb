@@ -9,7 +9,6 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_event_router.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/extensions/api/experimental.alarms.h"
@@ -35,6 +34,8 @@ void AlarmCallback(Profile* profile, const std::string& extension_id) {
 }
 
 }
+
+namespace extensions {
 
 bool AlarmsCreateFunction::RunImpl() {
   scoped_ptr<Alarms::Create::Params> params(
@@ -71,3 +72,5 @@ bool AlarmsClearAllFunction::RunImpl() {
   error_ = "Not implemented.";
   return false;
 }
+
+}  // namespace extensions

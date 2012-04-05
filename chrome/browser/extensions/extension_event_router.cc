@@ -394,7 +394,7 @@ void ExtensionEventRouter::MaybeLoadLazyBackgroundPage(
   if (!CanDispatchEventToProfile(profile, extension, event, &event_args))
     return;
 
-  LazyBackgroundTaskQueue* queue =
+  extensions::LazyBackgroundTaskQueue* queue =
       ExtensionSystem::Get(profile)->lazy_background_task_queue();
   if (queue->ShouldEnqueueTask(profile, extension)) {
     queue->AddPendingTask(

@@ -37,7 +37,8 @@ class TestExtensionSystem : public ExtensionSystem {
   virtual ExtensionDevToolsManager* devtools_manager() OVERRIDE;
   virtual ExtensionProcessManager* process_manager() OVERRIDE;
   virtual ExtensionInfoMap* info_map() OVERRIDE;
-  virtual LazyBackgroundTaskQueue* lazy_background_task_queue() OVERRIDE;
+  virtual extensions::LazyBackgroundTaskQueue*
+      lazy_background_task_queue() OVERRIDE;
   virtual ExtensionMessageService* message_service() OVERRIDE;
   virtual ExtensionEventRouter* event_router() OVERRIDE;
   virtual extensions::RulesRegistryService* rules_registry_service()

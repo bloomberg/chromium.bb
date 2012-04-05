@@ -8,6 +8,8 @@
 
 #include "chrome/browser/extensions/extension_function.h"
 
+namespace extensions {
+
 class AlarmsCreateFunction : public SyncExtensionFunction {
  protected:
   virtual bool RunImpl() OVERRIDE;
@@ -37,5 +39,7 @@ class AlarmsClearAllFunction : public SyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.alarms.clearAll");
 };
+
+} //  namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_ALARMS_ALARMS_API_H__

@@ -85,7 +85,8 @@ ExtensionInfoMap* TestExtensionSystem::info_map() {
   return NULL;
 }
 
-LazyBackgroundTaskQueue* TestExtensionSystem::lazy_background_task_queue() {
+extensions::LazyBackgroundTaskQueue*
+TestExtensionSystem::lazy_background_task_queue() {
   return NULL;
 }
 

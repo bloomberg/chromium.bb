@@ -23,6 +23,8 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 
+namespace extensions {
+
 LazyBackgroundTaskQueue::LazyBackgroundTaskQueue(Profile* profile)
     : profile_(profile) {
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
@@ -131,3 +133,5 @@ void LazyBackgroundTaskQueue::Observe(
       break;
   }
 }
+
+}  // namespace extensions

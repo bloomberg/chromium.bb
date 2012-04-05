@@ -19,6 +19,8 @@ class Extension;
 class ExtensionHost;
 class Profile;
 
+namespace extensions {
+
 // This class maintains a queue of tasks that should execute when an
 // extension's lazy background page is loaded. It is also in charge of loading
 // the page when the first task is queued.
@@ -65,5 +67,7 @@ class LazyBackgroundTaskQueue : public content::NotificationObserver {
   content::NotificationRegistrar registrar_;
   PendingTasksMap pending_tasks_;
 };
+
+}  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_LAZY_BACKGROUND_TASK_QUEUE_H_
