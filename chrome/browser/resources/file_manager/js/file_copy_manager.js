@@ -577,30 +577,35 @@ FileCopyManager.prototype.serviceNextTaskEntry_ = function(
     if (err.code != FileError.NOT_FOUND_ERR)
       return onError('FILESYSTEM_ERROR', err);
 
-    if (task.sourceOnGData && task.targetOnGData) {
-      if (task.deleteAfterCopy) {
+    if (task.deleteAfterCopy &&
+        DirectoryModel.getRootPath(sourceEntry.fullPath) ==
+            DirectoryModel.getRootPath(targetDirEntry.fullPath)) {
+      resolveDirAndBaseName(
+          targetDirEntry, targetRelativePath,
+          function(dirEntry, fileName) {
+            sourceEntry.moveTo(dirEntry, fileName,
+                               onFilesystemCopyComplete, onFilesystemError);
+          },
+          onFilesystemError);
+      // Since the file has been moved (not copied) the original file doesn't
+      // need to be deleted.
+      task.deleteAfterCopy = false;
+      return;
+    }
+
+    if (task.sourceOnGData && task.targetOnGData && !task.deleteAfterCopy) {
+      // TODO(benchan): GDataFileSystem has not implemented directory copy,
+      // and thus we only call FileEntry.copyTo() for files. Revisit this
+      // code when GDataFileSystem supports directory copy.
+      if (!sourceEntry.isDirectory) {
         resolveDirAndBaseName(
             targetDirEntry, targetRelativePath,
             function(dirEntry, fileName) {
-              sourceEntry.moveTo(dirEntry, fileName,
+              sourceEntry.copyTo(dirEntry, fileName,
                                  onFilesystemCopyComplete, onFilesystemError);
             },
             onFilesystemError);
         return;
-      } else {
-        // TODO(benchan): GDataFileSystem has not implemented directory copy,
-        // and thus we only call FileEntry.copyTo() for files. Revisit this
-        // code when GDataFileSystem supports directory copy.
-        if (!sourceEntry.isDirectory) {
-          resolveDirAndBaseName(
-              targetDirEntry, targetRelativePath,
-              function(dirEntry, fileName) {
-                sourceEntry.copyTo(dirEntry, fileName,
-                                   onFilesystemCopyComplete, onFilesystemError);
-              },
-              onFilesystemError);
-          return;
-        }
       }
     }
 
