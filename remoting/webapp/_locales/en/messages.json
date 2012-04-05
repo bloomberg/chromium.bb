@@ -230,6 +230,14 @@
     "message": "Failed to start remote access service.",
     "description": "Message shown when host service fails to start when enabling the host on local computer."
   },
+  "HOST_SETUP_INSTALL": {
+    "message": "Chrome is downloading the Chrome Remote Desktop Host installer.  Once the download is complete, please run the installer before continuing.",
+    "description": "Message shown when user is asked to manually install the Host components."
+  },
+  "HOST_SETUP_INSTALL_PENDING": {
+    "message": "Please run the installer before continuing.",
+    "description": "Message shown when user has attempted to continue past the manual install dialog, but the Host components are not yet installed."
+  },
   "HOST_SETUP_REGISTRATION_FAILED": {
     "message": "Failed to register this computer.",
     "description": "Message shown when host registration fails when enabling the host on local computer."

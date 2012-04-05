@@ -196,10 +196,10 @@ found in the LICENSE file.
       <div id="host-setup-dialog"
            class="kd-modaldialog"
            data-ui-mode="home.host-setup">
-        <p class="message" i18n-content="HOST_SETUP_DIALOG_DESCRIPTION"></p>
         <form id="ask-pin-form"
               data-ui-mode="home.host-setup.ask-pin"
               action="">
+          <p class="message" i18n-content="HOST_SETUP_DIALOG_DESCRIPTION"></p>
           <div>
             <label for="daemon-pin-entry"
                    i18n-content="ASK_PIN_DIALOG_LABEL"
@@ -246,6 +246,25 @@ found in the LICENSE file.
             <div class="box-spacer"></div>
             <button id="host-config-error-dismiss" i18n-content="OK"></button>
           </div>
+        </div>
+        <div data-ui-mode="home.host-setup.install" hidden>
+          <div class="message" i18n-content="HOST_SETUP_INSTALL"></div>
+          <div class="button-row">
+            <div class="box-spacer"></div>
+            <button id="host-config-install-continue"
+                    i18n-content="OK"></button>
+            <button id="host-config-install-dismiss"
+                    i18n-content="CANCEL"></button>
+          </div>
+        </div>
+        <div data-ui-mode="home.host-setup.install-pending" hidden>
+          <div class="message"
+                    i18n-content="HOST_SETUP_INSTALL_PENDING"></div>
+          <div class="button-row">
+            <div class="box-spacer"></div>
+            <button id="host-config-install-retry"
+                    i18n-content="OK"></button>
+            </div>
         </div>
       </div> <!-- host-setup-dialog -->
 

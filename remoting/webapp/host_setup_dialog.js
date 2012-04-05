@@ -9,7 +9,7 @@ var remoting = remoting || {};
 
 /**
  * @param {Array.<remoting.HostSetupFlow.State>} sequence Sequence of
- * steps for the flow.
+ *     steps for the flow.
  * @constructor
  */
 remoting.HostSetupFlow = function(sequence) {
@@ -28,22 +28,25 @@ remoting.HostSetupFlow.State = {
   // Dialog states.
   ASK_PIN: 1,
 
+  // Used on Mac OS X to prompt the user to manually install a .dmg package.
+  INSTALL_HOST: 2,
+
   // Processing states.
-  REGISTERING_HOST: 2,
-  STARTING_HOST: 3,
-  UPDATING_PIN: 4,
-  STOPPING_HOST: 5,
+  REGISTERING_HOST: 3,
+  STARTING_HOST: 4,
+  UPDATING_PIN: 5,
+  STOPPING_HOST: 6,
 
   // Done states.
-  HOST_STARTED: 6,
-  UPDATED_PIN: 7,
-  HOST_STOPPED: 8,
+  HOST_STARTED: 7,
+  UPDATED_PIN: 8,
+  HOST_STOPPED: 9,
 
   // Failure states.
-  REGISTRATION_FAILED: 9,
-  START_HOST_FAILED: 10,
-  UPDATE_PIN_FAILED: 11,
-  STOP_HOST_FAILED: 12
+  REGISTRATION_FAILED: 10,
+  START_HOST_FAILED: 11,
+  UPDATE_PIN_FAILED: 12,
+  STOP_HOST_FAILED: 13
 };
 
 /** @return {remoting.HostSetupFlow.State} Current state of the flow. */
@@ -130,11 +133,18 @@ remoting.HostSetupDialog = function(daemon) {
  * @return {void} Nothing.
  */
 remoting.HostSetupDialog.prototype.showForStart = function() {
-  this.startNewFlow_(
-      [remoting.HostSetupFlow.State.ASK_PIN,
-       remoting.HostSetupFlow.State.REGISTERING_HOST,
-       remoting.HostSetupFlow.State.STARTING_HOST,
-       remoting.HostSetupFlow.State.HOST_STARTED]);
+  var flow = [
+      remoting.HostSetupFlow.State.ASK_PIN,
+      remoting.HostSetupFlow.State.REGISTERING_HOST,
+      remoting.HostSetupFlow.State.STARTING_HOST,
+      remoting.HostSetupFlow.State.HOST_STARTED];
+
+  if (navigator.platform.indexOf('Mac') != -1 &&
+      this.daemon_.state() == remoting.DaemonPlugin.State.NOT_INSTALLED) {
+    flow.unshift(remoting.HostSetupFlow.State.INSTALL_HOST);
+  }
+
+  this.startNewFlow_(flow);
 };
 
 /**
@@ -214,6 +224,10 @@ remoting.HostSetupDialog.prototype.updateState_ = function() {
     this.hide();
   } else if (state == remoting.HostSetupFlow.State.ASK_PIN) {
     remoting.setMode(remoting.AppMode.HOST_SETUP_ASK_PIN);
+  } else if (state == remoting.HostSetupFlow.State.INSTALL_HOST) {
+    remoting.setMode(remoting.AppMode.HOST_SETUP_INSTALL);
+    window.location =
+        'http://dl.google.com/chrome-remote-desktop/chromeremotedesktop.dmg';
   } else if (state == remoting.HostSetupFlow.State.REGISTERING_HOST) {
     showProcessingMessage(/*i18n-content*/'HOST_SETUP_STARTING');
     this.registerHost_();
@@ -471,6 +485,26 @@ remoting.HostSetupDialog.validPin_ = function(pin) {
     }
   }
   return true;
+}
+
+/**
+ * @return {void} Nothing.
+ */
+remoting.HostSetupDialog.prototype.onInstallDialogOk = function() {
+  var state = this.daemon_.state();
+  if (state == remoting.DaemonPlugin.State.STOPPED) {
+    this.flow_.switchToNextStep(remoting.DaemonPlugin.AsyncResult.OK);
+    this.updateState_();
+  } else {
+    remoting.setMode(remoting.AppMode.HOST_SETUP_INSTALL_PENDING);
+  }
+}
+
+/**
+ * @return {void} Nothing.
+ */
+remoting.HostSetupDialog.prototype.onInstallDialogRetry = function() {
+  remoting.setMode(remoting.AppMode.HOST_SETUP_INSTALL);
 }
 
 /** @type {remoting.HostSetupDialog} */

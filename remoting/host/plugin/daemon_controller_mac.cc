@@ -95,9 +95,7 @@ DaemonControllerMac::~DaemonControllerMac() {
 DaemonController::State DaemonControllerMac::GetState() {
   pid_t job_pid = base::mac::PIDForJob(kServiceName);
   if (job_pid < 0) {
-    // TODO(lambroslambrou): Change this to STATE_NOT_INSTALLED when the
-    // installation process is implemented.
-    return DaemonController::STATE_NOT_IMPLEMENTED;
+    return DaemonController::STATE_NOT_INSTALLED;
   } else if (job_pid == 0) {
     // Service is stopped, or a start attempt failed.
     return DaemonController::STATE_STOPPED;

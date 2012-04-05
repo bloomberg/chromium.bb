@@ -77,7 +77,13 @@ function onLoad() {
       { event: 'click', id: 'host-config-done-dismiss',
         fn: function() { remoting.setMode(remoting.AppMode.HOME); } },
       { event: 'click', id: 'host-config-error-dismiss',
-        fn: function() { remoting.setMode(remoting.AppMode.HOME); } }
+        fn: function() { remoting.setMode(remoting.AppMode.HOME); } },
+      { event: 'click', id: 'host-config-install-continue',
+        fn: function() { remoting.hostSetupDialog.onInstallDialogOk(); } },
+      { event: 'click', id: 'host-config-install-dismiss',
+        fn: function() { remoting.hostSetupDialog.hide(); } },
+      { event: 'click', id: 'host-config-install-retry', fn: function() {
+          remoting.hostSetupDialog.onInstallDialogRetry(); } }
   ];
 
   for (var i = 0; i < actions.length; ++i) {

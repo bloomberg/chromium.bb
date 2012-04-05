@@ -39,6 +39,8 @@ remoting.AppMode = {
     HISTORY: 'home.history',
     CONFIRM_HOST_DELETE: 'home.confirm-host-delete',
     HOST_SETUP: 'home.host-setup',
+      HOST_SETUP_INSTALL: 'home.host-setup.install',
+      HOST_SETUP_INSTALL_PENDING: 'home.host-setup.install-pending',
       HOST_SETUP_ASK_PIN: 'home.host-setup.ask-pin',
       HOST_SETUP_PROCESSING: 'home.host-setup.processing',
       HOST_SETUP_DONE: 'home.host-setup.done',
