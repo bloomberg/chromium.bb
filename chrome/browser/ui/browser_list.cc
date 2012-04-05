@@ -40,6 +40,7 @@
 #include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
 #include "chrome/browser/chromeos/dbus/session_manager_client.h"
 #include "chrome/browser/chromeos/dbus/update_engine_client.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #endif
 
 using content::WebContents;
@@ -817,8 +818,15 @@ bool BrowserList::IsOffTheRecordSessionActive() {
   }
   return false;
 }
+
 // static
 bool BrowserList::IsOffTheRecordSessionActiveForProfile(Profile* profile) {
+#if defined(OS_CHROMEOS)
+  // In ChromeOS, we assume that the default profile is always valid, so if
+  // we are in guest mode, keep the OTR profile active so it won't be deleted.
+  if (chromeos::UserManager::Get()->IsLoggedInAsGuest())
+    return true;
+#endif
   for (BrowserList::const_iterator i = BrowserList::begin();
        i != BrowserList::end(); ++i) {
     if ((*i)->profile()->IsSameProfile(profile) &&
