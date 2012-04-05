@@ -16,6 +16,7 @@
 #include "base/logging.h"
 #include "base/string16.h"
 #include "base/string_util.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete_history_manager.h"
 #include "chrome/browser/autofill/autofill_cc_infobar_delegate.h"
@@ -146,7 +147,7 @@ void DeterminePossibleFieldTypesForUpload(
     const std::vector<AutofillProfile>& profiles,
     const std::vector<CreditCard>& credit_cards,
     FormStructure* submitted_form) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
 
   // For each field in the |submitted_form|, extract the value.  Then for each
   // profile or credit card, identify any stored types that match the value.
@@ -360,15 +361,11 @@ bool AutofillManager::OnFormSubmitted(const FormData& form,
       copied_credit_cards.push_back(**it);
     }
 
-    // TODO(isherman): Ideally, we should not be using the FILE thread here.
-    // Per jar@, this is a good compromise for now, as we don't currently have a
-    // broad consensus on how to support such one-off background tasks.
-
     // Note that ownership of |submitted_form| is passed to the second task,
     // using |base::Owned|.
     FormStructure* raw_submitted_form = submitted_form.get();
-    BrowserThread::PostTaskAndReply(
-        BrowserThread::FILE, FROM_HERE,
+    BrowserThread::GetBlockingPool()->PostTaskAndReply(
+        FROM_HERE,
         base::Bind(&DeterminePossibleFieldTypesForUpload,
                    copied_profiles,
                    copied_credit_cards,
