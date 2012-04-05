@@ -268,9 +268,6 @@ cr.define('uber', function() {
     if (lastSelected)
       lastSelected.classList.remove('selected');
     container.classList.add('selected');
-    if (container.dataset.title)
-      document.title = container.dataset.title;
-    $('favicon').href = container.dataset.favicon;
 
     setContentChanging(true);
     adjustToScroll(0);
@@ -280,6 +277,10 @@ cr.define('uber', function() {
 
     if (historyOption != HISTORY_STATE_OPTION.NONE)
       changePathTo(path, historyOption);
+
+    if (container.dataset.title)
+      document.title = container.dataset.title;
+    $('favicon').href = container.dataset.favicon;
 
     updateNavigationControls();
   }
