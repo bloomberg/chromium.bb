@@ -56,19 +56,23 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcess() {
   return PROCESS_NONE;
 }
 
-ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcessOrCreate() {
+ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcessOrCreate(
+    const NotificationCallback& notification_callback) {
   // Windows tries NotifyOtherProcess() first.
-  return Create() ? PROCESS_NONE : PROFILE_IN_USE;
+  return Create(notification_callback) ? PROCESS_NONE : PROFILE_IN_USE;
 }
 
 // Attempt to acquire an exclusive lock on an empty file in the
 // profile directory.  Returns |true| if it gets the lock.  Returns
 // |false| if the lock is held, or if there is an error.
+// |notification_callback| is not actually used. See the comments at the top of
+// this file for details.
 // TODO(shess): Rather than logging failures, popup an alert.  Punting
 // that for now because it would require confidence that this code is
 // never called in a situation where an alert wouldn't work.
 // http://crbug.com/59061
-bool ProcessSingleton::Create() {
+bool ProcessSingleton::Create(
+    const NotificationCallback& notification_callback) {
   DCHECK_EQ(-1, lock_fd_) << "lock_path_ is already open.";
 
   lock_fd_ = HANDLE_EINTR(open(lock_path_.value().c_str(),
@@ -113,8 +117,4 @@ void ProcessSingleton::Cleanup() {
     DPCHECK(!rc) << "Closing lock_fd_:";
   }
   lock_fd_ = -1;
-}
-
-void ProcessSingleton::ProcessCommandLine(const CommandLine& command_line,
-                                          const FilePath& current_directory) {
 }

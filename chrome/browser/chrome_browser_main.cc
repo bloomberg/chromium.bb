@@ -31,6 +31,7 @@
 #include "chrome/browser/about_flags.h"
 #include "chrome/browser/auto_launch_trial.h"
 #include "chrome/browser/autocomplete/autocomplete_field_trial.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_impl.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
@@ -536,6 +537,38 @@ void AddPreReadHistogramTime(const char* name, base::TimeDelta time) {
       name, kMin, kMax, kBuckets, base::Histogram::kUmaTargetedHistogramFlag);
 
   counter->AddTime(time);
+}
+
+bool ProcessSingletonNotificationCallback(const CommandLine& command_line,
+                                          const FilePath& current_directory) {
+  // Drop the request if the browser process is already in shutdown path.
+  if (!g_browser_process || g_browser_process->IsShuttingDown())
+    return false;
+
+  // TODO(erikwright): Consider removing this - AFAIK it is no longer used.
+  // Handle the --uninstall-extension startup action. This needs to done here
+  // in the process that is running with the target profile, otherwise the
+  // uninstall will fail to unload and remove all components.
+  if (command_line.HasSwitch(switches::kUninstallExtension)) {
+    // The uninstall extension switch can't be combined with the profile
+    // directory switch.
+    DCHECK(!command_line.HasSwitch(switches::kProfileDirectory));
+
+    Profile* profile = ProfileManager::GetLastUsedProfile();
+    if (!profile) {
+      // We should never be called before the profile has been created.
+      NOTREACHED();
+      return true;
+    }
+
+    ExtensionsStartupUtil ext_startup_util;
+    ext_startup_util.UninstallExtension(command_line, profile);
+    return true;
+  }
+
+  BrowserInit::ProcessCommandLineAlreadyRunning(
+      command_line, current_directory);
+  return true;
 }
 
 }  // namespace
@@ -1465,7 +1498,8 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
     // new one. NotifyOtherProcess will currently give the other process up to
     // 20 seconds to respond. Note that this needs to be done before we attempt
     // to read the profile.
-    notify_result_ = process_singleton_->NotifyOtherProcessOrCreate();
+    notify_result_ = process_singleton_->NotifyOtherProcessOrCreate(
+        base::Bind(&ProcessSingletonNotificationCallback));
     switch (notify_result_) {
       case ProcessSingleton::PROCESS_NONE:
         // No process already running, fall through to starting a new one.

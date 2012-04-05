@@ -16,6 +16,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/logging.h"
@@ -54,6 +55,15 @@ class ProcessSingleton : public base::NonThreadSafe {
     LOCK_ERROR,
   };
 
+  // Implement this callback to handle notifications from other processes. The
+  // callback will receive the command line and directory with which the other
+  // Chrome process was launched. Return true if the command line will be
+  // handled within the current browser instance or false if the remote process
+  // should handle it (i.e., because the current process is shutting down).
+  typedef base::Callback<
+      bool(const CommandLine& command_line, const FilePath& current_directory)>
+      NotificationCallback;
+
   explicit ProcessSingleton(const FilePath& user_data_dir);
   ~ProcessSingleton();
 
@@ -67,10 +77,12 @@ class ProcessSingleton : public base::NonThreadSafe {
   // first one, so this function won't find it.
   NotifyResult NotifyOtherProcess();
 
-  // Notify another process, if available.  Otherwise sets ourselves as the
-  // singleton instance.  Returns PROCESS_NONE if we became the singleton
+  // Notify another process, if available. Otherwise sets ourselves as the
+  // singleton instance and stores the provided callback for notification from
+  // future processes. Returns PROCESS_NONE if we became the singleton
   // instance.
-  NotifyResult NotifyOtherProcessOrCreate();
+  NotifyResult NotifyOtherProcessOrCreate(
+      const NotificationCallback& notification_callback);
 
 #if defined(OS_LINUX) || defined(OS_OPENBSD)
   // Exposed for testing.  We use a timeout on Linux, and in tests we want
@@ -80,6 +92,7 @@ class ProcessSingleton : public base::NonThreadSafe {
                                              bool kill_unresponsive);
   NotifyResult NotifyOtherProcessWithTimeoutOrCreate(
       const CommandLine& command_line,
+      const NotificationCallback& notification_callback,
       int timeout_seconds);
 #endif  // defined(OS_LINUX) || defined(OS_OPENBSD)
 
@@ -96,8 +109,10 @@ class ProcessSingleton : public base::NonThreadSafe {
 
   // Sets ourself up as the singleton instance.  Returns true on success.  If
   // false is returned, we are not the singleton instance and the caller must
-  // exit.
-  bool Create();
+  // exit. Otherwise, stores the provided callback for notification from
+  // future processes.
+  bool Create(
+      const NotificationCallback& notification_callback);
 
   // Clear any lock state during shutdown.
   void Cleanup();
@@ -132,8 +147,6 @@ class ProcessSingleton : public base::NonThreadSafe {
 
  private:
   typedef std::pair<CommandLine::StringVector, FilePath> DelayedStartupMessage;
-  void ProcessCommandLine(const CommandLine& command_line,
-                          const FilePath& current_directory);
 
 #if !defined(OS_MACOSX)
   // Timeout for the current browser process to respond. 20 seconds should be
@@ -143,6 +156,7 @@ class ProcessSingleton : public base::NonThreadSafe {
 
   bool locked_;
   gfx::NativeWindow foreground_window_;
+  NotificationCallback notification_callback_;  // Handler for notifications.
 
 #if defined(OS_WIN)
   // This ugly behemoth handles startup commands sent from another process.

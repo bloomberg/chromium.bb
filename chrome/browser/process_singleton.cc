@@ -17,7 +17,7 @@ void ProcessSingleton::Unlock() {
       if (replayed_messages.find(*it) !=
           replayed_messages.end())
         continue;
-      ProcessCommandLine(CommandLine(it->first), it->second);
+      notification_callback_.Run(CommandLine(it->first), it->second);
       replayed_messages.insert(*it);
     }
     saved_startup_messages_.clear();

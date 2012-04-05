@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,7 +11,10 @@
 #include <vector>
 #include <string>
 
+#include "base/bind.h"
+#include "base/command_line.h"
 #include "base/eintr_wrapper.h"
+#include "base/file_path.h"
 #include "base/path_service.h"
 #include "base/stringprintf.h"
 #include "base/test/test_timeouts.h"
@@ -26,6 +29,14 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
+
+bool UnexpectedNotificationCallback(const CommandLine& command_line,
+                                    const FilePath& current_directory) {
+  ADD_FAILURE() << "This callback should never be invoked because the active "
+                << "ProcessSingleton is that of the Browser process hosted by "
+                << "UITest.";
+  return false;
+}
 
 class ProcessSingletonLinuxTest : public UITest {
  public:
@@ -94,7 +105,9 @@ ProcessSingleton::NotifyResult NotifyOtherProcessOrCreate(
     int timeout_ms) {
   scoped_ptr<ProcessSingleton> process_singleton(CreateProcessSingleton());
   return process_singleton->NotifyOtherProcessWithTimeoutOrCreate(
-      CommandLineForUrl(url), timeout_ms / 1000);
+      CommandLineForUrl(url),
+      base::Bind(&UnexpectedNotificationCallback),
+      timeout_ms / 1000);
 }
 
 }  // namespace
@@ -271,7 +284,8 @@ TEST_F(ProcessSingletonLinuxTest, NotifyOtherProcessOrCreate_DifferingHost) {
 // Test that Create fails when another browser is using the profile directory.
 TEST_F(ProcessSingletonLinuxTest, CreateFailsWithExistingBrowser) {
   scoped_ptr<ProcessSingleton> process_singleton(CreateProcessSingleton());
-  EXPECT_FALSE(process_singleton->Create());
+  EXPECT_FALSE(process_singleton->Create(
+      base::Bind(&UnexpectedNotificationCallback)));
 }
 
 // Test that Create fails when another browser is using the profile directory
@@ -289,7 +303,8 @@ TEST_F(ProcessSingletonLinuxTest, CreateChecksCompatibilitySocket) {
                       socket_path_.value().c_str()));
   ASSERT_EQ(0, unlink(cookie_path_.value().c_str()));
 
-  EXPECT_FALSE(process_singleton->Create());
+  EXPECT_FALSE(process_singleton->Create(
+      base::Bind(&UnexpectedNotificationCallback)));
 }
 
 // Test that we fail when lock says process is on another host and we can't

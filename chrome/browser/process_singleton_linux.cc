@@ -80,16 +80,10 @@
 #include "base/time.h"
 #include "base/timer.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/browser_process.h"
 #if defined(TOOLKIT_GTK)
 #include "chrome/browser/ui/gtk/process_singleton_dialog.h"
 #endif
-#include "chrome/browser/io_thread.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/browser_init.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "grit/chromium_strings.h"
@@ -630,8 +624,11 @@ void ProcessSingleton::LinuxWatcher::HandleMessage(
     return;
   }
 
-  // Ignore the request if the browser process is already in shutdown path.
-  if (!g_browser_process || g_browser_process->IsShuttingDown()) {
+  if (parent_->notification_callback_.Run(CommandLine(argv),
+                                          FilePath(current_dir))) {
+    // Send back "ACK" message to prevent the client process from starting up.
+    reader->FinishWithACK(kACKToken, arraysize(kACKToken) - 1);
+  } else {
     LOG(WARNING) << "Not handling interprocess notification as browser"
                     " is shutting down";
     // Send back "SHUTDOWN" message, so that the client process can start up
@@ -639,12 +636,6 @@ void ProcessSingleton::LinuxWatcher::HandleMessage(
     reader->FinishWithACK(kShutdownToken, arraysize(kShutdownToken) - 1);
     return;
   }
-
-  CommandLine parsed_command_line(argv);
-  parent_->ProcessCommandLine(parsed_command_line, FilePath(current_dir));
-
-  // Send back "ACK" message to prevent the client process from starting up.
-  reader->FinishWithACK(kACKToken, arraysize(kACKToken) - 1);
 }
 
 void ProcessSingleton::LinuxWatcher::RemoveSocketReader(SocketReader* reader) {
@@ -886,21 +877,24 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcessWithTimeout(
   return PROCESS_NOTIFIED;
 }
 
-ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcessOrCreate() {
+ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcessOrCreate(
+    const NotificationCallback& notification_callback) {
   return NotifyOtherProcessWithTimeoutOrCreate(
       *CommandLine::ForCurrentProcess(),
+      notification_callback,
       kTimeoutInSeconds);
 }
 
 ProcessSingleton::NotifyResult
 ProcessSingleton::NotifyOtherProcessWithTimeoutOrCreate(
     const CommandLine& command_line,
+    const NotificationCallback& notification_callback,
     int timeout_seconds) {
   NotifyResult result = NotifyOtherProcessWithTimeout(command_line,
                                                       timeout_seconds, true);
   if (result != PROCESS_NONE)
     return result;
-  if (Create())
+  if (Create(notification_callback))
     return PROCESS_NONE;
   // If the Create() failed, try again to notify. (It could be that another
   // instance was starting at the same time and managed to grab the lock before
@@ -914,7 +908,8 @@ ProcessSingleton::NotifyOtherProcessWithTimeoutOrCreate(
   return LOCK_ERROR;
 }
 
-bool ProcessSingleton::Create() {
+bool ProcessSingleton::Create(
+    const NotificationCallback& notification_callback) {
   int sock;
   sockaddr_un addr;
 
@@ -971,6 +966,8 @@ bool ProcessSingleton::Create() {
   if (listen(sock, 5) < 0)
     NOTREACHED() << "listen failed: " << safe_strerror(errno);
 
+  notification_callback_ = notification_callback;
+
   DCHECK(BrowserThread::IsMessageLoopValid(BrowserThread::IO));
   BrowserThread::PostTask(
       BrowserThread::IO,
@@ -986,25 +983,4 @@ void ProcessSingleton::Cleanup() {
   UnlinkPath(socket_path_);
   UnlinkPath(cookie_path_);
   UnlinkPath(lock_path_);
-}
-
-void ProcessSingleton::ProcessCommandLine(const CommandLine& command_line,
-                                          const FilePath& current_directory) {
-  PrefService* prefs = g_browser_process->local_state();
-  DCHECK(prefs);
-
-  // Ignore the request if the process was passed the --product-version flag.
-  // Normally we wouldn't get here if that flag had been passed, but it can
-  // happen if it is passed to an older version of chrome. Since newer versions
-  // of chrome do this in the background, we want to avoid spawning extra
-  // windows.
-  if (command_line.HasSwitch(switches::kProductVersion)) {
-    DLOG(WARNING) << "Remote process was passed product version flag, "
-                  << "but ignored it. Doing nothing.";
-  } else {
-    // Run the browser startup sequence again, with the command line of the
-    // signalling process.
-    BrowserInit::ProcessCommandLineAlreadyRunning(command_line,
-                                                  current_directory);
-  }
 }
