@@ -32,7 +32,14 @@ class NaClGdbTest : public PPAPINaClTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(NaClGdbTest, Empty) {
+// Disabling for now on linux, it fails on the ASAN test bot.
+// See http://crbug.com/122219
+#if defined(OS_LINUX)
+#define MAYBE_Empty DISABLED_Empty
+#else
+#define MAYBE_Empty Empty
+#endif
+IN_PROC_BROWSER_TEST_F(NaClGdbTest, MAYBE_Empty) {
   FilePath mock_nacl_gdb_file;
   scoped_ptr<base::Environment> env(base::Environment::Create());
   std::string content;
