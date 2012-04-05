@@ -168,8 +168,8 @@ struct GenericVectorCallbackOutputTraits {
 };
 
 // Output traits for all vectors of resource types. It is implemented to pass
-// a PP_Resource* as an output parameter to the browser, and convert to the
-// given resource object type T when passing to the plugin.
+// a PP_ArrayOutput parameter to the browser, and convert the returned resources
+// to a vector of the given resource object type T when passing to the plugin.
 //
 // Note that this class is parameterized by the resource object, for example
 // ResourceVectorCallbackOutputTraits<pp::FileRef>. This is used as a base
@@ -192,7 +192,7 @@ struct ResourceVectorCallbackOutputTraits {
 // arrays of resources and arrays of POD (ints, structs, etc.) by inheriting
 // from the appropriate base class depending on whether the given type derives
 // from pp::Resource. This trick allows us to do this once rather than writing
-// specilalizations for every resource object type.
+// specializations for every resource object type.
 template<typename T>
 struct CallbackOutputTraits< std::vector<T> >
     : public InheritIf<GenericVectorCallbackOutputTraits<T>,

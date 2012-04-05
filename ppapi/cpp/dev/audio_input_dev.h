@@ -9,12 +9,12 @@
 
 #include "ppapi/c/dev/ppb_audio_input_dev.h"
 #include "ppapi/cpp/audio_config.h"
+#include "ppapi/cpp/completion_callback.h"
+#include "ppapi/cpp/dev/device_ref_dev.h"
 #include "ppapi/cpp/resource.h"
 
 namespace pp {
 
-class CompletionCallback;
-class DeviceRef_Dev;
 class InstanceHandle;
 
 class AudioInput_Dev : public Resource {
@@ -38,11 +38,7 @@ class AudioInput_Dev : public Resource {
   /// resource. Please use the 5-parameter Open() if you used this constructor.
   explicit AudioInput_Dev(const InstanceHandle& instance);
 
-  AudioInput_Dev(const AudioInput_Dev& other);
-
   virtual ~AudioInput_Dev();
-
-  AudioInput_Dev& operator=(const AudioInput_Dev& other);
 
   /// Static function for determining whether the browser supports the required
   /// AudioInput interface.
@@ -63,10 +59,14 @@ class AudioInput_Dev : public Resource {
   /// struct.
   const AudioConfig& config() const { return config_; }
 
-  /// |devices| must stay alive until either this AudioInput_Dev object goes
-  /// away or |callback| is run, if this method returns PP_OK_COMPLETIONPENDING.
-  int32_t EnumerateDevices(std::vector<DeviceRef_Dev>* devices,
-                           const CompletionCallback& callback);
+  // TODO(yzshen, brettw): If we forward declare DeviceRef_Dev (as opposed to
+  // including its .h file), it still compiles. However, it is not recognized as
+  // a derived class of Resource and does the wrong thing!
+  // This is due to the limitation of IsBaseOf in ppapi/cpp/output_traits.h. We
+  // need to figure out a way to overcome this problem.
+  int32_t EnumerateDevices(
+      const CompletionCallbackWithOutput<std::vector<DeviceRef_Dev> >&
+          callback);
 
   /// If |device_ref| is null (i.e., is_null() returns true), the default device
   /// will be used.
@@ -91,20 +91,7 @@ class AudioInput_Dev : public Resource {
   void Close();
 
  private:
-  struct EnumerateDevicesState;
-
-  void AbortEnumerateDevices();
-
-  // |user_data| is an EnumerateDevicesState object. It is this method's
-  // responsibility to delete it.
-  static void OnEnumerateDevicesComplete(void* user_data, int32_t result);
-
   AudioConfig config_;
-
-  // It is set in EnumerateDevices(), and cleared in AbortEnumerateDevices() or
-  // OnEnumerateDevicesComplete(). The object will be deleted by
-  // OnEnumerateDevicesComplete().
-  EnumerateDevicesState* enum_state_;
 
   // Used to store the arguments of Open() for the v0.2 interface.
   PPB_AudioInput_Callback audio_input_callback_;

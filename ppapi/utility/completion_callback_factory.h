@@ -570,8 +570,12 @@ class CompletionCallbackFactory {
     static void Thunk(void* user_data, int32_t result) {
       Self* self = static_cast<Self*>(user_data);
       T* object = self->back_pointer_->GetObject();
-      if (object)
-        (*self->dispatcher_)(object, result);
+
+      // Please note that |object| may be NULL at this point. But we still need
+      // to call into Dispatcher::operator() in that case, so that it can do
+      // necessary cleanup.
+      (*self->dispatcher_)(object, result);
+
       delete self;
     }
 
@@ -592,7 +596,8 @@ class CompletionCallbackFactory {
     explicit Dispatcher0(Method method) : method_(method) {
     }
     void operator()(T* object, int32_t result) {
-      (object->*method_)(result);
+      if (object)
+        (object->*method_)(result);
     }
    private:
     Method method_;
@@ -604,11 +609,21 @@ class CompletionCallbackFactory {
     typedef Output OutputType;
     typedef internal::CallbackOutputTraits<Output> Traits;
 
-    DispatcherWithOutput0() : method_(NULL) {}
-    DispatcherWithOutput0(Method method) : method_(method) {
+    DispatcherWithOutput0()
+        : method_(NULL),
+          output_() {
+    }
+    DispatcherWithOutput0(Method method)
+        : method_(method),
+          output_() {
     }
     void operator()(T* object, int32_t result) {
-      (object->*method_)(result, Traits::StorageToPluginArg(output_));
+      // We must call Traits::StorageToPluginArg() even if we don't need to call
+      // the callback anymore, otherwise we may leak resource or var references.
+      if (object)
+        (object->*method_)(result, Traits::StorageToPluginArg(output_));
+      else
+        Traits::StorageToPluginArg(output_);
     }
     typename Traits::StorageType* output() {
       return &output_;
@@ -622,13 +637,17 @@ class CompletionCallbackFactory {
   template <typename Method, typename A>
   class Dispatcher1 {
    public:
-    Dispatcher1() : method_(NULL) {}
+    Dispatcher1()
+        : method_(NULL),
+          a_() {
+    }
     Dispatcher1(Method method, const A& a)
         : method_(method),
           a_(a) {
     }
     void operator()(T* object, int32_t result) {
-      (object->*method_)(result, a_);
+      if (object)
+        (object->*method_)(result, a_);
     }
    private:
     Method method_;
@@ -641,13 +660,23 @@ class CompletionCallbackFactory {
     typedef Output OutputType;
     typedef internal::CallbackOutputTraits<Output> Traits;
 
-    DispatcherWithOutput1() : method_(NULL) {}
+    DispatcherWithOutput1()
+        : method_(NULL),
+          a_(),
+          output_() {
+    }
     DispatcherWithOutput1(Method method, const A& a)
         : method_(method),
-          a_(a) {
+          a_(a),
+          output_() {
     }
     void operator()(T* object, int32_t result) {
-      (object->*method_)(result, Traits::StorageToPluginArg(output_), a_);
+      // We must call Traits::StorageToPluginArg() even if we don't need to call
+      // the callback anymore, otherwise we may leak resource or var references.
+      if (object)
+        (object->*method_)(result, Traits::StorageToPluginArg(output_), a_);
+      else
+        Traits::StorageToPluginArg(output_);
     }
     typename Traits::StorageType* output() {
       return &output_;
@@ -662,14 +691,19 @@ class CompletionCallbackFactory {
   template <typename Method, typename A, typename B>
   class Dispatcher2 {
    public:
-    Dispatcher2() : method_(NULL) {}
+    Dispatcher2()
+        : method_(NULL),
+          a_(),
+          b_() {
+    }
     Dispatcher2(Method method, const A& a, const B& b)
         : method_(method),
           a_(a),
           b_(b) {
     }
     void operator()(T* object, int32_t result) {
-      (object->*method_)(result, a_, b_);
+      if (object)
+        (object->*method_)(result, a_, b_);
     }
    private:
     Method method_;
@@ -683,14 +717,25 @@ class CompletionCallbackFactory {
     typedef Output OutputType;
     typedef internal::CallbackOutputTraits<Output> Traits;
 
-    DispatcherWithOutput2() : method_(NULL) {}
+    DispatcherWithOutput2()
+        : method_(NULL),
+          a_(),
+          b_(),
+          output_() {
+    }
     DispatcherWithOutput2(Method method, const A& a, const B& b)
         : method_(method),
           a_(a),
-          b_(b) {
+          b_(b),
+          output_() {
     }
     void operator()(T* object, int32_t result) {
-      (object->*method_)(result, Traits::StorageToPluginArg(output_), a_, b_);
+      // We must call Traits::StorageToPluginArg() even if we don't need to call
+      // the callback anymore, otherwise we may leak resource or var references.
+      if (object)
+        (object->*method_)(result, Traits::StorageToPluginArg(output_), a_, b_);
+      else
+        Traits::StorageToPluginArg(output_);
     }
     typename Traits::StorageType* output() {
       return &output_;
@@ -706,7 +751,12 @@ class CompletionCallbackFactory {
   template <typename Method, typename A, typename B, typename C>
   class Dispatcher3 {
    public:
-    Dispatcher3() : method_(NULL) {}
+    Dispatcher3()
+        : method_(NULL),
+          a_(),
+          b_(),
+          c_() {
+    }
     Dispatcher3(Method method, const A& a, const B& b, const C& c)
         : method_(method),
           a_(a),
@@ -714,7 +764,8 @@ class CompletionCallbackFactory {
           c_(c) {
     }
     void operator()(T* object, int32_t result) {
-      (object->*method_)(result, a_, b_, c_);
+      if (object)
+        (object->*method_)(result, a_, b_, c_);
     }
    private:
     Method method_;
@@ -730,16 +781,29 @@ class CompletionCallbackFactory {
     typedef Output OutputType;
     typedef internal::CallbackOutputTraits<Output> Traits;
 
-    DispatcherWithOutput3() : method_(NULL) {}
+    DispatcherWithOutput3()
+        : method_(NULL),
+          a_(),
+          b_(),
+          c_(),
+          output_() {
+    }
     DispatcherWithOutput3(Method method, const A& a, const B& b, const C& c)
         : method_(method),
           a_(a),
           b_(b),
-          c_(c) {
+          c_(c),
+          output_() {
     }
     void operator()(T* object, int32_t result) {
-      (object->*method_)(result, Traits::StorageToPluginArg(output_),
-                         a_, b_, c_);
+      // We must call Traits::StorageToPluginArg() even if we don't need to call
+      // the callback anymore, otherwise we may leak resource or var references.
+      if (object) {
+        (object->*method_)(result, Traits::StorageToPluginArg(output_),
+                           a_, b_, c_);
+      } else {
+        Traits::StorageToPluginArg(output_);
+      }
     }
     typename Traits::StorageType* output() {
       return &output_;

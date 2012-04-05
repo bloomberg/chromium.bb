@@ -21,6 +21,13 @@ VarArrayOutputAdapterWithStorage::VarArrayOutputAdapterWithStorage()
   set_output(&temp_storage_);
 }
 
+VarArrayOutputAdapterWithStorage::~VarArrayOutputAdapterWithStorage() {
+  if (!temp_storage_.empty()) {
+    // An easy way to release the var references held by this object.
+    output();
+  }
+}
+
 std::vector<Var>& VarArrayOutputAdapterWithStorage::output() {
   PP_DCHECK(output_storage_.empty());
 
