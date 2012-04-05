@@ -15,15 +15,14 @@
 
 namespace remoting {
 
+namespace {
+
 using protocol::ClipboardEvent;
 using protocol::KeyEvent;
 using protocol::MouseEvent;
 
-namespace {
-
 // USB to XKB keycode map table.
 #define USB_KEYMAP(usb, xkb, win, mac) {usb, win}
-#define INVALID_KEYCODE 0x0000
 #include "remoting/host/usb_keycode_map.h"
 #undef USB_KEYMAP
 
@@ -85,15 +84,6 @@ void EventExecutorWin::InjectMouseEvent(const MouseEvent& event) {
   HandleMouse(event);
 }
 
-uint16_t UsbKeycodeToWinScancode(uint32_t usb_keycode) {
-  for (int i = 0; i < arraysize(usb_keycode_map); i++) {
-    if (usb_keycode_map[i].usb_keycode == usb_keycode)
-      return usb_keycode_map[i].native_keycode;
-  }
-
-  return INVALID_KEYCODE;
-}
-
 HKL EventExecutorWin::GetForegroundKeyboardLayout() {
   HKL layout = 0;
 
@@ -118,8 +108,15 @@ HKL EventExecutorWin::GetForegroundKeyboardLayout() {
 }
 
 void EventExecutorWin::HandleKey(const KeyEvent& event) {
+  // HostEventDispatcher should filter events missing the pressed field.
+  DCHECK(event.has_pressed());
+
   // Reset the system idle suspend timeout.
   SetThreadExecutionState(ES_SYSTEM_REQUIRED);
+
+  // Events which don't specify whether the key is pressed are invalid.
+  if (!event.has_pressed())
+    return;
 
   // The mapping between scancodes and VKEY values depends on the foreground
   // window's current keyboard layout.
@@ -127,22 +124,24 @@ void EventExecutorWin::HandleKey(const KeyEvent& event) {
 
   int key = event.keycode();
   bool down = event.pressed();
-  int scancode = INVALID_KEYCODE;
-  if (event.has_usb_keycode() && event.usb_keycode() != 0) {
+  int scancode = kInvalidKeycode;
+  if (event.has_usb_keycode()) {
     // If the event contains a USB-style code, map to a Windows scancode, and
     // look up the corresponding VKEY under the foreground layout.
-    scancode = UsbKeycodeToWinScancode(event.usb_keycode());
-    LOG(INFO) << std::hex << "Host received keycode: " << event.keycode()
-            << " usb_keycode: " << event.usb_keycode()
-            << " to scancode: " << scancode
-            << std::dec;
+    scancode = UsbKeycodeToNativeKeycode(event.usb_keycode());
     key = MapVirtualKeyEx(scancode, MAPVK_VSC_TO_VK_EX, layout);
+    VLOG(3) << "Converting USB keycode: " << std::hex << event.usb_keycode()
+            << " to scancode: " << scancode
+            << " and VKEY: " << key << std::dec;
   } else {
     // If the event provides only a VKEY, determine the corresponding scancode.
     scancode = MapVirtualKeyEx(key, MAPVK_VK_TO_VSC_EX, layout);
+    VLOG(3) << "Converting VKEY: " << std::hex << event.keycode()
+            << " to scancode: " << scancode << std::dec;
   }
 
-  if (scancode == INVALID_KEYCODE)
+  // Ignore events with no VK- or USB-keycode, or which can't be mapped.
+  if (scancode == kInvalidKeycode)
     return;
 
   INPUT input;

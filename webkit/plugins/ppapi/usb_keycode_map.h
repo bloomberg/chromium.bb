@@ -6,7 +6,7 @@
 //   src/remoting/host/usb_keycode_map.h
 //   src/webkit/plugins/ppapi/usb_keycode_map.h
 // Changes to this file must be made in both locations.
-// TODO(garykac): Move file into shared location.
+// TODO(wez): Move file into shared location (crbug.com/122174).
 
 // Data in this file was created by referencing:
 //  USB HID Usage Tables (v1.11) 27 June 2001
@@ -379,3 +379,13 @@ const usb_keymap usb_keycode_map[] = {
   USB_KEYMAP(0x0c028b, 0x00f1, 0x0000, 0xffff),  // AC_ForwardMsg (MailForward)
   USB_KEYMAP(0x0c028c, 0x00ef, 0x0000, 0xffff),  // AC_Send
 };
+
+const uint16_t kInvalidKeycode = usb_keycode_map[0].native_keycode;
+
+static uint16 UsbKeycodeToNativeKeycode(uint32_t usb_keycode) {
+  for (size_t i = 0; i < arraysize(usb_keycode_map); ++i) {
+    if (usb_keycode_map[i].usb_keycode == usb_keycode)
+      return usb_keycode_map[i].native_keycode;
+  }
+  return kInvalidKeycode;
+}

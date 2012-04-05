@@ -19,14 +19,14 @@ namespace remoting {
 
 namespace {
 
-// USB to Mac keycode mapping table.
-#define USB_KEYMAP(usb, xkb, win, mac) {usb, mac}
-#include "remoting/host/usb_keycode_map.h"
-#define INVALID_KEYCODE 0xffff
-
 using protocol::ClipboardEvent;
 using protocol::KeyEvent;
 using protocol::MouseEvent;
+
+// USB to Mac keycode mapping table.
+#define USB_KEYMAP(usb, xkb, win, mac) {usb, mac}
+#include "remoting/host/usb_keycode_map.h"
+#undef USB_KEYMAP
 
 // A class to generate events on Mac.
 class EventExecutorMac : public EventExecutor {
@@ -71,35 +71,35 @@ EventExecutorMac::EventExecutorMac(
 // keycodes.
 const int kUsVkeyToKeysym[256] = {
   // 0x00 - 0x07
-  INVALID_KEYCODE, INVALID_KEYCODE, INVALID_KEYCODE, INVALID_KEYCODE,
+  kInvalidKeycode, kInvalidKeycode, kInvalidKeycode, kInvalidKeycode,
   // 0x04 - 0x07
-  INVALID_KEYCODE, INVALID_KEYCODE, INVALID_KEYCODE, INVALID_KEYCODE,
+  kInvalidKeycode, kInvalidKeycode, kInvalidKeycode, kInvalidKeycode,
   // 0x08 - 0x0B
-  kVK_Delete, kVK_Tab, INVALID_KEYCODE, INVALID_KEYCODE,
+  kVK_Delete, kVK_Tab, kInvalidKeycode, kInvalidKeycode,
   // 0x0C - 0x0F
-  INVALID_KEYCODE, kVK_Return, INVALID_KEYCODE, INVALID_KEYCODE,
+  kInvalidKeycode, kVK_Return, kInvalidKeycode, kInvalidKeycode,
 
   // 0x10 - 0x13
-  kVK_Shift, kVK_Control, kVK_Option, INVALID_KEYCODE,
+  kVK_Shift, kVK_Control, kVK_Option, kInvalidKeycode,
   // 0x14 - 0x17
-  kVK_CapsLock, kVK_JIS_Kana, /* VKEY_HANGUL */ INVALID_KEYCODE,
-  /* VKEY_JUNJA */ INVALID_KEYCODE,
+  kVK_CapsLock, kVK_JIS_Kana, /* VKEY_HANGUL */ kInvalidKeycode,
+  /* VKEY_JUNJA */ kInvalidKeycode,
   // 0x18 - 0x1B
-  /* VKEY_FINAL */ INVALID_KEYCODE, /* VKEY_Kanji */ INVALID_KEYCODE,
-  INVALID_KEYCODE, kVK_Escape,
+  /* VKEY_FINAL */ kInvalidKeycode, /* VKEY_Kanji */ kInvalidKeycode,
+  kInvalidKeycode, kVK_Escape,
   // 0x1C - 0x1F
-  /* VKEY_CONVERT */ INVALID_KEYCODE, /* VKEY_NONCONVERT */ INVALID_KEYCODE,
-  /* VKEY_ACCEPT */ INVALID_KEYCODE, /* VKEY_MODECHANGE */ INVALID_KEYCODE,
+  /* VKEY_CONVERT */ kInvalidKeycode, /* VKEY_NONCONVERT */ kInvalidKeycode,
+  /* VKEY_ACCEPT */ kInvalidKeycode, /* VKEY_MODECHANGE */ kInvalidKeycode,
 
   // 0x20 - 0x23
   kVK_Space, kVK_PageUp, kVK_PageDown, kVK_End,
   // 0x24 - 0x27
   kVK_Home, kVK_LeftArrow, kVK_UpArrow, kVK_RightArrow,
   // 0x28 - 0x2B
-  kVK_DownArrow, /* VKEY_SELECT */ INVALID_KEYCODE,
-  /* VKEY_PRINT */ INVALID_KEYCODE, /* VKEY_EXECUTE */ INVALID_KEYCODE,
+  kVK_DownArrow, /* VKEY_SELECT */ kInvalidKeycode,
+  /* VKEY_PRINT */ kInvalidKeycode, /* VKEY_EXECUTE */ kInvalidKeycode,
   // 0x2C - 0x2F
-  /* VKEY_SNAPSHOT */ INVALID_KEYCODE, /* XK_INSERT */ INVALID_KEYCODE,
+  /* VKEY_SNAPSHOT */ kInvalidKeycode, /* XK_INSERT */ kInvalidKeycode,
   kVK_ForwardDelete, kVK_Help,
 
   // 0x30 - 0x33
@@ -107,12 +107,12 @@ const int kUsVkeyToKeysym[256] = {
   // 0x34 - 0x37
   kVK_ANSI_4, kVK_ANSI_5, kVK_ANSI_6, kVK_ANSI_7,
   // 0x38 - 0x3B
-  kVK_ANSI_8, kVK_ANSI_9, INVALID_KEYCODE, INVALID_KEYCODE,
+  kVK_ANSI_8, kVK_ANSI_9, kInvalidKeycode, kInvalidKeycode,
   // 0x3C - 0x3F
-  INVALID_KEYCODE, INVALID_KEYCODE, INVALID_KEYCODE, INVALID_KEYCODE,
+  kInvalidKeycode, kInvalidKeycode, kInvalidKeycode, kInvalidKeycode,
 
   // 0x40 - 0x43
-  INVALID_KEYCODE, kVK_ANSI_A, kVK_ANSI_B, kVK_ANSI_C,
+  kInvalidKeycode, kVK_ANSI_A, kVK_ANSI_B, kVK_ANSI_C,
   // 0x44 - 0x47
   kVK_ANSI_D, kVK_ANSI_E, kVK_ANSI_F, kVK_ANSI_G,
   // 0x48 - 0x4B
@@ -127,7 +127,7 @@ const int kUsVkeyToKeysym[256] = {
   // 0x58 - 0x5B
   kVK_ANSI_X, kVK_ANSI_Y, kVK_ANSI_Z, kVK_Command,
   // 0x5C - 0x5F
-  kVK_Command, kVK_Command, INVALID_KEYCODE, /* VKEY_SLEEP */ INVALID_KEYCODE,
+  kVK_Command, kVK_Command, kInvalidKeycode, /* VKEY_SLEEP */ kInvalidKeycode,
 
   // 0x60 - 0x63
   kVK_ANSI_Keypad0, kVK_ANSI_Keypad1, kVK_ANSI_Keypad2, kVK_ANSI_Keypad3,
@@ -137,7 +137,7 @@ const int kUsVkeyToKeysym[256] = {
   kVK_ANSI_Keypad8, kVK_ANSI_Keypad9, kVK_ANSI_KeypadMultiply,
   kVK_ANSI_KeypadPlus,
   // 0x6C - 0x6F
-  /* VKEY_SEPARATOR */ INVALID_KEYCODE, kVK_ANSI_KeypadMinus,
+  /* VKEY_SEPARATOR */ kInvalidKeycode, kVK_ANSI_KeypadMinus,
   kVK_ANSI_KeypadDecimal, kVK_ANSI_KeypadDivide,
 
   // 0x70 - 0x73
@@ -152,128 +152,123 @@ const int kUsVkeyToKeysym[256] = {
   // 0x80 - 0x83
   kVK_F17, kVK_F18, kVK_F19, kVK_F20,
   // 0x84 - 0x87
-  /* VKEY_F21 */ INVALID_KEYCODE, /* VKEY_F22 */ INVALID_KEYCODE,
-  /* VKEY_F23 */ INVALID_KEYCODE, /* XKEY_F24 */ INVALID_KEYCODE,
+  /* VKEY_F21 */ kInvalidKeycode, /* VKEY_F22 */ kInvalidKeycode,
+  /* VKEY_F23 */ kInvalidKeycode, /* XKEY_F24 */ kInvalidKeycode,
   // 0x88 - 0x8B
-  INVALID_KEYCODE, INVALID_KEYCODE, INVALID_KEYCODE, INVALID_KEYCODE,
+  kInvalidKeycode, kInvalidKeycode, kInvalidKeycode, kInvalidKeycode,
   // 0x8C - 0x8F
-  INVALID_KEYCODE, INVALID_KEYCODE, INVALID_KEYCODE, INVALID_KEYCODE,
+  kInvalidKeycode, kInvalidKeycode, kInvalidKeycode, kInvalidKeycode,
 
   // 0x90 - 0x93
-  /* VKEY_NUMLOCK */ INVALID_KEYCODE, /* VKEY_SCROLL */ INVALID_KEYCODE,
-  INVALID_KEYCODE, INVALID_KEYCODE,
+  /* VKEY_NUMLOCK */ kInvalidKeycode, /* VKEY_SCROLL */ kInvalidKeycode,
+  kInvalidKeycode, kInvalidKeycode,
   // 0x94 - 0x97
-  INVALID_KEYCODE, INVALID_KEYCODE, INVALID_KEYCODE, INVALID_KEYCODE,
+  kInvalidKeycode, kInvalidKeycode, kInvalidKeycode, kInvalidKeycode,
   // 0x98 - 0x9B
-  INVALID_KEYCODE, INVALID_KEYCODE, INVALID_KEYCODE, INVALID_KEYCODE,
+  kInvalidKeycode, kInvalidKeycode, kInvalidKeycode, kInvalidKeycode,
   // 0x9C - 0x9F
-  INVALID_KEYCODE, INVALID_KEYCODE, INVALID_KEYCODE, INVALID_KEYCODE,
+  kInvalidKeycode, kInvalidKeycode, kInvalidKeycode, kInvalidKeycode,
 
   // 0xA0 - 0xA3
   kVK_Shift, kVK_RightShift, kVK_Control, kVK_RightControl,
   // 0xA4 - 0xA7
   kVK_Option, kVK_RightOption,
-  /* XF86kVK_Back */ INVALID_KEYCODE, /* XF86kVK_Forward */ INVALID_KEYCODE,
+  /* XF86kVK_Back */ kInvalidKeycode, /* XF86kVK_Forward */ kInvalidKeycode,
   // 0xA8 - 0xAB
-  /* XF86kVK_Refresh */ INVALID_KEYCODE, /* XF86kVK_Stop */ INVALID_KEYCODE,
-  /* XF86kVK_Search */ INVALID_KEYCODE,
-  /* XF86kVK_Favorites */ INVALID_KEYCODE,
+  /* XF86kVK_Refresh */ kInvalidKeycode, /* XF86kVK_Stop */ kInvalidKeycode,
+  /* XF86kVK_Search */ kInvalidKeycode,
+  /* XF86kVK_Favorites */ kInvalidKeycode,
   // 0xAC - 0xAF
-  /* XF86kVK_HomePage */ INVALID_KEYCODE, kVK_Mute, kVK_VolumeDown,
+  /* XF86kVK_HomePage */ kInvalidKeycode, kVK_Mute, kVK_VolumeDown,
   kVK_VolumeUp,
 
   // 0xB0 - 0xB3
-  /* XF86kVK_AudioNext */ INVALID_KEYCODE,
-  /* XF86kVK_AudioPrev */ INVALID_KEYCODE,
-  /* XF86kVK_AudioStop */ INVALID_KEYCODE,
-  /* XF86kVK_AudioPause */ INVALID_KEYCODE,
+  /* XF86kVK_AudioNext */ kInvalidKeycode,
+  /* XF86kVK_AudioPrev */ kInvalidKeycode,
+  /* XF86kVK_AudioStop */ kInvalidKeycode,
+  /* XF86kVK_AudioPause */ kInvalidKeycode,
   // 0xB4 - 0xB7
-  /* XF86kVK_Mail */ INVALID_KEYCODE, /* XF86kVK_AudioMedia */ INVALID_KEYCODE,
-  /* XF86kVK_Launch0 */ INVALID_KEYCODE, /* XF86kVK_Launch1 */ INVALID_KEYCODE,
+  /* XF86kVK_Mail */ kInvalidKeycode, /* XF86kVK_AudioMedia */ kInvalidKeycode,
+  /* XF86kVK_Launch0 */ kInvalidKeycode, /* XF86kVK_Launch1 */ kInvalidKeycode,
   // 0xB8 - 0xBB
-  INVALID_KEYCODE, INVALID_KEYCODE, kVK_ANSI_Semicolon, kVK_ANSI_Equal,
+  kInvalidKeycode, kInvalidKeycode, kVK_ANSI_Semicolon, kVK_ANSI_Equal,
   // 0xBC - 0xBF
   kVK_ANSI_Comma, kVK_ANSI_Minus, kVK_ANSI_Period, kVK_ANSI_Slash,
 
   // 0xC0 - 0xC3
-  kVK_ANSI_Grave, INVALID_KEYCODE, INVALID_KEYCODE, INVALID_KEYCODE,
+  kVK_ANSI_Grave, kInvalidKeycode, kInvalidKeycode, kInvalidKeycode,
   // 0xC4 - 0xC7
-  INVALID_KEYCODE, INVALID_KEYCODE, INVALID_KEYCODE, INVALID_KEYCODE,
+  kInvalidKeycode, kInvalidKeycode, kInvalidKeycode, kInvalidKeycode,
   // 0xC8 - 0xCB
-  INVALID_KEYCODE, INVALID_KEYCODE, INVALID_KEYCODE, INVALID_KEYCODE,
+  kInvalidKeycode, kInvalidKeycode, kInvalidKeycode, kInvalidKeycode,
   // 0xCC - 0xCF
-  INVALID_KEYCODE, INVALID_KEYCODE, INVALID_KEYCODE, INVALID_KEYCODE,
+  kInvalidKeycode, kInvalidKeycode, kInvalidKeycode, kInvalidKeycode,
 
   // 0xD0 - 0xD3
-  INVALID_KEYCODE, INVALID_KEYCODE, INVALID_KEYCODE, INVALID_KEYCODE,
+  kInvalidKeycode, kInvalidKeycode, kInvalidKeycode, kInvalidKeycode,
   // 0xD4 - 0xD7
-  INVALID_KEYCODE, INVALID_KEYCODE, INVALID_KEYCODE, INVALID_KEYCODE,
+  kInvalidKeycode, kInvalidKeycode, kInvalidKeycode, kInvalidKeycode,
   // 0xD8 - 0xDB
-  INVALID_KEYCODE, INVALID_KEYCODE, INVALID_KEYCODE, kVK_ANSI_LeftBracket,
+  kInvalidKeycode, kInvalidKeycode, kInvalidKeycode, kVK_ANSI_LeftBracket,
   // 0xDC - 0xDF
   kVK_ANSI_Backslash, kVK_ANSI_RightBracket, kVK_ANSI_Quote,
-  /* VKEY_OEM_8 */ INVALID_KEYCODE,
+  /* VKEY_OEM_8 */ kInvalidKeycode,
 
   // 0xE0 - 0xE3
-  INVALID_KEYCODE, INVALID_KEYCODE, /* VKEY_OEM_102 */ INVALID_KEYCODE,
-  INVALID_KEYCODE,
+  kInvalidKeycode, kInvalidKeycode, /* VKEY_OEM_102 */ kInvalidKeycode,
+  kInvalidKeycode,
   // 0xE4 - 0xE7
-  INVALID_KEYCODE, /* VKEY_PROCESSKEY */ INVALID_KEYCODE, INVALID_KEYCODE,
-  /* VKEY_PACKET */ INVALID_KEYCODE,
+  kInvalidKeycode, /* VKEY_PROCESSKEY */ kInvalidKeycode, kInvalidKeycode,
+  /* VKEY_PACKET */ kInvalidKeycode,
   // 0xE8 - 0xEB
-  INVALID_KEYCODE, INVALID_KEYCODE, INVALID_KEYCODE, INVALID_KEYCODE,
+  kInvalidKeycode, kInvalidKeycode, kInvalidKeycode, kInvalidKeycode,
   // 0xEC - 0xEF
-  INVALID_KEYCODE, INVALID_KEYCODE, INVALID_KEYCODE, INVALID_KEYCODE,
+  kInvalidKeycode, kInvalidKeycode, kInvalidKeycode, kInvalidKeycode,
 
   // 0xF0 - 0xF3
-  INVALID_KEYCODE, INVALID_KEYCODE, INVALID_KEYCODE, INVALID_KEYCODE,
+  kInvalidKeycode, kInvalidKeycode, kInvalidKeycode, kInvalidKeycode,
   // 0xF4 - 0xF7
-  INVALID_KEYCODE, INVALID_KEYCODE, /* VKEY_ATTN */ INVALID_KEYCODE,
-  /* VKEY_CRSEL */ INVALID_KEYCODE,
+  kInvalidKeycode, kInvalidKeycode, /* VKEY_ATTN */ kInvalidKeycode,
+  /* VKEY_CRSEL */ kInvalidKeycode,
   // 0xF8 - 0xFB
-  /* VKEY_EXSEL */ INVALID_KEYCODE, /* VKEY_EREOF */ INVALID_KEYCODE,
-  /* VKEY_PLAY */ INVALID_KEYCODE, /* VKEY_ZOOM */ INVALID_KEYCODE,
+  /* VKEY_EXSEL */ kInvalidKeycode, /* VKEY_EREOF */ kInvalidKeycode,
+  /* VKEY_PLAY */ kInvalidKeycode, /* VKEY_ZOOM */ kInvalidKeycode,
   // 0xFC - 0xFF
-  /* VKEY_NONAME */ INVALID_KEYCODE, /* VKEY_PA1 */ INVALID_KEYCODE,
-  /* VKEY_OEM_CLEAR */ INVALID_KEYCODE, INVALID_KEYCODE
+  /* VKEY_NONAME */ kInvalidKeycode, /* VKEY_PA1 */ kInvalidKeycode,
+  /* VKEY_OEM_CLEAR */ kInvalidKeycode, kInvalidKeycode
 };
-
-uint16_t UsbKeycodeToMacKeycode(uint32_t usb_keycode) {
-  if (usb_keycode == 0)
-    return INVALID_KEYCODE;
-
-  for (uint i = 0; i < arraysize(usb_keycode_map); i++) {
-    if (usb_keycode_map[i].usb_keycode == usb_keycode)
-      return usb_keycode_map[i].native_keycode;
-  }
-
-  return INVALID_KEYCODE;
-}
 
 void EventExecutorMac::InjectClipboardEvent(const ClipboardEvent& event) {
   // TODO(simonmorris): Implement clipboard injection.
 }
 
 void EventExecutorMac::InjectKeyEvent(const KeyEvent& event) {
-  int keycode = 0;
-  if (event.has_usb_keycode() && event.usb_keycode() != INVALID_KEYCODE) {
-    keycode = UsbKeycodeToMacKeycode(event.usb_keycode());
-    VLOG(1) << "USB keycode: " << std::hex << event.usb_keycode()
-            << " to Mac keycode: " << keycode << std::dec;
-  } else {
+  // HostEventDispatcher should filter events missing the pressed field.
+  DCHECK(event.has_pressed());
+
+  int keycode = kInvalidKeycode;
+  if (event.has_usb_keycode()) {
+    keycode = UsbKeycodeToNativeKeycode(event.usb_keycode());
+    VLOG(3) << "Converting USB keycode: " << std::hex << event.usb_keycode()
+            << " to keycode: " << keycode << std::dec;
+  } else if (event.has_keycode()) {
     int win_keycode = event.keycode();
     if (win_keycode >= 0 && win_keycode < 256) {
       keycode = kUsVkeyToKeysym[win_keycode];
     }
+    VLOG(3) << "Converting VKEY: " << std::hex << event.keycode()
+            << " to keycode: " << keycode << std::dec;
   }
 
-  if (keycode != INVALID_KEYCODE) {
-    // We use the deprecated event injection API because the new one doesn't
-    // work with switched-out sessions (curtain mode).
-    CGError error = CGPostKeyboardEvent(0, keycode, event.pressed());
-    if (error != kCGErrorSuccess) {
-      LOG(WARNING) << "CGPostKeyboardEvent error " << error;
-    }
+  // If we couldn't determine the Mac virtual key code then ignore the event.
+  if (keycode == kInvalidKeycode)
+    return;
+
+  // We use the deprecated event injection API because the new one doesn't
+  // work with switched-out sessions (curtain mode).
+  CGError error = CGPostKeyboardEvent(0, keycode, event.pressed());
+  if (error != kCGErrorSuccess) {
+    LOG(WARNING) << "CGPostKeyboardEvent error " << error;
   }
 }
 
