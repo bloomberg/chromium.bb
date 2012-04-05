@@ -104,7 +104,8 @@ void AudioDeviceThread::Thread::Start() {
   // This reference will be released when the thread exists.
   AddRef();
 
-  PlatformThread::Create(0, this, &thread_);
+  PlatformThread::CreateWithPriority(0, this, &thread_,
+                                     base::kThreadPriority_RealtimeAudio);
   CHECK(thread_ != base::kNullThreadHandle);
 }
 
@@ -137,8 +138,6 @@ void AudioDeviceThread::Thread::ThreadMain() {
   // that might touch singletons and the lifetime of the callback is controlled
   // by another thread on which singleton access is OK as well.
   base::ThreadRestrictions::SetSingletonAllowed(true);
-  PlatformThread::SetThreadPriority(thread_,
-      base::kThreadPriority_RealtimeAudio);
 
   {  // NOLINT
     base::AutoLock auto_lock(callback_lock_);
