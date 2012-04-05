@@ -231,15 +231,22 @@ class MsvsSettings(object):
     """Returns the flags that need to be added to .cc compilations."""
     return ['/TP']
 
-  def GetLibFlags(self, config, spec):
+  def _GetAdditionalLibraryDirectories(self, root, config, gyp_to_build_path):
+    """Get and normalize the list of paths in AdditionalLibraryDirectories
+    setting."""
+    libpaths = self._Setting((root, 'AdditionalLibraryDirectories'),
+                             config, default=[])
+    libpaths = [os.path.normpath(gyp_to_build_path(self.ConvertVSMacros(p)))
+                for p in libpaths]
+    return ['/LIBPATH:"' + p + '"' for p in libpaths]
+
+  def GetLibFlags(self, config, gyp_to_build_path):
     """Returns the flags that need to be added to lib commands."""
     libflags = []
     lib = self._GetWrapper(self, self.msvs_settings[config],
                           'VCLibrarianTool', append=libflags)
-    libpaths = self._Setting(
-        ('VCLibrarianTool', 'AdditionalLibraryDirectories'), config, default=[])
-    libpaths = [os.path.normpath(self._ConvertVSMacros(p)) for p in libpaths]
-    libflags.extend(['/LIBPATH:"' + p + '"' for p in libpaths])
+    libflags.extend(self._GetAdditionalLibraryDirectories(
+        'VCLibrarianTool', config, gyp_to_build_path))
     lib('AdditionalOptions')
     return libflags
 
@@ -262,7 +269,8 @@ class MsvsSettings(object):
     self._GetDefFileAsLdflags(self.spec, ldflags, gyp_to_build_path)
     ld('GenerateDebugInformation', map={'true': '/DEBUG'})
     ld('TargetMachine', map={'1': 'X86', '17': 'X64'}, prefix='/MACHINE:')
-    ld('AdditionalLibraryDirectories', prefix='/LIBPATH:')
+    ldflags.extend(self._GetAdditionalLibraryDirectories(
+        'VCLinkerTool', config, gyp_to_build_path))
     ld('DelayLoadDLLs', prefix='/DELAYLOAD:')
     out = self._Setting(('VCLinkerTool', 'OutputFile'), config, prefix='/OUT:')
     if out:

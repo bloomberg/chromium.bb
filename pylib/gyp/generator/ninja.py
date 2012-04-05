@@ -771,7 +771,8 @@ class NinjaWriter:
           self.ExpandSpecial(generator_default_variables['PRODUCT_DIR']),
           self.GypPathToNinja)
     elif self.flavor == 'win':
-      libflags = self.msvs_settings.GetLibFlags(config_name, spec)
+      libflags = self.msvs_settings.GetLibFlags(config_name,
+                                                self.GypPathToNinja)
       self.WriteVariableList(
           'libflags', gyp.common.uniquer(map(self.ExpandSpecial, libflags)))
       ldflags = self.msvs_settings.GetLdflags(config_name,
