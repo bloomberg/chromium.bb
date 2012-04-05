@@ -217,6 +217,14 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
 
     When using the named interface, it connects to an existing browser
     instance.
+
+    On ChromeOS, a browser showing the login window is started. Tests can
+    initiate a user session by calling Login() or LoginAsGuest(). Cryptohome
+    vaults or flimflam profiles left over by previous tests can be cleared by
+    calling RemoveAllCryptohomeVaults() respectively CleanFlimflamDirs() before
+    logging in to improve isolation. Note that clearing flimflam profiles
+    requires a flimflam restart, briefly taking down network connectivity and
+    slowing down the test. This should be done for tests that use flimflam only.
     """
     self.__SetUp()
 
@@ -419,24 +427,19 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     """
     profile_dir = '/home/chronos/user'
     for item in os.listdir(profile_dir):
-
-      # We should not delete the flimflam directory because it puts
-      # flimflam in a weird state if the device is already logged in.
-      # However, deleting its contents is okay.
-      if item == 'flimflam' and os.path.isdir(os.path.join(profile_dir,
-                                              'flimflam')):
-        PyUITest.RunSuperuserActionOnChromeOS('CleanFlimflamDir')
-        continue
-
       # Deleting .pki causes stateful partition to get erased.
-      if item != 'log' and not item.startswith('.'):
-        pyauto_utils.RemovePath(os.path.join(profile_dir, item))
+      if item not in ['log', 'flimflam'] and not item.startswith('.'):
+         pyauto_utils.RemovePath(os.path.join(profile_dir, item))
 
     chronos_dir = '/home/chronos'
     for item in os.listdir(chronos_dir):
       if item != 'user' and not item.startswith('.'):
         pyauto_utils.RemovePath(os.path.join(chronos_dir, item))
 
+  @staticmethod
+  def CleanupFlimflamDirsOnChromeOS():
+    """Clean the contents of flimflam profiles and restart flimflam."""
+    PyUITest.RunSuperuserActionOnChromeOS('CleanFlimflamDirs')
 
   @staticmethod
   def _IsInodeNew(path, old_inode):

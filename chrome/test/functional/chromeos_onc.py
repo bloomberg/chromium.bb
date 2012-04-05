@@ -24,7 +24,7 @@ class ChromeosONC(policy_base.PolicyTestBase):
 
   def setUp(self):
     policy_base.PolicyTestBase.setUp(self)
-    pyauto.PyUITest.RunSuperuserActionOnChromeOS('CleanFlimflamDir')
+    self.CleanupFlimflamDirsOnChromeOS()
 
   def _ReadONCFileAndSet(self, filename):
     """Reads the specified ONC file and sends it as a policy.

@@ -137,6 +137,7 @@ class PyNetworkUITest(pyauto.PyUITest):
     self._PushServiceOrder('vpn,bluetooth,wifi,wimax,cellular,ethernet')
     self._ParseDefaultRoutingTable()
     pyauto.PyUITest.setUp(self)
+    self.CleanupFlimflamDirsOnChromeOS()
     self.ForgetAllRememberedNetworks()
     self._wifi_power_strip = None
 

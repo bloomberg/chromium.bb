@@ -9,13 +9,17 @@ Needs to be run with superuser privileges, typically using the
 suid_python binary.
 
 Usage:
-  sudo python suid_actions.py --action=clean_flimflam
+  sudo python suid_actions.py --action=CleanFlimflamDirs
 """
 
 import optparse
 import os
 import shutil
 import sys
+
+
+sys.path.append('/usr/local')  # to import autotest libs.
+from autotest.cros import cryptohome
 
 
 class SuidAction(object):
@@ -39,23 +43,27 @@ class SuidAction(object):
     return 0
 
   ## Actions ##
-  def CleanFlimflamDir(self):
+  def CleanFlimflamDirs(self):
     """Clean the contents of all flimflam profiles."""
-    flimflam_dir = ['/home/chronos/user/flimflam',
-                    '/var/cache/flimflam']
+    flimflam_dirs = ['/home/chronos/user/flimflam',
+                     '/var/cache/flimflam']
     os.system('stop flimflam')
     try:
-      for profile in flimflam_dir:
-        if not os.path.exists(profile):
+      for flimflam_dir in flimflam_dirs:
+        if not os.path.exists(flimflam_dir):
           continue
-        for item in os.listdir(profile):
-          path = os.path.join(profile, item)
+        for item in os.listdir(flimflam_dir):
+          path = os.path.join(flimflam_dir, item)
           if os.path.isdir(path):
             shutil.rmtree(path)
           else:
             os.remove(path)
     finally:
       os.system('start flimflam')
+
+  def RemoveAllCryptohomeVaults(self):
+    """Remove any existing cryptohome vaults."""
+    cryptohome.remove_all_vaults()
 
 
 if __name__ == '__main__':
