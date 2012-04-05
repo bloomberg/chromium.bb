@@ -14,6 +14,12 @@ void BrowserList::HandleAppExitingForPlatform() {
       switches::kDisableZeroBrowsersOpenForTests)) {
     // App is exiting, call EndKeepAlive() on behalf of Aura Shell.
     BrowserList::EndKeepAlive();
+    // Make sure we have notified the session manager that we are exiting.
+    // This might be called from FastShutdown() or CloseAllBrowsers(), but not
+    // if something prevents a browser from closing before SetTryingToQuit()
+    // gets called (e.g. browser->TabsNeedBeforeUnloadFired() is true).
+    // NotifyAndTerminate does nothing if called more than once.
+    BrowserList::NotifyAndTerminate(true);
   }
 #endif // OS_CHROMEOS
 }
