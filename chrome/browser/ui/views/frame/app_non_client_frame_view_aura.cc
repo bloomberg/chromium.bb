@@ -181,8 +181,10 @@ AppNonClientFrameViewAura::AppNonClientFrameViewAura(
 }
 
 AppNonClientFrameViewAura::~AppNonClientFrameViewAura() {
-  if (control_widget_)
+  if (control_widget_) {
+    control_widget_->RemoveObserver(this);
     control_widget_->Close();
+  }
   mouse_watcher_.Stop();
 }
 
