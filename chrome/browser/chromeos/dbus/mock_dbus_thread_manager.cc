@@ -12,7 +12,6 @@
 #include "chrome/browser/chromeos/dbus/mock_cashew_client.h"
 #include "chrome/browser/chromeos/dbus/mock_cros_disks_client.h"
 #include "chrome/browser/chromeos/dbus/mock_cryptohome_client.h"
-#include "chrome/browser/chromeos/dbus/mock_debug_daemon_client.h"
 #include "chrome/browser/chromeos/dbus/mock_flimflam_ipconfig_client.h"
 #include "chrome/browser/chromeos/dbus/mock_flimflam_network_client.h"
 #include "chrome/browser/chromeos/dbus/mock_flimflam_profile_client.h"
@@ -38,7 +37,6 @@ MockDBusThreadManager::MockDBusThreadManager()
       mock_cashew_client_(new MockCashewClient),
       mock_cros_disks_client_(new MockCrosDisksClient),
       mock_cryptohome_client_(new MockCryptohomeClient),
-      mock_debugdaemon_client_(new MockDebugDaemonClient),
       mock_flimflam_ipconfig_client_(new MockFlimflamIPConfigClient),
       mock_flimflam_network_client_(new MockFlimflamNetworkClient),
       mock_flimflam_profile_client_(new MockFlimflamProfileClient),
@@ -64,8 +62,6 @@ MockDBusThreadManager::MockDBusThreadManager()
       .WillRepeatedly(Return(mock_cros_disks_client()));
   EXPECT_CALL(*this, GetCryptohomeClient())
       .WillRepeatedly(Return(mock_cryptohome_client()));
-  EXPECT_CALL(*this, GetDebugDaemonClient())
-      .WillRepeatedly(Return(mock_debugdaemon_client()));
   EXPECT_CALL(*this, GetFlimflamIPConfigClient())
       .WillRepeatedly(Return(mock_flimflam_ipconfig_client()));
   EXPECT_CALL(*this, GetFlimflamNetworkClient())

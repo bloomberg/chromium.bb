@@ -15,7 +15,6 @@
 #include "chrome/browser/chromeos/dbus/dbus_client_implementation_type.h"
 #include "chrome/browser/chromeos/dbus/cros_disks_client.h"
 #include "chrome/browser/chromeos/dbus/cryptohome_client.h"
-#include "chrome/browser/chromeos/dbus/debug_daemon_client.h"
 #include "chrome/browser/chromeos/dbus/flimflam_ipconfig_client.h"
 #include "chrome/browser/chromeos/dbus/flimflam_network_client.h"
 #include "chrome/browser/chromeos/dbus/flimflam_profile_client.h"
@@ -73,9 +72,6 @@ class DBusThreadManagerImpl : public DBusThreadManager {
     // Create the Cryptohome client.
     cryptohome_client_.reset(
         CryptohomeClient::Create(client_type, system_bus_.get()));
-    // Create the debugdaemon client.
-    debugdaemon_client_.reset(
-        DebugDaemonClient::Create(client_type, system_bus_.get()));
     // Create the Flimflam IPConfig client.
     flimflam_ipconfig_client_.reset(
         FlimflamIPConfigClient::Create(client_type, system_bus_.get()));
@@ -160,11 +156,6 @@ class DBusThreadManagerImpl : public DBusThreadManager {
   }
 
   // DBusThreadManager override.
-  virtual DebugDaemonClient* GetDebugDaemonClient() OVERRIDE {
-    return debugdaemon_client_.get();
-  }
-
-  // DBusThreadManager override.
   virtual FlimflamIPConfigClient* GetFlimflamIPConfigClient() OVERRIDE {
     return flimflam_ipconfig_client_.get();
   }
@@ -218,7 +209,6 @@ class DBusThreadManagerImpl : public DBusThreadManager {
   scoped_ptr<CashewClient> cashew_client_;
   scoped_ptr<CrosDisksClient> cros_disks_client_;
   scoped_ptr<CryptohomeClient> cryptohome_client_;
-  scoped_ptr<DebugDaemonClient> debugdaemon_client_;
   scoped_ptr<FlimflamIPConfigClient> flimflam_ipconfig_client_;
   scoped_ptr<FlimflamNetworkClient> flimflam_network_client_;
   scoped_ptr<FlimflamProfileClient> flimflam_profile_client_;

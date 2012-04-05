@@ -28,7 +28,6 @@ class BluetoothNodeClient;
 class CashewClient;
 class CrosDisksClient;
 class CryptohomeClient;
-class DebugDaemonClient;
 class FlimflamIPConfigClient;
 class FlimflamNetworkClient;
 class FlimflamProfileClient;
@@ -118,11 +117,6 @@ class DBusThreadManager {
   // Do not cache this pointer and use it after DBusThreadManager is shut
   // down.
   virtual CryptohomeClient* GetCryptohomeClient() = 0;
-
-  // Returns the DebugDaemon client, owned by DBusThreadManager.
-  // Do not cache this pointer and use it after DBusThreadManager is shut
-  // down.
-  virtual DebugDaemonClient* GetDebugDaemonClient() = 0;
 
   // Returns the Flimflam IPConfig client, owned by DBusThreadManager.
   // Do not cache this pointer and use it after DBusThreadManager is shut
