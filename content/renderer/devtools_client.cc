@@ -79,11 +79,6 @@ void DevToolsClient::openInNewTab(const WebKit::WebString& url) {
                                         url.utf8()));
 }
 
-void DevToolsClient::saveAs(const WebKit::WebString& url,
-                            const WebKit::WebString& content) {
-  save(url, content, true);
-}
-
 void DevToolsClient::save(const WebKit::WebString& url,
                           const WebKit::WebString& content,
                           bool save_as) {

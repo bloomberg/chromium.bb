@@ -421,7 +421,7 @@ bool DevToolsWindow::IsInspectedBrowserPopupOrPanel() {
 
 void DevToolsWindow::UpdateFrontendAttachedState() {
   base::FundamentalValue docked(docked_);
-  CallClientFunction("WebInspector.setAttachedWindow", &docked);
+  CallClientFunction("InspectorFrontendAPI.setAttachedWindow", &docked);
 }
 
 
@@ -513,10 +513,10 @@ void DevToolsWindow::DoAction() {
   // TODO: these messages should be pushed through the WebKit API instead.
   switch (action_on_load_) {
     case DEVTOOLS_TOGGLE_ACTION_SHOW_CONSOLE:
-      CallClientFunction("WebInspector.showConsole", NULL);
+      CallClientFunction("InspectorFrontendAPI.showConsole", NULL);
       break;
     case DEVTOOLS_TOGGLE_ACTION_INSPECT:
-      CallClientFunction("WebInspector.toggleSearchingForNode", NULL);
+      CallClientFunction("InspectorFrontendAPI.enterInspectElementMode", NULL);
     case DEVTOOLS_TOGGLE_ACTION_NONE:
       // Do nothing.
       break;
@@ -573,7 +573,7 @@ void DevToolsWindow::UpdateTheme() {
   SkColor color_tab_text =
       tp->GetColor(ThemeService::COLOR_BOOKMARK_TEXT);
   std::string command = StringPrintf(
-      "WebInspector.setToolbarColors(\"%s\", \"%s\")",
+      "InspectorFrontendAPI.setToolbarColors(\"%s\", \"%s\")",
       SkColorToRGBAString(color_toolbar).c_str(),
       SkColorToRGBAString(color_tab_text).c_str());
   tab_contents_->web_contents()->GetRenderViewHost()->
@@ -741,7 +741,7 @@ void DevToolsWindow::SaveToFile(const std::string& url,
 
 void DevToolsWindow::FileSavedAs(const std::string& url, const FilePath& path) {
   StringValue url_value(url);
-  CallClientFunction("WebInspector.savedURL", &url_value);
+  CallClientFunction("InspectorFrontendAPI.savedURL", &url_value);
 }
 
 content::JavaScriptDialogCreator* DevToolsWindow::GetJavaScriptDialogCreator() {
