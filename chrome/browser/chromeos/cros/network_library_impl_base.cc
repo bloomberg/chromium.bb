@@ -1064,6 +1064,18 @@ bool NetworkLibraryImplBase::LoadOncNetworks(const std::string& onc_blob,
         *error = parser.parse_error();
       return false;
     }
+
+    // Disallow anything but WiFi and ethernet for device-level policy (which
+    // corresponds to shared networks). See also http://crosbug.com/28741.
+    if (source == NetworkUIData::ONC_SOURCE_DEVICE_POLICY &&
+        network->type() != TYPE_WIFI &&
+        network->type() != TYPE_ETHERNET) {
+      LOG(WARNING) << "Ignoring device-level policy-pushed network of type "
+                   << network->type();
+      delete network;
+      continue;
+    }
+
     networks.push_back(network);
     added_onc_map[network->unique_id()] = parser.GetNetworkConfig(i);
   }
