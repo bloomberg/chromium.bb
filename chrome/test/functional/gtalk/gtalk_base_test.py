@@ -38,7 +38,8 @@ class GTalkBaseTest(pyauto.PyUITest):
   def InstallGTalkExtension(self):
     """Download and install the GTalk extension."""
     extension_path = os.path.abspath(
-        os.path.join(self.DataDir(), 'extensions', 'gtalk', 'gtalk.crx'))
+        os.path.join(self.DataDir(), 'extensions', 'gtalk',
+                     'chat_for_google.crx'))
     self.assertTrue(
         os.path.exists(extension_path),
         msg='Failed to find GTalk extension: ' + extension_path)
