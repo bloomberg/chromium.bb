@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/search_engines/util.h"
 #include "chrome/browser/ui/browser_list.h"
 #import "chrome/browser/ui/cocoa/l10n_util.h"
@@ -51,6 +52,8 @@
 }
 
 - (void)awakeFromNib {
+  first_run::LogFirstRunMetric(first_run::FIRST_RUN_BUBBLE_SHOWN);
+
   DCHECK(header_);
   [header_ setStringValue:cocoa_l10n_util::ReplaceNSStringPlaceholders(
       [header_ stringValue], GetDefaultSearchEngineName(profile_), NULL)];
@@ -81,6 +84,8 @@
 }
 
 - (IBAction)onChange:(id)sender {
+  first_run::LogFirstRunMetric(first_run::FIRST_RUN_BUBBLE_CHANGE_INVOKED);
+
   Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
   [self close];
   if (browser)

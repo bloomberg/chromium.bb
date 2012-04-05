@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/file_util.h"
+#include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -460,6 +461,11 @@ bool SetPersonalDataManagerFirstRunPref() {
     local_state->SetBoolean(prefs::kAutofillPersonalDataManagerFirstRun, true);
   }
   return true;
+}
+
+void LogFirstRunMetric(FirstRunBubbleMetric metric) {
+  UMA_HISTOGRAM_ENUMERATION("FirstRun.SearchEngineBubble", metric,
+                            NUM_FIRST_RUN_BUBBLE_METRICS);
 }
 
 // static

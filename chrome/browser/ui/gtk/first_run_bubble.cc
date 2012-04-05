@@ -8,6 +8,7 @@
 
 #include "base/i18n/rtl.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/search_engines/util.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/gtk/theme_service_gtk.h"
@@ -31,6 +32,8 @@ const int kInterLineSpacing = 5;
 void FirstRunBubble::Show(Profile* profile,
                           GtkWidget* anchor,
                           const gfx::Rect& rect) {
+  first_run::LogFirstRunMetric(first_run::FIRST_RUN_BUBBLE_SHOWN);
+
   new FirstRunBubble(profile, anchor, rect);
 }
 
@@ -83,6 +86,8 @@ void FirstRunBubble::HandleDestroy(GtkWidget* sender) {
 }
 
 void FirstRunBubble::HandleChangeLink(GtkWidget* sender) {
+  first_run::LogFirstRunMetric(first_run::FIRST_RUN_BUBBLE_CHANGE_INVOKED);
+
   // Get |profile_|'s browser before closing the bubble, which deletes |this|.
   Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
   bubble_->Close();

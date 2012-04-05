@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/first_run_bubble.h"
 
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/search_engines/util.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/views/window.h"
@@ -31,6 +32,8 @@ namespace first_run {
 // static
 FirstRunBubble* FirstRunBubble::ShowBubble(Profile* profile,
                                            views::View* anchor_view) {
+  first_run::LogFirstRunMetric(first_run::FIRST_RUN_BUBBLE_SHOWN);
+
   FirstRunBubble* delegate = new FirstRunBubble(profile, anchor_view);
   views::BubbleDelegateView::CreateBubble(delegate);
   delegate->StartFade(true);
@@ -90,6 +93,8 @@ FirstRunBubble::~FirstRunBubble() {
 }
 
 void FirstRunBubble::LinkClicked(views::Link* source, int event_flags) {
+  first_run::LogFirstRunMetric(first_run::FIRST_RUN_BUBBLE_CHANGE_INVOKED);
+
   // Get |profile_|'s browser before closing the bubble, which deletes |this|.
   Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
   GetWidget()->Close();

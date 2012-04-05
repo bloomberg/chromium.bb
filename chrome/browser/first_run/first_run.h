@@ -33,6 +33,12 @@ class ProcessSingleton;
 // install work for this user. After that the sentinel file is created.
 namespace first_run {
 
+enum FirstRunBubbleMetric {
+  FIRST_RUN_BUBBLE_SHOWN = 0,       // The search engine bubble was shown.
+  FIRST_RUN_BUBBLE_CHANGE_INVOKED,  // The bubble's "Change" was invoked.
+  NUM_FIRST_RUN_BUBBLE_METRICS
+};
+
 // See ProcessMasterPreferences for more info about this structure.
 struct MasterPrefs {
   MasterPrefs();
@@ -73,6 +79,9 @@ bool SetShowWelcomePagePref();
 // browser loads PersonalDataManager once the main message loop gets going.
 // Returns false if the pref could not be set.
 bool SetPersonalDataManagerFirstRunPref();
+
+// Log a metric for the "FirstRun.SearchEngineBubble" histogram.
+void LogFirstRunMetric(FirstRunBubbleMetric metric);
 
 // -- Platform-specific functions --
 
