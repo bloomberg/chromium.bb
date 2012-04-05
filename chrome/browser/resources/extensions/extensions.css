@@ -78,6 +78,8 @@ html.loading * {
   height: 3em;
 }
 
+.loading #no-extensions,
+.loading #get-more-extensions,
 #extension-settings-list:not(.empty-extension-list) ~ #no-extensions,
 .empty-extension-list ~ #get-more-extensions {
   display: none;
