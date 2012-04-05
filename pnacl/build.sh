@@ -810,6 +810,8 @@ everything-post-hg() {
 
   llvm
   binutils
+  binutils-gold
+
   driver
 
   libs
