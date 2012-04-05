@@ -1,0 +1,4 @@
+ROLE_SYSTEM_DOCUMENT name='' state=FOCUSED,READONLY,FOCUSABLE
+    IA2_ROLE_SECTION name='' state=READONLY
+        ROLE_SYSTEM_LINK name='normal link' state=FOCUSABLE,LINKED
+            ROLE_SYSTEM_TEXT name='normal link' state=READONLY,LINKED
