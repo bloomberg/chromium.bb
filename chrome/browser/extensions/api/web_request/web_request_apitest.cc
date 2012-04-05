@@ -83,7 +83,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebRequestAuthRequired) {
       message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebRequestBlocking) {
+// This test times out regularly on win_rel trybots. See http://crbug.com/122178
+#if defined(OS_WIN)
+#define MAYBE_WebRequestBlocking DISABLED_WebRequestBlocking
+#else
+#define MAYBE_WebRequestBlocking WebRequestBlocking
+#endif
+IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, MAYBE_WebRequestBlocking) {
   ASSERT_TRUE(RunExtensionSubtest("webrequest", "test_blocking.html")) <<
       message_;
 }
