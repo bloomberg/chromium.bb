@@ -2143,6 +2143,7 @@
         '../tools/json_schema_compiler/test/crossref_unittest.cc',
         '../tools/json_schema_compiler/test/enums_unittest.cc',
         '../tools/json_schema_compiler/test/functions_on_types_unittest.cc',
+        '../tools/json_schema_compiler/test/idl_schemas_unittest.cc',
         '../tools/json_schema_compiler/test/objects_unittest.cc',
         '../tools/json_schema_compiler/test/simple_api_unittest.cc',
         '../ui/views/test/test_views_delegate.cc',

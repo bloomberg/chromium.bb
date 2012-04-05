@@ -114,6 +114,16 @@ class Typeref(object):
       properties['type'] = 'boolean'
     elif self.typeref == 'long':
       properties['type'] = 'integer'
+    elif self.typeref == 'any':
+      properties['type'] = 'any'
+    elif self.typeref == 'object':
+      properties['type'] = 'object'
+      if 'additionalProperties' not in properties:
+        properties['additionalProperties'] = {}
+      properties['additionalProperties']['type'] = 'any'
+      instance_of = self.parent.GetProperty('instanceOf')
+      if instance_of:
+        properties['isInstanceOf'] = instance_of
     elif self.typeref is None:
       properties['type'] = 'function'
     else:
