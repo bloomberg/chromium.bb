@@ -78,6 +78,9 @@ class RootWindowHostLinux : public RootWindowHost,
   // The bounds of |xwindow_|.
   gfx::Rect bounds_;
 
+  // Cached atom
+  ::Atom wm_delete_window_atom_;
+
   // True if the window should be focused when the window is shown.
   bool focus_when_shown_;
 

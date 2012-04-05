@@ -22,6 +22,10 @@ class AURA_EXPORT RootWindowObserver {
   virtual void OnRootWindowResized(const RootWindow* root,
                                    const gfx::Size& old_size) {}
 
+  // Invoked when the native windowing system sends us a request to close our
+  // window.
+  virtual void OnRootWindowHostClosed(const RootWindow* root) {}
+
   // Invoked when a window is focused.
   virtual void OnWindowFocused(Window* window) {}
 

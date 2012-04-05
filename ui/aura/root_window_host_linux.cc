@@ -326,6 +326,15 @@ RootWindowHostLinux::RootWindowHostLinux(const gfx::Rect& bounds)
   if (RootWindow::hide_host_cursor())
     XDefineCursor(xdisplay_, x_root_window_, invisible_cursor_);
 
+  // TODO(erg): We currently only request window deletion events. We also
+  // should listen for activation events and anything else that GTK+ listens
+  // for, and do something useful.
+  wm_delete_window_atom_ = XInternAtom(xdisplay_, "WM_DELETE_WINDOW", False);
+
+  ::Atom protocols[1];
+  protocols[0] = wm_delete_window_atom_;
+  XSetWMProtocols(xdisplay_, xwindow_, protocols, 1);
+
   // crbug.com/120229 - set the window title so gtalk can find the primary root
   // window to broadcast.
   // TODO(jhorwich) Remove this once Chrome supports window-based broadcasting.
@@ -464,6 +473,15 @@ base::MessagePumpDispatcher::DispatchStatus RootWindowHostLinux::Dispatch(
       if (!IsWindowManagerPresent() && focus_when_shown_)
         XSetInputFocus(xdisplay_, xwindow_, RevertToNone, CurrentTime);
       handled = true;
+      break;
+    }
+    case ClientMessage: {
+      Atom message_type = static_cast<Atom>(xev->xclient.data.l[0]);
+      if (message_type == wm_delete_window_atom_) {
+        // We have received a close message from the window manager.
+        root_window_->OnRootWindowHostClosed();
+        handled = true;
+      }
       break;
     }
     case MappingNotify: {

@@ -166,6 +166,9 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   // keycodes and keysyms) has changed.
   void OnKeyboardMappingChanged();
 
+  // The system windowing system has sent a request that we close our window.
+  void OnRootWindowHostClosed();
+
   // Add/remove observer. There is no need to remove the observer if
   // the root window is being deleted. In particular, you SHOULD NOT remove
   // in |WindowObserver::OnWindowDestroying| of the observer observing

@@ -10,6 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "ui/aura/client/activation_delegate.h"
 #include "ui/aura/client/drag_drop_delegate.h"
+#include "ui/aura/root_window_observer.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/base/events.h"
 #include "ui/views/views_export.h"
@@ -30,6 +31,7 @@ class TooltipManagerAura;
 
 class VIEWS_EXPORT NativeWidgetAura : public internal::NativeWidgetPrivate,
                                       public aura::WindowDelegate,
+                                      public aura::RootWindowObserver,
                                       public aura::client::ActivationDelegate,
                                       public aura::client::DragDropDelegate {
  public:
@@ -148,6 +150,9 @@ class VIEWS_EXPORT NativeWidgetAura : public internal::NativeWidgetPrivate,
   virtual void OnWindowDestroying() OVERRIDE;
   virtual void OnWindowDestroyed() OVERRIDE;
   virtual void OnWindowVisibilityChanged(bool visible) OVERRIDE;
+
+  // Overridden from aura::RootWindowObserver:
+  virtual void OnRootWindowHostClosed(const aura::RootWindow* root) OVERRIDE;
 
   // Overridden from aura::client::ActivationDelegate:
   virtual bool ShouldActivate(const aura::Event* event) OVERRIDE;

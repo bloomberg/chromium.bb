@@ -179,6 +179,7 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
     root_window_.reset(new aura::RootWindow(bounds));
     root_window_->SetEventFilter(
         new aura::DesktopRootWindowEventFilter(root_window_.get()));
+    root_window_->AddRootWindowObserver(this);
 
     aura::client::SetActivationClient(
         root_window_.get(),
@@ -811,6 +812,13 @@ void NativeWidgetAura::OnWindowDestroyed() {
 
 void NativeWidgetAura::OnWindowVisibilityChanged(bool visible) {
   delegate_->OnNativeWidgetVisibilityChanged(visible);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// NativeWidgetAura, aura::RootWindowObserver implementation:
+
+void NativeWidgetAura::OnRootWindowHostClosed(const aura::RootWindow* root) {
+  GetWidget()->Close();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
