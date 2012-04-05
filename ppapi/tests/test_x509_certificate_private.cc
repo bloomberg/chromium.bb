@@ -4,12 +4,60 @@
 
 #include "ppapi/tests/test_x509_certificate_private.h"
 
+#include <cmath>
+#include <limits>
+
 #include "ppapi/cpp/private/x509_certificate_private.h"
+#include "ppapi/cpp/var_array_buffer.h"
+#include "ppapi/cpp/var.h"
 #include "ppapi/tests/testing_instance.h"
 
 REGISTER_TEST_CASE(X509CertificatePrivate);
 
 namespace {
+
+bool FieldMatchesString(
+    const pp::X509Certificate& certificate,
+    PP_X509Certificate_Private_Field field,
+    const std::string& expected) {
+  pp::Var field_value = certificate.GetField(field);
+  if (!field_value.is_string())
+    return false;
+  return field_value.AsString() == expected;
+}
+
+bool FieldMatchesDouble(
+    const pp::X509Certificate& certificate,
+    PP_X509Certificate_Private_Field field,
+    double expected) {
+  pp::Var field_value = certificate.GetField(field);
+  if (!field_value.is_double())
+    return false;
+  return std::fabs(field_value.AsDouble() - expected) <=
+      std::numeric_limits<double>::epsilon();
+}
+
+bool FieldMatchesBuffer(
+    const pp::X509Certificate& certificate,
+    PP_X509Certificate_Private_Field field,
+    const char* expected,
+    uint32_t expected_length) {
+  pp::Var field_value = certificate.GetField(field);
+  if (!field_value.is_array_buffer())
+    return false;
+  pp::VarArrayBuffer array_buffer(field_value);
+  char* bytes = static_cast<char*>(array_buffer.Map());
+  uint32_t length = array_buffer.ByteLength();
+  if (length != expected_length)
+    return false;
+  return std::equal(expected, expected + expected_length, bytes);
+}
+
+bool FieldIsNull(
+    const pp::X509Certificate& certificate,
+    PP_X509Certificate_Private_Field field) {
+  return certificate.GetField(field).is_null();
+}
 
 // Google's cert.
 const unsigned char kGoogleDer[] = {
@@ -107,6 +155,57 @@ std::string TestX509CertificatePrivate::TestValidCertificate() {
   bool successful = certificate.Initialize(
       reinterpret_cast<const char*>(kGoogleDer), sizeof(kGoogleDer));
   ASSERT_TRUE(successful);
+
+  ASSERT_TRUE(FieldMatchesString(certificate,
+      PP_X509CERTIFICATE_PRIVATE_SUBJECT_COMMON_NAME, "www.google.com"));
+  ASSERT_TRUE(FieldMatchesString(certificate,
+      PP_X509CERTIFICATE_PRIVATE_SUBJECT_LOCALITY_NAME, "Mountain View"));
+  ASSERT_TRUE(FieldMatchesString(certificate,
+      PP_X509CERTIFICATE_PRIVATE_SUBJECT_STATE_OR_PROVINCE_NAME, "California"));
+  ASSERT_TRUE(FieldMatchesString(certificate,
+      PP_X509CERTIFICATE_PRIVATE_SUBJECT_COUNTRY_NAME, "US"));
+  ASSERT_TRUE(FieldMatchesString(certificate,
+      PP_X509CERTIFICATE_PRIVATE_SUBJECT_ORGANIZATION_NAME, "Google Inc"));
+  ASSERT_TRUE(FieldMatchesString(certificate,
+      PP_X509CERTIFICATE_PRIVATE_SUBJECT_ORGANIZATION_UNIT_NAME, ""));
+
+  ASSERT_TRUE(FieldMatchesString(certificate,
+      PP_X509CERTIFICATE_PRIVATE_ISSUER_COMMON_NAME, "Thawte SGC CA"));
+  ASSERT_TRUE(FieldMatchesString(certificate,
+      PP_X509CERTIFICATE_PRIVATE_ISSUER_LOCALITY_NAME, ""));
+  ASSERT_TRUE(FieldMatchesString(certificate,
+      PP_X509CERTIFICATE_PRIVATE_ISSUER_STATE_OR_PROVINCE_NAME, ""));
+  ASSERT_TRUE(FieldMatchesString(certificate,
+      PP_X509CERTIFICATE_PRIVATE_ISSUER_COUNTRY_NAME, "ZA"));
+  ASSERT_TRUE(FieldMatchesString(certificate,
+      PP_X509CERTIFICATE_PRIVATE_ISSUER_ORGANIZATION_NAME,
+      "Thawte Consulting (Pty) Ltd."));
+  ASSERT_TRUE(FieldMatchesString(certificate,
+      PP_X509CERTIFICATE_PRIVATE_ISSUER_ORGANIZATION_UNIT_NAME, ""));
+
+  ASSERT_FALSE(FieldIsNull(certificate,
+      PP_X509CERTIFICATE_PRIVATE_SERIAL_NUMBER));
+  ASSERT_TRUE(FieldMatchesDouble(certificate,
+      PP_X509CERTIFICATE_PRIVATE_VALIDITY_NOT_BEFORE, 1238192407));
+  ASSERT_TRUE(FieldMatchesDouble(certificate,
+      PP_X509CERTIFICATE_PRIVATE_VALIDITY_NOT_AFTER, 1269728407));
+  ASSERT_TRUE(FieldMatchesBuffer(certificate,
+      PP_X509CERTIFICATE_PRIVATE_RAW,
+      reinterpret_cast<const char*>(kGoogleDer), sizeof(kGoogleDer)));
+
+  // Check unimplemented fields return null.
+  ASSERT_TRUE(FieldIsNull(certificate,
+      PP_X509CERTIFICATE_PRIVATE_SUBJECT_UNIQUE_ID));
+  ASSERT_TRUE(FieldIsNull(certificate,
+      PP_X509CERTIFICATE_PRIVATE_ISSUER_UNIQUE_ID));
+  ASSERT_TRUE(FieldIsNull(certificate,
+      PP_X509CERTIFICATE_PRIVATE_VERSION));
+  ASSERT_TRUE(FieldIsNull(certificate,
+      PP_X509CERTIFICATE_PRIVATE_ALGORITHM_OID));
+  ASSERT_TRUE(FieldIsNull(certificate,
+      PP_X509CERTIFICATE_PRIVATE_ALGORITHM_PARAMATERS_RAW));
+  ASSERT_TRUE(FieldIsNull(certificate,
+      PP_X509CERTIFICATE_PRIVATE_SUBJECT_PUBLIC_KEY));
 
   PASS();
 }

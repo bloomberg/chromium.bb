@@ -10,6 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/string_util.h"
 #include "content/browser/renderer_host/pepper_message_filter.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/cert_verifier.h"
@@ -208,7 +209,46 @@ void PepperTCPSocket::SendConnectACKError() {
 bool PepperTCPSocket::GetCertificateFields(
     const net::X509Certificate& cert,
     ppapi::PPB_X509Certificate_Fields* fields) {
-  // TODO(raymes,rsleevi): Implement this.
+  const net::CertPrincipal& issuer = cert.issuer();
+  fields->SetField(PP_X509CERTIFICATE_PRIVATE_ISSUER_COMMON_NAME,
+      new base::StringValue(issuer.common_name));
+  fields->SetField(PP_X509CERTIFICATE_PRIVATE_ISSUER_LOCALITY_NAME,
+      new base::StringValue(issuer.locality_name));
+  fields->SetField(PP_X509CERTIFICATE_PRIVATE_ISSUER_STATE_OR_PROVINCE_NAME,
+      new base::StringValue(issuer.state_or_province_name));
+  fields->SetField(PP_X509CERTIFICATE_PRIVATE_ISSUER_COUNTRY_NAME,
+      new base::StringValue(issuer.country_name));
+  fields->SetField(PP_X509CERTIFICATE_PRIVATE_ISSUER_ORGANIZATION_NAME,
+      new base::StringValue(JoinString(issuer.organization_names, '\n')));
+  fields->SetField(PP_X509CERTIFICATE_PRIVATE_ISSUER_ORGANIZATION_UNIT_NAME,
+      new base::StringValue(JoinString(issuer.organization_unit_names, '\n')));
+
+  const net::CertPrincipal& subject = cert.subject();
+  fields->SetField(PP_X509CERTIFICATE_PRIVATE_SUBJECT_COMMON_NAME,
+      new base::StringValue(subject.common_name));
+  fields->SetField(PP_X509CERTIFICATE_PRIVATE_SUBJECT_LOCALITY_NAME,
+      new base::StringValue(subject.locality_name));
+  fields->SetField(PP_X509CERTIFICATE_PRIVATE_SUBJECT_STATE_OR_PROVINCE_NAME,
+      new base::StringValue(subject.state_or_province_name));
+  fields->SetField(PP_X509CERTIFICATE_PRIVATE_SUBJECT_COUNTRY_NAME,
+      new base::StringValue(subject.country_name));
+  fields->SetField(PP_X509CERTIFICATE_PRIVATE_SUBJECT_ORGANIZATION_NAME,
+      new base::StringValue(JoinString(subject.organization_names, '\n')));
+  fields->SetField(PP_X509CERTIFICATE_PRIVATE_SUBJECT_ORGANIZATION_UNIT_NAME,
+      new base::StringValue(JoinString(subject.organization_unit_names, '\n')));
+
+  const std::string& serial_number = cert.serial_number();
+  fields->SetField(PP_X509CERTIFICATE_PRIVATE_SERIAL_NUMBER,
+      base::BinaryValue::CreateWithCopiedBuffer(serial_number.data(),
+                                                serial_number.length()));
+  fields->SetField(PP_X509CERTIFICATE_PRIVATE_VALIDITY_NOT_BEFORE,
+      base::Value::CreateDoubleValue(cert.valid_start().ToDoubleT()));
+  fields->SetField(PP_X509CERTIFICATE_PRIVATE_VALIDITY_NOT_AFTER,
+      base::Value::CreateDoubleValue(cert.valid_expiry().ToDoubleT()));
+  std::string der;
+  net::X509Certificate::GetDEREncoded(cert.os_cert_handle(), &der);
+  fields->SetField(PP_X509CERTIFICATE_PRIVATE_RAW,
+      base::BinaryValue::CreateWithCopiedBuffer(der.data(), der.length()));
   return true;
 }
 
