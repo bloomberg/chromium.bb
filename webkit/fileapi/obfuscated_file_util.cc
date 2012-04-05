@@ -53,36 +53,24 @@ bool IsRootDirectory(const FileSystemPath& virtual_path) {
 const int64 kPathCreationQuotaCost = 146;  // Bytes per inode, basically.
 const int64 kPathByteQuotaCost = 2;  // Bytes per byte of path length in UTF-8.
 
-int64 GetPathQuotaUsage(
-    int growth_in_number_of_paths,
-    int64 growth_in_bytes_of_path_length) {
-  return growth_in_number_of_paths * kPathCreationQuotaCost +
-      growth_in_bytes_of_path_length * kPathByteQuotaCost;
+int64 UsageForPath(size_t length) {
+  return kPathCreationQuotaCost +
+      static_cast<int64>(length) * kPathByteQuotaCost;
 }
 
-bool AllocateQuotaForPath(
-    FileSystemOperationContext* context,
-    int growth_in_number_of_paths,
-    int64 growth_in_bytes_of_path_length) {
-  int64 growth = GetPathQuotaUsage(growth_in_number_of_paths,
-      growth_in_bytes_of_path_length);
+bool AllocateQuota(FileSystemOperationContext* context, int64 growth) {
   int64 new_quota = context->allowed_bytes_growth() - growth;
-
-  if (growth <= 0 || new_quota >= 0) {
-    context->set_allowed_bytes_growth(new_quota);
+  if (growth > 0 && new_quota < 0)
+    return false;
+  context->set_allowed_bytes_growth(new_quota);
     return true;
-  }
-  return false;
 }
 
-void UpdatePathQuotaUsage(
+void UpdateUsage(
     FileSystemOperationContext* context,
     const GURL& origin,
     FileSystemType type,
-    int growth_in_number_of_paths,  // -1, 0, or 1
-    int64 growth_in_bytes_of_path_length) {
-  int64 growth = GetPathQuotaUsage(growth_in_number_of_paths,
-      growth_in_bytes_of_path_length);
+    int64 growth) {
   FileSystemQuotaUtil* quota_util =
       context->file_system_context()->GetQuotaUtil(type);
   quota::QuotaManagerProxy* quota_manager_proxy =
@@ -311,14 +299,18 @@ PlatformFileError ObfuscatedFileUtil::CreateOrOpen(
     FileInfo file_info;
     InitFileInfo(&file_info, parent_id,
                  VirtualPath::BaseName(virtual_path.internal_path()).value());
-    if (!AllocateQuotaForPath(context, 1, file_info.name.size()))
+
+    int64 growth = UsageForPath(file_info.name.size());
+    if (!AllocateQuota(context, growth))
       return base::PLATFORM_FILE_ERROR_NO_SPACE;
     PlatformFileError error = CreateFile(
         context, FileSystemPath(),
         virtual_path.origin(), virtual_path.type(), &file_info,
         file_flags, file_handle);
-    if (created && base::PLATFORM_FILE_OK == error)
+    if (created && base::PLATFORM_FILE_OK == error) {
       *created = true;
+      UpdateUsage(context, virtual_path.origin(), virtual_path.type(), growth);
+    }
     return error;
   }
   if (file_flags & base::PLATFORM_FILE_CREATE)
@@ -374,14 +366,18 @@ PlatformFileError ObfuscatedFileUtil::EnsureFileExists(
   FileInfo file_info;
   InitFileInfo(&file_info, parent_id,
                VirtualPath::BaseName(virtual_path.internal_path()).value());
-  if (!AllocateQuotaForPath(context, 1, file_info.name.size()))
+
+  int64 growth = UsageForPath(file_info.name.size());
+  if (!AllocateQuota(context, growth))
     return base::PLATFORM_FILE_ERROR_NO_SPACE;
   PlatformFileError error = CreateFile(context,
       FileSystemPath(),
       virtual_path.origin(), virtual_path.type(), &file_info,
       0, NULL);
-  if (created && base::PLATFORM_FILE_OK == error)
+  if (created && base::PLATFORM_FILE_OK == error) {
     *created = true;
+    UpdateUsage(context, virtual_path.origin(), virtual_path.type(), growth);
+  }
   return error;
 }
 
@@ -429,14 +425,14 @@ PlatformFileError ObfuscatedFileUtil::CreateDirectory(
       continue;
     file_info.modification_time = base::Time::Now();
     file_info.parent_id = parent_id;
-    if (!AllocateQuotaForPath(context, 1, file_info.name.size()))
+    int64 growth = UsageForPath(file_info.name.size());
+    if (!AllocateQuota(context, growth))
       return base::PLATFORM_FILE_ERROR_NO_SPACE;
     if (!db->AddFileInfo(file_info, &parent_id)) {
       NOTREACHED();
       return base::PLATFORM_FILE_ERROR_FAILED;
     }
-    UpdatePathQuotaUsage(context, virtual_path.origin(), virtual_path.type(),
-                         1, file_info.name.size());
+    UpdateUsage(context, virtual_path.origin(), virtual_path.type(), growth);
     if (first) {
       first = false;
       TouchDirectory(db, file_info.parent_id);
@@ -673,16 +669,21 @@ PlatformFileError ObfuscatedFileUtil::CopyOrMoveFile(
       }
       InitFileInfo(&dest_file_info, dest_parent_id,
           VirtualPath::BaseName(dest_path.internal_path()).value());
-      if (!AllocateQuotaForPath(context, 1, dest_file_info.name.size()))
+      int64 growth = UsageForPath(dest_file_info.name.size());
+      if (!AllocateQuota(context, growth))
         return base::PLATFORM_FILE_ERROR_NO_SPACE;
-      return CreateFile(context, src_local_path,
-                        dest_path.origin(), dest_path.type(), &dest_file_info,
-                        0, NULL);
+      base::PlatformFileError error = CreateFile(
+          context, src_local_path,
+          dest_path.origin(), dest_path.type(), &dest_file_info,
+          0, NULL);
+      if (error == base::PLATFORM_FILE_OK)
+        UpdateUsage(context, dest_path.origin(), dest_path.type(), growth);
+      return error;
     }
   } else {  // It's a move.
     if (overwrite) {
-      AllocateQuotaForPath(context, -1,
-          -static_cast<int64>(src_file_info.name.size()));
+      int64 growth = -UsageForPath(src_file_info.name.size());
+      AllocateQuota(context, growth);
       if (!db->OverwritingMoveFile(src_file_id, dest_file_id))
         return base::PLATFORM_FILE_ERROR_FAILED;
       FileSystemPath dest_local_path = DataPathToLocalPath(
@@ -690,8 +691,7 @@ PlatformFileError ObfuscatedFileUtil::CopyOrMoveFile(
       if (base::PLATFORM_FILE_OK !=
           underlying_file_util()->DeleteFile(context, dest_local_path))
         LOG(WARNING) << "Leaked a backing file.";
-      UpdatePathQuotaUsage(context, src_path.origin(), src_path.type(),
-          -1, -static_cast<int64>(src_file_info.name.size()));
+      UpdateUsage(context, src_path.origin(), src_path.type(), growth);
       TouchDirectory(db, src_file_info.parent_id);
       TouchDirectory(db, dest_file_info.parent_id);
       return base::PLATFORM_FILE_OK;
@@ -704,11 +704,10 @@ PlatformFileError ObfuscatedFileUtil::CopyOrMoveFile(
       }
       FilePath dest_internal_path = dest_path.internal_path();
       FilePath src_internal_path = src_path.internal_path();
-      if (!AllocateQuotaForPath(
-          context, 0,
-          static_cast<int64>(
-              VirtualPath::BaseName(dest_internal_path).value().size()) -
-              static_cast<int64>(src_file_info.name.size())))
+      int64 growth = UsageForPath(
+          VirtualPath::BaseName(dest_internal_path).value().size());
+      growth -= UsageForPath(src_file_info.name.size());
+      if (!AllocateQuota(context, growth))
         return base::PLATFORM_FILE_ERROR_NO_SPACE;
       FileId src_parent_id = src_file_info.parent_id;
       src_file_info.parent_id = dest_parent_id;
@@ -716,12 +715,7 @@ PlatformFileError ObfuscatedFileUtil::CopyOrMoveFile(
           VirtualPath::BaseName(dest_path.internal_path()).value();
       if (!db->UpdateFileInfo(src_file_id, src_file_info))
         return base::PLATFORM_FILE_ERROR_FAILED;
-      UpdatePathQuotaUsage(
-          context, src_path.origin(), src_path.type(), 0,
-          static_cast<int64>(
-              VirtualPath::BaseName(dest_internal_path).value().size()) -
-              static_cast<int64>(
-                  VirtualPath::BaseName(src_internal_path).value().size()));
+      UpdateUsage(context, src_path.origin(), src_path.type(), growth);
       TouchDirectory(db, src_parent_id);
       TouchDirectory(db, dest_parent_id);
       return base::PLATFORM_FILE_OK;
@@ -763,11 +757,16 @@ PlatformFileError ObfuscatedFileUtil::CopyInForeignFile(
     }
     InitFileInfo(&dest_file_info, dest_parent_id,
         VirtualPath::BaseName(dest_path.internal_path()).value());
-    if (!AllocateQuotaForPath(context, 1, dest_file_info.name.size()))
+    int64 growth = UsageForPath(dest_file_info.name.size());
+    if (!AllocateQuota(context, growth))
       return base::PLATFORM_FILE_ERROR_NO_SPACE;
-    return CreateFile(context, underlying_src_path,
-                      dest_path.origin(), dest_path.type(), &dest_file_info,
-                      0, NULL);
+    base::PlatformFileError error =
+        CreateFile(context, underlying_src_path,
+                   dest_path.origin(), dest_path.type(), &dest_file_info,
+                   0, NULL);
+    if (error == base::PLATFORM_FILE_OK)
+      UpdateUsage(context, dest_path.origin(), dest_path.type(), growth);
+    return error;
   }
   return base::PLATFORM_FILE_ERROR_FAILED;
 }
@@ -791,9 +790,9 @@ PlatformFileError ObfuscatedFileUtil::DeleteFile(
     NOTREACHED();
     return base::PLATFORM_FILE_ERROR_FAILED;
   }
-  AllocateQuotaForPath(context, -1, -static_cast<int64>(file_info.name.size()));
-  UpdatePathQuotaUsage(context, virtual_path.origin(), virtual_path.type(),
-      -1, -static_cast<int64>(file_info.name.size()));
+  int64 growth = -UsageForPath(file_info.name.size());
+  AllocateQuota(context, growth);
+  UpdateUsage(context, virtual_path.origin(), virtual_path.type(), growth);
   FileSystemPath local_path = DataPathToLocalPath(
       virtual_path.origin(), virtual_path.type(), file_info.data_path);
   if (base::PLATFORM_FILE_OK !=
@@ -820,9 +819,9 @@ PlatformFileError ObfuscatedFileUtil::DeleteSingleDirectory(
   }
   if (!db->RemoveFileInfo(file_id))
     return base::PLATFORM_FILE_ERROR_NOT_EMPTY;
-  AllocateQuotaForPath(context, -1, -static_cast<int64>(file_info.name.size()));
-  UpdatePathQuotaUsage(context, virtual_path.origin(), virtual_path.type(),
-      -1, -static_cast<int64>(file_info.name.size()));
+  int64 growth = -UsageForPath(file_info.name.size());
+  AllocateQuota(context, growth);
+  UpdateUsage(context, virtual_path.origin(), virtual_path.type(), growth);
   TouchDirectory(db, file_info.parent_id);
   return base::PLATFORM_FILE_OK;
 }
@@ -993,7 +992,7 @@ bool ObfuscatedFileUtil::DestroyDirectoryDatabase(
 
 // static
 int64 ObfuscatedFileUtil::ComputeFilePathCost(const FilePath& path) {
-  return GetPathQuotaUsage(1, VirtualPath::BaseName(path).value().size());
+  return UsageForPath(VirtualPath::BaseName(path).value().size());
 }
 
 PlatformFileError ObfuscatedFileUtil::GetFileInfoInternal(
@@ -1125,8 +1124,6 @@ PlatformFileError ObfuscatedFileUtil::CreateFile(
     underlying_file_util()->DeleteFile(context, dest_path);
     return base::PLATFORM_FILE_ERROR_FAILED;
   }
-  UpdatePathQuotaUsage(context, dest_origin, dest_type,
-                       1, dest_file_info->name.size());
   TouchDirectory(db, dest_file_info->parent_id);
 
   return base::PLATFORM_FILE_OK;
