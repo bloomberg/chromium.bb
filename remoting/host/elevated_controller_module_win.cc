@@ -13,7 +13,7 @@
 #include "remoting/host/branding.h"
 
 // MIDL-generated declarations.
-#include <elevated_controller.h>
+#include "remoting/host/elevated_controller.h"
 
 namespace remoting {
 

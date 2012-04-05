@@ -225,6 +225,28 @@
     ['OS=="win"', {
       'targets': [
         {
+          'target_name': 'remoting_elevated_controller',
+          'type': 'static_library',
+          'sources': [
+            'host/elevated_controller.idl',
+            '<(SHARED_INTERMEDIATE_DIR)/remoting/host/elevated_controller.h',
+            '<(SHARED_INTERMEDIATE_DIR)/remoting/host/elevated_controller_i.c',
+          ],
+          # This target exports a hard dependency because dependent targets may
+          # include elevated_controller.h, a generated header.
+          'hard_dependency': 1,
+          'msvs_settings': {
+            'VCMIDLTool': {
+              'OutputDirectory': '<(SHARED_INTERMEDIATE_DIR)/remoting/host',
+            },
+          },
+          'direct_dependent_settings': {
+            'include_dirs': [
+              '<(SHARED_INTERMEDIATE_DIR)',
+            ],
+          },
+        },  # end of target 'remoting_elevated_controller'
+        {
           'target_name': 'remoting_host_controller',
           'type': 'executable',
           'variables': { 'enable_wexit_time_destructors': 1, },
@@ -239,17 +261,17 @@
           ],
           'dependencies': [
             '../base/base.gyp:base',
+            'remoting_elevated_controller',
             'remoting_version_resources',
           ],
           'sources': [
             'host/branding.cc',
             'host/branding.h',
-            'host/elevated_controller.idl',
             'host/elevated_controller.rc',
             'host/elevated_controller_module_win.cc',
             'host/elevated_controller_win.cc',
             'host/elevated_controller_win.h',
-            '<(SHARED_INTERMEDIATE_DIR)/remoting_version/elevated_controller_version.rc'
+            '<(SHARED_INTERMEDIATE_DIR)/remoting/elevated_controller_version.rc'
           ],
           'msvs_settings': {
             'VCLinkerTool': {
@@ -285,7 +307,7 @@
             'host/wts_console_observer_win.h',
             'host/wts_session_process_launcher_win.cc',
             'host/wts_session_process_launcher_win.h',
-            '<(SHARED_INTERMEDIATE_DIR)/remoting_version/host_service_version.rc'
+            '<(SHARED_INTERMEDIATE_DIR)/remoting/host_service_version.rc'
           ],
           'msvs_settings': {
             'VCLinkerTool': {
@@ -298,7 +320,7 @@
 
         # Generates the version information resources for the Windows binaries.
         # The .RC files are generated from the "version.rc.version" template and
-        # placed in the "<(SHARED_INTERMEDIATE_DIR)/remoting_version" folder.
+        # placed in the "<(SHARED_INTERMEDIATE_DIR)/remoting" folder.
         # The substiture strings are taken from:
         #   - remoting/VERSION - the current version of Chromoting.
         #   - build/util/LASTCHANGE - the last source code revision.
@@ -320,7 +342,7 @@
           ],
           'direct_dependent_settings': {
             'include_dirs': [
-              '<(SHARED_INTERMEDIATE_DIR)/remoting_version',
+              '<(SHARED_INTERMEDIATE_DIR)/remoting',
             ],
           },
           'sources': [
@@ -355,7 +377,7 @@
                 '<(lastchange_path)',
               ],
               'outputs': [
-                '<(SHARED_INTERMEDIATE_DIR)/remoting_version/<(RULE_INPUT_ROOT)_version.rc',
+                '<(SHARED_INTERMEDIATE_DIR)/remoting/<(RULE_INPUT_ROOT)_version.rc',
               ],
               'action': [
                 'python',
@@ -578,16 +600,16 @@
         [ 'OS=="win"', {
           'dependencies': [
             '../ipc/ipc.gyp:ipc',
+            'remoting_elevated_controller',
             'remoting_version_resources',
           ],
           'include_dirs': [
             '<(INTERMEDIATE_DIR)',
           ],
           'sources': [
-            'host/elevated_controller.idl',
             'host/plugin/host_plugin.def',
             'host/plugin/host_plugin.rc',
-            '<(SHARED_INTERMEDIATE_DIR)/remoting_version/host_plugin_version.rc'
+            '<(SHARED_INTERMEDIATE_DIR)/remoting/host_plugin_version.rc'
           ],
         }],
       ],
@@ -1001,7 +1023,7 @@
           'sources': [
             'host/host_event_logger_win.cc',
             'host/remoting_host_messages.mc',
-            '<(SHARED_INTERMEDIATE_DIR)/remoting_version/remoting_me2me_host_version.rc'
+            '<(SHARED_INTERMEDIATE_DIR)/remoting/remoting_me2me_host_version.rc'
           ],
           'include_dirs': [
             '<(INTERMEDIATE_DIR)',

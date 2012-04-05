@@ -1,7 +1,7 @@
 #include "afxres.h"
 
 // Embedded type library.
-1 typelib "elevated_controller.tlb"
+1 typelib "remoting/host/elevated_controller.tlb"
 
 // English (U.S.) resources
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)

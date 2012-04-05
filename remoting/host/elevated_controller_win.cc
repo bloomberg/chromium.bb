@@ -17,9 +17,6 @@
 #include "base/win/scoped_handle.h"
 #include "remoting/host/branding.h"
 
-// MIDL-generated definitions.
-#include "elevated_controller_i.c"
-
 namespace {
 
 // The host configuration file name.

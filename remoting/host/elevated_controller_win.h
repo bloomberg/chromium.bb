@@ -12,7 +12,7 @@
 #include "remoting/base/scoped_sc_handle_win.h"
 
 // MIDL-generated declarations.
-#include "elevated_controller.h"
+#include "remoting/host/elevated_controller.h"
 
 namespace remoting {
 
