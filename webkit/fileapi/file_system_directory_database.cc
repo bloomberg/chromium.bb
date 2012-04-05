@@ -53,7 +53,6 @@ bool FileInfoFromPickle(
       pickle.ReadString(&iter, &data_path) &&
       pickle.ReadString(&iter, &name) &&
       pickle.ReadInt64(&iter, &internal_time)) {
-
     info->data_path = fileapi::StringToFilePath(data_path);
     info->name = fileapi::StringToFilePath(name).value();
     info->modification_time = base::Time::FromInternalValue(internal_time);

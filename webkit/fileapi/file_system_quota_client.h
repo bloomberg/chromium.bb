@@ -5,11 +5,9 @@
 #ifndef WEBKIT_FILEAPI_FILE_SYSTEM_QUOTA_CLIENT_H_
 #define WEBKIT_FILEAPI_FILE_SYSTEM_QUOTA_CLIENT_H_
 
-#include <deque>
-#include <list>
-#include <map>
 #include <set>
 #include <string>
+#include <utility>
 
 #include "base/basictypes.h"
 #include "base/file_path.h"

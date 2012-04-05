@@ -208,7 +208,6 @@ class SandboxMountPointProviderMigrationTest : public testing::Test {
 
   void ValidateDataInNewFileSystem(
       const GURL& origin_url, fileapi::FileSystemType type) {
-
     scoped_ptr<FileSystemOperationContext> context;
     FilePath seed_file_path = FilePath().AppendASCII(
         URLAndTypeToSeedString(origin_url, type));

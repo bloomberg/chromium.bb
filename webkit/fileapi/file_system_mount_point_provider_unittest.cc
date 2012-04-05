@@ -102,7 +102,6 @@ const struct IsRestrictedNameTest {
   FilePath::StringType name;
   bool expected_dangerous;
 } kIsRestrictedNameTestCases[] = {
-
   // Names that contain strings that used to be restricted, but are now allowed.
   { FILE_PATH_LITERAL("con"), false, },
   { FILE_PATH_LITERAL("Con.txt"), false, },

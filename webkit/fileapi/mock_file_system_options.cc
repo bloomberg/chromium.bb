@@ -4,6 +4,9 @@
 
 #include "webkit/fileapi/mock_file_system_options.h"
 
+#include <string>
+#include <vector>
+
 namespace fileapi {
 
 FileSystemOptions CreateIncognitoFileSystemOptions() {

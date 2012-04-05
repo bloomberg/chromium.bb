@@ -5,6 +5,8 @@
 #ifndef WEBKIT_FILEAPI_ISOLATED_MOUNT_POINT_PROVIDER_H_
 #define WEBKIT_FILEAPI_ISOLATED_MOUNT_POINT_PROVIDER_H_
 
+#include <vector>
+
 #include "base/memory/scoped_ptr.h"
 #include "webkit/fileapi/file_system_mount_point_provider.h"
 

@@ -4,6 +4,8 @@
 
 #include "webkit/fileapi/test_file_set.h"
 
+#include <string>
+
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/platform_file.h"

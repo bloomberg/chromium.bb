@@ -41,12 +41,11 @@ class FileSystemFileUtilProxy {
 
   typedef base::Callback<void(PlatformFileError status)> StatusCallback;
   typedef base::Callback<void(PlatformFileError status,
-                              bool created
-                              )> EnsureFileExistsCallback;
+                              bool created)> EnsureFileExistsCallback;
   typedef base::Callback<void(PlatformFileError status,
                               const PlatformFileInfo& info,
-                              const FilePath& platform_path
-                              )> GetFileInfoCallback;
+                              const FilePath& platform_path)>
+      GetFileInfoCallback;
   typedef base::Callback<void(PlatformFileError,
                               const std::vector<Entry>&,
                               bool has_more)> ReadDirectoryCallback;

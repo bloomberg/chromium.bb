@@ -10,8 +10,6 @@
 
 #include "webkit/fileapi/file_system_url_request_job.h"
 
-#include "build/build_config.h"
-
 #include <string>
 
 #include "base/bind.h"
@@ -368,5 +366,5 @@ TEST_F(FileSystemURLRequestJobTest, GetMimeType) {
   EXPECT_EQ(mime_type_direct, mime_type_from_job);
 }
 
-}  // namespace (anonymous)
+}  // namespace
 }  // namespace fileapi

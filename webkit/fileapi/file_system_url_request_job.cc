@@ -4,6 +4,8 @@
 
 #include "webkit/fileapi/file_system_url_request_job.h"
 
+#include <vector>
+
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
@@ -147,9 +149,9 @@ void FileSystemURLRequestJob::SetExtraRequestHeaders(
   if (headers.GetHeader(net::HttpRequestHeaders::kRange, &range_header)) {
     std::vector<net::HttpByteRange> ranges;
     if (net::HttpUtil::ParseRangeHeader(range_header, &ranges)) {
-      if (ranges.size() == 1)
+      if (ranges.size() == 1) {
         byte_range_ = ranges[0];
-      else {
+      } else {
         // We don't support multiple range requests in one single URL request.
         // TODO(adamk): decide whether we want to support multiple range
         // requests.

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,7 +19,7 @@ class FileSystemUsageCacheTest : public testing::Test {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
   }
 
-protected:
+ protected:
   FilePath GetUsageFilePath() {
     return data_dir_.path().AppendASCII(FileSystemUsageCache::kUsageFileName);
   }

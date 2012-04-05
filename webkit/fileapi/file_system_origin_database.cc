@@ -4,6 +4,8 @@
 
 #include "webkit/fileapi/file_system_origin_database.h"
 
+#include <set>
+
 #include "base/file_util.h"
 #include "base/format_macros.h"
 #include "base/location.h"
@@ -41,7 +43,7 @@ const char* LastPathKey() {
   return kLastPathKey;
 }
 
-}
+}  // namespace
 
 namespace fileapi {
 
@@ -262,7 +264,7 @@ bool FileSystemOriginDatabase::ListAllOrigins(
   std::string origin_key_prefix = OriginToOriginKey("");
   iter->Seek(origin_key_prefix);
   origins->clear();
-  while(iter->Valid() &&
+  while (iter->Valid() &&
       StartsWithASCII(iter->key().ToString(), origin_key_prefix, true)) {
     std::string origin =
       iter->key().ToString().substr(origin_key_prefix.length());

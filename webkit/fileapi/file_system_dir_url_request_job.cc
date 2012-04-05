@@ -52,7 +52,6 @@ FileSystemDirURLRequestJob::~FileSystemDirURLRequestJob() {
 
 bool FileSystemDirURLRequestJob::ReadRawData(net::IOBuffer* dest, int dest_size,
                                              int *bytes_read) {
-
   int count = std::min(dest_size, static_cast<int>(data_.size()));
   if (count > 0) {
     memcpy(dest->data(), data_.data(), count);

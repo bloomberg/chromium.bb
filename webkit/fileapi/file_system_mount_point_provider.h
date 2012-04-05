@@ -12,7 +12,6 @@
 #include "base/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/platform_file.h"
-#include "base/platform_file.h"
 #include "webkit/fileapi/file_system_types.h"
 
 class GURL;

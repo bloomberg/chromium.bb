@@ -85,7 +85,7 @@ bool CrackFileSystemURL(const GURL& url, GURL* origin_url, FileSystemType* type,
   return true;
 }
 
-//TODO(ericu): Consider removing support for '\', even on Windows, if possible.
+// TODO(ericu): Consider removing support for '\', even on Windows, if possible.
 // There's a lot of test code that will need reworking, and we may have trouble
 // with FilePath elsewhere [e.g. DirName and other methods may also need
 // replacement].

@@ -5,6 +5,8 @@
 #ifndef WEBKIT_FILEAPI_FILE_SYSTEM_CONTEXT_H_
 #define WEBKIT_FILEAPI_FILE_SYSTEM_CONTEXT_H_
 
+#include <string>
+
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"

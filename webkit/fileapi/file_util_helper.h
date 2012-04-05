@@ -5,6 +5,8 @@
 #ifndef WEBKIT_FILEAPI_FILE_UTIL_HELPER_H_
 #define WEBKIT_FILEAPI_FILE_UTIL_HELPER_H_
 
+#include <vector>
+
 #include "base/file_util_proxy.h"
 #include "base/platform_file.h"
 

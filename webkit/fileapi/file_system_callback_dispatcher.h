@@ -1,10 +1,11 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef WEBKIT_FILEAPI_FILE_SYSTEM_CALLBACK_DISPATCHER_H_
 #define WEBKIT_FILEAPI_FILE_SYSTEM_CALLBACK_DISPATCHER_H_
 
+#include <string>
 #include <vector>
 
 #include "base/file_util_proxy.h"

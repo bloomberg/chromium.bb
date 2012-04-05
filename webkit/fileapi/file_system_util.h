@@ -6,6 +6,9 @@
 #define WEBKIT_FILEAPI_FILE_SYSTEM_UTIL_H_
 #pragma once
 
+#include <string>
+#include <vector>
+
 #include "base/file_path.h"
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/quota/quota_types.h"

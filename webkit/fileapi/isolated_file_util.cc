@@ -4,6 +4,9 @@
 
 #include "webkit/fileapi/isolated_file_util.h"
 
+#include <string>
+#include <vector>
+
 #include "base/memory/scoped_ptr.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_operation_context.h"

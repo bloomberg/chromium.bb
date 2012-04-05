@@ -1,8 +1,10 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "webkit/fileapi/file_system_url_request_job_factory.h"
+
+#include <string>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"

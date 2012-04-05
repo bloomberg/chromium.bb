@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "testing/gtest/include/gtest/gtest.h"
-
 #include <algorithm>
+#include <functional>
+#include <limits>
 #include <string>
 
 #include "base/file_path.h"
@@ -12,6 +12,7 @@
 #include "base/platform_file.h"
 #include "base/scoped_temp_dir.h"
 #include "base/stl_util.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/src/db/filename.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 #include "webkit/fileapi/file_system_origin_database.h"
@@ -20,6 +21,7 @@
 namespace fileapi {
 
 namespace {
+
 const FilePath::CharType kFileSystemDirName[] =
     FILE_PATH_LITERAL("File System");
 const FilePath::CharType kOriginDatabaseName[] = FILE_PATH_LITERAL("Origins");
@@ -90,7 +92,7 @@ void CorruptDatabase(const FilePath& db_path,
   base::ClosePlatformFile(file);
 }
 
-}
+}  // namespace
 
 TEST(FileSystemOriginDatabaseTest, BasicTest) {
   ScopedTempDir dir;

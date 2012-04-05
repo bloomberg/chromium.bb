@@ -21,7 +21,7 @@ class IsolatedContext;
 
 class IsolatedFileUtil : public FileSystemFileUtil {
  public:
-  IsolatedFileUtil(FileSystemFileUtil* underlying_file_util);
+  explicit IsolatedFileUtil(FileSystemFileUtil* underlying_file_util);
   virtual ~IsolatedFileUtil() {}
 
   // FileSystemFileUtil overrides.

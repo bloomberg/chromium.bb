@@ -10,8 +10,6 @@
 
 #include "webkit/fileapi/file_system_dir_url_request_job.h"
 
-#include "build/build_config.h"
-
 #include <string>
 
 #include "base/file_path.h"

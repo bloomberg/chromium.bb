@@ -32,6 +32,6 @@ enum FileSystemType {
   kFileSystemTypeExternal = WebKit::WebFileSystem::TypeExternal,
 };
 
-}
+}  // namespace fileapi
 
 #endif  // WEBKIT_FILEAPI_FILE_SYSTEM_TYPES_H_

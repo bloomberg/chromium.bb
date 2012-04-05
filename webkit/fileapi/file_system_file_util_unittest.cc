@@ -88,7 +88,7 @@ class FileSystemFileUtilTest : public testing::Test {
     // Do the actual copy or move.
     scoped_ptr<FileSystemOperationContext> copy_context(
         src_helper.NewOperationContext());
-    copy_context->set_allowed_bytes_growth(1024 * 1024); // OFSFU path quota.
+    copy_context->set_allowed_bytes_growth(1024 * 1024);  // OFSFU path quota.
 
     if (copy) {
       ASSERT_EQ(

@@ -4,6 +4,8 @@
 
 #include "webkit/fileapi/quota_file_util.h"
 
+#include <string>
+
 #include "base/file_path.h"
 #include "base/message_loop_proxy.h"
 #include "base/platform_file.h"
@@ -15,7 +17,6 @@
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_usage_cache.h"
 #include "webkit/fileapi/file_util_helper.h"
-#include "webkit/fileapi/quota_file_util.h"
 
 namespace fileapi {
 

@@ -17,7 +17,6 @@
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_file_util.h"
 #include "webkit/fileapi/file_system_mount_point_provider.h"
-#include "webkit/fileapi/file_system_operation.h"
 #include "webkit/fileapi/file_system_quota_util.h"
 #include "webkit/fileapi/file_system_test_helper.h"
 #include "webkit/fileapi/file_system_util.h"
@@ -1019,7 +1018,7 @@ TEST_F(FileSystemOperationTest, TestTouchFile) {
 
   const base::Time new_modified_time = base::Time::UnixEpoch();
   const base::Time new_accessed_time = new_modified_time +
-    base::TimeDelta::FromHours(77);;
+      base::TimeDelta::FromHours(77);
   ASSERT_NE(last_modified, new_modified_time);
   ASSERT_NE(last_accessed, new_accessed_time);
 

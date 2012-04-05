@@ -5,6 +5,8 @@
 #ifndef WEBKIT_FILEAPI_FILE_SYSTEM_OPERATION_INTERFACE_H_
 #define WEBKIT_FILEAPI_FILE_SYSTEM_OPERATION_INTERFACE_H_
 
+#include <vector>
+
 #include "base/file_util_proxy.h"
 #include "base/platform_file.h"
 #include "base/process.h"
@@ -60,24 +62,24 @@ class FileSystemOperationInterface {
   // Used for GetMetadata(). |result| is the return code of the operation,
   // |file_info| is the obtained file info, and |platform_path| is the path
   // of the file.
-  typedef base::Callback<void(
-      base::PlatformFileError result,
-      const base::PlatformFileInfo& file_info,
-      const FilePath& platform_path)> GetMetadataCallback;
+  typedef base::Callback<
+      void(base::PlatformFileError result,
+           const base::PlatformFileInfo& file_info,
+           const FilePath& platform_path)> GetMetadataCallback;
 
   // Used for OpenFile(). |result| is the return code of the operation.
-  typedef base::Callback<void(
-      base::PlatformFileError result,
-      base::PlatformFile file,
-      base::ProcessHandle peer_handle)> OpenFileCallback;
+  typedef base::Callback<
+      void(base::PlatformFileError result,
+           base::PlatformFile file,
+           base::ProcessHandle peer_handle)> OpenFileCallback;
 
   // Used for ReadDirectory(). |result| is the return code of the operation,
   // |file_list| is the list of files read, and |has_more| is true if some files
   // are yet to be read.
-  typedef base::Callback<void(
-      base::PlatformFileError result,
-      const std::vector<base::FileUtilProxy::Entry>& file_list,
-      bool has_more)> ReadDirectoryCallback;
+  typedef base::Callback<
+      void(base::PlatformFileError result,
+           const std::vector<base::FileUtilProxy::Entry>& file_list,
+           bool has_more)> ReadDirectoryCallback;
 
   // Used for CreateSnapshotFile(). (Please see the comment at
   // CreateSnapshotFile() below for how the method is called)
@@ -100,12 +102,12 @@ class FileSystemOperationInterface {
   // longer necessary in the javascript world.
   // Please see the comment for ShareableFileReference for details.
   //
-  typedef base::Callback<void(
-      base::PlatformFileError result,
-      const base::PlatformFileInfo& file_info,
-      const FilePath& platform_path,
-      const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref
-      )> SnapshotFileCallback;
+  typedef base::Callback<
+      void(base::PlatformFileError result,
+           const base::PlatformFileInfo& file_info,
+           const FilePath& platform_path,
+           const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref)>
+          SnapshotFileCallback;
 
   // Used for Write().
   typedef base::Callback<void(base::PlatformFileError result,

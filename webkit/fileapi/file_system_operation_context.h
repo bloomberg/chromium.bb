@@ -17,7 +17,7 @@ class FileSystemContext;
 
 class FileSystemOperationContext {
  public:
-  FileSystemOperationContext(FileSystemContext* context);
+  explicit FileSystemOperationContext(FileSystemContext* context);
   ~FileSystemOperationContext();
 
   FileSystemContext* file_system_context() const {

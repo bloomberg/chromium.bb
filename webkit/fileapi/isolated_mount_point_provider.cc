@@ -4,6 +4,8 @@
 
 #include "webkit/fileapi/isolated_mount_point_provider.h"
 
+#include <string>
+
 #include "base/bind.h"
 #include "base/file_path.h"
 #include "base/logging.h"
