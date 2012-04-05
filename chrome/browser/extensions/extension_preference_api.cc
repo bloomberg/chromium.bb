@@ -79,12 +79,16 @@ PrefMappingEntry kPrefMapping[] = {
     prefs::kEnableReferrers,
     ExtensionAPIPermission::kPrivacy
   },
+  { "safeBrowsingEnabled",
+    prefs::kSafeBrowsingEnabled,
+    ExtensionAPIPermission::kPrivacy
+  },
   { "searchSuggestEnabled",
     prefs::kSearchSuggestEnabled,
     ExtensionAPIPermission::kPrivacy
   },
-  { "safeBrowsingEnabled",
-    prefs::kSafeBrowsingEnabled,
+  { "spellingServiceEnabled",
+    prefs::kSpellCheckUseSpellingService,
     ExtensionAPIPermission::kPrivacy
   },
   { "thirdPartyCookiesAllowed",

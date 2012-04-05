@@ -28,6 +28,7 @@ var preferences_to_test = [
       'instantEnabled',
       'safeBrowsingEnabled',
       'searchSuggestEnabled',
+      'spellingServiceEnabled',
       'translationServiceEnabled'
     ]
   },

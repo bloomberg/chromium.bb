@@ -49,6 +49,11 @@
             "value": ["searchSuggestEnabled", {"type":"boolean"}],
             "description": "If enabled, Chrome sends the text you type into the Omnibox to your default search engine, which provides predictions of websites and searches that are likely completions of what you've typed so far. This preference's value is a boolean, defaulting to <code>true</code>."
           },
+          "spellingServiceEnabled": {
+            "$ref": "ChromeSetting",
+            "value": ["spellingServiceEnabled", {"type":"boolean"}],
+            "description": "If enabled, Chrome uses a web service to help correct spelling errors. This preference's value is a boolean, defaulting to <code>false</code>."
+          },
           "translationServiceEnabled": {
             "$ref": "ChromeSetting",
             "value": ["translationServiceEnabled", {"type":"boolean"}],
