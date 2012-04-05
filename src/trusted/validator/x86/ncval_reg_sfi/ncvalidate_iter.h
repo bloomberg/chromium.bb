@@ -24,7 +24,7 @@
  *
  *   if (!NaClArchSupported()) fail;
  *   NaClValidatorState* state =
- *     NaClValidatorStateCreate(base, limit - base, 32, RegR15);
+ *     NaClValidatorStateCreate(base, limit - base, 32, readonly, RegR15);
  *   if (state == NULL) fail;
  *   for each section:
  *     NaClValidateSegment(maddr, vaddr, size, state);
@@ -100,6 +100,7 @@ typedef struct NaClValidatorState NaClValidatorState;
  *   alignment: 16 or 32, specifying alignment.
  *   base_register - OperandKind defining value for base register (or
  *     RegUnknown if not defined).
+ *   readonly - Whether the text should be treated as read-only.
  *   features - The CPU features to use. Uses local features of machine if NULL.
  * Returns:
  *   A pointer to an initialized validator state if everything is ok, NULL
@@ -110,6 +111,7 @@ NaClValidatorState* NaClValidatorStateCreate(
     const NaClMemorySize codesize,
     const uint8_t alignment,
     const NaClOpKind base_register,
+    const int readonly, /* Bool */
     const NaClCPUFeaturesX86 *features);
 
 /* Returns true if the instruction iterator of the validator has any more

@@ -49,7 +49,8 @@ static NaClValidationStatus NCApplyValidatorSilently_x86_32(
     }
   }
 
-  vstate = NCValidateInit(guest_addr, size, bundle_size, cpu_features);
+  vstate = NCValidateInit(guest_addr, size, bundle_size,
+                          readonly_text, cpu_features);
   if (vstate == NULL) {
     if (query != NULL)
       cache->DestroyQuery(query);
@@ -57,13 +58,6 @@ static NaClValidationStatus NCApplyValidatorSilently_x86_32(
   }
   NCValidateSegment(data, guest_addr, size, vstate);
   validator_result = NCValidateFinish(vstate);
-
-  if (NCValidatorDidStubOut(vstate) && readonly_text) {
-    /* TODO(bradchen): prevent stubout writes from happening;
-     * fail inside validator.
-     */
-    validator_result = 1;  /* failure */
-  }
 
   if (query != NULL) {
     /* Don't cache the result if the code is modified. */

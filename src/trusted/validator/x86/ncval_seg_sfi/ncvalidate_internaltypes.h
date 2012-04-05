@@ -78,6 +78,7 @@ typedef struct NCValidatorState {
    */
   uint8_t *pattern_nonfirst_insts_table;
   int do_stub_out;  /* boolean */
+  int readonly_text; /* boolean */
   int num_diagnostics; /* How many error messages to print. */
   /* Defines the summarization function to apply. Defaults to
    * NCSelLDrJumpSummarizeFn, which is the summarize function

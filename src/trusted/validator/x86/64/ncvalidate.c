@@ -21,13 +21,14 @@
 #endif
 
 NaClValidationStatus NaClValidatorSetup_x86_64(
-    uintptr_t guest_addr,
+    intptr_t guest_addr,
     size_t size,
     int bundle_size,
+    int readonly_text,
     const NaClCPUFeaturesX86 *cpu_features,
     struct NaClValidatorState** vstate_ptr) {
   *vstate_ptr = NaClValidatorStateCreate(guest_addr, size, bundle_size, RegR15,
-                                         cpu_features);
+                                         readonly_text, cpu_features);
   return (*vstate_ptr == NULL)
       ? NaClValidationFailedOutOfMemory
       : NaClValidationSucceeded;     /* or at least to this point! */
@@ -60,8 +61,8 @@ static NaClValidationStatus NaClApplyValidatorSilently_x86_64(
   }
 
   status =
-      NaClValidatorSetup_x86_64(guest_addr, size, bundle_size, cpu_features,
-                                &vstate);
+    NaClValidatorSetup_x86_64(guest_addr, size, bundle_size, readonly_text,
+                              cpu_features, &vstate);
 
   if (status != NaClValidationSucceeded) {
     if (query != NULL)
@@ -72,12 +73,6 @@ static NaClValidationStatus NaClApplyValidatorSilently_x86_64(
   NaClValidateSegment(data, guest_addr, size, vstate);
   status =
       NaClValidatesOk(vstate) ? NaClValidationSucceeded : NaClValidationFailed;
-  if (NaClValidatorDidStubOut(vstate) && readonly_text) {
-    /* TODO(bradchen): prevent stubout writes from happening;
-     * fail inside validator.
-     */
-    status = NaClValidationFailed;
-  }
 
   if (query != NULL) {
     /* Don't cache the result if the code is modified. */
@@ -97,8 +92,8 @@ NaClValidationStatus NaClApplyValidatorStubout_x86_64(
     const NaClCPUFeaturesX86 *cpu_features) {
   struct NaClValidatorState *vstate;
   NaClValidationStatus status =
-      NaClValidatorSetup_x86_64(guest_addr, size, bundle_size, cpu_features,
-                                &vstate);
+      NaClValidatorSetup_x86_64(guest_addr, size, bundle_size, FALSE,
+                                cpu_features, &vstate);
   if (status != NaClValidationSucceeded) return status;
   NaClValidatorStateSetDoStubOut(vstate, TRUE);
   NaClValidateSegment(data, guest_addr, size, vstate);
@@ -148,8 +143,8 @@ static NaClValidationStatus NaClApplyValidatorPair(
   int is_ok;
   struct NaClValidatorState *vstate;
   NaClValidationStatus status =
-      NaClValidatorSetup_x86_64(guest_addr, size, bundle_size, cpu_features,
-                                &vstate);
+    NaClValidatorSetup_x86_64(guest_addr, size, bundle_size, FALSE,
+                              cpu_features, &vstate);
   if (status != NaClValidationSucceeded) return status;
   NaClValidatorStateSetLogVerbosity(vstate, LOG_ERROR);
   NaClValidateSegmentPair(data_old, data_new, guest_addr, size, vstate);

@@ -136,7 +136,7 @@ Bool NaClInstValidates(uint8_t* mbase,
 
   NaClGetCurrentCPUFeatures(&cpu_features);
   state = NaClValidatorStateCreate(vbase, (NaClMemorySize) size,
-                                   32, RegR15, &cpu_features);
+                                   32, RegR15, FALSE, &cpu_features);
   do {
     NaClSegmentInitialize(mbase, vbase, (NaClMemorySize) size, &segment);
     iter = NaClInstIterCreate(kNaClDecoderTables, &segment);

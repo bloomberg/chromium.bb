@@ -36,7 +36,7 @@ static INLINE void NaClCheckFeature(NaClCPUFeatureID feature,
     if (!NaClGetCPUFeature(&vstate->cpu_checks.cpu_features, feature)) {
       NaClValidatorInstMessage(
           LOG_WARNING, vstate, vstate->cur_inst_state,
-          "Does not support %s feature, removing usage(s).\n",
+          "CPU model does not support %s instructions.\n",
           NaClGetCPUFeatureName(feature));
       NaClSetCPUFeature(&vstate->cpu_checks.cpu_features, feature, TRUE);
     }
@@ -71,8 +71,7 @@ void NaClCpuCheck(struct NaClValidatorState* state,
         if (!state->cpu_checks.f_CMOV_and_x87) {
           NaClValidatorInstMessage(
               LOG_WARNING, state, state->cur_inst_state,
-              "Does not support CMOV and x87 features, "
-              "removing corresponding CMOV usage(s).\n");
+              "CPU model does not support CMOV and x87 instructions.\n");
           state->cpu_checks.f_CMOV_and_x87 = TRUE;
         }
         squash_me = TRUE;
@@ -92,8 +91,7 @@ void NaClCpuCheck(struct NaClValidatorState* state,
         if (!state->cpu_checks.f_MMX_or_SSE2) {
           NaClValidatorInstMessage(
               LOG_WARNING, state, state->cur_inst_state,
-              "Does not support MMX or SSE2 features, "
-              "removing corresponding usage(s).\n");
+              "CPU model does not support MMX or SSE2 instructions.\n");
           state->cpu_checks.f_MMX_or_SSE2 = TRUE;
         }
       }
@@ -150,14 +148,23 @@ void NaClCpuCheck(struct NaClValidatorState* state,
       NaClCheckFeature(NaClCPUFeature_SSE2, state, &squash_me);
       break;
     default:
+      /* This instruction could be either legal or illegal, but if we
+       * get here it is not CPU-dependent.
+       */
       break;
   }
   if (state->cur_inst->flags & NACL_IFLAG(LongMode)) {
     NaClCheckFeature(NaClCPUFeature_LM, state, &squash_me);
   }
   if (squash_me) {
-    /* Replace all bytes with the HLT instruction. */
-    NCStubOutMem(state, NaClInstIterGetInstMemoryInline(iter),
-                 NaClInstStateLength(state->cur_inst_state));
+    if (state->readonly_text) {
+      NaClValidatorInstMessage(
+          LOG_ERROR, state, state->cur_inst_state,
+          "Read-only text: cannot squash unsupported instruction.\n");
+    } else {
+      /* Replace all bytes of the instruction with the HLT instruction. */
+      NCStubOutMem(state, NaClInstIterGetInstMemoryInline(iter),
+                   NaClInstStateLength(state->cur_inst_state));
+    }
   }
 }

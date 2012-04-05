@@ -31,8 +31,8 @@ static NaClValidationStatus NaClApplyValidatorVerbosely_x86_64(
     const NaClCPUFeaturesX86 *cpu_features) {
   struct NaClValidatorState *vstate;
   NaClValidationStatus status =
-      NaClValidatorSetup_x86_64(guest_addr, size, bundle_size, cpu_features,
-                                &vstate);
+      NaClValidatorSetup_x86_64(guest_addr, size, bundle_size, FALSE,
+                                cpu_features, &vstate);
   if (status != NaClValidationSucceeded) return status;
   NaClValidatorStateSetLogVerbosity(vstate, LOG_ERROR);
   NaClValidatorStateSetMaxReportedErrors(vstate, -1);  /* Report all errors. */

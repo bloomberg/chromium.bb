@@ -105,6 +105,9 @@ struct NaClValidatorState {
    * if they are found to be illegal.
    */
   Bool do_stub_out;
+  /* Define whether the text segment should be handled as read-only.
+   */
+  Bool readonly_text;
   /* When true, generate detailed error messages instead of summary messages. */
   Bool do_detailed;
   /* Defines the local data needed while analyzing jumps and instruction

@@ -340,7 +340,7 @@ struct NCValidatorState* NCValInit(const NaClPcAddress vbase,
                                    const uint8_t alignment) {
   return NACL_FLAGS_detailed_errors
       ? NCValidateInitDetailed(vbase, codesize, alignment, &ncval_cpu_features)
-      : NCValidateInit(vbase, codesize, alignment, &ncval_cpu_features);
+      : NCValidateInit(vbase, codesize, alignment, FALSE, &ncval_cpu_features);
 }
 
 
@@ -389,7 +389,7 @@ struct NaClValidatorState* NaClValStateCreate(
       ? NaClValidatorStateCreateDetailed(vbase, sz, alignment, base_register,
                                          &ncval_cpu_features)
       : NaClValidatorStateCreate(vbase, sz, alignment, base_register,
-                                 &ncval_cpu_features);
+                                 FALSE, &ncval_cpu_features);
 }
 
 /* Returns the decoder tables to use. */

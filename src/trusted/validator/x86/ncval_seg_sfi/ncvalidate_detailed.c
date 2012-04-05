@@ -156,7 +156,7 @@ struct NCValidatorState *NCValidateInitDetailed(
     const uint8_t alignment,
     const NaClCPUFeaturesX86* features) {
   struct NCValidatorState *vstate = NCValidateInit(vbase, codesize, alignment,
-                                                   features);
+                                                   FALSE, features);
   if (NULL != vstate) {
     vstate->summarize_fn = NCJumpSummarizeDetailed;
     vstate->pattern_nonfirst_insts_table =

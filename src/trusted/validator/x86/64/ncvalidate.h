@@ -47,6 +47,7 @@ NaClValidationStatus NaClValidatorSetup_x86_64(
     uintptr_t guest_addr,
     size_t size,
     int bundle_size,
+    int readonly_text,
     const NaClCPUFeaturesX86 *cpu_features,
     struct NaClValidatorState** vstate_ptr);
 

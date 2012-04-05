@@ -505,6 +505,7 @@ NaClValidatorState *NaClValidatorStateCreate(
     const NaClMemorySize codesize,
     const uint8_t alignment,
     const NaClOpKind base_register,
+    const int readonly_text,
     const NaClCPUFeaturesX86 *features) {
   NaClValidatorState *vstate;
   NaClValidatorState *return_value = NULL;
@@ -542,6 +543,7 @@ NaClValidatorState *NaClValidatorStateCreate(
     NaClValidatorStateIterFinishInline(vstate);
     vstate->quit = NaClValidatorQuit(return_value);
     vstate->do_stub_out = FALSE;
+    vstate->readonly_text = readonly_text;
     vstate->do_detailed = FALSE;
     NaClOpcodeHistogramInitialize(vstate);
     NaClCpuCheckMemoryInitialize(vstate);

@@ -58,6 +58,7 @@ void NCValidateSetNumDiagnostics(struct NCValidatorState *vstate,
 struct NCValidatorState *NCValidateInit(const NaClPcAddress vbase,
                                         const NaClMemorySize codesize,
                                         const uint8_t alignment,
+                                        const int readonly_text,
                                         const NaClCPUFeaturesX86 *features);
 
 /*

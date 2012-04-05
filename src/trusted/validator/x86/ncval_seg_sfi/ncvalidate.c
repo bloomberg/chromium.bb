@@ -324,19 +324,10 @@ static Bool ValidateInstReplacement(NCDecoderStatePair* tthis,
                                     NCDecoderInst *dinst_new);
 static void NCJumpSummarize(struct NCValidatorState* vstate);
 
-/*
- * NCValidateInit: Initialize NaCl validator internal state
- * Parameters:
- *    vbase: base virtual address for code segment
- *    codesize: size in bytes of code segment
- *    alignment: 16 or 32, specifying alignment
- * Returns:
- *    an initialized struct NCValidatorState * if everything is okay,
- *    else NULL
- */
 struct NCValidatorState *NCValidateInit(const NaClPcAddress vbase,
                                         const NaClPcAddress codesize,
                                         const uint8_t alignment,
+                                        const int readonly_text,
                                         const NaClCPUFeaturesX86 *features) {
   struct NCValidatorState *vstate = NULL;
 
@@ -370,6 +361,7 @@ struct NCValidatorState *NCValidateInit(const NaClPcAddress vbase,
     vstate->pattern_nonfirst_insts_table = NULL;
     vstate->summarize_fn = NCJumpSummarize;
     vstate->do_stub_out = 0;
+    vstate->readonly_text = readonly_text;
     if (vstate->vttable == NULL || vstate->kttable == NULL)
       break;
     dprint(("  allocated tables\n"));
@@ -878,8 +870,14 @@ static Bool ValidateInst(const NCDecoderInst *dinst) {
       break;
   }
   if (squashme) {
-    NCStubOutMem(vstate, dinst->dstate->memory.mpc,
-                 dinst->dstate->memory.read_length);
+    if (vstate->readonly_text) {
+      NCBadInstructionError(dinst,
+                            "Illegal instruction for fixed-feature CPU mode");
+      NCStatsIllegalInst(vstate);
+    } else {
+      NCStubOutMem(vstate, dinst->dstate->memory.mpc,
+                   dinst->dstate->memory.read_length);
+    }
   }
   return TRUE;
 }
@@ -1004,10 +1002,10 @@ int NCValidateSegmentPair(uint8_t *mbase_old, uint8_t *mbase_new,
     return 0;
   }
 
-  old_vstate = NCValidateInit(vbase, sz, alignment, features);
+  old_vstate = NCValidateInit(vbase, sz, alignment, FALSE, features);
   if (old_vstate != NULL) {
     NCValidateDStateInit(old_vstate, mbase_old, vbase, sz);
-    new_vstate = NCValidateInit(vbase, sz, alignment, features);
+    new_vstate = NCValidateInit(vbase, sz, alignment, FALSE, features);
     if (new_vstate != NULL) {
       NCValidateDStateInit(new_vstate, mbase_new, vbase, sz);
 
