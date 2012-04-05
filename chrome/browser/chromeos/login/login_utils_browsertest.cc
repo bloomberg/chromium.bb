@@ -27,9 +27,9 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/net/gaia/gaia_auth_consumer.h"
 #include "chrome/common/net/gaia/gaia_urls.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/net/gaia/gaia_auth_consumer.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "content/public/browser/browser_thread.h"
@@ -131,7 +131,7 @@ class LoginUtilsTestBase : public TESTBASE,
     // io_thread_state_.
     MockSessionManagerClient* session_managed_client =
         mock_dbus_thread_manager_.mock_session_manager_client();
-    EXPECT_CALL(*session_managed_client, RetrievePolicy(_))
+    EXPECT_CALL(*session_managed_client, RetrieveDevicePolicy(_))
         .WillRepeatedly(MockSessionManagerClientPolicyCallback(""));
 
     mock_async_method_caller_ = new cryptohome::MockAsyncMethodCaller;

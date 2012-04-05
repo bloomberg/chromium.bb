@@ -6,8 +6,8 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "chrome/browser/chromeos/cros/cros_mock.h"
 #include "chrome/browser/chromeos/cros/cros_in_process_browser_test.h"
+#include "chrome/browser/chromeos/cros/cros_mock.h"
 #include "chrome/browser/chromeos/cros/mock_cryptohome_library.h"
 #include "chrome/browser/chromeos/cros/mock_network_library.h"
 #include "chrome/browser/chromeos/dbus/mock_dbus_thread_manager.h"
@@ -125,7 +125,7 @@ class ExistingUserControllerTest : public CrosInProcessBrowserTest {
         mock_dbus_thread_manager->mock_session_manager_client();
     EXPECT_CALL(*mock_session_manager_client, EmitLoginPromptReady())
         .Times(1);
-    EXPECT_CALL(*mock_session_manager_client, RetrievePolicy(_))
+    EXPECT_CALL(*mock_session_manager_client, RetrieveDevicePolicy(_))
         .Times(AnyNumber());
 
     cros_mock_->InitMockCryptohomeLibrary();

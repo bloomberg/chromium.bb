@@ -193,7 +193,7 @@ void StorePolicyOp::OnKeyOpComplete(const OwnerManager::KeyOpCode return_code,
 void StorePolicyOp::RequestStorePolicy() {
   std::string serialized;
   if (policy_->SerializeToString(&serialized)) {
-    DBusThreadManager::Get()->GetSessionManagerClient()->StorePolicy(
+    DBusThreadManager::Get()->GetSessionManagerClient()->StoreDevicePolicy(
         serialized,
         base::Bind(&StorePolicyOp::OnBoolComplete, this));
   } else {
@@ -214,7 +214,7 @@ RetrievePolicyOp::RetrievePolicyOp(
 RetrievePolicyOp::~RetrievePolicyOp() {}
 
 void RetrievePolicyOp::Execute() {
-  DBusThreadManager::Get()->GetSessionManagerClient()->RetrievePolicy(
+  DBusThreadManager::Get()->GetSessionManagerClient()->RetrieveDevicePolicy(
       base::Bind(&RetrievePolicyOp::OnStringComplete, this));
 }
 

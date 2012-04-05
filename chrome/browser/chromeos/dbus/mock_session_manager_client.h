@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,8 +25,12 @@ class MockSessionManagerClient : public SessionManagerClient {
   MOCK_METHOD2(RestartJob, void(int, const std::string&));
   MOCK_METHOD1(StartSession, void(const std::string&));
   MOCK_METHOD0(StopSession, void(void));
-  MOCK_METHOD1(RetrievePolicy, void(RetrievePolicyCallback));
-  MOCK_METHOD2(StorePolicy, void(const std::string&, StorePolicyCallback));
+  MOCK_METHOD1(RetrieveDevicePolicy, void(RetrievePolicyCallback));
+  MOCK_METHOD1(RetrieveUserPolicy, void(RetrievePolicyCallback));
+  MOCK_METHOD2(StoreDevicePolicy, void(const std::string&,
+                                       StorePolicyCallback));
+  MOCK_METHOD2(StoreUserPolicy, void(const std::string&,
+                                     StorePolicyCallback));
 };
 
 }  // namespace chromeos

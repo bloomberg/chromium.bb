@@ -134,22 +134,52 @@ class SessionManagerClientImpl : public SessionManagerClient {
   }
 
   // SessionManagerClient override.
-  virtual void RetrievePolicy(RetrievePolicyCallback callback) OVERRIDE {
+  virtual void RetrieveDevicePolicy(RetrievePolicyCallback callback) OVERRIDE {
+    CallRetrievePolicy(login_manager::kSessionManagerRetrievePolicy,
+                       callback);
+  }
+
+  // SessionManagerClient override.
+  virtual void RetrieveUserPolicy(RetrievePolicyCallback callback) OVERRIDE {
+    CallRetrievePolicy(login_manager::kSessionManagerRetrieveUserPolicy,
+                       callback);
+  }
+
+  // SessionManagerClient override.
+  virtual void StoreDevicePolicy(const std::string& policy_blob,
+                                 StorePolicyCallback callback) OVERRIDE {
+    CallStorePolicy(login_manager::kSessionManagerStorePolicy,
+                    policy_blob, callback);
+  }
+
+  // SessionManagerClient override.
+  virtual void StoreUserPolicy(const std::string& policy_blob,
+                               StorePolicyCallback callback) OVERRIDE {
+    CallStorePolicy(login_manager::kSessionManagerStoreUserPolicy,
+                    policy_blob, callback);
+  }
+
+ private:
+  // Helper for Retrieve{User,Device}Policy.
+  virtual void CallRetrievePolicy(const std::string& method_name,
+                                  RetrievePolicyCallback callback) {
     dbus::MethodCall method_call(login_manager::kSessionManagerInterface,
-                                 login_manager::kSessionManagerRetrievePolicy);
+                                 method_name);
     session_manager_proxy_->CallMethod(
         &method_call,
         dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::Bind(&SessionManagerClientImpl::OnRetrievePolicy,
                    weak_ptr_factory_.GetWeakPtr(),
+                   method_name,
                    callback));
   }
 
-  // SessionManagerClient override.
-  virtual void StorePolicy(const std::string& policy_blob,
-                           StorePolicyCallback callback) OVERRIDE {
+  // Helper for Store{User,Device}Policy.
+  virtual void CallStorePolicy(const std::string& method_name,
+                               const std::string& policy_blob,
+                               StorePolicyCallback callback) {
     dbus::MethodCall method_call(login_manager::kSessionManagerInterface,
-                                 login_manager::kSessionManagerStorePolicy);
+                                 method_name);
     dbus::MessageWriter writer(&method_call);
     // static_cast does not work due to signedness.
     writer.AppendArrayOfBytes(
@@ -159,10 +189,10 @@ class SessionManagerClientImpl : public SessionManagerClient {
         dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::Bind(&SessionManagerClientImpl::OnStorePolicy,
                    weak_ptr_factory_.GetWeakPtr(),
+                   method_name,
                    callback));
   }
 
- private:
   // Called when kSessionManagerEmitLoginPromptReady method is complete.
   void OnEmitLoginPromptReady(dbus::Response* response) {
     LOG_IF(ERROR, !response)
@@ -205,12 +235,13 @@ class SessionManagerClientImpl : public SessionManagerClient {
         << login_manager::kSessionManagerStopSession;
   }
 
-  // Called when kSessionManagerRetrievePolicy method is complete.
-  void OnRetrievePolicy(RetrievePolicyCallback callback,
+  // Called when kSessionManagerRetrievePolicy or
+  // kSessionManagerRetrieveUserPolicy  method is complete.
+  void OnRetrievePolicy(const std::string& method_name,
+                        RetrievePolicyCallback callback,
                         dbus::Response* response) {
     if (!response) {
-      LOG(ERROR) << "Failed to call "
-                 << login_manager::kSessionManagerRetrievePolicy;
+      LOG(ERROR) << "Failed to call " << method_name;
       callback.Run("");
       return;
     }
@@ -227,18 +258,18 @@ class SessionManagerClientImpl : public SessionManagerClient {
     callback.Run(serialized_proto);
   }
 
-  // Called when kSessionManagerStorePolicy method is complete.
-  void OnStorePolicy(StorePolicyCallback callback, dbus::Response* response) {
-    if (!response) {
-      LOG(ERROR) << "Failed to call "
-                 << login_manager::kSessionManagerStorePolicy;
-      return;
-    }
-    dbus::MessageReader reader(response);
+  // Called when kSessionManagerStorePolicy or kSessionManagerStoreUserPolicy
+  // method is complete.
+  void OnStorePolicy(const std::string& method_name,
+                     StorePolicyCallback callback,
+                     dbus::Response* response) {
     bool success = false;
-    if (!reader.PopBool(&success)) {
-      LOG(ERROR) << "Invalid response: " << response->ToString();
-      return;
+    if (!response) {
+      LOG(ERROR) << "Failed to call " << method_name;
+    } else {
+      dbus::MessageReader reader(response);
+      if (!reader.PopBool(&success))
+        LOG(ERROR) << "Invalid response: " << response->ToString();
     }
     callback.Run(success);
   }
@@ -293,14 +324,20 @@ class SessionManagerClientStubImpl : public SessionManagerClient {
   virtual void RestartEntd() OVERRIDE {}
   virtual void StartSession(const std::string& user_email) OVERRIDE {}
   virtual void StopSession() OVERRIDE {}
-  virtual void RetrievePolicy(RetrievePolicyCallback callback) OVERRIDE {
+  virtual void RetrieveDevicePolicy(RetrievePolicyCallback callback) OVERRIDE {
     callback.Run("");
   }
-  virtual void StorePolicy(const std::string& policy_blob,
-                           StorePolicyCallback callback) OVERRIDE {
+  virtual void RetrieveUserPolicy(RetrievePolicyCallback callback) OVERRIDE {
+    callback.Run("");
+  }
+  virtual void StoreDevicePolicy(const std::string& policy_blob,
+                                 StorePolicyCallback callback) OVERRIDE {
     callback.Run(true);
   }
-
+  virtual void StoreUserPolicy(const std::string& policy_blob,
+                               StorePolicyCallback callback) OVERRIDE {
+    callback.Run(true);
+  }
 };
 
 SessionManagerClient::SessionManagerClient() {

@@ -28,12 +28,12 @@
 #include "ui/views/controls/button/text_button.h"
 
 namespace chromeos {
+using ::testing::A;
 using ::testing::AnyNumber;
 using ::testing::InvokeWithoutArgs;
 using ::testing::Return;
 using ::testing::ReturnRef;
 using ::testing::_;
-using ::testing::A;
 using views::Button;
 
 class DummyButtonListener : public views::ButtonListener {
@@ -60,7 +60,7 @@ class NetworkScreenTest : public WizardInProcessBrowserTest {
     cellular_.reset(new NetworkDevice("cellular"));
     EXPECT_CALL(*mock_session_manager_client, EmitLoginPromptReady())
         .Times(1);
-    EXPECT_CALL(*mock_session_manager_client, RetrievePolicy(_))
+    EXPECT_CALL(*mock_session_manager_client, RetrieveDevicePolicy(_))
         .Times(AnyNumber());
 
     // Minimal set of expectations needed on NetworkScreen initialization.

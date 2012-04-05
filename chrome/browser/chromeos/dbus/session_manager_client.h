@@ -52,24 +52,34 @@ class SessionManagerClient {
   // Stops the current session.
   virtual void StopSession() = 0;
 
-  // Used for RetrievePolicy. Takes a serialized protocol buffer as string.
+  // Used for RetrieveDevicePolicy and RetrieveUserPolicy. Takes a serialized
+  // protocol buffer as string.  Upon success, we will pass a protobuf to the
+  // callback.  On failure, we will pass "".
   typedef base::Callback<void(const std::string&)> RetrievePolicyCallback;
 
-  // Fetches the policy blob stored by the session manager.  Upon
-  // completion of the retrieve attempt, we will call the provided
-  // callback.  Policies are serialized protocol buffers.  Upon success,
-  // we will pass a protobuf to the callback.  On failure, we will pass
-  // "".
-  virtual void RetrievePolicy(RetrievePolicyCallback callback) = 0;
+  // Fetches the device policy blob stored by the session manager.  Upon
+  // completion of the retrieve attempt, we will call the provided callback.
+  virtual void RetrieveDevicePolicy(RetrievePolicyCallback callback) = 0;
 
-  // Used for StorePolicyCallback. Takes a boolean indicating whether the
-  // operation was successful or not.
+  // Fetches the user policy blob stored by the session manager for the
+  // currently signed-in user.  Upon completion of the retrieve attempt, we will
+  // call the provided callback.
+  virtual void RetrieveUserPolicy(RetrievePolicyCallback callback) = 0;
+
+  // Used for StoreDevicePolicy and StoreUserPolicy. Takes a boolean indicating
+  // whether the operation was successful or not.
   typedef base::Callback<void(bool)> StorePolicyCallback;
 
-  // Attempts to store |policy_blob| asynchronously.  Upon completion of
-  // the store attempt, we will call callback.
-  virtual void StorePolicy(const std::string& policy_bob,
-                           StorePolicyCallback callback) = 0;
+  // Attempts to asynchronously store |policy_blob| as device policy.  Upon
+  // completion of the store attempt, we will call callback.
+  virtual void StoreDevicePolicy(const std::string& policy_blob,
+                                 StorePolicyCallback callback) = 0;
+
+  // Attempts to asynchronously store |policy_blob| as user policy for the
+  // currently signed-in user.  Upon completion of the store attempt, we will
+  // call callback.
+  virtual void StoreUserPolicy(const std::string& policy_blob,
+                               StorePolicyCallback callback) = 0;
 
   // Creates the instance.
   static SessionManagerClient* Create(DBusClientImplementationType type,

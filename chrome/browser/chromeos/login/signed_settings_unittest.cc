@@ -234,7 +234,7 @@ TEST_F(SignedSettingsTest, SignAndStorePolicy) {
                                                      &signed_serialized);
   MockSessionManagerClient* client =
       mock_dbus_thread_manager_->mock_session_manager_client();
-  EXPECT_CALL(*client, StorePolicy(signed_serialized, _))
+  EXPECT_CALL(*client, StoreDevicePolicy(signed_serialized, _))
       .WillOnce(Store(true))
       .RetiresOnSaturation();
   s->OnKeyOpComplete(OwnerManager::SUCCESS, fake_value_signature_);
@@ -255,7 +255,7 @@ TEST_F(SignedSettingsTest, StoreSignedPolicy) {
       SignedSettings::CreateStorePolicyOp(&signed_policy, &d));
   MockSessionManagerClient* client =
       mock_dbus_thread_manager_->mock_session_manager_client();
-  EXPECT_CALL(*client, StorePolicy(signed_serialized, _))
+  EXPECT_CALL(*client, StoreDevicePolicy(signed_serialized, _))
       .WillOnce(Store(true))
       .RetiresOnSaturation();
 
@@ -302,7 +302,7 @@ TEST_F(SignedSettingsTest, RetrievePolicy) {
 
   MockSessionManagerClient* client =
       mock_dbus_thread_manager_->mock_session_manager_client();
-  EXPECT_CALL(*client, RetrievePolicy(_))
+  EXPECT_CALL(*client, RetrieveDevicePolicy(_))
       .WillOnce(Retrieve(signed_serialized))
       .RetiresOnSaturation();
 
@@ -326,7 +326,7 @@ TEST_F(SignedSettingsTest, RetrieveNullPolicy) {
 
   MockSessionManagerClient* client =
       mock_dbus_thread_manager_->mock_session_manager_client();
-  EXPECT_CALL(*client, RetrievePolicy(_))
+  EXPECT_CALL(*client, RetrieveDevicePolicy(_))
       .WillOnce(Retrieve(""))
       .RetiresOnSaturation();
 
@@ -343,7 +343,7 @@ TEST_F(SignedSettingsTest, RetrieveEmptyPolicy) {
 
   MockSessionManagerClient* client =
       mock_dbus_thread_manager_->mock_session_manager_client();
-  EXPECT_CALL(*client, RetrievePolicy(_))
+  EXPECT_CALL(*client, RetrieveDevicePolicy(_))
       .WillOnce(Retrieve(""))
       .RetiresOnSaturation();
 
@@ -362,7 +362,7 @@ TEST_F(SignedSettingsTest, RetrieveUnsignedPolicy) {
 
   MockSessionManagerClient* client =
       mock_dbus_thread_manager_->mock_session_manager_client();
-  EXPECT_CALL(*client, RetrievePolicy(_))
+  EXPECT_CALL(*client, RetrieveDevicePolicy(_))
       .WillOnce(Retrieve(serialized))
       .RetiresOnSaturation();
 
@@ -381,7 +381,7 @@ TEST_F(SignedSettingsTest, RetrieveMalsignedPolicy) {
 
   MockSessionManagerClient* client =
       mock_dbus_thread_manager_->mock_session_manager_client();
-  EXPECT_CALL(*client, RetrievePolicy(_))
+  EXPECT_CALL(*client, RetrieveDevicePolicy(_))
       .WillOnce(Retrieve(signed_serialized))
       .RetiresOnSaturation();
 

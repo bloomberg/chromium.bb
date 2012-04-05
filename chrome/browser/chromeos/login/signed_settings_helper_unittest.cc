@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -59,9 +59,9 @@ class SignedSettingsHelperTest : public testing::Test,
         mock_dbus_thread_manager_->mock_session_manager_client();
     // Make sure the mocked out class calls back to notify success on store and
     // retrieve ops.
-    EXPECT_CALL(*client, StorePolicy(_, _))
+    EXPECT_CALL(*client, StoreDevicePolicy(_, _))
         .WillRepeatedly(Store(true));
-    EXPECT_CALL(*client, RetrievePolicy(_))
+    EXPECT_CALL(*client, RetrieveDevicePolicy(_))
         .WillRepeatedly(Retrieve(serialized_policy_));
 
     EXPECT_CALL(m_, StartSigningAttempt(_, A<OwnerManager::Delegate*>()))
