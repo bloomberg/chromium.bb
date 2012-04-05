@@ -121,11 +121,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
-#if defined(USE_LINUX_BREAKPAD)
-#include "base/linux_util.h"
-#include "chrome/app/breakpad_linux.h"
-#endif
-
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 #include "chrome/browser/first_run/upgrade_util_linux.h"
 #endif
@@ -190,10 +185,6 @@
 
 using content::BrowserThread;
 
-namespace net {
-class NetLog;
-}  // namespace net
-
 namespace {
 
 // This function provides some ways to test crash and assertion handling
@@ -227,12 +218,6 @@ void AddFirstRunNewTabs(BrowserInit* browser_init,
       browser_init->AddFirstRunTab(*it);
   }
 }
-
-#if defined(USE_LINUX_BREAKPAD)
-void GetLinuxDistroCallback() {
-  base::GetLinuxDistro();  // Initialize base::linux_distro if needed.
-}
-#endif  // USE_LINUX_BREAKPAD
 
 void InitializeNetworkOptions(const CommandLine& parsed_command_line) {
   if (parsed_command_line.HasSwitch(switches::kEnableFileCookies)) {
@@ -396,8 +381,7 @@ Profile* CreateProfile(const content::MainFunctionParams& parameters,
   if (ProfileManager::IsMultipleProfilesEnabled() &&
       parsed_command_line.HasSwitch(switches::kProfileDirectory)) {
     g_browser_process->local_state()->SetString(prefs::kProfileLastUsed,
-        parsed_command_line.GetSwitchValueASCII(
-            switches::kProfileDirectory));
+        parsed_command_line.GetSwitchValueASCII(switches::kProfileDirectory));
     // Clear kProfilesLastActive since the user only wants to launch a specific
     // profile.
     ListPrefUpdate update(g_browser_process->local_state(),
@@ -460,8 +444,9 @@ Profile* CreateProfile(const content::MainFunctionParams& parameters,
 void InitializeGpuDataManager(const CommandLine& parsed_command_line) {
   content::GpuDataManager::GetInstance();
   if (parsed_command_line.HasSwitch(switches::kSkipGpuDataLoading) ||
-      parsed_command_line.HasSwitch(switches::kIgnoreGpuBlacklist))
+      parsed_command_line.HasSwitch(switches::kIgnoreGpuBlacklist)) {
     return;
+  }
 
   const base::StringPiece gpu_blacklist_json(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
@@ -490,40 +475,6 @@ void SetSocketReusePolicy(int warmest_socket_trial_group,
   net::SetSocketReusePolicy(result - socket_policy);
 }
 
-#if defined(USE_LINUX_BREAKPAD)
-bool IsCrashReportingEnabled(const PrefService* local_state) {
-  // Check whether we should initialize the crash reporter. It may be disabled
-  // through configuration policy or user preference. It must be disabled for
-  // Guest mode on Chrome OS in Stable channel.
-  // The kHeadless environment variable overrides the decision, but only if the
-  // crash service is under control of the user. It is used by QA testing
-  // infrastructure to switch on generation of crash reports.
-#if defined(OS_CHROMEOS)
-  bool is_guest_session =
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kGuestSession);
-  bool is_stable_channel =
-      chrome::VersionInfo::GetChannel() == chrome::VersionInfo::CHANNEL_STABLE;
-  // TODO(pastarmovj): Consider the TrustedGet here.
-  bool reporting_enabled;
-  chromeos::CrosSettings::Get()->GetBoolean(chromeos::kStatsReportingPref,
-                                            &reporting_enabled);
-  bool breakpad_enabled =
-      !(is_guest_session && is_stable_channel) && reporting_enabled;
-  if (!breakpad_enabled)
-    breakpad_enabled = getenv(env_vars::kHeadless) != NULL;
-#else
-  const PrefService::Preference* metrics_reporting_enabled =
-      local_state->FindPreference(prefs::kMetricsReportingEnabled);
-  CHECK(metrics_reporting_enabled);
-  bool breakpad_enabled =
-      local_state->GetBoolean(prefs::kMetricsReportingEnabled);
-  if (!breakpad_enabled && metrics_reporting_enabled->IsUserModifiable())
-    breakpad_enabled = getenv(env_vars::kHeadless) != NULL;
-#endif  // #if defined(OS_CHROMEOS)
-  return breakpad_enabled;
-}
-#endif  // #if defined(USE_LINUX_BREAKPAD)
-
 // This code is specific to the Windows-only PreReadExperiment field-trial.
 void AddPreReadHistogramTime(const char* name, base::TimeDelta time) {
   const base::TimeDelta kMin(base::TimeDelta::FromMilliseconds(1));
@@ -536,6 +487,11 @@ void AddPreReadHistogramTime(const char* name, base::TimeDelta time) {
       name, kMin, kMax, kBuckets, base::Histogram::kUmaTargetedHistogramFlag);
 
   counter->AddTime(time);
+}
+
+bool HasImportSwitch(const CommandLine& command_line) {
+  return (command_line.HasSwitch(switches::kImport) ||
+          command_line.HasSwitch(switches::kImportFromFile));
 }
 
 }  // namespace
@@ -1171,8 +1127,7 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   is_first_run_ =
       (first_run::IsChromeFirstRun() ||
           parsed_command_line().HasSwitch(switches::kFirstRun)) &&
-      !parsed_command_line().HasSwitch(switches::kImport) &&
-      !parsed_command_line().HasSwitch(switches::kImportFromFile);
+      !HasImportSwitch(parsed_command_line());
   browser_process_.reset(new BrowserProcessImpl(parsed_command_line()));
 
   if (parsed_command_line().HasSwitch(switches::kEnableProfiling)) {
@@ -1200,8 +1155,7 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   // tabs.
   browser_process_->tab_closeable_state_watcher();
 
-  local_state_ = InitializeLocalState(parsed_command_line(),
-                                      is_first_run_);
+  local_state_ = InitializeLocalState(parsed_command_line(), is_first_run_);
 
   // These members must be initialized before returning from this function.
   master_prefs_.reset(new first_run::MasterPrefs);
@@ -1397,17 +1351,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // Now that the file thread has been started, start recording.
   StartMetricsRecording();
 
-#if defined(USE_LINUX_BREAKPAD)
-  // Needs to be called after we have chrome::DIR_USER_DATA and
-  // g_browser_process.  This happens in PreCreateThreads.
-  BrowserThread::PostTask(BrowserThread::FILE,
-                          FROM_HERE,
-                          base::Bind(&GetLinuxDistroCallback));
-
-  if (IsCrashReportingEnabled(local_state_))
-    InitCrashReporter();
-#endif
-
   // Create watchdog thread after creating all other threads because it will
   // watch the other threads and they must be running.
   browser_process_->watchdog_thread();
@@ -1458,8 +1401,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // from other browsers. In case this process is a short-lived "import"
   // process that another browser runs just to import the settings, we
   // don't want to be checking for another browser process, by design.
-  if (!(parsed_command_line().HasSwitch(switches::kImport) ||
-        parsed_command_line().HasSwitch(switches::kImportFromFile))) {
+  if (!HasImportSwitch(parsed_command_line())) {
 #endif
     // When another process is running, use that process instead of starting a
     // new one. NotifyOtherProcess will currently give the other process up to
@@ -1526,8 +1468,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // that exits when this task has finished.
   // TODO(port): Port the Mac's IPC-based implementation to other platforms to
   //             replace this implementation. http://crbug.com/22142
-  if (parsed_command_line().HasSwitch(switches::kImport) ||
-      parsed_command_line().HasSwitch(switches::kImportFromFile)) {
+  if (HasImportSwitch(parsed_command_line())) {
     return first_run::ImportNow(profile_, parsed_command_line());
   }
 #endif
