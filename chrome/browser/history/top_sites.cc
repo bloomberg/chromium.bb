@@ -170,8 +170,8 @@ TopSites::TopSites(Profile* profile)
       profile_->GetPrefs()->GetDictionary(prefs::kNtpMostVisitedURLsBlacklist);
   pinned_urls_ =
       profile_->GetPrefs()->GetDictionary(prefs::kNtpMostVisitedPinnedURLs);
-  DCHECK(blacklist_ != NULL);
-  DCHECK(pinned_urls_ != NULL);
+  CHECK(blacklist_ != NULL);
+  CHECK(pinned_urls_ != NULL);
 }
 
 void TopSites::Init(const FilePath& db_name) {
