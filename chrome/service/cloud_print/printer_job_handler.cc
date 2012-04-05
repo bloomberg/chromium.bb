@@ -308,10 +308,12 @@ void PrinterJobHandler::OnRequestGiveUp() {
 }
 
 CloudPrintURLFetcher::ResponseAction PrinterJobHandler::OnRequestAuthError() {
-  // TODO(gene): We might consider stop processing if we get auth error here.
+  // We got an Auth error and have no idea how long it will take to refresh
+  // auth information (may take forever). We'll drop current request and
+  // propagate this error to the upper level. After auth issues will be
+  // resolved, GCP connector will restart.
   OnAuthError();
-  // Continue processing as a network error.
-  return CloudPrintURLFetcher::CONTINUE_PROCESSING;
+  return CloudPrintURLFetcher::STOP_PROCESSING;
 }
 
 std::string PrinterJobHandler::GetAuthHeader() {
