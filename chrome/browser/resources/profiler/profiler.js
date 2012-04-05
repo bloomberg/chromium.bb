@@ -172,7 +172,7 @@ var MainView = (function() {
       },
 
       getValueAsText: function() {
-        return getDictionaryKeys(this.valuesSet_).length + ' unique'
+        return getDictionaryKeys(this.valuesSet_).length + ' unique';
       },
     };
 
@@ -243,7 +243,7 @@ var MainView = (function() {
           create: function(key) {
             return new Aggregator(numeratorKey, divisorKey);
           },
-        }
+        };
       }
     };
   })();
@@ -617,7 +617,7 @@ var MainView = (function() {
     var parts = [];
     for (var end = orig.length; end > 0; ) {
       var chunk = Math.min(end, 3);
-      parts.push(orig.substr(end-chunk, chunk));
+      parts.push(orig.substr(end - chunk, chunk));
       end -= chunk;
     }
     return parts.reverse().join(',');
@@ -1007,7 +1007,7 @@ var MainView = (function() {
           var a = row1[aggregateKey];
           var b = row2[aggregateKey];
 
-          var diffFunc =  KEY_PROPERTIES[aggregateKey].diff;
+          var diffFunc = KEY_PROPERTIES[aggregateKey].diff;
           newRow[aggregateKey] = diffFunc(a, b);
         }
       } else {
@@ -1486,7 +1486,7 @@ var MainView = (function() {
 
         // The grouped properties are going to be the same for each row in our,
         // table, so avoid drawing them in our table!
-        var keysToExclude = []
+        var keysToExclude = [];
 
         for (var i = 0; i < randomGroupKey.length; ++i)
           keysToExclude.push(randomGroupKey[i].key);
@@ -1535,7 +1535,7 @@ var MainView = (function() {
      * Draws a title into |parent| that describes |groupKey|.
      */
     drawGroupTitle_: function(parent, groupKey) {
-      if (groupKey.length  == 0) {
+      if (groupKey.length == 0) {
         // Empty group key means there was no grouping.
         return;
       }
@@ -1796,7 +1796,7 @@ var MainView = (function() {
         'userAgent': navigator.userAgent,
         'version': 1,
         'snapshots': snapshots
-      }
+      };
 
       var dumpText = JSON.stringify(dump, null, ' ');
       var blobBuilder = new WebKitBlobBuilder();
@@ -1807,7 +1807,7 @@ var MainView = (function() {
     },
 
     loadFileChanged_: function() {
-      this.loadSnapshots_($(SNAPSHOT_FILE_LOADER_ID).files[0])
+      this.loadSnapshots_($(SNAPSHOT_FILE_LOADER_ID).files[0]);
     },
 
     loadSnapshots_: function(file) {
@@ -1824,7 +1824,7 @@ var MainView = (function() {
     onLoadSnapshotsFile_: function(file, event) {
       try {
         var parsed = null;
-        parsed = JSON.parse(event.target.result)
+        parsed = JSON.parse(event.target.result);
 
         if (parsed.version != 1) {
           throw new Error('Unrecognized version: ' + parsed.version);
@@ -1848,7 +1848,7 @@ var MainView = (function() {
       this.updateMergedDataSoon_();
     },
 
-    displayLoadedFile_: function (file, content) {
+    displayLoadedFile_: function(file, content) {
       this.clearExistingSnapshots_();
       $(TAKE_SNAPSHOT_BUTTON_ID).disabled = true;
       $(SAVE_SNAPSHOTS_BUTTON_ID).disabled = true;
@@ -1863,7 +1863,7 @@ var MainView = (function() {
                               time: snapshot.timestamp * 1000});
         this.addSnapshotToList_(this.snapshots_.length - 1);
         var snapshotData = snapshot.data;
-        for (var j = 0; j < snapshotData.length; ++j){
+        for (var j = 0; j < snapshotData.length; ++j) {
           this.addDataToSnapshot(snapshotData[j]);
         }
       }
