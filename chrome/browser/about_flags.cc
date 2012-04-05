@@ -643,6 +643,15 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kDisableChromeToMobile)
   },
+#if defined(GOOGLE_CHROME_BUILD)
+  {
+    "enable-asynchronous-spellchecking",
+    IDS_FLAGS_ENABLE_ASYNCHRONOUS_SPELLCHECKING,
+    IDS_FLAGS_ENABLE_ASYNCHRONOUS_SPELLCHECKING_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kEnableAsynchronousSpellChecking)
+  },
+#endif
 };
 
 const Experiment* experiments = kExperiments;
