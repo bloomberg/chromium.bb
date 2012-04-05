@@ -174,6 +174,10 @@ int32_t NaClSysSysconf(struct NaClAppThread *natp,
       result_value = kImcSendMsgMaxSize;
       break;
     }
+    case NACL_ABI__SC_PAGESIZE: {
+      result_value = 1 << 16;  /* always 64k pages */
+      break;
+    }
     default: {
       retval = -NACL_ABI_EINVAL;
       goto cleanup;

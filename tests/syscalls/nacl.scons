@@ -1,5 +1,5 @@
 # -*- python -*-
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -165,3 +165,13 @@ env.AddNodeToTestSuite(node,
                        ['small_tests', 'sel_ldr_tests'],
                        'run_raw_timefuncs_test',
                        is_broken=is_on_vm or time_test_is_broken_on_this_os)
+
+sysconf_pagesize_nexe = env.ComponentProgram('sysconf_pagesize_test',
+                                             ['sysconf_pagesize.c'],
+                                             EXTRA_LIBS=['${NONIRT_LIBS}'])
+
+node = env.CommandSelLdrTestNacl('sysconf_pagesize_test.out',
+                                 sysconf_pagesize_nexe)
+env.AddNodeToTestSuite(node,
+                       ['small_tests', 'sel_ldr_tests'],
+                       'run_sysconf_pagesize_test')

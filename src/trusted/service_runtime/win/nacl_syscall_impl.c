@@ -156,7 +156,7 @@ int32_t NaClSysSysconf(struct NaClAppThread *natp,
       if (0 == number_of_workers) {
         SYSTEM_INFO si;
         GetSystemInfo(&si);
-        number_of_workers = (int32_t)si.dwNumberOfProcessors;
+        number_of_workers = (int32_t) si.dwNumberOfProcessors;
       }
       result_value = number_of_workers;
       break;
@@ -165,6 +165,10 @@ int32_t NaClSysSysconf(struct NaClAppThread *natp,
       /* TODO(sehr,bsy): this value needs to be determined at run time. */
       const int32_t kImcSendMsgMaxSize = 1 << 16;
       result_value = kImcSendMsgMaxSize;
+      break;
+    }
+    case NACL_ABI__SC_PAGESIZE: {
+      result_value = 1 << 16;  /* always 64k pages */
       break;
     }
     default: {
