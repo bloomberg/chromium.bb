@@ -160,6 +160,10 @@ class TabRestoreService : public BaseSessionService {
   // added to |delegate|.
   void RestoreMostRecentEntry(TabRestoreServiceDelegate* delegate);
 
+  // Removes the Tab with id |id| from the list and returns it; ownership is
+  // passed to the caller.
+  Tab* RemoveTabEntryById(SessionID::id_type id);
+
   // Restores an entry by id. If there is no entry with an id matching |id|,
   // this does nothing. If |delegate| is NULL, this creates a new window for the
   // entry. |disposition| is respected, but the attributes (tabstrip index,

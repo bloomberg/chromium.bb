@@ -1981,6 +1981,7 @@
         'browser/sessions/session_id.h',
         'browser/sessions/session_restore.cc',
         'browser/sessions/session_restore.h',
+        'browser/sessions/session_restore_android.cc',
         'browser/sessions/session_service.cc',
         'browser/sessions/session_service.h',
         'browser/sessions/session_service_factory.cc',
@@ -2321,6 +2322,7 @@
         'browser/ui/android/js_modal_dialog_android.cc',
         'browser/ui/android/select_file_dialog_android.cc',
         'browser/ui/android/ssl_client_certificate_selector.cc',
+        'browser/ui/android/tab_restore_service_delegate_android.cc',
         'browser/ui/app_modal_dialogs/app_modal_dialog.cc',
         'browser/ui/app_modal_dialogs/app_modal_dialog.h',
         'browser/ui/app_modal_dialogs/app_modal_dialog_queue.cc',
@@ -4516,6 +4518,9 @@
             'browser/ui/browser_navigator.cc',
             'browser/ui/browser_tab_restore_service_delegate.cc',
             'browser/ui/sync/browser_synced_window_delegate.cc',
+
+            # Custom implementation of session_restore for Android.
+            'browser/sessions/session_restore.cc',
 
             'browser/ui/sad_tab_helper.cc',
             'browser/ui/webui/certificate_viewer_webui.cc',

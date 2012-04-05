@@ -308,6 +308,21 @@ void TabRestoreService::RestoreMostRecentEntry(
   RestoreEntryById(delegate, entries_.front()->id, UNKNOWN);
 }
 
+TabRestoreService::Tab* TabRestoreService::RemoveTabEntryById(
+    SessionID::id_type id) {
+  Entries::iterator i = GetEntryIteratorById(id);
+  if (i == entries_.end())
+    return NULL;
+
+  Entry* entry = *i;
+  if (entry->type != TAB)
+    return NULL;
+
+  Tab* tab = static_cast<Tab*>(entry);
+  entries_.erase(i);
+  return tab;
+}
+
 void TabRestoreService::RestoreEntryById(TabRestoreServiceDelegate* delegate,
                                          SessionID::id_type id,
                                          WindowOpenDisposition disposition) {
