@@ -166,7 +166,7 @@ const int kWindowBorderWidth = 5;
 // How round the 'new tab' style bookmarks bar is.
 const int kNewtabBarRoundness = 5;
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
 extern "C" {
 typedef void (*SetFrameWindow)(HWND window);
 }
@@ -187,7 +187,7 @@ bool AdjustFrameForImmersiveMode(BrowserFrame* frame) {
 bool AdjustFrameForImmersiveMode(BrowserFrame* frame) {
   return false;
 }
-#endif  // OS_WIN
+#endif
 
 }  // namespace
 
