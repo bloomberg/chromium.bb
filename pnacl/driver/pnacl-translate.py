@@ -191,6 +191,12 @@ def main(argv):
     bcfile = bcfiles[0]
   else:
     bcfile = None
+  bctype = driver_tools.FileType(bcfile)
+  # Force the same effect of having the '-shared' commandline option.
+  # Usually only -shared is specified to the bitcode linker to create
+  # the .pso, and the translator operates with few commandline options.
+  if bctype == 'pso':
+    env.set('SHARED', '1')
 
   # If there's a bitcode file, translate it now.
   tng = driver_tools.TempNameGen(inputs + bcfiles, output)
@@ -226,13 +232,14 @@ def main(argv):
     inputs = ListReplace(inputs, bcfile, '__BITCODE__')
     env.set('INPUTS', *inputs)
 
-  # Get bitcode type and metadata
+  # Get bitcode metadata.
   if bcfile:
-    bctype = driver_tools.FileType(bcfile)
     metadata = driver_tools.GetBitcodeMetadata(bcfile)
 
   # Determine the output type, in this order of precedence:
   # 1) Output type can be specified on command-line (-S, -c, -shared, -static)
+  #    -S and -c are handled above (see the early return when output_type
+  #    is .o and .s).
   # 2) If bitcode file given, use it's output type. (pso->so, pexe->nexe, po->o)
   # 3) Otherwise, assume nexe output.
   if env.getbool('SHARED'):
@@ -272,9 +279,6 @@ def main(argv):
   return 0
 
 def ApplyBitcodeConfig(metadata, bctype):
-  if bctype == 'pso':
-    env.set('SHARED', '1')
-
   if env.getbool('SHARED'):
     env.set('PIC', '1')
 
