@@ -22,7 +22,7 @@
 #include "ui/gfx/font.h"
 #include "ui/gfx/pango_util.h"
 
-#if !defined(USE_WAYLAND) && defined(TOOLKIT_USES_GTK)
+#if !defined(USE_WAYLAND) && defined(TOOLKIT_GTK)
 #include <gdk/gdk.h>
 #include <gtk/gtk.h>
 #endif
@@ -63,7 +63,7 @@ std::string FindBestMatchFontFamilyName(
 // Returns a Pango font description (suitable for parsing by
 // pango_font_description_from_string()) for the default UI font.
 std::string GetDefaultFont() {
-#if defined(USE_WAYLAND) || !defined(TOOLKIT_USES_GTK)
+#if defined(USE_WAYLAND) || !defined(TOOLKIT_GTK)
 #if defined(OS_CHROMEOS)
   return l10n_util::GetStringUTF8(IDS_UI_FONT_FAMILY_CROS);
 #else
@@ -82,7 +82,7 @@ std::string GetDefaultFont() {
   std::string default_font = std::string(font_name);
   g_free(font_name);
   return default_font;
-#endif  // defined(USE_WAYLAND) || !defined(TOOLKIT_USES_GTK)
+#endif  // defined(USE_WAYLAND) || !defined(TOOLKIT_GTK)
 }
 
 }  // namespace

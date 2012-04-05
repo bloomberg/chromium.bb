@@ -26,7 +26,7 @@
 #include <asm/page.h>  // for PAGE_SIZE needed by PTHREAD_STACK_MIN
 #endif
 
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
 #include "chrome/browser/chrome_browser_main_extra_parts_gtk.h"
 #include "chrome/browser/printing/print_dialog_gtk.h"
 #endif
@@ -268,7 +268,7 @@ void ChromeBrowserMainPartsPosix::PostMainMessageLoopStart() {
   action.sa_handler = SIGHUPHandler;
   CHECK(sigaction(SIGHUP, &action, NULL) == 0);
 
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
   printing::PrintingContextGtk::SetCreatePrintDialogFunction(
       &PrintDialogGtk::CreatePrintDialog);
 #endif
@@ -285,7 +285,7 @@ void ChromeBrowserMainPartsPosix::ShowMissingLocaleMessageBox() {
 #elif defined(OS_MACOSX)
   // Not called on Mac because we load the locale files differently.
   NOTREACHED();
-#elif defined(TOOLKIT_USES_GTK)
+#elif defined(TOOLKIT_GTK)
   ChromeBrowserMainExtraPartsGtk::ShowMessageBox(
       chrome_browser::kMissingLocaleDataMessage);
 #elif defined(USE_AURA)

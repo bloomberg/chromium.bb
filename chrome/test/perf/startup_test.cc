@@ -442,7 +442,7 @@ TEST_F(StartupTest, MAYBE_PerfComplexTheme) {
                  UITestBase::COMPLEX_THEME, 0, 0);
 }
 
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
 TEST_F(StartupTest, PerfGtkTheme) {
   RunStartupTest("warm", "gtk-theme", WARM, NOT_IMPORTANT,
                  UITestBase::NATIVE_THEME, 0, 0);

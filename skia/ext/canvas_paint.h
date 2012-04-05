@@ -16,7 +16,7 @@
 #elif defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__sun)
 #if defined(USE_WAYLAND)
 #include "skia/ext/canvas_paint_wayland.h"
-#elif defined(TOOLKIT_USES_GTK)
+#elif defined(TOOLKIT_GTK)
 #include "skia/ext/canvas_paint_gtk.h"
 #else
 #include "skia/ext/canvas_paint_x.h"

@@ -50,7 +50,7 @@
 #include "remoting/protocol/it2me_host_authenticator_factory.h"
 #include "remoting/protocol/me2me_host_authenticator_factory.h"
 
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
 #include "ui/gfx/gtk_util.h"
 #elif defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"
@@ -306,9 +306,9 @@ int main(int argc, char** argv) {
   base::AtExitManager exit_manager;
   crypto::EnsureNSPRInit();
 
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
   gfx::GtkInitFromCommandLine(*cmd_line);
-#endif  // TOOLKIT_USES_GTK
+#endif  // TOOLKIT_GTK
 
   remoting::SimpleHost simple_host;
 

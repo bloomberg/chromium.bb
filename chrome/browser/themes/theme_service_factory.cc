@@ -12,7 +12,7 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/common/pref_names.h"
 
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
 #include "chrome/browser/ui/gtk/theme_service_gtk.h"
 #endif
 
@@ -46,7 +46,7 @@ ThemeServiceFactory::~ThemeServiceFactory() {}
 ProfileKeyedService* ThemeServiceFactory::BuildServiceInstanceFor(
     Profile* profile) const {
   ThemeService* provider = NULL;
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
   provider = new ThemeServiceGtk;
 #else
   provider = new ThemeService;
@@ -57,7 +57,7 @@ ProfileKeyedService* ThemeServiceFactory::BuildServiceInstanceFor(
 }
 
 void ThemeServiceFactory::RegisterUserPrefs(PrefService* prefs) {
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
   prefs->RegisterBooleanPref(prefs::kUsesSystemTheme,
                              ThemeServiceGtk::DefaultUsesSystemTheme(),
                              PrefService::UNSYNCABLE_PREF);

@@ -18,7 +18,7 @@
 #include "base/threading/thread_checker.h"
 #include "ui/base/ui_export.h"
 
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
 #include <gdk/gdk.h>
 #endif
 
@@ -36,7 +36,7 @@ class Size;
 class FilePath;
 class SkBitmap;
 
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
 typedef struct _GtkClipboard GtkClipboard;
 #endif
 
@@ -94,7 +94,7 @@ class UI_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
     explicit FormatType(const std::string& native_format);
     const std::string& ToString() const { return data_; }
     std::string data_;
-#elif defined(TOOLKIT_USES_GTK)
+#elif defined(TOOLKIT_GTK)
     explicit FormatType(const std::string& native_format);
     explicit FormatType(const GdkAtom& native_format);
     const GdkAtom& ToGdkAtom() const { return data_; }
@@ -332,7 +332,7 @@ class UI_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
 
   // True if we can create a window.
   bool create_window_;
-#elif defined(TOOLKIT_USES_GTK)
+#elif defined(TOOLKIT_GTK)
   // The public API is via WriteObjects() which dispatches to multiple
   // Write*() calls, but on GTK we must write all the clipboard types
   // in a single GTK call.  To support this we store the current set

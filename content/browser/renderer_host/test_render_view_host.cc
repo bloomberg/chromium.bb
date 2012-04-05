@@ -169,17 +169,15 @@ gfx::Rect TestRenderWidgetHostView::GetRootWindowBounds() {
 }
 #endif
 
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
 GdkEventButton* TestRenderWidgetHostView::GetLastMouseDown() {
   return NULL;
 }
 
-#if !defined(TOOLKIT_VIEWS)
 gfx::NativeView TestRenderWidgetHostView::BuildInputMethodsGtkMenu() {
   return NULL;
 }
-#endif  // !defined(TOOLKIT_VIEWS)
-#endif  // defined(TOOLKIT_USES_GTK)
+#endif  // defined(TOOLKIT_GTK)
 
 bool TestRenderWidgetHostView::CopyFromCompositingSurface(
     const gfx::Size& size,

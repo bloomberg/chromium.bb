@@ -25,10 +25,10 @@ class RepostFormWarningController : public TabModalConfirmDialogDelegate {
   virtual string16 GetTitle() OVERRIDE;
   virtual string16 GetMessage() OVERRIDE;
   virtual string16 GetAcceptButtonTitle() OVERRIDE;
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
   virtual const char* GetAcceptButtonIcon() OVERRIDE;
   virtual const char* GetCancelButtonIcon() OVERRIDE;
-#endif  // defined(TOOLKIT_USES_GTK)
+#endif  // defined(TOOLKIT_GTK)
   virtual void OnAccepted() OVERRIDE;
   virtual void OnCanceled() OVERRIDE;
 

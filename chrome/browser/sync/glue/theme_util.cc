@@ -25,7 +25,7 @@ namespace {
 
 // TODO(akalin): Remove this.
 bool IsSystemThemeDistinctFromDefaultTheme() {
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
   return true;
 #else
   return false;

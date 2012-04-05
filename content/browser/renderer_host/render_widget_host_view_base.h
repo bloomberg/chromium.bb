@@ -10,7 +10,7 @@
 #include <OpenGL/OpenGL.h>
 #endif
 
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
 #include <gdk/gdk.h>
 #endif
 

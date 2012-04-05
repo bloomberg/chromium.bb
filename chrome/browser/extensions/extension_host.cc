@@ -166,7 +166,7 @@ void ExtensionHost::CreateView(Browser* browser) {
 #elif defined(OS_MACOSX)
   view_.reset(new ExtensionViewMac(this, browser));
   view_->Init();
-#elif defined(TOOLKIT_USES_GTK)
+#elif defined(TOOLKIT_GTK)
   view_.reset(new ExtensionViewGtk(this, browser));
   view_->Init();
 #else

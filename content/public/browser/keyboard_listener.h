@@ -8,15 +8,15 @@
 
 #include "content/common/content_export.h"
 
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
 typedef struct _GdkEventKey GdkEventKey;
-#endif  // defined(TOOLKIT_USES_GTK)
+#endif  // defined(TOOLKIT_GTK)
 
 class CONTENT_EXPORT KeyboardListener {
  public:
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
   virtual bool HandleKeyPressEvent(GdkEventKey* event) = 0;
-#endif  // defined(TOOLKIT_USES_GTK)
+#endif  // defined(TOOLKIT_GTK)
 
  protected:
   virtual ~KeyboardListener() {}

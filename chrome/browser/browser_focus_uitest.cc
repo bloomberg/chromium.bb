@@ -42,7 +42,7 @@
 #include "chrome/browser/ui/views/tab_contents/tab_contents_container.h"
 #endif
 
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
 #include "chrome/browser/ui/gtk/view_id_util.h"
 #endif
 

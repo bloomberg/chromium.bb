@@ -4300,7 +4300,7 @@ void RenderViewImpl::OnSetRendererPrefs(
   double old_zoom_level = renderer_preferences_.default_zoom_level;
   renderer_preferences_ = renderer_prefs;
   UpdateFontRenderingFromRendererPrefs();
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
   WebColorName name = WebKit::WebColorWebkitFocusRingColor;
   WebKit::setNamedColors(&name, &renderer_prefs.focus_ring_color, 1);
   WebKit::setCaretBlinkInterval(renderer_prefs.caret_blink_interval);
@@ -4310,9 +4310,9 @@ void RenderViewImpl::OnSetRendererPrefs(
       renderer_prefs.track_color);
 #endif
 
-#if defined(USE_ASH) || defined(TOOLKIT_USES_GTK)
+#if defined(USE_ASH) || defined(TOOLKIT_GTK)
   if (webview()) {
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
     webview()->setScrollbarColors(
         renderer_prefs.thumb_inactive_color,
         renderer_prefs.thumb_active_color,

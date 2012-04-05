@@ -9,7 +9,7 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
 
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
 #include <gdk/gdkx.h>
 #include <gtk/gtk.h>
 

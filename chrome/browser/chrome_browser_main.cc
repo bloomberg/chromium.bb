@@ -174,7 +174,7 @@
 #include "ui/views/focus/accelerator_handler.h"
 #endif
 
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "ui/gfx/gtk_util.h"
 #endif

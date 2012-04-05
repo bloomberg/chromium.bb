@@ -196,7 +196,7 @@ TEST_F(NewTabUIStartupTest, DISABLED_NewTabTimingTestsCold) {
   RunNewTabTimingTest();
 }
 
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
 TEST_F(NewTabUIStartupTest, GtkThemeCold) {
   RunStartupTest("tab_gtk_theme_cold", false /* cold */,
                  false /* not important */,

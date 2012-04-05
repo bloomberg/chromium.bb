@@ -67,12 +67,10 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
   virtual void SetWindowVisibility(bool visible) OVERRIDE {}
   virtual void WindowFrameChanged() OVERRIDE {}
 #endif  // defined(OS_MACOSX)
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
   virtual GdkEventButton* GetLastMouseDown() OVERRIDE;
-#if !defined(TOOLKIT_VIEWS)
   virtual gfx::NativeView BuildInputMethodsGtkMenu() OVERRIDE;
-#endif  // !defined(TOOLKIT_VIEWS)
-#endif  // defined(TOOLKIT_USES_GTK)
+#endif  // defined(TOOLKIT_GTK)
   virtual bool CopyFromCompositingSurface(
       const gfx::Size& size,
              skia::PlatformCanvas* output) OVERRIDE;
@@ -151,10 +149,10 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
   virtual void AcceleratedSurfaceRelease(uint64 surface_id) OVERRIDE { }
 #endif
 
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
   virtual void CreatePluginContainer(gfx::PluginWindowHandle id) OVERRIDE { }
   virtual void DestroyPluginContainer(gfx::PluginWindowHandle id) OVERRIDE { }
-#endif  // defined(TOOLKIT_USES_GTK)
+#endif  // defined(TOOLKIT_GTK)
 
   virtual gfx::GLSurfaceHandle GetCompositingSurface() OVERRIDE;
 

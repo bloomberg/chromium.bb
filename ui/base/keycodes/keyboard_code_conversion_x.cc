@@ -329,7 +329,7 @@ KeyboardCode KeyboardCodeFromXKeysym(unsigned int keysym) {
     case XK_F24:
       return static_cast<KeyboardCode>(VKEY_F1 + (keysym - XK_F1));
 
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
     case XF86XK_HomePage:
     case XF86XK_Search:
     case XF86XK_Back:

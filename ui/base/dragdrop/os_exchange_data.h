@@ -13,7 +13,7 @@
 
 #if defined(OS_WIN)
 #include <objidl.h>
-#elif defined(TOOLKIT_USES_GTK)
+#elif defined(TOOLKIT_GTK)
 #include <gtk/gtk.h>
 #endif
 
@@ -56,7 +56,7 @@ class UI_EXPORT OSExchangeData {
   typedef Clipboard::FormatType CustomFormat;
 #elif defined(OS_WIN)
   typedef CLIPFORMAT CustomFormat;
-#elif defined(TOOLKIT_USES_GTK)
+#elif defined(TOOLKIT_GTK)
   typedef GdkAtom CustomFormat;
 #else
   typedef void* CustomFormat;

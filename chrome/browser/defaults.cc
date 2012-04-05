@@ -12,7 +12,7 @@ const bool kOSSupportsOtherBrowsers = false;
 const bool kOSSupportsOtherBrowsers = true;
 #endif
 
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
 const bool kShowCancelButtonInTaskManager = true;
 #else
 const bool kShowCancelButtonInTaskManager = false;
@@ -36,7 +36,7 @@ const bool kSyncAutoStarts = true;
 const bool kShowOtherBrowsersInAboutMemory = false;
 const bool kAlwaysOpenIncognitoWindow = true;
 
-#elif defined(TOOLKIT_USES_GTK)
+#elif defined(TOOLKIT_GTK)
 
 // 14px = 10.5pt @ 96dpi.
 const int kAutocompleteEditFontPixelSize = 14;

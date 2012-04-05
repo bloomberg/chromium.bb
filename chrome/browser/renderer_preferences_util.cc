@@ -9,7 +9,7 @@
 #include "chrome/common/pref_names.h"
 #include "content/public/common/renderer_preferences.h"
 
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/theme_service_gtk.h"
 #endif
@@ -18,7 +18,7 @@ namespace renderer_preferences_util {
 
 void UpdateFromSystemSettings(
     content::RendererPreferences* prefs, Profile* profile) {
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
   gtk_util::UpdateGtkFontSettings(prefs);
 
   ThemeServiceGtk* theme_service = ThemeServiceGtk::GetFrom(profile);

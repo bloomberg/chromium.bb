@@ -37,7 +37,7 @@
 #include "ui/base/events.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
 #include <gdk/gdk.h>
 #include <gtk/gtk.h>
 #endif
@@ -118,7 +118,7 @@ const struct TestHistoryEntry {
   {"http://bar/", "Bar", kSearchText, 1, 0, false },
 };
 
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
 // Returns the text stored in the PRIMARY clipboard.
 std::string GetPrimarySelectionText() {
   GtkClipboard* clipboard = gtk_clipboard_get(GDK_SELECTION_PRIMARY);
@@ -1356,9 +1356,9 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest,
   CtrlKeyPressedWithInlineAutocompleteTest();
 }
 
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
 // TODO(oshima): enable these tests for views-implmentation when
-// these featuers are supported.
+// these featuers are supported. http://crbug.com/121558.
 
 IN_PROC_BROWSER_TEST_F(OmniboxViewTest, UndoRedoLinux) {
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kAboutBlankURL));

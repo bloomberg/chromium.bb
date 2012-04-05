@@ -11,7 +11,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/size.h"
 
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
 #include <gdk-pixbuf/gdk-pixbuf.h>
 #include <gdk/gdk.h>
 #include <glib-object.h>
@@ -33,7 +33,7 @@ namespace internal {
 bool NSImageToSkBitmaps(NSImage* image, std::vector<const SkBitmap*>* bitmaps);
 #endif
 
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
 const SkBitmap* GdkPixbufToSkBitmap(GdkPixbuf* pixbuf) {
   CHECK(pixbuf);
   gfx::Canvas canvas(gfx::Size(gdk_pixbuf_get_width(pixbuf),
@@ -69,7 +69,7 @@ class ImageRep {
     return reinterpret_cast<ImageRepSkia*>(this);
   }
 
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
   ImageRepGdk* AsImageRepGdk() {
     CHECK_EQ(type_, Image::kImageRepGdk);
     return reinterpret_cast<ImageRepGdk*>(this);
@@ -125,7 +125,7 @@ class ImageRepSkia : public ImageRep {
   DISALLOW_COPY_AND_ASSIGN(ImageRepSkia);
 };
 
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
 class ImageRepGdk : public ImageRep {
  public:
   explicit ImageRepGdk(GdkPixbuf* pixbuf)
@@ -170,7 +170,7 @@ class ImageRepCairoCached : public ImageRep {
 
   DISALLOW_COPY_AND_ASSIGN(ImageRepCairoCached);
 };
-#endif  // defined(TOOLKIT_USES_GTK)
+#endif  // defined(TOOLKIT_GTK)
 
 #if defined(OS_MACOSX)
 class ImageRepCocoa : public ImageRep {
@@ -255,7 +255,7 @@ Image::Image(const std::vector<const SkBitmap*>& bitmaps)
   AddRepresentation(rep);
 }
 
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
 Image::Image(GdkPixbuf* pixbuf)
     : storage_(new internal::ImageStorage(Image::kImageRepGdk)) {
   internal::ImageRepGdk* rep = new internal::ImageRepGdk(pixbuf);
@@ -287,7 +287,7 @@ const SkBitmap* Image::ToSkBitmap() const {
   return rep->AsImageRepSkia()->bitmap();
 }
 
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
 GdkPixbuf* Image::ToGdkPixbuf() const {
   internal::ImageRep* rep = GetRepresentation(Image::kImageRepGdk);
   return rep->AsImageRepGdk()->pixbuf();
@@ -310,7 +310,7 @@ SkBitmap* Image::CopySkBitmap() const {
   return new SkBitmap(*ToSkBitmap());
 }
 
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
 GdkPixbuf* Image::CopyGdkPixbuf() const {
   GdkPixbuf* pixbuf = ToGdkPixbuf();
   g_object_ref(pixbuf);
@@ -379,7 +379,7 @@ internal::ImageRep* Image::GetRepresentation(
   // Handle native-to-Skia conversion.
   if (rep_type == Image::kImageRepSkia) {
     internal::ImageRepSkia* rep = NULL;
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
     if (storage_->default_representation_type() == Image::kImageRepGdk) {
       internal::ImageRepGdk* pixbuf_rep = default_rep->AsImageRepGdk();
       rep = new internal::ImageRepSkia(
@@ -400,7 +400,7 @@ internal::ImageRep* Image::GetRepresentation(
     AddRepresentation(rep);
     return rep;
   }
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
   else if (rep_type == Image::kImageRepCairoCache) {
     // Handle any-to-Cairo conversion. This may recursively create an
     // intermediate pixbuf before we send the data to the display server.
@@ -419,7 +419,7 @@ internal::ImageRep* Image::GetRepresentation(
     internal::ImageRep* native_rep = NULL;
 #if defined(USE_AURA)
     NOTIMPLEMENTED();
-#elif defined(TOOLKIT_USES_GTK)
+#elif defined(TOOLKIT_GTK)
     if (rep_type == Image::kImageRepGdk) {
       GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(
           default_rep->AsImageRepSkia()->bitmap());

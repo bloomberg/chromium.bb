@@ -333,7 +333,7 @@ void PanelBrowserFrameView::MouseWatcher::DidProcessEvent(
   if (ui::IsMotionEvent(event))
     HandleGlobalMouseMoveEvent();
 }
-#elif defined(TOOLKIT_USES_GTK)
+#elif defined(TOOLKIT_GTK)
 void PanelBrowserFrameView::MouseWatcher::WillProcessEvent(GdkEvent* event) {
 }
 

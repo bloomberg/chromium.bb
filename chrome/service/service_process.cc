@@ -34,7 +34,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_switches.h"
 
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
 #include "ui/gfx/gtk_util.h"
 #include <gtk/gtk.h>
 #endif
@@ -124,7 +124,7 @@ ServiceProcess::ServiceProcess()
 bool ServiceProcess::Initialize(MessageLoopForUI* message_loop,
                                 const CommandLine& command_line,
                                 ServiceProcessState* state) {
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
   // TODO(jamiewalch): Calling GtkInitFromCommandLine here causes the process
   // to abort if run headless. The correct fix for this is to refactor the
   // service process to be more modular, a task that is currently underway.

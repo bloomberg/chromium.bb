@@ -89,7 +89,7 @@ class WaylandWindow;
 }
 
 typedef struct _GdkRegion GdkRegion;
-#elif defined(TOOLKIT_USES_GTK)
+#elif defined(TOOLKIT_GTK)
 typedef struct _GdkCursor GdkCursor;
 typedef union _GdkEvent GdkEvent;
 typedef struct _GdkPixbuf GdkPixbuf;
@@ -128,7 +128,7 @@ typedef ui::WaylandWindow* NativeWindow;
 // a Wayland specific region
 typedef GdkRegion* NativeRegion;
 typedef void* NativeEvent;
-#elif defined(TOOLKIT_USES_GTK)
+#elif defined(TOOLKIT_GTK)
 typedef GdkCursor* NativeCursor;
 typedef GtkWidget* NativeView;
 typedef GtkWindow* NativeWindow;
@@ -160,7 +160,7 @@ typedef void* NativeEditView;
 typedef cairo_t* NativeDrawingContext;
 typedef void* NativeMenu;
 typedef void* NativeViewAccessible;
-#elif defined(TOOLKIT_USES_GTK)
+#elif defined(TOOLKIT_GTK)
 typedef PangoFontDescription* NativeFont;
 typedef GtkWidget* NativeEditView;
 typedef cairo_t* NativeDrawingContext;

@@ -43,7 +43,7 @@
 
 #include <errno.h>
 #include <fcntl.h>
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
 #include <gdk/gdk.h>
 #endif
 #include <signal.h>
@@ -873,7 +873,7 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcessWithTimeout(
     // The other process is shutting down, it's safe to start a new process.
     return PROCESS_NONE;
   } else if (strncmp(buf, kACKToken, arraysize(kACKToken) - 1) == 0) {
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
     // Notify the window manager that we've started up; if we do not open a
     // window, GTK will not automatically call this for us.
     gdk_notify_startup_complete();

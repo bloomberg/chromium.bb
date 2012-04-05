@@ -23,7 +23,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "ui/gfx/gl/gl_switches.h"
 
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
 // These two #includes need to come after gpu_messages.h.
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/size.h"
@@ -198,7 +198,7 @@ bool GpuProcessHostUIShim::OnControlMessageReceived(
     IPC_MESSAGE_HANDLER(GpuHostMsg_GraphicsInfoCollected,
                         OnGraphicsInfoCollected)
 
-#if defined(TOOLKIT_USES_GTK) || defined(OS_WIN)
+#if defined(TOOLKIT_GTK) || defined(OS_WIN)
     IPC_MESSAGE_HANDLER(GpuHostMsg_ResizeView, OnResizeView)
 #endif
 
@@ -238,7 +238,7 @@ void GpuProcessHostUIShim::OnGraphicsInfoCollected(
   GpuDataManagerImpl::GetInstance()->UpdateGpuInfo(gpu_info);
 }
 
-#if defined(TOOLKIT_USES_GTK) || defined(OS_WIN)
+#if defined(TOOLKIT_GTK) || defined(OS_WIN)
 
 void GpuProcessHostUIShim::OnResizeView(int32 surface_id,
                                         int32 route_id,
@@ -260,7 +260,7 @@ void GpuProcessHostUIShim::OnResizeView(int32 surface_id,
   // Resize the window synchronously. The GPU process must not issue GL
   // calls on the command buffer until the window is the size it expects it
   // to be.
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
   GdkWindow* window = reinterpret_cast<GdkWindow*>(
       gdk_xid_table_lookup(surface.handle));
   if (window) {

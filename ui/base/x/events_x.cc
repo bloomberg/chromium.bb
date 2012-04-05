@@ -10,14 +10,11 @@
 #include <string.h>
 
 #include "base/logging.h"
+#include "base/message_pump_x.h"
 #include "ui/base/keycodes/keyboard_code_conversion_x.h"
 #include "ui/base/touch/touch_factory.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/point.h"
-
-#if !defined(TOOLKIT_USES_GTK)
-#include "base/message_pump_x.h"
-#endif
 
 // Copied from xserver-properties.h
 #define AXIS_LABEL_PROP_REL_HWHEEL "Rel Horiz Wheel"
@@ -508,13 +505,11 @@ float GetTouchParamFromXEvent(XEvent* xev,
   return default_value;
 }
 
-#if !defined(TOOLKIT_USES_GTK)
 Atom GetNoopEventAtom() {
   return XInternAtom(
       base::MessagePumpX::GetDefaultXDisplay(),
       "noop", False);
 }
-#endif
 
 }  // namespace
 
@@ -864,13 +859,8 @@ void UpdateDeviceList() {
 }
 
 bool IsNoopEvent(const base::NativeEvent& event) {
-#if defined(TOOLKIT_USES_GTK)
-  NOTREACHED();
-  return false;
-#else
   return (event->type == ClientMessage &&
       event->xclient.message_type == GetNoopEventAtom());
-#endif
 }
 
 base::NativeEvent CreateNoopEvent() {
@@ -883,14 +873,9 @@ base::NativeEvent CreateNoopEvent() {
     noop->xclient.format = 8;
     DCHECK(!noop->xclient.display);
   }
-  // TODO(oshima): Remove ifdef once gtk is removed from views.
-#if defined(TOOLKIT_USES_GTK)
-  NOTREACHED();
-#else
   // Make sure we use atom from current xdisplay, which may
   // change during the test.
   noop->xclient.message_type = GetNoopEventAtom();
-#endif
   return noop;
 }
 

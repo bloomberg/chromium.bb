@@ -41,7 +41,7 @@ class TestCompositorHostLinux : public TestCompositorHost,
 #if defined(USE_AURA)
   virtual base::MessagePumpDispatcher::DispatchStatus
     Dispatch(XEvent* xev) OVERRIDE;
-#elif defined(TOOLKIT_USES_GTK)
+#elif defined(TOOLKIT_GTK)
   virtual bool Dispatch(GdkEvent* event) OVERRIDE;
 #endif
 
@@ -109,7 +109,7 @@ base::MessagePumpDispatcher::DispatchStatus TestCompositorHostLinux::Dispatch(
     XEvent* xev) {
   return MessagePumpDispatcher::EVENT_IGNORED;
 }
-#elif defined(TOOLKIT_USES_GTK)
+#elif defined(TOOLKIT_GTK)
 bool TestCompositorHostLinux::Dispatch(GdkEvent*) {
   return false;
 }

@@ -39,7 +39,7 @@
 #include <X11/Xcursor/Xcursor.h>
 #endif
 
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
 #include <gdk/gdk.h>
 #include <gdk/gdkx.h>
 #include <gtk/gtk.h>
@@ -421,7 +421,7 @@ bool GetCurrentDesktop(int* desktop) {
   return GetIntProperty(GetX11RootWindow(), "_NET_CURRENT_DESKTOP", desktop);
 }
 
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
 XID GetX11WindowFromGtkWidget(GtkWidget* widget) {
   return GDK_WINDOW_XID(gtk_widget_get_window(widget));
 }
@@ -446,7 +446,7 @@ GtkWindow* GetGtkWindowFromX11Window(XID xid) {
 void* GetVisualFromGtkWidget(GtkWidget* widget) {
   return GDK_VISUAL_XVISUAL(gtk_widget_get_visual(widget));
 }
-#endif  // defined(TOOLKIT_USES_GTK)
+#endif  // defined(TOOLKIT_GTK)
 
 int BitsPerPixelForPixmapDepth(Display* dpy, int depth) {
   int count;
@@ -646,7 +646,7 @@ bool SetIntArrayProperty(XID window,
 }
 
 Atom GetAtom(const char* name) {
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
   return gdk_x11_get_xatom_by_name_for_display(
       gdk_display_get_default(), name);
 #else
@@ -1037,7 +1037,7 @@ bool IsX11WindowFullScreen(XID window) {
           != atom_properties.end())
     return true;
 
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
   // As the last resort, check if the window size is as large as the main
   // screen.
   GdkRectangle monitor_rect;

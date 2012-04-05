@@ -97,7 +97,7 @@ class WebWidgetHost {
   void KeyEvent(NSEvent *);
   void SetFocus(bool enable);
  protected:
-#elif defined(TOOLKIT_USES_GTK)
+#elif defined(TOOLKIT_GTK)
  public:
   // ---------------------------------------------------------------------------
   // This is needed on Linux because the GtkWidget creation is the same between
@@ -142,7 +142,7 @@ class WebWidgetHost {
   bool track_mouse_leave_;
 #endif
 
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
   // Since GtkWindow resize is asynchronous, we have to stash the dimensions,
   // so that the backing store doesn't have to wait for sizing to take place.
   gfx::Size logical_size_;

@@ -106,7 +106,7 @@
 #include "chrome/browser/ui/cocoa/keystone_infobar_delegate.h"
 #endif
 
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #endif
 
@@ -120,9 +120,6 @@
 #include "chrome/browser/chromeos/network_message_observer.h"
 #include "chrome/browser/chromeos/power/low_battery_observer.h"
 #include "chrome/browser/chromeos/sms_observer.h"
-#if defined(TOOLKIT_USES_GTK)
-#include "chrome/browser/chromeos/legacy_window_manager/wm_message_listener.h"
-#endif
 #endif
 
 #if defined(TOOLKIT_VIEWS) && defined(OS_LINUX)
@@ -1422,7 +1419,7 @@ bool LearnMoreInfoBar::LinkClicked(WindowOpenDisposition disposition) {
 
 void BrowserInit::LaunchWithProfile::AddObsoleteSystemInfoBarIfNecessary(
     TabContentsWrapper* tab) {
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
   // We've deprecated support for Ubuntu Hardy.  Rather than attempting to
   // determine whether you're using that, we instead key off the GTK version;
   // this will also deprecate other distributions (including variants of Ubuntu)

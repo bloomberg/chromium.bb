@@ -42,7 +42,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageNamespace.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLError.h"
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
 #include "ui/base/keycodes/keyboard_code_conversion_gtk.h"
 #endif
 #include "ui/gfx/gl/gl_context.h"
@@ -693,7 +693,7 @@ WebKit::WebString RegisterIsolatedFileSystem(
 }
 
 // Keyboard code
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
 int NativeKeyCodeForWindowsKeyCode(int keycode, bool shift) {
   ui::KeyboardCode code = static_cast<ui::KeyboardCode>(keycode);
   return ui::GdkNativeKeyCodeForWindowsKeyCode(code, shift);

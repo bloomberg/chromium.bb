@@ -144,7 +144,7 @@ class GpuProcessHost : public content::BrowserChildProcessHostDelegate,
   // The pending create command buffer requests we need to reply to.
   std::queue<CreateCommandBufferCallback> create_command_buffer_requests_;
 
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
   // Encapsulates surfaces that we lock when creating view command buffers.
   // We release this lock once the command buffer (or associated GPU process)
   // is destroyed. This prevents the browser from destroying the surface

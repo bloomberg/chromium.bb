@@ -11,7 +11,7 @@
 #include "build/build_config.h"
 #include "ui/base/ui_export.h"
 
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
 #include <gtk/gtk.h>
 #endif
 
@@ -30,7 +30,7 @@ class UI_EXPORT Insets {
         left_(left),
         bottom_(bottom),
         right_(right) {}
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
   explicit Insets(const GtkBorder& border)
       : top_(border.top),
         left_(border.left),

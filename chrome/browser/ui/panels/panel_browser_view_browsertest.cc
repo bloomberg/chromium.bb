@@ -54,7 +54,7 @@ class PanelBrowserViewTest : public BasePanelBrowserTest {
       DidProcessEvent(msg);
 #elif defined(USE_AURA)
       NOTIMPLEMENTED();
-#elif defined(TOOLKIT_USES_GTK)
+#elif defined(TOOLKIT_GTK)
       GdkEvent event;
       event.type = GDK_MOTION_NOTIFY;
       DidProcessEvent(&event);

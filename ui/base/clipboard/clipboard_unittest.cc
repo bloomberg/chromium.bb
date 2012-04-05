@@ -136,7 +136,7 @@ TEST_F(ClipboardTest, RTFTest) {
   EXPECT_EQ(rtf, result);
 }
 
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
 TEST_F(ClipboardTest, MultipleBufferTest) {
   Clipboard clipboard;
 
@@ -230,7 +230,7 @@ TEST_F(ClipboardTest, UniodeHTMLTest) {
 }
 #endif  // defined(OS_WIN)
 
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
 // Regression test for crbug.com/56298 (pasting empty HTML crashes Linux).
 TEST_F(ClipboardTest, EmptyHTMLTest) {
   Clipboard clipboard;

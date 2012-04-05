@@ -8,7 +8,7 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_unittest_util.h"
 
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
 #include <gtk/gtk.h>
 #include "ui/gfx/gtk_util.h"
 #elif defined(OS_MACOSX)
@@ -161,7 +161,7 @@ TEST_F(ImageTest, PlatformToSkiaToCopy) {
   delete bitmap;
 }
 
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
 TEST_F(ImageTest, SkiaToGdkCopy) {
   GdkPixbuf* pixbuf;
 

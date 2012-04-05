@@ -65,7 +65,7 @@ void GetIconsInfo(const WebApplicationInfo& app_info,
                   IconInfoList* icons);
 #endif
 
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
 // GTK+ windows that correspond to web apps need to have a deterministic (and
 // different) WMClass than normal chrome windows so the window manager groups
 // them as a separate application.

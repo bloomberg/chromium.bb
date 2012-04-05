@@ -36,7 +36,7 @@
 #include "ui/gfx/gl/gl_implementation.h"
 #include "ui/gfx/gl/gl_switches.h"
 
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
 #include "ui/gfx/gtk_native_view_id_manager.h"
 #endif
 
@@ -75,7 +75,7 @@ static const int kGpuMaxCrashCount = 3;
 
 int g_last_host_id = 0;
 
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
 
 void ReleasePermanentXIDDispatcher(gfx::PluginWindowHandle surface) {
   GtkNativeViewManager* manager = GtkNativeViewManager::GetInstance();
@@ -120,7 +120,7 @@ void AcceleratedSurfaceBuffersSwappedCompleted(int host_id,
 
 }  // anonymous namespace
 
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
 // Used to put a lock on surfaces so that the window to which the GPU
 // process is drawing to doesn't disappear while it is drawing when
 // a tab is closed.
@@ -145,7 +145,7 @@ GpuProcessHost::SurfaceRef::~SurfaceRef() {
                           FROM_HERE,
                           base::Bind(&ReleasePermanentXIDDispatcher, surface_));
 }
-#endif  // defined(TOOLKIT_USES_GTK)
+#endif  // defined(TOOLKIT_GTK)
 
 // This class creates a GPU thread (instead of a GPU process), when running
 // with --in-process-gpu or --single-process.
@@ -478,7 +478,7 @@ void GpuProcessHost::CreateViewCommandBuffer(
     const CreateCommandBufferCallback& callback) {
   DCHECK(CalledOnValidThread());
 
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
   // There should only be one such command buffer (for the compositor).  In
   // practice, if the GPU process lost a context, GraphicsContext3D with
   // associated command buffer and view surface will not be gone until new
@@ -489,13 +489,13 @@ void GpuProcessHost::CreateViewCommandBuffer(
     surface_ref = (*it).second;
   else
     surface_ref.reset(new SurfaceRef(compositing_surface.handle));
-#endif  // defined(TOOLKIT_USES_GTK)
+#endif  // defined(TOOLKIT_GTK)
 
   if (!compositing_surface.is_null() &&
       Send(new GpuMsg_CreateViewCommandBuffer(
           compositing_surface, surface_id, client_id, init_params))) {
     create_command_buffer_requests_.push(callback);
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
     surface_refs_.insert(std::make_pair(surface_id, surface_ref));
 #endif
   } else {
@@ -545,11 +545,11 @@ void GpuProcessHost::OnCommandBufferCreated(const int32 route_id) {
 }
 
 void GpuProcessHost::OnDestroyCommandBuffer(int32 surface_id) {
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
   SurfaceRefMap::iterator it = surface_refs_.find(surface_id);
   if (it != surface_refs_.end())
     surface_refs_.erase(it);
-#endif  // defined(TOOLKIT_USES_GTK)
+#endif  // defined(TOOLKIT_GTK)
 }
 
 #if defined(OS_WIN) && !defined(USE_AURA)

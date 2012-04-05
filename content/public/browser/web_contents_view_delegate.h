@@ -6,7 +6,7 @@
 #define CONTENT_PUBLIC_BROWSER_WEB_CONTENTS_VIEW_WIN_DELEGATE_H_
 #pragma once
 
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
 #include <gtk/gtk.h>
 #elif defined(OS_MACOSX)
 #import <Cocoa/Cocoa.h>
@@ -54,7 +54,7 @@ class CONTENT_EXPORT WebContentsViewDelegate {
   virtual bool Focus() = 0;
   virtual void TakeFocus(bool reverse) = 0;
   virtual void SizeChanged(const gfx::Size& size) = 0;
-#elif defined(TOOLKIT_USES_GTK)
+#elif defined(TOOLKIT_GTK)
   // Initializes the WebContentsViewDelegate.
   virtual void Initialize(GtkWidget* expanded_container,
                           ui::FocusStoreGtk* focus_store) = 0;

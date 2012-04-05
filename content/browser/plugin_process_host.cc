@@ -112,7 +112,7 @@ void PluginProcessHost::OnReportExecutableMemory(size_t size) {
 }
 #endif  // defined(OS_WIN)
 
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
 void PluginProcessHost::OnMapNativeViewId(gfx::NativeViewId id,
                                           gfx::PluginWindowHandle* output) {
   *output = 0;
@@ -120,7 +120,7 @@ void PluginProcessHost::OnMapNativeViewId(gfx::NativeViewId id,
   GtkNativeViewManager::GetInstance()->GetXIDForId(output, id);
 #endif
 }
-#endif  // defined(TOOLKIT_USES_GTK)
+#endif  // defined(TOOLKIT_GTK)
 
 PluginProcessHost::PluginProcessHost()
 #if defined(OS_MACOSX)
@@ -312,7 +312,7 @@ bool PluginProcessHost::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(PluginProcessHostMsg_ReportExecutableMemory,
                         OnReportExecutableMemory)
 #endif
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
     IPC_MESSAGE_HANDLER(PluginProcessHostMsg_MapNativeViewId,
                         OnMapNativeViewId)
 #endif

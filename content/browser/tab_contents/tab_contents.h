@@ -383,7 +383,7 @@ class CONTENT_EXPORT TabContents
   friend class TabContentsViewViews;
 #elif defined(OS_MACOSX)
   friend class WebContentsViewMac;
-#elif defined(TOOLKIT_USES_GTK)
+#elif defined(TOOLKIT_GTK)
   friend class TabContentsViewGtk;
 #endif
 

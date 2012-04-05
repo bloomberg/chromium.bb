@@ -406,7 +406,7 @@ bool RenderProcessHostImpl::Init(bool is_accessibility_enabled) {
     in_process_renderer_.reset(new RendererMainThread(channel_id));
 
     base::Thread::Options options;
-#if !defined(TOOLKIT_USES_GTK)
+#if !defined(TOOLKIT_GTK)
     // In-process plugins require this to be a UI message loop.
     options.message_loop_type = MessageLoop::TYPE_UI;
 #else

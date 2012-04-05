@@ -22,7 +22,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
 
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #endif
 
@@ -339,7 +339,7 @@ class UIJankObserver : public base::RefCountedThreadSafe<UIJankObserver>,
 
   virtual void DidProcessEvent(const base::NativeEvent& event) OVERRIDE {
   }
-#elif defined(TOOLKIT_USES_GTK)
+#elif defined(TOOLKIT_GTK)
   virtual void WillProcessEvent(GdkEvent* event) {
     if (!helper_.MessageWillBeMeasured())
       return;

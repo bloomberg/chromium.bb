@@ -66,7 +66,7 @@
 #include <dbus/dbus-glib.h>
 #endif
 
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
 #include "ui/gfx/gtk_util.h"
 #endif
 

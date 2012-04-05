@@ -6,7 +6,7 @@
 
 #if defined(OS_WIN)
 #include <windows.h>
-#elif defined(TOOLKIT_USES_GTK)
+#elif defined(TOOLKIT_GTK)
 #include <gdk/gdk.h>
 #endif
 
@@ -92,7 +92,7 @@ string16 Accelerator::GetShortcutText() const {
     if (c != 0) {
       shortcut += static_cast<string16::value_type>(base::ToUpperASCII(c));
     }
-#elif defined(TOOLKIT_USES_GTK)
+#elif defined(TOOLKIT_GTK)
     const gchar* name = NULL;
     switch (key_code_) {
       case ui::VKEY_OEM_2:

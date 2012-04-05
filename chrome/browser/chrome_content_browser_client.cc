@@ -118,7 +118,7 @@
 #include "chrome/browser/tab_contents/chrome_web_contents_view_delegate_views.h"
 #endif
 
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
 #include "chrome/browser/chrome_browser_main_extra_parts_gtk.h"
 #endif
 
@@ -343,7 +343,7 @@ content::BrowserMainParts* ChromeContentBrowserClient::CreateBrowserMainParts(
 
   // Construct additional browser parts. Stages are called in the order in
   // which they are added.
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
   main_parts->AddParts(new ChromeBrowserMainExtraPartsGtk());
 #endif
 

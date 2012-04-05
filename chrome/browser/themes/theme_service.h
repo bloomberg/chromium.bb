@@ -282,12 +282,12 @@ class ThemeService : public base::NonThreadSafe,
   // case we don't have a theme pack).
   void BuildFromExtension(const Extension* extension);
 
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
   // Loads an image and flips it horizontally if |rtl_enabled| is true.
   GdkPixbuf* GetPixbufImpl(int id, bool rtl_enabled) const;
 #endif
 
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
   typedef std::map<int, GdkPixbuf*> GdkPixbufMap;
   mutable GdkPixbufMap gdk_pixbufs_;
 #elif defined(OS_MACOSX)

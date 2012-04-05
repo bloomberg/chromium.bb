@@ -16,10 +16,6 @@
 #include "base/message_loop_proxy.h"
 #include "ui/gfx/image/image.h"
 
-#if defined(TOOLKIT_USES_GTK)
-#include "base/file_path.h"
-#endif
-
 #if defined(OS_WIN)
 // On Windows, we group files by their extension, with several exceptions:
 // .dll, .exe, .ico. See IconManager.h for explanation.

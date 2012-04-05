@@ -42,7 +42,7 @@
 #include "remoting/jingle_glue/xmpp_signal_strategy.h"
 #include "remoting/protocol/me2me_host_authenticator_factory.h"
 
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
 #include "ui/gfx/gtk_util.h"
 #endif
 
@@ -358,12 +358,12 @@ int main(int argc, char** argv) {
 
   const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
 
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
   // Required for any calls into GTK functions, such as the Disconnect and
   // Continue windows, though these should not be used for the Me2Me case
   // (crbug.com/104377).
   gfx::GtkInitFromCommandLine(*cmd_line);
-#endif  // TOOLKIT_USES_GTK
+#endif  // TOOLKIT_GTK
 
   remoting::HostProcess me2me_host;
   me2me_host.InitWithCommandLine(cmd_line);

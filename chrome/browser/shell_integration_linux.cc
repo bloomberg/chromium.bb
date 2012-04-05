@@ -561,7 +561,7 @@ std::string ShellIntegration::GetDesktopFileContents(
   if (!icon_name.empty())
     g_key_file_set_string(key_file, kDesktopEntry, "Icon", icon_name.c_str());
 
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
   std::string wmclass = web_app::GetWMClassFromAppName(app_name);
   g_key_file_set_string(key_file, kDesktopEntry, "StartupWMClass",
                         wmclass.c_str());

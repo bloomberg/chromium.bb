@@ -283,7 +283,6 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopStart() {
     chromeos::input_method::InputMethodManager::GetInstance()->
         GetXKeyboard()->SetNumLockEnabled(true);
 #endif
-
     initial_browser_window_observer_.reset(
         new chromeos::InitialBrowserWindowObserver);
   }

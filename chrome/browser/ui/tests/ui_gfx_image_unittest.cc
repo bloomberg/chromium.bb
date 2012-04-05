@@ -8,7 +8,7 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_unittest_util.h"
 
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
 #include <gtk/gtk.h>
 
 #include "ui/gfx/gtk_util.h"
@@ -35,7 +35,7 @@ TEST(UiGfxImageTest, ViewsImageView) {
 }
 #endif
 
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
 TEST(UiGfxImageTest, GtkImageView) {
   GtkWidget* window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
   gtk_window_resize(GTK_WINDOW(window), 200, 200);

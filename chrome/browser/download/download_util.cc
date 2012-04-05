@@ -55,22 +55,15 @@
 #if defined(TOOLKIT_VIEWS)
 #include "ui/base/dragdrop/drag_utils.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
-#if !defined(TOOLKIT_USES_GTK)
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/widget/widget.h"
 #endif
-#endif
 
-#if defined(TOOLKIT_USES_GTK)
-#if defined(TOOLKIT_VIEWS)
-#include "ui/base/dragdrop/drag_drop_types.h"
-#include "ui/views/widget/native_widget_gtk.h"
-#elif defined(TOOLKIT_GTK)
+#if defined(TOOLKIT_GTK)
 #include "chrome/browser/ui/gtk/custom_drag.h"
 #include "chrome/browser/ui/gtk/unity_service.h"
 #endif  // defined(TOOLKIT_GTK)
-#endif  // defined(TOOLKIT_USES_GTK)
 
 #if defined(OS_WIN) && !defined(USE_AURA)
 #include "base/win/scoped_comptr.h"
@@ -396,7 +389,7 @@ void DragDownload(const DownloadItem* download,
                 download->GetFileNameToReportUser().LossyDisplayName());
   }
 
-#if !defined(TOOLKIT_USES_GTK)
+#if !defined(TOOLKIT_GTK)
   views::Widget* widget = views::Widget::GetWidgetForNativeView(view);
   // TODO(varunjain): Widget should not be NULL here. But its causing the crash
   // in http://code.google.com/p/chromium/issues/detail?id=120430 Find out why.
@@ -421,7 +414,7 @@ void DragDownload(const DownloadItem* download,
 
   widget->DoDrag(data,
                  ui::DragDropTypes::DRAG_COPY | ui::DragDropTypes::DRAG_LINK);
-#endif  // TOOLKIT_USES_GTK
+#endif  // TOOLKIT_GTK
 }
 #elif defined(USE_X11)
 void DragDownload(const DownloadItem* download,

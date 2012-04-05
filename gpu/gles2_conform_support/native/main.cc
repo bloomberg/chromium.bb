@@ -5,7 +5,7 @@
 #include "base/at_exit.h"
 #include "base/message_loop.h"
 
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
 #include <gtk/gtk.h>
 #endif
 
@@ -18,7 +18,7 @@ extern "C" {
 }
 
 int main(int argc, char *argv[]) {
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
   gtk_init(&argc, &argv);
 #endif
 

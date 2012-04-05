@@ -6,9 +6,9 @@
 #define CONTENT_PUBLIC_BROWSER_WEB_DRAG_DEST_DELEGATE_H_
 #pragma once
 
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
 #include <gtk/gtk.h>
-#endif  // TOOLKIT_USES_GTK
+#endif  // TOOLKIT_GTK
 
 #include "base/string16.h"
 
@@ -49,7 +49,7 @@ class WebDragDestDelegate {
   virtual void OnDragLeave() = 0;
 #endif
 
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
   // Returns the bookmark atom type. GTK and Views return different values here.
   virtual GdkAtom GetBookmarkTargetAtom() const = 0;
 
@@ -67,7 +67,7 @@ class WebDragDestDelegate {
   // data, it should return false.
   virtual bool AddDragData(const WebDropData& drop_data,
                            ui::OSExchangeData* data) = 0;
-#endif  // TOOLKIT_USES_GTK
+#endif  // TOOLKIT_GTK
 
   virtual ~WebDragDestDelegate() {}
 };

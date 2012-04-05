@@ -31,7 +31,7 @@ namespace ui {
 
 #if defined(OS_MACOSX)
 UI_EXPORT extern NSString* const kWebCustomDataPboardType;
-#elif (!defined(OS_WIN) && defined(USE_AURA)) || defined(TOOLKIT_USES_GTK)
+#elif (!defined(OS_WIN) && defined(USE_AURA)) || defined(TOOLKIT_GTK)
 UI_EXPORT extern const char kMimeTypeWebCustomData[];
 #endif
 

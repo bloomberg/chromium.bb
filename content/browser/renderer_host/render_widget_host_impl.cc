@@ -307,7 +307,7 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_AcceleratedSurfaceBuffersSwapped,
                         OnAcceleratedSurfaceBuffersSwapped)
 #endif
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
     IPC_MESSAGE_HANDLER(ViewHostMsg_CreatePluginContainer,
                         OnMsgCreatePluginContainer)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DestroyPluginContainer,
@@ -860,7 +860,7 @@ void RenderWidgetHostImpl::ForwardTouchEvent(
   ForwardInputEvent(touch_event, sizeof(WebKit::WebTouchEvent), false);
 }
 
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
 bool RenderWidgetHostImpl::KeyPressListenersHandleEvent(GdkEventKey* event) {
   if (event->type != GDK_KEY_PRESS)
     return false;
@@ -873,7 +873,7 @@ bool RenderWidgetHostImpl::KeyPressListenersHandleEvent(GdkEventKey* event) {
 
   return false;
 }
-#endif  // defined(TOOLKIT_USES_GTK)
+#endif  // defined(TOOLKIT_GTK)
 
 void RenderWidgetHostImpl::AddKeyboardListener(KeyboardListener* listener) {
   keyboard_listeners_.push_back(listener);
@@ -1547,7 +1547,7 @@ void RenderWidgetHostImpl::ActivateDeferredPluginHandles() {
     return;
 
   for (int i = 0; i < static_cast<int>(deferred_plugin_handles_.size()); i++) {
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
     view_->CreatePluginContainer(deferred_plugin_handles_[i]);
 #endif
   }

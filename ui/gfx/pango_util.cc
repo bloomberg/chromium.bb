@@ -20,7 +20,7 @@
 #include "ui/gfx/platform_font_pango.h"
 #include "ui/gfx/rect.h"
 
-#if !defined(USE_WAYLAND) && defined(TOOLKIT_USES_GTK)
+#if !defined(USE_WAYLAND) && defined(TOOLKIT_GTK)
 #include <gdk/gdk.h>
 #include <gtk/gtk.h>
 #include "ui/gfx/gtk_util.h"
@@ -50,7 +50,7 @@ cairo_font_options_t* GetCairoFontOptions() {
 
   cairo_font_options = cairo_font_options_create();
 
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
   gint antialias = 0;
   gint hinting = 0;
   gchar* hint_style = NULL;

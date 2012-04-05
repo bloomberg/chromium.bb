@@ -237,7 +237,7 @@ enum {
     VKEY_F1 = ui::VKEY_F1,
 };
 
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
 int NativeKeyCodeForWindowsKeyCode(int keycode, bool shift);
 #endif
 

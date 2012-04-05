@@ -553,7 +553,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest, kAcceptLanguages) {
 }
 
 // TCM ID - 7590682
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
 IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest, kUsesSystemTheme) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(BooleanPrefMatches(prefs::kUsesSystemTheme));
@@ -562,10 +562,10 @@ IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest, kUsesSystemTheme) {
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
   ASSERT_FALSE(BooleanPrefMatches(prefs::kUsesSystemTheme));
 }
-#endif  // TOOLKIT_USES_GTK
+#endif  // TOOLKIT_GTK
 
 // TCM ID - 3636292
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
 IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest,
                        kUseCustomChromeFrame) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
@@ -577,7 +577,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest,
   ASSERT_TRUE(BooleanPrefMatches(
       prefs::kUseCustomChromeFrame));
 }
-#endif  // TOOLKIT_USES_GTK
+#endif  // TOOLKIT_GTK
 
 // TCM ID - 6473347.
 #if defined(OS_CHROMEOS)

@@ -283,7 +283,7 @@ class PrefServiceWebKitPrefs : public ChromeRenderViewHostTestHarness {
 
     // Set some (WebKit) user preferences.
     TestingPrefService* pref_services = profile()->GetTestingPrefService();
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
     pref_services->SetUserPref(prefs::kUsesSystemTheme,
                                Value::CreateBooleanValue(false));
 #endif

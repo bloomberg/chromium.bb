@@ -229,7 +229,7 @@ TEST_F(SyncThemeUtilTest, SetCurrentThemeIfNecessaryDefaultThemeNotNecessary) {
       ThemeService::kDefaultThemeID));
   EXPECT_CALL(*mock_theme_service, UseDefaultTheme()).Times(AnyNumber());
 
-  // TODO(akalin): Mock out call to GetPrefs() under TOOLKIT_USES_GTK.
+  // TODO(akalin): Mock out call to GetPrefs() under TOOLKIT_GTK.
 
   sync_pb::ThemeSpecifics theme_specifics;
   SetCurrentThemeFromThemeSpecificsIfNecessary(theme_specifics,

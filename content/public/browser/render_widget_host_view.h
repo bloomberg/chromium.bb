@@ -6,7 +6,7 @@
 #define CONTENT_PUBLIC_BROWSER_RENDER_WIDGET_HOST_VIEW_H_
 #pragma once
 
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
 #include <gdk/gdk.h>
 #endif
 
@@ -116,14 +116,12 @@ class CONTENT_EXPORT RenderWidgetHostView {
   virtual void WindowFrameChanged() = 0;
 #endif  // defined(OS_MACOSX)
 
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
   // Gets the event for the last mouse down.
   virtual GdkEventButton* GetLastMouseDown() = 0;
-#if !defined(TOOLKIT_VIEWS)
   // Builds a submenu containing all the gtk input method commands.
   virtual gfx::NativeView BuildInputMethodsGtkMenu() = 0;
-#endif  // !defined(TOOLKIT_VIEWS)
-#endif  // defined(TOOLKIT_USES_GTK)
+#endif  // defined(TOOLKIT_GTK)
 
   // Subclasses should override this method to do what is appropriate to set
   // the custom background for their platform.
@@ -139,5 +137,3 @@ class CONTENT_EXPORT RenderWidgetHostView {
 }  // namespace content
 
 #endif  // CONTENT_PUBLIC_BROWSER_RENDER_WIDGET_HOST_VIEW_H_
-
-

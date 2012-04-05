@@ -22,7 +22,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "ui/base/resource/resource_bundle.h"
 
-#if defined(OS_POSIX) && defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
 #include <gtk/gtk.h>
 #endif
 
@@ -81,14 +81,14 @@ void WebUIBidiCheckerBrowserTestRTL::SetUpOnMainThread() {
   ResourceBundle::GetSharedInstance().OverrideLocalePakForTest(pak_path);
   ResourceBundle::GetSharedInstance().ReloadLocaleResources("he");
   base::i18n::SetICUDefaultLocale("he");
-#if defined(OS_POSIX) && defined(TOOLKIT_USES_GTK)
+#if defined(OS_POSIX) && defined(TOOLKIT_GTK)
   gtk_widget_set_default_direction(GTK_TEXT_DIR_RTL);
 #endif
 }
 
 void WebUIBidiCheckerBrowserTestRTL::CleanUpOnMainThread() {
   WebUIBidiCheckerBrowserTest::CleanUpOnMainThread();
-#if defined(OS_POSIX) && defined(TOOLKIT_USES_GTK)
+#if defined(OS_POSIX) && defined(TOOLKIT_GTK)
   gtk_widget_set_default_direction(GTK_TEXT_DIR_LTR);
 #endif
   base::i18n::SetICUDefaultLocale(app_locale_);
