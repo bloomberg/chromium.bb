@@ -583,7 +583,6 @@ void Window::SetVisible(bool visible) {
   if (visible == layer_->visible())
     return;  // No change.
 
-  bool was_visible = IsVisible();
   if (visible != layer_->visible()) {
     RootWindow* root_window = GetRootWindow();
     if (client::GetVisibilityClient(root_window)) {
@@ -594,13 +593,9 @@ void Window::SetVisible(bool visible) {
     }
   }
   visible_ = visible;
-  bool is_visible = IsVisible();
-  if (was_visible != is_visible) {
-    if (is_visible)
-      SchedulePaint();
-    if (delegate_)
-      delegate_->OnWindowVisibilityChanged(is_visible);
-  }
+  SchedulePaint();
+  if (delegate_)
+    delegate_->OnWindowVisibilityChanged(visible);
 
   if (parent_ && parent_->layout_manager_.get())
     parent_->layout_manager_->OnChildWindowVisibilityChanged(this, visible);

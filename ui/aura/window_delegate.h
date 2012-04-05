@@ -75,7 +75,10 @@ class AURA_EXPORT WindowDelegate {
   // The delegate can use this as an opportunity to delete itself if necessary.
   virtual void OnWindowDestroyed() = 0;
 
-  // Called when the visibility of a Window changed.
+  // Called when the visibility of a Window changes. See description in
+  // WindowObserver::OnWindowDestroyed() for details.
+  // TODO: this should be renamed to OnWindowTargetVisibilityChanged() to
+  // match when it's sent.
   virtual void OnWindowVisibilityChanged(bool visible) = 0;
 
  protected:

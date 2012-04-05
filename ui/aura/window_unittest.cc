@@ -766,8 +766,10 @@ class VisibilityWindowDelegate : public TestWindowDelegate {
 // Verifies show/hide propagate correctly to children and the layer.
 TEST_F(WindowTest, Visibility) {
   VisibilityWindowDelegate d;
+  VisibilityWindowDelegate d2;
   scoped_ptr<Window> w1(CreateTestWindowWithDelegate(&d, 1, gfx::Rect(), NULL));
-  scoped_ptr<Window> w2(CreateTestWindowWithId(2, w1.get()));
+  scoped_ptr<Window> w2(
+      CreateTestWindowWithDelegate(&d2, 2, gfx::Rect(),  w1.get()));
   scoped_ptr<Window> w3(CreateTestWindowWithId(3, w2.get()));
 
   // Create shows all the windows.
@@ -806,6 +808,18 @@ TEST_F(WindowTest, Visibility) {
   EXPECT_TRUE(w1->IsVisible());
   EXPECT_TRUE(w2->IsVisible());
   EXPECT_TRUE(w3->IsVisible());
+
+  // Verify that if an ancestor isn't visible and we change the visibility of a
+  // child window that OnChildWindowVisibilityChanged() is still invoked.
+  w1->Hide();
+  d2.Clear();
+  w2->Hide();
+  EXPECT_EQ(1, d2.hidden());
+  EXPECT_EQ(0, d2.shown());
+  d2.Clear();
+  w2->Show();
+  EXPECT_EQ(0, d2.hidden());
+  EXPECT_EQ(1, d2.shown());
 }
 
 TEST_F(WindowTest, IgnoreEventsTest) {
