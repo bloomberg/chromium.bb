@@ -198,17 +198,29 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, IFrameDNSError_Basic) {
       1);
 }
 
+// This test fails regularly on win_rel trybots. See crbug.com/121540
+#if defined(OS_WIN)
+#define MAYBE_IFrameDNSError_GoBack DISABLED_IFrameDNSError_GoBack
+#else
+#define MAYBE_IFrameDNSError_GoBack IFrameDNSError_GoBack
+#endif
 // Test that a DNS error occuring in an iframe does not result in an
 // additional session history entry.
-IN_PROC_BROWSER_TEST_F(ErrorPageTest, IFrameDNSError_GoBack) {
+IN_PROC_BROWSER_TEST_F(ErrorPageTest, MAYBE_IFrameDNSError_GoBack) {
   NavigateToFileURL(FILE_PATH_LITERAL("title2.html"));
   NavigateToFileURL(FILE_PATH_LITERAL("iframe_dns_error.html"));
   GoBackAndWaitForTitle("Title Of Awesomeness", 1);
 }
 
+// This test fails regularly on win_rel trybots. See crbug.com/121540
+#if defined(OS_WIN)
+#define MAYBE_IFrameDNSError_GoBackAndForward DISABLED_IFrameDNSError_GoBackAndForward
+#else
+#define MAYBE_IFrameDNSError_GoBackAndForward IFrameDNSError_GoBackAndForward
+#endif
 // Test that a DNS error occuring in an iframe does not result in an
 // additional session history entry.
-IN_PROC_BROWSER_TEST_F(ErrorPageTest, IFrameDNSError_GoBackAndForward) {
+IN_PROC_BROWSER_TEST_F(ErrorPageTest, MAYBE_IFrameDNSError_GoBackAndForward) {
   NavigateToFileURL(FILE_PATH_LITERAL("title2.html"));
   NavigateToFileURL(FILE_PATH_LITERAL("iframe_dns_error.html"));
   GoBackAndWaitForTitle("Title Of Awesomeness", 1);
