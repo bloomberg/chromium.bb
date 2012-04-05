@@ -180,6 +180,7 @@ bool TextureManager::TextureInfo::CanGenerateMipmaps(
       target_ == GL_TEXTURE_RECTANGLE_ARB) {
     return false;
   }
+
   const TextureInfo::LevelInfo& first = level_infos_[0][0];
   // TODO(gman): Check internal_format, format and type.
   for (size_t ii = 0; ii < level_infos_.size(); ++ii) {
@@ -190,7 +191,9 @@ bool TextureManager::TextureInfo::CanGenerateMipmaps(
         (info.depth != 1) ||
         (info.format != first.format) ||
         (info.internal_format != first.internal_format) ||
-        (info.type != first.type)) {
+        (info.type != first.type) ||
+        feature_info->validators()->compressed_texture_format.IsValid(
+            info.internal_format)) {
         return false;
     }
   }

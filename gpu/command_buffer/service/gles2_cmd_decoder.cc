@@ -3385,7 +3385,7 @@ void GLES2DecoderImpl::DoGenerateMipmap(GLenum target) {
   if (!info ||
       !texture_manager()->MarkMipmapsGenerated(info)) {
     SetGLError(GL_INVALID_OPERATION,
-               "glGenerateMipmaps: Can not generate mips for npot textures");
+               "glGenerateMipmaps: Can not generate mips");
     return;
   }
   // Workaround for Mac driver bug. In the large scheme of things setting
