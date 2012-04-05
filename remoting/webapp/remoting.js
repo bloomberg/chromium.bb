@@ -89,6 +89,7 @@ remoting.initDaemonUi = function () {
   remoting.setMode(getAppStartupMode_());
   remoting.hostSetupDialog =
       new remoting.HostSetupDialog(remoting.hostController);
+  remoting.extractThisHostAndDisplay(true);
   remoting.hostList.refresh(remoting.extractThisHostAndDisplay);
 };
 
