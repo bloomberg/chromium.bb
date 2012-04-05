@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -411,6 +411,11 @@ static const CHAR_I64_I32 kCHAR_I64_I32 = {
   ASSERT_EQ(s.y, KI641, "(CHECK_CHAR_I64_I32, y)")  \
   ASSERT_EQ(s.z, KI321, "(CHECK_CHAR_I64_I32, z)")
 
+static const I32_CHAR_ALIGN32 kI32_CHAR_ALIGN32 = {
+  KI321, KCHAR1 };
+#define CHECK_I32_CHAR_ALIGN32(s)                       \
+  ASSERT_EQ(s.x, KI321, "(CHECK_I32_CHAR_ALIGN32, x)") \
+  ASSERT_EQ(s.y, KCHAR1, "(CHECK_I32_CHAR_ALIGN32, y)")
 
 static const BITFIELD_STRADDLE kBITFIELD_STRADDLE = {
   (KI321 >> 1), (KI322 >> 1), (KI323 >> 1) };

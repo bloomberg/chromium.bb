@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -38,10 +38,7 @@ DO_FOR_TYPE(CHAR_I64_I32)
 DO_FOR_TYPE(BITFIELD_STRADDLE)
 DO_FOR_TYPE(NONBITFIELD_STRADDLE)
 
-/* TODO(jvoung): Turn on this test when the following bug is fixed:
- * http://code.google.com/p/nativeclient/issues/detail?id=2356
- */
-/* DO_FOR_TYPE(I32_CHAR_ALIGN32) */
+DO_FOR_TYPE(I32_CHAR_ALIGN32)
 
 DO_FOR_TYPE(U_I64_DOUBLE)
 DO_FOR_TYPE(U_DOUBLE_I64)
