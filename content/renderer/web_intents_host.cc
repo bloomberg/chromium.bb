@@ -200,5 +200,5 @@ void WebIntentsHost::DidClearWindowObject(WebFrame* frame) {
 
   delivered_intent_.reset(
       new BoundDeliveredIntent(*(intent_.get()), this, frame));
-  delivered_intent_->BindToJavascript(frame, "intent");
+  delivered_intent_->BindToJavascript(frame, "webkitIntent");
 }
