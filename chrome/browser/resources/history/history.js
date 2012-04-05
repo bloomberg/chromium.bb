@@ -246,8 +246,11 @@ Page.prototype.getTitleDOM_ = function() {
   this.addHighlightedText_(link, this.title_, this.model_.getSearchText());
   node.appendChild(link);
 
-  if (this.starred_)
-    node.appendChild(createElementWithClassName('div', 'starred'));
+  if (this.starred_) {
+    var star = createElementWithClassName('div', 'starred');
+    node.appendChild(star);
+    star.addEventListener('click', this.starClicked_.bind(this));
+  }
 
   return node;
 };
@@ -271,6 +274,16 @@ Page.prototype.removeFromHistory_ = function() {
   deleteNextInQueue();
 };
 
+/**
+ * Click event handler for the star icon that appears beside bookmarked URLs.
+ * When clicked, the bookmark is removed for that URL.
+ * @private
+ */
+Page.prototype.starClicked_ = function(event) {
+  chrome.send('removeBookmark', [this.url_]);
+  event.currentTarget.hidden = true;
+  event.preventDefault();
+}
 
 // Page, private, static: -----------------------------------------------------
 

@@ -26,17 +26,20 @@ class BrowsingHistoryHandler : public content::WebUIMessageHandler,
   // WebUIMessageHandler implementation.
   virtual void RegisterMessages() OVERRIDE;
 
-  // Callback for the "getHistory" message.
+  // Handler for the "getHistory" message.
   void HandleGetHistory(const base::ListValue* args);
 
-  // Callback for the "searchHistory" message.
+  // Handler for the "searchHistory" message.
   void HandleSearchHistory(const base::ListValue* args);
 
-  // Callback for the "removeURLsOnOneDay" message.
+  // Handler for the "removeURLsOnOneDay" message.
   void HandleRemoveURLsOnOneDay(const base::ListValue* args);
 
-  // Handle for "clearBrowsingData" message.
+  // Handler for "clearBrowsingData" message.
   void HandleClearBrowsingData(const base::ListValue* args);
+
+  // Handler for "removeBookmark" message.
+  void HandleRemoveBookmark(const base::ListValue* args);
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,

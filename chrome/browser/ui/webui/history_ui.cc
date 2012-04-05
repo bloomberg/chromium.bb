@@ -19,6 +19,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/profiles/profile.h"
@@ -174,6 +175,9 @@ void BrowsingHistoryHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("clearBrowsingData",
       base::Bind(&BrowsingHistoryHandler::HandleClearBrowsingData,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("removeBookmark",
+      base::Bind(&BrowsingHistoryHandler::HandleRemoveBookmark,
+                 base::Unretained(this)));
 }
 
 void BrowsingHistoryHandler::HandleGetHistory(const ListValue* args) {
@@ -283,6 +287,13 @@ void BrowsingHistoryHandler::HandleClearBrowsingData(const ListValue* args) {
   if (browser)
     browser->OpenClearBrowsingDataDialog();
 #endif
+}
+
+void BrowsingHistoryHandler::HandleRemoveBookmark(const ListValue* args) {
+  string16 url = ExtractStringValue(args);
+  Profile* profile = Profile::FromWebUI(web_ui());
+  BookmarkModel* model = profile->GetBookmarkModel();
+  bookmark_utils::RemoveAllBookmarks(model, GURL(url));
 }
 
 void BrowsingHistoryHandler::QueryComplete(
