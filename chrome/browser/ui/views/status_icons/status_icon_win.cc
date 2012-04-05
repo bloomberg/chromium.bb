@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -126,7 +126,8 @@ void StatusIconWin::UpdatePlatformContextMenu(ui::MenuModel* menu) {
 #endif
 }
 
-void StatusIconWin::HandleClickEvent(int x, int y, bool left_mouse_click) {
+void StatusIconWin::HandleClickEvent(const gfx::Point& cursor_pos,
+                                     bool left_mouse_click) {
   // Pass to the observer if appropriate.
   if (left_mouse_click && HasObservers()) {
     DispatchClickEvent();
@@ -141,7 +142,7 @@ void StatusIconWin::HandleClickEvent(int x, int y, bool left_mouse_click) {
     // Set our window as the foreground window, so the context menu closes when
     // we click away from it.
     SetForegroundWindow(window_);
-    context_menu_->RunContextMenuAt(gfx::Point(x, y));
+    context_menu_->RunContextMenuAt(cursor_pos);
   }
 #endif
 }

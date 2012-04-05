@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/win/scoped_gdi_object.h"
 #include "chrome/browser/status_icons/status_icon.h"
+
+namespace gfx {
+class Point;
+}
 
 namespace views {
 class Menu2;
@@ -39,7 +43,7 @@ class StatusIconWin : public StatusIcon {
   // Handles a click event from the user - if |left_button_click| is true and
   // there is a registered observer, passes the click event to the observer,
   // otherwise displays the context menu if there is one.
-  void HandleClickEvent(int x, int y, bool left_button_click);
+  void HandleClickEvent(const gfx::Point& cursor_pos, bool left_button_click);
 
   // Re-creates the status tray icon now after the taskbar has been created.
   void ResetIcon();
