@@ -10,3 +10,6 @@ CancellationFlagTest.SetOnDifferentThreadDeathTest
 
 # Fails on Valgrind/Mac, see http://crbug.com/93722
 ProcessUtilTest.MacTerminateOnHeapCorruption
+
+# Fails on Valgrind/Mac, see http://crbug.com/122080
+ProcessUtilTest.MacMallocFailureDoesNotTerminate
