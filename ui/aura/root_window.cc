@@ -18,13 +18,14 @@
 #include "ui/aura/event.h"
 #include "ui/aura/event_filter.h"
 #include "ui/aura/focus_manager.h"
-#include "ui/aura/gestures/gesture_recognizer.h"
 #include "ui/aura/monitor.h"
 #include "ui/aura/monitor_manager.h"
 #include "ui/aura/root_window_host.h"
 #include "ui/aura/root_window_observer.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
+#include "ui/base/gestures/gesture_recognizer.h"
+#include "ui/base/gestures/gesture_types.h"
 #include "ui/base/hit_test.h"
 #include "ui/gfx/compositor/compositor.h"
 #include "ui/gfx/compositor/layer.h"
@@ -96,7 +97,7 @@ RootWindow::RootWindow(const gfx::Rect& initial_bounds)
       mouse_moved_handler_(NULL),
       focused_window_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(
-          gesture_recognizer_(GestureRecognizer::Create())),
+          gesture_recognizer_(ui::GestureRecognizer::Create(this))),
       synthesize_mouse_move_(false),
       waiting_on_compositing_end_(false),
       draw_on_compositing_end_(false),
@@ -266,11 +267,11 @@ bool RootWindow::DispatchTouchEvent(TouchEvent* event) {
   event->UpdateForRootTransform(layer()->transform());
   bool handled = false;
   Window* target = capture_window_;
-
   ui::TouchStatus status = ui::TOUCH_STATUS_UNKNOWN;
 
   if (!target)
-    target = gesture_recognizer_->GetTargetForTouchEvent(event);
+    target = static_cast<Window*>(
+        gesture_recognizer_->GetTargetForTouchEvent(event));
 
   if (!target && !bounds().Contains(event->location())) {
     // If the touch is outside the root window, set its target to the
@@ -292,7 +293,7 @@ bool RootWindow::DispatchTouchEvent(TouchEvent* event) {
   }
 
   // Get the list of GestureEvents from GestureRecognizer.
-  scoped_ptr<GestureRecognizer::Gestures> gestures;
+  scoped_ptr<ui::GestureRecognizer::Gestures> gestures;
   gestures.reset(gesture_recognizer_->ProcessTouchEventForGesture(
       *event, status, target));
   if (ProcessGestures(gestures.get()))
@@ -305,8 +306,10 @@ bool RootWindow::DispatchGestureEvent(GestureEvent* event) {
   DispatchHeldMouseMove();
 
   Window* target = capture_window_;
-  if (!target)
-    target = gesture_recognizer_->GetTargetForGestureEvent(event);
+  if (!target) {
+    target = static_cast<Window*>(
+        gesture_recognizer_->GetTargetForGestureEvent(event));
+  }
   if (target) {
     GestureEvent translated_event(*event, this, target);
     ui::GestureStatus status = ProcessGestureEvent(target, &translated_event);
@@ -422,12 +425,12 @@ void RootWindow::ReleaseCapture(Window* window) {
 }
 
 void RootWindow::AdvanceQueuedTouchEvent(Window* window, bool processed) {
-  scoped_ptr<GestureRecognizer::Gestures> gestures;
+  scoped_ptr<ui::GestureRecognizer::Gestures> gestures;
   gestures.reset(gesture_recognizer_->AdvanceTouchQueue(window, processed));
   ProcessGestures(gestures.get());
 }
 
-void RootWindow::SetGestureRecognizerForTesting(GestureRecognizer* gr) {
+void RootWindow::SetGestureRecognizerForTesting(ui::GestureRecognizer* gr) {
   gesture_recognizer_.reset(gr);
 }
 
@@ -676,12 +679,13 @@ ui::GestureStatus RootWindow::ProcessGestureEvent(Window* target,
   return status;
 }
 
-bool RootWindow::ProcessGestures(GestureRecognizer::Gestures* gestures) {
+bool RootWindow::ProcessGestures(ui::GestureRecognizer::Gestures* gestures) {
   if (!gestures)
     return false;
   bool handled = false;
   for (unsigned int i = 0; i < gestures->size(); i++) {
-    GestureEvent* gesture = gestures->at(i).get();
+    GestureEvent* gesture =
+        static_cast<GestureEvent*>(gestures->get().at(i));
     if (DispatchGestureEvent(gesture) != ui::GESTURE_STATUS_UNKNOWN)
       handled = true;
   }
@@ -753,6 +757,21 @@ bool RootWindow::CanReceiveEvents() const {
 
 internal::FocusManager* RootWindow::GetFocusManager() {
   return this;
+}
+
+bool RootWindow::DispatchLongPressGestureEvent(ui::GestureEvent* event) {
+  return DispatchGestureEvent(static_cast<GestureEvent*>(event));
+}
+
+ui::GestureEvent* RootWindow::CreateGestureEvent(ui::EventType type,
+    const gfx::Point& location,
+    int flags,
+    const base::Time time,
+    float param_first,
+    float param_second,
+    unsigned int touch_id_bitfield) {
+  return new GestureEvent(type, location.x(), location.y(), flags, time,
+                          param_first, param_second, touch_id_bitfield);
 }
 
 void RootWindow::OnLayerAnimationEnded(

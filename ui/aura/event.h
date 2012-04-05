@@ -7,11 +7,13 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/event_types.h"
 #include "base/time.h"
 #include "ui/aura/aura_export.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/events.h"
+#include "ui/base/gestures/gesture_types.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/gfx/point.h"
 
@@ -103,6 +105,8 @@ class AURA_EXPORT LocatedEvent : public Event {
     LocatedEvent* located_event_;
   };
 
+  virtual ~LocatedEvent();
+
   int x() const { return location_.x(); }
   int y() const { return location_.y(); }
   gfx::Point location() const { return location_; }
@@ -177,7 +181,8 @@ class AURA_EXPORT MouseEvent : public LocatedEvent {
   DISALLOW_COPY_AND_ASSIGN(MouseEvent);
 };
 
-class AURA_EXPORT TouchEvent : public LocatedEvent {
+class AURA_EXPORT TouchEvent : public LocatedEvent,
+                               public ui::TouchEvent {
  public:
   explicit TouchEvent(const base::NativeEvent& native_event);
 
@@ -191,15 +196,21 @@ class AURA_EXPORT TouchEvent : public LocatedEvent {
              int touch_id,
              base::TimeDelta time_stamp);
 
+  virtual ~TouchEvent();
+
   int touch_id() const { return touch_id_; }
   float radius_x() const { return radius_x_; }
   float radius_y() const { return radius_y_; }
   float rotation_angle() const { return rotation_angle_; }
   float force() const { return force_; }
 
-  // Returns a copy of this touch event. Used when queueing events for
-  // asynchronous gesture recognition.
-  TouchEvent* Copy() const;
+  // Overridden from ui::TouchEvent.
+  virtual ui::EventType GetEventType() const OVERRIDE;
+  virtual gfx::Point GetLocation() const OVERRIDE;
+  virtual int GetTouchId() const OVERRIDE;
+  virtual int GetEventFlags() const OVERRIDE;
+  virtual base::TimeDelta GetTimestamp() const OVERRIDE;
+  virtual TouchEvent* Copy() const OVERRIDE;
 
  private:
   // The identity (typically finger) of the touch starting at 0 and incrementing
@@ -335,7 +346,8 @@ class AURA_EXPORT ScrollEvent : public MouseEvent {
   DISALLOW_COPY_AND_ASSIGN(ScrollEvent);
 };
 
-class AURA_EXPORT GestureEvent : public LocatedEvent {
+class AURA_EXPORT GestureEvent : public LocatedEvent,
+                                 public ui::GestureEvent {
  public:
   GestureEvent(ui::EventType type,
                int x,
@@ -351,13 +363,15 @@ class AURA_EXPORT GestureEvent : public LocatedEvent {
   // converted from |source| coordinate system to |target| coordinate system.
   GestureEvent(const GestureEvent& model, Window* source, Window* target);
 
+  virtual ~GestureEvent();
+
   float delta_x() const { return delta_x_; }
   float delta_y() const { return delta_y_; }
 
   // Returns the lowest touch-id of any of the touches which make up this
   // gesture.
   // If there are no touches associated with this gesture, returns -1.
-  int GetLowestTouchId() const;
+  virtual int GetLowestTouchId() const OVERRIDE;
 
  private:
   float delta_x_;

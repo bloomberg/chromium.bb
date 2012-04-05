@@ -17,6 +17,7 @@
 #include "ui/base/events.h"
 #include "ui/aura/aura_export.h"
 #include "ui/aura/client/window_types.h"
+#include "ui/base/gestures/gesture_types.h"
 #include "ui/gfx/compositor/layer_animator.h"
 #include "ui/gfx/compositor/layer_delegate.h"
 #include "ui/gfx/compositor/layer_type.h"
@@ -51,7 +52,8 @@ struct WindowProperty;
 // Aura window implementation. Interesting events are sent to the
 // WindowDelegate.
 // TODO(beng): resolve ownership.
-class AURA_EXPORT Window : public ui::LayerDelegate {
+class AURA_EXPORT Window : public ui::LayerDelegate,
+                           public ui::GestureConsumer {
  public:
   typedef std::vector<Window*> Windows;
 

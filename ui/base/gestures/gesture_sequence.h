@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_AURA_GESTURES_GESTURE_SEQUENCE_H_
-#define UI_AURA_GESTURES_GESTURE_SEQUENCE_H_
+#ifndef UI_BASE_GESTURES_GESTURE_SEQUENCE_H_
+#define UI_BASE_GESTURES_GESTURE_SEQUENCE_H_
 #pragma once
 
 #include "base/timer.h"
-#include "ui/aura/gestures/gesture_point.h"
-#include "ui/aura/gestures/gesture_recognizer.h"
 #include "ui/base/events.h"
+#include "ui/base/gestures/gesture_point.h"
+#include "ui/base/gestures/gesture_recognizer.h"
 
-namespace aura {
+namespace ui {
 class TouchEvent;
 class GestureEvent;
 
@@ -30,9 +30,9 @@ enum ScrollType {
 };
 
 // A GestureSequence recognizes gestures from touch sequences.
-class AURA_EXPORT GestureSequence {
+class UI_EXPORT GestureSequence {
  public:
-  explicit GestureSequence(RootWindow* root_window);
+  explicit GestureSequence(GestureEventHelper* consumer);
   virtual ~GestureSequence();
 
   typedef GestureRecognizer::Gestures Gestures;
@@ -153,11 +153,11 @@ class AURA_EXPORT GestureSequence {
   GesturePoint points_[kMaxGesturePoints];
   int point_count_;
 
-  RootWindow* root_window_;
+  GestureEventHelper* helper_;
 
   DISALLOW_COPY_AND_ASSIGN(GestureSequence);
 };
 
-}  // namespace aura
+}  // namespace ui
 
-#endif  // UI_AURA_GESTURES_GESTURE_SEQUENCE_H_
+#endif  // UI_BASE_GESTURES_GESTURE_SEQUENCE_H_

@@ -4,10 +4,9 @@
 
 #include "base/basictypes.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/aura/gestures/velocity_calculator.h"
-#include "ui/aura/test/aura_test_base.h"
+#include "ui/base/gestures/velocity_calculator.h"
 
-namespace aura {
+namespace ui {
 namespace test {
 
 namespace {
@@ -31,10 +30,8 @@ static void AddPoints(VelocityCalculator* velocity_calculator,
 
 }  // namespace
 
-typedef AuraTestBase VelocityCalculatorTest;
-
 // Test that the velocity returned is reasonable
-TEST_F(VelocityCalculatorTest, ReturnsReasonableVelocity) {
+TEST(VelocityCalculatorTest, ReturnsReasonableVelocity) {
   VelocityCalculator velocity_calculator(5);
   AddPoints(&velocity_calculator, 10, -10, 1, 7);
 
@@ -63,7 +60,7 @@ TEST_F(VelocityCalculatorTest, ReturnsReasonableVelocity) {
   EXPECT_LT(velocity_calculator.YVelocity(), -20);
 }
 
-TEST_F(VelocityCalculatorTest, IsAccurateWithLargeTimes) {
+TEST(VelocityCalculatorTest, IsAccurateWithLargeTimes) {
   VelocityCalculator velocity_calculator(5);
   int64 start_time = 0;
   velocity_calculator.PointSeen(9, -11, start_time);
@@ -92,7 +89,7 @@ TEST_F(VelocityCalculatorTest, IsAccurateWithLargeTimes) {
 
 // Check that the velocity returned is 0 if the velocity calculator
 // doesn't have enough data
-TEST_F(VelocityCalculatorTest, RequiresEnoughData) {
+TEST(VelocityCalculatorTest, RequiresEnoughData) {
   VelocityCalculator velocity_calculator(5);
   EXPECT_EQ(velocity_calculator.XVelocity(), 0);
   EXPECT_EQ(velocity_calculator.YVelocity(), 0);
@@ -111,7 +108,7 @@ TEST_F(VelocityCalculatorTest, RequiresEnoughData) {
 }
 
 // Ensures ClearHistory behaves correctly
-TEST_F(VelocityCalculatorTest, ClearsHistory) {
+TEST(VelocityCalculatorTest, ClearsHistory) {
   VelocityCalculator velocity_calculator(5);
   AddPoints(&velocity_calculator, 10, -10, 1, 7);
 
@@ -127,7 +124,7 @@ TEST_F(VelocityCalculatorTest, ClearsHistory) {
 }
 
 // Ensure data older than the buffer size is ignored
-TEST_F(VelocityCalculatorTest, IgnoresOldData) {
+TEST(VelocityCalculatorTest, IgnoresOldData) {
   VelocityCalculator velocity_calculator(5);
   AddPoints(&velocity_calculator, 10, -10, 1, 7);
 
@@ -143,4 +140,4 @@ TEST_F(VelocityCalculatorTest, IgnoresOldData) {
 }
 
 }  // namespace test
-}  // namespace aura
+}  // namespace ui

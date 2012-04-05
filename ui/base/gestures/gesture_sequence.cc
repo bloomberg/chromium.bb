@@ -2,17 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/aura/gestures/gesture_sequence.h"
+#include "ui/base/gestures/gesture_sequence.h"
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
-#include "ui/aura/event.h"
-#include "ui/aura/root_window.h"
-#include "ui/aura/gestures/gesture_configuration.h"
 #include "ui/base/events.h"
+#include "ui/base/gestures/gesture_configuration.h"
 
-namespace aura {
+namespace ui {
 
 namespace {
 
@@ -129,14 +127,14 @@ EdgeStateSignatureType Signature(GestureState gesture_state,
 ////////////////////////////////////////////////////////////////////////////////
 // GestureSequence Public:
 
-GestureSequence::GestureSequence(RootWindow* root_window)
+GestureSequence::GestureSequence(GestureEventHelper* helper)
     : state_(GS_NO_GESTURE),
       flags_(0),
       pinch_distance_start_(0.f),
       pinch_distance_current_(0.f),
       long_press_timer_(CreateTimer()),
       point_count_(0),
-      root_window_(root_window) {
+      helper_(helper) {
 }
 
 GestureSequence::~GestureSequence() {
@@ -149,18 +147,18 @@ GestureSequence::Gestures* GestureSequence::ProcessTouchEventForGesture(
     return NULL;  // The event was consumed by a touch sequence.
 
   // Set a limit on the number of simultaneous touches in a gesture.
-  if (event.touch_id() >= kMaxGesturePoints)
+  if (event.GetTouchId() >= kMaxGesturePoints)
     return NULL;
 
-  if (event.type() == ui::ET_TOUCH_PRESSED) {
+  if (event.GetEventType() == ui::ET_TOUCH_PRESSED) {
     if (point_count_ == kMaxGesturePoints)
       return NULL;
-    GesturePoint* new_point = &points_[event.touch_id()];
+    GesturePoint* new_point = &points_[event.GetTouchId()];
     // We shouldn't be able to get two PRESSED events from the same
     // finger without either a RELEASE or CANCEL in between.
-    DCHECK(!points_[event.touch_id()].in_use());
+    DCHECK(!points_[event.GetTouchId()].in_use());
     new_point->set_point_id(point_count_++);
-    new_point->set_touch_id(event.touch_id());
+    new_point->set_touch_id(event.GetTouchId());
   }
 
   GestureState last_state = state_;
@@ -169,11 +167,11 @@ GestureSequence::Gestures* GestureSequence::ProcessTouchEventForGesture(
   scoped_ptr<Gestures> gestures(new Gestures());
   GesturePoint& point = GesturePointForEvent(event);
   point.UpdateValues(event);
-  flags_ = event.flags();
-  const int point_id = points_[event.touch_id()].point_id();
+  flags_ = event.GetEventFlags();
+  const int point_id = points_[event.GetTouchId()].point_id();
   if (point_id < 0)
     return NULL;
-  switch (Signature(state_, point_id, event.type(), false)) {
+  switch (Signature(state_, point_id, event.GetEventType(), false)) {
     case GST_NO_GESTURE_FIRST_PRESSED:
       TouchDown(event, point, gestures.get());
       set_state(GS_PENDING_SYNTHETIC_CLICK);
@@ -234,7 +232,7 @@ GestureSequence::Gestures* GestureSequence::ProcessTouchEventForGesture(
   if (state_ != last_state)
     VLOG(4) << "Gesture Sequence"
             << " State: " << state_
-            << " touch id: " << event.touch_id();
+            << " touch id: " << event.GetTouchId();
 
   if (last_state == GS_PENDING_SYNTHETIC_CLICK && state_ != last_state)
     long_press_timer_->Stop();
@@ -243,9 +241,9 @@ GestureSequence::Gestures* GestureSequence::ProcessTouchEventForGesture(
   // When a touch point is released, all points with ids greater than the
   // released point must have their ids decremented, or the set of point_ids
   // could end up with gaps.
-  if (event.type() == ui::ET_TOUCH_RELEASED ||
-      event.type() == ui::ET_TOUCH_CANCELLED) {
-    GesturePoint& old_point = points_[event.touch_id()];
+  if (event.GetEventType() == ui::ET_TOUCH_RELEASED ||
+      event.GetEventType() == ui::ET_TOUCH_CANCELLED) {
+    GesturePoint& old_point = points_[event.GetTouchId()];
     for (int i = 0; i < kMaxGesturePoints; ++i) {
       GesturePoint& point = points_[i];
       if (point.point_id() > old_point.point_id())
@@ -276,7 +274,7 @@ base::OneShotTimer<GestureSequence>* GestureSequence::CreateTimer() {
 
 GesturePoint& GestureSequence::GesturePointForEvent(
     const TouchEvent& event) {
-  return points_[event.touch_id()];
+  return points_[event.GetTouchId()];
 }
 
 GesturePoint* GestureSequence::GetPointByPointId(int point_id) {
@@ -292,10 +290,9 @@ GesturePoint* GestureSequence::GetPointByPointId(int point_id) {
 
 void GestureSequence::AppendTapDownGestureEvent(const GesturePoint& point,
                                                 Gestures* gestures) {
-  gestures->push_back(linked_ptr<GestureEvent>(new GestureEvent(
+  gestures->push_back((helper_->CreateGestureEvent(
       ui::ET_GESTURE_TAP_DOWN,
-      point.first_touch_position().x(),
-      point.first_touch_position().y(),
+      point.first_touch_position(),
       flags_,
       base::Time::FromDoubleT(point.last_touch_time()),
       0.f, 0.f, 1 << point.touch_id())));
@@ -303,10 +300,9 @@ void GestureSequence::AppendTapDownGestureEvent(const GesturePoint& point,
 
 void GestureSequence::AppendClickGestureEvent(const GesturePoint& point,
                                               Gestures* gestures) {
-  gestures->push_back(linked_ptr<GestureEvent>(new GestureEvent(
+  gestures->push_back((helper_->CreateGestureEvent(
       ui::ET_GESTURE_TAP,
-      point.first_touch_position().x(),
-      point.first_touch_position().y(),
+      point.first_touch_position(),
       flags_,
       base::Time::FromDoubleT(point.last_touch_time()),
       0.f, 0.f, 1 << point.touch_id())));
@@ -314,10 +310,9 @@ void GestureSequence::AppendClickGestureEvent(const GesturePoint& point,
 
 void GestureSequence::AppendDoubleClickGestureEvent(const GesturePoint& point,
                                                     Gestures* gestures) {
-  gestures->push_back(linked_ptr<GestureEvent>(new GestureEvent(
+  gestures->push_back((helper_->CreateGestureEvent(
       ui::ET_GESTURE_DOUBLE_TAP,
-      point.first_touch_position().x(),
-      point.first_touch_position().y(),
+      point.first_touch_position(),
       flags_,
       base::Time::FromDoubleT(point.last_touch_time()),
       0.f, 0.f, 1 << point.touch_id())));
@@ -326,10 +321,9 @@ void GestureSequence::AppendDoubleClickGestureEvent(const GesturePoint& point,
 void GestureSequence::AppendScrollGestureBegin(const GesturePoint& point,
                                                const gfx::Point& location,
                                                Gestures* gestures) {
-  gestures->push_back(linked_ptr<GestureEvent>(new GestureEvent(
+  gestures->push_back((helper_->CreateGestureEvent(
       ui::ET_GESTURE_SCROLL_BEGIN,
-      location.x(),
-      location.y(),
+      location,
       flags_,
       base::Time::FromDoubleT(point.last_touch_time()),
       0.f, 0.f, 1 << point.touch_id())));
@@ -348,10 +342,9 @@ void GestureSequence::AppendScrollGestureEnd(const GesturePoint& point,
   else if (scroll_type_ == ST_VERTICAL)
     railed_x_velocity = 0;
 
-  gestures->push_back(linked_ptr<GestureEvent>(new GestureEvent(
+  gestures->push_back((helper_->CreateGestureEvent(
       ui::ET_GESTURE_SCROLL_END,
-      location.x(),
-      location.y(),
+      location,
       flags_,
       base::Time::FromDoubleT(point.last_touch_time()),
       railed_x_velocity, railed_y_velocity, 1 << point.touch_id())));
@@ -368,10 +361,9 @@ void GestureSequence::AppendScrollGestureUpdate(const GesturePoint& point,
   else if (scroll_type_ == ST_VERTICAL)
     dx = 0;
 
-  gestures->push_back(linked_ptr<GestureEvent>(new GestureEvent(
+  gestures->push_back((helper_->CreateGestureEvent(
       ui::ET_GESTURE_SCROLL_UPDATE,
-      location.x(),
-      location.y(),
+      location,
       flags_,
       base::Time::FromDoubleT(point.last_touch_time()),
       dx, dy, 1 << point.touch_id())));
@@ -381,10 +373,9 @@ void GestureSequence::AppendPinchGestureBegin(const GesturePoint& p1,
                                               const GesturePoint& p2,
                                               Gestures* gestures) {
   gfx::Point center = p1.last_touch_position().Middle(p2.last_touch_position());
-  gestures->push_back(linked_ptr<GestureEvent>(new GestureEvent(
+  gestures->push_back((helper_->CreateGestureEvent(
       ui::ET_GESTURE_PINCH_BEGIN,
-      center.x(),
-      center.y(),
+      center,
       flags_,
       base::Time::FromDoubleT(p1.last_touch_time()),
       0.f, 0.f, 1 << p1.touch_id() | 1 << p2.touch_id())));
@@ -395,10 +386,9 @@ void GestureSequence::AppendPinchGestureEnd(const GesturePoint& p1,
                                             float scale,
                                             Gestures* gestures) {
   gfx::Point center = p1.last_touch_position().Middle(p2.last_touch_position());
-  gestures->push_back(linked_ptr<GestureEvent>(new GestureEvent(
+  gestures->push_back((helper_->CreateGestureEvent(
       ui::ET_GESTURE_PINCH_END,
-      center.x(),
-      center.y(),
+      center,
       flags_,
       base::Time::FromDoubleT(p1.last_touch_time()),
       scale, 0.f, 1 << p1.touch_id() | 1 << p2.touch_id())));
@@ -411,10 +401,9 @@ void GestureSequence::AppendPinchGestureUpdate(const GesturePoint& p1,
   // TODO(sad): Compute rotation and include it in delta_y.
   // http://crbug.com/113145
   gfx::Point center = p1.last_touch_position().Middle(p2.last_touch_position());
-  gestures->push_back(linked_ptr<GestureEvent>(new GestureEvent(
+  gestures->push_back((helper_->CreateGestureEvent(
       ui::ET_GESTURE_PINCH_UPDATE,
-      center.x(),
-      center.y(),
+      center,
       flags_,
       base::Time::FromDoubleT(p1.last_touch_time()),
       scale, 0.f, 1 << p1.touch_id() | 1 << p2.touch_id())));
@@ -490,14 +479,13 @@ bool GestureSequence::TouchDown(const TouchEvent& event,
 
 void GestureSequence::AppendLongPressGestureEvent() {
   const GesturePoint* point = GetPointByPointId(0);
-  GestureEvent gesture(
+  scoped_ptr<GestureEvent> gesture(helper_->CreateGestureEvent(
       ui::ET_GESTURE_LONG_PRESS,
-      point->first_touch_position().x(),
-      point->first_touch_position().y(),
+      point->first_touch_position(),
       flags_,
       base::Time::FromDoubleT(point->last_touch_time()),
-      point->point_id(), 0.f, 1 << point->touch_id());
-  root_window_->DispatchGestureEvent(&gesture);
+      point->point_id(), 0.f, 1 << point->touch_id()));
+  helper_->DispatchLongPressGestureEvent(gesture.get());
 }
 
 bool GestureSequence::ScrollEnd(const TouchEvent& event,
@@ -581,4 +569,4 @@ bool GestureSequence::PinchEnd(const TouchEvent& event,
   return true;
 }
 
-}  // namespace aura
+}  // namespace ui

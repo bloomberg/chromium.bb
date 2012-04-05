@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/aura/gestures/gesture_point.h"
+#include "ui/base/gestures/gesture_point.h"
 
 #include <cmath>
 
 #include "base/basictypes.h"
-#include "ui/aura/event.h"
-#include "ui/aura/gestures/gesture_configuration.h"
 #include "ui/base/events.h"
+#include "ui/base/gestures/gesture_configuration.h"
+#include "ui/base/gestures/gesture_types.h"
 
-namespace aura {
+namespace ui {
 
 GesturePoint::GesturePoint()
     : first_touch_time_(0.0),
@@ -32,22 +32,22 @@ void GesturePoint::Reset() {
 
 void GesturePoint::UpdateValues(const TouchEvent& event) {
   const int64 event_timestamp_microseconds =
-      event.time_stamp().InMicroseconds();
-  if (event.type() == ui::ET_TOUCH_MOVED) {
-    velocity_calculator_.PointSeen(event.x(),
-                                   event.y(),
+      event.GetTimestamp().InMicroseconds();
+  if (event.GetEventType() == ui::ET_TOUCH_MOVED) {
+    velocity_calculator_.PointSeen(event.GetLocation().x(),
+                                   event.GetLocation().y(),
                                    event_timestamp_microseconds);
   }
 
-  last_touch_time_ = event.time_stamp().InSecondsF();
-  last_touch_position_ = event.location();
+  last_touch_time_ = event.GetTimestamp().InSecondsF();
+  last_touch_position_ = event.GetLocation();
 
-  if (event.type() == ui::ET_TOUCH_PRESSED) {
+  if (event.GetEventType() == ui::ET_TOUCH_PRESSED) {
     first_touch_time_ = last_touch_time_;
-    first_touch_position_ = event.location();
+    first_touch_position_ = event.GetLocation();
     velocity_calculator_.ClearHistory();
-    velocity_calculator_.PointSeen(event.x(),
-                                   event.y(),
+    velocity_calculator_.PointSeen(event.GetLocation().x(),
+                                   event.GetLocation().y(),
                                    event_timestamp_microseconds);
   }
 }
@@ -77,12 +77,13 @@ bool GesturePoint::IsInDoubleClickWindow(const TouchEvent& event) const {
 }
 
 bool GesturePoint::IsInScrollWindow(const TouchEvent& event) const {
-  return event.type() == ui::ET_TOUCH_MOVED &&
+  return event.GetEventType() == ui::ET_TOUCH_MOVED &&
          !IsInsideManhattanSquare(event);
 }
 
 bool GesturePoint::IsInFlickWindow(const TouchEvent& event) {
-  return IsOverMinFlickSpeed() && event.type() != ui::ET_TOUCH_CANCELLED;
+  return IsOverMinFlickSpeed() &&
+         event.GetEventType() != ui::ET_TOUCH_CANCELLED;
 }
 
 bool GesturePoint::DidScroll(const TouchEvent& event, int dist) const {
@@ -144,16 +145,20 @@ bool GesturePoint::IsInSecondClickTimeWindow() const {
 }
 
 bool GesturePoint::IsInsideManhattanSquare(const TouchEvent& event) const {
-  int manhattanDistance = abs(event.x() - first_touch_position_.x()) +
-                          abs(event.y() - first_touch_position_.y());
+  int manhattanDistance = abs(event.GetLocation().x() -
+                              first_touch_position_.x()) +
+                          abs(event.GetLocation().y() -
+                              first_touch_position_.y());
   return manhattanDistance <
       GestureConfiguration::max_touch_move_in_pixels_for_click();
 }
 
 bool GesturePoint::IsSecondClickInsideManhattanSquare(
     const TouchEvent& event) const {
-  int manhattanDistance = abs(event.x() - last_tap_position_.x()) +
-                          abs(event.y() - last_tap_position_.y());
+  int manhattanDistance = abs(event.GetLocation().x() -
+                              last_tap_position_.x()) +
+                          abs(event.GetLocation().y() -
+                              last_tap_position_.y());
   return manhattanDistance <
       GestureConfiguration::max_touch_move_in_pixels_for_click();
 }
@@ -163,4 +168,4 @@ bool GesturePoint::IsOverMinFlickSpeed() {
       GestureConfiguration::min_flick_speed_squared();
 }
 
-}  // namespace aura
+}  // namespace ui

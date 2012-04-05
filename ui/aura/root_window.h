@@ -13,10 +13,11 @@
 #include "base/message_loop.h"
 #include "ui/aura/aura_export.h"
 #include "ui/aura/focus_manager.h"
-#include "ui/aura/gestures/gesture_recognizer.h"
 #include "ui/aura/window.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/events.h"
+#include "ui/base/gestures/gesture_recognizer.h"
+#include "ui/base/gestures/gesture_types.h"
 #include "ui/gfx/compositor/compositor.h"
 #include "ui/gfx/compositor/compositor_observer.h"
 #include "ui/gfx/compositor/layer_animation_observer.h"
@@ -28,6 +29,7 @@ class Size;
 }
 
 namespace ui {
+class GestureRecognizer;
 class LayerAnimationSequence;
 class Transform;
 }
@@ -74,6 +76,7 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
                                public ui::CompositorObserver,
                                public Window,
                                public internal::FocusManager,
+                               public ui::GestureEventHelper,
                                public ui::LayerAnimationObserver {
  public:
   explicit RootWindow(const gfx::Rect& initial_bounds);
@@ -201,12 +204,12 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   // whether the queued event was processed by the window or not.
   void AdvanceQueuedTouchEvent(Window* window, bool processed);
 
-  GestureRecognizer* gesture_recognizer() const {
+  ui::GestureRecognizer* gesture_recognizer() const {
     return gesture_recognizer_.get();
   }
 
   // Provided only for testing:
-  void SetGestureRecognizerForTesting(GestureRecognizer* gr);
+  void SetGestureRecognizerForTesting(ui::GestureRecognizer* gr);
 
   // Returns the accelerated widget from the RootWindowHost.
   gfx::AcceleratedWidget GetAcceleratedWidget();
@@ -260,7 +263,7 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   bool ProcessKeyEvent(Window* target, KeyEvent* event);
   ui::TouchStatus ProcessTouchEvent(Window* target, TouchEvent* event);
   ui::GestureStatus ProcessGestureEvent(Window* target, GestureEvent* event);
-  bool ProcessGestures(GestureRecognizer::Gestures* gestures);
+  bool ProcessGestures(ui::GestureRecognizer::Gestures* gestures);
 
   // Called when a Window is attached or detached from the RootWindow.
   void OnWindowAddedToRootWindow(Window* window);
@@ -275,6 +278,16 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   virtual bool CanFocus() const OVERRIDE;
   virtual bool CanReceiveEvents() const OVERRIDE;
   virtual internal::FocusManager* GetFocusManager() OVERRIDE;
+
+  // Overridden from ui::GestureEventHelper.
+  virtual ui::GestureEvent* CreateGestureEvent(ui::EventType type,
+      const gfx::Point& location,
+      int flags,
+      const base::Time time,
+      float param_first,
+      float param_second,
+      unsigned int touch_id_bitfield) OVERRIDE;
+  virtual bool DispatchLongPressGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
   // Overridden from ui::LayerAnimationObserver:
   virtual void OnLayerAnimationEnded(
@@ -353,7 +366,7 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   Window* focused_window_;
 
   // The gesture_recognizer_ for this.
-  scoped_ptr<GestureRecognizer> gesture_recognizer_;
+  scoped_ptr<ui::GestureRecognizer> gesture_recognizer_;
 
   bool synthesize_mouse_move_;
   bool waiting_on_compositing_end_;

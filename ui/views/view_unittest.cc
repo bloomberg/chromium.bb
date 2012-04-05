@@ -40,8 +40,8 @@
 #endif
 #if defined(USE_AURA)
 #include "ui/aura/event.h"
-#include "ui/aura/gestures/gesture_recognizer.h"
 #include "ui/aura/root_window.h"
+#include "ui/base/gestures/gesture_recognizer.h"
 #endif
 
 using ::testing::_;

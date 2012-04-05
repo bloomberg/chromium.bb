@@ -178,6 +178,34 @@ TouchEvent::TouchEvent(const TouchEvent& model, View* source, View* target)
       force_(model.force_) {
 }
 
+TouchEvent::~TouchEvent() {
+}
+
+ui::EventType TouchEvent::GetEventType() const {
+  return type();
+}
+
+gfx::Point TouchEvent::GetLocation() const {
+  return location();
+}
+
+int TouchEvent::GetTouchId() const {
+  return touch_id_;
+}
+
+int TouchEvent::GetEventFlags() const {
+  return flags();
+}
+
+base::TimeDelta TouchEvent::GetTimestamp() const {
+  return base::TimeDelta::FromMilliseconds(time_stamp().ToDoubleT() * 1000);
+}
+
+TouchEvent* TouchEvent::Copy() const {
+  return new TouchEvent(type(), location().x(), location().y(),
+      flags(), touch_id_, radius_x_, radius_y_, rotation_angle_, force_);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // TouchEvent, private:
 
@@ -226,6 +254,16 @@ GestureEvent::GestureEvent(ui::EventType type, int x, int y, int flags)
       delta_x_(0),
       delta_y_(0) {
 }
+
+GestureEvent::~GestureEvent() {
+}
+
+#if !defined(USE_AURA)
+int GestureEvent::GetLowestTouchId() const {
+  // TODO:
+  return 0;
+}
+#endif
 
 GestureEventForTest::GestureEventForTest(ui::EventType type,
                                          int x,

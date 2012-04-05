@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_AURA_GESTURES_GESTURE_CONFIGURATION_H_
-#define UI_AURA_GESTURES_GESTURE_CONFIGURATION_H_
+#ifndef UI_BASE_GESTURES_GESTURE_CONFIGURATION_H_
+#define UI_BASE_GESTURES_GESTURE_CONFIGURATION_H_
 #pragma once
 
 #include "base/basictypes.h"
-#include "ui/aura/aura_export.h"
+#include "ui/base/ui_export.h"
 
-namespace aura {
+namespace ui {
 
 // TODO: Expand this design to support multiple OS configuration
 // approaches (windows, chrome, others).  This would turn into an
 // abstract base class.
 
-class AURA_EXPORT GestureConfiguration {
+class UI_EXPORT GestureConfiguration {
  public:
   // Ordered alphabetically ignoring underscores, to align with the
   // associated list of prefs in gesture_prefs_aura.cc.
@@ -126,6 +126,6 @@ class AURA_EXPORT GestureConfiguration {
   DISALLOW_COPY_AND_ASSIGN(GestureConfiguration);
 };
 
-}  // namespace aura
+}  // namespace ui
 
-#endif  // UI_AURA_GESTURES_GESTURE_CONFIGURATION_H_
+#endif  // UI_BASE_GESTURES_GESTURE_CONFIGURATION_H_

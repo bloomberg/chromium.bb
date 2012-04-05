@@ -6,13 +6,14 @@
 #include "base/timer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/event.h"
-#include "ui/aura/gestures/gesture_configuration.h"
-#include "ui/aura/gestures/gesture_recognizer_aura.h"
-#include "ui/aura/gestures/gesture_sequence.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
+#include "ui/base/gestures/gesture_configuration.h"
+#include "ui/base/gestures/gesture_recognizer_impl.h"
+#include "ui/base/gestures/gesture_sequence.h"
+#include "ui/base/gestures/gesture_types.h"
 #include "ui/base/hit_test.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
@@ -247,7 +248,7 @@ class GestureEventSynthDelegate : public TestWindowDelegate {
 };
 
 class TestOneShotGestureSequenceTimer
-    : public base::OneShotTimer<GestureSequence> {
+    : public base::OneShotTimer<ui::GestureSequence> {
  public:
   void ForceTimeout() {
     if (IsRunning()) {
@@ -257,10 +258,10 @@ class TestOneShotGestureSequenceTimer
   }
 };
 
-class TimerTestGestureSequence : public GestureSequence {
+class TimerTestGestureSequence : public ui::GestureSequence {
  public:
-  explicit TimerTestGestureSequence(RootWindow* root_window)
-      : GestureSequence(root_window) {
+  explicit TimerTestGestureSequence(ui::GestureEventHelper* helper)
+      : ui::GestureSequence(helper) {
   }
 
   void ForceTimeout() {
@@ -268,30 +269,31 @@ class TimerTestGestureSequence : public GestureSequence {
         long_press_timer())->ForceTimeout();
   }
 
-  base::OneShotTimer<GestureSequence>* CreateTimer() {
+  base::OneShotTimer<ui::GestureSequence>* CreateTimer() {
     return new TestOneShotGestureSequenceTimer();
   }
 };
 
-class TestGestureRecognizer : public GestureRecognizerAura {
- public:
-  TestGestureRecognizer()
-      : GestureRecognizerAura() {
+class TestGestureRecognizer : public ui::GestureRecognizerAura {
+  public:
+  explicit TestGestureRecognizer(RootWindow* root_window)
+      : GestureRecognizerAura(root_window) {
   }
 
-  GestureSequence* GetGestureSequenceForTesting(Window* window) {
-    return GetGestureSequenceForWindow(window);
+  ui::GestureSequence* GetGestureSequenceForTesting(Window* window) {
+    return GetGestureSequenceForConsumer(window);
   }
 };
 
 class TimerTestGestureRecognizer : public TestGestureRecognizer {
  public:
-  TimerTestGestureRecognizer()
-      : TestGestureRecognizer() {
+  explicit TimerTestGestureRecognizer(RootWindow* root_window)
+      : TestGestureRecognizer(root_window) {
   }
 
-  virtual GestureSequence* CreateSequence(RootWindow* root_window) OVERRIDE {
-    return new TimerTestGestureSequence(root_window);
+  virtual ui::GestureSequence* CreateSequence(
+      ui::GestureEventHelper* helper) OVERRIDE {
+    return new TimerTestGestureSequence(helper);
   }
 };
 
@@ -474,7 +476,7 @@ TEST_F(GestureRecognizerTest, GestureEventHorizontalRailFling) {
   // Get a high x velocity, while still staying on the rail
   SendScrollEvents(root_window(), 1, 1, press.time_stamp(),
                    100, 10, kTouchId, 1,
-                   GestureConfiguration::points_buffered_for_velocity(),
+                   ui::GestureConfiguration::points_buffered_for_velocity(),
                    delegate.get());
 
   delegate->Reset();
@@ -510,7 +512,7 @@ TEST_F(GestureRecognizerTest, GestureEventVerticalRailFling) {
   // Get a high y velocity, while still staying on the rail
   SendScrollEvents(root_window(), 1, 1, press.time_stamp(),
                    10, 100, kTouchId, 1,
-                   GestureConfiguration::points_buffered_for_velocity(),
+                   ui::GestureConfiguration::points_buffered_for_velocity(),
                    delegate.get());
 
   delegate->Reset();
@@ -544,7 +546,7 @@ TEST_F(GestureRecognizerTest, GestureEventNonRailFling) {
 
   SendScrollEvents(root_window(), 1, 1, press.time_stamp(),
                    10, 100, kTouchId, 1,
-                   GestureConfiguration::points_buffered_for_velocity(),
+                   ui::GestureConfiguration::points_buffered_for_velocity(),
                    delegate.get());
 
   delegate->Reset();
@@ -571,7 +573,7 @@ TEST_F(GestureRecognizerTest, GestureEventLongPress) {
   delegate->Reset();
 
   TimerTestGestureRecognizer* gesture_recognizer =
-      new TimerTestGestureRecognizer();
+      new TimerTestGestureRecognizer(root_window());
   TimerTestGestureSequence* gesture_sequence =
       static_cast<TimerTestGestureSequence*>(
           gesture_recognizer->GetGestureSequenceForTesting(window.get()));
@@ -612,7 +614,7 @@ TEST_F(GestureRecognizerTest, GestureEventLongPressCancelledByScroll) {
   delegate->Reset();
 
   TimerTestGestureRecognizer* gesture_recognizer =
-      new TimerTestGestureRecognizer();
+      new TimerTestGestureRecognizer(root_window());
   TimerTestGestureSequence* gesture_sequence =
       static_cast<TimerTestGestureSequence*>(
           gesture_recognizer->GetGestureSequenceForTesting(window.get()));
@@ -653,7 +655,7 @@ TEST_F(GestureRecognizerTest, GestureEventLongPressCancelledByPinch) {
       delegate.get(), -1234, bounds, NULL));
 
   TimerTestGestureRecognizer* gesture_recognizer =
-      new TimerTestGestureRecognizer();
+      new TimerTestGestureRecognizer(root_window());
   TimerTestGestureSequence* gesture_sequence =
       static_cast<TimerTestGestureSequence*>(
           gesture_recognizer->GetGestureSequenceForTesting(window.get()));
@@ -720,7 +722,7 @@ TEST_F(GestureRecognizerTest, GestureEventHorizontalRailScroll) {
   // and we can break the rail
   SendScrollEvents(root_window(), 1, 1, press.time_stamp(),
                    1, 100, kTouchId, 1,
-                   GestureConfiguration::points_buffered_for_velocity(),
+                   ui::GestureConfiguration::points_buffered_for_velocity(),
                    delegate.get());
 
   SendScrollEvent(root_window(), 0, 0, kTouchId, delegate.get());
@@ -762,7 +764,7 @@ TEST_F(GestureRecognizerTest, GestureEventVerticalRailScroll) {
   // and we can break the rail
   SendScrollEvents(root_window(), 1, 1, press.time_stamp(),
                    100, 1, kTouchId, 1,
-                   GestureConfiguration::points_buffered_for_velocity(),
+                   ui::GestureConfiguration::points_buffered_for_velocity(),
                    delegate.get());
 
   SendScrollEvent(root_window(), 0, 0, kTouchId, delegate.get());
@@ -1322,13 +1324,13 @@ TEST_F(GestureRecognizerTest, GestureEventPinchScrollOnlyWhenBothFingersMove) {
 
   SendScrollEvents(root_window(), 100, 100, press1.time_stamp(),
                    1, 10, kTouchId1, 1,
-                   GestureConfiguration::points_buffered_for_velocity(),
+                   ui::GestureConfiguration::points_buffered_for_velocity(),
                    delegate.get());
 
   SendScrollEvents(root_window(), 110, 110, press1.time_stamp() +
                    base::TimeDelta::FromMilliseconds(1000),
                    1, 10, kTouchId2, 1,
-                   GestureConfiguration::points_buffered_for_velocity(),
+                   ui::GestureConfiguration::points_buffered_for_velocity(),
                    delegate.get());
   // At no point were both fingers moving at the same time,
   // so no scrolling should have occurred
@@ -1351,17 +1353,18 @@ TEST_F(GestureRecognizerTest, GestureEventIgnoresDisconnectedEvents) {
 // Check that a touch is locked to the window of the closest current touch
 // within max_separation_for_gesture_touches_in_pixels
 TEST_F(GestureRecognizerTest, GestureEventTouchLockSelectsCorrectWindow) {
-  GestureRecognizer* gesture_recognizer =
-      new GestureRecognizerAura();
+  ui::GestureRecognizer* gesture_recognizer =
+      new ui::GestureRecognizerAura(root_window());
   root_window()->SetGestureRecognizerForTesting(gesture_recognizer);
 
-  Window* target;
+  ui::GestureConsumer* target;
   const int kNumWindows = 4;
 
   scoped_array<GestureEventConsumeDelegate*> delegates(
       new GestureEventConsumeDelegate*[kNumWindows]);
 
-  GestureConfiguration::set_max_separation_for_gesture_touches_in_pixels(499);
+  ui::GestureConfiguration::
+      set_max_separation_for_gesture_touches_in_pixels(499);
 
   scoped_array<gfx::Rect*> window_bounds(new gfx::Rect*[kNumWindows]);
   window_bounds[0] = new gfx::Rect(0, 0, 1, 1);
@@ -1383,7 +1386,7 @@ TEST_F(GestureRecognizerTest, GestureEventTouchLockSelectsCorrectWindow) {
   }
 
   // Touches should now be associated with the closest touch within
-  // GestureConfiguration::max_separation_for_gesture_touches_in_pixels
+  // ui::GestureConfiguration::max_separation_for_gesture_touches_in_pixels
   target = gesture_recognizer->GetTargetForLocation(gfx::Point(11, 11));
   EXPECT_EQ(windows[0], target);
   target = gesture_recognizer->GetTargetForLocation(gfx::Point(511, 11));
@@ -1430,16 +1433,16 @@ TEST_F(GestureRecognizerTest, GestureEventTouchLockSelectsCorrectWindow) {
 // by the root window's gesture sequence.
 TEST_F(GestureRecognizerTest, GestureEventOutsideRootWindowTap) {
   TestGestureRecognizer* gesture_recognizer =
-      new TestGestureRecognizer();
+      new TestGestureRecognizer(root_window());
   root_window()->SetGestureRecognizerForTesting(gesture_recognizer);
 
   scoped_ptr<aura::Window> window(CreateTestWindowWithBounds(
       gfx::Rect(-100, -100, 2000, 2000), NULL));
 
-  GestureSequence* window_gesture_sequence =
+  ui::GestureSequence* window_gesture_sequence =
       gesture_recognizer->GetGestureSequenceForTesting(window.get());
 
-  GestureSequence* root_window_gesture_sequence =
+  ui::GestureSequence* root_window_gesture_sequence =
       gesture_recognizer->GetGestureSequenceForTesting(root_window());
 
   gfx::Point pos1(-10, -10);

@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/aura/gestures/velocity_calculator.h"
+#include "ui/base/gestures/velocity_calculator.h"
 
-namespace aura {
+namespace ui {
 
 VelocityCalculator::VelocityCalculator(int buffer_size)
     : buffer_(new Point[buffer_size]) ,
@@ -106,4 +106,4 @@ void VelocityCalculator::ClearHistory() {
   velocities_stale_ = false;
 }
 
-}  // namespace aura
+}  // namespace ui

@@ -91,6 +91,9 @@ void Event::InitWithNativeEvent(const base::NativeEvent& native_event) {
   native_event_ = native_event;
 }
 
+LocatedEvent::~LocatedEvent() {
+}
+
 LocatedEvent::LocatedEvent(const base::NativeEvent& native_event)
     : Event(native_event,
             ui::EventTypeFromNative(native_event),
@@ -274,6 +277,29 @@ TouchEvent::TouchEvent(ui::EventType type,
   set_time_stamp(time_stamp);
 }
 
+TouchEvent::~TouchEvent() {
+}
+
+ui::EventType TouchEvent::GetEventType() const {
+  return type();
+}
+
+gfx::Point TouchEvent::GetLocation() const {
+  return location();
+}
+
+int TouchEvent::GetTouchId() const {
+  return touch_id_;
+}
+
+int TouchEvent::GetEventFlags() const {
+  return flags();
+}
+
+base::TimeDelta TouchEvent::GetTimestamp() const {
+  return time_stamp();
+}
+
 TouchEvent* TouchEvent::Copy() const {
 #if defined(OS_WIN)
   if (native_event().message)
@@ -423,6 +449,9 @@ GestureEvent::GestureEvent(const GestureEvent& model,
       delta_x_(model.delta_x_),
       delta_y_(model.delta_y_),
       touch_ids_bitfield_(model.touch_ids_bitfield_) {
+}
+
+GestureEvent::~GestureEvent() {
 }
 
 int GestureEvent::GetLowestTouchId() const {

@@ -4,15 +4,15 @@
 
 #include "base/memory/singleton.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/ui/gesture_prefs.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/ui/gesture_prefs.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_observer.h"
-#include "ui/aura/gestures/gesture_configuration.h"
+#include "ui/base/gestures/gesture_configuration.h"
 
-using aura::GestureConfiguration;
+using ui::GestureConfiguration;
 
 namespace {
 
@@ -42,7 +42,7 @@ class GesturePrefsObserverAura : public content::NotificationObserver {
 
 // The list of prefs we want to observe.
 // Note that this collection of settings should correspond to the settings used
-// in ui/aura/gestures/gesture_configuration.h
+// in ui/base/gestures/gesture_configuration.h
 const char* kPrefsToObserve[] = {
   prefs::kLongPressTimeInSeconds,
   prefs::kMaxSecondsBetweenDoubleClick,

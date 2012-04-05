@@ -189,6 +189,11 @@
             'gfx/screen_unittest.cc',
           ],
         }],
+        ['use_aura==1 or toolkit_views==1', {
+          'sources': [
+            'base/gestures/velocity_calculator_unittest.cc',
+          ],
+        }],
       ],
     },
   ],

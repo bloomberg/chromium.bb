@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_AURA_GESTURES_GESTURE_POINT_H_
-#define UI_AURA_GESTURES_GESTURE_POINT_H_
+#ifndef UI_BASE_GESTURES_GESTURE_POINT_H_
+#define UI_BASE_GESTURES_GESTURE_POINT_H_
 #pragma once
 
 #include "base/basictypes.h"
-#include "ui/aura/gestures/velocity_calculator.h"
+#include "ui/base/gestures/velocity_calculator.h"
 #include "ui/gfx/point.h"
 
-namespace aura {
+namespace ui {
 class TouchEvent;
 
 // A GesturePoint represents a single touch-point/finger during a gesture
@@ -103,6 +103,6 @@ class GesturePoint {
   DISALLOW_COPY_AND_ASSIGN(GesturePoint);
 };
 
-}  // namespace aura
+}  // namespace ui
 
-#endif  // UI_AURA_GESTURES_GESTURE_POINT_H_
+#endif  // UI_BASE_GESTURES_GESTURE_POINT_H_

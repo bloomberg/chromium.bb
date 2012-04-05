@@ -7,8 +7,10 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/time.h"
 #include "ui/base/events.h"
+#include "ui/base/gestures/gesture_types.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/gfx/point.h"
 #include "ui/views/views_export.h"
@@ -218,7 +220,8 @@ class VIEWS_EXPORT MouseEvent : public LocatedEvent {
 // TouchEvent and PlatformTouchPoint.
 //
 ////////////////////////////////////////////////////////////////////////////////
-class VIEWS_EXPORT TouchEvent : public LocatedEvent {
+class VIEWS_EXPORT TouchEvent : public LocatedEvent,
+                                public ui::TouchEvent {
  public:
   explicit TouchEvent(const NativeEvent& native_event);
 
@@ -238,12 +241,22 @@ class VIEWS_EXPORT TouchEvent : public LocatedEvent {
   // from |source| coordinate system to |target| coordinate system.
   TouchEvent(const TouchEvent& model, View* source, View* target);
 
+  virtual ~TouchEvent();
+
   int identity() const { return touch_id_; }
 
   float radius_x() const { return radius_x_; }
   float radius_y() const { return radius_y_; }
   float rotation_angle() const { return rotation_angle_; }
   float force() const { return force_; }
+
+  // Overridden from ui::TouchEvent.
+  virtual ui::EventType GetEventType() const OVERRIDE;
+  virtual gfx::Point GetLocation() const OVERRIDE;
+  virtual int GetTouchId() const OVERRIDE;
+  virtual int GetEventFlags() const OVERRIDE;
+  virtual base::TimeDelta GetTimestamp() const OVERRIDE;
+  virtual TouchEvent* Copy() const OVERRIDE;
 
  private:
   friend class internal::RootView;
@@ -399,7 +412,8 @@ class VIEWS_EXPORT ScrollEvent : public MouseEvent {
 // GestureEvent class
 //
 ////////////////////////////////////////////////////////////////////////////////
-class VIEWS_EXPORT GestureEvent : public LocatedEvent {
+class VIEWS_EXPORT GestureEvent : public LocatedEvent,
+                                  public ui::GestureEvent {
  public:
   explicit GestureEvent(const NativeEvent& native_event);
 
@@ -407,6 +421,8 @@ class VIEWS_EXPORT GestureEvent : public LocatedEvent {
   // If source / target views are provided, the model location will be converted
   // from |source| coordinate system to |target| coordinate system.
   GestureEvent(const GestureEvent& model, View* source, View* target);
+
+  virtual ~GestureEvent();
 
   float delta_x() const { return delta_x_; }
   float delta_y() const { return delta_y_; }
@@ -418,6 +434,9 @@ class VIEWS_EXPORT GestureEvent : public LocatedEvent {
   friend class internal::RootView;
 
   GestureEvent(const GestureEvent& model, View* root);
+
+  // Overridden from ui::GestureEvent.
+  virtual int GetLowestTouchId() const OVERRIDE;
 
   float delta_x_;
   float delta_y_;

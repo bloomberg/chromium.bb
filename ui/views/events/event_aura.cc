@@ -77,4 +77,9 @@ GestureEvent::GestureEvent(const NativeEvent& event)
       delta_y_(static_cast<aura::GestureEvent*>(event)->delta_y()) {
 }
 
+int GestureEvent::GetLowestTouchId() const {
+  return native_event() ?  static_cast<aura::GestureEvent*>(
+      native_event())->GetLowestTouchId() : 0;
+}
+
 }  // namespace views

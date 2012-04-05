@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_AURA_GESTURES_VELOCITY_CALCULATOR_H_
-#define UI_AURA_GESTURES_VELOCITY_CALCULATOR_H_
+#ifndef UI_BASE_GESTURES_VELOCITY_CALCULATOR_H_
+#define UI_BASE_GESTURES_VELOCITY_CALCULATOR_H_
 #pragma once
 
 #include <vector>
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "ui/aura/aura_export.h"
+#include "ui/base/ui_export.h"
 
-namespace aura {
+namespace ui {
 
-class AURA_EXPORT VelocityCalculator {
+class UI_EXPORT VelocityCalculator {
  public:
   explicit VelocityCalculator(int bufferSize);
   ~VelocityCalculator();
@@ -46,6 +46,6 @@ class AURA_EXPORT VelocityCalculator {
   DISALLOW_COPY_AND_ASSIGN(VelocityCalculator);
 };
 
-}  // namespace aura
+}  // namespace ui
 
-#endif  // UI_AURA_GESTURES_VELOCITY_CALCULATOR_H_
+#endif  // UI_BASE_GESTURES_VELOCITY_CALCULATOR_H_

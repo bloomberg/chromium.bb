@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/aura/gestures/gesture_configuration.h"
+#include "ui/base/gestures/gesture_configuration.h"
 
-namespace aura {
+namespace ui {
 
 // Ordered alphabetically ignoring underscores, to align with the
 // associated list of prefs in gesture_prefs_aura.cc.
@@ -30,4 +30,4 @@ int GestureConfiguration::points_buffered_for_velocity_ = 10;
 double GestureConfiguration::rail_break_proportion_ = 15;
 double GestureConfiguration::rail_start_proportion_ = 2;
 
-}  // namespace aura
+}  // namespace ui
