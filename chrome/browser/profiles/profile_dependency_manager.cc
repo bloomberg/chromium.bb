@@ -166,7 +166,6 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
   if (built_factories_)
     return;
 
-  BackgroundContentsServiceFactory::GetInstance();
   CookieSettings::Factory::GetInstance();
   DownloadServiceFactory::GetInstance();
   FindBarStateFactory::GetInstance();
@@ -206,6 +205,9 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
 #if defined(ENABLE_WEB_INTENTS)
   WebIntentsRegistryFactory::GetInstance();
 #endif
+#if defined(ENABLE_BACKGROUND)
+  BackgroundContentsServiceFactory::GetInstance();
+#endif  // defined(ENABLE_BACKGROUND)
 
   built_factories_ = true;
 }

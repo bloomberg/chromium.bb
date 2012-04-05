@@ -4049,6 +4049,11 @@
         '<(SHARED_INTERMEDIATE_DIR)/autofill_regex_constants.cc',
       ],
       'conditions': [
+        ['enable_background==0', {
+          'sources/': [
+            ['exclude', '^browser/background/'],
+          ],
+        }],
         ['enable_one_click_signin==0', {
           'sources!': [
             'browser/ui/cocoa/one_click_signin_bubble_controller.h',
