@@ -1259,7 +1259,7 @@ class ScrollTest(BasePerfTest):
     # Extra flag needed by scroll performance tests.
     return super(ScrollTest, self).ExtraChromeFlags() + ['--disable-gpu-vsync']
 
-  def _RunScrollTest(self, url, description, graph_name):
+  def _RunScrollTest(self, url, description, graph_name, setup_js=''):
     """Runs a scroll performance test on the specified webpage.
 
     Args:
@@ -1267,6 +1267,8 @@ class ScrollTest(BasePerfTest):
       description: A string description for the particular test being run.
       graph_name: A string name for the performance graph associated with this
           test.  Only used on Chrome desktop.
+      setup_js: String representing additional Javascript setup code to execute
+          in the webpage immediately before running the scroll test.
     """
     scroll_file = os.path.join(self.DataDir(), 'scroll', 'scroll.js')
     with open(scroll_file, 'r') as f:
@@ -1279,8 +1281,10 @@ class ScrollTest(BasePerfTest):
 
       js = """
           %s
+          %s
+          __scroll_test();
           window.domAutomationController.send('done');
-      """ % scroll_text
+      """ % (scroll_text, setup_js)
       self.ExecuteJavascript(js, tab_index=1)
 
       # Poll the webpage until the test is complete.
@@ -1335,6 +1339,12 @@ class ScrollTest(BasePerfTest):
     self._RunScrollTest(
         self.GetFileURLForDataPath('scroll', 'plus.html'),
         'ScrollGooglePlusPage', 'scroll_fps')
+
+  def testGmailScroll(self):
+    """Runs the scroll test using the live Gmail site."""
+    self._LoginToGoogleAccount(account_key='test_google_account_gmail')
+    self._RunScrollTest('http://www.gmail.com', 'ScrollGmail', 'scroll_fps',
+                        setup_js='__is_gmail_test = true;')
 
 
 class FlashTest(BasePerfTest):

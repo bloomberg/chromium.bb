@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,6 +31,11 @@ var __mean;  // Milliseconds between frames.
 var __mean_fps;  // Frames per second.
 var __variance;
 var __sigma;
+
+// Scrolling gmail.
+var __is_gmail_test = false;  // Set this to true when scrolling in Gmail.
+var __gmail_scrollable;
+var __gmail_scrollable_lines = 1000;
 
 
 // Initializes the platform-independent frame callback scheduler function.
@@ -93,6 +98,39 @@ function __first_frame_callback() {
 }
 
 
+// The next two functions are the same as the two functions above, but for the
+// Gmail test.
+function __gmail_frame_callback() {
+  record_delta_time();
+  __gmail_scrollable.scrollByLines(1);
+  __ypos += 1;
+  if (__ypos < __gmail_scrollable_lines) {
+    __set_frame_callback(__gmail_frame_callback, document.body);
+  } else if (__warm_up) {
+    // The first pass is a warm up.  For gmail, this also computes how far we
+    // can scroll.  When done, start the scroll test again, this time for real.
+    x = __gmail_scrollable.scrollTop;
+    __gmail_scrollable.scrollTop = 0;
+    __gmail_scrollable.scrollByLines(1);
+    // Number of lines = total pixels scrolled earlier / pixels for one line.
+    __gmail_scrollable_lines = x / __gmail_scrollable.scrollTop;
+    __warm_up = false;
+    __continue_scroll_test();
+  } else {
+    __compute_results();
+    __scrolling_complete = true;
+  }
+}
+
+
+// Positions document to start test.
+function __gmail_first_frame_callback() {
+  __gmail_scrollable.scrollTop = 0;
+  __ypos = 0;
+  __set_frame_callback(__gmail_frame_callback, document.body);
+}
+
+
 function __init_stats() {
   __delta_max = 0
   __delta_min = 1000000;
@@ -106,7 +144,14 @@ function __continue_scroll_test() {
   __start_time = 0;
   __init_set_frame_callback();
   __init_stats();
-  __set_frame_callback(__first_frame_callback, document.body);
+  if (__is_gmail_test) {
+    gmonkey.load("2.0", function(api) {
+        __gmail_scrollable = api.getScrollableElement();
+        __set_frame_callback(__gmail_first_frame_callback, document.body);
+    });
+  } else {
+    __set_frame_callback(__first_frame_callback, document.body);
+  }
 }
 
 
@@ -137,4 +182,4 @@ function __print_results() {
   window.console.log("FPS = " + __mean_fps);
 }
 
-__scroll_test();
+// To start the scrolling, invoke __scroll_test().
