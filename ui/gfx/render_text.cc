@@ -734,9 +734,7 @@ Point RenderText::GetAlignmentOffset() {
 
 Point RenderText::GetOriginForDrawing() {
   Point origin(GetTextOrigin());
-  // TODO(asvitkine): Use GetStringSize().height() here instead.
-  const Font& font = GetFont();
-  int height = font.GetHeight();
+  const int height = GetStringSize().height();
   DCHECK_LE(height, display_rect().height());
   // Center the text vertically in the display area.
   origin.Offset(0, (display_rect().height() - height) / 2);

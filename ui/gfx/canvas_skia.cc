@@ -56,14 +56,12 @@ bool PixelShouldGetHalo(const SkBitmap& bitmap,
 }
 
 // Apply vertical alignment per |flags|. Returns y-coordinate delta.
-int VAlignText(const gfx::Font& font,
-               int line_count,
+int VAlignText(int text_height,
                int flags,
                int available_height) {
   if (flags & gfx::Canvas::TEXT_VALIGN_TOP)
     return 0;
 
-  const int text_height = line_count * font.GetHeight();
   if (flags & gfx::Canvas::TEXT_VALIGN_BOTTOM)
     return available_height - text_height;
 
@@ -194,8 +192,9 @@ void Canvas::SizeStringInt(const string16& text,
     for (size_t i = 0; i < strings.size(); ++i) {
       StripAcceleratorChars(flags, &strings[i]);
       render_text->SetText(strings[i]);
-      w = std::max(w, render_text->GetStringSize().width());
-      h += font.GetHeight();
+      const Size string_size = render_text->GetStringSize();
+      w = std::max(w, string_size.width());
+      h += string_size.height();
     }
     *width = w;
     *height = h;
@@ -205,15 +204,17 @@ void Canvas::SizeStringInt(const string16& text,
     const size_t kMaxRenderTextLength = 5000;
     if (text.length() >= kMaxRenderTextLength) {
       *width = text.length() * font.GetAverageCharacterWidth();
+      *height = font.GetHeight();
     } else {
       scoped_ptr<RenderText> render_text(RenderText::CreateRenderText());
       gfx::Rect rect(*width, *height);
       string16 adjusted_text = text;
       StripAcceleratorChars(flags, &adjusted_text);
       UpdateRenderText(rect, adjusted_text, font, flags, 0, render_text.get());
-      *width = render_text->GetStringSize().width();
+      const Size string_size = render_text->GetStringSize();
+      *width = string_size.width();
+      *height = string_size.height();
     }
-    *height = font.GetHeight();
   }
 }
 
@@ -260,13 +261,21 @@ void Canvas::DrawStringInt(const string16& text,
     ui::ElideRectangleText(adjusted_text, font, w, h, wrap_behavior,
                            &strings);
 
-    rect.Offset(0, VAlignText(font, strings.size(), flags, h));
     for (size_t i = 0; i < strings.size(); i++) {
       ui::Range range = StripAcceleratorChars(flags, &strings[i]);
       UpdateRenderText(rect, strings[i], font, flags, color, render_text.get());
+
+      // Apply vertical alignment over the block of text using the height of the
+      // first line. This may not be correct if different lines in the text have
+      // different heights, but avoids needing to do two passes.
+      const int line_height = render_text->GetStringSize().height();
+      if (i == 0)
+        rect.Offset(0, VAlignText(strings.size() * line_height, flags, h));
+      rect.set_height(line_height);
+
       ApplyUnderlineStyle(range, render_text.get());
       render_text->Draw(this);
-      rect.Offset(0, font.GetHeight());
+      rect.Offset(0, line_height);
     }
   } else {
     ui::Range range = StripAcceleratorChars(flags, &adjusted_text);
@@ -287,9 +296,14 @@ void Canvas::DrawStringInt(const string16& text,
     if (elide_text)
       ElideTextAndAdjustRange(font, w, &adjusted_text, &range);
 
-    rect.Offset(0, VAlignText(font, 1, flags, h));
     UpdateRenderText(rect, adjusted_text, font, flags, color,
                      render_text.get());
+
+    const int line_height = render_text->GetStringSize().height();
+    rect.Offset(0, VAlignText(line_height, flags, h));
+    rect.set_height(line_height);
+    render_text->SetDisplayRect(rect);
+
     ApplyUnderlineStyle(range, render_text.get());
     render_text->Draw(this);
   }
@@ -399,8 +413,12 @@ void Canvas::DrawFadeTruncatingString(
   }
 
   gfx::Rect rect = display_rect;
-  rect.Offset(0, VAlignText(font, 1, flags, display_rect.height()));
   UpdateRenderText(rect, clipped_text, font, flags, color, render_text.get());
+
+  const int line_height = render_text->GetStringSize().height();
+  rect.Offset(0, VAlignText(line_height, flags, display_rect.height()));
+  rect.set_height(line_height);
+  render_text->SetDisplayRect(rect);
 
   canvas_->save(SkCanvas::kClip_SaveFlag);
   ClipRect(display_rect);
