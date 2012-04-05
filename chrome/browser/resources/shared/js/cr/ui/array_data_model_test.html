@@ -41,6 +41,25 @@ function testPush() {
   assertEquals('The splice event should only fire once', 1, count);
 }
 
+function testSplice() {
+  function compare(array, args) {
+    var m = new cr.ui.ArrayDataModel(array.slice());
+    var expected = array.slice();
+    var result = expected.splice.apply(expected, args);
+    assertArrayEquals(result, m.splice.apply(m, args));
+    assertArrayEquals(expected, m.slice());
+  }
+
+  compare([1, 2, 3], []);
+  compare([1, 2, 3], [0, 0]);
+  compare([1, 2, 3], [0, 1]);
+  compare([1, 2, 3], [1, 1]);
+  compare([1, 2, 3], [0, 3]);
+  compare([1, 2, 3], [0, 1, 5]);
+  compare([1, 2, 3], [0, 3, 1, 2, 3]);
+  compare([1, 2, 3], [5, 3, 1, 2, 3]);
+}
+
 </script>
 
 </body>

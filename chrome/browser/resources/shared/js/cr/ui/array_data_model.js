@@ -140,33 +140,42 @@ cr.define('cr.ui', function() {
       var newIndexes = [];
       var deletePermutation = [];
       var deleted = 0;
-      for (var i = 0; i < this.indexes_.length; i++) {
-        var oldIndex = this.indexes_[i];
-        if (oldIndex < index) {
-          newIndexes.push(oldIndex);
-          deletePermutation.push(i - deleted);
-        } else if (oldIndex >= index + deleteCount) {
-          newIndexes.push(oldIndex - deleteCount + addCount);
-          deletePermutation.push(i - deleted);
-        } else {
-          deletePermutation.push(-1);
-          deleted++;
-        }
+      var deletedItems = [];
+      var newArray = [];
+      index = Math.min(index, this.indexes_.length);
+      deleteCount = Math.min(deleteCount, this.indexes_.length - index);
+      // Copy items before the insertion point.
+      for (var i = 0; i < index; i++) {
+        newIndexes.push(newArray.length);
+        deletePermutation.push(i - deleted);
+        newArray.push(this.array_[this.indexes_[i]]);
       }
-      for (var i = 0; i < addCount; i++) {
-        newIndexes.push(index + i);
+      // Delete items.
+      for (; i < index + deleteCount; i++) {
+        deletePermutation.push(-1);
+        deleted++;
+        deletedItems.push(this.array_[this.indexes_[i]]);
       }
+      // Insert new items instead deleted ones.
+      for (var j = 0; j < addCount; j++) {
+        newIndexes.push(newArray.length);
+        newArray.push(arguments[j + 2]);
+      }
+      // Copy items after the insertion point.
+      for (; i < this.indexes_.length; i++) {
+        newIndexes.push(newArray.length);
+        deletePermutation.push(i - deleted);
+        newArray.push(this.array_[this.indexes_[i]]);
+      }
+
       this.indexes_ = newIndexes;
 
-      var arr = this.array_;
+      this.array_ = newArray;
 
       // TODO(arv): Maybe unify splice and change events?
       var spliceEvent = new Event('splice');
-      spliceEvent.index = index;
-      spliceEvent.removed = arr.slice(index, index + deleteCount);
+      spliceEvent.removed = deletedItems;
       spliceEvent.added = Array.prototype.slice.call(arguments, 2);
-
-      var rv = arr.splice.apply(arr, arguments);
 
       var status = this.sortStatus;
       // if sortStatus.field is null, this restores original order.
@@ -177,8 +186,10 @@ cr.define('cr.ui', function() {
           return element != -1 ? sortPermutation[element] : -1;
         });
         this.dispatchPermutedEvent_(splicePermutation);
+        spliceEvent.index = sortPermutation[index];
       } else {
         this.dispatchPermutedEvent_(deletePermutation);
+        spliceEvent.index = index;
       }
 
       this.dispatchEvent(spliceEvent);
@@ -190,7 +201,7 @@ cr.define('cr.ui', function() {
       if (status.field)
         this.delayedSort_(status.field, status.direction);
 
-      return rv;
+      return deletedItems;
     },
 
     /**
