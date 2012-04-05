@@ -457,6 +457,8 @@
     'browser/renderer_host/clipboard_message_filter.cc',
     'browser/renderer_host/clipboard_message_filter.h',
     'browser/renderer_host/clipboard_message_filter_mac.mm',
+    'browser/renderer_host/compositing_iosurface_mac.h',
+    'browser/renderer_host/compositing_iosurface_mac.mm',
     'browser/renderer_host/cross_site_resource_handler.cc',
     'browser/renderer_host/cross_site_resource_handler.h',
     'browser/renderer_host/database_message_filter.cc',

@@ -7,6 +7,7 @@
 #pragma once
 
 #import <Cocoa/Cocoa.h>
+#include <list>
 
 #include "base/memory/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
@@ -22,6 +23,7 @@
 #include "webkit/glue/webcursor.h"
 
 @class AcceleratedPluginView;
+class CompositingIOSurfaceMac;
 @class FullscreenWindowManager;
 class RenderWidgetHostViewMac;
 @protocol RenderWidgetHostViewMacDelegate;
@@ -126,6 +128,15 @@ class RenderWidgetHostImpl;
 
   // Event monitor for gesture-end events.
   id endGestureMonitor_;
+
+  // OpenGL Support:
+
+  // recursive globalFrameDidChange protection:
+  BOOL handlingGlobalFrameDidChange_;
+
+  // Set to YES once a GL context is attached to this NSView; never set back to
+  // NO.
+  BOOL hasGLContext_;
 }
 
 @property(nonatomic, readonly) NSRange selectedRange;
@@ -147,6 +158,9 @@ class RenderWidgetHostImpl;
 // Evaluates the event in the context of plugin IME, if plugin IME is enabled.
 // Returns YES if the event was handled.
 - (BOOL)postProcessEventForPluginIme:(NSEvent*)event;
+// Tell the view that a GL context was created and accelerated rendering may
+// ensue.
+- (void)addedGLContext;
 
 @end
 
@@ -308,13 +322,16 @@ class RenderWidgetHostViewMac : public content::RenderWidgetHostViewBase {
 
   const std::string& selected_text() const { return selected_text_; }
 
-  void UpdateRootGpuViewVisibility(bool show_gpu_widget);
-
-  // When rendering transitions from gpu to software, the gpu widget can't be
-  // hidden until the software backing store has been updated. This method
-  // checks if the GPU view needs to be hidden and hides it if necessary. It
-  // should be called after the software backing store has been painted to.
-  void HandleDelayedGpuViewHiding();
+  // Call setNeedsDisplay on the cocoa_view_. The IOSurface will be drawn during
+  // the next drawRect. The route_id and gpu_host_id are added to a list to be
+  // acked when the SwapBuffers occurs in drawRect.
+  void CompositorSwapBuffers(uint64 surface_handle,
+                             int32 route_id,
+                             int32 gpu_host_id);
+  // Ack pending SwapBuffers requests (queued up by CompositorSwapBuffers), if
+  // any, to unblock the GPU process. Has no effect if there are no pending
+  // requests.
+  void AckPendingCompositorSwapBuffers();
 
   // These member variables should be private, but the associated ObjC class
   // needs access to them and can't be made a friend.
@@ -359,6 +376,8 @@ class RenderWidgetHostViewMac : public content::RenderWidgetHostViewBase {
   // Helper class for managing instances of accelerated plug-ins.
   AcceleratedSurfaceContainerManagerMac plugin_container_manager_;
 
+  scoped_ptr<CompositingIOSurfaceMac> compositing_iosurface_;
+
   NSWindow* pepper_fullscreen_window() const {
     return pepper_fullscreen_window_;
   }
@@ -370,12 +389,6 @@ class RenderWidgetHostViewMac : public content::RenderWidgetHostViewBase {
   // be hooked up immediately to the view hierarchy, or else when it is
   // deleted it will delete this out from under the caller.
   explicit RenderWidgetHostViewMac(content::RenderWidgetHost* widget);
-
-  // If the window is at the root of the plugin container hierachy,
-  // we need to update the geometry manually.
-  void UpdatePluginGeometry(gfx::PluginWindowHandle window,
-                            int32 width,
-                            int32 height);
 
   // Returns whether this render view is a popup (autocomplete window).
   bool IsPopup() const;
@@ -409,14 +422,11 @@ class RenderWidgetHostViewMac : public content::RenderWidgetHostViewBase {
   // selected text on the renderer.
   std::string selected_text_;
 
-  bool accelerated_compositing_active_;
-
-  // When rendering transitions from gpu to software, the gpu widget can't be
-  // hidden until the software backing store has been updated. This variable is
-  // set when the gpu widget needs to be hidden once a paint is completed.
-  bool needs_gpu_visibility_update_after_repaint_;
-
   gfx::PluginWindowHandle compositing_surface_;
+
+  // List of pending swaps for deferred acking:
+  //   pairs of (route_id, gpu_host_id).
+  std::list<std::pair<int32, int32> > pending_swap_buffers_acks_;
 
   // The fullscreen window used for pepper flash.
   scoped_nsobject<NSWindow> pepper_fullscreen_window_;

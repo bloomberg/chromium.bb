@@ -10,10 +10,7 @@
 #include "ui/gfx/rect.h"
 
 AcceleratedSurfaceContainerManagerMac::AcceleratedSurfaceContainerManagerMac()
-    : current_id_(0),
-      root_container_(NULL),
-      root_container_handle_(gfx::kNullPluginWindow),
-      gpu_rendering_active_(false) {
+    : current_id_(0) {
 }
 
 AcceleratedSurfaceContainerManagerMac::
@@ -29,10 +26,7 @@ AcceleratedSurfaceContainerManagerMac::AllocateFakePluginWindowHandle(
   gfx::PluginWindowHandle res =
       static_cast<gfx::PluginWindowHandle>(++current_id_);
   plugin_window_to_container_map_.insert(std::make_pair(res, container));
-  if (root) {
-    root_container_ = container;
-    root_container_handle_ = res;
-  }
+  DCHECK(!root);
   return res;
 }
 
@@ -41,27 +35,9 @@ void AcceleratedSurfaceContainerManagerMac::DestroyFakePluginWindowHandle(
   base::AutoLock lock(lock_);
 
   AcceleratedSurfaceContainerMac* container = MapIDToContainer(id);
-  if (container) {
-    if (container == root_container_) {
-      root_container_ = NULL;
-      root_container_handle_ = gfx::kNullPluginWindow;
-    }
+  if (container)
     delete container;
-  }
   plugin_window_to_container_map_.erase(id);
-}
-
-bool AcceleratedSurfaceContainerManagerMac::IsRootContainer(
-    gfx::PluginWindowHandle id) const {
-  return root_container_handle_ != gfx::kNullPluginWindow &&
-      root_container_handle_ == id;
-}
-
-void AcceleratedSurfaceContainerManagerMac::
-    set_gpu_rendering_active(bool active) {
-  if (gpu_rendering_active_ && !active)
-    SetRootSurfaceInvalid();
-  gpu_rendering_active_ = active;
 }
 
 void AcceleratedSurfaceContainerManagerMac::SetSizeAndIOSurface(
@@ -157,18 +133,9 @@ void AcceleratedSurfaceContainerManagerMac::SetSurfaceWasPaintedTo(
     container->set_was_painted_to(surface_handle, update_rect);
 }
 
-void AcceleratedSurfaceContainerManagerMac::SetRootSurfaceInvalid() {
-  base::AutoLock lock(lock_);
-  if (root_container_)
-    root_container_->set_surface_invalid();
-}
-
 bool AcceleratedSurfaceContainerManagerMac::SurfaceShouldBeVisible(
     gfx::PluginWindowHandle id) const {
   base::AutoLock lock(lock_);
-
-  if (IsRootContainer(id) && !gpu_rendering_active_)
-    return false;
 
   AcceleratedSurfaceContainerMac* container = MapIDToContainer(id);
   return container && container->ShouldBeVisible();

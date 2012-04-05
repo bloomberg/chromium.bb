@@ -24,6 +24,7 @@
 #include "content/browser/plugin_process_host.h"
 #import "content/browser/renderer_host/accelerated_plugin_view_mac.h"
 #include "content/browser/renderer_host/backing_store_mac.h"
+#include "content/browser/renderer_host/compositing_iosurface_mac.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #import "content/browser/renderer_host/render_widget_host_view_mac_editcommand_helper.h"
@@ -263,8 +264,6 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget)
       is_loading_(false),
       is_hidden_(false),
       weak_factory_(this),
-      accelerated_compositing_active_(false),
-      needs_gpu_visibility_update_after_repaint_(false),
       compositing_surface_(gfx::kNullPluginWindow) {
   // |cocoa_view_| owns us and we will be deleted when |cocoa_view_|
   // goes away.  Since we autorelease it, our caller must put
@@ -359,6 +358,9 @@ void RenderWidgetHostViewMac::DidBecomeSelected() {
     tab_switch_paint_time_ = base::TimeTicks::Now();
   is_hidden_ = false;
   render_widget_host_->WasRestored();
+
+  // We're messing with the window, so do this to ensure no flashes.
+  [[cocoa_view_ window] disableScreenUpdatesUntilFlush];
 }
 
 void RenderWidgetHostViewMac::WasHidden() {
@@ -370,9 +372,20 @@ void RenderWidgetHostViewMac::WasHidden() {
   // everything again when we become selected again.
   is_hidden_ = true;
 
+  // Send ACKs for any pending SwapBuffers (if any) since we won't be displaying
+  // them and the GPU process is waiting.
+  AckPendingCompositorSwapBuffers();
+
   // If we have a renderer, then inform it that we are being hidden so it can
   // reduce its resource utilization.
   render_widget_host_->WasHidden();
+
+  // There can be a transparent flash as this view is removed and the next is
+  // added, because of OSX windowing races between displaying the contents of
+  // the NSView and its corresponding OpenGL context.
+  // disableScreenUpdatesUntilFlush prevents the transparent flash by avoiding
+  // screen updates until the next tab draws.
+  [[cocoa_view_ window] disableScreenUpdatesUntilFlush];
 }
 
 void RenderWidgetHostViewMac::SetSize(const gfx::Size& size) {
@@ -642,13 +655,6 @@ void RenderWidgetHostViewMac::DidUpdateBackingStore(
     if (!about_to_validate_and_paint_)
       [cocoa_view_ displayIfNeeded];
   }
-
-  // If |about_to_validate_and_paint_| is set, then -drawRect: is on the stack
-  // and it's not allowed to call -setHidden on the accelerated view.  In that
-  // case, -callSetNeedsDisplayInRect: will hide it later.
-  // If |about_to_validate_and_paint_| is not set, do it now.
-  if (!about_to_validate_and_paint_)
-    HandleDelayedGpuViewHiding();
 }
 
 void RenderWidgetHostViewMac::RenderViewGone(base::TerminationStatus status,
@@ -897,25 +903,6 @@ AcceleratedPluginView* RenderWidgetHostViewMac::ViewForPluginWindowHandle(
   return it->second;
 }
 
-void RenderWidgetHostViewMac::UpdatePluginGeometry(
-    gfx::PluginWindowHandle window,
-    int32 width,
-    int32 height) {
-  if (plugin_container_manager_.IsRootContainer(window)) {
-    // Fake up a WebPluginGeometry for the root window to set the
-    // container's size; we will never get a notification from the
-    // browser about the root window, only plugins.
-    webkit::npapi::WebPluginGeometry geom;
-    gfx::Rect rect(0, 0, width, height);
-    geom.window = window;
-    geom.window_rect = rect;
-    geom.clip_rect = rect;
-    geom.visible = true;
-    geom.rects_valid = true;
-    MovePluginWindows(std::vector<webkit::npapi::WebPluginGeometry>(1, geom));
-  }
-}
-
 void RenderWidgetHostViewMac::AcceleratedSurfaceSetIOSurface(
     gfx::PluginWindowHandle window,
     int32 width,
@@ -926,7 +913,6 @@ void RenderWidgetHostViewMac::AcceleratedSurfaceSetIOSurface(
                                                 width,
                                                 height,
                                                 io_surface_identifier);
-  UpdatePluginGeometry(window, width, height);
 }
 
 void RenderWidgetHostViewMac::AcceleratedSurfaceSetTransportDIB(
@@ -939,7 +925,37 @@ void RenderWidgetHostViewMac::AcceleratedSurfaceSetTransportDIB(
                                                    width,
                                                    height,
                                                    transport_dib);
-  UpdatePluginGeometry(window, width, height);
+}
+
+void RenderWidgetHostViewMac::CompositorSwapBuffers(uint64 surface_handle,
+                                                    int32 route_id,
+                                                    int32 gpu_host_id) {
+  pending_swap_buffers_acks_.push_back(std::make_pair(route_id, gpu_host_id));
+  if (!compositing_iosurface_.get() && !is_hidden_) {
+    [cocoa_view_ addedGLContext];
+    compositing_iosurface_.reset(CompositingIOSurfaceMac::Create());
+  }
+
+  if (compositing_iosurface_.get() && !is_hidden_) {
+    last_frame_was_accelerated_ = true;
+    compositing_iosurface_->SetIOSurface(surface_handle);
+    [cocoa_view_ setNeedsDisplay:YES];
+  } else {
+    AckPendingCompositorSwapBuffers();
+  }
+}
+
+void RenderWidgetHostViewMac::AckPendingCompositorSwapBuffers() {
+  TRACE_EVENT0("browser",
+               "RenderWidgetHostViewMac::AckPendingCompositorSwapBuffers");
+  while (!pending_swap_buffers_acks_.empty()) {
+    if (pending_swap_buffers_acks_.front().first != 0) {
+      RenderWidgetHostImpl::AcknowledgeSwapBuffers(
+          pending_swap_buffers_acks_.front().first,
+          pending_swap_buffers_acks_.front().second);
+    }
+    pending_swap_buffers_acks_.erase(pending_swap_buffers_acks_.begin());
+  }
 }
 
 void RenderWidgetHostViewMac::AcceleratedSurfaceBuffersSwapped(
@@ -948,22 +964,27 @@ void RenderWidgetHostViewMac::AcceleratedSurfaceBuffersSwapped(
   TRACE_EVENT0("browser",
       "RenderWidgetHostViewMac::AcceleratedSurfaceBuffersSwapped");
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  AcceleratedPluginView* view = ViewForPluginWindowHandle(params.window);
-  DCHECK(view);
-  if (view) {
-    last_frame_was_accelerated_ = (params.window ==
-        plugin_container_manager_.root_container_handle());
-    plugin_container_manager_.SetSurfaceWasPaintedTo(params.window,
-                                                     params.surface_handle);
 
-    // The surface is hidden until its first paint, to not show garbage.
-    if (plugin_container_manager_.SurfaceShouldBeVisible(params.window))
-      [view setHidden:NO];
-    [view drawView];
-  }
+  if (params.window == compositing_surface_) {
+    CompositorSwapBuffers(params.surface_handle, params.route_id, gpu_host_id);
+  } else {
+    // Deprecated accelerated plugin code path.
+    AcceleratedPluginView* view = ViewForPluginWindowHandle(params.window);
+    DCHECK(view);
+    if (view) {
+      plugin_container_manager_.SetSurfaceWasPaintedTo(params.window,
+                                                       params.surface_handle);
 
-  if (params.route_id != 0) {
-    RenderWidgetHostImpl::AcknowledgeSwapBuffers(params.route_id, gpu_host_id);
+      // The surface is hidden until its first paint, to not show garbage.
+      if (plugin_container_manager_.SurfaceShouldBeVisible(params.window))
+        [view setHidden:NO];
+      [view drawView];
+    }
+
+    if (params.route_id != 0) {
+      RenderWidgetHostImpl::AcknowledgeSwapBuffers(params.route_id,
+                                                   gpu_host_id);
+    }
   }
 }
 
@@ -973,82 +994,36 @@ void RenderWidgetHostViewMac::AcceleratedSurfacePostSubBuffer(
   TRACE_EVENT0("browser",
       "RenderWidgetHostViewMac::AcceleratedSurfacePostSubBuffer");
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  AcceleratedPluginView* view = ViewForPluginWindowHandle(params.window);
-  DCHECK(view);
-  if (view) {
-    last_frame_was_accelerated_ = (params.window ==
-        plugin_container_manager_.root_container_handle());
-    plugin_container_manager_.SetSurfaceWasPaintedTo(
-        params.window,
-        params.surface_handle,
-        gfx::Rect(params.x, params.y, params.width, params.height));
 
-    // The surface is hidden until its first paint, to not show garbage.
-    if (plugin_container_manager_.SurfaceShouldBeVisible(params.window))
-      [view setHidden:NO];
-    [view drawView];
-  }
+  if (params.window == compositing_surface_) {
+    CompositorSwapBuffers(params.surface_handle, params.route_id, gpu_host_id);
+  } else {
+    // Deprecated accelerated plugin code path.
+    AcceleratedPluginView* view = ViewForPluginWindowHandle(params.window);
+    DCHECK(view);
+    if (view) {
+      plugin_container_manager_.SetSurfaceWasPaintedTo(
+          params.window,
+          params.surface_handle,
+          gfx::Rect(params.x, params.y, params.width, params.height));
 
-  if (params.route_id != 0) {
-    RenderWidgetHostImpl::AcknowledgePostSubBuffer(
-        params.route_id, gpu_host_id);
+      // The surface is hidden until its first paint, to not show garbage.
+      if (plugin_container_manager_.SurfaceShouldBeVisible(params.window))
+        [view setHidden:NO];
+      [view drawView];
+    }
+
+    if (params.route_id != 0) {
+      RenderWidgetHostImpl::AcknowledgePostSubBuffer(
+          params.route_id, gpu_host_id);
+    }
   }
 }
 
 void RenderWidgetHostViewMac::AcceleratedSurfaceSuspend() {
 }
 
-void RenderWidgetHostViewMac::UpdateRootGpuViewVisibility(
-    bool show_gpu_widget) {
-  TRACE_EVENT1("renderer_host",
-      "RenderWidgetHostViewMac::UpdateRootGpuViewVisibility",
-      "show", show_gpu_widget);
-  // Plugins are destroyed on page navigate. The compositor layer on the other
-  // hand is created on demand and then stays alive until its renderer process
-  // dies (usually on cross-domain navigation). Instead, only a flag
-  // |is_accelerated_compositing_active()| is flipped when the compositor output
-  // should be shown/hidden.
-  // Show/hide the view belonging to the compositor here.
-  plugin_container_manager_.set_gpu_rendering_active(show_gpu_widget);
-
-  gfx::PluginWindowHandle root_handle =
-      plugin_container_manager_.root_container_handle();
-  if (root_handle != gfx::kNullPluginWindow) {
-    AcceleratedPluginView* view = ViewForPluginWindowHandle(root_handle);
-    DCHECK(view);
-    bool visible =
-        plugin_container_manager_.SurfaceShouldBeVisible(root_handle);
-    [[view window] disableScreenUpdatesUntilFlush];
-    [view setHidden:!visible];
-  }
-}
-
-void RenderWidgetHostViewMac::HandleDelayedGpuViewHiding() {
-  TRACE_EVENT0("renderer_host",
-      "RenderWidgetHostViewMac::HandleDelayedGpuViewHiding");
-  if (needs_gpu_visibility_update_after_repaint_) {
-    UpdateRootGpuViewVisibility(false);
-    needs_gpu_visibility_update_after_repaint_ = false;
-  }
-}
-
 void RenderWidgetHostViewMac::OnAcceleratedCompositingStateChange() {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  bool activated = RenderWidgetHostImpl::From(
-      GetRenderWidgetHost())->is_accelerated_compositing_active();
-  bool changed = accelerated_compositing_active_ != activated;
-  accelerated_compositing_active_ = activated;
-  if (!changed)
-    return;
-
-  TRACE_EVENT1("renderer_host",
-      "RenderWidgetHostViewMac::OnAcceleratedCompositingStateChange",
-      "active", accelerated_compositing_active_);
-  if (accelerated_compositing_active_) {
-    UpdateRootGpuViewVisibility(accelerated_compositing_active_);
-  } else {
-    needs_gpu_visibility_update_after_repaint_ = true;
-  }
 }
 
 void RenderWidgetHostViewMac::GetScreenInfo(WebKit::WebScreenInfo* results) {
@@ -1068,9 +1043,7 @@ gfx::Rect RenderWidgetHostViewMac::GetRootWindowBounds() {
 }
 
 gfx::GLSurfaceHandle RenderWidgetHostViewMac::GetCompositingSurface() {
-  if (compositing_surface_ == gfx::kNullPluginWindow)
-    compositing_surface_ = AllocateFakePluginWindowHandle(
-        /*opaque=*/true, /*root=*/true);
+  // compositing_surface_ is always gfx::kNullPluginWindow.
   return gfx::GLSurfaceHandle(compositing_surface_, true);
 }
 
@@ -1236,6 +1209,15 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
     renderWidgetHostView_.reset(r);
     canBeKeyView_ = YES;
     focusedPluginIdentifier_ = -1;
+
+    // OpenGL support:
+    handlingGlobalFrameDidChange_ = NO;
+    hasGLContext_ = NO;
+    [[NSNotificationCenter defaultCenter]
+         addObserver:self
+            selector:@selector(globalFrameDidChange:)
+                name:NSViewGlobalFrameDidChangeNotification
+              object:self];
   }
   return self;
 }
@@ -1243,6 +1225,7 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
 - (void)dealloc {
   if (delegate_ && [delegate_ respondsToSelector:@selector(viewGone:)])
     [delegate_ viewGone:self];
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
 
   [super dealloc];
 }
@@ -1766,6 +1749,44 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
   }
 }
 
+// OpenGL support
+- (void)addedGLContext {
+  hasGLContext_ = YES;
+  if (![self isHiddenOrHasHiddenAncestor]) {
+    // Intentionally leak underlaySurface count so that the window never changes
+    // back to opaque. This is to prevent black/transparent flashing that
+    // appears during tab switching otherwise.
+    // TODO(jbates) Remove the underlaySurfaceAdded feature completely from
+    // ChromeBrowserWindow when the subtle gray line corner bug is fixed. Then
+    // the window can be permanently set to non-opaque. crbug.com/56154
+    if ([[self window] respondsToSelector:@selector(underlaySurfaceAdded)])
+      [static_cast<id>([self window]) underlaySurfaceAdded];
+  }
+}
+
+- (void)viewWillMoveToWindow:(NSWindow*)newWindow {
+  if (![self isHiddenOrHasHiddenAncestor]) {
+    // Intentionally leak underlaySurface count (see comment in addedGLContext).
+    if (hasGLContext_ &&
+        [newWindow respondsToSelector:@selector(underlaySurfaceAdded)])
+      [static_cast<id>(newWindow) underlaySurfaceAdded];
+  }
+
+  // We're messing with the window, so do this to ensure no flashes. This one
+  // prevents a flash when the current tab is closed.
+  [[self window] disableScreenUpdatesUntilFlush];
+}
+
+- (void) globalFrameDidChange:(NSNotification*)notification {
+  if (handlingGlobalFrameDidChange_)
+    return;
+
+  handlingGlobalFrameDidChange_ = YES;
+  if (renderWidgetHostView_->compositing_iosurface_.get())
+    renderWidgetHostView_->compositing_iosurface_->GlobalFrameDidChange();
+  handlingGlobalFrameDidChange_ = NO;
+}
+
 - (void)setFrameSize:(NSSize)newSize {
   // NB: -[NSView setFrame:] calls through -setFrameSize:, so overriding
   // -setFrame: isn't neccessary.
@@ -1780,8 +1801,6 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
   [self setNeedsDisplayInRect:renderWidgetHostView_->invalid_rect_];
   renderWidgetHostView_->call_set_needs_display_in_rect_pending_ = false;
   renderWidgetHostView_->invalid_rect_ = NSZeroRect;
-
-  renderWidgetHostView_->HandleDelayedGpuViewHiding();
 }
 
 // Fills with white the parts of the area to the right and bottom for |rect|
@@ -1843,22 +1862,19 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
   const gfx::Rect damagedRect([self flipNSRectToRect:dirtyRect]);
 
   if (renderWidgetHostView_->last_frame_was_accelerated_) {
-    gfx::Rect gpuRect;
+    // Draw transparency to expose the GL underlay:
+    // TODO(jbates) avoid doing this every frame.
+    [[NSColor clearColor] set];
+    NSRectFill(dirtyRect);
 
-    gfx::PluginWindowHandle root_handle =
-       renderWidgetHostView_->plugin_container_manager_.root_container_handle();
-    if (root_handle != gfx::kNullPluginWindow) {
-      AcceleratedPluginView* view =
-          renderWidgetHostView_->ViewForPluginWindowHandle(root_handle);
-      DCHECK(view);
-      if (view && ![view isHidden]) {
-        gpuRect = [self flipNSRectToRect:[view frame]];
-      }
-    }
-
-    [self fillBottomRightRemainderOfRect:gpuRect dirtyRect:damagedRect];
+    renderWidgetHostView_->compositing_iosurface_->DrawIOSurface(self);
+    renderWidgetHostView_->AckPendingCompositorSwapBuffers();
     return;
   }
+
+  // In case the last frame was accelerated, ack any pending swaps to unblock
+  // the GPU process.
+  renderWidgetHostView_->AckPendingCompositorSwapBuffers();
 
   DCHECK(!renderWidgetHostView_->about_to_validate_and_paint_);
 

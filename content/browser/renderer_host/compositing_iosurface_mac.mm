@@ -1,0 +1,228 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "content/browser/renderer_host/compositing_iosurface_mac.h"
+
+#include <OpenGL/OpenGL.h>
+#include <vector>
+
+#include "base/command_line.h"
+#include "base/debug/trace_event.h"
+#include "content/browser/renderer_host/render_widget_host_view_mac.h"
+#include "content/public/browser/browser_thread.h"
+#include "ui/gfx/gl/gl_context.h"
+#include "ui/gfx/gl/gl_switches.h"
+#include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
+#include "ui/gfx/surface/io_surface_support_mac.h"
+
+#ifdef NDEBUG
+#define CHECK_GL_ERROR()
+#else
+#define CHECK_GL_ERROR() do {                                           \
+    GLenum gl_error = glGetError();                                     \
+    LOG_IF(ERROR, gl_error != GL_NO_ERROR) << "GL Error :" << gl_error; \
+  } while (0)
+#endif
+
+CompositingIOSurfaceMac* CompositingIOSurfaceMac::Create() {
+  TRACE_EVENT0("browser", "CompositingIOSurfaceMac::Create");
+  IOSurfaceSupport* io_surface_support = IOSurfaceSupport::Initialize();
+  if (!io_surface_support) {
+    LOG(WARNING) << "No IOSurface support";
+    return NULL;
+  }
+
+  std::vector<NSOpenGLPixelFormatAttribute> attributes;
+  attributes.push_back(NSOpenGLPFADoubleBuffer);
+  // We don't need a depth buffer - try setting its size to 0...
+  attributes.push_back(NSOpenGLPFADepthSize); attributes.push_back(0);
+  if (gfx::GLContext::SupportsDualGpus())
+    attributes.push_back(NSOpenGLPFAAllowOfflineRenderers);
+  attributes.push_back(0);
+
+  scoped_nsobject<NSOpenGLPixelFormat> glPixelFormat(
+      [[NSOpenGLPixelFormat alloc] initWithAttributes:&attributes.front()]);
+  if (!glPixelFormat) {
+    LOG(ERROR) << "NSOpenGLPixelFormat initWithAttributes failed";
+    return NULL;
+  }
+
+  scoped_nsobject<NSOpenGLContext> glContext(
+      [[NSOpenGLContext alloc] initWithFormat:glPixelFormat
+                                 shareContext:nil]);
+  if (!glContext) {
+    LOG(ERROR) << "NSOpenGLContext initWithFormat failed";
+    return NULL;
+  }
+
+  // We "punch a hole" in the window, and have the WindowServer render the
+  // OpenGL surface underneath so we can draw over it.
+  GLint belowWindow = -1;
+  [glContext setValues:&belowWindow forParameter:NSOpenGLCPSurfaceOrder];
+
+  CGLContextObj cglContext = (CGLContextObj)[glContext CGLContextObj];
+  if (!cglContext) {
+    LOG(ERROR) << "CGLContextObj failed";
+    return NULL;
+  }
+
+  // Draw at beam vsync.
+  GLint swapInterval;
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableGpuVsync))
+    swapInterval = 0;
+  else
+    swapInterval = 1;
+  [glContext setValues:&swapInterval forParameter:NSOpenGLCPSwapInterval];
+
+  return new CompositingIOSurfaceMac(io_surface_support, glContext.release(),
+                                     cglContext);
+}
+
+CompositingIOSurfaceMac::CompositingIOSurfaceMac(
+    IOSurfaceSupport* io_surface_support,
+    NSOpenGLContext* glContext,
+    CGLContextObj cglContext)
+    : io_surface_support_(io_surface_support),
+      glContext_(glContext),
+      cglContext_(cglContext),
+      io_surface_handle_(0) {
+}
+
+CompositingIOSurfaceMac::~CompositingIOSurfaceMac() {
+  UnrefIOSurface();
+}
+
+void CompositingIOSurfaceMac::SetIOSurface(uint64 io_surface_handle) {
+  CGLSetCurrentContext(cglContext_);
+  MapIOSurfaceToTexture(io_surface_handle);
+  CGLSetCurrentContext(0);
+}
+
+void CompositingIOSurfaceMac::DrawIOSurface(NSView* view) {
+  TRACE_EVENT0("browser", "CompositingIOSurfaceMac::DrawIOSurface");
+  CGLSetCurrentContext(cglContext_);
+
+  bool has_io_surface = MapIOSurfaceToTexture(io_surface_handle_);
+
+  [glContext_ setView:view];
+  NSSize window_size = [view frame].size;
+  glViewport(0, 0, window_size.width, window_size.height);
+
+  glMatrixMode(GL_PROJECTION);
+  glLoadIdentity();
+  glOrtho(0, window_size.width, window_size.height, 0, -1, 1);
+  glMatrixMode(GL_MODELVIEW);
+  glLoadIdentity();
+
+  glDisable(GL_DEPTH_TEST);
+  glDisable(GL_BLEND);
+
+  glColorMask(true, true, true, true);
+  // Should match the clear color of RenderWidgetHostViewMac.
+  glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+  // TODO(jbates): Just clear the right and bottom edges when the size doesn't
+  // match the window. Then use a shader to blit the texture without its alpha
+  // channel.
+  glClear(GL_COLOR_BUFFER_BIT);
+
+  if (has_io_surface) {
+    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+
+    // Draw only the color channels from the incoming texture.
+    glColorMask(true, true, true, false);
+
+    // Draw the color channels from the incoming texture.
+    glBindTexture(GL_TEXTURE_RECTANGLE_ARB, texture_); CHECK_GL_ERROR();
+    glEnable(GL_TEXTURE_RECTANGLE_ARB); CHECK_GL_ERROR();
+
+    glEnableClientState(GL_VERTEX_ARRAY); CHECK_GL_ERROR();
+    glEnableClientState(GL_TEXTURE_COORD_ARRAY); CHECK_GL_ERROR();
+
+    glVertexPointer(2, GL_FLOAT, sizeof(SurfaceVertex), &quad_.verts_[0].x_);
+    glTexCoordPointer(2, GL_FLOAT, sizeof(SurfaceVertex), &quad_.verts_[0].tx_);
+    glDrawArrays(GL_QUADS, 0, 4); CHECK_GL_ERROR();
+
+    glDisableClientState(GL_VERTEX_ARRAY);
+    glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+
+    glBindTexture(GL_TEXTURE_RECTANGLE_ARB, 0); CHECK_GL_ERROR();
+  }
+
+  CGLFlushDrawable(cglContext_);
+
+  CGLSetCurrentContext(0);
+}
+
+bool CompositingIOSurfaceMac::MapIOSurfaceToTexture(
+    uint64 io_surface_handle) {
+  if (io_surface_.get() && io_surface_handle == io_surface_handle_)
+    return true;
+
+  TRACE_EVENT0("browser", "CompositingIOSurfaceMac::MapIOSurfaceToTexture");
+  UnrefIOSurfaceWithContextCurrent();
+
+  io_surface_.reset(io_surface_support_->IOSurfaceLookup(
+      static_cast<uint32>(io_surface_handle)));
+  // Can fail if IOSurface with that ID was already released by the gpu
+  // process.
+  if (!io_surface_.get()) {
+    io_surface_handle_ = 0;
+    return false;
+  }
+
+  io_surface_handle_ = io_surface_handle;
+  io_surface_size_.SetSize(
+      io_surface_support_->IOSurfaceGetWidth(io_surface_),
+      io_surface_support_->IOSurfaceGetHeight(io_surface_));
+
+  quad_.set_size(io_surface_size_);
+
+  GLenum target = GL_TEXTURE_RECTANGLE_ARB;
+  glGenTextures(1, &texture_);
+  glBindTexture(target, texture_);
+  glTexParameterf(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameterf(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST); CHECK_GL_ERROR();
+  GLuint plane = 0;
+  CGLError cglerror =
+      io_surface_support_->CGLTexImageIOSurface2D(cglContext_,
+                                                  target,
+                                                  GL_RGBA,
+                                                  io_surface_size_.width(),
+                                                  io_surface_size_.height(),
+                                                  GL_BGRA,
+                                                  GL_UNSIGNED_INT_8_8_8_8_REV,
+                                                  io_surface_.get(),
+                                                  plane);
+   CHECK_GL_ERROR();
+  if (cglerror != kCGLNoError) {
+    LOG(ERROR) << "CGLTexImageIOSurface2D: " << cglerror;
+    return false;
+  }
+
+  return true;
+}
+
+void CompositingIOSurfaceMac::UnrefIOSurface() {
+  CGLSetCurrentContext(cglContext_);
+  UnrefIOSurfaceWithContextCurrent();
+  CGLSetCurrentContext(0);
+}
+
+void CompositingIOSurfaceMac::UnrefIOSurfaceWithContextCurrent() {
+  if (texture_) {
+    glDeleteTextures(1, &texture_);
+    texture_ = 0;
+  }
+
+  io_surface_.reset();
+}
+
+void CompositingIOSurfaceMac::GlobalFrameDidChange() {
+  [glContext_ update];
+}
+
+void CompositingIOSurfaceMac::ClearDrawable() {
+  [glContext_ clearDrawable];
+  UnrefIOSurface();
+}
