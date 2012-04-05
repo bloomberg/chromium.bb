@@ -30,7 +30,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
 #include "chrome/browser/ui/gtk/website_settings_popup_gtk.h"
 #endif
 
@@ -410,7 +410,7 @@ void WebsiteSettings::Show(gfx::NativeWindow parent,
                            TabContentsWrapper* tab_contents_wrapper,
                            const GURL& url,
                            const content::SSLStatus& ssl) {
-#if defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_GTK)
   // The WebsiteSettingsModel will delete itself after the UI is closed.
   new WebsiteSettings(new WebsiteSettingsPopupGtk(parent,
                                                   profile,
