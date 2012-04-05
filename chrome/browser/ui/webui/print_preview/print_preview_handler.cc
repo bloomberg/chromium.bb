@@ -543,7 +543,10 @@ void PrintPreviewHandler::HandlePrintWithCloudPrint() {
   scoped_refptr<RefCountedBytes> data;
   print_preview_ui->GetPrintPreviewDataForIndex(
       printing::COMPLETE_PREVIEW_DOCUMENT_INDEX, &data);
-  CHECK(data.get());
+  if (!data.get()) {
+    NOTREACHED();
+    return;
+  }
   DCHECK_GT(data->size(), 0U);
   print_dialog_cloud::CreatePrintDialogForBytes(data,
       string16(print_preview_ui->initiator_tab_title()),
