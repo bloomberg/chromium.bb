@@ -165,28 +165,7 @@ const int kWindowBorderWidth = 5;
 
 // How round the 'new tab' style bookmarks bar is.
 const int kNewtabBarRoundness = 5;
-
-// Metro driver export, this is how metro knows about our window.
-extern "C" {
-typedef void (*SetFrameWindow)(HWND window);
-}
-
-bool AdjustFrameForImmersiveMode(BrowserFrame* frame) {
-#if defined(OS_WIN) && !defined(USE_AURA)
-  if (!frame)
-    return false;
-  HMODULE metro = ::GetModuleHandleA("metro_driver.dll");
-  if (!metro)
-    return false;
-  // We are in metro mode.
-  SetFrameWindow set_frame_window = reinterpret_cast<SetFrameWindow>(
-      ::GetProcAddress(metro, "SetFrameWindow"));
-  set_frame_window(frame->GetNativeWindow());
-  return true;
-#else
-  return false;
-#endif
-}
+// ------------
 
 }  // namespace
 
@@ -600,8 +579,6 @@ void BrowserView::Show() {
   }
 
   CreateLauncherIcon();
-
-  AdjustFrameForImmersiveMode(frame_);
 
   // Showing the window doesn't make the browser window active right away.
   // This can cause SetFocusToLocationBar() to skip setting focus to the
