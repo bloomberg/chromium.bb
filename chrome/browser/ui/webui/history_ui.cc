@@ -54,6 +54,19 @@ static const int kMaxSearchResults = 100;
 static const char kStringsJsFile[] = "strings.js";
 static const char kHistoryJsFile[] = "history.js";
 
+namespace {
+
+#if defined(OS_MACOSX)
+// U+0028 U+21E7 U+2318 U+004E U+0029 in UTF8
+const char kIncognitoModeShortcut[] = "\x28\xE2\x8c\xA5\xE2\x8C\x98\x4E\x29";
+#elif defined(OS_WIN)
+const char kIncognitoModeShortcut[] = "(Ctrl+Shift+N)";
+#else
+const char kIncognitoModeShortcut[] = "(Shift+Ctrl+N)";
+#endif
+
+};  // namespace
+
 ////////////////////////////////////////////////////////////////////////////////
 //
 // HistoryUIHTMLSource
@@ -95,8 +108,9 @@ HistoryUIHTMLSource::HistoryUIHTMLSource()
   AddLocalizedString("removeselected", IDS_HISTORY_REMOVE_SELECTED_ITEMS);
   AddLocalizedString("clearallhistory",
                      IDS_HISTORY_OPEN_CLEAR_BROWSING_DATA_DIALOG);
-  AddLocalizedString("deletewarning",
-                     IDS_HISTORY_DELETE_PRIOR_VISITS_WARNING);
+  AddString("deletewarning",
+      l10n_util::GetStringFUTF16(IDS_HISTORY_DELETE_PRIOR_VISITS_WARNING,
+                                 UTF8ToUTF16(kIncognitoModeShortcut)));
   AddLocalizedString("actionMenuDescription",
                      IDS_HISTORY_ACTION_MENU_DESCRIPTION);
   AddLocalizedString("removeFromHistory", IDS_HISTORY_REMOVE_PAGE);

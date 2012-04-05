@@ -279,6 +279,8 @@ are declared in build/common.gypi.
       </message>
       <message name="IDS_HISTORY_DELETE_PRIOR_VISITS_WARNING" desc="Warning shown before deleting">
         Are you sure you want to delete these pages from your history?
+
+Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may come in useful next time.
       </message>
 
       <!-- History HTML UI -->
