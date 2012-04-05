@@ -85,9 +85,7 @@ void fill_hlts(uint8_t *data, size_t size) {
 
 /* Getting the assembler to pad our code fragments in templates.S is
    awkward because we have to output them in data mode, in which the
-   assembler wants to output zeroes instead of NOPs for padding.
-   Also, the assembler won't put in a terminating HLT, which we need
-   on x86-32.  So we do the padding at run time. */
+   assembler wants to output zeroes instead of NOPs for padding. */
 void copy_and_pad_fragment(void *dest,
                            int dest_size,
                            const char *fragment_start,
