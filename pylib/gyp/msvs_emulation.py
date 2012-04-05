@@ -123,22 +123,26 @@ class MsvsSettings(object):
 
     self.msvs_cygwin_dirs = spec.get('msvs_cygwin_dirs', ['.'])
 
-  def ConvertVSMacros(self, s):
+  def GetVSMacroEnv(self, base_to_build=None):
+    """Get a dict of variables mapping internal VS macro names to their gyp
+    equivalents."""
+    replacements = {
+        '$(VSInstallDir)': self.vs_version.Path(),
+        '$(VCInstallDir)': os.path.join(self.vs_version.Path(), 'VC'),
+        '$(OutDir)\\': '',
+        '$(OutDir)\\': base_to_build + '\\' if base_to_build else '',
+        '$(IntDir)': '$!INTERMEDIATE_DIR',
+        '$(InputName)': '${root}',
+    }
+    dxsdk_dir = os.environ.get('DXSDK_DIR')
+    if dxsdk_dir:
+      replacements['$(DXSDK_DIR)'] = dxsdk_dir + '\\'
+    return replacements
+
+  def ConvertVSMacros(self, s, base_to_build=None):
     """Convert from VS macro names to something equivalent."""
-    if '$' in s:
-      replacements = {
-          '$(VSInstallDir)': self.vs_version.Path(),
-          '$(VCInstallDir)': os.path.join(self.vs_version.Path(), 'VC'),
-          '$(OutDir)\\': '',
-          '$(IntDir)': '$!INTERMEDIATE_DIR',
-          '$(InputName)': '${root}',
-      }
-      dxsdk_dir = os.environ.get('DXSDK_DIR')
-      if dxsdk_dir:
-        replacements['$(DXSDK_DIR)'] = dxsdk_dir + '\\'
-      for old, new in replacements.iteritems():
-        s = s.replace(old, new)
-    return s
+    env = self.GetVSMacroEnv(base_to_build)
+    return ExpandMacros(s, env)
 
   def AdjustLibraries(self, libraries):
     """Strip -l from library if it's specified with that."""
@@ -393,3 +397,11 @@ def GetLibPath(generator_flags):
 
 def GetMidlPath(generator_flags):
   return _GetBinaryPath(generator_flags, 'midl.exe')
+
+def ExpandMacros(string, expansions):
+  """Expand $(Variable) per expansions dict. See MsvsSettings.GetVSMacroEnv
+  for the canonical way to retrieve a suitable dict."""
+  if '$' in string:
+    for old, new in expansions.iteritems():
+      string = string.replace(old, new)
+  return string

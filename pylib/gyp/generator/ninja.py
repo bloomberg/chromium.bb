@@ -217,6 +217,8 @@ class NinjaWriter:
     return path
 
   def ExpandRuleVariables(self, path, root, dirname, source, ext, name):
+    if self.flavor == 'win':
+      path = self.msvs_settings.ConvertVSMacros(path)
     path = path.replace(generator_default_variables['RULE_INPUT_ROOT'], root)
     path = path.replace(generator_default_variables['RULE_INPUT_DIRNAME'],
                         dirname)
@@ -231,7 +233,10 @@ class NinjaWriter:
 
     See the above discourse on path conversions."""
     if env:
-      path = gyp.xcode_emulation.ExpandEnvVars(path, env)
+      if self.flavor == 'mac':
+        path = gyp.xcode_emulation.ExpandEnvVars(path, env)
+      elif self.flavor == 'win':
+        path = gyp.msvs_emulation.ExpandMacros(path, env)
     if path.startswith('$!'):
       expanded = self.ExpandSpecial(path)
       if self.flavor == 'win':
@@ -465,6 +470,8 @@ class NinjaWriter:
                    extra_mac_bundle_resources):
     # Actions cd into the base directory.
     env = self.GetXcodeEnv()
+    if self.flavor == 'win':
+      env = self.msvs_emulation.GetVSMacroEnv(self.base_to_build)
     all_outputs = []
     for action in actions:
       # First write out a rule for the action.
@@ -531,11 +538,13 @@ class NinjaWriter:
         dirname, basename = os.path.split(source)
         root, ext = os.path.splitext(basename)
 
-        # Gather the list of outputs, expanding $vars if possible.
-        outputs = []
-        for output in rule['outputs']:
-          outputs.append(self.ExpandRuleVariables(output, root, dirname,
-                                                  source, ext, basename))
+        # Gather the list of inputs and outputs, expanding $vars if possible.
+        outputs = [self.ExpandRuleVariables(o, root, dirname,
+                                            source, ext, basename)
+                   for o in rule['outputs']]
+        inputs = [self.ExpandRuleVariables(i, root, dirname,
+                                           source, ext, basename)
+                  for i in rule.get('inputs', [])]
 
         if int(rule.get('process_outputs_as_sources', False)):
           extra_sources += outputs
@@ -561,7 +570,7 @@ class NinjaWriter:
           else:
             assert var == None, repr(var)
 
-        inputs = map(self.GypPathToNinja, rule.get('inputs', []))
+        inputs = map(self.GypPathToNinja, inputs)
         outputs = map(self.GypPathToNinja, outputs)
         self.ninja.build(outputs, rule_name, self.GypPathToNinja(source),
                          implicit=inputs,
@@ -1033,7 +1042,8 @@ class NinjaWriter:
     args = [self.ExpandSpecial(arg, self.base_to_build) for arg in args]
     env = self.ComputeExportEnvString(env)
     if self.flavor == 'win':
-      args = [self.msvs_settings.ConvertVSMacros(a) for a in args]
+      args = [self.msvs_settings.ConvertVSMacros(a, self.base_to_build)
+              for a in args]
       if is_cygwin:
         command = self.msvs_settings.BuildCygwinBashCommandLine(
             args, self.build_to_base)
