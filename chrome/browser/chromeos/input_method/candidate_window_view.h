@@ -135,6 +135,7 @@ class CandidateWindowView : public views::View {
 
  private:
   FRIEND_TEST_ALL_PREFIXES(CandidateWindowViewTest, MozcUpdateCandidateTest);
+  FRIEND_TEST_ALL_PREFIXES(CandidateWindowViewTest, ShortcutSettingTest);
 
   // Initializes the candidate views if needed.
   void MaybeInitializeCandidateViews(

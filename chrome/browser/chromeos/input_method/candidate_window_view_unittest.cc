@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,21 +6,22 @@
 
 #include <string>
 
+#include "base/utf_string_conversions.h"
+#include "chrome/browser/chromeos/input_method/candidate_view.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
-
-typedef views::ViewsTestBase CandidateWindowViewTest;
 
 namespace chromeos {
 namespace input_method {
 
 namespace {
 
-void ClearInputMethodLookupTable(InputMethodLookupTable* table) {
+void ClearInputMethodLookupTable(size_t page_size,
+                                 InputMethodLookupTable* table) {
   table->visible = false;
   table->cursor_absolute_index = 0;
-  table->page_size = 10;
+  table->page_size = page_size;
   table->candidates.clear();
   table->orientation = InputMethodLookupTable::kVertical;
   table->labels.clear();
@@ -64,6 +65,18 @@ void AppendCandidateIntoMozcCandidates(InputMethodLookupTable* table,
 
 }  // namespace
 
+class CandidateWindowViewTest : public views::ViewsTestBase {
+ protected:
+  void ExpectLabels(const std::string shortcut,
+                    const std::string candidate,
+                    const std::string annotation,
+                    const CandidateView* row) {
+    EXPECT_EQ(shortcut, UTF16ToUTF8(row->shortcut_label_->text()));
+    EXPECT_EQ(candidate, UTF16ToUTF8(row->candidate_label_->text()));
+    EXPECT_EQ(annotation, UTF16ToUTF8(row->annotation_label_->text()));
+  }
+};
+
 TEST_F(CandidateWindowViewTest, ShouldUpdateCandidateViewsTest) {
   // This test verifies the process of judging update lookup-table or not.
   // This judgement is handled by ShouldUpdateCandidateViews, which returns true
@@ -83,8 +96,10 @@ TEST_F(CandidateWindowViewTest, ShouldUpdateCandidateViewsTest) {
   InputMethodLookupTable old_table;
   InputMethodLookupTable new_table;
 
-  ClearInputMethodLookupTable(&old_table);
-  ClearInputMethodLookupTable(&new_table);
+  const size_t kPageSize = 10;
+
+  ClearInputMethodLookupTable(kPageSize, &old_table);
+  ClearInputMethodLookupTable(kPageSize, &new_table);
 
   old_table.visible = true;
   old_table.cursor_absolute_index = 0;
@@ -193,12 +208,14 @@ TEST_F(CandidateWindowViewTest, MozcSuggestWindowShouldUpdateTest) {
   const int kCaretPositionWidth2 = 35;
   const int kCaretPositionHeight2 = 45;
 
+  const size_t kPageSize = 10;
+
   InputMethodLookupTable old_table;
   InputMethodLookupTable new_table;
 
   // State chagne from using non-mozc candidate to mozc candidate.
-  ClearInputMethodLookupTable(&old_table);
-  ClearInputMethodLookupTable(&new_table);
+  ClearInputMethodLookupTable(kPageSize, &old_table);
+  ClearInputMethodLookupTable(kPageSize, &new_table);
 
   old_table.candidates.push_back(kSampleCandidate1);
   InitializeMozcCandidates(&new_table);
@@ -214,8 +231,8 @@ TEST_F(CandidateWindowViewTest, MozcSuggestWindowShouldUpdateTest) {
                                                               new_table));
 
   // State change from using mozc candidate to non-mozc candidate
-  ClearInputMethodLookupTable(&old_table);
-  ClearInputMethodLookupTable(&new_table);
+  ClearInputMethodLookupTable(kPageSize, &old_table);
+  ClearInputMethodLookupTable(kPageSize, &new_table);
 
   InitializeMozcCandidates(&old_table);
   AppendCandidateIntoMozcCandidates(&old_table, kSampleCandidate1);
@@ -234,8 +251,8 @@ TEST_F(CandidateWindowViewTest, MozcSuggestWindowShouldUpdateTest) {
   // State change from using mozc candidate to mozc candidate
 
   // No change
-  ClearInputMethodLookupTable(&old_table);
-  ClearInputMethodLookupTable(&new_table);
+  ClearInputMethodLookupTable(kPageSize, &old_table);
+  ClearInputMethodLookupTable(kPageSize, &new_table);
 
   InitializeMozcCandidates(&old_table);
   AppendCandidateIntoMozcCandidates(&old_table, kSampleCandidate1);
@@ -258,8 +275,8 @@ TEST_F(CandidateWindowViewTest, MozcSuggestWindowShouldUpdateTest) {
   EXPECT_FALSE(CandidateWindowView::ShouldUpdateCandidateViews(old_table,
                                                                new_table));
   // Position change only
-  ClearInputMethodLookupTable(&old_table);
-  ClearInputMethodLookupTable(&new_table);
+  ClearInputMethodLookupTable(kPageSize, &old_table);
+  ClearInputMethodLookupTable(kPageSize, &new_table);
 
   InitializeMozcCandidates(&old_table);
   AppendCandidateIntoMozcCandidates(&old_table, kSampleCandidate1);
@@ -282,8 +299,8 @@ TEST_F(CandidateWindowViewTest, MozcSuggestWindowShouldUpdateTest) {
   EXPECT_TRUE(CandidateWindowView::ShouldUpdateCandidateViews(old_table,
                                                               new_table));
   // Candidate contents only
-  ClearInputMethodLookupTable(&old_table);
-  ClearInputMethodLookupTable(&new_table);
+  ClearInputMethodLookupTable(kPageSize, &old_table);
+  ClearInputMethodLookupTable(kPageSize, &new_table);
 
   InitializeMozcCandidates(&old_table);
   AppendCandidateIntoMozcCandidates(&old_table, kSampleCandidate1);
@@ -307,8 +324,8 @@ TEST_F(CandidateWindowViewTest, MozcSuggestWindowShouldUpdateTest) {
                                                               new_table));
 
   // Both candidate and position
-  ClearInputMethodLookupTable(&old_table);
-  ClearInputMethodLookupTable(&new_table);
+  ClearInputMethodLookupTable(kPageSize, &old_table);
+  ClearInputMethodLookupTable(kPageSize, &new_table);
 
   InitializeMozcCandidates(&old_table);
   AppendCandidateIntoMozcCandidates(&old_table, kSampleCandidate1);
@@ -356,8 +373,10 @@ TEST_F(CandidateWindowViewTest, MozcUpdateCandidateTest) {
   const int kCaretPositionWidth2 = 35;
   const int kCaretPositionHeight2 = 45;
 
+  const size_t kPageSize = 10;
+
   InputMethodLookupTable new_table;
-  ClearInputMethodLookupTable(&new_table);
+  ClearInputMethodLookupTable(kPageSize, &new_table);
   InitializeMozcCandidates(&new_table);
 
   // If window location is CARET, use default position. So
@@ -406,6 +425,135 @@ TEST_F(CandidateWindowViewTest, MozcUpdateCandidateTest) {
             candidate_window_view.suggestion_window_location_.width());
   EXPECT_EQ(kCaretPositionHeight2,
             candidate_window_view.suggestion_window_location_.height());
+
+  // We should call CloseNow method, otherwise this test will leak memory.
+  widget->CloseNow();
+}
+
+TEST_F(CandidateWindowViewTest, ShortcutSettingTest) {
+  const char* kSampleCandidate[] = {
+    "Sample Candidate 1",
+    "Sample Candidate 2",
+    "Sample Candidate 3"
+  };
+  const char* kSampleAnnotation[] = {
+    "Sample Annotation 1",
+    "Sample Annotation 2",
+    "Sample Annotation 3"
+  };
+  const char* kEmptyLabel = "";
+  const char* kDefaultVerticalLabel[] = { "1", "2", "3" };
+  const char* kDefaultHorizontalLabel[] = { "1.", "2.", "3." };
+
+  views::Widget* widget = new views::Widget;
+  views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
+  widget->Init(params);
+
+  CandidateWindowView candidate_window_view(widget);
+  candidate_window_view.Init();
+
+  {
+    SCOPED_TRACE("candidate_views allocation test");
+    const size_t kMaxPageSize = 16;
+    for (size_t i = 1; i < kMaxPageSize; ++i) {
+      InputMethodLookupTable table;
+      ClearInputMethodLookupTable(i, &table);
+      candidate_window_view.UpdateCandidates(table);
+      EXPECT_EQ(i, candidate_window_view.candidate_views_.size());
+    }
+  }
+  {
+    SCOPED_TRACE("Empty labels expects default label(vertical)");
+    const size_t kPageSize = 3;
+    InputMethodLookupTable table;
+    ClearInputMethodLookupTable(kPageSize, &table);
+
+    table.orientation = InputMethodLookupTable::kVertical;
+    for (size_t i = 0; i < kPageSize; ++i) {
+      table.candidates.push_back(kSampleCandidate[i]);
+      table.annotations.push_back(kSampleAnnotation[i]);
+    }
+
+    table.labels.clear();
+
+    candidate_window_view.UpdateCandidates(table);
+
+    ASSERT_EQ(kPageSize, candidate_window_view.candidate_views_.size());
+    for (size_t i = 0; i < kPageSize; ++i) {
+      ExpectLabels(kDefaultVerticalLabel[i],
+                   kSampleCandidate[i],
+                   kSampleAnnotation[i],
+                   candidate_window_view.candidate_views_[i]);
+    }
+  }
+  {
+    SCOPED_TRACE("Empty string for each labels expects empty labels(vertical)");
+    const size_t kPageSize = 3;
+    InputMethodLookupTable table;
+    ClearInputMethodLookupTable(kPageSize, &table);
+
+    table.orientation = InputMethodLookupTable::kVertical;
+    for (size_t i = 0; i < kPageSize; ++i) {
+      table.candidates.push_back(kSampleCandidate[i]);
+      table.annotations.push_back(kSampleAnnotation[i]);
+      table.labels.push_back(kEmptyLabel);
+    }
+
+    candidate_window_view.UpdateCandidates(table);
+
+    ASSERT_EQ(kPageSize, candidate_window_view.candidate_views_.size());
+    for (size_t i = 0; i < kPageSize; ++i) {
+      ExpectLabels(kEmptyLabel, kSampleCandidate[i], kSampleAnnotation[i],
+                   candidate_window_view.candidate_views_[i]);
+    }
+  }
+  {
+    SCOPED_TRACE("Empty labels expects default label(horizontal)");
+    const size_t kPageSize = 3;
+    InputMethodLookupTable table;
+    ClearInputMethodLookupTable(kPageSize, &table);
+
+    table.orientation = InputMethodLookupTable::kHorizontal;
+    for (size_t i = 0; i < kPageSize; ++i) {
+      table.candidates.push_back(kSampleCandidate[i]);
+      table.annotations.push_back(kSampleAnnotation[i]);
+    }
+
+    table.labels.clear();
+
+    candidate_window_view.UpdateCandidates(table);
+
+    ASSERT_EQ(kPageSize, candidate_window_view.candidate_views_.size());
+    for (size_t i = 0; i < kPageSize; ++i) {
+      ExpectLabels(kDefaultHorizontalLabel[i],
+                   kSampleCandidate[i],
+                   kSampleAnnotation[i],
+                   candidate_window_view.candidate_views_[i]);
+    }
+  }
+  {
+    SCOPED_TRACE(
+        "Empty string for each labels expect empty labels(horizontal)");
+    const size_t kPageSize = 3;
+    InputMethodLookupTable table;
+    ClearInputMethodLookupTable(kPageSize, &table);
+
+    table.orientation = InputMethodLookupTable::kHorizontal;
+    for (size_t i = 0; i < kPageSize; ++i) {
+      table.candidates.push_back(kSampleCandidate[i]);
+      table.annotations.push_back(kSampleAnnotation[i]);
+      table.labels.push_back(kEmptyLabel);
+    }
+
+    candidate_window_view.UpdateCandidates(table);
+
+    ASSERT_EQ(kPageSize, candidate_window_view.candidate_views_.size());
+    // Confirm actual labels not containing ".".
+    for (size_t i = 0; i < kPageSize; ++i) {
+      ExpectLabels(kEmptyLabel, kSampleCandidate[i], kSampleAnnotation[i],
+                   candidate_window_view.candidate_views_[i]);
+    }
+  }
 
   // We should call CloseNow method, otherwise this test will leak memory.
   widget->CloseNow();
