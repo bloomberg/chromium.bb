@@ -49,13 +49,17 @@ bool ProgramManager::IsInvalidPrefix(const char* name, size_t length) {
       memcmp(name, kInvalidPrefix, sizeof(kInvalidPrefix)) == 0);
 }
 
-ProgramManager::ProgramInfo::ProgramInfo(GLuint service_id)
-    : use_count_(0),
+ProgramManager::ProgramInfo::ProgramInfo(
+    ProgramManager* manager, GLuint service_id)
+    : manager_(manager),
+      use_count_(0),
       max_attrib_name_length_(0),
       max_uniform_name_length_(0),
       service_id_(service_id),
+      deleted_(false),
       valid_(false),
       link_status_(false) {
+  manager_->StartTracking(this);
 }
 
 void ProgramManager::ProgramInfo::Reset() {
@@ -389,6 +393,9 @@ void ProgramManager::ProgramInfo::GetProgramiv(GLenum pname, GLint* params) {
       // Notice +1 to accomodate NULL terminator.
       *params = log_info_.get() ? (log_info_->size() + 1) : 0;
       break;
+    case GL_DELETE_STATUS:
+      *params = deleted_;
+      break;
     case GL_VALIDATE_STATUS:
       if (!IsValid()) {
         *params = GL_FALSE;
@@ -554,7 +561,15 @@ void ProgramManager::ProgramInfo::GetProgramInfo(
   DCHECK_EQ(ComputeOffset(header, strings), size);
 }
 
-ProgramManager::ProgramInfo::~ProgramInfo() {}
+ProgramManager::ProgramInfo::~ProgramInfo() {
+  if (manager_) {
+    if (manager_->have_context_) {
+      glDeleteProgram(service_id());
+    }
+    manager_->StopTracking(this);
+    manager_ = NULL;
+  }
+}
 
 // TODO(gman): make this some kind of random number. Base::RandInt is not
 // callable because of the sandbox. What matters is that it's possibly different
@@ -562,7 +577,9 @@ ProgramManager::ProgramInfo::~ProgramInfo() {}
 static int uniform_random_offset_ = 3;
 
 ProgramManager::ProgramManager()
-    : uniform_swizzle_(uniform_random_offset_++ % 15) {
+    : uniform_swizzle_(uniform_random_offset_++ % 15),
+      program_info_count_(0),
+      have_context_(true) {
 }
 
 ProgramManager::~ProgramManager() {
@@ -570,16 +587,16 @@ ProgramManager::~ProgramManager() {
 }
 
 void ProgramManager::Destroy(bool have_context) {
-  while (!program_infos_.empty()) {
-    if (have_context) {
-      ProgramInfo* info = program_infos_.begin()->second;
-      if (!info->IsDeleted()) {
-        glDeleteProgram(info->service_id());
-        info->MarkAsDeleted();
-      }
-    }
-    program_infos_.erase(program_infos_.begin());
-  }
+  have_context_ = have_context;
+  program_infos_.clear();
+}
+
+void ProgramManager::StartTracking(ProgramManager::ProgramInfo* /* program */) {
+  ++program_info_count_;
+}
+
+void ProgramManager::StopTracking(ProgramManager::ProgramInfo* /* program */) {
+  --program_info_count_;
 }
 
 ProgramManager::ProgramInfo* ProgramManager::CreateProgramInfo(
@@ -587,7 +604,7 @@ ProgramManager::ProgramInfo* ProgramManager::CreateProgramInfo(
   std::pair<ProgramInfoMap::iterator, bool> result =
       program_infos_.insert(
           std::make_pair(client_id,
-                         ProgramInfo::Ref(new ProgramInfo(service_id))));
+                         ProgramInfo::Ref(new ProgramInfo(this, service_id))));
   DCHECK(result.second);
   return result.first->second;
 }

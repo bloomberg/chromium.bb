@@ -295,10 +295,7 @@ bool GLES2DecoderTestBase::DoIsProgram(GLuint client_id) {
 }
 
 void GLES2DecoderTestBase::DoDeleteProgram(
-    GLuint client_id, GLuint service_id) {
-  EXPECT_CALL(*gl_, DeleteProgram(service_id))
-      .Times(1)
-      .RetiresOnSaturation();
+    GLuint client_id, GLuint /* service_id */) {
   DeleteProgram cmd;
   cmd.Init(client_id);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));

@@ -105,6 +105,10 @@ TEST_F(ProgramManagerTest, DeleteBug) {
   ASSERT_TRUE(info2);
   manager_.UseProgram(info1);
   manager_.MarkAsDeleted(&shader_manager, info1);
+  //  Program will be deleted when last ref is released.
+  EXPECT_CALL(*gl_, DeleteProgram(kService2Id))
+      .Times(1)
+      .RetiresOnSaturation();
   manager_.MarkAsDeleted(&shader_manager, info2);
   EXPECT_TRUE(manager_.IsOwned(info1));
   EXPECT_FALSE(manager_.IsOwned(info2));
@@ -839,6 +843,9 @@ TEST_F(ProgramManagerWithShaderTest, ProgramInfoUseCount) {
   manager_.UnuseProgram(&shader_manager_, program_info);
   EXPECT_TRUE(program_info->InUse());
   // this should delete the info.
+  EXPECT_CALL(*gl_, DeleteProgram(kServiceProgramId))
+      .Times(1)
+      .RetiresOnSaturation();
   manager_.UnuseProgram(&shader_manager_, program_info);
   info2 = manager_.GetProgramInfo(kClientProgramId);
   EXPECT_TRUE(info2 == NULL);
@@ -886,6 +893,9 @@ TEST_F(ProgramManagerWithShaderTest, ProgramInfoUseCount2) {
       manager_.GetProgramInfo(kClientProgramId);
   EXPECT_EQ(program_info, info2);
   // this should delete the program.
+  EXPECT_CALL(*gl_, DeleteProgram(kServiceProgramId))
+      .Times(1)
+      .RetiresOnSaturation();
   manager_.MarkAsDeleted(&shader_manager_, program_info);
   info2 = manager_.GetProgramInfo(kClientProgramId);
   EXPECT_TRUE(info2 == NULL);

@@ -72,7 +72,7 @@ class GPU_EXPORT ProgramManager {
     typedef std::vector<VertexAttribInfo> AttribInfoVector;
     typedef std::vector<int> SamplerIndices;
 
-    explicit ProgramInfo(GLuint service_id);
+    ProgramInfo(ProgramManager* manager, GLuint service_id);
 
     GLuint service_id() const {
       return service_id_;
@@ -125,7 +125,7 @@ class GPU_EXPORT ProgramManager {
     bool SetSamplers(GLint fake_location, GLsizei count, const GLint* value);
 
     bool IsDeleted() const {
-      return service_id_ == 0;
+      return deleted_;
     }
 
     void GetProgramiv(GLenum pname, GLint* params);
@@ -194,8 +194,8 @@ class GPU_EXPORT ProgramManager {
     }
 
     void MarkAsDeleted() {
-      DCHECK_NE(service_id_, 0u);
-      service_id_ = 0;
+      DCHECK(!deleted_);
+      deleted_ =  true;
     }
 
     // Resets the program.
@@ -227,6 +227,8 @@ class GPU_EXPORT ProgramManager {
       return (fake_location >> 16) & 0xFFFF;
     }
 
+    ProgramManager* manager_;
+
     int use_count_;
 
     GLsizei max_attrib_name_length_;
@@ -250,6 +252,9 @@ class GPU_EXPORT ProgramManager {
 
     // Shaders by type of shader.
     ShaderManager::ShaderInfo::Ref attached_shaders_[kMaxAttachedShaders];
+
+    // True if this program is marked as deleted.
+    bool deleted_;
 
     // This is true if glLinkProgram was successful at least once.
     bool valid_;
@@ -298,12 +303,21 @@ class GPU_EXPORT ProgramManager {
   GLint UnswizzleLocation(GLint swizzled_location) const;
 
  private:
+  void StartTracking(ProgramInfo* info);
+  void StopTracking(ProgramInfo* info);
+
   // Info for each "successfully linked" program by service side program Id.
   // TODO(gman): Choose a faster container.
   typedef std::map<GLuint, ProgramInfo::Ref> ProgramInfoMap;
   ProgramInfoMap program_infos_;
 
   int uniform_swizzle_;
+
+  // Counts the number of ProgramInfo allocated with 'this' as its manager.
+  // Allows to check no ProgramInfo will outlive this.
+  unsigned int program_info_count_;
+
+  bool have_context_;
 
   void RemoveProgramInfoIfUnused(
       ShaderManager* shader_manager, ProgramInfo* info);

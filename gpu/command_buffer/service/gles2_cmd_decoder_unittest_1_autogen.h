@@ -1408,16 +1408,9 @@ TEST_F(GLES2DecoderTest1, GetIntegervInvalidArgs1_1) {
 }
 
 TEST_F(GLES2DecoderTest1, GetProgramivValidArgs) {
-  EXPECT_CALL(*gl_, GetError())
-      .WillOnce(Return(GL_NO_ERROR))
-      .WillOnce(Return(GL_NO_ERROR))
-      .RetiresOnSaturation();
   SpecializedSetup<GetProgramiv, 0>(true);
   typedef GetProgramiv::Result Result;
   Result* result = static_cast<Result*>(shared_memory_address_);
-  EXPECT_CALL(
-      *gl_, GetProgramiv(
-          kServiceProgramId, GL_DELETE_STATUS, result->GetData()));
   result->size = 0;
   GetProgramiv cmd;
   cmd.Init(

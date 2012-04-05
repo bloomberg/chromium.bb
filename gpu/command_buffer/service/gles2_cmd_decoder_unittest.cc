@@ -3306,8 +3306,12 @@ TEST_F(GLES2DecoderTest, IsFramebuffer) {
 TEST_F(GLES2DecoderTest, IsProgram) {
   // IsProgram is true as soon as the program is created.
   EXPECT_TRUE(DoIsProgram(client_program_id_));
+  EXPECT_CALL(*gl_, DeleteProgram(kServiceProgramId))
+      .Times(1)
+      .RetiresOnSaturation();
   DoDeleteProgram(client_program_id_, kServiceProgramId);
   EXPECT_FALSE(DoIsProgram(client_program_id_));
+
 }
 
 TEST_F(GLES2DecoderTest, IsRenderbuffer) {

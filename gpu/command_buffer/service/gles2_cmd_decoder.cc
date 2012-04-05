@@ -3851,7 +3851,6 @@ error::Error GLES2DecoderImpl::HandleDeleteProgram(
     ProgramManager::ProgramInfo* info = GetProgramInfo(client_id);
     if (info) {
       if (!info->IsDeleted()) {
-        glDeleteProgram(info->service_id());
         program_manager()->MarkAsDeleted(shader_manager(), info);
       }
     } else {

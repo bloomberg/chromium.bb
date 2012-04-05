@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -155,6 +155,21 @@ void GLES2DecoderTestBase::SpecializedSetup<GetRenderbufferParameteriv, 0>(
   DoBindRenderbuffer(GL_RENDERBUFFER, client_renderbuffer_id_,
                     kServiceRenderbufferId);
 };
+
+template <>
+void GLES2DecoderTestBase::SpecializedSetup<GetProgramiv, 0>(
+    bool valid) {
+  if (valid) {
+    // GetProgramiv calls ClearGLError then GetError to make sure
+    // it actually got a value so it can report correctly to the client.
+    EXPECT_CALL(*gl_, GetError())
+        .WillOnce(Return(GL_NO_ERROR))
+        .RetiresOnSaturation();
+    EXPECT_CALL(*gl_, GetError())
+        .WillOnce(Return(GL_NO_ERROR))
+        .RetiresOnSaturation();
+  }
+}
 
 template <>
 void GLES2DecoderTestBase::SpecializedSetup<GetProgramInfoLog, 0>(

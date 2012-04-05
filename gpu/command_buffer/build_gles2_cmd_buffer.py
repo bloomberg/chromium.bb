@@ -1105,6 +1105,7 @@ _FUNCTION_INFO = {
     'type': 'GETn',
     'decoder_func': 'DoGetProgramiv',
     'result': ['SizedResult<GLint>'],
+    'expectation': False,
   },
   'GetProgramInfoCHROMIUM': {
     'type': 'Custom',
