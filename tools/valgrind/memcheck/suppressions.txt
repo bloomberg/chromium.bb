@@ -5320,7 +5320,7 @@
    fun:_ZN14ProfileManager11DoFinalInitEP7Profileb
    fun:_ZN14ProfileManager10AddProfileEP7Profile
    fun:_ZN14ProfileManager*GetProfileERK8FilePath
-   fun:_ZN14ProfileManager*GetLastUsedProfileERK8FilePath
+   fun:_ZN14ProfileManager*Get*ProfileERK8FilePath
 }
 
 #-----------------------------------------------------------------------
