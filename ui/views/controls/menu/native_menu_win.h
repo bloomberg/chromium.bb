@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,9 +13,13 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "ui/base/models/simple_menu_model.h"
+#include "base/string16.h"
 #include "ui/views/controls/menu/menu_wrapper.h"
 #include "ui/views/views_export.h"
+
+namespace ui {
+class MenuModel;
+}
 
 namespace views {
 
@@ -159,24 +163,6 @@ class VIEWS_EXPORT NativeMenuWin : public MenuWrapper {
   static NativeMenuWin* open_native_menu_win_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeMenuWin);
-};
-
-// A SimpleMenuModel subclass that allows the system menu for a window to be
-// wrapped.
-class VIEWS_EXPORT SystemMenuModel : public ui::SimpleMenuModel {
- public:
-  explicit SystemMenuModel(Delegate* delegate);
-  virtual ~SystemMenuModel();
-
-  // Overridden from ui::MenuModel:
-  virtual int GetFirstItemIndex(gfx::NativeMenu native_menu) const;
-
- protected:
-  // Overridden from SimpleMenuModel:
-  virtual int FlipIndex(int index) const { return GetItemCount() - index - 1; }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SystemMenuModel);
 };
 
 }  // namespace views

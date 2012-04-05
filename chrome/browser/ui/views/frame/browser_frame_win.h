@@ -14,12 +14,12 @@
 
 class BrowserView;
 class EncodingMenuModel;
+class SystemMenuModel;
 class SystemMenuModelDelegate;
 class ZoomMenuModel;
 
 namespace views {
 class NativeMenuWin;
-class SystemMenuModel;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -79,7 +79,7 @@ class BrowserFrameWin : public views::NativeWidgetWin,
 
   // The additional items we insert into the system menu.
   scoped_ptr<SystemMenuModelDelegate> system_menu_delegate_;
-  scoped_ptr<views::SystemMenuModel> system_menu_contents_;
+  scoped_ptr<SystemMenuModel> system_menu_contents_;
   scoped_ptr<ZoomMenuModel> zoom_menu_contents_;
   scoped_ptr<EncodingMenuModel> encoding_menu_contents_;
   // The wrapped system menu itself.

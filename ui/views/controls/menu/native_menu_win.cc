@@ -17,6 +17,7 @@
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_win.h"
+#include "ui/base/models/menu_model.h"
 #include "ui/base/win/hwnd_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
@@ -736,21 +737,6 @@ void NativeMenuWin::CreateHostWindow() {
   // exist wrapping submenus.
   if (!host_window_.get())
     host_window_.reset(new MenuHostWindow(this));
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// SystemMenuModel:
-
-SystemMenuModel::SystemMenuModel(ui::SimpleMenuModel::Delegate* delegate)
-    : SimpleMenuModel(delegate) {
-}
-
-SystemMenuModel::~SystemMenuModel() {
-}
-
-int SystemMenuModel::GetFirstItemIndex(gfx::NativeMenu native_menu) const {
-  // We allow insertions before last item (Close).
-  return std::max(0, GetMenuItemCount(native_menu) - 1);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/toolbar/wrench_menu_model.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/frame/system_menu_model.h"
 #include "chrome/browser/ui/views/frame/system_menu_model_delegate.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_accessibility_state.h"
@@ -163,8 +164,7 @@ const views::NativeWidget* BrowserFrameWin::AsNativeWidget() const {
 }
 
 void BrowserFrameWin::InitSystemContextMenu() {
-  system_menu_contents_.reset(new views::SystemMenuModel(
-      system_menu_delegate_.get()));
+  system_menu_contents_.reset(new SystemMenuModel(system_menu_delegate_.get()));
   // We add the menu items in reverse order so that insertion_index never needs
   // to change.
   if (browser_view_->IsBrowserTypeNormal())
