@@ -92,8 +92,6 @@
       '-autofill.AutofillTest.testMergeAggregatedProfilesWithSameAddress',
       # crbug.com/99475
       '-autofill.AutofillTest.testNoDuplicatePhoneNumsInPrefs',
-      # crbug.com/121998
-      '-databases.DatabasesTest.testDeleteAndUpdateDatabase',
       # crbug.com/115534
       '-gtalk.test_basic',
       # crbug.com/119173
