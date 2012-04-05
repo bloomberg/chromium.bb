@@ -22,7 +22,7 @@ namespace net {
 class URLRequestContextGetter;
 }
 
-// Base calss for all classes that implement a flow to call OAuth2
+// Base class for all classes that implement a flow to call OAuth2
 // enabled APIs.
 //
 // Given a refresh token, an access token, and a list of scopes an OAuth2
@@ -39,8 +39,8 @@ class OAuth2ApiCallFlow
       public OAuth2AccessTokenConsumer {
  public:
   // Creates an instance that works with the given data.
-  // Note that access_token can be empty. In that case, the flow will skip
-  // the first step (of trying an existing acces token).
+  // Note that |access_token| can be empty. In that case, the flow will skip
+  // the first step (of trying an existing access token).
   OAuth2ApiCallFlow(
       net::URLRequestContextGetter* context,
       const std::string& refresh_token,
@@ -66,7 +66,7 @@ class OAuth2ApiCallFlow
   virtual GURL CreateApiCallUrl() = 0;
   virtual std::string CreateApiCallBody() = 0;
 
-  // Sub-classes can expose appropriate observer interface by implementing
+  // Sub-classes can expose an appropriate observer interface by implementing
   // these template methods.
   // Called when the API call finished successfully.
   virtual void ProcessApiCallSuccess(const content::URLFetcher* source) = 0;
@@ -78,10 +78,6 @@ class OAuth2ApiCallFlow
       const GoogleServiceAuthError& error) = 0;
 
  private:
-  // The steps this class performs are:
-  // 1. Try existing access token.
-  // 2. If that works, flow is done. If not, generate a new access token.
-  // 3. Try using new access token.
   enum State {
     INITIAL,
     API_CALL_STARTED,
@@ -93,16 +89,20 @@ class OAuth2ApiCallFlow
 
   friend class OAuth2ApiCallFlowTest;
 
-  // Helper to create an instnace of access token fetcher.
+  // Helper to create an instance of access token fetcher.
   // Caller owns the returned instance.
+  // Note that this is virtual since it is mocked during unit testing.
   virtual OAuth2AccessTokenFetcher* CreateAccessTokenFetcher();
 
   // Creates an instance of URLFetcher that does not send or save cookies.
+  // Template method CreateApiCallUrl is used to get the URL.
+  // Template method CreateApiCallBody is used to get the body.
   // The URLFether's method will be GET if body is empty, POST otherwise.
   // Caller owns the returned instance.
+  // Note that this is virtual since it is mocked during unit testing.
   virtual content::URLFetcher* CreateURLFetcher();
 
-  // Helper methods to implement the state machien for the flow.
+  // Helper methods to implement the state machine for the flow.
   void BeginApiCall();
   void EndApiCall(const content::URLFetcher* source);
   void BeginMintAccessToken();
@@ -114,7 +114,7 @@ class OAuth2ApiCallFlow
   std::vector<std::string> scopes_;
 
   State state_;
-  // Whether we have already tried minting access token once.
+  // Whether we have already tried minting an access token once.
   bool tried_mint_access_token_;
 
   scoped_ptr<content::URLFetcher> url_fetcher_;

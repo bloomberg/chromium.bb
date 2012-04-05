@@ -32,6 +32,7 @@ using testing::_;
 using testing::Return;
 
 namespace {
+
 static GURL CreateApiUrl() {
   return GURL("https://www.googleapis.com/someapi");
 }
@@ -42,7 +43,8 @@ static std::vector<std::string> CreateTestScopes() {
   scopes.push_back("scope2");
   return scopes;
 }
-}
+
+}  // namespace
 
 class MockUrlFetcherFactory : public ScopedURLFetcherFactory,
                               public URLFetcherFactory {
@@ -94,7 +96,6 @@ class MockApiCallFlow : public OAuth2ApiCallFlow {
   MOCK_METHOD1(ProcessMintAccessTokenFailure,
       void (const GoogleServiceAuthError& error));
   MOCK_METHOD0(CreateAccessTokenFetcher, OAuth2AccessTokenFetcher* ());
-  // MOCK_METHOD0(CreateURLFetcher, URLFetcher* ());
 };
 
 class OAuth2ApiCallFlowTest : public testing::Test {

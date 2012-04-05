@@ -34,7 +34,7 @@ OAuth2ApiCallFlow::OAuth2ApiCallFlow(
       tried_mint_access_token_(false) {
 }
 
-OAuth2ApiCallFlow::~OAuth2ApiCallFlow() { }
+OAuth2ApiCallFlow::~OAuth2ApiCallFlow() {}
 
 void OAuth2ApiCallFlow::Start() {
   BeginApiCall();
@@ -46,10 +46,8 @@ void OAuth2ApiCallFlow::BeginApiCall() {
   // If the access token is empty then directly try to mint one.
   if (access_token_.empty()) {
     BeginMintAccessToken();
-    return;
   } else {
     state_ = API_CALL_STARTED;
-
     url_fetcher_.reset(CreateURLFetcher());
     url_fetcher_->Start();  // OnURLFetchComplete will be called.
   }
@@ -61,6 +59,7 @@ void OAuth2ApiCallFlow::EndApiCall(const URLFetcher* source) {
 
   URLRequestStatus status = source->GetStatus();
   if (!status.is_success()) {
+    state_ = ERROR_STATE;
     ProcessApiCallFailure(source);
     return;
   }
@@ -69,15 +68,18 @@ void OAuth2ApiCallFlow::EndApiCall(const URLFetcher* source) {
   // expired. So try generating a new access token.
   if (source->GetResponseCode() == net::HTTP_UNAUTHORIZED) {
     // If we already tried minting a new access token, don't do it again.
-    if (tried_mint_access_token_)
+    if (tried_mint_access_token_) {
+      state_ = ERROR_STATE;
       ProcessApiCallFailure(source);
-    else
+    } else {
       BeginMintAccessToken();
+    }
 
     return;
   }
 
   if (source->GetResponseCode() != net::HTTP_OK) {
+    state_ = ERROR_STATE;
     ProcessApiCallFailure(source);
     return;
   }
