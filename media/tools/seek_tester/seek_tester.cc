@@ -22,6 +22,20 @@
 #include "media/filters/ffmpeg_demuxer.h"
 #include "media/filters/file_data_source.h"
 
+class DemuxerHostImpl : public media::DemuxerHost {
+ public:
+  // DataSourceHost implementation.
+  virtual void SetTotalBytes(int64 total_bytes) OVERRIDE {}
+  virtual void SetBufferedBytes(int64 buffered_bytes) OVERRIDE {}
+  virtual void SetNetworkActivity(bool is_downloading_data) OVERRIDE {}
+
+  // DemuxerHost implementation.
+  virtual void SetDuration(base::TimeDelta duration) OVERRIDE {}
+  virtual void SetBufferedTime(base::TimeDelta buffered_time) OVERRIDE {}
+  virtual void SetCurrentReadPosition(int64 offset) OVERRIDE {}
+  virtual void OnDemuxerError(media::PipelineStatus error) OVERRIDE {}
+};
+
 void QuitMessageLoop(MessageLoop* loop, media::PipelineStatus status) {
   CHECK_EQ(status, media::PIPELINE_OK);
   loop->PostTask(FROM_HERE, MessageLoop::QuitClosure());
@@ -48,11 +62,12 @@ int main(int argc, char** argv) {
       new media::FileDataSource());
   CHECK_EQ(file_data_source->Initialize(argv[1]), media::PIPELINE_OK);
 
+  DemuxerHostImpl host;
   MessageLoop loop;
   media::PipelineStatusCB quitter = base::Bind(&QuitMessageLoop, &loop);
   scoped_refptr<media::FFmpegDemuxer> demuxer(
       new media::FFmpegDemuxer(&loop, file_data_source, true));
-  demuxer->Initialize(quitter);
+  demuxer->Initialize(&host, quitter);
   loop.Run();
 
   demuxer->Seek(base::TimeDelta::FromMilliseconds(seek_target_ms), quitter);

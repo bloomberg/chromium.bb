@@ -1091,8 +1091,7 @@ void Pipeline::InitializeDemuxer() {
     return;
   }
 
-  demuxer_->set_host(this);
-  demuxer_->Initialize(base::Bind(&Pipeline::OnDemuxerInitialized, this));
+  demuxer_->Initialize(this, base::Bind(&Pipeline::OnDemuxerInitialized, this));
 }
 
 void Pipeline::OnDemuxerInitialized(PipelineStatus status) {
