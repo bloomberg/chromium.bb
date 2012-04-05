@@ -129,10 +129,10 @@ class MsvsSettings(object):
     replacements = {
         '$(VSInstallDir)': self.vs_version.Path(),
         '$(VCInstallDir)': os.path.join(self.vs_version.Path(), 'VC'),
-        '$(OutDir)\\': '',
         '$(OutDir)\\': base_to_build + '\\' if base_to_build else '',
         '$(IntDir)': '$!INTERMEDIATE_DIR',
         '$(InputName)': '${root}',
+        '$(ProjectName)': self.spec['target_name'],
     }
     dxsdk_dir = os.environ.get('DXSDK_DIR')
     if dxsdk_dir:
