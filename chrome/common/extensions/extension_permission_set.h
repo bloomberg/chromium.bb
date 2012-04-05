@@ -128,6 +128,7 @@ class ExtensionAPIPermission {
     kPrivacy,
     kProxy,
     kSocket,
+    kStorage,
     kSystemPrivate,
     kTab,
     kTerminalPrivate,
