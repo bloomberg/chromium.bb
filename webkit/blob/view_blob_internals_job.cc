@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,7 +39,7 @@ void StartHTML(std::string* out) {
       "<!DOCTYPE HTML>"
       "<html><title>Blob Storage Internals</title>"
       "<meta http-equiv=\"X-WebKit-CSP\""
-      "  content=\"obejct-src 'none'; script-src 'none'\">\n"
+      "  content=\"object-src 'none'; script-src 'none'\">\n"
       "<style>\n"
       "body { font-family: sans-serif; font-size: 0.8em; }\n"
       "tt, code, pre { font-family: WebKitHack, monospace; }\n"
