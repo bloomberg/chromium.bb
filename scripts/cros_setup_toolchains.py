@@ -217,13 +217,29 @@ def GetStablePackageVersion(target, package):
 
   returns a string containing the latest version.
   """
-  keyword = GetPortageKeyword(target)
-  extra_env = {'ACCEPT_KEYWORDS' : '-* ' + keyword}
-  atom = GetPortagePackage(target, package)
-  cpv = cros_build_lib.RunCommand(['portageq', 'best_visible', '/', atom],
-                                  print_cmd=False, redirect_stdout=True,
-                                  extra_env=extra_env).output.splitlines()[0]
-  return portage.versions.cpv_getversion(cpv)
+  def mass_portageq_splitline(entry):
+    """Splits the output of mass_best_visible into package:version tuple."""
+    # mass_best_visible returns lines of the format "package:cpv"
+    split_string = entry.split(':', 1)
+    split_string[1] = portage.versions.cpv_getversion(split_string[1])
+    return split_string
+
+  CACHE_ATTR = '_target_stable_map'
+
+  val = getattr(VAR_CACHE, CACHE_ATTR, {})
+  if not target in val:
+    keyword = GetPortageKeyword(target)
+    extra_env = {'ACCEPT_KEYWORDS' : '-* ' + keyword}
+    # Evaluate all packages for a target in one swoop, because it's much faster.
+    pkgs = [GetPortagePackage(target, p) for p in GetTargetPackages(target)]
+    cmd = ['portageq', 'mass_best_visible', '/'] + pkgs
+    cpvs = cros_build_lib.RunCommand(cmd,
+                                     print_cmd=False, redirect_stdout=True,
+                                     extra_env=extra_env).output.splitlines()
+    val[target] = dict(map(mass_portageq_splitline, cpvs))
+    setattr(VAR_CACHE, CACHE_ATTR, val)
+
+  return val[target][GetPortagePackage(target, package)]
 
 
 def VersionListToNumeric(target, package, versions):
