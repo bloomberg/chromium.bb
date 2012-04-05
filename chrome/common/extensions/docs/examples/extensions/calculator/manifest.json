@@ -4,11 +4,12 @@
   "manifest_version": 2,
   "version": "1.0",
   "background": {
-    "scripts": ["main.js"]
+    "scripts": ["main.js"],
+    "transient": true
   },
   "platform_app": true,
   "icons": {
-   "16": "icon_16.png",
+    "16": "icon_16.png",
     "128": "icon_128.png"
   },
   "permissions": [
