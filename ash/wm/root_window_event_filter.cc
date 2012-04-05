@@ -149,8 +149,16 @@ ui::TouchStatus RootWindowEventFilter::PreHandleTouchEvent(
 ui::GestureStatus RootWindowEventFilter::PreHandleGestureEvent(
     aura::Window* target,
     aura::GestureEvent* event) {
-  // TODO(sad):
-  return ui::GESTURE_STATUS_UNKNOWN;
+  ui::GestureStatus status = ui::GESTURE_STATUS_UNKNOWN;
+  if (filters_.might_have_observers()) {
+    ObserverListBase<aura::EventFilter>::Iterator it(filters_);
+    aura::EventFilter* filter;
+    while (status == ui::GESTURE_STATUS_UNKNOWN &&
+        (filter = it.GetNext()) != NULL) {
+      status = filter->PreHandleGestureEvent(target, event);
+    }
+  }
+  return status;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -72,6 +72,7 @@ class RootWindowEventFilter;
 class RootWindowLayoutManager;
 class ShadowController;
 class ShelfLayoutManager;
+class SystemGestureEventFilter;
 class StackingController;
 class TooltipController;
 class VisibilityController;
@@ -98,6 +99,7 @@ class ASH_EXPORT Shell {
 
     internal::RootWindowLayoutManager* root_window_layout();
     internal::InputMethodEventFilter* input_method_event_filter();
+    internal::SystemGestureEventFilter* system_gesture_event_filter();
     internal::WorkspaceController* workspace_controller();
 
    private:
@@ -309,6 +311,9 @@ class ASH_EXPORT Shell {
   // An event filter that pre-handles key events while the partial
   // screenshot UI is active.
   scoped_ptr<internal::PartialScreenshotEventFilter> partial_screenshot_filter_;
+
+  // An event filter which handles system level gestures
+  scoped_ptr<internal::SystemGestureEventFilter> system_gesture_filter_;
 
 #if !defined(OS_MACOSX)
   // An event filter that pre-handles global accelerators.

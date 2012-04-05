@@ -56,6 +56,7 @@
 #include "ash/wm/shelf_layout_manager.h"
 #include "ash/wm/stacking_controller.h"
 #include "ash/wm/status_area_layout_manager.h"
+#include "ash/wm/system_gesture_event_filter.h"
 #include "ash/wm/system_modal_container_layout_manager.h"
 #include "ash/wm/toplevel_window_event_filter.h"
 #include "ash/wm/video_detector.h"
@@ -510,6 +511,11 @@ internal::InputMethodEventFilter* Shell::TestApi::input_method_event_filter() {
   return shell_->input_method_filter_.get();
 }
 
+internal::SystemGestureEventFilter*
+    Shell::TestApi::system_gesture_event_filter() {
+  return shell_->system_gesture_filter_.get();
+}
+
 internal::WorkspaceController* Shell::TestApi::workspace_controller() {
   return shell_->workspace_controller_.get();
 }
@@ -534,6 +540,7 @@ Shell::~Shell() {
   RemoveRootWindowEventFilter(partial_screenshot_filter_.get());
   RemoveRootWindowEventFilter(input_method_filter_.get());
   RemoveRootWindowEventFilter(window_modality_controller_.get());
+  RemoveRootWindowEventFilter(system_gesture_filter_.get());
 #if !defined(OS_MACOSX)
   RemoveRootWindowEventFilter(accelerator_filter_.get());
 #endif
@@ -649,6 +656,9 @@ void Shell::Init() {
 #endif
   input_method_filter_.reset(new internal::InputMethodEventFilter);
   AddRootWindowEventFilter(input_method_filter_.get());
+
+  system_gesture_filter_.reset(new internal::SystemGestureEventFilter);
+  AddRootWindowEventFilter(system_gesture_filter_.get());
 
   root_window->SetCursor(ui::kCursorPointer);
   if (initially_hide_cursor_)

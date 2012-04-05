@@ -266,21 +266,30 @@ bool RootWindow::DispatchTouchEvent(TouchEvent* event) {
   event->UpdateForRootTransform(layer()->transform());
   bool handled = false;
   Window* target = capture_window_;
-  if (!target)
-      target = gesture_recognizer_->GetTargetForTouchEvent(event);
-  if (!target)
-    target = GetEventHandlerForPoint(event->location());
-  if (!target)
-    return false;
 
   ui::TouchStatus status = ui::TOUCH_STATUS_UNKNOWN;
-  TouchEvent translated_event(*event, this, target);
-  status = ProcessTouchEvent(target, &translated_event);
-  handled = status != ui::TOUCH_STATUS_UNKNOWN;
 
-  if (status == ui::TOUCH_STATUS_QUEUED ||
-      status == ui::TOUCH_STATUS_QUEUED_END)
-    gesture_recognizer_->QueueTouchEventForGesture(target, *event);
+  if (!target)
+    target = gesture_recognizer_->GetTargetForTouchEvent(event);
+
+  if (!target && !bounds().Contains(event->location())) {
+    // If the touch is outside the root window, set its target to the
+    // root window.
+    target = this;
+  } else {
+    if (!target)
+      target = GetEventHandlerForPoint(event->location());
+    if (!target)
+      return false;
+
+    TouchEvent translated_event(*event, this, target);
+    status = ProcessTouchEvent(target, &translated_event);
+    handled = status != ui::TOUCH_STATUS_UNKNOWN;
+
+    if (status == ui::TOUCH_STATUS_QUEUED ||
+        status == ui::TOUCH_STATUS_QUEUED_END)
+      gesture_recognizer_->QueueTouchEventForGesture(target, *event);
+  }
 
   // Get the list of GestureEvents from GestureRecognizer.
   scoped_ptr<GestureRecognizer::Gestures> gestures;
@@ -560,6 +569,8 @@ bool RootWindow::ProcessMouseEvent(Window* target, MouseEvent* event) {
       return true;
   }
 
+  if (!target->delegate())
+    return false;
   return target->delegate()->OnMouseEvent(event);
 }
 
@@ -613,7 +624,10 @@ ui::GestureStatus RootWindow::ProcessGestureEvent(Window* target,
     return ui::GESTURE_STATUS_UNKNOWN;
 
   EventFilters filters;
-  GetEventFiltersToNotify(target->parent(), &filters);
+  if (target == this)
+    GetEventFiltersToNotify(target, &filters);
+  else
+    GetEventFiltersToNotify(target->parent(), &filters);
   ui::GestureStatus status = ui::GESTURE_STATUS_UNKNOWN;
   for (EventFilters::const_reverse_iterator it = filters.rbegin(),
            rend = filters.rend();
@@ -623,7 +637,8 @@ ui::GestureStatus RootWindow::ProcessGestureEvent(Window* target,
       return status;
   }
 
-  status = target->delegate()->OnGestureEvent(event);
+  if (target->delegate())
+    status = target->delegate()->OnGestureEvent(event);
   if (status == ui::GESTURE_STATUS_UNKNOWN) {
     // The gesture was unprocessed. Generate corresponding mouse events here
     // (e.g. tap to click).

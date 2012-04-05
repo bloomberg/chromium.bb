@@ -274,13 +274,20 @@ class TimerTestGestureSequence : public GestureSequence {
 };
 
 class TestGestureRecognizer : public GestureRecognizerAura {
-  public:
+ public:
   TestGestureRecognizer()
       : GestureRecognizerAura() {
   }
 
   GestureSequence* GetGestureSequenceForTesting(Window* window) {
     return GetGestureSequenceForWindow(window);
+  }
+};
+
+class TimerTestGestureRecognizer : public TestGestureRecognizer {
+ public:
+  TimerTestGestureRecognizer()
+      : TestGestureRecognizer() {
   }
 
   virtual GestureSequence* CreateSequence(RootWindow* root_window) OVERRIDE {
@@ -563,8 +570,8 @@ TEST_F(GestureRecognizerTest, GestureEventLongPress) {
 
   delegate->Reset();
 
-  TestGestureRecognizer* gesture_recognizer =
-      new TestGestureRecognizer();
+  TimerTestGestureRecognizer* gesture_recognizer =
+      new TimerTestGestureRecognizer();
   TimerTestGestureSequence* gesture_sequence =
       static_cast<TimerTestGestureSequence*>(
           gesture_recognizer->GetGestureSequenceForTesting(window.get()));
@@ -604,8 +611,8 @@ TEST_F(GestureRecognizerTest, GestureEventLongPressCancelledByScroll) {
 
   delegate->Reset();
 
-  TestGestureRecognizer* gesture_recognizer =
-      new TestGestureRecognizer();
+  TimerTestGestureRecognizer* gesture_recognizer =
+      new TimerTestGestureRecognizer();
   TimerTestGestureSequence* gesture_sequence =
       static_cast<TimerTestGestureSequence*>(
           gesture_recognizer->GetGestureSequenceForTesting(window.get()));
@@ -645,8 +652,8 @@ TEST_F(GestureRecognizerTest, GestureEventLongPressCancelledByPinch) {
   scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(
       delegate.get(), -1234, bounds, NULL));
 
-  TestGestureRecognizer* gesture_recognizer =
-      new TestGestureRecognizer();
+  TimerTestGestureRecognizer* gesture_recognizer =
+      new TimerTestGestureRecognizer();
   TimerTestGestureSequence* gesture_sequence =
       static_cast<TimerTestGestureSequence*>(
           gesture_recognizer->GetGestureSequenceForTesting(window.get()));
@@ -1417,6 +1424,36 @@ TEST_F(GestureRecognizerTest, GestureEventTouchLockSelectsCorrectWindow) {
 
   target = gesture_recognizer->GetTargetForLocation(gfx::Point(1000, 1000));
   EXPECT_EQ(windows[2], target);
+}
+
+// Check that touch events outside the root window are still handled
+// by the root window's gesture sequence.
+TEST_F(GestureRecognizerTest, GestureEventOutsideRootWindowTap) {
+  TestGestureRecognizer* gesture_recognizer =
+      new TestGestureRecognizer();
+  root_window()->SetGestureRecognizerForTesting(gesture_recognizer);
+
+  scoped_ptr<aura::Window> window(CreateTestWindowWithBounds(
+      gfx::Rect(-100, -100, 2000, 2000), NULL));
+
+  GestureSequence* window_gesture_sequence =
+      gesture_recognizer->GetGestureSequenceForTesting(window.get());
+
+  GestureSequence* root_window_gesture_sequence =
+      gesture_recognizer->GetGestureSequenceForTesting(root_window());
+
+  gfx::Point pos1(-10, -10);
+  TouchEvent press1(ui::ET_TOUCH_PRESSED, pos1, 0);
+  root_window()->DispatchTouchEvent(&press1);
+
+  gfx::Point pos2(1000, 1000);
+  TouchEvent press2(ui::ET_TOUCH_PRESSED, pos2, 1);
+  root_window()->DispatchTouchEvent(&press2);
+
+  // As these presses were outside the root window, they should be
+  // associated with the root window.
+  EXPECT_EQ(0, window_gesture_sequence->point_count());
+  EXPECT_EQ(2, root_window_gesture_sequence->point_count());
 }
 
 TEST_F(GestureRecognizerTest, NoTapWithPreventDefaultedRelease) {

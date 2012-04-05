@@ -44,6 +44,7 @@ class AURA_EXPORT GestureSequence {
   virtual Gestures* ProcessTouchEventForGesture(const TouchEvent& event,
                                                 ui::TouchStatus status);
   const GesturePoint* points() const { return points_; }
+  int point_count() const { return point_count_; }
 
   // Maximum number of points in a single gesture.
   static const int kMaxGesturePoints = 12;
