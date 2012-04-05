@@ -196,6 +196,8 @@
         'common/mac/objc_method_swizzle.mm',
         'common/mac/objc_zombie.h',
         'common/mac/objc_zombie.mm',
+        'common/metrics/experiments_helper.cc',
+        'common/metrics/experiments_helper.h',
         'common/metrics/histogram_sender.cc',
         'common/metrics/histogram_sender.h',
         'common/metrics/metrics_log_base.cc',

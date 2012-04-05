@@ -15,9 +15,11 @@
 #include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/threading/platform_thread.h"
+#include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_localization_peer.h"
+#include "chrome/common/metrics/experiments_helper.h"
 #include "chrome/common/net/net_resource_provider.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/chrome_content_renderer_client.h"
@@ -222,6 +224,8 @@ ChromeRenderProcessObserver::ChromeRenderProcessObserver(
   std::string error;
   base::LoadNativeLibrary(FilePath(L"crypt32.dll"), &error);
 #endif
+  // Setup initial set of crash dump data for Field Trials in this renderer.
+  ExperimentsHelper::SetChildProcessLoggingExperimentList();
 }
 
 ChromeRenderProcessObserver::~ChromeRenderProcessObserver() {
@@ -332,6 +336,7 @@ void ChromeRenderProcessObserver::OnSetFieldTrialGroup(
     const std::string& field_trial_name,
     const std::string& group_name) {
   base::FieldTrialList::CreateFieldTrial(field_trial_name, group_name);
+  ExperimentsHelper::SetChildProcessLoggingExperimentList();
 }
 
 void ChromeRenderProcessObserver::OnGetV8HeapStats() {

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/threading/thread.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/metrics/experiments_helper.h"
 #include "chrome/common/render_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
@@ -18,6 +19,8 @@ FieldTrialSynchronizer::FieldTrialSynchronizer() {
   DCHECK(field_trial_synchronizer_ == NULL);
   field_trial_synchronizer_ = this;
   base::FieldTrialList::AddObserver(this);
+
+  ExperimentsHelper::SetChildProcessLoggingExperimentList();
 }
 
 FieldTrialSynchronizer::~FieldTrialSynchronizer() {
@@ -49,6 +52,7 @@ void FieldTrialSynchronizer::OnFieldTrialGroupFinalized(
                  this,
                  field_trial_name,
                  group_name));
+  ExperimentsHelper::SetChildProcessLoggingExperimentList();
 }
 
 // static

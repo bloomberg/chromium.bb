@@ -19,11 +19,13 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
+#include "base/string16.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/registry.h"
 #include "base/win/win_util.h"
 #include "breakpad/src/client/windows/handler/exception_handler.h"
+#include "chrome/app/breakpad_field_trial_win.h"
 #include "chrome/app/hard_error_handler_win.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_result_codes.h"
@@ -33,6 +35,18 @@
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/install_util.h"
 #include "policy/policy_constants.h"
+
+namespace breakpad_win {
+
+std::vector<google_breakpad::CustomInfoEntry>* g_custom_entries = NULL;
+size_t g_num_of_experiments_offset = 0;
+size_t g_experiment_chunks_offset = 0;
+
+}   // namespace breakpad_win
+
+using breakpad_win::g_custom_entries;
+using breakpad_win::g_experiment_chunks_offset;
+using breakpad_win::g_num_of_experiments_offset;
 
 namespace {
 
@@ -65,19 +79,15 @@ const wchar_t kSystemPrincipalSid[] =L"S-1-5-18";
 google_breakpad::ExceptionHandler* g_breakpad = NULL;
 google_breakpad::ExceptionHandler* g_dumphandler_no_crash = NULL;
 
-// A pointer to the custom entries that we send in the event of a crash. We need
-// this pointer, along with the offsets into it below, so that we can keep the
-// data updated as the state of the browser changes.
-static std::vector<google_breakpad::CustomInfoEntry>* g_custom_entries = NULL;
-static size_t g_url_chunks_offset;
-static size_t g_num_of_extensions_offset;
-static size_t g_extension_ids_offset;
-static size_t g_client_id_offset;
-static size_t g_gpu_info_offset;
-static size_t g_printer_info_offset;
-static size_t g_num_of_views_offset;
-static size_t g_num_switches_offset;
-static size_t g_switches_offset;
+static size_t g_url_chunks_offset = 0;
+static size_t g_num_of_extensions_offset = 0;
+static size_t g_extension_ids_offset = 0;
+static size_t g_client_id_offset = 0;
+static size_t g_gpu_info_offset = 0;
+static size_t g_printer_info_offset = 0;
+static size_t g_num_of_views_offset = 0;
+static size_t g_num_switches_offset = 0;
+static size_t g_switches_offset = 0;
 
 // Maximum length for plugin path to include in plugin crash reports.
 const size_t kMaxPluginPathLength = 256;
@@ -253,9 +263,10 @@ google_breakpad::CustomClientInfo* GetCustomInfo(const std::wstring& exe_path,
       google_breakpad::CustomInfoEntry(L"num-extensions", L"N/A"));
 
   g_extension_ids_offset = g_custom_entries->size();
-  for (int i = 0; i < kMaxReportedActiveExtensions; ++i) {
+  // one-based index for the name suffix.
+  for (int i = 1; i <= kMaxReportedActiveExtensions; ++i) {
     g_custom_entries->push_back(google_breakpad::CustomInfoEntry(
-        base::StringPrintf(L"extension-%i", i + 1).c_str(), L""));
+        base::StringPrintf(L"extension-%i", i).c_str(), L""));
   }
 
   // Add empty values for the gpu_info. We'll put the actual values when we
@@ -276,10 +287,11 @@ google_breakpad::CustomClientInfo* GetCustomInfo(const std::wstring& exe_path,
   // Add empty values for the prn_info-*. We'll put the actual values when we
   // collect them at this location.
   g_printer_info_offset = g_custom_entries->size();
-  for (size_t i = 0; i < kMaxReportedPrinterRecords; ++i) {
+  // one-based index for the name suffix.
+  for (size_t i = 1; i <= kMaxReportedPrinterRecords; ++i) {
     g_custom_entries->push_back(
         google_breakpad::CustomInfoEntry(
-            base::StringPrintf(L"prn-info-%d", i + 1).c_str(), L""));
+            base::StringPrintf(L"prn-info-%d", i).c_str(), L""));
   }
 
   // Read the id from registry. If reporting has never been enabled
@@ -298,9 +310,10 @@ google_breakpad::CustomClientInfo* GetCustomInfo(const std::wstring& exe_path,
       google_breakpad::CustomInfoEntry(L"num-switches", L""));
 
   g_switches_offset = g_custom_entries->size();
-  for (int i = 0; i < kMaxSwitches; ++i) {
+  // one-based index for the name suffix.
+  for (int i = 1; i <= kMaxSwitches; ++i) {
     g_custom_entries->push_back(google_breakpad::CustomInfoEntry(
-        base::StringPrintf(L"switch-%i", i + 1).c_str(), L""));
+        base::StringPrintf(L"switch-%i", i).c_str(), L""));
   }
 
   // Fill in the command line arguments using CommandLine::ForCurrentProcess().
@@ -316,9 +329,10 @@ google_breakpad::CustomClientInfo* GetCustomInfo(const std::wstring& exe_path,
     // characters, which isn't enough for a URL. As a hack we create 8 entries
     // and split the URL across the g_custom_entries.
     g_url_chunks_offset = g_custom_entries->size();
-    for (int i = 0; i < kMaxUrlChunks; ++i) {
+    // one-based index for the name suffix.
+    for (int i = 1; i <= kMaxUrlChunks; ++i) {
       g_custom_entries->push_back(google_breakpad::CustomInfoEntry(
-          base::StringPrintf(L"url-chunk-%i", i + 1).c_str(), L""));
+          base::StringPrintf(L"url-chunk-%i", i).c_str(), L""));
     }
 
     if (type == L"plugin") {
@@ -330,6 +344,21 @@ google_breakpad::CustomClientInfo* GetCustomInfo(const std::wstring& exe_path,
   } else {
     g_custom_entries->push_back(
         google_breakpad::CustomInfoEntry(L"num-views", L"N/A"));
+  }
+
+  g_num_of_experiments_offset = g_custom_entries->size();
+  g_custom_entries->push_back(
+      google_breakpad::CustomInfoEntry(L"num-experiments", L"N/A"));
+
+  g_experiment_chunks_offset = g_custom_entries->size();
+  // We depend on this in UpdateExperiments...
+  DCHECK_NE(0UL, g_experiment_chunks_offset);
+  // And the test code depends on this.
+  DCHECK_EQ(g_num_of_experiments_offset + 1, g_experiment_chunks_offset);
+  // one-based index for the name suffix.
+  for (int i = 1; i <= kMaxReportedExperimentChunks; ++i) {
+    g_custom_entries->push_back(google_breakpad::CustomInfoEntry(
+        base::StringPrintf(L"experiment-chunk-%i", i).c_str(), L""));
   }
 
   static google_breakpad::CustomClientInfo custom_client_info;
@@ -534,6 +563,15 @@ extern "C" void __declspec(dllexport) __cdecl SetNumberOfViews(
 }
 
 }  // namespace
+
+namespace testing {
+
+// Access to namespace protected functions for testing purposes.
+void InitCustomInfoEntries() {
+  GetCustomInfo(L"", L"", L"");
+}
+
+}  // namespace testing
 
 bool WrapMessageBoxWithSEH(const wchar_t* text, const wchar_t* caption,
                            UINT flags, bool* exit_now) {

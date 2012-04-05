@@ -220,6 +220,10 @@ void SetCommandLine(const CommandLine* command_line) {
   }
 }
 
+void SetExperimentList(const std::vector<string16>& state) {
+  // TODO(mad): Implement this.
+}
+
 void SetChannel(const std::string& channel) {
   // This should match the corresponding string in breakpad_win.cc.
   NSString* const kChannelKey = @"channel";
