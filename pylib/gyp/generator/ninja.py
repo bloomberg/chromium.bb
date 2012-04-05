@@ -471,7 +471,7 @@ class NinjaWriter:
     # Actions cd into the base directory.
     env = self.GetXcodeEnv()
     if self.flavor == 'win':
-      env = self.msvs_emulation.GetVSMacroEnv(self.base_to_build)
+      env = self.msvs_settings.GetVSMacroEnv(self.base_to_build)
     all_outputs = []
     for action in actions:
       # First write out a rule for the action.
@@ -1040,7 +1040,7 @@ class NinjaWriter:
     else:
       cd = 'cd %s; ' % self.build_to_base
     args = [self.ExpandSpecial(arg, self.base_to_build) for arg in args]
-    env = self.ComputeExportEnvString(env)
+    env = self.ComputeExportEnvString(env) if self.flavor != 'win' else ''
     if self.flavor == 'win':
       args = [self.msvs_settings.ConvertVSMacros(a, self.base_to_build)
               for a in args]

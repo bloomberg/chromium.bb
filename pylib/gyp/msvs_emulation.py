@@ -403,5 +403,6 @@ def ExpandMacros(string, expansions):
   for the canonical way to retrieve a suitable dict."""
   if '$' in string:
     for old, new in expansions.iteritems():
+      assert '$(' not in new, new
       string = string.replace(old, new)
   return string
