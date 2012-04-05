@@ -1477,7 +1477,14 @@ void ProfileSyncService::Observe(int type,
       const TokenService::TokenRequestFailedDetails& token_details =
           *(content::Details<const TokenService::TokenRequestFailedDetails>(
               details).ptr());
-      if (IsTokenServiceRelevant(token_details.service())) {
+      if (IsTokenServiceRelevant(token_details.service()) &&
+          !AreCredentialsAvailable()) {
+        // The additional check around AreCredentialsAvailable above prevents us
+        // sounding the alarm if we actually have a valid token but a refresh
+        // attempt by TokenService failed for any variety of reasons (e.g. flaky
+        // network). It's possible the token we do have is also invalid, but in
+        // that case we should already have (or can expect) an auth error sent
+        // from the sync backend.
         GoogleServiceAuthError error(
             GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
         UpdateAuthErrorState(error);
