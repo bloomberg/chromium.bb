@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,9 +21,14 @@
 #include "base/sys_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "grit/generated_resources.h"
+#import "ui/base/cocoa/nib_loading.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
-static const int kFileTypePopupTag = 1234;
+namespace {
+
+const int kFileTypePopupTag = 1234;
+
+}  // namespace
 
 class SelectFileDialogImpl;
 
@@ -294,27 +299,9 @@ void SelectFileDialogImpl::FileWasSelected(NSSavePanel* dialog,
 NSView* SelectFileDialogImpl::GetAccessoryView(const FileTypeInfo* file_types,
                                                int file_type_index) {
   DCHECK(file_types);
-  scoped_nsobject<NSNib> nib (
-      [[NSNib alloc] initWithNibNamed:@"SaveAccessoryView"
-                               bundle:base::mac::FrameworkBundle()]);
-  if (!nib)
+  NSView* accessory_view = ui::GetViewFromNib(@"SaveAccessoryView");
+  if (!accessory_view)
     return nil;
-
-  NSArray* objects;
-  BOOL success = [nib instantiateNibWithOwner:nil
-                              topLevelObjects:&objects];
-  if (!success)
-    return nil;
-  [objects makeObjectsPerformSelector:@selector(release)];
-
-  // This is a one-object nib, but IB insists on creating a second object, the
-  // NSApplication. I don't know why.
-  size_t view_index = 0;
-  while (view_index < [objects count] &&
-      ![[objects objectAtIndex:view_index] isKindOfClass:[NSView class]])
-    ++view_index;
-  DCHECK(view_index < [objects count]);
-  NSView* accessory_view = [objects objectAtIndex:view_index];
 
   NSPopUpButton* popup = [accessory_view viewWithTag:kFileTypePopupTag];
   DCHECK(popup);

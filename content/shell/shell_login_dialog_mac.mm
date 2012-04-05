@@ -12,6 +12,7 @@
 #import "base/memory/scoped_nsobject.h"
 #include "base/sys_string_conversions.h"
 #include "content/public/browser/browser_thread.h"
+#import "ui/base/cocoa/nib_loading.h"
 
 namespace {
 
@@ -48,29 +49,13 @@ const int kPasswordFieldTag = 2;
 }
 
 - (NSView*)accessoryView {
-  scoped_nsobject<NSNib> nib(
-      [[NSNib alloc] initWithNibNamed:@"HttpAuth"
-                               bundle:base::mac::FrameworkBundle()]);
-  if (!nib)
+  NSView* accessory_view = ui::GetViewFromNib(@"HttpAuth");
+  if (!accessory_view)
     return nil;
 
-  NSArray* objects;
-  BOOL success = [nib instantiateNibWithOwner:nil
-                              topLevelObjects:&objects];
-  if (!success)
-    return nil;
-  [objects makeObjectsPerformSelector:@selector(release)];
-
-  for (NSView* view in objects) {
-    if (![view isKindOfClass:[NSView class]])
-      continue;
-
-    usernameField_ = [view viewWithTag:kUsernameFieldTag];
-    passwordField_ = [view viewWithTag:kPasswordFieldTag];
-    return view;
-  }
-
-  return nil;
+  usernameField_ = [accessory_view viewWithTag:kUsernameFieldTag];
+  passwordField_ = [accessory_view viewWithTag:kPasswordFieldTag];
+  return accessory_view;
 }
 
 - (void)focus {
