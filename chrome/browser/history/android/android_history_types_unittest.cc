@@ -9,24 +9,30 @@
 namespace history {
 
 TEST(AndroidHistoryTypesTest, TestGetBookmarkColumnID) {
-  EXPECT_EQ(BookmarkRow::ID, BookmarkRow::GetBookmarkColumnID("_id"));
-  EXPECT_EQ(BookmarkRow::URL, BookmarkRow::GetBookmarkColumnID("url"));
-  EXPECT_EQ(BookmarkRow::TITLE, BookmarkRow::GetBookmarkColumnID("title"));
-  EXPECT_EQ(BookmarkRow::CREATED, BookmarkRow::GetBookmarkColumnID("created"));
-  EXPECT_EQ(BookmarkRow::LAST_VISIT_TIME,
-            BookmarkRow::GetBookmarkColumnID("date"));
-  EXPECT_EQ(BookmarkRow::VISIT_COUNT,
-            BookmarkRow::GetBookmarkColumnID("visits"));
-  EXPECT_EQ(BookmarkRow::FAVICON, BookmarkRow::GetBookmarkColumnID("favicon"));
-  EXPECT_EQ(BookmarkRow::BOOKMARK,
-            BookmarkRow::GetBookmarkColumnID("bookmark"));
-  EXPECT_EQ(BookmarkRow::RAW_URL, BookmarkRow::GetBookmarkColumnID("raw_url"));
+  EXPECT_EQ(HistoryAndBookmarkRow::ID,
+            HistoryAndBookmarkRow::GetColumnID("_id"));
+  EXPECT_EQ(HistoryAndBookmarkRow::URL,
+            HistoryAndBookmarkRow::GetColumnID("url"));
+  EXPECT_EQ(HistoryAndBookmarkRow::TITLE,
+            HistoryAndBookmarkRow::GetColumnID("title"));
+  EXPECT_EQ(HistoryAndBookmarkRow::CREATED,
+            HistoryAndBookmarkRow::GetColumnID("created"));
+  EXPECT_EQ(HistoryAndBookmarkRow::LAST_VISIT_TIME,
+            HistoryAndBookmarkRow::GetColumnID("date"));
+  EXPECT_EQ(HistoryAndBookmarkRow::VISIT_COUNT,
+            HistoryAndBookmarkRow::GetColumnID("visits"));
+  EXPECT_EQ(HistoryAndBookmarkRow::FAVICON,
+            HistoryAndBookmarkRow::GetColumnID("favicon"));
+  EXPECT_EQ(HistoryAndBookmarkRow::BOOKMARK,
+            HistoryAndBookmarkRow::GetColumnID("bookmark"));
+  EXPECT_EQ(HistoryAndBookmarkRow::RAW_URL,
+            HistoryAndBookmarkRow::GetColumnID("raw_url"));
 }
 
 TEST(AndroidHistoryTypesTest, TestGetSearchColumnID) {
-  EXPECT_EQ(SearchRow::ID, SearchRow::GetSearchColumnID("_id"));
-  EXPECT_EQ(SearchRow::SEARCH_TERM, SearchRow::GetSearchColumnID("search"));
-  EXPECT_EQ(SearchRow::SEARCH_TIME, SearchRow::GetSearchColumnID("date"));
+  EXPECT_EQ(SearchRow::ID, SearchRow::GetColumnID("_id"));
+  EXPECT_EQ(SearchRow::SEARCH_TERM, SearchRow::GetColumnID("search"));
+  EXPECT_EQ(SearchRow::SEARCH_TIME, SearchRow::GetColumnID("date"));
 }
 
 }  // namespace history

@@ -28,42 +28,43 @@ const char* const kAndroidSearchColumn[] = {
 };
 
 class BookmarkIDMapping : public std::map<std::string,
-                                          BookmarkRow::BookmarkColumnID> {
+                                          HistoryAndBookmarkRow::ColumnID> {
  public:
   BookmarkIDMapping() {
-    COMPILE_ASSERT(arraysize(kAndroidBookmarkColumn) <= BookmarkRow::COLUMN_END,
+    COMPILE_ASSERT(arraysize(kAndroidBookmarkColumn) <=
+                   HistoryAndBookmarkRow::COLUMN_END,
                    Array_size_must_not_exceed_enum);
     for (size_t i = 0; i < arraysize(kAndroidBookmarkColumn); ++i) {
       (*this)[kAndroidBookmarkColumn[i]] =
-          static_cast<BookmarkRow::BookmarkColumnID>(i);
+          static_cast<HistoryAndBookmarkRow::ColumnID>(i);
     }
   }
 };
 
-// The mapping from Android column name to BookmarkColumnID; It is initialized
+// The mapping from Android column name to ColumnID; It is initialized
 // once it used.
 BookmarkIDMapping* g_bookmark_id_mapping = NULL;
 
 class SearchIDMapping : public std::map<std::string,
-                                        SearchRow::SearchColumnID> {
+                                        SearchRow::ColumnID> {
  public:
   SearchIDMapping() {
     COMPILE_ASSERT(arraysize(kAndroidSearchColumn) <= SearchRow::COLUMN_END,
                    Array_size_must_not_exceed_enum);
     for (size_t i = 0; i < arraysize(kAndroidSearchColumn); ++i) {
       (*this)[kAndroidSearchColumn[i]] =
-              static_cast<SearchRow::SearchColumnID>(i);
+              static_cast<SearchRow::ColumnID>(i);
     }
   }
 };
 
-// The mapping from Android column name to SearchColumnID; It is initialized
+// The mapping from Android column name to ColumnID; It is initialized
 // once it used.
 SearchIDMapping* g_search_id_mapping = NULL;
 
 }  // namespace
 
-BookmarkRow::BookmarkRow()
+HistoryAndBookmarkRow::HistoryAndBookmarkRow()
     : id_(0),
       created_(base::Time()),
       last_visit_time_(base::Time()),
@@ -73,21 +74,21 @@ BookmarkRow::BookmarkRow()
       url_id_(0) {
 }
 
-BookmarkRow::~BookmarkRow() {
+HistoryAndBookmarkRow::~HistoryAndBookmarkRow() {
 }
 
-std::string BookmarkRow::GetAndroidName(BookmarkColumnID id) {
+std::string HistoryAndBookmarkRow::GetAndroidName(ColumnID id) {
   return kAndroidBookmarkColumn[id];
 }
 
-BookmarkRow::BookmarkColumnID BookmarkRow::GetBookmarkColumnID(
+HistoryAndBookmarkRow::ColumnID HistoryAndBookmarkRow::GetColumnID(
     const std::string& name) {
   if (!g_bookmark_id_mapping)
     g_bookmark_id_mapping = new BookmarkIDMapping();
 
   BookmarkIDMapping::const_iterator i = g_bookmark_id_mapping->find(name);
   if (i == g_bookmark_id_mapping->end())
-    return BookmarkRow::COLUMN_END;
+    return HistoryAndBookmarkRow::COLUMN_END;
   else
     return i->second;
 }
@@ -100,11 +101,11 @@ SearchRow::SearchRow()
 SearchRow::~SearchRow() {
 }
 
-std::string SearchRow::GetAndroidName(SearchColumnID id) {
+std::string SearchRow::GetAndroidName(ColumnID id) {
   return kAndroidSearchColumn[id];
 }
 
-SearchRow::SearchColumnID SearchRow::GetSearchColumnID(
+SearchRow::ColumnID SearchRow::GetColumnID(
     const std::string& name) {
   if (!g_search_id_mapping)
     g_search_id_mapping = new SearchIDMapping();

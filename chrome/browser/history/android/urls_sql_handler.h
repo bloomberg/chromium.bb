@@ -18,8 +18,8 @@ class UrlsSQLHandler : public SQLHandler {
   virtual ~UrlsSQLHandler();
 
   // Overriden from SQLHandler.
-  virtual bool Insert(BookmarkRow* row) OVERRIDE;
-  virtual bool Update(const BookmarkRow& row,
+  virtual bool Insert(HistoryAndBookmarkRow* row) OVERRIDE;
+  virtual bool Update(const HistoryAndBookmarkRow& row,
                       const TableIDRows& ids_set) OVERRIDE;
   virtual bool Delete(const TableIDRows& ids_set) OVERRIDE;
 

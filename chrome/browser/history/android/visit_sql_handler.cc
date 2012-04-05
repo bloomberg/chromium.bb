@@ -14,9 +14,9 @@ namespace history {
 namespace {
 
 // The interesting columns of this handler.
-const BookmarkRow::BookmarkColumnID kInterestingColumns[] = {
-    BookmarkRow::CREATED, BookmarkRow::VISIT_COUNT,
-    BookmarkRow::LAST_VISIT_TIME };
+const HistoryAndBookmarkRow::ColumnID kInterestingColumns[] = {
+    HistoryAndBookmarkRow::CREATED, HistoryAndBookmarkRow::VISIT_COUNT,
+    HistoryAndBookmarkRow::LAST_VISIT_TIME };
 
 } // namespace
 
@@ -39,7 +39,7 @@ VisitSQLHandler::~VisitSQLHandler() {
 //    table, all existent visits will be removed. The new visits will be
 //    insertted according the value in urls table.
 // b. Otherwise, only add the increased number of visit count.
-bool VisitSQLHandler::Update(const BookmarkRow& row,
+bool VisitSQLHandler::Update(const HistoryAndBookmarkRow& row,
                              const TableIDRows& ids_set) {
   for (TableIDRows::const_iterator id = ids_set.begin();
        id != ids_set.end(); ++id) {
@@ -54,14 +54,14 @@ bool VisitSQLHandler::Update(const BookmarkRow& row,
 
     // If created time is updated or new visit count is less than the current
     // one, delete all visit rows.
-    if (row.is_value_set_explicitly(BookmarkRow::CREATED) ||
+    if (row.is_value_set_explicitly(HistoryAndBookmarkRow::CREATED) ||
         visit_count_in_table > visit_count_needed) {
       if (!DeleteVisitsForURL(id->url_id))
         return false;
       visit_count_in_table = 0;
     }
 
-    if (row.is_value_set_explicitly(BookmarkRow::CREATED) &&
+    if (row.is_value_set_explicitly(HistoryAndBookmarkRow::CREATED) &&
         visit_count_needed > 0) {
       if (!AddVisit(id->url_id, row.created()))
         return false;
@@ -75,8 +75,8 @@ bool VisitSQLHandler::Update(const BookmarkRow& row,
   return true;
 }
 
-bool VisitSQLHandler::Insert(BookmarkRow* row) {
-  DCHECK(row->is_value_set_explicitly(BookmarkRow::URL_ID));
+bool VisitSQLHandler::Insert(HistoryAndBookmarkRow* row) {
+  DCHECK(row->is_value_set_explicitly(HistoryAndBookmarkRow::URL_ID));
 
   URLRow url_row;
   if (!history_db_->GetURLRow(row->url_id(), &url_row))
@@ -85,7 +85,7 @@ bool VisitSQLHandler::Insert(BookmarkRow* row) {
   int visit_count = url_row.visit_count();
 
   // Add a row if the last visit time is different from created time.
-  if (row->is_value_set_explicitly(BookmarkRow::CREATED) &&
+  if (row->is_value_set_explicitly(HistoryAndBookmarkRow::CREATED) &&
       row->created() != url_row.last_visit() && visit_count > 0) {
     if (!AddVisit(row->url_id(), row->created()))
       return false;

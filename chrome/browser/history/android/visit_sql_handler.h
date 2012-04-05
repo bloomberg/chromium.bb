@@ -22,9 +22,9 @@ class VisitSQLHandler : public SQLHandler {
   virtual ~VisitSQLHandler();
 
   // Overriden from SQLHandler.
-  virtual bool Update(const BookmarkRow& row,
+  virtual bool Update(const HistoryAndBookmarkRow& row,
                       const TableIDRows& ids_set) OVERRIDE;
-  virtual bool Insert(BookmarkRow* row) OVERRIDE;
+  virtual bool Insert(HistoryAndBookmarkRow* row) OVERRIDE;
   virtual bool Delete(const TableIDRows& ids_set) OVERRIDE;
 
  private:

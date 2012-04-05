@@ -29,26 +29,26 @@ typedef std::vector<TableIDRow> TableIDRows;
 // are inserted or updated, the corresponding Insert() or Update() method will
 // be invoked. The Delete() method is called to delete rows.
 //
-// The BookmarkRow given in Insert() or Update() provide the data for insert
-// or update. No all the data in BookmarkRow maybe valid, using
-// BookmarkRow::is_value_set_explicitly() method to see if the data need be
-// inserted or updated.
+// The HistoryAndBookmarkRow given in Insert() or Update() provide the data for
+// insert or update. No all the data in HistoryAndBookmarkRow maybe valid, using
+// HistoryAndBookmarkRow::is_value_set_explicitly() method to see if the data
+// need be inserted or updated.
 class SQLHandler {
  public:
   // |columns| is the implementation's columns.
   // |column_count| is the number of column in |columns|.
-  SQLHandler(const BookmarkRow::BookmarkColumnID columns[], int column_count);
+  SQLHandler(const HistoryAndBookmarkRow::ColumnID columns[], int column_count);
   virtual ~SQLHandler();
 
   // Updates the rows whose URLID or URL is in the given |ids_set| with new
   // value stored in |row|. Return true if the update succeeds.
-  virtual bool Update(const BookmarkRow& row,
+  virtual bool Update(const HistoryAndBookmarkRow& row,
                       const TableIDRows& ids_set) = 0;
 
   // Inserts the given |row|, return true on success; The id of insertted row
   // should be set in |row|, so other implemnetations could use it to complete
   // the insert.
-  virtual bool Insert(BookmarkRow* row) = 0;
+  virtual bool Insert(HistoryAndBookmarkRow* row) = 0;
 
   // Deletes the rows whose id is in |ids_set|, returns false if any deletion
   // failed, otherwise return true even all/some of rows are not found.
@@ -56,14 +56,14 @@ class SQLHandler {
 
   // Return true if |row| has a value explicitly set for at least one of the
   // columns in |row| that are known to this class.
-  bool HasColumnIn(const BookmarkRow& row);
+  bool HasColumnIn(const HistoryAndBookmarkRow& row);
 
   // Returns true if |id| is one of the columns known to this class.
-  bool HasColumn(BookmarkRow::BookmarkColumnID id);
+  bool HasColumn(HistoryAndBookmarkRow::ColumnID id);
 
  private:
   // The columns of this handler.
-  const std::set<BookmarkRow::BookmarkColumnID> columns_;
+  const std::set<HistoryAndBookmarkRow::ColumnID> columns_;
 
   DISALLOW_COPY_AND_ASSIGN(SQLHandler);
 };

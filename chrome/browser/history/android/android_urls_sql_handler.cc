@@ -11,8 +11,8 @@ namespace history {
 namespace {
 
 // The interesting columns of this handler.
-const BookmarkRow::BookmarkColumnID kInterestingColumns[] = {
-    BookmarkRow::RAW_URL, BookmarkRow::URL_ID };
+const HistoryAndBookmarkRow::ColumnID kInterestingColumns[] = {
+    HistoryAndBookmarkRow::RAW_URL, HistoryAndBookmarkRow::URL_ID };
 
 } // namespace
 
@@ -24,10 +24,10 @@ AndroidURLsSQLHandler::AndroidURLsSQLHandler(HistoryDatabase* history_db)
 AndroidURLsSQLHandler::~AndroidURLsSQLHandler() {
 }
 
-bool AndroidURLsSQLHandler::Update(const BookmarkRow& row,
+bool AndroidURLsSQLHandler::Update(const HistoryAndBookmarkRow& row,
                                    const TableIDRows& ids_set) {
-  DCHECK(row.is_value_set_explicitly(BookmarkRow::URL_ID));
-  DCHECK(row.is_value_set_explicitly(BookmarkRow::RAW_URL));
+  DCHECK(row.is_value_set_explicitly(HistoryAndBookmarkRow::URL_ID));
+  DCHECK(row.is_value_set_explicitly(HistoryAndBookmarkRow::RAW_URL));
   if (ids_set.size() != 1)
     return false;
 
@@ -39,7 +39,7 @@ bool AndroidURLsSQLHandler::Update(const BookmarkRow& row,
                                           row.url_id());
 }
 
-bool AndroidURLsSQLHandler::Insert(BookmarkRow* row) {
+bool AndroidURLsSQLHandler::Insert(HistoryAndBookmarkRow* row) {
   AndroidURLID new_id = history_db_->AddAndroidURLRow(row->raw_url(),
                                                       row->url_id());
   row->set_id(new_id);

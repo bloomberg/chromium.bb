@@ -14,8 +14,8 @@ namespace history {
 namespace {
 
 // The interesting columns of this handler.
-const BookmarkRow::BookmarkColumnID kInterestingColumns[] = {
-  BookmarkRow::FAVICON};
+const HistoryAndBookmarkRow::ColumnID kInterestingColumns[] = {
+  HistoryAndBookmarkRow::FAVICON};
 
 } // namespace
 
@@ -27,7 +27,7 @@ FaviconSQLHandler::FaviconSQLHandler(ThumbnailDatabase* thumbnail_db)
 FaviconSQLHandler::~FaviconSQLHandler() {
 }
 
-bool FaviconSQLHandler::Update(const BookmarkRow& row,
+bool FaviconSQLHandler::Update(const HistoryAndBookmarkRow& row,
                                const TableIDRows& ids_set) {
   FaviconID favicon_id = 0;
   if (!row.favicon().empty()) {
@@ -101,12 +101,12 @@ bool FaviconSQLHandler::Delete(const TableIDRows& ids_set) {
   return true;
 }
 
-bool FaviconSQLHandler::Insert(BookmarkRow* row) {
-  if (!row->is_value_set_explicitly(BookmarkRow::FAVICON) ||
+bool FaviconSQLHandler::Insert(HistoryAndBookmarkRow* row) {
+  if (!row->is_value_set_explicitly(HistoryAndBookmarkRow::FAVICON) ||
       row->favicon().empty())
     return true;
 
-  DCHECK(row->is_value_set_explicitly(BookmarkRow::URL));
+  DCHECK(row->is_value_set_explicitly(HistoryAndBookmarkRow::URL));
 
   // Is it a problem to give a empty URL?
   FaviconID id = thumbnail_db_->AddFavicon(GURL(), history::FAVICON);

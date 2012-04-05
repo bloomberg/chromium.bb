@@ -18,10 +18,10 @@ class FaviconSQLHandler : public SQLHandler {
   virtual ~FaviconSQLHandler();
 
   // SQLHandler overrides:
-  virtual bool Update(const BookmarkRow& row,
+  virtual bool Update(const HistoryAndBookmarkRow& row,
                       const TableIDRows& ids_set) OVERRIDE;
   virtual bool Delete(const TableIDRows& ids_set) OVERRIDE;
-  virtual bool Insert(BookmarkRow* row) OVERRIDE;
+  virtual bool Insert(HistoryAndBookmarkRow* row) OVERRIDE;
 
  private:
   // Deletes the given favicons if they are not used by any pages. Returns

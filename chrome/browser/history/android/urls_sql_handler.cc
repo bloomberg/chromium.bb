@@ -13,9 +13,9 @@ namespace history {
 
 namespace {
 
-const BookmarkRow::BookmarkColumnID kInterestingColumns[] = {
-    BookmarkRow::URL, BookmarkRow::VISIT_COUNT, BookmarkRow::TITLE,
-    BookmarkRow::LAST_VISIT_TIME };
+const HistoryAndBookmarkRow::ColumnID kInterestingColumns[] = {
+    HistoryAndBookmarkRow::URL, HistoryAndBookmarkRow::VISIT_COUNT,
+    HistoryAndBookmarkRow::TITLE, HistoryAndBookmarkRow::LAST_VISIT_TIME };
 
 }  // namespace
 
@@ -27,7 +27,7 @@ UrlsSQLHandler::UrlsSQLHandler(HistoryDatabase* history_db)
 UrlsSQLHandler:: ~UrlsSQLHandler() {
 }
 
-bool UrlsSQLHandler::Insert(BookmarkRow* row) {
+bool UrlsSQLHandler::Insert(HistoryAndBookmarkRow* row) {
   URLRow url_row(row->url());
 
   URLID id = history_db_->GetRowForURL(row->url(), &url_row);
@@ -36,35 +36,35 @@ bool UrlsSQLHandler::Insert(BookmarkRow* row) {
     return false; // We already has this row.
   }
 
-  if (row->is_value_set_explicitly(BookmarkRow::TITLE))
+  if (row->is_value_set_explicitly(HistoryAndBookmarkRow::TITLE))
     url_row.set_title(row->title());
 
-  if (row->is_value_set_explicitly(BookmarkRow::LAST_VISIT_TIME))
+  if (row->is_value_set_explicitly(HistoryAndBookmarkRow::LAST_VISIT_TIME))
     url_row.set_last_visit(row->last_visit_time());
 
-  if (row->is_value_set_explicitly(BookmarkRow::VISIT_COUNT))
+  if (row->is_value_set_explicitly(HistoryAndBookmarkRow::VISIT_COUNT))
     url_row.set_visit_count(row->visit_count());
 
   // Adjust the last_visit_time if it not set.
-  if (!row->is_value_set_explicitly(BookmarkRow::LAST_VISIT_TIME)) {
-    if (row->is_value_set_explicitly(BookmarkRow::CREATED))
+  if (!row->is_value_set_explicitly(HistoryAndBookmarkRow::LAST_VISIT_TIME)) {
+    if (row->is_value_set_explicitly(HistoryAndBookmarkRow::CREATED))
       url_row.set_last_visit(row->created());
-    else if (row->is_value_set_explicitly(BookmarkRow::VISIT_COUNT) &&
+    else if (row->is_value_set_explicitly(HistoryAndBookmarkRow::VISIT_COUNT) &&
              row->visit_count() > 0)
       url_row.set_last_visit(Time::Now());
   }
 
   // Adjust the visit_count if it not set.
-  if (!row->is_value_set_explicitly(BookmarkRow::VISIT_COUNT)) {
+  if (!row->is_value_set_explicitly(HistoryAndBookmarkRow::VISIT_COUNT)) {
     int visit_count = 0;
-    if (row->is_value_set_explicitly(BookmarkRow::CREATED) &&
-        row->is_value_set_explicitly(BookmarkRow::LAST_VISIT_TIME) &&
+    if (row->is_value_set_explicitly(HistoryAndBookmarkRow::CREATED) &&
+        row->is_value_set_explicitly(HistoryAndBookmarkRow::LAST_VISIT_TIME) &&
         row->last_visit_time() == row->created()) {
       visit_count = 1;
     } else {
-      if (row->is_value_set_explicitly(BookmarkRow::CREATED))
+      if (row->is_value_set_explicitly(HistoryAndBookmarkRow::CREATED))
         visit_count++;
-      if (row->is_value_set_explicitly(BookmarkRow::LAST_VISIT_TIME))
+      if (row->is_value_set_explicitly(HistoryAndBookmarkRow::LAST_VISIT_TIME))
         visit_count++;
     }
     url_row.set_visit_count(visit_count);
@@ -91,11 +91,11 @@ bool UrlsSQLHandler::Insert(BookmarkRow* row) {
 //    otherwise update failed.
 // e. The title is free to update.
 //
-bool UrlsSQLHandler::Update(const BookmarkRow& row,
+bool UrlsSQLHandler::Update(const HistoryAndBookmarkRow& row,
                             const TableIDRows& ids_set) {
   // Directly updating the URL is not allowed, we should insert the new URL
   // and remove the older one.
-  DCHECK(!row.is_value_set_explicitly(BookmarkRow::URL));
+  DCHECK(!row.is_value_set_explicitly(HistoryAndBookmarkRow::URL));
 
   for (TableIDRows::const_iterator ids = ids_set.begin();
        ids != ids_set.end(); ++ids) {
@@ -105,13 +105,13 @@ bool UrlsSQLHandler::Update(const BookmarkRow& row,
 
     URLRow update_row = url_row;
 
-    if (row.is_value_set_explicitly(BookmarkRow::TITLE))
+    if (row.is_value_set_explicitly(HistoryAndBookmarkRow::TITLE))
       update_row.set_title(row.title());
 
-    if (row.is_value_set_explicitly(BookmarkRow::VISIT_COUNT))
+    if (row.is_value_set_explicitly(HistoryAndBookmarkRow::VISIT_COUNT))
       update_row.set_visit_count(row.visit_count());
 
-    if (row.is_value_set_explicitly(BookmarkRow::LAST_VISIT_TIME)) {
+    if (row.is_value_set_explicitly(HistoryAndBookmarkRow::LAST_VISIT_TIME)) {
       // The new last_visit_time can't be less than current one.
       if (row.last_visit_time() < url_row.last_visit())
         return false;
@@ -119,16 +119,16 @@ bool UrlsSQLHandler::Update(const BookmarkRow& row,
     }
 
     // Adjust the visit_count if it not set.
-    if (!row.is_value_set_explicitly(BookmarkRow::VISIT_COUNT) &&
-        row.is_value_set_explicitly(BookmarkRow::LAST_VISIT_TIME) &&
+    if (!row.is_value_set_explicitly(HistoryAndBookmarkRow::VISIT_COUNT) &&
+        row.is_value_set_explicitly(HistoryAndBookmarkRow::LAST_VISIT_TIME) &&
         (row.last_visit_time() != url_row.last_visit()))
           // If last visit time is changed, visit count needs increase by 1,
           // as a row will be added in visit database
       update_row.set_visit_count(url_row.visit_count() + 1);
 
     // Adjust the last_vsit_time if it not set.
-    if (!row.is_value_set_explicitly(BookmarkRow::LAST_VISIT_TIME)) {
-      if (row.is_value_set_explicitly(BookmarkRow::VISIT_COUNT) &&
+    if (!row.is_value_set_explicitly(HistoryAndBookmarkRow::LAST_VISIT_TIME)) {
+      if (row.is_value_set_explicitly(HistoryAndBookmarkRow::VISIT_COUNT) &&
           row.visit_count() == 0) {
         // User want to clear history
         update_row.set_last_visit(Time());

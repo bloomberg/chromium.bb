@@ -13,7 +13,7 @@ TableIDRow::TableIDRow()
 TableIDRow::~TableIDRow() {
 }
 
-SQLHandler::SQLHandler(const BookmarkRow::BookmarkColumnID columns[],
+SQLHandler::SQLHandler(const HistoryAndBookmarkRow::ColumnID columns[],
                        int column_count)
     : columns_(columns, columns + column_count) {
 }
@@ -21,8 +21,8 @@ SQLHandler::SQLHandler(const BookmarkRow::BookmarkColumnID columns[],
 SQLHandler::~SQLHandler() {
 }
 
-bool SQLHandler::HasColumnIn(const BookmarkRow& row) {
-  for (std::set<BookmarkRow::BookmarkColumnID>::const_iterator i =
+bool SQLHandler::HasColumnIn(const HistoryAndBookmarkRow& row) {
+  for (std::set<HistoryAndBookmarkRow::ColumnID>::const_iterator i =
            columns_.begin(); i != columns_.end(); ++i) {
     if (row.is_value_set_explicitly(*i))
       return true;
@@ -30,7 +30,7 @@ bool SQLHandler::HasColumnIn(const BookmarkRow& row) {
   return false;
 }
 
-bool SQLHandler::HasColumn(BookmarkRow::BookmarkColumnID id) {
+bool SQLHandler::HasColumn(HistoryAndBookmarkRow::ColumnID id) {
   return columns_.find(id) != columns_.end();
 }
 

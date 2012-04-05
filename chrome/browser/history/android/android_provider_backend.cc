@@ -62,10 +62,10 @@ void BindStatement(const std::vector<string16>& selection_args,
   }
 }
 
-bool IsBookmarkRowValid(const BookmarkRow& row) {
+bool IsHistoryAndBookmarkRowValid(const HistoryAndBookmarkRow& row) {
   // The caller should make sure both/neither Raw URL and/nor URL should be set.
-  DCHECK(row.is_value_set_explicitly(BookmarkRow::RAW_URL) ==
-         row.is_value_set_explicitly(BookmarkRow::URL));
+  DCHECK(row.is_value_set_explicitly(HistoryAndBookmarkRow::RAW_URL) ==
+         row.is_value_set_explicitly(HistoryAndBookmarkRow::URL));
 
   // The following cases are checked:
   // a. Last visit time or created time is large than now.
@@ -76,20 +76,20 @@ bool IsBookmarkRowValid(const BookmarkRow& row) {
   //    visit_count.
   // e. Visit count is 0, but any one of last visit time and created time is
   //    set and not equal to 0.
-  if (row.is_value_set_explicitly(BookmarkRow::LAST_VISIT_TIME) &&
+  if (row.is_value_set_explicitly(HistoryAndBookmarkRow::LAST_VISIT_TIME) &&
       row.last_visit_time() > Time::Now())
     return false;
 
-  if (row.is_value_set_explicitly(BookmarkRow::CREATED) &&
+  if (row.is_value_set_explicitly(HistoryAndBookmarkRow::CREATED) &&
       row.created() > Time::Now())
     return false;
 
-  if (row.is_value_set_explicitly(BookmarkRow::LAST_VISIT_TIME) &&
-      row.is_value_set_explicitly(BookmarkRow::CREATED)) {
+  if (row.is_value_set_explicitly(HistoryAndBookmarkRow::LAST_VISIT_TIME) &&
+      row.is_value_set_explicitly(HistoryAndBookmarkRow::CREATED)) {
     if (row.created() > row.last_visit_time())
       return false;
 
-    if (row.is_value_set_explicitly(BookmarkRow::VISIT_COUNT)) {
+    if (row.is_value_set_explicitly(HistoryAndBookmarkRow::VISIT_COUNT)) {
       if ((row.created() != row.last_visit_time() &&
            row.visit_count() < 2) ||
           (row.last_visit_time().ToInternalValue() -
@@ -98,11 +98,11 @@ bool IsBookmarkRowValid(const BookmarkRow& row) {
     }
   }
 
-  if (row.is_value_set_explicitly(BookmarkRow::VISIT_COUNT) &&
+  if (row.is_value_set_explicitly(HistoryAndBookmarkRow::VISIT_COUNT) &&
       row.visit_count() == 0 &&
-      ((row.is_value_set_explicitly(BookmarkRow::CREATED) &&
+      ((row.is_value_set_explicitly(HistoryAndBookmarkRow::CREATED) &&
         row.created() != Time()) ||
-       (row.is_value_set_explicitly(BookmarkRow::LAST_VISIT_TIME) &&
+       (row.is_value_set_explicitly(HistoryAndBookmarkRow::LAST_VISIT_TIME) &&
         row.last_visit_time() != Time())))
     return false;
 
@@ -131,7 +131,7 @@ AndroidProviderBackend::~AndroidProviderBackend() {
 }
 
 AndroidStatement* AndroidProviderBackend::QueryHistoryAndBookmarks(
-    const std::vector<BookmarkRow::BookmarkColumnID>& projections,
+    const std::vector<HistoryAndBookmarkRow::ColumnID>& projections,
     const std::string& selection,
     const std::vector<string16>& selection_args,
     const std::string& sort_order) {
@@ -150,7 +150,7 @@ AndroidStatement* AndroidProviderBackend::QueryHistoryAndBookmarks(
 }
 
 bool AndroidProviderBackend::UpdateHistoryAndBookmarks(
-    const BookmarkRow& row,
+    const HistoryAndBookmarkRow& row,
     const std::string& selection,
     const std::vector<string16>& selection_args,
     int* updated_count) {
@@ -168,7 +168,7 @@ bool AndroidProviderBackend::UpdateHistoryAndBookmarks(
 }
 
 AndroidURLID AndroidProviderBackend::InsertHistoryAndBookmark(
-    const BookmarkRow& values) {
+    const HistoryAndBookmarkRow& values) {
   HistoryNotifications notifications;
 
   ScopedTransaction transaction(history_db_, thumbnail_db_);
@@ -235,15 +235,15 @@ void AndroidProviderBackend::ScopedTransaction::Commit() {
 }
 
 bool AndroidProviderBackend::UpdateHistoryAndBookmarks(
-    const BookmarkRow& row,
+    const HistoryAndBookmarkRow& row,
     const std::string& selection,
     const std::vector<string16>& selection_args,
     int* updated_count,
     HistoryNotifications* notifications) {
-  if (!IsBookmarkRowValid(row))
+  if (!IsHistoryAndBookmarkRowValid(row))
     return false;
 
-  if (row.is_value_set_explicitly(BookmarkRow::ID))
+  if (row.is_value_set_explicitly(HistoryAndBookmarkRow::ID))
     return false;
 
   if (!EnsureInitializedAndUpdated())
@@ -260,13 +260,13 @@ bool AndroidProviderBackend::UpdateHistoryAndBookmarks(
   }
 
   // URL can not be updated, we simulate the update.
-  if (row.is_value_set_explicitly(BookmarkRow::URL)) {
+  if (row.is_value_set_explicitly(HistoryAndBookmarkRow::URL)) {
     // Only one row's URL can be updated at a time as we can't have multiple
     // rows have the same URL.
     if (ids_set.size() != 1)
       return false;
 
-    BookmarkRow new_row = row;
+    HistoryAndBookmarkRow new_row = row;
     if (!SimulateUpdateURL(new_row, ids_set, notifications))
       return false;
     *updated_count = 1;
@@ -287,15 +287,15 @@ bool AndroidProviderBackend::UpdateHistoryAndBookmarks(
 
   for (TableIDRows::const_iterator i = ids_set.begin(); i != ids_set.end();
        ++i) {
-    if (row.is_value_set_explicitly(BookmarkRow::TITLE) ||
-        row.is_value_set_explicitly(BookmarkRow::VISIT_COUNT) ||
-        row.is_value_set_explicitly(BookmarkRow::LAST_VISIT_TIME)) {
+    if (row.is_value_set_explicitly(HistoryAndBookmarkRow::TITLE) ||
+        row.is_value_set_explicitly(HistoryAndBookmarkRow::VISIT_COUNT) ||
+        row.is_value_set_explicitly(HistoryAndBookmarkRow::LAST_VISIT_TIME)) {
       URLRow url_row;
       if (!history_db_->GetURLRow(i->url_id, &url_row))
         return false;
       modified->changed_urls.push_back(url_row);
     }
-    if (row.is_value_set_explicitly(BookmarkRow::FAVICON))
+    if (row.is_value_set_explicitly(HistoryAndBookmarkRow::FAVICON))
       favicon->urls.insert(i->url);
   }
 
@@ -311,17 +311,17 @@ bool AndroidProviderBackend::UpdateHistoryAndBookmarks(
 }
 
 AndroidURLID AndroidProviderBackend::InsertHistoryAndBookmark(
-    const BookmarkRow& values,
+    const HistoryAndBookmarkRow& values,
     HistoryNotifications* notifications) {
-  if (!IsBookmarkRowValid(values))
+  if (!IsHistoryAndBookmarkRowValid(values))
     return false;
 
   if (!EnsureInitializedAndUpdated())
     return 0;
 
-  DCHECK(values.is_value_set_explicitly(BookmarkRow::URL));
+  DCHECK(values.is_value_set_explicitly(HistoryAndBookmarkRow::URL));
   // Make a copy of values as we need change it during insert.
-  BookmarkRow row = values;
+  HistoryAndBookmarkRow row = values;
   for (std::vector<SQLHandler*>::iterator i =
        sql_handlers_.begin(); i != sql_handlers_.end(); ++i) {
     if (!(*i)->Insert(&row))
@@ -338,7 +338,7 @@ AndroidURLID AndroidProviderBackend::InsertHistoryAndBookmark(
   modified->changed_urls.push_back(url_row);
 
   scoped_ptr<FaviconChangeDetails> favicon;
-  if (row.is_value_set_explicitly(BookmarkRow::FAVICON) &&
+  if (row.is_value_set_explicitly(HistoryAndBookmarkRow::FAVICON) &&
       !row.favicon().empty()) {
     favicon.reset(new FaviconChangeDetails);
     if (!favicon.get())
@@ -403,7 +403,7 @@ bool AndroidProviderBackend::DeleteHistoryAndBookmarks(
 }
 
 AndroidStatement* AndroidProviderBackend::QuerySearchTerms(
-    const std::vector<SearchRow::SearchColumnID>& projections,
+    const std::vector<SearchRow::ColumnID>& projections,
     const std::string& selection,
     const std::vector<string16>& selection_args,
     const std::string& sort_order) {
@@ -510,7 +510,7 @@ bool AndroidProviderBackend::UpdateSearchTerms(
     if (!history_db_->GetURLRow(search_term_rows[0].url_id, &url_row))
       return false;
 
-    BookmarkRow bookmark_row;
+    HistoryAndBookmarkRow bookmark_row;
     bookmark_row.set_last_visit_time(row.search_time());
     TableIDRow table_id_row;
     table_id_row.url_id = url_row.id();
@@ -726,23 +726,23 @@ bool AndroidProviderBackend::UpdateSearchTermTable() {
 }
 
 int AndroidProviderBackend::AppendBookmarkResultColumn(
-    const std::vector<BookmarkRow::BookmarkColumnID>& projections,
+    const std::vector<HistoryAndBookmarkRow::ColumnID>& projections,
     std::string* result_column) {
   int replaced_index = -1;
   // Attach the projections
   bool first = true;
   int index = 0;
-  for (std::vector<BookmarkRow::BookmarkColumnID>::const_iterator i =
+  for (std::vector<HistoryAndBookmarkRow::ColumnID>::const_iterator i =
            projections.begin(); i != projections.end(); ++i) {
     if (first)
       first = false;
     else
       result_column->append(", ");
 
-    if (*i == BookmarkRow::FAVICON)
+    if (*i == HistoryAndBookmarkRow::FAVICON)
       replaced_index = index;
 
-    result_column->append(BookmarkRow::GetAndroidName(*i));
+    result_column->append(HistoryAndBookmarkRow::GetAndroidName(*i));
     index++;
   }
   return replaced_index;
@@ -802,11 +802,11 @@ bool AndroidProviderBackend::GetSelectedSearchTerms(
 }
 
 void AndroidProviderBackend::AppendSearchResultColumn(
-    const std::vector<SearchRow::SearchColumnID>& projections,
+    const std::vector<SearchRow::ColumnID>& projections,
     std::string* result_column) {
   bool first = true;
   int index = 0;
-  for (std::vector<SearchRow::SearchColumnID>::const_iterator i =
+  for (std::vector<SearchRow::ColumnID>::const_iterator i =
            projections.begin(); i != projections.end(); ++i) {
     if (first)
       first = false;
@@ -819,7 +819,7 @@ void AndroidProviderBackend::AppendSearchResultColumn(
 }
 
 bool AndroidProviderBackend::SimulateUpdateURL(
-    const BookmarkRow& row,
+    const HistoryAndBookmarkRow& row,
     const TableIDRows& ids,
     HistoryNotifications* notifications) {
   DCHECK(ids.size() == 1);
@@ -828,13 +828,13 @@ bool AndroidProviderBackend::SimulateUpdateURL(
   // need to keep same.
 
   // Find all columns value of the current URL.
-  std::vector<BookmarkRow::BookmarkColumnID> projections;
-  projections.push_back(BookmarkRow::LAST_VISIT_TIME);
-  projections.push_back(BookmarkRow::CREATED);
-  projections.push_back(BookmarkRow::VISIT_COUNT);
-  projections.push_back(BookmarkRow::TITLE);
-  projections.push_back(BookmarkRow::FAVICON);
-  projections.push_back(BookmarkRow::BOOKMARK);
+  std::vector<HistoryAndBookmarkRow::ColumnID> projections;
+  projections.push_back(HistoryAndBookmarkRow::LAST_VISIT_TIME);
+  projections.push_back(HistoryAndBookmarkRow::CREATED);
+  projections.push_back(HistoryAndBookmarkRow::VISIT_COUNT);
+  projections.push_back(HistoryAndBookmarkRow::TITLE);
+  projections.push_back(HistoryAndBookmarkRow::FAVICON);
+  projections.push_back(HistoryAndBookmarkRow::BOOKMARK);
 
   std::ostringstream oss;
   oss << "url_id = " << ids[0].url_id;
@@ -845,7 +845,7 @@ bool AndroidProviderBackend::SimulateUpdateURL(
   if (!statement.get() || !statement->statement()->Step())
     return false;
 
-  BookmarkRow new_row;
+  HistoryAndBookmarkRow new_row;
   new_row.set_last_visit_time(FromDatabaseTime(
       statement->statement()->ColumnInt64(0)));
   new_row.set_created(FromDatabaseTime(
@@ -891,19 +891,19 @@ bool AndroidProviderBackend::SimulateUpdateURL(
 
   new_row.set_url(row.url());
   new_row.set_raw_url(row.raw_url());
-  if (row.is_value_set_explicitly(BookmarkRow::LAST_VISIT_TIME))
+  if (row.is_value_set_explicitly(HistoryAndBookmarkRow::LAST_VISIT_TIME))
     new_row.set_last_visit_time(row.last_visit_time());
-  if (row.is_value_set_explicitly(BookmarkRow::CREATED))
+  if (row.is_value_set_explicitly(HistoryAndBookmarkRow::CREATED))
     new_row.set_created(row.created());
-  if (row.is_value_set_explicitly(BookmarkRow::VISIT_COUNT))
+  if (row.is_value_set_explicitly(HistoryAndBookmarkRow::VISIT_COUNT))
     new_row.set_visit_count(row.visit_count());
-  if (row.is_value_set_explicitly(BookmarkRow::TITLE))
+  if (row.is_value_set_explicitly(HistoryAndBookmarkRow::TITLE))
     new_row.set_title(row.title());
-  if (row.is_value_set_explicitly(BookmarkRow::FAVICON)) {
+  if (row.is_value_set_explicitly(HistoryAndBookmarkRow::FAVICON)) {
     new_row.set_favicon(row.favicon());
     favicon_details->urls.insert(new_row.url());
   }
-  if (row.is_value_set_explicitly(BookmarkRow::BOOKMARK))
+  if (row.is_value_set_explicitly(HistoryAndBookmarkRow::BOOKMARK))
     new_row.set_is_bookmark(row.is_bookmark());
 
   if (!urls_handler_->Insert(&new_row))
@@ -943,7 +943,7 @@ bool AndroidProviderBackend::SimulateUpdateURL(
 }
 
 AndroidStatement* AndroidProviderBackend::QueryHistoryAndBookmarksInternal(
-    const std::vector<BookmarkRow::BookmarkColumnID>& projections,
+    const std::vector<HistoryAndBookmarkRow::ColumnID>& projections,
     const std::string& selection,
     const std::vector<string16>& selection_args,
     const std::string& sort_order) {
@@ -990,7 +990,7 @@ bool AndroidProviderBackend::AddSearchTerm(const SearchRow& values) {
   DCHECK(values.is_value_set_explicitly(SearchRow::URL));
 
   URLRow url_row;
-  BookmarkRow bookmark_row;
+  HistoryAndBookmarkRow bookmark_row;
   // Android CTS test BrowserTest.testAccessSearches allows insert the same
   // seach term multiple times, and just search time need updated.
   if (history_db_->GetRowForURL(values.url(), &url_row)) {

@@ -56,7 +56,7 @@ class VisitSQLHandlerTest : public testing::Test {
 // Insert a url with only url set to verify no visit was inserted in visit
 // table.
 TEST_F(VisitSQLHandlerTest, InsertURL) {
-  BookmarkRow row;
+  HistoryAndBookmarkRow row;
   row.set_raw_url("http://google.com");
   row.set_url(GURL("http://google.com"));
 
@@ -74,7 +74,7 @@ TEST_F(VisitSQLHandlerTest, InsertURL) {
 
 // Insert a url with last visit time set to verify a visit was inserted.
 TEST_F(VisitSQLHandlerTest, InsertURLWithLastVisitTime) {
-  BookmarkRow row;
+  HistoryAndBookmarkRow row;
   row.set_raw_url("http://google.com");
   row.set_url(GURL("http://google.com"));
   row.set_last_visit_time(Time::Now());
@@ -93,7 +93,7 @@ TEST_F(VisitSQLHandlerTest, InsertURLWithLastVisitTime) {
 
 // Insert a urls with created time to verify the a visit was inserted.
 TEST_F(VisitSQLHandlerTest, InsertURLWithCreatedTime) {
-  BookmarkRow row;
+  HistoryAndBookmarkRow row;
   row.set_raw_url("http://google.com");
   row.set_url(GURL("http://google.com"));
   row.set_title(UTF8ToUTF16("Google"));
@@ -113,7 +113,7 @@ TEST_F(VisitSQLHandlerTest, InsertURLWithCreatedTime) {
 
 // Insert a URL with visit count as 1 to verify a visit was inserted.
 TEST_F(VisitSQLHandlerTest, InsertURLWithVisitCount) {
-  BookmarkRow row;
+  HistoryAndBookmarkRow row;
   row.set_raw_url("http://google.com");
   row.set_url(GURL("http://google.com"));
   row.set_visit_count(1);
@@ -133,7 +133,7 @@ TEST_F(VisitSQLHandlerTest, InsertURLWithVisitCount) {
 // Insert a URL with all values set to verify the visit rows
 // were inserted correctly.
 TEST_F(VisitSQLHandlerTest, Insert) {
-  BookmarkRow row;
+  HistoryAndBookmarkRow row;
   row.set_raw_url("http://google.com");
   row.set_url(GURL("http://google.com"));
   row.set_visit_count(10);
@@ -158,7 +158,7 @@ TEST_F(VisitSQLHandlerTest, Insert) {
 
 // Test the case that both visit time and visit count updated.
 TEST_F(VisitSQLHandlerTest, UpdateVisitTimeAndVisitCount) {
-  BookmarkRow row;
+  HistoryAndBookmarkRow row;
   row.set_raw_url("http://google.com");
   row.set_url(GURL("http://google.com"));
   row.set_title(UTF8ToUTF16("Google"));
@@ -171,7 +171,7 @@ TEST_F(VisitSQLHandlerTest, UpdateVisitTimeAndVisitCount) {
   URLRow url_row;
   ASSERT_TRUE(history_db_.GetURLRow(row.url_id(), &url_row));
 
-  BookmarkRow update_row;
+  HistoryAndBookmarkRow update_row;
   update_row.set_last_visit_time(Time::Now());
   update_row.set_visit_count(1);
 
@@ -191,7 +191,7 @@ TEST_F(VisitSQLHandlerTest, UpdateVisitTimeAndVisitCount) {
 // Update visit count to zero to verify the visit rows of this url
 // were removed.
 TEST_F(VisitSQLHandlerTest, UpdateVisitCountZero) {
-  BookmarkRow row;
+  HistoryAndBookmarkRow row;
   row.set_raw_url("http://google.com");
   row.set_url(GURL("http://google.com"));
   row.set_visit_count(10);
@@ -203,7 +203,7 @@ TEST_F(VisitSQLHandlerTest, UpdateVisitCountZero) {
   URLRow url_row;
   ASSERT_TRUE(history_db_.GetURLRow(row.url_id(), &url_row));
 
-  BookmarkRow update_row;
+  HistoryAndBookmarkRow update_row;
   update_row.set_visit_count(0);
   TableIDRow id;
   id.url_id = url_row.id();
@@ -224,7 +224,7 @@ TEST_F(VisitSQLHandlerTest, UpdateVisitCountZero) {
 // Update both last visit time and created time to verify
 // that visits row are updated correctly.
 TEST_F(VisitSQLHandlerTest, UpdateBothTime) {
-  BookmarkRow row;
+  HistoryAndBookmarkRow row;
   row.set_raw_url("http://google.com");
   row.set_url(GURL("http://google.com"));
   row.set_visit_count(10);
@@ -235,7 +235,7 @@ TEST_F(VisitSQLHandlerTest, UpdateBothTime) {
   URLRow url_row;
   ASSERT_TRUE(history_db_.GetURLRow(row.url_id(), &url_row));
 
-  BookmarkRow update_row;
+  HistoryAndBookmarkRow update_row;
   update_row.set_last_visit_time(Time::Now() - TimeDelta::FromDays(9));
   update_row.set_created(Time::Now() - TimeDelta::FromDays(10));
   TableIDRow id;
@@ -256,7 +256,7 @@ TEST_F(VisitSQLHandlerTest, UpdateBothTime) {
 
 // Update the visit count to verify the new visits are inserted.
 TEST_F(VisitSQLHandlerTest, UpdateVisitCountIncreased) {
-  BookmarkRow row;
+  HistoryAndBookmarkRow row;
   row.set_raw_url("http://google.com");
   row.set_url(GURL("http://google.com"));
   row.set_visit_count(10);
@@ -269,7 +269,7 @@ TEST_F(VisitSQLHandlerTest, UpdateVisitCountIncreased) {
   EXPECT_EQ(10, url_row.visit_count());
   EXPECT_EQ(row.last_visit_time(), url_row.last_visit());
 
-  BookmarkRow update_row;
+  HistoryAndBookmarkRow update_row;
   update_row.set_visit_count(11);
   TableIDRow id;
   id.url_id = url_row.id();
@@ -283,7 +283,7 @@ TEST_F(VisitSQLHandlerTest, UpdateVisitCountIncreased) {
 }
 
 TEST_F(VisitSQLHandlerTest, Delete) {
-  BookmarkRow row;
+  HistoryAndBookmarkRow row;
   row.set_raw_url("http://google.com");
   row.set_url(GURL("http://google.com"));
   row.set_visit_count(10);

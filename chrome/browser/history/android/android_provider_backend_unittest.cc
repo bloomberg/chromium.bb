@@ -352,16 +352,16 @@ TEST_F(AndroidProviderBackendTest, QueryHistoryAndBookmarks) {
       new AndroidProviderBackend(android_cache_db_name_, &history_db_,
                                  &thumbnail_db_, &bookmark_model_, &delegate_));
 
-  std::vector<BookmarkRow::BookmarkColumnID> projections;
+  std::vector<HistoryAndBookmarkRow::ColumnID> projections;
 
-  projections.push_back(BookmarkRow::ID);
-  projections.push_back(BookmarkRow::URL);
-  projections.push_back(BookmarkRow::TITLE);
-  projections.push_back(BookmarkRow::CREATED);
-  projections.push_back(BookmarkRow::LAST_VISIT_TIME);
-  projections.push_back(BookmarkRow::VISIT_COUNT);
-  projections.push_back(BookmarkRow::FAVICON);
-  projections.push_back(BookmarkRow::BOOKMARK);
+  projections.push_back(HistoryAndBookmarkRow::ID);
+  projections.push_back(HistoryAndBookmarkRow::URL);
+  projections.push_back(HistoryAndBookmarkRow::TITLE);
+  projections.push_back(HistoryAndBookmarkRow::CREATED);
+  projections.push_back(HistoryAndBookmarkRow::LAST_VISIT_TIME);
+  projections.push_back(HistoryAndBookmarkRow::VISIT_COUNT);
+  projections.push_back(HistoryAndBookmarkRow::FAVICON);
+  projections.push_back(HistoryAndBookmarkRow::BOOKMARK);
 
   scoped_ptr<AndroidStatement> statement(backend->QueryHistoryAndBookmarks(
       projections, std::string(), std::vector<string16>(),
@@ -398,7 +398,7 @@ TEST_F(AndroidProviderBackendTest, QueryHistoryAndBookmarks) {
 }
 
 TEST_F(AndroidProviderBackendTest, InsertHistoryAndBookmark) {
-  BookmarkRow row1;
+  HistoryAndBookmarkRow row1;
   row1.set_raw_url("cnn.com");
   row1.set_url(GURL("http://cnn.com"));
   row1.set_last_visit_time(Time::Now() - TimeDelta::FromDays(1));
@@ -407,7 +407,7 @@ TEST_F(AndroidProviderBackendTest, InsertHistoryAndBookmark) {
   row1.set_is_bookmark(true);
   row1.set_title(UTF8ToUTF16("cnn"));
 
-  BookmarkRow row2;
+  HistoryAndBookmarkRow row2;
   row2.set_raw_url("http://www.example.com");
   row2.set_url(GURL("http://www.example.com"));
   row2.set_last_visit_time(Time::Now() - TimeDelta::FromDays(10));
@@ -455,15 +455,15 @@ TEST_F(AndroidProviderBackendTest, InsertHistoryAndBookmark) {
   // Set url1 as bookmark.
   AddBookmark(row1.url());
 
-  std::vector<BookmarkRow::BookmarkColumnID> projections;
-  projections.push_back(BookmarkRow::ID);
-  projections.push_back(BookmarkRow::URL);
-  projections.push_back(BookmarkRow::TITLE);
-  projections.push_back(BookmarkRow::CREATED);
-  projections.push_back(BookmarkRow::LAST_VISIT_TIME);
-  projections.push_back(BookmarkRow::VISIT_COUNT);
-  projections.push_back(BookmarkRow::FAVICON);
-  projections.push_back(BookmarkRow::BOOKMARK);
+  std::vector<HistoryAndBookmarkRow::ColumnID> projections;
+  projections.push_back(HistoryAndBookmarkRow::ID);
+  projections.push_back(HistoryAndBookmarkRow::URL);
+  projections.push_back(HistoryAndBookmarkRow::TITLE);
+  projections.push_back(HistoryAndBookmarkRow::CREATED);
+  projections.push_back(HistoryAndBookmarkRow::LAST_VISIT_TIME);
+  projections.push_back(HistoryAndBookmarkRow::VISIT_COUNT);
+  projections.push_back(HistoryAndBookmarkRow::FAVICON);
+  projections.push_back(HistoryAndBookmarkRow::BOOKMARK);
 
   scoped_ptr<AndroidStatement> statement(backend->QueryHistoryAndBookmarks(
       projections, std::string(), std::vector<string16>(),
@@ -504,7 +504,7 @@ TEST_F(AndroidProviderBackendTest, InsertHistoryAndBookmark) {
 }
 
 TEST_F(AndroidProviderBackendTest, DeleteHistoryAndBookmarks) {
-  BookmarkRow row1;
+  HistoryAndBookmarkRow row1;
   row1.set_raw_url("cnn.com");
   row1.set_url(GURL("http://cnn.com"));
   row1.set_last_visit_time(Time::Now() - TimeDelta::FromDays(1));
@@ -513,7 +513,7 @@ TEST_F(AndroidProviderBackendTest, DeleteHistoryAndBookmarks) {
   row1.set_is_bookmark(true);
   row1.set_title(UTF8ToUTF16("cnn"));
 
-  BookmarkRow row2;
+  HistoryAndBookmarkRow row2;
   row2.set_raw_url("http://www.example.com");
   row2.set_url(GURL("http://www.example.com"));
   row2.set_last_visit_time(Time::Now() - TimeDelta::FromDays(10));
@@ -557,15 +557,15 @@ TEST_F(AndroidProviderBackendTest, DeleteHistoryAndBookmarks) {
             delegate_.deleted_details()->rows[0].title());
   EXPECT_FALSE(delegate_.favicon_details());
 
-  std::vector<BookmarkRow::BookmarkColumnID> projections;
-  projections.push_back(BookmarkRow::ID);
-  projections.push_back(BookmarkRow::URL);
-  projections.push_back(BookmarkRow::TITLE);
-  projections.push_back(BookmarkRow::CREATED);
-  projections.push_back(BookmarkRow::LAST_VISIT_TIME);
-  projections.push_back(BookmarkRow::VISIT_COUNT);
-  projections.push_back(BookmarkRow::FAVICON);
-  projections.push_back(BookmarkRow::BOOKMARK);
+  std::vector<HistoryAndBookmarkRow::ColumnID> projections;
+  projections.push_back(HistoryAndBookmarkRow::ID);
+  projections.push_back(HistoryAndBookmarkRow::URL);
+  projections.push_back(HistoryAndBookmarkRow::TITLE);
+  projections.push_back(HistoryAndBookmarkRow::CREATED);
+  projections.push_back(HistoryAndBookmarkRow::LAST_VISIT_TIME);
+  projections.push_back(HistoryAndBookmarkRow::VISIT_COUNT);
+  projections.push_back(HistoryAndBookmarkRow::FAVICON);
+  projections.push_back(HistoryAndBookmarkRow::BOOKMARK);
 
   scoped_ptr<AndroidStatement> statement(backend->QueryHistoryAndBookmarks(
       projections, std::string(), std::vector<string16>(),
@@ -617,7 +617,7 @@ TEST_F(AndroidProviderBackendTest, DeleteHistoryAndBookmarks) {
   ASSERT_FALSE(statement1->statement()->Step());
 }
 
-TEST_F(AndroidProviderBackendTest, IsValidBookmarkRow) {
+TEST_F(AndroidProviderBackendTest, IsValidHistoryAndBookmarkRow) {
   ASSERT_EQ(sql::INIT_OK, history_db_.Init(history_db_name_, bookmark_temp_));
   ASSERT_EQ(sql::INIT_OK, thumbnail_db_.Init(thumbnail_db_name_, NULL,
                                              &history_db_));
@@ -627,7 +627,7 @@ TEST_F(AndroidProviderBackendTest, IsValidBookmarkRow) {
 
   // The created time and last visit time are too close to have required visit
   // count.
-  BookmarkRow row1;
+  HistoryAndBookmarkRow row1;
   row1.set_raw_url("cnn.com");
   row1.set_url(GURL("http://cnn.com"));
   row1.set_last_visit_time(Time::Now() - TimeDelta::FromDays(1));
@@ -640,7 +640,7 @@ TEST_F(AndroidProviderBackendTest, IsValidBookmarkRow) {
 
   // Have different created time and last visit time, but only have 1 visit
   // count.
-  BookmarkRow row2;
+  HistoryAndBookmarkRow row2;
   row2.set_raw_url("http://www.example.com");
   row2.set_url(GURL("http://www.example.com"));
   row2.set_last_visit_time(Time::Now() - TimeDelta::FromDays(10));
@@ -649,21 +649,21 @@ TEST_F(AndroidProviderBackendTest, IsValidBookmarkRow) {
   EXPECT_FALSE(backend->InsertHistoryAndBookmark(row2));
 
   // Have created time in the future.
-  BookmarkRow row3;
+  HistoryAndBookmarkRow row3;
   row3.set_raw_url("http://www.example.com");
   row3.set_url(GURL("http://www.example.com"));
   row3.set_created(Time::Now() + TimeDelta::FromDays(11));
   EXPECT_FALSE(backend->InsertHistoryAndBookmark(row3));
 
   // Have last vist time in the future.
-  BookmarkRow row4;
+  HistoryAndBookmarkRow row4;
   row4.set_raw_url("http://www.example.com");
   row4.set_url(GURL("http://www.example.com"));
   row4.set_last_visit_time(Time::Now() + TimeDelta::FromDays(11));
   EXPECT_FALSE(backend->InsertHistoryAndBookmark(row4));
 
   // Created time is larger than last visit time.
-  BookmarkRow row5;
+  HistoryAndBookmarkRow row5;
   row5.set_raw_url("http://www.example.com");
   row5.set_url(GURL("http://www.example.com"));
   row5.set_last_visit_time(Time::Now());
@@ -671,7 +671,7 @@ TEST_F(AndroidProviderBackendTest, IsValidBookmarkRow) {
   EXPECT_FALSE(backend->InsertHistoryAndBookmark(row5));
 
   // Visit count is zero, and last visit time is not zero.
-  BookmarkRow row6;
+  HistoryAndBookmarkRow row6;
   row6.set_raw_url("http://www.example.com");
   row6.set_url(GURL("http://www.example.com"));
   row6.set_visit_count(0);
@@ -679,7 +679,7 @@ TEST_F(AndroidProviderBackendTest, IsValidBookmarkRow) {
   EXPECT_FALSE(backend->InsertHistoryAndBookmark(row6));
 
   // Visit count is zero, and create time is not zero.
-  BookmarkRow row7;
+  HistoryAndBookmarkRow row7;
   row7.set_raw_url("http://www.example.com");
   row7.set_url(GURL("http://www.example.com"));
   row7.set_visit_count(0);
@@ -688,7 +688,7 @@ TEST_F(AndroidProviderBackendTest, IsValidBookmarkRow) {
 }
 
 TEST_F(AndroidProviderBackendTest, UpdateURL) {
-  BookmarkRow row1;
+  HistoryAndBookmarkRow row1;
   row1.set_raw_url("cnn.com");
   row1.set_url(GURL("http://cnn.com"));
   row1.set_last_visit_time(Time::Now() - TimeDelta::FromDays(1));
@@ -697,7 +697,7 @@ TEST_F(AndroidProviderBackendTest, UpdateURL) {
   row1.set_is_bookmark(true);
   row1.set_title(UTF8ToUTF16("cnn"));
 
-  BookmarkRow row2;
+  HistoryAndBookmarkRow row2;
   row2.set_raw_url("http://www.example.com");
   row2.set_url(GURL("http://www.example.com"));
   row2.set_last_visit_time(Time::Now() - TimeDelta::FromDays(10));
@@ -739,7 +739,7 @@ TEST_F(AndroidProviderBackendTest, UpdateURL) {
   int update_count;
   std::vector<string16> update_args;
   // Try to update the mutiple rows with the same URL, this should failed.
-  BookmarkRow update_row1;
+  HistoryAndBookmarkRow update_row1;
   update_row1.set_raw_url("newwebiste.com");
   update_row1.set_url(GURL("http://newwebsite.com"));
   update_args.clear();
@@ -795,7 +795,7 @@ TEST_F(AndroidProviderBackendTest, UpdateURL) {
   EXPECT_EQ(id1, android_url_row1.id);
 
   // Update the URL with visit count, created time, and last visit time.
-  BookmarkRow update_row2;
+  HistoryAndBookmarkRow update_row2;
   update_row2.set_raw_url("somethingelse.com");
   update_row2.set_url(GURL("http://somethingelse.com"));
   update_row2.set_last_visit_time(Time::Now());
@@ -861,7 +861,7 @@ TEST_F(AndroidProviderBackendTest, UpdateURL) {
 }
 
 TEST_F(AndroidProviderBackendTest, UpdateVisitCount) {
-  BookmarkRow row1;
+  HistoryAndBookmarkRow row1;
   row1.set_raw_url("cnn.com");
   row1.set_url(GURL("http://cnn.com"));
   row1.set_last_visit_time(Time::Now() - TimeDelta::FromDays(1));
@@ -870,7 +870,7 @@ TEST_F(AndroidProviderBackendTest, UpdateVisitCount) {
   row1.set_is_bookmark(true);
   row1.set_title(UTF8ToUTF16("cnn"));
 
-  BookmarkRow row2;
+  HistoryAndBookmarkRow row2;
   row2.set_raw_url("http://www.example.com");
   row2.set_url(GURL("http://www.example.com"));
   row2.set_last_visit_time(Time::Now() - TimeDelta::FromDays(10));
@@ -895,7 +895,7 @@ TEST_F(AndroidProviderBackendTest, UpdateVisitCount) {
   int update_count;
   std::vector<string16> update_args;
   // Update the visit_count to a value less than current one.
-  BookmarkRow update_row1;
+  HistoryAndBookmarkRow update_row1;
   update_row1.set_visit_count(5);
   update_args.push_back(UTF8ToUTF16(row1.raw_url()));
   delegate_.ResetDetails();
@@ -925,7 +925,7 @@ TEST_F(AndroidProviderBackendTest, UpdateVisitCount) {
   EXPECT_GT(row1.last_visit_time(), visits[0].visit_time);
 
   // Update the visit_count to a value equal to current one.
-  BookmarkRow update_row2;
+  HistoryAndBookmarkRow update_row2;
   update_row2.set_visit_count(1);
   update_args.clear();
   update_args.push_back(UTF8ToUTF16(row2.raw_url()));
@@ -942,7 +942,7 @@ TEST_F(AndroidProviderBackendTest, UpdateVisitCount) {
 }
 
 TEST_F(AndroidProviderBackendTest, UpdateLastVisitTime) {
-  BookmarkRow row1;
+  HistoryAndBookmarkRow row1;
   row1.set_raw_url("cnn.com");
   row1.set_url(GURL("http://cnn.com"));
   row1.set_last_visit_time(Time::Now() - TimeDelta::FromDays(1));
@@ -951,7 +951,7 @@ TEST_F(AndroidProviderBackendTest, UpdateLastVisitTime) {
   row1.set_is_bookmark(true);
   row1.set_title(UTF8ToUTF16("cnn"));
 
-  BookmarkRow row2;
+  HistoryAndBookmarkRow row2;
   row2.set_raw_url("http://www.example.com");
   row2.set_url(GURL("http://www.example.com"));
   row2.set_last_visit_time(Time::Now() - TimeDelta::FromDays(10));
@@ -976,7 +976,7 @@ TEST_F(AndroidProviderBackendTest, UpdateLastVisitTime) {
   int update_count;
   std::vector<string16> update_args;
   // Update the last visit time to a value greater than current one.
-  BookmarkRow update_row1;
+  HistoryAndBookmarkRow update_row1;
   update_row1.set_last_visit_time(Time::Now());
   update_args.push_back(UTF8ToUTF16(row1.raw_url()));
   delegate_.ResetDetails();
@@ -1005,7 +1005,7 @@ TEST_F(AndroidProviderBackendTest, UpdateLastVisitTime) {
   EXPECT_EQ(row1.last_visit_time(), visits[9].visit_time);
 
   // Update the visit_tim to a value less than to current one.
-  BookmarkRow update_row2;
+  HistoryAndBookmarkRow update_row2;
   update_row2.set_last_visit_time(Time::Now() - TimeDelta::FromDays(1));
   update_args.clear();
   update_args.push_back(UTF8ToUTF16(row1.raw_url()));
@@ -1014,7 +1014,7 @@ TEST_F(AndroidProviderBackendTest, UpdateLastVisitTime) {
 }
 
 TEST_F(AndroidProviderBackendTest, UpdateFavicon) {
-  BookmarkRow row1;
+  HistoryAndBookmarkRow row1;
   row1.set_raw_url("cnn.com");
   row1.set_url(GURL("http://cnn.com"));
   row1.set_last_visit_time(Time::Now() - TimeDelta::FromDays(1));
@@ -1036,7 +1036,7 @@ TEST_F(AndroidProviderBackendTest, UpdateFavicon) {
   int update_count;
   std::vector<string16> update_args;
   // Update the last visit time to a value greater than current one.
-  BookmarkRow update_row1;
+  HistoryAndBookmarkRow update_row1;
 
   // Set favicon.
   std::vector<unsigned char> data;
@@ -1064,7 +1064,7 @@ TEST_F(AndroidProviderBackendTest, UpdateFavicon) {
   EXPECT_EQ(data, png_icon_data);
 
   // Remove favicon.
-  BookmarkRow update_row2;
+  HistoryAndBookmarkRow update_row2;
 
   // Set favicon.
   update_row1.set_favicon(std::vector<unsigned char>());
@@ -1093,7 +1093,7 @@ TEST_F(AndroidProviderBackendTest, UpdateSearchTermTable) {
       new AndroidProviderBackend(android_cache_db_name_, &history_db_,
                                  &thumbnail_db_, &bookmark_model_, &delegate_));
   // Insert a keyword search item to verify if the update succeeds.
-  BookmarkRow row1;
+  HistoryAndBookmarkRow row1;
   row1.set_raw_url("cnn.com");
   row1.set_url(GURL("http://cnn.com"));
   row1.set_last_visit_time(Time::Now() - TimeDelta::FromDays(1));
@@ -1112,7 +1112,7 @@ TEST_F(AndroidProviderBackendTest, UpdateSearchTermTable) {
             ToDatabaseTime(keyword_cache.last_visit_time));
 
   // Add another row.
-  BookmarkRow row2;
+  HistoryAndBookmarkRow row2;
   row2.set_raw_url("google.com");
   row2.set_url(GURL("http://google.com"));
   row2.set_last_visit_time(Time::Now() - TimeDelta::FromDays(2));
@@ -1138,7 +1138,7 @@ TEST_F(AndroidProviderBackendTest, UpdateSearchTermTable) {
             ToDatabaseTime(keyword_cache.last_visit_time));
 
   // Add 3rd row and associate it with term.
-  BookmarkRow row3;
+  HistoryAndBookmarkRow row3;
   row3.set_raw_url("search.com");
   row3.set_url(GURL("http://search.com"));
   row3.set_last_visit_time(Time::Now());
@@ -1172,7 +1172,7 @@ TEST_F(AndroidProviderBackendTest, QuerySearchTerms) {
       new AndroidProviderBackend(android_cache_db_name_, &history_db_,
                                  &thumbnail_db_, &bookmark_model_, &delegate_));
   // Insert a keyword search item to verify if we can find it.
-  BookmarkRow row1;
+  HistoryAndBookmarkRow row1;
   row1.set_raw_url("cnn.com");
   row1.set_url(GURL("http://cnn.com"));
   row1.set_last_visit_time(Time::Now() - TimeDelta::FromDays(1));
@@ -1183,7 +1183,7 @@ TEST_F(AndroidProviderBackendTest, QuerySearchTerms) {
   ASSERT_TRUE(url_id);
   ASSERT_TRUE(history_db_.SetKeywordSearchTermsForURL(url_id, 1, term));
 
-  std::vector<SearchRow::SearchColumnID> projections;
+  std::vector<SearchRow::ColumnID> projections;
   projections.push_back(SearchRow::ID);
   projections.push_back(SearchRow::SEARCH_TERM);
   projections.push_back(SearchRow::SEARCH_TIME);
@@ -1206,7 +1206,7 @@ TEST_F(AndroidProviderBackendTest, UpdateSearchTerms) {
       new AndroidProviderBackend(android_cache_db_name_, &history_db_,
                                  &thumbnail_db_, &bookmark_model_, &delegate_));
   // Insert a keyword.
-  BookmarkRow row1;
+  HistoryAndBookmarkRow row1;
   row1.set_raw_url("cnn.com");
   row1.set_url(GURL("http://cnn.com"));
   row1.set_last_visit_time(Time::Now() - TimeDelta::FromDays(1));
@@ -1218,7 +1218,7 @@ TEST_F(AndroidProviderBackendTest, UpdateSearchTerms) {
   ASSERT_TRUE(history_db_.SetKeywordSearchTermsForURL(url_id, 1, term));
 
   // Get the SearchTermID of the row we just inserted.
-  std::vector<SearchRow::SearchColumnID> projections;
+  std::vector<SearchRow::ColumnID> projections;
   projections.push_back(SearchRow::ID);
   projections.push_back(SearchRow::SEARCH_TIME);
   projections.push_back(SearchRow::SEARCH_TERM);
@@ -1311,7 +1311,7 @@ TEST_F(AndroidProviderBackendTest, DeleteSearchTerms) {
       new AndroidProviderBackend(android_cache_db_name_, &history_db_,
                                  &thumbnail_db_, &bookmark_model_, &delegate_));
   // Insert a keyword.
-  BookmarkRow row1;
+  HistoryAndBookmarkRow row1;
   row1.set_raw_url("cnn.com");
   row1.set_url(GURL("http://cnn.com"));
   row1.set_last_visit_time(Time::Now() - TimeDelta::FromDays(1));
@@ -1323,7 +1323,7 @@ TEST_F(AndroidProviderBackendTest, DeleteSearchTerms) {
   ASSERT_TRUE(history_db_.SetKeywordSearchTermsForURL(url_id, 1, term));
 
   // Get the SearchTermID of the row we just inserted.
-  std::vector<SearchRow::SearchColumnID> projections;
+  std::vector<SearchRow::ColumnID> projections;
   projections.push_back(SearchRow::ID);
   projections.push_back(SearchRow::SEARCH_TIME);
   projections.push_back(SearchRow::SEARCH_TERM);
@@ -1338,7 +1338,7 @@ TEST_F(AndroidProviderBackendTest, DeleteSearchTerms) {
   EXPECT_FALSE(statement->statement()->Step());
 
   // Insert a keyword.
-  BookmarkRow row2;
+  HistoryAndBookmarkRow row2;
   row2.set_raw_url("google.com");
   row2.set_url(GURL("http://google.com"));
   row2.set_last_visit_time(Time::Now() - TimeDelta::FromDays(1));
@@ -1426,7 +1426,7 @@ TEST_F(AndroidProviderBackendTest, InsertSearchTerm) {
   SearchTermID id = backend->InsertSearchTerm(search_row);
   ASSERT_TRUE(id);
 
-  std::vector<SearchRow::SearchColumnID> projections;
+  std::vector<SearchRow::ColumnID> projections;
   projections.push_back(SearchRow::ID);
   projections.push_back(SearchRow::SEARCH_TIME);
   projections.push_back(SearchRow::SEARCH_TERM);

@@ -63,7 +63,7 @@ class AndroidProviderBackend {
   // |selection_args| is the arguments for WHERE clause.
   // |sort_order| is the SQL ORDER clause.
   AndroidStatement* QueryHistoryAndBookmarks(
-      const std::vector<BookmarkRow::BookmarkColumnID>& projections,
+      const std::vector<HistoryAndBookmarkRow::ColumnID>& projections,
       const std::string& selection,
       const std::vector<string16>& selection_args,
       const std::string& sort_order);
@@ -74,13 +74,13 @@ class AndroidProviderBackend {
   // |row| is the value to update.
   // |selection| is the SQL WHERE clause without 'WHERE'.
   // |selection_args| is the arguments for the WHERE clause.
-  bool UpdateHistoryAndBookmarks(const BookmarkRow& row,
+  bool UpdateHistoryAndBookmarks(const HistoryAndBookmarkRow& row,
                                  const std::string& selection,
                                  const std::vector<string16>& selection_args,
                                  int* update_count);
 
   // Inserts the given values and returns the URLID of the inserted row.
-  AndroidURLID InsertHistoryAndBookmark(const BookmarkRow& values);
+  AndroidURLID InsertHistoryAndBookmark(const HistoryAndBookmarkRow& values);
 
   // Deletes the specified rows and returns the number of the deleted rows in
   // |deleted_count|.
@@ -101,7 +101,7 @@ class AndroidProviderBackend {
   // |selection_args| is the arguments for WHERE clause.
   // |sort_order| the SQL ORDER clause.
   AndroidStatement* QuerySearchTerms(
-      const std::vector<SearchRow::SearchColumnID>& projections,
+      const std::vector<SearchRow::ColumnID>& projections,
       const std::string& selection,
       const std::vector<string16>& selection_args,
       const std::string& sort_order);
@@ -185,7 +185,7 @@ class AndroidProviderBackend {
   // |row| is the value to update.
   // |selection| is the SQL WHERE clause without 'WHERE'.
   // |selection_args| is the arguments for the WHERE clause.
-  bool UpdateHistoryAndBookmarks(const BookmarkRow& row,
+  bool UpdateHistoryAndBookmarks(const HistoryAndBookmarkRow& row,
                        const std::string& selection,
                        const std::vector<string16>& selection_args,
                        int* update_count,
@@ -193,7 +193,7 @@ class AndroidProviderBackend {
 
   // Inserts the given values and returns the URLID of the inserted row.
   // The notifications of change is returned in |notifications|.
-  AndroidURLID InsertHistoryAndBookmark(const BookmarkRow& values,
+  AndroidURLID InsertHistoryAndBookmark(const HistoryAndBookmarkRow& values,
                                         HistoryNotifications* notifications);
 
   // Deletes the specified rows and returns the number of the deleted rows in
@@ -238,13 +238,13 @@ class AndroidProviderBackend {
   // To support the lazy binding, the index of favicon column will be
   // returned if it exists, otherwise returns -1.
   int AppendBookmarkResultColumn(
-      const std::vector<BookmarkRow::BookmarkColumnID>& projections,
+      const std::vector<HistoryAndBookmarkRow::ColumnID>& projections,
       std::string* result_column);
 
   // Append the specified search result columns in |projections| to the given
   // |result_column|.
   void AppendSearchResultColumn(
-      const std::vector<SearchRow::SearchColumnID>& projections,
+      const std::vector<SearchRow::ColumnID>& projections,
       std::string* result_column);
 
   // Runs the given query on |virtual_table| and returns true if succeeds, the
@@ -263,14 +263,14 @@ class AndroidProviderBackend {
 
   // Simulates update url by deleting the previous URL and creating a new one.
   // Return true on success.
-  bool SimulateUpdateURL(const BookmarkRow& row,
+  bool SimulateUpdateURL(const HistoryAndBookmarkRow& row,
                          const TableIDRows& ids,
                          HistoryNotifications* notifications);
 
   // Query bookmark without sync the tables. It should be used after syncing
   // tables.
   AndroidStatement* QueryHistoryAndBookmarksInternal(
-      const std::vector<BookmarkRow::BookmarkColumnID>& projections,
+      const std::vector<HistoryAndBookmarkRow::ColumnID>& projections,
       const std::string& selection,
       const std::vector<string16>& selection_args,
       const std::string& sort_order);
