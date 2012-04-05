@@ -22,6 +22,19 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = os.path.dirname(os.path.dirname(BASE_DIR))
 
 
+def get_flavor():
+  """Returns the system default flavor. Copied from gyp/pylib/gyp/common.py."""
+  flavors = {
+    'cygwin': 'win',
+    'win32': 'win',
+    'darwin': 'mac',
+    'sunos5': 'solaris',
+    'freebsd7': 'freebsd',
+    'freebsd8': 'freebsd',
+  }
+  return flavors.get(sys.platform, 'linux')
+
+
 def isEnabledFor(level):
   return logging.getLogger().isEnabledFor(level)
 
@@ -635,6 +648,59 @@ def extract_directories(files, root):
   return sorted(files)
 
 
+def pretty_print(variables, stdout):
+  """Outputs a gyp compatible list from the decoded variables."""
+  # Similar to pprint.print() but with NIH syndrome.
+
+  def loop_list(indent, items):
+    for item in items:
+      if isinstance(item, basestring):
+        stdout.write('%s\'%s\',\n' % (indent, item))
+      elif isinstance(item, dict):
+        stdout.write('%s{\n' % indent)
+        loop_dict(indent + '  ', item)
+        stdout.write('%s},\n' % indent)
+      elif isinstance(item, list):
+        # A list inside a list will write the first item embedded.
+        stdout.write('%s[' % indent)
+        for index, i in enumerate(item):
+          if isinstance(i, basestring):
+            stdout.write('\'%s\', ' % i)
+          elif isinstance(i, dict):
+            stdout.write('{\n')
+            loop_dict(indent + '  ', i)
+            if index != len(item) - 1:
+              x = ', '
+            else:
+              x = ''
+            stdout.write('%s}%s' % (indent, x))
+          else:
+            assert False
+        stdout.write('],\n')
+      else:
+        assert False
+
+  def loop_dict(indent, items):
+    # Use reversed sorting since it happens we always want it that way.
+    for key in sorted(items, reverse=True):
+      item = items[key]
+      stdout.write("%s'%s': " % (indent, key))
+      if isinstance(item, dict):
+        stdout.write('{\n')
+        loop_dict(indent + '  ', item)
+        stdout.write(indent + '},\n')
+      elif isinstance(item, list):
+        stdout.write('[\n')
+        loop_list(indent + '  ', item)
+        stdout.write(indent + '],\n')
+      else:
+        assert False
+
+  stdout.write('{\n')
+  loop_dict('  ', variables)
+  stdout.write('}\n')
+
+
 def trace_inputs(logfile, cmd, root_dir, cwd_dir, product_dir, force_trace):
   """Tries to load the logs if available. If not, trace the test.
 
@@ -672,12 +738,13 @@ def trace_inputs(logfile, cmd, root_dir, cwd_dir, product_dir, force_trace):
     if cwd_dir is None:
       print(txt)
 
-  if sys.platform == 'linux2':
+  flavor = get_flavor()
+  if flavor == 'linux':
     api = Strace()
-  elif sys.platform == 'darwin':
+  elif flavor == 'mac':
     api = Dtrace()
   else:
-    print >> sys.stderr, 'Unsupported platform'
+    print >> sys.stderr, 'Unsupported platform %s' % sys.platform
     return 1
 
   if not os.path.isfile(logfile) or force_trace:
@@ -745,18 +812,19 @@ def trace_inputs(logfile, cmd, root_dir, cwd_dir, product_dir, force_trace):
     corrected = [fix(f) for f in simplified]
     files = [f for f in corrected if not f.endswith('/')]
     dirs = [f for f in corrected if f.endswith('/')]
-    # Constructs the python code manually.
-    print(
-        '{\n'
-        '  \'variables\': {\n'
-        '    \'isolate_files\': [\n') + (
-            ''.join('      \'%s\',\n' % f for f in files)) + (
-        '    ],\n'
-        '    \'isolate_dirs\': [\n') + (
-            ''.join('      \'%s\',\n' % f for f in dirs)) + (
-        '    ],\n'
-        '  },\n'
-        '},')
+    variables = {}
+    if files:
+      variables['isolate_files'] = files
+    if dirs:
+      variables['isolate_dirs'] = dirs
+    value = {
+      'conditions': [
+        ['OS=="%s"' % flavor, {
+          'variables': variables,
+        }],
+      ],
+    }
+    pretty_print(value, sys.stdout)
   return 0
 
 

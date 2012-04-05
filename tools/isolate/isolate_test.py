@@ -3,6 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import cStringIO
 import hashlib
 import json
 import logging
@@ -225,14 +226,21 @@ class Isolate(unittest.TestCase):
     # cmd[0] is not generated from infiles[0] so it's not using a relative path.
     self._expected_result(
         False, ['isolate_test.py'], ['isolate_test.py', '--ok'], False)
-    expected = (
-        "{\n  'variables': {\n"
-        "    'isolate_files': [\n"
-        "      '<(DEPTH)/isolate_test.py',\n"
-        "    ],\n"
-        "    'isolate_dirs': [\n"
-        "    ],\n  },\n},\n")
-    self.assertEquals(expected, out)
+
+    expected_value = {
+      'conditions': [
+        ['OS=="%s"' % self.isolate.trace_inputs.get_flavor(), {
+          'variables': {
+            'isolate_files': [
+              '<(DEPTH)/isolate_test.py',
+            ],
+          },
+        }],
+      ],
+    }
+    expected_buffer = cStringIO.StringIO()
+    self.isolate.trace_inputs.pretty_print(expected_value, expected_buffer)
+    self.assertEquals(expected_buffer.getvalue(), out)
 
 
 def main():
