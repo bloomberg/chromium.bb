@@ -128,13 +128,16 @@ TEST_F(ThumbnailDatabaseTest, GetFaviconAfterMigrationToTopSites) {
   base::Time time_out;
   std::vector<unsigned char> favicon_out;
   GURL url_out;
-  EXPECT_TRUE(db.GetFavicon(id, &time_out, &favicon_out, &url_out));
+  IconType icon_type_out;
+  EXPECT_TRUE(db.GetFavicon(id, &time_out, &favicon_out, &url_out,
+                            &icon_type_out));
   EXPECT_EQ(url, url_out);
   EXPECT_EQ(time.ToTimeT(), time_out.ToTimeT());
   ASSERT_EQ(data.size(), favicon_out.size());
   EXPECT_TRUE(std::equal(data.begin(),
                          data.end(),
                          favicon_out.begin()));
+  EXPECT_EQ(FAVICON, icon_type_out);
 }
 
 TEST_F(ThumbnailDatabaseTest, AddIconMapping) {
@@ -521,7 +524,7 @@ TEST_F(IconMappingMigrationTest, TestIconMappingMigration) {
   std::vector<unsigned char> out_data;
   GURL out_icon_url;
   ASSERT_TRUE(db.GetFavicon(
-      icon_mappings[0].icon_id, &time, &out_data, &out_icon_url));
+      icon_mappings[0].icon_id, &time, &out_data, &out_icon_url, NULL));
   EXPECT_EQ(icon1, out_icon_url);
 
   // Test a page which has the same icon.
@@ -542,7 +545,7 @@ TEST_F(IconMappingMigrationTest, TestIconMappingMigration) {
   EXPECT_EQ(page_url2, icon_mappings[0].page_url);
   EXPECT_EQ(2, icon_mappings[0].icon_id);
   ASSERT_TRUE(db.GetFavicon(
-      icon_mappings[0].icon_id, &time, &out_data, &out_icon_url));
+      icon_mappings[0].icon_id, &time, &out_data, &out_icon_url, NULL));
   EXPECT_EQ(icon2, out_icon_url);
 
   // Test a page without icon

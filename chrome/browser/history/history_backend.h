@@ -238,6 +238,8 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
                         const GURL& page_url,
                         int icon_types);
 
+  void GetFaviconForID(scoped_refptr<GetFaviconRequest> request, FaviconID id);
+
   void SetFavicon(const GURL& page_url,
                   const GURL& icon_url,
                   scoped_refptr<RefCountedMemory> data,
@@ -566,6 +568,10 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   bool GetFaviconFromDB(const GURL& page_url,
                         int icon_types,
                         FaviconData* favicon);
+
+  // Get favicon by the given |favicon_id|, the |favicon| is set appropriately
+  // and true if returned on success, otherwise false is returned.
+  bool GetFaviconFromDB(FaviconID favicon_id, FaviconData* favicon);
 
   // Data ----------------------------------------------------------------------
 

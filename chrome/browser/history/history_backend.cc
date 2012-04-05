@@ -1884,7 +1884,7 @@ void HistoryBackend::UpdateFaviconMappingAndFetchImpl(
       favicon.known_icon = true;
       Time last_updated;
       if (thumbnail_db_->GetFavicon(favicon_id, &last_updated, &data->data(),
-                                    NULL)) {
+                                    NULL, NULL)) {
         favicon.expired = (Time::Now() - last_updated) >
             TimeDelta::FromDays(kFaviconRefetchDays);
         favicon.image_data = data;
@@ -1911,6 +1911,16 @@ void HistoryBackend::GetFaviconForURL(
   // Get the favicon from DB.
   GetFaviconFromDB(page_url, icon_types, &favicon);
 
+  request->ForwardResult(request->handle(), favicon);
+}
+
+void HistoryBackend::GetFaviconForID(scoped_refptr<GetFaviconRequest> request,
+                                     FaviconID id) {
+  if (request->canceled())
+    return;
+
+  FaviconData favicon;
+  GetFaviconFromDB(id, &favicon);
   request->ForwardResult(request->handle(), favicon);
 }
 
@@ -2418,18 +2428,10 @@ bool HistoryBackend::GetFaviconFromDB(
   // Iterate over the known icons looking for one that includes one of the
   // requested types.
   if (thumbnail_db_->GetIconMappingsForPageURL(page_url, &icon_mappings)) {
-    Time last_updated;
-    scoped_refptr<RefCountedBytes> data = new RefCountedBytes();
     for (std::vector<IconMapping>::iterator i = icon_mappings.begin();
          i != icon_mappings.end(); ++i) {
       if ((i->icon_type & icon_types) &&
-          thumbnail_db_->GetFavicon(i->icon_id, &last_updated,
-                                    &data->data(), &favicon->icon_url)) {
-        favicon->known_icon = true;
-        favicon->expired = (Time::Now() - last_updated) >
-            TimeDelta::FromDays(kFaviconRefetchDays);
-        favicon->icon_type = i->icon_type;
-        favicon->image_data = data;
+          GetFaviconFromDB(i->icon_id, favicon)) {
         success = true;
         break;
       }
@@ -2438,6 +2440,22 @@ bool HistoryBackend::GetFaviconFromDB(
   UMA_HISTOGRAM_TIMES("History.GetFavIconFromDB",  // historical name
                       TimeTicks::Now() - beginning_time);
   return success;
+}
+
+bool HistoryBackend::GetFaviconFromDB(FaviconID favicon_id,
+                                      FaviconData* favicon) {
+  Time last_updated;
+  scoped_refptr<RefCountedBytes> data = new RefCountedBytes();
+
+  if (!thumbnail_db_->GetFavicon(favicon_id, &last_updated, &data->data(),
+                                 &favicon->icon_url, &favicon->icon_type))
+    return false;
+
+  favicon->expired = (Time::Now() - last_updated) >
+      TimeDelta::FromDays(kFaviconRefetchDays);
+  favicon->known_icon = true;
+  favicon->image_data = data;
+  return true;
 }
 
 }  // namespace history

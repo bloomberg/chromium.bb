@@ -414,11 +414,13 @@ bool ThumbnailDatabase::GetFavicon(
     FaviconID icon_id,
     base::Time* last_updated,
     std::vector<unsigned char>* png_icon_data,
-    GURL* icon_url) {
+    GURL* icon_url,
+    IconType* icon_type) {
   DCHECK(icon_id);
 
   sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE,
-      "SELECT last_updated, image_data, url FROM favicons WHERE id=?"));
+      "SELECT last_updated, image_data, url, icon_type "
+      "FROM favicons WHERE id=?"));
   statement.BindInt64(0, icon_id);
 
   if (!statement.Step())
@@ -430,6 +432,8 @@ bool ThumbnailDatabase::GetFavicon(
     statement.ColumnBlobAsVector(1, png_icon_data);
   if (icon_url)
     *icon_url = GURL(statement.ColumnString(2));
+  if (icon_type)
+    *icon_type = static_cast<history::IconType>(statement.ColumnInt(3));
 
   return true;
 }

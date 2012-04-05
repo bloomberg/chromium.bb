@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -65,6 +65,25 @@ FaviconService::Handle FaviconService::GetFaviconForURL(
   }
   return handle;
 }
+
+// Requests the favicon for |favicon_id|. The |consumer| is notified when the
+// bits have been fetched.
+FaviconService::Handle FaviconService::GetFaviconForID(
+    history::FaviconID favicon_id,
+    CancelableRequestConsumerBase* consumer,
+    const FaviconDataCallback& callback) {
+  GetFaviconRequest* request = new GetFaviconRequest(callback);
+  AddRequest(request, consumer);
+  FaviconService::Handle handle = request->handle();
+  HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
+  if (hs)
+    hs->GetFaviconForID(request, favicon_id);
+  else
+    ForwardEmptyResultAsync(request);
+
+  return handle;
+}
+
 
 void FaviconService::SetFaviconOutOfDateForPage(const GURL& page_url) {
   HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);

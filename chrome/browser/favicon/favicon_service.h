@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -78,6 +78,12 @@ class FaviconService : public CancelableRequestProvider {
                           CancelableRequestConsumerBase* consumer,
                           const FaviconDataCallback& callback);
 
+  // Requests the favicon for |favicon_id|. The |consumer| is notified when the
+  // bits have been fetched.
+  Handle GetFaviconForID(history::FaviconID favicon_id,
+                         CancelableRequestConsumerBase* consumer,
+                         const FaviconDataCallback& callback);
+
   // Marks all types of favicon for the page as being out of date.
   void SetFaviconOutOfDateForPage(const GURL& page_url);
 
@@ -101,8 +107,6 @@ class FaviconService : public CancelableRequestProvider {
                   history::IconType icon_type);
 
  private:
-
-
   Profile* profile_;
 
   // Helper to forward an empty result if we cannot get the history service.
