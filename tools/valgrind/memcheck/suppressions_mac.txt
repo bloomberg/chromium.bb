@@ -2237,7 +2237,6 @@
    fun:_ZN7WebCore11ImageSource18createFrameAtIndexEm
    fun:_ZN6WebKit8WebImage8fromDataERKNS_7WebDataERKNS_7WebSizeE
    fun:_ZNK11webkit_glue12ImageDecoder6DecodeEPKhm
-   ...
 }
 {
    bug_107158

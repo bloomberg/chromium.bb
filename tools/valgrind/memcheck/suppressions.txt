@@ -2829,6 +2829,13 @@
    fun:*35NonBlockingInvalidationNotifierTest5SetUpEv
 }
 {
+   bug_79328
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN14TestingProfile20CreateRequestContextEv
+   fun:_ZN30ProfileSyncServiceAutofillTest5SetUpEv
+}
+{
    bug_79357a
    Memcheck:Unaddressable
    ...
@@ -3030,6 +3037,18 @@
    ...
    fun:_ZN21RenderViewHostManager8NavigateERKN7content19NavigationEntryImplE
    fun:_ZN11TabContents15NavigateToEntryERKN7content19NavigationEntryImplENS0_20NavigationController10ReloadTypeE
+}
+{
+   bug_83561
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN3net16HostResolverImpl7ResolveERKNS_12HostResolver11RequestInfoEPNS_11AddressListERKN4base8CallbackIFviEEEPPvRKNS_11BoundNetLogE
+   fun:_ZN3net25SingleRequestHostResolver7ResolveERKNS_12HostResolver11RequestInfoEPNS_11AddressListERKN4base8CallbackIFviEEERKNS_11BoundNetLogE
+   fun:_ZN3net19TransportConnectJob13DoResolveHostEv
+   fun:_ZN3net19TransportConnectJob6DoLoopEi
+   fun:_ZN3net19TransportConnectJob15ConnectInternalEv
+   fun:_ZN3net10ConnectJob7ConnectEv
+   fun:_ZN3net8internal26ClientSocketPoolBaseHelper21RequestSocketInternalERKSsPKNS1_7RequestE
 }
 {
    bug_83566
@@ -4983,7 +5002,6 @@
    fun:_ZN2v88internal12HeapProfiler12TakeSnapshotEPNS0_6StringEiPNS_15ActivityControlE
    fun:_ZN2v812HeapProfiler12TakeSnapshotENS_6HandleINS_6StringEEENS_12HeapSnapshot4TypeEPNS_15ActivityControlE
    fun:_ZL13GetNumObjectsPKc
-   ...
 }
 {
    bug_112450_b
@@ -5217,13 +5235,6 @@
    fun:_ZN7browser18RegisterLocalStateEP11PrefService
 }
 {
-   bug_79328
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN14TestingProfile20CreateRequestContextEv
-   fun:_ZN30ProfileSyncServiceAutofillTest5SetUpEv
-}
-{
    bug_117427
    Memcheck:Leak
    fun:_Znw*
@@ -5272,7 +5283,6 @@
    fun:_ZN17AudioRendererHost16OnChannelClosingEv
    fun:_ZN3IPC12ChannelProxy7Context15OnChannelClosedEv
 }
-
 {
    bug_121450
    Memcheck:Leak
@@ -5281,7 +5291,6 @@
    fun:_ZN4base10TaskRunner16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEES9_
    fun:_ZN5gdata15GDataFileSystem21LoadRootFeedFromCacheENS0_13FeedChunkTypeE*K8FilePathbRKN4base8CallbackIFvNS5_17PlatformFileErrorES4_PNS_13GDataFileBaseEEEE
 }
-
 {
    bug_121729
    Memcheck:Leak
@@ -5308,7 +5317,6 @@
    fun:_ZN7WebCore25DecodedDataDocumentParser5flushEPNS_14DocumentWriterE
    fun:_ZN7WebCore14DocumentWriter27endIfNotLoadingMainResourceEv
 }
-
 {
    bug_122130
    Memcheck:Leak
