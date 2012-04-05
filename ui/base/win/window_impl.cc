@@ -6,6 +6,7 @@
 
 #include <list>
 
+#include "base/debug/alias.h"
 #include "base/memory/singleton.h"
 #include "base/string_number_conversions.h"
 #include "base/win/wrapped_window_proc.h"
@@ -143,10 +144,15 @@ WindowImpl::WindowImpl()
     : window_style_(0),
       window_ex_style_(kWindowDefaultExStyle),
       class_style_(CS_DBLCLKS),
-      hwnd_(NULL) {
+      hwnd_(NULL),
+      got_create_(false),
+      got_valid_hwnd_(false),
+      destroyed_(NULL) {
 }
 
 WindowImpl::~WindowImpl() {
+  if (destroyed_)
+    *destroyed_ = true;
   if (::IsWindow(hwnd_))
     ui::SetWindowUserData(hwnd_, NULL);
 }
@@ -177,13 +183,27 @@ void WindowImpl::Init(HWND parent, const gfx::Rect& bounds) {
   }
 
   std::wstring name(GetWindowClassName());
-  hwnd_ = CreateWindowEx(window_ex_style_, name.c_str(), NULL,
-                         window_style_, x, y, width, height,
-                         parent, NULL, NULL, this);
-  CheckWindowCreated(hwnd_);
+  bool destroyed = false;
+  destroyed_ = &destroyed;
+  HWND hwnd = CreateWindowEx(window_ex_style_, name.c_str(), NULL,
+                             window_style_, x, y, width, height,
+                             parent, NULL, NULL, this);
+  if (!hwnd_) {
+    base::debug::Alias(&destroyed);
+    base::debug::Alias(&hwnd);
+    DWORD last_error = GetLastError();
+    base::debug::Alias(&last_error);
+    bool got_create = got_create_;
+    base::debug::Alias(&got_create);
+    bool got_valid_hwnd = got_valid_hwnd_;
+    base::debug::Alias(&got_valid_hwnd);
+    CHECK(false);
+  }
+  if (!destroyed)
+    destroyed_ = NULL;
 
   // The window procedure should have set the data for us.
-  CHECK_EQ(this, ui::GetWindowUserData(hwnd_));
+  CHECK_EQ(this, ui::GetWindowUserData(hwnd));
 }
 
 HICON WindowImpl::GetDefaultWindowIcon() const {
@@ -212,6 +232,9 @@ LRESULT CALLBACK WindowImpl::WndProc(HWND hwnd,
     DCHECK(window);
     ui::SetWindowUserData(hwnd, window);
     window->hwnd_ = hwnd;
+    window->got_create_ = true;
+    if (hwnd)
+      window->got_valid_hwnd_ = true;
     return TRUE;
   }
 

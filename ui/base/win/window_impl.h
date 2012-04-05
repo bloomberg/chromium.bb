@@ -104,6 +104,12 @@ class UI_EXPORT WindowImpl : public MessageMapInterface {
   // Our hwnd.
   HWND hwnd_;
 
+  // For debugging.
+  // TODO(sky): nuke this when get crash data.
+  bool got_create_;
+  bool got_valid_hwnd_;
+  bool* destroyed_;
+
   DISALLOW_COPY_AND_ASSIGN(WindowImpl);
 };
 
