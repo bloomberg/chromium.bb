@@ -90,8 +90,6 @@ enum TouchStatus {
   TOUCH_STATUS_CONTINUE,     // The touch event is part of a previously
                              // started touch sequence.
   TOUCH_STATUS_END,          // The touch event ended the touch sequence.
-  TOUCH_STATUS_CANCEL,       // The touch event was cancelled, but didn't
-                             // terminate the touch sequence.
   TOUCH_STATUS_SYNTH_MOUSE,  // The touch event was not processed, but a
                              // synthetic mouse event generated from the
                              // unused touch event was handled.

@@ -263,13 +263,15 @@ TouchEvent::TouchEvent(const TouchEvent& model,
 
 TouchEvent::TouchEvent(ui::EventType type,
                        const gfx::Point& location,
-                       int touch_id)
+                       int touch_id,
+                       base::TimeDelta time_stamp)
     : LocatedEvent(type, location, location, 0),
       touch_id_(touch_id),
       radius_x_(1.0f),
       radius_y_(1.0f),
       rotation_angle_(0.0f),
       force_(0.0f) {
+  set_time_stamp(time_stamp);
 }
 
 TouchEvent* TouchEvent::Copy() const {

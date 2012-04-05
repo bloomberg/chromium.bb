@@ -144,7 +144,20 @@ GestureSequence::Gestures* GestureRecognizerAura::AdvanceTouchQueue(
 
   GestureSequence* sequence = GetGestureSequenceForWindow(window);
 
-  return sequence->ProcessTouchEventForGesture(*event,
+  if (processed && event->type() == ui::ET_TOUCH_RELEASED) {
+    // A touch release was was processed (e.g. preventDefault()ed by a
+    // web-page), but we still need to process a touch cancel.
+    TouchEvent processed_event(ui::ET_TOUCH_CANCELLED,
+                               event->location(),
+                               event->touch_id(),
+                               event->time_stamp());
+    return sequence->ProcessTouchEventForGesture(
+        processed_event,
+        ui::TOUCH_STATUS_UNKNOWN);
+  }
+
+  return sequence->ProcessTouchEventForGesture(
+      *event,
       processed ? ui::TOUCH_STATUS_CONTINUE : ui::TOUCH_STATUS_UNKNOWN);
 }
 

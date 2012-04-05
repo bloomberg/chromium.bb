@@ -223,6 +223,10 @@ class MouseTrackingDelegate : public TestWindowDelegate {
   DISALLOW_COPY_AND_ASSIGN(MouseTrackingDelegate);
 };
 
+base::TimeDelta getTime() {
+  return base::Time::NowFromSystemTime() - base::Time();
+}
+
 }  // namespace
 
 TEST_F(WindowTest, GetChildById) {
@@ -554,7 +558,7 @@ TEST_F(WindowTest, CaptureTests) {
   EXPECT_EQ(2, delegate.mouse_event_count());
   delegate.ResetCounts();
 
-  TouchEvent touchev(ui::ET_TOUCH_PRESSED, gfx::Point(50, 50), 0);
+  TouchEvent touchev(ui::ET_TOUCH_PRESSED, gfx::Point(50, 50), 0, getTime());
   root_window()->DispatchTouchEvent(&touchev);
   EXPECT_EQ(1, delegate.touch_event_count());
   delegate.ResetCounts();
@@ -568,7 +572,7 @@ TEST_F(WindowTest, CaptureTests) {
   generator.PressLeftButton();
   EXPECT_EQ(1, delegate.mouse_event_count());
 
-  TouchEvent touchev2(ui::ET_TOUCH_PRESSED, gfx::Point(250, 250), 1);
+  TouchEvent touchev2(ui::ET_TOUCH_PRESSED, gfx::Point(250, 250), 1, getTime());
   root_window()->DispatchTouchEvent(&touchev2);
   EXPECT_EQ(0, delegate.touch_event_count());
 
@@ -873,7 +877,7 @@ TEST_F(WindowTest, TransformGesture) {
   root_window()->SetTransform(transform);
 
   TouchEvent press(ui::ET_TOUCH_PRESSED,
-      gfx::Point(size.height() - 10, 10), 0);
+                   gfx::Point(size.height() - 10, 10), 0, getTime());
   root_window()->DispatchTouchEvent(&press);
   EXPECT_EQ(gfx::Point(10, 10).ToString(), delegate->position().ToString());
 }

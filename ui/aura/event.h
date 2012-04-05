@@ -186,10 +186,10 @@ class AURA_EXPORT TouchEvent : public LocatedEvent {
   // converted from |source| coordinate system to |target| coordinate system.
   TouchEvent(const TouchEvent& model, Window* source, Window* target);
 
-  // Used for synthetic events in testing.
   TouchEvent(ui::EventType type,
              const gfx::Point& root_location,
-             int touch_id);
+             int touch_id,
+             base::TimeDelta time_stamp);
 
   int touch_id() const { return touch_id_; }
   float radius_x() const { return radius_x_; }

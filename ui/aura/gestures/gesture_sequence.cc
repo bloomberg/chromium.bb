@@ -156,15 +156,11 @@ GestureSequence::Gestures* GestureSequence::ProcessTouchEventForGesture(
     if (point_count_ == kMaxGesturePoints)
       return NULL;
     GesturePoint* new_point = &points_[event.touch_id()];
-    // Eventually, we shouldn't be able to get two PRESSED events without either
-    // a RELEASE or CANCEL. Currently if a RELEASE is preventDefaulted,
-    // this could occur: crbug.com/116537
-    // TODO(tdresser): Enable this DCHECK, and remove the following condition
-    // DCHECK(!points_[event.touch_id()].in_use());
-    if (!points_[event.touch_id()].in_use()) {
-      new_point->set_point_id(point_count_++);
-      new_point->set_touch_id(event.touch_id());
-    }
+    // We shouldn't be able to get two PRESSED events from the same
+    // finger without either a RELEASE or CANCEL in between.
+    DCHECK(!points_[event.touch_id()].in_use());
+    new_point->set_point_id(point_count_++);
+    new_point->set_touch_id(event.touch_id());
   }
 
   GestureState last_state = state_;

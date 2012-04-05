@@ -24,6 +24,14 @@
 #include "ui/base/hit_test.h"
 #include "ui/gfx/screen.h"
 
+namespace {
+
+base::TimeDelta getTime() {
+  return base::Time::NowFromSystemTime() - base::Time();
+}
+
+}  // namespace
+
 namespace ash {
 
 typedef test::AshTestBase RootWindowEventFilterTest;
@@ -112,7 +120,7 @@ TEST_F(RootWindowEventFilterTest, Focus) {
   // Touch on a sub-window (w122) to focus it.
   gfx::Point click_point = w122->bounds().CenterPoint();
   aura::Window::ConvertPointToWindow(w122->parent(), root_window, &click_point);
-  aura::TouchEvent touchev(ui::ET_TOUCH_PRESSED, click_point, 0);
+  aura::TouchEvent touchev(ui::ET_TOUCH_PRESSED, click_point, 0, getTime());
   root_window->DispatchTouchEvent(&touchev);
   focus_manager = w122->GetFocusManager();
   EXPECT_EQ(w122.get(), focus_manager->GetFocusedWindow());
@@ -308,7 +316,7 @@ TEST_F(RootWindowEventFilterTest, ActivateOnTouch) {
   // Touch window2.
   gfx::Point press_point = w2->bounds().CenterPoint();
   aura::Window::ConvertPointToWindow(w2->parent(), root_window, &press_point);
-  aura::TouchEvent touchev1(ui::ET_TOUCH_PRESSED, press_point, 0);
+  aura::TouchEvent touchev1(ui::ET_TOUCH_PRESSED, press_point, 0, getTime());
   root_window->DispatchTouchEvent(&touchev1);
 
   // Window2 should have become active.
@@ -325,7 +333,7 @@ TEST_F(RootWindowEventFilterTest, ActivateOnTouch) {
   press_point = w1->bounds().CenterPoint();
   aura::Window::ConvertPointToWindow(w1->parent(), root_window, &press_point);
   d1.set_activate(false);
-  aura::TouchEvent touchev2(ui::ET_TOUCH_PRESSED, press_point, 1);
+  aura::TouchEvent touchev2(ui::ET_TOUCH_PRESSED, press_point, 1, getTime());
   root_window->DispatchTouchEvent(&touchev2);
 
   // Window2 should still be active and focused.
@@ -564,9 +572,9 @@ TEST_F(RootWindowEventFilterTest, UpdateCursorVisibility) {
   aura::MouseEvent mouse_moved(
       ui::ET_MOUSE_MOVED, gfx::Point(0, 0), gfx::Point(0, 0), 0x0);
   aura::TouchEvent touch_pressed1(
-      ui::ET_TOUCH_PRESSED, gfx::Point(0, 0), 0);
+      ui::ET_TOUCH_PRESSED, gfx::Point(0, 0), 0, getTime());
   aura::TouchEvent touch_pressed2(
-      ui::ET_TOUCH_PRESSED, gfx::Point(0, 0), 1);
+      ui::ET_TOUCH_PRESSED, gfx::Point(0, 0), 1, getTime());
 
   root_window_filter->set_update_cursor_visibility(true);
   root_window->DispatchMouseEvent(&mouse_moved);

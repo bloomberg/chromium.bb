@@ -28,7 +28,8 @@ class TestTouchEvent : public aura::TouchEvent {
   TestTouchEvent(ui::EventType type,
                  const gfx::Point& root_location,
                  int flags)
-      : TouchEvent(type, root_location, 0) {
+      : TouchEvent(type, root_location, 0,
+                   base::Time::NowFromSystemTime() - base::Time()) {
     set_flags(flags);
   }
 
