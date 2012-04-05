@@ -5,6 +5,7 @@
 #include "chrome/common/extensions/api/extension_api.h"
 
 #include <string>
+#include <vector>
 
 #include "base/file_path.h"
 #include "base/file_util.h"
@@ -31,10 +32,12 @@ class TestFeatureProvider : public FeatureProvider {
     result->set_name(name);
     result->extension_types()->insert(Extension::TYPE_EXTENSION);
     result->contexts()->insert(context_);
+    to_destroy_.push_back(make_linked_ptr(result));
     return result;
   }
 
  private:
+  std::vector<linked_ptr<Feature> > to_destroy_;
   Feature::Context context_;
 };
 
