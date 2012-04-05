@@ -91,8 +91,6 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
 
   Profile* profile() { return profile_; }
 
-  const PrefService* local_state() const { return local_state_; }
-
  private:
   // Methods for |EarlyInitialization()| ---------------------------------------
 
