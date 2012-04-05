@@ -846,7 +846,7 @@ class NinjaWriter:
     commands = env + ' F=0; ' + \
         ' '.join([ninja_syntax.escape(command) + ' || F=$$?;'
                                  for command in postbuilds])
-    command_string = env + commands + ' ((exit $$F) || rm -rf %s) ' % output + \
+    command_string = commands + ' ((exit $$F) || rm -rf %s) ' % output + \
                      '&& exit $$F)'
     if is_command_start:
       return '(' + command_string + ' && '
