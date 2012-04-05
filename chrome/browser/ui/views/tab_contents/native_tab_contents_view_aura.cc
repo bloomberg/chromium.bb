@@ -177,10 +177,13 @@ NativeTabContentsViewAura::NativeTabContentsViewAura(
     : views::NativeWidgetAura(delegate->AsNativeWidgetDelegate()),
       delegate_(delegate),
       current_drag_op_(WebKit::WebDragOperationNone),
-      drag_dest_delegate_(NULL) {
+      drag_dest_delegate_(NULL),
+      should_do_drag_cleanup_(NULL) {
 }
 
 NativeTabContentsViewAura::~NativeTabContentsViewAura() {
+  if (should_do_drag_cleanup_)
+    *should_do_drag_cleanup_ = false;
 }
 
 WebContents* NativeTabContentsViewAura::GetWebContents() const {
@@ -259,6 +262,9 @@ void NativeTabContentsViewAura::StartDragging(const WebDropData& drop_data,
 
   scoped_ptr<WebDragSourceAura> drag_source(new WebDragSourceAura(this));
 
+  bool should_do_drag_cleanup = true;
+  should_do_drag_cleanup_ = &should_do_drag_cleanup;
+
   // We need to enable recursive tasks on the message loop so we can get
   // updates while in the system DoDragDrop loop.
   int result_op = 0;
@@ -274,8 +280,10 @@ void NativeTabContentsViewAura::StartDragging(const WebDropData& drop_data,
         data, location, ConvertFromWeb(ops));
   }
 
-  EndDrag(ConvertToWeb(result_op));
-  GetWebContents()->GetRenderViewHost()->DragSourceSystemDragEnded();
+  if (should_do_drag_cleanup)
+    EndDrag(ConvertToWeb(result_op));
+  else
+    should_do_drag_cleanup_ = NULL;
 }
 
 void NativeTabContentsViewAura::CancelDrag() {
@@ -379,11 +387,21 @@ int NativeTabContentsViewAura::OnPerformDrop(
   return current_drag_op_;
 }
 
+void NativeTabContentsViewAura::OnWindowDestroying() {
+  if (should_do_drag_cleanup_)
+    *should_do_drag_cleanup_ = false;
+  NativeWidgetAura::OnWindowDestroying();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // NativeTabContentsViewAura, private:
 
 void NativeTabContentsViewAura::EndDrag(WebKit::WebDragOperationsMask ops) {
+  if (!GetWebContents() || !GetWebContents()->GetRenderViewHost())
+    return;
   aura::RootWindow* root_window = GetNativeView()->GetRootWindow();
+  if (!root_window)
+    return;
   gfx::Point screen_loc = root_window->last_mouse_location();
   gfx::Point client_loc = screen_loc;
   RenderViewHost* rvh = GetWebContents()->GetRenderViewHost();
@@ -391,6 +409,7 @@ void NativeTabContentsViewAura::EndDrag(WebKit::WebDragOperationsMask ops) {
   aura::Window::ConvertPointToWindow(root_window, window, &client_loc);
   rvh->DragSourceEndedAt(client_loc.x(), client_loc.y(), screen_loc.x(),
       screen_loc.y(), ops);
+  rvh->DragSourceSystemDragEnded();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

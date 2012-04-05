@@ -56,6 +56,7 @@ class NativeTabContentsViewAura : public views::NativeWidgetAura,
   virtual int OnDragUpdated(const aura::DropTargetEvent& event) OVERRIDE;
   virtual void OnDragExited() OVERRIDE;
   virtual int OnPerformDrop(const aura::DropTargetEvent& event) OVERRIDE;
+  virtual void OnWindowDestroying() OVERRIDE;
 
   // Informs the renderer that the drag operation it initiated has ended and
   // |ops| drag operations were applied.
@@ -66,6 +67,8 @@ class NativeTabContentsViewAura : public views::NativeWidgetAura,
   WebKit::WebDragOperationsMask current_drag_op_;
 
   content::WebDragDestDelegate* drag_dest_delegate_;
+
+  bool* should_do_drag_cleanup_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeTabContentsViewAura);
 };
