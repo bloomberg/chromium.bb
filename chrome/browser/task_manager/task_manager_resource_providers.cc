@@ -115,6 +115,7 @@ TaskManagerRendererResource::TaskManagerRendererResource(
   // We cache the process and pid as when a Tab/BackgroundContents is closed the
   // process reference becomes NULL and the TaskManager still needs it.
   pid_ = base::GetProcId(process_);
+  unique_process_id_ = render_view_host_->GetProcess()->GetID();
   memset(&stats_, 0, sizeof(stats_));
 }
 
@@ -174,6 +175,10 @@ void TaskManagerRendererResource::NotifyV8HeapStats(
 
 base::ProcessHandle TaskManagerRendererResource::GetProcess() const {
   return process_;
+}
+
+int TaskManagerRendererResource::GetUniqueChildProcessId() const {
+  return unique_process_id_;
 }
 
 TaskManager::Resource::Type TaskManagerRendererResource::GetType() const {
@@ -796,10 +801,12 @@ SkBitmap* TaskManagerChildProcessResource::default_icon_ = NULL;
 TaskManagerChildProcessResource::TaskManagerChildProcessResource(
     content::ProcessType type,
     const string16& name,
-    base::ProcessHandle handle)
+    base::ProcessHandle handle,
+    int unique_process_id)
     : type_(type),
       name_(name),
       handle_(handle),
+      unique_process_id_(unique_process_id),
       network_usage_support_(false) {
   // We cache the process id because it's not cheap to calculate, and it won't
   // be available when we get the plugin disconnected notification.
@@ -832,6 +839,10 @@ SkBitmap TaskManagerChildProcessResource::GetIcon() const {
 
 base::ProcessHandle TaskManagerChildProcessResource::GetProcess() const {
   return handle_;
+}
+
+int TaskManagerChildProcessResource::GetUniqueChildProcessId() const {
+  return unique_process_id_;
 }
 
 TaskManager::Resource::Type TaskManagerChildProcessResource::GetType() const {
@@ -1067,7 +1078,8 @@ void TaskManagerChildProcessResourceProvider::AddToTaskManager(
       new TaskManagerChildProcessResource(
           child_process_data.type,
           child_process_data.name,
-          child_process_data.handle);
+          child_process_data.handle,
+          child_process_data.id);
   resources_[child_process_data.handle] = resource;
   pid_to_resources_[resource->process_id()] = resource;
   task_manager_->AddResource(resource);
@@ -1112,6 +1124,7 @@ TaskManagerExtensionProcessResource::TaskManagerExtensionProcessResource(
     default_icon_ = rb.GetBitmapNamed(IDR_PLUGIN);
   }
   process_handle_ = extension_host_->render_process_host()->GetHandle();
+  unique_process_id_ = extension_host_->render_process_host()->GetID();
   pid_ = base::GetProcId(process_handle_);
   string16 extension_name = UTF8ToUTF16(GetExtension()->name());
   DCHECK(!extension_name.empty());
@@ -1145,6 +1158,10 @@ SkBitmap TaskManagerExtensionProcessResource::GetIcon() const {
 
 base::ProcessHandle TaskManagerExtensionProcessResource::GetProcess() const {
   return process_handle_;
+}
+
+int TaskManagerExtensionProcessResource::GetUniqueChildProcessId() const {
+  return unique_process_id_;
 }
 
 TaskManager::Resource::Type
@@ -1377,6 +1394,10 @@ size_t TaskManagerBrowserProcessResource::SqliteMemoryUsedBytes() const {
 
 base::ProcessHandle TaskManagerBrowserProcessResource::GetProcess() const {
   return base::GetCurrentProcessHandle();  // process_;
+}
+
+int TaskManagerBrowserProcessResource::GetUniqueChildProcessId() const {
+  return 0;
 }
 
 TaskManager::Resource::Type TaskManagerBrowserProcessResource::GetType() const {

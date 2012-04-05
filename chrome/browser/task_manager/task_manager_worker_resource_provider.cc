@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -52,6 +52,7 @@ class TaskManagerSharedWorkerResource : public TaskManager::Resource {
   virtual string16 GetProfileName() const OVERRIDE;
   virtual SkBitmap GetIcon() const OVERRIDE;
   virtual base::ProcessHandle GetProcess() const OVERRIDE;
+  virtual int GetUniqueChildProcessId() const OVERRIDE;
   virtual Type GetType() const OVERRIDE;
   virtual bool CanInspect() const OVERRIDE;
   virtual void Inspect() const OVERRIDE;
@@ -117,6 +118,10 @@ SkBitmap TaskManagerSharedWorkerResource::GetIcon() const {
 
 base::ProcessHandle TaskManagerSharedWorkerResource::GetProcess() const {
   return handle_;
+}
+
+int TaskManagerSharedWorkerResource::GetUniqueChildProcessId() const {
+  return process_id_;
 }
 
 TaskManager::Resource::Type TaskManagerSharedWorkerResource::GetType() const {

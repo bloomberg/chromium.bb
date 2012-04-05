@@ -464,6 +464,11 @@ base::ProcessHandle TaskManagerModel::GetResourceProcessHandle(int index)
   return resources_[index]->GetProcess();
 }
 
+int TaskManagerModel::GetUniqueChildProcessId(int index) const {
+  CHECK_LT(index, ResourceCount());
+  return resources_[index]->GetUniqueChildProcessId();
+}
+
 TaskManager::Resource::Type TaskManagerModel::GetResourceType(int index) const {
   CHECK_LT(index, ResourceCount());
   return resources_[index]->GetType();
