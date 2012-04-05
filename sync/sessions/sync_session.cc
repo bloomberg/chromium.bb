@@ -5,6 +5,7 @@
 #include "sync/sessions/sync_session.h"
 
 #include <algorithm>
+#include <iterator>
 
 #include "base/logging.h"
 #include "sync/syncable/model_type.h"
