@@ -838,7 +838,7 @@ IPC_SYNC_MESSAGE_CONTROL2_1(AutomationMsg_OverrideEncoding,
 
 // Used to disable the dialog box that prompts the user for a path when
 // saving a web page.
-IPC_SYNC_MESSAGE_CONTROL1_0(AutomationMsg_SavePackageShouldPromptUser,
+IPC_SYNC_MESSAGE_CONTROL1_0(AutomationMsg_DEPRECATED_SavePackageShouldPromptUser,
                             bool /* false if we want to not show the dialog */)
 
 // This message is an outgoing message from Chrome to an external host.

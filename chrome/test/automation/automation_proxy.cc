@@ -236,10 +236,6 @@ void AutomationProxy::SignalNewTabUITab(int load_time) {
   new_tab_ui_load_complete_.Signal();
 }
 
-bool AutomationProxy::SavePackageShouldPromptUser(bool should_prompt) {
-  return Send(new AutomationMsg_SavePackageShouldPromptUser(should_prompt));
-}
-
 scoped_refptr<ExtensionProxy> AutomationProxy::InstallExtension(
     const FilePath& extension_path, bool with_ui) {
   int handle = 0;

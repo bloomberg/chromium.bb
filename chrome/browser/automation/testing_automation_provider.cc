@@ -484,8 +484,6 @@ bool TestingAutomationProvider::OnMessageReceived(
     IPC_MESSAGE_HANDLER_DELAY_REPLY(
         AutomationMsg_GoForwardBlockUntilNavigationsComplete,
         GoForwardBlockUntilNavigationsComplete)
-    IPC_MESSAGE_HANDLER(AutomationMsg_SavePackageShouldPromptUser,
-                        SavePackageShouldPromptUser)
     IPC_MESSAGE_HANDLER(AutomationMsg_WindowTitle, GetWindowTitle)
     IPC_MESSAGE_HANDLER(AutomationMsg_SetShelfVisibility, SetShelfVisibility)
     IPC_MESSAGE_HANDLER(AutomationMsg_BlockedPopupCount, GetBlockedPopupCount)
@@ -2247,11 +2245,6 @@ void TestingAutomationProvider::GoForwardBlockUntilNavigationsComplete(
   AutomationMsg_GoForwardBlockUntilNavigationsComplete::WriteReplyParams(
       reply_message, AUTOMATION_MSG_NAVIGATION_ERROR);
   Send(reply_message);
-}
-
-void TestingAutomationProvider::SavePackageShouldPromptUser(
-    bool should_prompt) {
-  SavePackageFilePicker::SetShouldPromptUser(should_prompt);
 }
 
 void TestingAutomationProvider::SetShelfVisibility(int handle, bool visible) {

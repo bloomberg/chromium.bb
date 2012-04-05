@@ -8,11 +8,14 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
+#include "base/test/test_file_util.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_history.h"
+#include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
+#include "chrome/browser/download/save_package_file_picker.h"
 #include "chrome/browser/net/url_request_mock_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -47,6 +50,8 @@ static const char* kAppendedExtension =
 #else
     ".html";
 #endif
+
+}  // namespace
 
 class SavePageBrowserTest : public InProcessBrowserTest {
  protected:
@@ -333,4 +338,34 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, RemoveFromList) {
       full_file_name));
 }
 
-}  // namespace
+// This tests that a webpage with the title "test.exe" is saved as
+// "test.exe.htm".
+// We probably don't care to handle this on Linux or Mac.
+#if defined(OS_WIN)
+IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, CleanFilenameFromPageTitle) {
+  const FilePath file_name(FILE_PATH_LITERAL("c.htm"));
+  FilePath download_dir =
+      DownloadPrefs::FromDownloadManager(GetDownloadManager())->
+          download_path();
+  FilePath full_file_name =
+      download_dir.AppendASCII(std::string("test.exe") + kAppendedExtension);
+  FilePath dir = download_dir.AppendASCII("test.exe_files");
+
+  EXPECT_FALSE(file_util::PathExists(full_file_name));
+  GURL url = URLRequestMockHTTPJob::GetMockUrl(
+      FilePath(kTestDir).Append(file_name));
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  SavePackageFilePicker::SetShouldPromptUser(false);
+  ui_test_utils::WindowedNotificationObserver observer(
+        content::NOTIFICATION_SAVE_PACKAGE_SUCCESSFULLY_FINISHED,
+        content::NotificationService::AllSources());
+  browser()->SavePage();
+  observer.Wait();
+
+  EXPECT_TRUE(file_util::PathExists(full_file_name));
+
+  EXPECT_TRUE(file_util::DieFileDie(full_file_name, false));
+  EXPECT_TRUE(file_util::DieFileDie(dir, true));
+}
+#endif

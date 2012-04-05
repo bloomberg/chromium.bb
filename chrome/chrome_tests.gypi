@@ -790,7 +790,6 @@
         # NOTE: DON'T ADD NEW TESTS HERE!
         # New tests should be browser_tests. browser_tests are sharded and are
         # less flakier.
-        'browser/download/save_page_uitest.cc',
         'browser/fast_shutdown_uitest.cc',
         'browser/history/multipart_uitest.cc',
         'browser/history/redirect_uitest.cc',

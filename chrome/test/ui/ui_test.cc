@@ -449,17 +449,6 @@ void UITestBase::WaitUntilTabCount(int tab_count) {
   ADD_FAILURE() << "Timeout reached in WaitUntilTabCount";
 }
 
-FilePath UITestBase::GetDownloadDirectory() {
-  scoped_refptr<TabProxy> tab_proxy(GetActiveTab());
-  EXPECT_TRUE(tab_proxy.get());
-  if (!tab_proxy.get())
-    return FilePath();
-
-  FilePath download_directory;
-  EXPECT_TRUE(tab_proxy->GetDownloadDirectory(&download_directory));
-  return download_directory;
-}
-
 const FilePath::CharType* UITestBase::GetExecutablePath() {
   if (launch_arguments_.HasSwitch(switches::kEnableChromiumBranding))
     return chrome::kBrowserProcessExecutablePathChromium;
@@ -647,51 +636,6 @@ bool UITest::EvictFileFromSystemCacheWrapper(const FilePath& path) {
     base::PlatformThread::Sleep(kDelay);
   }
   return false;
-}
-
-void UITest::WaitForGeneratedFileAndCheck(
-    const FilePath& generated_file,
-    const FilePath& original_file,
-    bool compare_files,
-    bool need_equal,
-    bool delete_generated_file) {
-  // Check whether the target file has been generated.
-  base::PlatformFileInfo previous, current;
-  bool exist = false;
-  const int kCycles = 20;
-  const TimeDelta kDelay = TestTimeouts::action_timeout() / kCycles;
-  for (int i = 0; i < kCycles; ++i) {
-    if (exist) {
-      file_util::GetFileInfo(generated_file, &current);
-      if (current.size == previous.size)
-        break;
-      previous = current;
-    } else if (file_util::PathExists(generated_file)) {
-      file_util::GetFileInfo(generated_file, &previous);
-      exist = true;
-    }
-    base::PlatformThread::Sleep(kDelay);
-  }
-  EXPECT_TRUE(exist);
-
-  if (compare_files) {
-    // Check whether the generated file is equal with original file according to
-    // parameter: need_equal.
-    int64 generated_file_size = 0;
-    int64 original_file_size = 0;
-
-    EXPECT_TRUE(file_util::GetFileSize(generated_file, &generated_file_size));
-    EXPECT_TRUE(file_util::GetFileSize(original_file, &original_file_size));
-    if (need_equal) {
-      EXPECT_EQ(generated_file_size, original_file_size);
-      EXPECT_TRUE(file_util::ContentsEqual(generated_file, original_file));
-    } else {
-      EXPECT_NE(generated_file_size, original_file_size);
-      EXPECT_FALSE(file_util::ContentsEqual(generated_file, original_file));
-    }
-  }
-  if (delete_generated_file)
-    EXPECT_TRUE(file_util::DieFileDie(generated_file, false));
 }
 
 bool UITest::WaitUntilJavaScriptCondition(TabProxy* tab,

@@ -191,11 +191,6 @@ class AutomationProxy : public IPC::Channel::Listener,
   // load_time is how long, in ms, the tab contents took to load.
   void SignalNewTabUITab(int load_time);
 
-  // Set whether or not running the save page as... command show prompt the
-  // user for a download path.  Returns true if the message is successfully
-  // sent.
-  bool SavePackageShouldPromptUser(bool should_prompt) WARN_UNUSED_RESULT;
-
   // Installs the extension. If |with_ui| is true an install confirmation
   // and notification UI is shown, otherwise the install is silent. Returns the
   // ExtensionProxy for the installed extension, or NULL on failure.

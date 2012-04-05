@@ -360,8 +360,6 @@ class TestingAutomationProvider : public AutomationProvider,
                                               int number_of_navigations,
                                               IPC::Message* reply_message);
 
-  void SavePackageShouldPromptUser(bool should_prompt);
-
   void GetWindowTitle(int handle, string16* text);
 
   void SetShelfVisibility(int handle, bool visible);
