@@ -648,8 +648,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, TwoWatchesInOneFrame) {
   CheckGeoposition(final_position_latitude, final_position_longitude);
 }
 
-// Hangs flakily, http://crbug.com/70588.
-IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, DISABLED_TabDestroyed) {
+IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, TabDestroyed) {
   html_for_tests_ = "files/geolocation/tab_destroyed.html";
   ASSERT_TRUE(Initialize(INITIALIZATION_IFRAMES));
   LoadIFrames(3);
