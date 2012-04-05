@@ -145,9 +145,9 @@ FramePainter::FramePainter()
       top_right_corner_(NULL),
       header_left_edge_(NULL),
       header_right_edge_(NULL),
-      previous_theme_frame_(NULL),
+      previous_theme_frame_id_(0),
       previous_opacity_(0),
-      crossfade_theme_frame_(NULL),
+      crossfade_theme_frame_id_(0),
       crossfade_opacity_(0),
       crossfade_animation_(NULL),
       size_button_behavior_(SIZE_BUTTON_MAXIMIZES) {
@@ -291,41 +291,51 @@ gfx::Size FramePainter::GetMinimumSize(views::NonClientFrameView* view) {
 void FramePainter::PaintHeader(views::NonClientFrameView* view,
                                gfx::Canvas* canvas,
                                HeaderMode header_mode,
-                               const SkBitmap* theme_frame,
+                               int theme_frame_id,
                                const SkBitmap* theme_frame_overlay) {
-  int opacity = UseSoloWindowHeader(NULL) ?
-      kSoloWindowOpacity :
-      (header_mode == ACTIVE ? kActiveWindowOpacity : kInactiveWindowOpacity);
-
-  if (previous_theme_frame_ && previous_theme_frame_ != theme_frame) {
+  if (previous_theme_frame_id_ != 0 &&
+      previous_theme_frame_id_ != theme_frame_id) {
     crossfade_animation_.reset(new ui::SlideAnimation(this));
-    crossfade_theme_frame_ = previous_theme_frame_;
+    crossfade_theme_frame_id_ = previous_theme_frame_id_;
     crossfade_opacity_ = previous_opacity_;
     crossfade_animation_->SetSlideDuration(kActivationCrossfadeDurationMs);
     crossfade_animation_->Show();
   }
 
+  int opacity = UseSoloWindowHeader(NULL) ?
+      kSoloWindowOpacity :
+      (header_mode == ACTIVE ? kActiveWindowOpacity : kInactiveWindowOpacity);
+
+  ui::ThemeProvider* theme_provider = frame_->GetThemeProvider();
+  SkBitmap* theme_frame = theme_provider->GetBitmapNamed(theme_frame_id);
   header_frame_bounds_ = gfx::Rect(0, 0, view->width(), theme_frame->height());
 
   const int kCornerRadius = 2;
   SkPaint paint;
 
   if (crossfade_animation_.get() && crossfade_animation_->is_animating()) {
-    double current_value = crossfade_animation_->GetCurrentValue();
-    int old_alpha = (1 - current_value) * crossfade_opacity_;
-    int new_alpha = current_value * opacity;
+    SkBitmap* crossfade_theme_frame =
+        theme_provider->GetBitmapNamed(crossfade_theme_frame_id_);
+    if (crossfade_theme_frame) {
+      double current_value = crossfade_animation_->GetCurrentValue();
+      int old_alpha = (1 - current_value) * crossfade_opacity_;
+      int new_alpha = current_value * opacity;
 
-    // Draw the old header background, clipping the corners to be rounded.
-    paint.setAlpha(old_alpha);
-    paint.setXfermodeMode(SkXfermode::kPlus_Mode);
-    TileRoundRect(canvas,
-                  0, 0, view->width(), theme_frame->height(),
-                  &paint,
-                  *crossfade_theme_frame_,
-                  kCornerRadius,
-                  kThemeFrameBitmapOffsetX);
+      // Draw the old header background, clipping the corners to be rounded.
+      paint.setAlpha(old_alpha);
+      paint.setXfermodeMode(SkXfermode::kPlus_Mode);
+      TileRoundRect(canvas,
+                    0, 0, view->width(), theme_frame->height(),
+                    &paint,
+                    *crossfade_theme_frame,
+                    kCornerRadius,
+                    kThemeFrameBitmapOffsetX);
 
-    paint.setAlpha(new_alpha);
+      paint.setAlpha(new_alpha);
+    } else {
+      crossfade_animation_.reset();
+      paint.setAlpha(opacity);
+    }
   } else {
     paint.setAlpha(opacity);
   }
@@ -338,7 +348,7 @@ void FramePainter::PaintHeader(views::NonClientFrameView* view,
                 kCornerRadius,
                 kThemeFrameBitmapOffsetX);
 
-  previous_theme_frame_ = theme_frame;
+  previous_theme_frame_id_ = theme_frame_id;
   previous_opacity_ = opacity;
 
   // Draw the theme frame overlay, if available.

@@ -62,16 +62,14 @@ int PanelFrameView::NonClientHitTest(const gfx::Point& point) {
 }
 
 void PanelFrameView::OnPaint(gfx::Canvas* canvas) {
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   bool paint_as_active = ShouldPaintAsActive();
-  const SkBitmap* theme_bitmap = paint_as_active ?
-      rb.GetImageNamed(IDR_AURA_WINDOW_HEADER_BASE_ACTIVE).ToSkBitmap() :
-      rb.GetImageNamed(IDR_AURA_WINDOW_HEADER_BASE_INACTIVE).ToSkBitmap();
+  int theme_bitmap_id = paint_as_active ? IDR_AURA_WINDOW_HEADER_BASE_ACTIVE :
+      IDR_AURA_WINDOW_HEADER_BASE_INACTIVE;
   frame_painter_->PaintHeader(
       this,
       canvas,
       paint_as_active ? FramePainter::ACTIVE : FramePainter::INACTIVE,
-      theme_bitmap,
+      theme_bitmap_id,
       NULL);
   frame_painter_->PaintHeaderContentSeparator(this, canvas);
 }

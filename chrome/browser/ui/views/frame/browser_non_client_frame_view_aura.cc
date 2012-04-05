@@ -195,7 +195,7 @@ void BrowserNonClientFrameViewAura::OnPaint(gfx::Canvas* canvas) {
       canvas,
       ShouldPaintAsActive() ?
           ash::FramePainter::ACTIVE : ash::FramePainter::INACTIVE,
-      GetThemeFrameBitmap(),
+      GetThemeFrameBitmapId(),
       GetThemeFrameOverlayBitmap());
   if (browser_view()->ShouldShowWindowTitle())
     frame_painter_->PaintTitleBar(this, canvas, BrowserFrame::GetTitleFont());
@@ -399,30 +399,34 @@ void BrowserNonClientFrameViewAura::PaintContentEdge(gfx::Canvas* canvas) {
       ThemeService::GetDefaultColor(ThemeService::COLOR_TOOLBAR_SEPARATOR));
 }
 
-const SkBitmap* BrowserNonClientFrameViewAura::GetThemeFrameBitmap() const {
+int BrowserNonClientFrameViewAura::GetThemeFrameBitmapId() const {
   bool is_incognito = browser_view()->IsOffTheRecord();
   int resource_id;
   if (browser_view()->IsBrowserTypeNormal()) {
+    ui::ThemeProvider* tp = GetThemeProvider();
     if (ShouldPaintAsActive()) {
       // Use the standard resource ids to allow users to theme the frames.
       // TODO(jamescook): If this becomes the only frame we use on Aura, define
       // the resources to use the standard ids like IDR_THEME_FRAME, etc.
       if (is_incognito) {
-        return GetCustomBitmap(IDR_THEME_FRAME_INCOGNITO,
-                               IDR_AURA_WINDOW_HEADER_BASE_INCOGNITO_ACTIVE);
+        return tp->HasCustomImage(IDR_THEME_FRAME_INCOGNITO) ?
+            IDR_THEME_FRAME_INCOGNITO :
+            IDR_AURA_WINDOW_HEADER_BASE_INCOGNITO_ACTIVE;
       }
-      return GetCustomBitmap(IDR_THEME_FRAME,
-                             IDR_AURA_WINDOW_HEADER_BASE_ACTIVE);
+      return tp->HasCustomImage(IDR_THEME_FRAME) ?
+          IDR_THEME_FRAME :
+          IDR_AURA_WINDOW_HEADER_BASE_ACTIVE;
     }
     if (is_incognito) {
-      return GetCustomBitmap(IDR_THEME_FRAME_INCOGNITO_INACTIVE,
-                             IDR_AURA_WINDOW_HEADER_BASE_INCOGNITO_INACTIVE);
+      return tp->HasCustomImage(IDR_THEME_FRAME_INCOGNITO_INACTIVE) ?
+          IDR_THEME_FRAME_INCOGNITO_INACTIVE :
+          IDR_AURA_WINDOW_HEADER_BASE_INCOGNITO_INACTIVE;
     }
-    return GetCustomBitmap(IDR_THEME_FRAME_INACTIVE,
-                           IDR_AURA_WINDOW_HEADER_BASE_INACTIVE);
+    return tp->HasCustomImage(IDR_THEME_FRAME_INACTIVE) ?
+        IDR_THEME_FRAME_INACTIVE :
+        IDR_AURA_WINDOW_HEADER_BASE_INACTIVE;
   }
   // Never theme app and popup windows.
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   if (ShouldPaintAsActive()) {
     resource_id = is_incognito ?
         IDR_AURA_WINDOW_HEADER_BASE_INCOGNITO_ACTIVE :
@@ -432,7 +436,7 @@ const SkBitmap* BrowserNonClientFrameViewAura::GetThemeFrameBitmap() const {
         IDR_AURA_WINDOW_HEADER_BASE_INCOGNITO_INACTIVE :
         IDR_AURA_WINDOW_HEADER_BASE_INACTIVE;
   }
-  return rb.GetBitmapNamed(resource_id);
+  return resource_id;
 }
 
 const SkBitmap*
@@ -445,13 +449,4 @@ BrowserNonClientFrameViewAura::GetThemeFrameOverlayBitmap() const {
         IDR_THEME_FRAME_OVERLAY : IDR_THEME_FRAME_OVERLAY_INACTIVE);
   }
   return NULL;
-}
-
-SkBitmap* BrowserNonClientFrameViewAura::GetCustomBitmap(
-    int bitmap_id,
-    int fallback_bitmap_id) const {
-  ui::ThemeProvider* tp = GetThemeProvider();
-  if (tp->HasCustomImage(bitmap_id))
-    return tp->GetBitmapNamed(bitmap_id);
-  return tp->GetBitmapNamed(fallback_bitmap_id);
 }

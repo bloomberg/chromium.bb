@@ -84,7 +84,7 @@ class ASH_EXPORT FramePainter : public aura::WindowObserver,
   void PaintHeader(views::NonClientFrameView* view,
                    gfx::Canvas* canvas,
                    HeaderMode header_mode,
-                   const SkBitmap* theme_frame,
+                   int theme_frame_id,
                    const SkBitmap* theme_frame_overlay);
 
   // Paints the header/content separator line.  Exists as a separate function
@@ -147,12 +147,12 @@ class ASH_EXPORT FramePainter : public aura::WindowObserver,
   const SkBitmap* header_left_edge_;
   const SkBitmap* header_right_edge_;
 
-  // Bitmap and opacity last used for painting header.
-  const SkBitmap* previous_theme_frame_;
+  // Bitmap id and opacity last used for painting header.
+  int previous_theme_frame_id_;
   int previous_opacity_;
 
-  // Bitmap and opacity we are crossfading from.
-  const SkBitmap* crossfade_theme_frame_;
+  // Bitmap id and opacity we are crossfading from.
+  int crossfade_theme_frame_id_;
   int crossfade_opacity_;
 
   gfx::Rect header_frame_bounds_;

@@ -72,14 +72,10 @@ class BrowserNonClientFrameViewAura : public BrowserNonClientFrameView,
   // above the content area.
   void PaintContentEdge(gfx::Canvas* canvas);
 
-  // Returns the correct bitmap for the frame header based on activation state
-  // and incognito mode.
-  const SkBitmap* GetThemeFrameBitmap() const;
+  // Returns the correct bitmap id for the frame header based on activation
+  // state and incognito mode.
+  int GetThemeFrameBitmapId() const;
   const SkBitmap* GetThemeFrameOverlayBitmap() const;
-
-  // Returns the theme image bitmap for |bitmap_id| if the user has a custom
-  // theme image, or the bitmap for |fallback_bitmap_id| if not.
-  SkBitmap* GetCustomBitmap(int bitmap_id, int fallback_bitmap_id) const;
 
   // Window controls. The |size_button_| either toggles maximized or toggles
   // minimized. The exact behavior is determined by |size_button_minimizes_|.
