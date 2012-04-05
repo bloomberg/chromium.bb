@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <algorithm>
+#include <iterator>
 
 #include "base/bind.h"
 #include "base/callback.h"
