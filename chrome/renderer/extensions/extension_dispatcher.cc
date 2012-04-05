@@ -527,6 +527,7 @@ void ExtensionDispatcher::PopulateSourceMap() {
   source_map_.RegisterSource("pageAction", IDR_PAGE_ACTION_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("pageCapture",
                              IDR_PAGE_CAPTURE_CUSTOM_BINDINGS_JS);
+  source_map_.RegisterSource("platformApp", IDR_PLATFORM_APP_JS);
   source_map_.RegisterSource("storage", IDR_STORAGE_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("tabs", IDR_TABS_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("tts", IDR_TTS_CUSTOM_BINDINGS_JS);
@@ -656,6 +657,11 @@ void ExtensionDispatcher::DidCreateScriptContext(
     module_system->Require("schema_generated_bindings");
     InstallBindings(module_system.get(), v8_context, "extension");
   }
+
+  // Inject custom JS into the platform app context to block certain features
+  // of the document and window.
+  if (extension && extension->is_platform_app())
+    module_system->Require("platformApp");
 
   context->set_module_system(module_system.Pass());
 

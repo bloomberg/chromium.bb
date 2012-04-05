@@ -176,13 +176,13 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, DisallowNavigation) {
   EXPECT_TRUE(result);
 }
 
-IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, DisallowModalDialogs) {
-  ASSERT_TRUE(RunPlatformAppTest("platform_apps/modal_dialogs")) << message_;
-}
-
 // Tests that localStorage and WebSQL are disabled for platform apps.
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, DisallowStorage) {
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/storage")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, Restrictions) {
+  ASSERT_TRUE(RunPlatformAppTest("platform_apps/restrictions")) << message_;
 }
 
 // Tests that platform apps can use the chrome.windows.* API.
