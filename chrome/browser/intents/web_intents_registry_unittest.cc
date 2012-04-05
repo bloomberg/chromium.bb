@@ -181,6 +181,7 @@ TEST_F(WebIntentsRegistryTest, BasicTests) {
   registry_.RegisterIntentService(service);
 
   service.type = ASCIIToUTF16("video/*");
+  service.title = ASCIIToUTF16("Second Service");
   registry_.RegisterIntentService(service);
 
   service.action = ASCIIToUTF16("search");
@@ -307,19 +308,19 @@ TEST_F(WebIntentsRegistryTest, GetIntentsFromMixedSources) {
 
 TEST_F(WebIntentsRegistryTest, GetIntentsWithMimeMatching) {
   WebIntentServiceData services[] = {
-    WebIntentServiceData(GURL("http://somewhere.com/intent/share.html"),
+    WebIntentServiceData(GURL("http://elsewhere.com/intent/share.html"),
                          ASCIIToUTF16("http://webintents.org/share"),
                          ASCIIToUTF16("image/*"),
                          ASCIIToUTF16("Image Sharing Service")),
-    WebIntentServiceData(GURL("http://elsewhere.com/intent/share.html"),
+    WebIntentServiceData(GURL("http://somewhere.com/intent/share.html"),
                          ASCIIToUTF16("http://webintents.org/share"),
                          ASCIIToUTF16("image/jpeg"),
                          ASCIIToUTF16("Specific Image Editing Service")),
     WebIntentServiceData(GURL("http://somewhere.com/intent/share.html"),
                          ASCIIToUTF16("http://webintents.org/share"),
                          ASCIIToUTF16("text/uri-list"),
-                         ASCIIToUTF16("Link Sharing Service")),
-    WebIntentServiceData(GURL("http://elsewhere.com/intent/share.html"),
+                         ASCIIToUTF16("Text Link Sharing Service")),
+    WebIntentServiceData(GURL("http://somewhere2.com/intent/share.html"),
                          ASCIIToUTF16("http://webintents.org/share"),
                          ASCIIToUTF16("text/plain"),
                          ASCIIToUTF16("Text Sharing Service"))
@@ -429,4 +430,87 @@ TEST_F(WebIntentsRegistryTest, TestGetDefaults) {
   consumer.WaitForData();
 
   EXPECT_EQ("", consumer.default_.service_url);
+}
+
+// Verify that collapsing equivalent intents works properly.
+TEST_F(WebIntentsRegistryTest, CollapseIntents) {
+  WebIntentsRegistry::IntentServiceList services;
+
+  // Add two intents with identical |service_url|, |title|, and |action|.
+  services.push_back(
+      WebIntentServiceData(GURL("http://somewhere.com/intent/share.html"),
+      ASCIIToUTF16("http://webintents.org/share"),
+      ASCIIToUTF16("image/png"),
+      ASCIIToUTF16("Image Sharing Service")));
+  services.push_back(
+      WebIntentServiceData(GURL("http://somewhere.com/intent/share.html"),
+      ASCIIToUTF16("http://webintents.org/share"),
+      ASCIIToUTF16("image/jpg"),
+      ASCIIToUTF16("Image Sharing Service")));
+  // Service that differs in disposition.
+  services.push_back(
+      WebIntentServiceData(GURL("http://somewhere.com/intent/share.html"),
+      ASCIIToUTF16("http://webintents.org/share"),
+      ASCIIToUTF16("image/png"),
+      ASCIIToUTF16("Image Sharing Service")));
+  ASSERT_EQ(WebIntentServiceData::DISPOSITION_WINDOW,
+      services.back().disposition);
+  services.back().disposition = WebIntentServiceData::DISPOSITION_INLINE;
+  // Service that differs in title.
+  services.push_back(
+      WebIntentServiceData(GURL("http://somewhere.com/intent/share.html"),
+      ASCIIToUTF16("http://webintents.org/share"),
+      ASCIIToUTF16("image/png"),
+      ASCIIToUTF16("Sharing Service")));
+  // Service that differs in |action|.
+  services.push_back(
+      WebIntentServiceData(GURL("http://somewhere.com/intent/share.html"),
+      ASCIIToUTF16("http://webintents.org/share-old"),
+      ASCIIToUTF16("image/png"),
+      ASCIIToUTF16("Image Sharing Service")));
+  // Service that differs in |service_url|.
+  services.push_back(
+      WebIntentServiceData(GURL("http://zoo.com/share.html"),
+      ASCIIToUTF16("http://webintents.org/share"),
+      ASCIIToUTF16("image/png"),
+      ASCIIToUTF16("Image Sharing Service")));
+
+  // Only the first two services should be collapsed.
+  registry_.CollapseIntents(&services);
+  ASSERT_EQ(5UL, services.size());
+
+  // Joined services have their mime types combined
+  EXPECT_EQ(ASCIIToUTF16("image/png,image/jpg"), services[0].type);
+
+  // Verify the remaining services via distinguishing characteristics.
+  EXPECT_EQ(WebIntentServiceData::DISPOSITION_INLINE, services[1].disposition);
+  EXPECT_EQ(ASCIIToUTF16("Sharing Service"), services[2].title);
+  EXPECT_EQ(ASCIIToUTF16("http://webintents.org/share-old"),
+      services[3].action);
+  EXPECT_EQ(GURL("http://zoo.com/share.html").spec(),
+      services[4].service_url.spec());
+}
+
+// Verify that GetIntentServices collapses equivalent intents.
+TEST_F(WebIntentsRegistryTest, GetIntentsCollapsesEquivalentIntents) {
+  WebIntentServiceData services[] = {
+    WebIntentServiceData(GURL("http://somewhere.com/intent/share.html"),
+                         ASCIIToUTF16("http://webintents.org/share"),
+                         ASCIIToUTF16("image/png"),
+                         ASCIIToUTF16("Image Sharing Service")),
+    WebIntentServiceData(GURL("http://somewhere.com/intent/share.html"),
+                        ASCIIToUTF16("http://webintents.org/share"),
+                        ASCIIToUTF16("image/jpg"),
+                        ASCIIToUTF16("Image Sharing Service"))
+  };
+  registry_.RegisterIntentService(services[0]);
+  registry_.RegisterIntentService(services[1]);
+
+  TestConsumer consumer;
+  consumer.expected_id_ = registry_.GetIntentServices(
+      ASCIIToUTF16("http://webintents.org/share"),
+      ASCIIToUTF16("image/*"), &consumer);
+  consumer.WaitForData();
+  ASSERT_EQ(1U, consumer.services_.size());
+  EXPECT_EQ(ASCIIToUTF16("image/png,image/jpg"), consumer.services_[0].type);
 }

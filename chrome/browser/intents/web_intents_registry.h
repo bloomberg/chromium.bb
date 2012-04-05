@@ -108,9 +108,16 @@ class WebIntentsRegistry
   friend class WebIntentsRegistryFactory;
   friend class WebIntentsRegistryTest;
   friend class WebIntentsModelTest;
+  FRIEND_TEST_ALL_PREFIXES(WebIntentsRegistryTest, CollapseIntents);
 
   WebIntentsRegistry();
   virtual ~WebIntentsRegistry();
+
+  // Collapses a list of IntentServices by joining intents that have identical
+  // service URLs, actions, and mime types.
+  // |services| is the list of intent services to be collapsed when passed in
+  // and will be modified with the new list in-place.
+  void CollapseIntents(IntentServiceList* services);
 
  private:
    const Extension* ExtensionForURL(const std::string& url);

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/intents/web_intents_registry.h"
 
+#include <algorithm>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
@@ -55,6 +57,38 @@ void FilterServicesByMimetype(const string16& mimetype,
     else
       iter = matching_services->erase(iter);
   }
+}
+
+// Functor object for intent ordering.
+struct IntentOrdering {
+  // Implements StrictWeakOrdering for intents, based on intent-equivalence.
+  // Order by |service_url|, |action|, |title|, and |disposition| in order.
+  bool operator()(const webkit_glue::WebIntentServiceData& lhs,
+                  const webkit_glue::WebIntentServiceData& rhs) {
+    if (lhs.service_url != rhs.service_url)
+      return lhs.service_url < rhs.service_url;
+
+    if (lhs.action != rhs.action)
+      return lhs.action < rhs.action;
+
+    if (lhs.title != rhs.title)
+      return lhs.title < rhs.title;
+
+    if (lhs.disposition != rhs.disposition)
+      return lhs.disposition < rhs.disposition;
+
+    // At this point, we consider intents to be equal, even if |type| differs.
+    return false;
+  }
+};
+
+// Two intents are equivalent iff all fields except |type| are equal.
+bool IntentsAreEquivalent(const webkit_glue::WebIntentServiceData& lhs,
+                          const webkit_glue::WebIntentServiceData& rhs) {
+  return !((lhs.service_url != rhs.service_url) ||
+      (lhs.action != rhs.action) ||
+      (lhs.title != rhs.title) ||
+      (lhs.disposition != rhs.disposition));
 }
 
 }  // namespace
@@ -151,6 +185,9 @@ void WebIntentsRegistry::OnWebDataServiceRequestDone(
 
   // Filter out all services not matching the query type.
   FilterServicesByMimetype(query->type_, &matching_services);
+
+  // Collapse intents that are equivalent for all but |type|.
+  CollapseIntents(&matching_services);
 
   query->consumer_->OnIntentsQueryDone(query->query_id_, matching_services);
   delete query;
@@ -366,4 +403,35 @@ void WebIntentsRegistry::UnregisterIntentService(
     const WebIntentServiceData& service) {
   DCHECK(wds_.get());
   wds_->RemoveWebIntentService(service);
+}
+
+void WebIntentsRegistry::CollapseIntents(IntentServiceList* services) {
+  DCHECK(services);
+
+  // No need to do anything for no services/single service.
+  if (services->size() < 2)
+    return;
+
+  // Sort so that intents that can be collapsed must be adjacent.
+  std::sort(services->begin(), services->end(), IntentOrdering());
+
+  // Combine adjacent services if they are equivalent.
+  IntentServiceList::iterator write_iter = services->begin();
+  IntentServiceList::iterator read_iter = write_iter + 1;
+  while (read_iter != services->end()) {
+    if (IntentsAreEquivalent(*write_iter, *read_iter)) {
+      // If the two intents are equivalent, join types and collapse.
+      write_iter->type += ASCIIToUTF16(",") + read_iter->type;
+    } else {
+      // Otherwise, keep both intents.
+      ++write_iter;
+      if (write_iter != read_iter)
+        *write_iter = *read_iter;
+    }
+    ++read_iter;
+  }
+
+  // Cut off everything after the last intent copied to the list.
+  if (++write_iter != services->end())
+    services->erase(write_iter, services->end());
 }

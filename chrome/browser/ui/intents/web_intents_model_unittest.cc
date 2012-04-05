@@ -189,10 +189,10 @@ TEST_F(WebIntentsModelTest, LoadFromWebData) {
 TEST_F(WebIntentsModelTest, TestMultipleIntentsOnHost) {
   LoadRegistry();
   webkit_glue::WebIntentServiceData service;
-  service.service_url = GURL("http://www.google.com/edit");
-  service.action = ASCIIToUTF16("EDIT");
+  service.service_url = GURL("http://www.google.com/xedit");
+  service.action = ASCIIToUTF16("XEDIT");
   service.type = ASCIIToUTF16("text/plain");
-  service.title = ASCIIToUTF16("Edit");
+  service.title = ASCIIToUTF16("XEdit");
   registry_.RegisterIntentService(service);
 
   WaitingWebIntentsObserver obs;
@@ -207,6 +207,6 @@ TEST_F(WebIntentsModelTest, TestMultipleIntentsOnHost) {
   ASSERT_EQ(WebIntentsTreeNode::TYPE_SERVICE, node->Type());
   ASSERT_EQ(WebIntentsTreeNode::TYPE_SERVICE, node->Type());
   ServiceTreeNode* snode = static_cast<ServiceTreeNode*>(node);
-  EXPECT_EQ(ASCIIToUTF16("EDIT"), snode->Action());
-  EXPECT_EQ(ASCIIToUTF16("http://www.google.com/edit"), snode->ServiceUrl());
+  EXPECT_EQ(ASCIIToUTF16("XEDIT"), snode->Action());
+  EXPECT_EQ(ASCIIToUTF16("http://www.google.com/xedit"), snode->ServiceUrl());
 }
