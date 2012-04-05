@@ -16,6 +16,7 @@
 #include "base/stringprintf.h"
 #include "base/string_util.h"
 #include "base/win/scoped_handle.h"
+#include "base/win/scoped_process_information.h"
 #include "base/win/windows_version.h"
 #include "content/common/debug_flags.h"
 #include "content/public/common/content_client.h"
@@ -472,7 +473,6 @@ bool BrokerDuplicateHandle(HANDLE source_handle,
 
 base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
                                            const FilePath& exposed_dir) {
-  base::ProcessHandle process = 0;
   const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
   content::ProcessType type;
   std::string type_str = cmd_line->GetSwitchValueASCII(switches::kProcessType);
@@ -551,7 +551,7 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
   cmd_line->AppendArg(base::StringPrintf("/prefetch:%d", type));
 
   sandbox::ResultCode result;
-  PROCESS_INFORMATION target = {0};
+  base::win::ScopedProcessInformation target;
   sandbox::TargetPolicy* policy = g_broker_services->CreatePolicy();
 
 #if !defined(NACL_WIN64)  // We don't need this code on win nacl64.
@@ -564,6 +564,7 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
 
   if (!in_sandbox) {
     policy->Release();
+    base::ProcessHandle process = 0;
     base::LaunchProcess(*cmd_line, base::LaunchOptions(), &process);
     return process;
   }
@@ -620,7 +621,7 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
   result = g_broker_services->SpawnTarget(
       cmd_line->GetProgram().value().c_str(),
       cmd_line->GetCommandLineString().c_str(),
-      policy, &target);
+      policy, target.Receive());
   policy->Release();
 
   TRACE_EVENT_END_ETW("StartProcessWithAccess::LAUNCHPROCESS", 0, 0);
@@ -640,7 +641,7 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
       (base::win::OSInfo::GetInstance()->wow64_status() ==
           base::win::OSInfo::WOW64_DISABLED)) {
     const SIZE_T kOneGigabyte = 1 << 30;
-    void* nacl_mem = VirtualAllocEx(target.hProcess,
+    void* nacl_mem = VirtualAllocEx(target.process_handle(),
                                     NULL,
                                     kOneGigabyte,
                                     MEM_RESERVE,
@@ -650,16 +651,14 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
     }
   }
 
-  ResumeThread(target.hThread);
-  CloseHandle(target.hThread);
-  process = target.hProcess;
+  ResumeThread(target.thread_handle());
 
   // Help the process a little. It can't start the debugger by itself if
   // the process is in a sandbox.
   if (child_needs_help)
-    base::debug::SpawnDebuggerOnProcess(target.dwProcessId);
+    base::debug::SpawnDebuggerOnProcess(target.process_id());
 
-  return process;
+  return target.TakeProcessHandle();
 }
 
 }  // namespace sandbox
