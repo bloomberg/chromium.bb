@@ -7,6 +7,7 @@
 #pragma once
 
 #include <map>
+#include <queue>
 #include <string>
 
 #include "ash/launcher/launcher_delegate.h"
@@ -218,6 +219,11 @@ class ChromeLauncherDelegate : public ash::LauncherDelegate,
   // Returns the profile used for new windows.
   Profile* GetProfileForNewWindows();
 
+  // Checks |pending_pinnned_apps_| list and creates pinned app items for apps
+  // that are ready. To maintain the order, the list is iterated from the
+  // beginning to the end and stops the iteration when hitting a not-ready app.
+  void ProcessPendingPinnedApps();
+
   static ChromeLauncherDelegate* instance_;
 
   ash::LauncherModel* model_;
@@ -230,6 +236,12 @@ class ChromeLauncherDelegate : public ash::LauncherDelegate,
 
   // Used to load the image for an app tab.
   scoped_ptr<AppIconLoader> app_icon_loader_;
+
+  // A list of items that are in pinned app list but corresponding apps are
+  // not ready. Keep them in this list and create pinned item when the apps
+  // are installed (via sync or external extension provider.) The order of the
+  // list reflects the original order in pinned app list.
+  std::queue<Item> pending_pinned_apps_;
 
   content::NotificationRegistrar registrar_;
 

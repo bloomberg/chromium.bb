@@ -25,6 +25,10 @@
 
 namespace {
 
+const char* kSpecialApps[] = {
+  extension_misc::kWebStoreAppId,
+};
+
 class ChromeAppItem : public ChromeAppListItem {
  public:
   ChromeAppItem() : ChromeAppListItem(TYPE_OTHER) {
@@ -63,6 +67,16 @@ struct ModelItemSortData {
   ash::AppListItemModel* item;
   string16 key;
 };
+
+// Returns true if given |extension_id| is listed in kSpecialApps.
+bool IsSpecialApp(const std::string& extension_id) {
+  for (size_t i = 0; i < arraysize(kSpecialApps); ++i) {
+    if (extension_id == kSpecialApps[i])
+      return true;
+  }
+
+  return false;
+}
 
 // Returns true if given |str| matches |query|. Currently, it returns
 // if |query| is a substr of |str|.
@@ -106,6 +120,10 @@ void AppListModelBuilder::Build(const std::string& query) {
 }
 
 void AppListModelBuilder::SortAndPopulateModel(const Items& items) {
+  // Just return if there is nothing to populate.
+  if (items.empty())
+    return;
+
   // Sort items case insensitive alphabetically.
   std::vector<ModelItemSortData> sorted;
   for (Items::const_iterator it = items.begin(); it != items.end(); ++it)
@@ -155,6 +173,7 @@ void AppListModelBuilder::GetExtensionApps(const string16& query,
   for (ExtensionSet::const_iterator app = extensions->begin();
        app != extensions->end(); ++app) {
     if ((*app)->ShouldDisplayInLauncher() &&
+        !IsSpecialApp((*app)->id()) &&
         MatchesQuery(query, UTF8ToUTF16((*app)->name()))) {
       items->push_back(new ExtensionAppItem(profile_, *app));
     }
@@ -165,6 +184,17 @@ void AppListModelBuilder::CreateSpecialItems() {
   DCHECK(model_ && model_->item_count() == 0);
 
   model_->AddItem(new ChromeAppItem());
+
+  ExtensionService* service = profile_->GetExtensionService();
+  DCHECK(service);
+  for (size_t i = 0; i < arraysize(kSpecialApps); ++i) {
+    const Extension* extension =
+        service->GetInstalledExtension(kSpecialApps[i]);
+    DCHECK(extension);
+
+    model_->AddItem(new ExtensionAppItem(profile_, extension));
+  }
+
   special_items_count_ = model_->item_count();
 }
 

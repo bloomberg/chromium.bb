@@ -52,6 +52,44 @@ const char kShelfAutoHideBehaviorAlways[] = "Always";
 const char kShelfAutoHideBehaviorDefault[] = "Default";
 const char kShelfAutoHideBehaviorNever[] = "Never";
 
+// App ID of default pinned apps.
+const char* kDefaultPinnedApps[] = {
+  "pjkljhegncpnkpknbcohdijeoejaedia",  // Gamil
+  "coobgpohoikkiipiblmjeljniedjpjpf",  // Search
+  "apdfllckaahabafndbhieahigkjlhalf",  // Doc
+  "blpcfgokakmgnkcojhhkbfbldkacnbeo",  // YouTube
+};
+
+base::DictionaryValue* CreateAppDict(
+    const std::string& app_id,
+    ChromeLauncherDelegate::AppType app_type) {
+  scoped_ptr<base::DictionaryValue> app_value(new base::DictionaryValue);
+  app_value->SetString(kAppIDPath, app_id);
+  const char* app_type_string;
+  if (app_type == ChromeLauncherDelegate::APP_TYPE_WINDOW) {
+    app_type_string = kAppTypeWindow;
+  } else if (app_type == ChromeLauncherDelegate::APP_TYPE_APP_PANEL) {
+    app_type_string = kAppTypePanel;
+  } else if (app_type == ChromeLauncherDelegate::APP_TYPE_TAB) {
+    app_type_string = kAppTypeTab;
+  } else {
+    LOG(ERROR) << "Unsupported pinned type: " << app_type;
+    return NULL;
+  }
+  app_value->SetString(kAppTypePath, app_type_string);
+  return app_value.release();
+}
+
+base::ListValue* CreateDefaultPinnedAppsList() {
+  scoped_ptr<base::ListValue> apps(new base::ListValue);
+  for (size_t i = 0; i < arraysize(kDefaultPinnedApps); ++i) {
+    apps->Append(CreateAppDict(
+        kDefaultPinnedApps[i],
+        ChromeLauncherDelegate::APP_TYPE_TAB));
+  }
+  return apps.release();
+}
+
 }  // namespace
 
 // ChromeLauncherDelegate::Item ------------------------------------------------
@@ -82,6 +120,10 @@ ChromeLauncherDelegate::ChromeLauncherDelegate(Profile* profile,
   instance_ = this;
   model_->AddObserver(this);
   app_icon_loader_.reset(new LauncherAppIconLoader(profile_, this));
+
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSION_LOADED,
+                 content::Source<Profile>(profile_));
   registrar_.Add(this,
                  chrome::NOTIFICATION_EXTENSION_UNLOADED,
                  content::Source<Profile>(profile_));
@@ -105,8 +147,7 @@ void ChromeLauncherDelegate::Init() {
     if (pinned_apps->GetDictionary(i, &app)) {
       std::string app_id, type_string;
       if (app->GetString(kAppIDPath, &app_id) &&
-          app->GetString(kAppTypePath, &type_string) &&
-          app_icon_loader_->IsValidID(app_id)) {
+          app->GetString(kAppTypePath, &type_string)) {
         AppType app_type;
         if (type_string == kAppTypeWindow)
           app_type = APP_TYPE_WINDOW;
@@ -114,7 +155,16 @@ void ChromeLauncherDelegate::Init() {
           app_type = APP_TYPE_APP_PANEL;
         else
           app_type = APP_TYPE_TAB;
-        CreateAppLauncherItem(NULL, app_id, app_type, ash::STATUS_CLOSED);
+
+        if (app_icon_loader_->IsValidID(app_id)) {
+          CreateAppLauncherItem(NULL, app_id, app_type, ash::STATUS_CLOSED);
+        } else {
+          Item pending_item;
+          pending_item.item_type = TYPE_APP;
+          pending_item.app_type = app_type;
+          pending_item.app_id = app_id;
+          pending_pinned_apps_.push(pending_item);
+        }
       }
     }
   }
@@ -137,6 +187,7 @@ void ChromeLauncherDelegate::RegisterUserPrefs(PrefService* user_prefs) {
   // TODO: If we want to support multiple profiles this will likely need to be
   // pushed to local state and we'll need to track profile per item.
   user_prefs->RegisterListPref(prefs::kPinnedLauncherApps,
+                               CreateDefaultPinnedAppsList(),
                                PrefService::SYNCABLE_PREF);
   user_prefs->RegisterStringPref(prefs::kShelfAutoHideBehavior,
                                  kShelfAutoHideBehaviorDefault,
@@ -487,10 +538,20 @@ void ChromeLauncherDelegate::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  DCHECK_EQ(type, chrome::NOTIFICATION_EXTENSION_UNLOADED);
-  const Extension* extension =
-      content::Details<UnloadedExtensionInfo>(details)->extension;
-  UnpinAppsWithID(extension->id());
+  switch (type) {
+    case chrome::NOTIFICATION_EXTENSION_LOADED: {
+      ProcessPendingPinnedApps();
+      break;
+    }
+    case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
+      const Extension* extension =
+          content::Details<UnloadedExtensionInfo>(details)->extension;
+      UnpinAppsWithID(extension->id());
+      break;
+    }
+    default:
+      NOTREACHED() << "Unexpected notification type=" << type;
+  }
 }
 
 void ChromeLauncherDelegate::PersistPinnedState() {
@@ -501,22 +562,11 @@ void ChromeLauncherDelegate::PersistPinnedState() {
       ash::LauncherID id = model_->items()[i].id;
       if (id_to_item_map_.find(id) != id_to_item_map_.end() &&
           IsPinned(id)) {
-        base::DictionaryValue* app_value = new base::DictionaryValue;
-        app_value->SetString(kAppIDPath, id_to_item_map_[id].app_id);
-        AppType app_type(id_to_item_map_[id].app_type);
-        const char* app_type_string;
-        if (app_type == APP_TYPE_WINDOW) {
-          app_type_string = kAppTypeWindow;
-        } else if (app_type == APP_TYPE_APP_PANEL) {
-          app_type_string = kAppTypePanel;
-        } else if (app_type == APP_TYPE_TAB) {
-          app_type_string = kAppTypeTab;
-        } else {
-          LOG(ERROR) << "Unsupported pinned type: " << app_type;
-          continue;
-        }
-        app_value->SetString(kAppTypePath, app_type_string);
-        updater.Get()->Append(app_value);
+        base::DictionaryValue* app_value = CreateAppDict(
+            id_to_item_map_[id].app_id,
+            id_to_item_map_[id].app_type);
+        if (app_value)
+          updater.Get()->Append(app_value);
       }
     }
   }
@@ -528,4 +578,16 @@ void ChromeLauncherDelegate::SetAppIconLoaderForTest(AppIconLoader* loader) {
 
 Profile* ChromeLauncherDelegate::GetProfileForNewWindows() {
   return ProfileManager::GetDefaultProfileOrOffTheRecord();
+}
+
+void ChromeLauncherDelegate::ProcessPendingPinnedApps() {
+  while (!pending_pinned_apps_.empty()) {
+    const Item& item = pending_pinned_apps_.front();
+
+    if (!app_icon_loader_->IsValidID(item.app_id))
+      return;
+
+    PinAppWithID(item.app_id, item.app_type);
+    pending_pinned_apps_.pop();
+  }
 }
