@@ -60,7 +60,7 @@ void MigratePrefToLocalState() {
   if (local_state->HasPrefPath(prefs::kConfirmToQuitEnabled))
     return;
 
-  DLOG(INFO) << "Migrating kConfirmToQuitEnabled to local state";
+  DVLOG(1) << "Migrating kConfirmToQuitEnabled to local state";
 
   bool enable = false;
 
