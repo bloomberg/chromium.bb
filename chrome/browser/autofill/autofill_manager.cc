@@ -60,6 +60,7 @@
 #include "webkit/forms/form_data.h"
 #include "webkit/forms/form_data_predictions.h"
 #include "webkit/forms/form_field.h"
+#include "webkit/forms/password_form_dom_manager.h"
 
 using base::TimeTicks;
 using content::BrowserThread;
@@ -267,6 +268,10 @@ void AutofillManager::DidNavigateMainFrame(
   Reset();
 }
 
+bool AutofillManager::HasExternalDelegate() {
+  return external_delegate_ != NULL;
+}
+
 bool AutofillManager::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(AutofillManager, message)
@@ -292,6 +297,10 @@ bool AutofillManager::OnMessageReceived(const IPC::Message& message) {
                         OnHideAutofillPopup)
     IPC_MESSAGE_HANDLER(AutofillHostMsg_ShowPasswordGenerationPopup,
                         OnShowPasswordGenerationPopup)
+    IPC_MESSAGE_HANDLER(AutofillHostMsg_AddPasswordFormMapping,
+                        OnAddPasswordFormMapping)
+    IPC_MESSAGE_HANDLER(AutofillHostMsg_ShowPasswordSuggestions,
+                        OnShowPasswordSuggestions)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -679,6 +688,21 @@ void AutofillManager::OnShowPasswordGenerationPopup(const gfx::Rect& bounds) {
 #endif  // #if defined(OS_ANDROID)
 }
 
+void AutofillManager::OnAddPasswordFormMapping(
+      const webkit::forms::FormField& form,
+      const webkit::forms::PasswordFormFillData& fill_data) {
+  if (external_delegate_)
+    external_delegate_->AddPasswordFormMapping(form, fill_data);
+}
+
+void AutofillManager::OnShowPasswordSuggestions(
+    const webkit::forms::FormField& field,
+    const gfx::Rect& bounds,
+    const std::vector<string16>& suggestions) {
+  if (external_delegate_)
+    external_delegate_->OnShowPasswordSuggestions(suggestions, field, bounds);
+}
+
 void AutofillManager::OnLoadedServerPredictions(
     const std::string& response_xml) {
   // Parse and store the server predictions.
@@ -787,6 +811,9 @@ void AutofillManager::Reset() {
   user_did_edit_autofilled_field_ = false;
   forms_loaded_timestamp_ = TimeTicks();
   initial_interaction_timestamp_ = TimeTicks();
+
+  if (external_delegate_)
+    external_delegate_->Reset();
 }
 
 AutofillManager::AutofillManager(TabContentsWrapper* tab_contents,

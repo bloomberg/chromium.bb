@@ -10,8 +10,10 @@
 
 #include "base/compiler_specific.h"
 #include "base/string16.h"
+#include "chrome/browser/autofill/password_autofill_manager.h"
 #include "webkit/forms/form_data.h"
 #include "webkit/forms/form_field.h"
+#include "webkit/forms/password_form_dom_manager.h"
 
 class AutofillManager;
 class TabContentsWrapper;
@@ -57,6 +59,11 @@ class AutofillExternalDelegate {
       const std::vector<string16>& autofill_icons,
       const std::vector<int>& autofill_unique_ids);
 
+  // Show password suggestions in the popup.
+  void OnShowPasswordSuggestions(const std::vector<string16>& suggestions,
+                                 const webkit::forms::FormField& field,
+                                 const gfx::Rect& bounds);
+
   // Inform the delegate that the text field editing has ended, this is
   // used to help record the metrics of when a new popup is shown.
   void DidEndTextFieldEditing();
@@ -72,6 +79,15 @@ class AutofillExternalDelegate {
 
   // Hide the Autofill poup.
   virtual void HideAutofillPopup();
+
+  // Returns the delegate to its starting state by removing any page specific
+  // values or settings.
+  void Reset();
+
+  // Inform the Password Manager of a filled form.
+  void AddPasswordFormMapping(
+      const webkit::forms::FormField& form,
+      const webkit::forms::PasswordFormFillData& fill_data);
 
   // Platforms that wish to implement an external Autofill delegate
   // MUST implement this.  The 1st arg is the tab contents that owns
@@ -102,6 +118,9 @@ class AutofillExternalDelegate {
   // Handle platform-dependent hiding.
   virtual void HideAutofillPopupInternal() = 0;
 
+  // Set the bounds of the Autofill element being worked with.
+  virtual void SetBounds(const gfx::Rect& bounds) = 0;
+
  private:
   // Fills the form with the Autofill data corresponding to |unique_id|.
   // If |is_preview| is true then this is just a preview to show the user what
@@ -111,6 +130,9 @@ class AutofillExternalDelegate {
 
   TabContentsWrapper* tab_contents_wrapper_;  // weak; owns me.
   AutofillManager* autofill_manager_;  // weak.
+
+  // Password Autofill manager, handles all password-related Autofilling.
+  PasswordAutofillManager password_autofill_manager_;
 
   // The ID of the last request sent for form field Autofill.  Used to ignore
   // out of date responses.

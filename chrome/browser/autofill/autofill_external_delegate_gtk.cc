@@ -61,6 +61,11 @@ void AutofillExternalDelegateGtk::ApplyAutofillSuggestions(
               separator_index);
 }
 
+void AutofillExternalDelegateGtk::SetBounds(const gfx::Rect& bounds) {
+  CreateViewIfNeeded();
+  view_->set_element_bounds(bounds);
+}
+
 void AutofillExternalDelegateGtk::CreateViewIfNeeded() {
   if (view_.get())
     return;

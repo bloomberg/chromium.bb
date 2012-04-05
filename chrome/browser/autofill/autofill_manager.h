@@ -54,6 +54,7 @@ namespace webkit {
 namespace forms {
 struct FormData;
 struct FormField;
+struct PasswordFormFillData;
 }
 }
 
@@ -76,6 +77,9 @@ class AutofillManager : public content::WebContentsObserver,
   void SetExternalDelegate(AutofillExternalDelegate* delegate) {
     external_delegate_ = delegate;
   }
+
+  // Used to say if this class has an external delegate that it is using.
+  bool HasExternalDelegate();
 
   // Called from our external delegate so they cannot be private.
   virtual void OnFillAutofillFormData(int query_id,
@@ -187,6 +191,12 @@ class AutofillManager : public content::WebContentsObserver,
                                 bool display_warning);
   void OnDidEndTextFieldEditing();
   void OnHideAutofillPopup();
+  void OnAddPasswordFormMapping(
+      const webkit::forms::FormField& form,
+      const webkit::forms::PasswordFormFillData& fill_data);
+  void OnShowPasswordSuggestions(const webkit::forms::FormField& field,
+                                 const gfx::Rect& bounds,
+                                 const std::vector<string16>& suggestions);
 
   // Fills |host| with the RenderViewHost for this tab.
   // Returns false if Autofill is disabled or if the host is unavailable.

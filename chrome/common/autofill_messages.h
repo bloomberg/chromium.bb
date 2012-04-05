@@ -82,9 +82,11 @@ IPC_MESSAGE_ROUTED2(AutofillMsg_FormDataFilled,
                     webkit::forms::FormData /* form data */)
 
 // Fill a password form and prepare field autocomplete for multiple
-// matching logins.
-IPC_MESSAGE_ROUTED1(AutofillMsg_FillPasswordForm,
-                    webkit::forms::PasswordFormFillData)
+// matching logins. Lets the renderer know if it should disable the popup
+// because the browser process will own the popup UI.
+IPC_MESSAGE_ROUTED2(AutofillMsg_FillPasswordForm,
+                    webkit::forms::PasswordFormFillData, /* the fill form data*/
+                    bool /* disable popup */ )
 
 // Send the heuristic and server field type predictions to the renderer.
 IPC_MESSAGE_ROUTED1(
@@ -120,6 +122,10 @@ IPC_MESSAGE_ROUTED1(AutofillMsg_GeneratedPasswordAccepted,
 // password generation should be enabled.
 IPC_MESSAGE_ROUTED1(AutofillMsg_PasswordSyncEnabled,
                     bool /* is_enabled */)
+
+// Tells the renderer that the password field has accept the suggestion.
+IPC_MESSAGE_ROUTED1(AutofillMsg_AcceptPasswordAutofillSuggestion,
+                    string16 /* username value*/)
 
 // Autofill messages sent from the renderer to the browser.
 
@@ -197,3 +203,15 @@ IPC_MESSAGE_ROUTED0(AutofillHostMsg_HideAutofillPopup)
 // coordinate system.
 IPC_MESSAGE_ROUTED1(AutofillHostMsg_ShowPasswordGenerationPopup,
                     gfx::Rect /* source location */)
+
+// Instruct the browser that a password mapping has been found for a field.
+IPC_MESSAGE_ROUTED2(AutofillHostMsg_AddPasswordFormMapping,
+                    webkit::forms::FormField, /* the user name field */
+                    webkit::forms::PasswordFormFillData /* password pairings */)
+
+// Instruct the browser to show a popup with the following suggestions from the
+// password manager.
+IPC_MESSAGE_ROUTED3(AutofillHostMsg_ShowPasswordSuggestions,
+                    webkit::forms::FormField /* the form field */,
+                    gfx::Rect /* input field bounds, window-relative */,
+                    std::vector<string16> /* suggestions */)

@@ -16,6 +16,16 @@
 
 using content::RenderViewHost;
 
+namespace {
+
+// The value to give as the unique id for all warnings.
+const int kWarningId = -1;
+
+// The value to give as the unique id for all password entries.
+const int kPasswordEntryId = -2;
+
+}  // namespace
+
 AutofillExternalDelegate::~AutofillExternalDelegate() {
 }
 
@@ -24,6 +34,8 @@ AutofillExternalDelegate::AutofillExternalDelegate(
     AutofillManager* autofill_manager)
     : tab_contents_wrapper_(tab_contents_wrapper),
       autofill_manager_(autofill_manager),
+      password_autofill_manager_(
+          tab_contents_wrapper ? tab_contents_wrapper->web_contents() : NULL),
       autofill_query_id_(0),
       display_warning_if_disabled_(false),
       has_shown_autofill_popup_for_current_edit_(false),
@@ -33,9 +45,13 @@ AutofillExternalDelegate::AutofillExternalDelegate(
 
 void AutofillExternalDelegate::SelectAutofillSuggestionAtIndex(int unique_id,
                                                                int list_index) {
+  if (password_autofill_manager_.DidSelectAutofillSuggestion(
+          autofill_query_field_))
+    return;
+
   if (list_index == suggestions_options_index_ ||
       list_index == suggestions_clear_index_ ||
-      unique_id == -1)
+      unique_id == kWarningId)
     return;
 
   FillAutofillFormData(unique_id, true);
@@ -81,7 +97,7 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
     v.assign(1, l10n_util::GetStringUTF16(IDS_AUTOFILL_WARNING_FORM_DISABLED));
     l.assign(1, string16());
     i.assign(1, string16());
-    ids.assign(1, -1);
+    ids.assign(1, kWarningId);
   } else if (ids[0] < 0 && ids.size() > 1) {
     // If we received a warning instead of suggestions from autofill but regular
     // suggestions from autocomplete, don't show the autofill warning.
@@ -136,6 +152,24 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
   has_shown_autofill_popup_for_current_edit_ |= has_autofill_item;
 }
 
+void AutofillExternalDelegate::OnShowPasswordSuggestions(
+    const std::vector<string16>& suggestions,
+    const webkit::forms::FormField& field,
+    const gfx::Rect& bounds) {
+  autofill_query_field_ = field;
+
+  if (suggestions.empty()) {
+    HideAutofillPopup();
+    return;
+  }
+
+  SetBounds(bounds);
+
+  std::vector<string16> empty(suggestions.size());
+  std::vector<int> password_ids(suggestions.size(), kPasswordEntryId);
+  ApplyAutofillSuggestions(suggestions, empty, empty, password_ids, -1);
+}
+
 void AutofillExternalDelegate::DidEndTextFieldEditing() {
   has_shown_autofill_popup_for_current_edit_ = false;
 }
@@ -145,12 +179,8 @@ bool AutofillExternalDelegate::DidAcceptAutofillSuggestions(
     int unique_id,
     unsigned index) {
   // If the selected element is a warning we don't want to do anything.
-  if (unique_id < 0)
+  if (unique_id == kWarningId)
     return false;
-
-  // TODO(csharp): Add the password autofill manager.
-  // if (password_autofill_manager_->DidAcceptAutofillSuggestion(node, value))
-  //   return;
 
   if (suggestions_options_index_ != -1 &&
       index == static_cast<unsigned>(suggestions_options_index_)) {
@@ -162,8 +192,12 @@ bool AutofillExternalDelegate::DidAcceptAutofillSuggestions(
     RenderViewHost* host =
         tab_contents_wrapper_->web_contents()->GetRenderViewHost();
     host->Send(new AutofillMsg_ClearForm(host->GetRoutingID()));
+  } else if (password_autofill_manager_.DidAcceptAutofillSuggestion(
+                 autofill_query_field_, value)) {
+    // DidAcceptAutofillSuggestion has already handled the work to fill in
+    // the page as required.
   } else if (!unique_id) {
-    // User selected an Autocomplete entry, so we fill directly.
+    // User selected an Autocomplete, so we fill directly.
     RenderViewHost* host =
         tab_contents_wrapper_->web_contents()->GetRenderViewHost();
     host->Send(new AutofillMsg_SetNodeText(
@@ -179,6 +213,10 @@ bool AutofillExternalDelegate::DidAcceptAutofillSuggestions(
 }
 
 void AutofillExternalDelegate::ClearPreviewedForm() {
+  if (password_autofill_manager_.DidClearAutofillSelection(
+          autofill_query_field_))
+    return;
+
   RenderViewHost* host =
       tab_contents_wrapper_->web_contents()->GetRenderViewHost();
   host->Send(new AutofillMsg_ClearPreviewedForm(host->GetRoutingID()));
@@ -189,6 +227,18 @@ void AutofillExternalDelegate::HideAutofillPopup() {
   suggestions_options_index_ = -1;
 
   HideAutofillPopupInternal();
+}
+
+void AutofillExternalDelegate::Reset() {
+  HideAutofillPopup();
+
+  password_autofill_manager_.Reset();
+}
+
+void AutofillExternalDelegate::AddPasswordFormMapping(
+      const webkit::forms::FormField& form,
+      const webkit::forms::PasswordFormFillData& fill_data) {
+    password_autofill_manager_.AddPasswordFormMapping(form, fill_data);
 }
 
 void AutofillExternalDelegate::FillAutofillFormData(int unique_id,

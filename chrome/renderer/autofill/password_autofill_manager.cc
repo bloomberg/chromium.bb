@@ -8,6 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "chrome/common/autofill_messages.h"
+#include "chrome/renderer/autofill/form_autofill_util.h"
 #include "content/public/renderer/render_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
@@ -204,6 +205,7 @@ namespace autofill {
 PasswordAutofillManager::PasswordAutofillManager(
     content::RenderView* render_view)
     : content::RenderViewObserver(render_view),
+      disable_popup_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
 }
 
@@ -293,6 +295,10 @@ bool PasswordAutofillManager::TextDidChangeInTextField(
 bool PasswordAutofillManager::TextFieldHandlingKeyDown(
     const WebKit::WebInputElement& element,
     const WebKit::WebKeyboardEvent& event) {
+  // If using the new Autofill UI that lives in the browser, it will handle
+  // keypresses before this function. This is not currently an issue but if
+  // the keys handled there or here change, this issue may appear.
+
   LoginToPasswordInfoMap::iterator iter = login_to_password_info_.find(element);
   if (iter == login_to_password_info_.end())
     return false;
@@ -425,7 +431,10 @@ bool PasswordAutofillManager::InputElementLostFocus() {
 }
 
 void PasswordAutofillManager::OnFillPasswordForm(
-    const webkit::forms::PasswordFormFillData& form_data) {
+    const webkit::forms::PasswordFormFillData& form_data,
+    bool disable_popup) {
+  disable_popup_ = disable_popup;
+
   FormElementsList forms;
   // We own the FormElements* in forms.
   FindFormElements(render_view()->GetWebView(), form_data.basic_data, &forms);
@@ -458,6 +467,15 @@ void PasswordAutofillManager::OnFillPasswordForm(
     password_info.fill_data = form_data;
     password_info.password_field = password_element;
     login_to_password_info_[username_element] = password_info;
+
+    webkit::forms::FormData form;
+    webkit::forms::FormField field;
+    FindFormAndFieldForInputElement(
+        username_element, &form, &field, REQUIRE_NONE);
+    Send(new AutofillHostMsg_AddPasswordFormMapping(
+        routing_id(),
+        field,
+        form_data));
   }
 }
 
@@ -492,6 +510,23 @@ bool PasswordAutofillManager::ShowSuggestionPopup(
 
   std::vector<string16> suggestions;
   GetSuggestions(fill_data, user_input.value(), &suggestions);
+
+  if (disable_popup_) {
+    webkit::forms::FormData form;
+    webkit::forms::FormField field;
+    FindFormAndFieldForInputElement(
+        user_input, &form, &field, REQUIRE_NONE);
+
+    WebKit::WebInputElement selected_element = user_input;
+    gfx::Rect bounding_box(selected_element.boundsInViewportSpace());
+    Send(new AutofillHostMsg_ShowPasswordSuggestions(routing_id(),
+                                                     field,
+                                                     bounding_box,
+                                                     suggestions));
+    return !suggestions.empty();
+  }
+
+
   if (suggestions.empty()) {
     webview->hidePopups();
     return false;

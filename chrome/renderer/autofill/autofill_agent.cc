@@ -86,6 +86,8 @@ bool AutofillAgent::OnMessageReceived(const IPC::Message& message) {
                         OnClearPreviewedForm)
     IPC_MESSAGE_HANDLER(AutofillMsg_SetNodeText,
                         OnSetNodeText)
+    IPC_MESSAGE_HANDLER(AutofillMsg_AcceptPasswordAutofillSuggestion,
+                        OnAcceptPasswordAutofillSuggestion)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -230,8 +232,10 @@ void AutofillAgent::textFieldDidChange(const WebInputElement& element) {
 }
 
 void AutofillAgent::TextFieldDidChangeImpl(const WebInputElement& element) {
-  if (password_autofill_manager_->TextDidChangeInTextField(element))
+  if (password_autofill_manager_->TextDidChangeInTextField(element)) {
+    autofill_query_element_ = element;
     return;
+  }
 
   ShowSuggestions(element, false, true, false);
 
@@ -245,8 +249,10 @@ void AutofillAgent::TextFieldDidChangeImpl(const WebInputElement& element) {
 
 void AutofillAgent::textFieldDidReceiveKeyDown(const WebInputElement& element,
                                                const WebKeyboardEvent& event) {
-  if (password_autofill_manager_->TextFieldHandlingKeyDown(element, event))
+  if (password_autofill_manager_->TextFieldHandlingKeyDown(element, event)) {
+    autofill_query_element_ = element;
     return;
+  }
 
   if (event.windowsKeyCode == ui::VKEY_DOWN ||
       event.windowsKeyCode == ui::VKEY_UP)
@@ -396,6 +402,16 @@ void AutofillAgent::OnClearPreviewedForm() {
 
 void AutofillAgent::OnSetNodeText(const string16& value) {
   SetNodeText(value, &autofill_query_element_);
+}
+
+void AutofillAgent::OnAcceptPasswordAutofillSuggestion(const string16& value) {
+  // We need to make sure this is handled here because the browser process
+  // skipped it handling because it believed it would be handled here. If it
+  // isn't handled here then the browser logic needs to be updated.
+  bool handled = password_autofill_manager_->DidAcceptAutofillSuggestion(
+      autofill_query_element_,
+      value);
+  DCHECK(handled);
 }
 
 void AutofillAgent::ShowSuggestions(const WebInputElement& element,

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -75,7 +75,8 @@ class PasswordAutofillManager : public content::RenderViewObserver,
   virtual bool InputElementLostFocus() OVERRIDE;
 
   // RenderView IPC handlers:
-  void OnFillPasswordForm(const webkit::forms::PasswordFormFillData& form_data);
+  void OnFillPasswordForm(const webkit::forms::PasswordFormFillData& form_data,
+                          bool disable_popup);
 
   // Scans the given frame for password forms and sends them up to the browser.
   // If |only_visible| is true, only forms visible in the layout are sent.
@@ -113,6 +114,9 @@ class PasswordAutofillManager : public content::RenderViewObserver,
 
   // The logins we have filled so far with their associated info.
   LoginToPasswordInfoMap login_to_password_info_;
+
+  // Used to disable and hide the popup.
+  bool disable_popup_;
 
   base::WeakPtrFactory<PasswordAutofillManager> weak_ptr_factory_;
 

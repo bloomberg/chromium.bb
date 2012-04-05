@@ -6,6 +6,7 @@
 
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram.h"
+#include "chrome/browser/autofill/autofill_manager.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/password_manager/password_form_manager.h"
 #include "chrome/browser/password_manager/password_manager.h"
@@ -123,10 +124,13 @@ SavePasswordInfoBarDelegate::AsSavePasswordInfoBarDelegate() {
 
 void PasswordManagerDelegateImpl::FillPasswordForm(
     const webkit::forms::PasswordFormFillData& form_data) {
+  bool disable_popup = tab_contents_->autofill_manager()->HasExternalDelegate();
+
   tab_contents_->web_contents()->GetRenderViewHost()->Send(
       new AutofillMsg_FillPasswordForm(
           tab_contents_->web_contents()->GetRenderViewHost()->GetRoutingID(),
-          form_data));
+          form_data,
+          disable_popup));
 }
 
 void PasswordManagerDelegateImpl::AddSavePasswordInfoBarIfPermitted(

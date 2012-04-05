@@ -35,6 +35,8 @@ class TestAutofillExternalDelegate : public AutofillExternalDelegate {
 
   virtual void HideAutofillPopupInternal() OVERRIDE;
 
+  virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(TestAutofillExternalDelegate);
 };

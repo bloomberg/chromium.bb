@@ -24,3 +24,5 @@ void TestAutofillExternalDelegate::OnQueryPlatformSpecific(
     const gfx::Rect& bounds) {}
 
 void TestAutofillExternalDelegate::HideAutofillPopupInternal() {}
+
+void TestAutofillExternalDelegate::SetBounds(const gfx::Rect& bounds) {}
