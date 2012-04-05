@@ -177,25 +177,25 @@ TemplateURL* CreateTestTemplateURL(int seed) {
 TemplateURL* CreateTestTemplateURL(int seed,
                                    const string16& keyword,
                                    const std::string& sync_guid) {
-  return CreateTestTemplateURL(seed,
-      base::StringPrintf("http://www.test%d.com/", seed), keyword, sync_guid);
+  return CreateTestTemplateURL(seed, keyword,
+      base::StringPrintf("http://www.test%d.com/", seed), sync_guid);
 }
 
 TemplateURL* CreateTestTemplateURL(int seed,
-                                   const std::string& url,
                                    const string16& keyword,
+                                   const std::string& url,
                                    const std::string& sync_guid) {
-  TemplateURL* turl = new TemplateURL();
-  turl->set_short_name(CreateKeyword(seed));
-  turl->set_keyword(keyword);
-  turl->set_safe_for_autoreplace(true);
-  turl->set_date_created(base::Time::FromTimeT(100));
-  turl->set_last_modified(base::Time::FromTimeT(100));
-  turl->SetPrepopulateId(999999);
-  turl->set_sync_guid(sync_guid);
-  turl->SetURL(url);
-  turl->set_favicon_url(GURL("http://favicon.url"));
-  return turl;
+  TemplateURLData data;
+  data.short_name = CreateKeyword(seed);
+  data.SetKeyword(keyword);
+  data.safe_for_autoreplace = true;
+  data.SetURL(url);
+  data.favicon_url = GURL("http://favicon.url");
+  data.date_created = base::Time::FromTimeT(100);
+  data.last_modified = base::Time::FromTimeT(100);
+  data.prepopulate_id = 999999;
+  data.sync_guid = sync_guid;
+  return new TemplateURL(data);
 }
 
 void AddSearchEngine(int profile, int seed) {

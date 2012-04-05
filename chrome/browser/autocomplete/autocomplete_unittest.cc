@@ -182,8 +182,9 @@ void AutocompleteProviderTest::
   profile_.CreateTemplateURLService();
 
   // Reset the default TemplateURL.
-  TemplateURL* default_t_url = new TemplateURL();
-  default_t_url->SetURL("http://defaultturl/{searchTerms}");
+  TemplateURLData data;
+  data.SetURL("http://defaultturl/{searchTerms}");
+  TemplateURL* default_t_url = new TemplateURL(data);
   TemplateURLService* turl_model =
       TemplateURLServiceFactory::GetForProfile(&profile_);
   turl_model->Add(default_t_url);
@@ -192,10 +193,10 @@ void AutocompleteProviderTest::
   ASSERT_NE(0, default_provider_id);
 
   // Create another TemplateURL for KeywordProvider.
-  TemplateURL* keyword_t_url = new TemplateURL();
-  keyword_t_url->set_short_name(ASCIIToUTF16("k"));
-  keyword_t_url->set_keyword(ASCIIToUTF16("k"));
-  keyword_t_url->SetURL("http://keyword/{searchTerms}");
+  data.short_name = ASCIIToUTF16("k");
+  data.SetKeyword(ASCIIToUTF16("k"));
+  data.SetURL("http://keyword/{searchTerms}");
+  TemplateURL* keyword_t_url = new TemplateURL(data);
   turl_model->Add(keyword_t_url);
   ASSERT_NE(0, keyword_t_url->id());
 
@@ -223,18 +224,19 @@ void AutocompleteProviderTest::
       TemplateURLServiceFactory::GetForProfile(&profile_);
 
   // Create a TemplateURL for KeywordProvider.
-  TemplateURL* keyword_t_url = new TemplateURL();
-  keyword_t_url->set_short_name(ASCIIToUTF16("foo.com"));
-  keyword_t_url->set_keyword(ASCIIToUTF16("foo.com"));
-  keyword_t_url->SetURL("http://foo.com/{searchTerms}");
+  TemplateURLData data;
+  data.short_name = ASCIIToUTF16("foo.com");
+  data.SetKeyword(ASCIIToUTF16("foo.com"));
+  data.SetURL("http://foo.com/{searchTerms}");
+  TemplateURL* keyword_t_url = new TemplateURL(data);
   turl_model->Add(keyword_t_url);
   ASSERT_NE(0, keyword_t_url->id());
 
   // Create another TemplateURL for KeywordProvider.
-  keyword_t_url = new TemplateURL();
-  keyword_t_url->set_short_name(ASCIIToUTF16("bar.com"));
-  keyword_t_url->set_keyword(ASCIIToUTF16("bar.com"));
-  keyword_t_url->SetURL("http://bar.com/{searchTerms}");
+  data.short_name = ASCIIToUTF16("bar.com");
+  data.SetKeyword(ASCIIToUTF16("bar.com"));
+  data.SetURL("http://bar.com/{searchTerms}");
+  keyword_t_url = new TemplateURL(data);
   turl_model->Add(keyword_t_url);
   ASSERT_NE(0, keyword_t_url->id());
 

@@ -14,31 +14,20 @@
 #include "chrome/browser/search_engines/template_url_id.h"
 #include "googleurl/src/gurl.h"
 
-class PrefService;
 class Profile;
 class SearchTermsData;
 class TemplateURL;
-class TemplateURLParsingContext;
-class WebDataService;
 
-// TemplateURL represents the relevant portions of the Open Search Description
-// Document (http://www.opensearch.org/Specifications/OpenSearch).
-// The main use case for TemplateURL is to use the TemplateURLRef returned by
-// suggestions_url or url for keyword/suggestion expansion:
-// . suggestions_url describes a URL that is ideal for as you type suggestions.
-//   The returned results are in the mime type application/x-suggestions+json.
-// . url describes a URL that may be used as a shortcut. Returned results are
-//   are text/html.
-// Before using either one, make sure it's non-NULL, and if you intend to use
-// it to replace search terms, make sure SupportsReplacement returns true.
-// To use either URL invoke the ReplaceSearchTerms method on the corresponding
-// TemplateURLRef.
+
+// TemplateURLRef -------------------------------------------------------------
+
+// A TemplateURLRef represents a single URL within the larger TemplateURL class
+// (which represents an entire "search engine", see below).  If
+// SupportsReplacement() is true, this URL has placeholders in it, for which
+// callers can substitute values to get a "real" URL using ReplaceSearchTerms().
 //
-// For files parsed from the Web, be sure and invoke IsValid. IsValid returns
-// true if the URL could be parsed.
-//
-// Both TemplateURL and TemplateURLRef have value semantics. This allows the
-// UI to create a copy while the user modifies the values.
+// TemplateURLRefs always have a non-NULL |owner_| TemplateURL, which they
+// access in order to get at important data like the underlying URL string.
 class TemplateURLRef {
  public:
   // Magic numbers to pass to ReplaceSearchTerms() for the |accepted_suggestion|
@@ -246,10 +235,136 @@ class TemplateURLRef {
   DISALLOW_COPY_AND_ASSIGN(TemplateURLRef);
 };
 
-// Describes the relevant portions of a single OSD document.
+
+// TemplateURLData ------------------------------------------------------------
+
+// The data for the TemplateURL.  Separating this into its own class allows most
+// users to do SSA-style usage of TemplateURL: construct a TemplateURLData with
+// whatever fields are desired, then create an immutable TemplateURL from it.
+struct TemplateURLData {
+  TemplateURLData();
+  ~TemplateURLData();
+
+  // A short description of the template. This is the name we show to the user
+  // in various places that use TemplateURLs. For example, the location bar
+  // shows this when the user selects a substituting match.
+  string16 short_name;
+
+  // The shortcut for this TemplateURL.  May be empty.
+  void SetKeyword(const string16& keyword) const;
+  const string16& keyword(const TemplateURL* t_url) const;
+  // TODO(pkasting): This should only be necessary until we eliminate keyword
+  // autogeneration.
+  const string16& raw_keyword() const { return keyword_; }
+
+  // Whether to autogenerate a keyword in TemplateURL::GetKeyword().  Most
+  // consumers should not need this.
+  // NOTE: Calling SetKeyword() turns this back off.  Manual and automatic
+  // keywords are mutually exclusive.
+  void SetAutogenerateKeyword(bool autogenerate_keyword) const;
+  bool autogenerate_keyword() const { return autogenerate_keyword_; }
+
+  // Ensures that the keyword is generated.  Most consumers should not need this
+  // because it is done automatically.  Use this method on the UI thread, so
+  // the keyword may be accessed on another thread.
+  void EnsureKeyword(const TemplateURL* t_url) const;
+
+  // The raw URL for the TemplateURL, which may not be valid as-is (e.g. because
+  // it requires substitutions first).
+  void SetURL(const std::string& url);
+  const std::string& url() const { return url_; }
+
+  // Optional additional raw URLs.
+  std::string suggestions_url;
+  std::string instant_url;
+
+  // Optional favicon for the TemplateURL.
+  GURL favicon_url;
+
+  // URL to the OSD file this came from. May be empty.
+  GURL originating_url;
+
+  // Whether this TemplateURL is shown in the default list of search providers.
+  // This is just a property and does not indicate whether the TemplateURL has a
+  // TemplateURLRef that supports replacement. Use
+  // TemplateURL::ShowInDefaultList() to test both.
+  bool show_in_default_list;
+
+  // Whether it's safe for auto-modification code (the autogenerator and the
+  // code that imports data from other browsers) to replace the TemplateURL.
+  // This should be set to false for any TemplateURL the user edits, or any
+  // TemplateURL that the user clearly manually edited in the past, like a
+  // bookmark keyword from another browser.
+  bool safe_for_autoreplace;
+
+  // The list of supported encodings for the search terms. This may be empty,
+  // which indicates the terms should be encoded with UTF-8.
+  std::vector<std::string> input_encodings;
+
+  // Unique identifier of this TemplateURL. The unique ID is set by the
+  // TemplateURLService when the TemplateURL is added to it.
+  TemplateURLID id;
+
+  // Date this TemplateURL was created.
+  //
+  // NOTE: this may be 0, which indicates the TemplateURL was created before we
+  // started tracking creation time.
+  base::Time date_created;
+
+  // The last time this TemplateURL was modified by a user, since creation.
+  //
+  // NOTE: Like date_created above, this may be 0.
+  base::Time last_modified;
+
+  // True if this TemplateURL was automatically created by the administrator via
+  // group policy.
+  bool created_by_policy;
+
+  // Number of times this TemplateURL has been explicitly used to load a URL.
+  // We don't increment this for uses as the "default search engine" since
+  // that's not really "explicit" usage and incrementing would result in pinning
+  // the user's default search engine(s) to the top of the list of searches on
+  // the New Tab page, de-emphasizing the omnibox as "where you go to search".
+  int usage_count;
+
+  // If this TemplateURL comes from prepopulated data the prepopulate_id is > 0.
+  int prepopulate_id;
+
+  // The primary unique identifier for Sync. This set on all TemplateURLs
+  // regardless of whether they have been associated with Sync.
+  std::string sync_guid;
+
+ private:
+  // Private so we can enforce using the setters.
+  // TODO(pkasting): For now these setters are not critical, but later we will
+  // begin using them to ensure that these fields are non-empty.
+  mutable string16 keyword_;
+  std::string url_;
+
+  // TODO(pkasting): These fields will go away soon.
+  mutable bool autogenerate_keyword_;
+  // True if the keyword was generated. This is used to avoid multiple attempts
+  // if generating a keyword failed.
+  mutable bool keyword_generated_;
+};
+
+
+// TemplateURL ----------------------------------------------------------------
+
+// A TemplateURL represents a single "search engine", defined primarily as a
+// subset of the Open Search Description Document
+// (http://www.opensearch.org/Specifications/OpenSearch) plus some extensions.
+// One TemplateURL contains several TemplateURLRefs, which correspond to various
+// different capabilities (e.g. doing searches or getting suggestions), as well
+// as a TemplateURLData containing other details like the name, keyword, etc.
+//
+// TemplateURLs are intended to be read-only for most users; the only public
+// non-const method is the Profile getter, which returns a non-const Profile*.
+// The TemplateURLService, which handles storing and manipulating TemplateURLs,
+// is made a friend so that it can be the exception to this pattern.
 class TemplateURL {
  public:
-  TemplateURL();
+  explicit TemplateURL(const TemplateURLData& data);
 
   TemplateURL(const TemplateURL& other);
   TemplateURL& operator=(const TemplateURL& other);
@@ -259,143 +374,50 @@ class TemplateURL {
   // Generates a favicon URL from the specified url.
   static GURL GenerateFaviconURL(const GURL& url);
 
-  // A short description of the template. This is the name we show to the user
-  // in various places that use keywords. For example, the location bar shows
-  // this when the user selects the keyword.
-  void set_short_name(const string16& short_name) {
-    short_name_ = short_name;
-  }
-  const string16& short_name() const { return short_name_; }
+  const TemplateURLData& data() const { return data_; }
+
+  const string16& short_name() const { return data_.short_name; }
   // An accessor for the short_name, but adjusted so it can be appropriately
   // displayed even if it is LTR and the UI is RTL.
   string16 AdjustedShortNameForLocaleDirection() const;
 
-  // Parameterized URL for providing the results.
-  void SetURL(const std::string& url);
-  const std::string& url() const { return url_; }
-
-  // URL providing JSON results. This is typically used to provide suggestions
-  // as you type.
-  void SetSuggestionsURL(const std::string& url);
-  const std::string& suggestions_url() const { return suggestions_url_; }
-
-  // Parameterized URL for instant results.
-  void SetInstantURL(const std::string& url);
-  const std::string& instant_url() const { return instant_url_; }
-
-  // URL to the OSD file this came from. May be empty.
-  void set_originating_url(const GURL& url) {
-    originating_url_ = url;
-  }
-  const GURL& originating_url() const { return originating_url_; }
-
-  // The shortcut for this template url. May be empty.
-  void set_keyword(const string16& keyword);
-  const string16& keyword() const;
-
-  // Whether to autogenerate a keyword from the url() in GetKeyword().  Most
-  // consumers should not need this.
-  // NOTE: Calling set_keyword() turns this back off.  Manual and automatic
-  // keywords are mutually exclusive.
-  void set_autogenerate_keyword(bool autogenerate_keyword) {
-    autogenerate_keyword_ = autogenerate_keyword;
-    if (autogenerate_keyword_) {
-      keyword_.clear();
-      keyword_generated_ = false;
-    }
-  }
+  const string16& keyword() const { return data_.keyword(this); }
   bool autogenerate_keyword() const {
-    return autogenerate_keyword_;
+    return data_.autogenerate_keyword();
   }
+  void EnsureKeyword() const { data_.EnsureKeyword(this); }
 
-  // Ensures that the keyword is generated.  Most consumers should not need this
-  // because it is done automatically.  Use this method on the UI thread, so
-  // the keyword may be accessed on another thread.
-  void EnsureKeyword() const;
+  const std::string& url() const { return data_.url(); }
+  const std::string& suggestions_url() const { return data_.suggestions_url; }
+  const std::string& instant_url() const { return data_.instant_url; }
+  const GURL& favicon_url() const { return data_.favicon_url; }
 
-  // Whether this keyword is shown in the default list of search providers. This
-  // is just a property and does not indicate whether this TemplateURL has
-  // a TemplateURLRef that supports replacement. Use ShowInDefaultList to
-  // test both.
-  // The default value is false.
-  void set_show_in_default_list(bool show_in_default_list) {
-    show_in_default_list_ = show_in_default_list;
-  }
-  bool show_in_default_list() const { return show_in_default_list_; }
+  const GURL& originating_url() const { return data_.originating_url; }
+
+  bool show_in_default_list() const { return data_.show_in_default_list; }
 
   // Returns true if show_in_default_list() is true and this TemplateURL has a
   // TemplateURLRef that supports replacement.
   bool ShowInDefaultList() const;
 
-  // Whether it's safe for auto-modification code (the autogenerator and the
-  // code that imports data from other browsers) to replace the TemplateURL.
-  // This should be set to false for any keyword the user edits, or any keyword
-  // that the user clearly manually edited in the past, like a bookmark keyword
-  // from another browser.
-  void set_safe_for_autoreplace(bool safe_for_autoreplace) {
-    safe_for_autoreplace_ = safe_for_autoreplace;
-  }
-  bool safe_for_autoreplace() const { return safe_for_autoreplace_; }
+  bool safe_for_autoreplace() const { return data_.safe_for_autoreplace; }
 
-  // The favicon.  This is optional.
-  void set_favicon_url(const GURL& url) { favicon_url_ = url; }
-  const GURL& favicon_url() const { return favicon_url_; }
-
-  // Date this keyword was created.
-  //
-  // NOTE: this may be 0, which indicates the keyword was created before we
-  // started tracking creation time.
-  void set_date_created(base::Time time) { date_created_ = time; }
-  base::Time date_created() const { return date_created_; }
-
-  // The last time this keyword was modified by a user, since creation.
-  //
-  // NOTE: Like date_created above, this may be 0.
-  void set_last_modified(base::Time time) { last_modified_ = time; }
-  base::Time last_modified() const { return last_modified_; }
-
-  // True if this TemplateURL was automatically created by the administrator via
-  // group policy.
-  void set_created_by_policy(bool created_by_policy) {
-     created_by_policy_ = created_by_policy;
-  }
-  bool created_by_policy() const { return created_by_policy_; }
-
-  // Number of times this keyword has been explicitly used to load a URL.  We
-  // don't increment this for uses as the "default search engine" since that's
-  // not really "explicit" usage and incrementing would result in pinning the
-  // user's default search engine(s) to the top of the list of searches on the
-  // New Tab page, de-emphasizing the omnibox as "where you go to search".
-  void set_usage_count(int count) { usage_count_ = count; }
-  int usage_count() const { return usage_count_; }
-
-  // The list of supported encodings for the search terms. This may be empty,
-  // which indicates the terms should be encoded with UTF-8.
-  void set_input_encodings(const std::vector<std::string>& encodings) {
-    input_encodings_ = encodings;
-  }
-  void add_input_encoding(const std::string& encoding) {
-    input_encodings_.push_back(encoding);
-  }
   const std::vector<std::string>& input_encodings() const {
-    return input_encodings_;
+    return data_.input_encodings;
   }
 
-  // Returns the unique identifier of this TemplateURL. The unique ID is set
-  // by the TemplateURLService when the TemplateURL is added to it.
-  TemplateURLID id() const { return id_; }
+  TemplateURLID id() const { return data_.id; }
 
-  // Copies the data from |other|'s TemplateURLRef members into |this|.
-  void CopyURLRefs(const TemplateURL& other);
+  base::Time date_created() const { return data_.date_created; }
+  base::Time last_modified() const { return data_.last_modified; }
 
-  // If this TemplateURL comes from prepopulated data the prepopulate_id is > 0.
-  // SetPrepopulateId also sets any TemplateURLRef's prepopulated flag to true
-  // if |id| > 0 and false otherwise.
-  void SetPrepopulateId(int id);
-  int prepopulate_id() const { return prepopulate_id_; }
+  bool created_by_policy() const { return data_.created_by_policy; }
 
-  const std::string& sync_guid() const { return sync_guid_; }
-  void set_sync_guid(const std::string& guid) { sync_guid_ = guid; }
+  int usage_count() const { return data_.usage_count; }
+
+  int prepopulate_id() const { return data_.prepopulate_id; }
+
+  const std::string& sync_guid() const { return data_.sync_guid; }
 
   const TemplateURLRef& url_ref() const { return url_ref_; }
   const TemplateURLRef& suggestions_url_ref() const {
@@ -414,51 +436,15 @@ class TemplateURL {
   bool IsExtensionKeyword() const;
 
  private:
-  friend void MergeEnginesFromPrepopulateData(
-      PrefService* prefs,
-      WebDataService* service,
-      std::vector<TemplateURL*>* template_urls,
-      const TemplateURL** default_search_provider);
-  friend class KeywordTable;
-  friend class KeywordTableTest;
-  friend class SearchHostToURLsMap;
-  friend class TemplateURLParsingContext;
   friend class TemplateURLService;
-  FRIEND_TEST_ALL_PREFIXES(TemplateURLServiceSyncTest,
-                           ResolveSyncKeywordConflict);
+
+  void SetURL(const std::string& url);
+  void SetPrepopulateId(int id);
 
   // Invalidates cached values on this object and its child TemplateURLRefs.
   void InvalidateCachedValues() const;
 
-  // Unique identifier, used when archived to the database.
-  void set_id(TemplateURLID id) { id_ = id; }
-
-  string16 short_name_;
-  std::string url_;
-  std::string suggestions_url_;
-  std::string instant_url_;
-  GURL originating_url_;
-  mutable string16 keyword_;
-  bool autogenerate_keyword_;  // If this is set, |keyword_| holds the cached
-                               // generated keyword if available.
-  mutable bool keyword_generated_;  // True if the keyword was generated. This
-                                    // is used to avoid multiple attempts if
-                                    // generating a keyword failed.
-  bool show_in_default_list_;
-  bool safe_for_autoreplace_;
-  GURL favicon_url_;
-  // List of supported input encodings.
-  std::vector<std::string> input_encodings_;
-  TemplateURLID id_;
-  base::Time date_created_;
-  base::Time last_modified_;
-  bool created_by_policy_;
-  int usage_count_;
-  int prepopulate_id_;
-  // The primary unique identifier for Sync. This is only set on TemplateURLs
-  // that have been associated with Sync.
-  std::string sync_guid_;
-
+  TemplateURLData data_;
   TemplateURLRef url_ref_;
   TemplateURLRef suggestions_url_ref_;
   TemplateURLRef instant_url_ref_;

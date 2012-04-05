@@ -99,7 +99,7 @@ void TemplateURLParserTest::ParseFile(
 
   std::string contents;
   ASSERT_TRUE(file_util::ReadFileToString(full_path, &contents));
-  template_url_.reset(TemplateURLParser::Parse(NULL, contents.data(),
+  template_url_.reset(TemplateURLParser::Parse(NULL, false, contents.data(),
                                                contents.length(), filter));
 }
 

@@ -1828,24 +1828,23 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
         return;
       model->Load();
 
-      scoped_ptr<TemplateURL> template_url(new TemplateURL);
-      string16 keyword =
-          net::StripWWW(UTF8ToUTF16((params_.page_url.host())));
-      template_url->set_short_name(keyword);
-      template_url->set_keyword(keyword);
-      template_url->SetURL(params_.keyword_url.spec());
-      template_url->set_favicon_url(TemplateURL::GenerateFaviconURL(
-          params_.page_url.GetOrigin()));
-
       TabContentsWrapper* tab_contents_wrapper =
           TabContentsWrapper::GetCurrentWrapperForContents(
               source_web_contents_);
       if (tab_contents_wrapper &&
           tab_contents_wrapper->search_engine_tab_helper() &&
           tab_contents_wrapper->search_engine_tab_helper()->delegate()) {
-        // Takes ownership of |template_url|.
+        string16 keyword(TemplateURLService::GenerateKeyword(params_.page_url,
+                                                             false));
+        TemplateURLData data;
+        data.short_name = keyword;
+        data.SetKeyword(keyword);
+        data.SetURL(params_.keyword_url.spec());
+        data.favicon_url =
+            TemplateURL::GenerateFaviconURL(params_.page_url.GetOrigin());
+        // Takes ownership of the TemplateURL.
         tab_contents_wrapper->search_engine_tab_helper()->delegate()->
-            ConfirmAddSearchProvider(template_url.release(), profile_);
+            ConfirmAddSearchProvider(new TemplateURL(data), profile_);
       }
       break;
     }

@@ -121,10 +121,11 @@ void SearchProviderTest::SetUp() {
   turl_model->Load();
 
   // Reset the default TemplateURL.
-  default_t_url_ = new TemplateURL();
-  default_t_url_->SetURL("http://defaultturl/{searchTerms}");
-  default_t_url_->SetSuggestionsURL("http://defaultturl2/{searchTerms}");
-  default_t_url_->set_short_name(ASCIIToUTF16("t"));
+  TemplateURLData data;
+  data.short_name = ASCIIToUTF16("t");
+  data.SetURL("http://defaultturl/{searchTerms}");
+  data.suggestions_url = "http://defaultturl2/{searchTerms}";
+  default_t_url_ = new TemplateURL(data);
   turl_model->Add(default_t_url_);
   turl_model->SetDefaultSearchProvider(default_t_url_);
   TemplateURLID default_provider_id = default_t_url_->id();
@@ -134,11 +135,11 @@ void SearchProviderTest::SetUp() {
   term1_url_ = AddSearchToHistory(default_t_url_, term1_, 1);
 
   // Create another TemplateURL.
-  keyword_t_url_ = new TemplateURL();
-  keyword_t_url_->set_keyword(ASCIIToUTF16("k"));
-  keyword_t_url_->set_short_name(ASCIIToUTF16("k"));
-  keyword_t_url_->SetURL("http://keyword/{searchTerms}");
-  keyword_t_url_->SetSuggestionsURL("http://suggest_keyword/{searchTerms}");
+  data.short_name = ASCIIToUTF16("k");
+  data.SetKeyword(ASCIIToUTF16("k"));
+  data.SetURL("http://keyword/{searchTerms}");
+  data.suggestions_url = "http://suggest_keyword/{searchTerms}";
+  keyword_t_url_ = new TemplateURL(data);
   turl_model->Add(keyword_t_url_);
   ASSERT_NE(0, keyword_t_url_->id());
 

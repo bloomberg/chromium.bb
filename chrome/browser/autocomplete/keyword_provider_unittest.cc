@@ -201,12 +201,12 @@ TEST_F(KeywordProviderTest, DISABLED_Description) {
 }
 
 TEST_F(KeywordProviderTest, AddKeyword) {
-  TemplateURL* template_url = new TemplateURL();
+  TemplateURLData data;
+  data.short_name = ASCIIToUTF16("Test");
   string16 keyword(ASCIIToUTF16("foo"));
-  std::string url("http://www.google.com/foo?q={searchTerms}");
-  template_url->SetURL(url);
-  template_url->set_keyword(keyword);
-  template_url->set_short_name(ASCIIToUTF16("Test"));
+  data.SetKeyword(keyword);
+  data.SetURL("http://www.google.com/foo?q={searchTerms}");
+  TemplateURL* template_url = new TemplateURL(data);
   model_->Add(template_url);
   ASSERT_TRUE(template_url == model_->GetTemplateURLForKeyword(keyword));
 }
