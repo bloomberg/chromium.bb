@@ -2243,6 +2243,11 @@
             ['exclude', '^browser/automation/'],
           ],
         }],
+        ['use_virtual_keyboard!=1', {
+          'sources/': [
+            ['exclude', '^browser/ui/webui/options2/chromeos/virtual_keyboard_manager_handler2_unittest.cc'],
+          ],
+        }],
         ['chromeos==1', {
           'sources/': [
             ['exclude', '^browser/password_manager/native_backend_gnome_x_unittest.cc'],

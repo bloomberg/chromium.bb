@@ -4361,6 +4361,7 @@
             ['exclude', '^browser/ui/touch/status_bubble_touch.*'],
             ['exclude', '^browser/ui/virtual_keyboard/*'],
             ['exclude', '^browser/ui/webui/keyboard_ui.*'],
+            ['exclude', '^browser/ui/webui/options2/chromeos/virtual_keyboard_manager_handler2.*'],
           ],
         }],
         ['os_posix == 1 and OS != "mac" and OS != "android"', {
