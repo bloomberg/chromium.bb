@@ -123,7 +123,15 @@ remoting.HostSetupDialog = function(daemon) {
       event.preventDefault();
     }
   };
+  /** @param {Event} event A keypress event. */
+  var noDigitsInPin = function(event) {
+    if ((event.which < 48) || (event.which > 57)) {
+      event.preventDefault();
+    }
+  };
   this.pinEntry_.addEventListener('keypress', onDaemonPinEntryKeyPress, false);
+  this.pinEntry_.addEventListener('keypress', noDigitsInPin, false);
+  this.pinConfirm_.addEventListener('keypress', noDigitsInPin, false);
 };
 
 /**
