@@ -34,7 +34,7 @@ remoting.HostPlugin.prototype.getHostName = function() {};
 remoting.HostPlugin.prototype.generateKeyPair = function(callback) {};
 
 /** @param {string} config The new config, JSON encoded.
- *  @param {function(remoting.DaemonPlugin.AsyncResult):void} callback
+ *  @param {function(remoting.HostController.AsyncResult):void} callback
  *     Callback to be called when finished.
  *  @return {void} Nothing. */
 remoting.HostPlugin.prototype.updateDaemonConfig =
@@ -46,12 +46,12 @@ remoting.HostPlugin.prototype.updateDaemonConfig =
 remoting.HostPlugin.prototype.getDaemonConfig = function(callback) {};
 
 /** @param {string} config Host configuration.
- *  @param {function(remoting.DaemonPlugin.AsyncResult):void} callback
+ *  @param {function(remoting.HostController.AsyncResult):void} callback
  *     Callback to be called when finished.
  *  @return {void} Nothing. */
 remoting.HostPlugin.prototype.startDaemon = function(config, callback) {};
 
-/** @param {function(remoting.DaemonPlugin.AsyncResult):void} callback
+/** @param {function(remoting.HostController.AsyncResult):void} callback
  *     Callback to be called when finished.
  *  @return {void} Nothing. */
 remoting.HostPlugin.prototype.stopDaemon = function(callback) {};
@@ -71,7 +71,7 @@ remoting.HostPlugin.prototype.stopDaemon = function(callback) {};
 
 /** @type {string} */ remoting.HostPlugin.prototype.client;
 
-/** @type {remoting.DaemonPlugin.State} */
+/** @type {remoting.HostController.State} */
 remoting.HostPlugin.prototype.daemonState;
 
 /** @type {function(boolean):void} */

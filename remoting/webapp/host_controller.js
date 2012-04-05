@@ -8,7 +8,7 @@
 var remoting = remoting || {};
 
 /** @constructor */
-remoting.DaemonPlugin = function() {
+remoting.HostController = function() {
   /** @type {remoting.HostPlugin} @private */
   this.plugin_ = remoting.HostSession.createPlugin();
   /** @type {HTMLElement} @private */
@@ -21,7 +21,7 @@ remoting.DaemonPlugin = function() {
 // Note that the values in the enums below are copied from
 // daemon_controller.h and must be kept in sync.
 /** @enum {number} */
-remoting.DaemonPlugin.State = {
+remoting.HostController.State = {
   NOT_IMPLEMENTED: -1,
   NOT_INSTALLED: 0,
   INSTALLING: 1,
@@ -33,20 +33,20 @@ remoting.DaemonPlugin.State = {
 };
 
 /** @enum {number} */
-remoting.DaemonPlugin.AsyncResult = {
+remoting.HostController.AsyncResult = {
   OK: 0,
   FAILED: 1,
   CANCELLED: 2
 };
 
-/** @return {remoting.DaemonPlugin.State} The current state of the daemon. */
-remoting.DaemonPlugin.prototype.state = function() {
+/** @return {remoting.HostController.State} The current state of the daemon. */
+remoting.HostController.prototype.state = function() {
   try {
     return this.plugin_.daemonState;
   } catch (err) {
     // If the plug-in can't be instantiated, for example on ChromeOS, then
     // return something sensible.
-    return remoting.DaemonPlugin.State.NOT_IMPLEMENTED;
+    return remoting.HostController.State.NOT_IMPLEMENTED;
   }
 };
 
@@ -54,26 +54,26 @@ remoting.DaemonPlugin.prototype.state = function() {
  * Show or hide daemon-specific parts of the UI.
  * @return {void} Nothing.
  */
-remoting.DaemonPlugin.prototype.updateDom = function() {
+remoting.HostController.prototype.updateDom = function() {
   // TODO(sergeyu): This code updates UI state. Does it belong here,
   // or should it moved somewhere else?
   var match = '';
   var row = document.getElementById('this-host-connect');
   var state = this.state();
   switch (state) {
-    case remoting.DaemonPlugin.State.STARTED:
+    case remoting.HostController.State.STARTED:
       remoting.updateModalUi('enabled', 'data-daemon-state');
       row.classList.remove('host-offline');
       row.classList.add('clickable');
       break;
-    case remoting.DaemonPlugin.State.NOT_IMPLEMENTED:
+    case remoting.HostController.State.NOT_IMPLEMENTED:
       document.getElementById('start-daemon').disabled = true;
       document.getElementById('start-daemon-message').innerText =
           chrome.i18n.getMessage(
               /*i18n-content*/'HOME_DAEMON_DISABLED_MESSAGE');
       // No break;
-    case remoting.DaemonPlugin.State.STOPPED:
-    case remoting.DaemonPlugin.State.NOT_INSTALLED:
+    case remoting.HostController.State.STOPPED:
+    case remoting.HostController.State.NOT_INSTALLED:
       remoting.updateModalUi('disabled', 'data-daemon-state');
       row.classList.add('host-offline');
       row.classList.remove('clickable');
@@ -88,7 +88,7 @@ remoting.DaemonPlugin.prototype.updateDom = function() {
  *
  * return {void} Nothing.
  */
-remoting.DaemonPlugin.prototype.setTooltips = function() {
+remoting.HostController.prototype.setTooltips = function() {
   var connectStr = '';
   if (this.localHost) {
     chrome.i18n.getMessage(/*i18n-content*/'TOOLTIP_CONNECT',
@@ -105,14 +105,14 @@ remoting.DaemonPlugin.prototype.setTooltips = function() {
  *     generated key pair.
  * @return {void} Nothing.
  */
-remoting.DaemonPlugin.prototype.generateKeyPair = function(callback) {
+remoting.HostController.prototype.generateKeyPair = function(callback) {
   this.plugin_.generateKeyPair(callback);
 };
 
 /**
  * @return {string} Local hostname
  */
-remoting.DaemonPlugin.prototype.getHostName = function() {
+remoting.HostController.prototype.getHostName = function() {
   return this.plugin_.getHostName();
 };
 
@@ -121,38 +121,38 @@ remoting.DaemonPlugin.prototype.getHostName = function() {
  * @param {function(string):void} callback Host config callback.
  * @return {void} Nothing.
  */
-remoting.DaemonPlugin.prototype.getConfig = function(callback) {
+remoting.HostController.prototype.getConfig = function(callback) {
   this.plugin_.getDaemonConfig(callback);
 };
 
 /**
  * Start the daemon process.
  * @param {string} config Host config.
- * @param {function(remoting.DaemonPlugin.AsyncResult):void} callback
+ * @param {function(remoting.HostController.AsyncResult):void} callback
  *     Callback to be called when finished.
  * @return {void} Nothing.
  */
-remoting.DaemonPlugin.prototype.start = function(config, callback) {
+remoting.HostController.prototype.start = function(config, callback) {
   this.plugin_.startDaemon(config, callback);
 };
 
 /**
  * Stop the daemon process.
- * @param {function(remoting.DaemonPlugin.AsyncResult):void} callback
+ * @param {function(remoting.HostController.AsyncResult):void} callback
  *     Callback to be called when finished.
  * @return {void} Nothing.
  */
-remoting.DaemonPlugin.prototype.stop = function(callback) {
+remoting.HostController.prototype.stop = function(callback) {
   this.plugin_.stopDaemon(callback);
 };
 
 /**
  * @param {string} config The new host config, JSON encoded.
- * @param {function(remoting.DaemonPlugin.AsyncResult):void} callback
+ * @param {function(remoting.HostController.AsyncResult):void} callback
  *     Callback to be called when finished.
  * @return {void} Nothing.
  */
-remoting.DaemonPlugin.prototype.updateConfig = function(config, callback) {
+remoting.HostController.prototype.updateConfig = function(config, callback) {
   this.plugin_.updateDaemonConfig(config, callback);
 };
 
@@ -163,10 +163,10 @@ remoting.DaemonPlugin.prototype.updateConfig = function(config, callback) {
  * @param {remoting.Host?} host The host, or null if not registered.
  * @return {void} Nothing.
  */
-remoting.DaemonPlugin.prototype.setHost = function(host) {
+remoting.HostController.prototype.setHost = function(host) {
   this.localHost = host;
   this.setTooltips();
-  /** @type {remoting.DaemonPlugin} */
+  /** @type {remoting.HostController} */
   var that = this;
   if (host) {
     /** @param {remoting.HostTableEntry} host */
@@ -197,7 +197,8 @@ remoting.DaemonPlugin.prototype.setHost = function(host) {
  *     the future, it will asynchronously read the host id from the plugin
  *     (crbug.com/121518).
  */
-remoting.DaemonPlugin.prototype.onHostListRefresh = function(hostList, onDone) {
+remoting.HostController.prototype.onHostListRefresh =
+    function(hostList, onDone) {
   var hostId = window.localStorage.getItem('me2me-host-id');
   if (hostId && typeof(hostId) == 'string') {
     this.setHost(hostList.getHostForId(/** @type{string} */(hostId)));
@@ -212,10 +213,10 @@ remoting.DaemonPlugin.prototype.onHostListRefresh = function(hostList, onDone) {
  *
  * @return {void} Nothing.
  */
-remoting.DaemonPlugin.prototype.unregister = function() {
+remoting.HostController.prototype.unregister = function() {
   remoting.HostList.unregisterHostById(this.localHost.hostId);
   window.localStorage.removeItem('me2me-host-id');
 };
 
-/** @type {remoting.DaemonPlugin} */
-remoting.daemonPlugin = null;
+/** @type {remoting.HostController} */
+remoting.hostController = null;

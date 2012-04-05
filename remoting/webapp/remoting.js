@@ -84,11 +84,11 @@ remoting.init = function() {
 // initDaemonUi is called if the app is not starting up in session mode, and
 // also if the user cancels pin entry or the connection in session mode.
 remoting.initDaemonUi = function () {
-  remoting.daemonPlugin = new remoting.DaemonPlugin();
-  remoting.daemonPlugin.updateDom();
+  remoting.hostController = new remoting.HostController();
+  remoting.hostController.updateDom();
   remoting.setMode(getAppStartupMode_());
   remoting.hostSetupDialog =
-      new remoting.HostSetupDialog(remoting.daemonPlugin);
+      new remoting.HostSetupDialog(remoting.hostController);
   remoting.hostList.refresh(remoting.extractThisHostAndDisplay);
 };
 
@@ -103,14 +103,14 @@ remoting.extractThisHostAndDisplay = function(success) {
   if (success) {
     var display = function() {
       var hostId = null;
-      if (remoting.daemonPlugin.localHost) {
-        hostId = remoting.daemonPlugin.localHost.hostId;
+      if (remoting.hostController.localHost) {
+        hostId = remoting.hostController.localHost.hostId;
       }
       remoting.hostList.display(hostId);
     };
-    remoting.daemonPlugin.onHostListRefresh(remoting.hostList, display);
+    remoting.hostController.onHostListRefresh(remoting.hostList, display);
   } else {
-    remoting.daemonPlugin.setHost(null);
+    remoting.hostController.setHost(null);
     remoting.hostList.display(null);
   }
 };

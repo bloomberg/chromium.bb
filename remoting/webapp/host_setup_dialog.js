@@ -55,7 +55,7 @@ remoting.HostSetupFlow.prototype.getState = function() {
 };
 
 /**
- * @param {remoting.DaemonPlugin.AsyncResult} result Result of the
+ * @param {remoting.HostController.AsyncResult} result Result of the
  * current step.
  * @return {remoting.HostSetupFlow.State} New state.
  */
@@ -63,7 +63,7 @@ remoting.HostSetupFlow.prototype.switchToNextStep = function(result) {
   if (this.state_ == remoting.HostSetupFlow.State.NONE) {
     return this.state_;
   }
-  if (result == remoting.DaemonPlugin.AsyncResult.OK) {
+  if (result == remoting.HostController.AsyncResult.OK) {
     // If the current step was successful then switch to the next
     // step in the sequence.
     if (this.currentStep_ < this.sequence_.length - 1) {
@@ -72,7 +72,7 @@ remoting.HostSetupFlow.prototype.switchToNextStep = function(result) {
     } else {
       this.state_ = remoting.HostSetupFlow.State.NONE;
     }
-  } else if (result == remoting.DaemonPlugin.AsyncResult.CANCELLED) {
+  } else if (result == remoting.HostController.AsyncResult.CANCELLED) {
     // Stop the setup flow if user rejected one of the actions.
     this.state_ = remoting.HostSetupFlow.State.NONE;
   } else {
@@ -94,7 +94,7 @@ remoting.HostSetupFlow.prototype.switchToNextStep = function(result) {
 };
 
 /**
- * @param {remoting.DaemonPlugin} daemon The parent daemon plugin instance.
+ * @param {remoting.HostController} daemon The parent daemon plugin instance.
  * @constructor
  */
 remoting.HostSetupDialog = function(daemon) {
@@ -140,7 +140,7 @@ remoting.HostSetupDialog.prototype.showForStart = function() {
       remoting.HostSetupFlow.State.HOST_STARTED];
 
   if (navigator.platform.indexOf('Mac') != -1 &&
-      this.daemon_.state() == remoting.DaemonPlugin.State.NOT_INSTALLED) {
+      this.daemon_.state() == remoting.HostController.State.NOT_INSTALLED) {
     flow.unshift(remoting.HostSetupFlow.State.INSTALL_HOST);
   }
 
@@ -198,7 +198,7 @@ remoting.HostSetupDialog.prototype.startNewFlow_ = function(sequence) {
  * @private
  */
 remoting.HostSetupDialog.prototype.updateState_ = function() {
-  remoting.daemonPlugin.updateDom();
+  remoting.hostController.updateDom();
 
   /** @param {string} tag */
   function showProcessingMessage(tag) {
@@ -260,7 +260,7 @@ remoting.HostSetupDialog.prototype.updateState_ = function() {
 /**
  * Registers new host.
  * TODO(jamiewalch): This doesn't feel like it belongs here. I think it would be
- * better as a member of daemon_plugin, alongside unregister.
+ * better as a member of HostController, alongside unregister.
  */
 remoting.HostSetupDialog.prototype.registerHost_ = function() {
   /** @type {remoting.HostSetupDialog} */
@@ -314,8 +314,8 @@ remoting.HostSetupDialog.prototype.registerHost_ = function() {
                   ' response: ' + xhr.responseText);
     }
 
-    flow.switchToNextStep(success ? remoting.DaemonPlugin.AsyncResult.OK :
-                          remoting.DaemonPlugin.AsyncResult.FAILED);
+    flow.switchToNextStep(success ? remoting.HostController.AsyncResult.OK :
+                          remoting.HostController.AsyncResult.FAILED);
     that.updateState_();
   }
 
@@ -370,7 +370,7 @@ remoting.HostSetupDialog.prototype.startHost_ = function() {
   /** @type {remoting.HostSetupFlow} */
   var flow = this.flow_;
 
-  /** @param {remoting.DaemonPlugin.AsyncResult} result */
+  /** @param {remoting.HostController.AsyncResult} result */
   function onHostStarted(result) {
     if (flow !== that.flow_ ||
         flow.getState() != remoting.HostSetupFlow.State.STARTING_HOST) {
@@ -390,7 +390,7 @@ remoting.HostSetupDialog.prototype.updatePin_ = function() {
   /** @type {remoting.HostSetupFlow} */
   var flow = this.flow_;
 
-  /** @param {remoting.DaemonPlugin.AsyncResult} result */
+  /** @param {remoting.HostController.AsyncResult} result */
   function onPinUpdated(result) {
     if (flow !== that.flow_ ||
         flow.getState() != remoting.HostSetupFlow.State.UPDATING_PIN) {
@@ -417,7 +417,7 @@ remoting.HostSetupDialog.prototype.stopHost_ = function() {
   /** @type {remoting.HostSetupFlow} */
   var flow = this.flow_;
 
-  /** @param {remoting.DaemonPlugin.AsyncResult} result */
+  /** @param {remoting.HostController.AsyncResult} result */
   function onHostStopped(result) {
     if (flow !== that.flow_ ||
         flow.getState() != remoting.HostSetupFlow.State.STOPPING_HOST) {
@@ -456,7 +456,7 @@ remoting.HostSetupDialog.prototype.onPinSubmit_ = function() {
   }
   this.pinErrorDiv_.hidden = true;
   this.flow_.pin = pin1;
-  this.flow_.switchToNextStep(remoting.DaemonPlugin.AsyncResult.OK);
+  this.flow_.switchToNextStep(remoting.HostController.AsyncResult.OK);
   this.updateState_();
 };
 
@@ -492,8 +492,8 @@ remoting.HostSetupDialog.validPin_ = function(pin) {
  */
 remoting.HostSetupDialog.prototype.onInstallDialogOk = function() {
   var state = this.daemon_.state();
-  if (state == remoting.DaemonPlugin.State.STOPPED) {
-    this.flow_.switchToNextStep(remoting.DaemonPlugin.AsyncResult.OK);
+  if (state == remoting.HostController.State.STOPPED) {
+    this.flow_.switchToNextStep(remoting.HostController.AsyncResult.OK);
     this.updateState_();
   } else {
     remoting.setMode(remoting.AppMode.HOST_SETUP_INSTALL_PENDING);
