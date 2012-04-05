@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -260,7 +260,7 @@
   NSString* origin;
   switch (nodeType) {
     case CookieTreeNode::DetailedInfo::TYPE_COOKIE:
-      origin = base::SysWideToNSString(info.origin.c_str());
+      origin = base::SysUTF16ToNSString(info.origin.c_str());
       return [[[CocoaCookieDetails alloc] initWithCookie:info.cookie
                                                   origin:origin
                                        canEditExpiration:NO] autorelease];

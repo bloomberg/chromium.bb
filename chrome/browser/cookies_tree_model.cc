@@ -61,9 +61,7 @@ void CookieTreeCookieNode::DeleteStoredObjects() {
 }
 
 CookieTreeNode::DetailedInfo CookieTreeCookieNode::GetDetailedInfo() const {
-  return DetailedInfo(parent()->parent()->GetTitle(),
-                      DetailedInfo::TYPE_COOKIE,
-                      &*cookie_, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+  return DetailedInfo(parent()->parent()->GetTitle()).InitCookie(&*cookie_);
 }
 
 namespace {
@@ -147,10 +145,8 @@ void CookieTreeAppCacheNode::DeleteStoredObjects() {
 }
 
 CookieTreeNode::DetailedInfo CookieTreeAppCacheNode::GetDetailedInfo() const {
-  return DetailedInfo(parent()->parent()->GetTitle(),
-                      DetailedInfo::TYPE_APPCACHE,
-                      NULL, NULL, NULL, NULL, &*appcache_info_,
-                      NULL, NULL, NULL);
+  return DetailedInfo(parent()->parent()->GetTitle()).InitAppCache(
+      &*appcache_info_);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -173,10 +169,8 @@ void CookieTreeDatabaseNode::DeleteStoredObjects() {
 }
 
 CookieTreeNode::DetailedInfo CookieTreeDatabaseNode::GetDetailedInfo() const {
-  return DetailedInfo(parent()->parent()->GetTitle(),
-                      DetailedInfo::TYPE_DATABASE,
-                      NULL, &*database_info_,
-                      NULL, NULL, NULL, NULL, NULL, NULL);
+  return DetailedInfo(parent()->parent()->GetTitle()).InitDatabase(
+      &*database_info_);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -202,10 +196,8 @@ void CookieTreeLocalStorageNode::DeleteStoredObjects() {
 
 CookieTreeNode::DetailedInfo
 CookieTreeLocalStorageNode::GetDetailedInfo() const {
-  return DetailedInfo(parent()->parent()->GetTitle(),
-                      DetailedInfo::TYPE_LOCAL_STORAGE,
-                      NULL, NULL, &*local_storage_info_, NULL, NULL, NULL, NULL,
-                      NULL);
+  return DetailedInfo(parent()->parent()->GetTitle()).InitLocalStorage(
+      &*local_storage_info_);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -229,10 +221,8 @@ void CookieTreeSessionStorageNode::DeleteStoredObjects() {
 
 CookieTreeNode::DetailedInfo
 CookieTreeSessionStorageNode::GetDetailedInfo() const {
-  return DetailedInfo(parent()->parent()->GetTitle(),
-                      DetailedInfo::TYPE_SESSION_STORAGE,
-                      NULL, NULL, NULL, &*session_storage_info_, NULL, NULL,
-                      NULL, NULL);
+  return DetailedInfo(parent()->parent()->GetTitle()).InitSessionStorage(
+      &*session_storage_info_);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -255,10 +245,8 @@ void CookieTreeIndexedDBNode::DeleteStoredObjects() {
 }
 
 CookieTreeNode::DetailedInfo CookieTreeIndexedDBNode::GetDetailedInfo() const {
-  return DetailedInfo(parent()->parent()->GetTitle(),
-                      DetailedInfo::TYPE_INDEXED_DB,
-                      NULL, NULL, NULL, NULL, NULL, &*indexed_db_info_, NULL,
-                      NULL);
+  return DetailedInfo(parent()->parent()->GetTitle()).InitIndexedDB(
+      &*indexed_db_info_);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -281,10 +269,8 @@ void CookieTreeFileSystemNode::DeleteStoredObjects() {
 }
 
 CookieTreeNode::DetailedInfo CookieTreeFileSystemNode::GetDetailedInfo() const {
-  return DetailedInfo(parent()->parent()->GetTitle(),
-                      DetailedInfo::TYPE_FILE_SYSTEM,
-                      NULL, NULL, NULL, NULL, NULL, NULL, &*file_system_info_,
-                      NULL);
+  return DetailedInfo(parent()->parent()->GetTitle()).InitFileSystem(
+      &*file_system_info_);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -306,9 +292,8 @@ void CookieTreeQuotaNode::DeleteStoredObjects() {
 }
 
 CookieTreeNode::DetailedInfo CookieTreeQuotaNode::GetDetailedInfo() const {
-  return DetailedInfo(parent()->parent()->GetTitle(),
-                      DetailedInfo::TYPE_QUOTA,
-                      NULL, NULL, NULL, NULL, NULL, NULL, NULL, &*quota_info_);
+  return DetailedInfo(parent()->parent()->GetTitle()).InitQuota(
+      &*quota_info_);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -348,9 +333,7 @@ CookiesTreeModel* CookieTreeRootNode::GetModel() const {
 }
 
 CookieTreeNode::DetailedInfo CookieTreeRootNode::GetDetailedInfo() const {
-  return DetailedInfo(string16(),
-                      DetailedInfo::TYPE_ROOT,
-                      NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+  return DetailedInfo(string16()).Init(DetailedInfo::TYPE_ROOT);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -377,9 +360,7 @@ CookieTreeOriginNode::CookieTreeOriginNode(const GURL& url)
 CookieTreeOriginNode::~CookieTreeOriginNode() {}
 
 CookieTreeNode::DetailedInfo CookieTreeOriginNode::GetDetailedInfo() const {
-  return DetailedInfo(GetTitle(),
-                      DetailedInfo::TYPE_ORIGIN,
-                      NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+  return DetailedInfo(GetTitle()).Init(DetailedInfo::TYPE_ORIGIN);
 }
 
 CookieTreeCookiesNode* CookieTreeOriginNode::GetOrCreateCookiesNode() {
@@ -479,9 +460,7 @@ CookieTreeCookiesNode::~CookieTreeCookiesNode() {
 }
 
 CookieTreeNode::DetailedInfo CookieTreeCookiesNode::GetDetailedInfo() const {
-  return DetailedInfo(parent()->GetTitle(),
-                      DetailedInfo::TYPE_COOKIES,
-                      NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+  return DetailedInfo(parent()->GetTitle()).Init(DetailedInfo::TYPE_COOKIES);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -495,9 +474,7 @@ CookieTreeAppCachesNode::CookieTreeAppCachesNode()
 CookieTreeAppCachesNode::~CookieTreeAppCachesNode() {}
 
 CookieTreeNode::DetailedInfo CookieTreeAppCachesNode::GetDetailedInfo() const {
-  return DetailedInfo(parent()->GetTitle(),
-                      DetailedInfo::TYPE_APPCACHES,
-                      NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+  return DetailedInfo(parent()->GetTitle()).Init(DetailedInfo::TYPE_APPCACHES);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -510,9 +487,7 @@ CookieTreeDatabasesNode::CookieTreeDatabasesNode()
 CookieTreeDatabasesNode::~CookieTreeDatabasesNode() {}
 
 CookieTreeNode::DetailedInfo CookieTreeDatabasesNode::GetDetailedInfo() const {
-  return DetailedInfo(parent()->GetTitle(),
-                      DetailedInfo::TYPE_DATABASES,
-                      NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+  return DetailedInfo(parent()->GetTitle()).Init(DetailedInfo::TYPE_DATABASES);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -526,9 +501,8 @@ CookieTreeLocalStoragesNode::~CookieTreeLocalStoragesNode() {}
 
 CookieTreeNode::DetailedInfo
 CookieTreeLocalStoragesNode::GetDetailedInfo() const {
-  return DetailedInfo(parent()->GetTitle(),
-                      DetailedInfo::TYPE_LOCAL_STORAGES,
-                      NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+  return DetailedInfo(parent()->GetTitle()).Init(
+      DetailedInfo::TYPE_LOCAL_STORAGES);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -542,9 +516,8 @@ CookieTreeSessionStoragesNode::~CookieTreeSessionStoragesNode() {}
 
 CookieTreeNode::DetailedInfo
 CookieTreeSessionStoragesNode::GetDetailedInfo() const {
-  return DetailedInfo(parent()->GetTitle(),
-                      DetailedInfo::TYPE_SESSION_STORAGES,
-                      NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+  return DetailedInfo(parent()->GetTitle()).Init(
+      DetailedInfo::TYPE_SESSION_STORAGES);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -558,9 +531,8 @@ CookieTreeIndexedDBsNode::~CookieTreeIndexedDBsNode() {}
 
 CookieTreeNode::DetailedInfo
 CookieTreeIndexedDBsNode::GetDetailedInfo() const {
-  return DetailedInfo(parent()->GetTitle(),
-                      DetailedInfo::TYPE_INDEXED_DBS,
-                      NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+  return DetailedInfo(parent()->GetTitle()).Init(
+      DetailedInfo::TYPE_INDEXED_DBS);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -574,9 +546,8 @@ CookieTreeFileSystemsNode::~CookieTreeFileSystemsNode() {}
 
 CookieTreeNode::DetailedInfo
 CookieTreeFileSystemsNode::GetDetailedInfo() const {
-  return DetailedInfo(parent()->GetTitle(),
-                      DetailedInfo::TYPE_FILE_SYSTEMS,
-                      NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+  return DetailedInfo(parent()->GetTitle()).Init(
+      DetailedInfo::TYPE_FILE_SYSTEMS);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

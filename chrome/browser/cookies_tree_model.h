@@ -60,6 +60,7 @@ class CookieTreeNode : public ui::TreeNode<CookieTreeNode> {
   struct DetailedInfo {
     // NodeType corresponds to the various CookieTreeNode types.
     enum NodeType {
+      TYPE_NONE,
       TYPE_ROOT,  // This is used for CookieTreeRootNode nodes.
       TYPE_ORIGIN,  // This is used for CookieTreeOriginNode nodes.
       TYPE_COOKIES,  // This is used for CookieTreeCookiesNode nodes.
@@ -80,70 +81,83 @@ class CookieTreeNode : public ui::TreeNode<CookieTreeNode> {
     };
 
     // TODO(viettrungluu): Figure out whether we want to store |origin| as a
-    // |string16| or a (UTF-8) |std::string|, and convert. Remove constructor
-    // taking an |std::wstring|.
-    DetailedInfo(const string16& origin, NodeType node_type,
-        const net::CookieMonster::CanonicalCookie* cookie,
-        const BrowsingDataDatabaseHelper::DatabaseInfo* database_info,
-        const BrowsingDataLocalStorageHelper::LocalStorageInfo*
-            local_storage_info,
-        const BrowsingDataLocalStorageHelper::LocalStorageInfo*
-            session_storage_info,
-        const appcache::AppCacheInfo* appcache_info,
-        const BrowsingDataIndexedDBHelper::IndexedDBInfo* indexed_db_info,
-        const BrowsingDataFileSystemHelper::FileSystemInfo* file_system_info,
-        const BrowsingDataQuotaHelper::QuotaInfo* quota_info)
-        : origin(UTF16ToWideHack(origin)),
-          node_type(node_type),
-          cookie(cookie),
-          database_info(database_info),
-          local_storage_info(local_storage_info),
-          session_storage_info(session_storage_info),
-          appcache_info(appcache_info),
-          indexed_db_info(indexed_db_info),
-          file_system_info(file_system_info),
-          quota_info(quota_info) {
-      DCHECK((node_type != TYPE_DATABASE) || database_info);
-      DCHECK((node_type != TYPE_LOCAL_STORAGE) || local_storage_info);
-      DCHECK((node_type != TYPE_SESSION_STORAGE) || session_storage_info);
-      DCHECK((node_type != TYPE_APPCACHE) || appcache_info);
-      DCHECK((node_type != TYPE_INDEXED_DB) || indexed_db_info);
-      DCHECK((node_type != TYPE_FILE_SYSTEM) || file_system_info);
-      DCHECK((node_type != TYPE_QUOTA) || quota_info);
-    }
-#if !defined(WCHAR_T_IS_UTF16)
-    DetailedInfo(const std::wstring& origin, NodeType node_type,
-        const net::CookieMonster::CanonicalCookie* cookie,
-        const BrowsingDataDatabaseHelper::DatabaseInfo* database_info,
-        const BrowsingDataLocalStorageHelper::LocalStorageInfo*
-            local_storage_info,
-        const BrowsingDataLocalStorageHelper::LocalStorageInfo*
-            session_storage_info,
-        const appcache::AppCacheInfo* appcache_info,
-        const BrowsingDataIndexedDBHelper::IndexedDBInfo* indexed_db_info,
-        const BrowsingDataFileSystemHelper::FileSystemInfo* file_system_info,
-        const BrowsingDataQuotaHelper::QuotaInfo* quota_info)
+    // |string16| or a (UTF-8) |std::string|, and convert.
+    explicit DetailedInfo(const string16& origin)
         : origin(origin),
-          node_type(node_type),
-          cookie(cookie),
-          database_info(database_info),
-          local_storage_info(local_storage_info),
-          session_storage_info(session_storage_info),
-          appcache_info(appcache_info),
-          indexed_db_info(indexed_db_info),
-          file_system_info(file_system_info),
-          quota_info(quota_info) {
-      DCHECK((node_type != TYPE_DATABASE) || database_info);
-      DCHECK((node_type != TYPE_LOCAL_STORAGE) || local_storage_info);
-      DCHECK((node_type != TYPE_SESSION_STORAGE) || session_storage_info);
-      DCHECK((node_type != TYPE_APPCACHE) || appcache_info);
-      DCHECK((node_type != TYPE_INDEXED_DB) || indexed_db_info);
-      DCHECK((node_type != TYPE_FILE_SYSTEM) || file_system_info);
-      DCHECK((node_type != TYPE_QUOTA) || quota_info);
-    }
-#endif
+          node_type(TYPE_NONE),
+          cookie(NULL),
+          database_info(NULL),
+          local_storage_info(NULL),
+          session_storage_info(NULL),
+          appcache_info(NULL),
+          indexed_db_info(NULL),
+          file_system_info(NULL),
+          quota_info(NULL) {}
 
-    std::wstring origin;
+    DetailedInfo& Init(NodeType type) {
+      DCHECK_EQ(TYPE_NONE, node_type);
+      node_type = type;
+      return *this;
+    }
+
+    DetailedInfo& InitCookie(
+        const net::CookieMonster::CanonicalCookie* cookie) {
+      Init(TYPE_COOKIE);
+      this->cookie = cookie;
+      return *this;
+    }
+
+    DetailedInfo& InitDatabase(
+        const BrowsingDataDatabaseHelper::DatabaseInfo* database_info) {
+      Init(TYPE_DATABASE);
+      this->database_info = database_info;
+      return *this;
+    }
+
+    DetailedInfo& InitLocalStorage(
+        const BrowsingDataLocalStorageHelper::LocalStorageInfo*
+        local_storage_info) {
+      Init(TYPE_LOCAL_STORAGE);
+      this->local_storage_info = local_storage_info;
+      return *this;
+    }
+
+    DetailedInfo& InitSessionStorage(
+        const BrowsingDataLocalStorageHelper::LocalStorageInfo*
+        session_storage_info) {
+      Init(TYPE_SESSION_STORAGE);
+      this->session_storage_info = session_storage_info;
+      return *this;
+    }
+
+    DetailedInfo& InitAppCache(const appcache::AppCacheInfo* appcache_info) {
+      Init(TYPE_APPCACHE);
+      this->appcache_info = appcache_info;
+      return *this;
+    }
+
+    DetailedInfo& InitIndexedDB(
+        const BrowsingDataIndexedDBHelper::IndexedDBInfo* indexed_db_info) {
+      Init(TYPE_INDEXED_DB);
+      this->indexed_db_info = indexed_db_info;
+      return *this;
+    }
+
+    DetailedInfo& InitFileSystem(
+        const BrowsingDataFileSystemHelper::FileSystemInfo* file_system_info) {
+      Init(TYPE_FILE_SYSTEM);
+      this->file_system_info = file_system_info;
+      return *this;
+    }
+
+    DetailedInfo& InitQuota(
+        const BrowsingDataQuotaHelper::QuotaInfo* quota_info) {
+      Init(TYPE_QUOTA);
+      this->quota_info = quota_info;
+      return *this;
+    }
+
+    string16 origin;
     NodeType node_type;
     const net::CookieMonster::CanonicalCookie* cookie;
     const BrowsingDataDatabaseHelper::DatabaseInfo* database_info;
