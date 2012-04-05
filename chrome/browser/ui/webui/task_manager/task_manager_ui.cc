@@ -29,6 +29,7 @@ ChromeWebUIDataSource* CreateTaskManagerUIHTMLSource() {
       new ChromeWebUIDataSource(chrome::kChromeUITaskManagerHost);
 
   source->AddLocalizedString("closeWindow", IDS_CLOSE);
+  source->AddLocalizedString("title",IDS_TASK_MANAGER_TITLE);
   source->AddLocalizedString("aboutMemoryLink",
                              IDS_TASK_MANAGER_ABOUT_MEMORY_LINK);
   source->AddLocalizedString("killChromeOS", IDS_TASK_MANAGER_KILL_CHROMEOS);
