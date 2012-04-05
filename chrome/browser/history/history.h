@@ -220,17 +220,6 @@ class HistoryService : public CancelableRequestProvider,
   // title in the full text index.
   void SetPageTitle(const GURL& url, const string16& title);
 
-  // Updates the history database with a page's ending time stamp information.
-  // The page can be identified by the combination of the pointer to
-  // a RenderProcessHost, the page id and the url.
-  //
-  // The given pointer will not be dereferenced, it is only used for
-  // identification purposes, hence it is a void*.
-  void UpdateWithPageEndTime(const void* host,
-                             int32 page_id,
-                             const GURL& url,
-                             base::Time end_ts);
-
   // Indexing ------------------------------------------------------------------
 
   // Notifies history of the body text of the given recently-visited URL.

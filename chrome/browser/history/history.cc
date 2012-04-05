@@ -385,14 +385,6 @@ void HistoryService::SetPageTitle(const GURL& url,
   ScheduleAndForget(PRIORITY_NORMAL, &HistoryBackend::SetPageTitle, url, title);
 }
 
-void HistoryService::UpdateWithPageEndTime(const void* host,
-                                           int32 page_id,
-                                           const GURL& url,
-                                           Time end_ts) {
-  ScheduleAndForget(PRIORITY_NORMAL, &HistoryBackend::UpdateWithPageEndTime,
-                    host, page_id, url, end_ts);
-}
-
 void HistoryService::AddPageWithDetails(const GURL& url,
                                         const string16& title,
                                         int visit_count,
