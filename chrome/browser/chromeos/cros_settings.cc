@@ -12,6 +12,7 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros_settings_provider.h"
 #include "chrome/browser/chromeos/device_settings_provider.h"
+#include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/browser/chromeos/login/signed_settings_helper.h"
 #include "chrome/browser/chromeos/stub_cros_settings_provider.h"
 #include "chrome/browser/ui/webui/options2/chromeos/system_settings_provider2.h"
@@ -107,17 +108,32 @@ void CrosSettings::RemoveFromList(const std::string& path,
 bool CrosSettings::FindEmailInList(const std::string& path,
                                    const std::string& email) const {
   DCHECK(CalledOnValidThread());
-  base::StringValue email_value(email);
-  const base::ListValue* value(
-      static_cast<const base::ListValue*>(GetPref(path)));
-  if (value) {
-    if (value->Find(email_value) != value->end())
+  std::string canonicalized_email(
+      Authenticator::Canonicalize(Authenticator::Sanitize(email)));
+  std::string wildcard_email;
+  std::string::size_type at_pos = canonicalized_email.find('@');
+  if (at_pos != std::string::npos) {
+    wildcard_email =
+        std::string("*").append(canonicalized_email.substr(at_pos));
+  }
+
+  const base::ListValue* list;
+  if (!GetList(path, &list))
+    return false;
+  for (base::ListValue::const_iterator entry(list->begin());
+       entry != list->end();
+       ++entry) {
+    std::string entry_string;
+    if (!(*entry)->GetAsString(&entry_string)) {
+      NOTREACHED();
+      continue;
+    }
+    std::string canonicalized_entry(
+        Authenticator::Canonicalize(Authenticator::Sanitize(entry_string)));
+
+    if (canonicalized_entry == canonicalized_email ||
+        canonicalized_entry == wildcard_email) {
       return true;
-    std::string::size_type at_pos = email.find('@');
-    if (at_pos != std::string::npos) {
-      base::StringValue wildcarded_value(
-          std::string("*").append(email.substr(at_pos)));
-      return value->Find(wildcarded_value) != value->end();
     }
   }
   return false;
