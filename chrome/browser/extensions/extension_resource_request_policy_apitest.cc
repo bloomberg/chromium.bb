@@ -123,8 +123,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest, MAYBE_Video) {
       "video.html"));
 }
 
+// This test times out regularly on win_rel trybots. See http://crbug.com/122154
+#if defined(OS_WIN)
+#define MAYBE_WebAccessibleResources DISABLED_WebAccessibleResources
+#else
+#define MAYBE_WebAccessibleResources WebAccessibleResources
+#endif
 IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest,
-                       WebAccessibleResources) {
+                       MAYBE_WebAccessibleResources) {
   std::string result;
   ASSERT_TRUE(test_server()->Start());
   ASSERT_TRUE(LoadExtension(test_data_dir_
