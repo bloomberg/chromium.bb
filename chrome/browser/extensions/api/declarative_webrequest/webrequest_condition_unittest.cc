@@ -107,7 +107,7 @@ TEST(WebRequestConditionTest, CreateConditionSet) {
   EXPECT_EQ(2u, result->conditions().size());
 
   // Tell the URLMatcher about our shiny new patterns.
-  std::vector<URLMatcherConditionSet> url_matcher_condition_set;
+  URLMatcherConditionSet::Vector url_matcher_condition_set;
   result->GetURLMatcherConditionSets(&url_matcher_condition_set);
   matcher.AddConditionSets(url_matcher_condition_set);
 

@@ -284,7 +284,7 @@ TEST(URLMatcherConditionFactoryTest, TestFullSearches) {
 // URLMatcherConditionSet
 //
 
-TEST(URLMatcherConditionSetTest, Constructors) {
+TEST(URLMatcherConditionSetTest, Constructor) {
   URLMatcherConditionFactory factory;
   URLMatcherCondition m1 = factory.CreateHostSuffixCondition("example.com");
   URLMatcherCondition m2 = factory.CreatePathContainsCondition("foo");
@@ -293,20 +293,10 @@ TEST(URLMatcherConditionSetTest, Constructors) {
   conditions.insert(m1);
   conditions.insert(m2);
 
-  URLMatcherConditionSet condition_set(1, conditions);
-  EXPECT_EQ(1, condition_set.id());
-  EXPECT_EQ(2u, condition_set.conditions().size());
-
-  std::set<URLMatcherCondition> other_conditions;
-  other_conditions.insert(m1);
-  URLMatcherConditionSet condition_set2(2, other_conditions);
-  condition_set2 = condition_set;
-  EXPECT_EQ(1, condition_set2.id());
-  EXPECT_EQ(2u, condition_set2.conditions().size());
-
-  URLMatcherConditionSet condition_set3(condition_set);
-  EXPECT_EQ(1, condition_set2.id());
-  EXPECT_EQ(2u, condition_set2.conditions().size());
+  scoped_refptr<URLMatcherConditionSet> condition_set(
+      new URLMatcherConditionSet(1, conditions));
+  EXPECT_EQ(1, condition_set->id());
+  EXPECT_EQ(2u, condition_set->conditions().size());
 }
 
 TEST(URLMatcherConditionSetTest, Matching) {
@@ -321,17 +311,18 @@ TEST(URLMatcherConditionSetTest, Matching) {
   conditions.insert(m1);
   conditions.insert(m2);
 
-  URLMatcherConditionSet condition_set(1, conditions);
-  EXPECT_EQ(1, condition_set.id());
-  EXPECT_EQ(2u, condition_set.conditions().size());
+  scoped_refptr<URLMatcherConditionSet> condition_set(
+      new URLMatcherConditionSet(1, conditions));
+  EXPECT_EQ(1, condition_set->id());
+  EXPECT_EQ(2u, condition_set->conditions().size());
 
   std::set<SubstringPattern::ID> matching_substring_patterns;
   matching_substring_patterns.insert(m1.substring_pattern()->id());
-  EXPECT_FALSE(condition_set.IsMatch(matching_substring_patterns, url1));
+  EXPECT_FALSE(condition_set->IsMatch(matching_substring_patterns, url1));
 
   matching_substring_patterns.insert(m2.substring_pattern()->id());
-  EXPECT_TRUE(condition_set.IsMatch(matching_substring_patterns, url1));
-  EXPECT_FALSE(condition_set.IsMatch(matching_substring_patterns, url2));
+  EXPECT_TRUE(condition_set->IsMatch(matching_substring_patterns, url1));
+  EXPECT_FALSE(condition_set->IsMatch(matching_substring_patterns, url2));
 }
 
 
@@ -352,8 +343,9 @@ TEST(URLMatcherTest, FullTest) {
   conditions1.insert(factory->CreatePathContainsCondition("foo"));
 
   const int kConditionSetId1 = 1;
-  std::vector<URLMatcherConditionSet> insert1;
-  insert1.push_back(URLMatcherConditionSet(kConditionSetId1, conditions1));
+  URLMatcherConditionSet::Vector insert1;
+  insert1.push_back(make_scoped_refptr(
+      new URLMatcherConditionSet(kConditionSetId1, conditions1)));
   matcher.AddConditionSets(insert1);
   EXPECT_EQ(1u, matcher.MatchURL(url1).size());
   EXPECT_EQ(0u, matcher.MatchURL(url2).size());
@@ -363,8 +355,9 @@ TEST(URLMatcherTest, FullTest) {
   conditions2.insert(factory->CreateHostSuffixCondition("example.com"));
 
   const int kConditionSetId2 = 2;
-  std::vector<URLMatcherConditionSet> insert2;
-  insert2.push_back(URLMatcherConditionSet(kConditionSetId2, conditions2));
+  URLMatcherConditionSet::Vector insert2;
+  insert2.push_back(make_scoped_refptr(
+      new URLMatcherConditionSet(kConditionSetId2, conditions2)));
   matcher.AddConditionSets(insert2);
   EXPECT_EQ(2u, matcher.MatchURL(url1).size());
   EXPECT_EQ(1u, matcher.MatchURL(url2).size());

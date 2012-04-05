@@ -36,7 +36,7 @@ namespace extensions {
 class WebRequestCondition {
  public:
   WebRequestCondition(
-      const URLMatcherConditionSet& url_matcher_conditions,
+      scoped_refptr<URLMatcherConditionSet> url_matcher_conditions,
       const WebRequestConditionAttributes& condition_attributes);
   ~WebRequestCondition();
 
@@ -56,14 +56,14 @@ class WebRequestCondition {
   // This ID is registered in a URLMatcher that can inform us in case of a
   // match.
   URLMatcherConditionSet::ID url_matcher_condition_set_id() const {
-    return url_matcher_conditions_.id();
+    return url_matcher_conditions_->id();
   }
 
   // Returns the set of conditions that are checked on the URL. This is the
   // primary trigger for WebRequestCondition and therefore never empty.
   // (If it was empty, the URLMatcher would never notify us about network
   // requests which might fulfill the entire WebRequestCondition).
-  const URLMatcherConditionSet& url_matcher_condition_set() const {
+  scoped_refptr<URLMatcherConditionSet> url_matcher_condition_set() const {
     return url_matcher_conditions_;
   }
 
@@ -80,7 +80,7 @@ class WebRequestCondition {
       const base::Value* value,
       std::string* error);
 
-  URLMatcherConditionSet url_matcher_conditions_;
+  scoped_refptr<URLMatcherConditionSet> url_matcher_conditions_;
   WebRequestConditionAttributes condition_attributes_;
 
   // Bit vector indicating all RequestStages during which all
@@ -124,7 +124,7 @@ class WebRequestConditionSet {
 
   // Appends the URLMatcherConditionSet from all conditions to |condition_sets|.
   void GetURLMatcherConditionSets(
-      std::vector<URLMatcherConditionSet>* condition_sets) const;
+      URLMatcherConditionSet::Vector* condition_sets) const;
 
  private:
   typedef std::vector<linked_ptr<WebRequestCondition> > Conditions;

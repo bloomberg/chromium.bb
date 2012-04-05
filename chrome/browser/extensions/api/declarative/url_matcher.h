@@ -9,6 +9,7 @@
 #include <set>
 #include <vector>
 
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "chrome/browser/extensions/api/declarative/substring_set_matcher.h"
@@ -180,16 +181,13 @@ class URLMatcherConditionFactory {
 
 // This class represents a set of conditions that all need to match on a
 // given URL in order to be considered a match.
-class URLMatcherConditionSet {
+class URLMatcherConditionSet : public base::RefCounted<URLMatcherConditionSet> {
  public:
   typedef int ID;
   typedef std::set<URLMatcherCondition> Conditions;
+  typedef std::vector<scoped_refptr<URLMatcherConditionSet> > Vector;
 
-  URLMatcherConditionSet();
-  ~URLMatcherConditionSet();
   URLMatcherConditionSet(ID id, const Conditions& conditions);
-  URLMatcherConditionSet(const URLMatcherConditionSet& rhs);
-  URLMatcherConditionSet& operator=(const URLMatcherConditionSet& rhs);
 
   ID id() const { return id_; }
   const Conditions& conditions() const { return conditions_; }
@@ -199,8 +197,12 @@ class URLMatcherConditionSet {
       const GURL& url) const;
 
  private:
+  friend class base::RefCounted<URLMatcherConditionSet>;
+  ~URLMatcherConditionSet();
   ID id_;
   Conditions conditions_;
+
+  DISALLOW_COPY_AND_ASSIGN(URLMatcherConditionSet);
 };
 
 // This class allows matching one URL against a large set of
@@ -215,8 +217,7 @@ class URLMatcher {
   // This is an expensive operation as it triggers pre-calculations on the
   // currently registered condition sets. Do not call this operation many
   // times with a single condition set in each call.
-  void AddConditionSets(
-      const std::vector<URLMatcherConditionSet>& condition_sets);
+  void AddConditionSets(const URLMatcherConditionSet::Vector& condition_sets);
 
   // Removes the listed condition sets. All |condition_set_ids| must be
   // currently registered. This function should be called with large batches
@@ -249,7 +250,8 @@ class URLMatcher {
 
   // Maps the ID of a URLMatcherConditionSet to the respective
   // URLMatcherConditionSet.
-  typedef std::map<URLMatcherConditionSet::ID, URLMatcherConditionSet>
+  typedef std::map<URLMatcherConditionSet::ID,
+                   scoped_refptr<URLMatcherConditionSet> >
       URLMatcherConditionSets;
   URLMatcherConditionSets url_matcher_condition_sets_;
 

@@ -97,17 +97,17 @@ std::string WebRequestRulesRegistry::AddRulesImpl(
   // Create the triggers.
   for (RulesMap::iterator i = new_webrequest_rules.begin();
        i != new_webrequest_rules.end(); ++i) {
-    std::vector<URLMatcherConditionSet> url_condition_sets;
+    URLMatcherConditionSet::Vector url_condition_sets;
     const WebRequestConditionSet& conditions = i->second->conditions();
     conditions.GetURLMatcherConditionSets(&url_condition_sets);
-    for (std::vector<URLMatcherConditionSet>::iterator j =
-        url_condition_sets.begin(); j != url_condition_sets.end(); ++j) {
-      rule_triggers_[j->id()] = i->second.get();
+    for (URLMatcherConditionSet::Vector::iterator j =
+         url_condition_sets.begin(); j != url_condition_sets.end(); ++j) {
+      rule_triggers_[(*j)->id()] = i->second.get();
     }
   }
 
   // Register url patterns in url_matcher_.
-  std::vector<URLMatcherConditionSet> all_new_condition_sets;
+  URLMatcherConditionSet::Vector all_new_condition_sets;
   for (RulesMap::iterator i = new_webrequest_rules.begin();
        i != new_webrequest_rules.end(); ++i) {
     i->second->conditions().GetURLMatcherConditionSets(&all_new_condition_sets);
@@ -133,13 +133,13 @@ std::string WebRequestRulesRegistry::RemoveRulesImpl(
       continue;
 
     // Remove all triggers but collect their IDs.
-    std::vector<URLMatcherConditionSet> condition_sets;
+    URLMatcherConditionSet::Vector condition_sets;
     WebRequestRule* rule = webrequest_rules_entry->second.get();
     rule->conditions().GetURLMatcherConditionSets(&condition_sets);
-    for (std::vector<URLMatcherConditionSet>::iterator j =
-         condition_sets.begin(); j != condition_sets.end(); ++j) {
-      remove_from_url_matcher.push_back(j->id());
-      rule_triggers_.erase(j->id());
+    for (URLMatcherConditionSet::Vector::iterator j = condition_sets.begin();
+         j != condition_sets.end(); ++j) {
+      remove_from_url_matcher.push_back((*j)->id());
+      rule_triggers_.erase((*j)->id());
     }
 
     // Remove reference to actual rule.

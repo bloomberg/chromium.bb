@@ -118,11 +118,12 @@ namespace keys = declarative_webrequest_constants;
 //
 
 WebRequestCondition::WebRequestCondition(
-    const URLMatcherConditionSet& url_matcher_conditions,
+    scoped_refptr<URLMatcherConditionSet> url_matcher_conditions,
     const WebRequestConditionAttributes& condition_attributes)
     : url_matcher_conditions_(url_matcher_conditions),
       condition_attributes_(condition_attributes),
       applicable_request_stages_(~0) {
+  CHECK(url_matcher_conditions.get());
   for (WebRequestConditionAttributes::const_iterator i =
        condition_attributes_.begin(); i != condition_attributes_.end(); ++i) {
     applicable_request_stages_ &= (*i)->GetStages();
@@ -214,8 +215,8 @@ scoped_ptr<WebRequestCondition> WebRequestCondition::Create(
         url_matcher_condition_factory->CreateHostPrefixCondition(""));
   }
 
-  URLMatcherConditionSet url_matcher_condition_set(++g_next_id,
-                                                   url_matcher_conditions);
+  scoped_refptr<URLMatcherConditionSet> url_matcher_condition_set(
+      new URLMatcherConditionSet(++g_next_id, url_matcher_conditions));
   return scoped_ptr<WebRequestCondition>(
       new WebRequestCondition(url_matcher_condition_set, attributes));
 }
@@ -272,7 +273,7 @@ bool WebRequestConditionSet::IsFulfilled(
 }
 
 void WebRequestConditionSet::GetURLMatcherConditionSets(
-    std::vector<URLMatcherConditionSet>* condition_sets) const {
+    URLMatcherConditionSet::Vector* condition_sets) const {
   for (Conditions::const_iterator i = conditions_.begin();
        i != conditions_.end(); ++i) {
     condition_sets->push_back((*i)->url_matcher_condition_set());
