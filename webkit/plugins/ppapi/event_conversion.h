@@ -11,6 +11,7 @@
 #include "ppapi/c/ppb_gamepad.h"
 #include "ppapi/c/ppb_input_event.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
+#include "webkit/plugins/webkit_plugins_export.h"
 
 struct PP_InputEvent;
 
@@ -34,7 +35,7 @@ void CreateInputEventData(const WebKit::WebInputEvent& event,
 
 // Creates a WebInputEvent from the given PP_InputEvent.  If it fails, returns
 // NULL.  The caller owns the created object on success.
-WebKit::WebInputEvent* CreateWebInputEvent(
+WEBKIT_PLUGINS_EXPORT WebKit::WebInputEvent* CreateWebInputEvent(
     const ::ppapi::InputEventData& event);
 
 // Creates an array of WebInputEvents to make the given event look like a user

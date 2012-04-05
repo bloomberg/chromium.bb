@@ -40,7 +40,7 @@ class SerializedVar;
 namespace IPC {
 
 template<>
-struct ParamTraits<PP_Bool> {
+struct PPAPI_PROXY_EXPORT ParamTraits<PP_Bool> {
   typedef PP_Bool param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, PickleIterator* iter, param_type* r);
@@ -48,7 +48,7 @@ struct ParamTraits<PP_Bool> {
 };
 
 template<>
-struct ParamTraits<PP_FileInfo> {
+struct PPAPI_PROXY_EXPORT ParamTraits<PP_FileInfo> {
   typedef PP_FileInfo param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, PickleIterator* iter, param_type* r);
@@ -64,7 +64,7 @@ struct PPAPI_PROXY_EXPORT ParamTraits<PP_NetAddress_Private> {
 };
 
 template<>
-struct ParamTraits<PP_ObjectProperty> {
+struct PPAPI_PROXY_EXPORT ParamTraits<PP_ObjectProperty> {
   typedef PP_ObjectProperty param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, PickleIterator* iter, param_type* r);
@@ -72,7 +72,8 @@ struct ParamTraits<PP_ObjectProperty> {
 };
 
 template<>
-struct ParamTraits<ppapi::proxy::PPBFlash_DrawGlyphs_Params> {
+struct PPAPI_PROXY_EXPORT ParamTraits<
+    ppapi::proxy::PPBFlash_DrawGlyphs_Params> {
   typedef ppapi::proxy::PPBFlash_DrawGlyphs_Params param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, PickleIterator* iter, param_type* r);
@@ -80,7 +81,7 @@ struct ParamTraits<ppapi::proxy::PPBFlash_DrawGlyphs_Params> {
 };
 
 template<>
-struct ParamTraits<ppapi::PPB_FileRef_CreateInfo> {
+struct PPAPI_PROXY_EXPORT ParamTraits<ppapi::PPB_FileRef_CreateInfo> {
   typedef ppapi::PPB_FileRef_CreateInfo param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, PickleIterator* iter, param_type* r);
@@ -88,7 +89,8 @@ struct ParamTraits<ppapi::PPB_FileRef_CreateInfo> {
 };
 
 template<>
-struct ParamTraits<ppapi::proxy::PPBURLLoader_UpdateProgress_Params> {
+struct PPAPI_PROXY_EXPORT ParamTraits<
+    ppapi::proxy::PPBURLLoader_UpdateProgress_Params> {
   typedef ppapi::proxy::PPBURLLoader_UpdateProgress_Params param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, PickleIterator* iter, param_type* r);
@@ -96,7 +98,7 @@ struct ParamTraits<ppapi::proxy::PPBURLLoader_UpdateProgress_Params> {
 };
 
 template<>
-struct ParamTraits<ppapi::proxy::SerializedDirEntry> {
+struct PPAPI_PROXY_EXPORT ParamTraits<ppapi::proxy::SerializedDirEntry> {
   typedef ppapi::proxy::SerializedDirEntry param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, PickleIterator* iter, param_type* r);
@@ -104,7 +106,7 @@ struct ParamTraits<ppapi::proxy::SerializedDirEntry> {
 };
 
 template<>
-struct ParamTraits<ppapi::proxy::SerializedFontDescription> {
+struct PPAPI_PROXY_EXPORT ParamTraits<ppapi::proxy::SerializedFontDescription> {
   typedef ppapi::proxy::SerializedFontDescription param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, PickleIterator* iter, param_type* r);
@@ -112,7 +114,7 @@ struct ParamTraits<ppapi::proxy::SerializedFontDescription> {
 };
 
 template<>
-struct ParamTraits<ppapi::HostResource> {
+struct PPAPI_PROXY_EXPORT ParamTraits<ppapi::HostResource> {
   typedef ppapi::HostResource param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, PickleIterator* iter, param_type* r);
@@ -120,7 +122,7 @@ struct ParamTraits<ppapi::HostResource> {
 };
 
 template<>
-struct ParamTraits<ppapi::proxy::SerializedVar> {
+struct PPAPI_PROXY_EXPORT ParamTraits<ppapi::proxy::SerializedVar> {
   typedef ppapi::proxy::SerializedVar param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, PickleIterator* iter, param_type* r);
@@ -128,7 +130,8 @@ struct ParamTraits<ppapi::proxy::SerializedVar> {
 };
 
 template<>
-struct ParamTraits< std::vector<ppapi::proxy::SerializedVar> > {
+struct PPAPI_PROXY_EXPORT ParamTraits<
+    std::vector<ppapi::proxy::SerializedVar> > {
   typedef std::vector<ppapi::proxy::SerializedVar> param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, PickleIterator* iter, param_type* r);
@@ -136,7 +139,8 @@ struct ParamTraits< std::vector<ppapi::proxy::SerializedVar> > {
 };
 
 template<>
-struct ParamTraits< std::vector<ppapi::PPB_FileRef_CreateInfo> > {
+struct PPAPI_PROXY_EXPORT ParamTraits< std::vector<
+    ppapi::PPB_FileRef_CreateInfo> > {
   typedef std::vector<ppapi::PPB_FileRef_CreateInfo> param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, PickleIterator* iter, param_type* r);
@@ -144,7 +148,7 @@ struct ParamTraits< std::vector<ppapi::PPB_FileRef_CreateInfo> > {
 };
 
 template<>
-struct ParamTraits<ppapi::proxy::SerializedFlashMenu> {
+struct PPAPI_PROXY_EXPORT ParamTraits<ppapi::proxy::SerializedFlashMenu> {
   typedef ppapi::proxy::SerializedFlashMenu param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, PickleIterator* iter, param_type* r);
