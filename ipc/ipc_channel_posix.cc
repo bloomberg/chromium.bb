@@ -303,6 +303,7 @@ Channel::ChannelImpl::ChannelImpl(const IPC::ChannelHandle& channel_handle,
                                   Mode mode, Listener* listener)
     : ChannelReader(listener),
       mode_(mode),
+      peer_pid_(base::kNullProcessId),
       is_blocked_on_write_(false),
       waiting_connect_(true),
       message_send_bytes_written_(0),
@@ -1081,6 +1082,7 @@ void Channel::ChannelImpl::HandleHelloMessage(const Message& msg) {
     CHECK(descriptor.auto_close);
   }
 #endif  // IPC_USES_READWRITE
+  peer_pid_ = pid;
   listener()->OnChannelConnected(pid);
 }
 
@@ -1126,6 +1128,10 @@ void Channel::Close() {
 
 void Channel::set_listener(Listener* listener) {
   channel_impl_->set_listener(listener);
+}
+
+base::ProcessId Channel::peer_pid() const {
+  return channel_impl_->peer_pid();
 }
 
 bool Channel::Send(Message* message) {

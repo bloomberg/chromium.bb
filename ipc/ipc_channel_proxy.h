@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -168,6 +168,10 @@ class IPC_EXPORT ChannelProxy : public Message::Sender {
   // Called to clear the pointer to the IPC message loop when it's going away.
   void ClearIPCMessageLoop();
 
+  // Get the process ID for the connected peer.
+  // Returns base::kNullProcessId if the peer is not connected yet.
+  base::ProcessId peer_pid() const { return context_->peer_pid_; }
+
 #if defined(OS_POSIX)
   // Calls through to the underlying channel's methods.
   int GetClientFileDescriptor();
@@ -246,7 +250,6 @@ class IPC_EXPORT ChannelProxy : public Message::Sender {
     scoped_refptr<base::MessageLoopProxy> ipc_message_loop_;
     scoped_ptr<Channel> channel_;
     std::string channel_id_;
-    int peer_pid_;
     bool channel_connected_called_;
 
     // Holds filters between the AddFilter call on the listerner thread and the
@@ -254,6 +257,10 @@ class IPC_EXPORT ChannelProxy : public Message::Sender {
     std::vector<scoped_refptr<MessageFilter> > pending_filters_;
     // Lock for pending_filters_.
     base::Lock pending_filters_lock_;
+
+    // Cached copy of the peer process ID. Set on IPC but read on both IPC and
+    // listener threads.
+    base::ProcessId peer_pid_;
   };
 
   Context* context() { return context_; }

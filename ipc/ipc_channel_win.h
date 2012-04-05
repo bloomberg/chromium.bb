@@ -33,6 +33,7 @@ class Channel::ChannelImpl : public internal::ChannelReader,
   void Close();
   bool Send(Message* message);
   static bool IsNamedServerInitialized(const std::string& channel_id);
+  base::ProcessId peer_pid() const { return peer_pid_; }
 
  private:
   // ChannelReader implementation.
@@ -66,6 +67,8 @@ class Channel::ChannelImpl : public internal::ChannelReader,
   State output_state_;
 
   HANDLE pipe_;
+
+  base::ProcessId peer_pid_;
 
   // Messages to be sent are queued here.
   std::queue<Message*> output_queue_;

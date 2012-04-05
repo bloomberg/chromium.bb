@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/process.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message.h"
 
@@ -148,6 +149,10 @@ class IPC_EXPORT Channel : public Message::Sender {
 
   // Modify the Channel's listener.
   void set_listener(Listener* listener);
+
+  // Get the process ID for the connected peer.
+  // Returns base::kNullProcessId if the peer is not connected yet.
+  base::ProcessId peer_pid() const;
 
   // Send a message over the Channel to the listener on the other end.
   //

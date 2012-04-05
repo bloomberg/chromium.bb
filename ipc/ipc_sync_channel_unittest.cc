@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
+#include "base/process_util.h"
 #include "base/stl_util.h"
 #include "base/string_util.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
@@ -1768,6 +1769,7 @@ class VerifiedServer : public Worker {
     VLOG(1) << __FUNCTION__ << " Sending reply: " << reply_text_;
     SyncChannelNestedTestMsg_String::WriteReplyParams(reply_msg, reply_text_);
     Send(reply_msg);
+    ASSERT_EQ(channel()->peer_pid(), base::GetCurrentProcId());
     Done();
   }
 
@@ -1793,6 +1795,7 @@ class VerifiedClient : public Worker {
     DCHECK_EQ(response, expected_text_);
 
     VLOG(1) << __FUNCTION__ << " Received reply: " << response;
+    ASSERT_EQ(channel()->peer_pid(), base::GetCurrentProcId());
     Done();
   }
 

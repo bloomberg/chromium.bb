@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -66,8 +66,8 @@ ChannelProxy::Context::Context(Channel::Listener* listener,
     : listener_message_loop_(base::MessageLoopProxy::current()),
       listener_(listener),
       ipc_message_loop_(ipc_message_loop),
-      peer_pid_(0),
-      channel_connected_called_(false) {
+      channel_connected_called_(false),
+      peer_pid_(base::kNullProcessId) {
 }
 
 ChannelProxy::Context::~Context() {
@@ -126,7 +126,8 @@ void ChannelProxy::Context::OnChannelConnected(int32 peer_pid) {
   // the filter is run on the IO thread.
   OnAddFilter();
 
-  peer_pid_ = peer_pid;
+  // We cache off the peer_pid so it can be safely accessed from both threads.
+  peer_pid_ = channel_->peer_pid();
   for (size_t i = 0; i < filters_.size(); ++i)
     filters_[i]->OnChannelConnected(peer_pid);
 

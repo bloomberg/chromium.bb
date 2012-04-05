@@ -15,6 +15,7 @@
 #include <vector>
 
 #include "base/message_loop.h"
+#include "base/process.h"
 #include "ipc/file_descriptor_set_posix.h"
 #include "ipc/ipc_channel_reader.h"
 
@@ -65,6 +66,7 @@ class Channel::ChannelImpl : public internal::ChannelReader,
   bool HasAcceptedConnection() const;
   bool GetClientEuid(uid_t* client_euid) const;
   void ResetToAcceptingConnectionState();
+  base::ProcessId peer_pid() const { return peer_pid_; }
   static bool IsNamedServerInitialized(const std::string& channel_id);
 #if defined(OS_LINUX)
   static void SetGlobalPid(int pid);
@@ -112,6 +114,8 @@ class Channel::ChannelImpl : public internal::ChannelReader,
   virtual void OnFileCanWriteWithoutBlocking(int fd) OVERRIDE;
 
   Mode mode_;
+
+  base::ProcessId peer_pid_;
 
   // After accepting one client connection on our server socket we want to
   // stop listening.
