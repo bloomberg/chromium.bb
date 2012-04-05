@@ -6,6 +6,7 @@
 
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "base/time.h"
 #include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
 
@@ -23,7 +24,8 @@ TEST_F(SystemGestureEventFilterTest, TapOutsideRootWindow) {
   const int kTouchId = 5;
 
   // A touch outside the root window will be associated with the root window
-  aura::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(-10, -10), kTouchId);
+  aura::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(-10, -10), kTouchId,
+      base::Time::NowFromSystemTime() - base::Time());
   root_window->DispatchTouchEvent(&press);
 
   aura::GestureEvent* event = new aura::GestureEvent(

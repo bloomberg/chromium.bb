@@ -1443,11 +1443,11 @@ TEST_F(GestureRecognizerTest, GestureEventOutsideRootWindowTap) {
       gesture_recognizer->GetGestureSequenceForTesting(root_window());
 
   gfx::Point pos1(-10, -10);
-  TouchEvent press1(ui::ET_TOUCH_PRESSED, pos1, 0);
+  TouchEvent press1(ui::ET_TOUCH_PRESSED, pos1, 0, getTime());
   root_window()->DispatchTouchEvent(&press1);
 
   gfx::Point pos2(1000, 1000);
-  TouchEvent press2(ui::ET_TOUCH_PRESSED, pos2, 1);
+  TouchEvent press2(ui::ET_TOUCH_PRESSED, pos2, 1, getTime());
   root_window()->DispatchTouchEvent(&press2);
 
   // As these presses were outside the root window, they should be
