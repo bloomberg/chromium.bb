@@ -61,16 +61,32 @@ bool IsPluginBuiltInFlash(const CommandLine& cmd_line) {
   return (path.BaseName() == FilePath(L"gcswf32.dll"));
 }
 
-// Before we lock down the flash sandbox, we need to activate
-// the IME machinery. After lock down it seems it is unable
-// to start. Note that we leak the IME context on purpose.
+// Before we lock down the flash sandbox, we need to activate the IME machinery
+// and attach it to this process. (Windows attaches an IME machinery to this
+// process automatically while it creates its first top-level window.) After
+// lock down it seems it is unable to start. Note that we leak the IME context
+// on purpose.
+HWND g_ime_window = NULL;
+
 int PreloadIMEForFlash() {
   HIMC imc = ::ImmCreateContext();
   if (!imc)
     return 0;
   if (::ImmGetOpenStatus(imc))
     return 1;
+  if (!g_ime_window) {
+    g_ime_window = CreateWindowEx(WS_EX_TOOLWINDOW, L"EDIT", L"", WS_POPUP,
+        0, 0, 0, 0, NULL, NULL, GetModuleHandle(NULL), NULL);
+    SetWindowLongPtr(g_ime_window, GWL_EXSTYLE, WS_EX_NOACTIVATE);
+  }
   return 2;
+}
+
+void DestroyIMEForFlash() {
+  if (g_ime_window) {
+    DestroyWindow(g_ime_window);
+    g_ime_window = NULL;
+  }
 }
 
 // VirtualAlloc doesn't randomize well, so we use these calls to poke a
@@ -206,6 +222,7 @@ int PluginMain(const content::MainFunctionParams& parameters) {
   }
 
 #if defined(OS_WIN)
+  DestroyIMEForFlash();
   CoUninitialize();
 #endif
 
