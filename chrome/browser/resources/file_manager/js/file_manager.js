@@ -1210,9 +1210,7 @@ FileManager.prototype = {
    *                   selection.
    */
   FileManager.prototype.canExecute_ = function(commandId) {
-    var readonly = this.directoryModel_.readonly ||
-        (this.isOnGData() && this.isOffline());
-    var path = this.directoryModel_.currentEntry.fullPath;
+    var readonly = this.isOnReadonlyDirectory();
     switch (commandId) {
       case 'copy':
       case 'cut':
@@ -1282,8 +1280,12 @@ FileManager.prototype = {
   };
 
   FileManager.prototype.updateCommonActionButtons_ = function() {
-    if (this.deleteButton_)
-      this.deleteButton_.disabled = !this.canExecute_('delete');
+    if (this.deleteButton_) {
+      if (this.canExecute_('delete'))
+        this.deleteButton_.removeAttribute('disabled');
+      else
+        this.deleteButton_.setAttribute('disabled', true);
+    }
   };
 
   FileManager.prototype.setListType = function(type) {
@@ -2120,8 +2122,7 @@ FileManager.prototype = {
       if (entry.gdata_.isHosted) {
         element.classList.add('gdata-hosted');
       }
-      if (entry.isDirectory ||
-          this.isAvaliableOffline_(entry.gdata_, this.getFileType(entry))) {
+      if (entry.isDirectory || FileManager.isAvaliableOffline_(entry.gdata_)) {
         element.classList.add('gdata-present');
       }
     }.bind(this));
@@ -2176,6 +2177,7 @@ FileManager.prototype = {
     var div = this.document_.createElement('div');
     div.className = 'size';
     this.updateSize_(div, entry);
+    this.styleGDataItem_(entry, div);
     return div;
   };
 
@@ -2400,7 +2402,6 @@ FileManager.prototype = {
           // sizes for these files before telling the world the selection has
           // been summarized.  See the 'computeNextFile' logic below.
           pendingFiles.push(entry);
-          continue;
         } else {
           selection.bytes += entry.cachedSize_;
           selection.showBytes |= this.getFileType(entry).type != 'hosted';
@@ -2753,10 +2754,10 @@ FileManager.prototype = {
   };
 
   FileManager.prototype.executeIfAvailable_ = function(urls, callback) {
-    if (this.isOnGData() && this.isOffline()) {
+    if (this.isOnGDataOffline()) {
       chrome.fileBrowserPrivate.getGDataFileProperties(urls, function(props) {
         for (var i = 0; i != props.length; i++) {
-          if (!this.isAvaliableOffline_(props[i], FileType.getType(urls[i]))) {
+          if (!FileManager.isAvaliableOffline_(props[i])) {
             this.alert.showHtml(
                 str('OFFLINE_HEADER'),
                 strf(
@@ -2774,7 +2775,7 @@ FileManager.prototype = {
     }
   };
 
-  FileManager.prototype.isAvaliableOffline_ = function(gdata, type) {
+  FileManager.isAvaliableOffline_ = function(gdata) {
     return gdata.isPresent && !gdata.isHosted;
   };
 
@@ -2790,6 +2791,14 @@ FileManager.prototype = {
       console.log('ONLINE');
       this.dialogContainer_.removeAttribute('offline');
     }
+  };
+
+  FileManager.prototype.isOnGDataOffline = function() {
+    return this.isOnGData() && this.isOffline();
+  };
+
+  FileManager.prototype.isOnReadonlyDirectory = function() {
+    return this.directoryModel_.readonly || this.isOnGDataOffline();
   };
 
   /**
@@ -3013,8 +3022,9 @@ FileManager.prototype = {
       galleryFrame.contentWindow.FileType = FileType;
       galleryFrame.contentWindow.util = util;
 
-      // Gallery shoud treat GData folder as readonly.
-      var readonly = self.directoryModel_.readonly || self.isOnGData();
+      // Gallery shoud treat GData folder as readonly even when online
+      // until we learn to save files directly to GData.
+      var readonly = self.isOnReadonlyDirectory() || self.isOnGData();
       var currentDir = self.directoryModel_.currentEntry;
       var downloadsDir = self.directoryModel_.rootsList.item(0);
 
@@ -3389,8 +3399,7 @@ FileManager.prototype = {
   };
 
   FileManager.prototype.canCutOrDrag_ = function() {
-    var ro = this.directoryModel_.readonly;
-    return !ro && this.selection && this.selection.totalCount > 0;
+    return !this.isOnReadonlyDirectory() && this.canCopyOrDrag_();
   };
 
   FileManager.prototype.onPaste_ = function(event) {
@@ -3417,7 +3426,7 @@ FileManager.prototype = {
   };
 
   FileManager.prototype.canPasteOrDrop_ = function(dataTransfer, opt_entry) {
-    if (this.directoryModel_.readonly)
+    if (this.isOnReadonlyDirectory())
       return false;  // assure destination entry is in the current directory.
 
     if (!dataTransfer.types || dataTransfer.types.indexOf('fs/tag') == -1)
@@ -3655,8 +3664,7 @@ FileManager.prototype = {
       selectable = (this.selection.directoryCount == 0 &&
                     this.selection.fileCount >= 1);
     } else if (this.dialogType_ == FileManager.DialogType.SELECT_SAVEAS_FILE) {
-      if (this.directoryModel_.readonly) {
-        // Nothing can be saved in to the root or media/ directories.
+      if (this.isOnReadonlyDirectory()) {
         selectable = false;
       } else {
         selectable = !!this.filenameInput_.value;
@@ -3902,13 +3910,9 @@ FileManager.prototype = {
    * @param {cr.ui.ListItem} item Clicked item.
    */
   FileManager.prototype.allowRenameClick_ = function(event, item) {
-    var dir = this.directoryModel_.currentEntry;
-    if (this.dialogType_ != FileManager.DialogType.FULL_PAGE ||
-        this.directoryModel_.readonly) {
-      // Renaming only enabled for full-page mode, outside of the root
-      // directory.
+    // Renaming only enabled for full-page mode.
+    if (this.dialogType_ != FileManager.DialogType.FULL_PAGE)
       return false;
-    }
 
     // Didn't click on the label.
     if (!event.srcElement.classList.contains('filename-label'))
@@ -3924,7 +3928,7 @@ FileManager.prototype = {
     var lastLabelClick = this.lastLabelClick_;
     this.lastLabelClick_ = {index: item.listIndex, date: now};
 
-    if (this.isRenamingInProgress())
+    if (!this.canExecute_('rename'))
       return false;
 
     if (lastLabelClick && lastLabelClick.index == item.listIndex) {

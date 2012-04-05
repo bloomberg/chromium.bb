@@ -1042,6 +1042,13 @@ li.table-row {
   -webkit-margin-start: 8px;
 }
 
+.delete-button[disabled] {
+  /* Copied colors from cr-button:disabled */
+  border-color: rgba(0, 0, 0, 0.2);
+  color: #999;
+  pointer-events: none;
+}
+
 .task-item {
   -webkit-box-align: center;
   -webkit-box-orient: horizontal;
