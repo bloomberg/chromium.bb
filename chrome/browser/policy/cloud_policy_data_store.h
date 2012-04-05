@@ -76,6 +76,7 @@ class CloudPolicyDataStore {
   void set_user_name(const std::string& user_name);
   void set_user_affiliation(UserAffiliation user_affiliation);
   void set_known_machine_id(bool known_machine_id);
+  void set_policy_fetching_enabled(bool policy_fetching_enabled);
   void set_device_mode(DeviceMode device_mode);
 
 #if defined(OS_CHROMEOS)
@@ -94,6 +95,7 @@ class CloudPolicyDataStore {
       policy_register_type() const;
   const std::string& policy_type() const;
   bool token_cache_loaded() const;
+  bool policy_fetching_enabled() const;
   const std::string& user_name() const;
   UserAffiliation user_affiliation() const;
   bool known_machine_id() const;
@@ -131,6 +133,7 @@ class CloudPolicyDataStore {
   bool known_machine_id_;
 
   bool token_cache_loaded_;
+  bool policy_fetching_enabled_;
 
   DeviceMode device_mode_;
 

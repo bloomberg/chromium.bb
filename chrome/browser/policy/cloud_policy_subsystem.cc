@@ -137,6 +137,7 @@ void CloudPolicySubsystem::Reset() {
 }
 
 void CloudPolicySubsystem::RefreshPolicies(bool wait_for_auth_token) {
+  data_store_->set_policy_fetching_enabled(true);
   if (cloud_policy_controller_.get())
     cloud_policy_controller_->RefreshPolicies(wait_for_auth_token);
   // Make sure the |device_management_service_| is rolling.

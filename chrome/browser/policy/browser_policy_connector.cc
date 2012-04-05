@@ -194,6 +194,7 @@ void BrowserPolicyConnector::RegisterForDevicePolicy(
     }
     device_data_store_->set_user_name(owner_email);
     device_data_store_->set_known_machine_id(known_machine_id);
+    device_data_store_->set_policy_fetching_enabled(false);
     device_data_store_->SetOAuthToken(token);
   }
 #endif

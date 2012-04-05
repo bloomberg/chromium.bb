@@ -328,6 +328,10 @@ void CloudPolicyController::FetchToken() {
 
 void CloudPolicyController::SendPolicyRequest() {
   DCHECK(!data_store_->device_token().empty());
+
+  if (!data_store_->policy_fetching_enabled())
+    return;
+
   request_job_.reset(
       service_->CreateJob(DeviceManagementRequestJob::TYPE_POLICY_FETCH));
   request_job_->SetDMToken(data_store_->device_token());
