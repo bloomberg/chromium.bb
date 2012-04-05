@@ -406,8 +406,8 @@ bool ExtensionAPI::IsAvailable(const std::string& full_name,
 
   for (std::set<std::string>::iterator iter = dependency_names.begin();
        iter != dependency_names.end(); ++iter) {
-    scoped_ptr<Feature> feature(GetFeatureDependency(full_name));
-    CHECK(feature.get()) << *iter;
+    Feature* feature = GetFeatureDependency(full_name);
+    CHECK(feature) << *iter;
 
     Feature::Availability availability =
         feature->IsAvailableToContext(extension, context);
@@ -423,8 +423,8 @@ bool ExtensionAPI::IsPrivileged(const std::string& full_name) {
   std::string api_name = GetAPINameFromFullName(full_name, &child_name);
 
   // First try to use the feature system.
-  scoped_ptr<Feature> feature(GetFeature(full_name));
-  if (feature.get()) {
+  Feature* feature(GetFeature(full_name));
+  if (feature) {
     // An API is 'privileged' if it or any of its dependencies can only be run
     // in a blessed context.
     std::set<std::string> resolved_dependencies;
@@ -432,7 +432,7 @@ bool ExtensionAPI::IsPrivileged(const std::string& full_name) {
     ResolveDependencies(&resolved_dependencies);
     for (std::set<std::string>::iterator iter = resolved_dependencies.begin();
          iter != resolved_dependencies.end(); ++iter) {
-      scoped_ptr<Feature> dependency(GetFeatureDependency(*iter));
+      Feature* dependency = GetFeatureDependency(*iter);
       for (std::set<Feature::Context>::iterator context =
                dependency->contexts()->begin();
            context != dependency->contexts()->end(); ++context) {
@@ -558,40 +558,37 @@ scoped_ptr<std::set<std::string> > ExtensionAPI::GetAPIsForContext(
   return result.Pass();
 }
 
-scoped_ptr<Feature> ExtensionAPI::GetFeature(const std::string& full_name) {
+Feature* ExtensionAPI::GetFeature(const std::string& full_name) {
   // Ensure it's loaded.
   GetSchema(full_name);
 
   std::string child_name;
   std::string api_namespace = GetAPINameFromFullName(full_name, &child_name);
 
-  APIFeatureMap::iterator api_features = features_.find(api_namespace);
-  if (api_features == features_.end())
-    return scoped_ptr<Feature>(NULL);
+  APIFeatureMap::iterator feature_map = features_.find(api_namespace);
+  if (feature_map == features_.end())
+    return NULL;
 
-  scoped_ptr<Feature> result;
-  FeatureMap::iterator child_feature = api_features->second->find(child_name);
-  if (child_feature != api_features->second->end()) {
-    // TODO(aa): Argh, having FeatureProvider return a scoped pointer was a
-    // mistake. See: crbug.com/120068.
-    result.reset(new Feature(*child_feature->second));
+  Feature* result = NULL;
+  FeatureMap::iterator child_feature = feature_map->second->find(child_name);
+  if (child_feature != feature_map->second->end()) {
+    result = child_feature->second.get();
   } else {
-    FeatureMap::iterator parent_feature = api_features->second->find("");
-    CHECK(parent_feature != api_features->second->end());
-    result.reset(new Feature(*parent_feature->second));
+    FeatureMap::iterator parent_feature = feature_map->second->find("");
+    CHECK(parent_feature != feature_map->second->end());
+    result = parent_feature->second.get();
   }
 
   if (result->contexts()->empty()) {
-    result.reset();
     LOG(ERROR) << "API feature '" << full_name
                << "' must specify at least one context.";
+    return NULL;
   }
 
-  return result.Pass();
+  return result;
 }
 
-scoped_ptr<Feature> ExtensionAPI::GetFeatureDependency(
-    const std::string& full_name) {
+Feature* ExtensionAPI::GetFeatureDependency(const std::string& full_name) {
   std::string feature_type;
   std::string feature_name;
   SplitDependencyName(full_name, &feature_type, &feature_name);
@@ -600,10 +597,10 @@ scoped_ptr<Feature> ExtensionAPI::GetFeatureDependency(
       dependency_providers_.find(feature_type);
   CHECK(provider != dependency_providers_.end()) << full_name;
 
-  scoped_ptr<Feature> feature(provider->second->GetFeature(feature_name));
-  CHECK(feature.get()) << full_name;
+  Feature* feature = provider->second->GetFeature(feature_name);
+  CHECK(feature) << full_name;
 
-  return feature.Pass();
+  return feature;
 }
 
 std::string ExtensionAPI::GetAPINameFromFullName(const std::string& full_name,

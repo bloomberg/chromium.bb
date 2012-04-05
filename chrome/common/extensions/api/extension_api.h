@@ -96,7 +96,7 @@ class ExtensionAPI : public FeatureProvider {
   // Gets a Feature object describing the API with the specified |full_name|.
   // This can be either an API namespace (like history, or
   // experimental.bookmarks), or it can be an individual function or event.
-  virtual scoped_ptr<Feature> GetFeature(const std::string& full_name) OVERRIDE;
+  virtual Feature* GetFeature(const std::string& full_name) OVERRIDE;
 
   // Splits a full name from the extension API into its API and child name
   // parts. Some examples:
@@ -134,7 +134,7 @@ class ExtensionAPI : public FeatureProvider {
   void GetAllowedAPIs(const Extension* extension, std::set<std::string>* out);
 
   // Gets a feature from any dependency provider.
-  scoped_ptr<Feature> GetFeatureDependency(const std::string& dependency_name);
+  Feature* GetFeatureDependency(const std::string& dependency_name);
 
   // Adds dependent schemas to |out| as determined by the "dependencies"
   // property.

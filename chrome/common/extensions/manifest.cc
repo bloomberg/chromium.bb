@@ -28,9 +28,9 @@ Manifest::~Manifest() {
 bool Manifest::ValidateManifest(string16* error) const {
   for (DictionaryValue::key_iterator key = value_->begin_keys();
        key != value_->end_keys(); ++key) {
-    scoped_ptr<Feature> feature =
+    Feature* feature =
         SimpleFeatureProvider::GetManifestFeatures()->GetFeature(*key);
-    if (!feature.get()) {
+    if (!feature) {
       // When validating the extension manifests, we ignore keys that are not
       // recognized for forward compatibility.
       // TODO(aa): Consider having an error here in the case of strict error
@@ -150,9 +150,9 @@ bool Manifest::CanAccessPath(const std::string& path) const {
 }
 
 bool Manifest::CanAccessKey(const std::string& key) const {
-  scoped_ptr<Feature> feature =
+  Feature* feature =
       SimpleFeatureProvider::GetManifestFeatures()->GetFeature(key);
-  if (!feature.get())
+  if (!feature)
     return false;
 
   return Feature::IS_AVAILABLE == feature->IsAvailableToManifest(

@@ -9,7 +9,7 @@
 #include <set>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/linked_ptr.h"
 #include "base/values.h"
 #include "chrome/common/extensions/feature.h"
 #include "chrome/common/extensions/feature_provider.h"
@@ -23,8 +23,7 @@ class SimpleFeatureProvider : public FeatureProvider {
 
   // Creates a new SimpleFeatureProvider. Pass null to |factory| to have the
   // provider create plain old Feature instances.
-  SimpleFeatureProvider(scoped_ptr<DictionaryValue> root,
-                        FeatureFactory factory);
+  SimpleFeatureProvider(DictionaryValue* root, FeatureFactory factory);
   virtual ~SimpleFeatureProvider();
 
   // Gets an instance for the _manifest_features.json file that is baked into
@@ -39,11 +38,12 @@ class SimpleFeatureProvider : public FeatureProvider {
   std::set<std::string> GetAllFeatureNames() const;
 
   // Gets the feature |feature_name|, if it exists.
-  virtual scoped_ptr<Feature> GetFeature(
-      const std::string& feature_name) OVERRIDE;
+  virtual Feature* GetFeature(const std::string& feature_name) OVERRIDE;
 
  private:
-  scoped_ptr<DictionaryValue> root_;
+  typedef std::map<std::string, linked_ptr<Feature> > FeatureMap;
+  FeatureMap features_;
+
   FeatureFactory factory_;
 };
 

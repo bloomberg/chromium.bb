@@ -26,12 +26,12 @@ class TestFeatureProvider : public FeatureProvider {
       : context_(context) {
   }
 
-  virtual scoped_ptr<Feature> GetFeature(const std::string& name) OVERRIDE {
-    scoped_ptr<Feature> result(new Feature());
+  virtual Feature* GetFeature(const std::string& name) OVERRIDE {
+    Feature* result = new Feature();
     result->set_name(name);
     result->extension_types()->insert(Extension::TYPE_EXTENSION);
     result->contexts()->insert(context_);
-    return result.Pass();
+    return result;
   }
 
  private:
@@ -350,15 +350,15 @@ TEST(ExtensionAPI, GetAPINameFromFullName) {
 TEST(ExtensionAPI, DefaultConfigurationFeatures) {
   scoped_ptr<ExtensionAPI> api(ExtensionAPI::CreateWithDefaultConfiguration());
 
-  scoped_ptr<Feature> bookmarks(api->GetFeature("bookmarks"));
-  scoped_ptr<Feature> bookmarks_create(api->GetFeature("bookmarks.create"));
+  Feature* bookmarks = api->GetFeature("bookmarks");
+  Feature* bookmarks_create = api->GetFeature("bookmarks.create");
 
   struct {
     Feature* feature;
     // TODO(aa): More stuff to test over time.
   } test_data[] = {
-    { bookmarks.get() },
-    { bookmarks_create.get() }
+    { bookmarks },
+    { bookmarks_create }
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_data); ++i) {
@@ -408,8 +408,8 @@ TEST(ExtensionAPI, FeaturesRequireContexts) {
     api.RegisterSchema("test", base::StringPiece(schema_source));
     api.LoadAllSchemas();
 
-    scoped_ptr<Feature> feature(api.GetFeature("test"));
-    EXPECT_EQ(test_data[i].expect_success, feature.get() != NULL) << i;
+    Feature* feature = api.GetFeature("test");
+    EXPECT_EQ(test_data[i].expect_success, feature != NULL) << i;
   }
 }
 

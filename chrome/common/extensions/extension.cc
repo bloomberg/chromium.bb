@@ -3305,13 +3305,13 @@ bool Extension::ParsePermissions(const char* key,
       if (permission) {
         extensions::SimpleFeatureProvider* permission_features =
             extensions::SimpleFeatureProvider::GetPermissionFeatures();
-        scoped_ptr<extensions::Feature> feature(
-            permission_features->GetFeature(permission->name()));
+        extensions::Feature* feature =
+            permission_features->GetFeature(permission->name());
 
         // The feature should exist since we just got an ExtensionAPIPermission
         // for it. The two systems should be updated together whenever a
         // permission is added.
-        CHECK(feature.get());
+        CHECK(feature);
 
         extensions::Feature::Availability availability =
             feature->IsAvailableToManifest(

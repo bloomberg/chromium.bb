@@ -8,8 +8,6 @@
 
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
-
 namespace extensions {
 
 class Feature;
@@ -21,7 +19,7 @@ class FeatureProvider {
   virtual ~FeatureProvider() {}
 
   // Returns the feature with the specified name.
-  virtual scoped_ptr<Feature> GetFeature(const std::string& name) = 0;
+  virtual Feature* GetFeature(const std::string& name) = 0;
 };
 
 }  // namespace extensions

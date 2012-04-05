@@ -12,8 +12,8 @@ using extensions::SimpleFeatureProvider;
 TEST(SimpleFeatureProvider, ManifestFeatures) {
   SimpleFeatureProvider* provider =
       SimpleFeatureProvider::GetManifestFeatures();
-  scoped_ptr<Feature> feature = provider->GetFeature("description");
-  ASSERT_TRUE(feature.get());
+  Feature* feature = provider->GetFeature("description");
+  ASSERT_TRUE(feature);
   EXPECT_EQ(5u, feature->extension_types()->size());
   EXPECT_EQ(1u, feature->extension_types()->count(Extension::TYPE_EXTENSION));
   EXPECT_EQ(1u,
@@ -38,12 +38,12 @@ TEST(SimpleFeatureProvider, ManifestFeatures) {
       extension.get(), Feature::UNSPECIFIED_CONTEXT));
 
   feature = provider->GetFeature("theme");
-  ASSERT_TRUE(feature.get());
+  ASSERT_TRUE(feature);
   EXPECT_EQ(Feature::INVALID_TYPE, feature->IsAvailableToContext(
       extension.get(), Feature::UNSPECIFIED_CONTEXT));
 
   feature = provider->GetFeature("devtools_page");
-  ASSERT_TRUE(feature.get());
+  ASSERT_TRUE(feature);
   EXPECT_EQ(Feature::NOT_PRESENT, feature->IsAvailableToContext(
       extension.get(), Feature::UNSPECIFIED_CONTEXT));
 }
@@ -51,8 +51,8 @@ TEST(SimpleFeatureProvider, ManifestFeatures) {
 TEST(SimpleFeatureProvider, PermissionFeatures) {
   SimpleFeatureProvider* provider =
       SimpleFeatureProvider::GetPermissionFeatures();
-  scoped_ptr<Feature> feature = provider->GetFeature("browsingData");
-  ASSERT_TRUE(feature.get());
+  Feature* feature = provider->GetFeature("browsingData");
+  ASSERT_TRUE(feature);
   EXPECT_EQ(3u, feature->extension_types()->size());
   EXPECT_EQ(1u, feature->extension_types()->count(Extension::TYPE_EXTENSION));
   EXPECT_EQ(1u,
@@ -77,12 +77,12 @@ TEST(SimpleFeatureProvider, PermissionFeatures) {
       extension.get(), Feature::UNSPECIFIED_CONTEXT));
 
   feature = provider->GetFeature("chromePrivate");
-  ASSERT_TRUE(feature.get());
+  ASSERT_TRUE(feature);
   EXPECT_EQ(Feature::NOT_FOUND_IN_WHITELIST, feature->IsAvailableToContext(
       extension.get(), Feature::UNSPECIFIED_CONTEXT));
 
   feature = provider->GetFeature("clipboardWrite");
-  ASSERT_TRUE(feature.get());
+  ASSERT_TRUE(feature);
   EXPECT_EQ(Feature::NOT_PRESENT, feature->IsAvailableToContext(
       extension.get(), Feature::UNSPECIFIED_CONTEXT));
 }
@@ -102,19 +102,22 @@ TEST(SimpleFeatureProvider, Validation) {
   feature2->Set("contexts", contexts);
   value->Set("feature2", feature2);
 
-  SimpleFeatureProvider provider(value.Pass(), NULL);
+  scoped_ptr<SimpleFeatureProvider> provider(
+      new SimpleFeatureProvider(value.get(), NULL));
 
   // feature1 won't validate because it lacks an extension type.
-  EXPECT_FALSE(provider.GetFeature("feature1").get());
+  EXPECT_FALSE(provider->GetFeature("feature1"));
 
   // If we add one, it works.
   feature1->Set("extension_types", extension_types->DeepCopy());
-  EXPECT_TRUE(provider.GetFeature("feature1").get());
+  provider.reset(new SimpleFeatureProvider(value.get(), NULL));
+  EXPECT_TRUE(provider->GetFeature("feature1"));
 
   // feature2 won't validate because of the presence of "contexts".
-  EXPECT_FALSE(provider.GetFeature("feature2").get());
+  EXPECT_FALSE(provider->GetFeature("feature2"));
 
   // If we remove it, it works.
   feature2->Remove("contexts", NULL);
-  EXPECT_TRUE(provider.GetFeature("feature2").get());
+  provider.reset(new SimpleFeatureProvider(value.get(), NULL));
+  EXPECT_TRUE(provider->GetFeature("feature2"));
 }

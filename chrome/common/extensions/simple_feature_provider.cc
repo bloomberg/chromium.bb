@@ -55,7 +55,7 @@ struct Static {
     scoped_ptr<DictionaryValue> dictionary_value(
         static_cast<DictionaryValue*>(value));
     return scoped_ptr<SimpleFeatureProvider>(
-        new SimpleFeatureProvider(dictionary_value.Pass(), factory));
+        new SimpleFeatureProvider(dictionary_value.get(), factory));
   }
 };
 
@@ -63,11 +63,33 @@ base::LazyInstance<Static> g_static = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
-SimpleFeatureProvider::SimpleFeatureProvider(scoped_ptr<DictionaryValue> root,
+SimpleFeatureProvider::SimpleFeatureProvider(DictionaryValue* root,
                                              FeatureFactory factory)
-    : root_(root.release()),
-      factory_(factory ? factory :
+    : factory_(factory ? factory :
                static_cast<FeatureFactory>(&CreateFeature<Feature>)) {
+  for (DictionaryValue::Iterator iter(*root); iter.HasNext(); iter.Advance()) {
+    if (iter.value().GetType() != Value::TYPE_DICTIONARY) {
+      LOG(ERROR) << iter.key() << ": Feature description must be dictionary.";
+      continue;
+    }
+
+    linked_ptr<Feature> feature((*factory_)());
+    feature->set_name(iter.key());
+    feature->Parse(static_cast<const DictionaryValue*>(&iter.value()));
+
+    if (feature->extension_types()->empty()) {
+      LOG(ERROR) << iter.key() << ": Simple features must specify atleast one "
+                 << "value for extension_types.";
+      continue;
+    }
+
+    if (!feature->contexts()->empty()) {
+      LOG(ERROR) << iter.key() << ": Simple features do not support contexts.";
+      continue;
+    }
+
+    features_[iter.key()] = feature;
+  }
 }
 
 SimpleFeatureProvider::~SimpleFeatureProvider() {
@@ -85,37 +107,19 @@ SimpleFeatureProvider* SimpleFeatureProvider::GetPermissionFeatures() {
 
 std::set<std::string> SimpleFeatureProvider::GetAllFeatureNames() const {
   std::set<std::string> result;
-  for (DictionaryValue::key_iterator iter = root_->begin_keys();
-       iter != root_->end_keys(); ++iter) {
-    result.insert(*iter);
+  for (FeatureMap::const_iterator iter = features_.begin();
+       iter != features_.end(); ++iter) {
+    result.insert(iter->first);
   }
   return result;
 }
 
-scoped_ptr<Feature> SimpleFeatureProvider::GetFeature(const std::string& name) {
-  DictionaryValue* description = NULL;
-  if (!root_->GetDictionary(name, &description)) {
-    LOG(ERROR) << name << ": Definition not found.";
-    return scoped_ptr<Feature>();
-  }
-
-  scoped_ptr<Feature> feature(new Feature());
-  feature.reset((*factory_)());
-  feature->set_name(name);
-  feature->Parse(description);
-
-  if (feature->extension_types()->empty()) {
-    LOG(ERROR) << name << ": Simple features must specify atleast one value "
-               << "for extension_types.";
-    return scoped_ptr<Feature>();
-  }
-
-  if (!feature->contexts()->empty()) {
-    LOG(ERROR) << name << ": Simple features do not support contexts.";
-    return scoped_ptr<Feature>();
-  }
-
-  return feature.Pass();
+Feature* SimpleFeatureProvider::GetFeature(const std::string& name) {
+  FeatureMap::iterator iter = features_.find(name);
+  if (iter != features_.end())
+    return iter->second.get();
+  else
+    return NULL;
 }
 
 }  // namespace
