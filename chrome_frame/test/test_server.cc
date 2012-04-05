@@ -153,7 +153,6 @@ void SimpleWebServer::DeleteAllResponses() {
     if ((*it) != &quit_)
       delete (*it);
   }
-  connections_.clear();
 }
 
 Response* SimpleWebServer::FindResponse(const Request& request) const {
@@ -225,6 +224,7 @@ void SimpleWebServer::DidClose(net::ListenSocket* sock) {
   // 404's when the connection ends.
   Connection* c = FindConnection(sock);
   DCHECK(c);
+  c->OnSocketClosed();
   if (!FindResponse(c->request())) {
     // extremely inefficient, but in one line and not that common... :)
     connections_.erase(std::find(connections_.begin(), connections_.end(), c));

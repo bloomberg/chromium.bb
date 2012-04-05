@@ -123,6 +123,10 @@ class Connection {
     return request_;
   }
 
+  void OnSocketClosed() {
+    socket_ = NULL;
+  }
+
  protected:
   scoped_refptr<net::ListenSocket> socket_;
   Request request_;
