@@ -126,8 +126,6 @@ function load() {
                                 [$('account-picture')]);
     OptionsPage.registerOverlay(DetailsInternetPage.getInstance(),
                                 BrowserOptions.getInstance());
-    OptionsPage.registerOverlay(InternetOptions.getInstance(),
-                                BrowserOptions.getInstance());
     OptionsPage.registerOverlay(KeyboardOverlay.getInstance(),
                                 BrowserOptions.getInstance(),
                                 [$('keyboard-settings-button')]);
@@ -195,13 +193,6 @@ function load() {
   if (path.length > 1) {
     // Skip starting slash and remove trailing slash (if any).
     var pageName = path.slice(1).replace(/\/$/, '');
-
-    if (pageName == 'proxy') {
-      // The following page doesn't have a unique URL at the moment, so do
-      // something sensible if a user pastes this link or refreshes on this URL.
-      pageName = ProxyOptions ? ProxyOptions.getInstance().parentPage.name :
-                                AdvancedOptions.getInstance().name;
-    }
     OptionsPage.showPageByName(pageName, true, {replaceState: true});
   } else {
     OptionsPage.showDefaultPage();

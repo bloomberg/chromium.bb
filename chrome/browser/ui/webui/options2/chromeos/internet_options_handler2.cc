@@ -672,7 +672,8 @@ void InternetOptionsHandler::OnCellularDataPlanChanged(
                                 &connection_plans,
                                 cros_->GetCellularHomeCarrierId());
   web_ui()->CallJavascriptFunction(
-      "options.InternetOptions.updateCellularPlans", connection_plans);
+      "options.internet.DetailsInternetPage.updateCellularPlans",
+      connection_plans);
 }
 
 
@@ -684,18 +685,14 @@ void InternetOptionsHandler::Observe(
   if (type == chrome::NOTIFICATION_REQUIRE_PIN_SETTING_CHANGE_ENDED) {
     base::FundamentalValue require_pin(*content::Details<bool>(details).ptr());
     web_ui()->CallJavascriptFunction(
-        "options.InternetOptions.updateSecurityTab", require_pin);
+        "options.internet.DetailsInternetPage.updateSecurityTab", require_pin);
   } else if (type == chrome::NOTIFICATION_ENTER_PIN_ENDED) {
     // We make an assumption (which is valid for now) that the SIM
     // unlock dialog is put up only when the user is trying to enable
     // mobile data.
     bool cancelled = *content::Details<bool>(details).ptr();
-    if (cancelled) {
-      base::DictionaryValue dictionary;
-      FillNetworkInfo(&dictionary);
-      web_ui()->CallJavascriptFunction(
-          "options.InternetOptions.setupAttributes", dictionary);
-    }
+    if (cancelled)
+      RefreshNetworkData();
     // The case in which the correct PIN was entered and the SIM is
     // now unlocked is handled in NetworkMenuButton.
   }
@@ -901,7 +898,7 @@ void InternetOptionsHandler::PopulateDictionaryDetails(
   }
 
   web_ui()->CallJavascriptFunction(
-      "options.InternetOptions.showDetailedInfo", dictionary);
+      "options.internet.DetailsInternetPage.showDetailedInfo", dictionary);
 }
 
 void InternetOptionsHandler::PopulateWifiDetails(

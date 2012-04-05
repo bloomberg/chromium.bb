@@ -18,7 +18,6 @@
   <include src="chromeos/change_picture_options.js"></include>
   <include src="chromeos/internet_detail_ip_config_list.js"></include>
   <include src="chromeos/internet_network_element.js"></include>
-  <include src="chromeos/internet_options.js"></include>
   <include src="chromeos/internet_detail.js"></include>
   <include src="chromeos/network_list.js"></include>
   <include src="chromeos/preferred_networks.js"></include>
@@ -35,7 +34,6 @@
   <include src="chromeos/virtual_keyboard_list.js"></include>
   var AccountsOptions = options.AccountsOptions;
   var ChangePictureOptions = options.ChangePictureOptions;
-  var InternetOptions = options.InternetOptions;
   var DetailsInternetPage = options.internet.DetailsInternetPage;
   var BluetoothOptions = options.BluetoothOptions;
   var BluetoothPairing = options.BluetoothPairing;
