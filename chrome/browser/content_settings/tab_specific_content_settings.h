@@ -51,6 +51,7 @@ class TabSpecificContentSettings : public content::WebContentsObserver,
   static void CookiesRead(int render_process_id,
                           int render_view_id,
                           const GURL& url,
+                          const GURL& first_party_url,
                           const net::CookieList& cookie_list,
                           bool blocked_by_policy);
 
@@ -61,6 +62,7 @@ class TabSpecificContentSettings : public content::WebContentsObserver,
   static void CookieChanged(int render_process_id,
                             int render_view_id,
                             const GURL& url,
+                            const GURL& first_party_url,
                             const std::string& cookie_line,
                             const net::CookieOptions& options,
                             bool blocked_by_policy);
@@ -182,9 +184,11 @@ class TabSpecificContentSettings : public content::WebContentsObserver,
   // These methods are invoked on the UI thread by the static functions above.
   // Public for testing.
   void OnCookiesRead(const GURL& url,
+                     const GURL& first_party_url,
                      const net::CookieList& cookie_list,
                      bool blocked_by_policy);
   void OnCookieChanged(const GURL& url,
+                       const GURL& first_party_url,
                        const std::string& cookie_line,
                        const net::CookieOptions& options,
                        bool blocked_by_policy);

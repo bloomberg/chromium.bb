@@ -371,7 +371,8 @@ bool ChromeNetworkDelegate::CanGetCookies(
         BrowserThread::UI, FROM_HERE,
         base::Bind(&TabSpecificContentSettings::CookiesRead,
                    render_process_id, render_view_id,
-                   request->url(), cookie_list, !allow));
+                   request->url(), request->first_party_for_cookies(),
+                   cookie_list, !allow));
   }
 
   return allow;
@@ -399,7 +400,8 @@ bool ChromeNetworkDelegate::CanSetCookie(
         BrowserThread::UI, FROM_HERE,
         base::Bind(&TabSpecificContentSettings::CookieChanged,
                    render_process_id, render_view_id,
-                   request->url(), cookie_line, *options, !allow));
+                   request->url(), request->first_party_for_cookies(),
+                   cookie_line, *options, !allow));
   }
 
   return allow;

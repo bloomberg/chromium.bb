@@ -60,8 +60,11 @@ TEST_F(ContentSettingImageModelTest, CookieAccessed) {
   EXPECT_TRUE(content_setting_image_model->get_tooltip().empty());
 
   net::CookieOptions options;
-  content_settings->OnCookieChanged(
-      GURL("http://google.com"), "A=B", options, false);
+  content_settings->OnCookieChanged(GURL("http://google.com"),
+                                    GURL("http://google.com"),
+                                    "A=B",
+                                    options,
+                                    false);
   content_setting_image_model->UpdateFromWebContents(contents());
   EXPECT_TRUE(content_setting_image_model->is_visible());
   EXPECT_NE(0, content_setting_image_model->get_icon());

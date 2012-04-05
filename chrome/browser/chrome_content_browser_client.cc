@@ -891,7 +891,7 @@ bool ChromeContentBrowserClient::AllowGetCookie(
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&TabSpecificContentSettings::CookiesRead, render_process_id,
-                 render_view_id, url, cookie_list, !allow));
+                 render_view_id, url, first_party, cookie_list, !allow));
   return allow;
 }
 
@@ -914,7 +914,8 @@ bool ChromeContentBrowserClient::AllowSetCookie(
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&TabSpecificContentSettings::CookieChanged, render_process_id,
-                 render_view_id, url, cookie_line, *options, !allow));
+                 render_view_id, url, first_party, cookie_line, *options,
+                 !allow));
   return allow;
 }
 
