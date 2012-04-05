@@ -137,8 +137,10 @@ LDPatterns = [
   ( '-r',              "env.set('RELOCATABLE', '1')"),
   ( '-relocatable',    "env.set('RELOCATABLE', '1')"),
 
-  ( '-L(.+)',          "env.append('SEARCH_DIRS_USER', $0)"),
-  ( ('-L', '(.*)'),    "env.append('SEARCH_DIRS_USER', $0)"),
+  ( '-L(.+)',
+    "env.append('SEARCH_DIRS_USER', pathtools.normalize($0))"),
+  ( ('-L', '(.*)'),
+    "env.append('SEARCH_DIRS_USER', pathtools.normalize($0))"),
 
   ( ('(-Ttext)','(.*)'), PassThroughSegment),
   ( ('(-Ttext=.*)'),     PassThroughSegment),
