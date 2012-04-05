@@ -167,9 +167,9 @@
       # Disabled on vista in the actual test. crbug.com/89767
       # -imports.ImportsTest.testImportFirefoxPasswordsFromPrefs
       # crbug.com/121731
-      '-testIncognitoAppComboNameWithSpecialCharSearch',
-      '-testIncognitoAppNameWithSpaceSearch',
-      '-testIncognitoAppSearchWithVeryLongAppName',
+      '-omnibox.OmniboxTest.testIncognitoAppComboNameWithSpecialCharSearch',
+      '-omnibox.OmniboxTest.testIncognitoAppNameWithSpaceSearch',
+      '-omnibox.OmniboxTest.testIncognitoAppSearchWithVeryLongAppName',
       # crbug.com/117569
       '-passwords.PasswordTest.testSavedPasswordInTabsAndWindows',
       # crbug.com/104227
