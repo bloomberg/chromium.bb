@@ -2214,12 +2214,25 @@
    fun:_Z14PaParseStringsiPKPKcPKiP13TParseContext
    fun:_ZN9TCompiler7compileEPKPKcii
    fun:ShCompile
-   fun:_ZN6WebKit31WebGraphicsContext3DDefaultImpl25angleValidateShaderSourceERNS0_17ShaderSourceEntryE
-   fun:_ZN6WebKit31WebGraphicsContext3DDefaultImpl13compileShaderEj
-   fun:_ZN7WebCore25GraphicsContext3DInternal13compileShaderEi
-   fun:_ZN7WebCore17GraphicsContext3D13compileShaderEi
-   fun:_ZN7WebCore21WebGLRenderingContext13compileShaderEPNS_11WebGLShaderERi
-   fun:_ZN7WebCore29WebGLRenderingContextInternal21compileShaderCallbackERKN2v89ArgumentsE
+}
+{
+   bug_60667b
+   Memcheck:Leak
+   fun:_Zna*
+   fun:_ZN14TPoolAllocator8allocateEm
+   fun:_ZN17TSymbolTableLevelnwEm
+   fun:_ZN12TSymbolTable4pushEv
+   fun:_ZN9TCompiler7compileEPKPKcii
+   fun:ShCompile
+}
+{
+   bug_60667c
+   Memcheck:Leak
+   ...
+   obj:*
+   fun:_ZN3gpu5gles216GLES2DecoderImpl15DoCompileShaderEj
+   fun:_ZN3gpu5gles216GLES2DecoderImpl19HandleCompileShaderEjRKNS0_13CompileShaderE
+   fun:_ZN3gpu5gles216GLES2DecoderImpl9DoCommandEjjPKv
 }
 {
    bug_60668a
@@ -2264,6 +2277,26 @@
    fun:_ZN3gpu5gles216GLES2DecoderImpl14DoDrawElementsEbjijii
    fun:_ZN3gpu5gles216GLES2DecoderImpl18HandleDrawElementsEjRKNS0_12DrawElementsE
    fun:_ZN3gpu5gles216GLES2DecoderImpl9DoCommandEjjPKv
+}
+{
+   bug_60668c
+   Memcheck:Overlap
+   ...
+   fun:_swrast_write_rgba_span
+   fun:general_triangle
+   fun:_swrast_Triangle
+   fun:triangle_rgba
+   fun:_tnl_render_poly_elts
+   fun:_tnl_RenderClippedPolygon
+   fun:clip_tri_4
+   fun:clip_render_tri_fan_verts
+   fun:run_render
+   fun:_tnl_run_pipeline
+   fun:_tnl_draw_prims
+   fun:_tnl_vbo_draw_prims
+   fun:vbo_exec_DrawArrays
+   fun:neutral_DrawArrays
+   fun:glDrawArrays
 }
 {
    bug_60670a
@@ -4764,51 +4797,6 @@
    fun:_ZN7WebCore8Document20styleSelectorChangedENS_23StyleSelectorUpdateFlagE
 }
 {
-   bug_109495a
-   Memcheck:Leak
-   ...
-   fun:_Z7yyparseP13TParseContext
-   fun:_Z13glslang_parseP13TParseContext
-   fun:_Z14PaParseStringsiPKPKcPKiP13TParseContext
-   fun:_ZN12_GLOBAL__N_121InitializeSymbolTableERK7TVectorISbIcSt11char_traitsIcE14pool_allocatorIcEEE12ShShaderType12ShShaderSpecRK18ShBuiltInResourcesR9TInfoSinkR12TSymbolTable
-   fun:_ZN9TCompiler22InitBuiltInSymbolTableERK18ShBuiltInResources
-   fun:_ZN9TCompiler4InitERK18ShBuiltInResources
-   fun:ShConstructCompiler
-}
-{
-   bug_109495b
-   Memcheck:Leak
-   fun:_Zna*
-   fun:_ZN14TPoolAllocator8allocateEm
-   fun:_ZN14pool_allocatorIcE8allocateEm
-   fun:_ZNSbIcSt11char_traitsIcE14pool_allocatorIcEE4_Rep9_S_createEmmRKS2_
-   fun:_ZNSbIcSt11char_traitsIcE14pool_allocatorIcEE12_S_constructIPKcEEPcT_S8_RKS2_St20forward_iterator_tag
-   fun:_ZNSbIcSt11char_traitsIcE14pool_allocatorIcEE16_S_construct_auxIPKcEEPcT_S8_RKS2_St12__false_type
-   fun:_ZNSbIcSt11char_traitsIcE14pool_allocatorIcEE12_S_constructIPKcEEPcT_S8_RKS2_
-   fun:_ZNSbIcSt11char_traitsIcE14pool_allocatorIcEEC1EPKcRKS2_
-   fun:_ZL22BuiltInFunctionsCommonRK18ShBuiltInResources
-   fun:_ZN9TBuiltIns10initializeE12ShShaderType12ShShaderSpecRK18ShBuiltInResources
-   fun:_ZN9TCompiler22InitBuiltInSymbolTableERK18ShBuiltInResources
-   fun:_ZN9TCompiler4InitERK18ShBuiltInResources
-   fun:ShConstructCompiler
-}
-{
-   bug_109495d
-   Memcheck:Leak
-   fun:_Zna*
-   fun:_ZN14TPoolAllocator8allocateEm
-   fun:_ZN14pool_allocatorIcE8allocateEm
-   fun:_ZNSbIcSt11char_traitsIcE14pool_allocatorIcEE4_Rep9_S_createEmmRKS2_
-   fun:_ZNSbIcSt11char_traitsIcE14pool_allocatorIcEE4_Rep8_M_cloneERKS2_m
-   fun:_ZNSbIcSt11char_traitsIcE14pool_allocatorIcEE7reserveEm
-   fun:_ZNSbIcSt11char_traitsIcE14pool_allocatorIcEE6appendERKS3_
-   fun:_ZL22BuiltInFunctionsCommonRK18ShBuiltInResources
-   fun:_ZN9TBuiltIns10initializeE12ShShaderType12ShShaderSpecRK18ShBuiltInResources
-   fun:_ZN9TCompiler22InitBuiltInSymbolTableERK18ShBuiltInResources
-   fun:_ZN9TCompiler4InitERK18ShBuiltInResources
-   fun:ShConstructCompiler
-}
-{
    bug_109495e
    Memcheck:Leak
    fun:_Znw*
@@ -4840,6 +4828,14 @@
    fun:_ZN7WebCore21WebGLRenderingContext6createEPNS_17HTMLCanvasElementEPNS_22WebGLContextAttributesE
    fun:_ZN7WebCore17HTMLCanvasElement10getContextERKN3WTF6StringEPNS_23CanvasContextAttributesE
    fun:_ZN7WebCore19V8HTMLCanvasElement18getContextCallbackERKN2v89ArgumentsE
+}
+{
+   bug_109495g
+   Memcheck:Leak
+   ...
+   fun:_ZN9TCompiler22InitBuiltInSymbolTableERK18ShBuiltInResources
+   fun:_ZN9TCompiler4InitERK18ShBuiltInResources
+   fun:ShConstructCompiler
 }
 {
    bug_109496
@@ -5006,6 +5002,32 @@
    fun:vbo_validated_drawrangeelements
    fun:vbo_exec_DrawElements
    fun:neutral_DrawElements
+}
+{
+   bug_112278b
+   Memcheck:Uninitialized
+   fun:fetch_texel_2d_f_rgba8888
+   fun:sample_2d_nearest
+   fun:sample_nearest_2d
+   fun:fetch_texel_lod
+   fun:fetch_texel
+   fun:_mesa_execute_program
+   fun:run_program
+   fun:_swrast_exec_fragment_program
+   fun:shade_texture_span
+   fun:_swrast_write_rgba_span
+   fun:general_triangle
+   fun:_swrast_validate_triangle
+   fun:_swrast_Triangle
+   fun:triangle_rgba
+   fun:_tnl_render_tri_fan_verts
+   fun:run_render
+   fun:_tnl_run_pipeline
+   fun:_tnl_draw_prims
+   fun:_tnl_vbo_draw_prims
+   fun:vbo_exec_DrawArrays
+   fun:neutral_DrawArrays
+   fun:glDrawArrays
 }
 {
    bug_112315
@@ -5428,6 +5450,82 @@
    fun:_ZN7WebCore9WebSocket7connectERKN3WTF6StringERKNS1_6VectorIS2_Lm0EEERi
    fun:_ZN7WebCore9WebSocket7connectERKN3WTF6StringERi
    fun:_ZN7WebCore11V8WebSocket19constructorCallbackERKN2v89ArgumentsE
+}
+{
+   bug_122233d
+   Memcheck:Leak
+   fun:malloc
+   fun:_ZN3WTF10fastMallocEm
+   fun:_ZN7WebCore16WebSocketChannelnwEm
+   fun:_ZN7WebCore16WebSocketChannel6createEPNS_8DocumentEPNS_22WebSocketChannelClientE
+   fun:_ZN7WebCore26ThreadableWebSocketChannel6createEPNS_22ScriptExecutionContextEPNS_22WebSocketChannelClientE
+   fun:_ZN7WebCore9WebSocket7connectERKN3WTF6StringERKNS1_6VectorIS2_Lm0EEERi
+   fun:_ZN7WebCore9WebSocket7connectERKN3WTF6StringERi
+   fun:_ZN7WebCore11V8WebSocket19constructorCallbackERKN2v89ArgumentsE
+   fun:_ZN2v88internalL19HandleApiCallHelperILb1EEEPNS0_11MaybeObjectENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
+   fun:_ZN2v88internalL30Builtin_HandleApiCallConstructENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
+}
+{
+   bug_122245a
+   Memcheck:Uninitialized
+   ...
+   fun:_ZN15SkScalerContext15internalGetPathERK7SkGlyphP6SkPathS4_P8SkMatrix
+   fun:_ZN15SkScalerContext10getMetricsEP7SkGlyph
+   fun:_ZN12SkGlyphCache13lookupMetricsEjNS_11MetricsTypeE
+}
+{
+   bug_122245b
+   Memcheck:Uninitialized
+   ...
+   fun:_ZNK6SkRect8roundOutEP7SkIRect
+   fun:_ZN15SkScalerContext10getMetricsEP7SkGlyph
+   fun:_ZN12SkGlyphCache13lookupMetricsEjNS_11MetricsTypeE
+   fun:_ZN12SkGlyphCache17getGlyphIDMetricsEt
+   fun:_ZL22sk_getMetrics_glyph_00P12SkGlyphCachePPKcii
+   fun:_ZNK6SkDraw11drawPosTextEPKcmPKffiRK7SkPaint
+   fun:_ZN8SkDevice11drawPosTextERK6SkDrawPKvmPKffiRK7SkPaint
+   fun:_ZN11SkGpuDevice11drawPosTextERK6SkDrawPKvmPKffiRK7SkPaint
+   fun:_ZN8SkCanvas11drawPosTextEPKvmPK7SkPointRK7SkPaint
+   fun:_ZNK7WebCore4Font10drawGlyphsEPNS_15GraphicsContextEPKNS_14SimpleFontDataERKNS_11GlyphBufferEiiRKNS_10FloatPointE
+   fun:_ZNK7WebCore4Font15drawGlyphBufferEPNS_15GraphicsContextERKNS_7TextRunERKNS_11GlyphBufferERKNS_10FloatPointE
+   fun:_ZNK7WebCore4Font14drawSimpleTextEPNS_15GraphicsContextERKNS_7TextRunERKNS_10FloatPointEii
+   fun:_ZNK7WebCore4Font8drawTextEPNS_15GraphicsContextERKNS_7TextRunERKNS_10FloatPointEii
+   fun:_ZN7WebCore15GraphicsContext12drawBidiTextERKNS_4FontERKNS_7TextRunERKNS_10FloatPointE
+   fun:_ZN7WebCore24CanvasRenderingContext2D16drawTextInternalERKN3WTF6StringEffbfb
+   fun:_ZN7WebCore24CanvasRenderingContext2D10strokeTextERKN3WTF6StringEfff
+   fun:_ZN7WebCore32CanvasRenderingContext2DInternalL18strokeTextCallbackERKN2v89ArgumentsE
+   fun:_ZN2v88internalL19HandleApiCallHelperILb0EEEPNS0_11MaybeObjectENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
+   fun:_ZN2v88internalL21Builtin_HandleApiCallENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
+}
+{
+   bug_122249a
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN7WebCore23v8StringToWebCoreStringIN3WTF6StringEEET_N2v86HandleINS4_6StringEEENS_12ExternalModeE
+   fun:_ZN7WebCore23v8StringToWebCoreStringEN2v86HandleINS0_6StringEEE
+   fun:_ZN7WebCore22v8ValueToWebCoreStringEN2v86HandleINS0_5ValueEEE
+   fun:_ZN7WebCoreL21createIDBKeyFromValueEN2v86HandleINS0_5ValueEEERN3WTF6VectorINS1_INS0_5ArrayEEELm0EEE
+   fun:_ZN7WebCore21createIDBKeyFromValueEN2v86HandleINS0_5ValueEEE
+}
+{
+   bug_122249b
+   Memcheck:Leak
+   fun:malloc
+   fun:_ZN3WTF10fastMallocEm
+   fun:_ZN3WTF10RefCountedIN7WebCore14IDBObjectStoreEEnwEm
+   fun:_ZN7WebCore14IDBObjectStore6createEN3WTF10PassRefPtrINS_30IDBObjectStoreBackendInterfaceEEEPNS_14IDBTransactionE
+   fun:_ZN7WebCore11IDBDatabase17createObjectStoreERKN3WTF6StringERKNS_10DictionaryERi
+}
+{
+   bug_122249c
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN6WebKit13WebIDBFactory6createEv
+   fun:_ZN25TestWebKitPlatformSupport10idbFactoryEv
+   fun:_ZN6WebKit22IDBFactoryBackendProxyC1Ev
+   fun:_ZN6WebKit22IDBFactoryBackendProxy6createEv
+   fun:_ZN7WebCore15PlatformSupport10idbFactoryEv
+   fun:_ZN7WebCore26IDBFactoryBackendInterface6createEv
 }
 
 #-----------------------------------------------------------------------
