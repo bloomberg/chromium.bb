@@ -8,18 +8,18 @@
 #include "base/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/request_stages.h"
+#include "chrome/browser/extensions/api/declarative_webrequest/webrequest_constants.h"
 #include "net/url_request/url_request.h"
 
 namespace {
-// Constants from the JavaScript API.
-const char kSchemeKey[] = "scheme";
-
 // Error messages.
 const char kUnknownConditionAttribute[] = "Unknown matching condition: '%s'";
 const char kInvalidValue[] = "Condition '%s' has an invalid value";
 }
 
 namespace extensions {
+
+namespace keys = declarative_webrequest_constants;
 
 //
 // WebRequestConditionAttribute
@@ -64,7 +64,7 @@ WebRequestConditionAttributeHasScheme::~WebRequestConditionAttributeHasScheme()
 // static
 bool WebRequestConditionAttributeHasScheme::IsMatchingType(
     const std::string& instance_type) {
-  return instance_type == kSchemeKey;
+  return instance_type == keys::kSchemeKey;
 }
 
 //
@@ -81,7 +81,7 @@ WebRequestConditionAttributeHasScheme::Create(
 
   std::string scheme;
   if (!value->GetAsString(&scheme)) {
-    *error = base::StringPrintf(kInvalidValue, kSchemeKey);
+    *error = base::StringPrintf(kInvalidValue, keys::kSchemeKey);
     return scoped_ptr<WebRequestConditionAttribute>(NULL);
   }
 
@@ -96,7 +96,10 @@ int WebRequestConditionAttributeHasScheme::GetStages() const {
 }
 
 bool WebRequestConditionAttributeHasScheme::IsFulfilled(
-    net::URLRequest* request) {
+    net::URLRequest* request,
+    RequestStages request_stage) {
+  if (!(request_stage & GetStages()))
+    return false;
   return request->url().scheme() == pattern_;
 }
 

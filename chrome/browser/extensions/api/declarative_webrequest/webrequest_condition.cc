@@ -11,6 +11,7 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/request_stages.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_condition_attribute.h"
+#include "chrome/browser/extensions/api/declarative_webrequest/webrequest_constants.h"
 #include "net/url_request/url_request.h"
 
 namespace {
@@ -28,9 +29,6 @@ const char kConditionExpectedString[] =
     "Condition '%s' expected a string value";
 
 // String literals from the JavaScript API:
-const char kRequestMatcher[] = "experimental.webRequest.RequestMatcher";
-const char kInstanceType[] = "instanceType";
-
 const char kHostContainsKey[] = "host_contains";
 const char kHostEqualsKey[] = "host_equals";
 const char kHostPrefixKey[] = "host_prefix";
@@ -113,6 +111,8 @@ static base::LazyInstance<URLMatcherConditionFactoryMethods>
 
 namespace extensions {
 
+namespace keys = declarative_webrequest_constants;
+
 //
 // WebRequestCondition
 //
@@ -121,15 +121,27 @@ WebRequestCondition::WebRequestCondition(
     const URLMatcherConditionSet& url_matcher_conditions,
     const WebRequestConditionAttributes& condition_attributes)
     : url_matcher_conditions_(url_matcher_conditions),
-      condition_attributes_(condition_attributes) {}
+      condition_attributes_(condition_attributes),
+      applicable_request_stages_(~0) {
+  for (WebRequestConditionAttributes::const_iterator i =
+       condition_attributes_.begin(); i != condition_attributes_.end(); ++i) {
+    applicable_request_stages_ &= (*i)->GetStages();
+  }
+}
 
 WebRequestCondition::~WebRequestCondition() {}
 
-bool WebRequestCondition::IsFulfilled(net::URLRequest* request) const {
+bool WebRequestCondition::IsFulfilled(net::URLRequest* request,
+                                      RequestStages request_stage) const {
   // All condition attributes must be fulfilled for a fulfilled condition.
+  if (!(request_stage & applicable_request_stages_)) {
+    // A condition that cannot be evaluated is considered as violated.
+    return false;
+  }
+
   for (WebRequestConditionAttributes::const_iterator i =
        condition_attributes_.begin(); i != condition_attributes_.end(); ++i) {
-    if (!(*i)->IsFulfilled(request))
+    if (!(*i)->IsFulfilled(request, request_stage))
       return false;
   }
   return true;
@@ -148,11 +160,11 @@ scoped_ptr<WebRequestCondition> WebRequestCondition::Create(
 
   // Verify that we are dealing with a Condition whose type we understand.
   std::string instance_type;
-  if (!condition_dict->GetString(kInstanceType, &instance_type)) {
+  if (!condition_dict->GetString(keys::kInstanceTypeKey, &instance_type)) {
     *error = kConditionWithoutInstanceType;
     return scoped_ptr<WebRequestCondition>(NULL);
   }
-  if (instance_type != kRequestMatcher) {
+  if (instance_type != keys::kRequestMatcherType) {
     *error = kExpectedOtherConditionType;
     return scoped_ptr<WebRequestCondition>(NULL);
   }
@@ -164,7 +176,7 @@ scoped_ptr<WebRequestCondition> WebRequestCondition::Create(
        iter.HasNext(); iter.Advance()) {
     const std::string& condition_attribute_name = iter.key();
     const Value& condition_attribute_value = iter.value();
-    if (condition_attribute_name == kInstanceType) {
+    if (condition_attribute_name == keys::kInstanceTypeKey) {
       // Skip this.
     } else if (IsURLMatcherConditionAttribute(condition_attribute_name)) {
       URLMatcherCondition url_matcher_condition =
@@ -251,11 +263,12 @@ WebRequestConditionSet::~WebRequestConditionSet() {}
 
 bool WebRequestConditionSet::IsFulfilled(
     URLMatcherConditionSet::ID url_match,
-    net::URLRequest* request) const {
+    net::URLRequest* request,
+    RequestStages request_stage) const {
   MatchTriggers::const_iterator trigger = match_triggers_.find(url_match);
   DCHECK(trigger != match_triggers_.end());
   DCHECK_EQ(url_match, trigger->second->url_matcher_condition_set_id());
-  return trigger->second->IsFulfilled(request);
+  return trigger->second->IsFulfilled(request, request_stage);
 }
 
 void WebRequestConditionSet::GetURLMatcherConditionSets(

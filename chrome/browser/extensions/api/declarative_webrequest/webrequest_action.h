@@ -6,18 +6,34 @@
 #define CHROME_BROWSER_EXTENSIONS_API_DECLARATIVE_WEBREQUEST_WEBREQUEST_ACTION_H_
 #pragma once
 
+#include <list>
 #include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/memory/linked_ptr.h"
+#include "chrome/browser/extensions/api/declarative_webrequest/request_stages.h"
 #include "chrome/common/extensions/api/experimental.declarative.h"
+#include "googleurl/src/gurl.h"
 
 namespace base {
+class DictionaryValue;
+class Time;
 class Value;
 }
 
+namespace extension_web_request_api_helpers {
+struct EventResponseDelta;
+}
+
+namespace net {
+class URLRequest;
+}
+
 namespace extensions {
+
+typedef linked_ptr<extension_web_request_api_helpers::EventResponseDelta>
+    LinkedPtrEventResponseDelta;
 
 // Base class for all WebRequestActions of the declarative Web Request API.
 //
@@ -46,6 +62,14 @@ class WebRequestAction {
   // Sets |error| and returns NULL in case of an error.
   static scoped_ptr<WebRequestAction> Create(const base::Value& json_action,
                                              std::string* error);
+
+  // Returns a description of the modification to |request| caused by this
+  // action.
+  virtual LinkedPtrEventResponseDelta CreateDelta(
+      net::URLRequest* request,
+      RequestStages request_stage,
+      const std::string& extension_id,
+      const base::Time& extension_install_time) const = 0;
 };
 
 // Immutable container for multiple actions.
@@ -53,8 +77,6 @@ class WebRequestAction {
 // TODO(battre): As WebRequestActionSet can become the single owner of all
 // actions, we can optimize here by making some of them singletons (e.g. Cancel
 // actions).
-//
-// TODO(battre): Add method that corresponds to executing the action.
 class WebRequestActionSet {
  public:
   typedef std::vector<linked_ptr<json_schema_compiler::any::Any> > AnyVector;
@@ -68,6 +90,14 @@ class WebRequestActionSet {
   // extension API.
   static scoped_ptr<WebRequestActionSet> Create(const AnyVector& actions,
                                                 std::string* error);
+
+  // Returns a description of the modifications to |request| caused by the
+  // |actions_| that can be executed at |request_stage|.
+  std::list<LinkedPtrEventResponseDelta> CreateDeltas(
+      net::URLRequest* request,
+      RequestStages request_stage,
+      const std::string& extension_id,
+      const base::Time& extension_install_time) const;
 
   const Actions& actions() const { return actions_; }
 
@@ -90,24 +120,34 @@ class WebRequestCancelAction : public WebRequestAction {
   // Implementation of WebRequestAction:
   virtual int GetStages() const OVERRIDE;
   virtual Type GetType() const OVERRIDE;
+  virtual LinkedPtrEventResponseDelta CreateDelta(
+      net::URLRequest* request,
+      RequestStages request_stage,
+      const std::string& extension_id,
+      const base::Time& extension_install_time) const OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebRequestCancelAction);
 };
 
 // Action that instructs to redirect a network request.
-// TODO(battre): This needs to be expanded to contain information to which
-// URL a request should be redirected.
 class WebRequestRedirectAction : public WebRequestAction {
  public:
-  WebRequestRedirectAction();
+  explicit WebRequestRedirectAction(const GURL& redirect_url);
   virtual ~WebRequestRedirectAction();
 
   // Implementation of WebRequestAction:
   virtual int GetStages() const OVERRIDE;
   virtual Type GetType() const OVERRIDE;
+  virtual LinkedPtrEventResponseDelta CreateDelta(
+      net::URLRequest* request,
+      RequestStages request_stage,
+      const std::string& extension_id,
+      const base::Time& extension_install_time) const OVERRIDE;
 
  private:
+  GURL redirect_url_;  // Target to which the request shall be redirected.
+
   DISALLOW_COPY_AND_ASSIGN(WebRequestRedirectAction);
 };
 

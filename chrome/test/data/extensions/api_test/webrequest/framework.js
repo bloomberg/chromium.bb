@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@ var getURL = chrome.extension.getURL;
 var deepEq = chrome.test.checkDeepEq;
 var expectedEventData;
 var capturedEventData;
+var capturedUnexpectedData;
 var expectedEventOrder;
 var tabId;
 var tabIdMap;
@@ -13,6 +14,15 @@ var frameIdMap;
 var testServerPort;
 var testServer = "www.a.com";
 var eventsCaptured;
+
+// If true, don't bark on events that were not registered via expect().
+// These events are recorded in capturedUnexpectedData instead of
+// capturedEventData.
+var ignoreUnexpected = false;
+
+// This is a debugging aid to print all received events as well as the
+// information whether they were expected.
+var logAllRequests = false;
 
 function runTests(tests) {
   chrome.tabs.create({url: "about:blank"}, function(tab) {
@@ -64,11 +74,13 @@ function navigateAndWait(url, callback) {
 function expect(data, order, filter, extraInfoSpec) {
   expectedEventData = data;
   capturedEventData = [];
+  capturedUnexpectedData = [];
   expectedEventOrder = order;
   eventsCaptured = chrome.test.callbackAdded();
   tabAndFrameUrls = {};  // Maps "{tabId}-{frameId}" to the URL of the frame.
   frameIdMap = {"-1": -1};
   removeListeners();
+  resetDeclarativeRules();
   initListeners(filter || {urls: ["<all_urls>"]}, extraInfoSpec || []);
   // Fill in default values.
   for (var i = 0; i < expectedEventData.length; ++i) {
@@ -214,14 +226,24 @@ function captureEvent(name, details, callback) {
       }
     }
   });
-  if (!found) {
+  if (!found && !ignoreUnexpected) {
     console.log("Expected events: " +
         JSON.stringify(expectedEventData, null, 2));
     chrome.test.fail("Received unexpected event '" + name + "':" +
         JSON.stringify(details, null, 2));
   }
 
-  capturedEventData.push({label: label, event: name, details: details});
+  if (found) {
+    if (logAllRequests) {
+      console.log("Expected: " + name + ": " + JSON.stringify(details));
+    }
+    capturedEventData.push({label: label, event: name, details: details});
+  } else {
+    if (logAllRequests) {
+      console.log("NOT Expected: " + name + ": " + JSON.stringify(details));
+    }
+    capturedUnexpectedData.push({label: label, event: name, details: details});
+  }
   checkExpectations();
 
   if (callback) {
@@ -296,4 +318,8 @@ function removeListeners() {
   helper(chrome.webRequest.onBeforeRedirect);
   helper(chrome.webRequest.onCompleted);
   helper(chrome.webRequest.onErrorOccurred);
+}
+
+function resetDeclarativeRules() {
+  chrome.experimental.webRequest.onRequest.removeRules();
 }

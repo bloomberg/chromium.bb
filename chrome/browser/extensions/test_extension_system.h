@@ -40,6 +40,8 @@ class TestExtensionSystem : public ExtensionSystem {
   virtual LazyBackgroundTaskQueue* lazy_background_task_queue() OVERRIDE;
   virtual ExtensionMessageService* message_service() OVERRIDE;
   virtual ExtensionEventRouter* event_router() OVERRIDE;
+  virtual extensions::RulesRegistryService* rules_registry_service()
+      OVERRIDE;
 
   // Factory method for tests to use with SetTestingProfile.
   static ProfileKeyedService* Build(Profile* profile);

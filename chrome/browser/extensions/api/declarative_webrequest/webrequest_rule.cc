@@ -7,14 +7,17 @@
 #include "base/logging.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_action.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_condition.h"
+#include "chrome/browser/extensions/api/web_request/web_request_api_helpers.h"
 
 namespace extensions {
 
 WebRequestRule::WebRequestRule(
     const GlobalRuleId& id,
+    base::Time extension_installation_time,
     scoped_ptr<WebRequestConditionSet> conditions,
     scoped_ptr<WebRequestActionSet> actions)
     : id_(id),
+      extension_installation_time_(extension_installation_time),
       conditions_(conditions.release()),
       actions_(actions.release()) {
   CHECK(conditions_.get());
@@ -36,6 +39,7 @@ bool WebRequestRule::CheckConsistency(
 scoped_ptr<WebRequestRule> WebRequestRule::Create(
     URLMatcherConditionFactory* url_matcher_condition_factory,
     const std::string& extension_id,
+    base::Time extension_installation_time,
     linked_ptr<RulesRegistry::Rule> rule,
     std::string* error) {
   scoped_ptr<WebRequestRule> error_result;
@@ -60,7 +64,15 @@ scoped_ptr<WebRequestRule> WebRequestRule::Create(
 
   GlobalRuleId rule_id(extension_id, *(rule->id));
   return scoped_ptr<WebRequestRule>(
-      new WebRequestRule(rule_id, conditions.Pass(), actions.Pass()));
+      new WebRequestRule(rule_id, extension_installation_time,
+                         conditions.Pass(), actions.Pass()));
+}
+
+std::list<LinkedPtrEventResponseDelta> WebRequestRule::CreateDeltas(
+    net::URLRequest* request,
+    RequestStages request_stage) const {
+  return actions_->CreateDeltas(request, request_stage, id_.first,
+      extension_installation_time_);
 }
 
 }  // namespace extensions

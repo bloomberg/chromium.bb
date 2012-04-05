@@ -5,14 +5,16 @@
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_action.h"
 
 #include "base/values.h"
+#include "chrome/browser/extensions/api/declarative_webrequest/webrequest_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
-const char kCancelRequestType[] = "experimental.webRequest.CancelRequest";
 const char kUnknownActionType[] = "unknownType";
 }  // namespace
 
 namespace extensions {
+
+namespace keys = declarative_webrequest_constants;
 
 TEST(WebRequestActionTest, CreateAction) {
   std::string error;
@@ -33,14 +35,14 @@ TEST(WebRequestActionTest, CreateAction) {
   EXPECT_FALSE(result.get());
 
   // Test wrong instanceType element.
-  input.SetString("instanceType", kUnknownActionType);
+  input.SetString(keys::kInstanceTypeKey, kUnknownActionType);
   error.clear();
   result = WebRequestAction::Create(input, &error);
   EXPECT_FALSE(error.empty());
   EXPECT_FALSE(result.get());
 
   // Test success
-  input.SetString("instanceType", kCancelRequestType);
+  input.SetString(keys::kInstanceTypeKey, keys::kCancelRequestType);
   error.clear();
   result = WebRequestAction::Create(input, &error);
   EXPECT_TRUE(error.empty());
@@ -62,9 +64,9 @@ TEST(WebRequestActionTest, CreateActionSet) {
   EXPECT_TRUE(result->actions().empty());
 
   DictionaryValue correct_action;
-  correct_action.SetString("instanceType", kCancelRequestType);
+  correct_action.SetString(keys::kInstanceTypeKey, keys::kCancelRequestType);
   DictionaryValue incorrect_action;
-  incorrect_action.SetString("instanceType", kUnknownActionType);
+  incorrect_action.SetString(keys::kInstanceTypeKey, kUnknownActionType);
 
   // Test success.
   linked_ptr<json_schema_compiler::any::Any> action1 = make_linked_ptr(

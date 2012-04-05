@@ -8,7 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/declarative/rules_registry_service.h"
-#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/experimental.declarative.h"
 #include "content/public/browser/browser_thread.h"
@@ -46,7 +46,8 @@ bool RulesFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &event_name));
 
   RulesRegistryService* rules_registry_service =
-      profile()->GetExtensionService()->GetRulesRegistryService();
+      ExtensionSystemFactory::GetForProfile(profile())->
+      rules_registry_service();
   rules_registry_ = rules_registry_service->GetRulesRegistry(event_name);
   // Raw access to this function is not available to extensions, therefore
   // there should never be a request for a nonexisting rules registry.

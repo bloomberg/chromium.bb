@@ -7,9 +7,10 @@
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/api/declarative/rules_registry_service.h"
+#include "chrome/browser/extensions/api/declarative_webrequest/webrequest_constants.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_rules_registry.h"
 #include "chrome/browser/extensions/extension_apitest.h"
-#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
@@ -21,35 +22,18 @@ using extensions::RulesRegistry;
 using extensions::RulesRegistryService;
 using extensions::WebRequestRulesRegistry;
 
-namespace {
-const char kTestEvent[] = "experimental.webRequest.onRequest";
-}  // namespace
-
 class DeclarativeApiTest : public ExtensionApiTest {
  public:
-  DeclarativeApiTest() : rules_registry_(NULL) {}
+  DeclarativeApiTest() {}
   virtual ~DeclarativeApiTest() {}
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     ExtensionApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kEnableExperimentalExtensionApis);
   }
-
-  void RegisterTestRuleRegistry() {
-    Profile* profile = browser()->profile();
-    RulesRegistryService* rules_registry_service =
-        profile->GetExtensionService()->GetRulesRegistryService();
-    rules_registry_ = new WebRequestRulesRegistry();
-    // TODO(battre): The registry should register itself when the
-    // RulesRegistryService is instantiated.
-    rules_registry_service->RegisterRulesRegistry(kTestEvent, rules_registry_);
-  }
-
-  scoped_refptr<RulesRegistry> rules_registry_;
 };
 
 IN_PROC_BROWSER_TEST_F(DeclarativeApiTest, DeclarativeApi) {
-  RegisterTestRuleRegistry();
   ASSERT_TRUE(RunExtensionTest("declarative/api")) << message_;
 
   // Check that unloading the page has removed all rules.
@@ -60,15 +44,22 @@ IN_PROC_BROWSER_TEST_F(DeclarativeApiTest, DeclarativeApi) {
   // to process this unloading. The next task to retrive all rules
   // is therefore processed after the UnloadExtension task has been executed.
 
+  RulesRegistryService* rules_registry_service =
+      ExtensionSystemFactory::GetForProfile(browser()->profile())->
+      rules_registry_service();
+  scoped_refptr<RulesRegistry> rules_registry =
+      rules_registry_service->GetRulesRegistry(
+          extensions::declarative_webrequest_constants::kOnRequest);
+
   std::vector<linked_ptr<RulesRegistry::Rule> > known_rules;
 
   content::BrowserThread::PostTask(
-      rules_registry_->GetOwnerThread(),
+      rules_registry->GetOwnerThread(),
       FROM_HERE,
       base::Bind(base::IgnoreResult(&RulesRegistry::GetAllRules),
-                 rules_registry_, extension_id, &known_rules));
+                 rules_registry, extension_id, &known_rules));
 
-  ui_test_utils::RunAllPendingInMessageLoop(rules_registry_->GetOwnerThread());
+  ui_test_utils::RunAllPendingInMessageLoop(rules_registry->GetOwnerThread());
 
   EXPECT_TRUE(known_rules.empty());
 }

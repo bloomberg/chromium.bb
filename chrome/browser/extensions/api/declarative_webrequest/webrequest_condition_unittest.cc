@@ -8,15 +8,13 @@
 
 #include "base/message_loop.h"
 #include "base/values.h"
+#include "chrome/browser/extensions/api/declarative_webrequest/webrequest_constants.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace {
-const char kRequestMatcher[] = "experimental.webRequest.RequestMatcher";
-const char kInstanceType[] = "instanceType";
-}
-
 namespace extensions {
+
+namespace keys = declarative_webrequest_constants;
 
 TEST(WebRequestConditionTest, CreateCondition) {
   // Necessary for TestURLRequest.
@@ -29,16 +27,19 @@ TEST(WebRequestConditionTest, CreateCondition) {
   DictionaryValue invalid_condition;
   invalid_condition.SetString("invalid", "foobar");
   invalid_condition.SetString("host_suffix", "example.com");
-  invalid_condition.SetString(kInstanceType, kRequestMatcher);
+  invalid_condition.SetString(keys::kInstanceTypeKey,
+                              keys::kRequestMatcherType);
 
   DictionaryValue invalid_condition2;
   invalid_condition2.Set("host_suffix", new ListValue);
-  invalid_condition2.SetString(kInstanceType, kRequestMatcher);
+  invalid_condition2.SetString(keys::kInstanceTypeKey,
+                               keys::kRequestMatcherType);
 
   DictionaryValue valid_condition;
   valid_condition.SetString("scheme", "http");
   valid_condition.SetString("host_suffix", "example.com");
-  valid_condition.SetString(kInstanceType, kRequestMatcher);
+  valid_condition.SetString(keys::kInstanceTypeKey,
+                            keys::kRequestMatcherType);
 
   // Test wrong condition name passed.
   error.clear();
@@ -62,10 +63,10 @@ TEST(WebRequestConditionTest, CreateCondition) {
   ASSERT_TRUE(result.get());
 
   TestURLRequest match_request(GURL("http://www.example.com"), NULL);
-  EXPECT_TRUE(result->IsFulfilled(&match_request));
+  EXPECT_TRUE(result->IsFulfilled(&match_request, ON_BEFORE_REQUEST));
 
   TestURLRequest wrong_scheme(GURL("https://www.example.com"), NULL);
-  EXPECT_FALSE(result->IsFulfilled(&wrong_scheme));
+  EXPECT_FALSE(result->IsFulfilled(&wrong_scheme, ON_BEFORE_REQUEST));
 }
 
 TEST(WebRequestConditionTest, CreateConditionSet) {
@@ -76,13 +77,13 @@ TEST(WebRequestConditionTest, CreateConditionSet) {
   DictionaryValue http_condition;
   http_condition.SetString("scheme", "http");
   http_condition.SetString("host_suffix", "example.com");
-  http_condition.SetString(kInstanceType, kRequestMatcher);
+  http_condition.SetString(keys::kInstanceTypeKey, keys::kRequestMatcherType);
 
   DictionaryValue https_condition;
   https_condition.SetString("scheme", "https");
   https_condition.SetString("host_suffix", "example.com");
   https_condition.SetString("host_prefix", "www");
-  https_condition.SetString(kInstanceType, kRequestMatcher);
+  https_condition.SetString(keys::kInstanceTypeKey, keys::kRequestMatcherType);
 
   WebRequestConditionSet::AnyVector conditions;
 
@@ -120,7 +121,7 @@ TEST(WebRequestConditionTest, CreateConditionSet) {
   url_match_ids = matcher.MatchURL(http_url);
   for (std::set<URLMatcherConditionSet::ID>::iterator i = url_match_ids.begin();
        i != url_match_ids.end(); ++i) {
-    if (result->IsFulfilled(*i, &http_request))
+    if (result->IsFulfilled(*i, &http_request, ON_BEFORE_REQUEST))
       ++number_matches;
   }
   EXPECT_EQ(1, number_matches);
@@ -131,7 +132,7 @@ TEST(WebRequestConditionTest, CreateConditionSet) {
   number_matches = 0;
   for (std::set<URLMatcherConditionSet::ID>::iterator i = url_match_ids.begin();
        i != url_match_ids.end(); ++i) {
-    if (result->IsFulfilled(*i, &https_request))
+    if (result->IsFulfilled(*i, &https_request, ON_BEFORE_REQUEST))
       ++number_matches;
   }
   EXPECT_EQ(1, number_matches);
@@ -143,7 +144,7 @@ TEST(WebRequestConditionTest, CreateConditionSet) {
   number_matches = 0;
   for (std::set<URLMatcherConditionSet::ID>::iterator i = url_match_ids.begin();
        i != url_match_ids.end(); ++i) {
-    if (result->IsFulfilled(*i, &https_foo_request))
+    if (result->IsFulfilled(*i, &https_foo_request, ON_BEFORE_REQUEST))
       ++number_matches;
   }
   EXPECT_EQ(0, number_matches);

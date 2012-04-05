@@ -16,6 +16,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_content_browser_client.h"
+#include "chrome/browser/extensions/api/declarative_webrequest/webrequest_rules_registry.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api_constants.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api_helpers.h"
 #include "chrome/browser/extensions/api/web_request/web_request_time_tracker.h"
@@ -512,6 +513,11 @@ ExtensionWebRequestEventRouter::ExtensionWebRequestEventRouter()
 ExtensionWebRequestEventRouter::~ExtensionWebRequestEventRouter() {
 }
 
+void ExtensionWebRequestEventRouter::RegisterRulesRegistry(
+    scoped_refptr<extensions::WebRequestRulesRegistry> rules_registry) {
+  rules_registry_ = rules_registry;
+}
+
 int ExtensionWebRequestEventRouter::OnBeforeRequest(
     void* profile,
     ExtensionInfoMap* extension_info_map,
@@ -530,29 +536,43 @@ int ExtensionWebRequestEventRouter::OnBeforeRequest(
                                              request->url(),
                                              profile);
 
+  // Whether to initialized blocked_requests_.
+  bool initialize_blocked_requests = false;
+
+  initialize_blocked_requests |=
+      ProcessDeclarativeRules(request, extensions::ON_BEFORE_REQUEST);
+
   int extra_info_spec = 0;
   std::vector<const EventListener*> listeners =
       GetMatchingListeners(profile, extension_info_map, keys::kOnBeforeRequest,
                            request, &extra_info_spec);
-  if (listeners.empty())
-    return net::OK;
+  if (!listeners.empty() &&
+      !GetAndSetSignaled(request->identifier(), kOnBeforeRequest)) {
+    ListValue args;
+    DictionaryValue* dict = new DictionaryValue();
+    ExtractRequestInfo(request, dict);
+    args.Append(dict);
 
-  if (GetAndSetSignaled(request->identifier(), kOnBeforeRequest))
-    return net::OK;
+    initialize_blocked_requests |=
+        DispatchEvent(profile, request, listeners, args);
+  }
 
-  ListValue args;
-  DictionaryValue* dict = new DictionaryValue();
-  ExtractRequestInfo(request, dict);
-  args.Append(dict);
+  if (!initialize_blocked_requests)
+    return net::OK;  // Nobody saw a reason for modifying the request.
 
-  if (DispatchEvent(profile, request, listeners, args)) {
-    blocked_requests_[request->identifier()].event = kOnBeforeRequest;
-    blocked_requests_[request->identifier()].callback = callback;
-    blocked_requests_[request->identifier()].new_url = new_url;
-    blocked_requests_[request->identifier()].net_log = &request->net_log();
+  blocked_requests_[request->identifier()].event = kOnBeforeRequest;
+  blocked_requests_[request->identifier()].callback = callback;
+  blocked_requests_[request->identifier()].new_url = new_url;
+  blocked_requests_[request->identifier()].net_log = &request->net_log();
+
+  if (blocked_requests_[request->identifier()].num_handlers_blocking == 0) {
+    // If there are no blocking handlers, only the declarative rules tried
+    // to modify the request and we can respond synchronously.
+    return ExecuteDeltas(profile, request->identifier(),
+                         false /* call_callback*/);
+  } else {
     return net::ERR_IO_PENDING;
   }
-  return net::OK;
 }
 
 int ExtensionWebRequestEventRouter::OnBeforeSendHeaders(
@@ -1273,100 +1293,7 @@ void ExtensionWebRequestEventRouter::DecrementBlockCount(
       extension_id, request_id, block_time);
 
   if (num_handlers_blocking == 0) {
-    request_time_tracker_->IncrementTotalBlockTime(request_id, block_time);
-
-    bool credentials_set = false;
-
-    helpers::EventResponseDeltas& deltas = blocked_request.response_deltas;
-    deltas.sort(&helpers::InDecreasingExtensionInstallationTimeOrder);
-    std::set<std::string> conflicting_extensions;
-    helpers::EventLogEntries event_log_entries;
-
-    bool canceled = false;
-    helpers::MergeCancelOfResponses(
-        blocked_request.response_deltas,
-        &canceled,
-        &event_log_entries);
-
-    if (blocked_request.event == kOnBeforeRequest) {
-      CHECK(!blocked_request.callback.is_null());
-      helpers::MergeOnBeforeRequestResponses(
-          blocked_request.response_deltas,
-          blocked_request.new_url,
-          &conflicting_extensions,
-          &event_log_entries);
-    } else if (blocked_request.event == kOnBeforeSendHeaders) {
-      CHECK(!blocked_request.callback.is_null());
-      helpers::MergeOnBeforeSendHeadersResponses(
-          blocked_request.response_deltas,
-          blocked_request.request_headers,
-          &conflicting_extensions,
-          &event_log_entries);
-    } else if (blocked_request.event == kOnHeadersReceived) {
-      CHECK(!blocked_request.callback.is_null());
-      helpers::MergeOnHeadersReceivedResponses(
-          blocked_request.response_deltas,
-          blocked_request.original_response_headers.get(),
-          blocked_request.override_response_headers,
-          &conflicting_extensions,
-          &event_log_entries);
-    } else if (blocked_request.event == kOnAuthRequired) {
-      CHECK(blocked_request.callback.is_null());
-      CHECK(!blocked_request.auth_callback.is_null());
-      credentials_set = helpers::MergeOnAuthRequiredResponses(
-         blocked_request.response_deltas,
-         blocked_request.auth_credentials,
-         &conflicting_extensions,
-         &event_log_entries);
-    } else {
-      NOTREACHED();
-    }
-
-    for (helpers::EventLogEntries::const_iterator i =
-             event_log_entries.begin();
-         i != event_log_entries.end(); ++i) {
-      blocked_request.net_log->AddEvent(i->event_type, i->params);
-    }
-    if (!conflicting_extensions.empty()) {
-      BrowserThread::PostTask(
-          BrowserThread::UI,
-          FROM_HERE,
-          base::Bind(&ExtensionWarningSet::NotifyWarningsOnUI,
-                     profile,
-                     conflicting_extensions,
-                     ExtensionWarningSet::kNetworkConflict));
-    }
-
-    if (canceled) {
-      request_time_tracker_->SetRequestCanceled(request_id);
-    } else if (blocked_request.new_url &&
-               !blocked_request.new_url->is_empty()) {
-      request_time_tracker_->SetRequestRedirected(request_id);
-    }
-
-    if (!blocked_request.callback.is_null()) {
-      // This triggers onErrorOccurred.
-      int rv = canceled ? net::ERR_BLOCKED_BY_CLIENT : net::OK;
-      net::CompletionCallback callback = blocked_request.callback;
-      // Ensure that request is removed before callback because the callback
-      // might trigger the next event.
-      blocked_requests_.erase(request_id);
-      callback.Run(rv);
-    } else if (!blocked_request.auth_callback.is_null()) {
-      net::NetworkDelegate::AuthRequiredResponse response =
-          net::NetworkDelegate::AUTH_REQUIRED_RESPONSE_NO_ACTION;
-      if (canceled) {
-        response = net::NetworkDelegate::AUTH_REQUIRED_RESPONSE_CANCEL_AUTH;
-      } else if (credentials_set) {
-        response = net::NetworkDelegate::AUTH_REQUIRED_RESPONSE_SET_AUTH;
-      }
-      net::NetworkDelegate::AuthCallback callback =
-          blocked_request.auth_callback;
-      blocked_requests_.erase(request_id);
-      callback.Run(response);
-    } else {
-      blocked_requests_.erase(request_id);
-    }
+    ExecuteDeltas(profile, request_id, true);
   } else {
     // Update the URLRequest to indicate it is now blocked on a different
     // extension.
@@ -1382,6 +1309,138 @@ void ExtensionWebRequestEventRouter::DecrementBlockCount(
       }
     }
   }
+}
+
+int ExtensionWebRequestEventRouter::ExecuteDeltas(
+    void* profile,
+    uint64 request_id,
+    bool call_callback) {
+  BlockedRequest& blocked_request = blocked_requests_[request_id];
+  CHECK(blocked_request.num_handlers_blocking == 0);
+  helpers::EventResponseDeltas& deltas = blocked_request.response_deltas;
+  base::TimeDelta block_time =
+      base::Time::Now() - blocked_request.blocking_time;
+  request_time_tracker_->IncrementTotalBlockTime(request_id, block_time);
+
+  bool credentials_set = false;
+
+  deltas.sort(&helpers::InDecreasingExtensionInstallationTimeOrder);
+  std::set<std::string> conflicting_extensions;
+  helpers::EventLogEntries event_log_entries;
+
+  bool canceled = false;
+  helpers::MergeCancelOfResponses(
+      blocked_request.response_deltas,
+      &canceled,
+      &event_log_entries);
+
+  if (blocked_request.event == kOnBeforeRequest) {
+    CHECK(!blocked_request.callback.is_null());
+    helpers::MergeOnBeforeRequestResponses(
+        blocked_request.response_deltas,
+        blocked_request.new_url,
+        &conflicting_extensions,
+        &event_log_entries);
+  } else if (blocked_request.event == kOnBeforeSendHeaders) {
+    CHECK(!blocked_request.callback.is_null());
+    helpers::MergeOnBeforeSendHeadersResponses(
+        blocked_request.response_deltas,
+        blocked_request.request_headers,
+        &conflicting_extensions,
+        &event_log_entries);
+  } else if (blocked_request.event == kOnHeadersReceived) {
+    CHECK(!blocked_request.callback.is_null());
+    helpers::MergeOnHeadersReceivedResponses(
+        blocked_request.response_deltas,
+        blocked_request.original_response_headers.get(),
+        blocked_request.override_response_headers,
+        &conflicting_extensions,
+        &event_log_entries);
+  } else if (blocked_request.event == kOnAuthRequired) {
+    CHECK(blocked_request.callback.is_null());
+    CHECK(!blocked_request.auth_callback.is_null());
+    credentials_set = helpers::MergeOnAuthRequiredResponses(
+       blocked_request.response_deltas,
+       blocked_request.auth_credentials,
+       &conflicting_extensions,
+       &event_log_entries);
+  } else {
+    NOTREACHED();
+  }
+
+  for (helpers::EventLogEntries::const_iterator i =
+           event_log_entries.begin();
+       i != event_log_entries.end(); ++i) {
+    blocked_request.net_log->AddEvent(i->event_type, i->params);
+  }
+  if (!conflicting_extensions.empty()) {
+    BrowserThread::PostTask(
+        BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(&ExtensionWarningSet::NotifyWarningsOnUI,
+                   profile,
+                   conflicting_extensions,
+                   ExtensionWarningSet::kNetworkConflict));
+  }
+
+  if (canceled) {
+    request_time_tracker_->SetRequestCanceled(request_id);
+  } else if (blocked_request.new_url &&
+             !blocked_request.new_url->is_empty()) {
+    request_time_tracker_->SetRequestRedirected(request_id);
+  }
+
+  // This triggers onErrorOccurred if canceled is true.
+  int rv = canceled ? net::ERR_BLOCKED_BY_CLIENT : net::OK;
+
+  if (!blocked_request.callback.is_null()) {
+    net::CompletionCallback callback = blocked_request.callback;
+    // Ensure that request is removed before callback because the callback
+    // might trigger the next event.
+    blocked_requests_.erase(request_id);
+    if (call_callback)
+      callback.Run(rv);
+  } else if (!blocked_request.auth_callback.is_null()) {
+    net::NetworkDelegate::AuthRequiredResponse response =
+        net::NetworkDelegate::AUTH_REQUIRED_RESPONSE_NO_ACTION;
+    if (canceled) {
+      response = net::NetworkDelegate::AUTH_REQUIRED_RESPONSE_CANCEL_AUTH;
+    } else if (credentials_set) {
+      response = net::NetworkDelegate::AUTH_REQUIRED_RESPONSE_SET_AUTH;
+    }
+    net::NetworkDelegate::AuthCallback callback = blocked_request.auth_callback;
+    blocked_requests_.erase(request_id);
+    if (call_callback)
+      callback.Run(response);
+  } else {
+    blocked_requests_.erase(request_id);
+  }
+  return rv;
+}
+
+bool ExtensionWebRequestEventRouter::ProcessDeclarativeRules(
+    net::URLRequest* request,
+    extensions::RequestStages request_stage) {
+  if (!rules_registry_.get())
+    return false;
+
+  base::Time start = base::Time::Now();
+
+  std::list<linked_ptr<helpers::EventResponseDelta> > result =
+      rules_registry_->CreateDeltas(request, request_stage);
+
+  base::TimeDelta elapsed_time = start - base::Time::Now();
+  UMA_HISTOGRAM_TIMES("Extensions.DeclarativeWebRequestNetworkDelay",
+                      elapsed_time);
+
+  if (result.empty())
+    return false;
+
+  helpers::EventResponseDeltas& deltas =
+      blocked_requests_[request->identifier()].response_deltas;
+  CHECK(deltas.empty());
+  deltas.swap(result);
+  return true;
 }
 
 bool ExtensionWebRequestEventRouter::GetAndSetSignaled(uint64 request_id,

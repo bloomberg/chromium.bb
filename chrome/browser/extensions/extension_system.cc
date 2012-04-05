@@ -11,6 +11,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
+#include "chrome/browser/extensions/api/declarative/rules_registry_service.h"
 #include "chrome/browser/extensions/extension_devtools_manager.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_event_router.h"
@@ -168,6 +169,9 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
       extension_service_->InitEventRouters();
     }
   }
+
+  rules_registry_service_.reset(new extensions::RulesRegistryService(profile_));
+  rules_registry_service_->RegisterDefaultRulesRegistries();
 }
 
 ExtensionService* ExtensionSystemImpl::Shared::extension_service() {
@@ -193,6 +197,11 @@ ExtensionMessageService* ExtensionSystemImpl::Shared::message_service() {
 
 ExtensionEventRouter* ExtensionSystemImpl::Shared::event_router() {
   return extension_event_router_.get();
+}
+
+extensions::RulesRegistryService*
+ExtensionSystemImpl::Shared::rules_registry_service() {
+  return rules_registry_service_.get();
 }
 
 //
@@ -268,6 +277,11 @@ ExtensionMessageService* ExtensionSystemImpl::message_service() {
 
 ExtensionEventRouter* ExtensionSystemImpl::event_router() {
   return shared_->event_router();
+}
+
+extensions::RulesRegistryService*
+ExtensionSystemImpl::rules_registry_service() {
+  return shared_->rules_registry_service();
 }
 
 void ExtensionSystemImpl::RegisterExtensionWithRequestContexts(

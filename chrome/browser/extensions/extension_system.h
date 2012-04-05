@@ -27,6 +27,10 @@ class LazyBackgroundTaskQueue;
 class Profile;
 class UserScriptMaster;
 
+namespace extensions {
+class RulesRegistryService;
+}
+
 // The ExtensionSystem manages the creation and destruction of services
 // related to extensions. Most objects are shared between normal
 // and incognito Profiles, except as called out in comments.
@@ -73,6 +77,9 @@ class ExtensionSystem : public ProfileKeyedService {
   // The ExtensionEventRouter is created at startup.
   virtual ExtensionEventRouter* event_router() = 0;
 
+  // The RulesRegistryService is created at startup.
+  virtual extensions::RulesRegistryService* rules_registry_service() = 0;
+
   // Called by the ExtensionService that lives in this system. Gives the
   // info map a chance to react to the load event before the EXTENSION_LOADED
   // notification has fired. The purpose for handling this event first is to
@@ -113,6 +120,9 @@ class ExtensionSystemImpl : public ExtensionSystem {
   virtual ExtensionInfoMap* info_map() OVERRIDE;  // shared
   virtual ExtensionMessageService* message_service() OVERRIDE;  // shared
   virtual ExtensionEventRouter* event_router() OVERRIDE;  // shared
+  // The RulesRegistryService is created at startup.
+  virtual extensions::RulesRegistryService* rules_registry_service()
+      OVERRIDE;  // shared
 
   virtual void RegisterExtensionWithRequestContexts(
       const Extension* extension) OVERRIDE;
@@ -142,6 +152,7 @@ class ExtensionSystemImpl : public ExtensionSystem {
     LazyBackgroundTaskQueue* lazy_background_task_queue();
     ExtensionMessageService* message_service();
     ExtensionEventRouter* event_router();
+    extensions::RulesRegistryService* rules_registry_service();
 
    private:
     Profile* profile_;
@@ -160,6 +171,7 @@ class ExtensionSystemImpl : public ExtensionSystem {
     scoped_ptr<ExtensionMessageService> extension_message_service_;
     scoped_ptr<ExtensionEventRouter> extension_event_router_;
     scoped_ptr<ExtensionNavigationObserver> extension_navigation_observer_;
+    scoped_ptr<extensions::RulesRegistryService> rules_registry_service_;
   };
 
   Profile* profile_;

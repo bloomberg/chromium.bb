@@ -6,13 +6,28 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "content/public/browser/browser_thread.h"
 #include "chrome/browser/extensions/api/declarative/initializing_rules_registry.h"
+#include "chrome/browser/extensions/api/declarative_webrequest/webrequest_constants.h"
+#include "chrome/browser/extensions/api/declarative_webrequest/webrequest_rules_registry.h"
+#include "chrome/browser/extensions/api/web_request/web_request_api.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 
 namespace extensions {
+
+namespace {
+
+// Registers |web_request_rules_registry| on the IO thread.
+void RegisterToExtensionWebRequestEventRouterOnIO(
+    scoped_refptr<WebRequestRulesRegistry> web_request_rules_registry) {
+  ExtensionWebRequestEventRouter::GetInstance()->RegisterRulesRegistry(
+      web_request_rules_registry);
+}
+
+}  // namespace
 
 RulesRegistryService::RulesRegistryService(Profile* profile) {
   if (profile) {
@@ -22,6 +37,17 @@ RulesRegistryService::RulesRegistryService(Profile* profile) {
 }
 
 RulesRegistryService::~RulesRegistryService() {}
+
+void RulesRegistryService::RegisterDefaultRulesRegistries() {
+  scoped_refptr<WebRequestRulesRegistry> web_request_rules_registry(
+      new WebRequestRulesRegistry);
+  RegisterRulesRegistry(declarative_webrequest_constants::kOnRequest,
+                        web_request_rules_registry);
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO, FROM_HERE,
+      base::Bind(&RegisterToExtensionWebRequestEventRouterOnIO,
+          web_request_rules_registry));
+}
 
 void RulesRegistryService::RegisterRulesRegistry(
     const std::string& event_name,

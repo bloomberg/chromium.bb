@@ -12,7 +12,8 @@ var inputRule0 = {
   // No 'id', this should be filled by the API.
   "conditions": [new RequestMatcher({"host_prefix": "test1"}),
                  new RequestMatcher({"host_prefix": "test2"})],
-  "actions": [new CancelRequest(), new RedirectRequest()]
+  "actions": [new CancelRequest(),
+              new RedirectRequest({"redirectUrl": "http://foobar.com"})]
   // No 'priority', this should be filled by the API.
 }
 
@@ -20,7 +21,8 @@ var outputRule0 = {
   "id": "_0_",
   "conditions": [new RequestMatcher({"host_prefix": "test1"}),
                  new RequestMatcher({"host_prefix": "test2"})],
-  "actions": [new CancelRequest(), new RedirectRequest()],
+  "actions": [new CancelRequest(),
+              new RedirectRequest({"redirectUrl": "http://foobar.com"})],
   "priority": 100
 }
 

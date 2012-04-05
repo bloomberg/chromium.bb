@@ -7,11 +7,17 @@
 #pragma once
 
 #include <vector>
+#include <list>
 
 #include "base/memory/linked_ptr.h"
 #include "chrome/browser/extensions/api/declarative/rules_registry_with_cache.h"
 #include "chrome/browser/extensions/api/declarative/url_matcher.h"
+#include "chrome/browser/extensions/api/declarative_webrequest/request_stages.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_rule.h"
+
+namespace extension_web_request_api_helpers {
+struct EventResponseDelta;
+}
 
 namespace net {
 class URLRequest;
@@ -19,6 +25,7 @@ class URLRequest;
 
 namespace extensions {
 
+class RulesRegistryService;
 class WebRequestRule;
 
 // The WebRequestRulesRegistry is responsible for managing
@@ -56,7 +63,14 @@ class WebRequestRulesRegistry : public RulesRegistryWithCache {
 
   // TODO(battre): This will become an implementation detail, because we need
   // a way to also execute the actions of the rules.
-  std::set<WebRequestRule::GlobalRuleId> GetMatches(net::URLRequest* request);
+  std::set<WebRequestRule::GlobalRuleId> GetMatches(
+      net::URLRequest* request,
+      RequestStages request_stage);
+
+  // Returns which modifications should be executed on the network request
+  // according to the rules registered in this registry.
+  std::list<LinkedPtrEventResponseDelta> CreateDeltas(
+      net::URLRequest* request, RequestStages request_stage);
 
   // Implementation of RulesRegistryWithCache:
   virtual std::string AddRulesImpl(

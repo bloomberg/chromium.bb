@@ -6,15 +6,17 @@
 
 #include "base/message_loop.h"
 #include "base/values.h"
+#include "chrome/browser/extensions/api/declarative_webrequest/webrequest_constants.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
-const char kSchemeConditionName[] = "scheme";
 const char kUnknownConditionName[] = "unknownType";
 }  // namespace
 
 namespace extensions {
+
+namespace keys = declarative_webrequest_constants;
 
 TEST(WebRequestConditionAttributeTest, CreateConditionAttribute) {
   // Necessary for TestURLRequest.
@@ -42,15 +44,15 @@ TEST(WebRequestConditionAttributeTest, CreateConditionAttribute) {
   // Test success
   error.clear();
   result = WebRequestConditionAttribute::Create(
-      kSchemeConditionName, &http_string_value, &error);
+      keys::kSchemeKey, &http_string_value, &error);
   EXPECT_TRUE(error.empty());
   ASSERT_TRUE(result.get());
   EXPECT_EQ(WebRequestConditionAttribute::CONDITION_HAS_SCHEME,
             result->GetType());
   TestURLRequest url_request_ok(GURL("http://www.example.com"), NULL);
-  EXPECT_TRUE(result->IsFulfilled(&url_request_ok));
+  EXPECT_TRUE(result->IsFulfilled(&url_request_ok, ON_BEFORE_REQUEST));
   TestURLRequest url_request_fail(GURL("https://www.example.com"), NULL);
-  EXPECT_FALSE(result->IsFulfilled(&url_request_fail));
+  EXPECT_FALSE(result->IsFulfilled(&url_request_fail, ON_BEFORE_REQUEST));
 }
 
 }  // namespace extensions

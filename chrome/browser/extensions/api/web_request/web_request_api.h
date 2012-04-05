@@ -14,6 +14,7 @@
 
 #include "base/memory/singleton.h"
 #include "base/time.h"
+#include "chrome/browser/extensions/api/declarative_webrequest/request_stages.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api_helpers.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/profiles/profile.h"
@@ -36,6 +37,10 @@ class StringValue;
 
 namespace content {
 class RenderProcessHost;
+}
+
+namespace extensions {
+class WebRequestRulesRegistry;
 }
 
 namespace net {
@@ -125,6 +130,9 @@ class ExtensionWebRequestEventRouter {
   };
 
   static ExtensionWebRequestEventRouter* GetInstance();
+
+  void RegisterRulesRegistry(
+      scoped_refptr<extensions::WebRequestRulesRegistry> rules_registry);
 
   // Dispatches the OnBeforeRequest event to any extensions whose filters match
   // the given request. Returns net::ERR_IO_PENDING if an extension is
@@ -311,6 +319,21 @@ class ExtensionWebRequestEventRouter {
       uint64 request_id,
       EventResponse* response);
 
+  // Processes the generated deltas from blocked_requests_ on the specified
+  // request. If |call_back| is true, the callback registered in
+  // |blocked_requests_| is called.
+  // The function returns the error code for the network request. This is
+  // mostly relevant in case the caller passes |call_callback| = false
+  // and wants to return the correct network error code himself.
+  int ExecuteDeltas(void* profile, uint64 request_id, bool call_callback);
+
+  // Evaluates the rules of the declarative webrequest API and stores
+  // modifications to the request that result from WebRequestActions as
+  // deltas in |blocked_requests_|. Returns whether any deltas were
+  // generated.
+  bool ProcessDeclarativeRules(net::URLRequest* request,
+                               extensions::RequestStages request_stage);
+
   // Sets the flag that |event_type| has been signaled for |request_id|.
   // Returns the value of the flag before setting it.
   bool GetAndSetSignaled(uint64 request_id, EventTypes event_type);
@@ -345,6 +368,8 @@ class ExtensionWebRequestEventRouter {
   scoped_ptr<ExtensionWebRequestTimeTracker> request_time_tracker_;
 
   CallbacksForPageLoad callbacks_for_page_load_;
+
+  scoped_refptr<extensions::WebRequestRulesRegistry> rules_registry_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionWebRequestEventRouter);
 };

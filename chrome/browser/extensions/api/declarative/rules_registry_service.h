@@ -34,6 +34,9 @@ class RulesRegistryService : public content::NotificationObserver  {
   explicit RulesRegistryService(Profile* profile);
   virtual ~RulesRegistryService();
 
+  // Registers the default RulesRegistries used in Chromium.
+  void RegisterDefaultRulesRegistries();
+
   // Registers a RulesRegistry and wraps it in an InitializingRulesRegistry.
   void RegisterRulesRegistry(const std::string& event_name,
                              scoped_refptr<RulesRegistry> rule_registry);

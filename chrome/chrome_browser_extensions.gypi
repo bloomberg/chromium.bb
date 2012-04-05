@@ -91,6 +91,8 @@
         'browser/extensions/api/declarative_webrequest/webrequest_condition.h',
         'browser/extensions/api/declarative_webrequest/webrequest_condition_attribute.cc',
         'browser/extensions/api/declarative_webrequest/webrequest_condition_attribute.h',
+        'browser/extensions/api/declarative_webrequest/webrequest_constants.cc',
+        'browser/extensions/api/declarative_webrequest/webrequest_constants.h',
         'browser/extensions/api/declarative_webrequest/webrequest_rule.cc',
         'browser/extensions/api/declarative_webrequest/webrequest_rule.h',
         'browser/extensions/api/declarative_webrequest/webrequest_rules_registry.cc',

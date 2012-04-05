@@ -97,6 +97,11 @@ ExtensionEventRouter* TestExtensionSystem::event_router() {
   return NULL;
 }
 
+extensions::RulesRegistryService*
+TestExtensionSystem::rules_registry_service() {
+  return NULL;
+}
+
 // static
 ProfileKeyedService* TestExtensionSystem::Build(Profile* profile) {
   return new TestExtensionSystem(profile);

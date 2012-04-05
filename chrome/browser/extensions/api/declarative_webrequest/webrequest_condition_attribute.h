@@ -12,6 +12,7 @@
 #include "base/basictypes.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/extensions/api/declarative_webrequest/request_stages.h"
 #include "chrome/common/extensions/api/experimental.declarative.h"
 
 namespace base {
@@ -50,7 +51,8 @@ class WebRequestConditionAttribute {
   virtual int GetStages() const = 0;
 
   // Returns whether the condition is fulfilled for this request.
-  virtual bool IsFulfilled(net::URLRequest* request) = 0;
+  virtual bool IsFulfilled(net::URLRequest* request,
+                           RequestStages request_stage) = 0;
 
   virtual Type GetType() const = 0;
 
@@ -87,7 +89,8 @@ class WebRequestConditionAttributeHasScheme
 
   // Implementation of WebRequestConditionAttribute:
   virtual int GetStages() const OVERRIDE;
-  virtual bool IsFulfilled(net::URLRequest* request) OVERRIDE;
+  virtual bool IsFulfilled(net::URLRequest* request,
+                           RequestStages request_stage) OVERRIDE;
   virtual Type GetType() const OVERRIDE;
 
  private:

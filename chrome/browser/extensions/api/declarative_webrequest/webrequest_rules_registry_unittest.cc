@@ -9,6 +9,7 @@
 #include "base/memory/linked_ptr.h"
 #include "base/message_loop.h"
 #include "base/values.h"
+#include "chrome/browser/extensions/api/declarative_webrequest/webrequest_constants.h"
 #include "content/test/test_browser_thread.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -18,13 +19,11 @@ const char kExtensionId[] = "ext1";
 const char kExtensionId2[] = "ext2";
 const char kRuleId1[] = "rule1";
 const char kRuleId2[] = "rule2";
-
-const char kCancelRequestType[] = "experimental.webRequest.CancelRequest";
-const char kRequestMatcher[] = "experimental.webRequest.RequestMatcher";
-const char kInstanceType[] = "instanceType";
-}
+}  // namespace
 
 namespace extensions {
+
+namespace keys = declarative_webrequest_constants;
 
 class WebRequestRulesRegistryTest : public testing::Test {
  public:
@@ -47,13 +46,15 @@ class WebRequestRulesRegistryTest : public testing::Test {
     DictionaryValue http_condition_dict;
     http_condition_dict.SetString("scheme", "http");
     http_condition_dict.SetString("host_suffix", "example.com");
-    http_condition_dict.SetString(kInstanceType, kRequestMatcher);
+    http_condition_dict.SetString(keys::kInstanceTypeKey,
+                                  keys::kRequestMatcherType);
 
     DictionaryValue https_condition_dict;
     https_condition_dict.SetString("scheme", "https");
     https_condition_dict.SetString("host_suffix", "example.com");
     https_condition_dict.SetString("host_prefix", "www");
-    https_condition_dict.SetString(kInstanceType, kRequestMatcher);
+    https_condition_dict.SetString(keys::kInstanceTypeKey,
+                                   keys::kRequestMatcherType);
 
     linked_ptr<json_schema_compiler::any::Any> condition1 = make_linked_ptr(
         new json_schema_compiler::any::Any);
@@ -64,7 +65,7 @@ class WebRequestRulesRegistryTest : public testing::Test {
     condition2->Init(https_condition_dict);
 
     DictionaryValue action_dict;
-    action_dict.SetString(kInstanceType, kCancelRequestType);
+    action_dict.SetString(keys::kInstanceTypeKey, keys::kCancelRequestType);
 
     linked_ptr<json_schema_compiler::any::Any> action1 = make_linked_ptr(
         new json_schema_compiler::any::Any);
@@ -83,14 +84,14 @@ class WebRequestRulesRegistryTest : public testing::Test {
   // Returns a rule that matches anything and cancels it.
   linked_ptr<RulesRegistry::Rule> CreateRule2() {
     DictionaryValue condition_dict;
-    condition_dict.SetString(kInstanceType, kRequestMatcher);
+    condition_dict.SetString(keys::kInstanceTypeKey, keys::kRequestMatcherType);
 
     linked_ptr<json_schema_compiler::any::Any> condition = make_linked_ptr(
         new json_schema_compiler::any::Any);
     condition->Init(condition_dict);
 
     DictionaryValue action_dict;
-    action_dict.SetString(kInstanceType, kCancelRequestType);
+    action_dict.SetString(keys::kInstanceTypeKey, keys::kCancelRequestType);
 
     linked_ptr<json_schema_compiler::any::Any> action = make_linked_ptr(
         new json_schema_compiler::any::Any);
@@ -126,7 +127,7 @@ TEST_F(WebRequestRulesRegistryTest, AddRulesImpl) {
 
   GURL http_url("http://www.example.com");
   TestURLRequest http_request(http_url, NULL);
-  matches = registry->GetMatches(&http_request);
+  matches = registry->GetMatches(&http_request, ON_BEFORE_REQUEST);
   EXPECT_EQ(2u, matches.size());
   EXPECT_TRUE(matches.find(std::make_pair(kExtensionId, kRuleId1)) !=
       matches.end());
@@ -135,7 +136,7 @@ TEST_F(WebRequestRulesRegistryTest, AddRulesImpl) {
 
   GURL foobar_url("http://www.foobar.com");
   TestURLRequest foobar_request(foobar_url, NULL);
-  matches = registry->GetMatches(&foobar_request);
+  matches = registry->GetMatches(&foobar_request, ON_BEFORE_REQUEST);
   EXPECT_EQ(1u, matches.size());
   EXPECT_TRUE(matches.find(std::make_pair(kExtensionId, kRuleId2)) !=
       matches.end());

@@ -6,10 +6,13 @@
 #define CHROME_BROWSER_EXTENSIONS_API_DECLARATIVE_WEBREQUEST_WEBREQUEST_RULE_H_
 #pragma once
 
+#include <list>
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/time.h"
 #include "chrome/browser/extensions/api/declarative/rules_registry.h"
+#include "chrome/browser/extensions/api/declarative_webrequest/request_stages.h"
 
 namespace extensions {
 class URLMatcherConditionFactory;
@@ -17,7 +20,18 @@ class WebRequestConditionSet;
 class WebRequestActionSet;
 }
 
+namespace extension_web_request_api_helpers {
+struct EventResponseDelta;
+}
+
+namespace net {
+class URLRequest;
+}
+
 namespace extensions {
+
+typedef linked_ptr<extension_web_request_api_helpers::EventResponseDelta>
+    LinkedPtrEventResponseDelta;
 
 // Representation of a rule of the declarative Web Request API
 class WebRequestRule {
@@ -27,6 +41,7 @@ class WebRequestRule {
   typedef std::pair<ExtensionId, RuleId> GlobalRuleId;
 
   WebRequestRule(const GlobalRuleId& id,
+                 base::Time extension_installation_time,
                  scoped_ptr<WebRequestConditionSet> conditions,
                  scoped_ptr<WebRequestActionSet> actions);
   virtual ~WebRequestRule();
@@ -36,12 +51,17 @@ class WebRequestRule {
   static scoped_ptr<WebRequestRule> Create(
       URLMatcherConditionFactory* url_matcher_condition_factory,
       const std::string& extension_id,
+      base::Time extension_installation_time,
       linked_ptr<RulesRegistry::Rule> rule,
       std::string* error);
 
   const GlobalRuleId& id() const { return id_; }
   const WebRequestConditionSet& conditions() const { return *conditions_; }
   const WebRequestActionSet& actions() const { return *actions_; }
+
+  std::list<LinkedPtrEventResponseDelta> CreateDeltas(
+      net::URLRequest* request,
+      RequestStages request_stage) const;
 
  private:
   // Checks whether the set of |conditions| and |actions| are consistent,
@@ -53,6 +73,7 @@ class WebRequestRule {
                                std::string* error);
 
   GlobalRuleId id_;
+  base::Time extension_installation_time_;  // For precedences of rules.
   scoped_ptr<WebRequestConditionSet> conditions_;
   scoped_ptr<WebRequestActionSet> actions_;
 

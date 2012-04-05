@@ -49,7 +49,7 @@ class WebRequestCondition {
 
   // Returns whether |request| is a match, given that the URLMatcher found
   // a match for |url_matcher_conditions_|.
-  bool IsFulfilled(net::URLRequest* request) const;
+  bool IsFulfilled(net::URLRequest* request, RequestStages request_stage) const;
 
   // Returns a URLMatcherConditionSet::ID which is the canonical representation
   // for all URL patterns that need to be matched by this WebRequestCondition.
@@ -83,6 +83,10 @@ class WebRequestCondition {
   URLMatcherConditionSet url_matcher_conditions_;
   WebRequestConditionAttributes condition_attributes_;
 
+  // Bit vector indicating all RequestStages during which all
+  // |condition_attributes_| can be evaluated.
+  int applicable_request_stages_;
+
   DISALLOW_COPY_AND_ASSIGN(WebRequestCondition);
 };
 
@@ -115,7 +119,8 @@ class WebRequestConditionSet {
   // by the URLMatcher to ensure that the each trigger in |match_triggers_| is
   // found.
   bool IsFulfilled(URLMatcherConditionSet::ID url_match,
-                   net::URLRequest* request) const;
+                   net::URLRequest* request,
+                   RequestStages request_stage) const;
 
   // Appends the URLMatcherConditionSet from all conditions to |condition_sets|.
   void GetURLMatcherConditionSets(

@@ -2644,11 +2644,3 @@ ExtensionService::api_resource_controller() {
   }
   return api_resource_controller_;
 }
-
-extensions::RulesRegistryService* ExtensionService::GetRulesRegistryService() {
-  if (!rules_registry_service_.get()) {
-    rules_registry_service_.reset(
-        new extensions::RulesRegistryService(profile_));
-  }
-  return rules_registry_service_.get();
-}

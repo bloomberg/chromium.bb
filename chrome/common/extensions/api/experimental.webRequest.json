@@ -107,7 +107,8 @@
         "description": "Declarative event action that redirects a network request. (TODO: add destination)",
         "type": "object",
         "properties": {
-          "instanceType": { "type": "string", "enum": ["experimental.webRequest.RedirectRequest"] }
+          "instanceType": { "type": "string", "enum": ["experimental.webRequest.RedirectRequest"] },
+          "redirectUrl": { "type": "string", "description": "Destination to where the request is redirected."}
         }
       }
     ],

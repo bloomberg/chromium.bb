@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_rules_registry.h"
 
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_condition.h"
+#include "chrome/browser/extensions/api/web_request/web_request_api_helpers.h"
 #include "net/url_request/url_request.h"
 
 namespace extensions {
@@ -14,7 +15,8 @@ WebRequestRulesRegistry::WebRequestRulesRegistry() {}
 WebRequestRulesRegistry::~WebRequestRulesRegistry() {}
 
 std::set<WebRequestRule::GlobalRuleId>
-WebRequestRulesRegistry::GetMatches(net::URLRequest* request) {
+WebRequestRulesRegistry::GetMatches(net::URLRequest* request,
+                                    RequestStages request_stage) {
   std::set<WebRequestRule::GlobalRuleId> result;
 
   // Figure out for which rules the URL match conditions were fulfilled.
@@ -29,8 +31,28 @@ WebRequestRulesRegistry::GetMatches(net::URLRequest* request) {
     CHECK(rule_trigger != rule_triggers_.end());
 
     WebRequestRule* rule = rule_trigger->second;
-    if (rule->conditions().IsFulfilled(*url_match, request))
+    if (rule->conditions().IsFulfilled(*url_match, request, request_stage))
       result.insert(rule->id());
+  }
+
+  return result;
+}
+
+std::list<LinkedPtrEventResponseDelta> WebRequestRulesRegistry::CreateDeltas(
+    net::URLRequest* request,
+    RequestStages request_stage) {
+  std::set<WebRequestRule::GlobalRuleId> matches =
+      GetMatches(request, request_stage);
+
+  std::list<LinkedPtrEventResponseDelta> result;
+
+  for (std::set<WebRequestRule::GlobalRuleId>::iterator i = matches.begin();
+       i != matches.end(); ++i) {
+    RulesMap::const_iterator rule = webrequest_rules_.find(*i);
+    CHECK(rule != webrequest_rules_.end());
+    std::list<LinkedPtrEventResponseDelta> rule_result =
+        rule->second->CreateDeltas(request, request_stage);
+    result.splice(result.begin(), rule_result);
   }
 
   return result;
@@ -39,6 +61,9 @@ WebRequestRulesRegistry::GetMatches(net::URLRequest* request) {
 std::string WebRequestRulesRegistry::AddRulesImpl(
     const std::string& extension_id,
     const std::vector<linked_ptr<RulesRegistry::Rule> >& rules) {
+  // TODO(battre): Retrieve this from somewhere
+  base::Time extension_installation_time;
+
   std::string error;
   RulesMap new_webrequest_rules;
 
@@ -49,7 +74,7 @@ std::string WebRequestRulesRegistry::AddRulesImpl(
 
     scoped_ptr<WebRequestRule> webrequest_rule(
         WebRequestRule::Create(url_matcher_.condition_factory(), extension_id,
-                               *rule, &error));
+                               extension_installation_time, *rule, &error));
     if (!error.empty()) {
       // We don't return here, because we want to clear temporary
       // condition sets in the url_matcher_.
