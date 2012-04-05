@@ -1816,3 +1816,11 @@
    fun:FileSystem*URLRequestJobTest_InvalidURL_Test
    fun:testing::internal::TestFactoryImpl::CreateTest
 }
+{
+   bug_122130
+   Heapcheck:Leak
+   ...
+   fun:extensions::ExtensionAPI::GetFeatureDependency
+   fun:extensions::ExtensionAPI::IsPrivileged
+   fun:extensions::::ExtensionAPI_IsPrivilegedFeatures_Test::TestBody
+}
