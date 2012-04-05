@@ -117,7 +117,6 @@ AC_CONFIG_FILES([
         tables/Makefile
 	liblouis.pc
         tests/Makefile
-        tests/table_test_corpuses/Makefile
         tests/tables/Makefile
         tests/doctests/Makefile
         tests/harness/Makefile
