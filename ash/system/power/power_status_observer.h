@@ -5,9 +5,9 @@
 #ifndef ASH_SYSTEM_POWER_POWER_STATUS_OBSERVER_H_
 #define ASH_SYSTEM_POWER_POWER_STATUS_OBSERVER_H_
 
-namespace ash {
+#include "ash/system/power/power_supply_status.h"
 
-struct PowerSupplyStatus;
+namespace ash {
 
 class PowerStatusObserver {
  public:

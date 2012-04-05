@@ -2,25 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_POWER_POWER_SUPPLY_STATUS_H_
-#define ASH_SYSTEM_POWER_POWER_SUPPLY_STATUS_H_
+#ifndef CHROMEOS_DBUS_POWER_SUPPLY_STATUS_H_
+#define CHROMEOS_DBUS_POWER_SUPPLY_STATUS_H_
 
 #include <string>
 
-#include "ash/ash_export.h"
 #include "base/basictypes.h"
+#include "chromeos/chromeos_export.h"
 
-#if defined(OS_CHROMEOS)
-#include "chromeos/dbus/power_supply_status.h"
-#endif
+namespace chromeos {
 
-namespace ash {
-
-#if defined(OS_CHROMEOS)
-typedef chromeos::PowerSupplyStatus PowerSupplyStatus;
-#else
-// Define local struct when not building for Chrome OS.
-struct ASH_EXPORT PowerSupplyStatus {
+struct CHROMEOS_EXPORT PowerSupplyStatus {
   bool line_power_on;
 
   bool battery_is_present;
@@ -35,8 +27,7 @@ struct ASH_EXPORT PowerSupplyStatus {
   PowerSupplyStatus();
   std::string ToString() const;
 };
-#endif  // defined(OS_CHROMEOS)
 
-}  // namespace ash
+}  // namespace chromeos
 
-#endif  // ASH_SYSTEM_POWER_POWER_SUPPLY_STATUS_H_
+#endif  // CHROMEOS_DBUS_POWER_SUPPLY_STATUS_H_

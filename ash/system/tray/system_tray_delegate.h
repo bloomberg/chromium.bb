@@ -11,6 +11,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/system/user/login_status.h"
+#include "ash/system/power/power_supply_status.h"
 #include "base/i18n/time_formatting.h"
 #include "base/string16.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -64,8 +65,6 @@ struct ASH_EXPORT IMEInfo {
 };
 
 typedef std::vector<IMEInfo> IMEInfoList;
-
-struct PowerSupplyStatus;
 
 class SystemTrayDelegate {
  public:

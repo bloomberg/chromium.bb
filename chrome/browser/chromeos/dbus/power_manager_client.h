@@ -11,9 +11,7 @@
 #include "base/callback.h"
 #include "chrome/browser/chromeos/dbus/dbus_client_implementation_type.h"
 
-#if defined(USE_ASH)
-#include "ash/system/power/power_supply_status.h"
-#endif
+#include "chromeos/dbus/power_supply_status.h"
 
 namespace base {
 class TimeTicks;
@@ -23,27 +21,6 @@ class Bus;
 }
 
 namespace chromeos {
-
-#if defined(USE_ASH)
-typedef struct ash::PowerSupplyStatus PowerSupplyStatus;
-#else
-// This is the local struct that is used in Chrome.
-struct PowerSupplyStatus {
-  bool line_power_on;
-
-  bool battery_is_present;
-  bool battery_is_full;
-
-  // Time in seconds until the battery is empty or full, 0 for unknown.
-  int64 battery_seconds_to_empty;
-  int64 battery_seconds_to_full;
-
-  double battery_percentage;
-
-  PowerSupplyStatus();
-  std::string ToString() const;
-};
-#endif
 
 // Callback used for processing the idle time.  The int64 param is the number of
 // seconds the user has been idle.

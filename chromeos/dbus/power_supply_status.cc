@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/power/power_supply_status.h"
+#include "chromeos/dbus/power_supply_status.h"
 
 #include "base/format_macros.h"
 #include "base/stringprintf.h"
 
-namespace ash {
+namespace chromeos {
 
-#if !defined(OS_CHROMEOS)
 PowerSupplyStatus::PowerSupplyStatus()
     : line_power_on(false),
       battery_is_present(false),
@@ -41,6 +40,5 @@ std::string PowerSupplyStatus::ToString() const {
                       battery_seconds_to_full);
   return result;
 }
-#endif  // !defined(OS_CHROMEOS)
 
-}  // namespace ash
+}  // namespace chromeos

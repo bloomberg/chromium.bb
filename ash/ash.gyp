@@ -299,6 +299,11 @@
             ['exclude', 'accelerators/nested_dispatcher_controller.h'],
           ],
         }],
+        ['chromeos==1', {
+          'dependencies': [
+            '../chromeos/chromeos.gyp:chromeos',
+          ],
+        }],
       ],
     },
     {
