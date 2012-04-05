@@ -72,10 +72,7 @@ if sys.platform == 'darwin':
       'Versions/A/install_name_with_info_plist'):
     test.fail_test()
 
-  # TODO(thakis): Make this pass in ninja, http://crbug.com/113918
-  #               (it's broken in make too, but silently. Fix that too.)
-  if (test.format != 'ninja' and
-      'DYLIB_INSTALL_NAME_BASE:standardizepath: command not found' in
+  if ('DYLIB_INSTALL_NAME_BASE:standardizepath: command not found' in
           test.stdout()):
     test.fail_test()
 

@@ -379,6 +379,67 @@ class XcodeSettings(object):
     self.configname = None
     return cflags_objcc
 
+  def GetInstallNameBase(self):
+    """Return DYLIB_INSTALL_NAME_BASE for this target."""
+    # Xcode sets this for shared_libraries, and for nonbundled loadable_modules.
+    if (self.spec['type'] != 'shared_library' and
+        (self.spec['type'] != 'loadable_module' or self._IsBundle())):
+      return None
+    install_base = self.GetPerTargetSetting(
+        'DYLIB_INSTALL_NAME_BASE',
+        default='/Library/Frameworks' if self._IsBundle() else '/usr/local/lib')
+    return install_base
+
+  def _StandardizePath(self, path):
+    """Do :standardizepath processing for path."""
+    # I'm not quite sure what :standardizepath does. Just call normpath(),
+    # but don't let @executable_path/../foo collapse to foo.
+    if '/' in path:
+      prefix, rest = '', path
+      if path.startswith('@'):
+        prefix, rest = path.split('/', 1)
+      rest = os.path.normpath(rest)  # :standardizepath
+      path = os.path.join(prefix, rest)
+    return path
+
+  def GetInstallName(self):
+    """Return LD_DYLIB_INSTALL_NAME for this target."""
+    # Xcode sets this for shared_libraries, and for nonbundled loadable_modules.
+    if (self.spec['type'] != 'shared_library' and
+        (self.spec['type'] != 'loadable_module' or self._IsBundle())):
+      return None
+
+    default_install_name = \
+        '$(DYLIB_INSTALL_NAME_BASE:standardizepath)/$(EXECUTABLE_PATH)'
+    install_name = self.GetPerTargetSetting(
+        'LD_DYLIB_INSTALL_NAME', default=default_install_name)
+
+    # Hardcode support for the variables used in chromium for now, to
+    # unblock people using the make build.
+    if '$' in install_name:
+      assert install_name in ('$(DYLIB_INSTALL_NAME_BASE:standardizepath)/'
+          '$(WRAPPER_NAME)/$(PRODUCT_NAME)', default_install_name), (
+          'Variables in LD_DYLIB_INSTALL_NAME are not generally supported '
+          'yet in target \'%s\' (got \'%s\')' %
+              (self.spec['target_name'], install_name))
+
+      install_name = install_name.replace(
+          '$(DYLIB_INSTALL_NAME_BASE:standardizepath)',
+          self._StandardizePath(self.GetInstallNameBase()))
+      if self._IsBundle():
+        # These are only valid for bundles, hence the |if|.
+        install_name = install_name.replace(
+            '$(WRAPPER_NAME)', self.GetWrapperName())
+        install_name = install_name.replace(
+            '$(PRODUCT_NAME)', self.GetProductName())
+      else:
+        assert '$(WRAPPER_NAME)' not in install_name
+        assert '$(PRODUCT_NAME)' not in install_name
+
+      install_name = install_name.replace(
+          '$(EXECUTABLE_PATH)', self.GetExecutablePath())
+    return install_name
+
   def GetLdflags(self, configname, product_dir, gyp_to_build_path):
     """Returns flags that need to be passed to the linker.
 
@@ -440,49 +501,9 @@ class XcodeSettings(object):
     # Xcode adds the product directory by default.
     ldflags.append('-L' + product_dir)
 
-    default_install_name = \
-        '$(DYLIB_INSTALL_NAME_BASE:standardizepath)/$(EXECUTABLE_PATH)'
-    install_name = self.GetPerTargetSetting(
-        'LD_DYLIB_INSTALL_NAME', default=default_install_name)
-
-    install_base = self.GetPerTargetSetting(
-        'DYLIB_INSTALL_NAME_BASE',
-        default='/Library/Frameworks' if self._IsBundle() else '/usr/local/lib')
-
-    if self.spec['type'] == 'shared_library':
-      # Hardcode support for the variables used in chromium for now, to
-      # unblock people using the make build.
-      if '$' in install_name:
-        assert install_name in ('$(DYLIB_INSTALL_NAME_BASE:standardizepath)/'
-            '$(WRAPPER_NAME)/$(PRODUCT_NAME)', default_install_name), (
-            'Variables in LD_DYLIB_INSTALL_NAME are not generally supported '
-            'yet in target \'%s\' (got \'%s\')' %
-                (self.spec['target_name'], install_name))
-        # I'm not quite sure what :standardizepath does. Just call normpath(),
-        # but don't let @executable_path/../foo collapse to foo.
-        if '/' in install_base:
-          prefix, rest = '', install_base
-          if install_base.startswith('@'):
-            prefix, rest = install_base.split('/', 1)
-          rest = os.path.normpath(rest)  # :standardizepath
-          install_base = os.path.join(prefix, rest)
-
-        install_name = install_name.replace(
-            '$(DYLIB_INSTALL_NAME_BASE:standardizepath)', install_base)
-        if self._IsBundle():
-          # These are only valid for bundles, hence the |if|.
-          install_name = install_name.replace(
-              '$(WRAPPER_NAME)', self.GetWrapperName())
-          install_name = install_name.replace(
-              '$(PRODUCT_NAME)', self.GetProductName())
-        else:
-          assert '$(WRAPPER_NAME)' not in install_name
-          assert '$(PRODUCT_NAME)' not in install_name
-
-        install_name = install_name.replace(
-            '$(EXECUTABLE_PATH)', self.GetExecutablePath())
-      install_name = install_name.replace(' ', r'\ ')
-      ldflags.append('-install_name ' + install_name)
+    install_name = self.GetInstallName()
+    if install_name:
+      ldflags.append('-install_name ' + install_name.replace(' ', r'\ '))
 
     self.configname = None
     return ldflags
@@ -864,6 +885,13 @@ def GetXcodeEnv(xcode_settings, built_products_dir, srcroot, configuration,
         xcode_settings.GetBundleResourceFolder()
     env['INFOPLIST_PATH'] = xcode_settings.GetBundlePlistPath()
     env['WRAPPER_NAME'] = xcode_settings.GetWrapperName()
+
+  install_name = xcode_settings.GetInstallName()
+  if install_name:
+    env['LD_DYLIB_INSTALL_NAME'] = install_name
+  install_name_base = xcode_settings.GetInstallNameBase()
+  if install_name_base:
+    env['DYLIB_INSTALL_NAME_BASE'] = install_name_base
 
   if not additional_settings:
     additional_settings = {}
