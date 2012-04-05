@@ -62,8 +62,7 @@ bool Snappy_Compress(const char* input, size_t input_length,
 #endif
 }
 
-bool Snappy_GetUncompressedLength(const char* input_data,
-                                  size_t input_length,
+bool Snappy_GetUncompressedLength(const char* input, size_t length,
                                   size_t* result) {
 #if defined(USE_SNAPPY)
   return snappy::GetUncompressedLength(input_data, input_length, result);
