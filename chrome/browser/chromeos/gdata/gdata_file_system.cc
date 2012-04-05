@@ -567,7 +567,8 @@ GDataFileSystem::~GDataFileSystem() {
 void GDataFileSystem::ShutdownOnUIThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  pref_registrar_.RemoveAll();
+  pref_registrar_.reset(NULL);
+
   // Cancel all the in-flight operations.
   // This asynchronously cancels the URL fetch operations.
   documents_service_->CancelAll();
@@ -3977,8 +3978,9 @@ void GDataFileSystem::PostBlockingPoolSequencedTaskAndReply(
 }
 
 void GDataFileSystem::InitializePreferenceObserver() {
-  pref_registrar_.Init(profile_->GetPrefs());
-  pref_registrar_.Add(prefs::kDisableGDataHostedFiles, this);
+  pref_registrar_.reset(new PrefChangeRegistrar());
+  pref_registrar_->Init(profile_->GetPrefs());
+  pref_registrar_->Add(prefs::kDisableGDataHostedFiles, this);
 }
 
 }  // namespace gdata

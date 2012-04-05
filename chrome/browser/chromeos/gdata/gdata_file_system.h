@@ -1307,7 +1307,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // True if hosted documents should be hidden.
   bool hide_hosted_docs_;
 
-  PrefChangeRegistrar pref_registrar_;
+  scoped_ptr<PrefChangeRegistrar> pref_registrar_;
 
   // WeakPtrFactory and WeakPtr bound to the UI thread.
   scoped_ptr<base::WeakPtrFactory<GDataFileSystem> > ui_weak_ptr_factory_;
