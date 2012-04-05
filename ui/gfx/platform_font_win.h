@@ -43,6 +43,11 @@ class UI_EXPORT PlatformFontWin : public PlatformFont {
   typedef void (*AdjustFontCallback)(LOGFONT* lf);
   static AdjustFontCallback adjust_font_callback;
 
+  // Returns the font name for the system locale. Some fonts, particularly
+  // East Asian fonts, have different names per locale. If the localized font
+  // name could not be retrieved, returns GetFontName().
+  std::string GetLocalizedFontName() const;
+
   // Overridden from PlatformFont:
   virtual Font DeriveFont(int size_delta, int style) const OVERRIDE;
   virtual int GetHeight() const OVERRIDE;

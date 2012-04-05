@@ -12,7 +12,10 @@
 
 #include "base/logging.h"
 #include "base/string_util.h"
+#include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
+#include "base/win/scoped_hdc.h"
+#include "base/win/scoped_select_object.h"
 #include "base/win/win_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
@@ -119,6 +122,22 @@ int PlatformFontWin::GetStyle() const {
 
 std::string PlatformFontWin::GetFontName() const {
   return font_ref_->font_name();
+}
+
+std::string PlatformFontWin::GetLocalizedFontName() const {
+  base::win::ScopedCreateDC memory_dc(CreateCompatibleDC(NULL));
+  if (!memory_dc.Get())
+    return GetFontName();
+
+  // When a font has a localized name for a language matching the system
+  // locale, GetTextFace() returns the localized name.
+  base::win::ScopedSelectObject font(memory_dc, font_ref_->hfont());
+  wchar_t localized_font_name[LF_FACESIZE];
+  int length = GetTextFace(memory_dc, arraysize(localized_font_name),
+                           &localized_font_name[0]);
+  if (length <= 0)
+    return GetFontName();
+  return base::SysWideToUTF8(localized_font_name);
 }
 
 int PlatformFontWin::GetFontSize() const {

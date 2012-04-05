@@ -27,6 +27,29 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if defined(OS_WIN)
+#include "ui/gfx/font.h"
+#include "ui/gfx/platform_font_win.h"
+#endif
+
+namespace {
+
+// Returns the localized name of a font so that settings can find it within the
+// list of system fonts. On Windows, the list of system fonts has names only
+// for the system locale, but the pref value may be in the English name.
+std::string MaybeGetLocalizedFontName(const std::string& font_name) {
+#if defined(OS_WIN)
+  gfx::Font font(font_name, 12);  // dummy font size
+  return static_cast<gfx::PlatformFontWin*>(font.platform_font())->
+      GetLocalizedFontName();
+#else
+  return font_name;
+#endif
+}
+
+}  // namespace
+
+
 namespace options2 {
 
 FontSettingsHandler::FontSettingsHandler() {
@@ -140,10 +163,14 @@ void FontSettingsHandler::FontsListHasLoaded(
   }
 
   ListValue selected_values;
-  selected_values.Append(Value::CreateStringValue(standard_font_.GetValue()));
-  selected_values.Append(Value::CreateStringValue(serif_font_.GetValue()));
-  selected_values.Append(Value::CreateStringValue(sans_serif_font_.GetValue()));
-  selected_values.Append(Value::CreateStringValue(fixed_font_.GetValue()));
+  selected_values.Append(Value::CreateStringValue(MaybeGetLocalizedFontName(
+      standard_font_.GetValue())));
+  selected_values.Append(Value::CreateStringValue(MaybeGetLocalizedFontName(
+      serif_font_.GetValue())));
+  selected_values.Append(Value::CreateStringValue(MaybeGetLocalizedFontName(
+      sans_serif_font_.GetValue())));
+  selected_values.Append(Value::CreateStringValue(MaybeGetLocalizedFontName(
+      fixed_font_.GetValue())));
   selected_values.Append(Value::CreateStringValue(font_encoding_.GetValue()));
 
   web_ui()->CallJavascriptFunction("FontSettings.setFontsData",
