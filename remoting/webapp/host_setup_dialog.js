@@ -430,17 +430,48 @@ remoting.HostSetupDialog.prototype.onPinSubmit_ = function() {
     l10n.localizeElementFromTag(
         this.pinErrorMessage_, /*i18n-content*/'PINS_NOT_EQUAL');
     this.pinErrorDiv_.hidden = false;
-    this.pinEntry_.value = '';
-    this.pinConfirm_.value = '';
-    this.pinEntry_.focus();
+    this.prepareForPinEntry_();
     return;
-  } else {
-    this.pinErrorDiv_.hidden = true;
   }
+  if (!remoting.HostSetupDialog.validPin_(pin1)) {
+    l10n.localizeElementFromTag(
+        this.pinErrorMessage_, /*i18n-content*/'INVALID_PIN');
+    this.pinErrorDiv_.hidden = false;
+    this.prepareForPinEntry_();
+    return;
+  }
+  this.pinErrorDiv_.hidden = true;
   this.flow_.pin = pin1;
   this.flow_.switchToNextStep(remoting.DaemonPlugin.AsyncResult.OK);
   this.updateState_();
 };
+
+/** @private */
+remoting.HostSetupDialog.prototype.prepareForPinEntry_ = function() {
+  this.pinEntry_.value = '';
+  this.pinConfirm_.value = '';
+  this.pinEntry_.focus();
+};
+
+/**
+ * Returns whether a PIN is valid.
+ *
+ * @private
+ * @param {string} pin A PIN.
+ * @return {boolean} Whether the PIN is valid.
+ */
+remoting.HostSetupDialog.validPin_ = function(pin) {
+  if (pin.length < 6) {
+    return false;
+  }
+  for (var i = 0; i < pin.length; i++) {
+    var c = pin.charAt(i);
+    if ((c < '0') || (c > '9')) {
+      return false;
+    }
+  }
+  return true;
+}
 
 /** @type {remoting.HostSetupDialog} */
 remoting.hostSetupDialog = null;
