@@ -237,7 +237,13 @@ void ChromeBrowserMainPartsPosix::PostMainMessageLoopStart() {
   } else {
     g_shutdown_pipe_read_fd = pipefd[0];
     g_shutdown_pipe_write_fd = pipefd[1];
+#if !defined(ADDRESS_SANITIZER)
     const size_t kShutdownDetectorThreadStackSize = PTHREAD_STACK_MIN;
+#else
+    // ASan instrumentation bloats the stack, so we need to increase the stack
+    // size to avoid hitting the guard page.
+    const size_t kShutdownDetectorThreadStackSize = PTHREAD_STACK_MIN * 4;
+#endif
     // TODO(viettrungluu,willchan): crbug.com/29675 - This currently leaks, so
     // if you change this, you'll probably need to change the suppression.
     if (!base::PlatformThread::CreateNonJoinable(
