@@ -119,7 +119,7 @@ bool NPChannelBase::Init(base::MessageLoopProxy* ipc_message_loop,
                          base::WaitableEvent* shutdown_event) {
 #if defined(OS_POSIX)
   // Check the validity of fd for bug investigation.  Remove after fixed.
-  // See for details: crbug.com/95129, crbug.com/97285.
+  // See crbug.com/97285 for details.
   if (mode_ == IPC::Channel::MODE_CLIENT)
     CHECK_NE(-1, channel_handle_.socket.fd);
 #endif
@@ -130,7 +130,7 @@ bool NPChannelBase::Init(base::MessageLoopProxy* ipc_message_loop,
 
 #if defined(OS_POSIX)
   // Check the validity of fd for bug investigation.  Remove after fixed.
-  // See for details: crbug.com/95129, crbug.com/97285.
+  // See crbug.com/97285 for details.
   if (mode_ == IPC::Channel::MODE_SERVER)
     CHECK_NE(-1, channel_->GetClientFileDescriptor());
 #endif
