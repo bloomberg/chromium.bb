@@ -85,9 +85,6 @@ MediaTest.VideoBear*
 # Flakily times out, http://crbug.com/85865
 AppCacheUITest.AppCacheLayoutTests_NoPHP
 
-# Flakily times out, http://crbug.com/85866
-MetricsServiceTest.CloseRenderersNormally
-
 # Fails flakily, http://crbug.com/46783
 SessionHistoryTest.FrameBackForward
 SessionHistoryTest.JavascriptHistory
