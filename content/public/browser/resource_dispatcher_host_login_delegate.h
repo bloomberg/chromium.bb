@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,15 +12,17 @@
 
 namespace content {
 
-// Interface for getting login credentials for HTTP auth requests.  When the
-// implementation has the credentials, it shoudl call the Requests's SetAuth
-// method.
+// Interface for getting login credentials for HTTP auth requests. If the
+// login delegate obtains credentials, it should call the URLRequest's SetAuth
+// method. If the user cancels, the login delegate should call the URLRequest's
+// CancelAuth instead. And in either case, it must make a call to
+// ResourceDispatcherHost::ClearLoginDelegateForRequest.
 class CONTENT_EXPORT ResourceDispatcherHostLoginDelegate
     : public base::RefCountedThreadSafe<ResourceDispatcherHostLoginDelegate> {
  public:
   virtual ~ResourceDispatcherHostLoginDelegate() {}
 
-  // Notify the delegate that the request was cancelled.
+  // Notify the login delegate that the request was cancelled.
   // This function can only be called from the IO thread.
   virtual void OnRequestCancelled() = 0;
 };

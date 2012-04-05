@@ -84,6 +84,9 @@
         'shell/shell_javascript_dialog_mac.mm',
         'shell/shell_javascript_dialog_win.cc',
         'shell/shell_javascript_dialog.h',
+        'shell/shell_login_dialog_mac.mm',
+        'shell/shell_login_dialog.cc',
+        'shell/shell_login_dialog.h',
         'shell/shell_main_delegate.cc',
         'shell/shell_main_delegate.h',
         'shell/shell_messages.cc',
@@ -98,6 +101,8 @@
         'shell/shell_render_view_observer.h',
         'shell/shell_resource_context.cc',
         'shell/shell_resource_context.h',
+        'shell/shell_resource_dispatcher_host_delegate.cc',
+        'shell/shell_resource_dispatcher_host_delegate.h',
         'shell/shell_switches.cc',
         'shell/shell_switches.h',
         'shell/shell_url_request_context_getter.cc',
@@ -365,6 +370,7 @@
           'product_name': '<(content_shell_product_name) Framework',
           'mac_bundle': 1,
           'mac_bundle_resources': [
+            'shell/mac/English.lproj/HttpAuth.xib',
             'shell/mac/English.lproj/MainMenu.xib',
             '<(PRODUCT_DIR)/content_shell.pak'
           ],

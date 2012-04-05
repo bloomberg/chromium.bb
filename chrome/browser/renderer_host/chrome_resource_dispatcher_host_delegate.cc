@@ -255,7 +255,7 @@ ResourceDispatcherHostLoginDelegate*
     ChromeResourceDispatcherHostDelegate::CreateLoginDelegate(
         net::AuthChallengeInfo* auth_info, net::URLRequest* request) {
   std::string instant_header_value;
-  // For instant, return a NULl delegate. Auth navigations don't commit the load
+  // For instant, return a NULL delegate. Auth navigations don't commit the load
   // (the load remains pending) until the user cancels or succeeds in
   // authorizing. Since we don't allow merging of WebContents with pending loads
   // we disallow auth dialogs from showing during instant. Returning NULL does

@@ -16,6 +16,7 @@ namespace content {
 
 class ShellBrowserContext;
 class ShellBrowserMainParts;
+class ShellResourceDispatcherHostDelegate;
 
 class ShellContentBrowserClient : public ContentBrowserClient {
  public:
@@ -189,6 +190,9 @@ class ShellContentBrowserClient : public ContentBrowserClient {
   ShellBrowserContext* browser_context();
 
  private:
+  scoped_ptr<ShellResourceDispatcherHostDelegate>
+      resource_dispatcher_host_delegate_;
+
   ShellBrowserMainParts* shell_browser_main_parts_;
 };
 
