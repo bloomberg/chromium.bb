@@ -12,7 +12,12 @@
 #include "base/file_util.h"
 #include "base/message_loop_proxy.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/gdata/gdata_file_system.h"
+#include "chrome/browser/prefs/pref_change_registrar.h"
+#include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -65,8 +70,11 @@ void ScanPinnedDirectory(const FilePath& directory,
 
 }  // namespace
 
-GDataSyncClient::GDataSyncClient(GDataFileSystemInterface* file_system)
-    : file_system_(file_system),
+GDataSyncClient::GDataSyncClient(Profile* profile,
+                                 GDataFileSystemInterface* file_system)
+    : profile_(profile),
+      file_system_(file_system),
+      registrar_(new PrefChangeRegistrar),
       fetch_loop_is_running_(false),
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -82,6 +90,10 @@ void GDataSyncClient::Initialize() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   file_system_->AddObserver(this);
+
+  registrar_->Init(profile_->GetPrefs());
+  registrar_->Add(prefs::kDisableGData, this);
+  registrar_->Add(prefs::kDisableGDataOverCellular, this);
 }
 
 void GDataSyncClient::StartInitialScan(const base::Closure& closure) {
@@ -111,7 +123,8 @@ void GDataSyncClient::StartFetchLoop() {
 void GDataSyncClient::DoFetchLoop() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (queue_.empty()) {
+  if (queue_.empty() || ShouldStopFetchLoop()) {
+    // Note that |queue_| is not cleared so the fetch loop can resume.
     fetch_loop_is_running_ = false;
     return;
   }
@@ -126,6 +139,36 @@ void GDataSyncClient::DoFetchLoop() {
       base::Bind(&GDataSyncClient::OnFetchFileComplete,
                  weak_ptr_factory_.GetWeakPtr(),
                  resource_id));
+}
+
+bool GDataSyncClient::ShouldStopFetchLoop() {
+  // Should stop if the gdata feature was disabled while running the fetch
+  // loop.
+  if (profile_->GetPrefs()->GetBoolean(prefs::kDisableGData))
+    return true;
+
+  // Something must be wrong if the network library is not present.
+  chromeos::NetworkLibrary* network_library =
+      chromeos::CrosLibrary::Get()->GetNetworkLibrary();
+  if (!network_library)
+    return true;
+
+  // Something must be wrong if the active network is not present.
+  const chromeos::Network* active_network = network_library->active_network();
+  if (!active_network)
+    return true;
+
+  // Should stop if the network is not online.
+  if (!active_network->online())
+    return true;
+
+  // Should stop if the current connection is on cellular network, and
+  // fetching is disabled over cellular.
+  if (profile_->GetPrefs()->GetBoolean(prefs::kDisableGDataOverCellular) &&
+      active_network->type() == chromeos::TYPE_CELLULAR)
+    return true;
+
+  return false;
 }
 
 void GDataSyncClient::OnCacheInitialized() {
@@ -188,6 +231,29 @@ void GDataSyncClient::OnFetchFileComplete(const std::string& resource_id,
 
   // Continue the loop.
   DoFetchLoop();
+}
+
+void GDataSyncClient::OnNetworkChanged(
+    chromeos::NetworkLibrary* network_library,
+    const chromeos::Network* network) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // Resume the fetch loop if the network is back online. Note that we don't
+  // need to check the type of the network as it will be checked in
+  // ShouldStopFetchLoop() as soon as the loop is resumed.
+  if (network->online())
+    StartFetchLoop();
+}
+
+void GDataSyncClient::Observe(int type,
+                              const content::NotificationSource& source,
+                              const content::NotificationDetails& details) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // Resume the fetch loop if gdata preferences are changed. Note that we
+  // don't need to check the new values here as these will be checked in
+  // ShouldStopFetchLoop() as soon as the loop is resumed.
+  StartFetchLoop();
 }
 
 }  // namespace gdata

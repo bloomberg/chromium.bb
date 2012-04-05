@@ -441,6 +441,9 @@ class Network {
   // just returns whether or not the given property was found.
   bool GetProperty(PropertyIndex index, const base::Value** value) const;
 
+  // Creates a Network object for the given type for testing.
+  static Network* CreateForTesting(ConnectionType type);
+
  protected:
   Network(const std::string& service_path,
           ConnectionType type);

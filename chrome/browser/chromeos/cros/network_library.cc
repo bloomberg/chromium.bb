@@ -248,6 +248,11 @@ bool Network::GetProperty(PropertyIndex index,
   return true;
 }
 
+// static
+Network* Network::CreateForTesting(ConnectionType type) {
+  return new Network("fake_service_path", type);
+}
+
 void Network::SetState(ConnectionState new_state) {
   if (new_state == state_)
     return;

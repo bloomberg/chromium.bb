@@ -27,7 +27,7 @@ GDataSystemService::GDataSystemService(Profile* profile)
       file_system_(new GDataFileSystem(profile, new DocumentsService)),
       uploader_(new GDataUploader(file_system_.get())),
       download_observer_(new GDataDownloadObserver),
-      sync_client_(new GDataSyncClient(file_system_.get())) {
+      sync_client_(new GDataSyncClient(profile, file_system_.get())) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 

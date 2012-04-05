@@ -7,13 +7,21 @@
 #pragma once
 
 #include "chrome/browser/chromeos/gdata/gdata_sync_client.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_source.h"
 #include "testing/gmock/include/gmock/gmock.h"
+
+namespace chromeos {
+class Network;
+class NetworkLibrary;
+}
 
 namespace gdata {
 class GDataFileSystemInterface;
 
 // Mock for GDataSyncClientInterface.
-class MockGDataSyncClient : public GDataSyncClientInterface {
+class MockGDataSyncClient : public GDataSyncClientInterface,
+                            public GDataFileSystem::Observer {
  public:
   MockGDataSyncClient();
   virtual ~MockGDataSyncClient();

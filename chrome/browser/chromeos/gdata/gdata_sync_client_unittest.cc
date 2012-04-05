@@ -11,12 +11,18 @@
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
+#include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/cros/mock_network_library.h"
 #include "chrome/browser/chromeos/gdata/mock_gdata_file_system.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/pref_names.h"
+#include "chrome/test/base/testing_profile.h"
 #include "content/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using ::testing::AnyNumber;
 using ::testing::Return;
 using ::testing::_;
 
@@ -26,11 +32,21 @@ class GDataSyncClientTest : public testing::Test {
  public:
   GDataSyncClientTest()
       : ui_thread_(content::BrowserThread::UI, &message_loop_),
+        profile_(new TestingProfile),
         mock_file_system_(new MockGDataFileSystem),
-        sync_client_(new GDataSyncClient(mock_file_system_.get())) {
+        sync_client_(new GDataSyncClient(profile_.get(),
+                                         mock_file_system_.get())),
+        mock_network_library_(NULL) {
   }
 
   virtual void SetUp() OVERRIDE {
+    chromeos::CrosLibrary::Initialize(true /* use_stub */);
+
+    // CrosLibrary takes ownership of MockNetworkLibrary.
+    mock_network_library_ = new chromeos::MockNetworkLibrary;
+    chromeos::CrosLibrary::Get()->GetTestApi()->SetNetworkLibrary(
+        mock_network_library_, true);
+
     // Create a temporary directory.
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
@@ -40,6 +56,41 @@ class GDataSyncClientTest : public testing::Test {
         .Times(1);
 
     sync_client_->Initialize();
+  }
+
+  virtual void TearDown() OVERRIDE {
+    chromeos::CrosLibrary::Shutdown();
+  }
+
+  // Sets up MockNetworkLibrary as if it's connected to wifi network.
+  void ConnectToWifi() {
+    active_network_.reset(
+        chromeos::Network::CreateForTesting(chromeos::TYPE_WIFI));
+    EXPECT_CALL(*mock_network_library_, active_network())
+        .Times(AnyNumber())
+        .WillRepeatedly((Return(active_network_.get())));
+    chromeos::Network::TestApi(active_network_.get()).SetConnected(true);
+  }
+
+  // Sets up MockNetworkLibrary as if it's connected to cellular network.
+  void ConnectToCellular() {
+    active_network_.reset(
+        chromeos::Network::CreateForTesting(chromeos::TYPE_CELLULAR));
+    EXPECT_CALL(*mock_network_library_, active_network())
+        .Times(AnyNumber())
+        .WillRepeatedly((Return(active_network_.get())));
+    chromeos::Network::TestApi(active_network_.get()).SetConnected(true);
+  }
+
+  // Sets up MockNetworkLibrary as if it's disconnected.
+  void ConnectToNone() {
+    active_network_.reset(
+        chromeos::Network::CreateForTesting(chromeos::TYPE_WIFI));
+    EXPECT_CALL(*mock_network_library_, active_network())
+        .Times(AnyNumber())
+        .WillRepeatedly((Return(active_network_.get())));
+    // Here false is passed to make it disconnected.
+    chromeos::Network::TestApi(active_network_.get()).SetConnected(false);
   }
 
   // Sets up test files in the temporary directory.
@@ -81,8 +132,11 @@ class GDataSyncClientTest : public testing::Test {
   MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   ScopedTempDir temp_dir_;
+  scoped_ptr<TestingProfile> profile_;
   scoped_ptr<MockGDataFileSystem> mock_file_system_;
   scoped_ptr<GDataSyncClient> sync_client_;
+  chromeos::MockNetworkLibrary* mock_network_library_;
+  scoped_ptr<chromeos::Network> active_network_;
 };
 
 // Action used to set mock expectations for GetFileForResourceId().
@@ -119,6 +173,7 @@ TEST_F(GDataSyncClientTest, StartInitialScan) {
 
 TEST_F(GDataSyncClientTest, StartFetchLoop) {
   SetUpTestFiles();
+  ConnectToWifi();
 
   sync_client_->AddResourceIdForTesting("resource_id_not_fetched_foo");
   sync_client_->AddResourceIdForTesting("resource_id_not_fetched_bar");
@@ -151,8 +206,94 @@ TEST_F(GDataSyncClientTest, StartFetchLoop) {
   sync_client_->StartFetchLoop();
 }
 
+TEST_F(GDataSyncClientTest, StartFetchLoop_Offline) {
+  SetUpTestFiles();
+  ConnectToNone();
+
+  sync_client_->AddResourceIdForTesting("resource_id_not_fetched_foo");
+  sync_client_->AddResourceIdForTesting("resource_id_not_fetched_bar");
+  sync_client_->AddResourceIdForTesting("resource_id_not_fetched_baz");
+
+  // The three files will not be fetched by GetFileForResourceId(), as
+  // network is not connected.
+  EXPECT_CALL(*mock_file_system_, GetFileForResourceId(_, _)).Times(0);
+
+  sync_client_->StartFetchLoop();
+}
+
+TEST_F(GDataSyncClientTest, StartFetchLoop_CelluarDisabled) {
+  SetUpTestFiles();
+  ConnectToCellular();
+
+  sync_client_->AddResourceIdForTesting("resource_id_not_fetched_foo");
+  sync_client_->AddResourceIdForTesting("resource_id_not_fetched_bar");
+  sync_client_->AddResourceIdForTesting("resource_id_not_fetched_baz");
+
+  // The three files will not be fetched by GetFileForResourceId(), as
+  // fetching over cellular network is disabled by default.
+  EXPECT_CALL(*mock_file_system_, GetFileForResourceId(_, _)).Times(0);
+
+  sync_client_->StartFetchLoop();
+}
+
+TEST_F(GDataSyncClientTest, StartFetchLoop_CelluarEnabled) {
+  SetUpTestFiles();
+  ConnectToCellular();
+  // Enable fetching over cellular network.
+  profile_->GetPrefs()->SetBoolean(prefs::kDisableGDataOverCellular, false);
+
+  sync_client_->AddResourceIdForTesting("resource_id_not_fetched_foo");
+  sync_client_->AddResourceIdForTesting("resource_id_not_fetched_bar");
+  sync_client_->AddResourceIdForTesting("resource_id_not_fetched_baz");
+
+  // The three files will be fetched by GetFileForResourceId(), as fetching
+  // over cellular network is explicitly enabled.
+  EXPECT_CALL(*mock_file_system_,
+              GetFileForResourceId("resource_id_not_fetched_foo", _))
+      .WillOnce(MockGetFileForResourceId(
+          base::PLATFORM_FILE_OK,
+          FilePath::FromUTF8Unsafe("local_path_does_not_matter"),
+          std::string("mime_type_does_not_matter"),
+          REGULAR_FILE));
+  EXPECT_CALL(*mock_file_system_,
+              GetFileForResourceId("resource_id_not_fetched_bar", _))
+      .WillOnce(MockGetFileForResourceId(
+          base::PLATFORM_FILE_OK,
+          FilePath::FromUTF8Unsafe("local_path_does_not_matter"),
+          std::string("mime_type_does_not_matter"),
+          REGULAR_FILE));
+  EXPECT_CALL(*mock_file_system_,
+              GetFileForResourceId("resource_id_not_fetched_baz", _))
+      .WillOnce(MockGetFileForResourceId(
+          base::PLATFORM_FILE_OK,
+          FilePath::FromUTF8Unsafe("local_path_does_not_matter"),
+          std::string("mime_type_does_not_matter"),
+          REGULAR_FILE));
+
+  sync_client_->StartFetchLoop();
+}
+
+TEST_F(GDataSyncClientTest, StartFetchLoop_GDataDisabled) {
+  SetUpTestFiles();
+  ConnectToWifi();
+
+  // Disable the GData feature.
+  profile_->GetPrefs()->SetBoolean(prefs::kDisableGData, true);
+
+  sync_client_->AddResourceIdForTesting("resource_id_not_fetched_foo");
+  sync_client_->AddResourceIdForTesting("resource_id_not_fetched_bar");
+  sync_client_->AddResourceIdForTesting("resource_id_not_fetched_baz");
+
+  // The three files will not be fetched by GetFileForResourceId(), as the
+  // GData feature is disabled.
+  EXPECT_CALL(*mock_file_system_, GetFileForResourceId(_, _)).Times(0);
+
+  sync_client_->StartFetchLoop();
+}
+
 TEST_F(GDataSyncClientTest, OnFilePinned) {
   SetUpTestFiles();
+  ConnectToWifi();
 
   // This file will be fetched by GetFileForResourceId() as OnFilePinned()
   // will kick off the fetch loop.

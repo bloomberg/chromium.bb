@@ -12,7 +12,14 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop_proxy.h"
+#include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/gdata/gdata_file_system.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_source.h"
+
+class Profile;
+class PrefChangeRegistrar;
 
 namespace gdata {
 
@@ -36,7 +43,7 @@ namespace gdata {
 //
 
 // The interface class is defined to make GDataSyncClient mockable.
-class GDataSyncClientInterface : public GDataFileSystem::Observer {
+class GDataSyncClientInterface {
  public:
   // Initializes the GDataSyncClient.
   virtual void Initialize() = 0;
@@ -45,11 +52,16 @@ class GDataSyncClientInterface : public GDataFileSystem::Observer {
 };
 
 // The production implementation of GDataSyncClientInterface.
-class GDataSyncClient : public GDataSyncClientInterface {
+class GDataSyncClient : public GDataSyncClientInterface,
+                        public GDataFileSystem::Observer,
+                        public chromeos::NetworkLibrary::NetworkObserver,
+                        public content::NotificationObserver {
  public:
-  // |file_system| is used to access to the
+  // |profile| is used to access user preferences.
+  // |file_system| is used access the
   // cache (ex. store a file to the cache when the file is downloaded).
-  explicit GDataSyncClient(GDataFileSystemInterface* file_system);
+  GDataSyncClient(Profile* profile,
+                  GDataFileSystemInterface* file_system);
   virtual ~GDataSyncClient();
 
   // GDataSyncClientInterface overrides.
@@ -86,6 +98,9 @@ class GDataSyncClient : public GDataSyncClientInterface {
   // empty.
   void DoFetchLoop();
 
+  // Returns true if we should stop the fetch loop.
+  bool ShouldStopFetchLoop();
+
   // Called when the initial scan is complete. Receives the resource IDs of
   // pinned-but-not-fetched files as |resource_ids|. |closure| is run at the
   // end.
@@ -100,7 +115,17 @@ class GDataSyncClient : public GDataSyncClientInterface {
                            const std::string& ununsed_mime_type,
                            GDataFileType file_type);
 
+  // chromeos::NetworkLibrary::NetworkObserver override.
+  virtual void OnNetworkChanged(chromeos::NetworkLibrary* network_library,
+                                const chromeos::Network* network) OVERRIDE;
+
+  // content::NotificationObserver override.
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
+  Profile* profile_;
   GDataFileSystemInterface* file_system_;
+  scoped_ptr<PrefChangeRegistrar> registrar_;
 
   // The queue of resource IDs used to fetch pinned-but-not-fetched files in
   // the background thread. Note that this class does not use a lock to
