@@ -83,6 +83,23 @@ def GetArchStageTarball(tarballArch, version):
 
 def FetchRemoteTarball(url):
   """Fetches a tarball given by url, and place it in sdk/."""
+
+  def RunCurl(args, **kwargs):
+    """Runs curl and wraps around all necessary hacks."""
+    cmd = ['curl']
+    cmd.extend(args)
+
+    result = cros_build_lib.RunCommand(cmd, error_ok=True, **kwargs)
+    if result.returncode > 0:
+      # These are the return codes of failing certs as per 'man curl'.
+      if result.returncode in (51, 58, 60):
+        print 'Download failed with certificate error? Try "sudo c_rehash".'
+      else:
+        print 'Curl failed!'
+      sys.exit(1)
+
+    return result
+
   tarball_name = os.path.basename(urlparse.urlparse(url).path)
   tarball_dest = os.path.join(SDK_DIR, tarball_name)
 
@@ -96,23 +113,25 @@ def FetchRemoteTarball(url):
       if os.path.isfile(f_path) and os.stat(f_path).st_uid == os.getuid():
         os.remove(f_path)
 
+  curl_opts = ['-f', '--retry', '5', '-L', '-y', '30',
+               '--output', tarball_dest]
   print 'Downloading sdk: "%s"' % url
-  cmd = ['curl', '-f', '--retry', '5', '-L', '-y', '30',
-         '--output', tarball_dest]
-
   if not url.startswith('file://') and os.path.exists(tarball_dest):
     # Only resume for remote URLs. If the file is local, there's no
     # real speedup, and using the same filename for different files
     # locally will cause issues.
-    cmd.extend(['-C', '-'])
+    curl_opts.extend(['-C', '-'])
 
     # Additionally, certain versions of curl incorrectly fail if
     # told to resume a file that is fully downloaded, thus do a
     # check on our own.
     # see:
     # https://sourceforge.net/tracker/?func=detail&atid=100976&aid=3482927&group_id=976
-    result = cros_build_lib.RunCommand(['curl', '-I', url],
-                                       redirect_stdout=True, print_cmd=False)
+    result = RunCurl(['-I', url],
+                     redirect_stdout=True,
+                     redirect_stderr=True,
+                     print_cmd=False)
+
     for x in result.output.splitlines():
       if x.lower().startswith("content-length:"):
         length = int(x.split(":", 1)[-1].strip())
@@ -121,10 +140,8 @@ def FetchRemoteTarball(url):
           # of this (>=7.21.4 and up).
           return tarball_dest
         break
-
-  cmd.append(url)
-
-  cros_build_lib.RunCommand(cmd)
+  curl_opts.append(url)
+  RunCurl(curl_opts)
   return tarball_dest
 
 
