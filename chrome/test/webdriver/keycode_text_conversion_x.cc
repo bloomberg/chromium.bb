@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <X11/keysym.h>
+#include <X11/XKBlib.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 
@@ -157,7 +158,7 @@ bool GetXModifierMask(Display* display, int modifier, int* x_modifier) {
   for (int mod_index = 0; mod_index <= 8; ++mod_index) {
     for (int key_index = 0; key_index < max_mod_keys; ++key_index) {
       int key = mod_map->modifiermap[mod_index * max_mod_keys + key_index];
-      int keysym = XKeycodeToKeysym(display, key, 0);
+      int keysym = XkbKeycodeToKeysym(display, key, 0, 0);
       if (modifier == automation::kAltKeyMask)
         found = keysym == XK_Alt_L || keysym == XK_Alt_R;
       else if (modifier == automation::kMetaKeyMask)
