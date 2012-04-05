@@ -1099,7 +1099,7 @@ TEST_F(GDataFileSystemTest, FilePathTests) {
 
 TEST_F(GDataFileSystemTest, CachedFeedLoading) {
   TestLoadMetadataFromCache(FILE_PATH_LITERAL("cached_feeds.json"),
-      FilePath(FILE_PATH_LITERAL("GCache/v1/meta/first_feed.json")));
+      FilePath(FILE_PATH_LITERAL("GCache/v1/meta/last_feed.json")));
 
   // Test first feed elements.
   FindAndTestFilePath(FilePath(FILE_PATH_LITERAL("gdata/Feed 1 File.txt")));

@@ -881,7 +881,7 @@ FileManager.prototype = {
           this.gdataLoadingTimer_ = null;
           this.onGDataUnreachable_('GData load timeout');
         }.bind(this),
-        10 * 1000) ;
+        15 * 60 * 1000) ;
   };
 
   FileManager.prototype.clearGDataLoadingTimer_ = function(message) {

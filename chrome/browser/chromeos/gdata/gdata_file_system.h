@@ -893,9 +893,6 @@ class GDataFileSystem : public GDataFileSystemInterface,
                           int largest_changestamp,
                           const FindFileCallback& callback);
 
-  // Returns file name for cached feed given feed |chunk_type|.
-  FilePath GetCachedFeedFileName(FeedChunkType chunk_type) const;
-
   // Starts root feed load from the cache. If successful, it will try to find
   // the file upon retrieval completion. In addition to that, it will
   // initate retrieval of the root feed from the server if
