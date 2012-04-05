@@ -81,10 +81,13 @@ cr.define('print_preview', function() {
      * Updates the state of the margins UI.
      * @param {print_preview.Rect} marginsRectangle A rectangle describing the
      *     four margins.
-     * @param {Margins} marginValues
-     * @param {Array.<number>} valueLimits
-     * @param {boolean} keepDisplayedValue
-     * @param {Array.<number>} valueLimitsInPercent
+     * @param {Margins} marginValues The margin values in points.
+     * @param {Array.<number>} valueLimits The maximum allowed margins for each
+     *     side in points.
+     * @param {boolean} keepDisplayedValue True if the currently displayed
+     *     margin values should not be updated.
+     * @param {Array.<number>} valueLimitsInPercent The maximum allowed margins
+     *     for each side in percentages.
      */
     update: function(marginsRectangle, marginValues, valueLimits,
         keepDisplayedValue, valueLimitsInPercent) {

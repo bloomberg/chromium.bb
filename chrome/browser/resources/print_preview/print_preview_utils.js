@@ -120,8 +120,9 @@ function isPageRangeTextValid(pageRangeText, totalPageCount) {
  */
 function pageRangeTextToPageList(pageRangeText, totalPageCount) {
   var pageList = [];
-  if ((totalPageCount && !isPageRangeTextValid(pageRangeText, totalPageCount))
-      || !totalPageCount) {
+  if ((totalPageCount &&
+       !isPageRangeTextValid(pageRangeText, totalPageCount)) ||
+      !totalPageCount) {
     return pageList;
   }
 

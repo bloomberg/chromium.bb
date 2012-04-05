@@ -20,17 +20,18 @@ var previewModifiable = false;
 var hasPageSizeStyle = false;
 
 // Destination list special value constants.
-const MANAGE_CLOUD_PRINTERS = 'manageCloudPrinters';
-const MANAGE_LOCAL_PRINTERS = 'manageLocalPrinters';
-const SIGN_IN = 'signIn';
-const PRINT_TO_PDF = 'Save as PDF';
-const PRINT_WITH_CLOUD_PRINT = 'printWithCloudPrint';
+
+/** @const */ var MANAGE_CLOUD_PRINTERS = 'manageCloudPrinters';
+/** @const */ var MANAGE_LOCAL_PRINTERS = 'manageLocalPrinters';
+/** @const */ var SIGN_IN = 'signIn';
+/** @const */ var PRINT_TO_PDF = 'Save as PDF';
+/** @const */ var PRINT_WITH_CLOUD_PRINT = 'printWithCloudPrint';
 
 // State of the print preview settings.
 var printSettings = new PrintSettings();
 
 // Print ready data index.
-const PRINT_READY_DATA_INDEX = -1;
+/** @const */ var PRINT_READY_DATA_INDEX = -1;
 
 // The name of the default or last used printer.
 var defaultOrLastUsedPrinterName = '';
@@ -111,10 +112,10 @@ var lastClickedElement = null;
 var addedCloudPrinters = {};
 
 // The maximum number of cloud printers to allow in the dropdown.
-const maxCloudPrinters = 10;
+/** @const */ var maxCloudPrinters = 10;
 
-const MIN_REQUEST_ID = 0;
-const MAX_REQUEST_ID = 32000;
+/** @const */ var MIN_REQUEST_ID = 0;
+/** @const */ var MAX_REQUEST_ID = 32000;
 
 // Names of all the custom events used.
 var customEvents = {
@@ -1046,25 +1047,25 @@ function onPreviewPositionChanged() {
  */
 function checkCompatiblePluginExists() {
   var dummyPlugin = $('dummy-viewer');
-  var pluginInterface = [ dummyPlugin.onload,
-                          dummyPlugin.goToPage,
-                          dummyPlugin.removePrintButton,
-                          dummyPlugin.loadPreviewPage,
-                          dummyPlugin.printPreviewPageCount,
-                          dummyPlugin.resetPrintPreviewUrl,
-                          dummyPlugin.onPluginSizeChanged,
-                          dummyPlugin.onScroll,
-                          dummyPlugin.pageXOffset,
-                          dummyPlugin.pageYOffset,
-                          dummyPlugin.setZoomLevel,
-                          dummyPlugin.setPageNumbers,
-                          dummyPlugin.setPageXOffset,
-                          dummyPlugin.setPageYOffset,
-                          dummyPlugin.getHorizontalScrollbarThickness,
-                          dummyPlugin.getVerticalScrollbarThickness,
-                          dummyPlugin.getPageLocationNormalized,
-                          dummyPlugin.getHeight,
-                          dummyPlugin.getWidth ];
+  var pluginInterface = [dummyPlugin.onload,
+                         dummyPlugin.goToPage,
+                         dummyPlugin.removePrintButton,
+                         dummyPlugin.loadPreviewPage,
+                         dummyPlugin.printPreviewPageCount,
+                         dummyPlugin.resetPrintPreviewUrl,
+                         dummyPlugin.onPluginSizeChanged,
+                         dummyPlugin.onScroll,
+                         dummyPlugin.pageXOffset,
+                         dummyPlugin.pageYOffset,
+                         dummyPlugin.setZoomLevel,
+                         dummyPlugin.setPageNumbers,
+                         dummyPlugin.setPageXOffset,
+                         dummyPlugin.setPageYOffset,
+                         dummyPlugin.getHorizontalScrollbarThickness,
+                         dummyPlugin.getVerticalScrollbarThickness,
+                         dummyPlugin.getPageLocationNormalized,
+                         dummyPlugin.getHeight,
+                         dummyPlugin.getWidth];
 
   for (var i = 0; i < pluginInterface.length; i++) {
     if (!pluginInterface[i])
@@ -1087,6 +1088,7 @@ function setDefaultValuesAndRegeneratePreview(resetMargins) {
 
 /**
  * Class that represents the state of the print settings.
+ * @constructor
  */
 function PrintSettings() {
   this.deviceName = '';
