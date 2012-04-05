@@ -935,13 +935,15 @@ def main(argv):
       parser.error('Reference path %s does not look to be the base of a '
                    'repo checkout; no .repo exists in the root.'
                    % (options.reference_repo,))
-  if options.buildbot:
+
+  if options.buildbot or options.remote_trybot:
     if not options.cgroups:
-      parser.error('Options --buildbot and --nocgroups cannot be used '
-                   'together.  Cgroup support is required for buildbot mode.')
+      parser.error('Options --buildbot/--remote-trybot and --nocgroups cannot '
+                   'be used together.  Cgroup support is required for '
+                   'buildbot/remote-trybot mode.')
     if not cgroups.Cgroup.CgroupsSupported():
-      parser.error('Option --buildbot was given, but this system does not '
-                   'support cgroups.   Failing.')
+      parser.error('Option --buildbot/--remote-trybot was given, but this '
+                   'system does not support cgroups.  Failing.')
 
     missing = []
     for program in _BUILDBOT_REQUIRED_BINARIES:
@@ -952,8 +954,8 @@ def main(argv):
         missing.append(program)
 
     if missing:
-      parser.error("Option --buildbot requires the following binaries which "
-                   "couldn't be found in $PATH: %s"
+      parser.error("Option --buildbot/--remote-trybot requires the following "
+                   "binaries which couldn't be found in $PATH: %s"
                    % (', '.join(missing)))
 
   if options.reference_repo:
