@@ -89,6 +89,7 @@ class WebUIBindings;
 
 namespace content {
 class DocumentState;
+class NavigationState;
 class P2PSocketDispatcher;
 class RenderViewObserver;
 class RenderViewTest;
@@ -973,8 +974,11 @@ class RenderViewImpl : public RenderWidget,
 
   // If we initiated a navigation, this function will populate |document_state|
   // with the navigation information saved in OnNavigate().
-  void PopulateStateFromPendingNavigationParams(
-      content::DocumentState* document_state);
+  void PopulateDocumentStateFromPending(content::DocumentState* document_state);
+
+  // Returns a new NavigationState populated with the navigation information
+  // saved in OnNavigate().
+  content::NavigationState* CreateNavigationStateFromPending();
 
   // Processes the command-line flags --enable-viewport and
   // --enable-fixed-layout[=w,h].

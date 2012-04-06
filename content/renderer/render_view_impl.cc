@@ -2540,20 +2540,25 @@ void RenderViewImpl::didCompleteClientRedirect(
 }
 
 void RenderViewImpl::didCreateDataSource(WebFrame* frame, WebDataSource* ds) {
+  bool content_initiated = !pending_navigation_params_.get();
+
   DocumentState* document_state = DocumentState::FromDataSource(ds);
   if (!document_state) {
     document_state = new DocumentState;
     ds->setExtraData(document_state);
+    if (!content_initiated)
+      PopulateDocumentStateFromPending(document_state);
   }
 
   // The rest of RenderView assumes that a WebDataSource will always have a
   // non-null NavigationState.
-  bool content_initiated = !pending_navigation_params_.get();
   if (content_initiated)
     document_state->set_navigation_state(
         NavigationState::CreateContentInitiated());
-  else
-    PopulateStateFromPendingNavigationParams(document_state);
+  else {
+    document_state->set_navigation_state(CreateNavigationStateFromPending());
+    pending_navigation_params_.reset();
+  }
 
   // DocumentState::referred_by_prefetcher_ is true if we are
   // navigating from a page that used prefetching using a link on that
@@ -2604,38 +2609,20 @@ void RenderViewImpl::didCreateDataSource(WebFrame* frame, WebDataSource* ds) {
       RenderViewObserver, observers_, DidCreateDataSource(frame, ds));
 }
 
-void RenderViewImpl::PopulateStateFromPendingNavigationParams(
+void RenderViewImpl::PopulateDocumentStateFromPending(
     DocumentState* document_state) {
   const ViewMsg_Navigate_Params& params = *pending_navigation_params_.get();
+  document_state->set_request_time(params.request_time);
 
-  if (document_state->request_time().is_null())
-    document_state->set_request_time(params.request_time);
-
-  // A navigation resulting from loading a javascript URL should not be treated
-  // as a browser initiated event.  Instead, we want it to look as if the page
-  // initiated any load resulting from JS execution.
-  if (!params.url.SchemeIs(chrome::kJavaScriptScheme)) {
-    NavigationState* navigation_state = NavigationState::CreateBrowserInitiated(
-        params.page_id,
-        params.pending_history_list_offset,
-        params.transition);
-    navigation_state->set_transferred_request_child_id(
-        params.transferred_request_child_id);
-    navigation_state->set_transferred_request_request_id(
-        params.transferred_request_request_id);
-    if (params.navigation_type == ViewMsg_Navigate_Type::RESTORE) {
-      // We're doing a load of a page that was restored from the last session.
-      // By default this prefers the cache over loading (LOAD_PREFERRING_CACHE)
-      // which can result in stale data for pages that are set to expire. We
-      // explicitly override that by setting the policy here so that as
-      // necessary we load from the network.
-      document_state->set_cache_policy_override(
-          WebURLRequest::UseProtocolCachePolicy);
-    }
-    document_state->set_navigation_state(navigation_state);
-  } else {
-    document_state->set_navigation_state(
-        NavigationState::CreateContentInitiated());
+  if (!params.url.SchemeIs(chrome::kJavaScriptScheme) &&
+      params.navigation_type == ViewMsg_Navigate_Type::RESTORE) {
+    // We're doing a load of a page that was restored from the last session. By
+    // default this prefers the cache over loading (LOAD_PREFERRING_CACHE) which
+    // can result in stale data for pages that are set to expire. We explicitly
+    // override that by setting the policy here so that as necessary we load
+    // from the network.
+    document_state->set_cache_policy_override(
+        WebURLRequest::UseProtocolCachePolicy);
   }
 
   if (IsReload(params))
@@ -2644,8 +2631,28 @@ void RenderViewImpl::PopulateStateFromPendingNavigationParams(
     document_state->set_load_type(DocumentState::HISTORY_LOAD);
   else
     document_state->set_load_type(DocumentState::NORMAL_LOAD);
+}
 
-  pending_navigation_params_.reset();
+NavigationState* RenderViewImpl::CreateNavigationStateFromPending() {
+  const ViewMsg_Navigate_Params& params = *pending_navigation_params_.get();
+  NavigationState* navigation_state = NULL;
+
+  // A navigation resulting from loading a javascript URL should not be treated
+  // as a browser initiated event.  Instead, we want it to look as if the page
+  // initiated any load resulting from JS execution.
+  if (!params.url.SchemeIs(chrome::kJavaScriptScheme)) {
+    navigation_state = NavigationState::CreateBrowserInitiated(
+        params.page_id,
+        params.pending_history_list_offset,
+        params.transition);
+    navigation_state->set_transferred_request_child_id(
+        params.transferred_request_child_id);
+    navigation_state->set_transferred_request_request_id(
+        params.transferred_request_request_id);
+  } else {
+    navigation_state = NavigationState::CreateContentInitiated();
+  }
+  return navigation_state;
 }
 
 void RenderViewImpl::ProcessViewLayoutFlags(const CommandLine& command_line) {
