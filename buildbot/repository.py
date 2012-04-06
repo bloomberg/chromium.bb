@@ -21,7 +21,7 @@ from chromite.lib import rewrite_git_alternates
 # File that marks a buildroot as being used by a trybot
 _TRYBOT_MARKER = '.trybot'
 
-_DEFAULT_SYNC_JOBS = 4
+_DEFAULT_SYNC_JOBS = 12
 
 class SrcCheckOutException(Exception):
   """Exception gets thrown for failure to sync sources"""
