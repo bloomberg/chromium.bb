@@ -30,9 +30,9 @@ deps = {
     'src/googleurl':
         Var('git_url') + '/external/google-url.git@71eba6ebbc74d30c2c861baf67599cf331c95b87',
     'src/native_client':
-        Var('git_url') + '/native_client/src/native_client.git@ee8ada93e8cac9c1f0d6a6188f9d8f70c104f39e',
+        Var('git_url') + '/native_client/src/native_client.git@afd772d203db32334035ca20d13aba505ef0eb21',
     'src/native_client_sdk/src/site_scons':
-        Var('git_url') + '/native_client/src/native_client/site_scons.git@af1e4e94cf9142fa7997941a91cddf5de0989eb3',
+        Var('git_url') + '/native_client/src/native_client/site_scons.git@a8f97296b1f9f684952595a200dbba25f3377fc1',
     'src/sdch/open-vcdiff':
         Var('git_url') + '/external/open-vcdiff.git@438f2a5be6d809bc21611a94cd37bfc8c28ceb33',
     'src/seccompsandbox':
