@@ -2657,7 +2657,7 @@ binutils-gold-make() {
       ac_cv_search_zlibVersion=no \
       ac_cv_header_sys_mman_h=no \
       ac_cv_func_mmap=no \
-      ac_cv_func_mallinfo \
+      ac_cv_func_mallinfo=no \
       make ${MAKE_OPTS} all-gold
 
   ts-touch-commit "${objdir}"
