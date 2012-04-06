@@ -1007,20 +1007,21 @@ def GetSpecPostbuildCommands(spec, gyp_path_to_build_path, quiet=False):
   """Returns the list of postbuilds explicitly defined on |spec|, in a form
   executable by a shell."""
   postbuilds = []
-  for postbuild in spec.get('postbuilds', []):
+
+  spec_postbuilds = spec.get('postbuilds', [])[:]
+
+  # Postbuilds expect to be run in the gyp file's directory, so insert an
+  # implicit postbuild to cd to there.
+  if spec_postbuilds:
+    spec_postbuilds.insert(0, {
+        'action': ['cd', gyp_path_to_build_path('')],
+        'postbuild_name': "cd into target gyp file directory",
+    })
+
+  for postbuild in spec_postbuilds:
     if not quiet:
       postbuilds.append('echo POSTBUILD\\(%s\\) %s' % (
             spec['target_name'], postbuild['postbuild_name']))
-    shell_list = postbuild['action'][:]
-    # The first element is the command. If it's a relative path, it's
-    # a script in the source tree relative to the gyp file and needs to be
-    # absolutified. Else, it's in the PATH (e.g. install_name_tool, ln).
-    if os.path.sep in shell_list[0]:
-      shell_list[0] = gyp_path_to_build_path(shell_list[0])
-
-      # "script.sh" -> "./script.sh"
-      if not os.path.sep in shell_list[0]:
-        shell_list[0] = os.path.join('.', shell_list[0])
-    postbuilds.append(gyp.common.EncodePOSIXShellList(shell_list))
+    postbuilds.append(gyp.common.EncodePOSIXShellList(postbuild['action']))
 
   return postbuilds

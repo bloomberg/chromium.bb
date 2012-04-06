@@ -38,6 +38,14 @@
             'arg with spaces',
           ],
         },
+        {
+          'postbuild_name': 'Test paths relative to gyp file',
+          'action': [
+            '../copy.sh',
+            './copied_file.txt',
+            '${BUILT_PRODUCTS_DIR}/copied_file_2.txt',
+          ],
+        },
       ],
     },
   ],
