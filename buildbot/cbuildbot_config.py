@@ -769,6 +769,34 @@ _arm_release.add_config('arm-ironhide-release',
   boards=['ironhide'],
 )
 
+# Factory and Firmware releases much inherit from these classes.  Modifications
+# for these release builders should go here.
+
+# Naming conventions also must be followed.  Factory and firmware branches must
+# end in -factory or -firmware suffixes.
+
+_factory_release = _release.derive(
+  vm_tests=None,
+)
+
+_firmware_release = _release.derive(
+  push_image=False,
+  uprev=True,
+  overlays='both',
+  build_tests=False,
+  unittests=False,
+  vm_tests=None,
+  prebuilts=False,
+)
+
+# Examples:
+#_firmware_release.add_config('x86-mario-release-firmware',
+#  boards=['x86-mario'],
+#)
+
+#_factory_release.add_config('x86-mario-release-factory',
+#  boards=['x86-mario'],
+#)
 
 def _InjectDisplayPosition(config_source):
   """Add field to help buildbot masters order builders on the waterfall."""

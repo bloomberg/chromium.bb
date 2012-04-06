@@ -18,6 +18,7 @@ import urllib
 import constants
 sys.path.insert(0, constants.SOURCE_ROOT)
 from chromite.buildbot import cbuildbot_config
+from chromite.scripts import cbuildbot
 
 CHROMIUM_WATCHING_URL = ("http://src.chromium.org/viewvc/" +
     "chrome/trunk/tools/build/masters/" +
@@ -220,6 +221,21 @@ class CBuildBotTest(mox.MoxTestBase):
             config['upload_hw_test_artifacts'],
             "%s is trying to run hw tests without uploading payloads." %
             build_name)
+
+  def testFactoryFirmwareValidity(self):
+    """Ensures that firmware/factory branches have at least 1 valid name."""
+    tracking_branch = cbuildbot._GetChromiteTrackingBranch()
+    for branch in ['firmware', 'factory']:
+      if tracking_branch.startswith(branch):
+        saw_config_for_branch = False
+        for build_name, config in cbuildbot_config.config.iteritems():
+          if build_name.endswith('-%s' % branch):
+            saw_config_for_branch = True
+
+        self.assertTrue(
+            saw_config_for_branch, 'No config found for %s branch. '
+            'As this is the %s branch, all release configs that are being used '
+            'must end in %s.' % (branch, tracking_branch, branch))
 
 
 if __name__ == '__main__':
