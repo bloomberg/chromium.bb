@@ -152,6 +152,7 @@ void NaClAppThreadTeardown(struct NaClAppThread *natp) {
   NaClSignalStackUnregister();
   NaClLog(3, " freeing thread object\n");
   NaClAppThreadDtor(natp);
+  free(natp);
   NaClLog(3, " NaClThreadExit\n");
 
   NaClXMutexLock(&nap->mu);
