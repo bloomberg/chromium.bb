@@ -2201,6 +2201,12 @@
             ['exclude', '^browser/bookmarks/bookmark_node_data_unittest.cc'],
           ],
         }],
+        ['enable_task_manager==0', {
+          'sources/': [
+            ['exclude', '^browser/task_manager/'],
+            ['exclude', '^browser/ui/webui/task_manager/'],
+          ],
+        }],
         ['file_manager_extension==0', {
           'sources!': [
             'browser/ui/views/select_file_dialog_extension_unittest.cc',

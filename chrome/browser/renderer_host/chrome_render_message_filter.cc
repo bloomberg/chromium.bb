@@ -198,8 +198,10 @@ void ChromeRenderMessageFilter::OnResourceTypeStats(
                    static_cast<int>(stats.fonts.size / 1024));
 
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+#if defined(ENABLE_TASK_MANAGER)
   TaskManager::GetInstance()->model()->NotifyResourceTypeStats(
       base::GetProcId(peer_handle()), stats);
+#endif  // defined(ENABLE_TASK_MANAGER)
 }
 
 void ChromeRenderMessageFilter::OnUpdatedCacheStats(
@@ -219,8 +221,10 @@ void ChromeRenderMessageFilter::OnFPS(int routing_id, float fps) {
 
   base::ProcessId renderer_id = base::GetProcId(peer_handle());
 
+#if defined(ENABLE_TASK_MANAGER)
   TaskManager::GetInstance()->model()->NotifyFPS(
       renderer_id, routing_id, fps);
+#endif  // defined(ENABLE_TASK_MANAGER)
 
   FPSDetails details(routing_id, fps);
   content::NotificationService::current()->Notify(
@@ -242,10 +246,12 @@ void ChromeRenderMessageFilter::OnV8HeapStats(int v8_memory_allocated,
 
   base::ProcessId renderer_id = base::GetProcId(peer_handle());
 
+#if defined(ENABLE_TASK_MANAGER)
   TaskManager::GetInstance()->model()->NotifyV8HeapStats(
       renderer_id,
       static_cast<size_t>(v8_memory_allocated),
       static_cast<size_t>(v8_memory_used));
+#endif  // defined(ENABLE_TASK_MANAGER)
 
   V8HeapStatsDetails details(v8_memory_allocated, v8_memory_used);
   content::NotificationService::current()->Notify(

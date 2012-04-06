@@ -4075,6 +4075,12 @@
             'browser/ui/views/sync/one_click_signin_bubble_view.h',
           ]
         }],
+        ['enable_task_manager==0', {
+          'sources/': [
+            ['exclude', '^browser/task_manager/'],
+            ['exclude', '^browser/ui/webui/task_manager/'],
+          ],
+        }],
         ['disable_nacl==0', {
           'sources': [
             'browser/nacl_host/nacl_broker_host_win.cc',

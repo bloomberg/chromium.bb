@@ -208,8 +208,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(content::WebUI* web_ui,
     return &NewWebUI<SyncInternalsUI>;
   if (url.host() == chrome::kChromeUISyncResourcesHost)
     return &NewWebUI<HtmlDialogUI>;
-  if (url.host() == chrome::kChromeUITaskManagerHost)
-    return &NewWebUI<TaskManagerUI>;
   if (url.host() == chrome::kChromeUITracingHost)
     return &NewWebUI<TracingUI>;
   if (url.host() == chrome::kChromeUIUberFrameHost)
@@ -285,6 +283,10 @@ WebUIFactoryFunction GetWebUIFactoryFunction(content::WebUI* web_ui,
   if (url.host() == chrome::kChromeUIPolicyHost)
     return &NewWebUI<PolicyUI>;
 #endif
+#if defined(ENABLE_TASK_MANAGER)
+  if (url.host() == chrome::kChromeUITaskManagerHost)
+    return &NewWebUI<TaskManagerUI>;
+#endif  // defined(ENABLE_TASK_MANAGER)
 #if defined(USE_VIRTUAL_KEYBOARD)
   if (url.host() == chrome::kChromeUIKeyboardHost)
     return &NewWebUI<KeyboardUI>;
@@ -318,7 +320,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(content::WebUI* web_ui,
       url.host() == chrome::kChromeUIMemoryHost ||
       url.host() == chrome::kChromeUIMemoryRedirectHost ||
       url.host() == chrome::kChromeUIStatsHost ||
-      url.host() == chrome::kChromeUITaskManagerHost ||
       url.host() == chrome::kChromeUITermsHost ||
       url.host() == chrome::kChromeUIVersionHost
 #if defined(USE_TCMALLOC)
@@ -334,6 +335,9 @@ WebUIFactoryFunction GetWebUIFactoryFunction(content::WebUI* web_ui,
       || url.host() == chrome::kChromeUINetworkHost
       || url.host() == chrome::kChromeUIOSCreditsHost
       || url.host() == chrome::kChromeUITransparencyHost
+#endif
+#if defined(ENABLE_TASK_MANAGER)
+      || url.host() == chrome::kChromeUITaskManagerHost
 #endif
       ) {
     return &NewWebUI<AboutUI>;

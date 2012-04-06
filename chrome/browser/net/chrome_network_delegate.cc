@@ -305,7 +305,9 @@ void ChromeNetworkDelegate::OnResponseStarted(net::URLRequest* request) {
 
 void ChromeNetworkDelegate::OnRawBytesRead(const net::URLRequest& request,
                                            int bytes_read) {
+#if defined(ENABLE_TASK_MANAGER)
   TaskManager::GetInstance()->model()->NotifyBytesRead(request, bytes_read);
+#endif  // defined(ENABLE_TASK_MANAGER)
 }
 
 void ChromeNetworkDelegate::OnCompleted(net::URLRequest* request,

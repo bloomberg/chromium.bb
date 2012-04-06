@@ -123,7 +123,6 @@ void RegisterLocalState(PrefService* local_state) {
   ProfileInfoCache::RegisterPrefs(local_state);
   ProfileManager::RegisterPrefs(local_state);
   SSLConfigServiceManager::RegisterPrefs(local_state);
-  TaskManager::RegisterPrefs(local_state);
   WebCacheManager::RegisterPrefs(local_state);
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
@@ -137,6 +136,10 @@ void RegisterLocalState(PrefService* local_state) {
 #if defined(ENABLE_SAFE_BROWSING)
   SafeBrowsingService::RegisterPrefs(local_state);
 #endif
+
+#if defined(ENABLE_TASK_MANAGER)
+  TaskManager::RegisterPrefs(local_state);
+#endif  // defined(ENABLE_TASK_MANAGER)
 
 #if defined(TOOLKIT_VIEWS)
   BrowserView::RegisterBrowserViewPrefs(local_state);
