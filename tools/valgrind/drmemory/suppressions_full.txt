@@ -715,6 +715,18 @@ RPCRT4.dll!*
 RPCRT4.dll!*
 RPCRT4.dll!NDRCContextBinding
 
+# No idea, but all system code, not interesting.
+POSSIBLE LEAK
+name=http://crbug.com/TODO q
+RPCRT4.dll!...
+RPCRT4.dll!*
+RPCRT4.dll!*
+ole32.dll!...
+ole32.dll!*
+ole32.dll!*
+...
+SHELL32.dll!*
+
 LEAK
 name=http://crbug.com/109278 video device COM leaks
 ...
@@ -1279,3 +1291,12 @@ name=http://crbug.com/117539
 *!talk_base::TaskRunner::RunTasks
 *!notifier::TaskPump::CheckAndRunTasks
 *!base::internal::RunnableAdapter<void (__thiscall notifier::TaskPump::*)(void)>::Run
+
+# IE frame possible leak of COM object.
+LEAK
+name=http://crbug.com/122399
+ole32.dll!...
+ole32.dll!CoTaskMemAlloc
+urlmon.dll!...
+urlmon.dll!CreateUri
+IEFRAME.dll!*
