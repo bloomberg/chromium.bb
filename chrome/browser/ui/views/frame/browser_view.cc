@@ -178,6 +178,7 @@ bool AdjustFrameForImmersiveMode(BrowserFrame* frame) {
   if (!metro)
     return false;
   // We are in metro mode.
+  frame->set_frame_type(views::Widget::FRAME_TYPE_FORCE_CUSTOM);
   SetFrameWindow set_frame_window = reinterpret_cast<SetFrameWindow>(
       ::GetProcAddress(metro, "SetFrameWindow"));
   set_frame_window(frame->GetNativeWindow());
