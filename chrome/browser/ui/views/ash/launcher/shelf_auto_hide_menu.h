@@ -27,8 +27,10 @@ class ShelfAutoHideMenu : public ui::SimpleMenuModel,
   virtual void ExecuteCommand(int command_id) OVERRIDE;
 
  private:
+  // Menu command id needs to be unique. So starting at 1000 to avoid command
+  // id conflicts with parent LauncherContextMenu.
   enum MenuItem {
-    MENU_AUTO_HIDE_DEFAULT,
+    MENU_AUTO_HIDE_DEFAULT = 1000,
     MENU_AUTO_HIDE_ALWAYS,
     MENU_AUTO_HIDE_NEVER,
   };
