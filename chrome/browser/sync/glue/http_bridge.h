@@ -86,9 +86,10 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
     virtual scoped_refptr<base::MessageLoopProxy>
         GetIOMessageLoopProxy() const OVERRIDE;
 
-   private:
-    virtual ~RequestContextGetter() {}
+   protected:
+    virtual ~RequestContextGetter();
 
+   private:
     // User agent to apply to the net::URLRequestContext.
     std::string user_agent_;
 

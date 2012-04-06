@@ -119,6 +119,9 @@ class TestExtensionURLRequestContextGetter
     return BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
   }
 
+ protected:
+  virtual ~TestExtensionURLRequestContextGetter() {}
+
  private:
   scoped_refptr<net::URLRequestContext> context_;
 };

@@ -29,7 +29,6 @@ class ShellURLRequestContextGetter : public net::URLRequestContextGetter {
       const FilePath& base_path,
       MessageLoop* io_loop,
       MessageLoop* file_loop);
-  virtual ~ShellURLRequestContextGetter();
 
   // net::URLRequestContextGetter implementation.
   virtual net::URLRequestContext* GetURLRequestContext() OVERRIDE;
@@ -37,6 +36,9 @@ class ShellURLRequestContextGetter : public net::URLRequestContextGetter {
       GetIOMessageLoopProxy() const OVERRIDE;
 
   net::HostResolver* host_resolver();
+
+ protected:
+  virtual ~ShellURLRequestContextGetter();
 
  private:
   FilePath base_path_;

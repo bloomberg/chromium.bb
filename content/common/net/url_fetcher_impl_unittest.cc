@@ -257,9 +257,10 @@ class CancelTestURLRequestContextGetter : public net::URLRequestContextGetter {
     context_created_.Wait();
   }
 
- private:
-  ~CancelTestURLRequestContextGetter() {}
+ protected:
+  virtual ~CancelTestURLRequestContextGetter() {}
 
+ private:
   scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;
   base::WaitableEvent context_created_;
   scoped_refptr<net::URLRequestContext> context_;

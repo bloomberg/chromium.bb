@@ -238,6 +238,9 @@ class DeviceManagementRequestContextGetter
   virtual scoped_refptr<base::MessageLoopProxy> GetIOMessageLoopProxy()
       const OVERRIDE;
 
+ protected:
+  virtual ~DeviceManagementRequestContextGetter() {}
+
  private:
   scoped_refptr<net::URLRequestContext> context_;
   scoped_refptr<net::URLRequestContextGetter> base_context_getter_;

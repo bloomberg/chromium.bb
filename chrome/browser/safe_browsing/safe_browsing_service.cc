@@ -120,12 +120,14 @@ class SafeBrowsingURLRequestContextGetter
  public:
   explicit SafeBrowsingURLRequestContextGetter(
       SafeBrowsingService* sb_service_);
-  virtual ~SafeBrowsingURLRequestContextGetter();
 
   // Implementation for net::UrlRequestContextGetter.
   virtual net::URLRequestContext* GetURLRequestContext() OVERRIDE;
   virtual scoped_refptr<base::MessageLoopProxy> GetIOMessageLoopProxy() const
       OVERRIDE;
+
+ protected:
+  virtual ~SafeBrowsingURLRequestContextGetter();
 
  private:
   SafeBrowsingService* const sb_service_;  // Owned by BrowserProcess.

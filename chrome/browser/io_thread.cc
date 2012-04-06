@@ -248,11 +248,13 @@ ConstructSystemRequestContext(IOThread::Globals* globals,
 class SystemURLRequestContextGetter : public net::URLRequestContextGetter {
  public:
   explicit SystemURLRequestContextGetter(IOThread* io_thread);
-  virtual ~SystemURLRequestContextGetter();
 
   // Implementation for net::UrlRequestContextGetter.
   virtual net::URLRequestContext* GetURLRequestContext();
   virtual scoped_refptr<base::MessageLoopProxy> GetIOMessageLoopProxy() const;
+
+ protected:
+  virtual ~SystemURLRequestContextGetter();
 
  private:
   IOThread* const io_thread_;  // Weak pointer, owned by BrowserProcess.

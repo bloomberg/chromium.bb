@@ -30,6 +30,8 @@ HttpBridge::RequestContextGetter::RequestContextGetter(
     : baseline_context_getter_(baseline_context_getter) {
 }
 
+HttpBridge::RequestContextGetter::~RequestContextGetter() {}
+
 net::URLRequestContext*
 HttpBridge::RequestContextGetter::GetURLRequestContext() {
   // Lazily create the context.

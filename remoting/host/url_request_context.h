@@ -46,9 +46,10 @@ class URLRequestContextGetter : public net::URLRequestContextGetter {
   virtual scoped_refptr<base::MessageLoopProxy>
       GetIOMessageLoopProxy() const OVERRIDE;
 
- private:
+ protected:
   virtual ~URLRequestContextGetter();
 
+ private:
   scoped_refptr<net::URLRequestContext> url_request_context_;
   scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;
   scoped_ptr<net::ProxyConfigService> proxy_config_service_;
