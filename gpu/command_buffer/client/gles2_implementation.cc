@@ -622,7 +622,8 @@ void GLES2Implementation::SetGLError(GLenum error, const char* msg) {
     last_error_ = msg;
   }
   if (error_message_callback_) {
-    std::string temp(GLES2Util::GetStringError(error)  + " : " + msg);
+    std::string temp(GLES2Util::GetStringError(error)  + " : " +
+                     (msg ? msg : ""));
     error_message_callback_->OnErrorMessage(temp.c_str(), 0);
   }
   error_bits_ |= GLES2Util::GLErrorToErrorBit(error);
