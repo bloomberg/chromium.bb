@@ -620,6 +620,12 @@ internal_paladin.add_config('mario-paladin',
   paladin_builder_name='mario paladin',
 )
 
+internal_arm_paladin.add_config('daisy-paladin',
+  boards=['daisy'],
+  important=False,
+  paladin_builder_name='daisy paladin',
+)
+
 internal_arm_paladin.add_config('kaen-paladin',
   boards=['tegra2_kaen'],
   paladin_builder_name='tegra2 kaen paladin',
@@ -763,6 +769,10 @@ _arm_release.add_config('arm-tegra2_seaboard-release',
 
 _arm_release.add_config('arm-tegra2_kaen-release',
   boards=['tegra2_kaen'],
+)
+
+_arm_release.add_config('arm-daisy-release',
+  boards=['daisy'],
 )
 
 _arm_release.add_config('arm-ironhide-release',
