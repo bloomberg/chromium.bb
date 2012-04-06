@@ -4440,6 +4440,7 @@
           'sources!': [
             'browser/sync/glue/theme_change_processor.cc',
             'browser/sync/glue/theme_data_type_controller.cc',
+            'browser/sync/glue/theme_util.cc',
             'browser/ui/webui/theme_source.cc',
           ],
           'sources/': [
