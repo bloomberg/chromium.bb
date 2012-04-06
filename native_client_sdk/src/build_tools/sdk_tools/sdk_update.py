@@ -17,6 +17,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+from third_party import fancy_urllib
 import time
 import urllib2
 import urlparse
@@ -51,75 +52,6 @@ SDK_TOOLS='sdk_tools'  # the name for this tools directory
 USER_DATA_DIR='sdk_cache'
 
 HTTP_CONTENT_LENGTH = 'Content-Length'  # HTTP Header field for content length
-
-# The following SSL certificates are used to validate the SSL connection
-# to https://commondatastorage.googleapis.com
-# TODO(mball): Validate at least one of these certificates.
-# http://stackoverflow.com/questions/1087227/validate-ssl-certificates-with-python
-
-EQUIFAX_SECURE_CA_CERTIFICATE='''-----BEGIN CERTIFICATE-----
-MIIDIDCCAomgAwIBAgIENd70zzANBgkqhkiG9w0BAQUFADBOMQswCQYDVQQGEwJV
-UzEQMA4GA1UEChMHRXF1aWZheDEtMCsGA1UECxMkRXF1aWZheCBTZWN1cmUgQ2Vy
-dGlmaWNhdGUgQXV0aG9yaXR5MB4XDTk4MDgyMjE2NDE1MVoXDTE4MDgyMjE2NDE1
-MVowTjELMAkGA1UEBhMCVVMxEDAOBgNVBAoTB0VxdWlmYXgxLTArBgNVBAsTJEVx
-dWlmYXggU2VjdXJlIENlcnRpZmljYXRlIEF1dGhvcml0eTCBnzANBgkqhkiG9w0B
-AQEFAAOBjQAwgYkCgYEAwV2xWGcIYu6gmi0fCG2RFGiYCh7+2gRvE4RiIcPRfM6f
-BeC4AfBONOziipUEZKzxa1NfBbPLZ4C/QgKO/t0BCezhABRP/PvwDN1Dulsr4R+A
-cJkVV5MW8Q+XarfCaCMczE1ZMKxRHjuvK9buY0V7xdlfUNLjUA86iOe/FP3gx7kC
-AwEAAaOCAQkwggEFMHAGA1UdHwRpMGcwZaBjoGGkXzBdMQswCQYDVQQGEwJVUzEQ
-MA4GA1UEChMHRXF1aWZheDEtMCsGA1UECxMkRXF1aWZheCBTZWN1cmUgQ2VydGlm
-aWNhdGUgQXV0aG9yaXR5MQ0wCwYDVQQDEwRDUkwxMBoGA1UdEAQTMBGBDzIwMTgw
-ODIyMTY0MTUxWjALBgNVHQ8EBAMCAQYwHwYDVR0jBBgwFoAUSOZo+SvSspXXR9gj
-IBBPM5iQn9QwHQYDVR0OBBYEFEjmaPkr0rKV10fYIyAQTzOYkJ/UMAwGA1UdEwQF
-MAMBAf8wGgYJKoZIhvZ9B0EABA0wCxsFVjMuMGMDAgbAMA0GCSqGSIb3DQEBBQUA
-A4GBAFjOKer89961zgK5F7WF0bnj4JXMJTENAKaSbn+2kmOeUJXRmm/kEd5jhW6Y
-7qj/WsjTVbJmcVfewCHrPSqnI0kBBIZCe/zuf6IWUrVnZ9NA2zsmWLIodz2uFHdh
-1voqZiegDfqnc1zqcPGUIWVEX/r87yloqaKHee9570+sB3c4
------END CERTIFICATE-----'''
-
-GOOGLE_INTERNET_AUTHORITY_CERTIFICATE='''-----BEGIN CERTIFICATE-----
-MIICsDCCAhmgAwIBAgIDC2dxMA0GCSqGSIb3DQEBBQUAME4xCzAJBgNVBAYTAlVT
-MRAwDgYDVQQKEwdFcXVpZmF4MS0wKwYDVQQLEyRFcXVpZmF4IFNlY3VyZSBDZXJ0
-aWZpY2F0ZSBBdXRob3JpdHkwHhcNMDkwNjA4MjA0MzI3WhcNMTMwNjA3MTk0MzI3
-WjBGMQswCQYDVQQGEwJVUzETMBEGA1UEChMKR29vZ2xlIEluYzEiMCAGA1UEAxMZ
-R29vZ2xlIEludGVybmV0IEF1dGhvcml0eTCBnzANBgkqhkiG9w0BAQEFAAOBjQAw
-gYkCgYEAye23pIucV+eEPkB9hPSP0XFjU5nneXQUr0SZMyCSjXvlKAy6rWxJfoNf
-NFlOCnowzdDXxFdF7dWq1nMmzq0yE7jXDx07393cCDaob1FEm8rWIFJztyaHNWrb
-qeXUWaUr/GcZOfqTGBhs3t0lig4zFEfC7wFQeeT9adGnwKziV28CAwEAAaOBozCB
-oDAOBgNVHQ8BAf8EBAMCAQYwHQYDVR0OBBYEFL/AMOv1QxE+Z7qekfv8atrjaxIk
-MB8GA1UdIwQYMBaAFEjmaPkr0rKV10fYIyAQTzOYkJ/UMBIGA1UdEwEB/wQIMAYB
-Af8CAQAwOgYDVR0fBDMwMTAvoC2gK4YpaHR0cDovL2NybC5nZW90cnVzdC5jb20v
-Y3Jscy9zZWN1cmVjYS5jcmwwDQYJKoZIhvcNAQEFBQADgYEAuIojxkiWsRF8YHde
-BZqrocb6ghwYB8TrgbCoZutJqOkM0ymt9e8kTP3kS8p/XmOrmSfLnzYhLLkQYGfN
-0rTw8Ktx5YtaiScRhKqOv5nwnQkhClIZmloJ0pC3+gz4fniisIWvXEyZ2VxVKfml
-UUIuOss4jHg7y/j7lYe8vJD5UDI=
------END CERTIFICATE-----'''
-
-GOOGLE_USER_CONTENT_CERTIFICATE='''-----BEGIN CERTIFICATE-----
-MIIEPDCCA6WgAwIBAgIKUaoA4wADAAAueTANBgkqhkiG9w0BAQUFADBGMQswCQYD
-VQQGEwJVUzETMBEGA1UEChMKR29vZ2xlIEluYzEiMCAGA1UEAxMZR29vZ2xlIElu
-dGVybmV0IEF1dGhvcml0eTAeFw0xMTA4MTIwMzQ5MjlaFw0xMjA4MTIwMzU5Mjla
-MHExCzAJBgNVBAYTAlVTMRMwEQYDVQQIEwpDYWxpZm9ybmlhMRYwFAYDVQQHEw1N
-b3VudGFpbiBWaWV3MRMwEQYDVQQKEwpHb29nbGUgSW5jMSAwHgYDVQQDFBcqLmdv
-b2dsZXVzZXJjb250ZW50LmNvbTCBnzANBgkqhkiG9w0BAQEFAAOBjQAwgYkCgYEA
-uDmDvqlKBj6DppbENEuUmwVsHe5hpixV0bn6D+Ujy3mWUP9HtkO35/RmeFf4/y9i
-nGy78uWO6tk9QY1PsPSiyZN6LgplalBdkTeODCGAieVOVJFhHQ0KM330qDy9sKNM
-rwdMOfLPzkBMYPyr1C7CCm24j//aFiMCxD40bDQXRJkCAwEAAaOCAgQwggIAMB0G
-A1UdDgQWBBRyHxPfv+Lnm2Kgid72ja3pOszMsjAfBgNVHSMEGDAWgBS/wDDr9UMR
-Pme6npH7/Gra42sSJDBbBgNVHR8EVDBSMFCgTqBMhkpodHRwOi8vd3d3LmdzdGF0
-aWMuY29tL0dvb2dsZUludGVybmV0QXV0aG9yaXR5L0dvb2dsZUludGVybmV0QXV0
-aG9yaXR5LmNybDBmBggrBgEFBQcBAQRaMFgwVgYIKwYBBQUHMAKGSmh0dHA6Ly93
-d3cuZ3N0YXRpYy5jb20vR29vZ2xlSW50ZXJuZXRBdXRob3JpdHkvR29vZ2xlSW50
-ZXJuZXRBdXRob3JpdHkuY3J0MCEGCSsGAQQBgjcUAgQUHhIAVwBlAGIAUwBlAHIA
-dgBlAHIwgdUGA1UdEQSBzTCByoIXKi5nb29nbGV1c2VyY29udGVudC5jb22CFWdv
-b2dsZXVzZXJjb250ZW50LmNvbYIiKi5jb21tb25kYXRhc3RvcmFnZS5nb29nbGVh
-cGlzLmNvbYIgY29tbW9uZGF0YXN0b3JhZ2UuZ29vZ2xlYXBpcy5jb22CEGF0Z2ds
-c3RvcmFnZS5jb22CEiouYXRnZ2xzdG9yYWdlLmNvbYIUKi5zLmF0Z2dsc3RvcmFn
-ZS5jb22CCyouZ2dwaHQuY29tgglnZ3BodC5jb20wDQYJKoZIhvcNAQEFBQADgYEA
-XDvIl0/id823eokdFpLA8bL3pb7wQGaH0i3b29572aM7cDKqyxmTBbwi9mMMgbxy
-E/St8DoSEQg3cJ/t2UaTXtw8wCrA6M1dS/RFpNLfV84QNcVdNhLmKEuZjpa+miUK
-8OtYzFSMdfwXrbqKgkAIaqUs6m+LWKG/AQShp6DvTPo=
------END CERTIFICATE-----'''
 
 # Some commonly-used key names.
 ARCHIVES_KEY = 'archives'
@@ -201,6 +133,16 @@ def GetHostOS():
       'win32':  'win'
       }[sys.platform]
 
+def UrlOpen(url):
+  request = fancy_urllib.FancyRequest(url)
+  ca_certs = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                          'cacerts.txt')
+  request.set_ssl_info(ca_certs=ca_certs)
+  url_opener = urllib2.build_opener(
+      fancy_urllib.FancyProxyHandler(),
+      fancy_urllib.FancyRedirectHandler(),
+      fancy_urllib.FancyHTTPSHandler())
+  return url_opener.open(request)
 
 def ExtractInstaller(installer, outdir):
   '''Extract the SDK installer into a given directory
@@ -410,7 +352,7 @@ class Archive(dict):
     Return:
       A file-like object from which the archive's data can be read.'''
     try:
-      url_stream = urllib2.urlopen(self['url'])
+      url_stream = UrlOpen(self['url'])
     except urllib2.URLError:
       raise Error('Cannot open "%s" for archive %s' %
           (self['url'], self['host_os']))
@@ -807,9 +749,9 @@ class ManifestTools(object):
     DebugPrint("Running LoadManifest")
     try:
       # TODO(mball): Add certificate validation on the server
-      url_stream = urllib2.urlopen(self._options.manifest_url)
-    except urllib2.URLError:
-      raise Error('Unable to open %s' % self._options.manifest_url)
+      url_stream = UrlOpen(self._options.manifest_url)
+    except urllib2.URLError, e:
+      raise Error('Unable to open %s. [%s]' % (self._options.manifest_url, e))
 
     manifest_stream = cStringIO.StringIO()
     sha1, size = DownloadAndComputeHash(

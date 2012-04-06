@@ -397,54 +397,59 @@ def CopyExamples(pepperdir, toolchains):
     buildbot_common.CopyDir(os.path.join(SDK_EXAMPLE_DIR, example), exampledir)
     AddMakeBat(pepperdir, os.path.join(exampledir, example))
 
+UPDATER_FILES = [
+  # launch scripts
+  ('build_tools/naclsdk', 'nacl_sdk/naclsdk'),
+  ('build_tools/naclsdk.bat', 'nacl_sdk/naclsdk.bat'),
+
+  # base manifest
+  ('build_tools/json/naclsdk_manifest0.json',
+      'nacl_sdk/sdk_cache/naclsdk_manifest2.json'),
+
+  # SDK tools
+  ('build_tools/sdk_tools/cacerts.txt', 'nacl_sdk/sdk_tools/cacerts.txt'),
+  ('build_tools/sdk_tools/sdk_update.py', 'nacl_sdk/sdk_tools/sdk_update.py'),
+  ('build_tools/sdk_tools/third_party/__init__.py',
+      'nacl_sdk/sdk_tools/third_party/__init__.py'),
+  ('build_tools/sdk_tools/third_party/fancy_urllib/__init__.py',
+      'nacl_sdk/sdk_tools/third_party/fancy_urllib/__init__.py'),
+  ('build_tools/sdk_tools/third_party/fancy_urllib/README',
+      'nacl_sdk/sdk_tools/third_party/fancy_urllib/README'),
+  ('LICENSE', 'nacl_sdk/sdk_tools/LICENSE'),
+  (CYGTAR, 'nacl_sdk/sdk_tools/cygtar.py'),
+]
+
+def CopyFiles(files):
+  for in_file, out_file in files:
+    if not os.path.isabs(in_file):
+      in_file = os.path.join(SDK_SRC_DIR, in_file)
+    out_file = os.path.join(OUT_DIR, out_file)
+    buildbot_common.MakeDir(os.path.dirname(out_file))
+    buildbot_common.CopyFile(in_file, out_file)
 
 def BuildUpdater():
   buildbot_common.BuildStep('Create Updater')
 
-  naclsdkdir = os.path.join(OUT_DIR, 'nacl_sdk')
-  tooldir = os.path.join(naclsdkdir, 'sdk_tools')
-  cachedir = os.path.join(naclsdkdir, 'sdk_cache')
-  buildtoolsdir = os.path.join(SDK_SRC_DIR, 'build_tools')
-
   # Build SDK directory
-  buildbot_common.RemoveDir(naclsdkdir)
-  buildbot_common.MakeDir(naclsdkdir)
-  buildbot_common.MakeDir(tooldir)
-  buildbot_common.MakeDir(cachedir)
+  buildbot_common.RemoveDir(os.path.join(OUT_DIR, 'nacl_sdk'))
 
-  # Copy launch scripts
-  buildbot_common.CopyFile(os.path.join(buildtoolsdir, 'naclsdk'), naclsdkdir)
-  buildbot_common.CopyFile(os.path.join(buildtoolsdir, 'naclsdk.bat'), 
-                           naclsdkdir)
+  CopyFiles(UPDATER_FILES)
 
-  # Copy base manifest
-  json = os.path.join(buildtoolsdir, 'json', 'naclsdk_manifest0.json')
-  buildbot_common.CopyFile(json, 
-                           os.path.join(cachedir, 'naclsdk_manifest2.json'))
-
-  # Copy SDK tools
-  sdkupdate = os.path.join(SDK_SRC_DIR, 'build_tools',
-                           'sdk_tools', 'sdk_update.py')
-  license = os.path.join(SDK_SRC_DIR, 'LICENSE')
-  buildbot_common.CopyFile(sdkupdate, tooldir)
-  buildbot_common.CopyFile(license, tooldir)
-  buildbot_common.CopyFile(CYGTAR, tooldir)
-
+  # Make zip
   buildbot_common.RemoveFile(os.path.join(OUT_DIR, 'nacl_sdk.zip'))
-  buildbot_common.Run(['zip', '-r', 'nacl_sdk.zip',
-                      'nacl_sdk/naclsdk',
-                      'nacl_sdk/naclsdk.bat', 
-                      'nacl_sdk/sdk_tools/LICENSE',
-                      'nacl_sdk/sdk_tools/cygtar.py',
-                      'nacl_sdk/sdk_tools/sdk_update.py',
-                      'nacl_sdk/sdk_cache/naclsdk_manifest2.json'],
+  buildbot_common.Run(['zip', '-r', 'nacl_sdk.zip'] +
+                      [out_file for in_file, out_file in UPDATER_FILES],
                       cwd=OUT_DIR)
-  args = ['-v', sdkupdate, license, CYGTAR, tooldir]
-  tarname = os.path.join(OUT_DIR, 'sdk_tools.tgz')
 
+  # Tar of all files under nacl_sdk/sdk_tools
+  sdktoolsdir = 'nacl_sdk/sdk_tools'
+  tarname = os.path.join(OUT_DIR, 'sdk_tools.tgz')
+  files_to_tar = [os.path.relpath(out_file, sdktoolsdir) for in_file, out_file
+                  in UPDATER_FILES if out_file.startswith(sdktoolsdir)]
   buildbot_common.RemoveFile(tarname)
-  buildbot_common.Run([sys.executable, CYGTAR, '-C', tooldir, '-czf', tarname,
-       'sdk_update.py', 'LICENSE', 'cygtar.py'], cwd=NACL_DIR)
+  buildbot_common.Run([sys.executable, CYGTAR, '-C',
+      os.path.join(OUT_DIR, sdktoolsdir), '-czf', tarname] + files_to_tar,
+      cwd=NACL_DIR)
   sys.stdout.write('\n')
 
 

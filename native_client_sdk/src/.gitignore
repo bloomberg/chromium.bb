@@ -15,7 +15,6 @@
 
 # Ignore all directories than contain these names
 scons-out/
-third_party/
 toolchain/
 
 # Ignore these particular directories (relative to src directory)
