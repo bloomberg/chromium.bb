@@ -97,7 +97,6 @@ class ProfileImpl : public Profile,
       const std::string& app_id) OVERRIDE;
   virtual net::SSLConfigService* GetSSLConfigService() OVERRIDE;
   virtual HostContentSettingsMap* GetHostContentSettingsMap() OVERRIDE;
-  virtual UserStyleSheetWatcher* GetUserStyleSheetWatcher() OVERRIDE;
   virtual BookmarkModel* GetBookmarkModel() OVERRIDE;
   virtual ProtocolHandlerRegistry* GetProtocolHandlerRegistry() OVERRIDE;
   virtual bool IsSameProfile(Profile* profile) OVERRIDE;
@@ -211,7 +210,6 @@ class ProfileImpl : public Profile,
       geolocation_permission_context_;
   scoped_refptr<content::SpeechRecognitionPreferences>
       speech_recognition_preferences_;
-  scoped_refptr<UserStyleSheetWatcher> user_style_sheet_watcher_;
   scoped_ptr<GAIAInfoUpdateService> gaia_info_update_service_;
   scoped_refptr<HistoryService> history_service_;
   scoped_ptr<FaviconService> favicon_service_;

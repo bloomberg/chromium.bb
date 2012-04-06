@@ -203,7 +203,6 @@ class TestingProfile : public Profile {
   virtual net::URLRequestContextGetter* GetRequestContextForIsolatedApp(
       const std::string& app_id) OVERRIDE;
   virtual net::SSLConfigService* GetSSLConfigService() OVERRIDE;
-  virtual UserStyleSheetWatcher* GetUserStyleSheetWatcher() OVERRIDE;
   virtual HostContentSettingsMap* GetHostContentSettingsMap() OVERRIDE;
   virtual std::wstring GetName();
   virtual void SetName(const std::wstring& name) {}

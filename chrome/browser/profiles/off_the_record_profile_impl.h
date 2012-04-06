@@ -63,7 +63,6 @@ class OffTheRecordProfileImpl : public Profile,
       const std::string& app_id) OVERRIDE;
   virtual net::SSLConfigService* GetSSLConfigService() OVERRIDE;
   virtual HostContentSettingsMap* GetHostContentSettingsMap() OVERRIDE;
-  virtual UserStyleSheetWatcher* GetUserStyleSheetWatcher() OVERRIDE;
   virtual BookmarkModel* GetBookmarkModel() OVERRIDE;
   virtual ProtocolHandlerRegistry* GetProtocolHandlerRegistry() OVERRIDE;
   virtual bool IsSameProfile(Profile* profile) OVERRIDE;

@@ -761,14 +761,6 @@ content::SpeechRecognitionPreferences*
 #endif
 }
 
-UserStyleSheetWatcher* ProfileImpl::GetUserStyleSheetWatcher() {
-  if (!user_style_sheet_watcher_.get()) {
-    user_style_sheet_watcher_ = new UserStyleSheetWatcher(this, GetPath());
-    user_style_sheet_watcher_->Init();
-  }
-  return user_style_sheet_watcher_.get();
-}
-
 GAIAInfoUpdateService* ProfileImpl::GetGAIAInfoUpdateService() {
   if (!gaia_info_update_service_.get() &&
       GAIAInfoUpdateService::ShouldUseGAIAProfileInfo(this)) {

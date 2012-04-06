@@ -342,10 +342,6 @@ content::SpeechRecognitionPreferences*
   return profile_->GetSpeechRecognitionPreferences();
 }
 
-UserStyleSheetWatcher* OffTheRecordProfileImpl::GetUserStyleSheetWatcher() {
-  return profile_->GetUserStyleSheetWatcher();
-}
-
 bool OffTheRecordProfileImpl::DidLastSessionExitCleanly() {
   return profile_->DidLastSessionExitCleanly();
 }

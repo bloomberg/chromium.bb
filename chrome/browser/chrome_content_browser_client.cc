@@ -66,6 +66,7 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
 #include "chrome/browser/user_style_sheet_watcher.h"
+#include "chrome/browser/user_style_sheet_watcher_factory.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
@@ -1434,10 +1435,12 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
   web_prefs->password_echo_enabled = browser_defaults::kPasswordEchoEnabled;
 
   // The user stylesheet watcher may not exist in a testing profile.
-  if (profile->GetUserStyleSheetWatcher()) {
+  UserStyleSheetWatcher* user_style_sheet_watcher =
+      UserStyleSheetWatcherFactory::GetForProfile(profile);
+  if (user_style_sheet_watcher) {
     web_prefs->user_style_sheet_enabled = true;
     web_prefs->user_style_sheet_location =
-        profile->GetUserStyleSheetWatcher()->user_style_sheet();
+        user_style_sheet_watcher->user_style_sheet();
   } else {
     web_prefs->user_style_sheet_enabled = false;
   }

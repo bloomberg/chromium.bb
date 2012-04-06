@@ -591,10 +591,6 @@ net::SSLConfigService* TestingProfile::GetSSLConfigService() {
   return NULL;
 }
 
-UserStyleSheetWatcher* TestingProfile::GetUserStyleSheetWatcher() {
-  return NULL;
-}
-
 net::URLRequestContextGetter* TestingProfile::GetRequestContextForIsolatedApp(
     const std::string& app_id) {
   // We don't test isolated app storage here yet, so returning the same dummy

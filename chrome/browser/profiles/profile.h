@@ -37,7 +37,6 @@ class PromoCounter;
 class ProtocolHandlerRegistry;
 class TestingProfile;
 class UserScriptMaster;
-class UserStyleSheetWatcher;
 class VisitedLinkMaster;
 class WebDataService;
 
@@ -318,9 +317,6 @@ class Profile : public content::BrowserContext {
 
   // Returns the Hostname <-> Content settings map for this profile.
   virtual HostContentSettingsMap* GetHostContentSettingsMap() = 0;
-
-  // Returns the user style sheet watcher.
-  virtual UserStyleSheetWatcher* GetUserStyleSheetWatcher() = 0;
 
   // Returns the BookmarkModel, creating if not yet created.
   virtual BookmarkModel* GetBookmarkModel() = 0;

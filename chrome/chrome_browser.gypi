@@ -3942,6 +3942,8 @@
         'browser/upgrade_detector_impl.h',
         'browser/user_style_sheet_watcher.cc',
         'browser/user_style_sheet_watcher.h',
+        'browser/user_style_sheet_watcher_factory.cc',
+        'browser/user_style_sheet_watcher_factory.h',
         'browser/visitedlink/visitedlink_event_listener.cc',
         'browser/visitedlink/visitedlink_event_listener.h',
         'browser/visitedlink/visitedlink_master.cc',

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -133,7 +133,8 @@ void UserStyleSheetLoader::SetStyleSheet(const GURL& url) {
 
 UserStyleSheetWatcher::UserStyleSheetWatcher(Profile* profile,
                                              const FilePath& profile_path)
-    : profile_(profile),
+    : RefcountedProfileKeyedService(content::BrowserThread::UI),
+      profile_(profile),
       profile_path_(profile_path),
       loader_(new UserStyleSheetLoader) {
   // Listen for when the first render view host is created.  If we load
@@ -181,4 +182,8 @@ void UserStyleSheetWatcher::Observe(int type,
     loader_->NotifyLoaded();
     registrar_.RemoveAll();
   }
+}
+
+void UserStyleSheetWatcher::ShutdownOnUIThread() {
+  registrar_.RemoveAll();
 }

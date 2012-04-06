@@ -37,6 +37,7 @@
 #include "chrome/browser/ui/find_bar/find_bar_state_factory.h"
 #include "chrome/browser/ui/global_error_service_factory.h"
 #include "chrome/browser/ui/webui/ntp/ntp_resource_cache_factory.h"
+#include "chrome/browser/user_style_sheet_watcher_factory.h"
 
 #ifndef NDEBUG
 #include "base/command_line.h"
@@ -202,6 +203,7 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
 #if defined(ENABLE_THEMES)
   ThemeServiceFactory::GetInstance();
 #endif
+  UserStyleSheetWatcherFactory::GetInstance();
 #if defined(ENABLE_WEB_INTENTS)
   WebIntentsRegistryFactory::GetInstance();
 #endif

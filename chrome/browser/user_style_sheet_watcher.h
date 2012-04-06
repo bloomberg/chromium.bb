@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop_helpers.h"
+#include "chrome/browser/profiles/refcounted_profile_keyed_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -22,10 +23,8 @@ class UserStyleSheetLoader;
 // Watches the user style sheet file and triggers reloads on the file thread
 // whenever the file changes.
 class UserStyleSheetWatcher
-    : public base::RefCountedThreadSafe<
-          UserStyleSheetWatcher,
-          content::BrowserThread::DeleteOnUIThread>,
-      public content::NotificationObserver {
+    : public content::NotificationObserver,
+      public RefcountedProfileKeyedService {
  public:
   UserStyleSheetWatcher(Profile* profile, const FilePath& profile_path);
 
@@ -38,9 +37,10 @@ class UserStyleSheetWatcher
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+  // RefCountedProfileKeyedBase method override.
+  virtual void ShutdownOnUIThread() OVERRIDE;
+
  private:
-  friend struct content::BrowserThread::DeleteOnThread<
-      content::BrowserThread::UI>;
   friend class base::DeleteHelper<UserStyleSheetWatcher>;
 
   virtual ~UserStyleSheetWatcher();
