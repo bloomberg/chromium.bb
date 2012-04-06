@@ -59,6 +59,24 @@ class PseudoTcpAdapter : public net::StreamSocket, base::NonThreadSafe {
   // Set whether Nagle's algorithm is enabled.
   void SetNoDelay(bool no_delay);
 
+  // When write_waits_for_send flag is set to true the Write() method
+  // will wait until the data is sent to the remote end before the
+  // write completes (it still doesn't wait until the data is received
+  // and acknowledged by the remote end). Otherwise write completes
+  // after the data has been copied to the send buffer.
+  //
+  // This flag is useful in cases when the sender needs to get
+  // feedback from the connection when it is congested. E.g. remoting
+  // host uses this feature to adjust screen capturing rate according
+  // to the available bandwidth. In the same time it may negatively
+  // impact performance in some cases. E.g. when the sender writes one
+  // byte at a time then each byte will always be sent in a separate
+  // packet.
+  //
+  // TODO(sergeyu): Remove this flag once remoting has a better
+  // flow-control solution.
+  void SetWriteWaitsForSend(bool write_waits_for_send);
+
  private:
   class Core;
 

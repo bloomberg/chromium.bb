@@ -9,6 +9,7 @@
 #include "jingle/glue/pseudotcp_adapter.h"
 #include "jingle/glue/utils.h"
 #include "net/base/net_errors.h"
+#include "remoting/base/constants.h"
 #include "remoting/protocol/channel_authenticator.h"
 #include "remoting/protocol/transport_config.h"
 #include "third_party/libjingle/source/talk/base/basicpacketsocketfactory.h"
@@ -184,6 +185,12 @@ void LibjingleStreamTransport::Connect(
   socket_->SetNoDelay(true);
   socket_->SetAckDelay(kTcpAckDelayMilliseconds);
 
+  // TODO(sergeyu): This is a hack to improve latency of the video
+  // channel. Consider removing it once we have better flow control
+  // implemented.
+  if (name_ == kVideoChannelName)
+    socket_->SetWriteWaitsForSend(true);
+
   int result = socket_->Connect(
       base::Bind(&LibjingleStreamTransport::OnTcpConnected,
                  base::Unretained(this)));
@@ -341,7 +348,6 @@ LibjingleTransportFactory::CreateDatagramTransport() {
   NOTIMPLEMENTED();
   return scoped_ptr<DatagramTransport>(NULL);
 }
-
 
 }  // namespace protocol
 }  // namespace remoting

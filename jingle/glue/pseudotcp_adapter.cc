@@ -52,6 +52,7 @@ class PseudoTcpAdapter::Core : public cricket::IPseudoTcpNotify,
   void SetNoDelay(bool no_delay);
   void SetReceiveBufferSize(int32 size);
   void SetSendBufferSize(int32 size);
+  void SetWriteWaitsForSend(bool write_waits_for_send);
 
   void DeleteSocket();
 
@@ -66,6 +67,10 @@ class PseudoTcpAdapter::Core : public cricket::IPseudoTcpNotify,
   void DoReadFromSocket();
   void HandleReadResults(int result);
   void HandleTcpClock();
+
+  // Checks if current write has completed in the write-waits-for-send
+  // mode.
+  void CheckWriteComplete();
 
   // This re-sets |timer| without triggering callbacks.
   void AdjustClock();
@@ -82,6 +87,18 @@ class PseudoTcpAdapter::Core : public cricket::IPseudoTcpNotify,
   scoped_refptr<net::IOBuffer> write_buffer_;
   int write_buffer_size_;
 
+  // Whether we need to wait for data to be sent before completing write.
+  bool write_waits_for_send_;
+
+  // Set to true in the write-waits-for-send mode when we've
+  // successfully writtend data to the send buffer and waiting for the
+  // data to be sent to the remote end.
+  bool waiting_write_position_;
+
+  // Number of the bytes written by the last write stored while we wait
+  // for the data to be sent (i.e. when waiting_write_position_ = true).
+  int last_write_result_;
+
   bool socket_write_pending_;
   scoped_refptr<net::IOBuffer> socket_read_buffer_;
 
@@ -94,6 +111,8 @@ class PseudoTcpAdapter::Core : public cricket::IPseudoTcpNotify,
 PseudoTcpAdapter::Core::Core(net::Socket* socket)
     : ALLOW_THIS_IN_INITIALIZER_LIST(pseudo_tcp_(this, 0)),
       socket_(socket),
+      write_waits_for_send_(false),
+      waiting_write_position_(false),
       socket_write_pending_(false) {
   // Doesn't trigger callbacks.
   pseudo_tcp_.NotifyMTU(kDefaultMtu);
@@ -139,13 +158,29 @@ int PseudoTcpAdapter::Core::Write(net::IOBuffer* buffer, int buffer_size,
     DCHECK(result < 0);
   }
 
+  AdjustClock();
+
   if (result == net::ERR_IO_PENDING) {
     write_buffer_ = buffer;
     write_buffer_size_ = buffer_size;
     write_callback_ = callback;
+    return result;
   }
 
-  AdjustClock();
+  if (result < 0)
+    return result;
+
+  // Need to wait until the data is sent to the peer when
+  // send-confirmation mode is enabled.
+  if (write_waits_for_send_ && pseudo_tcp_.GetBytesBufferedNotSent() > 0) {
+    DCHECK(!waiting_write_position_);
+    waiting_write_position_ = true;
+    last_write_result_ = result;
+    write_buffer_ = buffer;
+    write_buffer_size_ = buffer_size;
+    write_callback_ = callback;
+    return net::ERR_IO_PENDING;
+  }
 
   return result;
 }
@@ -230,6 +265,11 @@ void PseudoTcpAdapter::Core::OnTcpWriteable(PseudoTcp* tcp) {
   if (write_callback_.is_null())
     return;
 
+  if (waiting_write_position_) {
+    CheckWriteComplete();
+    return;
+  }
+
   int result = pseudo_tcp_.Send(write_buffer_->data(), write_buffer_size_);
   if (result < 0) {
     result = net::MapSystemError(pseudo_tcp_.GetError());
@@ -239,6 +279,13 @@ void PseudoTcpAdapter::Core::OnTcpWriteable(PseudoTcp* tcp) {
   }
 
   AdjustClock();
+
+  if (write_waits_for_send_ && pseudo_tcp_.GetBytesBufferedNotSent() > 0) {
+    DCHECK(!waiting_write_position_);
+    waiting_write_position_ = true;
+    last_write_result_ = result;
+    return;
+  }
 
   net::CompletionCallback callback = write_callback_;
   write_callback_.Reset();
@@ -282,6 +329,10 @@ void PseudoTcpAdapter::Core::SetReceiveBufferSize(int32 size) {
 
 void PseudoTcpAdapter::Core::SetSendBufferSize(int32 size) {
   pseudo_tcp_.SetOption(cricket::PseudoTcp::OPT_SNDBUF, size);
+}
+
+void PseudoTcpAdapter::Core::SetWriteWaitsForSend(bool write_waits_for_send) {
+  write_waits_for_send_ = write_waits_for_send;
 }
 
 void PseudoTcpAdapter::Core::DeleteSocket() {
@@ -348,6 +399,8 @@ void PseudoTcpAdapter::Core::HandleReadResults(int result) {
   // TODO(wez): Disconnect on failure of NotifyPacket?
   pseudo_tcp_.NotifyPacket(socket_read_buffer_->data(), result);
   AdjustClock();
+
+  CheckWriteComplete();
 }
 
 void PseudoTcpAdapter::Core::OnRead(int result) {
@@ -385,6 +438,21 @@ void PseudoTcpAdapter::Core::HandleTcpClock() {
 
   pseudo_tcp_.NotifyClock(PseudoTcp::Now());
   AdjustClock();
+
+  CheckWriteComplete();
+}
+
+void PseudoTcpAdapter::Core::CheckWriteComplete() {
+  if (!write_callback_.is_null() && waiting_write_position_) {
+    if (pseudo_tcp_.GetBytesBufferedNotSent() == 0) {
+      waiting_write_position_ = false;
+
+      net::CompletionCallback callback = write_callback_;
+      write_callback_.Reset();
+      write_buffer_ = NULL;
+      callback.Run(last_write_result_);
+    }
+  }
 }
 
 // Public interface implemention.
@@ -516,6 +584,11 @@ void PseudoTcpAdapter::SetAckDelay(int delay_ms) {
 void PseudoTcpAdapter::SetNoDelay(bool no_delay) {
   DCHECK(CalledOnValidThread());
   core_->SetNoDelay(no_delay);
+}
+
+void PseudoTcpAdapter::SetWriteWaitsForSend(bool write_waits_for_send) {
+  DCHECK(CalledOnValidThread());
+  core_->SetWriteWaitsForSend(write_waits_for_send);
 }
 
 }  // namespace jingle_glue

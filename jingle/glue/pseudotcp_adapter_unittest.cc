@@ -407,6 +407,38 @@ TEST_F(PseudoTcpAdapterTest, DeleteOnConnected) {
   ASSERT_EQ(NULL, host_pseudotcp_.get());
 }
 
+// Verify that we can send/receive data with the write-waits-for-send
+// flag set.
+TEST_F(PseudoTcpAdapterTest, WriteWaitsForSendLetsDataThrough) {
+  net::TestCompletionCallback host_connect_cb;
+  net::TestCompletionCallback client_connect_cb;
+
+  host_pseudotcp_->SetWriteWaitsForSend(true);
+  client_pseudotcp_->SetWriteWaitsForSend(true);
+
+  // Disable Nagle's algorithm because the test is slow when it is
+  // enabled.
+  host_pseudotcp_->SetNoDelay(true);
+
+  int rv1 = host_pseudotcp_->Connect(host_connect_cb.callback());
+  int rv2 = client_pseudotcp_->Connect(client_connect_cb.callback());
+
+  if (rv1 == net::ERR_IO_PENDING)
+    rv1 = host_connect_cb.WaitForResult();
+  if (rv2 == net::ERR_IO_PENDING)
+    rv2 = client_connect_cb.WaitForResult();
+  ASSERT_EQ(net::OK, rv1);
+  ASSERT_EQ(net::OK, rv2);
+
+  scoped_refptr<TCPChannelTester> tester =
+      new TCPChannelTester(&message_loop_, host_pseudotcp_.get(),
+                           client_pseudotcp_.get());
+
+  tester->Start();
+  message_loop_.Run();
+  tester->CheckResults();
+}
+
 }  // namespace
 
 }  // namespace jingle_glue
