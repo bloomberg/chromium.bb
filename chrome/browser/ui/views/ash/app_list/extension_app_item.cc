@@ -224,14 +224,14 @@ void ExtensionAppItem::ShowExtensionOptions() {
     return;
 
   Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
-  if (!browser)
+  if (!browser) {
     browser = Browser::Create(profile_);
-
-  if (browser) {
-    browser->AddSelectedTabWithURL(extension->options_url(),
-                                   content::PAGE_TRANSITION_LINK);
-    browser->window()->Activate();
+    browser->window()->Show();
   }
+
+  browser->AddSelectedTabWithURL(extension->options_url(),
+                                 content::PAGE_TRANSITION_LINK);
+  browser->window()->Activate();
 }
 
 void ExtensionAppItem::StartExtensionUninstall() {
