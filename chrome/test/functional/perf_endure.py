@@ -791,5 +791,57 @@ class ChromeEndurePlusTest(ChromeEndureBaseTest):
                         test_description, scenario)
 
 
+class IndexedDBOfflineTest(ChromeEndureBaseTest):
+  """Long-running performance tests for IndexedDB, modeling offline usage."""
+
+  _webapp_name = 'IndexedDBOffline'
+  _tab_title_substring = 'IndexedDB Offline'
+
+  def setUp(self):
+    ChromeEndureBaseTest.setUp(self)
+
+    url = self.GetHttpURLForDataPath('indexeddb', 'endure', 'app.html')
+    self.NavigateToURL(url)
+    loaded_tab_title = self.GetActiveTabTitle()
+    self.assertTrue(self._tab_title_substring in loaded_tab_title,
+                    msg='Loaded tab title does not contain "%s": "%s"' %
+                        (self._tab_title_substring, loaded_tab_title))
+
+    self._driver = self.NewWebDriver()
+    # Any call to wait.until() will raise an exception if the timeout is hit.
+    self._wait = WebDriverWait(self._driver, timeout=60)
+
+  def testOfflineOnline(self):
+    """Simulates user input while offline and sync while online.
+
+    This test alternates between a simulated "Offline" state (where user
+    input events are queued) and an "Online" state (where user input events
+    are dequeued, sync data is staged, and sync data is unstaged).
+    """
+    test_description = 'OnlineOfflineSync'
+
+    def scenario():
+      # Click the "Online" button and let simulated sync run for 1 second.
+      if not self._ClickElementByXpath(self._driver, self._wait,
+                                       'id("online")'):
+        self._num_errors += 1
+      if not self._WaitForElementByXpath(
+        self._driver, self._wait, 'id("state")[text()="online"]'):
+        self._num_errors += 1
+      time.sleep(1)
+
+      # Click the "Offline" button and let user input occur for 1 second.
+      if not self._ClickElementByXpath(self._driver, self._wait,
+                                       'id("offline")'):
+        self._num_errors += 1
+      if not self._WaitForElementByXpath(
+          self._driver, self._wait, 'id("state")[text()="offline"]'):
+        self._num_errors += 1
+      time.sleep(1)
+
+    self._RunEndureTest(self._webapp_name, self._tab_title_substring,
+                        test_description, scenario)
+
+
 if __name__ == '__main__':
   pyauto_functional.Main()
