@@ -222,15 +222,15 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl
   static bool ImplementsThreadSafeReferenceCounting() { return true; }
 
   // AudioDevice::RenderCallback implementation.
-  virtual size_t Render(const std::vector<float*>& audio_data,
-                        size_t number_of_frames,
-                        size_t audio_delay_milliseconds) OVERRIDE;
+  virtual int Render(const std::vector<float*>& audio_data,
+                     int number_of_frames,
+                     int audio_delay_milliseconds) OVERRIDE;
   virtual void OnRenderError() OVERRIDE;
 
   // AudioInputDevice::CaptureCallback implementation.
   virtual void Capture(const std::vector<float*>& audio_data,
-                       size_t number_of_frames,
-                       size_t audio_delay_milliseconds,
+                       int number_of_frames,
+                       int audio_delay_milliseconds,
                        double volume) OVERRIDE;
   virtual void OnCaptureError() OVERRIDE;
 
@@ -365,10 +365,10 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl
   void SetSessionId(int session_id);
 
   // Accessors.
-  size_t input_buffer_size() const {
+  int input_buffer_size() const {
     return input_audio_parameters_.frames_per_buffer();
   }
-  size_t output_buffer_size() const {
+  int output_buffer_size() const {
     return output_audio_parameters_.frames_per_buffer();
   }
   int input_channels() const {

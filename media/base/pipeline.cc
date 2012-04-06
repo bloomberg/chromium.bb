@@ -436,7 +436,7 @@ base::TimeDelta Pipeline::GetDuration() const {
 }
 
 void Pipeline::OnAudioTimeUpdate(base::TimeDelta time,
-                                     base::TimeDelta max_time) {
+                                 base::TimeDelta max_time) {
   DCHECK(time <= max_time);
   DCHECK(IsRunning());
   base::AutoLock auto_lock(lock_);

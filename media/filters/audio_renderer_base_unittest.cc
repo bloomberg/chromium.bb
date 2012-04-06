@@ -16,9 +16,25 @@ using ::testing::_;
 using ::testing::AnyNumber;
 using ::testing::Invoke;
 using ::testing::Return;
-using ::testing::ReturnPointee;
-using ::testing::SaveArg;
+using ::testing::NiceMock;
 using ::testing::StrictMock;
+
+namespace {
+
+class MockAudioSink : public media::AudioRendererSink {
+ public:
+  MOCK_METHOD2(Initialize, void(const media::AudioParameters& params,
+                                RenderCallback* callback));
+  MOCK_METHOD0(Start, void());
+  MOCK_METHOD0(Stop, void());
+  MOCK_METHOD1(Pause, void(bool flush));
+  MOCK_METHOD0(Play, void());
+  MOCK_METHOD1(SetPlaybackRate, void(float rate));
+  MOCK_METHOD1(SetVolume, bool(double volume));
+  MOCK_METHOD1(GetVolume, void(double* volume));
+};
+
+}  // namespace
 
 namespace media {
 
@@ -27,30 +43,11 @@ namespace media {
 static uint8 kMutedAudio = 0x00;
 static uint8 kPlayingAudio = 0x99;
 
-// Mocked subclass of AudioRendererBase for testing purposes.
-class MockAudioRendererBase : public AudioRendererBase {
- public:
-  MockAudioRendererBase()
-      : AudioRendererBase() {}
-  virtual ~MockAudioRendererBase() {}
-
-  // AudioRenderer implementation.
-  MOCK_METHOD1(SetVolume, void(float volume));
-
-  // AudioRendererBase implementation.
-  MOCK_METHOD3(OnInitialize, bool(int, ChannelLayout, int));
-  MOCK_METHOD0(OnStop, void());
-  MOCK_METHOD0(OnRenderEndOfStream, void());
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockAudioRendererBase);
-};
-
 class AudioRendererBaseTest : public ::testing::Test {
  public:
   // Give the decoder some non-garbage media properties.
   AudioRendererBaseTest()
-      : renderer_(new MockAudioRendererBase()),
+      : renderer_(new AudioRendererBase(new NiceMock<MockAudioSink>())),
         decoder_(new MockAudioDecoder()) {
     renderer_->set_host(&host_);
 
@@ -59,13 +56,7 @@ class AudioRendererBaseTest : public ::testing::Test {
         .WillByDefault(Invoke(this, &AudioRendererBaseTest::SaveReadCallback));
 
     // Set up audio properties.
-    ON_CALL(*decoder_, bits_per_channel())
-        .WillByDefault(Return(16));
-    ON_CALL(*decoder_, channel_layout())
-        .WillByDefault(Return(CHANNEL_LAYOUT_MONO));
-    ON_CALL(*decoder_, samples_per_second())
-        .WillByDefault(Return(44100));
-
+    SetSupportedAudioDecoderProperties();
     EXPECT_CALL(*decoder_, bits_per_channel())
         .Times(AnyNumber());
     EXPECT_CALL(*decoder_, channel_layout())
@@ -75,7 +66,6 @@ class AudioRendererBaseTest : public ::testing::Test {
   }
 
   virtual ~AudioRendererBaseTest() {
-    EXPECT_CALL(*renderer_, OnStop());
     renderer_->Stop(NewExpectedClosure());
   }
 
@@ -91,6 +81,24 @@ class AudioRendererBaseTest : public ::testing::Test {
                       base::Unretained(this));
   }
 
+  void SetSupportedAudioDecoderProperties() {
+    ON_CALL(*decoder_, bits_per_channel())
+        .WillByDefault(Return(16));
+    ON_CALL(*decoder_, channel_layout())
+        .WillByDefault(Return(CHANNEL_LAYOUT_MONO));
+    ON_CALL(*decoder_, samples_per_second())
+        .WillByDefault(Return(44100));
+  }
+
+  void SetUnsupportedAudioDecoderProperties() {
+    ON_CALL(*decoder_, bits_per_channel())
+        .WillByDefault(Return(3));
+    ON_CALL(*decoder_, channel_layout())
+        .WillByDefault(Return(CHANNEL_LAYOUT_UNSUPPORTED));
+    ON_CALL(*decoder_, samples_per_second())
+        .WillByDefault(Return(0));
+  }
+
   void OnAudioTimeCallback(
       base::TimeDelta current_time, base::TimeDelta max_time) {
     CHECK(current_time <= max_time);
@@ -102,8 +110,6 @@ class AudioRendererBaseTest : public ::testing::Test {
   }
 
   void Initialize() {
-    EXPECT_CALL(*renderer_, OnInitialize(_, _, _))
-        .WillOnce(Return(true));
     renderer_->Initialize(
         decoder_, NewExpectedStatusCB(PIPELINE_OK), NewUnderflowClosure(),
         NewAudioTimeClosure());
@@ -218,7 +224,7 @@ class AudioRendererBaseTest : public ::testing::Test {
   }
 
   // Fixture members.
-  scoped_refptr<MockAudioRendererBase> renderer_;
+  scoped_refptr<AudioRendererBase> renderer_;
   scoped_refptr<MockAudioDecoder> decoder_;
   StrictMock<MockFilterHost> host_;
   AudioDecoder::ReadCB read_cb_;
@@ -234,8 +240,7 @@ class AudioRendererBaseTest : public ::testing::Test {
 };
 
 TEST_F(AudioRendererBaseTest, Initialize_Failed) {
-  EXPECT_CALL(*renderer_, OnInitialize(_, _, _))
-      .WillOnce(Return(false));
+  SetUnsupportedAudioDecoderProperties();
   renderer_->Initialize(
       decoder_,
       NewExpectedStatusCB(PIPELINE_ERROR_INITIALIZATION_FAILED),
@@ -246,8 +251,6 @@ TEST_F(AudioRendererBaseTest, Initialize_Failed) {
 }
 
 TEST_F(AudioRendererBaseTest, Initialize_Successful) {
-  EXPECT_CALL(*renderer_, OnInitialize(_, _, _))
-      .WillOnce(Return(true));
   renderer_->Initialize(decoder_, NewExpectedStatusCB(PIPELINE_OK),
                         NewUnderflowClosure(), NewAudioTimeClosure());
 
@@ -285,8 +288,6 @@ TEST_F(AudioRendererBaseTest, EndOfStream) {
   EXPECT_FALSE(renderer_->HasEnded());
 
   // Drain internal buffer, now we should report ended.
-  EXPECT_CALL(*renderer_, OnRenderEndOfStream())
-      .WillOnce(Invoke(renderer_.get(), &AudioRendererBase::SignalEndOfStream));
   EXPECT_CALL(host_, NotifyEnded());
   EXPECT_TRUE(ConsumeBufferedData(bytes_buffered(), NULL));
   EXPECT_TRUE(renderer_->HasEnded());
@@ -367,8 +368,6 @@ TEST_F(AudioRendererBaseTest, Underflow_EndOfStream) {
   // stop reading after receiving an end of stream buffer. It should have also
   // called NotifyEnded() http://crbug.com/106641
   DeliverEndOfStream();
-  EXPECT_CALL(*renderer_, OnRenderEndOfStream())
-      .WillOnce(Invoke(renderer_.get(), &AudioRendererBase::SignalEndOfStream));
   EXPECT_CALL(host_, NotifyEnded());
 
   EXPECT_CALL(host_, GetTime()).WillOnce(Return(base::TimeDelta()));

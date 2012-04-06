@@ -12,13 +12,14 @@
 #include "base/command_line.h"
 #include "base/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
+#include "media/audio/null_audio_sink.h"
 #include "media/base/filter_collection.h"
 #include "media/base/limits.h"
 #include "media/base/media_log.h"
 #include "media/base/media_switches.h"
 #include "media/base/pipeline.h"
 #include "media/base/video_frame.h"
-#include "media/filters/null_audio_renderer.h"
+#include "media/filters/audio_renderer_base.h"
 #include "media/filters/video_renderer_base.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebVideoFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
@@ -152,7 +153,8 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
   proxy_->set_frame_provider(video_renderer);
 
   // Create default audio renderer.
-  filter_collection_->AddAudioRenderer(new media::NullAudioRenderer());
+  filter_collection_->AddAudioRenderer(
+      new media::AudioRendererBase(new media::NullAudioSink()));
 }
 
 WebMediaPlayerImpl::~WebMediaPlayerImpl() {

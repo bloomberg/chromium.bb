@@ -28,10 +28,6 @@ CONTENT_EXPORT int GetInputSampleRate();
 // Must be used in conjunction with AUDIO_PCM_LOW_LATENCY.
 CONTENT_EXPORT size_t GetOutputBufferSize();
 
-// Computes a buffer size based on the given |sample_rate|. Must be used in
-// conjunction with AUDIO_PCM_LINEAR.
-CONTENT_EXPORT size_t GetHighLatencyOutputBufferSize(int sample_rate);
-
 // Fetch the audio channel layout for the default input device.
 // Must be called from RenderThreadImpl::current().
 CONTENT_EXPORT ChannelLayout GetInputChannelLayout();

@@ -57,6 +57,12 @@ void RenderAudioSourceProvider::Pause(bool flush) {
   is_running_ = false;
 }
 
+void RenderAudioSourceProvider::SetPlaybackRate(float rate) {
+  base::AutoLock auto_lock(sink_lock_);
+  if (!client_)
+    default_sink_->SetPlaybackRate(rate);
+}
+
 bool RenderAudioSourceProvider::SetVolume(double volume) {
   base::AutoLock auto_lock(sink_lock_);
   if (!client_)

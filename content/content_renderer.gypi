@@ -84,8 +84,6 @@
     'renderer/media/audio_input_message_filter.h',
     'renderer/media/audio_message_filter.cc',
     'renderer/media/audio_message_filter.h',
-    'renderer/media/audio_renderer_impl.cc',
-    'renderer/media/audio_renderer_impl.h',
     'renderer/media/capture_video_decoder.cc',
     'renderer/media/capture_video_decoder.h',
     'renderer/media/media_stream_center.h',

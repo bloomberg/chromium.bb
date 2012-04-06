@@ -69,10 +69,6 @@ void AudioDevice::Initialize(const media::AudioParameters& params,
   CHECK(!callback_);  // Calling Initialize() twice?
 
   audio_parameters_ = params;
-  audio_parameters_.Reset(
-      params.format(),
-      params.channel_layout(), params.sample_rate(), params.bits_per_sample(),
-      params.frames_per_buffer());
   callback_ = callback;
 }
 
@@ -85,7 +81,8 @@ AudioDevice::~AudioDevice() {
 void AudioDevice::Start() {
   DCHECK(callback_) << "Initialize hasn't been called";
   message_loop()->PostTask(FROM_HERE,
-      base::Bind(&AudioDevice::InitializeOnIOThread, this, audio_parameters_));
+      base::Bind(&AudioDevice::CreateStreamOnIOThread, this,
+                 audio_parameters_));
 }
 
 void AudioDevice::Stop() {
@@ -127,7 +124,7 @@ void AudioDevice::GetVolume(double* volume) {
   *volume = volume_;
 }
 
-void AudioDevice::InitializeOnIOThread(const media::AudioParameters& params) {
+void AudioDevice::CreateStreamOnIOThread(const media::AudioParameters& params) {
   DCHECK(message_loop()->BelongsToCurrentThread());
   // Make sure we don't create the stream more than once.
   DCHECK_EQ(0, stream_id_);

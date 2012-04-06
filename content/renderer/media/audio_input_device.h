@@ -95,8 +95,8 @@ class CONTENT_EXPORT AudioInputDevice
   class CONTENT_EXPORT CaptureCallback {
    public:
     virtual void Capture(const std::vector<float*>& audio_data,
-                         size_t number_of_frames,
-                         size_t audio_delay_milliseconds,
+                         int number_of_frames,
+                         int audio_delay_milliseconds,
                          double volume) = 0;
     virtual void OnCaptureError() = 0;
    protected:
@@ -148,7 +148,7 @@ class CONTENT_EXPORT AudioInputDevice
     return audio_parameters_.sample_rate();
   }
 
-  size_t buffer_size() const {
+  int buffer_size() const {
     return audio_parameters_.frames_per_buffer();
   }
 

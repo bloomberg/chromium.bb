@@ -30,9 +30,9 @@ class RendererWebAudioDeviceImpl
   virtual double sampleRate();
 
   // AudioDevice::RenderCallback implementation.
-  virtual size_t Render(const std::vector<float*>& audio_data,
-                        size_t number_of_frames,
-                        size_t audio_delay_milliseconds) OVERRIDE;
+  virtual int Render(const std::vector<float*>& audio_data,
+                     int number_of_frames,
+                     int audio_delay_milliseconds) OVERRIDE;
   virtual void OnRenderError() OVERRIDE;
 
  private:

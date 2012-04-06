@@ -72,10 +72,10 @@ int32_t WebRtcAudioDeviceImpl::Release() {
   return ret;
 }
 
-size_t WebRtcAudioDeviceImpl::Render(
+int WebRtcAudioDeviceImpl::Render(
     const std::vector<float*>& audio_data,
-    size_t number_of_frames,
-    size_t audio_delay_milliseconds) {
+    int number_of_frames,
+    int audio_delay_milliseconds) {
   DCHECK_LE(number_of_frames, output_buffer_size());
 
   {
@@ -92,12 +92,12 @@ size_t WebRtcAudioDeviceImpl::Render(
     // Even if the hardware runs at 44.1kHz, we use 44.0 internally.
     samples_per_sec = 44000;
   }
-  uint32_t samples_per_10_msec = (samples_per_sec / 100);
+  int samples_per_10_msec = (samples_per_sec / 100);
   const int bytes_per_10_msec =
       channels * samples_per_10_msec * bytes_per_sample_;
 
   uint32_t num_audio_samples = 0;
-  size_t accumulated_audio_samples = 0;
+  int accumulated_audio_samples = 0;
 
   char* audio_byte_buffer = reinterpret_cast<char*>(output_buffer_.get());
 
@@ -137,8 +137,8 @@ void WebRtcAudioDeviceImpl::OnRenderError() {
 }
 
 void WebRtcAudioDeviceImpl::Capture(const std::vector<float*>& audio_data,
-                                    size_t number_of_frames,
-                                    size_t audio_delay_milliseconds,
+                                    int number_of_frames,
+                                    int audio_delay_milliseconds,
                                     double volume) {
   DCHECK_LE(number_of_frames, input_buffer_size());
 #if defined(OS_WIN) || defined(OS_MACOSX)
@@ -179,7 +179,8 @@ void WebRtcAudioDeviceImpl::Capture(const std::vector<float*>& audio_data,
   const int samples_per_10_msec = (samples_per_sec / 100);
   const int bytes_per_10_msec =
       channels * samples_per_10_msec * bytes_per_sample_;
-  size_t accumulated_audio_samples = 0;
+  int accumulated_audio_samples = 0;
+
   char* audio_byte_buffer = reinterpret_cast<char*>(input_buffer_.get());
 
   // Map internal volume range of [0.0, 1.0] into [0, 255] used by the

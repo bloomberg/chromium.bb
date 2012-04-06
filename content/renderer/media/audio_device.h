@@ -23,7 +23,7 @@
 //
 //            Task [IO thread]                  IPC [IO thread]
 //
-// Start -> InitializeOnIOThread ------> AudioHostMsg_CreateStream -------->
+// Start -> CreateStreamOnIOThread -----> AudioHostMsg_CreateStream ------>
 //       <- OnStreamCreated <- AudioMsg_NotifyStreamCreated <-
 //       ---> PlayOnIOThread -----------> AudioHostMsg_PlayStream -------->
 //
@@ -96,27 +96,11 @@ class CONTENT_EXPORT AudioDevice
 
   virtual void Initialize(const media::AudioParameters& params,
                           RenderCallback* callback) OVERRIDE;
-  // Starts audio playback.
   virtual void Start() OVERRIDE;
-
-  // Stops audio playback.
   virtual void Stop() OVERRIDE;
-
-  // Resumes playback if currently paused.
   virtual void Play() OVERRIDE;
-
-  // Pauses playback.
-  // If |flush| is true then any pending audio that is in the pipeline
-  // (has not yet reached the hardware) will be discarded.  In this case,
-  // when Play() is later called, no previous pending audio will be
-  // rendered.
   virtual void Pause(bool flush) OVERRIDE;
-
-  // Sets the playback volume, with range [0.0, 1.0] inclusive.
-  // Returns |true| on success.
   virtual bool SetVolume(double volume) OVERRIDE;
-
-  // Gets the playback volume, with range [0.0, 1.0] inclusive.
   virtual void GetVolume(double* volume) OVERRIDE;
 
   // Methods called on IO thread ----------------------------------------------
@@ -136,7 +120,7 @@ class CONTENT_EXPORT AudioDevice
   // The following methods are tasks posted on the IO thread that needs to
   // be executed on that thread. They interact with AudioMessageFilter and
   // sends IPC messages on that thread.
-  void InitializeOnIOThread(const media::AudioParameters& params);
+  void CreateStreamOnIOThread(const media::AudioParameters& params);
   void PlayOnIOThread();
   void PauseOnIOThread(bool flush);
   void ShutDownOnIOThread();

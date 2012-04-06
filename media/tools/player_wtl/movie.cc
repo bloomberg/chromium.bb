@@ -9,15 +9,16 @@
 #include "base/threading/platform_thread.h"
 #include "base/utf_string_conversions.h"
 #include "media/audio/audio_manager.h"
+#include "media/audio/null_audio_sink.h"
 #include "media/base/filter_collection.h"
 #include "media/base/media_log.h"
 #include "media/base/message_loop_factory.h"
 #include "media/base/pipeline.h"
+#include "media/filters/audio_renderer_base.h"
 #include "media/filters/ffmpeg_audio_decoder.h"
 #include "media/filters/ffmpeg_demuxer.h"
 #include "media/filters/ffmpeg_video_decoder.h"
 #include "media/filters/file_data_source.h"
-#include "media/filters/null_audio_renderer.h"
 #include "media/filters/video_renderer_base.h"
 
 namespace media {
@@ -83,7 +84,8 @@ bool Movie::Open(const wchar_t* url, VideoRendererBase* video_renderer) {
                  "VideoDecoderThread")));
 
   // TODO(vrk): Re-enabled audio. (crbug.com/112159)
-  collection->AddAudioRenderer(new media::NullAudioRenderer());
+  collection->AddAudioRenderer(
+      new media::AudioRendererBase(new media::NullAudioSink()));
   collection->AddVideoRenderer(video_renderer);
 
   // Create and start our pipeline.

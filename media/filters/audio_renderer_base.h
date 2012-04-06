@@ -2,19 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// AudioRendererBase takes care of the tricky queuing work and provides simple
-// methods for subclasses to peek and poke at audio data.  In addition to
-// AudioRenderer interface methods this classes doesn't implement, subclasses
-// must also implement the following methods:
-//   OnInitialized
-//   OnStop
-//   OnRenderEndOfStream
+// Audio rendering unit utilizing an AudioRendererSink to output data.
 //
-// The general assumption is that subclasses start a callback-based audio thread
-// which needs to be filled with decoded audio data.  AudioDecoderBase provides
-// FillBuffer which handles filling the provided buffer, dequeuing items,
-// scheduling additional reads and updating the clock.  In a sense,
-// AudioRendererBase is the producer and the subclass is the consumer.
+// This class lives inside three threads during it's lifetime, namely:
+// 1. Render thread.
+//    This object is created on the render thread.
+// 2. Pipeline thread
+//    Initialize() is called here with the audio format.
+//    Play/Pause/Seek also happens here.
+// 3. Audio thread created by the AudioRendererSink.
+//    Render() is called here where audio data is decoded into raw PCM data.
+//
+// AudioRendererBase talks to an AudioRendererAlgorithmBase that takes care of
+// queueing audio data and stretching/shrinking audio data when playback rate !=
+// 1.0 or 0.0.
 
 #ifndef MEDIA_FILTERS_AUDIO_RENDERER_BASE_H_
 #define MEDIA_FILTERS_AUDIO_RENDERER_BASE_H_
@@ -23,22 +24,29 @@
 
 #include "base/synchronization/lock.h"
 #include "media/base/audio_decoder.h"
+#include "media/base/audio_renderer_sink.h"
 #include "media/base/buffers.h"
 #include "media/base/filters.h"
 #include "media/filters/audio_renderer_algorithm_base.h"
 
 namespace media {
 
-class MEDIA_EXPORT AudioRendererBase : public AudioRenderer {
+class MEDIA_EXPORT AudioRendererBase
+    : public AudioRenderer,
+      NON_EXPORTED_BASE(public media::AudioRendererSink::RenderCallback) {
  public:
-  AudioRendererBase();
+  // Methods called on Render thread ------------------------------------------
+  // An AudioRendererSink is used as the destination for the rendered audio.
+  explicit AudioRendererBase(media::AudioRendererSink* sink);
   virtual ~AudioRendererBase();
 
+  // Methods called on pipeline thread ----------------------------------------
   // Filter implementation.
   virtual void Play(const base::Closure& callback) OVERRIDE;
   virtual void Pause(const base::Closure& callback) OVERRIDE;
   virtual void Flush(const base::Closure& callback) OVERRIDE;
   virtual void Stop(const base::Closure& callback) OVERRIDE;
+  virtual void SetPlaybackRate(float rate) OVERRIDE;
   virtual void Seek(base::TimeDelta time, const PipelineStatusCB& cb) OVERRIDE;
 
   // AudioRenderer implementation.
@@ -48,25 +56,12 @@ class MEDIA_EXPORT AudioRendererBase : public AudioRenderer {
                           const TimeCB& time_cb) OVERRIDE;
   virtual bool HasEnded() OVERRIDE;
   virtual void ResumeAfterUnderflow(bool buffer_more_audio) OVERRIDE;
+  virtual void SetVolume(float volume) OVERRIDE;
 
- protected:
+ private:
+  friend class AudioRendererBaseTest;
   FRIEND_TEST_ALL_PREFIXES(AudioRendererBaseTest, EndOfStream);
   FRIEND_TEST_ALL_PREFIXES(AudioRendererBaseTest, Underflow_EndOfStream);
-
-  // Subclasses should return true if they were able to initialize, false
-  // otherwise.
-  virtual bool OnInitialize(int bits_per_channel,
-                            ChannelLayout channel_layout,
-                            int sample_rate) = 0;
-
-  // Called by Stop().  Subclasses should perform any necessary cleanup during
-  // this time, such as stopping any running threads.
-  virtual void OnStop() = 0;
-
-  // Method called by FillBuffer() when it finds that it reached end of stream.
-  // FillBuffer() cannot immediately signal end of stream event because browser
-  // may have buffered data.
-  virtual void OnRenderEndOfStream() = 0;
 
   // Callback from the audio decoder delivering decoded audio samples.
   void DecodedAudioReady(scoped_refptr<Buffer> buffer);
@@ -88,27 +83,39 @@ class MEDIA_EXPORT AudioRendererBase : public AudioRenderer {
   // should the filled buffer be played. If FillBuffer() is called as the audio
   // hardware plays the buffer, then |playback_delay| should be zero.
   //
-  // FillBuffer() calls OnRenderEndOfStream() when it reaches end of stream.
-  // It is responsibility of derived class to provide implementation of
-  // OnRenderEndOfStream() that calls SignalEndOfStream() when all the hardware
-  // buffers become empty (i.e. when all the data written to the device has
-  // been played).
+  // FillBuffer() calls SignalEndOfStream() when it reaches end of stream.
   //
   // Safe to call on any thread.
   uint32 FillBuffer(uint8* dest,
                     uint32 requested_frames,
                     const base::TimeDelta& playback_delay);
 
-  // Called by OnRenderEndOfStream() or some callback scheduled by derived class
-  // to signal end of stream.
+  // Called at the end of stream when all the hardware buffers become empty
+  // (i.e. when all the data written to the device has been played).
   void SignalEndOfStream();
 
-  // Get/Set the playback rate of |algorithm_|.
-  virtual void SetPlaybackRate(float playback_rate) OVERRIDE;
-  virtual float GetPlaybackRate();
+  // Get the playback rate of |algorithm_|.
+  float GetPlaybackRate();
 
- private:
-  friend class AudioRendererBaseTest;
+  // Convert number of bytes to duration of time using information about the
+  // number of channels, sample rate and sample bits.
+  base::TimeDelta ConvertToDuration(int bytes);
+
+  // Estimate earliest time when current buffer can stop playing.
+  void UpdateEarliestEndTime(int bytes_filled,
+                             base::TimeDelta request_delay,
+                             base::Time time_now);
+
+  // Methods called on pipeline thread ----------------------------------------
+  void DoPlay();
+  void DoPause();
+  void DoSeek();
+
+  // media::AudioRendererSink::RenderCallback implementation.
+  virtual int Render(const std::vector<float*>& audio_data,
+                     int number_of_frames,
+                     int audio_delay_milliseconds) OVERRIDE;
+  virtual void OnRenderError() OVERRIDE;
 
   // Helper method that schedules an asynchronous read from the decoder and
   // increments |pending_reads_|.
@@ -148,9 +155,9 @@ class MEDIA_EXPORT AudioRendererBase : public AudioRenderer {
   bool received_end_of_stream_;
   bool rendered_end_of_stream_;
 
-  // Audio time at end of last call to FillBuffer().
+  // The timestamp of the last frame (i.e. furthest in the future) buffered.
   // TODO(ralphl): Update this value after seeking.
-  base::TimeDelta last_fill_buffer_time_;
+  base::TimeDelta audio_time_buffered_;
 
   // Filter callbacks.
   base::Closure pause_cb_;
@@ -163,6 +170,36 @@ class MEDIA_EXPORT AudioRendererBase : public AudioRenderer {
   base::TimeDelta seek_timestamp_;
 
   uint32 bytes_per_frame_;
+
+  // Used to calculate audio delay given bytes.
+  uint32 bytes_per_second_;
+
+  // A flag that indicates this filter is called to stop.
+  bool stopped_;
+
+  // The sink (destination) for rendered audio.
+  scoped_refptr<media::AudioRendererSink> sink_;
+
+  // Set to true when OnInitialize() is called.
+  bool is_initialized_;
+
+  // We're supposed to know amount of audio data OS or hardware buffered, but
+  // that is not always so -- on my Linux box
+  // AudioBuffersState::hardware_delay_bytes never reaches 0.
+  //
+  // As a result we cannot use it to find when stream ends. If we just ignore
+  // buffered data we will notify host that stream ended before it is actually
+  // did so, I've seen it done ~140ms too early when playing ~150ms file.
+  //
+  // Instead of trying to invent OS-specific solution for each and every OS we
+  // are supporting, use simple workaround: every time we fill the buffer we
+  // remember when it should stop playing, and do not assume that buffer is
+  // empty till that time. Workaround is not bulletproof, as we don't exactly
+  // know when that particular data would start playing, but it is much better
+  // than nothing.
+  base::Time earliest_end_time_;
+
+  AudioParameters audio_parameters_;
 
   AudioDecoder::ReadCB read_cb_;
 
