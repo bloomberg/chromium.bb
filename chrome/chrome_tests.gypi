@@ -757,7 +757,6 @@
         # NOTE: DON'T ADD NEW TESTS HERE!
         # New tests should be browser_tests. browser_tests are sharded and are
         # less flakier.
-        'browser/fast_shutdown_uitest.cc',
         'browser/history/redirect_uitest.cc',
         'browser/iframe_uitest.cc',
         'browser/images_uitest.cc',
@@ -2868,6 +2867,7 @@
         'browser/extensions/system/system_apitest.cc',
         'browser/extensions/webstore_inline_install_browsertest.cc',
         'browser/extensions/window_open_apitest.cc',
+        'browser/fast_shutdown_browsertest.cc',
         'browser/first_run/first_run_browsertest.cc',
         'browser/first_run/try_chrome_dialog_view_browsertest.cc',
         'browser/geolocation/access_token_store_browsertest.cc',
