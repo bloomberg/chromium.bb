@@ -92,7 +92,7 @@ int TaskManagerTableModel::RowCount() {
 
 string16 TaskManagerTableModel::GetText(int row, int col_id) {
   switch (col_id) {
-    case IDS_TASK_MANAGER_PAGE_COLUMN:  // Process
+    case IDS_TASK_MANAGER_TASK_COLUMN:  // Process
       return model_->GetResourceTitle(row);
 
     case IDS_TASK_MANAGER_PROFILE_NAME_COLUMN:  // Profile Name
@@ -385,7 +385,7 @@ void TaskManagerView::Init() {
   table_model_.reset(new TaskManagerTableModel(model_));
 
   // Page column has no header label.
-  columns_.push_back(ui::TableColumn(IDS_TASK_MANAGER_PAGE_COLUMN,
+  columns_.push_back(ui::TableColumn(IDS_TASK_MANAGER_TASK_COLUMN,
                                      ui::TableColumn::LEFT, -1, 1));
   columns_.back().sortable = true;
   columns_.push_back(ui::TableColumn(IDS_TASK_MANAGER_PROFILE_NAME_COLUMN,

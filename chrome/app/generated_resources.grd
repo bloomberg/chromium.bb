@@ -3915,8 +3915,8 @@ Public Exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS">$3<ex>24</ex></ph> bits):
         <message name="IDS_TASK_MANAGER_PROCESS_ID_COLUMN" desc="The title for Task Manager process ID column.">
           Process ID
         </message>
-        <message name="IDS_TASK_MANAGER_PAGE_COLUMN" desc="The text of the page column">
-          Page
+        <message name="IDS_TASK_MANAGER_TASK_COLUMN" desc="The text of the task column">
+          Task
         </message>
         <message name="IDS_TASK_MANAGER_NET_COLUMN" desc="The text of the network usage column">
           Network
@@ -3977,8 +3977,8 @@ Public Exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS">$3<ex>24</ex></ph> bits):
         <message name="IDS_TASK_MANAGER_PROCESS_ID_COLUMN" desc="The title for Task Manager process ID column.">
           Process ID
         </message>
-        <message name="IDS_TASK_MANAGER_PAGE_COLUMN" desc="The text of the page column">
-          Page
+        <message name="IDS_TASK_MANAGER_TASK_COLUMN" desc="The text of the task column">
+          Task
         </message>
         <message name="IDS_TASK_MANAGER_NET_COLUMN" desc="The text of the network usage column">
           Network

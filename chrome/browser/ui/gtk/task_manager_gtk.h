@@ -108,7 +108,7 @@ class TaskManagerGtk : public TaskManagerModelObserver {
   static gint ComparePage(GtkTreeModel* model, GtkTreeIter* a,
                           GtkTreeIter* b, gpointer task_manager) {
     return reinterpret_cast<TaskManagerGtk*>(task_manager)->
-        CompareImpl(model, a, b, IDS_TASK_MANAGER_PAGE_COLUMN);
+        CompareImpl(model, a, b, IDS_TASK_MANAGER_TASK_COLUMN);
   }
 
   // Profile name sorting callback.

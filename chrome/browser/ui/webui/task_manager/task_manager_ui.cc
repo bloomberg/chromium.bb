@@ -35,7 +35,7 @@ ChromeWebUIDataSource* CreateTaskManagerUIHTMLSource() {
   source->AddLocalizedString("killChromeOS", IDS_TASK_MANAGER_KILL_CHROMEOS);
   source->AddLocalizedString("processIDColumn",
                              IDS_TASK_MANAGER_PROCESS_ID_COLUMN);
-  source->AddLocalizedString("pageColumn", IDS_TASK_MANAGER_PAGE_COLUMN);
+  source->AddLocalizedString("taskColumn", IDS_TASK_MANAGER_TASK_COLUMN);
   source->AddLocalizedString("profileNameColumn",
                              IDS_TASK_MANAGER_PROFILE_NAME_COLUMN);
   source->AddLocalizedString("netColumn", IDS_TASK_MANAGER_NET_COLUMN);

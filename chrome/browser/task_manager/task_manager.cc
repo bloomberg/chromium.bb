@@ -365,7 +365,7 @@ int TaskManagerModel::GetResourceIndexForGroup(int group_index,
 
 int TaskManagerModel::CompareValues(int row1, int row2, int col_id) const {
   CHECK(row1 < ResourceCount() && row2 < ResourceCount());
-  if (col_id == IDS_TASK_MANAGER_PAGE_COLUMN) {
+  if (col_id == IDS_TASK_MANAGER_TASK_COLUMN) {
     // Let's do the default, string compare on the resource title.
     static icu::Collator* collator = NULL;
     if (!collator) {
