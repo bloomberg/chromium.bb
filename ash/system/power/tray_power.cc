@@ -121,13 +121,21 @@ class PowerPopupView : public views::Label {
 
  private:
   void UpdateText() {
+    if (supply_status_.is_calculating_battery_time) {
+      SetText(l10n_util::GetStringFUTF16(supply_status_.line_power_on ?
+          IDS_ASH_STATUS_TRAY_BATTERY_CALCULATING_ON :
+          IDS_ASH_STATUS_TRAY_BATTERY_CALCULATING_OFF,
+          base::IntToString16(
+              static_cast<int>(supply_status_.battery_percentage))));
+      return;
+    }
+
     base::TimeDelta time = base::TimeDelta::FromSeconds(
         supply_status_.line_power_on ?
         supply_status_.battery_seconds_to_full :
         supply_status_.battery_seconds_to_empty);
     int hour = time.InHours();
     int min = (time - base::TimeDelta::FromHours(hour)).InMinutes();
-    ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
     if (hour || min) {
       SetText(l10n_util::GetStringFUTF16(IDS_ASH_STATUS_TRAY_BATTERY_STATUS,
           base::IntToString16(
@@ -136,7 +144,8 @@ class PowerPopupView : public views::Label {
           base::IntToString16(min)));
     } else {
       if (supply_status_.line_power_on) {
-        SetText(bundle.GetLocalizedString(IDS_ASH_STATUS_TRAY_BATTERY_FULL));
+        SetText(ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
+            IDS_ASH_STATUS_TRAY_BATTERY_FULL));
       } else {
         // Completely discharged? ... ha?
         SetText(string16());

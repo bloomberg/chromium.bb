@@ -289,6 +289,14 @@ This file contains the strings for ash.
 Battery: <ph name="percentage">$1<ex>56</ex></ph>%
 <ph name="hour">$2</ph>h <ph name="minute">$3</ph>m
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_BATTERY_CALCULATING_ON" desc="The label in the tray dialog indicating that the time to completely charge the battery is being calculated.">
+Battery: <ph name="percentage">$1<ex>56</ex></ph>%
+Calculating time until full
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_BATTERY_CALCULATING_OFF" desc="The label in the tray dialog indicating that the time to completely drain the battery is being calculated.">
+Battery: <ph name="percentage">$1<ex>56</ex></ph>%
+Calculating remaining time
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_IP" desc="The label for the IP address of the network:">
         IP Address
       </message>
