@@ -388,7 +388,7 @@ class SimpleBuilder(Builder):
           archive_stage = self.archive_stages[board]
           config = configs.get(board, self.build_config)
           self._RunStage(stages.BuildTargetStage, board, archive_stage,
-                         config=config)
+                         self.release_tag, config=config)
           self.archive_urls[board] = archive_stage.GetDownloadUrl()
 
           # Kick off task(board) in the background.

@@ -653,7 +653,7 @@ class BuildTargetStage(BoardSpecificBuilderStage):
 
   option_name = 'build'
 
-  def __init__(self, options, build_config, board, archive_stage):
+  def __init__(self, options, build_config, board, archive_stage, version):
     super(BuildTargetStage, self).__init__(options, build_config, board)
     self._env = {}
     if self._build_config.get('useflags'):
@@ -667,17 +667,23 @@ class BuildTargetStage(BoardSpecificBuilderStage):
 
     self._archive_stage = archive_stage
     self._tarball_dir = None
+    self._version = version if version else ''
 
-  def _CommunicateImagePath(self):
+  def _CommunicateVersion(self):
     """Communicates to archive_stage the image path of this stage."""
     image_path = self.GetImageDirSymlink()
     if os.path.isdir(image_path):
-      self._archive_stage.SetVersion(image_path)
+      version = os.readlink(image_path)
+      # Non-versioned builds need the build number to uniquify the image.
+      if not self._version:
+        version = version + '-b%s' % self._options.buildnumber
+
+      self._archive_stage.SetVersion(version)
     else:
       self._archive_stage.SetVersion(None)
 
   def HandleSkip(self):
-    self._CommunicateImagePath()
+    self._CommunicateVersion()
 
   def _BuildImages(self):
     # We only build base, dev, and test images from this stage.
@@ -688,6 +694,7 @@ class BuildTargetStage(BoardSpecificBuilderStage):
     commands.BuildImage(self._build_root,
                         self._current_board,
                         list(images_to_build),
+                        version=self._version,
                         extra_env=self._env)
 
     if self._build_config['vm_tests']:
@@ -702,7 +709,7 @@ class BuildTargetStage(BoardSpecificBuilderStage):
       os.remove(cbuildbot_image_link)
 
     os.symlink(latest_image, cbuildbot_image_link)
-    self._CommunicateImagePath()
+    self._CommunicateVersion()
 
   def _BuildAutotestTarballs(self):
     # Build autotest tarball, which is used in archive step. This is generated
@@ -989,13 +996,9 @@ class ArchiveStage(BoardSpecificBuilderStage):
     """Gets the version for the archive stage."""
     if self._set_version == ArchiveStage._VERSION_NOT_SET:
       version = self._version_queue.get()
+      self._set_version = version
       # Put the version right back on the queue in case anyone else is waiting.
       self._version_queue.put(version)
-      if version:
-        self._set_version = '%s-b%s' % (os.readlink(version),
-                                        self._options.buildnumber)
-      else:
-        self._set_version = None
 
     return self._set_version
 
@@ -1236,7 +1239,7 @@ class ArchiveStage(BoardSpecificBuilderStage):
 
       if config['chromeos_official']:
         # Build hwqual image and upload to Google Storage.
-        version = os.path.basename(os.path.realpath(image_dir))
+        version = self.GetVersion()
         hwqual_name = 'chromeos-hwqual-%s-%s' % (board, version)
         filename = commands.ArchiveHWQual(buildroot, hwqual_name, archive_path)
         upload_queue.put([filename])
