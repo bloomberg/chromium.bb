@@ -1796,5 +1796,22 @@ TEST_F(WindowTest, RootWindowAttachment) {
   EXPECT_EQ(2, observer.removed_count());
 }
 
+TEST_F(WindowTest, OwnedByParentFalse) {
+  // By default, a window is owned by its parent. If this is set to false, the
+  // window will not be destroyed when its parent is.
+
+  scoped_ptr<Window> w1(new Window(NULL));
+  w1->Init(ui::LAYER_NOT_DRAWN);
+  scoped_ptr<Window> w2(new Window(NULL));
+  w2->set_owned_by_parent(false);
+  w2->Init(ui::LAYER_NOT_DRAWN);
+  w2->SetParent(w1.get());
+
+  w1.reset();
+
+  // We should be able to deref w2 still, but its parent should now be NULL.
+  EXPECT_EQ(NULL, w2->parent());
+}
+
 }  // namespace test
 }  // namespace aura

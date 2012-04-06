@@ -47,6 +47,7 @@ bool Window::TestApi::OwnsLayer() const {
 
 Window::Window(WindowDelegate* delegate)
     : type_(client::WINDOW_TYPE_UNKNOWN),
+      owned_by_parent_(true),
       delegate_(delegate),
       layer_(NULL),
       parent_(NULL),
@@ -75,12 +76,19 @@ Window::~Window() {
     root_window->OnWindowDestroying(this);
 
   // Then destroy the children.
-  while (!children_.empty()) {
+  size_t child_count = children_.size();
+  while (child_count-- > 0) {
     Window* child = children_[0];
-    delete child;
-    // Deleting the child so remove it from out children_ list.
-    DCHECK(std::find(children_.begin(), children_.end(), child) ==
-           children_.end());
+    if (child->owned_by_parent_) {
+      delete child;
+      // Deleting the child so remove it from out children_ list.
+      DCHECK(std::find(children_.begin(), children_.end(), child) ==
+             children_.end());
+    } else {
+      // We don't call SetParent() since that may do unexpected things like
+      // reparent the window.
+      child->parent_ = NULL;
+    }
   }
 
   // Removes ourselves from our transient parent (if it hasn't been done by the

@@ -74,7 +74,12 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   explicit Window(WindowDelegate* delegate);
   virtual ~Window();
 
+  // Initializes the window. This creates the window's layer.
   void Init(ui::LayerType layer_type);
+
+  void set_owned_by_parent(bool owned_by_parent) {
+    owned_by_parent_ = owned_by_parent;
+  }
 
   // A type is used to identify a class of Windows and customize behavior such
   // as event handling and parenting.  This field should only be consumed by the
@@ -172,8 +177,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   void StackChildBelow(Window* child, Window* target);
 
   // Tree operations.
-  // TODO(beng): Child windows are currently not owned by the hierarchy. We
-  //             should change this.
   void AddChild(Window* child);
   void RemoveChild(Window* child);
 
@@ -393,6 +396,10 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   void UpdateLayerName(const std::string& name);
 
   client::WindowType type_;
+
+  // True if the Window is owned by its parent - i.e. it will be deleted by its
+  // parent during its parents destruction. True is the default.
+  bool owned_by_parent_;
 
   WindowDelegate* delegate_;
 

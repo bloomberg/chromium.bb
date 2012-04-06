@@ -50,6 +50,7 @@
 #include "ash/ash_switches.h"
 #include "ash/shell.h"
 #include "ash/wm/custom_frame_view_ash.h"
+#include "ash/wm/visibility_controller.h"
 #include "base/command_line.h"
 #include "ui/aura/window.h"
 #endif
@@ -583,6 +584,7 @@ ConstrainedWindowViews::ConstrainedWindowViews(
 #if defined(USE_ASH)
   // Ash window headers can be transparent.
   params.transparent = true;
+  ash::SetChildWindowVisibilityChangesAnimated(params.parent);
 #endif
   Init(params);
 

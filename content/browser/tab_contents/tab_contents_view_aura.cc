@@ -209,9 +209,11 @@ void TabContentsViewAura::CreateView(const gfx::Size& initial_size) {
   initial_size_ = initial_size;
 
   window_.reset(new aura::Window(this));
+  window_->set_owned_by_parent(false);
   window_->SetType(aura::client::WINDOW_TYPE_CONTROL);
   window_->SetTransparent(false);
   window_->Init(ui::LAYER_TEXTURED);
+  window_->SetParent(NULL);
   window_->layer()->SetMasksToBounds(true);
   window_->SetName("TabContentsViewAura");
 
@@ -528,7 +530,7 @@ ui::GestureStatus TabContentsViewAura::OnGestureEvent(
 }
 
 bool TabContentsViewAura::CanFocus() {
-  return false;
+  return true;
 }
 
 void TabContentsViewAura::OnCaptureLost() {
