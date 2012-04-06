@@ -982,6 +982,11 @@ class NinjaWriter:
     if not type:
       type = spec['type']
 
+    if self.flavor == 'win':
+      overridden_name = self.msvs_settings.GetOutputName(spec, self.config_name)
+      if overridden_name:
+        return self.ExpandSpecial(overridden_name, self.base_to_build)
+
     if self.flavor == 'mac' and type in (
         'static_library', 'executable', 'shared_library', 'loadable_module'):
       filename = self.xcode_settings.GetExecutablePath()

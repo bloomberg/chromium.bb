@@ -21,5 +21,8 @@ if sys.platform == 'win32':
 
   test.built_file_must_exist('blorp.exe', chdir=CHDIR)
   test.built_file_must_exist('blorp.dll', chdir=CHDIR)
+  test.built_file_must_exist('subdir/blorp.exe', chdir=CHDIR)
+  test.built_file_must_exist('blorp.lib', chdir=CHDIR)
+  test.built_file_must_exist('subdir/blorp.lib', chdir=CHDIR)
 
   test.pass_test()

@@ -199,6 +199,17 @@ class MsvsSettings(object):
         ('VCCLCompilerTool', 'PreprocessorDefinitions'), config, default=[]))
     return defines
 
+  def GetOutputName(self, spec, config):
+    """Gets the explicitly overridden output name for a target or returns None
+    if it's not overridden."""
+    type = spec['type']
+    root = 'VCLibrarianTool' if type == 'static_library' else 'VCLinkerTool'
+    # TODO(scottmg): Handle OutputDirectory without OutputFile.
+    output_file = self._Setting((root, 'OutputFile'), config)
+    if output_file:
+      output_file = os.path.normpath(self.ConvertVSMacros(output_file))
+    return output_file
+
   def GetCflags(self, config):
     """Returns the flags that need to be added to .c and .cc compilations."""
     cflags = []
