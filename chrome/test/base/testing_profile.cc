@@ -17,7 +17,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
-#include "chrome/browser/extensions/extension_pref_value_map.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -435,10 +434,6 @@ Profile* TestingProfile::GetOriginalProfile() {
 }
 
 VisitedLinkMaster* TestingProfile::GetVisitedLinkMaster() {
-  return NULL;
-}
-
-ExtensionPrefValueMap* TestingProfile::GetExtensionPrefValueMap() {
   return NULL;
 }
 

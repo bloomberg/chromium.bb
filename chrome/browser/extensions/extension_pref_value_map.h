@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,8 +10,11 @@
 #include <set>
 #include <string>
 
+#include "base/observer_list.h"
 #include "base/time.h"
-#include "chrome/browser/prefs/value_map_pref_store.h"
+#include "base/values.h"
+#include "chrome/browser/prefs/pref_value_map.h"
+#include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/extensions/extension_prefs_scope.h"
 
 // Non-persistent data container that is shared by ExtensionPrefStores. All
@@ -43,7 +46,7 @@
 // .reg = regular value
 // .inc = incognito value
 // Extension B has higher precedence than A.
-class ExtensionPrefValueMap {
+class ExtensionPrefValueMap : public ProfileKeyedService {
  public:
   // Observer interface for monitoring ExtensionPrefValueMap.
   class Observer {
@@ -63,6 +66,9 @@ class ExtensionPrefValueMap {
 
   ExtensionPrefValueMap();
   virtual ~ExtensionPrefValueMap();
+
+  // ProfileKeyedService implementation.
+  virtual void Shutdown() OVERRIDE;
 
   // Set an extension preference |value| for |key| of extension |ext_id|.
   // Takes ownership of |value|.
@@ -162,6 +168,11 @@ class ExtensionPrefValueMap {
   // preferences values (i.e. the ones with the highest precedence)
   // are stored in ExtensionPrefStores.
   ExtensionEntryMap entries_;
+
+  // In normal Profile shutdown, Shutdown() notifies observers that we are
+  // being destroyed. In tests, it isn't called, so the notification must
+  // be done in the destructor. This bit tracks whether it has been done yet.
+  bool destroyed_;
 
   ObserverList<Observer, true> observers_;
 

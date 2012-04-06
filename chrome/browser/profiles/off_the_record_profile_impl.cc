@@ -22,7 +22,6 @@
 #include "chrome/browser/extensions/api/web_request/web_request_api.h"
 #include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/extensions/extension_pref_store.h"
-#include "chrome/browser/extensions/extension_pref_value_map.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
@@ -189,10 +188,6 @@ Profile* OffTheRecordProfileImpl::GetOriginalProfile() {
 VisitedLinkMaster* OffTheRecordProfileImpl::GetVisitedLinkMaster() {
   // We don't provide access to the VisitedLinkMaster when we're OffTheRecord
   // because we don't want to leak the sites that the user has visited before.
-  return NULL;
-}
-
-ExtensionPrefValueMap* OffTheRecordProfileImpl::GetExtensionPrefValueMap() {
   return NULL;
 }
 

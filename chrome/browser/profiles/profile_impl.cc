@@ -31,6 +31,7 @@
 #include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/extensions/extension_pref_store.h"
 #include "chrome/browser/extensions/extension_pref_value_map.h"
+#include "chrome/browser/extensions/extension_pref_value_map_factory.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
@@ -252,7 +253,8 @@ ProfileImpl::ProfileImpl(const FilePath& path,
   if (create_mode == CREATE_MODE_ASYNCHRONOUS) {
     prefs_.reset(PrefService::CreatePrefService(
         GetPrefFilePath(),
-        new ExtensionPrefStore(GetExtensionPrefValueMap(), false),
+        new ExtensionPrefStore(
+            ExtensionPrefValueMapFactory::GetForProfile(this), false),
         true));
     // Wait for the notification that prefs has been loaded (successfully or
     // not).
@@ -262,7 +264,8 @@ ProfileImpl::ProfileImpl(const FilePath& path,
     // Load prefs synchronously.
     prefs_.reset(PrefService::CreatePrefService(
         GetPrefFilePath(),
-        new ExtensionPrefStore(GetExtensionPrefValueMap(), false),
+        new ExtensionPrefStore(
+            ExtensionPrefValueMapFactory::GetForProfile(this), false),
         false));
     OnPrefsLoaded(true);
   } else {
@@ -561,7 +564,8 @@ Profile* ProfileImpl::GetOffTheRecordProfile() {
 
 void ProfileImpl::DestroyOffTheRecordProfile() {
   off_the_record_profile_.reset();
-  extension_pref_value_map_->ClearAllIncognitoSessionOnlyPreferences();
+  ExtensionPrefValueMapFactory::GetForProfile(this)->
+      ClearAllIncognitoSessionOnlyPreferences();
 }
 
 bool ProfileImpl::HasOffTheRecordProfile() {
@@ -663,7 +667,8 @@ PrefService* ProfileImpl::GetOffTheRecordPrefs() {
     // The new ExtensionPrefStore is ref_counted and the new PrefService
     // stores a reference so that we do not leak memory here.
     otr_prefs_.reset(GetPrefs()->CreateIncognitoPrefService(
-        new ExtensionPrefStore(GetExtensionPrefValueMap(), true)));
+        new ExtensionPrefStore(
+            ExtensionPrefValueMapFactory::GetForProfile(this), true)));
   }
   return otr_prefs_.get();
 }
@@ -872,12 +877,6 @@ history::TopSites* ProfileImpl::GetTopSites() {
 
 history::TopSites* ProfileImpl::GetTopSitesWithoutCreating() {
   return top_sites_;
-}
-
-ExtensionPrefValueMap* ProfileImpl::GetExtensionPrefValueMap() {
-  if (!extension_pref_value_map_.get())
-    extension_pref_value_map_.reset(new ExtensionPrefValueMap);
-  return extension_pref_value_map_.get();
 }
 
 void ProfileImpl::MarkAsCleanShutdown() {

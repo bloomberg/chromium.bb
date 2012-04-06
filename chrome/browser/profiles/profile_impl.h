@@ -74,7 +74,6 @@ class ProfileImpl : public Profile,
   virtual history::TopSites* GetTopSites() OVERRIDE;
   virtual history::TopSites* GetTopSitesWithoutCreating() OVERRIDE;
   virtual VisitedLinkMaster* GetVisitedLinkMaster() OVERRIDE;
-  virtual ExtensionPrefValueMap* GetExtensionPrefValueMap() OVERRIDE;
   virtual ExtensionService* GetExtensionService() OVERRIDE;
   virtual UserScriptMaster* GetUserScriptMaster() OVERRIDE;
   virtual ExtensionProcessManager* GetExtensionProcessManager() OVERRIDE;
@@ -166,7 +165,6 @@ class ProfileImpl : public Profile,
 
   void UpdateProfileUserNameCache();
 
-
   // Updates the ProfileInfoCache with data from this profile.
   void UpdateProfileNameCache();
   void UpdateProfileAvatarCache();
@@ -187,7 +185,6 @@ class ProfileImpl : public Profile,
   //  that the declaration occurs AFTER things it depends on as destruction
   //  happens in reverse order of declaration.
 
-  scoped_ptr<ExtensionPrefValueMap> extension_pref_value_map_;
   // Keep |prefs_| on top for destruction order because |extension_prefs_|,
   // |net_pref_observer_|, |web_resource_service_|, and |io_data_| store
   // pointers to |prefs_| and shall be destructed first.

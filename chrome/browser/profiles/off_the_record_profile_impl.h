@@ -40,7 +40,6 @@ class OffTheRecordProfileImpl : public Profile,
   virtual bool HasOffTheRecordProfile() OVERRIDE;
   virtual Profile* GetOriginalProfile() OVERRIDE;
   virtual VisitedLinkMaster* GetVisitedLinkMaster() OVERRIDE;
-  virtual ExtensionPrefValueMap* GetExtensionPrefValueMap() OVERRIDE;
   virtual ExtensionService* GetExtensionService() OVERRIDE;
   virtual UserScriptMaster* GetUserScriptMaster() OVERRIDE;
   virtual ExtensionProcessManager* GetExtensionProcessManager() OVERRIDE;

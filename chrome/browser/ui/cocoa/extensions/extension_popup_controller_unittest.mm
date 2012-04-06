@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "chrome/browser/extensions/extension_pref_value_map.h"
+#include "chrome/browser/extensions/extension_pref_value_map_factory.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -29,10 +30,10 @@ class ExtensionTestingProfile : public TestingProfile {
     DCHECK(!GetExtensionService());
 
     manager_.reset(ExtensionProcessManager::Create(this));
-    extension_pref_value_map_.reset(new ExtensionPrefValueMap);
-    extension_prefs_.reset(new ExtensionPrefs(GetPrefs(),
-                                              GetExtensionsInstallDir(),
-                                              extension_pref_value_map_.get()));
+    extension_prefs_.reset(new ExtensionPrefs(
+        GetPrefs(),
+        GetExtensionsInstallDir(),
+        ExtensionPrefValueMapFactory::GetForProfile(this)));
     extension_prefs_->Init(false);
     service_.reset(new ExtensionService(this,
                                         CommandLine::ForCurrentProcess(),
@@ -64,7 +65,6 @@ class ExtensionTestingProfile : public TestingProfile {
   scoped_ptr<ExtensionProcessManager> manager_;
   scoped_ptr<ExtensionPrefs> extension_prefs_;
   scoped_ptr<ExtensionService> service_;
-  scoped_ptr<ExtensionPrefValueMap> extension_pref_value_map_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionTestingProfile);
 };

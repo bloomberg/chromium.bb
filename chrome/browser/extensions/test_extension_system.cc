@@ -9,6 +9,7 @@
 #include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/extensions/extension_pref_value_map.h"
+#include "chrome/browser/extensions/extension_pref_value_map_factory.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -36,21 +37,18 @@ ExtensionService* TestExtensionSystem::CreateExtensionService(
     const CommandLine* command_line,
     const FilePath& install_directory,
     bool autoupdate_enabled) {
-  // Extension pref store, created for use by |extension_prefs_|.
-  extension_pref_value_map_.reset(new ExtensionPrefValueMap);
-
   bool extensions_disabled =
       command_line && command_line->HasSwitch(switches::kDisableExtensions);
 
   // Note that the GetPrefs() creates a TestingPrefService, therefore
   // the extension controlled pref values set in extension_prefs_
   // are not reflected in the pref service. One would need to
-  // inject a new ExtensionPrefStore(extension_pref_value_map_.get(), false).
+  // inject a new ExtensionPrefStore(extension_pref_value_map, false).
 
-  extension_prefs_.reset(
-      new ExtensionPrefs(profile_->GetPrefs(),
-                         install_directory,
-                         extension_pref_value_map_.get()));
+  extension_prefs_.reset(new ExtensionPrefs(
+      profile_->GetPrefs(),
+      install_directory,
+      ExtensionPrefValueMapFactory::GetForProfile(profile_)));
   extension_prefs_->Init(extensions_disabled);
   extension_service_.reset(new ExtensionService(profile_,
                                                 command_line,

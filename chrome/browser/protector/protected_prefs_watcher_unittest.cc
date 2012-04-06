@@ -4,8 +4,9 @@
 
 #include "base/message_loop.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_pref_value_map.h"
+#include "chrome/browser/extensions/extension_pref_value_map_factory.h"
+#include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
@@ -105,12 +106,11 @@ TEST_F(ProtectedPrefsWatcherTest, ExtensionPrefChange) {
 
   FilePath extensions_install_dir =
       profile_.GetPath().AppendASCII(ExtensionService::kInstallDirectoryName);
-  scoped_ptr<ExtensionPrefValueMap> extension_pref_value_map_(
-      new ExtensionPrefValueMap);
   scoped_ptr<ExtensionPrefs> extension_prefs(
       new ExtensionPrefs(profile_.GetPrefs(),
                          extensions_install_dir,
-                         extension_pref_value_map_.get()));
+                         ExtensionPrefValueMapFactory::GetForProfile(
+                             &profile_)));
   std::string sample_id = extension_misc::kWebStoreAppId;
   extension_prefs->Init(false);
   // Flip a pref value of an extension (this will actually add it to the list).

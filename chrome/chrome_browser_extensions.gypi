@@ -313,6 +313,8 @@
         'browser/extensions/extension_pref_store.h',
         'browser/extensions/extension_pref_value_map.cc',
         'browser/extensions/extension_pref_value_map.h',
+        'browser/extensions/extension_pref_value_map_factory.cc',
+        'browser/extensions/extension_pref_value_map_factory.h',
         'browser/extensions/extension_preference_api.cc',
         'browser/extensions/extension_preference_api.h',
         'browser/extensions/extension_preference_api_constants.cc',

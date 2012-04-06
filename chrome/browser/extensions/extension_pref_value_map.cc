@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,13 +23,21 @@ struct ExtensionPrefValueMap::ExtensionEntry {
   PrefValueMap incognito_profile_preferences_session_only;
 };
 
-ExtensionPrefValueMap::ExtensionPrefValueMap() {
+ExtensionPrefValueMap::ExtensionPrefValueMap() : destroyed_(false) {
 }
 
 ExtensionPrefValueMap::~ExtensionPrefValueMap() {
-  NotifyOfDestruction();
+  if (!destroyed_) {
+    NotifyOfDestruction();
+    destroyed_ = true;
+  }
   STLDeleteValues(&entries_);
   entries_.clear();
+}
+
+void ExtensionPrefValueMap::Shutdown() {
+  NotifyOfDestruction();
+  destroyed_ = true;
 }
 
 void ExtensionPrefValueMap::SetExtensionPref(const std::string& ext_id,

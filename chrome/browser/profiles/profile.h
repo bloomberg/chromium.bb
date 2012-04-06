@@ -23,7 +23,6 @@ class ChromeAppCacheService;
 class ChromeURLDataManager;
 class Extension;
 class ExtensionEventRouter;
-class ExtensionPrefValueMap;
 class ExtensionProcessManager;
 class ExtensionService;
 class ExtensionSpecialStoragePolicy;
@@ -205,10 +204,6 @@ class Profile : public content::BrowserContext {
   // profile.  The VisitedLinkMaster is lazily created the first time
   // that this method is called.
   virtual VisitedLinkMaster* GetVisitedLinkMaster() = 0;
-
-  // Accessor. The instance is created upon first access.
-  // TODO(yoz): make this a ProfileKeyedService.
-  virtual ExtensionPrefValueMap* GetExtensionPrefValueMap() = 0;
 
   // DEPRECATED. Instead, use ExtensionSystem::extension_service().
   // Retrieves a pointer to the ExtensionService associated with this

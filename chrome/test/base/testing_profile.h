@@ -36,7 +36,6 @@ class AutocompleteClassifier;
 class BookmarkModel;
 class CommandLine;
 class ExtensionPrefs;
-class ExtensionPrefValueMap;
 class ExtensionSpecialStoragePolicy;
 class FaviconService;
 class HistoryService;
@@ -163,7 +162,6 @@ class TestingProfile : public Profile {
   virtual bool HasOffTheRecordProfile() OVERRIDE;
   virtual Profile* GetOriginalProfile() OVERRIDE;
   virtual VisitedLinkMaster* GetVisitedLinkMaster() OVERRIDE;
-  virtual ExtensionPrefValueMap* GetExtensionPrefValueMap() OVERRIDE;
   virtual ExtensionService* GetExtensionService() OVERRIDE;
   virtual UserScriptMaster* GetUserScriptMaster() OVERRIDE;
   virtual ExtensionProcessManager* GetExtensionProcessManager() OVERRIDE;

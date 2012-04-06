@@ -20,6 +20,7 @@
 #include "chrome/browser/extensions/extension_navigation_observer.h"
 #include "chrome/browser/extensions/extension_pref_store.h"
 #include "chrome/browser/extensions/extension_pref_value_map.h"
+#include "chrome/browser/extensions/extension_pref_value_map_factory.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
@@ -70,7 +71,7 @@ void ExtensionSystemImpl::Shared::InitPrefs() {
   extension_prefs_.reset(new ExtensionPrefs(
       profile_->GetPrefs(),
       profile_->GetPath().AppendASCII(ExtensionService::kInstallDirectoryName),
-      profile_->GetExtensionPrefValueMap()));
+      ExtensionPrefValueMapFactory::GetForProfile(profile_)));
   extension_prefs_->Init(extensions_disabled);
 }
 

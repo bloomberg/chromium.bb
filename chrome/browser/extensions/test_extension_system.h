@@ -50,7 +50,6 @@ class TestExtensionSystem : public ExtensionSystem {
  private:
   Profile* profile_;
 
-  scoped_ptr<ExtensionPrefValueMap> extension_pref_value_map_;
   // The Extension Preferences. Only created if CreateExtensionService is
   // invoked.
   scoped_ptr<ExtensionPrefs> extension_prefs_;
