@@ -36,11 +36,6 @@ bool RendererWebColorChooserImpl::OnMessageReceived(
   return handled;
 }
 
-void RendererWebColorChooserImpl::FrameWillClose(WebKit::WebFrame* frame) {
-  endChooser();
-  client_->didEndChooser();
-}
-
 void RendererWebColorChooserImpl::setSelectedColor(WebKit::WebColor color) {
   Send(new ViewHostMsg_SetSelectedColorInColorChooser(routing_id(), identifier_,
       static_cast<SkColor>(color)));
