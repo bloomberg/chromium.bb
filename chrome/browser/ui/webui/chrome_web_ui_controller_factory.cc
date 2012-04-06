@@ -36,7 +36,6 @@
 #include "chrome/browser/ui/webui/network_action_predictor/network_action_predictor_ui.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/browser/ui/webui/omnibox/omnibox_ui.h"
-#include "chrome/browser/ui/webui/options/options_ui.h"
 #include "chrome/browser/ui/webui/options2/options_ui2.h"
 #include "chrome/browser/ui/webui/plugins_ui.h"
 #include "chrome/browser/ui/webui/policy_ui.h"
