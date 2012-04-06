@@ -170,6 +170,9 @@ bool KeywordTable::UpdateKeyword(const TemplateURL& url) {
 }
 
 bool KeywordTable::SetDefaultSearchProviderID(int64 id) {
+  // Added for http://crbug.com/116952.
+  UMA_HISTOGRAM_COUNTS_100("Search.DefaultSearchProviderID",
+                           static_cast<int32>(id));
   return meta_table_->SetValue(kDefaultSearchProviderKey, id) &&
       UpdateBackupSignature();
 }

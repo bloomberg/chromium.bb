@@ -1125,6 +1125,27 @@ TEST_F(TemplateURLServiceTest, LoadUpdatesSearchURL) {
   TestLoadUpdatingPreloadedURL(1);
 }
 
+// Make sure that the load routine sets a default search provider if it was
+// missing and not managed.
+TEST_F(TemplateURLServiceTest, LoadEnsuresDefaultSearchProviderExists) {
+  // Force the model to load and make sure we have a default search provider.
+  test_util_.VerifyLoad();
+  const TemplateURL* old_default = model()->GetDefaultSearchProvider();
+  EXPECT_TRUE(old_default);
+
+  // Now remove it.
+  model()->SetDefaultSearchProvider(NULL);
+  model()->Remove(old_default);
+  test_util_.BlockTillServiceProcessesRequests();
+
+  EXPECT_FALSE(model()->GetDefaultSearchProvider());
+
+  // Reset the model and load it. There should be a default search provider.
+  test_util_.ResetModel(true);
+
+  EXPECT_TRUE(model()->GetDefaultSearchProvider());
+}
+
 // Make sure that the load does update of auto-keywords correctly.
 // This test basically verifies that no asserts or crashes occur
 // during this operation.
