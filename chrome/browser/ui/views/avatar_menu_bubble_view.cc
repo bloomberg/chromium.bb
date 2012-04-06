@@ -411,9 +411,8 @@ void AvatarMenuBubbleView::Layout() {
 bool AvatarMenuBubbleView::AcceleratorPressed(
     const ui::Accelerator& accelerator) {
   if (accelerator.key_code() != ui::VKEY_DOWN &&
-      accelerator.key_code() != ui::VKEY_UP) {
-    return false;
-  }
+      accelerator.key_code() != ui::VKEY_UP)
+    return BubbleDelegateView::AcceleratorPressed(accelerator);
 
   if (item_views_.empty())
     return true;
