@@ -191,8 +191,8 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
   scoped_ptr<PanelSettingsMenuModel> settings_menu_model_;
   scoped_ptr<MenuGtk> settings_menu_;
 
-  // False until the window has been allocated and sized.
-  bool window_size_known_;
+  // Size of window frame. Empty until the window has been allocated and sized.
+  gfx::Size frame_size_;
 
   // Indicates that the panel is currently drawing attention.
   bool is_drawing_attention_;

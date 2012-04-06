@@ -62,7 +62,6 @@ PanelBrowserWindowGtk::PanelBrowserWindowGtk(Browser* browser,
       drag_end_factory_(this),
       panel_(panel),
       bounds_(bounds),
-      window_size_known_(false),
       is_drawing_attention_(false),
       window_has_mouse_(false),
       show_close_button_(true) {
@@ -139,7 +138,7 @@ void PanelBrowserWindowGtk::SetGeometryHints() {
   gtk_window_set_geometry_hints(
       window(), GTK_WIDGET(window()), &hints, GDK_HINT_MIN_SIZE);
 
-  DCHECK(!window_size_known_);
+  DCHECK(frame_size_.IsEmpty());
 }
 
 void PanelBrowserWindowGtk::SetBounds(const gfx::Rect& bounds) {
@@ -150,10 +149,14 @@ void PanelBrowserWindowGtk::SetBounds(const gfx::Rect& bounds) {
 void PanelBrowserWindowGtk::OnSizeChanged(int width, int height) {
   BrowserWindowGtk::OnSizeChanged(width, height);
 
-  if (window_size_known_)
+  if (!frame_size_.IsEmpty())
     return;
 
-  window_size_known_ = true;
+  // The system is allowed to size the window before the desired panel
+  // bounds are applied. Save the frame size allocated by the system as
+  // it will be affected when we shrink the panel smaller than the frame.
+  frame_size_ = GetNonClientFrameSize();
+
   int top = bounds_.bottom() - height;
   int left = bounds_.right() - width;
 
@@ -345,12 +348,12 @@ void PanelBrowserWindowGtk::SetBoundsInternal(const gfx::Rect& bounds,
       if (bounds_.size() != bounds.size())
         ResizeWindow(bounds.width(), bounds.height());
     }
-  } else if (window_size_known_) {
+  } else if (!frame_size_.IsEmpty()) {
     StartBoundsAnimation(bounds_, bounds);
+  } else {
+    // Wait until the window frame has been sized before starting the animation
+    // to avoid animating the window before it is shown.
   }
-
-  // If window size is not known, wait till the size is known before starting
-  // the animation.
 
   bounds_ = bounds;
 }
@@ -496,16 +499,14 @@ void PanelBrowserWindowGtk::EnableResizeByMouse(bool enable) {
 
 gfx::Size PanelBrowserWindowGtk::WindowSizeFromContentSize(
     const gfx::Size& content_size) const {
-  gfx::Size frame = GetNonClientFrameSize();
-  return gfx::Size(content_size.width() + frame.width(),
-                   content_size.height() + frame.height());
+  return gfx::Size(content_size.width() + frame_size_.width(),
+                   content_size.height() + frame_size_.height());
 }
 
 gfx::Size PanelBrowserWindowGtk::ContentSizeFromWindowSize(
     const gfx::Size& window_size) const {
-  gfx::Size frame = GetNonClientFrameSize();
-  return gfx::Size(window_size.width() - frame.width(),
-                   window_size.height() - frame.height());
+  return gfx::Size(window_size.width() - frame_size_.width(),
+                   window_size.height() - frame_size_.height());
 }
 
 int PanelBrowserWindowGtk::TitleOnlyHeight() const {
@@ -589,7 +590,7 @@ void PanelBrowserWindowGtk::AnimationEnded(const ui::Animation* animation) {
 
 void PanelBrowserWindowGtk::AnimationProgressed(
     const ui::Animation* animation) {
-  DCHECK(window_size_known_);
+  DCHECK(!frame_size_.IsEmpty());
 
   gfx::Rect new_bounds = bounds_animator_->CurrentValueBetween(
       animation_start_bounds_, bounds_);
@@ -901,14 +902,14 @@ bool NativePanelTestingGtk::VerifyActiveState(bool is_active) {
 }
 
 void NativePanelTestingGtk::WaitForWindowCreationToComplete() const {
-  while (!panel_browser_window_gtk_->window_size_known_)
+  while (panel_browser_window_gtk_->frame_size_.IsEmpty())
     MessageLoopForUI::current()->RunAllPending();
   while (panel_browser_window_gtk_->IsAnimatingBounds())
     MessageLoopForUI::current()->RunAllPending();
 }
 
 bool NativePanelTestingGtk::IsWindowSizeKnown() const {
-  return panel_browser_window_gtk_->window_size_known_;
+  return !panel_browser_window_gtk_->frame_size_.IsEmpty();
 }
 
 bool NativePanelTestingGtk::IsAnimatingBounds() const {
