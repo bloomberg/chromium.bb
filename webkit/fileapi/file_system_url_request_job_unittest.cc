@@ -220,7 +220,7 @@ net::URLRequestJob* FileSystemURLRequestJobTest::job_ = NULL;
 
 namespace {
 
-TEST_F(FileSystemURLRequestJobTest, FileTest) {
+TEST_F(FileSystemURLRequestJobTest, DISABLED_FileTest) {
   WriteFile("file1.dat", kTestFileData, arraysize(kTestFileData) - 1);
   TestRequest(CreateFileSystemURL("file1.dat"));
 
