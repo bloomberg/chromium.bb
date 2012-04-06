@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,18 +44,18 @@ class InjectionTracer : public InjectionDelegate {
       : next_duplicate_(kDuplicateBase) {
   }
 
-  bool Duplicate(int* result, int fd) {
+  virtual bool Duplicate(int* result, int fd) OVERRIDE {
     *result = next_duplicate_++;
     actions_.push_back(Action(Action::DUPLICATE, *result, fd));
     return true;
   }
 
-  bool Move(int src, int dest) {
+  virtual bool Move(int src, int dest) OVERRIDE {
     actions_.push_back(Action(Action::MOVE, src, dest));
     return true;
   }
 
-  void Close(int fd) {
+  virtual void Close(int fd) OVERRIDE {
     actions_.push_back(Action(Action::CLOSE, fd));
   }
 
@@ -250,16 +250,15 @@ TEST(FileDescriptorShuffleTest, FanoutAndClose3) {
 
 class FailingDelegate : public InjectionDelegate {
  public:
-  bool Duplicate(int* result, int fd) {
+  virtual bool Duplicate(int* result, int fd) OVERRIDE {
     return false;
   }
 
-  bool Move(int src, int dest) {
+  virtual bool Move(int src, int dest) OVERRIDE {
     return false;
   }
 
-  void Close(int fd) {
-  }
+  virtual void Close(int fd) OVERRIDE {}
 };
 
 TEST(FileDescriptorShuffleTest, EmptyWithFailure) {
