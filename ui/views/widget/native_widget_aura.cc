@@ -817,7 +817,17 @@ void NativeWidgetAura::OnWindowVisibilityChanged(bool visible) {
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetAura, aura::RootWindowObserver implementation:
 
+void NativeWidgetAura::OnRootWindowResized(const aura::RootWindow* root,
+                                           const gfx::Size& old_size) {
+  // This case can only happen if we have our own aura::RootWindow*. When that
+  // happens, our main window should be at the origin and sized to the
+  // RootWindow.
+  DCHECK_EQ(root, root_window_.get());
+  SetBounds(gfx::Rect(root->GetHostSize()));
+}
+
 void NativeWidgetAura::OnRootWindowHostClosed(const aura::RootWindow* root) {
+  DCHECK_EQ(root, root_window_.get());
   GetWidget()->Close();
 }
 

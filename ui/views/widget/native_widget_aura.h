@@ -152,6 +152,8 @@ class VIEWS_EXPORT NativeWidgetAura : public internal::NativeWidgetPrivate,
   virtual void OnWindowVisibilityChanged(bool visible) OVERRIDE;
 
   // Overridden from aura::RootWindowObserver:
+  virtual void OnRootWindowResized(const aura::RootWindow* root,
+                                   const gfx::Size& old_size) OVERRIDE;
   virtual void OnRootWindowHostClosed(const aura::RootWindow* root) OVERRIDE;
 
   // Overridden from aura::client::ActivationDelegate:

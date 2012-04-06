@@ -4,6 +4,7 @@
 
 #include "ui/aura/root_window_host_linux.h"
 
+#include <X11/Xatom.h>
 #include <X11/cursorfont.h>
 #include <X11/extensions/XInput2.h>
 #include <X11/extensions/Xfixes.h>
@@ -274,6 +275,15 @@ bool ShouldSendCharEventForKeyboardCode(ui::KeyboardCode keycode) {
   }
 }
 
+// A list of atoms that we'll intern on host creation to save roundtrips to the
+// X11 server. Must be kept in sync with RootWindowHostLinux::AtomList
+const char* kAtomList[] = {
+  "WM_DELETE_WINDOW",
+  "_NET_WM_PING",
+  "_NET_WM_PID",
+  "WM_S0"
+};
+
 }  // namespace
 
 RootWindowHostLinux::RootWindowHostLinux(const gfx::Rect& bounds)
@@ -284,6 +294,7 @@ RootWindowHostLinux::RootWindowHostLinux(const gfx::Rect& bounds)
       current_cursor_(ui::kCursorNull),
       cursor_shown_(true),
       bounds_(bounds),
+      has_set_bounds_once_(false),
       focus_when_shown_(false),
       pointer_barriers_(NULL) {
   XSetWindowAttributes swa;
@@ -291,7 +302,7 @@ RootWindowHostLinux::RootWindowHostLinux(const gfx::Rect& bounds)
   swa.background_pixmap = None;
   xwindow_ = XCreateWindow(
       xdisplay_, x_root_window_,
-      bounds_.x(), bounds_.y(), bounds_.width(), bounds_.height(),
+      bounds.x(), bounds.y(), bounds.width(), bounds.height(),
       0,               // border width
       CopyFromParent,  // depth
       InputOutput,
@@ -326,14 +337,32 @@ RootWindowHostLinux::RootWindowHostLinux(const gfx::Rect& bounds)
   if (RootWindow::hide_host_cursor())
     XDefineCursor(xdisplay_, x_root_window_, invisible_cursor_);
 
+  // Grab all the atoms we need now to minimize roundtrips to the X11 server.
+  XInternAtoms(xdisplay_, const_cast<char**>(kAtomList), ATOM_COUNT, False,
+               cached_atoms_);
+
   // TODO(erg): We currently only request window deletion events. We also
   // should listen for activation events and anything else that GTK+ listens
   // for, and do something useful.
-  wm_delete_window_atom_ = XInternAtom(xdisplay_, "WM_DELETE_WINDOW", False);
+  ::Atom protocols[2];
+  protocols[0] = cached_atoms_[ATOM_WM_DELETE_WINDOW];
+  protocols[1] = cached_atoms_[ATOM__NET_WM_PING];
+  XSetWMProtocols(xdisplay_, xwindow_, protocols, 2);
 
-  ::Atom protocols[1];
-  protocols[0] = wm_delete_window_atom_;
-  XSetWMProtocols(xdisplay_, xwindow_, protocols, 1);
+  // We need a WM_CLIENT_MACHINE and WM_LOCALE_NAME value so we integrate with
+  // the desktop environment.
+  XSetWMProperties(xdisplay_, xwindow_, NULL, NULL, NULL, 0, NULL, NULL, NULL);
+
+  // Likewise, the X server needs to know this window's pid so it knows which
+  // program to kill if the window hangs.
+  pid_t pid = getpid();
+  XChangeProperty(xdisplay_,
+                  xwindow_,
+                  cached_atoms_[ATOM__NET_WM_PID],
+                  XA_CARDINAL,
+                  32,
+                  PropModeReplace,
+                  reinterpret_cast<unsigned char*>(&pid), 1);
 
   // crbug.com/120229 - set the window title so gtalk can find the primary root
   // window to broadcast.
@@ -477,9 +506,20 @@ base::MessagePumpDispatcher::DispatchStatus RootWindowHostLinux::Dispatch(
     }
     case ClientMessage: {
       Atom message_type = static_cast<Atom>(xev->xclient.data.l[0]);
-      if (message_type == wm_delete_window_atom_) {
+      if (message_type == cached_atoms_[ATOM_WM_DELETE_WINDOW]) {
         // We have received a close message from the window manager.
         root_window_->OnRootWindowHostClosed();
+        handled = true;
+      } else if (message_type == cached_atoms_[ATOM__NET_WM_PING]) {
+        XEvent reply_event = *xev;
+        reply_event.xclient.window = x_root_window_;
+
+        XSendEvent(xdisplay_,
+                   reply_event.xclient.window,
+                   False,
+                   SubstructureRedirectMask | SubstructureNotifyMask,
+                   &reply_event);
+
         handled = true;
       }
       break;
@@ -549,14 +589,35 @@ gfx::Rect RootWindowHostLinux::GetBounds() const {
 
 void RootWindowHostLinux::SetBounds(const gfx::Rect& bounds) {
   bool size_changed = bounds_.size() != bounds.size();
-  if (bounds == bounds_) {
+  if (has_set_bounds_once_ && bounds == bounds_) {
     root_window_->SchedulePaintInRect(root_window_->bounds());
     return;
   }
-  if (bounds.size() != bounds_.size())
+
+  bool set_hints = false;
+  XSizeHints size_hints;
+  size_hints.flags = 0;
+
+  if (!has_set_bounds_once_ || bounds.size() != bounds_.size()) {
     XResizeWindow(xdisplay_, xwindow_, bounds.width(), bounds.height());
-  if (bounds.origin() != bounds_.origin())
+
+    size_hints.flags |= PMinSize;
+    size_hints.min_width = bounds.width();
+    size_hints.min_height = bounds.height();
+    set_hints = true;
+  }
+
+  if (!has_set_bounds_once_ || bounds.origin() != bounds_.origin()) {
     XMoveWindow(xdisplay_, xwindow_, bounds.x(), bounds.y());
+
+    size_hints.flags |= PPosition;
+    size_hints.x = bounds.x();
+    size_hints.y = bounds.y();
+    set_hints = true;
+  }
+
+  if (set_hints)
+    XSetWMNormalHints(xdisplay_, xwindow_, &size_hints);
 
   // Assume that the resize will go through as requested, which should be the
   // case if we're running without a window manager.  If there's a window
@@ -564,6 +625,7 @@ void RootWindowHostLinux::SetBounds(const gfx::Rect& bounds) {
   // (possibly synthetic) ConfigureNotify about the actual size and correct
   // |bounds_| later.
   bounds_ = bounds;
+  has_set_bounds_once_ = true;
   if (size_changed)
     root_window_->OnHostResized(bounds.size());
 }
@@ -708,8 +770,7 @@ void RootWindowHostLinux::PostNativeEvent(
 bool RootWindowHostLinux::IsWindowManagerPresent() {
   // Per ICCCM 2.8, "Manager Selections", window managers should take ownership
   // of WM_Sn selections (where n is a screen number).
-  ::Atom wm_s0_atom = XInternAtom(xdisplay_, "WM_S0", False);
-  return XGetSelectionOwner(xdisplay_, wm_s0_atom) != None;
+  return XGetSelectionOwner(xdisplay_, cached_atoms_[ATOM_WM_S0]) != None;
 }
 
 void RootWindowHostLinux::SetCursorInternal(gfx::NativeCursor cursor) {

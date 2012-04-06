@@ -78,8 +78,22 @@ class RootWindowHostLinux : public RootWindowHost,
   // The bounds of |xwindow_|.
   gfx::Rect bounds_;
 
-  // Cached atom
-  ::Atom wm_delete_window_atom_;
+  // We have to keep track of whether we've set bounds before, because at least
+  // metacity ignores the initial position given to XCreateWindow() and demands
+  // a XMoveWindow().
+  bool has_set_bounds_once_;
+
+  // Names of cached atoms that we fetch during the constructor to minimize
+  // round trips to the X11 server.
+  enum AtomList {
+    ATOM_WM_DELETE_WINDOW = 0,
+    ATOM__NET_WM_PING,
+    ATOM__NET_WM_PID,
+    ATOM_WM_S0,
+
+    ATOM_COUNT
+  };
+  ::Atom cached_atoms_[ATOM_COUNT];
 
   // True if the window should be focused when the window is shown.
   bool focus_when_shown_;
