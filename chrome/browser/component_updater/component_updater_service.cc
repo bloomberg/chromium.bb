@@ -526,7 +526,7 @@ void CrxUpdateService::ProcessPendingItems() {
   // Next we can go back to components we already checked, here
   // we can also batch them in a single url request, as long as
   // we have not checked them recently.
-  base::TimeDelta min_delta_time =
+  const base::TimeDelta min_delta_time =
       base::TimeDelta::FromSeconds(config_->MinimumReCheckWait());
 
   for (UpdateItems::const_iterator it = work_items_.begin();
