@@ -151,6 +151,9 @@ void LauncherUpdater::FaviconUpdated() {
 }
 
 void LauncherUpdater::UpdateLauncher(TabContentsWrapper* tab) {
+  if (type_ == TYPE_APP_PANEL)
+    return;  // Maintained entirely by ChromeLauncherDelegate.
+
   if (!tab)
     return;  // Assume the window is going to be closed if there are no tabs.
 
@@ -159,27 +162,16 @@ void LauncherUpdater::UpdateLauncher(TabContentsWrapper* tab) {
     return;
 
   ash::LauncherItem item = launcher_model()->items()[item_index];
-  if (type_ != TYPE_TABBED) {
-    SkBitmap new_image;
-    if (type_ == TYPE_EXTENSION_PANEL) {
-      if (!favicon_loader_.get() ||
-          favicon_loader_->web_contents() != tab->web_contents()) {
-        favicon_loader_.reset(
-            new LauncherFaviconLoader(this, tab->web_contents()));
-      }
-      // Update the icon for app panels.
-      new_image = favicon_loader_->GetFavicon();
-      if (new_image.empty()) {
-        if (tab->extension_tab_helper()->GetExtensionAppIcon())
-          new_image = *tab->extension_tab_helper()->GetExtensionAppIcon();
-      }
-    } else {
-      // Use the app icon if we can.
-      if (tab->extension_tab_helper()->GetExtensionAppIcon())
-        new_image = *tab->extension_tab_helper()->GetExtensionAppIcon();
-      else
-        new_image = tab->favicon_tab_helper()->GetFavicon();
+  if (type_ == TYPE_EXTENSION_PANEL) {
+    if (!favicon_loader_.get() ||
+        favicon_loader_->web_contents() != tab->web_contents()) {
+      favicon_loader_.reset(
+          new LauncherFaviconLoader(this, tab->web_contents()));
     }
+    // Update the icon for extension panels.
+    SkBitmap new_image = favicon_loader_->GetFavicon();
+    if (new_image.empty() && tab->extension_tab_helper()->GetExtensionAppIcon())
+      new_image = *tab->extension_tab_helper()->GetExtensionAppIcon();
     // Only update the icon if we have a new image, or none has been set yet.
     // This avoids flickering to an empty image when a pinned app is opened.
     if (!new_image.empty())
@@ -187,6 +179,7 @@ void LauncherUpdater::UpdateLauncher(TabContentsWrapper* tab) {
     else if (item.image.empty())
       item.image = Extension::GetDefaultIcon(true);
   } else {
+    DCHECK_EQ(TYPE_TABBED, type_);
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     if (tab->favicon_tab_helper()->ShouldDisplayFavicon()) {
       item.image = tab->favicon_tab_helper()->GetFavicon();

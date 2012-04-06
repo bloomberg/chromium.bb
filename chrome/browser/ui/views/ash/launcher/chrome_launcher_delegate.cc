@@ -221,7 +221,7 @@ ash::LauncherID ChromeLauncherDelegate::CreateAppLauncherItem(
     item.type = ash::TYPE_APP_SHORTCUT;
   } else if (app_type == APP_TYPE_APP_PANEL ||
              app_type == APP_TYPE_EXTENSION_PANEL) {
-    item.type =  ash::TYPE_APP_PANEL;
+    item.type = ash::TYPE_APP_PANEL;
   } else {
     item.type = ash::TYPE_TABBED;
   }
@@ -358,7 +358,7 @@ void ChromeLauncherDelegate::SetAppImage(const std::string& id,
       continue;
     int index = model_->ItemIndexByID(i->first);
     ash::LauncherItem item = model_->items()[index];
-      item.image = image ? *image : Extension::GetDefaultIcon(true);
+    item.image = image ? *image : Extension::GetDefaultIcon(true);
     model_->Set(index, item);
     // It's possible we're waiting on more than one item, so don't break.
   }
