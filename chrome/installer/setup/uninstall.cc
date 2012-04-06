@@ -263,10 +263,14 @@ void DeleteChromeShortcuts(const InstallerState& installer_state,
   FilePath shortcut_path;
   if (installer_state.system_install()) {
     PathService::Get(base::DIR_COMMON_START_MENU, &shortcut_path);
-    if (!ShellUtil::RemoveChromeDesktopShortcut(product.distribution(),
-        ShellUtil::CURRENT_USER | ShellUtil::SYSTEM_LEVEL, false)) {
-      ShellUtil::RemoveChromeDesktopShortcut(product.distribution(),
-          ShellUtil::CURRENT_USER | ShellUtil::SYSTEM_LEVEL, true);
+    if (!ShellUtil::RemoveChromeDesktopShortcut(
+        product.distribution(),
+        ShellUtil::CURRENT_USER | ShellUtil::SYSTEM_LEVEL,
+        ShellUtil::SHORTCUT_NO_OPTIONS)) {
+      ShellUtil::RemoveChromeDesktopShortcut(
+          product.distribution(),
+          ShellUtil::CURRENT_USER | ShellUtil::SYSTEM_LEVEL,
+          ShellUtil::SHORTCUT_ALTERNATE);
     }
 
     ShellUtil::RemoveChromeQuickLaunchShortcut(product.distribution(),
@@ -274,9 +278,9 @@ void DeleteChromeShortcuts(const InstallerState& installer_state,
   } else {
     PathService::Get(base::DIR_START_MENU, &shortcut_path);
     if (!ShellUtil::RemoveChromeDesktopShortcut(product.distribution(),
-        ShellUtil::CURRENT_USER, false)) {
+        ShellUtil::CURRENT_USER, ShellUtil::SHORTCUT_NO_OPTIONS)) {
       ShellUtil::RemoveChromeDesktopShortcut(product.distribution(),
-          ShellUtil::CURRENT_USER, true);
+          ShellUtil::CURRENT_USER, ShellUtil::SHORTCUT_ALTERNATE);
     }
 
     ShellUtil::RemoveChromeQuickLaunchShortcut(product.distribution(),

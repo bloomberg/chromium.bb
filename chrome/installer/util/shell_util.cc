@@ -511,6 +511,15 @@ bool LaunchApplicationAssociationDialog(const std::wstring& app_id) {
   return SUCCEEDED(hr);
 }
 
+uint32 ConvertShellUtilShortcutOptionsToFileUtil(uint32 options) {
+  uint32 converted_options = 0;
+  if (options & ShellUtil::SHORTCUT_DUAL_MODE)
+    converted_options |= file_util::SHORTCUT_DUAL_MODE;
+  if (options & ShellUtil::SHORTCUT_CREATE_ALWAYS)
+    converted_options |= file_util::SHORTCUT_CREATE_ALWAYS;
+  return converted_options;
+}
+
 }  // namespace
 
 const wchar_t* ShellUtil::kRegDefaultIcon = L"\\DefaultIcon";
@@ -567,9 +576,9 @@ bool ShellUtil::CreateChromeDesktopShortcut(BrowserDistribution* dist,
                                             const std::wstring& icon_path,
                                             int icon_index,
                                             ShellChange shell_change,
-                                            bool alternate,
-                                            bool create_new) {
+                                            uint32 options) {
   std::wstring shortcut_name;
+  bool alternate = (options & ShellUtil::SHORTCUT_ALTERNATE) != 0;
   if (!ShellUtil::GetChromeShortcutName(dist, alternate, appended_name,
                                         &shortcut_name))
     return false;
@@ -594,7 +603,7 @@ bool ShellUtil::CreateChromeDesktopShortcut(BrowserDistribution* dist,
                                               description,
                                               icon_path,
                                               icon_index,
-                                              create_new);
+                                              options);
       }
     }
   } else if (shell_change == ShellUtil::SYSTEM_LEVEL) {
@@ -608,7 +617,7 @@ bool ShellUtil::CreateChromeDesktopShortcut(BrowserDistribution* dist,
                                             description,
                                             icon_path,
                                             icon_index,
-                                            create_new);
+                                            options);
     }
   } else {
     NOTREACHED();
@@ -619,7 +628,7 @@ bool ShellUtil::CreateChromeDesktopShortcut(BrowserDistribution* dist,
 bool ShellUtil::CreateChromeQuickLaunchShortcut(BrowserDistribution* dist,
                                                 const std::wstring& chrome_exe,
                                                 int shell_change,
-                                                bool create_new) {
+                                                uint32 options) {
   std::wstring shortcut_name;
   if (!ShellUtil::GetChromeShortcutName(dist, false, L"", &shortcut_name))
     return false;
@@ -634,7 +643,7 @@ bool ShellUtil::CreateChromeQuickLaunchShortcut(BrowserDistribution* dist,
                                             user_ql_path.value(),
                                             L"", L"", chrome_exe,
                                             dist->GetIconIndex(),
-                                            create_new);
+                                            options);
     } else {
       ret = false;
     }
@@ -650,7 +659,7 @@ bool ShellUtil::CreateChromeQuickLaunchShortcut(BrowserDistribution* dist,
                                             default_ql_path.value(),
                                             L"", L"", chrome_exe,
                                             dist->GetIconIndex(),
-                                            create_new) && ret;
+                                            options) && ret;
     } else {
       ret = false;
     }
@@ -1009,8 +1018,12 @@ bool ShellUtil::RegisterChromeForProtocol(BrowserDistribution* dist,
 }
 
 bool ShellUtil::RemoveChromeDesktopShortcut(BrowserDistribution* dist,
-                                            int shell_change, bool alternate) {
+                                            int shell_change, uint32 options) {
+  // Only SHORTCUT_ALTERNATE is a valid option for this function.
+  DCHECK(!options || options == ShellUtil::SHORTCUT_ALTERNATE);
+
   std::wstring shortcut_name;
+  bool alternate = (options & ShellUtil::SHORTCUT_ALTERNATE) != 0;
   if (!ShellUtil::GetChromeShortcutName(dist, alternate, L"",
                                         &shortcut_name))
     return false;
@@ -1095,7 +1108,7 @@ bool ShellUtil::UpdateChromeShortcut(BrowserDistribution* dist,
                                      const std::wstring& description,
                                      const std::wstring& icon_path,
                                      int icon_index,
-                                     bool create_new) {
+                                     uint32 options) {
   std::wstring chrome_path = FilePath(chrome_exe).DirName().value();
 
   FilePath prefs_path(chrome_path);
@@ -1105,25 +1118,15 @@ bool ShellUtil::UpdateChromeShortcut(BrowserDistribution* dist,
     prefs.GetInt(installer::master_preferences::kChromeShortcutIconIndex,
                  &icon_index);
   }
-  if (create_new) {
-    return file_util::CreateShortcutLink(
-        chrome_exe.c_str(),                // target
-        shortcut.c_str(),                  // shortcut
-        chrome_path.c_str(),               // working dir
-        arguments.c_str(),                 // arguments
-        description.c_str(),               // description
-        icon_path.c_str(),                 // icon file
-        icon_index,                        // icon index
-        dist->GetBrowserAppId().c_str());  // app id
-  } else {
-    return file_util::UpdateShortcutLink(
-        chrome_exe.c_str(),                // target
-        shortcut.c_str(),                  // shortcut
-        chrome_path.c_str(),               // working dir
-        arguments.c_str(),                 // arguments
-        description.c_str(),               // description
-        icon_path.c_str(),                 // icon file
-        icon_index,                        // icon index
-        dist->GetBrowserAppId().c_str());  // app id
-  }
+
+  return file_util::CreateOrUpdateShortcutLink(
+      chrome_exe.c_str(),
+      shortcut.c_str(),
+      chrome_path.c_str(),
+      arguments.c_str(),
+      description.c_str(),
+      icon_path.c_str(),
+      icon_index,
+      dist->GetBrowserAppId().c_str(),
+      ConvertShellUtilShortcutOptionsToFileUtil(options));
 }

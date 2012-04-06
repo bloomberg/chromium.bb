@@ -229,14 +229,16 @@ void CreateShortcutTask(const FilePath& web_app_path,
           StringPrintf(" (%d)", unique_number));
     }
 
-    success &= file_util::CreateShortcutLink(chrome_exe.value().c_str(),
+    success = file_util::CreateOrUpdateShortcutLink(
+        chrome_exe.value().c_str(),
         shortcut_file.value().c_str(),
         chrome_folder.value().c_str(),
         wide_switches.c_str(),
         description.c_str(),
         icon_file.value().c_str(),
         0,
-        app_id.c_str());
+        app_id.c_str(),
+        file_util::SHORTCUT_CREATE_ALWAYS) && success;
 
     // Any shortcut would work for the pinning. We use the first one.
     if (success && pin_to_taskbar && shortcut_to_pin.empty())

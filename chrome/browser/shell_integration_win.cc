@@ -181,8 +181,10 @@ void MigrateWin7ShortcutsInPath(
     GetShortcutAppId(shell_link, &existing_app_id);
 
     if (expected_app_id != existing_app_id) {
-      file_util::UpdateShortcutLink(NULL, shortcut.value().c_str(), NULL, NULL,
-                                    NULL, NULL, 0, expected_app_id.c_str());
+      file_util::CreateOrUpdateShortcutLink(NULL, shortcut.value().c_str(),
+                                            NULL, NULL, NULL, NULL, 0,
+                                            expected_app_id.c_str(),
+                                            file_util::SHORTCUT_NO_OPTIONS);
     }
   }
 }

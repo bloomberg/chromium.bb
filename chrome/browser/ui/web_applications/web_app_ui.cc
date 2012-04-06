@@ -257,14 +257,16 @@ void UpdateShortcutWorker::UpdateShortcutsOnFileThread() {
       shortcut_info_.description.resize(MAX_PATH - 1);
 
     for (size_t i = 0; i < shortcut_files_.size(); ++i) {
-      file_util::UpdateShortcutLink(NULL,
+      file_util::CreateOrUpdateShortcutLink(
+          NULL,
           shortcut_files_[i].value().c_str(),
           NULL,
           NULL,
           shortcut_info_.description.c_str(),
           icon_file.value().c_str(),
           0,
-          app_id.c_str());
+          app_id.c_str(),
+          file_util::SHORTCUT_NO_OPTIONS);
     }
   }
 

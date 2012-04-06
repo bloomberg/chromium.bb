@@ -122,8 +122,7 @@ bool CreateChromeDesktopShortcut() {
       chrome_exe.value(),
       dist->GetIconIndex(),
       ShellUtil::CURRENT_USER,
-      false,
-      true);  // create if doesn't exist.
+      ShellUtil::SHORTCUT_CREATE_ALWAYS);
 }
 
 // Creates the quick launch shortcut to chrome for the current user. Returns
@@ -137,7 +136,7 @@ bool CreateChromeQuickLaunchShortcut() {
       dist,
       chrome_exe.value(),
       ShellUtil::CURRENT_USER,  // create only for current user.
-      true);  // create if doesn't exist.
+      ShellUtil::SHORTCUT_CREATE_ALWAYS);
 }
 
 void PlatformSetup(Profile* profile) {
