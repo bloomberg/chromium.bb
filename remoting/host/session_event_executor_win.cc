@@ -13,7 +13,6 @@
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "remoting/proto/event.pb.h"
-#include "ui/base/keycodes/keyboard_codes.h"
 
 #include "remoting/host/chromoting_messages.h"
 #include "remoting/host/desktop_win.h"
@@ -22,6 +21,21 @@ namespace {
 
 // The command line switch specifying the name of the Chromoting IPC channel.
 const char kProcessChannelId[] = "chromoting-ipc";
+
+const uint32 kUsbLeftControl =  0x0700e0;
+const uint32 kUsbRightControl = 0x0700e4;
+const uint32 kUsbLeftAlt =  0x0700e2;
+const uint32 kUsbRightAlt = 0x0700e6;
+const uint32 kUsbDelete = 0x07004c;
+
+bool areCtrlAndAltPressed(const std::set<uint32>& pressed_keys) {
+  size_t ctrl_keys = pressed_keys.count(kUsbLeftControl) +
+    pressed_keys.count(kUsbRightControl);
+  size_t alt_keys = pressed_keys.count(kUsbLeftAlt) +
+    pressed_keys.count(kUsbRightAlt);
+  return ctrl_keys != 0 && alt_keys != 0 &&
+    (ctrl_keys + alt_keys == pressed_keys.size());
+}
 
 } // namespace
 
@@ -36,8 +50,7 @@ SessionEventExecutorWin::SessionEventExecutorWin(
     base::MessageLoopProxy* io_message_loop,
     scoped_ptr<protocol::HostEventStub> nested_executor)
     : nested_executor_(nested_executor.Pass()),
-      message_loop_(message_loop),
-      scroll_pressed_(false) {
+      message_loop_(message_loop) {
   std::string channel_name =
       CommandLine::ForCurrentProcess()->GetSwitchValueASCII(kProcessChannelId);
 
@@ -78,20 +91,23 @@ void SessionEventExecutorWin::InjectKeyEvent(const KeyEvent& event) {
     return;
   }
 
-  // Poor man's Ctrl+Alt+Delete emulation: a double Scroll Lock is converted to
-  // the Secure Attention Sequence.
-  // TODO(alexeypa): replace this with proper SAS handling.
-  if (chromoting_channel_.get() != NULL && event.keycode() == VK_SCROLL) {
+  // HostEventDispatcher should drop events lacking the pressed field.
+  DCHECK(event.has_pressed());
+
+  if (event.has_usb_keycode()) {
     if (event.pressed()) {
-      if (scroll_pressed_) {
-        chromoting_channel_->Send(new ChromotingHostMsg_SendSasToConsole());
-        scroll_pressed_ = false;
-      } else {
-        scroll_pressed_ = true;
+      // Simulate secure attention sequence if Ctrl-Alt-Del was just pressed.
+      if (event.usb_keycode() == kUsbDelete &&
+          areCtrlAndAltPressed(pressed_keys_)) {
+        VLOG(3) << "Sending Secure Attention Sequence to console";
+        if (chromoting_channel_.get())
+          chromoting_channel_->Send(new ChromotingHostMsg_SendSasToConsole());
       }
+
+      pressed_keys_.insert(event.usb_keycode());
+    } else {
+      pressed_keys_.erase(event.usb_keycode());
     }
-  } else {
-    scroll_pressed_ = false;
   }
 
   SwitchToInputDesktop();

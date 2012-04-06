@@ -5,6 +5,8 @@
 #ifndef REMOTING_HOST_SESSION_EVENT_EXECUTOR_WIN_H_
 #define REMOTING_HOST_SESSION_EVENT_EXECUTOR_WIN_H_
 
+#include <set>
+
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "ipc/ipc_channel.h"
@@ -59,7 +61,8 @@ class SessionEventExecutorWin : public protocol::HostEventStub,
   // The Chromoting IPC channel connecting the host with the service.
   scoped_ptr<IPC::ChannelProxy> chromoting_channel_;
 
-  bool scroll_pressed_;
+  // Keys currently pressed by the client, used to detect Ctrl-Alt-Del.
+  std::set<uint32> pressed_keys_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionEventExecutorWin);
 };
