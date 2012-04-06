@@ -160,7 +160,7 @@ void ShowCryptoModulePasswordDialog(
     const CryptoModulePasswordCallback& callback) {
   CryptoModulePasswordDialogView* dialog =
       new CryptoModulePasswordDialogView(slot_name, reason, server, callback);
-  views::Widget::CreateWindowWithParent(dialog, NULL)->Show();
+  views::Widget::CreateWindow(dialog)->Show();
 }
 
 }  // namespace browser
