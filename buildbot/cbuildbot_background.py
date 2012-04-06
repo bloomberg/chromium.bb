@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -151,12 +151,23 @@ def _ParallelSteps(steps):
 def RunParallelSteps(steps):
   """Run a list of functions in parallel.
 
+  This function blocks until all steps are completed.
+
   The output from the functions is saved to a temporary file and printed as if
   they were run in sequence.
 
   If exceptions occur in the steps, we join together the tracebacks and print
   them after all parallel tasks have finished running. Further, a
   BackgroundException is raised with full stack traces of all exceptions.
+
+  Example:
+    # This snippet will execute in parallel:
+    #   somefunc()
+    #   anotherfunc()
+    #   funcfunc()
+    steps = [somefunc, anotherfunc, funcfunc]
+    RunParallelSteps(steps)
+    # Blocks until all calls have completed.
   """
   with _ParallelSteps(steps):
     pass
@@ -221,6 +232,20 @@ def BackgroundTaskRunner(queue, task, processes=None, onexit=None):
   them after all parallel tasks have finished running. Further, a
   BackgroundException is raised with full stack traces of all exceptions.
 
+  Example:
+    # This will run somefunc('small', 'cow') in the background
+    # while "more random stuff" is being executed.
+
+    def somefunc(arg1, arg2):
+      ...
+    ...
+    myqueue = multiprocessing.Queue()
+    with BackgroundTaskRunner(myqueue, somefunc):
+      ... do random stuff ...
+      myqueue.put(['small', 'cow'])
+      ... do more random stuff ...
+    # Exiting the with statement will block until all calls have completed.
+
   Args:
     queue: A queue of tasks to run. Add tasks to this queue, and they will
       be run in the background.
@@ -244,13 +269,31 @@ def BackgroundTaskRunner(queue, task, processes=None, onexit=None):
 def RunTasksInProcessPool(task, inputs, processes=None):
   """Run the specified function with each supplied input in a pool of processes.
 
-  This function runs task(*x) for x in inputs in a pool of processes. The
-  output from these tasks is saved to a temporary file and printed as if they
-  were run in sequence.
+  This function runs task(*x) for x in inputs in a pool of processes. This
+  function blocks until all tasks are completed.
+
+  The output from these tasks is saved to a temporary file. When control
+  returns to the context manager, the background output is printed in order,
+  as if the tasks were run in sequence.
 
   If exceptions occur in the steps, we join together the tracebacks and print
   them after all parallel tasks have finished running. Further, a
   BackgroundException is raised with full stack traces of all exceptions.
+
+  Example:
+    # This snippet will execute in parallel:
+    #   somefunc('hi', 'fat', 'code')
+    #   somefunc('foo', 'bar', 'cow')
+
+    def somefunc(arg1, arg2, arg3):
+      ...
+    ...
+    inputs = [
+      ['hi', 'fat', 'code'],
+      ['foo', 'bar', 'cow'],
+    ]
+    RunTasksInProcessPool(somefunc, inputs)
+    # Blocks until all calls have completed.
 
   Args:
     task: Function to run on each input.
