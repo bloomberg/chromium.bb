@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,7 +18,7 @@
 #include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(USE_AURA) && defined(OS_WIN)
+#if defined(USE_AURA)
 // http://crbug.com/105200
 #define MAYBE_ExpectAsynchronousListenerCall DISABLED_ExpectAsynchronousListenerCall
 #else

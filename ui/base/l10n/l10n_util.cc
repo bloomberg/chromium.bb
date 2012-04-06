@@ -27,7 +27,7 @@
 #include "unicode/rbbi.h"
 #include "unicode/uloc.h"
 
-#if defined(TOOLKIT_GTK)
+#if defined(OS_LINUX)
 #include <glib.h>
 #endif
 
@@ -399,7 +399,7 @@ std::string GetApplicationLocale(const std::string& pref_locale) {
     candidates.push_back(base::i18n::GetConfiguredLocale());
   }
 
-#elif defined(OS_CHROMEOS) || defined(USE_AURA)
+#elif defined(OS_CHROMEOS) || (defined(USE_AURA) && !defined(OS_LINUX))
 
   // On ChromeOS, use the application locale preference.
   if (!pref_locale.empty())
@@ -411,7 +411,8 @@ std::string GetApplicationLocale(const std::string& pref_locale) {
   if (!pref_locale.empty())
     candidates.push_back(pref_locale);
 
-#elif defined(TOOLKIT_GTK)
+#elif defined(OS_LINUX)
+  // If we're on a different Linux system, we have glib.
 
   // GLib implements correct environment variable parsing with
   // the precedence order: LANGUAGE, LC_ALL, LC_MESSAGES and LANG.
