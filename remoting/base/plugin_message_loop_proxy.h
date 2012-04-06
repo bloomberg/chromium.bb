@@ -27,7 +27,6 @@ class PluginMessageLoopProxy : public base::MessageLoopProxy {
 
   // Caller keeps ownership of delegate.
   PluginMessageLoopProxy(Delegate* delegate);
-  virtual ~PluginMessageLoopProxy();
 
   void Detach();
 
@@ -50,6 +49,9 @@ class PluginMessageLoopProxy : public base::MessageLoopProxy {
       base::TimeDelta delay) OVERRIDE;
 
   virtual bool RunsTasksOnCurrentThread() const OVERRIDE;
+
+ protected:
+  virtual ~PluginMessageLoopProxy();
 
  private:
   static void TaskSpringboard(void* data);

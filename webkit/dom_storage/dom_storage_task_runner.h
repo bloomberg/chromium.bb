@@ -55,6 +55,9 @@ class DomStorageTaskRunner : public base::TaskRunner {
       const tracked_objects::Location& from_here,
       const base::Closure& task,
       int64 delay_ms) OVERRIDE;
+
+ protected:
+  virtual ~DomStorageTaskRunner() {}
 };
 
 // A derived class used in chromium that utilizes a SequenceWorkerPool
@@ -78,8 +81,10 @@ class DomStorageWorkerPoolTaskRunner : public DomStorageTaskRunner {
       SequenceID sequence_id,
       const base::Closure& task) OVERRIDE;
 
- private:
+ protected:
   virtual ~DomStorageWorkerPoolTaskRunner();
+
+ private:
   const scoped_refptr<base::MessageLoopProxy> message_loop_;
   const scoped_refptr<base::SequencedWorkerPool> sequenced_worker_pool_;
   base::SequencedWorkerPool::SequenceToken primary_sequence_token_;
@@ -105,8 +110,10 @@ class MockDomStorageTaskRunner : public DomStorageTaskRunner {
       SequenceID sequence_id,
       const base::Closure& task) OVERRIDE;
 
- private:
+ protected:
   virtual ~MockDomStorageTaskRunner();
+
+ private:
   const scoped_refptr<base::MessageLoopProxy> message_loop_;
 };
 
