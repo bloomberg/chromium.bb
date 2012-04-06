@@ -2548,7 +2548,8 @@ TEST_F(GDataFileSystemTest, GetFileForResourceId) {
   GDataFile* file = file_base->AsGDataFile();
   FilePath downloaded_file = GetCachePathForFile(file);
 
-  // The file is obtained with the mock DocumentsService.
+  // The file is obtained with the mock DocumentsService, because it's not
+  // stored in the cache.
   EXPECT_CALL(*mock_doc_service_,
               DownloadFile(file_in_root,
                            downloaded_file,
@@ -2564,6 +2565,43 @@ TEST_F(GDataFileSystemTest, GetFileForResourceId) {
   EXPECT_EQ(downloaded_file.value(),
             callback_helper_->download_path_.value());
 }
+
+TEST_F(GDataFileSystemTest, GetFileForResourceId_FromCache) {
+  EXPECT_CALL(*mock_sync_client_, OnCacheInitialized()).Times(1);
+
+  LoadRootFeedDocument("root_feed.json");
+
+  GetFileCallback callback =
+      base::Bind(&CallbackHelper::GetFileCallback,
+                 callback_helper_.get());
+
+  FilePath file_in_root(FILE_PATH_LITERAL("gdata/File 1.txt"));
+  GDataFileBase* file_base = FindFile(file_in_root);
+  GDataFile* file = file_base->AsGDataFile();
+  FilePath downloaded_file = GetCachePathForFile(file);
+
+  // Store something as cached version of this file.
+  TestStoreToCache(file->resource_id(),
+                   file->file_md5(),
+                   GetTestFilePath("root_feed.json"),
+                   base::PLATFORM_FILE_OK,
+                   GDataFile::CACHE_STATE_PRESENT,
+                   GDataRootDirectory::CACHE_TYPE_TMP);
+
+  // The file is obtained from the cache.
+  // Make sure we don't call downloads at all.
+  EXPECT_CALL(*mock_doc_service_, DownloadFile(_, _, _, _))
+      .Times(0);
+
+  file_system_->GetFileForResourceId(file->resource_id(),
+                                     callback);
+  RunAllPendingForIO();
+
+  EXPECT_EQ(REGULAR_FILE, callback_helper_->file_type_);
+  EXPECT_EQ(downloaded_file.value(),
+            callback_helper_->download_path_.value());
+}
+
 
 TEST_F(GDataFileSystemTest, GetAvailableSpace) {
   EXPECT_CALL(*mock_sync_client_, OnCacheInitialized()).Times(1);

@@ -1422,16 +1422,20 @@ void GDataFileSystem::GetFile(const FilePath& file_path,
 void GDataFileSystem::GetFileForResourceId(
     const std::string& resource_id,
     const GetFileCallback& callback) {
-  base::AutoLock lock(lock_);  // To access the cache map.
-
-  GDataFile* file = NULL;
-  GDataFileBase* file_base = root_->GetFileByResourceId(resource_id);
-  if (file_base)
-    file = file_base->AsGDataFile();
+  FilePath file_path;
+  {
+    base::AutoLock lock(lock_);  // To access the cache map.
+    GDataFileBase* file_base = root_->GetFileByResourceId(resource_id);
+    if (file_base) {
+      GDataFile* file = file_base->AsGDataFile();
+      if (file)
+        file_path = file->GetFilePath();
+    }
+  }
 
   // Report an error immediately if the file for the resource ID is not
   // found.
-  if (!file) {
+  if (file_path.empty()) {
     if (!callback.is_null()) {
       base::MessageLoopProxy::current()->PostTask(
           FROM_HERE,
@@ -1444,26 +1448,7 @@ void GDataFileSystem::GetFileForResourceId(
     return;
   }
 
-  const FilePath local_tmp_path = GetCacheFilePath(
-      resource_id,
-      file->file_md5(),
-      GDataRootDirectory::CACHE_TYPE_TMP,
-      CACHED_FILE_FROM_SERVER);
-
-  documents_service_->DownloadFile(
-      file->GetFilePath(),
-      local_tmp_path,
-      file->content_url(),
-      base::Bind(&GDataFileSystem::OnFileDownloaded,
-                 GetWeakPtrForCurrentThread(),
-                 GetFileFromCacheParams(file->GetFilePath(),
-                                        local_tmp_path,
-                                        file->content_url(),
-                                        resource_id,
-                                        file->file_md5(),
-                                        file->content_mime_type(),
-                                        base::MessageLoopProxy::current(),
-                                        callback)));
+  GetFile(file_path, callback);
 }
 
 void GDataFileSystem::OnGetFileFromCache(const GetFileFromCacheParams& params,
