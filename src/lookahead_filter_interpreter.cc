@@ -444,7 +444,7 @@ void LookaheadFilterInterpreter::CombineGestures(Gesture* gesture,
   }
   // |addend| must be a button gesture if we get to here.
   if (gesture->type != kGestureTypeButtonsChange) {
-    Err("Losing gesture");
+    Log("Losing gesture");
     *gesture = *addend;
     return;
   }

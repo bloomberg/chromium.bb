@@ -1277,10 +1277,8 @@ void ImmediateInterpreter::FillResultGesture(
       // Find corresponding finger id in previous state
       const FingerState* prev =
           prev_state_.GetFingerState(current->tracking_id);
-      if (!prev) {
-        Err("No previous state!");
+      if (!prev)
         return;
-      }
       if (fabsf(current->pressure - prev->pressure) >
           max_pressure_change_.val_)
         break;
