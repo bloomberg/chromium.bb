@@ -647,6 +647,18 @@
    ...
    obj:/usr/lib/flashplugin-installer/libflashplayer.so
 }
+{
+   Occasional leak inside setlocale()
+   Memcheck:Leak
+   fun:malloc
+   ...
+   fun:_nl_make_l10nflist
+   fun:_nl_find_locale
+   fun:setlocale
+   fun:_ZN12_GLOBAL__N_121ContentMainRunnerImpl10InitializeEiPPKcPN7content19ContentMainDelegateE
+   fun:_ZN7content11ContentMainEiPPKcPNS_19ContentMainDelegateE
+   fun:ChromeMain
+}
 
 #-----------------------------------------------------------------------
 # 2. intentional unit test errors, or stuff that is somehow a false positive
@@ -5610,6 +5622,49 @@
    fun:_ZN7WebCore20LayerTextureSubImage6uploadEPKhRKNS_7IntRectES5_S5_jPNS_17GraphicsContext3DE
    fun:_ZN7WebCore31BitmapCanvasLayerTextureUpdater17updateTextureRectEPNS_17GraphicsContext3DEPNS_16TextureAllocatorEPNS_14ManagedTextureERKNS_7IntRectES9_
    fun:_ZN7WebCore31BitmapCanvasLayerTextureUpdater7Texture10updateRectEPNS_17GraphicsContext3DEPNS_16TextureAllocatorERKNS_7IntRectES8_
+}
+{
+   bug_122454
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN11GrGLTexture4initEP7GrGpuGLRKNS_4DescEPKN16GrGLRenderTarget4DescE
+   fun:_ZN11GrGLTextureC1EP7GrGpuGLRKNS_4DescE
+   fun:_ZN7GrGpuGL15onCreateTextureERK13GrTextureDescPKvm
+   fun:_ZN5GrGpu13createTextureERK13GrTextureDescPKvm
+   fun:_ZN9GrContext20createAndLockTextureEmPK14GrSamplerStateRK13GrTextureDescPvm
+   fun:_Z27sk_gr_create_bitmap_textureP9GrContextmPK14GrSamplerStateRK8SkBitmap
+   fun:_ZN11SkGpuDevice17lockCachedTextureERK8SkBitmapPK14GrSamplerState
+}
+{
+   bug_122455
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN9__gnu_cxx13new_allocatorISt13_Rb_tree_nodeISsEE8allocateEmPKv
+   fun:_ZNSt8_Rb_treeISsSsSt9_IdentityISsESt4lessISsESaISsEE11_M_get_nodeEv
+   fun:_ZNSt8_Rb_treeISsSsSt9_IdentityISsESt4lessISsESaISsEE14_M_create_nodeERKSs
+   fun:_ZNSt8_Rb_treeISsSsSt9_IdentityISsESt4lessISsESaISsEE10_M_insert_EPKSt18_Rb_tree_node_baseS8_RKSs
+   fun:_ZNSt8_Rb_treeISsSsSt9_IdentityISsESt4lessISsESaISsEE16_M_insert_uniqueERKSs
+   fun:_ZNSt3setISsSt4lessISsESaISsEE6insertERKSs
+   fun:_ZN3gpu5gles219GLES2Implementation32GetRequestableExtensionsCHROMIUMEv
+   fun:_ZN6webkit3gpu46WebGraphicsContext3DInProcessCommandBufferImpl32getRequestableExtensionsCHROMIUMEv
+   fun:_ZN7WebCore24GraphicsContext3DPrivate20initializeExtensionsEv
+   fun:_ZN7WebCore24GraphicsContext3DPrivate17supportsExtensionERKN3WTF6StringE
+}
+{
+   bug_122457
+   Memcheck:Leak
+   fun:malloc
+   fun:_ZN3WTF10fastMallocEm
+   fun:_ZN3WTF10RefCountedIN7WebCore7ArchiveEEnwEm
+   fun:_ZN7WebCore12MHTMLArchive6createEv
+   fun:_ZN7WebCore11MHTMLParser22parseArchiveWithHeaderEPNS_10MIMEHeaderE
+   fun:_ZN7WebCore11MHTMLParser12parseArchiveEv
+   fun:_ZN7WebCore12MHTMLArchive6createERKNS_4KURLEPNS_12SharedBufferE
+   fun:_ZN7WebCoreL20archiveFactoryCreateINS_12MHTMLArchiveEEEN3WTF10PassRefPtrINS_7ArchiveEEERKNS_4KURLEPNS_12SharedBufferE
+   fun:_ZN7WebCore14ArchiveFactory6createERKNS_4KURLEPNS_12SharedBufferERKN3WTF6StringE
+   fun:_ZN7WebCore11FrameLoader23finishedLoadingDocumentEPNS_14DocumentLoaderE
+   fun:_ZN7WebCore14DocumentLoader15finishedLoadingEv
+   fun:_ZN7WebCore18MainResourceLoader16didFinishLoadingEd
 }
 
 #-----------------------------------------------------------------------
