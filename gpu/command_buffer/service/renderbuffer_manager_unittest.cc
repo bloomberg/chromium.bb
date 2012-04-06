@@ -65,6 +65,10 @@ TEST_F(RenderbufferManagerTest, Basic) {
   EXPECT_TRUE(manager_.GetRenderbufferInfo(kClient2Id) == NULL);
   // Check trying to a remove non-existent renderbuffers does not crash.
   manager_.RemoveRenderbufferInfo(kClient2Id);
+  // Check that the renderbuffer is deleted when the last ref is released.
+  EXPECT_CALL(*gl_, DeleteRenderbuffersEXT(1, ::testing::Pointee(kService1Id)))
+      .Times(1)
+      .RetiresOnSaturation();
   // Check we can't get the renderbuffer after we remove it.
   manager_.RemoveRenderbufferInfo(kClient1Id);
   EXPECT_TRUE(manager_.GetRenderbufferInfo(kClient1Id) == NULL);
@@ -127,6 +131,10 @@ TEST_F(RenderbufferManagerTest, RenderbufferInfo) {
   manager_.SetInfo(info1, kSamples, kFormat, kWidth, kHeight);
   EXPECT_TRUE(manager_.HaveUnclearedRenderbuffers());
 
+  // Check that the renderbuffer is deleted when the last ref is released.
+  EXPECT_CALL(*gl_, DeleteRenderbuffersEXT(1, ::testing::Pointee(kService1Id)))
+      .Times(1)
+      .RetiresOnSaturation();
   manager_.RemoveRenderbufferInfo(kClient1Id);
   EXPECT_FALSE(manager_.HaveUnclearedRenderbuffers());
 }
@@ -150,6 +158,11 @@ TEST_F(RenderbufferManagerTest, UseDeletedRenderbufferInfo) {
   EXPECT_TRUE(manager_.HaveUnclearedRenderbuffers());
   manager_.SetCleared(info1);
   EXPECT_FALSE(manager_.HaveUnclearedRenderbuffers());
+  // Check that the renderbuffer is deleted when the last ref is released.
+  EXPECT_CALL(*gl_, DeleteRenderbuffersEXT(1, ::testing::Pointee(kService1Id)))
+      .Times(1)
+      .RetiresOnSaturation();
+  info1 = NULL;
 }
 
 }  // namespace gles2

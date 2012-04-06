@@ -27,6 +27,7 @@ class GPU_EXPORT RenderbufferManager {
 
     RenderbufferInfo(RenderbufferManager* manager, GLuint service_id)
         : manager_(manager),
+          deleted_(false),
           service_id_(service_id),
           cleared_(true),
           has_been_bound_(false),
@@ -34,6 +35,7 @@ class GPU_EXPORT RenderbufferManager {
           internal_format_(GL_RGBA4),
           width_(0),
           height_(0) {
+      manager_->StartTracking(this);
     }
 
     GLuint service_id() const {
@@ -61,7 +63,7 @@ class GPU_EXPORT RenderbufferManager {
     }
 
     bool IsDeleted() const {
-      return service_id_ == 0;
+      return deleted_;
     }
 
     void MarkAsValid() {
@@ -94,11 +96,13 @@ class GPU_EXPORT RenderbufferManager {
     }
 
     void MarkAsDeleted() {
-      service_id_ = 0;
+      deleted_ = true;
     }
 
     // RenderbufferManager that owns this RenderbufferInfo.
     RenderbufferManager* manager_;
+
+    bool deleted_;
 
     // Service side renderbuffer id.
     GLuint service_id_;
@@ -159,6 +163,7 @@ class GPU_EXPORT RenderbufferManager {
  private:
   void UpdateMemRepresented();
 
+  void StartTracking(RenderbufferInfo* renderbuffer);
   void StopTracking(RenderbufferInfo* renderbuffer);
 
   GLint max_renderbuffer_size_;
@@ -167,6 +172,12 @@ class GPU_EXPORT RenderbufferManager {
   int num_uncleared_renderbuffers_;
 
   size_t mem_represented_;
+
+  // Counts the number of RenderbufferInfo allocated with 'this' as its manager.
+  // Allows to check no RenderbufferInfo will outlive this.
+  unsigned renderbuffer_info_count_;
+
+  bool have_context_;
 
   // Info for each renderbuffer in the system.
   typedef base::hash_map<GLuint, RenderbufferInfo::Ref> RenderbufferInfoMap;

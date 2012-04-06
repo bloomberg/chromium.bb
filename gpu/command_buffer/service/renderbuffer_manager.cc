@@ -16,12 +16,17 @@ RenderbufferManager::RenderbufferManager(
     : max_renderbuffer_size_(max_renderbuffer_size),
       max_samples_(max_samples),
       num_uncleared_renderbuffers_(0),
-      mem_represented_(0) {
+      mem_represented_(0),
+      renderbuffer_info_count_(0),
+      have_context_(true) {
   UpdateMemRepresented();
 }
 
 RenderbufferManager::~RenderbufferManager() {
   DCHECK(renderbuffer_infos_.empty());
+  // If this triggers, that means something is keeping a reference to
+  // a RenderbufferInfo belonging to this.
+  CHECK_EQ(renderbuffer_info_count_, 0u);
 }
 
 size_t RenderbufferManager::RenderbufferInfo::EstimatedSize() {
@@ -31,6 +36,10 @@ size_t RenderbufferManager::RenderbufferInfo::EstimatedSize() {
 
 RenderbufferManager::RenderbufferInfo::~RenderbufferInfo() {
   if (manager_) {
+    if (manager_->have_context_) {
+      GLuint id = service_id();
+      glDeleteRenderbuffersEXT(1, &id);
+    }
     manager_->StopTracking(this);
     manager_ = NULL;
   }
@@ -42,22 +51,18 @@ void RenderbufferManager::UpdateMemRepresented() {
 }
 
 void RenderbufferManager::Destroy(bool have_context) {
-  while (!renderbuffer_infos_.empty()) {
-    RenderbufferInfo* info = renderbuffer_infos_.begin()->second;
-    if (have_context) {
-      if (!info->IsDeleted()) {
-        GLuint service_id = info->service_id();
-        glDeleteRenderbuffersEXT(1, &service_id);
-        info->MarkAsDeleted();
-      }
-    }
-    renderbuffer_infos_.erase(renderbuffer_infos_.begin());
-  }
+  have_context_ = have_context;
+  renderbuffer_infos_.clear();
   DCHECK_EQ(0u, mem_represented_);
   UpdateMemRepresented();
 }
 
+void RenderbufferManager::StartTracking(RenderbufferInfo* /* renderbuffer */) {
+  ++renderbuffer_info_count_;
+}
+
 void RenderbufferManager::StopTracking(RenderbufferInfo* renderbuffer) {
+  --renderbuffer_info_count_;
   if (!renderbuffer->cleared()) {
     --num_uncleared_renderbuffers_;
   }

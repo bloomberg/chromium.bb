@@ -2387,8 +2387,6 @@ void GLES2DecoderImpl::DeleteRenderbuffersHelper(
         }
       }
       state_dirty_ = true;
-      GLuint service_id = renderbuffer->service_id();
-      glDeleteRenderbuffersEXT(1, &service_id);
       RemoveRenderbufferInfo(client_ids[ii]);
     }
   }
