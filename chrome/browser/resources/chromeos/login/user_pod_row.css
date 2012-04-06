@@ -187,16 +187,17 @@ html[dir=rtl] .pod .capslock-hint {
   height: 16px;
   margin: 0;
   min-width: 16px;
+  opacity: 0;
   padding: 0;
   position: absolute;
   right: 14px;
   top: 14px;
-  visibility: hidden;
   width: 16px;
 }
 
+.pod .remove-user-button:focus,
 .pod:hover .remove-user-button {
-  visibility: visible;
+  opacity: 1;
 }
 
 .remove-user-button:hover {
