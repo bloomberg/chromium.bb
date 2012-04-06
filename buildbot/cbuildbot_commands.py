@@ -41,7 +41,44 @@ class TestException(Exception):
 
 # =========================== Command Helpers =================================
 
-def _BuildRootGitCleanup(buildroot):
+def _GetVMConstants(buildroot):
+  """Returns minimum (vdisk_size, statefulfs_size) recommended for VM's."""
+  cwd = os.path.join(buildroot, 'src', 'scripts', 'lib')
+  source_cmd = 'source %s/cros_vm_constants.sh' % cwd
+  vdisk_size = cros_lib.RunCommandCaptureOutput([
+      '/bin/bash', '-c', '%s && echo $MIN_VDISK_SIZE_FULL' % source_cmd]
+      ).output.strip()
+  statefulfs_size = cros_lib.RunCommandCaptureOutput([
+      '/bin/bash', '-c', '%s && echo $MIN_STATEFUL_FS_SIZE_FULL' % source_cmd],
+       ).output.strip()
+  return (vdisk_size, statefulfs_size)
+
+
+def GetInput(prompt):
+  """Helper function to grab input from a user.   Makes testing easier."""
+  return raw_input(prompt)
+
+
+def ValidateClobber(buildroot):
+  """Do due diligence if user wants to clobber buildroot.
+
+    buildroot: buildroot that's potentially clobbered.
+  Returns: True if the clobber is ok.
+  """
+  cwd = os.path.dirname(os.path.realpath(__file__))
+  if cwd.startswith(buildroot):
+    cros_lib.Die('You are trying to clobber this chromite checkout!')
+
+  if os.path.exists(buildroot):
+    warning = 'This will delete %s' % buildroot
+    response = cros_lib.YesNoPrompt(default=cros_lib.NO, warning=warning,
+                                    full=True)
+    return response == cros_lib.YES
+
+
+# =========================== Main Commands ===================================
+
+def BuildRootGitCleanup(buildroot):
   """Put buildroot onto manifest branch. Delete branches created on last run."""
   manifest_branch = 'remotes/m/' + cros_lib.GetManifestDefaultBranch(buildroot)
   tasks = [
@@ -83,7 +120,7 @@ def _BuildRootGitCleanup(buildroot):
   background.RunTasksInProcessPool(RunCleanupCommands, dirs)
 
 
-def _CleanUpMountPoints(buildroot):
+def CleanUpMountPoints(buildroot):
   """Cleans up any stale mount points from previous runs."""
   mount_output = cros_lib.RunCommandCaptureOutput(['mount'])
   mount_pts_in_buildroot = cros_lib.RunCommandCaptureOutput(
@@ -95,59 +132,15 @@ def _CleanUpMountPoints(buildroot):
                             print_cmd=False)
 
 
-def _GetVMConstants(buildroot):
-  """Returns minimum (vdisk_size, statefulfs_size) recommended for VM's."""
-  cwd = os.path.join(buildroot, 'src', 'scripts', 'lib')
-  source_cmd = 'source %s/cros_vm_constants.sh' % cwd
-  vdisk_size = cros_lib.RunCommandCaptureOutput([
-      '/bin/bash', '-c', '%s && echo $MIN_VDISK_SIZE_FULL' % source_cmd]
-      ).output.strip()
-  statefulfs_size = cros_lib.RunCommandCaptureOutput([
-      '/bin/bash', '-c', '%s && echo $MIN_STATEFUL_FS_SIZE_FULL' % source_cmd],
-       ).output.strip()
-  return (vdisk_size, statefulfs_size)
-
-
-def _WipeOldOutput(buildroot, board):
-  """Wipes out build output directories for the specified board.
+def WipeOldOutput(buildroot):
+  """Wipes out build output directory.
 
   Args:
     buildroot: Root directory where build occurs.
     board: Delete image directories for this board name.
   """
-  image_dir = os.path.join('src', 'build', 'images', board)
+  image_dir = os.path.join('src', 'build', 'images')
   cros_lib.RunCommand(['rm', '-rf', image_dir], cwd=buildroot)
-
-
-def GetInput(prompt):
-  """Helper function to grab input from a user.   Makes testing easier."""
-  return raw_input(prompt)
-
-
-def ValidateClobber(buildroot):
-  """Do due diligence if user wants to clobber buildroot.
-
-    buildroot: buildroot that's potentially clobbered.
-  Returns: True if the clobber is ok.
-  """
-  cwd = os.path.dirname(os.path.realpath(__file__))
-  if cwd.startswith(buildroot):
-    cros_lib.Die('You are trying to clobber this chromite checkout!')
-
-  if os.path.exists(buildroot):
-    warning = 'This will delete %s' % buildroot
-    response = cros_lib.YesNoPrompt(default=cros_lib.NO, warning=warning,
-                                    full=True)
-    return response == cros_lib.YES
-
-
-# =========================== Main Commands ===================================
-
-
-def PreFlightRinse(buildroot):
-  """Cleans up any leftover state from previous runs."""
-  _BuildRootGitCleanup(buildroot)
-  _CleanUpMountPoints(buildroot)
 
 
 def MakeChroot(buildroot, replace, use_sdk, chrome_root=None, extra_env=None):
@@ -253,7 +246,6 @@ def Build(buildroot, board, build_autotest, usepkg, skip_toolchain_update,
 
 
 def BuildImage(buildroot, board, images_to_build, extra_env=None):
-  _WipeOldOutput(buildroot, board)
   cwd = os.path.join(buildroot, 'src', 'scripts')
   # Default to base if images_to_build is passed empty.
   if not images_to_build: images_to_build = ['base']

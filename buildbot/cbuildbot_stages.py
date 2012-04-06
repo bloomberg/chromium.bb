@@ -6,6 +6,7 @@
 
 import cPickle
 import datetime
+import functools
 import multiprocessing
 import os
 import Queue
@@ -97,8 +98,10 @@ class CleanUpStage(bs.BuilderStage):
                           self._build_root,
                           cwd=self._build_root)
 
-  def _PreFlightRinse(self):
-    commands.PreFlightRinse(self._build_root)
+  def _DeleteArchivedTrybotImages(self):
+    """For trybots, clear all previus archive images to save space."""
+    archive_root = ArchiveStage.GetTrybotArchiveRoot(self._build_root)
+    shutil.rmtree(archive_root, ignore_errors=True)
 
   def _PerformStage(self):
     if not self._options.buildbot and self._options.clobber:
@@ -110,7 +113,13 @@ class CleanUpStage(bs.BuilderStage):
       self._DeleteChroot()
       repository.ClearBuildRoot(self._build_root)
     else:
-      tasks = [self._PreFlightRinse]
+      # Clean mount points first to be safe about deleting.
+      commands.CleanUpMountPoints(self._build_root)
+
+      tasks = [functools.partial(commands.BuildRootGitCleanup,
+                                 self._build_root),
+               functools.partial(commands.WipeOldOutput, self._build_root),
+               self._DeleteArchivedTrybotImages]
       if self._build_config['chroot_replace'] and self._options.build:
         tasks.append(self._DeleteChroot)
       else:
@@ -917,6 +926,11 @@ class ArchiveStage(BoardSpecificBuilderStage):
   _VERSION_NOT_SET = '_not_set_version_'
   _REMOTE_TRYBOT_ARCHIVE_URL = 'gs://chromeos-trybot'
 
+  @classmethod
+  def GetTrybotArchiveRoot(cls, buildroot):
+    """Return the location where trybot archive images are kept."""
+    return os.path.join(buildroot, 'trybot_archive')
+
   # This stage is intended to run in the background, in parallel with tests.
   def __init__(self, options, build_config, board):
     super(ArchiveStage, self).__init__(options, build_config, board)
@@ -926,8 +940,7 @@ class ArchiveStage(BoardSpecificBuilderStage):
     if self._options.buildbot:
       self._archive_root = DEFAULT_ARCHIVE_PATH
     else:
-      self._archive_root = os.path.join(self._build_root,
-                                        'trybot_archive')
+      self._archive_root = self.GetTrybotArchiveRoot(self._build_root)
 
     self._bot_archive_root = os.path.join(self._archive_root, self._bot_id)
 
@@ -1091,10 +1104,7 @@ class ArchiveStage(BoardSpecificBuilderStage):
     if not archive_path:
       return None
 
-    if not self._options.buildbot:
-      # Trybot: Clear artifacts from all previous runs.
-      shutil.rmtree(self._bot_archive_root, ignore_errors=True)
-    else:
+    if self._options.buildbot:
       # Buildbot: Clear out any leftover build artifacts, if present.
       shutil.rmtree(archive_path, ignore_errors=True)
 
