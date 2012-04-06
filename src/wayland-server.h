@@ -316,18 +316,11 @@ wl_shm_buffer_get_stride(struct wl_buffer *buffer);
 uint32_t
 wl_shm_buffer_get_format(struct wl_buffer *buffer);
 
-struct wl_buffer *
-wl_shm_buffer_create(struct wl_shm *shm, int width, int height,
-		     int stride, uint32_t visual, void *data);
-
 int
 wl_buffer_is_shm(struct wl_buffer *buffer);
 
 int
 wl_display_init_shm(struct wl_display *display);
-
-void
-wl_shm_finish(struct wl_display *display);
 
 #ifdef  __cplusplus
 }
