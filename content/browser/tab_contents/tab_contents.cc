@@ -14,6 +14,7 @@
 #include "base/string_util.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
+#include "content/browser/browser_plugin/browser_plugin_web_contents_observer.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/debugger/devtools_manager_impl.h"
 #include "content/browser/download/download_stats.h"
@@ -307,6 +308,9 @@ TabContents::TabContents(content::BrowserContext* browser_context,
   java_bridge_dispatcher_host_manager_.reset(
       new JavaBridgeDispatcherHostManager(this));
 #endif
+
+  browser_plugin_web_contents_observer_.reset(
+      new content::BrowserPluginWebContentsObserver(this));
 }
 
 TabContents::~TabContents() {
