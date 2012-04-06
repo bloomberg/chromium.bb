@@ -378,7 +378,7 @@ void TemplateURLRef::CollectRLZMetrics() const {
         google_util::GetBrand(&brand) && !brand.empty() &&
         !google_util::IsOrganic(brand)) {
       // Now we know we should have had RLZ token check if there was one.
-      content::RecordAction(UserMetricsAction(
+      content::RecordAction(content::UserMetricsAction(
           (GetURL().find("rlz=") == std::string::npos) ?
           "SearchWithoutRLZ" : "SearchWithRLZ"));
       return;
