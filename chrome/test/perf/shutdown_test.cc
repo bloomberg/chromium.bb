@@ -136,8 +136,10 @@ TEST_F(ShutdownTest, SimpleSessionEnding) {
 // http://crbug.com/110471
 #if defined(OS_WIN) && !defined(NDEBUG)
 #define MAYBE_TwentyTabsWindowClose DISABLED_TwentyTabsWindowClose
+#define MAYBE_TwentyTabsUserQuit DISABLED_TwentyTabsUserQuit
 #else
 #define MAYBE_TwentyTabsWindowClose TwentyTabsWindowClose
+#define MAYBE_TwentyTabsUserQuit TwentyTabsUserQuit
 #endif
 
 TEST_F(ShutdownTest, MAYBE_TwentyTabsWindowClose) {
@@ -146,7 +148,7 @@ TEST_F(ShutdownTest, MAYBE_TwentyTabsWindowClose) {
                   ProxyLauncher::WINDOW_CLOSE);
 }
 
-TEST_F(ShutdownTest, TwentyTabsUserQuit) {
+TEST_F(ShutdownTest, MAYBE_TwentyTabsUserQuit) {
   RunShutdownTest("shutdown", "twentytabs-user-quit",
                   true, /* important */ TWENTY_TABS, ProxyLauncher::USER_QUIT);
 }
