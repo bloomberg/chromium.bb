@@ -272,8 +272,10 @@ static const int kUpdateUploadProgressIntervalMsec = 100;
 // The RequestProxy does most of its work on the IO thread.  The Start and
 // Cancel methods are proxied over to the IO thread, where an net::URLRequest
 // object is instantiated.
-class RequestProxy : public net::URLRequest::Delegate,
-                     public base::RefCountedThreadSafe<RequestProxy> {
+struct DeleteOnIOThread;  // See below.
+class RequestProxy
+    : public net::URLRequest::Delegate,
+      public base::RefCountedThreadSafe<RequestProxy, DeleteOnIOThread> {
  public:
   // Takes ownership of the params.
   RequestProxy()
@@ -306,12 +308,14 @@ class RequestProxy : public net::URLRequest::Delegate,
   }
 
  protected:
+  friend class base::DeleteHelper<RequestProxy>;
   friend class base::RefCountedThreadSafe<RequestProxy>;
+  friend struct DeleteOnIOThread;
 
   virtual ~RequestProxy() {
-    // If we have a request, then we'd better be on the io thread!
-    DCHECK(!request_.get() ||
-           MessageLoop::current() == g_io_thread->message_loop());
+    // Ensure we are deleted on the IO thread because base::Timer requires that.
+    // (guaranteed by the Traits class template parameter).
+    DCHECK(MessageLoop::current() == g_io_thread->message_loop());
   }
 
   // --------------------------------------------------------------------------
@@ -749,6 +753,17 @@ class RequestProxy : public net::URLRequest::Delegate,
   std::string file_url_prefix_;
   // Save a failed file request status to pass it to webkit.
   scoped_ptr<net::URLRequestStatus> failed_file_request_status_;
+};
+
+// Helper guaranteeing deletion on the IO thread (like
+// content::BrowserThread::DeleteOnIOThread, but without the dependency).
+struct DeleteOnIOThread {
+  static void Destruct(const RequestProxy* obj) {
+    if (MessageLoop::current() == g_io_thread->message_loop())
+      delete obj;
+    else
+      g_io_thread->message_loop()->DeleteSoon(FROM_HERE, obj);
+  }
 };
 
 //-----------------------------------------------------------------------------
