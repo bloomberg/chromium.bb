@@ -2608,8 +2608,7 @@ void Browser::SetNewHomePagePrefs(PrefService* prefs) {
   if (home_page_pref &&
       !home_page_pref->IsManaged() &&
       !prefs->HasPrefPath(prefs::kHomePage)) {
-    prefs->SetString(prefs::kHomePage,
-        GoogleURLTracker::kDefaultGoogleHomepage);
+    prefs->SetString(prefs::kHomePage, std::string());
   }
   const PrefService::Preference* home_page_is_new_tab_page_pref =
       prefs->FindPreference(prefs::kHomePageIsNewTabPage);
@@ -2636,7 +2635,7 @@ void Browser::RegisterPrefs(PrefService* prefs) {
 // static
 void Browser::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterStringPref(prefs::kHomePage,
-                            chrome::kChromeUINewTabURL,
+                            std::string(),
                             PrefService::SYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kHomePageChanged,
                              false,
