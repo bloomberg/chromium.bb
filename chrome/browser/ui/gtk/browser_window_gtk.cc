@@ -342,7 +342,9 @@ BrowserWindowGtk::BrowserWindowGtk(Browser* browser)
        show_state_after_show_(ui::SHOW_STATE_DEFAULT),
        suppress_window_raise_(false),
        accel_group_(NULL),
-       debounce_timer_disabled_(false) {
+       debounce_timer_disabled_(false),
+       fullscreen_exit_bubble_type_(
+           FEB_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION) {
 }
 
 BrowserWindowGtk::~BrowserWindowGtk() {
@@ -917,15 +919,7 @@ void BrowserWindowGtk::EnterFullscreen(
   // gtk_window_(un)fullscreen asks the window manager to toggle the EWMH
   // for fullscreen windows.  Not all window managers support this.
   gtk_window_fullscreen(window_);
-  bool is_kiosk =
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode);
-  if (!is_kiosk) {
-    fullscreen_exit_bubble_.reset(new FullscreenExitBubbleGtk(
-        GTK_FLOATING_CONTAINER(render_area_floating_container_),
-        browser(),
-        url,
-        type));
-  }
+  fullscreen_exit_bubble_type_ = type;
 }
 
 void BrowserWindowGtk::UpdateFullscreenExitBubbleContent(
@@ -1595,11 +1589,13 @@ gboolean BrowserWindowGtk::OnWindowState(GtkWidget* sender,
             GTK_FLOATING_CONTAINER(render_area_floating_container_),
             browser(),
             GURL(),
-            FEB_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION));
+            fullscreen_exit_bubble_type_));
       }
       gtk_widget_hide(titlebar_widget());
       gtk_widget_hide(toolbar_border_);
     } else {
+      fullscreen_exit_bubble_type_ =
+          FEB_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION;
       gtk_widget_show(titlebar_widget());
       fullscreen_exit_bubble_.reset();
       UpdateCustomFrame();

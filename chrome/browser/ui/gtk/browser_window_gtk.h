@@ -574,6 +574,8 @@ class BrowserWindowGtk : public BrowserWindow,
   // position is unimportant.
   bool debounce_timer_disabled_;
 
+  FullscreenExitBubbleType fullscreen_exit_bubble_type_;
+
   content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserWindowGtk);
