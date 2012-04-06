@@ -116,7 +116,6 @@ void RegisterLocalState(PrefService* local_state) {
   GoogleURLTracker::RegisterPrefs(local_state);
   IntranetRedirectDetector::RegisterPrefs(local_state);
   KeywordEditorController::RegisterPrefs(local_state);
-  ManagedMode::RegisterPrefs(local_state);
   MetricsLog::RegisterPrefs(local_state);
   MetricsService::RegisterPrefs(local_state);
   PrefProxyConfigTrackerImpl::RegisterPrefs(local_state);
@@ -149,6 +148,7 @@ void RegisterLocalState(PrefService* local_state) {
   BackgroundModeManager::RegisterPrefs(local_state);
   Browser::RegisterPrefs(local_state);
   FlagsUI::RegisterPrefs(local_state);
+  ManagedMode::RegisterPrefs(local_state);
   NewTabPageHandler::RegisterPrefs(local_state);
   printing::PrintJobManager::RegisterPrefs(local_state);
   PromoResourceService::RegisterPrefs(local_state);

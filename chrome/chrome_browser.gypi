@@ -4487,6 +4487,8 @@
             'browser/jankometer.cc',
 
             # There's no Browser/BrowserList on Android.
+            'browser/managed_mode.cc',
+            'browser/managed_mode.h',
             'browser/net/gaia/gaia_oauth_fetcher.cc',
             'browser/ui/browser.cc',
             'browser/ui/browser_init.cc',
