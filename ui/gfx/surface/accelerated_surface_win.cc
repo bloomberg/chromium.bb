@@ -91,7 +91,7 @@ class PresentThread : public base::Thread,
  public:
   explicit PresentThread(const char* name);
 
-  IDirect3DDevice9* device() { return device_.get(); }
+  IDirect3DDevice9Ex* device() { return device_.get(); }
   IDirect3DQuery9* query() { return query_.get(); }
 
   void InitDevice();
@@ -638,8 +638,10 @@ void AcceleratedPresenter::DoPresentAndAcknowledge(
   {
     TRACE_EVENT0("surface", "Present");
     hr = swap_chain_->Present(&rect, &rect, window_, NULL, 0);
-    if (FAILED(hr))
+    if (FAILED(hr) &&
+        FAILED(present_thread_->device()->CheckDeviceState(window_))) {
       present_thread_->ResetDevice();
+    }
   }
 }
 
