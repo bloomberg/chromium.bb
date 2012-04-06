@@ -21,9 +21,8 @@ cr.define('cert_viewer', function() {
     chrome.send('requestCertificateInfo');
     // TODO(kochi): ESC key should be handled in the views window side.
     document.addEventListener('keydown', function(e) {
-      if (e.keyCode == 27) {  // ESC
+      if (e.keyCode == 27)  // ESC
         chrome.send('DialogClose');
-      }
     });
   }
 
@@ -42,7 +41,7 @@ cr.define('cert_viewer', function() {
   /**
    * The tab name strings in the languages file have accessor keys indicated
    * by a preceding & sign. Strip these out for now.
-   * @TODO(flackr) These accessor keys could be implemented with Javascript or
+   * TODO(flackr) These accessor keys could be implemented with Javascript or
    *     translated strings could be added / modified to remove the & sign.
    */
   function stripGtkAccessorKeys() {
@@ -50,7 +49,7 @@ cr.define('cert_viewer', function() {
     var nodes = Array.prototype.slice.call($('tabs').childNodes, 0);
     nodes.push($('export'));
     for (var i = 0; i < nodes.length; i++)
-      nodes[i].textContent = nodes[i].textContent.replace('&','');
+      nodes[i].textContent = nodes[i].textContent.replace('&', '');
   }
 
   /**

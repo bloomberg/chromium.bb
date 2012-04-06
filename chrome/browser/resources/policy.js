@@ -48,7 +48,6 @@ cr.define('policies', function() {
   cr.addSingletonGetter(Policy);
 
   Policy.prototype = {
-
     /**
      * True if none of the received policies are actually set, false otherwise.
      * @type {boolean}
@@ -73,7 +72,7 @@ cr.define('policies', function() {
       if (this.noActivePolicies_)
         $('no-policies').hidden = false;
       if (policyData.status.displayStatusSection)
-        $('status-section').hidden = false;;
+        $('status-section').hidden = false;
 
       // This is the javascript code that processes the template:
       var input = new JsEvalContext(policyData);
@@ -90,7 +89,7 @@ cr.define('policies', function() {
 
       var containers = document.querySelectorAll('.text-container');
       for (var i = 0; i < containers.length; i++)
-        this.initTextContainer_(containers[i])
+        this.initTextContainer_(containers[i]);
     },
 
     /**
@@ -256,7 +255,7 @@ cr.define('policies', function() {
     $('fetch-policies-button').onclick = function(event) {
       this.disabled = true;
       Policy.triggerPolicyFetch();
-    }
+    };
 
     $('toggle-unsent-policies').onchange = function(event) {
       Policy.getInstance().updatePolicyVisibility();

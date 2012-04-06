@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 cr.define('options', function() {
-  const OptionsPage = options.OptionsPage;
+  /** @const */ var OptionsPage = options.OptionsPage;
 
   // Variable to track if a captcha challenge was issued. If this gets set to
   // true, it stays that way until we are told about successful login from
@@ -74,7 +74,7 @@ cr.define('options', function() {
 
     /** @inheritDoc */
     didShowPage: function() {
-      var forceLogin = document.location.hash == "#forceLogin";
+      var forceLogin = document.location.hash == '#forceLogin';
       var result = JSON.stringify({'forceLogin': forceLogin});
       chrome.send('SyncSetupAttachHandler', [result]);
     },

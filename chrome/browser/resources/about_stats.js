@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,62 +42,58 @@ function filterMatching(text, nodelist, functionToGetNameNode) {
   var showAll = text.length == 0;
   for (var i = 0, node; node = nodelist[i]; i++) {
     var name = functionToGetNameNode(node).innerHTML.toLowerCase();
-    if (showAll || name.indexOf(text) >= 0) {
-      node.style.display = "table-row";
-    } else {
-      node.style.display = "none";
-    }
+    if (showAll || name.indexOf(text) >= 0)
+      node.style.display = 'table-row';
+    else
+      node.style.display = 'none';
   }
 }
 
 /* Hides or shows counters based on the user's current filter selection. */
 function doFilter() {
-  var filter = document.getElementById("filter");
+  var filter = document.getElementById('filter');
   var text = filter.value.toLowerCase();
-  var nodes = document.getElementsByName("counter");
+  var nodes = document.getElementsByName('counter');
   filterMatching(text, nodes, getCounterNameFromCounterNode);
-  var nodes = document.getElementsByName("timer");
+  var nodes = document.getElementsByName('timer');
   filterMatching(text, nodes, getTimerNameFromTimerNode);
 }
 
 /* Colors the counters based on increasing or decreasing value. */
 function doColor() {
-  var nodes = document.getElementsByName("counter");
+  var nodes = document.getElementsByName('counter');
   for (var i = 0, node; node = nodes[i]; i++) {
     var child = getCounterDeltaFromCounterNode(node);
     var delta = child.innerHTML;
-    if (delta > 0) {
-      child.style.color = "Green";
-    } else if (delta == 0) {
-      child.style.color = "Black";
-    } else {
-      child.style.color = "Red";
-    }
+    if (delta > 0)
+      child.style.color = 'Green';
+    else if (delta == 0)
+      child.style.color = 'Black';
+    else
+      child.style.color = 'Red';
   }
 }
 
 /* Counters with no values are null. Remove them. */
 function removeNullValues() {
-  var nodes = document.getElementsByName("counter");
+  var nodes = document.getElementsByName('counter');
   for (var i = nodes.length - 1; i >= 0; i--) {
     var node = nodes[i];
     var value = getCounterValueFromCounterNode(node).innerHTML;
-    if (value == "null") {
+    if (value == 'null')
       node.parentNode.removeChild(node);
-    }
   }
-  var nodes = document.getElementsByName("timer");
+  var nodes = document.getElementsByName('timer');
   for (var i = 0, node; node = nodes[i]; i++) {
     var value_node = getTimerValueFromTimerNode(node);
-    if (value_node.innerHTML == "null") {
-      value_node.innerHTML = "";
-    }
+    if (value_node.innerHTML == 'null')
+      value_node.innerHTML = '';
   }
 }
 
 /* Compute the average time for timers */
 function computeTimes() {
-  var nodes = document.getElementsByName("timer");
+  var nodes = document.getElementsByName('timer');
   for (var i = 0, node; node = nodes[i]; i++) {
     var count = getTimerValueFromTimerNode(node).innerHTML;
     if (count.length > 0) {
@@ -116,18 +112,18 @@ function onLoadWork() {
   jstProcess(input, output);
 
   // Add handlers to dynamically created HTML elements.
-  var elements = document.getElementsByName("string-sort");
+  var elements = document.getElementsByName('string-sort');
   for (var i = 0; i < elements.length; ++i)
-    elements[i].onclick = function () { sort_table("string"); };
+    elements[i].onclick = function() { sort_table('string'); };
 
-  elements = document.getElementsByName("number-sort");
+  elements = document.getElementsByName('number-sort');
   for (i = 0; i < elements.length; ++i)
-    elements[i].onclick = function () { sort_table("number"); };
+    elements[i].onclick = function() { sort_table('number'); };
 
   doColor();
   removeNullValues();
   computeTimes();
-  document.getElementById("filter").focus();
+  document.getElementById('filter').focus();
 }
 
 // The function should only be used as the event handler
@@ -137,7 +133,7 @@ function onLoadWork() {
 // The function sorts rows after the row with onclick event handler.
 //
 // type: the data type, 'string', 'number'
-function sort_table(type){
+function sort_table(type) {
   var cell = event.target;
   var cnum = cell.cellIndex;
 
@@ -155,33 +151,33 @@ function sort_table(type){
     rows.push(table.rows[i]);
 
   // a, b are strings
-  function compare_strings(a,b) {
+  function compare_strings(a, b) {
     if (a == b) return 0;
     if (a < b) return -1;
     return 1;
   }
 
   // a, b are numbers
-  function compare_numbers(a,b) {
+  function compare_numbers(a, b) {
     var x = isNaN(a) ? 0 : a;
     var y = isNaN(b) ? 0 : b;
     return x - y;
   }
 
-  var sort_func = undefined;
+  var sort_func;
   if (type === 'string') {
     sort_func = function(a, b) {
       var x = a.cells[cnum].innerText;
       var y = b.cells[cnum].innerText;
       return compare_strings(x, y);
-    } ;
+    };
 
   } else if (type === 'number') {
     sort_func = function(a, b) {
       var x = parseFloat(a.cells[cnum].innerText);
       var y = parseFloat(b.cells[cnum].innerText);
       return compare_numbers(x, y);
-    }
+    };
   }
 
   rows.sort(sort_func);
@@ -199,4 +195,3 @@ function sort_table(type){
 }
 
 document.addEventListener('DOMContentLoaded', onLoadWork);
-

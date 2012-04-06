@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 // Constants.
-var FEEDBACK_LANDING_PAGE =
-    'http://www.google.com/support/chrome/go/feedback_confirmation'
+/** @const */ var FEEDBACK_LANDING_PAGE =
+    'http://www.google.com/support/chrome/go/feedback_confirmation';
 
 var selectedThumbnailDivId = '';
 var selectedThumbnailId = '';
@@ -14,7 +14,7 @@ var savedThumbnailIds = [];
 savedThumbnailIds['current-screenshots'] = '';
 savedThumbnailIds['saved-screenshots'] = '';
 
-var categoryTag = "";
+var categoryTag = '';
 
 var localStrings = new LocalStrings();
 
@@ -110,7 +110,7 @@ function sendReport() {
 
   // Add chromeos data if it exists.
   if ($('user-email-text') && $('sys-info-checkbox')) {
-    var userEmail= $('user-email-text').textContent;
+    var userEmail = $('user-email-text').textContent;
     if (!$('user-email-checkbox').checked)
       userEmail = '';
     reportArray = reportArray.concat([userEmail,
@@ -124,7 +124,7 @@ function sendReport() {
 }
 
 function cancel() {
-  chrome.send('cancel', []);
+  chrome.send('cancel');
   return true;
 }
 
@@ -154,7 +154,7 @@ function savedSelected() {
 
   if ($('saved-screenshots').childElementCount == 0) {
     // setupSavedScreenshots will take care of changing visibility
-    chrome.send('refreshSavedScreenshots', []);
+    chrome.send('refreshSavedScreenshots');
   } else {
     $('saved-screenshots').hidden = false;
     if (selectedThumbnailDivId != 'saved-screenshots')
@@ -251,9 +251,9 @@ function load() {
   // Pick up the category tag (for most cases this will be an empty string)
   categoryTag = parameters['categoryTag'];
 
-  chrome.send('getDialogDefaults', []);
-  chrome.send('refreshCurrentScreenshot', []);
-};
+  chrome.send('getDialogDefaults');
+  chrome.send('refreshCurrentScreenshot');
+}
 
 function setupCurrentScreenshot(screenshot) {
   addScreenshot('current-screenshots', screenshot);

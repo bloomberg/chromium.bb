@@ -1,19 +1,19 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 localStrings = new LocalStrings();
 
 // UTF8 sequence for an arrow triangle pointing down.
-kExpandedArrow = "\u25BE";
+kExpandedArrow = '\u25BE';
 // UTF8 sequence for an arrow triangle pointing right.
-kCollapsedArrow = "\u25B8";
+kCollapsedArrow = '\u25B8';
 
 /**
  * Requests the list of sessions from the backend.
  */
 function requestSessions() {
-  chrome.send('requestSessionList', [])
+  chrome.send('requestSessionList');
 }
 
 /**
@@ -22,10 +22,10 @@ function requestSessions() {
 function toggleExpandedState(div) {
   if (div.textContent.indexOf(kExpandedArrow) != -1) {
     div.textContent = div.textContent.replace(kExpandedArrow, kCollapsedArrow);
-    div.parentNode.querySelector(".indent").hidden = true;
+    div.parentNode.querySelector('.indent').hidden = true;
   } else {
     div.textContent = div.textContent.replace(kCollapsedArrow, kExpandedArrow);
-    div.parentNode.querySelector(".indent").hidden = false;
+    div.parentNode.querySelector('.indent').hidden = false;
   }
 }
 
@@ -71,7 +71,7 @@ function transformTab(tab) {
  */
 function transformWindow(window) {
   var windowDiv = document.createElement('div');
-  windowDiv.className = "window";
+  windowDiv.className = 'window';
   windowDiv.appendChild(createTitleDiv('window-title', 'Window'));
   addItems(windowDiv, window.tabs, transformTab);
   return windowDiv;
@@ -83,7 +83,7 @@ function transformWindow(window) {
 function transformSession(session) {
   var sessionDiv = document.createElement('div');
   var sessionName = session.name.length == 0 ? 'Session' : session.name;
-  sessionDiv.className = "session";
+  sessionDiv.className = 'session';
   sessionDiv.appendChild(createTitleDiv('session-title', sessionName));
   addItems(sessionDiv, session.windows, transformWindow);
   return sessionDiv;

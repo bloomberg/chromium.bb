@@ -47,7 +47,7 @@ function renderTemplate(flagsExperimentsData) {
   // Add handlers to dynamically created HTML elements.
   var elements = document.getElementsByClassName('experiment-select');
   for (var i = 0; i < elements.length; ++i) {
-    elements[i].onchange = function () {
+    elements[i].onchange = function() {
       handleSelectChoiceExperiment(this, this.selectedIndex);
       return false;
     };
@@ -55,7 +55,7 @@ function renderTemplate(flagsExperimentsData) {
 
   elements = document.getElementsByClassName('experiment-disable-link');
   for (var i = 0; i < elements.length; ++i) {
-    elements[i].onclick = function () {
+    elements[i].onclick = function() {
       handleEnableExperiment(this, false);
       return false;
     };
@@ -63,7 +63,7 @@ function renderTemplate(flagsExperimentsData) {
 
   elements = document.getElementsByClassName('experiment-enable-link');
   for (var i = 0; i < elements.length; ++i) {
-    elements[i].onclick = function () {
+    elements[i].onclick = function() {
       handleEnableExperiment(this, true);
       return false;
     };
@@ -81,21 +81,21 @@ function renderTemplate(flagsExperimentsData) {
  * should reply to returnFlagsExperiments() (below).
  */
 function requestFlagsExperimentsData() {
-  chrome.send('requestFlagsExperiments', []);
+  chrome.send('requestFlagsExperiments');
 }
 
 /**
  * Asks the C++ FlagsDOMHandler to restart the browser (restoring tabs).
  */
 function restartBrowser() {
-  chrome.send('restartBrowser', []);
+  chrome.send('restartBrowser');
 }
 
 /**
  * Called by the WebUI to re-populate the page with data representing the
  * current state of installed experiments.
  */
-function returnFlagsExperiments(flagsExperimentsData){
+function returnFlagsExperiments(flagsExperimentsData) {
   var bodyContainer = document.getElementById('body-container');
   renderTemplate(flagsExperimentsData);
   bodyContainer.style.visibility = 'visible';
@@ -107,7 +107,7 @@ function returnFlagsExperiments(flagsExperimentsData){
 function handleEnableExperiment(node, enable) {
   // Tell the C++ FlagsDOMHandler to enable/disable the experiment.
   chrome.send('enableFlagsExperiment', [String(node.internal_name),
-                                       String(enable)]);
+                                        String(enable)]);
   requestFlagsExperimentsData();
 }
 
@@ -118,7 +118,7 @@ function handleEnableExperiment(node, enable) {
 function handleSelectChoiceExperiment(node, index) {
   // Tell the C++ FlagsDOMHandler to enable the selected choice.
   chrome.send('enableFlagsExperiment',
-              [String(node.internal_name) + "@" + index, "true"]);
+              [String(node.internal_name) + '@' + index, 'true']);
   requestFlagsExperimentsData();
 }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -74,7 +74,7 @@ cr.googleTranslate = (function() {
      */
     get sourceLang() {
       if (!libReady || !finished || error)
-        return "";
+        return '';
       return lib.getDetectedLanguage();
     },
 
@@ -108,10 +108,10 @@ cr.googleTranslate = (function() {
      * Entry point called by the Translate Element once it has been injected in
      * the page.
      */
-    onTranslateElementLoad : function() {
+    onTranslateElementLoad: function() {
       try {
         lib = google.translate.TranslateService({});
-      } catch(err) {
+      } catch (err) {
         error = true;
         return;
       }

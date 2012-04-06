@@ -23,10 +23,10 @@ var pluginDataFormat = {
           'description': 'My crappy plugin',
           'mimeTypes': [
             { 'description': 'Foo Media',
-              'fileExtensions': [ 'foo' ],
+              'fileExtensions': ['foo'],
               'mimeType': 'application/x-my-foo' },
             { 'description': 'Bar Stuff',
-              'fileExtensions': [ 'bar','baz' ],
+              'fileExtensions': ['bar', 'baz'],
               'mimeType': 'application/my-bar' }
           ],
           'enabledMode': 'enabledByUser'
@@ -38,7 +38,7 @@ var pluginDataFormat = {
           'description': 'My first plugin',
           'mimeTypes': [
             { 'description': 'New Guy Media',
-              'fileExtensions': [ 'mfp' ],
+              'fileExtensions': ['mfp'],
               'mimeType': 'application/x-my-first' }
           ],
           'enabledMode': 'enabledByPolicy'
@@ -50,7 +50,7 @@ var pluginDataFormat = {
           'description': 'Your great plugin',
           'mimeTypes': [
             { 'description': 'Baz Stuff',
-              'fileExtensions': [ 'baz' ],
+              'fileExtensions': ['baz'],
               'mimeType': 'application/x-your-baz' }
           ],
           'enabledMode': 'disabledByUser'
@@ -62,7 +62,7 @@ var pluginDataFormat = {
           'description': 'His great plugin',
           'mimeTypes': [
             { 'description': 'More baz Stuff',
-              'fileExtensions': [ 'bor' ],
+              'fileExtensions': ['bor'],
               'mimeType': 'application/x-his-bor' }
           ],
           'enabledMode': 'disabledByPolicy'
@@ -91,8 +91,8 @@ function renderTemplate(pluginsData) {
  * reply to returnPluginsData() (below).
  */
 function requestPluginsData() {
-  chrome.send('requestPluginsData', []);
-  chrome.send('getShowDetails', []);
+  chrome.send('requestPluginsData');
+  chrome.send('getShowDetails');
 }
 
 function loadShowDetailsFromPrefs(show_details) {
@@ -109,7 +109,7 @@ function loadShowDetailsFromPrefs(show_details) {
  * Called by the web_ui_ to re-populate the page with data representing the
  * current state of installed plugins.
  */
-function returnPluginsData(pluginsData){
+function returnPluginsData(pluginsData) {
   var bodyContainer = document.getElementById('body-container');
   var body = document.body;
 
@@ -125,38 +125,38 @@ function returnPluginsData(pluginsData){
   // Add handlers to dynamically created HTML elements.
   var links = document.getElementsByClassName('disable-plugin-link');
   for (var i = 0; i < links.length; i++) {
-    links[i].onclick = function () {
+    links[i].onclick = function() {
       handleEnablePlugin(this, false, false);
       return false;
     };
   }
   links = document.getElementsByClassName('enable-plugin-link');
   for (var i = 0; i < links.length; i++) {
-    links[i].onclick = function () {
+    links[i].onclick = function() {
       handleEnablePlugin(this, true, false);
       return false;
     };
   }
   links = document.getElementsByClassName('disable-group-link');
   for (var i = 0; i < links.length; i++) {
-    links[i].onclick = function () {
+    links[i].onclick = function() {
       handleEnablePlugin(this, false, true);
       return false;
     };
   }
   links = document.getElementsByClassName('enable-group-link');
   for (var i = 0; i < links.length; i++) {
-    links[i].onclick = function () {
+    links[i].onclick = function() {
       handleEnablePlugin(this, true, true);
       return false;
     };
   }
   var checkboxes = document.getElementsByClassName('always-allow');
   for (var i = 0; i < checkboxes.length; i++) {
-    checkboxes[i].onclick = function () {
-      handleSetPluginAlwaysAllowed(this)
+    checkboxes[i].onclick = function() {
+      handleSetPluginAlwaysAllowed(this);
     };
-  };
+  }
 
   // Make sure the left column (with "Description:", "Location:", etc.) is the
   // same size for all plugins.
@@ -257,4 +257,3 @@ document.addEventListener('DOMContentLoaded', requestPluginsData);
 document.getElementById('collapse').onclick = toggleTmiMode;
 document.getElementById('expand').onclick = toggleTmiMode;
 document.getElementById('details-link').onclick = toggleTmiMode;
-
