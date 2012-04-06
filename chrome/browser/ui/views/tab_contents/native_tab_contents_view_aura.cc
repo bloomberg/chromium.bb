@@ -280,10 +280,12 @@ void NativeTabContentsViewAura::StartDragging(const WebDropData& drop_data,
         data, location, ConvertFromWeb(ops));
   }
 
-  if (should_do_drag_cleanup)
+  // |should_do_drag_cleanup| is still true. That means we were not destroyed
+  // while in the nested message loop. We should do cleanup and reset our state.
+  if (should_do_drag_cleanup) {
     EndDrag(ConvertToWeb(result_op));
-  else
     should_do_drag_cleanup_ = NULL;
+  }
 }
 
 void NativeTabContentsViewAura::CancelDrag() {
