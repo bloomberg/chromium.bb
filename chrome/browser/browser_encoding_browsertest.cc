@@ -73,7 +73,14 @@ class BrowserEncodingTest : public InProcessBrowserTest {
 // 2. Add more files with multiple encoding name variants for each canonical
 // encoding name). Webkit layout tests cover some, but testing in the UI test is
 // also necessary.
-IN_PROC_BROWSER_TEST_F(BrowserEncodingTest, TestEncodingAliasMapping) {
+
+// This test fails frequently on the win_rel trybot. See http://crbug.com/122053
+#if defined(OS_WIN)
+#define MAYBE_TestEncodingAliasMapping DISABLED_TestEncodingAliasMapping
+#else
+#define MAYBE_TestEncodingAliasMapping TestEncodingAliasMapping
+#endif
+IN_PROC_BROWSER_TEST_F(BrowserEncodingTest, MAYBE_TestEncodingAliasMapping) {
   struct EncodingTestData {
     const char* file_name;
     const char* encoding_name;
@@ -121,17 +128,10 @@ IN_PROC_BROWSER_TEST_F(BrowserEncodingTest, TestEncodingAliasMapping) {
         kEncodingTestDatas[i].file_name);
 
     GURL url = URLRequestMockHTTPJob::GetMockUrl(test_file_path);
-
-    // When looping through all the above files in one WebContents, there's a
-    // race condition on Windows trybots that causes the previous encoding to be
-    // seen sometimes. Create a new tab for each one.  http://crbug.com/122053
-    ui_test_utils::NavigateToURLWithDisposition(
-        browser(), url, NEW_FOREGROUND_TAB,
-        ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+    ui_test_utils::NavigateToURL(browser(), url);
 
     EXPECT_EQ(kEncodingTestDatas[i].encoding_name,
               browser()->GetSelectedWebContents()->GetEncoding());
-    browser()->CloseTab();
   }
 }
 
