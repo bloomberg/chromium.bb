@@ -131,6 +131,7 @@ class ExtensionApiTest : public ExtensionBrowserTest {
   // Load |page_url| and wait for pass / fail notification from the extension
   // API on the page.
   bool RunPageTest(const std::string& page_url);
+  bool RunPageTest(const std::string& page_url, int flags);
 
   // Similar to RunExtensionTest, except used for running tests in platform app
   // shell windows.

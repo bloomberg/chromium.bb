@@ -150,6 +150,11 @@ bool ExtensionApiTest::RunPageTest(const std::string& page_url) {
   return RunExtensionSubtest("", page_url);
 }
 
+bool ExtensionApiTest::RunPageTest(const std::string& page_url,
+                                   int flags) {
+  return RunExtensionSubtest("", page_url, flags);
+}
+
 bool ExtensionApiTest::RunPlatformAppTest(const char* extension_name) {
   return RunExtensionTestImpl(extension_name, "", kFlagLaunchAppShell);
 }

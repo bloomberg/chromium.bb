@@ -352,6 +352,20 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateBundleTest, InstallBundle) {
   ASSERT_TRUE(RunPageTest(GetTestServerURL("install_bundle.html").spec()));
 }
 
+// Tests that bundles can be installed from incognito windows.
+IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateBundleTest,
+                       InstallBundleIncognito) {
+  extensions::BundleInstaller::SetAutoApproveForTesting(true);
+
+  PackCRX("bmfoocgfinpmkmlbjhcbofejhkhlbchk", "extension1.json");
+  PackCRX("pkapffpjmiilhlhbibjhamlmdhfneidj", "extension2.json");
+  PackCRX("begfmnajjkbjdgmffnjaojchoncnmngg", "app1.json");
+  PackCRX("mpneghmdnmaolkljkipbhaienajcflfe", "app2.json");
+
+  ASSERT_TRUE(RunPageTest(GetTestServerURL("install_bundle.html").spec(),
+                          ExtensionApiTest::kFlagUseIncognito));
+}
+
 // Tests the user canceling the bundle install prompt.
 IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateBundleTest,
                        InstallBundleCancel) {
