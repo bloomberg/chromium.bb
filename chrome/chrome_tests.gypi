@@ -756,7 +756,6 @@
         # New tests should be browser_tests. browser_tests are sharded and are
         # less flakier.
         'browser/fast_shutdown_uitest.cc',
-        'browser/history/multipart_uitest.cc',
         'browser/history/redirect_uitest.cc',
         'browser/iframe_uitest.cc',
         'browser/images_uitest.cc',
@@ -2870,6 +2869,7 @@
         'browser/geolocation/geolocation_browsertest.cc',
         'browser/history/history_browsertest.cc',
         'browser/history/history_extension_apitest.cc',
+        'browser/history/multipart_browsertest.cc',
         'browser/history/top_sites_extension_test.cc',
         'browser/infobars/infobar_extension_apitest.cc',
         'browser/importer/toolbar_importer_utils_browsertest.cc',
