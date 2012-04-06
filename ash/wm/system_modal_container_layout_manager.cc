@@ -130,15 +130,6 @@ void SystemModalContainerLayoutManager::OnWindowDestroying(
 
 ////////////////////////////////////////////////////////////////////////////////
 // SystemModalContainerLayoutManager,
-//     ui::ImplicitAnimationObserver implementation:
-
-void SystemModalContainerLayoutManager::OnImplicitAnimationsCompleted() {
-  if (modal_screen_ && !modal_screen_->GetNativeView()->layer()->ShouldDraw())
-    DestroyModalScreen();
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// SystemModalContainerLayoutManager,
 //     SystemModalContainerEventFilter::Delegate implementation:
 
 bool SystemModalContainerLayoutManager::CanWindowReceiveEvents(
@@ -167,7 +158,7 @@ void SystemModalContainerLayoutManager::RemoveModalWindow(
     modal_windows_.erase(it);
 
   if (modal_windows_.empty())
-    HideModalScreen();
+    DestroyModalScreen();
   else
     wm::ActivateWindow(modal_window());
 }
@@ -188,31 +179,22 @@ void SystemModalContainerLayoutManager::CreateModalScreen() {
     Shell::GetInstance()->AddRootWindowEventFilter(modality_filter_.get());
   }
 
-  StopObservingImplicitAnimations();
-
   ui::ScopedLayerAnimationSettings settings(
       modal_screen_->GetNativeView()->layer()->GetAnimator());
-  settings.AddObserver(this);
   modal_screen_->Show();
   modal_screen_->GetNativeView()->layer()->SetOpacity(0.5f);
   container_->StackChildAtTop(modal_screen_->GetNativeView());
 }
 
 void SystemModalContainerLayoutManager::DestroyModalScreen() {
-  // Stop observing the modal screen's animations.
-  StopObservingImplicitAnimations();
-  modal_screen_->Close();
-  modal_screen_ = NULL;
-}
-
-void SystemModalContainerLayoutManager::HideModalScreen() {
-  StopObservingImplicitAnimations();
-
   Shell::GetInstance()->RemoveRootWindowEventFilter(modality_filter_.get());
   ui::ScopedLayerAnimationSettings settings(
       modal_screen_->GetNativeView()->layer()->GetAnimator());
-  settings.AddObserver(this);
+  modal_screen_->Close();
+  settings.AddObserver(
+      CreateHidingWindowAnimationObserver(modal_screen_->GetNativeView()));
   modal_screen_->GetNativeView()->layer()->SetOpacity(0.0f);
+  modal_screen_ = NULL;
 }
 
 }  // namespace internal

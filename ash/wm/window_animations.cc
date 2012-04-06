@@ -495,4 +495,10 @@ bool AnimateOnChildWindowVisibilityChanged(aura::Window* window, bool visible) {
 }
 
 }  // namespace internal
+
+ui::ImplicitAnimationObserver* CreateHidingWindowAnimationObserver(
+    aura::Window* window) {
+  return new internal::HidingWindowAnimationObserver(window);
+}
+
 }  // namespace ash

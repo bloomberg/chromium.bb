@@ -13,6 +13,7 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/window.h"
+#include "ui/gfx/compositor/layer.h"
 #include "ui/views/events/event.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -208,8 +209,7 @@ TEST_F(SystemModalContainerLayoutManagerTest,
   EXPECT_TRUE(wm::IsActiveWindow(unrelated.get()));
 }
 
-TEST_F(SystemModalContainerLayoutManagerTest,
-       EventFocusContainers) {
+TEST_F(SystemModalContainerLayoutManagerTest, EventFocusContainers) {
   // Create a normal window and attempt to receive a click event.
   EventTestWindow* main_delegate = new EventTestWindow(false);
   scoped_ptr<aura::Window> main(main_delegate->OpenTestWindow(NULL));
@@ -251,6 +251,21 @@ TEST_F(SystemModalContainerLayoutManagerTest,
   EXPECT_EQ(1, lock_modal_delegate->mouse_presses());
 
   Shell::GetInstance()->delegate()->UnlockScreen();
+}
+
+// Makes sure we don't crash if a modal window is shown while the parent window
+// is hidden.
+TEST_F(SystemModalContainerLayoutManagerTest, ShowModalWhileHidden) {
+  // Hide the lock screen.
+  Shell::GetInstance()->GetContainer(
+      internal::kShellWindowId_SystemModalContainer)->layer()->SetOpacity(0);
+
+  // Create a modal window.
+  scoped_ptr<aura::Window> parent(TestWindow::OpenTestWindow(NULL, false));
+  scoped_ptr<aura::Window> modal_window(
+      TestWindow::OpenTestWindow(parent.get(), true));
+  parent->Show();
+  modal_window->Show();
 }
 
 }  // namespace test

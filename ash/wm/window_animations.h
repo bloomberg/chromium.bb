@@ -13,6 +13,10 @@ namespace aura {
 class Window;
 }
 
+namespace ui {
+class ImplicitAnimationObserver;
+}
+
 namespace ash {
 
 // A variety of canned animations for window transitions.
@@ -51,6 +55,13 @@ void ASH_EXPORT SetWindowVisibilityAnimationTransition(
 void ASH_EXPORT SetWindowVisibilityAnimationDuration(
     aura::Window* window,
     const base::TimeDelta& duration);
+
+// Creates an ImplicitAnimationObserver that takes ownership of the layers
+// associated with a Window so that the animation can continue after the Window
+// has been destroyed.
+// The returned object deletes itself when the animations are done.
+ASH_EXPORT ui::ImplicitAnimationObserver* CreateHidingWindowAnimationObserver(
+    aura::Window* window);
 
 namespace internal {
 

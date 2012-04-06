@@ -15,7 +15,6 @@
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window_observer.h"
 #include "ash/ash_export.h"
-#include "ui/gfx/compositor/layer_animation_observer.h"
 
 namespace aura {
 class Window;
@@ -35,7 +34,6 @@ namespace internal {
 class ASH_EXPORT SystemModalContainerLayoutManager
     : public aura::LayoutManager,
       public aura::WindowObserver,
-      public ui::ImplicitAnimationObserver,
       public SystemModalContainerEventFilterDelegate {
  public:
   explicit SystemModalContainerLayoutManager(aura::Window* container);
@@ -56,9 +54,6 @@ class ASH_EXPORT SystemModalContainerLayoutManager
                                        intptr_t old) OVERRIDE;
   virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
 
-  // Overridden from ui::ImplicitAnimationObserver:
-  virtual void OnImplicitAnimationsCompleted() OVERRIDE;
-
   // Overridden from SystemModalContainerEventFilterDelegate:
   virtual bool CanWindowReceiveEvents(aura::Window* window) OVERRIDE;
 
@@ -68,7 +63,6 @@ class ASH_EXPORT SystemModalContainerLayoutManager
 
   void CreateModalScreen();
   void DestroyModalScreen();
-  void HideModalScreen();
 
   aura::Window* modal_window() {
     return !modal_windows_.empty() ? modal_windows_.back() : NULL;
