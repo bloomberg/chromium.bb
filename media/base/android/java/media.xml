@@ -1,0 +1,56 @@
+<!-- Copyright (c) 2012 The Chromium Authors. All rights reserved.
+
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file.
+-->
+<project name="Media" default="dist" basedir=".">
+  <description>
+    building media java source code with ant
+  </description>
+  <!-- set global properties for this build -->
+  <property environment="env"/>
+  <property name="sdk.dir" location="${env.ANDROID_SDK_ROOT}"/>
+  <property name="sdk.version" value="${env.ANDROID_SDK_VERSION}"/>
+  <property name="src" location="."/>
+  <property name="build" location="build"/>
+  <property name="dist"  location="dist"/>
+
+  <condition property="location.base"
+             value="${sdk.dir}"
+             else="${sdk.dir}/platforms/android-${sdk.version}">
+    <isset property="env.ANDROID_BUILD_TOP"/>
+  </condition>
+
+  <target name="init">
+    <!-- Create the time stamp -->
+    <tstamp/>
+    <!-- Create the build directory structure used by compile -->
+    <mkdir dir="${build}"/>
+  </target>
+
+  <target name="compile" depends="init"
+          description="compile the source " >
+    <!-- Compile the java code from ${src} into ${build} -->
+    <javac srcdir="${src}" destdir="${build}">
+      <classpath>
+        <path location="${location.base}/android.jar"/>
+      </classpath>
+    </javac>
+  </target>
+
+  <target name="dist" depends="compile"
+          description="generate the distribution" >
+    <!-- Create the distribution directory -->
+    <mkdir dir="${dist}/lib"/>
+
+    <!-- Put everything in ${build} into the chromium_media.jar file -->
+    <jar jarfile="${dist}/lib/chromium_media.jar" basedir="${build}"/>
+  </target>
+
+  <target name="clean"
+          description="clean up" >
+    <!-- Delete the ${build} and ${dist} directory trees -->
+    <delete dir="${build}"/>
+    <delete dir="${dist}"/>
+  </target>
+</project>
