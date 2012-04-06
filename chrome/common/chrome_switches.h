@@ -390,7 +390,7 @@ extern const char kTouchDevices[];
 #endif
 
 #if defined(USE_AURA)
-extern const char kDisableTCVA[];
+extern const char kEnableTCVA[];
 #endif
 
 #ifndef NDEBUG

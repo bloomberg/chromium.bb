@@ -1359,8 +1359,8 @@ const char kTouchDevices[]                  = "touch-devices";
 #endif
 
 #if defined(USE_AURA)
-// Use NativeTabContentsViewAura instead of the default implementation.
-const char kDisableTCVA[]                    = "disable-tcva";
+// Use TabContentsViewAura instead of the default implementation.
+const char kEnableTCVA[]                    = "enable-tcva";
 #endif
 
 #ifndef NDEBUG
