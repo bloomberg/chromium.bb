@@ -36,7 +36,8 @@ remoting.HostController.State = {
 remoting.HostController.AsyncResult = {
   OK: 0,
   FAILED: 1,
-  CANCELLED: 2
+  CANCELLED: 2,
+  FAILED_DIRECTORY: 3
 };
 
 /** @return {remoting.HostController.State} The current state of the daemon. */
@@ -100,40 +101,94 @@ remoting.HostController.prototype.setTooltips = function() {
 };
 
 /**
- * Generates new host key pair.
- * @param {function(string,string):void} callback Callback for the
- *     generated key pair.
+ * Registers and starts the host.
+ * @param {string} hostPin Host PIN.
+ * @param {function(remoting.HostController.AsyncResult):void}
+ * callback Callback to be called when done.
  * @return {void} Nothing.
  */
-remoting.HostController.prototype.generateKeyPair = function(callback) {
-  this.plugin_.generateKeyPair(callback);
-};
+remoting.HostController.prototype.start = function(hostPin, callback) {
+  /** @type {remoting.HostController} */
+  var that = this;
 
-/**
- * @return {string} Local hostname
- */
-remoting.HostController.prototype.getHostName = function() {
-  return this.plugin_.getHostName();
-};
+  /** @return {string} */
+  function generateUuid() {
+    var random = new Uint16Array(8);
+    window.crypto.getRandomValues(random);
+    /** @type {Array.<string>} */
+    var e = new Array();
+    for (var i = 0; i < 8; i++) {
+      e[i] = (/** @type {number} */random[i] + 0x10000).
+          toString(16).substring(1);
+    }
+    return e[0] + e[1] + '-' + e[2] + "-" + e[3] + '-' +
+        e[4] + '-' + e[5] + e[6] + e[7];
+  };
 
-/**
- * Read current host configuration.
- * @param {function(string):void} callback Host config callback.
- * @return {void} Nothing.
- */
-remoting.HostController.prototype.getConfig = function(callback) {
-  this.plugin_.getDaemonConfig(callback);
-};
+  var newHostId = generateUuid();
+  // TODO(jamiewalch): Create an unprivileged API to get the host id from the
+  // plugin instead of storing it locally (crbug.com/121518).
+  window.localStorage.setItem('me2me-host-id', newHostId);
 
-/**
- * Start the daemon process.
- * @param {string} config Host config.
- * @param {function(remoting.HostController.AsyncResult):void} callback
- *     Callback to be called when finished.
- * @return {void} Nothing.
- */
-remoting.HostController.prototype.start = function(config, callback) {
-  this.plugin_.startDaemon(config, callback);
+  /** @param {string} privateKey
+   *  @param {XMLHttpRequest} xhr */
+  function onRegistered(privateKey, xhr) {
+    var success = (xhr.status == 200);
+
+    if (success) {
+      // TODO(sergeyu): Calculate HMAC of the PIN instead of storing it
+      // in plaintext.
+      var hostConfig = JSON.stringify({
+          xmpp_login: remoting.oauth2.getCachedEmail(),
+          oauth_refresh_token: remoting.oauth2.getRefreshToken(),
+          host_id: newHostId,
+          host_name: that.plugin_.getHostName(),
+          host_secret_hash: 'plain:' + window.btoa(hostPin),
+          private_key: privateKey
+        });
+      that.plugin_.startDaemon(hostConfig, callback);
+    } else {
+      console.log('Failed to register the host. Status: ' + xhr.status +
+                  ' response: ' + xhr.responseText);
+      callback(remoting.HostController.AsyncResult.FAILED_DIRECTORY);
+    }
+  };
+
+  /**
+   * @param {string} privateKey
+   * @param {string} publicKey
+   * @param {string} oauthToken
+   */
+  function doRegisterHost(privateKey, publicKey, oauthToken) {
+    var headers = {
+      'Authorization': 'OAuth ' + oauthToken,
+      'Content-type' : 'application/json; charset=UTF-8'
+    };
+
+    var newHostDetails = { data: {
+       hostId: newHostId,
+       hostName: that.plugin_.getHostName(),
+       publicKey: publicKey
+    } };
+    remoting.xhr.post(
+        'https://www.googleapis.com/chromoting/v1/@me/hosts/',
+        /** @param {XMLHttpRequest} xhr */
+        function (xhr) { onRegistered(privateKey, xhr); },
+        JSON.stringify(newHostDetails),
+        headers);
+  };
+
+  /** @param {string} privateKey
+   *  @param {string} publicKey */
+  function onKeyGenerated(privateKey, publicKey) {
+    remoting.oauth2.callWithToken(
+        /** @param {string} oauthToken */
+        function(oauthToken) {
+          doRegisterHost(privateKey, publicKey, oauthToken);
+        });
+  };
+
+  this.plugin_.generateKeyPair(onKeyGenerated);
 };
 
 /**
@@ -143,17 +198,32 @@ remoting.HostController.prototype.start = function(config, callback) {
  * @return {void} Nothing.
  */
 remoting.HostController.prototype.stop = function(callback) {
-  this.plugin_.stopDaemon(callback);
+  /** @type {remoting.HostController} */
+  var that = this;
+
+  /** @param {remoting.HostController.AsyncResult} result */
+  function onStopped(result) {
+    if (that.localHost && that.localHost.hostId)
+      remoting.HostList.unregisterHostById(that.localHost.hostId);
+    window.localStorage.removeItem('me2me-host-id');
+    callback(result);
+  };
+  this.plugin_.stopDaemon(onStopped);
 };
 
 /**
- * @param {string} config The new host config, JSON encoded.
+ * @param {string} newPin The new PIN to set
  * @param {function(remoting.HostController.AsyncResult):void} callback
  *     Callback to be called when finished.
  * @return {void} Nothing.
  */
-remoting.HostController.prototype.updateConfig = function(config, callback) {
-  this.plugin_.updateDaemonConfig(config, callback);
+remoting.HostController.prototype.updatePin = function(newPin, callback) {
+      // TODO(sergeyu): Calculate HMAC of the PIN instead of storing it
+      // in plaintext.
+  var newConfig = JSON.stringify({
+          host_secret_hash: 'plain:' + window.btoa(newPin)
+      });
+  this.plugin_.updateDaemonConfig(newConfig, callback);
 };
 
 /**
@@ -206,16 +276,6 @@ remoting.HostController.prototype.onHostListRefresh =
     this.setHost(null);
   }
   onDone();
-};
-
-/**
- * Unregister the local host
- *
- * @return {void} Nothing.
- */
-remoting.HostController.prototype.unregister = function() {
-  remoting.HostList.unregisterHostById(this.localHost.hostId);
-  window.localStorage.removeItem('me2me-host-id');
 };
 
 /** @type {remoting.HostController} */
