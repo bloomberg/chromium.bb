@@ -285,6 +285,7 @@ const char kProviderNameProperty[] = "Provider.Name";
 const char kProviderTypeProperty[] = "Provider.Type";
 
 // Flimflam Wifi Service property names.
+const char kWifiBSsid[] = "WiFi.BSSID";
 const char kWifiHexSsid[] = "WiFi.HexSSID";
 const char kWifiFrequency[] = "WiFi.Frequency";
 const char kWifiHiddenSsid[] = "WiFi.HiddenSSID";
