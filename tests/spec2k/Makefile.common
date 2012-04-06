@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -222,7 +222,8 @@ $(IT).nacl.dyn.opt.x8664: $(SRC) $(CPPSRC)
 
 PNACL_BIN=$(PNACL_ROOT)/bin
 PNACL_TRANSLATOR=$(TIME_TRANSLATE) $(PNACL_BIN)/pnacl-translate
-PNACL_TRANSLATOR_SB=$(TIME_TRANSLATE) $(PNACL_BIN)/pnacl-translate --pnacl-sb
+PNACL_TRANSLATOR_SB=$(TIME_TRANSLATE) $(PNACL_BIN)/pnacl-translate \
+	--pnacl-sb --noirtshim
 PNACL_TRANSLATOR_SB_EMU=$(PNACL_TRANSLATOR_SB) --pnacl-use-emulator
 PNACL_CC=$(PNACL_BIN)/pnacl-clang
 PNACL_CXX=$(PNACL_BIN)/pnacl-clang++
