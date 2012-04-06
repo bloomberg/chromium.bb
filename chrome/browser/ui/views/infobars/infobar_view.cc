@@ -105,7 +105,7 @@ views::MenuButton* InfoBarView::CreateMenuButton(
   menu_button->set_animate_on_state_change(false);
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   menu_button->set_menu_marker(
-      rb.GetBitmapNamed(IDR_INFOBARBUTTON_MENU_DROPARROW));
+      rb.GetImageNamed(IDR_INFOBARBUTTON_MENU_DROPARROW).ToSkBitmap());
   menu_button->SetEnabledColor(SK_ColorBLACK);
   menu_button->SetHighlightColor(SK_ColorBLACK);
   menu_button->SetHoverColor(SK_ColorBLACK);
@@ -226,11 +226,11 @@ void InfoBarView::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
     close_button_ = new views::ImageButton(this);
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     close_button_->SetImage(views::CustomButton::BS_NORMAL,
-                            rb.GetBitmapNamed(IDR_CLOSE_BAR));
+                            rb.GetImageNamed(IDR_CLOSE_BAR).ToSkBitmap());
     close_button_->SetImage(views::CustomButton::BS_HOT,
-                            rb.GetBitmapNamed(IDR_CLOSE_BAR_H));
+                            rb.GetImageNamed(IDR_CLOSE_BAR_H).ToSkBitmap());
     close_button_->SetImage(views::CustomButton::BS_PUSHED,
-                            rb.GetBitmapNamed(IDR_CLOSE_BAR_P));
+                            rb.GetImageNamed(IDR_CLOSE_BAR_P).ToSkBitmap());
     close_button_->SetAccessibleName(
         l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE));
     close_button_->set_focusable(true);

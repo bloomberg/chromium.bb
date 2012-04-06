@@ -6,50 +6,49 @@
 
 #include "chrome/browser/defaults.h"
 #include "grit/theme_resources.h"
-#include "ui/base/animation/throb_animation.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/canvas.h"
+#include "ui/gfx/image/image.h"
 
 InfoBarButtonBorder::InfoBarButtonBorder() {
   set_vertical_padding(browser_defaults::kInfoBarBorderPaddingVertical);
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   BorderImageSet normal_set = {
-    rb.GetBitmapNamed(IDR_INFOBARBUTTON_TOP_LEFT_N),
-    rb.GetBitmapNamed(IDR_INFOBARBUTTON_TOP_N),
-    rb.GetBitmapNamed(IDR_INFOBARBUTTON_TOP_RIGHT_N),
-    rb.GetBitmapNamed(IDR_INFOBARBUTTON_LEFT_N),
-    rb.GetBitmapNamed(IDR_INFOBARBUTTON_CENTER_N),
-    rb.GetBitmapNamed(IDR_INFOBARBUTTON_RIGHT_N),
-    rb.GetBitmapNamed(IDR_INFOBARBUTTON_BOTTOM_LEFT_N),
-    rb.GetBitmapNamed(IDR_INFOBARBUTTON_BOTTOM_N),
-    rb.GetBitmapNamed(IDR_INFOBARBUTTON_BOTTOM_RIGHT_N),
+    rb.GetImageNamed(IDR_INFOBARBUTTON_TOP_LEFT_N).ToSkBitmap(),
+    rb.GetImageNamed(IDR_INFOBARBUTTON_TOP_N).ToSkBitmap(),
+    rb.GetImageNamed(IDR_INFOBARBUTTON_TOP_RIGHT_N).ToSkBitmap(),
+    rb.GetImageNamed(IDR_INFOBARBUTTON_LEFT_N).ToSkBitmap(),
+    rb.GetImageNamed(IDR_INFOBARBUTTON_CENTER_N).ToSkBitmap(),
+    rb.GetImageNamed(IDR_INFOBARBUTTON_RIGHT_N).ToSkBitmap(),
+    rb.GetImageNamed(IDR_INFOBARBUTTON_BOTTOM_LEFT_N).ToSkBitmap(),
+    rb.GetImageNamed(IDR_INFOBARBUTTON_BOTTOM_N).ToSkBitmap(),
+    rb.GetImageNamed(IDR_INFOBARBUTTON_BOTTOM_RIGHT_N).ToSkBitmap(),
   };
   set_normal_set(normal_set);
 
   BorderImageSet hot_set = {
-    rb.GetBitmapNamed(IDR_INFOBARBUTTON_TOP_LEFT_H),
-    rb.GetBitmapNamed(IDR_INFOBARBUTTON_TOP_H),
-    rb.GetBitmapNamed(IDR_INFOBARBUTTON_TOP_RIGHT_H),
-    rb.GetBitmapNamed(IDR_INFOBARBUTTON_LEFT_H),
-    rb.GetBitmapNamed(IDR_INFOBARBUTTON_CENTER_H),
-    rb.GetBitmapNamed(IDR_INFOBARBUTTON_RIGHT_H),
-    rb.GetBitmapNamed(IDR_INFOBARBUTTON_BOTTOM_LEFT_H),
-    rb.GetBitmapNamed(IDR_INFOBARBUTTON_BOTTOM_H),
-    rb.GetBitmapNamed(IDR_INFOBARBUTTON_BOTTOM_RIGHT_H),
+    rb.GetImageNamed(IDR_INFOBARBUTTON_TOP_LEFT_H).ToSkBitmap(),
+    rb.GetImageNamed(IDR_INFOBARBUTTON_TOP_H).ToSkBitmap(),
+    rb.GetImageNamed(IDR_INFOBARBUTTON_TOP_RIGHT_H).ToSkBitmap(),
+    rb.GetImageNamed(IDR_INFOBARBUTTON_LEFT_H).ToSkBitmap(),
+    rb.GetImageNamed(IDR_INFOBARBUTTON_CENTER_H).ToSkBitmap(),
+    rb.GetImageNamed(IDR_INFOBARBUTTON_RIGHT_H).ToSkBitmap(),
+    rb.GetImageNamed(IDR_INFOBARBUTTON_BOTTOM_LEFT_H).ToSkBitmap(),
+    rb.GetImageNamed(IDR_INFOBARBUTTON_BOTTOM_H).ToSkBitmap(),
+    rb.GetImageNamed(IDR_INFOBARBUTTON_BOTTOM_RIGHT_H).ToSkBitmap(),
   };
   set_hot_set(hot_set);
 
   BorderImageSet pushed_set = {
-    rb.GetBitmapNamed(IDR_INFOBARBUTTON_TOP_LEFT_P),
-    rb.GetBitmapNamed(IDR_INFOBARBUTTON_TOP_P),
-    rb.GetBitmapNamed(IDR_INFOBARBUTTON_TOP_RIGHT_P),
-    rb.GetBitmapNamed(IDR_INFOBARBUTTON_LEFT_P),
-    rb.GetBitmapNamed(IDR_INFOBARBUTTON_CENTER_P),
-    rb.GetBitmapNamed(IDR_INFOBARBUTTON_RIGHT_P),
-    rb.GetBitmapNamed(IDR_INFOBARBUTTON_BOTTOM_LEFT_P),
-    rb.GetBitmapNamed(IDR_INFOBARBUTTON_BOTTOM_P),
-    rb.GetBitmapNamed(IDR_INFOBARBUTTON_BOTTOM_RIGHT_P),
+    rb.GetImageNamed(IDR_INFOBARBUTTON_TOP_LEFT_P).ToSkBitmap(),
+    rb.GetImageNamed(IDR_INFOBARBUTTON_TOP_P).ToSkBitmap(),
+    rb.GetImageNamed(IDR_INFOBARBUTTON_TOP_RIGHT_P).ToSkBitmap(),
+    rb.GetImageNamed(IDR_INFOBARBUTTON_LEFT_P).ToSkBitmap(),
+    rb.GetImageNamed(IDR_INFOBARBUTTON_CENTER_P).ToSkBitmap(),
+    rb.GetImageNamed(IDR_INFOBARBUTTON_RIGHT_P).ToSkBitmap(),
+    rb.GetImageNamed(IDR_INFOBARBUTTON_BOTTOM_LEFT_P).ToSkBitmap(),
+    rb.GetImageNamed(IDR_INFOBARBUTTON_BOTTOM_P).ToSkBitmap(),
+    rb.GetImageNamed(IDR_INFOBARBUTTON_BOTTOM_RIGHT_P).ToSkBitmap(),
   };
   set_pushed_set(pushed_set);
 }
