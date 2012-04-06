@@ -10,29 +10,15 @@
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #import "chrome/browser/ui/cocoa/web_intent_sheet_controller.h"
 #include "chrome/browser/ui/cocoa/web_intent_picker_cocoa.h"
+#include "chrome/browser/ui/cocoa/web_intent_picker_test_base.h"
 #include "chrome/browser/ui/intents/web_intent_picker_delegate.h"
 #include "chrome/browser/ui/tab_contents/test_tab_contents_wrapper.h"
 #include "content/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-namespace {
-
-class MockIntentPickerDelegate : public WebIntentPickerDelegate {
- public:
-  virtual ~MockIntentPickerDelegate() {}
-
-  MOCK_METHOD2(OnServiceChosen, void(const GURL& url, Disposition disposition));
-  MOCK_METHOD1(OnInlineDispositionWebContentsCreated,
-      void(content::WebContents* web_contents));
-  MOCK_METHOD1(OnExtensionInstallRequested, void(const std::string& id));
-  MOCK_METHOD0(OnCancelled, void());
-  MOCK_METHOD0(OnClosing, void());
-};
-
-}  // namespace
-
 class WebIntentPickerSheetControllerTest
-    : public TabContentsWrapperTestHarness {
+    : public TabContentsWrapperTestHarness,
+      public WebIntentPickerTestBase {
  public:
   WebIntentPickerSheetControllerTest()
       : ui_thread_(content::BrowserThread::UI, MessageLoopForUI::current()) {}
@@ -59,16 +45,6 @@ class WebIntentPickerSheetControllerTest
     picker_->model_ = &model_;
     window_ = nil;
     controller_ = nil;
-  }
-
-  void CreateBubble() {
-    picker_.reset(new WebIntentPickerCocoa(NULL, contents_wrapper(),
-      &delegate_, &model_));
-
-    controller_ =
-        [[WebIntentPickerSheetController alloc] initWithPicker:picker_.get()];
-    window_ = [controller_ window];
-    [controller_ showWindow:nil];
   }
 
   // Checks the controller's window for the requisite subviews and icons.
@@ -129,21 +105,16 @@ class WebIntentPickerSheetControllerTest
   }
 
   content::TestBrowserThread ui_thread_;
-  WebIntentPickerSheetController* controller_;  // Weak, owns self.
-  NSWindow* window_;  // Weak, owned by controller.
-  scoped_ptr<WebIntentPickerCocoa> picker_;
-  MockIntentPickerDelegate delegate_;
-  WebIntentPickerModel model_;  // The model used by the picker
 };
 
 TEST_F(WebIntentPickerSheetControllerTest, EmptyBubble) {
-  CreateBubble();
+  CreateBubble(contents_wrapper());
 
   CheckWindow(/*icon_count=*/0);
 }
 
 TEST_F(WebIntentPickerSheetControllerTest, PopulatedBubble) {
-  CreateBubble();
+  CreateBubble(contents_wrapper());
 
   WebIntentPickerModel model;
   model.AddInstalledService(string16(), GURL(),
@@ -166,38 +137,8 @@ TEST_F(WebIntentPickerSheetControllerTest, OnCancelledWillSignalClose) {
   ignore_result(picker_.release());  // Closing |picker_| will destruct it.
 }
 
-// TODO(groby): Re-enable ASAP. Needs visible TabContentsWrapper to test sheet.
-TEST_F(WebIntentPickerSheetControllerTest, DISABLED_CloseWillClose) {
-  CreateBubble();
-
-  EXPECT_CALL(delegate_, OnCancelled()).Times(0);
-  EXPECT_CALL(delegate_, OnClosing());
-  picker_->Close();
-
-  ignore_result(picker_.release());  // Closing |picker_| will destruct it.
-}
-
-// TODO(groby): Re-enable ASAP. Needs visible TabContentsWrapper to test sheet.
-TEST_F(WebIntentPickerSheetControllerTest,
-    DISABLED_DontCancelAfterServiceInvokation) {
-  CreateBubble();
-  GURL url;
-  model_.AddInstalledService(string16(), url,
-      WebIntentPickerModel::DISPOSITION_WINDOW);
-
-  EXPECT_CALL(delegate_, OnServiceChosen(
-      url, WebIntentPickerModel::DISPOSITION_WINDOW));
-  EXPECT_CALL(delegate_, OnCancelled()).Times(0);
-  EXPECT_CALL(delegate_, OnClosing());
-
-  picker_->OnServiceChosen(0);
-  picker_->Close();
-
-  ignore_result(picker_.release());  // Closing |picker_| will destruct it.
-}
-
 TEST_F(WebIntentPickerSheetControllerTest, SuggestionView) {
-  CreateBubble();
+  CreateBubble(contents_wrapper());
 
   WebIntentPickerModel model;
 
