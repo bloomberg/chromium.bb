@@ -262,7 +262,7 @@ void SettingsBackend::StopSyncing(syncable::ModelType type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DCHECK(type == syncable::EXTENSION_SETTINGS ||
          type == syncable::APP_SETTINGS);
-  DCHECK_EQ(type, sync_type_);
+  DCHECK(sync_type_ == type || sync_type_ == syncable::UNSPECIFIED);
 
   for (StorageObjMap::iterator it = storage_objs_.begin();
       it != storage_objs_.end(); ++it) {
