@@ -94,11 +94,11 @@ const gfx::Font& GetTitleFont() {
 
 CustomFrameView::CustomFrameView()
     : frame_(NULL),
+      window_icon_(NULL),
       minimize_button_(NULL),
       maximize_button_(NULL),
       restore_button_(NULL),
       close_button_(NULL),
-      window_icon_(NULL),
       should_show_minmax_buttons_(false),
       frame_background_(new FrameBackground()) {
 }
