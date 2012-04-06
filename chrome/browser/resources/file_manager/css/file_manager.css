@@ -598,7 +598,7 @@ button.settings {
   width: 120px;
 }
 
-.thumbnail-item > input[type='checkbox'] {
+.thumbnail-item > input.common[type='checkbox'] {
   left: 0;
   position: absolute;
   top: 0;
@@ -1099,7 +1099,7 @@ li.table-row {
   -webkit-margin-end: 3px;
 }
 
-.detail-name > .file-checkbox::before,
+list .detail-name > .file-checkbox::before,
 .pin::before {
   /* Invisible area that reacts on mouse events. */
   content: '';
