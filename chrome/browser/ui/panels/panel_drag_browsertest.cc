@@ -688,6 +688,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, CloseDetachedPanelOnDrag) {
 
     // Cancel the drag.
     panel1_testing->CancelDragTitlebar();
+    WaitForBoundsAnimationFinished(panel1);
     EXPECT_FALSE(drag_controller->IsDragging());
 
     ASSERT_EQ(3, detached_strip->num_panels());
