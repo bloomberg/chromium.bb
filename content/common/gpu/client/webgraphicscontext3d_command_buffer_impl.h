@@ -78,6 +78,11 @@ class WebGraphicsContext3DCommandBufferImpl
 
   virtual ~WebGraphicsContext3DCommandBufferImpl();
 
+  void InitializeWithCommandBuffer(
+      CommandBufferProxy* command_buffer,
+      const Attributes& attributes,
+      bool bind_generates_resources);
+
   bool Initialize(const Attributes& attributes,
                   bool bind_generates_resources,
                   content::CauseForGpuLaunch cause);

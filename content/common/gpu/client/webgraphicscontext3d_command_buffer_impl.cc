@@ -151,6 +151,16 @@ WebGraphicsContext3DCommandBufferImpl::
   Destroy();
 }
 
+void WebGraphicsContext3DCommandBufferImpl::InitializeWithCommandBuffer(
+    CommandBufferProxy* command_buffer,
+    const WebGraphicsContext3D::Attributes& attributes,
+    bool bind_generates_resources) {
+  DCHECK(command_buffer);
+  command_buffer_ = command_buffer;
+  attributes_ = attributes;
+  bind_generates_resources_ = bind_generates_resources;
+}
+
 bool WebGraphicsContext3DCommandBufferImpl::Initialize(
     const WebGraphicsContext3D::Attributes& attributes,
     bool bind_generates_resources,
@@ -159,8 +169,7 @@ bool WebGraphicsContext3DCommandBufferImpl::Initialize(
 
   attributes_ = attributes;
   bind_generates_resources_ = bind_generates_resources;
-  if (command_buffer_)
-    return true;
+  DCHECK(!command_buffer_);
 
   if (!factory_)
     return false;
