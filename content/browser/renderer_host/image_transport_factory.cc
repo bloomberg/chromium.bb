@@ -396,7 +396,7 @@ class GpuProcessTransportFactory : public ui::ContextFactory,
     WebKit::WebGraphicsContext3D::Attributes attrs;
     attrs.shareResources = true;
     data->shared_context.reset(new WebGraphicsContext3DCommandBufferImpl(
-          data->surface_id,
+          0,
           GURL(),
           factory,
           data->swap_client->AsWeakPtr()));

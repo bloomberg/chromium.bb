@@ -115,7 +115,7 @@ bool TextureImageTransportSurface::Resize(const gfx::Size&) {
 }
 
 bool TextureImageTransportSurface::IsOffscreen() {
-  return false;
+  return parent_stub_.get() ? parent_stub_->surface()->IsOffscreen() : true;
 }
 
 bool TextureImageTransportSurface::OnMakeCurrent(gfx::GLContext* context) {

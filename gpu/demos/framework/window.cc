@@ -94,6 +94,7 @@ bool Window::CreateRenderContext(gfx::AcceleratedWidget hwnd) {
   std::vector<int32> attribs;
   if (!decoder_->Initialize(surface_.get(),
                             context_.get(),
+                            surface_->IsOffscreen(),
                             gfx::Size(),
                             gpu::gles2::DisallowedFeatures(),
                             NULL,
