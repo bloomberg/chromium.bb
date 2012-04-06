@@ -2609,17 +2609,17 @@ binutils-gold-configure() {
   mkdir -p "${objdir}"
   spushd "${objdir}"
 
+  # Gold only really depends on liberty (and not for much).
+  # NOTE: we are still building one unnecessary target: "32bit big-endian"
+  # which is dragged in by targ_extra_big_endian=true in
+  # pnacl/src/gold/gold/configure.tgt
+  # removing it causes undefined symbols during linking of gold.
+  # The potential savings are guesstimated to be 300kB in binary size
   RunWithLog gold.configure \
     env -i \
     PATH="/usr/bin:/bin" \
     CC="${CC}" \
     CXX="${CXX}" \
-    # Gold only really depends on liberty (and not for much).
-    # NOTE: we are still building one unnecessary target: "32bit big-endian"
-    # which is dragged in by targ_extra_big_endian=true in
-    # pnacl/src/gold/gold/configure.tgt
-    # removing it causes undefined symbols during linking of gold.
-    # The potential savings are guesstimated to be 300kB in binary size
     ${srcdir}/configure --prefix="${BINUTILS_INSTALL_DIR}" \
                                       --enable-targets=${gold_targets} \
                                       --enable-gold=yes \
