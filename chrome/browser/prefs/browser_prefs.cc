@@ -185,7 +185,6 @@ void RegisterUserPrefs(PrefService* user_prefs) {
   ChromeVersionService::RegisterUserPrefs(user_prefs);
   chrome_browser_net::HttpServerPropertiesManager::RegisterPrefs(user_prefs);
   chrome_browser_net::Predictor::RegisterUserPrefs(user_prefs);
-  DevToolsWindow::RegisterUserPrefs(user_prefs);
   DownloadPrefs::RegisterUserPrefs(user_prefs);
   extensions::ComponentLoader::RegisterUserPrefs(user_prefs);
   ExtensionPrefs::RegisterUserPrefs(user_prefs);
@@ -228,6 +227,7 @@ void RegisterUserPrefs(PrefService* user_prefs) {
 #if !defined(OS_ANDROID)
   Browser::RegisterUserPrefs(user_prefs);
   BrowserInit::RegisterUserPrefs(user_prefs);
+  DevToolsWindow::RegisterUserPrefs(user_prefs);
   PinnedTabCodec::RegisterUserPrefs(user_prefs);
   PluginsUI::RegisterUserPrefs(user_prefs);
   PromoResourceService::RegisterUserPrefs(user_prefs);

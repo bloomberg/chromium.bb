@@ -214,6 +214,11 @@
             '../build/linux/system.gyp:gtk',
           ],
         }],
+        ['OS=="android"', {
+          'sources!': [
+            'browser/debugger/devtools_window.cc',
+          ],
+        }],
       ],
     },
     {
