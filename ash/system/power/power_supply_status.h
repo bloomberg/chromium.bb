@@ -32,6 +32,8 @@ struct ASH_EXPORT PowerSupplyStatus {
 
   double battery_percentage;
 
+  bool is_calculating_battery_time;
+
   PowerSupplyStatus();
   std::string ToString() const;
 };

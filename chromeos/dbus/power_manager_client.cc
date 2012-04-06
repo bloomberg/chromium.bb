@@ -356,6 +356,7 @@ class PowerManagerClientImpl : public PowerManagerClient {
     status.battery_percentage = protobuf.battery_percentage();
     status.battery_is_present = protobuf.battery_is_present();
     status.battery_is_full = protobuf.battery_is_charged();
+    status.is_calculating_battery_time = protobuf.is_calculating_battery_time();
 
     VLOG(1) << "Power status: " << status.ToString();
     FOR_EACH_OBSERVER(Observer, observers_, PowerChanged(status));

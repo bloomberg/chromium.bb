@@ -15,8 +15,8 @@ PowerSupplyStatus::PowerSupplyStatus()
       battery_is_full(false),
       battery_seconds_to_empty(0),
       battery_seconds_to_full(0),
-      battery_percentage(0) {
-}
+      battery_percentage(0),
+      is_calculating_battery_time(false) {}
 
 std::string PowerSupplyStatus::ToString() const {
   std::string result;
@@ -38,6 +38,10 @@ std::string PowerSupplyStatus::ToString() const {
   base::StringAppendF(&result,
                       "battery_seconds_to_full = %"PRId64" ",
                       battery_seconds_to_full);
+  base::StringAppendF(&result,
+                      "is_calculating_battery_time = %s ",
+                      is_calculating_battery_time ? "true" : "false");
+
   return result;
 }
 
