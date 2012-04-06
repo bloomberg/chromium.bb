@@ -629,6 +629,24 @@
    fun:XRRFindDisplay
    fun:XRRSelectInput
 }
+{
+   Flash Player Leak
+   Memcheck:Leak
+   ...
+   obj:/usr/lib/flashplugin-installer/libflashplayer.so
+}
+{
+   Flash Player Unaddressable
+   Memcheck:Unaddressable
+   ...
+   obj:/usr/lib/flashplugin-installer/libflashplayer.so
+}
+{
+   Flash Player Uninitialized
+   Memcheck:Uninitialized
+   ...
+   obj:/usr/lib/flashplugin-installer/libflashplayer.so
+}
 
 #-----------------------------------------------------------------------
 # 2. intentional unit test errors, or stuff that is somehow a false positive
@@ -5521,6 +5539,77 @@
    fun:_ZN6WebKit22IDBFactoryBackendProxy6createEv
    fun:_ZN7WebCore15PlatformSupport10idbFactoryEv
    fun:_ZN7WebCore26IDBFactoryBackendInterface6createEv
+}
+{
+   bug_122429
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN6webkit3gpu18GLInProcessContext22CreateOffscreenContextEPS1_RKN3gfx4SizeES2_PKcPKiNS3_13GpuPreferenceE
+   fun:_ZN6webkit3gpu46WebGraphicsContext3DInProcessCommandBufferImpl10InitializeEN6WebKit20WebGraphicsContext3D10AttributesEPS3_
+   fun:_ZN25TestWebKitPlatformSupport32createOffscreenGraphicsContext3DERKN6WebKit20WebGraphicsContext3D10AttributesE
+   fun:_ZN13TestWebPlugin10initializeEPN6WebKit18WebPluginContainerE
+   fun:_ZN6WebKit21FrameLoaderClientImpl12createPluginERKN7WebCore7IntSizeEPNS1_17HTMLPlugInElementERKNS1_4KURLERKN3WTF6VectorINSA_6StringELm0EEESF_RKSC_b
+}
+{
+   bug_122431
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN11WebViewHost12createPluginEPN6WebKit8WebFrameERKNS0_15WebPluginParamsE
+   fun:_ZN6WebKit21FrameLoaderClientImpl12createPluginERKN7WebCore7IntSizeEPNS1_17HTMLPlugInElementERKNS1_4KURLERKN3WTF6VectorINSA_6StringELm0EEESF_RKSC_b
+   fun:_ZN7WebCore14SubframeLoader10loadPluginEPNS_22HTMLPlugInImageElementERKNS_4KURLERKN3WTF6StringERKNS6_6VectorIS7_Lm0EEESD_b
+   fun:_ZN7WebCore14SubframeLoader13requestPluginEPNS_22HTMLPlugInImageElementERKNS_4KURLERKN3WTF6StringERKNS6_6VectorIS7_Lm0EEESD_b
+   fun:_ZN7WebCore14SubframeLoader13requestObjectEPNS_22HTMLPlugInImageElementERKN3WTF6StringERKNS3_12AtomicStringES6_RKNS3_6VectorIS4_Lm0EEESD_
+   fun:_ZN7WebCore16HTMLEmbedElement12updateWidgetENS_20PluginCreationOptionE
+}
+{
+   bug_122435a
+   Memcheck:Leak
+   fun:_Zna*
+   fun:_ZN3gpu5gles219VertexAttribManager10InitializeEj
+   fun:_ZN3gpu5gles216GLES2DecoderImpl10InitializeERK13scoped_refptrIN3gfx9GLSurfaceEERKS2_INS3_9GLContextEERKNS3_4SizeERKNS0_18DisallowedFeaturesEPKcRKSt6vectorIiSaIiEE
+   fun:_ZN6webkit3gpu18GLInProcessContext10InitializeERKN3gfx4SizeEPS1_PKcPKiNS2_13GpuPreferenceE
+   fun:_ZN6webkit3gpu18GLInProcessContext22CreateOffscreenContextEPS1_RKN3gfx4SizeES2_PKcPKiNS3_13GpuPreferenceE
+   fun:_ZN6webkit3gpu46WebGraphicsContext3DInProcessCommandBufferImpl10InitializeEN6WebKit20WebGraphicsContext3D10AttributesEPS3_
+}
+{
+   bug_122435b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN9__gnu_cxx13new_allocatorISt10_List_nodeIPN3gpu5gles219VertexAttribManager16VertexAttribInfoEEE8allocateEmPKv
+   fun:_ZNSt10_List_baseIPN3gpu5gles219VertexAttribManager16VertexAttribInfoESaIS4_EE11_M_get_nodeEv
+   fun:_ZNSt4listIPN3gpu5gles219VertexAttribManager16VertexAttribInfoESaIS4_EE14_M_create_nodeERKS4_
+   fun:_ZNSt4listIPN3gpu5gles219VertexAttribManager16VertexAttribInfoESaIS4_EE6insertESt14_List_iteratorIS4_ERKS4_
+   fun:_ZN3gpu5gles219VertexAttribManager16VertexAttribInfo7SetListEPSt4listIPS2_SaIS4_EE
+   fun:_ZN3gpu5gles219VertexAttribManager6EnableEjb
+}
+{
+   bug_122436
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN9__gnu_cxx13new_allocatorISt13_Rb_tree_nodeISt4pairIKj10linked_ptrIN3gpu13CommonDecoder6BucketEEEEE8allocateEmPKv
+   fun:_ZNSt8_Rb_treeIjSt4pairIKj10linked_ptrIN3gpu13CommonDecoder6BucketEEESt10_Select1stIS7_ESt4lessIjESaIS7_EE11_M_get_nodeEv
+   fun:_ZNSt8_Rb_treeIjSt4pairIKj10linked_ptrIN3gpu13CommonDecoder6BucketEEESt10_Select1stIS7_ESt4lessIjESaIS7_EE14_M_create_nodeERKS7_
+   fun:_ZNSt8_Rb_treeIjSt4pairIKj10linked_ptrIN3gpu13CommonDecoder6BucketEEESt10_Select1stIS7_ESt4lessIjESaIS7_EE10_M_insert_EPKSt18_Rb_tree_node_baseSG_RKS7_
+   fun:_ZNSt8_Rb_treeIjSt4pairIKj10linked_ptrIN3gpu13CommonDecoder6BucketEEESt10_Select1stIS7_ESt4lessIjESaIS7_EE16_M_insert_uniqueERKS7_
+   fun:_ZNSt8_Rb_treeIjSt4pairIKj10linked_ptrIN3gpu13CommonDecoder6BucketEEESt10_Select1stIS7_ESt4lessIjESaIS7_EE17_M_insert_unique_ESt23_Rb_tree_const_iteratorIS7_ERKS7_
+   fun:_ZNSt3mapIj10linked_ptrIN3gpu13CommonDecoder6BucketEESt4lessIjESaISt4pairIKjS4_EEE6insertESt17_Rb_tree_iteratorIS9_ERKS9_
+   fun:_ZNSt3mapIj10linked_ptrIN3gpu13CommonDecoder6BucketEESt4lessIjESaISt4pairIKjS4_EEEixERS8_
+   fun:_ZN3gpu13CommonDecoder12CreateBucketEj
+}
+{
+   bug_122437
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN3gpu19MappedMemoryManager5Alloc*
+   fun:_ZN3gpu5gles219GLES2Implementation24MapTexSubImage2DCHROMIUM*
+   fun:_ZN6webkit3gpu46WebGraphicsContext3DInProcessCommandBufferImpl24mapTexSubImage2DCHROMIUM*
+   fun:_ZN7WebCore24GraphicsContext3DPrivate24mapTexSubImage2DCHROMIUM*
+   fun:_ZN7WebCore20Extensions3DChromium24mapTexSubImage2DCHROMIUM*
+   fun:_ZN7WebCore20LayerTextureSubImage24uploadWithMapTexSubImageEPKhRKNS_7IntRectES5_S5_jPNS_17GraphicsContext3DE
+   fun:_ZN7WebCore20LayerTextureSubImage6uploadEPKhRKNS_7IntRectES5_S5_jPNS_17GraphicsContext3DE
+   fun:_ZN7WebCore31BitmapCanvasLayerTextureUpdater17updateTextureRectEPNS_17GraphicsContext3DEPNS_16TextureAllocatorEPNS_14ManagedTextureERKNS_7IntRectES9_
+   fun:_ZN7WebCore31BitmapCanvasLayerTextureUpdater7Texture10updateRectEPNS_17GraphicsContext3DEPNS_16TextureAllocatorERKNS_7IntRectES8_
 }
 
 #-----------------------------------------------------------------------
