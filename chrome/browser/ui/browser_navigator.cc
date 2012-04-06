@@ -371,10 +371,9 @@ bool SwapInPrerender(TabContentsWrapper* target_contents, const GURL& url) {
   prerender::PrerenderManager* prerender_manager =
       prerender::PrerenderManagerFactory::GetForProfile(
           target_contents->profile());
-  if (!prerender_manager)
-    return false;
-  return prerender_manager->MaybeUsePrerenderedPage(
-      target_contents->web_contents(), url);
+  WebContents* web_contents = target_contents->web_contents();
+  return prerender_manager &&
+      prerender_manager->MaybeUsePrerenderedPage(web_contents, url);
 }
 
 }  // namespace
