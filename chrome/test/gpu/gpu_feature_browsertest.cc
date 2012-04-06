@@ -21,6 +21,9 @@
 #include "content/test/gpu/gpu_test_config.h"
 #include "net/base/net_util.h"
 #include "ui/gfx/gl/gl_switches.h"
+#if defined(OS_MACOSX)
+#include "ui/gfx/surface/io_surface_support_mac.h"
+#endif
 
 using content::GpuDataManager;
 using content::GpuFeatureType;
@@ -108,6 +111,11 @@ class GpuFeatureTest : public InProcessBrowserTest {
 #if defined(OS_LINUX) && !defined(NDEBUG)
     // Bypass tests on GPU Linux Debug bots.
     if (gpu_enabled_)
+      return;
+#endif
+#if defined(OS_MACOSX)
+    // Bypass tests on Mac OSX 10.5 bots (IOSurfaceSupport is now required).
+    if (!IOSurfaceSupport::Initialize())
       return;
 #endif
 
