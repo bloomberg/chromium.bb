@@ -468,6 +468,9 @@ def _FindUprevCandidates(files, blacklist):
     if not ebuild.is_workon or blacklist.IsPackageBlackListed(path):
       continue
     if ebuild.is_stable:
+      if ebuild.version == '9999':
+        cros_build_lib.Die('KEYWORDS in 9999 ebuild should not be stable %s'
+                           % path)
       stable_ebuilds.append(ebuild)
     else:
       unstable_ebuilds.append(ebuild)
