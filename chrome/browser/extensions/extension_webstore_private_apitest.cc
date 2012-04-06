@@ -274,8 +274,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, InstallCancelled) {
   ASSERT_TRUE(RunInstallTest("cancelled.html", "extension.crx"));
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest,
-                       IncorrectManifest1) {
+IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, IncorrectManifest1) {
   WebstoreInstallListener listener;
   WebstorePrivateApi::SetWebstoreInstallerDelegateForTesting(&listener);
   ASSERT_TRUE(RunInstallTest("incorrect_manifest1.html", "extension.crx"));
@@ -284,8 +283,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest,
   ASSERT_EQ("Manifest file is invalid.", listener.error());
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest,
-                       IncorrectManifest2) {
+IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, IncorrectManifest2) {
   WebstoreInstallListener listener;
   WebstorePrivateApi::SetWebstoreInstallerDelegateForTesting(&listener);
   ASSERT_TRUE(RunInstallTest("incorrect_manifest2.html", "extension.crx"));
@@ -306,9 +304,29 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, AppInstallBubble) {
 }
 
 // Tests using the iconUrl parameter to the install function.
-IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest,
-                       IconUrl) {
+IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, IconUrl) {
   ASSERT_TRUE(RunInstallTest("icon_url.html", "extension.crx"));
+}
+
+// Tests that the Approvals are properly created in beginInstall.
+IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, BeginInstall) {
+  std::string appId = "iladmdjkfniedhfhcfoefgojhgaiaccc";
+  std::string extensionId = "enfkhcelefdadlmkffamgdlgplcionje";
+  ASSERT_TRUE(RunInstallTest("begin_install.html", "extension.crx"));
+
+  scoped_ptr<WebstoreInstaller::Approval> approval =
+      WebstorePrivateApi::PopApprovalForTesting(browser()->profile(), appId);
+  EXPECT_EQ(appId, approval->extension_id);
+  EXPECT_TRUE(approval->use_app_installed_bubble);
+  EXPECT_FALSE(approval->skip_post_install_ui);
+  EXPECT_EQ(browser()->profile(), approval->profile);
+
+  approval = WebstorePrivateApi::PopApprovalForTesting(
+      browser()->profile(), extensionId);
+  EXPECT_EQ(extensionId, approval->extension_id);
+  EXPECT_FALSE(approval->use_app_installed_bubble);
+  EXPECT_FALSE(approval->skip_post_install_ui);
+  EXPECT_EQ(browser()->profile(), approval->profile);
 }
 
 // Tests using silentlyInstall to install extensions.

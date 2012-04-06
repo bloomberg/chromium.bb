@@ -37,6 +37,12 @@ class WebstorePrivateApi {
   // If |allow| is true, then the extension IDs used by the SilentlyInstall
   // apitest will be trusted.
   static void SetTrustTestIDsForTesting(bool allow);
+
+  // Gets the pending approval for the |extension_id| in |profile|. Pending
+  // approvals are held between the calls to beginInstallWithManifest and
+  // completeInstall. This should only be used for testing.
+  static scoped_ptr<WebstoreInstaller::Approval> PopApprovalForTesting(
+      Profile* profile, const std::string& extension_id);
 };
 
 class InstallBundleFunction : public AsyncExtensionFunction,

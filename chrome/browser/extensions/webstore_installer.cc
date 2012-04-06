@@ -124,7 +124,10 @@ const WebstoreInstaller::Approval* WebstoreInstaller::GetAssociatedApproval(
   return static_cast<const Approval*>(download.GetExternalData(kApprovalKey));
 }
 
-WebstoreInstaller::Approval::Approval() : profile(NULL) {}
+WebstoreInstaller::Approval::Approval()
+    : profile(NULL),
+      use_app_installed_bubble(false),
+      skip_post_install_ui(false) {}
 WebstoreInstaller::Approval::~Approval() {}
 
 WebstoreInstaller::WebstoreInstaller(Profile* profile,

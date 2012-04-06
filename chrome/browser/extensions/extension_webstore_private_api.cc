@@ -179,6 +179,13 @@ void WebstorePrivateApi::SetTrustTestIDsForTesting(bool allow) {
   trust_test_ids = allow;
 }
 
+// static
+scoped_ptr<WebstoreInstaller::Approval>
+    WebstorePrivateApi::PopApprovalForTesting(
+        Profile* profile, const std::string& extension_id) {
+  return g_pending_approvals.Get().PopApproval(profile, extension_id);
+}
+
 InstallBundleFunction::InstallBundleFunction() {}
 InstallBundleFunction::~InstallBundleFunction() {}
 
