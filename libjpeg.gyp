@@ -187,11 +187,24 @@
             [ 'OS=="win"', {
               'variables': {
                 'yasm_path': '../yasm/binaries/win/yasm<(EXECUTABLE_SUFFIX)',
-                'yasm_format': '-fwin32',
-                'yasm_flags': [
-                  '-DWIN32',
-                  '-DMSVC',
-                  '-Iwin/'
+                'conditions': [
+                  [ 'target_arch=="ia32"', {
+                    'yasm_format': '-fwin32',
+                    'yasm_flags': [
+                      '-D__x86__',
+                      '-DWIN32',
+                      '-DMSVC',
+                      '-Iwin/'
+                    ],
+                  }, {
+                    'yasm_format': '-fwin64',
+                    'yasm_flags': [
+                      '-D__x86_64__',
+                      '-DWIN64',
+                      '-DMSVC',
+                      '-Iwin/'
+                    ],
+                  }],
                 ],
               },
             }],
@@ -201,10 +214,22 @@
               ],
               'variables': {
                 'yasm_path': '<(PRODUCT_DIR)/yasm',
-                'yasm_format': '-fmacho',
-                'yasm_flags': [
-                  '-DMACHO',
-                  '-Imac/'
+                'conditions': [
+                  [ 'target_arch=="ia32"', {
+                    'yasm_format': '-fmacho',
+                    'yasm_flags': [
+                      '-D__x86__',
+                      '-DMACHO',
+                      '-Imac/'
+                    ],
+                  }, {
+                    'yasm_format': '-fmacho64',
+                    'yasm_flags': [
+                      '-D__x86_64__',
+                      '-DMACHO',
+                      '-Imac/'
+                    ],
+                  }],
                 ],
               },
             }],
@@ -225,7 +250,6 @@
                   }],
                   [ 'target_arch=="ia32"', {
                     'yasm_format': '-felf',
-                    'yasm_flag': '-D__X86__',
                     'yasm_flags': [
                       '-D__x86__',
                       '-DELF',
@@ -233,7 +257,6 @@
                     ],
                   }, {
                     'yasm_format': '-felf64',
-                    'yasm_flag': '-D__x86_64__',
                     'yasm_flags': [
                       '-D__x86_64__',
                       '-DELF',
