@@ -57,6 +57,9 @@ class FileChooserCompletionImpl : public WebFileChooserCompletion {
       files.push_back(file_names[i].utf8());
 
     file_chooser_->StoreChosenFiles(files);
+
+    // It is the responsibility of this method to delete the instance.
+    delete this;
   }
   virtual void didChooseFile(const WebVector<SelectedFileInfo>& file_names) {
     std::vector<std::string> files;
@@ -64,6 +67,9 @@ class FileChooserCompletionImpl : public WebFileChooserCompletion {
       files.push_back(file_names[i].path.utf8());
 
     file_chooser_->StoreChosenFiles(files);
+
+    // It is the responsibility of this method to delete the instance.
+    delete this;
   }
 
  private:
@@ -109,6 +115,17 @@ PPB_FileChooser_API* PPB_FileChooser_Impl::AsPPB_FileChooser_API() {
 void PPB_FileChooser_Impl::StoreChosenFiles(
     const std::vector<std::string>& files) {
   next_chosen_file_index_ = 0;
+
+  // It is possible that |callback_| has been run: before the user takes action
+  // on the file chooser, the page navigates away and causes the plugin module
+  // (whose instance requested to show the file chooser) to be destroyed. In
+  // that case, |callback_| has been aborted when we get here.
+  if (!TrackedCallback::IsPending(callback_)) {
+    // To be cautious, reset our internal state.
+    output_.Reset();
+    chosen_files_.clear();
+    return;
+  }
 
   std::vector< scoped_refptr<Resource> > chosen_files;
   for (std::vector<std::string>::const_iterator it = files.begin();
