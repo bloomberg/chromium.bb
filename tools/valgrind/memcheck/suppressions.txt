@@ -5338,6 +5338,15 @@
    fun:_ZN14ProfileManager*Get*ProfileERK8FilePath
 }
 {
+   bug_122177
+   Memcheck:Leak
+   ...
+   fun:_ZN7history16InMemoryURLIndex23PostSaveToCacheFileTaskEv
+   fun:_ZN7history16InMemoryURLIndex8ShutDownEv
+   fun:_ZN14HistoryService13UnloadBackendEv
+   fun:_ZN14HistoryService7CleanupEv
+}
+{
    bug_122189
    Memcheck:Leak
    fun:_Znw*
