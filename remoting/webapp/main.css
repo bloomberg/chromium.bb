@@ -313,7 +313,8 @@ section {
   border-top: 1px solid #EBEBEB;
 }
 
-.section-row:first-child {
+.section-row:first-child,
+.section-row.no-non-local-hosts {
   border-top: none;
 }
 

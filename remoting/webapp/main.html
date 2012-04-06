@@ -143,35 +143,35 @@ found in the LICENSE file.
           <div id="host-list" hidden></div>
           <div id="host-list-error" class="error-state" hidden></div>
           <div id="daemon-control" data-daemon-state="enabled disabled" hidden>
-            <div id="this-host-connect" class="section-row clickable">
+            <div class="section-row no-non-local-hosts"
+                 data-daemon-state="disabled">
+              <img src="icon_host.png" class="host-list-main-icon">
+              <div class="box-spacer host-list-label"
+                   id="start-daemon-message"
+                   i18n-content="HOME_DAEMON_START_MESSAGE"></div>
+              <div id="this-host-spacer" class="box-spacer"></div>
+              <button type="button"
+                      id="start-daemon"
+                      i18n-content="HOME_DAEMON_START_BUTTON">
+              </button>
+            </div> <!-- disabled -->
+            <div id="this-host-connect"
+                 class="section-row clickable no-non-local-hosts"
+                 data-daemon-state="enabled">
               <img id="this-host-icon"
                    src="icon_host.png"
                    class="host-list-main-icon">
-              <div class="box-spacer host-list-label"
-                   id="start-daemon-message"
-                   i18n-content="HOME_DAEMON_START_MESSAGE"
-                   data-daemon-state="disabled"></div>
-              <div id="this-host-name"
-                   data-daemon-state="enabled">
-              </div>
+              <div id="this-host-name"></div>
               <div id="this-host-spacer" class="box-spacer">
                 <img id="this-host-rename"
                      class="host-list-edit host-list-rename-icon"
-                     src="icon_pencil.png"
-                     data-daemon-state="enabled">
+                     src="icon_pencil.png">
               </div>
               <button type="button"
                       id="stop-daemon"
-                      i18n-content="HOME_DAEMON_STOP_BUTTON"
-                      data-daemon-state="enabled"
-                      title="">
+                      i18n-content="HOME_DAEMON_STOP_BUTTON">
               </button>
-              <button type="button"
-                      id="start-daemon"
-                      i18n-content="HOME_DAEMON_START_BUTTON"
-                      data-daemon-state="disabled">
-              </button>
-            </div>
+            </div> <!-- enabled -->
             <div data-daemon-state="enabled">
               <span i18n-content="HOME_DAEMON_ACTIVE_MESSAGE"></span>
               <a id="change-daemon-pin"

@@ -59,13 +59,10 @@ remoting.HostController.prototype.updateDom = function() {
   // TODO(sergeyu): This code updates UI state. Does it belong here,
   // or should it moved somewhere else?
   var match = '';
-  var row = document.getElementById('this-host-connect');
   var state = this.state();
   switch (state) {
     case remoting.HostController.State.STARTED:
       remoting.updateModalUi('enabled', 'data-daemon-state');
-      row.classList.remove('host-offline');
-      row.classList.add('clickable');
       break;
     case remoting.HostController.State.NOT_IMPLEMENTED:
       document.getElementById('start-daemon').disabled = true;
@@ -76,8 +73,6 @@ remoting.HostController.prototype.updateDom = function() {
     case remoting.HostController.State.STOPPED:
     case remoting.HostController.State.NOT_INSTALLED:
       remoting.updateModalUi('disabled', 'data-daemon-state');
-      row.classList.add('host-offline');
-      row.classList.remove('clickable');
       break;
   }
 };
