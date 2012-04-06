@@ -141,13 +141,6 @@ class TemplateURLService : public WebDataServiceConsumer,
   // Takes ownership of |template_url| and adds it to this model.
   void Add(TemplateURL* template_url);
 
-  // Like Add(), but overwrites the |template_url|'s values with the provided
-  // ones.
-  void AddWithOverrides(const TemplateURL* template_url,
-                        const string16& short_name,
-                        const string16& keyword,
-                        const std::string& url);
-
   // Removes the keyword from the model. This deletes the supplied TemplateURL.
   // This fails if the supplied template_url is the default search provider.
   void Remove(const TemplateURL* template_url);
@@ -297,12 +290,10 @@ class TemplateURLService : public WebDataServiceConsumer,
   // from |turl|.
   static SyncData CreateSyncDataFromTemplateURL(const TemplateURL& turl);
 
-  // Creates a new heap-allocated TemplateURL* which is populated by overlaying
-  // |sync_data| atop |existing_turl|.  |existing_turl| may be NULL; if not it
-  // remains unmodified.  The caller owns the returned TemplateURL*.
-  static TemplateURL* CreateTemplateURLFromTemplateURLAndSyncData(
-      const TemplateURL* existing_turl,
-      const SyncData& sync_data);
+  // Returns a heap-allocated TemplateURL, populated by |sync_data|'s fields.
+  // This does the opposite of CreateSyncDataFromTemplateURL. The caller owns
+  // the returned TemplateURL*.
+  static TemplateURL* CreateTemplateURLFromSyncData(const SyncData& sync_data);
 
   // Returns a map mapping Sync GUIDs to pointers to SyncData.
   static SyncDataMap CreateGUIDToSyncDataMap(const SyncDataList& sync_data);
@@ -515,6 +506,11 @@ class TemplateURLService : public WebDataServiceConsumer,
   // and database copies have valid sync_guids. This is to fix crbug.com/102038,
   // where old entries were being pushed to Sync without a sync_guid.
   void PatchMissingSyncGUIDs(std::vector<TemplateURL*>* template_urls);
+
+  // Overwrites |dst|'s synced fields with values from |sync_data|. This does
+  // commit |dst| to the TemplateURLService.
+  static void UpdateTemplateURLWithSyncData(TemplateURL* dst,
+                                            const SyncData& sync_data);
 
   content::NotificationRegistrar registrar_;
 

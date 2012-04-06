@@ -68,15 +68,19 @@ class InstantTest : public InProcessBrowserTest {
       observer.Wait();
     }
 
-    TemplateURLData data;
-    data.short_name = ASCIIToUTF16("foo");
-    data.SetKeyword(ASCIIToUTF16("foo"));
-    data.SetURL(base::StringPrintf("http://%s:%d/files/%s?q={searchTerms}",
-        test_server()->host_port_pair().host().c_str(),
-        test_server()->host_port_pair().port(), page.c_str()));
-    data.instant_url = data.url();
     // TemplateURLService takes ownership of this.
-    TemplateURL* template_url = new TemplateURL(data);
+    TemplateURL* template_url = new TemplateURL();
+
+    std::string url = base::StringPrintf(
+        "http://%s:%d/files/%s?q={searchTerms}",
+        test_server()->host_port_pair().host().c_str(),
+        test_server()->host_port_pair().port(),
+        page.c_str());
+    template_url->SetURL(url);
+    template_url->SetInstantURL(url);
+    template_url->set_keyword(ASCIIToUTF16("foo"));
+    template_url->set_short_name(ASCIIToUTF16("foo"));
+
     model->Add(template_url);
     model->SetDefaultSearchProvider(template_url);
   }

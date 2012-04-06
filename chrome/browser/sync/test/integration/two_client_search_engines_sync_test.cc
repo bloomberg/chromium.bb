@@ -13,6 +13,7 @@ using search_engines_helper::AddSearchEngine;
 using search_engines_helper::AllServicesMatch;
 using search_engines_helper::ChangeDefaultSearchProvider;
 using search_engines_helper::CreateTestTemplateURL;
+using search_engines_helper::DeleteSearchEngineByKeyword;
 using search_engines_helper::DeleteSearchEngineBySeed;
 using search_engines_helper::EditSearchEngine;
 using search_engines_helper::GetServiceForProfile;
@@ -177,7 +178,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientSearchEnginesSyncTest, MergeMultiple) {
   AddSearchEngine(1, 2);
   AddSearchEngine(1, 3);
   GetServiceForProfile(1)->Add(CreateTestTemplateURL(0,
-      ASCIIToUTF16("somethingelse.com"), "http://www.somethingelse.com/",
+      "http://www.somethingelse.com/", ASCIIToUTF16("somethingelse.com"),
       "somethingelse"));
 
   ASSERT_TRUE(AwaitQuiescence());

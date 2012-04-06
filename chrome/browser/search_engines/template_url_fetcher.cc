@@ -147,8 +147,8 @@ void TemplateURLFetcher::RequestDelegate::OnURLFetchComplete(
     return;
   }
 
-  template_url_.reset(TemplateURLParser::Parse(fetcher_->profile(), false,
-      data.data(), data.length(), NULL));
+  template_url_.reset(TemplateURLParser::Parse(fetcher_->profile(), data.data(),
+                                               data.length(), NULL));
   if (!template_url_.get() || !template_url_->url_ref().SupportsReplacement()) {
     fetcher_->RequestCompleted(this);
     // WARNING: RequestCompleted deletes us.
@@ -194,19 +194,18 @@ void TemplateURLFetcher::RequestDelegate::AddSearchProvider() {
 
   // The short name is what is shown to the user. We preserve original names
   // since it is better when generated keyword in many cases.
-  TemplateURLData data(template_url_->data());
-  data.SetKeyword(keyword_);
-  data.originating_url = osdd_url_;
+  template_url_->set_keyword(keyword_);
+  template_url_->set_originating_url(osdd_url_);
 
   // The page may have specified a URL to use for favicons, if not, set it.
-  if (!data.favicon_url.is_valid())
-    data.favicon_url = favicon_url_;
+  if (!template_url_->favicon_url().is_valid())
+    template_url_->set_favicon_url(favicon_url_);
 
   switch (provider_type_) {
     case AUTODETECTED_PROVIDER:
       // Mark the keyword as replaceable so it can be removed if necessary.
-      data.safe_for_autoreplace = true;
-      model->Add(new TemplateURL(data));
+      template_url_->set_safe_for_autoreplace(true);
+      model->Add(template_url_.release());
       break;
 
     case EXPLICIT_PROVIDER:
@@ -216,7 +215,7 @@ void TemplateURLFetcher::RequestDelegate::AddSearchProvider() {
       // The source TabContents' delegate takes care of adding the URL to the
       // model, which takes ownership, or of deleting it if the add is
       // cancelled.
-      callbacks_->ConfirmAddSearchProvider(new TemplateURL(data),
+      callbacks_->ConfirmAddSearchProvider(template_url_.release(),
                                            fetcher_->profile());
       break;
 

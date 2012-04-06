@@ -16,7 +16,6 @@
 #include "chrome/browser/search_engines/template_url_id.h"
 
 class TemplateURL;
-struct TemplateURLData;
 
 namespace sql {
 class Statement;
@@ -28,7 +27,7 @@ class Statement;
 // Note: The database stores time in seconds, UTC.
 //
 // keywords                 Most of the columns mirror that of a field in
-//                          TemplateURLData.  See that struct for more details.
+//                          TemplateURL. See TemplateURL for more details.
 //   id
 //   short_name
 //   keyword
@@ -44,16 +43,16 @@ class Statement;
 //   input_encodings        Semicolon separated list of supported input
 //                          encodings, may be empty.
 //   suggest_url
-//   prepopulate_id         See TemplateURLData::prepopulate_id.
+//   prepopulate_id         See TemplateURL::prepopulate_id.
 //   autogenerate_keyword
 //   logo_id                Deprecated, to be removed; see crbug.com/113248.
-//   created_by_policy      See TemplateURLData::created_by_policy.  This was
-//                          added in version 26.
-//   instant_url            See TemplateURLData::instant_url.  This was added in
-//                          version 29.
-//   last_modified          See TemplateURLData::last_modified.  This was added
-//                          in version 38.
-//   sync_guid              See TemplateURLData::sync_guid. This was added in
+//   created_by_policy      See TemplateURL::created_by_policy.  This was added
+//                          in version 26.
+//   instant_url            See TemplateURL::instant_url.  This was added
+//                          in version 29.
+//   last_modified          See TemplateURL::last_modified.  This was added in
+//                          version 38.
+//   sync_guid              See TemplateURL::sync_guid. This was added in
 //                          version 39.
 //
 // keywords_backup          The full copy of the |keywords| table. Added in
@@ -82,7 +81,7 @@ class Statement;
 //
 class KeywordTable : public WebDatabaseTable {
  public:
-  typedef std::vector<TemplateURLData> Keywords;
+  typedef std::vector<TemplateURL*> Keywords;
 
   // Constants exposed for the benefit of test code:
 
@@ -119,13 +118,13 @@ class KeywordTable : public WebDatabaseTable {
   // Returns true on success.
   bool UpdateKeyword(const TemplateURL& url);
 
-  // ID (TemplateURLData->id) of the default search provider.
+  // ID (TemplateURL->id) of the default search provider.
   bool SetDefaultSearchProviderID(int64 id);
   int64 GetDefaultSearchProviderID();
 
-  // If the default search provider backup is valid, returns true and copies the
-  // backup into |backup|.  Otherwise returns false.
-  bool GetDefaultSearchProviderBackup(TemplateURLData* backup);
+  // Backup of the default search provider. NULL if the backup is invalid. The
+  // returned TemplateURL is owned by the caller.
+  TemplateURL* GetDefaultSearchProviderBackup();
 
   // Returns true if the default search provider has been changed out from under
   // us. This can happen if another process modifies our database or the file
@@ -151,13 +150,9 @@ class KeywordTable : public WebDatabaseTable {
   FRIEND_TEST_ALL_PREFIXES(KeywordTableTest, GetTableContents);
   FRIEND_TEST_ALL_PREFIXES(KeywordTableTest, GetTableContentsOrdering);
 
-  // NOTE: Since the table columns have changed in different versions, many
-  // functions below take a |table_version| argument which dictates which
-  // version number's column set to use.
-
-  // Fills |data| with the data in |s|.
-  static void GetKeywordDataFromStatement(const sql::Statement& s,
-                                          TemplateURLData* data);
+  // Returns a new TemplateURL from the data in |s|.  The caller owns the
+  // returned pointer.
+  static TemplateURL* GetKeywordDataFromStatement(const sql::Statement& s);
 
   // Returns contents of |keywords_backup| table and default search provider
   // id backup as a string through |data|. Return value is true on success,

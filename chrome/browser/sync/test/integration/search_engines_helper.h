@@ -49,8 +49,8 @@ TemplateURL* CreateTestTemplateURL(int seed,
                                    const string16& keyword,
                                    const std::string& sync_guid);
 TemplateURL* CreateTestTemplateURL(int seed,
-                                   const string16& keyword,
                                    const std::string& url,
+                                   const string16& keyword,
                                    const std::string& sync_guid);
 
 // Add a search engine based on a seed to the service at index |profile| and the

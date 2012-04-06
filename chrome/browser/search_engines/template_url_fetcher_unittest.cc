@@ -288,11 +288,11 @@ TEST_F(TemplateURLFetcherTest, ExplicitBeforeLoadTest) {
 TEST_F(TemplateURLFetcherTest, DuplicateKeywordsTest) {
   string16 keyword(ASCIIToUTF16("test"));
 
-  TemplateURLData data;
-  data.short_name = keyword;
-  data.SetKeyword(keyword);
-  data.SetURL("http://example.com/");
-  test_util_.model()->Add(new TemplateURL(data));
+  TemplateURL* t_url = new TemplateURL();
+  t_url->SetURL("http://example.com/");
+  t_url->set_keyword(keyword);
+  t_url->set_short_name(keyword);
+  test_util_.model()->Add(t_url);
   test_util_.ChangeModelToLoadState();
 
   ASSERT_TRUE(test_util_.model()->GetTemplateURLForKeyword(keyword));

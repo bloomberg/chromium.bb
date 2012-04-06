@@ -171,10 +171,11 @@ void SearchEngineTabHelper::GenerateKeywordIfNecessary(
     url_service->Remove(current_url);
   }
 
-  TemplateURLData data;
-  data.short_name = keyword;
-  data.SetKeyword(keyword);
-  data.SetURL(url.spec());
+  TemplateURL* new_url = new TemplateURL();
+  new_url->set_short_name(keyword);
+  new_url->set_keyword(keyword);
+  new_url->set_safe_for_autoreplace(true);
+  new_url->add_input_encoding(params.searchable_form_encoding);
   DCHECK(controller.GetLastCommittedEntry());
   const GURL& current_favicon =
       controller.GetLastCommittedEntry()->GetFavicon().url;
@@ -183,9 +184,9 @@ void SearchEngineTabHelper::GenerateKeywordIfNecessary(
   // latter.
   // TODO(sky): Need a way to set the favicon that doesn't involve generating
   // its url.
-  data.favicon_url = current_favicon.is_valid() ?
+  const GURL& favicon_url = current_favicon.is_valid() ?
       current_favicon : TemplateURL::GenerateFaviconURL(params.referrer.url);
-  data.safe_for_autoreplace = true;
-  data.input_encodings.push_back(params.searchable_form_encoding);
-  url_service->Add(new TemplateURL(data));
+  new_url->SetURL(url.spec());
+  new_url->set_favicon_url(favicon_url);
+  url_service->Add(new_url);
 }

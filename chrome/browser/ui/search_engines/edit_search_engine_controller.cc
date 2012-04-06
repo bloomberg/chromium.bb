@@ -41,9 +41,8 @@ bool EditSearchEngineController::IsURLValid(
   // contains replacement strings.  We do this by constructing a dummy
   // TemplateURL owner because |template_url_| might be NULL and we can't call
   // TemplateURLRef::IsValid() when its owner is NULL.
-  TemplateURLData data;
-  data.SetURL(url);
-  TemplateURL t_url(data);
+  TemplateURL t_url;
+  t_url.SetURL(url);
   const TemplateURLRef& template_ref = t_url.url_ref();
   if (!template_ref.IsValid())
     return false;
@@ -98,9 +97,15 @@ void EditSearchEngineController::AcceptAddOrEdit(
     // Confiming an entry we got from JS. We have a template_url_, but it
     // hasn't yet been added to the model.
     DCHECK(template_url_);
+    // const_cast is ugly, but this is the same thing the TemplateURLService
+    // does in a similar situation (updating an existing TemplateURL with
+    // data from a new one).
+    TemplateURL* modifiable_url = const_cast<TemplateURL*>(template_url_);
+    modifiable_url->set_short_name(title_input);
+    modifiable_url->set_keyword(keyword_input);
+    modifiable_url->SetURL(url_string);
     // TemplateURLService takes ownership of template_url_.
-    template_url_service->AddWithOverrides(template_url_, title_input,
-                                           keyword_input, url_string);
+    template_url_service->Add(modifiable_url);
     content::RecordAction(UserMetricsAction("KeywordEditor_AddKeywordJS"));
   } else {
     // Adding or modifying an entry via the Delegate.
@@ -129,9 +134,8 @@ std::string EditSearchEngineController::GetFixedUpURL(
   // Parse the string as a URL to determine the scheme. If we need to, add the
   // scheme. As the scheme may be expanded (as happens with {google:baseURL})
   // we need to replace the search terms before testing for the scheme.
-  TemplateURLData data;
-  data.SetURL(url);
-  TemplateURL t_url(data);
+  TemplateURL t_url;
+  t_url.SetURL(url);
   std::string expanded_url(t_url.url_ref().ReplaceSearchTerms(ASCIIToUTF16("x"),
       TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, string16()));
   url_parse::Parsed parts;

@@ -232,11 +232,10 @@ void SearchProviderInstallDataTest::SimulateDefaultSearchIsManaged(
 TemplateURL* SearchProviderInstallDataTest::AddNewTemplateURL(
     const std::string& url,
     const string16& keyword) {
-  TemplateURLData data;
-  data.short_name = keyword;
-  data.SetKeyword(keyword);
-  data.SetURL(url);
-  TemplateURL* t_url = new TemplateURL(data);
+  TemplateURL* t_url = new TemplateURL();
+  t_url->set_short_name(keyword);
+  t_url->set_keyword(keyword);
+  t_url->SetURL(url);
   util_.model()->Add(t_url);
   return t_url;
 }

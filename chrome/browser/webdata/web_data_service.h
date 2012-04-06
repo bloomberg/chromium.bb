@@ -20,7 +20,6 @@
 #include "base/message_loop_helpers.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
-#include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_id.h"
 #include "chrome/browser/webdata/keyword_table.h"
 #include "content/public/browser/browser_thread.h"
@@ -39,6 +38,7 @@ struct IE7PasswordInfo;
 class MessageLoop;
 class Profile;
 class SkBitmap;
+class TemplateURL;
 class WebDatabase;
 
 namespace base {
@@ -119,9 +119,8 @@ struct WDKeywordsResult {
   int64 default_search_provider_id;
   // Version of the built-in keywords. A value of 0 indicates a first run.
   int builtin_keyword_version;
-  // Backup of the default search provider, and whether the backup is valid.
-  bool backup_valid;
-  TemplateURLData default_search_provider_backup;
+  // Backup of the default search provider. NULL if the backup is invalid.
+  TemplateURL* default_search_provider_backup;
   // Indicates if default search provider has been changed by something
   // other than user's action in the browser.
   bool did_default_search_provider_change;
@@ -336,9 +335,10 @@ class WebDataService
   // Many of the keyword related methods do not return a handle. This is because
   // the caller (TemplateURLService) does not need to know when the request is
   // done.
-
   void AddKeyword(const TemplateURL& url);
-  void RemoveKeyword(TemplateURLID id);
+
+  void RemoveKeyword(const TemplateURL& url);
+
   void UpdateKeyword(const TemplateURL& url);
 
   // Fetches the keywords.
@@ -599,7 +599,7 @@ class WebDataService
       content::BrowserThread::UI>;
   friend class base::DeleteHelper<WebDataService>;
 
-  typedef GenericRequest2<std::vector<const TemplateURLData*>,
+  typedef GenericRequest2<std::vector<const TemplateURL*>,
                           KeywordTable::Keywords> SetKeywordsRequest;
 
   // Invoked on the main thread if initializing the db fails.

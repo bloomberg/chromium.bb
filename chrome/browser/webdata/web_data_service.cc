@@ -72,9 +72,7 @@ WDAppImagesResult::~WDAppImagesResult() {}
 
 WDKeywordsResult::WDKeywordsResult()
   : default_search_provider_id(0),
-    builtin_keyword_version(0),
-    backup_valid(false),
-    did_default_search_provider_change(false) {
+    builtin_keyword_version(0) {
 }
 
 WDKeywordsResult::~WDKeywordsResult() {}
@@ -154,14 +152,14 @@ void WebDataService::AddKeyword(const TemplateURL& url) {
   // the TemplateURL for use on another keyword.
   url.EnsureKeyword();
   GenericRequest<TemplateURL>* request =
-      new GenericRequest<TemplateURL>(this, GetNextRequestHandle(), NULL, url);
+    new GenericRequest<TemplateURL>(this, GetNextRequestHandle(), NULL, url);
   RegisterRequest(request);
   ScheduleTask(FROM_HERE, Bind(&WebDataService::AddKeywordImpl, this, request));
 }
 
-void WebDataService::RemoveKeyword(TemplateURLID id) {
-  GenericRequest<TemplateURLID>* request =
-      new GenericRequest<TemplateURLID>(this, GetNextRequestHandle(), NULL, id);
+void WebDataService::RemoveKeyword(const TemplateURL& url) {
+  GenericRequest<TemplateURLID>* request = new GenericRequest<TemplateURLID>(
+      this, GetNextRequestHandle(), NULL, url.id());
   RegisterRequest(request);
   ScheduleTask(FROM_HERE,
                Bind(&WebDataService::RemoveKeywordImpl, this, request));
@@ -830,7 +828,8 @@ void WebDataService::AddKeywordImpl(GenericRequest<TemplateURL>* request) {
   request->RequestComplete();
 }
 
-void WebDataService::RemoveKeywordImpl(GenericRequest<TemplateURLID>* request) {
+void WebDataService::RemoveKeywordImpl(
+    GenericRequest<TemplateURLID>* request) {
   InitializeDatabaseIfNecessary();
   if (db_ && !request->IsCancelled(NULL)) {
     DCHECK(request->arg());
@@ -863,9 +862,10 @@ void WebDataService::GetKeywordsImpl(WebDataRequest* request) {
         db_->GetKeywordTable()->GetBuiltinKeywordVersion();
     result.did_default_search_provider_change =
         db_->GetKeywordTable()->DidDefaultSearchProviderChange();
-    result.backup_valid = result.did_default_search_provider_change &&
-        db_->GetKeywordTable()->GetDefaultSearchProviderBackup(
-            &result.default_search_provider_backup);
+    result.default_search_provider_backup =
+        result.did_default_search_provider_change ?
+        db_->GetKeywordTable()->GetDefaultSearchProviderBackup() :
+        NULL;
     request->SetResult(
         new WDResult<WDKeywordsResult>(KEYWORDS_RESULT, result));
   }

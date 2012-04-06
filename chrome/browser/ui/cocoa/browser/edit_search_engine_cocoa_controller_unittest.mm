@@ -206,13 +206,12 @@ TEST_F(EditSearchEngineControllerTest, ValidateFields) {
 
 // Tests editing an existing TemplateURL.
 TEST_F(EditSearchEngineControllerTest, EditTemplateURL) {
-  TemplateURLData data;
-  data.short_name = ASCIIToUTF16("Foobar");
-  data.SetKeyword(ASCIIToUTF16("keyword"));
+  TemplateURL url;
+  url.set_short_name(ASCIIToUTF16("Foobar"));
+  url.set_keyword(ASCIIToUTF16("keyword"));
   std::string urlString = TemplateURLRef::DisplayURLToURLRef(
       ASCIIToUTF16("http://foo-bar.com"));
-  data.SetURL(urlString);
-  TemplateURL url(data);
+  url.SetURL(urlString);
   FakeEditSearchEngineController *controller =
       [[FakeEditSearchEngineController alloc] initWithProfile:profile()
                                                      delegate:nil

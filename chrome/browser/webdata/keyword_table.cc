@@ -47,38 +47,37 @@ const char kKeywordColumnsConcatenated[] = "id || short_name || keyword || "
     "suggest_url || prepopulate_id || autogenerate_keyword || logo_id || "
     "created_by_policy || instant_url || last_modified || sync_guid";
 
-// Inserts the data from |data| into |s|.  |s| is assumed to have slots for all
+// Inserts the data from |url| into |s|.  |s| is assumed to have slots for all
 // the columns in the keyword table.  |id_column| is the slot number to bind
-// |data|'s id() to; |starting_column| is the slot number of the first of a
+// |url|'s id() to; |starting_column| is the slot number of the first of a
 // contiguous set of slots to bind all the other fields to.
 void BindURLToStatement(const TemplateURL& url,
                         sql::Statement* s,
                         int id_column,
                         int starting_column) {
-  const TemplateURLData& data = url.data();
-  s->BindInt64(id_column, data.id);
-  s->BindString16(starting_column, data.short_name);
-  s->BindString16(starting_column + 1, data.keyword(&url));
-  s->BindString(starting_column + 2, data.favicon_url.is_valid() ?
-      history::HistoryDatabase::GURLToDatabaseURL(data.favicon_url) :
+  s->BindInt64(id_column, url.id());
+  s->BindString16(starting_column, url.short_name());
+  s->BindString16(starting_column + 1, url.keyword());
+  s->BindString(starting_column + 2, url.favicon_url().is_valid() ?
+      history::HistoryDatabase::GURLToDatabaseURL(url.favicon_url()) :
       std::string());
-  s->BindString(starting_column + 3, data.url());
-  s->BindBool(starting_column + 4, data.safe_for_autoreplace);
-  s->BindString(starting_column + 5, data.originating_url.is_valid() ?
-      history::HistoryDatabase::GURLToDatabaseURL(data.originating_url) :
+  s->BindString(starting_column + 3, url.url());
+  s->BindBool(starting_column + 4, url.safe_for_autoreplace());
+  s->BindString(starting_column + 5, url.originating_url().is_valid() ?
+      history::HistoryDatabase::GURLToDatabaseURL(url.originating_url()) :
       std::string());
-  s->BindInt64(starting_column + 6, data.date_created.ToTimeT());
-  s->BindInt(starting_column + 7, data.usage_count);
-  s->BindString(starting_column + 8, JoinString(data.input_encodings, ';'));
-  s->BindBool(starting_column + 9, data.show_in_default_list);
-  s->BindString(starting_column + 10, data.suggestions_url);
-  s->BindInt(starting_column + 11, data.prepopulate_id);
-  s->BindBool(starting_column + 12, data.autogenerate_keyword());
+  s->BindInt64(starting_column + 6, url.date_created().ToTimeT());
+  s->BindInt(starting_column + 7, url.usage_count());
+  s->BindString(starting_column + 8, JoinString(url.input_encodings(), ';'));
+  s->BindBool(starting_column + 9, url.show_in_default_list());
+  s->BindString(starting_column + 10, url.suggestions_url());
+  s->BindInt(starting_column + 11, url.prepopulate_id());
+  s->BindInt(starting_column + 12, url.autogenerate_keyword() ? 1 : 0);
   s->BindInt(starting_column + 13, 0);
-  s->BindBool(starting_column + 14, data.created_by_policy);
-  s->BindString(starting_column + 15, data.instant_url);
-  s->BindInt64(starting_column + 16, data.last_modified.ToTimeT());
-  s->BindString(starting_column + 17, data.sync_guid);
+  s->BindBool(starting_column + 14, url.created_by_policy());
+  s->BindString(starting_column + 15, url.instant_url());
+  s->BindInt64(starting_column + 16, url.last_modified().ToTimeT());
+  s->BindString(starting_column + 17, url.sync_guid());
 }
 
 // Signs search provider id and returns its signature.
@@ -149,10 +148,8 @@ bool KeywordTable::GetKeywords(Keywords* keywords) {
                     " FROM keywords ORDER BY id ASC");
   sql::Statement s(db_->GetUniqueStatement(query.c_str()));
 
-  while (s.Step()) {
-    keywords->push_back(TemplateURLData());
-    GetKeywordDataFromStatement(s, &keywords->back());
-  }
+  while (s.Step())
+    keywords->push_back(GetKeywordDataFromStatement(s));
   return s.Succeeded();
 }
 
@@ -183,14 +180,14 @@ int64 KeywordTable::GetDefaultSearchProviderID() {
   return value;
 }
 
-bool KeywordTable::GetDefaultSearchProviderBackup(TemplateURLData* backup) {
+TemplateURL* KeywordTable::GetDefaultSearchProviderBackup() {
   if (!IsBackupSignatureValid())
-    return false;
+    return NULL;
 
   int64 backup_id = kInvalidTemplateURLID;
   if (!meta_table_->GetValue(kDefaultSearchIDBackupKey, &backup_id)) {
     LOG(ERROR) << "No default search id backup found.";
-    return false;
+    return NULL;
   }
   std::string query("SELECT " + std::string(kKeywordColumns) +
                     " FROM keywords_backup WHERE id=?");
@@ -203,11 +200,11 @@ bool KeywordTable::GetDefaultSearchProviderBackup(TemplateURLData* backup) {
     return NULL;
   }
 
-  GetKeywordDataFromStatement(s, backup);
+  TemplateURL* template_url = GetKeywordDataFromStatement(s);
   // ID has no meaning for the backup and should be kInvalidTemplateURLID in
   // case the TemplateURL will be added to keywords if missing.
-  backup->id = kInvalidTemplateURLID;
-  return true;
+  template_url->set_id(kInvalidTemplateURLID);
+  return template_url;
 }
 
 bool KeywordTable::DidDefaultSearchProviderChange() {
@@ -330,27 +327,35 @@ bool KeywordTable::MigrateToVersion44AddDefaultSearchProviderBackup() {
 }
 
 // static
-void KeywordTable::GetKeywordDataFromStatement(const sql::Statement& s,
-                                               TemplateURLData* data) {
-  DCHECK(data);
-  data->short_name = s.ColumnString16(1);
-  data->SetKeyword(s.ColumnString16(2));
-  data->SetAutogenerateKeyword(s.ColumnBool(13));
-  data->SetURL(s.ColumnString(4));
-  data->suggestions_url = s.ColumnString(11);
-  data->instant_url = s.ColumnString(16);
-  data->favicon_url = GURL(s.ColumnString(3));
-  data->originating_url = GURL(s.ColumnString(6));
-  data->show_in_default_list = s.ColumnBool(10);
-  data->safe_for_autoreplace = s.ColumnBool(5);
-  base::SplitString(s.ColumnString(9), ';', &data->input_encodings);
-  data->id = s.ColumnInt64(0);
-  data->date_created = Time::FromTimeT(s.ColumnInt64(7));
-  data->last_modified = Time::FromTimeT(s.ColumnInt64(17));
-  data->created_by_policy = s.ColumnBool(15);
-  data->usage_count = s.ColumnInt(8);
-  data->prepopulate_id = s.ColumnInt(12);
-  data->sync_guid = s.ColumnString(18);
+TemplateURL* KeywordTable::GetKeywordDataFromStatement(
+    const sql::Statement& s) {
+  TemplateURL* url = new TemplateURL;
+  url->set_id(s.ColumnInt64(0));
+  url->set_short_name(s.ColumnString16(1));
+  url->set_keyword(s.ColumnString16(2));
+  std::string tmp(s.ColumnString(3));
+  if (!tmp.empty())
+    url->set_favicon_url(GURL(tmp));
+  url->SetURL(s.ColumnString(4));
+  url->set_safe_for_autoreplace(s.ColumnBool(5));
+  tmp = s.ColumnString(6);
+  if (!tmp.empty())
+    url->set_originating_url(GURL(tmp));
+  url->set_date_created(Time::FromTimeT(s.ColumnInt64(7)));
+  url->set_usage_count(s.ColumnInt(8));
+  std::vector<std::string> encodings;
+  base::SplitString(s.ColumnString(9), ';', &encodings);
+  url->set_input_encodings(encodings);
+  url->set_show_in_default_list(s.ColumnBool(10));
+  url->SetSuggestionsURL(s.ColumnString(11));
+  url->SetPrepopulateId(s.ColumnInt(12));
+  url->set_autogenerate_keyword(s.ColumnBool(13));
+  url->set_created_by_policy(s.ColumnBool(15));
+  url->SetInstantURL(s.ColumnString(16));
+  url->set_last_modified(Time::FromTimeT(s.ColumnInt64(17)));
+  url->set_sync_guid(s.ColumnString(18));
+
+  return url;
 }
 
 bool KeywordTable::GetSignatureData(std::string* backup) {

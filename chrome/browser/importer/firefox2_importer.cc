@@ -134,13 +134,13 @@ TemplateURL* Firefox2Importer::CreateTemplateURL(const string16& title,
   if (keyword.empty() || !url.is_valid())
     return NULL;
 
-  TemplateURLData data;
+  TemplateURL* t_url = new TemplateURL();
   // We set short name by using the title if it exists.
   // Otherwise, we use the shortcut.
-  data.short_name = title.empty() ? keyword : title;
-  data.SetKeyword(keyword);
-  data.SetURL(TemplateURLRef::DisplayURLToURLRef(UTF8ToUTF16(url.spec())));
-  return new TemplateURL(data);
+  t_url->set_short_name(title.empty() ? keyword : title);
+  t_url->set_keyword(keyword);
+  t_url->SetURL(TemplateURLRef::DisplayURLToURLRef(UTF8ToUTF16(url.spec())));
+  return t_url;
 }
 
 // static

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,6 +37,13 @@ class SearchHostToURLsMap {
 
   // Removes the TemplateURL from the lookup.
   void Remove(const TemplateURL* template_url);
+
+  // Updates information in an existing TemplateURL. Note: Using Remove and
+  // then Add separately would lead to race conditions in reading because the
+  // lock would be released inbetween the calls.
+  void Update(const TemplateURL* existing_turl,
+              const TemplateURL& new_values,
+              const SearchTermsData& search_terms_data);
 
   // Updates all search providers which have a google base url.
   void UpdateGoogleBaseURLs(const SearchTermsData& search_terms_data);

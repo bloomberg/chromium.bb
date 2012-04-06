@@ -584,13 +584,14 @@ void IEImporter::ImportSearchEngines() {
       // First time we see that URL.
       GURL gurl(url);
       if (gurl.is_valid()) {
-        TemplateURLData data;
-        data.short_name = name;
-        data.SetKeyword(TemplateURLService::GenerateKeyword(gurl, false));
-        data.SetURL(url);
-        data.show_in_default_list = true;
-        t_iter = search_engines_map.insert(std::make_pair(url,
-            new TemplateURL(data))).first;
+        TemplateURL* template_url = new TemplateURL();
+        template_url->set_short_name(name);
+        template_url->SetURL(url);
+        // Give this a keyword to facilitate tab-to-search, if possible.
+        template_url->set_keyword(TemplateURLService::GenerateKeyword(gurl,
+                                                                      false));
+        template_url->set_show_in_default_list(true);
+        search_engines_map.insert(std::make_pair(url, template_url));
       }
     }
   }

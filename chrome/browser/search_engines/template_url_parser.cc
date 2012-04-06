@@ -145,7 +145,7 @@ class TemplateURLParsingContext {
   // This will be NULL if parsing failed or if the results were invalid for some
   // reason (e.g. the resulting URL was not HTTP[S], a name wasn't supplied,
   // etc.).
-  TemplateURL* GetTemplateURL(Profile* profile, bool show_in_default_list);
+  TemplateURL* GetTemplateURL(Profile* profile);
 
  private:
   // Key is UTF8 encoded.
@@ -163,9 +163,7 @@ class TemplateURLParsingContext {
 
   static ElementNameToElementTypeMap* kElementNameToElementTypeMap;
 
-  // Data that gets updated as we parse, and is converted to a TemplateURL by
-  // GetTemplateURL().
-  TemplateURLData data_;
+  scoped_ptr<TemplateURL> url_;
 
   std::vector<ElementType> elements_;
   bool image_is_valid_for_favicon_;
@@ -199,7 +197,8 @@ TemplateURLParsingContext::ElementNameToElementTypeMap*
 
 TemplateURLParsingContext::TemplateURLParsingContext(
     TemplateURLParser::ParameterFilter* parameter_filter)
-    : image_is_valid_for_favicon_(false),
+    : url_(new TemplateURL()),
+      image_is_valid_for_favicon_(false),
       parameter_filter_(parameter_filter),
       method_(GET),
       suggestion_method_(GET),
@@ -207,9 +206,9 @@ TemplateURLParsingContext::TemplateURLParsingContext(
       derive_image_from_url_(false) {
   if (kElementNameToElementTypeMap == NULL)
     InitMapping();
-  // When combined with proscriptions elsewhere against updating data_->url_ to
-  // the empty string, this call ensures data_->url() will never be NULL.
-  data_.SetURL("x");
+  // When combined with proscriptions elsewhere against updating url_->url_ to
+  // the empty string, this call ensures url_->url() will never be NULL.
+  url_->SetURL("x");
 }
 
 // static
@@ -250,7 +249,7 @@ void TemplateURLParsingContext::EndElementImpl(void* ctx, const xmlChar* name) {
       reinterpret_cast<TemplateURLParsingContext*>(ctx);
   switch (context->GetKnownType()) {
     case TemplateURLParsingContext::SHORT_NAME:
-      context->data_.short_name = context->string_;
+      context->url_->short_name_ = context->string_;
       break;
     case TemplateURLParsingContext::IMAGE: {
       GURL image_url(UTF16ToUTF8(context->string_));
@@ -262,7 +261,7 @@ void TemplateURLParsingContext::EndElementImpl(void* ctx, const xmlChar* name) {
       } else if (context->image_is_valid_for_favicon_ && image_url.is_valid() &&
                  (image_url.SchemeIs(chrome::kHttpScheme) ||
                   image_url.SchemeIs(chrome::kHttpsScheme))) {
-        context->data_.favicon_url = image_url;
+        context->url_->set_favicon_url(image_url);
       }
       context->image_is_valid_for_favicon_ = false;
       break;
@@ -270,7 +269,7 @@ void TemplateURLParsingContext::EndElementImpl(void* ctx, const xmlChar* name) {
     case TemplateURLParsingContext::INPUT_ENCODING: {
       std::string input_encoding = UTF16ToASCII(context->string_);
       if (IsValidEncodingString(input_encoding))
-        context->data_.input_encodings.push_back(input_encoding);
+        context->url_->input_encodings_.push_back(input_encoding);
       break;
     }
     case TemplateURLParsingContext::URL:
@@ -291,33 +290,30 @@ void TemplateURLParsingContext::CharactersImpl(void* ctx,
       UTF8ToUTF16(std::string(reinterpret_cast<const char*>(ch), len));
 }
 
-TemplateURL* TemplateURLParsingContext::GetTemplateURL(
-    Profile* profile,
-    bool show_in_default_list) {
+TemplateURL* TemplateURLParsingContext::GetTemplateURL(Profile* profile) {
   // Basic legality checks.
-  if (data_.short_name.empty() || !IsHTTPRef(data_.url()) ||
-      !IsHTTPRef(data_.suggestions_url))
+  if (url_->short_name_.empty() || !IsHTTPRef(url_->url()) ||
+      !IsHTTPRef(url_->suggestions_url()))
     return NULL;
 
   // If the image was a data URL, use the favicon from the search URL instead.
   // (see TODO inEndElementImpl()).
-  GURL url(data_.url());
-  if (derive_image_from_url_ && data_.favicon_url.is_empty())
-    data_.favicon_url = TemplateURL::GenerateFaviconURL(url);
+  GURL url(url_->url());
+  if (derive_image_from_url_ && url_->favicon_url().is_empty())
+    url_->set_favicon_url(TemplateURL::GenerateFaviconURL(url));
 
   // TODO(jcampan): http://b/issue?id=1196285 we do not support search engines
   //                that use POST yet.
   if (method_ == TemplateURLParsingContext::POST)
     return NULL;
   if (suggestion_method_ == TemplateURLParsingContext::POST)
-    data_.suggestions_url.clear();
+    url_->SetSuggestionsURL(std::string());
 
   // Give this a keyword to facilitate tab-to-search.
   string16 keyword(TemplateURLService::GenerateKeyword(url, false));
   DCHECK(!keyword.empty());
-  data_.SetKeyword(keyword);
-  data_.show_in_default_list = show_in_default_list;
-  return new TemplateURL(data_);
+  url_->set_keyword(keyword);
+  return url_.release();
 }
 
 // static
@@ -357,12 +353,12 @@ void TemplateURLParsingContext::ParseURL(const xmlChar** atts) {
   }
 
   if (is_html_url && !template_url.empty()) {
-    data_.SetURL(template_url);
+    url_->SetURL(template_url);
     is_suggest_url_ = false;
     if (is_post)
       method_ = POST;
   } else if (is_suggest_url) {
-    data_.suggestions_url = template_url;
+    url_->SetSuggestionsURL(template_url);
     is_suggest_url_ = true;
     if (is_post)
       suggestion_method_ = POST;
@@ -417,7 +413,7 @@ void TemplateURLParsingContext::ProcessURLParams() {
   if (!parameter_filter_ && extra_params_.empty())
     return;
 
-  GURL url(is_suggest_url_ ? data_.suggestions_url : data_.url());
+  GURL url(is_suggest_url_ ? url_->suggestions_url() : url_->url());
   if (url.is_empty())
     return;
 
@@ -455,9 +451,9 @@ void TemplateURLParsingContext::ProcessURLParams() {
     repl.SetQueryStr(new_query);
     url = url.ReplaceComponents(repl);
     if (is_suggest_url_)
-      data_.suggestions_url = url.spec();
+      url_->SetSuggestionsURL(url.spec());
     else if (url.is_valid())
-      data_.SetURL(url.spec());
+      url_->SetURL(url.spec());
   }
 }
 
@@ -476,7 +472,6 @@ TemplateURLParsingContext::ElementType
 // static
 TemplateURL* TemplateURLParser::Parse(
     Profile* profile,
-    bool show_in_default_list,
     const char* data,
     size_t length,
     TemplateURLParser::ParameterFilter* param_filter) {
@@ -494,5 +489,5 @@ TemplateURL* TemplateURLParser::Parse(
   xmlSAXUserParseMemory(&sax_handler, &context, data, static_cast<int>(length));
   xmlSubstituteEntitiesDefault(last_sub_entities_value);
 
-  return context.GetTemplateURL(profile, show_in_default_list);
+  return context.GetTemplateURL(profile);
 }
