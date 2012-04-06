@@ -47,7 +47,7 @@ class GPU_EXPORT FramebufferManager {
       virtual bool ValidForAttachmentType(GLenum attachment_type) = 0;
     };
 
-    explicit FramebufferInfo(GLuint service_id);
+    FramebufferInfo(FramebufferManager* manager, GLuint service_id);
 
     GLuint service_id() const {
       return service_id_;
@@ -76,7 +76,7 @@ class GPU_EXPORT FramebufferManager {
     const Attachment* GetAttachment(GLenum attachment) const;
 
     bool IsDeleted() const {
-      return service_id_ == 0;
+      return deleted_;
     }
 
     void MarkAsValid() {
@@ -122,6 +122,11 @@ class GPU_EXPORT FramebufferManager {
     unsigned framebuffer_complete_state_count_id() const {
       return framebuffer_complete_state_count_id_;
     }
+
+    // The managers that owns this.
+    FramebufferManager* manager_;
+
+    bool deleted_;
 
     // Service side framebuffer id.
     GLuint service_id_;
@@ -173,6 +178,9 @@ class GPU_EXPORT FramebufferManager {
   }
 
  private:
+  void StartTracking(FramebufferInfo* info);
+  void StopTracking(FramebufferInfo* info);
+
   // Info for each framebuffer in the system.
   typedef base::hash_map<GLuint, FramebufferInfo::Ref> FramebufferInfoMap;
   FramebufferInfoMap framebuffer_infos_;
@@ -180,6 +188,12 @@ class GPU_EXPORT FramebufferManager {
   // Incremented anytime anything changes that might effect framebuffer
   // state.
   unsigned framebuffer_state_change_count_;
+
+  // Counts the number of FramebufferInfo allocated with 'this' as its manager.
+  // Allows to check no FramebufferInfo will outlive this.
+  unsigned int framebuffer_info_count_;
+
+  bool have_context_;
 
   DISALLOW_COPY_AND_ASSIGN(FramebufferManager);
 };

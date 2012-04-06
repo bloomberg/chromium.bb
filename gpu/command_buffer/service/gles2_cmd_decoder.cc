@@ -2352,8 +2352,6 @@ void GLES2DecoderImpl::DeleteFramebuffersHelper(
             GL_READ_FRAMEBUFFER : GL_FRAMEBUFFER;
         glBindFramebufferEXT(target, GetBackbufferServiceId());
       }
-      GLuint service_id = framebuffer->service_id();
-      glDeleteFramebuffersEXT(1, &service_id);
       RemoveFramebufferInfo(client_ids[ii]);
     }
   }

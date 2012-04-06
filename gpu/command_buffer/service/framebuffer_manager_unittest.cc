@@ -73,6 +73,10 @@ TEST_F(FramebufferManagerTest, Basic) {
   EXPECT_TRUE(manager_.GetFramebufferInfo(kClient2Id) == NULL);
   // Check trying to a remove non-existent framebuffers does not crash.
   manager_.RemoveFramebufferInfo(kClient2Id);
+  // Check framebuffer gets deleted when last reference is released.
+  EXPECT_CALL(*gl_, DeleteFramebuffersEXT(1, ::testing::Pointee(kService1Id)))
+      .Times(1)
+      .RetiresOnSaturation();
   // Check we can't get the framebuffer after we remove it.
   manager_.RemoveFramebufferInfo(kClient1Id);
   EXPECT_TRUE(manager_.GetFramebufferInfo(kClient1Id) == NULL);
