@@ -20,6 +20,10 @@ class ASH_EXPORT AppListViewDelegate {
   // AppListView owns the delegate.
   virtual ~AppListViewDelegate() {}
 
+  // Invoked to get whether icon shadow should be generated.
+  // Returns true if icon shadows should be generated.
+  virtual bool ShouldGenerateIconShadow() = 0;
+
   // Invoked to set the model that AppListView uses.
   // Note that AppListView owns the model.
   virtual void SetModel(AppListModel* model) = 0;

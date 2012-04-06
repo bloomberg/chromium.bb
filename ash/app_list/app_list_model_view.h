@@ -23,7 +23,7 @@ class AppListModel;
 class ASH_EXPORT AppListModelView : public views::View,
                                     public ui::ListModelObserver {
  public:
-  explicit AppListModelView(views::ButtonListener* listener);
+  AppListModelView(views::ButtonListener* listener, bool generate_icon_shadow);
   virtual ~AppListModelView();
 
   // Calculate preferred icon size, rows and cols for given |content_size| and
@@ -39,6 +39,10 @@ class ASH_EXPORT AppListModelView : public views::View,
 
   void SetSelectedItem(AppListItemView* item);
   void ClearSelectedItem(AppListItemView* item);
+
+  bool generate_icon_shadow() const {
+    return generate_icon_shadow_;
+  }
 
  private:
   // Updates from model.
@@ -57,6 +61,8 @@ class ASH_EXPORT AppListModelView : public views::View,
   virtual void ListItemsAdded(int start, int count) OVERRIDE;
   virtual void ListItemsRemoved(int start, int count) OVERRIDE;
   virtual void ListItemsChanged(int start, int count) OVERRIDE;
+
+  bool generate_icon_shadow_;
 
   AppListModel* model_;  // Owned by parent AppListView.
   views::ButtonListener* listener_;

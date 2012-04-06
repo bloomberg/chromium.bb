@@ -9,8 +9,10 @@
 
 namespace ash {
 
-AppListModelView::AppListModelView(views::ButtonListener* listener)
-    : model_(NULL),
+AppListModelView::AppListModelView(views::ButtonListener* listener,
+                                   bool generate_icon_shadow)
+    : generate_icon_shadow_(generate_icon_shadow),
+      model_(NULL),
       listener_(listener),
       selected_item_index_(-1),
       cols_(0) {

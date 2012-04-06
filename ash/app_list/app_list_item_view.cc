@@ -261,6 +261,11 @@ void AppListItemView::UpdateIcon() {
 
   CancelPendingIconOperation();
 
+  if (!list_model_view_->generate_icon_shadow()) {
+    icon_->SetImage(SkBitmapOperations::CreateResizedBitmap(icon, icon_size_));
+    return;
+  }
+
   SkBitmap shadow;
   if (IconCache::GetInstance()->Get(icon, icon_size_, &shadow)) {
     icon_->SetImage(shadow);

@@ -72,7 +72,9 @@ void AppListView::Close() {
 }
 
 void AppListView::Init(const gfx::Rect& bounds) {
-  model_view_ = new AppListModelView(this);
+  bool generate_icon_shadow = delegate_.get() ?
+      delegate_->ShouldGenerateIconShadow() : true;
+  model_view_ = new AppListModelView(this, generate_icon_shadow);
   model_view_->SetPaintToLayer(true);
   model_view_->layer()->SetFillsBoundsOpaquely(false);
   AddChildView(model_view_);
