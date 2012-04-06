@@ -2645,8 +2645,19 @@ binutils-gold-make() {
   spushd "${objdir}"
   ts-touch-open "${objdir}"
 
+  # Note: the make invocation below actually results
+  # in another configure invocation, so we pass in a few
+  # more environment variables to control this:
+  # * eliminate unnecessary use of zlib
+  # * eliminate use of mmap
+  # (those should not have much impact on the non-sandboxed
+  # version but help in the sandboxed case
   RunWithLog gold.make \
       env -i PATH="/usr/bin:/bin" \
+      ac_cv_search_zlibVersion=no \
+      ac_cv_header_sys_mman_h=no \
+      ac_cv_func_mmap=no \
+      ac_cv_func_mallinfo \
       make ${MAKE_OPTS} all-gold
 
   ts-touch-commit "${objdir}"
