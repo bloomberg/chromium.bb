@@ -17,6 +17,7 @@
 #include "base/win/scoped_hdc.h"
 #include "base/win/scoped_select_object.h"
 #include "base/win/win_util.h"
+#include "ui/base/win/scoped_set_map_mode.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
 
@@ -186,14 +187,13 @@ PlatformFontWin::HFontRef* PlatformFontWin::GetBaseFontRef() {
 
 PlatformFontWin::HFontRef* PlatformFontWin::CreateHFontRef(HFONT font) {
   TEXTMETRIC font_metrics;
-  HDC screen_dc = GetDC(NULL);
-  HFONT previous_font = static_cast<HFONT>(SelectObject(screen_dc, font));
-  int last_map_mode = SetMapMode(screen_dc, MM_TEXT);
-  GetTextMetrics(screen_dc, &font_metrics);
-  // To avoid the DC referencing font_handle_, select the previous font.
-  SelectObject(screen_dc, previous_font);
-  SetMapMode(screen_dc, last_map_mode);
-  ReleaseDC(NULL, screen_dc);
+
+  {
+    base::win::ScopedGetDC screen_dc(NULL);
+    base::win::ScopedSelectObject font(screen_dc, font);
+    ui::ScopedSetMapMode mode(screen_dc, MM_TEXT);
+    GetTextMetrics(screen_dc, &font_metrics);
+  }
 
   const int height = std::max(1, static_cast<int>(font_metrics.tmHeight));
   const int baseline = std::max(1, static_cast<int>(font_metrics.tmAscent));
@@ -240,9 +240,10 @@ int PlatformFontWin::HFontRef::GetDluBaseX() {
   if (dlu_base_x_ != -1)
     return dlu_base_x_;
 
-  HDC screen_dc = GetDC(NULL);
-  HFONT previous_font = static_cast<HFONT>(SelectObject(screen_dc, hfont_));
-  int last_map_mode = SetMapMode(screen_dc, MM_TEXT);
+  base::win::ScopedGetDC screen_dc(NULL);
+  base::win::ScopedSelectObject font(screen_dc, hfont_);
+  ui::ScopedSetMapMode mode(screen_dc, MM_TEXT);
+
   // Yes, this is how Microsoft recommends calculating the dialog unit
   // conversions. See: http://support.microsoft.com/kb/125681
   SIZE ave_text_size;
@@ -250,10 +251,6 @@ int PlatformFontWin::HFontRef::GetDluBaseX() {
                        L"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",
                        52, &ave_text_size);
   dlu_base_x_ = (ave_text_size.cx / 26 + 1) / 2;
-  // To avoid the DC referencing font_handle_, select the previous font.
-  SelectObject(screen_dc, previous_font);
-  SetMapMode(screen_dc, last_map_mode);
-  ReleaseDC(NULL, screen_dc);
 
   DCHECK_NE(dlu_base_x_, -1);
   return dlu_base_x_;
