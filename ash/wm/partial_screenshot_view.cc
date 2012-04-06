@@ -87,13 +87,13 @@ void PartialScreenshotView::OnPaint(gfx::Canvas* canvas) {
 
 bool PartialScreenshotView::OnMousePressed(const views::MouseEvent& event) {
   start_position_ = event.location();
-  is_dragging_ = true;
   return true;
 }
 
 bool PartialScreenshotView::OnMouseDragged(const views::MouseEvent& event) {
   current_position_ = event.location();
   SchedulePaint();
+  is_dragging_ = true;
   return true;
 }
 
@@ -103,8 +103,11 @@ bool PartialScreenshotView::OnMouseWheel(const views::MouseWheelEvent& event) {
 }
 
 void PartialScreenshotView::OnMouseReleased(const views::MouseEvent& event) {
-  is_dragging_ = false;
   Cancel();
+  if (!is_dragging_)
+    return;
+
+  is_dragging_ = false;
   if (screenshot_delegate_) {
     aura::RootWindow *root_window = Shell::GetRootWindow();
     screenshot_delegate_->HandleTakePartialScreenshot(
