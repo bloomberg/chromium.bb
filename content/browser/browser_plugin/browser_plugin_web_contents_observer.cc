@@ -47,7 +47,7 @@ bool BrowserPluginWebContentsObserver::OnMessageReceived(
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_GuestReady, OnGuestReady)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_ResizeGuest, OnResizeGuest)
     IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP_EX()
+  IPC_END_MESSAGE_MAP()
   return handled;
 }
 
