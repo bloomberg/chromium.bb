@@ -163,6 +163,12 @@ void PepperStreamTransport::Connect(
     }
 
     if (transport->SetProperty(
+            PP_TRANSPORTPROPERTY_RELAY_USERNAME,
+            pp::Var("1")) != PP_OK) {
+      LOG(ERROR) << "Failed to set relay username.";
+    }
+
+    if (transport->SetProperty(
             PP_TRANSPORTPROPERTY_RELAY_PASSWORD,
             pp::Var(config_.relay_token)) != PP_OK) {
       LOG(ERROR) << "Failed to set relay token.";

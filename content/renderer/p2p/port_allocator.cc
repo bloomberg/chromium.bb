@@ -10,6 +10,7 @@
 #include "base/string_util.h"
 #include "content/renderer/p2p/host_address_request.h"
 #include "jingle/glue/utils.h"
+#include "net/base/escape.h"
 #include "net/base/ip_endpoint.h"
 #include "ppapi/c/dev/ppb_transport_dev.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
@@ -191,10 +192,24 @@ void P2PPortAllocatorSession::AllocateRelaySession() {
     return;
   }
 
+  std::string url = "https://" + allocator_->config_.relay_server +
+      kCreateRelaySessionURL;
+
+  // Use |relay_username| parameter to identify type of client for the
+  // relay session.
+  //
+  // TODO(sergeyu): Username is not used for legacy non-TURN relay
+  // servers, so we reuse it here to identify relay client type. This
+  // is currently used for Chromoting only. This code should be removed
+  // once Chromoting stops using Transport API and the API is removed.
+  if (!allocator_->config_.relay_username.empty()) {
+    url += "?sn=" +
+        net::EscapeUrlEncodedData(allocator_->config_.relay_username, true);
+  }
+
   WebURLRequest request;
   request.initialize();
-  request.setURL(WebURL(GURL(
-      "https://" + allocator_->config_.relay_server + kCreateRelaySessionURL)));
+  request.setURL(WebURL(GURL(url)));
   request.setAllowStoredCredentials(false);
   request.setCachePolicy(WebURLRequest::ReloadIgnoringCacheData);
   request.setHTTPMethod("GET");
