@@ -195,11 +195,18 @@ void TaskManagerDialogImpl::OnCloseDialog() {
 void TaskManagerDialogImpl::OpenHtmlDialog() {
   Browser* browser = BrowserList::GetLastActive();
   DCHECK(browser);
+#if defined(USE_ASH)
+  // Force the window to be always on top so that it can float above maximized
+  // windows.
+  DialogStyle dialog_style = STYLE_ALWAYS_ON_TOP;
+#else
+  DialogStyle dialog_style = STYLE_GENERIC;
+#endif
   window_ = browser::ShowHtmlDialog(NULL,
                                     browser->profile()->GetOriginalProfile(),
                                     NULL,
                                     this,
-                                    STYLE_GENERIC);
+                                    dialog_style);
 }
 
 // ****************************************************

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,19 +18,21 @@ enum DialogStyle {
   // Deprecated, see BubbleWindow::Create().
   // TODO(bshe): We probably need to use this style for certificate viewer
   // HTML dialog.
-  STYLE_XBAR = 1 << 0,
+  STYLE_XBAR =          1 << 0,
 
   // Show throbber for slow rendering.
   // Deprecated, see BubbleWindow::Create().
-  STYLE_THROBBER = 1 << 1,
+  STYLE_THROBBER =      1 << 1,
 
   // Content and title flush to edge, no padding.
-  STYLE_FLUSH = 1 << 2,
+  STYLE_FLUSH =         1 << 2,
 
   // Content flush to edge. Padding only on title.
-  STYLE_FLUSH_CONTENT = 1 << 3
+  STYLE_FLUSH_CONTENT = 1 << 3,
+
 #endif
 
+  STYLE_ALWAYS_ON_TOP = 1 << 4
 };
 
 #endif  // CHROME_BROWSER_UI_DIALOG_STYLE_H_

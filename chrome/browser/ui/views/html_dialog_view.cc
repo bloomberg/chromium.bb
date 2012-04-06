@@ -40,6 +40,8 @@ gfx::NativeWindow ShowHtmlDialog(gfx::NativeWindow parent,
   HtmlDialogView* html_view = new HtmlDialogView(profile, browser, delegate);
   views::Widget::CreateWindowWithParent(html_view, parent);
   html_view->InitDialog();
+  if (style & STYLE_ALWAYS_ON_TOP)
+    html_view->GetWidget()->SetAlwaysOnTop(true);
   html_view->GetWidget()->Show();
   return html_view->GetWidget()->GetNativeWindow();
 }

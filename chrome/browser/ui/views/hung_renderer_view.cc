@@ -564,6 +564,11 @@ void HungRendererDialogView::InitClass() {
 static HungRendererDialogView* CreateHungRendererDialogView() {
   HungRendererDialogView* cv = new HungRendererDialogView;
   views::Widget::CreateWindow(cv);
+#if defined(USE_ASH)
+  // Force the window to be always on top so that it can float above maximized
+  // windows.
+  cv->GetWidget()->SetAlwaysOnTop(true);
+#endif
   return cv;
 }
 
