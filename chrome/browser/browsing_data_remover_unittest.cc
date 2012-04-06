@@ -553,9 +553,9 @@ TEST_F(BrowsingDataRemoverTest, RemoveServerBoundCertLastHour) {
 
   EXPECT_EQ(BrowsingDataRemover::REMOVE_SERVER_BOUND_CERTS, GetRemovalMask());
   EXPECT_EQ(1, tester->ServerBoundCertCount());
-  std::vector<net::ServerBoundCertStore::ServerBoundCert> certs;
+  net::ServerBoundCertStore::ServerBoundCertList certs;
   tester->GetCertStore()->GetAllServerBoundCerts(&certs);
-  EXPECT_EQ(kTestOrigin2, certs[0].server_identifier());
+  EXPECT_EQ(kTestOrigin2, certs.front().server_identifier());
 }
 
 TEST_F(BrowsingDataRemoverTest, RemoveHistoryForever) {

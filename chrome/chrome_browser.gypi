@@ -349,6 +349,8 @@
         'browser/browsing_data_quota_helper_impl.h',
         'browser/browsing_data_remover.cc',
         'browser/browsing_data_remover.h',
+        'browser/browsing_data_server_bound_cert_helper.cc',
+        'browser/browsing_data_server_bound_cert_helper.h',
         'browser/feedback/feedback_data.cc',
         'browser/feedback/feedback_data.h',
         'browser/feedback/feedback_util.cc',

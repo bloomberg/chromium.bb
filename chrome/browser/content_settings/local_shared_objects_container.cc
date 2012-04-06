@@ -10,6 +10,7 @@
 #include "chrome/browser/browsing_data_file_system_helper.h"
 #include "chrome/browser/browsing_data_indexed_db_helper.h"
 #include "chrome/browser/browsing_data_local_storage_helper.h"
+#include "chrome/browser/browsing_data_server_bound_cert_helper.h"
 #include "chrome/browser/profiles/profile.h"
 
 LocalSharedObjectsContainer::LocalSharedObjectsContainer(Profile* profile)
@@ -19,6 +20,7 @@ LocalSharedObjectsContainer::LocalSharedObjectsContainer(Profile* profile)
       file_systems_(new CannedBrowsingDataFileSystemHelper(profile)),
       indexed_dbs_(new CannedBrowsingDataIndexedDBHelper()),
       local_storages_(new CannedBrowsingDataLocalStorageHelper(profile)),
+      server_bound_certs_(new CannedBrowsingDataServerBoundCertHelper()),
       session_storages_(new CannedBrowsingDataLocalStorageHelper(profile)) {
 }
 
@@ -32,6 +34,7 @@ void LocalSharedObjectsContainer::Reset() {
   file_systems_->Reset();
   indexed_dbs_->Reset();
   local_storages_->Reset();
+  server_bound_certs_->Reset();
   session_storages_->Reset();
 }
 
@@ -42,5 +45,6 @@ bool LocalSharedObjectsContainer::IsEmpty() const {
       file_systems_->empty() &&
       indexed_dbs_->empty() &&
       local_storages_->empty() &&
+      server_bound_certs_->empty() &&
       session_storages_->empty();
 }

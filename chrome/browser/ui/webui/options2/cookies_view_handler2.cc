@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,8 +13,9 @@
 #include "chrome/browser/browsing_data_database_helper.h"
 #include "chrome/browser/browsing_data_file_system_helper.h"
 #include "chrome/browser/browsing_data_indexed_db_helper.h"
-#include "chrome/browser/browsing_data_quota_helper.h"
 #include "chrome/browser/browsing_data_local_storage_helper.h"
+#include "chrome/browser/browsing_data_quota_helper.h"
+#include "chrome/browser/browsing_data_server_bound_cert_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/cookies_tree_model_util.h"
 #include "content/public/browser/web_ui.h"
@@ -73,6 +74,15 @@ void CookiesViewHandler::GetLocalizedValues(
       IDS_COOKIES_FILE_SYSTEM_TEMPORARY_USAGE_LABEL },
     { "label_file_system_persistent_usage",
       IDS_COOKIES_FILE_SYSTEM_PERSISTENT_USAGE_LABEL },
+    { "cookie_server_bound_cert", IDS_COOKIES_SERVER_BOUND_CERT },
+    { "label_server_bound_cert_server_id",
+      IDS_COOKIES_SERVER_BOUND_CERT_ORIGIN_LABEL },
+    { "label_server_bound_cert_type",
+      IDS_COOKIES_SERVER_BOUND_CERT_TYPE_LABEL },
+    { "label_server_bound_cert_created",
+      IDS_COOKIES_SERVER_BOUND_CERT_CREATED_LABEL },
+    { "label_server_bound_cert_expires",
+      IDS_COOKIES_SERVER_BOUND_CERT_EXPIRES_LABEL },
   };
 
   RegisterStrings(localized_strings, resources, arraysize(resources));
@@ -161,6 +171,7 @@ void CookiesViewHandler::EnsureCookiesTreeModelCreated() {
         BrowsingDataIndexedDBHelper::Create(profile),
         BrowsingDataFileSystemHelper::Create(profile),
         BrowsingDataQuotaHelper::Create(profile),
+        BrowsingDataServerBoundCertHelper::Create(profile),
         false));
     cookies_tree_model_->AddCookiesTreeObserver(this);
   }

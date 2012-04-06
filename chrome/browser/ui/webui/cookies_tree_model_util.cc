@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,6 +32,7 @@ static const char kKeyDesc[] = "desc";
 static const char kKeySize[] = "size";
 static const char kKeyOrigin[] = "origin";
 static const char kKeyManifest[] = "manifest";
+static const char kKeyServerId[] = "serverId";
 
 static const char kKeyAccessed[] = "accessed";
 static const char kKeyCreated[] = "created";
@@ -45,6 +46,8 @@ static const char kKeyTotalUsage[] = "totalUsage";
 static const char kKeyTemporaryUsage[] = "temporaryUsage";
 static const char kKeyPersistentUsage[] = "persistentUsage";
 static const char kKeyPersistentQuota[] = "persistentQuota";
+
+static const char kKeyCertType[] = "certType";
 
 static const int64 kNegligibleUsage = 1024;  // 1KiB
 
@@ -62,6 +65,17 @@ void* HexStringToPointer(const std::string& str) {
   }
 
   return *reinterpret_cast<void**>(&buffer[0]);
+}
+
+std::string ClientCertTypeToString(net::SSLClientCertType type) {
+  switch (type) {
+    case net::CLIENT_CERT_RSA_SIGN:
+      return l10n_util::GetStringUTF8(IDS_CLIENT_CERT_RSA_SIGN);
+    case net::CLIENT_CERT_ECDSA_SIGN:
+      return l10n_util::GetStringUTF8(IDS_CLIENT_CERT_ECDSA_SIGN);
+    default:
+      return base::IntToString(type);
+  }
 }
 
 }  // namespace
@@ -218,6 +232,24 @@ bool GetCookieTreeNodeDictionary(const CookieTreeNode& node,
       dict->SetString(kKeyPersistentUsage,
                       UTF16ToUTF8(ui::FormatBytes(
                           quota_info.persistent_usage)));
+      break;
+    }
+    case CookieTreeNode::DetailedInfo::TYPE_SERVER_BOUND_CERT: {
+      dict->SetString(kKeyType, "server_bound_cert");
+      dict->SetString(kKeyIcon, "chrome://theme/IDR_COOKIE_ICON");
+
+      const net::ServerBoundCertStore::ServerBoundCert& server_bound_cert =
+          *node.GetDetailedInfo().server_bound_cert;
+
+      dict->SetString(kKeyServerId, server_bound_cert.server_identifier());
+      dict->SetString(kKeyCertType,
+                      ClientCertTypeToString(server_bound_cert.type()));
+      dict->SetString(kKeyCreated, UTF16ToUTF8(
+          base::TimeFormatFriendlyDateAndTime(
+              server_bound_cert.creation_time())));
+      dict->SetString(kKeyExpires, UTF16ToUTF8(
+          base::TimeFormatFriendlyDateAndTime(
+              server_bound_cert.expiration_time())));
       break;
     }
     default:

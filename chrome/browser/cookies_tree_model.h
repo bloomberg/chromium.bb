@@ -25,10 +25,12 @@
 #include "chrome/browser/browsing_data_local_storage_helper.h"
 #include "chrome/browser/browsing_data_quota_helper.h"
 #include "chrome/common/content_settings.h"
+#include "net/base/server_bound_cert_store.h"
 #include "net/cookies/cookie_monster.h"
 #include "ui/base/models/tree_node_model.h"
 
 class BrowsingDataCookieHelper;
+class BrowsingDataServerBoundCertHelper;
 class CookieSettings;
 class CookiesTreeModel;
 class CookieTreeAppCacheNode;
@@ -41,6 +43,8 @@ class CookieTreeFileSystemsNode;
 class CookieTreeFileSystemNode;
 class CookieTreeLocalStorageNode;
 class CookieTreeLocalStoragesNode;
+class CookieTreeServerBoundCertNode;
+class CookieTreeServerBoundCertsNode;
 class CookieTreeQuotaNode;
 class CookieTreeSessionStorageNode;
 class CookieTreeSessionStoragesNode;
@@ -78,6 +82,8 @@ class CookieTreeNode : public ui::TreeNode<CookieTreeNode> {
       TYPE_FILE_SYSTEMS,  // This is used for CookieTreeFileSystemsNode.
       TYPE_FILE_SYSTEM,  // This is used for CookieTreeFileSystemNode.
       TYPE_QUOTA,  // This is used for CookieTreeQuotaNode.
+      TYPE_SERVER_BOUND_CERTS, // Used for CookieTreeServerBoundCertsNode.
+      TYPE_SERVER_BOUND_CERT, // Used for CookieTreeServerBoundCertNode.
     };
 
     // TODO(viettrungluu): Figure out whether we want to store |origin| as a
@@ -92,7 +98,8 @@ class CookieTreeNode : public ui::TreeNode<CookieTreeNode> {
           appcache_info(NULL),
           indexed_db_info(NULL),
           file_system_info(NULL),
-          quota_info(NULL) {}
+          quota_info(NULL),
+          server_bound_cert(NULL) {}
 
     DetailedInfo& Init(NodeType type) {
       DCHECK_EQ(TYPE_NONE, node_type);
@@ -157,6 +164,13 @@ class CookieTreeNode : public ui::TreeNode<CookieTreeNode> {
       return *this;
     }
 
+    DetailedInfo& InitServerBoundCert(
+        const net::ServerBoundCertStore::ServerBoundCert* server_bound_cert) {
+      Init(TYPE_SERVER_BOUND_CERT);
+      this->server_bound_cert = server_bound_cert;
+      return *this;
+    }
+
     string16 origin;
     NodeType node_type;
     const net::CookieMonster::CanonicalCookie* cookie;
@@ -168,6 +182,7 @@ class CookieTreeNode : public ui::TreeNode<CookieTreeNode> {
     const BrowsingDataIndexedDBHelper::IndexedDBInfo* indexed_db_info;
     const BrowsingDataFileSystemHelper::FileSystemInfo* file_system_info;
     const BrowsingDataQuotaHelper::QuotaInfo* quota_info;
+    const net::ServerBoundCertStore::ServerBoundCert* server_bound_cert;
   };
 
   CookieTreeNode() {}
@@ -238,6 +253,7 @@ class CookieTreeOriginNode : public CookieTreeNode {
   CookieTreeAppCachesNode* GetOrCreateAppCachesNode();
   CookieTreeIndexedDBsNode* GetOrCreateIndexedDBsNode();
   CookieTreeFileSystemsNode* GetOrCreateFileSystemsNode();
+  CookieTreeServerBoundCertsNode* GetOrCreateServerBoundCertsNode();
   CookieTreeQuotaNode* UpdateOrCreateQuotaNode(
       std::list<BrowsingDataQuotaHelper::QuotaInfo>::iterator quota_info);
 
@@ -263,6 +279,7 @@ class CookieTreeOriginNode : public CookieTreeNode {
   CookieTreeIndexedDBsNode* indexed_dbs_child_;
   CookieTreeFileSystemsNode* file_systems_child_;
   CookieTreeQuotaNode* quota_child_;
+  CookieTreeServerBoundCertsNode* server_bound_certs_child_;
 
   // The URL for which this node was initially created.
   GURL url_;
@@ -559,6 +576,44 @@ class CookieTreeQuotaNode : public CookieTreeNode {
   DISALLOW_COPY_AND_ASSIGN(CookieTreeQuotaNode);
 };
 
+// CookieTreeServerBoundCertNode ---------------------------------------------
+class CookieTreeServerBoundCertNode : public CookieTreeNode {
+ public:
+  friend class CookieTreeServerBoundCertsNode;
+
+  // The iterator should remain valid at least as long as the
+  // CookieTreeServerBoundCertNode is valid.
+  explicit CookieTreeServerBoundCertNode(
+      net::ServerBoundCertStore::ServerBoundCertList::iterator cert);
+  virtual ~CookieTreeServerBoundCertNode();
+
+  // CookieTreeNode methods:
+  virtual void DeleteStoredObjects() OVERRIDE;
+  virtual DetailedInfo GetDetailedInfo() const OVERRIDE;
+
+ private:
+  // server_bound_cert_ is expected to remain valid as long as the
+  // CookieTreeServerBoundCertNode is valid.
+  net::ServerBoundCertStore::ServerBoundCertList::iterator server_bound_cert_;
+
+  DISALLOW_COPY_AND_ASSIGN(CookieTreeServerBoundCertNode);
+};
+
+class CookieTreeServerBoundCertsNode : public CookieTreeNode {
+ public:
+  CookieTreeServerBoundCertsNode();
+  virtual ~CookieTreeServerBoundCertsNode();
+
+  virtual DetailedInfo GetDetailedInfo() const OVERRIDE;
+
+  void AddServerBoundCertNode(CookieTreeServerBoundCertNode* child) {
+    AddChildSortedByTitle(child);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(CookieTreeServerBoundCertsNode);
+};
+
 // CookiesTreeModel -----------------------------------------------------------
 class CookiesTreeModel : public ui::TreeNodeModel<CookieTreeNode> {
  public:
@@ -582,6 +637,7 @@ class CookiesTreeModel : public ui::TreeNodeModel<CookieTreeNode> {
       BrowsingDataIndexedDBHelper* indexed_db_helper,
       BrowsingDataFileSystemHelper* file_system_helper,
       BrowsingDataQuotaHelper* quota_helper,
+      BrowsingDataServerBoundCertHelper* server_bound_cert_helper,
       bool use_cookie_source);
   virtual ~CookiesTreeModel();
 
@@ -627,6 +683,7 @@ class CookiesTreeModel : public ui::TreeNodeModel<CookieTreeNode> {
   typedef std::list<BrowsingDataFileSystemHelper::FileSystemInfo>
       FileSystemInfoList;
   typedef std::list<BrowsingDataQuotaHelper::QuotaInfo> QuotaInfoArray;
+  typedef net::ServerBoundCertStore::ServerBoundCertList ServerBoundCertList;
 
   void OnAppCacheModelInfoLoaded();
   void OnCookiesModelInfoLoaded(const net::CookieList& cookie_list);
@@ -640,6 +697,7 @@ class CookiesTreeModel : public ui::TreeNodeModel<CookieTreeNode> {
   void OnFileSystemModelInfoLoaded(
       const FileSystemInfoList& file_system_info);
   void OnQuotaModelInfoLoaded(const QuotaInfoArray& quota_info);
+  void OnServerBoundCertModelInfoLoaded(const ServerBoundCertList& cert_list);
 
   void PopulateAppCacheInfoWithFilter(const std::wstring& filter);
   void PopulateCookieInfoWithFilter(const std::wstring& filter);
@@ -649,6 +707,7 @@ class CookiesTreeModel : public ui::TreeNodeModel<CookieTreeNode> {
   void PopulateIndexedDBInfoWithFilter(const std::wstring& filter);
   void PopulateFileSystemInfoWithFilter(const std::wstring& filter);
   void PopulateQuotaInfoWithFilter(const std::wstring& filter);
+  void PopulateServerBoundCertInfoWithFilter(const std::wstring& filter);
 
   void NotifyObserverBeginBatch();
   void NotifyObserverEndBatch();
@@ -661,6 +720,7 @@ class CookiesTreeModel : public ui::TreeNodeModel<CookieTreeNode> {
   scoped_refptr<BrowsingDataIndexedDBHelper> indexed_db_helper_;
   scoped_refptr<BrowsingDataFileSystemHelper> file_system_helper_;
   scoped_refptr<BrowsingDataQuotaHelper> quota_helper_;
+  scoped_refptr<BrowsingDataServerBoundCertHelper> server_bound_cert_helper_;
 
   std::map<GURL, std::list<appcache::AppCacheInfo> > appcache_info_;
   CookieList cookie_list_;
@@ -670,6 +730,7 @@ class CookiesTreeModel : public ui::TreeNodeModel<CookieTreeNode> {
   IndexedDBInfoList indexed_db_info_list_;
   FileSystemInfoList file_system_info_list_;
   QuotaInfoArray quota_info_list_;
+  ServerBoundCertList server_bound_cert_list_;
 
   // The CookiesTreeModel maintains a separate list of observers that are
   // specifically of the type CookiesTreeModel::Observer.
@@ -694,6 +755,7 @@ class CookiesTreeModel : public ui::TreeNodeModel<CookieTreeNode> {
   friend class CookieTreeIndexedDBNode;
   friend class CookieTreeFileSystemNode;
   friend class CookieTreeQuotaNode;
+  friend class CookieTreeServerBoundCertNode;
 
   DISALLOW_COPY_AND_ASSIGN(CookiesTreeModel);
 };

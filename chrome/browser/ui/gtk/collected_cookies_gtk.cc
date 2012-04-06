@@ -11,6 +11,7 @@
 #include "chrome/browser/browsing_data_file_system_helper.h"
 #include "chrome/browser/browsing_data_indexed_db_helper.h"
 #include "chrome/browser/browsing_data_local_storage_helper.h"
+#include "chrome/browser/browsing_data_server_bound_cert_helper.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/content_settings/local_shared_objects_container.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
@@ -217,6 +218,7 @@ GtkWidget* CollectedCookiesGtk::CreateAllowedPane() {
                            allowed_lsos.indexed_dbs()->Clone(),
                            allowed_lsos.file_systems()->Clone(),
                            NULL,
+                           allowed_lsos.server_bound_certs()->Clone(),
                            true));
   allowed_cookies_tree_adapter_.reset(
       new gtk_tree::TreeAdapter(this, allowed_cookies_tree_model_.get()));
@@ -304,6 +306,7 @@ GtkWidget* CollectedCookiesGtk::CreateBlockedPane() {
                            blocked_lsos.indexed_dbs()->Clone(),
                            blocked_lsos.file_systems()->Clone(),
                            NULL,
+                           blocked_lsos.server_bound_certs()->Clone(),
                            true));
   blocked_cookies_tree_adapter_.reset(
       new gtk_tree::TreeAdapter(this, blocked_cookies_tree_model_.get()));

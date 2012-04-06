@@ -14,6 +14,7 @@ class CannedBrowsingDataDatabaseHelper;
 class CannedBrowsingDataFileSystemHelper;
 class CannedBrowsingDataIndexedDBHelper;
 class CannedBrowsingDataLocalStorageHelper;
+class CannedBrowsingDataServerBoundCertHelper;
 class Profile;
 
 class LocalSharedObjectsContainer {
@@ -46,6 +47,9 @@ class LocalSharedObjectsContainer {
   CannedBrowsingDataLocalStorageHelper* local_storages() const {
     return local_storages_;
   }
+  CannedBrowsingDataServerBoundCertHelper* server_bound_certs() const {
+    return server_bound_certs_;
+  }
   CannedBrowsingDataLocalStorageHelper* session_storages() const {
     return session_storages_;
   }
@@ -57,6 +61,7 @@ class LocalSharedObjectsContainer {
   scoped_refptr<CannedBrowsingDataFileSystemHelper> file_systems_;
   scoped_refptr<CannedBrowsingDataIndexedDBHelper> indexed_dbs_;
   scoped_refptr<CannedBrowsingDataLocalStorageHelper> local_storages_;
+  scoped_refptr<CannedBrowsingDataServerBoundCertHelper> server_bound_certs_;
   scoped_refptr<CannedBrowsingDataLocalStorageHelper> session_storages_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalSharedObjectsContainer);

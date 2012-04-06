@@ -13,6 +13,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browsing_data_cookie_helper.h"
+#include "chrome/browser/browsing_data_server_bound_cert_helper.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "grit/generated_resources.h"
@@ -297,6 +298,29 @@ CookieTreeNode::DetailedInfo CookieTreeQuotaNode::GetDetailedInfo() const {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// CookieTreeServerBoundCertNode, public:
+
+CookieTreeServerBoundCertNode::CookieTreeServerBoundCertNode(
+      net::ServerBoundCertStore::ServerBoundCertList::iterator cert)
+    : CookieTreeNode(ASCIIToUTF16(cert->server_identifier())),
+      server_bound_cert_(cert) {
+}
+
+CookieTreeServerBoundCertNode::~CookieTreeServerBoundCertNode() {}
+
+void CookieTreeServerBoundCertNode::DeleteStoredObjects() {
+  GetModel()->server_bound_cert_helper_->DeleteServerBoundCert(
+      server_bound_cert_->server_identifier());
+  GetModel()->server_bound_cert_list_.erase(server_bound_cert_);
+}
+
+CookieTreeNode::DetailedInfo
+CookieTreeServerBoundCertNode::GetDetailedInfo() const {
+  return DetailedInfo(parent()->parent()->GetTitle()).InitServerBoundCert(
+      &*server_bound_cert_);
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // CookieTreeRootNode, public:
 
 CookieTreeRootNode::CookieTreeRootNode(CookiesTreeModel* model)
@@ -355,6 +379,7 @@ CookieTreeOriginNode::CookieTreeOriginNode(const GURL& url)
       indexed_dbs_child_(NULL),
       file_systems_child_(NULL),
       quota_child_(NULL),
+      server_bound_certs_child_(NULL),
       url_(url) {}
 
 CookieTreeOriginNode::~CookieTreeOriginNode() {}
@@ -428,6 +453,15 @@ CookieTreeQuotaNode* CookieTreeOriginNode::UpdateOrCreateQuotaNode(
   quota_child_ = new CookieTreeQuotaNode(quota_info);
   AddChildSortedByTitle(quota_child_);
   return quota_child_;
+}
+
+CookieTreeServerBoundCertsNode*
+CookieTreeOriginNode::GetOrCreateServerBoundCertsNode() {
+  if (server_bound_certs_child_)
+    return server_bound_certs_child_;
+  server_bound_certs_child_ = new CookieTreeServerBoundCertsNode;
+  AddChildSortedByTitle(server_bound_certs_child_);
+  return server_bound_certs_child_;
 }
 
 void CookieTreeOriginNode::CreateContentException(
@@ -551,6 +585,22 @@ CookieTreeFileSystemsNode::GetDetailedInfo() const {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// CookieTreeServerBoundCertsNode, public:
+
+CookieTreeServerBoundCertsNode::CookieTreeServerBoundCertsNode()
+    : CookieTreeNode(
+        l10n_util::GetStringUTF16(IDS_COOKIES_SERVER_BOUND_CERTS)) {
+}
+
+CookieTreeServerBoundCertsNode::~CookieTreeServerBoundCertsNode() {}
+
+CookieTreeNode::DetailedInfo
+CookieTreeServerBoundCertsNode::GetDetailedInfo() const {
+  return DetailedInfo(parent()->GetTitle()).Init(
+      DetailedInfo::TYPE_SERVER_BOUND_CERTS);
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // CookieTreeNode, protected
 
 bool CookieTreeNode::NodeTitleComparator::operator() (
@@ -584,6 +634,7 @@ CookiesTreeModel::CookiesTreeModel(
     BrowsingDataIndexedDBHelper* indexed_db_helper,
     BrowsingDataFileSystemHelper* file_system_helper,
     BrowsingDataQuotaHelper* quota_helper,
+    BrowsingDataServerBoundCertHelper* server_bound_cert_helper,
     bool use_cookie_source)
     : ALLOW_THIS_IN_INITIALIZER_LIST(ui::TreeNodeModel<CookieTreeNode>(
           new CookieTreeRootNode(this))),
@@ -595,6 +646,7 @@ CookiesTreeModel::CookiesTreeModel(
       indexed_db_helper_(indexed_db_helper),
       file_system_helper_(file_system_helper),
       quota_helper_(quota_helper),
+      server_bound_cert_helper_(server_bound_cert_helper),
       batch_update_(0),
       use_cookie_source_(use_cookie_source),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
@@ -641,6 +693,12 @@ CookiesTreeModel::CookiesTreeModel(
         base::Bind(&CookiesTreeModel::OnQuotaModelInfoLoaded,
                    weak_ptr_factory_.GetWeakPtr()));
   }
+
+  if (server_bound_cert_helper_) {
+    server_bound_cert_helper_->StartFetching(
+        base::Bind(&CookiesTreeModel::OnServerBoundCertModelInfoLoaded,
+                   base::Unretained(this)));
+  }
 }
 
 CookiesTreeModel::~CookiesTreeModel() {}
@@ -684,6 +742,8 @@ int CookiesTreeModel::GetIconIndex(ui::TreeModelNode* node) {
       return DATABASE;  // ditto
     case CookieTreeNode::DetailedInfo::TYPE_QUOTA:
       return -1;
+    case CookieTreeNode::DetailedInfo::TYPE_SERVER_BOUND_CERT:
+      return COOKIE;  // It's kinda like a cookie?
     default:
       break;
   }
@@ -725,6 +785,7 @@ void CookiesTreeModel::UpdateSearchResults(const std::wstring& filter) {
   PopulateIndexedDBInfoWithFilter(filter);
   PopulateFileSystemInfoWithFilter(filter);
   PopulateQuotaInfoWithFilter(filter);
+  PopulateServerBoundCertInfoWithFilter(filter);
   NotifyObserverTreeNodeChanged(root);
   NotifyObserverEndBatch();
 }
@@ -1021,6 +1082,45 @@ void CookiesTreeModel::PopulateQuotaInfoWithFilter(
       CookieTreeOriginNode* origin_node =
           root->GetOrCreateOriginNode(GURL("http://" + quota_info->host));
       origin_node->UpdateOrCreateQuotaNode(quota_info);
+    }
+  }
+  NotifyObserverTreeNodeChanged(root);
+  NotifyObserverEndBatch();
+}
+
+void CookiesTreeModel::OnServerBoundCertModelInfoLoaded(
+    const ServerBoundCertList& cert_list) {
+  server_bound_cert_list_ = cert_list;
+  PopulateServerBoundCertInfoWithFilter(std::wstring());
+}
+
+void CookiesTreeModel::PopulateServerBoundCertInfoWithFilter(
+    const std::wstring& filter) {
+  if (server_bound_cert_list_.empty())
+    return;
+  CookieTreeRootNode* root = static_cast<CookieTreeRootNode*>(GetRoot());
+  NotifyObserverBeginBatch();
+  for (ServerBoundCertList::iterator cert_info =
+       server_bound_cert_list_.begin();
+       cert_info != server_bound_cert_list_.end();
+       ++cert_info) {
+    GURL origin(cert_info->server_identifier());
+    if (!origin.is_valid()) {
+      // Domain Bound Cert.  Make a valid URL to satisfy the
+      // CookieTreeRootNode::GetOrCreateOriginNode interface.
+      origin = GURL(std::string(chrome::kHttpsScheme) +
+                    chrome::kStandardSchemeSeparator +
+                    cert_info->server_identifier() + "/");
+    }
+    std::wstring title = CookieTreeOriginNode::TitleForUrl(origin);
+
+    if (!filter.size() || title.find(filter) != std::wstring::npos) {
+      CookieTreeOriginNode* origin_node =
+          root->GetOrCreateOriginNode(origin);
+      CookieTreeServerBoundCertsNode* server_bound_certs_node =
+          origin_node->GetOrCreateServerBoundCertsNode();
+      server_bound_certs_node->AddServerBoundCertNode(
+          new CookieTreeServerBoundCertNode(cert_info));
     }
   }
   NotifyObserverTreeNodeChanged(root);
