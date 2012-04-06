@@ -18,6 +18,8 @@ struct TableIDRow {
 
   URLID url_id;
   GURL url;
+  // Whether the URL was bookmarked.
+  bool bookmarked;
 };
 
 typedef std::vector<TableIDRow> TableIDRows;

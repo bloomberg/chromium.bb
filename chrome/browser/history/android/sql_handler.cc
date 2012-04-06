@@ -7,7 +7,8 @@
 namespace history {
 
 TableIDRow::TableIDRow()
-    : url_id(0) {
+    : url_id(0),
+      bookmarked(false) {
 }
 
 TableIDRow::~TableIDRow() {

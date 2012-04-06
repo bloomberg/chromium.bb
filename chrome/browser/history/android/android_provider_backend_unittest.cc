@@ -1446,4 +1446,64 @@ TEST_F(AndroidProviderBackendTest, InsertSearchTerm) {
   EXPECT_FALSE(statement->statement()->Step());
 }
 
+TEST_F(AndroidProviderBackendTest, DeleteHistory) {
+  HistoryAndBookmarkRow row1;
+  row1.set_raw_url("cnn.com");
+  row1.set_url(GURL("http://cnn.com"));
+  row1.set_last_visit_time(Time::Now() - TimeDelta::FromDays(1));
+  row1.set_created(Time::Now() - TimeDelta::FromDays(20));
+  row1.set_visit_count(10);
+  row1.set_is_bookmark(true);
+  row1.set_title(UTF8ToUTF16("cnn"));
+
+  HistoryAndBookmarkRow row2;
+  row2.set_raw_url("http://www.example.com");
+  row2.set_url(GURL("http://www.example.com"));
+  row2.set_last_visit_time(Time::Now() - TimeDelta::FromDays(10));
+  row2.set_is_bookmark(false);
+  row2.set_title(UTF8ToUTF16("example"));
+  std::vector<unsigned char> data;
+  data.push_back('1');
+  row2.set_favicon(data);
+
+  ASSERT_EQ(sql::INIT_OK, history_db_.Init(history_db_name_, bookmark_temp_));
+  ASSERT_EQ(sql::INIT_OK, thumbnail_db_.Init(thumbnail_db_name_, NULL,
+                                             &history_db_));
+  scoped_ptr<AndroidProviderBackend> backend(
+      new AndroidProviderBackend(android_cache_db_name_, &history_db_,
+                                 &thumbnail_db_, &bookmark_model_, &delegate_));
+
+  AndroidURLID id1 = backend->InsertHistoryAndBookmark(row1);
+  ASSERT_TRUE(id1);
+  AndroidURLID id2 = backend->InsertHistoryAndBookmark(row2);
+  ASSERT_TRUE(id2);
+  AddBookmark(row1.url());
+
+  // Delete history
+  int deleted_count = 0;
+  ASSERT_TRUE(backend->DeleteHistory(std::string(), std::vector<string16>(),
+                                     &deleted_count));
+  EXPECT_EQ(2, deleted_count);
+  // The row2 was deleted.
+  EXPECT_FALSE(history_db_.GetRowForURL(row2.url(), NULL));
+  // Still find the row1.
+  URLRow url_row;
+  ASSERT_TRUE(history_db_.GetRowForURL(row1.url(), &url_row));
+  // The visit_count was reset.
+  EXPECT_EQ(0, url_row.visit_count());
+  EXPECT_EQ(Time::UnixEpoch(), url_row.last_visit());
+
+  // Verify notification
+  ASSERT_TRUE(delegate_.deleted_details());
+  ASSERT_EQ(2u, delegate_.deleted_details()->rows.size());
+  ASSERT_EQ(2u, delegate_.deleted_details()->urls.size());
+  ASSERT_TRUE(delegate_.modified_details());
+  ASSERT_EQ(1u, delegate_.modified_details()->changed_urls.size());
+  EXPECT_EQ(row1.url(),
+            delegate_.modified_details()->changed_urls[0].url());
+  EXPECT_EQ(Time::UnixEpoch(),
+            delegate_.modified_details()->changed_urls[0].last_visit());
+  EXPECT_EQ(1u, delegate_.favicon_details()->urls.size());
+}
+
 }  // namespace history
