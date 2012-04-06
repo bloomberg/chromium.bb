@@ -419,13 +419,13 @@ namespace {
 
   std::string chartest(std::vector<bool> v) {
     std::string result;
-    auto delimeter = "( ";
+    auto delimiter = "( ";
     for (int c = 0x00; c <= 0xff; ++c) {
       if (v[c]) {
         char buf[10];
-        snprintf(buf, sizeof(buf), "%s0x%02x", delimeter, c);
+        snprintf(buf, sizeof(buf), "%s0x%02x", delimiter, c);
         result += buf;
-        delimeter = " | ";
+        delimiter = " | ";
       }
     }
     return result + " )";
@@ -519,12 +519,12 @@ namespace {
         }
       }
       offset = 0;
-      auto delimeter = "static const char instruction_names[] = {\n  ";
+      auto delimiter = "static const char instruction_names[] = {\n  ";
       for (auto pair_it = instruction_names.begin();
            pair_it != instruction_names.end(); ++pair_it) {
         auto &pair = *pair_it;
         if (pair.second == offset) {
-          fprintf(const_file, "%s", delimeter);
+          fprintf(const_file, "%s", delimiter);
           for (auto c_it = pair.first.begin();
                c_it != pair.first.end(); ++c_it) {
             auto &c = *c_it;
@@ -533,7 +533,7 @@ namespace {
           fprintf(const_file, "\'\\0\',  /* ");
           fprintf(const_file, "%s", pair.first.c_str());
           offset += pair.first.length() + 1;
-          delimeter = " */\n  ";
+          delimiter = " */\n  ";
         }
       }
       fprintf(const_file, " */\n};\n");
@@ -1297,7 +1297,7 @@ namespace {
     enum InstructionClass {
       kDefault,
       /* The same as kDefault, but to make 'dil'/'sil'/'bpl'/'spl' accesible
-         pure REX (hex 0x40) is allowed.  */
+       * pure REX (hex 0x40) is allowed.  */
       kSize8,
       /* One operand is kSize8, another is RexW.  */
       kSize8RexW,
@@ -1579,7 +1579,6 @@ namespace {
       if (modrm_memory || modrm_register) {
         if (modrm_memory) {
           auto saved_prefixes = optional_prefixes;
-          /* optional_prefixes.insert("(segfs | seggs)"); */
           print_one_size_definition_modrm_memory();
           if (has_flag("lock")) {
             auto saved_prefixes = required_prefixes;
@@ -1598,7 +1597,7 @@ namespace {
     }
 
     void print_one_size_definition_nomodrm(void) {
-      print_operator_delimeter();
+      print_operator_delimiter();
       print_legacy_prefixes();
       print_rex_prefix();
       print_opcode_nomodrm();
@@ -1612,7 +1611,7 @@ namespace {
     }
 
     void print_one_size_definition_modrm_register(void) {
-      print_operator_delimeter();
+      print_operator_delimiter();
       if (mod_reg_is_used()) {
         rex.r = true;
       }
@@ -1674,7 +1673,7 @@ namespace {
       };
       for (int mode_it = 0; mode_it < arraysize(modes); ++mode_it) {
         auto mode = modes[mode_it];
-        print_operator_delimeter();
+        print_operator_delimiter();
         if (mod_reg_is_used()) {
           rex.r = true;
         }
@@ -1733,14 +1732,14 @@ namespace {
       }
     }
 
-    static bool first_delimeter;
-    void print_operator_delimeter(void) {
-      if (first_delimeter) {
+    static bool first_delimiter;
+    void print_operator_delimiter(void) {
+      if (first_delimiter) {
         fprintf(out_file, "\n    (");
       } else {
         fprintf(out_file, ") |\n    (");
       }
-      first_delimeter = false;
+      first_delimiter = false;
     }
 
     bool mod_reg_is_used() {
@@ -1786,7 +1785,7 @@ namespace {
         fprintf(out_file, "%s? ", optional_prefixes.begin()->c_str());
       } else if ((optional_prefixes.size() > 0) ||
                  (required_prefixes.size() > 0)) {
-        auto delimeter = "(";
+        auto delimiter = "(";
         auto opt_start = required_prefixes.size() ? 0 : 1;
         auto opt_end = 1 << optional_prefixes.size();
         for (auto opt = opt_start; opt < opt_end; ++opt) {
@@ -1798,20 +1797,20 @@ namespace {
             }
           }
           if (prefixes.size() == 1) {
-            fprintf(out_file, "%s%s", delimeter, prefixes.begin()->c_str());
-            delimeter = " | ";
+            fprintf(out_file, "%s%s", delimiter, prefixes.begin()->c_str());
+            delimiter = " | ";
           } else {
             std::vector<std::string> permutations(prefixes.begin(),
                                                                 prefixes.end());
             do {
-              fprintf(out_file, "%s", delimeter);
-              delimeter = " | ";
-              auto delimeter = '(';
+              fprintf(out_file, "%s", delimiter);
+              delimiter = " | ";
+              auto delimiter = '(';
               for (auto prefix_it = permutations.begin();
                    prefix_it != permutations.end(); ++prefix_it) {
                 auto &prefix = *prefix_it;
-                fprintf(out_file, "%c%s", delimeter, prefix.c_str());
-                delimeter = ' ';
+                fprintf(out_file, "%c%s", delimiter, prefix.c_str());
+                delimiter = ' ';
               }
               fprintf(out_file, ")");
             } while (next_permutation(permutations.begin(),
@@ -1874,11 +1873,11 @@ namespace {
             }
           }
         }
-        auto delimeter = "(";
+        auto delimiter = "(";
         for (auto byte_it = bytes.begin(); byte_it != bytes.end(); ++byte_it) {
           auto &byte = *byte_it;
-          fprintf(out_file, "%s0x%02x", delimeter, byte);
-          delimeter = " | ";
+          fprintf(out_file, "%s0x%02x", delimiter, byte);
+          delimiter = " | ";
         }
         fprintf(out_file, ")");
       }
@@ -1993,13 +1992,13 @@ namespace {
           exit(1);
         }
       } else {
-        auto delimeter = '(';
+        auto delimiter = '(';
         for (auto opcode_it = opcodes.begin();
              opcode_it != opcodes.end(); ++opcode_it) {
           auto &opcode = *opcode_it;
           if (opcode.find('/') == opcode.npos) {
-            fprintf(out_file, "%c%s", delimeter, opcode.c_str());
-            delimeter = ' ';
+            fprintf(out_file, "%c%s", delimiter, opcode.c_str());
+            delimiter = ' ';
           } else {
             break;
           }
@@ -2346,7 +2345,7 @@ namespace {
       MarkedInstruction(instruction).print_definition();
     }
   }
-  bool MarkedInstruction::first_delimeter = true;
+  bool MarkedInstruction::first_delimiter = true;
 }
 
 struct compare_action {
