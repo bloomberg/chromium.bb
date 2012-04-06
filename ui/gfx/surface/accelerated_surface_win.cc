@@ -283,7 +283,8 @@ scoped_refptr<AcceleratedPresenter> AcceleratedPresenterMap::GetPresenter(
 
 AcceleratedPresenter::AcceleratedPresenter(gfx::NativeWindow window)
     : present_thread_(g_present_thread_pool.Pointer()->NextThread()),
-      window_(window) {
+      window_(window),
+      event_(false, false) {
 }
 
 scoped_refptr<AcceleratedPresenter> AcceleratedPresenter::GetForWindow(
@@ -312,6 +313,26 @@ void AcceleratedPresenter::AsyncPresentAndAcknowledge(
 bool AcceleratedPresenter::Present() {
   TRACE_EVENT0("surface", "Present");
 
+  bool result;
+
+  present_thread_->message_loop()->PostTask(
+      FROM_HERE,
+      base::Bind(&AcceleratedPresenter::DoPresent,
+                 this,
+                 &result));
+  event_.Wait();
+  return result;
+}
+
+void AcceleratedPresenter::DoPresent(bool* result)
+{
+  *result = DoRealPresent();
+  event_.Signal();
+}
+
+bool AcceleratedPresenter::DoRealPresent()
+{
+  TRACE_EVENT0("surface", "DoRealPresent");
   HRESULT hr;
 
   base::AutoLock locked(lock_);
@@ -339,21 +360,6 @@ bool AcceleratedPresenter::Present() {
                               D3DPRESENT_INTERVAL_IMMEDIATE);
     if (FAILED(hr))
       return false;
-  }
-
-  // Wait for the Present to complete before returning.
-  {
-    TRACE_EVENT0("surface", "spin");
-    hr = present_thread_->query()->Issue(D3DISSUE_END);
-    if (FAILED(hr))
-      return false;
-
-    do {
-      hr = present_thread_->query()->GetData(NULL, 0, D3DGETDATA_FLUSH);
-
-      if (hr == S_FALSE)
-        Sleep(0);
-    } while (hr == S_FALSE);
   }
 
   return true;

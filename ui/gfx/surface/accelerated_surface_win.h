@@ -11,6 +11,7 @@
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/win/scoped_comptr.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
@@ -61,6 +62,8 @@ class SURFACE_EXPORT AcceleratedPresenter
       int64 surface_handle,
       const base::Callback<void(bool)>& completion_task);
   void DoSuspend();
+  void DoPresent(bool* presented);
+  bool DoRealPresent();
 
   // The thread with which this presenter has affinity.
   PresentThread* const present_thread_;
@@ -72,6 +75,9 @@ class SURFACE_EXPORT AcceleratedPresenter
   // simply post from the main thread to the present thread via the immutable
   // present_thread_ member.
   base::Lock lock_;
+
+  // UI thread can wait on this event to ensure a present is finished.
+  base::WaitableEvent event_;
 
   // The current size of the swap chain. This is only accessed on the thread
   // with which the surface has affinity.
