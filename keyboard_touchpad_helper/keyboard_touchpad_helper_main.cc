@@ -14,7 +14,7 @@
 #include <unistd.h>
 #include <vector>
 
-#include <base/scoped_ptr.h>
+#include <base/memory/scoped_ptr.h>
 #include <base/string_number_conversions.h>
 #include <base/string_split.h>
 #include <gflags/gflags.h>

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,8 +11,9 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#include <base/string_util.h>
 #include <base/json/json_writer.h>
+#include <base/stringprintf.h>
+#include <base/values.h>
 
 #include "gestures/include/logging.h"
 #include "gestures/include/prop_registry.h"
@@ -22,6 +23,7 @@
 #define VCSID "Unknown"
 #endif  // VCSID
 
+using base::FundamentalValue;
 using std::set;
 using std::string;
 

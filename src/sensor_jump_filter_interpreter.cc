@@ -4,7 +4,7 @@
 
 #include "gestures/include/sensor_jump_filter_interpreter.h"
 
-#include <base/scoped_ptr.h>
+#include <base/memory/scoped_ptr.h>
 
 #include "gestures/include/util.h"
 
