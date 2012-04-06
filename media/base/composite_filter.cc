@@ -7,7 +7,8 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
-#include "base/message_loop.h"
+#include "base/location.h"
+#include "base/message_loop_proxy.h"
 #include "base/stl_util.h"
 
 namespace media {
@@ -33,7 +34,8 @@ class CompositeFilter::FilterHostImpl : public FilterHost {
   DISALLOW_COPY_AND_ASSIGN(FilterHostImpl);
 };
 
-CompositeFilter::CompositeFilter(MessageLoop* message_loop)
+CompositeFilter::CompositeFilter(
+    const scoped_refptr<base::MessageLoopProxy>& message_loop)
     : state_(kCreated),
       sequence_index_(0),
       message_loop_(message_loop),
@@ -43,14 +45,14 @@ CompositeFilter::CompositeFilter(MessageLoop* message_loop)
 }
 
 CompositeFilter::~CompositeFilter() {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
+  DCHECK(message_loop_->BelongsToCurrentThread());
   DCHECK(state_ == kCreated || state_ == kStopped);
 
   filters_.clear();
 }
 
 void CompositeFilter::AddFilter(scoped_refptr<Filter> filter) {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
+  DCHECK(message_loop_->BelongsToCurrentThread());
   CHECK(filter && state_ == kCreated && host());
 
   // Register ourselves as the filter's host.
@@ -59,7 +61,7 @@ void CompositeFilter::AddFilter(scoped_refptr<Filter> filter) {
 }
 
 void CompositeFilter::RemoveFilter(scoped_refptr<Filter> filter) {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
+  DCHECK(message_loop_->BelongsToCurrentThread());
   if (!filter.get() || state_ != kCreated || !host())
     LOG(FATAL) << "Unknown filter, or in unexpected state.";
 
@@ -75,7 +77,7 @@ void CompositeFilter::RemoveFilter(scoped_refptr<Filter> filter) {
 }
 
 void CompositeFilter::set_host(FilterHost* host) {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
+  DCHECK(message_loop_->BelongsToCurrentThread());
   DCHECK(host);
   DCHECK(!host_impl_.get());
   host_impl_.reset(new FilterHostImpl(this, host));
@@ -86,7 +88,7 @@ FilterHost* CompositeFilter::host() {
 }
 
 void CompositeFilter::Play(const base::Closure& play_cb) {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
+  DCHECK(message_loop_->BelongsToCurrentThread());
   if (IsOperationPending()) {
     SendErrorToHost(PIPELINE_ERROR_OPERATION_PENDING);
     play_cb.Run();
@@ -106,7 +108,7 @@ void CompositeFilter::Play(const base::Closure& play_cb) {
 }
 
 void CompositeFilter::Pause(const base::Closure& pause_cb) {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
+  DCHECK(message_loop_->BelongsToCurrentThread());
   if (IsOperationPending()) {
     SendErrorToHost(PIPELINE_ERROR_OPERATION_PENDING);
     pause_cb.Run();
@@ -126,7 +128,7 @@ void CompositeFilter::Pause(const base::Closure& pause_cb) {
 }
 
 void CompositeFilter::Flush(const base::Closure& flush_cb) {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
+  DCHECK(message_loop_->BelongsToCurrentThread());
   if (IsOperationPending()) {
     SendErrorToHost(PIPELINE_ERROR_OPERATION_PENDING);
     flush_cb.Run();
@@ -143,7 +145,7 @@ void CompositeFilter::Flush(const base::Closure& flush_cb) {
 }
 
 void CompositeFilter::Stop(const base::Closure& stop_cb) {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
+  DCHECK(message_loop_->BelongsToCurrentThread());
   if (!host()) {
     SendErrorToHost(PIPELINE_ERROR_INVALID_STATE);
     stop_cb.Run();
@@ -190,7 +192,7 @@ void CompositeFilter::Stop(const base::Closure& stop_cb) {
 }
 
 void CompositeFilter::SetPlaybackRate(float playback_rate) {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
+  DCHECK(message_loop_->BelongsToCurrentThread());
   for (FilterVector::iterator iter = filters_.begin();
        iter != filters_.end();
        ++iter) {
@@ -200,7 +202,7 @@ void CompositeFilter::SetPlaybackRate(float playback_rate) {
 
 void CompositeFilter::Seek(base::TimeDelta time,
                            const PipelineStatusCB& seek_cb) {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
+  DCHECK(message_loop_->BelongsToCurrentThread());
 
   if (IsOperationPending()) {
     seek_cb.Run(PIPELINE_ERROR_OPERATION_PENDING);
@@ -217,7 +219,7 @@ void CompositeFilter::Seek(base::TimeDelta time,
 }
 
 void CompositeFilter::OnAudioRendererDisabled() {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
+  DCHECK(message_loop_->BelongsToCurrentThread());
   for (FilterVector::iterator iter = filters_.begin();
        iter != filters_.end();
        ++iter) {
@@ -226,12 +228,12 @@ void CompositeFilter::OnAudioRendererDisabled() {
 }
 
 void CompositeFilter::ChangeState(State new_state) {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
+  DCHECK(message_loop_->BelongsToCurrentThread());
   state_ = new_state;
 }
 
 void CompositeFilter::StartSerialCallSequence() {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
+  DCHECK(message_loop_->BelongsToCurrentThread());
   status_ = PIPELINE_OK;
   sequence_index_ = 0;
 
@@ -244,7 +246,7 @@ void CompositeFilter::StartSerialCallSequence() {
 }
 
 void CompositeFilter::StartParallelCallSequence() {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
+  DCHECK(message_loop_->BelongsToCurrentThread());
   status_ = PIPELINE_OK;
   sequence_index_ = 0;
 
@@ -337,7 +339,7 @@ CompositeFilter::State CompositeFilter::GetNextState(State state) const {
 }
 
 void CompositeFilter::SerialCallback() {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
+  DCHECK(message_loop_->BelongsToCurrentThread());
   if (status_ != PIPELINE_OK) {
     // We encountered an error. Terminate the sequence now.
     ChangeState(kError);
@@ -362,7 +364,7 @@ void CompositeFilter::SerialCallback() {
 }
 
 void CompositeFilter::ParallelCallback() {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
+  DCHECK(message_loop_->BelongsToCurrentThread());
 
   if (!filters_.empty())
     sequence_index_++;
@@ -405,9 +407,10 @@ void CompositeFilter::SendErrorToHost(PipelineStatus error) {
 }
 
 // Execute |closure| if on |message_loop|, otherwise post to it.
-static void TrampolineClosureIfNecessary(MessageLoop* message_loop,
-                                         const base::Closure& closure) {
-  if (MessageLoop::current() == message_loop)
+static void TrampolineClosureIfNecessary(
+    const scoped_refptr<base::MessageLoopProxy>& message_loop,
+    const base::Closure& closure) {
+  if (message_loop->BelongsToCurrentThread())
     closure.Run();
   else
     message_loop->PostTask(FROM_HERE, closure);
@@ -439,13 +442,13 @@ void CompositeFilter::OnStatusCB(const base::Closure& callback,
 }
 
 void CompositeFilter::SetError(PipelineStatus error) {
-  if (message_loop_ != MessageLoop::current()) {
+  if (!message_loop_->BelongsToCurrentThread()) {
     message_loop_->PostTask(FROM_HERE,
         base::Bind(&CompositeFilter::SetError, this, error));
     return;
   }
 
-  DCHECK_EQ(message_loop_, MessageLoop::current());
+  DCHECK(message_loop_->BelongsToCurrentThread());
   DCHECK_NE(state_, kCreated);
 
   // Drop errors recieved while stopping or stopped.

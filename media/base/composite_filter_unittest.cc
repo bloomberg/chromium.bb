@@ -141,7 +141,7 @@ class CompositeFilterTest : public testing::Test {
 };
 
 CompositeFilterTest::CompositeFilterTest() :
-    composite_(new CompositeFilter(&message_loop_)),
+    composite_(new CompositeFilter(message_loop_.message_loop_proxy())),
     filter_1_status_(PIPELINE_OK),
     filter_2_status_(PIPELINE_OK),
     mock_filter_host_(new StrictMock<MockFilterHost>()) {
@@ -151,7 +151,7 @@ CompositeFilterTest::~CompositeFilterTest() {}
 
 void CompositeFilterTest::SetupAndAdd2Filters() {
   mock_filter_host_.reset(new StrictMock<MockFilterHost>());
-  composite_ = new CompositeFilter(&message_loop_);
+  composite_ = new CompositeFilter(message_loop_.message_loop_proxy());
   composite_->set_host(mock_filter_host_.get());
 
   // Setup |filter_1_| and arrange for methods to set

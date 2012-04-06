@@ -64,7 +64,7 @@ struct Pipeline::PipelineInitState {
 };
 
 Pipeline::Pipeline(MessageLoop* message_loop, MediaLog* media_log)
-    : message_loop_(message_loop),
+    : message_loop_(message_loop->message_loop_proxy()),
       media_log_(media_log),
       clock_(new Clock(&base::Time::Now)),
       waiting_for_clock_update_(false),
@@ -337,22 +337,22 @@ bool Pipeline::IsPipelineOk() {
 }
 
 bool Pipeline::IsPipelineStopped() {
-  DCHECK_EQ(MessageLoop::current(), message_loop_);
+  DCHECK(message_loop_->BelongsToCurrentThread());
   return state_ == kStopped || state_ == kError;
 }
 
 bool Pipeline::IsPipelineTearingDown() {
-  DCHECK_EQ(MessageLoop::current(), message_loop_);
+  DCHECK(message_loop_->BelongsToCurrentThread());
   return tearing_down_;
 }
 
 bool Pipeline::IsPipelineStopPending() {
-  DCHECK_EQ(MessageLoop::current(), message_loop_);
+  DCHECK(message_loop_->BelongsToCurrentThread());
   return stop_pending_;
 }
 
 bool Pipeline::IsPipelineSeeking() {
-  DCHECK_EQ(MessageLoop::current(), message_loop_);
+  DCHECK(message_loop_->BelongsToCurrentThread());
   if (!seek_pending_)
     return false;
   DCHECK(kSeeking == state_ || kPausing == state_ ||
@@ -371,7 +371,7 @@ void Pipeline::ReportStatus(const PipelineStatusCB& cb, PipelineStatus status) {
 }
 
 void Pipeline::FinishInitialization() {
-  DCHECK_EQ(MessageLoop::current(), message_loop_);
+  DCHECK(message_loop_->BelongsToCurrentThread());
   // Execute the seek callback, if present.  Note that this might be the
   // initial callback passed into Start().
   ReportStatus(seek_cb_, status_);
@@ -596,7 +596,7 @@ void Pipeline::StartTask(scoped_ptr<FilterCollection> filter_collection,
                          const PipelineStatusCB& error_cb,
                          const NetworkEventCB& network_cb,
                          const PipelineStatusCB& start_cb) {
-  DCHECK_EQ(MessageLoop::current(), message_loop_);
+  DCHECK(message_loop_->BelongsToCurrentThread());
   DCHECK_EQ(kCreated, state_);
   filter_collection_ = filter_collection.Pass();
   ended_cb_ = ended_cb;
@@ -631,7 +631,7 @@ void Pipeline::StartTask(scoped_ptr<FilterCollection> filter_collection,
 // works like a big state change table. If we no longer need to start filters
 // in order, we need to get rid of all the state change.
 void Pipeline::InitializeTask(PipelineStatus last_stage_status) {
-  DCHECK_EQ(MessageLoop::current(), message_loop_);
+  DCHECK(message_loop_->BelongsToCurrentThread());
 
   if (last_stage_status != PIPELINE_OK) {
     // Currently only VideoDecoders have a recoverable error code.
@@ -733,7 +733,7 @@ void Pipeline::InitializeTask(PipelineStatus last_stage_status) {
 // Stop() tasks even if we've already stopped.  Perhaps this should no-op for
 // additional calls, however most of this logic will be changing.
 void Pipeline::StopTask(const base::Closure& stop_cb) {
-  DCHECK_EQ(MessageLoop::current(), message_loop_);
+  DCHECK(message_loop_->BelongsToCurrentThread());
   DCHECK(!IsPipelineStopPending());
   DCHECK_NE(state_, kStopped);
 
@@ -764,7 +764,7 @@ void Pipeline::StopTask(const base::Closure& stop_cb) {
 }
 
 void Pipeline::ErrorChangedTask(PipelineStatus error) {
-  DCHECK_EQ(MessageLoop::current(), message_loop_);
+  DCHECK(message_loop_->BelongsToCurrentThread());
   DCHECK_NE(PIPELINE_OK, error) << "PIPELINE_OK isn't an error!";
 
   // Suppress executing additional error logic. Note that if we are currently
@@ -789,7 +789,7 @@ void Pipeline::ErrorChangedTask(PipelineStatus error) {
 }
 
 void Pipeline::PlaybackRateChangedTask(float playback_rate) {
-  DCHECK_EQ(MessageLoop::current(), message_loop_);
+  DCHECK(message_loop_->BelongsToCurrentThread());
 
   if (!running_ || tearing_down_)
     return;
@@ -817,7 +817,7 @@ void Pipeline::PlaybackRateChangedTask(float playback_rate) {
 }
 
 void Pipeline::VolumeChangedTask(float volume) {
-  DCHECK_EQ(MessageLoop::current(), message_loop_);
+  DCHECK(message_loop_->BelongsToCurrentThread());
   if (!running_ || tearing_down_)
     return;
 
@@ -827,7 +827,7 @@ void Pipeline::VolumeChangedTask(float volume) {
 
 void Pipeline::SeekTask(base::TimeDelta time,
                         const PipelineStatusCB& seek_cb) {
-  DCHECK_EQ(MessageLoop::current(), message_loop_);
+  DCHECK(message_loop_->BelongsToCurrentThread());
   DCHECK(!IsPipelineStopPending());
 
   // Suppress seeking if we're not fully started.
@@ -864,7 +864,7 @@ void Pipeline::SeekTask(base::TimeDelta time,
 }
 
 void Pipeline::NotifyEndedTask() {
-  DCHECK_EQ(MessageLoop::current(), message_loop_);
+  DCHECK(message_loop_->BelongsToCurrentThread());
 
   // We can only end if we were actually playing.
   if (state_ != kStarted) {
@@ -901,13 +901,13 @@ void Pipeline::NotifyEndedTask() {
 }
 
 void Pipeline::NotifyNetworkEventTask(NetworkEvent type) {
-  DCHECK_EQ(MessageLoop::current(), message_loop_);
+  DCHECK(message_loop_->BelongsToCurrentThread());
   if (!network_cb_.is_null())
     network_cb_.Run(type);
 }
 
 void Pipeline::DisableAudioRendererTask() {
-  DCHECK_EQ(MessageLoop::current(), message_loop_);
+  DCHECK(message_loop_->BelongsToCurrentThread());
 
   base::AutoLock auto_lock(lock_);
   has_audio_ = false;
@@ -929,7 +929,7 @@ void Pipeline::DisableAudioRendererTask() {
 }
 
 void Pipeline::FilterStateTransitionTask() {
-  DCHECK_EQ(MessageLoop::current(), message_loop_);
+  DCHECK(message_loop_->BelongsToCurrentThread());
 
   // No reason transitioning if we've errored or have stopped.
   if (IsPipelineStopped()) {
@@ -1057,7 +1057,7 @@ void Pipeline::TeardownStateTransitionTask() {
 }
 
 void Pipeline::FinishDestroyingFiltersTask() {
-  DCHECK_EQ(MessageLoop::current(), message_loop_);
+  DCHECK(message_loop_->BelongsToCurrentThread());
   DCHECK(IsPipelineStopped());
 
   // Clear filter references.
@@ -1082,7 +1082,7 @@ void Pipeline::FinishDestroyingFiltersTask() {
 }
 
 void Pipeline::InitializeDemuxer() {
-  DCHECK_EQ(MessageLoop::current(), message_loop_);
+  DCHECK(message_loop_->BelongsToCurrentThread());
   DCHECK(IsPipelineOk());
 
   demuxer_ = filter_collection_->GetDemuxer();
@@ -1095,7 +1095,7 @@ void Pipeline::InitializeDemuxer() {
 }
 
 void Pipeline::OnDemuxerInitialized(PipelineStatus status) {
-  if (MessageLoop::current() != message_loop_) {
+  if (!message_loop_->BelongsToCurrentThread()) {
     message_loop_->PostTask(FROM_HERE, base::Bind(
         &Pipeline::OnDemuxerInitialized, this, status));
     return;
@@ -1118,7 +1118,7 @@ void Pipeline::OnDemuxerInitialized(PipelineStatus status) {
 
 bool Pipeline::InitializeAudioDecoder(
     const scoped_refptr<Demuxer>& demuxer) {
-  DCHECK_EQ(MessageLoop::current(), message_loop_);
+  DCHECK(message_loop_->BelongsToCurrentThread());
   DCHECK(IsPipelineOk());
   DCHECK(demuxer);
 
@@ -1144,7 +1144,7 @@ bool Pipeline::InitializeAudioDecoder(
 
 bool Pipeline::InitializeVideoDecoder(
     const scoped_refptr<Demuxer>& demuxer) {
-  DCHECK_EQ(MessageLoop::current(), message_loop_);
+  DCHECK(message_loop_->BelongsToCurrentThread());
   DCHECK(IsPipelineOk());
   DCHECK(demuxer);
 
@@ -1172,7 +1172,7 @@ bool Pipeline::InitializeVideoDecoder(
 
 bool Pipeline::InitializeAudioRenderer(
     const scoped_refptr<AudioDecoder>& decoder) {
-  DCHECK_EQ(MessageLoop::current(), message_loop_);
+  DCHECK(message_loop_->BelongsToCurrentThread());
   DCHECK(IsPipelineOk());
 
   if (!decoder)
@@ -1197,7 +1197,7 @@ bool Pipeline::InitializeAudioRenderer(
 
 bool Pipeline::InitializeVideoRenderer(
     const scoped_refptr<VideoDecoder>& decoder) {
-  DCHECK_EQ(MessageLoop::current(), message_loop_);
+  DCHECK(message_loop_->BelongsToCurrentThread());
   DCHECK(IsPipelineOk());
 
   if (!decoder)
@@ -1220,7 +1220,7 @@ bool Pipeline::InitializeVideoRenderer(
 }
 
 void Pipeline::TearDownPipeline() {
-  DCHECK_EQ(MessageLoop::current(), message_loop_);
+  DCHECK(message_loop_->BelongsToCurrentThread());
   DCHECK_NE(kStopped, state_);
 
   DCHECK(!tearing_down_ ||  // Teardown on Stop().
@@ -1297,7 +1297,7 @@ void Pipeline::DoStop(const base::Closure& callback) {
 }
 
 void Pipeline::OnDemuxerStopDone(const base::Closure& callback) {
-  if (MessageLoop::current() != message_loop_) {
+  if (!message_loop_->BelongsToCurrentThread()) {
     message_loop_->PostTask(FROM_HERE, base::Bind(
         &Pipeline::OnDemuxerStopDone, this, callback));
     return;
@@ -1326,7 +1326,7 @@ void Pipeline::DoSeek(base::TimeDelta seek_timestamp) {
 
 void Pipeline::OnDemuxerSeekDone(base::TimeDelta seek_timestamp,
                                  PipelineStatus status) {
-  if (MessageLoop::current() != message_loop_) {
+  if (!message_loop_->BelongsToCurrentThread()) {
     message_loop_->PostTask(FROM_HERE, base::Bind(
         &Pipeline::OnDemuxerSeekDone, this, seek_timestamp, status));
     return;
@@ -1344,7 +1344,7 @@ void Pipeline::OnDemuxerSeekDone(base::TimeDelta seek_timestamp,
 }
 
 void Pipeline::OnAudioUnderflow() {
-  if (MessageLoop::current() != message_loop_) {
+  if (!message_loop_->BelongsToCurrentThread()) {
     message_loop_->PostTask(FROM_HERE, base::Bind(
         &Pipeline::OnAudioUnderflow, this));
     return;
@@ -1363,7 +1363,7 @@ void Pipeline::OnCanPlayThrough() {
 }
 
 void Pipeline::NotifyCanPlayThrough() {
-  DCHECK_EQ(MessageLoop::current(), message_loop_);
+  DCHECK(message_loop_->BelongsToCurrentThread());
   NotifyNetworkEventTask(CAN_PLAY_THROUGH);
 }
 

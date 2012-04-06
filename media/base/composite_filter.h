@@ -12,13 +12,16 @@
 #include "media/base/filter_host.h"
 #include "media/base/filters.h"
 
-class MessageLoop;
+namespace base {
+class MessageLoopProxy;
+}
 
 namespace media {
 
 class MEDIA_EXPORT CompositeFilter : public Filter {
  public:
-  explicit CompositeFilter(MessageLoop* message_loop);
+  explicit CompositeFilter(
+      const scoped_refptr<base::MessageLoopProxy>& message_loop);
 
   // Adds a filter to the composite. This is only allowed after set_host()
   // is called and before the first state changing operation such as Play(),
@@ -131,7 +134,7 @@ class MEDIA_EXPORT CompositeFilter : public Filter {
   unsigned int sequence_index_;
 
   // Message loop passed into the constructor.
-  MessageLoop* message_loop_;
+  scoped_refptr<base::MessageLoopProxy> message_loop_;
 
   // FilterHost implementation passed to Filters owned by this
   // object.
