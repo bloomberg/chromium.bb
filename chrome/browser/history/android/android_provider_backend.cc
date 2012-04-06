@@ -905,7 +905,7 @@ bool AndroidProviderBackend::SimulateUpdateURL(
   FaviconID favicon_id = statement->statement()->ColumnInt64(4);
   if (favicon_id) {
     std::vector<unsigned char> favicon;
-    if (!thumbnail_db_->GetFavicon(favicon_id, NULL, &favicon, NULL))
+    if (!thumbnail_db_->GetFavicon(favicon_id, NULL, &favicon, NULL, NULL))
       return false;
     if (!favicon.empty())
       new_row.set_favicon(favicon);
