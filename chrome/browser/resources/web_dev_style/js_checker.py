@@ -78,6 +78,7 @@ class JSChecker(object):
         path.join(resources, 'ntp4'),
         path.join(resources, 'options2'),
         path.join(resources, 'print_preview'),
+        path.join(resources, 'profiler'),
         path.join(resources, 'sync_promo'),
         path.join(resources, 'uber'),
     )
