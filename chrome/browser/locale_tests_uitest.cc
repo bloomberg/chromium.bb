@@ -66,7 +66,13 @@ class LocaleTestsZhTw : public LocaleTestsBase {
   }
 };
 
-TEST_F(LocaleTestsDa, TestStart) {
+#if defined(OS_CHROMEOS)
+// See http://crbug.com/122366
+#define MAYBE_TestStart FAILS_TestStart
+#else
+#define MAYBE_TestStart TestStart
+#endif
+TEST_F(LocaleTestsDa, MAYBE_TestStart) {
   // Just making sure we can start/shutdown cleanly.
 }
 
