@@ -9,10 +9,10 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/observer_list.h"
 #include "base/threading/worker_pool.h"
-#include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
-#include "chrome/browser/chromeos/dbus/image_burner_client.h"
 #include "chrome/browser/chromeos/disks/disk_mount_manager.h"
 #include "chrome/common/zip.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/image_burner_client.h"
 
 namespace chromeos {
 

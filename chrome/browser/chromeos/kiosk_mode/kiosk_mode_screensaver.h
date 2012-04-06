@@ -9,7 +9,7 @@
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/dbus/power_manager_client.h"
+#include "chromeos/dbus/power_manager_client.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 

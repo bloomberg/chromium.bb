@@ -7,8 +7,8 @@
 #pragma once
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/chromeos/dbus/power_manager_client.h"
 #include "chrome/browser/chromeos/status/status_area_button.h"
+#include "chromeos/dbus/power_manager_client.h"
 #include "ui/views/controls/button/menu_button_listener.h"
 #include "ui/views/controls/menu/menu_delegate.h"
 

@@ -8,7 +8,7 @@
 
 #include <map>
 
-#include "chrome/browser/chromeos/dbus/cros_disks_client.h"
+#include "chromeos/dbus/cros_disks_client.h"
 
 namespace chromeos {
 namespace disks {

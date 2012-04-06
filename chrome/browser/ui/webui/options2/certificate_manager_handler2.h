@@ -19,7 +19,7 @@
 #include "ui/gfx/native_widget_types.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/dbus/cryptohome_client.h"
+#include "chromeos/dbus/cryptohome_client.h"
 #endif
 
 namespace options2 {

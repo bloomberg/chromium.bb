@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/views/ash/brightness_controller_chromeos.h"
 
-#include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
-#include "chrome/browser/chromeos/dbus/power_manager_client.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/power_manager_client.h"
 #include "content/public/browser/user_metrics.h"
 #include "ui/base/accelerators/accelerator.h"
 

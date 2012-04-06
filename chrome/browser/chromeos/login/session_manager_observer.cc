@@ -5,10 +5,10 @@
 #include "chrome/browser/chromeos/login/session_manager_observer.h"
 
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
 #include "chrome/browser/chromeos/login/signed_settings.h"
 #include "chrome/browser/chromeos/login/signed_settings_cache.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 

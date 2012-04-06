@@ -7,8 +7,8 @@
 #pragma once
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/chromeos/dbus/update_engine_client.h"
 #include "chrome/browser/ui/webui/help/version_updater.h"
+#include "chromeos/dbus/update_engine_client.h"
 
 class VersionUpdaterCros : public VersionUpdater,
                            public chromeos::UpdateEngineClient::Observer {

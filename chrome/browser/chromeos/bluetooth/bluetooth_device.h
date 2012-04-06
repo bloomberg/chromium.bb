@@ -13,8 +13,8 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
-#include "chrome/browser/chromeos/dbus/bluetooth_agent_service_provider.h"
-#include "chrome/browser/chromeos/dbus/bluetooth_device_client.h"
+#include "chromeos/dbus/bluetooth_agent_service_provider.h"
+#include "chromeos/dbus/bluetooth_device_client.h"
 #include "dbus/object_path.h"
 
 namespace chromeos {

@@ -7,12 +7,12 @@
 #include "ash/shell.h"
 #include "ash/wm/power_button_controller.h"
 #include "base/logging.h"
-#include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/power/power_button_controller_delegate_chromeos.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "content/public/browser/notification_service.h"
 
 namespace chromeos {

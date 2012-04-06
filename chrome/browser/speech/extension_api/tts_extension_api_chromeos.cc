@@ -12,10 +12,10 @@
 #include "base/message_loop.h"
 #include "base/stl_util.h"
 #include "base/string_number_conversions.h"
-#include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
-#include "chrome/browser/chromeos/dbus/speech_synthesizer_client.h"
 #include "chrome/browser/speech/extension_api/tts_extension_api_controller.h"
 #include "chrome/browser/speech/extension_api/tts_extension_api_platform.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/speech_synthesizer_client.h"
 
 using base::DoubleToString;
 

@@ -8,8 +8,8 @@
 #include "base/hash_tables.h"
 #include "base/location.h"
 #include "base/message_loop_proxy.h"
-#include "chrome/browser/chromeos/dbus/cryptohome_client.h"
-#include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/cryptohome_client.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 
 using chromeos::DBusThreadManager;
 

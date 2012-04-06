@@ -13,7 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/string_util.h"
-#include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;

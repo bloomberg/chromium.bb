@@ -114,12 +114,12 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/customization_document.h"
-#include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
 #include "chrome/browser/chromeos/enterprise_extension_observer.h"
 #include "chrome/browser/chromeos/gview_request_interceptor.h"
 #include "chrome/browser/chromeos/network_message_observer.h"
 #include "chrome/browser/chromeos/power/low_battery_observer.h"
 #include "chrome/browser/chromeos/sms_observer.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #endif
 
 #if defined(TOOLKIT_VIEWS) && defined(OS_LINUX)

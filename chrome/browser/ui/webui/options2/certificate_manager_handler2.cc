@@ -26,8 +26,8 @@
 #include "ui/base/l10n/l10n_util_collator.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/dbus/cryptohome_client.h"
-#include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/cryptohome_client.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #endif
 
 using content::BrowserThread;

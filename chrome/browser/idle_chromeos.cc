@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,11 +6,8 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
-#include "chrome/browser/chromeos/dbus/power_manager_client.h"
-#if !defined(USE_AURA)
-#include "chrome/browser/screensaver_window_finder_gtk.h"
-#endif
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/power_manager_client.h"
 
 void CalculateIdleStateNotifier(unsigned int idle_treshold,
                                 IdleCallback notify,
@@ -25,10 +22,6 @@ void CalculateIdleStateNotifier(unsigned int idle_treshold,
 }
 
 void CalculateIdleState(unsigned int idle_threshold, IdleCallback notify) {
-  if (CheckIdleStateIsLocked()) {
-    notify.Run(IDLE_STATE_LOCKED);
-    return;
-  }
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
       CalculateIdleTime(base::Bind(&CalculateIdleStateNotifier, idle_threshold,
                                    notify));
@@ -37,9 +30,6 @@ void CalculateIdleState(unsigned int idle_threshold, IdleCallback notify) {
 bool CheckIdleStateIsLocked() {
   // Usually the screensaver is used to lock the screen, so we do not need to
   // check if the workstation is locked.
-#if defined(USE_AURA)
+  // TODO(oshima): Verify if this behavior is correct.
   return false;
-#else
-  return ScreensaverWindowFinder::ScreensaverWindowExists();
-#endif
 }

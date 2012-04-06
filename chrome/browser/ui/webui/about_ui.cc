@@ -76,11 +76,11 @@
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/customization_document.h"
-#include "chrome/browser/chromeos/dbus/cryptohome_client.h"
-#include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/version_loader.h"
 #include "chrome/browser/oom_priority_manager.h"
+#include "chromeos/dbus/cryptohome_client.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "content/public/browser/zygote_host_linux.h"
 #elif defined(OS_LINUX) || defined(OS_OPENBSD)
 #include "content/public/browser/zygote_host_linux.h"

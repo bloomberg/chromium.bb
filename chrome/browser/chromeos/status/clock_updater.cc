@@ -4,9 +4,9 @@
 
 #include "chrome/browser/chromeos/status/clock_updater.h"
 
-#include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
 #include "chrome/browser/chromeos/status/clock_menu_button.h"
 #include "chrome/browser/chromeos/system/timezone_settings.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 
 ClockUpdater::ClockUpdater(ClockMenuButton* button)
     : button_(button) {

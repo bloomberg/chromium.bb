@@ -9,10 +9,10 @@
 #include "base/stl_util.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/bluetooth/bluetooth_device.h"
-#include "chrome/browser/chromeos/dbus/bluetooth_adapter_client.h"
-#include "chrome/browser/chromeos/dbus/bluetooth_device_client.h"
-#include "chrome/browser/chromeos/dbus/bluetooth_manager_client.h"
-#include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/bluetooth_adapter_client.h"
+#include "chromeos/dbus/bluetooth_device_client.h"
+#include "chromeos/dbus/bluetooth_manager_client.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "dbus/object_path.h"
 
 namespace chromeos {

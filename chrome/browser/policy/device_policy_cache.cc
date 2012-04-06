@@ -16,8 +16,6 @@
 #include "base/metrics/histogram.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros_settings.h"
-#include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
-#include "chrome/browser/chromeos/dbus/update_engine_client.h"
 #include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/browser/chromeos/login/ownership_service.h"
 #include "chrome/browser/chromeos/login/signed_settings_helper.h"
@@ -28,6 +26,8 @@
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
 #include "chrome/browser/policy/proto/device_management_local.pb.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/update_engine_client.h"
 #include "policy/policy_constants.h"
 
 using google::protobuf::RepeatedPtrField;

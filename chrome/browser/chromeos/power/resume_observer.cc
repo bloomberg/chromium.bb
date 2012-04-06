@@ -4,8 +4,8 @@
 
 #include "chrome/browser/chromeos/power/resume_observer.h"
 
-#include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
 #include "chrome/browser/extensions/system/system_api.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 
 namespace chromeos {
 

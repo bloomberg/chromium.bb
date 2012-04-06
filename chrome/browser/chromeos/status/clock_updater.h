@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_CHROMEOS_STATUS_CLOCK_UPDATER_H_
 #pragma once
 
-#include "chrome/browser/chromeos/dbus/power_manager_client.h"
 #include "chrome/browser/chromeos/system/timezone_settings.h"
+#include "chromeos/dbus/power_manager_client.h"
 
 class ClockMenuButton;
 

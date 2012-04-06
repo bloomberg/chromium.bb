@@ -4,13 +4,13 @@
 
 #include "base/message_loop.h"
 #include "chrome/browser/chromeos/cros/mock_network_library.h"
-#include "chrome/browser/chromeos/dbus/mock_dbus_thread_manager.h"
-#include "chrome/browser/chromeos/dbus/mock_session_manager_client.h"
-#include "chrome/browser/chromeos/dbus/mock_update_engine_client.h"
 #include "chrome/browser/chromeos/login/mock_screen_observer.h"
 #include "chrome/browser/chromeos/login/update_screen.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/login/wizard_in_process_browser_test.h"
+#include "chromeos/dbus/mock_dbus_thread_manager.h"
+#include "chromeos/dbus/mock_session_manager_client.h"
+#include "chromeos/dbus/mock_update_engine_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {

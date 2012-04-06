@@ -37,10 +37,10 @@
 #if defined(OS_CHROMEOS)
 #include "base/chromeos/chromeos_version.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
-#include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
-#include "chrome/browser/chromeos/dbus/session_manager_client.h"
-#include "chrome/browser/chromeos/dbus/update_engine_client.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/session_manager_client.h"
+#include "chromeos/dbus/update_engine_client.h"
 #endif
 
 using content::WebContents;

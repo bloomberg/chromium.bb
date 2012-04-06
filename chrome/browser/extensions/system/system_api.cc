@@ -13,8 +13,8 @@
 #include "chrome/common/pref_names.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
-#include "chrome/browser/chromeos/dbus/update_engine_client.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/update_engine_client.h"
 #else
 #include "chrome/browser/upgrade_detector.h"
 #endif

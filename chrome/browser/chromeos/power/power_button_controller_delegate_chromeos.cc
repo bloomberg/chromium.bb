@@ -5,10 +5,10 @@
 #include "chrome/browser/chromeos/power/power_button_controller_delegate_chromeos.h"
 
 #include "base/logging.h"
-#include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
-#include "chrome/browser/chromeos/dbus/power_manager_client.h"
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/power_manager_client.h"
 
 namespace chromeos {
 

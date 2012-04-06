@@ -14,10 +14,10 @@
 #include "chrome/browser/browser_process.h"  // g_browser_process
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
-#include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
-#include "chrome/browser/chromeos/dbus/cryptohome_client.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/common/net/x509_certificate_model.h"
+#include "chromeos/dbus/cryptohome_client.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "crypto/encryptor.h"
 #include "crypto/nss_util.h"

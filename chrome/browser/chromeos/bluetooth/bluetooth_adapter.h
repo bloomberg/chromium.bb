@@ -13,9 +13,9 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/observer_list.h"
-#include "chrome/browser/chromeos/dbus/bluetooth_adapter_client.h"
-#include "chrome/browser/chromeos/dbus/bluetooth_device_client.h"
-#include "chrome/browser/chromeos/dbus/bluetooth_manager_client.h"
+#include "chromeos/dbus/bluetooth_adapter_client.h"
+#include "chromeos/dbus/bluetooth_device_client.h"
+#include "chromeos/dbus/bluetooth_manager_client.h"
 #include "dbus/object_path.h"
 
 namespace chromeos {

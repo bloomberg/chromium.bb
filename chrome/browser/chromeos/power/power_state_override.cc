@@ -7,8 +7,8 @@
 #include "base/bind.h"
 #include "base/message_loop.h"
 #include "base/time.h"
-#include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
-#include "chrome/browser/chromeos/dbus/power_manager_client.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/power_manager_client.h"
 
 using chromeos::PowerManagerClient;
 
