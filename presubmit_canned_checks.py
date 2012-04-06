@@ -271,8 +271,9 @@ def CheckChangeHasNoTabs(input_api, output_api, source_file_filter=None):
     # It's the default filter.
     source_file_filter = input_api.FilterSourceFile
   def filter_more(affected_file):
-    return (not input_api.os_path.basename(affected_file.LocalPath()) in
-                ('Makefile', 'makefile') and
+    basename = input_api.os_path.basename(affected_file.LocalPath())
+    return (not (basename in ('Makefile', 'makefile') or
+                 basename.endswith('.mk')) and
             source_file_filter(affected_file))
 
   tabs = _FindNewViolationsOfRule(lambda _, line : '\t' not in line,
