@@ -2583,7 +2583,11 @@ binutils-gold() {
   binutils-gold-clean
   binutils-gold-configure
   binutils-gold-make
-  binutils-gold-install
+  # TODO(robertm): temporary hack to unbreak the tc bots for mac/win
+  # current theory is that we just got the filename wrong, so we dump
+  # the directory contents
+  ls -lR ${TC_BUILD_GOLD}/
+  #binutils-gold-install
 }
 
 # binutils-gold-clean - Clean gold
