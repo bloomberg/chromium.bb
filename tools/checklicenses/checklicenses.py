@@ -241,6 +241,24 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     'third_party/libpng': [  # http://crbug.com/98318
         'UNKNOWN',
     ],
+
+    # The following files lack license headers, but are trivial.
+    'third_party/libusb/libusb/os/poll_posix.h': [
+        'UNKNOWN',
+    ],
+    'third_party/libusb/libusb/version.h': [
+        'UNKNOWN',
+    ],
+    'third_party/libusb/autogen.sh': [
+        'UNKNOWN',
+    ],
+    'third_party/libusb/config.h': [
+        'UNKNOWN',
+    ],
+    'third_party/libusb/msvc/config.h': [
+        'UNKNOWN',
+    ],
+
     'third_party/libvpx/source': [  # http://crbug.com/98319
         'UNKNOWN',
     ],
