@@ -325,8 +325,6 @@ BOOL WINAPI Monitor2EnumPorts(HANDLE,
                               DWORD   ports_size,
                               DWORD* needed_bytes,
                               DWORD* returned) {
-  LOG(INFO) << "Monitor2EnumPorts";
-
   if (needed_bytes == NULL) {
     LOG(ERROR) << "needed_bytes should not be NULL.";
     SetLastError(ERROR_INVALID_PARAMETER);
@@ -389,8 +387,6 @@ BOOL WINAPI Monitor2EnumPorts(HANDLE,
 }
 
 BOOL WINAPI Monitor2OpenPort(HANDLE, wchar_t*, HANDLE* handle) {
-  LOG(INFO) << "Monitor2OpenPort";
-
   PortData* port_data =
       reinterpret_cast<PortData*>(GlobalAlloc(GMEM_FIXED|GMEM_ZEROINIT,
                                               sizeof(PortData)));
@@ -413,7 +409,6 @@ BOOL WINAPI Monitor2StartDocPort(HANDLE port_handle,
                                  DWORD job_id,
                                  DWORD,
                                  BYTE*) {
-  LOG(INFO) << "Monitor2StartDocPort";
   const wchar_t* kUsageKey = L"dr";
   // Set appropriate key to 1 to let Omaha record usage.
   base::win::RegKey key;
@@ -470,7 +465,6 @@ BOOL WINAPI Monitor2WritePort(HANDLE port_handle,
                               BYTE* buffer,
                               DWORD buffer_size,
                               DWORD* bytes_written) {
-  LOG(INFO) << "Monitor2WritePort";
   PortData* port_data = reinterpret_cast<PortData*>(port_handle);
   if (!ValidateCurrentUser()) {
     // TODO(abodenha@chromium.org) Abort the print job.
@@ -486,7 +480,6 @@ BOOL WINAPI Monitor2WritePort(HANDLE port_handle,
 }
 
 BOOL WINAPI Monitor2ReadPort(HANDLE, BYTE*, DWORD, DWORD* read_bytes) {
-  LOG(INFO) << "Monitor2ReadPort";
   LOG(ERROR) << "Read is not supported.";
   *read_bytes = 0;
   SetLastError(ERROR_NOT_SUPPORTED);
@@ -494,7 +487,6 @@ BOOL WINAPI Monitor2ReadPort(HANDLE, BYTE*, DWORD, DWORD* read_bytes) {
 }
 
 BOOL WINAPI Monitor2EndDocPort(HANDLE port_handle) {
-  LOG(INFO) << "Monitor2EndDocPort";
   if (!ValidateCurrentUser()) {
     // TODO(abodenha@chromium.org) Abort the print job.
     return FALSE;
@@ -535,7 +527,6 @@ BOOL WINAPI Monitor2EndDocPort(HANDLE port_handle) {
 }
 
 BOOL WINAPI Monitor2ClosePort(HANDLE port_handle) {
-  LOG(INFO) << "Monitor2ClosePort";
   if (port_handle == NULL) {
     LOG(ERROR) << "port_handle should not be NULL.";
     SetLastError(ERROR_INVALID_PARAMETER);
@@ -548,7 +539,6 @@ BOOL WINAPI Monitor2ClosePort(HANDLE port_handle) {
 }
 
 VOID WINAPI Monitor2Shutdown(HANDLE monitor_handle) {
-  LOG(INFO) << "Monitor2Shutdown";
   if (monitor_handle != NULL) {
     MonitorData* monitor_data =
       reinterpret_cast<MonitorData*>(monitor_handle);
@@ -561,7 +551,6 @@ BOOL WINAPI Monitor2XcvOpenPort(HANDLE,
                                 const wchar_t*,
                                 ACCESS_MASK granted_access,
                                 HANDLE* handle) {
-  LOG(INFO) << "Monitor2XcvOpenPort";
   if (handle == NULL) {
     LOG(ERROR) << "handle should not be NULL.";
     SetLastError(ERROR_INVALID_PARAMETER);
@@ -587,7 +576,6 @@ DWORD WINAPI Monitor2XcvDataPort(HANDLE xcv_handle,
                                  BYTE* output_data,
                                  DWORD output_data_bytes,
                                  DWORD* output_data_bytes_needed) {
-  LOG(INFO) << "Monitor2XcvDataPort";
   XcvUiData* xcv_data = reinterpret_cast<XcvUiData*>(xcv_handle);
   DWORD ret_val = ERROR_SUCCESS;
   if ((xcv_data->granted_access & SERVER_ACCESS_ADMINISTER) == 0) {
@@ -642,7 +630,6 @@ BOOL WINAPI MonitorUiConfigureOrDeletePortUI(const wchar_t*,
 
 MONITOR2* WINAPI InitializePrintMonitor2(MONITORINIT*,
                                          HANDLE* handle) {
-  LOG(INFO) << "InitializePrintMonitor2";
   cloud_print::MonitorData* monitor_data =
       reinterpret_cast<cloud_print::MonitorData*>
       (GlobalAlloc(GMEM_FIXED|GMEM_ZEROINIT, sizeof(cloud_print::MonitorData)));
@@ -663,7 +650,6 @@ MONITOR2* WINAPI InitializePrintMonitor2(MONITORINIT*,
 }
 
 MONITORUI* WINAPI InitializePrintMonitorUI(void) {
-  LOG(INFO) << "InitializePrintMonitorUI";
   return &cloud_print::g_monitor_ui;
 }
 
