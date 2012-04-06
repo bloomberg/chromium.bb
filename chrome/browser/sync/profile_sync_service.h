@@ -539,6 +539,14 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // Helper method for managing encryption UI.
   bool IsEncryptedDatatypeEnabled() const;
 
+  // Helper for OnUnrecoverableError.
+  // TODO(tim): Use an enum for |delete_sync_database| here, in ShutdownImpl,
+  // and in SyncBackendHost::Shutdown.
+  void OnUnrecoverableErrorImpl(
+      const tracked_objects::Location& from_here,
+      const std::string& message,
+      bool delete_sync_database);
+
   // This is a cache of the last authentication response we received from the
   // sync server. The UI queries this to display appropriate messaging to the
   // user.

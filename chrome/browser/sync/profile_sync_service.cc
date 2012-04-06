@@ -585,6 +585,13 @@ void ProfileSyncService::RegisterNewDataType(syncable::ModelType data_type) {
 void ProfileSyncService::OnUnrecoverableError(
     const tracked_objects::Location& from_here,
     const std::string& message) {
+  OnUnrecoverableErrorImpl(from_here, message, true);
+}
+
+void ProfileSyncService::OnUnrecoverableErrorImpl(
+    const tracked_objects::Location& from_here,
+    const std::string& message,
+    bool delete_sync_database) {
   unrecoverable_error_detected_ = true;
   unrecoverable_error_message_ = message;
   unrecoverable_error_location_ = from_here;
@@ -599,7 +606,7 @@ void ProfileSyncService::OnUnrecoverableError(
   // Shut all data types down.
   MessageLoop::current()->PostTask(FROM_HERE,
       base::Bind(&ProfileSyncService::ShutdownImpl, weak_factory_.GetWeakPtr(),
-                 true));
+                 delete_sync_database));
 }
 
 void ProfileSyncService::OnDisableDatatype(
@@ -634,9 +641,12 @@ void ProfileSyncService::OnBackendInitialized(
   }
 
   if (!success) {
-    // Something went unexpectedly wrong.  Play it safe: nuke our current state
-    // and prepare ourselves to try again later.
-    DisableForUser();
+    // Something went unexpectedly wrong.  Play it safe: stop syncing at once
+    // and surface error UI to alert the user sync has stopped.
+    // Keep the directory around for now so that on restart we will retry
+    // again and potentially succeed in presence of transient file IO failures
+    // or permissions issues, etc.
+    OnUnrecoverableErrorImpl(FROM_HERE, "BackendInitialize failure", false);
     return;
   }
 
