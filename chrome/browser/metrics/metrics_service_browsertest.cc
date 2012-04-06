@@ -74,7 +74,8 @@ IN_PROC_BROWSER_TEST_F(MetricsServiceTest, CloseRenderersNormally) {
   // exits... it's not clear to me how to test that.
 }
 
-IN_PROC_BROWSER_TEST_F(MetricsServiceTest, CrashRenderers) {
+// Flaky: http://crbug.com/18738
+IN_PROC_BROWSER_TEST_F(MetricsServiceTest, FLAKY_CrashRenderers) {
   OpenTabs();
 
   // Kill the process for one of the tabs.
