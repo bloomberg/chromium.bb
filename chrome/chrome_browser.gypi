@@ -580,8 +580,6 @@
         'browser/chromeos/kiosk_mode/kiosk_mode_settings.h',
         'browser/chromeos/language_preferences.cc',
         'browser/chromeos/language_preferences.h',
-        'browser/chromeos/legacy_window_manager/initial_browser_window_observer.cc',
-        'browser/chromeos/legacy_window_manager/initial_browser_window_observer.h',
         'browser/chromeos/locale_change_guard.cc',
         'browser/chromeos/locale_change_guard.h',
         'browser/chromeos/login/auth_attempt_state.cc',

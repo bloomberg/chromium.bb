@@ -26,7 +26,6 @@
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_idle_logout.h"
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_screensaver.h"
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
-#include "chrome/browser/chromeos/legacy_window_manager/initial_browser_window_observer.h"
 #include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/ownership_service.h"
@@ -283,8 +282,6 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopStart() {
     chromeos::input_method::InputMethodManager::GetInstance()->
         GetXKeyboard()->SetNumLockEnabled(true);
 #endif
-    initial_browser_window_observer_.reset(
-        new chromeos::InitialBrowserWindowObserver);
   }
 
   ChromeBrowserMainPartsLinux::PostMainMessageLoopStart();
