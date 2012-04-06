@@ -31,6 +31,7 @@ namespace content {
 class RenderViewHost;
 class RenderViewHostDelegate;
 class SessionStorageNamespace;
+class WebContents;
 }
 
 namespace prerender {
@@ -241,6 +242,9 @@ class PrerenderContents : public content::NotificationObserver,
   const PendingPrerenderList* pending_prerender_list() const {
     return &pending_prerender_list_;
   }
+
+  virtual content::WebContents* CreateWebContents(
+      content::SessionStorageNamespace* session_storage_namespace);
 
  private:
   class TabContentsDelegateImpl;

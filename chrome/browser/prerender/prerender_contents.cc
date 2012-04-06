@@ -281,8 +281,7 @@ void PrerenderContents::StartPrerendering(
   InformRenderProcessAboutPrerender(prerender_url_, true,
                                     creator_child_id_);
 
-  WebContents* new_contents = WebContents::Create(
-      profile_, NULL, MSG_ROUTING_NONE, NULL, session_storage_namespace);
+  WebContents* new_contents = CreateWebContents(session_storage_namespace);
   prerender_contents_.reset(new TabContentsWrapper(new_contents));
   content::WebContentsObserver::Observe(new_contents);
 
@@ -488,6 +487,12 @@ void PrerenderContents::Observe(int type,
 
 void PrerenderContents::OnRenderViewHostCreated(
     RenderViewHost* new_render_view_host) {
+}
+
+WebContents* PrerenderContents::CreateWebContents(
+    content::SessionStorageNamespace* session_storage_namespace) {
+  return  WebContents::Create(profile_, NULL, MSG_ROUTING_NONE, NULL,
+                              session_storage_namespace);
 }
 
 void PrerenderContents::OnUpdateFaviconURL(

@@ -11,6 +11,9 @@
 //     very early, to test for it reliably, the source of the media tag
 //     should be added after this script is included or add
 //     'onLoadStart=mediEventHandler' as an attribute to the media element.
+//     Also to reliably test the stalled event, the the test should wait for the
+//     prerendered page's title to change to "READY" before calling
+//     DidPrerenderPass.
 
 function assert(bool) {
   if (!bool)
@@ -21,6 +24,7 @@ var canPlaySeen = false;
 var playingSeen = false;
 var canPlayThroughSeen = false;
 var loadStartSeen = false;
+var stalledSeen = false;
 var hasError = false;
 
 assert(typeof(willPlay) != 'undefined');
@@ -48,9 +52,11 @@ function mediaEventHandler(e) {
       loadStartSeen = true;
       break;
     case 'stalled':
-      // We should never see a stalled event during the display portion of the
-      // test.
-      assert(false);
+      assert(loadStartSeen);
+      stalledSeen = true;
+      if (testNetworkEvents) {
+        document.title = 'READY';
+      }
       break;
   }
 
@@ -75,7 +81,8 @@ function DidPrerenderPass() {
   // The media should not have started at this point.
   return !canPlaySeen && !playingSeen && !hasError &&
       mediaEl.currentTime == 0 &&
-      mediaEl.readyState == mediaEl.HAVE_NOTHING;
+      mediaEl.readyState == mediaEl.HAVE_NOTHING &&
+      (!testNetworkEvents || stalledSeen);
 }
 
 function DidDisplayPass() {

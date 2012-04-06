@@ -71,6 +71,10 @@ namespace prerender {
 
 namespace {
 
+// Constants used in the test HTML files.
+static const char* kReadyTitle = "READY";
+static const char* kPassTitle = "PASS";
+
 std::string CreateClientRedirect(const std::string& dest_url) {
   const char* const kClientRedirectBase = "client-redirect?";
   return kClientRedirectBase + dest_url;
@@ -125,7 +129,8 @@ class TestPrerenderContents : public PrerenderContents {
       const GURL& url,
       const content::Referrer& referrer,
       int expected_number_of_loads,
-      FinalStatus expected_final_status)
+      FinalStatus expected_final_status,
+      bool prerender_should_wait_for_ready_title)
       : PrerenderContents(prerender_manager, prerender_tracker,
                           profile, url, referrer, ORIGIN_LINK_REL_PRERENDER,
                           PrerenderManager::kNoExperiment),
@@ -140,7 +145,9 @@ class TestPrerenderContents : public PrerenderContents {
             expected_final_status != FINAL_STATUS_EVICTED &&
             expected_final_status != FINAL_STATUS_APP_TERMINATING &&
             expected_final_status != FINAL_STATUS_MAX),
-        expected_pending_prerenders_(0) {
+        expected_pending_prerenders_(0),
+        prerender_should_wait_for_ready_title_(
+            prerender_should_wait_for_ready_title) {
     if (expected_number_of_loads == 0)
       MessageLoopForUI::current()->Quit();
   }
@@ -225,6 +232,24 @@ class TestPrerenderContents : public PrerenderContents {
     }
   }
 
+  virtual WebContents* CreateWebContents(
+      content::SessionStorageNamespace* session_storage_namespace) OVERRIDE {
+    WebContents* web_contents = PrerenderContents::CreateWebContents(
+        session_storage_namespace);
+    string16 ready_title = ASCIIToUTF16(kReadyTitle);
+    if (prerender_should_wait_for_ready_title_)
+      ready_title_watcher_.reset(new ui_test_utils::TitleWatcher(
+          web_contents, ready_title));
+    return web_contents;
+  }
+
+  void WaitForPrerenderToHaveReadyTitleIfRequired() {
+    if (ready_title_watcher_.get()) {
+      string16 ready_title = ASCIIToUTF16(kReadyTitle);
+      ASSERT_EQ(ready_title, ready_title_watcher_->WaitAndGetTitle());
+    }
+  }
+
   // Waits until the prerender has |expected_pending_prerenders| pending
   // prerenders.
   void WaitForPendingPrerenders(size_t expected_pending_prerenders) {
@@ -302,6 +327,11 @@ class TestPrerenderContents : public PrerenderContents {
   // Total number of pending prerenders we're currently waiting for.  Zero
   // indicates we currently aren't waiting for any.
   size_t expected_pending_prerenders_;
+
+  // If true, before calling DidPrerenderPass, will wait for the title of the
+  // prerendered page to turn to "READY".
+  bool prerender_should_wait_for_ready_title_;
+  scoped_ptr<ui_test_utils::TitleWatcher> ready_title_watcher_;
 };
 
 // PrerenderManager that uses TestPrerenderContents.
@@ -309,9 +339,12 @@ class WaitForLoadPrerenderContentsFactory : public PrerenderContents::Factory {
  public:
   WaitForLoadPrerenderContentsFactory(
       int expected_number_of_loads,
-      const std::deque<FinalStatus>& expected_final_status_queue)
+      const std::deque<FinalStatus>& expected_final_status_queue,
+      bool prerender_should_wait_for_ready_title)
       : expected_number_of_loads_(expected_number_of_loads),
-        expected_final_status_queue_(expected_final_status_queue) {
+        expected_final_status_queue_(expected_final_status_queue),
+        prerender_should_wait_for_ready_title_(
+            prerender_should_wait_for_ready_title) {
     VLOG(1) << "Factory created with queue length " <<
                expected_final_status_queue_.size();
   }
@@ -335,12 +368,14 @@ class WaitForLoadPrerenderContentsFactory : public PrerenderContents::Factory {
     return new TestPrerenderContents(prerender_manager, prerender_tracker,
                                      profile, url,
                                      referrer, expected_number_of_loads_,
-                                     expected_final_status);
+                                     expected_final_status,
+                                     prerender_should_wait_for_ready_title_);
   }
 
  private:
   int expected_number_of_loads_;
   std::deque<FinalStatus> expected_final_status_queue_;
+  bool prerender_should_wait_for_ready_title_;
 };
 
 #if defined(ENABLE_SAFE_BROWSING)
@@ -481,21 +516,42 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
   void PrerenderTestURL(const std::string& html_file,
                         FinalStatus expected_final_status,
                         int expected_number_of_loads) {
+    PrerenderTestURL(html_file,
+                     expected_final_status,
+                     expected_number_of_loads,
+                     false);
+  }
+
+  void PrerenderTestURL(const std::string& html_file,
+                        FinalStatus expected_final_status,
+                        int expected_number_of_loads,
+                        bool prerender_should_wait_for_ready_title) {
     std::deque<FinalStatus> expected_final_status_queue(1,
                                                         expected_final_status);
     PrerenderTestURL(html_file,
                      expected_final_status_queue,
-                     expected_number_of_loads);
+                     expected_number_of_loads,
+                     prerender_should_wait_for_ready_title);
+  }
+
+  void PrerenderTestURL(
+      const std::string& html_file,
+      const std::deque<FinalStatus>& expected_final_status_queue,
+      int expected_number_of_loads,
+      bool prerender_should_wait_for_ready_title) {
+    GURL url = test_server()->GetURL(html_file);
+    PrerenderTestURLImpl(url, url,
+                         expected_final_status_queue,
+                         expected_number_of_loads,
+                         prerender_should_wait_for_ready_title);
   }
 
   void PrerenderTestURL(
       const std::string& html_file,
       const std::deque<FinalStatus>& expected_final_status_queue,
       int expected_number_of_loads) {
-    GURL url = test_server()->GetURL(html_file);
-    PrerenderTestURLImpl(url, url,
-                         expected_final_status_queue,
-                         expected_number_of_loads);
+    PrerenderTestURL(html_file, expected_final_status_queue,
+                     expected_number_of_loads, false);
   }
 
   void PrerenderTestURL(
@@ -506,7 +562,8 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
                                                         expected_final_status);
     PrerenderTestURLImpl(url, url,
                          expected_final_status_queue,
-                         expected_number_of_loads);
+                         expected_number_of_loads,
+                         false);
   }
 
   void PrerenderTestURL(
@@ -518,7 +575,8 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
                                                         expected_final_status);
     PrerenderTestURLImpl(prerender_url, destination_url,
                          expected_final_status_queue,
-                         expected_number_of_loads);
+                         expected_number_of_loads,
+                         false);
   }
 
   void NavigateToDestURL() const {
@@ -585,7 +643,7 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
   }
 
   void NavigateToDestUrlAndWaitForPassTitle() {
-    string16 expected_title = ASCIIToUTF16("PASS");
+    string16 expected_title = ASCIIToUTF16(kPassTitle);
     ui_test_utils::TitleWatcher title_watcher(
         GetPrerenderContents()->prerender_contents()->web_contents(),
         expected_title);
@@ -731,7 +789,8 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
       const GURL& prerender_url,
       const GURL& destination_url,
       const std::deque<FinalStatus>& expected_final_status_queue,
-      int expected_number_of_loads) {
+      int expected_number_of_loads,
+      bool prerender_should_wait_for_ready_title) {
     dest_url_ = destination_url;
 
     std::vector<net::TestServer::StringPair> replacement_text;
@@ -762,8 +821,10 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
     prerender_manager()->mutable_config().https_allowed = true;
     ASSERT_TRUE(prerender_contents_factory_ == NULL);
     prerender_contents_factory_ =
-        new WaitForLoadPrerenderContentsFactory(expected_number_of_loads,
-                                                expected_final_status_queue);
+        new WaitForLoadPrerenderContentsFactory(
+            expected_number_of_loads,
+            expected_final_status_queue,
+            prerender_should_wait_for_ready_title);
     prerender_manager()->SetPrerenderContentsFactory(
         prerender_contents_factory_);
     FinalStatus expected_final_status = expected_final_status_queue.front();
@@ -785,6 +846,10 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
       EXPECT_EQ(FINAL_STATUS_MAX, prerender_contents->final_status());
 
       if (call_javascript_ && expected_number_of_loads > 0) {
+        // Wait for the prerendered page to change title to signal it is ready
+        // if required.
+        prerender_contents->WaitForPrerenderToHaveReadyTitleIfRequired();
+
         // Check if page behaves as expected while in prerendered state.
         bool prerender_test_result = false;
         ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
@@ -1451,7 +1516,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderHTML5VideoJs) {
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderHTML5VideoNetwork) {
   PrerenderTestURL("files/prerender/prerender_html5_video_network.html",
                    FINAL_STATUS_USED,
-                   1);
+                   1,
+                   true);
   NavigateToDestUrlAndWaitForPassTitle();
 }
 
