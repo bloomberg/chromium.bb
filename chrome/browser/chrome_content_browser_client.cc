@@ -159,7 +159,8 @@ namespace {
 
 const char* kPredefinedAllowedSocketOrigins[] = {
   "okddffdblfhhnmhodogpojmfkjmhinfp",  // Test SSH Client
-  "pnhechapfaindjhompbnflcldabbghjo"   // HTerm App (SSH Client)
+  "pnhechapfaindjhompbnflcldabbghjo",  // HTerm App (SSH Client)
+  "bglhmjfplikpjnfoegeomebmfnkjomhe"   // see crbug.com/122126
 };
 
 // Handles rewriting Web UI URLs.
