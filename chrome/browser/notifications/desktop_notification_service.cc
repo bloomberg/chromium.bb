@@ -388,19 +388,16 @@ bool DesktopNotificationService::ShowDesktopNotification(
       new NotificationObjectProxy(process_id, route_id,
                                   params.notification_id,
                                   source == WorkerNotification);
-  GURL contents;
+
+  string16 display_source = DisplayNameForOrigin(origin);
   if (params.is_html) {
-    contents = params.contents_url;
+    ShowNotification(Notification(origin, params.contents_url, display_source,
+        params.replace_id, proxy));
   } else {
-    // "upconvert" the string parameters to a data: URL.
-    contents = GURL(
-        CreateDataUrl(params.icon_url, params.title, params.body,
-                      params.direction));
+    ShowNotification(Notification(origin, params.icon_url, params.title,
+        params.body, params.direction, display_source, params.replace_id,
+        proxy));
   }
-  Notification notification(
-      origin, contents, DisplayNameForOrigin(origin),
-      params.replace_id, proxy);
-  ShowNotification(notification);
   return true;
 }
 
