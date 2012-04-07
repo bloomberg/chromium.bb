@@ -333,6 +333,7 @@ void ExtensionSettingsHandler::RegisterMessages() {
 
 void ExtensionSettingsHandler::FileSelected(const FilePath& path, int index,
                                             void* params) {
+  last_unpacked_directory_ = FilePath(path);
   extensions::UnpackedInstaller::Create(extension_service_)->Load(path);
 }
 
@@ -686,8 +687,8 @@ void ExtensionSettingsHandler::HandleLoadUnpackedExtensionMessage(
   const SelectFileDialog::Type kSelectType = SelectFileDialog::SELECT_FOLDER;
   load_extension_dialog_ = SelectFileDialog::Create(this);
   load_extension_dialog_->SelectFile(
-      kSelectType, select_title, FilePath(), NULL, kFileTypeIndex,
-      FILE_PATH_LITERAL(""), web_ui()->GetWebContents(),
+      kSelectType, select_title, last_unpacked_directory_, NULL,
+      kFileTypeIndex, FILE_PATH_LITERAL(""), web_ui()->GetWebContents(),
       web_ui()->GetWebContents()->GetView()->GetTopLevelNativeWindow(), NULL);
 }
 

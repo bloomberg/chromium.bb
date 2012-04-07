@@ -172,6 +172,10 @@ class ExtensionSettingsHandler : public content::WebUIMessageHandler,
   // Used to pick the directory when loading an extension.
   scoped_refptr<SelectFileDialog> load_extension_dialog_;
 
+  // Used to start the |load_extension_dialog_| in the last directory that was
+  // loaded.
+  FilePath last_unpacked_directory_;
+
   // Used to show confirmation UI for uninstalling extensions in incognito mode.
   scoped_ptr<ExtensionUninstallDialog> extension_uninstall_dialog_;
 
