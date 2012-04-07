@@ -119,7 +119,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ContentScriptCSSLocalization) {
   ASSERT_TRUE(RunExtensionTest("content_scripts/css_l10n")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_ContentScriptExtensionAPIs) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ContentScriptExtensionAPIs) {
   ASSERT_TRUE(StartTestServer());
 
   CommandLine::ForCurrentProcess()->AppendSwitch(

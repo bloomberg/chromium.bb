@@ -172,7 +172,7 @@ class ExtensionSettingsApiTest : public ExtensionApiTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest, DISABLED_SimpleTest) {
+IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest, SimpleTest) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExperimentalExtensionApis);
   ASSERT_TRUE(RunExtensionTest("settings/simple_test")) << message_;
@@ -182,7 +182,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest, DISABLED_SimpleTest) {
 // Note that only split-mode incognito is tested, because spanning mode
 // incognito looks the same as normal mode when the only API activity comes
 // from background pages.
-IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest, DISABLED_SplitModeIncognito) {
+IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest, SplitModeIncognito) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExperimentalExtensionApis);
 
@@ -209,7 +209,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest, DISABLED_SplitModeIncognito) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest,
-    DISABLED_OnChangedNotificationsBetweenBackgroundPages) {
+    OnChangedNotificationsBetweenBackgroundPages) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExperimentalExtensionApis);
 
@@ -235,7 +235,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest,
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest,
-    DISABLED_SyncAndLocalAreasAreSeparate) {
+    SyncAndLocalAreasAreSeparate) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExperimentalExtensionApis);
 
