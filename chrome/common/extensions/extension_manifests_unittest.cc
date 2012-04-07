@@ -297,6 +297,11 @@ TEST_F(ExtensionManifestTest, PlatformApps) {
   CommandLine::ForCurrentProcess()->AppendSwitch(switches::kEnablePlatformApps);
 
   LoadAndExpectSuccess("init_valid_platform_app.json");
+
+  LoadAndExpectError(
+      "init_invalid_platform_app_3.json",
+      "Feature 'platform_app' is not accessible. "
+          "Requires manifest version of at least 2.");
 }
 
 TEST_F(ExtensionManifestTest, CertainApisRequirePlatformApps) {

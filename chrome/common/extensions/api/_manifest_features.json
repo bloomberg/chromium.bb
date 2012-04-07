@@ -124,7 +124,8 @@
     ]
   },
   "platform_app": {
-    "extension_types": ["platform_app"]
+    "extension_types": ["platform_app"],
+    "min_manifest_version": 2
   },
   "plugins": {
     "extension_types": ["extension", "packaged_app", "hosted_app"]

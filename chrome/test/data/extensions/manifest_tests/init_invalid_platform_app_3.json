@@ -1,0 +1,6 @@
+{
+  "name": "Platform Test",
+  "platform_app": true,
+  "version": "1"
+  // "manifest_version": 2 is required
+}
