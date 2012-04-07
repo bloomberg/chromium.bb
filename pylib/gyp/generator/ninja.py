@@ -57,6 +57,7 @@ def StripPrefix(arg, prefix):
     return arg[len(prefix):]
   return arg
 
+
 def QuoteShellArgument(arg, flavor):
   """Quote a string such that it will be interpreted as a single argument
   by the shell."""
@@ -67,6 +68,7 @@ def QuoteShellArgument(arg, flavor):
   if flavor == 'win':
     return gyp.msvs_emulation.QuoteForRspFile(arg)
   return "'" + arg.replace("'", "'" + '"\'"' + "'")  + "'"
+
 
 def InvertRelativePath(path):
   """Given a relative path like foo/bar, return the inverse relative path:
@@ -867,8 +869,7 @@ class NinjaWriter:
     strip_save_file = self.xcode_settings.GetPerTargetSetting(
         'CHROMIUM_STRIP_SAVE_FILE')
     if strip_save_file:
-      postbuild_settings['CHROMIUM_STRIP_SAVE_FILE'] = self.GypPathToNinja(
-          strip_save_file)
+      postbuild_settings['CHROMIUM_STRIP_SAVE_FILE'] = strip_save_file
     return self.GetXcodeEnv(additional_settings=postbuild_settings)
 
   def GetPostbuildCommand(self, spec, output, output_binary,
@@ -881,14 +882,19 @@ class NinjaWriter:
     output = QuoteShellArgument(output, self.flavor)
     target_postbuilds = self.xcode_settings.GetTargetPostbuilds(
         self.config_name,
-        output,
-        QuoteShellArgument(output_binary, self.flavor),
+        os.path.normpath(os.path.join(self.base_to_build, output)),
+        QuoteShellArgument(
+            os.path.normpath(os.path.join(self.base_to_build, output_binary)),
+            self.flavor),
         quiet=True)
-    postbuilds = gyp.xcode_emulation.GetSpecPostbuildCommands(
-        spec, self.GypPathToNinja, quiet=True)
+    postbuilds = gyp.xcode_emulation.GetSpecPostbuildCommands(spec, quiet=True)
     postbuilds = target_postbuilds + postbuilds
     if not postbuilds:
       return ''
+    # Postbuilds expect to be run in the gyp file's directory, so insert an
+    # implicit postbuild to cd to there.
+    postbuilds.insert(0, gyp.common.EncodePOSIXShellList(
+        ['cd', self.build_to_base]))
     env = self.ComputeExportEnvString(self.GetXcodePostbuildEnv())
     # G will be non-null if any postbuild fails. Run all postbuilds in a
     # subshell.

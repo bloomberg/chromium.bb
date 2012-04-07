@@ -1003,25 +1003,14 @@ def TopologicallySortedEnvVarKeys(env):
 
   return sorted_nodes
 
-def GetSpecPostbuildCommands(spec, gyp_path_to_build_path, quiet=False):
+
+def GetSpecPostbuildCommands(spec, quiet=False):
   """Returns the list of postbuilds explicitly defined on |spec|, in a form
   executable by a shell."""
   postbuilds = []
-
-  spec_postbuilds = spec.get('postbuilds', [])[:]
-
-  # Postbuilds expect to be run in the gyp file's directory, so insert an
-  # implicit postbuild to cd to there.
-  if spec_postbuilds:
-    spec_postbuilds.insert(0, {
-        'action': ['cd', gyp_path_to_build_path('')],
-        'postbuild_name': "cd into target gyp file directory",
-    })
-
-  for postbuild in spec_postbuilds:
+  for postbuild in spec.get('postbuilds', []):
     if not quiet:
       postbuilds.append('echo POSTBUILD\\(%s\\) %s' % (
             spec['target_name'], postbuild['postbuild_name']))
     postbuilds.append(gyp.common.EncodePOSIXShellList(postbuild['action']))
-
   return postbuilds

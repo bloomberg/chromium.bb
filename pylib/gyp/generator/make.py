@@ -620,6 +620,21 @@ def QuoteSpaces(s, quote=r'\ '):
   return s.replace(' ', quote)
 
 
+def InvertRelativePath(path):
+  """Given a relative path like foo/bar, return the inverse relative path:
+  the path from the relative path back to the origin dir.
+
+  E.g. os.path.normpath(os.path.join(path, InvertRelativePath(path)))
+  should always produce the empty string."""
+
+  if not path:
+    return path
+  # Only need to handle relative paths into subdirectories for now.
+  assert '..' not in path, path
+  depth = len(path.split(os.path.sep))
+  return os.path.sep.join(['..'] * depth)
+
+
 # Map from qualified target to path to output.
 target_outputs = {}
 # Map from qualified target to any linkable output.  A subset
@@ -1396,10 +1411,13 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
               generator_default_variables['PRODUCT_DIR'], self.Absolutify)
 
           # TARGET_POSTBUILDS_$(BUILDTYPE) is added to postbuilds later on.
+          gyp_to_build = InvertRelativePath(self.path)
           target_postbuild = self.xcode_settings.GetTargetPostbuilds(
               configname,
-              QuoteSpaces(self.output),
-              QuoteSpaces(self.output_binary))
+              QuoteSpaces(os.path.normpath(os.path.join(gyp_to_build,
+                                                        self.output))),
+              QuoteSpaces(os.path.normpath(os.path.join(gyp_to_build,
+                                                        self.output_binary))))
           if target_postbuild:
             target_postbuilds[configname] = target_postbuild
         else:
@@ -1430,7 +1448,7 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
       if target_postbuilds:
         postbuilds.append('$(TARGET_POSTBUILDS_$(BUILDTYPE))')
       postbuilds.extend(
-          gyp.xcode_emulation.GetSpecPostbuildCommands(spec, self.Absolutify))
+          gyp.xcode_emulation.GetSpecPostbuildCommands(spec))
 
     if postbuilds:
       # Envvars may be referenced by TARGET_POSTBUILDS_$(BUILDTYPE),
@@ -1444,6 +1462,9 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
              configname,
              gyp.common.EncodePOSIXShellList(target_postbuilds[configname])))
 
+      # Postbuilds expect to be run in the gyp file's directory, so insert an
+      # implicit postbuild to cd to there.
+      postbuilds.insert(0, gyp.common.EncodePOSIXShellList(['cd', self.path]))
       for i in xrange(len(postbuilds)):
         if not postbuilds[i].startswith('$'):
           postbuilds[i] = EscapeShellArgument(postbuilds[i])
@@ -1780,13 +1801,9 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
     # CHROMIUM_STRIP_SAVE_FILE is a chromium-specific hack.
     # TODO(thakis): It would be nice to have some general mechanism instead.
     strip_save_file = self.xcode_settings.GetPerTargetSetting(
-        'CHROMIUM_STRIP_SAVE_FILE')
-    if strip_save_file:
-      strip_save_file = self.Absolutify(strip_save_file)
-    else:
-      # Explicitly clear this out, else a postbuild might pick up an export
-      # from an earlier target.
-      strip_save_file = ''
+        'CHROMIUM_STRIP_SAVE_FILE', '')
+    # Even if strip_save_file is empty, explicitly write it. Else a postbuild
+    # might pick up an export from an earlier target.
     return self.GetXcodeEnv(
         additional_settings={'CHROMIUM_STRIP_SAVE_FILE': strip_save_file})
 
