@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "base/memory/weak_ptr.h"
 #include "base/compiler_specific.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -14,7 +15,9 @@
 class MessageLoop;
 class Profile;
 
-class ExtensionUninstallDialog : public ImageLoadingTracker::Observer {
+class ExtensionUninstallDialog
+    : public ImageLoadingTracker::Observer,
+      public base::SupportsWeakPtr<ExtensionUninstallDialog> {
  public:
   class Delegate {
    public:
