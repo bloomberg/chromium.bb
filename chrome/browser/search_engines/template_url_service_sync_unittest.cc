@@ -44,16 +44,18 @@ void SetManagedDefaultSearchPreferences(TemplateURLService* turl_service,
                                         TestingProfile* profile,
                                         bool enabled,
                                         const std::string& name,
+                                        const std::string& keyword,
                                         const std::string& search_url,
                                         const std::string& suggest_url,
                                         const std::string& icon_url,
-                                        const std::string& encodings,
-                                        const std::string& keyword) {
+                                        const std::string& encodings) {
   TestingPrefService* pref_service = profile->GetTestingPrefService();
   pref_service->SetManagedPref(prefs::kDefaultSearchProviderEnabled,
                                Value::CreateBooleanValue(enabled));
   pref_service->SetManagedPref(prefs::kDefaultSearchProviderName,
                                Value::CreateStringValue(name));
+  pref_service->SetManagedPref(prefs::kDefaultSearchProviderKeyword,
+                               Value::CreateStringValue(keyword));
   pref_service->SetManagedPref(prefs::kDefaultSearchProviderSearchURL,
                                Value::CreateStringValue(search_url));
   pref_service->SetManagedPref(prefs::kDefaultSearchProviderSuggestURL,
@@ -62,8 +64,6 @@ void SetManagedDefaultSearchPreferences(TemplateURLService* turl_service,
                                Value::CreateStringValue(icon_url));
   pref_service->SetManagedPref(prefs::kDefaultSearchProviderEncodings,
                                Value::CreateStringValue(encodings));
-  pref_service->SetManagedPref(prefs::kDefaultSearchProviderKeyword,
-                               Value::CreateStringValue(keyword));
 }
 
 // Remove all the managed preferences for the default search provider and
@@ -71,13 +71,13 @@ void SetManagedDefaultSearchPreferences(TemplateURLService* turl_service,
 void RemoveManagedDefaultSearchPreferences(TemplateURLService* turl_service,
                                            TestingProfile* profile) {
   TestingPrefService* pref_service = profile->GetTestingPrefService();
-  pref_service->RemoveManagedPref(prefs::kDefaultSearchProviderSearchURL);
   pref_service->RemoveManagedPref(prefs::kDefaultSearchProviderEnabled);
   pref_service->RemoveManagedPref(prefs::kDefaultSearchProviderName);
+  pref_service->RemoveManagedPref(prefs::kDefaultSearchProviderKeyword);
+  pref_service->RemoveManagedPref(prefs::kDefaultSearchProviderSearchURL);
   pref_service->RemoveManagedPref(prefs::kDefaultSearchProviderSuggestURL);
   pref_service->RemoveManagedPref(prefs::kDefaultSearchProviderIconURL);
   pref_service->RemoveManagedPref(prefs::kDefaultSearchProviderEncodings);
-  pref_service->RemoveManagedPref(prefs::kDefaultSearchProviderKeyword);
   pref_service->RemoveManagedPref(prefs::kDefaultSearchProviderID);
   pref_service->RemoveManagedPref(prefs::kDefaultSearchProviderPrepopulateID);
 }
@@ -267,30 +267,30 @@ TemplateURL* TemplateURLServiceSyncTest::CreateTestTemplateURL(
     const std::string& guid,
     time_t last_mod,
     bool created_by_policy) const {
-  TemplateURL* turl = new TemplateURL();
-  turl->set_short_name(ASCIIToUTF16("unittest"));
-  turl->set_keyword(keyword);
-  turl->set_safe_for_autoreplace(true);
-  turl->set_date_created(Time::FromTimeT(100));
-  turl->set_last_modified(Time::FromTimeT(last_mod));
-  turl->set_created_by_policy(created_by_policy);
-  turl->SetPrepopulateId(999999);
+  TemplateURLData data;
+  data.short_name = ASCIIToUTF16("unittest");
+  data.SetKeyword(keyword);
+  data.SetURL(url);
+  data.favicon_url = GURL("http://favicon.url");
+  data.safe_for_autoreplace = true;
+  data.date_created = Time::FromTimeT(100);
+  data.last_modified = Time::FromTimeT(last_mod);
+  data.created_by_policy = created_by_policy;
+  data.prepopulate_id = 999999;
   if (!guid.empty())
-    turl->set_sync_guid(guid);
-  turl->SetURL(url);
-  turl->set_favicon_url(GURL("http://favicon.url"));
-  return turl;
+    data.sync_guid = guid;
+  return new TemplateURL(data);
 }
 
 void TemplateURLServiceSyncTest::AssertEquals(const TemplateURL& expected,
                                               const TemplateURL& actual) const {
   ASSERT_EQ(expected.short_name(), actual.short_name());
+  ASSERT_EQ(expected.keyword(), actual.keyword());
   ASSERT_EQ(expected.url(), actual.url());
   ASSERT_EQ(expected.suggestions_url(), actual.suggestions_url());
-  ASSERT_EQ(expected.keyword(), actual.keyword());
+  ASSERT_EQ(expected.favicon_url(), actual.favicon_url());
   ASSERT_EQ(expected.show_in_default_list(), actual.show_in_default_list());
   ASSERT_EQ(expected.safe_for_autoreplace(), actual.safe_for_autoreplace());
-  ASSERT_EQ(expected.favicon_url(), actual.favicon_url());
   ASSERT_EQ(expected.input_encodings(), actual.input_encodings());
   ASSERT_EQ(expected.date_created(), actual.date_created());
   ASSERT_EQ(expected.last_modified(), actual.last_modified());
@@ -341,7 +341,8 @@ SyncDataList TemplateURLServiceSyncTest::CreateInitialSyncData() const {
 
 TemplateURL* TemplateURLServiceSyncTest::Deserialize(
     const SyncData& sync_data) {
-  return TemplateURLService::CreateTemplateURLFromSyncData(sync_data);
+  return TemplateURLService::CreateTemplateURLFromTemplateURLAndSyncData(NULL,
+      sync_data);
 }
 
 
@@ -1097,14 +1098,17 @@ TEST_F(TemplateURLServiceSyncTest, MergeTwiceWithSameSyncData) {
 
   // We should have updated the original TemplateURL with Sync's version.
   // Keep a copy of it so we can compare it after we re-merge.
-  ASSERT_TRUE(model()->GetTemplateURLForGUID("key1"));
-  TemplateURL updated_turl(*model()->GetTemplateURLForGUID("key1"));
-  EXPECT_EQ(Time::FromTimeT(90), updated_turl.last_modified());
+  const TemplateURL* key1_url = model()->GetTemplateURLForGUID("key1");
+  ASSERT_TRUE(key1_url);
+  scoped_ptr<TemplateURL> updated_turl(new TemplateURL(key1_url->data()));
+  EXPECT_EQ(Time::FromTimeT(90), updated_turl->last_modified());
 
   // Modify a single field of the initial data. This should not be updated in
   // the second merge, as the last_modified timestamp remains the same.
   scoped_ptr<TemplateURL> temp_turl(Deserialize(initial_data[0]));
-  temp_turl->set_short_name(ASCIIToUTF16("SomethingDifferent"));
+  TemplateURLData data(temp_turl->data());
+  data.short_name = ASCIIToUTF16("SomethingDifferent");
+  temp_turl.reset(new TemplateURL(data));
   initial_data.clear();
   initial_data.push_back(
       TemplateURLService::CreateSyncDataFromTemplateURL(*temp_turl));
@@ -1121,7 +1125,7 @@ TEST_F(TemplateURLServiceSyncTest, MergeTwiceWithSameSyncData) {
   // Check that the TemplateURL was not modified.
   const TemplateURL* reupdated_turl = model()->GetTemplateURLForGUID("key1");
   ASSERT_TRUE(reupdated_turl);
-  AssertEquals(updated_turl, *reupdated_turl);
+  AssertEquals(*updated_turl, *reupdated_turl);
 }
 
 TEST_F(TemplateURLServiceSyncTest, SyncedDefaultGUIDArrivesFirst) {

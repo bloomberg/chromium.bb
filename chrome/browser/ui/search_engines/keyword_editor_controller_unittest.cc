@@ -245,9 +245,10 @@ TEST_F(KeywordEditorControllerTest, MakeDefaultNoWebData) {
 // Mutates the TemplateURLService and make sure table model is updating
 // appropriately.
 TEST_F(KeywordEditorControllerTest, MutateTemplateURLService) {
-  TemplateURL* turl = new TemplateURL();
-  turl->set_keyword(ASCIIToUTF16("a"));
-  turl->set_short_name(ASCIIToUTF16("b"));
+  TemplateURLData data;
+  data.short_name = ASCIIToUTF16("b");
+  data.SetKeyword(ASCIIToUTF16("a"));
+  TemplateURL* turl = new TemplateURL(data);
   model_->Add(turl);
 
   // Table model should have updated.

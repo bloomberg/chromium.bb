@@ -597,10 +597,10 @@ bool DefaultSearchPolicyHandler::DefaultSearchURLIsValid(
   *url_value = policies.GetValue(key::kDefaultSearchProviderSearchURL);
   if (!*url_value || !(*url_value)->GetAsString(url_string))
     return false;
-  TemplateURL t_url;
-  t_url.SetURL(*url_string);
+  TemplateURLData data;
+  data.SetURL(*url_string);
   SearchTermsData search_terms_data;
-  return t_url.url_ref().SupportsReplacementUsingTermsData(search_terms_data);
+  return TemplateURL(data).SupportsReplacementUsingTermsData(search_terms_data);
 }
 
 void DefaultSearchPolicyHandler::EnsureStringPrefExists(

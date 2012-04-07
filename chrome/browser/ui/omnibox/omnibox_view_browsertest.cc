@@ -285,18 +285,16 @@ class OmniboxViewTest : public InProcessBrowserTest,
          i = builtins.begin(); i != builtins.end(); ++i)
       model->Remove(*i);
 
-    TemplateURL* template_url = new TemplateURL();
-    template_url->SetURL(kSearchURL);
-    template_url->set_keyword(ASCIIToUTF16(kSearchKeyword));
-    template_url->set_short_name(ASCIIToUTF16(kSearchShortName));
+    TemplateURLData data;
+    data.short_name = ASCIIToUTF16(kSearchShortName);
+    data.SetKeyword(ASCIIToUTF16(kSearchKeyword));
+    data.SetURL(kSearchURL);
+    TemplateURL* template_url = new TemplateURL(data);
     model->Add(template_url);
     model->SetDefaultSearchProvider(template_url);
 
-    TemplateURL* second_url = new TemplateURL();
-    second_url->SetURL(kSearchURL);
-    second_url->set_keyword(ASCIIToUTF16(kSearchKeyword2));
-    second_url->set_short_name(ASCIIToUTF16(kSearchShortName));
-    model->Add(second_url);
+    data.SetKeyword(ASCIIToUTF16(kSearchKeyword2));
+    model->Add(new TemplateURL(data));
   }
 
   void AddHistoryEntry(const TestHistoryEntry& entry, const Time& time) {
@@ -945,10 +943,11 @@ class OmniboxViewTest : public InProcessBrowserTest,
         TemplateURLServiceFactory::GetForProfile(browser()->profile());
 
     // Add a non-default substituting keyword.
-    TemplateURL* template_url = new TemplateURL();
-    template_url->SetURL("http://abc.com/{searchTerms}");
-    template_url->set_keyword(UTF8ToUTF16(kSearchText));
-    template_url->set_short_name(UTF8ToUTF16("Search abc"));
+    TemplateURLData data;
+    data.short_name = ASCIIToUTF16("Search abc");
+    data.SetKeyword(ASCIIToUTF16(kSearchText));
+    data.SetURL("http://abc.com/{searchTerms}");
+    TemplateURL* template_url = new TemplateURL(data);
     template_url_service->Add(template_url);
 
     omnibox_view->SetUserText(string16());
@@ -970,11 +969,9 @@ class OmniboxViewTest : public InProcessBrowserTest,
 
     // Try a non-substituting keyword.
     template_url_service->Remove(template_url);
-    template_url = new TemplateURL();
-    template_url->SetURL("http://abc.com/");
-    template_url->set_keyword(UTF8ToUTF16(kSearchText));
-    template_url->set_short_name(UTF8ToUTF16("abc"));
-    template_url_service->Add(template_url);
+    data.short_name = ASCIIToUTF16("abc");
+    data.SetURL("http://abc.com/");
+    template_url_service->Add(new TemplateURL(data));
 
     // We always allow exact matches for non-substituting keywords.
     ASSERT_NO_FATAL_FAILURE(SendKeySequence(kSearchTextKeys));

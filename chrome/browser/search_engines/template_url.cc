@@ -22,8 +22,6 @@
 #include "net/base/escape.h"
 #include "ui/base/l10n/l10n_util.h"
 
-using content::UserMetricsAction;
-
 // TODO(pastarmovj): Remove google_update_settings and user_metrics when the
 // CollectRLZMetrics function is not needed anymore.
 
@@ -568,77 +566,90 @@ void TemplateURLRef::ParseHostAndSearchTermKey(
 }
 
 
+// TemplateURLData ------------------------------------------------------------
+
+TemplateURLData::TemplateURLData()
+    : show_in_default_list(false),
+      safe_for_autoreplace(false),
+      id(0),
+      date_created(base::Time::Now()),
+      last_modified(base::Time::Now()),
+      created_by_policy(false),
+      usage_count(0),
+      prepopulate_id(0),
+      sync_guid(guid::GenerateGUID()),
+      autogenerate_keyword_(false),
+      keyword_generated_(false) {
+}
+
+TemplateURLData::~TemplateURLData() {
+}
+
+void TemplateURLData::SetKeyword(const string16& keyword) const {
+  // Case sensitive keyword matching is confusing. As such, we force all
+  // keywords to be lower case.
+  keyword_ = base::i18n::ToLower(keyword);
+  autogenerate_keyword_ = false;
+}
+
+const string16& TemplateURLData::keyword(const TemplateURL* t_url) const {
+  EnsureKeyword(t_url);
+  return keyword_;
+}
+
+void TemplateURLData::SetAutogenerateKeyword(bool autogenerate_keyword) const {
+  autogenerate_keyword_ = autogenerate_keyword;
+  if (autogenerate_keyword_) {
+    keyword_.clear();
+    keyword_generated_ = false;
+  }
+}
+
+void TemplateURLData::EnsureKeyword(const TemplateURL* t_url) const {
+  if (autogenerate_keyword_ && !keyword_generated_) {
+    // Generate a keyword and cache it.
+    keyword_ = base::i18n::ToLower(TemplateURLService::GenerateKeyword(
+        TemplateURLService::GenerateSearchURL(t_url).GetWithEmptyPath(), true));
+    keyword_generated_ = true;
+  }
+}
+
+void TemplateURLData::SetURL(const std::string& url) {
+  url_ = url;
+}
+
+
 // TemplateURL ----------------------------------------------------------------
 
-TemplateURL::TemplateURL()
-    : autogenerate_keyword_(false),
-      keyword_generated_(false),
-      show_in_default_list_(false),
-      safe_for_autoreplace_(false),
-      id_(0),
-      date_created_(base::Time::Now()),
-      last_modified_(base::Time::Now()),
-      created_by_policy_(false),
-      usage_count_(0),
-      prepopulate_id_(0),
-      sync_guid_(guid::GenerateGUID()),
+TemplateURL::TemplateURL(const TemplateURLData& data)
+    : data_(data),
       url_ref_(ALLOW_THIS_IN_INITIALIZER_LIST(this), TemplateURLRef::SEARCH),
       suggestions_url_ref_(ALLOW_THIS_IN_INITIALIZER_LIST(this),
                            TemplateURLRef::SUGGEST),
       instant_url_ref_(ALLOW_THIS_IN_INITIALIZER_LIST(this),
                        TemplateURLRef::INSTANT) {
+  SetPrepopulateId(data_.prepopulate_id);
 }
 
 TemplateURL::TemplateURL(const TemplateURL& other)
-    : short_name_(other.short_name_),
-      url_(other.url_),
-      suggestions_url_(other.suggestions_url_),
-      instant_url_(other.instant_url_),
-      originating_url_(other.originating_url_),
-      keyword_(other.keyword_),
-      autogenerate_keyword_(other.autogenerate_keyword_),
-      keyword_generated_(other.keyword_generated_),
-      show_in_default_list_(other.show_in_default_list_),
-      safe_for_autoreplace_(other.safe_for_autoreplace_),
-      favicon_url_(other.favicon_url_),
-      input_encodings_(other.input_encodings_),
-      id_(other.id_),
-      date_created_(other.date_created_),
-      last_modified_(other.last_modified_),
-      created_by_policy_(other.created_by_policy_),
-      usage_count_(other.usage_count_),
-      sync_guid_(other.sync_guid_),
+    : data_(other.data_),
       url_ref_(ALLOW_THIS_IN_INITIALIZER_LIST(this), TemplateURLRef::SEARCH),
       suggestions_url_ref_(ALLOW_THIS_IN_INITIALIZER_LIST(this),
                            TemplateURLRef::SUGGEST),
       instant_url_ref_(ALLOW_THIS_IN_INITIALIZER_LIST(this),
                        TemplateURLRef::INSTANT) {
-  CopyURLRefs(other);
+  SetPrepopulateId(data_.prepopulate_id);
 }
 
 TemplateURL& TemplateURL::operator=(const TemplateURL& other) {
   if (this == &other)
     return *this;
 
-  short_name_ = other.short_name_;
-  url_ = other.url_;
-  suggestions_url_ = other.suggestions_url_;
-  instant_url_ = other.instant_url_;
-  originating_url_ = other.originating_url_;
-  keyword_ = other.keyword_;
-  autogenerate_keyword_ = other.autogenerate_keyword_;
-  keyword_generated_ = other.keyword_generated_;
-  show_in_default_list_ = other.show_in_default_list_;
-  safe_for_autoreplace_ = other.safe_for_autoreplace_;
-  favicon_url_ = other.favicon_url_;
-  input_encodings_ = other.input_encodings_;
-  id_ = other.id_;
-  date_created_ = other.date_created_;
-  last_modified_ = other.last_modified_;
-  created_by_policy_ = other.created_by_policy_;
-  usage_count_ = other.usage_count_;
-  sync_guid_ = other.sync_guid_;
-  CopyURLRefs(other);
+  data_ = other.data_;
+  url_ref_.InvalidateCachedValues();
+  suggestions_url_ref_.InvalidateCachedValues();
+  instant_url_ref_.InvalidateCachedValues();
+  SetPrepopulateId(data_.prepopulate_id);
   return *this;
 }
 
@@ -662,74 +673,13 @@ GURL TemplateURL::GenerateFaviconURL(const GURL& url) {
 }
 
 string16 TemplateURL::AdjustedShortNameForLocaleDirection() const {
-  string16 bidi_safe_short_name = short_name_;
+  string16 bidi_safe_short_name = data_.short_name;
   base::i18n::AdjustStringForLocaleDirection(&bidi_safe_short_name);
   return bidi_safe_short_name;
 }
 
-void TemplateURL::SetURL(const std::string& url) {
-  url_ = url;
-  url_ref_.InvalidateCachedValues();
-}
-
-void TemplateURL::SetSuggestionsURL(const std::string& url) {
-  suggestions_url_ = url;
-  suggestions_url_ref_.InvalidateCachedValues();
-}
-
-void TemplateURL::SetInstantURL(const std::string& url) {
-  instant_url_ = url;
-  instant_url_ref_.InvalidateCachedValues();
-}
-
-void TemplateURL::set_keyword(const string16& keyword) {
-  // Case sensitive keyword matching is confusing. As such, we force all
-  // keywords to be lower case.
-  keyword_ = base::i18n::ToLower(keyword);
-  autogenerate_keyword_ = false;
-}
-
-const string16& TemplateURL::keyword() const {
-  EnsureKeyword();
-  return keyword_;
-}
-
-void TemplateURL::EnsureKeyword() const {
-  if (autogenerate_keyword_ && !keyword_generated_) {
-    // Generate a keyword and cache it.
-    keyword_ = TemplateURLService::GenerateKeyword(
-        TemplateURLService::GenerateSearchURL(this).GetWithEmptyPath(), true);
-    keyword_generated_ = true;
-  }
-}
-
 bool TemplateURL::ShowInDefaultList() const {
-  return show_in_default_list() && url_ref_.SupportsReplacement();
-}
-
-void TemplateURL::CopyURLRefs(const TemplateURL& other) {
-  url_ref_.InvalidateCachedValues();
-  suggestions_url_ref_.InvalidateCachedValues();
-  instant_url_ref_.InvalidateCachedValues();
-  SetPrepopulateId(other.prepopulate_id_);
-}
-
-void TemplateURL::SetPrepopulateId(int id) {
-  prepopulate_id_ = id;
-  const bool prepopulated = id > 0;
-  suggestions_url_ref_.prepopulated_ = prepopulated;
-  url_ref_.prepopulated_ = prepopulated;
-  instant_url_ref_.prepopulated_ = prepopulated;
-}
-
-void TemplateURL::InvalidateCachedValues() const {
-  url_ref_.InvalidateCachedValues();
-  suggestions_url_ref_.InvalidateCachedValues();
-  instant_url_ref_.InvalidateCachedValues();
-  if (autogenerate_keyword_) {
-    keyword_.clear();
-    keyword_generated_ = false;
-  }
+  return data_.show_in_default_list && url_ref_.SupportsReplacement();
 }
 
 bool TemplateURL::SupportsReplacement() const {
@@ -744,9 +694,29 @@ bool TemplateURL::SupportsReplacementUsingTermsData(
 
 std::string TemplateURL::GetExtensionId() const {
   DCHECK(IsExtensionKeyword());
-  return GURL(url_).host();
+  return GURL(data_.url()).host();
 }
 
 bool TemplateURL::IsExtensionKeyword() const {
-  return GURL(url_).SchemeIs(chrome::kExtensionScheme);
+  return GURL(data_.url()).SchemeIs(chrome::kExtensionScheme);
+}
+
+void TemplateURL::SetURL(const std::string& url) {
+  data_.SetURL(url);
+  url_ref_.InvalidateCachedValues();
+}
+
+void TemplateURL::SetPrepopulateId(int id) {
+  data_.prepopulate_id = id;
+  const bool prepopulated = id > 0;
+  suggestions_url_ref_.prepopulated_ = prepopulated;
+  url_ref_.prepopulated_ = prepopulated;
+  instant_url_ref_.prepopulated_ = prepopulated;
+}
+
+void TemplateURL::InvalidateCachedValues() const {
+  url_ref_.InvalidateCachedValues();
+  suggestions_url_ref_.InvalidateCachedValues();
+  instant_url_ref_.InvalidateCachedValues();
+  data_.SetAutogenerateKeyword(data_.autogenerate_keyword());
 }

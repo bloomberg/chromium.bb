@@ -59,23 +59,6 @@ void SearchHostToURLsMap::Remove(const TemplateURL* template_url) {
     host_to_urls_map_.erase(host_to_urls_map_.find(host));
 }
 
-void SearchHostToURLsMap::Update(const TemplateURL* existing_turl,
-                                 const TemplateURL& new_values,
-                                 const SearchTermsData& search_terms_data) {
-  DCHECK(initialized_);
-  DCHECK(existing_turl);
-
-  Remove(existing_turl);
-
-  // Use the information from new_values but preserve existing_turl's id.
-  TemplateURLID previous_id = existing_turl->id();
-  TemplateURL* modifiable_turl = const_cast<TemplateURL*>(existing_turl);
-  *modifiable_turl = new_values;
-  modifiable_turl->set_id(previous_id);
-
-  Add(existing_turl, search_terms_data);
-}
-
 void SearchHostToURLsMap::UpdateGoogleBaseURLs(
     const SearchTermsData& search_terms_data) {
   DCHECK(initialized_);
