@@ -69,7 +69,9 @@ class Strace(object):
     # A process received a signal.
     RE_SIGNAL = re.compile(r'^\d+\s+--- SIG[A-Z]+ .+ ---')
     # A process didn't handle a signal.
-    RE_KILLED = re.compile(r'^(\d+) \+\+\+ killed by ([A-Z]+) \+\+\+$')
+    RE_KILLED = re.compile(r'^(\d+)\s+\+\+\+ killed by ([A-Z]+) \+\+\+$')
+    # A call was canceled.
+    RE_UNAVAILABLE = re.compile(r'\)\s+= \? <unavailable>$')
 
     # Arguments parsing.
     RE_CHDIR = re.compile(r'^\"(.+?)\"$')
@@ -107,6 +109,14 @@ class Strace(object):
         m = self.RE_UNFINISHED.match(line)
         assert m, line
         self._pending_calls[(m.group(1), m.group(2))] = line
+        return
+
+      m = self.RE_UNAVAILABLE.match(line)
+      if m:
+        # This usually means a process was killed and a pending call was
+        # canceled.
+        # TODO(maruel): Look up the last exit_group() trace just above and make
+        # sure any self._pending_calls[(pid, anything)] is properly flushed.
         return
 
       m = self.RE_RESUMED.match(line)
