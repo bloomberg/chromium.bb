@@ -645,12 +645,14 @@ bool ExtensionService::UpdateExtension(
     installer->set_install_source(extension->location());
   if (pending_extension_info.install_silently())
     installer->set_allow_silent_install(true);
-  // If the extension came from sync and its auto-update URL is from the
+  // If the extension was installed from or has migrated to the webstore, or
+  // if the extension came from sync and its auto-update URL is from the
   // webstore, treat it as a webstore install. Note that we ignore some older
   // extensions with blank auto-update URLs because we are mostly concerned
   // with restrictions on NaCl extensions, which are newer.
   int creation_flags = Extension::NO_FLAGS;
   if ((extension && extension->from_webstore()) ||
+      (extension && extension->UpdatesFromGallery()) ||
       (!extension && pending_extension_info.is_from_sync() &&
        extension_urls::IsWebstoreUpdateUrl(
            pending_extension_info.update_url()))) {
