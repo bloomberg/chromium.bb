@@ -1270,7 +1270,8 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
       'rc',
       description='RC $in',
       # Note: $in must be last otherwise rc.exe complains.
-      command='$rc /nologo $defines $includes $rcflags /fo$out $in')
+      command=('python gyp-win-tool rc-wrapper '
+               '$rc $defines $includes $rcflags /fo$out $in'))
 
   if flavor != 'mac' and flavor != 'win':
     master_ninja.rule(

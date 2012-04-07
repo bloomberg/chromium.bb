@@ -90,5 +90,17 @@ class WinTool(object):
         sys.stdout.write(line)
     return popen.returncode
 
+  def ExecRcWrapper(self, *args):
+    """Filter logo banner from invocations of rc.exe. Older versions of RC
+    don't support the /nologo flag."""
+    popen = subprocess.Popen(
+        args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    out, _ = popen.communicate()
+    for line in out.splitlines():
+      if (not line.startswith('Microsoft (R) Windows (R) Resource Compiler') and
+          not line.startswith('Copyright (C) Microsoft Corporation')):
+        sys.stdout.write(line)
+    return popen.returncode
+
 if __name__ == '__main__':
   sys.exit(main(sys.argv[1:]))
