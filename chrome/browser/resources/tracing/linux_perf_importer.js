@@ -163,12 +163,18 @@ cr.define('tracing', function() {
     /**
      * @return {TimelinThread} A thread corresponding to the kernelThreadName.
      */
-    getOrCreateKernelThread: function(kernelThreadName) {
+    getOrCreateKernelThread: function(kernelThreadName, opt_pid, opt_tid) {
       if (!this.kernelThreadStates_[kernelThreadName]) {
-        var pid = /.+-(\d+)/.exec(kernelThreadName)[1];
-        pid = parseInt(pid);
+        var pid = opt_pid;
+        if (pid == undefined) {
+          pid = /.+-(\d+)/.exec(kernelThreadName)[1];
+          pid = parseInt(pid, 10);
+        }
+        var tid = opt_tid;
+        if (tid == undefined)
+          tid = pid;
 
-        var thread = this.model_.getOrCreateProcess(pid).getOrCreateThread(pid);
+        var thread = this.model_.getOrCreateProcess(pid).getOrCreateThread(tid);
         thread.name = kernelThreadName;
         this.kernelThreadStates_[kernelThreadName] = {
           pid: pid,
@@ -383,118 +389,194 @@ cr.define('tracing', function() {
 
         var eventName = eventBase[4];
 
-        if (eventName == 'sched_switch') {
-          var event = schedSwitchRE.exec(eventBase[5]);
-          if (!event) {
-            this.model_.importErrors.push('Line ' + (lineNumber + 1) +
-                ': Malformed sched_switch event');
-            continue;
-          }
+        switch (eventName) {
+          case 'sched_switch':
+            var event = schedSwitchRE.exec(eventBase[5]);
+            if (!event) {
+              this.model_.importErrors.push('Line ' + (lineNumber + 1) +
+                  ': Malformed sched_switch event');
+              continue;
+            }
 
-          var prevState = event[4];
-          var nextComm = event[5];
-          var nextPid = parseInt(event[6]);
-          var nextPrio = parseInt(event[7]);
-          cpuState.switchRunningLinuxPid(
-              this, prevState, ts, nextPid, nextComm, nextPrio);
+            var prevState = event[4];
+            var nextComm = event[5];
+            var nextPid = parseInt(event[6]);
+            var nextPrio = parseInt(event[7]);
+            cpuState.switchRunningLinuxPid(
+                this, prevState, ts, nextPid, nextComm, nextPrio);
+            break;
+          case 'sched_wakeup':
+            var event = schedWakeupRE.exec(eventBase[5]);
+            if (!event) {
+              this.model_.importErrors.push('Line ' + (lineNumber + 1) +
+                  ': Malformed sched_wakeup event');
+              continue;
+            }
 
-        } else if (eventName == 'sched_wakeup') {
-          var event = schedWakeupRE.exec(eventBase[5]);
-          if (!event) {
-            this.model_.importErrors.push('Line ' + (lineNumber + 1) +
-                ': Malformed sched_wakeup event');
-            continue;
-          }
+            var comm = event[1];
+            var pid = parseInt(event[2]);
+            var prio = parseInt(event[3]);
+            this.markPidRunnable(ts, pid, comm, prio);
+            break;
+          case 'power_start':
+            var event = /type=(\d+) state=(\d) cpu_id=(\d)+/.exec(eventBase[5]);
+            if (!event) {
+              this.model_.importErrors.push('Line ' + (lineNumber + 1) +
+                  ': Malformed power_start event');
+              continue;
+            }
+            var targetCpuNumber = parseInt(event[3]);
+            var targetCpu = this.getOrCreateCpuState(targetCpuNumber);
+            var powerCounter;
+            if (event[1] == '1') {
+              powerCounter = targetCpu.cpu.getOrCreateCounter('', 'C-State');
+            } else {
+              this.model_.importErrors.push('Line ' + (lineNumber + 1) +
+                  ': Don\'t understand power_start events of type ' + event[1]);
+              continue;
+            }
+            if (powerCounter.numSeries == 0) {
+              powerCounter.seriesNames.push('state');
+              powerCounter.seriesColors.push(
+                  tracing.getStringColorId(powerCounter.name + '.' + 'state'));
+            }
+            var powerState = parseInt(event[2]);
+            powerCounter.timestamps.push(ts);
+            powerCounter.samples.push(powerState);
+            break;
+          case 'power_frequency':
+            var event = /type=(\d+) state=(\d+) cpu_id=(\d)+/.
+                exec(eventBase[5]);
+            if (!event) {
+              this.model_.importErrors.push('Line ' + (lineNumber + 1) +
+                  ': Malformed power_start event');
+              continue;
+            }
+            var targetCpuNumber = parseInt(event[3]);
+            var targetCpu = this.getOrCreateCpuState(targetCpuNumber);
+            var powerCounter =
+                targetCpu.cpu.getOrCreateCounter('', 'Power Frequency');
+            if (powerCounter.numSeries == 0) {
+              powerCounter.seriesNames.push('state');
+              powerCounter.seriesColors.push(
+                  tracing.getStringColorId(powerCounter.name + '.' + 'state'));
+            }
+            var powerState = parseInt(event[2]);
+            powerCounter.timestamps.push(ts);
+            powerCounter.samples.push(powerState);
+            break;
+          case 'workqueue_execute_start':
+            var event = workqueueExecuteStartRE.exec(eventBase[5]);
+            if (!event) {
+              this.model_.importErrors.push('Line ' + (lineNumber + 1) +
+                  ': Malformed workqueue_execute_start event');
+              continue;
+            }
+            var kthread = this.getOrCreateKernelThread(eventBase[1]);
+            kthread.openSliceTS = ts;
+            kthread.openSlice = event[2];
+            break;
+          case 'workqueue_execute_end':
+            var event = workqueueExecuteEndRE.exec(eventBase[5]);
+            if (!event) {
+              this.model_.importErrors.push('Line ' + (lineNumber + 1) +
+                  ': Malformed workqueue_execute_start event');
+              continue;
+            }
+            var kthread = this.getOrCreateKernelThread(eventBase[1]);
+            if (kthread.openSlice) {
+              var slice = new tracing.TimelineSlice(kthread.openSlice,
+                  tracing.getStringColorId(kthread.openSlice),
+                  kthread.openSliceTS,
+                  {},
+                  ts - kthread.openSliceTS);
 
-          var comm = event[1];
-          var pid = parseInt(event[2]);
-          var prio = parseInt(event[3]);
-          this.markPidRunnable(ts, pid, comm, prio);
+              kthread.thread.subRows[0].push(slice);
+            }
+            kthread.openSlice = undefined;
+            break;
+          case 'i915_gem_object_pwrite':
+            var event = /obj=(.+), offset=(\d+), len=(\d+)/.exec(eventBase[5]);
+            if (!event) {
+              this.model_.importErrors.push('Line ' + (lineNumber + 1) +
+                  ': Malformed ' + eventName + ' event');
+              continue;
+            }
 
-        } else if (eventName == 'power_start') {
-          var event = /type=(\d+) state=(\d) cpu_id=(\d)+/.exec(eventBase[5]);
-          if (!event) {
-            this.model_.importErrors.push('Line ' + (lineNumber + 1) +
-                ': Malformed power_start event');
-            continue;
-          }
-          var targetCpuNumber = parseInt(event[3]);
-          var targetCpu = this.getOrCreateCpuState(targetCpuNumber);
-          var powerCounter;
-          if (event[1] == '1') {
-            powerCounter = targetCpu.cpu.getOrCreateCounter('', 'C-State');
-          } else {
-            this.model_.importErrors.push('Line ' + (lineNumber + 1) +
-                ': Don\'t understand power_start events of type ' + event[1]);
-            continue;
-          }
-          if (powerCounter.numSeries == 0) {
-            powerCounter.seriesNames.push('state');
-            powerCounter.seriesColors.push(
-                tracing.getStringColorId(powerCounter.name + '.' + 'state'));
-          }
-          var powerState = parseInt(event[2]);
-          powerCounter.timestamps.push(ts);
-          powerCounter.samples.push(powerState);
-        } else if (eventName == 'power_frequency') {
-          var event = /type=(\d+) state=(\d+) cpu_id=(\d)+/.exec(eventBase[5]);
-          if (!event) {
-            this.model_.importErrors.push('Line ' + (lineNumber + 1) +
-                ': Malformed power_start event');
-            continue;
-          }
-          var targetCpuNumber = parseInt(event[3]);
-          var targetCpu = this.getOrCreateCpuState(targetCpuNumber);
-          var powerCounter =
-              targetCpu.cpu.getOrCreateCounter('', 'Power Frequency');
-          if (powerCounter.numSeries == 0) {
-            powerCounter.seriesNames.push('state');
-            powerCounter.seriesColors.push(
-                tracing.getStringColorId(powerCounter.name + '.' + 'state'));
-          }
-          var powerState = parseInt(event[2]);
-          powerCounter.timestamps.push(ts);
-          powerCounter.samples.push(powerState);
-        } else if (eventName == 'workqueue_execute_start') {
-          var event = workqueueExecuteStartRE.exec(eventBase[5]);
-          if (!event) {
-            this.model_.importErrors.push('Line ' + (lineNumber + 1) +
-                ': Malformed workqueue_execute_start event');
-            continue;
-          }
-          var kthread = this.getOrCreateKernelThread(eventBase[1]);
-          kthread.openSliceTS = ts;
-          kthread.openSlice = event[2];
-
-        } else if (eventName == 'workqueue_execute_end') {
-          var event = workqueueExecuteEndRE.exec(eventBase[5]);
-          if (!event) {
-            this.model_.importErrors.push('Line ' + (lineNumber + 1) +
-                ': Malformed workqueue_execute_start event');
-            continue;
-          }
-          var kthread = this.getOrCreateKernelThread(eventBase[1]);
-          if (kthread.openSlice) {
+            var obj = event[1];
+            var offset = parseInt(event[2]);
+            var len = parseInt(event[3]);
+            var kthread = this.getOrCreateKernelThread('i915_gem', 0, 1);
+            kthread.openSlice = 'pwrite:' + obj;
             var slice = new tracing.TimelineSlice(kthread.openSlice,
                 tracing.getStringColorId(kthread.openSlice),
-                kthread.openSliceTS,
-                {},
-                ts - kthread.openSliceTS);
+                ts,
+                {
+                  obj: obj,
+                  offset: offset,
+                  len: len
+                }, 0);
 
             kthread.thread.subRows[0].push(slice);
-          }
-          kthread.openSlice = undefined;
+            break;
+          case 'i915_flip_request':
+            var event = /plane=(\d+), obj=(.+)/.exec(eventBase[5]);
+            if (!event) {
+              this.model_.importErrors.push('Line ' + (lineNumber + 1) +
+                  ': Malformed ' + eventName + ' event');
+              continue;
+            }
 
-        } else if (eventName == '0') { // trace_mark's show up with 0 prefixes.
-          var event = traceEventClockSyncRE.exec(eventBase[5]);
-          if (event)
-            this.clockSyncRecords_.push({
-              perfTS: ts,
-              parentTS: event[1] * 1000
-            });
-          else
-            this.model_.importErrors.push('Line ' + (lineNumber + 1) +
-                ': Unrecognized event: ' + eventBase[5]);
+            var plane = parseInt(event[1]);
+            var obj = event[2];
+            // use i915_obj_plane?
+            var kthread = this.getOrCreateKernelThread('i915_flip', 0, 2);
+            kthread.openSliceTS = ts;
+            kthread.openSlice = 'flip:' + obj + '/' + plane;
+            break;
+          case 'i915_flip_complete':
+            var event = /plane=(\d+), obj=(.+)/.exec(eventBase[5]);
+            if (!event) {
+              this.model_.importErrors.push('Line ' + (lineNumber + 1) +
+                  ': Malformed ' + eventName + ' event');
+              continue;
+            }
+
+            var plane = parseInt(event[1]);
+            var obj = event[2];
+            // use i915_obj_plane?
+            var kthread = this.getOrCreateKernelThread('i915_flip', 0, 2);
+            if (kthread.openSlice) {
+              var slice = new tracing.TimelineSlice(kthread.openSlice,
+                  tracing.getStringColorId(kthread.openSlice),
+                  kthread.openSliceTS,
+                  {
+                    obj: obj,
+                    plane: plane,
+                  },
+                  ts - kthread.openSliceTS);
+
+              kthread.thread.subRows[0].push(slice);
+            }
+            kthread.openSlice = undefined;
+            break;
+          case '0':
+          case 'tracing_mark_write':
+            // trace_mark's show up with 0 prefixes in older kernels; in
+            // newer linux kernels they are demarcated by tracing_mark_write.
+            var event = traceEventClockSyncRE.exec(eventBase[5]);
+            if (event)
+              this.clockSyncRecords_.push({
+                perfTS: ts,
+                parentTS: event[1] * 1000
+              });
+            else
+              this.model_.importErrors.push('Line ' + (lineNumber + 1) +
+                  ': Unrecognized event: ' + eventBase[5]);
+            break;
+          default:
+            console.log('unknown event ' + eventName);
+            break;
         }
       }
     }

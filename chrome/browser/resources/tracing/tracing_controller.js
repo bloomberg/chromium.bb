@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,6 +26,7 @@ cr.define('tracing', function() {
     this.overlay_.appendChild(this.stopButton_);
 
     this.traceEvents_ = [];
+    this.systemTraceEvents_ = [];
 
     this.onKeydownBoundToThis_ = this.onKeydown_.bind(this);
     this.onKeypressBoundToThis_ = this.onKeypress_.bind(this);
@@ -40,6 +41,7 @@ cr.define('tracing', function() {
     clientInfo_: undefined,
     tracingEnabled_: false,
     tracingEnding_: false,
+    systemTraceDataFilename_: undefined,
 
     onRequestBufferPercentFullComplete: function(percent_full) {
       if (!this.overlay_.visible)
@@ -61,7 +63,7 @@ cr.define('tracing', function() {
     /**
      * Called by info_view to empty the trace buffer
      */
-    beginTracing: function() {
+    beginTracing: function(opt_systemTracingEnabled) {
       if (this.tracingEnabled_)
         throw Error('Tracing already begun.');
 
@@ -70,14 +72,14 @@ cr.define('tracing', function() {
       this.overlay_.visible = true;
 
       this.tracingEnabled_ = true;
+
       console.log('Beginning to trace...');
       this.statusDiv_.textContent = 'Tracing active.';
 
       this.traceEvents_ = [];
-      chrome.send('beginTracing');
+      this.systemTraceEvents_ = [];
+      chrome.send('beginTracing', [opt_systemTracingEnabled || false]);
       this.beginRequestBufferPercentFull_();
-
-      this.tracingEnabled_ = true;
 
       var e = new cr.Event('traceBegun');
       e.events = this.traceEvents_;
@@ -176,6 +178,23 @@ cr.define('tracing', function() {
     },
 
     /**
+     * Called by tracing c++ code when new system trace data arrives.
+     */
+    onSystemTraceDataCollected: function(events) {
+      console.log('onSystemTraceDataCollected with ' +
+                  events.length + ' chars of data.');
+      this.systemTraceEvents_ = events;
+    },
+
+    /**
+     * Gets the currentl system trace events. If tracing is active, then
+     * this can change on the fly.
+     */
+    get systemTraceEvents() {
+      return this.systemTraceEvents_;
+    },
+
+    /**
      * Tells browser to put up a load dialog and load the trace file
      */
     beginLoadTraceFile: function() {
@@ -194,6 +213,14 @@ cr.define('tracing', function() {
         else
           this.traceEvents_ = data;
       }
+      if (data.systemTraceEvents) {
+        this.systemTraceEvents_ = data.systemTraceEvents;
+      } else { // path for loading traces saved without metadata
+        if (!data.length)
+          console.log('Expected an array when loading the trace file');
+        else
+          this.systemTraceEvents_ = data;
+      }
       var e = new cr.Event('loadTraceFileComplete');
       e.events = this.traceEvents_;
       this.dispatchEvent(e);
@@ -209,9 +236,10 @@ cr.define('tracing', function() {
     /**
      * Tells browser to put up a save dialog and save the trace file
      */
-    beginSaveTraceFile: function(traceEvents) {
+    beginSaveTraceFile: function(traceEvents, systemTraceEvents) {
       var data = {
-        traceEvents: traceEvents,
+        traceEvents: this.traceEvents_,
+        systemTraceEvents: this.systemTraceEvents_,
         clientInfo: this.clientInfo_,
         gpuInfo: this.gpuInfo_
       };

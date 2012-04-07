@@ -19,6 +19,7 @@ cr.define('tracing', function() {
     __proto__: cr.ui.TabPanel.prototype,
 
     traceEvents_: [],
+    systemTraceEvents_: [],
 
     decorate: function() {
       cr.ui.TabPanel.prototype.decorate.apply(this);
@@ -53,6 +54,19 @@ cr.define('tracing', function() {
       this.controlDiv_.appendChild(this.loadBn_);
       this.controlDiv_.appendChild(this.saveBn_);
 
+      if (cr.isChromeOS) {
+        this.systemTracingBn_ = document.createElement('input');
+        this.systemTracingBn_.type = 'checkbox';
+        this.systemTracingBn_.checked = true;
+
+        var systemTracingLabelEl = document.createElement('div');
+        systemTracingLabelEl.className = 'label';
+        systemTracingLabelEl.textContent = 'System events';
+        systemTracingLabelEl.appendChild(this.systemTracingBn_);
+
+        this.controlDiv_.appendChild(systemTracingLabelEl);
+      }
+
       this.container_.appendChild(this.timelineView_);
       this.appendChild(this.container_);
 
@@ -72,11 +86,16 @@ cr.define('tracing', function() {
     },
 
     refresh_: function() {
-      var hasEvents = this.traceEvents_ && this.traceEvents_.length;
+      var traceEvents = tracingController.traceEvents;
+      var hasEvents = traceEvents && traceEvents.length;
 
       this.saveBn_.disabled = !hasEvents;
 
-      this.timelineView_.traceData = this.traceEvents_;
+      if (!hasEvents) return;
+
+      var m = new tracing.TimelineModel();
+      m.importEvents(traceEvents, true, [tracingController.systemTraceEvents]);
+      this.timelineView_.model = m;
     },
 
     onKeypress_: function(event) {
@@ -88,11 +107,10 @@ cr.define('tracing', function() {
     ///////////////////////////////////////////////////////////////////////////
 
     onRecord_: function() {
-      tracingController.beginTracing();
+      tracingController.beginTracing(this.systemTracingBn_.checked);
     },
 
     onRecordDone_: function() {
-      this.traceEvents_ = tracingController.traceEvents;
       this.refresh_();
     },
 
@@ -108,7 +126,7 @@ cr.define('tracing', function() {
       this.overlayEl_.appendChild(labelEl);
       this.overlayEl_.visible = true;
 
-      tracingController.beginSaveTraceFile(this.traceEvents_);
+      tracingController.beginSaveTraceFile();
     },
 
     onSaveTraceFileComplete_: function(e) {
@@ -140,7 +158,6 @@ cr.define('tracing', function() {
       this.overlayEl_.visible = false;
       this.overlayEl_ = undefined;
 
-      this.traceEvents_ = e.events;
       this.refresh_();
     },
 

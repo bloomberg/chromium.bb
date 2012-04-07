@@ -35,6 +35,11 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if defined(OS_CHROMEOS)
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/debug_daemon_client.h"
+#endif
+
 using content::BrowserThread;
 using content::GpuDataManager;
 using content::TraceController;
@@ -109,6 +114,12 @@ class TracingMessageHandler
   // True while tracing is active.
   bool trace_enabled_;
 
+  // True while system tracing is active.
+  bool system_trace_in_progress_;
+
+  void OnEndSystemTracingAck(
+      const scoped_refptr<base::RefCountedString>& events_str_ptr);
+
   DISALLOW_COPY_AND_ASSIGN(TracingMessageHandler);
 };
 
@@ -146,7 +157,8 @@ class TaskProxy : public base::RefCountedThreadSafe<TaskProxy> {
 
 TracingMessageHandler::TracingMessageHandler()
   : select_trace_file_dialog_type_(SelectFileDialog::SELECT_NONE),
-    trace_enabled_(false) {
+    trace_enabled_(false),
+    system_trace_in_progress_(false) {
 }
 
 TracingMessageHandler::~TracingMessageHandler() {
@@ -157,6 +169,15 @@ TracingMessageHandler::~TracingMessageHandler() {
 
   // If we are the current subscriber, this will result in ending tracing.
   TraceController::GetInstance()->CancelSubscriber(this);
+
+  // Shutdown any system tracing too.
+    if (system_trace_in_progress_) {
+#if defined(OS_CHROMEOS)
+      chromeos::DBusThreadManager::Get()->GetDebugDaemonClient()->
+          RequestStopSystemTracing(
+              chromeos::DebugDaemonClient::EmptyStopSystemTracingCallback());
+#endif
+    }
 }
 
 void TracingMessageHandler::RegisterMessages() {
@@ -354,12 +375,28 @@ void TracingMessageHandler::SaveTraceFileComplete() {
 
 void TracingMessageHandler::OnBeginTracing(const ListValue* args) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(args->GetSize() == 1);
+
+  bool system_tracing_requested = false;
+  bool ok = args->GetBoolean(0, &system_tracing_requested);
+  DCHECK(ok);
+
   trace_enabled_ = true;
   // TODO(jbates) This may fail, but that's OK for current use cases.
   //              Ex: Multiple about:gpu traces can not trace simultaneously.
   // TODO(nduca) send feedback to javascript about whether or not BeginTracing
   //             was successful.
   TraceController::GetInstance()->BeginTracing(this);
+
+  if (system_tracing_requested) {
+#if defined(OS_CHROMEOS)
+    DCHECK(!system_trace_in_progress_);
+    chromeos::DBusThreadManager::Get()->GetDebugDaemonClient()->
+        StartSystemTracing();
+    // TODO(sleffler) async, could wait for completion
+    system_trace_in_progress_ = true;
+#endif
+  }
 }
 
 void TracingMessageHandler::OnEndTracingAsync(const ListValue* list) {
@@ -379,7 +416,35 @@ void TracingMessageHandler::OnEndTracingAsync(const ListValue* list) {
 void TracingMessageHandler::OnEndTracingComplete() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   trace_enabled_ = false;
+  if (system_trace_in_progress_) {
+    // Disable system tracing now that the local trace has shutdown.
+    // This must be done last because we potentially need to push event
+    // records into the system event log for synchronizing system event
+    // timestamps with chrome event timestamps--and since the system event
+    // log is a ring-buffer (on linux) adding them at the end is the only
+    // way we're confident we'll have them in the final result.
+    system_trace_in_progress_ = false;
+#if defined(OS_CHROMEOS)
+    chromeos::DBusThreadManager::Get()->GetDebugDaemonClient()->
+        RequestStopSystemTracing(
+            base::Bind(&TracingMessageHandler::OnEndSystemTracingAck,
+            base::Unretained(this)));
+    return;
+#endif
+  }
   web_ui()->CallJavascriptFunction("tracingController.onEndTracingComplete");
+}
+
+void TracingMessageHandler::OnEndSystemTracingAck(
+    const scoped_refptr<base::RefCountedString>& events_str_ptr) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  web_ui()->CallJavascriptFunction(
+      "tracingController.onSystemTraceDataCollected",
+      *scoped_ptr<Value>(Value::CreateStringValue(events_str_ptr->data())));
+  DCHECK(!system_trace_in_progress_);
+
+  OnEndTracingComplete();
 }
 
 void TracingMessageHandler::OnTraceDataCollected(
