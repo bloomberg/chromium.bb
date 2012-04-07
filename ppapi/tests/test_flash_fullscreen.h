@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,8 +34,8 @@ class TestFlashFullscreen : public TestCase {
 
   bool fullscreen_pending_;
   bool normal_pending_;
-  TestCompletionCallback fullscreen_callback_;
-  TestCompletionCallback normal_callback_;
+  NestedEvent fullscreen_event_;
+  NestedEvent normal_event_;
 };
 
 #endif  // PPAPI_TESTS_TEST_FLASH_FULLSCREEN_H_

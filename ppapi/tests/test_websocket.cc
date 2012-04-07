@@ -282,7 +282,7 @@ PP_Resource TestWebSocket::Connect(const std::string& url,
   }
   *result = websocket_interface_->Connect(
       ws, url_var, protocols, protocol_count,
-      static_cast<pp::CompletionCallback>(callback).pp_completion_callback());
+      callback.GetCallback().pp_completion_callback());
   ReleaseVar(url_var);
   if (protocol.size())
     ReleaseVar(protocols[0]);
@@ -356,12 +356,12 @@ std::string TestWebSocket::TestInvalidConnect() {
   TestCompletionCallback callback(instance_->pp_instance(), force_async_);
   int32_t result = websocket_interface_->Connect(
       ws, PP_MakeUndefined(), protocols, 1U,
-      static_cast<pp::CompletionCallback>(callback).pp_completion_callback());
+      callback.GetCallback().pp_completion_callback());
   ASSERT_EQ(PP_ERROR_BADARGUMENT, result);
 
   result = websocket_interface_->Connect(
       ws, PP_MakeUndefined(), protocols, 1U,
-      static_cast<pp::CompletionCallback>(callback).pp_completion_callback());
+      callback.GetCallback().pp_completion_callback());
   ASSERT_EQ(PP_ERROR_INPROGRESS, result);
 
   core_interface_->ReleaseResource(ws);
@@ -393,7 +393,7 @@ std::string TestWebSocket::TestProtocols() {
   TestCompletionCallback callback(instance_->pp_instance(), force_async_);
   int32_t result = websocket_interface_->Connect(
       ws, url, bad_protocols, 2U,
-      static_cast<pp::CompletionCallback>(callback).pp_completion_callback());
+      callback.GetCallback().pp_completion_callback());
   if (result == PP_OK_COMPLETIONPENDING)
     result = callback.WaitForResult();
   ASSERT_EQ(PP_ERROR_BADARGUMENT, result);
@@ -452,7 +452,7 @@ std::string TestWebSocket::TestInvalidClose() {
   PP_Resource ws = websocket_interface_->Create(instance_->pp_instance());
   int32_t result = websocket_interface_->Close(
       ws, PP_WEBSOCKETSTATUSCODE_NORMAL_CLOSURE, reason,
-      static_cast<pp::CompletionCallback>(callback).pp_completion_callback());
+      callback.GetCallback().pp_completion_callback());
   ASSERT_EQ(PP_ERROR_FAILED, result);
   core_interface_->ReleaseResource(ws);
 
@@ -461,7 +461,7 @@ std::string TestWebSocket::TestInvalidClose() {
   ASSERT_TRUE(ws);
   ASSERT_EQ(PP_OK, result);
   result = websocket_interface_->Close(ws, 1U, reason,
-      static_cast<pp::CompletionCallback>(callback).pp_completion_callback());
+      callback.GetCallback().pp_completion_callback());
   ASSERT_EQ(PP_ERROR_NOACCESS, result);
   core_interface_->ReleaseResource(ws);
 
@@ -484,7 +484,7 @@ std::string TestWebSocket::TestValidClose() {
   ASSERT_EQ(PP_OK, result);
   result = websocket_interface_->Close(ws,
       PP_WEBSOCKETSTATUSCODE_NORMAL_CLOSURE, reason,
-      static_cast<pp::CompletionCallback>(callback).pp_completion_callback());
+      callback.GetCallback().pp_completion_callback());
   ASSERT_EQ(PP_OK_COMPLETIONPENDING, result);
   result = callback.WaitForResult();
   ASSERT_EQ(PP_OK, result);
@@ -495,12 +495,11 @@ std::string TestWebSocket::TestValidClose() {
   // successfully.
   ws = websocket_interface_->Create(instance_->pp_instance());
   result = websocket_interface_->Connect(ws, url, protocols, 0U,
-      static_cast<pp::CompletionCallback>(callback).pp_completion_callback());
+      callback.GetCallback().pp_completion_callback());
   ASSERT_EQ(PP_OK_COMPLETIONPENDING, result);
   result = websocket_interface_->Close(ws,
       PP_WEBSOCKETSTATUSCODE_NORMAL_CLOSURE, reason,
-      static_cast<pp::CompletionCallback>(
-          another_callback).pp_completion_callback());
+      another_callback.GetCallback().pp_completion_callback());
   ASSERT_EQ(PP_OK_COMPLETIONPENDING, result);
   result = callback.WaitForResult();
   ASSERT_EQ(PP_ERROR_ABORTED, result);
@@ -516,12 +515,11 @@ std::string TestWebSocket::TestValidClose() {
   ASSERT_EQ(PP_OK, result);
   result = websocket_interface_->Close(ws,
       PP_WEBSOCKETSTATUSCODE_NORMAL_CLOSURE, reason,
-      static_cast<pp::CompletionCallback>(callback).pp_completion_callback());
+      callback.GetCallback().pp_completion_callback());
   ASSERT_EQ(PP_OK_COMPLETIONPENDING, result);
   result = websocket_interface_->Close(ws,
       PP_WEBSOCKETSTATUSCODE_NORMAL_CLOSURE, reason,
-      static_cast<pp::CompletionCallback>(
-          another_callback).pp_completion_callback());
+      another_callback.GetCallback().pp_completion_callback());
   ASSERT_EQ(PP_ERROR_INPROGRESS, result);
   result = callback.WaitForResult();
   ASSERT_EQ(PP_OK, result);
@@ -533,12 +531,11 @@ std::string TestWebSocket::TestValidClose() {
   ASSERT_EQ(PP_OK, result);
   PP_Var receive_message_var;
   result = websocket_interface_->ReceiveMessage(ws, &receive_message_var,
-      static_cast<pp::CompletionCallback>(callback).pp_completion_callback());
+      callback.GetCallback().pp_completion_callback());
   ASSERT_EQ(PP_OK_COMPLETIONPENDING, result);
   result = websocket_interface_->Close(ws,
       PP_WEBSOCKETSTATUSCODE_NORMAL_CLOSURE, reason,
-      static_cast<pp::CompletionCallback>(
-          another_callback).pp_completion_callback());
+      another_callback.GetCallback().pp_completion_callback());
   ASSERT_EQ(PP_OK_COMPLETIONPENDING, result);
   result = callback.WaitForResult();
   ASSERT_EQ(PP_ERROR_ABORTED, result);
@@ -594,7 +591,7 @@ std::string TestWebSocket::TestTextSendReceive() {
   TestCompletionCallback callback(instance_->pp_instance(), force_async_);
   PP_Var received_message;
   result = websocket_interface_->ReceiveMessage(ws, &received_message,
-      static_cast<pp::CompletionCallback>(callback).pp_completion_callback());
+      callback.GetCallback().pp_completion_callback());
   ASSERT_FALSE(result != PP_OK && result != PP_OK_COMPLETIONPENDING);
   if (result == PP_OK_COMPLETIONPENDING)
     result = callback.WaitForResult();
@@ -626,7 +623,7 @@ std::string TestWebSocket::TestBinarySendReceive() {
   TestCompletionCallback callback(instance_->pp_instance(), force_async_);
   PP_Var received_message;
   result = websocket_interface_->ReceiveMessage(ws, &received_message,
-      static_cast<pp::CompletionCallback>(callback).pp_completion_callback());
+      callback.GetCallback().pp_completion_callback());
   ASSERT_TRUE(result == PP_OK || result == PP_OK_COMPLETIONPENDING);
   if (result == PP_OK_COMPLETIONPENDING)
     result = callback.WaitForResult();
@@ -668,8 +665,7 @@ std::string TestWebSocket::TestStressedSendReceive() {
     TestCompletionCallback callback(instance_->pp_instance(), force_async_);
     PP_Var received_message;
     int32_t result = websocket_interface_->ReceiveMessage(
-        ws, &received_message, static_cast<pp::CompletionCallback>(
-            callback).pp_completion_callback());
+        ws, &received_message, callback.GetCallback().pp_completion_callback());
     ASSERT_TRUE(result == PP_OK || result == PP_OK_COMPLETIONPENDING);
     if (result == PP_OK_COMPLETIONPENDING)
       result = callback.WaitForResult();
@@ -715,7 +711,7 @@ std::string TestWebSocket::TestBufferedAmount() {
   TestCompletionCallback callback(instance_->pp_instance());
   result = websocket_interface_->Close(ws,
       PP_WEBSOCKETSTATUSCODE_NORMAL_CLOSURE, reason,
-      static_cast<pp::CompletionCallback>(callback).pp_completion_callback());
+      callback.GetCallback().pp_completion_callback());
   ASSERT_EQ(PP_OK_COMPLETIONPENDING, result);
   ASSERT_EQ(PP_WEBSOCKETREADYSTATE_CLOSING,
       websocket_interface_->GetReadyState(ws));

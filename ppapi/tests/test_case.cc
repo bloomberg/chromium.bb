@@ -12,7 +12,7 @@
 TestCase::TestCase(TestingInstance* instance)
     : instance_(instance),
       testing_interface_(NULL),
-      force_async_(false) {
+      callback_type_(PP_REQUIRED) {
   // Get the testing_interface_ if it is available, so that we can do Resource
   // and Var checks on shutdown (see CheckResourcesAndVars). If it is not
   // available, testing_interface_ will be NULL. Some tests do not require it.

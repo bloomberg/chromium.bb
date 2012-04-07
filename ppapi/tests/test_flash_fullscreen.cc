@@ -40,8 +40,8 @@ TestFlashFullscreen::TestFlashFullscreen(TestingInstance* instance)
       screen_mode_(instance),
       fullscreen_pending_(false),
       normal_pending_(false),
-      fullscreen_callback_(instance->pp_instance()),
-      normal_callback_(instance->pp_instance()) {
+      fullscreen_event_(instance->pp_instance()),
+      normal_event_(instance->pp_instance()) {
   screen_mode_.GetScreenSize(&screen_size_);
 }
 
@@ -86,7 +86,7 @@ std::string TestFlashFullscreen::TestNormalToFullscreenToNormal() {
   }
 
   // DidChangeView() will call the callback once in fullscreen mode.
-  fullscreen_callback_.WaitForResult();
+  fullscreen_event_.Wait();
   if (fullscreen_pending_)
     return "fullscreen_pending_ has not been reset";
   if (!screen_mode_.IsFullscreen())
@@ -116,7 +116,7 @@ std::string TestFlashFullscreen::TestNormalToFullscreenToNormal() {
   if (testing_interface_->IsOutOfProcess()) {
     if (!screen_mode_.IsFullscreen())
       return ReportError("IsFullscreen() in normal transition", false);
-    normal_callback_.WaitForResult();
+    normal_event_.Wait();
     if (normal_pending_)
       return "normal_pending_ has not been reset";
   }
@@ -140,11 +140,11 @@ void TestFlashFullscreen::DidChangeView(const pp::View& view) {
   pp::Rect clip = view.GetClipRect();
   if (fullscreen_pending_ && IsFullscreenView(position, clip, screen_size_)) {
     fullscreen_pending_ = false;
-    pp::Module::Get()->core()->CallOnMainThread(0, fullscreen_callback_);
+    fullscreen_event_.Signal();
   } else if (normal_pending_ &&
              !IsFullscreenView(position, clip, screen_size_)) {
     normal_pending_ = false;
     if (testing_interface_->IsOutOfProcess())
-      pp::Module::Get()->core()->CallOnMainThread(0, normal_callback_);
+      normal_event_.Signal();
   }
 }

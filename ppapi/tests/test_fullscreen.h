@@ -57,9 +57,9 @@ class TestFullscreen : public TestCase {
   bool fullscreen_pending_;
   bool normal_pending_;
   pp::Graphics2D graphics2d_;
-  TestCompletionCallback set_fullscreen_true_callback_;
-  TestCompletionCallback fullscreen_callback_;
-  TestCompletionCallback normal_callback_;
+
+  NestedEvent fullscreen_event_;
+  NestedEvent normal_event_;
 };
 
 #endif  // PAPPI_TESTS_TEST_FULLSCREEN_H_

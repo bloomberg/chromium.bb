@@ -98,9 +98,9 @@ PP_Resource PPB_NetworkMonitor_Private_Proxy::CreateProxyResource(
     // here.
     proxy->current_list_ = NULL;
   } else if (proxy->current_list_.get()) {
-    MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
+    MessageLoop::current()->PostTask(FROM_HERE, RunWhileLocked(base::Bind(
         &NetworkMonitor::OnNetworkListReceived,
-        result->AsWeakPtr(), proxy->current_list_));
+        result->AsWeakPtr(), proxy->current_list_)));
   }
 
   return result->GetReference();

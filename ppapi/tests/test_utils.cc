@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -71,51 +71,146 @@ bool GetLocalHostPort(PP_Instance instance, std::string* host, uint16_t* port) {
   return true;
 }
 
+void NestedEvent::Wait() {
+  // Don't allow nesting more than once; it doesn't work with the code as-is,
+  // and probably is a bad idea most of the time anyway.
+  PP_DCHECK(!waiting_);
+  if (signalled_)
+    return;
+  waiting_ = true;
+  while (!signalled_)
+    GetTestingInterface()->RunMessageLoop(instance_);
+  waiting_ = false;
+}
+
+void NestedEvent::Signal() {
+  signalled_ = true;
+  if (waiting_)
+    GetTestingInterface()->QuitMessageLoop(instance_);
+}
+
 TestCompletionCallback::TestCompletionCallback(PP_Instance instance)
-    : have_result_(false),
+    : wait_for_result_called_(false),
+      have_result_(false),
       result_(PP_OK_COMPLETIONPENDING),
-      force_async_(false),
+      // TODO(dmichael): The default should probably be PP_REQUIRED, but this is
+      //                 what the tests currently expect.
+      callback_type_(PP_OPTIONAL),
       post_quit_task_(false),
-      run_count_(0),
       instance_(instance) {
 }
 
 TestCompletionCallback::TestCompletionCallback(PP_Instance instance,
                                                bool force_async)
-    : have_result_(false),
+    : wait_for_result_called_(false),
+      have_result_(false),
       result_(PP_OK_COMPLETIONPENDING),
-      force_async_(force_async),
+      callback_type_(force_async ? PP_REQUIRED : PP_OPTIONAL),
       post_quit_task_(false),
-      run_count_(0),
+      instance_(instance) {
+}
+
+TestCompletionCallback::TestCompletionCallback(PP_Instance instance,
+                                               CallbackType callback_type)
+    : wait_for_result_called_(false),
+      have_result_(false),
+      result_(PP_OK_COMPLETIONPENDING),
+      callback_type_(callback_type),
+      post_quit_task_(false),
       instance_(instance) {
 }
 
 int32_t TestCompletionCallback::WaitForResult() {
+  PP_DCHECK(!wait_for_result_called_);
+  wait_for_result_called_ = true;
+  errors_.clear();
   if (!have_result_) {
-    result_ = PP_OK_COMPLETIONPENDING;  // Reset
     post_quit_task_ = true;
     GetTestingInterface()->RunMessageLoop(instance_);
   }
-  have_result_ = false;
   return result_;
 }
 
-TestCompletionCallback::operator pp::CompletionCallback() const {
-  int32_t flags = (force_async_ ? 0 : PP_COMPLETIONCALLBACK_FLAG_OPTIONAL);
+void TestCompletionCallback::WaitForResult(int32_t result) {
+  PP_DCHECK(!wait_for_result_called_);
+  wait_for_result_called_ = true;
+  errors_.clear();
+  if (result == PP_OK_COMPLETIONPENDING) {
+    if (!have_result_) {
+      post_quit_task_ = true;
+      GetTestingInterface()->RunMessageLoop(instance_);
+    }
+    if (callback_type_ == PP_BLOCKING) {
+      errors_.assign(
+          ReportError("TestCompletionCallback: Call did not run synchronously "
+                      "when passed a blocking completion callback!",
+                      result_));
+      return;
+    }
+  } else {
+    result_ = result;
+    have_result_ = true;
+    if (callback_type_ == PP_REQUIRED) {
+      errors_.assign(
+          ReportError("TestCompletionCallback: Call ran synchronously when "
+                      "passed a required completion callback!",
+                      result_));
+      return;
+    }
+  }
+  PP_DCHECK(have_result_ == true);
+}
+
+void TestCompletionCallback::WaitForAbortResult(int32_t result) {
+  WaitForResult(result);
+  int32_t final_result = result_;
+  if (result == PP_OK_COMPLETIONPENDING) {
+    if (final_result != PP_ERROR_ABORTED) {
+      errors_.assign(
+          ReportError("TestCompletionCallback: Expected PP_ERROR_ABORTED or "
+                      "PP_OK. Ran asynchronously.",
+                      final_result));
+      return;
+    }
+  } else if (result != PP_OK) {
+    errors_.assign(
+        ReportError("TestCompletionCallback: Expected PP_ERROR_ABORTED or"
+                    "PP_OK. Ran synchronously.",
+                    result));
+    return;
+  }
+}
+
+pp::CompletionCallback TestCompletionCallback::GetCallback() {
+  Reset();
+  int32_t flags = 0;
+  if (callback_type_ == PP_BLOCKING)
+    return pp::CompletionCallback();
+  else if (callback_type_ == PP_OPTIONAL)
+    flags = PP_COMPLETIONCALLBACK_FLAG_OPTIONAL;
   return pp::CompletionCallback(&TestCompletionCallback::Handler,
                                 const_cast<TestCompletionCallback*>(this),
                                 flags);
+}
+
+void TestCompletionCallback::Reset() {
+  wait_for_result_called_ = false;
+  result_ = PP_OK_COMPLETIONPENDING;
+  have_result_ = false;
+  post_quit_task_ = false;
+  errors_.clear();
 }
 
 // static
 void TestCompletionCallback::Handler(void* user_data, int32_t result) {
   TestCompletionCallback* callback =
       static_cast<TestCompletionCallback*>(user_data);
+  PP_DCHECK(!callback->have_result_);
   callback->result_ = result;
   callback->have_result_ = true;
-  callback->run_count_++;
   if (callback->post_quit_task_) {
     callback->post_quit_task_ = false;
     GetTestingInterface()->QuitMessageLoop(callback->instance_);
   }
 }
+

@@ -274,14 +274,12 @@ std::string TestURLRequest::TestSetProperty() {
 
 std::string TestURLRequest::LoadAndCompareBody(
     PP_Resource url_request, const std::string& expected_body) {
-  TestCompletionCallback test_callback(instance_->pp_instance(), true);
-  pp::CompletionCallback callback =
-      static_cast<pp::CompletionCallback>(test_callback);
-  int32_t result = ppb_url_loader_interface_->Open(
-      url_loader_, url_request, callback.pp_completion_callback());
-  ASSERT_EQ(PP_OK_COMPLETIONPENDING, result);
-  result = test_callback.WaitForResult();
-  ASSERT_EQ(PP_OK, result);
+  TestCompletionCallback callback(instance_->pp_instance(), PP_REQUIRED);
+  callback.WaitForResult(ppb_url_loader_interface_->Open(
+      url_loader_, url_request,
+      callback.GetCallback().pp_completion_callback()));
+  CHECK_CALLBACK_BEHAVIOR(callback);
+  ASSERT_EQ(PP_OK, callback.result());
 
   std::string error;
   PP_Resource url_response =
@@ -298,19 +296,17 @@ std::string TestURLRequest::LoadAndCompareBody(
     for (; error.empty();) {  // Read the entire body in this loop.
       const size_t kBufferSize = 32;
       char buf[kBufferSize];
-      result = ppb_url_loader_interface_->ReadResponseBody(
+      callback.WaitForResult(ppb_url_loader_interface_->ReadResponseBody(
           url_loader_, buf, kBufferSize,
-          callback.pp_completion_callback());
-      if (PP_OK_COMPLETIONPENDING != result) {
-        error = ReportError("PPB_URLLoader::ReadResponseBody()", result);
+          callback.GetCallback().pp_completion_callback()));
+      if (callback.failed())
+        error.assign(callback.errors());
+      else if (callback.result() < PP_OK)
+        error.assign(ReportError("PPB_URLLoader::ReadResponseBody()",
+                                 callback.result()));
+      if (callback.result() <= PP_OK || callback.failed())
         break;
-      }
-      result = test_callback.WaitForResult();
-      if (result < PP_OK)
-        error = ReportError("PPB_URLLoader::ReadResponseBody()", result);
-      if (result <= PP_OK)
-        break;
-      actual_body.append(buf, result);
+      actual_body.append(buf, callback.result());
     }
     if (actual_body != expected_body)
       error = "PPB_URLLoader::ReadResponseBody() read unexpected response";

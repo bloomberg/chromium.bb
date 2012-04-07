@@ -14,6 +14,7 @@
 #include "ppapi/c/dev/ppb_testing_dev.h"
 #include "ppapi/cpp/dev/scrollbar_dev.h"
 #include "ppapi/cpp/view.h"
+#include "ppapi/tests/test_utils.h"
 
 #if (defined __native_client__)
 #include "ppapi/cpp/var.h"
@@ -108,13 +109,28 @@ class TestCase {
   // Pointer to the instance that owns us.
   TestingInstance* instance_;
 
+ protected:
   // NULL unless InitTestingInterface is called.
   const PPB_Testing_Dev* testing_interface_;
 
-  // Force asynchronous completion of any operation taking a callback.
+  // TODO(dmichael): Remove this, it's for temporary backwards compatibility so
+  // I don't have to change all the tests at once.
   bool force_async_;
 
+  void set_callback_type(CallbackType callback_type) {
+    callback_type_ = callback_type;
+    // TODO(dmichael): Remove this; see comment on force_async_.
+    force_async_ = (callback_type_ == PP_REQUIRED);
+  }
+  CallbackType callback_type() const {
+    return callback_type_;
+  }
+
  private:
+  // Passed when creating completion callbacks in some tests. This determines
+  // what kind of callback we use for the test.
+  CallbackType callback_type_;
+
   // Var ids that should be ignored when checking for leaks on shutdown.
   std::set<int64_t> ignored_leaked_vars_;
 
@@ -167,7 +183,7 @@ class TestCaseFactory {
 // test |name|.
 #define RUN_TEST(name, test_filter) \
   if (MatchesFilter(#name, test_filter)) { \
-    force_async_ = false; \
+    set_callback_type(PP_OPTIONAL); \
     std::string error_message = Test##name(); \
     if (error_message.empty()) \
       error_message = CheckResourcesAndVars(); \
@@ -176,7 +192,7 @@ class TestCaseFactory {
 
 #define RUN_TEST_WITH_REFERENCE_CHECK(name, test_filter) \
   if (MatchesFilter(#name, test_filter)) { \
-    force_async_ = false; \
+    set_callback_type(PP_OPTIONAL); \
     uint32_t objects = testing_interface_->GetLiveObjectsForInstance( \
         instance_->pp_instance()); \
     std::string error_message = Test##name(); \
@@ -192,7 +208,7 @@ class TestCaseFactory {
 // asynchronously on success or error.
 #define RUN_TEST_FORCEASYNC(name, test_filter) \
   if (MatchesFilter(#name"ForceAsync", test_filter)) { \
-    force_async_ = true; \
+    set_callback_type(PP_REQUIRED); \
     instance_->LogTest(#name"ForceAsync", Test##name()); \
   }
 

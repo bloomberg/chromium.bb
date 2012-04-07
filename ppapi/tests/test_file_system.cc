@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,64 +27,43 @@ std::string TestFileSystem::TestOpen() {
 
   // Open.
   pp::FileSystem file_system(instance_, PP_FILESYSTEMTYPE_LOCALTEMPORARY);
-  int32_t rv = file_system.Open(1024, callback);
-  if (rv == PP_OK_COMPLETIONPENDING)
-    rv = callback.WaitForResult();
-  if (rv != PP_OK)
-    return ReportError("FileSystem::Open", rv);
+  callback.WaitForResult(file_system.Open(1024, callback));
+  CHECK_CALLBACK_BEHAVIOR(callback);
+  ASSERT_EQ(PP_OK, callback.result());
 
   // Open aborted (see the DirectoryReader test for comments).
-  callback.reset_run_count();
-  rv = pp::FileSystem(instance_, PP_FILESYSTEMTYPE_LOCALTEMPORARY)
-      .Open(1024, callback);
-  if (callback.run_count() > 0)
-    return "FileSystem::Open ran callback synchronously.";
-  if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
-    return ReportError("FileSystem::Open force_async", rv);
-  if (rv == PP_OK_COMPLETIONPENDING) {
-    rv = callback.WaitForResult();
-    if (rv != PP_ERROR_ABORTED)
-      return "FileSystem::Open not aborted.";
-  } else if (rv != PP_OK) {
-    return ReportError("FileSystem::Open", rv);
+  int32_t rv = 0;
+  {
+    rv = pp::FileSystem(instance_,
+                        PP_FILESYSTEMTYPE_LOCALTEMPORARY).Open(1024, callback);
   }
+  callback.WaitForAbortResult(rv);
+  CHECK_CALLBACK_BEHAVIOR(callback);
 
   PASS();
 }
 
 std::string TestFileSystem::TestMultipleOpens() {
-  // Should not allow multiple opens, no matter the first open has completed or
-  // not.
+  // Should not allow multiple opens, regardless of whether or not the first
+  // open has completed.
   TestCompletionCallback callback_1(instance_->pp_instance(), force_async_);
   pp::FileSystem file_system(instance_, PP_FILESYSTEMTYPE_LOCALTEMPORARY);
   int32_t rv_1 = file_system.Open(1024, callback_1);
-  if (callback_1.run_count() > 0)
-    return "FileSystem::Open1 ran callback synchronously.";
-  if (force_async_ && rv_1 != PP_OK_COMPLETIONPENDING)
-    return ReportError("FileSystem::Open1 force_async", rv_1);
 
   TestCompletionCallback callback_2(instance_->pp_instance(), force_async_);
-  int32_t rv_2 = file_system.Open(1024, callback_2);
-  if (force_async_ && rv_2 != PP_OK_COMPLETIONPENDING)
-    return ReportError("FileSystem::Open2 force_async", rv_2);
-  if (rv_2 == PP_OK_COMPLETIONPENDING)
-    rv_2 = callback_2.WaitForResult();
-  if (rv_2 == PP_OK)
-    return "FileSystem::Open2 should not allow multiple opens.";
+  callback_2.WaitForResult(file_system.Open(1024, callback_2));
+  CHECK_CALLBACK_BEHAVIOR(callback_2);
+  // FileSystem should not allow multiple opens.
+  ASSERT_NE(PP_OK, callback_2.result());
 
-  if (rv_1 == PP_OK_COMPLETIONPENDING)
-    rv_1 = callback_1.WaitForResult();
-  if (rv_1 != PP_OK)
-    return ReportError("FileSystem::Open1", rv_1);
+  callback_1.WaitForResult(rv_1);
+  CHECK_CALLBACK_BEHAVIOR(callback_1);
+  ASSERT_EQ(PP_OK, callback_1.result());
 
   TestCompletionCallback callback_3(instance_->pp_instance(), force_async_);
-  int32_t rv_3 = file_system.Open(1024, callback_3);
-  if (force_async_ && rv_3 != PP_OK_COMPLETIONPENDING)
-    return ReportError("FileSystem::Open3 force_async", rv_3);
-  if (rv_3 == PP_OK_COMPLETIONPENDING)
-    rv_3 = callback_3.WaitForResult();
-  if (rv_3 == PP_OK)
-    return "FileSystem::Open3 should not allow multiple opens.";
+  callback_3.WaitForResult(file_system.Open(1024, callback_3));
+  CHECK_CALLBACK_BEHAVIOR(callback_3);
+  ASSERT_NE(PP_OK, callback_3.result());
 
   PASS();
 }
