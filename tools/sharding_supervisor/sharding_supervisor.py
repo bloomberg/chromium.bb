@@ -285,11 +285,11 @@ class ShardingSupervisor(object):
     num_failed = len(self.failed_shards)
     if num_failed > 0:
       self.failed_shards.sort()
-      self.WriteText(sys.stderr,
+      self.WriteText(sys.stdout,
                      "\nFAILED SHARDS: %s\n" % str(self.failed_shards),
                      "\x1b[1;5;31m")
     else:
-      self.WriteText(sys.stderr, "\nALL SHARDS PASSED!\n", "\x1b[1;5;32m")
+      self.WriteText(sys.stdout, "\nALL SHARDS PASSED!\n", "\x1b[1;5;32m")
     self.PrintSummary(self.failed_tests)
     if self.retry_percent < 0:
       return len(self.failed_shards) > 0
@@ -334,7 +334,7 @@ class ShardingSupervisor(object):
           sys.stdout.write(line)
     except:
       sys.stdout.flush()
-      print >> sys.stderr, 'CAUGHT EXCEPTION: dumping remaining data:'
+      print 'CAUGHT EXCEPTION: dumping remaining data:'
       for shard_index in range(self.num_shards_to_run):
         while True:
           try:
@@ -345,7 +345,7 @@ class ShardingSupervisor(object):
             break
           if line is self.SHARD_COMPLETED:
             break
-          sys.stderr.write(line)
+          sys.stdout.write(line)
       raise
 
   def LogOutputLine(self, index, line):
@@ -381,9 +381,9 @@ class ShardingSupervisor(object):
     """
     num_tests_run = self.test_counter.next()
     if len(self.failed_tests) > self.retry_percent * num_tests_run:
-      sys.stderr.write("\nNOT RETRYING FAILED TESTS (too many failed)\n")
+      sys.stdout.write("\nNOT RETRYING FAILED TESTS (too many failed)\n")
       return 1
-    self.WriteText(sys.stderr, "\nRETRYING FAILED TESTS:\n", "\x1b[1;5;33m")
+    self.WriteText(sys.stdout, "\nRETRYING FAILED TESTS:\n", "\x1b[1;5;33m")
     sharded_description = re.compile(r": (?:\d+>)?(.*)")
     gtest_filters = [sharded_description.search(line).group(1)
                      for line in self.failed_tests]
@@ -397,7 +397,7 @@ class ShardingSupervisor(object):
       if rerun.returncode != 0:
         failed_retries.append(test_filter)
 
-    self.WriteText(sys.stderr, "RETRY RESULTS:\n", "\x1b[1;5;33m")
+    self.WriteText(sys.stdout, "RETRY RESULTS:\n", "\x1b[1;5;33m")
     self.PrintSummary(failed_retries)
     return len(failed_retries) > 0
 
@@ -408,11 +408,11 @@ class ShardingSupervisor(object):
     the lines that indicate a test failure are reproduced.
     """
     if failed_tests:
-      self.WriteText(sys.stderr, "FAILED TESTS:\n", "\x1b[1;5;31m")
+      self.WriteText(sys.stdout, "FAILED TESTS:\n", "\x1b[1;5;31m")
       for line in failed_tests:
-        sys.stderr.write(line)
+        sys.stdout.write(line)
     else:
-      self.WriteText(sys.stderr, "ALL TESTS PASSED!\n", "\x1b[1;5;32m")
+      self.WriteText(sys.stdout, "ALL TESTS PASSED!\n", "\x1b[1;5;32m")
 
   def WriteText(self, pipe, text, ansi):
     """Writes the text to the pipe with the ansi escape code, if colored

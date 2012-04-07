@@ -22,9 +22,10 @@ SHARDS_PER_CORE = sharding_supervisor.SS_DEFAULT_SHARDS_PER_CORE
 def generate_expected_output(start, end, num_shards):
   """Generate the expected stdout and stderr for the dummy test."""
   stdout = ''
+  stderr = ''
   for i in range(start, end):
     stdout += 'Running shard %d of %d\n' % (i, num_shards)
-  stderr = '\nALL SHARDS PASSED!\nALL TESTS PASSED!\n'
+  stdout += '\nALL SHARDS PASSED!\nALL TESTS PASSED!\n'
 
   return (stdout, stderr)
 
