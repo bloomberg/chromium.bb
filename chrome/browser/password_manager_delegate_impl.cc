@@ -56,8 +56,7 @@ class SavePasswordInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual bool Accept() OVERRIDE;
   virtual bool Cancel() OVERRIDE;
 
-  virtual SavePasswordInfoBarDelegate*
-      AsSavePasswordInfoBarDelegate() OVERRIDE;
+  virtual InfoBarAutomationType GetInfoBarAutomationType() const OVERRIDE;
 
   // The PasswordFormManager managing the form we're asking the user about,
   // and should update as per her decision.
@@ -115,9 +114,9 @@ bool SavePasswordInfoBarDelegate::Cancel() {
   return true;
 }
 
-SavePasswordInfoBarDelegate*
-SavePasswordInfoBarDelegate::AsSavePasswordInfoBarDelegate() {
-  return this;
+InfoBarDelegate::InfoBarAutomationType
+    SavePasswordInfoBarDelegate::GetInfoBarAutomationType() const {
+  return PASSWORD_INFOBAR;
 }
 
 // PasswordManagerDelegateImpl ------------------------------------------------

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,6 +20,9 @@ class ConfirmInfoBarDelegate : public InfoBarDelegate {
     BUTTON_OK     = 1 << 0,
     BUTTON_CANCEL = 1 << 1,
   };
+
+  // Returns the InfoBar type to be displayed for the InfoBar.
+  virtual InfoBarAutomationType GetInfoBarAutomationType() const OVERRIDE;
 
   // Returns the message string to be displayed for the InfoBar.
   virtual string16 GetMessageText() const = 0;

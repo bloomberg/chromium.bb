@@ -26,6 +26,11 @@ RegisterProtocolHandlerInfoBarDelegate::RegisterProtocolHandlerInfoBarDelegate(
       handler_(handler) {
 }
 
+InfoBarDelegate::InfoBarAutomationType
+    RegisterProtocolHandlerInfoBarDelegate::GetInfoBarAutomationType() const {
+  return RPH_INFOBAR;
+}
+
 InfoBarDelegate::Type
 RegisterProtocolHandlerInfoBarDelegate::GetInfoBarType() const {
   return PAGE_ACTION_TYPE;

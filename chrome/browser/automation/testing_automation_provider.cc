@@ -2670,17 +2670,25 @@ ListValue* TestingAutomationProvider::GetInfobarsInfo(WebContents* wc) {
   for (size_t i = 0; i < infobar_helper->infobar_count(); ++i) {
     DictionaryValue* infobar_item = new DictionaryValue;
     InfoBarDelegate* infobar = infobar_helper->GetInfoBarDelegateAt(i);
+    switch (infobar->GetInfoBarAutomationType()) {
+      case InfoBarDelegate::CONFIRM_INFOBAR:
+        infobar_item->SetString("type", "confirm_infobar");
+        break;
+      case InfoBarDelegate::ONE_CLICK_LOGIN_INFOBAR:
+        infobar_item->SetString("type", "oneclicklogin_infobar");
+        break;
+      case InfoBarDelegate::PASSWORD_INFOBAR:
+        infobar_item->SetString("type", "password_infobar");
+        break;
+      case InfoBarDelegate::RPH_INFOBAR:
+        infobar_item->SetString("type", "rph_infobar");
+        break;
+      case InfoBarDelegate::UNKNOWN_INFOBAR:
+        infobar_item->SetString("type", "unknown_infobar");
+        break;
+    }
     if (infobar->AsConfirmInfoBarDelegate()) {
       // Also covers ThemeInstalledInfoBarDelegate.
-      if (infobar->AsOneClickLoginInfoBarDelegate()) {
-        infobar_item->SetString("type", "oneclicklogin_infobar");
-      } else if (infobar->AsSavePasswordInfoBarDelegate()) {
-        infobar_item->SetString("type", "password_infobar");
-      } else if (infobar->AsRegisterProtocolHandlerInfoBarDelegate()) {
-        infobar_item->SetString("type", "rph_infobar");
-      } else {
-        infobar_item->SetString("type", "confirm_infobar");
-      }
       ConfirmInfoBarDelegate* confirm_infobar =
         infobar->AsConfirmInfoBarDelegate();
       infobar_item->SetString("text", confirm_infobar->GetMessageText());

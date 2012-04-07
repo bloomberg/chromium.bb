@@ -61,8 +61,7 @@ class OneClickLoginInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual bool Accept() OVERRIDE;
   virtual bool Cancel() OVERRIDE;
 
-  virtual OneClickLoginInfoBarDelegate*
-      AsOneClickLoginInfoBarDelegate() OVERRIDE;
+  virtual InfoBarAutomationType GetInfoBarAutomationType() const OVERRIDE;
 
   // Set the profile preference to turn off one-click sign in so that it won't
   // show again in this profile.
@@ -179,9 +178,9 @@ bool OneClickLoginInfoBarDelegate::Cancel() {
   return true;
 }
 
-OneClickLoginInfoBarDelegate*
-OneClickLoginInfoBarDelegate::AsOneClickLoginInfoBarDelegate() {
-    return this;
+InfoBarDelegate::InfoBarAutomationType
+    OneClickLoginInfoBarDelegate::GetInfoBarAutomationType() const {
+  return ONE_CLICK_LOGIN_INFOBAR;
 }
 
 void OneClickLoginInfoBarDelegate::DisableOneClickSignIn() {

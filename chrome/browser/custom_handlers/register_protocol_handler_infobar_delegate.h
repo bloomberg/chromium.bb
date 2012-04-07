@@ -33,6 +33,8 @@ class RegisterProtocolHandlerInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual RegisterProtocolHandlerInfoBarDelegate*
       AsRegisterProtocolHandlerInfoBarDelegate() OVERRIDE;
 
+  virtual InfoBarAutomationType GetInfoBarAutomationType() const OVERRIDE;
+
   bool IsReplacedBy(RegisterProtocolHandlerInfoBarDelegate* delegate);
 
  private:
