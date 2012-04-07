@@ -80,10 +80,12 @@ def _DoRemapping(element, map):
   """If |element| then remap it through |map|. If |element| is iterable then
   each item will be remapped. Any elements not found will be removed."""
   if map is not None and element is not None:
+    if not callable(map):
+      map = map.get # Assume it's a dict, otherwise a callable to do the remap.
     if isinstance(element, list) or isinstance(element, tuple):
-      element = filter(None, [map.get(elem) for elem in element])
+      element = filter(None, [map(elem) for elem in element])
     else:
-      element = map.get(element)
+      element = map(element)
   return element
 
 
@@ -325,6 +327,18 @@ class MsvsSettings(object):
 
     return ldflags
 
+  def GetRcflags(self, config):
+    """Returns the flags that need to be added to invocations of the resource
+    compiler."""
+    rcflags = []
+    rc = self._GetWrapper(self, self.msvs_settings[config],
+        'VCResourceCompilerTool', append=rcflags)
+    rc('AdditionalIncludeDirectories', prefix='/I')
+    rc('PreprocessorDefinitions', prefix='/d')
+    # /l arg must be in hex without leading '0x'
+    rc('Culture', prefix='/l', map=lambda x: hex(int(x))[2:])
+    return rcflags
+
   def BuildCygwinBashCommandLine(self, args, path_to_base):
     """Build a command line that runs args via cygwin bash. We assume that all
     incoming paths are in Windows normpath'd form, so they need to be
@@ -408,6 +422,9 @@ def GetLibPath(generator_flags):
 
 def GetMidlPath(generator_flags):
   return _GetBinaryPath(generator_flags, 'midl.exe')
+
+def GetRCPath(generator_flags):
+  return _GetBinaryPath(generator_flags, 'rc.exe')
 
 def ExpandMacros(string, expansions):
   """Expand $(Variable) per expansions dict. See MsvsSettings.GetVSMacroEnv

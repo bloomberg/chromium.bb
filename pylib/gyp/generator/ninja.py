@@ -665,6 +665,11 @@ class NinjaWriter:
     self.WriteVariableList('defines',
         [QuoteShellArgument(ninja_syntax.escape('-D' + d), self.flavor)
          for d in defines])
+    if self.flavor == 'win':
+      self.WriteVariableList('rcflags',
+          [QuoteShellArgument(self.ExpandSpecial(f), self.flavor)
+           for f in self.msvs_settings.GetRcflags(config_name)])
+
     include_dirs = config.get('include_dirs', [])
     if self.flavor == 'win':
       include_dirs = self.msvs_settings.AdjustIncludeDirs(include_dirs,
@@ -697,6 +702,7 @@ class NinjaWriter:
     for source in sources:
       filename, ext = os.path.splitext(source)
       ext = ext[1:]
+      obj_ext = self.obj_ext
       if ext in ('cc', 'cpp', 'cxx'):
         command = 'cxx'
       elif ext in ('c', 's', 'S'):
@@ -705,11 +711,14 @@ class NinjaWriter:
         command = 'objc'
       elif self.flavor == 'mac' and ext == 'mm':
         command = 'objcxx'
+      elif self.flavor == 'win' and ext == 'rc':
+        command = 'rc'
+        obj_ext = '.res'
       else:
         # Ignore unhandled extensions.
         continue
       input = self.GypPathToNinja(source)
-      output = self.GypPathToUniqueOutput(filename + self.obj_ext)
+      output = self.GypPathToUniqueOutput(filename + obj_ext)
       implicit = precompiled_header.GetObjDependencies([input], [output])
       self.ninja.build(output, command, input,
                        implicit=[gch for _, _, gch in implicit],
@@ -1195,6 +1204,10 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
     master_ninja.variable('idl',
         gyp.msvs_emulation.GetMidlPath(generator_flags))
     master_ninja.variable('ar', gyp.msvs_emulation.GetLibPath(generator_flags))
+    # TODO(scottmg): Note that rc.exe isn't part of VS, it's part of the
+    # Windows SDK. We currently assume it's in the PATH, we may need to figure
+    # out a way to locate it explicitly.
+    master_ninja.variable('rc', 'rc.exe')
   else:
     master_ninja.variable('ld', flock + ' linker.lock $cxx')
     master_ninja.variable('ar', os.environ.get('AR', 'ar'))
@@ -1253,6 +1266,11 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
       command=('python gyp-win-tool midl-wrapper $outdir '
                '$tlb $h $dlldata $iid $proxy $in '
                '$idlflags'))
+    master_ninja.rule(
+      'rc',
+      description='RC $in',
+      # Note: $in must be last otherwise rc.exe complains.
+      command='$rc /nologo $defines $includes $rcflags /fo$out $in')
 
   if flavor != 'mac' and flavor != 'win':
     master_ninja.rule(
