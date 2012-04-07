@@ -89,7 +89,7 @@ class BasicTest(gtalk_base_test.GTalkBaseTest):
         msg='Timed out waiting for document.forms[0].')
 
     # Fill and submit the login form.
-    credentials = self.GetPrivateInfo()['test_quasar']
+    credentials = self.GetPrivateInfo()['test_google_account']
 
     self.RunInLoginPage(
         'document.forms[0].Email.value="' + credentials['username'] + '"')
