@@ -220,7 +220,7 @@ scoped_refptr<Extension> CreateExtensionWithPermission(
   return CreateExtensionWithPermissions(permissions);
 }
 
-TEST(ExtensionAPI, DISABLED_ExtensionWithUnprivilegedAPIs) {
+TEST(ExtensionAPI, ExtensionWithUnprivilegedAPIs) {
   scoped_refptr<Extension> extension;
   {
     std::set<std::string> permissions;
