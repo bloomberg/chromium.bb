@@ -42,8 +42,10 @@ SpellingServiceClient::~SpellingServiceClient() {
 bool SpellingServiceClient::RequestTextCheck(
     Profile* profile,
     int tag,
+    ServiceType type,
     const string16& text,
     const TextCheckCompleteCallback& callback) {
+  DCHECK(type == SUGGEST || type == SPELLCHECK);
   net::URLRequestContextGetter* context = profile->GetRequestContext();
   if (!context)
     return false;
@@ -76,7 +78,7 @@ bool SpellingServiceClient::RequestTextCheck(
   static const char kSpellingRequest[] =
       "{"
       "\"method\":\"spelling.check\","
-      "\"apiVersion\":\"v1\","
+      "\"apiVersion\":\"v%d\","
       "\"params\":{"
       "\"text\":\"%s\","
       "\"language\":\"%s\","
@@ -85,6 +87,7 @@ bool SpellingServiceClient::RequestTextCheck(
       "}"
       "}";
   std::string request = base::StringPrintf(kSpellingRequest,
+                                           type,
                                            encoded_text.c_str(),
                                            language, country);
 

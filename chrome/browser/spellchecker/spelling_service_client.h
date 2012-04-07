@@ -50,6 +50,16 @@ struct SpellCheckResult;
 //
 class SpellingServiceClient : public content::URLFetcherDelegate {
  public:
+  // Service types provided by the Spelling service. The Spelling service
+  // consists of a couple of backends:
+  // * SUGGEST: Retrieving suggestions for a word (used by Google Search), and;
+  // * SPELLCHECK: Spellchecking text (used by Google Docs).
+  // This type is used for choosing a backend when sending a JSON-RPC request to
+  // the service.
+  enum ServiceType {
+    SUGGEST = 1,
+    SPELLCHECK = 2,
+  };
   typedef base::Callback<void(
       int /* tag */,
       const std::vector<SpellCheckResult>& /* results */)>
@@ -67,6 +77,7 @@ class SpellingServiceClient : public content::URLFetcherDelegate {
   // call |callback| when we receive a text-check response from the service.
   bool RequestTextCheck(Profile* profile,
                         int tag,
+                        ServiceType type,
                         const string16& text,
                         const TextCheckCompleteCallback& callback);
 

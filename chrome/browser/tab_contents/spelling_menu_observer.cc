@@ -88,7 +88,7 @@ void SpellingMenuObserver::InitMenu(const content::ContextMenuParams& params) {
       // it.
       client_.reset(new SpellingServiceClient);
       bool result = client_->RequestTextCheck(
-          profile, 0, text,
+          profile, 0, SpellingServiceClient::SUGGEST, text,
           base::Bind(&SpellingMenuObserver::OnTextCheckComplete,
                      base::Unretained(this)));
       if (result) {
