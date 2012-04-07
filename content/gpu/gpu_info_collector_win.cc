@@ -288,6 +288,22 @@ bool CollectDriverInfoD3D(const std::wstring& device_id,
         if (result == ERROR_SUCCESS)
           driver_date = WideToASCII(std::wstring(value));
 
+        std::string driver_vendor;
+        dwcb_data = sizeof(value);
+        result = RegQueryValueExW(
+            key, L"ProviderName", NULL, NULL,
+            reinterpret_cast<LPBYTE>(value), &dwcb_data);
+        if (result == ERROR_SUCCESS) {
+          driver_vendor = WideToASCII(std::wstring(value));
+          // If it's an Intel GPU with a driver provided by AMD then it's
+          // probably AMD's Dynamic Switchable Graphics.
+          // TODO: detect only AMD switchable
+          gpu_info->amd_switchable =
+              driver_vendor == "Advanced Micro Devices, Inc." ||
+              driver_vendor == "ATI Technologies Inc.";
+        }
+
+        gpu_info->driver_vendor = driver_vendor;
         gpu_info->driver_version = driver_version;
         gpu_info->driver_date = driver_date;
         found = true;

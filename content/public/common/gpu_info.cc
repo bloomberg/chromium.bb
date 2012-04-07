@@ -9,6 +9,7 @@ namespace content {
 GPUInfo::GPUInfo()
     : finalized(false),
       optimus(false),
+      amd_switchable(false),
       vendor_id(0),
       device_id(0),
       can_lose_context(false),

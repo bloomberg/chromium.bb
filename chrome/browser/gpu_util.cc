@@ -341,6 +341,8 @@ DictionaryValue* GpuInfoAsDictionaryValue() {
       "Device Id", base::StringPrintf("0x%04x", gpu_info.device_id)));
   basic_info->Append(NewDescriptionValuePair(
       "Optimus", Value::CreateBooleanValue(gpu_info.optimus)));
+  basic_info->Append(NewDescriptionValuePair(
+      "AMD switchable", Value::CreateBooleanValue(gpu_info.amd_switchable)));
   basic_info->Append(NewDescriptionValuePair("Driver vendor",
                                              gpu_info.driver_vendor));
   basic_info->Append(NewDescriptionValuePair("Driver version",

@@ -34,6 +34,9 @@ struct CONTENT_EXPORT GPUInfo {
   // Computer has NVIDIA Optimus
   bool optimus;
 
+  // Computer has AMD Dynamic Switchable Graphics
+  bool amd_switchable;
+
   // The DWORD (uint32) representing the graphics card vendor id.
   uint32 vendor_id;
 

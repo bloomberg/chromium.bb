@@ -207,6 +207,12 @@ void GpuDataManagerImpl::AppendGpuCommandLine(
     base::AutoLock auto_lock(gpu_info_lock_);
     if (gpu_info_.optimus)
       command_line->AppendSwitch(switches::kReduceGpuSandbox);
+    if (gpu_info_.amd_switchable) {
+      // The image transport surface currently doesn't work with AMD Dynamic
+      // Switchable graphics.
+      command_line->AppendSwitch(switches::kReduceGpuSandbox);
+      command_line->AppendSwitch(switches::kDisableImageTransportSurface);
+    }
   }
 }
 
@@ -296,6 +302,7 @@ bool GpuDataManagerImpl::Merge(content::GPUInfo* object,
     object->finalized = other.finalized;
     object->initialization_time = other.initialization_time;
     object->optimus |= other.optimus;
+    object->amd_switchable |= other.amd_switchable;
 
     if (object->driver_vendor.empty()) {
       changed |= object->driver_vendor != other.driver_vendor;
