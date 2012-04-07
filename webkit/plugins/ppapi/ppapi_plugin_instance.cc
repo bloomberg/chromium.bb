@@ -1112,6 +1112,10 @@ void PluginInstance::SendAsyncDidChangeView(const ViewData& previous_view) {
 }
 
 void PluginInstance::SendDidChangeView(const ViewData& previous_view) {
+  // Don't send DidChangeView to crashed plugins.
+  if (module()->is_crashed())
+    return;
+
   if (suppress_did_change_view_ ||
       (sent_initial_did_change_view_ && previous_view.Equals(view_data_)))
     return;  // Nothing to update.
