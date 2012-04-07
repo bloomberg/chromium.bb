@@ -7,21 +7,15 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#if !defined(USE_WAYLAND)
 #include "third_party/mesa/MesaLib/include/GL/osmesa.h"
-#endif
 #include "ui/gfx/gl/gl_bindings.h"
 #include "ui/gfx/gl/gl_implementation.h"
 #include "ui/gfx/gl/gl_surface_egl.h"
-#if !defined(USE_WAYLAND)
 #include "ui/gfx/gl/gl_surface_glx.h"
 #include "ui/gfx/gl/gl_surface_osmesa.h"
-#endif
 #include "ui/gfx/gl/gl_surface_stub.h"
 
 namespace gfx {
-
-#if !defined(USE_WAYLAND)
 
 namespace {
 Display* g_osmesa_display;
@@ -54,11 +48,8 @@ class NativeViewGLSurfaceOSMesa : public GLSurfaceOSMesa {
   DISALLOW_COPY_AND_ASSIGN(NativeViewGLSurfaceOSMesa);
 };
 
-#endif //  !USE_WAYLAND
-
 bool GLSurface::InitializeOneOffInternal() {
   switch (GetGLImplementation()) {
-#if !defined(USE_WAYLAND)
     case kGLImplementationDesktopGL:
       if (!GLSurfaceGLX::InitializeOneOff()) {
         LOG(ERROR) << "GLSurfaceGLX::InitializeOneOff failed.";
@@ -71,7 +62,6 @@ bool GLSurface::InitializeOneOffInternal() {
         return false;
       }
       break;
-#endif
     case kGLImplementationEGLGLES2:
       if (!GLSurfaceEGL::InitializeOneOff()) {
         LOG(ERROR) << "GLSurfaceEGL::InitializeOneOff failed.";
@@ -84,8 +74,6 @@ bool GLSurface::InitializeOneOffInternal() {
 
   return true;
 }
-
-#if !defined(USE_WAYLAND)
 
 NativeViewGLSurfaceOSMesa::NativeViewGLSurfaceOSMesa(
     gfx::AcceleratedWidget window)
@@ -272,8 +260,6 @@ bool NativeViewGLSurfaceOSMesa::PostSubBuffer(
   return true;
 }
 
-#endif //  !USE_WAYLAND
-
 scoped_refptr<GLSurface> GLSurface::CreateViewGLSurface(
     bool software,
     gfx::AcceleratedWidget window) {
@@ -281,7 +267,6 @@ scoped_refptr<GLSurface> GLSurface::CreateViewGLSurface(
     return NULL;
 
   switch (GetGLImplementation()) {
-#if !defined(USE_WAYLAND)
     case kGLImplementationOSMesaGL: {
       scoped_refptr<GLSurface> surface(
           new NativeViewGLSurfaceOSMesa(window));
@@ -298,7 +283,6 @@ scoped_refptr<GLSurface> GLSurface::CreateViewGLSurface(
 
       return surface;
     }
-#endif
     case kGLImplementationEGLGLES2: {
       scoped_refptr<GLSurface> surface(new NativeViewGLSurfaceEGL(
           false, window));
@@ -322,7 +306,6 @@ scoped_refptr<GLSurface> GLSurface::CreateOffscreenGLSurface(
     return NULL;
 
   switch (GetGLImplementation()) {
-#if !defined(USE_WAYLAND)
     case kGLImplementationOSMesaGL: {
       scoped_refptr<GLSurface> surface(new GLSurfaceOSMesa(OSMESA_RGBA,
                                                            size));
@@ -338,7 +321,6 @@ scoped_refptr<GLSurface> GLSurface::CreateOffscreenGLSurface(
 
       return surface;
     }
-#endif
     case kGLImplementationEGLGLES2: {
       scoped_refptr<GLSurface> surface(new PbufferGLSurfaceEGL(false, size));
       if (!surface->Initialize())

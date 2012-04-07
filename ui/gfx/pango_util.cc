@@ -20,7 +20,7 @@
 #include "ui/gfx/platform_font_pango.h"
 #include "ui/gfx/rect.h"
 
-#if !defined(USE_WAYLAND) && defined(TOOLKIT_GTK)
+#if defined(TOOLKIT_GTK)
 #include <gdk/gdk.h>
 #include <gtk/gtk.h>
 #include "ui/gfx/gtk_util.h"
@@ -179,7 +179,7 @@ float GetPixelsInPoint() {
 namespace gfx {
 
 PangoContext* GetPangoContext() {
-#if defined(USE_WAYLAND) || defined(USE_AURA)
+#if defined(USE_AURA)
   PangoFontMap* font_map = pango_cairo_font_map_get_default();
   return pango_font_map_create_context(font_map);
 #else

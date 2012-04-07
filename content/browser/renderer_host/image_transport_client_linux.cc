@@ -83,8 +83,6 @@ class ImageTransportClientEGL : public ImageTransportClient {
   EGLImageKHR image_;
 };
 
-#if !defined(USE_WAYLAND)
-
 class ImageTransportClientGLX : public ImageTransportClient {
  public:
   ImageTransportClientGLX(ImageTransportFactory* factory, const gfx::Size& size)
@@ -289,20 +287,16 @@ class ImageTransportClientOSMesa : public ImageTransportClient {
 };
 uint32 ImageTransportClientOSMesa::next_handle_ = 0;
 
-#endif //  !USE_WAYLAND
-
 }  // anonymous namespace
 
 ImageTransportClient* ImageTransportClient::Create(
     ImageTransportFactory* factory,
     const gfx::Size& size) {
   switch (gfx::GetGLImplementation()) {
-#if !defined(USE_WAYLAND)
     case gfx::kGLImplementationOSMesaGL:
       return new ImageTransportClientOSMesa(factory, size);
     case gfx::kGLImplementationDesktopGL:
       return new ImageTransportClientGLX(factory, size);
-#endif
     case gfx::kGLImplementationEGLGLES2:
       return new ImageTransportClientEGL(factory, size);
     default:

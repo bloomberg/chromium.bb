@@ -80,16 +80,7 @@ typedef struct _PangoFontDescription PangoFontDescription;
 typedef struct _cairo cairo_t;
 #endif
 
-#if defined(USE_WAYLAND)
-typedef struct _GdkPixbuf GdkPixbuf;
-struct wl_egl_window;
-
-namespace ui {
-class WaylandWindow;
-}
-
-typedef struct _GdkRegion GdkRegion;
-#elif defined(TOOLKIT_GTK)
+#if defined(TOOLKIT_GTK)
 typedef struct _GdkCursor GdkCursor;
 typedef union _GdkEvent GdkEvent;
 typedef struct _GdkPixbuf GdkPixbuf;
@@ -120,14 +111,6 @@ typedef NSCursor* NativeCursor;
 typedef NSView* NativeView;
 typedef NSWindow* NativeWindow;
 typedef NSEvent* NativeEvent;
-#elif defined(USE_WAYLAND)
-typedef void* NativeCursor;
-typedef ui::WaylandWindow* NativeView;
-typedef ui::WaylandWindow* NativeWindow;
-// TODO(dnicoara) This should be replaced with a cairo region or maybe
-// a Wayland specific region
-typedef GdkRegion* NativeRegion;
-typedef void* NativeEvent;
 #elif defined(TOOLKIT_GTK)
 typedef GdkCursor* NativeCursor;
 typedef GtkWidget* NativeView;
@@ -152,12 +135,6 @@ typedef IAccessible* NativeViewAccessible;
 typedef NSFont* NativeFont;
 typedef NSTextField* NativeEditView;
 typedef CGContext* NativeDrawingContext;
-typedef void* NativeMenu;
-typedef void* NativeViewAccessible;
-#elif defined(USE_WAYLAND)
-typedef PangoFontDescription* NativeFont;
-typedef void* NativeEditView;
-typedef cairo_t* NativeDrawingContext;
 typedef void* NativeMenu;
 typedef void* NativeViewAccessible;
 #elif defined(TOOLKIT_GTK)
@@ -233,9 +210,6 @@ static inline NativeView NativeViewFromIdInBrowser(NativeViewId id) {
 #if defined(OS_WIN)
   typedef HWND PluginWindowHandle;
   const PluginWindowHandle kNullPluginWindow = NULL;
-#elif defined(USE_WAYLAND)
-  typedef struct wl_egl_window* PluginWindowHandle;
-  const PluginWindowHandle kNullPluginWindow = NULL;
 #elif defined(USE_X11)
   typedef unsigned long PluginWindowHandle;
   const PluginWindowHandle kNullPluginWindow = 0;
@@ -294,9 +268,6 @@ struct GLSurfaceHandle {
 // AcceleratedWidget provides a surface to compositors to paint pixels.
 #if defined(OS_WIN)
 typedef HWND AcceleratedWidget;
-const AcceleratedWidget kNullAcceleratedWidget = NULL;
-#elif defined(USE_WAYLAND)
-typedef struct wl_egl_window* AcceleratedWidget;
 const AcceleratedWidget kNullAcceleratedWidget = NULL;
 #elif defined(USE_X11)
 typedef unsigned long AcceleratedWidget;

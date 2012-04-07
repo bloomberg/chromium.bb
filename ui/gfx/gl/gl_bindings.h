@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -74,10 +74,6 @@ typedef HWND    EGLNativeWindowType;
 typedef void                       *EGLNativeDisplayType;
 typedef struct egl_native_pixmap_t *EGLNativePixmapType;
 typedef struct ANativeWindow       *EGLNativeWindowType;
-#elif defined(USE_WAYLAND)
-typedef struct wl_display     *EGLNativeDisplayType;
-typedef struct wl_egl_pixmap  *EGLNativePixmapType;
-typedef struct wl_egl_window  *EGLNativeWindowType;
 #else
 typedef Display *EGLNativeDisplayType;
 typedef Pixmap   EGLNativePixmapType;

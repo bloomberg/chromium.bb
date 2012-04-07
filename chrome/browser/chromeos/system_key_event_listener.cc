@@ -10,15 +10,10 @@
 #include <X11/XKBlib.h>
 #undef Status
 
+#include "base/message_pump_x.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
 #include "ui/base/x/x11_util.h"
-
-#if defined(USE_WAYLAND)
-#include "base/message_pump_wayland.h"
-#else
-#include "base/message_pump_x.h"
-#endif
 
 namespace chromeos {
 

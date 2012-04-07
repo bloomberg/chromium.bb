@@ -59,22 +59,6 @@ class MouseWatcher::Observer : public MessageLoopForUI::Observer {
         break;
     }
   }
-#elif defined(USE_WAYLAND)
-  virtual MessageLoopForUI::Observer::EventStatus WillProcessEvent(
-      base::wayland::WaylandEvent* event) OVERRIDE {
-    switch (event->type) {
-      case base::wayland::WAYLAND_MOTION:
-        HandleGlobalMouseMoveEvent(MouseWatcherHost::MOUSE_MOVE);
-        break;
-      case base::wayland::WAYLAND_POINTER_FOCUS:
-        if (!event->pointer_focus.state)
-          HandleGlobalMouseMoveEvent(MouseWatcherHost::MOUSE_EXIT);
-        break;
-      default:
-        break;
-    }
-    return EVENT_CONTINUE;
-  }
 #elif defined(USE_AURA)
   virtual base::EventStatus WillProcessEvent(
       const base::NativeEvent& event) OVERRIDE {

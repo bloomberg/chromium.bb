@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,7 +27,6 @@ scoped_refptr<GLContext> GLContext::CreateGLContext(
     GLSurface* compatible_surface,
     GpuPreference gpu_preference) {
   switch (GetGLImplementation()) {
-#if !defined(USE_WAYLAND)
     case kGLImplementationOSMesaGL: {
       scoped_refptr<GLContext> context(new GLContextOSMesa(share_group));
       if (!context->Initialize(compatible_surface, gpu_preference))
@@ -42,7 +41,6 @@ scoped_refptr<GLContext> GLContext::CreateGLContext(
 
       return context;
     }
-#endif
     case kGLImplementationEGLGLES2: {
       scoped_refptr<GLContext> context(new GLContextEGL(share_group));
       if (!context->Initialize(compatible_surface, gpu_preference))

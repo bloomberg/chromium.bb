@@ -30,8 +30,6 @@
       'sources': [
         'accelerated_surface_mac.cc',
         'accelerated_surface_mac.h',
-        'accelerated_surface_wayland.cc',
-        'accelerated_surface_wayland.h',
         'accelerated_surface_win.cc',
         'accelerated_surface_win.h',
         'io_surface_support_mac.cc',

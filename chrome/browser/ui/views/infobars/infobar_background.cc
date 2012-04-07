@@ -8,7 +8,6 @@
 #include "chrome/browser/ui/views/infobars/infobar_view.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/canvas_skia_paint.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/views/view.h"
 
