@@ -12,19 +12,35 @@
 #include "base/compiler_specific.h"
 #include "base/environment.h"
 #include "base/file_path.h"
+#include "base/file_util.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
+#include "base/md5.h"
 #include "base/process_util.h"
+#include "base/string_number_conversions.h"
 #include "base/string_split.h"
+#include "base/string_util.h"
 #include "base/threading/thread.h"
 #include "base/values.h"
+#include "net/base/net_util.h"
+#include "remoting/host/host_config.h"
+#include "remoting/host/json_host_config.h"
 
 namespace remoting {
 
 namespace {
 
-const char* kDaemonScript = "me2me_virtual_host.py";
+const char kDaemonScript[] = "me2me_virtual_host.py";
 const int64 kDaemonTimeoutMs = 5000;
+
+std::string GetMd5(const std::string& value) {
+  base::MD5Context ctx;
+  base::MD5Init(&ctx);
+  base::MD5Update(&ctx, value);
+  base::MD5Digest digest;
+  base::MD5Final(&digest, &ctx);
+  return StringToLowerASCII(base::HexEncode(digest.a, sizeof(digest.a)));
+}
 
 // TODO(sergeyu): This is a very hacky implementation of
 // DaemonController interface for linux. Current version works, but
@@ -49,6 +65,9 @@ class DaemonControllerLinux : public remoting::DaemonController {
   virtual void Stop(const CompletionCallback& done_callback) OVERRIDE;
 
  private:
+  FilePath GetConfigPath();
+
+  void DoGetConfig(const GetConfigCallback& callback);
   void DoSetConfigAndStart(scoped_ptr<base::DictionaryValue> config,
                            const CompletionCallback& done_callback);
   void DoUpdateConfig(scoped_ptr<base::DictionaryValue> config,
@@ -133,7 +152,9 @@ remoting::DaemonController::State DaemonControllerLinux::GetState() {
 }
 
 void DaemonControllerLinux::GetConfig(const GetConfigCallback& callback) {
-  NOTIMPLEMENTED();
+  // base::Unretained() is safe because we control lifetime of the thread.
+  file_io_thread_.message_loop()->PostTask(FROM_HERE, base::Bind(
+      &DaemonControllerLinux::DoGetConfig, base::Unretained(this), callback));
 }
 
 void DaemonControllerLinux::SetConfigAndStart(
@@ -159,6 +180,27 @@ void DaemonControllerLinux::Stop(const CompletionCallback& done_callback) {
       done_callback));
 }
 
+FilePath DaemonControllerLinux::GetConfigPath() {
+  std::string filename = "host#" + GetMd5(net::GetHostName()) + ".json";
+  return file_util::GetHomeDir().
+      Append(".config/chrome-remote-desktop").Append(filename);
+}
+
+void DaemonControllerLinux::DoGetConfig(const GetConfigCallback& callback) {
+  JsonHostConfig config(GetConfigPath());
+  scoped_ptr<base::DictionaryValue> result;
+  if (config.Read()) {
+    result.reset(new base::DictionaryValue());
+
+    std::string value;
+    if (config.GetString(kHostIdConfigPath, &value))
+      result->SetString(kHostIdConfigPath, value);
+    if (config.GetString(kXmppLoginConfigPath, &value))
+      result->SetString(kXmppLoginConfigPath, value);
+  }
+  callback.Run(result.Pass());
+}
+
 void DaemonControllerLinux::DoSetConfigAndStart(
     scoped_ptr<base::DictionaryValue> config,
     const CompletionCallback& done_callback) {
@@ -181,8 +223,21 @@ void DaemonControllerLinux::DoSetConfigAndStart(
 void DaemonControllerLinux::DoUpdateConfig(
     scoped_ptr<base::DictionaryValue> config,
     const CompletionCallback& done_callback) {
-  NOTIMPLEMENTED();
-  done_callback.Run(RESULT_OK);
+  JsonHostConfig config_file(GetConfigPath());
+  if (!config_file.Read())
+    done_callback.Run(RESULT_FAILED);
+
+  for (DictionaryValue::key_iterator key(config->begin_keys());
+       key != config->end_keys(); ++key) {
+    std::string value;
+    if (!config->GetString(*key, &value)) {
+      LOG(WARNING) << "Skipping " << *key << " because it is not a string.";
+    }
+    config_file.SetString(*key, value);
+  }
+  bool success = config_file.Save();
+  done_callback.Run(success ? RESULT_OK : RESULT_FAILED);
+  // TODO(sergeyu): Send signal to the daemon to restart the host.
 }
 
 void DaemonControllerLinux::DoStop(const CompletionCallback& done_callback) {

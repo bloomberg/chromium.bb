@@ -540,8 +540,6 @@ def main():
   parser.add_option("", "--check-running", dest="check_running", default=False,
                     action="store_true",
                     help="return 0 if the daemon is running, or 1 otherwise")
-  parser.add_option("", "--explicit-pin", dest="explicit_pin",
-                    help="set or unset the pin on the command line")
   parser.add_option("", "--explicit-config", dest="explicit_config",
                     help="explicitly specify content of the config")
   (options, args) = parser.parse_args()
@@ -597,14 +595,6 @@ def main():
 
   host = Host(os.path.join(CONFIG_DIR, "host#%s.json" % host_hash))
   register_host = not host.load_config()
-
-  if options.explicit_pin != None:
-    host.set_pin(options.explicit_pin)
-    host.save_config()
-    running, pid = PidFile(pid_filename).check()
-    if running and pid != 0:
-      os.kill(pid, signal.SIGUSR1)
-    return 0
 
   # Outside the loop so user doesn't get asked twice.
   if register_host:
