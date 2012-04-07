@@ -491,7 +491,12 @@ int TestMain() {
    * http://code.google.com/p/nativeclient/issues/detail?id=2678
    */
 #ifndef __arm__
-  RUN_TEST(test_threaded_loads);
+  /*
+   * TODO(ncbray) reenable when cause of flake is understood.
+   * http://code.google.com/p/chromium/issues/detail?id=120355
+   */
+  if (!TestRunningInBrowser())
+    RUN_TEST(test_threaded_loads);
 #endif
 
   /* Test again to make sure we didn't run out of space. */

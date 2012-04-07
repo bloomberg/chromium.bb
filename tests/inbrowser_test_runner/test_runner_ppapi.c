@@ -45,6 +45,10 @@ int RunTests(int (*test_func)(void)) {
   return PpapiPluginMain();
 }
 
+int TestRunningInBrowser() {
+  return 1;
+}
+
 /***************************************************************************
  * PPP_Instance allows the browser to create an instance of the plugin.
  **************************************************************************/

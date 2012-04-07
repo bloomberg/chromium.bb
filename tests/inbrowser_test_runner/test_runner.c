@@ -15,3 +15,7 @@ int RunTests(int (*test_func)(void)) {
   setvbuf(stdout, NULL, _IONBF, 0);
   return test_func();
 }
+
+int TestRunningInBrowser() {
+  return 0;
+}
