@@ -758,8 +758,6 @@
         # New tests should be browser_tests. browser_tests are sharded and are
         # less flakier.
         'browser/history/redirect_uitest.cc',
-        'browser/iframe_uitest.cc',
-        'browser/images_uitest.cc',
         'browser/locale_tests_uitest.cc',
         'browser/net/load_timing_observer_uitest.cc',
         'browser/prefs/pref_service_uitest.cc',
@@ -2876,6 +2874,7 @@
         'browser/history/history_extension_apitest.cc',
         'browser/history/multipart_browsertest.cc',
         'browser/history/top_sites_extension_test.cc',
+        'browser/iframe_browsertest.cc',
         'browser/infobars/infobar_extension_apitest.cc',
         'browser/importer/toolbar_importer_utils_browsertest.cc',
         'browser/metrics/metrics_service_browsertest.cc',
