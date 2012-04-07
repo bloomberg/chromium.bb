@@ -123,7 +123,7 @@ bool CreateSessionToken(uint32 session_id,
 
   ScopedHandle session_token;
   DWORD desired_access = TOKEN_ADJUST_DEFAULT | TOKEN_ADJUST_SESSIONID |
-                         TOKEN_ASSIGN_PRIMARY | TOKEN_QUERY;
+                         TOKEN_ASSIGN_PRIMARY | TOKEN_DUPLICATE | TOKEN_QUERY;
   if (!CopyProcessToken(desired_access, &session_token)) {
     return false;
   }
