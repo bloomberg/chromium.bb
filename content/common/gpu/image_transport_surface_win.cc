@@ -54,6 +54,7 @@ class PbufferImageTransportSurface
  private:
   virtual ~PbufferImageTransportSurface();
   void SendBuffersSwapped();
+  void DestroySurface();
 
   // Tracks the current buffer allocation state.
   BufferAllocationState buffer_allocation_state_;
@@ -144,6 +145,12 @@ void PbufferImageTransportSurface::SetBufferAllocation(
     default:
       NOTREACHED();
   }
+  DestroySurface();
+}
+
+void PbufferImageTransportSurface::DestroySurface() {
+  GpuHostMsg_AcceleratedSurfaceRelease_Params params;
+  helper_->SendAcceleratedSurfaceRelease(params);
 }
 
 std::string PbufferImageTransportSurface::GetExtensions() {
@@ -183,6 +190,8 @@ void PbufferImageTransportSurface::OnResizeViewACK() {
 void PbufferImageTransportSurface::OnResize(gfx::Size size) {
   if (buffer_allocation_state_ == BUFFER_ALLOCATION_FRONT_AND_BACK)
     Resize(size);
+
+  DestroySurface();
 
   visible_size_ = size;
 }

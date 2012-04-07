@@ -45,6 +45,9 @@ class SURFACE_EXPORT AcceleratedPresenter
   // thread.
   void Suspend();
 
+  // Schedule the presenter to release its reference to the shared surface.
+  void ReleaseSurface();
+
   // The public member functions are called on the main thread.
   bool Present();
   bool CopyTo(const gfx::Size& size, void* buf);
@@ -64,6 +67,7 @@ class SURFACE_EXPORT AcceleratedPresenter
   void DoSuspend();
   void DoPresent(bool* presented);
   bool DoRealPresent();
+  void DoReleaseSurface();
 
   // The thread with which this presenter has affinity.
   PresentThread* const present_thread_;
@@ -82,6 +86,9 @@ class SURFACE_EXPORT AcceleratedPresenter
   // The current size of the swap chain. This is only accessed on the thread
   // with which the surface has affinity.
   gfx::Size size_;
+
+  // This is a shared texture that is being presented from.
+  base::win::ScopedComPtr<IDirect3DTexture9> source_texture_;
 
   // The swap chain is presented to the child window. Copy semantics
   // are used so it is possible to represent it to quickly validate the window.

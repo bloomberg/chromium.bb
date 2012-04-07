@@ -25,6 +25,7 @@ class GpuMainThread;
 struct GPUCreateCommandBufferConfig;
 struct GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params;
 struct GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params;
+struct GpuHostMsg_AcceleratedSurfaceRelease_Params;
 
 class BrowserChildProcessHostImpl;
 
@@ -121,6 +122,8 @@ class GpuProcessHost : public content::BrowserChildProcessHostDelegate,
   void OnAcceleratedSurfacePostSubBuffer(
       const GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params& params);
   void OnAcceleratedSurfaceSuspend(int32 surface_id);
+  void OnAcceleratedSurfaceRelease(
+    const GpuHostMsg_AcceleratedSurfaceRelease_Params& params);
 #endif
 
   bool LaunchGpuProcess(const std::string& channel_id);
