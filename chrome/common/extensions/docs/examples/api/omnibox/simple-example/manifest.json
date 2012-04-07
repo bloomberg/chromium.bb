@@ -3,7 +3,7 @@
   "description" : "To use, type 'omnix' plus a search term into the Omnibox.",
   "version": "1.1",
   "background": {
-    "scripts": ["background.html"]
+    "scripts": ["background.js"]
   },
   "omnibox": { "keyword" : "omnix" },
   "manifest_version": 2
