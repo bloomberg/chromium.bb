@@ -197,16 +197,6 @@ AutomationMsg_NavigationResponseValues TabProxy::Reload() {
   return navigate_response;
 }
 
-bool TabProxy::GetRedirectsFrom(const GURL& source_url,
-                                std::vector<GURL>* redirects) {
-  bool succeeded = false;
-  sender_->Send(new AutomationMsg_RedirectsFrom(handle_,
-                                                source_url,
-                                                &succeeded,
-                                                redirects));
-  return succeeded;
-}
-
 bool TabProxy::GetCurrentURL(GURL* url) const {
   if (!is_valid())
     return false;

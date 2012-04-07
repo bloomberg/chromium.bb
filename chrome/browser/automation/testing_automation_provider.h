@@ -1569,13 +1569,6 @@ class TestingAutomationProvider : public AutomationProvider,
   void GetParentBrowserOfTab(
       int tab_handle, int* browser_handle, bool* success);
 
-  // Callback for history redirect queries.
-  virtual void OnRedirectQueryComplete(
-      HistoryService::Handle request_handle,
-      GURL from_url,
-      bool success,
-      history::RedirectList* redirects);
-
   void OnRemoveProvider();  // Called via PostTask
 
 #if defined(TOOLKIT_VIEWS)
@@ -1595,12 +1588,6 @@ class TestingAutomationProvider : public AutomationProvider,
 
   // Used to wait on various browser sync events.
   scoped_ptr<ProfileSyncServiceHarness> sync_waiter_;
-
-  // Handle for an in-process redirect query. We expect only one redirect query
-  // at a time (we should have only one caller, and it will block while waiting
-  // for the results) so there is only one handle. When non-0, indicates a
-  // query in progress.
-  HistoryService::Handle redirect_query_;
 
   content::NotificationRegistrar registrar_;
 

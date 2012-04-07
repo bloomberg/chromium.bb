@@ -225,14 +225,14 @@ class AutomationInterstitialPage : public content::InterstitialPageDelegate {
 }  // namespace
 
 TestingAutomationProvider::TestingAutomationProvider(Profile* profile)
-    : AutomationProvider(profile),
+    : AutomationProvider(profile)
 #if defined(TOOLKIT_VIEWS)
-      popup_menu_waiter_(NULL),
+      , popup_menu_waiter_(NULL)
 #endif
 #if defined(OS_CHROMEOS)
-      power_manager_observer_(NULL),
+      , power_manager_observer_(NULL)
 #endif
-      redirect_query_(0) {
+      {
   BrowserList::AddObserver(this);
   registrar_.Add(this, chrome::NOTIFICATION_SESSION_END,
                  content::NotificationService::AllSources());
@@ -354,8 +354,6 @@ bool TestingAutomationProvider::OnMessageReceived(
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_SetAuth, SetAuth)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_CancelAuth, CancelAuth)
     IPC_MESSAGE_HANDLER(AutomationMsg_NeedsAuth, NeedsAuth)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_RedirectsFrom,
-                                    GetRedirectsFrom)
     IPC_MESSAGE_HANDLER(AutomationMsg_BrowserWindowCount, GetBrowserWindowCount)
     IPC_MESSAGE_HANDLER(AutomationMsg_NormalBrowserWindowCount,
                         GetNormalBrowserWindowCount)
@@ -821,39 +819,6 @@ void TestingAutomationProvider::NeedsAuth(int tab_handle, bool* needs_auth) {
       *needs_auth = true;
     }
   }
-}
-
-void TestingAutomationProvider::GetRedirectsFrom(int tab_handle,
-                                                 const GURL& source_url,
-                                                 IPC::Message* reply_message) {
-  if (redirect_query_) {
-    LOG(ERROR) << "Can only handle one redirect query at once.";
-  } else if (tab_tracker_->ContainsHandle(tab_handle)) {
-    NavigationController* tab = tab_tracker_->GetResource(tab_handle);
-    Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
-    HistoryService* history_service =
-        profile->GetHistoryService(Profile::EXPLICIT_ACCESS);
-
-    DCHECK(history_service) << "Tab " << tab_handle << "'s profile " <<
-                               "has no history service";
-    if (history_service) {
-      DCHECK(!reply_message_);
-      reply_message_ = reply_message;
-      // Schedule a history query for redirects. The response will be sent
-      // asynchronously from the callback the history system uses to notify us
-      // that it's done: OnRedirectQueryComplete.
-      redirect_query_ = history_service->QueryRedirectsFrom(
-          source_url, &consumer_,
-          base::Bind(&TestingAutomationProvider::OnRedirectQueryComplete,
-                     base::Unretained(this)));
-      return;  // Response will be sent when query completes.
-    }
-  }
-
-  // Send failure response.
-  std::vector<GURL> empty;
-  AutomationMsg_RedirectsFrom::WriteReplyParams(reply_message, false, empty);
-  Send(reply_message);
 }
 
 void TestingAutomationProvider::GetBrowserWindowCount(int* window_count) {
@@ -7119,29 +7084,6 @@ void TestingAutomationProvider::GetParentBrowserOfTab(int tab_handle,
       *success = true;
     }
   }
-}
-
-// TODO(brettw) change this to accept GURLs when history supports it
-void TestingAutomationProvider::OnRedirectQueryComplete(
-    HistoryService::Handle request_handle,
-    GURL from_url,
-    bool success,
-    history::RedirectList* redirects) {
-  DCHECK_EQ(redirect_query_, request_handle);
-  DCHECK(reply_message_ != NULL);
-
-  std::vector<GURL> redirects_gurl;
-  reply_message_->WriteBool(success);
-  if (success) {
-    for (size_t i = 0; i < redirects->size(); i++)
-      redirects_gurl.push_back(redirects->at(i));
-  }
-
-  IPC::ParamTraits<std::vector<GURL> >::Write(reply_message_, redirects_gurl);
-
-  Send(reply_message_);
-  redirect_query_ = 0;
-  reply_message_ = NULL;
 }
 
 void TestingAutomationProvider::OnRemoveProvider() {

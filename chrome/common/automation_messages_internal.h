@@ -176,7 +176,7 @@ IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_CancelAuth,
 // decoded by the caller manually; it contains an integer indicating the
 // number of URLs, followed by that many wstrings indicating a chain of
 // redirects. On failure, the count will be negative.
-IPC_SYNC_MESSAGE_CONTROL2_2(AutomationMsg_RedirectsFrom,
+IPC_SYNC_MESSAGE_CONTROL2_2(AutomationMsg_DEPRECATED_RedirectsFrom,
                             int /* tab handle */,
                             GURL /* source URL */,
                             bool /* succeeded */,

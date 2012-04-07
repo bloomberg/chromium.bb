@@ -123,13 +123,6 @@ class TabProxy : public AutomationResourceProxy,
       const GURL& url,
       WindowOpenDisposition disposition) WARN_UNUSED_RESULT;
 
-  // Replaces a vector contents with the redirect chain out of the given URL.
-  // Returns true on success. Failure may be due to being unable to send the
-  // message, parse the response, or a failure of the history system in the
-  // browser.
-  bool GetRedirectsFrom(const GURL& source_url,
-                        std::vector<GURL>* redirects) WARN_UNUSED_RESULT;
-
   // Equivalent to hitting the Back button. This is a synchronous call and
   // hence blocks until the navigation completes.
   AutomationMsg_NavigationResponseValues GoBack() WARN_UNUSED_RESULT;
