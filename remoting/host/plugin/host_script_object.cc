@@ -4,6 +4,7 @@
 
 #include "remoting/host/plugin/host_script_object.h"
 
+#include "base/base64.h"
 #include "base/bind.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
@@ -25,6 +26,7 @@
 #include "remoting/host/policy_hack/nat_policy.h"
 #include "remoting/host/register_support_host_request.h"
 #include "remoting/jingle_glue/xmpp_signal_strategy.h"
+#include "remoting/protocol/authentication_method.h"
 #include "remoting/protocol/it2me_host_authenticator_factory.h"
 
 namespace remoting {
@@ -44,6 +46,7 @@ const char* kFuncNameConnect = "connect";
 const char* kFuncNameDisconnect = "disconnect";
 const char* kFuncNameLocalize = "localize";
 const char* kFuncNameGetHostName = "getHostName";
+const char* kFuncNameGetPinHash = "getPinHash";
 const char* kFuncNameGenerateKeyPair = "generateKeyPair";
 const char* kFuncNameUpdateDaemonConfig = "updateDaemonConfig";
 const char* kFuncNameGetDaemonConfig = "getDaemonConfig";
@@ -151,6 +154,7 @@ bool HostNPScriptObject::HasMethod(const std::string& method_name) {
           method_name == kFuncNameDisconnect ||
           method_name == kFuncNameLocalize ||
           method_name == kFuncNameGetHostName ||
+          method_name == kFuncNameGetPinHash ||
           method_name == kFuncNameGenerateKeyPair ||
           method_name == kFuncNameUpdateDaemonConfig ||
           method_name == kFuncNameGetDaemonConfig ||
@@ -181,6 +185,8 @@ bool HostNPScriptObject::Invoke(const std::string& method_name,
     return Localize(args, arg_count, result);
   } else if (method_name == kFuncNameGetHostName) {
     return GetHostName(args, arg_count, result);
+  } else if (method_name == kFuncNameGetPinHash) {
+    return GetPinHash(args, arg_count, result);
   } else if (method_name == kFuncNameGenerateKeyPair) {
     return GenerateKeyPair(args, arg_count, result);
   } else if (method_name == kFuncNameUpdateDaemonConfig) {
@@ -355,6 +361,7 @@ bool HostNPScriptObject::Enumerate(std::vector<std::string>* values) {
     kFuncNameDisconnect,
     kFuncNameLocalize,
     kFuncNameGetHostName,
+    kFuncNameGetPinHash,
     kFuncNameGenerateKeyPair,
     kFuncNameUpdateDaemonConfig,
     kFuncNameGetDaemonConfig,
@@ -605,6 +612,39 @@ bool HostNPScriptObject::GetHostName(const NPVariant* args,
   }
   DCHECK(result);
   *result = NPVariantFromString(net::GetHostName());
+  return true;
+}
+
+bool HostNPScriptObject::GetPinHash(const NPVariant* args,
+                                    uint32_t arg_count,
+                                    NPVariant* result) {
+  if (arg_count != 2) {
+    SetException("getPinHash: bad number of arguments");
+    return false;
+  }
+
+  std::string host_id = StringFromNPVariant(args[0]);
+  if (host_id.empty()) {
+    SetException("getPinHash: bad hostId parameter");
+    return false;
+  }
+
+  if (!NPVARIANT_IS_STRING(args[1])) {
+    SetException("getPinHash: bad pin parameter");
+    return false;
+  }
+  std::string pin = StringFromNPVariant(args[1]);
+
+  std::string hash = protocol::AuthenticationMethod::ApplyHashFunction(
+      protocol::AuthenticationMethod::HMAC_SHA256, host_id, pin);
+  std::string hash_base64;
+  bool base64_result = base::Base64Encode(hash, &hash_base64);
+  if (!base64_result) {
+    LOG(FATAL) << "Base64Encode failed";
+  }
+
+  *result = NPVariantFromString(hash_base64);
+
   return true;
 }
 
@@ -1046,7 +1086,8 @@ void HostNPScriptObject::InvokeGetDaemonConfigCallback(
   // There is no easy way to create a dictionary from an NPAPI plugin
   // so we have to serialize the dictionary to pass it to JavaScript.
   std::string config_str;
-  base::JSONWriter::Write(config.get(), &config_str);
+  if (config.get())
+    base::JSONWriter::Write(config.get(), &config_str);
 
   NPVariant config_val = NPVariantFromString(config_str);
   InvokeAndIgnoreResult(callback, &config_val, 1);

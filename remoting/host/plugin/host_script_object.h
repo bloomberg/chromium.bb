@@ -119,6 +119,14 @@ class HostNPScriptObject : public HostStatusObserver {
                    uint32_t arg_count,
                    NPVariant* result);
 
+  // Calculates PIN hash value to be stored in the config. Args are:
+  //   string hostId Host ID.
+  //   string pin The PIN.
+  // Returns the resulting hash value encoded with Base64.
+  bool GetPinHash(const NPVariant* args,
+                  uint32_t arg_count,
+                  NPVariant* result);
+
   // Generates new key pair to use for the host. The specified
   // callback is called when when the key is generated. The key is
   // returned in format understood by the host (PublicKeyInfo

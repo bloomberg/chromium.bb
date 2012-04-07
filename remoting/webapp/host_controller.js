@@ -56,8 +56,6 @@ remoting.HostController.prototype.state = function() {
  * @return {void} Nothing.
  */
 remoting.HostController.prototype.updateDom = function() {
-  // TODO(sergeyu): This code updates UI state. Does it belong here,
-  // or should it moved somewhere else?
   var match = '';
   var state = this.state();
   switch (state) {
@@ -131,14 +129,14 @@ remoting.HostController.prototype.start = function(hostPin, callback) {
     var success = (xhr.status == 200);
 
     if (success) {
-      // TODO(sergeyu): Calculate HMAC of the PIN instead of storing it
-      // in plaintext.
+      var hostSecretHash =
+          'hmac:' + that.plugin_.getPinHash(newHostId, hostPin);
       var hostConfig = JSON.stringify({
           xmpp_login: remoting.oauth2.getCachedEmail(),
           oauth_refresh_token: remoting.oauth2.getRefreshToken(),
           host_id: newHostId,
           host_name: that.plugin_.getHostName(),
-          host_secret_hash: 'plain:' + window.btoa(hostPin),
+          host_secret_hash: hostSecretHash,
           private_key: privateKey
         });
       that.plugin_.startDaemon(hostConfig, callback);
@@ -213,12 +211,27 @@ remoting.HostController.prototype.stop = function(callback) {
  * @return {void} Nothing.
  */
 remoting.HostController.prototype.updatePin = function(newPin, callback) {
-      // TODO(sergeyu): Calculate HMAC of the PIN instead of storing it
-      // in plaintext.
-  var newConfig = JSON.stringify({
-          host_secret_hash: 'plain:' + window.btoa(newPin)
+  /** @type {remoting.HostController} */
+  var that = this;
+
+  /** @param {string} config */
+  function onConfig(config) {
+    var configParsed = /** @type {Object.<string,string>} */ JSON.parse(config);
+    if (!('host_id' in configParsed) ||
+        typeof configParsed['host_id'] != 'string') {
+      callback(remoting.HostController.AsyncResult.FAILED);
+      return;
+    }
+    var hostId = configParsed['host_id'];
+    var newConfig = JSON.stringify({
+        host_secret_hash: 'hmac:' + that.plugin_.getPinHash(hostId, newPin)
       });
-  this.plugin_.updateDaemonConfig(newConfig, callback);
+    that.plugin_.updateDaemonConfig(newConfig, callback);
+  };
+
+  // TODO(sergeyu): When crbug.com/121518 is fixed: replace this call
+  // with an upriveleged version if that is necessary.
+  this.plugin_.getDaemonConfig(onConfig);
 };
 
 /**

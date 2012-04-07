@@ -28,6 +28,11 @@ remoting.HostPlugin.prototype.localize = function(callback) {};
 /** @return {string} Local hostname. */
 remoting.HostPlugin.prototype.getHostName = function() {};
 
+/** @param {string} hostId The host ID.
+ *  @param {string} pin The PIN.
+ *  @return {string} The hash encoded with Base64. */
+remoting.HostPlugin.prototype.getPinHash = function(hostId, pin) {};
+
 /** @param {function(string, string):void} callback Callback to be called
  *  after new key is generated.
  *  @return {void} Nothing. */
