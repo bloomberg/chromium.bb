@@ -75,6 +75,7 @@ BookmarkEditorView::BookmarkEditorView(
       url_label_(NULL),
       url_tf_(NULL),
       title_label_(NULL),
+      title_tf_(NULL),
       parent_(parent),
       details_(details),
       running_menu_for_root_(false),
@@ -100,7 +101,7 @@ string16 BookmarkEditorView::GetDialogButtonLabel(
 bool BookmarkEditorView::IsDialogButtonEnabled(ui::DialogButton button) const {
   if (button == ui::DIALOG_BUTTON_OK) {
     if (details_.GetNodeType() == BookmarkNode::FOLDER)
-      return !title_tf_.text().empty();
+      return !title_tf_->text().empty();
 
     const GURL url(GetInputURL());
     return bb_model_->IsLoaded() && url.is_valid();
@@ -270,9 +271,9 @@ void BookmarkEditorView::Show(gfx::NativeWindow parent_hwnd) {
     ExpandAndSelect();
   GetWidget()->Show();
   // Select all the text in the name Textfield.
-  title_tf_.SelectAll();
+  title_tf_->SelectAll();
   // Give focus to the name Textfield.
-  title_tf_.RequestFocus();
+  title_tf_->RequestFocus();
 }
 
 void BookmarkEditorView::Close() {
@@ -303,7 +304,8 @@ void BookmarkEditorView::Init() {
   DCHECK(bb_model_);
   bb_model_->AddObserver(this);
 
-  title_tf_.set_parent_owned(false);
+  title_label_ = new views::Label(
+      l10n_util::GetStringUTF16(IDS_BOOKMARK_EDITOR_NAME_LABEL));
 
   string16 title;
   GURL url;
@@ -316,12 +318,10 @@ void BookmarkEditorView::Init() {
     bookmark_utils::GetURLAndTitleToBookmarkFromCurrentTab(profile_,
         &url, &title);
   }
-  title_tf_.SetText(title);
-  title_tf_.SetController(this);
-
-  title_label_ = new views::Label(
-      l10n_util::GetStringUTF16(IDS_BOOKMARK_EDITOR_NAME_LABEL));
-  title_tf_.SetAccessibleName(title_label_->text());
+  title_tf_ = new views::Textfield;
+  title_tf_->SetText(title);
+  title_tf_->SetController(this);
+  title_tf_->SetAccessibleName(title_label_->text());
 
   if (show_tree_) {
     tree_view_ = new views::TreeView();
@@ -370,7 +370,7 @@ void BookmarkEditorView::Init() {
   layout->StartRow(0, labels_column_set_id);
 
   layout->AddView(title_label_);
-  layout->AddView(&title_tf_);
+  layout->AddView(title_tf_);
 
   if (details_.GetNodeType() != BookmarkNode::FOLDER) {
     url_label_ = new views::Label(
@@ -475,7 +475,7 @@ GURL BookmarkEditorView::GetInputURL() const {
 }
 
 string16 BookmarkEditorView::GetInputTitle() const {
-  return title_tf_.text();
+  return title_tf_->text();
 }
 
 void BookmarkEditorView::UserInputChanged() {

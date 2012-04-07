@@ -247,8 +247,8 @@ class BookmarkEditorView : public BookmarkEditor,
   // The label for the title text field.
   views::Label* title_label_;
 
-  // Used for editing the title.
-  views::Textfield title_tf_;
+  // The text field used for editing the title.
+  views::Textfield* title_tf_;
 
   // Initial parent to select. Is only used if |details_.existing_node| is
   // NULL.
