@@ -228,6 +228,7 @@
         'browser/in_process_webkit/indexed_db_quota_client_unittest.cc',
         'browser/in_process_webkit/indexed_db_unittest.cc',
         'browser/in_process_webkit/webkit_thread_unittest.cc',
+        'browser/intents/intent_injector_unittest.cc',
         'browser/intents/internal_web_intents_dispatcher_unittest.cc',
         'browser/mach_broker_mac_unittest.cc',
         'browser/media_device_notifications_linux_unittest.cc',

@@ -48,6 +48,7 @@ void IntentInjector::SetIntent(
   intents_dispatcher_->RegisterReplyNotification(
       base::Bind(&IntentInjector::OnSendReturnMessage, base::Unretained(this)));
   source_intent_.reset(new webkit_glue::WebIntentData(intent));
+  initial_url_ = web_contents()->GetPendingSiteInstance()->GetSite();
 }
 
 void IntentInjector::OnSendReturnMessage(
@@ -60,6 +61,13 @@ void IntentInjector::RenderViewCreated(RenderViewHost* render_view_host) {
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableWebIntents) ||
       web_contents()->GetRenderViewHost() == NULL) {
+    return;
+  }
+
+  // Only deliver the intent to the renderer if it has the same origin
+  // as the initial delivery target.
+  if (initial_url_.GetOrigin() !=
+      render_view_host->GetSiteInstance()->GetSite().GetOrigin()) {
     return;
   }
 

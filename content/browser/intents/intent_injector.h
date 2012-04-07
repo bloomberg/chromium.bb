@@ -11,6 +11,7 @@
 #include "base/string16.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/common/content_export.h"
+#include "googleurl/src/gurl.h"
 #include "webkit/glue/web_intent_reply_data.h"
 
 namespace content {
@@ -68,6 +69,9 @@ class CONTENT_EXPORT IntentInjector : public content::WebContentsObserver {
 
   // Weak pointer to the message forwarder to the tab invoking the intent.
   content::WebIntentsDispatcher* intents_dispatcher_;
+
+  // Remember the initial delivery url for origin restriction.
+  GURL initial_url_;
 
   DISALLOW_COPY_AND_ASSIGN(IntentInjector);
 };
