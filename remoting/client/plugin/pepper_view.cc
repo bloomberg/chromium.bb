@@ -231,22 +231,23 @@ void PepperView::SetSourceSize(const SkISize& source_size) {
 }
 
 pp::ImageData* PepperView::AllocateBuffer() {
-  pp::ImageData* buffer = NULL;
-  if (buffers_.size() < kMaxPendingBuffersCount) {
-    pp::Size pp_size = pp::Size(clip_area_.width(), clip_area_.height());
-    buffer =  new pp::ImageData(instance_,
-                                PP_IMAGEDATAFORMAT_BGRA_PREMUL,
-                                pp_size,
-                                false);
-    if (buffer->is_null()) {
-      LOG(WARNING) << "Not enough memory for frame buffers.";
-      delete buffer;
-      buffer = NULL;
-    } else {
-      buffers_.push_back(buffer);
-    }
+  if (buffers_.size() >= kMaxPendingBuffersCount)
+    return NULL;
+
+  pp::Size pp_size = pp::Size(clip_area_.width(), clip_area_.height());
+  if (pp_size.IsEmpty())
+    return NULL;
+
+  // Create an image buffer of the required size, but don't zero it.
+  pp::ImageData* buffer =  new pp::ImageData(
+      instance_, PP_IMAGEDATAFORMAT_BGRA_PREMUL, pp_size, false);
+  if (buffer->is_null()) {
+    LOG(WARNING) << "Not enough memory for frame buffers.";
+    delete buffer;
+    return NULL;
   }
 
+  buffers_.push_back(buffer);
   return buffer;
 }
 
