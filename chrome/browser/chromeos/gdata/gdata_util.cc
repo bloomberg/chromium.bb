@@ -9,10 +9,14 @@
 #include <utility>
 
 #include "base/basictypes.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/stringprintf.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/libxml_utils.h"
 #include "chrome/common/pref_names.h"
@@ -20,6 +24,9 @@
 #include "chrome/browser/chromeos/gdata/gdata_system_service.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "net/base/escape.h"
 
@@ -66,6 +73,37 @@ GDataFileSystem* GetGDataFileSystem(Profile* profile) {
   return system_service ? system_service->file_system() : NULL;
 }
 
+void GetHostedDocumentURLBlockingThread(const FilePath& gdata_cache_path,
+                                        GURL* url) {
+  std::string json;
+  if (!file_util::ReadFileToString(gdata_cache_path, &json)) {
+    NOTREACHED() << "Unable to read file " << gdata_cache_path.value();
+    return;
+  }
+  DVLOG(1) << "Hosted doc content " << json;
+  scoped_ptr<base::Value> val(base::JSONReader::Read(json, false));
+  base::DictionaryValue* dict_val;
+  if (!val.get() || !val->GetAsDictionary(&dict_val)) {
+    NOTREACHED() << "Parse failure for " << json;
+    return;
+  }
+  std::string edit_url;
+  if (!dict_val->GetString("url", &edit_url)) {
+    NOTREACHED() << "url field doesn't exist in " << json;
+    return;
+  }
+  *url = GURL(edit_url);
+  DVLOG(1) << "edit url " << *url;
+}
+
+void OpenEditURLUIThread(Profile* profile, GURL* edit_url) {
+  Browser* browser = BrowserList::GetLastActiveWithProfile(profile);
+  if (browser) {
+    browser->OpenURL(content::OpenURLParams(*edit_url, content::Referrer(),
+        CURRENT_TAB, content::PAGE_TRANSITION_TYPED, false));
+  }
+}
+
 }  // namespace
 
 const FilePath& GetGDataMountPointPath() {
@@ -98,14 +136,30 @@ void ModifyGDataFileResourceUrl(Profile* profile,
                                 const FilePath& gdata_cache_path,
                                 GURL* url) {
   GDataFileSystem* file_system = GetGDataFileSystem(profile);
-  if (file_system &&
-      file_system->GetGDataCacheTmpDirectory().IsParent(gdata_cache_path)) {
-    // This is a gdata cache path. Extract the resource id.
+  if (!file_system)
+    return;
+
+  // Handle hosted documents. The edit url is in the temporary file, so we
+  // read it on a blocking thread.
+  if (file_system->GetGDataTempDocumentFolderPath().IsParent(
+      gdata_cache_path)) {
+    GURL* edit_url = new GURL();
+    content::BrowserThread::GetBlockingPool()->PostTaskAndReply(FROM_HERE,
+        base::Bind(&GetHostedDocumentURLBlockingThread,
+                   gdata_cache_path, edit_url),
+        base::Bind(&OpenEditURLUIThread, profile, base::Owned(edit_url)));
+    *url = GURL();
+    return;
+  }
+
+  // Handle all other gdata files.
+  if (file_system->GetGDataCacheTmpDirectory().IsParent(gdata_cache_path)) {
     const std::string resource_id =
         gdata_cache_path.BaseName().RemoveExtension().AsUTF8Unsafe();
     GetFileNameDelegate delegate;
     file_system->FindFileByResourceIdSync(resource_id, &delegate);
     *url = gdata::util::GetFileResourceUrl(resource_id, delegate.file_name());
+    DVLOG(1) << "ModifyGDataFileResourceUrl " << *url;
   }
 }
 
