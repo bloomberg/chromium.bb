@@ -2326,11 +2326,7 @@ gboolean BrowserWindowGtk::OnButtonPressEvent(GtkWidget* widget,
         return HandleTitleBarLeftMousePress(
             event, last_click_time, last_click_position);
       } else if (has_hit_edge) {
-        gtk_window_begin_resize_drag(window_, edge, event->button,
-                                     static_cast<gint>(event->x_root),
-                                     static_cast<gint>(event->y_root),
-                                     event->time);
-        return TRUE;
+        return HandleWindowEdgeLeftMousePress(window_, edge, event);
       }
     } else if (GDK_2BUTTON_PRESS == event->type) {
       if (has_hit_titlebar) {
@@ -2398,6 +2394,17 @@ bool BrowserWindowGtk::HandleTitleBarLeftMousePress(
     return TRUE;
   }
   return FALSE;
+}
+
+bool BrowserWindowGtk::HandleWindowEdgeLeftMousePress(
+    GtkWindow* window,
+    GdkWindowEdge edge,
+    GdkEventButton* event) {
+  gtk_window_begin_resize_drag(window, edge, event->button,
+                               static_cast<gint>(event->x_root),
+                               static_cast<gint>(event->y_root),
+                               event->time);
+  return TRUE;
 }
 
 gboolean BrowserWindowGtk::OnFocusIn(GtkWidget* widget,

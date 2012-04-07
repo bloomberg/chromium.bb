@@ -285,6 +285,11 @@ class BrowserWindowGtk : public BrowserWindow,
                                             guint32 last_click_time,
                                             gfx::Point last_click_position);
 
+  // Returns true if handled.
+  virtual bool HandleWindowEdgeLeftMousePress(GtkWindow* window,
+                                              GdkWindowEdge edge,
+                                              GdkEventButton* event);
+
   // Save the window position in the prefs.
   virtual void SaveWindowPosition();
 
