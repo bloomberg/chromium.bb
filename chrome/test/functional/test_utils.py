@@ -21,6 +21,11 @@ import pyauto_utils
 
 """Commonly used functions for PyAuto tests."""
 
+def CrashBrowser(test):
+  """Crashes the browser by navigating to special URL."""
+  test.NavigateToURL('about:inducebrowsercrashforrealz')
+
+
 def CopyFileFromDataDirToDownloadDir(test, file_path):
   """Copy a file from data directory to downloads directory.
 

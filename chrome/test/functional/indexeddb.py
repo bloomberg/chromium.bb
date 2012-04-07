@@ -5,15 +5,11 @@
 
 import pyauto_functional
 import pyauto
+import test_utils
 
 
 class IndexedDBTest(pyauto.PyUITest):
   """Test of IndexedDB."""
-
-  def _CrashBrowser(self):
-    """Crashes the browser by navigating to special URL"""
-    crash_url = 'about:inducebrowsercrashforrealz'
-    self.NavigateToURL(crash_url)
 
   def testIndexedDBNullKeyPathPersistence(self):
     """Verify null key path persists after restarting browser."""
@@ -50,7 +46,8 @@ class IndexedDBTest(pyauto.PyUITest):
                                    expect_retval='pass - part2 - crash me'),
                     msg='Failed to start transaction')
 
-    self._CrashBrowser()
+
+    test_utils.CrashBrowser(self)
 
     self.RestartBrowser(clear_profile=False)
 
@@ -80,6 +77,7 @@ class IndexedDBTest(pyauto.PyUITest):
     self.assertTrue(self.WaitUntil(self.GetActiveTabTitle,
                                     expect_retval='setVersion(2) complete'),
                      msg='Version change never unblocked')
+
 
 if __name__ == '__main__':
   pyauto_functional.Main()
