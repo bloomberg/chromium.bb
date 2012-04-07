@@ -24,8 +24,9 @@
     'version_full':
         '<!(python <(version_py_path) -f <(version_path) -t "@MAJOR@.@MINOR@.@BUILD@.@PATCH@")',
 
-    'platformsdk_exists': '<!(python <(DEPTH)/build/dir_exists.py ../third_party/platformsdk_win7)',
-    'wix_exists': '<!(python <(DEPTH)/build/dir_exists.py ../third_party/wix)',
+    # Windows Installer XML (WiX) path can be set in ~/.gyp/include.gypi to
+    # indicate that WiX is available.
+    'wix_path%': '',
 
     'conditions': [
       ['OS=="mac"', {
@@ -395,11 +396,11 @@
       ],  # end of 'targets'
     }],  # 'OS=="win"'
 
-    # The host installation is generated only if WiX is available and when
-    # building a non-component build. WiX does not provide a easy way to
-    # include all DLLs imported by the installed binaries, so supporting
-    # the component build becomes a burden.
-    ['OS == "win" and component != "shared_library" and wix_exists == "True" and platformsdk_exists == "True"', {
+    # The host installation is generated only if WiX location is known and only
+    # as part of a non-component build. WiX does not provide a easy way to
+    # include all DLLs imported by the installed binaries depend on, so
+    # supporting the component build becomes a burden.
+    ['"<(wix_path)" != "" and component != "shared_library"', {
       'targets': [
         {
           'target_name': 'remoting_host_installation',
@@ -416,8 +417,7 @@
             '<(PRODUCT_DIR)/chromoting.msi',
           ],
           'variables': {
-            'sas_dll_path': '<(DEPTH)/third_party/platformsdk_win7/files/redist/x86/sas.dll',
-            'wix_path': '<(DEPTH)\\third_party\\wix',
+            'sas_dll_path': '<(DEPTH)/third_party/platformsdk_win7/files/redist/x86/sas.dll'
           },
           'conditions': [
             ['branding == "Chrome"', {
@@ -447,10 +447,10 @@
               'msvs_cygwin_shell': 0,
               'msvs_quote_cmd': 0,
               'action': [
-                '"<(wix_path)\\candle"',
-                '-ext "<(wix_path)\\WixFirewallExtension.dll"',
-                '-ext "<(wix_path)\\WixUIExtension.dll"',
-                '-ext "<(wix_path)\\WixUtilExtension.dll"',
+                '"<(wix_path)\\bin\\candle"',
+                '-ext "<(wix_path)\\bin\\WixFirewallExtension.dll"',
+                '-ext "<(wix_path)\\bin\\WixUIExtension.dll"',
+                '-ext "<(wix_path)\\bin\\WixUtilExtension.dll"',
                 '-dVersion=<(version_full) '
                 '"-dFileSource=<(PRODUCT_DIR)." '
                 '"-dSasDllPath=<(sas_dll_path)" '
@@ -476,10 +476,10 @@
               'msvs_cygwin_shell': 0,
               'msvs_quote_cmd': 0,
               'action': [
-                '"<(wix_path)\\light"',
-                '-ext "<(wix_path)\\WixFirewallExtension.dll"',
-                '-ext "<(wix_path)\\WixUIExtension.dll"',
-                '-ext "<(wix_path)\\WixUtilExtension.dll"',
+                '"<(wix_path)\\bin\\light"',
+                '-ext "<(wix_path)\\bin\\WixFirewallExtension.dll"',
+                '-ext "<(wix_path)\\bin\\WixUIExtension.dll"',
+                '-ext "<(wix_path)\\bin\\WixUtilExtension.dll"',
                 '-cultures:en-us',
                 '-dVersion=<(version_full) '
                 '"-dFileSource=<(PRODUCT_DIR)." '
