@@ -65,15 +65,25 @@ class PluginPrefs : public RefcountedProfileKeyedService,
   // Enable or disable a plugin group.
   void EnablePluginGroup(bool enable, const string16& group_name);
 
-  // Enable or disable a specific plugin file.
-  // Returns false if the plug-in state cannot be changed because of a policy.
-  bool EnablePlugin(bool enable, const FilePath& file_path);
+  // Returns true if the plug-in state can be enabled or disabled according to
+  // |enable|, false if the plug-in state cannot be changed because of a policy.
+  bool CanEnablePlugin(bool enable, const FilePath& file_path);
 
-  // Enable or disable a plug-in in all profiles. This sets a default for
-  // profiles which are created later as well.
-  // Returns false if the plug-in state cannot be changed because of a policy.
+  // Enables or disables a specific plugin file, and calls |callback|
+  // afterwards.
+  // If the plug-in state cannot be changed because of a policy (as indicated
+  // by |CanEnablePlugin|), it will be silently ignored.
+  void EnablePlugin(bool enable, const FilePath& file_path,
+                    const base::Closure& callback);
+
+  // Enables or disables a plug-in in all profiles, and calls |callback|
+  // afterwards. This sets a default for profiles which are created later as
+  // well.
+  // If the plug-in state in a profile cannot be changed because of a policy,
+  // it will be silently ignored.
   // This method should only be called on the UI thread.
-  static bool EnablePluginGlobally(bool enable, const FilePath& file_path);
+  static void EnablePluginGlobally(bool enable, const FilePath& file_path,
+                                   const base::Closure& callback);
 
   // Returns whether there is a policy enabling or disabling plug-ins of the
   // given name.
@@ -119,6 +129,7 @@ class PluginPrefs : public RefcountedProfileKeyedService,
   void EnablePluginInternal(
       bool enabled,
       const FilePath& path,
+      const base::Closure& callback,
       const std::vector<webkit::npapi::PluginGroup>& groups);
 
   // Called on the file thread to get the data necessary to update the saved

@@ -197,7 +197,8 @@ TEST_F(GViewRequestInterceptorTest, DoNotInterceptDownload) {
 
 TEST_F(GViewRequestInterceptorTest, DoNotInterceptPdfWhenEnabled) {
   SetPDFPluginLoadedState(true);
-  plugin_prefs_->EnablePlugin(true, pdf_path_);
+  plugin_prefs_->EnablePlugin(true, pdf_path_, MessageLoop::QuitClosure());
+  MessageLoop::current()->Run();
 
   net::URLRequest request(GURL(kPdfUrl), &test_delegate_);
   SetupRequest(&request);
@@ -209,7 +210,8 @@ TEST_F(GViewRequestInterceptorTest, DoNotInterceptPdfWhenEnabled) {
 
 TEST_F(GViewRequestInterceptorTest, InterceptPdfWhenDisabled) {
   SetPDFPluginLoadedState(true);
-  plugin_prefs_->EnablePlugin(false, pdf_path_);
+  plugin_prefs_->EnablePlugin(false, pdf_path_, MessageLoop::QuitClosure());
+  MessageLoop::current()->Run();
 
   net::URLRequest request(GURL(kPdfUrl), &test_delegate_);
   SetupRequest(&request);

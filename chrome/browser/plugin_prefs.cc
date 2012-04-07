@@ -45,6 +45,38 @@ namespace {
 base::LazyInstance<std::map<FilePath, bool> > g_default_plugin_state =
     LAZY_INSTANCE_INITIALIZER;
 
+class CallbackBarrier : public base::RefCountedThreadSafe<CallbackBarrier> {
+ public:
+  explicit CallbackBarrier(const base::Closure& callback)
+      : callback_(callback),
+        outstanding_callbacks_(0) {
+    DCHECK(!callback_.is_null());
+  }
+
+  base::Closure CreateCallback() {
+    outstanding_callbacks_++;
+    return base::Bind(&CallbackBarrier::MaybeRunCallback, this);
+  }
+
+ private:
+  friend class base::RefCountedThreadSafe<CallbackBarrier>;
+
+  ~CallbackBarrier() {
+    DCHECK(callback_.is_null());
+  }
+
+  void MaybeRunCallback() {
+    DCHECK_GT(outstanding_callbacks_, 0);
+    if (--outstanding_callbacks_ == 0) {
+      callback_.Run();
+      callback_.Reset();
+    }
+  }
+
+  base::Closure callback_;
+  int outstanding_callbacks_;
+};
+
 }  // namespace
 
 // How long to wait to save the plugin enabled information, which might need to
@@ -101,8 +133,7 @@ void PluginPrefs::EnablePluginGroupInternal(
       base::Bind(&PluginPrefs::NotifyPluginStatusChanged, this));
 }
 
-bool PluginPrefs::EnablePlugin(bool enabled, const FilePath& path) {
-  // Do policy checks first. These don't need to run on the FILE thread.
+bool PluginPrefs::CanEnablePlugin(bool enabled, const FilePath& path) {
   webkit::npapi::PluginList* plugin_list = GetPluginList();
   webkit::WebPluginInfo plugin;
   if (PluginService::GetInstance()->GetPluginInfoByPath(path, &plugin)) {
@@ -117,16 +148,23 @@ bool PluginPrefs::EnablePlugin(bool enabled, const FilePath& path) {
       if (plugin_status == POLICY_ENABLED || group_status == POLICY_ENABLED)
         return false;
     }
+  } else {
+    NOTREACHED();
   }
-
-  PluginService::GetInstance()->GetPluginGroups(
-      base::Bind(&PluginPrefs::EnablePluginInternal, this, enabled, path));
   return true;
+}
+
+void PluginPrefs::EnablePlugin(bool enabled, const FilePath& path,
+                               const base::Closure& callback) {
+  PluginService::GetInstance()->GetPluginGroups(
+      base::Bind(&PluginPrefs::EnablePluginInternal, this,
+                 enabled, path, callback));
 }
 
 void PluginPrefs::EnablePluginInternal(
     bool enabled,
     const FilePath& path,
+    const base::Closure& callback,
     const std::vector<webkit::npapi::PluginGroup>& groups) {
   {
     // Set the desired state for the plug-in.
@@ -158,23 +196,23 @@ void PluginPrefs::EnablePluginInternal(
       base::Bind(&PluginPrefs::OnUpdatePreferences, this, groups));
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
       base::Bind(&PluginPrefs::NotifyPluginStatusChanged, this));
+  callback.Run();
 }
 
 // static
-bool PluginPrefs::EnablePluginGlobally(bool enable, const FilePath& file_path) {
+void PluginPrefs::EnablePluginGlobally(bool enable, const FilePath& file_path,
+                                       const base::Closure& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   g_default_plugin_state.Get()[file_path] = enable;
   std::vector<Profile*> profiles =
       g_browser_process->profile_manager()->GetLoadedProfiles();
-  bool result = true;
+  scoped_refptr<CallbackBarrier> barrier = new CallbackBarrier(callback);
   for (std::vector<Profile*>::iterator it = profiles.begin();
        it != profiles.end(); ++it) {
     PluginPrefs* plugin_prefs = PluginPrefs::GetForProfile(*it);
     DCHECK(plugin_prefs);
-    if (!plugin_prefs->EnablePlugin(enable, file_path))
-      result = false;
+    plugin_prefs->EnablePlugin(enable, file_path, barrier->CreateCallback());
   }
-  return result;
 }
 
 PluginPrefs::PolicyStatus PluginPrefs::PolicyStatusForPlugin(

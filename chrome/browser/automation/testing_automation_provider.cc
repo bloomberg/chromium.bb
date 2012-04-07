@@ -3788,16 +3788,20 @@ void TestingAutomationProvider::EnablePlugin(Browser* browser,
                                              DictionaryValue* args,
                                              IPC::Message* reply_message) {
   FilePath::StringType path;
-  AutomationJSONReply reply(this, reply_message);
   if (!args->GetString("path", &path)) {
-    reply.SendError("path not specified.");
-  } else if (!PluginPrefs::GetForProfile(browser->profile())->EnablePlugin(
-      true, FilePath(path))) {
-    reply.SendError(StringPrintf("Could not enable plugin for path %s.",
-                                 path.c_str()));
-  } else {
-    reply.SendSuccess(NULL);
+    AutomationJSONReply(this, reply_message).SendError("path not specified.");
+    return;
   }
+  PluginPrefs* plugin_prefs = PluginPrefs::GetForProfile(browser->profile());
+  if (!plugin_prefs->CanEnablePlugin(true, FilePath(path))) {
+    AutomationJSONReply(this, reply_message).SendError(
+        StringPrintf("Could not enable plugin for path %s.", path.c_str()));
+    return;
+  }
+  plugin_prefs->EnablePlugin(
+      true, FilePath(path),
+      base::Bind(&TestingAutomationProvider::SendSuccessReply, this,
+                 reply_message));
 }
 
 // Sample json input:
@@ -3807,16 +3811,20 @@ void TestingAutomationProvider::DisablePlugin(Browser* browser,
                                               DictionaryValue* args,
                                               IPC::Message* reply_message) {
   FilePath::StringType path;
-  AutomationJSONReply reply(this, reply_message);
   if (!args->GetString("path", &path)) {
-    reply.SendError("path not specified.");
-  } else if (!PluginPrefs::GetForProfile(browser->profile())->EnablePlugin(
-      false, FilePath(path))) {
-    reply.SendError(StringPrintf("Could not disable plugin for path %s.",
-                                 path.c_str()));
-  } else {
-    reply.SendSuccess(NULL);
+    AutomationJSONReply(this, reply_message).SendError("path not specified.");
+    return;
   }
+  PluginPrefs* plugin_prefs = PluginPrefs::GetForProfile(browser->profile());
+  if (!plugin_prefs->CanEnablePlugin(false, FilePath(path))) {
+    AutomationJSONReply(this, reply_message).SendError(
+        StringPrintf("Could not disable plugin for path %s.", path.c_str()));
+    return;
+  }
+  plugin_prefs->EnablePlugin(
+      false, FilePath(path),
+      base::Bind(&TestingAutomationProvider::SendSuccessReply, this,
+                 reply_message));
 }
 
 // Sample json input:

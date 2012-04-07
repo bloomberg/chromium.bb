@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #include "base/at_exit.h"
 #include "base/bind.h"
 #include "base/message_loop.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
@@ -26,7 +27,7 @@ class PluginPrefsTest : public ::testing::Test {
     plugin_prefs_ = new PluginPrefs();
   }
 
-   void SetPolicyEnforcedPluginPatterns(
+  void SetPolicyEnforcedPluginPatterns(
       const std::set<string16>& disabled,
       const std::set<string16>& disabled_exceptions,
       const std::set<string16>& enabled) {
@@ -143,8 +144,6 @@ TEST_F(PluginPrefsTest, DisableGlobally) {
 
   MessageLoop message_loop;
   content::TestBrowserThread ui_thread(BrowserThread::UI, &message_loop);
-  content::TestBrowserThread file_thread(BrowserThread::FILE, &message_loop);
-
   webkit::npapi::MockPluginList plugin_list(NULL, 0);
   PluginService::GetInstance()->SetPluginListForTesting(&plugin_list);
   PluginService::GetInstance()->Init();
@@ -165,9 +164,10 @@ TEST_F(PluginPrefsTest, DisableGlobally) {
                                ASCIIToUTF16("1.0.0"),
                                ASCIIToUTF16("Foo plug-in"));
   plugin_list.AddPluginToLoad(plugin);
-  EXPECT_TRUE(PluginPrefs::EnablePluginGlobally(false, plugin.path));
+  PluginPrefs::EnablePluginGlobally(false, plugin.path,
+                                    MessageLoop::QuitClosure());
 
-  message_loop.RunAllPending();
+  message_loop.Run();
 
   EXPECT_FALSE(plugin_prefs->IsPluginEnabled(plugin));
 

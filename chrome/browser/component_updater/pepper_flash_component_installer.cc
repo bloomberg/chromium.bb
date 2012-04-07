@@ -194,7 +194,8 @@ void RegisterPepperFlashWithChrome(const FilePath& path,
     return;
   bool enable_by_default = IsPepperFlashEnabledByDefault();
   if (fresh_install)
-    PluginPrefs::EnablePluginGlobally(enable_by_default, plugin_info.path);
+    PluginPrefs::EnablePluginGlobally(enable_by_default, plugin_info.path,
+                                      base::Bind(&base::DoNothing));
 
   bool add_to_front = enable_by_default;
   PluginService::GetInstance()->RegisterInternalPlugin(

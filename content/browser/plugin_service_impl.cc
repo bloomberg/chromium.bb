@@ -13,6 +13,7 @@
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -47,14 +48,6 @@ using content::PluginServiceFilter;
 
 namespace {
 
-// Helper function that merely runs the callback with the result. Called on the
-// thread on which the original GetPlugins() call was made.
-static void RunGetPluginsCallback(
-    const PluginService::GetPluginsCallback& callback,
-    const std::vector<webkit::WebPluginInfo>& result) {
-  callback.Run(result);
-}
-
 // A callback for GetPlugins() that then gets the freshly loaded plugin groups
 // and runs the callback for GetPluginGroups().
 static void GetPluginsForGroupsCallback(
@@ -69,7 +62,7 @@ static void GetPluginsForGroupsCallback(
 // correct thread.
 void WillLoadPluginsCallback() {
 #if defined(OS_WIN)
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  CHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
 #else
   CHECK(false) << "Plugin loading should happen out-of-process.";
 #endif
@@ -489,16 +482,17 @@ void PluginServiceImpl::GetPlugins(const GetPluginsCallback& callback) {
       MessageLoop::current()->message_loop_proxy());
 
 #if defined(OS_WIN)
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
+  BrowserThread::GetBlockingPool()->PostWorkerTaskWithShutdownBehavior(
+      FROM_HERE,
       base::Bind(&PluginServiceImpl::GetPluginsInternal, base::Unretained(this),
-          target_loop, callback));
+                 target_loop, callback),
+      base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
 #else
   std::vector<webkit::WebPluginInfo> cached_plugins;
   if (plugin_list_->GetPluginsIfNoRefreshNeeded(&cached_plugins)) {
     // Can't assume the caller is reentrant.
     target_loop->PostTask(FROM_HERE,
-        base::Bind(&RunGetPluginsCallback, callback, cached_plugins));
+        base::Bind(callback, cached_plugins));
   } else {
     // If we switch back to loading plugins in process, then we need to make
     // sure g_thread_init() gets called since plugins may call glib at load.
@@ -519,13 +513,13 @@ void PluginServiceImpl::GetPluginGroups(
 void PluginServiceImpl::GetPluginsInternal(
      base::MessageLoopProxy* target_loop,
      const PluginService::GetPluginsCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
 
   std::vector<webkit::WebPluginInfo> plugins;
   plugin_list_->GetPlugins(&plugins);
 
   target_loop->PostTask(FROM_HERE,
-      base::Bind(&RunGetPluginsCallback, callback, plugins));
+      base::Bind(callback, plugins));
 }
 
 void PluginServiceImpl::OnWaitableEventSignaled(

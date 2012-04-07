@@ -257,8 +257,9 @@ void PluginsDOMHandler::HandleEnablePluginMessage(const ListValue* args) {
       NOTREACHED();
       return;
     }
-    bool result = plugin_prefs->EnablePlugin(enable, FilePath(file_path));
-    DCHECK(result);
+    DCHECK(plugin_prefs->CanEnablePlugin(enable, FilePath(file_path)));
+    plugin_prefs->EnablePlugin(enable, FilePath(file_path),
+                               base::Bind(&base::DoNothing));
   }
 }
 
