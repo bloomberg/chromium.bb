@@ -2577,28 +2577,6 @@
           # but when we tried to pull it up to the common.gypi level, it broke
           # other things like the ui, startup, and page_cycler tests. *shrug*
           'xcode_settings': {'OTHER_LDFLAGS': ['-Wl,-ObjC']},
-
-          # libwebcore.a is so large that ld may not have a sufficiently large
-          # "hole" in its address space into which it can be mmaped by the
-          # time it reaches this library. As of May 10, 2010, libwebcore.a is
-          # about 1GB in some builds. In the Mac OS X 10.5 toolchain, using
-          # Xcode 3.1, ld is only a 32-bit executable, and address space
-          # exhaustion is the result, with ld failing and producing
-          # the message:
-          # ld: in .../libwebcore.a, can't map file, errno=12
-          #
-          # As a workaround, ensure that libwebcore.a appears to ld first when
-          # linking unit_tests. This allows the library to be mmapped when
-          # ld's address space is "wide open." Other libraries are small
-          # enough that they'll be able to "squeeze" into the remaining holes.
-          # The Mac linker isn't so sensitive that moving this library to the
-          # front of the list will cause problems.
-          #
-          # Enough pluses to make this target get prepended to the target's
-          # list of dependencies.
-          'dependencies+++': [
-            '../third_party/WebKit/Source/WebCore/WebCore.gyp/WebCore.gyp:webcore',
-          ],
         }],
         ['OS=="win"', {
           'dependencies': [
