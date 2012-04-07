@@ -140,6 +140,10 @@ static int ToMessageID(WebLocalizedString::Name name) {
       return IDS_AX_UNCHECKED_CHECK_BOX_ACTION_VERB;
     case WebLocalizedString::AXWebAreaText:
       return IDS_AX_ROLE_WEB_AREA;
+    case WebLocalizedString::CalendarClear:
+      return IDS_FORM_CALENDAR_CLEAR;
+    case WebLocalizedString::CalendarToday:
+      return IDS_FORM_CALENDAR_TODAY;
     case WebLocalizedString::DetailsLabel:
       return IDS_DETAILS_WITHOUT_SUMMARY_LABEL;
     case WebLocalizedString::FileButtonChooseFileLabel:

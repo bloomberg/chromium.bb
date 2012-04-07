@@ -219,6 +219,12 @@ below:
       <message name="IDS_SEARCHABLE_INDEX_INTRO" desc="Text that appears at the start of nearly-obsolete webpages in the form of a 'searchable index'.">
         This is a searchable index. Enter search keywords: '''
       </message>
+      <message name="IDS_FORM_CALENDAR_CLEAR" desc="Label for a button which clears a date input field.">
+        Clear
+      </message>
+      <message name="IDS_FORM_CALENDAR_TODAY" desc="Label for a button which sets today to a date input field.">
+        Today
+      </message>
       <message name="IDS_FORM_SUBMIT_LABEL" desc="Default label for Submit buttons in forms on webpages.">
         Submit
       </message>
