@@ -369,7 +369,7 @@ content::WebContentsView*
 #if defined(USE_AURA)
   // TODO(beng): remove this once TCVV is gone.
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (!command_line.HasSwitch(switches::kEnableTCVA)) {
+  if (command_line.HasSwitch(switches::kDisableTCVA)) {
     return new TabContentsViewViews(web_contents,
                                     GetWebContentsViewDelegate(web_contents));
   }
@@ -386,7 +386,7 @@ content::WebContentsViewDelegate*
   return new ChromeWebContentsViewDelegateViews(web_contents);
 #elif defined(USE_AURA)
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kEnableTCVA))
+  if (!command_line.HasSwitch(switches::kDisableTCVA))
     return new ChromeWebContentsViewDelegateViews(web_contents);
   return new ChromeWebContentsViewDelegateAura(web_contents);
 #endif

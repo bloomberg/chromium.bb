@@ -85,9 +85,10 @@ Window::~Window() {
       DCHECK(std::find(children_.begin(), children_.end(), child) ==
              children_.end());
     } else {
-      // We don't call SetParent() since that may do unexpected things like
-      // reparent the window.
-      child->parent_ = NULL;
+      // Even if we can't delete the child, we still need to remove it from the
+      // parent so that relevant bookkeeping (parent_ back-pointers etc) are
+      // updated.
+      RemoveChild(child);
     }
   }
 

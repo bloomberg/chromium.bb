@@ -212,14 +212,10 @@ void TabContentsViewAura::CreateView(const gfx::Size& initial_size) {
   window_->set_owned_by_parent(false);
   window_->SetType(aura::client::WINDOW_TYPE_CONTROL);
   window_->SetTransparent(false);
-  window_->Init(ui::LAYER_TEXTURED);
+  window_->Init(ui::LAYER_NOT_DRAWN);
   window_->SetParent(NULL);
   window_->layer()->SetMasksToBounds(true);
   window_->SetName("TabContentsViewAura");
-
-  // TODO(beng): allow for delegate init step.
-
-  // TODO(beng): drag & drop init.
 }
 
 content::RenderWidgetHostView* TabContentsViewAura::CreateViewForWidget(
