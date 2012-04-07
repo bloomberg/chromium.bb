@@ -10,7 +10,6 @@
 #include "remoting/host/chromoting_host.h"
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/host_mock_objects.h"
-#include "remoting/host/in_memory_host_config.h"
 #include "remoting/host/it2me_host_user_interface.h"
 #include "remoting/proto/video.pb.h"
 #include "remoting/protocol/protocol_mock_objects.h"
@@ -70,7 +69,6 @@ class ChromotingHostTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE {
     message_loop_proxy_ = base::MessageLoopProxy::current();
-    config_ = new InMemoryHostConfig();
     ON_CALL(context_, main_message_loop())
         .WillByDefault(Return(&message_loop_));
     ON_CALL(context_, encode_message_loop())
@@ -233,7 +231,6 @@ class ChromotingHostTest : public testing::Test {
   scoped_ptr<DesktopEnvironment> desktop_environment_;
   scoped_ptr<It2MeHostUserInterface> it2me_host_user_interface_;
   scoped_refptr<ChromotingHost> host_;
-  scoped_refptr<InMemoryHostConfig> config_;
   MockChromotingHostContext context_;
   MockConnectionToClient* connection_;
   scoped_ptr<MockConnectionToClient> owned_connection_;

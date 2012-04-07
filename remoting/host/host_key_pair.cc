@@ -44,9 +44,9 @@ bool HostKeyPair::LoadFromString(const std::string& key_base64) {
   return true;
 }
 
-bool HostKeyPair::Load(HostConfig* host_config) {
+bool HostKeyPair::Load(const HostConfig& host_config) {
   std::string key_base64;
-  if (!host_config->GetString(kPrivateKeyConfigPath, &key_base64)) {
+  if (!host_config.GetString(kPrivateKeyConfigPath, &key_base64)) {
     LOG(ERROR) << "Private key wasn't found in the config file.";
     return false;
   }

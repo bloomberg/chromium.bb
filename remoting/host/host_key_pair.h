@@ -26,7 +26,7 @@ class HostKeyPair {
 
   void Generate();
   bool LoadFromString(const std::string& key_base64);
-  bool Load(HostConfig* host_config);
+  bool Load(const HostConfig& host_config);
   void Save(MutableHostConfig* host_config);
 
   crypto::RSAPrivateKey* private_key() { return key_.get(); }

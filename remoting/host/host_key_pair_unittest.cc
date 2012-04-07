@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,21 +27,19 @@ const char kExpectedSignature[] =
 "gDcvyW8QiGuKLopGj/4c5CQT4yE8JjsyU3Qqo2ZPK4neJYQhOmAlg+Q5dAPLpzWMj5HQyOVHJaSXZ"
 "Y8vl/LiKvbdofYLeYNVKAE4q5mfpQMrsysPYpbxBV60AhFyrvtC040MFGcflKQRZNiZwMXVb7DclC"
 "BPgvK7rI5Y0ERtVm+yNmH7vCivfyAnDUYA==";
-}
-
+}  // namespace
 
 class HostKeyPairTest : public testing::Test {
  protected:
   virtual void SetUp() {
     ASSERT_TRUE(test_dir_.CreateUniqueTempDir());
     FilePath config_path = test_dir_.path().AppendASCII("test_config.json");
-    config_ = new JsonHostConfig(
-        config_path, base::MessageLoopProxy::current());
+    config_.reset(new JsonHostConfig(config_path));
   }
 
   MessageLoop message_loop_;
   ScopedTempDir test_dir_;
-  scoped_refptr<JsonHostConfig> config_;
+  scoped_ptr<JsonHostConfig> config_;
 };
 
 TEST_F(HostKeyPairTest, SaveLoad) {
@@ -49,12 +47,12 @@ TEST_F(HostKeyPairTest, SaveLoad) {
   // generate the same signature with both keys.
   HostKeyPair exported_key;
   exported_key.LoadFromString(kTestHostKeyPair);
-  exported_key.Save(config_);
+  exported_key.Save(config_.get());
 
   message_loop_.RunAllPending();
 
   HostKeyPair imported_key;
-  imported_key.Load(config_);
+  imported_key.Load(*config_);
 
   ASSERT_EQ(exported_key.GetSignature(kTestMessage),
             imported_key.GetSignature(kTestMessage));

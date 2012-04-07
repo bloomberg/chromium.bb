@@ -155,15 +155,13 @@ class HostProcess : public OAuthClient::Delegate {
   // Read Host config from disk, returning true if successful.
   bool LoadConfig(base::MessageLoopProxy* io_message_loop,
                   bool* tokens_pending) {
-    scoped_refptr<JsonHostConfig> host_config =
-        new JsonHostConfig(host_config_path_, io_message_loop);
-    scoped_refptr<JsonHostConfig> auth_config =
-        new JsonHostConfig(auth_config_path_, io_message_loop);
+    JsonHostConfig host_config(host_config_path_);
+    JsonHostConfig auth_config(auth_config_path_);
 
     FilePath failed_path;
-    if (!host_config->Read()) {
+    if (!host_config.Read()) {
       failed_path = host_config_path_;
-    } else if (!auth_config->Read()) {
+    } else if (!auth_config.Read()) {
       failed_path = auth_config_path_;
     }
     if (!failed_path.empty()) {
@@ -171,7 +169,7 @@ class HostProcess : public OAuthClient::Delegate {
       return false;
     }
 
-    if (!host_config->GetString(kHostIdConfigPath, &host_id_)) {
+    if (!host_config.GetString(kHostIdConfigPath, &host_id_)) {
       LOG(ERROR) << "host_id is not defined in the config.";
       return false;
     }
@@ -181,8 +179,8 @@ class HostProcess : public OAuthClient::Delegate {
     }
 
     std::string host_secret_hash_string;
-    if (!host_config->GetString(kHostSecretHashConfigPath,
-                                &host_secret_hash_string)) {
+    if (!host_config.GetString(kHostSecretHashConfigPath,
+                               &host_secret_hash_string)) {
       host_secret_hash_string = "plain:";
     }
 
@@ -192,10 +190,10 @@ class HostProcess : public OAuthClient::Delegate {
     }
 
     // Use an XMPP connection to the Talk network for session signalling.
-    if (!auth_config->GetString(kXmppLoginConfigPath, &xmpp_login_) ||
-        !(auth_config->GetString(kXmppAuthTokenConfigPath, &xmpp_auth_token_) ||
-          auth_config->GetString(kOAuthRefreshTokenConfigPath,
-                                 &oauth_refresh_token_))) {
+    if (!auth_config.GetString(kXmppLoginConfigPath, &xmpp_login_) ||
+        !(auth_config.GetString(kXmppAuthTokenConfigPath, &xmpp_auth_token_) ||
+          auth_config.GetString(kOAuthRefreshTokenConfigPath,
+                                &oauth_refresh_token_))) {
       LOG(ERROR) << "XMPP credentials are not defined in the config.";
       return false;
     }
@@ -204,8 +202,8 @@ class HostProcess : public OAuthClient::Delegate {
     if (*tokens_pending) {
       xmpp_auth_token_ = "";  // This will be set to the access token later.
       xmpp_auth_service_ = "oauth2";
-    } else if (!auth_config->GetString(kXmppAuthServiceConfigPath,
-                                &xmpp_auth_service_)) {
+    } else if (!auth_config.GetString(kXmppAuthServiceConfigPath,
+                                      &xmpp_auth_service_)) {
       // For the me2me host, we default to ClientLogin token for chromiumsync
       // because earlier versions of the host had no HTTP stack with which to
       // request an OAuth2 access token.

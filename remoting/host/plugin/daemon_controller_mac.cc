@@ -136,19 +136,18 @@ void DaemonControllerMac::Stop(const CompletionCallback& done_callback) {
 }
 
 void DaemonControllerMac::DoGetConfig(const GetConfigCallback& callback) {
-  JsonHostConfig host_config(FilePath(kHostConfigFile),
-                             base::MessageLoopProxy::current());
-  host_config.Read();
+  FilePath config_path(kHostConfigFile);
+  JsonHostConfig host_config(config_path);
+  scoped_ptr<base::DictionaryValue> config;
 
-  scoped_ptr<base::DictionaryValue> config(new base::DictionaryValue());
-
-  const char* key = "host_id";
-  std::string value;
-  if (host_config.GetString(key, &value))
-    config.get()->SetString(key, value);
-  key = "xmpp_login";
-  if (host_config.GetString(key, &value))
-    config.get()->SetString(key, value);
+  if (host_config.Read()) {
+    config.reset(new base::DictionaryValue());
+    std::string value;
+    if (host_config.GetString(kHostIdConfigPath, &value))
+      config.get()->SetString(kHostIdConfigPath, value);
+    if (host_config.GetString(kXmppLoginConfigPath, &value))
+      config.get()->SetString(kXmppLoginConfigPath, value);
+  }
 
   callback.Run(config.Pass());
 }

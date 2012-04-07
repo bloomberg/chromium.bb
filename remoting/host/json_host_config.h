@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,8 +8,6 @@
 #include <string>
 
 #include "base/file_path.h"
-#include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "remoting/host/in_memory_host_config.h"
 
 namespace base {
@@ -21,20 +19,16 @@ namespace remoting {
 // JsonHostConfig implements MutableHostConfig for JSON file.
 class JsonHostConfig : public InMemoryHostConfig {
  public:
-  JsonHostConfig(const FilePath& pref_filename,
-                 base::MessageLoopProxy* file_message_loop_proxy);
+  JsonHostConfig(const FilePath& filename);
   virtual ~JsonHostConfig();
 
   virtual bool Read();
 
   // MutableHostConfig interface.
-  virtual void Save() OVERRIDE;
+  virtual bool Save() OVERRIDE;
 
  private:
-  void DoWrite();
-
   FilePath filename_;
-  scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;
 
   DISALLOW_COPY_AND_ASSIGN(JsonHostConfig);
 };

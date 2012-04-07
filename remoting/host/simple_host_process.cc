@@ -104,15 +104,14 @@ class SimpleHost {
 
   int Run() {
     FilePath config_path = GetConfigPath();
-    scoped_refptr<JsonHostConfig> config = new JsonHostConfig(
-        config_path, file_io_thread_.message_loop_proxy());
-    if (!config->Read()) {
+    JsonHostConfig config(config_path);
+    if (!config.Read()) {
       LOG(ERROR) << "Failed to read configuration file "
                  << config_path.value();
       return 1;
     }
 
-    if (!config->GetString(kHostIdConfigPath, &host_id_)) {
+    if (!config.GetString(kHostIdConfigPath, &host_id_)) {
       LOG(ERROR) << "host_id is not defined in the config.";
       return 1;
     }
@@ -122,8 +121,8 @@ class SimpleHost {
     }
 
     std::string host_secret_hash_string;
-    if (!config->GetString(kHostSecretHashConfigPath,
-                           &host_secret_hash_string)) {
+    if (!config.GetString(kHostSecretHashConfigPath,
+                          &host_secret_hash_string)) {
       host_secret_hash_string = "plain:";
     }
 
@@ -133,12 +132,12 @@ class SimpleHost {
     }
 
     // Use an XMPP connection to the Talk network for session signalling.
-    if (!config->GetString(kXmppLoginConfigPath, &xmpp_login_) ||
-        !config->GetString(kXmppAuthTokenConfigPath, &xmpp_auth_token_)) {
+    if (!config.GetString(kXmppLoginConfigPath, &xmpp_login_) ||
+        !config.GetString(kXmppAuthTokenConfigPath, &xmpp_auth_token_)) {
       LOG(ERROR) << "XMPP credentials are not defined in the config.";
       return 1;
     }
-    if (!config->GetString(kXmppAuthServiceConfigPath, &xmpp_auth_service_)) {
+    if (!config.GetString(kXmppAuthServiceConfigPath, &xmpp_auth_service_)) {
       // For the simple host, we assume we always use the ClientLogin token for
       // chromiumsync because we do not have an HTTP stack with which we can
       // easily request an OAuth2 access token even if we had a RefreshToken for

@@ -9,52 +9,49 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/location.h"
-#include "base/message_loop_proxy.h"
-#include "base/synchronization/lock.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 
 namespace remoting {
 
-JsonHostConfig::JsonHostConfig(
-    const FilePath& filename,
-    base::MessageLoopProxy* file_message_loop_proxy)
-    : filename_(filename),
-      message_loop_proxy_(file_message_loop_proxy) {
+JsonHostConfig::JsonHostConfig(const FilePath& filename)
+    : filename_(filename) {
 }
 
 JsonHostConfig::~JsonHostConfig() {}
 
 bool JsonHostConfig::Read() {
+  DCHECK(CalledOnValidThread());
+
   // TODO(sergeyu): Implement better error handling here.
   std::string file_content;
   if (!file_util::ReadFileToString(filename_, &file_content)) {
+    LOG(WARNING) << "Failed to read " << filename_.value();
     return false;
   }
 
   scoped_ptr<Value> value(base::JSONReader::Read(file_content, true));
   if (value.get() == NULL || !value->IsType(Value::TYPE_DICTIONARY)) {
+    LOG(WARNING) << "Failed to parse " << filename_.value();
     return false;
   }
 
   DictionaryValue* dictionary = static_cast<DictionaryValue*>(value.release());
-  base::AutoLock auto_lock(lock_);
   values_.reset(dictionary);
   return true;
 }
 
-void JsonHostConfig::Save() {
-  message_loop_proxy_->PostTask(
-      FROM_HERE, base::Bind(&JsonHostConfig::DoWrite, this));
-}
+bool JsonHostConfig::Save() {
+  DCHECK(CalledOnValidThread());
 
-void JsonHostConfig::DoWrite() {
   std::string file_content;
-  base::AutoLock auto_lock(lock_);
   base::JSONWriter::WriteWithOptions(values_.get(),
                                      base::JSONWriter::OPTIONS_PRETTY_PRINT,
                                      &file_content);
   // TODO(sergeyu): Move ImportantFileWriter to base and use it here.
-  file_util::WriteFile(filename_, file_content.c_str(), file_content.size());
+  int result = file_util::WriteFile(filename_, file_content.c_str(),
+                                    file_content.size());
+  return result == static_cast<int>(file_content.size());
 }
 
 }  // namespace remoting

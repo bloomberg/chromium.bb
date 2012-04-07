@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/memory/ref_counted.h"
+#include "base/basictypes.h"
 
 namespace remoting {
 
@@ -34,14 +34,16 @@ extern const char kHostSecretHashConfigPath[];
 extern const char kPrivateKeyConfigPath[];
 
 // HostConfig interace provides read-only access to host configuration.
-class HostConfig : public base::RefCountedThreadSafe<HostConfig> {
+class HostConfig {
  public:
   HostConfig() {}
   virtual ~HostConfig() {}
 
-  virtual bool GetString(const std::string& path, std::string* out_value) = 0;
-  virtual bool GetBoolean(const std::string& path, bool* out_value) = 0;
+  virtual bool GetString(const std::string& path,
+                         std::string* out_value) const = 0;
+  virtual bool GetBoolean(const std::string& path, bool* out_value) const = 0;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(HostConfig);
 };
 
@@ -56,8 +58,8 @@ class MutableHostConfig : public HostConfig {
                          const std::string& in_value) = 0;
   virtual void SetBoolean(const std::string& path, bool in_value) = 0;
 
-  // Save's changes.
-  virtual void Save() = 0;
+  // Saves changes.
+  virtual bool Save() = 0;
 
   DISALLOW_COPY_AND_ASSIGN(MutableHostConfig);
 };
