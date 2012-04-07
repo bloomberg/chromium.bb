@@ -420,11 +420,7 @@ bool AddPolicyForPepperPlugin(sandbox::TargetPolicy* policy) {
   result = policy->AddRule(sandbox::TargetPolicy::SUBSYS_NAMED_PIPES,
                            sandbox::TargetPolicy::NAMEDPIPES_ALLOW_ANY,
                            L"\\\\.\\pipe\\chrome.*");
-  if (result != sandbox::SBOX_ALL_OK) {
-    NOTREACHED();
-    return false;
-  }
-  return AddPolicyForRenderer(policy);
+  return result == sandbox::SBOX_ALL_OK;
 }
 
 }  // namespace
@@ -585,9 +581,6 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
   } else if (type == content::PROCESS_TYPE_GPU) {
     if (!AddPolicyForGPU(cmd_line, policy))
       return 0;
-  } else if (type == content::PROCESS_TYPE_PPAPI_PLUGIN) {
-    if (!AddPolicyForPepperPlugin(policy))
-      return 0;
   } else {
     if (!AddPolicyForRenderer(policy))
       return 0;
@@ -596,7 +589,13 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
     if (type == content::PROCESS_TYPE_RENDERER ||
         type == content::PROCESS_TYPE_WORKER) {
       AddBaseHandleClosePolicy(policy);
+
+    // Pepper uses the renderer's policy, whith some tweaks.
+    } else if (type == content::PROCESS_TYPE_PPAPI_PLUGIN) {
+      if (!AddPolicyForPepperPlugin(policy))
+        return 0;
     }
+
 
     if (type_str != switches::kRendererProcess) {
       // Hack for Google Desktop crash. Trick GD into not injecting its DLL into
