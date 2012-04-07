@@ -23,10 +23,7 @@ class ShellContentBrowserClient : public ContentBrowserClient {
   ShellContentBrowserClient();
   virtual ~ShellContentBrowserClient();
 
-  void set_shell_browser_main_parts(ShellBrowserMainParts* parts) {
-    shell_browser_main_parts_ = parts;
-  }
-
+  // content::ContentBrowserClient overrides.
   virtual BrowserMainParts* CreateBrowserMainParts(
       const content::MainFunctionParams& parameters) OVERRIDE;
   virtual WebContentsView* OverrideCreateWebContentsView(

@@ -13,7 +13,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/shell/shell.h"
 #include "content/shell/shell_browser_context.h"
-#include "content/shell/shell_content_browser_client.h"
 #include "content/shell/shell_devtools_delegate.h"
 #include "content/shell/shell_switches.h"
 #include "googleurl/src/gurl.h"
@@ -35,10 +34,6 @@ ShellBrowserMainParts::ShellBrowserMainParts(
     const content::MainFunctionParams& parameters)
     : BrowserMainParts(),
       devtools_delegate_(NULL) {
-  ShellContentBrowserClient* shell_browser_client =
-      static_cast<ShellContentBrowserClient*>(
-          content::GetContentClient()->browser());
-  shell_browser_client->set_shell_browser_main_parts(this);
 }
 
 ShellBrowserMainParts::~ShellBrowserMainParts() {
