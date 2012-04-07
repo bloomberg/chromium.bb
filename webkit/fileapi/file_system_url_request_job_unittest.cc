@@ -234,7 +234,7 @@ TEST_F(FileSystemURLRequestJobTest, DISABLED_FileTest) {
   EXPECT_EQ("no-cache", cache_control);
 }
 
-TEST_F(FileSystemURLRequestJobTest, FileTestFullSpecifiedRange) {
+TEST_F(FileSystemURLRequestJobTest, DISABLED_FileTestFullSpecifiedRange) {
   const size_t buffer_size = 4000;
   scoped_array<char> buffer(new char[buffer_size]);
   FillBuffer(buffer.get(), buffer_size);
@@ -258,7 +258,7 @@ TEST_F(FileSystemURLRequestJobTest, FileTestFullSpecifiedRange) {
   EXPECT_TRUE(partial_buffer_string == delegate_->data_received());
 }
 
-TEST_F(FileSystemURLRequestJobTest, FileTestHalfSpecifiedRange) {
+TEST_F(FileSystemURLRequestJobTest, DISABLED_FileTestHalfSpecifiedRange) {
   const size_t buffer_size = 4000;
   scoped_array<char> buffer(new char[buffer_size]);
   FillBuffer(buffer.get(), buffer_size);
@@ -281,7 +281,8 @@ TEST_F(FileSystemURLRequestJobTest, FileTestHalfSpecifiedRange) {
 }
 
 
-TEST_F(FileSystemURLRequestJobTest, FileTestMultipleRangesNotSupported) {
+TEST_F(FileSystemURLRequestJobTest,
+       DISABLED_FileTestMultipleRangesNotSupported) {
   WriteFile("file1.dat", kTestFileData, arraysize(kTestFileData) - 1);
   net::HttpRequestHeaders headers;
   headers.SetHeader(net::HttpRequestHeaders::kRange,
@@ -292,7 +293,7 @@ TEST_F(FileSystemURLRequestJobTest, FileTestMultipleRangesNotSupported) {
             request_->status().error());
 }
 
-TEST_F(FileSystemURLRequestJobTest, RangeOutOfBounds) {
+TEST_F(FileSystemURLRequestJobTest, DISABLED_RangeOutOfBounds) {
   WriteFile("file1.dat", kTestFileData, arraysize(kTestFileData) - 1);
   net::HttpRequestHeaders headers;
   headers.SetHeader(net::HttpRequestHeaders::kRange, "bytes=500-1000");
@@ -304,7 +305,7 @@ TEST_F(FileSystemURLRequestJobTest, RangeOutOfBounds) {
             request_->status().error());
 }
 
-TEST_F(FileSystemURLRequestJobTest, FileDirRedirect) {
+TEST_F(FileSystemURLRequestJobTest, DISABLED_FileDirRedirect) {
   CreateDirectory("dir");
   TestRequest(CreateFileSystemURL("dir"));
 
@@ -317,28 +318,28 @@ TEST_F(FileSystemURLRequestJobTest, FileDirRedirect) {
   MessageLoop::current()->Run();
 }
 
-TEST_F(FileSystemURLRequestJobTest, InvalidURL) {
+TEST_F(FileSystemURLRequestJobTest, DISABLED_InvalidURL) {
   TestRequest(GURL("filesystem:/foo/bar/baz"));
   ASSERT_FALSE(request_->is_pending());
   EXPECT_TRUE(delegate_->request_failed());
   EXPECT_EQ(net::ERR_INVALID_URL, request_->status().error());
 }
 
-TEST_F(FileSystemURLRequestJobTest, NoSuchRoot) {
+TEST_F(FileSystemURLRequestJobTest, DISABLED_NoSuchRoot) {
   TestRequest(GURL("filesystem:http://remote/persistent/somefile"));
   ASSERT_FALSE(request_->is_pending());
   EXPECT_TRUE(delegate_->request_failed());
   EXPECT_EQ(net::ERR_FILE_NOT_FOUND, request_->status().error());
 }
 
-TEST_F(FileSystemURLRequestJobTest, NoSuchFile) {
+TEST_F(FileSystemURLRequestJobTest, DISABLED_NoSuchFile) {
   TestRequest(CreateFileSystemURL("somefile"));
   ASSERT_FALSE(request_->is_pending());
   EXPECT_TRUE(delegate_->request_failed());
   EXPECT_EQ(net::ERR_FILE_NOT_FOUND, request_->status().error());
 }
 
-TEST_F(FileSystemURLRequestJobTest, Cancel) {
+TEST_F(FileSystemURLRequestJobTest, DISABLED_Cancel) {
   WriteFile("file1.dat", kTestFileData, arraysize(kTestFileData) - 1);
   TestRequestNoRun(CreateFileSystemURL("file1.dat"));
 
@@ -348,7 +349,7 @@ TEST_F(FileSystemURLRequestJobTest, Cancel) {
   // If we get here, success! we didn't crash!
 }
 
-TEST_F(FileSystemURLRequestJobTest, GetMimeType) {
+TEST_F(FileSystemURLRequestJobTest, DISABLED_GetMimeType) {
   const char kFilename[] = "hoge.html";
 
   std::string mime_type_direct;
