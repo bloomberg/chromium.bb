@@ -108,6 +108,10 @@ class GPU_EXPORT ProgramManager {
          &uniform_infos_[index] : NULL;
     }
 
+    // If the original name is not found, return NULL.
+    const std::string* GetAttribMappedName(
+        const std::string& original_name) const;
+
     // Gets the fake location of a uniform by name.
     GLint GetUniformFakeLocation(const std::string& name) const;
 
@@ -206,6 +210,12 @@ class GPU_EXPORT ProgramManager {
 
     // Updates the program log info from GL
     void UpdateLogInfo();
+
+    // If long attribate names are mapped during shader translation, call
+    // glBindAttribLocation() again with the mapped names.
+    // This is called right before the glLink() call, but after shaders are
+    // translated.
+    void ExecuteBindAttribLocationCalls();
 
     const UniformInfo* AddUniformInfo(
         GLsizei size, GLenum type, GLint location,

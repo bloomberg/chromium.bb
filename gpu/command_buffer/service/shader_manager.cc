@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -51,6 +51,16 @@ const ShaderManager::ShaderInfo::VariableInfo*
         const std::string& name) const {
   VariableMap::const_iterator it = attrib_map_.find(name);
   return it != attrib_map_.end() ? &it->second : NULL;
+}
+
+const std::string* ShaderManager::ShaderInfo::GetAttribMappedName(
+    const std::string& original_name) const {
+  for (VariableMap::const_iterator it = attrib_map_.begin();
+       it != attrib_map_.end(); ++it) {
+    if (it->second.name == original_name)
+      return &(it->first);
+  }
+  return NULL;
 }
 
 const ShaderManager::ShaderInfo::VariableInfo*

@@ -66,6 +66,10 @@ class GPU_EXPORT ShaderManager {
     const VariableInfo* GetAttribInfo(const std::string& name) const;
     const VariableInfo* GetUniformInfo(const std::string& name) const;
 
+    // If the original_name is not found, return NULL.
+    const std::string* GetAttribMappedName(
+        const std::string& original_name) const;
+
     const std::string* log_info() const {
       return log_info_.get();
     }

@@ -167,6 +167,16 @@ void ProgramManager::ProgramInfo::Update() {
   valid_ = true;
 }
 
+void ProgramManager::ProgramInfo::ExecuteBindAttribLocationCalls() {
+  for (std::map<std::string, GLint>::const_iterator it =
+           bind_attrib_location_map_.begin();
+       it != bind_attrib_location_map_.end(); ++it) {
+    const std::string* mapped_name = GetAttribMappedName(it->first);
+    if (mapped_name && *mapped_name != it->first)
+      glBindAttribLocation(service_id_, it->second, mapped_name->c_str());
+  }
+}
+
 void ProgramManager::ProgramInfo::Link() {
   ClearLinkStatus();
   if (!CanLink()) {
@@ -177,7 +187,7 @@ void ProgramManager::ProgramInfo::Link() {
     set_log_info("glBindAttribLocation() conflicts");
     return;
   }
-
+  ExecuteBindAttribLocationCalls();
   glLinkProgram(service_id());
   GLint success = 0;
   glGetProgramiv(service_id(), GL_LINK_STATUS, &success);
@@ -262,6 +272,20 @@ const ProgramManager::ProgramInfo::UniformInfo*
       *real_location = uniform_info.element_locations[element_index];
       *array_index = element_index;
       return &uniform_info;
+    }
+  }
+  return NULL;
+}
+
+const std::string* ProgramManager::ProgramInfo::GetAttribMappedName(
+    const std::string& original_name) const {
+  for (int ii = 0; ii < kMaxAttachedShaders; ++ii) {
+    ShaderManager::ShaderInfo* shader_info = attached_shaders_[ii].get();
+    if (shader_info) {
+      const std::string* mapped_name =
+          shader_info->GetAttribMappedName(original_name);
+      if (mapped_name)
+        return mapped_name;
     }
   }
   return NULL;
