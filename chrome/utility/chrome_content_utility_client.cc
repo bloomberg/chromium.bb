@@ -8,6 +8,7 @@
 #include "base/base64.h"
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
+#include "base/message_loop_proxy.h"
 #include "base/threading/thread.h"
 #include "chrome/browser/importer/external_process_importer_bridge.h"
 #include "chrome/browser/importer/importer.h"
@@ -392,7 +393,8 @@ void ChromeContentUtilityClient::OnImportStart(
     uint16 items,
     const DictionaryValue& localized_strings) {
   bridge_ = new ExternalProcessImporterBridge(
-      localized_strings, content::UtilityThread::Get());
+      localized_strings, content::UtilityThread::Get(),
+      base::MessageLoopProxy::current());
   importer_ = importer::CreateImporterByType(source_profile.importer_type);
   if (!importer_) {
     Send(new ProfileImportProcessHostMsg_Import_Finished(false,
