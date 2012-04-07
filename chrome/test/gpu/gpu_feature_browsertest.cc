@@ -19,6 +19,7 @@
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/common/content_switches.h"
 #include "content/test/gpu/gpu_test_config.h"
+#include "content/test/gpu/test_switches.h"
 #include "net/base/net_util.h"
 #include "ui/gfx/gl/gl_switches.h"
 #if defined(OS_MACOSX)
@@ -55,7 +56,7 @@ class GpuFeatureTest : public InProcessBrowserTest {
     InProcessBrowserTest::SetUpCommandLine(command_line);
 
     // Do not use mesa if real GPU is required.
-    if (!command_line->HasSwitch("use-gpu-in-tests")) {
+    if (!command_line->HasSwitch(switches::kUseGpuInTests)) {
 #if !defined(OS_MACOSX)
       CHECK(test_launcher_utils::OverrideGLImplementation(
           command_line, gfx::kGLImplementationOSMesaName)) <<
@@ -418,4 +419,3 @@ IN_PROC_BROWSER_TEST_F(GpuFeatureTest, RafNoDamage) {
 }
 
 }  // namespace anonymous
-

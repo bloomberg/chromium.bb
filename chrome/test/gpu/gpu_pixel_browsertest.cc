@@ -20,6 +20,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
+#include "content/test/gpu/test_switches.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -86,7 +87,8 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
  public:
   GpuPixelBrowserTest()
       : ref_img_revision_(0),
-        ref_img_revision_no_older_than_(0) {
+        ref_img_revision_no_older_than_(0),
+        use_checked_in_ref_imgs_(false) {
   }
 
   virtual void SetUpCommandLine(CommandLine* command_line) {
@@ -114,6 +116,11 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
     else
       ref_img_dir_ = test_data_dir_.AppendASCII("gpu_reference");
 
+    // Only use checked in ref images when using a software rasterizer as
+    // all machines should generate the same output with a software rasterizer.
+    use_checked_in_ref_imgs_ = !command_line->HasSwitch(
+        switches::kUseGpuInTests);
+
     test_name_ = testing::UnitTest::GetInstance()->current_test_info()->name();
     const char* test_status_prefixes[] = {"DISABLED_", "FLAKY_", "FAILS_"};
     for (size_t i = 0; i < arraysize(test_status_prefixes); ++i) {
@@ -129,8 +136,10 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
   void RunPixelTest(const gfx::Size& tab_container_size,
                     const FilePath& url,
                     int64 ref_img_update_revision) {
-    ref_img_revision_no_older_than_ = ref_img_update_revision;
-    ObtainLocalRefImageRevision();
+    if (!use_checked_in_ref_imgs_) {
+      ref_img_revision_no_older_than_ = ref_img_update_revision;
+      ObtainLocalRefImageRevision();
+    }
 
 #if defined(OS_WIN)
     ASSERT_TRUE(tracing::BeginTracing("-test_*"));
@@ -203,6 +212,9 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
   // Any local ref image generated from older revision is ignored.
   int64 ref_img_revision_no_older_than_;
 
+  // If true, the test will use checked in reference images.
+  bool use_checked_in_ref_imgs_;
+
   // Compares the generated bitmap with the appropriate reference image on disk.
   // Returns true iff the images were the same.
   //
@@ -220,13 +232,24 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
   //     FAIL_WebGLTeapot_19762.png, DIFF_WebGLTeapot_19762.png
   bool CompareImages(const SkBitmap& gen_bmp, bool skip_bottom_corners) {
     SkBitmap ref_bmp_on_disk;
+
+    FilePath img_path = ref_img_dir_.AppendASCII(test_name_ + ".png");
+    bool found_ref_img = ReadPNGFile(img_path, &ref_bmp_on_disk);
+
+    if (!found_ref_img && use_checked_in_ref_imgs_) {
+      LOG(ERROR) << "Couldn't find reference image: "
+                 << img_path.value();
+      // No image to compare to, exit early.
+      return false;
+    }
+
     const SkBitmap* ref_bmp;
     bool save_gen = false;
     bool save_diff = false;
     bool rt = true;
-    FilePath img_path = ref_img_dir_.AppendASCII(test_name_ + ".png");
-    if (ref_img_revision_ <= 0 ||
-        !ReadPNGFile(img_path, &ref_bmp_on_disk)) {
+
+    if ((ref_img_revision_ <= 0 && !use_checked_in_ref_imgs_) ||
+        !found_ref_img) {
       chrome::VersionInfo chrome_version_info;
       FilePath rev_path = ref_img_dir_.AppendASCII(
           test_name_ + "_" + chrome_version_info.LastChange() + ".rev");

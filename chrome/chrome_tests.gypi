@@ -3038,6 +3038,8 @@
         '../content/renderer/mouse_lock_dispatcher_browsertest.cc',
         '../content/renderer/render_view_browsertest.cc',
         '../content/renderer/render_view_browsertest_mac.mm',
+	'../content/test/gpu/test_switches.cc',
+        '../content/test/gpu/test_switches.h',
         '../content/test/layout_browsertest.cc',
         '../content/test/layout_browsertest.h',
         '../content/test/render_widget_browsertest.cc',
@@ -4098,113 +4100,31 @@
       # Executable that contains all the tests to be run on the GPU bots.
       'target_name': 'gpu_tests',
       'type': 'executable',
-      'variables': {
-        'test_list_out_dir': '<(SHARED_INTERMEDIATE_DIR)/chrome/test/gpu',
-      },
       'dependencies': [
-        'browser',
-        'chrome',
-        'chrome_resources.gyp:chrome_resources',
-        'chrome_resources.gyp:chrome_strings',
-        'renderer',
-        'test_support_common',
-        'test_support_ui',
-        '../base/base.gyp:base',
-        '../base/base.gyp:test_support_base',
-        '../net/net.gyp:net_test_support',
-        '../skia/skia.gyp:skia',
-        '../testing/gtest.gyp:gtest',
-        '../third_party/icu/icu.gyp:icui18n',
-        '../third_party/icu/icu.gyp:icuuc',
         # Runtime dependencies
         '../third_party/mesa/mesa.gyp:osmesa',
       ],
-      'include_dirs': [
-        '..',
-        '<(test_list_out_dir)',
-      ],
-      'defines': [
-        'HAS_OUT_OF_PROC_TEST_RUNNER',
-        'BROWSER_TESTS_HEADER_OVERRIDE="chrome/test/base/in_process_browser_test.h"',
+      'includes': [
+        'test/gpu/test_support_gpu.gypi'
       ],
       'sources': [
-        'test/base/chrome_test_launcher.cc',
         'test/gpu/gpu_crash_browsertest.cc',
         'test/gpu/gpu_feature_browsertest.cc',
         'test/gpu/gpu_pixel_browsertest.cc',
         'test/gpu/webgl_conformance_tests.cc',
         'test/gpu/webgl_conformance_test_list_autogen.h',
-        '../content/app/startup_helper_win.cc',
-        '../content/test/test_launcher.cc',
-        '../content/test/test_launcher.h',
       ],
-      # hard_dependency is necessary for this target because it has actions
-      # that generate a header file included by dependent targets. The header
-      # file must be generated before the dependents are compiled. The usual
-      # semantics are to allow the two targets to build concurrently.
-      'hard_dependency': 1,
-      'conditions': [
-        ['OS=="win"', {
-          'dependencies': [
-            'chrome_version_resources',
-            '../sandbox/sandbox.gyp:sandbox',
-          ],
-          'include_dirs': [
-            '<(DEPTH)/third_party/wtl/include',
-          ],
-          'sources': [
-            'app/chrome_dll.rc',
-            'app/chrome_dll_resource.h',
-            'app/chrome_version.rc.version',
-            '<(SHARED_INTERMEDIATE_DIR)/chrome/browser_resources.rc',
-            '<(SHARED_INTERMEDIATE_DIR)/chrome/common_resources.rc',
-            '<(SHARED_INTERMEDIATE_DIR)/chrome/renderer_resources.rc',
-            '<(SHARED_INTERMEDIATE_DIR)/chrome/theme_resources.rc',
-            '<(SHARED_INTERMEDIATE_DIR)/chrome/theme_resources_standard.rc',
-            '<(SHARED_INTERMEDIATE_DIR)/chrome_version/other_version.rc',
-            '<(SHARED_INTERMEDIATE_DIR)/content/content_resources.rc',
-            '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.rc',
-            '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.rc',
-            '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources_standard/ui_resources_standard.rc',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_chromium_resources.rc',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources.rc',
-          ],
-          'conditions': [
-            ['win_use_allocator_shim==1', {
-              'dependencies': [
-                '<(allocator_target)',
-              ],
-            }],
-          ],
-          'configurations': {
-            'Debug': {
-              'msvs_settings': {
-                'VCLinkerTool': {
-                  'LinkIncremental': '<(msvs_large_module_debug_link_mode)',
-                },
-              },
-            },
-          },
-        }],
-        ['OS=="mac"', {
-          # See comments about "xcode_settings" elsewhere in this file.
-          'xcode_settings': {'OTHER_LDFLAGS': ['-Wl,-ObjC']},
-        }],
-        ['toolkit_uses_gtk == 1', {
-           'dependencies': [
-             '../build/linux/system.gyp:gtk',
-           ],
-        }],
-        ['toolkit_uses_gtk == 1 or chromeos==1 or (OS=="linux" and use_aura==1)', {
-          'dependencies': [
-            '../build/linux/system.gyp:ssl',
-          ],
-        }],
-        ['toolkit_views==1', {
-          'dependencies': [
-            '../ui/views/views.gyp:views',
-          ],
-        }],
+    },
+    {
+      # Executable that contains a subset of the gpu tests which are run with a
+      # software rasterizer.
+      'target_name': 'soft_gpu_tests',
+      'type': 'executable',
+      'includes': [
+        'test/gpu/test_support_gpu.gypi'
+      ],
+      'sources': [
+        'test/gpu/gpu_pixel_browsertest.cc',
       ],
     },
     {
