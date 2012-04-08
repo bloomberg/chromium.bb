@@ -318,45 +318,16 @@ void PepperView::FlushBuffer(const SkIRect& clip_area,
   }
 
   // Flush the updated areas to the screen.
-  scoped_ptr<base::Closure> task(
-      new base::Closure(
-          base::Bind(&PepperView::OnFlushDone, AsWeakPtr(), start_time,
-                     buffer)));
-
-  // Flag needs to be set here in order to get a proper error code for Flush().
-  // Otherwise Flush() will always return PP_OK_COMPLETIONPENDING and the error
-  // would be hidden.
-  //
-  // Note that we can also handle this by providing an actual callback which
-  // takes the result code. Right now everything goes to the task that doesn't
-  // result value.
-  pp::CompletionCallback pp_callback(&CompletionCallbackClosureAdapter,
-                                     task.get(),
-                                     PP_COMPLETIONCALLBACK_FLAG_OPTIONAL);
-  int error = graphics2d_.Flush(pp_callback);
-
-  // If Flush() returns asynchronously then release the task.
-  flush_pending_ = (error == PP_OK_COMPLETIONPENDING);
-  if (flush_pending_) {
-    ignore_result(task.release());
-  } else {
-    instance_->GetStats()->video_paint_ms()->Record(
-        (base::Time::Now() - start_time).InMilliseconds());
-
-    ReturnBuffer(buffer);
-
-    // Resume painting for the buffer that was previoulsy postponed because of
-    // pending flush.
-    if (merge_buffer_ != NULL) {
-      buffer = merge_buffer_;
-      merge_buffer_ = NULL;
-      FlushBuffer(merge_clip_area_, buffer, merge_region_);
-    }
-  }
+  int error = graphics2d_.Flush(
+      PpCompletionCallback(base::Bind(
+          &PepperView::OnFlushDone, AsWeakPtr(), start_time, buffer)));
+  CHECK(error == PP_OK_COMPLETIONPENDING);
+  flush_pending_ = true;
 }
 
 void PepperView::OnFlushDone(base::Time paint_start,
-                             pp::ImageData* buffer) {
+                             pp::ImageData* buffer,
+                             int result) {
   DCHECK(context_->main_message_loop()->BelongsToCurrentThread());
   DCHECK(flush_pending_);
 
@@ -366,8 +337,7 @@ void PepperView::OnFlushDone(base::Time paint_start,
   flush_pending_ = false;
   ReturnBuffer(buffer);
 
-  // Resume painting for the buffer that was previoulsy postponed because of
-  // pending flush.
+  // If there is a buffer queued for rendering then render it now.
   if (merge_buffer_ != NULL) {
     buffer = merge_buffer_;
     merge_buffer_ = NULL;

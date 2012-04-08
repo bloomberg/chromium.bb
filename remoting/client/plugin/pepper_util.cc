@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,10 +10,16 @@
 
 namespace remoting {
 
-void CompletionCallbackClosureAdapter(void* user_data, int32_t not_used) {
-  base::Closure* closure = reinterpret_cast<base::Closure*>(user_data);
-  closure->Run();
-  delete closure;
+static void CallbackAdapter(void* user_data, int32_t result) {
+  scoped_ptr<base::Callback<void(int)> > callback(
+      reinterpret_cast<base::Callback<void(int)>*>(user_data));
+  callback->Run(result);
+}
+
+pp::CompletionCallback PpCompletionCallback(
+    base::Callback<void(int)> callback) {
+  return pp::CompletionCallback(&CallbackAdapter,
+                                new base::Callback<void(int)>(callback));
 }
 
 }  // namespace remoting
