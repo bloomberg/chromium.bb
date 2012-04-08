@@ -9,6 +9,7 @@ build systems, primarily ninja.
 
 import os
 import re
+import subprocess
 import sys
 
 import gyp.MSVSVersion
@@ -102,6 +103,21 @@ def _AppendOrReturn(append, element):
     return element
 
 
+def _FindDirectXInstallation():
+  """Try to find an installation location for the DirectX SDK. Check for the
+  standard environment variable, and if that doesn't exist, try to find
+  via the registry. May return None if not found in either location."""
+  dxsdk_dir = os.environ.get('DXSDK_DIR')
+  if not dxsdk_dir:
+    # Setup params to pass to and attempt to launch reg.exe.
+    cmd = ['reg.exe', 'query', r'HKLM\Software\Microsoft\DirectX', '/s']
+    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    for line in p.communicate()[0].splitlines():
+      if 'InstallPath' in line:
+        dxsdk_dir = line.split('    ')[3] + "\\"
+  return dxsdk_dir
+
+
 class MsvsSettings(object):
   """A class that understands the gyp 'msvs_...' values (especially the
   msvs_settings field). They largely correpond to the VS2008 IDE DOM. This
@@ -110,6 +126,7 @@ class MsvsSettings(object):
   def __init__(self, spec, generator_flags):
     self.spec = spec
     self.vs_version = GetVSVersion(generator_flags)
+    self.dxsdk_dir = _FindDirectXInstallation()
 
     supported_fields = [
         ('msvs_configuration_attributes', dict),
@@ -136,9 +153,8 @@ class MsvsSettings(object):
         '$(InputName)': '${root}',
         '$(ProjectName)': self.spec['target_name'],
     }
-    dxsdk_dir = os.environ.get('DXSDK_DIR')
-    if dxsdk_dir:
-      replacements['$(DXSDK_DIR)'] = dxsdk_dir + '\\'
+    if self.dxsdk_dir:
+      replacements['$(DXSDK_DIR)'] = self.dxsdk_dir
     return replacements
 
   def ConvertVSMacros(self, s, base_to_build=None):
