@@ -758,7 +758,6 @@
         # New tests should be browser_tests. browser_tests are sharded and are
         # less flakier.
         'browser/locale_tests_uitest.cc',
-        'browser/net/load_timing_observer_uitest.cc',
         'browser/prefs/pref_service_uitest.cc',
         'browser/printing/printing_layout_uitest.cc',
         'browser/process_singleton_linux_uitest.cc',
@@ -2858,6 +2857,7 @@
         'browser/metrics/metrics_service_browsertest.cc',
         'browser/net/cookie_policy_browsertest.cc',
         'browser/net/ftp_browsertest.cc',
+        'browser/net/load_timing_observer_browsertest.cc',
         'browser/notifications/desktop_notifications_unittest.cc',
         'browser/notifications/desktop_notifications_unittest.h',
         'browser/oom_priority_manager_browsertest.cc',
