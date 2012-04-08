@@ -261,8 +261,6 @@
         '../plugins/ppapi/ppb_broker_impl.h',
         '../plugins/ppapi/ppb_buffer_impl.cc',
         '../plugins/ppapi/ppb_buffer_impl.h',
-        '../plugins/ppapi/ppb_cursor_control_impl.cc',
-        '../plugins/ppapi/ppb_cursor_control_impl.h',
         '../plugins/ppapi/ppb_directory_reader_impl.cc',
         '../plugins/ppapi/ppb_directory_reader_impl.h',
         '../plugins/ppapi/ppb_file_chooser_impl.cc',

@@ -5,7 +5,6 @@
 #ifndef NATIVE_CLIENT_SRC_SHARED_PPAPI_PROXY_BROWSER_GLOBALS_H_
 #define NATIVE_CLIENT_SRC_SHARED_PPAPI_PROXY_BROWSER_GLOBALS_H_
 
-#include "ppapi/c/dev/ppb_cursor_control_dev.h"
 #include "ppapi/c/dev/ppb_find_dev.h"
 #include "ppapi/c/dev/ppb_font_dev.h"
 #include "ppapi/c/dev/ppb_memory_dev.h"
@@ -28,6 +27,7 @@
 #include "ppapi/c/ppb_input_event.h"
 #include "ppapi/c/ppb_instance.h"
 #include "ppapi/c/ppb_messaging.h"
+#include "ppapi/c/ppb_mouse_cursor.h"
 #include "ppapi/c/ppb_mouse_lock.h"
 #include "ppapi/c/ppb_url_loader.h"
 #include "ppapi/c/ppb_url_request_info.h"
@@ -102,7 +102,7 @@ const void* GetBrowserInterfaceSafe(const char* interface_name);
 // plugin side of the proxy, so they can be used by the shared proxy code
 // under both trusted and untrusted compilation.
 const PPB_Core* PPBCoreInterface();  // shared
-const PPB_CursorControl_Dev* PPBCursorControlInterface();
+const PPB_MouseCursor_1_0* PPBMouseCursorInterface();
 const PPB_FileIO* PPBFileIOInterface();
 const PPB_FileRef* PPBFileRefInterface();
 const PPB_FileSystem* PPBFileSystemInterface();

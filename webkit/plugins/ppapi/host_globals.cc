@@ -20,7 +20,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginContainer.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
-#include "webkit/plugins/ppapi/ppb_cursor_control_impl.h"
 #include "webkit/plugins/ppapi/ppb_flash_clipboard_impl.h"
 #include "webkit/plugins/ppapi/ppb_text_input_impl.h"
 #include "webkit/plugins/ppapi/resource_creation_impl.h"
@@ -141,9 +140,6 @@ HostGlobals::~HostGlobals() {
     return proxy.get();
 
   switch (id) {
-    case ::ppapi::API_ID_PPB_CURSORCONTROL:
-      proxy.reset(new PPB_CursorControl_Impl(instance));
-      break;
     case ::ppapi::API_ID_PPB_TEXT_INPUT:
       proxy.reset(new PPB_TextInput_Impl(instance));
       break;

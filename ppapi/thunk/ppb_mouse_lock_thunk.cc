@@ -14,14 +14,14 @@ namespace thunk {
 namespace {
 
 int32_t LockMouse(PP_Instance instance, PP_CompletionCallback callback) {
-  EnterFunction<PPB_Instance_FunctionAPI> enter(instance, callback, true);
+  EnterInstance enter(instance, callback);
   if (enter.failed())
     return enter.retval();
   return enter.SetResult(enter.functions()->LockMouse(instance, callback));
 }
 
 void UnlockMouse(PP_Instance instance) {
-  EnterFunction<PPB_Instance_FunctionAPI> enter(instance, true);
+  EnterInstance enter(instance);
   if (enter.failed())
     return;
   enter.functions()->UnlockMouse(instance);

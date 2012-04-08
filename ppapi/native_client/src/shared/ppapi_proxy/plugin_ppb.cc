@@ -11,7 +11,6 @@
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_audio_config.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_buffer.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_core.h"
-#include "native_client/src/shared/ppapi_proxy/plugin_ppb_cursor_control.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_file_io.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_file_ref.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_file_system.h"
@@ -27,6 +26,7 @@
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_instance.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_memory.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_messaging.h"
+#include "native_client/src/shared/ppapi_proxy/plugin_ppb_mouse_cursor.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_mouse_lock.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_net_address_private.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_pdf.h"
@@ -63,7 +63,7 @@ InterfaceMapElement interface_map[] = {
   { PPB_AUDIO_CONFIG_INTERFACE_1_0, PluginAudioConfig::GetInterface1_0(),
     true },
   { PPB_CORE_INTERFACE, PluginCore::GetInterface(), true },
-  { PPB_CURSOR_CONTROL_DEV_INTERFACE, PluginCursorControl::GetInterface(),
+  { PPB_MOUSECURSOR_INTERFACE_1_0, PluginMouseCursor::GetInterface(),
     true },
   { PPB_FILEIO_INTERFACE, PluginFileIO::GetInterface(), true },
   { PPB_FILEREF_INTERFACE, PluginFileRef::GetInterface(), true },

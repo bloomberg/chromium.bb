@@ -224,6 +224,16 @@
       },
     },
     {
+      'target_name': 'ppapi_example_mouse_cursor',
+      'dependencies': [
+        'ppapi_example_skeleton',
+        'ppapi.gyp:ppapi_cpp',
+      ],
+      'sources': [
+        'examples/mouse_cursor/mouse_cursor.cc',
+      ],
+    },
+    {
       'target_name': 'ppapi_example_mouse_lock',
       'dependencies': [
         'ppapi_example_skeleton',

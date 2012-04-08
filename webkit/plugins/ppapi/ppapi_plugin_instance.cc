@@ -173,60 +173,66 @@ const char kHeight[] = "height";
 const char kBorder[] = "border";  // According to w3c, deprecated.
 const char kStyle[] = "style";
 
-COMPILE_ASSERT_MATCHING_ENUM(TypePointer, PP_CURSORTYPE_POINTER);
-COMPILE_ASSERT_MATCHING_ENUM(TypeCross, PP_CURSORTYPE_CROSS);
-COMPILE_ASSERT_MATCHING_ENUM(TypeHand, PP_CURSORTYPE_HAND);
-COMPILE_ASSERT_MATCHING_ENUM(TypeIBeam, PP_CURSORTYPE_IBEAM);
-COMPILE_ASSERT_MATCHING_ENUM(TypeWait, PP_CURSORTYPE_WAIT);
-COMPILE_ASSERT_MATCHING_ENUM(TypeHelp, PP_CURSORTYPE_HELP);
-COMPILE_ASSERT_MATCHING_ENUM(TypeEastResize, PP_CURSORTYPE_EASTRESIZE);
-COMPILE_ASSERT_MATCHING_ENUM(TypeNorthResize, PP_CURSORTYPE_NORTHRESIZE);
+COMPILE_ASSERT_MATCHING_ENUM(TypePointer, PP_MOUSECURSOR_TYPE_POINTER);
+COMPILE_ASSERT_MATCHING_ENUM(TypeCross, PP_MOUSECURSOR_TYPE_CROSS);
+COMPILE_ASSERT_MATCHING_ENUM(TypeHand, PP_MOUSECURSOR_TYPE_HAND);
+COMPILE_ASSERT_MATCHING_ENUM(TypeIBeam, PP_MOUSECURSOR_TYPE_IBEAM);
+COMPILE_ASSERT_MATCHING_ENUM(TypeWait, PP_MOUSECURSOR_TYPE_WAIT);
+COMPILE_ASSERT_MATCHING_ENUM(TypeHelp, PP_MOUSECURSOR_TYPE_HELP);
+COMPILE_ASSERT_MATCHING_ENUM(TypeEastResize, PP_MOUSECURSOR_TYPE_EASTRESIZE);
+COMPILE_ASSERT_MATCHING_ENUM(TypeNorthResize, PP_MOUSECURSOR_TYPE_NORTHRESIZE);
 COMPILE_ASSERT_MATCHING_ENUM(TypeNorthEastResize,
-                             PP_CURSORTYPE_NORTHEASTRESIZE);
+                             PP_MOUSECURSOR_TYPE_NORTHEASTRESIZE);
 COMPILE_ASSERT_MATCHING_ENUM(TypeNorthWestResize,
-                             PP_CURSORTYPE_NORTHWESTRESIZE);
-COMPILE_ASSERT_MATCHING_ENUM(TypeSouthResize, PP_CURSORTYPE_SOUTHRESIZE);
+                             PP_MOUSECURSOR_TYPE_NORTHWESTRESIZE);
+COMPILE_ASSERT_MATCHING_ENUM(TypeSouthResize, PP_MOUSECURSOR_TYPE_SOUTHRESIZE);
 COMPILE_ASSERT_MATCHING_ENUM(TypeSouthEastResize,
-                             PP_CURSORTYPE_SOUTHEASTRESIZE);
+                             PP_MOUSECURSOR_TYPE_SOUTHEASTRESIZE);
 COMPILE_ASSERT_MATCHING_ENUM(TypeSouthWestResize,
-                             PP_CURSORTYPE_SOUTHWESTRESIZE);
-COMPILE_ASSERT_MATCHING_ENUM(TypeWestResize, PP_CURSORTYPE_WESTRESIZE);
+                             PP_MOUSECURSOR_TYPE_SOUTHWESTRESIZE);
+COMPILE_ASSERT_MATCHING_ENUM(TypeWestResize, PP_MOUSECURSOR_TYPE_WESTRESIZE);
 COMPILE_ASSERT_MATCHING_ENUM(TypeNorthSouthResize,
-                             PP_CURSORTYPE_NORTHSOUTHRESIZE);
-COMPILE_ASSERT_MATCHING_ENUM(TypeEastWestResize, PP_CURSORTYPE_EASTWESTRESIZE);
+                             PP_MOUSECURSOR_TYPE_NORTHSOUTHRESIZE);
+COMPILE_ASSERT_MATCHING_ENUM(TypeEastWestResize,
+                             PP_MOUSECURSOR_TYPE_EASTWESTRESIZE);
 COMPILE_ASSERT_MATCHING_ENUM(TypeNorthEastSouthWestResize,
-                             PP_CURSORTYPE_NORTHEASTSOUTHWESTRESIZE);
+                             PP_MOUSECURSOR_TYPE_NORTHEASTSOUTHWESTRESIZE);
 COMPILE_ASSERT_MATCHING_ENUM(TypeNorthWestSouthEastResize,
-                             PP_CURSORTYPE_NORTHWESTSOUTHEASTRESIZE);
-COMPILE_ASSERT_MATCHING_ENUM(TypeColumnResize, PP_CURSORTYPE_COLUMNRESIZE);
-COMPILE_ASSERT_MATCHING_ENUM(TypeRowResize, PP_CURSORTYPE_ROWRESIZE);
-COMPILE_ASSERT_MATCHING_ENUM(TypeMiddlePanning, PP_CURSORTYPE_MIDDLEPANNING);
-COMPILE_ASSERT_MATCHING_ENUM(TypeEastPanning, PP_CURSORTYPE_EASTPANNING);
-COMPILE_ASSERT_MATCHING_ENUM(TypeNorthPanning, PP_CURSORTYPE_NORTHPANNING);
+                             PP_MOUSECURSOR_TYPE_NORTHWESTSOUTHEASTRESIZE);
+COMPILE_ASSERT_MATCHING_ENUM(TypeColumnResize,
+                             PP_MOUSECURSOR_TYPE_COLUMNRESIZE);
+COMPILE_ASSERT_MATCHING_ENUM(TypeRowResize, PP_MOUSECURSOR_TYPE_ROWRESIZE);
+COMPILE_ASSERT_MATCHING_ENUM(TypeMiddlePanning,
+                             PP_MOUSECURSOR_TYPE_MIDDLEPANNING);
+COMPILE_ASSERT_MATCHING_ENUM(TypeEastPanning, PP_MOUSECURSOR_TYPE_EASTPANNING);
+COMPILE_ASSERT_MATCHING_ENUM(TypeNorthPanning,
+                             PP_MOUSECURSOR_TYPE_NORTHPANNING);
 COMPILE_ASSERT_MATCHING_ENUM(TypeNorthEastPanning,
-                             PP_CURSORTYPE_NORTHEASTPANNING);
+                             PP_MOUSECURSOR_TYPE_NORTHEASTPANNING);
 COMPILE_ASSERT_MATCHING_ENUM(TypeNorthWestPanning,
-                             PP_CURSORTYPE_NORTHWESTPANNING);
-COMPILE_ASSERT_MATCHING_ENUM(TypeSouthPanning, PP_CURSORTYPE_SOUTHPANNING);
+                             PP_MOUSECURSOR_TYPE_NORTHWESTPANNING);
+COMPILE_ASSERT_MATCHING_ENUM(TypeSouthPanning,
+                             PP_MOUSECURSOR_TYPE_SOUTHPANNING);
 COMPILE_ASSERT_MATCHING_ENUM(TypeSouthEastPanning,
-                             PP_CURSORTYPE_SOUTHEASTPANNING);
+                             PP_MOUSECURSOR_TYPE_SOUTHEASTPANNING);
 COMPILE_ASSERT_MATCHING_ENUM(TypeSouthWestPanning,
-                             PP_CURSORTYPE_SOUTHWESTPANNING);
-COMPILE_ASSERT_MATCHING_ENUM(TypeWestPanning, PP_CURSORTYPE_WESTPANNING);
-COMPILE_ASSERT_MATCHING_ENUM(TypeMove, PP_CURSORTYPE_MOVE);
-COMPILE_ASSERT_MATCHING_ENUM(TypeVerticalText, PP_CURSORTYPE_VERTICALTEXT);
-COMPILE_ASSERT_MATCHING_ENUM(TypeCell, PP_CURSORTYPE_CELL);
-COMPILE_ASSERT_MATCHING_ENUM(TypeContextMenu, PP_CURSORTYPE_CONTEXTMENU);
-COMPILE_ASSERT_MATCHING_ENUM(TypeAlias, PP_CURSORTYPE_ALIAS);
-COMPILE_ASSERT_MATCHING_ENUM(TypeProgress, PP_CURSORTYPE_PROGRESS);
-COMPILE_ASSERT_MATCHING_ENUM(TypeNoDrop, PP_CURSORTYPE_NODROP);
-COMPILE_ASSERT_MATCHING_ENUM(TypeCopy, PP_CURSORTYPE_COPY);
-COMPILE_ASSERT_MATCHING_ENUM(TypeNone, PP_CURSORTYPE_NONE);
-COMPILE_ASSERT_MATCHING_ENUM(TypeNotAllowed, PP_CURSORTYPE_NOTALLOWED);
-COMPILE_ASSERT_MATCHING_ENUM(TypeZoomIn, PP_CURSORTYPE_ZOOMIN);
-COMPILE_ASSERT_MATCHING_ENUM(TypeZoomOut, PP_CURSORTYPE_ZOOMOUT);
-COMPILE_ASSERT_MATCHING_ENUM(TypeGrab, PP_CURSORTYPE_GRAB);
-COMPILE_ASSERT_MATCHING_ENUM(TypeGrabbing, PP_CURSORTYPE_GRABBING);
+                             PP_MOUSECURSOR_TYPE_SOUTHWESTPANNING);
+COMPILE_ASSERT_MATCHING_ENUM(TypeWestPanning, PP_MOUSECURSOR_TYPE_WESTPANNING);
+COMPILE_ASSERT_MATCHING_ENUM(TypeMove, PP_MOUSECURSOR_TYPE_MOVE);
+COMPILE_ASSERT_MATCHING_ENUM(TypeVerticalText,
+                             PP_MOUSECURSOR_TYPE_VERTICALTEXT);
+COMPILE_ASSERT_MATCHING_ENUM(TypeCell, PP_MOUSECURSOR_TYPE_CELL);
+COMPILE_ASSERT_MATCHING_ENUM(TypeContextMenu, PP_MOUSECURSOR_TYPE_CONTEXTMENU);
+COMPILE_ASSERT_MATCHING_ENUM(TypeAlias, PP_MOUSECURSOR_TYPE_ALIAS);
+COMPILE_ASSERT_MATCHING_ENUM(TypeProgress, PP_MOUSECURSOR_TYPE_PROGRESS);
+COMPILE_ASSERT_MATCHING_ENUM(TypeNoDrop, PP_MOUSECURSOR_TYPE_NODROP);
+COMPILE_ASSERT_MATCHING_ENUM(TypeCopy, PP_MOUSECURSOR_TYPE_COPY);
+COMPILE_ASSERT_MATCHING_ENUM(TypeNone, PP_MOUSECURSOR_TYPE_NONE);
+COMPILE_ASSERT_MATCHING_ENUM(TypeNotAllowed, PP_MOUSECURSOR_TYPE_NOTALLOWED);
+COMPILE_ASSERT_MATCHING_ENUM(TypeZoomIn, PP_MOUSECURSOR_TYPE_ZOOMIN);
+COMPILE_ASSERT_MATCHING_ENUM(TypeZoomOut, PP_MOUSECURSOR_TYPE_ZOOMOUT);
+COMPILE_ASSERT_MATCHING_ENUM(TypeGrab, PP_MOUSECURSOR_TYPE_GRAB);
+COMPILE_ASSERT_MATCHING_ENUM(TypeGrabbing, PP_MOUSECURSOR_TYPE_GRABBING);
 // Do not assert WebCursorInfo::TypeCustom == PP_CURSORTYPE_CUSTOM;
 // PP_CURSORTYPE_CUSTOM is pinned to allow new cursor types.
 
@@ -447,57 +453,6 @@ void PluginInstance::InstanceCrashed() {
   InvalidateRect(gfx::Rect());
 
   delegate()->PluginCrashed(this);
-}
-
-bool PluginInstance::SetCursor(PP_CursorType_Dev type,
-                               PP_Resource custom_image,
-                               const PP_Point* hot_spot) {
-  if (type != PP_CURSORTYPE_CUSTOM) {
-    DoSetCursor(new WebCursorInfo(static_cast<WebCursorInfo::Type>(type)));
-    return true;
-  }
-
-  if (!hot_spot)
-    return false;
-
-  EnterResourceNoLock<PPB_ImageData_API> enter(custom_image, true);
-  if (enter.failed())
-    return false;
-  PPB_ImageData_Impl* image_data =
-      static_cast<PPB_ImageData_Impl*>(enter.object());
-
-  if (image_data->format() != PPB_ImageData_Impl::GetNativeImageDataFormat()) {
-    // TODO(yzshen): Handle the case that the image format is different from the
-    // native format.
-    NOTIMPLEMENTED();
-    return false;
-  }
-
-  ImageDataAutoMapper auto_mapper(image_data);
-  if (!auto_mapper.is_valid())
-    return false;
-
-  scoped_ptr<WebCursorInfo> custom_cursor(
-      new WebCursorInfo(WebCursorInfo::TypeCustom));
-  custom_cursor->hotSpot.x = hot_spot->x;
-  custom_cursor->hotSpot.y = hot_spot->y;
-
-#if WEBKIT_USING_SKIA
-  const SkBitmap* bitmap = image_data->GetMappedBitmap();
-  // Make a deep copy, so that the cursor remains valid even after the original
-  // image data gets freed.
-  if (!bitmap->copyTo(&custom_cursor->customImage.getSkBitmap(),
-                      bitmap->config())) {
-    return false;
-  }
-#elif WEBKIT_USING_CG
-  // TODO(yzshen): Implement it.
-  NOTIMPLEMENTED();
-  return false;
-#endif
-
-  DoSetCursor(custom_cursor.release());
-  return true;
 }
 
 bool PluginInstance::Initialize(WebPluginContainer* container,
@@ -2022,6 +1977,51 @@ void PluginInstance::ZoomLimitsChanged(PP_Instance instance,
 
 void PluginInstance::PostMessage(PP_Instance instance, PP_Var message) {
   message_channel_->PostMessageToJavaScript(message);
+}
+
+PP_Bool PluginInstance::SetCursor(PP_Instance instance,
+                                  PP_MouseCursor_Type type,
+                                  PP_Resource image,
+                                  const PP_Point* hot_spot) {
+  if (!ValidateSetCursorParams(type, image, hot_spot))
+    return PP_FALSE;
+
+  if (type != PP_MOUSECURSOR_TYPE_CUSTOM) {
+    DoSetCursor(new WebCursorInfo(static_cast<WebCursorInfo::Type>(type)));
+    return PP_TRUE;
+  }
+
+  EnterResourceNoLock<PPB_ImageData_API> enter(image, true);
+  if (enter.failed())
+    return PP_FALSE;
+  PPB_ImageData_Impl* image_data =
+      static_cast<PPB_ImageData_Impl*>(enter.object());
+
+  ImageDataAutoMapper auto_mapper(image_data);
+  if (!auto_mapper.is_valid())
+    return PP_FALSE;
+
+  scoped_ptr<WebCursorInfo> custom_cursor(
+      new WebCursorInfo(WebCursorInfo::TypeCustom));
+  custom_cursor->hotSpot.x = hot_spot->x;
+  custom_cursor->hotSpot.y = hot_spot->y;
+
+#if WEBKIT_USING_SKIA
+  const SkBitmap* bitmap = image_data->GetMappedBitmap();
+  // Make a deep copy, so that the cursor remains valid even after the original
+  // image data gets freed.
+  if (!bitmap->copyTo(&custom_cursor->customImage.getSkBitmap(),
+                      bitmap->config())) {
+    return PP_FALSE;
+  }
+#elif WEBKIT_USING_CG
+  // TODO(yzshen): Implement it.
+  NOTIMPLEMENTED();
+  return false;
+#endif
+
+  DoSetCursor(custom_cursor.release());
+  return PP_TRUE;
 }
 
 int32_t PluginInstance::LockMouse(PP_Instance instance,

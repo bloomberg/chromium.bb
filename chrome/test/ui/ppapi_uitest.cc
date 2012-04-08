@@ -444,17 +444,6 @@ TEST_PPAPI_OUT_OF_PROCESS(DISABLED_Broker)
 TEST_PPAPI_IN_PROCESS(Core)
 TEST_PPAPI_OUT_OF_PROCESS(Core)
 
-// Times out on Linux. http://crbug.com/108180
-#if defined(OS_LINUX)
-#define MAYBE_CursorControl DISABLED_CursorControl
-#else
-#define MAYBE_CursorControl CursorControl
-#endif
-
-TEST_PPAPI_IN_PROCESS(MAYBE_CursorControl)
-TEST_PPAPI_OUT_OF_PROCESS(MAYBE_CursorControl)
-TEST_PPAPI_NACL_VIA_HTTP(MAYBE_CursorControl)
-
 // Times out on Linux. http://crbug.com/108859
 #if defined(OS_LINUX)
 #define MAYBE_InputEvent DISABLED_InputEvent
@@ -1038,5 +1027,9 @@ TEST_PPAPI_IN_PROCESS(FlashMessageLoop_Basics)
 TEST_PPAPI_IN_PROCESS(FlashMessageLoop_RunWithoutQuit)
 TEST_PPAPI_OUT_OF_PROCESS(FlashMessageLoop_Basics)
 TEST_PPAPI_OUT_OF_PROCESS(FlashMessageLoop_RunWithoutQuit)
+
+TEST_PPAPI_IN_PROCESS(MouseCursor)
+TEST_PPAPI_OUT_OF_PROCESS(MouseCursor)
+TEST_PPAPI_NACL_VIA_HTTP(MouseCursor)
 
 #endif // ADDRESS_SANITIZER

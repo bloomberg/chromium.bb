@@ -9,6 +9,7 @@
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/size.h"
+#include "ppapi/cpp/view.h"
 #include "ppapi/utility/graphics/paint_manager.h"
 
 // Number of pixels to each side of the center of the square that we draw.
@@ -70,8 +71,8 @@ class MyInstance : public pp::Instance, public pp::PaintManager::Client {
     }
   }
 
-  virtual void DidChangeView(const pp::Rect& position, const pp::Rect& clip) {
-    paint_manager_.SetSize(position.size());
+  virtual void DidChangeView(const pp::View& view) {
+    paint_manager_.SetSize(view.GetRect().size());
   }
 
   // PaintManager::Client implementation.

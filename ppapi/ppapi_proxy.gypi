@@ -80,8 +80,6 @@
         'proxy/ppb_buffer_proxy.h',
         'proxy/ppb_core_proxy.cc',
         'proxy/ppb_core_proxy.h',
-        'proxy/ppb_cursor_control_proxy.cc',
-        'proxy/ppb_cursor_control_proxy.h',
         'proxy/ppb_file_chooser_proxy.cc',
         'proxy/ppb_file_chooser_proxy.h',
         'proxy/ppb_file_io_proxy.cc',

@@ -124,6 +124,8 @@ bool PPB_Instance_Proxy::OnMessageReceived(const IPC::Message& msg) {
                         OnHostMsgGetDocumentURL)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_GetPluginInstanceURL,
                         OnHostMsgGetPluginInstanceURL)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_SetCursor,
+                        OnHostMsgSetCursor)
 
     // Host -> Plugin messages.
     IPC_MESSAGE_HANDLER(PpapiMsg_PPBInstance_MouseLockComplete,
@@ -403,6 +405,32 @@ void PPB_Instance_Proxy::PostMessage(PP_Instance instance,
       instance, SerializedVarSendInput(dispatcher(), message)));
 }
 
+PP_Bool PPB_Instance_Proxy::SetCursor(PP_Instance instance,
+                                      PP_MouseCursor_Type type,
+                                      PP_Resource image,
+                                      const PP_Point* hot_spot) {
+  // Some of these parameters are important for security. This check is in the
+  // plugin process just for the convenience of the caller (since we don't
+  // bother returning errors from the other process with a sync message). The
+  // parameters will be validated again in the renderer.
+  if (!ValidateSetCursorParams(type, image, hot_spot))
+    return PP_FALSE;
+
+  HostResource image_host_resource;
+  if (image) {
+    Resource* cursor_image =
+        PpapiGlobals::Get()->GetResourceTracker()->GetResource(image);
+    if (!cursor_image || cursor_image->pp_instance() != instance)
+      return PP_FALSE;
+    image_host_resource = cursor_image->host_resource();
+  }
+
+  dispatcher()->Send(new PpapiHostMsg_PPBInstance_SetCursor(
+      API_ID_PPB_INSTANCE, instance, static_cast<int32_t>(type),
+      image_host_resource, hot_spot ? *hot_spot : PP_MakePoint(0, 0)));
+  return PP_TRUE;
+}
+
 int32_t PPB_Instance_Proxy::LockMouse(PP_Instance instance,
                                       PP_CompletionCallback callback) {
   if (!callback.func)
@@ -634,6 +662,19 @@ void PPB_Instance_Proxy::OnHostMsgGetPluginInstanceURL(
   if (enter.succeeded()) {
     result.Return(dispatcher(),
                   enter.functions()->GetPluginInstanceURL(instance, NULL));
+  }
+}
+
+void  PPB_Instance_Proxy::OnHostMsgSetCursor(
+    PP_Instance instance,
+    int32_t type,
+    const ppapi::HostResource& custom_image,
+    const PP_Point& hot_spot) {
+  EnterInstanceNoLock enter(instance, true);
+  if (enter.succeeded()) {
+    enter.functions()->SetCursor(
+        instance, static_cast<PP_MouseCursor_Type>(type),
+        custom_image.host_resource(), &hot_spot);
   }
 }
 

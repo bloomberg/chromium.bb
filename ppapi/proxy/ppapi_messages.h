@@ -675,26 +675,6 @@ IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBCore_AddRefResource,
 IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBCore_ReleaseResource,
                     ppapi::HostResource)
 
-// PPB_CursorControl.
-IPC_SYNC_MESSAGE_ROUTED4_1(PpapiHostMsg_PPBCursorControl_SetCursor,
-                           PP_Instance /* instance */,
-                           int32_t /* type */,
-                           ppapi::HostResource /* custom_image */,
-                           PP_Point /* hot_spot */,
-                           PP_Bool /* result */)
-IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBCursorControl_LockCursor,
-                           PP_Instance /* instance */,
-                           PP_Bool /* result */)
-IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBCursorControl_UnlockCursor,
-                           PP_Instance /* instance */,
-                           PP_Bool /* result */)
-IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBCursorControl_HasCursorLock,
-                           PP_Instance /* instance */,
-                           PP_Bool /* result */)
-IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBCursorControl_CanLockCursor,
-                           PP_Instance /* instance */,
-                           PP_Bool /* result */)
-
 // PPB_FileChooser.
 IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBFileChooser_Create,
                            PP_Instance /* instance */,
@@ -944,6 +924,11 @@ IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBInstance_GetDocumentURL,
 IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBInstance_GetPluginInstanceURL,
                            PP_Instance /* active */,
                            ppapi::proxy::SerializedVar /* result */)
+IPC_MESSAGE_ROUTED4(PpapiHostMsg_PPBInstance_SetCursor,
+                    PP_Instance /* instance */,
+                    int32_t /* type */,
+                    ppapi::HostResource /* custom_image */,
+                    PP_Point /* hot_spot */)
 
 IPC_SYNC_MESSAGE_ROUTED3_1(
     PpapiHostMsg_PPBPDF_GetFontFileWithFallback,

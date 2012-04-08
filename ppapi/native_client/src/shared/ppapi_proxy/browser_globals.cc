@@ -347,13 +347,6 @@ const PPB_WheelInputEvent* PPBWheelInputEventInterface() {
 }
 
 // Dev interfaces.
-const PPB_CursorControl_Dev* PPBCursorControlInterface() {
-  static const PPB_CursorControl_Dev* ppb =
-      static_cast<const PPB_CursorControl_Dev*>(
-          GetBrowserInterfaceSafe(PPB_CURSOR_CONTROL_DEV_INTERFACE));
-  return ppb;
-}
-
 const PPB_FileIO* PPBFileIOInterface() {
   static const PPB_FileIO* ppb =
       static_cast<const PPB_FileIO*>(
@@ -400,6 +393,13 @@ const PPB_Gamepad* PPBGamepadInterface() {
   static const PPB_Gamepad* ppb =
       static_cast<const PPB_Gamepad*>(
           GetBrowserInterfaceSafe(PPB_GAMEPAD_INTERFACE));
+  return ppb;
+}
+
+const PPB_MouseCursor_1_0* PPBMouseCursorInterface() {
+  static const PPB_MouseCursor_1_0* ppb =
+      static_cast<const PPB_MouseCursor_1_0*>(
+          GetBrowserInterfaceSafe(PPB_MOUSECURSOR_INTERFACE_1_0));
   return ppb;
 }
 

@@ -174,43 +174,6 @@ class PpbCoreRpcServer {
   void operator=(const PpbCoreRpcServer);
 };  // class PpbCoreRpcServer
 
-class PpbCursorControlRpcServer {
- public:
-  static void PPB_CursorControl_SetCursor(
-      NaClSrpcRpc* rpc,
-      NaClSrpcClosure* done,
-      PP_Instance instance,
-      int32_t type,
-      PP_Resource custom_image,
-      nacl_abi_size_t hot_spot_bytes, char* hot_spot,
-      int32_t* success);
-  static void PPB_CursorControl_LockCursor(
-      NaClSrpcRpc* rpc,
-      NaClSrpcClosure* done,
-      PP_Instance instance,
-      int32_t* success);
-  static void PPB_CursorControl_UnlockCursor(
-      NaClSrpcRpc* rpc,
-      NaClSrpcClosure* done,
-      PP_Instance instance,
-      int32_t* success);
-  static void PPB_CursorControl_HasCursorLock(
-      NaClSrpcRpc* rpc,
-      NaClSrpcClosure* done,
-      PP_Instance instance,
-      int32_t* success);
-  static void PPB_CursorControl_CanLockCursor(
-      NaClSrpcRpc* rpc,
-      NaClSrpcClosure* done,
-      PP_Instance instance,
-      int32_t* success);
-
- private:
-  PpbCursorControlRpcServer();
-  PpbCursorControlRpcServer(const PpbCursorControlRpcServer&);
-  void operator=(const PpbCursorControlRpcServer);
-};  // class PpbCursorControlRpcServer
-
 class PpbFileIORpcServer {
  public:
   static void PPB_FileIO_Create(
@@ -845,6 +808,23 @@ class PpbMessagingRpcServer {
   PpbMessagingRpcServer(const PpbMessagingRpcServer&);
   void operator=(const PpbMessagingRpcServer);
 };  // class PpbMessagingRpcServer
+
+class PpbMouseCursorRpcServer {
+ public:
+  static void PPB_MouseCursor_SetCursor(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Instance instance,
+      int32_t type,
+      PP_Resource custom_image,
+      nacl_abi_size_t hot_spot_bytes, char* hot_spot,
+      int32_t* success);
+
+ private:
+  PpbMouseCursorRpcServer();
+  PpbMouseCursorRpcServer(const PpbMouseCursorRpcServer&);
+  void operator=(const PpbMouseCursorRpcServer);
+};  // class PpbMouseCursorRpcServer
 
 class PpbMouseLockRpcServer {
  public:

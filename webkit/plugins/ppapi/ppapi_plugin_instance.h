@@ -154,11 +154,6 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   const GURL& plugin_url() const { return plugin_url_; }
   bool full_frame() const { return full_frame_; }
   const ::ppapi::ViewData& view_data() const { return view_data_; }
-  // If |type| is not PP_CURSORTYPE_CUSTOM, |custom_image| and |hot_spot| are
-  // ignored.
-  bool SetCursor(PP_CursorType_Dev type,
-                 PP_Resource custom_image,
-                 const PP_Point* hot_spot);
 
   // PPP_Instance and PPP_Instance_Private pass-through.
   bool Initialize(WebKit::WebPluginContainer* container,
@@ -379,6 +374,10 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
                                  double minimum_factor,
                                  double maximium_factor) OVERRIDE;
   virtual void PostMessage(PP_Instance instance, PP_Var message) OVERRIDE;
+  virtual PP_Bool SetCursor(PP_Instance instance,
+                            PP_MouseCursor_Type type,
+                            PP_Resource image,
+                            const PP_Point* hot_spot) OVERRIDE;
   virtual int32_t LockMouse(PP_Instance instance,
                             PP_CompletionCallback callback) OVERRIDE;
   virtual void UnlockMouse(PP_Instance instance) OVERRIDE;

@@ -153,38 +153,6 @@ class PpbCoreRpcClient {
   void operator=(const PpbCoreRpcClient);
 };  // class PpbCoreRpcClient
 
-class PpbCursorControlRpcClient {
- public:
-  static NaClSrpcError PPB_CursorControl_SetCursor(
-      NaClSrpcChannel* channel,
-      PP_Instance instance,
-      int32_t type,
-      PP_Resource custom_image,
-      nacl_abi_size_t hot_spot_bytes, char* hot_spot,
-      int32_t* success);
-  static NaClSrpcError PPB_CursorControl_LockCursor(
-      NaClSrpcChannel* channel,
-      PP_Instance instance,
-      int32_t* success);
-  static NaClSrpcError PPB_CursorControl_UnlockCursor(
-      NaClSrpcChannel* channel,
-      PP_Instance instance,
-      int32_t* success);
-  static NaClSrpcError PPB_CursorControl_HasCursorLock(
-      NaClSrpcChannel* channel,
-      PP_Instance instance,
-      int32_t* success);
-  static NaClSrpcError PPB_CursorControl_CanLockCursor(
-      NaClSrpcChannel* channel,
-      PP_Instance instance,
-      int32_t* success);
-
- private:
-  PpbCursorControlRpcClient();
-  PpbCursorControlRpcClient(const PpbCursorControlRpcClient&);
-  void operator=(const PpbCursorControlRpcClient);
-};  // class PpbCursorControlRpcClient
-
 class PpbFileIORpcClient {
  public:
   static NaClSrpcError PPB_FileIO_Create(
@@ -740,6 +708,22 @@ class PpbMessagingRpcClient {
   PpbMessagingRpcClient(const PpbMessagingRpcClient&);
   void operator=(const PpbMessagingRpcClient);
 };  // class PpbMessagingRpcClient
+
+class PpbMouseCursorRpcClient {
+ public:
+  static NaClSrpcError PPB_MouseCursor_SetCursor(
+      NaClSrpcChannel* channel,
+      PP_Instance instance,
+      int32_t type,
+      PP_Resource custom_image,
+      nacl_abi_size_t hot_spot_bytes, char* hot_spot,
+      int32_t* success);
+
+ private:
+  PpbMouseCursorRpcClient();
+  PpbMouseCursorRpcClient(const PpbMouseCursorRpcClient&);
+  void operator=(const PpbMouseCursorRpcClient);
+};  // class PpbMouseCursorRpcClient
 
 class PpbMouseLockRpcClient {
  public:

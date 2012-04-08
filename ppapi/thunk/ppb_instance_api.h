@@ -14,6 +14,7 @@
 #include "ppapi/c/ppb_audio_config.h"
 #include "ppapi/c/ppb_gamepad.h"
 #include "ppapi/c/ppb_instance.h"
+#include "ppapi/c/ppb_mouse_cursor.h"
 #include "ppapi/c/private/ppb_instance_private.h"
 #include "ppapi/shared_impl/api_id.h"
 
@@ -98,6 +99,12 @@ class PPB_Instance_FunctionAPI {
 
   // Messaging.
   virtual void PostMessage(PP_Instance instance, PP_Var message) = 0;
+
+  // Mouse cursor.
+  virtual PP_Bool SetCursor(PP_Instance instance,
+                            PP_MouseCursor_Type type,
+                            PP_Resource image,
+                            const PP_Point* hot_spot) = 0;
 
   // MouseLock.
   virtual int32_t LockMouse(PP_Instance instance,

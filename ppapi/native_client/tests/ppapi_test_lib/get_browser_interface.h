@@ -21,13 +21,13 @@
 #include "ppapi/c/ppb_input_event.h"
 #include "ppapi/c/ppb_instance.h"
 #include "ppapi/c/ppb_messaging.h"
+#include "ppapi/c/ppb_mouse_cursor.h"
 #include "ppapi/c/ppb_opengles2.h"
 #include "ppapi/c/ppb_url_loader.h"
 #include "ppapi/c/ppb_url_request_info.h"
 #include "ppapi/c/ppb_url_response_info.h"
 #include "ppapi/c/ppb_var.h"
 #include "ppapi/c/ppb_view.h"
-#include "ppapi/c/dev/ppb_cursor_control_dev.h"
 #include "ppapi/c/dev/ppb_font_dev.h"
 #include "ppapi/c/dev/ppb_memory_dev.h"
 #include "ppapi/c/dev/ppb_scrollbar_dev.h"
@@ -58,6 +58,7 @@ const PPB_InputEvent* PPBInputEvent();
 const PPB_Instance* PPBInstance();
 const PPB_KeyboardInputEvent* PPBKeyboardInputEvent();
 const PPB_Messaging* PPBMessaging();
+const PPB_MouseCursor* PPBMouseCursor();
 const PPB_MouseInputEvent* PPBMouseInputEvent();
 const PPB_OpenGLES2* PPBOpenGLES2();
 const PPB_URLLoader* PPBURLLoader();
@@ -72,7 +73,6 @@ const PPB_WheelInputEvent* PPBWheelInputEvent();
 // Lookup returns NULL if the interface is not available.
 //
 
-const PPB_CursorControl_Dev* PPBCursorControlDev();
 const PPB_Font_Dev* PPBFontDev();
 const PPB_Memory_Dev* PPBMemoryDev();
 const PPB_Scrollbar_Dev* PPBScrollbarDev();

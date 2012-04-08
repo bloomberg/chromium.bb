@@ -4,7 +4,6 @@
 
 #include "native_client/src/shared/platform/nacl_check.h"
 
-#include "ppapi/c/dev/ppb_cursor_control_dev.h"
 #include "ppapi/c/dev/ppb_font_dev.h"
 #include "ppapi/c/dev/ppb_memory_dev.h"
 #include "ppapi/c/dev/ppb_scrollbar_dev.h"
@@ -24,6 +23,7 @@
 #include "ppapi/c/ppb_input_event.h"
 #include "ppapi/c/ppb_instance.h"
 #include "ppapi/c/ppb_messaging.h"
+#include "ppapi/c/ppb_mouse_cursor.h"
 #include "ppapi/c/ppb_opengles2.h"
 #include "ppapi/c/ppb_url_loader.h"
 #include "ppapi/c/ppb_url_request_info.h"
@@ -118,6 +118,11 @@ const PPB_Messaging* PPBMessaging() {
       GetBrowserInterfaceSafe(PPB_MESSAGING_INTERFACE));
 }
 
+const PPB_MouseCursor_1_0* PPBMouseCursor() {
+  return reinterpret_cast<const PPB_MouseCursor_1_0*>(
+      GetBrowserInterfaceSafe(PPB_MOUSECURSOR_INTERFACE_1_0));
+}
+
 const PPB_MouseInputEvent* PPBMouseInputEvent() {
   return reinterpret_cast<const PPB_MouseInputEvent*>(
       GetBrowserInterfaceSafe(PPB_MOUSE_INPUT_EVENT_INTERFACE));
@@ -155,12 +160,6 @@ const PPB_WheelInputEvent* PPBWheelInputEvent() {
 
 
 // Dev interfaces.
-
-const PPB_CursorControl_Dev* PPBCursorControlDev() {
-  return reinterpret_cast<const PPB_CursorControl_Dev*>(
-      // Change to GetBrowserInterfaceSafe when moving out of dev.
-      GetBrowserInterface(PPB_CURSOR_CONTROL_DEV_INTERFACE));
-}
 
 const PPB_Font_Dev* PPBFontDev() {
   return reinterpret_cast<const PPB_Font_Dev*>(
