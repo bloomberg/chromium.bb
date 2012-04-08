@@ -7250,7 +7250,7 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         generating...
       </message>
       <message name="IDS_CHROME_TO_MOBILE_BUBBLE_SEND_COPY_FAILED" desc="Text indicating that the offline copy generation failed.">
-        An error occured while generating the offline copy
+        An error occurred while generating the offline copy
       </message>
       <message name="IDS_CHROME_TO_MOBILE_BUBBLE_SEND" desc="Button to send the page to the target mobile device.">
         Send
@@ -7270,11 +7270,11 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       <message name="IDS_CHROME_TO_MOBILE_BUBBLE_SENT" desc="Text indicating that the page has been sent to the device.">
         Sent!
       </message>
-      <message name="IDS_CHROME_TO_MOBILE_BUBBLE_ERROR" desc="Text indicating that an error occured sending the page to the device.">
+      <message name="IDS_CHROME_TO_MOBILE_BUBBLE_ERROR" desc="Text indicating that an error occurred sending the page to the device.">
         Error
       </message>
       <message name="IDS_CHROME_TO_MOBILE_BUBBLE_ERROR_MESSAGE" desc="The error message shown when an error occurs sending the page to the device.">
-        An error occured while sending the page
+        An error occurred while sending the page
       </message>
       <message name="IDS_CHROME_TO_MOBILE_BUBBLE_TOOLTIP" desc="The tooltip for the Chrome To Mobile button.">
         Send this page to your mobile device
@@ -11427,7 +11427,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
         <message name="IDS_SYNC_MENU_SYNCED_LABEL" desc="The text for the sync app menu item when bookmark sync has been enabled">
           Signed in as <ph name="USER_NAME">$1<ex>pat@example.com</ex></ph>...
         </message>
-        <message name="IDS_SYNC_MENU_SYNC_ERROR_LABEL" desc="The text for the sync app menu item when a bookmark sync error has occured">
+        <message name="IDS_SYNC_MENU_SYNC_ERROR_LABEL" desc="The text for the sync app menu item when a bookmark sync error has occurred">
           Sync error...
         </message>
       </if>
@@ -11438,7 +11438,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
         <message name="IDS_SYNC_MENU_SYNCED_LABEL" desc="The text for the sync app menu item when bookmark sync has been enabled">
           Signed in as <ph name="USER_NAME">$1<ex>pat@example.com</ex></ph>...
         </message>
-        <message name="IDS_SYNC_MENU_SYNC_ERROR_LABEL" desc="In Title Case: The text for the sync app menu item when a bookmark sync error has occured">
+        <message name="IDS_SYNC_MENU_SYNC_ERROR_LABEL" desc="In Title Case: The text for the sync app menu item when a bookmark sync error has occurred">
           Sync Error...
         </message>
       </if>
@@ -12271,10 +12271,10 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_IMAGEBURN_PROGRESS_TIME_UNKNOWN" desc="Message telling user that a tast could take few minutes">
         This may take a few minutes
       </message>
-      <message name="IDS_IMAGEBURN_ERROR_STATUS" desc="Message telling user that an error occured">
+      <message name="IDS_IMAGEBURN_ERROR_STATUS" desc="Message telling user that an error occurred">
         An error occurred
       </message>
-      <message name="IDS_IMAGEBURN_DOWNLOAD_ERROR" desc="Message telling user that an error occured during download">
+      <message name="IDS_IMAGEBURN_DOWNLOAD_ERROR" desc="Message telling user that an error occurred during download">
         There was a problem during recovery image download.
       </message>
       <message name="IDS_IMAGEBURN_EXTRACTING_ERROR" desc="Message telling user that downloaded zip could not be extracted">
@@ -15368,7 +15368,7 @@ Battery full
     <message name="IDS_SPEECH_INPUT_TRY_AGAIN" desc="Text shown on a button to retry speech recognition">
       Try again
     </message>
-    <message name="IDS_SPEECH_INPUT_NET_ERROR" desc="Message shown when a network error occured and no results were received from the recognition server.">
+    <message name="IDS_SPEECH_INPUT_NET_ERROR" desc="Message shown when a network error occurred and no results were received from the recognition server.">
       Connection to speech servers failed.
     </message>
     <message name="IDS_SPEECH_INPUT_MIC_SETTINGS" desc="Text displayed on a button or link to open the microphone settings window.">
