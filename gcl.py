@@ -1133,8 +1133,8 @@ def CMDchange(args):
   change_info._files = new_cl_files
   change_info.Save()
   if svn_info.get('URL', '').startswith('http:'):
-    Warn("WARNING: Creating CL in a read-only checkout.  You will not be "
-         "able to commit it!")
+    Warn("WARNING: Creating CL in a read-only checkout.  You will need to "
+         "commit using a commit queue!")
 
   print change_info.name + " changelist saved."
   if change_info.MissingTests():
