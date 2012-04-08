@@ -74,7 +74,7 @@ class ChromeRenderMessageFilter : public content::BrowserMessageFilter {
   virtual ~ChromeRenderMessageFilter();
 
 #if !defined(DISABLE_NACL)
-  void OnLaunchNaCl(const std::wstring& url,
+  void OnLaunchNaCl(const GURL& manifest_url,
                     int socket_count,
                     IPC::Message* reply_msg);
 #endif

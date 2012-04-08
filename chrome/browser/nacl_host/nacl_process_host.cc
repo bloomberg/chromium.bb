@@ -36,9 +36,9 @@
 #include "content/public/browser/browser_child_process_host.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/common/child_process_host.h"
-#include "googleurl/src/gurl.h"
 #include "ipc/ipc_switches.h"
 #include "native_client/src/shared/imc/nacl_imc.h"
+#include "net/base/net_util.h"
 
 #if defined(OS_POSIX)
 #include <fcntl.h>
@@ -412,8 +412,8 @@ struct NaClProcessHost::NaClInternal {
 
 // -----------------------------------------------------------------------------
 
-NaClProcessHost::NaClProcessHost(const std::wstring& url)
-    :
+NaClProcessHost::NaClProcessHost(const GURL& manifest_url)
+    : manifest_url_(manifest_url),
 #if defined(OS_WIN)
       process_launched_by_broker_(false),
 #elif defined(OS_LINUX)
@@ -425,7 +425,12 @@ NaClProcessHost::NaClProcessHost(const std::wstring& url)
       enable_exception_handling_(false) {
   process_.reset(content::BrowserChildProcessHost::Create(
       content::PROCESS_TYPE_NACL_LOADER, this));
-  process_->SetName(WideToUTF16Hack(url));
+
+  // Set the display name so the user knows what plugin the process is running.
+  // We aren't on the UI thread so getting the pref locale for language
+  // formatting isn't possible, so IDN will be lost, but this is probably OK
+  // for this use case.
+  process_->SetName(net::FormatUrl(manifest_url_, std::string()));
 
   // We allow untrusted hardware exception handling to be enabled via
   // an env var for consistency with the standalone build of NaCl.
@@ -738,11 +743,10 @@ void NaClProcessHost::OnNaClGdbAttached() {
 #endif
 
 FilePath NaClProcessHost::GetManifestPath() {
-  GURL manifest_url = GURL(process_->GetData().name);
   const Extension* extension = extension_info_map_->extensions()
-      .GetExtensionOrAppByURL(ExtensionURLInfo(manifest_url));
-  if (extension != NULL && manifest_url.SchemeIs(chrome::kExtensionScheme)) {
-    std::string path = manifest_url.path();
+      .GetExtensionOrAppByURL(ExtensionURLInfo(manifest_url_));
+  if (extension != NULL && manifest_url_.SchemeIs(chrome::kExtensionScheme)) {
+    std::string path = manifest_url_.path();
     TrimString(path, "/", &path);  // Remove first slash
     return extension->path().AppendASCII(path);
   }

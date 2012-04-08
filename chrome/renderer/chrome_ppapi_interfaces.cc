@@ -45,7 +45,7 @@ bool LaunchSelLdr(const char* alleged_url, int socket_count,
   }
   if (!sender->Send(
       new ChromeViewHostMsg_LaunchNaCl(
-          ASCIIToWide(alleged_url),
+          GURL(alleged_url),
           socket_count,
           &sockets,
           &nacl_process,

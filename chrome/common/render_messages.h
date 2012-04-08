@@ -484,7 +484,7 @@ IPC_MESSAGE_ROUTED3(ChromeViewHostMsg_ForwardMessageToExternalHost,
 // a new instance of the Native Client process. The browser will launch
 // the process and return a handle to an IMC channel.
 IPC_SYNC_MESSAGE_CONTROL2_3(ChromeViewHostMsg_LaunchNaCl,
-                            std::wstring /* url for the NaCl module */,
+                            GURL /* manifest_url */,
                             int /* socket count */,
                             std::vector<nacl::FileDescriptor>
                                 /* imc channel handles */,

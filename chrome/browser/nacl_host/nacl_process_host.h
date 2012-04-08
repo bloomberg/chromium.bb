@@ -16,6 +16,7 @@
 #include "base/process.h"
 #include "chrome/common/nacl_types.h"
 #include "content/public/browser/browser_child_process_host_delegate.h"
+#include "googleurl/src/gurl.h"
 
 class ChromeRenderMessageFilter;
 class CommandLine;
@@ -33,7 +34,9 @@ class BrowserChildProcessHost;
 // running in the renderer and NaCl processes.
 class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
  public:
-  explicit NaClProcessHost(const std::wstring& url);
+  // The argument is the URL of the manifest of the Native Client plugin being
+  // executed.
+  explicit NaClProcessHost(const GURL& manifest_url);
   virtual ~NaClProcessHost();
 
   // Do any minimal work that must be done at browser startup.
@@ -85,6 +88,8 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
   // Message handlers for validation caching.
   void OnQueryKnownToValidate(const std::string& signature, bool* result);
   void OnSetKnownToValidate(const std::string& signature);
+
+  GURL manifest_url_;
 
 #if defined(OS_WIN)
   class DebugContext;
