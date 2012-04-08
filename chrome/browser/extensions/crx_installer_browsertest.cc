@@ -2,10 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/download/download_crx_util.h"
-#include "chrome/browser/download/download_service.h"
-#include "chrome/browser/download/download_service_factory.h"
-#include "chrome/browser/download/download_test_observer.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
@@ -19,8 +15,6 @@
 class SkBitmap;
 
 namespace {
-
-// Observer waits for exactly one download to finish.
 
 class MockInstallUI : public ExtensionInstallUI {
  public:
@@ -121,31 +115,4 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, PlatformAppCrx) {
   command_line->AppendSwitch(switches::kEnablePlatformApps);
   EXPECT_TRUE(InstallExtension(
       test_data_dir_.AppendASCII("generic_platform_app.crx"), 1));
-}
-
-IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, PackAndInstallExtension) {
-  const int kNumDownloadsExpected = 1;
-  const bool kExpectFileSelectDialog = false;
-
-  FilePath crx_path = PackExtension(
-      test_data_dir_.AppendASCII("common/background_page"));
-  ASSERT_FALSE(crx_path.empty());
-  std::string crx_path_string(crx_path.value().begin(), crx_path.value().end());
-  GURL url = GURL(std::string("file:///").append(crx_path_string));
-
-  MockInstallUI* mock_ui = new MockInstallUI(browser()->profile());
-  download_crx_util::SetMockInstallUIForTesting(mock_ui);
-
-  content::DownloadManager* download_manager =
-      DownloadServiceFactory::GetForProfile(
-          browser()->profile())->GetDownloadManager();
-
-  scoped_ptr<DownloadTestObserver> observer(
-      new DownloadTestObserverTerminal(
-          download_manager, kNumDownloadsExpected, kExpectFileSelectDialog,
-          DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_ACCEPT));
-  ui_test_utils::NavigateToURL(browser(), url);
-
-  EXPECT_TRUE(WaitForExtensionInstall());
-  EXPECT_TRUE(mock_ui->confirmation_requested());
 }
