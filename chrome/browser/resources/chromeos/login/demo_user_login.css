@@ -30,10 +30,15 @@ body {
 }
 
 #logo {
+  -webkit-transition: opacity 1s linear;
+  opacity: 0;
   width: 150px;
 }
 
 #demo-login-text {
+  /* Delay the login text showing up till the logo has fully faded in */
+  -webkit-transition: opacity 1s linear 1s;
   font-size: 24px;
+  opacity: 0;
   padding-top: 80px;
 }
