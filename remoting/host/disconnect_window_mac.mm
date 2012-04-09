@@ -96,7 +96,11 @@ scoped_ptr<DisconnectWindow> DisconnectWindow::Create() {
 }
 
 - (BOOL)isRToL {
-  return host_->ui_strings().direction == remoting::UiStrings::RTL;
+  if (host_) {
+    return host_->ui_strings().direction == remoting::UiStrings::RTL;
+  } else {
+    return false;
+  }
 }
 
 - (void)close {
