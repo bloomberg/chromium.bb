@@ -1,5 +1,5 @@
 # -*- python -*-
-# Copyright 2011 The Native Client Authors.  All rights reserved.
+# Copyright 2012 The Native Client Authors.  All rights reserved.
 # Use of this source code is governed by a BSD-style license that can
 # be found in the LICENSE file.
 
@@ -8,6 +8,11 @@ Import('env')
 
 test_prog = env.ComponentProgram('test_guest', ['test_guest.c'],
                                  EXTRA_LINKFLAGS=['-nostdlib'])
+
+# If we are generating a pexe, translate it first
+if env.Bit('pnacl_generate_pexe'):
+  env.Replace(TRANSLATEFLAGS=['-nostdlib'])
+  test_prog = env.GetTranslatedNexe(test_prog)
 
 if not env.Bit('host_windows'):
   # This test is specifically for Windows: it checks how NaCl
