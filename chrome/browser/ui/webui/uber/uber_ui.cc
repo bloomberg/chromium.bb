@@ -6,15 +6,20 @@
 
 #include "base/stl_util.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
 #include "chrome/browser/ui/webui/extensions/extensions_ui.h"
 #include "chrome/browser/ui/webui/options2/options_ui2.h"
+#include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "grit/browser_resources.h"
@@ -60,7 +65,25 @@ ChromeWebUIDataSource* CreateUberHTMLSource() {
   return source;
 }
 
-ChromeWebUIDataSource* CreateUberFrameHTMLSource() {
+// Determines whether the user has an active extension of the given type.
+bool HasExtensionType(Profile* profile, const char* extensionType) {
+  const ExtensionSet* extensionSet =
+      profile->GetExtensionService()->extensions();
+
+  for (ExtensionSet::const_iterator iter = extensionSet->begin();
+       iter != extensionSet->end(); ++iter) {
+    Extension::URLOverrideMap map = (*iter)->GetChromeURLOverrides();
+    Extension::URLOverrideMap::const_iterator result =
+        map.find(std::string(extensionType));
+
+    if (result != map.end())
+      return true;
+  }
+
+  return false;
+}
+
+ChromeWebUIDataSource* CreateUberFrameHTMLSource(Profile* profile) {
   ChromeWebUIDataSource* source =
       new ChromeWebUIDataSource(chrome::kChromeUIUberFrameHost);
 
@@ -88,6 +111,10 @@ ChromeWebUIDataSource* CreateUberFrameHTMLSource() {
   source->AddString("settingsHost",
                     ASCIIToUTF16(chrome::kChromeUISettingsHost));
   source->AddLocalizedString("settingsDisplayName", IDS_SETTINGS_TITLE);
+  bool overridesHistory = HasExtensionType(profile,
+      chrome::kChromeUIHistoryHost);
+  source->AddString("overridesHistory",
+                    ASCIIToUTF16(overridesHistory ? "yes" : "no"));
 
   return source;
 }
@@ -170,8 +197,41 @@ bool UberUI::OverrideHandleWebUIMessage(const GURL& source_url,
 UberFrameUI::UberFrameUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
   profile->GetChromeURLDataManager()->AddDataSource(
-      CreateUberFrameHTMLSource());
+      CreateUberFrameHTMLSource(profile));
+
+  // Register as an observer for when extensions are loaded and unloaded.
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
+      content::Source<Profile>(profile));
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
+      content::Source<Profile>(profile));
 }
 
 UberFrameUI::~UberFrameUI() {
+}
+
+void UberFrameUI::Observe(int type, const content::NotificationSource& source,
+                          const content::NotificationDetails& details) {
+  switch (type) {
+    // We listen for notifications that indicate an extension has been loaded
+    // (i.e., has been installed and/or enabled) or unloaded (i.e., has been
+    // uninstalled and/or disabled). If one of these events has occurred, then
+    // we must update the behavior of the History navigation element so that
+    // it opens the history extension if one is installed and enabled or
+    // opens the default history page if one is uninstalled or disabled.
+    case chrome::NOTIFICATION_EXTENSION_LOADED:
+    case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
+      Profile* profile = Profile::FromWebUI(web_ui());
+      bool overridesHistory = HasExtensionType(profile,
+          chrome::kChromeUIHistoryHost);
+      scoped_ptr<Value> controlsValue(
+          Value::CreateStringValue(chrome::kChromeUIHistoryHost));
+      scoped_ptr<Value> overrideValue(
+          Value::CreateStringValue(overridesHistory ? "yes" : "no"));
+      web_ui()->CallJavascriptFunction(
+          "uber_frame.setNavigationOverride", *controlsValue, *overrideValue);
+      break;
+    }
+    default:
+      NOTREACHED();
+  }
 }
