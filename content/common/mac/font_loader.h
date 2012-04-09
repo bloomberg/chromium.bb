@@ -17,6 +17,8 @@
 class NSFont;
 #endif
 
+struct FontDescriptor;
+
 // Provides functionality to transmit fonts over IPC.
 //
 // Note about font formats: .dfont (datafork suitcase) fonts are currently not
@@ -25,20 +27,27 @@ class NSFont;
 
 class FontLoader {
  public:
-  // Load a font specified by |font_to_encode| into a shared memory buffer
-  // suitable for sending over IPC.
+  // This structure holds the result of LoadFont(). This structure is passed to
+  // LoadFont(), which should run on the file thread, then it is passed to a
+  // task which sends the result to the originating renderer.
+  struct Result {
+    uint32 font_data_size;
+    base::SharedMemory font_data;
+    uint32 font_id;
+  };
+  // Load a font specified by |font| into a shared memory buffer suitable for
+  // sending over IPC.
   //
   // On return:
-  //  returns true on success, false on failure.
-  //  |font_data| - shared memory buffer containing the raw data for the font
-  // file.
-  //  |font_data_size| - size of data contained in |font_data|.
-  //  |font_id| - unique identifier for the on-disk file we load for the font.
+  //  |result->font_data| - shared memory buffer containing the raw data for
+  // the font file. The buffer is only valid when both |result->font_data_size|
+  // and |result->font_id| are not zero.
+  //  |result->font_data_size| - size of data contained in |result->font_data|.
+  // This value is zero on failure.
+  //  |result->font_id| - unique identifier for the on-disk file we load for
+  // the font. This value is zero on failure.
   CONTENT_EXPORT
-  static bool LoadFontIntoBuffer(NSFont* font_to_encode,
-                                 base::SharedMemory* font_data,
-                                 uint32* font_data_size,
-                                 uint32* font_id);
+  static void LoadFont(const FontDescriptor& font, FontLoader::Result* result);
 
   // Given a shared memory buffer containing the raw data for a font file, load
   // the font and return a CGFontRef.

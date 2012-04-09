@@ -501,7 +501,7 @@ bool RendererWebKitPlatformSupportImpl::SandboxSupport::loadFont(
 
   if (font_data_size == 0 || font_data == base::SharedMemory::NULLHandle() ||
       *font_id == 0) {
-    NOTREACHED() << "Bad response from ViewHostMsg_LoadFont() for " <<
+    LOG(ERROR) << "Bad response from ViewHostMsg_LoadFont() for " <<
         src_font_descriptor.font_name;
     *out = NULL;
     *font_id = 0;

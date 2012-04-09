@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include "base/mac/scoped_cftyperef.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/shared_memory.h"
+#include "content/common/mac/font_descriptor.h"
 #include "content/common/mac/font_loader.h"
 #include "content/common/sandbox_mac_unittest_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -109,17 +110,16 @@ TEST_F(MacSandboxTest, FontLoadingTest) {
   ASSERT_TRUE(temp_file);
   file_util::ScopedFILE temp_file_closer(temp_file);
 
-  base::SharedMemory font_data;
-  uint32 font_data_size;
-  uint32 font_id;
   NSFont* srcFont = [NSFont fontWithName:@"Geeza Pro" size:16.0];
-  EXPECT_TRUE(FontLoader::LoadFontIntoBuffer(srcFont,
-                  &font_data, &font_data_size, &font_id));
-  EXPECT_GT(font_data_size, 0U);
-  EXPECT_GT(font_id, 0U);
+  FontDescriptor descriptor(srcFont);
+  FontLoader::Result result;
+  FontLoader::LoadFont(descriptor, &result);
+  EXPECT_GT(result.font_data_size, 0U);
+  EXPECT_GT(result.font_id, 0U);
 
   file_util::WriteFileDescriptor(fileno(temp_file),
-      static_cast<const char *>(font_data.memory()), font_data_size);
+      static_cast<const char *>(result.font_data.memory()),
+      result.font_data_size);
 
   ASSERT_TRUE(RunTestInSandbox(content::SANDBOX_TYPE_RENDERER,
                   "FontLoadingTestCase", temp_file_path.value().c_str()));

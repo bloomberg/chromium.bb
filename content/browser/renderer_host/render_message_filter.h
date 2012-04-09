@@ -26,6 +26,10 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/surface/transport_dib.h"
 
+#if defined(OS_MACOSX)
+#include "content/common/mac/font_loader.h"
+#endif
+
 class DOMStorageContextImpl;
 class PluginServiceImpl;
 class RenderWidgetHelper;
@@ -131,10 +135,9 @@ class RenderMessageFilter : public content::BrowserMessageFilter {
                         bool* cookies_enabled);
 
 #if defined(OS_MACOSX)
-  void OnLoadFont(const FontDescriptor& font,
-                  uint32* handle_size,
-                  base::SharedMemoryHandle* handle,
-                  uint32* font_id);
+  // Messages for OOP font loading.
+  void OnLoadFont(const FontDescriptor& font, IPC::Message* reply_msg);
+  void SendLoadFontReply(IPC::Message* reply, FontLoader::Result* result);
 #endif
 
 #if defined(OS_WIN) && !defined(USE_AURA)

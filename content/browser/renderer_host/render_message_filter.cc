@@ -63,7 +63,6 @@
 
 #if defined(OS_MACOSX)
 #include "content/common/mac/font_descriptor.h"
-#include "content/common/mac/font_loader.h"
 #endif
 #if defined(OS_POSIX)
 #include "base/file_descriptor_posix.h"
@@ -348,7 +347,7 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER(ViewHostMsg_DeleteCookie, OnDeleteCookie)
     IPC_MESSAGE_HANDLER(ViewHostMsg_CookiesEnabled, OnCookiesEnabled)
 #if defined(OS_MACOSX)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_LoadFont, OnLoadFont)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_LoadFont, OnLoadFont)
 #endif
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetPlugins, OnGetPlugins)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GetPluginInfo, OnGetPluginInfo)
@@ -553,25 +552,29 @@ void RenderMessageFilter::OnCookiesEnabled(
 
 #if defined(OS_MACOSX)
 void RenderMessageFilter::OnLoadFont(const FontDescriptor& font,
-                                     uint32* handle_size,
-                                     base::SharedMemoryHandle* handle,
-                                     uint32* font_id) {
-  base::SharedMemory font_data;
-  uint32 font_data_size = 0;
-  bool ok = FontLoader::LoadFontIntoBuffer(font.ToNSFont(), &font_data,
-                &font_data_size, font_id);
-  if (!ok || font_data_size == 0 || *font_id == 0) {
-    LOG(ERROR) << "Couldn't load font data for " << font.font_name <<
-        " ok=" << ok << " font_data_size=" << font_data_size <<
-        " font id=" << *font_id;
-    *handle_size = 0;
-    *handle = base::SharedMemory::NULLHandle();
-    *font_id = 0;
-    return;
-  }
+                                     IPC::Message* reply_msg) {
+  FontLoader::Result* result = new FontLoader::Result;
 
-  *handle_size = font_data_size;
-  font_data.GiveToProcess(base::GetCurrentProcessHandle(), handle);
+  BrowserThread::PostTaskAndReply(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&FontLoader::LoadFont, font, result),
+      base::Bind(&RenderMessageFilter::SendLoadFontReply, this, reply_msg,
+                 base::Owned(result)));
+}
+
+void RenderMessageFilter::SendLoadFontReply(IPC::Message* reply,
+                                            FontLoader::Result* result) {
+  base::SharedMemoryHandle handle;
+  if (result->font_data_size == 0 || result->font_id == 0) {
+    result->font_data_size = 0;
+    result->font_id = 0;
+    handle = base::SharedMemory::NULLHandle();
+  } else {
+    result->font_data.GiveToProcess(base::GetCurrentProcessHandle(), &handle);
+  }
+  ViewHostMsg_LoadFont::WriteReplyParams(
+      reply, result->font_data_size, handle, result->font_id);
+  Send(reply);
 }
 #endif  // OS_MACOSX
 

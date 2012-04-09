@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,6 +14,8 @@
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/sys_string_conversions.h"
+#include "base/threading/thread_restrictions.h"
+#include "content/common/mac/font_descriptor.h"
 
 extern "C" {
 
@@ -52,23 +54,21 @@ void _CTFontManagerUnregisterFontForData(NSUInteger, int) {
 }  // extern "C"
 
 // static
-bool FontLoader::LoadFontIntoBuffer(NSFont* font_to_encode,
-                                    base::SharedMemory* font_data,
-                                    uint32* font_data_size,
-                                    uint32* font_id) {
-  DCHECK(font_data);
-  DCHECK(font_data_size);
-  DCHECK(font_id);
-  *font_data_size = 0;
-  *font_id = 0;
+void FontLoader::LoadFont(const FontDescriptor& font,
+                          FontLoader::Result* result) {
+  base::ThreadRestrictions::AssertIOAllowed();
+  DCHECK(result);
+  result->font_data_size = 0;
+  result->font_id = 0;
 
+  NSFont* font_to_encode = font.ToNSFont();
   // Used only for logging.
   std::string font_name([[font_to_encode fontName] UTF8String]);
 
   // Load appropriate NSFont.
   if (!font_to_encode) {
     DLOG(ERROR) << "Failed to load font " << font_name;
-    return false;
+    return;
   }
 
   // NSFont -> ATSFontRef.
@@ -76,18 +76,18 @@ bool FontLoader::LoadFontIntoBuffer(NSFont* font_to_encode,
       CTFontGetPlatformFont(reinterpret_cast<CTFontRef>(font_to_encode), NULL);
   if (!ats_font) {
     DLOG(ERROR) << "Conversion to ATSFontRef failed for " << font_name;
-    return false;
+    return;
   }
 
   // Retrieve the ATSFontContainerRef corresponding to the font file we want to
   // load. This is a unique identifier that allows the caller determine if the
   // font file in question is already loaded.
-  COMPILE_ASSERT(sizeof(ATSFontContainerRef) == sizeof(font_id),
+  COMPILE_ASSERT(sizeof(ATSFontContainerRef) == sizeof(&result->font_id),
       uint32_cant_hold_fontcontainer_ref);
   ATSFontContainerRef fontContainer = kATSFontContainerRefUnspecified;
   if (ATSFontGetContainer(ats_font, 0, &fontContainer) != noErr) {
       DLOG(ERROR) << "Failed to get font container ref for " << font_name;
-      return false;
+      return;
   }
 
   // ATSFontRef -> File path.
@@ -101,7 +101,7 @@ bool FontLoader::LoadFontIntoBuffer(NSFont* font_to_encode,
   FSRef font_fsref;
   if (ATSFontGetFileReference(ats_font, &font_fsref) != noErr) {
     DLOG(ERROR) << "Failed to find font file for " << font_name;
-    return false;
+    return;
   }
   FilePath font_path = FilePath(base::mac::PathFromFSRef(font_fsref));
 
@@ -109,31 +109,30 @@ bool FontLoader::LoadFontIntoBuffer(NSFont* font_to_encode,
   int64 font_file_size_64 = -1;
   if (!file_util::GetFileSize(font_path, &font_file_size_64)) {
     DLOG(ERROR) << "Couldn't get font file size for " << font_path.value();
-    return false;
+    return;
   }
 
   if (font_file_size_64 <= 0 || font_file_size_64 >= kint32max) {
     DLOG(ERROR) << "Bad size for font file " << font_path.value();
-    return false;
+    return;
   }
 
   int32 font_file_size_32 = static_cast<int32>(font_file_size_64);
-  if (!font_data->CreateAndMapAnonymous(font_file_size_32)) {
+  if (!result->font_data.CreateAndMapAnonymous(font_file_size_32)) {
     DLOG(ERROR) << "Failed to create shmem area for " << font_name;
-    return false;
+    return;
   }
 
   int32 amt_read = file_util::ReadFile(font_path,
-                       reinterpret_cast<char*>(font_data->memory()),
+                       reinterpret_cast<char*>(result->font_data.memory()),
                        font_file_size_32);
   if (amt_read != font_file_size_32) {
     DLOG(ERROR) << "Failed to read font data for " << font_path.value();
-    return false;
+    return;
   }
 
-  *font_data_size = font_file_size_32;
-  *font_id = fontContainer;
-  return true;
+  result->font_data_size = font_file_size_32;
+  result->font_id = fontContainer;
 }
 
 // static
