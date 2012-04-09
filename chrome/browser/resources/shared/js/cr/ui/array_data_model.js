@@ -139,7 +139,6 @@ cr.define('cr.ui', function() {
       var addCount = arguments.length - 2;
       var newIndexes = [];
       var deletePermutation = [];
-      var deleted = 0;
       var deletedItems = [];
       var newArray = [];
       index = Math.min(index, this.indexes_.length);
@@ -147,13 +146,12 @@ cr.define('cr.ui', function() {
       // Copy items before the insertion point.
       for (var i = 0; i < index; i++) {
         newIndexes.push(newArray.length);
-        deletePermutation.push(i - deleted);
+        deletePermutation.push(i);
         newArray.push(this.array_[this.indexes_[i]]);
       }
       // Delete items.
       for (; i < index + deleteCount; i++) {
         deletePermutation.push(-1);
-        deleted++;
         deletedItems.push(this.array_[this.indexes_[i]]);
       }
       // Insert new items instead deleted ones.
@@ -164,7 +162,7 @@ cr.define('cr.ui', function() {
       // Copy items after the insertion point.
       for (; i < this.indexes_.length; i++) {
         newIndexes.push(newArray.length);
-        deletePermutation.push(i - deleted);
+        deletePermutation.push(i - deleteCount + addCount);
         newArray.push(this.array_[this.indexes_[i]]);
       }
 

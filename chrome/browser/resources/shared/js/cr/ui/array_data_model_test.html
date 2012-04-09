@@ -60,6 +60,32 @@ function testSplice() {
   compare([1, 2, 3], [5, 3, 1, 2, 3]);
 }
 
+function testPermutation() {
+  function doTest(sourceArray, spliceArgs) {
+    var m = new cr.ui.ArrayDataModel(sourceArray.slice());
+    var permutation;
+    m.addEventListener('permuted', function(event) {
+      permutation = event.permutation;
+    });
+    m.splice.apply(m, spliceArgs);
+    var deleted = 0;
+    for (var i = 0; i < sourceArray.length; i++) {
+      if (permutation[i] == -1)
+        deleted++;
+      else
+        assertEquals(sourceArray[i], m.item(permutation[i]));
+    }
+    assertEquals(deleted, spliceArgs[1]);
+  }
+
+  doTest([1, 2, 3], [0, 0]);
+  doTest([1, 2, 3], [0, 1]);
+  doTest([1, 2, 3], [1, 1]);
+  doTest([1, 2, 3], [0, 3]);
+  doTest([1, 2, 3], [0, 1, 5]);
+  doTest([1, 2, 3], [0, 3, 1, 2, 3]);
+}
+
 </script>
 
 </body>

@@ -128,9 +128,6 @@
       '-popups.PopupsTest.testUnblockedPopupAddedToOmnibox',
       # crbug.com/85600
       '-prefs.PrefsTest.testNavigationStateOnSessionRestore',
-      # crbug.com/122269
-      '-prefs_ui.PrefsUITest.testAddNewExceptionUI',
-      '-prefs_ui.PrefsUITest.testDeleteExceptionUI',
       # crbug.com/112051
       '-prefs_ui.PrefsUITest.testChangeExceptionBehaviorUI',
       # crbug.com/119183
