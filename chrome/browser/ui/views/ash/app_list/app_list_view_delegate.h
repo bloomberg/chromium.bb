@@ -20,7 +20,6 @@ class AppListViewDelegate : public ash::AppListViewDelegate {
 
  private:
   // Overridden from ash::AppListViewDelegate:
-  virtual bool ShouldGenerateIconShadow() OVERRIDE;
   virtual void SetModel(ash::AppListModel* model) OVERRIDE;
   virtual void UpdateModel(const std::string& query) OVERRIDE;
   virtual void OnAppListItemActivated(ash::AppListItemModel* item,

@@ -113,10 +113,6 @@ class ExampleAppListViewDelegate : public ash::AppListViewDelegate {
 
  private:
   // Overridden from ash::AppListViewDelegate:
-  virtual bool ShouldGenerateIconShadow() OVERRIDE {
-    return true;
-  }
-
   virtual void SetModel(AppListModel* model) OVERRIDE {
     model_ = model;
   }
