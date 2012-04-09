@@ -10,6 +10,9 @@ namespace protocol {
 InputFilter::InputFilter() : input_stub_(NULL) {
 }
 
+InputFilter::InputFilter(InputStub* input_stub) : input_stub_(input_stub) {
+}
+
 InputFilter::~InputFilter() {
 }
 

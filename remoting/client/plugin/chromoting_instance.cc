@@ -102,7 +102,7 @@ static base::LazyInstance<base::Lock>::Leaky
 
 // String sent in the "hello" message to the plugin to describe features.
 const char ChromotingInstance::kApiFeatures[] =
-    "highQualityScaling injectKeyEvent sendClipboardItem";
+    "highQualityScaling injectKeyEvent sendClipboardItem remapKey trapKey";
 
 bool ChromotingInstance::ParseAuthMethods(const std::string& auth_methods_str,
                                           ClientConfig* config) {
@@ -269,6 +269,26 @@ void ChromotingInstance::HandleMessage(const pp::Var& message) {
     // Even though new hosts will ignore keycode, it's a required field.
     event.set_keycode(0);
     InjectKeyEvent(event);
+  } else if (method == "remapKey") {
+    int from_keycode = 0;
+    int to_keycode = 0;
+    if (!data->GetInteger("fromKeycode", &from_keycode) ||
+        !data->GetInteger("toKeycode", &to_keycode)) {
+      LOG(ERROR) << "Invalid remapKey.";
+      return;
+    }
+
+    RemapKey(from_keycode, to_keycode);
+  } else if (method == "trapKey") {
+    int keycode = 0;
+    bool trap = false;
+    if (!data->GetInteger("keycode", &keycode) ||
+        !data->GetBoolean("trap", &trap)) {
+      LOG(ERROR) << "Invalid trapKey.";
+      return;
+    }
+
+    TrapKey(keycode, trap);
   } else if (method == "sendClipboardItem") {
     std::string mime_type;
     std::string item;
@@ -370,8 +390,9 @@ void ChromotingInstance::Connect(const ClientConfig& config) {
   mouse_input_filter_->set_input_size(view_->get_view_size());
   input_tracker_.reset(
       new protocol::InputEventTracker(mouse_input_filter_.get()));
+  key_mapper_.set_input_stub(input_tracker_.get());
   input_handler_.reset(
-      new PepperInputHandler(input_tracker_.get()));
+      new PepperInputHandler(&key_mapper_));
 
   LOG(INFO) << "Connecting to " << config.host_jid
             << ". Local jid: " << config.local_jid << ".";
@@ -425,8 +446,18 @@ void ChromotingInstance::ReleaseAllKeys() {
 }
 
 void ChromotingInstance::InjectKeyEvent(const protocol::KeyEvent& event) {
+  // Inject after the KeyEventMapper, so the event won't get mapped or trapped.
   if (input_tracker_.get())
     input_tracker_->InjectKeyEvent(event);
+}
+
+void ChromotingInstance::RemapKey(uint32 in_usb_keycode,
+                                  uint32 out_usb_keycode) {
+  key_mapper_.RemapKey(in_usb_keycode, out_usb_keycode);
+}
+
+void ChromotingInstance::TrapKey(uint32 usb_keycode, bool trap) {
+  key_mapper_.TrapKey(usb_keycode, trap);
 }
 
 void ChromotingInstance::SendClipboardItem(const std::string& mime_type,
@@ -456,6 +487,13 @@ void ChromotingInstance::PostChromotingMessage(
   std::string message_json;
   base::JSONWriter::Write(message.get(), &message_json);
   PostMessage(pp::Var(message_json));
+}
+
+void ChromotingInstance::SendTrappedKey(uint32 usb_keycode, bool pressed) {
+  scoped_ptr<base::DictionaryValue> data(new base::DictionaryValue());
+  data->SetInteger("usbKeycode", usb_keycode);
+  data->SetBoolean("pressed", pressed);
+  PostChromotingMessage("trappedKeyEvent", data.Pass());
 }
 
 void ChromotingInstance::SendOutgoingIq(const std::string& iq) {
