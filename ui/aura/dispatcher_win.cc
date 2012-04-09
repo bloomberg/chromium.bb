@@ -14,13 +14,13 @@ class DispatcherWin : public MessageLoop::Dispatcher {
   virtual ~DispatcherWin() {}
 
   // Overridden from MessageLoop::Dispatcher:
-  virtual bool Dispatch(const MSG& msg) OVERRIDE;
+  virtual bool Dispatch(const base::NativeEvent& event) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DispatcherWin);
 };
 
-bool DispatcherWin::Dispatch(const MSG& msg) {
+bool DispatcherWin::Dispatch(const base::NativeEvent& msg) {
   TranslateMessage(&msg);
   DispatchMessage(&msg);
   return true;

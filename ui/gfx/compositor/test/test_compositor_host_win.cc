@@ -25,7 +25,7 @@ class TestCompositorHostWin : public TestCompositorHost,
   }
 
   // Overridden from MessageLoop::Dispatcher:
-  virtual bool Dispatch(const MSG& msg) {
+  virtual bool Dispatch(const base::NativeEvent& msg) {
     TranslateMessage(&msg);
     DispatchMessage(&msg);
     return true;

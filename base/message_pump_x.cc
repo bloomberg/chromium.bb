@@ -144,14 +144,9 @@ bool MessagePumpX::ProcessXEvent(MessagePumpDispatcher* dispatcher,
   }
 
   if (!WillProcessXEvent(xev)) {
-    MessagePumpDispatcher::DispatchStatus status =
-        dispatcher->Dispatch(xev);
-
-    if (status == MessagePumpDispatcher::EVENT_QUIT) {
+    if (!dispatcher->Dispatch(xev)) {
       should_quit = true;
       Quit();
-    } else if (status == MessagePumpDispatcher::EVENT_IGNORED) {
-      DVLOG(1) << "Event (" << xev->type << ") not handled.";
     }
     DidProcessXEvent(xev);
   }

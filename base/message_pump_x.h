@@ -8,6 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_pump.h"
 #include "base/message_pump_glib.h"
+#include "base/message_pump_dispatcher.h"
 #include "base/message_pump_observer.h"
 
 #include <bitset>
@@ -17,26 +18,6 @@
 typedef struct _XDisplay Display;
 
 namespace base {
-
-// The documentation for this class is in message_pump_glib.h
-//
-// The nested loop is exited by either posting a quit, or returning EVENT_QUIT
-// from Dispatch.
-class MessagePumpDispatcher {
- public:
-  enum DispatchStatus {
-    EVENT_IGNORED,    // The event was not processed.
-    EVENT_PROCESSED,  // The event has been processed.
-    EVENT_QUIT        // The event was processed and the message-loop should
-                      // terminate.
-  };
-  virtual ~MessagePumpDispatcher() {}
-
-  // Dispatches the event. EVENT_IGNORED is returned if the event was ignored
-  // (i.e. not processed). EVENT_PROCESSED is returned if the event was
-  // processed. The nested loop exits immediately if EVENT_QUIT is returned.
-  virtual DispatchStatus Dispatch(XEvent* xevent) = 0;
-};
 
 // This class implements a message-pump for dispatching X events.
 class BASE_EXPORT MessagePumpX : public MessagePumpGlib {

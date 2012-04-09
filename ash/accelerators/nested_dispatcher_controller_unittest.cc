@@ -15,6 +15,7 @@
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
 #include "ui/base/accelerators/accelerator.h"
+#include "ui/base/events.h"
 
 #if defined(USE_X11)
 #include <X11/Xlib.h>
@@ -33,21 +34,13 @@ class MockDispatcher : public MessageLoop::Dispatcher {
 
   int num_key_events_dispatched() { return num_key_events_dispatched_; }
 
-#if defined(OS_WIN)
-  virtual bool Dispatch(const MSG& msg) OVERRIDE {
-    if (msg.message == WM_KEYUP)
+#if defined(OS_WIN) || defined(USE_X11)
+  virtual bool Dispatch(const base::NativeEvent& event) OVERRIDE {
+    if (ui::EventTypeFromNative(event) == ui::ET_KEY_RELEASED)
       num_key_events_dispatched_++;
-    return !ui::IsNoopEvent(msg);
+    return !ui::IsNoopEvent(event);
   }
-#elif defined(USE_X11)
-  virtual base::MessagePumpDispatcher::DispatchStatus Dispatch(
-      XEvent* xev) OVERRIDE {
-    if (xev->type == KeyRelease)
-      num_key_events_dispatched_++;
-    return ui::IsNoopEvent(xev) ? MessagePumpDispatcher::EVENT_QUIT :
-        MessagePumpDispatcher::EVENT_IGNORED;
-  }
-#endif
+#endif  //  defined(OS_WIN) || defined(USE_X11)
 
  private:
   int num_key_events_dispatched_;

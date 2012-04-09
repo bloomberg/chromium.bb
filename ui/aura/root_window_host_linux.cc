@@ -386,9 +386,8 @@ RootWindowHostLinux::~RootWindowHostLinux() {
   XFreeCursor(xdisplay_, invisible_cursor_);
 }
 
-base::MessagePumpDispatcher::DispatchStatus RootWindowHostLinux::Dispatch(
-    XEvent* xev) {
-  bool handled = false;
+bool RootWindowHostLinux::Dispatch(const base::NativeEvent& event) {
+  XEvent* xev = event;
 
   // See crbug.com/109884.
   // CheckXEventForConsistency(xev);
@@ -396,22 +395,21 @@ base::MessagePumpDispatcher::DispatchStatus RootWindowHostLinux::Dispatch(
   switch (xev->type) {
     case Expose:
       root_window_->ScheduleFullDraw();
-      handled = true;
       break;
     case KeyPress: {
       KeyEvent keydown_event(xev, false);
-      handled = root_window_->DispatchKeyEvent(&keydown_event);
+      root_window_->DispatchKeyEvent(&keydown_event);
       break;
     }
     case KeyRelease: {
       KeyEvent keyup_event(xev, false);
-      handled = root_window_->DispatchKeyEvent(&keyup_event);
+      root_window_->DispatchKeyEvent(&keyup_event);
       break;
     }
     case ButtonPress:
     case ButtonRelease: {
       MouseEvent mouseev(xev);
-      handled = root_window_->DispatchMouseEvent(&mouseev);
+      root_window_->DispatchMouseEvent(&mouseev);
       break;
     }
     case FocusOut:
@@ -438,7 +436,6 @@ base::MessagePumpDispatcher::DispatchStatus RootWindowHostLinux::Dispatch(
       bounds_ = bounds;
       if (size_changed)
         root_window_->OnHostResized(bounds.size());
-      handled = true;
       break;
     }
     case GenericEvent: {
@@ -457,7 +454,7 @@ base::MessagePumpDispatcher::DispatchStatus RootWindowHostLinux::Dispatch(
         case ui::ET_TOUCH_RELEASED:
         case ui::ET_TOUCH_MOVED: {
           TouchEvent touchev(xev);
-          handled = root_window_->DispatchTouchEvent(&touchev);
+          root_window_->DispatchTouchEvent(&touchev);
           break;
         }
         case ui::ET_MOUSE_MOVED:
@@ -474,18 +471,17 @@ base::MessagePumpDispatcher::DispatchStatus RootWindowHostLinux::Dispatch(
         case ui::ET_MOUSE_ENTERED:
         case ui::ET_MOUSE_EXITED: {
           MouseEvent mouseev(xev);
-          handled = root_window_->DispatchMouseEvent(&mouseev);
+          root_window_->DispatchMouseEvent(&mouseev);
           break;
         }
         case ui::ET_SCROLL_FLING_START:
         case ui::ET_SCROLL_FLING_CANCEL:
         case ui::ET_SCROLL: {
           ScrollEvent scrollev(xev);
-          handled = root_window_->DispatchScrollEvent(&scrollev);
+          root_window_->DispatchScrollEvent(&scrollev);
           break;
         }
         case ui::ET_UNKNOWN:
-          handled = false;
           break;
         default:
           NOTREACHED();
@@ -501,7 +497,6 @@ base::MessagePumpDispatcher::DispatchStatus RootWindowHostLinux::Dispatch(
       // focus to our host window.
       if (!IsWindowManagerPresent() && focus_when_shown_)
         XSetInputFocus(xdisplay_, xwindow_, RevertToNone, CurrentTime);
-      handled = true;
       break;
     }
     case ClientMessage: {
@@ -509,7 +504,6 @@ base::MessagePumpDispatcher::DispatchStatus RootWindowHostLinux::Dispatch(
       if (message_type == cached_atoms_[ATOM_WM_DELETE_WINDOW]) {
         // We have received a close message from the window manager.
         root_window_->OnRootWindowHostClosed();
-        handled = true;
       } else if (message_type == cached_atoms_[ATOM__NET_WM_PING]) {
         XEvent reply_event = *xev;
         reply_event.xclient.window = x_root_window_;
@@ -519,8 +513,6 @@ base::MessagePumpDispatcher::DispatchStatus RootWindowHostLinux::Dispatch(
                    False,
                    SubstructureRedirectMask | SubstructureNotifyMask,
                    &reply_event);
-
-        handled = true;
       }
       break;
     }
@@ -559,12 +551,11 @@ base::MessagePumpDispatcher::DispatchStatus RootWindowHostLinux::Dispatch(
       }
 
       MouseEvent mouseev(xev);
-      handled = root_window_->DispatchMouseEvent(&mouseev);
+      root_window_->DispatchMouseEvent(&mouseev);
       break;
     }
   }
-  return handled ? base::MessagePumpDispatcher::EVENT_PROCESSED :
-      base::MessagePumpDispatcher::EVENT_IGNORED;
+  return true;
 }
 
 void RootWindowHostLinux::SetRootWindow(RootWindow* root_window) {

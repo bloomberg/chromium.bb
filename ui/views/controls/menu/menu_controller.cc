@@ -890,7 +890,6 @@ bool MenuController::Dispatch(const MSG& msg) {
     }
     case WM_CHAR:
       return !SelectByChar(static_cast<char16>(msg.wParam));
-
     case WM_KEYUP:
       return true;
 
@@ -914,34 +913,25 @@ bool MenuController::Dispatch(const MSG& msg) {
   return exit_type_ == EXIT_NONE;
 }
 #elif defined(USE_AURA)
-base::MessagePumpDispatcher::DispatchStatus
-    MenuController::Dispatch(XEvent* xev) {
+bool MenuController::Dispatch(const base::NativeEvent& event) {
   if (exit_type_ == EXIT_ALL || exit_type_ == EXIT_DESTROYED) {
-    aura::Env::GetInstance()->GetDispatcher()->Dispatch(xev);
-    return base::MessagePumpDispatcher::EVENT_QUIT;
+    aura::Env::GetInstance()->GetDispatcher()->Dispatch(event);
+    return false;
   }
-  switch (ui::EventTypeFromNative(xev)) {
+  switch (ui::EventTypeFromNative(event)) {
     case ui::ET_KEY_PRESSED:
-      if (!OnKeyDown(ui::KeyboardCodeFromNative(xev)))
-        return base::MessagePumpDispatcher::EVENT_QUIT;
+      if (!OnKeyDown(ui::KeyboardCodeFromNative(event)))
+        return false;
 
-      return SelectByChar(ui::KeyboardCodeFromNative(xev)) ?
-          base::MessagePumpDispatcher::EVENT_QUIT :
-          base::MessagePumpDispatcher::EVENT_PROCESSED;
+      return !SelectByChar(ui::KeyboardCodeFromNative(event));
     case ui::ET_KEY_RELEASED:
-      return base::MessagePumpDispatcher::EVENT_PROCESSED;
+      return true;
     default:
       break;
   }
 
-  // TODO(oshima): Update Windows' Dispatcher to return DispatchStatus
-  // instead of bool.
-  if (aura::Env::GetInstance()->GetDispatcher()->Dispatch(xev) ==
-      base::MessagePumpDispatcher::EVENT_IGNORED)
-    return EVENT_IGNORED;
-  return exit_type_ != EXIT_NONE ?
-      base::MessagePumpDispatcher::EVENT_QUIT :
-      base::MessagePumpDispatcher::EVENT_PROCESSED;
+  aura::Env::GetInstance()->GetDispatcher()->Dispatch(event);
+  return exit_type_ == EXIT_NONE;
 }
 #endif
 

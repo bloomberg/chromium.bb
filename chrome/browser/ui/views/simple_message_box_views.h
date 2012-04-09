@@ -74,14 +74,9 @@ class SimpleMessageBoxViews : public views::DialogDelegate,
   virtual ~SimpleMessageBoxViews();
 
   // MessageLoop::Dispatcher implementation.
-#if defined(OS_WIN)
   // Dispatcher method. This returns true if the menu was canceled, or
   // if the message is such that the menu should be closed.
-  virtual bool Dispatch(const MSG& msg) OVERRIDE;
-#elif defined(USE_AURA)
-  virtual base::MessagePumpDispatcher::DispatchStatus Dispatch(
-      XEvent* xevent) OVERRIDE;
-#endif
+  virtual bool Dispatch(const base::NativeEvent& event) OVERRIDE;
 
   const DialogType type_;
   string16 message_box_title_;

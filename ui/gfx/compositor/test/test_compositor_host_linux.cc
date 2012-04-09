@@ -38,12 +38,7 @@ class TestCompositorHostLinux : public TestCompositorHost,
   virtual void ScheduleDraw() OVERRIDE;
 
   // Overridden from MessagePumpDispatcher:
-#if defined(USE_AURA)
-  virtual base::MessagePumpDispatcher::DispatchStatus
-    Dispatch(XEvent* xev) OVERRIDE;
-#elif defined(TOOLKIT_GTK)
-  virtual bool Dispatch(GdkEvent* event) OVERRIDE;
-#endif
+  virtual bool Dispatch(const base::NativeEvent& event) OVERRIDE;
 
   void Draw();
 
@@ -104,16 +99,9 @@ void TestCompositorHostLinux::ScheduleDraw() {
   }
 }
 
-#if defined(USE_AURA)
-base::MessagePumpDispatcher::DispatchStatus TestCompositorHostLinux::Dispatch(
-    XEvent* xev) {
-  return MessagePumpDispatcher::EVENT_IGNORED;
+bool TestCompositorHostLinux::Dispatch(const base::NativeEvent& event) {
+  return true;
 }
-#elif defined(TOOLKIT_GTK)
-bool TestCompositorHostLinux::Dispatch(GdkEvent*) {
-  return false;
-}
-#endif
 
 void TestCompositorHostLinux::Draw() {
   if (compositor_.get())

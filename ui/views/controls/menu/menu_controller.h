@@ -238,13 +238,10 @@ class VIEWS_EXPORT MenuController : public MessageLoop::Dispatcher {
                                  const LocatedEvent& event);
   void StartDrag(SubmenuView* source, const gfx::Point& location);
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(USE_AURA)
   // Dispatcher method. This returns true if the menu was canceled, or
   // if the message is such that the menu should be closed.
-  virtual bool Dispatch(const MSG& msg) OVERRIDE;
-#elif defined(USE_AURA)
-  virtual base::MessagePumpDispatcher::DispatchStatus Dispatch(
-      XEvent* xevent) OVERRIDE;
+  virtual bool Dispatch(const base::NativeEvent& event) OVERRIDE;
 #endif
 
   // Key processing. The return value of this is returned from Dispatch.

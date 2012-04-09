@@ -25,8 +25,7 @@ class MonitorChangeObserverX11 : public MessageLoop::Dispatcher {
   virtual ~MonitorChangeObserverX11();
 
   // Overridden from Dispatcher overrides:
-  virtual base::MessagePumpDispatcher::DispatchStatus Dispatch(
-      XEvent* xev) OVERRIDE;
+  virtual bool Dispatch(const base::NativeEvent& xev) OVERRIDE;
 
   // Reads monitor configurations from the system and notifies
   // |monitor_manager_| about the change.

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,21 +9,18 @@ namespace views {
 AcceleratorHandler::AcceleratorHandler() {
 }
 
+bool AcceleratorHandler::Dispatch(const base::NativeEvent& event) {
 #if defined(OS_WIN)
-bool AcceleratorHandler::Dispatch(const MSG& msg) {
-  TranslateMessage(&msg);
-  DispatchMessage(&msg);
+  TranslateMessage(&event);
+  DispatchMessage(&event);
+#endif  // defined(OS_WIN)
   return true;
 }
-#else
-base::MessagePumpDispatcher::DispatchStatus AcceleratorHandler::Dispatch(
-    XEvent*) {
-  return base::MessagePumpDispatcher::EVENT_IGNORED;
-}
 
+#if defined(USE_X11)
 bool DispatchXEvent(XEvent* xev) {
   return false;
 }
-#endif  // defined(OS_WIN)
+#endif  // defined(USE_X11)
 
 }  // namespace views

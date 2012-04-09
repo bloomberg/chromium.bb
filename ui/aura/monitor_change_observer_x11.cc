@@ -55,13 +55,11 @@ MonitorChangeObserverX11::~MonitorChangeObserverX11() {
       WindowDispatcherDestroying(x_root_window_);
 }
 
-base::MessagePumpDispatcher::DispatchStatus
-MonitorChangeObserverX11::Dispatch(XEvent* event) {
+bool MonitorChangeObserverX11::Dispatch(const base::NativeEvent& event) {
   if (event->type - xrandr_event_base_ == RRScreenChangeNotify) {
     NotifyMonitorChange();
-    return base::MessagePumpDispatcher::EVENT_PROCESSED;
   }
-  return base::MessagePumpDispatcher::EVENT_IGNORED;
+  return true;
 }
 
 void MonitorChangeObserverX11::NotifyMonitorChange() {

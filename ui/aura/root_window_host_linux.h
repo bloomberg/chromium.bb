@@ -25,8 +25,7 @@ class RootWindowHostLinux : public RootWindowHost,
   virtual ~RootWindowHostLinux();
 
   // Overridden from Dispatcher overrides:
-  virtual base::MessagePumpDispatcher::DispatchStatus
-      Dispatch(XEvent* xev) OVERRIDE;
+  virtual bool Dispatch(const base::NativeEvent& event) OVERRIDE;
 
  private:
   // RootWindowHost Overrides.

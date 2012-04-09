@@ -27,8 +27,7 @@ class DispatcherLinux : public MessageLoop::Dispatcher {
   void WindowDispatcherDestroying(::Window window);
 
   // Overridden from MessageLoop::Dispatcher:
-  virtual base::MessagePumpDispatcher::DispatchStatus Dispatch(
-      XEvent* xev) OVERRIDE;
+  virtual bool Dispatch(const base::NativeEvent& event) OVERRIDE;
 
  private:
   typedef std::map< ::Window, MessageLoop::Dispatcher* > DispatchersMap;

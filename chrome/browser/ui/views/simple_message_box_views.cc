@@ -149,20 +149,12 @@ SimpleMessageBoxViews::SimpleMessageBoxViews(gfx::NativeWindow parent_window,
 SimpleMessageBoxViews::~SimpleMessageBoxViews() {
 }
 
+bool SimpleMessageBoxViews::Dispatch(const base::NativeEvent& event) {
 #if defined(OS_WIN)
-bool SimpleMessageBoxViews::Dispatch(const MSG& msg) {
-  TranslateMessage(&msg);
-  DispatchMessage(&msg);
+  TranslateMessage(&event);
+  DispatchMessage(&event);
+#elif defined(USE_AURA)
+  aura::Env::GetInstance()->GetDispatcher()->Dispatch(event);
+#endif
   return disposition_ == DISPOSITION_UNKNOWN;
 }
-#elif defined(USE_AURA)
-base::MessagePumpDispatcher::DispatchStatus
-    SimpleMessageBoxViews::Dispatch(XEvent* xev) {
-  if (!aura::Env::GetInstance()->GetDispatcher()->Dispatch(xev))
-    return EVENT_IGNORED;
-
-  if (disposition_ == DISPOSITION_UNKNOWN)
-    return base::MessagePumpDispatcher::EVENT_PROCESSED;
-  return base::MessagePumpDispatcher::EVENT_QUIT;
-}
-#endif

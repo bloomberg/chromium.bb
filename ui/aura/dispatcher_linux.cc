@@ -28,14 +28,13 @@ void DispatcherLinux::WindowDispatcherDestroying(::Window window) {
   dispatchers_.erase(window);
 }
 
-base::MessagePumpDispatcher::DispatchStatus DispatcherLinux::Dispatch(
-    XEvent* xev) {
+bool DispatcherLinux::Dispatch(const base::NativeEvent& xev) {
   // XI_HierarchyChanged events are special. There is no window associated with
   // these events. So process them directly from here.
   if (xev->type == GenericEvent &&
       xev->xgeneric.evtype == XI_HierarchyChanged) {
     ui::UpdateDeviceList();
-    return EVENT_PROCESSED;
+    return true;
   }
 
   // MappingNotify events (meaning that the keyboard or pointer buttons have
@@ -46,11 +45,11 @@ base::MessagePumpDispatcher::DispatchStatus DispatcherLinux::Dispatch(
          it != dispatchers_.end(); ++it) {
       it->second->Dispatch(xev);
     }
-    return EVENT_PROCESSED;
+    return true;
   }
 
   MessageLoop::Dispatcher* dispatcher = GetDispatcherForXEvent(xev);
-  return dispatcher ? dispatcher->Dispatch(xev) : EVENT_IGNORED;
+  return dispatcher ? dispatcher->Dispatch(xev) : true;
 }
 
 MessageLoop::Dispatcher* DispatcherLinux::GetDispatcherForXEvent(

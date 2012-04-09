@@ -35,13 +35,10 @@ class VIEWS_EXPORT AcceleratorHandler : public MessageLoop::Dispatcher {
 
   // Dispatcher method. This returns true if an accelerator was processed by the
   // focus manager
-#if defined(OS_WIN)
-  virtual bool Dispatch(const MSG& msg) OVERRIDE;
+#if defined(OS_WIN) || defined(USE_AURA)
+  virtual bool Dispatch(const base::NativeEvent& event) OVERRIDE;
 #elif defined(OS_MACOSX)
   // TODO(dhollowa): Implement on Mac.  http://crbug.com/109946
-#elif defined(USE_AURA)
-  virtual base::MessagePumpDispatcher::DispatchStatus Dispatch(
-      XEvent* xev) OVERRIDE;
 #endif
 
  private:
