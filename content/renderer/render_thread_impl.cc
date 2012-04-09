@@ -179,6 +179,30 @@ RenderThreadImpl::RenderThreadImpl(const std::string& channel_name)
   Init();
 }
 
+#if defined(OS_POSIX)
+class SuicideOnChannelErrorFilter : public IPC::ChannelProxy::MessageFilter {
+  void OnChannelError() {
+    // On POSIX, at least, one can install an unload handler which loops
+    // forever and leave behind a renderer process which eats 100% CPU forever.
+    //
+    // This is because the terminate signals (ViewMsg_ShouldClose and the error
+    // from the IPC channel) are routed to the main message loop but never
+    // processed (because that message loop is stuck in V8).
+    //
+    // One could make the browser SIGKILL the renderers, but that leaves open a
+    // large window where a browser failure (or a user, manually terminating
+    // the browser because "it's stuck") will leave behind a process eating all
+    // the CPU.
+    //
+    // So, we install a filter on the channel so that we can process this event
+    // here and kill the process.
+
+    _exit(0);
+  }
+};
+#endif  // OS_POSIX
+
+
 void RenderThreadImpl::Init() {
   TRACE_EVENT_BEGIN_ETW("RenderThreadImpl::Init", 0, "");
 
@@ -231,6 +255,10 @@ void RenderThreadImpl::Init() {
   AddFilter(devtools_agent_message_filter_.get());
 
   AddFilter(new IndexedDBMessageFilter);
+
+#if defined(OS_POSIX)
+  AddFilter(new SuicideOnChannelErrorFilter());
+#endif
 
   content::GetContentClient()->renderer()->RenderThreadStarted();
 
