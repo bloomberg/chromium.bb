@@ -6,19 +6,11 @@
 #define CHROME_BROWSER_UI_VIEWS_DOWNLOAD_DOWNLOAD_IN_PROGRESS_DIALOG_VIEW_H_
 #pragma once
 
-#include <string>
-
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/string16.h"
-#include "ui/views/view.h"
 #include "ui/views/window/dialog_delegate.h"
 
 class Browser;
-
-namespace gfx {
-class Size;
-}
 
 namespace views {
 class Label;
@@ -26,10 +18,12 @@ class Label;
 
 class DownloadInProgressDialogView : public views::DialogDelegateView {
  public:
+  static void Show(Browser* browser, gfx::NativeWindow parent_window);
+
+ private:
   explicit DownloadInProgressDialogView(Browser* browser);
   virtual ~DownloadInProgressDialogView();
 
- private:
   // views::View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
 

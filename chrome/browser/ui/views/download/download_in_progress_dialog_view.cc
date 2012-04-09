@@ -7,12 +7,7 @@
 #include <algorithm>
 
 #include "base/string_number_conversions.h"
-#include "base/utf_string_conversions.h"
-#include "chrome/browser/download/download_service.h"
-#include "chrome/browser/download/download_service_factory.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "content/public/browser/download_manager.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -23,6 +18,14 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/widget/widget.h"
+
+// static
+void DownloadInProgressDialogView::Show(Browser* browser,
+                                        gfx::NativeWindow parent_window) {
+  DownloadInProgressDialogView* window =
+      new DownloadInProgressDialogView(browser);
+  views::Widget::CreateWindowWithParent(window, parent_window)->Show();
+}
 
 DownloadInProgressDialogView::DownloadInProgressDialogView(Browser* browser)
     : browser_(browser),
@@ -55,7 +58,7 @@ DownloadInProgressDialogView::DownloadInProgressDialogView(Browser* browser)
   } else {
     warning_text = l10n_util::GetStringFUTF16(
         IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_WARNING,
-        UTF8ToUTF16(base::IntToString(download_count)));
+        base::IntToString16(download_count));
     explanation_text = l10n_util::GetStringUTF16(
         IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_EXPLANATION);
     ok_button_text_ = l10n_util::GetStringUTF16(
@@ -108,8 +111,8 @@ gfx::Size DownloadInProgressDialogView::GetPreferredSize() {
 
 string16 DownloadInProgressDialogView::GetDialogButtonLabel(
     ui::DialogButton button) const {
-  return (button == ui::DIALOG_BUTTON_OK) ? ok_button_text_
-                                          : cancel_button_text_;
+  return (button == ui::DIALOG_BUTTON_OK) ?
+      ok_button_text_ : cancel_button_text_;
 }
 
 int DownloadInProgressDialogView::GetDefaultDialogButton() const {
