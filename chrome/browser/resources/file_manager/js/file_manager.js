@@ -3998,7 +3998,7 @@ FileManager.prototype = {
 
   FileManager.prototype.onRenameInputBlur_ = function(event) {
     if (this.isRenamingInProgress() && !this.renameInput_.validation_)
-      this.cancelRename_();
+      this.commitRename_();
   };
 
   FileManager.prototype.commitRename_ = function() {
@@ -4011,6 +4011,9 @@ FileManager.prototype = {
       return;
     }
 
+    var nameNode = this.findListItemForNode_(this.renameInput_).
+                   querySelector('.filename-label');
+
     input.validation_ = true;
     function validationDone() {
       input.validation_ = false;
@@ -4022,8 +4025,6 @@ FileManager.prototype = {
     if (!this.validateFileName_(newName, validationDone.bind(this)))
       return;
 
-    var nameNode = this.findListItemForNode_(this.renameInput_).
-                   querySelector('.filename-label');
     function onError(err) {
       nameNode.textContent = entry.name;
       this.alert.show(strf('ERROR_RENAMING', entry.name,
