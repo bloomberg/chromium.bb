@@ -12,45 +12,45 @@
 #include "chrome/browser/ui/panels/panel_strip.h"
 
 namespace {
-  static bool ResizingLeft(PanelResizeController::ResizingSides sides) {
-    return sides == PanelResizeController::RESIZE_TOP_LEFT ||
-           sides == PanelResizeController::RESIZE_LEFT ||
-           sides == PanelResizeController::RESIZE_BOTTOM_LEFT;
+  static bool ResizingLeft(panel::ResizingSides sides) {
+    return sides == panel::RESIZE_TOP_LEFT ||
+           sides == panel::RESIZE_LEFT ||
+           sides == panel::RESIZE_BOTTOM_LEFT;
   }
 
-  static bool ResizingRight(PanelResizeController::ResizingSides sides) {
-    return sides == PanelResizeController::RESIZE_TOP_RIGHT ||
-           sides == PanelResizeController::RESIZE_RIGHT ||
-           sides == PanelResizeController::RESIZE_BOTTOM_RIGHT;
+  static bool ResizingRight(panel::ResizingSides sides) {
+    return sides == panel::RESIZE_TOP_RIGHT ||
+           sides == panel::RESIZE_RIGHT ||
+           sides == panel::RESIZE_BOTTOM_RIGHT;
   }
 
-  static bool ResizingTop(PanelResizeController::ResizingSides sides) {
-    return sides == PanelResizeController::RESIZE_TOP_LEFT ||
-           sides == PanelResizeController::RESIZE_TOP ||
-           sides == PanelResizeController::RESIZE_TOP_RIGHT;
+  static bool ResizingTop(panel::ResizingSides sides) {
+    return sides == panel::RESIZE_TOP_LEFT ||
+           sides == panel::RESIZE_TOP ||
+           sides == panel::RESIZE_TOP_RIGHT;
   }
 
-  static bool ResizingBottom(PanelResizeController::ResizingSides sides) {
-    return sides == PanelResizeController::RESIZE_BOTTOM_RIGHT ||
-           sides == PanelResizeController::RESIZE_BOTTOM ||
-           sides == PanelResizeController::RESIZE_BOTTOM_LEFT;
+  static bool ResizingBottom(panel::ResizingSides sides) {
+    return sides == panel::RESIZE_BOTTOM_RIGHT ||
+           sides == panel::RESIZE_BOTTOM ||
+           sides == panel::RESIZE_BOTTOM_LEFT;
   }
 }
 
 PanelResizeController::PanelResizeController(PanelManager* panel_manager)
   : panel_manager_(panel_manager),
     resizing_panel_(NULL),
-    sides_resized_(NO_SIDES) {
+    sides_resized_(panel::RESIZE_NONE) {
 }
 
 void PanelResizeController::StartResizing(Panel* panel,
                                           const gfx::Point& mouse_location,
-                                          ResizingSides sides) {
+                                          panel::ResizingSides sides) {
   DCHECK(!IsResizing());
   DCHECK(panel->panel_strip() &&
          panel->panel_strip()->CanResizePanel(panel));
 
-  DCHECK_NE(NO_SIDES, sides);
+  DCHECK_NE(panel::RESIZE_NONE, sides);
 
   mouse_location_at_start_ = mouse_location;
   bounds_at_start_ = panel->GetBounds();
@@ -113,7 +113,7 @@ void PanelResizeController::EndResizing(bool cancelled) {
 
   // Do a thorough cleanup.
   resizing_panel_ = NULL;
-  sides_resized_ = NO_SIDES;
+  sides_resized_ = panel::RESIZE_NONE;
   bounds_at_start_ = gfx::Rect();
   mouse_location_at_start_ = gfx::Point();
 }
@@ -125,41 +125,4 @@ void PanelResizeController::OnPanelClosed(Panel* panel) {
   // If the resizing panel is closed, abort the resize operation.
   if (resizing_panel_ == panel)
     EndResizing(false);
-}
-
-PanelResizeController::ResizingSides
-    PanelResizeController::IsMouseNearFrameSide(
-    gfx::Point mouse_location,
-    int resize_edge_thickness,
-    Panel* panel) {
-  gfx::Rect bounds = panel->GetBounds();
-
-  bool left = false, right = false, top = false, bottom = false;
-
-  if (abs(mouse_location.x() - bounds.x()) <= resize_edge_thickness)
-    left = true;
-  if (abs(mouse_location.y() - bounds.y()) <= resize_edge_thickness)
-    top = true;
-  if (abs(mouse_location.x() - bounds.right()) <= resize_edge_thickness)
-    right = true;
-  if (abs(mouse_location.y() - bounds.bottom()) <= resize_edge_thickness)
-    bottom = true;
-
-  if (top && left)
-    return RESIZE_TOP_LEFT;
-  if (top && right)
-    return RESIZE_TOP_RIGHT;
-  if (bottom && left)
-    return RESIZE_BOTTOM_LEFT;
-  if (bottom && right)
-    return RESIZE_BOTTOM_RIGHT;
-  if (top)
-    return RESIZE_TOP;
-  if (bottom)
-    return RESIZE_BOTTOM;
-  if (left)
-    return RESIZE_LEFT;
-  if (right)
-    return RESIZE_RIGHT;
-  return NO_SIDES;
 }

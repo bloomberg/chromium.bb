@@ -8,6 +8,7 @@
 
 #include <set>
 #include "base/basictypes.h"
+#include "chrome/browser/ui/panels/panel_constants.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 
@@ -22,23 +23,11 @@ class PanelResizeController {
  public:
   explicit PanelResizeController(PanelManager* panel_manager);
 
-  enum ResizingSides {
-    NO_SIDES = 0,
-    RESIZE_TOP,
-    RESIZE_TOP_RIGHT,
-    RESIZE_RIGHT,
-    RESIZE_BOTTOM_RIGHT,
-    RESIZE_BOTTOM,
-    RESIZE_BOTTOM_LEFT,
-    RESIZE_LEFT,
-    RESIZE_TOP_LEFT
-  };
-
   // Resize the given panel.
   // |mouse_location| is in screen coordinate system.
   void StartResizing(Panel* panel,
                      const gfx::Point& mouse_location,
-                     ResizingSides sides);
+                     panel::ResizingSides sides);
   void Resize(const gfx::Point& mouse_location);
   void EndResizing(bool cancelled);
 
@@ -47,15 +36,6 @@ class PanelResizeController {
 
   bool IsResizing() const { return resizing_panel_ != NULL; }
 
-  // Helper to compute the ResizingSide from the location of the mouse.
-  // Splits the edges into 8 areas (edges and corners) using uniform
-  // thickness.
-  // TODO (ABurago): move this into the native layer.
-  static ResizingSides IsMouseNearFrameSide(gfx::Point mouse_location,
-                                            int resize_edge_thickness,
-                                            Panel* panel);
-
-
  private:
   PanelManager* panel_manager_;  // Weak, owns us.
 
@@ -63,7 +43,7 @@ class PanelResizeController {
   Panel* resizing_panel_;
 
   // Resizing at which side?
-  ResizingSides sides_resized_;
+  panel::ResizingSides sides_resized_;
 
   // The mouse location, in screen coordinates, when StartResizing
   // previously called.

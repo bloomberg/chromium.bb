@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/panels/overflow_panel_strip.h"
 #include "chrome/browser/ui/panels/panel_drag_controller.h"
 #include "chrome/browser/ui/panels/panel_mouse_watcher.h"
+#include "chrome/browser/ui/panels/panel_resize_controller.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
@@ -189,9 +190,9 @@ void PanelManager::EndDragging(bool cancelled) {
 
 void PanelManager::StartResizingByMouse(Panel* panel,
     const gfx::Point& mouse_location,
-    PanelResizeController::ResizingSides sides) {
+    panel::ResizingSides sides) {
    if (panel->panel_strip() && panel->panel_strip()->CanResizePanel(panel) &&
-      sides != PanelResizeController::NO_SIDES)
+      sides != panel::RESIZE_NONE)
     resize_controller_->StartResizing(panel, mouse_location, sides);
 }
 

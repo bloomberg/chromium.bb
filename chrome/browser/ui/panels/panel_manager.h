@@ -13,7 +13,7 @@
 #include "base/timer.h"
 #include "chrome/browser/ui/panels/display_settings_provider.h"
 #include "chrome/browser/ui/panels/panel.h"
-#include "chrome/browser/ui/panels/panel_resize_controller.h"
+#include "chrome/browser/ui/panels/panel_constants.h"
 #include "chrome/browser/ui/panels/panel_strip.h"
 #include "ui/gfx/rect.h"
 
@@ -22,6 +22,7 @@ class DetachedPanelStrip;
 class DockedPanelStrip;
 class OverflowPanelStrip;
 class PanelDragController;
+class PanelResizeController;
 class PanelMouseWatcher;
 
 // This class manages a set of panels.
@@ -55,7 +56,7 @@ class PanelManager : public DisplaySettingsProvider::Observer {
   // Resizes the given panel.
   // |mouse_location| is in screen coordinate system.
   void StartResizingByMouse(Panel* panel, const gfx::Point& mouse_location,
-                            PanelResizeController::ResizingSides sides);
+                            panel::ResizingSides sides);
   void ResizeByMouse(const gfx::Point& mouse_location);
   void EndResizingByMouse(bool cancelled);
 

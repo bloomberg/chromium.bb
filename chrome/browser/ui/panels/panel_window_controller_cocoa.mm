@@ -32,7 +32,6 @@
 #include "chrome/browser/ui/panels/panel_bounds_animation.h"
 #include "chrome/browser/ui/panels/panel_browser_window_cocoa.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
-#include "chrome/browser/ui/panels/panel_resize_controller.h"
 #include "chrome/browser/ui/panels/panel_settings_menu_model.h"
 #include "chrome/browser/ui/panels/panel_strip.h"
 #import "chrome/browser/ui/panels/panel_titlebar_view_cocoa.h"
@@ -121,13 +120,21 @@ enum {
 @interface PanelResizeByMouseOverlay : NSView {
  @private
    Panel* panel_;
-   NSPoint startMouseLocationScreen_;
+   NSPoint startMouseLocation_;
    PanelDragState dragState_;
    scoped_nsobject<NSCursor> dragCursor_;
    scoped_nsobject<NSCursor> eastWestCursor_;
    scoped_nsobject<NSCursor> northSouthCursor_;
    scoped_nsobject<NSCursor> northEastSouthWestCursor_;
    scoped_nsobject<NSCursor> northWestSouthEastCursor_;
+   NSRect leftCursorRect_;
+   NSRect rightCursorRect_;
+   NSRect topCursorRect_;
+   NSRect bottomCursorRect_;
+   NSRect topLeftCursorRect_;
+   NSRect topRightCursorRect_;
+   NSRect bottomLeftCursorRect_;
+   NSRect bottomRightCursorRect_;
 }
 @end
 
@@ -163,31 +170,45 @@ enum {
   return YES;
 }
 
-  // NSWindow uses this method to figure out if this view is under the mouse
-  // and hence the one to handle the incoming mouse event.
-  // Since this view covers the whole panel, it is asked first.
-  // See if this is the mouse event we are interested in (in the resize areas)
-  // and return 'nil' to let NSWindow find another candidate otherwise.
-  // |point| is in coordinate system of the parent view.
+// |pointInWindow| is in window coordinates.
+- (panel::ResizingSides)edgeHitTest:(NSPoint)pointInWindow {
+  DCHECK(panel_->CanResizeByMouse());
+
+  NSPoint point = [self convertPoint:pointInWindow fromView:nil];
+  BOOL flipped = [self isFlipped];
+  if (NSMouseInRect(point, leftCursorRect_, flipped))
+    return panel::RESIZE_LEFT;
+  if (NSMouseInRect(point, rightCursorRect_, flipped))
+    return panel::RESIZE_RIGHT;
+  if (NSMouseInRect(point, topCursorRect_, flipped))
+    return panel::RESIZE_TOP;
+  if (NSMouseInRect(point, bottomCursorRect_, flipped))
+    return panel::RESIZE_BOTTOM;
+  if (NSMouseInRect(point, topLeftCursorRect_, flipped))
+    return panel::RESIZE_TOP_LEFT;
+  if (NSMouseInRect(point, topRightCursorRect_, flipped))
+    return panel::RESIZE_TOP_RIGHT;
+  if (NSMouseInRect(point, bottomLeftCursorRect_, flipped))
+    return panel::RESIZE_BOTTOM_LEFT;
+  if (NSMouseInRect(point, bottomRightCursorRect_, flipped))
+    return panel::RESIZE_BOTTOM_RIGHT;
+
+  return panel::RESIZE_NONE;
+}
+
+// NSWindow uses this method to figure out if this view is under the mouse
+// and hence the one to handle the incoming mouse event.
+// Since this view covers the whole panel, it is asked first.
+// See if this is the mouse event we are interested in (in the resize areas)
+// and return 'nil' to let NSWindow find another candidate otherwise.
+// |point| is in coordinate system of the parent view.
 - (NSView*)hitTest:(NSPoint)point {
   // If panel is not resizable, let the mouse events fall through.
   if (!panel_->CanResizeByMouse())
     return nil;
 
-  // Grab the view which coordinate system is used for hit-testing.
-  NSView* superview = [self superview];
-
-  NSRect frame = [self frame];
-  NSSize resizeAreaThickness = NSMakeSize(kWidthOfMouseResizeArea,
-                                          kWidthOfMouseResizeArea);
-  // Convert to the view coordinate system.
-  NSSize resizeAreaThicknessView = [superview convertSize:resizeAreaThickness
-                                                 fromView:nil];
-  frame = NSInsetRect(frame,
-                      resizeAreaThicknessView.width,
-                      resizeAreaThicknessView.height);
-  BOOL inResizeArea = ![superview mouse:point inRect:frame];
-  return inResizeArea ? self : nil;
+  NSPoint pointInWindow = [[self superview] convertPoint:point toView:nil];
+  return [self edgeHitTest:pointInWindow] == panel::RESIZE_NONE ? nil : self;
 }
 
 - (void)mouseDown:(NSEvent*)event {
@@ -233,10 +254,7 @@ enum {
           return;
 
         DCHECK(dragState_ == PANEL_DRAG_IN_PROGRESS);
-        // Get current mouse location in Cocoa's screen coordinates.
-        NSPoint mouseLocation =
-            [[event window] convertBaseToScreen:[event locationInWindow]];
-        [self resizeByMouse:mouseLocation];
+        [self resizeByMouse:[event locationInWindow]];
         break;
       }
 
@@ -283,9 +301,7 @@ enum {
 
 - (void)prepareForDrag:(NSEvent*)initialMouseDownEvent {
   dragState_ = PANEL_DRAG_CAN_START;
-  NSWindow* window = [initialMouseDownEvent window];
-  startMouseLocationScreen_ =
-    [window convertBaseToScreen:[initialMouseDownEvent locationInWindow]];
+  startMouseLocation_ = [initialMouseDownEvent locationInWindow];
 
   // Make sure the cursor stays the same during whole resize operation.
   // The cursor rects normally do not guarantee the same cursor, since the
@@ -300,54 +316,47 @@ enum {
   dragState_ = PANEL_DRAG_SUPPRESSED;
   [[self window] enableCursorRects];
   dragCursor_.reset();
-  startMouseLocationScreen_ = NSZeroPoint;
+  startMouseLocation_ = NSZeroPoint;
 }
 
 - (BOOL)exceedsDragThreshold:(NSPoint)mouseLocation {
-  float deltaX = fabs(startMouseLocationScreen_.x - mouseLocation.x);
-  float deltaY = fabs(startMouseLocationScreen_.y - mouseLocation.y);
+  float deltaX = fabs(startMouseLocation_.x - mouseLocation.x);
+  float deltaY = fabs(startMouseLocation_.y - mouseLocation.y);
   return deltaX > kDragThreshold || deltaY > kDragThreshold;
 }
 
 - (BOOL)tryStartDrag:(NSEvent*)event {
   DCHECK(dragState_ == PANEL_DRAG_CAN_START);
-  NSPoint mouseLocation =
-      [[event window] convertBaseToScreen:[event locationInWindow]];
-
+  NSPoint mouseLocation = [event locationInWindow];
   if (![self exceedsDragThreshold:mouseLocation])
     return NO;
 
   // Mouse moved over threshold, start drag.
   dragState_ = PANEL_DRAG_IN_PROGRESS;
-  [self startResize:startMouseLocationScreen_];
+  [self startResize:startMouseLocation_];
   return YES;
 }
 
-// |initialMouseLocation| is in screen coordinates.
+// |initialMouseLocation| is in window coordinates.
 - (void)startResize:(NSPoint)initialMouseLocation {
   DCHECK(dragState_ == PANEL_DRAG_IN_PROGRESS);
 
-  // TODO(dimich): move IsMouseNearFrameSide helper here and make sure it uses
-  // correct methods to detect edges, to avoid 1-px errors on the boundaries.
-  // The errors may come up because of different assumptions on which edge of
-  // a rect 'belongs' to a rect.
-  PanelResizeController::ResizingSides side =
-      PanelResizeController::IsMouseNearFrameSide(
-          cocoa_utils::ConvertPointFromCocoaCoordinates(initialMouseLocation),
-          kWidthOfMouseResizeArea,
-          panel_);
+  NSPoint initialMouseLocationScreen =
+      [[self window] convertBaseToScreen:initialMouseLocation];
 
   panel_->manager()->StartResizingByMouse(
       panel_,
-      cocoa_utils::ConvertPointFromCocoaCoordinates(initialMouseLocation),
-      side);
+      cocoa_utils::ConvertPointFromCocoaCoordinates(initialMouseLocationScreen),
+      [self edgeHitTest:initialMouseLocation]);
 }
 
-// |initialMouseLocation| is in screen coordinates.
+// |mouseLocation| is in window coordinates.
 - (void)resizeByMouse:(NSPoint)mouseLocation {
   DCHECK(dragState_ == PANEL_DRAG_IN_PROGRESS);
+  NSPoint mouseLocationScreen =
+      [[self window] convertBaseToScreen:mouseLocation];
   panel_->manager()->ResizeByMouse(
-      cocoa_utils::ConvertPointFromCocoaCoordinates(mouseLocation));
+      cocoa_utils::ConvertPointFromCocoaCoordinates(mouseLocationScreen));
 }
 
 - (void)endResize:(BOOL)cancelled {
@@ -355,53 +364,57 @@ enum {
   panel_->manager()->EndResizingByMouse(cancelled);
 }
 
--(void)resetCursorRects
-{
+- (void)resetCursorRects {
   if(!panel_->CanResizeByMouse())
     return;
 
   NSRect bounds = [self bounds];
 
   // Left vertical edge.
-  NSRect rect = NSMakeRect(NSMinX(bounds),
-                           NSMinY(bounds) + kWidthOfMouseResizeArea,
-                           kWidthOfMouseResizeArea,
-                           NSHeight(bounds) - 2 * kWidthOfMouseResizeArea);
-  [self addCursorRect:rect cursor:eastWestCursor_];
+  leftCursorRect_ = NSMakeRect(NSMinX(bounds),
+                               NSMinY(bounds) + kWidthOfMouseResizeArea,
+                               kWidthOfMouseResizeArea,
+                               NSHeight(bounds) - 2 * kWidthOfMouseResizeArea);
+  [self addCursorRect:leftCursorRect_ cursor:eastWestCursor_];
 
   // Right vertical edge.
-  rect.origin.x = NSMaxX(bounds) - kWidthOfMouseResizeArea;
-  [self addCursorRect:rect cursor:eastWestCursor_];
+  rightCursorRect_ = leftCursorRect_;
+  rightCursorRect_.origin.x = NSMaxX(bounds) - kWidthOfMouseResizeArea;
+  [self addCursorRect:rightCursorRect_ cursor:eastWestCursor_];
 
   // Top horizontal edge.
-  rect = NSMakeRect(NSMinX(bounds) + kWidthOfMouseResizeArea,
-                    NSMaxY(bounds) - kWidthOfMouseResizeArea,
-                    NSWidth(bounds) - 2 * kWidthOfMouseResizeArea,
-                    kWidthOfMouseResizeArea);
-  [self addCursorRect:rect cursor:northSouthCursor_];
+  topCursorRect_ = NSMakeRect(NSMinX(bounds) + kWidthOfMouseResizeArea,
+                              NSMaxY(bounds) - kWidthOfMouseResizeArea,
+                              NSWidth(bounds) - 2 * kWidthOfMouseResizeArea,
+                              kWidthOfMouseResizeArea);
+  [self addCursorRect:topCursorRect_ cursor:northSouthCursor_];
 
   // Bottom horizontal edge.
-  rect.origin.y = NSMinY(bounds);
-  [self addCursorRect:rect cursor:northSouthCursor_];
+  bottomCursorRect_ = topCursorRect_;
+  bottomCursorRect_.origin.y = NSMinY(bounds);
+  [self addCursorRect:bottomCursorRect_ cursor:northSouthCursor_];
 
   // Top left corner.
-  rect = NSMakeRect(NSMinX(bounds),
-                    NSMaxY(bounds) - kWidthOfMouseResizeArea,
-                    kWidthOfMouseResizeArea,
-                    NSMaxY(bounds));
-  [self addCursorRect:rect cursor:northWestSouthEastCursor_];
+  topLeftCursorRect_ = NSMakeRect(NSMinX(bounds),
+                                  NSMaxY(bounds) - kWidthOfMouseResizeArea,
+                                  kWidthOfMouseResizeArea,
+                                  NSMaxY(bounds));
+  [self addCursorRect:topLeftCursorRect_ cursor:northWestSouthEastCursor_];
 
   // Top right corner.
-  rect.origin.x = NSMaxX(bounds) - kWidthOfMouseResizeArea;
-  [self addCursorRect:rect cursor:northEastSouthWestCursor_];
+  topRightCursorRect_ = topLeftCursorRect_;
+  topRightCursorRect_.origin.x = NSMaxX(bounds) - kWidthOfMouseResizeArea;
+  [self addCursorRect:topRightCursorRect_ cursor:northEastSouthWestCursor_];
 
   // Bottom right corner.
-  rect.origin.y = NSMinY(bounds);
-  [self addCursorRect:rect cursor:northWestSouthEastCursor_];
+  bottomRightCursorRect_ = topRightCursorRect_;
+  bottomRightCursorRect_.origin.y = NSMinY(bounds);
+  [self addCursorRect:bottomRightCursorRect_ cursor:northWestSouthEastCursor_];
 
   // Bottom left corner.
-  rect.origin.x = NSMinX(bounds);
-  [self addCursorRect:rect cursor:northEastSouthWestCursor_];
+  bottomLeftCursorRect_ = bottomRightCursorRect_;
+  bottomLeftCursorRect_.origin.x = NSMinX(bounds);
+  [self addCursorRect:bottomLeftCursorRect_ cursor:northEastSouthWestCursor_];
 }
 @end
 
