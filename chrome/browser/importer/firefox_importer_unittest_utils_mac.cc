@@ -182,7 +182,7 @@ bool FFUnitTestDecryptorProxy::WaitForClientResponse() {
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&CancellableQuitMsgLoop::QuitNow, quit_task.get()),
-      TestTimeouts::action_max_timeout_ms());
+      TestTimeouts::action_max_timeout());
 
   message_loop_->Run();
   bool ret = !quit_task->cancelled_;
