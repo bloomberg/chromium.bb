@@ -1204,6 +1204,22 @@ def ExpandWildcardDependencies(targets, data):
         index = index + 1
 
 
+def Unify(l):
+  """Removes duplicate elements from l, keeping the first element."""
+  seen = {}
+  return [seen.setdefault(e, e) for e in l if e not in seen]
+
+
+def RemoveDuplicateDependencies(targets):
+  """Makes sure every dependency appears only once in all targets's dependency
+  lists."""
+  for target_name, target_dict in targets.iteritems():
+    for dependency_key in dependency_sections:
+      dependencies = target_dict.get(dependency_key, [])
+      if dependencies:
+        target_dict[dependency_key] = Unify(dependencies)
+
+
 class DependencyGraphNode(object):
   """
 
@@ -2337,6 +2353,9 @@ def Load(build_files, variables, includes, depth, generator_input_info, check,
     # Write the results back to |target_dict|.
     for key in tmp_dict:
       target_dict[key] = tmp_dict[key]
+
+  # Make sure every dependency appears at most once.
+  RemoveDuplicateDependencies(targets)
 
   if circular_check:
     # Make sure that any targets in a.gyp don't contain dependencies in other
