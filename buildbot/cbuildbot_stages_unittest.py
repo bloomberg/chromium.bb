@@ -836,12 +836,12 @@ def _replace_archive_path(functor):
   # use that and kill this.
   # Till then, we just mutate the module and restore it on the way out.
   def f(self):
-    original = stages.DEFAULT_ARCHIVE_PATH
+    original = stages.BUILDBOT_ARCHIVE_PATH
     try:
-      stages.DEFAULT_ARCHIVE_PATH = self.tempdir
+      stages.BUILDBOT_ARCHIVE_PATH = self.tempdir
       return functor(self)
     finally:
-      stages.DEFAULT_ARCHIVE_PATH = original
+      stages.BUILDBOT_ARCHIVE_PATH = original
   return cros_test_lib.tempdir_decorator(f)
 
 

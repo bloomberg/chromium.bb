@@ -32,7 +32,7 @@ _FULL_BINHOST = 'FULL_BINHOST'
 _PORTAGE_BINHOST = 'PORTAGE_BINHOST'
 _CROS_ARCHIVE_URL = 'CROS_ARCHIVE_URL'
 _PRINT_INTERVAL = 1
-DEFAULT_ARCHIVE_PATH = '/var/www/archive'
+BUILDBOT_ARCHIVE_PATH = '/b/archive'
 
 
 class NonHaltingBuilderStage(bs.BuilderStage):
@@ -938,7 +938,7 @@ class ArchiveStage(BoardSpecificBuilderStage):
     # directly.  Use GetVersion() instead.
     self._set_version = ArchiveStage._VERSION_NOT_SET
     if self._options.buildbot:
-      self._archive_root = DEFAULT_ARCHIVE_PATH
+      self._archive_root = BUILDBOT_ARCHIVE_PATH
     else:
       self._archive_root = self.GetTrybotArchiveRoot(self._build_root)
 
