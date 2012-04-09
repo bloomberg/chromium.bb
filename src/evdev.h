@@ -33,3 +33,9 @@ evdev_input_create(struct weston_compositor *c, struct udev *udev,
 
 void
 evdev_input_destroy(struct weston_input_device *input_base);
+
+int
+evdev_enable_udev_monitor(struct udev *udev, struct weston_input_device *input_base);
+
+void
+evdev_disable_udev_monitor(struct weston_input_device *input_base);

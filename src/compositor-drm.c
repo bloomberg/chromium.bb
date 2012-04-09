@@ -1498,8 +1498,10 @@ vt_func(struct weston_compositor *compositor, int event)
 		compositor->state = ec->prev_state;
 		drm_compositor_set_modes(ec);
 		weston_compositor_damage_all(compositor);
-		wl_list_for_each(input, &compositor->input_device_list, link)
+		wl_list_for_each(input, &compositor->input_device_list, link) {
 			evdev_add_devices(ec->udev, input);
+			evdev_enable_udev_monitor(ec->udev, input);
+		}
 		break;
 	case TTY_LEAVE_VT:
 		compositor->focus = 0;
@@ -1528,8 +1530,10 @@ vt_func(struct weston_compositor *compositor, int event)
 					drm_output->crtc_id, 0, 0,
 					0, 0, 0, 0, 0, 0, 0, 0);
 
-		wl_list_for_each(input, &compositor->input_device_list, link)
+		wl_list_for_each(input, &compositor->input_device_list, link) {
+			evdev_disable_udev_monitor(input);
 			evdev_remove_devices(input);
+		}
 
 		if (weston_launcher_drm_set_master(&ec->base, ec->drm.fd, 0) < 0)
 			fprintf(stderr, "failed to drop master: %m\n");

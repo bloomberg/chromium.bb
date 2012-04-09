@@ -632,9 +632,10 @@ evdev_udev_handler(int fd, uint32_t mask, void *data)
 	return 0;
 }
 
-static int
-evdev_config_udev_monitor(struct udev *udev, struct evdev_input *master)
+int
+evdev_enable_udev_monitor(struct udev *udev, struct weston_input_device *input_base)
 {
+	struct evdev_input *master = (struct evdev_input *) input_base;
 	struct wl_event_loop *loop;
 	struct weston_compositor *c = master->base.compositor;
 	int fd;
@@ -668,6 +669,20 @@ evdev_config_udev_monitor(struct udev *udev, struct evdev_input *master)
 }
 
 void
+evdev_disable_udev_monitor(struct weston_input_device *input_base)
+{
+	struct evdev_input *input = (struct evdev_input *) input_base;
+
+	if (!input->udev_monitor)
+		return;
+
+	udev_monitor_unref(input->udev_monitor);
+	input->udev_monitor = NULL;
+	wl_event_source_remove(input->udev_monitor_source);
+	input->udev_monitor_source = NULL;
+}
+
+void
 evdev_input_create(struct weston_compositor *c, struct udev *udev,
 		   const char *seat)
 {
@@ -682,7 +697,7 @@ evdev_input_create(struct weston_compositor *c, struct udev *udev,
 
 	wl_list_init(&input->devices_list);
 	input->seat_id = strdup(seat);
-	if (!evdev_config_udev_monitor(udev, input)) {
+	if (!evdev_enable_udev_monitor(udev, &input->base)) {
 		free(input->seat_id);
 		free(input);
 		return;
@@ -709,9 +724,7 @@ evdev_input_destroy(struct weston_input_device *input_base)
 	struct evdev_input *input = (struct evdev_input *) input_base;
 
 	evdev_remove_devices(input_base);
-
-	udev_monitor_unref(input->udev_monitor);
-	wl_event_source_remove(input->udev_monitor_source);
+	evdev_disable_udev_monitor(&input->base);
 
 	wl_list_remove(&input->base.link);
 	free(input->seat_id);
