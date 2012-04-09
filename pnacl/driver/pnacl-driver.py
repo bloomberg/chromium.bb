@@ -31,7 +31,6 @@ EXTRA_ENV = {
                           # NOTE: potentially different code paths and bugs
                           #       might be triggered by this
   'LANGUAGE'    : '',     # C or CXX (set by SetTool)
-  'FRONTEND'    : '',     # CLANG, or DRAGONEGG (set by SetTool)
   'INCLUDE_CXX_HEADERS': '0', # This is set by RunCC.
 
   # Command-line options
@@ -58,29 +57,24 @@ EXTRA_ENV = {
   'OPT_LEVEL'   : '0',
   'CC_FLAGS'    : '-O${OPT_LEVEL} ' +
                   '-nostdinc -DNACL_LINUX=1 ${BIAS_%BIAS%} ' +
-                  '${CC_FLAGS_%FRONTEND%}',
-  'CC_FLAGS_CLANG': '-ccc-host-triple le32-unknown-nacl',
-  'CC_FLAGS_DRAGONEGG': '-D__native_client__=1 -D__pnacl__=1 ' +
-                        '-flto -fplugin=${DRAGONEGG_PLUGIN}',
+                  '-ccc-host-triple le32-unknown-nacl',
+
 
   'ISYSTEM'        : '${ISYSTEM_USER} ${STDINC ? ${ISYSTEM_BUILTIN}}',
+
   'ISYSTEM_USER'   : '',  # System include directories specified by
                           # using the -isystem flag.
 
   'ISYSTEM_BUILTIN':
     '${BASE_USR}/local/include ' +
-    '${ISYSTEM_%FRONTEND%} ' +
+    '${ISYSTEM_CLANG} ' +
     '${ISYSTEM_CXX} ' +
     '${BASE_USR}/include ' +
     '${BASE_SDK}/include ' +
     # This is used only for newlib bootstrapping.
     '${BASE_LIBMODE}/sysroot/include',
 
-  'ISYSTEM_CLANG':
-      '${BASE_LLVM}/lib/clang/3.1/include',
-
-  # TODO(pdox): fill this in.
-  'ISYSTEM_DRAGONEGG': '',
+  'ISYSTEM_CLANG'  : '${BASE_LLVM}/lib/clang/3.1/include',
 
   'ISYSTEM_CXX' : '${INCLUDE_CXX_HEADERS ? ${ISYSTEM_CXX_%LIBMODE%}}',
 
@@ -134,19 +128,15 @@ EXTRA_ENV = {
 
   'STDLIBS'   : '${DEFAULTLIBS ? '
                 '${LIBSTDCPP} ${LIBPTHREAD} ${LIBC} ${LIBNACL} ${PNACL_ABI}}',
-  'LIBSTDCPP' : '${LANGUAGE==CXX ? -lstdc++ -lm }',
+  'LIBSTDCPP' : '${IS_CXX ? -lstdc++ -lm }',
   'LIBC'      : '-lc',
   'LIBNACL'   : '${LIBMODE_NEWLIB ? -lnacl}',
   'LIBPTHREAD': '', # Enabled by -pthreads
   'PNACL_ABI' : '-l:pnacl_abi.bc',
 
 
-  'CC'              : '${CC_%FRONTEND%_%LANGUAGE%}',
-  'CC_CLANG_C'      : '${CLANG}',
-  'CC_CLANG_CXX'    : '${CLANGXX}',
-  'CC_DRAGONEGG_C'  : '${DRAGONEGG_GCC}',
-  'CC_DRAGONEGG_CXX': '${DRAGONEGG_GXX}',
-
+  # IS_CC is set by pnacl-clang and pnacl-clang++ programmatically
+  'CC' : '${IS_CXX ? ${CLANGXX} : ${CLANG}}',
   'RUN_CC': '${CC} -emit-llvm ${mode} ${CC_FLAGS} ' +
             '${@AddPrefix:-isystem :ISYSTEM} ' +
             '-x${typespec} "${infile}" -o ${output}',
@@ -333,23 +323,13 @@ GCCPatterns = [
              "ForceFileType(pathtools.normalize($0))"),
 ]
 
-# Called by the frontend scripts (pnacl-clang.py, etc)
-def SetTool(tool):
-  env.update(EXTRA_ENV)
-  namemap = { 'pnacl-clang':   ('CLANG', 'C'),
-              'pnacl-clang++': ('CLANG', 'CXX'),
-              'pnacl-dgcc':    ('DRAGONEGG', 'C'),
-              'pnacl-dg++':    ('DRAGONEGG', 'CXX') }
-  (frontend, language) = namemap[tool]
-  env.set('FRONTEND', frontend)
-  env.set('LANGUAGE', language)
-
 def CheckSetup():
-  if not env.has('FRONTEND'):
+  if not env.has('IS_CXX'):
     Log.Fatal('"pnacl-driver" cannot be used directly. '
-              'Use pnacl-clang or pnacl-dgcc.')
+              'Use pnacl-clang or pnacl-clang++.')
 
 def main(argv):
+  env.update(EXTRA_ENV)
   CheckSetup()
   _, real_argv = ParseArgs(argv, CustomPatterns, must_match = False)
   ParseArgs(real_argv, GCCPatterns)
@@ -614,14 +594,10 @@ def SetupChain(chain, input_type, output_type):
   Log.Fatal("Unable to compile .%s to .%s", input_type, output_type)
 
 def get_help(argv):
-  CheckSetup()
-  frontend = env.getone('FRONTEND').capitalize()
-  language = env.getone('LANGUAGE').replace('XX','++')
   tool = env.getone('SCRIPT_NAME')
 
   return """
-%s %s compiler for PNaCl.
-This is a "GCC-compatible" driver.
+This is a "GCC-compatible" driver using clang under the hood.
 
 Usage: %s [options] <inputs> ...
 
@@ -650,4 +626,4 @@ BASIC OPTIONS:
   -save-temps        Keep intermediate compilation results.
   -v                 Verbose output / show commands.
   -h | --help        Show this help.
-""" % (frontend, language, tool)
+""" % (tool)

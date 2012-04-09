@@ -115,9 +115,6 @@ INITIAL_ENV = {
   'SCONS_OS_darwin'     : 'mac',
   'SCONS_OS_windows'    : 'win',
 
-  # Tool Pathnames
-  'DRAGONEGG_PLUGIN': '${BASE_GCC}/lib/dragonegg${SO_EXT}',
-
   'SCONS_STAGING'       : '${SCONS_STAGING_%ARCH%}',
   'SCONS_STAGING_X8632' : '${SCONS_OUT}/opt-${SCONS_OS}-x86-32/staging',
   'SCONS_STAGING_X8664' : '${SCONS_OUT}/opt-${SCONS_OS}-x86-64/staging',
@@ -181,11 +178,6 @@ INITIAL_ENV = {
   'LLVM_LLC'      : '${BASE_LLVM_BIN}/llc${EXEC_EXT}',
   # llvm-mc is llvm's native assembler
   'LLVM_MC'       : '${BASE_LLVM_BIN}/llvm-mc${EXEC_EXT}',
-
-
-  # DragonEgg (not yet supported)
-  'DRAGONEGG_GCC' : '${BASE_GCC}/bin/i686-unknown-linux-gnu-gcc',
-  'DRAGONEGG_GXX' : '${BASE_GCC}/bin/i686-unknown-linux-gnu-g++',
 
   # Binutils
   'BINUTILS_BASE'  : '${BASE_BINUTILS}/bin/arm-pc-nacl-',

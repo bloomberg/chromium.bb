@@ -14,9 +14,9 @@
 pnacl_driver = __import__("pnacl-driver")
 
 def main(argv):
-  pnacl_driver.SetTool('pnacl-clang++')
+  pnacl_driver.env.set('IS_CXX', '1')
   return pnacl_driver.main(argv)
 
 def get_help(argv):
-  pnacl_driver.SetTool('pnacl-clang++')
+  pnacl_driver.env.set('IS_CXX', '1')
   return pnacl_driver.get_help(argv)
