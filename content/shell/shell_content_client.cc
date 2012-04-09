@@ -36,8 +36,7 @@ bool ShellContentClient::CanHandleWhileSwappedOut(const IPC::Message& msg) {
   return false;
 }
 
-std::string ShellContentClient::GetUserAgent(bool* overriding) const {
-  *overriding = false;
+std::string ShellContentClient::GetUserAgent() const {
   // The "19" is so that sites that sniff for version think that this is
   // something reasonably current; the "77.34.5" is a hint that this isn't a
   // standard Chrome.

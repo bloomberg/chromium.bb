@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,17 +16,11 @@ static ContentClient* g_client;
 void SetContentClient(ContentClient* client) {
   g_client = client;
 
-  // TODO(dpranke): Doing real work (calling webkit_glue::SetUserAgent)
-  // inside what looks like a function that initializes a global is a
-  // bit odd, but we need to make sure this is done before
-  // webkit_glue::GetUserAgent() is called (so that the UA doesn't change).
-  //
-  // It would be cleaner if we could rename this to something like a
-  // content::Initialize(). Maybe we can merge this into ContentMain() somehow?
+  // Set the default user agent as provided by the client. We need to make
+  // sure this is done before webkit_glue::GetUserAgent() is called (so that
+  // the UA doesn't change).
   if (client) {
-    bool custom = false;
-    std::string ua = client->GetUserAgent(&custom);
-    webkit_glue::SetUserAgent(ua, custom);
+    webkit_glue::SetUserAgent(client->GetUserAgent(), false);
   }
 }
 

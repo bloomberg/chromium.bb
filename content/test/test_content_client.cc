@@ -44,8 +44,7 @@ bool TestContentClient::CanHandleWhileSwappedOut(const IPC::Message& msg) {
   return false;
 }
 
-std::string TestContentClient::GetUserAgent(bool* overriding) const {
-  *overriding = false;
+std::string TestContentClient::GetUserAgent() const {
   return std::string("TestContentClient");
 }
 

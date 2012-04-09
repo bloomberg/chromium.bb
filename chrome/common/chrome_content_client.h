@@ -25,7 +25,7 @@ class ChromeContentClient : public content::ContentClient {
       webkit::npapi::PluginList* plugin_list) OVERRIDE;
   virtual bool HasWebUIScheme(const GURL& url) const OVERRIDE;
   virtual bool CanHandleWhileSwappedOut(const IPC::Message& msg) OVERRIDE;
-  virtual std::string GetUserAgent(bool* overriding) const OVERRIDE;
+  virtual std::string GetUserAgent() const OVERRIDE;
   virtual string16 GetLocalizedString(int message_id) const OVERRIDE;
   virtual base::StringPiece GetDataResource(int resource_id) const OVERRIDE;
 

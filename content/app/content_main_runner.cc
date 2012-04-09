@@ -223,9 +223,10 @@ int RunZygote(const content::MainFunctionParams& main_function_params,
   // If a custom user agent was passed on the command line, we need
   // to (re)set it now, rather than using the default one the zygote
   // initialized.
-  bool custom = false;
-  std::string ua = content::GetContentClient()->GetUserAgent(&custom);
-  if (custom) webkit_glue::SetUserAgent(ua, custom);
+  if (command_line.HasSwitch(switches::kUserAgent)) {
+    webkit_glue::SetUserAgent(
+        command_line.GetSwitchValueASCII(switches::kUserAgent), true);
+  }
 
   // The StatsTable must be initialized in each process; we already
   // initialized for the browser process, now we need to initialize
@@ -466,6 +467,14 @@ class ContentMainRunnerImpl : public content::ContentMainRunner {
 
     if (delegate)
       delegate->PreSandboxStartup();
+
+    // Set any custom user agent passed on the command line now so the string
+    // doesn't change between calls to webkit_glue::GetUserAgent(), otherwise it
+    // defaults to the user agent set during SetContentClient().
+    if (command_line.HasSwitch(switches::kUserAgent)) {
+      webkit_glue::SetUserAgent(
+          command_line.GetSwitchValueASCII(switches::kUserAgent), true);
+    }
 
     if (!process_type.empty())
       CommonSubprocessInit(process_type);
