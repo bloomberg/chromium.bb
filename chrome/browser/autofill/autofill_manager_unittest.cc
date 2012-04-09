@@ -2906,7 +2906,7 @@ TEST_F(AutofillManagerTest, UpdatePasswordSyncState) {
   sync_service->ChangePreferredDataTypes(preferred_set);
   UpdatePasswordSyncState();
   EXPECT_EQ(1u, autofill_manager_->GetSentStates().size());
-  EXPECT_EQ(true, autofill_manager_->GetSentStates()[0]);
+  EXPECT_TRUE(autofill_manager_->GetSentStates()[0]);
   autofill_manager_->ClearSentStates();
 
   // Add some additional synced state. Nothing should be sent.
@@ -2919,7 +2919,7 @@ TEST_F(AutofillManagerTest, UpdatePasswordSyncState) {
   sync_service->DisableForUser();
   UpdatePasswordSyncState();
   EXPECT_EQ(1u, autofill_manager_->GetSentStates().size());
-  EXPECT_EQ(false, autofill_manager_->GetSentStates()[0]);
+  EXPECT_FALSE(autofill_manager_->GetSentStates()[0]);
   autofill_manager_->ClearSentStates();
 }
 
