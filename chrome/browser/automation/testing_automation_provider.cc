@@ -101,7 +101,6 @@
 #include "chrome/browser/ui/bookmarks/bookmark_bar.h"
 #include "chrome/browser/ui/browser_init.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/constrained_window_tab_helper.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/login/login_prompt.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
@@ -394,8 +393,6 @@ bool TestingAutomationProvider::OnMessageReceived(
                         GetFullscreenBubbleVisibility)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_DomOperation,
                                     ExecuteJavascript)
-    IPC_MESSAGE_HANDLER(AutomationMsg_ConstrainedWindowCount,
-                        GetConstrainedWindowCount)
 #if defined(TOOLKIT_VIEWS)
     IPC_MESSAGE_HANDLER(AutomationMsg_GetFocusedViewID, GetFocusedViewID)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_WaitForFocusedViewIDToChange,
@@ -1419,23 +1416,6 @@ void TestingAutomationProvider::ExecuteJavascript(
   ExecuteJavascriptInRenderViewFrame(WideToUTF16Hack(frame_xpath),
                                      WideToUTF16Hack(script), reply_message,
                                      web_contents->GetRenderViewHost());
-}
-
-void TestingAutomationProvider::GetConstrainedWindowCount(int handle,
-                                                          int* count) {
-  *count = -1;  // -1 is the error code
-  if (tab_tracker_->ContainsHandle(handle)) {
-    NavigationController* nav_controller = tab_tracker_->GetResource(handle);
-    WebContents* web_contents = nav_controller->GetWebContents();
-    if (web_contents) {
-      TabContentsWrapper* wrapper =
-          TabContentsWrapper::GetCurrentWrapperForContents(web_contents);
-      if (wrapper) {
-        *count = static_cast<int>(wrapper->constrained_window_tab_helper()->
-                                  constrained_window_count());
-      }
-    }
-  }
 }
 
 void TestingAutomationProvider::HandleInspectElementRequest(

@@ -171,8 +171,6 @@ class TestingAutomationProvider : public AutomationProvider,
                          const std::wstring& script,
                          IPC::Message* reply_message);
 
-  void GetConstrainedWindowCount(int handle, int* count);
-
 #if defined(TOOLKIT_VIEWS)
   void GetFocusedViewID(int handle, int* view_id);
 

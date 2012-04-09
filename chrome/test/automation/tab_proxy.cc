@@ -338,35 +338,6 @@ DOMElementProxyRef TabProxy::GetDOMDocument() {
   return GetObjectProxy<DOMElementProxy>(element_handle);
 }
 
-bool TabProxy::GetConstrainedWindowCount(int* count) const {
-  if (!is_valid())
-    return false;
-
-  if (!count) {
-    NOTREACHED();
-    return false;
-  }
-
-  return sender_->Send(new AutomationMsg_ConstrainedWindowCount(
-      handle_, count));
-}
-
-bool TabProxy::WaitForChildWindowCountToChange(int count, int* new_count,
-                                               int wait_timeout) {
-  int intervals = std::max(wait_timeout / automation::kSleepTime, 1);
-  for (int i = 0; i < intervals; ++i) {
-    base::PlatformThread::Sleep(
-        base::TimeDelta::FromMilliseconds(automation::kSleepTime));
-    bool succeeded = GetConstrainedWindowCount(new_count);
-    if (!succeeded)
-      return false;
-    if (count != *new_count)
-      return true;
-  }
-  // Constrained Window count did not change, return false.
-  return false;
-}
-
 bool TabProxy::GetBlockedPopupCount(int* count) const {
   if (!is_valid())
     return false;

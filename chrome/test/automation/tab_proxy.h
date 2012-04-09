@@ -69,9 +69,6 @@ class TabProxy : public AutomationResourceProxy,
   // Gets the tabstrip index of the tab.
   bool GetTabIndex(int* index) const WARN_UNUSED_RESULT;
 
-  // Gets the number of constrained window for this tab.
-  bool GetConstrainedWindowCount(int* count) const WARN_UNUSED_RESULT;
-
   // Executes a javascript in a frame's context whose xpath is provided as the
   // first parameter and extract the values from the resulting json string.
   // Examples:
@@ -213,14 +210,6 @@ class TabProxy : public AutomationResourceProxy,
   // Sends a InspectElement message for the current tab. |x| and |y| are the
   // coordinates that we want to simulate that the user is trying to inspect.
   int InspectElement(int x, int y);
-
-  // Block the thread until the constrained(child) window count changes.
-  // First parameter is the original child window count
-  // The second parameter is updated with the number of new child windows.
-  // The third parameter specifies the timeout length for the wait loop.
-  // Returns false if the count does not change.
-  bool WaitForChildWindowCountToChange(int count, int* new_count,
-      int wait_timeout) WARN_UNUSED_RESULT;
 
   // Gets the number of popups blocked from this tab.
   bool GetBlockedPopupCount(int* count) const WARN_UNUSED_RESULT;
