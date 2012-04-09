@@ -120,6 +120,26 @@ bool IsVisibleNormalWindow(aura::Window* window) {
     window->type() == aura::client::WINDOW_TYPE_NORMAL;
 }
 
+// Returns a number of the windows in |container| except |ignore| window.
+int CountWindowInContainer(int container_id, aura::Window* ignore) {
+  const aura::Window* container =
+      ash::Shell::GetInstance()->GetContainer(container_id);
+  if (!container)
+    return 0;  // Shutting down. See crbug.com/120786.
+  int normal_window_count = 0;
+  const aura::Window::Windows& windows = container->children();
+  for (aura::Window::Windows::const_iterator it = windows.begin();
+       it != windows.end();
+       ++it) {
+    if (*it != ignore && IsVisibleNormalWindow(*it)) {
+      normal_window_count++;
+      if (normal_window_count > 1)
+        return 2;
+    }
+  }
+  return normal_window_count;
+}
+
 }  // namespace
 
 namespace ash {
@@ -571,22 +591,14 @@ bool FramePainter::UseSoloWindowHeader(aura::Window* ignore) const {
   // In unit tests this can be called after the shell is destroyed.
   if (!Shell::HasInstance())
     return false;
-  const aura::Window* default_container = Shell::GetInstance()->GetContainer(
-      internal::kShellWindowId_DefaultContainer);
-  if (!default_container)
-    return false;  // Shutting down. See crbug.com/120786.
-  int normal_window_count = 0;
-  const aura::Window::Windows& windows = default_container->children();
-  for (aura::Window::Windows::const_iterator it = windows.begin();
-       it != windows.end();
-       ++it) {
-    if (*it != ignore && IsVisibleNormalWindow(*it)) {
-      normal_window_count++;
-      if (normal_window_count > 1)
-        return false;
-    }
-  }
-  return normal_window_count == 1;
+  int window_count = 0;
+  window_count += CountWindowInContainer(
+      internal::kShellWindowId_DefaultContainer, ignore);
+  if (window_count > 1)
+    return false;
+  window_count += CountWindowInContainer(
+      internal::kShellWindowId_AlwaysOnTopContainer, ignore);
+  return window_count == 1;
 }
 
 }  // namespace ash
