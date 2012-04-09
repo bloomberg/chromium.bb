@@ -840,7 +840,7 @@ class VMTestStage(BoardSpecificBuilderStage):
     self._archive_stage.TestResultsReady(None)
 
 
-class HWTestStage(BoardSpecificBuilderStage):
+class HWTestStage(BoardSpecificBuilderStage, NonHaltingBuilderStage):
   """Stage that runs tests in the Autotest lab."""
 
   # If the tests take longer than an hour, abort.
