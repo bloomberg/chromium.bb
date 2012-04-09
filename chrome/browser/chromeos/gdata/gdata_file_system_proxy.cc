@@ -255,9 +255,10 @@ void GDataFileSystemProxy::OnReadDirectory(
     base::PlatformFileError error,
     const FilePath& directory_path,
     GDataFileBase* file) {
-  DCHECK(file);
-  GDataDirectory* directory = file->AsGDataDirectory();
-  if (!directory)
+  DCHECK(file || error != base::PLATFORM_FILE_OK);
+
+  GDataDirectory* directory = file ? file->AsGDataDirectory() : NULL;
+  if (!directory && error == base::PLATFORM_FILE_OK)
     error = base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY;
 
   if (error != base::PLATFORM_FILE_OK) {
