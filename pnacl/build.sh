@@ -253,7 +253,7 @@ fi
 readonly UPSTREAM_REV=${UPSTREAM_REV:-4dd3419f60be}
 
 readonly NEWLIB_REV=346ea38d142f
-readonly BINUTILS_REV=8040f022bb25
+readonly BINUTILS_REV=f44074cff866
 readonly GOLD_REV=906eebd9b894
 readonly COMPILER_RT_REV=1a3a6ffb31ea
 
