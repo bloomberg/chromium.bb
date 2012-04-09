@@ -172,7 +172,11 @@ bool PluginDispatcher::Send(IPC::Message* msg) {
   //
   // Allowing all async messages to unblock the renderer means more reentrancy
   // there but gives correct ordering.
-  msg->set_unblock(true);
+  //
+  // We don't want reply messages to unblock however, as they will potentially
+  // end up on the wrong queue - see crbug.com/122443
+  if (!msg->is_reply())
+    msg->set_unblock(true);
   if (msg->is_sync()) {
     // Synchronous messages might be re-entrant, so we need to drop the lock.
     ProxyAutoUnlock unlock;
