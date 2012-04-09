@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/launcher/view_model.h"
+#include "ui/views/view_model.h"
 
 #include "base/logging.h"
 #include "ui/views/view.h"
 
-namespace ash {
+namespace views {
 
 ViewModel::ViewModel() {
 }
@@ -16,7 +16,7 @@ ViewModel::~ViewModel() {
   // view are owned by their parent, no need to delete them.
 }
 
-void ViewModel::Add(views::View* view, int index) {
+void ViewModel::Add(View* view, int index) {
   Entry entry;
   entry.view = view;
   entries_.insert(entries_.begin() + index, entry);
@@ -44,7 +44,7 @@ void ViewModel::Clear() {
     delete entries[i].view;
 }
 
-int ViewModel::GetIndexOfView(const views::View* view) const {
+int ViewModel::GetIndexOfView(const View* view) const {
   for (size_t i = 0; i < entries_.size(); ++i) {
     if (entries_[i].view == view)
       return static_cast<int>(i);
@@ -52,4 +52,4 @@ int ViewModel::GetIndexOfView(const views::View* view) const {
   return -1;
 }
 
-}  // namespace ash
+}  // namespace views

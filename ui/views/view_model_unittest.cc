@@ -1,16 +1,16 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/launcher/view_model.h"
+#include "ui/views/view_model.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/view.h"
 
-namespace ash {
+namespace views {
 
 TEST(ViewModel, BasicAssertions) {
-  views::View v1;
+  View v1;
   ViewModel model;
   model.Add(&v1, 0);
   EXPECT_EQ(1, model.view_size());
@@ -22,7 +22,7 @@ TEST(ViewModel, BasicAssertions) {
 }
 
 TEST(ViewModel, Move) {
-  views::View v1, v2, v3;
+  View v1, v2, v3;
   ViewModel model;
   model.Add(&v1, 0);
   model.Add(&v2, 1);
@@ -38,4 +38,4 @@ TEST(ViewModel, Move) {
   EXPECT_EQ(&v3, model.view_at(2));
 }
 
-}  // namespace ash
+}  // namespace views

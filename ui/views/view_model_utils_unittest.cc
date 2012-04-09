@@ -1,18 +1,18 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/launcher/view_model_utils.h"
+#include "ui/views/view_model_utils.h"
 
-#include "ash/launcher/view_model.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/view.h"
+#include "ui/views/view_model.h"
 
-namespace ash {
+namespace views {
 
 // Makes sure SetViewBoundsToIdealBounds updates the view appropriately.
 TEST(ViewModelUtils, SetViewBoundsToIdealBounds) {
-  views::View v1;
+  View v1;
   ViewModel model;
   model.Add(&v1, 0);
   gfx::Rect v1_bounds(1, 2, 3, 4);
@@ -23,7 +23,7 @@ TEST(ViewModelUtils, SetViewBoundsToIdealBounds) {
 
 // Assertions for DetermineMoveIndex.
 TEST(ViewModelUtils, DetermineMoveIndex) {
-  views::View v1, v2, v3;
+  View v1, v2, v3;
   ViewModel model;
   model.Add(&v1, 0);
   model.Add(&v2, 1);
@@ -43,4 +43,4 @@ TEST(ViewModelUtils, DetermineMoveIndex) {
   EXPECT_EQ(2, ViewModelUtils::DetermineMoveIndex(model, &v2, 12));
 }
 
-}  // namespace ash
+}  // namespace views

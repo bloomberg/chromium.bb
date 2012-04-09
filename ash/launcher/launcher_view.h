@@ -20,6 +20,7 @@ namespace views {
 class BoundsAnimator;
 class ImageButton;
 class MenuRunner;
+class ViewModel;
 }
 
 namespace ash {
@@ -27,7 +28,6 @@ namespace ash {
 class LauncherDelegate;
 struct LauncherItem;
 class LauncherModel;
-class ViewModel;
 
 namespace internal {
 
@@ -167,7 +167,7 @@ class ASH_EXPORT LauncherView : public views::View,
 
   // Used to manage the set of active launcher buttons. There is a view per
   // item in |model_|.
-  scoped_ptr<ViewModel> view_model_;
+  scoped_ptr<views::ViewModel> view_model_;
 
   scoped_ptr<views::BoundsAnimator> bounds_animator_;
 

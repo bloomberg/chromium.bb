@@ -1,15 +1,15 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/launcher/view_model_utils.h"
+#include "ui/views/view_model_utils.h"
 
 #include <algorithm>
 
-#include "ash/launcher/view_model.h"
+#include "ui/views/view_model.h"
 #include "ui/views/view.h"
 
-namespace ash {
+namespace views {
 
 // static
 void ViewModelUtils::SetViewBoundsToIdealBounds(const ViewModel& model) {
@@ -19,7 +19,7 @@ void ViewModelUtils::SetViewBoundsToIdealBounds(const ViewModel& model) {
 
 // static
 int ViewModelUtils::DetermineMoveIndex(const ViewModel& model,
-                                       views::View* view,
+                                       View* view,
                                        int x) {
   int current_index = model.GetIndexOfView(view);
   DCHECK_NE(-1, current_index);
@@ -45,4 +45,4 @@ int ViewModelUtils::DetermineMoveIndex(const ViewModel& model,
   return model.view_size() - 1;
 }
 
-}  // namespace ash
+}  // namespace views

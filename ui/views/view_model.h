@@ -2,35 +2,33 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_LAUNCHER_VIEW_MODEL_H_
-#define ASH_LAUNCHER_VIEW_MODEL_H_
+#ifndef UI_VIEWS_VIEW_MODEL_H_
+#define UI_VIEWS_VIEW_MODEL_H_
 #pragma once
 
 #include <vector>
 
 #include "base/basictypes.h"
-#include "ash/ash_export.h"
 #include "ui/gfx/rect.h"
+#include "ui/views/views_export.h"
 
 namespace views {
-class View;
-}
 
-namespace ash {
+class View;
 
 // ViewModel is used to track an 'interesting' set of a views. Often times
 // during animations views are removed after a delay, which makes for tricky
 // coordinate conversion as you have to account for the possibility of the
 // indices from the model not lining up with those you expect. This class lets
 // you define the 'interesting' views and operate on those views.
-class ASH_EXPORT ViewModel {
+class VIEWS_EXPORT ViewModel {
  public:
   ViewModel();
   ~ViewModel();
 
   // Adds |view| to this model. This does not add |view| to a view hierarchy,
   // only to this model.
-  void Add(views::View* view, int index);
+  void Add(View* view, int index);
 
   // Removes the view at the specified index. This does not actually remove the
   // view from the view hierarchy.
@@ -47,7 +45,7 @@ class ASH_EXPORT ViewModel {
   void Clear();
 
   // Returns the view at the specified index.
-  views::View* view_at(int index) const {
+  View* view_at(int index) const {
     return entries_[index].view;
   }
 
@@ -61,13 +59,13 @@ class ASH_EXPORT ViewModel {
 
   // Returns the index of the specified view, or -1 if the view isn't in the
   // model.
-  int GetIndexOfView(const views::View* view) const;
+  int GetIndexOfView(const View* view) const;
 
  private:
   struct Entry {
     Entry() : view(NULL) {}
 
-    views::View* view;
+    View* view;
     gfx::Rect ideal_bounds;
   };
   typedef std::vector<Entry> Entries;
@@ -77,6 +75,6 @@ class ASH_EXPORT ViewModel {
   DISALLOW_COPY_AND_ASSIGN(ViewModel);
 };
 
-}  // namespace ash
+}  // namespace views
 
-#endif  // ASH_LAUNCHER_VIEW_MODEL_H_
+#endif  // UI_VIEWS_VIEW_MODEL_H_

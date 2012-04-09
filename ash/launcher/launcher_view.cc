@@ -8,8 +8,6 @@
 #include "ash/launcher/launcher_delegate.h"
 #include "ash/launcher/launcher_model.h"
 #include "ash/launcher/tabbed_launcher_button.h"
-#include "ash/launcher/view_model.h"
-#include "ash/launcher/view_model_utils.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "base/auto_reset.h"
@@ -29,6 +27,8 @@
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/focus/focus_search.h"
+#include "ui/views/view_model.h"
+#include "ui/views/view_model_utils.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
 
@@ -55,7 +55,7 @@ namespace {
 // the ViewModel.
 class LauncherFocusSearch : public views::FocusSearch {
  public:
-  LauncherFocusSearch(ViewModel* view_model)
+  LauncherFocusSearch(views::ViewModel* view_model)
       : FocusSearch(NULL, true, true),
         view_model_(view_model) {}
   virtual ~LauncherFocusSearch() {}
@@ -85,7 +85,7 @@ class LauncherFocusSearch : public views::FocusSearch {
   }
 
  private:
-  ViewModel* view_model_;
+  views::ViewModel* view_model_;
 
   DISALLOW_COPY_AND_ASSIGN(LauncherFocusSearch);
 };
@@ -254,7 +254,7 @@ LauncherButton* LauncherView::TestAPI::GetButton(int index) {
 LauncherView::LauncherView(LauncherModel* model, LauncherDelegate* delegate)
     : model_(model),
       delegate_(delegate),
-      view_model_(new ViewModel),
+      view_model_(new views::ViewModel),
       overflow_button_(NULL),
       dragging_(NULL),
       drag_view_(NULL),
@@ -345,7 +345,7 @@ View* LauncherView::GetFocusTraversableParentView() {
 void LauncherView::LayoutToIdealBounds() {
   IdealBounds ideal_bounds;
   CalculateIdealBounds(&ideal_bounds);
-  ViewModelUtils::SetViewBoundsToIdealBounds(*view_model_);
+  views::ViewModelUtils::SetViewBoundsToIdealBounds(*view_model_);
   overflow_button_->SetBoundsRect(ideal_bounds.overflow_bounds);
 }
 
@@ -527,7 +527,7 @@ void LauncherView::ContinueDrag(const views::MouseEvent& event) {
 
   drag_view_->SetX(x);
   int target_index =
-      ViewModelUtils::DetermineMoveIndex(*view_model_, drag_view_, x);
+      views::ViewModelUtils::DetermineMoveIndex(*view_model_, drag_view_, x);
   target_index =
       std::min(indices.second, std::max(target_index, indices.first));
   if (target_index == current_index)
