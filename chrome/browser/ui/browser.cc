@@ -2339,18 +2339,23 @@ bool Browser::MaybeCreateBackgroundContents(int route_id,
     return false;
   }
 
-  // Only allow a single background contents per app. If one already exists,
-  // close it (even if it was specified in the manifest).
+  // Only allow a single background contents per app.
+  bool allow_js_access = extension->allow_background_js_access();
   BackgroundContents* existing =
       service->GetAppBackgroundContents(ASCIIToUTF16(extension->id()));
   if (existing) {
+    // For non-scriptable background contents, ignore the request altogether,
+    // (returning true, so that a regular WebContents isn't created either).
+    if (!allow_js_access)
+      return true;
+    // For scriptable background pages, if one already exists, close it (even
+    // if it was specified in the manifest).
     DLOG(INFO) << "Closing existing BackgroundContents for " << opener_url;
     delete existing;
   }
 
   // If script access is not allowed, create the the background contents in a
   // new SiteInstance, so that a separate process is used.
-  bool allow_js_access = extension->allow_background_js_access();
   scoped_refptr<content::SiteInstance> site_instance =
       allow_js_access ?
       opener_site_instance :

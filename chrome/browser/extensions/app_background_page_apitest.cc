@@ -10,9 +10,11 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/test/test_notification_tracker.h"
 #include "net/base/mock_host_resolver.h"
 
 class AppBackgroundPageApiTest : public ExtensionApiTest {
@@ -144,6 +146,13 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, ManifestBackgroundPage) {
 }
 
 IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, NoJsBackgroundPage) {
+  // Make sure that no BackgroundContentses get deleted (a signal that repeated
+  // window.open calls recreate instances, instead of being no-ops).
+  TestNotificationTracker background_deleted_tracker;
+  background_deleted_tracker.ListenFor(
+      chrome::NOTIFICATION_BACKGROUND_CONTENTS_DELETED,
+      content::Source<Profile>(browser()->profile()));
+
   host_resolver()->AddRule("a.com", "127.0.0.1");
   ASSERT_TRUE(StartTestServer());
 
@@ -182,6 +191,8 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, NoJsBackgroundPage) {
   ASSERT_TRUE(
       BackgroundContentsServiceFactory::GetForProfile(browser()->profile())->
           GetAppBackgroundContents(ASCIIToUTF16(extension->id())));
+
+  EXPECT_EQ(0u, background_deleted_tracker.size());
 }
 
 IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, NoJsManifestBackgroundPage) {
