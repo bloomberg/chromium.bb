@@ -717,11 +717,12 @@ void Pipeline::InitializeTask(PipelineStatus last_stage_status) {
     PlaybackRateChangedTask(GetPlaybackRate());
     VolumeChangedTask(GetVolume());
 
-    // Fire the seek request to get the filters to preroll.
+    // Fire a seek request to get the renderers to preroll. We don't need to
+    // tell the demuxer to seek since it should already be at the start.
     seek_pending_ = true;
     SetState(kSeeking);
     seek_timestamp_ = demuxer_->GetStartTime();
-    DoSeek(seek_timestamp_);
+    OnDemuxerSeekDone(seek_timestamp_, PIPELINE_OK);
   }
 }
 
@@ -1312,7 +1313,7 @@ void Pipeline::OnDemuxerStopDone(const base::Closure& callback) {
 }
 
 void Pipeline::DoSeek(base::TimeDelta seek_timestamp) {
-  // TODO(acolwell) : We might be able to convert this if (demuxer_) into a
+  // TODO(acolwell): We might be able to convert this if (demuxer_) into a
   // DCHECK(). Further investigation is needed to make sure this won't introduce
   // a bug.
   if (demuxer_) {

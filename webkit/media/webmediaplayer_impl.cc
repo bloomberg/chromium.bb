@@ -288,18 +288,6 @@ bool WebMediaPlayerImpl::supportsSave() const {
 void WebMediaPlayerImpl::seek(float seconds) {
   DCHECK_EQ(main_loop_, MessageLoop::current());
 
-  // WebKit fires a seek(0) at the very start, however pipeline already does a
-  // seek(0) internally.  Avoid doing seek(0) the second time because this will
-  // cause extra pre-rolling and will break servers without range request
-  // support.
-  //
-  // We still have to notify WebKit that time has changed otherwise
-  // HTMLMediaElement gets into an inconsistent state.
-  if (pipeline_->GetCurrentTime().ToInternalValue() == 0 && seconds == 0) {
-    GetClient()->timeChanged();
-    return;
-  }
-
   if (seeking_) {
     pending_seek_ = true;
     pending_seek_seconds_ = seconds;

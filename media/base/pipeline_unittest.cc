@@ -112,8 +112,6 @@ class PipelineTest : public ::testing::Test {
         .WillOnce(DoAll(SetDemuxerProperties(duration),
                         Invoke(&RunPipelineStatusCB2)));
     EXPECT_CALL(*mocks_->demuxer(), SetPlaybackRate(0.0f));
-    EXPECT_CALL(*mocks_->demuxer(), Seek(mocks_->demuxer()->GetStartTime(), _))
-        .WillOnce(Invoke(&RunPipelineStatusCB2));
     EXPECT_CALL(*mocks_->demuxer(), Stop(_))
         .WillOnce(Invoke(&RunStopFilterCallback));
 
