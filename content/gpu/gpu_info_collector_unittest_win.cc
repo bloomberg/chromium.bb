@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,7 +32,6 @@ class GPUInfoTest : public testing::Test {
                         Return(D3D_OK)));
     EXPECT_CALL(d3d_, QueryInterface(__uuidof(IDirect3D9Ex), _))
         .WillOnce(Return(E_NOINTERFACE));
-    EXPECT_CALL(d3d_, Release());
   }
   void TearDown() {
   }

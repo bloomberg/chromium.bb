@@ -15,6 +15,8 @@
 #include "base/scoped_native_library.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "base/win/scoped_com_initializer.h"
+#include "base/win/scoped_comptr.h"
 #include "ui/gfx/gl/gl_implementation.h"
 #include "ui/gfx/gl/gl_surface_egl.h"
 
@@ -35,76 +37,64 @@ std::string VersionNumberToString(uint32 version_number) {
 
 float GetAssessmentScore(IProvideWinSATResultsInfo* results,
                          WINSAT_ASSESSMENT_TYPE type) {
-  IProvideWinSATAssessmentInfo* subcomponent = NULL;
-  if (FAILED(results->GetAssessmentInfo(type, &subcomponent)))
+  base::win::ScopedComPtr<IProvideWinSATAssessmentInfo> subcomponent;
+  if (FAILED(results->GetAssessmentInfo(type, subcomponent.Receive())))
     return 0.0;
 
   float score = 0.0;
   if (FAILED(subcomponent->get_Score(&score)))
     score = 0.0;
-  subcomponent->Release();
   return score;
 }
 
 content::GpuPerformanceStats RetrieveGpuPerformanceStats() {
-  IQueryRecentWinSATAssessment* assessment = NULL;
-  IProvideWinSATResultsInfo* results = NULL;
-
   content::GpuPerformanceStats stats;
 
-  do {
-    HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
-    if (FAILED(hr)) {
-      LOG(ERROR) << "CoInitializeEx() failed";
-      break;
-    }
+  base::win::ScopedCOMInitializer com_initializer;
+  if (!com_initializer.succeeded()) {
+    LOG(ERROR) << "CoInitializeEx() failed";
+    return stats;
+  }
 
-    hr = CoCreateInstance(__uuidof(CQueryWinSAT),
-                          NULL,
-                          CLSCTX_INPROC_SERVER,
-                          __uuidof(IQueryRecentWinSATAssessment),
-                          reinterpret_cast<void**>(&assessment));
-    if (FAILED(hr)) {
-      LOG(ERROR) << "CoCreateInstance() failed";
-      break;
-    }
+  base::win::ScopedComPtr<IQueryRecentWinSATAssessment> assessment;
+  HRESULT hr = assessment.CreateInstance(__uuidof(CQueryWinSAT), NULL,
+                                         CLSCTX_INPROC_SERVER);
+  if (FAILED(hr)) {
+    LOG(ERROR) << "CoCreateInstance() failed";
+    return stats;
+  }
 
-    hr = assessment->get_Info(&results);
-    if (FAILED(hr)) {
-      LOG(ERROR) << "get_Info() failed";
-      break;
-    }
+  base::win::ScopedComPtr<IProvideWinSATResultsInfo> results;
+  hr = assessment->get_Info(results.Receive());
+  if (FAILED(hr)) {
+    LOG(ERROR) << "get_Info() failed";
+    return stats;
+  }
 
-    WINSAT_ASSESSMENT_STATE state = WINSAT_ASSESSMENT_STATE_UNKNOWN;
-    hr = results->get_AssessmentState(&state);
-    if (FAILED(hr)) {
-      LOG(ERROR) << "get_AssessmentState() failed";
-      break;
-    }
-    if (state != WINSAT_ASSESSMENT_STATE_VALID &&
-        state != WINSAT_ASSESSMENT_STATE_INCOHERENT_WITH_HARDWARE) {
-      LOG(ERROR) << "Can't retrieve a valid assessment";
-      break;
-    }
+  WINSAT_ASSESSMENT_STATE state = WINSAT_ASSESSMENT_STATE_UNKNOWN;
+  hr = results->get_AssessmentState(&state);
+  if (FAILED(hr)) {
+    LOG(ERROR) << "get_AssessmentState() failed";
+    return stats;
+  }
 
-    hr = results->get_SystemRating(&stats.overall);
-    if (FAILED(hr))
-      LOG(ERROR) << "Get overall score failed";
+  if (state != WINSAT_ASSESSMENT_STATE_VALID &&
+      state != WINSAT_ASSESSMENT_STATE_INCOHERENT_WITH_HARDWARE) {
+    LOG(ERROR) << "Can't retrieve a valid assessment";
+    return stats;
+  }
 
-    stats.gaming = GetAssessmentScore(results, WINSAT_ASSESSMENT_D3D);
-    if (stats.gaming == 0.0)
-      LOG(ERROR) << "Get gaming score failed";
+  hr = results->get_SystemRating(&stats.overall);
+  if (FAILED(hr))
+    LOG(ERROR) << "Get overall score failed";
 
-    stats.graphics = GetAssessmentScore(results, WINSAT_ASSESSMENT_GRAPHICS);
-    if (stats.graphics == 0.0)
-      LOG(ERROR) << "Get graphics score failed";
-  } while (false);
+  stats.gaming = GetAssessmentScore(results, WINSAT_ASSESSMENT_D3D);
+  if (stats.gaming == 0.0)
+    LOG(ERROR) << "Get gaming score failed";
 
-  if (assessment)
-    assessment->Release();
-  if (results)
-    results->Release();
-  CoUninitialize();
+  stats.graphics = GetAssessmentScore(results, WINSAT_ASSESSMENT_GRAPHICS);
+  if (stats.graphics == 0.0)
+    LOG(ERROR) << "Get graphics score failed";
 
   return stats;
 }
@@ -148,8 +138,8 @@ bool CollectGraphicsInfo(content::GPUInfo* gpu_info) {
     return false;
   }
 
-  IDirect3D9* d3d = NULL;
-  if (FAILED(device->GetDirect3D(&d3d))) {
+  base::win::ScopedComPtr<IDirect3D9> d3d;
+  if (FAILED(device->GetDirect3D(d3d.Receive()))) {
     LOG(ERROR) << "device->GetDirect3D(&d3d) failed";
     return false;
   }
@@ -195,17 +185,12 @@ bool CollectGraphicsInfoD3D(IDirect3D9* d3d, content::GPUInfo* gpu_info) {
   }
 
   // Get can_lose_context
-  bool can_lose_context = false;
-  IDirect3D9Ex* d3dex = NULL;
-  if (SUCCEEDED(d3d->QueryInterface(__uuidof(IDirect3D9Ex),
-                                    reinterpret_cast<void**>(&d3dex)))) {
-    d3dex->Release();
-  } else {
-    can_lose_context = true;
-  }
-  gpu_info->can_lose_context = can_lose_context;
+  base::win::ScopedComPtr<IDirect3D9Ex> d3dex;
+  if (SUCCEEDED(d3dex.QueryFrom(d3d)))
+    gpu_info->can_lose_context = false;
+  else
+    gpu_info->can_lose_context = true;
 
-  d3d->Release();
   return true;
 }
 
@@ -246,8 +231,8 @@ bool CollectDriverInfoD3D(const std::wstring& device_id,
                           content::GPUInfo* gpu_info) {
   // create device info for the display device
   HDEVINFO device_info = SetupDiGetClassDevsW(
-    NULL, device_id.c_str(), NULL,
-    DIGCF_PRESENT | DIGCF_PROFILE | DIGCF_ALLCLASSES);
+      NULL, device_id.c_str(), NULL,
+      DIGCF_PRESENT | DIGCF_PROFILE | DIGCF_ALLCLASSES);
   if (device_info == INVALID_HANDLE_VALUE) {
     LOG(ERROR) << "Creating device info failed";
     return false;
