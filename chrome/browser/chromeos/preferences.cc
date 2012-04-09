@@ -141,24 +141,24 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
     prefs->RegisterBooleanPref(
         language_prefs::kChewingBooleanPrefs[i].pref_name,
         language_prefs::kChewingBooleanPrefs[i].default_pref_value,
-        PrefService::UNSYNCABLE_PREF);
+        language_prefs::kChewingBooleanPrefs[i].sync_status);
   }
   for (size_t i = 0; i < language_prefs::kNumChewingMultipleChoicePrefs; ++i) {
     prefs->RegisterStringPref(
         language_prefs::kChewingMultipleChoicePrefs[i].pref_name,
         language_prefs::kChewingMultipleChoicePrefs[i].default_pref_value,
-        PrefService::UNSYNCABLE_PREF);
+        language_prefs::kChewingMultipleChoicePrefs[i].sync_status);
   }
   prefs->RegisterIntegerPref(
       language_prefs::kChewingHsuSelKeyType.pref_name,
       language_prefs::kChewingHsuSelKeyType.default_pref_value,
-      PrefService::UNSYNCABLE_PREF);
+      language_prefs::kChewingHsuSelKeyType.sync_status);
 
   for (size_t i = 0; i < language_prefs::kNumChewingIntegerPrefs; ++i) {
     prefs->RegisterIntegerPref(
         language_prefs::kChewingIntegerPrefs[i].pref_name,
         language_prefs::kChewingIntegerPrefs[i].default_pref_value,
-        PrefService::UNSYNCABLE_PREF);
+        language_prefs::kChewingIntegerPrefs[i].sync_status);
   }
   prefs->RegisterStringPref(
       prefs::kLanguageHangulKeyboard,
