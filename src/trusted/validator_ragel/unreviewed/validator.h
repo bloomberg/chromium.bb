@@ -7,7 +7,8 @@
 #ifndef _VALIDATOR_X86_64_H_
 #define _VALIDATOR_X86_64_H_
 
-#include "native_client/src/include/portability.h"
+#include <inttypes.h>
+#include <stdbool.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -91,7 +92,7 @@ enum register_name {
   REG_ES_RDI,   /* For string instructions: %es:(%rsi).                       */
   REG_DS_RSI,   /* For string instructions: %ds:(%rdi).                       */
   REG_PORT_DX,  /* 16-bit DX: for in/out instructions.                        */
-  NO_REG,       /* For modrm: both index and base can be absent.              */
+  REG_NONE,     /* For modrm: both index and base can be absent.              */
   REG_ST,       /* For x87 instructions: implicit %st.                        */
   JMP_TO        /* Operand is jump target address: usually %rip+offset.       */
 };

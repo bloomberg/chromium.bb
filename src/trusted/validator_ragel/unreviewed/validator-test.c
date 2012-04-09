@@ -5,41 +5,29 @@
  */
 
 #include <assert.h>
+#include <elf.h>
+#include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "validator.h"
 
-#include "native_client/src/include/elf32.h"
-#include "native_client/src/include/elf64.h"
-#include "native_client/src/shared/platform/nacl_check.h"
-#include "native_client/src/shared/utils/types.h"
-#include "native_client/src/trusted/validator_ragel/unreviewed/validator.h"
+#undef TRUE
+#define TRUE    1
 
-/* This is a copy of NaClLog_Function from shared/platform/nacl_log.c to avoid
- * linking in code in NaCl shared code in the unreviewed/Makefile and be able to
- *  use CHECK().
+#undef FALSE
+#define FALSE   0
 
- * TODO(khim): remove the copy of NaClLog_Function implementation as soon as
- *unreviewed/Makefile is eliminated.
- */
-void NaClLog_Function(int detail_level, char const  *fmt, ...) {
-  va_list ap;
-
-  va_start(ap, fmt);
-  vfprintf(stderr, fmt, ap);
-  exit(1);
-  NaClLogV_mu(detail_level, fmt, ap);
-  va_end(ap);
-  NaClLogUnlock();
-}
+/* This may help with portability but makes code less readable.  */
+#pragma GCC diagnostic ignored "-Wdeclaration-after-statement"
 
 static void CheckBounds(unsigned char *data, size_t data_size,
                         void *ptr, size_t inside_size) {
-  CHECK(data <= (unsigned char *) ptr);
-  CHECK((unsigned char *) ptr + inside_size <= data + data_size);
+  assert(data <= (unsigned char *) ptr);
+  assert((unsigned char *) ptr + inside_size <= data + data_size);
 }
 
-void ReadImage(const char *filename, uint8_t **result, size_t *result_size) {
+void ReadFile(const char *filename, uint8_t **result, size_t *result_size) {
   FILE *fp;
   uint8_t *data;
   size_t file_size;
@@ -78,17 +66,16 @@ struct ValidateState {
 };
 
 void ProcessError (const uint8_t *ptr, void *userdata) {
-  printf("offset 0x%"NACL_PRIxS": DFA error in validator\n",
-                            ptr - (((struct ValidateState *)userdata)->offset));
+  printf("offset 0x%zx: DFA error in validator\n",
+         ptr - (((struct ValidateState *)userdata)->offset));
 }
 
 int ValidateFile(const char *filename, int repeat_count) {
   size_t data_size;
   uint8_t *data;
+  ReadFile(filename, &data, &data_size);
+
   int count;
-
-  ReadImage(filename, &data, &data_size);
-
   if (data[4] == 1) {
     for (count = 0; count < repeat_count; ++count) {
       Elf32_Ehdr *header;
@@ -105,8 +92,6 @@ int ValidateFile(const char *filename, int repeat_count) {
 
         if ((section->sh_flags & SHF_EXECINSTR) != 0) {
           struct ValidateState state;
-          int res;
-
           state.offset = data + section->sh_offset - section->sh_addr;
           if (section->sh_size <= 0xfff) {
             state.width = 4;
@@ -117,7 +102,7 @@ int ValidateFile(const char *filename, int repeat_count) {
           }
           CheckBounds(data, data_size,
                       data + section->sh_offset, section->sh_size);
-          res = ValidateChunkIA32(data + section->sh_offset,
+          int res = ValidateChunkIA32(data + section->sh_offset,
                                         section->sh_size, ProcessError, &state);
           if (res != 0) {
             return res;
@@ -141,8 +126,6 @@ int ValidateFile(const char *filename, int repeat_count) {
 
         if ((section->sh_flags & SHF_EXECINSTR) != 0) {
           struct ValidateState state;
-          int res;
-
           state.offset = data + section->sh_offset - section->sh_addr;
           if (section->sh_size <= 0xfff) {
             state.width = 4;
@@ -155,7 +138,7 @@ int ValidateFile(const char *filename, int repeat_count) {
           }
           CheckBounds(data, data_size,
                       data + section->sh_offset, section->sh_size);
-          res = ValidateChunkAMD64(data + section->sh_offset,
+          int res = ValidateChunkAMD64(data + section->sh_offset,
                                         section->sh_size, ProcessError, &state);
           if (res != 0) {
             return res;
