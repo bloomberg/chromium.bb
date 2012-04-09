@@ -18,6 +18,9 @@ var CrosView = (function() {
    */
   function clearFileInput_() {
     $(CrosView.IMPORT_DIV_ID).innerHTML = $(CrosView.IMPORT_DIV_ID).innerHTML;
+    $(CrosView.IMPORT_ONC_ID).addEventListener('change',
+                                               handleFileChangeEvent_,
+                                               false);
   }
 
   /**
@@ -26,6 +29,7 @@ var CrosView = (function() {
    *  @private
    */
   function importONCFile_() {
+    clearParseStatus_();
     if (fileContent)
       g_browser.importONCFile(fileContent, passcode);
     else
@@ -65,13 +69,31 @@ var CrosView = (function() {
    */
   function setFileContent_(result) {
     fileContent = result;
+    // Parse the JSON to get at the top level "Type" property.
+    var json_object;
+    // Ignore any parse errors: they'll get handled in the C++ import code.
+    try {
+      json_object = JSON.parse(fileContent);
+    } catch (error) {}
     // Check if file is encrypted.
-    if (fileContent.search(/begin pgp message/i) == -1) {
-      // Not encrypted, don't need passcode.
-      importONCFile_();
-    } else {
+    if (json_object &&
+        json_object.hasOwnProperty('Type') &&
+        json_object.Type == 'EncryptedConfiguration') {
       promptForPasscode_();
+    } else {
+      importONCFile_();
     }
+  }
+
+  /**
+   *  Clear ONC file parse status.  Clears and hides the parse status div.
+   *
+   *  @private
+   */
+  function clearParseStatus_(error) {
+    var parseStatus = $(CrosView.PARSE_STATUS_ID);
+    parseStatus.hidden = true;
+    parseStatus.textContent = '';
   }
 
   /**
@@ -88,20 +110,29 @@ var CrosView = (function() {
   }
 
   /**
+   *  An event listener for the file selection field.
+   *
+   *  @private
+   */
+  function handleFileChangeEvent_(event) {
+    clearParseStatus_();
+    var file = event.target.files[0];
+    var reader = new FileReader();
+    reader.onloadend = function(e) {
+      setFileContent_(reader.result);
+    };
+    reader.readAsText(file);
+  }
+
+  /**
    *  Add event listeners for the file selection and passcode input fields.
    *
    *  @private
    */
   function addEventListeners_() {
-    $(CrosView.IMPORT_ONC_ID).addEventListener('change', function(event) {
-      $(CrosView.PARSE_STATUS_ID).hidden = true;
-      var file = event.target.files[0];
-      var reader = new FileReader();
-      reader.onloadend = function(e) {
-        setFileContent_(this.result);
-      };
-      reader.readAsText(file);
-    }, false);
+    $(CrosView.IMPORT_ONC_ID).addEventListener('change',
+                                               handleFileChangeEvent_,
+                                               false);
 
     $(CrosView.PASSCODE_INPUT_ID).addEventListener('change', function(event) {
       setPasscode_(this.value);
