@@ -229,6 +229,14 @@ bool BrowserThread::PostBlockingPoolTask(
   return g_globals.Get().blocking_pool->PostWorkerTask(from_here, task);
 }
 
+bool BrowserThread::PostBlockingPoolTaskAndReply(
+    const tracked_objects::Location& from_here,
+    const base::Closure& task,
+    const base::Closure& reply) {
+  return g_globals.Get().blocking_pool->PostTaskAndReply(
+      from_here, task, reply);
+}
+
 // static
 bool BrowserThread::PostBlockingPoolSequencedTask(
     const std::string& sequence_token_name,

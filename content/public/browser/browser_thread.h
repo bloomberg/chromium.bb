@@ -154,9 +154,10 @@ class CONTENT_EXPORT BrowserThread {
   // for doing things like blocking I/O.
   //
   // The first variant will run the task in the pool with no sequencing
-  // semantics, so may get run in parallel with other posted tasks. The
-  // second variant provides sequencing between tasks with the same
-  // sequence token name.
+  // semantics, so may get run in parallel with other posted tasks. The second
+  // variant will all post a task with no sequencing semantics, and will post a
+  // reply task to the origin TaskRunner upon completion.  The third variant
+  // provides sequencing between tasks with the same sequence token name.
   //
   // These tasks are guaranteed to run before shutdown.
   //
@@ -168,6 +169,10 @@ class CONTENT_EXPORT BrowserThread {
   // GetBlockingPool().
   static bool PostBlockingPoolTask(const tracked_objects::Location& from_here,
                                    const base::Closure& task);
+  static bool PostBlockingPoolTaskAndReply(
+      const tracked_objects::Location& from_here,
+      const base::Closure& task,
+      const base::Closure& reply);
   static bool PostBlockingPoolSequencedTask(
       const std::string& sequence_token_name,
       const tracked_objects::Location& from_here,
