@@ -21,7 +21,13 @@ struct TestCase {
   std::string str;
   ProcessOutputType type;
 
-  TestCase(std::string expected_string, ProcessOutputType expected_type)
+  TestCase(const char* expected_string,
+           size_t expected_string_length,
+           ProcessOutputType expected_type)
+      : str(expected_string, expected_string_length),
+        type(expected_type) {
+  }
+  TestCase(const std::string& expected_string, ProcessOutputType expected_type)
       : str(expected_string),
         type(expected_type) {
   }
@@ -33,44 +39,36 @@ class ProcessWatcherExpectations {
 
   void Init(const std::vector<TestCase>& expectations) {
     received_from_out_ = 0;
-    received_from_err_ = 0;
 
     for (size_t i = 0; i < expectations.size(); i++) {
-      if (expectations[i].type == PROCESS_OUTPUT_TYPE_OUT) {
-        out_expectations_.append(expectations[i].str);
-      } else {
-        err_expectations_.append(expectations[i].str);
-      }
+      out_expectations_.append(expectations[i].str.c_str(),
+                               expectations[i].str.length());
     }
   }
 
-  void CheckExpectations(const std::string& data, ProcessOutputType type) {
-    const std::string& expectations =
-        (type == PROCESS_OUTPUT_TYPE_OUT) ? out_expectations_
-                                          : err_expectations_;
-    size_t& received =
-        (type == PROCESS_OUTPUT_TYPE_OUT) ? received_from_out_
-                                          : received_from_err_;
+  bool CheckExpectations(const std::string& data, ProcessOutputType type) {
+    EXPECT_EQ(PROCESS_OUTPUT_TYPE_OUT, type);
+    if (!type == PROCESS_OUTPUT_TYPE_OUT)
+      return false;
 
-    EXPECT_LT(received, expectations.length());
-    if (received >= expectations.length())
-      return;
+    EXPECT_LT(received_from_out_, out_expectations_.length());
+    if (received_from_out_ >= out_expectations_.length())
+      return false;
 
-    EXPECT_EQ(received, expectations.find(data, received));
+    EXPECT_EQ(received_from_out_,
+              out_expectations_.find(data, received_from_out_));
 
-    received += data.length();
+    received_from_out_ += data.length();
+    return true;
   }
 
   bool IsDone() {
-    return received_from_out_ >= out_expectations_.length() &&
-           received_from_err_ >= err_expectations_.length();
+    return received_from_out_ >= out_expectations_.length();
   }
 
  private:
   std::string out_expectations_;
   size_t received_from_out_;
-  std::string err_expectations_;
-  size_t received_from_err_;
 };
 
 class ProcessOutputWatcherTest : public testing::Test {
@@ -86,8 +84,8 @@ public:
   }
 
   void OnRead(ProcessOutputType type, const std::string& output) {
-    expectations_.CheckExpectations(output, type);
-    if (expectations_.IsDone())
+    bool success = expectations_.CheckExpectations(output, type);
+    if (!success || expectations_.IsDone())
       all_data_received_->Signal();
   }
 
@@ -127,6 +125,9 @@ TEST_F(ProcessOutputWatcherTest, OutputWatcher) {
   test_cases.push_back(TestCase("testing output3\n", PROCESS_OUTPUT_TYPE_OUT));
   test_cases.push_back(TestCase(VeryLongString(), PROCESS_OUTPUT_TYPE_OUT));
   test_cases.push_back(TestCase("testing error2\n", PROCESS_OUTPUT_TYPE_OUT));
+  test_cases.push_back(TestCase("line with \0 in it\n",
+                                arraysize("line with \0 in it \n"),
+                                PROCESS_OUTPUT_TYPE_OUT));
 
   output_watch_thread.message_loop()->PostTask(FROM_HERE,
       base::Bind(&ProcessOutputWatcherTest::StartWatch, base::Unretained(this),

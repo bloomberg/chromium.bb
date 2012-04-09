@@ -95,18 +95,13 @@ void ProcessOutputWatcher::ReadFromFd(ProcessOutputType type, int* fd) {
   if (bytes_read < 0)
     DPLOG(WARNING) << "read from buffer failed";
 
-  // TODO(tbarzic): We can probably avoid extra string creation.
   if (bytes_read > 0) {
-    // Ensure the string in buffer is NULL terminated. |read_buffer_size_| is
-    // is set to be smaller than real buffer capacity, so |read_buffer_| won't
-    // get overflown.
-    read_buffer_[bytes_read] = 0;
-    on_read_callback_.Run(type, std::string(read_buffer_));
+    on_read_callback_.Run(type, std::string(read_buffer_, bytes_read));
   }
-  // If there is nothing on the output or received data contains \0, we assume
-  // the watched process has exited (slave end of pty is closed).
-  if (bytes_read <= 0 ||
-      static_cast<size_t>(bytes_read) > strlen(read_buffer_)) {
+
+  // If there is nothing on the output the watched process has exited (slave end
+  // of pty is closed).
+  if (bytes_read <= 0) {
     // Slave pseudo terminal has been closed, we won't need master fd anymore.
     CloseFd(fd);
 
