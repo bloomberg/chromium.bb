@@ -13,18 +13,16 @@ namespace dom_storage {
 
 // DomStorageTaskRunner
 
+bool DomStorageTaskRunner::RunsTasksOnCurrentThread() const {
+  return IsRunningOnSequence(PRIMARY_SEQUENCE);
+}
+
 bool DomStorageTaskRunner::PostDelayedTask(
     const tracked_objects::Location& from_here,
     const base::Closure& task,
     int64 delay_ms) {
   return PostDelayedTask(
       from_here, task, base::TimeDelta::FromMilliseconds(delay_ms));
-}
-
-bool DomStorageTaskRunner::RunsTasksOnCurrentThread() const {
-  // TODO(michaeln): make this method useful once SequencedWorkerPool
-  // can check which sequence the current thread is processing.
-  return true;
 }
 
 // DomStorageWorkerPoolTaskRunner
@@ -67,16 +65,23 @@ bool DomStorageWorkerPoolTaskRunner::PostShutdownBlockingTask(
     const tracked_objects::Location& from_here,
     SequenceID sequence_id,
     const base::Closure& task) {
-  base::SequencedWorkerPool::SequenceToken token;
-  if (sequence_id == PRIMARY_SEQUENCE) {
-    token = primary_sequence_token_;
-  } else {
-    DCHECK_EQ(COMMIT_SEQUENCE, sequence_id);
-    token = commit_sequence_token_;
-  }
   return sequenced_worker_pool_->PostSequencedWorkerTaskWithShutdownBehavior(
-      token, from_here, task,
+      IDtoToken(sequence_id), from_here, task,
       base::SequencedWorkerPool::BLOCK_SHUTDOWN);
+}
+
+bool DomStorageWorkerPoolTaskRunner::IsRunningOnSequence(
+    SequenceID sequence_id) const {
+  return sequenced_worker_pool_->IsRunningSequenceOnCurrentThread(
+      IDtoToken(sequence_id));
+}
+
+base::SequencedWorkerPool::SequenceToken
+DomStorageWorkerPoolTaskRunner::IDtoToken(SequenceID id) const {
+  if (id == PRIMARY_SEQUENCE)
+    return primary_sequence_token_;
+  DCHECK_EQ(COMMIT_SEQUENCE, id);
+  return commit_sequence_token_;
 }
 
 // MockDomStorageTaskRunner
@@ -101,6 +106,10 @@ bool MockDomStorageTaskRunner::PostShutdownBlockingTask(
     SequenceID sequence_id,
     const base::Closure& task) {
   return message_loop_->PostTask(from_here, task);
+}
+
+bool MockDomStorageTaskRunner::IsRunningOnSequence(SequenceID) const {
+  return message_loop_->RunsTasksOnCurrentThread();
 }
 
 }  // namespace dom_storage

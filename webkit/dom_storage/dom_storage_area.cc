@@ -250,6 +250,7 @@ void DomStorageArea::OnCommitTimer() {
 
   // This method executes on the primary sequence, we schedule
   // a task for immediate execution on the commit sequence.
+  DCHECK(task_runner_->IsRunningOnPrimarySequence());
   in_flight_commit_batch_ = commit_batch_.Pass();
   bool success = task_runner_->PostShutdownBlockingTask(
       FROM_HERE,
@@ -260,6 +261,7 @@ void DomStorageArea::OnCommitTimer() {
 
 void DomStorageArea::CommitChanges() {
   // This method executes on the commit sequence.
+  DCHECK(task_runner_->IsRunningOnCommitSequence());
   DCHECK(in_flight_commit_batch_.get());
   bool success = backing_->CommitChanges(
       in_flight_commit_batch_->clear_all_first,
@@ -272,6 +274,7 @@ void DomStorageArea::CommitChanges() {
 
 void DomStorageArea::OnCommitComplete() {
   // We're back on the primary sequence in this method.
+  DCHECK(task_runner_->IsRunningOnPrimarySequence());
   if (is_shutdown_)
     return;
   in_flight_commit_batch_.reset();
@@ -286,6 +289,7 @@ void DomStorageArea::OnCommitComplete() {
 
 void DomStorageArea::ShutdownInCommitSequence() {
   // This method executes on the commit sequence.
+  DCHECK(task_runner_->IsRunningOnCommitSequence());
   DCHECK(backing_.get());
   if (commit_batch_.get()) {
     // Commit any changes that accrued prior to the timer firing.

@@ -45,9 +45,18 @@ class DomStorageTaskRunner : public base::TaskRunner {
       SequenceID sequence_id,
       const base::Closure& task) = 0;
 
-  // Only here because base::TaskRunner requires it, the return
-  // value is hard coded to true, do not rely on this method.
+  // The TaskRunner override returns true if the current thread is running
+  // on the primary sequence.
   virtual bool RunsTasksOnCurrentThread() const OVERRIDE;
+
+  // Returns true if the current thread is running on the given |sequence_id|.
+  virtual bool IsRunningOnSequence(SequenceID sequence_id) const = 0;
+  bool IsRunningOnPrimarySequence() const {
+    return IsRunningOnSequence(PRIMARY_SEQUENCE);
+  }
+  bool IsRunningOnCommitSequence() const {
+    return IsRunningOnSequence(COMMIT_SEQUENCE);
+  }
 
   // DEPRECATED: Only here because base::TaskRunner requires it, implemented
   // by calling the virtual PostDelayedTask(..., TimeDelta) variant.
@@ -81,10 +90,15 @@ class DomStorageWorkerPoolTaskRunner : public DomStorageTaskRunner {
       SequenceID sequence_id,
       const base::Closure& task) OVERRIDE;
 
+  virtual bool IsRunningOnSequence(SequenceID sequence_id) const OVERRIDE;
+
  protected:
   virtual ~DomStorageWorkerPoolTaskRunner();
 
  private:
+
+  base::SequencedWorkerPool::SequenceToken IDtoToken(SequenceID id) const;
+
   const scoped_refptr<base::MessageLoopProxy> message_loop_;
   const scoped_refptr<base::SequencedWorkerPool> sequenced_worker_pool_;
   base::SequencedWorkerPool::SequenceToken primary_sequence_token_;
@@ -109,6 +123,8 @@ class MockDomStorageTaskRunner : public DomStorageTaskRunner {
       const tracked_objects::Location& from_here,
       SequenceID sequence_id,
       const base::Closure& task) OVERRIDE;
+
+  virtual bool IsRunningOnSequence(SequenceID sequence_id) const OVERRIDE;
 
  protected:
   virtual ~MockDomStorageTaskRunner();
