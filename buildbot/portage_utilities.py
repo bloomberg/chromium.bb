@@ -246,7 +246,10 @@ class EBuild(object):
     fileinput.close()
 
   def GetSourcePath(self, srcroot):
-    """Get the project and path for this ebuild."""
+    """Get the project and path for this ebuild.
+
+    The path is guaranteed to exist, be a directory, and be absolute.
+    """
     # Grab and evaluate CROS_WORKON variables from this ebuild.
     cmd = ('export CROS_WORKON_LOCALNAME="%s" CROS_WORKON_PROJECT="%s"; '
            'eval $(grep -E "^CROS_WORKON" %s) && '
@@ -261,7 +264,7 @@ class EBuild(object):
     else:
       dir_ = 'third_party'
 
-    subdir_path = os.path.join(srcroot, dir_, subdir)
+    subdir_path = os.path.realpath(os.path.join(srcroot, dir_, subdir))
 
     if not os.path.isdir(subdir_path):
       cros_build_lib.Die('Source repository %s '
@@ -277,7 +280,7 @@ class EBuild(object):
                          '(found %s, expected %s)' % (
                              subdir_path, real_project, project))
 
-    return project, os.path.realpath(subdir_path)
+    return project, subdir_path
 
   def GetCommitId(self, srcdir):
     """Get the commit id for this ebuild."""
@@ -311,10 +314,6 @@ class EBuild(object):
 
     _project, srcdir = self.GetSourcePath(srcroot)
 
-    if not os.path.isdir(srcdir):
-      cros_build_lib.Die('Package %s source directory doesn\'t exist: "%s"' %
-                          (self._pkgname, os.path.abspath(srcdir)))
-
     # The chromeos-version script will output a usable raw version number,
     # or nothing in case of error or no available version
     output = self._RunCommand([vers_script, srcdir]).strip()
@@ -322,7 +321,7 @@ class EBuild(object):
     if not output:
       cros_build_lib.Die('Package %s has a chromeos-version.sh script but '
                          'it returned no valid version for "%s"' %
-                          (self._pkgname, os.path.abspath(srcdir)))
+                         (self._pkgname, srcdir))
 
     return output
 
