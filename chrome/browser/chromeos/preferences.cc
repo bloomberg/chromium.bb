@@ -397,9 +397,6 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
       UMA_HISTOGRAM_BOOLEAN("Mouse.PrimaryButtonRight.Started", right);
   }
 
-  // We don't handle prefs::kLanguageCurrentInputMethod and PreviousInputMethod
-  // here.
-
   if (!pref_name || *pref_name == prefs::kLanguageHotkeyNextEngineInMenu) {
     SetLanguageConfigStringListAsCSV(
         language_prefs::kHotKeySectionName,
@@ -444,7 +441,6 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
 
   // Do not check |*pref_name| for the two prefs. We're only interested in
   // initial values of the prefs.
-  // TODO(yusukes): Remove the second condition on R20.
   if (!pref_name) {
     const std::string previous_input_method_id =
         previous_input_method_.GetValue();
