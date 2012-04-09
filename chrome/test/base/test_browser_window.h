@@ -64,7 +64,6 @@ class TestBrowserWindow : public BrowserWindow {
   virtual void FocusToolbar() OVERRIDE {}
   virtual void FocusAppMenu() OVERRIDE {}
   virtual void FocusBookmarksToolbar() OVERRIDE {}
-  virtual void FocusChromeOSStatus() OVERRIDE {}
   virtual void RotatePaneFocus(bool forwards) OVERRIDE {}
   virtual void ShowAppMenu() OVERRIDE {}
   virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,

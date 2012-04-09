@@ -2183,11 +2183,6 @@ void Browser::FocusBookmarksToolbar() {
   window_->FocusBookmarksToolbar();
 }
 
-void Browser::FocusChromeOSStatus() {
-  content::RecordAction(UserMetricsAction("FocusChromeOSStatus"));
-  window_->FocusChromeOSStatus();
-}
-
 void Browser::FocusNextPane() {
   content::RecordAction(UserMetricsAction("FocusNextPane"));
   window_->RotatePaneFocus(true);
@@ -3214,7 +3209,6 @@ void Browser::ExecuteCommandWithDisposition(
     case IDC_FOCUS_SEARCH:          FocusSearch();                    break;
     case IDC_FOCUS_MENU_BAR:        FocusAppMenu();                   break;
     case IDC_FOCUS_BOOKMARKS:       FocusBookmarksToolbar();          break;
-    case IDC_FOCUS_CHROMEOS_STATUS: FocusChromeOSStatus();            break;
     case IDC_FOCUS_NEXT_PANE:       FocusNextPane();                  break;
     case IDC_FOCUS_PREVIOUS_PANE:   FocusPreviousPane();              break;
 
@@ -4896,8 +4890,6 @@ void Browser::UpdateCommandsForFullscreenMode(bool is_fullscreen) {
       IDC_FOCUS_PREVIOUS_PANE, main_not_fullscreen);
   command_updater_.UpdateCommandEnabled(
       IDC_FOCUS_BOOKMARKS, main_not_fullscreen);
-  command_updater_.UpdateCommandEnabled(
-      IDC_FOCUS_CHROMEOS_STATUS, main_not_fullscreen);
 
   // Show various bits of UI
   command_updater_.UpdateCommandEnabled(IDC_DEVELOPER_MENU, show_main_ui);

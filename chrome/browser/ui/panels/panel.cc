@@ -451,10 +451,6 @@ void Panel::FocusBookmarksToolbar() {
   NOTIMPLEMENTED();
 }
 
-void Panel::FocusChromeOSStatus() {
-  NOTIMPLEMENTED();
-}
-
 void Panel::RotatePaneFocus(bool forwards) {
   NOTIMPLEMENTED();
 }

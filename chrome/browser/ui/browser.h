@@ -632,7 +632,6 @@ class Browser : public TabHandlerDelegate,
   void FocusSearch();
   void FocusAppMenu();
   void FocusBookmarksToolbar();
-  void FocusChromeOSStatus();
   void FocusNextPane();
   void FocusPreviousPane();
 

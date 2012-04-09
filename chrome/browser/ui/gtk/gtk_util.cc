@@ -1065,10 +1065,6 @@ void PresentWindow(GtkWidget* window, int timestamp) {
     gtk_window_present(GTK_WINDOW(window));
 }
 
-GtkWindow* GetDialogWindow(GtkWidget* dialog) {
-  return GTK_WINDOW(dialog);
-}
-
 gfx::Rect GetDialogBounds(GtkWidget* dialog) {
   gint x = 0, y = 0, width = 1, height = 1;
   gtk_window_get_position(GTK_WINDOW(dialog), &x, &y);

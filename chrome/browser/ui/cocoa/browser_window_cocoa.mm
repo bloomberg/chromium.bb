@@ -363,9 +363,6 @@ void BrowserWindowCocoa::FocusBookmarksToolbar() {
   // Not needed on the Mac.
 }
 
-void BrowserWindowCocoa::FocusChromeOSStatus() {
-  // Not needed on the Mac.
-}
 
 bool BrowserWindowCocoa::IsBookmarkBarVisible() const {
   return browser_->profile()->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar);

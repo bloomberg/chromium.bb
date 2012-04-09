@@ -262,7 +262,6 @@ class BrowserView : public BrowserWindow,
   virtual void FocusToolbar() OVERRIDE;
   virtual void FocusAppMenu() OVERRIDE;
   virtual void FocusBookmarksToolbar() OVERRIDE;
-  virtual void FocusChromeOSStatus() OVERRIDE {}
   virtual void RotatePaneFocus(bool forwards) OVERRIDE;
   virtual void DestroyBrowser() OVERRIDE;
   virtual bool IsBookmarkBarVisible() const OVERRIDE;

@@ -986,10 +986,6 @@ void BrowserWindowGtk::FocusBookmarksToolbar() {
   NOTIMPLEMENTED();
 }
 
-void BrowserWindowGtk::FocusChromeOSStatus() {
-  NOTIMPLEMENTED();
-}
-
 void BrowserWindowGtk::RotatePaneFocus(bool forwards) {
   NOTIMPLEMENTED();
 }

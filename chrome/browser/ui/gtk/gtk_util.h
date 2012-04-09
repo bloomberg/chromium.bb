@@ -293,13 +293,8 @@ void ShowDialogWithMinLocalizedWidth(GtkWidget* dialog,
                                      int width_id);
 
 // Wrapper to present a window. On Linux, it just calls gtk_window_present or
-// gtk_window_present_with_time for non-zero timestamp. For ChromeOS, it first
-// finds the host window of the dialog contents and then present it.
+// gtk_window_present_with_time for non-zero timestamp.
 void PresentWindow(GtkWidget* window, int timestamp);
-
-// Get real window for given dialog. On ChromeOS, this gives the native dialog
-// host window. On Linux, it merely returns the passed in dialog.
-GtkWindow* GetDialogWindow(GtkWidget* dialog);
 
 // Gets dialog window bounds.
 gfx::Rect GetDialogBounds(GtkWidget* dialog);

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,7 +17,7 @@ int ChromeMain(int argc, const char** argv);
 int main(int argc, const char** argv) {
   int return_code = ChromeMain(argc, argv);
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#if defined(OS_LINUX)
   // Launch a new instance if we're shutting down because we detected an
   // upgrade in the persistent mode.
   upgrade_util::RelaunchChromeBrowserWithNewCommandLineIfNeeded();

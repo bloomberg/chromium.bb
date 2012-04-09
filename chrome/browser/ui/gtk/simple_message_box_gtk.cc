@@ -13,9 +13,7 @@ namespace {
 void SetDialogTitle(GtkWidget* dialog, const string16& title) {
   gtk_window_set_title(GTK_WINDOW(dialog), UTF16ToUTF8(title).c_str());
 
-  // The following code requires the dialog to be realized. However, we host
-  // dialog's content in a Chrome window without really realize the dialog
-  // on ChromeOS. Thus, skip the following code for ChromeOS.
+  // The following code requires the dialog to be realized.
   gtk_widget_realize(dialog);
 
   // Make sure it's big enough to show the title.
