@@ -2354,6 +2354,11 @@ bool HistoryBackend::ClearAllThumbnailHistory(URLRows* kept_urls) {
       thumbnail_db_->AddToTemporaryIconMappingTable(i->url(), new_id);
     }
   }
+#if defined(OS_ANDROID)
+  // TODO (michaelbai): Add the unit test once AndroidProviderBackend is
+  // avaliable in HistoryBackend.
+  history_db_->ClearAndroidURLRows();
+#endif
 
   // Rename the duplicate favicon and icon_mapping back table and recreate the
   // other tables. This will make the database consistent again.

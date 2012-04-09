@@ -140,4 +140,8 @@ bool AndroidURLsDatabase::UpdateAndroidURLRow(AndroidURLID id,
   return true;
 }
 
+bool AndroidURLsDatabase::ClearAndroidURLRows() {
+  return GetDB().Execute("DELETE FROM android_urls");
+}
+
 }  // namespace history

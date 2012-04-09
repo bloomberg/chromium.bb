@@ -52,6 +52,10 @@ class AndroidURLsDatabase {
                            const std::string&raw_url,
                            URLID url_id);
 
+  // Clears all the rows in android_urls table, returns true on success, false
+  // on error.
+  bool ClearAndroidURLRows();
+
  protected:
   // Returns the database for the functions in this interface. The decendent of
   // this class implements these functions to return its objects.
