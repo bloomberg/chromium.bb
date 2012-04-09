@@ -88,21 +88,13 @@ clean() {
 }
 
 #@
-#@ prereq-x8632
-prereq-x8632() {
-  # NOTE: we force the building of scons-out/nacl-x86-32/lib/crtX.o
+#@ prereq <arch>
+prereq() {
+  local arch=$1
+  # NOTE: we force the building of scons-out/nacl-*/lib/crtX.o
   #       implicitly via run_intrinsics_test
   # this is only required for naclgcc_newlib tests
-  ./scons platform=x86-32 irt_core sel_ldr run_intrinsics_test
-}
-
-#@
-#@ prereq-x8664
-prereq-x8664() {
-  # NOTE: we force the building of scons-out/nacl-x86-64/lib/crtX.o
-  #       implicitly via run_intrinsics_test
-  # this is only required for naclgcc_newlib tests
-  ./scons platform=x86-64 irt_core sel_ldr run_intrinsics_test
+  ./scons platform=${arch} irt_core sel_ldr run_intrinsics_test
 }
 
 #@
@@ -111,11 +103,6 @@ prereq-pnacl() {
   pnacl/build.sh sdk newlib
 }
 
-#@
-#@ prereq-arm
-prereq-arm() {
-  ./scons platform=arm irt_core sel_ldr run_intrinsics_test
-}
 
 handle-error() {
   echo "@@@STEP_FAILURE@@@"
@@ -147,10 +134,10 @@ eh_tests() {
 }
 
 #@
-#@ pnacl-x8632-torture
+#@ pnacl-x86-32-torture
 #@
-pnacl-x8632-torture() {
-  prereq-x8632
+pnacl-x86-32-torture() {
+  prereq "x86-32"
   prereq-pnacl
   eh_tests llvm_pnacl_x8632_O0 known_eh_failures_pnacl.txt "$@"
   eh_tests llvm_pnacl_x8632_O3 known_eh_failures_pnacl.txt "$@"
@@ -159,10 +146,11 @@ pnacl-x8632-torture() {
 }
 
 #@
-#@ pnacl-x8664-torture
+#@ pnacl-x86-64-torture
 #@
-pnacl-x8664-torture() {
-  prereq-x8664
+pnacl-x86-64-torture() {
+  prereq "x86-64"
+
   prereq-pnacl
   eh_tests llvm_pnacl_x8664_O0 known_eh_failures_pnacl.txt "$@"
   eh_tests llvm_pnacl_x8664_O3 known_eh_failures_pnacl.txt "$@"
@@ -174,7 +162,7 @@ pnacl-x8664-torture() {
 #@ pnacl-arm-torture
 #@
 pnacl-arm-torture() {
-  prereq-arm
+  prereq "arm"
   prereq-pnacl
   eh_tests llvm_pnacl_arm_O0 known_eh_failures_pnacl.txt "$@"
   eh_tests llvm_pnacl_arm_O3 known_eh_failures_pnacl.txt "$@"
@@ -183,10 +171,10 @@ pnacl-arm-torture() {
 }
 
 #@
-#@ naclgcc-x8632-torture
+#@ naclgcc-x86-32-torture
 #@
-naclgcc-x8632-torture() {
-  prereq-x8632
+naclgcc-x86-32-torture() {
+  prereq "x86-32"
   eh_tests nacl_gcc_x8632_O0 known_eh_failures_naclgcc.txt "$@"
   eh_tests nacl_gcc_x8632_O3 known_eh_failures_naclgcc.txt "$@"
   standard_tests nacl_gcc_x8632_O0 known_failures_naclgcc.txt "$@"
@@ -194,10 +182,10 @@ naclgcc-x8632-torture() {
 }
 
 #@
-#@ naclgcc-x8664-torture
+#@ naclgcc-x86-64-torture
 #@
-naclgcc-x8664-torture() {
-  prereq-x8664
+naclgcc-x86-64-torture() {
+  prereq "x86-64"
   eh_tests nacl_gcc_x8664_O0 known_eh_failures_naclgcc.txt "$@"
   eh_tests nacl_gcc_x8664_O3 known_eh_failures_naclgcc.txt "$@"
   standard_tests nacl_gcc_x8664_O0 known_failures_naclgcc.txt "$@"
@@ -205,9 +193,9 @@ naclgcc-x8664-torture() {
 }
 
 #@
-#@ localgcc-x8632-torture
+#@ localgcc-x86-32-torture
 #@
-localgcc-x8632-torture() {
+localgcc-x86-32-torture() {
   eh_tests local_gcc_x8632_O0 known_eh_failures_localgcc.txt "$@"
   eh_tests local_gcc_x8632_O3 known_eh_failures_localgcc.txt "$@"
   standard_tests local_gcc_x8632_O0 known_failures_localgcc.txt "$@"
@@ -215,9 +203,9 @@ localgcc-x8632-torture() {
 }
 
 #@
-#@ localgcc-x8664-torture
+#@ localgcc-x86-64-torture
 #@
-localgcc-x8664-torture() {
+localgcc-x86-64-torture() {
   eh_tests local_gcc_x8664_O0 known_eh_failures_localgcc.txt "$@"
   eh_tests local_gcc_x8664_O3 known_eh_failures_localgcc.txt "$@"
   standard_tests local_gcc_x8664_O0 known_failures_localgcc.txt "$@"
@@ -233,9 +221,9 @@ trybot-pnacl-arm-torture() {
 }
 
 #@
-#@ trybot-pnacl-x8632-torture
+#@ trybot-pnacl-x86-32-torture
 #@
-trybot-pnacl-x8632-torture() {
+trybot-pnacl-x86-32-torture() {
   install-tests
   pnacl-x8632-torture --verbose "$@"
 }
@@ -243,25 +231,25 @@ trybot-pnacl-x8632-torture() {
 #@
 #@ trybot-pnacl-x8664-torture
 #@
-trybot-pnacl-x8664-torture() {
+trybot-pnacl-x86-64-torture() {
   install-tests
-  pnacl-x8664-torture --verbose "$@"
+  pnacl-x86-64-torture --verbose "$@"
 }
 
 #@
-#@ trybot-pnacl-x8632-torture
+#@ trybot-naclgcc-x86-32-torture
 #@
-trybot-naclgcc-x8632-torture() {
+trybot-naclgcc-x86-32-torture() {
   install-tests
-  naclgcc-x8632-torture --verbose "$@"
+  naclgcc-x86-32-torture --verbose "$@"
 }
 
 #@
-#@ trybot-pnacl-x8664-torture
+#@ trybot-naclgcc-x86-64-torture
 #@
-trybot-naclgcc-x8664-torture() {
+trybot-naclgcc-x86-64-torture() {
   install-tests
-  naclgcc-x8664-torture --verbose "$@"
+  naclgcc-x86-64-torture --verbose "$@"
 }
 
 ######################################################################
