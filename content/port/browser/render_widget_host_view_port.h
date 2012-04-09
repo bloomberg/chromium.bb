@@ -6,6 +6,7 @@
 #define CONTENT_PORT_BROWSER_RENDER_WIDGET_HOST_VIEW_PORT_H_
 #pragma once
 
+#include "base/callback.h"
 #include "base/process_util.h"
 #include "base/string16.h"
 #include "content/common/content_export.h"
@@ -138,11 +139,19 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView {
   // Allocate a backing store for this view.
   virtual BackingStore* AllocBackingStore(const gfx::Size& size) = 0;
 
-  // Copies the contents of the compositing surface into the given
-  // (uninitialized) PlatformCanvas if any. Returns true on success, false
-  // otherwise.
+  // DEPRECATED: Synchronous version of AsyncCopyFromCompositingSurface.
+  // This will be removed once all the caller have been chagned to use the
+  // asynchronous version.
   virtual bool CopyFromCompositingSurface(const gfx::Size& size,
                                           skia::PlatformCanvas* output) = 0;
+
+  // Asynchrnously copies the contents of the compositing surface into the given
+  // (uninitialized) PlatformCanvas if any. Returns true on success, false
+  // otherwise.
+  virtual void AsyncCopyFromCompositingSurface(
+      const gfx::Size& size,
+      skia::PlatformCanvas* output,
+      base::Callback<void(bool)> callback) = 0;
 
   // Called when accelerated compositing state changes.
   virtual void OnAcceleratedCompositingStateChange() = 0;

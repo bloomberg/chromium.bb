@@ -77,9 +77,26 @@ bool DefaultContextFactory::Initialize() {
 
 WebKit::WebGraphicsContext3D* DefaultContextFactory::CreateContext(
     Compositor* compositor) {
+  return CreateContextCommon(compositor, false);
+}
+
+WebKit::WebGraphicsContext3D* DefaultContextFactory::CreateOffscreenContext(
+    Compositor* compositor) {
+  return CreateContextCommon(compositor, true);
+}
+
+void DefaultContextFactory::RemoveCompositor(Compositor* compositor) {
+}
+
+WebKit::WebGraphicsContext3D* DefaultContextFactory::CreateContextCommon(
+    Compositor* compositor,
+    bool offscreen) {
   WebKit::WebGraphicsContext3D::Attributes attrs;
   attrs.shareResources = true;
   WebKit::WebGraphicsContext3D* context =
+      offscreen ?
+      webkit::gpu::WebGraphicsContext3DInProcessImpl::CreateForWebView(
+          attrs, false) :
       webkit::gpu::WebGraphicsContext3DInProcessImpl::CreateForWindow(
           attrs, compositor->widget(), share_group_.get());
   CommandLine* command_line = CommandLine::ForCurrentProcess();
@@ -90,9 +107,6 @@ WebKit::WebGraphicsContext3D* DefaultContextFactory::CreateContext(
     gl_context->ReleaseCurrent(NULL);
   }
   return context;
-}
-
-void DefaultContextFactory::RemoveCompositor(Compositor* compositor) {
 }
 
 Texture::Texture(bool flipped, const gfx::Size& size)
