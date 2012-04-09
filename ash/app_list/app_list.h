@@ -42,6 +42,9 @@ class AppList : public aura::EventFilter,
   // is ongoing.
   bool GetTargetVisibility() const { return is_visible_; }
 
+  // Returns app list window or NULL if it is not visible.
+  aura::Window* GetWindow();
+
  private:
   // Sets app list view. If we are in visible mode, start showing animation.
   // Otherwise, we just close it.

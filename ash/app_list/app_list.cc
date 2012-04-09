@@ -10,6 +10,7 @@
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/shelf_layout_manager.h"
+#include "ash/wm/window_util.h"
 #include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
@@ -79,6 +80,10 @@ void AppList::SetVisible(bool visible) {
 
 bool AppList::IsVisible() {
   return view_ && view_->GetWidget()->IsVisible();
+}
+
+aura::Window* AppList::GetWindow() {
+  return is_visible_ && view_ ? view_->GetWidget()->GetNativeWindow() : NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -257,8 +262,12 @@ void AppList::OnWidgetClosing(views::Widget* widget) {
 
 void AppList::OnWidgetActivationChanged(views::Widget* widget, bool active) {
   DCHECK(view_->GetWidget() == widget);
-  if (view_ && is_visible_ && !active)
-    SetVisible(false);
+  if (view_ && is_visible_ && !active) {
+    aura::Window* self = view_->GetWidget()->GetNativeWindow();
+    aura::Window* active_window = ash::wm::GetActiveWindow();
+    if (active_window->parent() != self->parent())
+      SetVisible(false);
+  }
 }
 
 }  // namespace internal

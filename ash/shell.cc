@@ -817,6 +817,10 @@ bool Shell::GetAppListTargetVisibility() const {
   return app_list_.get() && app_list_->GetTargetVisibility();
 }
 
+aura::Window* Shell::GetAppListWindow() {
+  return app_list_.get() ? app_list_->GetWindow() : NULL;
+}
+
 bool Shell::IsScreenLocked() const {
   return !delegate_.get() || delegate_->IsScreenLocked();
 }

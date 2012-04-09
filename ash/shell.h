@@ -144,6 +144,9 @@ class ASH_EXPORT Shell {
   // Returns app list target visibility.
   bool GetAppListTargetVisibility() const;
 
+  // Returns app list window or NULL if it is not visible.
+  aura::Window* GetAppListWindow();
+
   // Returns true if the screen is locked.
   bool IsScreenLocked() const;
 
