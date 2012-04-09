@@ -4,6 +4,7 @@
 
 #include "chrome/browser/sync/glue/chrome_report_unrecoverable_error.h"
 
+#include "base/rand_util.h"
 #include "build/build_config.h"
 
 #if defined(OS_WIN)
@@ -14,9 +15,15 @@
 
 namespace browser_sync {
 
+static const double kErrorUploadRatio = 0.15;
 void ChromeReportUnrecoverableError() {
   // TODO(lipalani): Add this for other platforms as well.
 #if defined(OS_WIN)
+  // We only want to upload |kErrorUploadRatio| ratio of errors.
+  double random_number = base::RandDouble();
+  if (random_number > kErrorUploadRatio)
+    return;
+
   // Get the breakpad pointer from chrome.exe
   typedef void (__cdecl *DumpProcessFunction)();
   DumpProcessFunction DumpProcess = reinterpret_cast<DumpProcessFunction>(
