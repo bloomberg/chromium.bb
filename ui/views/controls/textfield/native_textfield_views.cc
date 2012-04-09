@@ -904,8 +904,15 @@ bool NativeTextfieldViews::HandleKeyEvent(const KeyEvent& key_event) {
             model_->MoveCursor(gfx::WORD_BREAK, direction, true);
           }
         }
-        cursor_changed = text_changed = (key_code == ui::VKEY_BACK) ?
-            model_->Backspace() : model_->Delete();
+        if (key_code == ui::VKEY_BACK)
+          model_->Backspace();
+        else
+          model_->Delete();
+
+        // We have to consume the backspace/delete keys here even if the edit
+        // did not make effects.  This is to prevent further handling of the key
+        // event that might have unintended side-effects.
+        text_changed = true;
         break;
       case ui::VKEY_INSERT:
         GetRenderText()->ToggleInsertMode();
