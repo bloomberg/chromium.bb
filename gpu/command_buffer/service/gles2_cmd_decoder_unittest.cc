@@ -1361,9 +1361,9 @@ TEST_F(GLES2DecoderWithShaderTest, GetShaderPrecisionFormatSucceeds) {
            shared_memory_id_, shared_memory_offset_);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_NE(0, result->success);
-  EXPECT_EQ(-62, result->min_range);
-  EXPECT_EQ(62, result->max_range);
-  EXPECT_EQ(-16, result->precision);
+  EXPECT_EQ(127, result->min_range);
+  EXPECT_EQ(127, result->max_range);
+  EXPECT_EQ(23, result->precision);
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
