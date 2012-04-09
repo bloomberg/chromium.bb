@@ -27,9 +27,8 @@ class InputMethodDescriptor {
                         const std::string& in_language_code);
   ~InputMethodDescriptor();
 
-  bool operator==(const InputMethodDescriptor& other) const {
-    return id() == other.id();
-  }
+  bool operator==(const InputMethodDescriptor& other) const;
+  bool operator!=(const InputMethodDescriptor& other) const;
 
   // Debug print function.
   std::string ToString() const;

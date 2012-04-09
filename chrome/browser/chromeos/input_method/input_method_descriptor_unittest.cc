@@ -34,6 +34,14 @@ class InputMethodDescriptorTest : public testing::Test {
                                  "language_code");
   }
 
+  InputMethodDescriptor GetDescById(const std::string& id) {
+    return InputMethodDescriptor(whitelist_,
+                                 id,
+                                 "",  // name
+                                 "us",
+                                 "language_code");
+  }
+
  private:
   const InputMethodWhitelist whitelist_;
 };
@@ -57,6 +65,12 @@ TEST_F(InputMethodDescriptorTest, TestCreateInputMethodDescriptor) {
   EXPECT_EQ(kFallbackLayout, GetDesc("").keyboard_layout());
 
   // TODO(yusukes): Add tests for |virtual_keyboard_layout| member.
+}
+
+TEST_F(InputMethodDescriptorTest, TestOperatorEqual) {
+  EXPECT_EQ(GetDescById("xkb:us::eng"), GetDescById("xkb:us::eng"));
+  EXPECT_NE(GetDescById("xkb:us::eng"), GetDescById("xkb:us:dvorak:eng"));
+  EXPECT_NE(GetDescById("xkb:fr::fra"), GetDescById("xkb:us::eng"));
 }
 
 }  // namespace input_method

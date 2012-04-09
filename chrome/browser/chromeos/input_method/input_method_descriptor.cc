@@ -62,6 +62,16 @@ InputMethodDescriptor::InputMethodDescriptor(
       in_virtual_keyboard_layouts, ',', &virtual_keyboard_layouts_);
 }
 
+bool InputMethodDescriptor::operator==(
+    const InputMethodDescriptor& other) const {
+  return id() == other.id();
+}
+
+bool InputMethodDescriptor::operator!=(
+    const InputMethodDescriptor& other) const {
+  return !(*this == other);
+}
+
 // static
 InputMethodDescriptor
 InputMethodDescriptor::GetFallbackInputMethodDescriptor() {
