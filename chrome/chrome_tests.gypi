@@ -1299,6 +1299,7 @@
         'browser/chromeos/imageburner/burn_manager_unittest.cc',
         'browser/chromeos/input_method/candidate_window_view_unittest.cc',
         'browser/chromeos/input_method/input_method_descriptor_unittest.cc',
+        'browser/chromeos/input_method/input_method_property_unittest.cc',
         'browser/chromeos/input_method/input_method_util_unittest.cc',
         'browser/chromeos/input_method/input_method_whitelist_unittest.cc',
         'browser/chromeos/input_method/virtual_keyboard_selector_unittest.cc',

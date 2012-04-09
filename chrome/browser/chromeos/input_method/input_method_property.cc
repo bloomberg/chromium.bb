@@ -33,6 +33,18 @@ InputMethodProperty::InputMethodProperty()
 InputMethodProperty::~InputMethodProperty() {
 }
 
+bool InputMethodProperty::operator==(const InputMethodProperty& other) const {
+  return key == other.key &&
+      label == other.label &&
+      is_selection_item == other.is_selection_item &&
+      is_selection_item_checked == other.is_selection_item_checked &&
+      selection_item_id == other.selection_item_id;
+}
+
+bool InputMethodProperty::operator!=(const InputMethodProperty& other) const {
+  return !(*this == other);
+}
+
 std::string InputMethodProperty::ToString() const {
   std::stringstream stream;
   stream << "key=" << key

@@ -23,6 +23,9 @@ struct InputMethodProperty {
   InputMethodProperty();
   ~InputMethodProperty();
 
+  bool operator==(const InputMethodProperty& other) const;
+  bool operator!=(const InputMethodProperty& other) const;
+
   // Debug print function.
   std::string ToString() const;
 
