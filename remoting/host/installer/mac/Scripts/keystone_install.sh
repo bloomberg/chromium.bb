@@ -1,0 +1,7 @@
+#!/bin/sh
+
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+/usr/sbin/installer -pkg "$1/Chrome Remote Desktop.mpkg" -target /
