@@ -871,7 +871,8 @@ class BookmarkBarViewTest9 : public BookmarkBarViewEventTestBase {
 
   void Step3() {
     MessageLoop::current()->PostDelayedTask(FROM_HERE,
-        base::Bind(&BookmarkBarViewTest9::Step4, this), 200);
+        base::Bind(&BookmarkBarViewTest9::Step4, this),
+        base::TimeDelta::FromMilliseconds(200));
   }
 
   void Step4() {
@@ -1127,7 +1128,8 @@ class BookmarkBarViewTest12 : public BookmarkBarViewEventTestBase {
     // Delay until we send tab, otherwise the message box doesn't appear
     // correctly.
     MessageLoop::current()->PostDelayedTask(FROM_HERE,
-        CreateEventTask(this, &BookmarkBarViewTest12::Step4), 1000);
+        CreateEventTask(this, &BookmarkBarViewTest12::Step4),
+        base::TimeDelta::FromSeconds(1));
   }
 
   void Step4() {
@@ -1136,7 +1138,8 @@ class BookmarkBarViewTest12 : public BookmarkBarViewEventTestBase {
 
     // For some reason return isn't processed correctly unless we delay.
     MessageLoop::current()->PostDelayedTask(FROM_HERE,
-        CreateEventTask(this, &BookmarkBarViewTest12::Step5), 1000);
+        CreateEventTask(this, &BookmarkBarViewTest12::Step5),
+        base::TimeDelta::FromSeconds(1));
   }
 
   void Step5() {

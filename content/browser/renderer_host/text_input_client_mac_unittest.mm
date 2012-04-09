@@ -46,7 +46,13 @@ class TextInputClientMacTest : public testing::Test {
   // Helper method to post a task on the testing thread's MessageLoop after
   // a short delay.
   void PostTask(const tracked_objects::Location& from_here,
-                const base::Closure& task, const int64 delay = kTaskDelayMs) {
+                const base::Closure& task) {
+    PostTask(from_here, task, base::TimeDelta::FromMilliseconds(kTaskDelayMs));
+  }
+
+  void PostTask(const tracked_objects::Location& from_here,
+                const base::Closure& task,
+                const base::TimeDelta delay) {
     thread_.message_loop()->PostDelayedTask(from_here, task, delay);
   }
 
@@ -143,7 +149,7 @@ TEST_F(TextInputClientMacTest, NotFoundCharacterIndex) {
   // setting.
   PostTask(FROM_HERE,
            base::Bind(&CallOnMessageReceived, filter, *message, &message_ok),
-           kTaskDelayMs * 2);
+           base::TimeDelta::FromMilliseconds(kTaskDelayMs) * 2);
 
   NSUInteger index = service()->GetCharacterIndexAtPoint(
       widget(), gfx::Point(2, 2));

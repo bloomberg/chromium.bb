@@ -135,7 +135,7 @@ class RenderWidgetHostViewAura::ResizeLock :
         BrowserThread::UI, FROM_HERE,
         base::Bind(&RenderWidgetHostViewAura::ResizeLock::CancelLock,
                    AsWeakPtr()),
-        kResizeLockTimeoutMs);
+        base::TimeDelta::FromMilliseconds(kResizeLockTimeoutMs));
   }
 
   ~ResizeLock() {

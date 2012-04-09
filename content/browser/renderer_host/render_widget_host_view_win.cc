@@ -152,7 +152,7 @@ void NotifyPluginProcessHostHelper(HWND window, HWND parent, int tries) {
       MessageLoop::current()->PostDelayedTask(
           FROM_HERE,
           base::Bind(&NotifyPluginProcessHostHelper, window, parent, tries - 1),
-          kTryDelayMs);
+          base::TimeDelta::FromMilliseconds(kTryDelayMs));
       return;
     }
   }
@@ -640,7 +640,7 @@ void RenderWidgetHostViewWin::CleanupCompositorWindow() {
       FROM_HERE,
       base::Bind(base::IgnoreResult(&::DestroyWindow),
                  compositor_host_window_),
-      kDestroyCompositorHostWindowDelay);
+      base::TimeDelta::FromMilliseconds(kDestroyCompositorHostWindowDelay));
 
   compositor_host_window_ = NULL;
 }
@@ -2334,7 +2334,8 @@ LRESULT RenderWidgetHostViewWin::OnPointerMessage(
     received_focus_change_after_pointer_down_ = false;
     MessageLoop::current()->PostDelayedTask(FROM_HERE,
         base::Bind(&RenderWidgetHostViewWin::ResetPointerDownContext,
-                   weak_factory_.GetWeakPtr()), kPointerDownContextResetDelay);
+                   weak_factory_.GetWeakPtr()),
+        base::TimeDelta::FromMilliseconds(kPointerDownContextResetDelay));
   }
   handled = FALSE;
   return 0;
