@@ -317,7 +317,9 @@ bool EGLImageTransportSurface::OnMakeCurrent(gfx::GLContext* context) {
 
   glGenFramebuffersEXT(1, &fbo_id_);
   glBindFramebufferEXT(GL_FRAMEBUFFER, fbo_id_);
-  OnResize(gfx::Size(1, 1));
+  // TODO(anush): Revert to 1x1 once crosbug.com/p/8834 is fixed
+  // Use 16x16 instead of 1x1 as small tiles can cause prototype HW to hang
+  OnResize(gfx::Size(16, 16));
 
   GLenum status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER);
   if (status != GL_FRAMEBUFFER_COMPLETE) {
