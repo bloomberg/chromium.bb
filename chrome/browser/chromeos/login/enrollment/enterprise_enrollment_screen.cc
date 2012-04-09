@@ -189,7 +189,7 @@ void EnterpriseEnrollmentScreen::WriteInstallAttributesData() {
           FROM_HERE,
           base::Bind(&EnterpriseEnrollmentScreen::WriteInstallAttributesData,
                      weak_ptr_factory_.GetWeakPtr()),
-          kLockRetryIntervalMs);
+          base::TimeDelta::FromMilliseconds(kLockRetryIntervalMs));
       return;
     }
     case policy::EnterpriseInstallAttributes::LOCK_BACKEND_ERROR: {
