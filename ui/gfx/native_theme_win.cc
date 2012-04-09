@@ -464,9 +464,10 @@ void NativeThemeWin::PaintToNonPlatformCanvas(SkCanvas* canvas,
 
   // Copy the pixels to a bitmap that has ref-counted pixel storage, which is
   // necessary to have when drawing to a SkPicture.
-  const SkBitmap& bitmap = offscreen_canvas->getDevice()->accessBitmap(false);
-  SkBitmap ref_counted;
-  bitmap.copyTo(&ref_counted, SkBitmap::kARGB_8888_Config);
+  const SkBitmap& hdc_bitmap =
+      offscreen_canvas->getDevice()->accessBitmap(false);
+  SkBitmap bitmap;
+  hdc_bitmap.copyTo(&bitmap, SkBitmap::kARGB_8888_Config);
 
   // Post-process the pixels to fix up the alpha values (see big comment above).
   const SkPMColor placeholder_value = SkPreMultiplyColor(placeholder);
@@ -486,7 +487,7 @@ void NativeThemeWin::PaintToNonPlatformCanvas(SkCanvas* canvas,
   }
 
   // Draw the offscreen bitmap to the destination canvas.
-  canvas->drawBitmap(ref_counted, rect.x(), rect.y());
+  canvas->drawBitmap(bitmap, rect.x(), rect.y());
 }
 
 HRESULT NativeThemeWin::GetThemePartSize(ThemeName theme_name,
