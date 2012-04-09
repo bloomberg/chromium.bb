@@ -14,6 +14,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/message_loop_proxy.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/threading/thread.h"
@@ -61,7 +62,8 @@ class CONTENT_EXPORT MediaStreamImpl
       NON_EXPORTED_BASE(public webkit_media::MediaStreamClient),
       public MediaStreamDispatcherEventHandler,
       NON_EXPORTED_BASE(public base::NonThreadSafe),
-      public base::RefCountedThreadSafe<MediaStreamImpl> {
+      public base::RefCountedThreadSafe<MediaStreamImpl>,
+      public base::SupportsWeakPtr<MediaStreamImpl> {
  public:
   MediaStreamImpl(
       MediaStreamDispatcher* media_stream_dispatcher,

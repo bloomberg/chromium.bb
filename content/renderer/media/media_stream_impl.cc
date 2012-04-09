@@ -177,7 +177,7 @@ void MediaStreamImpl::requestUserMedia(
 
   media_stream_dispatcher_->GenerateStream(
       request_id,
-      this,
+      AsWeakPtr(),
       media_stream::StreamOptions(audio, video_option),
       security_origin);
 }

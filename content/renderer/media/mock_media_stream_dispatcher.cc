@@ -7,7 +7,6 @@
 MockMediaStreamDispatcher::MockMediaStreamDispatcher()
     : MediaStreamDispatcher(NULL),
       request_id_(-1),
-      event_handler_(NULL),
       components_(NULL),
       stop_stream_counter_(0) {
 }
@@ -16,7 +15,7 @@ MockMediaStreamDispatcher::~MockMediaStreamDispatcher() {}
 
 void MockMediaStreamDispatcher::GenerateStream(
     int request_id,
-    MediaStreamDispatcherEventHandler* event_handler,
+    const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler,
     media_stream::StreamOptions components,
     const std::string& security_origin) {
   request_id_ = request_id;

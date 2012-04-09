@@ -15,10 +15,11 @@ class MockMediaStreamDispatcher : public MediaStreamDispatcher {
   MockMediaStreamDispatcher();
   virtual ~MockMediaStreamDispatcher();
 
-  virtual void GenerateStream(int request_id,
-                              MediaStreamDispatcherEventHandler* event_handler,
-                              media_stream::StreamOptions components,
-                              const std::string& security_origin) OVERRIDE;
+  virtual void GenerateStream(
+      int request_id,
+      const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler,
+      media_stream::StreamOptions components,
+      const std::string& security_origin) OVERRIDE;
   virtual void StopStream(const std::string& label) OVERRIDE;
   virtual bool IsStream(const std::string& label) OVERRIDE;
   virtual int video_session_id(const std::string& label, int index) OVERRIDE;
@@ -34,7 +35,7 @@ class MockMediaStreamDispatcher : public MediaStreamDispatcher {
 
  private:
   int request_id_;
-  MediaStreamDispatcherEventHandler* event_handler_;
+  base::WeakPtr<MediaStreamDispatcherEventHandler> event_handler_;
   media_stream::StreamOptions* components_;
   std::string security_origin_;
   int stop_stream_counter_;

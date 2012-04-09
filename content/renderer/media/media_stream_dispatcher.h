@@ -34,7 +34,7 @@ class CONTENT_EXPORT MediaStreamDispatcher
   // Note: The event_handler must be valid for as long as the stream exists.
   virtual void GenerateStream(
       int request_id,
-      MediaStreamDispatcherEventHandler* event_handler,
+      const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler,
       media_stream::StreamOptions components,
       const std::string& security_origin);
 
@@ -42,17 +42,19 @@ class CONTENT_EXPORT MediaStreamDispatcher
   virtual void StopStream(const std::string& label);
 
   // Request to enumerate devices.
-  void EnumerateDevices(int request_id,
-                        MediaStreamDispatcherEventHandler* event_handler,
-                        media_stream::MediaStreamType type,
-                        const std::string& security_origin);
+  void EnumerateDevices(
+      int request_id,
+      const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler,
+      media_stream::MediaStreamType type,
+      const std::string& security_origin);
 
   // Request to open a device.
-  void OpenDevice(int request_id,
-                  MediaStreamDispatcherEventHandler* event_handler,
-                  const std::string& device_id,
-                  media_stream::MediaStreamType type,
-                  const std::string& security_origin);
+  void OpenDevice(
+      int request_id,
+      const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler,
+      const std::string& device_id,
+      media_stream::MediaStreamType type,
+      const std::string& security_origin);
 
   // Close a started device. |label| is provided in OnDeviceOpened.
   void CloseDevice(const std::string& label);

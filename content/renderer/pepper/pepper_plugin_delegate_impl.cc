@@ -1350,7 +1350,7 @@ int PepperPluginDelegateImpl::EnumerateDevices(
 
 #if defined(ENABLE_WEBRTC)
   render_view_->media_stream_dispatcher()->EnumerateDevices(
-      request_id, device_enumeration_event_handler_.get(),
+      request_id, device_enumeration_event_handler_.get()->AsWeakPtr(),
       PepperDeviceEnumerationEventHandler::FromPepperDeviceType(type), "");
 #else
   MessageLoop::current()->PostTask(
@@ -1538,7 +1538,9 @@ int PepperPluginDelegateImpl::OpenDevice(PP_DeviceType_Dev type,
 
 #if defined(ENABLE_WEBRTC)
   render_view_->media_stream_dispatcher()->OpenDevice(
-      request_id, device_enumeration_event_handler_.get(), device_id,
+      request_id,
+      device_enumeration_event_handler_.get()->AsWeakPtr(),
+      device_id,
       PepperDeviceEnumerationEventHandler::FromPepperDeviceType(type), "");
 #else
   MessageLoop::current()->PostTask(
