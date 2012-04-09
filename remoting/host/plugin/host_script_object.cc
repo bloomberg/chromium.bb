@@ -18,6 +18,7 @@
 #include "remoting/host/chromoting_host.h"
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/desktop_environment.h"
+#include "remoting/host/host_config.h"
 #include "remoting/host/host_key_pair.h"
 #include "remoting/host/host_secret.h"
 #include "remoting/host/it2me_host_user_interface.h"
@@ -679,14 +680,14 @@ bool HostNPScriptObject::UpdateDaemonConfig(const NPVariant* args,
   }
 
   std::string config_str = StringFromNPVariant(args[0]);
-  base::Value* config = base::JSONReader::Read(config_str, true);
-  base::DictionaryValue* config_dict;
-
-  if (config_str.empty() || !config || !config->GetAsDictionary(&config_dict)) {
-    delete config;
+  scoped_ptr<base::Value> config(base::JSONReader::Read(config_str, true));
+  if (config_str.empty() || !config.get() ||
+      !config->IsType(base::Value::TYPE_DICTIONARY)) {
     SetException("updateDaemonConfig: bad config parameter");
     return false;
   }
+  scoped_ptr<base::DictionaryValue> config_dict(
+      reinterpret_cast<base::DictionaryValue*>(config.release()));
 
   NPObject* callback_obj = ObjectFromNPVariant(args[1]);
   if (!callback_obj) {
@@ -694,10 +695,17 @@ bool HostNPScriptObject::UpdateDaemonConfig(const NPVariant* args,
     return false;
   }
 
+  if (config_dict->HasKey(kHostIdConfigPath) ||
+      config_dict->HasKey(kXmppLoginConfigPath)) {
+    SetException("updateDaemonConfig: trying to update immutable config "
+                 "parameters");
+    return false;
+  }
+
   callback_obj = g_npnetscape_funcs->retainobject(callback_obj);
 
   daemon_controller_->UpdateConfig(
-      scoped_ptr<base::DictionaryValue>(config_dict),
+      config_dict.Pass(),
       base::Bind(&HostNPScriptObject::InvokeAsyncResultCallback,
                  base::Unretained(this), callback_obj));
   return true;
@@ -737,14 +745,14 @@ bool HostNPScriptObject::StartDaemon(const NPVariant* args,
   }
 
   std::string config_str = StringFromNPVariant(args[0]);
-  base::Value* config = base::JSONReader::Read(config_str, true);
-  base::DictionaryValue* config_dict;
-
-  if (config_str.empty() || !config || !config->GetAsDictionary(&config_dict)) {
-    delete config;
-    SetException("startDaemon: bad config parameter");
+  scoped_ptr<base::Value> config(base::JSONReader::Read(config_str, true));
+  if (config_str.empty() || !config.get() ||
+      !config->IsType(base::Value::TYPE_DICTIONARY)) {
+    SetException("updateDaemonConfig: bad config parameter");
     return false;
   }
+  scoped_ptr<base::DictionaryValue> config_dict(
+      reinterpret_cast<base::DictionaryValue*>(config.release()));
 
   NPObject* callback_obj = ObjectFromNPVariant(args[1]);
   if (!callback_obj) {
@@ -755,7 +763,7 @@ bool HostNPScriptObject::StartDaemon(const NPVariant* args,
   callback_obj = g_npnetscape_funcs->retainobject(callback_obj);
 
   daemon_controller_->SetConfigAndStart(
-      scoped_ptr<base::DictionaryValue>(config_dict),
+      config_dict.Pass(),
       base::Bind(&HostNPScriptObject::InvokeAsyncResultCallback,
                  base::Unretained(this), callback_obj));
   return true;

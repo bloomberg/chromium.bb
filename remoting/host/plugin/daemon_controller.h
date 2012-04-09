@@ -104,11 +104,7 @@ class DaemonController {
                                  const CompletionCallback& done_callback) = 0;
 
   // Updates current host configuration with the values specified in
-  // |config|. Following parameters in the config cannot be changed
-  // using this function: host_id, xmpp_login. Implementation must not
-  // change these fields and must return an error if the webapp tries
-  // to change these values. Changes must come to effect before the
-  // call completes.
+  // |config|. Changes must take effect before the call completes.
   virtual void UpdateConfig(scoped_ptr<base::DictionaryValue> config,
                             const CompletionCallback& done_callback) = 0;
 

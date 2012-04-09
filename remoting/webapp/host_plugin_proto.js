@@ -38,10 +38,18 @@ remoting.HostPlugin.prototype.getPinHash = function(hostId, pin) {};
  *  @return {void} Nothing. */
 remoting.HostPlugin.prototype.generateKeyPair = function(callback) {};
 
-/** @param {string} config The new config, JSON encoded.
- *  @param {function(remoting.HostController.AsyncResult):void} callback
+/**
+ * Updates host config with the values specified in |config|. All
+ * fields that are not specified in |config| remain
+ * unchanged. Following parameters cannot be changed using this
+ * function: host_id, xmpp_login. Error is returned if |config|
+ * includes these paramters. Changes take effect before the callback
+ * is called.
+ *
+ * @param {string} config The new config parameters, JSON encoded dictionary.
+ * @param {function(remoting.HostController.AsyncResult):void} callback
  *     Callback to be called when finished.
- *  @return {void} Nothing. */
+ * @return {void} Nothing. */
 remoting.HostPlugin.prototype.updateDaemonConfig =
     function(config, callback) {};
 
