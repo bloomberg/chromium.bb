@@ -5677,6 +5677,16 @@
    fun:_ZN10scoped_ptrIN7content11WebContentsEE5resetEPS1_
    fun:_ZN11BalloonHost8ShutdownEv
 }
+{
+   bug_122670
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN3WTF11ListHashSetIPN7WebCore12RenderInlineELm256ENS_7PtrHashIS3_EEEC1Ev
+   fun:_ZNK7WebCore17RenderLineBoxList5paintEPNS_20RenderBoxModelObjectERNS_9PaintInfoERKNS_8IntPointE
+   fun:_ZN7WebCore11RenderBlock13paintContentsERNS_9PaintInfoERKNS_8IntPointE
+   fun:_ZN7WebCore11RenderBlock11paintObjectERNS_9PaintInfoERKNS_8IntPointE
+   fun:_ZN7WebCore11RenderBlock5paintERNS_9PaintInfoERKNS_8IntPointE
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
