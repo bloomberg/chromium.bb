@@ -158,7 +158,7 @@ namespace cmd {
   OP(SetBucketSize)                 /*  7 */ \
   OP(SetBucketData)                 /*  8 */ \
   OP(SetBucketDataImmediate)        /*  9 */ \
-  OP(GetBucketSize)                 /* 10 */ \
+  OP(GetBucketStart)                /* 10 */ \
   OP(GetBucketData)                 /* 11 */ \
 
 // Common commands.
@@ -533,14 +533,19 @@ COMPILE_ASSERT(offsetof(SetBucketDataImmediate, offset) == 8,
 COMPILE_ASSERT(offsetof(SetBucketDataImmediate, size) == 12,
                Offsetof_SetBucketDataImmediate_size_not_12);
 
-// Gets the size of a bucket the service has available. Sending a variable size
-// result back to the client, for example any API that returns a string, is
-// problematic since the largest thing you can send back is the size of your
-// shared memory. This command along with GetBucketData implements a way to get
-// a result a piece at a time to help solve that problem in a generic way.
-struct GetBucketSize {
-  typedef GetBucketSize ValueType;
-  static const CommandId kCmdId = kGetBucketSize;
+// Gets the start of a bucket the service has available. Sending a variable size
+// result back to the client and the portion of that result that fits in the
+// supplied shared memory. If the size of the result is larger than the supplied
+// shared memory the rest of the bucket's contents can be retrieved with
+// GetBucketData.
+//
+// This is used for example for any API that returns a string. The problem is
+// the largest thing you can send back in 1 command is the size of your shared
+// memory. This command along with GetBucketData implements a way to get a
+// result a piece at a time to help solve that problem in a generic way.
+struct GetBucketStart {
+  typedef GetBucketStart ValueType;
+  static const CommandId kCmdId = kGetBucketStart;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
   typedef uint32 Result;
@@ -550,39 +555,60 @@ struct GetBucketSize {
   }
 
   void Init(uint32 _bucket_id,
-            uint32 _shared_memory_id,
-            uint32 _shared_memory_offset) {
+            uint32 _result_memory_id,
+            uint32 _result_memory_offset,
+            uint32 _data_memory_size,
+            uint32 _data_memory_id,
+            uint32 _data_memory_offset) {
     SetHeader();
     bucket_id = _bucket_id;
-    shared_memory_id = _shared_memory_id;
-    shared_memory_offset = _shared_memory_offset;
+    result_memory_id = _result_memory_id;
+    result_memory_offset = _result_memory_offset;
+    data_memory_size = _data_memory_size;
+    data_memory_id = _data_memory_id;
+    data_memory_offset = _data_memory_offset;
   }
   static void* Set(void* cmd,
                    uint32 _bucket_id,
-                   uint32 _shared_memory_id,
-                   uint32 _shared_memory_offset) {
+                   uint32 _result_memory_id,
+                   uint32 _result_memory_offset,
+                   uint32 _data_memory_size,
+                   uint32 _data_memory_id,
+                   uint32 _data_memory_offset) {
     static_cast<ValueType*>(cmd)->Init(
         _bucket_id,
-        _shared_memory_id,
-        _shared_memory_offset);
+        _result_memory_id,
+        _result_memory_offset,
+        _data_memory_size,
+        _data_memory_id,
+        _data_memory_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
   CommandHeader header;
   uint32 bucket_id;
-  uint32 shared_memory_id;
-  uint32 shared_memory_offset;
+  uint32 result_memory_id;
+  uint32 result_memory_offset;
+  uint32 data_memory_size;
+  uint32 data_memory_id;
+  uint32 data_memory_offset;
 };
 
-COMPILE_ASSERT(sizeof(GetBucketSize) == 16, Sizeof_GetBucketSize_is_not_16);
-COMPILE_ASSERT(offsetof(GetBucketSize, header) == 0,
-               Offsetof_GetBucketSize_header_not_0);
-COMPILE_ASSERT(offsetof(GetBucketSize, bucket_id) == 4,
-               Offsetof_GetBucketSize_bucket_id_not_4);
-COMPILE_ASSERT(offsetof(GetBucketSize, shared_memory_id) == 8,
-               Offsetof_GetBucketSize_shared_memory_id_not_8);
-COMPILE_ASSERT(offsetof(GetBucketSize, shared_memory_offset) == 12,
-               Offsetof_GetBucketSize_shared_memory_offset_not_12);
+COMPILE_ASSERT(sizeof(GetBucketStart) == 28, Sizeof_GetBucketStart_is_not_28);
+COMPILE_ASSERT(offsetof(GetBucketStart, header) == 0,
+               Offsetof_GetBucketStart_header_not_0);
+COMPILE_ASSERT(offsetof(GetBucketStart, bucket_id) == 4,
+               Offsetof_GetBucketStart_bucket_id_not_4);
+COMPILE_ASSERT(offsetof(GetBucketStart, result_memory_id) == 8,
+               Offsetof_GetBucketStart_result_memory_id_not_8);
+COMPILE_ASSERT(offsetof(GetBucketStart, result_memory_offset) == 12,
+               Offsetof_GetBucketStart_result_memory_offset_not_12);
+COMPILE_ASSERT(offsetof(GetBucketStart, data_memory_size) == 16,
+               Offsetof_GetBucketStart_data_memory_size_not_16);
+COMPILE_ASSERT(offsetof(GetBucketStart, data_memory_id) == 20,
+               Offsetof_GetBucketStart_data_memory_id_not_20);
+COMPILE_ASSERT(offsetof(GetBucketStart, data_memory_offset) == 24,
+               Offsetof_GetBucketStart_data_memory_offset_not_24);
 
 // Gets a piece of a result the service as available.
 // See GetBucketSize.

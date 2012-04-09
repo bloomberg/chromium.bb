@@ -446,6 +446,10 @@ class GLES2ImplementationTest : public testing::Test {
     return gl_->GetError();
   }
 
+  bool GetBucketContents(uint32 bucket_id, std::vector<int8>* data) {
+    return gl_->GetBucketContents(bucket_id, data);
+  }
+
   Sequence sequence_;
   scoped_ptr<MockClientCommandBuffer> command_buffer_;
   scoped_ptr<GLES2CmdHelper> helper_;
@@ -503,6 +507,57 @@ const GLuint GLES2ImplementationTest::kQueriesStartId;
 
 TEST_F(GLES2ImplementationTest, Basic) {
   EXPECT_TRUE(gl_->share_group() != NULL);
+}
+
+TEST_F(GLES2ImplementationTest, GetBucketContents) {
+  const uint32 kBucketId = GLES2Implementation::kResultBucketId;
+  const uint32 kTestSize = MaxTransferBufferSize() + 32;
+
+  scoped_array<uint8> buf(new uint8 [kTestSize]);
+  uint8* expected_data = buf.get();
+  for (uint32 ii = 0; ii < kTestSize; ++ii) {
+    expected_data[ii] = ii * 3;
+  }
+
+  struct Cmds {
+    cmd::GetBucketStart get_bucket_start;
+    cmd::SetToken set_token1;
+    cmd::GetBucketData get_bucket_data;
+    cmd::SetToken set_token2;
+    cmd::SetBucketSize set_bucket_size2;
+  };
+
+  ExpectedMemoryInfo mem1 = GetExpectedMemory(MaxTransferBufferSize());
+  ExpectedMemoryInfo result1 = GetExpectedResultMemory(sizeof(uint32));
+  ExpectedMemoryInfo mem2 = GetExpectedMemory(
+      kTestSize - MaxTransferBufferSize());
+
+  Cmds expected;
+  expected.get_bucket_start.Init(
+      kBucketId, result1.id, result1.offset,
+      MaxTransferBufferSize(), mem1.id, mem1.offset);
+  expected.set_token1.Init(GetNextToken());
+  expected.get_bucket_data.Init(
+      kBucketId, MaxTransferBufferSize(),
+      kTestSize - MaxTransferBufferSize(), mem2.id, mem2.offset);
+  expected.set_bucket_size2.Init(kBucketId, 0);
+  expected.set_token2.Init(GetNextToken());
+
+  EXPECT_CALL(*command_buffer(), OnFlush())
+      .WillOnce(DoAll(
+          SetMemory(result1.ptr, kTestSize),
+          SetMemoryFromArray(
+              mem1.ptr, expected_data, MaxTransferBufferSize())))
+      .WillOnce(SetMemoryFromArray(
+          mem2.ptr, expected_data + MaxTransferBufferSize(),
+          kTestSize - MaxTransferBufferSize()))
+      .RetiresOnSaturation();
+
+  std::vector<int8> data;
+  GetBucketContents(kBucketId, &data);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+  ASSERT_EQ(kTestSize, data.size());
+  EXPECT_EQ(0, memcmp(expected_data, &data[0], data.size()));
 }
 
 TEST_F(GLES2ImplementationTest, ShaderSource) {
@@ -566,29 +621,28 @@ TEST_F(GLES2ImplementationTest, GetShaderSource) {
   struct Cmds {
     cmd::SetBucketSize set_bucket_size1;
     GetShaderSource get_shader_source;
-    cmd::GetBucketSize get_bucket_size;
-    cmd::GetBucketData get_bucket_data;
+    cmd::GetBucketStart get_bucket_start;
     cmd::SetToken set_token1;
     cmd::SetBucketSize set_bucket_size2;
   };
 
+  ExpectedMemoryInfo mem1 = GetExpectedMemory(MaxTransferBufferSize());
   ExpectedMemoryInfo result1 = GetExpectedResultMemory(sizeof(uint32));
-  ExpectedMemoryInfo mem1 = GetExpectedMemory(sizeof(kString));
 
   Cmds expected;
   expected.set_bucket_size1.Init(kBucketId, 0);
   expected.get_shader_source.Init(kShaderId, kBucketId);
-  expected.get_bucket_size.Init(kBucketId, result1.id, result1.offset);
-  expected.get_bucket_data.Init(
-      kBucketId, 0, sizeof(kString), mem1.id, mem1.offset);
+  expected.get_bucket_start.Init(
+      kBucketId, result1.id, result1.offset,
+      MaxTransferBufferSize(), mem1.id, mem1.offset);
   expected.set_token1.Init(GetNextToken());
   expected.set_bucket_size2.Init(kBucketId, 0);
   char buf[sizeof(kString) + 1];
   memset(buf, kBad, sizeof(buf));
 
   EXPECT_CALL(*command_buffer(), OnFlush())
-      .WillOnce(SetMemory(result1.ptr, uint32(sizeof(kString))))
-      .WillOnce(SetMemory(mem1.ptr, kString))
+      .WillOnce(DoAll(SetMemory(result1.ptr, uint32(sizeof(kString))),
+                      SetMemory(mem1.ptr, kString)))
       .RetiresOnSaturation();
 
   GLsizei length = 0;
@@ -1604,34 +1658,33 @@ TEST_F(GLES2ImplementationTest, GetProgramInfoCHROMIUMGoodArgs) {
   const Str7 kString = {"foobar"};
   char buf[20];
 
-  ExpectedMemoryInfo result1 =
-      GetExpectedResultMemory(sizeof(cmd::GetBucketSize::Result));
   ExpectedMemoryInfo mem1 =
-      GetExpectedMemory(sizeof(kString));
+      GetExpectedMemory(MaxTransferBufferSize());
+  ExpectedMemoryInfo result1 =
+      GetExpectedResultMemory(sizeof(cmd::GetBucketStart::Result));
   ExpectedMemoryInfo result2 =
       GetExpectedResultMemory(sizeof(GetError::Result));
 
   memset(buf, kBad, sizeof(buf));
   EXPECT_CALL(*command_buffer(), OnFlush())
-      .WillOnce(SetMemory(result1.ptr, uint32(sizeof(kString))))
-      .WillOnce(SetMemory(mem1.ptr, kString))
+      .WillOnce(DoAll(SetMemory(result1.ptr, uint32(sizeof(kString))),
+                      SetMemory(mem1.ptr, kString)))
       .WillOnce(SetMemory(result2.ptr, GLuint(GL_NO_ERROR)))
       .RetiresOnSaturation();
 
   struct Cmds {
     cmd::SetBucketSize set_bucket_size1;
     GetProgramInfoCHROMIUM get_program_info;
-    cmd::GetBucketSize get_bucket_size;
-    cmd::GetBucketData get_bucket_data;
+    cmd::GetBucketStart get_bucket_start;
     cmd::SetToken set_token1;
     cmd::SetBucketSize set_bucket_size2;
   };
   Cmds expected;
   expected.set_bucket_size1.Init(kBucketId, 0);
   expected.get_program_info.Init(kProgramId, kBucketId);
-  expected.get_bucket_size.Init(kBucketId, result1.id, result1.offset);
-  expected.get_bucket_data.Init(
-      kBucketId, 0, sizeof(kString), mem1.id, mem1.offset);
+  expected.get_bucket_start.Init(
+      kBucketId, result1.id, result1.offset,
+      MaxTransferBufferSize(), mem1.id, mem1.offset);
   expected.set_token1.Init(GetNextToken());
   expected.set_bucket_size2.Init(kBucketId, 0);
   gl_->GetProgramInfoCHROMIUM(kProgramId, sizeof(buf), &size, &buf);
@@ -1649,9 +1702,9 @@ TEST_F(GLES2ImplementationTest, GetProgramInfoCHROMIUMBadArgs) {
   const Str7 kString = {"foobar"};
   char buf[20];
 
+  ExpectedMemoryInfo mem1 = GetExpectedMemory(MaxTransferBufferSize());
   ExpectedMemoryInfo result1 =
-      GetExpectedResultMemory(sizeof(cmd::GetBucketSize::Result));
-  ExpectedMemoryInfo mem1 = GetExpectedMemory(sizeof(kString));
+      GetExpectedResultMemory(sizeof(cmd::GetBucketStart::Result));
   ExpectedMemoryInfo result2 =
       GetExpectedResultMemory(sizeof(GetError::Result));
   ExpectedMemoryInfo result3 =
@@ -1660,8 +1713,8 @@ TEST_F(GLES2ImplementationTest, GetProgramInfoCHROMIUMBadArgs) {
       GetExpectedResultMemory(sizeof(GetError::Result));
 
   EXPECT_CALL(*command_buffer(), OnFlush())
-      .WillOnce(SetMemory(result1.ptr, uint32(sizeof(kString))))
-      .WillOnce(SetMemory(mem1.ptr,  kString))
+      .WillOnce(DoAll(SetMemory(result1.ptr, uint32(sizeof(kString))),
+                      SetMemory(mem1.ptr,  kString)))
       .WillOnce(SetMemory(result2.ptr, GLuint(GL_NO_ERROR)))
       .WillOnce(SetMemory(result3.ptr, GLuint(GL_NO_ERROR)))
       .WillOnce(SetMemory(result4.ptr, GLuint(GL_NO_ERROR)))
@@ -1671,17 +1724,16 @@ TEST_F(GLES2ImplementationTest, GetProgramInfoCHROMIUMBadArgs) {
   struct Cmds {
     cmd::SetBucketSize set_bucket_size1;
     GetProgramInfoCHROMIUM get_program_info;
-    cmd::GetBucketSize get_bucket_size;
-    cmd::GetBucketData get_bucket_data;
+    cmd::GetBucketStart get_bucket_start;
     cmd::SetToken set_token1;
     cmd::SetBucketSize set_bucket_size2;
   };
   Cmds expected;
   expected.set_bucket_size1.Init(kBucketId, 0);
   expected.get_program_info.Init(kProgramId, kBucketId);
-  expected.get_bucket_size.Init(kBucketId, result1.id, result1.offset);
-  expected.get_bucket_data.Init(
-      kBucketId, 0, sizeof(kString), mem1.id, mem1.offset);
+  expected.get_bucket_start.Init(
+      kBucketId, result1.id, result1.offset,
+      MaxTransferBufferSize(), mem1.id, mem1.offset);
   expected.set_token1.Init(GetNextToken());
   expected.set_bucket_size2.Init(kBucketId, 0);
   gl_->GetProgramInfoCHROMIUM(kProgramId, 6, &size, &buf);
@@ -2134,28 +2186,27 @@ TEST_F(GLES2ImplementationTest, GetString) {
   struct Cmds {
     cmd::SetBucketSize set_bucket_size1;
     GetString get_string;
-    cmd::GetBucketSize get_bucket_size;
-    cmd::GetBucketData get_bucket_data;
+    cmd::GetBucketStart get_bucket_start;
     cmd::SetToken set_token1;
     cmd::SetBucketSize set_bucket_size2;
   };
+  ExpectedMemoryInfo mem1 = GetExpectedMemory(MaxTransferBufferSize());
   ExpectedMemoryInfo result1 =
-      GetExpectedResultMemory(sizeof(cmd::GetBucketSize::Result));
-  ExpectedMemoryInfo mem1 = GetExpectedMemory(sizeof(kString));
+      GetExpectedResultMemory(sizeof(cmd::GetBucketStart::Result));
   Cmds expected;
   expected.set_bucket_size1.Init(kBucketId, 0);
   expected.get_string.Init(GL_EXTENSIONS, kBucketId);
-  expected.get_bucket_size.Init(kBucketId, result1.id, result1.offset);
-  expected.get_bucket_data.Init(
-      kBucketId, 0, sizeof(kString), mem1.id, mem1.offset);
+  expected.get_bucket_start.Init(
+      kBucketId, result1.id, result1.offset,
+      MaxTransferBufferSize(), mem1.id, mem1.offset);
   expected.set_token1.Init(GetNextToken());
   expected.set_bucket_size2.Init(kBucketId, 0);
   char buf[sizeof(kString) + 1];
   memset(buf, kBad, sizeof(buf));
 
   EXPECT_CALL(*command_buffer(), OnFlush())
-      .WillOnce(SetMemory(result1.ptr, uint32(sizeof(kString))))
-      .WillOnce(SetMemory(mem1.ptr, kString))
+      .WillOnce(DoAll(SetMemory(result1.ptr, uint32(sizeof(kString))),
+                      SetMemory(mem1.ptr, kString)))
       .RetiresOnSaturation();
 
   const GLubyte* result = gl_->GetString(GL_EXTENSIONS);
@@ -2169,30 +2220,29 @@ TEST_F(GLES2ImplementationTest, PixelStoreiGLPackReverseRowOrderANGLE) {
   struct Cmds {
     cmd::SetBucketSize set_bucket_size1;
     GetString get_string;
-    cmd::GetBucketSize get_bucket_size;
-    cmd::GetBucketData get_bucket_data;
+    cmd::GetBucketStart get_bucket_start;
     cmd::SetToken set_token1;
     cmd::SetBucketSize set_bucket_size2;
     PixelStorei pixel_store;
   };
 
+  ExpectedMemoryInfo mem1 = GetExpectedMemory(MaxTransferBufferSize());
   ExpectedMemoryInfo result1 =
-      GetExpectedResultMemory(sizeof(cmd::GetBucketSize::Result));
-  ExpectedMemoryInfo mem1 = GetExpectedMemory(sizeof(kString));
+      GetExpectedResultMemory(sizeof(cmd::GetBucketStart::Result));
 
   Cmds expected;
   expected.set_bucket_size1.Init(kBucketId, 0);
   expected.get_string.Init(GL_EXTENSIONS, kBucketId);
-  expected.get_bucket_size.Init(kBucketId, result1.id, result1.offset);
-  expected.get_bucket_data.Init(
-      kBucketId, 0, sizeof(kString), mem1.id, mem1.offset);
+  expected.get_bucket_start.Init(
+      kBucketId, result1.id, result1.offset,
+      MaxTransferBufferSize(), mem1.id, mem1.offset);
   expected.set_token1.Init(GetNextToken());
   expected.set_bucket_size2.Init(kBucketId, 0);
   expected.pixel_store.Init(GL_PACK_REVERSE_ROW_ORDER_ANGLE, 1);
 
   EXPECT_CALL(*command_buffer(), OnFlush())
-      .WillOnce(SetMemory(result1.ptr, uint32(sizeof(kString))))
-      .WillOnce(SetMemory(mem1.ptr, kString))
+      .WillOnce(DoAll(SetMemory(result1.ptr, uint32(sizeof(kString))),
+                      SetMemory(mem1.ptr, kString)))
       .RetiresOnSaturation();
 
   gl_->PixelStorei(GL_PACK_REVERSE_ROW_ORDER_ANGLE, 1);

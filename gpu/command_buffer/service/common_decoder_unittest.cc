@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -471,36 +471,103 @@ TEST_F(CommonDecoderTest, SetBucketDataImmediate) {
             ExecuteImmediateCmd(cmd, sizeof(kData2)));
 }
 
-TEST_F(CommonDecoderTest, GetBucketSize) {
+TEST_F(CommonDecoderTest, GetBucketStart) {
   cmd::SetBucketSize size_cmd;
-  cmd::GetBucketSize cmd;
+  cmd::SetBucketData set_cmd;
+  cmd::GetBucketStart cmd;
 
-  const uint32 kBucketSize = 456;
+  static const char kData[] = "1234567890123456789";
+  static const char zero[sizeof(kData)] = { 0, };
+
+  const uint32 kBucketSize = sizeof(kData);
   const uint32 kBucketId = 123;
   const uint32 kInvalidBucketId = 124;
 
-  size_cmd.Init(kBucketId, kBucketSize);
+  // Put data in the bucket.
+  size_cmd.Init(kBucketId, sizeof(kData));
   EXPECT_EQ(error::kNoError, ExecuteCmd(size_cmd));
-
-  // Check that the size is correct.
   const uint32 kSomeOffsetInSharedMemory = 50;
+  uint8* start = engine_.GetSharedMemoryAs<uint8*>(kSomeOffsetInSharedMemory);
+  memcpy(start, kData, sizeof(kData));
+  set_cmd.Init(kBucketId, 0, sizeof(kData),
+               MockCommandBufferEngine::kValidShmId, kSomeOffsetInSharedMemory);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(set_cmd));
+
+  // Check that the size is correct with no data buffer.
   uint32* memory =
       engine_.GetSharedMemoryAs<uint32*>(kSomeOffsetInSharedMemory);
   *memory = 0x0;
   cmd.Init(kBucketId,
-           MockCommandBufferEngine::kValidShmId, kSomeOffsetInSharedMemory);
+           MockCommandBufferEngine::kValidShmId, kSomeOffsetInSharedMemory,
+           0, 0, 0);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(kBucketSize, *memory);
 
-  // Check that it fails if the bucket_id is invalid
+  // Check that the data is copied with data buffer.
+  const uint32 kDataOffsetInSharedMemory = 54;
+  uint8* data = engine_.GetSharedMemoryAs<uint8*>(kDataOffsetInSharedMemory);
+  *memory = 0x0;
+  memset(data, 0, sizeof(kData));
+  cmd.Init(kBucketId,
+           MockCommandBufferEngine::kValidShmId, kSomeOffsetInSharedMemory,
+           kBucketSize, MockCommandBufferEngine::kValidShmId,
+           kDataOffsetInSharedMemory);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(kBucketSize, *memory);
+  EXPECT_EQ(0, memcmp(data, kData, kBucketSize));
+
+  // Check that we can get a piece.
+  *memory = 0x0;
+  memset(data, 0, sizeof(kData));
+  const uint32 kPieceSize = kBucketSize / 2;
+  cmd.Init(kBucketId,
+           MockCommandBufferEngine::kValidShmId, kSomeOffsetInSharedMemory,
+           kPieceSize, MockCommandBufferEngine::kValidShmId,
+           kDataOffsetInSharedMemory);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(kBucketSize, *memory);
+  EXPECT_EQ(0, memcmp(data, kData, kPieceSize));
+  EXPECT_EQ(0, memcmp(data + kPieceSize, zero, sizeof(kData) - kPieceSize));
+
+  // Check that it fails if the result_id is invalid
   cmd.Init(kInvalidBucketId,
-           MockCommandBufferEngine::kValidShmId, kSomeOffsetInSharedMemory);
+           MockCommandBufferEngine::kValidShmId, kSomeOffsetInSharedMemory,
+           0, 0, 0);
+  EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
+
+  // Check that it fails if the data_id is invalid
+  cmd.Init(kBucketId,
+           MockCommandBufferEngine::kValidShmId, kSomeOffsetInSharedMemory,
+           1, MockCommandBufferEngine::kInvalidShmId, 0);
+  EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
+
+  // Check that it fails if the data_size is invalid
+  cmd.Init(kBucketId,
+           MockCommandBufferEngine::kValidShmId, kSomeOffsetInSharedMemory,
+           1, 0, 0);
+  EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
+  cmd.Init(kBucketId,
+           MockCommandBufferEngine::kValidShmId, kSomeOffsetInSharedMemory,
+           MockCommandBufferEngine::kBufferSize + 1,
+           MockCommandBufferEngine::kValidShmId, 0);
+  EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
+
+  // Check that it fails if the data_offset is invalid
+  cmd.Init(kBucketId,
+           MockCommandBufferEngine::kValidShmId, kSomeOffsetInSharedMemory,
+           0, 0, 1);
+  EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
+  cmd.Init(kBucketId,
+           MockCommandBufferEngine::kValidShmId, kSomeOffsetInSharedMemory,
+           MockCommandBufferEngine::kBufferSize,
+           MockCommandBufferEngine::kValidShmId, 1);
   EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
 
   // Check that it fails if the result size is not set to zero
   *memory = 0x1;
   cmd.Init(kBucketId,
-           MockCommandBufferEngine::kValidShmId, kSomeOffsetInSharedMemory);
+           MockCommandBufferEngine::kValidShmId, kSomeOffsetInSharedMemory,
+           0, 0, 0);
   EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
 }
 

@@ -209,14 +209,20 @@ class GPU_EXPORT CommandBufferHelper {
     }
   }
 
-  void GetBucketSize(uint32 bucket_id,
-                     uint32 shared_memory_id,
-                     uint32 shared_memory_offset) {
-    cmd::GetBucketSize* cmd = GetCmdSpace<cmd::GetBucketSize>();
+  void GetBucketStart(uint32 bucket_id,
+                      uint32 result_memory_id,
+                      uint32 result_memory_offset,
+                      uint32 data_memory_size,
+                      uint32 data_memory_id,
+                      uint32 data_memory_offset) {
+    cmd::GetBucketStart* cmd = GetCmdSpace<cmd::GetBucketStart>();
     if (cmd) {
       cmd->Init(bucket_id,
-                shared_memory_id,
-                shared_memory_offset);
+                result_memory_id,
+                result_memory_offset,
+                data_memory_size,
+                data_memory_id,
+                data_memory_offset);
     }
   }
 

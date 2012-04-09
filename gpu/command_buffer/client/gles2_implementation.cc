@@ -633,30 +633,41 @@ bool GLES2Implementation::GetBucketContents(uint32 bucket_id,
                                             std::vector<int8>* data) {
   TRACE_EVENT0("gpu", "GLES2::GetBucketContents");
   GPU_DCHECK(data);
-  typedef cmd::GetBucketSize::Result Result;
+  const uint32 kStartSize = 32 * 1024;
+  ScopedTransferBufferPtr buffer(kStartSize, helper_, transfer_buffer_);
+  if (!buffer.valid()) {
+    return false;
+  }
+  typedef cmd::GetBucketStart::Result Result;
   Result* result = GetResultAs<Result*>();
   if (!result) {
     return false;
   }
   *result = 0;
-  helper_->GetBucketSize(bucket_id, GetResultShmId(), GetResultShmOffset());
+  helper_->GetBucketStart(
+      bucket_id, GetResultShmId(), GetResultShmOffset(),
+      buffer.size(), buffer.shm_id(), buffer.offset());
   WaitForCmd();
   uint32 size = *result;
   data->resize(size);
   if (size > 0u) {
     uint32 offset = 0;
     while (size) {
-      ScopedTransferBufferPtr buffer(size, helper_, transfer_buffer_);
       if (!buffer.valid()) {
-        return false;
+        buffer.Reset(size);
+        if (!buffer.valid()) {
+          return false;
+        }
+        helper_->GetBucketData(
+            bucket_id, offset, buffer.size(), buffer.shm_id(), buffer.offset());
+        WaitForCmd();
       }
-      helper_->GetBucketData(
-          bucket_id, offset, buffer.size(), buffer.shm_id(), buffer.offset());
-      WaitForCmd();
-      memcpy(&(*data)[offset], buffer.address(), buffer.size());
-      offset += buffer.size();
-      size -= buffer.size();
-    }
+      uint32 size_to_copy = std::min(size, buffer.size());
+      memcpy(&(*data)[offset], buffer.address(), size_to_copy);
+      offset += size_to_copy;
+      size -= size_to_copy;
+      buffer.Release();
+    };
     // Free the bucket. This is not required but it does free up the memory.
     // and we don't have to wait for the result so from the client's perspective
     // it's cheap.
