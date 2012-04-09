@@ -47,7 +47,6 @@
 #if defined(OS_WIN)
 #include "base/win/win_util.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/ui/views/restart_message_box.h"
 #include "chrome/installer/util/install_util.h"
 #endif  // defined(OS_WIN)
 
