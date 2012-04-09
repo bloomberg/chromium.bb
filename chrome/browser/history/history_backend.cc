@@ -367,6 +367,29 @@ SegmentID HistoryBackend::UpdateSegments(
   return segment_id;
 }
 
+void HistoryBackend::UpdateWithPageEndTime(const void* host,
+                                           int32 page_id,
+                                           const GURL& url,
+                                           Time end_ts) {
+  // Will be filled with the URL ID and the visit ID of the last addition.
+  VisitID visit_id = tracker_.GetLastVisit(host, page_id, url);
+  UpdateVisitDuration(visit_id, end_ts);
+}
+
+void HistoryBackend::UpdateVisitDuration(VisitID visit_id, const Time end_ts) {
+  if (!db_.get())
+    return;
+
+  // Get the starting visit_time for visit_id.
+  VisitRow visit_row;
+  if (db_->GetRowForVisit(visit_id, &visit_row)) {
+    // We should never have a negative duration time even when time is skewed.
+    visit_row.visit_duration = end_ts > visit_row.visit_time ?
+        end_ts - visit_row.visit_time : TimeDelta::FromMicroseconds(0);
+    db_->UpdateVisitRow(visit_row);
+  }
+}
+
 void HistoryBackend::AddPage(scoped_refptr<HistoryAddPageArgs> request) {
   if (!db_.get())
     return;
@@ -441,6 +464,9 @@ void HistoryBackend::AddPage(scoped_refptr<HistoryAddPageArgs> request) {
     if (!is_keyword_generated) {
       UpdateSegments(request->url, from_visit_id, last_ids.second, t,
                      last_recorded_time_);
+
+      // Update the referrer's duration.
+      UpdateVisitDuration(from_visit_id, last_recorded_time_);
     }
   } else {
     // Redirect case. Add the redirect chain.
@@ -510,6 +536,9 @@ void HistoryBackend::AddPage(scoped_refptr<HistoryAddPageArgs> request) {
         // Update the segment for this visit.
         UpdateSegments(request->redirects[redirect_index],
                        from_visit_id, last_ids.second, t, last_recorded_time_);
+
+        // Update the visit_details for this visit.
+        UpdateVisitDuration(from_visit_id, last_recorded_time_);
       }
 
       // Subsequent transitions in the redirect list must all be sever

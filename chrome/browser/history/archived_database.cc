@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,7 @@ namespace history {
 
 namespace {
 
-static const int kCurrentVersionNumber = 3;
+static const int kCurrentVersionNumber = 4;
 static const int kCompatibleVersionNumber = 2;
 
 }  // namespace
@@ -84,6 +84,11 @@ sql::Connection& ArchivedDatabase::GetDB() {
   return db_;
 }
 
+// static
+int ArchivedDatabase::GetCurrentVersion() {
+  return kCurrentVersionNumber;
+}
+
 // Migration -------------------------------------------------------------------
 
 sql::InitStatus ArchivedDatabase::EnsureCurrentVersion() {
@@ -113,6 +118,17 @@ sql::InitStatus ArchivedDatabase::EnsureCurrentVersion() {
 
   if (cur_version == 2) {
     // This is the version prior to adding visit_source table.
+    ++cur_version;
+    meta_table_.SetVersionNumber(cur_version);
+  }
+
+  if (cur_version == 3) {
+    // This is the version prior to adding the visit_duration field in visits
+    // database. We need to migrate the database.
+    if (!MigrateVisitsWithoutDuration()) {
+      LOG(WARNING) << "Unable to update archived database to version 4.";
+      return sql::INIT_FAILURE;
+    }
     ++cur_version;
     meta_table_.SetVersionNumber(cur_version);
   }

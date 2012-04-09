@@ -136,6 +136,18 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   virtual void SetPageTitle(const GURL& url, const string16& title);
   void AddPageNoVisitForBookmark(const GURL& url);
 
+  // Updates the database backend with a page's ending time stamp information.
+  // The page can be identified by the combination of the pointer to
+  // a RenderProcessHost, the page id and the url.
+  //
+  // The given pointer will not be dereferenced, it is only used for
+  // identification purposes, hence it is a void*.
+  void UpdateWithPageEndTime(const void* host,
+                             int32 page_id,
+                             const GURL& url,
+                             base::Time end_ts);
+
+
   // Indexing ------------------------------------------------------------------
 
   void SetPageContents(const GURL& url, const string16& contents);
@@ -393,8 +405,8 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, GetFaviconForURL);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest,
                            CloneFaviconIsRestrictedToSameDomain);
-  FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest,
-                           QueryFilteredURLs);
+  FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, QueryFilteredURLs);
+  FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, UpdateVisitDuration);
 
   friend class ::TestingProfile;
 
@@ -436,6 +448,9 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // at |cur_visit|.
   void GetRedirectsToSpecificVisit(
       VisitID cur_visit, history::RedirectList* redirects);
+
+  // Update the visit_duration information in visits table.
+  void UpdateVisitDuration(VisitID visit_id, const base::Time end_ts);
 
   // Thumbnail Helpers ---------------------------------------------------------
 
