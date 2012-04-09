@@ -387,7 +387,10 @@ void InMemoryURLIndexTest::ExpectPrivateDataEqual(
       expected_info != expected.history_info_map_.end(); ++expected_info) {
     HistoryInfoMap::const_iterator actual_info =
         actual.history_info_map_.find(expected_info->first);
-    ASSERT_NE(actual_info, actual.history_info_map_.end());
+    // NOTE(yfriedman): ASSERT_NE can't be used due to incompatibility between
+    // gtest and STLPort in the Android build. See
+    // http://code.google.com/p/googletest/issues/detail?id=359
+    ASSERT_TRUE(actual_info != actual.history_info_map_.end());
     const URLRow& expected_row(expected_info->second);
     const URLRow& actual_row(actual_info->second);
     EXPECT_EQ(expected_row.visit_count(), actual_row.visit_count());
@@ -402,7 +405,10 @@ void InMemoryURLIndexTest::ExpectPrivateDataEqual(
       ++expected_starts) {
     WordStartsMap::const_iterator actual_starts =
         actual.word_starts_map_.find(expected_starts->first);
-    ASSERT_NE(actual_starts, actual.word_starts_map_.end());
+    // NOTE(yfriedman): ASSERT_NE can't be used due to incompatibility between
+    // gtest and STLPort in the Android build. See
+    // http://code.google.com/p/googletest/issues/detail?id=359
+    ASSERT_TRUE(actual_starts != actual.word_starts_map_.end());
     const RowWordStarts& expected_word_starts(expected_starts->second);
     const RowWordStarts& actual_word_starts(actual_starts->second);
     EXPECT_EQ(expected_word_starts.url_word_starts_.size(),

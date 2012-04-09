@@ -1060,7 +1060,7 @@ TEST_F(AndroidProviderBackendTest, UpdateFavicon) {
   Time last_updated;
   std::vector<unsigned char> png_icon_data;
   EXPECT_TRUE(thumbnail_db_.GetFavicon(icon_mapping.icon_id, &last_updated,
-                                       &png_icon_data, NULL));
+                                       &png_icon_data, NULL, NULL));
   EXPECT_EQ(data, png_icon_data);
 
   // Remove favicon.
