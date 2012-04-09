@@ -168,12 +168,29 @@ class UI_EXPORT Canvas {
   // call Restore() more times than Save*().
   void Restore() ;
 
-  // Returns true if the clip is non-empty.
+  // Adds |rect| to the current clip. Returns true if the resulting clip is
+  // non-empty.
   bool ClipRect(const gfx::Rect& rect);
+
+  // Adds |path| to the current clip. Returns true if the resulting clip is
+  // non-empty.
+  bool ClipPath(const SkPath& path);
+
+  // Returns the bounds of the current clip (in local coordinates) in the
+  // |bounds| parameter, and returns true if it is non empty.
+  bool GetClipBounds(gfx::Rect* bounds);
 
   void Translate(const gfx::Point& point);
 
   void Scale(int x_scale, int y_scale);
+
+  // Fills the entire canvas' bitmap (restricted to current clip) with
+  // specified |color| using a transfer mode of SkXfermode::kSrcOver_Mode.
+  void DrawColor(SkColor color);
+
+  // Fills the entire canvas' bitmap (restricted to current clip) with
+  // specified |color| and |mode|.
+  void DrawColor(SkColor color, SkXfermode::Mode mode);
 
   // Fills |rect| with |color| using a transfer mode of
   // SkXfermode::kSrcOver_Mode.
@@ -194,11 +211,31 @@ class UI_EXPORT Canvas {
   // NOTE: if you need a single pixel line, use DrawLine.
   void DrawRect(const gfx::Rect& rect, SkColor color, SkXfermode::Mode mode);
 
-  // Draws the given rectangle with the given paint's parameters.
+  // Draws the given rectangle with the given |paint| parameters.
   void DrawRect(const gfx::Rect& rect, const SkPaint& paint);
+
+  // Draw the given point with the given |paint| parameters.
+  void DrawPoint(const gfx::Point& p, const SkPaint& paint);
 
   // Draws a single pixel line with the specified color.
   void DrawLine(const gfx::Point& p1, const gfx::Point& p2, SkColor color);
+
+  // Draws a line with the given |paint| parameters.
+  void DrawLine(const gfx::Point& p1,
+                const gfx::Point& p2,
+                const SkPaint& paint);
+
+  // Draws a circle with the given |paint| parameters.
+  void DrawCircle(const gfx::Point& center_point,
+                  int radius,
+                  const SkPaint& paint);
+
+  // Draws the given rectangle with rounded corners of |radius| using the
+  // given |paint| parameters.
+  void DrawRoundRect(const gfx::Rect& rect, int radius, const SkPaint& paint);
+
+  // Draws the given path using the given |paint| parameters.
+  void DrawPath(const SkPath& path, const SkPaint& paint);
 
   // Draws a bitmap with the origin at the specified location. The upper left
   // corner of the bitmap is rendered at the specified location.

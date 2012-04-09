@@ -147,12 +147,31 @@ bool Canvas::ClipRect(const gfx::Rect& rect) {
   return canvas_->clipRect(gfx::RectToSkRect(rect));
 }
 
+bool Canvas::ClipPath(const SkPath& path) {
+  return canvas_->clipPath(path);
+}
+
+bool Canvas::GetClipBounds(gfx::Rect* bounds) {
+  SkRect out;
+  bool has_non_empty_clip = canvas_->getClipBounds(&out);
+  bounds->SetRect(out.left(), out.top(), out.width(), out.height());
+  return has_non_empty_clip;
+}
+
 void Canvas::Translate(const gfx::Point& point) {
   canvas_->translate(SkIntToScalar(point.x()), SkIntToScalar(point.y()));
 }
 
 void Canvas::Scale(int x_scale, int y_scale) {
   canvas_->scale(SkIntToScalar(x_scale), SkIntToScalar(y_scale));
+}
+
+void Canvas::DrawColor(SkColor color) {
+  DrawColor(color, SkXfermode::kSrcOver_Mode);
+}
+
+void Canvas::DrawColor(SkColor color, SkXfermode::Mode mode) {
+  canvas_->drawColor(color, mode);
 }
 
 void Canvas::FillRect(const gfx::Rect& rect, SkColor color) {
@@ -192,14 +211,42 @@ void Canvas::DrawRect(const gfx::Rect& rect, const SkPaint& paint) {
   canvas_->drawIRect(RectToSkIRect(rect), paint);
 }
 
+void Canvas::DrawPoint(const gfx::Point& p1, const SkPaint& paint) {
+  canvas_->drawPoint(SkIntToScalar(p1.x()), SkIntToScalar(p1.y()), paint);
+}
+
 void Canvas::DrawLine(const gfx::Point& p1,
                       const gfx::Point& p2,
                       SkColor color) {
   SkPaint paint;
   paint.setColor(color);
   paint.setStrokeWidth(SkIntToScalar(1));
+  DrawLine(p1, p2, paint);
+}
+
+void Canvas::DrawLine(const gfx::Point& p1,
+                      const gfx::Point& p2,
+                      const SkPaint& paint) {
   canvas_->drawLine(SkIntToScalar(p1.x()), SkIntToScalar(p1.y()),
                     SkIntToScalar(p2.x()), SkIntToScalar(p2.y()), paint);
+}
+
+void Canvas::DrawCircle(const gfx::Point& center_point,
+                        int radius,
+                        const SkPaint& paint) {
+  canvas_->drawCircle(SkIntToScalar(center_point.x()),
+      SkIntToScalar(center_point.y()), SkIntToScalar(radius), paint);
+}
+
+void Canvas::DrawRoundRect(const gfx::Rect& rect,
+                           int radius,
+                           const SkPaint& paint) {
+  canvas_->drawRoundRect(RectToSkRect(rect), SkIntToScalar(radius),
+                         SkIntToScalar(radius), paint);
+}
+
+void Canvas::DrawPath(const SkPath& path, const SkPaint& paint) {
+  canvas_->drawPath(path, paint);
 }
 
 void Canvas::DrawFocusRect(const gfx::Rect& rect) {
