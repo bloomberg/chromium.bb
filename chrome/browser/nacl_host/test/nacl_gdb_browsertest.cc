@@ -32,9 +32,8 @@ class NaClGdbTest : public PPAPINaClTest {
   }
 };
 
-// Disabling for now on linux, it fails on the ASAN test bot.
-// See http://crbug.com/122219
-#if defined(OS_LINUX)
+// Fails on the ASAN test bot. See http://crbug.com/122219
+#if defined(ADDRESS_SANITIZER)
 #define MAYBE_Empty DISABLED_Empty
 #else
 #define MAYBE_Empty Empty
