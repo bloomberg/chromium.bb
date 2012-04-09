@@ -205,7 +205,7 @@
                 '<(PRODUCT_DIR)/icudt.dll',
               ],
               'outputs': [
-                'xxx.out',
+                'xxx2.out',
                 '<(PRODUCT_DIR)/<(RULE_INPUT_NAME).7z',
                 '<(PRODUCT_DIR)/<(RULE_INPUT_NAME).packed.7z',
                 '<(PRODUCT_DIR)/setup.ex_',
