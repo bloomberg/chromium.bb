@@ -111,6 +111,7 @@ UNFILED MAC AMD : conformance_glsl_functions_glsl_function_dot = FAIL
 UNFILED MAC AMD : conformance_glsl_functions_glsl_function_length = FAIL
 UNFILED MAC AMD : conformance_glsl_variables_gl_pointcoord = FAIL
 UNFILED MAC AMD : conformance_reading_read_pixels_test = TIMEOUT
+122651 MAC AMD : conformance_misc_object_deletion_behaviour = TIMEOUT
 
 WONTFIX LINUX DEBUG : conformance_more_conformance_quickCheckAPI_B1 = TIMEOUT
 WONTFIX LINUX DEBUG : conformance_more_conformance_quickCheckAPI_G_I = TIMEOUT
