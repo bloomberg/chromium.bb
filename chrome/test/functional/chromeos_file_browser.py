@@ -103,7 +103,7 @@ class ChromeosFileBrowserTest(pyauto.PyUITest):
     file_browser = self._GetSaveAsDialogFileBrowser()
     self.assertTrue(file_browser, msg='File browser failed to initialize.')
     dialog = self.WaitUntilExtensionViewLoaded(view_type='EXTENSION_DIALOG')
-    file_browser.Save('apple')
+    file_browser.Save('apple.html')
     self.assertTrue(self.WaitUntilExtensionViewClosed(dialog))
     file_browser = self._GetOpenDialogFileBrowser()
     self.assertTrue(file_browser.Select('apple.html'))
@@ -196,7 +196,8 @@ class ChromeosFileBrowserTest(pyauto.PyUITest):
     file_browser.CreateDirectory('apples')
     file_browser.Select('apples')
     file_browser.Copy()
-    file_browser.ChangeDirectory('apples')
+    file_browser.CreateDirectory('oranges')
+    file_browser.ChangeDirectory('oranges')
     file_browser.Paste()
     self.assertTrue(file_browser.Select('apples'))
 

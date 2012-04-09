@@ -38,7 +38,7 @@ var pyautoAPI = {
    * @return {object} A a list of item names.
    */
   listDirectory: function() {
-    var list = []
+    var list = [];
     var dm = fileManager.directoryModel_.fileList;
     for (var i = 0; i < dm.length; i++) {
       list.push(dm.item(i).name);
@@ -77,11 +77,18 @@ var pyautoAPI = {
     this.sendDone_();
   },
 
+  executeClipboardCommand_: function(command) {
+    // Input should not be focused, or the cut/cop/paste command
+    // will be treated as textual editing.
+    fileManager.filenameInput_.blur();
+    fileManager.document_.execCommand(command);
+  },
+
   /**
    * Copy selected items to clipboard.
    */
   copyItems: function() {
-    fileManager.copySelectionToClipboard();
+    this.executeClipboardCommand_('copy');
     this.sendDone_();
   },
 
@@ -89,7 +96,7 @@ var pyautoAPI = {
    * Cut selected items to clipboard.
    */
   cutItems: function() {
-    fileManager.cutSelectionToClipboard();
+    this.executeClipboardCommand_('cut');
     this.sendDone_();
   },
 
@@ -104,7 +111,7 @@ var pyautoAPI = {
     }.bind(this);
 
     dm.addEventListener('rescan-completed', onRescan);
-    fileManager.pasteFromClipboard();
+    this.executeClipboardCommand_('paste');
   },
 
   /**
@@ -132,7 +139,14 @@ var pyautoAPI = {
    * @param {string} name Name of the directory.
    */
   createDirectory: function(name) {
-    fileManager.createNewFolder(name, this.sendDone_);
+    var dm = fileManager.directoryModel_;
+    var onRescan = function() {
+      dm.removeEventListener('rescan-completed', onRescan);
+      this.sendDone_();
+    }.bind(this);
+
+    dm.addEventListener('rescan-completed', onRescan);
+    fileManager.directoryModel_.createDirectory(name, function(){});
   },
 
   /**
