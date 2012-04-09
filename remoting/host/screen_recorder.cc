@@ -285,6 +285,9 @@ void ScreenRecorder::DoEncode(
     scoped_refptr<CaptureData> capture_data) {
   DCHECK_EQ(encode_loop_, MessageLoop::current());
 
+  if (encoder_stopped_)
+    return;
+
   // Early out if there's nothing to encode.
   if (!capture_data || capture_data->dirty_region().isEmpty()) {
     // Send an empty video packet to keep network active.
