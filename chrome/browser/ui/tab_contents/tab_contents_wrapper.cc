@@ -123,14 +123,14 @@ TabContentsWrapper::TabContentsWrapper(WebContents* contents)
   webnavigation_observer_.reset(
       new extensions::WebNavigationTabObserver(contents));
   external_protocol_observer_.reset(new ExternalProtocolObserver(contents));
-  if (OmniboxSearchHint::IsEnabled(profile()))
-    omnibox_search_hint_.reset(new OmniboxSearchHint(this));
   pdf_tab_observer_.reset(new PDFTabObserver(this));
   plugin_observer_.reset(new PluginObserver(this));
   safe_browsing_tab_observer_.reset(
       new safe_browsing::SafeBrowsingTabObserver(this));
 
 #if !defined(OS_ANDROID)
+  if (OmniboxSearchHint::IsEnabled(profile()))
+    omnibox_search_hint_.reset(new OmniboxSearchHint(this));
   print_preview_.reset(new printing::PrintPreviewMessageHandler(contents));
 #endif
 
