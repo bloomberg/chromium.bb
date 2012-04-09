@@ -59,6 +59,7 @@ scons-tests-translator() {
 ####
 
 tc-test-bot() {
+  local archset="$1"
   clobber
 
   echo "@@@BUILD_STEP show-config@@@"
@@ -71,34 +72,41 @@ tc-test-bot() {
 
   # run the torture tests. the "trybot" phases take care of prerequisites
   # for both test sets
-  for arch in x8664 x8632 arm; do
+  for arch in ${archset}; do
     echo "@@@BUILD_STEP torture_tests $arch @@@"
     ${TORTURE_TEST} trybot-pnacl-${arch}-torture \
       --concurrency=${PNACL_CONCURRENCY} || handle-error
   done
 
-  for arch in x86-64 x86-32; do
+  for arch in ${archset}; do
     echo "@@@BUILD_STEP llvm-test-suite $arch @@@"
     ${LLVM_TESTSUITE} testsuite-prereq ${arch}
     ${LLVM_TESTSUITE} testsuite-clean
-    { ${LLVM_TESTSUITE} testsuite-configure ${arch} &&
-      ${LLVM_TESTSUITE} testsuite-run ${arch} &&
-      ${LLVM_TESTSUITE} testsuite-report ${arch} -v -c
-    } || handle-error
+
+    if [[ ${arch} == "arm" ]] ; then
+        # just warn rather then report an error
+        # this can be taken out once we run it on a separate bot
+        { ${LLVM_TESTSUITE} testsuite-configure arm &&
+            ${LLVM_TESTSUITE} testsuite-run arm &&
+            ${LLVM_TESTSUITE} testsuite-report arm -v -c
+        } || handle-error-warn
+    else
+        { ${LLVM_TESTSUITE} testsuite-configure ${arch} &&
+            ${LLVM_TESTSUITE} testsuite-run ${arch} &&
+            ${LLVM_TESTSUITE} testsuite-report ${arch} -v -c
+        } || handle-error
+    fi
+
+    if [[ ${arch} == "arm" ]] ; then
+        scons-tests-translator "arm"
+    fi
   done
 
-  # Do arm separately and warn rather than erroring, until we can move this
-  # a hw bot
-  echo "@@@BUILD_STEP llvm-test-suite arm @@@"
-    ${LLVM_TESTSUITE} testsuite-prereq arm
-    ${LLVM_TESTSUITE} testsuite-clean
-    { ${LLVM_TESTSUITE} testsuite-configure arm &&
-      ${LLVM_TESTSUITE} testsuite-run arm &&
-      ${LLVM_TESTSUITE} testsuite-report arm -v -c
-    } || handle-error-warn
-
-
-  scons-tests-translator "arm"
 }
 
-tc-test-bot
+####
+if [ $# = 0 ]; then
+    tc-test-bot "x86-64 x86-32 arm"
+else
+    "$@"
+fi
