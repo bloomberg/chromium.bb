@@ -38,6 +38,28 @@ const char kBackupExtensionsIDs[] = "backup.extensions.ids";
 const char kBackupSignature[] = "backup._signature";
 const char kBackupVersion[] = "backup._version";
 
+// Appends a list of strings to |out|.
+void StringAppendStringList(const base::ListValue* list, std::string* out) {
+  for (base::ListValue::const_iterator it = list->begin(); it != list->end();
+       ++it) {
+    std::string item;
+    if (!(*it)->GetAsString(&item))
+      NOTREACHED();
+    base::StringAppendF(out, "|%s", item.c_str());
+  }
+}
+
+// Appends a dictionary with string values to |out|.
+void StringAppendStringDictionary(const base::DictionaryValue* dict,
+                                  std::string* out) {
+  for (base::DictionaryValue::Iterator it(*dict); it.HasNext(); it.Advance()) {
+    std::string value;
+    if (!it.value().GetAsString(&value))
+      NOTREACHED();
+    base::StringAppendF(out, "|%s|%s", it.key().c_str(), value.c_str());
+  }
+}
+
 }  // namespace
 
 // static
@@ -288,22 +310,8 @@ std::string ProtectedPrefsWatcher::GetSignatureData(PrefService* prefs) const {
       prefs->GetBoolean(kBackupHomePageIsNewTabPage) ? 1 : 0,
       prefs->GetBoolean(kBackupShowHomeButton) ? 1 : 0,
       prefs->GetInteger(kBackupRestoreOnStartup));
-  const base::ListValue* startup_urls =
-      prefs->GetList(kBackupURLsToRestoreOnStartup);
-  for (base::ListValue::const_iterator it = startup_urls->begin();
-       it != startup_urls->end(); ++it) {
-    std::string url;
-    if (!(*it)->GetAsString(&url))
-      NOTREACHED();
-    base::StringAppendF(&data, "|%s", url.c_str());
-  }
-  // These are safe to use becase they are always up-to-date and returned in
-  // a consistent (sorted) order.
-  for (ExtensionPrefs::ExtensionIdSet::const_iterator it =
-           cached_extension_ids_.begin();
-       it != cached_extension_ids_.end(); ++it) {
-    base::StringAppendF(&data, "|%s", it->c_str());
-  }
+  StringAppendStringList(prefs->GetList(kBackupURLsToRestoreOnStartup), &data);
+  StringAppendStringList(prefs->GetList(kBackupExtensionsIDs), &data);
   if (current_version >= 2) {
     // Version itself is included only since version 2 since it wasn't there
     // in version 1.
@@ -316,13 +324,7 @@ std::string ProtectedPrefsWatcher::GetSignatureData(PrefService* prefs) const {
         NOTREACHED();
         continue;
       }
-      for (base::DictionaryValue::Iterator it2(*tab); it2.HasNext();
-           it2.Advance()) {
-        std::string value;
-        if (!it2.value().GetAsString(&value))
-          NOTREACHED();
-        base::StringAppendF(&data, "|%s|%s", it2.key().c_str(), value.c_str());
-      }
+      StringAppendStringDictionary(tab, &data);
     }
   }
   return data;
