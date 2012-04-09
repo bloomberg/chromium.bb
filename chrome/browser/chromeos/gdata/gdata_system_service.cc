@@ -58,14 +58,7 @@ void GDataSystemService::Shutdown() {
   download_observer_.reset();
   uploader_.reset();
 
-  file_system_->ShutdownOnUIThread();
-  // Delete file_system_ on IO thread, because file_system_ owns a weak
-  // ptr factory that needs to be deleted on the IO thread.
-  BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&base::DeletePointer<GDataFileSystem>,
-                 file_system_.release()));
+  file_system_.reset();
 }
 
 //===================== GDataSystemServiceFactory =============================

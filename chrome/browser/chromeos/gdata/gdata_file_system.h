@@ -410,11 +410,6 @@ class GDataFileSystem : public GDataFileSystemInterface,
                   DocumentsServiceInterface* documents_service);
   virtual ~GDataFileSystem();
 
-  // Shuts down the file system on UI thread. All pending operations are
-  // canceled. Most parts of shutdown happens here. The destructor is only
-  // used to release objects on the IO thread.
-  void ShutdownOnUIThread();
-
   // GDataFileSystem overrides.
   virtual void Initialize() OVERRIDE;
   virtual void AddObserver(Observer* observer) OVERRIDE;
@@ -594,6 +589,11 @@ class GDataFileSystem : public GDataFileSystemInterface,
   typedef base::Callback<void(base::PlatformFileError error,
                               const FilePath& file_path)>
       FilePathUpdateCallback;
+
+  // Nukes |io_weak_ptr_factory_| on IO thread, and signals using |done_event|
+  // when done.
+  // It is called from destructor which blocks until the singal is sent.
+  void ResetIOWeakPtrFactoryOnIOThread(base::WaitableEvent* done_event);
 
   // Returns a WeakPtr for the current thread.
   base::WeakPtr<GDataFileSystem> GetWeakPtrForCurrentThread();
@@ -1291,6 +1291,8 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // GDataRootDirectory::CacheSubDirectoryType enum.
   std::vector<FilePath> cache_paths_;
 
+  // Waitable events used to block dectructor until all the tasks on blocking
+  // thread pool are run.
   scoped_ptr<base::WaitableEvent> on_io_completed_;
 
   // True if cache initialization has started, is in progress or has completed,

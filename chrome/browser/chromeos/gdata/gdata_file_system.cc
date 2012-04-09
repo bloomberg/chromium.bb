@@ -552,28 +552,32 @@ void GDataFileSystem::Initialize() {
 }
 
 GDataFileSystem::~GDataFileSystem() {
-  // Should be deleted on IO thread by GDataSystemService.
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-  // io_weak_ptr_factory_ must be deleted on IO thread.
-  io_weak_ptr_factory_.reset();
-  // documents_service_ must be deleted on IO thread, as it also owns
-  // WeakPtrFactory bound to IO thread.
-  documents_service_.reset();
-}
-
-void GDataFileSystem::ShutdownOnUIThread() {
+  // This should be called from UI thread, from GDataSystemService shutdown.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   pref_registrar_.reset(NULL);
 
-  // Cancel all the in-flight operations.
-  // This asynchronously cancels the URL fetch operations.
-  documents_service_->CancelAll();
-  documents_service_.reset();
-
   // ui_weak_ptr_factory_ must be deleted on UI thread.
   ui_weak_ptr_factory_.reset();
+
+  // There may still be some tasks on IO thread that access data members, so we
+  // should wait until they are over and io_weak_ptr_factory is nuked. After
+  // weak factory is nuked we can be sure there will be no tasks bound to this
+  // on IO thread.
+  base::WaitableEvent on_io_weak_ptr_factory_reset(
+      true /* manual reset */, false /* initially not signaled */);
+
+  // io_weak_ptr_factory must be deleted on IO thread. We won't continue
+  // until the tasks is ran, so unretained is safe.
+  BrowserThread::PostTask(
+      BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(&GDataFileSystem::ResetIOWeakPtrFactoryOnIOThread,
+                 base::Unretained(this),
+                 &on_io_weak_ptr_factory_reset));
+
+  // TODO(satorux): Remove the waitable event (crosbug.com/28501).
+  on_io_weak_ptr_factory_reset.Wait();
 
   // In case an IO task is in progress, wait for its completion before
   // destructing because it accesses data members.
@@ -591,9 +595,27 @@ void GDataFileSystem::ShutdownOnUIThread() {
   if (need_to_wait)
     on_io_completed_->Wait();
 
+  // Now that we are sure that there are no more pending tasks bound to this on
+  // other threads, we are safe to destroy the data members.
+
+  // Cancel all the in-flight operations.
+  // This asynchronously cancels the URL fetch operations.
+  documents_service_->CancelAll();
+  documents_service_.reset();
+
   // Lock to let root destroy cache map and resource map.
   base::AutoLock lock(lock_);
   root_.reset(NULL);
+}
+
+void GDataFileSystem::ResetIOWeakPtrFactoryOnIOThread(
+    base::WaitableEvent* done_event) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  io_weak_ptr_factory_.reset();
+
+  // Signal we are done so the object destruction can continue.
+  done_event->Signal();
 }
 
 void GDataFileSystem::AddObserver(Observer* observer) {

@@ -119,7 +119,7 @@ class GDataFileSystemTest : public testing::Test {
   GDataFileSystemTest()
       : ui_thread_(content::BrowserThread::UI, &message_loop_),
         file_thread_(content::BrowserThread::FILE),
-        io_thread_(content::BrowserThread::IO, &message_loop_),
+        io_thread_(content::BrowserThread::IO),
         file_system_(NULL),
         mock_doc_service_(NULL),
         mock_sync_client_(NULL),
@@ -132,6 +132,7 @@ class GDataFileSystemTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE {
     file_thread_.StartIOThread();
+    io_thread_.StartIOThread();
 
     profile_.reset(new TestingProfile);
 
@@ -155,7 +156,6 @@ class GDataFileSystemTest : public testing::Test {
   virtual void TearDown() OVERRIDE {
     ASSERT_TRUE(file_system_);
     EXPECT_CALL(*mock_doc_service_, CancelAll()).Times(1);
-    file_system_->ShutdownOnUIThread();
     delete file_system_;
     file_system_ = NULL;
 
