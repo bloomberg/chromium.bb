@@ -76,11 +76,11 @@ class ComboboxModelExampleList : public ui::ComboboxModel {
 class ExamplesWindowContents : public WidgetDelegateView,
                                public ComboboxListener {
  public:
-  explicit ExamplesWindowContents(bool quit_on_close)
+  explicit ExamplesWindowContents(Operation operation)
       : combobox_(new Combobox(&combobox_model_)),
         example_shown_(new View),
         status_label_(new Label),
-        quit_on_close_(quit_on_close) {
+        operation_(operation) {
     instance_ = this;
     combobox_->set_listener(this);
   }
@@ -103,7 +103,7 @@ class ExamplesWindowContents : public WidgetDelegateView,
   virtual View* GetContentsView() OVERRIDE { return this; }
   virtual void WindowClosing() OVERRIDE {
     instance_ = NULL;
-    if (quit_on_close_)
+    if (operation_ == QUIT_ON_CLOSE)
       MessageLoopForUI::current()->Quit();
   }
 
@@ -186,7 +186,7 @@ class ExamplesWindowContents : public WidgetDelegateView,
   Combobox* combobox_;
   View* example_shown_;
   Label* status_label_;
-  bool quit_on_close_;
+  const Operation operation_;
 
   DISALLOW_COPY_AND_ASSIGN(ExamplesWindowContents);
 };
@@ -194,11 +194,11 @@ class ExamplesWindowContents : public WidgetDelegateView,
 // static
 ExamplesWindowContents* ExamplesWindowContents::instance_ = NULL;
 
-void ShowExamplesWindow(bool quit_on_close) {
+void ShowExamplesWindow(Operation operation) {
   if (ExamplesWindowContents::instance()) {
     ExamplesWindowContents::instance()->GetWidget()->Activate();
   } else {
-    Widget::CreateWindowWithBounds(new ExamplesWindowContents(quit_on_close),
+    Widget::CreateWindowWithBounds(new ExamplesWindowContents(operation),
                                    gfx::Rect(0, 0, 850, 300))->Show();
   }
 }

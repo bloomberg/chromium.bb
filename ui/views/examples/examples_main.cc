@@ -24,8 +24,8 @@
 #if defined(USE_AURA)
 #include "ui/aura/client/stacking_client.h"
 #include "ui/aura/env.h"
-#include "ui/aura/window.h"
 #include "ui/aura/root_window.h"
+#include "ui/aura/window.h"
 #include "ui/gfx/compositor/compositor.h"
 #include "ui/gfx/compositor/test/compositor_test_support.h"
 #include "ui/views/widget/native_widget_aura.h"
@@ -88,7 +88,7 @@ int main(int argc, char** argv) {
 
   views::TestViewsDelegate delegate;
 
-  views::examples::ShowExamplesWindow(true);
+  views::examples::ShowExamplesWindow(views::examples::QUIT_ON_CLOSE);
 
   // xxx: Hax here because this kills event handling.
 #if !defined(USE_AURA)

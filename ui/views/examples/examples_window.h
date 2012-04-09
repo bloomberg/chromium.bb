@@ -9,8 +9,13 @@
 namespace views {
 namespace examples {
 
+enum Operation {
+  DO_NOTHING_ON_CLOSE = 0,
+  QUIT_ON_CLOSE,
+};
+
 // Shows a window with the views examples in it.
-void ShowExamplesWindow(bool quit_on_close);
+void ShowExamplesWindow(Operation operation);
 
 }  // namespace examples
 }  // namespace views

@@ -5,8 +5,8 @@
 #include "ash/app_list/app_list_item_model.h"
 #include "ash/app_list/app_list_item_view.h"
 #include "ash/app_list/app_list_model.h"
-#include "ash/app_list/app_list_view_delegate.h"
 #include "ash/app_list/app_list_view.h"
+#include "ash/app_list/app_list_view_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/shell/example_factory.h"
@@ -91,7 +91,8 @@ class WindowTypeLauncherItem : public ash::AppListItemModel {
       }
       case EXAMPLES_WINDOW: {
 #if !defined(OS_MACOSX)
-        views::examples::ShowExamplesWindow(false);
+        views::examples::ShowExamplesWindow(
+            views::examples::DO_NOTHING_ON_CLOSE);
 #endif
         break;
       }
