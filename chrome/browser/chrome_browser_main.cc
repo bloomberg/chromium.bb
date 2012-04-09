@@ -124,7 +124,7 @@
 
 #if defined(USE_LINUX_BREAKPAD)
 #include "base/linux_util.h"
-#include "chrome/app/breakpad_linux.h"
+#include "chrome/app/breakpad_linuxish.h"
 #endif
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)

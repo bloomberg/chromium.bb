@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/crash_handler_host_linux.h"
+#include "chrome/browser/crash_handler_host_linuxish.h"
 
 #include <stdint.h>
 #include <stdlib.h>
@@ -27,10 +27,16 @@
 #include "breakpad/src/client/linux/handler/exception_handler.h"
 #include "breakpad/src/client/linux/minidump_writer/linux_dumper.h"
 #include "breakpad/src/client/linux/minidump_writer/minidump_writer.h"
-#include "chrome/app/breakpad_linux.h"
+#include "chrome/app/breakpad_linuxish.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/env_vars.h"
 #include "content/public/browser/browser_thread.h"
+
+#if defined(OS_ANDROID)
+#include <sys/linux-syscalls.h>
+
+#define SYS_read __NR_read
+#endif
 
 using content::BrowserThread;
 using google_breakpad::ExceptionHandler;
@@ -318,8 +324,12 @@ void CrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
 
   info->distro_length = strlen(distro);
   info->distro = distro;
-
+#if defined(OS_ANDROID)
+  // Nothing gets uploaded in android.
+  info->upload = false;
+#else
   info->upload = (getenv(env_vars::kHeadless) == NULL);
+#endif
   info->process_start_time = uptime;
   info->oom_size = oom_size;
 
@@ -357,10 +367,13 @@ void CrashHandlerHostLinux::WriteDumpFile(BreakpadInfo* info,
   delete[] crash_context;
 
   // Freed in CrashDumpTask();
-  char* minidump_filename_str = new char[minidump_filename.length() + 1];
+  unsigned minidump_filename_str_len = minidump_filename.length() + 1;
+  char* minidump_filename_str = new char[minidump_filename_str_len];
   minidump_filename.copy(minidump_filename_str, minidump_filename.length());
   minidump_filename_str[minidump_filename.length()] = '\0';
   info->filename = minidump_filename_str;
+  info->filename_length = minidump_filename_str_len;
+  info->pid = crashing_pid;
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
