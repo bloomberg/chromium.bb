@@ -175,7 +175,7 @@ void DataPromoNotification::ShowOptionalMobileDataPromoNotification(
                 cros,
                 host,
                 listener),
-            kPromoShowDelayMs);
+            base::TimeDelta::FromMilliseconds(kPromoShowDelayMs));
       }
       return;
     }

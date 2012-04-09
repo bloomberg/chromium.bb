@@ -391,7 +391,7 @@ void ProfileImpl::DoFinalInit(bool is_new_profile) {
   BrowserThread::PostDelayedTask(
         BrowserThread::FILE, FROM_HERE,
         base::Bind(&EnsureReadmeFile, GetPath()),
-        create_readme_delay_ms);
+        base::TimeDelta::FromMilliseconds(create_readme_delay_ms));
 
   // Creation has been finished.
   if (delegate_)
