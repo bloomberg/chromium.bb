@@ -5,6 +5,7 @@
 #include "chrome/renderer/module_system.h"
 
 #include "base/bind.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebScopedMicrotaskSuppression.h"
 
 namespace {
 
@@ -74,7 +75,10 @@ v8::Handle<v8::Value> ModuleSystem::RequireForJsInner(
     natives->Get(v8::String::NewSymbol("requireNative")),
     exports,
   };
-  func->Call(global, 3, args);
+  {
+    WebKit::WebScopedMicrotaskSuppression suppression;
+    func->Call(global, 3, args);
+  }
   modules->Set(module_name, exports);
   return handle_scope.Close(exports);
 }
@@ -136,6 +140,7 @@ void ModuleSystem::SetLazyField(v8::Handle<v8::Object> object,
 v8::Handle<v8::Value> ModuleSystem::RunString(v8::Handle<v8::String> code,
                                               v8::Handle<v8::String> name) {
   v8::HandleScope handle_scope;
+  WebKit::WebScopedMicrotaskSuppression suppression;
   return handle_scope.Close(v8::Script::New(code, name)->Run());
 }
 

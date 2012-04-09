@@ -128,10 +128,15 @@ bool ChromeV8Context::CallChromeHiddenMethod(
   TRACE_EVENT1("v8", "v8.callChromeHiddenMethod",
                "function_name", function_name);
 
+  v8::Local<v8::Function> function = v8::Local<v8::Function>::Cast(value);
   v8::Handle<v8::Value> result_temp =
-      v8::Local<v8::Function>::Cast(value)->Call(v8::Object::New(), argc, argv);
+      web_frame_->callFunctionEvenIfScriptDisabled(function,
+                                                   v8::Object::New(),
+                                                   argc,
+                                                   argv);
   if (result)
     *result = result_temp;
+
   return true;
 }
 
