@@ -41,6 +41,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_util.h"
 
+using base::DictionaryValue;
 using content::BrowserThread;
 using content::NavigationController;
 
@@ -140,7 +141,6 @@ TopSites::TopSites(Profile* profile)
       thread_safe_cache_(new TopSitesCache()),
       profile_(profile),
       last_num_urls_changed_(0),
-      blacklist_(NULL),
       pinned_urls_(NULL),
       history_state_(HISTORY_LOADING),
       top_sites_state_(TOP_SITES_LOADING),
@@ -160,18 +160,13 @@ TopSites::TopSites(Profile* profile)
   // We create update objects here to be sure that dictionaries are created
   // in the user preferences.
   DictionaryPrefUpdate(profile_->GetPrefs(),
-                       prefs::kNtpMostVisitedURLsBlacklist).Get();
-  DictionaryPrefUpdate(profile_->GetPrefs(),
                        prefs::kNtpMostVisitedPinnedURLs).Get();
 
   // Now the dictionaries are guaranteed to exist and we can cache pointers
   // to them.
-  blacklist_ =
-      profile_->GetPrefs()->GetDictionary(prefs::kNtpMostVisitedURLsBlacklist);
   pinned_urls_ =
       profile_->GetPrefs()->GetDictionary(prefs::kNtpMostVisitedPinnedURLs);
-  CHECK(blacklist_ != NULL);
-  CHECK(pinned_urls_ != NULL);
+  DCHECK(pinned_urls_ != NULL);
 }
 
 void TopSites::Init(const FilePath& db_name) {
@@ -385,7 +380,9 @@ void TopSites::SyncWithHistory() {
 }
 
 bool TopSites::HasBlacklistedItems() const {
-  return !blacklist_->empty();
+  const DictionaryValue* blacklist =
+      profile_->GetPrefs()->GetDictionary(prefs::kNtpMostVisitedURLsBlacklist);
+  return blacklist && !blacklist->empty();
 }
 
 void TopSites::AddBlacklistedURL(const GURL& url) {
@@ -418,7 +415,9 @@ void TopSites::RemoveBlacklistedURL(const GURL& url) {
 
 bool TopSites::IsBlacklisted(const GURL& url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  return blacklist_->HasKey(GetURLHash(url));
+  const DictionaryValue* blacklist =
+      profile_->GetPrefs()->GetDictionary(prefs::kNtpMostVisitedURLsBlacklist);
+  return blacklist && blacklist->HasKey(GetURLHash(url));
 }
 
 void TopSites::ClearBlacklistedURLs() {
@@ -919,7 +918,9 @@ void TopSites::SetTopSites(const MostVisitedURLList& new_top_sites) {
 int TopSites::num_results_to_request_from_history() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  return kTopSitesNumber + blacklist_->size();
+  const DictionaryValue* blacklist =
+      profile_->GetPrefs()->GetDictionary(prefs::kNtpMostVisitedURLsBlacklist);
+  return kTopSitesNumber + (blacklist ? blacklist->size() : 0);
 }
 
 void TopSites::MoveStateToLoaded() {

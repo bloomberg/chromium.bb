@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -373,15 +373,6 @@ class TopSites
   // enough Top Sites (new profile), we store it until the next
   // SetTopSites call.
   TempImages temp_images_;
-
-  // Blacklisted and pinned URLs are stored in Preferences.
-
-  // Blacklisted URLs. They are filtered out from the list of Top
-  // Sites when GetMostVisitedURLs is called. Note that we are still
-  // storing all URLs, but filtering on access. It is a dictionary,
-  // key is the URL, value is a dummy value. This is owned by the
-  // PrefService.
-  const base::DictionaryValue* blacklist_;
 
   // This is a dictionary for the pinned URLs for the the most visited part of
   // the new tab page. Key is the URL, value is index where it is pinned at (may
