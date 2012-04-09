@@ -126,11 +126,7 @@ Compositor::Compositor(CompositorDelegate* delegate,
   settings.perTilePainting =
     command_line->HasSwitch(switches::kUIEnablePerTilePainting);
 
-#if defined(WEBLAYERTREEVIEW_HAS_INITIALIZE)
   host_.initialize(this, root_web_layer_, settings);
-#else
-  host_ = WebKit::WebLayerTreeView::create(this, root_web_layer_, settings);
-#endif
   root_web_layer_.setAnchorPoint(WebKit::WebFloatPoint(0.f, 0.f));
   WidgetSizeChanged(size_);
 }
