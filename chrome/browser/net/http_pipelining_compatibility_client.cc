@@ -473,7 +473,8 @@ void CollectPipeliningCapabilityStatsOnIOThread(
 
   chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
   if (channel == chrome::VersionInfo::CHANNEL_CANARY) {
-    probability_to_run_test = 100;
+    // TODO(simonjam): Re-enable this when crash is fixed.
+    probability_to_run_test = 0;
   }
 
   int collect_stats_group = trial->AppendGroup("enable_test",
