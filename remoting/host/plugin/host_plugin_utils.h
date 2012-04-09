@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,18 +36,18 @@ class ScopedRefNPObject {
  public:
   ScopedRefNPObject();
   explicit ScopedRefNPObject(NPObject* object);
+  explicit ScopedRefNPObject(const ScopedRefNPObject& object);
   ~ScopedRefNPObject();
 
   // Release the held reference and replace it with |object|, incrementing
   // its reference count.
   ScopedRefNPObject& operator=(NPObject* object);
+  ScopedRefNPObject& operator=(const ScopedRefNPObject& object);
 
-  NPObject* get() { return object_; }
+  NPObject* get() const { return object_; }
 
  private:
   NPObject* object_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedRefNPObject);
 };
 
 }  // namespace remoting

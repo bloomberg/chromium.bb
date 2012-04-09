@@ -212,19 +212,19 @@ class HostNPScriptObject : public HostStatusObserver {
   // Helper methods for Me2Me host.
 
   // Helpers for GenerateKeyPair().
-  void DoGenerateKeyPair(NPObject* callback);
-  void InvokeGenerateKeyPairCallback(NPObject* callback,
+  void DoGenerateKeyPair(const ScopedRefNPObject& callback);
+  void InvokeGenerateKeyPairCallback(const ScopedRefNPObject& callback,
                                      const std::string& private_key,
                                      const std::string& public_key);
 
 
   // Callback handler for SetConfigAndStart(), Stop() and SetPin() in
   // DaemonController.
-  void InvokeAsyncResultCallback(NPObject* callback,
+  void InvokeAsyncResultCallback(const ScopedRefNPObject& callback,
                                  DaemonController::AsyncResult result);
 
   // Callback handler for DaemonController::GetConfig().
-  void InvokeGetDaemonConfigCallback(NPObject* callback,
+  void InvokeGetDaemonConfigCallback(const ScopedRefNPObject& callback,
                                      scoped_ptr<base::DictionaryValue> config);
 
   //////////////////////////////////////////////////////////

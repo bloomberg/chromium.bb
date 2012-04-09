@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -47,6 +47,11 @@ ScopedRefNPObject::ScopedRefNPObject(NPObject* object)
   *this = object;
 }
 
+ScopedRefNPObject::ScopedRefNPObject(const ScopedRefNPObject& object)
+    : object_(NULL) {
+  *this = object;
+}
+
 ScopedRefNPObject::~ScopedRefNPObject() {
   *this = NULL;
 }
@@ -60,6 +65,11 @@ ScopedRefNPObject& ScopedRefNPObject::operator=(NPObject* object) {
   }
   object_ = object;
   return *this;
+}
+
+ScopedRefNPObject& ScopedRefNPObject::operator=(
+    const ScopedRefNPObject& object) {
+  return *this = object.get();
 }
 
 }  // namespace remoting

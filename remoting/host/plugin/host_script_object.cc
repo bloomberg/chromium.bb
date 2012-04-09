@@ -657,13 +657,11 @@ bool HostNPScriptObject::GenerateKeyPair(const NPVariant* args,
     return false;
   }
 
-  NPObject* callback_obj = ObjectFromNPVariant(args[0]);
-  if (!callback_obj) {
+  ScopedRefNPObject callback_obj(ObjectFromNPVariant(args[0]));
+  if (!callback_obj.get()) {
     SetException("generateKeyPair: invalid callback parameter");
     return false;
   }
-
-  callback_obj = g_npnetscape_funcs->retainobject(callback_obj);
 
   worker_thread_.message_loop_proxy()->PostTask(
       FROM_HERE, base::Bind(&HostNPScriptObject::DoGenerateKeyPair,
@@ -689,8 +687,8 @@ bool HostNPScriptObject::UpdateDaemonConfig(const NPVariant* args,
   scoped_ptr<base::DictionaryValue> config_dict(
       reinterpret_cast<base::DictionaryValue*>(config.release()));
 
-  NPObject* callback_obj = ObjectFromNPVariant(args[1]);
-  if (!callback_obj) {
+  ScopedRefNPObject callback_obj(ObjectFromNPVariant(args[1]));
+  if (callback_obj.get()) {
     SetException("updateDaemonConfig: invalid callback parameter");
     return false;
   }
@@ -701,8 +699,6 @@ bool HostNPScriptObject::UpdateDaemonConfig(const NPVariant* args,
                  "parameters");
     return false;
   }
-
-  callback_obj = g_npnetscape_funcs->retainobject(callback_obj);
 
   daemon_controller_->UpdateConfig(
       config_dict.Pass(),
@@ -719,13 +715,11 @@ bool HostNPScriptObject::GetDaemonConfig(const NPVariant* args,
     return false;
   }
 
-  NPObject* callback_obj = ObjectFromNPVariant(args[0]);
-  if (!callback_obj) {
+  ScopedRefNPObject callback_obj(ObjectFromNPVariant(args[0]));
+  if (!callback_obj.get()) {
     SetException("getDaemonConfig: invalid callback parameter");
     return false;
   }
-
-  callback_obj = g_npnetscape_funcs->retainobject(callback_obj);
 
   // We control lifetime of the |daemon_controller_| so it's safe to
   // use base::Unretained() here.
@@ -754,13 +748,11 @@ bool HostNPScriptObject::StartDaemon(const NPVariant* args,
   scoped_ptr<base::DictionaryValue> config_dict(
       reinterpret_cast<base::DictionaryValue*>(config.release()));
 
-  NPObject* callback_obj = ObjectFromNPVariant(args[1]);
-  if (!callback_obj) {
+  ScopedRefNPObject callback_obj(ObjectFromNPVariant(args[1]));
+  if (!callback_obj.get()) {
     SetException("startDaemon: invalid callback parameter");
     return false;
   }
-
-  callback_obj = g_npnetscape_funcs->retainobject(callback_obj);
 
   daemon_controller_->SetConfigAndStart(
       config_dict.Pass(),
@@ -777,13 +769,11 @@ bool HostNPScriptObject::StopDaemon(const NPVariant* args,
     return false;
   }
 
-  NPObject* callback_obj = ObjectFromNPVariant(args[0]);
-  if (!callback_obj) {
+  ScopedRefNPObject callback_obj(ObjectFromNPVariant(args[0]));
+  if (!callback_obj.get()) {
     SetException("stopDaemon: invalid callback parameter");
     return false;
   }
-
-  callback_obj = g_npnetscape_funcs->retainobject(callback_obj);
 
   daemon_controller_->Stop(
       base::Bind(&HostNPScriptObject::InvokeAsyncResultCallback,
@@ -1034,7 +1024,7 @@ void HostNPScriptObject::UpdateWebappNatPolicy(bool nat_traversal_enabled) {
   }
 }
 
-void HostNPScriptObject::DoGenerateKeyPair(NPObject* callback) {
+void HostNPScriptObject::DoGenerateKeyPair(const ScopedRefNPObject& callback) {
   HostKeyPair key_pair;
   key_pair.Generate();
   InvokeGenerateKeyPairCallback(callback, key_pair.GetAsString(),
@@ -1042,7 +1032,7 @@ void HostNPScriptObject::DoGenerateKeyPair(NPObject* callback) {
 }
 
 void HostNPScriptObject::InvokeGenerateKeyPairCallback(
-    NPObject* callback,
+    const ScopedRefNPObject& callback,
     const std::string& private_key,
     const std::string& public_key) {
   if (!plugin_message_loop_proxy_->BelongsToCurrentThread()) {
@@ -1056,14 +1046,13 @@ void HostNPScriptObject::InvokeGenerateKeyPairCallback(
   NPVariant params[2];
   params[0] = NPVariantFromString(private_key);
   params[1] = NPVariantFromString(public_key);
-  InvokeAndIgnoreResult(callback, params, arraysize(params));
+  InvokeAndIgnoreResult(callback.get(), params, arraysize(params));
   g_npnetscape_funcs->releasevariantvalue(&(params[0]));
   g_npnetscape_funcs->releasevariantvalue(&(params[1]));
-  g_npnetscape_funcs->releaseobject(callback);
 }
 
 void HostNPScriptObject::InvokeAsyncResultCallback(
-    NPObject* callback,
+    const ScopedRefNPObject& callback,
     DaemonController::AsyncResult result) {
   if (!plugin_message_loop_proxy_->BelongsToCurrentThread()) {
     plugin_message_loop_proxy_->PostTask(
@@ -1075,13 +1064,12 @@ void HostNPScriptObject::InvokeAsyncResultCallback(
 
   NPVariant result_var;
   INT32_TO_NPVARIANT(static_cast<int32>(result), result_var);
-  InvokeAndIgnoreResult(callback, &result_var, 1);
+  InvokeAndIgnoreResult(callback.get(), &result_var, 1);
   g_npnetscape_funcs->releasevariantvalue(&result_var);
-  g_npnetscape_funcs->releaseobject(callback);
 }
 
 void HostNPScriptObject::InvokeGetDaemonConfigCallback(
-    NPObject* callback,
+    const ScopedRefNPObject& callback,
     scoped_ptr<base::DictionaryValue> config) {
   if (!plugin_message_loop_proxy_->BelongsToCurrentThread()) {
     plugin_message_loop_proxy_->PostTask(
@@ -1098,9 +1086,8 @@ void HostNPScriptObject::InvokeGetDaemonConfigCallback(
     base::JSONWriter::Write(config.get(), &config_str);
 
   NPVariant config_val = NPVariantFromString(config_str);
-  InvokeAndIgnoreResult(callback, &config_val, 1);
+  InvokeAndIgnoreResult(callback.get(), &config_val, 1);
   g_npnetscape_funcs->releasevariantvalue(&config_val);
-  g_npnetscape_funcs->releaseobject(callback);
 }
 
 void HostNPScriptObject::LogDebugInfo(const std::string& message) {
