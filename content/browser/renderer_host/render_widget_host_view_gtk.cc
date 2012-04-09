@@ -969,23 +969,6 @@ BackingStore* RenderWidgetHostViewGtk::AllocBackingStore(
                              depth);
 }
 
-bool RenderWidgetHostViewGtk::CopyFromCompositingSurface(
-    const gfx::Size& size,
-    skia::PlatformCanvas* output) {
-  // TODO(mazda): Implement this.
-  NOTIMPLEMENTED();
-  return false;
-}
-
-void RenderWidgetHostViewGtk::AsyncCopyFromCompositingSurface(
-    const gfx::Size& size,
-    skia::PlatformCanvas* output,
-    base::Callback<void(bool)> callback) {
-  // TODO(mazda): Implement this.
-  NOTIMPLEMENTED();
-  callback.Run(false);
-}
-
 void RenderWidgetHostViewGtk::AcceleratedSurfaceBuffersSwapped(
     const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params,
     int gpu_host_id) {
@@ -1005,6 +988,14 @@ void RenderWidgetHostViewGtk::AcceleratedSurfaceSuspend() {
 void RenderWidgetHostViewGtk::SetBackground(const SkBitmap& background) {
   content::RenderWidgetHostViewBase::SetBackground(background);
   host_->Send(new ViewMsg_SetBackground(host_->GetRoutingID(), background));
+}
+
+bool RenderWidgetHostViewGtk::CopyFromCompositingSurface(
+      const gfx::Size& size,
+      skia::PlatformCanvas* output) {
+  // TODO(mazda): Implement this.
+  NOTIMPLEMENTED();
+  return false;
 }
 
 void RenderWidgetHostViewGtk::ModifyEventForEdgeDragging(

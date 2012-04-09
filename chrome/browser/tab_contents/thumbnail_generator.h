@@ -13,7 +13,6 @@
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/memory/linked_ptr.h"
-#include "base/memory/weak_ptr.h"
 #include "base/timer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -33,10 +32,6 @@ class Size;
 
 namespace history {
 class TopSites;
-}
-
-namespace skia {
-class PlatformCanvas;
 }
 
 class ThumbnailGenerator : public content::NotificationObserver,
@@ -151,17 +146,6 @@ class ThumbnailGenerator : public content::NotificationObserver,
       int tag,
       const gfx::Size& size);
 
-  // Asynchronously updates the thumbnail of the given tab. This must be called
-  // on the UI thread.
-  void AsyncUpdateThumbnail(content::WebContents* web_contents);
-
-  // Called when the bitmap for generating a thumbnail is ready after the
-  // AsyncUpdateThumbnail invocation. This runs on the UI thread.
-  void AsyncUpdateThumbnailFinish(
-      base::WeakPtr<content::WebContents> web_contents,
-      skia::PlatformCanvas* temp_canvas,
-      bool result);
-
   // content::NotificationObserver interface.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
@@ -183,10 +167,6 @@ class ThumbnailGenerator : public content::NotificationObserver,
   ThumbnailCallbackMap callback_map_;
 
   bool load_interrupted_;
-
-  base::WeakPtrFactory<ThumbnailGenerator> weak_factory_;
-  scoped_ptr<base::WeakPtrFactory<content::WebContents> >
-      web_contents_weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ThumbnailGenerator);
 };

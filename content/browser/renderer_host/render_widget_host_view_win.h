@@ -169,6 +169,9 @@ class RenderWidgetHostViewWin
   virtual bool IsShowing() OVERRIDE;
   virtual gfx::Rect GetViewBounds() const OVERRIDE;
   virtual void SetBackground(const SkBitmap& background) OVERRIDE;
+  virtual bool CopyFromCompositingSurface(
+      const gfx::Size& size,
+      skia::PlatformCanvas* output) OVERRIDE;
 
   // Implementation of RenderWidgetHostViewPort.
   virtual void InitAsPopup(content::RenderWidgetHostView* parent_host_view,
@@ -199,13 +202,6 @@ class RenderWidgetHostViewWin
   virtual void Destroy() OVERRIDE;
   virtual void SetTooltipText(const string16& tooltip_text) OVERRIDE;
   virtual BackingStore* AllocBackingStore(const gfx::Size& size) OVERRIDE;
-  virtual bool CopyFromCompositingSurface(
-      const gfx::Size& size,
-      skia::PlatformCanvas* output) OVERRIDE;
-  virtual void AsyncCopyFromCompositingSurface(
-      const gfx::Size& size,
-      skia::PlatformCanvas* output,
-      base::Callback<void(bool)> callback) OVERRIDE;
   virtual void OnAcceleratedCompositingStateChange() OVERRIDE;
   virtual void ProcessTouchAck(WebKit::WebInputEvent::Type type,
                                bool processed) OVERRIDE;

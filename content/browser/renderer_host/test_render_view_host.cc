@@ -94,19 +94,6 @@ BackingStore* TestRenderWidgetHostView::AllocBackingStore(
   return new TestBackingStore(rwh_, size);
 }
 
-bool TestRenderWidgetHostView::CopyFromCompositingSurface(
-    const gfx::Size& size,
-    skia::PlatformCanvas* output) {
-  return false;
-}
-
-void TestRenderWidgetHostView::AsyncCopyFromCompositingSurface(
-    const gfx::Size& size,
-    skia::PlatformCanvas* output,
-    base::Callback<void(bool)> callback) {
-  callback.Run(false);
-}
-
 void TestRenderWidgetHostView::OnAcceleratedCompositingStateChange() {
 }
 
@@ -191,6 +178,12 @@ gfx::NativeView TestRenderWidgetHostView::BuildInputMethodsGtkMenu() {
   return NULL;
 }
 #endif  // defined(TOOLKIT_GTK)
+
+bool TestRenderWidgetHostView::CopyFromCompositingSurface(
+    const gfx::Size& size,
+    skia::PlatformCanvas* output) {
+  return false;
+}
 
 gfx::GLSurfaceHandle TestRenderWidgetHostView::GetCompositingSurface() {
   return gfx::GLSurfaceHandle();

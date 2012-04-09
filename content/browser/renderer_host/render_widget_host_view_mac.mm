@@ -793,23 +793,6 @@ BackingStore* RenderWidgetHostViewMac::AllocBackingStore(
   return new BackingStoreMac(render_widget_host_, size);
 }
 
-bool RenderWidgetHostViewMac::CopyFromCompositingSurface(
-      const gfx::Size& size,
-      skia::PlatformCanvas* output) {
-  // TODO(mazda): Implement this.
-  NOTIMPLEMENTED();
-  return false;
-}
-
-void RenderWidgetHostViewMac::AsyncCopyFromCompositingSurface(
-    const gfx::Size& size,
-    skia::PlatformCanvas* output,
-    base::Callback<void(bool)> callback) {
-  // TODO(mazda): Implement this.
-  NOTIMPLEMENTED();
-  callback.Run(false);
-}
-
 // Sets whether or not to accept first responder status.
 void RenderWidgetHostViewMac::SetTakesFocusOnlyOnMouseDown(bool flag) {
   [cocoa_view_ setTakesFocusOnlyOnMouseDown:flag];
@@ -1178,6 +1161,14 @@ void RenderWidgetHostViewMac::SetBackground(const SkBitmap& background) {
   if (render_widget_host_)
     render_widget_host_->Send(new ViewMsg_SetBackground(
         render_widget_host_->GetRoutingID(), background));
+}
+
+bool RenderWidgetHostViewMac::CopyFromCompositingSurface(
+      const gfx::Size& size,
+      skia::PlatformCanvas* output) {
+  // TODO(mazda): Implement this.
+  NOTIMPLEMENTED();
+  return false;
 }
 
 void RenderWidgetHostViewMac::OnAccessibilityNotifications(

@@ -206,6 +206,9 @@ class RenderWidgetHostViewMac : public content::RenderWidgetHostViewBase {
   virtual void SetWindowVisibility(bool visible) OVERRIDE;
   virtual void WindowFrameChanged() OVERRIDE;
   virtual void SetBackground(const SkBitmap& background) OVERRIDE;
+  virtual bool CopyFromCompositingSurface(
+      const gfx::Size& size,
+      skia::PlatformCanvas* output) OVERRIDE;
 
   // Implementation of RenderWidgetHostViewPort.
   virtual void InitAsPopup(content::RenderWidgetHostView* parent_host_view,
@@ -237,13 +240,6 @@ class RenderWidgetHostViewMac : public content::RenderWidgetHostViewBase {
                                 size_t offset,
                                 const ui::Range& range) OVERRIDE;
   virtual BackingStore* AllocBackingStore(const gfx::Size& size) OVERRIDE;
-  virtual bool CopyFromCompositingSurface(
-      const gfx::Size& size,
-      skia::PlatformCanvas* output) OVERRIDE;
-  virtual void AsyncCopyFromCompositingSurface(
-      const gfx::Size& size,
-      skia::PlatformCanvas* output,
-      base::Callback<void(bool)> callback) OVERRIDE;
   virtual void OnAcceleratedCompositingStateChange() OVERRIDE;
   // See comment in RenderWidgetHostView!
   virtual gfx::Rect GetViewCocoaBounds() const OVERRIDE;

@@ -514,40 +514,6 @@ bool RenderWidgetHostImpl::CopyFromBackingStore(
   return backing_store->CopyFromBackingStore(copy_rect, output);
 }
 
-void RenderWidgetHostImpl::AsyncCopyFromBackingStore(
-    const gfx::Rect& src_rect,
-    const gfx::Size& accelerated_dest_size,
-    skia::PlatformCanvas* output,
-    base::Callback<void(bool)> callback) {
-  if (view_ && is_accelerated_compositing_active_) {
-    TRACE_EVENT0("browser",
-        "RenderWidgetHostImpl::CopyFromBackingStore::FromCompositingSurface");
-    // TODO(mazda): Support partial copy with |src_rect|
-    // (http://crbug.com/118571).
-    view_->AsyncCopyFromCompositingSurface(accelerated_dest_size,
-                                           output,
-                                           callback);
-    return;
-  }
-
-  BackingStore* backing_store = GetBackingStore(false);
-  if (!backing_store) {
-    callback.Run(false);
-    return;
-  }
-
-  TRACE_EVENT0("browser",
-      "RenderWidgetHostImpl::CopyFromBackingStore::FromBackingStore");
-  const gfx::Size backing_store_size = backing_store->size();
-  gfx::Rect copy_rect = src_rect.IsEmpty() ?
-      gfx::Rect(0, 0, backing_store_size.width(), backing_store_size.height()) :
-      src_rect;
-  // When the result size is equal to the backing store size, copy from the
-  // backing store directly to the output canvas.
-  bool result = backing_store->CopyFromBackingStore(copy_rect, output);
-  callback.Run(result);
-}
-
 #if defined(TOOLKIT_GTK)
 bool RenderWidgetHostImpl::CopyFromBackingStoreToGtkWindow(
     const gfx::Rect& dest_rect, GdkWindow* target) {

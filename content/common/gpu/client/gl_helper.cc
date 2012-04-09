@@ -4,33 +4,13 @@
 
 #include "content/common/gpu/client/gl_helper.h"
 
-#include "base/bind.h"
-#include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/message_loop.h"
-#include "base/synchronization/waitable_event.h"
-#include "base/threading/thread.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebCString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "ui/gfx/gl/gl_bindings.h"
 #include "ui/gfx/size.h"
 
 namespace {
-
-const char kGLHelperThreadName[] = "GLHelperThread";
-
-class GLHelperThread : public base::Thread {
- public:
-  GLHelperThread() : base::Thread(kGLHelperThreadName) {
-    Start();
-  }
-  virtual ~GLHelperThread() {}
-
-  DISALLOW_COPY_AND_ASSIGN(GLHelperThread);
-};
-
-base::LazyInstance<GLHelperThread> g_gl_helper_thread =
-    LAZY_INSTANCE_INITIALIZER;
 
 class ScopedWebGLId {
  public:
@@ -191,57 +171,6 @@ class ScopedTextureBinder : ScopedBinder<target> {
           &WebKit::WebGraphicsContext3D::bindTexture) {}
 };
 
-void ReadBackFramebuffer(
-    WebKit::WebGraphicsContext3D* context,
-    unsigned char* pixels,
-    gfx::Size size,
-    WebKit::WebGLId dst_texture,
-    bool* result) {
-  *result = false;
-  if (!context->makeContextCurrent())
-    return;
-  if (context->isContextLost())
-    return;
-  ScopedFramebuffer dst_framebuffer(context, context->createFramebuffer());
-  {
-    ScopedFramebufferBinder<GL_DRAW_FRAMEBUFFER> framebuffer_binder(
-        context, dst_framebuffer);
-    ScopedTextureBinder<GL_TEXTURE_2D> texture_binder(
-        context, dst_texture);
-    context->framebufferTexture2D(GL_DRAW_FRAMEBUFFER,
-                                  GL_COLOR_ATTACHMENT0,
-                                  GL_TEXTURE_2D,
-                                  dst_texture,
-                                  0);
-  }
-  *result = context->readBackFramebuffer(
-        pixels,
-        4 * size.GetArea(),
-        static_cast<WebKit::WebGLId>(dst_framebuffer),
-        size.width(),
-        size.height());
-  context->flush();
-}
-
-void ReadBackFramebufferComplete(WebKit::WebGraphicsContext3D* context,
-                                 WebKit::WebGLId* dst_texture,
-                                 base::Callback<void(bool)> callback,
-                                 bool* result) {
-  callback.Run(*result);
-  if (*dst_texture != 0) {
-    context->deleteTexture(*dst_texture);
-    *dst_texture = 0;
-  }
-}
-
-void DeleteContext(WebKit::WebGraphicsContext3D* context) {
-  delete context;
-}
-
-void SignalWaitableEvent(base::WaitableEvent* event) {
-  event->Signal();
-}
-
 }  // namespace
 
 namespace content {
@@ -250,20 +179,15 @@ namespace content {
 class GLHelper::CopyTextureToImpl {
  public:
   CopyTextureToImpl(WebKit::WebGraphicsContext3D* context,
-                    WebKit::WebGraphicsContext3D* context_for_thread,
                     GLHelper* helper)
       : context_(context),
-        context_for_thread_(context_for_thread),
         helper_(helper),
         program_(context, context->createProgram()),
-        vertex_attributes_buffer_(context_, context_->createBuffer()),
-        dst_texture_(0) {
+        vertex_attributes_buffer_(context_, context_->createBuffer()) {
     InitBuffer();
     InitProgram();
   }
-  ~CopyTextureToImpl() {
-    DeleteContextForThread();
-  }
+  ~CopyTextureToImpl() {}
 
   void InitBuffer();
   void InitProgram();
@@ -273,21 +197,7 @@ class GLHelper::CopyTextureToImpl {
                      const gfx::Size& src_size,
                      const gfx::Size& dst_size,
                      unsigned char* out);
-
-  void AsyncCopyTextureTo(WebKit::WebGLId src_texture,
-                          const gfx::Size& src_size,
-                          const gfx::Size& dst_size,
-                          unsigned char* out,
-                          base::Callback<void(bool)> callback);
  private:
-  // Returns the id of a framebuffer that
-  WebKit::WebGLId ScaleTexture(WebKit::WebGLId src_texture,
-                               const gfx::Size& src_size,
-                               const gfx::Size& dst_size);
-
-  // Deletes the context for GLHelperThread.
-  void DeleteContextForThread();
-
   // Interleaved array of 2-dimentional vertex positions (x, y) and
   // 2-dimentional texture coordinates (s, t).
   static const WebKit::WGC3Dfloat kVertexAttributes[];
@@ -296,7 +206,6 @@ class GLHelper::CopyTextureToImpl {
   static const WebKit::WGC3Dchar kCopyFragmentShader[];
 
   WebKit::WebGraphicsContext3D* context_;
-  WebKit::WebGraphicsContext3D* context_for_thread_;
   GLHelper* helper_;
 
   // A program for copying a source texture into a destination texture.
@@ -310,8 +219,6 @@ class GLHelper::CopyTextureToImpl {
   WebKit::WGC3Dint texcoord_location_;
   // The location of the source texture in the program.
   WebKit::WGC3Dint texture_location_;
-  // The destination texture id. This is used only for the asynchronous version.
-  WebKit::WebGLId dst_texture_;
 };
 
 const WebKit::WGC3Dfloat GLHelper::CopyTextureToImpl::kVertexAttributes[] = {
@@ -374,21 +281,19 @@ void GLHelper::CopyTextureToImpl::InitProgram() {
 void GLHelper::CopyTextureToImpl::Detach() {
   program_.Detach();
   vertex_attributes_buffer_.Detach();
-  dst_texture_ = 0;
 }
 
-WebKit::WebGLId GLHelper::CopyTextureToImpl::ScaleTexture(
-    WebKit::WebGLId src_texture,
-    const gfx::Size& src_size,
-    const gfx::Size& dst_size) {
-  WebKit::WebGLId dst_texture = context_->createTexture();
+bool GLHelper::CopyTextureToImpl::CopyTextureTo(WebKit::WebGLId src_texture,
+                                                const gfx::Size& src_size,
+                                                const gfx::Size& dst_size,
+                                                unsigned char* out) {
+  ScopedFramebuffer dst_framebuffer(context_, context_->createFramebuffer());
+  ScopedTexture dst_texture(context_, context_->createTexture());
   {
-    ScopedFramebuffer dst_framebuffer(context_, context_->createFramebuffer());
     ScopedFramebufferBinder<GL_DRAW_FRAMEBUFFER> framebuffer_binder(
         context_, dst_framebuffer);
     {
-      ScopedTextureBinder<GL_TEXTURE_2D> texture_binder(
-          context_, dst_texture);
+      ScopedTextureBinder<GL_TEXTURE_2D> texture_binder(context_, dst_texture);
       context_->texImage2D(GL_TEXTURE_2D,
                            0,
                            GL_RGBA,
@@ -435,102 +340,22 @@ WebKit::WebGLId GLHelper::CopyTextureToImpl::ScaleTexture(
     // Conduct texture mapping by drawing a quad composed of two triangles.
     context_->drawArrays(GL_TRIANGLE_STRIP, 0, 4);
   }
-  return dst_texture;
-}
 
-void GLHelper::CopyTextureToImpl::DeleteContextForThread() {
-  if (!context_for_thread_)
-    return;
-
-  g_gl_helper_thread.Pointer()->message_loop_proxy()->PostTask(
-      FROM_HERE,
-      base::Bind(&DeleteContext,
-                 context_for_thread_));
-  context_for_thread_ = NULL;
-}
-
-bool GLHelper::CopyTextureToImpl::CopyTextureTo(
-    WebKit::WebGLId src_texture,
-    const gfx::Size& src_size,
-    const gfx::Size& dst_size,
-    unsigned char* out) {
-  ScopedTexture dst_texture(context_,
-                            ScaleTexture(src_texture, src_size, dst_size));
-  ScopedFramebuffer dst_framebuffer(context_, context_->createFramebuffer());
-  {
-    ScopedFramebufferBinder<GL_DRAW_FRAMEBUFFER> framebuffer_binder(
-        context_, dst_framebuffer);
-    ScopedTextureBinder<GL_TEXTURE_2D> texture_binder(
-        context_, dst_framebuffer);
-    context_->framebufferTexture2D(GL_DRAW_FRAMEBUFFER,
-                                   GL_COLOR_ATTACHMENT0,
-                                   GL_TEXTURE_2D,
-                                   dst_texture,
-                                   0);
-  }
+  // TODO(mazda): Do this on another thread because this can block the UI
+  // thread for possibly a long time (http://crbug.com/118547).
   return context_->readBackFramebuffer(
       out,
-      4 * dst_size.GetArea(),
-      static_cast<WebKit::WebGLId>(dst_framebuffer),
+      4 * dst_size.width() * dst_size.height(),
+      dst_framebuffer,
       dst_size.width(),
       dst_size.height());
 }
 
-void GLHelper::CopyTextureToImpl::AsyncCopyTextureTo(
-    WebKit::WebGLId src_texture,
-    const gfx::Size& src_size,
-    const gfx::Size& dst_size,
-    unsigned char* out,
-    base::Callback<void(bool)> callback) {
-  if (!context_for_thread_) {
-    callback.Run(false);
-    return;
-  }
-
-  dst_texture_ = ScaleTexture(src_texture, src_size, dst_size);
-  context_->flush();
-  bool* result = new bool(false);
-  g_gl_helper_thread.Pointer()->message_loop_proxy()->PostTaskAndReply(
-      FROM_HERE,
-      base::Bind(&ReadBackFramebuffer,
-                 context_for_thread_,
-                 out,
-                 dst_size,
-                 dst_texture_,
-                 result),
-      base::Bind(&ReadBackFramebufferComplete,
-                 context_,
-                 &dst_texture_,
-                 callback,
-                 base::Owned(result)));
-}
-
-base::subtle::Atomic32 GLHelper::count_ = 0;
-
-GLHelper::GLHelper(WebKit::WebGraphicsContext3D* context,
-                   WebKit::WebGraphicsContext3D* context_for_thread)
-    : context_(context),
-      context_for_thread_(context_for_thread) {
-  base::subtle::NoBarrier_AtomicIncrement(&count_, 1);
+GLHelper::GLHelper(WebKit::WebGraphicsContext3D* context)
+    : context_(context) {
 }
 
 GLHelper::~GLHelper() {
-  DCHECK_NE(MessageLoop::current(),
-            g_gl_helper_thread.Pointer()->message_loop());
-  base::subtle::Atomic32 decremented_count =
-    base::subtle::NoBarrier_AtomicIncrement(&count_, -1);
-  if (decremented_count == 0) {
-    // When this is the last instance, we synchronize with the pending
-    // operations on GLHelperThread. Otherwise on shutdown we may kill the GPU
-    // process infrastructure (BrowserGpuChannelHostFactory) before they have
-    // a chance to complete, likely leading to a crash.
-    base::WaitableEvent event(false, false);
-    g_gl_helper_thread.Pointer()->message_loop_proxy()->PostTask(
-        FROM_HERE,
-        base::Bind(&SignalWaitableEvent,
-                   &event));
-    event.Wait();
-  }
 }
 
 WebKit::WebGraphicsContext3D* GLHelper::context() const {
@@ -548,33 +373,13 @@ bool GLHelper::CopyTextureTo(WebKit::WebGLId src_texture,
                              unsigned char* out) {
   // Lazily initialize |copy_texture_to_impl_|
   if (!copy_texture_to_impl_.get())
-    copy_texture_to_impl_.reset(new CopyTextureToImpl(context_,
-                                                      context_for_thread_,
-                                                      this));
+    copy_texture_to_impl_.reset(new CopyTextureToImpl(context_, this));
 
-  return copy_texture_to_impl_->CopyTextureTo(
-      src_texture,
-      src_size,
-      dst_size,
-      out);
-}
+  return copy_texture_to_impl_->CopyTextureTo(src_texture,
+                                              src_size,
+                                              dst_size,
+                                              out);
 
-void GLHelper::AsyncCopyTextureTo(WebKit::WebGLId src_texture,
-                                  const gfx::Size& src_size,
-                                  const gfx::Size& dst_size,
-                                  unsigned char* out,
-                                  const base::Callback<void(bool)>& callback) {
-  // Lazily initialize |copy_texture_to_impl_|
-  if (!copy_texture_to_impl_.get())
-    copy_texture_to_impl_.reset(new CopyTextureToImpl(context_,
-                                                      context_for_thread_,
-                                                      this));
-
-  copy_texture_to_impl_->AsyncCopyTextureTo(src_texture,
-                                            src_size,
-                                            dst_size,
-                                            out,
-                                            callback);
 }
 
 WebKit::WebGLId GLHelper::CompileShaderFromSource(
