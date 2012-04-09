@@ -4,3 +4,5 @@ PipelineIntegrationTest.SeekWhilePlaying
 # Win TSan disturbs ffmpeg's output, causing hash comparison assertion to fail.
 # http://crbug.com/120396
 PipelineIntegrationTest.BasicPlayback
+# Occasionally crashes, http://crbug.com/122447
+PipelineIntegrationTest.EncryptedPlayback
