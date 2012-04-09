@@ -18,6 +18,9 @@ namespace Function3 = test::api::idl_basics::Function3;
 namespace Function4 = test::api::idl_basics::Function4;
 namespace Function5 = test::api::idl_basics::Function5;
 namespace Function6 = test::api::idl_basics::Function6;
+namespace Function7 = test::api::idl_basics::Function7;
+namespace Function8 = test::api::idl_basics::Function8;
+namespace Function9 = test::api::idl_basics::Function9;
 namespace ObjectFunction1 = test::api::idl_object_types::ObjectFunction1;
 
 TEST(IdlCompiler, Basics) {
@@ -60,6 +63,44 @@ TEST(IdlCompiler, Basics) {
   EXPECT_TRUE(MyType1::Populate(*f6_result, &c));
   EXPECT_EQ(a.x, c.x);
   EXPECT_EQ(a.y, c.y);
+}
+
+TEST(IdlCompiler, OptionalArguments) {
+  // Test a function that takes one optional argument, but without and with
+  // that argument.
+  ListValue list;
+  scoped_ptr<Function7::Params> f7_params = Function7::Params::Create(list);
+  EXPECT_EQ(NULL, f7_params->arg.get());
+  list.Append(Value::CreateIntegerValue(7));
+  f7_params = Function7::Params::Create(list);
+  EXPECT_EQ(7, *(f7_params->arg));
+
+  // Similar to above, but a function with one required and one optional
+  // argument.
+  list.Clear();
+  list.Append(Value::CreateIntegerValue(8));
+  scoped_ptr<Function8::Params> f8_params = Function8::Params::Create(list);
+  EXPECT_EQ(8, f8_params->arg1);
+  EXPECT_EQ(NULL, f8_params->arg2.get());
+  list.Append(Value::CreateStringValue("foo"));
+  f8_params = Function8::Params::Create(list);
+  EXPECT_EQ(8, f8_params->arg1);
+  EXPECT_EQ("foo", *(f8_params->arg2));
+
+  // Test a function with an optional argument of custom type.
+  list.Clear();
+  scoped_ptr<Function9::Params> f9_params = Function9::Params::Create(list);
+  EXPECT_EQ(NULL, f9_params->arg.get());
+  list.Clear();
+  DictionaryValue* tmp = new DictionaryValue();
+  tmp->SetInteger("x", 17);
+  tmp->SetString("y", "hello");
+  list.Append(tmp);
+  f9_params = Function9::Params::Create(list);
+  ASSERT_TRUE(f9_params->arg.get() != NULL);
+  MyType1* t1 = f9_params->arg.get();
+  EXPECT_EQ(17, t1->x);
+  EXPECT_EQ("hello", t1->y);
 }
 
 TEST(IdlCompiler, ObjectTypes) {

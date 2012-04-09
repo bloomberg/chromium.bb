@@ -108,6 +108,10 @@ class Typeref(object):
 
   def process(self, refs):
     properties = self.additional_properties
+
+    if self.parent.GetProperty('OPTIONAL', False):
+      properties['optional'] = True
+
     if self.typeref == 'DOMString':
       properties['type'] = 'string'
     elif self.typeref == 'boolean':

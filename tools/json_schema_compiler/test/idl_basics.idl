@@ -26,6 +26,10 @@ namespace idl_basics {
     static void function4(Callback1 cb);
     static void function5(Callback2 cb);
     static void function6(Callback3 cb);
+
+    static void function7(optional long arg);
+    static void function8(long arg1, optional DOMString arg2);
+    static void function9(optional MyType1 arg);
   };
 
   interface Events {
