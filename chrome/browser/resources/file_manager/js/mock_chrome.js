@@ -301,6 +301,10 @@ chrome.fileBrowserPrivate = {
     setTimeout(callback, 0, response);
   },
 
+  getGDataPreferences: function(callback) {
+    setTimeout(callback, 0, {});
+  },
+
   pinGDataFile: function(urls, on, callback) {
     for (var i = 0; i != urls.length; i++) {
       var url = urls[i];
@@ -434,6 +438,16 @@ chrome.fileBrowserPrivate = {
 
       GDATA_MOBILE_CONNECTION_OPTION: 'Do not use mobile data for sync',
       GDATA_SHOW_HOSTED_FILES_OPTION: 'Show Google Docs files',
+
+      OFFLINE_COLUMN_LABEL: 'Available offline',
+      GDATA_PRODUCT_NAME: 'Google Docs',
+      GDATA_LOADING: 'Loading $1',
+      GDATA_RETRY: 'Retry',
+      GDATA_LEARN_MORE: 'Learn more',
+      GDATA_CANNOT_REACH: '$1 cannot be reached at this time',
+      GDOC_DOCUMENT_FILE_TYPE: 'Google document',
+      GSHEET_DOCUMENT_FILE_TYPE: 'Google spreadsheet',
+      GSLIDES_DOCUMENT_FILE_TYPE: 'Google presentation',
 
       PASTE_ITEMS_REMAINING: 'Pasting $1 items',
       PASTE_CANCELLED: 'Paste cancelled.',
