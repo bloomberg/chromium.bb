@@ -1,11 +1,11 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 // This is a stub file which is compiled in when we are building without
 // breakpad support.
 
-#include "chrome/browser/crash_handler_host_linuxish.h"
+#include "chrome/browser/crash_handler_host_linux.h"
 
 #include "base/memory/singleton.h"
 

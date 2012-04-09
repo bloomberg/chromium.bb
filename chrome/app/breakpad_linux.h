@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_APP_BREAKPAD_LINUXISH_H_
-#define CHROME_APP_BREAKPAD_LINUXISH_H_
+#ifndef CHROME_APP_BREAKPAD_LINUX_H_
+#define CHROME_APP_BREAKPAD_LINUX_H_
 #pragma once
 
 #include "base/basictypes.h"
@@ -28,9 +28,8 @@ struct BreakpadInfo {
   bool upload;                     // Whether to upload or save crash dump.
   uint64_t process_start_time;     // Uptime of the crashing process.
   size_t oom_size;                 // Amount of memory requested if OOM.
-  uint64_t pid;                    // PID where applicable.
 };
 
 extern void HandleCrashDump(const BreakpadInfo& info);
 
-#endif  // CHROME_APP_BREAKPAD_LINUXISH_H_
+#endif  // CHROME_APP_BREAKPAD_LINUX_H_

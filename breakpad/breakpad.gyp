@@ -217,153 +217,11 @@
         },
       ],
     }],
-    [ 'OS=="linux" or OS=="android"', {
+    [ 'OS=="linux"', {
       'conditions': [
-        ['OS=="android"', {
-          'defines': [
-            '__ANDROID__',
-          ],
-        }],
         # Tools needed for archiving build symbols.
         ['linux_breakpad==1', {
           'targets': [
-            {
-              'target_name': 'minidump_stackwalk',
-              'type': 'executable',
-              'toolsets': [ 'host', ],
-              # This uses the system libcurl, so don't use the default 32-bit
-              # compile flags when building on a 64-bit machine.
-              'variables': {
-                'host_arch': '<!(uname -m)',
-              },
-              'conditions': [
-                ['host_arch=="x86_64"', {
-                  'cflags!': ['-m32', '-march=pentium4', '-msse2',
-                              '-mfpmath=sse'],
-                  'ldflags!': ['-m32'],
-                  'cflags': ['-O2'],
-                  'include_dirs!': ['/usr/include32'],
-                }],
-              ],
-              'include_dirs': [
-                'src',
-                'src/third_party',
-                '..',
-              ],
-              'sources': [
-                'src/processor/minidump_stackwalk.cc',
-                'src/processor/stackwalker.cc',
-                'src/processor/stackwalker.h',
-                'src/processor/basic_code_module.h',
-                'src/processor/basic_code_modules.cc',
-                'src/processor/basic_code_modules.h',
-                'src/processor/basic_source_line_resolver.cc',
-                'src/processor/basic_source_line_resolver.h',
-                'src/processor/binarystream.cc',
-                'src/processor/binarystream.h',
-                'src/processor/call_stack.cc',
-                'src/google_breakpad/procesor/call_stack.h',
-                'src/processor/cfi_frame_info.cc',
-                'src/processor/cfi_frame_info.h',
-                'src/processor/disassembler_x86.cc',
-                'src/processor/disassembler_x86.h',
-                'src/processor/exploitability.cc',
-                'src/processor/exploitability.h',
-                'src/processor/exploitability_win.cc',
-                'src/processor/exploitability_win.h',
-                'src/processor/logging.cc',
-                'src/processor/logging.h',
-                'src/processor/minidump.cc',
-                'src/processor/minidump.h',
-                'src/processor/minidump_processor.cc',
-                'src/processor/minidump_processor.h',
-                'src/processor/pathname_stripper.cc',
-                'src/processor/pathname_stripper.h',
-                'src/processor/process_state.cc',
-                'src/processor/process_state.h',
-                'src/processor/simple_symbol_supplier.cc',
-                'src/processor/simple_symbol_supplier.h',
-                'src/processor/source_line_resolver_base.cc',
-                'src/processor/source_line_resolver_base.h',
-                'src/processor/stackwalker.cc',
-                'src/processor/stackwalker.h',
-                'src/processor/stackwalker_amd64.cc',
-                'src/processor/stackwalker_amd64.h',
-                'src/processor/stackwalker_arm.cc',
-                'src/processor/stackwalker_arm.h',
-                'src/processor/stackwalker_ppc.cc',
-                'src/processor/stackwalker_ppc.h',
-                'src/processor/stackwalker_sparc.cc',
-                'src/processor/stackwalker_sparc.h',
-                'src/processor/stackwalker_x86.cc',
-                'src/processor/stackwalker_x86.h',
-                'src/processor/tokenize.cc',
-                'src/processor/tokenize.h',
-                # libdisasm
-                'src/third_party/libdisasm/ia32_implicit.c',
-                'src/third_party/libdisasm/ia32_implicit.h',
-                'src/third_party/libdisasm/ia32_insn.c',
-                'src/third_party/libdisasm/ia32_insn.h',
-                'src/third_party/libdisasm/ia32_invariant.c',
-                'src/third_party/libdisasm/ia32_invariant.h',
-                'src/third_party/libdisasm/ia32_modrm.c',
-                'src/third_party/libdisasm/ia32_modrm.h',
-                'src/third_party/libdisasm/ia32_opcode_tables.c',
-                'src/third_party/libdisasm/ia32_opcode_tables.h',
-                'src/third_party/libdisasm/ia32_operand.c',
-                'src/third_party/libdisasm/ia32_operand.h',
-                'src/third_party/libdisasm/ia32_reg.c',
-                'src/third_party/libdisasm/ia32_reg.h',
-                'src/third_party/libdisasm/ia32_settings.c',
-                'src/third_party/libdisasm/ia32_settings.h',
-                'src/third_party/libdisasm/libdis.h',
-                'src/third_party/libdisasm/qword.h',
-                'src/third_party/libdisasm/x86_disasm.c',
-                'src/third_party/libdisasm/x86_format.c',
-                'src/third_party/libdisasm/x86_imm.c',
-                'src/third_party/libdisasm/x86_imm.h',
-                'src/third_party/libdisasm/x86_insn.c',
-                'src/third_party/libdisasm/x86_misc.c',
-                'src/third_party/libdisasm/x86_operand_list.c',
-                'src/third_party/libdisasm/x86_operand_list.h',
-              ],
-            },
-            {
-              'target_name': 'minidump_dump',
-              'type': 'executable',
-              'toolsets': [ 'host', ],
-              # This uses the system libcurl, so don't use the default 32-bit
-              # compile flags when building on a 64-bit machine.
-              'variables': {
-                'host_arch': '<!(uname -m)',
-              },
-              'conditions': [
-                ['host_arch=="x86_64"', {
-                  'cflags!': ['-m32', '-march=pentium4', '-msse2',
-                              '-mfpmath=sse'],
-                  'ldflags!': ['-m32'],
-                  'cflags': ['-O2'],
-                  'include_dirs!': ['/usr/include32'],
-                }],
-              ],
-              'sources': [
-                'src/processor/minidump_dump.cc',
-                'src/processor/basic_code_module.h',
-                'src/processor/basic_code_modules.h',
-                'src/processor/basic_code_modules.cc',
-                'src/processor/logging.h',
-                'src/processor/logging.cc',
-                'src/processor/minidump.h',
-                'src/processor/minidump.cc',
-                'src/processor/pathname_stripper.h',
-                'src/processor/pathname_stripper.cc',
-              ],
-              'include_dirs': [
-                'src',
-                'src/third_party',
-                '..',
-              ],
-            },
             {
               'target_name': 'symupload',
               'type': 'executable',
@@ -400,7 +258,6 @@
             {
               'target_name': 'dump_syms',
               'type': 'executable',
-              'toolsets': [ 'host' ],
 
               # dwarf2reader.cc uses dynamic_cast. Because we don't typically
               # don't support RTTI, we enable it for this single target. Since
@@ -500,12 +357,6 @@
           'conditions': [
             ['target_arch=="arm"', {
               'cflags': ['-Wa,-mimplicit-it=always'],
-            }],
-            ['OS=="android"', {
-              'sources!':[
-                'src/common/linux/elf_core_dump.cc',
-                'src/common/linux/elf_core_dump.h',
-              ],
             }],
           ],
 

@@ -13,5 +13,4 @@ include_rules = [
   "+policy",  # For generated headers and source
   "+sandbox",
   "+tools/memory_watcher",
-  "+third_party/lss/linux_syscall_support.h",
 ]
