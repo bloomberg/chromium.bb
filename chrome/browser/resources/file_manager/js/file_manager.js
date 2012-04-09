@@ -909,6 +909,14 @@ FileManager.prototype = {
     loading.textContent = strf('GDATA_LOADING', str('GDATA_PRODUCT_NAME'));
     this.unmountedPanel_.appendChild(loading);
 
+    var spinnerBox = this.document_.createElement('div');
+    spinnerBox.className = 'spinner-box';
+    loading.appendChild(spinnerBox);
+
+    var spinner = this.document_.createElement('div');
+    spinner.className = 'spinner';
+    spinnerBox.appendChild(spinner);
+
     var error = this.document_.createElement('div');
     error.className = 'gdata error';
     error.textContent = strf('GDATA_CANNOT_REACH', str('GDATA_PRODUCT_NAME'));

@@ -1236,16 +1236,16 @@ div.unmounted-panel > div {
   display: -webkit-box;
 }
 
-.unmounted-panel > .gdata.loading,
-.unmounted-panel > .gdata.error {
-  margin-left: -30px;  /* Room for the spinner.*/
-  padding-left: 30px;
+.unmounted-panel > .gdata.loading {
+  position: relative;
 }
 
-.unmounted-panel > .gdata.loading {
-  background-image: url(../images/spinner.svg);
-  background-position: 0 center;
-  background-repeat: no-repeat;
+.unmounted-panel > .gdata.loading .spinner-box {
+  bottom: 0;
+  position: absolute;
+  right: 100%;
+  top: 0;
+  width: 40px;
 }
 
 .unmounted-panel:not([loading]) > .gdata.loading,
