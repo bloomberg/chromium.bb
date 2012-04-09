@@ -614,7 +614,7 @@ IPC_SYNC_MESSAGE_CONTROL2_1(AutomationMsg_IsMenuCommandEnabled,
 // This message notifies the AutomationProvider to print the tab with given
 // handle. The first parameter is the handle to the tab resource.  The
 // return value contains a bool which is true on success.
-IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_PrintNow,
+IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_DEPRECATED_PrintNow,
                             int,
                             bool)
 

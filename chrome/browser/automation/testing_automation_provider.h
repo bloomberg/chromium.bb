@@ -242,9 +242,6 @@ class TestingAutomationProvider : public AutomationProvider,
                             int message_num,
                             bool* menu_item_enabled);
 
-  // Prints the current tab immediately.
-  void PrintNow(int tab_handle, IPC::Message* reply_message);
-
   // Save the current web page.
   void SavePage(int tab_handle,
                 const FilePath& file_name,

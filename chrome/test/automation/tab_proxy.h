@@ -278,9 +278,6 @@ class TabProxy : public AutomationResourceProxy,
   // out of there' button.
   bool TakeActionOnSSLBlockingPage(bool proceed) WARN_UNUSED_RESULT;
 
-  // Prints the current page without user intervention.
-  bool PrintNow() WARN_UNUSED_RESULT;
-
   // Sends off an asynchronous request for printing.
   bool PrintAsync() WARN_UNUSED_RESULT;
 

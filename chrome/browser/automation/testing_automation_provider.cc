@@ -73,7 +73,6 @@
 #include "chrome/browser/plugin_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/printing/print_preview_tab_controller.h"
-#include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -424,7 +423,6 @@ bool TestingAutomationProvider::OnMessageReceived(
     IPC_MESSAGE_HANDLER(AutomationMsg_BringBrowserToFront, BringBrowserToFront)
     IPC_MESSAGE_HANDLER(AutomationMsg_IsMenuCommandEnabled,
                         IsMenuCommandEnabled)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_PrintNow, PrintNow)
     IPC_MESSAGE_HANDLER(AutomationMsg_SavePage, SavePage)
     IPC_MESSAGE_HANDLER(AutomationMsg_OpenFindInPage,
                         HandleOpenFindInPageRequest)
@@ -1668,31 +1666,6 @@ void TestingAutomationProvider::IsMenuCommandEnabled(int browser_handle,
     *menu_item_enabled =
         browser->command_updater()->IsCommandEnabled(message_num);
   }
-}
-
-void TestingAutomationProvider::PrintNow(int tab_handle,
-                                         IPC::Message* reply_message) {
-  NavigationController* tab = NULL;
-  WebContents* web_contents = GetWebContentsForHandle(tab_handle, &tab);
-  if (web_contents) {
-    FindAndActivateTab(tab);
-
-    content::NotificationObserver* observer =
-        new DocumentPrintedNotificationObserver(this, reply_message);
-
-    TabContentsWrapper* wrapper =
-        TabContentsWrapper::GetCurrentWrapperForContents(web_contents);
-    if (!wrapper->print_view_manager()->PrintNow()) {
-      // Clean up the observer. It will send the reply message.
-      delete observer;
-    }
-
-    // Return now to avoid sending reply message twice.
-    return;
-  }
-
-  AutomationMsg_PrintNow::WriteReplyParams(reply_message, false);
-  Send(reply_message);
 }
 
 void TestingAutomationProvider::SavePage(int tab_handle,

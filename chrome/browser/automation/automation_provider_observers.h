@@ -646,25 +646,6 @@ class DomOperationMessageSender : public DomOperationObserver {
   DISALLOW_COPY_AND_ASSIGN(DomOperationMessageSender);
 };
 
-class DocumentPrintedNotificationObserver
-    : public content::NotificationObserver {
- public:
-  DocumentPrintedNotificationObserver(AutomationProvider* automation,
-                                      IPC::Message* reply_message);
-  virtual ~DocumentPrintedNotificationObserver();
-
-  virtual void Observe(int type, const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
-
- private:
-  content::NotificationRegistrar registrar_;
-  base::WeakPtr<AutomationProvider> automation_;
-  bool success_;
-  scoped_ptr<IPC::Message> reply_message_;
-
-  DISALLOW_COPY_AND_ASSIGN(DocumentPrintedNotificationObserver);
-};
-
 // Collects METRIC_EVENT_DURATION notifications and keep track of the times.
 class MetricEventDurationObserver : public content::NotificationObserver {
  public:

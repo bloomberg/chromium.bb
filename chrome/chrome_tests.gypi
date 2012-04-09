@@ -758,7 +758,6 @@
         # New tests should be browser_tests. browser_tests are sharded and are
         # less flakier.
         'browser/locale_tests_uitest.cc',
-        'browser/printing/printing_layout_uitest.cc',
         'browser/process_singleton_linux_uitest.cc',
         'browser/process_singleton_uitest.cc',
         'browser/sanity_uitest.cc',
@@ -859,11 +858,6 @@
               },
             },
           },
-        }, { # else: OS != "win"
-          'sources!': [
-            # TODO(port): http://crbug.com/45770
-            'browser/printing/printing_layout_uitest.cc',
-          ],
         }],
         ['os_posix == 1 and OS != "mac"', {
           'conditions': [
@@ -2866,6 +2860,7 @@
         'browser/prerender/prefetch_browsertest.cc',
         'browser/prerender/prerender_browsertest.cc',
         'browser/printing/cloud_print/test/cloud_print_proxy_process_browsertest.cc',
+        'browser/printing/printing_layout_browsertest.cc',
         'browser/printing/print_preview_tab_controller_browsertest.cc',
         'browser/profiles/profile_browsertest.cc',
         'browser/profiles/profile_manager_browsertest.cc',
@@ -3039,7 +3034,7 @@
         '../content/renderer/mouse_lock_dispatcher_browsertest.cc',
         '../content/renderer/render_view_browsertest.cc',
         '../content/renderer/render_view_browsertest_mac.mm',
-	'../content/test/gpu/test_switches.cc',
+        '../content/test/gpu/test_switches.cc',
         '../content/test/gpu/test_switches.h',
         '../content/test/layout_browsertest.cc',
         '../content/test/layout_browsertest.h',
@@ -3245,6 +3240,8 @@
             'app/chrome_dll.rc',
             'app/chrome_dll_resource.h',
             'app/chrome_version.rc.version',
+            # TODO(port): http://crbug.com/45770
+            'browser/printing/printing_layout_browsertest.cc',
           ],
         }],
         ['toolkit_uses_gtk == 1', {

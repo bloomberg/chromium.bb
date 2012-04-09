@@ -5,13 +5,25 @@
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/message_loop.h"
+#include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/string_util.h"
 #include "base/test/test_file_util.h"
 #include "base/threading/simple_thread.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/test/automation/tab_proxy.h"
-#include "chrome/test/ui/ui_test.h"
+#include "chrome/browser/printing/print_job.h"
+#include "chrome/browser/printing/print_view_manager.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_notification_types.h"
+#include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/notification_service.h"
 #include "net/test/test_server.h"
 #include "printing/image.h"
 #include "printing/printing_test.h"
@@ -21,32 +33,74 @@ namespace {
 using printing::Image;
 
 const char kGenerateSwitch[] = "print-layout-generate";
-const FilePath::CharType kDocRoot[] = FILE_PATH_LITERAL("chrome/test/data");
 
-class PrintingLayoutTest : public PrintingTest<UITest> {
+class PrintingLayoutTest : public PrintingTest<InProcessBrowserTest>,
+                           public content::NotificationObserver {
  public:
   PrintingLayoutTest() {
-    emf_path_ = browser_directory_.AppendASCII("metafile_dumps");
-    launch_arguments_.AppendSwitchPath("debug-print", emf_path_);
-    show_window_ = true;
+    FilePath browser_directory;
+    PathService::Get(chrome::DIR_APP, &browser_directory);
+    emf_path_ = browser_directory.AppendASCII("metafile_dumps");
   }
 
-  virtual void SetUp() {
+  virtual void SetUp() OVERRIDE {
     // Make sure there is no left overs.
     CleanupDumpDirectory();
-    UITest::SetUp();
+    InProcessBrowserTest::SetUp();
   }
 
-  virtual void TearDown() {
-    UITest::TearDown();
+  virtual void TearDown() OVERRIDE {
+    InProcessBrowserTest::TearDown();
     file_util::Delete(emf_path_, true);
+  }
+
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    command_line->AppendSwitchPath(switches::kDebugPrint, emf_path_);
   }
 
  protected:
   void PrintNowTab() {
-    scoped_refptr<TabProxy> tab_proxy(GetActiveTab());
-    ASSERT_TRUE(tab_proxy.get());
-    ASSERT_TRUE(tab_proxy->PrintNow());
+    registrar_.Add(this, chrome::NOTIFICATION_PRINT_JOB_EVENT,
+                   content::NotificationService::AllSources());
+
+    TabContentsWrapper* wrapper = browser()->GetSelectedTabContentsWrapper();
+    wrapper->print_view_manager()->PrintNow();
+    ui_test_utils::RunMessageLoop();
+    registrar_.RemoveAll();
+  }
+
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) {
+    DCHECK(type == chrome::NOTIFICATION_PRINT_JOB_EVENT);
+    switch (content::Details<printing::JobEventDetails>(details)->type()) {
+      case printing::JobEventDetails::JOB_DONE: {
+        // Succeeded.
+        MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+        break;
+      }
+      case printing::JobEventDetails::USER_INIT_CANCELED:
+      case printing::JobEventDetails::FAILED: {
+        // Failed.
+        ASSERT_TRUE(false);
+        MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+        break;
+      }
+      case printing::JobEventDetails::NEW_DOC:
+      case printing::JobEventDetails::USER_INIT_DONE:
+      case printing::JobEventDetails::DEFAULT_INIT_DONE:
+      case printing::JobEventDetails::NEW_PAGE:
+      case printing::JobEventDetails::PAGE_DONE:
+      case printing::JobEventDetails::DOC_DONE:
+      case printing::JobEventDetails::ALL_PAGES_REQUESTED: {
+        // Don't care.
+        break;
+      }
+      default: {
+        NOTREACHED();
+        break;
+      }
+    }
   }
 
   // Finds the dump for the last print job and compares it to the data named
@@ -60,7 +114,8 @@ class PrintingLayoutTest : public PrintingTest<UITest> {
       return 100.;
     }
 
-    FilePath base_path(test_data_directory_.AppendASCII("printing"));
+    FilePath base_path(ui_test_utils::GetTestFilePath(
+        FilePath().AppendASCII("printing"), FilePath()));
     FilePath emf(base_path.Append(verification_name + L".emf"));
     FilePath png(base_path.Append(verification_name + L".png"));
 
@@ -110,8 +165,8 @@ class PrintingLayoutTest : public PrintingTest<UITest> {
 
   // Makes sure the directory exists and is empty.
   void CleanupDumpDirectory() {
-    EXPECT_TRUE(file_util::DieFileDie(emf_path(), true));
-    EXPECT_TRUE(file_util::CreateDirectory(emf_path()));
+    EXPECT_TRUE(file_util::DieFileDie(emf_path_, true));
+    EXPECT_TRUE(file_util::CreateDirectory(emf_path_));
   }
 
   // Returns if Clear Type is currently enabled.
@@ -136,7 +191,7 @@ class PrintingLayoutTest : public PrintingTest<UITest> {
     bool found_emf = false;
     bool found_prn = false;
     for (int i = 0; i < 100; ++i) {
-      file_util::FileEnumerator enumerator(emf_path(), false,
+      file_util::FileEnumerator enumerator(emf_path_, false,
           file_util::FileEnumerator::FILES);
       emf_file.clear();
       prn_file.clear();
@@ -177,19 +232,10 @@ class PrintingLayoutTest : public PrintingTest<UITest> {
     return CommandLine::ForCurrentProcess()->HasSwitch(kGenerateSwitch);
   }
 
-  const FilePath& emf_path() const { return emf_path_; }
-
   FilePath emf_path_;
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(PrintingLayoutTest);
-};
-
-// Tests that don't need UI access.
-class PrintingLayoutTestHidden : public PrintingLayoutTest {
- public:
-  PrintingLayoutTestHidden() {
-    show_window_ = false;
-  }
 };
 
 class PrintingLayoutTextTest : public PrintingLayoutTest {
@@ -242,8 +288,8 @@ bool CloseDialogWindow(HWND dialog_window) {
 // default button.
 class DismissTheWindow : public base::DelegateSimpleThread::Delegate {
  public:
-  explicit DismissTheWindow(DWORD owner_process)
-      : owner_process_(owner_process) {
+  DismissTheWindow()
+      : owner_process_(base::Process::Current().pid()) {
   }
 
   virtual void Run() {
@@ -277,21 +323,19 @@ class DismissTheWindow : public base::DelegateSimpleThread::Delegate {
 }  // namespace
 
 // Fails, see http://crbug.com/7721.
-TEST_F(PrintingLayoutTextTest, DISABLED_Complex) {
+IN_PROC_BROWSER_TEST_F(PrintingLayoutTextTest, DISABLED_Complex) {
   if (IsTestCaseDisabled())
     return;
 
-  DismissTheWindow dismisser(base::GetProcId(process()));
+  DismissTheWindow dismisser;
   base::DelegateSimpleThread close_printdlg_thread(&dismisser,
                                                    "close_printdlg_thread");
 
   // Print a document, check its output.
-  net::TestServer test_server(net::TestServer::TYPE_HTTP,
-                              net::TestServer::kLocalhost,
-                              FilePath(kDocRoot));
-  ASSERT_TRUE(test_server.Start());
+  ASSERT_TRUE(test_server()->Start());
 
-  NavigateToURL(test_server.GetURL("files/printing/test1.html"));
+  ui_test_utils::NavigateToURL(
+      browser(), test_server()->GetURL("files/printing/test1.html"));
   close_printdlg_thread.Start();
   PrintNowTab();
   close_printdlg_thread.Join();
@@ -313,23 +357,20 @@ const TestPool kTestPool[] = {
 };
 
 // http://crbug.com/7721
-TEST_F(PrintingLayoutTestHidden, DISABLED_ManyTimes) {
+IN_PROC_BROWSER_TEST_F(PrintingLayoutTest, DISABLED_ManyTimes) {
   if (IsTestCaseDisabled())
     return;
 
-  net::TestServer test_server(net::TestServer::TYPE_HTTP,
-                              net::TestServer::kLocalhost,
-                              FilePath(kDocRoot));
-  ASSERT_TRUE(test_server.Start());
+  ASSERT_TRUE(test_server()->Start());
 
-  DismissTheWindow dismisser(base::GetProcId(process()));
+  DismissTheWindow dismisser;
 
   ASSERT_GT(arraysize(kTestPool), 0u);
   for (int i = 0; i < arraysize(kTestPool); ++i) {
     if (i)
       CleanupDumpDirectory();
     const TestPool& test = kTestPool[i % arraysize(kTestPool)];
-    NavigateToURL(test_server.GetURL(test.source));
+    ui_test_utils::NavigateToURL(browser(), test_server()->GetURL(test.source));
     base::DelegateSimpleThread close_printdlg_thread1(&dismisser,
                                                       "close_printdlg_thread");
     EXPECT_EQ(NULL, FindDialogWindow(dismisser.owner_process()));
@@ -365,69 +406,57 @@ TEST_F(PrintingLayoutTestHidden, DISABLED_ManyTimes) {
 }
 
 // Prints a popup and immediately closes it. Disabled because it crashes.
-TEST_F(PrintingLayoutTest, DISABLED_Delayed) {
+IN_PROC_BROWSER_TEST_F(PrintingLayoutTest, DISABLED_Delayed) {
   if (IsTestCaseDisabled())
     return;
 
-  net::TestServer test_server(net::TestServer::TYPE_HTTP,
-                              net::TestServer::kLocalhost,
-                              FilePath(kDocRoot));
-  ASSERT_TRUE(test_server.Start());
+  ASSERT_TRUE(test_server()->Start());
 
   {
-    scoped_refptr<TabProxy> tab_proxy(GetActiveTab());
-    ASSERT_TRUE(tab_proxy.get());
     bool is_timeout = true;
-    GURL url = test_server.GetURL("files/printing/popup_delayed_print.htm");
-    EXPECT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS,
-              tab_proxy->NavigateToURL(url));
+    GURL url = test_server()->GetURL("files/printing/popup_delayed_print.htm");
+    ui_test_utils::NavigateToURL(browser(), url);
 
-    DismissTheWindow dismisser(base::GetProcId(process()));
+    DismissTheWindow dismisser;
     base::DelegateSimpleThread close_printdlg_thread(&dismisser,
                                                      "close_printdlg_thread");
     close_printdlg_thread.Start();
     close_printdlg_thread.Join();
 
     // Force a navigation elsewhere to verify that it's fine with it.
-    url = test_server.GetURL("files/printing/test1.html");
-    EXPECT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS,
-              tab_proxy->NavigateToURL(url));
+    url = test_server()->GetURL("files/printing/test1.html");
+    ui_test_utils::NavigateToURL(browser(), url);
   }
-  CloseBrowserAndServer();
+  browser()->CloseWindow();
+  ui_test_utils::RunAllPendingInMessageLoop();
 
   EXPECT_EQ(0., CompareWithResult(L"popup_delayed_print"))
       << L"popup_delayed_print";
 }
 
 // Prints a popup and immediately closes it. http://crbug.com/7721
-TEST_F(PrintingLayoutTest, DISABLED_IFrame) {
+IN_PROC_BROWSER_TEST_F(PrintingLayoutTest, DISABLED_IFrame) {
   if (IsTestCaseDisabled())
     return;
 
-  net::TestServer test_server(net::TestServer::TYPE_HTTP,
-                              net::TestServer::kLocalhost,
-                              FilePath(kDocRoot));
-  ASSERT_TRUE(test_server.Start());
+  ASSERT_TRUE(test_server()->Start());
 
   {
-    scoped_refptr<TabProxy> tab_proxy(GetActiveTab());
-    ASSERT_TRUE(tab_proxy.get());
-    GURL url = test_server.GetURL("files/printing/iframe.htm");
-    EXPECT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS,
-              tab_proxy->NavigateToURL(url));
+    GURL url = test_server()->GetURL("files/printing/iframe.htm");
+    ui_test_utils::NavigateToURL(browser(), url);
 
-    DismissTheWindow dismisser(base::GetProcId(process()));
+    DismissTheWindow dismisser;
     base::DelegateSimpleThread close_printdlg_thread(&dismisser,
                                                      "close_printdlg_thread");
     close_printdlg_thread.Start();
     close_printdlg_thread.Join();
 
     // Force a navigation elsewhere to verify that it's fine with it.
-    url = test_server.GetURL("files/printing/test1.html");
-    EXPECT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS,
-              tab_proxy->NavigateToURL(url));
+    url = test_server()->GetURL("files/printing/test1.html");
+    ui_test_utils::NavigateToURL(browser(), url);
   }
-  CloseBrowserAndServer();
+  browser()->CloseWindow();
+  ui_test_utils::RunAllPendingInMessageLoop();
 
   EXPECT_EQ(0., CompareWithResult(L"iframe")) << L"iframe";
 }

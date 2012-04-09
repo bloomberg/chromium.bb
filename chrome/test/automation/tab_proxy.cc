@@ -573,15 +573,6 @@ bool TabProxy::TakeActionOnSSLBlockingPage(bool proceed) {
       result == AUTOMATION_MSG_NAVIGATION_AUTH_NEEDED;
 }
 
-bool TabProxy::PrintNow() {
-  if (!is_valid())
-    return false;
-
-  bool succeeded = false;
-  sender_->Send(new AutomationMsg_PrintNow(handle_, &succeeded));
-  return succeeded;
-}
-
 bool TabProxy::PrintAsync() {
   if (!is_valid())
     return false;

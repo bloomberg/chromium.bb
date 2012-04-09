@@ -44,7 +44,6 @@
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/password_manager/password_store_change.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
-#include "chrome/browser/printing/print_job.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/chrome_render_message_filter.h"
 #include "chrome/browser/search_engines/template_url_service.h"
@@ -1279,57 +1278,6 @@ void DomOperationMessageSender::OnJavascriptBlocked() {
     AutomationJSONReply(automation_, reply_message_.release())
         .SendError("Javascript execution was blocked");
     delete this;
-  }
-}
-
-DocumentPrintedNotificationObserver::DocumentPrintedNotificationObserver(
-    AutomationProvider* automation, IPC::Message* reply_message)
-    : automation_(automation->AsWeakPtr()),
-      success_(false),
-      reply_message_(reply_message) {
-  registrar_.Add(this, chrome::NOTIFICATION_PRINT_JOB_EVENT,
-                 content::NotificationService::AllSources());
-}
-
-DocumentPrintedNotificationObserver::~DocumentPrintedNotificationObserver() {
-  if (automation_) {
-    AutomationMsg_PrintNow::WriteReplyParams(reply_message_.get(), success_);
-    automation_->Send(reply_message_.release());
-  }
-}
-
-void DocumentPrintedNotificationObserver::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK(type == chrome::NOTIFICATION_PRINT_JOB_EVENT);
-  switch (content::Details<printing::JobEventDetails>(details)->type()) {
-    case printing::JobEventDetails::JOB_DONE: {
-      // Succeeded.
-      success_ = true;
-      delete this;
-      break;
-    }
-    case printing::JobEventDetails::USER_INIT_CANCELED:
-    case printing::JobEventDetails::FAILED: {
-      // Failed.
-      delete this;
-      break;
-    }
-    case printing::JobEventDetails::NEW_DOC:
-    case printing::JobEventDetails::USER_INIT_DONE:
-    case printing::JobEventDetails::DEFAULT_INIT_DONE:
-    case printing::JobEventDetails::NEW_PAGE:
-    case printing::JobEventDetails::PAGE_DONE:
-    case printing::JobEventDetails::DOC_DONE:
-    case printing::JobEventDetails::ALL_PAGES_REQUESTED: {
-      // Don't care.
-      break;
-    }
-    default: {
-      NOTREACHED();
-      break;
-    }
   }
 }
 
