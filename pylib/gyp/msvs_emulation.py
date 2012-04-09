@@ -153,8 +153,11 @@ class MsvsSettings(object):
         '$(InputName)': '${root}',
         '$(ProjectName)': self.spec['target_name'],
     }
-    if self.dxsdk_dir:
-      replacements['$(DXSDK_DIR)'] = self.dxsdk_dir
+    # Chromium uses DXSDK_DIR in include/lib paths, but it may or may not be
+    # set. This happens when the SDK is sync'd via src-internal, rather than
+    # by typical end-user installation of the SDK. If it's not set, we don't
+    # want to leave the unexpanded variable in the path, so simply strip it.
+    replacements['$(DXSDK_DIR)'] = self.dxsdk_dir if self.dxsdk_dir else ''
     return replacements
 
   def ConvertVSMacros(self, s, base_to_build=None):
