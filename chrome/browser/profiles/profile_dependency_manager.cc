@@ -39,6 +39,10 @@
 #include "chrome/browser/ui/webui/ntp/ntp_resource_cache_factory.h"
 #include "chrome/browser/user_style_sheet_watcher_factory.h"
 
+#if defined(USE_AURA)
+#include "chrome/browser/ui/views/ash/gesture_prefs_observer_factory_aura.h"
+#endif
+
 #ifndef NDEBUG
 #include "base/command_line.h"
 #include "base/file_util.h"
@@ -170,6 +174,9 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
   CookieSettings::Factory::GetInstance();
   DownloadServiceFactory::GetInstance();
   FindBarStateFactory::GetInstance();
+#if defined(USE_AURA)
+  GesturePrefsObserverFactoryAura::GetInstance();
+#endif
   GlobalErrorServiceFactory::GetInstance();
   NetworkActionPredictorFactory::GetInstance();
   NTPResourceCacheFactory::GetInstance();

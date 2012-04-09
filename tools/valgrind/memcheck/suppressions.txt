@@ -5296,13 +5296,6 @@
    fun:_ZN7WebCore19CCSingleThreadProxy11doCompositeEv
 }
 {
-   bug_117245
-   Memcheck:Uninitialized
-   fun:_ZN12_GLOBAL__N_124GesturePrefsObserverAura13RegisterPrefsEP11PrefService
-   fun:_Z25GesturePrefsRegisterPrefsP11PrefService
-   fun:_ZN7browser18RegisterLocalStateEP11PrefService
-}
-{
    bug_117427
    Memcheck:Leak
    fun:_Znw*
