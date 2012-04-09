@@ -5,24 +5,22 @@
  */
 
 #include <assert.h>
-#include <elf.h>
-#include <inttypes.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "validator.h"
 
-#undef TRUE
-#define TRUE    1
+#include "native_client/src/shared/utils/types.h"
+#include "native_client/src/trusted/validator_ragel/unreviewed/validator.h"
 
-#undef FALSE
-#define FALSE   0
+#if defined(_MSC_VER)
+#define inline __inline
+#endif
 
 #define check_jump_dest \
     if ((jump_dest & bundle_mask) != bundle_mask) { \
       if (jump_dest >= size) { \
-        printf("direct jump out of range: %zx\n", jump_dest); \
+        printf("direct jump out of range: %"NACL_PRIxS"\n", jump_dest); \
         result = 1; \
         goto error_detected; \
       } else { \
@@ -115,8 +113,8 @@ enum disp_mode {
 
 static const int kBitsPerByte = 8;
 
-static inline uint8_t *BitmapAllocate(uint32_t indexes) {
-  uint32_t byte_count = (indexes + kBitsPerByte - 1) / kBitsPerByte;
+static inline uint8_t *BitmapAllocate(size_t indexes) {
+  size_t byte_count = (indexes + kBitsPerByte - 1) / kBitsPerByte;
   uint8_t *bitmap = malloc(byte_count);
   if (bitmap != NULL) {
     memset(bitmap, 0, byte_count);
@@ -124,15 +122,15 @@ static inline uint8_t *BitmapAllocate(uint32_t indexes) {
   return bitmap;
 }
 
-static inline int BitmapIsBitSet(uint8_t *bitmap, uint32_t index) {
+static inline int BitmapIsBitSet(uint8_t *bitmap, size_t index) {
   return (bitmap[index / kBitsPerByte] & (1 << (index % kBitsPerByte))) != 0;
 }
 
-static inline void BitmapSetBit(uint8_t *bitmap, uint32_t index) {
+static inline void BitmapSetBit(uint8_t *bitmap, size_t index) {
   bitmap[index / kBitsPerByte] |= 1 << (index % kBitsPerByte);
 }
 
-static inline void BitmapClearBit(uint8_t *bitmap, uint32_t index) {
+static inline void BitmapClearBit(uint8_t *bitmap, size_t index) {
   bitmap[index / kBitsPerByte] &= ~(1 << (index % kBitsPerByte));
 }
 

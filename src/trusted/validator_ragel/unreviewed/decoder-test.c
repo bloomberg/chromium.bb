@@ -5,26 +5,41 @@
  */
 
 #include <assert.h>
-#include <elf.h>
-#include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "decoder.h"
 
-#undef TRUE
-#define TRUE    1
+#include "native_client/src/include/elf32.h"
+#include "native_client/src/include/elf64.h"
+#include "native_client/src/shared/platform/nacl_check.h"
+#include "native_client/src/shared/utils/types.h"
+#include "native_client/src/trusted/validator_ragel/unreviewed/decoder.h"
 
-#undef FALSE
-#define FALSE   0
+/* This is a copy of NaClLog_Function from shared/platform/nacl_log.c to avoid
+ * linking in code in NaCl shared code in the unreviewed/Makefile and be able to
+ *  use CHECK().
+
+ * TODO(khim): remove the copy of NaClLog_Function implementation as soon as
+ *unreviewed/Makefile is eliminated.
+ */
+void NaClLog_Function(int detail_level, char const  *fmt, ...) {
+  va_list ap;
+
+  va_start(ap, fmt);
+  vfprintf(stderr, fmt, ap);
+  exit(1);
+  NaClLogV_mu(detail_level, fmt, ap);
+  va_end(ap);
+  NaClLogUnlock();
+}
 
 static void CheckBounds(unsigned char *data, size_t data_size,
                         void *ptr, size_t inside_size) {
-  assert(data <= (unsigned char *) ptr);
-  assert((unsigned char *) ptr + inside_size <= data + data_size);
+  CHECK(data <= (unsigned char *) ptr);
+  CHECK((unsigned char *) ptr + inside_size <= data + data_size);
 }
 
-void ReadFile(const char *filename, uint8_t **result, size_t *result_size) {
+void ReadImage(const char *filename, uint8_t **result, size_t *result_size) {
   FILE *fp;
   uint8_t *data;
   size_t file_size;
@@ -76,7 +91,7 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
   int show_name_suffix = FALSE;
   int empty_rex_prefix_ok = FALSE;
 #define print_name(x) (printf((x)), shown_name += strlen((x)))
-  int shown_name = 0;
+  size_t shown_name = 0;
   int i, operand_type;
 
   /* "fwait" is nasty: any number of them will be included in other X87
@@ -530,7 +545,7 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
         if ((instruction->rm.base >= REG_R8) &&
             (instruction->rm.base <= REG_R15)) {
           ++rex_bits;
-        } else if ((instruction->rm.base == REG_NONE) ||
+        } else if ((instruction->rm.base == NO_REG) ||
                    (instruction->rm.base == REG_RIP)) {
           ++maybe_rex_bits;
         }
@@ -776,11 +791,12 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
     }
   }
   {
+    size_t i;
     /* Print branch hint suffixes for conditional jump instructions (Jcc).  */
     const char* jcc_jumps[] = {
       "ja", "jae", "jbe", "jb", "je", "jg", "jge", "jle",
       "jl", "jne", "jno", "jnp", "jns", "jo", "jp", "js", NULL};
-    for (int i = 0; jcc_jumps[i] != NULL; ++i) {
+    for (i = 0; jcc_jumps[i] != NULL; ++i) {
       if (!strcmp(instruction_name, jcc_jumps[i])) {
         if (instruction->prefix.branch_not_taken) {
           print_name(",pn");
@@ -1149,11 +1165,11 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
         break;
       case REG_RM: {
         if (instruction->rm.offset) {
-          printf("0x%"PRIx64, instruction->rm.offset);
+          printf("0x%"NACL_PRIx64, instruction->rm.offset);
         }
         if (((struct DecodeState *)userdata)->ia32_mode) {
-          if ((instruction->rm.base != REG_NONE) ||
-              (instruction->rm.index != REG_NONE) ||
+          if ((instruction->rm.base != NO_REG) ||
+              (instruction->rm.index != NO_REG) ||
               (instruction->rm.scale != 0)) {
             printf("(");
           }
@@ -1166,7 +1182,7 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
             case REG_RBP: printf("%%ebp"); break;
             case REG_RSI: printf("%%esi"); break;
             case REG_RDI: printf("%%edi"); break;
-            case REG_NONE: break;
+            case NO_REG: break;
             case REG_R8:
             case REG_R9:
             case REG_R10:
@@ -1201,7 +1217,7 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
                               (instruction->rm.scale != 0))
                 printf(",%%eiz,%d",1<<instruction->rm.scale);
               break;
-            case REG_NONE: break;
+            case NO_REG: break;
             case REG_R8:
             case REG_R9:
             case REG_R10:
@@ -1222,13 +1238,13 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
             case JMP_TO:
               assert(FALSE);
           }
-          if ((instruction->rm.base != REG_NONE) ||
-              (instruction->rm.index != REG_NONE) ||
+          if ((instruction->rm.base != NO_REG) ||
+              (instruction->rm.index != NO_REG) ||
               (instruction->rm.scale != 0)) {
             printf(")");
           }
         } else {
-          if ((instruction->rm.base != REG_NONE) ||
+          if ((instruction->rm.base != NO_REG) ||
               (instruction->rm.index != REG_RIZ) ||
               (instruction->rm.scale != 0)) {
             printf("(");
@@ -1251,7 +1267,7 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
             case REG_R14: printf("%%r14"); break;
             case REG_R15: printf("%%r15"); break;
             case REG_RIP: printf("%%rip"); print_rip = TRUE; break;
-            case REG_NONE: break;
+            case NO_REG: break;
             case REG_RM:
             case REG_RIZ:
             case REG_IMM:
@@ -1281,13 +1297,13 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
             case REG_R13: printf(",%%r13,%d",1<<instruction->rm.scale); break;
             case REG_R14: printf(",%%r14,%d",1<<instruction->rm.scale); break;
             case REG_R15: printf(",%%r15,%d",1<<instruction->rm.scale); break;
-            case REG_RIZ: if (((instruction->rm.base != REG_NONE) &&
+            case REG_RIZ: if (((instruction->rm.base != NO_REG) &&
                                (instruction->rm.base != REG_RSP) &&
                                (instruction->rm.base != REG_R12)) ||
                                (instruction->rm.scale != 0))
                 printf(",%%riz,%d",1<<instruction->rm.scale);
               break;
-            case REG_NONE: break;
+            case NO_REG: break;
             case REG_RM:
             case REG_RIP:
             case REG_IMM:
@@ -1300,7 +1316,7 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
             case JMP_TO:
               assert(FALSE);
           }
-          if ((instruction->rm.base != REG_NONE) ||
+          if ((instruction->rm.base != NO_REG) ||
               (instruction->rm.index != REG_RIZ) ||
               (instruction->rm.scale != 0)) {
             printf(")");
@@ -1309,11 +1325,11 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
       }
       break;
       case REG_IMM: {
-        printf("$0x%"PRIx64,instruction->imm[0]);
+        printf("$0x%"NACL_PRIx64,instruction->imm[0]);
         break;
       }
       case REG_IMM2: {
-        printf("$0x%"PRIx64,instruction->imm[1]);
+        printf("$0x%"NACL_PRIx64,instruction->imm[1]);
         break;
       }
       case REG_PORT_DX: printf("(%%dx)"); break;
@@ -1336,28 +1352,28 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
         }
         break;
       case JMP_TO: if (instruction->operands[0].type == OperandSize16bit)
-          printf("0x%zx", ((end + instruction->rm.offset -
+          printf("0x%"NACL_PRIxS, ((end + instruction->rm.offset -
                          (((struct DecodeState *)userdata)->offset)) & 0xffff));
         else
-          printf("0x%zx", (end + instruction->rm.offset -
+          printf("0x%"NACL_PRIxS, (end + instruction->rm.offset -
                                    (((struct DecodeState *)userdata)->offset)));
         break;
       case REG_RIP:
       case REG_RIZ:
-      case REG_NONE:
+      case NO_REG:
         assert(FALSE);
     }
     delimeter = ',';
   }
   if (print_rip) {
-    printf("        # 0x%8"PRIx64,
+    printf("        # 0x%8"NACL_PRIx64,
            (uint64_t) (end + instruction->rm.offset -
                (((struct DecodeState *)userdata)->offset)));
   }
   printf("\n");
   begin += 7;
   while (begin < end) {
-    printf("%*"PRIx64":\t", ((struct DecodeState *)userdata)->width,
+    printf("%*"NACL_PRIx64":\t", ((struct DecodeState *)userdata)->width,
            (uint64_t) (begin - (((struct DecodeState *)userdata)->offset)));
     for (p = begin; p < begin + 7; ++p) {
       if (p >= end) {
@@ -1376,7 +1392,7 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
 }
 
 void ProcessError (const uint8_t *ptr, void *userdata) {
-  printf("rejected at %"PRIx64" (byte 0x%02"PRIx32")\n",
+  printf("rejected at %"NACL_PRIx64" (byte 0x%02"NACL_PRIx32")\n",
          (uint64_t) (ptr - (((struct DecodeState *)userdata)->offset)),
          *ptr);
 }
@@ -1386,7 +1402,7 @@ int DecodeFile(const char *filename, int repeat_count) {
   uint8_t *data;
   int count;
 
-  ReadFile(filename, &data, &data_size);
+  ReadImage(filename, &data, &data_size);
   if (data[4] == 1) {
     for (count = 0; count < repeat_count; ++count) {
       Elf32_Ehdr *header;

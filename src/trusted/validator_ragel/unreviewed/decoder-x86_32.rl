@@ -5,21 +5,15 @@
  */
 
 #include <assert.h>
-#include <elf.h>
-#include <inttypes.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "decoder.h"
 
-#undef TRUE
-#define TRUE    1
+#include "native_client/src/shared/utils/types.h"
+#include "native_client/src/trusted/validator_ragel/unreviewed/decoder.h"
 
-#undef FALSE
-#define FALSE   0
-
-#include "decoder-x86_32-instruction-consts.c"
+#include "native_client/src/trusted/validator_ragel/generated/decoder-x86_32-instruction-consts.c"
 
 %%{
   machine x86_32_decoder;
