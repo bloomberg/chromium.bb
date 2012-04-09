@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <cmath>
 #include <string>
 
 #include <base/file_util.h>
@@ -19,16 +20,28 @@ class SplitCorrectingFilterInterpreterTest : public ::testing::Test {};
 class SplitCorrectingFilterInterpreterTestInterpreter :
       public Interpreter {
  public:
-  SplitCorrectingFilterInterpreterTestInterpreter() : iteration_(0) {}
+  SplitCorrectingFilterInterpreterTestInterpreter()
+      : expect_finger_ids_(true),
+        iteration_(0),
+        expect_warp_on_one_finger_only_(false) {}
 
   virtual Gesture* SyncInterpret(HardwareState* hwstate, stime_t* timeout) {
-    EXPECT_EQ(hwstate->finger_cnt, hwstate->touch_cnt);
-    EXPECT_EQ(hwstate->finger_cnt, expected_ids_.size());
+    if (expect_finger_ids_) {
+      EXPECT_EQ(hwstate->finger_cnt, hwstate->touch_cnt);
+      EXPECT_EQ(hwstate->finger_cnt, expected_ids_.size());
+    }
     for (size_t i = 0; i < hwstate->finger_cnt; i++) {
       bool found = SetContainsValue(expected_ids_,
                                     hwstate->fingers[i].tracking_id);
-      EXPECT_TRUE(found) << iteration_ << ","
-                         << hwstate->fingers[i].tracking_id;
+      if (expect_finger_ids_)
+        EXPECT_TRUE(found) << iteration_ << ","
+                           << hwstate->fingers[i].tracking_id;
+      if (expect_warp_on_one_finger_only_) {
+        EXPECT_EQ(hwstate->finger_cnt == 1,
+                  (hwstate->fingers[i].flags &
+                   (GESTURES_FINGER_WARP_X | GESTURES_FINGER_WARP_Y)) ==
+                  (GESTURES_FINGER_WARP_X | GESTURES_FINGER_WARP_Y));
+      }
     }
     iteration_++;
     return NULL;
@@ -39,7 +52,9 @@ class SplitCorrectingFilterInterpreterTestInterpreter :
   virtual void SetHardwareProperties(const HardwareProperties& hw_props) {};
 
   set<short, kMaxFingers> expected_ids_;
+  bool expect_finger_ids_;
   size_t iteration_;
+  bool expect_warp_on_one_finger_only_;
 };
 
 struct InputEventWithExpectations {
@@ -105,6 +120,172 @@ TEST(SplitCorrectingFilterInterpreterTest, FullFingerSetTest) {
   events[1] = events[0];
 
   DoTest(events, arraysize(events), false);
+}
+
+struct InCoords {
+  short id_;
+  float x_, y_, pressure_;
+};
+
+struct FalseMergeInputs {
+  stime_t timestamp;
+  InCoords in[2];
+};
+
+// Tests that when two fingers are scrolling and it looks like a merge
+// at the beginning, we break out of merging.
+TEST(SplitCorrectingFilterInterpreterTest, FalseMergeTest) {
+  FalseMergeInputs inputs[] = {
+    { 1324.3365, { { 66, 58.66, 16.60,  5.65 }, { -1,  0.00,  0.00,  0.00 } } },
+    { 1324.3474, { { 66, 61.41, 17.00, 36.70 }, { 67, 53.33, 17.10, 17.30 } } },
+    { 1324.3587, { { 66, 60.83, 17.30, 61.93 }, { 67, 53.00, 17.30, 50.28 } } },
+    { 1324.3699, { { 66, 60.66, 17.40, 65.81 }, { 67, 53.08, 17.50, 58.04 } } },
+    { 1324.3811, { { 66, 60.66, 17.40, 67.75 }, { 67, 53.00, 17.60, 58.04 } } },
+    { 1324.3923, { { 66, 60.58, 17.60, 67.75 }, { 67, 53.00, 17.70, 61.93 } } },
+    { 1324.4036, { { 66, 60.50, 18.00, 71.63 }, { 67, 53.00, 18.20, 65.81 } } },
+    { 1324.4152, { { 66, 60.58, 18.30, 73.57 }, { 67, 53.00, 18.50, 65.81 } } },
+    { 1324.4265, { { 66, 60.58, 19.00, 71.63 }, { 67, 52.91, 19.20, 67.75 } } },
+    { 1324.4377, { { 66, 60.58, 19.50, 71.63 }, { 67, 53.00, 19.70, 65.81 } } },
+    { 1324.4487, { { 66, 60.66, 20.10, 69.69 }, { 67, 52.91, 20.40, 63.87 } } },
+    { 1324.4596, { { 66, 60.58, 20.90, 69.69 }, { 67, 53.00, 21.10, 65.81 } } },
+    { 1324.4705, { { 66, 60.58, 21.50, 71.63 }, { 67, 53.00, 21.80, 65.81 } } },
+    { 1324.4815, { { 66, 60.50, 22.40, 73.57 }, { 67, 53.08, 22.60, 67.75 } } },
+    { 1324.4926, { { 66, 60.75, 23.10, 77.45 }, { 67, 53.00, 23.30, 69.69 } } },
+    { 1324.5039, { { 66, 60.75, 24.00, 77.45 }, { 67, 53.00, 24.10, 69.69 } } },
+    { 1324.5152, { { 66, 60.66, 24.50, 77.45 }, { 67, 53.00, 24.70, 71.63 } } },
+  };
+
+  SplitCorrectingFilterInterpreterTestInterpreter* base_interpreter
+      = new SplitCorrectingFilterInterpreterTestInterpreter;
+  SplitCorrectingFilterInterpreter interpreter(NULL, base_interpreter);
+
+  HardwareProperties hwprops = {
+    0, 0, 100, 100,  // left, top, right, bottom
+    1,  // res_x
+    1,  // res_y
+    133,  // screen_x_dpi
+    133,  // screen_y_dpi
+    5,  // max finger cnt
+    5,  // max touch cnt
+    0,  // supports_t5r2
+    0,   // support_semi_mt
+    1  // is_button_pad
+  };
+  interpreter.SetHardwareProperties(hwprops);
+
+  for (size_t i = 0; i < arraysize(inputs); i++) {
+    const FalseMergeInputs& input = inputs[i];
+    // Get finger count
+    size_t finger_cnt = 0;
+    for (size_t fidx = 0;
+         fidx < arraysize(input.in) && input.in[fidx].id_ >= 0;
+         fidx++)
+      finger_cnt += 1;
+    // Set up hardware state
+    FingerState fs[finger_cnt];
+    for (size_t fidx = 0; fidx < finger_cnt; fidx++) {
+      memset(&fs[fidx], 0, sizeof(fs[fidx]));
+      fs[fidx].position_x  = input.in[fidx].x_;
+      fs[fidx].position_y  = input.in[fidx].y_;
+      fs[fidx].pressure    = input.in[fidx].pressure_;
+      fs[fidx].tracking_id = input.in[fidx].id_;
+    }
+    HardwareState hs = { input.timestamp, 0, finger_cnt, finger_cnt, &fs[0] };
+    // Set up expectations
+    base_interpreter->expect_finger_ids_ = false;
+    if (i == 1) {
+      // if the second iteration, expect merging to occur
+      base_interpreter->expect_finger_ids_ = true;
+      base_interpreter->expected_ids_.clear();
+      base_interpreter->expected_ids_.insert(inputs[0].in[0].id_);
+    } else if (i == (arraysize(inputs) - 1)) {
+      // if the final iteration, expect no merging
+      base_interpreter->expect_finger_ids_ = true;
+      base_interpreter->expected_ids_.clear();
+      base_interpreter->expected_ids_.insert(inputs[i].in[0].id_);
+      base_interpreter->expected_ids_.insert(inputs[i].in[1].id_);
+    }
+    // if the last iteration
+    stime_t timestamp = -1.0;
+
+    interpreter.SyncInterpret(&hs, &timestamp);
+    base_interpreter->expect_warp_on_one_finger_only_ = true;
+  }
+}
+
+namespace {
+struct DistFromPointToLineRec {
+  // line is (x0, y0) to (x1, y1). Point is (px, py). Expected dist is dist.
+  float x0, y0, x1, y1, px, py, dist;
+};
+
+bool WeakFloatEq(float f_a, float f_b) {
+  return fabsf(f_a - f_b) < 0.001;
+}
+}  // namespace
+
+// This test sets up some example inputs to send through the
+// DistFromPointToLine function. It also transforms these inputs in a variety
+// of ways to further stress this function.
+TEST(SplitCorrectingFilterInterpreterTest, DistFromPointToLineTest) {
+  // Imagine a 3-4-5 triangle. theta is the angle between 4 and 5.
+  const float theta = acosf(4.0 / 5.0);
+
+  DistFromPointToLineRec tests[] = {
+    { 0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 1.0 },
+    { 1.0, 1.0, 2.0, 1.0, 2.0, 2.0, 1.0 },
+    { 1.0, 1.0, 2.0, 0.0, 2.0, 1.0, sqrtf(0.5) },
+    { 1.0, 1.0, 2.0, 1.0, 4.0, 2.0, 1.0 },
+    { 0.0, 0.0, 4.0 * cosf(theta), 4.0 * sinf(theta), 5.0, 0.0, 3.0 },
+  };
+
+  // For each of the input tests, these are a variety of transforms we apply.
+  // There is a for loop for each type of transform. Because they are nested,
+  // this means we test every combination.
+  for (size_t i = 0; i < arraysize(tests); i++) {
+    for (int h_shift = 1; h_shift <= 4; h_shift++) {
+      float horiz_shift = static_cast<float>(h_shift) / 2.0;
+      for (int v_shift = 1; v_shift <= 4; v_shift++) {
+        float vert_shift = static_cast<float>(v_shift) / 2.0;
+        for (size_t h_invert = 0; h_invert < 2; h_invert++) {
+          float horiz_invert = h_invert ? 1.0 : -1.0;
+          for (size_t v_invert = 0; v_invert < 2; v_invert++) {
+            float vert_invert = v_invert ? 1.0 : -1.0;
+            for (size_t swap_inputs = 0; swap_inputs < 2; swap_inputs++) {
+              DistFromPointToLineRec rec = {
+                (tests[i].x0 + horiz_shift) * horiz_invert,
+                (tests[i].y0 + vert_shift) * vert_invert,
+                (tests[i].x1 + horiz_shift) * horiz_invert,
+                (tests[i].y1 + vert_shift) * vert_invert,
+                (tests[i].px + horiz_shift) * horiz_invert,
+                (tests[i].py + vert_shift) * vert_invert,
+                tests[i].dist,
+              };
+              if (swap_inputs) {
+                std::swap(rec.x0, rec.x1);
+                std::swap(rec.y0, rec.y1);
+              }
+              float actual = sqrtf(
+                  SplitCorrectingFilterInterpreter::DistSqFromPointToLine(
+                      rec.x0, rec.y0,
+                      rec.x1, rec.y1,
+                      rec.px, rec.py));
+              EXPECT_TRUE(WeakFloatEq(
+                  rec.dist,
+                  actual)) << "(" << rec.x0 << ", "
+                           << rec.y0 << ") ("
+                           << rec.x1 << ", "
+                           << rec.y1 << ") and ("
+                           << rec.px << ", "
+                           << rec.py << "): got "
+                           << actual << ", expected "
+                           << rec.dist;
+            }
+          }
+        }
+      }
+    }
+  }
 }
 
 // Test that this doesn't do anything on T5R2 pads

@@ -47,6 +47,10 @@ int CompareY(const void* a_ptr, const void* b_ptr) {
   return a->position_y < b->position_y ? -1 : a->position_y > b->position_y;
 }
 
+inline float DegToRad(float degrees) {
+  return M_PI * degrees / 180.0;
+}
+
 }  // namespace gestures
 
 #endif  // GESTURES_UTIL_H_

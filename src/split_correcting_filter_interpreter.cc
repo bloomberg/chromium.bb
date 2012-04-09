@@ -14,7 +14,9 @@ namespace gestures {
 SplitCorrectingFilterInterpreter::SplitCorrectingFilterInterpreter(
     PropRegistry* prop_reg, Interpreter* next)
     : enabled_(true),
-      merge_max_separation_(prop_reg, "Split Merge Max Separation", 15.0) {
+      merge_max_separation_(prop_reg, "Split Merge Max Separation", 17.0),
+      merge_max_movement_(prop_reg, "Split Merge Max Movement", 3.0),
+      merge_max_ratio_(prop_reg, "Merge Max Ratio", sinf(DegToRad(13.0))) {
   next_.reset(next);
 }
 
@@ -49,7 +51,7 @@ void SplitCorrectingFilterInterpreter::RemoveMissingUnmergedContacts(
     const HardwareState& hwstate) {
   for (UnmergedContact* it = unmerged_;
        it < &unmerged_[arraysize(unmerged_)] &&
-       it->Valid();) {
+           it->Valid();) {
     if (!hwstate.GetFingerState(it->input_id)) {
       // Erase this element
       std::copy(it + 1, &unmerged_[arraysize(unmerged_)], it);
@@ -94,9 +96,7 @@ void SplitCorrectingFilterInterpreter::MergeFingers(
     }
     if (min_error_it != unused.end()) {
       // we have a merge!
-      AppendMergedContact(existing_contact->tracking_id,
-                          (*min_error_it)->tracking_id,
-                          it->output_id);
+      AppendMergedContact(*existing_contact, *(*min_error_it), it->output_id);
       unused.erase(min_error_it);
       // Delete this UnmergedContact
       std::copy(it + 1, &unmerged_[arraysize(unmerged_)], it);
@@ -125,14 +125,15 @@ void SplitCorrectingFilterInterpreter::MergeFingers(
   }
 }
 
-void SplitCorrectingFilterInterpreter::AppendMergedContact(short input_id_a,
-                                                           short input_id_b,
-                                                           short output_id) {
+void SplitCorrectingFilterInterpreter::AppendMergedContact(
+    const FingerState& input_a,
+    const FingerState& input_b,
+    short output_id) {
   for (size_t i = 0; i < arraysize(merged_); i++) {
     if (merged_[i].Valid())
       continue;
-    merged_[i].input_ids[0] = input_id_a;
-    merged_[i].input_ids[1] = input_id_b;
+    merged_[i].input_fingers[0] = input_a;
+    merged_[i].input_fingers[1] = input_b;
     merged_[i].output_id = output_id;
     return;
   }
@@ -166,27 +167,83 @@ float SplitCorrectingFilterInterpreter::AreMergePair(
     return -1;
   }
   // Does this new contact help?
-  float existing_dist_sq = DistSq(merge_recipient, existing_contact);
-  float new_x = (new_contact.position_x + existing_contact.position_x) * 0.5;
-  float new_y = (new_contact.position_y + existing_contact.position_y) * 0.5;
-  float new_dist_sq = DistSqXY(merge_recipient, new_x, new_y);
-  if (new_dist_sq >= existing_dist_sq)
-    return -1;  // No improvement by merging
-  // Return new distance
-  return new_dist_sq;
+  float existing_move_sq = DistSq(merge_recipient, existing_contact);
+  float mid_x = (new_contact.position_x + existing_contact.position_x) * 0.5;
+  float mid_y = (new_contact.position_y + existing_contact.position_y) * 0.5;
+  float old_to_mid_dist_sq = DistSqXY(merge_recipient, mid_x, mid_y);
+  if (old_to_mid_dist_sq < existing_move_sq)
+    return old_to_mid_dist_sq;  // Return new distance; definite improvement
+
+  // Check if the merge recipient is too far from new_contact
+  float current_dist_sq = DistSq(existing_contact, new_contact);
+  float new_to_reicpient_sq = DistSq(merge_recipient, new_contact);
+  if (current_dist_sq < new_to_reicpient_sq)
+    return -1;
+
+  // Check if the new contact is, more or less, "along the line" from
+  // existing contact through merge_recipient, and beyond.
+
+  // Distance_sq from new_contact to the line that goes through merge_recipient
+  // and existing_contact.
+  const float orthogonal_dist_sq =
+      DistSqFromPointToLine(merge_recipient.position_x,
+                            merge_recipient.position_y,
+                            existing_contact.position_x,
+                            existing_contact.position_y,
+                            new_contact.position_x,
+                            new_contact.position_y);
+
+  // Imagine a right-triangle like so:
+  //                         /|(new point)
+  //                      /   | <== orthogonal_dist
+  // (existing_contact)/__m___|(right angle)
+  //                    ^^^^^ line between existing_contact and merge_recipient
+  // m = merge_recipient point.
+  // We compute the maximum ratio of orthogonal_dist / hypotenuse length
+
+  if (orthogonal_dist_sq <
+      merge_max_ratio_.val_ * merge_max_ratio_.val_ * current_dist_sq)
+    return old_to_mid_dist_sq;  // merge!
+
+  return -1;  // no merge
+}
+
+// static
+float SplitCorrectingFilterInterpreter::DistSqFromPointToLine(float line_x_0,
+                                                              float line_y_0,
+                                                              float line_x_1,
+                                                              float line_y_1,
+                                                              float point_x,
+                                                              float point_y) {
+  // Find general form (A*x + B*y + C = 0) of a line given two points.
+  float line_a = line_y_0 - line_y_1;
+  float line_b = line_x_1 - line_x_0;
+  float line_c = line_x_0 * line_y_1 - line_y_0 * line_x_1;
+  // Compute min distance from line to point_(x,y)
+  float num = line_a * point_x + line_b * point_y + line_c;
+  float den_sq = line_a * line_a + line_b * line_b;
+  if (den_sq == 0.0)
+    return 0.0;  // don't crash
+  return num * num / den_sq;
 }
 
 void SplitCorrectingFilterInterpreter::UnmergeFingers(
     const HardwareState& hwstate) {
   const float kMaxSepSq =
       merge_max_separation_.val_ * merge_max_separation_.val_;
+  const float kMaxMoveSq =
+      merge_max_movement_.val_ * merge_max_movement_.val_;
   for (size_t i = 0; i < arraysize(merged_);) {
     MergedContact* mc = &merged_[i];
     if (!mc->Valid())
       break;
-    const FingerState* first = hwstate.GetFingerState(mc->input_ids[0]);
-    const FingerState* second = hwstate.GetFingerState(mc->input_ids[1]);
-    if (first && second && DistSq(*first, *second) <= kMaxSepSq) {
+    const FingerState* first =
+        hwstate.GetFingerState(mc->input_fingers[0].tracking_id);
+    const FingerState* second =
+        hwstate.GetFingerState(mc->input_fingers[1].tracking_id);
+    if (first && second && DistSq(*first, *second) <= kMaxSepSq &&
+        DistSq(*first, mc->input_fingers[0]) < kMaxMoveSq &&
+        DistSq(*second, mc->input_fingers[1]) < kMaxMoveSq) {
       i++;
       continue;
     }
@@ -215,8 +272,9 @@ void SplitCorrectingFilterInterpreter::UpdateHwState(
     }
     const MergedContact* merged = FindMerged(fs->tracking_id);
     if (merged && merged->Valid()) {
-      short other_id = merged->input_ids[0] != fs->tracking_id ?
-          merged->input_ids[0] : merged->input_ids[1];
+      short other_id = merged->input_fingers[0].tracking_id != fs->tracking_id ?
+          merged->input_fingers[0].tracking_id :
+          merged->input_fingers[1].tracking_id;
       FingerState* other_fs = hwstate->GetFingerState(other_id);
       if (!other_fs) {
         Err("Missing other finger state?");
@@ -244,8 +302,8 @@ const UnmergedContact* SplitCorrectingFilterInterpreter::FindUnmerged(
 const MergedContact* SplitCorrectingFilterInterpreter::FindMerged(
     short input_id) const {
   for (size_t i = 0; i < arraysize(merged_) && merged_[i].Valid(); i++)
-    if (merged_[i].input_ids[0] == input_id ||
-        merged_[i].input_ids[1] == input_id)
+    if (merged_[i].input_fingers[0].tracking_id == input_id ||
+        merged_[i].input_fingers[1].tracking_id == input_id)
       return &merged_[i];
   return NULL;
 }
@@ -265,6 +323,9 @@ void SplitCorrectingFilterInterpreter::JoinFingerState(
     float FingerState::*field = fields[f_idx];
     in_out->*field = (in_out->*field + newfinger.*field) * 0.5;
   }
+  in_out->flags |= newfinger.flags |
+      GESTURES_FINGER_WARP_X |
+      GESTURES_FINGER_WARP_Y;
 }
 
 // static
@@ -313,8 +374,8 @@ void SplitCorrectingFilterInterpreter::Dump(
   for (size_t i = 0; i < arraysize(merged_); i++)
     Log("  %sin: %d in: %d out: %d",
         merged_[i].Valid() ? "" : "INV ",
-        merged_[i].input_ids[0],
-        merged_[i].input_ids[1],
+        merged_[i].input_fingers[0].tracking_id,
+        merged_[i].input_fingers[1].tracking_id,
         merged_[i].output_id);
   Log("HW state IDs:");
   for (size_t i = 0; i < hwstate.finger_cnt; i++)

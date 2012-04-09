@@ -214,12 +214,6 @@ const ScrollEvent& ScrollEventBuffer::Get(size_t offset) const {
   return buf_[(head_ + offset) % max_size_];
 }
 
-namespace {
-float DegToRad(float degrees) {
-  return M_PI * degrees / 180.0;
-}
-}  // namespace {}
-
 ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg)
     : button_type_(0),
       sent_button_down_(false),
