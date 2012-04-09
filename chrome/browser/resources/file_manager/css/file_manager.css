@@ -405,8 +405,9 @@ div.open-sidebar:hover {
 .dialog-footer {
   -webkit-box-align: center;
   -webkit-box-orient: horizontal;
+  border-top: 1px solid #d2d2d2;
   display: -webkit-box;
-  margin: 0 15px 15px;
+  padding: 10px 17px 14px 15px;
 }
 
 .dialog-footer:not([progress]) .progress-bar,
@@ -1082,11 +1083,9 @@ li.table-row {
 .dialog-footer .filename-label {
   -webkit-box-orient: horizontal;
   background-color: white;
-  color: #666;
+  color: #333;
   display: -webkit-box;
-  font-weight: bold;
   padding-right: 4px;
-  padding-top: 4px;
 }
 
 .detail-name > * {
@@ -1112,6 +1111,7 @@ list .detail-name > .file-checkbox::before,
 }
 
 .filename-input {
+  -webkit-border-radius: 2px;
   -webkit-box-flex: 1;
   -webkit-box-orient: horizontal;
   display: -webkit-box;
