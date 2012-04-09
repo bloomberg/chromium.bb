@@ -19,7 +19,6 @@
 namespace content {
 
 void Shell::PlatformInitialize() {
-  gtk_init(NULL, NULL);
 }
 
 base::StringPiece Shell::PlatformResourceProvider(int key) {
