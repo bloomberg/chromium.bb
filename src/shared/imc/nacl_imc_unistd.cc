@@ -44,10 +44,7 @@ const char kNaClTempPrefixVar[] = "NACL_TMPFS_PREFIX";
 const char kShmTempPrefix[] = "/tmp/google-nacl-shm-";
 const char kShmOpenPrefix[] = "/google-nacl-shm-";
 
-nacl::CreateMemoryObjectFunc g_create_memory_object_func = NULL;
-// This is the usable-from-C variant that takes an int rather than a bool.
-// TODO(mseaborn): Switch to having only the int variant.
-NaClCreateMemoryObjectFunc g_create_memory_object_func_c = NULL;
+NaClCreateMemoryObjectFunc g_create_memory_object_func = NULL;
 
 }  // namespace
 
@@ -58,7 +55,7 @@ NaClHandle NaClDuplicateNaClHandle(NaClHandle handle) {
 }
 
 void NaClSetCreateMemoryObjectFunc(NaClCreateMemoryObjectFunc func) {
-  g_create_memory_object_func_c = func;
+  g_create_memory_object_func = func;
 }
 
 
@@ -127,10 +124,6 @@ static int TryShmOrTempOpen(size_t length, const char* prefix, bool use_temp) {
   }
 }
 
-void SetCreateMemoryObjectFunc(CreateMemoryObjectFunc func) {
-  g_create_memory_object_func = func;
-}
-
 Handle CreateMemoryObject(size_t length, bool executable) {
   if (0 == length) {
     return -1;
@@ -139,12 +132,6 @@ Handle CreateMemoryObject(size_t length, bool executable) {
 
   if (g_create_memory_object_func != NULL) {
     fd = g_create_memory_object_func(length, executable);
-    if (fd >= 0)
-      return fd;
-  }
-
-  if (g_create_memory_object_func_c != NULL) {
-    fd = g_create_memory_object_func_c(length, executable);
     if (fd >= 0)
       return fd;
   }

@@ -215,15 +215,24 @@ int NaClReceiveDatagram(NaClHandle socket, NaClMessageHeader* message,
                         int flags);
 
 /*
- * Type of function supplied to NaClSetCreateMemoryObjectFunc().  See
- * nacl::CreateMemoryObjectFunc.
+ * Type of function supplied to NaClSetCreateMemoryObjectFunc().  Such
+ * a function creates a memory object of length bytes.
+ * @param length The size of the memory object to create. It must be a
+ *               multiple of allocation granularity given by
+ *               kMapPageSize.
+ * @param executable Whether the memory object needs to be mappable
+ *                   with PROT_EXEC.  On Mac OS X, FDs created with
+ *                   shm_open() are not mappable with PROT_EXEC, so
+ *                   this flag indicates whether an alternative FD
+ *                   type must be used.
+ * @return A handle of the newly created memory object on success, and
+ *         kInvalidHandle on failure.
  */
 typedef NaClHandle (*NaClCreateMemoryObjectFunc)(size_t length, int executable);
 
 /*
  * This allows an alternative implementation of NaClCreateMemoryObject()
- * to be provided that works in an outer sandbox. See
- * nacl::SetCreateMemoryObjectFunc().
+ * to be provided that works in an outer sandbox.
  */
 void NaClSetCreateMemoryObjectFunc(NaClCreateMemoryObjectFunc func);
 
