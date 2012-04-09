@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -203,7 +203,26 @@ SfiValidator::SfiValidator(uint32_t bytes_per_bundle,
       code_region_bytes_(code_region_bytes),
       read_only_registers_(read_only_registers),
       data_address_registers_(data_address_registers),
-      decode_state_(nacl_arm_dec::init_decode()) {}
+      decode_state_() {}
+
+SfiValidator::SfiValidator(const SfiValidator& v)
+    : bytes_per_bundle_(v.bytes_per_bundle_),
+      data_address_mask_(v.data_address_mask_),
+      code_address_mask_(v.code_address_mask_),
+      code_region_bytes_(v.code_region_bytes_),
+      read_only_registers_(v.read_only_registers_),
+      data_address_registers_(v.data_address_registers_),
+      decode_state_() {}
+
+SfiValidator& SfiValidator::operator=(const SfiValidator& v) {
+  bytes_per_bundle_ = v.bytes_per_bundle_;
+  data_address_mask_ = v.data_address_mask_;
+  code_address_mask_ = v.code_address_mask_;
+  code_region_bytes_ = v.code_region_bytes_;
+  read_only_registers_ = v.read_only_registers_;
+  data_address_registers_ = v.data_address_registers_;
+  return *this;
+}
 
 bool SfiValidator::validate(const vector<CodeSegment> &segments,
                             ProblemSink *out) {
@@ -243,7 +262,7 @@ bool SfiValidator::validate_fallthrough(const CodeSegment &segment,
 
   for (uint32_t va = segment.begin_addr(); va != segment.end_addr(); va += 4) {
     DecodedInstruction inst(va, segment[va],
-                            nacl_arm_dec::decode(segment[va], decode_state_));
+                            decode_state_.decode(segment[va]));
 
     if (inst.safety() != nacl_arm_dec::MAY_BE_SAFE) {
       out->report_problem(va, inst.safety(), kProblemUnsafe);
@@ -310,7 +329,7 @@ bool SfiValidator::validate_branches(const vector<CodeSegment> &segments,
     const CodeSegment &segment = *seg_it;
 
     DecodedInstruction inst(va, segment[va],
-                            nacl_arm_dec::decode(segment[va], decode_state_));
+                            decode_state_.decode(segment[va]));
 
     // We know it is_relative_branch(), so we can simply call:
     uint32_t target_va = inst.branch_target();

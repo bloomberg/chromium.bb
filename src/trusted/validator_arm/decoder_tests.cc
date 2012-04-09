@@ -27,13 +27,7 @@
  */
 
 #include "gtest/gtest.h"
-#include "native_client/src/trusted/validator_arm/decoder_tester.h"
-#include "native_client/src/trusted/validator_arm/inst_classes.h"
-
-using nacl_arm_dec::Arm32DecoderTester;
-using nacl_arm_dec::ClassDecoder;
-using nacl_arm_dec::Binary4RegisterShiftedOp;
-using nacl_arm_dec::Instruction;
+#include "native_client/src/trusted/validator_arm/inst_classes_testers.h"
 
 namespace {
 
@@ -47,51 +41,19 @@ class Arm32InstructionTests : public ::testing::Test {
   Arm32InstructionTests() {}
 };
 
-/****************************************************************************
- * Add (register-shifted register):
- *
- * ADD(S)<c> <Rd>, <Rn>, <Rm>,  <type> <Rs>
- * +--------+--------------+--+--------+--------+--------+--+----+--+--------+
- * |31302928|27262524232221|20|19181716|15141312|1110 9 8| 7| 6 5| 4| 3 2 1 0|
- * +--------+--------------+--+--------+--------+--------+--+----+--+--------+
- * |  cond  | 0 0 0 0 1 0 0| S|   Rn   |   Rd   |   Rs   | 0|type| 1|   Rm   |
- * +--------+--------------+--+--------+--------+--------+--+----+--+--------+
- *****************************************************************************
- */
-
-class Add_A8_6_7_A1_A8_26_Tester : public Arm32DecoderTester {
- public:
-  virtual void ApplySanityChecks(Instruction inst,
-                                 const ClassDecoder& decoder) {
-    UNREFERENCED_PARAMETER(decoder);
-    // Don't test unconditionals.
-    if (inst.bits(31, 28) == 0xF) return;
-    // Check if expected class name found.
-    Arm32DecoderTester::ApplySanityChecks(inst, decoder);
-    // Check Registers and flags used in DataProc.
-    EXPECT_EQ(expected_decoder_.Rn(inst).number(), inst.bits(19, 16));
-    EXPECT_EQ(expected_decoder_.Rd(inst).number(), inst.bits(15, 12));
-    EXPECT_EQ(expected_decoder_.Rs(inst).number(), inst.bits(11, 8));
-    EXPECT_EQ(expected_decoder_.Rm(inst).number(), inst.bits(3, 0));
-    EXPECT_EQ(expected_decoder_.UpdatesFlagsRegister(inst), inst.bit(20));
-    // Other ARM constraints about this instruction.
-    EXPECT_NE(expected_decoder_.Rn(inst).number(), (uint32_t) 15)
-        << "Expected Unpredictable for " << InstContents();
-    EXPECT_NE(expected_decoder_.Rd(inst).number(), (uint32_t) 15)
-        << "Expected Unpredictable for " << InstContents();
-    EXPECT_NE(expected_decoder_.Rs(inst).number(), (uint32_t) 15)
-        << "Expected Unpredictable for " << InstContents();
-    EXPECT_NE(expected_decoder_.Rm(inst).number(), (uint32_t) 15)
-        << "Expected Unpredictable for " << InstContents();
-  }
-
- private:
-  Binary4RegisterShiftedOp expected_decoder_;
-};
-
-TEST_F(Arm32InstructionTests, DISABLE_Add_A8_6_7_A1_A8_26) {
-  Add_A8_6_7_A1_A8_26_Tester tester;
-  tester.Test("cccc0000100snnnnddddssss0tt1mmmm", "Binary4RegisterShiftedOp");
+// ***************************************************************************
+// Add (register-shifted register):
+//
+// ADD(S)<c> <Rd>, <Rn>, <Rm>,  <type> <Rs>
+// +--------+--------------+--+--------+--------+--------+--+----+--+--------+
+// |31302928|27262524232221|20|19181716|15141312|1110 9 8| 7| 6 5| 4| 3 2 1 0|
+// +--------+--------------+--+--------+--------+--------+--+----+--+--------+
+// |  cond  | 0 0 0 0 1 0 0| S|   Rn   |   Rd   |   Rs   | 0|type| 1|   Rm   |
+// +--------+--------------+--+--------+--------+--------+--+----+--+--------+
+// ***************************************************************************
+TEST_F(Arm32InstructionTests, Add_A8_6_7_A1_A8_26) {
+  nacl_arm_test::Binary4RegisterShiftedOpTester tester;
+  tester.Test("cccc0000100snnnnddddssss0tt1mmmm");
 }
 
 }  // namespace

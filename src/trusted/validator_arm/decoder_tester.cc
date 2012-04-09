@@ -13,7 +13,13 @@
 #include <string>
 #include "gtest/gtest.h"
 
-namespace nacl_arm_dec {
+using nacl_arm_dec::kArm32InstSize;
+using nacl_arm_dec::kThumbWordSize;
+using nacl_arm_dec::ClassDecoder;
+using nacl_arm_dec::Instruction;
+using nacl_arm_dec::MAY_BE_SAFE;
+
+namespace nacl_arm_test {
 
 DecoderTester::DecoderTester()
 {}
@@ -21,8 +27,8 @@ DecoderTester::DecoderTester()
 void DecoderTester::ApplySanityChecks(Instruction inst,
                                       const ClassDecoder& decoder) {
   UNREFERENCED_PARAMETER(inst);
-  EXPECT_TRUE(decoder.IsInstanceOf(ExpectedClassName()))
-      << "Expected " << ExpectedClassName() << " but found "
+  EXPECT_EQ(&decoder, &ExpectedDecoder())
+      << "Expected " << ExpectedDecoder().name() << " but found "
       << decoder.name() << " for " << InstContents();
 }
 
@@ -48,10 +54,9 @@ void DecoderTester::TestAtIndex(int index) {
     }
 
     if (islower(selector)) {
-      /* Find the length of the run of the same character (selector) in
-       * the pattern. Then, test all combinations of zero and one for the
-       * run length.
-       */
+      // Find the length of the run of the same character (selector) in
+      // the pattern. Then, test all combinations of zero and one for the
+      // run length.
       int length = 1;
       while (Pattern(index - length) == selector) ++length;
       TestAtIndexExpandAll(index, length);
@@ -59,7 +64,7 @@ void DecoderTester::TestAtIndex(int index) {
     }
 
     if (isupper(selector)) {
-      /* Find length of selector, then expand. */
+      // Find length of selector, then expand.
       int length = 1;
       while (Pattern(index - length) == selector) ++length;
       TestAtIndexExpandFill(index, length, true);
@@ -123,30 +128,27 @@ void DecoderTester::TestAtIndexExpandFill4(int index, int length, bool value) {
   TestAtIndexExpandFillAll(index, stride, length, value);
 }
 
-Arm32DecoderTester::Arm32DecoderTester()
+Arm32DecoderTester::Arm32DecoderTester(const ClassDecoder& expected_decoder)
     : DecoderTester(),
-      expected_class_name_(""),
+      expected_decoder_(expected_decoder),
       pattern_(""),
-      state_(init_decode()),
+      state_(),
       inst_((uint32_t) 0xFFFFFFFF) {
 }
 
 Arm32DecoderTester:: ~Arm32DecoderTester() {
-  delete_state(state_);
 }
 
-void Arm32DecoderTester::Test(const char* pattern,
-                              const char* expected_class_name) {
+void Arm32DecoderTester::Test(const char* pattern) {
   pattern_ = pattern;
-  expected_class_name_ = expected_class_name;
   ASSERT_EQ(static_cast<int>(kArm32InstSize),
             static_cast<int>(strlen(pattern_)))
       << "Arm32 pattern length incorrect: " << pattern_;
   TestAtIndex(kArm32InstSize-1);
 }
 
-const char* Arm32DecoderTester::ExpectedClassName() const {
-  return expected_class_name_;
+const ClassDecoder& Arm32DecoderTester::ExpectedDecoder() const {
+  return expected_decoder_;
 }
 
 static inline char BoolToChar(bool value) {
@@ -167,8 +169,8 @@ char Arm32DecoderTester::Pattern(int index) const {
 }
 
 void Arm32DecoderTester::ProcessMatch() {
-  /* Completed pattern, decode and test resulting state. */
-  const ClassDecoder& decoder = decode(inst_, state_);
+  // Completed pattern, decode and test resulting state.
+  const ClassDecoder& decoder = state_.decode(inst_);
   if (MAY_BE_SAFE == decoder.safety(inst_)) ApplySanityChecks(inst_, decoder);
   return;
 }
@@ -210,8 +212,8 @@ void ThumbWord1DecoderTester::Test() {
   TestAtIndex(kThumbWordSize-1);
 }
 
-const char* ThumbWord1DecoderTester::ExpectedClassName() const {
-  return thumb_tester_->ExpectedClassName();
+const ClassDecoder& ThumbWord1DecoderTester::ExpectedDecoder() const {
+  return thumb_tester_->ExpectedDecoder();
 }
 
 char ThumbWord1DecoderTester::Pattern(int index) const {
@@ -264,8 +266,8 @@ void ThumbWord2DecoderTester::Test() {
   TestAtIndex(kThumbWordSize);
 }
 
-const char* ThumbWord2DecoderTester::ExpectedClassName() const {
-  return thumb_tester_->ExpectedClassName();
+const ClassDecoder& ThumbWord2DecoderTester::ExpectedDecoder() const {
+  return thumb_tester_->ExpectedDecoder();
 }
 
 const char* ThumbWord2DecoderTester::InstContents() const {
@@ -302,24 +304,21 @@ void ThumbWord2DecoderTester::SetBitRange(
                                       (uint16_t) value);
 }
 
-ThumbDecoderTester::ThumbDecoderTester()
-      : expected_class_name_(""),
-        pattern_(""),
-        state_(init_decode()),
-        inst_((uint16_t) 0, (uint16_t) 0),
-        word1_tester_(this),
-        word2_tester_(this)
+ThumbDecoderTester::ThumbDecoderTester(const ClassDecoder& expected_decoder)
+    : expected_decoder_(expected_decoder),
+      pattern_(""),
+      state_(),
+      inst_((uint16_t) 0, (uint16_t) 0),
+      word1_tester_(this),
+      word2_tester_(this)
 {}
 
 ThumbDecoderTester::~ThumbDecoderTester() {
-  delete_state(state_);
 }
 
-void ThumbDecoderTester::Test(const char* pattern,
-                              const char* expected_class_name) {
+void ThumbDecoderTester::Test(const char* pattern) {
   int len = static_cast<int>(strlen(pattern_));
   pattern_ = pattern;
-  expected_class_name_ = expected_class_name;
   if (kThumbWordSize == len) {
     word1_tester_.SetPattern(pattern_);
     word2_tester_.SetPattern("XXXXXXXXXXXXXXXX");
@@ -333,8 +332,8 @@ void ThumbDecoderTester::Test(const char* pattern,
   word1_tester_.Test();
 }
 
-const char* ThumbDecoderTester::ExpectedClassName() const {
-  return expected_class_name_;
+const ClassDecoder& ThumbDecoderTester::ExpectedDecoder() const {
+  return expected_decoder_;
 }
 
 const char* ThumbDecoderTester::InstContents() const {
@@ -359,8 +358,8 @@ char ThumbDecoderTester::Pattern(int index) const {
 }
 
 void ThumbDecoderTester::ProcessMatch() {
-  /* Completed pattern, decode and test resulting state. */
-  const ClassDecoder& decoder = decode(inst_, state_);
+  // Completed pattern, decode and test resulting state.
+  const ClassDecoder& decoder = state_.decode(inst_);
   if (MAY_BE_SAFE == decoder.safety(inst_)) ApplySanityChecks(inst_, decoder);
   return;
 }

@@ -40,39 +40,75 @@ enum SafetyLevel {
   MAY_BE_SAFE
 };
 
-// Helper class to pull out Register D from bits 12 through 15.
-class RegDBits12To15 {
+// Interface class to pull out the condition in bits 28 through 31
+class ConditionBits28To31Interface {
  public:
-  virtual ~RegDBits12To15() {}
-  inline Register Rd(const Instruction& i) const {
-    return i.reg(15, 12);
+  inline uint32_t value(const Instruction& i) const {
+    return i.bits(31, 28);
+  }
+  inline bool defined(const Instruction& i) const {
+    return value(i) != 0xF;
+  }
+  inline bool undefined(const Instruction& i) const {
+    return !defined(i);
   }
 };
 
-// Helper class to pull out Register M from bits 0 through 3.
-class RegMBits0To3 {
+// Interface class to pull out Register D from bits 12 through 15.
+class RegDBits12To15Interface {
  public:
-  virtual ~RegMBits0To3() {}
-  inline Register Rm(const Instruction& i) const {
-    return i.reg(3, 0);
+  inline uint32_t number(const Instruction& i) const {
+    return i.bits(15, 12);
+  }
+  inline Register reg(const Instruction& i) const {
+    return Register(number(i));
   }
 };
 
-// Helper class to pull out Register n from bits 16 through 19.
-class RegNBits16To19 {
+// Interface class to pull out Register M from bits 0 through 3.
+class RegMBits0To3Interface {
  public:
-  virtual ~RegNBits16To19() {}
-  inline Register Rn(const Instruction& i) const {
-    return i.reg(19, 16);
+  inline uint32_t number(const Instruction& i) const {
+    return i.bits(3, 0);
+  }
+  inline Register reg(const Instruction& i) const {
+    return Register(number(i));
   }
 };
 
-// Helper class to pull out Register S from bits 8 through 11.
-class RegSBits8To11 {
+// Interface class to pull out Register n from bits 16 through 19.
+class RegNBits16To19Interface {
  public:
-  virtual ~RegSBits8To11() {}
-  inline Register Rs(const Instruction& i) const {
-    return i.reg(11, 8);
+  inline uint32_t number(const Instruction& i) const {
+    return i.bits(19, 16);
+  }
+  inline Register reg(const Instruction& i) const {
+    return Register(number(i));
+  }
+};
+
+// Interface class to pull out Register S from bits 8 through 11.
+class RegSBits8To11Interface {
+ public:
+  inline uint32_t number(const Instruction& i) const {
+    return i.bits(11, 8);
+  }
+  inline Register reg(const Instruction& i) const {
+    return Register(number(i));
+  }
+};
+
+// Interface class to pull out S (update) bit from bit 20, which
+// defines if the flags register is updated by the instruction.
+class UpdatesFlagsRegisterBit20Interface {
+ public:
+  // Returns true if bit is set that states that the flags register is updated.
+  inline bool is_updated(const Instruction i) const {
+    return i.bit(20);
+  }
+  // Returns the flags register if it is used.
+  inline Register reg_if_updated(const Instruction i) const {
+    return is_updated(i) ? kRegisterFlags : kRegisterNone;
   }
 };
 
@@ -220,16 +256,12 @@ class ClassDecoder {
     return false;
   }
 
-  // Returns a c-string containing the name of the class. Used in
-  // IsInstanceOf method, which is (in turn) used in the testing of
-  // the decoders.
-  virtual const char* name() const  = 0;
+  // Returns a c-string containing the name of the class. Used for
+  // testing only.
+  virtual const char* name() const;
 
   // Many instructions define control bits in bits 20-24. The useful bits
   // are defined here.
-
-  // Returns true if the decoder class has the given name.
-  bool IsInstanceOf(const char* class_name) const;
 
   // True if U (updates flags register) flag is defined.
   inline bool UpdatesFlagsRegister(const Instruction& i) const {
@@ -260,13 +292,11 @@ class Forbidden : public ClassDecoder {
     UNREFERENCED_PARAMETER(i);
     return FORBIDDEN;
   }
+
   // Switch off the def warnings -- it's already forbidden!
   virtual RegisterList defs(Instruction i) const {
     UNREFERENCED_PARAMETER(i);
     return kRegisterNone;
-  }
-  virtual const char* name() const {
-    return "Forbidden";
   }
 };
 
@@ -284,9 +314,6 @@ class Undefined : public ClassDecoder {
     UNREFERENCED_PARAMETER(i);
     return kRegisterNone;
   }
-  virtual const char* name() const {
-    return "Undefined";
-  }
 };
 
 // Represents instructions that have been deprecated in ARMv7.
@@ -302,9 +329,6 @@ class Deprecated : public ClassDecoder {
   virtual RegisterList defs(Instruction i) const {
     UNREFERENCED_PARAMETER(i);
     return kRegisterNone;
-  }
-  virtual const char* name() const {
-    return "Deprecated";
   }
 };
 
@@ -323,9 +347,6 @@ class Unpredictable : public ClassDecoder {
   virtual RegisterList defs(Instruction i) const {
     UNREFERENCED_PARAMETER(i);
     return kRegisterNone;
-  }
-  virtual const char* name() const {
-    return "Unpredictable";
   }
 };
 
@@ -378,9 +399,6 @@ class EffectiveNoOp : public ClassDecoder {
     UNREFERENCED_PARAMETER(i);
     return kRegisterNone;
   }
-  virtual const char* name() const {
-    return "EffectiveNoOp";
-  }
 };
 
 // Models all instructions that reliably trap, preventing execution from falling
@@ -398,9 +416,6 @@ class Roadblock : public ClassDecoder {
     UNREFERENCED_PARAMETER(i);
     return kRegisterNone;
   }
-  virtual const char* name() const {
-    return "Roadblock";
-  }
 };
 
 // BKPT
@@ -411,9 +426,6 @@ class Breakpoint : public Roadblock {
  public:
   virtual ~Breakpoint() {}
   virtual bool is_literal_pool_head(Instruction i) const;
-  virtual const char* name() const {
-    return "Breakpoint";
-  }
 };
 
 // Models a 3-register-shifted unary operation of the form:
@@ -432,21 +444,26 @@ class Breakpoint : public Roadblock {
 //    S - Defines if the flags regsiter is updated.
 // Implements:
 //    MVN(register-shifted) A1 A8-218
-class Unary3RegisterShiftedOp : public ClassDecoder,
-                                public RegMBits0To3,
-                                public RegSBits8To11,
-                                public RegDBits12To15 {
+class Unary3RegisterShiftedOp : public ClassDecoder {
  public:
+  // Interfaces for components in the instruction.
+  const RegMBits0To3Interface m_;
+  const RegSBits8To11Interface s_;
+  const RegDBits12To15Interface d_;
+  const UpdatesFlagsRegisterBit20Interface flags_;
+  const ConditionBits28To31Interface cond_;
+
+  // Methods for class.
+  Unary3RegisterShiftedOp()
+      : ClassDecoder(), m_(), s_(), d_(), flags_(), cond_() {}
   virtual ~Unary3RegisterShiftedOp() {}
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
-  virtual const char* name() const {
-    return "Unary3RegisterShiftedOp";
-  }
-  // Returns true if S is 1. That is, it updates the flags register.
-  inline bool UpdatesFlagsRegister(Instruction i) const {
-    return i.bit(20);
-  }
+
+ private:
+  // Don't allow the following!
+  explicit Unary3RegisterShiftedOp(const Unary3RegisterShiftedOp&);
+  void operator=(const Unary3RegisterShiftedOp&);
 };
 
 // Models a 4-register-shifted binary operation of the form:
@@ -475,22 +492,27 @@ class Unary3RegisterShiftedOp : public ClassDecoder,
 //    RSC(register-shifted) A1 A8-294
 //    SBC(register-shifted) A1 A8-306
 //    SUB(register-shifted) A1 A8-424
-class Binary4RegisterShiftedOp : public ClassDecoder,
-                                 public RegMBits0To3,
-                                 public RegSBits8To11,
-                                 public RegDBits12To15,
-                                 public RegNBits16To19 {
+class Binary4RegisterShiftedOp : public ClassDecoder {
  public:
+  // Interfaces for components in the instruction.
+  const RegMBits0To3Interface m_;
+  const RegSBits8To11Interface s_;
+  const RegDBits12To15Interface d_;
+  const RegNBits16To19Interface n_;
+  const UpdatesFlagsRegisterBit20Interface flags_;
+  const ConditionBits28To31Interface cond_;
+
+  // Methods for class.
+  Binary4RegisterShiftedOp()
+      : ClassDecoder(), m_(), s_(), d_(), n_(), flags_(), cond_() {}
   virtual ~Binary4RegisterShiftedOp() {}
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
-  virtual const char* name() const {
-    return "Binary4RegisterShiftedOp";
-  }
-  // Returns true if S is 1. That is, it updates the flags register.
-  inline bool UpdatesFlagsRegister(Instruction i) const {
-    return i.bit(20);
-  }
+
+ private:
+  // Don't allow the following!
+  Binary4RegisterShiftedOp(const Binary4RegisterShiftedOp&);
+  void operator=(const Binary4RegisterShiftedOp&);
 };
 
 // Models the most common class of data processing instructions.  We use this
@@ -525,9 +547,6 @@ class DataProc : public ClassDecoder {
   inline Register Rd(const Instruction& i) const {
     return i.reg(15, 12);
   }
-  virtual const char* name() const {
-    return "DataProc";
-  }
 };
 
 // Models a 3-register-shifted test operation of the form:
@@ -549,21 +568,25 @@ class DataProc : public ClassDecoder {
 //    CMP(register-shifted) A1 A8-84
 //    TEQ(register-shifted) A1 A8-452
 //    TST(register-shifted) A1 A8-458
-class Binary3RegisterShiftedTest : public ClassDecoder,
-                                   public RegMBits0To3,
-                                   public RegSBits8To11,
-                                   public RegNBits16To19 {
+class Binary3RegisterShiftedTest : public ClassDecoder {
  public:
+  // Interfaces for components in the instruction.
+  const RegMBits0To3Interface m_;
+  const RegSBits8To11Interface s_;
+  const RegNBits16To19Interface n_;
+  const UpdatesFlagsRegisterBit20Interface flags_;
+  const ConditionBits28To31Interface cond_;
+
+  // Methods for class.
+  Binary3RegisterShiftedTest()
+      : ClassDecoder(), m_(), s_(), n_(), flags_(), cond_() {}
   virtual ~Binary3RegisterShiftedTest() {}
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
-  virtual const char* name() const {
-    return "Binary3RegisterShiftedTest";
-  }
-  // Returns true if S is 1. That is, it updates the flags register.
-  inline bool UpdatesFlagsRegister(Instruction i) const {
-    return i.bit(20);
-  }
+ private:
+  // Don't allow the following!
+  explicit Binary3RegisterShiftedTest(const Binary3RegisterShiftedTest&);
+  Binary3RegisterShiftedTest& operator=(const Binary3RegisterShiftedTest&);
 };
 
 // Models the few data-processing instructions that *don't* produce a result,
@@ -577,9 +600,6 @@ class Test : public DataProc {
  public:
   virtual ~Test() {}
   virtual RegisterList defs(Instruction i) const;
-  virtual const char* name() const {
-    return "Test";
-  }
 };
 
 // Specifically models the TST register-immediate instruction, which is
@@ -591,9 +611,6 @@ class TestImmediate : public Test {
   virtual bool sets_Z_if_bits_clear(Instruction i,
                                     Register r,
                                     uint32_t mask) const;
-  virtual const char* name() const {
-    return "TestImmediate";
-  }
   // Defines the operand register.
   inline Register Rn(const Instruction& i) const {
     return i.reg(19, 16);
@@ -613,9 +630,6 @@ class ImmediateBic : public DataProc {
     return MAY_BE_SAFE;
   }
   virtual bool clears_bits(Instruction i, uint32_t mask) const;
-  virtual const char* name() const {
-    return "ImmediateBic";
-  }
 };
 
 // Models the Pack/Saturate/Reverse instructions, which
@@ -638,9 +652,6 @@ class PackSatRev : public ClassDecoder {
 
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
-  virtual const char* name() const {
-    return "PackSatRev";
-  }
   // Defines the destination register.
   inline Register Rd(const Instruction& i) const {
     return i.reg(15, 12);
@@ -667,9 +678,6 @@ class Multiply : public ClassDecoder {
 
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
-  virtual const char* name() const {
-    return "Multiply";
-  }
   // Defines the destination register.
   inline Register Rd(const Instruction& i) const {
     return i.reg(19, 16);
@@ -694,9 +702,6 @@ class LongMultiply : public Multiply {
   virtual ~LongMultiply() {}
 
   virtual RegisterList defs(Instruction i) const;
-  virtual const char* name() const {
-    return "LongMultiply";
-  }
   // Supplies the lower 32 bits for the destination result.
   inline Register RdLo(const Instruction& i) const {
     return i.reg(15, 12);
@@ -718,9 +723,6 @@ class SatAddSub : public DataProc {
   virtual ~SatAddSub() {}
 
   virtual RegisterList defs(Instruction i) const;
-  virtual const char* name() const {
-    return "SatAddSub";
-  }
 };
 
 // Move to Status Register.  Used from application code to alter or restore
@@ -740,9 +742,6 @@ class MoveToStatusRegister : public ClassDecoder {
     return MAY_BE_SAFE;
   }
   virtual RegisterList defs(Instruction i) const;
-  virtual const char* name() const {
-    return "MoveToStatusRegister";
-  }
 };
 
 // A base+immediate store, of unspecified width.  (We don't care whether it
@@ -763,9 +762,6 @@ class StoreImmediate : public ClassDecoder {
     return true;
   }
   virtual Register base_address_register(Instruction i) const;
-  virtual const char* name() const {
-    return "StoreImmediate";
-  }
   // Defines the base register.
   inline Register Rn(const Instruction& i) const {
     return i.reg(19, 16);
@@ -789,9 +785,6 @@ class StoreRegister : public ClassDecoder {
     return true;
   }
   virtual Register base_address_register(Instruction i) const;
-  virtual const char* name() const {
-    return "StoreRegister";
-  }
   // Defines the base register.
   inline Register Rn(const Instruction& i) const {
     return i.reg(19, 16);
@@ -815,9 +808,6 @@ class StoreExclusive : public ClassDecoder {
     return true;
   }
   virtual Register base_address_register(Instruction i) const;
-  virtual const char* name() const {
-    return "StoreExclusive";
-  }
   // Defines the base register.
   inline Register Rn(const Instruction& i) const {
     return i.reg(19, 16);
@@ -863,9 +853,6 @@ class LoadRegister : public AbstractLoad {
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
   virtual Register base_address_register(Instruction i) const;
-  virtual const char* name() const {
-    return "LoadRegister";
-  }
   // Defines the base register.
   inline Register Rn(const Instruction& i) const {
     return i.reg(19, 16);
@@ -889,9 +876,6 @@ class LoadImmediate : public AbstractLoad {
   virtual RegisterList immediate_addressing_defs(Instruction i) const;
   virtual Register base_address_register(Instruction i) const;
   virtual bool offset_is_immediate(Instruction i) const;
-  virtual const char* name() const {
-    return "LoadImmediate";
-  }
   // Defines the base register.
   inline Register Rn(const Instruction& i) const {
     return i.reg(19, 16);
@@ -909,9 +893,6 @@ class LoadDoubleI : public LoadImmediate {
   virtual RegisterList defs(Instruction i) const;
   virtual Register base_address_register(Instruction i) const;
   virtual bool offset_is_immediate(Instruction i) const;
-  virtual const char* name() const {
-    return "LoadDoubleI";
-  }
   // Defines the second destination register.
   inline Register Rt2(const Instruction& i) const {
     return Register(Rt(i).number() + 1);
@@ -933,9 +914,6 @@ class LoadDoubleR : public LoadRegister {
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
   virtual Register base_address_register(Instruction i) const;
-  virtual const char* name() const {
-    return "LoadDoubleR";
-  }
   // Defines the second destination register.
   inline Register Rt2(const Instruction& i) const {
     return Register(Rt(i).number() + 1);
@@ -950,9 +928,6 @@ class LoadExclusive : public AbstractLoad {
  public:
   virtual ~LoadExclusive() {}
   virtual Register base_address_register(Instruction i) const;
-  virtual const char* name() const {
-    return "LoadExclusive";
-  }
   // Defines the base register.
   inline Register Rn(const Instruction& i) const {
     return i.reg(19, 16);
@@ -966,9 +941,6 @@ class LoadDoubleExclusive : public LoadExclusive {
 
   virtual RegisterList defs(Instruction i) const;
   virtual Register base_address_register(Instruction i) const;
-  virtual const char* name() const {
-    return "LoadDoubleExclusive";
-  }
   // Defines the second destination register.
   inline Register Rt2(const Instruction& i) const {
     return Register(Rt(i).number() + 1);
@@ -988,9 +960,6 @@ class LoadMultiple : public ClassDecoder {
   virtual RegisterList defs(Instruction i) const;
   virtual RegisterList immediate_addressing_defs(Instruction i) const;
   virtual Register base_address_register(Instruction i) const;
-  virtual const char* name() const {
-    return "LoadMultiple";
-  }
   // Defines the base register.
   inline Register Rn(const Instruction& i) const {
     return i.reg(19, 16);
@@ -1013,9 +982,6 @@ class VectorLoad : public ClassDecoder {
   virtual RegisterList defs(Instruction i) const;
   virtual RegisterList immediate_addressing_defs(Instruction i) const;
   virtual Register base_address_register(Instruction i) const;
-  virtual const char* name() const {
-    return "VectorLoad";
-  }
   // Defines the base address for the access.
   inline Register Rn(const Instruction& i) const {
     return i.reg(19, 16);
@@ -1040,9 +1006,6 @@ class VectorStore : public ClassDecoder {
   virtual RegisterList immediate_addressing_defs(Instruction i) const;
   virtual bool writes_memory(Instruction i) const;
   virtual Register base_address_register(Instruction i) const;
-  virtual const char* name() const {
-    return "VectorStore";
-  }
   // Defines the base address for the access.
   inline Register Rn(const Instruction& i) const {
     return i.reg(19, 16);
@@ -1071,9 +1034,6 @@ class CoprocessorOp : public ClassDecoder {
     UNREFERENCED_PARAMETER(i);
     return kRegisterNone;
   }
-  virtual const char* name() const {
-    return "CoprocessorOp";
-  }
   // Returns the name (i.e. index) of the coprocessor referenced.
   inline uint32_t CoprocIndex(const Instruction& i) const {
     return i.bits(11, 8);
@@ -1094,9 +1054,6 @@ class LoadCoprocessor : public CoprocessorOp {
 
   virtual RegisterList defs(Instruction i) const;
   virtual RegisterList immediate_addressing_defs(Instruction i) const;
-  virtual const char* name() const {
-    return "LoadCoprocessor";
-  }
   // Contains the base address for the access.
   inline Register Rn(const Instruction& i) const {
     return i.reg(19, 16);
@@ -1121,9 +1078,6 @@ class StoreCoprocessor : public CoprocessorOp {
     return true;
   }
   virtual Register base_address_register(Instruction i) const;
-  virtual const char* name() const {
-    return "StoreCoprocessor";
-  }
   // Contains the base address for the access.
   inline Register Rn(const Instruction& i) const {
     return i.reg(19, 16);
@@ -1136,9 +1090,6 @@ class MoveFromCoprocessor : public CoprocessorOp {
   virtual ~MoveFromCoprocessor() {}
 
   virtual RegisterList defs(Instruction i) const;
-  virtual const char* name() const {
-    return "MoveFromCoprocessor";
-  }
   // Defines the destination core register.
   inline Register Rt(const Instruction& i) const {
     Register rt = i.reg(15, 12);
@@ -1156,9 +1107,6 @@ class MoveDoubleFromCoprocessor : public CoprocessorOp {
   virtual ~MoveDoubleFromCoprocessor() {}
 
   virtual RegisterList defs(Instruction i) const;
-  virtual const char* name() const {
-    return "MoveDoubleFromCoprocessor";
-  }
   // Contains the first destination core register.
   inline Register Rt(const Instruction& i) const {
     return i.reg(15, 12);
@@ -1183,9 +1131,6 @@ class BxBlx : public ClassDecoder {
   }
   virtual RegisterList defs(Instruction i) const;
   virtual Register branch_target_register(Instruction i) const;
-  virtual const char* name() const {
-    return "BxBlx";
-  }
   // Defines flag that indicates that Link register is used as well.
   inline bool UsesLinkRegister(const Instruction& i) const {
     return i.bit(5);
@@ -1209,9 +1154,6 @@ class Branch : public ClassDecoder {
     return MAY_BE_SAFE;
   }
   virtual RegisterList defs(Instruction i) const;
-  virtual const char* name() const {
-    return "Branch";
-  }
   virtual bool is_relative_branch(Instruction i) const {
     UNREFERENCED_PARAMETER(i);
     return true;

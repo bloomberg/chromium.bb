@@ -32,6 +32,10 @@ bool Register::operator!=(const Register &other) const {
   return number_ != other.number_;
 }
 
+inline RegisterList operator+(const Register &r1, const Register& r2) {
+  RegisterList regs(r1);
+  return regs + r2;
+}
 
 RegisterList::RegisterList(uint32_t bits) : bits_(bits) {}
 RegisterList::RegisterList(Register r) : bits_(r.bitmask()) {}
@@ -56,7 +60,8 @@ bool RegisterList::operator==(const RegisterList other) const {
   return bits_ == other.bits_;
 }
 
-const RegisterList operator+(const RegisterList a, const RegisterList b) {
+inline const RegisterList operator+(const RegisterList a,
+                                    const RegisterList b) {
   return RegisterList(a.bits_ | b.bits_);
 }
 

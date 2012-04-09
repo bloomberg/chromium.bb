@@ -4,15 +4,19 @@
  * found in the LICENSE file.
  */
 
-#include <string.h>
 #include "native_client/src/trusted/validator_arm/inst_classes.h"
+
+#include <assert.h>
+#include <string.h>
 
 // Implementations of instruction classes, for those not completely defined in
 
 namespace nacl_arm_dec {
 
-bool ClassDecoder::IsInstanceOf(const char* class_name) const {
-  return 0 == strcmp(name(), class_name);
+const char* ClassDecoder::name() const {
+  // This should never be called!
+  assert(0);
+  return "???";
 }
 
 // A utility function: given a modified-immediate-form instruction, extracts
@@ -39,32 +43,28 @@ bool Breakpoint::is_literal_pool_head(const Instruction i) const {
 // Binary4RegisterShiftedOp
 SafetyLevel Binary4RegisterShiftedOp::safety(Instruction i) const {
   // Unsafe if any register contains PC (ARM restriction).
-  if ((Rn(i) == kRegisterPc) ||
-      (Rd(i) == kRegisterPc) ||
-      (Rs(i) == kRegisterPc) ||
-      (Rm(i) == kRegisterPc)) return UNPREDICTABLE;
+  if ((d_.reg(i) + n_.reg(i) + s_.reg(i) + m_.reg(i))[kRegisterPc])
+    return UNPREDICTABLE;
   // Note: We would restrict out PC as well for Rd in NaCl, but no need
   // since the ARM restriction doesn't allow it anyway.
   return MAY_BE_SAFE;
 }
 
 RegisterList Binary4RegisterShiftedOp::defs(const Instruction i) const {
-  return Rd(i) + (UpdatesFlagsRegister(i) ? kRegisterFlags : kRegisterNone);
+  return d_.reg(i) + flags_.reg_if_updated(i);
 }
 
 // Unary3RegisterShiftedOp
 SafetyLevel Unary3RegisterShiftedOp::safety(Instruction i) const {
   // Unsafe if any register contains PC (ARM restriction).
-  if ((Rd(i) == kRegisterPc) ||
-      (Rs(i) == kRegisterPc) ||
-      (Rm(i) == kRegisterPc)) return UNPREDICTABLE;
+  if ((d_.reg(i) + s_.reg(i) + m_.reg(i))[kRegisterPc]) return UNPREDICTABLE;
   // Note: We would restrict out PC as well for Rd in NaCl, but no need
   // since the ARM restriction doesn't allow it anyway.
   return MAY_BE_SAFE;
 }
 
 RegisterList Unary3RegisterShiftedOp::defs(const Instruction i) const {
-  return Rd(i) + (UpdatesFlagsRegister(i) ? kRegisterFlags : kRegisterNone);
+  return d_.reg(i) + flags_.reg_if_updated(i);
 }
 
 // Data processing and arithmetic
@@ -82,14 +82,12 @@ RegisterList DataProc::defs(const Instruction i) const {
 // Binary3RegisterShiftedTest
 SafetyLevel Binary3RegisterShiftedTest::safety(Instruction i) const {
   // Unsafe if any register contains PC (ARM restriction).
-  if ((Rn(i) == kRegisterPc) ||
-      (Rs(i) == kRegisterPc) ||
-      (Rm(i) == kRegisterPc)) return UNPREDICTABLE;
+  if ((n_.reg(i) + s_.reg(i) + m_.reg(i))[kRegisterPc]) return UNPREDICTABLE;
   return MAY_BE_SAFE;
 }
 
 RegisterList Binary3RegisterShiftedTest::defs(const Instruction i) const {
-  return (UpdatesFlagsRegister(i) ? kRegisterFlags : kRegisterNone);
+  return flags_.reg_if_updated(i);
 }
 
 RegisterList Test::defs(const Instruction i) const {

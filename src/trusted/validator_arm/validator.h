@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -17,7 +17,7 @@
 
 #include "native_client/src/include/nacl_string.h"
 #include "native_client/src/trusted/validator_arm/address_set.h"
-#include "native_client/src/trusted/validator_arm/decode.h"
+#include "native_client/src/trusted/validator_arm/gen/arm32_decode.h"
 #include "native_client/src/trusted/validator_arm/inst_classes.h"
 #include "native_client/src/trusted/validator_arm/model.h"
 #include "native_client/src/include/portability.h"
@@ -84,6 +84,8 @@ class SfiValidator {
                nacl_arm_dec::RegisterList read_only_registers,
                nacl_arm_dec::RegisterList data_address_registers);
 
+  explicit SfiValidator(const SfiValidator& v);
+
   /*
    * The main validator entry point.  Validates the provided CodeSegments,
    * which must be in sorted order, reporting any problems through the
@@ -120,6 +122,11 @@ class SfiValidator {
     code_address_mask_ = code_address_mask;
     data_address_mask_ = data_address_mask;
   }
+
+  /*
+   * Copy the given validator state.
+   */
+  SfiValidator& operator=(const SfiValidator& v);
 
  private:
   bool is_bundle_head(uint32_t address) const;
@@ -175,7 +182,8 @@ class SfiValidator {
   nacl_arm_dec::RegisterList read_only_registers_;
   // Registers which must always contain a valid data region address.
   nacl_arm_dec::RegisterList data_address_registers_;
-  const nacl_arm_dec::DecoderState *decode_state_;
+  // Defines the decoder parser to use.
+  const nacl_arm_dec::Arm32DecoderState decode_state_;
 };
 
 

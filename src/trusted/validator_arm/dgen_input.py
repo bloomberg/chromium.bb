@@ -1,9 +1,8 @@
 #!/usr/bin/python
 #
-# Copyright 2009 The Native Client Authors.  All rights reserved.
+# Copyright 2012 The Native Client Authors.  All rights reserved.
 # Use of this source code is governed by a BSD-style license that can
 # be found in the LICENSE file.
-# Copyright 2009, Google Inc.
 #
 
 """
@@ -113,15 +112,23 @@ def end_of_file():
 
 
 def next_line():
+    "Reads the next non-comment line"
     global _line_no, _line
 
     _line_no += 1
     _line = _in.readline()
-    if _line:
+    while True:
+      if _line:
+        if _line[0] == '#':
+          # skip comment line and continue search.
+          _line_no += 1
+          _line = _in.readline()
+          continue
         _line = re.sub(r'#.*', '', _line).strip()
-    else:
+      else:
         _line = None
-
+      # if reached, found line.
+      return
 
 def unexpected():
     raise Exception('Line %d: Unexpected line in input: %s' % (_line_no, _line))

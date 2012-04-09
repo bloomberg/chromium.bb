@@ -36,6 +36,8 @@
 
 namespace nacl_arm_dec {
 
+class RegisterList;
+
 /*
  * A value class that names a single register.  We could use a typedef for this,
  * but it introduces some ambiguity problems because of the implicit conversion
@@ -60,6 +62,9 @@ class Register {
 
   inline bool operator==(const Register &) const;
   inline bool operator!=(const Register &) const;
+
+  // Build a register list from two registers.
+  friend RegisterList operator+(const Register &r1, const Register& r2);
 
  private:
   uint32_t number_;

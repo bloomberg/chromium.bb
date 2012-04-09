@@ -1,8 +1,7 @@
 /*
- * Copyright 2009 The Native Client Authors.  All rights reserved.
+ * Copyright 2012 The Native Client Authors.  All rights reserved.
  * Use of this source code is governed by a BSD-style license that can
  * be found in the LICENSE file.
- * Copyright 2009, Google Inc.
  */
 
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_ARM_V2_DECODE_H
@@ -13,25 +12,15 @@
 
 namespace nacl_arm_dec {
 
-struct DecoderState;
+// Models a arm instruction parser that returns the decoder to use
+// to decode an instruction.
+struct DecoderState {
+  explicit DecoderState() {}
+  virtual ~DecoderState() {}
 
-/*
- * Creates a new DecodeState instance that can be used to make calls to
- * decode.  The caller owns the result and should delete it when appropriate,
- * by using delete_state below.
- */
-const DecoderState *init_decode();
-
-/*
- * Frees any resources previously allocated by a call to init_decode.
- */
-void delete_state(const DecoderState *);
-
-/*
- * Chooses a ClassDecoder that can answer questions about the given Instruction.
- */
-const ClassDecoder &decode(const Instruction, const DecoderState *);
-
+  // Parses the given instruction, returning the decoder to use.
+  virtual const class ClassDecoder &decode(const Instruction) const = 0;
+};
 
 }  // namespace
 
