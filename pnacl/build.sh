@@ -1385,14 +1385,18 @@ llvm-make() {
   spushd "${objdir}"
 
   ts-touch-open "${objdir}"
+  # Provide libelf (host version)
+  local cppflags
+  cppflags+=" -I${TC_BUILD_LIBELF}/install/include"
+  cppflags+=" -L${TC_BUILD_LIBELF}/install/lib"
 
   RunWithLog llvm.make \
     env -i PATH=/usr/bin/:/bin \
            MAKE_OPTS="${MAKE_OPTS}" \
            NACL_SANDBOX=0 \
            NACL_SB_JIT=0 \
-           CC="${CC}" \
-           CXX="${CXX}" \
+           CC="${CC} ${cppflags}" \
+           CXX="${CXX} ${cppflags}" \
            make ${MAKE_OPTS} all
 
   ts-touch-commit  "${objdir}"
