@@ -299,6 +299,7 @@ class Builder(object):
   def Run(self):
     """Main runner for this builder class.  Runs build and prints summary."""
     print_report = True
+    exception_thrown = False
     success = True
     try:
       self.Initialize()
@@ -316,7 +317,9 @@ class Builder(object):
         success = self._ReExecuteInBuildroot(sync_instance)
       else:
         self.RunStages()
-
+    except Exception:
+      exception_thrown = True
+      raise
     finally:
       if print_report:
         self._WriteCheckpoint()
@@ -324,6 +327,12 @@ class Builder(object):
         results_lib.Results.Report(sys.stdout, self.archive_urls,
                                    self.release_tag)
         success = results_lib.Results.BuildSucceededSoFar()
+        if exception_thrown and success:
+          success = False
+          print >> sys.stderr, """
+@@@STEP_FAILURE@@@
+Exception thrown, but all stages marked successful. This is an internal error,
+because the stage that threw the exception should be marked as failing."""
 
     return success
 

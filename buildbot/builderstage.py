@@ -248,7 +248,9 @@ class BuilderStage(object):
     except Exception as e:
       # Tell the build bot this step failed for the waterfall
       result, description = self._HandleStageException(e)
-      raise NonBacktraceBuildException()
+      if result not in (results_lib.Results.FORGIVEN,
+                        results_lib.Results.SUCCESS):
+        raise NonBacktraceBuildException()
     finally:
       elapsed_time = time.time() - start_time
       results_lib.Results.Record(self.name, result, description,
