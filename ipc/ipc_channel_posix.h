@@ -179,7 +179,10 @@ class Channel::ChannelImpl : public internal::ChannelReader,
   // File descriptors extracted from messages coming off of the channel. The
   // handles may span messages and come off different channels from the message
   // data (in the case of READWRITE), and are processed in FIFO here.
-  std::deque<int> input_fds_;
+  // NOTE: The implementation assumes underlying storage here is contiguous, so
+  // don't change to something like std::deque<> without changing the
+  // implementation!
+  std::vector<int> input_fds_;
 
   // True if we are responsible for unlinking the unix domain socket file.
   bool must_unlink_;

@@ -1008,6 +1008,9 @@ bool Channel::ChannelImpl::WillDispatchInputMessage(Message* msg) {
     return false;
   }
 
+  // The shenaniganery below with &foo.front() requires input_fds_ to have
+  // contiguous underlying storage (such as a simple array or a std::vector).
+  // This is why the header warns not to make input_fds_ a deque<>.
   msg->file_descriptor_set()->SetDescriptors(&input_fds_.front(),
                                              header_fds);
   input_fds_.erase(input_fds_.begin(), input_fds_.begin() + header_fds);
@@ -1054,11 +1057,11 @@ bool Channel::ChannelImpl::ExtractFileDescriptorsFromMsghdr(msghdr* msg) {
 }
 
 void Channel::ChannelImpl::ClearInputFDs() {
-  while (!input_fds_.empty()) {
-    if (HANDLE_EINTR(close(input_fds_.front())) < 0)
+  for (size_t i = 0; i < input_fds_.size(); ++i) {
+    if (HANDLE_EINTR(close(input_fds_[i])) < 0)
       PLOG(ERROR) << "close ";
-    input_fds_.pop_front();
   }
+  input_fds_.clear();
 }
 
 void Channel::ChannelImpl::HandleHelloMessage(const Message& msg) {
