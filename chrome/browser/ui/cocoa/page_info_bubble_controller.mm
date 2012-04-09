@@ -126,7 +126,7 @@ class PageInfoModelBubbleBridge : public PageInfoModelObserver {
     MessageLoop::current()->PostDelayedTask(FROM_HERE,
         base::Bind(&PageInfoModelBubbleBridge::PerformLayout,
                    weak_ptr_factory_.GetWeakPtr()),
-        1000 /* milliseconds */);
+        base::TimeDelta::FromSeconds(1));
   }
 
   // Sets the controller.

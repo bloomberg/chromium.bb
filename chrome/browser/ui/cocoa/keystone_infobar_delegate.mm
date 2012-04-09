@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -76,11 +76,12 @@ KeystonePromotionInfoBarDelegate::KeystonePromotionInfoBarDelegate(
       prefs_(prefs),
       can_expire_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
-  const int kCanExpireOnNavigationAfterMilliseconds = 8 * 1000;
+  const base::TimeDelta kCanExpireOnNavigationAfterDelay =
+      base::TimeDelta::FromSeconds(8);
   MessageLoop::current()->PostDelayedTask(FROM_HERE,
       base::Bind(&KeystonePromotionInfoBarDelegate::SetCanExpire,
                  weak_ptr_factory_.GetWeakPtr()),
-      kCanExpireOnNavigationAfterMilliseconds);
+      kCanExpireOnNavigationAfterDelay);
 }
 
 KeystonePromotionInfoBarDelegate::~KeystonePromotionInfoBarDelegate() {

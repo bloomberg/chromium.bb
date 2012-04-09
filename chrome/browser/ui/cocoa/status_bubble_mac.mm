@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -172,7 +172,7 @@ void StatusBubbleMac::SetURL(const GURL& url, const std::string& languages) {
     MessageLoop::current()->PostDelayedTask(FROM_HERE,
         base::Bind(&StatusBubbleMac::ExpandBubble,
                    expand_timer_factory_.GetWeakPtr()),
-        kExpandHoverDelay);
+        base::TimeDelta::FromMilliseconds(kExpandHoverDelay));
   }
 }
 
@@ -514,7 +514,7 @@ void StatusBubbleMac::StartTimer(int64 delay_ms) {
 
   MessageLoop::current()->PostDelayedTask(FROM_HERE,
       base::Bind(&StatusBubbleMac::TimerFired, timer_factory_.GetWeakPtr()),
-      delay_ms);
+      base::TimeDelta::FromMilliseconds(delay_ms));
 }
 
 void StatusBubbleMac::CancelTimer() {
