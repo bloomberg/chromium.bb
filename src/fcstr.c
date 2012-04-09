@@ -26,6 +26,9 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
+#ifdef HAVE_REGEX_H
+#include <regex.h>
+#endif
 #ifdef _WIN32
 #include <windows.h>
 #endif
@@ -267,6 +270,53 @@ FcStrCmp (const FcChar8 *s1, const FcChar8 *s2)
 	    break;
     }
     return (int) c1 - (int) c2;
+}
+
+static FcBool
+_FcStrRegexCmp (const FcChar8 *s, const FcChar8 *regex, int cflags, int eflags)
+{
+    int ret = -1;
+#if defined (HAVE_REGCOMP) && defined (HAVE_REGERROR) && defined (HAVE_REGEXEC) && defined (HAVE_REGFREE)
+    regex_t reg;
+
+    if ((ret = regcomp (&reg, (const char *)regex, cflags)) != 0)
+    {
+	if (FcDebug () & FC_DBG_MATCHV)
+	{
+	    char buf[512];
+
+	    regerror (ret, &reg, buf, 512);
+	    printf("Regexp compile error: %s\n", buf);
+	}
+	return FcFalse;
+    }
+    ret = regexec (&reg, (const char *)s, 0, NULL, eflags);
+    if (ret != 0)
+    {
+	if (FcDebug () & FC_DBG_MATCHV)
+	{
+	    char buf[512];
+
+	    regerror (ret, &reg, buf, 512);
+	    printf("Regexp exec error: %s\n", buf);
+	}
+    }
+    regfree (&reg);
+#endif
+
+    return ret == 0 ? FcTrue : FcFalse;
+}
+
+FcBool
+FcStrRegexCmp (const FcChar8 *s, const FcChar8 *regex)
+{
+	return _FcStrRegexCmp (s, regex, REG_EXTENDED | REG_NOSUB, 0);
+}
+
+FcBool
+FcStrRegexCmpIgnoreCase (const FcChar8 *s, const FcChar8 *regex)
+{
+	return _FcStrRegexCmp (s, regex, REG_EXTENDED | REG_NOSUB | REG_ICASE, 0);
 }
 
 /*
