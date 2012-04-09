@@ -213,7 +213,7 @@ void ExtensionTtsPlatformImplChromeOs::ContinuePollingIfSpeechIsNotFinished(
           &ExtensionTtsPlatformImplChromeOs::PollUntilSpeechFinishes,
           weak_ptr_factory_.GetWeakPtr(),
           utterance_id),
-      kSpeechCheckDelayIntervalMs);
+      base::TimeDelta::FromMilliseconds(kSpeechCheckDelayIntervalMs));
 }
 
 void ExtensionTtsPlatformImplChromeOs::AppendSpeakOption(
