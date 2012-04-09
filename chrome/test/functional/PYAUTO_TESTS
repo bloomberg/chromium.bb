@@ -517,6 +517,9 @@
       '-infobars.InfobarTest.testMultipleDownloadsInfobar',
       '-prefs.PrefsTest.testDownloadDirPref',
       '-translate.TranslateTest.testDownloadsNotTranslated',
+      # crbug.com/122269
+      '-prefs_ui.PrefsUITest.testAddNewExceptionUI',
+      '-prefs_ui.PrefsUITest.testDeleteExceptionUI',
     ],
 
     'win': [
