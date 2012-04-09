@@ -75,6 +75,7 @@ cr.define('tracing', function() {
     this.cpuStates_ = {};
     this.kernelThreadStates_ = {};
     this.buildMapFromLinuxPidsToTimelineThreads();
+    this.lineNumber = -1;
   }
 
   TestExports = {};
@@ -367,20 +368,29 @@ cr.define('tracing', function() {
       // TODO(nduca): implement this functionality.
     },
 
+    importError: function(message) {
+      this.model_.importErrors.push('Line ' + (this.lineNumber + 1) +
+          ': ' + message);
+    },
+
+    malformedEvent: function(eventName) {
+      this.importError('Malformed ' + eventName + ' event');
+    },
+
     /**
      * Walks the this.events_ structure and creates TimelineCpu objects.
      */
     importCpuData: function() {
       this.lines_ = this.events_.split('\n');
 
-      for (var lineNumber = 0; lineNumber < this.lines_.length; ++lineNumber) {
-        var line = this.lines_[lineNumber];
+      for (this.lineNumber = 0; this.lineNumber < this.lines_.length;
+          ++this.lineNumber) {
+        var line = this.lines_[this.lineNumber];
         if (/^#/.exec(line) || line.length == 0)
           continue;
         var eventBase = lineRE.exec(line);
         if (!eventBase) {
-          this.model_.importErrors.push('Line ' + (lineNumber + 1) +
-              ': Unrecognized line: ' + line);
+          this.importError('Unrecognized line: ' + line);
           continue;
         }
 
@@ -393,8 +403,7 @@ cr.define('tracing', function() {
           case 'sched_switch':
             var event = schedSwitchRE.exec(eventBase[5]);
             if (!event) {
-              this.model_.importErrors.push('Line ' + (lineNumber + 1) +
-                  ': Malformed sched_switch event');
+              this.malformedEvent(eventName);
               continue;
             }
 
@@ -408,8 +417,7 @@ cr.define('tracing', function() {
           case 'sched_wakeup':
             var event = schedWakeupRE.exec(eventBase[5]);
             if (!event) {
-              this.model_.importErrors.push('Line ' + (lineNumber + 1) +
-                  ': Malformed sched_wakeup event');
+              this.malformedEvent(eventName);
               continue;
             }
 
@@ -418,21 +426,21 @@ cr.define('tracing', function() {
             var prio = parseInt(event[3]);
             this.markPidRunnable(ts, pid, comm, prio);
             break;
-          case 'power_start':
+          case 'power_start':  // NB: old-style power event, deprecated
             var event = /type=(\d+) state=(\d) cpu_id=(\d)+/.exec(eventBase[5]);
             if (!event) {
-              this.model_.importErrors.push('Line ' + (lineNumber + 1) +
-                  ': Malformed power_start event');
+              this.malformedEvent(eventName);
               continue;
             }
+
             var targetCpuNumber = parseInt(event[3]);
             var targetCpu = this.getOrCreateCpuState(targetCpuNumber);
             var powerCounter;
             if (event[1] == '1') {
               powerCounter = targetCpu.cpu.getOrCreateCounter('', 'C-State');
             } else {
-              this.model_.importErrors.push('Line ' + (lineNumber + 1) +
-                  ': Don\'t understand power_start events of type ' + event[1]);
+              this.importError('Don\'t understand power_start events of ' +
+                  'type ' + event[1]);
               continue;
             }
             if (powerCounter.numSeries == 0) {
@@ -444,14 +452,14 @@ cr.define('tracing', function() {
             powerCounter.timestamps.push(ts);
             powerCounter.samples.push(powerState);
             break;
-          case 'power_frequency':
-            var event = /type=(\d+) state=(\d+) cpu_id=(\d)+/.
-                exec(eventBase[5]);
+          case 'power_frequency':  // NB: old-style power event, deprecated
+            var event = /type=(\d+) state=(\d+) cpu_id=(\d)+/.exec(
+                eventBase[5]);
             if (!event) {
-              this.model_.importErrors.push('Line ' + (lineNumber + 1) +
-                  ': Malformed power_start event');
+              this.malformedEvent(eventName);
               continue;
             }
+
             var targetCpuNumber = parseInt(event[3]);
             var targetCpu = this.getOrCreateCpuState(targetCpuNumber);
             var powerCounter =
@@ -468,10 +476,10 @@ cr.define('tracing', function() {
           case 'workqueue_execute_start':
             var event = workqueueExecuteStartRE.exec(eventBase[5]);
             if (!event) {
-              this.model_.importErrors.push('Line ' + (lineNumber + 1) +
-                  ': Malformed workqueue_execute_start event');
+              this.malformedEvent(eventName);
               continue;
             }
+
             var kthread = this.getOrCreateKernelThread(eventBase[1]);
             kthread.openSliceTS = ts;
             kthread.openSlice = event[2];
@@ -479,10 +487,10 @@ cr.define('tracing', function() {
           case 'workqueue_execute_end':
             var event = workqueueExecuteEndRE.exec(eventBase[5]);
             if (!event) {
-              this.model_.importErrors.push('Line ' + (lineNumber + 1) +
-                  ': Malformed workqueue_execute_start event');
+              this.malformedEvent(eventName);
               continue;
             }
+
             var kthread = this.getOrCreateKernelThread(eventBase[1]);
             if (kthread.openSlice) {
               var slice = new tracing.TimelineSlice(kthread.openSlice,
@@ -498,8 +506,7 @@ cr.define('tracing', function() {
           case 'i915_gem_object_pwrite':
             var event = /obj=(.+), offset=(\d+), len=(\d+)/.exec(eventBase[5]);
             if (!event) {
-              this.model_.importErrors.push('Line ' + (lineNumber + 1) +
-                  ': Malformed ' + eventName + ' event');
+              this.malformedEvent(eventName);
               continue;
             }
 
@@ -522,8 +529,7 @@ cr.define('tracing', function() {
           case 'i915_flip_request':
             var event = /plane=(\d+), obj=(.+)/.exec(eventBase[5]);
             if (!event) {
-              this.model_.importErrors.push('Line ' + (lineNumber + 1) +
-                  ': Malformed ' + eventName + ' event');
+              this.malformedEvent(eventName);
               continue;
             }
 
@@ -537,8 +543,7 @@ cr.define('tracing', function() {
           case 'i915_flip_complete':
             var event = /plane=(\d+), obj=(.+)/.exec(eventBase[5]);
             if (!event) {
-              this.model_.importErrors.push('Line ' + (lineNumber + 1) +
-                  ': Malformed ' + eventName + ' event');
+              this.malformedEvent(eventName);
               continue;
             }
 
@@ -560,19 +565,17 @@ cr.define('tracing', function() {
             }
             kthread.openSlice = undefined;
             break;
-          case '0':
+          case '0':  // NB: old-style trace markers; deprecated
           case 'tracing_mark_write':
-            // trace_mark's show up with 0 prefixes in older kernels; in
-            // newer linux kernels they are demarcated by tracing_mark_write.
             var event = traceEventClockSyncRE.exec(eventBase[5]);
-            if (event)
-              this.clockSyncRecords_.push({
-                perfTS: ts,
-                parentTS: event[1] * 1000
-              });
-            else
-              this.model_.importErrors.push('Line ' + (lineNumber + 1) +
-                  ': Unrecognized event: ' + eventBase[5]);
+            if (!event) {
+              this.malformedEvent(eventName);
+              continue;
+            }
+            this.clockSyncRecords_.push({
+              perfTS: ts,
+              parentTS: event[1] * 1000
+            });
             break;
           default:
             console.log('unknown event ' + eventName);
