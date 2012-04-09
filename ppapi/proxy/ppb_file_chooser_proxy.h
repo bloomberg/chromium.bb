@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,8 +29,6 @@ class PPB_FileChooser_Proxy : public InterfaceProxy {
  public:
   explicit PPB_FileChooser_Proxy(Dispatcher* dispatcher);
   virtual ~PPB_FileChooser_Proxy();
-
-  static const Info* GetTrustedInfo();
 
   static PP_Resource CreateProxyResource(
       PP_Instance instance,

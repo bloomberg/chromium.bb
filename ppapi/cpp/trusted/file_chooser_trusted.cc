@@ -67,6 +67,7 @@ int32_t FileChooser_Trusted::Show(
     ChooseCallbackData0_5* data = new ChooseCallbackData0_5;
     data->file_chooser = pp_resource();
     data->output = callback.output();
+    data->original_callback = callback.pp_completion_callback();
 
     return get_interface<PPB_FileChooserTrusted_0_5>()->ShowWithoutUserGesture(
         pp_resource(),

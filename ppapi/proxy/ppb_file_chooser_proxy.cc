@@ -201,18 +201,6 @@ PPB_FileChooser_Proxy::~PPB_FileChooser_Proxy() {
 }
 
 // static
-const InterfaceProxy::Info* PPB_FileChooser_Proxy::GetTrustedInfo() {
-  static const Info info = {
-    thunk::GetPPB_FileChooser_Trusted_0_5_Thunk(),
-    PPB_FILECHOOSER_TRUSTED_INTERFACE_0_5,
-    API_ID_NONE,  // FILE_CHOOSER is the canonical one.
-    false,
-    &CreateFileChooserProxy
-  };
-  return &info;
-}
-
-// static
 PP_Resource PPB_FileChooser_Proxy::CreateProxyResource(
     PP_Instance instance,
     PP_FileChooserMode_Dev mode,

@@ -57,19 +57,6 @@ int32_t Show(PP_Resource chooser,
   return enter.SetResult(enter.object()->Show(output, callback));
 }
 
-
-int32_t ShowWithoutUserGesture(PP_Resource chooser,
-                               PP_Bool save_as,
-                               PP_Var suggested_file_name,
-                               const PP_ArrayOutput* output,
-                               PP_CompletionCallback callback) {
-  EnterResource<PPB_FileChooser_API> enter(chooser, callback, true);
-  if (enter.failed())
-    return enter.retval();
-  return enter.SetResult(enter.object()->ShowWithoutUserGesture(
-      save_as, suggested_file_name, *output, callback));
-}
-
 int32_t ShowWithoutUserGesture0_5(PP_Resource chooser,
                                   PP_Bool save_as,
                                   PP_Var suggested_file_name,
@@ -124,11 +111,11 @@ const PPB_FileChooser_Dev_0_6* GetPPB_FileChooser_Dev_0_6_Thunk() {
   return &g_ppb_file_chooser_0_6_thunk;
 }
 
-const PPB_FileChooserTrusted_0_5* GetPPB_FileChooser_Trusted_0_5_Thunk() {
+const PPB_FileChooserTrusted_0_5* GetPPB_FileChooserTrusted_0_5_Thunk() {
   return &g_ppb_file_chooser_trusted_0_5_thunk;
 }
 
-const PPB_FileChooserTrusted_0_6* GetPPB_FileChooser_Trusted_0_6_Thunk() {
+const PPB_FileChooserTrusted_0_6* GetPPB_FileChooserTrusted_0_6_Thunk() {
   return &g_ppb_file_chooser_trusted_0_6_thunk;
 }
 
