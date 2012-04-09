@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// AudioRendererAlgorithmBase buffers and transforms audio data. The owner of
+// AudioRendererAlgorithm buffers and transforms audio data. The owner of
 // this object provides audio data to the object through EnqueueBuffer() and
 // requests data from the buffer via FillBuffer(). The owner also sets the
 // playback rate, and the AudioRendererAlgorithm will stretch or compress the
@@ -13,14 +13,14 @@
 // This class is *not* thread-safe. Calls to enqueue and retrieve data must be
 // locked if called from multiple threads.
 //
-// AudioRendererAlgorithmBase uses a simple pitch-preservation algorithm to
+// AudioRendererAlgorithm uses a simple pitch-preservation algorithm to
 // stretch and compress audio data to meet playback speeds less than and
 // greater than the natural playback of the audio stream.
 //
 // Audio at very low or very high playback rates are muted to preserve quality.
 
-#ifndef MEDIA_FILTERS_AUDIO_RENDERER_ALGORITHM_BASE_H_
-#define MEDIA_FILTERS_AUDIO_RENDERER_ALGORITHM_BASE_H_
+#ifndef MEDIA_FILTERS_AUDIO_RENDERER_ALGORITHM_H_
+#define MEDIA_FILTERS_AUDIO_RENDERER_ALGORITHM_H_
 
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
@@ -30,10 +30,10 @@ namespace media {
 
 class Buffer;
 
-class MEDIA_EXPORT AudioRendererAlgorithmBase {
+class MEDIA_EXPORT AudioRendererAlgorithm {
  public:
-  AudioRendererAlgorithmBase();
-  ~AudioRendererAlgorithmBase();
+  AudioRendererAlgorithm();
+  ~AudioRendererAlgorithm();
 
   // Call prior to Initialize() to validate configuration.  Returns false if the
   // configuration is invalid.  Detailed error information will be DVLOG'd.
@@ -195,9 +195,9 @@ class MEDIA_EXPORT AudioRendererAlgorithmBase {
   // Window size, in bytes (calculated from audio properties).
   int window_size_;
 
-  DISALLOW_COPY_AND_ASSIGN(AudioRendererAlgorithmBase);
+  DISALLOW_COPY_AND_ASSIGN(AudioRendererAlgorithm);
 };
 
 }  // namespace media
 
-#endif  // MEDIA_FILTERS_AUDIO_RENDERER_ALGORITHM_BASE_H_
+#endif  // MEDIA_FILTERS_AUDIO_RENDERER_ALGORITHM_H_

@@ -19,7 +19,7 @@
 #include "media/base/media_switches.h"
 #include "media/base/pipeline.h"
 #include "media/base/video_frame.h"
-#include "media/filters/audio_renderer_base.h"
+#include "media/filters/audio_renderer_impl.h"
 #include "media/filters/video_renderer_base.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebVideoFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
@@ -154,7 +154,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
 
   // Create default audio renderer.
   filter_collection_->AddAudioRenderer(
-      new media::AudioRendererBase(new media::NullAudioSink()));
+      new media::AudioRendererImpl(new media::NullAudioSink()));
 }
 
 WebMediaPlayerImpl::~WebMediaPlayerImpl() {

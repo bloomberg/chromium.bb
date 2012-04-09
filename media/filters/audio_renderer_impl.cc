@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/filters/audio_renderer_base.h"
+#include "media/filters/audio_renderer_impl.h"
 
 #include <math.h>
 
@@ -15,7 +15,7 @@
 
 namespace media {
 
-AudioRendererBase::AudioRendererBase(media::AudioRendererSink* sink)
+AudioRendererImpl::AudioRendererImpl(media::AudioRendererSink* sink)
     : state_(kUninitialized),
       pending_read_(false),
       received_end_of_stream_(false),
@@ -25,17 +25,17 @@ AudioRendererBase::AudioRendererBase(media::AudioRendererSink* sink)
       stopped_(false),
       sink_(sink),
       is_initialized_(false),
-      read_cb_(base::Bind(&AudioRendererBase::DecodedAudioReady,
+      read_cb_(base::Bind(&AudioRendererImpl::DecodedAudioReady,
                           base::Unretained(this))) {
 }
 
-AudioRendererBase::~AudioRendererBase() {
+AudioRendererImpl::~AudioRendererImpl() {
   // Stop() should have been called and |algorithm_| should have been destroyed.
   DCHECK(state_ == kUninitialized || state_ == kStopped);
   DCHECK(!algorithm_.get());
 }
 
-void AudioRendererBase::Play(const base::Closure& callback) {
+void AudioRendererImpl::Play(const base::Closure& callback) {
   {
     base::AutoLock auto_lock(lock_);
     DCHECK_EQ(kPaused, state_);
@@ -53,13 +53,13 @@ void AudioRendererBase::Play(const base::Closure& callback) {
   }
 }
 
-void AudioRendererBase::DoPlay() {
+void AudioRendererImpl::DoPlay() {
   earliest_end_time_ = base::Time::Now();
   DCHECK(sink_.get());
   sink_->Play();
 }
 
-void AudioRendererBase::Pause(const base::Closure& callback) {
+void AudioRendererImpl::Pause(const base::Closure& callback) {
   {
     base::AutoLock auto_lock(lock_);
     DCHECK(state_ == kPlaying || state_ == kUnderflow ||
@@ -80,16 +80,16 @@ void AudioRendererBase::Pause(const base::Closure& callback) {
   DoPause();
 }
 
-void AudioRendererBase::DoPause() {
+void AudioRendererImpl::DoPause() {
   DCHECK(sink_.get());
   sink_->Pause(false);
 }
 
-void AudioRendererBase::Flush(const base::Closure& callback) {
+void AudioRendererImpl::Flush(const base::Closure& callback) {
   decoder_->Reset(callback);
 }
 
-void AudioRendererBase::Stop(const base::Closure& callback) {
+void AudioRendererImpl::Stop(const base::Closure& callback) {
   if (!stopped_) {
     DCHECK(sink_.get());
     sink_->Stop();
@@ -108,7 +108,7 @@ void AudioRendererBase::Stop(const base::Closure& callback) {
   }
 }
 
-void AudioRendererBase::Seek(base::TimeDelta time, const PipelineStatusCB& cb) {
+void AudioRendererImpl::Seek(base::TimeDelta time, const PipelineStatusCB& cb) {
   base::AutoLock auto_lock(lock_);
   DCHECK_EQ(kPaused, state_);
   DCHECK(!pending_read_) << "Pending read must complete before seeking";
@@ -132,14 +132,14 @@ void AudioRendererBase::Seek(base::TimeDelta time, const PipelineStatusCB& cb) {
   DoSeek();
 }
 
-void AudioRendererBase::DoSeek() {
+void AudioRendererImpl::DoSeek() {
   earliest_end_time_ = base::Time::Now();
 
   // Pause and flush the stream when we seek to a new location.
   sink_->Pause(true);
 }
 
-void AudioRendererBase::Initialize(const scoped_refptr<AudioDecoder>& decoder,
+void AudioRendererImpl::Initialize(const scoped_refptr<AudioDecoder>& decoder,
                                    const PipelineStatusCB& init_cb,
                                    const base::Closure& underflow_cb,
                                    const TimeCB& time_cb) {
@@ -153,10 +153,10 @@ void AudioRendererBase::Initialize(const scoped_refptr<AudioDecoder>& decoder,
   time_cb_ = time_cb;
 
   // Create a callback so our algorithm can request more reads.
-  base::Closure cb = base::Bind(&AudioRendererBase::ScheduleRead_Locked, this);
+  base::Closure cb = base::Bind(&AudioRendererImpl::ScheduleRead_Locked, this);
 
   // Construct the algorithm.
-  algorithm_.reset(new AudioRendererAlgorithmBase());
+  algorithm_.reset(new AudioRendererAlgorithm());
 
   // Initialize our algorithm with media properties, initial playback rate,
   // and a callback to request more reads from the data source.
@@ -200,14 +200,14 @@ void AudioRendererBase::Initialize(const scoped_refptr<AudioDecoder>& decoder,
   init_cb.Run(PIPELINE_OK);
 }
 
-bool AudioRendererBase::HasEnded() {
+bool AudioRendererImpl::HasEnded() {
   base::AutoLock auto_lock(lock_);
   DCHECK(!rendered_end_of_stream_ || algorithm_->NeedsMoreData());
 
   return received_end_of_stream_ && rendered_end_of_stream_;
 }
 
-void AudioRendererBase::ResumeAfterUnderflow(bool buffer_more_audio) {
+void AudioRendererImpl::ResumeAfterUnderflow(bool buffer_more_audio) {
   base::AutoLock auto_lock(lock_);
   if (state_ == kUnderflow) {
     if (buffer_more_audio)
@@ -217,13 +217,13 @@ void AudioRendererBase::ResumeAfterUnderflow(bool buffer_more_audio) {
   }
 }
 
-void AudioRendererBase::SetVolume(float volume) {
+void AudioRendererImpl::SetVolume(float volume) {
   if (stopped_)
     return;
   sink_->SetVolume(volume);
 }
 
-void AudioRendererBase::DecodedAudioReady(scoped_refptr<Buffer> buffer) {
+void AudioRendererImpl::DecodedAudioReady(scoped_refptr<Buffer> buffer) {
   base::AutoLock auto_lock(lock_);
   DCHECK(state_ == kPaused || state_ == kSeeking || state_ == kPlaying ||
          state_ == kUnderflow || state_ == kRebuffering || state_ == kStopped);
@@ -274,7 +274,7 @@ void AudioRendererBase::DecodedAudioReady(scoped_refptr<Buffer> buffer) {
   }
 }
 
-void AudioRendererBase::SignalEndOfStream() {
+void AudioRendererImpl::SignalEndOfStream() {
   DCHECK(received_end_of_stream_);
   if (!rendered_end_of_stream_) {
     rendered_end_of_stream_ = true;
@@ -282,7 +282,7 @@ void AudioRendererBase::SignalEndOfStream() {
   }
 }
 
-void AudioRendererBase::ScheduleRead_Locked() {
+void AudioRendererImpl::ScheduleRead_Locked() {
   lock_.AssertAcquired();
   if (pending_read_ || state_ == kPaused)
     return;
@@ -290,7 +290,7 @@ void AudioRendererBase::ScheduleRead_Locked() {
   decoder_->Read(read_cb_);
 }
 
-void AudioRendererBase::SetPlaybackRate(float playback_rate) {
+void AudioRendererImpl::SetPlaybackRate(float playback_rate) {
   DCHECK_LE(0.0f, playback_rate);
 
   if (!stopped_) {
@@ -312,17 +312,17 @@ void AudioRendererBase::SetPlaybackRate(float playback_rate) {
   algorithm_->SetPlaybackRate(playback_rate);
 }
 
-float AudioRendererBase::GetPlaybackRate() {
+float AudioRendererImpl::GetPlaybackRate() {
   base::AutoLock auto_lock(lock_);
   return algorithm_->playback_rate();
 }
 
-bool AudioRendererBase::IsBeforeSeekTime(const scoped_refptr<Buffer>& buffer) {
+bool AudioRendererImpl::IsBeforeSeekTime(const scoped_refptr<Buffer>& buffer) {
   return (state_ == kSeeking) && buffer && !buffer->IsEndOfStream() &&
       (buffer->GetTimestamp() + buffer->GetDuration()) < seek_timestamp_;
 }
 
-int AudioRendererBase::Render(const std::vector<float*>& audio_data,
+int AudioRendererImpl::Render(const std::vector<float*>& audio_data,
                               int number_of_frames,
                               int audio_delay_milliseconds) {
   if (stopped_ || GetPlaybackRate() == 0.0f) {
@@ -374,7 +374,7 @@ int AudioRendererBase::Render(const std::vector<float*>& audio_data,
   return frames_filled;
 }
 
-uint32 AudioRendererBase::FillBuffer(uint8* dest,
+uint32 AudioRendererImpl::FillBuffer(uint8* dest,
                                      uint32 requested_frames,
                                      const base::TimeDelta& playback_delay) {
   // The |audio_time_buffered_| is the ending timestamp of the last frame
@@ -451,7 +451,7 @@ uint32 AudioRendererBase::FillBuffer(uint8* dest,
   return frames_written;
 }
 
-void AudioRendererBase::UpdateEarliestEndTime(int bytes_filled,
+void AudioRendererImpl::UpdateEarliestEndTime(int bytes_filled,
                                               base::TimeDelta request_delay,
                                               base::Time time_now) {
   if (bytes_filled != 0) {
@@ -468,7 +468,7 @@ void AudioRendererBase::UpdateEarliestEndTime(int bytes_filled,
   }
 }
 
-base::TimeDelta AudioRendererBase::ConvertToDuration(int bytes) {
+base::TimeDelta AudioRendererImpl::ConvertToDuration(int bytes) {
   if (bytes_per_second_) {
     return base::TimeDelta::FromMicroseconds(
         base::Time::kMicrosecondsPerSecond * bytes / bytes_per_second_);
@@ -476,7 +476,7 @@ base::TimeDelta AudioRendererBase::ConvertToDuration(int bytes) {
   return base::TimeDelta();
 }
 
-void AudioRendererBase::OnRenderError() {
+void AudioRendererImpl::OnRenderError() {
   host()->DisableAudioRenderer();
 }
 

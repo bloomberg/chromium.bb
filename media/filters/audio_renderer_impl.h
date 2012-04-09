@@ -13,12 +13,12 @@
 // 3. Audio thread created by the AudioRendererSink.
 //    Render() is called here where audio data is decoded into raw PCM data.
 //
-// AudioRendererBase talks to an AudioRendererAlgorithmBase that takes care of
+// AudioRendererImpl talks to an AudioRendererAlgorithm that takes care of
 // queueing audio data and stretching/shrinking audio data when playback rate !=
 // 1.0 or 0.0.
 
-#ifndef MEDIA_FILTERS_AUDIO_RENDERER_BASE_H_
-#define MEDIA_FILTERS_AUDIO_RENDERER_BASE_H_
+#ifndef MEDIA_FILTERS_AUDIO_RENDERER_IMPL_H_
+#define MEDIA_FILTERS_AUDIO_RENDERER_IMPL_H_
 
 #include <deque>
 
@@ -27,18 +27,18 @@
 #include "media/base/audio_renderer_sink.h"
 #include "media/base/buffers.h"
 #include "media/base/filters.h"
-#include "media/filters/audio_renderer_algorithm_base.h"
+#include "media/filters/audio_renderer_algorithm.h"
 
 namespace media {
 
-class MEDIA_EXPORT AudioRendererBase
+class MEDIA_EXPORT AudioRendererImpl
     : public AudioRenderer,
       NON_EXPORTED_BASE(public media::AudioRendererSink::RenderCallback) {
  public:
   // Methods called on Render thread ------------------------------------------
   // An AudioRendererSink is used as the destination for the rendered audio.
-  explicit AudioRendererBase(media::AudioRendererSink* sink);
-  virtual ~AudioRendererBase();
+  explicit AudioRendererImpl(media::AudioRendererSink* sink);
+  virtual ~AudioRendererImpl();
 
   // Methods called on pipeline thread ----------------------------------------
   // Filter implementation.
@@ -59,9 +59,9 @@ class MEDIA_EXPORT AudioRendererBase
   virtual void SetVolume(float volume) OVERRIDE;
 
  private:
-  friend class AudioRendererBaseTest;
-  FRIEND_TEST_ALL_PREFIXES(AudioRendererBaseTest, EndOfStream);
-  FRIEND_TEST_ALL_PREFIXES(AudioRendererBaseTest, Underflow_EndOfStream);
+  friend class AudioRendererImplTest;
+  FRIEND_TEST_ALL_PREFIXES(AudioRendererImplTest, EndOfStream);
+  FRIEND_TEST_ALL_PREFIXES(AudioRendererImplTest, Underflow_EndOfStream);
 
   // Callback from the audio decoder delivering decoded audio samples.
   void DecodedAudioReady(scoped_refptr<Buffer> buffer);
@@ -132,7 +132,7 @@ class MEDIA_EXPORT AudioRendererBase
   scoped_refptr<AudioDecoder> decoder_;
 
   // Algorithm for scaling audio.
-  scoped_ptr<AudioRendererAlgorithmBase> algorithm_;
+  scoped_ptr<AudioRendererAlgorithm> algorithm_;
 
   base::Lock lock_;
 
@@ -203,9 +203,9 @@ class MEDIA_EXPORT AudioRendererBase
 
   AudioDecoder::ReadCB read_cb_;
 
-  DISALLOW_COPY_AND_ASSIGN(AudioRendererBase);
+  DISALLOW_COPY_AND_ASSIGN(AudioRendererImpl);
 };
 
 }  // namespace media
 
-#endif  // MEDIA_FILTERS_AUDIO_RENDERER_BASE_H_
+#endif  // MEDIA_FILTERS_AUDIO_RENDERER_IMPL_H_

@@ -93,7 +93,6 @@ class CONTENT_EXPORT AudioDevice
   AudioDevice(const media::AudioParameters& params, RenderCallback* callback);
 
   // AudioRendererSink implementation.
-
   virtual void Initialize(const media::AudioParameters& params,
                           RenderCallback* callback) OVERRIDE;
   virtual void Start() OVERRIDE;

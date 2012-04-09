@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/filters/audio_renderer_algorithm_base.h"
+#include "media/filters/audio_renderer_algorithm.h"
 
 #include <algorithm>
 #include <cmath>
@@ -35,7 +35,7 @@ static const double kCrossfadeDuration = 0.008;
 static const float kMinPlaybackRate = 0.5f;
 static const float kMaxPlaybackRate = 4.0f;
 
-AudioRendererAlgorithmBase::AudioRendererAlgorithmBase()
+AudioRendererAlgorithm::AudioRendererAlgorithm()
     : channels_(0),
       samples_per_second_(0),
       bytes_per_channel_(0),
@@ -50,9 +50,9 @@ AudioRendererAlgorithmBase::AudioRendererAlgorithmBase()
       window_size_(0) {
 }
 
-AudioRendererAlgorithmBase::~AudioRendererAlgorithmBase() {}
+AudioRendererAlgorithm::~AudioRendererAlgorithm() {}
 
-bool AudioRendererAlgorithmBase::ValidateConfig(
+bool AudioRendererAlgorithm::ValidateConfig(
     int channels,
     int samples_per_second,
     int bits_per_channel) {
@@ -77,7 +77,7 @@ bool AudioRendererAlgorithmBase::ValidateConfig(
   return status;
 }
 
-void AudioRendererAlgorithmBase::Initialize(
+void AudioRendererAlgorithm::Initialize(
     int channels,
     int samples_per_second,
     int bits_per_channel,
@@ -104,7 +104,7 @@ void AudioRendererAlgorithmBase::Initialize(
   crossfade_buffer_.reset(new uint8[bytes_in_crossfade_]);
 }
 
-int AudioRendererAlgorithmBase::FillBuffer(
+int AudioRendererAlgorithm::FillBuffer(
     uint8* dest, int requested_frames) {
   DCHECK_NE(bytes_per_frame_, 0);
 
@@ -136,13 +136,13 @@ int AudioRendererAlgorithmBase::FillBuffer(
   return total_frames_rendered;
 }
 
-void AudioRendererAlgorithmBase::ResetWindow() {
+void AudioRendererAlgorithm::ResetWindow() {
   DCHECK_LE(index_into_window_, window_size_);
   index_into_window_ = 0;
   crossfade_frame_number_ = 0;
 }
 
-bool AudioRendererAlgorithmBase::OutputFasterPlayback(uint8* dest) {
+bool AudioRendererAlgorithm::OutputFasterPlayback(uint8* dest) {
   DCHECK_LT(index_into_window_, window_size_);
   DCHECK_GT(playback_rate_, 1.0);
 
@@ -231,7 +231,7 @@ bool AudioRendererAlgorithmBase::OutputFasterPlayback(uint8* dest) {
   return true;
 }
 
-bool AudioRendererAlgorithmBase::OutputSlowerPlayback(uint8* dest) {
+bool AudioRendererAlgorithm::OutputSlowerPlayback(uint8* dest) {
   DCHECK_LT(index_into_window_, window_size_);
   DCHECK_LT(playback_rate_, 1.0);
   DCHECK_NE(playback_rate_, 0.0);
@@ -314,7 +314,7 @@ bool AudioRendererAlgorithmBase::OutputSlowerPlayback(uint8* dest) {
   return true;
 }
 
-bool AudioRendererAlgorithmBase::OutputNormalPlayback(uint8* dest) {
+bool AudioRendererAlgorithm::OutputNormalPlayback(uint8* dest) {
   if (audio_buffer_.forward_bytes() >= bytes_per_frame_) {
     CopyWithAdvance(dest);
     index_into_window_ += bytes_per_frame_;
@@ -323,16 +323,16 @@ bool AudioRendererAlgorithmBase::OutputNormalPlayback(uint8* dest) {
   return false;
 }
 
-void AudioRendererAlgorithmBase::CopyWithAdvance(uint8* dest) {
+void AudioRendererAlgorithm::CopyWithAdvance(uint8* dest) {
   CopyWithoutAdvance(dest);
   DropFrame();
 }
 
-void AudioRendererAlgorithmBase::CopyWithoutAdvance(uint8* dest) {
+void AudioRendererAlgorithm::CopyWithoutAdvance(uint8* dest) {
   CopyWithoutAdvance(dest, 0);
 }
 
-void AudioRendererAlgorithmBase::CopyWithoutAdvance(
+void AudioRendererAlgorithm::CopyWithoutAdvance(
     uint8* dest, int offset) {
   if (muted_) {
     memset(dest, 0, bytes_per_frame_);
@@ -342,14 +342,14 @@ void AudioRendererAlgorithmBase::CopyWithoutAdvance(
   DCHECK_EQ(bytes_per_frame_, copied);
 }
 
-void AudioRendererAlgorithmBase::DropFrame() {
+void AudioRendererAlgorithm::DropFrame() {
   audio_buffer_.Seek(bytes_per_frame_);
 
   if (!IsQueueFull())
     request_read_cb_.Run();
 }
 
-void AudioRendererAlgorithmBase::OutputCrossfadedFrame(
+void AudioRendererAlgorithm::OutputCrossfadedFrame(
     uint8* outtro, const uint8* intro) {
   DCHECK_LE(index_into_window_, window_size_);
   DCHECK(!muted_);
@@ -370,7 +370,7 @@ void AudioRendererAlgorithmBase::OutputCrossfadedFrame(
 }
 
 template <class Type>
-void AudioRendererAlgorithmBase::CrossfadeFrame(
+void AudioRendererAlgorithm::CrossfadeFrame(
     uint8* outtro_bytes, const uint8* intro_bytes) {
   Type* outtro = reinterpret_cast<Type*>(outtro_bytes);
   const Type* intro = reinterpret_cast<const Type*>(intro_bytes);
@@ -385,7 +385,7 @@ void AudioRendererAlgorithmBase::CrossfadeFrame(
   crossfade_frame_number_++;
 }
 
-void AudioRendererAlgorithmBase::SetPlaybackRate(float new_rate) {
+void AudioRendererAlgorithm::SetPlaybackRate(float new_rate) {
   DCHECK_GE(new_rate, 0.0);
   playback_rate_ = new_rate;
   muted_ =
@@ -394,11 +394,11 @@ void AudioRendererAlgorithmBase::SetPlaybackRate(float new_rate) {
   ResetWindow();
 }
 
-void AudioRendererAlgorithmBase::AlignToFrameBoundary(int* value) {
+void AudioRendererAlgorithm::AlignToFrameBoundary(int* value) {
   (*value) -= ((*value) % bytes_per_frame_);
 }
 
-void AudioRendererAlgorithmBase::FlushBuffers() {
+void AudioRendererAlgorithm::FlushBuffers() {
   ResetWindow();
 
   // Clear the queue of decoded packets (releasing the buffers).
@@ -406,11 +406,11 @@ void AudioRendererAlgorithmBase::FlushBuffers() {
   request_read_cb_.Run();
 }
 
-base::TimeDelta AudioRendererAlgorithmBase::GetTime() {
+base::TimeDelta AudioRendererAlgorithm::GetTime() {
   return audio_buffer_.current_time();
 }
 
-void AudioRendererAlgorithmBase::EnqueueBuffer(Buffer* buffer_in) {
+void AudioRendererAlgorithm::EnqueueBuffer(Buffer* buffer_in) {
   DCHECK(!buffer_in->IsEndOfStream());
   audio_buffer_.Append(buffer_in);
   needs_more_data_ = false;
@@ -420,23 +420,23 @@ void AudioRendererAlgorithmBase::EnqueueBuffer(Buffer* buffer_in) {
     request_read_cb_.Run();
 }
 
-bool AudioRendererAlgorithmBase::NeedsMoreData() {
+bool AudioRendererAlgorithm::NeedsMoreData() {
   return needs_more_data_ || IsQueueEmpty();
 }
 
-bool AudioRendererAlgorithmBase::IsQueueEmpty() {
+bool AudioRendererAlgorithm::IsQueueEmpty() {
   return audio_buffer_.forward_bytes() == 0;
 }
 
-bool AudioRendererAlgorithmBase::IsQueueFull() {
+bool AudioRendererAlgorithm::IsQueueFull() {
   return audio_buffer_.forward_bytes() >= audio_buffer_.forward_capacity();
 }
 
-int AudioRendererAlgorithmBase::QueueCapacity() {
+int AudioRendererAlgorithm::QueueCapacity() {
   return audio_buffer_.forward_capacity();
 }
 
-void AudioRendererAlgorithmBase::IncreaseQueueCapacity() {
+void AudioRendererAlgorithm::IncreaseQueueCapacity() {
   audio_buffer_.set_forward_capacity(
       std::min(2 * audio_buffer_.forward_capacity(), kMaxBufferSizeInBytes));
 }

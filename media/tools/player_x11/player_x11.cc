@@ -24,7 +24,7 @@
 #include "media/base/message_loop_factory.h"
 #include "media/base/pipeline.h"
 #include "media/base/video_frame.h"
-#include "media/filters/audio_renderer_base.h"
+#include "media/filters/audio_renderer_impl.h"
 #include "media/filters/ffmpeg_audio_decoder.h"
 #include "media/filters/ffmpeg_demuxer.h"
 #include "media/filters/ffmpeg_video_decoder.h"
@@ -129,7 +129,7 @@ bool InitPipeline(MessageLoop* message_loop,
   collection->AddVideoRenderer(g_video_renderer);
 
   collection->AddAudioRenderer(
-      new media::AudioRendererBase(new media::NullAudioSink()));
+      new media::AudioRendererImpl(new media::NullAudioSink()));
 
   // Create the pipeline and start it.
   *pipeline = new media::Pipeline(message_loop, new media::MediaLog());

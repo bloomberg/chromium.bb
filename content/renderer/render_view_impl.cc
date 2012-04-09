@@ -93,7 +93,7 @@
 #include "media/base/filter_collection.h"
 #include "media/base/media_switches.h"
 #include "media/base/message_loop_factory.h"
-#include "media/filters/audio_renderer_base.h"
+#include "media/filters/audio_renderer_impl.h"
 #include "media/filters/gpu_video_decoder.h"
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"
@@ -2174,8 +2174,8 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
 
     // Add the chrome specific audio renderer, using audio_source_provider
     // as the sink.
-    media::AudioRendererBase* audio_renderer =
-        new media::AudioRendererBase(audio_source_provider);
+    media::AudioRendererImpl* audio_renderer =
+        new media::AudioRendererImpl(audio_source_provider);
     collection->AddAudioRenderer(audio_renderer);
   }
 

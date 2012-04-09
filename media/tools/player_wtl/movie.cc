@@ -14,7 +14,7 @@
 #include "media/base/media_log.h"
 #include "media/base/message_loop_factory.h"
 #include "media/base/pipeline.h"
-#include "media/filters/audio_renderer_base.h"
+#include "media/filters/audio_renderer_impl.h"
 #include "media/filters/ffmpeg_audio_decoder.h"
 #include "media/filters/ffmpeg_demuxer.h"
 #include "media/filters/ffmpeg_video_decoder.h"
@@ -85,7 +85,7 @@ bool Movie::Open(const wchar_t* url, VideoRendererBase* video_renderer) {
 
   // TODO(vrk): Re-enabled audio. (crbug.com/112159)
   collection->AddAudioRenderer(
-      new media::AudioRendererBase(new media::NullAudioSink()));
+      new media::AudioRendererImpl(new media::NullAudioSink()));
   collection->AddVideoRenderer(video_renderer);
 
   // Create and start our pipeline.
