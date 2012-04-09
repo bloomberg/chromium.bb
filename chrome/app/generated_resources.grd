@@ -5319,12 +5319,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_HTTP_PIPELINING_DESCRIPTION" desc="Description for the flag to enable HTTP pipelining.">
         Enable experimental pipelining of HTTP requests.
       </message>
-      <message name="IDS_FLAGS_ENABLE_SPDY_FLOW_CONTROL_NAME" desc="Title for the flag to enable SPDY Flow Control">
-        Enable Flow Control and SPDY/2.1
-      </message>
-      <message name="IDS_FLAGS_ENABLE_SPDY_FLOW_CONTROL_DESCRIPTION" desc="Description for the flag to enable SPDY/2.1 and SPDY's flow control.">
-        Enable experimental SPDY/2.1 for flow control.
-      </message>
       <message name="IDS_FLAGS_ENABLE_SPDY3_NAME" desc="Title for the flag to enable SPDY/3">
         Enable SPDY/3
       </message>

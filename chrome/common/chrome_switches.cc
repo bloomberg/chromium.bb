@@ -587,9 +587,6 @@ const char kEnableSdch[]                    = "enable-sdch";
 // Enable SPDY/3. This is a temporary testing flag.
 const char kEnableSpdy3[]                   = "enable-spdy3";
 
-// Enable SPDY's FlowControl (SPDY/2.1). This is a temporary testing flag.
-const char kEnableSpdyFlowControl[]         = "enable-spdy-flow-control";
-
 // Enables experimental suggestions pane in New Tab page.
 const char kEnableSuggestionsTabPage[]      = "enable-suggestions-ntp";
 

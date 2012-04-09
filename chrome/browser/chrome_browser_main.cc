@@ -790,19 +790,14 @@ void ChromeBrowserMainParts::SpdyFieldTrial() {
   }
   if (parsed_command_line().HasSwitch(switches::kEnableSpdy3)) {
     net::HttpStreamFactory::EnableNpnSpdy3();
-  } else if (parsed_command_line().HasSwitch(
-             switches::kEnableSpdyFlowControl)) {
-    net::HttpStreamFactory::EnableFlowControl();
   } else if (parsed_command_line().HasSwitch(switches::kEnableNpn)) {
     net::HttpStreamFactory::EnableNpnSpdy();
   } else if (parsed_command_line().HasSwitch(switches::kEnableNpnHttpOnly)) {
     net::HttpStreamFactory::EnableNpnHttpOnly();
   } else {
 #if !defined(OS_CHROMEOS)
-    bool is_spdy_trial = false;
     const base::FieldTrial::Probability kSpdyDivisor = 100;
     base::FieldTrial::Probability npnhttp_probability = 5;
-    base::FieldTrial::Probability flow_control_probability = 5;
     base::FieldTrial::Probability spdy3_probability = 0;
 
     // After June 30, 2013 builds, it will always be in default group.
@@ -816,28 +811,18 @@ void ChromeBrowserMainParts::SpdyFieldTrial() {
     // NPN with only http support, no spdy.
     int npn_http_grp = trial->AppendGroup("npn_with_http", npnhttp_probability);
 
-    // NPN with http/1.1, spdy/2, spdy/2.1 and spdy/3 support.
+    // NPN with http/1.1, spdy/2, and spdy/3 support.
     int spdy3_grp = trial->AppendGroup("spdy3", spdy3_probability);
-
-    // NPN with http/1.1, spdy/2 and spdy/2.1 support.
-    int flow_control_grp = trial->AppendGroup(
-        "flow_control", flow_control_probability);
 
     int trial_grp = trial->group();
     if (trial_grp == npn_spdy_grp) {
-      is_spdy_trial = true;
       net::HttpStreamFactory::EnableNpnSpdy();
     } else if (trial_grp == npn_http_grp) {
-      is_spdy_trial = true;
       net::HttpStreamFactory::EnableNpnHttpOnly();
     } else if (trial_grp == spdy3_grp) {
-      is_spdy_trial = true;
       net::HttpStreamFactory::EnableNpnSpdy3();
-    } else if (trial_grp == flow_control_grp) {
-      is_spdy_trial = true;
-      net::HttpStreamFactory::EnableFlowControl();
     } else {
-      CHECK(!is_spdy_trial);
+      NOTREACHED();
     }
 #else
     // Always enable SPDY on Chrome OS
