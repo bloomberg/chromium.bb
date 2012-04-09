@@ -768,7 +768,8 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
           configs, deps, all_sources, extra_outputs,
           extra_link_deps, part_of_all,
           gyp.xcode_emulation.MacPrefixHeader(
-              self.xcode_settings, self.Absolutify, self.Pchify))
+              self.xcode_settings, lambda p: Sourceify(self.Absolutify(p)),
+              self.Pchify))
       sources = filter(Compilable, all_sources)
       if sources:
         self.WriteLn(SHARED_HEADER_SUFFIX_RULES_COMMENT1)
@@ -1101,7 +1102,7 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
     """Write Makefile code for bundle Info.plist files."""
     info_plist, out, defines, extra_env = gyp.xcode_emulation.GetMacInfoPlist(
         generator_default_variables['PRODUCT_DIR'], self.xcode_settings,
-        self.Absolutify)
+        lambda p: Sourceify(self.Absolutify(p)))
     if not info_plist:
       return
     if defines:
@@ -1408,7 +1409,8 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
         config = configs[configname]
         if self.flavor == 'mac':
           ldflags = self.xcode_settings.GetLdflags(configname,
-              generator_default_variables['PRODUCT_DIR'], self.Absolutify)
+              generator_default_variables['PRODUCT_DIR'],
+              lambda p: Sourceify(self.Absolutify(p)))
 
           # TARGET_POSTBUILDS_$(BUILDTYPE) is added to postbuilds later on.
           gyp_to_build = InvertRelativePath(self.path)
