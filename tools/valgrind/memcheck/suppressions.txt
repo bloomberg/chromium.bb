@@ -3105,8 +3105,20 @@
    bug_83561
    Memcheck:Leak
    fun:_Znw*
+   ...
    fun:_ZN3net16HostResolverImpl7ResolveERKNS_12HostResolver11RequestInfoEPNS_11AddressListERKN4base8CallbackIFviEEEPPvRKNS_11BoundNetLogE
    fun:_ZN3net25SingleRequestHostResolver7ResolveERKNS_12HostResolver11RequestInfoEPNS_11AddressListERKN4base8CallbackIFviEEERKNS_11BoundNetLogE
+   fun:_ZN3net19TransportConnectJob13DoResolveHostEv
+   fun:_ZN3net19TransportConnectJob6DoLoopEi
+   fun:_ZN3net19TransportConnectJob15ConnectInternalEv
+   fun:_ZN3net10ConnectJob7ConnectEv
+   fun:_ZN3net8internal26ClientSocketPoolBaseHelper21RequestSocketInternalERKSsPKNS1_7RequestE
+}
+{
+   bug_83561b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4base4BindIMN3net19TransportConnectJob*
    fun:_ZN3net19TransportConnectJob13DoResolveHostEv
    fun:_ZN3net19TransportConnectJob6DoLoopEi
    fun:_ZN3net19TransportConnectJob15ConnectInternalEv
@@ -4639,6 +4651,16 @@
    fun:_ZN7WebCore12StyleElement7processEPNS_7ElementE
 }
 {
+   bug_107698b
+   Memcheck:Leak
+   fun:malloc
+   ...
+   fun:_ZN7WebCore9CSSParser10parseSheetEPNS_13CSSStyleSheetERKN3WTF6StringEiPNS3_7HashMapIPNS_9StyleRuleENS3_6RefPtrINS_17CSSRuleSourceDataEEENS3_7PtrHashIS9_EENS3_10HashTraitsIS9_EENSF_ISC_EEEE
+   fun:_ZN7WebCore13CSSStyleSheet17parseStringAtLineERKN3WTF6StringE13CSSParserModei
+   fun:_ZN7WebCore13CSSStyleSheet11parseStringERKN3WTF6StringE13CSSParserMode
+   fun:_ZN7WebCoreL12parseUASheetERKN3WTF6StringE
+}
+{
    bug_107699
    Memcheck:Leak
    fun:malloc
@@ -5414,8 +5436,6 @@
    fun:_ZN7WebCore24GraphicsContext3DPrivate20initializeExtensionsEv
    fun:_ZN7WebCore24GraphicsContext3DPrivate17supportsExtensionERKN3WTF6StringE
    fun:_ZN7WebCore20Extensions3DChromium8supportsERKN3WTF6StringE
-   fun:_ZN7WebCore13DrawingBuffer6createEPNS_17GraphicsContext3DERKNS_7IntSizeEb
-   fun:_ZN7WebCore21WebGLRenderingContextC1EPNS_17HTMLCanvasElementEN3WTF10PassRefPtrINS_17GraphicsContext3DEEENS5_10AttributesE
 }
 {
    bug_122201
@@ -5578,7 +5598,7 @@
    Memcheck:Leak
    fun:_Zna*
    fun:_ZN3gpu5gles219VertexAttribManager10InitializeEj
-   fun:_ZN3gpu5gles216GLES2DecoderImpl10InitializeERK13scoped_refptrIN3gfx9GLSurfaceEERKS2_INS3_9GLContextEERKNS3_4SizeERKNS0_18DisallowedFeaturesEPKcRKSt6vectorIiSaIiEE
+   fun:_ZN3gpu5gles216GLES2DecoderImpl10InitializeERK13scoped_refptrIN3gfx9GLSurfaceEERKS2_INS3_9GLContext*SizeERKNS0_18DisallowedFeaturesEPKcRKSt6vectorIiSaIiEE
    fun:_ZN6webkit3gpu18GLInProcessContext10InitializeERKN3gfx4SizeEPS1_PKcPKiNS2_13GpuPreferenceE
    fun:_ZN6webkit3gpu18GLInProcessContext22CreateOffscreenContextEPS1_RKN3gfx4SizeES2_PKcPKiNS3_13GpuPreferenceE
    fun:_ZN6webkit3gpu46WebGraphicsContext3DInProcessCommandBufferImpl10InitializeEN6WebKit20WebGraphicsContext3D10AttributesEPS3_
