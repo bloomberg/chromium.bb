@@ -10,21 +10,8 @@
 namespace remoting {
 namespace protocol {
 
-static bool PressedKeysLessThan(const KeyEvent& a, const KeyEvent& b) {
-  if ((!a.has_usb_keycode() && !b.has_usb_keycode()) ||
-      (a.usb_keycode() == b.usb_keycode())) {
-    if (a.has_keycode() && b.has_keycode())
-      return a.keycode() < b.keycode();
-    return b.has_keycode();
-  }
-  if (a.has_usb_keycode() && b.has_usb_keycode())
-    return a.usb_keycode() < b.usb_keycode();
-  return b.has_usb_keycode();
-}
-
 InputEventTracker::InputEventTracker(InputStub* input_stub)
     : input_stub_(input_stub),
-      pressed_keys_(&PressedKeysLessThan),
       mouse_pos_(SkIPoint::Make(0, 0)),
       mouse_button_state_(0) {
 }
@@ -32,12 +19,65 @@ InputEventTracker::InputEventTracker(InputStub* input_stub)
 InputEventTracker::~InputEventTracker() {
 }
 
+bool InputEventTracker::IsKeyPressed(uint32 usb_keycode) const {
+  return pressed_keys_.find(usb_keycode) != pressed_keys_.end();
+}
+
+int InputEventTracker::PressedKeyCount() const {
+  return pressed_keys_.size() + pressed_vkeys_.size();
+}
+
+void InputEventTracker::ReleaseAll() {
+  std::set<uint32>::iterator i;
+  for (i = pressed_keys_.begin(); i != pressed_keys_.end(); ++i) {
+    KeyEvent event;
+    event.set_pressed(false);
+    event.set_usb_keycode(*i);
+    input_stub_->InjectKeyEvent(event);
+  }
+  pressed_keys_.clear();
+
+  std::set<int>::iterator j;
+  for (j = pressed_vkeys_.begin(); j != pressed_vkeys_.end(); ++j) {
+    KeyEvent event;
+    event.set_pressed(false);
+    event.set_keycode(*j);
+    input_stub_->InjectKeyEvent(event);
+  }
+  pressed_vkeys_.clear();
+
+  for (int i = MouseEvent::BUTTON_UNDEFINED + 1;
+       i < MouseEvent::BUTTON_MAX; ++i) {
+    if (mouse_button_state_ & (1 << (i - 1))) {
+      MouseEvent mouse;
+
+      // TODO(wez): EventInjectors should cope with positionless events by
+      // using the current cursor position, and we wouldn't set position here.
+      mouse.set_x(mouse_pos_.x());
+      mouse.set_y(mouse_pos_.y());
+
+      mouse.set_button((MouseEvent::MouseButton)i);
+      mouse.set_button_down(false);
+      input_stub_->InjectMouseEvent(mouse);
+    }
+  }
+  mouse_button_state_ = 0;
+}
+
 void InputEventTracker::InjectKeyEvent(const KeyEvent& event) {
-  if (event.has_pressed() && (event.has_keycode() || event.has_usb_keycode())) {
-    if (event.pressed()) {
-      pressed_keys_.insert(event);
-    } else {
-      pressed_keys_.erase(event);
+  if (event.has_pressed()) {
+    if (event.has_usb_keycode()) {
+      if (event.pressed()) {
+        pressed_keys_.insert(event.usb_keycode());
+      } else {
+        pressed_keys_.erase(event.usb_keycode());
+      }
+    } else if (event.has_keycode()) {
+      if (event.pressed()) {
+        pressed_vkeys_.insert(event.keycode());
+      } else {
+        pressed_vkeys_.erase(event.keycode());
+      }
     }
   }
   input_stub_->InjectKeyEvent(event);
@@ -59,33 +99,6 @@ void InputEventTracker::InjectMouseEvent(const MouseEvent& event) {
     }
   }
   input_stub_->InjectMouseEvent(event);
-}
-
-void InputEventTracker::ReleaseAll() {
-  PressedKeySet::iterator i;
-  for (i = pressed_keys_.begin(); i != pressed_keys_.end(); ++i) {
-    KeyEvent event = *i;
-    event.set_pressed(false);
-    input_stub_->InjectKeyEvent(event);
-  }
-  pressed_keys_.clear();
-
-  for (int i = MouseEvent::BUTTON_UNDEFINED + 1;
-       i < MouseEvent::BUTTON_MAX; ++i) {
-    if (mouse_button_state_ & (1 << (i - 1))) {
-      MouseEvent mouse;
-
-      // TODO(wez): EventInjectors should cope with positionless events by
-      // using the current cursor position, and we wouldn't set position here.
-      mouse.set_x(mouse_pos_.x());
-      mouse.set_y(mouse_pos_.y());
-
-      mouse.set_button((MouseEvent::MouseButton)i);
-      mouse.set_button_down(false);
-      input_stub_->InjectMouseEvent(mouse);
-    }
-  }
-  mouse_button_state_ = 0;
 }
 
 }  // namespace protocol

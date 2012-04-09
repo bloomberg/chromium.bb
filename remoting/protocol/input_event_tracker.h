@@ -23,6 +23,12 @@ class InputEventTracker : public InputStub {
   explicit InputEventTracker(protocol::InputStub* input_stub);
   virtual ~InputEventTracker();
 
+  // Returns true if the key with the specified USB code is currently pressed.
+  bool IsKeyPressed(uint32 usb_keycode) const;
+
+  // Returns the count of keys currently pressed.
+  int PressedKeyCount() const;
+
   // Dispatch release events for all currently-pressed keys and mouse buttons
   // to the InputStub.
   void ReleaseAll();
@@ -34,10 +40,9 @@ class InputEventTracker : public InputStub {
  private:
   protocol::InputStub* input_stub_;
 
-  // TODO(wez): Replace this with a set of integers when we deprecate VK codes.
-  typedef bool(*PressedKeyCompareFnPtr)(const KeyEvent&,const KeyEvent&);
-  typedef std::set<KeyEvent,PressedKeyCompareFnPtr> PressedKeySet;
-  PressedKeySet pressed_keys_;
+  // TODO(wez): Remove this member when we stop supporting VKEY based clients.
+  std::set<int> pressed_vkeys_;
+  std::set<uint32> pressed_keys_;
 
   SkIPoint mouse_pos_;
   uint32 mouse_button_state_;

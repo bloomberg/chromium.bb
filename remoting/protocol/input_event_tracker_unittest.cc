@@ -28,11 +28,6 @@ MATCHER_P2(EqualsUsbEvent, usb_keycode, pressed, "") {
          arg.pressed() == pressed;
 }
 
-MATCHER_P3(EqualsVkeyUsbEvent, keycode, usb_keycode, pressed, "") {
-  return arg.keycode() == keycode && arg.pressed() == pressed &&
-         arg.usb_keycode() == static_cast<uint32>(usb_keycode);
-}
-
 MATCHER_P4(EqualsMouseEvent, x, y, button, down, "") {
   return arg.x() == x && arg.y() == y && arg.button() == button &&
          arg.button_down() == down;
@@ -147,6 +142,11 @@ TEST(InputEventTrackerTest, ReleaseAllKeys) {
   input_tracker.InjectMouseEvent(NewMouseEvent(0, 0, BUTTON_LEFT, true));
   input_tracker.InjectMouseEvent(NewMouseEvent(1, 1, BUTTON_LEFT, false));
 
+  EXPECT_FALSE(input_tracker.IsKeyPressed(1));
+  EXPECT_FALSE(input_tracker.IsKeyPressed(2));
+  EXPECT_TRUE(input_tracker.IsKeyPressed(3));
+  EXPECT_EQ(1, input_tracker.PressedKeyCount());
+
   input_tracker.ReleaseAll();
 }
 
@@ -164,14 +164,10 @@ TEST(InputEventTrackerTest, TrackVkeyAndUsb) {
     injects += EXPECT_CALL(mock_stub,
         InjectKeyEvent(EqualsVkeyEvent(1, false)));
     injects += EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsVkeyEvent(4, true)));
-    injects += EXPECT_CALL(mock_stub,
-        InjectKeyEvent(EqualsVkeyUsbEvent(5, 6, true)));
-    injects += EXPECT_CALL(mock_stub,
-        InjectKeyEvent(EqualsVkeyUsbEvent(5, 7, true)));
-    injects += EXPECT_CALL(mock_stub,
-        InjectKeyEvent(EqualsVkeyUsbEvent(6, 5, true)));
-    injects += EXPECT_CALL(mock_stub,
-        InjectKeyEvent(EqualsVkeyUsbEvent(7, 5, true)));
+    injects += EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsUsbEvent(6, true)));
+    injects += EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsUsbEvent(7, true)));
+    injects += EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsUsbEvent(5, true)));
+    injects += EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsUsbEvent(5, true)));
     injects += EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsUsbEvent(2, true)));
     injects += EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsUsbEvent(2, false)));
   }
@@ -180,13 +176,11 @@ TEST(InputEventTrackerTest, TrackVkeyAndUsb) {
       .After(injects);
   EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsVkeyEvent(4, false)))
       .After(injects);
-  EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsVkeyUsbEvent(5, 6, false)))
+  EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsUsbEvent(6, false)))
       .After(injects);
-  EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsVkeyUsbEvent(5, 7, false)))
+  EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsUsbEvent(7, false)))
       .After(injects);
-  EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsVkeyUsbEvent(6, 5, false)))
-      .After(injects);
-  EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsVkeyUsbEvent(7, 5, false)))
+  EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsUsbEvent(5, false)))
       .After(injects);
 
   input_tracker.InjectKeyEvent(NewUsbEvent(3, true));
@@ -197,6 +191,15 @@ TEST(InputEventTrackerTest, TrackVkeyAndUsb) {
   input_tracker.InjectKeyEvent(NewVkeyUsbEvent(6, 5, true));
   input_tracker.InjectKeyEvent(NewVkeyUsbEvent(7, 5, true));
   PressAndReleaseUsb(&input_tracker, 2);
+
+  EXPECT_FALSE(input_tracker.IsKeyPressed(1));
+  EXPECT_FALSE(input_tracker.IsKeyPressed(2));
+  EXPECT_TRUE(input_tracker.IsKeyPressed(3));
+  EXPECT_FALSE(input_tracker.IsKeyPressed(4)); // 4 was a VKEY.
+  EXPECT_TRUE(input_tracker.IsKeyPressed(5));
+  EXPECT_TRUE(input_tracker.IsKeyPressed(6));
+  EXPECT_TRUE(input_tracker.IsKeyPressed(7));
+  EXPECT_EQ(5, input_tracker.PressedKeyCount());
 
   input_tracker.ReleaseAll();
 }
@@ -241,6 +244,12 @@ TEST(InputEventTrackerTest, InvalidEventsNotTracked) {
 
   input_tracker.InjectKeyEvent(NewVkeyEvent(4, true));
   PressAndReleaseUsb(&input_tracker, 2);
+
+  EXPECT_FALSE(input_tracker.IsKeyPressed(1));
+  EXPECT_FALSE(input_tracker.IsKeyPressed(2));
+  EXPECT_TRUE(input_tracker.IsKeyPressed(3));
+  EXPECT_FALSE(input_tracker.IsKeyPressed(4)); // Injected as VKEY.
+  EXPECT_EQ(2, input_tracker.PressedKeyCount());
 
   input_tracker.ReleaseAll();
 }
