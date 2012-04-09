@@ -758,7 +758,6 @@
         # New tests should be browser_tests. browser_tests are sharded and are
         # less flakier.
         'browser/locale_tests_uitest.cc',
-        'browser/prefs/pref_service_uitest.cc',
         'browser/printing/printing_layout_uitest.cc',
         'browser/process_singleton_linux_uitest.cc',
         'browser/process_singleton_uitest.cc',
@@ -2864,6 +2863,7 @@
         'browser/oom_priority_manager_browsertest.cc',
         'browser/policy/device_management_service_browsertest.cc',
         'browser/popup_blocker_browsertest.cc',
+        'browser/prefs/pref_service_browsertest.cc',
         'browser/prerender/prefetch_browsertest.cc',
         'browser/prerender/prerender_browsertest.cc',
         'browser/printing/cloud_print/test/cloud_print_proxy_process_browsertest.cc',

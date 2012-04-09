@@ -7,77 +7,66 @@
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/json/json_file_value_serializer.h"
+#include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
 #include "base/test/test_file_util.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/test/automation/automation_proxy.h"
-#include "chrome/test/automation/browser_proxy.h"
-#include "chrome/test/automation/window_proxy.h"
-#include "chrome/test/ui/ui_test.h"
+#include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "ui/gfx/rect.h"
 
-class PreferenceServiceTest : public UITest {
+class PreferenceServiceTest : public InProcessBrowserTest {
  public:
-  void SetUp() {
-    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    FilePath tmp_profile = temp_dir_.path().AppendASCII("tmp_profile");
+  explicit PreferenceServiceTest(bool new_profile) : new_profile_(new_profile) {
+  }
 
-    ASSERT_TRUE(file_util::CreateDirectory(tmp_profile));
+  virtual bool SetUpUserDataDirectory() OVERRIDE {
+    FilePath user_data_directory;
+    PathService::Get(chrome::DIR_USER_DATA, &user_data_directory);
 
     FilePath reference_pref_file;
     if (new_profile_) {
-      reference_pref_file = test_data_directory_
-          .AppendASCII("profiles")
-          .AppendASCII("window_placement")
-          .AppendASCII("Default")
-          .Append(chrome::kPreferencesFilename);
-      tmp_pref_file_ = tmp_profile.AppendASCII("Default");
-      ASSERT_TRUE(file_util::CreateDirectory(tmp_pref_file_));
+      reference_pref_file = ui_test_utils::GetTestFilePath(
+          FilePath().AppendASCII("profiles").
+                     AppendASCII("window_placement").
+                     AppendASCII("Default"),
+          FilePath().Append(chrome::kPreferencesFilename));
+      tmp_pref_file_ = user_data_directory.AppendASCII("Default");
+      CHECK(file_util::CreateDirectory(tmp_pref_file_));
       tmp_pref_file_ = tmp_pref_file_.Append(chrome::kPreferencesFilename);
     } else {
-      reference_pref_file = test_data_directory_
-            .AppendASCII("profiles")
-            .AppendASCII("window_placement")
-            .Append(chrome::kLocalStateFilename);
-      tmp_pref_file_ = tmp_profile.Append(chrome::kLocalStateFilename);
+      reference_pref_file = ui_test_utils::GetTestFilePath(
+          FilePath().AppendASCII("profiles").
+                     AppendASCII("window_placement"),
+          FilePath().Append(chrome::kLocalStateFilename));
+      tmp_pref_file_ = user_data_directory.Append(chrome::kLocalStateFilename);
     }
 
-    ASSERT_TRUE(file_util::PathExists(reference_pref_file));
+    CHECK(file_util::PathExists(reference_pref_file));
     // Copy only the Preferences file if |new_profile_|, or Local State if not,
     // and the rest will be automatically created.
-    ASSERT_TRUE(file_util::CopyFile(reference_pref_file, tmp_pref_file_));
+    CHECK(file_util::CopyFile(reference_pref_file, tmp_pref_file_));
 
 #if defined(OS_WIN)
     // Make the copy writable.  On POSIX we assume the umask allows files
     // we create to be writable.
-    ASSERT_TRUE(::SetFileAttributesW(tmp_pref_file_.value().c_str(),
+    CHECK(::SetFileAttributesW(tmp_pref_file_.value().c_str(),
         FILE_ATTRIBUTE_NORMAL));
 #endif
-
-    launch_arguments_.AppendSwitchPath(switches::kUserDataDir, tmp_profile);
-  }
-
-  bool LaunchAppWithProfile() {
-    if (!file_util::PathExists(tmp_pref_file_))
-      return false;
-    UITest::SetUp();
     return true;
   }
 
-  void TearDown() {
-    UITest::TearDown();
-  }
-
- public:
-  bool new_profile_;
+ protected:
   FilePath tmp_pref_file_;
 
  private:
-  ScopedTempDir temp_dir_;
+  bool new_profile_;
 };
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
@@ -86,14 +75,16 @@ class PreferenceServiceTest : public UITest {
 // the window manager might fight with you over positioning.  However, we
 // might be able to make this work on buildbots.
 // TODO(port): revisit this.
-TEST_F(PreferenceServiceTest, PreservedWindowPlacementIsLoaded) {
+
+class PreservedWindowPlacementIsLoaded : public PreferenceServiceTest {
+ public:
+  PreservedWindowPlacementIsLoaded() : PreferenceServiceTest(true) {
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(PreservedWindowPlacementIsLoaded, Test) {
   // The window should open with the new reference profile, with window
   // placement values stored in the user data directory.
-  new_profile_ = true;
-  ASSERT_TRUE(LaunchAppWithProfile());
-
-  ASSERT_TRUE(file_util::PathExists(tmp_pref_file_));
-
   JSONFileValueSerializer deserializer(tmp_pref_file_);
   scoped_ptr<Value> root(deserializer.Deserialize(NULL, NULL));
 
@@ -103,13 +94,7 @@ TEST_F(PreferenceServiceTest, PreservedWindowPlacementIsLoaded) {
   DictionaryValue* root_dict = static_cast<DictionaryValue*>(root.get());
 
   // Retrieve the screen rect for the launched window
-  scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
-  ASSERT_TRUE(browser.get());
-  scoped_refptr<WindowProxy> window(browser->GetWindow());
-  ASSERT_TRUE(window.get());
-
-  gfx::Rect bounds;
-  ASSERT_TRUE(window->GetBounds(&bounds));
+  gfx::Rect bounds = browser()->window()->GetRestoredBounds();
 
   // Retrieve the expected rect values from "Preferences"
   int bottom = 0;
@@ -134,8 +119,8 @@ TEST_F(PreferenceServiceTest, PreservedWindowPlacementIsLoaded) {
   EXPECT_EQ(right, bounds.x() + bounds.width());
 
   // Find if launched window is maximized.
-  bool is_window_maximized = false;
-  ASSERT_TRUE(window->IsMaximized(&is_window_maximized));
+  bool is_window_maximized =
+      browser()->GetSavedWindowShowState() == ui::SHOW_STATE_MAXIMIZED;
   bool is_maximized = false;
   EXPECT_TRUE(root_dict->GetBoolean(kBrowserWindowPlacement + ".maximized",
       &is_maximized));
@@ -144,13 +129,16 @@ TEST_F(PreferenceServiceTest, PreservedWindowPlacementIsLoaded) {
 #endif
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
-TEST_F(PreferenceServiceTest, PreservedWindowPlacementIsMigrated) {
+
+class PreservedWindowPlacementIsMigrated : public PreferenceServiceTest {
+ public:
+  PreservedWindowPlacementIsMigrated() : PreferenceServiceTest(false) {
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(PreservedWindowPlacementIsMigrated, Test) {
   // The window should open with the old reference profile, with window
   // placement values stored in Local State.
-  new_profile_ = false;
-  ASSERT_TRUE(LaunchAppWithProfile());
-
-  ASSERT_TRUE(file_util::PathExists(tmp_pref_file_));
 
   JSONFileValueSerializer deserializer(tmp_pref_file_);
   scoped_ptr<Value> root(deserializer.Deserialize(NULL, NULL));
@@ -159,13 +147,7 @@ TEST_F(PreferenceServiceTest, PreservedWindowPlacementIsMigrated) {
   ASSERT_TRUE(root->IsType(Value::TYPE_DICTIONARY));
 
   // Retrieve the screen rect for the launched window
-  scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
-  ASSERT_TRUE(browser.get());
-  scoped_refptr<WindowProxy> window(browser->GetWindow());
-  ASSERT_TRUE(window.get());
-
-  gfx::Rect bounds;
-  ASSERT_TRUE(window->GetBounds(&bounds));
+  gfx::Rect bounds = browser()->window()->GetRestoredBounds();
 
   // Values from old reference profile in Local State should have been
   // correctly migrated to the user's Preferences -- if so, the window
@@ -196,12 +178,11 @@ TEST_F(PreferenceServiceTest, PreservedWindowPlacementIsMigrated) {
   EXPECT_EQ(right, bounds.x() + bounds.width());
 
   // Find if launched window is maximized.
-  bool is_window_maximized = false;
-  ASSERT_TRUE(window->IsMaximized(&is_window_maximized));
+  bool is_window_maximized =
+      browser()->GetSavedWindowShowState() == ui::SHOW_STATE_MAXIMIZED;
   bool is_maximized = false;
   EXPECT_TRUE(root_dict->GetBoolean(kBrowserWindowPlacement + ".maximized",
       &is_maximized));
   EXPECT_EQ(is_maximized, is_window_maximized);
 }
 #endif
-
