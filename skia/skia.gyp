@@ -1170,12 +1170,9 @@
             '-mssse3',
           ],
         }],
-        # TODO: when ninja/make understand
-        # GCC_ENABLE_SUPPLEMENTAL_SSE3_INSTRUCTIONS, set that to YES here
-        # instead of stepping on OTHER_CFLAGS.
-        [ 'OS in ["mac"]', {
+        [ 'OS == "mac"', {
           'xcode_settings': {
-            'OTHER_CFLAGS': ['-mssse3',],
+            'GCC_ENABLE_SUPPLEMENTAL_SSE3_INSTRUCTIONS': 'YES',
           },
         }],
         [ 'OS == "win"', {
