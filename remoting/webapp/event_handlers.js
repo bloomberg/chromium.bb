@@ -44,7 +44,7 @@ function onLoad() {
   };
   /** @type {Array.<{event: string, id: string, fn: function(Event):void}>} */
   var actions = [
-      { event: 'click', id: 'clear-oauth', fn: remoting.clearOAuth2 },
+      { event: 'click', id: 'sign-out', fn: remoting.signOut },
       { event: 'click', id: 'toolbar-disconnect', fn: remoting.disconnect },
       { event: 'click', id: 'send-ctrl-alt-del',
         fn: remoting.sendCtrlAltDel },

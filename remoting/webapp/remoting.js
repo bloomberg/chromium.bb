@@ -155,10 +155,12 @@ remoting.promptClose = function() {
 
 /**
  * Sign the user out of Chromoting by clearing the OAuth refresh token.
+ *
+ * Also clear all localStorage, to avoid leaking information.
  */
-remoting.clearOAuth2 = function() {
+remoting.signOut = function() {
   remoting.oauth2.clear();
-  window.localStorage.removeItem(KEY_EMAIL_);
+  window.localStorage.clear();
   remoting.setMode(remoting.AppMode.UNAUTHENTICATED);
 };
 
