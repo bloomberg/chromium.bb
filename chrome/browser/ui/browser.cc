@@ -3663,6 +3663,9 @@ void Browser::TabStripEmpty() {
   //       update BrowserList::CloseAllBrowsers.
   MessageLoop::current()->PostTask(
       FROM_HERE, base::Bind(&Browser::CloseFrame, weak_factory_.GetWeakPtr()));
+  // Set is_attempting_to_close_browser_ here, so that extensions, etc, do not
+  // attempt to add tabs to the browser before it closes.
+  is_attempting_to_close_browser_ = true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
