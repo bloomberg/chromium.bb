@@ -48,7 +48,7 @@ bool AlarmsCreateFunction::RunImpl() {
   // http://crbug.com/81758
   MessageLoop::current()->PostDelayedTask(FROM_HERE,
       base::Bind(&AlarmCallback, profile(), extension_id()),
-      params->alarm_info.delay_in_seconds * 1000);
+      base::TimeDelta::FromSeconds(params->alarm_info.delay_in_seconds));
 
   return true;
 }
