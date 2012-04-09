@@ -744,8 +744,7 @@ bool MobileSetupHandler::ConnectToNetwork(
   if (state_ != PLAN_ACTIVATION_RECONNECTING_OTASP_TRY &&
       state_ != PLAN_ACTIVATION_RECONNECTING &&
       state_ != PLAN_ACTIVATION_RECONNECTING_PAYMENT &&
-      state_ != PLAN_ACTIVATION_RECONNECTING_OTASP)
-    return false;
+      state_ != PLAN_ACTIVATION_RECONNECTING_OTASP) return false;
   if (network)
     LOG(INFO) << "Connecting to: " << network->service_path();
   connection_retry_count_++;
@@ -757,7 +756,7 @@ bool MobileSetupHandler::ConnectToNetwork(
     // with a delay (and try to reconnect if needed).
     BrowserThread::PostDelayedTask(BrowserThread::UI, FROM_HERE,
         base::Bind(&MobileSetupHandler::ContinueConnecting, AsWeakPtr(), delay),
-        delay);
+        base::TimeDelta::FromMilliseconds(delay));
     return false;
   }
   chromeos::CrosLibrary::Get()->GetNetworkLibrary()->
@@ -780,7 +779,7 @@ void MobileSetupHandler::ForceReconnect(
   // Check the network state 3s after we disconnect to make sure.
   BrowserThread::PostDelayedTask(BrowserThread::UI, FROM_HERE,
       base::Bind(&MobileSetupHandler::ContinueConnecting, AsWeakPtr(), delay),
-      delay);
+      base::TimeDelta::FromMilliseconds(delay));
 }
 
 bool MobileSetupHandler::ConnectionTimeout() {
@@ -1185,7 +1184,7 @@ void MobileSetupHandler::ChangeState(chromeos::CellularNetwork* network,
       UMA_HISTOGRAM_COUNTS("Cellular.RetryOTASP", 1);
       BrowserThread::PostDelayedTask(BrowserThread::UI, FROM_HERE,
           base::Bind(&MobileSetupHandler::RetryOTASP, AsWeakPtr()),
-          kOTASPRetryDelay);
+          base::TimeDelta::FromMilliseconds(kOTASPRetryDelay));
       break;
     }
     case PLAN_ACTIVATION_INITIATING_ACTIVATION:
