@@ -311,13 +311,18 @@ class EBuild(object):
 
     _project, srcdir = self.GetSourcePath(srcroot)
 
+    if not os.path.isdir(srcdir):
+      cros_build_lib.Die('Package %s source directory doesn\'t exist: "%s"' %
+                          (self._pkgname, os.path.abspath(srcdir)))
+
     # The chromeos-version script will output a usable raw version number,
     # or nothing in case of error or no available version
     output = self._RunCommand([vers_script, srcdir]).strip()
 
     if not output:
       cros_build_lib.Die('Package %s has a chromeos-version.sh script but '
-                         'it returned no valid version' % self._pkgname)
+                         'it returned no valid version for "%s"' %
+                          (self._pkgname, os.path.abspath(srcdir)))
 
     return output
 
