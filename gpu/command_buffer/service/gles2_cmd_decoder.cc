@@ -7386,16 +7386,18 @@ error::Error GLES2DecoderImpl::HandleGetShaderPrecisionFormat(
     case GL_LOW_INT:
     case GL_MEDIUM_INT:
     case GL_HIGH_INT:
-      result->min_range = -31;
-      result->max_range = 31;
+      // These values are for a 32-bit twos-complement integer format.
+      result->min_range = 31;
+      result->max_range = 30;
       result->precision = 0;
       break;
     case GL_LOW_FLOAT:
     case GL_MEDIUM_FLOAT:
     case GL_HIGH_FLOAT:
-      result->min_range = -62;
-      result->max_range = 62;
-      result->precision = -16;
+      // These values are for an IEEE single-precision floating-point format.
+      result->min_range = 127;
+      result->max_range = 127;
+      result->precision = 23;
       break;
     default:
       NOTREACHED();
