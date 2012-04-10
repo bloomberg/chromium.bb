@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -20,7 +20,7 @@ class ChromotingBasic(chromoting.ChromotingMixIn, pyauto.PyUITest):
     using the default Chromoting test account.
     """
     super(ChromotingBasic, self).setUp()
-    app = self.InstallExtension(self.GetIT2MeAppPath())
+    app = self.InstallExtension(self.GetWebappPath())
     self.LaunchApp(app)
     account = self.GetPrivateInfo()['test_chromoting_account']
     self.Authenticate(account['username'], account['password'])
@@ -30,13 +30,11 @@ class ChromotingBasic(chromoting.ChromotingMixIn, pyauto.PyUITest):
     host = self
     client = self.remote
 
-    host.SetHostMode()
     access_code = host.Share()
     self.assertTrue(access_code,
                     msg='Host attempted to share, but it failed. '
                         'No access code was found.')
 
-    client.SetClientMode()
     self.assertTrue(client.Connect(access_code),
                     msg='The client attempted to connect to the host, '
                         'but the chromoting session did not start.')
