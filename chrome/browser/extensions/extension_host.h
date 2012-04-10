@@ -124,6 +124,11 @@ class ExtensionHost : public content::WebContentsDelegate,
   // Insert a default style sheet for Extension Infobars.
   void InsertInfobarCSS();
 
+  // Notifications from the JavaScriptDialogCreator when a dialog is being
+  // opened/closed.
+  void WillRunJavaScriptDialog();
+  void DidCloseJavaScriptDialog();
+
   // content::WebContentsObserver
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void RenderViewCreated(

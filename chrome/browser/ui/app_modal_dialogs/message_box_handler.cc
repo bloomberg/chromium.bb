@@ -15,6 +15,10 @@
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog_queue.h"
 #include "chrome/browser/ui/app_modal_dialogs/js_modal_dialog.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_notification_types.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/common/content_client.h"
 #include "grit/generated_resources.h"
 #include "net/base/net_util.h"
@@ -24,7 +28,9 @@
 using content::JavaScriptDialogCreator;
 using content::WebContents;
 
-class ChromeJavaScriptDialogCreator : public JavaScriptDialogCreator {
+class ChromeJavaScriptDialogCreator
+    : public JavaScriptDialogCreator,
+      public content::NotificationObserver {
  public:
   static ChromeJavaScriptDialogCreator* GetInstance();
 
@@ -54,11 +60,22 @@ class ChromeJavaScriptDialogCreator : public JavaScriptDialogCreator {
 
   friend struct DefaultSingletonTraits<ChromeJavaScriptDialogCreator>;
 
+  // content::NotificationObserver
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
+
   string16 GetTitle(const GURL& origin_url,
                     const std::string& accept_lang,
                     bool is_alert);
 
   void CancelPendingDialogs(WebContents* web_contents);
+
+  // Wrapper around a DialogClosedCallback so that we can intercept it before
+  // passing it onto the original callback.
+  void OnDialogClosed(DialogClosedCallback callback,
+                      bool success,
+                      const string16& user_input);
 
   // Mapping between the WebContents and their extra data. The key
   // is a void* because the pointer is just a cookie and is never dereferenced.
@@ -70,6 +87,8 @@ class ChromeJavaScriptDialogCreator : public JavaScriptDialogCreator {
   // It's used to get a extension name from a URL.
   // If it's not owned by any Extension, it should be NULL.
   ExtensionHost* extension_host_;
+
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeJavaScriptDialogCreator);
 };
@@ -87,6 +106,8 @@ ChromeJavaScriptDialogCreator::~ChromeJavaScriptDialogCreator() {
 ChromeJavaScriptDialogCreator::ChromeJavaScriptDialogCreator(
     ExtensionHost* extension_host)
     : extension_host_(extension_host) {
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,
+                 content::Source<Profile>(extension_host_->profile()));
 }
 
 /* static */
@@ -127,6 +148,9 @@ void ChromeJavaScriptDialogCreator::RunJavaScriptDialog(
   bool is_alert = javascript_message_type == ui::JAVASCRIPT_MESSAGE_TYPE_ALERT;
   string16 dialog_title = GetTitle(origin_url, accept_lang, is_alert);
 
+  if (extension_host_)
+    extension_host_->WillRunJavaScriptDialog();
+
   AppModalDialogQueue::GetInstance()->AddDialog(new JavaScriptAppModalDialog(
       web_contents,
       extra_data,
@@ -137,7 +161,8 @@ void ChromeJavaScriptDialogCreator::RunJavaScriptDialog(
       display_suppress_checkbox,
       false,  // is_before_unload_dialog
       false,  // is_reload
-      callback));
+      base::Bind(&ChromeJavaScriptDialogCreator::OnDialogClosed,
+                 base::Unretained(this), callback)));
 }
 
 void ChromeJavaScriptDialogCreator::RunBeforeUnloadDialog(
@@ -159,6 +184,9 @@ void ChromeJavaScriptDialogCreator::RunBeforeUnloadDialog(
 
   string16 full_message = message_text + ASCIIToUTF16("\n\n") + footer;
 
+  if (extension_host_)
+    extension_host_->WillRunJavaScriptDialog();
+
   AppModalDialogQueue::GetInstance()->AddDialog(new JavaScriptAppModalDialog(
       web_contents,
       extra_data,
@@ -169,13 +197,22 @@ void ChromeJavaScriptDialogCreator::RunBeforeUnloadDialog(
       false,       // display_suppress_checkbox
       true,        // is_before_unload_dialog
       is_reload,
-      callback));
+      base::Bind(&ChromeJavaScriptDialogCreator::OnDialogClosed,
+                 base::Unretained(this), callback)));
 }
 
 void ChromeJavaScriptDialogCreator::ResetJavaScriptState(
     WebContents* web_contents) {
   CancelPendingDialogs(web_contents);
   javascript_dialog_extra_data_.erase(web_contents);
+}
+
+void ChromeJavaScriptDialogCreator::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  DCHECK_EQ(type, chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED);
+  extension_host_ = NULL;
 }
 
 string16 ChromeJavaScriptDialogCreator::GetTitle(const GURL& origin_url,
@@ -220,6 +257,13 @@ void ChromeJavaScriptDialogCreator::CancelPendingDialogs(
   }
 }
 
+void ChromeJavaScriptDialogCreator::OnDialogClosed(
+    DialogClosedCallback callback, bool success, const string16& user_input) {
+  if (extension_host_)
+    extension_host_->DidCloseJavaScriptDialog();
+  callback.Run(success, user_input);
+}
+
 //------------------------------------------------------------------------------
 
 content::JavaScriptDialogCreator* GetJavaScriptDialogCreatorInstance() {
@@ -230,4 +274,3 @@ content::JavaScriptDialogCreator* CreateJavaScriptDialogCreatorInstance(
     ExtensionHost* extension_host) {
   return new ChromeJavaScriptDialogCreator(extension_host);
 }
-

@@ -14,7 +14,9 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_shutdown.h"
+#include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_modal_dialogs/message_box_handler.h"
@@ -392,10 +394,10 @@ void ExtensionHost::DocumentAvailableInMainFrame() {
 }
 
 void ExtensionHost::DocumentLoadedInFrame(int64 frame_id) {
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_EXTENSION_HOST_DOM_CONTENT_LOADED,
-        content::Source<Profile>(profile_),
-        content::Details<ExtensionHost>(this));
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_EXTENSION_HOST_DOM_CONTENT_LOADED,
+      content::Source<Profile>(profile_),
+      content::Details<ExtensionHost>(this));
 }
 
 void ExtensionHost::CloseContents(WebContents* contents) {
@@ -412,6 +414,20 @@ void ExtensionHost::CloseContents(WebContents* contents) {
 
 bool ExtensionHost::ShouldSuppressDialogs() {
   return extension_->is_platform_app();
+}
+
+void ExtensionHost::WillRunJavaScriptDialog() {
+  ExtensionProcessManager* pm =
+      ExtensionSystem::Get(profile_)->process_manager();
+  if (pm)
+    pm->IncrementLazyKeepaliveCount(extension());
+}
+
+void ExtensionHost::DidCloseJavaScriptDialog() {
+  ExtensionProcessManager* pm =
+      ExtensionSystem::Get(profile_)->process_manager();
+  if (pm)
+    pm->DecrementLazyKeepaliveCount(extension());
 }
 
 WebContents* ExtensionHost::OpenURLFromTab(WebContents* source,
