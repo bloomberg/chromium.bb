@@ -84,6 +84,11 @@ static const char* kTransactionTests[] = {
   NULL
 };
 
+static const char* kRegressionTests[] = {
+  "dont-commit-on-blocked.html",
+  NULL
+};
+
 }
 
 IN_PROC_BROWSER_TEST_F(IndexedDBLayoutTest, BasicTests) {
@@ -111,4 +116,8 @@ IN_PROC_BROWSER_TEST_F(IndexedDBLayoutTest, KeyTests) {
 
 IN_PROC_BROWSER_TEST_F(IndexedDBLayoutTest, TransactionTests) {
   RunLayoutTests(kTransactionTests);
+}
+
+IN_PROC_BROWSER_TEST_F(IndexedDBLayoutTest, RegressionTests) {
+  RunLayoutTests(kRegressionTests);
 }
