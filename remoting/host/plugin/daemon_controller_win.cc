@@ -8,28 +8,38 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
+#include "base/string16.h"
+#include "base/stringize_macros.h"
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "base/win/scoped_bstr.h"
+#include "base/win/scoped_comptr.h"
 #include "remoting/base/scoped_sc_handle_win.h"
 #include "remoting/host/branding.h"
+#include "remoting/host/plugin/daemon_installer_win.h"
 
 // MIDL-generated declarations and definitions.
 #include "remoting/host/elevated_controller.h"
+
+using base::win::ScopedBstr;
+using base::win::ScopedComPtr;
 
 namespace remoting {
 
 namespace {
 
 // The COM elevation moniker for the elevated controller.
-const char kElevationMoniker[] = "Elevation:Administrator!new:"
-    "{430a9403-8176-4733-afdc-0b325a8fda84}";
+const char16 kDaemonControllerElevationMoniker[] =
+    TO_L_STRING("Elevation:Administrator!new:")
+    TO_L_STRING("ChromotingElevatedController.ElevatedController");
 
 // Name of the Daemon Controller's worker thread.
 const char kDaemonControllerThreadName[] = "Daemon Controller thread";
@@ -50,7 +60,7 @@ class ComThread : public base::Thread {
   virtual void Init() OVERRIDE;
   virtual void CleanUp() OVERRIDE;
 
-  IDaemonControl* control_;
+  ScopedComPtr<IDaemonControl> control_;
 
   DISALLOW_COPY_AND_ASSIGN(ComThread);
 };
@@ -76,18 +86,28 @@ class DaemonControllerWin : public remoting::DaemonController {
   // Converts HRESULT to the AsyncResult.
   static AsyncResult HResultToAsyncResult(HRESULT hr);
 
+  // Procedes with the daemon configuration if the installation succeeded,
+  // otherwise reports the error.
+  void OnInstallationComplete(scoped_ptr<base::DictionaryValue> config,
+                              const CompletionCallback& done_callback,
+                              HRESULT result);
+
   // Opens the Chromoting service returning its handle in |service_out|.
   DWORD OpenService(ScopedScHandle* service_out);
 
   // The functions that actually do the work. They should be called in
   // the context of |worker_thread_|;
   void DoGetConfig(const GetConfigCallback& callback);
+  void DoInstallAsNeededAndStart(scoped_ptr<base::DictionaryValue> config,
+                                 const CompletionCallback& done_callback);
   void DoSetConfigAndStart(scoped_ptr<base::DictionaryValue> config,
                            const CompletionCallback& done_callback);
   void DoStop(const CompletionCallback& done_callback);
 
   // The worker thread used for servicing long running operations.
   ComThread worker_thread_;
+
+  scoped_ptr<DaemonInstallerWin> installer_;
 
   DISALLOW_COPY_AND_ASSIGN(DaemonControllerWin);
 };
@@ -100,8 +120,7 @@ void ComThread::Init() {
 }
 
 void ComThread::CleanUp() {
-  if (control_ != NULL)
-    control_->Release();
+  control_.Release();
   CoUninitialize();
 }
 
@@ -109,25 +128,24 @@ HRESULT ComThread::ActivateElevatedController(
     IDaemonControl** control_out) {
   // Chache the instance of Elevated Controller to prevent a UAC prompt on every
   // operation.
-  if (control_ == NULL) {
+  if (control_.get() == NULL) {
     BIND_OPTS3 bind_options;
     memset(&bind_options, 0, sizeof(bind_options));
     bind_options.cbStruct = sizeof(bind_options);
     bind_options.hwnd = NULL;
     bind_options.dwClassContext  = CLSCTX_LOCAL_SERVER;
 
-    HRESULT hr = ::CoGetObject(ASCIIToUTF16(kElevationMoniker).c_str(),
-                               &bind_options,
-                               IID_IDaemonControl,
-                               reinterpret_cast<void**>(&control_));
+    HRESULT hr = ::CoGetObject(
+        kDaemonControllerElevationMoniker,
+        &bind_options,
+        IID_IDaemonControl,
+        control_.ReceiveVoid());
     if (FAILED(hr)) {
-      LOG(ERROR) << "Failed to create the elevated controller (error: 0x"
-          << std::hex << hr << std::dec << ").";
       return hr;
     }
   }
 
-  *control_out = control_;
+  *control_out = control_.get();
   return S_OK;
 }
 
@@ -168,7 +186,7 @@ remoting::DaemonController::State DaemonControllerWin::GetState() {
       break;
     }
     case ERROR_SERVICE_DOES_NOT_EXIST:
-      return STATE_NOT_IMPLEMENTED;
+      return STATE_NOT_INSTALLED;
     default:
       return STATE_UNKNOWN;
   }
@@ -187,8 +205,8 @@ void DaemonControllerWin::SetConfigAndStart(
 
   worker_thread_.message_loop_proxy()->PostTask(
       FROM_HERE, base::Bind(
-          &DaemonControllerWin::DoSetConfigAndStart, base::Unretained(this),
-          base::Passed(&config), done_callback));
+          &DaemonControllerWin::DoInstallAsNeededAndStart,
+          base::Unretained(this), base::Passed(&config), done_callback));
 }
 
 void DaemonControllerWin::UpdateConfig(
@@ -241,6 +259,24 @@ DaemonController::AsyncResult DaemonControllerWin::HResultToAsyncResult(
   return FAILED(hr) ? RESULT_FAILED : RESULT_OK;
 }
 
+void DaemonControllerWin::OnInstallationComplete(
+    scoped_ptr<base::DictionaryValue> config,
+    const CompletionCallback& done_callback,
+    HRESULT result) {
+  DCHECK(worker_thread_.message_loop_proxy()->BelongsToCurrentThread());
+
+  if (SUCCEEDED(result)) {
+    DoSetConfigAndStart(config.Pass(), done_callback);
+  } else {
+    LOG(ERROR) << "Failed to install the Chromoting Host "
+               << "(error: 0x" << std::hex << result << std::dec << ").";
+    done_callback.Run(HResultToAsyncResult(result));
+  }
+
+  DCHECK(installer_.get() != NULL);
+  installer_.reset();
+}
+
 DWORD DaemonControllerWin::OpenService(ScopedScHandle* service_out) {
   // Open the service and query its current state.
   ScopedScHandle scmanager(
@@ -270,6 +306,8 @@ DWORD DaemonControllerWin::OpenService(ScopedScHandle* service_out) {
 }
 
 void DaemonControllerWin::DoGetConfig(const GetConfigCallback& callback) {
+  DCHECK(worker_thread_.message_loop_proxy()->BelongsToCurrentThread());
+
   IDaemonControl* control = NULL;
   HRESULT hr = worker_thread_.ActivateElevatedController(&control);
   if (FAILED(hr)) {
@@ -278,16 +316,14 @@ void DaemonControllerWin::DoGetConfig(const GetConfigCallback& callback) {
   }
 
   // Get the host configuration.
-  BSTR host_config = NULL;
-  hr = control->GetConfig(&host_config);
+  ScopedBstr host_config;
+  hr = control->GetConfig(host_config.Receive());
   if (FAILED(hr)) {
     callback.Run(scoped_ptr<base::DictionaryValue>());
     return;
   }
 
-  string16 file_content(static_cast<char16*>(host_config),
-                        ::SysStringLen(host_config));
-  SysFreeString(host_config);
+  string16 file_content(static_cast<BSTR>(host_config), host_config.Length());
 
   // Parse the string into a dictionary.
   scoped_ptr<base::Value> config(
@@ -303,9 +339,44 @@ void DaemonControllerWin::DoGetConfig(const GetConfigCallback& callback) {
   callback.Run(scoped_ptr<base::DictionaryValue>(dictionary));
 }
 
+void DaemonControllerWin::DoInstallAsNeededAndStart(
+    scoped_ptr<base::DictionaryValue> config,
+    const CompletionCallback& done_callback) {
+  DCHECK(worker_thread_.message_loop_proxy()->BelongsToCurrentThread());
+
+  IDaemonControl* control = NULL;
+  HRESULT hr = worker_thread_.ActivateElevatedController(&control);
+
+  // Just configure and start the Daemon Controller if it is installed already.
+  if (SUCCEEDED(hr)) {
+    DoSetConfigAndStart(config.Pass(), done_callback);
+    return;
+  }
+
+  // Otherwise, install it if it's COM registration entry is missing.
+  if (hr == CO_E_CLASSSTRING) {
+    scoped_ptr<DaemonInstallerWin> installer = DaemonInstallerWin::Create(
+        base::Bind(&DaemonControllerWin::OnInstallationComplete,
+                   base::Unretained(this),
+                   base::Passed(&config),
+                   done_callback));
+    if (installer.get()) {
+      DCHECK(!installer_.get());
+      installer_ = installer.Pass();
+      installer_->Install();
+    }
+  } else {
+    LOG(ERROR) << "Failed to initiate the Chromoting Host installation "
+               << "(error: 0x" << std::hex << hr << std::dec << ").";
+    done_callback.Run(HResultToAsyncResult(hr));
+  }
+}
+
 void DaemonControllerWin::DoSetConfigAndStart(
     scoped_ptr<base::DictionaryValue> config,
     const CompletionCallback& done_callback) {
+  DCHECK(worker_thread_.message_loop_proxy()->BelongsToCurrentThread());
+
   IDaemonControl* control = NULL;
   HRESULT hr = worker_thread_.ActivateElevatedController(&control);
   if (FAILED(hr)) {
@@ -317,14 +388,13 @@ void DaemonControllerWin::DoSetConfigAndStart(
   std::string file_content;
   base::JSONWriter::Write(config.get(), &file_content);
 
-  BSTR host_config = ::SysAllocString(UTF8ToUTF16(file_content).c_str());
+  ScopedBstr host_config(UTF8ToUTF16(file_content).c_str());
   if (host_config == NULL) {
     done_callback.Run(HResultToAsyncResult(E_OUTOFMEMORY));
     return;
   }
 
   hr = control->SetConfig(host_config);
-  ::SysFreeString(host_config);
   if (FAILED(hr)) {
     done_callback.Run(HResultToAsyncResult(hr));
     return;
@@ -336,6 +406,8 @@ void DaemonControllerWin::DoSetConfigAndStart(
 }
 
 void DaemonControllerWin::DoStop(const CompletionCallback& done_callback) {
+  DCHECK(worker_thread_.message_loop_proxy()->BelongsToCurrentThread());
+
   IDaemonControl* control = NULL;
   HRESULT hr = worker_thread_.ActivateElevatedController(&control);
   if (FAILED(hr)) {

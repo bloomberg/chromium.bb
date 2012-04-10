@@ -1,2 +1,23 @@
-This IDL was provided by the Google Update team so that we could use the new
-On-Demand checking for updates.
+Originally this IDL was provided by the Google Update team so that we could use
+the On-Demand checking for updates. Now it is copied from the public Omaha
+repository with minor modifications. See
+http://omaha.googlecode.com/svn/trunk/official/goopdate/omaha3_idl.idl.
+
+This copy is based on http://omaha.googlecode.com/svn/trunk/official/goopdate/omaha3_idl.idl@120
+with the following two coclasses removed:
+
+  [
+    uuid(___AUTO_GENERATED_GUID___),
+    helpstring("GoogleComProxyMachineClass")
+  ]
+  coclass GoogleComProxyMachineClass {
+    [default] interface IUnknown;
+  }
+
+  [
+    uuid(___AUTO_GENERATED_GUID___),
+    helpstring("GoogleComProxyUserClass")
+  ]
+  coclass GoogleComProxyUserClass {
+    [default] interface IUnknown;
+  }

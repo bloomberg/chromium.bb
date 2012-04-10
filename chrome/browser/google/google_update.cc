@@ -156,7 +156,7 @@ class GoogleUpdateJobObserver
   STDMETHOD(OnPause)() {
     return S_OK;
   }
-  STDMETHOD(OnComplete)(CompletionCodes code, const TCHAR* text) {
+  STDMETHOD(OnComplete)(LegacyCompletionCodes code, const TCHAR* text) {
     switch (code) {
       case COMPLETION_CODE_SUCCESS_CLOSE_UI:
       case COMPLETION_CODE_SUCCESS: {
