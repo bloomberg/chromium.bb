@@ -181,8 +181,6 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   void MarkWebContentsAsNotPrerendered(content::WebContents* web_contents);
   bool IsWebContentsPrerendered(content::WebContents* web_contents) const;
   bool WouldWebContentsBePrerendered(content::WebContents* web_contents) const;
-  bool IsOldRenderViewHost(
-      const content::RenderViewHost* render_view_host) const;
 
   // Checks whether |url| has been recently navigated to.
   bool HasRecentlyBeenNavigatedTo(const GURL& url);

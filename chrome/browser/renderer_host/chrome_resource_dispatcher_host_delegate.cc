@@ -16,7 +16,6 @@
 #include "chrome/browser/net/load_timing_observer.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
-#include "chrome/browser/prerender/prerender_resource_throttle.h"
 #include "chrome/browser/prerender/prerender_tracker.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/renderer_host/chrome_url_request_user_data.h"
@@ -162,12 +161,6 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
     throttles->push_back(new OfflineResourceThrottle(
         child_id, route_id, request, resource_context));
 #endif
-
-    throttles->push_back(
-        new prerender::PrerenderResourceThrottle(prerender_tracker_,
-                                                 request,
-                                                 child_id,
-                                                 route_id));
   }
 
   AppendStandardResourceThrottles(request,

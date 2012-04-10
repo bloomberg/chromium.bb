@@ -414,9 +414,6 @@ PrerenderContents::~PrerenderContents() {
   // destroy it.
   if (prerender_contents_.get())
     delete ReleasePrerenderContents();
-
-  // The following URLs are no longer rendering.
-  prerender_tracker_->RemovePrerenderURLsOnUIThread(alias_urls_);
 }
 
 void PrerenderContents::Observe(int type,
@@ -527,7 +524,6 @@ bool PrerenderContents::AddAliasURL(const GURL& url) {
 
   alias_urls_.push_back(url);
   InformRenderProcessAboutPrerender(url, true, creator_child_id_);
-  prerender_tracker_->AddPrerenderURLOnUIThread(url);
   return true;
 }
 
@@ -537,7 +533,6 @@ void PrerenderContents::AddAliasURLsFromOtherPrerenderContents(
        it != other_pc->alias_urls_.end();
        ++it) {
     alias_urls_.push_back(*it);
-    prerender_tracker_->AddPrerenderURLOnUIThread(*it);
   }
 }
 

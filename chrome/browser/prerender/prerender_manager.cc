@@ -699,18 +699,6 @@ bool PrerenderManager::WouldWebContentsBePrerendered(
   return would_be_prerendered_tab_contents_set_.count(web_contents) > 0;
 }
 
-bool PrerenderManager::IsOldRenderViewHost(
-    const RenderViewHost* render_view_host) const {
-  for (std::list<TabContentsWrapper*>::const_iterator it =
-           old_tab_contents_list_.begin();
-       it != old_tab_contents_list_.end();
-       ++it) {
-    if ((*it)->web_contents()->GetRenderViewHost() == render_view_host)
-      return true;
-  }
-  return false;
-}
-
 bool PrerenderManager::HasRecentlyBeenNavigatedTo(const GURL& url) {
   DCHECK(CalledOnValidThread());
 

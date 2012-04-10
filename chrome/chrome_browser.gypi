@@ -1688,8 +1688,6 @@
         'browser/prerender/prerender_origin.h',
         'browser/prerender/prerender_render_view_host_observer.cc',
         'browser/prerender/prerender_render_view_host_observer.h',
-        'browser/prerender/prerender_resource_throttle.cc',
-        'browser/prerender/prerender_resource_throttle.h',
         'browser/prerender/prerender_tab_helper.cc',
         'browser/prerender/prerender_tab_helper.h',
         'browser/prerender/prerender_tracker.cc',
