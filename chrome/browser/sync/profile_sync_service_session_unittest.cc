@@ -1019,7 +1019,8 @@ TEST_F(ProfileSyncServiceSessionTest, DISABLED_MissingHeaderAndTab) {
   SyncError error;
   std::string local_tag = model_associator_->GetCurrentMachineTag();
 
-  ASSERT_TRUE(model_associator_->DisassociateModels(&error));
+  error = model_associator_->DisassociateModels();
+  ASSERT_FALSE(error.IsSet());
   {
     // Create a sync node with the local tag but neither header nor tab field.
     sync_api::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
@@ -1032,7 +1033,8 @@ TEST_F(ProfileSyncServiceSessionTest, DISABLED_MissingHeaderAndTab) {
     specifics.set_session_tag(local_tag);
     extra_header.SetSessionSpecifics(specifics);
   }
-  ASSERT_TRUE(model_associator_->AssociateModels(&error));
+
+  error = model_associator_->AssociateModels();
   ASSERT_FALSE(error.IsSet());
 }
 
@@ -1047,7 +1049,8 @@ TEST_F(ProfileSyncServiceSessionTest, DISABLED_MultipleHeaders) {
   SyncError error;
   std::string local_tag = model_associator_->GetCurrentMachineTag();
 
-  ASSERT_TRUE(model_associator_->DisassociateModels(&error));
+  error = model_associator_->DisassociateModels();
+  ASSERT_FALSE(error.IsSet());
   {
     // Create another sync node with a header field and the local tag.
     sync_api::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
@@ -1061,7 +1064,7 @@ TEST_F(ProfileSyncServiceSessionTest, DISABLED_MultipleHeaders) {
     specifics.mutable_header();
     extra_header.SetSessionSpecifics(specifics);
   }
-  ASSERT_TRUE(model_associator_->AssociateModels(&error));
+  error = model_associator_->AssociateModels();
   ASSERT_FALSE(error.IsSet());
 }
 
@@ -1075,7 +1078,8 @@ TEST_F(ProfileSyncServiceSessionTest, DISABLED_CorruptedForeign) {
   ASSERT_TRUE(StartSyncService(create_root.callback(), false));
   SyncError error;
 
-  ASSERT_TRUE(model_associator_->DisassociateModels(&error));
+  error = model_associator_->DisassociateModels();
+  ASSERT_FALSE(error.IsSet());
   {
     // Create another sync node with neither header nor tab field and a foreign
     // tag.
@@ -1090,7 +1094,7 @@ TEST_F(ProfileSyncServiceSessionTest, DISABLED_CorruptedForeign) {
     specifics.set_session_tag(foreign_tag);
     extra_header.SetSessionSpecifics(specifics);
   }
-  ASSERT_TRUE(model_associator_->AssociateModels(&error));
+  error = model_associator_->AssociateModels();
   ASSERT_FALSE(error.IsSet());
 }
 
@@ -1105,7 +1109,8 @@ TEST_F(ProfileSyncServiceSessionTest, DISABLED_MissingLocalTabNode) {
   std::string local_tag = model_associator_->GetCurrentMachineTag();
   SyncError error;
 
-  ASSERT_TRUE(model_associator_->DisassociateModels(&error));
+  error = model_associator_->DisassociateModels();
+  ASSERT_FALSE(error.IsSet());
   {
     // Delete the first sync tab node.
     std::string tab_tag = SessionModelAssociator::TabIdToTag(local_tag, 0);
@@ -1117,7 +1122,7 @@ TEST_F(ProfileSyncServiceSessionTest, DISABLED_MissingLocalTabNode) {
     ASSERT_TRUE(tab_node.InitByClientTagLookup(syncable::SESSIONS, tab_tag));
     tab_node.Remove();
   }
-  ASSERT_TRUE(model_associator_->AssociateModels(&error));
+  error = model_associator_->AssociateModels();
   ASSERT_FALSE(error.IsSet());
 
   // Add some more tabs to ensure we don't conflict with the pre-existing tab

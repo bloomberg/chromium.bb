@@ -97,6 +97,12 @@ class DataTypeController
   // Current state of the data type controller.
   virtual State state() const = 0;
 
+  // Partial implementation of DataTypeErrorHandler.
+  virtual SyncError CreateAndUploadError(
+      const tracked_objects::Location& location,
+      const std::string& message,
+      syncable::ModelType type) OVERRIDE;
+
  protected:
   // Handles the reporting of unrecoverable error. It records stuff in
   // UMA and reports to breakpad.

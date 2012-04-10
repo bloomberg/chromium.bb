@@ -114,9 +114,10 @@ void NonFrontendDataTypeController::StartAssociation() {
 
   base::TimeTicks start_time = base::TimeTicks::Now();
   SyncError error;
-  bool merge_success = model_associator_->AssociateModels(&error);
+  error = model_associator_->AssociateModels();
+  // TODO(lipalani): crbug.com/122690 - handle abort.
   RecordAssociationTime(base::TimeTicks::Now() - start_time);
-  if (!merge_success) {
+  if (error.IsSet()) {
     StartFailed(ASSOCIATION_FAILED, error);
     return;
   }
@@ -249,7 +250,7 @@ void NonFrontendDataTypeController::StopAssociation() {
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (model_associator_.get()) {
     SyncError error;  // Not used.
-    model_associator_->DisassociateModels(&error);
+    error = model_associator_->DisassociateModels();
   }
   model_associator_.reset();
   change_processor_.reset();

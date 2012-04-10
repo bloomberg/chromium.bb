@@ -8,7 +8,10 @@
 
 #include <string>
 #include "base/location.h"
+
+#include "chrome/browser/sync/api/sync_error.h"
 #include "sync/util/unrecoverable_error_handler.h"
+#include "sync/syncable/model_type.h"
 
 namespace browser_sync {
 
@@ -19,6 +22,15 @@ class DataTypeErrorHandler : public UnrecoverableErrorHandler {
   virtual void OnSingleDatatypeUnrecoverableError(
       const tracked_objects::Location& from_here,
       const std::string& message) = 0;
+
+  // This will create a SyncError object. This will also upload
+  // a breakpad call stack to crash server. A sync error usually means
+  // that sync has to be disabled either for that type or completely.
+  virtual SyncError CreateAndUploadError(
+      const tracked_objects::Location& location,
+      const std::string& message,
+      syncable::ModelType type) = 0;
+
  protected:
   virtual ~DataTypeErrorHandler() { }
 };

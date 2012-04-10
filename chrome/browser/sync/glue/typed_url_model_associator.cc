@@ -58,11 +58,13 @@ static bool CheckVisitOrdering(const history::VisitVector& visits) {
 
 TypedUrlModelAssociator::TypedUrlModelAssociator(
     ProfileSyncService* sync_service,
-    history::HistoryBackend* history_backend)
+    history::HistoryBackend* history_backend,
+    DataTypeErrorHandler* error_handler)
     : sync_service_(sync_service),
       history_backend_(history_backend),
       expected_loop_(MessageLoop::current()),
-      pending_abort_(false) {
+      pending_abort_(false),
+      error_handler_(error_handler) {
   DCHECK(sync_service_);
   // history_backend_ may be null for unit tests (since it's not mockable).
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -130,17 +132,18 @@ bool TypedUrlModelAssociator::ShouldIgnoreUrl(
   return true;
 }
 
-bool TypedUrlModelAssociator::AssociateModels(SyncError* error) {
+SyncError TypedUrlModelAssociator::AssociateModels() {
   DVLOG(1) << "Associating TypedUrl Models";
+  SyncError error;
   DCHECK(expected_loop_ == MessageLoop::current());
   if (IsAbortPending())
-    return false;
+    return SyncError();
   history::URLRows typed_urls;
   if (!history_backend_->GetAllTypedURLs(&typed_urls)) {
-    error->Reset(FROM_HERE,
-                "Could not get the typed_url entries.",
-                model_type());
-    return false;
+    return error_handler_->CreateAndUploadError(
+        FROM_HERE,
+        "Could not get the typed_url entries.",
+        model_type());
   }
 
   // Get all the visits.
@@ -148,12 +151,14 @@ bool TypedUrlModelAssociator::AssociateModels(SyncError* error) {
   for (history::URLRows::iterator ix = typed_urls.begin();
        ix != typed_urls.end();) {
     if (IsAbortPending())
-      return false;
+      return SyncError();
     DCHECK_EQ(0U, visit_vectors.count(ix->id()));
     if (!FixupURLAndGetVisits(
             history_backend_, &(*ix), &(visit_vectors[ix->id()]))) {
-      error->Reset(FROM_HERE, "Could not get the url's visits.", model_type());
-      return false;
+      return error_handler_->CreateAndUploadError(
+          FROM_HERE,
+          "Could not get the url's visits.",
+          model_type());
     }
 
     if (ShouldIgnoreUrl(*ix, visit_vectors[ix->id()]))
@@ -170,18 +175,18 @@ bool TypedUrlModelAssociator::AssociateModels(SyncError* error) {
     sync_api::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
     sync_api::ReadNode typed_url_root(&trans);
     if (!typed_url_root.InitByTagLookup(kTypedUrlTag)) {
-      error->Reset(FROM_HERE,
-                   "Server did not create the top-level typed_url node. We "
-                   "might be running against an out-of-date server.",
-                   model_type());
-      return false;
+      return error_handler_->CreateAndUploadError(
+          FROM_HERE,
+          "Server did not create the top-level typed_url node. We "
+          "might be running against an out-of-date server.",
+          model_type());
     }
 
     std::set<std::string> current_urls;
     for (history::URLRows::iterator ix = typed_urls.begin();
          ix != typed_urls.end(); ++ix) {
       if (IsAbortPending())
-        return false;
+        return SyncError();
       std::string tag = ix->url().spec();
       // Empty URLs should be filtered out by ShouldIgnoreUrl() previously.
       DCHECK(!tag.empty());
@@ -208,10 +213,10 @@ bool TypedUrlModelAssociator::AssociateModels(SyncError* error) {
         if (difference & DIFF_UPDATE_NODE) {
           sync_api::WriteNode write_node(&trans);
           if (!write_node.InitByClientTagLookup(syncable::TYPED_URLS, tag)) {
-            error->Reset(FROM_HERE,
-                         "Failed to edit typed_url sync node.",
-                         model_type());
-            return false;
+            return error_handler_->CreateAndUploadError(
+                FROM_HERE,
+                "Failed to edit typed_url sync node.",
+                model_type());
           }
           // We don't want to resurrect old visits that have been aged out by
           // other clients, so remove all visits that are older than the
@@ -245,10 +250,10 @@ bool TypedUrlModelAssociator::AssociateModels(SyncError* error) {
         sync_api::WriteNode node(&trans);
         if (!node.InitUniqueByCreation(syncable::TYPED_URLS,
                                        typed_url_root, tag)) {
-          error->Reset(FROM_HERE,
-                       "Failed to create typed_url sync node: " + tag,
-                       model_type());
-          return false;
+          return error_handler_->CreateAndUploadError(
+              FROM_HERE,
+              "Failed to create typed_url sync node: " + tag,
+              model_type());
         }
 
         node.SetTitle(UTF8ToWide(tag));
@@ -264,11 +269,13 @@ bool TypedUrlModelAssociator::AssociateModels(SyncError* error) {
     int64 sync_child_id = typed_url_root.GetFirstChildId();
     while (sync_child_id != sync_api::kInvalidId) {
       if (IsAbortPending())
-        return false;
+        return SyncError();
       sync_api::ReadNode sync_child_node(&trans);
       if (!sync_child_node.InitByIdLookup(sync_child_id)) {
-        error->Reset(FROM_HERE, "Failed to fetch child node.", model_type());
-        return false;
+        return error_handler_->CreateAndUploadError(
+            FROM_HERE,
+            "Failed to fetch child node.",
+            model_type());
       }
       const sync_pb::TypedUrlSpecifics& typed_url(
           sync_child_node.GetTypedUrlSpecifics());
@@ -307,11 +314,13 @@ bool TypedUrlModelAssociator::AssociateModels(SyncError* error) {
         // Update the local DB from the sync DB. Since we are doing our
         // initial model association, we don't want to remove any of the
         // existing visits (pass NULL as |visits_to_remove|).
-        if (!UpdateFromSyncDB(filtered_url, &new_visits, NULL, &updated_urls,
-                              &new_urls)) {
-            error->Reset(FROM_HERE, "Could not get existing url's visits.",
-                         model_type());
-            return false;
+        error = UpdateFromSyncDB(filtered_url,
+                                 &new_visits,
+                                 NULL,
+                                 &updated_urls,
+                                 &new_urls);
+        if (error.IsSet()) {
+          return error;
         }
       }
     }
@@ -323,13 +332,13 @@ bool TypedUrlModelAssociator::AssociateModels(SyncError* error) {
            it != obsolete_nodes.end();
            ++it) {
           if (IsAbortPending())
-            return false;
+            return SyncError();
         sync_api::WriteNode sync_node(&trans);
         if (!sync_node.InitByIdLookup(*it)) {
-          error->Reset(FROM_HERE,
-                      "Failed to fetch obsolete node.",
-                      model_type());
-          return false;
+          return error_handler_->CreateAndUploadError(
+              FROM_HERE,
+              "Failed to fetch obsolete node.",
+              model_type());
         }
         sync_node.Remove();
       }
@@ -341,17 +350,15 @@ bool TypedUrlModelAssociator::AssociateModels(SyncError* error) {
   // this is the only thread that writes to the database.  We also don't have
   // to worry about the sync model getting out of sync, because changes are
   // propagated to the ChangeProcessor on this thread.
-  if (!WriteToHistoryBackend(&new_urls, &updated_urls,
-                             &new_visits, NULL)) {
-    error->Reset(FROM_HERE,
-                 "Failed to write to history backend",
-                 model_type());
-    return false;
+  error = WriteToHistoryBackend(&new_urls, &updated_urls,
+                                &new_visits, NULL);
+  if (error.IsSet()) {
+    return error;
   }
-  return true;
+  return error;
 }
 
-bool TypedUrlModelAssociator::UpdateFromSyncDB(
+SyncError TypedUrlModelAssociator::UpdateFromSyncDB(
     const sync_pb::TypedUrlSpecifics& typed_url,
     TypedUrlVisitVector* visits_to_add,
     history::VisitVector* visits_to_remove,
@@ -368,7 +375,10 @@ bool TypedUrlModelAssociator::UpdateFromSyncDB(
     // merge them below.
     if (!FixupURLAndGetVisits(
             history_backend_, &new_url, &existing_visits)) {
-      return false;
+      return error_handler_->CreateAndUploadError(
+          FROM_HERE,
+          "UpdateFromSyncDB failed",
+          model_type());
     }
   }
 
@@ -386,7 +396,7 @@ bool TypedUrlModelAssociator::UpdateFromSyncDB(
     new_urls->push_back(new_url);
   }
 
-  return true;
+  return SyncError();
 }
 
 sync_pb::TypedUrlSpecifics TypedUrlModelAssociator::FilterExpiredVisits(
@@ -429,8 +439,8 @@ bool TypedUrlModelAssociator::DeleteAllNodes(
   return true;
 }
 
-bool TypedUrlModelAssociator::DisassociateModels(SyncError* error) {
-  return true;
+SyncError TypedUrlModelAssociator::DisassociateModels() {
+  return SyncError();
 }
 
 void TypedUrlModelAssociator::AbortAssociation() {
@@ -460,7 +470,7 @@ bool TypedUrlModelAssociator::SyncModelHasUserCreatedNodes(bool* has_nodes) {
   return true;
 }
 
-bool TypedUrlModelAssociator::WriteToHistoryBackend(
+SyncError TypedUrlModelAssociator::WriteToHistoryBackend(
     const history::URLRows* new_urls,
     const TypedUrlUpdateVector* updated_urls,
     const TypedUrlVisitVector* new_visits,
@@ -477,7 +487,10 @@ bool TypedUrlModelAssociator::WriteToHistoryBackend(
       // transitioning from non-typed to typed as a result of this sync.
       if (!history_backend_->UpdateURL(url->first, url->second)) {
         LOG(ERROR) << "Could not update page: " << url->second.url().spec();
-        return false;
+        return error_handler_->CreateAndUploadError(
+            FROM_HERE,
+            "UpdateURl() failed",
+            model_type());
       }
     }
   }
@@ -490,17 +503,25 @@ bool TypedUrlModelAssociator::WriteToHistoryBackend(
       if (!history_backend_->AddVisits(visits->first, visits->second,
                                        history::SOURCE_SYNCED)) {
         LOG(ERROR) << "Could not add visits.";
-        return false;
+        return error_handler_->CreateAndUploadError(
+            FROM_HERE,
+            "AddVisits() failed",
+            model_type());
+
       }
     }
   }
   if (deleted_visits) {
     if (!history_backend_->RemoveVisits(*deleted_visits)) {
       LOG(ERROR) << "Could not remove visits.";
-      return false;
+      return error_handler_->CreateAndUploadError(
+          FROM_HERE,
+          "RemoveVisits() failed",
+          model_type());
+
     }
   }
-  return true;
+  return SyncError();
 }
 
 // static

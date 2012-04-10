@@ -7,6 +7,7 @@
 #pragma once
 
 #include "chrome/browser/sync/glue/change_processor.h"
+#include "sync/syncable/model_type.h"
 #include "sync/syncable/syncable.h"
 #include "sync/util/unrecoverable_error_handler.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -30,6 +31,10 @@ class ChangeProcessorMock
   MOCK_METHOD2(OnSingleDatatypeUnrecoverableError,
                      void(const tracked_objects::Location&,
                           const std::string&));
+  MOCK_METHOD3(CreateAndUploadError,
+                   SyncError(const tracked_objects::Location&,
+                             const std::string&,
+                             syncable::ModelType));
 
 };
 

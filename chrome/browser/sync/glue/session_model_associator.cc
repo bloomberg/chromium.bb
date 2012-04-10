@@ -82,7 +82,8 @@ sync_pb::SessionHeader::DeviceType GetLocalDeviceType() {
 
 }  // namespace
 
-SessionModelAssociator::SessionModelAssociator(ProfileSyncService* sync_service)
+SessionModelAssociator::SessionModelAssociator(ProfileSyncService* sync_service,
+    DataTypeErrorHandler* error_handler)
     : tab_pool_(sync_service),
       local_session_syncid_(sync_api::kInvalidId),
       sync_service_(sync_service),
@@ -91,7 +92,8 @@ SessionModelAssociator::SessionModelAssociator(ProfileSyncService* sync_service)
       waiting_for_change_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(test_weak_factory_(this)),
       profile_(sync_service->profile()),
-      pref_service_(profile_->GetPrefs()) {
+      pref_service_(profile_->GetPrefs()),
+      error_handler_(error_handler) {
   DCHECK(CalledOnValidThread());
   DCHECK(sync_service_);
   DCHECK(profile_);
@@ -112,7 +114,8 @@ SessionModelAssociator::SessionModelAssociator(ProfileSyncService* sync_service,
       waiting_for_change_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(test_weak_factory_(this)),
       profile_(sync_service->profile()),
-      pref_service_(NULL)  {
+      pref_service_(NULL),
+      error_handler_(NULL) {
   DCHECK(CalledOnValidThread());
   DCHECK(sync_service_);
   DCHECK(profile_);
@@ -265,9 +268,12 @@ bool SessionModelAssociator::AssociateWindows(bool reload_tabs,
   sync_api::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
   sync_api::WriteNode header_node(&trans);
   if (!header_node.InitByIdLookup(local_session_syncid_)) {
-    error->Reset(FROM_HERE,
-                 "Failed to load local session header node.",
-                 model_type());
+    if (error) {
+      *error = error_handler_->CreateAndUploadError(
+           FROM_HERE,
+           "Failed to load local session header node.",
+           model_type());
+    }
     return false;
   }
   header_node.SetSessionSpecifics(specifics);
@@ -322,10 +328,12 @@ bool SessionModelAssociator::AssociateTab(const SyncedTabDelegate& tab,
     // This is a new tab, get a sync node for it.
     sync_id = tab_pool_.GetFreeTabNode();
     if (sync_id == sync_api::kInvalidId) {
-      error->Reset(FROM_HERE,
-                   "Received invalid tab node from tab pool. Reassociation "
-                       "needed.",
-                    model_type());
+      if (error) {
+        *error = error_handler_->CreateAndUploadError(
+            FROM_HERE,
+            "Received invalid tab node from tab pool.",
+            model_type());
+      }
       return false;
     }
   } else {
@@ -398,7 +406,12 @@ bool SessionModelAssociator::WriteTabContentsToSyncModel(
   sync_api::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
   sync_api::WriteNode tab_node(&trans);
   if (!tab_node.InitByIdLookup(sync_id)) {
-    error->Reset(FROM_HERE, "Failed to look up local tab node", model_type());
+    if (error) {
+      *error = error_handler_->CreateAndUploadError(
+          FROM_HERE,
+          "Failed to look up local tab node",
+          model_type());
+    }
     return false;
   }
   tab_node.SetSessionSpecifics(session_s);
@@ -493,8 +506,9 @@ void SessionModelAssociator::Disassociate(int64 sync_id) {
   NOTIMPLEMENTED();
 }
 
-bool SessionModelAssociator::AssociateModels(SyncError* error) {
+SyncError SessionModelAssociator::AssociateModels() {
   DCHECK(CalledOnValidThread());
+  SyncError error;
 
   // Ensure that we disassociated properly, otherwise memory might leak.
   DCHECK(synced_session_tracker_.Empty());
@@ -509,8 +523,10 @@ bool SessionModelAssociator::AssociateModels(SyncError* error) {
 
     sync_api::ReadNode root(&trans);
     if (!root.InitByTagLookup(syncable::ModelTypeToRootTag(model_type()))) {
-      error->Reset(FROM_HERE, kNoSessionsFolderError, model_type());
-      return false;
+      return error_handler_->CreateAndUploadError(
+          FROM_HERE,
+          kNoSessionsFolderError,
+          model_type());
     }
 
     // Make sure we have a machine tag.
@@ -522,18 +538,20 @@ bool SessionModelAssociator::AssociateModels(SyncError* error) {
       InitializeCurrentSessionName();
     }
     synced_session_tracker_.SetLocalSessionTag(current_machine_tag_);
-    if (!UpdateAssociationsFromSyncModel(root, &trans, error))
-      return false;
+    if (!UpdateAssociationsFromSyncModel(root, &trans, &error)) {
+      DCHECK(error.IsSet());
+      return error;
+    }
 
     if (local_session_syncid_ == sync_api::kInvalidId) {
       // The sync db didn't have a header node for us, we need to create one.
       sync_api::WriteNode write_node(&trans);
       if (!write_node.InitUniqueByCreation(SESSIONS, root,
                                            current_machine_tag_)) {
-        error->Reset(FROM_HERE,
-                     "Failed to create sessions header sync node.",
-                     model_type());
-        return false;
+        return error_handler_->CreateAndUploadError(
+            FROM_HERE,
+            "Failed to create sessions header sync node.",
+            model_type());
       }
       write_node.SetTitle(UTF8ToWide(current_machine_tag_));
       local_session_syncid_ = write_node.GetId();
@@ -541,14 +559,17 @@ bool SessionModelAssociator::AssociateModels(SyncError* error) {
   }
 
   // Check if anything has changed on the client side.
-  if (!UpdateSyncModelDataFromClient(error))
-    return false;
+  if (!UpdateSyncModelDataFromClient(&error)) {
+    DCHECK(error.IsSet());
+    return error;
+  }
 
   DVLOG(1) << "Session models associated.";
-  return true;
+  DCHECK(!error.IsSet());
+  return error;
 }
 
-bool SessionModelAssociator::DisassociateModels(SyncError* error) {
+SyncError SessionModelAssociator::DisassociateModels() {
   DCHECK(CalledOnValidThread());
   DVLOG(1) << "Disassociating local session " << GetCurrentMachineTag();
   synced_session_tracker_.Clear();
@@ -564,7 +585,7 @@ bool SessionModelAssociator::DisassociateModels(SyncError* error) {
       chrome::NOTIFICATION_FOREIGN_SESSION_DISABLED,
       content::Source<Profile>(sync_service_->profile()),
       content::NotificationService::NoDetails());
-  return true;
+  return SyncError();
 }
 
 void SessionModelAssociator::InitializeCurrentMachineTag(
@@ -623,7 +644,12 @@ bool SessionModelAssociator::UpdateAssociationsFromSyncModel(
   while (id != sync_api::kInvalidId) {
     sync_api::WriteNode sync_node(trans);
     if (!sync_node.InitByIdLookup(id)) {
-      error->Reset(FROM_HERE, "Failed to load sync node", model_type());
+      if (error) {
+        *error = error_handler_->CreateAndUploadError(
+            FROM_HERE,
+            "Failed to load sync node",
+            model_type());
+      }
       return false;
     }
     int64 next_id = sync_node.GetSuccessorId();

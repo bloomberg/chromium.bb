@@ -8,6 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "chrome/browser/sync/glue/data_type_error_handler.h"
 #include "chrome/browser/sync/glue/model_associator.h"
 #include "sync/syncable/model_type.h"
 
@@ -19,15 +20,16 @@ namespace browser_sync {
 // sync themes model.
 class ThemeModelAssociator : public AssociatorInterface {
  public:
-  explicit ThemeModelAssociator(ProfileSyncService* sync_service);
+  ThemeModelAssociator(ProfileSyncService* sync_service,
+                       DataTypeErrorHandler* error_handler);
   virtual ~ThemeModelAssociator();
 
   // Used by profile_sync_test_util.h.
   static syncable::ModelType model_type() { return syncable::THEMES; }
 
   // AssociatorInterface implementation.
-  virtual bool AssociateModels(SyncError* error) OVERRIDE;
-  virtual bool DisassociateModels(SyncError* error) OVERRIDE;
+  virtual SyncError AssociateModels() OVERRIDE;
+  virtual SyncError DisassociateModels() OVERRIDE;
   virtual bool SyncModelHasUserCreatedNodes(bool* has_nodes) OVERRIDE;
   virtual void AbortAssociation() OVERRIDE {
     // No implementation needed, this associator runs on the main
@@ -37,6 +39,7 @@ class ThemeModelAssociator : public AssociatorInterface {
 
  private:
   ProfileSyncService* sync_service_;
+  DataTypeErrorHandler* error_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(ThemeModelAssociator);
 };

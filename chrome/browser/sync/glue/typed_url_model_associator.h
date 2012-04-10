@@ -15,6 +15,7 @@
 #include "base/compiler_specific.h"
 #include "base/string16.h"
 #include "chrome/browser/history/history_types.h"
+#include "chrome/browser/sync/glue/data_type_error_handler.h"
 #include "chrome/browser/sync/glue/model_associator.h"
 #include "sync/protocol/typed_url_specifics.pb.h"
 
@@ -50,16 +51,17 @@ class TypedUrlModelAssociator : public AssociatorInterface {
 
   static syncable::ModelType model_type() { return syncable::TYPED_URLS; }
   TypedUrlModelAssociator(ProfileSyncService* sync_service,
-                          history::HistoryBackend* history_backend);
+                          history::HistoryBackend* history_backend,
+                          DataTypeErrorHandler* error_handler);
   virtual ~TypedUrlModelAssociator();
 
   // AssociatorInterface implementation.
   //
   // Iterates through the sync model looking for matched pairs of items.
-  virtual bool AssociateModels(SyncError* error) OVERRIDE;
+  virtual SyncError AssociateModels() OVERRIDE;
 
   // Clears all associations.
-  virtual bool DisassociateModels(SyncError* error) OVERRIDE;
+  virtual SyncError DisassociateModels() OVERRIDE;
 
   // Called from the main thread, to abort the currently active model
   // association (for example, if we are shutting down).
@@ -74,10 +76,10 @@ class TypedUrlModelAssociator : public AssociatorInterface {
   // Delete all typed url nodes.
   bool DeleteAllNodes(sync_api::WriteTransaction* trans);
 
-  bool WriteToHistoryBackend(const history::URLRows* new_urls,
-                             const TypedUrlUpdateVector* updated_urls,
-                             const TypedUrlVisitVector* new_visits,
-                             const history::VisitVector* deleted_visits);
+  SyncError WriteToHistoryBackend(const history::URLRows* new_urls,
+                                  const TypedUrlUpdateVector* updated_urls,
+                                  const TypedUrlVisitVector* new_visits,
+                                  const history::VisitVector* deleted_visits);
 
   // Given a typed URL in the sync DB, looks for an existing entry in the
   // local history DB and generates a list of visits to add to the
@@ -87,7 +89,7 @@ class TypedUrlModelAssociator : public AssociatorInterface {
   // |updated_urls| or |new_urls| depending on whether the URL already existed
   // in the history DB.
   // Returns false if we encountered an error trying to access the history DB.
-  bool UpdateFromSyncDB(const sync_pb::TypedUrlSpecifics& typed_url,
+  SyncError UpdateFromSyncDB(const sync_pb::TypedUrlSpecifics& typed_url,
                         TypedUrlVisitVector* visits_to_add,
                         history::VisitVector* visits_to_remove,
                         TypedUrlUpdateVector* updated_urls,
@@ -179,6 +181,8 @@ class TypedUrlModelAssociator : public AssociatorInterface {
 
   // Set to true if there's a pending abort.
   bool pending_abort_;
+
+  DataTypeErrorHandler* error_handler_; // Guaranteed to outlive datatypes.
 
   DISALLOW_COPY_AND_ASSIGN(TypedUrlModelAssociator);
 };

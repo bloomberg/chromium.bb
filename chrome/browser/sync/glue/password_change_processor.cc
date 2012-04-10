@@ -221,9 +221,11 @@ void PasswordChangeProcessor::CommitChangesFromSyncModel() {
     return;
   ScopedStopObserving<PasswordChangeProcessor> stop_observing(this);
 
-  if (!model_associator_->WriteToPasswordStore(&new_passwords_,
-                                               &updated_passwords_,
-                                               &deleted_passwords_)) {
+  SyncError error = model_associator_->WriteToPasswordStore(
+      &new_passwords_,
+      &updated_passwords_,
+      &deleted_passwords_);
+  if (error.IsSet()) {
     error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
         "Error writing passwords");
     return;

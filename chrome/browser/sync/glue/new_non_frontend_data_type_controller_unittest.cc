@@ -374,7 +374,6 @@ TEST_F(SyncNewNonFrontendDataTypeControllerTest, AbortDuringAssociation) {
           Return(true)));
   EXPECT_CALL(*change_processor_, GetSyncData(_)).
       WillOnce(Return(SyncError(FROM_HERE, "Disconnected.", AUTOFILL_PROFILE)));
-  EXPECT_CALL(*dtc_mock_, RecordUnrecoverableError(_, _));
   EXPECT_CALL(*change_processor_, Disconnect()).
       WillOnce(DoAll(SignalEvent(&pause_db_thread), Return(true)));
   EXPECT_CALL(service_, DeactivateDataType(_));

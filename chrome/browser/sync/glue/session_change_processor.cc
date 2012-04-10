@@ -214,24 +214,22 @@ void SessionChangeProcessor::Observe(
   // Note that if we fail to associate, it means something has gone wrong,
   // such as our local session being deleted, so we disassociate and associate
   // again.
-  SyncError error;
   bool reassociation_needed = !modified_tabs.empty() &&
-      !session_model_associator_->AssociateTabs(modified_tabs, &error);
+      !session_model_associator_->AssociateTabs(modified_tabs, NULL);
 
   // Note, we always associate windows because it's possible a tab became
   // "interesting" by going to a valid URL, in which case it needs to be added
   // to the window's tab information.
   if (!reassociation_needed) {
     reassociation_needed =
-        !session_model_associator_->AssociateWindows(false, &error);
+        !session_model_associator_->AssociateWindows(false, NULL);
   }
 
   if (reassociation_needed) {
     LOG(WARNING) << "Reassociation of local models triggered.";
-    // Needing to reassociate would have set the error already so clear it.
-    error = SyncError();
-    session_model_associator_->DisassociateModels(&error);
-    session_model_associator_->AssociateModels(&error);
+    SyncError error;
+    error = session_model_associator_->DisassociateModels();
+    error = session_model_associator_->AssociateModels();
     if (error.IsSet()) {
       error_handler()->OnSingleDatatypeUnrecoverableError(
           error.location(),

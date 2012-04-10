@@ -22,6 +22,7 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/browser/sync/abstract_profile_sync_service_test.h"
+#include "chrome/browser/sync/glue/data_type_error_handler_mock.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/glue/typed_url_change_processor.h"
 #include "chrome/browser/sync/glue/typed_url_data_type_controller.h"
@@ -124,9 +125,14 @@ ACTION_P2(RunTaskOnDBThread, thread, backend) {
                             task));
 }
 
-ACTION_P4(MakeTypedUrlSyncComponents, profile, service, hb, dtc) {
+ACTION_P5(MakeTypedUrlSyncComponents,
+              profile,
+              service,
+              hb,
+              dtc,
+              error_handler) {
   TypedUrlModelAssociator* model_associator =
-      new TypedUrlModelAssociator(service, hb);
+      new TypedUrlModelAssociator(service, hb, error_handler);
   TypedUrlChangeProcessor* change_processor =
       new TypedUrlChangeProcessor(profile, model_associator, hb, dtc);
   return ProfileSyncComponentsFactory::SyncComponents(model_associator,
@@ -199,7 +205,8 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
           WillOnce(MakeTypedUrlSyncComponents(&profile_,
                                               service_.get(),
                                               history_backend_.get(),
-                                              data_type_controller));
+                                              data_type_controller,
+                                              &error_handler_));
       EXPECT_CALL(*factory, CreateDataTypeManager(_, _)).
           WillOnce(ReturnNewDataTypeManager());
 
@@ -292,6 +299,7 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
   ProfileMock profile_;
   scoped_refptr<HistoryBackendMock> history_backend_;
   scoped_refptr<HistoryServiceMock> history_service_;
+  browser_sync::DataTypeErrorHandlerMock error_handler_;
 };
 
 void AddTypedUrlEntries(ProfileSyncServiceTypedUrlTest* test,
@@ -777,6 +785,10 @@ TEST_F(ProfileSyncServiceTypedUrlTest, FailWriteToHistoryBackend) {
 
   EXPECT_CALL((*history_backend_.get()), UpdateURL(_, _)).
       WillRepeatedly(Return(false));
+  EXPECT_CALL(error_handler_, CreateAndUploadError(_, _, _)).
+              WillOnce(Return(SyncError(FROM_HERE,
+                                         "Unit test",
+                                         syncable::TYPED_URLS)));
   StartSyncService(base::Bind(&AddTypedUrlEntries, this, sync_entries));
   ASSERT_TRUE(
       service_->failed_datatypes_handler().GetFailedTypes().Has(

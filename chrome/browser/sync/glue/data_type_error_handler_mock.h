@@ -8,6 +8,8 @@
 #include "chrome/browser/sync/glue/data_type_controller.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
+#include "sync/syncable/model_type.h"
+
 namespace browser_sync {
 
 class DataTypeErrorHandlerMock : public DataTypeErrorHandler {
@@ -18,6 +20,11 @@ class DataTypeErrorHandlerMock : public DataTypeErrorHandler {
                void(const tracked_objects::Location&, const std::string&));
   MOCK_METHOD2(OnSingleDatatypeUnrecoverableError,
                void(const tracked_objects::Location&, const std::string&));
+  MOCK_METHOD3(CreateAndUploadError,
+                   SyncError(const tracked_objects::Location&,
+                             const std::string&,
+                             syncable::ModelType));
+
 };
 
 }  // namesspace browser_sync

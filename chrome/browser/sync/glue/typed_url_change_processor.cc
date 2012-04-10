@@ -243,9 +243,10 @@ void TypedUrlChangeProcessor::ApplyChangesFromSyncModel(
       continue;
     }
 
-    if (!model_associator_->UpdateFromSyncDB(
-            filtered_url, &pending_new_visits_, &pending_deleted_visits_,
-            &pending_updated_urls_, &pending_new_urls_)) {
+    SyncError error = model_associator_->UpdateFromSyncDB(
+        filtered_url, &pending_new_visits_, &pending_deleted_visits_,
+        &pending_updated_urls_, &pending_new_urls_);
+    if (error.IsSet()) {
       error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
           "Could not get existing url's visits.");
       return;
@@ -264,10 +265,13 @@ void TypedUrlChangeProcessor::CommitChangesFromSyncModel() {
   if (!pending_deleted_urls_.empty())
     history_backend_->DeleteURLs(pending_deleted_urls_);
 
-  if (!model_associator_->WriteToHistoryBackend(&pending_new_urls_,
-                                                &pending_updated_urls_,
-                                                &pending_new_visits_,
-                                                &pending_deleted_visits_)) {
+  SyncError error = model_associator_->WriteToHistoryBackend(
+      &pending_new_urls_,
+      &pending_updated_urls_,
+      &pending_new_visits_,
+      &pending_deleted_visits_);
+
+  if (error.IsSet()) {
     error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
         "Could not write to the history backend.");
     return;

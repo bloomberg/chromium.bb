@@ -32,19 +32,22 @@ static const char kNoThemesFolderError[] =
 }  // namespace
 
 ThemeModelAssociator::ThemeModelAssociator(
-    ProfileSyncService* sync_service)
-    : sync_service_(sync_service) {
+    ProfileSyncService* sync_service,
+    DataTypeErrorHandler* error_handler)
+    : sync_service_(sync_service),
+      error_handler_(error_handler) {
   DCHECK(sync_service_);
 }
 
 ThemeModelAssociator::~ThemeModelAssociator() {}
 
-bool ThemeModelAssociator::AssociateModels(SyncError* error) {
+SyncError ThemeModelAssociator::AssociateModels() {
   sync_api::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
   sync_api::ReadNode root(&trans);
   if (!root.InitByTagLookup(kThemesTag)) {
-    error->Reset(FROM_HERE, kNoThemesFolderError, model_type());
-    return false;
+    return error_handler_->CreateAndUploadError(FROM_HERE,
+                                                kNoThemesFolderError,
+                                                model_type());
   }
 
   Profile* profile = sync_service_->profile();
@@ -66,10 +69,10 @@ bool ThemeModelAssociator::AssociateModels(SyncError* error) {
     sync_api::WriteNode node(&trans);
     if (!node.InitUniqueByCreation(syncable::THEMES, root,
                                    kCurrentThemeClientTag)) {
-      error->Reset(FROM_HERE,
-                   "Could not create current theme node.",
-                   model_type());
-      return false;
+      return error_handler_->CreateAndUploadError(
+          FROM_HERE,
+          "Could not create current theme node.",
+          model_type());
     }
     node.SetIsFolder(false);
     node.SetTitle(UTF8ToWide(kCurrentThemeNodeTitle));
@@ -77,12 +80,12 @@ bool ThemeModelAssociator::AssociateModels(SyncError* error) {
     GetThemeSpecificsFromCurrentTheme(profile, &theme_specifics);
     node.SetThemeSpecifics(theme_specifics);
   }
-  return true;
+  return SyncError();
 }
 
-bool ThemeModelAssociator::DisassociateModels(SyncError* error) {
+SyncError ThemeModelAssociator::DisassociateModels() {
   // We don't maintain any association state, so nothing to do.
-  return true;
+  return SyncError();
 }
 
 bool ThemeModelAssociator::SyncModelHasUserCreatedNodes(bool* has_nodes) {

@@ -22,6 +22,7 @@
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_types.h"
+#include "chrome/browser/sync/glue/data_type_error_handler.h"
 #include "chrome/browser/sync/glue/model_associator.h"
 #include "chrome/browser/sync/glue/synced_session_tracker.h"
 #include "chrome/browser/sync/glue/synced_tab_delegate.h"
@@ -58,7 +59,8 @@ class SessionModelAssociator
       public base::NonThreadSafe {
  public:
   // Does not take ownership of sync_service.
-  explicit SessionModelAssociator(ProfileSyncService* sync_service);
+  SessionModelAssociator(ProfileSyncService* sync_service,
+                         DataTypeErrorHandler* error_handler);
   SessionModelAssociator(ProfileSyncService* sync_service,
                          bool setup_for_test);
   virtual ~SessionModelAssociator();
@@ -131,8 +133,7 @@ class SessionModelAssociator
   // with local client data. Processes/reuses any sync nodes owned by this
   // client and creates any further sync nodes needed to store local header and
   // tab info.
-  // |error| gets set if any association error occurred.
-  virtual bool AssociateModels(SyncError* error) OVERRIDE;
+  virtual SyncError AssociateModels() OVERRIDE;
 
   // Initializes the given sync node from the given chrome node id.
   // Returns false if no sync node was found for the given chrome node id or
@@ -142,8 +143,7 @@ class SessionModelAssociator
 
   // Clear local sync data buffers. Does not delete sync nodes to avoid
   // tombstones. TODO(zea): way to eventually delete orphaned nodes.
-  // |error| gets set if any disassociation error occurred.
-  virtual bool DisassociateModels(SyncError* error) OVERRIDE;
+  virtual SyncError DisassociateModels() OVERRIDE;
 
   // Returns the tag used to uniquely identify this machine's session in the
   // sync model.
@@ -470,6 +470,8 @@ class SessionModelAssociator
 
   // Pref service. Used to persist the session sync guid. Weak pointer.
   PrefService* const pref_service_;
+
+  DataTypeErrorHandler* error_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionModelAssociator);
 };

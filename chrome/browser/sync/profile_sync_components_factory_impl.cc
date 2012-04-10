@@ -292,7 +292,8 @@ ProfileSyncComponentsFactory::SyncComponents
         DataTypeErrorHandler* error_handler) {
   PasswordModelAssociator* model_associator =
       new PasswordModelAssociator(profile_sync_service,
-                                  password_store);
+                                  password_store,
+                                  error_handler);
   PasswordChangeProcessor* change_processor =
       new PasswordChangeProcessor(model_associator,
                                   password_store,
@@ -306,7 +307,7 @@ ProfileSyncComponentsFactory::SyncComponents
         ProfileSyncService* profile_sync_service,
         DataTypeErrorHandler* error_handler) {
   ThemeModelAssociator* model_associator =
-      new ThemeModelAssociator(profile_sync_service);
+      new ThemeModelAssociator(profile_sync_service, error_handler);
   ThemeChangeProcessor* change_processor =
       new ThemeChangeProcessor(error_handler);
   return SyncComponents(model_associator, change_processor);
@@ -320,7 +321,8 @@ ProfileSyncComponentsFactory::SyncComponents
         browser_sync::DataTypeErrorHandler* error_handler) {
   TypedUrlModelAssociator* model_associator =
       new TypedUrlModelAssociator(profile_sync_service,
-                                  history_backend);
+                                  history_backend,
+                                  error_handler);
   TypedUrlChangeProcessor* change_processor =
       new TypedUrlChangeProcessor(profile_,
                                   model_associator,
@@ -334,7 +336,7 @@ ProfileSyncComponentsFactory::SyncComponents
        ProfileSyncService* profile_sync_service,
         DataTypeErrorHandler* error_handler) {
   SessionModelAssociator* model_associator =
-      new SessionModelAssociator(profile_sync_service);
+      new SessionModelAssociator(profile_sync_service, error_handler);
   SessionChangeProcessor* change_processor =
       new SessionChangeProcessor(error_handler, model_associator);
   return SyncComponents(model_associator, change_processor);

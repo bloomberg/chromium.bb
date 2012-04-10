@@ -360,8 +360,8 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
         profile_.GetBookmarkModel(),
         test_user_share_.user_share(),
         &mock_error_handler_));
-    SyncError error;
-    EXPECT_TRUE(model_associator_->AssociateModels(&error));
+    SyncError error = model_associator_->AssociateModels();
+    EXPECT_FALSE(error.IsSet());
     MessageLoop::current()->RunAllPending();
 
     // Set up change processor.
@@ -374,8 +374,8 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
   void StopSync() {
     change_processor_->Stop();
     change_processor_.reset();
-    SyncError error;
-    EXPECT_TRUE(model_associator_->DisassociateModels(&error));
+    SyncError error = model_associator_->DisassociateModels();
+    EXPECT_FALSE(error.IsSet());
     model_associator_.reset();
 
     message_loop_.RunAllPending();

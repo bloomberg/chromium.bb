@@ -11,6 +11,7 @@
 #include "base/message_loop.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sync/api/sync_error.h"
 #include "chrome/browser/sync/glue/bookmark_data_type_controller.h"
 #include "chrome/browser/sync/glue/change_processor_mock.h"
 #include "chrome/browser/sync/glue/data_type_controller_mock.h"
@@ -84,14 +85,15 @@ class SyncBookmarkDataTypeControllerTest : public testing::Test {
     EXPECT_CALL(*profile_sync_factory_, CreateBookmarkSyncComponents(_, _));
     EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_)).
         WillRepeatedly(DoAll(SetArgumentPointee<0>(true), Return(true)));
-    EXPECT_CALL(*model_associator_, AssociateModels(_)).
-        WillRepeatedly(Return(true));
+    EXPECT_CALL(*model_associator_, AssociateModels()).
+        WillRepeatedly(Return(SyncError()));
     EXPECT_CALL(service_, ActivateDataType(_, _, _));
   }
 
   void SetStopExpectations() {
     EXPECT_CALL(service_, DeactivateDataType(_));
-    EXPECT_CALL(*model_associator_, DisassociateModels(_));
+    EXPECT_CALL(*model_associator_, DisassociateModels()).
+                WillOnce(Return(SyncError()));
   }
 
   MessageLoopForUI message_loop_;
@@ -205,9 +207,10 @@ TEST_F(SyncBookmarkDataTypeControllerTest, StartAssociationFailed) {
       WillRepeatedly(Return(true));
   EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_)).
       WillRepeatedly(DoAll(SetArgumentPointee<0>(true), Return(true)));
-  EXPECT_CALL(*model_associator_, AssociateModels(_)).
-      WillRepeatedly(DoAll(browser_sync::SetSyncError(syncable::BOOKMARKS),
-                           Return(false)));
+  EXPECT_CALL(*model_associator_, AssociateModels()).
+      WillRepeatedly(Return(SyncError(FROM_HERE,
+                                     "error",
+                                     syncable::BOOKMARKS)));
 
   EXPECT_CALL(start_callback_,
               Run(DataTypeController::ASSOCIATION_FAILED, _));

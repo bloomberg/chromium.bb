@@ -144,8 +144,8 @@ class SyncNonFrontendDataTypeControllerTest : public testing::Test {
         WillOnce(Return(true));
     EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_)).
         WillOnce(DoAll(SetArgumentPointee<0>(true), Return(true)));
-    EXPECT_CALL(*model_associator_, AssociateModels(_)).
-        WillOnce(Return(true));
+    EXPECT_CALL(*model_associator_, AssociateModels()).
+        WillOnce(Return(SyncError()));
     EXPECT_CALL(*dtc_mock_, RecordAssociationTime(_));
   }
 
@@ -157,13 +157,18 @@ class SyncNonFrontendDataTypeControllerTest : public testing::Test {
   void SetStopExpectations() {
     EXPECT_CALL(*dtc_mock_, StopModels());
     EXPECT_CALL(service_, DeactivateDataType(_));
-    EXPECT_CALL(*model_associator_, DisassociateModels(_));
+    EXPECT_CALL(*model_associator_, DisassociateModels()).
+                WillOnce(Return(SyncError()));
   }
 
   void SetStartFailExpectations(DataTypeController::StartResult result) {
     EXPECT_CALL(*dtc_mock_, StopModels());
     if (DataTypeController::IsUnrecoverableResult(result))
       EXPECT_CALL(*dtc_mock_, RecordUnrecoverableError(_, _));
+    if (model_associator_) {
+      EXPECT_CALL(*model_associator_, DisassociateModels()).
+                  WillOnce(Return(SyncError()));
+    }
     EXPECT_CALL(*dtc_mock_, RecordStartFailure(result));
     EXPECT_CALL(start_callback_, Run(result,_));
   }
@@ -214,8 +219,8 @@ TEST_F(SyncNonFrontendDataTypeControllerTest, StartFirstRun) {
       WillOnce(Return(true));
   EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_)).
       WillOnce(DoAll(SetArgumentPointee<0>(false), Return(true)));
-  EXPECT_CALL(*model_associator_, AssociateModels(_)).
-      WillOnce(Return(true));
+  EXPECT_CALL(*model_associator_, AssociateModels()).
+      WillOnce(Return(SyncError()));
   EXPECT_CALL(*dtc_mock_, RecordAssociationTime(_));
   SetActivateExpectations(DataTypeController::OK_FIRST_RUN);
   EXPECT_EQ(DataTypeController::NOT_RUNNING, non_frontend_dtc_->state());
@@ -243,9 +248,8 @@ TEST_F(SyncNonFrontendDataTypeControllerTest, StartAssociationFailed) {
       WillOnce(Return(true));
   EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_)).
       WillOnce(DoAll(SetArgumentPointee<0>(true), Return(true)));
-  EXPECT_CALL(*model_associator_, AssociateModels(_)).
-      WillOnce(DoAll(browser_sync::SetSyncError(syncable::AUTOFILL),
-                     Return(false)));
+  EXPECT_CALL(*model_associator_, AssociateModels()).
+      WillOnce(Return(SyncError(FROM_HERE, "Error", syncable::AUTOFILL)));
   EXPECT_CALL(*dtc_mock_, RecordAssociationTime(_));
   SetStartFailExpectations(DataTypeController::ASSOCIATION_FAILED);
   // Set up association to fail with an association failed error.
@@ -302,7 +306,8 @@ TEST_F(SyncNonFrontendDataTypeControllerTest, AbortDuringAssociationInactive) {
           Return(true)));
   EXPECT_CALL(*model_associator_, AbortAssociation()).WillOnce(
       SignalEvent(&pause_db_thread));
-  EXPECT_CALL(*model_associator_, AssociateModels(_)).WillOnce(Return(true));
+  EXPECT_CALL(*model_associator_, AssociateModels()).
+              WillOnce(Return(SyncError()));
   EXPECT_CALL(*dtc_mock_, RecordAssociationTime(_));
   EXPECT_CALL(service_, ActivateDataType(_, _, _));
   EXPECT_CALL(start_callback_, Run(DataTypeController::ABORTED,_));
@@ -331,8 +336,8 @@ TEST_F(SyncNonFrontendDataTypeControllerTest, AbortDuringAssociationActivated) {
           Return(true)));
   EXPECT_CALL(*model_associator_, AbortAssociation()).WillOnce(
       SignalEvent(&pause_db_thread));
-  EXPECT_CALL(*model_associator_, AssociateModels(_)).
-      WillOnce(Return(true));
+  EXPECT_CALL(*model_associator_, AssociateModels()).
+      WillOnce(Return(SyncError()));
   EXPECT_CALL(*dtc_mock_, RecordAssociationTime(_));
   EXPECT_CALL(service_, ActivateDataType(_, _, _)).WillOnce(DoAll(
       SignalEvent(&wait_for_db_thread_pause),

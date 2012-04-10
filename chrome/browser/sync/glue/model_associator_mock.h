@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,8 +22,8 @@ class ModelAssociatorMock : public AssociatorInterface {
   ModelAssociatorMock();
   virtual ~ModelAssociatorMock();
 
-  MOCK_METHOD1(AssociateModels, bool(SyncError* error));
-  MOCK_METHOD1(DisassociateModels, bool(SyncError* error));
+  MOCK_METHOD0(AssociateModels, SyncError());
+  MOCK_METHOD0(DisassociateModels, SyncError());
   MOCK_METHOD1(SyncModelHasUserCreatedNodes, bool(bool* has_nodes));
   MOCK_METHOD0(AbortAssociation, void());
   MOCK_METHOD0(CryptoReadyIfNecessary, bool());

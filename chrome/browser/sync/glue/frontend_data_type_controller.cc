@@ -97,9 +97,10 @@ bool FrontendDataTypeController::Associate() {
 
   base::TimeTicks start_time = base::TimeTicks::Now();
   SyncError error;
-  bool merge_success = model_associator()->AssociateModels(&error);
+  error = model_associator()->AssociateModels();
+  // TODO(lipalani): crbug.com/122690 - handle abort.
   RecordAssociationTime(base::TimeTicks::Now() - start_time);
-  if (!merge_success) {
+  if (error.IsSet()) {
     StartFailed(ASSOCIATION_FAILED, error);
     return false;
   }
@@ -176,7 +177,7 @@ void FrontendDataTypeController::Stop() {
 
   if (model_associator()) {
     SyncError error;  // Not used.
-    model_associator()->DisassociateModels(&error);
+    error = model_associator()->DisassociateModels();
   }
 
   set_model_associator(NULL);
