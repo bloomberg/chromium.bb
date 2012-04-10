@@ -142,7 +142,7 @@ TEST_F(HttpServerPropertiesManagerTest,
   // Set up alternate_protocol for www.google.com:80.
   base::DictionaryValue* alternate_protocol = new base::DictionaryValue;
   alternate_protocol->SetInteger("port", 443);
-  alternate_protocol->SetInteger("protocol", static_cast<int>(net::NPN_SPDY_1));
+  alternate_protocol->SetString("protocol_str", "npn-spdy/1");
   server_pref_dict->SetWithoutPathExpansion(
       "alternate_protocol", alternate_protocol);
 
@@ -164,8 +164,8 @@ TEST_F(HttpServerPropertiesManagerTest,
   // Set up alternate_protocol for mail.google.com:80
   base::DictionaryValue* alternate_protocol1 = new base::DictionaryValue;
   alternate_protocol1->SetInteger("port", 444);
-  alternate_protocol1->SetInteger(
-      "protocol", static_cast<int>(net::NPN_SPDY_2));
+  alternate_protocol1->SetString("protocol_str", "npn-spdy/2");
+
   server_pref_dict1->SetWithoutPathExpansion(
       "alternate_protocol", alternate_protocol1);
 

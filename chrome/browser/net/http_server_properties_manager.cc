@@ -335,10 +335,16 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefsOnUI() {
         detected_corrupted_prefs = true;
         continue;
       }
-      int protocol = 0;
-      if (!port_alternate_protocol_dict->GetIntegerWithoutPathExpansion(
-          "protocol", &protocol) || (protocol < 0) ||
-          (protocol > net::NUM_ALTERNATE_PROTOCOLS)) {
+      std::string protocol_str;
+      if (!port_alternate_protocol_dict->GetStringWithoutPathExpansion(
+              "protocol_str", &protocol_str)) {
+        DVLOG(1) << "Malformed Alternate-Protocol server: " << server_str;
+        detected_corrupted_prefs = true;
+        continue;
+      }
+      net::AlternateProtocol protocol =
+          net::AlternateProtocolFromString(protocol_str);
+      if (protocol > net::NUM_ALTERNATE_PROTOCOLS) {
         DVLOG(1) << "Malformed Alternate-Protocol server: " << server_str;
         detected_corrupted_prefs = true;
         continue;
@@ -346,8 +352,7 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefsOnUI() {
 
       net::PortAlternateProtocolPair port_alternate_protocol;
       port_alternate_protocol.port = port;
-      port_alternate_protocol.protocol = static_cast<net::AlternateProtocol>(
-          protocol);
+      port_alternate_protocol.protocol = protocol;
 
       (*alternate_protocol_map)[server] = port_alternate_protocol;
     } while (false);
@@ -589,8 +594,9 @@ void HttpServerPropertiesManager::UpdatePrefsOnUI(
           server_pref.alternate_protocol;
       port_alternate_protocol_dict->SetInteger(
           "port", port_alternate_protocol->port);
-      port_alternate_protocol_dict->SetInteger(
-          "protocol", port_alternate_protocol->protocol);
+      const char* protocol_str =
+          net::AlternateProtocolToString(port_alternate_protocol->protocol);
+      port_alternate_protocol_dict->SetString("protocol_str", protocol_str);
       server_pref_dict->SetWithoutPathExpansion(
           "alternate_protocol", port_alternate_protocol_dict);
     }
