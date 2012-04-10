@@ -342,7 +342,8 @@ class ExtensionService
 
   // Disables the extension.  If the extension is already disabled, or
   // cannot be disabled, does nothing.
-  virtual void DisableExtension(const std::string& extension_id);
+  virtual void DisableExtension(const std::string& extension_id,
+                                Extension::DisableReason disable_reason);
 
   // Updates the |extension|'s granted permissions lists to include all
   // permissions in the |extension|'s manifest and re-enables the

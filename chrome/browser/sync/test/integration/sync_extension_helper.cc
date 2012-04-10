@@ -101,7 +101,8 @@ void SyncExtensionHelper::EnableExtension(Profile* profile,
 
 void SyncExtensionHelper::DisableExtension(Profile* profile,
                                            const std::string& name) {
-  profile->GetExtensionService()->DisableExtension(NameToId(name));
+  profile->GetExtensionService()->DisableExtension(
+      NameToId(name), Extension::DISABLE_USER_ACTION);
 }
 
 bool SyncExtensionHelper::IsExtensionEnabled(

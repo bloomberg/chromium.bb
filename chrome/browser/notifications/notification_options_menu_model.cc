@@ -239,7 +239,8 @@ void NotificationOptionsMenuModel::ExecuteCommand(int command_id) {
       if (extension) {
         const std::string& id = extension->id();
         if (extension_service->IsExtensionEnabled(id))
-          extension_service->DisableExtension(id);
+          extension_service->DisableExtension(
+              id, Extension::DISABLE_USER_ACTION);
         else
           extension_service->EnableExtension(id);
       }

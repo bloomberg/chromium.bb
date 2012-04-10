@@ -2253,7 +2253,7 @@ TEST_F(ExtensionServiceTest, UpdateExtensionPreservesState) {
 
   // Disable it and allow it to run in incognito. These settings should carry
   // over to the updated version.
-  service_->DisableExtension(good->id());
+  service_->DisableExtension(good->id(), Extension::DISABLE_USER_ACTION);
   service_->SetIsIncognitoEnabled(good->id(), true);
   service_->extension_prefs()->SetDidExtensionEscalatePermissions(good, true);
 
@@ -2932,7 +2932,7 @@ TEST_F(ExtensionServiceTest, DisableExtension) {
   EXPECT_TRUE(service_->disabled_extensions()->is_empty());
 
   // Disable it.
-  service_->DisableExtension(good_crx);
+  service_->DisableExtension(good_crx, Extension::DISABLE_USER_ACTION);
 
   EXPECT_TRUE(service_->extensions()->is_empty());
   EXPECT_TRUE(service_->GetExtensionById(good_crx, true));
@@ -2948,7 +2948,7 @@ TEST_F(ExtensionServiceTest, DisableTerminatedExtension) {
   EXPECT_TRUE(service_->GetTerminatedExtension(good_crx));
 
   // Disable it.
-  service_->DisableExtension(good_crx);
+  service_->DisableExtension(good_crx, Extension::DISABLE_USER_ACTION);
 
   EXPECT_FALSE(service_->GetTerminatedExtension(good_crx));
   EXPECT_TRUE(service_->GetExtensionById(good_crx, true));
@@ -2997,7 +2997,7 @@ TEST_F(ExtensionServiceTest, ReloadExtensions) {
   FilePath path = data_dir_.AppendASCII("good.crx");
   InstallCRX(path, INSTALL_NEW);
   const char* extension_id = good_crx;
-  service_->DisableExtension(extension_id);
+  service_->DisableExtension(extension_id, Extension::DISABLE_USER_ACTION);
 
   EXPECT_EQ(0u, service_->extensions()->size());
   EXPECT_EQ(1u, service_->disabled_extensions()->size());
@@ -4073,7 +4073,7 @@ TEST_F(ExtensionServiceTest, GetSyncExtensionDataUserSettings) {
     EXPECT_FALSE(data.incognito_enabled());
   }
 
-  service_->DisableExtension(good_crx);
+  service_->DisableExtension(good_crx, Extension::DISABLE_USER_ACTION);
   {
     SyncDataList list = service_->GetAllSyncData(syncable::EXTENSIONS);
     ASSERT_EQ(list.size(), 1U);
@@ -4194,7 +4194,7 @@ TEST_F(ExtensionServiceTest, GetSyncDataList) {
   service_->MergeDataAndStartSyncing(syncable::EXTENSIONS, SyncDataList(),
       scoped_ptr<SyncChangeProcessor>(new TestSyncProcessorStub));
 
-  service_->DisableExtension(page_action);
+  service_->DisableExtension(page_action, Extension::DISABLE_USER_ACTION);
   TerminateExtension(theme2_crx);
 
   EXPECT_EQ(0u, service_->GetAllSyncData(syncable::APPS).size());
