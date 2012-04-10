@@ -831,11 +831,11 @@ _firmware_release = _release.derive(
 )
 
 # Examples:
-#_firmware_release.add_config('x86-mario-release-firmware',
+#_firmware_release.add_config('x86-mario-firmware',
 #  boards=['x86-mario'],
 #)
 
-#_factory_release.add_config('x86-mario-release-factory',
+#_factory_release.add_config('x86-mario-factory',
 #  boards=['x86-mario'],
 #)
 

@@ -230,6 +230,9 @@ class CBuildBotTest(mox.MoxTestBase):
         saw_config_for_branch = False
         for build_name, config in cbuildbot_config.config.iteritems():
           if build_name.endswith('-%s' % branch):
+            self.assertFalse('release' in build_name,
+                             'Factory|Firmware release builders should not '
+                             'contain release in their name.')
             saw_config_for_branch = True
 
         self.assertTrue(
