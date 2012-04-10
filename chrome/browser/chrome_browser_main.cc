@@ -1088,10 +1088,6 @@ void ChromeBrowserMainParts::PreMainMessageLoopStart() {
     chrome_extra_parts_[i]->PreMainMessageLoopStart();
 }
 
-MessageLoop* ChromeBrowserMainParts::GetMainMessageLoop() {
-  return NULL;
-}
-
 void ChromeBrowserMainParts::PostMainMessageLoopStart() {
   for (size_t i = 0; i < chrome_extra_parts_.size(); ++i)
     chrome_extra_parts_[i]->PostMainMessageLoopStart();

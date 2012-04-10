@@ -308,11 +308,8 @@ void BrowserMainLoop::MainMessageLoopStart() {
   }
 #endif
 
-  // Must first NULL pointer or we hit a DCHECK that the newly constructed
-  // message loop is the current one.
-  main_message_loop_.reset();
-  main_message_loop_.reset(parts_->GetMainMessageLoop());
-  if (!main_message_loop_.get())
+  // Create a MessageLoop if one does not already exist for the current thread.
+  if (!MessageLoop::current())
     main_message_loop_.reset(new MessageLoop(MessageLoop::TYPE_UI));
 
   InitializeMainThread();
@@ -585,7 +582,8 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
 void BrowserMainLoop::InitializeMainThread() {
   const char* kThreadName = "CrBrowserMain";
   base::PlatformThread::SetName(kThreadName);
-  main_message_loop_->set_thread_name(kThreadName);
+  if (main_message_loop_.get())
+    main_message_loop_->set_thread_name(kThreadName);
 
   // Register the main thread by instantiating it, but don't call any methods.
   main_thread_.reset(new BrowserThreadImpl(BrowserThread::UI,

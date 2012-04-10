@@ -754,10 +754,6 @@ void CFUrlRequestUnittestRunner::PreEarlyInitialization() {
   StartFileLogger();
 }
 
-MessageLoop* CFUrlRequestUnittestRunner::GetMainMessageLoop() {
-  return NULL;
-}
-
 int CFUrlRequestUnittestRunner::PreCreateThreads() {
   fake_chrome_.reset(new FakeExternalTab());
   fake_chrome_->Initialize();
