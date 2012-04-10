@@ -389,6 +389,9 @@ GLES2Implementation::GLES2Implementation(
       pack_alignment_(4),
       unpack_alignment_(4),
       unpack_flip_y_(false),
+      unpack_row_length_(0),
+      unpack_skip_rows_(0),
+      unpack_skip_pixels_(0),
       pack_reverse_row_order_(false),
       active_texture_unit_(0),
       bound_framebuffer_(0),
@@ -1240,6 +1243,15 @@ void GLES2Implementation::PixelStorei(GLenum pname, GLint param) {
     case GL_UNPACK_ALIGNMENT:
         unpack_alignment_ = param;
         break;
+    case GL_UNPACK_ROW_LENGTH:
+        unpack_row_length_ = param;
+        return;
+    case GL_UNPACK_SKIP_ROWS:
+        unpack_skip_rows_ = param;
+        return;
+    case GL_UNPACK_SKIP_PIXELS:
+        unpack_skip_pixels_ = param;
+        return;
     case GL_UNPACK_FLIP_Y_CHROMIUM:
         unpack_flip_y_ = (param != 0);
         return;
@@ -1512,44 +1524,40 @@ void GLES2Implementation::CompressedTexSubImage2D(
   helper_->SetBucketSize(kResultBucketId, 0);
 }
 
-bool GLES2Implementation::CopyRectToBufferFlipped(
+namespace {
+
+void CopyRectToBuffer(
     const void* pixels,
-    GLsizei width,
-    GLsizei height,
-    GLenum format,
-    GLenum type,
-    void* buffer) {
-  if (width == 0 || height == 0) {
-    return true;
-  }
-
-  uint32 temp_size;
-  if (!GLES2Util::ComputeImageDataSize(
-      width, 1, format, type, unpack_alignment_, &temp_size)) {
-    SetGLError(GL_INVALID_VALUE, "glTexSubImage2D: size to large");
-    return false;
-  }
-  GLsizeiptr unpadded_row_size = temp_size;
-  if (!GLES2Util::ComputeImageDataSize(
-      width, 2, format, type, unpack_alignment_, &temp_size)) {
-    SetGLError(GL_INVALID_VALUE, "glTexSubImage2D: size to large");
-    return false;
-  }
-  GLsizeiptr padded_row_size = temp_size - unpadded_row_size;
-  if (padded_row_size < 0 || unpadded_row_size < 0) {
-    SetGLError(GL_INVALID_VALUE, "glTexSubImage2D: size to large");
-    return false;
-  }
-
+    uint32 height,
+    uint32 unpadded_row_size,
+    uint32 pixels_padded_row_size,
+    bool flip_y,
+    void* buffer,
+    uint32 buffer_padded_row_size) {
   const int8* source = static_cast<const int8*>(pixels);
-  int8* dest = static_cast<int8*>(buffer) + padded_row_size * (height - 1);
-  for (; height; --height) {
+  int8* dest = static_cast<int8*>(buffer);
+  if (flip_y || pixels_padded_row_size != buffer_padded_row_size) {
+    if (flip_y) {
+      dest += buffer_padded_row_size * (height - 1);
+    }
+    // the last row is copied unpadded at the end
+    for (; height > 1; --height) {
+      memcpy(dest, source, buffer_padded_row_size);
+      if (flip_y) {
+        dest -= buffer_padded_row_size;
+      } else {
+        dest += buffer_padded_row_size;
+      }
+      source += pixels_padded_row_size;
+    }
     memcpy(dest, source, unpadded_row_size);
-    dest -= padded_row_size;
-    source += padded_row_size;
+  } else {
+    uint32 size = (height - 1) * pixels_padded_row_size + unpadded_row_size;
+    memcpy(dest, source, size);
   }
-  return true;
 }
+
+}  // anonymous namespace
 
 void GLES2Implementation::TexImage2D(
     GLenum target, GLint level, GLint internalformat, GLsizei width,
@@ -1569,8 +1577,11 @@ void GLES2Implementation::TexImage2D(
     return;
   }
   uint32 size;
-  if (!GLES2Util::ComputeImageDataSize(
-      width, height, format, type, unpack_alignment_, &size)) {
+  uint32 unpadded_row_size;
+  uint32 padded_row_size;
+  if (!GLES2Util::ComputeImageDataSizes(
+          width, height, format, type, unpack_alignment_, &size,
+          &unpadded_row_size, &padded_row_size)) {
     SetGLError(GL_INVALID_VALUE, "glTexImage2D: image size too large");
     return;
   }
@@ -1583,6 +1594,28 @@ void GLES2Implementation::TexImage2D(
     return;
   }
 
+  // compute the advance bytes per row for the src pixels
+  uint32 src_padded_row_size;
+  if (unpack_row_length_ > 0) {
+    if (!GLES2Util::ComputeImagePaddedRowSize(
+        unpack_row_length_, format, type, unpack_alignment_,
+        &src_padded_row_size)) {
+      SetGLError(GL_INVALID_VALUE, "glTexImage2D: unpack row length too large");
+      return;
+    }
+  } else {
+    src_padded_row_size = padded_row_size;
+  }
+
+  // advance pixels pointer past the skip rows and skip pixels
+  pixels = reinterpret_cast<const int8*>(pixels) +
+      unpack_skip_rows_ * src_padded_row_size;
+  if (unpack_skip_pixels_) {
+    uint32 group_size = GLES2Util::ComputeImageGroupSize(format, type);
+    pixels = reinterpret_cast<const int8*>(pixels) +
+        unpack_skip_pixels_ * group_size;
+  }
+
   // Check if we can send it all at once.
   ScopedTransferBufferPtr buffer(size, helper_, transfer_buffer_);
   if (!buffer.valid()) {
@@ -1590,19 +1623,12 @@ void GLES2Implementation::TexImage2D(
   }
 
   if (buffer.size() >= size) {
-    bool copy_success = true;
-    if (unpack_flip_y_) {
-      copy_success = CopyRectToBufferFlipped(
-          pixels, width, height, format, type, buffer.address());
-    } else {
-      memcpy(buffer.address(), pixels, size);
-    }
-
-    if (copy_success) {
-      helper_->TexImage2D(
-          target, level, internalformat, width, height, border, format, type,
-          buffer.shm_id(), buffer.offset());
-    }
+    CopyRectToBuffer(
+        pixels, height, unpadded_row_size, src_padded_row_size, unpack_flip_y_,
+        buffer.address(), padded_row_size);
+    helper_->TexImage2D(
+        target, level, internalformat, width, height, border, format, type,
+        buffer.shm_id(), buffer.offset());
     return;
   }
 
@@ -1611,8 +1637,8 @@ void GLES2Implementation::TexImage2D(
      target, level, internalformat, width, height, border, format, type,
      0, 0);
   TexSubImage2DImpl(
-      target, level, 0, 0, width, height, format, type, pixels, GL_TRUE,
-      &buffer);
+      target, level, 0, 0, width, height, format, type, unpadded_row_size,
+      pixels, src_padded_row_size, GL_TRUE, &buffer, padded_row_size);
 }
 
 void GLES2Implementation::TexSubImage2D(
@@ -1637,16 +1663,42 @@ void GLES2Implementation::TexSubImage2D(
   }
 
   uint32 temp_size;
-  if (!GLES2Util::ComputeImageDataSize(
-      width, height, format, type, unpack_alignment_, &temp_size)) {
+  uint32 unpadded_row_size;
+  uint32 padded_row_size;
+  if (!GLES2Util::ComputeImageDataSizes(
+        width, height, format, type, unpack_alignment_, &temp_size,
+        &unpadded_row_size, &padded_row_size)) {
     SetGLError(GL_INVALID_VALUE, "glTexSubImage2D: size to large");
     return;
   }
 
+  // compute the advance bytes per row for the src pixels
+  uint32 src_padded_row_size;
+  if (unpack_row_length_ > 0) {
+    if (!GLES2Util::ComputeImagePaddedRowSize(
+        unpack_row_length_, format, type, unpack_alignment_,
+        &src_padded_row_size)) {
+      SetGLError(GL_INVALID_VALUE, "glTexImage2D: unpack row length too large");
+      return;
+    }
+  } else {
+    src_padded_row_size = padded_row_size;
+  }
+
+  // advance pixels pointer past the skip rows and skip pixels
+  pixels = reinterpret_cast<const int8*>(pixels) +
+      unpack_skip_rows_ * src_padded_row_size;
+  if (unpack_skip_pixels_) {
+    uint32 group_size = GLES2Util::ComputeImageGroupSize(format, type);
+    pixels = reinterpret_cast<const int8*>(pixels) +
+        unpack_skip_pixels_ * group_size;
+  }
+
   ScopedTransferBufferPtr buffer(temp_size, helper_, transfer_buffer_);
   TexSubImage2DImpl(
-      target, level, xoffset, yoffset, width, height, format, type, pixels,
-      GL_FALSE, &buffer);
+      target, level, xoffset, yoffset, width, height, format, type,
+      unpadded_row_size, pixels, src_padded_row_size, GL_FALSE, &buffer,
+      padded_row_size);
 }
 
 static GLint ComputeNumRowsThatFitInBuffer(
@@ -1662,37 +1714,20 @@ static GLint ComputeNumRowsThatFitInBuffer(
 
 void GLES2Implementation::TexSubImage2DImpl(
     GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width,
-    GLsizei height, GLenum format, GLenum type, const void* pixels,
-    GLboolean internal, ScopedTransferBufferPtr* buffer) {
+    GLsizei height, GLenum format, GLenum type, uint32 unpadded_row_size,
+    const void* pixels, uint32 pixels_padded_row_size, GLboolean internal,
+    ScopedTransferBufferPtr* buffer, uint32 buffer_padded_row_size) {
   GPU_DCHECK(buffer);
   GPU_DCHECK_GE(level, 0);
   GPU_DCHECK_GT(height, 0);
   GPU_DCHECK_GT(width, 0);
 
-  const int8* source = static_cast<const int8*>(pixels);
-  uint32 temp_size;
-  if (!GLES2Util::ComputeImageDataSize(
-      width, 1, format, type, unpack_alignment_, &temp_size)) {
-    SetGLError(GL_INVALID_VALUE, "glTexSubImage2D: size to large");
-    return;
-  }
-  GLsizeiptr unpadded_row_size = temp_size;
-  if (!GLES2Util::ComputeImageDataSize(
-      width, 2, format, type, unpack_alignment_, &temp_size)) {
-    SetGLError(GL_INVALID_VALUE, "glTexSubImage2D: size to large");
-    return;
-  }
-  GLsizeiptr padded_row_size = temp_size - unpadded_row_size;
-  if (padded_row_size < 0 || unpadded_row_size < 0) {
-    SetGLError(GL_INVALID_VALUE, "glTexSubImage2D: size to large");
-    return;
-  }
-
+  const int8* source = reinterpret_cast<const int8*>(pixels);
   GLint original_yoffset = yoffset;
   // Transfer by rows.
   while (height) {
     unsigned int desired_size =
-        padded_row_size * (height - 1) + unpadded_row_size;
+        buffer_padded_row_size * (height - 1) + unpadded_row_size;
     if (!buffer->valid() || buffer->size() == 0) {
       buffer->Reset(desired_size);
       if (!buffer->valid()) {
@@ -1701,24 +1736,18 @@ void GLES2Implementation::TexSubImage2DImpl(
     }
 
     GLint num_rows = ComputeNumRowsThatFitInBuffer(
-        padded_row_size, unpadded_row_size, buffer->size());
+        buffer_padded_row_size, unpadded_row_size, buffer->size());
     num_rows = std::min(num_rows, height);
-    GLint y;
-    if (unpack_flip_y_) {
-      CopyRectToBufferFlipped(
-          source, width, num_rows, format, type, buffer->address());
-      y = original_yoffset + height - num_rows;
-    } else {
-      temp_size = padded_row_size * (num_rows - 1) + unpadded_row_size;
-      memcpy(buffer->address(), source, temp_size);
-      y = yoffset;
-    }
+    CopyRectToBuffer(
+        source, num_rows, unpadded_row_size, pixels_padded_row_size,
+        unpack_flip_y_, buffer->address(), buffer_padded_row_size);
+    GLint y = unpack_flip_y_ ? original_yoffset + height - num_rows : yoffset;
     helper_->TexSubImage2D(
         target, level, xoffset, y, width, num_rows, format, type,
         buffer->shm_id(), buffer->offset(), internal);
     buffer->Release();
     yoffset += num_rows;
-    source += num_rows * padded_row_size;
+    source += num_rows * pixels_padded_row_size;
     height -= num_rows;
   }
 }
@@ -1945,7 +1974,8 @@ const GLubyte* GLES2Implementation::GetStringHelper(GLenum name) {
       case GL_EXTENSIONS:
         str += std::string(str.empty() ? "" : " ") +
             "GL_CHROMIUM_map_sub "
-            "GL_CHROMIUM_flipy";
+            "GL_CHROMIUM_flipy "
+            "GL_EXT_unpack_subimage";
         break;
       default:
         break;
@@ -2062,19 +2092,11 @@ void GLES2Implementation::ReadPixels(
 
   int8* dest = reinterpret_cast<int8*>(pixels);
   uint32 temp_size;
-  if (!GLES2Util::ComputeImageDataSize(
-      width, 1, format, type, pack_alignment_, &temp_size)) {
-    SetGLError(GL_INVALID_VALUE, "glReadPixels: size too large.");
-    return;
-  }
-  GLsizeiptr unpadded_row_size = temp_size;
-  if (!GLES2Util::ComputeImageDataSize(
-      width, 2, format, type, pack_alignment_, &temp_size)) {
-    SetGLError(GL_INVALID_VALUE, "glReadPixels: size too large.");
-    return;
-  }
-  GLsizei padded_row_size = temp_size - unpadded_row_size;
-  if (padded_row_size < 0 || unpadded_row_size < 0) {
+  uint32 unpadded_row_size;
+  uint32 padded_row_size;
+  if (!GLES2Util::ComputeImageDataSizes(
+      width, 2, format, type, pack_alignment_, &temp_size, &unpadded_row_size,
+      &padded_row_size)) {
     SetGLError(GL_INVALID_VALUE, "glReadPixels: size too large.");
     return;
   }
@@ -2582,8 +2604,8 @@ void* GLES2Implementation::MapTexSubImage2DCHROMIUM(
     return NULL;
   }
   uint32 size;
-  if (!GLES2Util::ComputeImageDataSize(
-      width, height, format, type, unpack_alignment_, &size)) {
+  if (!GLES2Util::ComputeImageDataSizes(
+      width, height, format, type, unpack_alignment_, &size, NULL, NULL)) {
     SetGLError(
         GL_INVALID_VALUE, "MapTexSubImage2DCHROMIUM: image size too large");
     return NULL;

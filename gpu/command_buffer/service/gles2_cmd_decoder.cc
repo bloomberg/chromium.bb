@@ -1657,8 +1657,9 @@ bool Texture::AllocateStorage(const gfx::Size& size, GLenum format) {
   bool success = glGetError() == GL_NO_ERROR;
   if (success) {
     uint32 image_size = 0;
-    GLES2Util::ComputeImageDataSize(
-        size.width(), size.height(), format, GL_UNSIGNED_BYTE, 4, &image_size);
+    GLES2Util::ComputeImageDataSizes(
+        size.width(), size.height(), format, GL_UNSIGNED_BYTE, 4, &image_size,
+        NULL, NULL);
     estimated_size_ = image_size;
     decoder_->UpdateBackbufferMemoryAccounting();
   }
@@ -5971,8 +5972,8 @@ error::Error GLES2DecoderImpl::HandleReadPixels(
   }
   typedef gles2::ReadPixels::Result Result;
   uint32 pixels_size;
-  if (!GLES2Util::ComputeImageDataSize(
-      width, height, format, type, pack_alignment_, &pixels_size)) {
+  if (!GLES2Util::ComputeImageDataSizes(
+      width, height, format, type, pack_alignment_, &pixels_size, NULL, NULL)) {
     return error::kOutOfBounds;
   }
   void* pixels = GetSharedMemoryAs<void*>(
@@ -6017,27 +6018,20 @@ error::Error GLES2DecoderImpl::HandleReadPixels(
     // The user requested an out of range area. Get the results 1 line
     // at a time.
     uint32 temp_size;
-    if (!GLES2Util::ComputeImageDataSize(
-        width, 1, format, type, pack_alignment_, &temp_size)) {
-      SetGLError(GL_INVALID_VALUE, "glReadPixels: dimensions out of range");
-      return error::kNoError;
-    }
-    GLsizei unpadded_row_size = temp_size;
-    if (!GLES2Util::ComputeImageDataSize(
-        width, 2, format, type, pack_alignment_, &temp_size)) {
-      SetGLError(GL_INVALID_VALUE, "glReadPixels: dimensions out of range");
-      return error::kNoError;
-    }
-    GLsizei padded_row_size = temp_size - unpadded_row_size;
-    if (padded_row_size < 0 || unpadded_row_size < 0) {
+    uint32 unpadded_row_size;
+    uint32 padded_row_size;
+    if (!GLES2Util::ComputeImageDataSizes(
+        width, 2, format, type, pack_alignment_, &temp_size,
+        &unpadded_row_size, &padded_row_size)) {
       SetGLError(GL_INVALID_VALUE, "glReadPixels: dimensions out of range");
       return error::kNoError;
     }
 
     GLint dest_x_offset = std::max(-x, 0);
     uint32 dest_row_offset;
-    if (!GLES2Util::ComputeImageDataSize(
-      dest_x_offset, 1, format, type, pack_alignment_, &dest_row_offset)) {
+    if (!GLES2Util::ComputeImageDataSizes(
+        dest_x_offset, 1, format, type, pack_alignment_, &dest_row_offset, NULL,
+        NULL)) {
       SetGLError(GL_INVALID_VALUE, "glReadPixels: dimensions out of range");
       return error::kNoError;
     }
@@ -6072,19 +6066,12 @@ error::Error GLES2DecoderImpl::HandleReadPixels(
     if ((channels_exist & 0x0008) == 0) {
       // Set the alpha to 255 because some drivers are buggy in this regard.
       uint32 temp_size;
-      if (!GLES2Util::ComputeImageDataSize(
-          width, 1, format, type, pack_alignment_, &temp_size)) {
-        SetGLError(GL_INVALID_VALUE, "glReadPixels: dimensions out of range");
-        return error::kNoError;
-      }
-      GLsizei unpadded_row_size = temp_size;
-      if (!GLES2Util::ComputeImageDataSize(
-          width, 2, format, type, pack_alignment_, &temp_size)) {
-        SetGLError(GL_INVALID_VALUE, "glReadPixels: dimensions out of range");
-        return error::kNoError;
-      }
-      GLsizei padded_row_size = temp_size - unpadded_row_size;
-      if (padded_row_size < 0 || unpadded_row_size < 0) {
+
+      uint32 unpadded_row_size;
+      uint32 padded_row_size;
+      if (!GLES2Util::ComputeImageDataSizes(
+          width, 2, format, type, pack_alignment_, &temp_size,
+          &unpadded_row_size, &padded_row_size)) {
         SetGLError(GL_INVALID_VALUE, "glReadPixels: dimensions out of range");
         return error::kNoError;
       }
@@ -6463,8 +6450,9 @@ bool GLES2DecoderImpl::ClearLevel(
     bool is_texture_immutable) {
   // Assumes the size has already been checked.
   uint32 pixels_size = 0;
-  if (!GLES2Util::ComputeImageDataSize(
-      width, height, format, type, unpack_alignment_, &pixels_size)) {
+  if (!GLES2Util::ComputeImageDataSizes(
+      width, height, format, type, unpack_alignment_, &pixels_size, NULL,
+      NULL)) {
     return false;
   }
   scoped_array<char> zero(new char[pixels_size]);
@@ -6771,8 +6759,9 @@ error::Error GLES2DecoderImpl::HandleTexImage2D(
   uint32 pixels_shm_id = static_cast<uint32>(c.pixels_shm_id);
   uint32 pixels_shm_offset = static_cast<uint32>(c.pixels_shm_offset);
   uint32 pixels_size;
-  if (!GLES2Util::ComputeImageDataSize(
-      width, height, format, type, unpack_alignment_, &pixels_size)) {
+  if (!GLES2Util::ComputeImageDataSizes(
+      width, height, format, type, unpack_alignment_, &pixels_size, NULL,
+      NULL)) {
     return error::kOutOfBounds;
   }
   const void* pixels = NULL;
@@ -6799,8 +6788,8 @@ error::Error GLES2DecoderImpl::HandleTexImage2DImmediate(
   GLenum format = static_cast<GLenum>(c.format);
   GLenum type = static_cast<GLenum>(c.type);
   uint32 size;
-  if (!GLES2Util::ComputeImageDataSize(
-      width, height, format, type, unpack_alignment_, &size)) {
+  if (!GLES2Util::ComputeImageDataSizes(
+      width, height, format, type, unpack_alignment_, &size, NULL, NULL)) {
     return error::kOutOfBounds;
   }
   const void* pixels = GetImmediateDataAs<const void*>(
@@ -7026,8 +7015,9 @@ void GLES2DecoderImpl::DoCopyTexSubImage2D(
       copyHeight != height) {
     // some part was clipped so clear the sub rect.
     uint32 pixels_size = 0;
-    if (!GLES2Util::ComputeImageDataSize(
-        width, height, format, type, unpack_alignment_, &pixels_size)) {
+    if (!GLES2Util::ComputeImageDataSizes(
+        width, height, format, type, unpack_alignment_, &pixels_size, NULL,
+        NULL)) {
       SetGLError(GL_INVALID_VALUE, "glCopyTexSubImage2D: dimensions too large");
       return;
     }
@@ -7134,8 +7124,8 @@ error::Error GLES2DecoderImpl::HandleTexSubImage2D(
   GLenum format = static_cast<GLenum>(c.format);
   GLenum type = static_cast<GLenum>(c.type);
   uint32 data_size;
-  if (!GLES2Util::ComputeImageDataSize(
-      width, height, format, type, unpack_alignment_, &data_size)) {
+  if (!GLES2Util::ComputeImageDataSizes(
+      width, height, format, type, unpack_alignment_, &data_size, NULL, NULL)) {
     return error::kOutOfBounds;
   }
   const void* pixels = GetSharedMemoryAs<const void*>(
@@ -7183,8 +7173,8 @@ error::Error GLES2DecoderImpl::HandleTexSubImage2DImmediate(
   GLenum format = static_cast<GLenum>(c.format);
   GLenum type = static_cast<GLenum>(c.type);
   uint32 data_size;
-  if (!GLES2Util::ComputeImageDataSize(
-      width, height, format, type, unpack_alignment_, &data_size)) {
+  if (!GLES2Util::ComputeImageDataSizes(
+      width, height, format, type, unpack_alignment_, &data_size, NULL, NULL)) {
     return error::kOutOfBounds;
   }
   const void* pixels = GetImmediateDataAs<const void*>(

@@ -265,8 +265,8 @@ void TextureManager::TextureInfo::SetLevelInfo(
   info.type = type;
 
   estimated_size_ -= info.estimated_size;
-  GLES2Util::ComputeImageDataSize(
-      width, height, format, type, 4, &info.estimated_size);
+  GLES2Util::ComputeImageDataSizes(
+      width, height, format, type, 4, &info.estimated_size, NULL, NULL);
   estimated_size_ += info.estimated_size;
 
   if (!info.cleared) {

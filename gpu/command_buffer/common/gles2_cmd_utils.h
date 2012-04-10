@@ -103,10 +103,21 @@ class GLES2_UTILS_EXPORT GLES2Util {
   // function is called. If 0 is returned the id is invalid.
   int GLGetNumValuesReturned(int id) const;
 
+  // Computes the size of a single group of elements from a format and type pair
+  static uint32 ComputeImageGroupSize(int format, int type);
+
+  // Computes the size of an image row including alignment padding
+  static bool ComputeImagePaddedRowSize(
+    int width, int format, int type, int unpack_alignment,
+    uint32* padded_row_size);
+
   // Computes the size of image data for TexImage2D and TexSubImage2D.
-  static bool ComputeImageDataSize(
+  // Optionally the unpadded and padded row sizes can be returned. If height < 2
+  // then the padded_row_size will be the same as the unpadded_row_size since
+  // padding is not necessary.
+  static bool ComputeImageDataSizes(
     int width, int height, int format, int type, int unpack_alignment,
-    uint32* size);
+    uint32* size, uint32* unpadded_row_size, uint32* padded_row_size);
 
   static size_t RenderbufferBytesPerPixel(int format);
 

@@ -373,12 +373,31 @@ int BytesPerElement(int type) {
 
 }  // anonymous namespace
 
+uint32 GLES2Util::ComputeImageGroupSize(int format, int type) {
+  return BytesPerElement(type) * ElementsPerGroup(format, type);
+}
+
+bool GLES2Util::ComputeImagePaddedRowSize(
+        int width, int format, int type, int unpack_alignment,
+        uint32* padded_row_size) {
+  uint32 bytes_per_group = ComputeImageGroupSize(format, type);
+  uint32 unpadded_row_size;
+  if (!SafeMultiplyUint32(width, bytes_per_group, &unpadded_row_size)) {
+    return false;
+  }
+  uint32 temp;
+  if (!SafeAddUint32(unpadded_row_size, unpack_alignment - 1, &temp)) {
+      return false;
+  }
+  *padded_row_size = (temp / unpack_alignment) * unpack_alignment;
+  return true;
+}
+
 // Returns the amount of data glTexImage2D or glTexSubImage2D will access.
-bool GLES2Util::ComputeImageDataSize(
+bool GLES2Util::ComputeImageDataSizes(
     int width, int height, int format, int type, int unpack_alignment,
-    uint32* size) {
-  uint32 bytes_per_group =
-      BytesPerElement(type) * ElementsPerGroup(format, type);
+    uint32* size, uint32* ret_unpadded_row_size, uint32* ret_padded_row_size) {
+  uint32 bytes_per_group = ComputeImageGroupSize(format, type);
   uint32 row_size;
   if (!SafeMultiplyUint32(width, bytes_per_group, &row_size)) {
     return false;
@@ -397,11 +416,21 @@ bool GLES2Util::ComputeImageDataSize(
     if (!SafeAddUint32(size_of_all_but_last_row, row_size, size)) {
       return false;
     }
+    if (ret_padded_row_size) {
+      *ret_padded_row_size = padded_row_size;
+    }
   } else {
     if (!SafeMultiplyUint32(height, row_size, size)) {
       return false;
     }
+    if (ret_padded_row_size) {
+      *ret_padded_row_size = row_size;
+    }
   }
+  if (ret_unpadded_row_size) {
+    *ret_unpadded_row_size = row_size;
+  }
+
   return true;
 }
 

@@ -413,13 +413,13 @@ class GLES2_IMPL_EXPORT GLES2Implementation {
   GLuint GetMaxValueInBufferCHROMIUMHelper(
       GLuint buffer_id, GLsizei count, GLenum type, GLuint offset);
 
-  bool CopyRectToBufferFlipped(
-      const void* pixels, GLsizei width, GLsizei height, GLenum format,
-      GLenum type, void* buffer);
+  // The pixels pointer should already account for unpack skip rows and skip
+  // pixels.
   void TexSubImage2DImpl(
       GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width,
-      GLsizei height, GLenum format, GLenum type, const void* pixels,
-      GLboolean internal, ScopedTransferBufferPtr* buffer);
+      GLsizei height, GLenum format, GLenum type, uint32 unpadded_row_size,
+      const void* pixels, uint32 pixels_padded_row_size, GLboolean internal,
+      ScopedTransferBufferPtr* buffer, uint32 buffer_padded_row_size);
 
   // Helpers for query functions.
   bool GetHelper(GLenum pname, GLint* params);
@@ -461,6 +461,15 @@ class GLES2_IMPL_EXPORT GLES2Implementation {
 
   // unpack yflip as last set by glPixelstorei
   bool unpack_flip_y_;
+
+  // unpack row length as last set by glPixelStorei
+  GLint unpack_row_length_;
+
+  // unpack skip rows as last set by glPixelStorei
+  GLint unpack_skip_rows_;
+
+  // unpack skip pixels as last set by glPixelStorei
+  GLint unpack_skip_pixels_;
 
   // pack reverse row order as last set by glPixelstorei
   bool pack_reverse_row_order_;
