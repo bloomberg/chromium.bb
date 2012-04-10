@@ -11,6 +11,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
+#include "chrome/browser/extensions/api/alarms/alarm_manager.h"
 #include "chrome/browser/extensions/api/declarative/rules_registry_service.h"
 #include "chrome/browser/extensions/extension_devtools_manager.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
@@ -243,6 +244,7 @@ void ExtensionSystemImpl::Init(bool extensions_enabled) {
   shared_->InitInfoMap();
 
   extension_process_manager_.reset(ExtensionProcessManager::Create(profile_));
+  alarm_manager_.reset(new extensions::AlarmManager(profile_));
 
   shared_->Init(extensions_enabled);
 }
@@ -263,6 +265,10 @@ ExtensionDevToolsManager* ExtensionSystemImpl::devtools_manager() {
 
 ExtensionProcessManager* ExtensionSystemImpl::process_manager() {
   return extension_process_manager_.get();
+}
+
+extensions::AlarmManager* ExtensionSystemImpl::alarm_manager() {
+  return alarm_manager_.get();
 }
 
 ExtensionInfoMap* ExtensionSystemImpl::info_map() {

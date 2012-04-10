@@ -222,7 +222,8 @@ class UIThreadExtensionFunction : public ExtensionFunction {
   class DelegateForTests {
    public:
     virtual void OnSendResponse(UIThreadExtensionFunction* function,
-                                bool success) = 0;
+                                bool success,
+                                bool bad_message) = 0;
   };
 
   UIThreadExtensionFunction();

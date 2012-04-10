@@ -1,0 +1,94 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_BROWSER_EXTENSIONS_API_ALARMS_ALARM_MANAGER_H__
+#define CHROME_BROWSER_EXTENSIONS_API_ALARMS_ALARM_MANAGER_H__
+#pragma once
+
+#include <string>
+#include <map>
+#include <vector>
+
+#include "base/timer.h"
+#include "chrome/browser/extensions/extension_function.h"
+#include "chrome/common/extensions/api/experimental.alarms.h"
+
+class Profile;
+
+namespace extensions {
+
+// Manages the currently pending alarms for every extension in a profile.
+// There is one manager per virtual Profile.
+class AlarmManager {
+ public:
+  typedef extensions::api::experimental_alarms::Alarm Alarm;
+  typedef std::vector<linked_ptr<Alarm> > AlarmList;
+
+  class Delegate {
+   public:
+    virtual ~Delegate() {}
+    // Called when an alarm fires.
+    virtual void OnAlarm(const std::string& extension_id,
+                         const Alarm& alarm) = 0;
+  };
+
+  explicit AlarmManager(Profile* profile);
+  virtual ~AlarmManager();
+
+  // Override the default delegate. Callee assumes onwership. Used for testing.
+  void set_delegate(Delegate* delegate) { delegate_.reset(delegate); }
+
+  // Adds |alarm| for the given extension, and starts the timer.
+  void AddAlarm(const std::string& extension_id,
+                const linked_ptr<Alarm>& alarm);
+
+  // Returns the alarm with the given name, or NULL if none exists.
+  const Alarm* GetAlarm(const std::string& extension_id,
+                        const std::string& name);
+
+  // Returns the list of pending alarms for the given extension, or NULL
+  // if none exist.
+  const AlarmList* GetAllAlarms(const std::string& extension_id);
+
+  // Cancels and removes the alarm with the given name.
+  bool RemoveAlarm(const std::string& extension_id,
+                   const std::string& name);
+
+  // Cancels and removes all alarms for the given extension.
+  void RemoveAllAlarms(const std::string& extension_id);
+
+ private:
+  typedef std::string ExtensionId;
+  typedef std::map<ExtensionId, AlarmList> AlarmMap;
+
+  // Iterator used to identify a particular alarm within the Map/List pair.
+  // "Not found" is represented by <alarms_.end(), invalid_iterator>.
+  typedef std::pair<AlarmMap::iterator, AlarmList::iterator> AlarmIterator;
+
+  // Helper to return the iterators within the AlarmMap and AlarmList for the
+  // matching alarm, or an iterator to the end of the AlarmMap if none were
+  // found.
+  AlarmIterator GetAlarmIterator(const std::string& extension_id,
+                                 const std::string& name);
+
+  // Helper to cancel and remove the alarm at the given iterator. The iterator
+  // must be valid.
+  void RemoveAlarmIterator(const AlarmIterator& iter);
+
+  // Callback for when an alarm fires.
+  void OnAlarm(const std::string& extension_id, const std::string& name);
+
+  Profile* profile_;
+  scoped_ptr<Delegate> delegate_;
+
+  // A map of our pending alarms, per extension.
+  AlarmMap alarms_;
+
+  // A map of the timer associated with each alarm.
+  std::map<const Alarm*, linked_ptr<base::Timer> > timers_;
+};
+
+} //  namespace extensions
+
+#endif  // CHROME_BROWSER_EXTENSIONS_API_ALARMS_ALARM_MANAGER_H__

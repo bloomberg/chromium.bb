@@ -27,6 +27,7 @@ class Profile;
 class UserScriptMaster;
 
 namespace extensions {
+class AlarmManager;
 class LazyBackgroundTaskQueue;
 class RulesRegistryService;
 }
@@ -64,6 +65,9 @@ class ExtensionSystem : public ProfileKeyedService {
 
   // The ExtensionProcessManager is created at startup.
   virtual ExtensionProcessManager* process_manager() = 0;
+
+  // The AlarmManager is created at startup.
+  virtual extensions::AlarmManager* alarm_manager() = 0;
 
   // Returns the IO-thread-accessible extension data.
   virtual ExtensionInfoMap* info_map() = 0;
@@ -115,6 +119,7 @@ class ExtensionSystemImpl : public ExtensionSystem {
   virtual UserScriptMaster* user_script_master() OVERRIDE;  // shared
   virtual ExtensionDevToolsManager* devtools_manager() OVERRIDE;
   virtual ExtensionProcessManager* process_manager() OVERRIDE;
+  virtual extensions::AlarmManager* alarm_manager() OVERRIDE;
   virtual extensions::LazyBackgroundTaskQueue* lazy_background_task_queue()
       OVERRIDE;  // shared
   virtual ExtensionInfoMap* info_map() OVERRIDE;  // shared
@@ -185,6 +190,7 @@ class ExtensionSystemImpl : public ExtensionSystem {
   // incoming resource requests from extension processes and those require
   // access to the ResourceContext owned by |io_data_|.
   scoped_ptr<ExtensionProcessManager> extension_process_manager_;
+  scoped_ptr<extensions::AlarmManager> alarm_manager_;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_SYSTEM_H_

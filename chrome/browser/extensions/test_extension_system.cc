@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/test_extension_system.h"
 
+#include "chrome/browser/extensions/api/alarms/alarm_manager.h"
 #include "chrome/browser/extensions/extension_devtools_manager.h"
 #include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/extensions/extension_info_map.h"
@@ -31,6 +32,10 @@ void TestExtensionSystem::Shutdown() {
 
 void TestExtensionSystem::CreateExtensionProcessManager() {
   extension_process_manager_.reset(ExtensionProcessManager::Create(profile_));
+}
+
+void TestExtensionSystem::CreateAlarmManager() {
+  alarm_manager_.reset(new extensions::AlarmManager(profile_));
 }
 
 ExtensionService* TestExtensionSystem::CreateExtensionService(
@@ -77,6 +82,10 @@ ExtensionDevToolsManager* TestExtensionSystem::devtools_manager() {
 
 ExtensionProcessManager* TestExtensionSystem::process_manager() {
   return extension_process_manager_.get();
+}
+
+extensions::AlarmManager* TestExtensionSystem::alarm_manager() {
+  return alarm_manager_.get();
 }
 
 ExtensionInfoMap* TestExtensionSystem::info_map() {

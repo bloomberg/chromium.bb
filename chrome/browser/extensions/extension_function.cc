@@ -183,7 +183,7 @@ Browser* UIThreadExtensionFunction::GetCurrentBrowser() {
 
 void UIThreadExtensionFunction::SendResponse(bool success) {
   if (delegate_) {
-    delegate_->OnSendResponse(this, success);
+    delegate_->OnSendResponse(this, success, bad_message_);
   } else {
     if (!render_view_host_ || !dispatcher())
       return;
