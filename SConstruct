@@ -2517,6 +2517,7 @@ def MakeBaseTrustedEnv():
       'src/trusted/simple_service/build.scons',
       'src/trusted/threading/build.scons',
       'src/trusted/validator/build.scons',
+      'src/trusted/validator_ragel/build.scons',
       'src/trusted/validator/x86/build.scons',
       'src/trusted/validator/x86/decoder/build.scons',
       'src/trusted/validator/x86/decoder/generator/build.scons',
