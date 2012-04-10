@@ -66,8 +66,7 @@ TEST_F(ChromeLoggingTest, EnvironmentLogFileName) {
   RestoreEnvironmentVariable();
 }
 
-#if (defined(OS_LINUX) || defined(OS_ANDROID)) \
-    && (!defined(NDEBUG) || !defined(USE_LINUX_BREAKPAD))
+#if defined(OS_LINUX) && (!defined(NDEBUG) || !defined(USE_LINUX_BREAKPAD))
 // On Linux in Debug mode, Chrome generates a SIGTRAP.
 // we do not catch SIGTRAPs, thus no crash dump.
 // This also does not work if Breakpad is disabled.
@@ -150,7 +149,7 @@ class RendererCrashTest : public UITest {
   }
 };
 
-#if (defined(OS_LINUX) || defined(OS_ANDROID)) && !defined(USE_LINUX_BREAKPAD)
+#if defined(OS_LINUX) && !defined(USE_LINUX_BREAKPAD)
 // On Linux, do not expect a crash dump if Breakpad is disabled.
 #define EXPECTED_CRASH_CRASHES 0
 #else

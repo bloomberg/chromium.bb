@@ -135,9 +135,9 @@
 #include "chrome/browser/chrome_browser_main_extra_parts_ash.h"
 #endif
 
-#if defined(OS_LINUX) || defined(OS_OPENBSD) || defined(OS_ANDROID)
+#if defined(OS_LINUX) || defined(OS_OPENBSD)
 #include "base/linux_util.h"
-#include "chrome/browser/crash_handler_host_linuxish.h"
+#include "chrome/browser/crash_handler_host_linux.h"
 #endif
 
 #if defined(TOOLKIT_GTK)
@@ -1611,6 +1611,11 @@ bool ChromeContentBrowserClient::AllowSocketAPI(
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 int ChromeContentBrowserClient::GetCrashSignalFD(
     const CommandLine& command_line) {
+#if defined(OS_ANDROID)
+  // TODO(carlosvaldivia): Upstream breakpad code for Android and remove this
+  // fork. http://crbug.com/113560
+  NOTIMPLEMENTED();
+#else
   if (command_line.HasSwitch(switches::kExtensionProcess)) {
     ExtensionCrashHandlerHostLinux* crash_handler =
         ExtensionCrashHandlerHostLinux::GetInstance();
@@ -1631,6 +1636,7 @@ int ChromeContentBrowserClient::GetCrashSignalFD(
 
   if (process_type == switches::kGpuProcess)
     return GpuCrashHandlerHostLinux::GetInstance()->GetDeathSignalSocket();
+#endif  // defined(OS_ANDROID)
 
   return -1;
 }

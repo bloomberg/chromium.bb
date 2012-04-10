@@ -29,7 +29,7 @@
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(USE_LINUX_BREAKPAD)
-#include "chrome/app/breakpad_linuxish.h"
+#include "chrome/app/breakpad_linux.h"
 #endif
 
 #if defined(GOOGLE_CHROME_BUILD)
