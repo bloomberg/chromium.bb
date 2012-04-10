@@ -73,6 +73,7 @@ enum dpms_enum {
 
 struct weston_output {
 	struct wl_list link;
+	struct wl_global *global;
 	struct weston_compositor *compositor;
 	struct weston_matrix matrix;
 	struct wl_list frame_callback_list;
