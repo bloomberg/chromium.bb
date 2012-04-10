@@ -56,13 +56,13 @@
   overflow-y: auto;
 }
 
-#ipConfigList {
+#ip-config-list {
   min-height: 96px !important;
 }
 
 /* Minimum and maximum height are integer multiples of the height of a list
    entry. */
-#ignoredHostList {
+#ignored-host-list {
   -webkit-margin-start: 0;
   border: solid 1px #999;
   max-height: 128px;
@@ -70,7 +70,7 @@
   width: 400px;
 }
 
-#newHost {
+#new-host {
   -webkit-margin-start: 0;
   margin-top: 8px;
 }
