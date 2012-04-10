@@ -4446,6 +4446,9 @@
                 '-Wno-self-assign',
               ],
             }],
+            ['asan==1', {
+              'cflags!': [ '-faddress-sanitizer' ],
+            }],
           ],
           'actions': [
             {
