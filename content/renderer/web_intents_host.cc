@@ -6,10 +6,12 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/utf_string_conversions.h"
 #include "content/common/intents_messages.h"
 #include "content/renderer/render_view_impl.h"
 #include "ipc/ipc_message.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebBlob.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIntentRequest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
@@ -19,6 +21,7 @@
 #include "webkit/glue/cpp_bound_class.h"
 
 using WebKit::WebBindings;
+using WebKit::WebBlob;
 using WebKit::WebCString;
 using WebKit::WebFrame;
 using WebKit::WebIntentRequest;
@@ -36,6 +39,7 @@ class WebIntentsHost::BoundDeliveredIntent : public CppBoundClass {
                        WebFrame* frame) {
     action_ = WebString(intent.action).utf8();
     type_ = WebString(intent.type).utf8();
+    extra_data_ = intent.extra_data;
     parent_ = parent;
 
     v8::HandleScope scope;
@@ -48,25 +52,32 @@ class WebIntentsHost::BoundDeliveredIntent : public CppBoundClass {
           WebSerializedScriptValue::fromString(WebString(intent.data));
       DCHECK(!ssv.isNull());
       data_obj = v8::Local<v8::Value>::New(ssv.deserialize());
-    } else {
-      DCHECK(intent.data_type == webkit_glue::WebIntentData::UNSERIALIZED);
+    } else if (intent.data_type == webkit_glue::WebIntentData::UNSERIALIZED) {
       data_obj = v8::String::New(
           reinterpret_cast<const uint16_t*>(intent.unserialized_data.data()),
           static_cast<int>(intent.unserialized_data.length()));
+    } else {
+      DCHECK(intent.data_type == webkit_glue::WebIntentData::BLOB);
+      WebBlob web_blob = WebBlob::createFromFile(
+          WebString::fromUTF8(intent.blob_file.AsUTF8Unsafe()),
+          intent.blob_length);
+      data_obj = v8::Local<v8::Value>::New(web_blob.toV8Value());
     }
 
     data_val_.reset(new CppVariant);
     WebBindings::toNPVariant(data_obj, frame->windowObject(), data_val_.get());
 
-    BindGetterCallback("action", base::Bind(&BoundDeliveredIntent::getAction,
+    BindGetterCallback("action", base::Bind(&BoundDeliveredIntent::GetAction,
                                             base::Unretained(this)));
-    BindGetterCallback("type", base::Bind(&BoundDeliveredIntent::getType,
+    BindGetterCallback("type", base::Bind(&BoundDeliveredIntent::GetType,
                                           base::Unretained(this)));
-    BindGetterCallback("data", base::Bind(&BoundDeliveredIntent::getData,
+    BindGetterCallback("data", base::Bind(&BoundDeliveredIntent::GetData,
                                           base::Unretained(this)));
-    BindCallback("postResult", base::Bind(&BoundDeliveredIntent::postResult,
+    BindCallback("getExtra", base::Bind(&BoundDeliveredIntent::GetExtra,
+                                        base::Unretained(this)));
+    BindCallback("postResult", base::Bind(&BoundDeliveredIntent::PostResult,
                                           base::Unretained(this)));
-    BindCallback("postFailure", base::Bind(&BoundDeliveredIntent::postFailure,
+    BindCallback("postFailure", base::Bind(&BoundDeliveredIntent::PostFailure,
                                            base::Unretained(this)));
   }
 
@@ -85,7 +96,7 @@ class WebIntentsHost::BoundDeliveredIntent : public CppBoundClass {
     return ssv.toString();
   }
 
-  void postResult(const CppArgumentList& args, CppVariant* retval) {
+  void PostResult(const CppArgumentList& args, CppVariant* retval) {
     if (args.size() != 1) {
       WebBindings::setException(NULL, "Must pass one argument to postResult");
       return;
@@ -95,7 +106,7 @@ class WebIntentsHost::BoundDeliveredIntent : public CppBoundClass {
     parent_->OnResult(str);
   }
 
-  void postFailure(const CppArgumentList& args, CppVariant* retval) {
+  void PostFailure(const CppArgumentList& args, CppVariant* retval) {
     if (args.size() != 1) {
       WebBindings::setException(NULL, "Must pass one argument to postFailure");
       return;
@@ -105,26 +116,49 @@ class WebIntentsHost::BoundDeliveredIntent : public CppBoundClass {
     parent_->OnFailure(str);
   }
 
-  void getAction(CppVariant* result) {
+  void GetAction(CppVariant* result) {
     std::string action;
     action.assign(action_.data(), action_.length());
     result->Set(action);
   }
 
-  void getType(CppVariant* result) {
+  void GetType(CppVariant* result) {
     std::string type;
     type.assign(type_.data(), type_.length());
     result->Set(type);
   }
 
-  void getData(CppVariant* result) {
+  void GetData(CppVariant* result) {
     result->Set(*data_val_.get());
+  }
+
+  void GetExtra(const CppArgumentList& args, CppVariant* result) {
+    if (args.size() != 1) {
+      WebBindings::setException(NULL, "Must pass one argument to getExtra");
+      return;
+    }
+
+    if (!args[0].isString()) {
+      WebBindings::setException(NULL, "Argument to getExtra must be a string");
+      return;
+    }
+
+    std::string str = args[0].ToString();
+    std::map<string16, string16>::const_iterator iter =
+        extra_data_.find(UTF8ToUTF16(str));
+    if (iter == extra_data_.end()) {
+      result->SetNull();
+      return;
+    }
+    std::string val = UTF16ToUTF8(iter->second);
+    result->Set(val);
   }
 
  private:
   // Intent data suitable for surfacing to Javascript callers.
   WebCString action_;
   WebCString type_;
+  std::map<string16, string16> extra_data_;
   scoped_ptr<CppVariant> data_val_;
 
   // The dispatcher object, for forwarding postResult/postFailure calls.

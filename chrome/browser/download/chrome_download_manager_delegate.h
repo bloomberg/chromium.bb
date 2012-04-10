@@ -146,6 +146,13 @@ class ChromeDownloadManagerDelegate
   // Callback from history system.
   void OnItemAddedToPersistentStore(int32 download_id, int64 db_handle);
 
+  // Check policy of whether we should open this download with a web intents
+  // dispatch.
+  bool ShouldOpenWithWebIntents(const content::DownloadItem* item);
+
+  // Open the given item with a web intent dispatch.
+  void OpenWithWebIntent(const content::DownloadItem* item);
+
   Profile* profile_;
   int next_download_id_;
   scoped_ptr<DownloadPrefs> download_prefs_;

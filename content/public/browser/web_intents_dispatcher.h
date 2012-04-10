@@ -17,6 +17,7 @@ struct WebIntentData;
 namespace content {
 
 class WebContents;
+class WebContentsDelegate;
 
 // This class is the coordinator for dispatching web intents and seeing that
 // return messages are sent to the correct invoking context. The WebContents
@@ -38,6 +39,11 @@ class CONTENT_EXPORT WebIntentsDispatcher {
   // This callback type is registered for notification of |SendReplyMessage|.
   typedef base::Callback<void(webkit_glue::WebIntentReplyType)>
       ReplyNotification;
+
+  // Create internal (browser-triggered) intent. This will create
+  // a new dispatcher with the passed intent payload |data|. The caller should
+  // manage dispatching it correctly.
+  static WebIntentsDispatcher* Create(const webkit_glue::WebIntentData& data);
 
   virtual ~WebIntentsDispatcher() {}
 

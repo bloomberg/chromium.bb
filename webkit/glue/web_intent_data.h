@@ -5,6 +5,9 @@
 #ifndef WEBKIT_GLUE_WEB_INTENT_DATA_H_
 #define WEBKIT_GLUE_WEB_INTENT_DATA_H_
 
+#include <map>
+
+#include "base/file_path.h"
 #include "base/string16.h"
 #include "webkit/glue/webkit_glue_export.h"
 
@@ -20,17 +23,26 @@ struct WEBKIT_GLUE_EXPORT WebIntentData {
   string16 action;
   // The MIME type of data in this intent payload.
   string16 type;
-  // The representation of the payload data. Wire format is from
-  // SerializedScriptObject.
+  // The serialized representation of the payload data. Wire format is from
+  // WebSerializedScriptValue.
   string16 data;
+  // Any extra key-value pair metadata. (Not serialized.)
+  std::map<string16, string16> extra_data;
 
   // String payload data.
   string16 unserialized_data;
 
+  // The file of a payload blob. Together with |blob_length|, suitable
+  // arguments to WebBlob::createFromFile.
+  FilePath blob_file;
+  // Length of the blob.
+  int64 blob_length;
+
   // These enum values indicate which payload data type should be used.
   enum DataType {
-    SERIALIZED = 0,   // The payload is serialized in |data|.
-    UNSERIALIZED = 1  // The payload is unseriazed in |unserialized_data|.
+    SERIALIZED = 0,    // The payload is serialized in |data|.
+    UNSERIALIZED = 1,  // The payload is unserialized in |unserialized_data|.
+    BLOB = 2           // The payload is a blob
   };
   // Which data payload to use when delivering the intent.
   DataType data_type;
@@ -40,6 +52,10 @@ struct WEBKIT_GLUE_EXPORT WebIntentData {
   WebIntentData(const string16& action_in,
                 const string16& type_in,
                 const string16& unserialized_data_in);
+  WebIntentData(const string16& action_in,
+                const string16& type_in,
+                const FilePath& blob_file_in,
+                int64 blob_length_in);
   ~WebIntentData();
 };
 

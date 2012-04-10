@@ -14,6 +14,7 @@
 #include "base/rand_util.h"
 #include "base/stringprintf.h"
 #include "base/time.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_crx_util.h"
 #include "chrome/browser/download/download_extensions.h"
@@ -37,8 +38,10 @@
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_intents_dispatcher.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "webkit/glue/web_intent_data.h"
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/ui/browser.h"
@@ -226,26 +229,58 @@ bool ChromeDownloadManagerDelegate::ShouldCompleteDownload(DownloadItem* item) {
 }
 
 bool ChromeDownloadManagerDelegate::ShouldOpenDownload(DownloadItem* item) {
-  if (!IsExtensionDownload(item)) {
-    return true;
+  if (IsExtensionDownload(item)) {
+    scoped_refptr<CrxInstaller> crx_installer =
+        download_crx_util::OpenChromeExtension(profile_, *item);
+
+    // CRX_INSTALLER_DONE will fire when the install completes.  Observe()
+    // will call DelayedDownloadOpened() on this item.  If this DownloadItem is
+    // not around when CRX_INSTALLER_DONE fires, Complete() will not be called.
+    registrar_.Add(this,
+                   chrome::NOTIFICATION_CRX_INSTALLER_DONE,
+                   content::Source<CrxInstaller>(crx_installer.get()));
+
+    crx_installers_[crx_installer.get()] = item->GetId();
+    // The status text and percent complete indicator will change now
+    // that we are installing a CRX.  Update observers so that they pick
+    // up the change.
+    item->UpdateObservers();
+    return false;
   }
 
-  scoped_refptr<CrxInstaller> crx_installer =
-      download_crx_util::OpenChromeExtension(profile_, *item);
+  if (ShouldOpenWithWebIntents(item)) {
+    OpenWithWebIntent(item);
+    item->DelayedDownloadOpened();
+    return false;
+  }
 
-  // CRX_INSTALLER_DONE will fire when the install completes.  Observe()
-  // will call DelayedDownloadOpened() on this item.  If this DownloadItem is
-  // not around when CRX_INSTALLER_DONE fires, Complete() will not be called.
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_CRX_INSTALLER_DONE,
-                 content::Source<CrxInstaller>(crx_installer.get()));
+  return true;
+}
 
-  crx_installers_[crx_installer.get()] = item->GetId();
-  // The status text and percent complete indicator will change now
-  // that we are installing a CRX.  Update observers so that they pick
-  // up the change.
-  item->UpdateObservers();
+bool ChromeDownloadManagerDelegate::ShouldOpenWithWebIntents(
+    const DownloadItem* item) {
   return false;
+}
+
+void ChromeDownloadManagerDelegate::OpenWithWebIntent(
+    const DownloadItem* item) {
+  webkit_glue::WebIntentData intent_data(
+      ASCIIToUTF16("http://webintents.org/view"),
+      ASCIIToUTF16(item->GetMimeType()),
+      item->GetFullPath(),
+      item->GetReceivedBytes());
+
+  // TODO(gbillock): Should we pass this? RCH specifies that the receiver gets
+  // the url, but with web intents we don't need to pass it.
+  intent_data.extra_data.insert(make_pair(
+      ASCIIToUTF16("url"), ASCIIToUTF16(item->GetURL().spec())));
+
+  content::WebIntentsDispatcher* dispatcher =
+      content::WebIntentsDispatcher::Create(intent_data);
+  // TODO(gbillock): try to get this to be able to delegate to the Browser
+  // object directly, passing a NULL WebContents?
+  item->GetWebContents()->GetDelegate()->WebIntentDispatch(
+      item->GetWebContents(), dispatcher);
 }
 
 bool ChromeDownloadManagerDelegate::GenerateFileHash() {

@@ -6,8 +6,10 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/file_path.h"
 #include "base/logging.h"
 #include "base/string16.h"
+#include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/intents_messages.h"
@@ -69,6 +71,13 @@ void IntentInjector::RenderViewCreated(RenderViewHost* render_view_host) {
   if (initial_url_.GetOrigin() !=
       render_view_host->GetSiteInstance()->GetSite().GetOrigin()) {
     return;
+  }
+
+  if (source_intent_->data_type == webkit_glue::WebIntentData::BLOB) {
+    // Grant read permission on the blob file to the delivered context.
+    int child_id = render_view_host->GetProcess()->GetID();
+    ChildProcessSecurityPolicyImpl::GetInstance()->GrantReadFile(
+        child_id, source_intent_->blob_file);
   }
 
   render_view_host->Send(new IntentsMsg_SetWebIntentData(

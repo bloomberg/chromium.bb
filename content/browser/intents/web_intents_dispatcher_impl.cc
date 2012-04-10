@@ -5,12 +5,23 @@
 #include "content/browser/intents/web_intents_dispatcher_impl.h"
 
 #include "content/browser/intents/intent_injector.h"
+#include "content/browser/intents/internal_web_intents_dispatcher.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/intents_messages.h"
 #include "webkit/glue/web_intent_data.h"
 #include "webkit/glue/web_intent_reply_data.h"
 
 using content::WebContents;
+
+namespace content {
+
+WebIntentsDispatcher* WebIntentsDispatcher::Create(
+    const webkit_glue::WebIntentData& data) {
+  return new InternalWebIntentsDispatcher(data);
+}
+
+}  // namespace content
+
 
 WebIntentsDispatcherImpl::WebIntentsDispatcherImpl(
     TabContents* source_tab,
