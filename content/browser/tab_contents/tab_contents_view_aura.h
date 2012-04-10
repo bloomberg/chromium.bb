@@ -28,7 +28,7 @@ class CONTENT_EXPORT TabContentsViewAura
       public aura::WindowDelegate,
       public aura::client::DragDropDelegate {
  public:
-  TabContentsViewAura(TabContents* tab_contents,
+  TabContentsViewAura(WebContentsImpl* web_contents,
                       content::WebContentsViewDelegate* delegate);
   virtual ~TabContentsViewAura();
 
@@ -121,8 +121,8 @@ class CONTENT_EXPORT TabContentsViewAura
 
   scoped_ptr<aura::Window> window_;
 
-  // The TabContents whose contents we display.
-  TabContents* tab_contents_;
+  // The WebContentsImpl whose contents we display.
+  WebContentsImpl* tab_contents_;
 
   content::RenderWidgetHostView* view_;
 

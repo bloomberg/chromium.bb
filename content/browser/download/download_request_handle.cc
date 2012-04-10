@@ -56,14 +56,13 @@ DownloadRequestHandle::DownloadRequestHandle(int child_id,
   DCHECK(ResourceDispatcherHostImpl::Get());
 }
 
-TabContents* DownloadRequestHandle::GetTabContents() const {
+content::WebContents* DownloadRequestHandle::GetWebContents() const {
   RenderViewHostImpl* render_view_host =
       RenderViewHostImpl::FromID(child_id_, render_view_id_);
   if (!render_view_host)
     return NULL;
 
-  return static_cast<TabContents*>(
-      render_view_host->GetDelegate()->GetAsWebContents());
+  return render_view_host->GetDelegate()->GetAsWebContents();
 }
 
 DownloadManager* DownloadRequestHandle::GetDownloadManager() const {

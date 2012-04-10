@@ -26,7 +26,7 @@ class WebIntentsDispatcherImpl : public content::WebIntentsDispatcher,
   // |intent| is the intent payload created by that page.
   // |intent_id| is the identifier assigned by WebKit to direct replies back to
   // the correct Javascript callback.
-  WebIntentsDispatcherImpl(TabContents* source_tab,
+  WebIntentsDispatcherImpl(content::WebContents* source_contents,
                            const webkit_glue::WebIntentData& intent,
                            int intent_id);
   virtual ~WebIntentsDispatcherImpl();

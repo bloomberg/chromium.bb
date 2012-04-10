@@ -13,27 +13,27 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/gfx/size.h"
 
-class TabContents;
+class WebContentsImpl;
 
 namespace content {
 
 class BrowserPluginWebContentsObserver: public WebContentsObserver,
                                         public NotificationObserver {
  public:
-  BrowserPluginWebContentsObserver(TabContents* web_contents);
+  BrowserPluginWebContentsObserver(WebContentsImpl* web_contents);
 
   virtual ~BrowserPluginWebContentsObserver();
 
   // A Host BrowserPluginWebContentsObserver keeps track of
   // its guests so that if it navigates away, its associated RenderView
   // crashes or it is hidden, it takes appropriate action on the guest.
-  void AddGuest(TabContents* guest, int64 frame_id);
+  void AddGuest(WebContentsImpl* guest, int64 frame_id);
 
-  void RemoveGuest(TabContents* guest);
+  void RemoveGuest(WebContentsImpl* guest);
 
-  TabContents* host() const { return host_; }
+  WebContentsImpl* host() const { return host_; }
 
-  void set_host(TabContents* host) { host_ = host; }
+  void set_host(WebContentsImpl* host) { host_ = host; }
 
   int instance_id() const { return instance_id_; }
 
@@ -57,7 +57,7 @@ class BrowserPluginWebContentsObserver: public WebContentsObserver,
   virtual void WebContentsDestroyed(WebContents* tab) OVERRIDE;
 
  private:
-  typedef std::map<TabContents*, int64> GuestMap;
+  typedef std::map<WebContentsImpl*, int64> GuestMap;
 
   void OnOpenChannelToBrowserPlugin(int32 instance_id,
                                     long long frame_id,
@@ -80,7 +80,7 @@ class BrowserPluginWebContentsObserver: public WebContentsObserver,
   // A scoped container for notification registries.
   NotificationRegistrar registrar_;
 
-  TabContents* host_;
+  WebContentsImpl* host_;
 
   // An identifier that uniquely identifies a browser plugin container
   // within a host.

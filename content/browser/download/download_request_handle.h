@@ -11,14 +11,13 @@
 #include "base/compiler_specific.h"
 #include "content/common/content_export.h"
 
-class TabContents;
-
 namespace content {
 class DownloadManager;
+class WebContents;
 }
 
 // A handle used by the download system for operations on the URLRequest
-// or objects conditional on it (e.g. TabContents).
+// or objects conditional on it (e.g. WebContentsImpl).
 // This class needs to be copyable, so we can pass it across threads and not
 // worry about lifetime or const-ness.
 //
@@ -28,7 +27,7 @@ class CONTENT_EXPORT DownloadRequestHandleInterface {
   virtual ~DownloadRequestHandleInterface() {}
 
   // These functions must be called on the UI thread.
-  virtual TabContents* GetTabContents() const = 0;
+  virtual content::WebContents* GetWebContents() const = 0;
   virtual content::DownloadManager* GetDownloadManager() const = 0;
 
   // Pauses or resumes the matching URL request.
@@ -61,7 +60,7 @@ class CONTENT_EXPORT DownloadRequestHandle
                         int request_id);
 
   // Implement DownloadRequestHandleInterface interface.
-  virtual TabContents* GetTabContents() const OVERRIDE;
+  virtual content::WebContents* GetWebContents() const OVERRIDE;
   virtual content::DownloadManager* GetDownloadManager() const OVERRIDE;
   virtual void PauseRequest() const OVERRIDE;
   virtual void ResumeRequest() const OVERRIDE;

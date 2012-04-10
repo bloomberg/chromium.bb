@@ -16,7 +16,7 @@
 #include "content/public/common/renderer_preferences.h"
 #include "googleurl/src/gurl.h"
 
-class TabContents;
+class WebContentsImpl;
 
 namespace content {
 class NavigationEntry;
@@ -131,8 +131,8 @@ class CONTENT_EXPORT InterstitialPageImpl
   // interstitial.
   void TakeActionOnResourceDispatcher(ResourceRequestAction action);
 
-  // The tab in which we are displayed.
-  TabContents* tab_;
+  // The contents in which we are displayed.
+  WebContentsImpl* tab_;
 
   // The URL that is shown when the interstitial is showing.
   GURL url_;

@@ -49,7 +49,6 @@ class MessageLoop;
 class Profile;
 class ScopedTempDir;
 class SkBitmap;
-class TabContents;
 class TabContentsWrapper;
 class TemplateURLService;
 

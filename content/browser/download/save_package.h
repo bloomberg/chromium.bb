@@ -74,7 +74,7 @@ class CONTENT_EXPORT SavePackage
   // Constructor for user initiated page saving. This constructor results in a
   // SavePackage that will generate and sanitize a suggested name for the user
   // in the "Save As" dialog box.
-  explicit SavePackage(TabContents* tab_contents);
+  explicit SavePackage(content::WebContents* tab_contents);
 
   // This contructor is used only for testing. We can bypass the file and
   // directory name generation / sanitization by providing well known paths
@@ -111,7 +111,6 @@ class CONTENT_EXPORT SavePackage
   content::SavePageType save_type() const { return save_type_; }
   int tab_id() const { return tab_id_; }
   int id() const { return unique_id_; }
-  TabContents* tab_contents() const;
   content::WebContents* web_contents() const;
 
   void GetSaveInfo();
@@ -120,7 +119,7 @@ class CONTENT_EXPORT SavePackage
   friend class base::RefCountedThreadSafe<SavePackage>;
 
   // For testing only.
-  SavePackage(TabContents* tab_contents,
+  SavePackage(content::WebContents* web_contents,
               const FilePath& file_full_path,
               const FilePath& directory_full_path);
 
@@ -177,7 +176,7 @@ class CONTENT_EXPORT SavePackage
   // Remove SaveItem from in progress map and put it to saved map.
   void PutInProgressItemToSavedMap(SaveItem* save_item);
 
-  // Retrieves the URL to be saved from the TabContents.
+  // Retrieves the URL to be saved from the WebContents.
   GURL GetUrlToBeSaved();
 
   void CreateDirectoryOnFileThread(const FilePath& website_save_dir,

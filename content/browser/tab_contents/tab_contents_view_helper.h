@@ -16,7 +16,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupType.h"
 #include "webkit/glue/window_open_disposition.h"
 
-class TabContents;
+class WebContentsImpl;
 struct ViewHostMsg_CreateWindow_Params;
 
 namespace content {
@@ -41,9 +41,10 @@ class CONTENT_EXPORT TabContentsViewHelper
   virtual ~TabContentsViewHelper();
 
   // Creates a new window; call |ShowCreatedWindow| below to show it.
-  TabContents* CreateNewWindow(content::WebContents* web_contents,
-                               int route_id,
-                               const ViewHostMsg_CreateWindow_Params& params);
+  WebContentsImpl* CreateNewWindow(
+      content::WebContents* web_contents,
+      int route_id,
+      const ViewHostMsg_CreateWindow_Params& params);
 
   // Creates a new popup or fullscreen widget; call |ShowCreatedWidget| below to
   // show it. If |is_fullscreen| is true it is a fullscreen widget, if not then
@@ -55,11 +56,11 @@ class CONTENT_EXPORT TabContentsViewHelper
       WebKit::WebPopupType popup_type);
 
   // Shows a window created with |CreateNewWindow| above.
-  TabContents* ShowCreatedWindow(content::WebContents* web_contents,
-                                 int route_id,
-                                 WindowOpenDisposition disposition,
-                                 const gfx::Rect& initial_pos,
-                                 bool user_gesture);
+  WebContentsImpl* ShowCreatedWindow(content::WebContents* web_contents,
+                                     int route_id,
+                                     WindowOpenDisposition disposition,
+                                     const gfx::Rect& initial_pos,
+                                     bool user_gesture);
 
   // Shows a widget created with |CreateNewWidget| above. |initial_pos| is only
   // meaningful for non-fullscreen widgets.
@@ -79,14 +80,14 @@ class CONTENT_EXPORT TabContentsViewHelper
   // called once as this call also removes it from the internal map.
   content::RenderWidgetHostView* GetCreatedWidget(int route_id);
 
-  // Finds the new TabContents by route_id, initializes it for
+  // Finds the new WebContentsImpl by route_id, initializes it for
   // renderer-initiated creation, and returns it. Note that this can only be
   // called once as this call also removes it from the internal map.
-  TabContents* GetCreatedWindow(int route_id);
+  WebContentsImpl* GetCreatedWindow(int route_id);
 
-  // Tracks created TabContents objects that have not been shown yet. They are
-  // identified by the route ID passed to CreateNewWindow.
-  typedef std::map<int, TabContents*> PendingContents;
+  // Tracks created WebContentsImpl objects that have not been shown yet. They
+  // are identified by the route ID passed to CreateNewWindow.
+  typedef std::map<int, WebContentsImpl*> PendingContents;
   PendingContents pending_contents_;
 
   // These maps hold on to the widgets that we created on behalf of the renderer

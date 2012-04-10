@@ -20,12 +20,12 @@ using content::Referrer;
 
 @implementation WebDragDest
 
-// |contents| is the TabContents representing this tab, used to communicate
+// |contents| is the WebContentsImpl representing this tab, used to communicate
 // drag&drop messages to WebCore and handle navigation on a successful drop
 // (if necessary).
-- (id)initWithTabContents:(TabContents*)contents {
+- (id)initWithWebContentsImpl:(WebContentsImpl*)contents {
   if ((self = [super init])) {
-    tabContents_ = contents;
+    webContents_ = contents;
   }
   return self;
 }
@@ -69,7 +69,7 @@ using content::Referrer;
 // entering and exiting).  One example is an interstitial page (e.g., safe
 // browsing warning).
 - (BOOL)onlyAllowsNavigation {
-  return tabContents_->ShowingInterstitialPage();
+  return webContents_->ShowingInterstitialPage();
 }
 
 // Messages to send during the tracking of a drag, usually upon receiving
@@ -79,7 +79,7 @@ using content::Referrer;
                               view:(NSView*)view {
   // Save off the RVH so we can tell if it changes during a drag. If it does,
   // we need to send a new enter message in draggingUpdated:.
-  currentRVH_ = tabContents_->GetRenderViewHost();
+  currentRVH_ = webContents_->GetRenderViewHost();
 
   if ([self onlyAllowsNavigation]) {
     if ([[info draggingPasteboard] containsURLData])
@@ -88,7 +88,7 @@ using content::Referrer;
   }
 
   if (delegate_) {
-    delegate_->DragInitialize(tabContents_);
+    delegate_->DragInitialize(webContents_);
     delegate_->OnDragEnter();
   }
 
@@ -102,7 +102,8 @@ using content::Referrer;
   NSPoint viewPoint = [self flipWindowPointToView:windowPoint view:view];
   NSPoint screenPoint = [self flipWindowPointToScreen:windowPoint view:view];
   NSDragOperation mask = [info draggingSourceOperationMask];
-  tabContents_->GetRenderViewHost()->DragTargetDragEnter(data,
+  webContents_->GetRenderViewHost()->DragTargetDragEnter(
+      data,
       gfx::Point(viewPoint.x, viewPoint.y),
       gfx::Point(screenPoint.x, screenPoint.y),
       static_cast<WebDragOperationsMask>(mask));
@@ -115,7 +116,7 @@ using content::Referrer;
 
 - (void)draggingExited:(id<NSDraggingInfo>)info {
   DCHECK(currentRVH_);
-  if (currentRVH_ != tabContents_->GetRenderViewHost())
+  if (currentRVH_ != webContents_->GetRenderViewHost())
     return;
 
   // Nothing to do in the interstitial case.
@@ -123,13 +124,13 @@ using content::Referrer;
   if (delegate_)
     delegate_->OnDragLeave();
 
-  tabContents_->GetRenderViewHost()->DragTargetDragLeave();
+  webContents_->GetRenderViewHost()->DragTargetDragLeave();
 }
 
 - (NSDragOperation)draggingUpdated:(id<NSDraggingInfo>)info
                               view:(NSView*)view {
   DCHECK(currentRVH_);
-  if (currentRVH_ != tabContents_->GetRenderViewHost())
+  if (currentRVH_ != webContents_->GetRenderViewHost())
     [self draggingEntered:info view:view];
 
   if ([self onlyAllowsNavigation]) {
@@ -144,7 +145,7 @@ using content::Referrer;
   NSPoint viewPoint = [self flipWindowPointToView:windowPoint view:view];
   NSPoint screenPoint = [self flipWindowPointToScreen:windowPoint view:view];
   NSDragOperation mask = [info draggingSourceOperationMask];
-  tabContents_->GetRenderViewHost()->DragTargetDragOver(
+  webContents_->GetRenderViewHost()->DragTargetDragOver(
       gfx::Point(viewPoint.x, viewPoint.y),
       gfx::Point(screenPoint.x, screenPoint.y),
       static_cast<WebDragOperationsMask>(mask));
@@ -157,7 +158,7 @@ using content::Referrer;
 
 - (BOOL)performDragOperation:(id<NSDraggingInfo>)info
                               view:(NSView*)view {
-  if (currentRVH_ != tabContents_->GetRenderViewHost())
+  if (currentRVH_ != webContents_->GetRenderViewHost())
     [self draggingEntered:info view:view];
 
   // Check if we only allow navigation and navigate to a url on the pasteboard.
@@ -166,7 +167,7 @@ using content::Referrer;
     if ([pboard containsURLData]) {
       GURL url;
       ui::PopulateURLAndTitleFromPasteboard(&url, NULL, pboard, YES);
-      tabContents_->OpenURL(OpenURLParams(
+      webContents_->OpenURL(OpenURLParams(
           url, Referrer(), CURRENT_TAB, content::PAGE_TRANSITION_AUTO_BOOKMARK,
           false));
       return YES;
@@ -184,7 +185,7 @@ using content::Referrer;
   NSPoint windowPoint = [info draggingLocation];
   NSPoint viewPoint = [self flipWindowPointToView:windowPoint view:view];
   NSPoint screenPoint = [self flipWindowPointToScreen:windowPoint view:view];
-  tabContents_->GetRenderViewHost()->DragTargetDrop(
+  webContents_->GetRenderViewHost()->DragTargetDrop(
       gfx::Point(viewPoint.x, viewPoint.y),
       gfx::Point(screenPoint.x, screenPoint.y));
 

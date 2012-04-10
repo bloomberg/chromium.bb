@@ -106,7 +106,7 @@ class NullDownloadRequestHandle : public DownloadRequestHandleInterface {
   NullDownloadRequestHandle() {}
 
   // DownloadRequestHandleInterface calls
-  virtual TabContents* GetTabContents() const OVERRIDE {
+  virtual WebContents* GetWebContents() const OVERRIDE {
     return NULL;
   }
   virtual DownloadManager* GetDownloadManager() const OVERRIDE {
@@ -853,7 +853,7 @@ WebContents* DownloadItemImpl::GetWebContents() const {
   // Currently such items have null request_handle_s, where other items
   // (regular and SavePackage downloads) have actual objects off the pointer.
   if (request_handle_.get())
-    return request_handle_->GetTabContents();
+    return request_handle_->GetWebContents();
   return NULL;
 }
 

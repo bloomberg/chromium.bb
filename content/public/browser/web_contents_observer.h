@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,7 +12,7 @@
 #include "ipc/ipc_channel.h"
 #include "webkit/glue/window_open_disposition.h"
 
-class TabContents;
+class WebContentsImpl;
 
 namespace content {
 
@@ -23,7 +23,7 @@ struct LoadCommittedDetails;
 struct Referrer;
 
 // An observer API implemented by classes which are interested in various page
-// load events from TabContents.  They also get a chance to filter IPC messages.
+// load events from WebContents.  They also get a chance to filter IPC messages.
 class CONTENT_EXPORT WebContentsObserver : public IPC::Channel::Listener,
                                            public IPC::Message::Sender {
  public:
@@ -110,7 +110,7 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Channel::Listener,
   // its entire lifetime.
   explicit WebContentsObserver(WebContents* web_contents);
 
-  // Use this constructor when the object wants to observe a TabContents for
+  // Use this constructor when the object wants to observe a WebContents for
   // part of its lifetime.  It can then call Observe() to start and stop
   // observing.
   WebContentsObserver();
@@ -123,13 +123,13 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Channel::Listener,
   WebContents* web_contents() const;
 
  private:
-  friend class ::TabContents;
+  friend class ::WebContentsImpl;
 
-  // Invoked from TabContents. Invokes TabContentsDestroyed and NULL out
+  // Invoked from WebContentsImpl. Invokes TabContentsDestroyed and NULL out
   // |tab_contents_|.
   void TabContentsDestroyed();
 
-  TabContents* tab_contents_;
+  WebContentsImpl* web_contents_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsObserver);
 };

@@ -1986,7 +1986,7 @@ void ResourceDispatcherHostImpl::ContinueSSLRequest(
   request->ContinueDespiteLastError();
 }
 
-void ResourceDispatcherHostImpl::OnUserGesture(TabContents* tab) {
+void ResourceDispatcherHostImpl::OnUserGesture(WebContentsImpl* contents) {
   last_user_gesture_time_ = TimeTicks::Now();
 }
 

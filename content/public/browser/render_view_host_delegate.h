@@ -24,7 +24,7 @@
 
 class GURL;
 class SkBitmap;
-class TabContents;
+class WebContentsImpl;
 class WebKeyboardEvent;
 struct NativeWebKeyboardEvent;
 struct ViewHostMsg_CreateWindow_Params;

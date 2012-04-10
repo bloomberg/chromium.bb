@@ -15,8 +15,8 @@
 #include "content/public/browser/navigation_type.h"
 
 class SessionStorageNamespaceImpl;
-class TabContents;
 struct ViewHostMsg_FrameNavigate_Params;
+class WebContentsImpl;
 
 namespace content {
 class NavigationEntryImpl;
@@ -28,7 +28,7 @@ class CONTENT_EXPORT NavigationControllerImpl
     : public NON_EXPORTED_BASE(content::NavigationController) {
  public:
   NavigationControllerImpl(
-      TabContents* tab_contents,
+      WebContentsImpl* tab_contents,
       content::BrowserContext* browser_context,
       SessionStorageNamespaceImpl* session_storage_namespace);
   virtual ~NavigationControllerImpl();
@@ -122,9 +122,9 @@ class CONTENT_EXPORT NavigationControllerImpl
   // Note that adding a transient entry does not change the active contents.
   void AddTransientEntry(content::NavigationEntryImpl* entry);
 
-  // TabContents ---------------------------------------------------------------
+  // WebContentsImpl -----------------------------------------------------------
 
-  TabContents* tab_contents() const {
+  WebContentsImpl* tab_contents() const {
     // This currently returns the active tab contents which should be renamed to
     // tab_contents.
     return tab_contents_;
@@ -133,10 +133,10 @@ class CONTENT_EXPORT NavigationControllerImpl
   // Called when a document has been loaded in a frame.
   void DocumentLoadedInFrame();
 
-  // For use by TabContents ----------------------------------------------------
+  // For use by WebContentsImpl ------------------------------------------------
 
   // Handles updating the navigation state after the renderer has navigated.
-  // This is used by the TabContents.
+  // This is used by the WebContentsImpl.
   //
   // If a new entry is created, it will return true and will have filled the
   // given details structure and broadcast the NOTIFY_NAV_ENTRY_COMMITTED
@@ -148,7 +148,7 @@ class CONTENT_EXPORT NavigationControllerImpl
   bool RendererDidNavigate(const ViewHostMsg_FrameNavigate_Params& params,
                            content::LoadCommittedDetails* details);
 
-  // Notifies us that we just became active. This is used by the TabContents
+  // Notifies us that we just became active. This is used by the WebContentsImpl
   // so that we know to load URLs that were pending as "lazy" loads.
   void SetActive(bool is_active);
 
@@ -179,7 +179,7 @@ class CONTENT_EXPORT NavigationControllerImpl
  private:
   class RestoreHelper;
   friend class RestoreHelper;
-  friend class TabContents;  // For invoking OnReservedPageIDRange.
+  friend class WebContentsImpl;  // For invoking OnReservedPageIDRange.
 
   // Classifies the given renderer navigation (see the NavigationType enum).
   content::NavigationType ClassifyNavigation(
@@ -300,11 +300,11 @@ class CONTENT_EXPORT NavigationControllerImpl
 
   // The tab contents associated with the controller. Possibly NULL during
   // setup.
-  TabContents* tab_contents_;
+  WebContentsImpl* tab_contents_;
 
   // The max restored page ID in this controller, if it was restored.  We must
-  // store this so that TabContents can tell any renderer in charge of one of
-  // the restored entries to update its max page ID.
+  // store this so that WebContentsImpl can tell any renderer in charge of one
+  // of the restored entries to update its max page ID.
   int32 max_restored_page_id_;
 
   // Manages the SSL security UI

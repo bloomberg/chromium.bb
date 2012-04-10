@@ -21,7 +21,7 @@
 
 class FilePath;
 class GURL;
-class TabContents;
+class WebContentsImpl;
 struct NativeWebKeyboardEvent;
 
 namespace base {
@@ -398,7 +398,7 @@ class CONTENT_EXPORT WebContentsDelegate {
   virtual ~WebContentsDelegate();
 
  private:
-  friend class ::TabContents;
+  friend class ::WebContentsImpl;
 
   // Called when |this| becomes the WebContentsDelegate for |source|.
   void Attach(WebContents* source);

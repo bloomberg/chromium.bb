@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,7 @@
 
 #include "base/string16.h"
 
-class TabContents;
+class WebContentsImpl;
 struct WebDropData;
 
 namespace content {
@@ -23,8 +23,8 @@ typedef content::RenderViewHost* RenderViewHostIdentifier;
 
 @interface WebDragDest : NSObject {
  @private
-  // Our associated TabContents. Weak reference.
-  TabContents* tabContents_;
+  // Our associated WebContentsImpl. Weak reference.
+  WebContentsImpl* webContents_;
 
   // Delegate; weak.
   content::WebDragDestDelegate* delegate_;
@@ -38,17 +38,17 @@ typedef content::RenderViewHost* RenderViewHostIdentifier;
   RenderViewHostIdentifier currentRVH_;
 }
 
-// |contents| is the TabContents representing this tab, used to communicate
+// |contents| is the WebContentsImpl representing this tab, used to communicate
 // drag&drop messages to WebCore and handle navigation on a successful drop
 // (if necessary).
-- (id)initWithTabContents:(TabContents*)contents;
+- (id)initWithWebContentsImpl:(WebContentsImpl*)contents;
 
 - (void)setDragDelegate:(content::WebDragDestDelegate*)delegate;
 
 // Sets the current operation negotiated by the source and destination,
 // which determines whether or not we should allow the drop. Takes effect the
 // next time |-draggingUpdated:| is called.
-- (void)setCurrentOperation: (NSDragOperation)operation;
+- (void)setCurrentOperation:(NSDragOperation)operation;
 
 // Messages to send during the tracking of a drag, ususally upon receiving
 // calls from the view system. Communicates the drag messages to WebCore.

@@ -28,7 +28,7 @@ class WebDragDestTest : public RenderViewHostImplTestHarness {
  public:
   virtual void SetUp() {
     RenderViewHostImplTestHarness::SetUp();
-    drag_dest_.reset([[WebDragDest alloc] initWithTabContents:contents()]);
+    drag_dest_.reset([[WebDragDest alloc] initWithWebContentsImpl:contents()]);
   }
 
   void PutURLOnPasteboard(NSString* urlString, NSPasteboard* pboard) {

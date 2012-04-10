@@ -20,6 +20,7 @@ using content::DownloadId;
 using content::DownloadItem;
 using content::DownloadManager;
 using content::MockDownloadItem;
+using content::WebContents;
 
 DownloadId::Domain kValidDownloadItemIdDomain = "valid DownloadId::Domain";
 
@@ -40,7 +41,7 @@ class MockDelegate : public DownloadItemImpl::Delegate {
 
 class MockRequestHandle : public DownloadRequestHandleInterface {
  public:
-  MOCK_CONST_METHOD0(GetTabContents, TabContents*());
+  MOCK_CONST_METHOD0(GetWebContents, WebContents*());
   MOCK_CONST_METHOD0(GetDownloadManager, DownloadManager*());
   MOCK_CONST_METHOD0(PauseRequest, void());
   MOCK_CONST_METHOD0(ResumeRequest, void());

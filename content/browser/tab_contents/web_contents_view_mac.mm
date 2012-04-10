@@ -65,9 +65,9 @@ content::WebContentsView* CreateWebContentsView(
 }
 
 WebContentsViewMac::WebContentsViewMac(
-    TabContents* tab_contents,
+    WebContentsImpl* web_contents,
     content::WebContentsViewDelegate* delegate)
-    : tab_contents_(tab_contents),
+    : web_contents_(web_contents),
       delegate_(delegate) {
 }
 
@@ -133,7 +133,7 @@ gfx::NativeView WebContentsViewMac::GetNativeView() const {
 }
 
 gfx::NativeView WebContentsViewMac::GetContentNativeView() const {
-  RenderWidgetHostView* rwhv = tab_contents_->GetRenderWidgetHostView();
+  RenderWidgetHostView* rwhv = web_contents_->GetRenderWidgetHostView();
   if (!rwhv)
     return NULL;
   return rwhv->GetNativeView();
@@ -211,8 +211,8 @@ void WebContentsViewMac::Focus() {
 }
 
 void WebContentsViewMac::SetInitialFocus() {
-  if (tab_contents_->FocusLocationBarByDefault())
-    tab_contents_->SetFocusToLocationBar(false);
+  if (web_contents_->FocusLocationBarByDefault())
+    web_contents_->SetFocusToLocationBar(false);
   else
     [[cocoa_view_.get() window] makeFirstResponder:GetContentNativeView()];
 }
@@ -269,13 +269,13 @@ void WebContentsViewMac::TakeFocus(bool reverse) {
 void WebContentsViewMac::CreateNewWindow(
     int route_id,
     const ViewHostMsg_CreateWindow_Params& params) {
-  tab_contents_view_helper_.CreateNewWindow(tab_contents_, route_id, params);
+  tab_contents_view_helper_.CreateNewWindow(web_contents_, route_id, params);
 }
 
 void WebContentsViewMac::CreateNewWidget(
     int route_id, WebKit::WebPopupType popup_type) {
   RenderWidgetHostView* widget_view =
-      tab_contents_view_helper_.CreateNewWidget(tab_contents_,
+      tab_contents_view_helper_.CreateNewWidget(web_contents_,
                                                 route_id,
                                                 false,
                                                 popup_type);
@@ -289,7 +289,7 @@ void WebContentsViewMac::CreateNewWidget(
 
 void WebContentsViewMac::CreateNewFullscreenWidget(int route_id) {
   RenderWidgetHostView* widget_view =
-      tab_contents_view_helper_.CreateNewWidget(tab_contents_,
+      tab_contents_view_helper_.CreateNewWidget(web_contents_,
                                                 route_id,
                                                 true,
                                                 WebKit::WebPopupTypeNone);
@@ -306,13 +306,13 @@ void WebContentsViewMac::ShowCreatedWindow(int route_id,
                                            const gfx::Rect& initial_pos,
                                            bool user_gesture) {
   tab_contents_view_helper_.ShowCreatedWindow(
-      tab_contents_, route_id, disposition, initial_pos, user_gesture);
+      web_contents_, route_id, disposition, initial_pos, user_gesture);
 }
 
 void WebContentsViewMac::ShowCreatedWidget(
     int route_id, const gfx::Rect& initial_pos) {
   RenderWidgetHostView* widget_host_view =
-      tab_contents_view_helper_.ShowCreatedWidget(tab_contents_,
+      tab_contents_view_helper_.ShowCreatedWidget(web_contents_,
                                                   route_id,
                                                   false,
                                                   initial_pos);
@@ -327,7 +327,7 @@ void WebContentsViewMac::ShowCreatedWidget(
 
 void WebContentsViewMac::ShowCreatedFullscreenWidget(int route_id) {
   RenderWidgetHostView* widget_host_view =
-      tab_contents_view_helper_.ShowCreatedWidget(tab_contents_,
+      tab_contents_view_helper_.ShowCreatedWidget(web_contents_,
                                                   route_id,
                                                   true,
                                                   gfx::Rect());
@@ -343,8 +343,8 @@ void WebContentsViewMac::ShowCreatedFullscreenWidget(int route_id) {
 void WebContentsViewMac::ShowContextMenu(
     const content::ContextMenuParams& params) {
   // Allow delegates to handle the context menu operation first.
-  if (tab_contents_->GetDelegate() &&
-      tab_contents_->GetDelegate()->HandleContextMenu(params)) {
+  if (web_contents_->GetDelegate() &&
+      web_contents_->GetDelegate()->HandleContextMenu(params)) {
     return;
   }
 
@@ -362,7 +362,7 @@ void WebContentsViewMac::ShowPopupMenu(
     int selected_item,
     const std::vector<WebMenuItem>& items,
     bool right_aligned) {
-  PopupMenuHelper popup_menu_helper(tab_contents_->GetRenderViewHost());
+  PopupMenuHelper popup_menu_helper(web_contents_->GetRenderViewHost());
   popup_menu_helper.ShowPopupMenu(bounds, item_height, item_font_size,
                                   selected_item, items, right_aligned);
 }
@@ -388,7 +388,7 @@ void WebContentsViewMac::GetViewBounds(gfx::Rect* out) const {
 }
 
 void WebContentsViewMac::CloseTab() {
-  tab_contents_->Close(tab_contents_->GetRenderViewHost());
+  web_contents_->Close(web_contents_->GetRenderViewHost());
 }
 
 @implementation WebContentsViewCocoa
@@ -398,7 +398,7 @@ void WebContentsViewMac::CloseTab() {
   if (self != nil) {
     webContentsView_ = w;
     dragDest_.reset(
-        [[WebDragDest alloc] initWithTabContents:[self tabContents]]);
+        [[WebDragDest alloc] initWithWebContentsImpl:[self webContents]]);
     [self registerDragTypes];
 
     [[NSNotificationCenter defaultCenter]
@@ -442,22 +442,22 @@ void WebContentsViewMac::CloseTab() {
   [dragDest_ setCurrentOperation:operation];
 }
 
-- (TabContents*)tabContents {
+- (WebContentsImpl*)webContents {
   if (webContentsView_ == NULL)
     return NULL;
-  return webContentsView_->tab_contents();
+  return webContentsView_->web_contents();
 }
 
-- (void)mouseEvent:(NSEvent *)theEvent {
-  TabContents* tabContents = [self tabContents];
-  if (tabContents && tabContents->GetDelegate()) {
+- (void)mouseEvent:(NSEvent*)theEvent {
+  WebContentsImpl* webContents = [self webContents];
+  if (webContents && webContents->GetDelegate()) {
     NSPoint location = [NSEvent mouseLocation];
     if ([theEvent type] == NSMouseMoved)
-      tabContents->GetDelegate()->ContentsMouseEvent(
-          tabContents, gfx::Point(location.x, location.y), true);
+      webContents->GetDelegate()->ContentsMouseEvent(
+          webContents, gfx::Point(location.x, location.y), true);
     if ([theEvent type] == NSMouseExited)
-      tabContents->GetDelegate()->ContentsMouseEvent(
-          tabContents, gfx::Point(location.x, location.y), false);
+      webContents->GetDelegate()->ContentsMouseEvent(
+          webContents, gfx::Point(location.x, location.y), false);
   }
 }
 
@@ -481,7 +481,7 @@ void WebContentsViewMac::CloseTab() {
                         image:(NSImage*)image
                        offset:(NSPoint)offset {
   dragSource_.reset([[WebDragSource alloc]
-      initWithContents:[self tabContents]
+      initWithContents:[self webContents]
                   view:self
               dropData:&dropData
                  image:image
@@ -576,7 +576,7 @@ void WebContentsViewMac::CloseTab() {
   if (direction == NSDirectSelection)
     return;
 
-  [self tabContents]->
+  [self webContents]->
       FocusThroughTabTraversal(direction == NSSelectingPrevious);
 }
 

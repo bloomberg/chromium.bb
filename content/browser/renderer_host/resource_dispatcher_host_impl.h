@@ -37,7 +37,7 @@ class DownloadFileManager;
 class ResourceHandler;
 class ResourceMessageFilter;
 class SaveFileManager;
-class TabContents;
+class WebContentsImpl;
 struct ResourceHostMsg_Request;
 struct ViewMsg_SwapOut_Params;
 
@@ -199,7 +199,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
                                 const net::SSLInfo* ssl_info) OVERRIDE;
   virtual void ContinueSSLRequest(const content::GlobalRequestID& id) OVERRIDE;
 
-  void OnUserGesture(TabContents* tab);
+  void OnUserGesture(WebContentsImpl* contents);
 
   // Retrieves a net::URLRequest.  Must be called from the IO thread.
   net::URLRequest* GetURLRequest(

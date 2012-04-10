@@ -32,12 +32,11 @@ class CONTENT_EXPORT TabContentsViewGtk : public WebContentsView {
   // because that's what was easiest when they were split. We optionally take
   // |wrapper| which creates an intermediary widget layer for features from the
   // Embedding layer that lives with the WebContentsView.
-  TabContentsViewGtk(TabContents* tab_contents,
+  TabContentsViewGtk(WebContentsImpl* web_contents,
                      WebContentsViewDelegate* delegate);
   virtual ~TabContentsViewGtk();
 
   WebContentsViewDelegate* delegate() const { return delegate_.get(); }
-  TabContents* tab_contents() { return tab_contents_; }
   WebContents* web_contents();
 
   // WebContentsView implementation --------------------------------------------
@@ -116,8 +115,8 @@ class CONTENT_EXPORT TabContentsViewGtk : public WebContentsView {
   CHROMEGTK_CALLBACK_1(TabContentsViewGtk, void, OnSizeAllocate,
                        GtkAllocation*);
 
-  // The TabContents whose contents we display.
-  TabContents* tab_contents_;
+  // The WebContentsImpl whose contents we display.
+  WebContentsImpl* tab_contents_;
 
   // Common implementations of some WebContentsView methods.
   TabContentsViewHelper tab_contents_view_helper_;

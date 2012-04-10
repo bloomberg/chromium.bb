@@ -41,18 +41,19 @@ class Point;
   scoped_nsobject<WebDragDest> dragDest_;
 }
 
-// Expose this, since sometimes one needs both the NSView and the TabContents.
-- (TabContents*)tabContents;
+// Expose this, since sometimes one needs both the NSView and the
+// WebContentsImpl.
+- (WebContentsImpl*)webContents;
 @end
 
 // Mac-specific implementation of the WebContentsView. It owns an NSView that
 // contains all of the contents of the tab and associated child views.
 class WebContentsViewMac : public content::WebContentsView {
  public:
-  // The corresponding TabContents is passed in the constructor, and manages our
-  // lifetime. This doesn't need to be the case, but is this way currently
+  // The corresponding WebContentsImpl is passed in the constructor, and manages
+  // our lifetime. This doesn't need to be the case, but is this way currently
   // because that's what was easiest when they were split.
-  WebContentsViewMac(TabContents* tab_contents,
+  WebContentsViewMac(WebContentsImpl* web_contents,
                      content::WebContentsViewDelegate* delegate);
   virtual ~WebContentsViewMac();
 
@@ -114,12 +115,12 @@ class WebContentsViewMac : public content::WebContentsView {
   // CloseTabAfterEventTracking() implementation.
   void CloseTab();
 
-  TabContents* tab_contents() { return tab_contents_; }
+  WebContentsImpl* web_contents() { return web_contents_; }
   content::WebContentsViewDelegate* delegate() { return delegate_.get(); }
 
  private:
-  // The TabContents whose contents we display.
-  TabContents* tab_contents_;
+  // The WebContentsImpl whose contents we display.
+  WebContentsImpl* web_contents_;
 
   // Common implementations of some WebContentsView methods.
   TabContentsViewHelper tab_contents_view_helper_;
@@ -149,7 +150,7 @@ class WebContentsViewDelegate;
 namespace web_contents_view_mac {
 // Creates a WebContentsViewMac. Takes ownership of |delegate|.
 CONTENT_EXPORT content::WebContentsView* CreateWebContentsView(
-    TabContents* tab_contents,
+    WebContentsImpl* web_contents,
     content::WebContentsViewDelegate* delegate);
 }
 

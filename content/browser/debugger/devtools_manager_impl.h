@@ -17,7 +17,6 @@
 #include "content/public/browser/devtools_manager.h"
 
 class GURL;
-class TabContents;
 
 namespace IPC {
 class Message;

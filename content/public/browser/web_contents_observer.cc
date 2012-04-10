@@ -11,29 +11,29 @@
 namespace content {
 
 WebContentsObserver::WebContentsObserver(WebContents* web_contents)
-    : tab_contents_(NULL) {
+    : web_contents_(NULL) {
   Observe(web_contents);
 }
 
 WebContentsObserver::WebContentsObserver()
-    : tab_contents_(NULL) {
+    : web_contents_(NULL) {
 }
 
 WebContentsObserver::~WebContentsObserver() {
-  if (tab_contents_)
-    tab_contents_->RemoveObserver(this);
+  if (web_contents_)
+    web_contents_->RemoveObserver(this);
 }
 
 WebContents* WebContentsObserver::web_contents() const {
-  return tab_contents_;
+  return web_contents_;
 }
 
 void WebContentsObserver::Observe(WebContents* web_contents) {
-  if (tab_contents_)
-    tab_contents_->RemoveObserver(this);
-  tab_contents_ = static_cast<TabContents*>(web_contents);
-  if (tab_contents_) {
-    tab_contents_->AddObserver(this);
+  if (web_contents_)
+    web_contents_->RemoveObserver(this);
+  web_contents_ = static_cast<WebContentsImpl*>(web_contents);
+  if (web_contents_) {
+    web_contents_->AddObserver(this);
   }
 }
 
@@ -42,28 +42,28 @@ bool WebContentsObserver::OnMessageReceived(const IPC::Message& message) {
 }
 
 bool WebContentsObserver::Send(IPC::Message* message) {
-  if (!tab_contents_ || !tab_contents_->GetRenderViewHost()) {
+  if (!web_contents_ || !web_contents_->GetRenderViewHost()) {
     delete message;
     return false;
   }
 
   return static_cast<RenderViewHostImpl*>(
-      tab_contents_->GetRenderViewHost())->Send(message);
+      web_contents_->GetRenderViewHost())->Send(message);
 }
 
 int WebContentsObserver::routing_id() const {
-  if (!tab_contents_ || !tab_contents_->GetRenderViewHost())
+  if (!web_contents_ || !web_contents_->GetRenderViewHost())
     return MSG_ROUTING_NONE;
 
-  return tab_contents_->GetRenderViewHost()->GetRoutingID();
+  return web_contents_->GetRenderViewHost()->GetRoutingID();
 }
 
 void WebContentsObserver::TabContentsDestroyed() {
   // Do cleanup so that 'this' can safely be deleted from WebContentsDestroyed.
-  tab_contents_->RemoveObserver(this);
-  TabContents* tab = tab_contents_;
-  tab_contents_ = NULL;
-  WebContentsDestroyed(tab);
+  web_contents_->RemoveObserver(this);
+  WebContentsImpl* contents = web_contents_;
+  web_contents_ = NULL;
+  WebContentsDestroyed(contents);
 }
 
 }  // namespace content

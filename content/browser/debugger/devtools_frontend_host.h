@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,7 +12,7 @@
 #include "content/public/browser/devtools_client_host.h"
 #include "content/public/browser/render_view_host_observer.h"
 
-class TabContents;
+class WebContentsImpl;
 
 namespace content {
 
@@ -25,7 +25,7 @@ class DevToolsFrontendHostDelegate;
 class DevToolsFrontendHost : public DevToolsClientHost,
                              public RenderViewHostObserver {
  public:
-  DevToolsFrontendHost(TabContents* tab_contents,
+  DevToolsFrontendHost(WebContentsImpl* web_contents,
                        DevToolsFrontendHostDelegate* delegate);
 
  private:
@@ -52,7 +52,7 @@ class DevToolsFrontendHost : public DevToolsClientHost,
               const std::string& content,
               bool save_as);
 
-  TabContents* tab_contents_;
+  WebContentsImpl* tab_contents_;
   DevToolsFrontendHostDelegate* delegate_;
   DISALLOW_COPY_AND_ASSIGN(DevToolsFrontendHost);
 };

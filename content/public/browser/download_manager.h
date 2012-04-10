@@ -46,7 +46,6 @@
 
 class DownloadRequestHandle;
 class GURL;
-class TabContents;
 struct DownloadCreateInfo;
 struct DownloadRetrieveInfo;
 

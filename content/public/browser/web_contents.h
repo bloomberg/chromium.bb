@@ -61,7 +61,7 @@ class WebContents : public PageNavigator {
       BrowserContext* browser_context,
       SiteInstance* site_instance,
       int routing_id,
-      const WebContents* base_tab_contents,
+      const WebContents* base_web_contents,
       SessionStorageNamespace* session_storage_namespace);
 
   virtual ~WebContents() {}

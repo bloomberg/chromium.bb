@@ -9,15 +9,15 @@
 #include "base/memory/scoped_ptr.h"
 #include "googleurl/src/gurl.h"
 
-class TabContents;
+class WebContentsImpl;
 struct WebDropData;
 
 // A class that handles tracking and event processing for a drag and drop
 // originating from the content area.
 @interface WebDragSource : NSObject {
  @private
-  // Our tab. Weak reference (owns or co-owns us).
-  TabContents* contents_;
+  // Our contents. Weak reference (owns or co-owns us).
+  WebContentsImpl* contents_;
 
   // The view from which the drag was initiated. Weak reference.
   NSView* contentsView_;
@@ -50,7 +50,7 @@ struct WebDropData;
 // Initialize a WebDragSource object for a drag (originating on the given
 // contentsView and with the given dropData and pboard). Fill the pasteboard
 // with data types appropriate for dropData.
-- (id)initWithContents:(TabContents*)contents
+- (id)initWithContents:(WebContentsImpl*)contents
                   view:(NSView*)contentsView
               dropData:(const WebDropData*)dropData
                  image:(NSImage*)image

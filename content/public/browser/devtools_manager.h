@@ -11,8 +11,6 @@
 #include "content/common/content_export.h"
 #include "content/public/common/console_message_level.h"
 
-class TabContents;
-
 namespace IPC {
 class Message;
 }

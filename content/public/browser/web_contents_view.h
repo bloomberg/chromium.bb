@@ -15,8 +15,6 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 
-class TabContents;
-
 namespace content {
 
 class RenderViewHost;
@@ -24,7 +22,7 @@ class RenderWidgetHost;
 class RenderWidgetHostView;
 
 // The WebContentsView is an interface that is implemented by the platform-
-// dependent web contents views. The TabContents uses this interface to talk to
+// dependent web contents views. The WebContents uses this interface to talk to
 // them. View-related messages will also get forwarded directly to this class
 // from RenderViewHost via RenderViewHostDelegate::View.
 class CONTENT_EXPORT WebContentsView
@@ -37,7 +35,7 @@ class CONTENT_EXPORT WebContentsView
 
   // Sets up the View that holds the rendered web page, receives messages for
   // it and contains page plugins. The host view should be sized to the current
-  // size of the TabContents.
+  // size of the WebContents.
   virtual RenderWidgetHostView* CreateViewForWidget(
       RenderWidgetHost* render_widget_host) = 0;
 
@@ -82,10 +80,10 @@ class CONTENT_EXPORT WebContentsView
   //
   // (1) will be fixed once interstitials are cleaned up. (2) seems like it
   // should be cleaned up or done some other way, since this works for normal
-  // TabContents without the special code.
+  // WebContents without the special code.
   virtual void SizeContents(const gfx::Size& size) = 0;
 
-  // Invoked when the TabContents is notified that the RenderView has been
+  // Invoked when the WebContents is notified that the RenderView has been
   // fully created.
   virtual void RenderViewCreated(RenderViewHost* host) = 0;
 
@@ -111,7 +109,7 @@ class CONTENT_EXPORT WebContentsView
 
   // If we close the tab while a UI control is in an event-tracking
   // loop, the control may message freed objects and crash.
-  // TabContents::Close() calls IsEventTracking(), and if it returns
+  // WebContents::Close() calls IsEventTracking(), and if it returns
   // true CloseTabAfterEventTracking() is called and the close is not
   // completed.
   virtual bool IsEventTracking() const = 0;

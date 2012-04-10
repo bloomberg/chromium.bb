@@ -27,7 +27,7 @@ class WebContentsViewDelegate;
 class CONTENT_EXPORT TabContentsViewWin : public content::WebContentsView,
                                           public ui::WindowImpl {
  public:
-  TabContentsViewWin(TabContents* tab_contents,
+  TabContentsViewWin(WebContentsImpl* web_contents,
                      content::WebContentsViewDelegate* delegate);
   virtual ~TabContentsViewWin();
 
@@ -99,7 +99,7 @@ class CONTENT_EXPORT TabContentsViewWin : public content::WebContentsView,
   virtual void GotFocus() OVERRIDE;
   virtual void TakeFocus(bool reverse) OVERRIDE;
 
-  TabContents* tab_contents() const { return tab_contents_; }
+  WebContentsImpl* tab_contents() const { return tab_contents_; }
 
  private:
   void EndDragging();
@@ -124,8 +124,8 @@ class CONTENT_EXPORT TabContentsViewWin : public content::WebContentsView,
 
   gfx::Size initial_size_;
 
-  // The TabContents whose contents we display.
-  TabContents* tab_contents_;
+  // The WebContentsImpl whose contents we display.
+  WebContentsImpl* tab_contents_;
 
   RenderWidgetHostViewWin* view_;
 

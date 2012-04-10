@@ -53,18 +53,18 @@ namespace webkit_glue {
 struct WebIntentData;
 }
 
-class CONTENT_EXPORT TabContents
+class CONTENT_EXPORT WebContentsImpl
     : public NON_EXPORTED_BASE(content::WebContents),
       public content::RenderViewHostDelegate,
       public RenderViewHostManager::Delegate {
  public:
   // See WebContents::Create for a description of these parameters.
-  TabContents(content::BrowserContext* browser_context,
-              content::SiteInstance* site_instance,
-              int routing_id,
-              const TabContents* base_tab_contents,
-              SessionStorageNamespaceImpl* session_storage_namespace);
-  virtual ~TabContents();
+  WebContentsImpl(content::BrowserContext* browser_context,
+                  content::SiteInstance* site_instance,
+                  int routing_id,
+                  const WebContentsImpl* base_web_contents,
+                  SessionStorageNamespaceImpl* session_storage_namespace);
+  virtual ~WebContentsImpl();
 
   // Returns the content specific prefs for the given RVH.
   static WebPreferences GetWebkitPrefs(
@@ -73,23 +73,23 @@ class CONTENT_EXPORT TabContents
   // Returns the SavePackage which manages the page saving job. May be NULL.
   SavePackage* save_package() const { return save_package_.get(); }
 
-  // Updates the max page ID for the current SiteInstance in this TabContents
-  // to be at least |page_id|.
+  // Updates the max page ID for the current SiteInstance in this
+  // WebContentsImpl to be at least |page_id|.
   void UpdateMaxPageID(int32 page_id);
 
-  // Updates the max page ID for the given SiteInstance in this TabContents
+  // Updates the max page ID for the given SiteInstance in this WebContentsImpl
   // to be at least |page_id|.
   void UpdateMaxPageIDForSiteInstance(content::SiteInstance* site_instance,
                                       int32 page_id);
 
   // Copy the current map of SiteInstance ID to max page ID from another tab.
   // This is necessary when this tab adopts the NavigationEntries from
-  // |tab_contents|.
-  void CopyMaxPageIDsFrom(TabContents* tab_contents);
+  // |web_contents|.
+  void CopyMaxPageIDsFrom(WebContentsImpl* web_contents);
 
-  // Called by the NavigationController to cause the TabContents to navigate to
-  // the current pending entry. The NavigationController should be called back
-  // with RendererDidNavigate on success or DiscardPendingEntry on failure.
+  // Called by the NavigationController to cause the WebContentsImpl to navigate
+  // to the current pending entry. The NavigationController should be called
+  // back with RendererDidNavigate on success or DiscardPendingEntry on failure.
   // The callbacks can be inside of this function, or at some future time.
   //
   // The entry has a PageID of -1 if newly created (corresponding to navigation
@@ -506,13 +506,13 @@ class CONTENT_EXPORT TabContents
   bool UpdateTitleForEntry(content::NavigationEntryImpl* entry,
                            const string16& title);
 
-  // Causes the TabContents to navigate in the right renderer to |entry|, which
-  // must be already part of the entries in the navigation controller.
+  // Causes the WebContentsImpl to navigate in the right renderer to |entry|,
+  // which must be already part of the entries in the navigation controller.
   // This does not change the NavigationController state.
   bool NavigateToEntry(const content::NavigationEntryImpl& entry,
                        content::NavigationController::ReloadType reload_type);
 
-  // Sets the history for this tab_contents to |history_length| entries, and
+  // Sets the history for this WebContentsImpl to |history_length| entries, and
   // moves the current page_id to the last entry in the list if it's valid.
   // This is mainly used when a prerendered page is swapped into the current
   // tab. The method is virtual for testing.
@@ -562,7 +562,7 @@ class CONTENT_EXPORT TabContents
   RenderViewHostManager render_manager_;
 
   // Manages injecting Java objects into all RenderViewHosts associated with
-  // this TabContents.
+  // this WebContentsImpl.
   scoped_ptr<JavaBridgeDispatcherHostManager>
       java_bridge_dispatcher_host_manager_;
 
@@ -587,7 +587,7 @@ class CONTENT_EXPORT TabContents
 
   // Map of SiteInstance ID to max page ID for this tab. A page ID is specific
   // to a given tab and SiteInstance, and must be valid for the lifetime of the
-  // TabContents.
+  // WebContentsImpl.
   std::map<int32, int32> max_page_ids_;
 
   // System time at which the current load was started.
@@ -626,13 +626,13 @@ class CONTENT_EXPORT TabContents
   bool is_being_destroyed_;
 
   // Indicates whether we should notify about disconnection of this
-  // TabContents. This is used to ensure disconnection notifications only
+  // WebContentsImpl. This is used to ensure disconnection notifications only
   // happen if a connection notification has happened and that they happen only
   // once.
   bool notify_disconnection_;
 
   // Pointer to the JavaScript dialog creator, lazily assigned. Used because the
-  // delegate of this TabContents is nulled before its destructor is called.
+  // delegate of this WebContentsImpl is nulled before its destructor is called.
   content::JavaScriptDialogCreator* dialog_creator_;
 
 #if defined(OS_WIN)
@@ -690,7 +690,9 @@ class CONTENT_EXPORT TabContents
   // Color chooser that was opened by this tab.
   content::ColorChooser* color_chooser_;
 
-  DISALLOW_COPY_AND_ASSIGN(TabContents);
+  DISALLOW_COPY_AND_ASSIGN(WebContentsImpl);
 };
+
+typedef class WebContentsImpl TabContents;
 
 #endif  // CONTENT_BROWSER_TAB_CONTENTS_TAB_CONTENTS_H_

@@ -27,7 +27,6 @@
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_impl.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -37,6 +36,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_view_host_delegate.h"
 #include "content/public/browser/resource_context.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/io_buffer.h"
 #include "net/base/mime_util.h"
@@ -150,13 +150,13 @@ SavePackage::SavePackage(WebContents* web_contents,
   InternalInit();
 }
 
-SavePackage::SavePackage(TabContents* tab_contents)
-    : content::WebContentsObserver(tab_contents),
+SavePackage::SavePackage(WebContents* web_contents)
+    : content::WebContentsObserver(web_contents),
       file_manager_(NULL),
       download_manager_(NULL),
       download_(NULL),
       page_url_(GetUrlToBeSaved()),
-      title_(tab_contents->GetTitle()),
+      title_(web_contents->GetTitle()),
       start_tick_(base::TimeTicks::Now()),
       finished_(false),
       user_canceled_(false),
@@ -164,7 +164,7 @@ SavePackage::SavePackage(TabContents* tab_contents)
       save_type_(content::SAVE_PAGE_TYPE_UNKNOWN),
       all_save_items_count_(0),
       wait_state_(INITIALIZE),
-      tab_id_(tab_contents->GetRenderProcessHost()->GetID()),
+      tab_id_(web_contents->GetRenderProcessHost()->GetID()),
       unique_id_(g_save_package_id++),
       wrote_to_completed_file_(false),
       wrote_to_failed_file_(false) {
@@ -175,10 +175,10 @@ SavePackage::SavePackage(TabContents* tab_contents)
 // This is for testing use. Set |finished_| as true because we don't want
 // method Cancel to be be called in destructor in test mode.
 // We also don't call InternalInit().
-SavePackage::SavePackage(TabContents* tab_contents,
+SavePackage::SavePackage(WebContents* web_contents,
                          const FilePath& file_full_path,
                          const FilePath& directory_full_path)
-    : content::WebContentsObserver(tab_contents),
+    : content::WebContentsObserver(web_contents),
       file_manager_(NULL),
       download_manager_(NULL),
       download_(NULL),
@@ -1100,7 +1100,7 @@ FilePath SavePackage::GetSuggestedNameForSaveAs(
   // component or if there is none, the domain as the file name.
   // Normally we want to base the filename on the page title, or if it doesn't
   // exist, on the URL. It's not easy to tell if the page has no title, because
-  // if the page has no title, TabContents::GetTitle() will return the page's
+  // if the page has no title, WebContents::GetTitle() will return the page's
   // URL (adjusted for display purposes). Therefore, we convert the "title"
   // back to a URL, and if it matches the original page URL, we know the page
   // had no title (or had a title equal to its URL, which is fine to treat
@@ -1189,13 +1189,8 @@ const FilePath::CharType* SavePackage::ExtensionForMimeType(
   return FILE_PATH_LITERAL("");
 }
 
-TabContents* SavePackage::tab_contents() const {
-  return
-      static_cast<TabContents*>(content::WebContentsObserver::web_contents());
-}
-
 WebContents* SavePackage::web_contents() const {
-  return tab_contents();
+  return content::WebContentsObserver::web_contents();
 }
 
 void SavePackage::GetSaveInfo() {
@@ -1204,7 +1199,7 @@ void SavePackage::GetSaveInfo() {
   FilePath website_save_dir, download_save_dir;
   DCHECK(download_manager_);
   download_manager_->delegate()->GetSaveDir(
-      tab_contents(), &website_save_dir, &download_save_dir);
+      web_contents(), &website_save_dir, &download_save_dir);
   std::string mime_type = web_contents()->GetContentsMimeType();
   std::string accept_languages =
       content::GetContentClient()->browser()->GetAcceptLangs(
@@ -1263,7 +1258,7 @@ void SavePackage::CreateDirectoryOnFileThread(
 
 void SavePackage::ContinueGetSaveInfo(const FilePath& suggested_path,
                                       bool can_save_as_complete) {
-  // The TabContents which owns this SavePackage may have disappeared during
+  // The WebContents which owns this SavePackage may have disappeared during
   // the UI->FILE->UI thread hop of
   // GetSaveInfo->CreateDirectoryOnFileThread->ContinueGetSaveInfo.
   if (!web_contents())

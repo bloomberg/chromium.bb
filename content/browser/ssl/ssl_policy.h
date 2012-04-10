@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,7 +14,7 @@
 class SSLCertErrorHandler;
 class SSLPolicyBackend;
 class SSLRequestInfo;
-class TabContents;
+class WebContentsImpl;
 
 namespace content {
 class NavigationEntryImpl;
@@ -42,7 +42,7 @@ class SSLPolicy {
   // Update the SSL information in |entry| to match the current state.
   // |tab_contents| is the TabContents associated with this entry.
   void UpdateEntry(content::NavigationEntryImpl* entry,
-                   TabContents* tab_contents);
+                   WebContentsImpl* web_contents);
 
   SSLPolicyBackend* backend() const { return backend_; }
 
