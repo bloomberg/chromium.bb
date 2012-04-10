@@ -412,13 +412,11 @@ void BrowserOptionsHandler::RegisterCloudPrintValues(DictionaryValue* values) {
       IDS_OPTIONS_CLOUD_PRINT_CONNECTOR_DISABLED_LABEL,
       l10n_util::GetStringUTF16(IDS_GOOGLE_CLOUD_PRINT)));
   values->SetString("cloudPrintConnectorDisabledButton",
-      l10n_util::GetStringFUTF16(
-      IDS_OPTIONS_CLOUD_PRINT_CONNECTOR_DISABLED_BUTTON,
-      l10n_util::GetStringUTF16(IDS_GOOGLE_CLOUD_PRINT)));
+      l10n_util::GetStringUTF16(
+      IDS_OPTIONS_CLOUD_PRINT_CONNECTOR_DISABLED_BUTTON));
   values->SetString("cloudPrintConnectorEnabledButton",
-      l10n_util::GetStringFUTF16(
-      IDS_OPTIONS_CLOUD_PRINT_CONNECTOR_ENABLED_BUTTON,
-      l10n_util::GetStringUTF16(IDS_GOOGLE_CLOUD_PRINT)));
+      l10n_util::GetStringUTF16(
+      IDS_OPTIONS_CLOUD_PRINT_CONNECTOR_ENABLED_BUTTON));
 #endif
 }
 

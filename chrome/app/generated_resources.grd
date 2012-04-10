@@ -9005,13 +9005,13 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
         </message>
       </if>
       <message name="IDS_OPTIONS_CLOUD_PRINT_CONNECTOR_DISABLED_BUTTON" desc="The label of the cloud connector configure button when it hasn't been set up yet.">
-        Enable <ph name="CLOUD_PRINT_NAME">$1<ex>Google Cloud Print</ex></ph> connector
+        Add printers
       </message>
       <message name="IDS_OPTIONS_CLOUD_PRINT_CONNECTOR_ENABLED_LABEL" desc="The label of the cloud print setup button when it has been set up.">
         You have registered your printers with <ph name="CLOUD_PRINT_NAME">$1<ex>Google Cloud Print</ex></ph> using the account <ph name="EMAIL">$2<ex>foo@bar.com</ex></ph>
       </message>
       <message name="IDS_OPTIONS_CLOUD_PRINT_CONNECTOR_ENABLED_BUTTON" desc="The label of the cloud print connector configure button when it has been set up.">
-        Disable <ph name="CLOUD_PRINT_NAME">$1<ex>Google Cloud Print</ex></ph> connector
+        Disconnect printers
       </message>
       <message name="IDS_OPTIONS_CLOUD_PRINT_CONNECTOR_ENABLED_MANAGE_BUTTON" desc="The label of the link item for the cloud print management URL.">
         Manage print settings...
