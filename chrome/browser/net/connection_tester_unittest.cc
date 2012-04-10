@@ -6,7 +6,7 @@
 
 #include "chrome/test/base/testing_pref_service.h"
 #include "content/test/test_browser_thread.h"
-#include "net/base/cert_verifier.h"
+#include "net/base/mock_cert_verifier.h"
 #include "net/base/mock_host_resolver.h"
 #include "net/base/ssl_config_service_defaults.h"
 #include "net/cookies/cookie_monster.h"
@@ -119,7 +119,7 @@ class ConnectionTesterTest : public PlatformTest {
  private:
   void InitializeRequestContext() {
     proxy_script_fetcher_context_->set_host_resolver(&host_resolver_);
-    cert_verifier_.reset(net::CertVerifier::CreateDefault());
+    cert_verifier_.reset(new net::MockCertVerifier);
     proxy_script_fetcher_context_->set_cert_verifier(cert_verifier_.get());
     proxy_script_fetcher_context_->set_http_auth_handler_factory(
         &http_auth_handler_factory_);

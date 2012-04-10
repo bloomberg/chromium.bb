@@ -6,7 +6,7 @@
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
-#include "net/base/cert_verifier.h"
+#include "net/base/mock_cert_verifier.h"
 #include "net/base/net_errors.h"
 #include "net/base/ssl_config_service.h"
 #include "net/http/disk_cache_based_ssl_host_info.h"
@@ -34,8 +34,7 @@ const MockTransaction kHostInfoTransaction = {
 // Tests that we can delete a DiskCacheBasedSSLHostInfo object in a
 // completion callback for DiskCacheBasedSSLHostInfo::WaitForDataReady.
 TEST(DiskCacheBasedSSLHostInfo, DeleteInCallback) {
-  scoped_ptr<net::CertVerifier> cert_verifier(
-      net::CertVerifier::CreateDefault());
+  scoped_ptr<net::CertVerifier> cert_verifier(new net::MockCertVerifier);
   // Use the blocking mock backend factory to force asynchronous completion
   // of ssl_host_info->WaitForDataReady(), so that the callback will run.
   MockBlockingBackendFactory* factory = new MockBlockingBackendFactory();
@@ -61,8 +60,7 @@ TEST(DiskCacheBasedSSLHostInfo, Update) {
   net::TestCompletionCallback callback;
 
   // Store a certificate chain.
-  scoped_ptr<net::CertVerifier> cert_verifier(
-      net::CertVerifier::CreateDefault());
+  scoped_ptr<net::CertVerifier> cert_verifier(new net::MockCertVerifier);
   net::SSLConfig ssl_config;
   scoped_ptr<net::SSLHostInfo> ssl_host_info(
       new net::DiskCacheBasedSSLHostInfo("https://www.google.com", ssl_config,
