@@ -83,7 +83,16 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
   virtual void OnProcessLaunched() OVERRIDE;
 
   void IrtReady();
-  void SendStart();
+
+  // Sends the start command with file handles to an opened NaCl process.
+  // Returns false on failure.
+  bool SendStart();
+
+  // Does post-process-launching tasks for starting the NaCl process once
+  // we have a connection.
+  //
+  // Returns false on failure.
+  bool StartWithLaunchedProcess();
 
   // Message handlers for validation caching.
   void OnQueryKnownToValidate(const std::string& signature, bool* result);

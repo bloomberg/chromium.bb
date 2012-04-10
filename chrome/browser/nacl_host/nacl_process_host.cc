@@ -118,7 +118,7 @@ bool SendHandleToSelLdr(
                        0,  // Unused given DUPLICATE_SAME_ACCESS.
                        FALSE,
                        flags)) {
-    LOG(ERROR) << "DuplicateHandle() failed";
+    DLOG(ERROR) << "DuplicateHandle() failed";
     return false;
   }
   handles_for_sel_ldr->push_back(
@@ -266,7 +266,7 @@ void NaClBrowser::InitIrtFilePath() {
   } else {
     FilePath plugin_dir;
     if (!PathService::Get(chrome::DIR_INTERNAL_PLUGINS, &plugin_dir)) {
-      LOG(ERROR) << "Failed to locate the plugins directory";
+      DLOG(ERROR) << "Failed to locate the plugins directory";
       return;
     }
 
@@ -351,7 +351,7 @@ void NaClProcessHost::DebugContext::AttachDebugger(
   DWORD exit_code;
   attached = DebugActiveProcess(pid);
   if (!attached) {
-    LOG(ERROR) << "Failed to connect to the process";
+    DLOG(ERROR) << "Failed to connect to the process";
   }
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
@@ -388,7 +388,7 @@ void NaClProcessHost::DebugContext::SendStartMessage() {
   if (start_msg_.get() && can_send_start_msg_) {
     if (nacl_process_host_) {
       if (!nacl_process_host_->Send(start_msg_.release())) {
-        LOG(ERROR) << "Failed to send start message";
+        DLOG(ERROR) << "Failed to send start message";
       }
     }
   }
@@ -458,12 +458,12 @@ NaClProcessHost::~NaClProcessHost() {
 
   for (size_t i = 0; i < internal_->sockets_for_renderer.size(); i++) {
     if (nacl::Close(internal_->sockets_for_renderer[i]) != 0) {
-      LOG(ERROR) << "nacl::Close() failed";
+      NOTREACHED() << "nacl::Close() failed";
     }
   }
   for (size_t i = 0; i < internal_->sockets_for_sel_ldr.size(); i++) {
     if (nacl::Close(internal_->sockets_for_sel_ldr[i]) != 0) {
-      LOG(ERROR) << "nacl::Close() failed";
+      NOTREACHED() << "nacl::Close() failed";
     }
   }
 
@@ -508,9 +508,9 @@ void NaClProcessHost::Launch(
   }
 
   // Start getting the IRT open asynchronously while we launch the NaCl process.
-  // We'll make sure this actually finished in OnProcessLaunched, below.
+  // We'll make sure this actually finished in StartWithLaunchedProcess, below.
   if (!NaClBrowser::GetInstance()->EnsureIrtAvailable()) {
-    LOG(ERROR) << "Cannot launch NaCl process after IRT file open failed";
+    DLOG(ERROR) << "Cannot launch NaCl process after IRT file open failed";
     delete this;
     return;
   }
@@ -558,9 +558,12 @@ void NaClProcessHost::OnChannelConnected(int32 peer_pid) {
             base::kProcessAccessWaitForTermination,
             &process)) {
       process_->SetHandle(process);
-      OnProcessLaunched();
+      if (!StartWithLaunchedProcess()) {
+        delete this;
+        return;
+      }
     } else {
-      LOG(ERROR) << "Failed to get process handle";
+      DLOG(ERROR) << "Failed to get process handle";
     }
   }
   if (debug_context_ == NULL) {
@@ -587,13 +590,13 @@ void NaClProcessHost::OnChannelConnected(int32 peer_pid) {
              base::kProcessAccessVMWrite |
              base::kProcessAccessWaitForTermination,
              &process)) {
-      LOG(ERROR) << "Failed to open the process";
+      DLOG(ERROR) << "Failed to open the process";
       debug_context_->AllowAndSendStartMessage();
       return;
     }
     base::Thread* dbg_thread = new base::Thread("Debug thread");
     if (!dbg_thread->Start()) {
-      LOG(ERROR) << "Debug thread not started";
+      DLOG(ERROR) << "Debug thread not started";
       debug_context_->AllowAndSendStartMessage();
       base::CloseProcessHandle(process);
       return;
@@ -615,7 +618,8 @@ void NaClProcessHost::OnChannelConnected(int32 peer_pid) {
 void NaClProcessHost::OnProcessLaunchedByBroker(base::ProcessHandle handle) {
   process_launched_by_broker_ = true;
   process_->SetHandle(handle);
-  OnProcessLaunched();
+  if (!StartWithLaunchedProcess())
+    delete this;
 }
 
 void NaClProcessHost::OnDebugExceptionHandlerLaunchedByBroker() {
@@ -863,44 +867,20 @@ void NaClProcessHost::OnProcessCrashed(int exit_code) {
 }
 
 void NaClProcessHost::OnProcessLaunched() {
-#if defined(OS_LINUX)
-  if (wait_for_nacl_gdb_) {
-    if (LaunchNaClGdb(base::GetProcId(process_->GetData().handle))) {
-      // OnProcessLaunched will be called with wait_for_nacl_gdb_ = false once
-      // debugger is attached to the program.
-      return;
-    }
-    LOG(ERROR) << "Failed to launch debugger";
-    // Continue execution without debugger.
-  }
-#endif
-  NaClBrowser* nacl_browser = NaClBrowser::GetInstance();
-
-  if (nacl_browser->IrtAvailable()) {
-    // The IRT is already open.  Away we go.
-    SendStart();
-  } else {
-    // We're waiting for the IRT to be open.
-    if (!nacl_browser->MakeIrtAvailable(
-            base::Bind(&NaClProcessHost::IrtReady,
-                       weak_factory_.GetWeakPtr())))
-      delete this;
-  }
+  if (!StartWithLaunchedProcess())
+    delete this;
 }
 
 // The asynchronous attempt to get the IRT file open has completed.
 void NaClProcessHost::IrtReady() {
   NaClBrowser* nacl_browser = NaClBrowser::GetInstance();
-
-  if (nacl_browser->IrtAvailable()) {
-    SendStart();
-  } else {
-    LOG(ERROR) << "Cannot launch NaCl process after IRT file open failed";
+  if (!nacl_browser->IrtAvailable() || !SendStart()) {
+    DLOG(ERROR) << "Cannot launch NaCl process";
     delete this;
   }
 }
 
-void NaClProcessHost::SendStart() {
+bool NaClProcessHost::SendStart() {
   NaClBrowser* nacl_browser = NaClBrowser::GetInstance();
   base::PlatformFile irt_file = nacl_browser->IrtFile();
   CHECK_NE(irt_file, base::kInvalidPlatformFileValue);
@@ -920,9 +900,8 @@ void NaClProcessHost::SendStart() {
                          0,  // Unused given DUPLICATE_SAME_ACCESS.
                          FALSE,
                          DUPLICATE_CLOSE_SOURCE | DUPLICATE_SAME_ACCESS)) {
-      LOG(ERROR) << "DuplicateHandle() failed";
-      delete this;
-      return;
+      DLOG(ERROR) << "DuplicateHandle() failed";
+      return false;
     }
     handles_for_renderer.push_back(
         reinterpret_cast<nacl::FileDescriptor>(handle_in_renderer));
@@ -946,9 +925,8 @@ void NaClProcessHost::SendStart() {
                        PROCESS_DUP_HANDLE,
                        FALSE,
                        0)) {
-    LOG(ERROR) << "DuplicateHandle() failed";
-    delete this;
-    return;
+    DLOG(ERROR) << "DuplicateHandle() failed";
+    return false;
   }
 #else
   // We use pid as process handle on Posix
@@ -970,16 +948,13 @@ void NaClProcessHost::SendStart() {
     if (!SendHandleToSelLdr(data.handle,
                             internal_->sockets_for_sel_ldr[i], true,
                             &handles_for_sel_ldr)) {
-      delete this;
-      return;
+      return false;
     }
   }
 
   // Send over the IRT file handle.  We don't close our own copy!
-  if (!SendHandleToSelLdr(data.handle, irt_file, false, &handles_for_sel_ldr)) {
-    delete this;
-    return;
-  }
+  if (!SendHandleToSelLdr(data.handle, irt_file, false, &handles_for_sel_ldr))
+    return false;
 
 #if defined(OS_MACOSX)
   // For dynamic loading support, NaCl requires a file descriptor that
@@ -991,16 +966,14 @@ void NaClProcessHost::SendStart() {
   options.size = 1;
   options.executable = true;
   if (!memory_buffer.Create(options)) {
-    LOG(ERROR) << "Failed to allocate memory buffer";
-    delete this;
-    return;
+    DLOG(ERROR) << "Failed to allocate memory buffer";
+    return false;
   }
   nacl::FileDescriptor memory_fd;
   memory_fd.fd = dup(memory_buffer.handle().fd);
   if (memory_fd.fd < 0) {
-    LOG(ERROR) << "Failed to dup() a file descriptor";
-    delete this;
-    return;
+    DLOG(ERROR) << "Failed to dup() a file descriptor";
+    return false;
   }
   memory_fd.auto_close = true;
   handles_for_sel_ldr.push_back(memory_fd);
@@ -1026,6 +999,29 @@ void NaClProcessHost::SendStart() {
 #endif
 
   internal_->sockets_for_sel_ldr.clear();
+  return true;
+}
+
+bool NaClProcessHost::StartWithLaunchedProcess() {
+#if defined(OS_LINUX)
+  if (wait_for_nacl_gdb_) {
+    if (LaunchNaClGdb(base::GetProcId(process_->GetData().handle))) {
+      // We will be called with wait_for_nacl_gdb_ = false once debugger is
+      // attached to the program.
+      return true;
+    }
+    DLOG(ERROR) << "Failed to launch debugger";
+    // Continue execution without debugger.
+  }
+#endif
+
+  NaClBrowser* nacl_browser = NaClBrowser::GetInstance();
+  if (nacl_browser->IrtAvailable())
+    return SendStart();  // The IRT is already open.  Away we go.
+
+  // We're waiting for the IRT to be open.
+  return nacl_browser->MakeIrtAvailable(
+      base::Bind(&NaClProcessHost::IrtReady, weak_factory_.GetWeakPtr()));
 }
 
 void NaClProcessHost::OnQueryKnownToValidate(const std::string& signature,
