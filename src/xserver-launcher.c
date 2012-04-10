@@ -1654,9 +1654,13 @@ create_lockfile(int display, char *lockfile, size_t lsize)
 			/* stale lock file; unlink and try again */
 			fprintf(stderr,
 				"unlinking stale lock file %s\n", lockfile);
-			unlink(lockfile);
-			errno = EAGAIN;
 			close(fd);
+			if (unlink(lockfile))
+				/* If we fail to unlink, return EEXIST
+				   so we try the next display number.*/
+				errno = EEXIST;
+			else
+				errno = EAGAIN;
 			return -1;
 		}
 
