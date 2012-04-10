@@ -156,6 +156,9 @@ CONTENT_EXPORT extern const char kRecordMode[];
 CONTENT_EXPORT extern const char kRegisterPepperPlugins[];
 CONTENT_EXPORT extern const char kRemoteDebuggingPort[];
 CONTENT_EXPORT extern const char kRendererAssertTest[];
+#if defined(OS_POSIX)
+extern const char kRendererCleanExit[];
+#endif
 extern const char kRendererCmdPrefix[];
 CONTENT_EXPORT extern const char kRendererCrashTest[];
 CONTENT_EXPORT extern const char kRendererProcess[];

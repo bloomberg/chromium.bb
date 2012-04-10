@@ -514,6 +514,11 @@ const char kRemoteDebuggingPort[]           = "remote-debugging-port";
 // Causes the renderer process to throw an assertion on launch.
 const char kRendererAssertTest[]            = "renderer-assert-test";
 
+#if defined(OS_POSIX)
+// Causes the renderer process to cleanly exit via calling exit().
+const char kRendererCleanExit[]             = "renderer-clean-exit";
+#endif
+
 // On POSIX only: the contents of this flag are prepended to the renderer
 // command line. Useful values might be "valgrind" or "xterm -e gdb --args".
 const char kRendererCmdPrefix[]             = "renderer-cmd-prefix";

@@ -733,6 +733,9 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
 #if !defined(OFFICIAL_BUILD)
     switches::kRendererCheckFalseTest,
 #endif  // !defined(OFFICIAL_BUILD)
+#if defined(OS_POSIX)
+    switches::kRendererCleanExit,
+#endif
     switches::kRendererCrashTest,
     switches::kRendererStartupDialog,
     switches::kShowPaintRects,

@@ -48,12 +48,17 @@ class ChildProcessLauncher::Context
         client_thread_id_(BrowserThread::UI),
         termination_status_(base::TERMINATION_STATUS_NORMAL_TERMINATION),
         exit_code_(content::RESULT_CODE_NORMAL_EXIT),
-        starting_(true),
-        terminate_child_on_shutdown_(true)
+        starting_(true)
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
         , zygote_(false)
 #endif
         {
+#if defined(OS_POSIX)
+          terminate_child_on_shutdown_ = !CommandLine::ForCurrentProcess()->
+              HasSwitch(switches::kRendererCleanExit);
+#else
+          terminate_child_on_shutdown_ = true;
+#endif
   }
 
   void Launch(

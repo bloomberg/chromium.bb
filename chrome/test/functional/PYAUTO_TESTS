@@ -243,6 +243,7 @@
     ],
 
     'linux': [  # linux != chromeos
+      'test_clean_exit',
       # ===========================
       # Permanently-disabled tests.
       # ===========================
