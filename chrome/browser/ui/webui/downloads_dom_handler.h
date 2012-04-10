@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/web_ui_message_handler.h"
@@ -88,6 +89,18 @@ class DownloadsDOMHandler : public content::WebUIMessageHandler,
   // Clear all download items and their observers.
   void ClearDownloadItems();
 
+  // Display a native prompt asking the user for confirmation after accepting
+  // the dangerous download specified by |dangerous|. The function returns
+  // immediately, and will invoke DangerPromptAccepted() asynchronously if the
+  // user accepts the dangerous download. The native prompt will observe
+  // |dangerous| until either the dialog is dismissed or |dangerous| is no
+  // longer an in-progress dangerous download.
+  void ShowDangerPrompt(content::DownloadItem* dangerous);
+
+  // Called when the user accepts a dangerous download via the
+  // DownloadDangerPrompt invoked via ShowDangerPrompt().
+  void DangerPromptAccepted(int download_id);
+
   // Return the download that corresponds to a given id.
   content::DownloadItem* GetDownloadById(int id);
 
@@ -113,6 +126,8 @@ class DownloadsDOMHandler : public content::WebUIMessageHandler,
   // notification should follow close on the heels of such a change.
   typedef std::vector<content::DownloadItem*> OrderedDownloads;
   OrderedDownloads download_items_;
+
+  base::WeakPtrFactory<DownloadsDOMHandler> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadsDOMHandler);
 };

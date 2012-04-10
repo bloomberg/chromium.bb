@@ -2720,6 +2720,7 @@
         'browser/crash_recovery_browsertest.cc',
         'browser/custom_handlers/protocol_handler_registry_browsertest.cc',
         'browser/download/download_browsertest.cc',
+        'browser/download/download_danger_prompt_browsertest.cc',
         'browser/download/download_extension_apitest.cc',
         'browser/download/download_extension_test.cc',
         'browser/download/download_query_unittest.cc',
