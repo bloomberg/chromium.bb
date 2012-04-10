@@ -291,7 +291,6 @@ void GpuCommandBufferStub::OnInitialize(
   // Initialize the decoder with either the view or pbuffer GLContext.
   if (!decoder_->Initialize(surface_.get(),
                             context_.get(),
-                            !surface_id(),
                             initial_size_,
                             disallowed_features_,
                             allowed_extensions_.c_str(),

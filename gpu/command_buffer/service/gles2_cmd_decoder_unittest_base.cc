@@ -199,7 +199,7 @@ void GLES2DecoderTestBase::InitDecoder(
   decoder_.reset(GLES2Decoder::Create(group_.get()));
   decoder_->set_log_synthesized_gl_errors(false);
   decoder_->Initialize(
-      surface_, context_, false, surface_->GetSize(), DisallowedFeatures(),
+      surface_, context_, surface_->GetSize(), DisallowedFeatures(),
       NULL, attribs);
   decoder_->set_engine(engine_.get());
 

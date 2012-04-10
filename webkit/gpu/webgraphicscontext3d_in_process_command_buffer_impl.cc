@@ -426,7 +426,6 @@ bool GLInProcessContext::Initialize(const gfx::Size& size,
 
   if (!decoder_->Initialize(surface_.get(),
                             context_.get(),
-                            true,
                             size,
                             ::gpu::gles2::DisallowedFeatures(),
                             allowed_extensions,

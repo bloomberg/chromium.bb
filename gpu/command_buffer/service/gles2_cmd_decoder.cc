@@ -471,7 +471,6 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   // Overridden from GLES2Decoder.
   virtual bool Initialize(const scoped_refptr<gfx::GLSurface>& surface,
                           const scoped_refptr<gfx::GLContext>& context,
-                          bool offscreen,
                           const gfx::Size& size,
                           const DisallowedFeatures& disallowed_features,
                           const char* allowed_extensions,
@@ -1914,7 +1913,6 @@ GLES2DecoderImpl::~GLES2DecoderImpl() {
 bool GLES2DecoderImpl::Initialize(
     const scoped_refptr<gfx::GLSurface>& surface,
     const scoped_refptr<gfx::GLContext>& context,
-    bool offscreen,
     const gfx::Size& size,
     const DisallowedFeatures& disallowed_features,
     const char* allowed_extensions,
@@ -2033,7 +2031,7 @@ bool GLES2DecoderImpl::Initialize(
   glGetIntegerv(GL_STENCIL_BITS, &v);
   back_buffer_has_stencil_ = attrib_parser.stencil_size_ != 0 && v > 0;
 
-  if (offscreen) {
+  if (surface_->IsOffscreen()) {
     if (attrib_parser.samples_ > 0 && attrib_parser.sample_buffers_ > 0 &&
         (context_->HasExtension("GL_EXT_framebuffer_multisample") ||
          context_->HasExtension("GL_ANGLE_framebuffer_multisample"))) {
@@ -7612,30 +7610,32 @@ error::Error GLES2DecoderImpl::HandleSwapBuffers(
       ScopedResolvedFrameBufferBinder binder(this, true, false);
       return error::kNoError;
     } else {
-      ScopedFrameBufferBinder binder(this,
-                                     offscreen_target_frame_buffer_->id());
+      if (surface_->IsOffscreen()) {
+        ScopedFrameBufferBinder binder(this,
+                                       offscreen_target_frame_buffer_->id());
 
-      if (offscreen_target_buffer_preserved_) {
-        // Copy the target frame buffer to the saved offscreen texture.
-        offscreen_saved_color_texture_->Copy(
-            offscreen_saved_color_texture_->size(),
-            offscreen_saved_color_format_);
-      } else {
-        // Flip the textures in the parent context via the texture manager.
-        if (!!offscreen_saved_color_texture_info_.get())
-          offscreen_saved_color_texture_info_->
-              SetServiceId(offscreen_target_color_texture_->id());
+        if (offscreen_target_buffer_preserved_) {
+          // Copy the target frame buffer to the saved offscreen texture.
+          offscreen_saved_color_texture_->Copy(
+              offscreen_saved_color_texture_->size(),
+              offscreen_saved_color_format_);
+        } else {
+          // Flip the textures in the parent context via the texture manager.
+          if (!!offscreen_saved_color_texture_info_.get())
+            offscreen_saved_color_texture_info_->
+                SetServiceId(offscreen_target_color_texture_->id());
 
-        offscreen_saved_color_texture_.swap(offscreen_target_color_texture_);
-        offscreen_target_frame_buffer_->AttachRenderTexture(
-            offscreen_target_color_texture_.get());
+          offscreen_saved_color_texture_.swap(offscreen_target_color_texture_);
+          offscreen_target_frame_buffer_->AttachRenderTexture(
+              offscreen_target_color_texture_.get());
+        }
+
+        // Ensure the side effects of the copy are visible to the parent
+        // context. There is no need to do this for ANGLE because it uses a
+        // single D3D device for all contexts.
+        if (!IsAngle())
+          glFlush();
       }
-
-      // Ensure the side effects of the copy are visible to the parent
-      // context. There is no need to do this for ANGLE because it uses a
-      // single D3D device for all contexts.
-      if (!IsAngle())
-        glFlush();
       return error::kNoError;
     }
   } else {

@@ -112,7 +112,6 @@ EGLSurface Display::CreateWindowSurface(EGLConfig config,
   std::vector<int32> attribs;
   if (!decoder_->Initialize(gl_surface_.get(),
                             gl_context_.get(),
-                            gl_surface_->IsOffscreen(),
                             gfx::Size(),
                             gpu::gles2::DisallowedFeatures(),
                             NULL,

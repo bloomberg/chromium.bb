@@ -87,9 +87,6 @@ class GPU_EXPORT GLES2Decoder : public CommonDecoder {
   // Parameters:
   //  surface: the GL surface to render to.
   //  context: the GL context to render to.
-  //  offscreen: whether to make the context offscreen or not. When FBO 0 is
-  //      bound, offscreen contexts render to an internal buffer, onscreen ones
-  //      to the surface.
   //  size: the size if the GL context is offscreen.
   //  allowed_extensions: A string in the same format as
   //      glGetString(GL_EXTENSIONS) that lists the extensions this context
@@ -98,7 +95,6 @@ class GPU_EXPORT GLES2Decoder : public CommonDecoder {
   //   true if successful.
   virtual bool Initialize(const scoped_refptr<gfx::GLSurface>& surface,
                           const scoped_refptr<gfx::GLContext>& context,
-                          bool offscreen,
                           const gfx::Size& size,
                           const DisallowedFeatures& disallowed_features,
                           const char* allowed_extensions,
