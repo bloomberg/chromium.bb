@@ -120,26 +120,6 @@ bool IsVisibleNormalWindow(aura::Window* window) {
     window->type() == aura::client::WINDOW_TYPE_NORMAL;
 }
 
-// Returns a number of the windows in |container| except |ignore| window.
-int CountWindowInContainer(int container_id, aura::Window* ignore) {
-  const aura::Window* container =
-      ash::Shell::GetInstance()->GetContainer(container_id);
-  if (!container)
-    return 0;  // Shutting down. See crbug.com/120786.
-  int normal_window_count = 0;
-  const aura::Window::Windows& windows = container->children();
-  for (aura::Window::Windows::const_iterator it = windows.begin();
-       it != windows.end();
-       ++it) {
-    if (*it != ignore && IsVisibleNormalWindow(*it)) {
-      normal_window_count++;
-      if (normal_window_count > 1)
-        return 2;
-    }
-  }
-  return normal_window_count;
-}
-
 }  // namespace
 
 namespace ash {
@@ -185,16 +165,16 @@ FramePainter::~FramePainter() {
 
 void FramePainter::Init(views::Widget* frame,
                         views::View* window_icon,
-                        views::ImageButton* maximize_button,
+                        views::ImageButton* size_button,
                         views::ImageButton* close_button,
                         SizeButtonBehavior behavior) {
   DCHECK(frame);
   // window_icon may be NULL.
-  DCHECK(maximize_button);
+  DCHECK(size_button);
   DCHECK(close_button);
   frame_ = frame;
   window_icon_ = window_icon;
-  size_button_ = maximize_button;
+  size_button_ = size_button;
   close_button_ = close_button;
   size_button_behavior_ = behavior;
 
@@ -322,7 +302,7 @@ void FramePainter::PaintHeader(views::NonClientFrameView* view,
     crossfade_animation_->Show();
   }
 
-  int opacity = UseSoloWindowHeader(NULL) ?
+  int opacity = UseSoloWindowHeader() ?
       kSoloWindowOpacity :
       (header_mode == ACTIVE ? kActiveWindowOpacity : kInactiveWindowOpacity);
 
@@ -547,7 +527,7 @@ void FramePainter::OnWindowDestroying(aura::Window* destroying) {
   // If we have two or more windows open and we close this one, we might trigger
   // the solo window appearance.  If so, find the window that is becoming solo
   // and schedule it to paint.
-  if (UseSoloWindowHeader(destroying)) {
+  if (UseSoloWindowHeader()) {
     for (std::set<FramePainter*>::const_iterator it = instances_->begin();
          it != instances_->end();
          ++it) {
@@ -587,17 +567,18 @@ int FramePainter::GetTitleOffsetX() const {
       kTitleNoIconOffsetX;
 }
 
-bool FramePainter::UseSoloWindowHeader(aura::Window* ignore) const {
-  // In unit tests this can be called after the shell is destroyed.
-  if (!Shell::HasInstance())
-    return false;
+// static
+bool FramePainter::UseSoloWindowHeader() {
   int window_count = 0;
-  window_count += CountWindowInContainer(
-      internal::kShellWindowId_DefaultContainer, ignore);
-  if (window_count > 1)
-    return false;
-  window_count += CountWindowInContainer(
-      internal::kShellWindowId_AlwaysOnTopContainer, ignore);
+  for (std::set<FramePainter*>::const_iterator it = instances_->begin();
+       it != instances_->end();
+       ++it) {
+    if (IsVisibleNormalWindow((*it)->window_)) {
+      window_count++;
+      if (window_count > 1)
+        return false;
+    }
+  }
   return window_count == 1;
 }
 

@@ -11,6 +11,7 @@
 #include "ash/ash_export.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"  // OVERRIDE
+#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/gfx/rect.h"
@@ -115,6 +116,9 @@ class ASH_EXPORT FramePainter : public aura::WindowObserver,
   virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(FramePainterTest, Basics);
+  FRIEND_TEST_ALL_PREFIXES(FramePainterTest, UseSoloWindowHeader);
+
   // Sets the images for a button base on IDs from the |frame_| theme provider.
   void SetButtonImages(views::ImageButton* button,
                        int normal_bitmap_id,
@@ -124,11 +128,10 @@ class ASH_EXPORT FramePainter : public aura::WindowObserver,
   // Returns the offset between window left edge and title string.
   int GetTitleOffsetX() const;
 
-  // Returns true if there is exactly one visible, normal-type window in the
-  // default window container, in which case we should paint a transparent
-  // window header.  Does not count window |ignore|.  Pass NULL for |ignore|
-  // to check all windows.
-  bool UseSoloWindowHeader(aura::Window* ignore) const;
+  // Returns true if there is exactly one visible, normal-type window using
+  // a header painted by this class, in which case we should paint a transparent
+  // window header.
+  static bool UseSoloWindowHeader();
 
   static std::set<FramePainter*>* instances_;
 
