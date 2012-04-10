@@ -757,7 +757,6 @@
         # NOTE: DON'T ADD NEW TESTS HERE!
         # New tests should be browser_tests. browser_tests are sharded and are
         # less flakier.
-        'browser/locale_tests_uitest.cc',
         'browser/process_singleton_linux_uitest.cc',
         'browser/process_singleton_uitest.cc',
         'browser/sanity_uitest.cc',
@@ -2848,6 +2847,7 @@
         'browser/iframe_browsertest.cc',
         'browser/infobars/infobar_extension_apitest.cc',
         'browser/importer/toolbar_importer_utils_browsertest.cc',
+        'browser/locale_tests_browsertest.cc',
         'browser/metrics/metrics_service_browsertest.cc',
         'browser/net/cookie_policy_browsertest.cc',
         'browser/net/ftp_browsertest.cc',
