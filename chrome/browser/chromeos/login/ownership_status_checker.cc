@@ -44,7 +44,12 @@ void OwnershipStatusChecker::Core::Check() {
 }
 
 void OwnershipStatusChecker::Core::Cancel() {
-  DCHECK(origin_loop_->BelongsToCurrentThread());
+  // It looks like this gets invoked after threads are already down because
+  // SignedSettingsMigrationHelper is clinging to a checker object but itself
+  // is owned by a singleton that gets killed only at process termination.
+  // TODO(pastarmovj): Re-enable after fixing http://crbug.com/122207.
+  if (base::MessageLoopProxy::current().get())
+    DCHECK(origin_loop_->BelongsToCurrentThread());
   callback_.Reset();
 }
 
