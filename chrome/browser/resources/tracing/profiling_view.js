@@ -107,7 +107,12 @@ cr.define('tracing', function() {
     ///////////////////////////////////////////////////////////////////////////
 
     onRecord_: function() {
-      tracingController.beginTracing(this.systemTracingBn_.checked);
+      var systemTracingEnabled;
+      if (this.systemTracingBn_)
+        systemTracingEnabled = this.systemTracingBn_.checked;
+      else
+        systemTracingEnabled = false;
+      tracingController.beginTracing(systemTracingEnabled);
     },
 
     onRecordDone_: function() {
