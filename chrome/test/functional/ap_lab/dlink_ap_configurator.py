@@ -68,6 +68,9 @@ class DLinkAPConfigurator(ap_configurator.APConfigurator):
   def GetRouterName(self):
     return 'Router Name: DAP-1522; Class: DLinkAPConfigurator'
 
+  def GetRouterShortName(self):
+    return 'DAP-1522'
+
   def GetNumberOfPages(self):
     return 1
 
@@ -177,7 +180,6 @@ class DLinkAPConfigurator(ap_configurator.APConfigurator):
       radio_enabled = False
     else:
       radio_enabled = True
-    print 'radio_enabled = %d; enabld = %d' % (radio_enabled, enabled)
     if radio_enabled == enabled:
       # Nothing to do
       return

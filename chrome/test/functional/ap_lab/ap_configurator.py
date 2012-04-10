@@ -155,7 +155,14 @@ class APConfigurator(object):
   def GetRouterName(self):
     """Returns a string to describe the router.
 
-    Note: The derrived class must implement this method.
+    Note: The derived class must implement this method.
+    """
+    raise NotImplementedError
+
+  def GetRouterShortName(self):
+    """Returns a short string to describe the router.
+
+    Note: The derived class must implement this method.
     """
     raise NotImplementedError
 
@@ -163,7 +170,7 @@ class APConfigurator(object):
     """Returns the number of web pages used to configure the router.
 
     Note: This is used internally by applySettings, and this method must be
-          implemented by the derrived class.
+          implemented by the derived class.
     """
     raise NotImplementedError
 
@@ -182,7 +189,7 @@ class APConfigurator(object):
     Returns:
       A list of dictionaries as described above
 
-    Note: The derrived class must implement this method.
+    Note: The derived class must implement this method.
     """
     raise NotImplementedError
 
@@ -201,7 +208,7 @@ class APConfigurator(object):
     Returns:
       A list of dictionaries as described above
 
-    Note: The derrived class must implement this method.
+    Note: The derived class must implement this method.
     """
     raise NotImplementedError
 
@@ -217,7 +224,7 @@ class APConfigurator(object):
     Returns:
       True if navigation is successful; False otherwise.
 
-    Note: The derrived class must implement this method.
+    Note: The derived class must implement this method.
     """
     raise NotImplementedError
 
@@ -230,7 +237,7 @@ class APConfigurator(object):
     Returns:
       True if navigation is successful; False otherwise.
 
-    Note: The derrived class must implement this method.
+    Note: The derived class must implement this method.
     """
     raise NotImplementedError
 
@@ -241,7 +248,7 @@ class APConfigurator(object):
       mode: must be one of the modes listed in __init__()
       band: the band to select
 
-    Note: The derrived class must implement this method
+    Note: The derived class must implement this method
     """
     raise NotImplementedError
 
@@ -251,7 +258,7 @@ class APConfigurator(object):
     Args:
       enabled: True to turn on the radio; False otherwise
 
-    Note: The derrived class must implement this method.
+    Note: The derived class must implement this method.
     """
     raise NotImplementedError
 
@@ -261,7 +268,7 @@ class APConfigurator(object):
     Args:
       ssid: Name of the wireless network
 
-    Note: The derrived class must implement this method.
+    Note: The derived class must implement this method.
     """
     raise NotImplementedError
 
@@ -271,7 +278,7 @@ class APConfigurator(object):
     Args:
       channel: Integer value of the channel
 
-    Note: The derrived class must implement this method.
+    Note: The derived class must implement this method.
     """
     raise NotImplementedError
 
@@ -283,14 +290,14 @@ class APConfigurator(object):
     Args:
       band: Constant describing the band type
 
-    Note: The derrived class must implement this method.
+    Note: The derived class must implement this method.
     """
     raise NotImplementedError
 
   def SetSecurityDisabled(self):
     """Disables the security of the wireless network.
 
-    Note: The derrived class must implement this method.
+    Note: The derived class must implement this method.
     """
     raise NotImplementedError
 
@@ -302,7 +309,7 @@ class APConfigurator(object):
       authentication: one of two supported authentication types:
                       wep_authentication_open or wep_authentication_shared
 
-    Note: The derrived class must implement this method.
+    Note: The derived class must implement this method.
     """
     raise NotImplementedError
 
@@ -313,7 +320,7 @@ class APConfigurator(object):
       shared_key: shared encryption key to use
       update_interval: number of seconds to wait before updating
 
-    Note: The derrived class must implement this method.
+    Note: The derived class must implement this method.
     """
     raise NotImplementedError
 
@@ -323,7 +330,7 @@ class APConfigurator(object):
     Args:
       visible: True for visible; False otherwise
 
-    Note: The derrived class must implement this method.
+    Note: The derived class must implement this method.
     """
     raise NotImplementedError
 

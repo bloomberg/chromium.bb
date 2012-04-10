@@ -26,6 +26,9 @@ class LinksysAPConfigurator(ap_configurator.APConfigurator):
   def GetRouterName(self):
     return 'Router Name: WRT54G2; Class: LinksysAPConfigurator'
 
+  def GetRouterShortName(self):
+    return 'WRT54G2'
+
   def GetNumberOfPages(self):
     return 2
 

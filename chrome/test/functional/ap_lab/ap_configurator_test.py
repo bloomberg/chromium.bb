@@ -4,6 +4,7 @@
 
 import unittest
 
+import ap_configurator_factory
 import dlink_ap_configurator
 import linksys_ap_configurator
 
@@ -24,13 +25,9 @@ class ConfiguratorTest(pyauto.PyUITest):
 
   def setUp(self):
     pyauto.PyUITest.setUp(self)
-    # Build your new class object and add it to the list
-    # TODO (krisr): Create a factory object that creates the ap configurators.
-    linksys = linksys_ap_configurator.LinksysAPConfigurator(self,
-                                                            '172.22.12.107')
-    dlink = dlink_ap_configurator.DLinkAPConfigurator(self, '172.22.12.124')
+    factory = ap_configurator_factory.APConfiguratorFactory(self)
     # Set self.ap to the one you want to test against.
-    self.ap = dlink
+    self.ap = factory.GetAPConfiguratorByShortName('DAP-1522')
 
   def testMakeNoChanges(self):
     """Test saving with no changes doesn't throw an error."""
