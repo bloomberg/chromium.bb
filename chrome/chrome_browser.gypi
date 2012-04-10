@@ -932,7 +932,6 @@
         'browser/content_settings/tab_specific_content_settings.h',
         'browser/cookies_tree_model.cc',
         'browser/cookies_tree_model.h',
-        'browser/crash_handler_host_linux.h',
         'browser/crash_upload_list.cc',
         'browser/crash_upload_list.h',
         'browser/crash_upload_list_win.cc',
@@ -4339,12 +4338,15 @@
               '-lXss',
             ],
           },
+        }],
+        ['os_posix == 1 and OS != "mac"', {
+          'sources': [ 'browser/crash_handler_host_linuxish.h', ],
           'conditions': [
             ['linux_breakpad==1', {
               'sources': [
-                'app/breakpad_linux.cc',
-                'app/breakpad_linux.h',
-                'browser/crash_handler_host_linux.cc',
+                'app/breakpad_linuxish.cc',
+                'app/breakpad_linuxish.h',
+                'browser/crash_handler_host_linuxish.cc',
               ],
               'dependencies': [
                 '../breakpad/breakpad.gyp:breakpad_client',
@@ -4352,13 +4354,13 @@
                 'common',
               ],
               'include_dirs': [
-                # breakpad_linux.cc uses generated file_version_info_linux.h.
+                # breakpad_linuxish.cc uses generated file_version_info_linux.h.
                 '<(SHARED_INTERMEDIATE_DIR)',
                 '../breakpad/src',
               ],
             }, {  # linux_breakpad==0
               'sources': [
-                'browser/crash_handler_host_linux_stub.cc',
+                'browser/crash_handler_host_linuxish_stub.cc',
               ],
             }],
           ],
