@@ -146,6 +146,29 @@ DWORD WINAPI GetFontDataPatch(HDC hdc,
 }
 #endif  // OS_WIN
 
+#if defined(OS_POSIX)
+class SuicideOnChannelErrorFilter : public IPC::ChannelProxy::MessageFilter {
+  void OnChannelError() {
+    // On POSIX, at least, one can install an unload handler which loops
+    // forever and leave behind a renderer process which eats 100% CPU forever.
+    //
+    // This is because the terminate signals (ViewMsg_ShouldClose and the error
+    // from the IPC channel) are routed to the main message loop but never
+    // processed (because that message loop is stuck in V8).
+    //
+    // One could make the browser SIGKILL the renderers, but that leaves open a
+    // large window where a browser failure (or a user, manually terminating
+    // the browser because "it's stuck") will leave behind a process eating all
+    // the CPU.
+    //
+    // So, we install a filter on the channel so that we can process this event
+    // here and kill the process.
+
+    _exit(0);
+  }
+};
+#endif  // OS_POSIX
+
 }  // namespace
 
 bool ChromeRenderProcessObserver::is_incognito_process_ = false;
@@ -166,6 +189,10 @@ ChromeRenderProcessObserver::ChromeRenderProcessObserver(
   RenderThread* thread = RenderThread::Get();
   resource_delegate_.reset(new RendererResourceDelegate());
   thread->SetResourceDispatcherDelegate(resource_delegate_.get());
+
+#if defined(OS_POSIX)
+  thread->AddFilter(new SuicideOnChannelErrorFilter());
+#endif
 
   // Configure modules that need access to resources.
   net::NetModule::SetResourceProvider(chrome_common_net::NetResourceProvider);
