@@ -57,9 +57,6 @@ const char kPrefOrphanAcknowledged[] = "ack_orphan";
 // Indicates whether to show an install warning when the user enables.
 const char kExtensionDidEscalatePermissions[] = "install_warning_on_enable";
 
-// Indicates whether the extension was updated while it was disabled.
-const char kPrefDisableReason[] = "disable_reason";
-
 // A preference that tracks browser action toolbar configuration. This is a list
 // object stored in the Preferences file. The extensions are stored by ID.
 const char kExtensionToolbar[] = "extensions.toolbar";
@@ -674,27 +671,6 @@ void ExtensionPrefs::SetDidExtensionEscalatePermissions(
     const Extension* extension, bool did_escalate) {
   UpdateExtensionPref(extension->id(), kExtensionDidEscalatePermissions,
                       Value::CreateBooleanValue(did_escalate));
-}
-
-Extension::DisableReason ExtensionPrefs::GetDisableReason(
-    const std::string& extension_id) {
-  int value = -1;
-  if (ReadExtensionPrefInteger(extension_id, kPrefDisableReason, &value) &&
-      value >= 0 && value < Extension::DISABLE_LAST) {
-    return static_cast<Extension::DisableReason>(value);
-  }
-  return Extension::DISABLE_UNKNOWN;
-}
-
-void ExtensionPrefs::SetDisableReason(const std::string& extension_id,
-                                      Extension::DisableReason disable_reason) {
-  UpdateExtensionPref(
-      extension_id, kPrefDisableReason,
-      Value::CreateIntegerValue(static_cast<int>(disable_reason)));
-}
-
-void ExtensionPrefs::RemoveDisableReason(const std::string& extension_id) {
-  UpdateExtensionPref(extension_id, kPrefDisableReason, NULL);
 }
 
 void ExtensionPrefs::UpdateBlacklist(

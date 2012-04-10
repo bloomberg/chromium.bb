@@ -135,8 +135,7 @@ void ExtensionContextMenuModel::ExecuteCommand(int command_id) {
     }
     case DISABLE: {
       ExtensionService* extension_service = profile_->GetExtensionService();
-      extension_service->DisableExtension(extension_id_,
-                                          Extension::DISABLE_USER_ACTION);
+      extension_service->DisableExtension(extension_id_);
       break;
     }
     case UNINSTALL: {

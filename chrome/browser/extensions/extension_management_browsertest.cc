@@ -139,13 +139,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, DisableEnable) {
   EXPECT_TRUE(manager->GetBackgroundHostForExtension(extension_id));
 
   // After disabling, the background page should go away.
-  DisableExtension(extension_id);
+  service->DisableExtension(extension_id);
   EXPECT_EQ(size_before, service->extensions()->size());
   EXPECT_EQ(1u, service->disabled_extensions()->size());
   EXPECT_FALSE(manager->GetBackgroundHostForExtension(extension_id));
 
   // And bring it back.
-  EnableExtension(extension_id);
+  service->EnableExtension(extension_id);
   EXPECT_EQ(size_before + 1, service->extensions()->size());
   EXPECT_EQ(0u, service->disabled_extensions()->size());
   EXPECT_TRUE(manager->GetBackgroundHostForExtension(extension_id));
@@ -322,7 +322,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest,
       InstallExtension(basedir.AppendASCII("v1.crx"), 1);
   ASSERT_TRUE(extension);
   listener1.WaitUntilSatisfied();
-  DisableExtension(extension->id());
+  service->DisableExtension(extension->id());
   ASSERT_EQ(disabled_size_before + 1, service->disabled_extensions()->size());
   ASSERT_EQ(enabled_size_before, service->extensions()->size());
   ASSERT_EQ("ogjcoiohnmldgjemafoockdghcjciccf", extension->id());
@@ -348,7 +348,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest,
   // The extension should have not made the callback because it is disabled.
   // When we enabled it, it should then make the callback.
   ASSERT_FALSE(listener2.was_satisfied());
-  EnableExtension(extension->id());
+  service->EnableExtension(extension->id());
   listener2.WaitUntilSatisfied();
   ASSERT_TRUE(notification_listener.started());
   ASSERT_TRUE(notification_listener.finished());
@@ -484,7 +484,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalPolicyRefresh) {
   EXPECT_EQ(Extension::EXTERNAL_POLICY_DOWNLOAD, extension->location());
 
   // Try to disable and uninstall the extension which should fail.
-  DisableExtension(kExtensionId);
+  service->DisableExtension(kExtensionId);
   EXPECT_EQ(size_before + 1, service->extensions()->size());
   EXPECT_EQ(0u, service->disabled_extensions()->size());
   UninstallExtension(kExtensionId);
@@ -576,7 +576,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, PolicyOverridesUserInstall) {
   EXPECT_TRUE(service->IsExtensionEnabled(kExtensionId));
   EXPECT_TRUE(service->disabled_extensions()->is_empty());
 
-  DisableExtension(kExtensionId);
+  service->DisableExtension(kExtensionId);
   EXPECT_EQ(1u, service->disabled_extensions()->size());
   extension = service->GetExtensionById(kExtensionId, true);
   EXPECT_TRUE(extension);

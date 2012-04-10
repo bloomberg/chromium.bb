@@ -382,7 +382,7 @@ bool SetEnabledFunction::RunImpl() {
     }
     service()->EnableExtension(extension_id_);
   } else if (currently_enabled && !enable) {
-    service()->DisableExtension(extension_id_, Extension::DISABLE_USER_ACTION);
+    service()->DisableExtension(extension_id_);
   }
 
   BrowserThread::PostTask(

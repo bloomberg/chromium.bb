@@ -4662,7 +4662,7 @@ void TestingAutomationProvider::SetExtensionStateById(
       AutomationJSONReply(this, reply_message).SendSuccess(NULL);
     }
   } else {
-    service->DisableExtension(extension->id(), Extension::DISABLE_USER_ACTION);
+    service->DisableExtension(extension->id());
     AutomationJSONReply(this, reply_message).SendSuccess(NULL);
   }
 

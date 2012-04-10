@@ -139,12 +139,6 @@ class ExtensionPrefs : public ExtensionContentSettingsStore::Observer,
   void SetDidExtensionEscalatePermissions(const Extension* extension,
                                           bool did_escalate);
 
-  // Getter and setters for disabled reason.
-  Extension::DisableReason GetDisableReason(const std::string& extension_id);
-  void SetDisableReason(const std::string& extension_id,
-                        Extension::DisableReason disable_reason);
-  void RemoveDisableReason(const std::string& extension_id);
-
   // Returns the version string for the currently installed extension, or
   // the empty string if not found.
   std::string GetVersionString(const std::string& extension_id);

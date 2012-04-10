@@ -914,7 +914,7 @@ void AutomationProvider::DisableExtension(int extension_handle,
   ExtensionService* service = profile_->GetExtensionService();
   if (extension && service) {
     ExtensionUnloadNotificationObserver observer;
-    service->DisableExtension(extension->id(), Extension::DISABLE_USER_ACTION);
+    service->DisableExtension(extension->id());
     // The extension unload notification should have been sent synchronously
     // with the disable. Just to be safe, check that it was received.
     *success = observer.did_receive_unload_notification();

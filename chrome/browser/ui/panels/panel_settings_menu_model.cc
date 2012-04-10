@@ -92,7 +92,7 @@ void PanelSettingsMenuModel::ExecuteCommand(int command_id) {
       break;
     case COMMAND_DISABLE:
       browser->GetProfile()->GetExtensionService()->DisableExtension(
-          extension->id(), Extension::DISABLE_USER_ACTION);
+          extension->id());
       break;
     case COMMAND_UNINSTALL:
       // When the owning panel is being closed by the extension API, the

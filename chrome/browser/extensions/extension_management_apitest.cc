@@ -46,10 +46,11 @@ class ExtensionManagementApiTest : public ExtensionApiTest {
     ASSERT_TRUE(LoadExtension(basedir.AppendASCII("permissions")));
 
     // Load 2 disabled items.
+    ExtensionService* service = browser()->profile()->GetExtensionService();
     ASSERT_TRUE(LoadExtension(basedir.AppendASCII("disabled_extension")));
-    DisableExtension(last_loaded_extension_id_);
+    service->DisableExtension(last_loaded_extension_id_);
     ASSERT_TRUE(LoadExtension(basedir.AppendASCII("disabled_app")));
-    DisableExtension(last_loaded_extension_id_);
+    service->DisableExtension(last_loaded_extension_id_);
   }
 
   // Load an app, and wait for a message from app "management/launch_on_install"

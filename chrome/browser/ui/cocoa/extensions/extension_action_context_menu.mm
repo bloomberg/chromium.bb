@@ -262,8 +262,7 @@ int CurrentTabId() {
       ExtensionService* extensionService = profile_->GetExtensionService();
       if (!extensionService)
         return; // Incognito mode.
-      extensionService->DisableExtension(extension_->id(),
-                                         Extension::DISABLE_USER_ACTION);
+      extensionService->DisableExtension(extension_->id());
       break;
     }
     case kExtensionContextUninstall: {
