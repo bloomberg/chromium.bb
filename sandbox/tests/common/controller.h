@@ -95,6 +95,9 @@ class TestRunner {
   // Sets TestRunner to return without waiting for the process to exit.
   void SetAsynchronous(bool is_async) { is_async_ = is_async; }
 
+  // Sets TestRunner to return without waiting for the process to exit.
+  void SetUnsandboxed(bool is_no_sandbox) { no_sandbox_ = is_no_sandbox; }
+
   // Sets the desired state for the test to run.
   void SetTestState(SboxTestsState desired_state);
 
@@ -123,6 +126,7 @@ class TestRunner {
   SboxTestsState state_;
   bool is_init_;
   bool is_async_;
+  bool no_sandbox_;
   base::win::ScopedHandle target_process_;
   DWORD target_process_id_;
 };
