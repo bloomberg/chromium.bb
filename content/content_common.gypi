@@ -401,6 +401,7 @@
         ],
         'msvs_settings': {
           'VCLinkerTool': {
+            'AdditionalLibraryDirectories': ['$(DXSDK_DIR)/lib/x86'],
             'DelayLoadDLLs': [
               'd3d9.dll',
               'd3dx9_43.dll',
