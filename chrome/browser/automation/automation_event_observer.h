@@ -20,7 +20,7 @@ class AutomationEventObserver {
                                    bool recurring);
   virtual ~AutomationEventObserver();
 
-  void Init(int observer_id);
+  virtual void Init(int observer_id);
   void NotifyEvent(DictionaryValue* value);
   int GetId() const;
 
@@ -40,26 +40,32 @@ class AutomationEventObserver {
 
 // AutomationEventObserver implementation that listens for explicitly raised
 // events. A webpage explicitly raises events by calling:
-// window.domAutomationController.raiseEvent("EVENT_NAME");
-class DomRaisedEventObserver
+// window.domAutomationController.sendWithId(automation_id, event_name);
+class DomEventObserver
     : public AutomationEventObserver, public content::NotificationObserver {
  public:
-  DomRaisedEventObserver(AutomationEventQueue* event_queue,
-                         const std::string& event_name,
-                         int automation_id,
-                         bool recurring);
-  virtual ~DomRaisedEventObserver();
+  DomEventObserver(AutomationEventQueue* event_queue,
+                   const std::string& event_name,
+                   int automation_id,
+                   bool recurring);
+  virtual ~DomEventObserver();
 
+  virtual void Init(int observer_id);
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
  private:
   std::string event_name_;
+  std::string event_name_base_;
   int automation_id_;
   content::NotificationRegistrar registrar_;
 
-  DISALLOW_COPY_AND_ASSIGN(DomRaisedEventObserver);
+  // The first instance of this string in an event name will be replaced with
+  // the id of this observer.
+  static const char* kSubstringReplaceWithObserverId;
+
+  DISALLOW_COPY_AND_ASSIGN(DomEventObserver);
 };
 
 #endif  // CHROME_BROWSER_AUTOMATION_AUTOMATION_EVENT_OBSERVER_H_

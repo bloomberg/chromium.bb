@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string>
+
 #include "base/logging.h"
+#include "base/stringprintf.h"
 #include "chrome/browser/automation/automation_event_observer.h"
 #include "chrome/browser/automation/automation_event_queue.h"
 #include "chrome/browser/automation/automation_provider.h"
@@ -10,6 +13,8 @@
 #include "content/public/browser/dom_operation_notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+
+const char* DomEventObserver::kSubstringReplaceWithObserverId = "$(id)";
 
 AutomationEventObserver::AutomationEventObserver(
     AutomationEventQueue* event_queue, bool recurring)
@@ -32,9 +37,7 @@ void AutomationEventObserver::NotifyEvent(DictionaryValue* value) {
 }
 
 void AutomationEventObserver::Init(int observer_id) {
-  if (observer_id_ < 0) {
     observer_id_ = observer_id;
-  }
 }
 
 int AutomationEventObserver::GetId() const {
@@ -47,21 +50,35 @@ void AutomationEventObserver::RemoveIfDone() {
   }
 }
 
-DomRaisedEventObserver::DomRaisedEventObserver(
+DomEventObserver::DomEventObserver(
     AutomationEventQueue* event_queue,
     const std::string& event_name,
     int automation_id,
     bool recurring)
     : AutomationEventObserver(event_queue, recurring),
       event_name_(event_name),
+      event_name_base_(event_name),
       automation_id_(automation_id) {
   registrar_.Add(this, content::NOTIFICATION_DOM_OPERATION_RESPONSE,
                  content::NotificationService::AllSources());
 }
 
-DomRaisedEventObserver::~DomRaisedEventObserver() {}
+DomEventObserver::~DomEventObserver() {}
 
-void DomRaisedEventObserver::Observe(
+void DomEventObserver::Init(int observer_id) {
+    AutomationEventObserver::Init(observer_id);
+    std::string id_string = base::StringPrintf("%d", observer_id);
+    event_name_ = event_name_base_;
+    int replace_pos =
+        event_name_.find(kSubstringReplaceWithObserverId);
+    if (replace_pos != (int)std::string::npos) {
+      event_name_.replace(replace_pos,
+                          ::strlen(kSubstringReplaceWithObserverId),
+                          id_string);
+    }
+}
+
+void DomEventObserver::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {

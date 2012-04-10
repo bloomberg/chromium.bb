@@ -954,15 +954,14 @@ class TestingAutomationProvider : public AutomationProvider,
   void ExecuteJavascriptJSON(
       base::DictionaryValue* args, IPC::Message* reply_message);
 
-  // Creates a DomRaisedEventObserver associated with the AutomationEventQueue.
+  // Creates a DomEventObserver associated with the AutomationEventQueue.
   // Example:
   //   input: { "event_name": "login complete",
-  //            "windex": 1,
-  //            "tab_index": 1,
-  //            "frame_xpath": "//frames[1]",
+  //            "automation_id": 4444,
+  //            "recurring": False
   //          }
   //   output: { "observer_id": 1 }
-  void AddDomRaisedEventObserver(
+  void AddDomEventObserver(
       base::DictionaryValue* args, IPC::Message* reply_message);
 
   // Removes an event observer associated with the AutomationEventQueue.

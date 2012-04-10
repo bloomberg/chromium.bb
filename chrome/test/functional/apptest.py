@@ -4,7 +4,7 @@
 
 import pyauto_functional  # must be imported before pyauto
 import pyauto
-
+import domselector
 
 class PyAutoEventsTest(pyauto.PyUITest):
   """Tests using the event queue."""
@@ -13,9 +13,8 @@ class PyAutoEventsTest(pyauto.PyUITest):
     """Basic test for the event queue."""
     url = self.GetHttpURLForDataPath('apptest', 'basic.html')
     driver = self.NewWebDriver()
-    event_id = self.AddDomRaisedEventObserver(automation_id=4444);
-    success_id = self.AddDomRaisedEventObserver('test success',
-                                                automation_id=4444);
+    event_id = self.AddDomEventObserver(automation_id=4444, recurring=True)
+    success_id = self.AddDomEventObserver('test success', automation_id=4444)
     self.NavigateToURL(url)
     self._ExpectEvent(event_id, 'init')
     self._ExpectEvent(event_id, 'login ready')
@@ -24,10 +23,26 @@ class PyAutoEventsTest(pyauto.PyUITest):
     self._ExpectEvent(event_id, 'login done')
     self.GetNextEvent(success_id)
 
-  def _ExpectEvent(self, event_id, event_name):
+  def testDomMutationEvents(self):
+    """Basic tests for Dom Mutation observers."""
+    url = self.GetHttpURLForDataPath('apptest', 'dom_mutations.html')
+    self.NavigateToURL(url)
+    self.GetNextEvent(self.AddDomMutationObserver(
+        'add', domselector.XPath('/html/body')))
+    self.GetNextEvent(self.AddDomMutationObserver(
+        'add', domselector.CSSSelector('#login'), expected_value='Log In'))
+    success_id = self.AddDomMutationObserver(
+        'change', domselector.XPath('id(\'console\')'),
+        expected_value='.*succeeded.*')
+    self.NewWebDriver().find_element_by_id('login').click()
+    self.GetNextEvent(self.AddDomMutationObserver(
+        'remove', domselector.XPath('id(\'fail\')/a')))
+    self.GetNextEvent(success_id)
+
+  def _ExpectEvent(self, event_id, expected_event_name):
     """Checks that the next event is expected."""
     e = self.GetNextEvent(event_id)
-    self.assertEqual(e.get('name'), event_name,
+    self.assertEqual(e.get('name'), expected_event_name,
                      msg="unexpected event: %s" % e)
 
 

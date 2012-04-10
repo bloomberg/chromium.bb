@@ -2235,8 +2235,8 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
   handler_map["SetPrefs"] = &TestingAutomationProvider::SetPrefs;
   handler_map["ExecuteJavascript"] =
       &TestingAutomationProvider::ExecuteJavascriptJSON;
-  handler_map["AddDomRaisedEventObserver"] =
-      &TestingAutomationProvider::AddDomRaisedEventObserver;
+  handler_map["AddDomEventObserver"] =
+      &TestingAutomationProvider::AddDomEventObserver;
   handler_map["RemoveEventObserver"] =
       &TestingAutomationProvider::RemoveEventObserver;
   handler_map["GetNextEvent"] =
@@ -6481,7 +6481,7 @@ void TestingAutomationProvider::ExecuteJavascriptInRenderView(
                                      rvh);
 }
 
-void TestingAutomationProvider::AddDomRaisedEventObserver(
+void TestingAutomationProvider::AddDomEventObserver(
     DictionaryValue* args,
     IPC::Message* reply_message) {
   if (SendErrorIfModalDialogActive(this, reply_message))
@@ -6508,10 +6508,8 @@ void TestingAutomationProvider::AddDomRaisedEventObserver(
     automation_event_queue_.reset(new AutomationEventQueue);
 
   int observer_id = automation_event_queue_->AddObserver(
-      new DomRaisedEventObserver(automation_event_queue_.get(),
-                                 event_name,
-                                 automation_id,
-                                 recurring));
+      new DomEventObserver(automation_event_queue_.get(), event_name,
+                           automation_id, recurring));
   scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
   return_value->SetInteger("observer_id", observer_id);
   reply.SendSuccess(return_value.get());

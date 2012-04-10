@@ -79,6 +79,7 @@ except ImportError:
 
 # Should go after sys.path is set appropriately
 import bookmark_model
+import domselector
 import download_info
 import history_info
 import omnibox_info
@@ -2866,16 +2867,16 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     return self._GetResultFromJSONRequest(cmd_dict, windex=windex,
                                           timeout=timeout)
 
-  def AddDomRaisedEventObserver(self, event_name='', automation_id=-1,
-                                recurring=True):
-    """Adds a DomRaisedEventObserver associated with the AutomationEventQueue.
+  def AddDomEventObserver(self, event_name='', automation_id=-1,
+                          recurring=False):
+    """Adds a DomEventObserver associated with the AutomationEventQueue.
 
     An app raises a matching event in Javascript by calling:
     window.domAutomationController.sendWithId(automation_id, event_name)
 
     Args:
       event_name: The event name to watch for. By default an event is raised
-                  for every message.
+                  for any message.
       automation_id: The Automation Id of the sent message. By default all
                      messages sent from the window.domAutomationController are
                      observed. Note that other PyAuto functions also send
@@ -2893,12 +2894,69 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       pyauto_errors.JSONInterfaceError if the automation call returns an error.
     """
     cmd_dict = {
-      'command': 'AddDomRaisedEventObserver',
+      'command': 'AddDomEventObserver',
       'event_name': event_name,
       'automation_id': automation_id,
       'recurring': recurring,
     }
     return self._GetResultFromJSONRequest(cmd_dict, windex=None)['observer_id']
+
+  def AddDomMutationObserver(self, mutation_type, selector,
+                             expected_value=None, automation_id=44444,
+                             **kwargs):
+    """Sets up an event observer watching for a specific DOM mutation.
+
+    Creates an observer that raises an event when a mutation of the given type
+    occurs on a DOM node specified by |selector|.
+
+    Args:
+      mutation_type: One of 'add', 'remove', or 'change'.
+      selector: A DOMSelector object defining the DOM node to watch. The node
+          must already exist if |mutation_type| is 'change'.
+      expected_value: Optional regular expression to match against the node's
+          textContent attribute after the mutation. Defaults to None.
+      automation_id: The automation_id used to route the observer javascript
+          messages. Defaults to 44444.
+
+      Any additional keyword arguments are passed on to ExecuteJavascript and
+      can be used to select the tab where the DOM MutationObserver is created.
+
+    Returns:
+      The id of the created observer, which can be used with GetNextEvent(id)
+      and RemoveEventObserver(id).
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+      RuntimeError if the injected javascript MutationObserver returns an error.
+    """
+    assert mutation_type in ('add', 'remove', 'change'), \
+        'Unexpected value "%s" for mutation_type.' % mutation_type
+    assert isinstance(selector, domselector.DOMSelector), \
+        'Unexpected type: selector is not a instance of DOMSelector.'
+    assert '"' not in selector.pattern, \
+        'Do not use character " in selector.'
+    assert not expected_value or '"' not in expected_value, \
+        'Do not use character " in expected_value.'
+    cmd_dict = {
+      'command': 'AddDomEventObserver',
+      'event_name': '__dom_mutation_observer__:$(id)',
+      'automation_id': automation_id,
+      'recurring': False,
+    }
+    observer_id = (
+        self._GetResultFromJSONRequest(cmd_dict, windex=None)['observer_id'])
+    jsfile = os.path.join(os.path.abspath(os.path.dirname(__file__)),
+                          'dom_mutation_observer.js')
+    with open(jsfile, 'r') as f:
+      js = ('(' + f.read() + ')(%d, %d, "%s", "%s", "%s", %s);' %
+            (automation_id, observer_id, mutation_type,
+             selector.pattern, selector.type_string,
+             'null' if expected_value is None else '"%s"' % expected_value))
+    jsreturn = self.ExecuteJavascript(js, **kwargs)
+    if jsreturn != 'success':
+      self.RemoveEventObserver(observer_id)
+      raise RuntimeError(jsreturn)
+    return observer_id
 
   def GetNextEvent(self, observer_id=-1, blocking=True, timeout=-1):
     """Waits for an observed event to occur.
