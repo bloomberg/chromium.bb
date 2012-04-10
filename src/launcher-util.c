@@ -68,6 +68,7 @@ weston_launcher_open(struct weston_compositor *compositor,
 	do {
 		len = send(sock, message, n, 0);
 	} while (len < 0 && errno == EINTR);
+	free(message);
 
 	memset(&msg, 0, sizeof msg);
 	iov.iov_base = &ret;
@@ -83,14 +84,14 @@ weston_launcher_open(struct weston_compositor *compositor,
 
 	if (len != sizeof ret ||
 	    ret < 0)
-		goto out;
+		return -1;
 
 	cmsg = CMSG_FIRSTHDR(&msg);
 	if (!cmsg ||
 	    cmsg->cmsg_level != SOL_SOCKET ||
 	    cmsg->cmsg_type != SCM_RIGHTS) {
 		fprintf(stderr, "invalid control message\n");
-		goto out;
+		return -1;
 	}
 
 	data = (union cmsg_data *) CMSG_DATA(cmsg);
@@ -99,9 +100,7 @@ weston_launcher_open(struct weston_compositor *compositor,
 		return -1;
 	}
 
-out:
-	free(message);
-	return ret < 0 ? ret : data->fd;
+	return data->fd;
 }
 
 int
