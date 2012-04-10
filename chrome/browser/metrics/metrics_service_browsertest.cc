@@ -74,8 +74,7 @@ IN_PROC_BROWSER_TEST_F(MetricsServiceTest, CloseRenderersNormally) {
   // exits... it's not clear to me how to test that.
 }
 
-// Flaky: http://crbug.com/18738
-IN_PROC_BROWSER_TEST_F(MetricsServiceTest, FLAKY_CrashRenderers) {
+IN_PROC_BROWSER_TEST_F(MetricsServiceTest, CrashRenderers) {
   OpenTabs();
 
   // Kill the process for one of the tabs.
@@ -85,8 +84,18 @@ IN_PROC_BROWSER_TEST_F(MetricsServiceTest, FLAKY_CrashRenderers) {
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUICrashURL));
   observer.Wait();
 
-  // Verify that the expected stability metrics were recorded.
+  // The MetricsService listens for the same notification, so the |observer|
+  // might finish waiting before the MetricsService has a chance to process the
+  // notification.  To avoid racing here, we repeatedly run the message loop
+  // until the MetricsService catches up.  This should happen "real soon now",
+  // since the notification is posted to all observers essentially
+  // simultaneously... so busy waiting here shouldn't be too bad.
   const PrefService* prefs = g_browser_process->local_state();
+  while (!prefs->GetInteger(prefs::kStabilityRendererCrashCount)) {
+    ui_test_utils::RunAllPendingInMessageLoop();
+  }
+
+  // Verify that the expected stability metrics were recorded.
   EXPECT_EQ(1, prefs->GetInteger(prefs::kStabilityLaunchCount));
 #if defined(USE_VIRTUAL_KEYBOARD)
   // The keyboard page loads.
