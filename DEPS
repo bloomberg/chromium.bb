@@ -17,27 +17,29 @@ vars = {
   # After changing nacl_toolchain_revision, run 'gclient runhooks' to get the
   # new values.
   "nacl_toolchain_linux_x86_hash":
-      "ad59800b550fa1c5d0bac15774a82ed78a510827",
+      "73456ff5cce78ed15d41d269cbcdaabe3579e9ff",
   "nacl_toolchain_linux_x86_newlib_hash":
-      "569cfaa5820f18cfe179e5dcb9ef9e03b7d5cff9",
+      "84e66d5bd28119156e46dbd5eacbee7a912bdef5",
   "nacl_toolchain_mac_x86_hash":
-      "a8afcd5a55d4499d1df27cba910102ec0413d9a6",
+      "6e08949e301f65dd77cf0458cc331da4d03424e6",
   "nacl_toolchain_mac_x86_newlib_hash":
-      "d0a34734e0356d2fd611ab781c05ee994dec9b5e",
-  "nacl_toolchain_pnacl_mac_x86_32_hash":
-      "4b7e08c62431459244a9e32fc1551918ee96cf34",
-  "nacl_toolchain_pnacl_linux_x86_64_hash":
-      "8d76fec06ff9975ace6bbbfd01f3ba729c4b9a75",
+      "a2b91a00ef0b2155bb71ca1f55bf74e5fd107610",
   "nacl_toolchain_pnacl_linux_x86_32_hash":
-      "e368da00aa7fd5f1958f8e817c8928df7da70bee",
+      "d4ebfd187cd883fbdadf8d74a4042168d7cd34f7",
+  "nacl_toolchain_pnacl_linux_x86_64_hash":
+      "848b857d9bc33da7fe7e225574fd8229895cf133",
+  "nacl_toolchain_pnacl_mac_x86_32_hash":
+      "4c08cdc1af1a10c35628c214153e544c4855e7cb",
   "nacl_toolchain_pnacl_translator_hash":
-      "f9e28462709580ad7333d65c65dc56e40ed8752b",
+      "43aba86194193f96223b45a1f76c6a931ff26fbf",
+  "nacl_toolchain_pnacl_win_x86_32_hash":
+      "d9a1040fca439ec437caae95ae9258ca0a68545b",
   "nacl_toolchain_win_x86_hash":
-      "253e3ed5fc292205d1953f78c52a72e1d42b9a18",
+      "65be3541acfd41c6a9a46478b0f1df90dec253fb",
   "nacl_toolchain_win_x86_newlib_hash":
-      "6ed8ac51f53cb15328165ff1143d9611c40fc5d8",
-  "nacl_toolchain_revision": "8097",
-  "pnacl_toolchain_revision": "8097",
+      "ecb7c0f4b923c00e8a23b98abd8f21b22ced74a0",
+  "nacl_toolchain_revision": "8169",
+  "pnacl_toolchain_revision": "8169",
 
   "libjingle_revision": "128",
   "libphonenumber_revision": "425",
@@ -488,6 +490,8 @@ hooks = [
              Var("nacl_toolchain_pnacl_translator_hash"),
          "--file-hash", "pnacl_mac_x86_32",
              Var("nacl_toolchain_pnacl_mac_x86_32_hash"),
+         "--file-hash", "pnacl_win_x86_32",
+             Var("nacl_toolchain_pnacl_win_x86_32_hash"),
          "--x86-version", Var("nacl_toolchain_revision"),
          "--file-hash", "mac_x86_newlib",
              Var("nacl_toolchain_mac_x86_newlib_hash"),
