@@ -376,12 +376,10 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
         manager->GetCurrentInputMethodProperties();
     for (size_t i = 0; i < properties.size(); ++i) {
       ash::IMEPropertyInfo property;
-      // Do not show the item not in the selection item.
-      if (!properties[i].is_selection_item)
-        continue;
       property.key = properties[i].key;
       property.name = util->TranslateString(properties[i].label);
       property.selected = properties[i].is_selection_item_checked;
+      property.is_selection = properties[i].is_selection_item;
       list->push_back(property);
     }
   }
@@ -390,9 +388,10 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     input_method::InputMethodManager::GetInstance()->ChangeInputMethod(ime_id);
   }
 
-  virtual void ActivateIMEProperty(const std::string& key) OVERRIDE {
+  virtual void ActivateIMEProperty(
+      const std::string& key, bool is_selection) OVERRIDE {
     input_method::InputMethodManager::GetInstance()->SetImePropertyActivated(
-        key, true);
+        key, is_selection);
   }
 
   virtual void GetMostRelevantNetworkIcon(ash::NetworkIconInfo* info,

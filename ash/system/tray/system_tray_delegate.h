@@ -48,6 +48,7 @@ struct ASH_EXPORT IMEPropertyInfo {
   ~IMEPropertyInfo();
 
   bool selected;
+  bool is_selection;
   std::string key;
   string16 name;
 };
@@ -157,8 +158,10 @@ class SystemTrayDelegate {
   // Switches to the selected input method.
   virtual void SwitchIME(const std::string& ime_id) = 0;
 
-  // Activates an IME property.
-  virtual void ActivateIMEProperty(const std::string& key) = 0;
+  // Activates an IME property.  Specify true to |is_selection| if it's a
+  // selection item.
+  virtual void ActivateIMEProperty(
+      const std::string& key, bool is_selection) = 0;
 
   // Returns information about the most relevant network. Relevance is
   // determined by the implementor (e.g. a connecting network may be more

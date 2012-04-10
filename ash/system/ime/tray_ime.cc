@@ -4,6 +4,7 @@
 
 #include "ash/system/ime/tray_ime.h"
 
+#include <utility>
 #include <vector>
 
 #include "ash/shell.h"
@@ -122,7 +123,7 @@ class IMEDetailedView : public views::View,
           property_list[i].name,
           property_list[i].selected ? gfx::Font::BOLD : gfx::Font::NORMAL);
       properties->AddChildView(container);
-      property_map_[container] = property_list[i].key;
+      property_map_[container] = property_list[i];
     }
     properties->set_border(views::Border::CreateSolidSidedBorder(
         0, 0, 1, 0, kBorderLightColor));
@@ -153,11 +154,11 @@ class IMEDetailedView : public views::View,
         delegate->SwitchIME(ime_id);
         GetWidget()->Close();
       } else {
-        std::map<views::View*, std::string>::const_iterator prop_find;
+        std::map<views::View*, IMEPropertyInfo>::const_iterator prop_find;
         prop_find = property_map_.find(sender);
         if (prop_find != property_map_.end()) {
-          std::string key = prop_find->second;
-          delegate->ActivateIMEProperty(key);
+          const IMEPropertyInfo& prop = prop_find->second;
+          delegate->ActivateIMEProperty(prop.key, prop.is_selection);
           GetWidget()->Close();
         }
       }
@@ -167,7 +168,7 @@ class IMEDetailedView : public views::View,
   user::LoginStatus login_;
 
   std::map<views::View*, std::string> ime_map_;
-  std::map<views::View*, std::string> property_map_;
+  std::map<views::View*, IMEPropertyInfo> property_map_;
   views::View* header_;
   views::View* settings_;
 

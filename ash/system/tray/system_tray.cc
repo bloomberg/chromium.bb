@@ -431,7 +431,8 @@ IMEInfo::~IMEInfo() {
 }
 
 IMEPropertyInfo::IMEPropertyInfo()
-    : selected(false) {
+    : selected(false),
+      is_selection(false) {
 }
 
 IMEPropertyInfo::~IMEPropertyInfo() {
