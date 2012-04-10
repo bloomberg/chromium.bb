@@ -45,6 +45,9 @@ class _ShutDownException(SystemExit):
 
 
 def _DefaultHandler(signum, frame):
+  # Don't double process sigterms; just trigger shutdown from the first
+  # exception.
+  signal.signal(signum, signal.SIG_IGN)
   raise _ShutDownException(
       signum, "Received signal %i; shutting down" % (signum,))
 
