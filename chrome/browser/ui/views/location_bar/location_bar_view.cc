@@ -256,7 +256,7 @@ void LocationBarView::Init() {
         ChromeToMobileService::IsChromeToMobileEnabled()) {
       chrome_to_mobile_view_ = new ChromeToMobileView(this, command_updater_);
       AddChildView(chrome_to_mobile_view_);
-      scoped_refptr<ChromeToMobileService> service =
+      ChromeToMobileService* service =
           ChromeToMobileServiceFactory::GetForProfile(profile_);
       service->RequestMobileListUpdate();
       chrome_to_mobile_view_->SetVisible(service->HasDevices());

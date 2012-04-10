@@ -15,28 +15,24 @@ ChromeToMobileServiceFactory* ChromeToMobileServiceFactory::GetInstance() {
 }
 
 // static
-scoped_refptr<ChromeToMobileService>
-ChromeToMobileServiceFactory::GetForProfile(Profile* profile) {
+ChromeToMobileService* ChromeToMobileServiceFactory::GetForProfile(
+    Profile* profile) {
   return static_cast<ChromeToMobileService*>(
-    GetInstance()->GetServiceForProfile(profile, true).get());
+    GetInstance()->GetServiceForProfile(profile, true));
 }
 
-scoped_refptr<RefcountedProfileKeyedService>
-ChromeToMobileServiceFactory::BuildServiceInstanceFor(Profile* profile) const {
+ProfileKeyedService* ChromeToMobileServiceFactory::BuildServiceInstanceFor(
+    Profile* profile) const {
   // Ensure that the service is not instantiated or used if it is disabled.
   if (!ChromeToMobileService::IsChromeToMobileEnabled())
     return NULL;
 
-  scoped_refptr<ChromeToMobileService> service =
-      new ChromeToMobileService(profile);
-  service->Init();
-  return service;
+  return new ChromeToMobileService(profile);
 }
 
 ChromeToMobileServiceFactory::ChromeToMobileServiceFactory()
-    : RefcountedProfileKeyedServiceFactory(
-        "ChromeToMobileService",
-        ProfileDependencyManager::GetInstance()) {
+    : ProfileKeyedServiceFactory("ChromeToMobileService",
+                                 ProfileDependencyManager::GetInstance()) {
   DependsOn(TokenServiceFactory::GetInstance());
   DependsOn(CookieSettings::Factory::GetInstance());
 }

@@ -7,16 +7,16 @@
 #pragma once
 
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
-#include "base/file_util.h"
+#include "base/file_path.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
-#include "base/scoped_temp_dir.h"
 #include "base/string16.h"
 #include "base/timer.h"
-#include "chrome/browser/profiles/refcounted_profile_keyed_service.h"
+#include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/common/net/gaia/oauth2_access_token_consumer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -34,7 +34,7 @@ class DictionaryValue;
 
 // ChromeToMobileService connects to the cloud print service to enumerate
 // compatible mobiles owned by its profile and send URLs and MHTML snapshots.
-class ChromeToMobileService : public RefcountedProfileKeyedService,
+class ChromeToMobileService : public ProfileKeyedService,
                               public content::URLFetcherDelegate,
                               public content::NotificationObserver,
                               public OAuth2AccessTokenConsumer {
@@ -78,9 +78,6 @@ class ChromeToMobileService : public RefcountedProfileKeyedService,
   explicit ChromeToMobileService(Profile* profile);
   virtual ~ChromeToMobileService();
 
-  // Initialize the service; performed on construction by the factory.
-  void Init();
-
   // Returns true if the service has found any registered mobile devices.
   bool HasDevices();
 
@@ -101,8 +98,9 @@ class ChromeToMobileService : public RefcountedProfileKeyedService,
                             const FilePath& snapshot,
                             base::WeakPtr<Observer> observer);
 
-  // RefcountedProfileKeyedService method.
-  virtual void ShutdownOnUIThread() OVERRIDE;
+  // Delete the snapshot file (should be called on observer destruction).
+  // Virtual for unit test mocking.
+  virtual void DeleteSnapshot(const FilePath& snapshot);
 
   // content::URLFetcherDelegate method.
   virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
@@ -119,8 +117,11 @@ class ChromeToMobileService : public RefcountedProfileKeyedService,
  private:
   friend class MockChromeToMobileService;
 
-  // Utility function to initialize the ScopedTempDir.
-  void CreateUniqueTempDir();
+  // Handle the attempted creation of a temporary file for snapshot generation.
+  // Alert the observer of failure or generate MHTML with an observer callback.
+  void SnapshotFileCreated(base::WeakPtr<Observer> observer,
+                           const FilePath path,
+                           bool success);
 
   // Utility function to create URLFetcher requests.
   content::URLFetcher* CreateRequest(const RequestData& data);
@@ -139,6 +140,8 @@ class ChromeToMobileService : public RefcountedProfileKeyedService,
   void HandleSearchResponse();
   void HandleSubmitResponse(const content::URLFetcher* source);
 
+  base::WeakPtrFactory<ChromeToMobileService> weak_ptr_factory_;
+
   Profile* profile_;
 
   // Used to recieve TokenService notifications for GaiaOAuth2LoginRefreshToken.
@@ -151,9 +154,8 @@ class ChromeToMobileService : public RefcountedProfileKeyedService,
   // The list of mobile devices retrieved from the cloud print service.
   ScopedVector<base::DictionaryValue> mobiles_;
 
-  // The temporary directory for MHTML snapshot files and its validity flag.
-  ScopedTempDir temp_dir_;
-  bool temp_dir_valid_;
+  // The set of snapshots currently available.
+  std::set<FilePath> snapshots_;
 
   // Map URLFetchers to observers for reporting OnSendComplete.
   typedef std::map<const content::URLFetcher*, base::WeakPtr<Observer> >

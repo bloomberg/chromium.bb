@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/stringprintf.h"
@@ -72,10 +73,6 @@ const char kRequestTypeURL[] = "url";
 const char kRequestTypeDelayedSnapshot[] = "url_with_delayed_snapshot";
 const char kRequestTypeSnapshot[] = "snapshot";
 
-// The snapshot path constants; used with a guid for each MHTML snapshot file.
-const FilePath::CharType kSnapshotPath[] =
-    FILE_PATH_LITERAL("chrome_to_mobile_snapshot_.mht");
-
 // Get the "__c2dm__job_data" tag JSON data for the cloud print job submission.
 std::string GetJobString(const ChromeToMobileService::RequestData& data) {
   scoped_ptr<DictionaryValue> job(new DictionaryValue());
@@ -122,15 +119,23 @@ GURL GetSubmitURL(const GURL& service_url,
   return submit_url.ReplaceComponents(replacements);
 }
 
-// Delete the specified file; called as a BlockingPoolTask.
-void DeleteFilePath(const FilePath& file_path) {
-  bool success = file_util::Delete(file_path, false);
-  DCHECK(success);
+// A callback to continue snapshot generation after creating the temp file.
+typedef base::Callback<void(FilePath path, bool success)>
+    CreateSnapshotFileCallback;
+
+// Create a temp file and post the callback on the UI thread with the results.
+// Call this as a BlockingPoolTask to avoid the FILE thread.
+void CreateSnapshotFile(CreateSnapshotFileCallback callback) {
+  FilePath snapshot;
+  bool success = file_util::CreateTemporaryFile(&snapshot);
+  content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
+                                   base::Bind(callback, snapshot, success));
 }
 
-// Construct POST data and submit the MHTML snapshot file; deletes the snapshot.
-void SubmitSnapshot(content::URLFetcher* request,
-                    const ChromeToMobileService::RequestData& data) {
+// Send snapshot file contents as POST data in a job submit request.
+// Call this as a BlockingPoolSequencedTask (before posting DeleteSnapshotFile).
+void SubmitSnapshotFile(content::URLFetcher* request,
+                        const ChromeToMobileService::RequestData& data) {
   std::string file;
   if (file_util::ReadFileToString(data.snapshot_path, &file) && !file.empty()) {
     std::string post_data, mime_boundary;
@@ -154,9 +159,13 @@ void SubmitSnapshot(content::URLFetcher* request,
     request->SetUploadData(content_type, post_data);
     request->Start();
   }
+}
 
-  content::BrowserThread::PostBlockingPoolTask(FROM_HERE,
-      base::Bind(&DeleteFilePath, data.snapshot_path));
+// Delete the snapshot file; DCHECK, but really ignore the result of the delete.
+// Call this as a BlockingPoolSequencedTask [after posting SubmitSnapshotFile].
+void DeleteSnapshotFile(const FilePath snapshot) {
+  bool success = file_util::Delete(snapshot, false);
+  DCHECK(success);
 }
 
 }  // namespace
@@ -181,23 +190,12 @@ bool ChromeToMobileService::IsChromeToMobileEnabled() {
 }
 
 ChromeToMobileService::ChromeToMobileService(Profile* profile)
-    : profile_(profile),
+    : ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
+      profile_(profile),
       cloud_print_url_(new CloudPrintURL(profile)),
-      temp_dir_valid_(false),
       cloud_print_accessible_(false) {
-}
-
-ChromeToMobileService::~ChromeToMobileService() {}
-
-void ChromeToMobileService::Init() {
   // Skip initialization if constructed without a profile.
   if (profile_) {
-    // Create a unique temporary directory for the page snapshots.
-    // Note that if this task is posted and run in the ctor, the service will be
-    // destroyed (since there are no other references to the service).
-    content::BrowserThread::PostBlockingPoolTask(FROM_HERE,
-        base::Bind(&ChromeToMobileService::CreateUniqueTempDir, this));
-
     // Get an access token as soon as the Gaia login refresh token is available.
     TokenService* service = TokenServiceFactory::GetForProfile(profile_);
     registrar_.Add(this, chrome::NOTIFICATION_TOKEN_AVAILABLE,
@@ -205,6 +203,11 @@ void ChromeToMobileService::Init() {
     if (service->HasOAuthLoginToken())
       RefreshAccessToken();
   }
+}
+
+ChromeToMobileService::~ChromeToMobileService() {
+  while (!snapshots_.empty())
+    DeleteSnapshot(*snapshots_.begin());
 }
 
 bool ChromeToMobileService::HasDevices() {
@@ -223,19 +226,13 @@ void ChromeToMobileService::RequestMobileListUpdate() {
 }
 
 void ChromeToMobileService::GenerateSnapshot(base::WeakPtr<Observer> observer) {
-  // Signal snapshot generation failure and bail if the temp dir is invalid.
-  DCHECK(temp_dir_valid_);
-  if (!temp_dir_valid_) {
-    if (observer.get())
-      observer->SnapshotGenerated(FilePath(), 0);
-    return;
-  }
-
-  // Generate the snapshot and have the observer be called back on completion.
-  FilePath path(temp_dir_.path().Append(kSnapshotPath));
-  BrowserList::GetLastActiveWithProfile(profile_)->GetSelectedWebContents()->
-      GenerateMHTML(path.InsertBeforeExtensionASCII(guid::GenerateGUID()),
-                    base::Bind(&Observer::SnapshotGenerated, observer));
+  // Callback SnapshotFileCreated from CreateSnapshotFile to continue.
+  CreateSnapshotFileCallback callback =
+      base::Bind(&ChromeToMobileService::SnapshotFileCreated,
+                 weak_ptr_factory_.GetWeakPtr(), observer);
+  // Create a temporary file via the blocking pool for snapshot storage.
+  content::BrowserThread::PostBlockingPoolTask(FROM_HERE,
+      base::Bind(&CreateSnapshotFile, callback));
 }
 
 void ChromeToMobileService::SendToMobile(const string16& mobile_id,
@@ -261,12 +258,21 @@ void ChromeToMobileService::SendToMobile(const string16& mobile_id,
     data.type = SNAPSHOT;
     content::URLFetcher* submit_snapshot = CreateRequest(data);
     request_observer_map_[submit_snapshot] = observer;
-    content::BrowserThread::PostBlockingPoolTask(FROM_HERE,
-      base::Bind(&SubmitSnapshot, submit_snapshot, data));
+    content::BrowserThread::PostBlockingPoolSequencedTask(
+        data.snapshot_path.AsUTF8Unsafe(), FROM_HERE,
+        base::Bind(&SubmitSnapshotFile, submit_snapshot, data));
   }
 }
 
-void ChromeToMobileService::ShutdownOnUIThread() {
+void ChromeToMobileService::DeleteSnapshot(const FilePath& snapshot) {
+  DCHECK(snapshot.empty() || snapshots_.find(snapshot) != snapshots_.end());
+  if (snapshots_.find(snapshot) != snapshots_.end()) {
+    if (!snapshot.empty())
+      content::BrowserThread::PostBlockingPoolSequencedTask(
+          snapshot.AsUTF8Unsafe(), FROM_HERE,
+          base::Bind(&DeleteSnapshotFile, snapshot));
+    snapshots_.erase(snapshot);
+  }
 }
 
 void ChromeToMobileService::OnURLFetchComplete(
@@ -283,7 +289,7 @@ void ChromeToMobileService::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  DCHECK(type == chrome::NOTIFICATION_TOKEN_AVAILABLE);
+  DCHECK_EQ(type, chrome::NOTIFICATION_TOKEN_AVAILABLE);
   TokenService::TokenAvailableDetails* token_details =
       content::Details<TokenService::TokenAvailableDetails>(details).ptr();
   if (token_details->service() == GaiaConstants::kGaiaOAuth2LoginRefreshToken)
@@ -308,10 +314,23 @@ void ChromeToMobileService::OnGetTokenFailure(
       this, &ChromeToMobileService::RefreshAccessToken);
 }
 
-void ChromeToMobileService::CreateUniqueTempDir() {
-  temp_dir_valid_ = temp_dir_.CreateUniqueTempDir();
-  DCHECK_EQ(temp_dir_valid_, temp_dir_.IsValid());
-  DCHECK(temp_dir_valid_);
+void ChromeToMobileService::SnapshotFileCreated(
+    base::WeakPtr<Observer> observer,
+    const FilePath path,
+    bool success) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  // Track the set of temporary files to be deleted later.
+  snapshots_.insert(path);
+
+  Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
+  if (success && browser && browser->GetSelectedWebContents()) {
+    // Generate the snapshot and have the observer be called back on completion.
+    browser->GetSelectedWebContents()->GenerateMHTML(path,
+        base::Bind(&Observer::SnapshotGenerated, observer));
+  } else if (observer.get()) {
+    // Signal snapshot generation failure.
+    observer->SnapshotGenerated(FilePath(), 0);
+  }
 }
 
 content::URLFetcher* ChromeToMobileService::CreateRequest(

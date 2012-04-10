@@ -89,7 +89,7 @@ class ChromeToMobileBubbleNotificationBridge
   scoped_ptr<ChromeToMobileBubbleNotificationBridge> bridge_;
 
   // The Chrome To Mobile service associated with this bubble.
-  scoped_refptr<ChromeToMobileService> service_;
+  ChromeToMobileService* service_;
 
   // The file path for the MHTML page snapshot.
   FilePath snapshotPath_;
@@ -122,7 +122,7 @@ class ChromeToMobileBubbleNotificationBridge
 @interface ChromeToMobileBubbleController (JustForTesting)
 
 - (id)initWithParentWindow:(NSWindow*)parentWindow
-                   service:(scoped_refptr<ChromeToMobileService>)service;
+                   service:(ChromeToMobileService*)service;
 - (void)setSendCopy:(bool)sendCopy;
 - (ChromeToMobileBubbleNotificationBridge*)bridge;
 

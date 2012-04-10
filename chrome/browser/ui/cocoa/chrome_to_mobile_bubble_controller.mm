@@ -82,6 +82,9 @@ void ChromeToMobileBubbleNotificationBridge::OnSendComplete(bool success) {
 }
 
 - (void)windowWillClose:(NSNotification*)notification {
+  // Instruct the service to delete the snapshot file.
+  service_->DeleteSnapshot(snapshotPath_);
+
   // We caught a close so we don't need to observe further notifications.
   bridge_.reset(NULL);
   [progressAnimation_ stopAnimation];
@@ -179,9 +182,9 @@ void ChromeToMobileBubbleNotificationBridge::OnSendComplete(bool success) {
 
 - (void)snapshotGenerated:(const FilePath&)path
                     bytes:(int64)bytes {
+  snapshotPath_ = path;
   NSString* text = nil;
   if (bytes > 0) {
-    snapshotPath_ = path;
     [sendCopy_ setEnabled:YES];
     text = l10n_util::GetNSStringF(IDS_CHROME_TO_MOBILE_BUBBLE_SEND_COPY,
                                    ui::FormatBytes(bytes));
@@ -243,7 +246,7 @@ void ChromeToMobileBubbleNotificationBridge::OnSendComplete(bool success) {
 @implementation ChromeToMobileBubbleController (JustForTesting)
 
 - (id)initWithParentWindow:(NSWindow*)parentWindow
-                   service:(scoped_refptr<ChromeToMobileService>)service {
+                   service:(ChromeToMobileService*)service {
   self = [super initWithWindowNibPath:@"ChromeToMobileBubble"
                          parentWindow:parentWindow
                            anchoredAt:NSZeroPoint];

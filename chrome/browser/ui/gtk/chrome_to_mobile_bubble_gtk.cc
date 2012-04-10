@@ -63,6 +63,10 @@ void ChromeToMobileBubbleGtk::BubbleClosing(BubbleGtk* bubble,
                                             bool closed_by_escape) {
   DCHECK_EQ(bubble, bubble_);
 
+  // Instruct the service to delete the snapshot file.
+  service_->DeleteSnapshot(snapshot_path_);
+
+  // Restore the resting state mobile device icon.
   gtk_image_set_from_pixbuf(GTK_IMAGE(anchor_image_),
       theme_service_->GetImageNamed(IDR_MOBILE)->ToGdkPixbuf());
 
@@ -107,8 +111,8 @@ void ChromeToMobileBubbleGtk::Observe(
 
 void ChromeToMobileBubbleGtk::SnapshotGenerated(const FilePath& path,
                                                 int64 bytes) {
+  snapshot_path_ = path;
   if (bytes > 0) {
-    snapshot_path_ = path;
     gtk_button_set_label(GTK_BUTTON(send_copy_), l10n_util::GetStringFUTF8(
         IDS_CHROME_TO_MOBILE_BUBBLE_SEND_COPY, ui::FormatBytes(bytes)).c_str());
     gtk_widget_set_sensitive(send_copy_, TRUE);

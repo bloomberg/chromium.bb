@@ -77,7 +77,7 @@ class ChromeToMobileBubbleView : public views::BubbleDelegateView,
   base::WeakPtrFactory<ChromeToMobileBubbleView> weak_ptr_factory_;
 
   // The Chrome To Mobile service associated with this bubble.
-  scoped_refptr<ChromeToMobileService> service_;
+  ChromeToMobileService* service_;
 
   // A map of radio buttons for each mobile device to the device's information.
   typedef std::map<views::RadioButton*, base::DictionaryValue*> DeviceMap;
