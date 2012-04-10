@@ -585,7 +585,7 @@ TemplateURLData::TemplateURLData()
 TemplateURLData::~TemplateURLData() {
 }
 
-void TemplateURLData::SetKeyword(const string16& keyword) const {
+void TemplateURLData::SetKeyword(const string16& keyword) {
   // Case sensitive keyword matching is confusing. As such, we force all
   // keywords to be lower case.
   keyword_ = base::i18n::ToLower(keyword);
@@ -597,7 +597,7 @@ const string16& TemplateURLData::keyword(const TemplateURL* t_url) const {
   return keyword_;
 }
 
-void TemplateURLData::SetAutogenerateKeyword(bool autogenerate_keyword) const {
+void TemplateURLData::SetAutogenerateKeyword(bool autogenerate_keyword) {
   autogenerate_keyword_ = autogenerate_keyword;
   if (autogenerate_keyword_) {
     keyword_.clear();
@@ -709,12 +709,12 @@ void TemplateURL::SetURL(const std::string& url) {
 void TemplateURL::SetPrepopulateId(int id) {
   data_.prepopulate_id = id;
   const bool prepopulated = id > 0;
-  suggestions_url_ref_.prepopulated_ = prepopulated;
   url_ref_.prepopulated_ = prepopulated;
+  suggestions_url_ref_.prepopulated_ = prepopulated;
   instant_url_ref_.prepopulated_ = prepopulated;
 }
 
-void TemplateURL::InvalidateCachedValues() const {
+void TemplateURL::InvalidateCachedValues() {
   url_ref_.InvalidateCachedValues();
   suggestions_url_ref_.InvalidateCachedValues();
   instant_url_ref_.InvalidateCachedValues();

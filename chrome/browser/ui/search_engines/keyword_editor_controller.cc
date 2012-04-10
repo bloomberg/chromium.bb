@@ -54,6 +54,7 @@ void KeywordEditorController::ModifyTemplateURL(const TemplateURL* template_url,
                                                 const string16& title,
                                                 const string16& keyword,
                                                 const std::string& url) {
+  DCHECK(!url.empty());
   const int index = table_model_->IndexOfTemplateURL(template_url);
   if (index == -1) {
     // Will happen if url was deleted out from under us while the user was

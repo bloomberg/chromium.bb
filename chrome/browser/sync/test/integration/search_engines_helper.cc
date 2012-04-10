@@ -54,7 +54,6 @@ std::string GetTURLInfoString(const TemplateURL* turl) {
 bool TURLsMatch(const TemplateURL* turl1, const TemplateURL* turl2) {
   CHECK(turl1);
   CHECK(turl2);
-
   bool result = (turl1->url() == turl2->url()) &&
       (turl1->keyword() == turl2->keyword()) &&
       (turl1->short_name() == turl2->short_name());
@@ -188,9 +187,9 @@ TemplateURL* CreateTestTemplateURL(int seed,
   TemplateURLData data;
   data.short_name = CreateKeyword(seed);
   data.SetKeyword(keyword);
-  data.safe_for_autoreplace = true;
   data.SetURL(url);
   data.favicon_url = GURL("http://favicon.url");
+  data.safe_for_autoreplace = true;
   data.date_created = base::Time::FromTimeT(100);
   data.last_modified = base::Time::FromTimeT(100);
   data.prepopulate_id = 999999;

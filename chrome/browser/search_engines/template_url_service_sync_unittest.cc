@@ -791,10 +791,10 @@ TEST_F(TemplateURLServiceSyncTest, MergeAddFromNewerSyncData) {
   // retains the original keyword. The local copy should get a uniquified
   // keyword. Both TemplateURLs should be found locally.
   const TemplateURL* key2_sync = model()->GetTemplateURLForGUID("key2");
-  EXPECT_TRUE(key2_sync);
+  ASSERT_TRUE(key2_sync);
   EXPECT_EQ(ASCIIToUTF16("key2"), key2_sync->keyword());
   const TemplateURL* key2_local = model()->GetTemplateURLForGUID("bbb");
-  EXPECT_TRUE(key2_local);
+  ASSERT_TRUE(key2_local);
   EXPECT_EQ(ASCIIToUTF16("expected.com"), key2_local->keyword());
 
   // The last TemplateURL should have had no conflicts and was just added. It

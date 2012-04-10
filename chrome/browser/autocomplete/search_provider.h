@@ -119,17 +119,7 @@ class SearchProvider : public AutocompleteProvider,
       return cached_keyword_provider_;
     }
 
-    // Returns true of the keyword provider is valid.
-    bool valid_keyword_provider() const { return !!keyword_provider_; }
-
-    // Returns true if the keyword provider is valid and has a valid suggest
-    // url.
-    bool valid_suggest_for_keyword_provider() const {
-      return keyword_provider_ &&
-          !cached_keyword_provider_.suggestions_url().empty();
-    }
-
-    // Returns true of the default provider is valid.
+    // Returns true if the default provider is valid.
     bool valid_default_provider() const { return !!default_provider_; }
 
     // Returns true if the default provider is valid and has a valid suggest
@@ -137,6 +127,16 @@ class SearchProvider : public AutocompleteProvider,
     bool valid_suggest_for_default_provider() const {
       return default_provider_ &&
           !cached_default_provider_.suggestions_url().empty();
+    }
+
+    // Returns true if the keyword provider is valid.
+    bool valid_keyword_provider() const { return !!keyword_provider_; }
+
+    // Returns true if the keyword provider is valid and has a valid suggest
+    // url.
+    bool valid_suggest_for_keyword_provider() const {
+      return keyword_provider_ &&
+          !cached_keyword_provider_.suggestions_url().empty();
     }
 
     // Returns true if |from_keyword_provider| is true, or
@@ -202,10 +202,11 @@ class SearchProvider : public AutocompleteProvider,
   void StopSuggest();
 
   // Creates a URLFetcher requesting suggest results from the specified
-  // |provider|. The caller owns the returned URLFetcher.
-  content::URLFetcher* CreateSuggestFetcher(int id,
-                                            const TemplateURL& provider,
-                                            const string16& text);
+  // |suggestions_url|. The caller owns the returned URLFetcher.
+  content::URLFetcher* CreateSuggestFetcher(
+      int id,
+      const TemplateURLRef& suggestions_url,
+      const string16& text);
 
   // Parses the results from the Suggest server and stores up to kMaxMatches of
   // them in server_results_.  Returns whether parsing succeeded.

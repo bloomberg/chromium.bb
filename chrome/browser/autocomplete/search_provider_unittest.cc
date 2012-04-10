@@ -200,8 +200,8 @@ void SearchProviderTest::QueryForInputAndSetWYTMatch(
     return;
   ASSERT_GE(provider_->matches().size(), 1u);
   EXPECT_TRUE(FindMatchWithDestination(GURL(
-    default_t_url_->url_ref().ReplaceSearchTerms(text,
-        TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, string16())), wyt_match));
+      default_t_url_->url_ref().ReplaceSearchTerms(text,
+          TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, string16())), wyt_match));
 }
 
 void SearchProviderTest::TearDown() {

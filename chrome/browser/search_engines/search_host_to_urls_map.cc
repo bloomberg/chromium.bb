@@ -65,16 +65,13 @@ void SearchHostToURLsMap::UpdateGoogleBaseURLs(
 
   // Create a list of the the TemplateURLs to update.
   std::vector<const TemplateURL*> t_urls_using_base_url;
-  for (HostToURLsMap::iterator host_map_iterator = host_to_urls_map_.begin();
-       host_map_iterator != host_to_urls_map_.end(); ++host_map_iterator) {
-    const TemplateURLSet& urls = host_map_iterator->second;
-    for (TemplateURLSet::const_iterator url_set_iterator = urls.begin();
-         url_set_iterator != urls.end(); ++url_set_iterator) {
-      const TemplateURL* t_url = *url_set_iterator;
-      if (t_url->url_ref().HasGoogleBaseURLs() ||
-          t_url->suggestions_url_ref().HasGoogleBaseURLs()) {
-        t_urls_using_base_url.push_back(t_url);
-      }
+  for (HostToURLsMap::iterator i(host_to_urls_map_.begin());
+       i != host_to_urls_map_.end(); ++i) {
+    for (TemplateURLSet::const_iterator j(i->second.begin());
+         j != i->second.end(); ++j) {
+      if ((*j)->url_ref().HasGoogleBaseURLs() ||
+          (*j)->suggestions_url_ref().HasGoogleBaseURLs())
+        t_urls_using_base_url.push_back(*j);
     }
   }
 

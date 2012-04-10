@@ -76,6 +76,7 @@ void EditSearchEngineController::AcceptAddOrEdit(
     const string16& title_input,
     const string16& keyword_input,
     const std::string& url_input) {
+  DCHECK(!keyword_input.empty());
   std::string url_string = GetFixedUpURL(url_input);
   DCHECK(!url_string.empty());
 

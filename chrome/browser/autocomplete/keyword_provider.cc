@@ -436,8 +436,7 @@ AutocompleteMatch KeywordProvider::CreateAutocompleteMatch(
     int relevance) {
   DCHECK(model);
   // Get keyword data from data store.
-  const TemplateURL* element(
-      model->GetTemplateURLForKeyword(keyword));
+  const TemplateURL* element = model->GetTemplateURLForKeyword(keyword);
   DCHECK(element && !element->url().empty());
   const bool supports_replacement = element->url_ref().SupportsReplacement();
 

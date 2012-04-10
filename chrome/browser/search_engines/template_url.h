@@ -251,7 +251,7 @@ struct TemplateURLData {
   string16 short_name;
 
   // The shortcut for this TemplateURL.  May be empty.
-  void SetKeyword(const string16& keyword) const;
+  void SetKeyword(const string16& keyword);
   const string16& keyword(const TemplateURL* t_url) const;
   // TODO(pkasting): This should only be necessary until we eliminate keyword
   // autogeneration.
@@ -261,7 +261,7 @@ struct TemplateURLData {
   // consumers should not need this.
   // NOTE: Calling SetKeyword() turns this back off.  Manual and automatic
   // keywords are mutually exclusive.
-  void SetAutogenerateKeyword(bool autogenerate_keyword) const;
+  void SetAutogenerateKeyword(bool autogenerate_keyword);
   bool autogenerate_keyword() const { return autogenerate_keyword_; }
 
   // Ensures that the keyword is generated.  Most consumers should not need this
@@ -342,7 +342,7 @@ struct TemplateURLData {
   std::string url_;
 
   // TODO(pkasting): These fields will go away soon.
-  mutable bool autogenerate_keyword_;
+  bool autogenerate_keyword_;
   // True if the keyword was generated. This is used to avoid multiple attempts
   // if generating a keyword failed.
   mutable bool keyword_generated_;
@@ -395,7 +395,6 @@ class TemplateURL {
   const GURL& originating_url() const { return data_.originating_url; }
 
   bool show_in_default_list() const { return data_.show_in_default_list; }
-
   // Returns true if show_in_default_list() is true and this TemplateURL has a
   // TemplateURLRef that supports replacement.
   bool ShowInDefaultList() const;
@@ -442,7 +441,7 @@ class TemplateURL {
   void SetPrepopulateId(int id);
 
   // Invalidates cached values on this object and its child TemplateURLRefs.
-  void InvalidateCachedValues() const;
+  void InvalidateCachedValues();
 
   TemplateURLData data_;
   TemplateURLRef url_ref_;

@@ -491,6 +491,9 @@ TEST_F(TemplateURLServiceTest, GenerateKeyword) {
   // Make sure we don't get a trailing /
   ASSERT_EQ(ASCIIToUTF16("blah"),
             TemplateURLService::GenerateKeyword(GURL("http://blah/"), true));
+  // Don't generate the empty string.
+  ASSERT_EQ(ASCIIToUTF16("www"),
+            TemplateURLService::GenerateKeyword(GURL("http://www."), false));
 }
 
 TEST_F(TemplateURLServiceTest, GenerateSearchURL) {
@@ -795,11 +798,11 @@ TEST_F(TemplateURLServiceTest, DefaultSearchProviderLoadedFromPrefs) {
   // value are persisted to prefs.
   const TemplateURL* default_turl = model()->GetDefaultSearchProvider();
   ASSERT_TRUE(default_turl);
-  ASSERT_EQ("http://url", default_turl->url());
-  ASSERT_EQ("http://url2", default_turl->suggestions_url());
+  EXPECT_EQ(ASCIIToUTF16("a"), default_turl->short_name());
+  EXPECT_EQ("http://url", default_turl->url());
+  EXPECT_EQ("http://url2", default_turl->suggestions_url());
   EXPECT_EQ("http://instant", default_turl->instant_url());
-  ASSERT_EQ(ASCIIToUTF16("a"), default_turl->short_name());
-  ASSERT_EQ(id, default_turl->id());
+  EXPECT_EQ(id, default_turl->id());
 
   // Now do a load and make sure the default search provider really takes.
   test_util_.VerifyLoad();

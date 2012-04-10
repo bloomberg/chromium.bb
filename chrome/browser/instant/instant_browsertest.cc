@@ -279,7 +279,8 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE(OnChangeEvent)) {
       GetDefaultSearchProvider();
   EXPECT_TRUE(default_turl);
   EXPECT_EQ(default_turl->url_ref().ReplaceSearchTerms(ASCIIToUTF16("defghi"),
-      0, string16()), loader()->url().spec());
+                TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, string16()),
+            loader()->url().spec());
 
   // Check that the value is reflected and onchange is called.
   EXPECT_EQ("true 0 0 1 true d false def false 3 3",

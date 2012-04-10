@@ -99,8 +99,8 @@ bool IsHTTPRef(const std::string& url) {
   if (url.empty())
     return true;
   GURL gurl(url);
-  return (gurl.is_valid() && (gurl.SchemeIs(chrome::kHttpScheme) ||
-                              gurl.SchemeIs(chrome::kHttpsScheme)));
+  return gurl.is_valid() && (gurl.SchemeIs(chrome::kHttpScheme) ||
+                             gurl.SchemeIs(chrome::kHttpsScheme));
 }
 
 }  // namespace
@@ -312,7 +312,6 @@ TemplateURL* TemplateURLParsingContext::GetTemplateURL(
   if (suggestion_method_ == TemplateURLParsingContext::POST)
     data_.suggestions_url.clear();
 
-  // Give this a keyword to facilitate tab-to-search.
   string16 keyword(TemplateURLService::GenerateKeyword(url, false));
   DCHECK(!keyword.empty());
   data_.SetKeyword(keyword);

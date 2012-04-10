@@ -25,12 +25,9 @@ using ::testing::Invoke;
 using ::testing::NiceMock;
 using ::testing::Return;
 
-namespace protector {
-
 namespace {
 
 // Keyword names and URLs used for testing.
-
 const string16 example_info = ASCIIToUTF16("Example.info");
 const string16 example_info_long = ASCIIToUTF16("ExampleSearchEngine.info");
 const std::string http_example_info = "http://example.info/%s";
@@ -55,6 +52,8 @@ TemplateURL* MakeTemplateURL(const string16& short_name,
 }
 
 };
+
+namespace protector {
 
 class DefaultSearchProviderChangeTest : public InProcessBrowserTest {
  public:

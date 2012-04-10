@@ -117,7 +117,7 @@ TabContentsWrapper::TabContentsWrapper(WebContents* contents)
 
   // Create the per-tab observers.
   alternate_error_page_tab_observer_.reset(
-      new AlternateErrorPageTabObserver(contents));
+      new AlternateErrorPageTabObserver(contents, profile()));
   download_request_limiter_observer_.reset(
       new DownloadRequestLimiterObserver(contents));
   webnavigation_observer_.reset(

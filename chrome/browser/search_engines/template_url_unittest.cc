@@ -329,7 +329,7 @@ TEST_F(TemplateURLTest, ReplaceSearchTerms) {
     data.SetURL(test_data[i].url);
     TemplateURL url(data);
     EXPECT_TRUE(url.url_ref().IsValid());
-    EXPECT_TRUE(url.url_ref().SupportsReplacement());
+    ASSERT_TRUE(url.url_ref().SupportsReplacement());
     std::string expected_result = test_data[i].expected_result;
     ReplaceSubstringsAfterOffset(&expected_result, 0, "{language}",
         g_browser_process->GetApplicationLocale());
@@ -369,6 +369,8 @@ TEST_F(TemplateURLTest, ReplaceArbitrarySearchTerms) {
     data.input_encodings.clear();
     data.input_encodings.push_back(test_data[i].encoding);
     TemplateURL url(data);
+    EXPECT_TRUE(url.url_ref().IsValid());
+    ASSERT_TRUE(url.url_ref().SupportsReplacement());
     GURL result(url.url_ref().ReplaceSearchTerms(test_data[i].search_term,
         TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, string16()));
     ASSERT_TRUE(result.is_valid());
@@ -398,7 +400,7 @@ TEST_F(TemplateURLTest, Suggestions) {
               "{google:originalQueryForSuggestion}q={searchTerms}");
   data.input_encodings.push_back("UTF-8");
   TemplateURL url(data);
-  ASSERT_TRUE(url.url_ref().IsValid());
+  EXPECT_TRUE(url.url_ref().IsValid());
   ASSERT_TRUE(url.url_ref().SupportsReplacement());
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_data); ++i) {
     GURL result(url.url_ref().ReplaceSearchTerms(ASCIIToUTF16("foobar"),

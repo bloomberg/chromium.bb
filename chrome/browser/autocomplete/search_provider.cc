@@ -62,14 +62,7 @@ bool HasMultipleWords(const string16& text) {
 };
 
 
-// SearchProvider -------------------------------------------------------------
-
-// static
-const int SearchProvider::kDefaultProviderURLFetcherID = 1;
-// static
-const int SearchProvider::kKeywordProviderURLFetcherID = 2;
-// static
-bool SearchProvider::query_suggest_immediately_ = false;
+// SearchProvider::Providers --------------------------------------------------
 
 void SearchProvider::Providers::Set(const TemplateURL* default_provider,
                                     const TemplateURL* keyword_provider) {
@@ -83,6 +76,16 @@ void SearchProvider::Providers::Set(const TemplateURL* default_provider,
   if (keyword_provider)
     cached_keyword_provider_ = *keyword_provider;
 }
+
+
+// SearchProvider -------------------------------------------------------------
+
+// static
+const int SearchProvider::kDefaultProviderURLFetcherID = 1;
+// static
+const int SearchProvider::kKeywordProviderURLFetcherID = 2;
+// static
+bool SearchProvider::query_suggest_immediately_ = false;
 
 SearchProvider::SearchProvider(ACProviderListener* listener, Profile* profile)
     : AutocompleteProvider(listener, profile, "Search"),
@@ -242,15 +245,16 @@ void SearchProvider::Run() {
   // Start a new request with the current input.
   DCHECK(!done_);
   suggest_results_pending_ = 0;
-  if (providers_.valid_suggest_for_keyword_provider()) {
-    suggest_results_pending_++;
-    keyword_fetcher_.reset(CreateSuggestFetcher(kKeywordProviderURLFetcherID,
-        providers_.keyword_provider(), keyword_input_text_));
-  }
   if (providers_.valid_suggest_for_default_provider()) {
     suggest_results_pending_++;
     default_fetcher_.reset(CreateSuggestFetcher(kDefaultProviderURLFetcherID,
-        providers_.default_provider(), input_.text()));
+        providers_.default_provider().suggestions_url_ref(), input_.text()));
+  }
+  if (providers_.valid_suggest_for_keyword_provider()) {
+    suggest_results_pending_++;
+    keyword_fetcher_.reset(CreateSuggestFetcher(kKeywordProviderURLFetcherID,
+        providers_.keyword_provider().suggestions_url_ref(),
+        keyword_input_text_));
   }
   // We should only get here if we have a suggest url for the keyword or default
   // providers.
@@ -335,13 +339,13 @@ void SearchProvider::DoHistoryQuery(bool minimal_changes) {
   // require multiple searches and tracking of "single- vs. multi-word" in the
   // database.
   int num_matches = kMaxMatches * 5;
-  if (providers_.valid_keyword_provider()) {
-    url_db->GetMostRecentKeywordSearchTerms(providers_.keyword_provider().id(),
-        keyword_input_text_, num_matches, &keyword_history_results_);
-  }
   if (providers_.valid_default_provider()) {
     url_db->GetMostRecentKeywordSearchTerms(providers_.default_provider().id(),
         input_.text(), num_matches, &default_history_results_);
+  }
+  if (providers_.valid_keyword_provider()) {
+    url_db->GetMostRecentKeywordSearchTerms(providers_.keyword_provider().id(),
+        keyword_input_text_, num_matches, &keyword_history_results_);
   }
 }
 
@@ -386,11 +390,11 @@ void SearchProvider::StartOrStopSuggestQuery(bool minimal_changes) {
 }
 
 bool SearchProvider::IsQuerySuitableForSuggest() const {
-  // Don't run Suggest in incognito mode, the engine doesn't support it, or
-  // the user has disabled it.
+  // Don't run Suggest in incognito mode, if the engine doesn't support it, or
+  // if the user has disabled it.
   if (profile_->IsOffTheRecord() ||
-      (!providers_.valid_suggest_for_keyword_provider() &&
-       !providers_.valid_suggest_for_default_provider()) ||
+      (!providers_.valid_suggest_for_default_provider() &&
+       !providers_.valid_suggest_for_keyword_provider()) ||
       !profile_->GetPrefs()->GetBoolean(prefs::kSearchSuggestEnabled))
     return false;
 
@@ -453,9 +457,8 @@ void SearchProvider::StopSuggest() {
 
 content::URLFetcher* SearchProvider::CreateSuggestFetcher(
     int id,
-    const TemplateURL& provider,
+    const TemplateURLRef& suggestions_url,
     const string16& text) {
-  const TemplateURLRef& suggestions_url = provider.suggestions_url_ref();
   DCHECK(suggestions_url.SupportsReplacement());
   content::URLFetcher* fetcher = content::URLFetcher::Create(id,
       GURL(suggestions_url.ReplaceSearchTermsUsingProfile(
@@ -838,8 +841,8 @@ void SearchProvider::AddMatchToMap(const string16& query_string,
                                    MatchMap* map) {
   AutocompleteMatch match(this, relevance, false, type);
   std::vector<size_t> content_param_offsets;
-  const TemplateURL& provider = is_keyword ? providers_.keyword_provider() :
-                                             providers_.default_provider();
+  const TemplateURL& provider = is_keyword ?
+      providers_.keyword_provider() : providers_.default_provider();
   match.template_url = &provider;
   match.contents.assign(query_string);
   // We do intra-string highlighting for suggestions - the suggested segment

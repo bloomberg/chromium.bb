@@ -74,7 +74,6 @@
 #include "content/public/common/ssl_status.h"
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
-#include "net/base/net_util.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebContextMenuData.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayerAction.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginAction.h"

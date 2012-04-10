@@ -406,6 +406,8 @@ class TemplateURLService : public WebDataServiceConsumer,
   // Updates the information in |existing_turl| using the information from
   // |new_values|, but the ID for |existing_turl| is retained.
   // Notifying observers is the responsibility of the caller.
+  // NOTE: This should not be called with an extension keyword as there are no
+  // updates needed in that case.
   void UpdateNoNotify(const TemplateURL* existing_turl,
                       const TemplateURL& new_values);
 
@@ -444,8 +446,11 @@ class TemplateURLService : public WebDataServiceConsumer,
 
   // Adds a new TemplateURL to this model. TemplateURLService will own the
   // reference, and delete it when the TemplateURL is removed.
+  // If |newly_adding| is false, we assume that this TemplateURL was already
+  // part of the model in the past, and therefore we don't need to do things
+  // like assign it an ID or notify sync.
   // Caller is responsible for notifying observers.
-  void AddNoNotify(TemplateURL* template_url);
+  void AddNoNotify(TemplateURL* template_url, bool newly_adding);
 
   // Removes the keyword from the model. This deletes the supplied TemplateURL.
   // This fails if the supplied template_url is the default search provider.

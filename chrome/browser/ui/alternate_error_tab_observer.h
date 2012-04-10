@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,15 +17,13 @@ class Profile;
 class AlternateErrorPageTabObserver : public content::WebContentsObserver,
                                       public content::NotificationObserver {
  public:
-  explicit AlternateErrorPageTabObserver(content::WebContents* web_contents);
+  AlternateErrorPageTabObserver(content::WebContents* web_contents,
+                                Profile* profile);
   virtual ~AlternateErrorPageTabObserver();
 
   static void RegisterUserPrefs(PrefService* prefs);
 
  private:
-  // Helper to return the profile for this tab.
-  Profile* GetProfile() const;
-
   // content::WebContentsObserver overrides:
   virtual void RenderViewCreated(
       content::RenderViewHost* render_view_host) OVERRIDE;
@@ -44,6 +42,7 @@ class AlternateErrorPageTabObserver : public content::WebContentsObserver,
   // Send the alternate error page URL to the renderer.
   void UpdateAlternateErrorPageURL(content::RenderViewHost* rvh);
 
+  Profile* profile_;
   content::NotificationRegistrar registrar_;
   PrefChangeRegistrar pref_change_registrar_;
 

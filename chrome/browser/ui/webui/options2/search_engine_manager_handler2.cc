@@ -265,6 +265,7 @@ void SearchEngineManagerHandler::OnEditedKeyword(
     const string16& title,
     const string16& keyword,
     const std::string& url) {
+  DCHECK(!url.empty());
   if (template_url)
     list_controller_->ModifyTemplateURL(template_url, title, keyword, url);
   else

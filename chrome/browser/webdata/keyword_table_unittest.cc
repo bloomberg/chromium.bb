@@ -82,6 +82,7 @@ TEST_F(KeywordTableTest, Keywords) {
   EXPECT_EQ(keyword.autogenerate_keyword(),
             restored_keyword.autogenerate_keyword());
   EXPECT_EQ(keyword.url(), restored_keyword.url());
+  EXPECT_EQ(keyword.suggestions_url, restored_keyword.suggestions_url);
   EXPECT_EQ(keyword.instant_url, restored_keyword.instant_url);
   EXPECT_EQ(keyword.favicon_url, restored_keyword.favicon_url);
   EXPECT_EQ(keyword.originating_url, restored_keyword.originating_url);
@@ -112,8 +113,8 @@ TEST_F(KeywordTableTest, KeywordMisc) {
   ASSERT_EQ(sql::INIT_OK, db.Init(file_));
   KeywordTable* keyword_table = db.GetKeywordTable();
 
-  ASSERT_EQ(kInvalidTemplateURLID, keyword_table->GetDefaultSearchProviderID());
-  ASSERT_EQ(0, keyword_table->GetBuiltinKeywordVersion());
+  EXPECT_EQ(kInvalidTemplateURLID, keyword_table->GetDefaultSearchProviderID());
+  EXPECT_EQ(0, keyword_table->GetBuiltinKeywordVersion());
 
   TemplateURLData keyword;
   keyword.short_name = ASCIIToUTF16("short_name");
@@ -133,13 +134,13 @@ TEST_F(KeywordTableTest, KeywordMisc) {
   keyword.usage_count = 32;
   keyword.prepopulate_id = 10;
   TemplateURL url(keyword);
-  ASSERT_TRUE(keyword_table->AddKeyword(url));
+  EXPECT_TRUE(keyword_table->AddKeyword(url));
 
-  ASSERT_TRUE(keyword_table->SetDefaultSearchProviderID(10));
-  ASSERT_TRUE(keyword_table->SetBuiltinKeywordVersion(11));
+  EXPECT_TRUE(keyword_table->SetDefaultSearchProviderID(10));
+  EXPECT_TRUE(keyword_table->SetBuiltinKeywordVersion(11));
 
-  ASSERT_EQ(10, keyword_table->GetDefaultSearchProviderID());
-  ASSERT_EQ(11, keyword_table->GetBuiltinKeywordVersion());
+  EXPECT_EQ(10, keyword_table->GetDefaultSearchProviderID());
+  EXPECT_EQ(11, keyword_table->GetBuiltinKeywordVersion());
 }
 
 TEST_F(KeywordTableTest, DefaultSearchProviderBackup) {
@@ -162,7 +163,7 @@ TEST_F(KeywordTableTest, DefaultSearchProviderBackup) {
   TemplateURL url(keyword);
   EXPECT_TRUE(keyword_table->AddKeyword(url));
 
-  ASSERT_TRUE(keyword_table->SetDefaultSearchProviderID(1));
+  EXPECT_TRUE(keyword_table->SetDefaultSearchProviderID(1));
   EXPECT_TRUE(keyword_table->IsBackupSignatureValid());
   EXPECT_EQ(1, keyword_table->GetDefaultSearchProviderID());
 
@@ -180,7 +181,7 @@ TEST_F(KeywordTableTest, DefaultSearchProviderBackup) {
   EXPECT_FALSE(keyword_table->DidDefaultSearchProviderChange());
 
   // Change the actual setting.
-  ASSERT_TRUE(keyword_table->meta_table_->SetValue(
+  EXPECT_TRUE(keyword_table->meta_table_->SetValue(
       KeywordTable::kDefaultSearchProviderKey, 2));
   EXPECT_TRUE(keyword_table->IsBackupSignatureValid());
   EXPECT_EQ(2, keyword_table->GetDefaultSearchProviderID());
@@ -197,9 +198,9 @@ TEST_F(KeywordTableTest, DefaultSearchProviderBackup) {
   EXPECT_TRUE(keyword_table->DidDefaultSearchProviderChange());
 
   // Change the backup.
-  ASSERT_TRUE(keyword_table->meta_table_->SetValue(
+  EXPECT_TRUE(keyword_table->meta_table_->SetValue(
       KeywordTable::kDefaultSearchProviderKey, 1));
-  ASSERT_TRUE(keyword_table->meta_table_->SetValue(
+  EXPECT_TRUE(keyword_table->meta_table_->SetValue(
       KeywordTable::kDefaultSearchIDBackupKey, 2));
   EXPECT_FALSE(keyword_table->IsBackupSignatureValid());
   EXPECT_EQ(1, keyword_table->GetDefaultSearchProviderID());
@@ -207,9 +208,9 @@ TEST_F(KeywordTableTest, DefaultSearchProviderBackup) {
   EXPECT_TRUE(keyword_table->DidDefaultSearchProviderChange());
 
   // Change the signature.
-  ASSERT_TRUE(keyword_table->meta_table_->SetValue(
+  EXPECT_TRUE(keyword_table->meta_table_->SetValue(
       KeywordTable::kDefaultSearchIDBackupKey, 1));
-  ASSERT_TRUE(keyword_table->meta_table_->SetValue(
+  EXPECT_TRUE(keyword_table->meta_table_->SetValue(
       KeywordTable::kBackupSignatureKey, std::string()));
   EXPECT_FALSE(keyword_table->IsBackupSignatureValid());
   EXPECT_EQ(1, keyword_table->GetDefaultSearchProviderID());
@@ -217,10 +218,10 @@ TEST_F(KeywordTableTest, DefaultSearchProviderBackup) {
   EXPECT_TRUE(keyword_table->DidDefaultSearchProviderChange());
 
   // Change keywords.
-  ASSERT_TRUE(keyword_table->UpdateBackupSignature());
+  EXPECT_TRUE(keyword_table->UpdateBackupSignature());
   sql::Statement remove_keyword(keyword_table->db_->GetUniqueStatement(
       "DELETE FROM keywords WHERE id=1"));
-  ASSERT_TRUE(remove_keyword.Run());
+  EXPECT_TRUE(remove_keyword.Run());
   EXPECT_TRUE(keyword_table->IsBackupSignatureValid());
   EXPECT_EQ(1, keyword_table->GetDefaultSearchProviderID());
 
@@ -238,7 +239,7 @@ TEST_F(KeywordTableTest, DefaultSearchProviderBackup) {
   // Change keywords backup.
   sql::Statement remove_keyword_backup(keyword_table->db_->GetUniqueStatement(
       "DELETE FROM keywords_backup WHERE id=1"));
-  ASSERT_TRUE(remove_keyword_backup.Run());
+  EXPECT_TRUE(remove_keyword_backup.Run());
   EXPECT_FALSE(keyword_table->IsBackupSignatureValid());
   EXPECT_EQ(1, keyword_table->GetDefaultSearchProviderID());
   EXPECT_FALSE(keyword_table->GetDefaultSearchProviderBackup(&backup));
@@ -281,10 +282,10 @@ TEST_F(KeywordTableTest, GetTableContents) {
       "00http://instant2/0FEDC-BA09-8765-4321";
 
   std::string contents;
-  ASSERT_TRUE(keyword_table->GetTableContents("keywords", &contents));
+  EXPECT_TRUE(keyword_table->GetTableContents("keywords", &contents));
   EXPECT_EQ(kTestContents, contents);
 
-  ASSERT_TRUE(keyword_table->GetTableContents("keywords_backup", &contents));
+  EXPECT_TRUE(keyword_table->GetTableContents("keywords_backup", &contents));
   EXPECT_EQ(kTestContents, contents);
 }
 
@@ -324,10 +325,10 @@ TEST_F(KeywordTableTest, GetTableContentsOrdering) {
       "url2000001234-5678-90AB-CDEF";
 
   std::string contents;
-  ASSERT_TRUE(keyword_table->GetTableContents("keywords", &contents));
+  EXPECT_TRUE(keyword_table->GetTableContents("keywords", &contents));
   EXPECT_EQ(kTestContents, contents);
 
-  ASSERT_TRUE(keyword_table->GetTableContents("keywords_backup", &contents));
+  EXPECT_TRUE(keyword_table->GetTableContents("keywords_backup", &contents));
   EXPECT_EQ(kTestContents, contents);
 }
 

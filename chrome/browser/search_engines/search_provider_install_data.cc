@@ -129,8 +129,7 @@ void GoogleURLObserver::Observe(int type,
                                 const content::NotificationDetails& details) {
   if (type == chrome::NOTIFICATION_GOOGLE_URL_UPDATED) {
     BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-        base::Bind(&GoogleURLChangeNotifier::OnChange,
-                   change_notifier_.get(),
+        base::Bind(&GoogleURLChangeNotifier::OnChange, change_notifier_.get(),
                    UIThreadSearchTermsData().GoogleBaseURLValue()));
   } else {
     // This must be the death notification.
@@ -145,9 +144,8 @@ static bool IsSameOrigin(const GURL& requested_origin,
                          const TemplateURL* template_url,
                          const SearchTermsData& search_terms_data) {
   DCHECK(requested_origin == requested_origin.GetOrigin());
-  return template_url && requested_origin ==
-      TemplateURLService::GenerateSearchURLUsingTermsData(
-          template_url,
+  return requested_origin ==
+      TemplateURLService::GenerateSearchURLUsingTermsData(template_url,
           search_terms_data).GetOrigin();
 }
 

@@ -227,7 +227,7 @@ void TemplateURLServiceTestUtil::SetGoogleBaseURL(
 }
 
 TemplateURLService* TemplateURLServiceTestUtil::model() const {
-  return TemplateURLServiceFactory::GetForProfile(profile());
+  return TemplateURLServiceFactory::GetForProfile(profile_.get());
 }
 
 TestingProfile* TemplateURLServiceTestUtil::profile() const {

@@ -287,7 +287,6 @@ TEST_F(TemplateURLFetcherTest, ExplicitBeforeLoadTest) {
 
 TEST_F(TemplateURLFetcherTest, DuplicateKeywordsTest) {
   string16 keyword(ASCIIToUTF16("test"));
-
   TemplateURLData data;
   data.short_name = keyword;
   data.SetKeyword(keyword);

@@ -265,7 +265,7 @@ struct ParamTraits<TemplateURL*> {
     return true;
   }
   static void Log(const param_type& p, std::string* l) {
-    l->append("<TemplateURL>");
+    l->append("<TemplateURL*>");
   }
 };
 
