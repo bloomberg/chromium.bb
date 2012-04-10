@@ -104,6 +104,12 @@ try_open_vt(struct tty *tty)
 	return fd;
 }
 
+int
+tty_activate_vt(struct tty *tty, int vt)
+{
+	return ioctl(tty->fd, VT_ACTIVATE, vt);
+}
+
 struct tty *
 tty_create(struct weston_compositor *compositor, tty_vt_func_t vt_func,
            int tty_nr)

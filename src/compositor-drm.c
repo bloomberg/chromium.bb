@@ -29,6 +29,7 @@
 #include <string.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <linux/input.h>
 
 #include <xf86drm.h>
 #include <xf86drmMode.h>
@@ -1542,6 +1543,16 @@ vt_func(struct weston_compositor *compositor, int event)
 	};
 }
 
+static void
+switch_vt_binding(struct wl_input_device *device, uint32_t time,
+		  uint32_t key, uint32_t button, uint32_t axis, int32_t state, void *data)
+{
+	struct drm_compositor *ec = data;
+
+	if (state)
+		tty_activate_vt(ec->tty, key - KEY_F1 + 1);
+}
+
 static const char default_seat[] = "seat0";
 
 static struct weston_compositor *
@@ -1554,6 +1565,7 @@ drm_compositor_create(struct wl_display *display,
 	struct udev_device *device, *drm_device;
 	const char *path, *device_seat;
 	struct wl_event_loop *loop;
+	uint32_t key;
 
 	ec = malloc(sizeof *ec);
 	if (ec == NULL)
@@ -1613,6 +1625,11 @@ drm_compositor_create(struct wl_display *display,
 	/* Can't init base class until we have a current egl context */
 	if (weston_compositor_init(&ec->base, display) < 0)
 		return NULL;
+
+	for (key = KEY_F1; key < KEY_F9; key++)
+		weston_compositor_add_binding(&ec->base, key, 0, 0,
+					      MODIFIER_CTRL | MODIFIER_ALT,
+					      switch_vt_binding, ec);
 
 	wl_list_init(&ec->sprite_list);
 	create_sprites(ec);

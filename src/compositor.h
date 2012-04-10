@@ -518,6 +518,9 @@ tty_create(struct weston_compositor *compositor,
 void
 tty_destroy(struct tty *tty);
 
+int
+tty_activate_vt(struct tty *tty, int vt);
+
 struct screenshooter *
 screenshooter_create(struct weston_compositor *ec);
 
