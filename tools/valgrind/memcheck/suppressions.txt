@@ -5744,6 +5744,40 @@
    fun:_ZN5gdata15GDataFileSystem8SaveFeedE10scoped_ptrIN4base5ValueEERK8FilePath
    fun:_ZN5gdata15GDataFileSystem14OnGetDocumentsEPNS0_18GetDocumentsParamsENS_14GDataErrorCodeE10scoped_ptrIN4base5ValueEE
 }
+{
+   bug_122733
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN9__gnu_cxx13new_allocatorINS_15_Hashtable_nodeISsEEE8allocateEmPKv
+   fun:_ZN9__gnu_cxx9hashtableISsSsNS_4hashISsEESt9_IdentityISsESt8equal_toISsESaISsEE11_M_get_nodeEv
+   fun:_ZN9__gnu_cxx9hashtableISsSsNS_4hashISsEESt9_IdentityISsESt8equal_toISsESaISsEE11_M_new_nodeERKSs
+   fun:_ZN9__gnu_cxx9hashtableISsSsNS_4hashISsEESt9_IdentityISsESt8equal_toISsESaISsEE22insert_unique_noresizeERKSs
+   fun:_ZN9__gnu_cxx9hashtableISsSsNS_4hashISsEESt9_IdentityISsESt8equal_toISsESaISsEE13insert_uniqueERKSs
+   fun:_ZN9__gnu_cxx8hash_setISsNS_4hashISsEESt8equal_toISsESaISsEE6insertERKSs
+   fun:_ZN13safe_browsing6Scorer6CreateERKN4base16BasicStringPieceISsEE
+   fun:_ZN13safe_browsing24PhishingClassifierFilter18OnSetPhishingModelERKSs
+}
+{
+   bug_122752a
+   Memcheck:Unaddressable
+   fun:_ZN6WebKit12CCThreadImpl8postTaskEN3WTF10PassOwnPtrIN7WebCore8CCThread4TaskEEE
+   fun:_ZN7WebCore13CCThreadProxy18finishAllRenderingEv
+   fun:_ZN7WebCore15CCLayerTreeHost18finishAllRenderingEv
+   fun:_ZN6WebKit16WebLayerTreeView18finishAllRenderingEv
+   fun:_ZN6WebKit11WebViewImpl33setIsAcceleratedCompositingActiveEb
+   fun:_ZN6WebKit11WebViewImpl20setRootGraphicsLayerEPN7WebCore13GraphicsLayerE
+}
+{
+   bug_122752b
+   Memcheck:Unaddressable
+   fun:_ZN6WebKit12CCThreadImpl8postTaskEN3WTF10PassOwnPtrIN7WebCore8CCThread4TaskEEE
+   fun:_ZN7WebCore13CCThreadProxy14setNeedsCommitEv
+   fun:_ZN7WebCore15CCLayerTreeHost14setNeedsCommitEv
+   fun:_ZN7WebCore13LayerChromium14setNeedsCommitEv
+   fun:_ZN7WebCore13LayerChromium11removeChildEPS0_
+   fun:_ZN7WebCore13LayerChromium16removeFromParentEv
+   fun:_ZN7WebCore21GraphicsLayerChromium16removeFromParentEv
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
