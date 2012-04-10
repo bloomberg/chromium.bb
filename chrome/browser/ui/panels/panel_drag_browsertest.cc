@@ -23,8 +23,10 @@ class PanelDragBrowserTest : public BasePanelBrowserTest {
     BasePanelBrowserTest::SetUpOnMainThread();
 
     // All the tests here assume 800x600 work area. Do the check now.
-    DCHECK(PanelManager::GetInstance()->work_area().width() == 800);
-    DCHECK(PanelManager::GetInstance()->work_area().height() == 600);
+    gfx::Rect display_area = PanelManager::GetInstance()->
+        display_settings_provider()->GetDisplayArea();
+    DCHECK(display_area.width() == 800);
+    DCHECK(display_area.height() == 600);
   }
 
   // Drag |panel| from its origin by the offset |delta|.

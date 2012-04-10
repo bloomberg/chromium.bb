@@ -11,7 +11,6 @@
 #include "chrome/browser/ui/gtk/menu_gtk.h"
 #include "chrome/browser/ui/panels/native_panel.h"
 #include "ui/base/animation/animation_delegate.h"
-#include "ui/base/x/work_area_watcher_x_observer.h"
 
 class Panel;
 class PanelBoundsAnimation;
@@ -22,8 +21,7 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
                               public MenuGtk::Delegate,
                               public MessageLoopForUI::Observer,
                               public NativePanel,
-                              public ui::AnimationDelegate,
-                              public ui::WorkAreaWatcherXObserver {
+                              public ui::AnimationDelegate {
  public:
   PanelBrowserWindowGtk(Browser* browser, Panel* panel,
                         const gfx::Rect& bounds);
@@ -39,9 +37,6 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
   virtual TitleDecoration GetWindowTitle(std::string* title) const OVERRIDE;
 
   virtual bool ShouldShowCloseButton() const OVERRIDE;
-
-  // ui::WorkAreaWatcherXObserver override
-  virtual void WorkAreaChanged() OVERRIDE;
 
   // Overrides BrowserWindowGtk::NotificationObserver::Observe
   virtual void Observe(int type,

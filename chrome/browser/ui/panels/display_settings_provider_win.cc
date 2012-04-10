@@ -18,17 +18,18 @@ const int kHiddenAutoHideTaskbarThickness = 2;
 const int kCheckTaskbarPollingIntervalMs = 500;
 }  // namespace
 
-DisplaySettingsProviderWin::DisplaySettingsProviderWin(Observer* observer)
-    : DisplaySettingsProvider(observer),
-      monitor_(NULL) {
+DisplaySettingsProviderWin::DisplaySettingsProviderWin()
+    : monitor_(NULL) {
   memset(taskbars_, 0, sizeof(taskbars_));
 }
 
 DisplaySettingsProviderWin::~DisplaySettingsProviderWin() {
 }
 
-void DisplaySettingsProviderWin::OnWorkAreaChanged() {
-  RECT rect = work_area_.ToRECT();
+void DisplaySettingsProviderWin::OnDisplaySettingsChanged() {
+  DisplaySettingsProvider::OnDisplaySettingsChanged();
+
+  RECT rect = work_area().ToRECT();
   monitor_ = ::MonitorFromRect(&rect, MONITOR_DEFAULTTOPRIMARY);
   DCHECK(monitor_);
 
@@ -100,28 +101,28 @@ DisplaySettingsProviderWin::GetDesktopBarVisibilityFromBounds(
     const gfx::Rect& taskbar_bounds) const {
   switch (alignment) {
     case DESKTOP_BAR_ALIGNED_BOTTOM:
-      if (taskbar_bounds.bottom() <= work_area_.bottom())
+      if (taskbar_bounds.bottom() <= work_area().bottom())
         return DESKTOP_BAR_VISIBLE;
       else if (taskbar_bounds.y() >=
-               work_area_.bottom() - kHiddenAutoHideTaskbarThickness)
+               work_area().bottom() - kHiddenAutoHideTaskbarThickness)
         return DESKTOP_BAR_HIDDEN;
       else
         return DESKTOP_BAR_ANIMATING;
 
     case DESKTOP_BAR_ALIGNED_LEFT:
-      if (taskbar_bounds.x() >= work_area_.x())
+      if (taskbar_bounds.x() >= work_area().x())
         return DESKTOP_BAR_VISIBLE;
       else if (taskbar_bounds.right() <=
-               work_area_.x() + kHiddenAutoHideTaskbarThickness)
+               work_area().x() + kHiddenAutoHideTaskbarThickness)
         return DESKTOP_BAR_HIDDEN;
       else
         return DESKTOP_BAR_ANIMATING;
 
     case DESKTOP_BAR_ALIGNED_RIGHT:
-      if (taskbar_bounds.right() <= work_area_.right())
+      if (taskbar_bounds.right() <= work_area().right())
         return DESKTOP_BAR_VISIBLE;
       else if (taskbar_bounds.x() >=
-               work_area_.right() - kHiddenAutoHideTaskbarThickness)
+               work_area().right() - kHiddenAutoHideTaskbarThickness)
         return DESKTOP_BAR_HIDDEN;
       else
         return DESKTOP_BAR_ANIMATING;
@@ -171,21 +172,20 @@ bool DisplaySettingsProviderWin::CheckTaskbars(bool notify_observer) {
         alignment, bounds);
     if (visibility != taskbars_[i].visibility) {
       taskbars_[i].visibility = visibility;
-      if (notify_observer) {
-        observer_->OnAutoHidingDesktopBarVisibilityChanged(alignment,
-                                                           visibility);
+      if (notify_observer && desktop_bar_observer()) {
+        desktop_bar_observer()->OnAutoHidingDesktopBarVisibilityChanged(
+            alignment, visibility);
       }
     }
   }
 
-  // Notify the thickness change if needed.
-  if (thickness_changed && notify_observer)
-    observer_->OnAutoHidingDesktopBarThicknessChanged();
+  if (thickness_changed)
+    OnAutoHidingDesktopBarChanged();
 
   return true;
 }
 
 // static
-DisplaySettingsProvider* DisplaySettingsProvider::Create(Observer* observer) {
-  return new DisplaySettingsProviderWin(observer);
+DisplaySettingsProvider* DisplaySettingsProvider::Create() {
+  return new DisplaySettingsProviderWin();
 }

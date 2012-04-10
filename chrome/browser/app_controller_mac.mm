@@ -52,7 +52,6 @@
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_window_controller.h"
 #include "chrome/browser/ui/cocoa/task_manager_mac.h"
-#include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
@@ -1289,15 +1288,24 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
   return bookmarkMenuBridge_.get();
 }
 
+- (void)addObserverForWorkAreaChange:(ui::WorkAreaWatcherObserver*)observer {
+  workAreaChangeObservers_.AddObserver(observer);
+}
+
+- (void)removeObserverForWorkAreaChange:(ui::WorkAreaWatcherObserver*)observer {
+  workAreaChangeObservers_.RemoveObserver(observer);
+}
+
 - (void)applicationDidChangeScreenParameters:(NSNotification*)notification {
   // During this callback the working area is not always already updated. Defer.
-  [self performSelector:@selector(delayedPanelManagerScreenParametersUpdate)
+  [self performSelector:@selector(delayedScreenParametersUpdate)
              withObject:nil
              afterDelay:0];
 }
 
-- (void)delayedPanelManagerScreenParametersUpdate {
-  PanelManager::GetInstance()->OnDisplayChanged();
+- (void)delayedScreenParametersUpdate {
+  FOR_EACH_OBSERVER(ui::WorkAreaWatcherObserver, workAreaChangeObservers_,
+      WorkAreaChanged());
 }
 
 @end  // @implementation AppController

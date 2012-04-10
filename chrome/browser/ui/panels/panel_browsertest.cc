@@ -348,7 +348,8 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, CreatePanel) {
   EXPECT_GT(bounds.width(), 0);
   EXPECT_GT(bounds.height(), 0);
 
-  EXPECT_EQ(bounds.right(), panel_manager->StartingRightPosition());
+  EXPECT_EQ(bounds.right(),
+            panel_manager->docked_strip()->StartingRightPosition());
 
   CloseWindowAndWait(panel->browser());
 
@@ -356,7 +357,8 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, CreatePanel) {
 }
 
 IN_PROC_BROWSER_TEST_F(PanelBrowserTest, CreateBigPanel) {
-  gfx::Rect work_area = GetTestingWorkArea();
+  gfx::Rect work_area = PanelManager::GetInstance()->
+      display_settings_provider()->GetDisplayArea();
   Panel* panel = CreatePanelWithBounds("BigPanel", work_area);
   gfx::Rect bounds = panel->GetBounds();
   EXPECT_EQ(panel->max_size().width(), bounds.width());

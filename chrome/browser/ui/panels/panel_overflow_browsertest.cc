@@ -115,7 +115,10 @@ class PanelOverflowBrowserTest : public BasePanelBrowserTest {
     panel_manager->SetMouseWatcherForTesting(mouse_watcher);
 
     // All the overflow tests assume 800x600 work area. Do the check now.
-    DCHECK_EQ(800, PanelManager::GetInstance()->work_area().width());
+    gfx::Rect display_area = PanelManager::GetInstance()->
+        display_settings_provider()->GetDisplayArea();
+    DCHECK(display_area.width() == 800);
+    DCHECK(display_area.height() == 600);
   }
 
  protected:

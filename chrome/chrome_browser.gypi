@@ -3089,6 +3089,8 @@
         'browser/ui/page_info_bubble.h',
         'browser/ui/panels/detached_panel_strip.cc',
         'browser/ui/panels/detached_panel_strip.h',
+        'browser/ui/panels/display_settings_provider_cocoa.mm',
+        'browser/ui/panels/display_settings_provider_gtk.cc',
         'browser/ui/panels/display_settings_provider_win.cc',
         'browser/ui/panels/display_settings_provider_win.h',
         'browser/ui/panels/display_settings_provider.cc',

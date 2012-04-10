@@ -55,11 +55,11 @@ struct MockDesktopBar {
 class MockDisplaySettingsProviderImpl :
     public BasePanelBrowserTest::MockDisplaySettingsProvider {
  public:
-  explicit MockDisplaySettingsProviderImpl(Observer* observer);
+  explicit MockDisplaySettingsProviderImpl(PanelManager* panel_manager);
   virtual ~MockDisplaySettingsProviderImpl() { }
 
   // Overridden from DisplaySettingsProvider:
-  virtual gfx::Rect GetWorkArea() OVERRIDE;
+  virtual gfx::Rect GetWorkArea() const OVERRIDE;
   virtual bool IsAutoHidingDesktopBarEnabled(
       DesktopBarAlignment alignment) OVERRIDE;
   virtual int GetDesktopBarThickness(
@@ -78,10 +78,7 @@ class MockDisplaySettingsProviderImpl :
                                       int thickness) OVERRIDE;
 
  private:
-  void NotifyDesktopBarVisibilityChange(DesktopBarAlignment alignment,
-                                        DesktopBarVisibility visibility);
-  void NotifyDesktopBarThicknessChange();
-
+  gfx::Rect testing_work_area_;
   MockDesktopBar mock_desktop_bars[3];
 
   DISALLOW_COPY_AND_ASSIGN(MockDisplaySettingsProviderImpl);
@@ -89,16 +86,21 @@ class MockDisplaySettingsProviderImpl :
 
 
 MockDisplaySettingsProviderImpl::MockDisplaySettingsProviderImpl(
-    DisplaySettingsProvider::Observer* observer)
-    : MockDisplaySettingsProvider(observer) {
+    PanelManager* panel_manager) {
+  DisplaySettingsProvider* old_provider =
+      panel_manager->display_settings_provider();
+  set_display_area_observer(old_provider->display_area_observer());
+  set_desktop_bar_observer(old_provider->desktop_bar_observer());
+  panel_manager->set_display_settings_provider(this);
+
   memset(mock_desktop_bars, 0, sizeof(mock_desktop_bars));
 }
 
-gfx::Rect MockDisplaySettingsProviderImpl::GetWorkArea() {
+gfx::Rect MockDisplaySettingsProviderImpl::GetWorkArea() const {
   // Some test might want to use the actual work area, that is indicated by
   // passing empty testing work area.
-  return work_area_.IsEmpty() ? DisplaySettingsProvider::GetWorkArea()
-                              : work_area_;
+  return testing_work_area_.IsEmpty() ? DisplaySettingsProvider::GetWorkArea()
+                                      : testing_work_area_;
 }
 
 bool MockDisplaySettingsProviderImpl::IsAutoHidingDesktopBarEnabled(
@@ -122,11 +124,12 @@ void MockDisplaySettingsProviderImpl::EnableAutoHidingDesktopBar(
   MockDesktopBar* bar = &(mock_desktop_bars[static_cast<int>(alignment)]);
   bar->auto_hiding_enabled = enabled;
   bar->thickness = thickness;
-  observer_->OnAutoHidingDesktopBarThicknessChanged();
+  OnAutoHidingDesktopBarChanged();
 }
 
 void MockDisplaySettingsProviderImpl::SetWorkArea(const gfx::Rect& work_area) {
-  work_area_ = work_area;
+  testing_work_area_ = work_area;
+  OnDisplaySettingsChanged();
 }
 
 void MockDisplaySettingsProviderImpl::SetDesktopBarVisibility(
@@ -137,13 +140,7 @@ void MockDisplaySettingsProviderImpl::SetDesktopBarVisibility(
   if (visibility == bar->visibility)
     return;
   bar->visibility = visibility;
-  MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(
-          &MockDisplaySettingsProviderImpl::NotifyDesktopBarVisibilityChange,
-          base::Unretained(this),
-          alignment,
-          visibility));
+  OnAutoHidingDesktopBarChanged();
 }
 
 void MockDisplaySettingsProviderImpl::SetDesktopBarThickness(
@@ -154,21 +151,7 @@ void MockDisplaySettingsProviderImpl::SetDesktopBarThickness(
   if (thickness == bar->thickness)
     return;
   bar->thickness = thickness;
-  MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(
-          &MockDisplaySettingsProviderImpl::NotifyDesktopBarThicknessChange,
-          base::Unretained(this)));
-}
-
-void MockDisplaySettingsProviderImpl::NotifyDesktopBarVisibilityChange(
-    DesktopBarAlignment alignment,
-    DesktopBarVisibility visibility) {
-  observer_->OnAutoHidingDesktopBarVisibilityChanged(alignment, visibility);
-}
-
-void MockDisplaySettingsProviderImpl::NotifyDesktopBarThicknessChange() {
-  observer_->OnAutoHidingDesktopBarThicknessChanged();
+  OnAutoHidingDesktopBarChanged();
 }
 
 bool ExistsPanel(Panel* panel) {
@@ -218,9 +201,8 @@ void BasePanelBrowserTest::SetUpOnMainThread() {
   // Setup the work area and desktop bar so that we have consistent testing
   // environment for all panel related tests.
   PanelManager* panel_manager = PanelManager::GetInstance();
-  mock_display_settings_provider_ = new MockDisplaySettingsProviderImpl(
-      panel_manager);
-  panel_manager->set_display_settings_provider(mock_display_settings_provider_);
+  mock_display_settings_provider_ =
+      new MockDisplaySettingsProviderImpl(panel_manager);
   SetTestingWorkArea(gfx::Rect(
       0, 0, kTestingWorkAreaWidth, kTestingWorkAreaHeight));
 
@@ -470,13 +452,8 @@ scoped_refptr<Extension> BasePanelBrowserTest::CreateExtension(
   return extension;
 }
 
-gfx::Rect BasePanelBrowserTest::GetTestingWorkArea() const {
-  return mock_display_settings_provider_->GetWorkArea();
-}
-
 void BasePanelBrowserTest::SetTestingWorkArea(const gfx::Rect& work_area) {
   mock_display_settings_provider_->SetWorkArea(work_area);
-  PanelManager::GetInstance()->OnDisplayChanged();
 }
 
 void BasePanelBrowserTest::CloseWindowAndWait(Browser* browser) {

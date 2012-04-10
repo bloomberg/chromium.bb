@@ -65,6 +65,7 @@ DockedPanelStrip::DockedPanelStrip(PanelManager* panel_manager)
       delayed_titlebar_action_(NO_ACTION),
       titlebar_action_factory_(this) {
   dragging_panel_current_iterator_ = panels_.end();
+  panel_manager_->display_settings_provider()->set_desktop_bar_observer(this);
 }
 
 DockedPanelStrip::~DockedPanelStrip() {

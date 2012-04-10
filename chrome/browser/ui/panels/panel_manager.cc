@@ -83,50 +83,45 @@ PanelManager::PanelManager()
       auto_sizing_enabled_(true),
       is_full_screen_(false),
       is_processing_overflow_(false) {
+  // DisplaySettingsProvider should be created before the creation of strips
+  // since some strip might depend on it.
+  display_settings_provider_.reset(DisplaySettingsProvider::Create());
+  display_settings_provider_->set_display_area_observer(this);
+
   detached_strip_.reset(new DetachedPanelStrip(this));
   docked_strip_.reset(new DockedPanelStrip(this));
   overflow_strip_.reset(new OverflowPanelStrip(this));
   drag_controller_.reset(new PanelDragController(this));
   resize_controller_.reset(new PanelResizeController(this));
-  display_settings_provider_.reset(DisplaySettingsProvider::Create(this));
-
-  OnDisplayChanged();
 }
 
 PanelManager::~PanelManager() {
 }
 
-void PanelManager::OnDisplayChanged() {
-  gfx::Rect work_area = display_settings_provider_->GetWorkArea();
-  if (work_area == work_area_)
-    return;
-  work_area_ = work_area;
-
-  AdjustWorkAreaForDisplaySettingsProviders();
-  Layout();
-}
-
-void PanelManager::Layout() {
+void PanelManager::OnDisplayAreaChanged(const gfx::Rect& display_area) {
   int height =
-      static_cast<int>(adjusted_work_area_.height() * kPanelStripHeightFactor);
+      static_cast<int>(display_area.height() * kPanelStripHeightFactor);
   gfx::Rect docked_strip_bounds;
-  docked_strip_bounds.set_x(adjusted_work_area_.x() + kPanelStripLeftMargin);
-  docked_strip_bounds.set_y(adjusted_work_area_.bottom() - height);
-  docked_strip_bounds.set_width(adjusted_work_area_.width() -
+  docked_strip_bounds.set_x(display_area.x() + kPanelStripLeftMargin);
+  docked_strip_bounds.set_y(display_area.bottom() - height);
+  docked_strip_bounds.set_width(display_area.width() -
                                 kPanelStripLeftMargin - kPanelStripRightMargin);
   docked_strip_bounds.set_height(height);
   docked_strip_->SetDisplayArea(docked_strip_bounds);
 
-  gfx::Rect overflow_area(adjusted_work_area_);
+  gfx::Rect overflow_area(display_area);
   overflow_area.set_width(kOverflowStripThickness);
   overflow_strip_->SetDisplayArea(overflow_area);
 }
 
 Panel* PanelManager::CreatePanel(Browser* browser) {
-  // Need to sync the display area if no panel is present. This is because we
-  // could only get display area notifications through a panel window.
+  // Need to sync the display area if no panel is present. This is because:
+  // 1) Display area is not initialized until first panel is created.
+  // 2) On windows, display settings notification is tied to a window. When
+  //    display settings are changed at the time that no panel exists, we do
+  //    not receive any notification.
   if (num_panels() == 0)
-    OnDisplayChanged();
+    display_settings_provider_->OnDisplaySettingsChanged();
 
   int width = browser->override_bounds().width();
   int height = browser->override_bounds().height();
@@ -146,10 +141,6 @@ Panel* PanelManager::CreatePanel(Browser* browser) {
   }
 
   return panel;
-}
-
-int PanelManager::StartingRightPosition() const {
-  return docked_strip_->StartingRightPosition();
 }
 
 void PanelManager::CheckFullScreenMode() {
@@ -313,25 +304,6 @@ void PanelManager::BringUpOrDownTitlebars(bool bring_up) {
   docked_strip_->BringUpOrDownTitlebars(bring_up);
 }
 
-void PanelManager::AdjustWorkAreaForDisplaySettingsProviders() {
-  // Note that we do not care about the desktop bar aligned to the top edge
-  // since panels could not reach so high due to size constraint.
-  adjusted_work_area_ = work_area_;
-  if (display_settings_provider_->IsAutoHidingDesktopBarEnabled(
-      DisplaySettingsProvider::DESKTOP_BAR_ALIGNED_LEFT)) {
-    int space = display_settings_provider_->GetDesktopBarThickness(
-        DisplaySettingsProvider::DESKTOP_BAR_ALIGNED_LEFT);
-    adjusted_work_area_.set_x(adjusted_work_area_.x() + space);
-    adjusted_work_area_.set_width(adjusted_work_area_.width() - space);
-  }
-  if (display_settings_provider_->IsAutoHidingDesktopBarEnabled(
-      DisplaySettingsProvider::DESKTOP_BAR_ALIGNED_RIGHT)) {
-    int space = display_settings_provider_->GetDesktopBarThickness(
-        DisplaySettingsProvider::DESKTOP_BAR_ALIGNED_RIGHT);
-    adjusted_work_area_.set_width(adjusted_work_area_.width() - space);
-  }
-}
-
 BrowserWindow* PanelManager::GetNextBrowserWindowToActivate(
     Panel* panel) const {
   // Find the last active browser window that is not minimized.
@@ -344,17 +316,6 @@ BrowserWindow* PanelManager::GetNextBrowserWindowToActivate(
   }
 
   return NULL;
-}
-
-void PanelManager::OnAutoHidingDesktopBarThicknessChanged() {
-  AdjustWorkAreaForDisplaySettingsProviders();
-  Layout();
-}
-
-void PanelManager::OnAutoHidingDesktopBarVisibilityChanged(
-    DisplaySettingsProvider::DesktopBarAlignment alignment,
-    DisplaySettingsProvider::DesktopBarVisibility visibility) {
-  docked_strip_->OnAutoHidingDesktopBarVisibilityChanged(alignment, visibility);
 }
 
 void PanelManager::CloseAll() {

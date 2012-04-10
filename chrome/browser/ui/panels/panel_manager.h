@@ -26,16 +26,13 @@ class PanelResizeController;
 class PanelMouseWatcher;
 
 // This class manages a set of panels.
-class PanelManager : public DisplaySettingsProvider::Observer {
+class PanelManager : public DisplaySettingsProvider::DisplayAreaObserver {
  public:
   // Returns a single instance.
   static PanelManager* GetInstance();
 
   // Returns true if panels should be used for the extension.
   static bool ShouldUsePanels(const std::string& extension_id);
-
-  // Called when the display is changed, i.e. work area is updated.
-  void OnDisplayChanged();
 
   // Creates a panel and returns it. The panel might be queued for display
   // later.
@@ -99,7 +96,6 @@ class PanelManager : public DisplaySettingsProvider::Observer {
   BrowserWindow* GetNextBrowserWindowToActivate(Panel* panel) const;
 
   int num_panels() const;
-  int StartingRightPosition() const;
   std::vector<Panel*> panels() const;
 
   PanelDragController* drag_controller() const {
@@ -164,10 +160,6 @@ class PanelManager : public DisplaySettingsProvider::Observer {
     auto_sizing_enabled_ = enabled;
   }
 
-  const gfx::Rect& work_area() const {
-    return work_area_;
-  }
-
   void SetMouseWatcherForTesting(PanelMouseWatcher* watcher) {
     SetMouseWatcher(watcher);
   }
@@ -179,17 +171,8 @@ class PanelManager : public DisplaySettingsProvider::Observer {
   PanelManager();
   virtual ~PanelManager();
 
-  // Overridden from DisplaySettingsProvider::Observer:
-  virtual void OnAutoHidingDesktopBarThicknessChanged() OVERRIDE;
-  virtual void OnAutoHidingDesktopBarVisibilityChanged(
-      DisplaySettingsProvider::DesktopBarAlignment alignment,
-      DisplaySettingsProvider::DesktopBarVisibility visibility) OVERRIDE;
-
-  // Adjusts the work area to exclude the influence of auto-hiding desktop bars.
-  void AdjustWorkAreaForDisplaySettingsProviders();
-
-  // Positions the various groupings of panels.
-  void Layout();
+  // Overridden from DisplaySettingsProvider::DisplayAreaObserver:
+  virtual void OnDisplayAreaChanged(const gfx::Rect& display_area) OVERRIDE;
 
   // Tests if the current active app is in full screen mode.
   void CheckFullScreenMode();
@@ -211,16 +194,6 @@ class PanelManager : public DisplaySettingsProvider::Observer {
   // minimized panels. Mouse movement is only tracked when there is a minimized
   // panel.
   scoped_ptr<PanelMouseWatcher> panel_mouse_watcher_;
-
-  // The maximum work area avaialble. This area does not include the area taken
-  // by the always-visible (non-auto-hiding) desktop bars.
-  gfx::Rect work_area_;
-
-  // The useable work area for computing the panel bounds. This area excludes
-  // the potential area that could be taken by the auto-hiding desktop
-  // bars (we only consider those bars that are aligned to bottom, left, and
-  // right of the screen edges) when they become fully visible.
-  gfx::Rect adjusted_work_area_;
 
   scoped_ptr<DisplaySettingsProvider> display_settings_provider_;
 

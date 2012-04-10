@@ -14,6 +14,8 @@
 #import "base/mac/cocoa_protocols.h"
 #include "base/memory/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/observer_list.h"
+#include "ui/base/work_area_watcher_observer.h"
 
 class BookmarkMenuBridge;
 class CommandUpdater;
@@ -21,6 +23,9 @@ class GURL;
 class HistoryMenuBridge;
 class Profile;
 @class ProfileMenuController;
+namespace ui {
+class WorkAreaWatcherObserver;
+}
 
 // The application controller object, created by loading the MainMenu nib.
 // This handles things like responding to menus when there are no windows
@@ -66,6 +71,9 @@ class Profile;
 
   // Indicates wheter an NSPopover is currently being shown.
   BOOL hasPopover_;
+
+  // Observers that listen to the work area changes.
+  ObserverList<ui::WorkAreaWatcherObserver> workAreaChangeObservers_;
 }
 
 @property(readonly, nonatomic) BOOL startupComplete;
@@ -107,6 +115,10 @@ class Profile;
 - (void)clearStartupUrls;
 
 - (BookmarkMenuBridge*)bookmarkMenuBridge;
+
+// Subscribes/unsubscribes from the work area change notification.
+- (void)addObserverForWorkAreaChange:(ui::WorkAreaWatcherObserver*)observer;
+- (void)removeObserverForWorkAreaChange:(ui::WorkAreaWatcherObserver*)observer;
 
 @end
 

@@ -146,7 +146,7 @@ bool PanelDragController::CanDragToDockedStrip(
   // docked strip resides, as in the multi-monitor scenario, we want it to be
   // still free-floating.
   gfx::Rect display_area = panel_manager_->display_settings_provider()->
-      GetWorkArea();
+      GetDisplayArea();
   if (!display_area.Intersects(target_panel_bounds))
     return false;
 

@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "chrome/browser/native_window_notification_source.h"
+#include "chrome/browser/ui/panels/display_settings_provider.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_bounds_animation.h"
 #include "chrome/browser/ui/panels/panel_browser_frame_view.h"
@@ -261,12 +262,12 @@ void PanelBrowserView::AnimationProgressed(const ui::Animation* animation) {
 
 void PanelBrowserView::OnDisplayChanged() {
   BrowserView::OnDisplayChanged();
-  panel_->manager()->OnDisplayChanged();
+  panel_->manager()->display_settings_provider()->OnDisplaySettingsChanged();
 }
 
 void PanelBrowserView::OnWorkAreaChanged() {
   BrowserView::OnWorkAreaChanged();
-  panel_->manager()->OnDisplayChanged();
+  panel_->manager()->display_settings_provider()->OnDisplaySettingsChanged();
 }
 
 bool PanelBrowserView::WillProcessWorkAreaChange() const {

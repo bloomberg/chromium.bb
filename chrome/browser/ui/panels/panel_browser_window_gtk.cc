@@ -15,7 +15,6 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"
 #include "ui/base/dragdrop/gtk_dnd_util.h"
-#include "ui/base/x/work_area_watcher_x.h"
 
 using content::WebContents;
 
@@ -94,7 +93,6 @@ void PanelBrowserWindowGtk::Init() {
   g_signal_connect(window_, "leave-notify-event",
                    G_CALLBACK(OnLeaveNotifyThunk), this);
 
-  ui::WorkAreaWatcherX::AddObserver(this);
   registrar_.Add(
       this,
       chrome::NOTIFICATION_PANEL_CHANGED_LAYOUT_MODE,
@@ -267,10 +265,6 @@ bool PanelBrowserWindowGtk::ShouldShowCloseButton() const {
   return show_close_button_;
 }
 
-void PanelBrowserWindowGtk::WorkAreaChanged() {
-  panel_->manager()->OnDisplayChanged();
-}
-
 void PanelBrowserWindowGtk::Observe(
     int type,
     const content::NotificationSource& source,
@@ -293,7 +287,6 @@ void PanelBrowserWindowGtk::Observe(
         DestroyDragWidget();
       }
       panel_->OnNativePanelClosed();
-      ui::WorkAreaWatcherX::RemoveObserver(this);
       break;
   }
 

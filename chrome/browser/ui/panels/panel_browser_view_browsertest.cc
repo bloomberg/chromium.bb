@@ -8,6 +8,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/panels/base_panel_browser_test.h"
+#include "chrome/browser/ui/panels/docked_panel_strip.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_bounds_animation.h"
 #include "chrome/browser/ui/panels/panel_browser_frame_view.h"
@@ -177,7 +178,8 @@ class PanelBrowserViewTest : public BasePanelBrowserTest {
   // for the purpose of accessing its private members.
   void TestMinimizeAndRestore(bool enable_auto_hiding) {
     PanelManager* panel_manager = PanelManager::GetInstance();
-    int expected_bottom_on_expanded = panel_manager->work_area().height();
+    DockedPanelStrip* docked_strip = panel_manager->docked_strip();
+    int expected_bottom_on_expanded = docked_strip->display_area().bottom();
     int expected_bottom_on_title_only = expected_bottom_on_expanded;
     int expected_bottom_on_minimized = expected_bottom_on_expanded;
 
@@ -297,7 +299,8 @@ class PanelBrowserViewTest : public BasePanelBrowserTest {
 
   void TestChangeAutoHideTaskBarThickness() {
     PanelManager* manager = PanelManager::GetInstance();
-    int initial_starting_right_position = manager->StartingRightPosition();
+    DockedPanelStrip* docked_strip = manager->docked_strip();
+    int initial_starting_right_position = docked_strip->StartingRightPosition();
 
     int bottom_bar_thickness = 20;
     int right_bar_thickness = 30;
@@ -310,19 +313,19 @@ class PanelBrowserViewTest : public BasePanelBrowserTest {
         true,
         right_bar_thickness);
     EXPECT_EQ(
-        initial_starting_right_position - manager->StartingRightPosition(),
+        initial_starting_right_position - docked_strip->StartingRightPosition(),
         right_bar_thickness);
 
     Panel* panel = CreatePanel("PanelTest");
     panel->SetExpansionState(Panel::TITLE_ONLY);
     WaitTillBoundsAnimationFinished(panel);
 
-    EXPECT_EQ(manager->work_area().height() - bottom_bar_thickness,
+    EXPECT_EQ(docked_strip->display_area().bottom() - bottom_bar_thickness,
               panel->GetBounds().bottom());
-    EXPECT_GT(manager->work_area().right() - right_bar_thickness,
+    EXPECT_EQ(docked_strip->StartingRightPosition(),
               panel->GetBounds().right());
 
-    initial_starting_right_position = manager->StartingRightPosition();
+    initial_starting_right_position = docked_strip->StartingRightPosition();
     int bottom_bar_thickness_delta = 10;
     bottom_bar_thickness += bottom_bar_thickness_delta;
     int right_bar_thickness_delta = 15;
@@ -335,14 +338,14 @@ class PanelBrowserViewTest : public BasePanelBrowserTest {
         right_bar_thickness);
     MessageLoopForUI::current()->RunAllPending();
     EXPECT_EQ(
-        initial_starting_right_position - manager->StartingRightPosition(),
+        initial_starting_right_position - docked_strip->StartingRightPosition(),
         right_bar_thickness_delta);
-    EXPECT_EQ(manager->work_area().height() - bottom_bar_thickness,
+    EXPECT_EQ(docked_strip->display_area().bottom() - bottom_bar_thickness,
               panel->GetBounds().bottom());
-    EXPECT_GT(manager->work_area().right() - right_bar_thickness,
+    EXPECT_EQ(docked_strip->StartingRightPosition(),
               panel->GetBounds().right());
 
-    initial_starting_right_position = manager->StartingRightPosition();
+    initial_starting_right_position = docked_strip->StartingRightPosition();
     bottom_bar_thickness_delta = 20;
     bottom_bar_thickness -= bottom_bar_thickness_delta;
     right_bar_thickness_delta = 10;
@@ -355,11 +358,11 @@ class PanelBrowserViewTest : public BasePanelBrowserTest {
         right_bar_thickness);
     MessageLoopForUI::current()->RunAllPending();
     EXPECT_EQ(
-        manager->StartingRightPosition() - initial_starting_right_position,
+        docked_strip->StartingRightPosition() - initial_starting_right_position,
         right_bar_thickness_delta);
-    EXPECT_EQ(manager->work_area().height() - bottom_bar_thickness,
+    EXPECT_EQ(docked_strip->display_area().bottom() - bottom_bar_thickness,
               panel->GetBounds().bottom());
-    EXPECT_GT(manager->work_area().right() - right_bar_thickness,
+    EXPECT_EQ(docked_strip->StartingRightPosition(),
               panel->GetBounds().right());
 
     panel->Close();

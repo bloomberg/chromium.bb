@@ -24,7 +24,8 @@ class PanelManager;
 // Panels in the strip appear minimized, showing title-only or expanded.
 // All panels in the strip are contained within the bounds of the strip.
 class DockedPanelStrip : public PanelStrip,
-                         public PanelMouseWatcherObserver {
+                         public PanelMouseWatcherObserver,
+                         public DisplaySettingsProvider::DesktopBarObserver {
  public:
   typedef std::list<Panel*> Panels;
 
@@ -101,10 +102,6 @@ class DockedPanelStrip : public PanelStrip,
   int GetMaxPanelHeight() const;
   int StartingRightPosition() const;
 
-  void OnAutoHidingDesktopBarVisibilityChanged(
-      DisplaySettingsProvider::DesktopBarAlignment alignment,
-      DisplaySettingsProvider::DesktopBarVisibility visibility);
-
   void OnFullScreenModeChanged(bool is_full_screen);
 
   // Returns |true| if panel can fit in the dock strip.
@@ -137,6 +134,11 @@ class DockedPanelStrip : public PanelStrip,
 
   // Overridden from PanelMouseWatcherObserver:
   virtual void OnMouseMove(const gfx::Point& mouse_position) OVERRIDE;
+
+  // Overridden from DisplaySettingsProvider::DesktopBarObserver:
+  virtual void OnAutoHidingDesktopBarVisibilityChanged(
+      DisplaySettingsProvider::DesktopBarAlignment alignment,
+      DisplaySettingsProvider::DesktopBarVisibility visibility) OVERRIDE;
 
   // Helper methods to put the panel to the collection.
   void InsertNewlyCreatedPanel(Panel* panel);

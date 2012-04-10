@@ -19,9 +19,7 @@ class BasePanelBrowserTest : public InProcessBrowserTest {
  public:
   class MockDisplaySettingsProvider : public DisplaySettingsProvider {
    public:
-    explicit MockDisplaySettingsProvider(Observer* observer)
-        : DisplaySettingsProvider(observer) {
-    }
+    MockDisplaySettingsProvider() { }
     virtual ~MockDisplaySettingsProvider() { }
 
     virtual void SetWorkArea(const gfx::Rect& work_area) = 0;
@@ -105,7 +103,6 @@ class BasePanelBrowserTest : public InProcessBrowserTest {
   void CloseWindowAndWait(Browser* browser);
   static std::string MakePanelName(int index);
 
-  gfx::Rect GetTestingWorkArea() const;
   void SetTestingWorkArea(const gfx::Rect& work_area);
 
   MockDisplaySettingsProvider* mock_display_settings_provider() const {
