@@ -6,6 +6,7 @@
 
 #include <stdio.h>
 
+#include "base/logging.h"
 #include "ui/aura/env.h"
 #include "ui/aura/monitor.h"
 #include "ui/aura/root_window.h"
@@ -29,16 +30,18 @@ Monitor* MonitorManager::CreateMonitorFromSpec(const std::string& spec) {
   gfx::Rect bounds(kDefaultHostWindowX, kDefaultHostWindowY,
                    kDefaultHostWindowWidth, kDefaultHostWindowHeight);
   int x = 0, y = 0, width, height;
-  if (sscanf(spec.c_str(), "%dx%d", &width, &height) == 2) {
+  float scale = 1.0f;
+  if (sscanf(spec.c_str(), "%dx%d*%f", &width, &height, &scale) >= 2) {
     bounds.set_size(gfx::Size(width, height));
-  } else if (sscanf(spec.c_str(), "%d+%d-%dx%d", &x, &y, &width, &height)
-             == 4) {
+  } else if (sscanf(spec.c_str(), "%d+%d-%dx%d*%f", &x, &y, &width, &height,
+                    &scale) >= 4 ) {
     bounds = gfx::Rect(x, y, width, height);
   } else if (use_fullscreen_host_window_) {
     bounds = gfx::Rect(aura::RootWindowHost::GetNativeScreenSize());
   }
   Monitor* monitor = new Monitor();
   monitor->set_bounds(bounds);
+  VLOG(1) << "Monitor bounds=" << bounds.ToString() << ", scale=" << scale;
   return monitor;
 }
 

@@ -33,6 +33,15 @@ class AURA_EXPORT Monitor {
   }
   const gfx::Insets& work_area_insets() const { return work_area_insets_; }
 
+  // Output device's pixel scale factor. This specifies how much the
+  // UI should be scaled when the actual output has more pixels than
+  // standard monitors (which is around 100~120dpi.) For aura, this
+  // value is either 1.0 or 2.0, but may return different values on
+  // other platforms.
+  float GetDeviceScaleFactor() const {
+    return device_scale_factor_;
+  }
+
   // Returns the monitor's work area.
   gfx::Rect GetWorkAreaBounds() const;
 
@@ -41,6 +50,8 @@ class AURA_EXPORT Monitor {
   gfx::Insets work_area_insets_;
 
   gfx::Rect bounds_;
+
+  float device_scale_factor_;
 
   DISALLOW_COPY_AND_ASSIGN(Monitor);
 };

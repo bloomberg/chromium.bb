@@ -6,7 +6,7 @@
 
 namespace aura {
 
-Monitor::Monitor() {
+Monitor::Monitor() : device_scale_factor_(1.0f) {
 }
 
 Monitor::~Monitor() {
