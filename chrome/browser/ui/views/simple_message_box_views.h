@@ -21,6 +21,17 @@ class SimpleMessageBoxViews : public views::DialogDelegate,
                               public MessageLoop::Dispatcher,
                               public base::RefCounted<SimpleMessageBoxViews> {
  public:
+  static void ShowErrorBox(gfx::NativeWindow parent_window,
+                           const string16& title,
+                           const string16& message);
+  static bool ShowYesNoBox(gfx::NativeWindow parent_window,
+                           const string16& title,
+                           const string16& message);
+
+  // Returns true if the Accept button was clicked.
+  bool accepted() const { return disposition_ == DISPOSITION_OK; }
+
+ private:
   friend class base::RefCounted<SimpleMessageBoxViews>;
 
   // The state of the dialog when closing.
@@ -30,42 +41,24 @@ class SimpleMessageBoxViews : public views::DialogDelegate,
     DISPOSITION_OK
   };
 
-  // Message box is modal to |parent_window|.
-  static void ShowErrorBox(gfx::NativeWindow parent_window,
-                           const string16& title,
-                           const string16& message);
-  static bool ShowYesNoBox(gfx::NativeWindow parent_window,
-                           const string16& title,
-                           const string16& message);
+  enum DialogType {
+    DIALOG_ERROR,
+    DIALOG_YES_NO,
+  };
 
-  // Overridden from views::DialogDelegate:
-  virtual bool Cancel() OVERRIDE;
-  virtual bool Accept() OVERRIDE;
-
-  // Returns true if the Accept button was clicked.
-  const bool Accepted() {
-    return disposition_ == DISPOSITION_OK;
-  }
-
- protected:
   // Overridden from views::DialogDelegate:
   virtual int GetDialogButtons() const OVERRIDE;
   virtual string16 GetDialogButtonLabel(ui::DialogButton button) const OVERRIDE;
+  virtual bool Cancel() OVERRIDE;
+  virtual bool Accept() OVERRIDE;
 
   // Overridden from views::WidgetDelegate:
-  virtual bool ShouldShowWindowTitle() const OVERRIDE;
   virtual string16 GetWindowTitle() const OVERRIDE;
   virtual void DeleteDelegate() OVERRIDE;
   virtual ui::ModalType GetModalType() const OVERRIDE;
   virtual views::View* GetContentsView() OVERRIDE;
   virtual views::Widget* GetWidget() OVERRIDE;
   virtual const views::Widget* GetWidget() const OVERRIDE;
-
- private:
-  enum DialogType {
-    DIALOG_ERROR,
-    DIALOG_YES_NO,
-  };
 
   SimpleMessageBoxViews(gfx::NativeWindow parent_window,
                         DialogType type,

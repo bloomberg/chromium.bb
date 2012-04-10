@@ -73,18 +73,11 @@ bool SimpleMessageBoxViews::ShowYesNoBox(gfx::NativeWindow parent_window,
 
   g_browser_process->ReleaseModule();
 
-  return dialog->Accepted();
+  return dialog->accepted();
 }
 
-bool SimpleMessageBoxViews::Cancel() {
-  disposition_ = DISPOSITION_CANCEL;
-  return true;
-}
-
-bool SimpleMessageBoxViews::Accept() {
-  disposition_ = DISPOSITION_OK;
-  return true;
-}
+////////////////////////////////////////////////////////////////////////////////
+// SimpleMessageBoxViews, private:
 
 int SimpleMessageBoxViews::GetDialogButtons() const {
   if (type_ == DIALOG_ERROR)
@@ -98,7 +91,13 @@ string16 SimpleMessageBoxViews::GetDialogButtonLabel(
       IDS_OK : IDS_CLOSE);
 }
 
-bool SimpleMessageBoxViews::ShouldShowWindowTitle() const {
+bool SimpleMessageBoxViews::Cancel() {
+  disposition_ = DISPOSITION_CANCEL;
+  return true;
+}
+
+bool SimpleMessageBoxViews::Accept() {
+  disposition_ = DISPOSITION_OK;
   return true;
 }
 
@@ -125,9 +124,6 @@ views::Widget* SimpleMessageBoxViews::GetWidget() {
 const views::Widget* SimpleMessageBoxViews::GetWidget() const {
   return message_box_view_->GetWidget();
 }
-
-////////////////////////////////////////////////////////////////////////////////
-// SimpleMessageBoxViews, private:
 
 SimpleMessageBoxViews::SimpleMessageBoxViews(gfx::NativeWindow parent_window,
                                              DialogType type,
