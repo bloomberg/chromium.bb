@@ -493,7 +493,9 @@ remoting.connectMe2MeWithPin = function() {
   remoting.setMode(remoting.AppMode.CLIENT_CONNECTING);
 
   var host = remoting.hostList.getHostForId(remoting.hostId);
-  if (!host) {
+  // There will be no JID or public key if the user connects to a new host
+  // without first reloading the web-app.
+  if (!host || !host.jabberId || !host.publicKey) {
     retryConnectOrReportOffline_();
     return;
   }

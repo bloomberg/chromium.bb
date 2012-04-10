@@ -96,13 +96,14 @@ remoting.HostController.prototype.setTooltips = function() {
 /**
  * Registers and starts the host.
  * @param {string} hostPin Host PIN.
- * @param {function(remoting.HostController.AsyncResult):void}
+ * @param {function(remoting.HostController.AsyncResult):void} callback
  * callback Callback to be called when done.
  * @return {void} Nothing.
  */
 remoting.HostController.prototype.start = function(hostPin, callback) {
   /** @type {remoting.HostController} */
   var that = this;
+  var hostName = that.plugin_.getHostName();
 
   /** @return {string} */
   function generateUuid() {
@@ -123,6 +124,27 @@ remoting.HostController.prototype.start = function(hostPin, callback) {
   // plugin instead of storing it locally (crbug.com/121518).
   window.localStorage.setItem('me2me-host-id', newHostId);
 
+  /** @param {function(remoting.HostController.AsyncResult):void} callback
+   *  @param {remoting.HostController.AsyncResult} result
+   *  @param {string} hostName */
+  function onStarted(callback, result, hostName) {
+    if (result == remoting.HostController.AsyncResult.OK) {
+      // Create a dummy remoting.Host instance to represent the local host.
+      // Refreshing the list is no good in general, because the directory
+      // information won't be in sync for several seconds. We don't know the
+      // host JID or public key, but they can be missing from the cache with
+      // no ill effects (it will be refreshed--we hope that the directory
+      // will have been updated by that point).
+      var localHost = new remoting.Host();
+      localHost.hostName = hostName;
+      localHost.hostId = newHostId;
+      localHost.status = 'ONLINE';
+      that.setHost(localHost);
+      remoting.hostList.addHost(localHost);
+    }
+    callback(result);
+  };
+
   /** @param {string} privateKey
    *  @param {XMLHttpRequest} xhr */
   function onRegistered(privateKey, xhr) {
@@ -135,11 +157,15 @@ remoting.HostController.prototype.start = function(hostPin, callback) {
           xmpp_login: remoting.oauth2.getCachedEmail(),
           oauth_refresh_token: remoting.oauth2.getRefreshToken(),
           host_id: newHostId,
-          host_name: that.plugin_.getHostName(),
+          host_name: hostName,
           host_secret_hash: hostSecretHash,
           private_key: privateKey
-        });
-      that.plugin_.startDaemon(hostConfig, callback);
+      });
+      /** @param {remoting.HostController.AsyncResult} result */
+      var onStartDaemon = function(result) {
+        onStarted(callback, result, hostName);
+      };
+      that.plugin_.startDaemon(hostConfig, onStartDaemon);
     } else {
       console.log('Failed to register the host. Status: ' + xhr.status +
                   ' response: ' + xhr.responseText);
@@ -160,7 +186,7 @@ remoting.HostController.prototype.start = function(hostPin, callback) {
 
     var newHostDetails = { data: {
        hostId: newHostId,
-       hostName: that.plugin_.getHostName(),
+       hostName: hostName,
        publicKey: publicKey
     } };
     remoting.xhr.post(

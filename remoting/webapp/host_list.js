@@ -273,6 +273,19 @@ remoting.HostList.prototype.renameHost = function(hostTableEntry) {
 };
 
 /**
+ * Add a host to the list. This is called when the local host is started to
+ * avoid having to refresh the host list and deal with replication delays.
+ *
+ * @param {remoting.Host} localHost The local Me2Me host.
+ * @return {void} Nothing.
+ */
+remoting.HostList.prototype.addHost = function(localHost) {
+  this.hosts_.push(localHost);
+  window.localStorage.setItem(remoting.HostList.HOSTS_KEY,
+                              JSON.stringify(this.hosts_));
+}
+
+/**
  * Key name under which Me2Me hosts are cached.
  */
 remoting.HostList.HOSTS_KEY = 'me2me-cached-hosts';
