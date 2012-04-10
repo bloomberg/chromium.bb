@@ -603,7 +603,8 @@ class BuildBoardStage(bs.BuilderStage):
 
       if latest_toolchain:
         env['USE'] = 'git_gcc'
-        env['GCC_GITHASH'] = 'gcc.gnu.org/branches/google/main'
+
+      env['GCC_GITHASH'] = self._build_config['gcc_githash']
 
       commands.SetupBoard(self._build_root,
                           board=board_to_build,
