@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,11 +20,20 @@ class UI_EXPORT Path : public SkPath {
     int x;
     int y;
   };
+#if defined(ENABLE_DIP)
+  struct PointF {
+    float x;
+    float y;
+  };
+#endif
 
   Path();
 
   // Creates a path populated with the specified points.
   Path(const Point* points, size_t count);
+#if defined(ENABLE_DIP)
+  Path(const PointF* points, size_t count);
+#endif
 
   ~Path();
 
