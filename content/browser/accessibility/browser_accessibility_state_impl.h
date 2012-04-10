@@ -11,8 +11,6 @@
 #include "base/timer.h"
 #include "content/public/browser/browser_accessibility_state.h"
 
-template <typename T> struct DefaultSingletonTraits;
-
 // The BrowserAccessibilityState class is used to determine if Chrome should be
 // customized for users with assistive technology, such as screen readers. We
 // modify the behavior of certain user interfaces to provide a better experience
@@ -33,6 +31,9 @@ template <typename T> struct DefaultSingletonTraits;
 class CONTENT_EXPORT BrowserAccessibilityStateImpl
     : public BrowserAccessibilityState {
  public:
+  BrowserAccessibilityStateImpl();
+
+  // Leaky singleton, destructor generally won't be called.
   virtual ~BrowserAccessibilityStateImpl();
 
   static BrowserAccessibilityStateImpl* GetInstance();
@@ -46,10 +47,6 @@ class CONTENT_EXPORT BrowserAccessibilityStateImpl
   void UpdateHistogram();
 
  protected:
-  BrowserAccessibilityStateImpl();
-
-  friend struct DefaultSingletonTraits<BrowserAccessibilityStateImpl>;
-
   // Set to true when full accessibility features should be enabled.
   bool accessibility_enabled_;
 
