@@ -12,6 +12,7 @@
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/browser/net/browser_url_util.h"
 #include "chrome/common/libxml_utils.h"
+#include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "chrome/common/net/gaia/gaia_urls.h"
 #include "net/base/escape.h"
 #include "net/http/http_util.h"
@@ -21,10 +22,12 @@ using content::URLFetcher;
 
 namespace {
 
-// Used for success ratio histograms. 1 for success, 0 for failure.
+// Used for success ratio histograms. 0 for failure, 1 for success,
+// 2 for no connection (likely offline).
 const int kSuccessRatioHistogramFailure = 0;
 const int kSuccessRatioHistogramSuccess = 1;
-const int kSuccessRatioHistogramMaxValue = 2;  // The max value is exclusive.
+const int kSuccessRatioHistogramNoConnection = 2;
+const int kSuccessRatioHistogramMaxValue = 3;  // The max value is exclusive.
 
 // Template for optional OAuth2 authorization HTTP header.
 const char kAuthorizationHeaderFormat[] = "Authorization: Bearer %s";
@@ -158,12 +161,23 @@ void AuthOperation::OnGetTokenSuccess(const std::string& access_token) {
 void AuthOperation::OnGetTokenFailure(const GoogleServiceAuthError& error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  UMA_HISTOGRAM_ENUMERATION("GData.AuthSuccess",
-                            kSuccessRatioHistogramFailure,
-                            kSuccessRatioHistogramMaxValue);
+  LOG(WARNING) << "AuthOperation: token request using refresh token failed"
+               << error.ToString();
 
-  LOG(WARNING) << "AuthOperation: token request using refresh token failed";
-  callback_.Run(HTTP_UNAUTHORIZED, std::string());
+  // There are many ways to fail, but if the failure is due to connection,
+  // it's likely that the device is off-line. We treat the error differently
+  // so that the file manager works while off-line.
+  if (error.state() == GoogleServiceAuthError::CONNECTION_FAILED) {
+    UMA_HISTOGRAM_ENUMERATION("GData.AuthSuccess",
+                              kSuccessRatioHistogramNoConnection,
+                              kSuccessRatioHistogramMaxValue);
+    callback_.Run(GDATA_NO_CONNECTION, std::string());
+  } else {
+    UMA_HISTOGRAM_ENUMERATION("GData.AuthSuccess",
+                              kSuccessRatioHistogramFailure,
+                              kSuccessRatioHistogramMaxValue);
+    callback_.Run(HTTP_UNAUTHORIZED, std::string());
+  }
   NotifyFinish(GDataOperationRegistry::OPERATION_FAILED);
 }
 

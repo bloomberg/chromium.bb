@@ -966,8 +966,14 @@ bool AddMountFunction::RunImpl() {
 }
 
 void AddMountFunction::RaiseGDataMountEvent(gdata::GDataErrorCode error) {
-  chromeos::MountError error_code = error == gdata::HTTP_SUCCESS ?
-      chromeos::MOUNT_ERROR_NONE : chromeos::MOUNT_ERROR_NOT_AUTHENTICATED;
+  chromeos::MountError error_code = chromeos::MOUNT_ERROR_NONE;
+  // For the file manager to work offline, GDATA_NO_CONNECTION is allowed.
+  if (error == gdata::HTTP_SUCCESS || error == gdata::GDATA_NO_CONNECTION) {
+    error_code = chromeos::MOUNT_ERROR_NONE;
+  } else {
+    error_code = chromeos::MOUNT_ERROR_NOT_AUTHENTICATED;
+  }
+
   DiskMountManager::MountPointInfo mount_info(
       gdata::util::GetGDataMountPointPathAsString(),
       gdata::util::GetGDataMountPointPathAsString(),

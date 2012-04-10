@@ -28,6 +28,7 @@ enum GDataErrorCode {
   GDATA_FILE_ERROR           = -101,
   GDATA_CANCELLED            = -102,
   GDATA_OTHER_ERROR          = -103,
+  GDATA_NO_CONNECTION        = -104,
 };
 
 }  // namespace gdata
