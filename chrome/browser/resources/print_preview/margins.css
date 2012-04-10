@@ -2,7 +2,7 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-.margin-box {
+#print-preview .margin-box {
   background-color: #2a2a2a;
   border: 1px solid #888;
   box-sizing: border-box;
