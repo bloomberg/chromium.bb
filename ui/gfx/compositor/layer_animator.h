@@ -149,6 +149,13 @@ class COMPOSITOR_EXPORT LayerAnimator : public AnimationContainerElement {
   LayerAnimationDelegate* delegate() { return delegate_; }
   const LayerAnimationDelegate* delegate() const { return delegate_; }
 
+  // Virtual for testing.
+  virtual bool ProgressAnimation(LayerAnimationSequence* sequence,
+                                 base::TimeDelta delta);
+
+  // Returns true if the sequence is owned by this animator.
+  bool HasAnimation(LayerAnimationSequence* sequence) const;
+
  private:
   friend class ScopedLayerAnimationSettings;
 

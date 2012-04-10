@@ -51,6 +51,46 @@ class TestImplicitAnimationObserver : public ImplicitAnimationObserver {
   DISALLOW_COPY_AND_ASSIGN(TestImplicitAnimationObserver);
 };
 
+// When notified that an animation has ended, stops all other animations.
+class DeletingLayerAnimationObserver : public LayerAnimationObserver {
+ public:
+  DeletingLayerAnimationObserver(LayerAnimator* animator,
+                                 LayerAnimationSequence* sequence)
+    : animator_(animator),
+      sequence_(sequence) {
+  }
+
+  virtual void OnLayerAnimationEnded(LayerAnimationSequence* sequence) {
+    animator_->StopAnimating();
+  }
+
+  virtual void OnLayerAnimationAborted(LayerAnimationSequence* sequence) {}
+
+  virtual void OnLayerAnimationScheduled(LayerAnimationSequence* sequence) {}
+
+ private:
+  LayerAnimator* animator_;
+  LayerAnimationSequence* sequence_;
+
+  DISALLOW_COPY_AND_ASSIGN(DeletingLayerAnimationObserver);
+};
+
+class TestLayerAnimator : public LayerAnimator {
+ public:
+  TestLayerAnimator() : LayerAnimator(base::TimeDelta::FromSeconds(0)) {}
+  virtual ~TestLayerAnimator() {}
+
+ protected:
+  virtual bool ProgressAnimation(LayerAnimationSequence* sequence,
+                                 base::TimeDelta delta) OVERRIDE {
+    EXPECT_TRUE(HasAnimation(sequence));
+    return LayerAnimator::ProgressAnimation(sequence, delta);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestLayerAnimator);
+};
+
 // The test layer animation sequence updates a live instances count when it is
 // created and destroyed.
 class TestLayerAnimationSequence : public LayerAnimationSequence {
@@ -940,6 +980,53 @@ TEST(LayerAnimatorTest, ObserverDetachedBeforeAnimationFinished) {
   sequence->RemoveObserver(&observer);
 
   EXPECT_TRUE(observer.animations_completed());
+}
+
+// This checks that if an animation is deleted due to a callback, that the
+// animator does not try to use the deleted animation. For example, if we have
+// two running animations, and the first finishes and the resulting callback
+// causes the second to be deleted, we should not attempt to animate the second
+// animation.
+TEST(LayerAnimatorTest, ObserverDeletesAnimations) {
+  LayerAnimator::set_disable_animations_for_test(false);
+  scoped_ptr<LayerAnimator> animator(new TestLayerAnimator());
+  AnimationContainerElement* element = animator.get();
+  animator->set_disable_timer_for_test(true);
+  TestLayerAnimationDelegate delegate;
+  animator->SetDelegate(&delegate);
+
+  double start_opacity(0.0);
+  double target_opacity(1.0);
+
+  gfx::Rect start_bounds(0, 0, 50, 50);
+  gfx::Rect target_bounds(5, 5, 5, 5);
+
+  delegate.SetOpacityFromAnimation(start_opacity);
+  delegate.SetBoundsFromAnimation(start_bounds);
+
+  base::TimeDelta opacity_delta = base::TimeDelta::FromSeconds(1);
+  base::TimeDelta halfway_delta = base::TimeDelta::FromSeconds(2);
+  base::TimeDelta bounds_delta = base::TimeDelta::FromSeconds(3);
+
+  LayerAnimationSequence* to_delete = new LayerAnimationSequence(
+      LayerAnimationElement::CreateBoundsElement(target_bounds, bounds_delta));
+
+  scoped_ptr<DeletingLayerAnimationObserver> observer(
+      new DeletingLayerAnimationObserver(animator.get(), to_delete));
+
+  animator->AddObserver(observer.get());
+
+  animator->StartAnimation(
+      new LayerAnimationSequence(
+          LayerAnimationElement::CreateOpacityElement(
+              target_opacity, opacity_delta)));
+
+  animator->StartAnimation(to_delete);
+
+  base::TimeTicks start_time = animator->last_step_time();
+  element->Step(start_time + halfway_delta);
+
+  animator->RemoveObserver(observer.get());
 }
 
 // Check that setting a property during an animation with a default animator

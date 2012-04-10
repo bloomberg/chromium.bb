@@ -226,6 +226,23 @@ void LayerAnimator::RemoveObserver(LayerAnimationObserver* observer) {
   }
 }
 
+// LayerAnimator protected -----------------------------------------------------
+
+bool LayerAnimator::ProgressAnimation(LayerAnimationSequence* sequence,
+                                      base::TimeDelta delta) {
+  return sequence->Progress(delta, delegate());
+}
+
+
+bool LayerAnimator::HasAnimation(LayerAnimationSequence* sequence) const {
+  for (AnimationQueue::const_iterator queue_iter = animation_queue_.begin();
+       queue_iter != animation_queue_.end(); ++queue_iter) {
+    if ((*queue_iter).get() == sequence)
+      return true;
+  }
+  return false;
+}
+
 // LayerAnimator private -------------------------------------------------------
 
 void LayerAnimator::Step(base::TimeTicks now) {
@@ -238,14 +255,15 @@ void LayerAnimator::Step(base::TimeTicks now) {
   RunningAnimations running_animations_copy = running_animations_;
   bool needs_redraw = false;
   for (size_t i = 0; i < running_animations_copy.size(); ++i) {
+    if (!HasAnimation(running_animations_copy[i].sequence))
+      continue;
+
     base::TimeDelta delta = now - running_animations_copy[i].start_time;
     if (delta >= running_animations_copy[i].sequence->duration() &&
         !running_animations_copy[i].sequence->is_cyclic()) {
       FinishAnimation(running_animations_copy[i].sequence);
-    } else {
-      if (running_animations_copy[i].sequence->Progress(delta, delegate()))
-        needs_redraw = true;
-    }
+    } else if (ProgressAnimation(running_animations_copy[i].sequence, delta))
+      needs_redraw = true;
   }
 
   if (needs_redraw)
@@ -318,6 +336,9 @@ void LayerAnimator::FinishAnyAnimationWithZeroDuration() {
   // cause new animations to start running.
   RunningAnimations running_animations_copy = running_animations_;
   for (size_t i = 0; i < running_animations_copy.size(); ++i) {
+    if (!HasAnimation(running_animations_copy[i].sequence))
+      continue;
+
     if (running_animations_copy[i].sequence->duration() == base::TimeDelta()) {
       running_animations_copy[i].sequence->Progress(
           running_animations_copy[i].sequence->duration(), delegate());
@@ -334,6 +355,9 @@ void LayerAnimator::ClearAnimations() {
   // clients are badly behaved, we will use a copy of the running animations.
   RunningAnimations running_animations_copy = running_animations_;
   for (size_t i = 0; i < running_animations_copy.size(); ++i) {
+    if (!HasAnimation(running_animations_copy[i].sequence))
+      continue;
+
     scoped_ptr<LayerAnimationSequence> removed(
         RemoveAnimation(running_animations_copy[i].sequence));
     if (removed.get())
@@ -380,6 +404,9 @@ void LayerAnimator::RemoveAllAnimationsWithACommonProperty(
   // operate on a copy.
   RunningAnimations running_animations_copy = running_animations_;
   for (size_t i = 0; i < running_animations_copy.size(); ++i) {
+    if (!HasAnimation(running_animations_copy[i].sequence))
+      continue;
+
     if (running_animations_copy[i].sequence->HasCommonProperty(
             sequence->properties())) {
       scoped_ptr<LayerAnimationSequence> removed(
@@ -400,6 +427,9 @@ void LayerAnimator::RemoveAllAnimationsWithACommonProperty(
     sequences.push_back((*queue_iter).get());
 
   for (size_t i = 0; i < sequences.size(); ++i) {
+    if (!HasAnimation(sequences[i]))
+      continue;
+
     if (sequences[i]->HasCommonProperty(sequence->properties())) {
       scoped_ptr<LayerAnimationSequence> removed(
           RemoveAnimation(sequences[i]));
