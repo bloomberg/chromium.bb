@@ -1504,6 +1504,11 @@ vt_func(struct weston_compositor *compositor, int event)
 		}
 		break;
 	case TTY_LEAVE_VT:
+		wl_list_for_each(input, &compositor->input_device_list, link) {
+			evdev_disable_udev_monitor(input);
+			evdev_remove_devices(input);
+		}
+
 		compositor->focus = 0;
 		ec->prev_state = compositor->state;
 		compositor->state = WESTON_COMPOSITOR_SLEEPING;
@@ -1529,11 +1534,6 @@ vt_func(struct weston_compositor *compositor, int event)
 					sprite->plane_id,
 					drm_output->crtc_id, 0, 0,
 					0, 0, 0, 0, 0, 0, 0, 0);
-
-		wl_list_for_each(input, &compositor->input_device_list, link) {
-			evdev_disable_udev_monitor(input);
-			evdev_remove_devices(input);
-		}
 
 		if (weston_launcher_drm_set_master(&ec->base, ec->drm.fd, 0) < 0)
 			fprintf(stderr, "failed to drop master: %m\n");
