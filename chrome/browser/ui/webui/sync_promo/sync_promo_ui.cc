@@ -57,14 +57,8 @@ bool AllowPromoAtStartupForCurrentBrand() {
   if (google_util::IsInternetCafeBrandCode(brand))
     return false;
 
-  if (google_util::IsOrganic(brand))
-    return true;
-
-  if (StartsWithASCII(brand, "CH", true))
-    return true;
-
-  // Default to disallow for all other brand codes.
-  return false;
+  // Enable for both organic and distribution.
+  return true;
 }
 
 // The Web UI data source for the sync promo page.
