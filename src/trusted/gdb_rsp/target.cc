@@ -204,6 +204,10 @@ void Target::Run(Session *ses) {
     } else {
       // otherwise there really is an exception so get the id of the thread
       id = GetRegThreadId();
+
+      // Reset single stepping.
+      IThread *thread = threads_[id];
+      thread->SetStep(false);
     }
 
     // If we got this far, then there is some kind of signal.
