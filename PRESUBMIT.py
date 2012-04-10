@@ -27,7 +27,6 @@ EXCLUDE_PROJECT_CHECKS_DIRS = [
     'src/trusted/validator/x86/decoder/generator/gen',
     'src/trusted/validator/x86/ncval_seg_sfi/gen',
     'src/trusted/validator_arm/gen',
-    'src/trusted/validator_ragel/gen',
     ]
 
 def NaclTopDir():

@@ -15,8 +15,8 @@ OBJD=$(OUT)/build/objs
 PYTHON2X=/usr/bin/python2.6
 CC = gcc -std=gnu99 -Wdeclaration-after-statement -Wall -pedantic -Wextra \
      -Wno-long-long -Wswitch-enum -Wsign-compare -Wno-variadic-macros -Werror \
-     -O3 -finline-limit=10000 -I../../../../.. -DNACL_LINUX
-CXX = g++ -std=c++0x -O3 -finline-limit=10000 -DNACL_TRUSTED_BUT_NOT_TCB
+     -O3 -finline-limit=10000
+CXX = g++ -std=c++0x -O3 -finline-limit=10000
 RAGEL = ragel
 CFLAGS = -g
 CXXFLAGS = -g

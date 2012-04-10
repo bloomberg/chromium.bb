@@ -12,30 +12,11 @@
 #include <string.h>
 
 #include <algorithm>
-#include <iterator>
 #include <map>
 #include <set>
 #include <string>
 #include <tuple>
 #include <vector>
-
-#ifndef NACL_TRUSTED_BUT_NOT_TCB
-#error("This file is not meant for use in the TCB")
-#endif
-
-#ifdef __GNUC__
-/* We use operand number formats here.  They are defined in SUSv2 and supported
-   on all POSIX systems (including all versions of Linux and MacOS), yet
-   -pedantic warns about them.  */
-#pragma GCC diagnostic ignored "-Wformat"
-/* GCC complains even when we explicitly use empty initializer list.  Can be
-   easily fixed with data member initializers, but this requires GCC 4.7+.  */
-#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
-/* Default is perfectly valid way to handle missing cases.  Especially if we
-   only care about very few non-default ones as often here.  */
-#pragma GCC diagnostic ignored "-Wswitch-enum"
-#pragma GCC diagnostic error "-Wswitch"
-#endif
 
 template <typename T, size_t N>
 char (&ArraySizeHelper(T (&array)[N]))[N];
@@ -45,13 +26,12 @@ namespace {
   const char* short_program_name;
 
   const struct option kProgramOptions[] = {
-    {"mode",       required_argument,      NULL,   'm'},
-    {"disable",    required_argument,      NULL,   'd'},
-    {"output",     required_argument,      NULL,   'o'},
-    {"const_file", required_argument,      NULL,   'c'},
-    {"help",       no_argument,            NULL,   'h'},
-    {"version",    no_argument,            NULL,   'v'},
-    {NULL,         0,                      NULL,   0}
+    {"mode",    required_argument,      NULL,   'm'},
+    {"disable", required_argument,      NULL,   'd'},
+    {"output",  required_argument,      NULL,   'o'},
+    {"help",    no_argument,            NULL,   'h'},
+    {"version", no_argument,            NULL,   'v'},
+    {NULL,      0,                      NULL,   0}
   };
 
   const char kVersion[] = "0.0";
@@ -66,7 +46,6 @@ namespace {
 "  -m, --mode=mode            CPU mode: ia32 for IA32, amd64 for x86-64\n"
 "  -d, --disable=action_list  disable actions from the comma-separated list\n"
 "  -o, --output=FILE          write result to FILE instead of standard output\n"
-"  -c, --const_file=FILE      wrire result of FILE instead of standard output\n"
 "  -h, --help                 display this help and exit\n"
 "  -v, --version              output version information and exit\n"
 "\n"
@@ -210,7 +189,7 @@ namespace {
 
   class Instruction {
    public:
-    static void check_flag_valid(const std::string &flag) {
+    static bool check_flag_valid(const std::string &flag) {
       if (all_instruction_flags.find(flag) == all_instruction_flags.end()) {
         fprintf(stderr, "%s: unknown flag: '%s'\n",
                 short_program_name, flag.c_str());
@@ -245,7 +224,6 @@ namespace {
   FILE *out_file = stdout;
   FILE *const_file = stdout;
   char *out_file_name = NULL;
-  char *const_file_name = NULL;
 
   auto ia32_mode = true;
 
@@ -590,7 +568,7 @@ namespace {
       fprintf(out_file, "  action rel8_operand {\n"
 "    operand0 = JMP_TO;\n"
 "    base = REG_RIP;\n"
-"    index = NO_REG;\n"
+"    index = REG_NONE;\n"
 "    scale = 0;\n"
 "    disp_type = DISP8;\n"
 "    disp = p;\n"
@@ -598,7 +576,7 @@ namespace {
 "  action rel16_operand {\n"
 "    operand0 = JMP_TO;\n"
 "    base = REG_RIP;\n"
-"    index = NO_REG;\n"
+"    index = REG_NONE;\n"
 "    scale = 0;\n"
 "    disp_type = DISP16;\n"
 "    disp = p - 1;\n"
@@ -606,7 +584,7 @@ namespace {
 "  action rel32_operand {\n"
 "    operand0 = JMP_TO;\n"
 "    base = REG_RIP;\n"
-"    index = NO_REG;\n"
+"    index = REG_NONE;\n"
 "    scale = 0;\n"
 "    disp_type = DISP32;\n"
 "    disp = p - 3;\n"
@@ -707,23 +685,23 @@ namespace {
       if (ia32_mode) {
         fprintf(out_file, "  action modrm_only_base {\n"
 "    disp_type = DISPNONE;\n"
-"    index = NO_REG;\n"
+"    index = REG_NONE;\n"
 "    base = (*p) & 0x07;\n"
 "    scale = 0;\n"
 "  }\n"
 "  action modrm_base_disp {\n"
-"    index = NO_REG;\n"
+"    index = REG_NONE;\n"
 "    base = (*p) & 0x07;\n"
 "    scale = 0;\n"
 "  }\n"
 "  action modrm_pure_disp {\n"
-"    base = NO_REG;\n"
-"    index = NO_REG;\n"
+"    base = REG_NONE;\n"
+"    index = REG_NONE;\n"
 "    scale = 0;\n"
 "  }\n"
 "  action modrm_pure_index {\n"
 "    disp_type = DISPNONE;\n"
-"    base = NO_REG;\n"
+"    base = REG_NONE;\n"
 "    index = index_registers[((*p) & 0x38) >> 3];\n"
 "    scale = ((*p) & 0xc0) >> 6;\n"
 "  }\n"
@@ -736,27 +714,27 @@ namespace {
       } else {
         fprintf(out_file, "  action modrm_only_base {\n"
 "    disp_type = DISPNONE;\n"
-"    index = NO_REG;\n"
+"    index = REG_NONE;\n"
 "    base = ((*p) & 0x07) |\n"
 "          ((rex_prefix & 0x01) << 3) |\n"
 "          (((~vex_prefix2) & 0x20) >> 2);\n"
 "    scale = 0;\n"
 "  }\n"
 "  action modrm_base_disp {\n"
-"    index = NO_REG;\n"
+"    index = REG_NONE;\n"
 "    base = ((*p) & 0x07) |\n"
 "          ((rex_prefix & 0x01) << 3) |\n"
 "          (((~vex_prefix2) & 0x20) >> 2);\n"
 "    scale = 0;\n"
 "  }\n"
 "  action modrm_rip {\n"
-"    index = NO_REG;\n"
+"    index = REG_NONE;\n"
 "    base = REG_RIP;\n"
 "    scale = 0;\n"
 "  }\n"
 "  action modrm_pure_index {\n"
 "    disp_type = DISPNONE;\n"
-"    base = NO_REG;\n"
+"    base = REG_NONE;\n"
 "    index = index_registers[(((*p) & 0x38) >> 3) |\n"
 "                           ((rex_prefix & 0x02) << 2) |\n"
 "                           (((~vex_prefix2) & 0x40) >> 3)];\n"
@@ -1009,7 +987,7 @@ namespace {
       T { "XB",         0x80 },
       T { "RXB",        0x00 }
     };
-    for (size_t vex_it = 0; vex_it < arraysize(vex_fields); ++vex_it) {
+    for (int vex_it = 0; vex_it < arraysize(vex_fields); ++vex_it) {
       auto vex = vex_fields[vex_it];
       fprintf(out_file, "  VEX_%2$s = %3$s%1$s;\n"
 "", enabled(Actions::kVexPrefix) && !ia32_mode ? " @vex_prefix2" : "",
@@ -1029,7 +1007,7 @@ namespace {
       T { "01001",      9       },
       T { "01010",      10      },
     };
-    for (size_t vex_it = 0; vex_it < arraysize(vex_map); ++vex_it) {
+    for (int vex_it = 0; vex_it < arraysize(vex_map); ++vex_it) {
       auto vex = vex_map[vex_it];
       fprintf(out_file, "  VEX_map%1$s = %2$s;\n"
 "", vex.first, chartest((c & 0x1f) == vex.second));
@@ -1084,7 +1062,7 @@ namespace {
           T { "dreg",                   "DebugRegister"                 },
           T { "selector",               "Selector"                      }
         };
-        for (size_t size_it = 0; size_it < arraysize(sizes); ++size_it) {
+        for (int size_it = 0; size_it < arraysize(sizes); ++size_it) {
           auto size = sizes[size_it];
           fprintf(out_file, "  action operand%1$d_%2$s {\n"
 "    operand%1$d_type = Operand%3$s;\n"
@@ -1094,8 +1072,8 @@ namespace {
         if (ia32_mode) {
           fprintf(out_file, "  action operand%1$d_absolute_disp {\n"
 "    operand%1$d = REG_RM;\n"
-"    base = NO_REG;\n"
-"    index = NO_REG;\n"
+"    base = REG_NONE;\n"
+"    index = REG_NONE;\n"
 "    scale = 0;\n"
 "  }\n"
 "  action operand%1$d_from_opcode {\n"
@@ -1120,7 +1098,7 @@ namespace {
         } else {
           fprintf(out_file, "  action operand%1$d_absolute_disp {\n"
 "    operand%1$d = REG_RM;\n"
-"    base = NO_REG;\n"
+"    base = REG_NONE;\n"
 "    index = REG_RIZ;\n"
 "    scale = 0;\n"
 "  }\n"
@@ -1163,7 +1141,7 @@ namespace {
           T { "rm",                     "REG_RM"        },
           T { "st",                     "REG_ST"        }
         };
-        for (size_t type_it = 0; type_it < arraysize(types); ++type_it) {
+        for (int type_it = 0; type_it < arraysize(types); ++type_it) {
           auto type = types[type_it];
           fprintf(out_file, "  action operand%1$d_%2$s {\n"
 "    operand%1$d = %3$s;\n"
@@ -1175,20 +1153,20 @@ namespace {
     if (enabled(Actions::kParseOperandsStates)) {
       for (auto i = 0 ; i < 5; ++i) {
         fprintf(out_file, "  action operand%1$d_unused {\n"
-"    operand%1$d_read = FALSE;\n"
-"    operand%1$d_write = FALSE;\n"
+"    operand%1$d_read = false;\n"
+"    operand%1$d_write = false;\n"
 "  }\n"
 "  action operand%1$d_read {\n"
-"    operand%1$d_read = TRUE;\n"
-"    operand%1$d_write = FALSE;\n"
+"    operand%1$d_read = true;\n"
+"    operand%1$d_write = false;\n"
 "  }\n"
 "  action operand%1$d_write {\n"
-"    operand%1$d_read = FALSE;\n"
-"    operand%1$d_write = TRUE;\n"
+"    operand%1$d_read = false;\n"
+"    operand%1$d_write = true;\n"
 "  }\n"
 "  action operand%1$d_readwrite {\n"
-"    operand%1$d_read = TRUE;\n"
-"    operand%1$d_write = TRUE;\n"
+"    operand%1$d_read = true;\n"
+"    operand%1$d_write = true;\n"
 "  }\n"
 "", i);
       }
@@ -1211,7 +1189,7 @@ namespace {
     explicit MarkedInstruction(Instruction instruction_) :
         Instruction(instruction_),
         instruction_class(get_instruction_class(instruction_)),
-        rex { }, opcode_in_modrm(false), opcode_in_imm(false) {
+        opcode_in_modrm(false), opcode_in_imm(false), rex { } {
       if (has_flag("branch_hint")) {
         optional_prefixes.insert("branch_hint");
       }
@@ -1259,7 +1237,7 @@ namespace {
                   (*opcode) = "(";
                   opcode->append(saved_opcode);
                   static const char cc[] = {'9', 'a', 'b', 'c', 'd', 'e', 'f'};
-                  for (size_t c_it = 0; c_it < arraysize(cc); ++c_it) {
+                  for (int c_it = 0; c_it < arraysize(cc); ++c_it) {
                     auto c = cc[c_it];
                     opcode->push_back('|');
                     (*(saved_opcode.rbegin())) = c;
@@ -1531,7 +1509,7 @@ namespace {
                    operand_it != operands.end(); ++operand_it) {
                 auto &operand = *operand_it;
                 static const char cc[] = {'H', 'L', 'U', 'V', 'W'};
-                for (size_t c_it = 0; c_it < arraysize(cc); ++c_it) {
+                for (int c_it = 0; c_it < arraysize(cc); ++c_it) {
                   auto c = cc[c_it];
                   if ((operand.source == c) &&
                       (*(operand.size.rbegin()) == 'x') &&
@@ -1570,7 +1548,7 @@ namespace {
       }
       bool modrm_memory = false;
       bool modrm_register = false;
-      char operand_source = ' ';
+      char operand_source;
       for (auto operand_it = operands.begin();
            operand_it != operands.end(); ++operand_it) {
         auto &operand = *operand_it;
@@ -1693,7 +1671,7 @@ namespace {
         T { " operand_sib_pure_index",  true,   false   },
         T { " operand_sib_base_index",  true,   true    }
       };
-      for (size_t mode_it = 0; mode_it < arraysize(modes); ++mode_it) {
+      for (int mode_it = 0; mode_it < arraysize(modes); ++mode_it) {
         auto mode = modes[mode_it];
         print_operator_delimiter();
         if (mod_reg_is_used()) {
@@ -1773,7 +1751,7 @@ namespace {
           return true;
         }
         static const char cc[] = { 'G', 'P', 'V' };
-        for (size_t c_it = 0; c_it < arraysize(cc); ++c_it) {
+        for (int c_it = 0; c_it < arraysize(cc); ++c_it) {
           auto c = cc[c_it];
           if (operand.source == c) {
             return true;
@@ -1788,7 +1766,7 @@ namespace {
            operand_it != operands.end(); ++operand_it) {
         auto &operand = *operand_it;
         static const char cc[] = { 'E', 'M', 'N', 'Q', 'R', 'U', 'W' };
-        for (size_t c_it = 0; c_it < arraysize(cc); ++c_it) {
+        for (int c_it = 0; c_it < arraysize(cc); ++c_it) {
           auto c = cc[c_it];
           if (operand.source == c) {
             return true;
@@ -1939,12 +1917,11 @@ namespace {
         fprintf(out_file, " & VEX_map%s) ", opcodes[1].c_str() + 4);
         auto third_byte = opcodes[2];
         static const char* symbolic_names[] = { "cntl", "dest", "src1", "src" };
-        for (size_t symbolic_it = 0;
+        for (int symbolic_it = 0;
              symbolic_it < arraysize(symbolic_names); ++symbolic_it) {
           auto symbolic = symbolic_names[symbolic_it];
           for (auto it = third_byte.begin(); it != third_byte.end(); ++it) {
-            auto symbolic_len = strlen(symbolic);
-            if (static_cast<size_t>(third_byte.end() - it) >= symbolic_len &&
+            if ((third_byte.end() - it) >= strlen(symbolic) &&
                 !strncmp(&*it, symbolic, strlen(symbolic))) {
               third_byte.replace(it, it + strlen(symbolic), "XXXX");
               break;
@@ -1965,10 +1942,9 @@ namespace {
           { '0', '1' }
         };
         auto third_byte_ok = (arraysize(third_byte_check) ==
-            third_byte.length());
+                                                           third_byte.length());
         if (third_byte_ok) {
-          for (size_t set_it = 0; set_it < arraysize(third_byte_check);
-              ++set_it) {
+          for (int set_it = 0; set_it < arraysize(third_byte_check); ++set_it) {
             auto &set = third_byte_check[set_it];
             if (set.find(third_byte[&set - third_byte_check]) == set.end()) {
               third_byte_ok = false;
@@ -2392,7 +2368,7 @@ int main(int argc, char *argv[]) {
   for (;;) {
     int option_index;
 
-    int option = getopt_long(argc, argv, "c:d:hm:o:v",
+    int option = getopt_long(argc, argv, "d:hm:o:v",
                              kProgramOptions, &option_index);
 
     if (option == -1) {
@@ -2400,10 +2376,6 @@ int main(int argc, char *argv[]) {
     }
 
     switch (option) {
-      case 'c': {
-        const_file_name = optarg;
-        break;
-      }
       case 'd': {
         for (auto action_to_disable = strtok(optarg, ",");
              action_to_disable;
@@ -2457,34 +2429,29 @@ int main(int argc, char *argv[]) {
     load_instructions(argv[i]);
   }
 
-  if (out_file_name && !(out_file = fopen(out_file_name, "w"))) {
+  if (!(out_file = fopen(out_file_name, "w"))) {
     fprintf(stderr,
             "%s: can not open '%s' file (%s)\n",
             short_program_name, out_file_name, strerror(errno));
     return 1;
-  } else if ((out_file_name || const_file_name) &&
-             (enabled(Actions::kInstructionName) ||
-              enabled(Actions::kParseOperands))) {
-    size_t const_name_len = 0;
-    if (out_file_name && !const_file_name) {
-      const_name_len = strlen(out_file_name) + 10;
-      const_file_name = static_cast<char *>(malloc(const_name_len));
-      strcpy(const_file_name, out_file_name);
-      char* dot_position = strrchr(const_file_name, '.');
-      if (!dot_position) {
-        dot_position = strrchr(const_file_name, '\0');
-      }
-      strcpy(dot_position, "-consts.c");
+  } else if (enabled(Actions::kInstructionName) ||
+             enabled(Actions::kParseOperands)) {
+    size_t const_name_len = strlen(out_file_name) + 10;
+    char* const_name = static_cast<char *>(malloc(const_name_len));
+    strncpy(const_name, out_file_name, const_name_len);
+    char* dot_position = strrchr(const_name, '.');
+    if (!dot_position) {
+      dot_position = strrchr(const_name, '\0');
     }
-    if (!(const_file = fopen(const_file_name, "w"))) {
+    strncpy(dot_position,
+            "-consts.c",
+            const_name_len - (dot_position - const_name));
+    if (!(const_file = fopen(const_name, "w"))) {
       fprintf(stderr, "%s: can not open '%s' file (%s)\n",
-              short_program_name, const_file_name, strerror(errno));
+              short_program_name, const_name, strerror(errno));
        return 1;
     }
-    if (const_name_len) {
-      free(const_file_name);
-      const_file_name = NULL;
-    }
+    free(const_name);
   }
 
   if (enabled(Actions::kInstructionName) ||
@@ -2505,7 +2472,7 @@ int main(int argc, char *argv[]) {
 "  alphtype unsigned char;\n"
 "");
   } else {
-    fprintf(out_file, "%%%%{\n"
+    fprintf(out_file, "END(%%%%{\n"
 "  machine decode_x86_64;\n"
 "  alphtype unsigned char;\n"
 "");

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -7,8 +7,7 @@
 #ifndef _DECODER_X86_64_H_
 #define _DECODER_X86_64_H_
 
-#include "native_client/src/shared/utils/types.h"
-#include "native_client/src/include/portability.h"
+#include <inttypes.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -70,7 +69,7 @@ enum register_name {
   REG_ES_RDI,   /* For string instructions: %es:(%rsi).                       */
   REG_DS_RSI,   /* For string instructions: %ds:(%rdi).                       */
   REG_PORT_DX,  /* 16-bit DX: for in/out instructions.                        */
-  NO_REG,       /* For modrm: both index and base can be absent.              */
+  REG_NONE,     /* For modrm: both index and base can be absent.              */
   REG_ST,       /* For x87 instructions: implicit %st.                        */
   JMP_TO        /* Operand is jump target address: usually %rip+offset.       */
 };
@@ -80,21 +79,12 @@ struct instruction {
   unsigned char operands_count;
   struct {
     unsigned char rex;        /* Mostly to distingush cases like %ah vs %spl. */
-#ifdef _MSC_VER
-    Bool data16:1;            /* "Normal", non-rex prefixes. */
-    Bool lock:1;
-    Bool repnz:1;
-    Bool repz:1;
-    Bool branch_not_taken:1;
-    Bool branch_taken:1;
-#else
     _Bool data16:1;           /* "Normal", non-rex prefixes. */
     _Bool lock:1;
     _Bool repnz:1;
     _Bool repz:1;
     _Bool branch_not_taken:1;
     _Bool branch_taken:1;
-#endif
   } prefix;
   struct {
     enum register_name name;

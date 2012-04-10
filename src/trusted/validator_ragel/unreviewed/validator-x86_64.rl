@@ -5,24 +5,26 @@
  */
 
 #include <assert.h>
+#include <elf.h>
+#include <inttypes.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "validator.h"
 
-#include "native_client/src/shared/utils/types.h"
-#include "native_client/src/trusted/validator_ragel/unreviewed/validator.h"
+#undef TRUE
+#define TRUE    1
 
-#if defined(_MSC_VER)
-#define inline __inline
-#endif
+#undef FALSE
+#define FALSE   0
 
-#include "native_client/src/trusted/validator_ragel/gen/validator-x86_64-instruction-consts.c"
+#include "validator-x86_64-instruction-consts.c"
 
 #define check_jump_dest \
     if ((jump_dest & bundle_mask) != bundle_mask) { \
       if (jump_dest >= size) { \
-        printf("direct jump out of range: %"NACL_PRIxS"\n", jump_dest); \
+        printf("direct jump out of range: %zx\n", jump_dest); \
         result = 1; \
         goto error_detected; \
       } else { \
@@ -31,10 +33,10 @@
     } \
     operand0 = JMP_TO; \
     base = REG_RIP; \
-    index = NO_REG;
+    index = REG_NONE;
 
 static void PrintError(const char* msg, uintptr_t ptr) {
-  printf("offset 0x%"NACL_PRIxS": %s", ptr, msg);
+  printf("offset 0x%zx: %s", ptr, msg);
 }
 
 %%{
@@ -49,7 +51,7 @@ static void PrintError(const char* msg, uintptr_t ptr) {
           ((index == REG_RDI) &&
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
-      } else if ((index != NO_REG) && (index != REG_RIZ)) {
+      } else if ((index != REG_NONE) && (index != REG_RIZ)) {
         PrintError("Improper sandboxing in instruction\n", begin - data);
         result = 1;
         goto error_detected;
@@ -61,7 +63,7 @@ static void PrintError(const char* msg, uintptr_t ptr) {
           ((base == REG_RDI) &&
            (restricted_register == kSandboxedRsiRestrictedRdi))) {
         BitmapClearBit(valid_targets, begin - data);
-      } else if ((base != NO_REG) && (base != REG_RIZ)) {
+      } else if ((base != REG_NONE) && (base != REG_RIZ)) {
         PrintError("Improper sandboxing in instruction\n", begin - data);
         result = 1;
         goto error_detected;
@@ -412,8 +414,8 @@ enum imm_mode {
 
 static const int kBitsPerByte = 8;
 
-static inline uint8_t *BitmapAllocate(size_t indexes) {
-  size_t byte_count = (indexes + kBitsPerByte - 1) / kBitsPerByte;
+static inline uint8_t *BitmapAllocate(uint32_t indexes) {
+  uint32_t byte_count = (indexes + kBitsPerByte - 1) / kBitsPerByte;
   uint8_t *bitmap = malloc(byte_count);
   if (bitmap != NULL) {
     memset(bitmap, 0, byte_count);
@@ -421,15 +423,15 @@ static inline uint8_t *BitmapAllocate(size_t indexes) {
   return bitmap;
 }
 
-static inline int BitmapIsBitSet(uint8_t *bitmap, size_t index) {
+static inline int BitmapIsBitSet(uint8_t *bitmap, uint32_t index) {
   return (bitmap[index / kBitsPerByte] & (1 << (index % kBitsPerByte))) != 0;
 }
 
-static inline void BitmapSetBit(uint8_t *bitmap, size_t index) {
+static inline void BitmapSetBit(uint8_t *bitmap, uint32_t index) {
   bitmap[index / kBitsPerByte] |= 1 << (index % kBitsPerByte);
 }
 
-static inline void BitmapClearBit(uint8_t *bitmap, size_t index) {
+static inline void BitmapClearBit(uint8_t *bitmap, uint32_t index) {
   bitmap[index / kBitsPerByte] &= ~(1 << (index % kBitsPerByte));
 }
 
@@ -458,22 +460,14 @@ int ValidateChunkAMD64(const uint8_t *data, size_t size,
   const uint8_t *p = data;
   const uint8_t *begin = p;  /* Start of the instruction being processed.  */
 
-  uint8_t rex_prefix = 0;
-  uint8_t vex_prefix2 = 0xe0;
-  uint8_t vex_prefix3 = 0x00;
+  uint8_t rex_prefix, vex_prefix2, vex_prefix3;
   struct Operand {
     unsigned int name   :5;
     unsigned int type   :2;
-#ifdef _MSC_VER
-    Bool         write  :1;
-#else
-    _Bool        write  :1;
-#endif
+    bool         write  :1;
   } operands[5];
-  enum register_name base = NO_REG;
-  enum register_name index = NO_REG;
-  uint8_t operands_count = 0;
-  uint8_t i;
+  enum register_name base, index;
+  uint8_t operands_count, i;
   int result = 0;
   /*
    * These are borders of the appropriate instructions.  Initialize them to make
