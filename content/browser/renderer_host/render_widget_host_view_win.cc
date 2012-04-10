@@ -903,11 +903,6 @@ BackingStore* RenderWidgetHostViewWin::AllocBackingStore(
   return new BackingStoreWin(render_widget_host_, size);
 }
 
-void RenderWidgetHostViewWin::SetBackground(const SkBitmap& background) {
-  content::RenderWidgetHostViewBase::SetBackground(background);
-  render_widget_host_->SetBackground(background);
-}
-
 bool RenderWidgetHostViewWin::CopyFromCompositingSurface(
       const gfx::Size& size,
       skia::PlatformCanvas* output) {
@@ -922,6 +917,20 @@ bool RenderWidgetHostViewWin::CopyFromCompositingSurface(
 
   return accelerated_surface_->CopyTo(
       size, output->getTopDevice()->accessBitmap(true).getPixels());
+}
+
+void RenderWidgetHostViewWin::AsyncCopyFromCompositingSurface(
+    const gfx::Size& size,
+    skia::PlatformCanvas* output,
+    base::Callback<void(bool)> callback) {
+  // TODO(mazda): Implement this.
+  NOTIMPLEMENTED();
+  callback.Run(false);
+}
+
+void RenderWidgetHostViewWin::SetBackground(const SkBitmap& background) {
+  content::RenderWidgetHostViewBase::SetBackground(background);
+  render_widget_host_->SetBackground(background);
 }
 
 void RenderWidgetHostViewWin::ProcessTouchAck(

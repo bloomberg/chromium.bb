@@ -243,25 +243,12 @@ class GpuProcessTransportFactory : public ui::ContextFactory,
 
   virtual WebKit::WebGraphicsContext3D* CreateContext(
       ui::Compositor* compositor) OVERRIDE {
-    PerCompositorData* data = per_compositor_data_[compositor];
-    if (!data)
-      data = CreatePerCompositorData(compositor);
+    return CreateContextCommon(compositor, false);
+  }
 
-    WebKit::WebGraphicsContext3D::Attributes attrs;
-    attrs.shareResources = true;
-    GpuChannelHostFactory* factory = BrowserGpuChannelHostFactory::instance();
-    scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context(
-        new WebGraphicsContext3DCommandBufferImpl(
-            data->surface_id,
-            GURL(),
-            factory,
-            data->swap_client->AsWeakPtr()));
-    if (!context->Initialize(
-        attrs,
-        false,
-        content::CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE))
-      return NULL;
-    return context.release();
+  virtual WebKit::WebGraphicsContext3D* CreateOffscreenContext(
+      ui::Compositor* compositor) OVERRIDE {
+    return CreateContextCommon(compositor, true);
   }
 
   virtual void RemoveCompositor(ui::Compositor* compositor) OVERRIDE {
@@ -384,6 +371,30 @@ class GpuProcessTransportFactory : public ui::ContextFactory,
     CreateSharedContext(compositor);
 
     return data;
+  }
+
+  WebKit::WebGraphicsContext3D* CreateContextCommon(
+      ui::Compositor* compositor,
+      bool offscreen) {
+    PerCompositorData* data = per_compositor_data_[compositor];
+    if (!data)
+      data = CreatePerCompositorData(compositor);
+
+    WebKit::WebGraphicsContext3D::Attributes attrs;
+    attrs.shareResources = true;
+    GpuChannelHostFactory* factory = BrowserGpuChannelHostFactory::instance();
+    scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context(
+        new WebGraphicsContext3DCommandBufferImpl(
+            offscreen ? 0 : data->surface_id,
+            GURL(),
+            factory,
+            data->swap_client->AsWeakPtr()));
+    if (!context->Initialize(
+        attrs,
+        false,
+        content::CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE))
+      return NULL;
+    return context.release();
   }
 
   void CreateSharedContext(ui::Compositor* compositor) {

@@ -6,6 +6,7 @@
 #define CONTENT_PUBLIC_BROWSER_RENDER_WIDGET_HOST_H_
 #pragma once
 
+#include "base/callback.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/keyboard_listener.h"
 #include "content/public/browser/native_web_keyboard_event.h"
@@ -170,10 +171,19 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Channel::Sender {
 
   virtual void Blur() = 0;
 
+  // DEPRECATED: Synchronous version of AsyncCopyFromBackingSurface.
+  // This will be removed once all the caller have been changed to use the
+  // asynchronous version.
+  virtual bool CopyFromBackingStore(const gfx::Rect& src_rect,
+                                    const gfx::Size& accelerated_dest_size,
+                                    skia::PlatformCanvas* output) = 0;
+
   // Copies the given subset of the backing store into the given (uninitialized)
   // PlatformCanvas. If |src_rect| is empty, the whole contents is copied.
-  // Returns true on success, false otherwise. When accelerated compositing is
-  // active, the contents is copied from the compositing surface.
+  // |callback| is invoked with true on success, false otherwise.
+  // When accelerated compositing is active, the contents is copied
+  // asynchronously from the compositing surface, but when the backing store is
+  // available, the contents is copied synchronously because it's fast enough.
   // If non empty |accelerated_dest_size| is given and accelerated compositing
   // is active, the content is shrinked so that it fits in
   // |accelerated_dest_size|. If |accelerated_dest_size| is larger than the
@@ -182,10 +192,11 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Channel::Sender {
   // NOTE: |src_rect| is not supported yet when accelerated compositing is
   // active (http://crbug.com/118571) and the whole content is always copied
   // regardless of |src_rect|.
-  virtual bool CopyFromBackingStore(const gfx::Rect& src_rect,
-                                    const gfx::Size& accelerated_dest_size,
-                                    skia::PlatformCanvas* output) = 0;
-
+  virtual void AsyncCopyFromBackingStore(
+      const gfx::Rect& src_rect,
+      const gfx::Size& accelerated_dest_size,
+      skia::PlatformCanvas* output,
+      base::Callback<void(bool)> callback) = 0;
 #if defined(TOOLKIT_GTK)
   // Paint the backing store into the target's |dest_rect|.
   virtual bool CopyFromBackingStoreToGtkWindow(const gfx::Rect& dest_rect,
