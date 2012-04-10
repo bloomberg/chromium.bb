@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -142,7 +142,6 @@ uint32 H264BitstreamConverter::CalculateNeededOutputBufferSize(
     // Actual NAL unit size
     output_size += nal_unit_length;
     input += nal_unit_length;
-    first_nal_in_this_access_unit = false;
     // No need for trailing zero bits
   }
   return output_size;
@@ -311,4 +310,3 @@ bool H264BitstreamConverter::ConvertNalUnitStreamToByteStream(
 }
 
 }  // namespace media
-
