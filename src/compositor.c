@@ -2224,8 +2224,12 @@ weston_shader_init(struct weston_shader *shader,
 WL_EXPORT void
 weston_output_destroy(struct weston_output *output)
 {
+	struct weston_compositor *c = output->compositor;
+
 	pixman_region32_fini(&output->region);
 	pixman_region32_fini(&output->previous_damage);
+
+	wl_display_remove_global(c->wl_display, output->global);
 }
 
 WL_EXPORT void
@@ -2310,11 +2314,13 @@ weston_output_init(struct weston_output *output, struct weston_compositor *c,
 
 	output->flags = flags;
 	weston_output_move(output, x, y);
+	weston_output_damage(output);
 
 	wl_list_init(&output->frame_callback_list);
 
-	wl_display_add_global(c->wl_display,
-			      &wl_output_interface, output, bind_output);
+	output->global =
+		wl_display_add_global(c->wl_display, &wl_output_interface,
+				      output, bind_output);
 }
 
 static void
