@@ -313,132 +313,6 @@ display_create_egl_window_surface(struct display *display,
 	return cairo_surface;
 }
 
-struct egl_image_surface_data {
-	struct surface_data data;
-	cairo_device_t *device;
-	EGLImageKHR image;
-	GLuint texture;
-	struct display *display;
-	struct wl_egl_pixmap *pixmap;
-};
-
-static void
-egl_image_surface_data_destroy(void *p)
-{
-	struct egl_image_surface_data *data = p;
-	struct display *d = data->display;
-
-	cairo_device_acquire(data->device);
-	glDeleteTextures(1, &data->texture);
-	cairo_device_release(data->device);
-
-	d->destroy_image(d->dpy, data->image);
-	wl_buffer_destroy(data->data.buffer);
-	wl_egl_pixmap_destroy(data->pixmap);
-	free(p);
-}
-
-EGLImageKHR
-display_get_image_for_egl_image_surface(struct display *display,
-					cairo_surface_t *surface)
-{
-	struct egl_image_surface_data *data;
-
-	data = cairo_surface_get_user_data (surface, &surface_data_key);
-
-	return data->image;
-}
-
-static cairo_surface_t *
-display_create_egl_image_surface(struct display *display,
-				 uint32_t flags,
-				 struct rectangle *rectangle)
-{
-	struct egl_image_surface_data *data;
-	EGLDisplay dpy = display->dpy;
-	cairo_surface_t *surface;
-	cairo_content_t content;
-
-	data = malloc(sizeof *data);
-	if (data == NULL)
-		return NULL;
-
-	data->display = display;
-
-	data->pixmap = wl_egl_pixmap_create(rectangle->width,
-					    rectangle->height, 0);
-	if (data->pixmap == NULL) {
-		free(data);
-		return NULL;
-	}
-
-	data->device = display->argb_device;
-	content = CAIRO_CONTENT_COLOR_ALPHA;
-
-	data->image = display->create_image(dpy, NULL,
-					    EGL_NATIVE_PIXMAP_KHR,
-					    (EGLClientBuffer) data->pixmap,
-					    NULL);
-	if (data->image == EGL_NO_IMAGE_KHR) {
-		wl_egl_pixmap_destroy(data->pixmap);
-		free(data);
-		return NULL;
-	}
-
-	data->data.buffer =
-		wl_egl_pixmap_create_buffer(data->pixmap);
-
-	cairo_device_acquire(data->device);
-	glGenTextures(1, &data->texture);
-	glBindTexture(GL_TEXTURE_2D, data->texture);
-	display->image_target_texture_2d(GL_TEXTURE_2D, data->image);
-	cairo_device_release(data->device);
-
-	surface = cairo_gl_surface_create_for_texture(data->device,
-						      content,
-						      data->texture,
-						      rectangle->width,
-						      rectangle->height);
-
-	cairo_surface_set_user_data (surface, &surface_data_key,
-				     data, egl_image_surface_data_destroy);
-
-	return surface;
-}
-
-static cairo_surface_t *
-display_create_egl_image_surface_from_file(struct display *display,
-					   const char *filename,
-					   struct rectangle *rect)
-{
-	cairo_surface_t *surface;
-	pixman_image_t *image;
-	struct egl_image_surface_data *data;
-
-	image = load_image(filename);
-	if (image == NULL)
-		return NULL;
-
-	surface = display_create_egl_image_surface(display, 0, rect);
-	if (surface == NULL) {
-		pixman_image_unref(image);
-		return NULL;
-	}
-
-	data = cairo_surface_get_user_data(surface, &surface_data_key);
-
-	cairo_device_acquire(display->argb_device);
-	glBindTexture(GL_TEXTURE_2D, data->texture);
-	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, rect->width, rect->height,
-			GL_RGBA, GL_UNSIGNED_BYTE,
-			pixman_image_get_data(image));
-	cairo_device_release(display->argb_device);
-
-	pixman_image_unref(image);
-
-	return surface;
-}
-
 #endif
 
 struct wl_buffer *
@@ -750,7 +624,6 @@ window_attach_surface(struct window *window)
 				&window->server_allocation.width,
 				&window->server_allocation.height);
 		break;
-	case WINDOW_BUFFER_TYPE_EGL_IMAGE:
 #endif
 	case WINDOW_BUFFER_TYPE_SHM:
 		buffer =
@@ -849,11 +722,6 @@ window_create_surface(struct window *window)
 		}
 		surface = display_create_surface(window->display,
 						 window->surface,
-						 &window->allocation, flags);
-		break;
-	case WINDOW_BUFFER_TYPE_EGL_IMAGE:
-		surface = display_create_surface(window->display,
-						 NULL,
 						 &window->allocation, flags);
 		break;
 #endif
@@ -2332,7 +2200,6 @@ window_create_internal(struct display *display, struct window *parent)
 
 	if (display->dpy)
 #ifdef HAVE_CAIRO_EGL
-		/* FIXME: make TYPE_EGL_IMAGE choosable for testing */
 		window->buffer_type = WINDOW_BUFFER_TYPE_EGL_WINDOW;
 #else
 		window->buffer_type = WINDOW_BUFFER_TYPE_SHM;
