@@ -759,10 +759,8 @@
         # less flakier.
         'browser/process_singleton_linux_uitest.cc',
         'browser/process_singleton_uitest.cc',
-        'browser/sanity_uitest.cc',
         'browser/session_history_uitest.cc',
         'browser/sessions/session_restore_uitest.cc',
-        'browser/tab_contents/view_source_uitest.cc',
         'browser/tab_restore_uitest.cc',
         'browser/unload_uitest.cc',
         'browser/ui/login/login_prompt_uitest.cc',
@@ -2884,6 +2882,7 @@
         'browser/ssl/ssl_browser_tests.cc',
         'browser/tab_contents/render_view_context_menu_browsertest.cc',
         'browser/tab_contents/spelling_menu_observer_browsertest.cc',
+        'browser/tab_contents/view_source_browsertest.cc',
         'browser/tab_render_watcher_browsertest.cc',
         'browser/task_manager/task_manager_browsertest.cc',
         'browser/task_manager/task_manager_browsertest_util.cc',

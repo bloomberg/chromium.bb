@@ -1,0 +1,84 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "base/utf_string_conversions.h"
+#include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/common/url_constants.h"
+#include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/web_contents.h"
+#include "googleurl/src/gurl.h"
+#include "net/test/test_server.h"
+
+namespace {
+const char kTestHtml[] = "files/viewsource/test.html";
+}
+
+typedef InProcessBrowserTest ViewSourceTest;
+
+// This test renders a page in view-source and then checks to see if the title
+// set in the html was set successfully (it shouldn't because we rendered the
+// page in view source).
+// Flaky; see http://crbug.com/72201.
+IN_PROC_BROWSER_TEST_F(ViewSourceTest, DoesBrowserRenderInViewSource) {
+  ASSERT_TRUE(test_server()->Start());
+
+  // First we navigate to our view-source test page.
+  GURL url(chrome::kViewSourceScheme + std::string(":") +
+      test_server()->GetURL(kTestHtml).spec());
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  // Check that the title didn't get set.  It should not be there (because we
+  // are in view-source mode).
+  EXPECT_NE(ASCIIToUTF16("foo"),
+            browser()->GetSelectedWebContents()->GetTitle());
+}
+
+// This test renders a page normally and then renders the same page in
+// view-source mode. This is done since we had a problem at one point during
+// implementation of the view-source: prefix being consumed (removed from the
+// URL) if the URL was not changed (apart from adding the view-source prefix)
+IN_PROC_BROWSER_TEST_F(ViewSourceTest, DoesBrowserConsumeViewSourcePrefix) {
+  ASSERT_TRUE(test_server()->Start());
+
+  // First we navigate to google.html.
+  GURL url(test_server()->GetURL(kTestHtml));
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  // Then we navigate to the same url but with the "view-source:" prefix.
+  GURL url_viewsource(chrome::kViewSourceScheme + std::string(":") +
+      url.spec());
+  ui_test_utils::NavigateToURL(browser(), url_viewsource);
+
+  // The URL should still be prefixed with "view-source:".
+  EXPECT_EQ(url_viewsource.spec(),
+            browser()->GetSelectedWebContents()->GetURL().spec());
+}
+
+// Make sure that when looking at the actual page, we can select "View Source"
+// from the menu.
+IN_PROC_BROWSER_TEST_F(ViewSourceTest, ViewSourceInMenuEnabledOnANormalPage) {
+  ASSERT_TRUE(test_server()->Start());
+
+  GURL url(test_server()->GetURL(kTestHtml));
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  EXPECT_TRUE(browser()->command_updater()->IsCommandEnabled(IDC_VIEW_SOURCE));
+}
+
+// Make sure that when looking at the page source, we can't select "View Source"
+// from the menu.
+//
+// Occasionally crashes on all platforms, see http://crbug.com/69249
+IN_PROC_BROWSER_TEST_F(ViewSourceTest,
+                       ViewSourceInMenuDisabledWhileViewingSource) {
+  ASSERT_TRUE(test_server()->Start());
+
+  GURL url_viewsource(chrome::kViewSourceScheme + std::string(":") +
+      test_server()->GetURL(kTestHtml).spec());
+  ui_test_utils::NavigateToURL(browser(), url_viewsource);
+
+  EXPECT_FALSE(browser()->command_updater()->IsCommandEnabled(IDC_VIEW_SOURCE));
+}
