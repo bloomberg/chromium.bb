@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -298,11 +298,11 @@ TEST(Convolver, SIMDVerification) {
 
         int64 c_us = delta_c.InMicroseconds();
         int64 sse_us = delta_sse.InMicroseconds();
-        LOG(INFO) << "from:" << source_width << "x" << source_height
-                  << " to:" << dest_width << "x" << dest_height
-                  << (alpha ? " with alpha" : " w/o alpha");
-        LOG(INFO) << "c:" << c_us << " sse:" << sse_us;
-        LOG(INFO) << "ratio:" << static_cast<float>(c_us) / sse_us;
+        VLOG(1) << "from:" << source_width << "x" << source_height
+                << " to:" << dest_width << "x" << dest_height
+                << (alpha ? " with alpha" : " w/o alpha");
+        VLOG(1) << "c:" << c_us << " sse:" << sse_us;
+        VLOG(1) << "ratio:" << static_cast<float>(c_us) / sse_us;
 
         // Comparing result.
         for (unsigned int i = 0; i < dest_height; i++) {
