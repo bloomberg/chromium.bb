@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -25,7 +25,7 @@ class PyAutoTest(pyauto.PyUITest):
     Overrides the default list of extra flags passed to Chrome.  See
     ExtraChromeFlags() in pyauto.py.
     """
-    return self._EXTRA_CHROME_FLAGS
+    return pyauto.PyUITest.ExtraChromeFlags(self) + self._EXTRA_CHROME_FLAGS
 
   def testSetCustomChromeFlags(self):
     """Ensures that Chrome can be launched with custom flags."""
