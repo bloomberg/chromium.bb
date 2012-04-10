@@ -238,12 +238,12 @@ class SystemTrayBubbleBorder : public views::Border {
       SkPaint paint;
       paint.setStyle(SkPaint::kFill_Style);
       paint.setColor(kBackgroundColor);
-      canvas->sk_canvas()->drawPath(path, paint);
+      canvas->DrawPath(path, paint);
 
       // Now the draw the outline.
       paint.setStyle(SkPaint::kStroke_Style);
       paint.setColor(kBorderDarkColor);
-      canvas->sk_canvas()->drawPath(path, paint);
+      canvas->DrawPath(path, paint);
     }
   }
 
@@ -278,7 +278,7 @@ class SystemTrayBackground : public views::Background {
     gfx::Rect bounds(view->bounds());
     SkScalar radius = SkIntToScalar(kTrayRoundedBorderRadius);
     path.addRoundRect(gfx::RectToSkRect(bounds), radius, radius);
-    canvas->sk_canvas()->drawPath(path, paint);
+    canvas->DrawPath(path, paint);
   }
 
   int alpha_;

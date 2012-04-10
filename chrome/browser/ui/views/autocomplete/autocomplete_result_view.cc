@@ -579,7 +579,7 @@ void AutocompleteResultView::OnBoundsChanged(
 void AutocompleteResultView::OnPaint(gfx::Canvas* canvas) {
   const ResultViewState state = GetState();
   if (state != NORMAL)
-    canvas->sk_canvas()->drawColor(GetColor(state, BACKGROUND));
+    canvas->DrawColor(GetColor(state, BACKGROUND));
 
   if (!match_.associated_keyword.get() ||
       keyword_icon_->x() > icon_bounds_.right()) {

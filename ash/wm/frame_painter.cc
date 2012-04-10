@@ -109,7 +109,7 @@ void TileRoundRect(gfx::Canvas* canvas,
   // Adjust canvas to compensate for image sampling offset, draw, then adjust
   // back. This is cheaper than pushing/popping the entire canvas state.
   canvas->sk_canvas()->translate(SkIntToScalar(-bitmap_offset_x), 0);
-  canvas->sk_canvas()->drawPath(path, *paint);
+  canvas->DrawPath(path, *paint);
   canvas->sk_canvas()->translate(SkIntToScalar(bitmap_offset_x), 0);
 }
 

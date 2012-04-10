@@ -25,7 +25,7 @@ class SolidBackground : public Background {
   void Paint(gfx::Canvas* canvas, View* view) const {
     // Fill the background. Note that we don't constrain to the bounds as
     // canvas is already clipped for us.
-    canvas->sk_canvas()->drawColor(get_color());
+    canvas->DrawColor(get_color());
   }
 
  private:

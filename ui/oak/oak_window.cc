@@ -73,7 +73,7 @@ void OakWindow::DeleteDelegate() {
 // OakWindow, views::View overrides:
 
 void OakWindow::OnPaint(gfx::Canvas* canvas) {
-  canvas->sk_canvas()->drawColor(SK_ColorWHITE);
+  canvas->DrawColor(SK_ColorWHITE);
   canvas->FillRect(separator_rect_, kBorderColor);
 }
 

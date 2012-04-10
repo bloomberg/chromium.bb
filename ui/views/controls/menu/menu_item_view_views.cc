@@ -39,7 +39,7 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
   if (render_selection) {
     SkColor bg_color = gfx::NativeTheme::instance()->GetSystemColor(
         gfx::NativeTheme::kColorId_FocusedMenuItemBackgroundColor);
-    canvas->sk_canvas()->drawColor(bg_color, SkXfermode::kSrc_Mode);
+    canvas->DrawColor(bg_color, SkXfermode::kSrc_Mode);
   }
 
   // Render the check.

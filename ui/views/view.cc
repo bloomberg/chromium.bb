@@ -1231,7 +1231,7 @@ void View::UpdateChildLayerBounds(const gfx::Point& offset) {
 
 void View::OnPaintLayer(gfx::Canvas* canvas) {
   if (!layer() || !layer()->fills_bounds_opaquely())
-    canvas->sk_canvas()->drawColor(SK_ColorBLACK, SkXfermode::kClear_Mode);
+    canvas->DrawColor(SK_ColorBLACK, SkXfermode::kClear_Mode);
   PaintCommon(canvas);
 }
 

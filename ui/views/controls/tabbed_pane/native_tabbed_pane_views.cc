@@ -78,7 +78,7 @@ class Tab : public View {
     paint.setColor(kTabBorderColor);
     paint.setStrokeWidth(kTabBorderThickness * 2);
 
-    canvas->sk_canvas()->drawPath(path, paint);
+    canvas->DrawPath(path, paint);
   }
 
   void PaintTabTitle(gfx::Canvas* canvas, bool selected) {

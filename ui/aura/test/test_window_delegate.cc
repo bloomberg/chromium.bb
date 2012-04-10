@@ -4,7 +4,6 @@
 
 #include "ui/aura/test/test_window_delegate.h"
 
-#include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/aura/event.h"
 #include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
@@ -98,7 +97,7 @@ void ColorTestWindowDelegate::OnWindowDestroyed() {
   delete this;
 }
 void ColorTestWindowDelegate::OnPaint(gfx::Canvas* canvas) {
-  canvas->sk_canvas()->drawColor(color_, SkXfermode::kSrc_Mode);
+  canvas->DrawColor(color_, SkXfermode::kSrc_Mode);
 }
 
 }  // namespace test

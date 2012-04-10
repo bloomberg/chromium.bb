@@ -511,7 +511,7 @@ void BalloonViewImpl::OnPaint(gfx::Canvas* canvas) {
   SkPaint paint;
   paint.setAntiAlias(true);
   paint.setColor(kControlBarBackgroundColor);
-  canvas->sk_canvas()->drawPath(path, paint);
+  canvas->DrawPath(path, paint);
 
   // Draw a 1-pixel gray line between the content and the menu bar.
   int line_width = GetTotalWidth() - kLeftMargin - kRightMargin;

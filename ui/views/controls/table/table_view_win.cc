@@ -1259,7 +1259,7 @@ LRESULT TableView::OnCustomDraw(NMLVCUSTOMDRAW* draw_info) {
               // NOTE: This may be invoked without the ListView filling in the
               // background (or rather windows paints background, then invokes
               // this twice). As such, we always fill in the background.
-              canvas.sk_canvas()->drawColor(
+              canvas.DrawColor(
                   skia::COLORREFToSkColor(GetSysColor(bg_color_index)),
                   SkXfermode::kSrc_Mode);
               // + 1 for padding (we declared the image as 18x18 in the list-

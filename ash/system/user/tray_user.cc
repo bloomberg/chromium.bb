@@ -298,7 +298,7 @@ class RoundedImageView : public views::View {
     paint.setShader(shader);
     paint.setXfermodeMode(SkXfermode::kSrcOver_Mode);
     shader->unref();
-    canvas->sk_canvas()->drawPath(path, paint);
+    canvas->DrawPath(path, paint);
   }
 
  private:

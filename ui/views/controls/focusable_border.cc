@@ -38,7 +38,7 @@ void FocusableBorder::Paint(const View& view, gfx::Canvas* canvas) const {
   paint.setColor(focus_color);
   paint.setStrokeWidth(SkIntToScalar(2));
 
-  canvas->sk_canvas()->drawPath(path, paint);
+  canvas->DrawPath(path, paint);
 }
 
 void FocusableBorder::GetInsets(gfx::Insets* insets) const {

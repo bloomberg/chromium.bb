@@ -87,7 +87,7 @@ void FillRoundRect(gfx::Canvas* canvas,
   // Need to unref shader, otherwise never deleted.
   s->unref();
 
-  canvas->sk_canvas()->drawPath(path, paint);
+  canvas->DrawPath(path, paint);
 }
 
 void FillRoundRect(gfx::Canvas* canvas,
@@ -108,7 +108,7 @@ void FillRoundRect(gfx::Canvas* canvas,
     paint.setStyle(SkPaint::kFill_Style);
     paint.setFlags(SkPaint::kAntiAlias_Flag);
     paint.setColor(gradient_start_color);
-    canvas->sk_canvas()->drawPath(path, paint);
+    canvas->DrawPath(path, paint);
   }
 }
 
@@ -126,7 +126,7 @@ void StrokeRoundRect(gfx::Canvas* canvas,
   paint.setStyle(SkPaint::kStroke_Style);
   paint.setFlags(SkPaint::kAntiAlias_Flag);
   paint.setStrokeWidth(SkIntToScalar(stroke_width));
-  canvas->sk_canvas()->drawPath(path, paint);
+  canvas->DrawPath(path, paint);
 }
 
 }  // namespace

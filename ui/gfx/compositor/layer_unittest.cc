@@ -127,7 +127,7 @@ class ColoredLayer : public Layer, public LayerDelegate {
 
   // Overridden from LayerDelegate:
   virtual void OnPaintLayer(gfx::Canvas* canvas) OVERRIDE {
-    canvas->sk_canvas()->drawColor(color_);
+    canvas->DrawColor(color_);
   }
 
  private:

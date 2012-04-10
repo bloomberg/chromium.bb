@@ -47,7 +47,7 @@ void DrawRoundedRect(gfx::Canvas* canvas,
     paint.setColor(top_color);
   }
 
-  canvas->sk_canvas()->drawPath(path, paint);
+  canvas->DrawPath(path, paint);
 }
 
 void DrawRoundedRectShadow(gfx::Canvas* canvas,
@@ -164,12 +164,12 @@ class RoundedBackground : public views::Background {
     paint.setStyle(SkPaint::kFill_Style);
     paint.setFlags(SkPaint::kAntiAlias_Flag);
     paint.setColor(get_color());
-    canvas->sk_canvas()->drawPath(path, paint);
+    canvas->DrawPath(path, paint);
     // Redraw boundary region with correspoinding color.
     paint.setStyle(SkPaint::kStroke_Style);
     paint.setStrokeWidth(SkIntToScalar(stroke_width_));
     paint.setColor(stroke_color_);
-    canvas->sk_canvas()->drawPath(path, paint);
+    canvas->DrawPath(path, paint);
   }
 
  private:

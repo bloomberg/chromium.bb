@@ -259,7 +259,7 @@ void PaintDownloadProgress(gfx::Canvas* canvas,
     foreground_paint.setShader(shader);
     foreground_paint.setAntiAlias(true);
     shader->unref();
-    canvas->sk_canvas()->drawPath(path, foreground_paint);
+    canvas->DrawPath(path, foreground_paint);
     return;
   }
 
