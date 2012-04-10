@@ -770,7 +770,7 @@ set_plane(struct kms_driver *kms, struct connector *c, struct plane *p)
 			kms_bo_get_prop(plane_bo, KMS_HANDLE, &handles[1]);
 			pitches[2] = p->w / 2;
 			offsets[2] = offsets[1] + (p->w * p->h) / 4;
-			kms_bo_get_prop(plane_bo, KMS_HANDLE, &handles[1]);
+			kms_bo_get_prop(plane_bo, KMS_HANDLE, &handles[2]);
 
 			fill420(virtual, virtual+offsets[1], virtual+offsets[2],
 					1, 0, p->w, p->h, pitches[0]);
