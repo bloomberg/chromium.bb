@@ -113,3 +113,8 @@ IPC_SYNC_MESSAGE_ROUTED3_4(Msg_R_3_4, bool, int, std::string, int, bool,
 IPC_MESSAGE_CONTROL1(SyncChannelTestMsg_Ping, int)
 IPC_SYNC_MESSAGE_CONTROL1_1(SyncChannelTestMsg_PingTTL, int, int)
 IPC_SYNC_MESSAGE_CONTROL0_0(SyncChannelTestMsg_Done)
+
+// Messages for ReentrantReply test.
+IPC_SYNC_MESSAGE_CONTROL0_0(SyncChannelTestMsg_Reentrant1)
+IPC_SYNC_MESSAGE_CONTROL0_0(SyncChannelTestMsg_Reentrant2)
+IPC_SYNC_MESSAGE_CONTROL0_0(SyncChannelTestMsg_Reentrant3)

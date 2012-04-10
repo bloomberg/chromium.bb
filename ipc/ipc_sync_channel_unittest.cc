@@ -1750,6 +1750,120 @@ TEST_F(IPCSyncChannelTest, RestrictedDispatch4WayDeadlock) {
   EXPECT_EQ(3, success);
 }
 
+
+//-----------------------------------------------------------------------------
+//
+// This test case inspired by crbug.com/122443
+// We want to make sure a reply message with the unblock flag set correctly
+// behaves as a reply, not a regular message.
+// We have 3 workers. Server1 will send a message to Server2 (which will block),
+// during which it will dispatch a message comming from Client, at which point
+// it will send another message to Server2. While sending that second message it
+// will receive a reply from Server1 with the unblock flag.
+
+namespace {
+
+class ReentrantReplyServer1 : public Worker {
+ public:
+  ReentrantReplyServer1(WaitableEvent* server_ready)
+      : Worker("reentrant_reply1", Channel::MODE_SERVER),
+        server_ready_(server_ready) { }
+
+  void Run() {
+    server2_channel_.reset(new SyncChannel(
+        "reentrant_reply2", Channel::MODE_CLIENT, this,
+        ipc_thread().message_loop_proxy(), true, shutdown_event()));
+    server_ready_->Signal();
+    Message* msg = new SyncChannelTestMsg_Reentrant1();
+    server2_channel_->Send(msg);
+    server2_channel_.reset();
+    Done();
+  }
+
+ private:
+  bool OnMessageReceived(const Message& message) {
+    IPC_BEGIN_MESSAGE_MAP(ReentrantReplyServer1, message)
+     IPC_MESSAGE_HANDLER(SyncChannelTestMsg_Reentrant2, OnReentrant2)
+     IPC_REPLY_HANDLER(OnReply)
+    IPC_END_MESSAGE_MAP()
+    return true;
+  }
+
+  void OnReentrant2() {
+    Message* msg = new SyncChannelTestMsg_Reentrant3();
+    server2_channel_->Send(msg);
+  }
+
+  void OnReply(const Message& message) {
+    // If we get here, the Send() will never receive the reply (thus would
+    // hang), so abort instead.
+    LOG(FATAL) << "Reply message was dispatched";
+  }
+
+  WaitableEvent* server_ready_;
+  scoped_ptr<SyncChannel> server2_channel_;
+};
+
+class ReentrantReplyServer2 : public Worker {
+ public:
+  ReentrantReplyServer2()
+      : Worker("reentrant_reply2", Channel::MODE_SERVER),
+        reply_(NULL) { }
+
+ private:
+  bool OnMessageReceived(const Message& message) {
+    IPC_BEGIN_MESSAGE_MAP(ReentrantReplyServer2, message)
+     IPC_MESSAGE_HANDLER_DELAY_REPLY(
+         SyncChannelTestMsg_Reentrant1, OnReentrant1)
+     IPC_MESSAGE_HANDLER(SyncChannelTestMsg_Reentrant3, OnReentrant3)
+    IPC_END_MESSAGE_MAP()
+    return true;
+  }
+
+  void OnReentrant1(Message* reply) {
+    DCHECK(!reply_);
+    reply_ = reply;
+  }
+
+  void OnReentrant3() {
+    DCHECK(reply_);
+    Message* reply = reply_;
+    reply_ = NULL;
+    reply->set_unblock(true);
+    Send(reply);
+    Done();
+  }
+
+  Message* reply_;
+};
+
+class ReentrantReplyClient : public Worker {
+ public:
+  ReentrantReplyClient(WaitableEvent* server_ready)
+      : Worker("reentrant_reply1", Channel::MODE_CLIENT),
+        server_ready_(server_ready) { }
+
+  void Run() {
+    server_ready_->Wait();
+    Send(new SyncChannelTestMsg_Reentrant2());
+    Done();
+  }
+
+ private:
+  WaitableEvent* server_ready_;
+};
+
+}  // namespace
+
+TEST_F(IPCSyncChannelTest, ReentrantReply) {
+  std::vector<Worker*> workers;
+  WaitableEvent server_ready(false, false);
+  workers.push_back(new ReentrantReplyServer2());
+  workers.push_back(new ReentrantReplyServer1(&server_ready));
+  workers.push_back(new ReentrantReplyClient(&server_ready));
+  RunTest(workers);
+}
+
 //-----------------------------------------------------------------------------
 
 // Generate a validated channel ID using Channel::GenerateVerifiedChannelID().

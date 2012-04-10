@@ -323,13 +323,13 @@ bool SyncChannel::SyncContext::OnMessageReceived(const Message& msg) {
   if (TryToUnblockListener(&msg))
     return true;
 
-  if (msg.should_unblock()) {
-    received_sync_msgs_->QueueMessage(msg, this);
+  if (msg.is_reply()) {
+    received_sync_msgs_->QueueReply(msg, this);
     return true;
   }
 
-  if (msg.is_reply()) {
-    received_sync_msgs_->QueueReply(msg, this);
+  if (msg.should_unblock()) {
+    received_sync_msgs_->QueueMessage(msg, this);
     return true;
   }
 
