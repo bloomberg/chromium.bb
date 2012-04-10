@@ -41,8 +41,9 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #endif  // OS_MACOSX
 
-#if defined(OS_MACOSX)
 namespace {
+
+#if defined(OS_MACOSX)
 
 CFArrayRef ChromeTISCreateInputSourceList(
    CFDictionaryRef properties,
@@ -68,8 +69,34 @@ void InstallFrameworkHacks() {
   }
 }
 
-}  // namespace
 #endif  // OS_MACOSX
+
+#if defined(OS_POSIX)
+
+class SuicideOnChannelErrorFilter : public IPC::ChannelProxy::MessageFilter {
+  void OnChannelError() {
+    // On POSIX, at least, one can install an unload handler which loops
+    // forever and leave behind a renderer process which eats 100% CPU forever.
+    //
+    // This is because the terminate signals (ViewMsg_ShouldClose and the error
+    // from the IPC channel) are routed to the main message loop but never
+    // processed (because that message loop is stuck in V8).
+    //
+    // One could make the browser SIGKILL the renderers, but that leaves open a
+    // large window where a browser failure (or a user, manually terminating
+    // the browser because "it's stuck") will leave behind a process eating all
+    // the CPU.
+    //
+    // So, we install a filter on the channel so that we can process this event
+    // here and kill the process.
+
+    _exit(0);
+  }
+};
+
+#endif  // OS(POSIX)
+
+}  // namespace
 
 // This function provides some ways to test crash and assertion handling
 // behavior of the renderer.
@@ -226,6 +253,10 @@ int RendererMain(const content::MainFunctionParams& parameters) {
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
     RenderProcessImpl render_process;
     new RenderThreadImpl();
+#endif
+
+#if defined(OS_POSIX)
+    RenderThreadImpl::current()->AddFilter(new SuicideOnChannelErrorFilter());
 #endif
 
     platform.RunSandboxTests();
