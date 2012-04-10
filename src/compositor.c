@@ -1675,8 +1675,7 @@ destroy_device_saved_kbd_focus(struct wl_listener *listener,
 
 WL_EXPORT void
 notify_keyboard_focus(struct wl_input_device *device,
-		      uint32_t time, struct weston_output *output,
-		      struct wl_array *keys)
+		      uint32_t time, struct wl_array *keys)
 {
 	struct weston_input_device *wd =
 		(struct weston_input_device *) device;
@@ -1684,7 +1683,7 @@ notify_keyboard_focus(struct wl_input_device *device,
 	struct wl_surface *surface;
 	uint32_t *k;
 
-	if (output) {
+	if (keys) {
 		wl_array_copy(&wd->input_device.keys, keys);
 		wd->modifier_state = 0;
 		wl_array_for_each(k, &device->keys) {

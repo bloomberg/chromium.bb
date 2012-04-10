@@ -615,7 +615,7 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 			output = x11_compositor_find_output(c, focus_in->event);
 			notify_keyboard_focus(c->base.input_device,
 					      weston_compositor_get_time(),
-					      &output->base, &c->keys);
+					      &c->keys);
 
 			free(prev);
 			prev = NULL;
@@ -704,7 +704,7 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 				break;
 			notify_keyboard_focus(c->base.input_device,
 					      weston_compositor_get_time(),
-					      NULL, NULL);
+					      NULL);
 			break;
 
 		default:

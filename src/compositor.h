@@ -391,8 +391,7 @@ notify_pointer_focus(struct wl_input_device *device,
 
 void
 notify_keyboard_focus(struct wl_input_device *device,
-		      uint32_t time, struct weston_output *output,
-		      struct wl_array *keys);
+		      uint32_t time, struct wl_array *keys);
 
 void
 notify_touch(struct wl_input_device *device, uint32_t time, int touch_id,

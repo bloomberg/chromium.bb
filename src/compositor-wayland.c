@@ -595,10 +595,8 @@ input_handle_keyboard_enter(void *data,
 {
 	struct wayland_input *input = data;
 	struct wayland_compositor *c = input->compositor;
-	struct wayland_output *output;
 
-	output = wl_surface_get_user_data(surface);
-	notify_keyboard_focus(c->base.input_device, time, &output->base, keys);
+	notify_keyboard_focus(c->base.input_device, time, keys);
 }
 
 static void
@@ -610,7 +608,7 @@ input_handle_keyboard_leave(void *data,
 	struct wayland_input *input = data;
 	struct wayland_compositor *c = input->compositor;
 
-	notify_keyboard_focus(c->base.input_device, time, NULL, NULL);
+	notify_keyboard_focus(c->base.input_device, time, NULL);
 }
 
 static const struct wl_input_device_listener input_device_listener = {
