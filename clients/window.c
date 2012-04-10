@@ -478,17 +478,11 @@ display_create_surface(struct display *display,
 	if (check_size(rectangle) < 0)
 		return NULL;
 #ifdef HAVE_CAIRO_EGL
-	if (display->dpy) {
-		if (surface)
-			return display_create_egl_window_surface(display,
-								 surface,
-								 flags,
-								 rectangle);
-		else
-			return display_create_egl_image_surface(display,
-								flags,
-								rectangle);
-	}
+	if (display->dpy)
+		return display_create_egl_window_surface(display,
+							 surface,
+							 flags,
+							 rectangle);
 #endif
 	return display_create_shm_surface(display, rectangle, flags, NULL);
 }
@@ -500,13 +494,7 @@ display_create_surface_from_file(struct display *display,
 {
 	if (check_size(rectangle) < 0)
 		return NULL;
-#ifdef HAVE_CAIRO_EGL
-	if (display->dpy) {
-		return display_create_egl_image_surface_from_file(display,
-								  filename,
-								  rectangle);
-	}
-#endif
+
 	return display_create_shm_surface_from_file(display, filename, rectangle);
 }
  static const struct {
