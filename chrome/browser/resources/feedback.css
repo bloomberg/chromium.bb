@@ -162,12 +162,12 @@ th {
 }
 
 #buttons-pane {
-  display: -webkit-box;
-  padding: 0;
-/* Linux and Mac OS X display OK/Cancel dialogs in the reverse direction. */
+  /* Linux and Mac OS X display OK/Cancel dialogs in the reverse direction. */
 <if expr="not pp_ifdef('toolkit_views')">
   -webkit-box-direction: reverse;
 </if>
+  display: -webkit-box;
+  padding: 0;
 }
 
 #send-report-button,
