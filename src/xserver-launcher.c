@@ -1645,6 +1645,7 @@ create_lockfile(int display, char *lockfile, size_t lsize)
 		if (end != pid + 10) {
 			fprintf(stderr, "can't parse lock file %s\n",
 				lockfile);
+			close(fd);
 			errno = EEXIST;
 			return -1;
 		}
@@ -1655,6 +1656,7 @@ create_lockfile(int display, char *lockfile, size_t lsize)
 				"unlinking stale lock file %s\n", lockfile);
 			unlink(lockfile);
 			errno = EAGAIN;
+			close(fd);
 			return -1;
 		}
 
