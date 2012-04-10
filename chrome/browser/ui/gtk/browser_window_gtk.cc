@@ -950,7 +950,7 @@ bool BrowserWindowGtk::IsFullscreen() const {
 }
 
 bool BrowserWindowGtk::IsFullscreenBubbleVisible() const {
-  return fullscreen_exit_bubble_.get() ? true : false;
+  return fullscreen_exit_bubble_ != NULL;
 }
 
 LocationBar* BrowserWindowGtk::GetLocationBar() const {

@@ -848,7 +848,7 @@ bool BrowserView::IsFullscreen() const {
 }
 
 bool BrowserView::IsFullscreenBubbleVisible() const {
-  return fullscreen_bubble_.get() ? true : false;
+  return fullscreen_bubble_ != NULL;
 }
 
 void BrowserView::FullScreenStateChanged() {
