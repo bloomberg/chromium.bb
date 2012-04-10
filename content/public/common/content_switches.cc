@@ -211,9 +211,6 @@ const char kDisableXSSAuditor[]             = "disable-xss-auditor";
 // |DOMAutomationController| to the |AutomationRenderViewHelper|.
 const char kDomAutomationController[]       = "dom-automation";
 
-// Enable gpu-accelerated 2d canvas.
-const char kEnableAccelerated2dCanvas[]     = "enable-accelerated-2d-canvas";
-
 // Enable hardware accelerated page painting.
 const char kEnableAcceleratedPainting[]     = "enable-accelerated-painting";
 

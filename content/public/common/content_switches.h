@@ -74,7 +74,6 @@ extern const char kDisableWebSecurity[];
 extern const char kDisableWebSockets[];
 extern const char kDisableXSSAuditor[];
 CONTENT_EXPORT extern const char kDomAutomationController[];
-extern const char kEnableAccelerated2dCanvas[];
 CONTENT_EXPORT extern const char kEnableAcceleratedPainting[];
 CONTENT_EXPORT extern const char kEnableAcceleratedFilters[];
 extern const char kEnableAccessibility[];

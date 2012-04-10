@@ -464,15 +464,7 @@ IN_PROC_BROWSER_TEST_F(GpuPixelBrowserTest, CSS3DBlueBox) {
   RunPixelTest(container_size, url, ref_img_revision_update);
 }
 
-class Canvas2DPixelTestHD : public GpuPixelBrowserTest {
- public:
-  virtual void SetUpCommandLine(CommandLine* command_line) {
-    GpuPixelBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kEnableAccelerated2dCanvas);
-  }
-};
-
-IN_PROC_BROWSER_TEST_F(Canvas2DPixelTestHD, Canvas2DRedBoxHD) {
+IN_PROC_BROWSER_TEST_F(GpuPixelBrowserTest, Canvas2DRedBoxHD) {
   // If test baseline needs to be updated after a given revision, update the
   // following number. If no revision requirement, then 0.
   const int64 ref_img_revision_update = 123489;

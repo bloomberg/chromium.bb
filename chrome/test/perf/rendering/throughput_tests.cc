@@ -179,7 +179,6 @@ class ThroughputTest : public BrowserPerfTest {
     command_line->AppendSwitch(switches::kAllowFileAccessFromFiles);
     // Enable or disable GPU acceleration.
     if (use_gpu_) {
-      command_line->AppendSwitch(switches::kEnableAccelerated2dCanvas);
       command_line->AppendSwitch(switches::kForceCompositingMode);
     } else {
       command_line->AppendSwitch(switches::kDisableAcceleratedCompositing);

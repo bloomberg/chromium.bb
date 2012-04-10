@@ -312,15 +312,7 @@ IN_PROC_BROWSER_TEST_F(WebGLMultisamplingTest, MultisamplingDisabled) {
   RunTest(url, "\"FALSE\"", true);
 }
 
-class Canvas2DEnabledTest : public GpuFeatureTest {
- public:
-  virtual void SetUpCommandLine(CommandLine* command_line) {
-    GpuFeatureTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kEnableAccelerated2dCanvas);
-  }
-};
-
-IN_PROC_BROWSER_TEST_F(Canvas2DEnabledTest, Canvas2DAllowed) {
+IN_PROC_BROWSER_TEST_F(GpuFeatureTest, Canvas2DAllowed) {
 #if defined(OS_WIN)
   // Accelerated canvas 2D is not supported on XP.
   GPUTestBotConfig test_bot;
@@ -336,7 +328,7 @@ IN_PROC_BROWSER_TEST_F(Canvas2DEnabledTest, Canvas2DAllowed) {
   RunTest(url, EXPECT_GPU_SWAP_BUFFERS);
 }
 
-IN_PROC_BROWSER_TEST_F(Canvas2DEnabledTest, Canvas2DBlocked) {
+IN_PROC_BROWSER_TEST_F(GpuFeatureTest, Canvas2DBlocked) {
   const std::string json_blacklist =
       "{\n"
       "  \"name\": \"gpu blacklist\",\n"
