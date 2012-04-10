@@ -199,13 +199,15 @@ class PostPage(webapp.RequestHandler):
 
     new_stat = model.Statistics(parent=DATASTORE_KEY)
 
-    # Use automatically set end_datetime prop to set end_date and end_time.
-    new_stat.end_time = new_stat.end_datetime.time()
-    new_stat.end_date = new_stat.end_datetime.date()
-
     # Check each supported DB property to see if it has a value set
     # in the POST request.
     for prop in model.Statistics.properties():
+      # Skip properties with auto_now or auto_now_add enabled.
+      model_prop = getattr(model.Statistics, prop)
+      if ((hasattr(model_prop, 'auto_now_add') and model_prop.auto_now_add) or
+          (hasattr(model_prop, 'auto_now') and model_prop.auto_now)):
+        continue
+
       # Note that using hasattr with self.request does not work at all.
       # It (almost) always says the attribute is not present, when getattr
       # does actually return a value.
@@ -213,11 +215,15 @@ class PostPage(webapp.RequestHandler):
 
       if value is not None:
         # Integer properties require casting
-        if db.IntegerProperty == type(getattr(model.Statistics, prop)):
+        if isinstance(model_prop, db.IntegerProperty):
           value = int(value)
 
         logging.debug('  Stats POST property %r ==> %r', prop, value)
         setattr(new_stat, prop, value)
+
+    # Use automatically set end_datetime prop to set end_date and end_time.
+    new_stat.end_time = new_stat.end_datetime.time()
+    new_stat.end_date = new_stat.end_datetime.date()
 
     # Save to model.
     new_stat.put()
