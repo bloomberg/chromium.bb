@@ -22,9 +22,11 @@ import glob
 import httplib
 import optparse
 import os
+import platform
 import shutil
 import sys
 import urllib
+import urllib2
 import urlparse
 
 import pyauto_utils
@@ -38,38 +40,43 @@ class FetchPrebuilt(object):
     parser.add_option(
         '-d', '--outdir', type='string', default=None,
         help='Directory in which to setup. This is typically the directory '
-             'where the binaries would go when compiled from source.')
+        'where the binaries would go when compiled from source.')
     parser.add_option(
         '-p', '--platform', type='string',
         default=pyauto_utils.GetCurrentPlatform(),
         help='Platform. Valid options: win, mac, linux32, linux64. '
-             'Default: current platform (%s)' %
-             pyauto_utils.GetCurrentPlatform())
+        'Default: current platform (%s)' % pyauto_utils.GetCurrentPlatform())
+    parser.add_option(
+        '-l', '--latest', action='store_true', default=False,
+        help='Download the latest chromium build from commondatastorage. '
+        '[default=False]')
     self._options, self._args = parser.parse_args()
+    if self._options.latest:
+      self._url = self._GetLastestDownloadURL(self._options.platform)
+    elif not self._args:
+      print >>sys.stderr, 'Need download url'
+      sys.exit(2)
+    else:
+      self._url = self._args[0]
     if not self._options.outdir:
       print >>sys.stderr, 'Need output directory: -d/--outdir'
       sys.exit(1)
-    if not self._args:
-      print >>sys.stderr, 'Need download url'
-      sys.exit(2)
     self._outdir = self._options.outdir
-    self._url = self._args[0]
     # Chromium continuous build archive has a non-standard format.
     if 'index.html?path=' in self._url:
       self._url = self._url.replace('index.html?path=', '')
     self._url = self._url.rstrip('/')
-
     # Determine name of zip.
     if not self._options.platform.startswith('linux'):
-      self._chrome_zip_name = 'chrome-%s' % { 'mac': 'mac',
-                                              'win': 'win32'
+      self._chrome_zip_name = 'chrome-%s' % {'mac': 'mac',
+                                             'win': 'win32'
                                             }[self._options.platform]
     else:
       linux_32_names = ['linux', 'lucid32bit']
       linux_64_names = ['linux64', 'lucid64bit']
-      linux_names = { 'linux': linux_32_names + linux_64_names,
-                      'linux32': linux_32_names,
-                      'linux64': linux_64_names
+      linux_names = {'linux': linux_32_names + linux_64_names,
+                     'linux32': linux_32_names,
+                     'linux64': linux_64_names
                     }[self._options.platform]
       for name in linux_names:
         zip_name = 'chrome-' + name
@@ -92,6 +99,26 @@ class FetchPrebuilt(object):
       self._chromedriver_name = 'chromedriver'
     self._pyautolib_so_url = chrome_test_url + '/' + self._pyautolib_so_name
     self._chromedriver_url = chrome_test_url + '/' + self._chromedriver_name
+
+  def _GetLastestDownloadURL(self, os_platform):
+    os_type = {'win': 'Win',
+               'mac': 'Mac',
+               'linux': 'Linux',
+               'linux32': 'Linux',
+               'linux64': 'Linux_x64'}[os_platform]
+    if os_type == 'Linux' and platform.architecture()[0] == '64bit':
+      os_type = 'Linux_x64'
+    last_change_url = ('http://commondatastorage.googleapis.com/'
+                       'chromium-browser-continuous/%s/LAST_CHANGE' % os_type)
+    response = urllib2.urlopen(last_change_url)
+    last_change = response.read()
+    if not last_change:
+      print >>sys.stderr, ('Unable to get latest from %s' % last_change_url)
+      sys.exit(2)
+    last_change_url = ('http://commondatastorage.googleapis.com/'
+                       'chromium-browser-continuous/%s/%s' % (os_type,
+                                                              last_change))
+    return last_change_url
 
   def _DoesURLExist(self, url):
     """Determines whether a resource exists at the given URL."""
