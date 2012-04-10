@@ -18,13 +18,16 @@ chrome.test.runTests([
     fs.setFontName({
       script: 'Hang',
       genericFamily: 'standard',
-      fontName: 'UnBatang'
+      fontName: 'Verdana'
     }, chrome.test.callbackPass());
   },
 
   function getPerScriptFontName() {
-    var expected = 'UnBatang';
+    var expected = 'Verdana';
     var message = 'Setting for Hangul standard font should be ' + expected;
+
+    // This test may fail on Windows if the font is not installed on the
+    // system. See crbug.com/122303
     fs.getFontName({
       script: 'Hang',
       genericFamily: 'standard'
@@ -34,14 +37,17 @@ chrome.test.runTests([
   function setGlobalFontName() {
     fs.setFontName({
       genericFamily: 'sansserif',
-      fontName: 'Arial'
+      fontName: 'Tahoma'
     }, chrome.test.callbackPass());
   },
 
   function getGlobalFontName() {
-    var expected = 'Arial';
+    var expected = 'Tahoma';
     var message =
         'Setting for global sansserif font should be ' + expected;
+
+    // As above, this test may fail on Windows if the font is not installed on
+    // the system. See crbug.com/122303
     fs.getFontName({
       genericFamily: 'sansserif'
     }, expect({fontName: expected}, message));

@@ -61,7 +61,7 @@
                 "properties": {
                   "fontName": {
                     "type": "string",
-                    "description": "The font name."
+                    "description": "The font name. Rather than the literal font name preference value, this may be the name of the font that the system resolves the preference value to. The empty string signifies fallback to the global script font setting."
                   }
                 }
               }
@@ -96,7 +96,7 @@
               },
               "fontName": {
                 "type": "string",
-                "description": "The font name."
+                "description": "The font name. If a script is specified, the empty string means to fallback to the global script font setting."
               }
             }
           },

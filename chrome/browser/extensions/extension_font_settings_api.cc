@@ -15,6 +15,11 @@
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/font_list_async.h"
 
+#if defined(OS_WIN)
+#include "ui/gfx/font.h"
+#include "ui/gfx/platform_font_win.h"
+#endif
+
 namespace {
 
 const char kGenericFamilyKey[] = "genericFamily";
@@ -57,6 +62,20 @@ bool GetFontNamePrefPath(DictionaryValue* details, std::string* pref_path) {
   return true;
 }
 
+// Returns the localized name of a font so that it can be matched within the
+// list of system fonts. On Windows, the list of system fonts has names only
+// for the system locale, but the pref value may be in the English name.
+std::string MaybeGetLocalizedFontName(const std::string& font_name) {
+#if defined(OS_WIN)
+  if (!font_name.empty()) {
+    gfx::Font font(font_name, 12);  // dummy font size
+    return static_cast<gfx::PlatformFontWin*>(font.platform_font())->
+        GetLocalizedFontName();
+  }
+#endif
+  return font_name;
+}
+
 }  // namespace
 
 bool GetFontNameFunction::RunImpl() {
@@ -72,6 +91,8 @@ bool GetFontNameFunction::RunImpl() {
   std::string font_name;
   EXTENSION_FUNCTION_VALIDATE(
       pref && pref->GetValue()->GetAsString(&font_name));
+
+  font_name = MaybeGetLocalizedFontName(font_name);
 
   DictionaryValue* result = new DictionaryValue();
   result->SetString(kFontNameKey, font_name);
