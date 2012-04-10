@@ -138,33 +138,72 @@ AC_CHECK_FUNCS([geteuid getuid link memmove memset mkstemp strchr strrchr strtol
 #
 # Checks for iconv
 #
+AC_ARG_WITH(libiconv,
+	[AC_HELP_STRING([--with-libiconv=DIR],
+			[Use libiconv in DIR])],
+	[libiconv_prefix=$withval],
+	[libiconv_prefix=auto])
+AC_ARG_WITH(libiconv-includes,
+	[AC_HELP_STRING([--with-libiconv-includes=DIR],
+			[Use libiconv includes in DIR])],
+	[libiconv_includes=$withval],
+	[libiconv_includes=auto])
+AC_ARG_WITH(libiconv-lib,
+	[AC_HELP_STRING([--with-libiconv-lib=DIR],
+			[Use libiconv library in DIR])],
+	[libiconv_lib=$withval],
+	[libiconv_lib=auto])
+
+# if none of libiconv,libiconv-includes,libiconv-libs are specified
+if test "$libiconv_prefix" != "auto" -o "$libiconv_includes" != "auto" -o "$libiconv_lib" != "auto"; then
+	if test "$libiconv_includes" != "auto" -a -r ${libiconv_includes}/iconv.h; then
+		libiconv_cflags="-I${libiconv_includes}"
+	elif test "$libiconv_prefix" != "auto" -a -r ${libiconv_prefix}/include/iconv.h; then
+		libiconv_cflags="-I${libiconv_prefix}/include"
+	else
+		libiconv_cflags=""
+	fi
+	if test "$libiconv_lib" != "auto"; then
+		libiconv_lib="-L${libiconv_lib} -liconv"
+	elif test "$libiconv_prefix" != "auto"; then
+		libiconv_lib="-L${libiconv_prefix}/lib -liconv"
+	elif test "x$libiconv_cflags" != "x"; then
+		libiconv_lib="-liconv"
+	else
+		libiconv_lib=""
+	fi
+fi
+
+use_iconv=0
 AC_MSG_CHECKING([for a usable iconv])
-ICONV_LIBS=""
-AC_TRY_LINK([#include <iconv.h>],
-	    [iconv_open ("from", "to");],
-	    [use_iconv=1],
-	    [use_iconv=0])
-if test x$use_iconv = x1; then
-	AC_MSG_RESULT([libc])
-else
-	# try using libiconv
-	fontconfig_save_libs="$LIBS"
-	LIBS="$LIBS -liconv"
+if test "x$libiconv_cflags" != "x" -o "x$libiconv_lib" != "x"; then
+	iconvsaved_CFLAGS="$CFLAGS"
+	iconvsaved_LIBS="$LIBS"
+	CFLAGS="$CFLAGS $libiconv_cflags"
+	LIBS="$LIBS $libiconv_lib"
 
 	AC_TRY_LINK([#include <iconv.h>],
-		    [iconv_open ("from", "to");],
-		    [use_iconv=1],
-		    [use_iconv=0])
-	
-	if test x$use_iconv = x1; then
-		ICONV_LIBS="-liconv"
-		AC_MSG_RESULT([libiconv])
-	else
-		AC_MSG_RESULT([no])
-	fi
+		[iconv_open ("from", "to");],
+		[iconv_type="libiconv"
+		 use_iconv=1],
+		[use_iconv=0])
 
-	LIBS="$fontconfig_save_libs"
+	CFLAGS="$iconvsaved_CFLAGS"
+	LIBS="$iconvsaved_LIBS"
+	ICONV_CFLAGS="$libiconv_cflags"
+	ICONV_LIBS="$libiconv_lib"
 fi
+if test "x$use_iconv" = "x0"; then
+	AC_TRY_LINK([#include <iconv.h>],
+		[iconv_open ("from", "to");],
+		[iconv_type="libc"
+		 use_iconv=1],
+		[iconv_type="not found"
+		 use_iconv=0])
+fi
+
+AC_MSG_RESULT([$iconv_type])
+AC_SUBST(ICONV_CFLAGS)
 AC_SUBST(ICONV_LIBS)
 AC_DEFINE_UNQUOTED(USE_ICONV,$use_iconv,[Use iconv.])
 
