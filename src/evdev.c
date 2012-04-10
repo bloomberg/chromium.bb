@@ -557,6 +557,45 @@ device_removed(struct evdev_input_device *device)
 	free(device);
 }
 
+static void
+evdev_notify_keyboard_focus(struct evdev_input *input)
+{
+	struct evdev_input_device *device;
+	struct wl_array keys;
+	unsigned int i, set;
+	char evdev_keys[(KEY_CNT + 7) / 8], all_keys[(KEY_CNT + 7) / 8];
+	uint32_t *k;
+	int ret;
+
+	memset(all_keys, 0, sizeof all_keys);
+	wl_list_for_each(device, &input->devices_list, link) {
+		memset(evdev_keys, 0, sizeof evdev_keys);
+		ret = ioctl(device->fd,
+			    EVIOCGKEY(sizeof evdev_keys), evdev_keys);
+		if (ret < 0) {
+			fprintf(stderr, "failed to get keys for device %s\n",
+				device->devnode);
+			continue;
+		}
+		for (i = 0; i < ARRAY_LENGTH(evdev_keys); i++)
+			all_keys[i] |= evdev_keys[i];
+	}
+
+	wl_array_init(&keys);
+	for (i = 0; i < KEY_CNT; i++) {
+		set = all_keys[i >> 3] & (1 << (i & 7));
+		if (set) {
+			k = wl_array_add(&keys, sizeof *k);
+			*k = i;
+		}
+	}
+
+	notify_keyboard_focus(&input->base.input_device,
+			      weston_compositor_get_time(), &keys);
+
+	wl_array_release(&keys);
+}
+
 void
 evdev_add_devices(struct udev *udev, struct weston_input_device *input_base)
 {
@@ -584,6 +623,8 @@ evdev_add_devices(struct udev *udev, struct weston_input_device *input_base)
 		udev_device_unref(device);
 	}
 	udev_enumerate_unref(e);
+
+	evdev_notify_keyboard_focus(input);
 
 	if (wl_list_empty(&input->devices_list)) {
 		fprintf(stderr,
@@ -716,6 +757,9 @@ evdev_remove_devices(struct weston_input_device *input_base)
 
 	wl_list_for_each_safe(device, next, &input->devices_list, link)
 		device_removed(device);
+
+	notify_keyboard_focus(&input->base.input_device,
+			      weston_compositor_get_time(), NULL);
 }
 
 void
