@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,6 +37,9 @@ void ExternalProtocolHandler::RunExternalProtocolDialog(
 @implementation ExternalProtocolDialogController
 - (id)initWithGURL:(const GURL*)url {
   DCHECK_EQ(MessageLoop::TYPE_UI, MessageLoop::current()->type());
+
+  if (!(self = [super init]))
+    return nil;
 
   url_ = *url;
   creation_time_ = base::Time::Now();

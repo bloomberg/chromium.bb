@@ -81,10 +81,11 @@ static NSEvent* MakeMouseEvent(NSEventType type,
 
 @implementation RepaintAnimation
 - (id)initWithView:(NSView*)targetView duration:(double) duration {
-  if (![super initWithDuration:duration animationCurve:NSAnimationEaseInOut])
-    return nil;
-  [self setAnimationBlockingMode:NSAnimationNonblocking];
-  targetView_ = targetView;
+  if ((self = [super initWithDuration:duration
+                       animationCurve:NSAnimationEaseInOut])) {
+    [self setAnimationBlockingMode:NSAnimationNonblocking];
+    targetView_ = targetView;
+  }
   return self;
 }
 

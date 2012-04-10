@@ -427,9 +427,9 @@ enum {
     windowShim_.reset(window);
     animateOnBoundsChange_ = YES;
     canBecomeKeyWindow_ = YES;
+    contentsController_.reset(
+        [[TabContentsController alloc] initWithContents:nil]);
   }
-  contentsController_.reset(
-      [[TabContentsController alloc] initWithContents:nil]);
   return self;
 }
 
