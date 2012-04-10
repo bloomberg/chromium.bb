@@ -35,6 +35,7 @@ EnumMapper<PropertyIndex>::Pair property_index_table[] = {
   { flimflam::kCellularApnProperty, PROPERTY_INDEX_CELLULAR_APN },
   { flimflam::kCellularLastGoodApnProperty,
     PROPERTY_INDEX_CELLULAR_LAST_GOOD_APN },
+  { flimflam::kCheckPortalProperty, PROPERTY_INDEX_CHECK_PORTAL },
   { flimflam::kCheckPortalListProperty, PROPERTY_INDEX_CHECK_PORTAL_LIST },
   { flimflam::kConnectableProperty, PROPERTY_INDEX_CONNECTABLE },
   { flimflam::kConnectedTechnologiesProperty,
@@ -181,8 +182,10 @@ EnumMapper<PropertyIndex>::Pair property_index_table[] = {
   { flimflam::kOpenVPNTLSRemoteProperty, PROPERTY_INDEX_OPEN_VPN_TLSREMOTE },
   { flimflam::kOpenVPNUserProperty, PROPERTY_INDEX_OPEN_VPN_USER },
   { flimflam::kPaymentPortalProperty, PROPERTY_INDEX_OLP },
+  { flimflam::kPaymentURLProperty, PROPERTY_INDEX_OLP_URL },
   { flimflam::kVPNDomainProperty, PROPERTY_INDEX_VPN_DOMAIN },
   { flimflam::kWifiAuthMode, PROPERTY_INDEX_WIFI_AUTH_MODE },
+  { flimflam::kWifiBSsid, PROPERTY_INDEX_WIFI_BSSID },
   { flimflam::kWifiFrequency, PROPERTY_INDEX_WIFI_FREQUENCY },
   { flimflam::kWifiHexSsid, PROPERTY_INDEX_WIFI_HEX_SSID },
   { flimflam::kWifiHiddenSsid, PROPERTY_INDEX_WIFI_HIDDEN_SSID },
@@ -721,6 +724,9 @@ bool NativeNetworkParser::ParseValue(PropertyIndex index,
       network->set_save_credentials(save_credentials);
       return true;
     }
+    case PROPERTY_INDEX_CHECK_PORTAL:
+      // This property is ignored.
+      return true;
     default:
       return NetworkParser::ParseValue(index, value, network);
       break;
@@ -941,6 +947,9 @@ bool NativeCellularNetworkParser::ParseValue(PropertyIndex index,
       }
       break;
     }
+    case PROPERTY_INDEX_OLP_URL:
+      // This property is ignored.
+      return true;
     case PROPERTY_INDEX_STATE: {
       // Save previous state before calling WirelessNetwork::ParseValue.
       ConnectionState prev_state = cellular_network->state();
@@ -1023,6 +1032,7 @@ bool NativeWifiNetworkParser::ParseValue(PropertyIndex index,
       wifi_network->SetHexSsid(ssid_hex);
       return true;
     }
+    case PROPERTY_INDEX_WIFI_BSSID:
     case PROPERTY_INDEX_WIFI_AUTH_MODE:
     case PROPERTY_INDEX_WIFI_PHY_MODE:
     case PROPERTY_INDEX_WIFI_HIDDEN_SSID:

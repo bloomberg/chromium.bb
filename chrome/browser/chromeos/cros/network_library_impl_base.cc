@@ -763,7 +763,7 @@ void NetworkLibraryImplBase::NetworkConnectStart(
   // and auto-connect.
   network->set_connection_started(true);
   NotifyNetworkManagerChanged(true);  // Forced update.
-  VLOG(1) << "Requesting connect to network: " << network->service_path()
+  VLOG(1) << "Requesting connect to network: " << network->name()
           << " profile type: " << profile_type;
   // Specify the correct profile for wifi networks (if specified or unset).
   if (network->type() == TYPE_WIFI &&
@@ -807,10 +807,13 @@ void NetworkLibraryImplBase::NetworkConnectCompleted(
     }
     NotifyNetworkManagerChanged(true);  // Forced update.
     NotifyNetworkChanged(network);
+    VLOG(1) << "Error connecting to network: " << network->name()
+            << " Status: " << status;
     return;
   }
 
-  VLOG(1) << "Connected to service: " << network->name();
+  VLOG(1) << "Connected to network: " << network->name()
+          << " State: " << network->state();
 
   // If the user asked not to save credentials, flimflam will have
   // forgotten them.  Wipe our cache as well.

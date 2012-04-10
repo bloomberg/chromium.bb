@@ -58,6 +58,9 @@ void NetworkLoginObserver::OnNetworkManagerChanged(NetworkLibrary* cros) {
       // Always re-display for user initiated connections that fail.
       // Always re-display the login dialog for encrypted networks that were
       // added and failed to connect for any reason.
+      VLOG(1) << "NotifyFailure: " << wifi->name()
+              << ", error: " << wifi->error()
+              << ", added: " << wifi->added();
       if (wifi->error() == ERROR_BAD_PASSPHRASE ||
           wifi->error() == ERROR_BAD_WEPKEY ||
           wifi->connection_started() ||
@@ -72,6 +75,9 @@ void NetworkLoginObserver::OnNetworkManagerChanged(NetworkLibrary* cros) {
        it != virtual_networks.end(); it++) {
     VirtualNetwork* vpn = *it;
     if (vpn->notify_failure()) {
+      VLOG(1) << "NotifyFailure: " << vpn->name()
+              << ", error: " << vpn->error()
+              << ", added: " << vpn->added();
       // Display login dialog for any error or newly added network.
       if (vpn->error() != ERROR_NO_ERROR || vpn->added()) {
         CreateModalPopup(new NetworkConfigView(vpn));

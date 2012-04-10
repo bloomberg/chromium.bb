@@ -1028,8 +1028,14 @@ Network* NetworkLibraryImplCros::ParseNetwork(
     // Erase entry from network_unique_id_map_ in case unique id changes.
     if (!network->unique_id().empty())
       network_unique_id_map_.erase(network->unique_id());
-    if (network->network_parser())
+    if (network->network_parser()) {
+      ConnectionState old_state = network->state();
       network->network_parser()->UpdateNetworkFromInfo(info, network);
+      if (old_state != network->state()) {
+        VLOG(1) << "ParseNetwork: " << network->name()
+                << " State: " << old_state << " -> " << network->state();
+      }
+    }
   }
 
   if (!network->unique_id().empty())
@@ -1059,7 +1065,7 @@ Network* NetworkLibraryImplCros::ParseNetwork(
     //              << service_path;
   }
 
-  VLOG(1) << "ParseNetwork: " << network->name()
+  VLOG(2) << "ParseNetwork: " << network->name()
           << " path: " << network->service_path()
           << " profile: " << network->profile_path_;
   NotifyNetworkManagerChanged(false);  // Not forced.

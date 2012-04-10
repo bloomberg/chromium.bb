@@ -104,12 +104,10 @@ void NetworkChangeNotifierChromeos::UpdateNetworkState(
   const chromeos::Network* network = lib->active_network();
 
   if (network) {
-    VLOG(2) << "UpdateNetworkState: type = "
-            << network->type()
-            << ", dev = "
-            << network->device_path()
-            << ", state_ = "
-            << network->state();
+    VLOG(1) << "UpdateNetworkState: " << network->name()
+            << ", type= " << network->type()
+            << ", device= " << network->device_path()
+            << ", state= " << network->state();
   }
 
   // Check if active network was added, removed or changed.
@@ -133,7 +131,6 @@ void NetworkChangeNotifierChromeos::UpdateNetworkState(
     if (network)
       lib->AddNetworkObserver(network->service_path(), this);
 
-    DVLOG(1) << "NotifyObserversOfIPAddressChange!!";
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(
@@ -144,14 +141,11 @@ void NetworkChangeNotifierChromeos::UpdateNetworkState(
 void NetworkChangeNotifierChromeos::UpdateConnectivityState(
       const chromeos::Network* network) {
   if (network) {
-    VLOG(2) << "UpdateConnectivityState: nt = "
-            << network->type()
-            << ", dev = "
-            << network->device_path()
-            << ", ns = "
-            << network->state()
-            << ", cs_ = "
-            << connection_state_;
+    VLOG(1) << "UpdateConnectivityState: " << network->name()
+            << ", type= " << network->type()
+            << ", device= " << network->device_path()
+            << ", state= " << network->state()
+            << ", connect= " << connection_state_;
   }
 
   // We don't care about all transitions of ConnectionState.  OnlineStateChange
@@ -166,28 +160,23 @@ void NetworkChangeNotifierChromeos::UpdateConnectivityState(
   bool was_online = (connection_state_ == chromeos::STATE_ONLINE);
   bool is_portal = (new_connection_state == chromeos::STATE_PORTAL);
   bool was_portal = (connection_state_ == chromeos::STATE_PORTAL);
-  VLOG(2) << "UpdateConnectivityState: n_cs = "
-          << new_connection_state
-          << ", is_online = "
-          << is_online
-          << ", was_online = "
-          << was_online
-          << ", is_portal = "
-          << is_portal
-          << ", was_portal = "
-          << was_portal;
+  VLOG(2) << "UpdateConnectivityState: " << network->name()
+          << ", new_cs = " << new_connection_state
+          << ", is_online = " << is_online
+          << ", was_online = " << was_online
+          << ", is_portal = " << is_portal
+          << ", was_portal = " << was_portal;
   connection_state_ = new_connection_state;
   if (is_online != was_online || is_portal != was_portal) {
     ReportOnlineStateChange(IsOnline(connection_state_));
   }
-  VLOG(2) << "UpdateConnectivityState: new_cs = "
-          << new_connection_state
-          << ", end_cs_ = "
-          << connection_state_;
+  VLOG(2) << "UpdateConnectivityState: " << network->name()
+          << ", new_cs = " << new_connection_state
+          << ", end_cs_ = " << connection_state_;
 }
 
 void NetworkChangeNotifierChromeos::ReportOnlineStateChange(bool is_online) {
-  VLOG(2) << "ReportOnlineStateChange: " << (is_online ? "online" : "offline");
+  VLOG(1) << "ReportOnlineStateChange: " << (is_online ? "online" : "offline");
   if (weak_factory_.HasWeakPtrs()) {
     DVLOG(1) << "ReportOnlineStateChange: has pending task";
     // If we are trying to report the same state, just continue as planned.
@@ -213,7 +202,6 @@ void NetworkChangeNotifierChromeos::ReportOnlineStateChange(bool is_online) {
 void NetworkChangeNotifierChromeos::ReportOnlineStateChangeOnUIThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  DVLOG(1) << "OnlineStatusReportThreadTask: firing notification!";
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(
