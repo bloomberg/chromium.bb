@@ -677,33 +677,31 @@ void WebMediaPlayerImpl::Repaint() {
 
 void WebMediaPlayerImpl::OnPipelineInitialize(PipelineStatus status) {
   DCHECK_EQ(main_loop_, MessageLoop::current());
-  if (status == media::PIPELINE_OK) {
-    // Only keep one time range starting from 0.
-    WebKit::WebTimeRanges new_buffered(static_cast<size_t>(1));
-    new_buffered[0].start = 0.0f;
-    new_buffered[0].end =
-        static_cast<float>(pipeline_->GetMediaDuration().InSecondsF());
-    buffered_.swap(new_buffered);
-
-    if (!hasVideo())
-      GetClient()->disableAcceleratedCompositing();
-
-    if (pipeline_->IsLocalSource())
-      SetNetworkState(WebKit::WebMediaPlayer::Loaded);
-
-    SetReadyState(WebKit::WebMediaPlayer::HaveMetadata);
-    // Fire canplaythrough immediately after playback begins because of
-    // crbug.com/106480.
-    // TODO(vrk): set ready state to HaveFutureData when bug above is fixed.
-    SetReadyState(WebKit::WebMediaPlayer::HaveEnoughData);
-  } else {
-    // TODO(hclam): should use |status| to determine the state
-    // properly and reports error using MediaError.
-    // WebKit uses FormatError to indicate an error for bogus URL or bad file.
-    // Since we are at the initialization stage we can safely treat every error
-    // as format error. Should post a task to call to |webmediaplayer_|.
-    SetNetworkState(WebKit::WebMediaPlayer::FormatError);
+  if (status != media::PIPELINE_OK) {
+    OnPipelineError(status);
+    // Repaint to trigger UI update.
+    Repaint();
+    return;
   }
+
+  // Only keep one time range starting from 0.
+  WebKit::WebTimeRanges new_buffered(static_cast<size_t>(1));
+  new_buffered[0].start = 0.0f;
+  new_buffered[0].end =
+      static_cast<float>(pipeline_->GetMediaDuration().InSecondsF());
+  buffered_.swap(new_buffered);
+
+  if (!hasVideo())
+    GetClient()->disableAcceleratedCompositing();
+
+  if (pipeline_->IsLocalSource())
+    SetNetworkState(WebKit::WebMediaPlayer::Loaded);
+
+  SetReadyState(WebKit::WebMediaPlayer::HaveMetadata);
+  // Fire canplaythrough immediately after playback begins because of
+  // crbug.com/106480.
+  // TODO(vrk): set ready state to HaveFutureData when bug above is fixed.
+  SetReadyState(WebKit::WebMediaPlayer::HaveEnoughData);
 
   // Repaint to trigger UI update.
   Repaint();
@@ -718,19 +716,25 @@ void WebMediaPlayerImpl::OnPipelineSeek(PipelineStatus status) {
     return;
   }
 
-  if (status == media::PIPELINE_OK) {
-    // Update our paused time.
-    if (paused_)
-      paused_time_ = pipeline_->GetCurrentTime();
-
-    GetClient()->timeChanged();
+  if (status != media::PIPELINE_OK) {
+    OnPipelineError(status);
+    return;
   }
+
+  // Update our paused time.
+  if (paused_)
+    paused_time_ = pipeline_->GetCurrentTime();
+
+  GetClient()->timeChanged();
 }
 
 void WebMediaPlayerImpl::OnPipelineEnded(PipelineStatus status) {
   DCHECK_EQ(main_loop_, MessageLoop::current());
-  if (status == media::PIPELINE_OK)
-    GetClient()->timeChanged();
+  if (status != media::PIPELINE_OK) {
+    OnPipelineError(status);
+    return;
+  }
+  GetClient()->timeChanged();
 }
 
 void WebMediaPlayerImpl::OnPipelineError(PipelineStatus error) {
