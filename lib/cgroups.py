@@ -502,6 +502,8 @@ class Cgroup(object):
   def KillProcesses(self, poll_interval=0.05, remove=False):
     """Kill all processes in this namespace."""
 
+    my_pid = str(os.getpid())
+
     def _SignalPids(pids, signum):
       cros_lib.SudoRunCommand(
           ['kill', '-%i' % signum] + sorted(pids),
@@ -516,6 +518,12 @@ class Cgroup(object):
     while time.time() < time_end:
       previous_pids = pids
       pids = self.tasks
+
+      if my_pid in pids:
+        raise Exception("Bad API usage: asked to kill cgroup %s, but "
+                        "current pid %i is in that group.  Effectively "
+                        "asked to kill ourselves."
+                        % (self.namespace, my_pid))
 
       if not pids:
         if not saw_pids:
@@ -543,6 +551,12 @@ class Cgroup(object):
       pids = self.all_tasks
 
       if pids:
+        if my_pid in pids:
+          raise Exception("Bad API usage: asked to kill cgroup %s, but "
+                          "current pid %i is in that group.  Effectively "
+                          "asked to kill ourselves."
+                          % (self.namespace, my_pid))
+
         _SignalPids(pids, signal.SIGKILL)
         saw_pids = True
       elif not (saw_pids or groups_existed):
