@@ -28,6 +28,14 @@ class ToggleImageButton;
 
 namespace chromeos {
 
+namespace internal {
+class EAPMethodComboboxModel;
+class Phase2AuthComboboxModel;
+class SecurityComboboxModel;
+class ServerCACertComboboxModel;
+class UserCertComboboxModel;
+}
+
 // A dialog box for showing a password textfield.
 class WifiConfigView : public ChildNetworkConfigView,
                        public views::TextfieldController,
@@ -142,12 +150,17 @@ class WifiConfigView : public ChildNetworkConfigView,
   NetworkPropertyUIData passphrase_ui_data_;
 
   views::Textfield* ssid_textfield_;
+  scoped_ptr<internal::EAPMethodComboboxModel> eap_method_combobox_model_;
   views::Combobox* eap_method_combobox_;
   views::Label* phase_2_auth_label_;
+  scoped_ptr<internal::Phase2AuthComboboxModel> phase_2_auth_combobox_model_;
   views::Combobox* phase_2_auth_combobox_;
   views::Label* user_cert_label_;
+  scoped_ptr<internal::UserCertComboboxModel> user_cert_combobox_model_;
   views::Combobox* user_cert_combobox_;
   views::Label* server_ca_cert_label_;
+  scoped_ptr<internal::ServerCACertComboboxModel>
+      server_ca_cert_combobox_model_;
   views::Combobox* server_ca_cert_combobox_;
   views::Label* identity_label_;
   views::Textfield* identity_textfield_;
@@ -156,6 +169,7 @@ class WifiConfigView : public ChildNetworkConfigView,
   views::Checkbox* save_credentials_checkbox_;
   views::Checkbox* share_network_checkbox_;
   views::Label* shared_network_label_;
+  scoped_ptr<internal::SecurityComboboxModel> security_combobox_model_;
   views::Combobox* security_combobox_;
   views::Label* passphrase_label_;
   views::Textfield* passphrase_textfield_;
