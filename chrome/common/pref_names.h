@@ -670,9 +670,10 @@ extern const char kRestoreSessionStateDialogShown[];
 extern const char kWebIntentsEnabled[];
 
 #if defined(USE_AURA)
-extern const char kPinnedLauncherApps[];
 extern const char kAlwaysAutoHideShelf[];
 extern const char kShelfAutoHideBehavior[];
+extern const char kUseDefaultPinnedApps[];
+extern const char kPinnedLauncherApps[];
 
 extern const char kLongPressTimeInSeconds[];
 extern const char kMaxSecondsBetweenDoubleClick[];

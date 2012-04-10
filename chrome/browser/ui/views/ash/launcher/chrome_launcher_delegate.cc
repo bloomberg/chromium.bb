@@ -142,6 +142,17 @@ ChromeLauncherDelegate::~ChromeLauncherDelegate() {
 void ChromeLauncherDelegate::Init() {
   const base::ListValue* pinned_apps =
       profile_->GetPrefs()->GetList(prefs::kPinnedLauncherApps);
+
+  // Use default pinned apps only when current pinned apps list is empty and
+  // kUseDefaultPinnedApps is true.
+  // TODO(xiyuan): Remove this after http://crbug.com/122679 is resolved.
+  scoped_ptr<base::ListValue> default_pinned_apps;
+  if (pinned_apps->empty() &&
+      profile_->GetPrefs()->GetBoolean(prefs::kUseDefaultPinnedApps)) {
+    default_pinned_apps.reset(CreateDefaultPinnedAppsList());
+    pinned_apps = default_pinned_apps.get();
+  }
+
   for (size_t i = 0; i < pinned_apps->GetSize(); ++i) {
     DictionaryValue* app = NULL;
     if (pinned_apps->GetDictionary(i, &app)) {
@@ -186,8 +197,10 @@ void ChromeLauncherDelegate::Init() {
 void ChromeLauncherDelegate::RegisterUserPrefs(PrefService* user_prefs) {
   // TODO: If we want to support multiple profiles this will likely need to be
   // pushed to local state and we'll need to track profile per item.
+  user_prefs->RegisterBooleanPref(prefs::kUseDefaultPinnedApps,
+                                  true,
+                                  PrefService::SYNCABLE_PREF);
   user_prefs->RegisterListPref(prefs::kPinnedLauncherApps,
-                               CreateDefaultPinnedAppsList(),
                                PrefService::SYNCABLE_PREF);
   user_prefs->RegisterStringPref(prefs::kShelfAutoHideBehavior,
                                  kShelfAutoHideBehaviorDefault,
@@ -555,6 +568,10 @@ void ChromeLauncherDelegate::Observe(
 }
 
 void ChromeLauncherDelegate::PersistPinnedState() {
+  // Set kUseDefaultPinnedApps to false and use pinned apps list from prefs
+  // from now on.
+  profile_->GetPrefs()->SetBoolean(prefs::kUseDefaultPinnedApps, false);
+
   ListPrefUpdate updater(profile_->GetPrefs(), prefs::kPinnedLauncherApps);
   updater.Get()->Clear();
   for (size_t i = 0; i < model_->items().size(); ++i) {

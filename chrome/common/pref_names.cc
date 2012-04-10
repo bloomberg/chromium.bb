@@ -1793,6 +1793,8 @@ const char kAlwaysAutoHideShelf[] =
 // String value corresponding to ash::Shell::ShelfAutoHideBehavior.
 const char kShelfAutoHideBehavior[] =
     "auto_hide_behavior";
+// Boolean value indicating whether to use default pinned apps.
+const char kUseDefaultPinnedApps[] = "use_default_pinned_apps";
 const char kPinnedLauncherApps[] =
     "pinned_launcher_apps";
 
