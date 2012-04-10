@@ -4970,21 +4970,22 @@ bool GLES2DecoderImpl::SimulateAttrib0(
   CopyRealGLErrorsToWrapper();
   glBindBuffer(GL_ARRAY_BUFFER, attrib_0_buffer_id_);
 
-  if (static_cast<GLsizei>(size_needed) > attrib_0_size_) {
+  bool new_buffer = static_cast<GLsizei>(size_needed) > attrib_0_size_;
+  if (new_buffer) {
     glBufferData(GL_ARRAY_BUFFER, size_needed, NULL, GL_DYNAMIC_DRAW);
     GLenum error = glGetError();
     if (error != GL_NO_ERROR) {
       SetGLError(GL_OUT_OF_MEMORY, "glDrawXXX: Simulating attrib 0");
       return false;
     }
-    attrib_0_buffer_matches_value_ = false;
   }
-  if (attrib_0_used &&
-      (!attrib_0_buffer_matches_value_ ||
-       (info->value().v[0] != attrib_0_value_.v[0] ||
-        info->value().v[1] != attrib_0_value_.v[1] ||
-        info->value().v[2] != attrib_0_value_.v[2] ||
-        info->value().v[3] != attrib_0_value_.v[3]))) {
+  if (new_buffer ||
+      (attrib_0_used &&
+       (!attrib_0_buffer_matches_value_ ||
+        (info->value().v[0] != attrib_0_value_.v[0] ||
+         info->value().v[1] != attrib_0_value_.v[1] ||
+         info->value().v[2] != attrib_0_value_.v[2] ||
+         info->value().v[3] != attrib_0_value_.v[3])))) {
     std::vector<Vec4> temp(num_vertices, info->value());
     glBufferSubData(GL_ARRAY_BUFFER, 0, size_needed, &temp[0].v[0]);
     attrib_0_buffer_matches_value_ = true;
