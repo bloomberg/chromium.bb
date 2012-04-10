@@ -2579,7 +2579,7 @@ binutils-sb-install() {
 #+                 It has nothing to do with the bitcode linker
 #+                 which is also gold based.
 binutils-gold() {
-  StepBanner "GOLD-NATIVE" "gold"
+  StepBanner "GOLD-NATIVE (libiberty + gold)"
 
   local srcdir="${TC_SRC_GOLD}"
   assert-dir "${srcdir}" "You need to checkout gold."
@@ -2587,11 +2587,7 @@ binutils-gold() {
   binutils-gold-clean
   binutils-gold-configure
   binutils-gold-make
-  # TODO(robertm): temporary hack to unbreak the tc bots for mac/win
-  # current theory is that we just got the filename wrong, so we dump
-  # the directory contents
-  ls -lR ${TC_BUILD_GOLD}/
-  #binutils-gold-install
+  binutils-gold-install
 }
 
 # binutils-gold-clean - Clean gold
@@ -2605,34 +2601,55 @@ binutils-gold-clean() {
 
 # binutils-gold-configure - Configure binutils for gold (unsandboxed)
 binutils-gold-configure() {
-  StepBanner "GOLD-NATIVE" "Configure"
   local srcdir="${TC_SRC_GOLD}"
   local objdir="${TC_BUILD_GOLD}"
-  # c.f. pnacl/src/gold/gold/configure.tgt
-  local gold_targets="i686-pc-nacl,x86_64-pc-nacl,arm-pc-nacl"
-  mkdir -p "${objdir}"
-  spushd "${objdir}"
 
-  # Gold only really depends on liberty (and not for much).
-  # NOTE: we are still building one unnecessary target: "32bit big-endian"
-  # which is dragged in by targ_extra_big_endian=true in
-  # pnacl/src/gold/gold/configure.tgt
-  # removing it causes undefined symbols during linking of gold.
-  # The potential savings are guesstimated to be 300kB in binary size
+  StepBanner "GOLD-NATIVE" "Configure (libiberty)"
+  # Gold depends on liberty only for a few functions:
+  # xrealloc, lbasename, etc.
+  # we could remove these if necessary
+  mkdir -p "${objdir}/libiberty"
+  spushd "${objdir}/libiberty"
   RunWithLog gold.configure \
     env -i \
     PATH="/usr/bin:/bin" \
     CC="${CC}" \
     CXX="${CXX}" \
-    ${srcdir}/configure --prefix="${BINUTILS_INSTALL_DIR}" \
+    ${srcdir}/libiberty/configure --prefix="${BINUTILS_INSTALL_DIR}"
+
+  spopd
+
+  StepBanner "GOLD-NATIVE" "Configure (gold)"
+  # NOTE: we are still building one unnecessary target: "32bit big-endian"
+  # which is dragged in by targ_extra_big_endian=true in
+  # pnacl/src/gold/gold/configure.tgt
+  # removing it causes undefined symbols during linking of gold.
+  # The potential savings are guesstimated to be 300kB in binary size
+  local gold_targets="i686-pc-nacl,x86_64-pc-nacl,arm-pc-nacl"
+
+  mkdir -p "${objdir}/gold"
+  spushd "${objdir}/gold"
+  RunWithLog gold.configure \
+    env -i \
+    PATH="/usr/bin:/bin" \
+    CC="${CC}" \
+    CXX="${CXX}" \
+    ac_cv_search_zlibVersion=no \
+    ac_cv_header_sys_mman_h=no \
+    ac_cv_func_mmap=no \
+    ac_cv_func_mallinfo=no \
+    ${srcdir}/gold/configure --prefix="${BINUTILS_INSTALL_DIR}" \
                                       --enable-targets=${gold_targets} \
-                                      --enable-gold=yes \
-                                      --enable-ld=no \
                                       --disable-intl \
-                                      --disable-bfd \
                                       --enable-plugins=no \
                                       --disable-werror \
                                       --with-sysroot="${NONEXISTENT_PATH}"
+  # Note: the extra ac_cv settings:
+  # * eliminate unnecessary use of zlib
+  # * eliminate use of mmap
+  # (those should not have much impact on the non-sandboxed
+  # version but help in the sandboxed case)
+
   # There's no point in setting the correct path as sysroot, because we
   # want the toolchain to be relocatable. The driver will use ld command-line
   # option --sysroot= to override this value and set it to the correct path.
@@ -2643,34 +2660,39 @@ binutils-gold-configure() {
 
 # binutils-gold-make - Make binutils (unsandboxed)
 binutils-gold-make() {
-  StepBanner "GOLD-NATIVE" "Make"
   local objdir="${TC_BUILD_GOLD}"
+  ts-touch-open "${objdir}/"
 
-  spushd "${objdir}"
-  ts-touch-open "${objdir}"
+  StepBanner "GOLD-NATIVE" "Make (liberty)"
+  spushd "${objdir}/libiberty"
+
+  RunWithLog gold.make \
+      env -i PATH="/usr/bin:/bin" \
+      make ${MAKE_OPTS}
+  spopd
+
+  StepBanner "GOLD-NATIVE" "Make (gold)"
+  spushd "${objdir}/gold"
+  RunWithLog gold.make \
+      env -i PATH="/usr/bin:/bin" \
+      make ${MAKE_OPTS}
+  spopd
 
   # Note: the make invocation below actually results
   # in another configure invocation, so we pass in a few
   # more environment variables to control this:
-  # * eliminate unnecessary use of zlib
-  # * eliminate use of mmap
-  # (those should not have much impact on the non-sandboxed
-  # version but help in the sandboxed case
-  RunWithLog gold.make \
-      env -i PATH="/usr/bin:/bin" \
-      ac_cv_search_zlibVersion=no \
-      ac_cv_header_sys_mman_h=no \
-      ac_cv_func_mmap=no \
-      ac_cv_func_mallinfo=no \
-      make ${MAKE_OPTS} all-gold
+
+
 
   ts-touch-commit "${objdir}"
-  spopd
+
 }
 
 # binutils-gold-install - Install gold
 binutils-gold-install() {
   StepBanner "GOLD-NATIVE" "Install"
+  # TODO(robertm): removed this once we have mac/windows working
+  ls -l  ${TC_BUILD_GOLD}/gold
   local dst=${BINUTILS_INSTALL_DIR}/bin/arm-pc-nacl-ld.alt
   cp ${TC_BUILD_GOLD}/gold/ld-new ${dst}
 }
