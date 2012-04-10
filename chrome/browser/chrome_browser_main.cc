@@ -57,7 +57,6 @@
 #include "chrome/browser/metrics/tracking_synchronizer.h"
 #include "chrome/browser/nacl_host/nacl_process_host.h"
 #include "chrome/browser/net/chrome_net_log.h"
-#include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
@@ -993,22 +992,6 @@ void ChromeBrowserMainParts::AutoLaunchChromeFieldTrial() {
   }
 }
 
-void ChromeBrowserMainParts::ComodoDNSExperimentFieldTrial() {
-  // 100% probability of being in the experiment group until the timeout.
-  const base::FieldTrial::Probability kDivisor = 1;
-  const base::FieldTrial::Probability kProbability = 1;
-
-  // After April 15, 2012 builds, it will always be in default group.
-  scoped_refptr<base::FieldTrial> trial(
-      new base::FieldTrial("ComodoDNSExperiment", kDivisor,
-          "inactive", 2012, 4, 15));
-
-  const int active = trial->AppendGroup("active", kProbability);
-
-  if (trial->group() == active)
-    ChromeNetworkDelegate::EnableComodoDNSExperiment();
-}
-
 // ChromeBrowserMainParts: |SetupMetricsAndFieldTrials()| related --------------
 
 void ChromeBrowserMainParts::SetupFieldTrials(bool metrics_recording_enabled,
@@ -1029,7 +1012,6 @@ void ChromeBrowserMainParts::SetupFieldTrials(bool metrics_recording_enabled,
   PredictorFieldTrial();
   DefaultAppsFieldTrial();
   AutoLaunchChromeFieldTrial();
-  ComodoDNSExperimentFieldTrial();
   AutocompleteFieldTrial::Activate();
   NewTabUI::SetupFieldTrials();
 }

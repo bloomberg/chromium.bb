@@ -127,10 +127,6 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   // computer startup has on retention and usage of Chrome.
   void AutoLaunchChromeFieldTrial();
 
-  // A field trial to test the viability of a DNS based, certificate revocation
-  // system.
-  void ComodoDNSExperimentFieldTrial();
-
   // Methods for |SetupMetricsAndFieldTrials()| --------------------------------
 
   // Constructs metrics service and does related initialization, including
