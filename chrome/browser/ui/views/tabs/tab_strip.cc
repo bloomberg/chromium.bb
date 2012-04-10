@@ -39,6 +39,7 @@
 #include "ui/gfx/skbitmap_operations.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/mouse_watcher_view_host.h"
+#include "ui/views/view_model_utils.h"
 #include "ui/views/widget/default_theme_provider.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
@@ -336,22 +337,11 @@ void TabStrip::RemoveTabDelegate::AnimationEnded(
 
 void TabStrip::RemoveTabDelegate::AnimationCanceled(
     const ui::Animation* animation) {
-  // We can be canceled for two interesting reasons:
-  // . The tab we reference was dragged back into the tab strip. In this case
-  //   we don't want to remove the tab (closing is false).
-  // . The drag was completed before the animation completed
-  //   (DestroyDraggedSourceTab). In this case we need to remove the tab
-  //   (closing is true).
-  if (tab_->closing())
-    CompleteRemove();
+  CompleteRemove();
 }
 
 void TabStrip::RemoveTabDelegate::CompleteRemove() {
-  if (!tab_->closing()) {
-    // The tab was added back yet we weren't canceled. This shouldn't happen.
-    NOTREACHED();
-    return;
-  }
+  DCHECK(tab_->closing());
   tabstrip_->RemoveAndDeleteTab(tab_);
   HighlightCloseButton();
 }
@@ -433,23 +423,20 @@ bool TabStrip::SizeTabButtonToTopOfTabStrip() {
 }
 
 void TabStrip::StartHighlight(int model_index) {
-  GetTabAtModelIndex(model_index)->StartPulse();
+  tab_at(model_index)->StartPulse();
 }
 
 void TabStrip::StopAllHighlighting() {
   for (int i = 0; i < tab_count(); ++i)
-    GetTabAtTabDataIndex(i)->StopPulse();
+    tab_at(i)->StopPulse();
 }
 
 void TabStrip::AddTabAt(int model_index, const TabRendererData& data) {
   BaseTab* tab = CreateTab();
   tab->SetData(data);
-
-  TabData d = { tab, gfx::Rect() };
-  tab_data_.insert(tab_data_.begin() + ModelIndexToTabIndex(model_index), d);
-
+  UpdateTabsClosingMap(model_index, 1);
+  tabs_.Add(tab, model_index);
   AddChildView(tab);
-
   // Don't animate the first tab, it looks weird, and don't animate anything
   // if the containing window isn't visible yet.
   if (tab_count() > 1 && GetWidget() && GetWidget()->IsVisible())
@@ -459,20 +446,12 @@ void TabStrip::AddTabAt(int model_index, const TabRendererData& data) {
 }
 
 void TabStrip::MoveTab(int from_model_index, int to_model_index) {
-  BaseTab* last_tab = tab_data_.back().tab;
-
-  int from_tab_data_index = ModelIndexToTabIndex(from_model_index);
-  BaseTab* tab = tab_data_[from_tab_data_index].tab;
-  tab_data_.erase(tab_data_.begin() + from_tab_data_index);
-
-  TabData data = {tab, gfx::Rect()};
-  int to_tab_data_index = ModelIndexToTabIndex(to_model_index);
-  tab_data_.insert(tab_data_.begin() + to_tab_data_index, data);
-
+  DCHECK_GT(tabs_.view_size(), 0);
+  BaseTab* last_tab = tab_at(tab_count() - 1);
+  tabs_.Move(from_model_index, to_model_index);
   StartMoveTabAnimation();
-
   if (TabDragController::IsAttachedTo(this) &&
-      (last_tab != tab_data_.back().tab || tab_data_.back().tab->dragging())) {
+      (last_tab != tab_at(tab_count() - 1) || last_tab->dragging())) {
     newtab_button_->SetVisible(false);
   }
 }
@@ -491,7 +470,7 @@ void TabStrip::RemoveTabAt(int model_index) {
 }
 
 void TabStrip::SetTabData(int model_index, const TabRendererData& data) {
-  BaseTab* tab = GetBaseTabAtModelIndex(model_index);
+  BaseTab* tab = tab_at(model_index);
   bool mini_state_changed = tab->data().mini != data.mini;
   tab->SetData(data);
 
@@ -516,12 +495,12 @@ void TabStrip::PrepareForCloseAt(int model_index) {
     // available_width_for_tabs_ so that if we do a layout we don't position a
     // tab past the end of the second to last tab. We do this so that as the
     // user closes tabs with the mouse a tab continues to fall under the mouse.
-    Tab* last_tab = GetTabAtModelIndex(model_count - 1);
-    Tab* tab_being_removed = GetTabAtModelIndex(model_index);
+    Tab* last_tab = tab_at(model_count - 1);
+    Tab* tab_being_removed = tab_at(model_index);
     available_width_for_tabs_ = last_tab->x() + last_tab->width() -
         tab_being_removed->width() - kTabHOffset;
     if (model_index == 0 && tab_being_removed->data().mini &&
-        !GetTabAtModelIndex(1)->data().mini) {
+        !tab_at(1)->data().mini) {
       available_width_for_tabs_ -= kMiniToNonMiniGap;
     }
   }
@@ -552,34 +531,22 @@ void TabStrip::SetSelection(const TabStripSelectionModel& old_selection,
                       new_selection.selected_indices().begin(),
                       new_selection.selected_indices().end(),
                       it);
-  for (size_t i = 0; i < no_longer_selected.size(); ++i) {
-    GetTabAtTabDataIndex(ModelIndexToTabIndex(no_longer_selected[i]))->
-        StopMiniTabTitleAnimation();
-  }
+  for (size_t i = 0; i < no_longer_selected.size(); ++i)
+    tab_at(no_longer_selected[i])->StopMiniTabTitleAnimation();
 }
 
 void TabStrip::TabTitleChangedNotLoading(int model_index) {
-  Tab* tab = GetTabAtModelIndex(model_index);
+  Tab* tab = tab_at(model_index);
   if (tab->data().mini && !tab->IsActive())
     tab->StartMiniTabTitleAnimation();
 }
 
-BaseTab* TabStrip::GetBaseTabAtModelIndex(int model_index) const {
-  return base_tab_at_tab_index(ModelIndexToTabIndex(model_index));
+Tab* TabStrip::tab_at(int index) const {
+  return static_cast<Tab*>(tabs_.view_at(index));
 }
 
 int TabStrip::GetModelIndexOfBaseTab(const BaseTab* tab) const {
-  for (int i = 0, model_index = 0; i < tab_count(); ++i) {
-    BaseTab* current_tab = base_tab_at_tab_index(i);
-    if (!current_tab->closing()) {
-      if (current_tab == tab)
-        return model_index;
-      model_index++;
-    } else if (current_tab == tab) {
-      return -1;
-    }
-  }
-  return -1;
+  return tabs_.GetIndexOfView(tab);
 }
 
 int TabStrip::GetModelCount() const {
@@ -588,18 +555,6 @@ int TabStrip::GetModelCount() const {
 
 bool TabStrip::IsValidModelIndex(int model_index) const {
   return controller_->IsValidIndex(model_index);
-}
-
-int TabStrip::ModelIndexToTabIndex(int model_index) const {
-  int current_model_index = 0;
-  for (int i = 0; i < tab_count(); ++i) {
-    if (!base_tab_at_tab_index(i)->closing()) {
-      if (current_model_index == model_index)
-        return i;
-      current_model_index++;
-    }
-  }
-  return static_cast<int>(tab_data_.size());
 }
 
 BaseTab* TabStrip::CreateTabForDragging() {
@@ -616,7 +571,7 @@ bool TabStrip::IsDragSessionActive() const {
 
 bool TabStrip::IsActiveDropTarget() const {
   for (int i = 0; i < tab_count(); ++i) {
-    BaseTab* tab = base_tab_at_tab_index(i);
+    BaseTab* tab = tab_at(i);
     if (tab->dragging())
       return true;
   }
@@ -656,17 +611,26 @@ void TabStrip::AddSelectionFromAnchorTo(BaseTab* tab) {
 }
 
 void TabStrip::CloseTab(BaseTab* tab) {
-  // Find the closest model index. We do this so that the user can rapdily close
-  // tabs and have the close click close the next tab.
-  int model_index = 0;
-  for (int i = 0; i < tab_count(); ++i) {
-    BaseTab* current_tab = base_tab_at_tab_index(i);
-    if (current_tab == tab)
-      break;
-    if (!current_tab->closing())
-      model_index++;
+  if (tab->closing()) {
+    // If the tab is already closing, close the next tab. We do this so that the
+    // user can rapdily close tabs by clicking the close button and not have
+    // the animations interfere with that.
+    for (TabsClosingMap::const_iterator i = tabs_closing_map_.begin();
+         i != tabs_closing_map_.end(); ++i) {
+      std::vector<BaseTab*>::const_iterator j =
+          std::find(i->second.begin(), i->second.end(), tab);
+      if (j != i->second.end()) {
+        if (i->first + 1 < GetModelCount())
+          controller_->CloseTab(i->first + 1);
+        return;
+      }
+    }
+    // If we get here, it means a tab has been marked as closing but isn't in
+    // the set of known closing tabs.
+    NOTREACHED();
+    return;
   }
-
+  int model_index = GetModelIndexOfBaseTab(tab);
   if (IsValidModelIndex(model_index))
     controller_->CloseTab(model_index);
 }
@@ -726,8 +690,8 @@ void TabStrip::MaybeStartDrag(
   // Build the set of selected tabs to drag and calculate the offset from the
   // first selected tab.
   for (int i = 0; i < tab_count(); ++i) {
-    BaseTab* other_tab = base_tab_at_tab_index(i);
-    if (IsTabSelected(other_tab) && !other_tab->closing()) {
+    BaseTab* other_tab = tab_at(i);
+    if (IsTabSelected(other_tab)) {
       tabs.push_back(other_tab);
       if (other_tab == tab) {
         size_to_selected = GetSizeNeededForTabs(tabs);
@@ -830,7 +794,7 @@ bool TabStrip::IsPositionInWindowCaption(const gfx::Point& point) {
 
 void TabStrip::SetBackgroundOffset(const gfx::Point& offset) {
   for (int i = 0; i < tab_count(); ++i)
-    GetTabAtTabDataIndex(i)->set_background_offset(offset);
+    tab_at(i)->set_background_offset(offset);
   newtab_button_->set_background_offset(offset);
 }
 
@@ -851,20 +815,19 @@ void TabStrip::Layout() {
 }
 
 void TabStrip::PaintChildren(gfx::Canvas* canvas) {
-  // Normally, tabs are painted in reverse order, so they stack to the left.
-  // When in "touch optimized mode", tabs stack up towards the active tab from
-  // the left and the right.
+  // The view order doesn't match the paint order (tabs_ contains the tab
+  // ordering). Additionally we need to paint the tabs that are closing in
+  // |tabs_closing_map_|.
   Tab* active_tab = NULL;
   std::vector<Tab*> tabs_dragging;
   std::vector<Tab*> selected_tabs;
   bool is_dragging = false;
   int active_tab_index = -1;
 
+  PaintClosingTabs(canvas, tab_count());
+
   for (int i = tab_count() - 1; i >= 0; --i) {
-    // We must ask the _Tab's_ model, not ourselves, because in some situations
-    // the model will be different to this object, e.g. when a Tab is being
-    // removed after its TabContents has been destroyed.
-    Tab* tab = GetTabAtTabDataIndex(i);
+    Tab* tab = tab_at(i);
     if (tab->dragging() && !stacking_) {
       is_dragging = true;
       if (tab->IsActive()) {
@@ -885,17 +848,18 @@ void TabStrip::PaintChildren(gfx::Canvas* canvas) {
       active_tab = tab;
       active_tab_index = i;
     }
+    PaintClosingTabs(canvas, i);
   }
 
   // Draw from the left and then the right if we're in touch mode.
   if (stacking_ && active_tab_index >= 0) {
     for (int i = 0; i < active_tab_index; ++i) {
-      Tab* tab = GetTabAtTabDataIndex(i);
+      Tab* tab = tab_at(i);
       tab->Paint(canvas);
     }
 
     for (int i = tab_count() - 1; i > active_tab_index; --i) {
-      Tab* tab = GetTabAtTabDataIndex(i);
+      Tab* tab = tab_at(i);
       tab->Paint(canvas);
     }
   }
@@ -936,6 +900,17 @@ void TabStrip::PaintChildren(gfx::Canvas* canvas) {
   // If the active tab is being dragged, it goes last.
   if (active_tab && is_dragging)
     active_tab->Paint(canvas);
+}
+
+void TabStrip::PaintClosingTabs(gfx::Canvas* canvas, int index) {
+  if (tabs_closing_map_.find(index) == tabs_closing_map_.end())
+    return;
+
+  const std::vector<BaseTab*>& tabs = tabs_closing_map_[index];
+  for (std::vector<BaseTab*>::const_reverse_iterator i = tabs.rbegin();
+       i != tabs.rend(); ++i) {
+    (*i)->Paint(canvas);
+  }
 }
 
 gfx::Size TabStrip::GetPreferredSize() {
@@ -996,43 +971,24 @@ views::View* TabStrip::GetEventHandlerForPoint(const gfx::Point& point) {
   if (v && v != this && v->GetClassName() != Tab::kViewClassName)
     return v;
 
-  // The display order doesn't necessarily match the child list order, so we
-  // walk the display list hit-testing Tabs. Since the active tab always
-  // renders on top of adjacent tabs, it needs to be hit-tested before any
-  // left-adjacent Tab, so we look ahead for it as we walk.
+  // The view order doesn't match the ordering we paint in. |tabs_| contains
+  // the overall order.
   for (int i = 0; i < tab_count(); ++i) {
-    Tab* next_tab = i < (tab_count() - 1) ? GetTabAtTabDataIndex(i + 1) : NULL;
+    Tab* next_tab = i < (tab_count() - 1) ? tab_at(i + 1) : NULL;
     if (next_tab && next_tab->IsActive() && IsPointInTab(next_tab, point))
       return next_tab;
-    Tab* tab = GetTabAtTabDataIndex(i);
+    Tab* tab = tab_at(i);
     if (IsPointInTab(tab, point))
       return tab;
   }
 
-  // No need to do any floating view stuff, we don't use them in the TabStrip.
   return this;
-}
-
-int TabStrip::TabIndexOfTab(BaseTab* tab) const {
-  for (int i = 0; i < tab_count(); ++i) {
-    if (base_tab_at_tab_index(i) == tab)
-      return i;
-  }
-  return -1;
-}
-
-Tab* TabStrip::GetTabAtTabDataIndex(int tab_data_index) const {
-  return static_cast<Tab*>(base_tab_at_tab_index(tab_data_index));
-}
-
-Tab* TabStrip::GetTabAtModelIndex(int model_index) const {
-  return GetTabAtTabDataIndex(ModelIndexToTabIndex(model_index));
 }
 
 int TabStrip::GetMiniTabCount() const {
   int mini_count = 0;
   for (int i = 0; i < tab_count(); ++i) {
-    if (base_tab_at_tab_index(i)->data().mini)
+    if (tab_at(i)->data().mini)
       mini_count++;
     else
       return mini_count;
@@ -1062,11 +1018,11 @@ void TabStrip::ViewHierarchyChanged(bool is_add,
 const views::View* TabStrip::GetViewByID(int view_id) const {
   if (tab_count() > 0) {
     if (view_id == VIEW_ID_TAB_LAST) {
-      return base_tab_at_tab_index(tab_count() - 1);
+      return tab_at(tab_count() - 1);
     } else if ((view_id >= VIEW_ID_TAB_0) && (view_id < VIEW_ID_TAB_LAST)) {
       int index = view_id - VIEW_ID_TAB_0;
       if (index >= 0 && index < tab_count()) {
-        return base_tab_at_tab_index(index);
+        return tab_at(index);
       } else {
         return NULL;
       }
@@ -1134,16 +1090,15 @@ void TabStrip::StartInsertTabAnimation(int model_index) {
 
   GenerateIdealBounds();
 
-  int tab_data_index = ModelIndexToTabIndex(model_index);
-  BaseTab* tab = base_tab_at_tab_index(tab_data_index);
+  BaseTab* tab = tab_at(model_index);
   if (model_index == 0) {
-    tab->SetBounds(0, ideal_bounds(tab_data_index).y(), 0,
-                   ideal_bounds(tab_data_index).height());
+    tab->SetBounds(0, ideal_bounds(model_index).y(), 0,
+                   ideal_bounds(model_index).height());
   } else {
-    BaseTab* last_tab = base_tab_at_tab_index(tab_data_index - 1);
+    BaseTab* last_tab = tab_at(model_index - 1);
     tab->SetBounds(last_tab->bounds().right() + kTabHOffset,
-                   ideal_bounds(tab_data_index).y(), 0,
-                   ideal_bounds(tab_data_index).height());
+                   ideal_bounds(model_index).y(), 0,
+                   ideal_bounds(model_index).height());
   }
 
   AnimateToIdealBounds();
@@ -1159,8 +1114,10 @@ void TabStrip::StartRemoveTabAnimation(int model_index) {
   PrepareForAnimation();
 
   // Mark the tab as closing.
-  BaseTab* tab = GetBaseTabAtModelIndex(model_index);
+  BaseTab* tab = tab_at(model_index);
   tab->set_closing(true);
+
+  RemoveTabFromViewModel(model_index);
 
   // Start an animation for the tabs.
   GenerateIdealBounds();
@@ -1197,7 +1154,7 @@ void TabStrip::StopAnimating(bool layout) {
 
 void TabStrip::AnimateToIdealBounds() {
   for (int i = 0; i < tab_count(); ++i) {
-    Tab* tab = GetTabAtTabDataIndex(i);
+    Tab* tab = tab_at(i);
     if (!tab->closing() && !tab->dragging())
       bounds_animator_.AnimateViewTo(tab, ideal_bounds(i));
   }
@@ -1216,8 +1173,7 @@ void TabStrip::DoLayout() {
 
   GenerateIdealBounds();
 
-  for (int i = 0; i < tab_count(); ++i)
-    tab_data_[i].tab->SetBoundsRect(tab_data_[i].ideal_bounds);
+  views::ViewModelUtils::SetViewBoundsToIdealBounds(tabs_);
 
   SchedulePaint();
 
@@ -1246,7 +1202,7 @@ void TabStrip::LayoutDraggedTabsAt(const std::vector<BaseTab*>& tabs,
     return;
   }
   // Immediately hide the new tab button if the last tab is being dragged.
-  if (tab_data_.back().tab->dragging())
+  if (tab_at(tab_count() - 1)->dragging())
     newtab_button_->SetVisible(false);
   std::vector<gfx::Rect> bounds;
   CalculateBoundsForDraggedTabs(tabs, &bounds);
@@ -1307,11 +1263,53 @@ int TabStrip::GetSizeNeededForTabs(const std::vector<BaseTab*>& tabs) {
   return width;
 }
 
+void TabStrip::RemoveTabFromViewModel(int index) {
+  // We still need to paint the tab until we actually remove it. Put it
+  // in tabs_closing_map_ so we can find it.
+  tabs_closing_map_[index].push_back(tab_at(index));
+  UpdateTabsClosingMap(index + 1, -1);
+  tabs_.Remove(index);
+}
+
 void TabStrip::RemoveAndDeleteTab(BaseTab* tab) {
-  int tab_data_index = TabIndexOfTab(tab);
-  DCHECK(tab_data_index != -1);
-  tab_data_.erase(tab_data_.begin() + tab_data_index);
-  delete tab;
+  scoped_ptr<BaseTab> deleter(tab);
+  for (TabsClosingMap::iterator i = tabs_closing_map_.begin();
+       i != tabs_closing_map_.end(); ++i) {
+    std::vector<BaseTab*>::iterator j =
+        std::find(i->second.begin(), i->second.end(), tab);
+    if (j != i->second.end()) {
+      i->second.erase(j);
+      if (i->second.empty())
+        tabs_closing_map_.erase(i);
+      return;
+    }
+  }
+  NOTREACHED();
+}
+
+void TabStrip::UpdateTabsClosingMap(int index, int delta) {
+  if (tabs_closing_map_.empty())
+    return;
+
+  if (delta == -1 &&
+      tabs_closing_map_.find(index - 1) != tabs_closing_map_.end() &&
+      tabs_closing_map_.find(index) != tabs_closing_map_.end()) {
+    const std::vector<BaseTab*>& tabs(tabs_closing_map_[index]);
+    tabs_closing_map_[index - 1].insert(
+        tabs_closing_map_[index - 1].end(), tabs.begin(), tabs.end());
+  }
+  TabsClosingMap updated_map;
+  for (TabsClosingMap::iterator i = tabs_closing_map_.begin();
+       i != tabs_closing_map_.end(); ++i) {
+    if (i->first > index) {
+      updated_map[i->first + delta] = i->second;
+    } else if (i->first < index) {
+      updated_map[i->first] = i->second;
+    }
+  }
+  if (delta > 0 && tabs_closing_map_.find(index) != tabs_closing_map_.end())
+    updated_map[index + delta] = tabs_closing_map_[index];
+  tabs_closing_map_.swap(updated_map);
 }
 
 void TabStrip::StartedDraggingTabs(const std::vector<BaseTab*>& tabs) {
@@ -1323,7 +1321,7 @@ void TabStrip::StartedDraggingTabs(const std::vector<BaseTab*>& tabs) {
 
   // Reset dragging state of existing tabs.
   for (int i = 0; i < tab_count(); ++i)
-    base_tab_at_tab_index(i)->set_dragging(false);
+    tab_at(i)->set_dragging(false);
 
   for (size_t i = 0; i < tabs.size(); ++i) {
     tabs[i]->set_dragging(true);
@@ -1335,8 +1333,8 @@ void TabStrip::StartedDraggingTabs(const std::vector<BaseTab*>& tabs) {
 
   // Sets the bounds of the dragged tabs.
   for (size_t i = 0; i < tabs.size(); ++i) {
-    int tab_data_index = TabIndexOfTab(tabs[i]);
-    DCHECK(tab_data_index != -1);
+    int tab_data_index = GetModelIndexOfBaseTab(tabs[i]);
+    DCHECK_NE(-1, tab_data_index);
     tabs[i]->SetBoundsRect(ideal_bounds(tab_data_index));
   }
   SchedulePaint();
@@ -1353,7 +1351,7 @@ void TabStrip::StoppedDraggingTabs(const std::vector<BaseTab*>& tabs) {
 }
 
 void TabStrip::StoppedDraggingTab(BaseTab* tab, bool* is_first_tab) {
-  int tab_data_index = TabIndexOfTab(tab);
+  int tab_data_index = GetModelIndexOfBaseTab(tab);
   if (tab_data_index == -1) {
     // The tab was removed before the drag completed. Don't do anything.
     return;
@@ -1367,7 +1365,7 @@ void TabStrip::StoppedDraggingTab(BaseTab* tab, bool* is_first_tab) {
     GenerateIdealBounds();
     AnimateToIdealBounds();
   }
-  bounds_animator_.AnimateViewTo(tab, ideal_bounds(TabIndexOfTab(tab)));
+  bounds_animator_.AnimateViewTo(tab, ideal_bounds(tab_data_index));
   // Install a delegate to reset the dragging state when done. We have to leave
   // dragging true for the tab otherwise it'll draw beneath the new tab button.
   bounds_animator_.SetAnimationDelegate(
@@ -1391,7 +1389,7 @@ TabDragController* TabStrip::ReleaseDragController() {
 int TabStrip::NumNonClosingTabs(int index1, int index2) const {
   int count = 0;
   for (int i = index1; i < index2; ++i) {
-    if (!base_tab_at_tab_index(i)->closing())
+    if (!tab_at(i)->closing())
       count++;
   }
   return count;
@@ -1415,7 +1413,7 @@ void TabStrip::EnsureModelIndexIsVisible(int model_index) {
     return;
 
   int original = first_visible_tab_index_;
-  int active_index = ModelIndexToTabIndex(model_index);
+  int active_index = model_index;
   if (active_index < first_visible_tab_index_)
     first_visible_tab_index_ = active_index;
   else if (active_index >= first_visible_tab_index_ + num_visible_tabs_)
@@ -1527,7 +1525,7 @@ void TabStrip::ResizeLayoutTabs() {
     // mini-tabs have the same width), so there is nothing to do.
     return;
   }
-  Tab* first_tab  = GetTabAtTabDataIndex(mini_tab_count);
+  Tab* first_tab  = tab_at(mini_tab_count);
   double unselected, selected;
   GetDesiredTabWidths(tab_count(), mini_tab_count, &unselected, &selected);
   // TODO: this is always selected, should it be 'selected : unselected'?
@@ -1543,7 +1541,7 @@ void TabStrip::SetTabBoundsForDrag(const std::vector<gfx::Rect>& tab_bounds) {
   StopAnimating(false);
   DCHECK_EQ(tab_count(), static_cast<int>(tab_bounds.size()));
   for (int i = 0; i < tab_count(); ++i)
-    base_tab_at_tab_index(i)->SetBoundsRect(tab_bounds[i]);
+    tab_at(i)->SetBoundsRect(tab_bounds[i]);
 }
 
 void TabStrip::AddMessageLoopObserver() {
@@ -1567,13 +1565,13 @@ gfx::Rect TabStrip::GetDropBounds(int drop_index,
   DCHECK_NE(drop_index, -1);
   int center_x;
   if (drop_index < tab_count()) {
-    Tab* tab = GetTabAtTabDataIndex(drop_index);
+    Tab* tab = tab_at(drop_index);
     if (drop_before)
       center_x = tab->x() - (kTabHOffset / 2);
     else
       center_x = tab->x() + (tab->width() / 2);
   } else {
-    Tab* last_tab = GetTabAtTabDataIndex(drop_index - 1);
+    Tab* last_tab = tab_at(drop_index - 1);
     center_x = last_tab->x() + last_tab->width() + (kTabHOffset / 2);
   }
 
@@ -1609,7 +1607,7 @@ void TabStrip::UpdateDropIndex(const DropTargetEvent& event) {
   const int x = GetMirroredXInView(event.x());
   // We don't allow replacing the urls of mini-tabs.
   for (int i = GetMiniTabCount(); i < tab_count(); ++i) {
-    Tab* tab = GetTabAtTabDataIndex(i);
+    Tab* tab = tab_at(i);
     const int tab_max_x = tab->x() + tab->width();
     const int hot_width = tab->width() / kTabEdgeRatioInverse;
     if (x < tab_max_x) {
@@ -1713,7 +1711,7 @@ bool TabStrip::IsAnimating() const {
 void TabStrip::PrepareForAnimation() {
   if (!IsDragSessionActive() && !TabDragController::IsAttachedTo(this)) {
     for (int i = 0; i < tab_count(); ++i)
-      base_tab_at_tab_index(i)->set_dragging(false);
+      tab_at(i)->set_dragging(false);
   }
 }
 
@@ -1721,7 +1719,7 @@ void TabStrip::GenerateIdealBounds() {
   int non_closing_tab_count = 0;
   int mini_tab_count = 0;
   for (int i = 0; i < tab_count(); ++i) {
-    BaseTab* tab = base_tab_at_tab_index(i);
+    BaseTab* tab = tab_at(i);
     if (!tab->closing()) {
       ++non_closing_tab_count;
       if (tab->data().mini)
@@ -1742,7 +1740,7 @@ void TabStrip::GenerateIdealBounds() {
   double tab_x = 0;
   bool last_was_mini = false;
   for (int i = 0; i < tab_count(); ++i) {
-    Tab* tab = GetTabAtTabDataIndex(i);
+    Tab* tab = tab_at(i);
     if (!tab->closing()) {
       double tab_width = unselected;
       if (tab->data().mini) {
@@ -1801,7 +1799,7 @@ double TabStrip::GenerateIdealBoundsWithStacking(int mini_tab_count,
   int tab_index = 0;
   double next_x = 0;
   for (; tab_index < tab_count(); ++tab_index) {
-    BaseTab* tab = base_tab_at_tab_index(tab_index);
+    BaseTab* tab = tab_at(tab_index);
     if (!tab->closing() && !tab->data().mini) {
       next_x = ideal_bounds(tab_index).x();
       break;
@@ -1823,7 +1821,7 @@ double TabStrip::GenerateIdealBoundsWithStacking(int mini_tab_count,
   for (int visible_count = 0;
        stacked_trailing_index < tab_count() &&
            visible_count < num_visible_tabs_; ++stacked_trailing_index) {
-    if (!base_tab_at_tab_index(stacked_trailing_index)->closing())
+    if (!tab_at(stacked_trailing_index)->closing())
       visible_count++;
   }
   int stacked_leading_count =
@@ -1836,7 +1834,7 @@ double TabStrip::GenerateIdealBoundsWithStacking(int mini_tab_count,
     double stacked_offset =
         kMaxEdgeStackWidth / static_cast<double>(stacked_leading_count);
     for (; tab_index < first_visible_tab_index_; ++tab_index) {
-      if (base_tab_at_tab_index(tab_index)->closing())
+      if (tab_at(tab_index)->closing())
         continue;
       gfx::Rect bounds = ideal_bounds(tab_index);
       bounds.set_x(next_x);
@@ -1859,7 +1857,7 @@ double TabStrip::GenerateIdealBoundsWithStacking(int mini_tab_count,
   for (int visible_count = 0;
        tab_index < tab_count() && visible_count < num_visible_tabs_;
        tab_index++) {
-    if (base_tab_at_tab_index(tab_index)->closing())
+    if (tab_at(tab_index)->closing())
       continue;
     gfx::Rect bounds = ideal_bounds(tab_index);
     bounds.set_x(next_x);
@@ -1877,7 +1875,7 @@ double TabStrip::GenerateIdealBoundsWithStacking(int mini_tab_count,
   next_x = width() - (kNewTabButtonHOffset + newtab_button_bounds_.width()) -
       (stacked_trailing_count - 1) * stacked_offset - selected_size;
   for (; tab_index < tab_count(); ++tab_index) {
-    if (base_tab_at_tab_index(tab_index)->closing())
+    if (tab_at(tab_index)->closing())
       continue;
     gfx::Rect bounds = ideal_bounds(tab_index);
     bounds.set_x(next_x);
@@ -1907,34 +1905,31 @@ void TabStrip::StartMiniTabAnimation() {
 void TabStrip::StartMouseInitiatedRemoveTabAnimation(int model_index) {
   // The user initiated the close. We want to persist the bounds of all the
   // existing tabs, so we manually shift ideal_bounds then animate.
-  int tab_data_index = ModelIndexToTabIndex(model_index);
-  DCHECK(tab_data_index != tab_count());
-  BaseTab* tab_closing = base_tab_at_tab_index(tab_data_index);
+  BaseTab* tab_closing = tab_at(model_index);
   int delta = tab_closing->width() + kTabHOffset;
   // If the tab being closed is a mini-tab next to a non-mini-tab, be sure to
   // add the extra padding.
-  int next_tab_data_index = ModelIndexToTabIndex(model_index + 1);
-  DCHECK_NE(next_tab_data_index, tab_count());
-  if (tab_closing->data().mini && next_tab_data_index < tab_count() &&
-      !base_tab_at_tab_index(next_tab_data_index)->data().mini) {
+  DCHECK_NE(model_index + 1, tab_count());
+  if (tab_closing->data().mini && model_index + 1 < tab_count() &&
+      !tab_at(model_index + 1)->data().mini) {
     delta += kMiniToNonMiniGap;
   }
 
-  for (int i = tab_data_index + 1; i < tab_count(); ++i) {
-    BaseTab* tab = base_tab_at_tab_index(i);
-    if (!tab->closing()) {
-      gfx::Rect bounds = ideal_bounds(i);
-      bounds.set_x(bounds.x() - delta);
-      set_ideal_bounds(i, bounds);
-    }
+  for (int i = model_index + 1; i < tab_count(); ++i) {
+    gfx::Rect bounds = ideal_bounds(i);
+    bounds.set_x(bounds.x() - delta);
+    set_ideal_bounds(i, bounds);
   }
 
   newtab_button_bounds_.set_x(newtab_button_bounds_.x() - delta);
 
   PrepareForAnimation();
 
-  // Mark the tab as closing.
   tab_closing->set_closing(true);
+
+  // We still need to paint the tab until we actually remove it. Put it in
+  // tabs_closing_map_ so we can find it.
+  RemoveTabFromViewModel(model_index);
 
   AnimateToIdealBounds();
 
@@ -1944,13 +1939,10 @@ void TabStrip::StartMouseInitiatedRemoveTabAnimation(int model_index) {
 
   // Register delegate to do cleanup when done, BoundsAnimator takes
   // ownership of RemoveTabDelegate.
-  bounds_animator_.SetAnimationDelegate(tab_closing,
-                                        CreateRemoveTabDelegate(tab_closing),
-                                        true);
-}
-
-ui::AnimationDelegate* TabStrip::CreateRemoveTabDelegate(BaseTab* tab) {
-  return new RemoveTabDelegate(this, tab);
+  bounds_animator_.SetAnimationDelegate(
+      tab_closing,
+      new RemoveTabDelegate(this, tab_closing),
+      true);
 }
 
 bool TabStrip::IsPointInTab(Tab* tab,

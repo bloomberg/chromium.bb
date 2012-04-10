@@ -32,6 +32,7 @@ class ImageButton;
 }
 
 // Base class for tab renderers.
+// TODO(sky): there's no point in this class, merge Tab and BaseTab.
 class BaseTab : public ui::AnimationDelegate,
                 public views::ButtonListener,
                 public views::ContextMenuController,

@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/tabs/tab_menu_model.h"
+#include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_renderer_data.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -253,12 +254,10 @@ void BrowserTabStripController::UpdateLoadingAnimations() {
   // Don't use the model count here as it's possible for this to be invoked
   // before we've applied an update from the model (Browser::TabInsertedAt may
   // be processed before us and invokes this).
-  for (int tab_index = 0, tab_count = tabstrip_->tab_count();
-       tab_index < tab_count; ++tab_index) {
-    BaseTab* tab = tabstrip_->base_tab_at_tab_index(tab_index);
-    int model_index = tabstrip_->GetModelIndexOfBaseTab(tab);
-    if (model_->ContainsIndex(model_index)) {
-      TabContentsWrapper* contents = model_->GetTabContentsAt(model_index);
+  for (int i = 0, tab_count = tabstrip_->tab_count(); i < tab_count; ++i) {
+    BaseTab* tab = tabstrip_->tab_at(i);
+    if (model_->ContainsIndex(i)) {
+      TabContentsWrapper* contents = model_->GetTabContentsAt(i);
       tab->UpdateLoadingAnimation(
           TabContentsNetworkState(contents->web_contents()));
     }
@@ -416,7 +415,7 @@ void BrowserTabStripController::Observe(int type,
   // Here, we just re-layout each existing tab to reflect the change in its
   // closeable state, and then schedule paint for entire tabstrip.
   for (int i = 0; i < tabstrip_->tab_count(); ++i)
-    tabstrip_->base_tab_at_tab_index(i)->Layout();
+    static_cast<BaseTab*>(tabstrip_->tab_at(i))->Layout();
   tabstrip_->SchedulePaint();
 }
 

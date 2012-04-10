@@ -489,7 +489,7 @@ void TabDragController2::InitWindowCreatePoint(TabStrip* tab_strip) {
   // first_tab based on tab_strip, not attached_tabstrip_. Otherwise,
   // the window_create_point_ is not in the correct coordinate system. Please
   // refer to http://crbug.com/6223 comment #15 for detailed information.
-  views::View* first_tab = tab_strip->base_tab_at_tab_index(0);
+  views::View* first_tab = tab_strip->tab_at(0);
   views::View::ConvertPointToWidget(first_tab, &first_source_tab_point_);
   window_create_point_ = first_source_tab_point_;
   window_create_point_.Offset(mouse_offset_.x(), mouse_offset_.y());
@@ -1117,7 +1117,7 @@ std::vector<BaseTab*> TabDragController2::GetTabsMatchingDraggedContents(
     int model_index = model->GetIndexOfTabContents(drag_data_[i].contents);
     if (model_index == TabStripModel::kNoTab)
       return std::vector<BaseTab*>();
-    tabs.push_back(tabstrip->GetBaseTabAtModelIndex(model_index));
+    tabs.push_back(tabstrip->tab_at(model_index));
   }
   return tabs;
 }

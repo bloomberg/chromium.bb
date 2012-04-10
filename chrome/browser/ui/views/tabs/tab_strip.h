@@ -20,6 +20,7 @@
 #include "ui/views/animation/bounds_animator.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/mouse_watcher.h"
+#include "ui/views/view_model.h"
 
 class BaseTab;
 class NewTabButton;
@@ -94,37 +95,24 @@ class TabStrip : public AbstractTabStripView,
 
   // Retrieves the ideal bounds for the Tab at the specified index.
   const gfx::Rect& ideal_bounds(int tab_data_index) {
-    return tab_data_[tab_data_index].ideal_bounds;
+    return tabs_.ideal_bounds(tab_data_index);
   }
 
-  // Returns the tab at the specified model index.
-  BaseTab* GetBaseTabAtModelIndex(int model_index) const;
-
-  // Returns the tab at the specified tab index.
-  BaseTab* base_tab_at_tab_index(int tab_index) const {
-    return tab_data_[tab_index].tab;
-  }
+  // Returns the Tab at |index|.
+  Tab* tab_at(int index) const;
 
   // Returns the index of the specified tab in the model coordiate system, or
   // -1 if tab is closing or not valid.
   int GetModelIndexOfBaseTab(const BaseTab* tab) const;
 
   // Gets the number of Tabs in the tab strip.
-  // WARNING: this is the number of tabs displayed by the tabstrip, which if
-  // an animation is ongoing is not necessarily the same as the number of tabs
-  // in the model.
-  int tab_count() const { return static_cast<int>(tab_data_.size()); }
+  int tab_count() const { return tabs_.view_size(); }
 
   // Cover method for TabStripController::GetCount.
   int GetModelCount() const;
 
   // Cover method for TabStripController::IsValidIndex.
   bool IsValidModelIndex(int model_index) const;
-
-  // Returns the index into |tab_data_| corresponding to the index from the
-  // TabStripModel, or |tab_data_.size()| if there is no tab representing
-  // |model_index|.
-  int ModelIndexToTabIndex(int model_index) const;
 
   TabStripController* controller() const { return controller_.get(); }
 
@@ -194,25 +182,8 @@ class TabStrip : public AbstractTabStripView,
   static const int kMiniToNonMiniGap;
 
   void set_ideal_bounds(int index, const gfx::Rect& bounds) {
-    tab_data_[index].ideal_bounds = bounds;
+    tabs_.set_ideal_bounds(index, bounds);
   }
-
-  // Returns the index into |tab_data_| corresponding to the specified tab, or
-  // -1 if the tab isn't in |tab_data_|.
-  int TabIndexOfTab(BaseTab* tab) const;
-
-  // Retrieves the Tab at the specified index. Remember, the specified index
-  // is in terms of tab_data, *not* the model.
-  Tab* GetTabAtTabDataIndex(int tab_data_index) const;
-
-  // Returns the tab at the specified index. If a remove animation is on going
-  // and the index is >= the index of the tab being removed, the index is
-  // incremented. While a remove operation is on going the indices of the model
-  // do not line up with the indices of the view. This method adjusts the index
-  // accordingly.
-  //
-  // Use this instead of GetTabAtTabDataIndex if the index comes from the model.
-  Tab* GetTabAtModelIndex(int model_index) const;
 
   // Returns the number of mini-tabs.
   int GetMiniTabCount() const;
@@ -231,17 +202,13 @@ class TabStrip : public AbstractTabStripView,
   virtual void OnMouseCaptureLost() OVERRIDE;
 
  private:
+  typedef std::map<int, std::vector<BaseTab*> > TabsClosingMap;
+
   class RemoveTabDelegate;
 
   friend class DefaultTabDragController;
   friend class TabDragController2;
   friend class TabDragController2Test;
-
-  // The Tabs we contain, and their last generated "good" bounds.
-  struct TabData {
-    BaseTab* tab;
-    gfx::Rect ideal_bounds;
-  };
 
   // Used during a drop session of a url. Tracks the position of the drop as
   // well as a window used to highlight where the drop occurs.
@@ -325,9 +292,17 @@ class TabStrip : public AbstractTabStripView,
   // and drop to calculate offsets and positioning.
   int GetSizeNeededForTabs(const std::vector<BaseTab*>& tabs);
 
+  // Adds the tab at |index| to |tabs_closing_map_| and removes the tab from
+  // |tabs_|.
+  void RemoveTabFromViewModel(int index);
+
   // Cleans up the Tab from the TabStrip. This is called from the tab animation
   // code and is not a general-purpose method.
   void RemoveAndDeleteTab(BaseTab* tab);
+
+  // Adjusts the indices of all tabs in |tabs_closing_map_| whose index is
+  // >= |index| to have a new index of |index + delta|.
+  void UpdateTabsClosingMap(int index, int delta);
 
   // Used by TabDragController when the user starts or stops dragging tabs.
   void StartedDraggingTabs(const std::vector<BaseTab*>& tabs);
@@ -367,6 +342,9 @@ class TabStrip : public AbstractTabStripView,
   // Makes sure |model_index| is within the set of visible tabs. Only does
   // something if stacking.
   void EnsureModelIndexIsVisible(int model_index);
+
+  // Paints all the tabs in |tabs_closing_map_[index]|.
+  void PaintClosingTabs(gfx::Canvas* canvas, int index);
 
   // -- Tab Resize Layout -----------------------------------------------------
 
@@ -443,19 +421,23 @@ class TabStrip : public AbstractTabStripView,
   void StartMiniTabAnimation();
   void StartMouseInitiatedRemoveTabAnimation(int model_index);
 
-  // Creates an AnimationDelegate that resets state after a remove animation
-  // completes. The caller owns the returned object.
-  ui::AnimationDelegate* CreateRemoveTabDelegate(BaseTab* tab);
-
   // Returns true if the specified point in TabStrip coords is within the
   // hit-test region of the specified Tab.
   bool IsPointInTab(Tab* tab, const gfx::Point& point_in_tabstrip_coords);
 
   // -- Member Variables ------------------------------------------------------
 
-  scoped_ptr<TabStripController> controller_;
+  // There is a one-to-one mapping between each of the tabs in the
+  // TabStripController (TabStripModel) and |tabs_|. Because we animate tab
+  // removal there exists a period of time where a tab is displayed but not in
+  // the model. When this occurs the tab is removed from |tabs_| and placed in
+  // |tabs_closing_map_|. When the animation completes the tab is removed from
+  // |tabs_closing_map_|. The painting code ensures both sets of tabs are
+  // painted, and the event handling code ensures only tabs in |tabs_| are used.
+  views::ViewModel tabs_;
+  TabsClosingMap tabs_closing_map_;
 
-  std::vector<TabData> tab_data_;
+  scoped_ptr<TabStripController> controller_;
 
   // The "New Tab" button.
   NewTabButton* newtab_button_;

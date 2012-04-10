@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,11 +10,19 @@
 #include "chrome/browser/tabs/tab_strip_selection_model.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
 
+class TabStrip;
+
 class FakeBaseTabStripController : public TabStripController {
  public:
   FakeBaseTabStripController();
   virtual ~FakeBaseTabStripController();
 
+  void AddTab(int index);
+  void RemoveTab(int index);
+
+  void set_tab_strip(TabStrip* tab_strip) { tab_strip_ = tab_strip; }
+
+  // TabStripController overrides:
   virtual const TabStripSelectionModel& GetSelectionModel() OVERRIDE;
   virtual int GetCount() const OVERRIDE;
   virtual bool IsValidIndex(int index) const OVERRIDE;
@@ -42,10 +50,13 @@ class FakeBaseTabStripController : public TabStripController {
   virtual bool IsIncognito() OVERRIDE;
 
  private:
+  TabStrip* tab_strip_;
+
+  int num_tabs_;
+
   TabStripSelectionModel selection_model_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeBaseTabStripController);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TABS_FAKE_BASE_TAB_STRIP_CONTROLLER_H_
-

@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -155,13 +156,11 @@ IN_PROC_BROWSER_TEST_F(TabDragController2Test, DragInSameWindow) {
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
   TabStripModel* model = browser()->tabstrip_model();
 
-  gfx::Point tab_1_center(
-      GetCenterInScreenCoordinates(tab_strip->GetBaseTabAtModelIndex(1)));
+  gfx::Point tab_1_center(GetCenterInScreenCoordinates(tab_strip->tab_at(1)));
   ASSERT_TRUE(ui_test_utils::SendMouseMoveSync(tab_1_center));
   ASSERT_TRUE(ui_test_utils::SendMouseEventsSync(
                   ui_controls::LEFT, ui_controls::DOWN));
-  gfx::Point tab_0_center(
-      GetCenterInScreenCoordinates(tab_strip->GetBaseTabAtModelIndex(0)));
+  gfx::Point tab_0_center(GetCenterInScreenCoordinates(tab_strip->tab_at(0)));
   ASSERT_TRUE(ui_test_utils::SendMouseMoveSync(tab_0_center));
   ASSERT_TRUE(ui_test_utils::SendMouseEventsSync(
                   ui_controls::LEFT, ui_controls::UP));
@@ -199,8 +198,7 @@ IN_PROC_BROWSER_TEST_F(TabDragController2Test, DragToSeparateWindow) {
 
   // Move to the first tab and drag it enough so that it detaches, but not
   // enough that it attaches to browser2.
-  gfx::Point tab_0_center(
-      GetCenterInScreenCoordinates(tab_strip->GetBaseTabAtModelIndex(0)));
+  gfx::Point tab_0_center(GetCenterInScreenCoordinates(tab_strip->tab_at(0)));
   ASSERT_TRUE(ui_test_utils::SendMouseMoveSync(tab_0_center));
   ASSERT_TRUE(ui_test_utils::SendMouseEventsSync(
                   ui_controls::LEFT, ui_controls::DOWN));
@@ -236,7 +234,7 @@ IN_PROC_BROWSER_TEST_F(TabDragController2Test, DetachToOwnWindow) {
 
   // Move to the first tab and drag it enough so that it detaches.
   gfx::Point tab_0_center(
-      GetCenterInScreenCoordinates(tab_strip->GetBaseTabAtModelIndex(0)));
+      GetCenterInScreenCoordinates(tab_strip->tab_at(0)));
   ASSERT_TRUE(ui_test_utils::SendMouseMoveSync(tab_0_center));
   ASSERT_TRUE(ui_test_utils::SendMouseEventsSync(
                   ui_controls::LEFT, ui_controls::DOWN));
@@ -271,8 +269,7 @@ IN_PROC_BROWSER_TEST_F(TabDragController2Test, DeleteBeforeStartedDragging) {
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
 
   // Click on the first tab, but don't move it.
-  gfx::Point tab_0_center(
-      GetCenterInScreenCoordinates(tab_strip->GetBaseTabAtModelIndex(0)));
+  gfx::Point tab_0_center(GetCenterInScreenCoordinates(tab_strip->tab_at(0)));
   ASSERT_TRUE(ui_test_utils::SendMouseMoveSync(tab_0_center));
   ASSERT_TRUE(ui_test_utils::SendMouseEventsSync(
                   ui_controls::LEFT, ui_controls::DOWN));
@@ -299,8 +296,7 @@ IN_PROC_BROWSER_TEST_F(TabDragController2Test, DeleteTabWhileAttached) {
 
   // Click on the first tab and move it enough so that it starts dragging but is
   // still attached.
-  gfx::Point tab_0_center(
-      GetCenterInScreenCoordinates(tab_strip->GetBaseTabAtModelIndex(0)));
+  gfx::Point tab_0_center(GetCenterInScreenCoordinates(tab_strip->tab_at(0)));
   ASSERT_TRUE(ui_test_utils::SendMouseMoveSync(tab_0_center));
   ASSERT_TRUE(ui_test_utils::SendMouseEventsSync(
                   ui_controls::LEFT, ui_controls::DOWN));
@@ -337,8 +333,7 @@ IN_PROC_BROWSER_TEST_F(TabDragController2Test, DeleteTabWhileDetached) {
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
 
   // Move to the first tab and drag it enough so that it detaches.
-  gfx::Point tab_0_center(
-      GetCenterInScreenCoordinates(tab_strip->GetBaseTabAtModelIndex(0)));
+  gfx::Point tab_0_center(GetCenterInScreenCoordinates(tab_strip->tab_at(0)));
   TabContentsWrapper* to_delete =
       browser()->tabstrip_model()->GetTabContentsAt(0);
   ASSERT_TRUE(ui_test_utils::SendMouseMoveSync(tab_0_center));
@@ -378,8 +373,7 @@ IN_PROC_BROWSER_TEST_F(TabDragController2Test, DeleteSourceDetached) {
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
 
   // Move to the first tab and drag it enough so that it detaches.
-  gfx::Point tab_0_center(
-      GetCenterInScreenCoordinates(tab_strip->GetBaseTabAtModelIndex(0)));
+  gfx::Point tab_0_center(GetCenterInScreenCoordinates(tab_strip->tab_at(0)));
   TabContentsWrapper* to_delete =
       browser()->tabstrip_model()->GetTabContentsAt(1);
   ASSERT_TRUE(ui_test_utils::SendMouseMoveSync(tab_0_center));
@@ -419,8 +413,7 @@ IN_PROC_BROWSER_TEST_F(TabDragController2Test,
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
 
   // Move to the first tab and drag it enough so that it detaches.
-  gfx::Point tab_0_center(
-      GetCenterInScreenCoordinates(tab_strip->GetBaseTabAtModelIndex(0)));
+  gfx::Point tab_0_center(GetCenterInScreenCoordinates(tab_strip->tab_at(0)));
   ASSERT_TRUE(ui_test_utils::SendMouseMoveSync(tab_0_center));
   ASSERT_TRUE(ui_test_utils::SendMouseEventsSync(
                   ui_controls::LEFT, ui_controls::DOWN));
@@ -464,8 +457,7 @@ IN_PROC_BROWSER_TEST_F(TabDragController2Test, DragAll) {
 
   // Move to the first tab and drag it enough so that it would normally
   // detach.
-  gfx::Point tab_0_center(
-      GetCenterInScreenCoordinates(tab_strip->GetBaseTabAtModelIndex(0)));
+  gfx::Point tab_0_center(GetCenterInScreenCoordinates(tab_strip->tab_at(0)));
   ASSERT_TRUE(ui_test_utils::SendMouseMoveSync(tab_0_center));
   ASSERT_TRUE(ui_test_utils::SendMouseEventsSync(
                   ui_controls::LEFT, ui_controls::DOWN));
@@ -521,7 +513,7 @@ IN_PROC_BROWSER_TEST_F(TabDragController2Test, DragAllToSeparateWindow) {
   // Move to the first tab and drag it enough so that it detaches, but not
   // enough that it attaches to browser2.
   gfx::Point tab_0_center(
-      GetCenterInScreenCoordinates(tab_strip->GetBaseTabAtModelIndex(0)));
+      GetCenterInScreenCoordinates(tab_strip->tab_at(0)));
   ASSERT_TRUE(ui_test_utils::SendMouseMoveSync(tab_0_center));
   ASSERT_TRUE(ui_test_utils::SendMouseEventsSync(
                   ui_controls::LEFT, ui_controls::DOWN));
@@ -582,7 +574,7 @@ IN_PROC_BROWSER_TEST_F(TabDragController2Test,
   // Move to the first tab and drag it enough so that it detaches, but not
   // enough that it attaches to browser2.
   gfx::Point tab_0_center(
-      GetCenterInScreenCoordinates(tab_strip->GetBaseTabAtModelIndex(0)));
+      GetCenterInScreenCoordinates(tab_strip->tab_at(0)));
   ASSERT_TRUE(ui_test_utils::SendMouseMoveSync(tab_0_center));
   ASSERT_TRUE(ui_test_utils::SendMouseEventsSync(
                   ui_controls::LEFT, ui_controls::DOWN));

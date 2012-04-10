@@ -1949,7 +1949,6 @@
         'browser/ui/views/select_file_dialog_extension_unittest.cc',
         'browser/ui/views/select_file_dialog_win_unittest.cc',
         'browser/ui/views/status_icons/status_tray_win_unittest.cc',
-        'browser/ui/views/tabs/base_tab_strip_test_fixture.h',
         'browser/ui/views/tabs/fake_base_tab_strip_controller.cc',
         'browser/ui/views/tabs/fake_base_tab_strip_controller.h',
         'browser/ui/views/tabs/tab_strip_unittest.cc',
