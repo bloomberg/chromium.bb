@@ -257,7 +257,7 @@ void ChromotingInstance::HandleMessage(const pp::Var& message) {
   } else if (method == "injectKeyEvent") {
     int usb_keycode = 0;
     bool is_pressed = false;
-    if (!data->GetInteger("usb_keycode", &usb_keycode) ||
+    if (!data->GetInteger("usbKeycode", &usb_keycode) ||
         !data->GetBoolean("pressed", &is_pressed)) {
       LOG(ERROR) << "Invalid injectKeyEvent.";
       return;
