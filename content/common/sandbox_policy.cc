@@ -322,7 +322,7 @@ bool AddGenericPolicy(sandbox::TargetPolicy* policy) {
 // TODO(cpu): Lock down the sandbox more if possible.
 bool AddPolicyForGPU(CommandLine* cmd_line, sandbox::TargetPolicy* policy) {
 #if !defined(NACL_WIN64)  // We don't need this code on win nacl64.
-  if (base::win::GetVersion() > base::win::VERSION_XP) {
+  if (base::win::GetVersion() > base::win::VERSION_SERVER_2003) {
     if (cmd_line->GetSwitchValueASCII(switches::kUseGL) ==
         gfx::kGLImplementationDesktopName) {
       // Open GL path.
