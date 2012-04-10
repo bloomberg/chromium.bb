@@ -1434,7 +1434,7 @@
    fun:_ZN9SingletonI20IOSurfaceSupportImpl22DefaultSingletonTraitsIS0_ES0_E3getEv
    fun:_ZN20IOSurfaceSupportImpl11GetInstanceEv
    fun:_ZN16IOSurfaceSupport10InitializeEv
-   fun:_ZN11TabContents14GetWebkitPrefsEv
+   fun:_ZN15WebContentsImpl14GetWebkitPrefsEv
 }
 {
    bug_79655b
@@ -1447,7 +1447,7 @@
    fun:_ZN9SingletonI20IOSurfaceSupportImpl22DefaultSingletonTraitsIS0_ES0_E3getEv
    fun:_ZN20IOSurfaceSupportImpl11GetInstanceEv
    fun:_ZN16IOSurfaceSupport10InitializeEv
-   fun:_ZN11TabContents14GetWebkitPrefsEv
+   fun:_ZN15WebContentsImpl14GetWebkitPrefsEv
 }
 {
    bug_79994
@@ -1478,7 +1478,7 @@
    fun:_ZN23RenderWidgetHostViewMac21GetCompositingSurfaceEv
    fun:_ZN16RenderWidgetHost21GetCompositingSurfaceEv
    fun:_ZN14RenderViewHost16CreateRenderViewERKSbItN4base20string16_char_traitsESaItEE
-   fun:_ZN11TabContents32CreateRenderViewForRenderManagerEP14RenderViewHost
+   fun:_ZN15WebContentsImpl32CreateRenderViewForRenderManagerEP14RenderViewHost
    fun:_ZN21RenderViewHostManager14InitRenderViewEP14RenderViewHostRK15NavigationEntry
 }
 {
@@ -1491,7 +1491,7 @@
    fun:_ZN23RenderWidgetHostViewMac21GetCompositingSurfaceEv
    fun:_ZN16RenderWidgetHost21GetCompositingSurfaceEv
    fun:_ZN14RenderViewHost16CreateRenderViewERKSbItN4base20string16_char_traitsESaItEE
-   fun:_ZN11TabContents32CreateRenderViewForRenderManagerEP14RenderViewHost
+   fun:_ZN15WebContentsImpl32CreateRenderViewForRenderManagerEP14RenderViewHost
 }
 {
    bug_82328

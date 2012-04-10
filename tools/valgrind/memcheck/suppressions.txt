@@ -2954,8 +2954,8 @@
    fun:_ZNSt3setIP16RenderWidgetHostSt4lessIS1_ESaIS1_EE6insertERKS1_
    fun:*TabLoader7ObserveEiRKN7content18NotificationSourceERKNS1_19NotificationDetailsE
    fun:_ZN23NotificationServiceImpl*
-   fun:_ZN11TabContents12SetIsLoading*
-   fun:_ZN11TabContents14RenderViewGone*
+   fun:_ZN15WebContentsImpl12SetIsLoading*
+   fun:_ZN15WebContentsImpl14RenderViewGone*
 }
 {
    bug_79865a
@@ -3095,11 +3095,11 @@
    fun:_ZN6chrome26ChromeContentBrowserClient24RenderProcessHostCreatedEPN7content17RenderProcessHostE
    fun:_ZN21RenderProcessHostImpl4InitEb
    ...
-   fun:_ZN11TabContents32CreateRenderViewForRenderManagerEP*
+   fun:_ZN15WebContentsImpl32CreateRenderViewForRenderManagerEP*
    fun:_ZN21RenderViewHostManager14InitRenderViewEP*
    ...
    fun:_ZN21RenderViewHostManager8NavigateERKN7content19NavigationEntryImplE
-   fun:_ZN11TabContents15NavigateToEntryERKN7content19NavigationEntryImplENS0_20NavigationController10ReloadTypeE
+   fun:_ZN15WebContentsImpl15NavigateToEntryERKN7content19NavigationEntryImplENS0_20NavigationController10ReloadTypeE
 }
 {
    bug_83561
@@ -3374,7 +3374,7 @@
    fun:_Znw*
    fun:_ZN11ProfileImpl24GetUserStyleSheetWatcherEv
    fun:_ZN6chrome26ChromeContentBrowserClient14GetWebkitPrefs*
-   fun:_ZN11TabContents14GetWebkitPrefsEv
+   fun:_ZN15WebContentsImpl14GetWebkitPrefsEv
 }
 {
    bug_90487
@@ -4315,8 +4315,8 @@
    fun:_ZN12_GLOBAL__N_18NewWebUII11DownloadsUIEEPN7content15WebUIControllerEPNS2_5WebUIERK4GURL
    fun:_ZNK28ChromeWebUIControllerFactory27CreateWebUIControllerForURLEPN7content5WebUIERK4GURL
    fun:_ZNK32TestChromeWebUIControllerFactory27CreateWebUIControllerForURLEPN7content5WebUIERK4GURL
-   fun:_ZN11TabContents11CreateWebUIERK4GURL
-   fun:_ZN11TabContents27CreateWebUIForRenderManagerERK4GURL
+   fun:_ZN15WebContentsImpl11CreateWebUIERK4GURL
+   fun:_ZN15WebContentsImpl27CreateWebUIForRenderManagerERK4GURL
    fun:_ZN21RenderViewHostManager30UpdateRendererStateForNavigateERKN7content19NavigationEntryImplE
    fun:_ZN21RenderViewHostManager8NavigateERKN7content19NavigationEntryImplE
    ...
@@ -4450,7 +4450,7 @@
    ...
    fun:_ZN21RenderViewHostFactory6CreateEPN7content12SiteInstanceEPNS0_22RenderViewHostDelegate*SessionStorageNamespace*
    fun:_ZN21RenderViewHostManager4InitEPN7content14BrowserContextEPNS0_12SiteInstanceEi
-   fun:_ZN11TabContentsC1EPN7content14BrowserContextEPNS0_12SiteInstance*SessionStorageNamespace*
+   fun:_ZN15WebContentsImplC1EPN7content14BrowserContextEPNS0_12SiteInstance*SessionStorageNamespace*
    fun:_ZN7content11WebContents6CreateEPNS_14BrowserContextEPNS_12SiteInstance*SessionStorageNamespace*
    fun:_ZN11BalloonHost4InitEv
 }
@@ -4463,8 +4463,8 @@
    ...
    fun:_ZN21RenderViewHostManager14InitRenderView*
    fun:_ZN21RenderViewHostManager8NavigateERKN7content19NavigationEntryImplE
-   fun:_ZN11TabContents15NavigateToEntryERKN7content19NavigationEntryImplENS0_20NavigationController10ReloadTypeE
-   fun:_ZN11TabContents22NavigateToPendingEntryEN7content20NavigationController10ReloadTypeE
+   fun:_ZN15WebContentsImpl15NavigateToEntryERKN7content19NavigationEntryImplENS0_20NavigationController10ReloadTypeE
+   fun:_ZN15WebContentsImpl22NavigateToPendingEntryEN7content20NavigationController10ReloadTypeE
    fun:_ZN24NavigationControllerImpl22NavigateToPendingEntryEN7content20NavigationController10ReloadTypeE
    fun:_ZN24NavigationControllerImpl9LoadEntryEPN7content19NavigationEntryImplE
    fun:_ZN24NavigationControllerImpl7LoadURLERK4GURLRKN7content8ReferrerENS3_14PageTransitionERKSs
@@ -4476,11 +4476,11 @@
    fun:_Znw*
    fun:_ZN21RenderProcessHostImpl4InitEb
    ...
-   fun:_ZN11TabContents32CreateRenderViewForRenderManager*
+   fun:_ZN15WebContentsImpl32CreateRenderViewForRenderManager*
    fun:_ZN21RenderViewHostManager14InitRenderView*
    fun:_ZN21RenderViewHostManager8NavigateERKN7content19NavigationEntryImplE
-   fun:_ZN11TabContents15NavigateToEntryERKN7content19NavigationEntryImplENS0_20NavigationController10ReloadTypeE
-   fun:_ZN11TabContents22NavigateToPendingEntryEN7content20NavigationController10ReloadTypeE
+   fun:_ZN15WebContentsImpl15NavigateToEntryERKN7content19NavigationEntryImplENS0_20NavigationController10ReloadTypeE
+   fun:_ZN15WebContentsImpl22NavigateToPendingEntryEN7content20NavigationController10ReloadTypeE
    fun:_ZN24NavigationControllerImpl22NavigateToPendingEntryEN7content20NavigationController10ReloadTypeE
    fun:_ZN24NavigationControllerImpl9LoadEntryEPN7content19NavigationEntryImplE
    fun:_ZN24NavigationControllerImpl7LoadURLERK4GURLRKN7content8ReferrerENS3_14PageTransitionERKSs
@@ -5699,7 +5699,7 @@
    fun:_ZN10scoped_ptrIN4aura6WindowEED1Ev
    fun:_ZN19TabContentsViewAuraD0Ev
    fun:_ZN10scoped_ptrIN7content15WebContentsViewEED1Ev
-   fun:_ZN11TabContentsD0Ev
+   fun:_ZN15WebContentsImplD0Ev
    fun:_ZN10scoped_ptrIN7content11WebContentsEE5resetEPS1_
    fun:_ZN11BalloonHost8ShutdownEv
 }
