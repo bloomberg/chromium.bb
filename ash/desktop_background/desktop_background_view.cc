@@ -9,6 +9,7 @@
 #include "ash/ash_export.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
+#include "ash/wm/window_animations.h"
 #include "base/utf_string_conversions.h"
 #include "grit/ui_resources.h"
 #include "ui/aura/root_window.h"
@@ -36,14 +37,6 @@ DesktopBackgroundView::DesktopBackgroundView(const SkBitmap& wallpaper,
 }
 
 DesktopBackgroundView::~DesktopBackgroundView() {
-}
-
-void DesktopBackgroundView::SetWallpaper(const SkBitmap& wallpaper,
-                                         ImageLayout layout) {
-  image_layout_ = layout;
-  wallpaper_ = wallpaper;
-  wallpaper_.buildMipMap(false);
-  SchedulePaint();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -115,6 +108,10 @@ views::Widget* CreateDesktopBackground(const SkBitmap& wallpaper,
           ash::internal::kShellWindowId_DesktopBackgroundContainer);
   desktop_widget->Init(params);
   desktop_widget->SetContentsView(view);
+  ash::SetWindowVisibilityAnimationType(
+      desktop_widget->GetNativeView(),
+      ash::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE);
+  desktop_widget->SetBounds(params.parent->bounds());
   desktop_widget->Show();
   desktop_widget->GetNativeView()->SetName("DesktopBackgroundView");
   return desktop_widget;

@@ -106,7 +106,7 @@ void SetWallpaperOptionsHandler::HandleSelectImage(const ListValue* args) {
 
   UserManager::Get()->SaveUserWallpaperIndex(image_index);
   ash::Shell::GetInstance()->desktop_background_controller()->
-      OnDesktopBackgroundChanged();
+      SetDesktopBackgroundImageMode();
 }
 
 gfx::NativeWindow SetWallpaperOptionsHandler::GetBrowserWindow() const {

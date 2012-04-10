@@ -63,7 +63,7 @@ void DesktopBackgroundObserver::Observe(int type,
   switch (type) {
     case chrome::NOTIFICATION_LOGIN_USER_CHANGED: {
       ash::Shell::GetInstance()->desktop_background_controller()->
-          OnDesktopBackgroundChanged();
+          SetDesktopBackgroundImageMode();
       break;
     }
     default:

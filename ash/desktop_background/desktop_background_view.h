@@ -19,11 +19,6 @@ class DesktopBackgroundView : public views::WidgetDelegateView {
   DesktopBackgroundView(const SkBitmap& wallpaper, ImageLayout layout);
   virtual ~DesktopBackgroundView();
 
-  // TODO(bshe): Remove this function once issue 117244 is fixed. It is
-  // currently used in DesktopBackgroundController::
-  // OnDesktopBackgroundChanged.
-  void SetWallpaper(const SkBitmap& wallpaper, ImageLayout layout);
-
  private:
   // Overridden from views::View:
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;

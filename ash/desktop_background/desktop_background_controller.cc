@@ -26,27 +26,17 @@ DesktopBackgroundController::DesktopBackgroundController() :
 DesktopBackgroundController::~DesktopBackgroundController() {
 }
 
-void DesktopBackgroundController::OnDesktopBackgroundChanged() {
+void DesktopBackgroundController::SetDesktopBackgroundImageMode() {
   internal::RootWindowLayoutManager* root_window_layout =
       Shell::GetInstance()->root_window_layout();
-  if (desktop_background_mode_ == BACKGROUND_SOLID_COLOR)
-    return;
-
+  if (root_window_layout->background_widget())
+    root_window_layout->background_widget()->Hide();
   int index = Shell::GetInstance()->user_wallpaper_delegate()->
       GetUserWallpaperIndex();
-  DCHECK(root_window_layout->background_widget()->widget_delegate());
-  static_cast<internal::DesktopBackgroundView*>(
-      root_window_layout->background_widget()->widget_delegate())->
-          SetWallpaper(GetWallpaper(index), GetWallpaperInfo(index).layout);
-}
-
-void DesktopBackgroundController::SetDesktopBackgroundImageMode(
-    const SkBitmap& wallpaper, ImageLayout layout) {
-  internal::RootWindowLayoutManager* root_window_layout =
-      Shell::GetInstance()->root_window_layout();
   root_window_layout->SetBackgroundLayer(NULL);
   root_window_layout->SetBackgroundWidget(
-      internal::CreateDesktopBackground(wallpaper, layout));
+      internal::CreateDesktopBackground(GetWallpaper(index),
+                                        GetWallpaperInfo(index).layout));
   desktop_background_mode_ = BACKGROUND_IMAGE;
 }
 

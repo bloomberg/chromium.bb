@@ -140,9 +140,11 @@ void CreateSpecialContainers(aura::RootWindow* root_window) {
                   "UnparentedControlContainer",
                   non_lock_screen_containers);
 
-  CreateContainer(internal::kShellWindowId_DesktopBackgroundContainer,
-                  "DesktopBackgroundContainer",
-                  non_lock_screen_containers);
+  aura::Window* desktop_background_containers = CreateContainer(
+      internal::kShellWindowId_DesktopBackgroundContainer,
+      "DesktopBackgroundContainer",
+      non_lock_screen_containers);
+  SetChildWindowVisibilityChangesAnimated(desktop_background_containers);
 
   aura::Window* default_container = CreateContainer(
       internal::kShellWindowId_DefaultContainer,
@@ -933,11 +935,7 @@ void Shell::InitLayoutManagers() {
           always_on_top_container->GetRootWindow()));
 
   // Create desktop background widget.
-  // TODO(bshe): We should be able to use OnDesktopBackgroundChanged function
-  // here after issue 117244 got fixed.
-  int index = user_wallpaper_delegate_->GetUserWallpaperIndex();
-  desktop_background_controller_->SetDesktopBackgroundImageMode(
-      GetWallpaper(index), GetWallpaperInfo(index).layout);
+  desktop_background_controller_->SetDesktopBackgroundImageMode();
 }
 
 void Shell::DisableWorkspaceGridLayout() {
