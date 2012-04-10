@@ -146,6 +146,11 @@ _settings = dict(
 # latest_toolchain -- Use the newest ebuilds for all the toolchain packages.
   latest_toolchain=False,
 
+# gcc_githash -- This is only valid when latest_toolchain is True.
+# If you set this to a commit-ish, the gcc ebuild will use it to build the
+# toolchain compiler.
+  gcc_githash=None,
+
 # chroot_replace -- wipe and replace chroot, but not source.
   chroot_replace=False,
 
@@ -572,13 +577,27 @@ x86_generic_full.add_config('x86-pineview-full',
   boards=['x86-pineview'],
 )
 
-_toolchain = full.derive(latest_toolchain=True, prebuilts=False)
+_toolchain = \
+    full.derive(latest_toolchain=True, prebuilts=False,
+                gcc_githash='gcc.gnu.org/branches/google/main')
 
 _toolchain.add_config('x86-generic-toolchain',
   boards=['x86-generic'],
 )
 
 _toolchain.add_config('arm-tegra2-seaboard-toolchain', arm,
+  boards=['tegra2_seaboard'],
+)
+
+_toolchain_minor = \
+    full.derive(latest_toolchain=True, prebuilts=False,
+                gcc_githash='gcc.gnu.org/branches/google/gcc-4_6')
+
+_toolchain_minor.add_config('x86-generic-toolchain_minor',
+  boards=['x86-generic'],
+)
+
+_toolchain_minor.add_config('arm-tegra2-seaboard-toolchain_minor', arm,
   boards=['tegra2_seaboard'],
 )
 
@@ -689,6 +708,21 @@ _internal_toolchain.add_config('x86-alex-toolchain',
 )
 
 _internal_toolchain.add_config('arm-tegra2_kaen-toolchain',
+  arm,
+  boards=['tegra2_kaen'],
+)
+
+_internal_toolchain_minor = _toolchain_minor.derive(internal, full, official,
+  use_lkgm=True,
+  useflags=['chrome_internal'],
+  build_tests=True,
+)
+
+_internal_toolchain_minor.add_config('x86-alex-toolchain_minor',
+  boards=['x86-alex'],
+)
+
+_internal_toolchain_minor.add_config('arm-tegra2_kaen-toolchain_minor',
   arm,
   boards=['tegra2_kaen'],
 )

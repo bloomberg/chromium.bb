@@ -150,6 +150,14 @@ class CBuildBotTest(mox.MoxTestBase):
           config['build_type'] in cbuildbot_config.BUILD_TYPE_DUMP_ORDER,
           'Config %s: has unexpected build_type value.' % build_name)
 
+  def testGCCGitHash(self):
+    """Verifies that gcc_githash is not set without setting latest_toolchain."""
+    for build_name, config in cbuildbot_config.config.iteritems():
+      if config['gcc_githash']:
+        self.assertTrue(
+            config['latest_toolchain'],
+            'Config %s: has gcc_githash but not latest_toolchain.' % build_name)
+
   def testBuildToRun(self):
     """Verify we don't try to run tests without building them."""
 
