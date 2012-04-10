@@ -464,7 +464,8 @@ shm_surface_data_destroy(void *p)
 	struct shm_surface_data *data = p;
 
 	wl_buffer_destroy(data->data.buffer);
-	munmap(data->map, data->length);
+	if (data->map)
+		munmap(data->map, data->length);
 }
 
 static struct wl_shm_pool *
@@ -523,9 +524,10 @@ display_create_shm_surface(struct display *display,
 	if (window && window->pool && data->length < window->pool_size) {
 		pool = window->pool;
 		map = window->pool_data;
+		data->map = NULL;
 	} else {
-		pool = make_shm_pool(display, data->length, &data->map);
-		map = data->map;
+		pool = make_shm_pool(display, data->length, &map);
+		data->map = map;
 	}
 
 	surface = cairo_image_surface_create_for_data (map,
@@ -547,7 +549,7 @@ display_create_shm_surface(struct display *display,
 						      rectangle->height,
 						      stride, format);
 
-	if (map == data->map)
+	if (data->map)
 		wl_shm_pool_destroy(pool);
 
 	return surface;
