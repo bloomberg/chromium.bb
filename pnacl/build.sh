@@ -2691,10 +2691,13 @@ binutils-gold-make() {
 # binutils-gold-install - Install gold
 binutils-gold-install() {
   StepBanner "GOLD-NATIVE" "Install"
-  # TODO(robertm): removed this once we have mac/windows working
-  ls -l  ${TC_BUILD_GOLD}/gold
+  local src=${TC_BUILD_GOLD}/gold/ld-new
   local dst=${BINUTILS_INSTALL_DIR}/bin/arm-pc-nacl-ld.alt
-  cp ${TC_BUILD_GOLD}/gold/ld-new ${dst}
+  # Note, the "*" is for windows where ld-new is actually ld-new.exe
+  ls -l  ${src}*
+  # Note, this does the right thing on windows:
+  # "cp" has built-in smarts to deal with the ".exe" extension of ld-new
+  cp ${src} ${dst}
 }
 
 #+-------------------------------------------------------------------------
