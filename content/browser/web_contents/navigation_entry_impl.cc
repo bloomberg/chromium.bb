@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/tab_contents/navigation_entry_impl.h"
+#include "content/browser/web_contents/navigation_entry_impl.h"
 
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"

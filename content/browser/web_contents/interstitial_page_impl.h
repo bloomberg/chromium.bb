@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_TAB_CONTENTS_INTERSTITIAL_PAGE_IMPL_H_
-#define CONTENT_BROWSER_TAB_CONTENTS_INTERSTITIAL_PAGE_IMPL_H_
+#ifndef CONTENT_BROWSER_WEB_CONTENTS_INTERSTITIAL_PAGE_IMPL_H_
+#define CONTENT_BROWSER_WEB_CONTENTS_INTERSTITIAL_PAGE_IMPL_H_
 #pragma once
 
 #include "base/compiler_specific.h"
@@ -195,4 +195,4 @@ class CONTENT_EXPORT InterstitialPageImpl
   DISALLOW_COPY_AND_ASSIGN(InterstitialPageImpl);
 };
 
-#endif  // CONTENT_BROWSER_TAB_CONTENTS_INTERSTITIAL_PAGE_IMPL_H_
+#endif  // CONTENT_BROWSER_WEB_CONTENTS_INTERSTITIAL_PAGE_IMPL_H_

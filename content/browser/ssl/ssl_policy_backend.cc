@@ -1,11 +1,11 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "content/browser/ssl/ssl_policy_backend.h"
 
 #include "content/browser/ssl/ssl_host_state.h"
-#include "content/browser/tab_contents/navigation_controller_impl.h"
+#include "content/browser/web_contents/navigation_controller_impl.h"
 #include "content/public/browser/browser_context.h"
 
 SSLPolicyBackend::SSLPolicyBackend(NavigationControllerImpl* controller)

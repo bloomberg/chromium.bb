@@ -4,8 +4,8 @@
 
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
-#include "content/browser/tab_contents/navigation_controller_impl.h"
 #include "content/browser/tab_contents/test_web_contents.h"
+#include "content/browser/web_contents/navigation_controller_impl.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/common/bindings_policy.h"

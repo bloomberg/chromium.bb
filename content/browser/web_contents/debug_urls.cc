@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/tab_contents/debug_urls.h"
+#include "content/browser/web_contents/debug_urls.h"
 
 #include "content/browser/gpu/gpu_process_host_ui_shim.h"
 #include "content/public/common/url_constants.h"
