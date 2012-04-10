@@ -28,6 +28,7 @@
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/screen.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/views/border.h"
 #include "ui/views/bubble/bubble_delegate.h"
@@ -349,6 +350,20 @@ class SystemTrayBubble : public views::BubbleDelegateView {
       if (view)
         AddChildView(new TrayPopupItemContainer(view));
     }
+  }
+
+  virtual gfx::Rect GetAnchorRect() OVERRIDE {
+    views::Widget* widget = tray_->GetWidget();
+    if (widget->IsVisible()) {
+      gfx::Rect rect = widget->GetWindowScreenBounds();
+      rect.Inset(0, 0, kPaddingFromRightEdgeOfScreen,
+          kPaddingFromBottomOfScreen);
+      return rect;
+    }
+    gfx::Rect rect = gfx::Screen::GetPrimaryMonitorBounds();
+    return gfx::Rect(rect.width() - kPaddingFromRightEdgeOfScreen,
+                     rect.height() - kPaddingFromBottomOfScreen,
+                     0, 0);
   }
 
   // Overridden from views::View.

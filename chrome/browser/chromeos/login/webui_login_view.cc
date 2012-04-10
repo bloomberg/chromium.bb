@@ -234,8 +234,12 @@ void WebUILoginView::SetStatusAreaEnabled(bool enable) {
 
 void WebUILoginView::SetStatusAreaVisible(bool visible) {
   ash::SystemTray* tray = ash::Shell::GetInstance()->tray();
-  if (tray)
-    tray->SetVisible(visible);
+  if (tray) {
+    if (visible)
+      tray->GetWidget()->Show();
+    else
+      tray->GetWidget()->Hide();
+  }
   if (status_area_)
     status_area_->SetVisible(visible);
   else

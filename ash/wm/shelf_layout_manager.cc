@@ -129,9 +129,9 @@ void ShelfLayoutManager::SetAutoHideBehavior(ShelfAutoHideBehavior behavior) {
 }
 
 bool ShelfLayoutManager::IsVisible() const {
-  return state_.visibility_state == VISIBLE ||
+  return status_->IsVisible() && (state_.visibility_state == VISIBLE ||
       (state_.visibility_state == AUTO_HIDE &&
-       state_.auto_hide_state == AUTO_HIDE_SHOWN);
+       state_.auto_hide_state == AUTO_HIDE_SHOWN));
 }
 
 gfx::Rect ShelfLayoutManager::GetMaximizedWindowBounds(
