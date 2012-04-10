@@ -1717,6 +1717,10 @@ notify_keyboard_focus(struct wl_input_device *device,
 
 		wl_input_device_set_keyboard_focus(&wd->input_device,
 						   NULL, time);
+		/* FIXME: We really need keyboard grab cancel here to
+		 * let the grab shut down properly.  As it is we leak
+		 * the grab data. */
+		wl_input_device_end_keyboard_grab(&wd->input_device, time);
 	}
 }
 
