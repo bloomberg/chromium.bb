@@ -42,12 +42,13 @@ remoting.HostController.AsyncResult = {
 
 /** @return {remoting.HostController.State} The current state of the daemon. */
 remoting.HostController.prototype.state = function() {
-  try {
-    return this.plugin_.daemonState;
-  } catch (err) {
+  var result = this.plugin_.daemonState;
+  if (typeof(result) == 'undefined') {
     // If the plug-in can't be instantiated, for example on ChromeOS, then
     // return something sensible.
     return remoting.HostController.State.NOT_IMPLEMENTED;
+  } else {
+    return result;
   }
 };
 
