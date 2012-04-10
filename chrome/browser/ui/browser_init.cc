@@ -127,6 +127,7 @@
 #endif
 
 #if defined(OS_WIN)
+#include "base/win/metro.h"
 #include "base/win/windows_version.h"
 #include "chrome/installer/util/auto_launch_util.h"
 #endif
@@ -262,6 +263,13 @@ bool AutolaunchInfoBarDelegate::Cancel() {
                  profile_->GetPath().BaseName().value()));
   return true;
 }
+
+// Metro driver export, this is how metro passes the initial navigated url
+// back to us.
+extern "C" {
+typedef const wchar_t* (*GetInitialUrl)();
+}
+
 
 #endif  // OS_WIN
 
@@ -1666,6 +1674,22 @@ std::vector<GURL> BrowserInit::GetURLsFromCommandLine(
       }
     }
   }
+#if defined(OS_WIN)
+  // If we are in Windows 8 metro mode and were launched as a result of the
+  // search charm or via a url navigation in metro, then fetch the url being
+  // navigated to from the metro handler and initiate the navigation
+  // accordingly.
+  if (urls.empty()) {
+    HMODULE metro = base::win::GetMetroModule();
+    if (metro) {
+      GetInitialUrl initial_metro_url = reinterpret_cast<GetInitialUrl>(
+          ::GetProcAddress(metro, "GetInitialUrl"));
+      string16 url = initial_metro_url();
+      if (!url.empty())
+        urls.push_back(GURL(url));
+    }
+  }
+#endif  // OS_WIN
   return urls;
 }
 
