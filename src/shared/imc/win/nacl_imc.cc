@@ -26,7 +26,16 @@
 #include "native_client/src/shared/imc/nacl_imc_c.h"
 #include "native_client/src/trusted/handle_pass/handle_lookup.h"
 
-// Duplicate a Windows HANDLE.
+
+namespace {
+NaClBrokerDuplicateHandleFunc g_broker_duplicate_handle_func;
+}
+
+void NaClSetBrokerDuplicateHandleFunc(NaClBrokerDuplicateHandleFunc func) {
+  g_broker_duplicate_handle_func = func;
+}
+
+// Duplicate a Windows HANDLE within the current process.
 NaClHandle NaClDuplicateNaClHandle(NaClHandle handle) {
   NaClHandle dup_handle;
   if (DuplicateHandle(GetCurrentProcess(),
@@ -263,19 +272,33 @@ int SendDatagram(Handle handle, const MessageHeader* message, int flags) {
         header.command != kEchoResponse) {
       return -1;
     }
+    HANDLE target;
+    if (g_broker_duplicate_handle_func == NULL) {
+      // TODO(mseaborn): Remove these non-NACL_STANDALONE cases.
+      // Chromium is being changed to supply g_broker_duplicate_handle_func.
 #ifdef NACL_STANDALONE  // not in Chrome
-    HANDLE target = OpenProcess(PROCESS_DUP_HANDLE, FALSE, header.pid);
+      target = OpenProcess(PROCESS_DUP_HANDLE, FALSE, header.pid);
 #else
-    HANDLE target = NaClHandlePassLookupHandle(header.pid);
+      target = NaClHandlePassLookupHandle(header.pid);
 #endif
-    if (target == NULL) {
-      return -1;
+      if (target == NULL) {
+        return -1;
+      }
     }
     for (uint32_t i = 0; i < message->handle_count; ++i) {
       HANDLE temp_remote_handle;
-      if (DuplicateHandle(GetCurrentProcess(), message->handles[i],
-                          target, &temp_remote_handle,
-                          0, FALSE, DUPLICATE_SAME_ACCESS) == FALSE) {
+      bool success;
+      if (g_broker_duplicate_handle_func != NULL) {
+        success = g_broker_duplicate_handle_func(message->handles[i],
+                                                 header.pid,
+                                                 &temp_remote_handle,
+                                                 0, DUPLICATE_SAME_ACCESS);
+      } else {
+        success = DuplicateHandle(GetCurrentProcess(), message->handles[i],
+                                  target, &temp_remote_handle,
+                                  0, FALSE, DUPLICATE_SAME_ACCESS);
+      }
+      if (!success) {
         // Send the kCancel message to revoke the handles duplicated
         // so far in the remote peer.
         header.command = kCancel;
@@ -284,16 +307,20 @@ int SendDatagram(Handle handle, const MessageHeader* message, int flags) {
           WriteAll(handle, &header, sizeof header);
           WriteAll(handle, remote_handles, sizeof(uint64_t) * i);
         }
+        if (g_broker_duplicate_handle_func == NULL) {
 #ifdef NACL_STANDALONE
-        CloseHandle(target);
+          CloseHandle(target);
 #endif
+        }
         return -1;
       }
       remote_handles[i] = reinterpret_cast<uint64_t>(temp_remote_handle);
     }
+    if (g_broker_duplicate_handle_func == NULL) {
 #ifdef NACL_STANDALONE
-    CloseHandle(target);
+      CloseHandle(target);
 #endif
+    }
   }
   header.command = kMessage;
   header.handle_count = message->handle_count;

@@ -236,6 +236,27 @@ typedef NaClHandle (*NaClCreateMemoryObjectFunc)(size_t length, int executable);
  */
 void NaClSetCreateMemoryObjectFunc(NaClCreateMemoryObjectFunc func);
 
+#if NACL_WINDOWS
+/*
+ * Type of function supplied to NaClSetBrokerDuplicateHandleFunc().
+ * Such a function copies a Windows handle into the target process
+ * with the given process ID.  This is a more restricted version of
+ * Windows' DuplicateHandle() that can send handles but not retrieve
+ * them.
+ */
+typedef int (*NaClBrokerDuplicateHandleFunc)(NaClHandle source_handle,
+                                             uint32_t target_process_id,
+                                             NaClHandle *target_handle,
+                                             uint32_t desired_access,
+                                             uint32_t options);
+
+/*
+ * This allows a replacement for Windows' DuplicateHandle() to be
+ * provided that works in an outer sandbox.
+ */
+void NaClSetBrokerDuplicateHandleFunc(NaClBrokerDuplicateHandleFunc func);
+#endif
+
 /*
  * Creates a memory object of length bytes.
  *

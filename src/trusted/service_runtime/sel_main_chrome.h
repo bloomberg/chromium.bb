@@ -43,6 +43,14 @@ struct NaClChromeMainArgs {
 
   /* Cache for NaCl validation judgements.  Optional; may be NULL. */
   struct NaClValidationCache *validation_cache;
+
+#if NACL_WINDOWS
+  /*
+   * Callback to use instead of DuplicateHandle() for copying a
+   * Windows handle to another process.  Optional; may be NULL.
+   */
+  NaClBrokerDuplicateHandleFunc broker_duplicate_handle_func;
+#endif
 };
 
 /* Create a new args struct containing default values. */

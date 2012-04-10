@@ -45,6 +45,9 @@ struct NaClChromeMainArgs *NaClChromeMainArgsCreate(void) {
   args->enable_debug_stub = 0;
   args->create_memory_object_func = NULL;
   args->validation_cache = NULL;
+#if NACL_WINDOWS
+  args->broker_duplicate_handle_func = NULL;
+#endif
   return args;
 }
 
@@ -120,6 +123,11 @@ void NaClChromeMainStart(struct NaClChromeMainArgs *args) {
 
   /* Inject the validation caching interface, if it exists. */
   nap->validation_cache = args->validation_cache;
+
+#if NACL_WINDOWS
+  if (args->broker_duplicate_handle_func != NULL)
+    NaClSetBrokerDuplicateHandleFunc(args->broker_duplicate_handle_func);
+#endif
 
   NaClAppInitialDescriptorHookup(nap);
 
