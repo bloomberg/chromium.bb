@@ -2314,6 +2314,7 @@ weston_output_init(struct weston_output *output, struct weston_compositor *c,
 
 	output->flags = flags;
 	weston_output_move(output, x, y);
+	weston_output_damage(output);
 
 	wl_list_init(&output->frame_callback_list);
 
