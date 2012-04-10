@@ -55,6 +55,7 @@ POLICY_DEEP_2 = 'POLICY_DEEP_2'
 
 # TODO(dmikurube): Avoid global variables.
 address_symbol_dict = {}
+appeared_addresses = set()
 components = []
 
 
@@ -265,7 +266,7 @@ class Log(object):
     bucket = buckets.get(int(words[BUCKET_ID]))
     if bucket:
       for address in bucket.stacktrace:
-        address_symbol_dict[address] = ''
+        appeared_addresses.add(address)
     return True
 
   @staticmethod
@@ -514,8 +515,18 @@ class Log(object):
     sys.stderr.write('total: %d\n' % (total))
 
 
-def read_symbols(symbol_path, mapping_lines, chrome_path):
-  """Reads symbol names from a .symbol file or a Chrome binary with pprof.
+def update_symbols(symbol_path, mapping_lines, chrome_path):
+  """Updates address/symbol mapping on memory and in a .symbol cache file.
+
+  It reads cached address/symbol mapping from a .symbol file if it exists.
+  Then, it resolves unresolved addresses from a Chrome binary with pprof.
+  Both mappings on memory and in a .symbol cache file are updated.
+
+  Symbol files are formatted as follows:
+    <Address> <Symbol>
+    <Address> <Symbol>
+    <Address> <Symbol>
+    ...
 
   Args:
       symbol_path: A string representing a path for a .symbol file.
@@ -524,8 +535,15 @@ def read_symbols(symbol_path, mapping_lines, chrome_path):
   """
   with open(symbol_path, mode='a+') as symbol_f:
     symbol_lines = symbol_f.readlines()
+    if symbol_lines:
+      for line in symbol_lines:
+        items = line.split(None, 1)
+        address_symbol_dict[items[0]] = items[1].rstrip()
 
-    if not symbol_lines:
+    unresolved_addresses = sorted(
+        a for a in appeared_addresses if a not in address_symbol_dict)
+
+    if unresolved_addresses:
       with tempfile.NamedTemporaryFile(
           suffix='maps', prefix="dmprof", mode='w+') as pprof_in:
         with tempfile.NamedTemporaryFile(
@@ -533,9 +551,8 @@ def read_symbols(symbol_path, mapping_lines, chrome_path):
           for line in mapping_lines:
             pprof_in.write(line)
 
-          address_list = sorted(address_symbol_dict)
-          for key in address_list:
-            pprof_in.write(key + '\n')
+          for address in unresolved_addresses:
+            pprof_in.write(address + '\n')
 
           pprof_in.seek(0)
 
@@ -546,15 +563,11 @@ def read_symbols(symbol_path, mapping_lines, chrome_path):
 
           pprof_out.seek(0)
           symbols = pprof_out.readlines()
-          for address, symbol in zip(address_list, symbols):
-            address_symbol_dict[address] = symbol.strip()
-
-      for address, symbol in address_symbol_dict.iteritems():
-        symbol_f.write('%s %s\n' % (address, symbol))
-    else:
-      for l in symbol_lines:
-        items = l.split()
-        address_symbol_dict[items[0]] = items[1]
+          symbol_f.seek(0, 2)
+          for address, symbol in zip(unresolved_addresses, symbols):
+            stripped_symbol = symbol.strip()
+            address_symbol_dict[address] = stripped_symbol
+            symbol_f.write('%s %s\n' % (address, symbol.strip()))
 
 
 def parse_policy(policy_path):
@@ -690,7 +703,7 @@ Examples:
     logs.append(Log(path, buckets))
 
   sys.stderr.write('getting symbols\n')
-  read_symbols(symbol_path, maps_lines, chrome_path)
+  update_symbols(symbol_path, maps_lines, chrome_path)
 
   # TODO(dmikurube): Many modes now.  Split them into separete functions.
   if action == '--stacktrace':
