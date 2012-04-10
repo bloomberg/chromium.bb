@@ -63,40 +63,9 @@ typedef enum NaClValidationStatus {
   NaClValidationFailedSegmentationIssue
 } NaClValidationStatus;
 
-/* Defines possible ways that validation can be applied. */
-typedef enum NaClApplyValidationKind {
-  /* This applies the validator. Returns the resulting status
-   * of the validation of a code segment.
-   * Typically used for sel_ldr.
-   */
-  NaClApplyCodeValidation,
-  /* This applies the validator silently, stubbing out instructions
-   * that may not validate with a suitable halt instruction.
-   * Note: The return status of NaClValidationSucceeded in this case
-   * does not necessarily imply that all illegal instructions have
-   * been stubbed out. It is the responsability of the caller to
-   * call the validator a second time to see if the stubbed code
-   * is valid. Typically used as the first step of a stubout tool
-   * (either in sel_ldr or command-line tool).
-   */
-  NaClApplyValidationDoStubout,
-  /* This applies the validator, reporting errors as needed by
-   * ncval_annotate. That is, messages of the form:
-   *    VALIDATOR: XXXXXX: Message
-   * where XXXXXX is an instruction address, and Message is
-   * an error message. ncval_annotate will then use this
-   * information to print out the corresponding instruction
-   * using objdump, with the corresponding error message. Returns
-   * the resulting status of the validation of a code segment.
-   * Typically used to generate input for ncval_annotate.
-   */
-  NaClApplyValidationAnnotator
-} NaClApplyValidationKind;
-
 /* Applies the validator, as defined by sel_ldr. That is, run the
  * validator where performance is critical.
  * Parameters are:
- *    kind - The way the validator should be applied.
  *    local_cpu: True if local cpu rules should be applied.
  *           Otherwise, assume no cpu specific rules.
  *    guest_addr - The virtual pc to assume with the beginning address of the
@@ -105,6 +74,15 @@ typedef enum NaClApplyValidationKind {
  *    data - The contents of the code segment to be validated.
  *    size - The size of the code segment to be validated.
  *    bundle_size - The number of bytes in a code bundle.
+ *    stubout_mode - Whether the validator should stub out disallowed
+ *           instructions. This applies the validator silently, stubbing out
+ *           instructions that may not validate with a suitable halt
+ *           instruction. Note: The return status of NaClValidationSucceeded in
+ *           this case does not necessarily imply that all illegal instructions
+ *           have been stubbed out. It is the responsibility of the caller to
+ *           call the validator a second time to see if the stubbed code is
+ *           valid. Typically used as the first step of a stubout tool (either
+ *           in sel_ldr or command-line tool).
  *    readonly_text - If code should be considered read-only.
  *    cpu_features - The CPU features to support while validating.
  *    cache - Pointer to NaCl validation cache.
@@ -113,11 +91,11 @@ extern NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidator,
                                               NACL_TARGET_ARCH,
                                               NACL_TARGET_SUBARCH)(
     enum NaClSBKind         sb_kind,
-    NaClApplyValidationKind kind,
     uintptr_t               guest_addr,
     uint8_t                 *data,
     size_t                  size,
     int                     bundle_size,
+    int                     stubout_mode,
     int                     readonly_text,
     const NaClCPUFeatures   *cpu_features,
     struct NaClValidationCache *cache);
@@ -126,7 +104,6 @@ extern NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidator,
  * Note: This is intentionally separated from ApplyValidator, since it need
  * not be performance critical.
  * Parameters are:
- *    kind - The way the validator should be applied.
  *    local_cpu: True if local cpu rules should be applied.
  *           Otherwise, assume no cpu specific rules.
  *    guest_addr - The virtual pc to assume with the beginning address of the
@@ -141,7 +118,6 @@ extern NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorVerbosely,
                                               NACL_TARGET_ARCH,
                                               NACL_TARGET_SUBARCH)(
     enum NaClSBKind         sb_kind,
-    NaClApplyValidationKind kind,
     uintptr_t               guest_addr,
     uint8_t                 *data,
     size_t                  size,

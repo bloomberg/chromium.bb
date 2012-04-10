@@ -90,11 +90,11 @@ NaClValidationStatus NCApplyValidatorStubout_x86_32(
 
 NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidator, NACL_TARGET_ARCH, 32) (
     enum NaClSBKind sb_kind,
-    NaClApplyValidationKind kind,
     uintptr_t guest_addr,
     uint8_t *data,
     size_t size,
     int bundle_size,
+    int stubout_mode,
     int readonly_text,
     const NaClCPUFeaturesX86 *cpu_features,
     struct NaClValidationCache *cache) {
@@ -103,19 +103,13 @@ NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidator, NACL_TARGET_ARCH, 32) (
   if (bundle_size == 16 || bundle_size == 32) {
     if (!NaClArchSupported(cpu_features))
       return NaClValidationFailedCpuNotSupported;
-    switch (kind) {
-      case NaClApplyCodeValidation:
-        status = NCApplyValidatorSilently_x86_32(
-            guest_addr, data, size, bundle_size,
-            readonly_text, cpu_features, cache);
-        break;
-      case NaClApplyValidationDoStubout:
-        status = NCApplyValidatorStubout_x86_32(
-            guest_addr, data, size, bundle_size, cpu_features);
-        break;
-      default:
-        /* If reached, it isn't implemented (yet). */
-        break;
+    if (stubout_mode) {
+      status = NCApplyValidatorStubout_x86_32(
+          guest_addr, data, size, bundle_size, cpu_features);
+    } else {
+      status = NCApplyValidatorSilently_x86_32(
+          guest_addr, data, size, bundle_size,
+          readonly_text, cpu_features, cache);
     }
   }
   return status;

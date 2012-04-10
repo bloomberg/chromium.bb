@@ -46,7 +46,6 @@ static NaClValidationStatus NaClApplyValidatorVerbosely_x86_64(
 
 NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorVerbosely, x86, 64)
     (enum NaClSBKind sb_kind,
-     NaClApplyValidationKind kind,
      uintptr_t guest_addr,
      uint8_t *data,
      size_t size,
@@ -57,19 +56,8 @@ NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorVerbosely, x86, 64)
   if (bundle_size == 16 || bundle_size == 32) {
     if (!NaClArchSupported(cpu_features))
       return NaClValidationFailedCpuNotSupported;
-    switch (kind) {
-      case NaClApplyCodeValidation:
-        status = NaClApplyValidatorVerbosely_x86_64(
-            guest_addr, data, size, bundle_size, cpu_features);
-        break;
-      case NaClApplyValidationDoStubout:
-        status = NaClApplyValidatorStubout_x86_64(
-            guest_addr, data, size, bundle_size, cpu_features);
-        break;
-      default:
-        /* If reached, it isn't implemented (yet). */
-        break;
-    }
+    status = NaClApplyValidatorVerbosely_x86_64(
+        guest_addr, data, size, bundle_size, cpu_features);
   }
   return status;
 }

@@ -134,9 +134,9 @@ class ValidationCachingInterfaceTests : public ::testing::Test {
                              NACL_TARGET_ARCH,
                              NACL_TARGET_SUBARCH)(
                                  NACL_SB_DEFAULT,
-                                 NaClApplyCodeValidation,
                                  0, code_buffer, 32,
-                                 bundle_size, FALSE, &cpu_features,
+                                 bundle_size, /* stubout_mode= */ FALSE,
+                                 /* readonly_test= */ FALSE, &cpu_features,
                                  &cache);
   }
 };
@@ -156,9 +156,9 @@ TEST_F(ValidationCachingInterfaceTests, NoCache) {
                         NACL_TARGET_ARCH,
                         NACL_TARGET_SUBARCH)(
                             NACL_SB_DEFAULT,
-                            NaClApplyCodeValidation,
                             0, code_buffer, CODE_SIZE,
-                            bundle_size, FALSE, &cpu_features,
+                            bundle_size, /* stubout_mode= */ FALSE,
+                            /* readonly_test= */ FALSE, &cpu_features,
                             NULL);
   EXPECT_EQ(NaClValidationSucceeded, status);
 }

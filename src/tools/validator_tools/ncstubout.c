@@ -39,8 +39,9 @@ static Bool FixUpSection(uintptr_t load_address,
   status = NACL_SUBARCH_NAME(ApplyValidator,
                              NACL_TARGET_ARCH,
                              NACL_TARGET_SUBARCH)
-      (sb_kind, NaClApplyValidationDoStubout, load_address, code,
-       code_size, bundle_size, FALSE, &cpu_features, NULL);
+      (sb_kind, load_address, code, code_size, bundle_size,
+       /* stubout_mode= */ TRUE, /* readonly_text= */ FALSE,
+       &cpu_features, NULL);
   if (status == NaClValidationSucceeded) {
     /* Now run the validator again, so that we report any errors
      * that were not fixed by stubbing out. This is done so that
@@ -49,8 +50,7 @@ static Bool FixUpSection(uintptr_t load_address,
     status = NACL_SUBARCH_NAME(ApplyValidatorVerbosely,
                                NACL_TARGET_ARCH,
                                NACL_TARGET_SUBARCH)
-        (sb_kind, NaClApplyCodeValidation, load_address, code, code_size,
-         bundle_size, &cpu_features);
+        (sb_kind, load_address, code, code_size, bundle_size, &cpu_features);
   }
 
   switch (status) {

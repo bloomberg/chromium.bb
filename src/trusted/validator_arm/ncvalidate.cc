@@ -67,11 +67,11 @@ int NCValidateSegment(uint8_t *mbase, uint32_t vbase, size_t size) {
 
 NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidator, arm, 32) (
     enum NaClSBKind sb_kind,
-    NaClApplyValidationKind kind,
     uintptr_t guest_addr,
     uint8_t *data,
     size_t size,
     int bundle_size,
+    int stubout_mode,
     int readonly_text,
     const NaClCPUFeaturesArm *cpu_features,
     struct NaClValidationCache *cache) {
@@ -80,12 +80,11 @@ NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidator, arm, 32) (
   UNREFERENCED_PARAMETER(sb_kind);
   /* The ARM validator is currently unsafe w.r.t. caching. */
   UNREFERENCED_PARAMETER(cache);
+  if (stubout_mode) return NaClValidationFailedNotImplemented;
   if (readonly_text) return NaClValidationFailedNotImplemented;
   if (bundle_size == 16) {
-    if (kind == NaClApplyCodeValidation) {
-        status = ((0 == NCValidateSegment(data, guest_addr, size))
-                  ? NaClValidationSucceeded : NaClValidationFailed);
-    }
+    status = ((0 == NCValidateSegment(data, guest_addr, size))
+              ? NaClValidationSucceeded : NaClValidationFailed);
   }
   return status;
 }

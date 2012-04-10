@@ -71,22 +71,24 @@ int NaClValidateCode(struct NaClApp *nap, uintptr_t guest_addr,
                                NACL_TARGET_ARCH,
                                NACL_TARGET_SUBARCH)(
                                    sb_kind,
-                                   NaClApplyValidationDoStubout,
                                    guest_addr, data, size,
                                    nap->bundle_size,
+                                   TRUE, /* stub out */
                                    FALSE, /* text is not read-only */
                                    &nap->cpu_features,
                                    cache);
   }
   if (status == NaClValidationSucceeded) {
+    /* Fixed feature CPU mode implies read-only */
+    int readonly_text = nap->fixed_feature_cpu_mode;
     status = NACL_SUBARCH_NAME(ApplyValidator,
                                NACL_TARGET_ARCH,
                                NACL_TARGET_SUBARCH)(
                                    sb_kind,
-                                   NaClApplyCodeValidation,
                                    guest_addr, data, size,
                                    nap->bundle_size,
-                                   nap->fixed_feature_cpu_mode,
+                                   FALSE, /* do not stub out */
+                                   readonly_text,
                                    &nap->cpu_features,
                                    cache);
   }
