@@ -75,6 +75,8 @@ struct weston_launch {
 	int verbose;
 };
 
+union cmsg_data { unsigned char b[4]; int fd; };
+
 static gid_t *
 read_groups(void)
 {
@@ -234,9 +236,10 @@ setenv_fd(const char *env, int fd)
 static int
 handle_setmaster(struct weston_launch *wl, struct msghdr *msg, ssize_t len)
 {
-	int drm_fd = -1, ret = -1;
+	int ret = -1;
 	struct cmsghdr *cmsg;
 	struct weston_launcher_set_master *message;
+	union cmsg_data *data;
 
 	if (len != sizeof(*message)) {
 		error(0, 0, "missing value in setmaster request");
@@ -253,18 +256,18 @@ handle_setmaster(struct weston_launch *wl, struct msghdr *msg, ssize_t len)
 		goto out;
 	}
 
-	drm_fd = *(int *) CMSG_DATA(cmsg);
-	if (drm_fd == -1) {
+	data = (union cmsg_data *) CMSG_DATA(cmsg);
+	if (data->fd == -1) {
 		error(0, 0, "missing drm fd in socket request");
 		goto out;
 	}
 
 	if (message->set_master)
-		ret = drmSetMaster(drm_fd);
+		ret = drmSetMaster(data->fd);
 	else
-		ret = drmDropMaster(drm_fd);
+		ret = drmDropMaster(data->fd);
 
-	close(drm_fd);
+	close(data->fd);
 out:
 	do {
 		len = send(wl->sock[0], &ret, sizeof ret, 0);
@@ -285,6 +288,7 @@ handle_open(struct weston_launch *wl, struct msghdr *msg, ssize_t len)
 	struct msghdr nmsg;
 	struct iovec iov;
 	struct weston_launcher_open *message;
+	union cmsg_data *data;
 
 	message = msg->msg_iov->iov_base;
 	if ((size_t)len < sizeof(*message))
@@ -317,7 +321,8 @@ err0:
 		cmsg->cmsg_level = SOL_SOCKET;
 		cmsg->cmsg_type = SCM_RIGHTS;
 		cmsg->cmsg_len = CMSG_LEN(sizeof(fd));
-		*(int *) CMSG_DATA(cmsg) = fd;
+		data = (union cmsg_data *) CMSG_DATA(cmsg);
+		data->fd = fd;
 		nmsg.msg_controllen = cmsg->cmsg_len;
 		ret = 0;
 	}

@@ -37,16 +37,19 @@
 #include "launcher-util.h"
 #include "weston-launch.h"
 
+union cmsg_data { unsigned char b[4]; int fd; };
+
 int
 weston_launcher_open(struct weston_compositor *compositor,
 		     const char *path, int flags)
 {
 	int sock = compositor->launcher_sock;
-	int fd, n, ret = -1;
+	int n, ret = -1;
 	struct msghdr msg;
 	struct cmsghdr *cmsg;
 	struct iovec iov;
-	char control[CMSG_SPACE(sizeof fd)];
+	union cmsg_data *data;
+	char control[CMSG_SPACE(sizeof data->fd)];
 	ssize_t len;
 	struct weston_launcher_open *message;
 
@@ -90,15 +93,15 @@ weston_launcher_open(struct weston_compositor *compositor,
 		goto out;
 	}
 
-	fd = *(int *) CMSG_DATA(cmsg);
-	if (fd == -1) {
+	data = (union cmsg_data *) CMSG_DATA(cmsg);
+	if (data->fd == -1) {
 		fprintf(stderr, "missing drm fd in socket request");
 		return -1;
 	}
 
 out:
 	free(message);
-	return ret < 0 ? ret : fd;
+	return ret < 0 ? ret : data->fd;
 }
 
 int
@@ -112,6 +115,7 @@ weston_launcher_drm_set_master(struct weston_compositor *compositor,
 	int ret;
 	ssize_t len;
 	struct weston_launcher_set_master message;
+	union cmsg_data *data;
 
 	if (compositor->launcher_sock == -1) {
 		if (master)
@@ -130,7 +134,8 @@ weston_launcher_drm_set_master(struct weston_compositor *compositor,
 	cmsg->cmsg_type = SCM_RIGHTS;
 	cmsg->cmsg_len = CMSG_LEN(sizeof(drm_fd));
 
-	*(int *) CMSG_DATA(cmsg) = drm_fd;
+	data = (union cmsg_data *) CMSG_DATA(cmsg);
+	data->fd = drm_fd;
 	msg.msg_controllen = cmsg->cmsg_len;
 
 	iov.iov_base = &message;
