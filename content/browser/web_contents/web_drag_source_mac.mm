@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "content/browser/tab_contents/web_drag_source_mac.h"
+#import "content/browser/web_contents/web_drag_source_mac.h"
 
 #include <sys/param.h>
 

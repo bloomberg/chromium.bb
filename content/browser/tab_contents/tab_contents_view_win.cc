@@ -11,7 +11,7 @@
 #include "content/browser/tab_contents/interstitial_page_impl.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/web_contents_drag_win.h"
-#include "content/browser/tab_contents/web_drag_dest_win.h"
+#include "content/browser/web_contents/web_drag_dest_win.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_view_delegate.h"
 #include "ui/gfx/screen.h"

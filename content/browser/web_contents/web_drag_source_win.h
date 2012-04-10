@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_TAB_CONTENTS_WEB_DRAG_SOURCE_WIN_H_
-#define CONTENT_BROWSER_TAB_CONTENTS_WEB_DRAG_SOURCE_WIN_H_
+#ifndef CONTENT_BROWSER_WEB_CONTENTS_WEB_DRAG_SOURCE_WIN_H_
+#define CONTENT_BROWSER_WEB_CONTENTS_WEB_DRAG_SOURCE_WIN_H_
 #pragma once
 
 #include "base/basictypes.h"
@@ -66,4 +66,4 @@ class WebDragSource : public ui::DragSource,
   DISALLOW_COPY_AND_ASSIGN(WebDragSource);
 };
 
-#endif  // CONTENT_BROWSER_TAB_CONTENTS_WEB_DRAG_SOURCE_WIN_H_
+#endif  // CONTENT_BROWSER_WEB_CONTENTS_WEB_DRAG_SOURCE_WIN_H_

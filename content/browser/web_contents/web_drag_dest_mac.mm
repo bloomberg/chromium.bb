@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "content/browser/tab_contents/web_drag_dest_mac.h"
+#import "content/browser/web_contents/web_drag_dest_mac.h"
 
 #include "base/sys_string_conversions.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
