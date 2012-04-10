@@ -875,7 +875,7 @@ TEST_F(ProfileSyncServiceSessionTest, DeleteStaleSessions) {
   VerifySyncedSession(tag2, session_reference, *(foreign_sessions[0]));
 }
 
-// Write a stale foreign session to a node. Then update one of it's tabs so
+// Write a stale foreign session to a node. Then update one of its tabs so
 // the session is no longer stale. Ensure it doesn't get deleted.
 TEST_F(ProfileSyncServiceSessionTest, StaleSessionRefresh) {
   CreateRootHelper create_root(this);

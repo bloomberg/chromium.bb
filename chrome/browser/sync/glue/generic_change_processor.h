@@ -49,7 +49,7 @@ class GenericChangeProcessor : public ChangeProcessor,
       const sync_api::BaseTransaction* trans,
       const sync_api::ImmutableChangeRecordList& changes) OVERRIDE;
   // Passes |syncer_changes_|, built in ApplyChangesFromSyncModel, onto
-  // |local_service_| by way of it's ProcessSyncChanges method.
+  // |local_service_| by way of its ProcessSyncChanges method.
   virtual void CommitChangesFromSyncModel() OVERRIDE;
 
   // SyncChangeProcessor implementation.

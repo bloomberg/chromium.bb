@@ -140,7 +140,7 @@ void NewNonFrontendDataTypeController::
   // pointer, but |shared_change_processor| protects us from attempting to
   // access it.
   // Note: This must be done on the datatype's thread to ensure local_service_
-  // doesn't start trying to push changes from it's thread before we activate
+  // doesn't start trying to push changes from its thread before we activate
   // the datatype.
   shared_change_processor->ActivateDataType(model_safe_group());
   StartDone(!sync_has_nodes ? OK_FIRST_RUN : OK, RUNNING, SyncError());

@@ -70,7 +70,7 @@ void FakeSyncapiShutdownCallback(base::Thread* syncer_thread,
   // result in the syncer calling it's own destructor, which results in
   // the SyncerThread::HaltSyncer being called, which sets the
   // syncer in RequestEarlyExit mode and waits until the Syncer finishes
-  // SyncShare to remove the syncer from it's watch. Here we just manually
+  // SyncShare to remove the syncer from its watch. Here we just manually
   // wait until all outstanding jobs are done to simulate what happens in
   // SyncerThread::HaltSyncer.
   all_jobs_done.WaitMany(jobs, job_count);

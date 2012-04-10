@@ -23,14 +23,14 @@ TEST_F(SyncedSessionTrackerTest, GetSession) {
   SyncedSession* session2 = tracker.GetSession("tag2");
   ASSERT_EQ(session1, tracker.GetSession("tag"));
   ASSERT_NE(session1, session2);
-  // Should clean up memory on it's own.
+  // Should clean up memory on its own.
 }
 
 TEST_F(SyncedSessionTrackerTest, GetTabUnmapped) {
   SyncedSessionTracker tracker;
   SessionTab* tab = tracker.GetTab("tag", 0);
   ASSERT_EQ(tab, tracker.GetTab("tag", 0));
-  // Should clean up memory on it's own.
+  // Should clean up memory on its own.
 }
 
 TEST_F(SyncedSessionTrackerTest, PutWindowInSession) {
@@ -38,7 +38,7 @@ TEST_F(SyncedSessionTrackerTest, PutWindowInSession) {
   tracker.PutWindowInSession("tag", 0);
   SyncedSession* session = tracker.GetSession("tag");
   ASSERT_EQ(1U, session->windows.size());
-  // Should clean up memory on it's own.
+  // Should clean up memory on its own.
 }
 
 TEST_F(SyncedSessionTrackerTest, PutTabInWindow) {
@@ -49,7 +49,7 @@ TEST_F(SyncedSessionTrackerTest, PutTabInWindow) {
   ASSERT_EQ(1U, session->windows.size());
   ASSERT_EQ(1U, session->windows[10]->tabs.size());
   ASSERT_EQ(tracker.GetTab("tag", 15), session->windows[10]->tabs[0]);
-  // Should clean up memory on it's own.
+  // Should clean up memory on its own.
 }
 
 TEST_F(SyncedSessionTrackerTest, LookupAllForeignSessions) {
@@ -214,7 +214,7 @@ TEST_F(SyncedSessionTrackerTest, SessionTracking) {
 
   // Reset tracking and get the current windows/tabs.
   // We simulate moving a tab from one window to another, then closing the first
-  // window (including it's one remaining tab), and opening a new tab on the
+  // window (including its one remaining tab), and opening a new tab on the
   // remaining window.
   tracker.GetTab(tag1, 6);  // New tab, arrived before meta node so unmapped.
   tracker.ResetSessionTracking(tag1);

@@ -198,7 +198,7 @@ class SessionModelAssociator
   // stale.
   void SetStaleSessionThreshold(size_t stale_session_threshold_days);
 
-  // Delete a foreign session and all it's sync data.
+  // Delete a foreign session and all its sync data.
   void DeleteForeignSession(const std::string& tag);
 
   // Control which local tabs we're interested in syncing.
