@@ -57,13 +57,11 @@ void WrenchMenuModel::Build() {
   AddItem(IDC_VIEW_INCOMPATIBILITIES,
       l10n_util::GetStringUTF16(IDS_VIEW_INCOMPATIBILITIES));
 
-#if !defined(USE_ASH)
   // Use an icon for IDC_HELP_PAGE menu item.
   AddItemWithStringId(IDC_HELP_PAGE, IDS_HELP_PAGE);
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   SetIcon(GetIndexOfCommandId(IDC_HELP_PAGE),
           *rb.GetBitmapNamed(IDR_HELP_MENU));
-#endif
 
   // Show IDC_FEEDBACK in top-tier wrench menu for ChromeOS.
   AddItemWithStringId(IDC_FEEDBACK, IDS_FEEDBACK);
