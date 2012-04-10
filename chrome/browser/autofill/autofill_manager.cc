@@ -238,28 +238,30 @@ void AutofillManager::SendPasswordSyncStateToRenderer(
                                                  enabled));
 }
 
-void AutofillManager::UpdatePasswordSyncState(content::RenderViewHost* host) {
+void AutofillManager::UpdatePasswordSyncState(content::RenderViewHost* host,
+                                              bool new_renderer) {
   if (!sync_service_)
     return;
 
   syncable::ModelTypeSet sync_set = sync_service_->GetPreferredDataTypes();
   bool new_password_sync_enabled = (sync_service_->HasSyncSetupCompleted() &&
                                     sync_set.Has(syncable::PASSWORDS));
-  if (new_password_sync_enabled != password_sync_enabled_) {
+  if (new_password_sync_enabled != password_sync_enabled_ ||
+      new_renderer) {
     password_sync_enabled_ = new_password_sync_enabled;
     SendPasswordSyncStateToRenderer(host, password_sync_enabled_);
   }
 }
 
 void AutofillManager::RenderViewCreated(content::RenderViewHost* host) {
-  UpdatePasswordSyncState(host);
+  UpdatePasswordSyncState(host, true);
 }
 
 void AutofillManager::OnStateChanged() {
   // It is possible for sync state to change during tab contents destruction.
   // In this case, we don't need to update the renderer since it's going away.
   if (web_contents() && web_contents()->GetRenderViewHost()) {
-    UpdatePasswordSyncState(web_contents()->GetRenderViewHost());
+    UpdatePasswordSyncState(web_contents()->GetRenderViewHost(), false);
   }
 }
 

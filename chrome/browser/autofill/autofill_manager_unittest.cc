@@ -582,8 +582,8 @@ class AutofillManagerTest : public TabContentsWrapperTestHarness {
     TabContentsWrapperTestHarness::TearDown();
   }
 
-  void UpdatePasswordSyncState() {
-    autofill_manager_->UpdatePasswordSyncState(NULL);
+  void UpdatePasswordSyncState(bool new_renderer) {
+    autofill_manager_->UpdatePasswordSyncState(NULL, new_renderer);
   }
 
   void GetAutofillSuggestions(int query_id,
@@ -2898,13 +2898,13 @@ TEST_F(AutofillManagerTest, UpdatePasswordSyncState) {
   preferred_set.Put(syncable::PREFERENCES);
   sync_service->ChangePreferredDataTypes(preferred_set);
   syncable::ModelTypeSet new_set = sync_service->GetPreferredDataTypes();
-  UpdatePasswordSyncState();
+  UpdatePasswordSyncState(false);
   EXPECT_EQ(0u, autofill_manager_->GetSentStates().size());
 
   // Now sync passwords.
   preferred_set.Put(syncable::PASSWORDS);
   sync_service->ChangePreferredDataTypes(preferred_set);
-  UpdatePasswordSyncState();
+  UpdatePasswordSyncState(false);
   EXPECT_EQ(1u, autofill_manager_->GetSentStates().size());
   EXPECT_TRUE(autofill_manager_->GetSentStates()[0]);
   autofill_manager_->ClearSentStates();
@@ -2912,12 +2912,19 @@ TEST_F(AutofillManagerTest, UpdatePasswordSyncState) {
   // Add some additional synced state. Nothing should be sent.
   preferred_set.Put(syncable::THEMES);
   sync_service->ChangePreferredDataTypes(preferred_set);
-  UpdatePasswordSyncState();
+  UpdatePasswordSyncState(false);
   EXPECT_EQ(0u, autofill_manager_->GetSentStates().size());
 
   // Disable syncing. This should be sent.
   sync_service->DisableForUser();
-  UpdatePasswordSyncState();
+  UpdatePasswordSyncState(false);
+  EXPECT_EQ(1u, autofill_manager_->GetSentStates().size());
+  EXPECT_FALSE(autofill_manager_->GetSentStates()[0]);
+  autofill_manager_->ClearSentStates();
+
+  // When a new render_view is created, we send the state even if it's the
+  // same.
+  UpdatePasswordSyncState(true);
   EXPECT_EQ(1u, autofill_manager_->GetSentStates().size());
   EXPECT_FALSE(autofill_manager_->GetSentStates()[0]);
   autofill_manager_->ClearSentStates();

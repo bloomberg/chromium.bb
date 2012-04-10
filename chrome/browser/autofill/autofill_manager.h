@@ -173,9 +173,11 @@ class AutofillManager : public content::WebContentsObserver,
   void RegisterWithSyncService();
 
   // Determines what the current state of password sync is, and if it has
-  // changed from password_sync_enabled_. If it has changed, it notifies
-  // the renderers of this change via SendPasswordSyncStateToRenderer.
-  void UpdatePasswordSyncState(content::RenderViewHost* host);
+  // changed from password_sync_enabled_. If it has changed or if
+  // |new_renderer| is true, it notifies the renderer of this change via
+  // SendPasswordSyncStateToRenderer.
+  void UpdatePasswordSyncState(content::RenderViewHost* host,
+                               bool new_renderer);
 
   void OnFormsSeen(const std::vector<webkit::forms::FormData>& forms,
                    const base::TimeTicks& timestamp);
