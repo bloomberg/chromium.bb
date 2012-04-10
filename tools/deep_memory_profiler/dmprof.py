@@ -5,7 +5,6 @@
 
 """The deep heap profiler script for Chrome."""
 
-from collections import defaultdict
 import os
 import re
 import subprocess
@@ -128,7 +127,7 @@ class Log(object):
     """
     for l in stacktrace_lines:
       words = l.split()
-      bucket = buckets[int(words[BUCKET_ID])]
+      bucket = buckets.get(int(words[BUCKET_ID]))
       if not bucket:
         continue
       for i in range(0, BUCKET_ID - 1):
@@ -169,7 +168,7 @@ class Log(object):
     com_allocs = 0
     for l in stacktrace_lines:
       words = l.split()
-      bucket = buckets[int(words[BUCKET_ID])]
+      bucket = buckets.get(int(words[BUCKET_ID]))
       if (not bucket or
           (component_name and
            component_name != get_component(policy_list, bucket, mmap))):
@@ -196,7 +195,7 @@ class Log(object):
     """
     for l in stacktrace_lines:
       words = l.split()
-      bucket = buckets[int(words[BUCKET_ID])]
+      bucket = buckets.get(int(words[BUCKET_ID]))
       if (not bucket or
           (component_name and
            component_name != get_component(policy_list, bucket, mmap))):
@@ -263,7 +262,7 @@ class Log(object):
       return False
     if words[BUCKET_ID - 1] != '@':
       return False
-    bucket = buckets[int(words[BUCKET_ID])]
+    bucket = buckets.get(int(words[BUCKET_ID]))
     if bucket:
       for address in bucket.stacktrace:
         address_symbol_dict[address] = ''
@@ -395,7 +394,7 @@ class Log(object):
                                  policy_list, buckets, sizes, mmap):
     for l in stacktrace_lines:
       words = l.split()
-      bucket = buckets[int(words[BUCKET_ID])]
+      bucket = buckets.get(int(words[BUCKET_ID]))
       component_match = get_component(policy_list, bucket, mmap)
       sizes[component_match] += int(words[COMMITTED])
 
@@ -475,7 +474,7 @@ class Log(object):
                                  component_name, depth, sizes, mmap):
     for line in stacktrace_lines:
       words = line.split()
-      bucket = buckets[int(words[BUCKET_ID])]
+      bucket = buckets.get(int(words[BUCKET_ID]))
       component_match = get_component(policy_list, bucket, mmap)
       if component_match == component_name:
         stacktrace_sequence = ''
@@ -648,12 +647,12 @@ Examples:
 
   sys.stderr.write('parsing the maps file\n')
   maps_path = prefix + '.maps'
-  with open(maps_path, mode='r') as maps_f:
+  with open(maps_path, 'r') as maps_f:
     maps_lines = maps_f.readlines()
 
   # Reading buckets
   sys.stderr.write('parsing the bucket file\n')
-  buckets = defaultdict(lambda: None)
+  buckets = {}
   bucket_count = 0
   n = 0
   while True:
@@ -664,20 +663,15 @@ Examples:
       n += 1
       continue
     sys.stderr.write('reading buckets from %s\n' % (buckets_path))
-    with open(buckets_path, mode='r') as buckets_f:
+    with open(buckets_path, 'r') as buckets_f:
       for l in buckets_f:
         words = l.split()
-        st = []
-        for i in range(1, len(words)):
-          st.append(words[i])
-        buckets[int(words[0])] = Bucket(st)
-        bucket_count += 1
+        buckets[int(words[0])] = Bucket(words[1:])
     n += 1
 
   sys.stderr.write('the number buckets: %d\n' % (bucket_count))
 
-  log_path_list = []
-  log_path_list.append(log_path)
+  log_path_list = [log_path]
 
   if action == '--csv':
     # search for the sequence of files
@@ -698,6 +692,7 @@ Examples:
   sys.stderr.write('getting symbols\n')
   read_symbols(symbol_path, maps_lines, chrome_path)
 
+  # TODO(dmikurube): Many modes now.  Split them into separete functions.
   if action == '--stacktrace':
     logs[0].dump_stacktrace(buckets)
 
@@ -709,7 +704,7 @@ Examples:
       component_sizes = log.apply_policy(policy_list, buckets, logs[0].log_time)
       s = []
       for c in components:
-        if c in ['hour', 'minute', 'second']:
+        if c in ('hour', 'minute', 'second'):
           s.append('%05.5f' % (component_sizes[c]))
         else:
           s.append('%05.5f' % (component_sizes[c] / 1024.0 / 1024.0))
