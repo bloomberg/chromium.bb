@@ -1,0 +1,125 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// File-level comment to appease parser. Eventually this will not be necessary.
+
+[nodoc] namespace experimental.socket {
+
+  // A socket event.
+  dictionary SocketEvent {
+    // A connectComplete event reports the result of a connect that blocked. A
+    // writeComplete event reports the result of a write that blocked. A
+    // dataRead event reports bytes that have arrived following a read call
+    // that blocked.
+    DOMString type;
+
+    // The result code, if the event type is writeComplete. The result code
+    // description matches that of <code>writeInfo.bytesWritten</code>.
+    long? resultCode;
+
+    // The data read, if the event type is dataRead.
+    DOMString? data;
+
+    // Whether this is the final event that this socket will send.
+    [nodoc] boolean isFinalEvent;
+
+    // An ID unique to the calling function's context so that events can get
+    // routed back to the correct callback.
+    [nodoc] long? srcId;
+  };
+
+  callback OnEventCallback = void (SocketEvent event);
+
+  // The socket options.
+  dictionary CreateOptions {
+    // Our code generator can't handle a dictionary containing only a callback.
+    long? dummyValue;
+
+    // This function is called with events that occur during the lifetime of
+    // the socket.
+    OnEventCallback? onEvent;
+  };
+
+  dictionary CreateInfo {
+    // The id of the newly created socket.
+    long socketId;
+  };
+
+  callback CreateCallback = void (CreateInfo createInfo);
+
+  callback ConnectCallback = void (long result);
+
+  dictionary ReadInfo {
+    // The data received. Warning: will probably become a blob or other
+    // appropriate binary-friendly type.
+    DOMString message;
+  };
+
+  callback ReadCallback = void (ReadInfo readInfo);
+
+  dictionary WriteInfo {
+    // The number of bytes sent, or a negative error code.
+    long bytesWritten;
+  };
+
+  callback WriteCallback = void (WriteInfo writeInfo);
+
+  interface Functions {
+    // Creates a socket of the specified type that will connect to the specified
+    // remote machine.
+    // |type| : The type of socket to create. Must be <code>tcp</code> or
+    // <code>udp</code>.
+    // |address| : The address of the remote machine.
+    // |port| : The port of the remote machine.
+    // |options| : The socket options.
+    // |callback| : Called when the socket has been created.
+    static void create(DOMString type,
+                       DOMString address,
+                       long port,
+                       optional CreateOptions options,
+                       CreateCallback callback);
+
+    // Destroys the socket. Each socket created should be destroyed after use.
+    // |socketId| : The socketId.
+    static void destroy(long socketId);
+
+    // Connects the socket to the remote machine. For UDP sockets,
+    // <code>connect</code> is a non-operation but is safe to call.
+    // |socketId| : The socketId.
+    // |callback| : Called when the connection attempt is complete.
+    static void connect(long socketId,
+                        ConnectCallback callback);
+
+    // Disconnects the socket. For UDP sockets, <code>disconnect</code> is a
+    // non-operation but is safe to call.
+    // |socketId| : The socketId.
+    static void disconnect(long socketId);
+
+    // Reads data from the given socket.
+    // |socketId| : The socketId.
+    // |callback| : Delivers data that was available to be read without
+    // blocking.
+    static void read(long socketId,
+                     ReadCallback callback);
+
+    // Writes data on the given socket.
+    // |socketId| : The socketId.
+    // |data| : The data to write. Warning: will probably become a blob or other
+    // appropriate binary-friendly type.
+    // |callback| : Called when the first of any of the following happens: the
+    // write operation completes without blocking, the write operation blocked
+    // before completion (in which case onEvent() will eventually be called with
+    // a <code>writeComplete</code> event), or an error occurred.
+    static void write(long socketId,
+                      DOMString data,
+                      WriteCallback callback);
+  };
+
+  interface Events {
+    // Used to pass events back to the socket creator.
+    // |event| : The event indicating socket status.
+    static void onEvent(SocketEvent event);
+  };
+
+};

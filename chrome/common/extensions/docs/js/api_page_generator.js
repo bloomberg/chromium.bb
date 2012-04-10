@@ -46,8 +46,6 @@ var MODULE_SCHEMAS = [
   '../api/experimental.processes.json',
   '../api/experimental.rlz.json',
   '../api/experimental.runtime.json',
-  '../api/experimental.serial.json',
-  '../api/experimental.socket.json',
   '../api/experimental.speechInput.json',
   '../api/experimental.webRequest.json',
   '../api/extension.json',

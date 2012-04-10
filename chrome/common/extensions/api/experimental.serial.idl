@@ -1,0 +1,64 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// File-level comment to appease parser. Eventually this will not be necessary.
+
+[nodoc] namespace experimental.serial {
+
+  dictionary OpenInfo {
+    // The id of the opened connection.
+    long connectionId;
+  };
+
+  callback OpenCallback = void (OpenInfo openInfo);
+
+  callback CloseCallback = void (boolean result);
+
+  dictionary ReadInfo {
+    // The number of bytes received, or a negative number if an error occurred.
+    long bytesRead;
+
+    // The data received. Warning: will probably become a blob or other
+    // appropriate binary-friendly type.
+    DOMString message;
+  };
+
+  callback ReadCallback = void (ReadInfo readInfo);
+
+  dictionary WriteInfo {
+    // The number of bytes written.
+    long bytesWritten;
+  };
+
+  callback WriteCallback = void (WriteInfo writeInfo);
+
+  interface Functions {
+    // Opens a connection to the given serial port.
+    // |port| : The name of the serial port to open.
+    // |callback| : Called when the connection has been opened.
+    static void open(DOMString port,
+                     OpenCallback callback);
+
+    // Closes an open connection.
+    // |connectionId| : The id of the opened connection.
+    // |callback| : Called when the connection has been closed.
+    static void close(long connectionId,
+                      CloseCallback callback);
+
+    // Reads a byte from the given connection.
+    // |connectionId| : The id of the connection.
+    // |callback| : Called when the byte has been read or the read blocked.
+    static void read(long connectionId,
+                     ReadCallback callback);
+
+    // Writes a string to the given connection.
+    // |connectionId| : The id of the connection.
+    // |data| : The string to write.
+    // |callback| : Called when the string has been written.
+    static void write(long connectionId,
+                      DOMString data,
+                      WriteCallback callback);
+  };
+
+};

@@ -55,7 +55,7 @@ var testSocketCreation = function() {
     chrome.test.succeed();
   }
 
-  socket.create(protocol, address, port, {}, onCreate);
+  socket.create(protocol, address, port, {onEvent: function(e) {}}, onCreate);
 };
 
 function onDataRead(readInfo) {
