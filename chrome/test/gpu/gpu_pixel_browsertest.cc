@@ -296,7 +296,8 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
           << "(" << ref_bmp->width() << "x" << ref_bmp->height()
               << ") vs. "
           << "(" << gen_bmp.width() << "x" << gen_bmp.height() << ")";
-      save_gen = true;
+      if (!use_checked_in_ref_imgs_)
+        save_gen = true;
       rt = false;
     } else {
       // Compare pixels and create a simple diff image.
@@ -328,8 +329,10 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
       if (diff_pixels_count > 0) {
         LOG(ERROR) << diff_pixels_count
                    << " pixels do not match.";
-        save_gen = true;
-        save_diff = true;
+        if (!use_checked_in_ref_imgs_) {
+          save_gen = true;
+          save_diff = true;
+        }
         rt = false;
       }
     }
