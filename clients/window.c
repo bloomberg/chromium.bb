@@ -131,7 +131,7 @@ struct window {
 	struct input *keyboard_device;
 	enum window_buffer_type buffer_type;
 
-	cairo_surface_t *cairo_surface, *pending_surface;
+	cairo_surface_t *cairo_surface;
 
 	struct wl_shm_pool *pool;
 	size_t pool_size;
@@ -711,25 +711,6 @@ display_get_pointer_surface(struct display *display, int pointer,
 }
 
 static void
-window_attach_surface(struct window *window);
-
-static void
-free_surface(void *data, struct wl_callback *callback, uint32_t time)
-{
-	struct window *window = data;
-
-	wl_callback_destroy(callback);
-	cairo_surface_destroy(window->pending_surface);
-	window->pending_surface = NULL;
-	if (window->cairo_surface)
-		window_attach_surface(window);
-}
-
-static const struct wl_callback_listener free_surface_listener = {
-	free_surface
-};
-
-static void
 window_get_resize_dx_dy(struct window *window, int *x, int *y)
 {
 	if (window->resize_edges & WINDOW_RESIZING_LEFT)
@@ -751,7 +732,6 @@ window_attach_surface(struct window *window)
 {
 	struct display *display = window->display;
 	struct wl_buffer *buffer;
-	struct wl_callback *cb;
 #ifdef HAVE_CAIRO_EGL
 	struct egl_window_surface_data *data;
 #endif
@@ -771,21 +751,18 @@ window_attach_surface(struct window *window)
 	case WINDOW_BUFFER_TYPE_EGL_IMAGE:
 #endif
 	case WINDOW_BUFFER_TYPE_SHM:
-		if (window->pending_surface != NULL)
-			return;
-
-		window->pending_surface = window->cairo_surface;
-		window->cairo_surface = NULL;
-
 		buffer =
 			display_get_buffer_for_surface(display,
-						       window->pending_surface);
+						       window->cairo_surface);
 
 		window_get_resize_dx_dy(window, &x, &y);
 		wl_surface_attach(window->surface, buffer, x, y);
+		wl_surface_damage(window->surface, 0, 0,
+				  window->allocation.width,
+				  window->allocation.height);
 		window->server_allocation = window->allocation;
-		cb = wl_display_sync(display->display);
-		wl_callback_add_listener(cb, &free_surface_listener, window);
+		cairo_surface_destroy(window->cairo_surface);
+		window->cairo_surface = NULL;
 		break;
 	default:
 		return;
@@ -804,10 +781,6 @@ window_attach_surface(struct window *window)
 		wl_region_destroy(window->opaque_region);
 		window->opaque_region = NULL;
 	}
-
-	wl_surface_damage(window->surface, 0, 0,
-			  window->allocation.width,
-			  window->allocation.height);
 }
 
 void
@@ -932,8 +905,6 @@ window_destroy(struct window *window)
 
 	if (window->cairo_surface != NULL)
 		cairo_surface_destroy(window->cairo_surface);
-	if (window->pending_surface != NULL)
-		cairo_surface_destroy(window->pending_surface);
 
 	free(window->title);
 	free(window);
