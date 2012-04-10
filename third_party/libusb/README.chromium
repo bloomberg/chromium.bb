@@ -1,0 +1,13 @@
+Name: libusb
+URL: http://libusb.org
+Version: 1.0.8
+License: LGPL 2.1
+Security Critical: yes
+
+Description:
+libusb provides a platform-agnostic API for accessing the USB subsystem on Mac,
+Windows, and Linux systems.
+
+Local Modifications:
+- config.h (empty) has been created to satisfy includes within the tree.
+- windows-build.patch has been applied.

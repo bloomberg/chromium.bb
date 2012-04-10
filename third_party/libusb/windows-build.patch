@@ -1,0 +1,42 @@
+diff --git a/libusb/os/poll_windows.h b/libusb/os/poll_windows.h
+index fee89f5..27986b8 100644
+--- a/libusb/os/poll_windows.h
++++ b/libusb/os/poll_windows.h
+@@ -19,6 +19,9 @@
+  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+  *
+  */
++
++#ifndef LIBUSB_POLL_WINDOWS_H
++#define LIBUSB_POLL_WINDOWS_H
+ #pragma once
+ 
+ #if defined(_MSC_VER)
+@@ -57,12 +60,6 @@ extern enum windows_version windows_version;
+ #define POLLHUP     0x0010    /* Hung up */
+ #define POLLNVAL    0x0020    /* Invalid request: fd not open */
+ 
+-struct pollfd {
+-    int fd;           /* file descriptor */
+-    short events;     /* requested events */
+-    short revents;    /* returned events */
+-};
+-
+ // access modes
+ enum rw_type {
+ 	RW_NONE,
+@@ -118,3 +115,4 @@ do {                                                    \
+ } while (0)
+ #endif
+ 
++#endif /* LIBUSB_POLL_WINDOWS_H */
+diff --git a/msvc/config.h b/msvc/config.h
+index 43b4d4e..9ac6134 100644
+--- a/msvc/config.h
++++ b/msvc/config.h
+@@ -19,3 +19,5 @@
+ 
+ /* type of second poll() argument */
+ #define POLL_NFDS_TYPE unsigned int
++
++#include <Winsock2.h>
