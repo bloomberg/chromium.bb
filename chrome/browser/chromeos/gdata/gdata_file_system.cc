@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/chromeos/chromeos_version.h"
 #include "base/eintr_wrapper.h"
 #include "base/file_util.h"
 #include "base/json/json_file_value_serializer.h"
@@ -18,8 +19,10 @@
 #include "base/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
 #include "base/platform_file.h"
+#include "base/sys_info.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/gdata/gdata_documents_service.h"
@@ -70,6 +73,58 @@ const char kGDataFileSystemToken[] = "GDataFileSystemToken";
 const FilePath::CharType kAccountMetadataFile[] =
     FILE_PATH_LITERAL("account_metadata.json");
 const FilePath::CharType kSymLinkToDevNull[] = FILE_PATH_LITERAL("/dev/null");
+
+// Returns the home directory path, or an empty string if the home directory
+// is not found.
+// Copied from webkit/chromeos/cros_mount_point_provider.h.
+// TODO(satorux): Share the code.
+std::string GetHomeDirectory() {
+  if (base::chromeos::IsRunningOnChromeOS())
+    return "/home/chronos/user";
+
+  const char* home = getenv("HOME");
+  if (home)
+    return home;
+  return "";
+}
+
+// Used to tweak GetAmountOfFreeDiskSpace() behavior for testing.
+FreeDiskSpaceGetterInterface* global_free_disk_getter_for_testing = NULL;
+
+// Gets the amount of free disk space. Use
+// |global_free_disk_getter_for_testing| if set.
+int64 GetAmountOfFreeDiskSpace() {
+  if (global_free_disk_getter_for_testing)
+    return global_free_disk_getter_for_testing->AmountOfFreeDiskSpace();
+
+  return base::SysInfo::AmountOfFreeDiskSpace(
+      FilePath::FromUTF8Unsafe(GetHomeDirectory()));
+}
+
+// Returns true if we have sufficient space to store the given number of
+// bytes, while keeping kMinFreeSpace bytes on the disk.
+bool HasEnoughSpaceFor(int64 num_bytes) {
+  int64 free_space = GetAmountOfFreeDiskSpace();
+  // Substract this as if this portion does not exist.
+  free_space -= kMinFreeSpace;
+  return (free_space >= num_bytes);
+}
+
+// Remove all files under the given directory, non-recursively.
+// Do not remove recursively as we don't want to touch <gache>/tmp/downloads,
+// which is used for user initiated downloads like "Save As"
+void RemoveAllFiles(const FilePath& directory) {
+  using file_util::FileEnumerator;
+
+  FileEnumerator enumerator(directory, false /* recursive */,
+                            FileEnumerator::FILES);
+  for (FilePath file_path = enumerator.Next(); !file_path.empty();
+       file_path = enumerator.Next()) {
+    DVLOG(1) << "Removing " << file_path.value();
+    if (!file_util::Delete(file_path, false /* recursive */))
+      LOG(WARNING) << "Failed to delete " << file_path.value();
+  }
+}
 
 // Converts gdata error code into file platform error code.
 base::PlatformFileError GDataToPlatformError(GDataErrorCode status) {
@@ -1492,7 +1547,77 @@ void GDataFileSystem::OnGetFileFromCache(const GetFileFromCacheParams& params,
     return;
   }
 
-  // If cache file is not found, try to download it from the server instead.
+  // If cache file is not found, try to download the file from the server
+  // instead. This logic is rather complicated but here's how this works:
+  //
+  // Check if we have enough space, based on the expected file size.
+  // - if we don't have enough space, try to free up the disk space
+  // - if we still don't have enough space, return "no space" error
+  // - if we have enough space, start downloading the file from the server
+  int64 file_size = 0;
+  {
+    base::AutoLock lock(lock_);  // To access the root directory.
+    GDataFileBase* file_base = root_->GetFileByResourceId(resource_id);
+    if (file_base)
+      file_size = file_base->file_info().size;
+  }
+
+  bool* has_enough_space = new bool(false);
+  PostBlockingPoolSequencedTaskAndReply(
+      kGDataFileSystemToken,
+      FROM_HERE,
+      base::Bind(&GDataFileSystem::FreeDiskSpaceIfNeededFor,
+                 base::Unretained(this),
+                 file_size,
+                 has_enough_space),
+      base::Bind(&GDataFileSystem::StartDownloadFileIfEnoughSpace,
+                 GetWeakPtrForCurrentThread(),
+                 params,
+                 cache_file_path,
+                 base::Owned(has_enough_space)));
+}
+
+void GDataFileSystem::FreeDiskSpaceIfNeededFor(int64 num_bytes,
+                                               bool* has_enough_space) {
+  // Do nothing and return if we have enough space.
+  *has_enough_space = HasEnoughSpaceFor(num_bytes);
+  if (*has_enough_space)
+    return;
+
+  // Otherwise, try to free up the disk space.
+  DVLOG(1) << "Freeing up disk space for " << num_bytes;
+  base::AutoLock lock(lock_);  // To access the cache map.
+  // First remove temporary files from the cache map.
+  root_->RemoveTemporaryFilesFromCacheMap();
+  // Then remove all files under "tmp" directory.
+  RemoveAllFiles(GetGDataCacheTmpDirectory());
+
+  // Check the disk space again.
+  *has_enough_space = HasEnoughSpaceFor(num_bytes);
+}
+
+void GDataFileSystem::FreeDiskSpaceIfNeeded(bool* has_enough_space) {
+  FreeDiskSpaceIfNeededFor(0, has_enough_space);
+}
+
+void GDataFileSystem::StartDownloadFileIfEnoughSpace(
+    const GetFileFromCacheParams& params,
+    const FilePath& cache_file_path,
+    bool* has_enough_space) {
+  if (!*has_enough_space) {
+    // If no enough space, return PLATFORM_FILE_ERROR_NO_SPACE.
+    if (!params.callback.is_null()) {
+      params.proxy->PostTask(FROM_HERE,
+                             base::Bind(params.callback,
+                                        base::PLATFORM_FILE_ERROR_NO_SPACE,
+                                        cache_file_path,
+                                        params.mime_type,
+                                        REGULAR_FILE));
+    }
+    return;
+  }
+
+  // We have enough disk space. Start downloading the file.
   documents_service_->DownloadFile(
       params.virtual_file_path,
       params.local_tmp_path,
@@ -2304,18 +2429,60 @@ void GDataFileSystem::OnFileDownloaded(
     GDataErrorCode status,
     const GURL& content_url,
     const FilePath& downloaded_file_path) {
+  // At this point, the disk can be full or nearly full for several reasons:
+  // - The expected file size was incorrect and the file was larger
+  // - There was an in-flight download operation and it used up space
+  // - The disk became full for some user actions we cannot control
+  //   (ex. the user might have downloaded a large file from a regular web site)
+  //
+  // If we don't have enough space, we return PLATFORM_FILE_ERROR_NO_SPACE,
+  // and try to free up space, even if the file was downloaded successfully.
+  bool* has_enough_space = new bool(false);
+  PostBlockingPoolSequencedTaskAndReply(
+      kGDataFileSystemToken,
+      FROM_HERE,
+      base::Bind(&GDataFileSystem::FreeDiskSpaceIfNeeded,
+                 base::Unretained(this),
+                 has_enough_space),
+      base::Bind(&GDataFileSystem::OnFileDownloadedAndSpaceChecked,
+                 GetWeakPtrForCurrentThread(),
+                 params,
+                 status,
+                 content_url,
+                 downloaded_file_path,
+                 base::Owned(has_enough_space)));
+}
+
+void GDataFileSystem::OnFileDownloadedAndSpaceChecked(
+    const GetFileFromCacheParams& params,
+    GDataErrorCode status,
+    const GURL& content_url,
+    const FilePath& downloaded_file_path,
+    bool* has_enough_space) {
   base::PlatformFileError error = GDataToPlatformError(status);
 
   // Make sure that downloaded file is properly stored in cache. We don't have
   // to wait for this operation to finish since the user can already use the
   // downloaded file.
   if (error == base::PLATFORM_FILE_OK) {
-    StoreToCache(params.resource_id,
-                 params.md5,
-                 downloaded_file_path,
-                 FILE_OPERATION_MOVE,
-                 base::Bind(&GDataFileSystem::OnDownloadStoredToCache,
-                            GetWeakPtrForCurrentThread()));
+    if (*has_enough_space) {
+      StoreToCache(params.resource_id,
+                   params.md5,
+                   downloaded_file_path,
+                   FILE_OPERATION_MOVE,
+                   base::Bind(&GDataFileSystem::OnDownloadStoredToCache,
+                              GetWeakPtrForCurrentThread()));
+    } else {
+      // If we don't have enough space, remove the downloaded file, and
+      // report "no space" error.
+      PostBlockingPoolSequencedTask(
+          kGDataFileSystemToken,
+          FROM_HERE,
+          base::Bind(base::IgnoreResult(&file_util::Delete),
+                     downloaded_file_path,
+                     false /* recursive*/));
+      error = base::PLATFORM_FILE_ERROR_NO_SPACE;
+    }
   }
 
   if (!params.callback.is_null()) {
@@ -3758,6 +3925,16 @@ void GDataFileSystem::OnFileUnpinned(base::PlatformFileError* error,
 
   if (*error == base::PLATFORM_FILE_OK)
     NotifyFileUnpinned(resource_id, md5);
+
+  // Now the file is moved from "persistent" to "tmp" directory.
+  // It's a chance to free up space if needed.
+  bool* has_enough_space = new bool(false);
+  PostBlockingPoolSequencedTask(
+      kGDataFileSystemToken,
+      FROM_HERE,
+      base::Bind(&GDataFileSystem::FreeDiskSpaceIfNeeded,
+                 base::Unretained(this),
+                 base::Owned(has_enough_space)));
 }
 
 //============= GDataFileSystem: internal helper functions =====================
@@ -3936,6 +4113,11 @@ void GDataFileSystem::InitializePreferenceObserver() {
   pref_registrar_.reset(new PrefChangeRegistrar());
   pref_registrar_->Init(profile_->GetPrefs());
   pref_registrar_->Add(prefs::kDisableGDataHostedFiles, this);
+}
+
+void SetFreeDiskSpaceGetterForTesting(FreeDiskSpaceGetterInterface* getter) {
+  delete global_free_disk_getter_for_testing;  // Safe to delete NULL;
+  global_free_disk_getter_for_testing = getter;
 }
 
 }  // namespace gdata

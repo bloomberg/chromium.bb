@@ -394,6 +394,9 @@ class GDataRootDirectory : public GDataDirectory {
                      const std::string& md5,
                      const GetCacheStateCallback& callback);
 
+  // Remove temporary files (files in CACHE_TYPE_TMP) from the cache map.
+  void RemoveTemporaryFilesFromCacheMap();
+
  private:
   ResourceMap resource_map_;
   CacheMap cache_map_;

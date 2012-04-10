@@ -33,6 +33,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::AnyNumber;
+using ::testing::AtLeast;
 using ::testing::Eq;
 using ::testing::IsNull;
 using ::testing::Ne;
@@ -99,6 +100,8 @@ struct InitialCacheResource {
      "local", gdata::GDataRootDirectory::CACHE_TYPE_PERSISTENT },
 };
 
+const int64 kLotsOfSpace = gdata::kMinFreeSpace * 10;
+
 struct PathToVerify {
   PathToVerify(const FilePath& in_path_to_scan,
                const FilePath& in_expected_existing_path) :
@@ -113,6 +116,12 @@ struct PathToVerify {
 }  // anonymous namespace
 
 namespace gdata {
+
+class MockFreeDiskSpaceGetter : public FreeDiskSpaceGetterInterface {
+ public:
+  virtual ~MockFreeDiskSpaceGetter() {}
+  MOCK_CONST_METHOD0(AmountOfFreeDiskSpace, int64());
+};
 
 class GDataFileSystemTest : public testing::Test {
  protected:
@@ -144,6 +153,10 @@ class GDataFileSystemTest : public testing::Test {
 
     EXPECT_CALL(*mock_doc_service_, Initialize(profile_.get())).Times(1);
 
+    // Likewise, this will be owned by GDataFileSystem.
+    mock_free_disk_space_checker_ = new MockFreeDiskSpaceGetter;
+    SetFreeDiskSpaceGetterForTesting(mock_free_disk_space_checker_);
+
     ASSERT_FALSE(file_system_);
     file_system_ = new GDataFileSystem(profile_.get(),
                                        mock_doc_service_);
@@ -158,6 +171,7 @@ class GDataFileSystemTest : public testing::Test {
     EXPECT_CALL(*mock_doc_service_, CancelAll()).Times(1);
     delete file_system_;
     file_system_ = NULL;
+    SetFreeDiskSpaceGetterForTesting(NULL);
 
     // Run the remaining tasks on the main thread, so that reply tasks (2nd
     // callback of PostTaskAndReply) are run. Otherwise, there will be a leak
@@ -257,6 +271,25 @@ class GDataFileSystemTest : public testing::Test {
       GDataFileSystem::CachedFileOrigin file_origin) {
     return file_system_->GetCacheFilePath(resource_id, md5, sub_dir_type,
                                           file_origin);
+  }
+
+  // Returns true if the cache entry exists for the given resource ID and MD5.
+  bool CacheEntryExists(const std::string& resource_id,
+                        const std::string& md5) {
+    GDataRootDirectory::CacheEntry* entry =
+        file_system_->root_->GetCacheEntry(resource_id, md5);
+    return entry != NULL;
+  }
+
+  // Returns true if the cache file exists for the given resource ID and MD5.
+  bool CacheFileExists(const std::string& resource_id,
+                       const std::string& md5) {
+    const FilePath file_path = file_system_->GetCacheFilePath(
+        resource_id,
+        md5,
+        GDataRootDirectory::CACHE_TYPE_TMP,
+        GDataFileSystem::CACHED_FILE_FROM_SERVER);
+    return file_util::PathExists(file_path);
   }
 
   void TestGetCacheFilePath(const std::string& resource_id,
@@ -875,6 +908,7 @@ class GDataFileSystemTest : public testing::Test {
   scoped_refptr<CallbackHelper> callback_helper_;
   GDataFileSystem* file_system_;
   MockDocumentsService* mock_doc_service_;
+  MockFreeDiskSpaceGetter* mock_free_disk_space_checker_;
   scoped_ptr<MockGDataSyncClient> mock_sync_client_;
 
   int num_callback_invocations_;
@@ -1840,6 +1874,8 @@ TEST_F(GDataFileSystemTest, RemoveFromCacheSimple) {
 
 TEST_F(GDataFileSystemTest, PinAndUnpin) {
   EXPECT_CALL(*mock_sync_client_, OnCacheInitialized()).Times(1);
+  EXPECT_CALL(*mock_free_disk_space_checker_, AmountOfFreeDiskSpace())
+      .Times(AtLeast(1)).WillRepeatedly(Return(kLotsOfSpace));
 
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
@@ -2077,6 +2113,8 @@ TEST_F(GDataFileSystemTest, DirtyCachePinned) {
 
 TEST_F(GDataFileSystemTest, PinAndUnpinDirtyCache) {
   EXPECT_CALL(*mock_sync_client_, OnCacheInitialized()).Times(1);
+  EXPECT_CALL(*mock_free_disk_space_checker_, AmountOfFreeDiskSpace())
+      .Times(AtLeast(1)).WillRepeatedly(Return(kLotsOfSpace));
 
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
@@ -2430,7 +2468,45 @@ TEST_F(GDataFileSystemTest, CreateDirectoryWithService) {
   // EXPECT_EQ(base::PLATFORM_FILE_OK, callback_helper_->last_error_);
 }
 
-TEST_F(GDataFileSystemTest, GetFile_FromGData) {
+TEST_F(GDataFileSystemTest, GetFile_FromGData_EnoughSpace) {
+  EXPECT_CALL(*mock_sync_client_, OnCacheInitialized()).Times(1);
+
+  LoadRootFeedDocument("root_feed.json");
+
+  GetFileCallback callback =
+      base::Bind(&CallbackHelper::GetFileCallback,
+                 callback_helper_.get());
+
+  FilePath file_in_root(FILE_PATH_LITERAL("gdata/File 1.txt"));
+  GDataFileBase* file_base = FindFile(file_in_root);
+  GDataFile* file = file_base->AsGDataFile();
+  FilePath downloaded_file = GetCachePathForFile(file);
+  const int64 file_size = file_base->file_info().size;
+
+  // Pretend we have enough space.
+  EXPECT_CALL(*mock_free_disk_space_checker_, AmountOfFreeDiskSpace())
+      .Times(2).WillRepeatedly(Return(file_size + kMinFreeSpace));
+
+  // The file is obtained with the mock DocumentsService.
+  EXPECT_CALL(*mock_doc_service_,
+              DownloadFile(file_in_root,
+                           downloaded_file,
+                           GURL("https://file_content_url/"),
+                           _))
+      .Times(1);
+
+  file_system_->GetFile(file_in_root, callback);
+  RunAllPendingForIO();  // Try to get from the cache.
+  RunAllPendingForIO();  // Check if we have space before downloading.
+  RunAllPendingForIO();  // Check if we have space after downloading.
+
+  EXPECT_EQ(base::PLATFORM_FILE_OK, callback_helper_->last_error_);
+  EXPECT_EQ(REGULAR_FILE, callback_helper_->file_type_);
+  EXPECT_EQ(downloaded_file.value(),
+            callback_helper_->download_path_.value());
+}
+
+TEST_F(GDataFileSystemTest, GetFile_FromGData_NoSpaceAtAll) {
   EXPECT_CALL(*mock_sync_client_, OnCacheInitialized()).Times(1);
 
   LoadRootFeedDocument("root_feed.json");
@@ -2444,6 +2520,109 @@ TEST_F(GDataFileSystemTest, GetFile_FromGData) {
   GDataFile* file = file_base->AsGDataFile();
   FilePath downloaded_file = GetCachePathForFile(file);
 
+  // Pretend we have no space at all.
+  EXPECT_CALL(*mock_free_disk_space_checker_, AmountOfFreeDiskSpace())
+      .Times(2).WillRepeatedly(Return(0));
+
+  // The file is not obtained with the mock DocumentsService, because of no
+  // space.
+  EXPECT_CALL(*mock_doc_service_,
+              DownloadFile(file_in_root,
+                           downloaded_file,
+                           GURL("https://file_content_url/"),
+                           _))
+      .Times(0);
+
+  file_system_->GetFile(file_in_root, callback);
+  RunAllPendingForIO();  // Try to get from the cache.
+  RunAllPendingForIO();  // Check if we have space before downloading.
+
+  EXPECT_EQ(base::PLATFORM_FILE_ERROR_NO_SPACE,
+            callback_helper_->last_error_);
+}
+
+TEST_F(GDataFileSystemTest, GetFile_FromGData_NoEnoughSpaceButCanFreeUp) {
+  EXPECT_CALL(*mock_sync_client_, OnCacheInitialized()).Times(1);
+
+  LoadRootFeedDocument("root_feed.json");
+
+  GetFileCallback callback =
+      base::Bind(&CallbackHelper::GetFileCallback,
+                 callback_helper_.get());
+
+  FilePath file_in_root(FILE_PATH_LITERAL("gdata/File 1.txt"));
+  GDataFileBase* file_base = FindFile(file_in_root);
+  GDataFile* file = file_base->AsGDataFile();
+  FilePath downloaded_file = GetCachePathForFile(file);
+  const int64 file_size = file_base->file_info().size;
+
+  // Pretend we have no space first (checked before downloading a file),
+  // but then start reporting we have space. This is to emulate that
+  // the disk space was freed up by removing temporary files.
+  EXPECT_CALL(*mock_free_disk_space_checker_, AmountOfFreeDiskSpace())
+      .WillOnce(Return(0))
+      .WillOnce(Return(file_size + kMinFreeSpace))
+      .WillOnce(Return(file_size + kMinFreeSpace));
+
+  // Store something in the temporary cache directory.
+  TestStoreToCache("<resource_id>",
+                   "<md5>",
+                   GetTestFilePath("root_feed.json"),
+                   base::PLATFORM_FILE_OK,
+                   GDataFile::CACHE_STATE_PRESENT,
+                   GDataRootDirectory::CACHE_TYPE_TMP);
+  ASSERT_TRUE(CacheEntryExists("<resource_id>", "<md5>"));
+  ASSERT_TRUE(CacheFileExists("<resource_id>", "<md5>"));
+
+  // The file is obtained with the mock DocumentsService, because of we freed
+  // up the space.
+  EXPECT_CALL(*mock_doc_service_,
+              DownloadFile(file_in_root,
+                           downloaded_file,
+                           GURL("https://file_content_url/"),
+                           _))
+      .Times(1);
+
+  file_system_->GetFile(file_in_root, callback);
+  RunAllPendingForIO();  // Try to get from the cache.
+  RunAllPendingForIO();  // Check if we have space before downloading.
+  RunAllPendingForIO();  // Check if we have space after downloading
+
+  EXPECT_EQ(base::PLATFORM_FILE_OK, callback_helper_->last_error_);
+  EXPECT_EQ(REGULAR_FILE, callback_helper_->file_type_);
+  EXPECT_EQ(downloaded_file.value(),
+            callback_helper_->download_path_.value());
+
+  // The file should be removed in order to free up space, and the cache
+  // entry should also be removed.
+  ASSERT_FALSE(CacheEntryExists("<resource_id>", "<md5>"));
+  ASSERT_FALSE(CacheFileExists("<resource_id>", "<md5>"));
+}
+
+TEST_F(GDataFileSystemTest, GetFile_FromGData_EnoughSpaceButBecomeFull) {
+  EXPECT_CALL(*mock_sync_client_, OnCacheInitialized()).Times(1);
+
+  LoadRootFeedDocument("root_feed.json");
+
+  GetFileCallback callback =
+      base::Bind(&CallbackHelper::GetFileCallback,
+                 callback_helper_.get());
+
+  FilePath file_in_root(FILE_PATH_LITERAL("gdata/File 1.txt"));
+  GDataFileBase* file_base = FindFile(file_in_root);
+  GDataFile* file = file_base->AsGDataFile();
+  FilePath downloaded_file = GetCachePathForFile(file);
+  const int64 file_size = file_base->file_info().size;
+
+  // Pretend we have enough space first (checked before downloading a file),
+  // but then start reporting we have not enough space. This is to emulate that
+  // the disk space becomes full after the file is downloaded for some reason
+  // (ex. the actual file was larger than the expected size).
+  EXPECT_CALL(*mock_free_disk_space_checker_, AmountOfFreeDiskSpace())
+      .WillOnce(Return(file_size + kMinFreeSpace))
+      .WillOnce(Return(kMinFreeSpace - 1))
+      .WillOnce(Return(kMinFreeSpace - 1));
+
   // The file is obtained with the mock DocumentsService.
   EXPECT_CALL(*mock_doc_service_,
               DownloadFile(file_in_root,
@@ -2453,11 +2632,12 @@ TEST_F(GDataFileSystemTest, GetFile_FromGData) {
       .Times(1);
 
   file_system_->GetFile(file_in_root, callback);
-  RunAllPendingForIO();
+  RunAllPendingForIO();  // Try to get from the cache.
+  RunAllPendingForIO();  // Check if we have space before downloading.
+  RunAllPendingForIO();  // Check if we have space after downloading.
 
-  EXPECT_EQ(REGULAR_FILE, callback_helper_->file_type_);
-  EXPECT_EQ(downloaded_file.value(),
-            callback_helper_->download_path_.value());
+  EXPECT_EQ(base::PLATFORM_FILE_ERROR_NO_SPACE,
+            callback_helper_->last_error_);
 }
 
 TEST_F(GDataFileSystemTest, GetFile_FromCache) {
@@ -2536,6 +2716,8 @@ TEST_F(GDataFileSystemTest, GetFile_HostedDocument) {
 
 TEST_F(GDataFileSystemTest, GetFileForResourceId) {
   EXPECT_CALL(*mock_sync_client_, OnCacheInitialized()).Times(1);
+  EXPECT_CALL(*mock_free_disk_space_checker_, AmountOfFreeDiskSpace())
+      .Times(AtLeast(1)).WillRepeatedly(Return(kLotsOfSpace));
 
   LoadRootFeedDocument("root_feed.json");
 
@@ -2559,7 +2741,9 @@ TEST_F(GDataFileSystemTest, GetFileForResourceId) {
 
   file_system_->GetFileForResourceId(file->resource_id(),
                                      callback);
-  RunAllPendingForIO();
+  RunAllPendingForIO();  // Try to get from the cache.
+  RunAllPendingForIO();  // Check if we have space before downloading.
+  RunAllPendingForIO();  // Check if we have space after downloading.
 
   EXPECT_EQ(REGULAR_FILE, callback_helper_->file_type_);
   EXPECT_EQ(downloaded_file.value(),

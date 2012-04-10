@@ -793,6 +793,15 @@ class GDataFileSystem : public GDataFileSystemInterface,
     const GURL& content_url,
     const FilePath& downloaded_file_path);
 
+  // Similar to OnFileDownloaded() but takes |has_enough_space| so we report
+  // an error in case we don't have enough disk space.
+  void OnFileDownloadedAndSpaceChecked(
+      const GetFileFromCacheParams& params,
+      GDataErrorCode status,
+      const GURL& content_url,
+      const FilePath& downloaded_file_path,
+      bool* has_enough_space);
+
   // Callback for handling internal StoreToCache() calls after downloading
   // file content.
   void OnDownloadStoredToCache(base::PlatformFileError error,
@@ -1218,6 +1227,22 @@ class GDataFileSystem : public GDataFileSystemInterface,
                           const FilePath& gdata_file_path,
                           const FilePath& cache_file_path);
 
+  // Frees up disk space to store the given number of bytes, while keeping
+  // kMinFreSpace bytes on the disk, if needed.  |has_enough_space| is
+  // updated to indicate if we have enough space.
+  void FreeDiskSpaceIfNeededFor(int64 num_bytes,
+                                bool* has_enough_space);
+
+  // Frees up disk space if we have less than kMinFreSpace. |has_enough_space|
+  // is updated to indicate if we have enough space.
+  void FreeDiskSpaceIfNeeded(bool* has_enough_space);
+
+  // Starts downloading a file if we have enough disk space indicated by
+  // |has_enough_space|.
+  void StartDownloadFileIfEnoughSpace(const GetFileFromCacheParams& params,
+                                      const FilePath& cache_file_path,
+                                      bool* has_enough_space);
+
   // Cache internal helper functions.
 
   // Unsafe (unlocked) version of InitializeCacheIfnecessary method.
@@ -1317,6 +1342,26 @@ class GDataFileSystem : public GDataFileSystemInterface,
 
   ObserverList<Observer> observers_;
 };
+
+// The minimum free space to keep. GDataFileSystem::GetFile() returns
+// base::PLATFORM_FILE_ERROR_NO_SPACE if the available space is smaller than
+// this value.
+//
+// Copied from cryptohome/homedirs.h.
+// TODO(satorux): Share the constant.
+const int64 kMinFreeSpace = 512 * 1LL << 20;
+
+// Interface class used for getting the free disk space. Only for testing.
+class FreeDiskSpaceGetterInterface {
+ public:
+  virtual ~FreeDiskSpaceGetterInterface() {}
+  virtual int64 AmountOfFreeDiskSpace() const = 0;
+};
+
+// Sets the free disk space getter for testing.
+// The existing getter is deleted.
+void SetFreeDiskSpaceGetterForTesting(
+    FreeDiskSpaceGetterInterface* getter);
 
 }  // namespace gdata
 
