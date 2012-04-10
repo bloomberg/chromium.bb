@@ -111,7 +111,7 @@ class CleanUpStage(bs.BuilderStage):
     if self._options.clobber or not os.path.exists(
         os.path.join(self._build_root, '.repo')):
       self._DeleteChroot()
-      repository.ClearBuildRoot(self._build_root)
+      repository.ClearBuildRoot(self._build_root, self._options.preserve_paths)
     else:
       # Clean mount points first to be safe about deleting.
       commands.CleanUpMountPoints(self._build_root)
