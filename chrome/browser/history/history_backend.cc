@@ -2386,7 +2386,7 @@ bool HistoryBackend::ClearAllThumbnailHistory(URLRows* kept_urls) {
 #if defined(OS_ANDROID)
   // TODO (michaelbai): Add the unit test once AndroidProviderBackend is
   // avaliable in HistoryBackend.
-  history_db_->ClearAndroidURLRows();
+  db_->ClearAndroidURLRows();
 #endif
 
   // Rename the duplicate favicon and icon_mapping back table and recreate the
