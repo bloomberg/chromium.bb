@@ -94,7 +94,7 @@ deps = {
     'src/third_party/pymox/src':
         Var('git_url') + '/external/pymox.git@df220ffcc57380c3823aae52cdea0d7bb6f2b145',
     'src/third_party/safe_browsing/testing':
-        Var('git_url') + '/external/google-safe-browsing/testing.git@35ae935ba271ec4265fda3c6b418ca343350fed6',
+        Var('git_url') + '/external/google-safe-browsing/testing.git@1c915e54f77f3a8288bd6af5c507d2dbdc6b4035',
     'src/third_party/scons-2.0.1':
         Var('git_url') + '/native_client/src/third_party/scons-2.0.1.git@c81c95aff36392cffede13382dd5fcad25c0a603',
     'src/third_party/sfntly/cpp/src':
