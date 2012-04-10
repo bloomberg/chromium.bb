@@ -207,7 +207,7 @@ void RLZTracker::ScheduleDelayedInit(int delay) {
       BrowserThread::FILE,
       FROM_HERE,
       base::Bind(&RLZTracker::DelayedInit, base::Unretained(this)),
-      delay);
+      base::TimeDelta::FromMilliseconds(delay));
 }
 
 void RLZTracker::DelayedInit() {
