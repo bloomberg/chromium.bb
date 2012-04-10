@@ -225,7 +225,7 @@ trybot-pnacl-arm-torture() {
 #@
 trybot-pnacl-x86-32-torture() {
   install-tests
-  pnacl-x8632-torture --verbose "$@"
+  pnacl-x86-32-torture --verbose "$@"
 }
 
 #@
