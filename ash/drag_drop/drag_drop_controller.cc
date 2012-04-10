@@ -27,7 +27,6 @@ namespace internal {
 using aura::RootWindow;
 
 namespace {
-const gfx::Point kDragDropWidgetOffset(0, 0);
 const base::TimeDelta kDragDropAnimationDuration =
     base::TimeDelta::FromMilliseconds(250);
 }  // namespace
@@ -69,13 +68,14 @@ int DragDropController::StartDragAndDrop(const ui::OSExchangeData& data,
 
   drag_image_.reset(new DragImageView);
   drag_image_->SetImage(provider.drag_image());
+  drag_image_offset_ = provider.drag_image_offset();
   drag_image_->SetScreenBounds(gfx::Rect(
-        root_location.Add(kDragDropWidgetOffset),
+        root_location.Subtract(drag_image_offset_),
         drag_image_->GetPreferredSize()));
   drag_image_->SetWidgetVisible(true);
 
   drag_window_ = NULL;
-  drag_start_location_ = root_location;
+  drag_start_location_ = root_location.Subtract(drag_image_offset_);
 
 #if !defined(OS_MACOSX)
   if (should_block_during_drag_drop_) {
@@ -122,7 +122,7 @@ void DragDropController::DragUpdate(aura::Window* target,
   DCHECK(drag_image_.get());
   if (drag_image_->visible()) {
     drag_image_->SetScreenPosition(
-        event.root_location().Add(kDragDropWidgetOffset));
+        event.root_location().Subtract(drag_image_offset_));
   }
 }
 

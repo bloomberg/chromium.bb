@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,6 +21,7 @@ void SetDragImageOnDataObject(const SkBitmap& bitmap,
   ui::OSExchangeDataProviderAura& provider(
       static_cast<ui::OSExchangeDataProviderAura&>(data_object->provider()));
   provider.set_drag_image(bitmap);
+  provider.set_drag_image_offset(cursor_offset);
 }
 
 }  // namespace drag_utils

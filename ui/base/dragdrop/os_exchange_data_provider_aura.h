@@ -8,11 +8,12 @@
 
 #include <map>
 
-#include "ui/base/dragdrop/os_exchange_data.h"
-#include "googleurl/src/gurl.h"
 #include "base/pickle.h"
 #include "base/file_path.h"
+#include "googleurl/src/gurl.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/dragdrop/os_exchange_data.h"
+#include "ui/gfx/point.h"
 
 namespace ui {
 
@@ -58,6 +59,10 @@ class UI_EXPORT OSExchangeDataProviderAura : public OSExchangeData::Provider {
 
   void set_drag_image(const SkBitmap& drag_image) { drag_image_ = drag_image; }
   const SkBitmap& drag_image() const { return drag_image_; }
+  void set_drag_image_offset(const gfx::Point& drag_image_offset) {
+    drag_image_offset_ = drag_image_offset;
+  }
+  const gfx::Point& drag_image_offset() const { return drag_image_offset_; }
 
  private:
   typedef std::map<OSExchangeData::CustomFormat, Pickle>  PickleData;
@@ -85,6 +90,7 @@ class UI_EXPORT OSExchangeDataProviderAura : public OSExchangeData::Provider {
 
   // Drag image and offset data.
   SkBitmap drag_image_;
+  gfx::Point drag_image_offset_;
 
   // For HTML format
   string16 html_;
