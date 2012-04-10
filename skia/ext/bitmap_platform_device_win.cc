@@ -88,7 +88,6 @@ void BitmapPlatformDevice::BitmapPlatformDeviceData::LoadConfig() {
 // required so that we can call the base class' constructor with the pixel
 // data.
 BitmapPlatformDevice* BitmapPlatformDevice::Create(
-    HDC screen_dc,
     int width,
     int height,
     bool is_opaque,
@@ -116,7 +115,7 @@ BitmapPlatformDevice* BitmapPlatformDevice::Create(
   hdr.biClrImportant = 0;
 
   void* data = NULL;
-  HBITMAP hbitmap = CreateDIBSection(screen_dc,
+  HBITMAP hbitmap = CreateDIBSection(NULL,
                                      reinterpret_cast<BITMAPINFO*>(&hdr), 0,
                                      &data,
                                      shared_section, 0);
@@ -140,18 +139,6 @@ BitmapPlatformDevice* BitmapPlatformDevice::Create(
   // of the data object will be 1, which is what the constructor expects.
   return new BitmapPlatformDevice(new BitmapPlatformDeviceData(hbitmap),
                                   bitmap);
-}
-
-// static
-BitmapPlatformDevice* BitmapPlatformDevice::Create(int width,
-                                                   int height,
-                                                   bool is_opaque,
-                                                   HANDLE shared_section) {
-  HDC screen_dc = GetDC(NULL);
-  BitmapPlatformDevice* device = BitmapPlatformDevice::Create(
-      screen_dc, width, height, is_opaque, shared_section);
-  ReleaseDC(NULL, screen_dc);
-  return device;
 }
 
 // static

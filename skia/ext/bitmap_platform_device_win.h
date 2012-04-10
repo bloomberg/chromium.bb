@@ -28,21 +28,16 @@ namespace skia {
 // DEVICE'S PIXEL DATA TO ANOTHER BITMAP, make sure you copy instead.
 class SK_API BitmapPlatformDevice : public SkDevice, public PlatformDevice {
  public:
-  // Factory function. The screen DC is used to create the bitmap, and will not
-  // be stored beyond this function. is_opaque should be set if the caller
-  // knows the bitmap will be completely opaque and allows some optimizations.
+  // Factory function. is_opaque should be set if the caller knows the bitmap
+  // will be completely opaque and allows some optimizations.
   //
   // The |shared_section| parameter is optional (pass NULL for default
   // behavior). If |shared_section| is non-null, then it must be a handle to a
   // file-mapping object returned by CreateFileMapping.  See CreateDIBSection
   // for details. If |shared_section| is null, the bitmap backing store is not
   // initialized.
-  static BitmapPlatformDevice* Create(HDC screen_dc, int width, int height,
+  static BitmapPlatformDevice* Create(int width, int height,
                                       bool is_opaque, HANDLE shared_section);
-
-  // This version is the same as above but will get the screen DC itself.
-  static BitmapPlatformDevice* Create(int width, int height, bool is_opaque,
-                                      HANDLE shared_section);
 
   // Create a BitmapPlatformDevice with no shared section. The bitmap is not
   // initialized to 0.
