@@ -38,9 +38,9 @@ deps = {
     'src/seccompsandbox':
         Var('git_url') + '/external/seccompsandbox.git@16a95ccebbef3caed8bfb8f2e667319d61f7d454',
     'src/testing/gmock':
-        Var('git_url') + '/external/googlemock.git@1de8831515fed5d6c86989c6c021f08abd2c37a5',
+        Var('git_url') + '/external/googlemock.git@9bc5e4afdb0407b5fd4acb101e3b11850a90a873',
     'src/testing/gtest':
-        Var('git_url') + '/external/googletest.git@a2965825b1953c7b8ad292f726eb5c3f2659d5d3',
+        Var('git_url') + '/external/googletest.git@361c8fbbc15e74730908e28660cb742eba046a83',
     'src/third_party/WebKit':
         Var('webkit_url') + Var('webkit_rev'),
     'src/third_party/angle':
