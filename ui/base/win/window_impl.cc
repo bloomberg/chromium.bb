@@ -53,15 +53,15 @@ const wchar_t* const WindowImpl::kBaseClassName = L"Chrome_WidgetWin_";
 // WindowImpl class information used for registering unique windows.
 struct ClassInfo {
   UINT style;
-  HBRUSH background;
+  HICON icon;
 
-  explicit ClassInfo(int style)
+  ClassInfo(int style, HICON icon)
       : style(style),
-        background(NULL) {}
+        icon(icon) {}
 
   // Compares two ClassInfos. Returns true if all members match.
   bool Equals(const ClassInfo& other) const {
-    return (other.style == style && other.background == background);
+    return (other.style == style && other.icon == icon);
   }
 };
 
@@ -247,14 +247,14 @@ LRESULT CALLBACK WindowImpl::WndProc(HWND hwnd,
 }
 
 std::wstring WindowImpl::GetWindowClassName() {
-  ClassInfo class_info(initial_class_style());
+  HICON icon = GetDefaultWindowIcon();
+  ClassInfo class_info(initial_class_style(), icon);
   std::wstring name;
   if (ClassRegistrar::GetInstance()->RetrieveClassName(class_info, &name))
     return name;
 
-  HICON icon = GetDefaultWindowIcon();
-
   // No class found, need to register one.
+  HBRUSH background = NULL;
   WNDCLASSEX class_ex = {
     sizeof(WNDCLASSEX),
     class_info.style,
@@ -264,7 +264,7 @@ std::wstring WindowImpl::GetWindowClassName() {
     NULL,
     icon,
     NULL,
-    reinterpret_cast<HBRUSH>(class_info.background + 1),
+    reinterpret_cast<HBRUSH>(background + 1),
     NULL,
     name.c_str(),
     icon
