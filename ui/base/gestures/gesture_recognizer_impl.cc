@@ -75,16 +75,16 @@ class CancelledTouchEvent : public ui::TouchEvent {
 namespace ui {
 
 ////////////////////////////////////////////////////////////////////////////////
-// GestureRecognizerAura, public:
+// GestureRecognizerImpl, public:
 
-GestureRecognizerAura::GestureRecognizerAura(GestureEventHelper* helper)
+GestureRecognizerImpl::GestureRecognizerImpl(GestureEventHelper* helper)
     : helper_(helper) {
 }
 
-GestureRecognizerAura::~GestureRecognizerAura() {
+GestureRecognizerImpl::~GestureRecognizerImpl() {
 }
 
-GestureConsumer* GestureRecognizerAura::GetTargetForTouchEvent(
+GestureConsumer* GestureRecognizerImpl::GetTargetForTouchEvent(
     TouchEvent* event) {
   GestureConsumer* target = touch_id_target_[event->GetTouchId()];
   if (!target)
@@ -92,7 +92,7 @@ GestureConsumer* GestureRecognizerAura::GetTargetForTouchEvent(
   return target;
 }
 
-GestureConsumer* GestureRecognizerAura::GetTargetForGestureEvent(
+GestureConsumer* GestureRecognizerImpl::GetTargetForGestureEvent(
     GestureEvent* event) {
   GestureConsumer* target = NULL;
   int touch_id = event->GetLowestTouchId();
@@ -100,7 +100,7 @@ GestureConsumer* GestureRecognizerAura::GetTargetForGestureEvent(
   return target;
 }
 
-GestureConsumer* GestureRecognizerAura::GetTargetForLocation(
+GestureConsumer* GestureRecognizerImpl::GetTargetForLocation(
     const gfx::Point& location) {
   const GesturePoint* closest_point = NULL;
   int closest_distance_squared = 0;
@@ -130,17 +130,17 @@ GestureConsumer* GestureRecognizerAura::GetTargetForLocation(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// GestureRecognizerAura, protected:
+// GestureRecognizerImpl, protected:
 
-GestureSequence* GestureRecognizerAura::CreateSequence(
+GestureSequence* GestureRecognizerImpl::CreateSequence(
     GestureEventHelper* helper) {
   return new GestureSequence(helper);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// GestureRecognizerAura, private:
+// GestureRecognizerImpl, private:
 
-GestureSequence* GestureRecognizerAura::GetGestureSequenceForConsumer(
+GestureSequence* GestureRecognizerImpl::GetGestureSequenceForConsumer(
     GestureConsumer* consumer) {
   GestureSequence* gesture_sequence = consumer_sequence_[consumer];
   if (!gesture_sequence) {
@@ -150,7 +150,7 @@ GestureSequence* GestureRecognizerAura::GetGestureSequenceForConsumer(
   return gesture_sequence;
 }
 
-GestureSequence::Gestures* GestureRecognizerAura::ProcessTouchEventForGesture(
+GestureSequence::Gestures* GestureRecognizerImpl::ProcessTouchEventForGesture(
     const TouchEvent& event,
     ui::TouchStatus status,
     GestureConsumer* target) {
@@ -167,14 +167,14 @@ GestureSequence::Gestures* GestureRecognizerAura::ProcessTouchEventForGesture(
   return gesture_sequence->ProcessTouchEventForGesture(event, status);
 }
 
-void GestureRecognizerAura::QueueTouchEventForGesture(GestureConsumer* consumer,
+void GestureRecognizerImpl::QueueTouchEventForGesture(GestureConsumer* consumer,
                                                       const TouchEvent& event) {
   if (!event_queue_[consumer])
     event_queue_[consumer] = new std::queue<TouchEvent*>();
   event_queue_[consumer]->push(event.Copy());
 }
 
-GestureSequence::Gestures* GestureRecognizerAura::AdvanceTouchQueue(
+GestureSequence::Gestures* GestureRecognizerImpl::AdvanceTouchQueue(
     GestureConsumer* consumer,
     bool processed) {
   if (!event_queue_[consumer] || event_queue_[consumer]->empty()) {
@@ -200,7 +200,7 @@ GestureSequence::Gestures* GestureRecognizerAura::AdvanceTouchQueue(
       processed ? ui::TOUCH_STATUS_CONTINUE : ui::TOUCH_STATUS_UNKNOWN);
 }
 
-void GestureRecognizerAura::FlushTouchQueue(GestureConsumer* consumer) {
+void GestureRecognizerImpl::FlushTouchQueue(GestureConsumer* consumer) {
   if (consumer_sequence_.count(consumer)) {
     delete consumer_sequence_[consumer];
     consumer_sequence_.erase(consumer);
@@ -234,7 +234,7 @@ void GestureRecognizerAura::FlushTouchQueue(GestureConsumer* consumer) {
 
 // GestureRecognizer, static
 GestureRecognizer* GestureRecognizer::Create(GestureEventHelper* helper) {
-  return new GestureRecognizerAura(helper);
+  return new GestureRecognizerImpl(helper);
 }
 
 }  // namespace ui

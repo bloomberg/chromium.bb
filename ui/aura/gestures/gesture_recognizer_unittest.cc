@@ -274,10 +274,10 @@ class TimerTestGestureSequence : public ui::GestureSequence {
   }
 };
 
-class TestGestureRecognizer : public ui::GestureRecognizerAura {
+class TestGestureRecognizer : public ui::GestureRecognizerImpl {
   public:
   explicit TestGestureRecognizer(RootWindow* root_window)
-      : GestureRecognizerAura(root_window) {
+      : GestureRecognizerImpl(root_window) {
   }
 
   ui::GestureSequence* GetGestureSequenceForTesting(Window* window) {
@@ -1354,7 +1354,7 @@ TEST_F(GestureRecognizerTest, GestureEventIgnoresDisconnectedEvents) {
 // within max_separation_for_gesture_touches_in_pixels
 TEST_F(GestureRecognizerTest, GestureEventTouchLockSelectsCorrectWindow) {
   ui::GestureRecognizer* gesture_recognizer =
-      new ui::GestureRecognizerAura(root_window());
+      new ui::GestureRecognizerImpl(root_window());
   root_window()->SetGestureRecognizerForTesting(gesture_recognizer);
 
   ui::GestureConsumer* target;

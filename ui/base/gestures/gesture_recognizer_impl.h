@@ -24,10 +24,10 @@ class GestureSequence;
 class GestureConsumer;
 class GestureEventHelper;
 
-class UI_EXPORT GestureRecognizerAura : public GestureRecognizer {
+class UI_EXPORT GestureRecognizerImpl : public GestureRecognizer {
  public:
-  explicit GestureRecognizerAura(GestureEventHelper* helper);
-  virtual ~GestureRecognizerAura();
+  explicit GestureRecognizerImpl(GestureEventHelper* helper);
+  virtual ~GestureRecognizerImpl();
 
   // Checks if this finger is already down, if so, returns the current target.
   // Otherwise, if the finger is within
@@ -72,7 +72,7 @@ class UI_EXPORT GestureRecognizerAura : public GestureRecognizer {
   std::map<int, GestureConsumer*> touch_id_target_for_gestures_;
   GestureEventHelper* helper_;
 
-  DISALLOW_COPY_AND_ASSIGN(GestureRecognizerAura);
+  DISALLOW_COPY_AND_ASSIGN(GestureRecognizerImpl);
 };
 
 }  // namespace ui
