@@ -5535,17 +5535,6 @@
    fun:_ZN7WebCore21createIDBKeyFromValueEN2v86HandleINS0_5ValueEEE
 }
 {
-   bug_122249d
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN7WebCore23v8StringToWebCoreStringIN3WTF12AtomicStringEEET_N2v86HandleINS4_6StringEEENS_12ExternalModeE
-   fun:_ZN7WebCore29v8StringToAtomicWebCoreStringEN2v86HandleINS0_6StringEEE
-   fun:_ZN7WebCore28v8ValueToAtomicWebCoreStringEN2v86HandleINS0_5ValueEEE
-   fun:_ZN7WebCore18IDBRequestInternalL24addEventListenerCallbackERKN2v89ArgumentsE
-   fun:_ZN2v88internalL19HandleApiCallHelperILb0EEEPNS0_11MaybeObjectENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
-   fun:_ZN2v88internalL21Builtin_HandleApiCallENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
-}
-{
    bug_122249b
    Memcheck:Leak
    fun:malloc
@@ -5564,6 +5553,30 @@
    fun:_ZN6WebKit22IDBFactoryBackendProxy6createEv
    fun:_ZN7WebCore15PlatformSupport10idbFactoryEv
    fun:_ZN7WebCore26IDBFactoryBackendInterface6createEv
+}
+{
+   bug_122249d
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN7WebCore23v8StringToWebCoreStringIN3WTF12AtomicStringEEET_N2v86HandleINS4_6StringEEENS_12ExternalModeE
+   fun:_ZN7WebCore29v8StringToAtomicWebCoreStringEN2v86HandleINS0_6StringEEE
+   fun:_ZN7WebCore28v8ValueToAtomicWebCoreStringEN2v86HandleINS0_5ValueEEE
+   ...
+   fun:_ZN2v88internalL19HandleApiCallHelperILb0EEEPNS0_11MaybeObjectENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
+   fun:_ZN2v88internalL21Builtin_HandleApiCallENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
+}
+{
+   bug_122249e
+   Memcheck:Leak
+   fun:malloc
+   fun:_ZN3WTF10fastMallocEm
+   fun:_ZN3WTF24ThreadSafeRefCountedBasenwEm
+   fun:_ZN7WebCore25IDBTransactionBackendImpl6createEPNS_13DOMStringListEtPNS_22IDBDatabaseBackendImplE
+   fun:_ZN7WebCore22IDBDatabaseBackendImpl10setVersionERKN3WTF6StringENS1_10PassRefPtrINS_12IDBCallbacksEEENS5_INS_20IDBDatabaseCallbacksEEERi
+   fun:_ZN6WebKit18WebIDBDatabaseImpl10setVersionERKNS_9WebStringEPNS_15WebIDBCallbacksERi
+   fun:_ZN6WebKit23IDBDatabaseBackendProxy10setVersionERKN3WTF6StringENS1_10PassRefPtrIN7WebCore12IDBCallbacksEEENS5_INS6_20IDBDatabaseCallbacksEEERi
+   fun:_ZN7WebCore11IDBDatabase10setVersionEPNS_22ScriptExecutionContextERKN3WTF6StringERi
+   fun:_ZN7WebCore19IDBDatabaseInternalL18setVersionCallbackERKN2v89ArgumentsE
 }
 {
    bug_122429
@@ -5699,6 +5712,37 @@
    fun:_ZN7WebCore11RenderBlock13paintContentsERNS_9PaintInfoERKNS_8IntPointE
    fun:_ZN7WebCore11RenderBlock11paintObjectERNS_9PaintInfoERKNS_8IntPointE
    fun:_ZN7WebCore11RenderBlock5paintERNS_9PaintInfoERKNS_8IntPointE
+}
+{
+   bug_122716
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN9__gnu_cxx13new_allocatorISsE8allocate*
+   fun:_ZNSt12_Vector_baseISsSaISsEE11_M_allocate*
+   fun:_ZNSt6vectorISsSaISsEE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPSsS1_EERKSs
+   fun:_ZNSt6vectorISsSaISsEE9push_backERKSs
+   fun:_ZN4baseL12SplitStringTISsEEvRKT_NS1_10value_typeEbPSt6vectorIS1_SaIS1_EE
+}
+{
+   bug_122717_use_after_free
+   Memcheck:Unaddressable
+   fun:__pthread_mutex_unlock_usercnt
+   fun:_ZN4base8internal8LockImpl6UnlockEv
+   fun:_ZN4base4Lock7ReleaseEv
+   fun:_ZN4base8AutoLockD1Ev
+   fun:_ZN5gdata15GDataFileSystem21RunTaskOnIOThreadPoolERKN4base8CallbackIFvvEEE
+}
+{
+   bug_122717_leak
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4base8internal20PostTaskAndReplyImpl16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEESA_
+   fun:_ZN4base10TaskRunner16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEES9_
+   fun:_ZN7content13BrowserThread16PostTaskAndReplyENS0_2IDERKN15tracked_objects8LocationERKN4base8CallbackIFvvEEESB_
+   fun:_ZN5gdata15GDataFileSystem37PostBlockingPoolSequencedTaskAndReplyERKSsRKN15tracked_objects8LocationERKN4base8CallbackIFvvEEESC_
+   fun:_ZN5gdata15GDataFileSystem29PostBlockingPoolSequencedTaskERKSsRKN15tracked_objects8LocationERKN4base8CallbackIFvvEEE
+   fun:_ZN5gdata15GDataFileSystem8SaveFeedE10scoped_ptrIN4base5ValueEERK8FilePath
+   fun:_ZN5gdata15GDataFileSystem14OnGetDocumentsEPNS0_18GetDocumentsParamsENS_14GDataErrorCodeE10scoped_ptrIN4base5ValueEE
 }
 
 #-----------------------------------------------------------------------
