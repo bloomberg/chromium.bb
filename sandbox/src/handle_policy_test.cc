@@ -65,27 +65,5 @@ TEST(HandlePolicyTest, DuplicateHandle) {
   EXPECT_EQ(SBOX_TEST_SUCCEEDED, runner.RunTest(cmd_line.c_str()));
 }
 
-// Tests that duplicating an object works only when the policy allows it.
-TEST(HandlePolicyTest, DuplicatePeerHandle) {
-  TestRunner target;
-  TestRunner runner;
-
-  // Kick off an asynchronous target process for testing.
-  target.SetAsynchronous(true);
-  target.SetUnsandboxed(true);
-  EXPECT_EQ(SBOX_TEST_SUCCEEDED, target.RunTest(L"Handle_WaitProcess 30000"));
-
-  // First test that we fail to open the event.
-  std::wstring cmd_line = base::StringPrintf(L"Handle_DuplicateEvent %d",
-                                             target.process_id());
-  EXPECT_EQ(SBOX_TEST_DENIED, runner.RunTest(cmd_line.c_str()));
-
-  // Now successfully open the event after adding a duplicate handle rule.
-  EXPECT_TRUE(runner.AddRule(TargetPolicy::SUBSYS_HANDLES,
-                             TargetPolicy::HANDLES_DUP_ANY,
-                             L"Event"));
-  EXPECT_EQ(SBOX_TEST_SUCCEEDED, runner.RunTest(cmd_line.c_str()));
-}
-
 }  // namespace sandbox
 
