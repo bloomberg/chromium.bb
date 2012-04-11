@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -120,15 +120,25 @@ ssize_t NaClHostDirGetdents(struct NaClHostDir  *d,
   while (1) {
     /**
      * The FIND_DATA structure contains the filename as a UTF-16
-     * string of length MAX_PATH. This may or may not convert into
-     * an 8-bit char string of similar length. The safe thing to do here
-     * is to assume the worst case: every UTF-16 character expands
-     * to a four-byte UTF8 sequence.
+     * string of length MAX_PATH.  This may or may not convert into an
+     * 8-bit char string of similar length.  The safe thing to do here
+     * is to assume the worst case: every UTF-16 character expands to
+     * a four-byte MBCS sequence.  This should default to CP_ACP (ANSI
+     * code page).
+     *
+     * TODO(bsy,sehr): consider using WideCharToMultiByte (and
+     * MultiByteToWideChar before invoking _s_open_s in
+     * NaClHostDescOpen) with CP_UTF8 to always present UTF8 to
+     * untrusted application code.  NB: MB_ERR_INVALID_CHARS is needed
+     * since otherwise we have an issue with silently dropping invalid
+     * Unicode code points that can cause file name aliasing.
+     *
+     * http://code.google.com/p/nativeclient/issues/detail?id=2725
      *
      * NB: Keep in mind that MAX_PATH is an API limitation, not a
      * limitation of the underlying filesystem.
      */
-    char name_utf8[(MAX_PATH * 4) + 1];
+    char name_mbcs[(MAX_PATH * 4) + 1];
     size_t name_length;
     size_t rec_length;
     uint16_t nacl_abi_rec_length;
@@ -139,15 +149,15 @@ ssize_t NaClHostDirGetdents(struct NaClHostDir  *d,
       goto done;
     }
 
-    err = _snprintf_s(name_utf8,
-                      _countof(name_utf8),
+    err = _snprintf_s(name_mbcs,
+                      _countof(name_mbcs),
                       _TRUNCATE,
                       "%ws", d->find_data.cFileName);
     if (err < 0) {
       retval = -NACL_ABI_EOVERFLOW;
       goto done;
     }
-    name_length = strlen(name_utf8) + 1;
+    name_length = strlen(name_mbcs) + 1;
     rec_length = (offsetof(struct nacl_abi_dirent, nacl_abi_d_name)
                     + (name_length + 3))
                   & ~3;
@@ -187,7 +197,7 @@ ssize_t NaClHostDirGetdents(struct NaClHostDir  *d,
     p->nacl_abi_d_ino = NACL_FAKE_INODE_NUM;  /* windows doesn't do inodes */
     p->nacl_abi_d_off = d->off;
     p->nacl_abi_d_reclen = nacl_abi_rec_length;
-    memcpy((char *) p->nacl_abi_d_name, name_utf8, name_length);
+    memcpy((char *) p->nacl_abi_d_name, name_mbcs, name_length);
     i += nacl_abi_rec_length;
     ++d->off;
 
