@@ -45,23 +45,17 @@ const SkColor kErrorColor = SkColorSetRGB(0xFF, 0xBC, 0xBC);
 // Preferred width of the tree.
 const int kTreeWidth = 300;
 
-// ID for various children.
-const int kNewFolderButtonID = 1002;
-
 }  // namespace
 
 // static
-void BookmarkEditor::Show(gfx::NativeWindow parent_hwnd,
+void BookmarkEditor::Show(gfx::NativeWindow parent_window,
                           Profile* profile,
                           const EditDetails& details,
                           Configuration configuration) {
   DCHECK(profile);
-  BookmarkEditorView* editor =
-      new BookmarkEditorView(profile,
-                             details.parent_node,
-                             details,
-                             configuration);
-  editor->Show(parent_hwnd);
+  BookmarkEditorView* editor = new BookmarkEditorView(profile,
+      details.parent_node, details, configuration);
+  editor->Show(parent_window);
 }
 
 BookmarkEditorView::BookmarkEditorView(
@@ -93,18 +87,18 @@ BookmarkEditorView::~BookmarkEditorView() {
 }
 
 string16 BookmarkEditorView::GetDialogButtonLabel(
-      ui::DialogButton button) const {
+    ui::DialogButton button) const {
   if (button == ui::DIALOG_BUTTON_OK)
     return l10n_util::GetStringUTF16(IDS_SAVE);
   return string16();
 }
+
 bool BookmarkEditorView::IsDialogButtonEnabled(ui::DialogButton button) const {
   if (button == ui::DIALOG_BUTTON_OK) {
     if (details_.GetNodeType() == BookmarkNode::FOLDER)
       return !title_tf_->text().empty();
 
-    const GURL url(GetInputURL());
-    return bb_model_->IsLoaded() && url.is_valid();
+    return bb_model_->IsLoaded() && GetInputURL().is_valid();
   }
   return true;
 }
@@ -205,15 +199,8 @@ bool BookmarkEditorView::HandleKeyEvent(views::Textfield* sender,
 
 void BookmarkEditorView::ButtonPressed(views::Button* sender,
                                        const views::Event& event) {
-  DCHECK(sender);
-  switch (sender->id()) {
-    case kNewFolderButtonID:
-      NewFolder();
-      break;
-
-    default:
-      NOTREACHED();
-  }
+  DCHECK_EQ(new_folder_button_.get(), sender);
+  NewFolder();
 }
 
 bool BookmarkEditorView::IsCommandIdChecked(int command_id) const {
@@ -264,8 +251,8 @@ void BookmarkEditorView::ExecuteCommand(int command_id) {
   }
 }
 
-void BookmarkEditorView::Show(gfx::NativeWindow parent_hwnd) {
-  views::Widget::CreateWindowWithParent(this, parent_hwnd);
+void BookmarkEditorView::Show(gfx::NativeWindow parent_window) {
+  views::Widget::CreateWindowWithParent(this, parent_window);
   UserInputChanged();
   if (show_tree_ && bb_model_->IsLoaded())
     ExpandAndSelect();
@@ -324,17 +311,15 @@ void BookmarkEditorView::Init() {
   title_tf_->SetAccessibleName(title_label_->text());
 
   if (show_tree_) {
-    tree_view_ = new views::TreeView();
+    tree_view_ = new views::TreeView;
+    tree_view_->SetRootShown(false);
     tree_view_->set_lines_at_root(true);
-    new_folder_button_.reset(new views::NativeTextButton(
-        this,
-        l10n_util::GetStringUTF16(IDS_BOOKMARK_EDITOR_NEW_FOLDER_BUTTON)));
-    new_folder_button_->set_parent_owned(false);
     tree_view_->set_context_menu_controller(this);
 
-    tree_view_->SetRootShown(false);
+    new_folder_button_.reset(new views::NativeTextButton(this,
+        l10n_util::GetStringUTF16(IDS_BOOKMARK_EDITOR_NEW_FOLDER_BUTTON)));
+    new_folder_button_->set_parent_owned(false);
     new_folder_button_->SetEnabled(false);
-    new_folder_button_->set_id(kNewFolderButtonID);
   }
 
   // Yummy layout code.
@@ -474,10 +459,6 @@ GURL BookmarkEditorView::GetInputURL() const {
   return URLFixerUpper::FixupURL(UTF16ToUTF8(url_tf_->text()), std::string());
 }
 
-string16 BookmarkEditorView::GetInputTitle() const {
-  return title_tf_->text();
-}
-
 void BookmarkEditorView::UserInputChanged() {
   if (details_.GetNodeType() != BookmarkNode::FOLDER) {
     const GURL url(GetInputURL());
@@ -592,7 +573,7 @@ void BookmarkEditorView::ApplyEdits(EditorNode* parent) {
   bb_model_->RemoveObserver(this);
 
   GURL new_url(GetInputURL());
-  string16 new_title(GetInputTitle());
+  string16 new_title(title_tf_->text());
 
   if (!show_tree_) {
     bookmark_utils::ApplyEditsWithNoFolderChange(

@@ -120,7 +120,7 @@ class BookmarkEditorView : public BookmarkEditor,
 
   // Creates a Window and adds the BookmarkEditorView to it. When the window is
   // closed the BookmarkEditorView is deleted.
-  void Show(gfx::NativeWindow parent_hwnd);
+  void Show(gfx::NativeWindow parent_window);
 
   // Closes the dialog.
   void Close();
@@ -201,9 +201,6 @@ class BookmarkEditorView : public BookmarkEditor,
 
   // Returns the current url the user has input.
   GURL GetInputURL() const;
-
-  // Returns the title the user has input.
-  string16 GetInputTitle() const;
 
   // Invoked when the url or title has possibly changed. Updates the background
   // of Textfields and ok button appropriately.
