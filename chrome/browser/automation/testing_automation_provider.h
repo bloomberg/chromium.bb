@@ -902,6 +902,35 @@ class TestingAutomationProvider : public AutomationProvider,
               base::DictionaryValue* args,
               IPC::Message* reply_message);
 
+  // Fullscreen and Mouse Lock hooks. They take no JSON parameters.
+  void IsFullscreenForBrowser(Browser* browser,
+            base::DictionaryValue* args,
+            IPC::Message* reply_message);
+  void IsFullscreenForTab(Browser* browser,
+            base::DictionaryValue* args,
+            IPC::Message* reply_message);
+  void IsMouseLocked(Browser* browser,
+            base::DictionaryValue* args,
+            IPC::Message* reply_message);
+  void IsMouseLockPermissionRequested(Browser* browser,
+            base::DictionaryValue* args,
+            IPC::Message* reply_message);
+  void IsFullscreenPermissionRequested(Browser* browser,
+            base::DictionaryValue* args,
+            IPC::Message* reply_message);
+  void IsFullscreenBubbleDisplayed(Browser* browser,
+              base::DictionaryValue* args,
+              IPC::Message* reply_message);
+  void IsFullscreenBubbleDisplayingButtons(Browser* browser,
+            base::DictionaryValue* args,
+            IPC::Message* reply_message);
+  void AcceptCurrentFullscreenOrMouseLockRequest(Browser* browser,
+            base::DictionaryValue* args,
+            IPC::Message* reply_message);
+  void DenyCurrentFullscreenOrMouseLockRequest(Browser* browser,
+            base::DictionaryValue* args,
+            IPC::Message* reply_message);
+
   // Waits for all views to stop loading or a modal dialog to become active.
   void WaitForAllViewsToStopLoading(base::DictionaryValue* args,
                                     IPC::Message* reply_message);

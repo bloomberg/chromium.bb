@@ -132,6 +132,12 @@ class CONTENT_EXPORT RenderWidgetHostView {
   // The region specified will be transparent to mouse clicks.
   virtual void SetClickthroughRegion(SkRegion* region) {}
 #endif
+
+  // Return value indicates whether the mouse is locked successfully or not.
+  virtual bool LockMouse() = 0;
+  virtual void UnlockMouse() = 0;
+  // Returns true if the mouse pointer is currently locked.
+  virtual bool IsMouseLocked() = 0;
 };
 
 }  // namespace content

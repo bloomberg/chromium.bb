@@ -249,11 +249,6 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView {
   virtual void SetScrollOffsetPinning(
       bool is_pinned_to_left, bool is_pinned_to_right) = 0;
 
-  // Return value indicates whether the mouse is locked successfully or not.
-  virtual bool LockMouse() = 0;
-  virtual void UnlockMouse() = 0;
-  virtual bool IsMouseLocked() = 0;
-
   // Called when a mousewheel event was not processed by the renderer.
   virtual void UnhandledWheelEvent(const WebKit::WebMouseWheelEvent& event) = 0;
 

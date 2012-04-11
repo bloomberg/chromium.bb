@@ -3648,6 +3648,65 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     }
     return self._GetResultFromJSONRequest(cmd_dict, windex=windex)
 
+  def IsFullscreenForBrowser(self, windex=0):
+    """Returns true if the window is currently fullscreen and was initially
+    transitioned to fullscreen by a browser (vs tab) mode transition."""
+    return self._GetResultFromJSONRequest(
+      { 'command': 'IsFullscreenForBrowser' },
+      windex=windex).get('result')
+
+  def IsFullscreenForTab(self, windex=0):
+    """Returns true if fullscreen has been caused by a tab."""
+    return self._GetResultFromJSONRequest(
+      { 'command': 'IsFullscreenForTab' },
+      windex=windex).get('result')
+
+  def IsMouseLocked(self, windex=0):
+    """Returns true if the mouse is currently locked."""
+    return self._GetResultFromJSONRequest(
+      { 'command': 'IsMouseLocked' },
+      windex=windex).get('result')
+
+  def IsMouseLockPermissionRequested(self, windex=0):
+    """Returns true if the user is currently prompted to give permision for
+    mouse lock."""
+    return self._GetResultFromJSONRequest(
+      { 'command': 'IsMouseLockPermissionRequested' },
+      windex=windex).get('result')
+
+  def IsFullscreenPermissionRequested(self, windex=0):
+    """Returns true if the user is currently prompted to give permision for
+    fullscreen."""
+    return self._GetResultFromJSONRequest(
+      { 'command': 'IsFullscreenPermissionRequested' },
+      windex=windex).get('result')
+
+  def IsFullscreenBubbleDisplayed(self, windex=0):
+    """Returns true if the fullscreen and mouse lock bubble is currently
+    displayed."""
+    return self._GetResultFromJSONRequest(
+      { 'command': 'IsFullscreenBubbleDisplayed' },
+      windex=windex).get('result')
+
+  def IsFullscreenBubbleDisplayingButtons(self, windex=0):
+    """Returns true if the fullscreen and mouse lock bubble is currently
+    displayed and presenting buttons."""
+    return self._GetResultFromJSONRequest(
+      { 'command': 'IsFullscreenBubbleDisplayingButtons' },
+      windex=windex).get('result')
+
+  def AcceptCurrentFullscreenOrMouseLockRequest(self, windex=0):
+    """Activate the accept button on the fullscreen and mouse lock bubble."""
+    return self._GetResultFromJSONRequest(
+      { 'command': 'AcceptCurrentFullscreenOrMouseLockRequest' },
+      windex=windex)
+
+  def DenyCurrentFullscreenOrMouseLockRequest(self, windex=0):
+    """Activate the deny button on the fullscreen and mouse lock bubble."""
+    return self._GetResultFromJSONRequest(
+      { 'command': 'DenyCurrentFullscreenOrMouseLockRequest' },
+      windex=windex)
+
   def KillRendererProcess(self, pid):
     """Kills the given renderer process.
 

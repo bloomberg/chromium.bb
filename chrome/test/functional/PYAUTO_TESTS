@@ -50,6 +50,7 @@
       'extensions',
       'find_in_page',
       'flash',
+      'fullscreen_mouselock',
       'history',
       'https',
       'gtalk.test_basic',

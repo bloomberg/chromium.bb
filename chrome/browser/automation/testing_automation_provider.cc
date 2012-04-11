@@ -101,6 +101,8 @@
 #include "chrome/browser/ui/browser_init.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
+#include "chrome/browser/ui/fullscreen_controller.h"
+#include "chrome/browser/ui/fullscreen_exit_bubble_type.h"
 #include "chrome/browser/ui/login/login_prompt.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
@@ -2544,6 +2546,26 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
       &TestingAutomationProvider::GetV8HeapStats;
   browser_handler_map["GetFPS"] =
       &TestingAutomationProvider::GetFPS;
+
+  browser_handler_map["IsFullscreenForBrowser"] =
+      &TestingAutomationProvider::IsFullscreenForBrowser;
+  browser_handler_map["IsFullscreenForTab"] =
+      &TestingAutomationProvider::IsFullscreenForTab;
+  browser_handler_map["IsMouseLocked"] =
+      &TestingAutomationProvider::IsMouseLocked;
+  browser_handler_map["IsMouseLockPermissionRequested"] =
+      &TestingAutomationProvider::IsMouseLockPermissionRequested;
+  browser_handler_map["IsFullscreenPermissionRequested"] =
+      &TestingAutomationProvider::IsFullscreenPermissionRequested;
+  browser_handler_map["IsFullscreenBubbleDisplayed"] =
+      &TestingAutomationProvider::IsFullscreenBubbleDisplayed;
+  browser_handler_map["IsFullscreenBubbleDisplayingButtons"] =
+      &TestingAutomationProvider::IsFullscreenBubbleDisplayingButtons;
+  browser_handler_map["AcceptCurrentFullscreenOrMouseLockRequest"] =
+      &TestingAutomationProvider::AcceptCurrentFullscreenOrMouseLockRequest;
+  browser_handler_map["DenyCurrentFullscreenOrMouseLockRequest"] =
+      &TestingAutomationProvider::DenyCurrentFullscreenOrMouseLockRequest;
+
 #if defined(OS_CHROMEOS)
   browser_handler_map["CaptureProfilePhoto"] =
       &TestingAutomationProvider::CaptureProfilePhoto;
@@ -6198,6 +6220,101 @@ void TestingAutomationProvider::GetFPS(
       base::GetProcId(render_view->GetProcess()->GetHandle()),
       routing_id);
   render_view->Send(new ChromeViewMsg_GetFPS(routing_id));
+}
+
+void TestingAutomationProvider::IsFullscreenForBrowser(Browser* browser,
+    base::DictionaryValue* args,
+    IPC::Message* reply_message) {
+  DictionaryValue dict;
+  dict.SetBoolean("result",
+                  browser->fullscreen_controller_->IsFullscreenForBrowser());
+  AutomationJSONReply(this, reply_message).SendSuccess(&dict);
+}
+
+void TestingAutomationProvider::IsFullscreenForTab(Browser* browser,
+    base::DictionaryValue* args,
+    IPC::Message* reply_message) {
+  DictionaryValue dict;
+  dict.SetBoolean("result", browser->IsFullscreenForTabOrPending());
+  AutomationJSONReply(this, reply_message).SendSuccess(&dict);
+}
+
+void TestingAutomationProvider::IsMouseLocked(Browser* browser,
+    base::DictionaryValue* args,
+    IPC::Message* reply_message) {
+  DictionaryValue dict;
+  dict.SetBoolean("result", browser->GetSelectedWebContents()->
+      GetRenderViewHost()->GetView()->IsMouseLocked());
+  AutomationJSONReply(this, reply_message).SendSuccess(&dict);
+}
+
+void TestingAutomationProvider::IsMouseLockPermissionRequested(
+    Browser* browser,
+    base::DictionaryValue* args,
+    IPC::Message* reply_message) {
+  FullscreenExitBubbleType type =
+      browser->fullscreen_controller_->GetFullscreenExitBubbleType();
+  bool mouse_lock = false;
+  fullscreen_bubble::PermissionRequestedByType(type, NULL, &mouse_lock);
+  DictionaryValue dict;
+  dict.SetBoolean("result", mouse_lock);
+  AutomationJSONReply(this, reply_message).SendSuccess(&dict);
+}
+
+void TestingAutomationProvider::IsFullscreenPermissionRequested(
+    Browser* browser,
+    base::DictionaryValue* args,
+    IPC::Message* reply_message) {
+  FullscreenExitBubbleType type =
+      browser->fullscreen_controller_->GetFullscreenExitBubbleType();
+  bool fullscreen = false;
+  fullscreen_bubble::PermissionRequestedByType(type, &fullscreen, NULL);
+  DictionaryValue dict;
+  dict.SetBoolean("result", fullscreen);
+  AutomationJSONReply(this, reply_message).SendSuccess(&dict);
+}
+
+void TestingAutomationProvider::IsFullscreenBubbleDisplayed(Browser* browser,
+    base::DictionaryValue* args,
+    IPC::Message* reply_message) {
+  FullscreenExitBubbleType type =
+      browser->fullscreen_controller_->GetFullscreenExitBubbleType();
+  DictionaryValue dict;
+  dict.SetBoolean("result",
+                  type != FEB_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION);
+  AutomationJSONReply(this, reply_message).SendSuccess(&dict);
+}
+
+void TestingAutomationProvider::IsFullscreenBubbleDisplayingButtons(
+    Browser* browser,
+    base::DictionaryValue* args,
+    IPC::Message* reply_message) {
+  FullscreenExitBubbleType type =
+      browser->fullscreen_controller_->GetFullscreenExitBubbleType();
+  DictionaryValue dict;
+  dict.SetBoolean("result", fullscreen_bubble::ShowButtonsForType(type));
+  AutomationJSONReply(this, reply_message).SendSuccess(&dict);
+}
+
+void TestingAutomationProvider::AcceptCurrentFullscreenOrMouseLockRequest(
+    Browser* browser,
+    base::DictionaryValue* args,
+    IPC::Message* reply_message) {
+  WebContents* fullscreen_tab = browser->GetSelectedWebContents();
+  FullscreenExitBubbleType type =
+      browser->fullscreen_controller_->GetFullscreenExitBubbleType();
+  browser->OnAcceptFullscreenPermission(fullscreen_tab->GetURL(), type);
+  AutomationJSONReply(this, reply_message).SendSuccess(NULL);
+}
+
+void TestingAutomationProvider::DenyCurrentFullscreenOrMouseLockRequest(
+    Browser* browser,
+    base::DictionaryValue* args,
+    IPC::Message* reply_message) {
+  FullscreenExitBubbleType type =
+      browser->fullscreen_controller_->GetFullscreenExitBubbleType();
+  browser->OnDenyFullscreenPermission(type);
+  AutomationJSONReply(this, reply_message).SendSuccess(NULL);
 }
 
 void TestingAutomationProvider::WaitForAllViewsToStopLoading(
