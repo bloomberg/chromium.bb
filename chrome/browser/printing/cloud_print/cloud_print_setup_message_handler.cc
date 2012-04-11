@@ -36,7 +36,7 @@ void CloudPrintSetupMessageHandler::HandleSubmitAuth(const ListValue* args) {
     return;
   }
 
-  scoped_ptr<Value> parsed_value(base::JSONReader::Read(json, false));
+  scoped_ptr<Value> parsed_value(base::JSONReader::Read(json));
   if (!parsed_value.get() || !parsed_value->IsType(Value::TYPE_DICTIONARY)) {
     NOTREACHED() << "Unable to parse auth data";
     return;

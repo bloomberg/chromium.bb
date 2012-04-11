@@ -2198,7 +2198,8 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
   scoped_ptr<Value> values;
   base::JSONReader reader;
   std::string error;
-  values.reset(reader.ReadAndReturnError(json_request, true, NULL, &error));
+  values.reset(reader.ReadAndReturnError(json_request,
+      base::JSON_ALLOW_TRAILING_COMMAS, NULL, &error));
   if (!error.empty()) {
     AutomationJSONReply(this, reply_message).SendError(error);
     return;

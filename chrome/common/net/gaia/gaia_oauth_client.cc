@@ -144,7 +144,7 @@ void GaiaOAuthClient::Core::HandleResponse(
   if (source->GetResponseCode() == net::HTTP_OK) {
     std::string data;
     source->GetResponseAsString(&data);
-    scoped_ptr<Value> message_value(base::JSONReader::Read(data, false));
+    scoped_ptr<Value> message_value(base::JSONReader::Read(data));
     if (message_value.get() &&
         message_value->IsType(Value::TYPE_DICTIONARY)) {
       scoped_ptr<DictionaryValue> response_dict(

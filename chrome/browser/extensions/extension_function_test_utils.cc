@@ -44,8 +44,7 @@ class TestFunctionDispatcherDelegate
 namespace extension_function_test_utils {
 
 base::Value* ParseJSON(const std::string& data) {
-  const bool kAllowTrailingComma = false;
-  return base::JSONReader::Read(data, kAllowTrailingComma);
+  return base::JSONReader::Read(data);
 }
 
 base::ListValue* ParseList(const std::string& data) {

@@ -74,7 +74,8 @@ Value* NetworkConfigurationPolicyHandler::SanitizeNetworkConfig(
   if (!config->GetAsString(&json_string))
     return NULL;
 
-  scoped_ptr<Value> json_value(base::JSONReader::Read(json_string, true));
+  scoped_ptr<Value> json_value(
+      base::JSONReader::Read(json_string, base::JSON_ALLOW_TRAILING_COMMAS));
   if (!json_value.get() || !json_value->IsType(base::Value::TYPE_DICTIONARY))
     return NULL;
 

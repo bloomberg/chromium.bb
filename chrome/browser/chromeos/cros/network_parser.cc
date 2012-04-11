@@ -217,7 +217,7 @@ bool NetworkParser::ParseValue(PropertyIndex index,
       if (!value.GetAsString(&ui_data_json))
         return false;
       scoped_ptr<base::Value> ui_data_value(
-          base::JSONReader::Read(ui_data_json, false));
+          base::JSONReader::Read(ui_data_json));
       base::DictionaryValue* ui_data_dict = NULL;
       if (!ui_data_value.get() ||
           !ui_data_value->GetAsDictionary(&ui_data_dict))

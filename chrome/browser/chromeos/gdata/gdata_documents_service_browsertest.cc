@@ -118,7 +118,7 @@ IN_PROC_BROWSER_TEST_F(GDataTest, GetDocuments) {
   std::string expected_contents;
   file_util::ReadFileToString(expected_filepath, &expected_contents);
   scoped_ptr<base::Value> expected_data(
-      base::JSONReader::Read(expected_contents, false));
+      base::JSONReader::Read(expected_contents));
   EXPECT_TRUE(base::Value::Equals(expected_data.get(), result_data));
   delete result_data;
 }

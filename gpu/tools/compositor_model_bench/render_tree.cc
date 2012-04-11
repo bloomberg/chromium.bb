@@ -461,7 +461,7 @@ RenderNode* BuildRenderTreeFromFile(const FilePath& path) {
   int error_code = 0;
   string error_message;
   root.reset(JSONReader::ReadAndReturnError(contents,
-            true,
+            base::JSON_ALLOW_TRAILING_COMMAS,
             &error_code,
             &error_message));
   if (!root.get()) {

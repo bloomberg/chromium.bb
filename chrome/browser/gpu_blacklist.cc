@@ -769,7 +769,7 @@ bool GpuBlacklist::LoadGpuBlacklist(
   DCHECK(browser_version_.get() != NULL);
 
   scoped_ptr<Value> root;
-  root.reset(base::JSONReader::Read(json_context, false));
+  root.reset(base::JSONReader::Read(json_context));
   if (root.get() == NULL || !root->IsType(Value::TYPE_DICTIONARY))
     return false;
 

@@ -68,7 +68,7 @@ scoped_ptr<ListValue> LoadSchemaList(const base::StringPiece& schema) {
   scoped_ptr<Value> result(
       base::JSONReader::ReadAndReturnError(
           schema.as_string(),
-          false, // allow trailing commas
+          base::JSON_PARSE_RFC,  // options
           NULL,  // error code
           &error_message));
   CHECK(result.get()) << error_message;

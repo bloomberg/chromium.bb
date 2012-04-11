@@ -510,8 +510,7 @@ bool PrintSystemCUPS::IsValidPrinter(const std::string& printer_name) {
 bool PrintSystemCUPS::ValidatePrintTicket(const std::string& printer_name,
                                         const std::string& print_ticket_data) {
   DCHECK(initialized_);
-  scoped_ptr<Value> ticket_value(base::JSONReader::Read(print_ticket_data,
-      false));
+  scoped_ptr<Value> ticket_value(base::JSONReader::Read(print_ticket_data));
   return ticket_value != NULL && ticket_value->IsType(Value::TYPE_DICTIONARY);
 }
 
@@ -520,7 +519,7 @@ bool PrintSystemCUPS::ParsePrintTicket(
     const std::string& print_ticket,
     std::map<std::string, std::string>* options) {
   DCHECK(options);
-  scoped_ptr<Value> ticket_value(base::JSONReader::Read(print_ticket, false));
+  scoped_ptr<Value> ticket_value(base::JSONReader::Read(print_ticket));
   if (ticket_value == NULL || !ticket_value->IsType(Value::TYPE_DICTIONARY))
     return false;
 

@@ -15,8 +15,6 @@ namespace extensions {
 
 namespace {
 
-const bool kAllowTrailingComma = false;
-
 template<class FeatureClass>
 Feature* CreateFeature() {
   return new FeatureClass();
@@ -48,7 +46,8 @@ struct Static {
     int error_code = 0;
     std::string error_message;
     Value* value = base::JSONReader::ReadAndReturnError(
-        manifest_features, kAllowTrailingComma, &error_code, &error_message);
+        manifest_features, base::JSON_PARSE_RFC,
+        &error_code, &error_message);
     CHECK(value) << "Could not load features: " << debug_string << " "
                  << error_message;
     CHECK(value->IsType(Value::TYPE_DICTIONARY)) << debug_string;

@@ -57,7 +57,7 @@ TEST_F(PromoResourceServiceTest, UnpackLogoSignal) {
                      "  }"
                      "}";
   scoped_ptr<DictionaryValue> test_json(
-      static_cast<DictionaryValue*>(base::JSONReader::Read(json, false)));
+      static_cast<DictionaryValue*>(base::JSONReader::Read(json)));
 
   // Check that prefs are set correctly.
   web_resource_service_->UnpackLogoSignal(*(test_json.get()));
@@ -88,7 +88,7 @@ TEST_F(PromoResourceServiceTest, UnpackLogoSignal) {
          "}";
   test_json->Clear();
   test_json.reset(static_cast<DictionaryValue*>(
-      base::JSONReader::Read(json, false)));
+      base::JSONReader::Read(json)));
 
   // Check that prefs are set correctly.
   web_resource_service_->UnpackLogoSignal(*(test_json.get()));
@@ -107,7 +107,7 @@ TEST_F(PromoResourceServiceTest, UnpackLogoSignal) {
          "}";
   test_json->Clear();
   test_json.reset(static_cast<DictionaryValue*>(
-      base::JSONReader::Read(json, false)));
+      base::JSONReader::Read(json)));
 
   // Check that prefs are set correctly.
   web_resource_service_->UnpackLogoSignal(*(test_json.get()));
@@ -150,7 +150,7 @@ class NotificationPromoTestDelegate : public NotificationPromo::Delegate {
     notification_promo_ = notification_promo;
 
     test_json_.reset(static_cast<DictionaryValue*>(
-        base::JSONReader::Read(json, false)));
+        base::JSONReader::Read(json)));
 
     start_ = start;
     end_ = end;
@@ -696,7 +696,7 @@ TEST_F(PromoResourceServiceTest, UnpackWebStoreSignal) {
                      "  }"
                      "}";
   scoped_ptr<DictionaryValue> test_json(static_cast<DictionaryValue*>(
-      base::JSONReader::Read(json, false)));
+      base::JSONReader::Read(json)));
 
   // Set the source logo URL to verify that it gets cleared.
   AppsPromo::SetSourcePromoLogoURL(GURL("https://www.google.com/test.png"));
@@ -732,7 +732,7 @@ TEST_F(PromoResourceServiceTest, UnpackPartialWebStoreSignal) {
                      "  }"
                      "}";
   scoped_ptr<DictionaryValue> test_json(static_cast<DictionaryValue*>(
-      base::JSONReader::Read(json, false)));
+      base::JSONReader::Read(json)));
 
   // Check that prefs are set correctly.
   web_resource_service_->UnpackWebStoreSignal(*(test_json.get()));
@@ -769,7 +769,7 @@ TEST_F(PromoResourceServiceTest, UnpackWebStoreSignalHttpsLogo) {
       "}";
 
   scoped_ptr<DictionaryValue> test_json(static_cast<DictionaryValue*>(
-      base::JSONReader::Read(json, false)));
+      base::JSONReader::Read(json)));
 
   // Update the promo multiple times to verify the logo is cached correctly.
   for (size_t i = 0; i < 2; ++i) {
@@ -829,7 +829,7 @@ TEST_F(PromoResourceServiceTest, UnpackWebStoreSignalHttpsLogoError) {
       "}";
 
   scoped_ptr<DictionaryValue> test_json(static_cast<DictionaryValue*>(
-      base::JSONReader::Read(json, false)));
+      base::JSONReader::Read(json)));
 
   web_resource_service_->UnpackWebStoreSignal(*(test_json.get()));
 
@@ -880,7 +880,7 @@ TEST_F(PromoResourceServiceTest, UnpackWebStoreSignalHttpLogo) {
       "}";
 
   scoped_ptr<DictionaryValue> test_json(static_cast<DictionaryValue*>(
-      base::JSONReader::Read(json, false)));
+      base::JSONReader::Read(json)));
 
   web_resource_service_->UnpackWebStoreSignal(*(test_json.get()));
 

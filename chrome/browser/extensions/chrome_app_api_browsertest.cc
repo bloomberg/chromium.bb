@@ -97,8 +97,7 @@ IN_PROC_BROWSER_TEST_F(ChromeAppAPITest, IsInstalled) {
           browser()->GetSelectedWebContents()->GetRenderViewHost(),
           L"", get_app_details, &result));
   scoped_ptr<DictionaryValue> app_details(
-      static_cast<DictionaryValue*>(
-          base::JSONReader::Read(result, false /* allow trailing comma */)));
+      static_cast<DictionaryValue*>(base::JSONReader::Read(result)));
   // extension->manifest() does not contain the id.
   app_details->Remove("id", NULL);
   EXPECT_TRUE(app_details.get());
@@ -176,8 +175,7 @@ IN_PROC_BROWSER_TEST_F(ChromeAppAPITest, GetDetailsForFrame) {
           L"", get_details_for_frame, &json));
 
   scoped_ptr<DictionaryValue> app_details(
-      static_cast<DictionaryValue*>(
-          base::JSONReader::Read(json, false /* allow trailing comma */)));
+      static_cast<DictionaryValue*>(base::JSONReader::Read(json)));
   // extension->manifest() does not contain the id.
   app_details->Remove("id", NULL);
   EXPECT_TRUE(app_details.get());

@@ -92,9 +92,7 @@ bool CustomizationDocument::LoadManifestFromString(
   int error_code = 0;
   std::string error;
   scoped_ptr<Value> root(base::JSONReader::ReadAndReturnError(manifest,
-                                                              true,
-                                                              &error_code,
-                                                              &error));
+      base::JSON_ALLOW_TRAILING_COMMAS, &error_code, &error));
   if (error_code != base::JSONReader::JSON_NO_ERROR)
     LOG(ERROR) << error;
   DCHECK(root.get() != NULL);

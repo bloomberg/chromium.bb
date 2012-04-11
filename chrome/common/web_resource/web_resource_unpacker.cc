@@ -26,7 +26,7 @@ WebResourceUnpacker::~WebResourceUnpacker() {
 bool WebResourceUnpacker::Run() {
   scoped_ptr<Value> value;
   if (!resource_data_.empty()) {
-    value.reset(base::JSONReader::Read(resource_data_, false));
+    value.reset(base::JSONReader::Read(resource_data_));
     if (!value.get()) {
       // Page information not properly read, or corrupted.
       error_message_ = kInvalidDataTypeError;

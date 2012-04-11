@@ -394,7 +394,8 @@ bool CellularConfigDocument::LoadFromFile(const FilePath& config_path) {
   if (!file_util::ReadFileToString(config_path, &config))
     return false;
 
-  scoped_ptr<Value> root(base::JSONReader::Read(config, true));
+  scoped_ptr<Value> root(
+      base::JSONReader::Read(config, base::JSON_ALLOW_TRAILING_COMMAS));
   DCHECK(root.get() != NULL);
   if (!root.get() || root->GetType() != Value::TYPE_DICTIONARY) {
     LOG(WARNING) << "Bad cellular config file";

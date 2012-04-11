@@ -216,7 +216,8 @@ void ChromotingInstance::HandleMessage(const pp::Var& message) {
   }
 
   scoped_ptr<base::Value> json(
-      base::JSONReader::Read(message.AsString(), true));
+      base::JSONReader::Read(message.AsString(),
+                             base::JSON_ALLOW_TRAILING_COMMAS));
   base::DictionaryValue* message_dict = NULL;
   std::string method;
   base::DictionaryValue* data = NULL;

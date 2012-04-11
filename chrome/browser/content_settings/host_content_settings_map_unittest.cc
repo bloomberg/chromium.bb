@@ -727,12 +727,12 @@ TEST_F(HostContentSettingsMapTest, CanonicalizeExceptionsUnicodeAndPunycode) {
   TestingProfile profile;
 
   scoped_ptr<Value> value(base::JSONReader::Read(
-      "{\"[*.]\\xC4\\x87ira.com,*\":{\"images\":1}}", false));
+      "{\"[*.]\\xC4\\x87ira.com,*\":{\"images\":1}}"));
   profile.GetPrefs()->Set(prefs::kContentSettingsPatternPairs, *value);
 
   // Set punycode equivalent, with different setting.
   scoped_ptr<Value> puny_value(base::JSONReader::Read(
-      "{\"[*.]xn--ira-ppa.com,*\":{\"images\":2}}", false));
+      "{\"[*.]xn--ira-ppa.com,*\":{\"images\":2}}"));
   profile.GetPrefs()->Set(prefs::kContentSettingsPatternPairs, *puny_value);
 
   // Initialize the content map.
@@ -799,7 +799,7 @@ TEST_F(HostContentSettingsMapTest, ResourceIdentifierPrefs) {
 
   TestingProfile profile;
   scoped_ptr<Value> value(base::JSONReader::Read(
-      "{\"[*.]example.com,*\":{\"per_plugin\":{\"someplugin\":2}}}", false));
+      "{\"[*.]example.com,*\":{\"per_plugin\":{\"someplugin\":2}}}"));
   profile.GetPrefs()->Set(prefs::kContentSettingsPatternPairs, *value);
   HostContentSettingsMap* host_content_settings_map =
       profile.GetHostContentSettingsMap();

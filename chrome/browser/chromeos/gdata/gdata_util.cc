@@ -81,7 +81,7 @@ void GetHostedDocumentURLBlockingThread(const FilePath& gdata_cache_path,
     return;
   }
   DVLOG(1) << "Hosted doc content " << json;
-  scoped_ptr<base::Value> val(base::JSONReader::Read(json, false));
+  scoped_ptr<base::Value> val(base::JSONReader::Read(json));
   base::DictionaryValue* dict_val;
   if (!val.get() || !val->GetAsDictionary(&dict_val)) {
     NOTREACHED() << "Parse failure for " << json;

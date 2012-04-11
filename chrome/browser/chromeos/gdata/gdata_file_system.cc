@@ -2237,7 +2237,8 @@ void GDataFileSystem::LoadJsonFileOnIOThreadPool(
   int unused_error_code = -1;
   std::string unused_error_message;
   root_value.reset(base::JSONReader::ReadAndReturnError(
-      contents, false, &unused_error_code, &unused_error_message));
+      contents, base::JSON_PARSE_RFC, &unused_error_code,
+      &unused_error_message));
 
   bool has_root = root_value.get();
   if (!has_root)

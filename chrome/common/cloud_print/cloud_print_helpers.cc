@@ -47,7 +47,7 @@ GURL GetUrlForSubmit(const GURL& cloud_print_server_url) {
 bool ParseResponseJSON(const std::string& response_data,
                        bool* succeeded,
                        DictionaryValue** response_dict) {
-  scoped_ptr<Value> message_value(base::JSONReader::Read(response_data, false));
+  scoped_ptr<Value> message_value(base::JSONReader::Read(response_data));
   if (!message_value.get())
     return false;
 

@@ -416,9 +416,7 @@ void CoreOptionsHandler::HandleSetPref(const ListValue* args, PrefType type) {
       std::string json_string;
       CHECK(value->GetAsString(&json_string));
       temp_value.reset(
-          base::JSONReader().JsonToValue(json_string,
-                                         false,  // no check_root
-                                         false));  // no trailing comma
+          base::JSONReader::Read(json_string));
       value = temp_value.get();
       CHECK_EQ(base::Value::TYPE_LIST, value->GetType());
       break;

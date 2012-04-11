@@ -605,9 +605,8 @@ bool BrowserProxy::GetInitialLoadTimes(int timeout_ms,
     return false;
   }
   std::string error;
-  base::JSONReader reader;
-  scoped_ptr<Value> values(reader.ReadAndReturnError(json_response, true,
-                                                     NULL, &error));
+  scoped_ptr<Value> values(base::JSONReader::ReadAndReturnError(
+      json_response, base::JSON_ALLOW_TRAILING_COMMAS, NULL, &error));
   if (!error.empty() || values->GetType() != Value::TYPE_DICTIONARY)
     return false;
 

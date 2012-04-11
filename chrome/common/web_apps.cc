@@ -217,7 +217,7 @@ bool ParseWebAppFromDefinitionFile(Value* definition_value,
       base::JSONReader::ReadAndReturnError(
           ResourceBundle::GetSharedInstance().GetRawDataResource(
               IDR_WEB_APP_SCHEMA).as_string(),
-          false,  // disallow trailing comma
+          base::JSON_PARSE_RFC,  // options
           &error_code,
           &error_message));
   DCHECK(schema.get())

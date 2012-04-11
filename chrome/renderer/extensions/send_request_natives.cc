@@ -33,9 +33,7 @@ v8::Handle<v8::Value> SendRequestNatives::GetNextRequestId(
 v8::Handle<v8::Value> SendRequestNatives::StartRequest(
     const v8::Arguments& args) {
   std::string str_args = *v8::String::Utf8Value(args[1]);
-  base::JSONReader reader;
-  scoped_ptr<Value> value_args;
-  value_args.reset(reader.JsonToValue(str_args, false, false));
+  scoped_ptr<Value> value_args(base::JSONReader::Read(str_args));
 
   // Since we do the serialization in the v8 extension, we should always get
   // valid JSON.

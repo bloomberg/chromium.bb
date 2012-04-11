@@ -467,7 +467,8 @@ TEST_F(ExtensionMenuManagerTest, ExecuteCommand) {
   // Parse the json event_args, which should turn into a 2-element list where
   // the first element is a dictionary we want to inspect for the correct
   // values.
-  scoped_ptr<Value> result(base::JSONReader::Read(event_args, true));
+  scoped_ptr<Value> result(
+      base::JSONReader::Read(event_args, base::JSON_ALLOW_TRAILING_COMMAS));
   Value* value = result.get();
   ASSERT_TRUE(result.get() != NULL);
   ASSERT_EQ(Value::TYPE_LIST, value->GetType());

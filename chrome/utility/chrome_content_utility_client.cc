@@ -357,8 +357,8 @@ bool ChromeContentUtilityClient::RenderPDFToWinMetafile(
 void ChromeContentUtilityClient::OnParseJSON(const std::string& json) {
   int error_code;
   std::string error;
-  Value* value =
-      base::JSONReader::ReadAndReturnError(json, false, &error_code, &error);
+  Value* value = base::JSONReader::ReadAndReturnError(
+      json, base::JSON_PARSE_RFC, &error_code, &error);
   if (value) {
     ListValue wrapper;
     wrapper.Append(value);

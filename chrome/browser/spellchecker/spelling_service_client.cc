@@ -153,7 +153,8 @@ bool SpellingServiceClient::ParseResponse(
   //   }
   // }
   scoped_ptr<DictionaryValue> value(
-      static_cast<DictionaryValue*>(base::JSONReader::Read(data, true)));
+      static_cast<DictionaryValue*>(
+          base::JSONReader::Read(data, base::JSON_ALLOW_TRAILING_COMMAS)));
   if (!value.get() || !value->IsType(base::Value::TYPE_DICTIONARY))
     return false;
 

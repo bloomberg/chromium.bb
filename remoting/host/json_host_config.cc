@@ -30,7 +30,8 @@ bool JsonHostConfig::Read() {
     return false;
   }
 
-  scoped_ptr<Value> value(base::JSONReader::Read(file_content, true));
+  scoped_ptr<Value> value(
+      base::JSONReader::Read(file_content, base::JSON_ALLOW_TRAILING_COMMAS));
   if (value.get() == NULL || !value->IsType(Value::TYPE_DICTIONARY)) {
     LOG(WARNING) << "Failed to parse " << filename_.value();
     return false;

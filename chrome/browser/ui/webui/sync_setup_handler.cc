@@ -95,7 +95,7 @@ bool GetAuthData(const std::string& json,
                  std::string* password,
                  std::string* captcha,
                  std::string* access_code) {
-  scoped_ptr<Value> parsed_value(base::JSONReader::Read(json, false));
+  scoped_ptr<Value> parsed_value(base::JSONReader::Read(json));
   if (!parsed_value.get() || !parsed_value->IsType(Value::TYPE_DICTIONARY))
     return false;
 
@@ -110,7 +110,7 @@ bool GetAuthData(const std::string& json,
 }
 
 bool GetConfiguration(const std::string& json, SyncConfigInfo* config) {
-  scoped_ptr<Value> parsed_value(base::JSONReader::Read(json, false));
+  scoped_ptr<Value> parsed_value(base::JSONReader::Read(json));
   DictionaryValue* result;
   if (!parsed_value.get() || !parsed_value->GetAsDictionary(&result)) {
     DLOG(ERROR) << "GetConfiguration() not passed a Dictionary";
@@ -161,7 +161,7 @@ bool GetConfiguration(const std::string& json, SyncConfigInfo* config) {
 }
 
 bool GetPassphrase(const std::string& json, std::string* passphrase) {
-  scoped_ptr<Value> parsed_value(base::JSONReader::Read(json, false));
+  scoped_ptr<Value> parsed_value(base::JSONReader::Read(json));
   if (!parsed_value.get() || !parsed_value->IsType(Value::TYPE_DICTIONARY))
     return false;
 
@@ -720,7 +720,7 @@ void SyncSetupHandler::HandleAttachHandler(const ListValue* args) {
   bool force_login = false;
   std::string json;
   if (args->GetString(0, &json) && !json.empty()) {
-    scoped_ptr<Value> parsed_value(base::JSONReader::Read(json, false));
+    scoped_ptr<Value> parsed_value(base::JSONReader::Read(json));
     DictionaryValue* result = static_cast<DictionaryValue*>(parsed_value.get());
     result->GetBoolean("forceLogin", &force_login);
   }

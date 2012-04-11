@@ -133,7 +133,7 @@ TEST(DispatchTest, ReturnsCommandResponseAsJson) {
   int error_code;
   std::string error_message;
   scoped_ptr<Value> parsed_response(base::JSONReader::ReadAndReturnError(
-      actual_data, false, &error_code, &error_message));
+      actual_data, base::JSON_PARSE_RFC, &error_code, &error_message));
 
   ASSERT_TRUE(parsed_response.get() != NULL) << error_message;
   ASSERT_TRUE(parsed_response->IsType(Value::TYPE_DICTIONARY))

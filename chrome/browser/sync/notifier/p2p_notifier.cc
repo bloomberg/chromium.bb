@@ -109,8 +109,7 @@ std::string P2PNotificationData::ToString() const {
 }
 
 bool P2PNotificationData::ResetFromString(const std::string& str) {
-  scoped_ptr<Value> data_value(
-      base::JSONReader::Read(str, false /* allow_trailing_comma */));
+  scoped_ptr<Value> data_value(base::JSONReader::Read(str));
   if (!data_value.get()) {
     LOG(WARNING) << "Could not parse " << str;
     return false;

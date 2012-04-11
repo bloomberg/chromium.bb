@@ -220,7 +220,8 @@ void TranslateManager::SetSupportedLanguages(const std::string& language_list) {
   // JSON doesn't support single quotes though this is what is used on the
   // translate server so we must replace them with double quotes.
   ReplaceSubstringsAfterOffset(&languages_json, 0, "'", "\"");
-  scoped_ptr<Value> json_value(base::JSONReader::Read(languages_json, true));
+  scoped_ptr<Value> json_value(
+      base::JSONReader::Read(languages_json, base::JSON_ALLOW_TRAILING_COMMAS));
   if (json_value == NULL || !json_value->IsType(Value::TYPE_DICTIONARY)) {
     NOTREACHED();
     return;

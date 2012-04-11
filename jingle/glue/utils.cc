@@ -59,7 +59,8 @@ std::string SerializeP2PCandidate(const cricket::Candidate& candidate) {
 
 bool DeserializeP2PCandidate(const std::string& candidate_str,
                              cricket::Candidate* candidate) {
-  scoped_ptr<Value> value(base::JSONReader::Read(candidate_str, true));
+  scoped_ptr<Value> value(
+      base::JSONReader::Read(candidate_str, base::JSON_ALLOW_TRAILING_COMMAS));
   if (!value.get() || !value->IsType(Value::TYPE_DICTIONARY)) {
     return false;
   }

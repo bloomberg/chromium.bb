@@ -46,7 +46,8 @@ bool SendAutomationJSONRequest(AutomationMessageSender* sender,
     LOG(INFO) << error->message();
     return false;
   }
-  scoped_ptr<Value> value(base::JSONReader::Read(reply, true));
+  scoped_ptr<Value> value(
+      base::JSONReader::Read(reply, base::JSON_ALLOW_TRAILING_COMMAS));
   if (!value.get() || !value->IsType(Value::TYPE_DICTIONARY)) {
     *error = Error("JSON request did not return a dictionary");
     LOG(ERROR) << "JSON request did not return dict: " << command << "\n";

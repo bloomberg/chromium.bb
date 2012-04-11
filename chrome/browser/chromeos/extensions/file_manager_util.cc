@@ -527,8 +527,7 @@ void ReadUrlFromGDocOnFileThread(const FilePath& file_path) {
   }
 
   scoped_ptr<base::Value> root_value;
-  root_value.reset(
-      base::JSONReader::Read(contents, false /* no trailing comma */));
+  root_value.reset(base::JSONReader::Read(contents));
 
   DictionaryValue* dictionary_value;
   std::string edit_url_string;

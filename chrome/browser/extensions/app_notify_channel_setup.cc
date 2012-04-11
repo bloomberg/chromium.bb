@@ -402,8 +402,7 @@ std::string AppNotifyChannelSetup::MakeAuthorizationHeader(
 // static
 bool AppNotifyChannelSetup::ParseCWSChannelServiceResponse(
     const std::string& data, std::string* result) {
-  base::JSONReader reader;
-  scoped_ptr<base::Value> value(reader.Read(data, false));
+  scoped_ptr<base::Value> value(base::JSONReader::Read(data));
   if (!value.get() || value->GetType() != base::Value::TYPE_DICTIONARY)
     return false;
 

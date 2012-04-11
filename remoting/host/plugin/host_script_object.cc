@@ -678,7 +678,8 @@ bool HostNPScriptObject::UpdateDaemonConfig(const NPVariant* args,
   }
 
   std::string config_str = StringFromNPVariant(args[0]);
-  scoped_ptr<base::Value> config(base::JSONReader::Read(config_str, true));
+  scoped_ptr<base::Value> config(
+      base::JSONReader::Read(config_str, base::JSON_ALLOW_TRAILING_COMMAS));
   if (config_str.empty() || !config.get() ||
       !config->IsType(base::Value::TYPE_DICTIONARY)) {
     SetException("updateDaemonConfig: bad config parameter");
@@ -739,7 +740,8 @@ bool HostNPScriptObject::StartDaemon(const NPVariant* args,
   }
 
   std::string config_str = StringFromNPVariant(args[0]);
-  scoped_ptr<base::Value> config(base::JSONReader::Read(config_str, true));
+  scoped_ptr<base::Value> config(
+      base::JSONReader::Read(config_str, base::JSON_ALLOW_TRAILING_COMMAS));
   if (config_str.empty() || !config.get() ||
       !config->IsType(base::Value::TYPE_DICTIONARY)) {
     SetException("updateDaemonConfig: bad config parameter");

@@ -407,8 +407,7 @@ bool GaiaAuthFetcher::ParseOAuth2TokenPairResponse(const std::string& data,
                                                    int* expires_in_secs) {
   DCHECK(refresh_token);
   DCHECK(access_token);
-  base::JSONReader reader;
-  scoped_ptr<base::Value> value(reader.Read(data, false));
+  scoped_ptr<base::Value> value(base::JSONReader::Read(data));
   if (!value.get() || value->GetType() != base::Value::TYPE_DICTIONARY)
     return false;
 

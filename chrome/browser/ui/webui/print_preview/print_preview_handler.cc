@@ -132,7 +132,7 @@ DictionaryValue* GetSettingsDictionary(const ListValue* args) {
     return NULL;
   }
   scoped_ptr<DictionaryValue> settings(static_cast<DictionaryValue*>(
-      base::JSONReader::Read(json_str, false)));
+      base::JSONReader::Read(json_str)));
   if (!settings.get() || !settings->IsType(Value::TYPE_DICTIONARY)) {
     NOTREACHED() << "Print job settings must be a dictionary.";
     return NULL;

@@ -74,7 +74,8 @@ HRESULT ReadConfig(const FilePath& filename,
 
   // Parse the JSON configuration, expecting it to contain a dictionary.
   std::string file_content(buffer.get(), size);
-  scoped_ptr<base::Value> value(base::JSONReader::Read(file_content, true));
+  scoped_ptr<base::Value> value(
+      base::JSONReader::Read(file_content, base::JSON_ALLOW_TRAILING_COMMAS));
 
   base::DictionaryValue* dictionary;
   if (value.get() == NULL || !value->GetAsDictionary(&dictionary)) {

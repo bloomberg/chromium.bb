@@ -327,7 +327,8 @@ void DaemonControllerWin::DoGetConfig(const GetConfigCallback& callback) {
 
   // Parse the string into a dictionary.
   scoped_ptr<base::Value> config(
-      base::JSONReader::Read(UTF16ToUTF8(file_content), true));
+      base::JSONReader::Read(UTF16ToUTF8(file_content),
+          base::JSON_ALLOW_TRAILING_COMMAS));
 
   base::DictionaryValue* dictionary;
   if (config.get() == NULL || !config->GetAsDictionary(&dictionary)) {

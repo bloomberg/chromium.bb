@@ -164,8 +164,7 @@ class ProfileSyncServicePreferenceTest
     const sync_pb::PreferenceSpecifics& specifics(
         node.GetEntitySpecifics().preference());
 
-    JSONReader reader;
-    return reader.JsonToValue(specifics.value(), false, false);
+    return base::JSONReader::Read(specifics.value());
   }
 
   int64 WriteSyncedValue(const std::string& name,
@@ -255,8 +254,7 @@ TEST_F(ProfileSyncServicePreferenceTest, CreatePrefSyncData) {
       preference());
   EXPECT_EQ(std::string(prefs::kHomePage), specifics.name());
 
-  base::JSONReader reader;
-  scoped_ptr<Value> value(reader.JsonToValue(specifics.value(), false, false));
+  scoped_ptr<Value> value(base::JSONReader::Read(specifics.value()));
   EXPECT_TRUE(pref->GetValue()->Equals(value.get()));
 }
 

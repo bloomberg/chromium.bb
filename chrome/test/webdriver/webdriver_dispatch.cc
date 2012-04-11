@@ -320,7 +320,7 @@ bool ParseRequestInfo(const struct mg_request_info* const request_info,
     if (json.length() > 0) {
       std::string error_msg;
       scoped_ptr<Value> params(base::JSONReader::ReadAndReturnError(
-          json, true, NULL, &error_msg));
+          json, base::JSON_ALLOW_TRAILING_COMMAS, NULL, &error_msg));
       if (!params.get()) {
         response->SetError(new Error(
             kBadRequest,

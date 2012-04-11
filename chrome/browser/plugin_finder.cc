@@ -51,11 +51,10 @@ DictionaryValue* PluginFinder::LoadPluginListInternal() {
   base::StringPiece json_resource(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_PLUGIN_DB_JSON));
-  bool allow_trailing_comma = false;
   std::string error_str;
   scoped_ptr<base::Value> value(base::JSONReader::ReadAndReturnError(
       json_resource.as_string(),
-      allow_trailing_comma,
+      base::JSON_PARSE_RFC,
       NULL,
       &error_str));
   if (!value.get()) {

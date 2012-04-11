@@ -427,7 +427,7 @@ base::Value* GetDataOperation::ParseResponse(const std::string& data) {
   int error_code = -1;
   std::string error_message;
   scoped_ptr<base::Value> root_value(base::JSONReader::ReadAndReturnError(
-      data, false, &error_code, &error_message));
+      data, base::JSON_PARSE_RFC, &error_code, &error_message));
   if (!root_value.get()) {
     LOG(ERROR) << "Error while parsing entry response: "
                << error_message

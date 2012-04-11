@@ -46,7 +46,7 @@ void SettingSyncData::InitFromExtensionSettingSpecifics(
     const sync_pb::ExtensionSettingSpecifics& specifics) {
   DCHECK(!internal_.get());
   scoped_ptr<Value> value(
-      base::JSONReader().JsonToValue(specifics.value(), false, false));
+      base::JSONReader::Read(specifics.value()));
   if (!value.get()) {
     LOG(WARNING) << "Specifics for " << specifics.extension_id() << "/" <<
         specifics.key() << " had bad JSON for value: " << specifics.value();

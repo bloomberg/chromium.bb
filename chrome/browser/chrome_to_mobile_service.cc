@@ -425,7 +425,7 @@ void ChromeToMobileService::HandleAccountInfoResponse() {
 
   ListValue* services = NULL;
   DictionaryValue* dictionary = NULL;
-  scoped_ptr<Value> json(base::JSONReader::Read(data, false));
+  scoped_ptr<Value> json(base::JSONReader::Read(data));
   StringValue cloud_print_service(kCloudPrintSerivceValue);
   if (json.get() && json->GetAsDictionary(&dictionary) && dictionary &&
       dictionary->GetList(kAccountServicesKey, &services) && services &&
@@ -444,7 +444,7 @@ void ChromeToMobileService::HandleSearchResponse() {
 
   ListValue* list = NULL;
   DictionaryValue* dictionary = NULL;
-  scoped_ptr<Value> json(base::JSONReader::Read(data, false));
+  scoped_ptr<Value> json(base::JSONReader::Read(data));
   if (json.get() && json->GetAsDictionary(&dictionary) && dictionary &&
       dictionary->GetList(cloud_print::kPrinterListValue, &list)) {
     ScopedVector<base::DictionaryValue> mobiles;
@@ -482,7 +482,7 @@ void ChromeToMobileService::HandleSubmitResponse(
   source->GetResponseAsString(&data);
   bool success = false;
   DictionaryValue* dictionary = NULL;
-  scoped_ptr<Value> json(base::JSONReader::Read(data, false));
+  scoped_ptr<Value> json(base::JSONReader::Read(data));
   if (json.get() && json->GetAsDictionary(&dictionary) && dictionary)
     dictionary->GetBoolean("success", &success);
 

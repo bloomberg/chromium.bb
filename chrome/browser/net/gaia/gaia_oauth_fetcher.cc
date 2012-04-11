@@ -264,8 +264,7 @@ void GaiaOAuthFetcher::ParseOAuthWrapBridgeResponse(const std::string& data,
 // static
 void GaiaOAuthFetcher::ParseUserInfoResponse(const std::string& data,
                                              std::string* email_result) {
-  base::JSONReader reader;
-  scoped_ptr<base::Value> value(reader.Read(data, false));
+  scoped_ptr<base::Value> value(base::JSONReader::Read(data));
   if (value->GetType() == base::Value::TYPE_DICTIONARY) {
     Value* email_value;
     DictionaryValue* dict = static_cast<DictionaryValue*>(value.get());

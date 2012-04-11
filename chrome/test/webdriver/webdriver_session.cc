@@ -1471,7 +1471,7 @@ Error* Session::ExecuteScriptAndParseValue(const FrameId& frame_id,
     return error;
 
   scoped_ptr<Value> value(base::JSONReader::ReadAndReturnError(
-      response_json, true, NULL, NULL));
+      response_json, base::JSON_ALLOW_TRAILING_COMMAS, NULL, NULL));
   if (!value.get())
     return new Error(kUnknownError, "Failed to parse script result");
   if (value->GetType() != Value::TYPE_DICTIONARY)

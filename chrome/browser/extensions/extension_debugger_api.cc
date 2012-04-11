@@ -283,7 +283,7 @@ void ExtensionDevToolsClientHost::DispatchOnInspectorFrontend(
   if (profile == NULL || !profile->GetExtensionEventRouter())
     return;
 
-  scoped_ptr<Value> result(base::JSONReader::Read(message, false));
+  scoped_ptr<Value> result(base::JSONReader::Read(message));
   if (!result->IsType(Value::TYPE_DICTIONARY))
     return;
   DictionaryValue* dictionary = static_cast<DictionaryValue*>(result.get());
