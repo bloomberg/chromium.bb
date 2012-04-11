@@ -33,7 +33,7 @@ TEST(JsonSchemaCompilerAnyTest, OptionalAnyParamsCreate) {
     scoped_ptr<OptionalAny::Params> params(
         OptionalAny::Params::Create(*params_value));
     EXPECT_TRUE(params.get());
-    EXPECT_FALSE(params->any.get());
+    EXPECT_FALSE(params->any_name.get());
   }
   {
     scoped_ptr<ListValue> params_value(new ListValue());
@@ -42,8 +42,8 @@ TEST(JsonSchemaCompilerAnyTest, OptionalAnyParamsCreate) {
     scoped_ptr<OptionalAny::Params> params(
         OptionalAny::Params::Create(*params_value));
     EXPECT_TRUE(params.get());
-    EXPECT_TRUE(params->any.get());
-    EXPECT_TRUE(params->any->value().Equals(param.get()));
+    EXPECT_TRUE(params->any_name.get());
+    EXPECT_TRUE(params->any_name->value().Equals(param.get()));
   }
   {
     scoped_ptr<ListValue> params_value(new ListValue());
@@ -52,8 +52,8 @@ TEST(JsonSchemaCompilerAnyTest, OptionalAnyParamsCreate) {
     scoped_ptr<OptionalAny::Params> params(
         OptionalAny::Params::Create(*params_value));
     EXPECT_TRUE(params.get());
-    EXPECT_TRUE(params->any.get());
-    EXPECT_TRUE(params->any.get());
-    EXPECT_TRUE(params->any->value().Equals(param.get()));
+    EXPECT_TRUE(params->any_name.get());
+    EXPECT_TRUE(params->any_name.get());
+    EXPECT_TRUE(params->any_name->value().Equals(param.get()));
   }
 }

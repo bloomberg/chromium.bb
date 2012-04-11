@@ -16,9 +16,9 @@ class AnyHelper(object):
     dst: Type*
     """
     if any_prop.optional:
-      return '%s->%s->Init(*%s)' % (dst, any_prop.name, src)
+      return '%s->%s->Init(*%s)' % (dst, any_prop.unix_name, src)
     else:
-      return '%s->%s.Init(*%s)' % (dst, any_prop.name, src)
+      return '%s->%s.Init(*%s)' % (dst, any_prop.unix_name, src)
 
   def GetValue(self, any_prop, var):
     """Get |var| as a const Value&.

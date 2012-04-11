@@ -21,7 +21,7 @@
         "parameters": [
           {
             "type": "any",
-            "name": "any",
+            "name": "anyName",
             "optional": true
           },
           {
