@@ -41,6 +41,26 @@ Dir('src/third_party_mod/gtest').addRepository(
 # Underlay things migrating to ppapi repo.
 Dir('..').addRepository(Dir('#/../ppapi'))
 
+# Load a config file from the Chrome repo. This allows scons files to be added
+# and removed in Chrome without requiring a DEPS roll.
+ppapi_scons_files = {}
+execfile(
+    File('#/../ppapi/native_client/ppapi_scons_files.py').abspath,
+    {}, # Globals
+    ppapi_scons_files)
+
+# Append a list of files to another, filtering out the files that already exist.
+# Filtering helps migrate declarations between repos by preventing redundant
+# declarations from causing an error.
+def ExtendFileList(existing, additional):
+  # Avoid quadratic behavior by using a set.
+  combined = set()
+  for file_name in existing + additional:
+    if file_name in combined:
+      print 'WARNING: two references to file %s in the build.' % file_name
+    combined.add(file_name)
+  return sorted(combined)
+
 # turning garbage collection off reduces startup time by 10%
 import gc
 gc.disable()
@@ -2486,13 +2506,11 @@ def MakeBaseTrustedEnv():
     base_env.Append(CPPDEFINES = ['NACL_TARGET_ARM_THUMB2_MODE=1'])
 
   base_env.Append(
-    BUILD_SCONSCRIPTS = [
+    BUILD_SCONSCRIPTS = ExtendFileList([
       # KEEP THIS SORTED PLEASE
       'src/shared/gio/build.scons',
       'src/shared/imc/build.scons',
       'src/shared/platform/build.scons',
-      'src/shared/ppapi/build.scons',
-      'src/shared/ppapi_proxy/build.scons',
       'src/shared/srpc/build.scons',
       'src/shared/utils/build.scons',
       'src/third_party_mod/gtest/build.scons',
@@ -2509,7 +2527,6 @@ def MakeBaseTrustedEnv():
       'src/trusted/nonnacl_util/build.scons',
       'src/trusted/perf_counter/build.scons',
       'src/trusted/platform_qualify/build.scons',
-      'src/trusted/plugin/build.scons',
       'src/trusted/python_bindings/build.scons',
       'src/trusted/reverse_service/build.scons',
       'src/trusted/sel_universal/build.scons',
@@ -2528,10 +2545,6 @@ def MakeBaseTrustedEnv():
       'src/trusted/validator/x86/64/build.scons',
       'src/trusted/validator_x86/build.scons',
       'src/trusted/weak_ref/build.scons',
-      'tests/ppapi_geturl/build.scons',
-      'tests/ppapi_messaging/build.scons',
-      'tests/ppapi_browser/ppb_file_system/build.scons',
-      'tests/ppapi_tests/build.scons',  # Build PPAPI tests from Chrome as a .so
       'tests/python_version/build.scons',
       'tests/srpc_message/build.scons',
       'tests/tools/build.scons',
@@ -2542,7 +2555,7 @@ def MakeBaseTrustedEnv():
       'tests/unittests/trusted/platform_qualify/build.scons',
       'tests/unittests/trusted/service_runtime/build.scons',
       'installer/build.scons'
-      ],
+      ], ppapi_scons_files['trusted_scons_files'])
     )
 
   base_env.AddMethod(SDKInstallBin)
@@ -3289,10 +3302,7 @@ nacl_env.Append(
 
 if (not nacl_env.Bit('cros_chroot')) or CrosChrootHasGclient():
   nacl_env.Append(
-      BUILD_SCONSCRIPTS = [
-          'src/shared/ppapi/nacl.scons',
-          'src/shared/ppapi_proxy/nacl.scons',
-          ])
+      BUILD_SCONSCRIPTS = ppapi_scons_files['untrusted_scons_files'])
 
 nacl_env.Append(
     BUILD_SCONSCRIPTS = [
@@ -3404,7 +3414,7 @@ irt_variant_tests = [
 # In some cases, that's because they are browser tests which always
 # use the IRT.  In others, it's because they are special-case tests
 # that are incompatible with having an IRT loaded.
-nonvariant_tests = [
+nonvariant_tests = ExtendFileList([
     #### ALPHABETICALLY SORTED ####
     'tests/barebones/nacl.scons',
     'tests/chrome_extension/nacl.scons',
@@ -3421,45 +3431,6 @@ nonvariant_tests = [
     # http://code.google.com/p/nativeclient/issues/detail?id=2092
     # See also the comment in "buildbot/buildbot_standard.py"
     'tests/pnacl_shared_lib_test/nacl.scons',
-    'tests/ppapi/nacl.scons',
-    'tests/ppapi_browser/bad/nacl.scons',
-    'tests/ppapi_browser/crash/nacl.scons',
-    'tests/ppapi_browser/extension_mime_handler/nacl.scons',
-    'tests/ppapi_browser/manifest/nacl.scons',
-    'tests/ppapi_browser/ppb_core/nacl.scons',
-    'tests/ppapi_browser/ppb_dev/nacl.scons',
-    'tests/ppapi_browser/ppb_file_system/nacl.scons',
-    'tests/ppapi_browser/ppb_graphics2d/nacl.scons',
-    'tests/ppapi_browser/ppb_graphics3d/nacl.scons',
-    'tests/ppapi_browser/ppb_image_data/nacl.scons',
-    'tests/ppapi_browser/ppb_instance/nacl.scons',
-    'tests/ppapi_browser/ppb_memory/nacl.scons',
-    'tests/ppapi_browser/ppb_pdf/nacl.scons',
-    'tests/ppapi_browser/ppb_scrollbar/nacl.scons',
-    'tests/ppapi_browser/ppb_url_loader/nacl.scons',
-    'tests/ppapi_browser/ppb_url_request_info/nacl.scons',
-    'tests/ppapi_browser/ppb_var/nacl.scons',
-    'tests/ppapi_browser/ppb_widget/nacl.scons',
-    'tests/ppapi_browser/ppp_input_event/nacl.scons',
-    'tests/ppapi_browser/ppp_instance/nacl.scons',
-    'tests/ppapi_browser/progress_events/nacl.scons',
-    'tests/ppapi_browser/stress_many_nexes/nacl.scons',
-    'tests/ppapi_example_2d/nacl.scons',
-    'tests/ppapi_example_audio/nacl.scons',
-    'tests/ppapi_example_events/nacl.scons',
-    # TODO(dspringer): re-enable test once the 3D ABI has stabilized. See
-    # http://code.google.com/p/nativeclient/issues/detail?id=2060
-    # 'tests/ppapi_example_gles2/nacl.scons',
-    'tests/ppapi_example_post_message/nacl.scons',
-    'tests/ppapi_geturl/nacl.scons',
-    'tests/ppapi_gles_book/nacl.scons',
-    'tests/ppapi_messaging/nacl.scons',
-    # Broken by Chrome change
-    # http://code.google.com/p/nativeclient/issues/detail?id=2480
-    #'tests/ppapi_simple_tests/nacl.scons',
-    'tests/ppapi_test_example/nacl.scons',
-    'tests/ppapi_test_lib/nacl.scons',
-    'tests/ppapi_tests/nacl.scons',
     'tests/pyauto_nacl/nacl.scons',
     'tests/translator_size_limits/nacl.scons',
     'tests/trusted_crash/osx_crash_filter/nacl.scons',
@@ -3468,7 +3439,7 @@ nonvariant_tests = [
     'tests/unittests/shared/imc/nacl.scons',
     'tests/unittests/shared/srpc/nacl.scons',
     #### ALPHABETICALLY SORTED ####
-    ]
+    ], ppapi_scons_files['nonvariant_test_scons_files'])
 
 if (not nacl_env.Bit('cros_chroot')) or CrosChrootHasGclient():
   # BUG=http://code.google.com/p/nativeclient/issues/detail?id=2455
@@ -3693,9 +3664,7 @@ if (not nacl_irt_env.Bit('cros_chroot')) or CrosChrootHasGclient():
   # Do not load up these nacl.scons files in CrOS chroot, as they
   # inject dependecies outside of the native_client source tree
   nacl_irt_env.Append(
-      BUILD_SCONSCRIPTS = [
-          'src/shared/ppapi_proxy/nacl.scons',
-          ])
+      BUILD_SCONSCRIPTS = ppapi_scons_files['untrusted_irt_scons_files'])
 nacl_irt_env.Append(
     BUILD_SCONSCRIPTS = [
         'src/shared/srpc/nacl.scons',
