@@ -12,10 +12,9 @@
  * dialogs, as well as the full screen file manager application (though the
  * latter is not yet implemented).
  *
+ * @constructor
  * @param {HTMLElement} dialogDom The DOM node containing the prototypical
  *     dialog UI.
- * @param {DOMFileSystem} filesystem The HTML5 filesystem object representing
- *     the root filesystem for the new FileManager.
  */
 function FileManager(dialogDom) {
   this.dialogDom_ = dialogDom;
@@ -69,32 +68,32 @@ FileManager.prototype = {
   /**
    * Location of the FAQ about the downloads directory.
    */
-  const DOWNLOADS_FAQ_URL = 'http://www.google.com/support/chromeos/bin/' +
+  var DOWNLOADS_FAQ_URL = 'http://www.google.com/support/chromeos/bin/' +
       'answer.py?hl=en&answer=1061547';
 
   /**
   * Location of the FAQ about the file actions.
   */
-  const NO_ACTION_FOR_FILE_URL = 'http://support.google.com/chromeos/bin/' +
+  var NO_ACTION_FOR_FILE_URL = 'http://support.google.com/chromeos/bin/' +
       'answer.py?hl=en&answer=1700055&topic=29026&ctx=topic';
 
   /**
    * Maximum amount of thumbnails in the preview pane.
    */
-  const MAX_PREVIEW_THUMBAIL_COUNT = 4;
+  var MAX_PREVIEW_THUMBAIL_COUNT = 4;
 
   /**
    * Maximum width or height of an image what pops up when the mouse hovers
    * thumbnail in the bottom panel (in pixels).
    */
-  const IMAGE_HOVER_PREVIEW_SIZE = 200;
+  var IMAGE_HOVER_PREVIEW_SIZE = 200;
 
   /**
    * The minimum about of time to display the butter bar for, in ms.
    * Justification is 1000ms for minimum display time plus 300ms for transition
    * duration.
    */
-  const MINIMUM_BUTTER_DISPLAY_TIME_MS = 1300;
+  var MINIMUM_BUTTER_DISPLAY_TIME_MS = 1300;
 
   /**
    * Translated strings.
@@ -166,10 +165,10 @@ FileManager.prototype = {
         !child_path || child_path.length == 0)
       return false;
 
-    if (parent_path[parent_path.length -1] != '/')
+    if (parent_path[parent_path.length - 1] != '/')
       parent_path += '/';
 
-    if (child_path[child_path.length -1] != '/')
+    if (child_path[child_path.length - 1] != '/')
       child_path += '/';
 
     return child_path.indexOf(parent_path) == 0;
@@ -657,7 +656,7 @@ FileManager.prototype = {
                                     this.onBeforeCopy_.bind(this));
     // Disable the default browser context menu.
     this.document_.addEventListener('contextmenu',
-                                    function (e) { e.preventDefault() });
+                                    function(e) { e.preventDefault() });
 
     this.document_.addEventListener('paste', this.onPaste_.bind(this));
     this.document_.addEventListener('beforepaste',
@@ -707,7 +706,7 @@ FileManager.prototype = {
         this.onGDataPrefClick_.bind(this, 'hostedFilesDisabled'));
 
     chrome.fileBrowserPrivate.getGDataPreferences(
-        function (result) {
+        function(result) {
           if (!result.cellularDisabled)
             this.syncButton.setAttribute('checked', 'checked');
           if (!result.hostedFilesDisabled)
@@ -828,7 +827,7 @@ FileManager.prototype = {
     if (dirChanged) {
       // When changing to GData directory we want to see a clear panel.
       this.unmountedPanel_.removeAttribute('retry');
-      if (this.gdataLoadingTimer_ ) {  // Show immediately if already loading.
+      if (this.gdataLoadingTimer_) {  // Show immediately if already loading.
         this.unmountedPanel_.setAttribute('loading', true);
       } else {
         this.unmountedPanel_.removeAttribute('loading');
@@ -858,7 +857,7 @@ FileManager.prototype = {
           this.gdataLoadingTimer_ = null;
           this.onGDataUnreachable_('GData load timeout');
         }.bind(this),
-        15 * 60 * 1000) ;
+        15 * 60 * 1000);
   };
 
   FileManager.prototype.clearGDataLoadingTimer_ = function(message) {
@@ -920,7 +919,7 @@ FileManager.prototype = {
    * Get the icon type for a given Entry.
    *
    * @param {Entry} entry An Entry subclass (FileEntry or DirectoryEntry).
-   * @return {string}
+   * @return {string} Icon type.
    */
   FileManager.prototype.getIconType = function(entry) {
     if (!('cachedIconType_' in entry))
@@ -1067,7 +1066,7 @@ FileManager.prototype = {
         for (var label in opt_options.actions) {
           var link = this.document_.createElement('a');
           link.setAttribute('href', 'javascript://' + label);
-          link.addEventListener('click', function () {
+          link.addEventListener('click', function() {
               opt_options.actions[label]();
               return false;
           });
@@ -1083,7 +1082,7 @@ FileManager.prototype = {
 
     var self = this;
 
-    setTimeout(function () {
+    setTimeout(function() {
       self.currentButter_ = butter;
       self.updateButter(message, opt_options);
       self.butterLastShowTime_ = new Date();
@@ -1128,7 +1127,7 @@ FileManager.prototype = {
     }
     if (opt_options && 'progress' in opt_options) {
       butter.querySelector('.progress-track').style.width =
-          (opt_options.progress*100) + '%';
+          (opt_options.progress * 100) + '%';
     }
 
     butter.style.left = ((this.dialogDom_.clientWidth -
@@ -1165,13 +1164,13 @@ FileManager.prototype = {
    * @return {intener} Index of selected type from this.fileTypes_ + 1. 0
    *                   means value is not specified.
    */
-  FileManager.prototype.getSelectedFilterIndex_= function(fileName) {
+  FileManager.prototype.getSelectedFilterIndex_ = function(fileName) {
     // TODO(serya): Implement the combo box
     // For now try to guess choice by file extension.
     if (!this.fileTypes_ || this.fileTypes_.length == 0) return 0;
 
     var extension = /\.[^\.]+$/.exec(fileName);
-    extension = extension ? extension[0].substring(1).toLowerCase() : "";
+    extension = extension ? extension[0].substring(1).toLowerCase() : '';
     var result = 0;  // Use first type by default.
     for (var i = 0; i < this.fileTypes_.length; i++) {
       if (this.fileTypes_[i].extensions.indexOf(extension)) {
@@ -1508,7 +1507,7 @@ FileManager.prototype = {
     var self = this;
     var progress = this.copyManager_.getProgress();
 
-    var options = {progress: progress.percentage, actions:{}};
+    var options = {progress: progress.percentage, actions: {}};
     options.actions[str('CANCEL_LABEL')] = function cancelPaste() {
       self.copyManager_.requestCancel();
     };
@@ -1728,7 +1727,8 @@ FileManager.prototype = {
    * Default path may also contain a file name. Freshly opened file manager
    * window has neither.
    *
-   * @param {boolean} blankWhileOpeningAFile
+   * @param {boolean} blankWhileOpeningAFile Whether to show fade over
+   *                                         the file manager.
    */
   FileManager.prototype.setupCurrentDirectory_ =
       function(blankWhileOpeningAFile) {
@@ -1959,12 +1959,12 @@ FileManager.prototype = {
   /**
    * Create a box containing a centered thumbnail image.
    *
-   * @param {Entry} entry
+   * @param {Entry} entry Entry which thumbnail is generating for.
    * @param {boolean} True if fill, false if fit.
    * @param {function(HTMLElement)} opt_imageLoadCallback Callback called when
    *                                the image has been loaded before inserting
    *                                it into the DOM.
-   * @return {HTMLDivElement}
+   * @return {HTMLDivElement} Thumbnal box.
    */
   FileManager.prototype.renderThumbnailBox_ = function(entry, fill,
                                                        opt_imageLoadCallback) {
@@ -2476,7 +2476,7 @@ FileManager.prototype = {
   FileManager.prototype.initThumbnailZoom_ = function(box, img, transform) {
     var width = img.width;
     var height = img.height;
-    const THUMBNAIL_SIZE = 45;
+    var THUMBNAIL_SIZE = 45;
 
     if (width < THUMBNAIL_SIZE * 2 && height < THUMBNAIL_SIZE * 2)
       return;
@@ -2713,7 +2713,7 @@ FileManager.prototype = {
   /**
    * Dispatches default task for the current selection. If tasks are not ready
    * yet, dispatches after task are available.
-   * @param {Object=} opt_selection
+   * @param {Object=} opt_selection Object similar to this.selection.
    */
   FileManager.prototype.dispatchDefaultTask_ = function(opt_selection) {
     var selection = opt_selection || this.selection;
@@ -2825,14 +2825,14 @@ FileManager.prototype = {
 
     if (event && event.mountType == 'gdata') {
       metrics.recordInterval('Load.GData');
-      console.log("GData mounted");
+      console.log('GData mounted');
       if (event.status == 'success') {
         this.gdataMounted_ = true;
         this.gdataMountInfo_ = {
-          "mountPath": event.mountPath,
-          "sourceUrl": event.sourceUrl,
-          "mountType": event.mountType,
-          "mountCondition": event.status
+          'mountPath': event.mountPath,
+          'sourceUrl': event.sourceUrl,
+          'mountType': event.mountType,
+          'mountCondition': event.status
         };
         // Not calling clearGDataLoadingTimer_ here because we want to keep
         // "Loading Google Docs" message until the directory loads. It is OK if
@@ -2849,7 +2849,7 @@ FileManager.prototype = {
         this.gdataMounted_ = false;
         this.gdataMountInfo_ = null;
         this.clearGDataLoadingTimer_();
-        this.onGDataUnreachable_('GData mount failed: ' +  event.status);
+        this.onGDataUnreachable_('GData mount failed: ' + event.status);
         if (this.setupCurrentDirectoryPostponed_) {
           this.setupCurrentDirectoryPostponed_(true /* cancel */);
           // Change to unmounted GData root.
@@ -2894,7 +2894,7 @@ FileManager.prototype = {
           event.mountPath == self.directoryModel_.rootPath) {
         if (self.params_.mountTriggered) {
           // window.close() sometimes doesn't work.
-          chrome.tabs.getCurrent(function(tab){
+          chrome.tabs.getCurrent(function(tab) {
             chrome.tabs.remove(tab.id);
           });
           return;
@@ -2944,7 +2944,7 @@ FileManager.prototype = {
       this.openGallery_(urls);
     } else if (id == 'view-pdf' || id == 'view-in-browser' ||
         id == 'install-crx' || id == 'open-hosted') {
-      chrome.fileBrowserPrivate.viewFiles(urls, 'default', function (success) {
+      chrome.fileBrowserPrivate.viewFiles(urls, 'default', function(success) {
         if (!success)
           console.error('chrome.fileBrowserPrivate.viewFiles failed', urls);
       });
@@ -3228,7 +3228,7 @@ FileManager.prototype = {
       callback(iconType, FileType.getPreviewArt(iconType));
     }
 
-    this.getMetadataProvider().fetch(entry.toURL(), function (metadata) {
+    this.getMetadataProvider().fetch(entry.toURL(), function(metadata) {
       if (metadata.thumbnailURL) {
         callback(iconType, metadata.thumbnailURL, metadata.thumbnailTransform);
       } else if (iconType == 'image') {
@@ -3314,9 +3314,9 @@ FileManager.prototype = {
    */
   FileManager.prototype.cutOrCopyToClipboard_ = function(dataTransfer,
                                                          effectAllowed) {
-    var directories  = [];
+    var directories = [];
     var files = [];
-    for(var i = 0, entry; i < this.selection.entries.length; i++) {
+    for (var i = 0, entry; i < this.selection.entries.length; i++) {
       entry = this.selection.entries[i];
       if (entry.isDirectory)
         directories.push(entry.fullPath);
@@ -3336,7 +3336,7 @@ FileManager.prototype = {
     dataTransfer.setData('fs/effectallowed', effectAllowed);
 
     var files = this.selection.files;
-    for(var i = 0; i < files.length; i++) {
+    for (var i = 0; i < files.length; i++) {
       dataTransfer.items.add(files[i]);
     }
   }
@@ -3572,7 +3572,7 @@ FileManager.prototype = {
 
     var newThumbnailUrlCache = {};
     if (this.selection) {
-      const entries = this.selection.entries;
+      var entries = this.selection.entries;
       for (var i = 0; i < entries.length; i++) {
         var path = entries[i].fullPath;
         if (path in this.thumbnailUrlCache_)
@@ -4324,8 +4324,8 @@ FileManager.prototype = {
    * For gdata files this involves some special treatment.
    * Starts getting gdata files if needed.
    *
-   * @param {Array.<string>} fileUrls
-   * @param {function(Array.<string>)}
+   * @param {Array.<string>} fileUrls GData URLs.
+   * @param {function(Array.<string>)} callback To be called with fixed URLs.
    */
   FileManager.prototype.resolveSelectResults_ = function(fileUrls, callback) {
     if (this.isOnGData()) {
