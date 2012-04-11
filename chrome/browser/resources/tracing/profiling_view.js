@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+'use strict';
 
 /**
  * @fileoverview ProfilingView visualizes TRACE_EVENT events using the
@@ -13,7 +14,7 @@ cr.define('tracing', function() {
    * @constructor
    * @extends {ui.TabPanel}
    */
-  ProfilingView = cr.ui.define(cr.ui.TabPanel);
+  var ProfilingView = cr.ui.define(cr.ui.TabPanel);
 
   ProfilingView.prototype = {
     __proto__: cr.ui.TabPanel.prototype,
@@ -23,6 +24,7 @@ cr.define('tracing', function() {
 
     decorate: function() {
       cr.ui.TabPanel.prototype.decorate.apply(this);
+      this.classList.add('profiling-view');
 
       // make the <list>/add/save/record element
       this.controlDiv_ = document.createElement('div');
@@ -33,6 +35,7 @@ cr.define('tracing', function() {
       tracingEl.textContent = 'Tracing: ';
 
       this.recordBn_ = document.createElement('button');
+      this.recordBn_.className = 'record';
       this.recordBn_.textContent = 'Record';
       this.recordBn_.addEventListener('click', this.onRecord_.bind(this));
 
@@ -47,7 +50,7 @@ cr.define('tracing', function() {
       this.container_ = document.createElement('div');
       this.container_.className = 'container';
 
-      this.timelineView_ = new TimelineView();
+      this.timelineView_ = new tracing.TimelineView();
 
       this.controlDiv_.appendChild(tracingEl);
       this.controlDiv_.appendChild(this.recordBn_);
@@ -72,21 +75,31 @@ cr.define('tracing', function() {
 
       document.addEventListener('keypress', this.onKeypress_.bind(this));
 
-      tracingController.addEventListener('traceEnded',
+      this.refresh_();
+    },
+
+    didSetTracingController_: function(value, oldValue) {
+      if (oldValue)
+        throw 'Can only set tracing controller once.';
+
+      this.tracingController_.addEventListener('traceEnded',
           this.onRecordDone_.bind(this));
-      tracingController.addEventListener('loadTraceFileComplete',
+      this.tracingController_.addEventListener('loadTraceFileComplete',
           this.onLoadTraceFileComplete_.bind(this));
-      tracingController.addEventListener('saveTraceFileComplete',
+      this.tracingController_.addEventListener('saveTraceFileComplete',
           this.onSaveTraceFileComplete_.bind(this));
-      tracingController.addEventListener('loadTraceFileCanceled',
+      this.tracingController_.addEventListener('loadTraceFileCanceled',
           this.onLoadTraceFileCanceled_.bind(this));
-      tracingController.addEventListener('saveTraceFileCanceled',
+      this.tracingController_.addEventListener('saveTraceFileCanceled',
           this.onSaveTraceFileCanceled_.bind(this));
       this.refresh_();
     },
 
     refresh_: function() {
-      var traceEvents = tracingController.traceEvents;
+      if (!this.tracingController_)
+        return;
+
+      var traceEvents = this.tracingController_.traceEvents;
       var hasEvents = traceEvents && traceEvents.length;
 
       this.saveBn_.disabled = !hasEvents;
@@ -94,14 +107,19 @@ cr.define('tracing', function() {
       if (!hasEvents) return;
 
       var m = new tracing.TimelineModel();
-      m.importEvents(traceEvents, true, [tracingController.systemTraceEvents]);
+      m.importEvents(traceEvents, true,
+                     [this.tracingController_.systemTraceEvents]);
       this.timelineView_.model = m;
     },
 
     onKeypress_: function(event) {
-      if (event.keyCode == 114 && !tracingController.isTracingEnabled) {
+      if (event.keyCode == 114 && !this.tracingController_.isTracingEnabled) {
         this.onRecord_();
       }
+    },
+
+    get timelineView() {
+      return this.timelineView_;
     },
 
     ///////////////////////////////////////////////////////////////////////////
@@ -112,7 +130,7 @@ cr.define('tracing', function() {
         systemTracingEnabled = this.systemTracingBn_.checked;
       else
         systemTracingEnabled = false;
-      tracingController.beginTracing(systemTracingEnabled);
+      this.tracingController_.beginTracing(systemTracingEnabled);
     },
 
     onRecordDone_: function() {
@@ -131,7 +149,7 @@ cr.define('tracing', function() {
       this.overlayEl_.appendChild(labelEl);
       this.overlayEl_.visible = true;
 
-      tracingController.beginSaveTraceFile();
+      this.tracingController_.beginSaveTraceFile();
     },
 
     onSaveTraceFileComplete_: function(e) {
@@ -156,7 +174,7 @@ cr.define('tracing', function() {
       this.overlayEl_.appendChild(labelEl);
       this.overlayEl_.visible = true;
 
-      tracingController.beginLoadTraceFile();
+      this.tracingController_.beginLoadTraceFile();
     },
 
     onLoadTraceFileComplete_: function(e) {
@@ -171,6 +189,9 @@ cr.define('tracing', function() {
       this.overlayEl_ = undefined;
     }
   };
+
+  cr.defineProperty(ProfilingView, 'tracingController', cr.PropertyKind.JS,
+                    ProfilingView.prototype.didSetTracingController_);
 
   return {
     ProfilingView: ProfilingView

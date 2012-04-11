@@ -1,0 +1,169 @@
+<!DOCTYPE HTML>
+<html>
+<!--
+Copyright (c) 2012 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+<head i18n-values="dir:textdirection;">
+<title>Interactive Timeline Tests</title>
+<link rel="stylesheet" href="profiling_view.css">
+<link rel="stylesheet" href="../shared/css/tabs.css">
+<script src="http://closure-library.googlecode.com/svn/trunk/closure/goog/base.js"></script>
+<script src="../shared/js/cr.js"></script>
+<script src="../shared/js/cr/event_target.js"></script>
+<script src="../shared/js/cr/ui.js"></script>
+<script src="../shared/js/cr/ui/tabs.js"></script>
+<script src="profiling_view.js"></script>
+<script>
+  goog.require('goog.testing.jsunit');
+</script>
+<style>
+  .profiling-view {
+    border: 1px solid black;
+  }
+</style>
+</head>
+<body>
+  <script>
+    'use strict';
+
+    /*
+     * Just enough of the TracingController to support the tests below.
+     */
+    function FakeTracingController() {
+      
+    }
+    FakeTracingController.prototype = {
+      __proto__: cr.EventTarget.prototype,
+
+      beginTracing: function(opt_systemTracingEnabled) {
+        this.wasBeginTracingCalled = true;
+        this.wasBeginTracingCalledWithSystemTracingEnabled = opt_systemTracingEnabled;
+      },
+
+      get traceEvents() {
+        if (!this.wasBeginTracingCalled)
+          return undefined;
+        return FakeTracingController.testData;
+      },
+
+      get systemTraceEvents() {
+        if (!this.wasBeginTracingCalled)
+          return undefined;
+        if (!this.wasBeginTracingCalledWithSystemTracingEnabled)
+          return undefined;
+        return FakeTracingController.systemTraceTestData;
+      }
+
+    };
+    FakeTracingController.testData = [
+      "hello",
+      "world"
+    ];
+    FakeTracingController.systemTraceTestData = [
+      "the kernel",
+      "says it wants",
+      "its memory back"
+    ];
+
+    /*
+     * Just enough of the TimelineModel to support the tests below.
+     */
+    function FakeTimelineModel() {
+      
+    }
+    FakeTimelineModel.prototype = {
+      __proto__: Object.prototype,
+
+      importEvents: function(eventData, 
+                             opt_zeroAndBoost, opt_additionalEventData) {
+        assertEquals(eventData, FakeTracingController.testData);
+        if (cr.isChromeOS) {
+          assertEquals(1, opt_additionalEventData.length);
+          assertEquals(opt_additionalEventData[0], FakeTracingController.systemTraceTestData)
+        }
+      },
+
+      something: function() {
+      },
+    };
+
+    /*
+     * Just enough of the TimelineView to support the tests below.
+     */
+    var FakeTimelineView = cr.ui.define('div');
+
+    FakeTimelineView.prototype = {
+      __proto__: HTMLDivElement.prototype,
+
+      decorate: function() {
+        this.statusEl_ = document.createElement('span');
+        this.appendChild(this.statusEl_);
+        this.refresh_();
+      },
+
+      refresh_: function() {
+        var status;
+        if (this.timelineModel)
+          status = "timelineModel";
+        else
+          status = "!timelineModel";
+        this.statusEl_.textContent = status;
+      },
+    };
+
+    /* Monkeypatch timeline model and view so ProfilingView
+     * instantiates them instead. 
+     */
+    tracing.TimelineModel = FakeTimelineModel;
+    tracing.TimelineView = FakeTimelineView;
+
+    /* This test just instantiates a ProflingView and adds it to the DOM
+     * to help with non-unittest UI work.
+     */
+    function testInstantiate() {
+      var view = new tracing.ProfilingView();
+      view.tracingController = new FakeTracingController();
+      document.body.appendChild(view);
+    }
+
+    function recordTestCommon() {
+      var view = new tracing.ProfilingView();
+      var tracingController = new FakeTracingController()
+      view.tracingController = tracingController;
+      view.querySelector('button.record').click();
+      assertTrue(tracingController.wasBeginTracingCalled);
+      assertEquals(cr.isChromeOS,
+                   tracingController.wasBeginTracingCalledWithSystemTracingEnabled);
+      
+      var e = new cr.Event('traceEnded');
+      var didRefresh = false;
+      e.events = tracingController.traceEvents;
+      tracingController.dispatchEvent(e);
+      assertTrue(!!view.timelineView.model);
+    }
+
+    function testRecordNonCros() {
+      var old = cr.isChromeOS;
+      cr.isChromeOS = false;
+      try {
+        recordTestCommon();
+      } finally {
+        cr.isChromeOS = old;
+      }
+    }
+
+    function testRecordCros() {
+      var old = cr.isChromeOS;
+      cr.isChromeOS = true;
+      try {
+        recordTestCommon();
+      } finally {
+        cr.isChromeOS = old;
+      }
+    }
+
+  </script>
+</body>
+</html>

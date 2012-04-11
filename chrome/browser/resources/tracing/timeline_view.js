@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+'use strict';
 
 /**
  * @fileoverview TimelineView visualizes TRACE_EVENT events using the
@@ -39,7 +40,7 @@ cr.define('tracing', function() {
    * @constructor
    * @extends {HTMLDivElement}
    */
-  TimelineView = cr.ui.define('div');
+  var TimelineView = cr.ui.define('div');
 
   TimelineView.prototype = {
     __proto__: HTMLDivElement.prototype,

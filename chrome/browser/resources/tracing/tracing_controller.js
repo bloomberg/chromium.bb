@@ -143,7 +143,7 @@ cr.define('tracing', function() {
     },
 
     /**
-     * Called by info_view to finish tracing and update all views.
+     * Called to finish tracing and update all views.
      */
     endTracing: function() {
       if (!this.tracingEnabled_) throw new Error('Tracing not begun.');
