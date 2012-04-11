@@ -17,6 +17,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "content/test/test_browser_thread.h"
 
+class GURL;
 class TemplateURLService;
 class TemplateURLServiceTestingProfile;
 class TestingTemplateURLService;
@@ -74,8 +75,8 @@ class TemplateURLServiceTestUtil : public TemplateURLServiceObserver {
   // TemplateURLService::SetKeywordSearchTermsForURL and clears the search term.
   string16 GetAndClearSearchTerm();
 
-  // Set the google base url.
-  void SetGoogleBaseURL(const std::string& base_url) const;
+  // Set the google base url.  |base_url| must be valid.
+  void SetGoogleBaseURL(const GURL& base_url) const;
 
   // Returns the TemplateURLService.
   TemplateURLService* model() const;

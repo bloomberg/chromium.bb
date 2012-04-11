@@ -157,7 +157,7 @@ void TemplateURLServiceTestUtil::TearDown() {
     profile_->TearDown();
     profile_.reset();
   }
-  UIThreadSearchTermsData::SetGoogleBaseURL(NULL);
+  UIThreadSearchTermsData::SetGoogleBaseURL(std::string());
 
   // Flush the message loop to make application verifiers happy.
   message_loop_.RunAllPending();
@@ -217,9 +217,9 @@ string16 TemplateURLServiceTestUtil::GetAndClearSearchTerm() {
       static_cast<TestingTemplateURLService*>(model())->GetAndClearSearchTerm();
 }
 
-void TemplateURLServiceTestUtil::SetGoogleBaseURL(
-    const std::string& base_url) const {
-  UIThreadSearchTermsData::SetGoogleBaseURL(new std::string(base_url));
+void TemplateURLServiceTestUtil::SetGoogleBaseURL(const GURL& base_url) const {
+  DCHECK(base_url.is_valid());
+  UIThreadSearchTermsData::SetGoogleBaseURL(base_url.spec());
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_GOOGLE_URL_UPDATED,
       content::NotificationService::AllSources(),

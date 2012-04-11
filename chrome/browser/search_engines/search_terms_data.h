@@ -82,9 +82,9 @@ class UIThreadSearchTermsData : public SearchTermsData {
   // non-NULL Profile.
   virtual std::string InstantFieldTrialUrlParam() const OVERRIDE;
 
-  // Used by tests to set the value for the Google base url. This takes
-  // ownership of the given std::string.
-  static void SetGoogleBaseURL(std::string* google_base_url);
+  // Used by tests to override the value for the Google base URL.  Passing the
+  // empty string cancels this override.
+  static void SetGoogleBaseURL(const std::string& base_url);
 
  private:
   static std::string* google_base_url_;

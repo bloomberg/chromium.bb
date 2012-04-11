@@ -123,7 +123,7 @@ std::string UIThreadSearchTermsData::InstantFieldTrialUrlParam() const {
 }
 
 // static
-void UIThreadSearchTermsData::SetGoogleBaseURL(std::string* google_base_url) {
+void UIThreadSearchTermsData::SetGoogleBaseURL(const std::string& base_url) {
   delete google_base_url_;
-  google_base_url_ = google_base_url;
+  google_base_url_ = base_url.empty() ? NULL : new std::string(base_url);
 }

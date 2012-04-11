@@ -301,7 +301,7 @@ TEST_F(SearchProviderInstallDataTest, GoogleBaseUrlChange) {
   // Set up the database.
   util_.ChangeModelToLoadState();
   std::string google_host = "w.com";
-  util_.SetGoogleBaseURL("http://" + google_host + "/");
+  util_.SetGoogleBaseURL(GURL("http://" + google_host + "/"));
   // Wait for the I/O thread to process the update notification.
   TemplateURLServiceTestUtil::BlockTillIOThreadProcessesRequests();
 
@@ -319,7 +319,7 @@ TEST_F(SearchProviderInstallDataTest, GoogleBaseUrlChange) {
 
   // Change the Google base url.
   google_host = "foo.com";
-  util_.SetGoogleBaseURL("http://" + google_host + "/");
+  util_.SetGoogleBaseURL(GURL("http://" + google_host + "/"));
   // Wait for the I/O thread to process the update notification.
   TemplateURLServiceTestUtil::BlockTillIOThreadProcessesRequests();
 

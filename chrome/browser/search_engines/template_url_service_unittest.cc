@@ -911,7 +911,7 @@ TEST_F(TemplateURLServiceTest, ChangeGoogleBaseValue) {
   // which also has a {google:baseURL} keyword in it, which will confuse this
   // test.
   test_util_.ChangeModelToLoadState();
-  test_util_.SetGoogleBaseURL("http://google.com/");
+  test_util_.SetGoogleBaseURL(GURL("http://google.com/"));
   const TemplateURL* t_url = AddKeywordWithDate("name", "google.com", true,
       "{google:baseURL}?q={searchTerms}", "http://sugg1", "http://icon1",
       false, "UTF-8;UTF-16", Time(), Time());
@@ -921,7 +921,7 @@ TEST_F(TemplateURLServiceTest, ChangeGoogleBaseValue) {
 
   // Change the Google base url.
   test_util_.ResetObserverCount();
-  test_util_.SetGoogleBaseURL("http://google.co.uk/");
+  test_util_.SetGoogleBaseURL(GURL("http://google.co.uk/"));
   VerifyObserverCount(1);
 
   // Make sure the host->TemplateURL map was updated appropriately.
