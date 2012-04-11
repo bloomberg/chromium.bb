@@ -53,6 +53,7 @@ struct omap_bo * omap_bo_from_name(struct omap_device *dev, uint32_t name);
 void omap_bo_del(struct omap_bo *bo);
 int omap_bo_get_name(struct omap_bo *bo, uint32_t *name);
 uint32_t omap_bo_handle(struct omap_bo *bo);
+int omap_bo_dmabuf(struct omap_bo *bo);
 uint32_t omap_bo_size(struct omap_bo *bo);
 void * omap_bo_map(struct omap_bo *bo);
 int omap_bo_cpu_prep(struct omap_bo *bo, enum omap_gem_op op);
