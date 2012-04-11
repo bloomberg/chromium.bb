@@ -58,7 +58,7 @@ int GpuMain(const content::MainFunctionParams& parameters) {
     ui::SetDefaultX11ErrorHandlers();
 #endif
 #if defined(TOOLKIT_GTK)
-    gfx::GtkInitFromCommandLine(*CommandLine::ForCurrentProcess());
+    gfx::GdkInitFromCommandLine(*CommandLine::ForCurrentProcess());
 #endif
   }
 

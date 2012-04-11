@@ -60,7 +60,8 @@ void FreePixels(guchar* pixels, gpointer data) {
 
 namespace gfx {
 
-void GtkInitFromCommandLine(const CommandLine& command_line) {
+static void CommonInitFromCommandLine(
+    const CommandLine& command_line, void (*init_func)(gint*, gchar***)) {
   const std::vector<std::string>& args = command_line.argv();
   int argc = args.size();
   scoped_array<char *> argv(new char *[argc + 1]);
@@ -72,10 +73,18 @@ void GtkInitFromCommandLine(const CommandLine& command_line) {
   argv[argc] = NULL;
   char **argv_pointer = argv.get();
 
-  gtk_init(&argc, &argv_pointer);
+  init_func(&argc, &argv_pointer);
   for (size_t i = 0; i < args.size(); ++i) {
     free(argv[i]);
   }
+}
+
+void GtkInitFromCommandLine(const CommandLine& command_line) {
+  CommonInitFromCommandLine(command_line, gtk_init);
+}
+
+void GdkInitFromCommandLine(const CommandLine& command_line) {
+  CommonInitFromCommandLine(command_line, gdk_init);
 }
 
 GdkPixbuf* GdkPixbufFromSkBitmap(const SkBitmap* bitmap) {

@@ -21,10 +21,11 @@ namespace gfx {
 
 class Rect;
 
-// Call gtk_init() using the argc and argv from command_line.
-// gtk_init() wants an argc and argv that it can mutate; we provide those,
-// but leave the original CommandLine unaltered.
+// Call gtk_init() / gdk_init() using the argc and argv from command_line.
+// These init functions want an argc and argv that they can mutate; we provide
+// those, but leave the original CommandLine unaltered.
 UI_EXPORT void GtkInitFromCommandLine(const CommandLine& command_line);
+UI_EXPORT void GdkInitFromCommandLine(const CommandLine& command_line);
 
 // Convert and copy a SkBitmap to a GdkPixbuf. NOTE: this uses BGRAToRGBA, so
 // it is an expensive operation.  The returned GdkPixbuf will have a refcount of
