@@ -3,12 +3,26 @@
  * found in the LICENSE file. */
 
 /* Styles for the cookies list page. */
-#cookiesViewPage {
+#cookies-view-page {
+  height: 90%;
   margin-left: -15px;
   min-width: 700px;
 }
 
 /* Styles for the cookies list elements in cookies_view.html. */
+#cookies-list {
+  -webkit-box-flex: 1;
+  /* This property overrides the |min-height: 192px;| property above due to
+   * special behavior of the cookies list. */
+  min-height: 0;
+}
+
+#cookies-list-content-area {
+  -webkit-box-orient: vertical;
+  display: -webkit-box;
+  overflow-y: hidden;
+}
+
 #remove-all-cookies-search-column {
   bottom: 10px;
   position: absolute;

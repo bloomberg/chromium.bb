@@ -16,7 +16,7 @@ cr.define('options', function() {
   function CookiesView(model) {
     OptionsPage.call(this, 'cookies',
                      templateData.cookiesViewPageTabTitle,
-                     'cookiesViewPage');
+                     'cookies-view-page');
   }
 
   cr.addSingletonGetter(CookiesView);
