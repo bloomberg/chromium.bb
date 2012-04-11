@@ -612,28 +612,28 @@ TEST_F(WindowSizerTestWithBrowser, PlaceNewWindowOverOldWindow) {
   // existing windows.
   window_owning_browser.reset(new Browser(Browser::TYPE_TABBED,
                                           profile.get()));
-  BrowserWindow* browser_window = new TestBrowserWindowAura(
-                                      window_owning_browser.get(),
-                                      window.get());
-  window_owning_browser.get()->SetWindowForTesting(browser_window);
+  scoped_ptr<BrowserWindow> browser_window;
+  browser_window.reset(new TestBrowserWindowAura(window_owning_browser.get(),
+                                                 window.get()));
+  window_owning_browser->SetWindowForTesting(browser_window.get());
 
   scoped_ptr<Browser> popup_owning_browser;
   // Creating a popup to make sure it does not interfere with the positioning.
   popup_owning_browser.reset(new Browser(Browser::TYPE_POPUP,
                                           profile.get()));
-  BrowserWindow* browser_popup = new TestBrowserWindowAura(
-                                     popup_owning_browser.get(),
-                                     popup.get());
-  popup_owning_browser.get()->SetWindowForTesting(browser_popup);
+  scoped_ptr<BrowserWindow> browser_popup;
+  browser_popup.reset(new TestBrowserWindowAura(popup_owning_browser.get(),
+                                                popup.get()));
+  popup_owning_browser->SetWindowForTesting(browser_popup.get());
 
   scoped_ptr<Browser> panel_owning_browser;
   // Creating a panel to make sure it does not interfere with the positioning.
   panel_owning_browser.reset(new Browser(Browser::TYPE_PANEL,
                                           profile.get()));
-  BrowserWindow* browser_panel = new TestBrowserWindowAura(
-                                     panel_owning_browser.get(),
-                                     panel.get());
-  panel_owning_browser.get()->SetWindowForTesting(browser_panel);
+  scoped_ptr<BrowserWindow> browser_panel;
+  browser_panel.reset(new TestBrowserWindowAura(panel_owning_browser.get(),
+                                                panel.get()));
+  panel_owning_browser->SetWindowForTesting(browser_panel.get());
 
   window->Show();
   { // With a shown window it's size should get returned.
