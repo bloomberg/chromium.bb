@@ -65,8 +65,6 @@ void FileSystemTestOriginHelper::SetUp(
     bool unlimited_quota,
     quota::QuotaManagerProxy* quota_manager_proxy,
     FileSystemFileUtil* file_util) {
-  file_util_ = file_util;
-  DCHECK(file_util_);
   scoped_refptr<quota::MockSpecialStoragePolicy> special_storage_policy =
       new quota::MockSpecialStoragePolicy;
   special_storage_policy->SetAllUnlimited(unlimited_quota);
@@ -81,9 +79,17 @@ void FileSystemTestOriginHelper::SetUp(
   DCHECK(file_system_context_->sandbox_provider());
 
   // Prepare the origin's root directory.
-  file_system_context_->GetMountPointProvider(type_)->
-      GetFileSystemRootPathOnFileThread(
-          origin_, type_, FilePath(), true /* create */);
+  FileSystemMountPointProvider* mount_point_provider =
+      file_system_context_->GetMountPointProvider(type_);
+  mount_point_provider->GetFileSystemRootPathOnFileThread(
+      origin_, type_, FilePath(), true /* create */);
+
+  if (file_util)
+    file_util_ = file_util;
+  else
+    file_util_ = mount_point_provider->GetFileUtil();
+
+  DCHECK(file_util_);
 
   // Initialize the usage cache file.  This code assumes that we're either using
   // OFSFU or we've mocked it out in the sandbox provider.
@@ -158,6 +164,11 @@ int64 FileSystemTestOriginHelper::ComputeCurrentOriginUsage() const {
   if (file_util::PathExists(GetUsageCachePath()))
     size -= FileSystemUsageCache::kUsageFileSize;
   return size;
+}
+
+int64 FileSystemTestOriginHelper::ComputeCurrentDirectoryDatabaseUsage() const {
+  return file_util::ComputeDirectorySize(
+      GetOriginRootPath().AppendASCII("Paths"));
 }
 
 FileSystemOperation* FileSystemTestOriginHelper::NewOperation() {

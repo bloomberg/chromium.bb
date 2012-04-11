@@ -79,6 +79,8 @@ class FileSystemTestOriginHelper {
   // This doesn't work with OFSFU.
   int64 ComputeCurrentOriginUsage() const;
 
+  int64 ComputeCurrentDirectoryDatabaseUsage() const;
+
   FileSystemOperation* NewOperation();
   FileSystemOperationContext* NewOperationContext();
 

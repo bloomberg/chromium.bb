@@ -29,10 +29,6 @@ class QuotaFileUtil : public FileSystemFileUtil {
   // instance.
   static QuotaFileUtil* CreateDefault();
 
-  virtual base::PlatformFileError Truncate(
-      FileSystemOperationContext* fs_context,
-      const FileSystemPath& path,
-      int64 length) OVERRIDE;
   virtual base::PlatformFileError CopyOrMoveFile(
       FileSystemOperationContext* fs_context,
       const FileSystemPath& src_path,
@@ -41,6 +37,14 @@ class QuotaFileUtil : public FileSystemFileUtil {
   virtual base::PlatformFileError DeleteFile(
       FileSystemOperationContext* fs_context,
       const FileSystemPath& path) OVERRIDE;
+
+  // TODO(tzik): Remove this after we complete merging QuotaFileUtil
+  // into ObfuscatedFileUtil.  TruncateInternal should be used in test and
+  // other methods of QuotaFileUtil.
+  base::PlatformFileError TruncateInternal(
+      FileSystemOperationContext* fs_context,
+      const FileSystemPath& path,
+      int64 length);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(QuotaFileUtil);

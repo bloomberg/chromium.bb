@@ -520,6 +520,11 @@ class ObfuscatedFileUtilTest : public testing::Test {
     EXPECT_NE(base::Time(), GetModifiedTime(dest_dir_path));
   }
 
+  int64 ComputeCurrentUsage() {
+    return test_helper().ComputeCurrentOriginUsage() -
+        test_helper().ComputeCurrentDirectoryDatabaseUsage();
+  }
+
   const FileSystemTestOriginHelper& test_helper() const { return test_helper_; }
 
  private:
@@ -653,6 +658,80 @@ TEST_F(ObfuscatedFileUtilTest, TestTruncate) {
   EXPECT_FALSE(ofu()->DirectoryExists(context.get(), path));
   context.reset(NewContext(NULL));
   EXPECT_TRUE(ofu()->PathExists(context.get(), path));
+}
+
+TEST_F(ObfuscatedFileUtilTest, TestQuotaOnTruncation) {
+  bool created = false;
+  FileSystemPath path = CreatePathFromUTF8("file");
+  scoped_ptr<FileSystemOperationContext> context(NewContext(NULL));
+
+  ASSERT_EQ(base::PLATFORM_FILE_OK,
+            ofu()->EnsureFileExists(context.get(), path, &created));
+  ASSERT_TRUE(created);
+
+  int64 path_cost = test_helper().GetCachedOriginUsage();
+
+  context.reset(NewContext(NULL));
+  context->set_allowed_bytes_growth(1020);
+  ASSERT_EQ(base::PLATFORM_FILE_OK,
+            ofu()->Truncate(context.get(), path, 1020));
+  ASSERT_EQ(path_cost + 1020, test_helper().GetCachedOriginUsage());
+  ASSERT_EQ(path_cost + ComputeCurrentUsage(),
+            test_helper().GetCachedOriginUsage());
+
+  context.reset(NewContext(NULL));
+  context->set_allowed_bytes_growth(0);
+  ASSERT_EQ(base::PLATFORM_FILE_OK,
+            ofu()->Truncate(context.get(), path, 0));
+  ASSERT_EQ(path_cost + 0, test_helper().GetCachedOriginUsage());
+  ASSERT_EQ(path_cost + ComputeCurrentUsage(),
+            test_helper().GetCachedOriginUsage());
+
+  context.reset(NewContext(NULL));
+  context->set_allowed_bytes_growth(1020);
+  EXPECT_EQ(base::PLATFORM_FILE_ERROR_NO_SPACE,
+            ofu()->Truncate(context.get(), path, 1021));
+  ASSERT_EQ(path_cost + 0, test_helper().GetCachedOriginUsage());
+  ASSERT_EQ(path_cost + ComputeCurrentUsage(),
+            test_helper().GetCachedOriginUsage());
+
+  context.reset(NewContext(NULL));
+  context->set_allowed_bytes_growth(1020);
+  EXPECT_EQ(base::PLATFORM_FILE_OK,
+            ofu()->Truncate(context.get(), path, 1020));
+  ASSERT_EQ(path_cost + 1020, test_helper().GetCachedOriginUsage());
+  ASSERT_EQ(path_cost + ComputeCurrentUsage(),
+            test_helper().GetCachedOriginUsage());
+
+  context.reset(NewContext(NULL));
+  context->set_allowed_bytes_growth(0);
+  EXPECT_EQ(base::PLATFORM_FILE_OK,
+            ofu()->Truncate(context.get(), path, 1020));
+  ASSERT_EQ(path_cost + 1020, test_helper().GetCachedOriginUsage());
+  ASSERT_EQ(path_cost + ComputeCurrentUsage(),
+            test_helper().GetCachedOriginUsage());
+
+  context.reset(NewContext(NULL));
+  context->set_allowed_bytes_growth(-2);  // quota exceeded
+  EXPECT_EQ(base::PLATFORM_FILE_OK,
+            ofu()->Truncate(context.get(), path, 1019));
+  ASSERT_EQ(path_cost + 1019, test_helper().GetCachedOriginUsage());
+  ASSERT_EQ(path_cost + ComputeCurrentUsage(),
+            test_helper().GetCachedOriginUsage());
+
+  // Delete backing file to make following truncation fail.
+  context.reset(NewContext(NULL));
+  FilePath local_path;
+  ASSERT_EQ(base::PLATFORM_FILE_OK,
+            ofu()->GetLocalFilePath(context.get(), path, &local_path));
+  ASSERT_FALSE(local_path.empty());
+  ASSERT_TRUE(file_util::Delete(local_path, false));
+
+  context.reset(NewContext(NULL));
+  context->set_allowed_bytes_growth(1234);
+  EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND,
+            ofu()->Truncate(context.get(), path, 1234));
+  ASSERT_EQ(path_cost + 1019, test_helper().GetCachedOriginUsage());
 }
 
 TEST_F(ObfuscatedFileUtilTest, TestEnsureFileExists) {

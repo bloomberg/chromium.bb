@@ -81,7 +81,7 @@ QuotaFileUtil* QuotaFileUtil::CreateDefault() {
   return new QuotaFileUtil(new NativeFileUtil());
 }
 
-base::PlatformFileError QuotaFileUtil::Truncate(
+base::PlatformFileError QuotaFileUtil::TruncateInternal(
     FileSystemOperationContext* fs_context,
     const FileSystemPath& path,
     int64 length) {

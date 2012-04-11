@@ -63,7 +63,7 @@ bool AllocateQuota(FileSystemOperationContext* context, int64 growth) {
   if (growth > 0 && new_quota < 0)
     return false;
   context->set_allowed_bytes_growth(new_quota);
-    return true;
+  return true;
 }
 
 void UpdateUsage(
@@ -524,10 +524,21 @@ PlatformFileError ObfuscatedFileUtil::Truncate(
     FileSystemOperationContext* context,
     const FileSystemPath& virtual_path,
     int64 length) {
-  FileSystemPath local_path = GetLocalPath(virtual_path);
-  if (local_path.internal_path().empty())
-    return base::PLATFORM_FILE_ERROR_NOT_FOUND;
-  return underlying_file_util()->Truncate(context, local_path, length);
+  base::PlatformFileInfo file_info;
+  FilePath local_path;
+  base::PlatformFileError error =
+      GetFileInfo(context, virtual_path, &file_info, &local_path);
+  if (error != base::PLATFORM_FILE_OK)
+    return error;
+
+  int64 growth = length - file_info.size;
+  if (!AllocateQuota(context, growth))
+    return base::PLATFORM_FILE_ERROR_NO_SPACE;
+  error = underlying_file_util()->Truncate(
+      context, virtual_path.WithInternalPath(local_path), length);
+  if (error == base::PLATFORM_FILE_OK)
+    UpdateUsage(context, virtual_path.origin(), virtual_path.type(), growth);
+  return error;
 }
 
 bool ObfuscatedFileUtil::PathExists(
