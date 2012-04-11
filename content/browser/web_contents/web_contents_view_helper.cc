@@ -5,7 +5,7 @@
 #include "content/browser/web_contents/web_contents_view_helper.h"
 
 #include "content/browser/renderer_host/render_view_host_impl.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/view_messages.h"
 #include "content/port/browser/render_widget_host_view_port.h"
 #include "content/public/browser/notification_service.h"

@@ -11,7 +11,7 @@
 #include "base/string16.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/intents_messages.h"
 #include "content/public/browser/web_intents_dispatcher.h"
 #include "content/public/common/content_switches.h"

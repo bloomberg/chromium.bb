@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_TAB_CONTENTS_TAB_CONTENTS_H_
-#define CONTENT_BROWSER_TAB_CONTENTS_TAB_CONTENTS_H_
+#ifndef CONTENT_BROWSER_WEB_CONTENTS_WEB_CONTENTS_IMPL_H_
+#define CONTENT_BROWSER_WEB_CONTENTS_WEB_CONTENTS_IMPL_H_
 #pragma once
 
 #include <map>
@@ -695,4 +695,4 @@ class CONTENT_EXPORT WebContentsImpl
 
 typedef class WebContentsImpl TabContents;
 
-#endif  // CONTENT_BROWSER_TAB_CONTENTS_TAB_CONTENTS_H_
+#endif  // CONTENT_BROWSER_WEB_CONTENTS_WEB_CONTENTS_IMPL_H_

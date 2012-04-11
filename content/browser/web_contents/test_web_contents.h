@@ -6,7 +6,7 @@
 #define CONTENT_BROWSER_WEB_CONTENTS_TEST_WEB_CONTENTS_H_
 #pragma once
 
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/test/web_contents_tester.h"
 #include "webkit/glue/webpreferences.h"

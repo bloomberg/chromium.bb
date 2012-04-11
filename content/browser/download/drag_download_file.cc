@@ -8,7 +8,7 @@
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "content/browser/download/download_stats.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_item.h"

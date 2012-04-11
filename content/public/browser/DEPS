@@ -7,8 +7,6 @@ include_rules = [
   # TODO(jam): remove
   "+content/browser/download/download_state_info.h",
   "+content/browser/javascript_dialogs.h",
-  "+content/browser/tab_contents/navigation_controller.h",
-  "+content/browser/tab_contents/page_navigator.h",
-  "+content/browser/tab_contents/tab_contents.h",
+  "+content/browser/web_contents/web_contents_impl.h",
   "+content/browser/webui/web_ui.h",
 ]

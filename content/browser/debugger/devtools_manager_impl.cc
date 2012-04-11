@@ -12,7 +12,7 @@
 #include "content/browser/debugger/devtools_netlog_observer.h"
 #include "content/browser/debugger/render_view_devtools_agent_host.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_client_host.h"
 #include "content/public/browser/devtools_agent_host_registry.h"

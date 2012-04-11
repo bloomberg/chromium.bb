@@ -5,7 +5,7 @@
 #include "content/public/browser/web_contents_observer.h"
 
 #include "content/browser/renderer_host/render_view_host_impl.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/navigation_details.h"
 
 namespace content {
