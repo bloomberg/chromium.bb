@@ -991,6 +991,11 @@ void GDataFileSystem::OnTransferCompleted(
   if (!callback.is_null())
     callback.Run(error);
 
+  // In case of error upload_file_info will be deleted by the uploader.
+  if (error != base::PLATFORM_FILE_OK)
+    return;
+
+  // TODO(achuith): GDataFileSystem should not have to call DeleteUpload.
   GDataSystemService* service =
       GDataSystemServiceFactory::GetForProfile(profile_);
   if (service)

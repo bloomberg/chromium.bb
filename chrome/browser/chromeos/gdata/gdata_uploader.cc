@@ -330,10 +330,10 @@ void GDataUploader::OnResumeUploadResponseReceived(
     //   successfully, but instead of returning 201 (CREATED) status code after
     //   receiving the last chunk, it returns 403 (FORBIDDEN); response content
     //   then will indicate quote exceeded exception.
-    NOTREACHED() << "UploadNextChunk http code=" << response.code
-                 << ", start_range_received=" << response.start_range_received
-                 << ", end_range_received=" << response.end_range_received
-                 << ", expected end range=" << upload_file_info->end_range;
+    LOG(ERROR) << "UploadNextChunk http code=" << response.code
+               << ", start_range_received=" << response.start_range_received
+               << ", end_range_received=" << response.end_range_received
+               << ", expected end range=" << upload_file_info->end_range;
 
     UploadFailed(upload_file_info);
     return;
