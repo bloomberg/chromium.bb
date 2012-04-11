@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -315,7 +315,7 @@ TEST_F(ProcessSingletonTest, MAYBE_StartupRaceCondition) {
     // "There can be only one!" :-)
     ASSERT_EQ(static_cast<size_t>(1), pending_starters.size());
     size_t last_index = pending_starters.front();
-    pending_starters.empty();
+    pending_starters.clear();
     if (chrome_starters_[last_index]->process_handle_ !=
         base::kNullProcessHandle) {
       KillProcessTree(chrome_starters_[last_index]->process_handle_);
