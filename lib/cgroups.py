@@ -11,6 +11,7 @@ import signal
 import time
 
 from chromite.lib import cros_build_lib as cros_lib
+from chromite.lib import signals
 from chromite.lib import sudo
 
 
@@ -489,6 +490,9 @@ class Cgroup(object):
 
     If pool_name is given, that name is used rather than os.getpid() for
     the job pool created.
+
+    Finally, note that during cleanup this will suppress SIGINT and SIGTERM
+    to ensure that it cleanses any children before returning.
     """
     if pool_name is None:
       pool_name = str(os.getpid())
@@ -497,7 +501,8 @@ class Cgroup(object):
       with self.TemporarilySwitchToGroup(node):
         yield
     finally:
-      node.KillProcesses(remove=True)
+      with signals.DeferSignals(signal.SIGINT, signal.SIGTERM):
+        node.KillProcesses(remove=True)
 
   def KillProcesses(self, poll_interval=0.05, remove=False):
     """Kill all processes in this namespace."""

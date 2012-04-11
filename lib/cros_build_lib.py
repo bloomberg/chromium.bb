@@ -16,6 +16,7 @@ import xml.sax
 import functools
 import contextlib
 
+from chromite.lib import signals
 
 STRICT_SUDO = False
 
@@ -161,20 +162,6 @@ def SudoRunCommand(cmd, **kwds):
   return RunCommand(final_command, **kwds)
 
 
-def _RelaySignal(handler, signum, frame):
-  """Notify a listener returned from getsignal of receipt of a signal.
-  Return True if it was relayed to the target, False otherwise.
-  False in particular occurs if the target isn't relayable."""
-  if handler in (None, signal.SIG_IGN):
-    return True
-  elif handler == signal.SIG_DFL:
-    # This scenario is a fairly painful to handle fully, thus we just
-    # state we couldn't handle it and leave it to client code.
-    return False
-  handler(signum, frame)
-  return True
-
-
 def _KillChildProcess(proc, kill_timeout, cmd, original_handler, signum, frame):
   """Functor that when curried w/ the appropriate arguments, is used as a signal
   handler by RunCommand.
@@ -207,51 +194,10 @@ def _KillChildProcess(proc, kill_timeout, cmd, original_handler, signum, frame):
     # Ensure our child process has been reaped.
     proc.wait()
 
-  if not _RelaySignal(original_handler, signum, frame):
+  if not signals.RelaySignal(original_handler, signum, frame):
     # Mock up our own, matching exit code for signalling.
     cmd_result = CommandResult(cmd=cmd, returncode=signum<<8)
     raise TerminateRunCommandError('Received signal %i' % signum, cmd_result)
-
-
-def _SignalModuleUsable(_signal=signal.signal, _SIGUSR1=signal.SIGUSR1):
-  """Verify that the signal module is usable and won't segfault on us.
-
-  See http://bugs.python.org/issue14173.  This function detects if the
-  signals module is no longer safe to use (which only occurs during
-  final stages of the interpreter shutdown) and heads off a segfault
-  if signal.* was accessed.
-
-  This shouldn't be used by anything other than functionality that is
-  known and unavoidably invoked by finalizer code during python shutdown.
-
-  Finally, the default args here are intentionally binding what we need
-  from the signal module to do the necessary test; invoking code shouldn't
-  pass any options, nor should any developer ever remove those default
-  options.
-
-  Note that this functionality is intended to be removed just as soon
-  as all consuming code installs their own SIGTERM handlers.
-  """
-  # Track any signals we receive while doing the check.
-  received, actual = [], None
-  def handler(signum, frame):
-    received.append([signum, frame])
-  try:
-    # Play with sigusr1, since it's not particularly used.
-    actual = _signal(_SIGUSR1, handler)
-    _signal(_SIGUSR1, actual)
-    return True
-  except (TypeError, AttributeError, SystemError):
-    # All three exceptions can be thrown depending on the state of the signal
-    # module internal Handlers array; we catch all, and interpret it as that we
-    # were invoked during sys.exit cleanup.
-    return False
-  finally:
-    # And now relay those signals to the original handler.  Not all may
-    # be delivered- the first may throw an exception for example.  Not our
-    # problem however.
-    for signum, frame in received:
-      actual(signum, frame)
 
 
 class _Popen(subprocess.Popen):
@@ -444,9 +390,9 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
 
   proc = None
   # Verify that the signals modules is actually usable, and won't segfault
-  # upon invocation of getsignal.  See _SignalModuleUsable for the details
-  # and upstream python bug.
-  use_signals = _SignalModuleUsable()
+  # upon invocation of getsignal.  See signals.SignalModuleUsable for the
+  # details and upstream python bug.
+  use_signals = signals.SignalModuleUsable()
   try:
     proc = _Popen(cmd, cwd=cwd, stdin=stdin, stdout=stdout,
                   stderr=stderr, shell=False, env=env,
@@ -1249,7 +1195,7 @@ def SubCommandTimeout(max_run_time):
       # Signal the previous handler if it would have already passed.
       time_left = remaining_timeout - (int(time.time()) - previous_time)
       if time_left <= 0:
-        _RelaySignal(original_handler, signal.SIGALRM, None)
+        signals.RelaySignal(original_handler, signal.SIGALRM, None)
       else:
         signal.alarm(time_left)
 
