@@ -40,6 +40,7 @@ class PrefsBackupInvalidChange : public BasePrefsChange {
   virtual string16 GetBubbleMessage() const OVERRIDE;
   virtual string16 GetApplyButtonText() const OVERRIDE;
   virtual string16 GetDiscardButtonText() const OVERRIDE;
+  virtual bool CanBeMerged() const OVERRIDE;
 
  private:
   virtual ~PrefsBackupInvalidChange();
@@ -100,14 +101,14 @@ int PrefsBackupInvalidChange::GetBubbleIconID() const {
 }
 
 string16 PrefsBackupInvalidChange::GetBubbleTitle() const {
-  return l10n_util::GetStringUTF16(IDS_SETTING_CHANGE_NO_BACKUP_TITLE);
+  return l10n_util::GetStringUTF16(IDS_SETTING_CHANGE_TITLE);
 }
 
 string16 PrefsBackupInvalidChange::GetBubbleMessage() const {
   return startup_pref_reset_ ?
       l10n_util::GetStringUTF16(
           IDS_SETTING_CHANGE_NO_BACKUP_STARTUP_RESET_BUBBLE_MESSAGE) :
-      l10n_util::GetStringUTF16(IDS_SETTING_CHANGE_NO_BACKUP_BUBBLE_MESSAGE);
+      l10n_util::GetStringUTF16(IDS_SETTING_CHANGE_BUBBLE_MESSAGE);
 }
 
 string16 PrefsBackupInvalidChange::GetApplyButtonText() const {
@@ -129,6 +130,10 @@ void PrefsBackupInvalidChange::ApplyDefaults(Profile* profile) {
     SessionStartupPref::SetStartupPref(prefs, startup_pref);
     startup_pref_reset_ = true;
   }
+}
+
+bool PrefsBackupInvalidChange::CanBeMerged() const {
+  return false;
 }
 
 BaseSettingChange* CreatePrefsBackupInvalidChange() {

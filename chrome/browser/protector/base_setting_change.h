@@ -6,12 +6,12 @@
 #define CHROME_BROWSER_PROTECTOR_BASE_SETTING_CHANGE_H_
 #pragma once
 
-#include <string>
-#include <vector>
+#include <utility>
 
 #include "base/basictypes.h"
 #include "base/string16.h"
 #include "chrome/browser/tabs/pinned_tab_codec.h"
+#include "googleurl/src/gurl.h"
 
 class Browser;
 class Profile;
@@ -20,11 +20,33 @@ struct SessionStartupPref;
 
 namespace protector {
 
+class CompositeSettingsChange;
+
 // Base class for setting change tracked by Protector.
 class BaseSettingChange {
  public:
+  // Pair consisting of a display name representing either new or backup setting
+  // and priority for it. Priority is used for composite changes, consisting
+  // of multiple BaseSettingChange instances - the display name with the highest
+  // priority is used.
+  typedef std::pair<size_t, string16> DisplayName;
+
+  // Default priority value.
+  static const size_t kDefaultNamePriority;
+
   BaseSettingChange();
   virtual ~BaseSettingChange();
+
+  // Merges |this| with |other| and returns a CompositeSettingsChange instance.
+  // Returned instance takes ownership of |other|.
+  // Init should not be called for the returned instance.
+  // |this| may be another CompositeSettingsChange, in which case |other| is
+  // simply added to it and |this| is returned. |other| cannot be
+  // CompositeSettingsChange.
+  virtual CompositeSettingsChange* MergeWith(BaseSettingChange* other);
+
+  // Returns true if |this| is a result of merging some changes with |other|.
+  virtual bool Contains(const BaseSettingChange* other) const;
 
   // Applies initial actions to the setting if needed. Must be called before
   // any other calls are made, including text getters.
@@ -66,6 +88,22 @@ class BaseSettingChange {
   // Returns text for the button to discard the change with |Discard|.
   virtual string16 GetDiscardButtonText() const = 0;
 
+  // Returns the display name and priority for the new setting. If multiple
+  // BaseSettingChange instances are merged into CompositeSettingsChange
+  // instance, the display name with the highest priority will be used for the
+  // Apply button (Discard button will have a generic caption in that case).
+  // Returns an empty string in |second| if there is no specific representation
+  // for new setting value and a generic string should be used.
+  virtual DisplayName GetApplyDisplayName() const;
+
+  // Returns a URL uniquely identifying new (to be applied) settings.
+  // ProtectorService uses this URLs to decide whether to merge a change
+  // with already existing active changes. The URL may be empty.
+  virtual GURL GetNewSettingURL() const;
+
+  // Returns true if this change can be merged with other changes.
+  virtual bool CanBeMerged() const;
+
  protected:
   // Profile instance we've been associated with by an |Init| call.
   Profile* profile() { return profile_; }
@@ -75,6 +113,10 @@ class BaseSettingChange {
 
   DISALLOW_COPY_AND_ASSIGN(BaseSettingChange);
 };
+
+// Display name priorities of various change types:
+extern const size_t kDefaultSearchProviderChangeNamePriority;
+extern const size_t kSessionStartupChangeNamePriority;
 
 // TODO(ivankr): CompositeSettingChange that incapsulates multiple
 // BaseSettingChange instances.

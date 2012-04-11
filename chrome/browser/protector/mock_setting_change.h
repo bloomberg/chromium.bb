@@ -32,6 +32,11 @@ class MockSettingChange : public BaseSettingChange {
   MOCK_CONST_METHOD0(GetBubbleMessage, string16());
   MOCK_CONST_METHOD0(GetApplyButtonText, string16());
   MOCK_CONST_METHOD0(GetDiscardButtonText, string16());
+
+  MOCK_CONST_METHOD0(GetApplyDisplayName, DisplayName());
+
+  MOCK_CONST_METHOD0(GetNewSettingURL, GURL());
+  MOCK_CONST_METHOD0(CanBeMerged, bool());
 };
 
 }  // namespace protector

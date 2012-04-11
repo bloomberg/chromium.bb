@@ -18,6 +18,11 @@ namespace {
 
 const char kStartupUrl1[] = "http://google.com";
 const char kStartupUrl2[] = "http://example.com";
+const char kStartupHost1[] = "google.com";
+const char kStartupHost2[] = "example.com";
+
+const BaseSettingChange::DisplayName kNoDisplayName(
+    BaseSettingChange::kDefaultNamePriority, string16());
 
 }  // namespace
 
@@ -89,6 +94,8 @@ TEST_F(SessionStartupChangeTest, ApplyButtonCaptions) {
                                  backup_startup_pref, empty_pinned_tabs_));
   ASSERT_TRUE(change->Init(&profile_));
   EXPECT_EQ(open_ntp_caption, change->GetApplyButtonText());
+  EXPECT_EQ(GURL(), change->GetNewSettingURL());
+  EXPECT_EQ(kNoDisplayName, change->GetApplyDisplayName());
 
   // Pinned tabs count as startup URLs as well.
   PinnedTabCodec::Tabs new_pinned_tabs;
@@ -100,6 +107,8 @@ TEST_F(SessionStartupChangeTest, ApplyButtonCaptions) {
                                  backup_startup_pref, empty_pinned_tabs_));
   ASSERT_TRUE(change->Init(&profile_));
   EXPECT_EQ(open_url2_etc_caption, change->GetApplyButtonText());
+  EXPECT_EQ(GURL(kStartupUrl2), change->GetNewSettingURL());
+  EXPECT_EQ(UTF8ToUTF16(kStartupHost2), change->GetApplyDisplayName().second);
 
   // "Open URLs" with no URLs is the same as "Open NTP".
   initial_startup_pref_.type = SessionStartupPref::URLS;
@@ -108,6 +117,8 @@ TEST_F(SessionStartupChangeTest, ApplyButtonCaptions) {
                                  backup_startup_pref, empty_pinned_tabs_));
   ASSERT_TRUE(change->Init(&profile_));
   EXPECT_EQ(open_ntp_caption, change->GetApplyButtonText());
+  EXPECT_EQ(GURL(), change->GetNewSettingURL());
+  EXPECT_EQ(kNoDisplayName, change->GetApplyDisplayName());
 
   // Single URL.
   initial_startup_pref_.urls.push_back(GURL(kStartupUrl1));
@@ -116,6 +127,8 @@ TEST_F(SessionStartupChangeTest, ApplyButtonCaptions) {
                                  backup_startup_pref, empty_pinned_tabs_));
   ASSERT_TRUE(change->Init(&profile_));
   EXPECT_EQ(open_url1_etc_caption, change->GetApplyButtonText());
+  EXPECT_EQ(GURL(kStartupUrl1), change->GetNewSettingURL());
+  EXPECT_EQ(UTF8ToUTF16(kStartupHost1), change->GetApplyDisplayName().second);
 
   // Multiple URLs: name of the first one used.
   initial_startup_pref_.urls.push_back(GURL(kStartupUrl2));
@@ -124,6 +137,8 @@ TEST_F(SessionStartupChangeTest, ApplyButtonCaptions) {
                                  backup_startup_pref, empty_pinned_tabs_));
   ASSERT_TRUE(change->Init(&profile_));
   EXPECT_EQ(open_url1_etc_caption, change->GetApplyButtonText());
+  EXPECT_EQ(GURL(kStartupUrl1), change->GetNewSettingURL());
+  EXPECT_EQ(UTF8ToUTF16(kStartupHost1), change->GetApplyDisplayName().second);
 
   // Pinned tabs go after the startup URLs.
   change.reset(
@@ -131,6 +146,8 @@ TEST_F(SessionStartupChangeTest, ApplyButtonCaptions) {
                                  backup_startup_pref, empty_pinned_tabs_));
   ASSERT_TRUE(change->Init(&profile_));
   EXPECT_EQ(open_url1_etc_caption, change->GetApplyButtonText());
+  EXPECT_EQ(GURL(kStartupUrl1), change->GetNewSettingURL());
+  EXPECT_EQ(UTF8ToUTF16(kStartupHost1), change->GetApplyDisplayName().second);
 }
 
 }  // namespace protector

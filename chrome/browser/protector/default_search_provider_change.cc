@@ -97,6 +97,8 @@ class DefaultSearchProviderChange : public BaseSettingChange,
   virtual string16 GetBubbleMessage() const OVERRIDE;
   virtual string16 GetApplyButtonText() const OVERRIDE;
   virtual string16 GetDiscardButtonText() const OVERRIDE;
+  virtual DisplayName GetApplyDisplayName() const OVERRIDE;
+  virtual GURL GetNewSettingURL() const OVERRIDE;
 
  private:
   virtual ~DefaultSearchProviderChange();
@@ -320,6 +322,28 @@ string16 DefaultSearchProviderChange::GetDiscardButtonText() const {
   }
   // Old setting is lost, offer to go to settings.
   return l10n_util::GetStringUTF16(IDS_SELECT_SEARCH_ENGINE);
+}
+
+BaseSettingChange::DisplayName
+DefaultSearchProviderChange::GetApplyDisplayName() const {
+  if (new_search_provider_ &&
+      new_search_provider_->short_name().length() <= kMaxDisplayedNameLength) {
+    return DisplayName(kDefaultSearchProviderChangeNamePriority,
+                       new_search_provider_->short_name());
+  }
+  // Return the default empty name.
+  return BaseSettingChange::GetApplyDisplayName();
+}
+
+GURL DefaultSearchProviderChange::GetNewSettingURL() const {
+  if (is_fallback_) {
+    // Do not collide this change when fallback was made, since the message
+    // and Discard behaviour is pretty different.
+    return GURL();
+  }
+  if (!new_search_provider_)
+    return GURL();
+  return TemplateURLService::GenerateSearchURL(new_search_provider_);
 }
 
 void DefaultSearchProviderChange::OnTemplateURLServiceChanged() {

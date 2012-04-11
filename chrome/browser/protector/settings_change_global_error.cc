@@ -165,6 +165,10 @@ string16 SettingsChangeGlobalError::GetBubbleViewCancelButtonLabel() {
 }
 
 void SettingsChangeGlobalError::OnBubbleViewDidClose(Browser* browser) {
+  // The bubble may be closed as the result of RemoveFromProfile call when
+  // merging this error with another one.
+  if (!profile_)
+    return;
   if (!closed_by_button_) {
     BrowserThread::PostDelayedTask(
         BrowserThread::UI, FROM_HERE,

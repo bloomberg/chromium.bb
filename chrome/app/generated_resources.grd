@@ -1320,10 +1320,10 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
         Change to <ph name="URL">$1<ex>google.com</ex></ph>
       </message>
 
-      <message name="IDS_SETTING_CHANGE_NO_BACKUP_TITLE" desc="The title of the bubble and the wrench menu item with a generic settings change.">
+      <message name="IDS_SETTING_CHANGE_TITLE" desc="The title of the bubble and the wrench menu item with a generic settings change.">
         Attempted settings change
       </message>
-      <message name="IDS_SETTING_CHANGE_NO_BACKUP_BUBBLE_MESSAGE" desc="The text of the generic settings change notification.">
+      <message name="IDS_SETTING_CHANGE_BUBBLE_MESSAGE" desc="The text of the generic settings change notification.">
         Arrr! Something tried to commandeer your settings!
       </message>
       <message name="IDS_SETTING_CHANGE_NO_BACKUP_STARTUP_RESET_BUBBLE_MESSAGE" desc="The text of the generic settings change notification, additionally informing user that the startup settings have been reset to defaults.">
@@ -1335,6 +1335,12 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
 
       <message name="IDS_KEEP_SETTING" desc="The title of the button that confirms staying with the previous settings.">
         Keep my settings
+      </message>
+      <message name="IDS_CHANGE_SETTING" desc="The title of the button that confirms changing to the new settings, usually described by a domain name or search engine name.">
+        Change to <ph name="NEW_SETTING_NAME">$1<ex>Awesome Site</ex></ph>
+      </message>
+      <message name="IDS_CHANGE_SETTING_NO_NAME" desc="The title of the button that confirms changing to the new settings.">
+        Change settings
       </message>
 
       <!-- Keywords -->

@@ -6,6 +6,7 @@
 #include "base/metrics/histogram.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/protector/base_setting_change.h"
 #include "chrome/browser/protector/histograms.h"
 #include "chrome/browser/protector/mock_protector_service.h"
 #include "chrome/browser/protector/protector_service_factory.h"
@@ -25,17 +26,25 @@ using ::testing::Invoke;
 using ::testing::NiceMock;
 using ::testing::Return;
 
+namespace protector {
+
 namespace {
 
 // Keyword names and URLs used for testing.
 const string16 example_info = ASCIIToUTF16("Example.info");
 const string16 example_info_long = ASCIIToUTF16("ExampleSearchEngine.info");
-const std::string http_example_info = "http://example.info/%s";
+const std::string http_example_info = "http://example.info/?q={searchTerms}";
+const std::string example_info_domain = "example.info";
 const string16 example_com = ASCIIToUTF16("Example.com");
 const string16 example_com_long = ASCIIToUTF16("ExampleSearchEngine.com");
-const std::string http_example_com = "http://example.com/%s";
+const std::string http_example_com = "http://example.com/?q={searchTerms}";
+const std::string example_com_domain = "example.com";
 const string16 example_net = ASCIIToUTF16("Example.net");
-const std::string http_example_net = "http://example.net/%s";
+const std::string http_example_net = "http://example.net/?q={searchTerms}";
+const std::string example_domain = "example.net";
+
+const BaseSettingChange::DisplayName kNoDisplayName(
+    BaseSettingChange::kDefaultNamePriority, string16());
 
 // Convenience function.
 TemplateURL* MakeTemplateURL(const string16& short_name,
@@ -51,9 +60,7 @@ TemplateURL* MakeTemplateURL(const string16& short_name,
   return new TemplateURL(data);
 }
 
-};
-
-namespace protector {
+}  // namespace
 
 class DefaultSearchProviderChangeTest : public InProcessBrowserTest {
  public:
@@ -176,6 +183,8 @@ IN_PROC_BROWSER_TEST_F(DefaultSearchProviderChangeTest, BackupValid) {
             change->GetApplyButtonText());
   EXPECT_EQ(GetKeepSearchButtonText(example_info),
             change->GetDiscardButtonText());
+  EXPECT_EQ(example_com_domain, change->GetNewSettingURL().host());
+  EXPECT_EQ(example_com, change->GetApplyDisplayName().second);
 
   // Discard does nothing - backup was already active.
   change->Discard(browser());
@@ -218,6 +227,8 @@ IN_PROC_BROWSER_TEST_F(DefaultSearchProviderChangeTest, BackupValidLongNames) {
     EXPECT_EQ(GetChangeSearchButtonText(example_com),
               change->GetApplyButtonText());
     EXPECT_EQ(GetKeepSearchButtonText(), change->GetDiscardButtonText());
+    EXPECT_EQ(example_com_domain, change->GetNewSettingURL().host());
+    EXPECT_EQ(example_com, change->GetApplyDisplayName().second);
   }
 
   {
@@ -235,6 +246,8 @@ IN_PROC_BROWSER_TEST_F(DefaultSearchProviderChangeTest, BackupValidLongNames) {
     EXPECT_EQ(GetChangeSearchButtonText(), change->GetApplyButtonText());
     EXPECT_EQ(GetKeepSearchButtonText(example_info),
               change->GetDiscardButtonText());
+    EXPECT_EQ(example_com_domain, change->GetNewSettingURL().host());
+    EXPECT_EQ(kNoDisplayName, change->GetApplyDisplayName());
   }
 }
 
@@ -334,6 +347,8 @@ IN_PROC_BROWSER_TEST_F(DefaultSearchProviderChangeTest,
   EXPECT_EQ(GetChangeSearchButtonText(example_com),
             change->GetApplyButtonText());
   EXPECT_EQ(GetOpenSettingsButtonText(), change->GetDiscardButtonText());
+  EXPECT_EQ(GURL(), change->GetNewSettingURL());
+  EXPECT_EQ(example_com, change->GetApplyDisplayName().second);
 
   // Verify that search engine settings are opened by Discard.
   ExpectSettingsOpened(chrome::kSearchEnginesSubPage);
@@ -377,6 +392,8 @@ IN_PROC_BROWSER_TEST_F(DefaultSearchProviderChangeTest,
   EXPECT_EQ(GetOpenSettingsButtonText(), change->GetApplyButtonText());
   EXPECT_EQ(GetKeepSearchButtonText(example_info),
             change->GetDiscardButtonText());
+  EXPECT_EQ(GURL(), change->GetNewSettingURL());
+  EXPECT_EQ(kNoDisplayName, change->GetApplyDisplayName());
 
   // Discard does nothing - backup was already active.
   change->Discard(browser());
@@ -420,6 +437,8 @@ IN_PROC_BROWSER_TEST_F(DefaultSearchProviderChangeTest,
             change->GetBubbleMessage());
   EXPECT_EQ(string16(), change->GetApplyButtonText());
   EXPECT_EQ(GetOpenSettingsButtonText(), change->GetDiscardButtonText());
+  EXPECT_EQ(GURL(), change->GetNewSettingURL());
+  EXPECT_EQ(kNoDisplayName, change->GetApplyDisplayName());
 
   // Verify that search engine settings are opened by Discard.
   ExpectSettingsOpened(chrome::kSearchEnginesSubPage);
@@ -461,6 +480,8 @@ IN_PROC_BROWSER_TEST_F(DefaultSearchProviderChangeTest,
             change->GetBubbleMessage());
   EXPECT_EQ(string16(), change->GetApplyButtonText());
   EXPECT_EQ(GetOpenSettingsButtonText(), change->GetDiscardButtonText());
+  EXPECT_EQ(GURL(), change->GetNewSettingURL());
+  EXPECT_EQ(current_url->short_name(), change->GetApplyDisplayName().second);
 
   // Verify that search engine settings are opened by Discard.
   ExpectSettingsOpened(chrome::kSearchEnginesSubPage);
@@ -525,6 +546,8 @@ IN_PROC_BROWSER_TEST_F(DefaultSearchProviderChangeTest,
   EXPECT_EQ(GetOpenSettingsButtonText(), change->GetApplyButtonText());
   EXPECT_EQ(GetKeepSearchButtonText(example_info),
             change->GetDiscardButtonText());
+  EXPECT_EQ(GURL(), change->GetNewSettingURL());
+  EXPECT_EQ(kNoDisplayName, change->GetApplyDisplayName());
 
   // Verify that search engine settings are opened by Apply.
   ExpectSettingsOpened(chrome::kSearchEnginesSubPage);

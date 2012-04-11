@@ -71,14 +71,23 @@ class ProtectorService : public ProfileKeyedService,
  private:
   friend class ProtectorServiceTest;
 
-  // Pair of error and corresponding change instance. linked_ptr is used because
-  // Item instances are stored in a std::vector and must be copyable.
+  // Each item consists of an error and corresponding change instance.
+  // linked_ptr is used because Item instances are stored in a std::vector and
+  // must be copyable.
   struct Item {
     Item();
     ~Item();
     linked_ptr<BaseSettingChange> change;
     linked_ptr<SettingsChangeGlobalError> error;
+    // When true, this means |change| was merged with another instance and
+    // |error| is in process of being removed from GlobalErrorService.
+    bool was_merged;
+    // Meaningful only when |was_merged| is true. In that case, true means that
+    // the new merged GlobalError instance will be immediately shown.
+    bool show_when_merged;
   };
+
+  typedef std::vector<Item> Items;
 
   // Matches Item by |change| field.
   class MatchItemByChange {
@@ -102,6 +111,11 @@ class ProtectorService : public ProfileKeyedService,
     const SettingsChangeGlobalError* other_;
   };
 
+  // Returns an Item instance whose change can be merged with |change|, if any.
+  // Otherwise returns |NULL|. Provided that the merge strategy is transitive,
+  // there can be only one such instance.
+  Item* FindItemToMergeWith(const BaseSettingChange* change);
+
   // ProfileKeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
@@ -115,7 +129,7 @@ class ProtectorService : public ProfileKeyedService,
 
   // Pointers to error bubble controllers and corresponding changes in the order
   // added.
-  std::vector<Item> items_;
+  Items items_;
 
   // Profile which settings we are protecting.
   Profile* profile_;

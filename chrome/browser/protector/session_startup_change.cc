@@ -43,9 +43,15 @@ class SessionStartupChange : public BasePrefsChange {
   virtual string16 GetBubbleMessage() const OVERRIDE;
   virtual string16 GetApplyButtonText() const OVERRIDE;
   virtual string16 GetDiscardButtonText() const OVERRIDE;
+  virtual DisplayName GetApplyDisplayName() const OVERRIDE;
+  virtual GURL GetNewSettingURL() const OVERRIDE;
 
  private:
   virtual ~SessionStartupChange();
+
+  // Returns the first URL among new startup pages. Returns an empty URL if
+  // there are no new startup pages.
+  GURL GetFirstNewURL() const;
 
   // Opens all tabs in |tabs| and makes them pinned.
   void OpenPinnedTabs(Browser* browser, const PinnedTabCodec::Tabs& tabs);
@@ -139,24 +145,41 @@ string16 SessionStartupChange::GetApplyButtonText() const {
   if (new_startup_pref_.type == SessionStartupPref::LAST)
       return l10n_util::GetStringUTF16(IDS_CHANGE_STARTUP_SETTINGS_RESTORE);
 
-  string16 first_url;
-  if (new_startup_pref_.type == SessionStartupPref::URLS &&
-      !new_startup_pref_.urls.empty()) {
-    // Display the domain name of the first statrup URL.
-    first_url = UTF8ToUTF16(new_startup_pref_.urls[0].host());
-  } else if (!new_pinned_tabs_.empty()) {
-    // Start with NTP or no URLs (basically the same): display the domain name
-    // of the first pinned tab, if any.
-    first_url = UTF8ToUTF16(new_pinned_tabs_[0].url.host());
-  }
-  return first_url.empty() ?
+  // Display the domain name of the first startup/pinned URL.
+  string16 first_domain = UTF8ToUTF16(GetFirstNewURL().host());
+  return first_domain.empty() ?
       l10n_util::GetStringUTF16(IDS_CHANGE_STARTUP_SETTINGS_NTP) :
       l10n_util::GetStringFUTF16(IDS_CHANGE_STARTUP_SETTINGS_URLS,
-                                 first_url);
+                                 first_domain);
 }
 
 string16 SessionStartupChange::GetDiscardButtonText() const {
   return l10n_util::GetStringUTF16(IDS_KEEP_SETTING);
+}
+
+BaseSettingChange::DisplayName
+SessionStartupChange::GetApplyDisplayName() const {
+  string16 first_domain = UTF8ToUTF16(GetFirstNewURL().host());
+  return first_domain.empty() ?
+      BaseSettingChange::GetApplyDisplayName() :
+      DisplayName(kSessionStartupChangeNamePriority, first_domain);
+}
+
+GURL SessionStartupChange::GetNewSettingURL() const {
+  VLOG(1) << "HP URL: " << GetFirstNewURL().spec();
+  return GetFirstNewURL();
+}
+
+GURL SessionStartupChange::GetFirstNewURL() const {
+  // TODO(ivankr): this actually should return the first URL present in new
+  // startup prefs AND not in old.
+  if (new_startup_pref_.type == SessionStartupPref::URLS &&
+      !new_startup_pref_.urls.empty()) {
+    return new_startup_pref_.urls[0];
+  }
+  if (!new_pinned_tabs_.empty())
+    return new_pinned_tabs_[0].url;
+  return GURL();
 }
 
 void SessionStartupChange::OpenPinnedTabs(
