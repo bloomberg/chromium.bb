@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -37,6 +37,8 @@
         'blob_url_request_job.h',
         'blob_url_request_job_factory.cc',
         'blob_url_request_job_factory.h',
+        'local_file_reader.cc',
+        'local_file_reader.h',
         'shareable_file_reference.cc',
         'shareable_file_reference.h',
         'view_blob_internals_job.cc',

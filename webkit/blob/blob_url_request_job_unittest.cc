@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -259,10 +259,10 @@ class BlobURLRequestJobTest : public testing::Test {
 
   void VerifyResponse() {
     EXPECT_TRUE(request_->status().is_success());
-    EXPECT_EQ(request_->response_headers()->response_code(),
-              expected_status_code_);
-    EXPECT_STREQ(url_request_delegate_->response_data().c_str(),
-                 expected_response_.c_str());
+    EXPECT_EQ(expected_status_code_,
+              request_->response_headers()->response_code());
+    EXPECT_STREQ(expected_response_.c_str(),
+                 url_request_delegate_->response_data().c_str());
     TestFinished();
   }
 
