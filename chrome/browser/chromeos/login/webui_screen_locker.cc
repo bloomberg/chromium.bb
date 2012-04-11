@@ -13,7 +13,6 @@
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
-#include "chrome/browser/chromeos/status/status_area_view_chromeos.h"
 #include "chrome/browser/ui/views/dom_view.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -85,7 +84,6 @@ void WebUIScreenLocker::OnAuthenticate() {
 
 void WebUIScreenLocker::SetInputEnabled(bool enabled) {
   login_display_->SetUIEnabled(enabled);
-  SetStatusAreaEnabled(enabled);
 }
 
 void WebUIScreenLocker::ShowErrorMessage(
@@ -113,12 +111,6 @@ WebUIScreenLocker::~WebUIScreenLocker() {
     static_cast<OobeUI*>(GetWebUI()->GetController())->
         ResetSigninScreenHandlerDelegate();
   }
-  // WebUILoginView::OnTabMainFrameFirstRender sets the screen mode to
-  // WebUIScreenLocker::GetScreenMode() = SCREEN_LOCKER_MODE. We need to reset
-  // the screen mode when the lock screen is hidden here.
-  chromeos::StatusAreaViewChromeos::SetScreenMode(
-      chromeos::StatusAreaViewChromeos::BROWSER_MODE);
-  SetStatusAreaEnabled(true);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -197,17 +189,6 @@ void WebUIScreenLocker::OnLockWindowReady() {
   lock_ready_ = true;
   if (webui_ready_)
     ScreenLockReady();
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// Overridden from WebUILoginView:
-
-StatusAreaViewChromeos::ScreenMode WebUIScreenLocker::GetScreenMode() {
-  return StatusAreaViewChromeos::SCREEN_LOCKER_MODE;
-}
-
-views::Widget::InitParams::Type WebUIScreenLocker::GetStatusAreaWidgetType() {
-  return views::Widget::InitParams::TYPE_POPUP;
 }
 
 }  // namespace chromeos

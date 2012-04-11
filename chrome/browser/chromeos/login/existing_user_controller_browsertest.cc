@@ -80,7 +80,6 @@ class MockLoginDisplayHost : public LoginDisplayHost {
   MOCK_METHOD0(OpenProxySettings, void(void));
   MOCK_METHOD1(SetOobeProgressBarVisible, void(bool));
   MOCK_METHOD1(SetShutdownButtonEnabled, void(bool));
-  MOCK_METHOD1(SetStatusAreaEnabled, void(bool));
   MOCK_METHOD1(SetStatusAreaVisible, void(bool));
   MOCK_METHOD0(ShowBackground, void(void));
   MOCK_METHOD0(CheckForAutoEnrollment, void(void));
@@ -217,8 +216,6 @@ scoped_refptr<Authenticator> CreateAuthenticatorNewUser(
 }
 
 IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest, ExistingUserLogin) {
-  EXPECT_CALL(*mock_login_display_host_, SetStatusAreaEnabled(false))
-      .Times(1);
   EXPECT_CALL(*mock_login_display_, SetUIEnabled(false))
       .Times(1);
   EXPECT_CALL(*mock_login_utils_, CreateAuthenticator(_))

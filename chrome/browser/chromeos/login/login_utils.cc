@@ -39,7 +39,6 @@
 #include "chrome/browser/chromeos/login/parallel_authenticator.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
-#include "chrome/browser/chromeos/status/status_area_view_chromeos.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
@@ -706,13 +705,8 @@ void LoginUtilsImpl::DoBrowserLaunch(Profile* profile,
   if (browser_shutdown::IsTryingToQuit())
     return;
 
-  StatusAreaViewChromeos::SetScreenMode(StatusAreaViewChromeos::BROWSER_MODE);
-  if (login_host) {
-    // Enable status area now as the login window may be destructed anytime
-    // after LaunchBrowser.
+  if (login_host)
     login_host->SetStatusAreaVisible(true);
-    login_host->SetStatusAreaEnabled(true);
-  }
 
   BootTimesLoader::Get()->AddLoginTimeMarker("BrowserLaunched", false);
 
@@ -1070,7 +1064,6 @@ std::string LoginUtilsImpl::GetOffTheRecordCommandLine(
       switches::kFlingTapSuppressMaxDown,
       switches::kFlingTapSuppressMaxGap,
       switches::kTouchDevices,
-      ash::switches::kDisableAshUberTray,
       ash::switches::kAuraLegacyPowerButton,
       ash::switches::kAuraNoShadows,
       ash::switches::kAuraPanelManager,

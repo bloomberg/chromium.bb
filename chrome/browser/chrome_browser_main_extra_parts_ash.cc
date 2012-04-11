@@ -16,7 +16,6 @@
 #include "chrome/browser/ui/views/ash/key_rewriter.h"
 #include "chrome/browser/ui/views/ash/screen_orientation_listener.h"
 #include "chrome/browser/ui/views/ash/screenshot_taker.h"
-#include "chrome/browser/ui/views/ash/status_area_host_aura.h"
 #include "ui/aura/env.h"
 #include "ui/aura/aura_switches.h"
 #include "ui/aura/monitor_manager.h"
@@ -78,11 +77,6 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
 }
 
 void ChromeBrowserMainExtraPartsAsh::PostProfileInit() {
-  // Add the status area buttons after Profile has been initialized.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-        ash::switches::kDisableAshUberTray)) {
-    ChromeShellDelegate::instance()->status_area_host()->AddButtons();
-  }
 }
 
 void ChromeBrowserMainExtraPartsAsh::PostMainMessageLoopRun() {

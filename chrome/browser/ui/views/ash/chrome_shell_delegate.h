@@ -14,8 +14,6 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
-class StatusAreaHostAura;
-class StatusAreaView;
 class WindowPositioner;
 
 namespace views {
@@ -30,16 +28,9 @@ class ChromeShellDelegate : public ash::ShellDelegate,
 
   static ChromeShellDelegate* instance() { return instance_; }
 
-  StatusAreaHostAura* status_area_host() {
-    return status_area_host_.get();
-  }
-
-  StatusAreaView* GetStatusArea();
-
   WindowPositioner* window_positioner() { return window_positioner_.get(); }
 
   // ash::ShellDelegate overrides;
-  virtual views::Widget* CreateStatusArea() OVERRIDE;
   virtual bool IsUserLoggedIn() OVERRIDE;
   virtual void LockScreen() OVERRIDE;
   virtual void UnlockScreen() OVERRIDE;
@@ -65,7 +56,6 @@ class ChromeShellDelegate : public ash::ShellDelegate,
 
   content::NotificationRegistrar registrar_;
 
-  scoped_ptr<StatusAreaHostAura> status_area_host_;
   scoped_ptr<WindowPositioner> window_positioner_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeShellDelegate);

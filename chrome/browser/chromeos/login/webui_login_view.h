@@ -10,8 +10,6 @@
 #include <string>
 
 #include "chrome/browser/chromeos/login/login_html_dialog.h"
-#include "chrome/browser/chromeos/status/status_area_button.h"
-#include "chrome/browser/chromeos/status/status_area_view_chromeos.h"
 #include "chrome/browser/tab_render_watcher.h"
 #include "chrome/browser/ui/views/unhandled_keyboard_event_handler.h"
 #include "content/public/browser/notification_observer.h"
@@ -22,7 +20,6 @@
 
 class DOMView;
 class GURL;
-class StatusAreaView;
 
 namespace content {
 class WebUI;
@@ -36,16 +33,12 @@ class Widget;
 namespace chromeos {
 
 // View used to render a WebUI supporting Widget. This widget is used for the
-// WebUI based start up and lock screens. It contains a StatusAreaView and
-// DOMView.
+// WebUI based start up and lock screens. It contains a DOMView.
 class WebUILoginView : public views::WidgetDelegateView,
-                       public StatusAreaButton::Delegate,
                        public content::WebContentsDelegate,
                        public content::NotificationObserver,
                        public TabRenderWatcher::Delegate {
  public:
-  static const int kStatusAreaCornerPadding;
-
   WebUILoginView();
   virtual ~WebUILoginView();
 
@@ -76,9 +69,6 @@ class WebUILoginView : public views::WidgetDelegateView,
   // Opens proxy settings dialog.
   void OpenProxySettings();
 
-  // Toggles whether status area is enabled.
-  void SetStatusAreaEnabled(bool enable);
-
   // Toggles status area visibility.
   void SetStatusAreaVisible(bool visible);
 
@@ -94,34 +84,15 @@ class WebUILoginView : public views::WidgetDelegateView,
   virtual void ChildPreferredSizeChanged(View* child) OVERRIDE;
   virtual void AboutToRequestFocusFromTabTraversal(bool reverse) OVERRIDE;
 
-  // Overridden from StatusAreaButton::Delegate:
-  virtual bool ShouldExecuteStatusAreaCommand(
-      const views::View* button_view, int command_id) const OVERRIDE;
-  virtual void ExecuteStatusAreaCommand(
-      const views::View* button_view, int command_id) OVERRIDE;
-  virtual StatusAreaButton::TextStyle GetStatusAreaTextStyle() const OVERRIDE;
-  virtual void ButtonVisibilityChanged(views::View* button_view) OVERRIDE;
-
   // TabRenderWatcher::Delegate implementation.
   virtual void OnRenderHostCreated(content::RenderViewHost* host) OVERRIDE;
   virtual void OnTabMainFrameLoaded() OVERRIDE;
   virtual void OnTabMainFrameRender() OVERRIDE;
 
-  // Creates and adds the status area (separate window).
-  virtual void InitStatusArea();
-
-  // Returns the screen mode to set on the status area view.
-  virtual StatusAreaViewChromeos::ScreenMode GetScreenMode();
-
-  // Returns the type to use for the status area widget.
-  virtual views::Widget::InitParams::Type GetStatusAreaWidgetType();
-
   // Overridden from content::NotificationObserver.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
-
-  StatusAreaView* status_area_;
 
   // DOMView for rendering a webpage as a webui login.
   DOMView* webui_login_;
@@ -148,11 +119,6 @@ class WebUILoginView : public views::WidgetDelegateView,
   // Login window which shows the view.
   views::Widget* login_window_;
 
-  // Window that contains status area.
-  // TODO(nkostylev): Temporary solution till we have
-  // RenderWidgetHostViewViews working.
-  views::Widget* status_window_;
-
   // Converts keyboard events on the TabContents to accelerators.
   UnhandledKeyboardEventHandler unhandled_keyboard_event_handler_;
 
@@ -164,9 +130,6 @@ class WebUILoginView : public views::WidgetDelegateView,
 
   // Whether the host window is frozen.
   bool host_window_frozen_;
-
-  // Caches StatusArea visibility setting before it has been initialized.
-  bool status_area_visibility_on_init_;
 
   // Has the login page told us that it's ready?  This is triggered by either
   // all of the user images or the GAIA prompt being loaded, whichever comes

@@ -35,7 +35,6 @@ class WebUILoginDisplayHost : public BaseLoginDisplayHost {
   virtual void OpenProxySettings() OVERRIDE;
   virtual void SetOobeProgressBarVisible(bool visible) OVERRIDE;
   virtual void SetShutdownButtonEnabled(bool enable) OVERRIDE;
-  virtual void SetStatusAreaEnabled(bool enable) OVERRIDE;
   virtual void SetStatusAreaVisible(bool visible) OVERRIDE;
   virtual void StartWizard(const std::string& first_screen_name,
                            DictionaryValue* screen_parameters) OVERRIDE;

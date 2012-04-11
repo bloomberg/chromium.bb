@@ -74,6 +74,7 @@ class InputMethodUtil {
 
   string16 GetInputMethodShortName(
       const InputMethodDescriptor& input_method) const;
+  string16 GetInputMethodLongName(const InputMethodDescriptor& ime) const;
 
   // Converts an input method ID to an input method descriptor. Returns NULL
   // when |input_method_id| is unknown.

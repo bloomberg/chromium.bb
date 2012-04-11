@@ -26,7 +26,7 @@ class ASH_EXPORT StatusAreaView : public views::WidgetDelegate,
   void SetFocusCyclerForTesting(const FocusCycler* focus_cycler);
 
   // Overridden from views::View:
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
   virtual views::Widget* GetWidget() OVERRIDE;
   virtual const views::Widget* GetWidget() const OVERRIDE;
 
@@ -35,9 +35,6 @@ class ASH_EXPORT StatusAreaView : public views::WidgetDelegate,
   virtual void DeleteDelegate() OVERRIDE;
 
  private:
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
-
-  SkBitmap status_mock_;
   const FocusCycler* focus_cycler_for_testing_;
 
   DISALLOW_COPY_AND_ASSIGN(StatusAreaView);

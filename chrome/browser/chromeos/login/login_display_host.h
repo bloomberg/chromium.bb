@@ -53,9 +53,6 @@ class LoginDisplayHost {
   // Enable/disable shutdown button.
   virtual void SetShutdownButtonEnabled(bool enable) = 0;
 
-  // Toggles whether status area is enabled.
-  virtual void SetStatusAreaEnabled(bool enable) = 0;
-
   // Toggles status area visibility.
   virtual void SetStatusAreaVisible(bool visible) = 0;
 

@@ -78,11 +78,6 @@ void WebUILoginDisplayHost::SetOobeProgressBarVisible(bool visible) {
 void WebUILoginDisplayHost::SetShutdownButtonEnabled(bool enable) {
 }
 
-void WebUILoginDisplayHost::SetStatusAreaEnabled(bool enable) {
-  if (login_view_)
-    login_view_->SetStatusAreaEnabled(enable);
-}
-
 void WebUILoginDisplayHost::SetStatusAreaVisible(bool visible) {
   if (login_view_)
     login_view_->SetStatusAreaVisible(visible);

@@ -8,6 +8,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/input_method_whitelist.h"
 #include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -170,6 +171,112 @@ TEST_F(InputMethodUtilTest, GetInputMethodShortNameTest) {
         GetDesc(controller.get(), "m17n:zh:quick", "us", "zh-TW");
     EXPECT_EQ(UTF8ToUTF16("\xe9\x80\x9f"),
               util_.GetInputMethodShortName(desc));
+  }
+}
+
+TEST_F(InputMethodUtilTest, GetInputMethodLongNameTest) {
+  scoped_ptr<IBusController> controller(IBusController::Create());
+
+  // For most languages input method or keyboard layout name is returned.
+  // See below for exceptions.
+  {
+    InputMethodDescriptor desc =
+        GetDesc(controller.get(), "m17n:fa:isiri", "us", "fa");
+    EXPECT_EQ(ASCIIToUTF16("Persian input method (ISIRI 2901 layout)"),
+              util_.GetInputMethodLongName(desc));
+  }
+  {
+    InputMethodDescriptor desc =
+        GetDesc(controller.get(), "mozc-hangul", "us", "ko");
+    EXPECT_EQ(ASCIIToUTF16("Korean input method"),
+              util_.GetInputMethodLongName(desc));
+  }
+  {
+    InputMethodDescriptor desc =
+        GetDesc(controller.get(), "m17n:vi:tcvn", "us", "vi");
+    EXPECT_EQ(ASCIIToUTF16("Vietnamese input method (TCVN6064)"),
+              util_.GetInputMethodLongName(desc));
+  }
+  {
+    InputMethodDescriptor desc = GetDesc(controller.get(), "mozc", "us", "ja");
+#if !defined(GOOGLE_CHROME_BUILD)
+    EXPECT_EQ(ASCIIToUTF16("Japanese input method (for US keyboard)"),
+#else
+    EXPECT_EQ(ASCIIToUTF16("Google Japanese Input (for US keyboard)"),
+#endif  // defined(GOOGLE_CHROME_BUILD)
+              util_.GetInputMethodLongName(desc));
+  }
+  {
+    InputMethodDescriptor desc =
+        GetDesc(controller.get(), "xkb:jp::jpn", "jp", "ja");
+    EXPECT_EQ(ASCIIToUTF16("Japanese keyboard"),
+              util_.GetInputMethodLongName(desc));
+  }
+  {
+    InputMethodDescriptor desc =
+        GetDesc(controller.get(), "xkb:us:dvorak:eng", "us(dvorak)", "en-US");
+    EXPECT_EQ(ASCIIToUTF16("US Dvorak keyboard"),
+              util_.GetInputMethodLongName(desc));
+  }
+  {
+    InputMethodDescriptor desc =
+        GetDesc(controller.get(), "xkb:gb:dvorak:eng", "gb(dvorak)", "en-US");
+    EXPECT_EQ(ASCIIToUTF16("UK Dvorak keyboard"),
+              util_.GetInputMethodLongName(desc));
+  }
+
+  // For Arabic, Dutch, French, German and Hindi,
+  // "language - keyboard layout" pair is returned.
+  {
+    InputMethodDescriptor desc =
+        GetDesc(controller.get(), "m17n:ar:kbd", "us", "ar");
+    EXPECT_EQ(ASCIIToUTF16("Arabic - Standard input method"),
+              util_.GetInputMethodLongName(desc));
+  }
+  {
+    InputMethodDescriptor desc =
+        GetDesc(controller.get(), "xkb:be::nld", "be", "nl");
+    EXPECT_EQ(ASCIIToUTF16("Dutch - Belgian keyboard"),
+              util_.GetInputMethodLongName(desc));
+  }
+  {
+    InputMethodDescriptor desc =
+        GetDesc(controller.get(), "xkb:fr::fra", "fr", "fr");
+    EXPECT_EQ(ASCIIToUTF16("French - French keyboard"),
+              util_.GetInputMethodLongName(desc));
+  }
+  {
+    InputMethodDescriptor desc =
+        GetDesc(controller.get(), "xkb:be::fra", "be", "fr");
+    EXPECT_EQ(ASCIIToUTF16("French - Belgian keyboard"),
+              util_.GetInputMethodLongName(desc));
+  }
+  {
+    InputMethodDescriptor desc =
+        GetDesc(controller.get(), "xkb:de::ger", "de", "de");
+    EXPECT_EQ(ASCIIToUTF16("German - German keyboard"),
+              util_.GetInputMethodLongName(desc));
+  }
+  {
+    InputMethodDescriptor desc =
+        GetDesc(controller.get(), "xkb:be::ger", "be", "de");
+    EXPECT_EQ(ASCIIToUTF16("German - Belgian keyboard"),
+              util_.GetInputMethodLongName(desc));
+  }
+  {
+    InputMethodDescriptor desc =
+        GetDesc(controller.get(), "m17n:hi:itrans", "us", "hi");
+    EXPECT_EQ(ASCIIToUTF16("Hindi - Standard input method"),
+              util_.GetInputMethodLongName(desc));
+  }
+
+  {
+    InputMethodDescriptor desc =
+        GetDesc(controller.get(), "invalid-id", "us", "xx");
+    // You can safely ignore the "Resouce ID is not found for: invalid-id"
+    // error.
+    EXPECT_EQ(ASCIIToUTF16("invalid-id"),
+              util_.GetInputMethodLongName(desc));
   }
 }
 

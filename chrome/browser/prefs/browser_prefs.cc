@@ -90,8 +90,7 @@
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/preferences.h"
 #include "chrome/browser/chromeos/proxy_config_service_impl.h"
-#include "chrome/browser/chromeos/status/input_method_menu.h"
-#include "chrome/browser/chromeos/status/network_menu_button.h"
+#include "chrome/browser/chromeos/status/data_promo_notification.h"
 #include "chrome/browser/policy/auto_enrollment_client.h"
 #include "chrome/browser/policy/device_status_collector.h"
 #else
@@ -157,7 +156,7 @@ void RegisterLocalState(PrefService* local_state) {
 #if defined(OS_CHROMEOS)
   chromeos::AudioHandler::RegisterPrefs(local_state);
   chromeos::language_prefs::RegisterPrefs(local_state);
-  chromeos::NetworkMenuButton::RegisterPrefs(local_state);
+  chromeos::DataPromoNotification::RegisterPrefs(local_state);
   chromeos::ProxyConfigServiceImpl::RegisterPrefs(local_state);
   chromeos::UserManager::RegisterPrefs(local_state);
   chromeos::ServicesCustomizationDocument::RegisterPrefs(local_state);

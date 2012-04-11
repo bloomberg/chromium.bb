@@ -21,10 +21,6 @@ TestShellDelegate::TestShellDelegate() : locked_(false) {
 TestShellDelegate::~TestShellDelegate() {
 }
 
-views::Widget* TestShellDelegate::CreateStatusArea() {
-  return NULL;
-}
-
 bool TestShellDelegate::IsUserLoggedIn() {
   return true;
 }

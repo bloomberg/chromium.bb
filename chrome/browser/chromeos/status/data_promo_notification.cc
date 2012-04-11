@@ -12,7 +12,6 @@
 #include "chrome/browser/chromeos/login/message_bubble.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/mobile_config.h"
-#include "chrome/browser/chromeos/status/status_area_view_chromeos.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -126,6 +125,11 @@ DataPromoNotification::~DataPromoNotification() {
     mobile_data_bubble_->GetWidget()->Close();
 }
 
+void DataPromoNotification::RegisterPrefs(PrefService* local_state) {
+  // Carrier deal notification shown count defaults to 0.
+  local_state->RegisterIntegerPref(prefs::kCarrierDealPromoShown, 0);
+}
+
 void DataPromoNotification::ShowOptionalMobileDataPromoNotification(
     NetworkLibrary* cros,
     views::View* host,
@@ -133,7 +137,7 @@ void DataPromoNotification::ShowOptionalMobileDataPromoNotification(
   // Display one-time notification for non-Guest users on first use
   // of Mobile Data connection or if there's a carrier deal defined
   // show that even if user has already seen generic promo.
-  if (StatusAreaViewChromeos::IsBrowserMode() &&
+  if (UserManager::Get()->IsUserLoggedIn() &&
       !UserManager::Get()->IsLoggedInAsGuest() &&
       check_for_promo_ &&
       cros->cellular_connected() && !cros->ethernet_connected() &&

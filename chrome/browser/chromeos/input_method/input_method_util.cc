@@ -15,6 +15,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
@@ -61,6 +62,13 @@ const struct {
 
 const size_t kMappingFromIdToIndicatorTextLen =
     ARRAYSIZE_UNSAFE(kMappingFromIdToIndicatorText);
+
+string16 GetLanguageName(const std::string& language_code) {
+  const string16 language_name = l10n_util::GetDisplayNameForLocale(
+      language_code, g_browser_process->GetApplicationLocale(), true);
+  return language_name;
+}
+
 }
 
 namespace chromeos {
@@ -407,6 +415,40 @@ string16 InputMethodUtil::GetInputMethodShortName(
     text = StringToUpperASCII(UTF8ToUTF16(language_code)).substr(
         0, kMaxLanguageNameLen);
   }
+  DCHECK(!text.empty());
+  return text;
+}
+
+string16 InputMethodUtil::GetInputMethodLongName(
+    const InputMethodDescriptor& input_method) const {
+  if (!input_method.name().empty()) {
+    // If the descriptor has a name, use it.
+    return UTF8ToUTF16(input_method.name());
+  }
+
+  // We don't show language here.  Name of keyboard layout or input method
+  // usually imply (or explicitly include) its language.
+
+  input_method::InputMethodManager* manager =
+      input_method::InputMethodManager::GetInstance();
+
+  // Special case for German, French and Dutch: these languages have multiple
+  // keyboard layouts and share the same layout of keyboard (Belgian). We need
+  // to show explicitly the language for the layout. For Arabic, Amharic, and
+  // Indic languages: they share "Standard Input Method".
+  const string16 standard_input_method_text = l10n_util::GetStringUTF16(
+      IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_STANDARD_INPUT_METHOD);
+  const std::string language_code = input_method.language_code();
+
+  string16 text =
+      manager->GetInputMethodUtil()->TranslateString(input_method.id());
+  if (text == standard_input_method_text ||
+             language_code == "de" ||
+             language_code == "fr" ||
+             language_code == "nl") {
+    text = GetLanguageName(language_code) + UTF8ToUTF16(" - ") + text;
+  }
+
   DCHECK(!text.empty());
   return text;
 }

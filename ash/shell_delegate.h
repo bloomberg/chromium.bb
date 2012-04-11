@@ -38,9 +38,6 @@ class ASH_EXPORT ShellDelegate {
   // The Shell owns the delegate.
   virtual ~ShellDelegate() {}
 
-  // Invoked to create a new status area. Can return NULL.
-  virtual views::Widget* CreateStatusArea() = 0;
-
   // Returns true if user has logged in.
   virtual bool IsUserLoggedIn() = 0;
 

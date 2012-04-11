@@ -30,10 +30,6 @@ void ShellDelegateImpl::SetWatcher(WindowWatcher* watcher) {
     launcher_delegate_->set_watcher(watcher);
 }
 
-views::Widget* ShellDelegateImpl::CreateStatusArea() {
-  return NULL;
-}
-
 bool ShellDelegateImpl::IsUserLoggedIn() {
   return true;
 }

@@ -678,69 +678,57 @@ void Shell::Init() {
 
   event_client_.reset(new internal::EventClientImpl(root_window));
 
-  if (delegate_.get())
-    status_widget_ = delegate_->CreateStatusArea();
-
   CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (!command_line->HasSwitch(switches::kDisableAshUberTray)) {
-    // TODO(sad): This is rather ugly at the moment. This is because we are
-    // supporting both the old and the new status bar at the same time. This
-    // will soon get better once the new one is ready and the old one goes out
-    // the door.
-    tray_.reset(new SystemTray());
-    if (status_widget_) {
-      status_widget_->GetContentsView()->RemoveAllChildViews(false);
-      status_widget_->GetContentsView()->AddChildView(tray_.get());
-    }
 
-    if (delegate_.get())
-      tray_delegate_.reset(delegate_->CreateSystemTrayDelegate(tray_.get()));
-    if (!tray_delegate_.get())
-      tray_delegate_.reset(new DummySystemTrayDelegate());
+  // TODO(sad): All of these initialization should happen in SystemTray.
+  tray_.reset(new SystemTray());
+  if (delegate_.get())
+    tray_delegate_.reset(delegate_->CreateSystemTrayDelegate(tray_.get()));
+  if (!tray_delegate_.get())
+    tray_delegate_.reset(new DummySystemTrayDelegate());
 
-    internal::TrayVolume* tray_volume = new internal::TrayVolume();
-    internal::TrayBluetooth* tray_bluetooth = new internal::TrayBluetooth();
-    internal::TrayBrightness* tray_brightness = new internal::TrayBrightness();
-    internal::TrayDate* tray_date = new internal::TrayDate();
-    internal::TrayPower* tray_power = new internal::TrayPower();
-    internal::TrayNetwork* tray_network = new internal::TrayNetwork;
-    internal::TrayUser* tray_user = new internal::TrayUser;
-    internal::TrayAccessibility* tray_accessibility =
-        new internal::TrayAccessibility;
-    internal::TrayCapsLock* tray_caps_lock = new internal::TrayCapsLock;
-    internal::TrayIME* tray_ime = new internal::TrayIME;
-    internal::TrayUpdate* tray_update = new internal::TrayUpdate;
+  internal::TrayVolume* tray_volume = new internal::TrayVolume();
+  internal::TrayBluetooth* tray_bluetooth = new internal::TrayBluetooth();
+  internal::TrayBrightness* tray_brightness = new internal::TrayBrightness();
+  internal::TrayDate* tray_date = new internal::TrayDate();
+  internal::TrayPower* tray_power = new internal::TrayPower();
+  internal::TrayNetwork* tray_network = new internal::TrayNetwork;
+  internal::TrayUser* tray_user = new internal::TrayUser;
+  internal::TrayAccessibility* tray_accessibility =
+      new internal::TrayAccessibility;
+  internal::TrayCapsLock* tray_caps_lock = new internal::TrayCapsLock;
+  internal::TrayIME* tray_ime = new internal::TrayIME;
+  internal::TrayUpdate* tray_update = new internal::TrayUpdate;
 
-    tray_->accessibility_observer_ = tray_accessibility;
-    tray_->audio_observer_ = tray_volume;
-    tray_->bluetooth_observer_ = tray_bluetooth;
-    tray_->brightness_observer_ = tray_brightness;
-    tray_->caps_lock_observer_ = tray_caps_lock;
-    tray_->clock_observer_ = tray_date;
-    tray_->ime_observer_ = tray_ime;
-    tray_->network_observer_ = tray_network;
-    tray_->power_status_observer_ = tray_power;
-    tray_->update_observer_ = tray_update;
-    tray_->user_observer_ = tray_user;
+  tray_->accessibility_observer_ = tray_accessibility;
+  tray_->audio_observer_ = tray_volume;
+  tray_->bluetooth_observer_ = tray_bluetooth;
+  tray_->brightness_observer_ = tray_brightness;
+  tray_->caps_lock_observer_ = tray_caps_lock;
+  tray_->clock_observer_ = tray_date;
+  tray_->ime_observer_ = tray_ime;
+  tray_->network_observer_ = tray_network;
+  tray_->power_status_observer_ = tray_power;
+  tray_->update_observer_ = tray_update;
+  tray_->user_observer_ = tray_user;
 
-    tray_->AddTrayItem(tray_user);
-    tray_->AddTrayItem(new internal::TrayEmpty());
-    tray_->AddTrayItem(tray_power);
-    tray_->AddTrayItem(tray_network);
-    tray_->AddTrayItem(tray_bluetooth);
-    tray_->AddTrayItem(tray_ime);
-    tray_->AddTrayItem(tray_volume);
-    tray_->AddTrayItem(tray_brightness);
-    tray_->AddTrayItem(tray_update);
-    tray_->AddTrayItem(new internal::TraySettings());
-    tray_->AddTrayItem(tray_accessibility);
-    tray_->AddTrayItem(tray_caps_lock);
-    tray_->AddTrayItem(tray_date);
+  tray_->AddTrayItem(tray_user);
+  tray_->AddTrayItem(new internal::TrayEmpty());
+  tray_->AddTrayItem(tray_power);
+  tray_->AddTrayItem(tray_network);
+  tray_->AddTrayItem(tray_bluetooth);
+  tray_->AddTrayItem(tray_ime);
+  tray_->AddTrayItem(tray_volume);
+  tray_->AddTrayItem(tray_brightness);
+  tray_->AddTrayItem(tray_update);
+  tray_->AddTrayItem(new internal::TraySettings());
+  tray_->AddTrayItem(tray_accessibility);
+  tray_->AddTrayItem(tray_caps_lock);
+  tray_->AddTrayItem(tray_date);
+  tray_->SetVisible(tray_delegate_->GetTrayVisibilityOnStartup());
 
-    tray_->SetVisible(tray_delegate_->GetTrayVisibilityOnStartup());
-  }
-  if (!status_widget_)
-    status_widget_ = internal::CreateStatusArea(tray_.get());
+  // TODO(sad): Replace uses of status_widget_ with tray_->GetWidget().
+  status_widget_ = internal::CreateStatusArea(tray_.get());
 
   // This controller needs to be set before SetupManagedWindowMode.
   desktop_background_controller_.reset(new DesktopBackgroundController);

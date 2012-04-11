@@ -334,7 +334,6 @@ void ExistingUserController::Login(const std::string& username,
                                    const std::string& password) {
   if (username.empty() || password.empty())
     return;
-  SetStatusAreaEnabled(false);
   // Disable clicking on other windows.
   login_display_->SetUIEnabled(false);
 
@@ -370,7 +369,6 @@ void ExistingUserController::Login(const std::string& username,
 }
 
 void ExistingUserController::LoginAsDemoUser() {
-  SetStatusAreaEnabled(false);
   // Disable clicking on other windows.
   login_display_->SetUIEnabled(false);
   // TODO(rkc): Add a CHECK to make sure demo logins are allowed once
@@ -388,7 +386,6 @@ void ExistingUserController::LoginAsDemoUser() {
 
 
 void ExistingUserController::LoginAsGuest() {
-  SetStatusAreaEnabled(false);
   // Disable clicking on other windows.
   login_display_->SetUIEnabled(false);
 
@@ -505,7 +502,6 @@ void ExistingUserController::OnLoginFailure(const LoginFailure& failure) {
     }
     // Reenable clicking on other windows and status area.
     login_display_->SetUIEnabled(true);
-    SetStatusAreaEnabled(true);
   }
 
   if (login_status_consumer_)
@@ -636,7 +632,6 @@ void ExistingUserController::WhiteListCheckFailed(const std::string& email) {
 
   // Reenable clicking on other windows and status area.
   login_display_->SetUIEnabled(true);
-  SetStatusAreaEnabled(true);
 
   display_email_.clear();
 }
@@ -747,12 +742,6 @@ void ExistingUserController::InitializeStartUrls() const {
     CommandLine::ForCurrentProcess()->AppendArg(start_urls[i]);
 }
 
-void ExistingUserController::SetStatusAreaEnabled(bool enable) {
-  if (!host_)
-    return;
-  host_->SetStatusAreaEnabled(enable);
-}
-
 void ExistingUserController::ShowError(int error_id,
                                        const std::string& details) {
   // TODO(dpolukhin): show detailed error info. |details| string contains
@@ -791,7 +780,6 @@ void ExistingUserController::ShowGaiaPasswordChanged(
                                           User::OAUTH_TOKEN_STATUS_INVALID);
 
   login_display_->SetUIEnabled(true);
-  SetStatusAreaEnabled(true);
   login_display_->ShowGaiaPasswordChanged(username);
 }
 

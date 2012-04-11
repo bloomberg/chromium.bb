@@ -41,7 +41,6 @@
 #include "chrome/browser/chromeos/power/resume_observer.h"
 #include "chrome/browser/chromeos/power/screen_lock_observer.h"
 #include "chrome/browser/chromeos/power/video_property_writer.h"
-#include "chrome/browser/chromeos/status/status_area_view_chromeos.h"
 #include "chrome/browser/chromeos/system/statistics_provider.h"
 #include "chrome/browser/chromeos/system_key_event_listener.h"
 #include "chrome/browser/chromeos/upgrade_detector_chromeos.h"
@@ -358,10 +357,6 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
         chrome::NOTIFICATION_SESSION_STARTED,
         content::NotificationService::AllSources(),
         content::NotificationService::NoDetails());
-  } else if (parsed_command_line().HasSwitch(switches::kLoginManager)) {
-    // Initialize status area mode early on.
-    chromeos::StatusAreaViewChromeos::
-        SetScreenMode(chromeos::StatusAreaViewChromeos::LOGIN_MODE_WEBUI);
   }
 
   // In Aura builds this will initialize ash::Shell.

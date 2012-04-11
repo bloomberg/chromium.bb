@@ -18,7 +18,6 @@ class TestShellDelegate : public ShellDelegate {
   virtual ~TestShellDelegate();
 
   // Overridden from ShellDelegate:
-  virtual views::Widget* CreateStatusArea() OVERRIDE;
   virtual bool IsUserLoggedIn() OVERRIDE;
   virtual void LockScreen() OVERRIDE;
   virtual void UnlockScreen() OVERRIDE;

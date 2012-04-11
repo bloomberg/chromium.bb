@@ -15,7 +15,6 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/views/ash/app_list/app_list_view_delegate.h"
 #include "chrome/browser/ui/views/ash/launcher/chrome_launcher_delegate.h"
-#include "chrome/browser/ui/views/ash/status_area_host_aura.h"
 #include "chrome/browser/ui/views/ash/window_positioner.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -50,17 +49,6 @@ ChromeShellDelegate::ChromeShellDelegate()
 ChromeShellDelegate::~ChromeShellDelegate() {
   if (instance_ == this)
     instance_ = NULL;
-}
-
-StatusAreaView* ChromeShellDelegate::GetStatusArea() {
-  return status_area_host_->GetStatusArea();
-}
-
-views::Widget* ChromeShellDelegate::CreateStatusArea() {
-  status_area_host_.reset(new StatusAreaHostAura());
-  views::Widget* status_area_widget =
-      status_area_host_.get()->CreateStatusArea();
-  return status_area_widget;
 }
 
 bool ChromeShellDelegate::IsUserLoggedIn() {

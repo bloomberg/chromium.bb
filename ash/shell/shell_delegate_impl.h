@@ -22,7 +22,6 @@ class ShellDelegateImpl : public ash::ShellDelegate {
 
   void SetWatcher(WindowWatcher* watcher);
 
-  virtual views::Widget* CreateStatusArea() OVERRIDE;
   virtual bool IsUserLoggedIn() OVERRIDE;
   virtual void LockScreen() OVERRIDE;
   virtual void UnlockScreen() OVERRIDE;

@@ -14,7 +14,6 @@
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/login/language_switch_menu.h"
-#include "chrome/browser/chromeos/status/input_method_menu.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/options2/chromeos/cros_language_options_handler2.h"
 #include "content/public/browser/web_ui.h"
@@ -216,16 +215,19 @@ ListValue* NetworkScreenHandler::GetInputMethods() {
   ListValue* input_methods_list = new ListValue;
   input_method::InputMethodManager* manager =
       input_method::InputMethodManager::GetInstance();
+  input_method::InputMethodUtil* util = manager->GetInputMethodUtil();
   scoped_ptr<input_method::InputMethodDescriptors> input_methods(
       manager->GetActiveInputMethods());
   std::string current_input_method_id = manager->GetCurrentInputMethod().id();
   for (size_t i = 0; i < input_methods->size(); ++i) {
+    const std::string ime_id = input_methods->at(i).id();
     DictionaryValue* input_method = new DictionaryValue;
-    input_method->SetString("value", input_methods->at(i).id());
+    input_method->SetString("value", ime_id);
     input_method->SetString(
-        "title", InputMethodMenu::GetTextForMenu(input_methods->at(i)));
+        "title",
+        util->GetInputMethodLongName(input_methods->at(i)));
     input_method->SetBoolean("selected",
-        input_methods->at(i).id() == current_input_method_id);
+        ime_id == current_input_method_id);
     input_methods_list->Append(input_method);
   }
   return input_methods_list;

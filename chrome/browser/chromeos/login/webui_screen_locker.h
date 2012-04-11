@@ -69,10 +69,6 @@ class WebUIScreenLocker : public WebUILoginView,
   // LockWindow::Observer implementation.
   virtual void OnLockWindowReady() OVERRIDE;
 
-  // Overridden from WebUILoginView.
-  virtual StatusAreaViewChromeos::ScreenMode GetScreenMode() OVERRIDE;
-  virtual views::Widget::InitParams::Type GetStatusAreaWidgetType() OVERRIDE;
-
  private:
   friend class test::WebUIScreenLockerTester;
 

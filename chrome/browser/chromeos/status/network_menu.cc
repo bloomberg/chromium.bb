@@ -19,7 +19,6 @@
 #include "chrome/browser/chromeos/options/network_config_view.h"
 #include "chrome/browser/chromeos/sim_dialog_delegate.h"
 #include "chrome/browser/chromeos/status/network_menu_icon.h"
-#include "chrome/browser/chromeos/status/status_area_view_chromeos.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
@@ -627,9 +626,9 @@ void MainMenuModel::InitMenuItems(bool should_open_button_options) {
       chromeos::ActivationState activation_state =
           cell_networks[i]->activation_state();
 
-      // If we are on the OOBE/login screen, do not show activating 3G option.
-      if (!StatusAreaViewChromeos::IsBrowserMode() &&
-          activation_state != ACTIVATION_STATE_ACTIVATED)
+      // This is currently only used in the OOBE/login screen, do not show
+      // activating 3G option.
+      if (activation_state != ACTIVATION_STATE_ACTIVATED)
         continue;
 
       // Ampersand is a valid character in a network name, but menu2 uses it
@@ -694,27 +693,8 @@ void MainMenuModel::InitMenuItems(bool should_open_button_options) {
     }
     const NetworkDevice* cellular_device = cros->FindCellularDevice();
     if (cellular_device) {
-      // Add "View Account" with top up URL if we know that.
-      MobileConfig* config = MobileConfig::GetInstance();
-      if (StatusAreaViewChromeos::IsBrowserMode() && config->IsReady()) {
-        std::string carrier_id = cros->GetCellularHomeCarrierId();
-        // If we don't have top up URL cached.
-        if (carrier_id != carrier_id_) {
-          // Mark that we've checked this carrier ID.
-          carrier_id_ = carrier_id;
-          top_up_url_.clear();
-          const MobileConfig::Carrier* carrier = config->GetCarrier(carrier_id);
-          if (carrier && !carrier->top_up_url().empty())
-            top_up_url_ = carrier->top_up_url();
-        }
-        if (!top_up_url_.empty()) {
-          menu_items_.push_back(MenuItem(
-              ui::MenuModel::TYPE_COMMAND,
-              l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_VIEW_ACCOUNT),
-              SkBitmap(),
-              std::string(), FLAG_VIEW_ACCOUNT));
-        }
-      }
+      // NOTE: This is currently only used in login/OOBE screen. So do not add
+      // "View Account" with top up URL.
 
       if (cellular_device->support_network_scan()) {
         // For GSM add mobile network scan.
@@ -738,20 +718,6 @@ void MainMenuModel::InitMenuItems(bool should_open_button_options) {
                 l10n_util::GetStringUTF16(IDS_STATUSBAR_NO_NETWORKS_MESSAGE));
     menu_items_.push_back(MenuItem(ui::MenuModel::TYPE_COMMAND, label,
         SkBitmap(), std::string(), FLAG_DISABLED));
-  }
-
-  // If we are logged in and there is a connected network or a connected VPN,
-  // add submenu for Private Networks.
-  if (StatusAreaViewChromeos::IsBrowserMode()) {
-    if (cros->connected_network() || cros->virtual_network_connected()) {
-      menu_items_.push_back(MenuItem());  // Separator
-      const SkBitmap icon = NetworkMenuIcon::GetVpnBitmap();
-      menu_items_.push_back(MenuItem(
-          ui::MenuModel::TYPE_SUBMENU,
-          l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_PRIVATE_NETWORKS),
-          icon, vpn_menu_model_.get(), FLAG_NONE));
-      vpn_menu_model_->InitMenuItems(should_open_button_options);
-    }
   }
 
   bool show_wifi_scanning = wifi_available && cros->wifi_scanning();
@@ -827,18 +793,10 @@ void MainMenuModel::InitMenuItems(bool should_open_button_options) {
   more_menu_model_->InitMenuItems(should_open_button_options);
   if (!more_menu_model_->menu_items().empty()) {
     menu_items_.push_back(MenuItem());  // Separator
-    if (StatusAreaViewChromeos::IsBrowserMode()) {
-      // In browser mode we do not want separate submenu, inline items.
-      menu_items_.insert(
-          menu_items_.end(),
-          more_menu_model_->menu_items().begin(),
-          more_menu_model_->menu_items().end());
-    } else {
-      menu_items_.push_back(MenuItem(
-          ui::MenuModel::TYPE_SUBMENU,
-          l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_MORE),
-          SkBitmap(), more_menu_model_.get(), FLAG_NONE));
-    }
+    menu_items_.push_back(MenuItem(
+        ui::MenuModel::TYPE_SUBMENU,
+        l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_MORE),
+        SkBitmap(), more_menu_model_.get(), FLAG_NONE));
   }
 }
 
@@ -924,9 +882,7 @@ void MoreMenuModel::InitMenuItems(bool should_open_button_options) {
   bool connected = cros->Connected();  // always call for test expectations.
 
   int message_id = -1;
-  if (StatusAreaViewChromeos::IsBrowserMode())
-    message_id = IDS_STATUSBAR_NETWORK_OPEN_OPTIONS_DIALOG;
-  else if (connected)
+  if (connected)
     message_id = IDS_STATUSBAR_NETWORK_OPEN_PROXY_SETTINGS_DIALOG;
   if (message_id != -1) {
     link_items.push_back(MenuItem(ui::MenuModel::TYPE_COMMAND,
@@ -943,32 +899,30 @@ void MoreMenuModel::InitMenuItems(bool should_open_button_options) {
     }
   }
 
-  if (!StatusAreaViewChromeos::IsBrowserMode()) {
-    const NetworkDevice* ether = cros->FindEthernetDevice();
-    if (ether) {
+  const NetworkDevice* ether = cros->FindEthernetDevice();
+  if (ether) {
+    std::string hardware_address;
+    cros->GetIPConfigs(ether->device_path(), &hardware_address,
+        NetworkLibrary::FORMAT_COLON_SEPARATED_HEX);
+    if (!hardware_address.empty()) {
+      std::string label = l10n_util::GetStringUTF8(
+          IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET) + " " + hardware_address;
+      address_items.push_back(MenuItem(ui::MenuModel::TYPE_COMMAND,
+          UTF8ToUTF16(label), SkBitmap(), std::string(), FLAG_DISABLED));
+    }
+  }
+
+  if (cros->wifi_enabled()) {
+    const NetworkDevice* wifi = cros->FindWifiDevice();
+    if (wifi) {
       std::string hardware_address;
-      cros->GetIPConfigs(ether->device_path(), &hardware_address,
-          NetworkLibrary::FORMAT_COLON_SEPARATED_HEX);
+      cros->GetIPConfigs(wifi->device_path(),
+          &hardware_address, NetworkLibrary::FORMAT_COLON_SEPARATED_HEX);
       if (!hardware_address.empty()) {
         std::string label = l10n_util::GetStringUTF8(
-            IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET) + " " + hardware_address;
+            IDS_STATUSBAR_NETWORK_DEVICE_WIFI) + " " + hardware_address;
         address_items.push_back(MenuItem(ui::MenuModel::TYPE_COMMAND,
             UTF8ToUTF16(label), SkBitmap(), std::string(), FLAG_DISABLED));
-      }
-    }
-
-    if (cros->wifi_enabled()) {
-      const NetworkDevice* wifi = cros->FindWifiDevice();
-      if (wifi) {
-        std::string hardware_address;
-        cros->GetIPConfigs(wifi->device_path(),
-            &hardware_address, NetworkLibrary::FORMAT_COLON_SEPARATED_HEX);
-        if (!hardware_address.empty()) {
-          std::string label = l10n_util::GetStringUTF8(
-              IDS_STATUSBAR_NETWORK_DEVICE_WIFI) + " " + hardware_address;
-          address_items.push_back(MenuItem(ui::MenuModel::TYPE_COMMAND,
-              UTF8ToUTF16(label), SkBitmap(), std::string(), FLAG_DISABLED));
-        }
       }
     }
   }

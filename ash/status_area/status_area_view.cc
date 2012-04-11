@@ -15,16 +15,16 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/accessible_pane_view.h"
+#include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
 namespace internal {
 
 StatusAreaView::StatusAreaView()
-    : status_mock_(*ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-          IDR_AURA_STATUS_MOCK).ToSkBitmap()),
-      focus_cycler_for_testing_(NULL) {
+    : focus_cycler_for_testing_(NULL) {
 }
+
 StatusAreaView::~StatusAreaView() {
 }
 
@@ -32,8 +32,13 @@ void StatusAreaView::SetFocusCyclerForTesting(const FocusCycler* focus_cycler) {
   focus_cycler_for_testing_ = focus_cycler;
 }
 
-gfx::Size StatusAreaView::GetPreferredSize() {
-  return gfx::Size(status_mock_.width(), status_mock_.height());
+bool StatusAreaView::AcceleratorPressed(const ui::Accelerator& accelerator) {
+  if (accelerator.key_code() == ui::VKEY_ESCAPE) {
+    RemovePaneFocus();
+    GetFocusManager()->ClearFocus();
+    return true;
+  }
+  return false;
 }
 
 views::Widget* StatusAreaView::GetWidget() {
@@ -60,10 +65,6 @@ void StatusAreaView::DeleteDelegate() {
     delete this;
 }
 
-void StatusAreaView::OnPaint(gfx::Canvas* canvas) {
-  canvas->DrawBitmapInt(status_mock_, 0, 0);
-}
-
 ASH_EXPORT views::Widget* CreateStatusArea(views::View* contents) {
   StatusAreaView* status_area_view = new StatusAreaView;
   if (!contents)
@@ -71,7 +72,7 @@ ASH_EXPORT views::Widget* CreateStatusArea(views::View* contents) {
   views::Widget* widget = new views::Widget;
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-  gfx::Size ps = contents->GetPreferredSize();
+  gfx::Size ps = contents ? contents->GetPreferredSize() : gfx::Size(200, 29);
   params.bounds = gfx::Rect(0, 0, ps.width(), ps.height());
   params.delegate = status_area_view;
   params.parent = Shell::GetInstance()->GetContainer(
@@ -85,6 +86,7 @@ ASH_EXPORT views::Widget* CreateStatusArea(views::View* contents) {
   // longer be needed and we can nuke this.
   views::AccessiblePaneView* accessible_pane =
       new views::AccessiblePaneView;
+  accessible_pane->SetLayoutManager(new views::FillLayout);
   accessible_pane->AddChildView(contents);
   widget->set_focus_on_creation(false);
   widget->SetContentsView(accessible_pane);
