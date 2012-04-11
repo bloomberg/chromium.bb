@@ -6,6 +6,8 @@
 #define UI_GFX_CANVAS_H_
 #pragma once
 
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
@@ -24,6 +26,7 @@ class Brush;
 class Rect;
 class Font;
 class Point;
+class ShadowValue;
 class Size;
 
 // Canvas is a SkCanvas wrapper that provides a number of methods for
@@ -291,6 +294,15 @@ class UI_EXPORT Canvas {
                      int x, int y, int w, int h,
                      int flags);
 
+  // Similar to above DrawStringInt method but with text shadows support.
+  // Currently it's only implemented for canvas skia.
+  void DrawStringWithShadows(const string16& text,
+                             const gfx::Font& font,
+                             SkColor color,
+                             const gfx::Rect& text_bounds,
+                             int flags,
+                             const std::vector<ShadowValue>& shadows);
+
   // Draws a dotted gray rectangle used for focus purposes.
   void DrawFocusRect(const gfx::Rect& rect);
 
@@ -332,6 +344,7 @@ class UI_EXPORT Canvas {
  private:
   // Test whether the provided rectangle intersects the current clip rect.
   bool IntersectsClipRectInt(int x, int y, int w, int h);
+  bool IntersectsClipRect(const gfx::Rect& rect);
 
 #if defined(OS_WIN)
   // Draws text with the specified color, font and location. The text is
@@ -340,7 +353,7 @@ class UI_EXPORT Canvas {
   void DrawStringInt(const string16& text,
                      HFONT font,
                      SkColor color,
-                     int x, int y, int w, int h,
+                     const gfx::Rect& text_bounds,
                      int flags);
 #endif
 

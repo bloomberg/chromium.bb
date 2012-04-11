@@ -325,15 +325,15 @@ void Canvas::SizeStringInt(const string16& text,
 void Canvas::DrawStringInt(const string16& text,
                            HFONT font,
                            SkColor color,
-                           int x, int y, int w, int h,
+                           const gfx::Rect& text_bounds,
                            int flags) {
   SkRect fclip;
   if (!canvas_->getClipBounds(&fclip))
     return;
-  RECT text_bounds = { x, y, x + w, y + h };
+  RECT text_rect = text_bounds.ToRECT();
   SkIRect clip;
   fclip.round(&clip);
-  if (!clip.intersect(skia::RECTToSkIRect(text_bounds)))
+  if (!clip.intersect(skia::RECTToSkIRect(text_rect)))
     return;
 
   // Clamp the max amount of text we'll draw to 32K.  There seem to be bugs in
@@ -355,7 +355,7 @@ void Canvas::DrawStringInt(const string16& text,
     SetTextColor(dc, brush_color);
 
     int f = ComputeFormatFlags(flags, clamped_string);
-    DoDrawText(dc, clamped_string, &text_bounds, f);
+    DoDrawText(dc, clamped_string, &text_rect, f);
   }
 
   // Restore the old font. This way we don't have to worry if the caller
@@ -369,12 +369,15 @@ void Canvas::DrawStringInt(const string16& text,
                    clip.height());
 }
 
-void Canvas::DrawStringInt(const string16& text,
-                           const gfx::Font& font,
-                           SkColor color,
-                           int x, int y, int w, int h,
-                           int flags) {
-  DrawStringInt(text, font.GetNativeFont(), color, x, y, w, h, flags);
+void Canvas::DrawStringWithShadows(const string16& text,
+                                   const gfx::Font& font,
+                                   SkColor color,
+                                   const gfx::Rect& text_bounds,
+                                   int flags,
+                                   const std::vector<ShadowValue>& shadows) {
+  DLOG_IF(WARNING, !shadows.empty()) << "Text shadow not implemented.";
+
+  DrawStringInt(text, font.GetNativeFont(), color, text_bounds, flags);
 }
 
 // Checks each pixel immediately adjacent to the given pixel in the bitmap. If

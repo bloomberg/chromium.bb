@@ -244,16 +244,18 @@ void Canvas::DrawStringWithHalo(const string16& text,
   context.DrawWithHalo(text_color, halo_color);
 }
 
-void Canvas::DrawStringInt(const string16& text,
-                           const gfx::Font& font,
-                           SkColor color,
-                           int x, int y, int w, int h,
-                           int flags) {
-  if (!IntersectsClipRectInt(x, y, w, h))
+void Canvas::DrawStringWithShadows(const string16& text,
+                                   const gfx::Font& font,
+                                   SkColor color,
+                                   const gfx::Rect& text_bounds,
+                                   int flags,
+                                   const std::vector<ShadowValue>& shadows) {
+  DLOG_IF(WARNING, !shadows.empty()) << "Text shadow not implemented.";
+
+  if (!IntersectsClipRect(text_bounds))
     return;
 
-  gfx::Rect bounds(x, y, w, h);
-  DrawStringContext context(this, text, font, bounds, bounds, flags);
+  DrawStringContext context(this, text, font, text_bounds, text_bounds, flags);
   context.Draw(color);
 }
 

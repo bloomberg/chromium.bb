@@ -10,6 +10,7 @@
 #include "base/sys_string_conversions.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "ui/gfx/font.h"
+#include "ui/gfx/rect.h"
 
 // Note: This is a temporary Skia-based implementation of the ui/gfx text
 // rendering routines for views/aura.  It replaces the stale Cocoa-based
@@ -50,11 +51,14 @@ void Canvas::SizeStringInt(const string16& text,
   *height = font.GetHeight();
 }
 
-void Canvas::DrawStringInt(const string16& text,
-                           const gfx::Font& font,
-                           SkColor color,
-                           int x, int y, int w, int h,
-                           int flags) {
+void Canvas::DrawStringWithShadows(const string16& text,
+                                   const gfx::Font& font,
+                                   SkColor color,
+                                   const gfx::Rect& text_bounds,
+                                   int flags,
+                                   const std::vector<ShadowValue>& shadows) {
+  DLOG_IF(WARNING, !shadows.empty()) << "Text shadow not implemented.";
+
   SkTypeface* typeface = SkTypeface::CreateFromName(font.GetFontName().c_str(),
                                                     FontTypefaceStyle(font));
   SkPaint paint;
@@ -63,8 +67,8 @@ void Canvas::DrawStringInt(const string16& text,
   paint.setColor(color);
   canvas_->drawText(text.c_str(),
                     text.size() * sizeof(string16::value_type),
-                    x,
-                    y + h,
+                    text_bounds.x(),
+                    text_bounds.bottom(),
                     paint);
 }
 

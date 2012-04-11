@@ -28,6 +28,7 @@ namespace gfx {
 
 class Canvas;
 class RenderTextTest;
+class ShadowValue;
 struct StyleRange;
 
 namespace internal {
@@ -38,6 +39,7 @@ class SkiaTextRenderer {
   explicit SkiaTextRenderer(Canvas* canvas);
   ~SkiaTextRenderer();
 
+  void SetDrawLooper(SkDrawLooper* draw_looper);
   void SetFontSmoothingSettings(bool enable_smoothing, bool enable_lcd_text);
   void SetTypeface(SkTypeface* typeface);
   void SetTextSize(int size);
@@ -214,6 +216,8 @@ class UI_EXPORT RenderText {
 
   // Get the size in pixels of the entire string. For the height, this will
   // return the maximum height among the different fonts in the text runs.
+  // Note that this returns the raw size of the string, which does not include
+  // the margin area of text shadows.
   virtual Size GetStringSize() = 0;
 
   void Draw(Canvas* canvas);
@@ -245,6 +249,9 @@ class UI_EXPORT RenderText {
   // Return a SelectionModel with the cursor at the current selection's start.
   // The returned value represents a cursor/caret position without a selection.
   SelectionModel GetSelectionModelForSelectionStart();
+
+  // Sets shadows to drawn with text.
+  void SetTextShadows(const std::vector<ShadowValue>& shadows);
 
  protected:
   RenderText();
@@ -339,6 +346,9 @@ class UI_EXPORT RenderText {
   // Applies fade effects to |renderer|.
   void ApplyFadeEffects(internal::SkiaTextRenderer* renderer);
 
+  // Applies text shadows to |renderer|.
+  void ApplyTextShadows(internal::SkiaTextRenderer* renderer);
+
   // A convenience function to check whether the glyph attached to the caret
   // is within the given range.
   static bool RangeContainsCaret(const ui::Range& range,
@@ -429,6 +439,9 @@ class UI_EXPORT RenderText {
   // The cached bounds and offset are invalidated by changes to the cursor,
   // selection, font, and other operations that adjust the visible text bounds.
   bool cached_bounds_and_offset_valid_;
+
+  // Text shadows to be drawn.
+  std::vector<ShadowValue> text_shadows_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderText);
 };

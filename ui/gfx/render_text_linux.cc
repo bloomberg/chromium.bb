@@ -385,6 +385,7 @@ void RenderTextLinux::DrawVisualText(Canvas* canvas) {
 
   internal::SkiaTextRenderer renderer(canvas);
   ApplyFadeEffects(&renderer);
+  ApplyTextShadows(&renderer);
   renderer.SetFontSmoothingSettings(
       true /* enable_smoothing */,
       IsSubpixelRenderingEnabledInFontConfig() && !background_is_transparent());

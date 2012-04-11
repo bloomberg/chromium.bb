@@ -476,6 +476,7 @@ void RenderTextWin::DrawVisualText(Canvas* canvas) {
 
   internal::SkiaTextRenderer renderer(canvas);
   ApplyFadeEffects(&renderer);
+  ApplyTextShadows(&renderer);
 
   bool smoothing_enabled;
   bool cleartype_enabled;

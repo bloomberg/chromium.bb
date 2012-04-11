@@ -17,6 +17,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
+#include "ui/gfx/shadow_value.h"
 #include "ui/gfx/skbitmap_operations.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/menu/menu_item_view.h"
@@ -184,7 +185,14 @@ AppListItemView::AppListItemView(AppListModelView* list_model_view,
       ALLOW_THIS_IN_INITIALIZER_LIST(apply_shadow_factory_(this)) {
   title_->SetBackgroundColor(0);
   title_->SetEnabledColor(kTitleColor);
-  title_->SetDropShadowSize(3);
+
+  const gfx::ShadowValue kTitleShadows[] = {
+    gfx::ShadowValue(gfx::Point(0, 0), 1, SkColorSetARGB(0x66, 0, 0, 0)),
+    gfx::ShadowValue(gfx::Point(0, 0), 10, SkColorSetARGB(0x66, 0, 0, 0)),
+    gfx::ShadowValue(gfx::Point(0, 2), 2, SkColorSetARGB(0x66, 0, 0, 0)),
+    gfx::ShadowValue(gfx::Point(0, 2), 4, SkColorSetARGB(0x66, 0, 0, 0)),
+  };
+  title_->SetTextShadows(arraysize(kTitleShadows), kTitleShadows);
 
   AddChildView(icon_);
   AddChildView(title_);

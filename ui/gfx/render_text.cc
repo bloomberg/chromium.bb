@@ -10,11 +10,16 @@
 #include "base/i18n/break_iterator.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
+#include "third_party/skia/include/core/SkColorFilter.h"
 #include "third_party/skia/include/core/SkTypeface.h"
+#include "third_party/skia/include/effects/SkBlurMaskFilter.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
+#include "third_party/skia/include/effects/SkLayerDrawLooper.h"
 #include "ui/base/text/utf16_indexing.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/insets.h"
 #include "ui/gfx/native_theme.h"
+#include "ui/gfx/shadow_value.h"
 
 namespace {
 
@@ -181,6 +186,10 @@ SkiaTextRenderer::SkiaTextRenderer(Canvas* canvas)
 }
 
 SkiaTextRenderer::~SkiaTextRenderer() {
+}
+
+void SkiaTextRenderer::SetDrawLooper(SkDrawLooper* draw_looper) {
+  paint_.setLooper(draw_looper);
 }
 
 void SkiaTextRenderer::SetFontSmoothingSettings(bool enable_smoothing,
@@ -546,8 +555,11 @@ void RenderText::Draw(Canvas* canvas) {
     EnsureLayout();
   }
 
+  gfx::Rect clip_rect(display_rect());
+  clip_rect.Inset(ShadowValue::GetMargin(text_shadows_));
+
   canvas->Save();
-  canvas->ClipRect(display_rect());
+  canvas->ClipRect(clip_rect);
 
   if (!text().empty())
     DrawSelection(canvas);
@@ -606,6 +618,10 @@ SelectionModel RenderText::GetSelectionModelForSelectionStart() {
     return selection_model_;
   return SelectionModel(sel.start(),
                         sel.is_reversed() ? CURSOR_BACKWARD : CURSOR_FORWARD);
+}
+
+void RenderText::SetTextShadows(const std::vector<ShadowValue>& shadows) {
+  text_shadows_ = shadows;
 }
 
 RenderText::RenderText()
@@ -786,6 +802,46 @@ void RenderText::ApplyFadeEffects(internal::SkiaTextRenderer* renderer) {
     // |renderer| adds its own ref. So don't |release()| it from the ref ptr.
     renderer->SetShader(shader);
   }
+}
+
+void RenderText::ApplyTextShadows(internal::SkiaTextRenderer* renderer) {
+  if (text_shadows_.empty()) {
+    renderer->SetDrawLooper(NULL);
+    return;
+  }
+
+  SkLayerDrawLooper* looper = new SkLayerDrawLooper;
+  SkAutoUnref auto_unref(looper);
+
+  looper->addLayer();  // top layer of the original.
+
+  SkLayerDrawLooper::LayerInfo layer_info;
+  layer_info.fPaintBits |= SkLayerDrawLooper::kMaskFilter_Bit;
+  layer_info.fPaintBits |= SkLayerDrawLooper::kColorFilter_Bit;
+  layer_info.fColorMode = SkXfermode::kSrc_Mode;
+
+  for (size_t i = 0; i < text_shadows_.size(); ++i) {
+    const ShadowValue& shadow = text_shadows_[i];
+
+    layer_info.fOffset.set(SkIntToScalar(shadow.x()),
+                           SkIntToScalar(shadow.y()));
+
+    // SkBlurMaskFilter's blur radius defines the range to extend the blur from
+    // original mask, which is half of blur amount as defined in ShadowValue.
+    SkMaskFilter* blur_mask = SkBlurMaskFilter::Create(
+        SkDoubleToScalar(shadow.blur() / 2),
+        SkBlurMaskFilter::kNormal_BlurStyle,
+        SkBlurMaskFilter::kHighQuality_BlurFlag);
+    SkColorFilter* color_filter = SkColorFilter::CreateModeFilter(
+        shadow.color(),
+        SkXfermode::kSrcIn_Mode);
+
+    SkPaint* paint = looper->addLayer(layer_info);
+    SkSafeUnref(paint->setMaskFilter(blur_mask));
+    SkSafeUnref(paint->setColorFilter(color_filter));
+  }
+
+  renderer->SetDrawLooper(looper);
 }
 
 // static

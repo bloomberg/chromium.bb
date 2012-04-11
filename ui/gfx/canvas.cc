@@ -13,6 +13,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/shadow_value.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/transform.h"
 
@@ -340,6 +341,19 @@ void Canvas::DrawStringInt(const string16& text,
                 display_rect.width(), display_rect.height());
 }
 
+void Canvas::DrawStringInt(const string16& text,
+                           const gfx::Font& font,
+                           SkColor color,
+                           int x, int y, int w, int h,
+                           int flags) {
+  DrawStringWithShadows(text,
+                        font,
+                        color,
+                        gfx::Rect(x, y, w, h),
+                        flags,
+                        std::vector<ShadowValue>());
+}
+
 void Canvas::TileImageInt(const SkBitmap& bitmap,
                           int x, int y, int w, int h) {
   TileImageInt(bitmap, 0, 0, x, y, w, h);
@@ -387,6 +401,11 @@ bool Canvas::IntersectsClipRectInt(int x, int y, int w, int h) {
   return canvas_->getClipBounds(&clip) &&
       clip.intersect(SkIntToScalar(x), SkIntToScalar(y), SkIntToScalar(x + w),
                      SkIntToScalar(y + h));
+}
+
+bool Canvas::IntersectsClipRect(const gfx::Rect& rect) {
+  return IntersectsClipRectInt(rect.x(), rect.y(),
+                               rect.width(), rect.height());
 }
 
 }  // namespace gfx

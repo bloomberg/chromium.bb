@@ -91,6 +91,7 @@
         'gfx/insets_unittest.cc',
         'gfx/rect_unittest.cc',
         'gfx/screen_unittest.cc',
+        'gfx/shadow_value_unittest.cc',
         'gfx/skbitmap_operations_unittest.cc',
         'gfx/skia_util_unittest.cc',
         'gfx/transform_util_unittest.cc',

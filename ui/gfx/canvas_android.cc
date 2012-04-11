@@ -16,11 +16,12 @@ void Canvas::SizeStringInt(const string16& text,
   NOTIMPLEMENTED();
 }
 
-void Canvas::DrawStringInt(const string16& text,
-                           const gfx::Font& font,
-                           SkColor color,
-                           int x, int y, int w, int h,
-                           int flags) {
+void Canvas::DrawStringWithShadows(const string16& text,
+                                   const gfx::Font& font,
+                                   SkColor color,
+                                   const gfx::Rect& text_bounds,
+                                   int flags,
+                                   const std::vector<ShadowValue>& shadows) {
   NOTIMPLEMENTED();
 }
 
