@@ -146,9 +146,6 @@ _settings = dict(
 # latest_toolchain -- Use the newest ebuilds for all the toolchain packages.
   latest_toolchain=False,
 
-# gcc_githash -- What commit-ish to use for building gcc during setup_board.
-  gcc_githash='master',
-
 # chroot_replace -- wipe and replace chroot, but not source.
   chroot_replace=False,
 
@@ -585,18 +582,6 @@ _toolchain.add_config('arm-tegra2-seaboard-toolchain', arm,
   boards=['tegra2_seaboard'],
 )
 
-_toolchain_minor = \
-    full.derive(latest_toolchain=True, prebuilts=False,
-                gcc_githash='gcc.gnu.org/branches/google/gcc-4_6')
-
-_toolchain_minor.add_config('x86-generic-toolchain_minor',
-  boards=['x86-generic'],
-)
-
-_toolchain_minor.add_config('arm-tegra2-seaboard-toolchain_minor', arm,
-  boards=['tegra2_seaboard'],
-)
-
 
 full.add_config('amd64-generic-full',
   boards=['amd64-generic'],
@@ -704,21 +689,6 @@ _internal_toolchain.add_config('x86-alex-toolchain',
 )
 
 _internal_toolchain.add_config('arm-tegra2_kaen-toolchain',
-  arm,
-  boards=['tegra2_kaen'],
-)
-
-_internal_toolchain_minor = _toolchain_minor.derive(internal, full, official,
-  use_lkgm=True,
-  useflags=['chrome_internal'],
-  build_tests=True,
-)
-
-_internal_toolchain_minor.add_config('x86-alex-toolchain_minor',
-  boards=['x86-alex'],
-)
-
-_internal_toolchain_minor.add_config('arm-tegra2_kaen-toolchain_minor',
   arm,
   boards=['tegra2_kaen'],
 )
