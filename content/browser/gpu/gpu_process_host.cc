@@ -371,6 +371,8 @@ GpuProcessHost::~GpuProcessHost() {
 }
 
 bool GpuProcessHost::Init() {
+  init_start_time_ = base::TimeTicks::Now();
+
   std::string channel_id = process_->GetHost()->CreateChannel();
   if (channel_id.empty())
     return false;
@@ -650,6 +652,9 @@ void GpuProcessHost::OnProcessLaunched() {
 #else
   gpu_process_ = child_handle;
 #endif
+
+  UMA_HISTOGRAM_TIMES("GPU.GPUProcessLaunchTime",
+                      base::TimeTicks::Now() - init_start_time_);
 }
 
 void GpuProcessHost::OnProcessCrashed(int exit_code) {

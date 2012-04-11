@@ -14,6 +14,7 @@
 #include "base/memory/linked_ptr.h"
 #include "base/process.h"
 #include "base/threading/non_thread_safe.h"
+#include "base/time.h"
 #include "content/common/content_export.h"
 #include "content/common/gpu/gpu_process_launch_causes.h"
 #include "content/public/browser/browser_child_process_host_delegate.h"
@@ -177,6 +178,9 @@ class GpuProcessHost : public content::BrowserChildProcessHostDelegate,
 
   // Whether we actually launched a GPU process.
   bool process_launched_;
+
+  // Time Init started.  Used to log total GPU process startup time to UMA.
+  base::TimeTicks init_start_time_;
 
   // Master switch for enabling/disabling GPU acceleration for the current
   // browser session. It does not change the acceleration settings for
