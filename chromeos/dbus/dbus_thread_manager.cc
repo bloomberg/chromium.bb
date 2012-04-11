@@ -17,6 +17,7 @@
 #include "chromeos/dbus/dbus_client_implementation_type.h"
 #include "chromeos/dbus/debug_daemon_client.h"
 #include "chromeos/dbus/flimflam_ipconfig_client.h"
+#include "chromeos/dbus/flimflam_manager_client.h"
 #include "chromeos/dbus/flimflam_network_client.h"
 #include "chromeos/dbus/flimflam_profile_client.h"
 #include "chromeos/dbus/image_burner_client.h"
@@ -79,6 +80,9 @@ class DBusThreadManagerImpl : public DBusThreadManager {
     // Create the Flimflam IPConfig client.
     flimflam_ipconfig_client_.reset(
         FlimflamIPConfigClient::Create(client_type, system_bus_.get()));
+    // Create the Flimflam Manager client.
+    flimflam_manager_client_.reset(
+        FlimflamManagerClient::Create(client_type, system_bus_.get()));
     // Create the Flimflam Network client.
     flimflam_network_client_.reset(
         FlimflamNetworkClient::Create(client_type, system_bus_.get()));
@@ -169,6 +173,12 @@ class DBusThreadManagerImpl : public DBusThreadManager {
     return flimflam_ipconfig_client_.get();
   }
 
+  // DBusThreadManager override.
+  virtual FlimflamManagerClient* GetFlimflamManagerClient() OVERRIDE {
+    return flimflam_manager_client_.get();
+  }
+
+  // DBusThreadManager override.
   virtual FlimflamNetworkClient* GetFlimflamNetworkClient() OVERRIDE {
     return flimflam_network_client_.get();
   }
@@ -220,6 +230,7 @@ class DBusThreadManagerImpl : public DBusThreadManager {
   scoped_ptr<CryptohomeClient> cryptohome_client_;
   scoped_ptr<DebugDaemonClient> debugdaemon_client_;
   scoped_ptr<FlimflamIPConfigClient> flimflam_ipconfig_client_;
+  scoped_ptr<FlimflamManagerClient> flimflam_manager_client_;
   scoped_ptr<FlimflamNetworkClient> flimflam_network_client_;
   scoped_ptr<FlimflamProfileClient> flimflam_profile_client_;
   scoped_ptr<ImageBurnerClient> image_burner_client_;

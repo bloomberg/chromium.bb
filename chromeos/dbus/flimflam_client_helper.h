@@ -21,7 +21,9 @@ class DictionaryValue;
 
 namespace dbus {
 
+class MessageWriter;
 class MethodCall;
+class ObjectPath;
 class ObjectProxy;
 class Response;
 class Signal;
@@ -33,10 +35,6 @@ namespace chromeos {
 // A class to help implement Flimflam clients.
 class FlimflamClientHelper {
  public:
-  explicit FlimflamClientHelper(dbus::ObjectProxy* proxy);
-
-  virtual ~FlimflamClientHelper();
-
   // A callback to handle PropertyChanged signals.
   typedef base::Callback<void(const std::string& name,
                               const base::Value& value)> PropertyChangedHandler;
@@ -44,10 +42,19 @@ class FlimflamClientHelper {
   // A callback to handle responses for methods without results.
   typedef base::Callback<void(DBusMethodCallStatus call_status)> VoidCallback;
 
+  // A callback to handle responses for methods with ObjectPath results.
+  typedef base::Callback<void(
+      DBusMethodCallStatus call_status,
+      const dbus::ObjectPath& result)> ObjectPathCallback;
+
   // A callback to handle responses for methods with DictionaryValue results.
   typedef base::Callback<void(
       DBusMethodCallStatus call_status,
       const base::DictionaryValue& result)> DictionaryValueCallback;
+
+  explicit FlimflamClientHelper(dbus::ObjectProxy* proxy);
+
+  virtual ~FlimflamClientHelper();
 
   // Sets PropertyChanged signal handler.
   void SetPropertyChangedHandler(const PropertyChangedHandler& handler);
@@ -62,9 +69,18 @@ class FlimflamClientHelper {
   void CallVoidMethod(dbus::MethodCall* method_call,
                       const VoidCallback& callback);
 
+  // Calls a method with an object path result.
+  void CallObjectPathMethod(dbus::MethodCall* method_call,
+                            const ObjectPathCallback& callback);
+
   // Calls a method with a dictionary value result.
   void CallDictionaryValueMethod(dbus::MethodCall* method_call,
                                  const DictionaryValueCallback& callback);
+
+  // Appends the value (basic types and string-to-string dictionary) to the
+  // writer as a variant.
+  static void AppendValueDataAsVariant(dbus::MessageWriter* writer,
+                                       const base::Value& value);
 
  private:
   // Handles the result of signal connection setup.
@@ -77,6 +93,10 @@ class FlimflamClientHelper {
 
   // Handles responses for methods without results.
   void OnVoidMethod(const VoidCallback& callback, dbus::Response* response);
+
+  // Handles responses for methods with ObjectPath results.
+  void OnObjectPathMethod(const ObjectPathCallback& callback,
+                          dbus::Response* response);
 
   // Handles responses for methods with DictionaryValue results.
   void OnDictionaryValueMethod(const DictionaryValueCallback& callback,

@@ -79,6 +79,11 @@ class FlimflamClientUnittestBase : public testing::Test {
   static void ExpectNoResultValue(DBusMethodCallStatus call_status);
 
   // Checks the result and expects the call status to be SUCCESS.
+  static void ExpectObjectPathResult(const dbus::ObjectPath& expected_result,
+                                     DBusMethodCallStatus call_status,
+                                     const dbus::ObjectPath& result);
+
+  // Checks the result and expects the call status to be SUCCESS.
   static void ExpectDictionaryValueResult(
       const base::DictionaryValue* expected_result,
       DBusMethodCallStatus call_status,

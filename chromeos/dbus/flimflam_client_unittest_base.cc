@@ -136,6 +136,15 @@ void FlimflamClientUnittestBase::ExpectNoResultValue(
 }
 
 // static
+void FlimflamClientUnittestBase::ExpectObjectPathResult(
+    const dbus::ObjectPath& expected_result,
+    DBusMethodCallStatus call_status,
+    const dbus::ObjectPath& result) {
+  EXPECT_EQ(DBUS_METHOD_CALL_SUCCESS, call_status);
+  EXPECT_EQ(expected_result, result);
+}
+
+// static
 void FlimflamClientUnittestBase::ExpectDictionaryValueResult(
     const base::DictionaryValue* expected_result,
     DBusMethodCallStatus call_status,

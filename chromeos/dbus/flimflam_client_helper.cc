@@ -50,6 +50,15 @@ void FlimflamClientHelper::CallVoidMethod(dbus::MethodCall* method_call,
                                 callback));
 }
 
+void FlimflamClientHelper::CallObjectPathMethod(
+    dbus::MethodCall* method_call,
+    const ObjectPathCallback& callback) {
+  proxy_->CallMethod(method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                     base::Bind(&FlimflamClientHelper::OnObjectPathMethod,
+                                weak_ptr_factory_.GetWeakPtr(),
+                                callback));
+}
+
 void FlimflamClientHelper::CallDictionaryValueMethod(
     dbus::MethodCall* method_call,
     const DictionaryValueCallback& callback) {
@@ -57,6 +66,48 @@ void FlimflamClientHelper::CallDictionaryValueMethod(
                      base::Bind(&FlimflamClientHelper::OnDictionaryValueMethod,
                                 weak_ptr_factory_.GetWeakPtr(),
                                 callback));
+}
+
+// static
+void FlimflamClientHelper::AppendValueDataAsVariant(dbus::MessageWriter* writer,
+                                                    const base::Value& value) {
+  // Support basic types and string-to-string dictionary.
+  switch (value.GetType()) {
+    case base::Value::TYPE_DICTIONARY: {
+      const base::DictionaryValue* dictionary = NULL;
+      value.GetAsDictionary(&dictionary);
+      dbus::MessageWriter variant_writer(NULL);
+      writer->OpenVariant("a{ss}", &variant_writer);
+      dbus::MessageWriter array_writer(NULL);
+      variant_writer.OpenArray("{ss}", &array_writer);
+      for (base::DictionaryValue::Iterator it(*dictionary);
+           it.HasNext();
+           it.Advance()) {
+        dbus::MessageWriter entry_writer(NULL);
+        array_writer.OpenDictEntry(&entry_writer);
+        entry_writer.AppendString(it.key());
+        const base::Value& value = it.value();
+        std::string value_string;
+        DLOG_IF(ERROR, value.GetType() != base::Value::TYPE_STRING)
+            << "Unexpected type " << value.GetType();
+        value.GetAsString(&value_string);
+        entry_writer.AppendString(value_string);
+        array_writer.CloseContainer(&entry_writer);
+      }
+      variant_writer.CloseContainer(&array_writer);
+      writer->CloseContainer(&variant_writer);
+      break;
+    }
+    case base::Value::TYPE_BOOLEAN:
+    case base::Value::TYPE_INTEGER:
+    case base::Value::TYPE_DOUBLE:
+    case base::Value::TYPE_STRING:
+      dbus::AppendBasicTypeValueDataAsVariant(writer, value);
+      break;
+    default:
+      DLOG(ERROR) << "Unexpected type " << value.GetType();
+  }
+
 }
 
 void FlimflamClientHelper::OnSignalConnected(const std::string& interface,
@@ -87,6 +138,22 @@ void FlimflamClientHelper::OnVoidMethod(const VoidCallback& callback,
     return;
   }
   callback.Run(DBUS_METHOD_CALL_SUCCESS);
+}
+
+void FlimflamClientHelper::OnObjectPathMethod(
+    const ObjectPathCallback& callback,
+    dbus::Response* response) {
+  if (!response) {
+    callback.Run(DBUS_METHOD_CALL_FAILURE, dbus::ObjectPath());
+    return;
+  }
+  dbus::MessageReader reader(response);
+  dbus::ObjectPath result;
+  if (!reader.PopObjectPath(&result)) {
+    callback.Run(DBUS_METHOD_CALL_FAILURE, dbus::ObjectPath());
+    return;
+  }
+  callback.Run(DBUS_METHOD_CALL_SUCCESS, result);
 }
 
 void FlimflamClientHelper::OnDictionaryValueMethod(

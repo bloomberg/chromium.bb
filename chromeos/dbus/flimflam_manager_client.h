@@ -1,0 +1,93 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROMEOS_DBUS_FLIMFLAM_MANAGER_CLIENT_H_
+#define CHROMEOS_DBUS_FLIMFLAM_MANAGER_CLIENT_H_
+
+#include <string>
+
+#include "base/basictypes.h"
+#include "base/callback.h"
+#include "chromeos/chromeos_export.h"
+#include "chromeos/dbus/dbus_client_implementation_type.h"
+#include "chromeos/dbus/flimflam_client_helper.h"
+
+namespace dbus {
+
+class Bus;
+
+}  // namespace dbus
+
+namespace chromeos {
+
+// FlimflamManagerClient is used to communicate with the Flimflam Manager
+// service.  All methods should be called from the origin thread which
+// initializes the DBusThreadManager instance.
+class CHROMEOS_EXPORT FlimflamManagerClient {
+ public:
+  typedef FlimflamClientHelper::PropertyChangedHandler PropertyChangedHandler;
+  typedef FlimflamClientHelper::VoidCallback VoidCallback;
+  typedef FlimflamClientHelper::ObjectPathCallback ObjectPathCallback;
+  typedef FlimflamClientHelper::DictionaryValueCallback DictionaryValueCallback;
+
+  virtual ~FlimflamManagerClient();
+
+  // Factory function, creates a new instance which is owned by the caller.
+  // For normal usage, access the singleton via DBusThreadManager::Get().
+  static FlimflamManagerClient* Create(DBusClientImplementationType type,
+                                       dbus::Bus* bus);
+
+  // Sets PropertyChanged signal handler.
+  virtual void SetPropertyChangedHandler(
+      const PropertyChangedHandler& handler) = 0;
+
+  // Resets PropertyChanged signal handler.
+  virtual void ResetPropertyChangedHandler() = 0;
+
+  // Calls GetProperties method.
+  // |callback| is called after the method call succeeds.
+  virtual void GetProperties(const DictionaryValueCallback& callback) = 0;
+
+  // Calls SetProperty method.
+  // |callback| is called after the method call succeeds.
+  virtual void SetProperty(const std::string& name,
+                           const base::Value& value,
+                           const VoidCallback& callback) = 0;
+
+  // Calls RequestScan method.
+  // |callback| is called after the method call succeeds.
+  virtual void RequestScan(const std::string& type,
+                           const VoidCallback& callback) = 0;
+
+  // Calls EnableTechnology method.
+  // |callback| is called after the method call succeeds.
+  virtual void EnableTechnology(const std::string& type,
+                                const VoidCallback& callback) = 0;
+
+  // Calls DisableTechnology method.
+  // |callback| is called after the method call succeeds.
+  virtual void DisableTechnology(const std::string& type,
+                                 const VoidCallback& callback) = 0;
+
+  // Calls ConfigureService method.
+  // |callback| is called after the method call succeeds.
+  virtual void ConfigureService(const base::DictionaryValue& properties,
+                                const VoidCallback& callback) = 0;
+
+  // Calls GetService method.
+  // |callback| is called after the method call succeeds.
+  virtual void GetService(const base::DictionaryValue& properties,
+                          const ObjectPathCallback& callback) = 0;
+
+ protected:
+  // Create() should be used instead.
+  FlimflamManagerClient();
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FlimflamManagerClient);
+};
+
+}  // namespace chromeos
+
+#endif  // CHROMEOS_DBUS_FLIMFLAM_MANAGER_CLIENT_H_
