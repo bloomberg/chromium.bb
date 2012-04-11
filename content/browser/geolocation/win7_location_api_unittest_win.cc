@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,6 +21,7 @@ using testing::_;
 using testing::AtLeast;
 using testing::DoDefault;
 using testing::Invoke;
+using testing::NiceMock;
 using testing::Return;
 
 namespace {
@@ -242,11 +243,12 @@ class MockLocation : public ILocation {
 
   MockReport* mock_report_;
 
- private:
+ protected:
   ~MockLocation() {
     mock_report_->Release();
   }
 
+ private:
   HRESULT GetReportValid(REFIID report_type,
                          ILocationReport** location_report) {
     *location_report = reinterpret_cast<ILocationReport*>(mock_report_);
@@ -293,7 +295,7 @@ class GeolocationApiWin7Tests : public testing::Test {
   }
  protected:
   Win7LocationApi* CreateMock() {
-    MockLocation* locator = new MockLocation();
+    NiceMock<MockLocation>* locator = new NiceMock<MockLocation>();
     locator_ = locator;
     return Win7LocationApi::CreateForTesting(&MockPropVariantToDoubleFunction,
                                              locator);
@@ -301,7 +303,7 @@ class GeolocationApiWin7Tests : public testing::Test {
 
   scoped_ptr<Win7LocationApi> api_;
   MockLatLongReport* lat_long_report_;
-  MockLocation* locator_;
+  NiceMock<MockLocation>* locator_;
   MockReport* report_;
 };
 

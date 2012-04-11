@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,10 +10,12 @@
 #include "content/browser/geolocation/location_provider.h"
 #include "content/browser/geolocation/mock_location_provider.h"
 #include "content/common/geoposition.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::AccessTokenStore;
 using content::FakeAccessTokenStore;
+using ::testing::NiceMock;
 
 namespace {
 
@@ -99,7 +101,7 @@ class GeolocationLocationArbitratorTest : public testing::Test {
  protected:
   // testing::Test
   virtual void SetUp() {
-    access_token_store_ = new FakeAccessTokenStore;
+    access_token_store_ = new NiceMock<FakeAccessTokenStore>;
     observer_.reset(new MockLocationObserver);
     dependency_factory_ = new MockDependencyFactory(access_token_store_);
     GeolocationArbitrator::SetDependencyFactoryForTest(

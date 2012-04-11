@@ -425,7 +425,6 @@ DBusPowerSaveBlocker::DBusPowerSaveBlocker() {
     case base::nix::DESKTOP_ENVIRONMENT_OTHER:
       // Not supported, so we exit.
       // We don't create D-Bus objects.
-      NOTIMPLEMENTED();
       break;
   }
 

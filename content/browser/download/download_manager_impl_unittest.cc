@@ -60,6 +60,7 @@ using content::DownloadId;
 using content::DownloadItem;
 using content::DownloadManager;
 using content::WebContents;
+using ::testing::NiceMock;
 using ::testing::ReturnRef;
 using ::testing::Return;
 
@@ -803,7 +804,7 @@ TEST_F(DownloadManagerTest, DownloadFilenameTest) {
     info->download_id = DownloadId(kValidIdDomain, i);
     info->url_chain.push_back(GURL());
 
-    MockDownloadFile* download_file(new MockDownloadFile());
+    MockDownloadFile* download_file(new NiceMock<MockDownloadFile>());
     FilePath suggested_path(ExpandFilenameTestPath(
         kDownloadFilenameTestCases[i].suggested_path,
         downloads_dir, alternate_dir));
@@ -881,7 +882,7 @@ TEST_F(DownloadManagerTest, DownloadRenameTest) {
     info->url_chain.push_back(GURL());
     const FilePath new_path(kDownloadRenameCases[i].suggested_path);
 
-    MockDownloadFile* download_file(new MockDownloadFile());
+    MockDownloadFile* download_file(new NiceMock<MockDownloadFile>());
     const DownloadId id = info->download_id;
     ON_CALL(*download_file, GlobalId())
         .WillByDefault(ReturnRef(id));
@@ -943,7 +944,7 @@ TEST_F(DownloadManagerTest, DownloadInterruptTest) {
   const FilePath new_path(FILE_PATH_LITERAL("foo.zip"));
   const FilePath cr_path(GetTempDownloadPath(new_path));
 
-  MockDownloadFile* download_file(new MockDownloadFile());
+  MockDownloadFile* download_file(new NiceMock<MockDownloadFile>());
   ON_CALL(*download_file, AppendDataToFile(_, _))
       .WillByDefault(Return(net::OK));
 
@@ -1087,7 +1088,7 @@ TEST_F(DownloadManagerTest, DownloadCancelTest) {
   const FilePath new_path(FILE_PATH_LITERAL("foo.zip"));
   const FilePath cr_path(GetTempDownloadPath(new_path));
 
-  MockDownloadFile* download_file(new MockDownloadFile());
+  MockDownloadFile* download_file(new NiceMock<MockDownloadFile>());
   ON_CALL(*download_file, AppendDataToFile(_, _))
       .WillByDefault(Return(net::OK));
   AddMockDownloadToFileManager(info->download_id.local(), download_file);

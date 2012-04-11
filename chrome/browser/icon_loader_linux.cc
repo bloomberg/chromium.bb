@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,20 +33,25 @@ void IconLoader::ReadIcon() {
   }
 
   FilePath filename = base::nix::GetMimeIcon(group_, size_pixels);
-  string icon_data;
-  file_util::ReadFileToString(filename, &icon_data);
+  // We don't support SVG icons; this just spams the terminal so fail quickly
+  // and don't try to read the file from disk first.
+  if (filename.Extension() != ".svg") {
+    string icon_data;
+    file_util::ReadFileToString(filename, &icon_data);
 
-  webkit_glue::ImageDecoder decoder;
-  scoped_ptr<SkBitmap> bitmap(new SkBitmap());
-  *bitmap = decoder.Decode(
-      reinterpret_cast<const unsigned char*>(icon_data.data()),
-      icon_data.length());
-  if (!bitmap->empty()) {
-    DCHECK_EQ(size_pixels, bitmap->width());
-    DCHECK_EQ(size_pixels, bitmap->height());
-    image_.reset(new gfx::Image(bitmap.release()));
-  } else {
-    LOG(WARNING) << "Unsupported file type or load error: " << filename.value();
+    webkit_glue::ImageDecoder decoder;
+    scoped_ptr<SkBitmap> bitmap(new SkBitmap());
+    *bitmap = decoder.Decode(
+        reinterpret_cast<const unsigned char*>(icon_data.data()),
+        icon_data.length());
+    if (!bitmap->empty()) {
+      DCHECK_EQ(size_pixels, bitmap->width());
+      DCHECK_EQ(size_pixels, bitmap->height());
+      image_.reset(new gfx::Image(bitmap.release()));
+    } else {
+      LOG(WARNING) << "Unsupported file type or load error: "
+                   << filename.value();
+    }
   }
 
   target_message_loop_->PostTask(
