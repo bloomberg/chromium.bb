@@ -86,13 +86,13 @@ FileType.types = [
   {type: 'document', icon: 'pdf', name: 'PDF_DOCUMENT_FILE_TYPE',
    pattern: /\.pdf$/i},
   {type: 'document', icon: 'html', name: 'HTML_DOCUMENT_FILE_TYPE',
-   pattern: /\.html?$/i},
+   pattern: /\.(html?|mht|mhtml)$/i},
   {type: 'document', icon: 'word', name: 'WORD_DOCUMENT_FILE_TYPE',
    pattern: /\.(doc|docx)$/i},
   {type: 'document', icon: 'ppt', name: 'POWERPOINT_PRESENTATION_FILE_TYPE',
    pattern: /\.(ppt|pptx)$/i},
   {type: 'document', icon: 'excel', name: 'EXCEL_FILE_TYPE',
-   pattern: /\.(xls|xlsx)$/i},
+   pattern: /\.(xls|xlsx)$/i}
 ];
 
 FileType.previewArt = {

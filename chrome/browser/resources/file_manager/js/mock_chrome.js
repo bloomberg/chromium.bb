@@ -126,9 +126,9 @@ chrome.fileBrowserPrivate = {
         iconUrl: 'images/icon16.png'
       },
       {
-        taskId: extensionId + '|view-txt',
+        taskId: extensionId + '|view-in-browser',
         title: 'View',
-        regexp: /\.txt$/i,
+        regexp: /\.(html?|log|mht|mhtml|txt)$/i,
         iconUrl: emptyIcon
       },
       {

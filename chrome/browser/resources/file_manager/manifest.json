@@ -65,10 +65,15 @@
       ]
     },
     {
-      "id": "view-txt",
+      "id": "view-in-browser",
       "default_title": "__MSG_OPEN_ACTION__",
       "default_icon": "images/icon_preview_16x16.png",
       "file_filters": [
+        "filesystem:*.htm",
+        "filesystem:*.html",
+        "filesystem:*.log",
+        "filesystem:*.mht",
+        "filesystem:*.mhtml",
         "filesystem:*.txt"
       ]
     },

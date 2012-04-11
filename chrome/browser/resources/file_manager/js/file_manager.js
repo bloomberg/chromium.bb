@@ -2636,7 +2636,7 @@ FileManager.prototype = {
           task.iconUrl =
               chrome.extension.getURL('images/icon_preview_16x16.png');
           task.title = str('ACTION_VIEW');
-        } else if (task_parts[1] == 'view-txt') {
+        } else if (task_parts[1] == 'view-in-browser') {
           task.iconUrl =
               chrome.extension.getURL('images/icon_preview_16x16.png');
           task.title = str('ACTION_VIEW');
@@ -2929,8 +2929,8 @@ FileManager.prototype = {
       });
     } else if (id == 'gallery') {
       this.openGallery_(urls);
-    } else if (id == 'view-pdf' || id == 'view-txt' || id == 'install-crx' ||
-        id == 'open-hosted') {
+    } else if (id == 'view-pdf' || id == 'view-in-browser' ||
+        id == 'install-crx' || id == 'open-hosted') {
       chrome.fileBrowserPrivate.viewFiles(urls, 'default', function (success) {
         if (!success)
           console.error('chrome.fileBrowserPrivate.viewFiles failed', urls);
