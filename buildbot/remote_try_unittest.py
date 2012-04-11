@@ -4,9 +4,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Unittests for commands.  Needs to be run inside of chroot for mox."""
-
-import glob
 import json
 import mox
 import os
@@ -17,24 +14,32 @@ import unittest
 
 import constants
 sys.path.insert(0, constants.SOURCE_ROOT)
+from chromite.lib import cros_build_lib as cros_lib
 from chromite.lib import cros_test_lib as test_lib
 from chromite.buildbot import remote_try
+from chromite.buildbot import repository
 
-# pylint: disable=W0212,R0904
+# pylint: disable=W0212,R0904,E1101
 class RemoteTryTests(mox.MoxTestBase):
+
+  PATCHES = ['5555', '6666']
+  BOTS = ['x86-generic-paladin', 'arm-generic-paladin']
 
   @test_lib.tempdir_decorator
   def testSimpleTryJob(self):
     """Test that a tryjob spec file is created and pushed properly."""
-    PATCHES = ['5555', '6666']
-    BOTS = ['x86-generic-paladin', 'arm-generic-paladin']
     options = mox.MockAnything()
-    options.gerrit_patches = PATCHES
+    options.gerrit_patches = self.PATCHES
     options.local_patches = []
+    self.mox.StubOutWithMock(repository, 'IsARepoRoot')
+    repository.IsARepoRoot(mox.IgnoreArg()).AndReturn(True)
+    self.mox.StubOutWithMock(repository, 'IsInternalRepoCheckout')
+    repository.IsInternalRepoCheckout(mox.IgnoreArg()).AndReturn(False)
+
     self.mox.StubOutWithMock(time, 'time')
     time.time().AndReturn(0)
     self.mox.ReplayAll()
-    job = remote_try.RemoteTryJob(options, BOTS, [])
+    job = remote_try.RemoteTryJob(options, self.BOTS, [])
     job.Submit(workdir=self.tempdir, dryrun=True)
     # Get the file that was just created.
     created_file = os.path.join(self.tempdir, job.user, '%s.0' % job.user)
@@ -45,13 +50,51 @@ class RemoteTryTests(mox.MoxTestBase):
                      re.search('\@chromium\.org', values['email'][0]) is None)
 
     for arg in values['extra_args']:
-      if PATCHES[0] in arg and PATCHES[1] in arg:
+      if self.PATCHES[0] in arg and self.PATCHES[1] in arg:
         break
     else:
       self.assertTrue(False, "Patches couldn't be found in extra_args...")
 
-    self.assertTrue(BOTS[0] in values['bot'] and
-                    BOTS[1] in values['bot'])
+    self.assertTrue(set(self.BOTS).issubset(values['bot']))
+
+    remote_url = cros_lib.RunCommand(['git', 'config', 'remote.origin.url'],
+                                     redirect_stdout=True,
+                                     cwd=self.tempdir).output.strip()
+    self.assertTrue(remote_url == remote_try.RemoteTryJob.EXT_SSH_URL)
+
+  @test_lib.tempdir_decorator
+  def testInternalTryJob(self):
+    """Verify internal tryjobs are pushed properly."""
+    options = mox.MockAnything()
+    options.gerrit_patches = self.PATCHES
+    options.local_patches = []
+    self.mox.StubOutWithMock(repository, 'IsARepoRoot')
+    repository.IsARepoRoot(mox.IgnoreArg()).AndReturn(True)
+    self.mox.StubOutWithMock(repository, 'IsInternalRepoCheckout')
+    repository.IsInternalRepoCheckout(mox.IgnoreArg()).AndReturn(True)
+
+    self.mox.ReplayAll()
+    job = remote_try.RemoteTryJob(options, self.BOTS, [])
+    job.Submit(workdir=self.tempdir, dryrun=True)
+
+    remote_url = cros_lib.RunCommand(['git', 'config', 'remote.origin.url'],
+                                     redirect_stdout=True,
+                                     cwd=self.tempdir).output.strip()
+    self.assertTrue(remote_url == remote_try.RemoteTryJob.INT_SSH_URL)
+
+  def testBareTryJob(self):
+    """Verify submitting a tryjob from just a chromite checkout works."""
+    options = mox.MockAnything()
+    options.gerrit_patches = self.PATCHES
+    options.local_patches = []
+    self.mox.StubOutWithMock(repository, 'IsARepoRoot')
+    repository.IsARepoRoot(mox.IgnoreArg()).AndReturn(False)
+    self.mox.StubOutWithMock(repository, 'IsInternalRepoCheckout')
+
+    self.mox.ReplayAll()
+    job = remote_try.RemoteTryJob(options, self.BOTS, [])
+    self.assertTrue(job.ssh_url == remote_try.RemoteTryJob.EXT_SSH_URL)
+
 
 if __name__ == '__main__':
   unittest.main()

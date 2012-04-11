@@ -51,13 +51,24 @@ def InARepoRepository(directory, require_project=False):
   return output.returncode == 0
 
 
-def IsARepoRoot(root):
+def IsARepoRoot(directory):
   """Returns True if directory is the root of a repo checkout."""
   # Check for the underlying git-repo checkout.  If it exists, it's
   # definitely the repo root.  If it doesn't, it may be an aborted
   # checkout- either way it isn't usable.
-  repo_dir = os.path.join(root, '.repo', 'repo')
+  repo_dir = os.path.join(directory, '.repo', 'repo')
   return os.path.isdir(repo_dir)
+
+
+def IsInternalRepoCheckout(root):
+  """Returns whether root houses an internal 'repo' checkout."""
+  manifest_dir = os.path.join(root, '.repo', 'manifests')
+  manifest_url = cros_lib.RunCommand(['git', 'config', 'remote.origin.url'],
+                                     redirect_stdout=True,
+                                     print_cmd=False,
+                                     cwd=manifest_dir).output.strip()
+  return (os.path.splitext(os.path.basename(manifest_url))[0]
+          == os.path.splitext(os.path.basename(constants.MANIFEST_INT_URL))[0])
 
 
 def CloneGitRepo(working_dir, repo_url):

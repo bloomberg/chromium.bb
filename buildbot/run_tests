@@ -59,6 +59,7 @@ all_tests=(
   patch_unittest.py
   prebuilt_unittest.py
   remote_try_unittest.py
+  repository_unittest.py
   validation_pool_unittest.py
   "cros_mark_as_stable_unittest.py yes"
   "cros_mark_chrome_as_stable_unittest.py yes"

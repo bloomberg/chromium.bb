@@ -22,8 +22,11 @@ from chromite.lib import cros_build_lib as cros_lib
 
 class RemoteTryJob(object):
   """Remote Tryjob that is submitted through a Git repo."""
-  SSH_URL = os.path.join(constants.GERRIT_SSH_URL,
-                         'chromiumos/tryjobs')
+  EXT_SSH_URL = os.path.join(constants.GERRIT_SSH_URL,
+                             'chromiumos/tryjobs')
+  INT_SSH_URL = os.path.join(constants.GERRIT_INT_SSH_URL,
+                             'chromeos/tryjobs')
+
   TRYJOB_DESCRIPTION_VERSION = 1
   TRYSERVER_URL = 'http://chromegw/p/tryserver.chromiumos'
 
@@ -52,6 +55,10 @@ class RemoteTryJob(object):
                              % ' '.join(options.gerrit_patches))
     self.tryjob_repo = None
     self.local_patches = local_patches
+    self.ssh_url = self.EXT_SSH_URL
+    if (repository.IsARepoRoot(constants.SOURCE_ROOT)
+        and repository.IsInternalRepoCheckout(constants.SOURCE_ROOT)):
+      self.ssh_url = self.INT_SSH_URL
 
   @property
   def values(self):
@@ -77,7 +84,7 @@ class RemoteTryJob(object):
                                 patch.tracking_branch))
 
     # TODO(rcui): convert to shallow clone when that's available.
-    repository.CloneGitRepo(self.tryjob_repo, self.SSH_URL)
+    repository.CloneGitRepo(self.tryjob_repo, self.ssh_url)
     push_branch = manifest_version.PUSH_BRANCH
     remote_branch = ('origin', 'test') if testjob else None
     cros_lib.CreatePushBranch(push_branch, self.tryjob_repo, sync=False,
