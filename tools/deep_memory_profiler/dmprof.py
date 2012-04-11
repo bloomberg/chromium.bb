@@ -5,6 +5,8 @@
 
 """The deep heap profiler script for Chrome."""
 
+from datetime import datetime
+import json
 import os
 import re
 import subprocess
@@ -622,6 +624,7 @@ def parse_policy(policy_path):
 
 def main():
   if (len(sys.argv) < 4) or (not (sys.argv[1] in ['--csv',
+                                                  '--json',
                                                   '--expand',
                                                   '--list',
                                                   '--stacktrace',
@@ -631,6 +634,7 @@ def main():
 
 Options:
   --csv                         Output result in csv format
+  --json                        Output result in json format
   --stacktrace                  Convert raw address to symbol names
   --list                        Lists components and their sizes
   --expand                      Show all stacktraces in the specified component
@@ -640,6 +644,7 @@ Options:
 
 Examples:
   dmprof --csv Debug/chrome dmpolicy hprof.12345.0001.heap > result.csv
+  dmprof --json Debug/chrome dmpolicy hprof.12345.0001.heap > result.json
   dmprof --list Debug/chrome dmpolicy hprof.12345.0012.heap
   dmprof --expand Debug/chrome dmpolicy hprof.12345.0012.heap tc-webkit 4
   dmprof --pprof Debug/chrome dmpolicy hprof.12345.0012.heap > for_pprof.txt
@@ -686,7 +691,7 @@ Examples:
 
   log_path_list = [log_path]
 
-  if action == '--csv':
+  if action in ('--csv', '--json'):
     # search for the sequence of files
     n = int(log_path[len(log_path) - 9 : len(log_path) - 5])
     n += 1  # skip current file
@@ -698,9 +703,7 @@ Examples:
         break
       n += 1
 
-  logs = []
-  for path in log_path_list:
-    logs.append(Log(path, buckets))
+  logs = [Log(path, buckets) for path in log_path_list]
 
   sys.stderr.write('getting symbols\n')
   update_symbols(symbol_path, maps_lines, chrome_path)
@@ -723,6 +726,20 @@ Examples:
           s.append('%05.5f' % (component_sizes[c] / 1024.0 / 1024.0))
       sys.stdout.write(','.join(s))
       sys.stdout.write('\n')
+
+  elif action == '--json':
+    json_base = {
+      'version': 'JSON_DEEP_1',
+      'legends': components,
+      'snapshots': [],
+    }
+    for log in logs:
+      component_sizes = log.apply_policy(policy_list, buckets, logs[0].log_time)
+      component_sizes['log_path'] = log.log_path
+      component_sizes['log_time'] = datetime.fromtimestamp(
+          log.log_time).strftime('%Y-%m-%d %H:%M:%S')
+      json_base['snapshots'].append(component_sizes)
+    json.dump(json_base, sys.stdout, indent=2, sort_keys=True)
 
   elif action == '--list':
     component_sizes = logs[0].apply_policy(
