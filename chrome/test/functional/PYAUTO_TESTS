@@ -95,6 +95,8 @@
       '-autofill.AutofillTest.testNoDuplicatePhoneNumsInPrefs',
       # crbug.com/119173
       '-https.SSLTest',
+      # crbug.com/123045
+      '-indexeddb',
       # crbug.com/119110
       '-https.SSLTest.testSSLCertOK',
       # crbug.com/100593
