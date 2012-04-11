@@ -29,6 +29,8 @@
 #include <png.h>
 #include <pixman.h>
 
+#include "config-parser.h"
+
 #define ARRAY_LENGTH(a) (sizeof (a) / sizeof (a)[0])
 
 #ifdef HAVE_WEBP
@@ -67,7 +69,8 @@ load_jpeg(FILE *fp)
 {
 	struct jpeg_decompress_struct cinfo;
 	struct jpeg_error_mgr jerr;
-	int stride, i, first;
+	unsigned int i;
+	int stride, first;
 	JSAMPLE *data, *rows[4];
 	jmp_buf env;
 
@@ -350,7 +353,7 @@ load_image(const char *filename)
 	pixman_image_t *image;
 	unsigned char header[4];
 	FILE *fp;
-	int i;
+	unsigned int i;
 
 	fp = fopen(filename, "rb");
 	if (fp == NULL)
