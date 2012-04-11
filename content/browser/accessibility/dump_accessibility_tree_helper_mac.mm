@@ -17,10 +17,15 @@ string16 DumpAccessibilityTreeHelper::ToString(BrowserAccessibility* node,
                                                char* prefix) {
   BrowserAccessibilityCocoa* cocoa_node = node->toBrowserAccessibilityCocoa();
   NSString* dump =
-      [NSString stringWithFormat:@"%s%@ subrole=%@ title='%@' value='%@'\n",
+      [NSString stringWithFormat:@"%s%@ "
+                                  "subrole=%@ "
+                                  "roleDescription='%@' "
+                                  "title='%@' "
+                                  "value='%@'\n",
        prefix,
        [cocoa_node role],
        [cocoa_node subrole],
+       [cocoa_node roleDescription],
        [cocoa_node title],
        [cocoa_node value]];
   std::string tempVal = [dump cStringUsingEncoding:NSUTF8StringEncoding];
