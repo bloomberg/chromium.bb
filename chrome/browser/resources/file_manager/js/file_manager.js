@@ -3019,7 +3019,6 @@ FileManager.prototype = {
     this.updateLocation_(false /*push*/, dirPath);
 
     galleryFrame.onload = function() {
-      self.document_.title = str('ACTION_VIEW');
       galleryFrame.contentWindow.ImageUtil.metrics = metrics;
       galleryFrame.contentWindow.FileType = FileType;
       galleryFrame.contentWindow.util = util;
@@ -3042,6 +3041,7 @@ FileManager.prototype = {
         metadataProvider: self.getMetadataProvider(),
         getShareActions: self.getShareActions_.bind(self),
         onNameChange: function(name) {
+          self.document_.title = name;
           self.updateLocation_(true /*replace*/, dirPath + '/' + name);
         },
         onClose: function() {
