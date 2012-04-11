@@ -83,12 +83,14 @@ class BufferedResourceLoaderTest : public testing::Test {
     first_position_ = first_position;
     last_position_ = last_position;
 
-    url_loader_ = new NiceMock<MockWebURLLoader>();
     loader_.reset(new BufferedResourceLoader(
         gurl_, first_position_, last_position_,
         BufferedResourceLoader::kThresholdDefer, 0, 0,
         new media::MediaLog()));
-    loader_->SetURLLoaderForTest(scoped_ptr<WebKit::WebURLLoader>(url_loader_));
+
+    // |test_loader_| will be used when Start() is called.
+    url_loader_ = new NiceMock<MockWebURLLoader>();
+    loader_->test_loader_ = scoped_ptr<WebKit::WebURLLoader>(url_loader_);
   }
 
   void SetLoaderBuffer(int forward_capacity, int backward_capacity) {

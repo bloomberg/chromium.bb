@@ -56,8 +56,9 @@ class MockBufferedDataSource : public BufferedDataSource {
         .WillByDefault(Assign(&loading_, true));
     ON_CALL(*url_loader, cancel())
         .WillByDefault(Assign(&loading_, false));
-    scoped_ptr<WebURLLoader> wul(url_loader);
-    loader->SetURLLoaderForTest(wul.Pass());
+
+    // |test_loader_| will be used when Start() is called.
+    loader->test_loader_ = scoped_ptr<WebURLLoader>(url_loader);
     return loader;
   }
 

@@ -323,11 +323,6 @@ const GURL& BufferedResourceLoader::url() {
   return url_;
 }
 
-void BufferedResourceLoader::SetURLLoaderForTest(
-    scoped_ptr<WebURLLoader> test_loader) {
-  test_loader_ = test_loader.Pass();
-}
-
 /////////////////////////////////////////////////////////////////////////////
 // WebKit::WebURLLoaderClient implementation.
 void BufferedResourceLoader::willSendRequest(

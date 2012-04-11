@@ -90,15 +90,15 @@ class BufferedResourceLoader : public WebKit::WebURLLoaderClient {
   //   - Loading completed
   //   - Loading failed
   typedef base::Callback<void(Status)> StartCB;
-  virtual void Start(const StartCB& start_cb,
-                     const base::Closure& event_cb,
-                     WebKit::WebFrame* frame);
+  void Start(const StartCB& start_cb,
+             const base::Closure& event_cb,
+             WebKit::WebFrame* frame);
 
   // Stops everything associated with this loader, including active URL loads
   // and pending callbacks.
   //
   // It is safe to delete a BufferedResourceLoader after calling Stop().
-  virtual void Stop();
+  void Stop();
 
   // Copies |read_size| bytes from |position| into |buffer|, executing |read_cb|
   // when the operation has completed.
@@ -109,34 +109,30 @@ class BufferedResourceLoader : public WebKit::WebURLLoaderClient {
   // If necessary will temporarily increase forward capacity of buffer to
   // accomodate an unusually large read.
   typedef base::Callback<void(Status, int)> ReadCB;
-  virtual void Read(int64 position, int read_size,
-                    uint8* buffer, const ReadCB& read_cb);
+  void Read(int64 position, int read_size,
+            uint8* buffer, const ReadCB& read_cb);
 
   // Returns the position of the last byte buffered. Returns
   // |kPositionNotSpecified| if such value is not available.
-  virtual int64 GetBufferedPosition();
+  int64 GetBufferedPosition();
 
   // Gets the content length in bytes of the instance after this loader has been
   // started. If this value is |kPositionNotSpecified|, then content length is
   // unknown.
-  virtual int64 content_length();
+  int64 content_length();
 
   // Gets the original size of the file requested. If this value is
   // |kPositionNotSpecified|, then the size is unknown.
-  virtual int64 instance_size();
+  int64 instance_size();
 
   // Returns true if the server supports byte range requests.
-  virtual bool range_supported();
+  bool range_supported();
 
   // Returns true if the resource loader is currently downloading data.
-  virtual bool is_downloading_data();
+  bool is_downloading_data();
 
   // Returns resulting URL.
-  virtual const GURL& url();
-
-  // |test_loader| will get used the next time Start() is called.
-  virtual void SetURLLoaderForTest(
-      scoped_ptr<WebKit::WebURLLoader> test_loader);
+  const GURL& url();
 
   // WebKit::WebURLLoaderClient implementation.
   virtual void willSendRequest(
@@ -196,6 +192,7 @@ class BufferedResourceLoader : public WebKit::WebURLLoaderClient {
  private:
   friend class BufferedDataSourceTest;
   friend class BufferedResourceLoaderTest;
+  friend class MockBufferedDataSource;
 
   // Updates the |buffer_|'s forward and backward capacities.
   void UpdateBufferWindow();
