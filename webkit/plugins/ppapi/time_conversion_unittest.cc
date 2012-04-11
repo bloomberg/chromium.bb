@@ -1,12 +1,12 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include <math.h>
 #include <stdlib.h>
 
-#include "testing/gtest/include/gtest/gtest.h"
 #include "ppapi/shared_impl/time_conversion.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace ppapi {
 
@@ -29,8 +29,8 @@ TEST(TimeConversion, Time) {
 
   // Units should be in seconds.
   base::Time one_second_from_now = now + base::TimeDelta::FromSeconds(1);
-  EXPECT_EQ(1.0, ppapi::TimeToPPTime(one_second_from_now) -
-                 ppapi::TimeToPPTime(now));
+  EXPECT_DOUBLE_EQ(1.0, ppapi::TimeToPPTime(one_second_from_now) -
+                        ppapi::TimeToPPTime(now));
 }
 
 TEST(TimeConversion, EventTime) {
