@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,49 +12,45 @@
 
 namespace gfx {
 
-template<>
-PointBase<Point,int>::PointBase(int x, int y) : x_(x), y_(y) {
+Point::Point() : x_(0), y_(0) {
 }
 
-Point::Point() : PointBase<Point, int>(0, 0) {
-}
-
-Point::Point(int x, int y) : PointBase<Point, int>(x, y) {
+Point::Point(int x, int y) : x_(x), y_(y) {
 }
 
 #if defined(OS_WIN)
-Point::Point(DWORD point) : PointBase<Point, int>(0, 0){
+Point::Point(DWORD point) {
   POINTS points = MAKEPOINTS(point);
-  set_x(points.x);
-  set_y(points.y);
+  x_ = points.x;
+  y_ = points.y;
 }
 
-Point::Point(const POINT& point) : PointBase<Point, int>(point.x, point.y) {
+Point::Point(const POINT& point) : x_(point.x), y_(point.y) {
 }
 
 Point& Point::operator=(const POINT& point) {
-  set_x(point.x);
-  set_y(point.y);
+  x_ = point.x;
+  y_ = point.y;
   return *this;
 }
 
 POINT Point::ToPOINT() const {
   POINT p;
-  p.x = x();
-  p.y = y();
+  p.x = x_;
+  p.y = y_;
   return p;
 }
 #elif defined(OS_MACOSX)
-Point::Point(const CGPoint& point) : PointBase<Point, int>(point.x, point.y) {
+Point::Point(const CGPoint& point) : x_(point.x), y_(point.y) {
 }
 
 CGPoint Point::ToCGPoint() const {
-  return CGPointMake(x(), y());
+  return CGPointMake(x_, y_);
 }
 #endif
 
 std::string Point::ToString() const {
-  return base::StringPrintf("%d,%d", x(), y());
+  return base::StringPrintf("%d,%d", x_, y_);
 }
 
 }  // namespace gfx

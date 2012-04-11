@@ -15,78 +15,118 @@
 #include "base/logging.h"
 #include "base/stringprintf.h"
 #include "ui/gfx/insets.h"
-#include "ui/gfx/rect_base_impl.h"
+
+namespace {
+
+void AdjustAlongAxis(int dst_origin, int dst_size, int* origin, int* size) {
+  *size = std::min(dst_size, *size);
+  if (*origin < dst_origin)
+    *origin = dst_origin;
+  else
+    *origin = std::min(dst_origin + dst_size, *origin + *size) - *size;
+}
+
+} // namespace
 
 namespace gfx {
 
-template class RectBase<Rect, Point, Size, Insets, int>;
-
-typedef class RectBase<Rect, Point, Size, Insets, int> RectBaseT;
-
-Rect::Rect() : RectBaseT(gfx::Point()) {
+Rect::Rect() {
 }
 
 Rect::Rect(int width, int height)
-    : RectBaseT(gfx::Size(width, height)) {
+    : size_(width, height) {
 }
 
 Rect::Rect(int x, int y, int width, int height)
-    : RectBaseT(gfx::Point(x, y), gfx::Size(width, height)) {
+    : origin_(x, y), size_(width, height) {
 }
 
 Rect::Rect(const gfx::Size& size)
-    : RectBaseT(size) {
+    : size_(size) {
 }
 
 Rect::Rect(const gfx::Point& origin, const gfx::Size& size)
-    : RectBaseT(origin, size) {
+    : origin_(origin), size_(size) {
 }
 
 Rect::~Rect() {}
 
 #if defined(OS_WIN)
 Rect::Rect(const RECT& r)
-    : RectBaseT(gfx::Point(r.left, r.top)) {
+    : origin_(r.left, r.top) {
   set_width(std::abs(r.right - r.left));
   set_height(std::abs(r.bottom - r.top));
 }
 
 Rect& Rect::operator=(const RECT& r) {
-  set_x(r.left);
-  set_y(r.top);
+  origin_.SetPoint(r.left, r.top);
   set_width(std::abs(r.right - r.left));
   set_height(std::abs(r.bottom - r.top));
   return *this;
 }
 #elif defined(OS_MACOSX)
 Rect::Rect(const CGRect& r)
-    : RectBaseT(gfx::Point(r.origin.x, r.origin.y)) {
+    : origin_(r.origin.x, r.origin.y) {
   set_width(r.size.width);
   set_height(r.size.height);
 }
 
 Rect& Rect::operator=(const CGRect& r) {
-  set_x(r.origin.x);
-  set_y(r.origin.y);
+  origin_.SetPoint(r.origin.x, r.origin.y);
   set_width(r.size.width);
   set_height(r.size.height);
   return *this;
 }
 #elif defined(TOOLKIT_GTK)
 Rect::Rect(const GdkRectangle& r)
-    : RectBaseT(gfx::Point(r.x, r.y)) {
+    : origin_(r.x, r.y) {
   set_width(r.width);
   set_height(r.height);
 }
 
 Rect& Rect::operator=(const GdkRectangle& r) {
-  set_x(r.x);
-  set_y(r.y);
+  origin_.SetPoint(r.x, r.y);
   set_width(r.width);
   set_height(r.height);
   return *this;
 }
 #endif
+
+void Rect::SetRect(int x, int y, int width, int height) {
+  origin_.SetPoint(x, y);
+  set_width(width);
+  set_height(height);
+}
+
+void Rect::Inset(const gfx::Insets& insets) {
+  Inset(insets.left(), insets.top(), insets.right(), insets.bottom());
+}
+
+void Rect::Inset(int left, int top, int right, int bottom) {
+  Offset(left, top);
+  set_width(std::max(width() - left - right, 0));
+  set_height(std::max(height() - top - bottom, 0));
+}
+
+void Rect::Offset(int horizontal, int vertical) {
+  origin_.Offset(horizontal, vertical);
+}
+
+bool Rect::operator==(const Rect& other) const {
+  return origin_ == other.origin_ && size_ == other.size_;
+}
+
+bool Rect::operator<(const Rect& other) const {
+  if (origin_ == other.origin_) {
+    if (width() == other.width()) {
+      return height() < other.height();
+    } else {
+      return width() < other.width();
+    }
+  } else {
+    return origin_ < other.origin_;
+  }
+}
 
 #if defined(OS_WIN)
 RECT Rect::ToRECT() const {
@@ -108,10 +148,122 @@ GdkRectangle Rect::ToGdkRectangle() const {
 }
 #endif
 
+bool Rect::Contains(int point_x, int point_y) const {
+  return (point_x >= x()) && (point_x < right()) &&
+         (point_y >= y()) && (point_y < bottom());
+}
+
+bool Rect::Contains(const Rect& rect) const {
+  return (rect.x() >= x() && rect.right() <= right() &&
+          rect.y() >= y() && rect.bottom() <= bottom());
+}
+
+bool Rect::Intersects(const Rect& rect) const {
+  return !(rect.x() >= right() || rect.right() <= x() ||
+           rect.y() >= bottom() || rect.bottom() <= y());
+}
+
+Rect Rect::Intersect(const Rect& rect) const {
+  int rx = std::max(x(), rect.x());
+  int ry = std::max(y(), rect.y());
+  int rr = std::min(right(), rect.right());
+  int rb = std::min(bottom(), rect.bottom());
+
+  if (rx >= rr || ry >= rb)
+    rx = ry = rr = rb = 0;  // non-intersecting
+
+  return Rect(rx, ry, rr - rx, rb - ry);
+}
+
+Rect Rect::Union(const Rect& rect) const {
+  // special case empty rects...
+  if (IsEmpty())
+    return rect;
+  if (rect.IsEmpty())
+    return *this;
+
+  int rx = std::min(x(), rect.x());
+  int ry = std::min(y(), rect.y());
+  int rr = std::max(right(), rect.right());
+  int rb = std::max(bottom(), rect.bottom());
+
+  return Rect(rx, ry, rr - rx, rb - ry);
+}
+
+Rect Rect::Subtract(const Rect& rect) const {
+  // boundary cases:
+  if (!Intersects(rect))
+    return *this;
+  if (rect.Contains(*this))
+    return Rect();
+
+  int rx = x();
+  int ry = y();
+  int rr = right();
+  int rb = bottom();
+
+  if (rect.y() <= y() && rect.bottom() >= bottom()) {
+    // complete intersection in the y-direction
+    if (rect.x() <= x()) {
+      rx = rect.right();
+    } else {
+      rr = rect.x();
+    }
+  } else if (rect.x() <= x() && rect.right() >= right()) {
+    // complete intersection in the x-direction
+    if (rect.y() <= y()) {
+      ry = rect.bottom();
+    } else {
+      rb = rect.y();
+    }
+  }
+  return Rect(rx, ry, rr - rx, rb - ry);
+}
+
+Rect Rect::AdjustToFit(const Rect& rect) const {
+  int new_x = x();
+  int new_y = y();
+  int new_width = width();
+  int new_height = height();
+  AdjustAlongAxis(rect.x(), rect.width(), &new_x, &new_width);
+  AdjustAlongAxis(rect.y(), rect.height(), &new_y, &new_height);
+  return Rect(new_x, new_y, new_width, new_height);
+}
+
+Point Rect::CenterPoint() const {
+  return Point(x() + (width() - 1) / 2, y() + (height() - 1) / 2);
+}
+
+Rect Rect::Center(const gfx::Size& size) const {
+  int new_width = std::min(width(), size.width());
+  int new_height = std::min(height(), size.height());
+  int new_x = x() + (width() - new_width) / 2;
+  int new_y = y() + (height() - new_height) / 2;
+  return Rect(new_x, new_y, new_width, new_height);
+}
+
+void Rect::SplitVertically(gfx::Rect* left_half, gfx::Rect* right_half) const {
+  DCHECK(left_half);
+  DCHECK(right_half);
+
+  left_half->SetRect(this->x(), this->y(), this->width() / 2, this->height());
+  right_half->SetRect(left_half->right(),
+                      this->y(),
+                      this->width() - left_half->width(),
+                      this->height());
+}
+
+bool Rect::SharesEdgeWith(const gfx::Rect& rect) const {
+  return (y() == rect.y() && height() == rect.height() &&
+             (x() == rect.right() || right() == rect.x())) ||
+         (x() == rect.x() && width() == rect.width() &&
+             (y() == rect.bottom() || bottom() == rect.y()));
+}
+
 std::string Rect::ToString() const {
   return base::StringPrintf("%s %s",
-                            origin().ToString().c_str(),
-                            size().ToString().c_str());
+                            origin_.ToString().c_str(),
+                            size_.ToString().c_str());
 }
 
 }  // namespace gfx

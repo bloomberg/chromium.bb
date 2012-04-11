@@ -12,22 +12,18 @@
 
 #include "base/logging.h"
 #include "base/stringprintf.h"
-#include "ui/gfx/size_base.h"
-#include "ui/gfx/size_base_impl.h"
 
 namespace gfx {
 
-template class SizeBase<Size, int>;
+Size::Size() : width_(0), height_(0) {}
 
-Size::Size() : SizeBase<Size, int>(0, 0) {}
-
-Size::Size(int width, int height) : SizeBase<Size, int>(0, 0) {
+Size::Size(int width, int height) {
   set_width(width);
   set_height(height);
 }
 
 #if defined(OS_MACOSX)
-Size::Size(const CGSize& s) : SizeBase<Size, int>(0, 0) {
+Size::Size(const CGSize& s) {
   set_width(s.width);
   set_height(s.height);
 }
@@ -44,18 +40,34 @@ Size::~Size() {}
 #if defined(OS_WIN)
 SIZE Size::ToSIZE() const {
   SIZE s;
-  s.cx = width();
-  s.cy = height();
+  s.cx = width_;
+  s.cy = height_;
   return s;
 }
 #elif defined(OS_MACOSX)
 CGSize Size::ToCGSize() const {
-  return CGSizeMake(width(), height());
+  return CGSizeMake(width_, height_);
 }
 #endif
 
+void Size::set_width(int width) {
+  if (width < 0) {
+    NOTREACHED() << "negative width:" << width;
+    width = 0;
+  }
+  width_ = width;
+}
+
+void Size::set_height(int height) {
+  if (height < 0) {
+    NOTREACHED() << "negative height:" << height;
+    height = 0;
+  }
+  height_ = height;
+}
+
 std::string Size::ToString() const {
-  return base::StringPrintf("%dx%d", width(), height());
+  return base::StringPrintf("%dx%d", width_, height_);
 }
 
 }  // namespace gfx

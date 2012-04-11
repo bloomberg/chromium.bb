@@ -4,30 +4,23 @@
 
 #include "ui/gfx/point_f.h"
 
-#include <cmath>
-
 #include "base/stringprintf.h"
 #include "ui/gfx/point.h"
 
 namespace gfx {
 
-template<>
-PointBase<Point, float>::PointBase(float x, float y) : x_(x), y_(y) {
+PointF::PointF() : x_(0), y_(0) {
 }
 
-PointF::PointF() : PointBase<PointF, float>(0, 0) {
-}
-
-PointF::PointF(float x, float y) : PointBase<PointF, float>(x, y) {
+PointF::PointF(float x, float y) : x_(x), y_(y) {
 }
 
 Point PointF::ToPoint() const {
-  return Point(static_cast<int>(std::floor(x())),
-               static_cast<int>(std::floor(y())));
+  return Point(static_cast<int>(x_), static_cast<int>(y_));
 }
 
 std::string PointF::ToString() const {
-  return base::StringPrintf("%f,%f", x(), y());
+  return base::StringPrintf("%f,%f", x_, y_);
 }
 
 }  // namespace gfx
