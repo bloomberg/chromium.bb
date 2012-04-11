@@ -195,7 +195,10 @@ bool CrashGenerator::CreateChildCrash(
     return false;
   }
   if (!WIFSIGNALED(status) || WTERMSIG(status) != crash_signal) {
-    perror("CrashGenerator: Child process not killed by the expected signal");
+    fprintf(stderr, "CrashGenerator: Child process not killed by the expected signal\n"
+                    "  exit status=0x%x signaled=%s sig=%d expected=%d\n",
+                    status, WIFSIGNALED(status) ? "true" : "false",
+                    WTERMSIG(status), crash_signal);
     return false;
   }
 
