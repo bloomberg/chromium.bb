@@ -184,6 +184,10 @@ class WebRTCAudioDeviceTest
   scoped_ptr<content::TestBrowserThread> io_thread_;
   // COM initialization on the IO thread for Windows.
   scoped_ptr<base::win::ScopedCOMInitializer> initialize_com_;
+
+  // These are initialized when we set up our IO thread.
+  bool has_input_devices_;
+  bool has_output_devices_;
 };
 
 // A very basic implementation of webrtc::Transport that acts as a transport
