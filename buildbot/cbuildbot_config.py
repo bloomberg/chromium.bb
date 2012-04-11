@@ -774,12 +774,12 @@ _config.add_group('x86-zgb-release-group',
 
 _release.add_config('stumpy-release',
   boards=['stumpy'],
-  # Disabled HWTest for now crosbug.com/29228
-  # hw_tests=['bvt'],
+  hw_tests=['bvt'],
 )
 
 _release.add_config('lumpy-release',
   boards=['lumpy'],
+  hw_tests=['bvt'],
 )
 
 _release.add_config('link-release',
