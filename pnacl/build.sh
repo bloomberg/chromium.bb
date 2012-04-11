@@ -830,6 +830,7 @@ everything-post-hg() {
 everything-translator() {
   everything
   translator-all
+  driver-install-translator
 }
 
 #+ translator-clean-all  - Clean all translator install/build directories
@@ -3191,7 +3192,6 @@ driver() {
   StepBanner "DRIVER"
   driver-install newlib
   driver-install glibc
-  driver-install-translator
 }
 
 # install python scripts and redirector shell/batch scripts
