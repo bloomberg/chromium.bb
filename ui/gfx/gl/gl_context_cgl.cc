@@ -7,6 +7,7 @@
 #include <OpenGL/CGLRenderers.h>
 #include <vector>
 
+#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "ui/gfx/gl/gl_bindings.h"
 #include "ui/gfx/gl/gl_implementation.h"
@@ -87,6 +88,7 @@ void GLContextCGL::Destroy() {
 }
 
 bool GLContextCGL::MakeCurrent(GLSurface* surface) {
+  TRACE_EVENT0("gpu", "GLContextCGL::MakeCurrent");
   DCHECK(context_);
   if (IsCurrent(surface))
     return true;

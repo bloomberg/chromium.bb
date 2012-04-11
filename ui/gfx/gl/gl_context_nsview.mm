@@ -9,6 +9,7 @@
 #import <AppKit/NSOpenGL.h>
 #import <AppKit/NSView.h>
 
+#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "ui/gfx/gl/gl_surface_nsview.h"
 
@@ -54,6 +55,7 @@ void GLContextNSView::Destroy() {
 }
 
 bool GLContextNSView::MakeCurrent(GLSurface* surface) {
+  TRACE_EVENT0("gpu", "GLContextNSView::MakeCurrent");
   AcceleratedWidget view =
       static_cast<AcceleratedWidget>(surface->GetHandle());
   // Only set the context's view if the view is parented.

@@ -8,6 +8,7 @@ extern "C" {
 
 #include "ui/gfx/gl/gl_context_glx.h"
 
+#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "third_party/mesa/MesaLib/include/GL/osmesa.h"
@@ -151,6 +152,7 @@ void GLContextGLX::Destroy() {
 }
 
 bool GLContextGLX::MakeCurrent(GLSurface* surface) {
+  TRACE_EVENT0("gpu", "GLContextGLX::MakeCurrent");
   DCHECK(context_);
   if (IsCurrent(surface))
     return true;
