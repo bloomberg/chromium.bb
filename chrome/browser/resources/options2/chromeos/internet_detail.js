@@ -802,7 +802,7 @@ cr.define('options.internet', function() {
           indicators[i].controlledBy = controlledBy;
           var forElement = $(indicators[i].getAttribute('for'));
           if (forElement)
-            forElement.disabled = true;
+            forElement.disabled = controlledBy != 'recommended';
           if (forElement.type == 'radio' && !forElement.checked)
             indicators[i].hidden = true;
         } else {
