@@ -76,6 +76,9 @@
         'content/browser/tab_contents/.*|'\
         'chrome/browser/ui/tab_contents/.*',
     },
+    'sessions': {
+      'filepath': 'chrome/browser/sessions/.*',
+    },
     'site_instance': {
       'filepath': 'content/browser/site_instance.*|'\
         'content/browser/browsing_instance.*',
@@ -354,6 +357,7 @@
                  'brettw-cc@chromium.org'],
     'tab_contents': ['brettw-cc@chromium.org', 'avi@chromium.org',
                      'creis+watch@chromium.org', 'ajwong+watch@chromium.org'],
+    'sessions': ['marja+watch@chromium.org'],
     'site_instance': ['creis+watch@chromium.org', 'ajwong+watch@chromium.org'],
     'webkit': ['darin-cc@chromium.org'],
     'plugin': ['darin-cc@chromium.org', 'jam@chromium.org',
