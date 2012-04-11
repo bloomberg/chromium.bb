@@ -2640,33 +2640,41 @@ FileManager.prototype = {
               chrome.extension.getURL('images/icon_mount_archive_16x16.png');
           task.title = str('MOUNT_ARCHIVE');
         } else if (task_parts[1] == 'gallery') {
-          task.iconUrl =
-              chrome.extension.getURL('images/icon_preview_16x16.png');
           if (selection.urls.filter(FileType.isImage).length) {
             // Some images sected, use the generic "Open" title.
             task.title = str('ACTION_OPEN');
+            task.iconUrl =
+                chrome.extension.getURL('images/filetype_image.png');
           } else {
             // The selection is all videos, use the specific "Watch" title.
             task.title = str('ACTION_WATCH');
+            task.iconUrl =
+                chrome.extension.getURL('images/filetype_video.png');
           }
         } else if (task_parts[1] == 'open-hosted') {
-          task.iconUrl =
-          chrome.extension.getURL('images/icon_preview_16x16.png');
-              task.title = str('ACTION_OPEN');
+          if (selection.urls.length > 1) {
+            task.iconUrl =
+                chrome.extension.getURL('images/filetype_generic.png');
+          } else {
+            // Use specific icon.
+            var icon = FileType.getType(selection.urls[0]).icon;
+            task.iconUrl =
+                chrome.extension.getURL('images/filetype_' + icon + '.png');
+          }
+          task.title = str('ACTION_OPEN');
         } else if (task_parts[1] == 'view-pdf') {
           // Do not render this task if disabled.
           if (str('PDF_VIEW_ENABLED') == 'false') continue;
           task.iconUrl =
-              chrome.extension.getURL('images/icon_preview_16x16.png');
+              chrome.extension.getURL('images/filetype_pdf.png');
           task.title = str('ACTION_VIEW');
         } else if (task_parts[1] == 'view-in-browser') {
           task.iconUrl =
-              chrome.extension.getURL('images/icon_preview_16x16.png');
+              chrome.extension.getURL('images/filetype_generic.png');
           task.title = str('ACTION_VIEW');
         } else if (task_parts[1] == 'install-crx') {
-          // TODO(dgozman): change to the right icon.
           task.iconUrl =
-              chrome.extension.getURL('images/icon_preview_16x16.png');
+              chrome.extension.getURL('images/filetype_generic.png');
           task.title = str('INSTALL_CRX');
         }
       }

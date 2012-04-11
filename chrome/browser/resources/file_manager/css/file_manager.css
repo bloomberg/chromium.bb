@@ -914,10 +914,6 @@ li.table-row {
   background-image: url(../images/filetype_device.png);
 }
 
-.detail-icon[iconType='doc'] {
-  background-image: url(../images/filetype_doc.png);
-}
-
 .detail-icon[iconType='excel'] {
   background-image: url(../images/filetype_excel.png);
 }
@@ -942,14 +938,6 @@ li.table-row {
   background-image: url(../images/filetype_ppt.png);
 }
 
-.detail-icon[iconType='presentation'] {
-  background-image: url(../images/filetype_presentation.png);
-}
-
-.detail-icon[iconType='spreadsheet'] {
-  background-image: url(../images/filetype_spreadsheet.png);
-}
-
 .detail-icon[iconType='text'] {
   background-image: url(../images/filetype_text.png);
 }
@@ -967,23 +955,23 @@ li.table-row {
 }
 
 .detail-icon[iconType='gdoc'] {
-  background-image: url(../images/filetype_doc.png);
+  background-image: url(../images/filetype_gdoc.png);
 }
 
 .detail-icon[iconType='gsheet'] {
-  background-image: url(../images/filetype_spreadsheet.png);
+  background-image: url(../images/filetype_gsheet.png);
 }
 
 .detail-icon[iconType='gslides'] {
-  background-image: url(../images/filetype_presentation.png);
+  background-image: url(../images/filetype_gslides.png);
 }
 
 .detail-icon[iconType='gdraw'] {
-  background-image: url(../images/filetype_drawing.png);
+  background-image: url(../images/filetype_gdraw.png);
 }
 
 .detail-icon[iconType='gtable'] {
-  background-image: url(../images/filetype_table.png);
+  background-image: url(../images/filetype_gtable.png);
 }
 
 /* The filename text in the preview pane. */

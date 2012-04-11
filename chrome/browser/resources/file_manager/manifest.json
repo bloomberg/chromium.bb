@@ -59,7 +59,7 @@
     {
       "id": "view-pdf",
       "default_title": "__MSG_OPEN_ACTION__",
-      "default_icon": "images/icon_preview_16x16.png",
+      "default_icon": "images/filetype_pdf.png",
       "file_filters": [
         "filesystem:*.pdf"
       ]
@@ -67,7 +67,7 @@
     {
       "id": "view-in-browser",
       "default_title": "__MSG_OPEN_ACTION__",
-      "default_icon": "images/icon_preview_16x16.png",
+      "default_icon": "images/filetype_generic.png",
       "file_filters": [
         "filesystem:*.htm",
         "filesystem:*.html",
@@ -80,8 +80,7 @@
     {
       "id": "install-crx",
       "default_title": "__MSG_INSTALL_CRX__",
-      // TODO(dgozman): replace to the right icon.
-      "default_icon": "images/icon_preview_16x16.png",
+      "default_icon": "images/filetype_generic.png",
       "file_filters": [
         "filesystem:*.crx"
       ]
@@ -89,7 +88,7 @@
     {
       "id": "gallery",
       "default_title": "__MSG_OPEN_ACTION__",
-      "default_icon": "images/icon_preview_16x16.png",
+      "default_icon": "images/filetype_image.png",
       "file_filters": [
         // Image formats
         "filesystem:*.bmp",
