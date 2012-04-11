@@ -66,6 +66,7 @@ class MockPeerConnectionImpl : public PeerConnectionInterface {
   std::string signaling_message_;
   std::string stream_label_;
   bool stream_changes_committed_;
+  talk_base::scoped_refptr<MockStreamCollection> local_streams_;
   talk_base::scoped_refptr<MockStreamCollection> remote_streams_;
 
   DISALLOW_COPY_AND_ASSIGN(MockPeerConnectionImpl);

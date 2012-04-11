@@ -33,11 +33,12 @@ class MockStreamCollection : public StreamCollectionInterface {
   virtual ~MockStreamCollection() {}
 
  private:
-  std::vector<MediaStreamInterface*> streams_;
+  std::vector<talk_base::scoped_refptr<MediaStreamInterface> > streams_;
 };
 
 MockPeerConnectionImpl::MockPeerConnectionImpl()
     : stream_changes_committed_(false),
+      local_streams_(new talk_base::RefCountedObject<MockStreamCollection>),
       remote_streams_(new talk_base::RefCountedObject<MockStreamCollection>) {
 }
 
@@ -54,8 +55,7 @@ bool MockPeerConnectionImpl::Send(const std::string& msg) {
 
 talk_base::scoped_refptr<StreamCollectionInterface>
 MockPeerConnectionImpl::local_streams() {
-  NOTIMPLEMENTED();
-  return NULL;
+  return local_streams_;
 }
 
 talk_base::scoped_refptr<StreamCollectionInterface>
@@ -64,10 +64,13 @@ MockPeerConnectionImpl::remote_streams() {
 }
 
 void MockPeerConnectionImpl::AddStream(LocalMediaStreamInterface* stream) {
+  DCHECK(stream_label_.empty());
   stream_label_ = stream->label();
+  local_streams_->AddStream(stream);
 }
 
 void MockPeerConnectionImpl::RemoveStream(LocalMediaStreamInterface* stream) {
+  DCHECK_EQ(stream_label_, stream->label());
   stream_label_.clear();
 }
 
@@ -130,15 +133,13 @@ bool MockPeerConnectionImpl::ProcessIceMessage(
 }
 
 const webrtc::SessionDescriptionInterface*
-MockPeerConnectionImpl::local_description()
-    const {
+MockPeerConnectionImpl::local_description() const {
   NOTIMPLEMENTED();
   return NULL;
 }
 
 const webrtc::SessionDescriptionInterface*
-MockPeerConnectionImpl::remote_description()
-    const {
+MockPeerConnectionImpl::remote_description() const {
   NOTIMPLEMENTED();
   return NULL;
 }

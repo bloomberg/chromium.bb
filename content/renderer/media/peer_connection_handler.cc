@@ -38,7 +38,7 @@ void PeerConnectionHandler::SetVideoRenderer(
       native_peer_connection_->remote_streams()->find(stream_label);
   webrtc::VideoTracks* video_tracks = stream->video_tracks();
   // We assume there is only one enabled video track.
-  for(size_t i = 0; i < video_tracks->count(); ++i) {
+  for (size_t i = 0; i < video_tracks->count(); ++i) {
     webrtc::VideoTrackInterface* video_track = video_tracks->at(i);
     if (video_track->enabled()) {
       video_track->SetRenderer(renderer);
@@ -191,12 +191,16 @@ void PeerConnectionHandler::AddStreams(
 
 void PeerConnectionHandler::RemoveStreams(
     const WebKit::WebVector<WebKit::WebMediaStreamDescriptor>& streams) {
-  for (size_t i = 0; i < streams.size(); ++i) {
-    webrtc::MediaStreamInterface* stream =
-        native_peer_connection_->remote_streams()->find(
-            UTF16ToUTF8(streams[i].label()));
-    native_peer_connection_->RemoveStream(
-        static_cast<webrtc::LocalMediaStreamInterface*>(stream));
+  talk_base::scoped_refptr<webrtc::StreamCollectionInterface> native_streams =
+      native_peer_connection_->local_streams();
+  // TODO(perkj): Change libJingle PeerConnection::RemoveStream API to take a
+  // label as input instead of stream and return bool.
+  for (size_t i = 0; i < streams.size() && native_streams != NULL; ++i) {
+    webrtc::LocalMediaStreamInterface* stream =
+        static_cast<webrtc::LocalMediaStreamInterface*>(native_streams->find(
+            UTF16ToUTF8(streams[i].label())));
+    DCHECK(stream);
+    native_peer_connection_->RemoveStream(stream);
   }
 }
 
