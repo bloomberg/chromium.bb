@@ -1285,7 +1285,7 @@ void BrowserWindowGtk::ShowPasswordGenerationBubble(const gfx::Rect& rect) {
 }
 
 void BrowserWindowGtk::ConfirmBrowserCloseWithPendingDownloads() {
-  new DownloadInProgressDialogGtk(browser());
+  DownloadInProgressDialogGtk::Show(browser(), GetNativeHandle());
 }
 
 void BrowserWindowGtk::Observe(int type,
