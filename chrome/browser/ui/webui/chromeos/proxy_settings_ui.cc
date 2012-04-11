@@ -106,7 +106,6 @@ void ProxySettingsUI::InitializeHandlers() {
   proxy_tracker->UIMakeActiveNetworkCurrent();
   std::string network_name;
   proxy_tracker->UIGetCurrentNetworkName(&network_name);
-  proxy_handler_->SetNetworkName(network_name);
 }
 
 }  // namespace chromeos

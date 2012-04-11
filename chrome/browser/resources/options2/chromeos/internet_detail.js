@@ -697,7 +697,6 @@ cr.define('options.internet', function() {
       $('firmware-revision').textContent = data.firmwareRevision;
       $('hardware-revision').textContent = data.hardwareRevision;
       $('prl-version').textContent = data.prlVersion;
-
       $('meid').textContent = data.meid;
       $('imei').textContent = data.imei;
       $('mdn').textContent = data.mdn;

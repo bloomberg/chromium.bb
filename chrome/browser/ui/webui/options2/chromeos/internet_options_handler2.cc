@@ -304,28 +304,6 @@ void InternetOptionsHandler::GetLocalizedValues(
       IDS_OPTIONS_SETTINGS_TOGGLE_DATA_ROAMING_RESTRICTION },
     { "activateNetwork", IDS_STATUSBAR_NETWORK_DEVICE_ACTIVATE },
 
-    // Network options dialog labels.
-    // TODO(kevers): Remove once dialog is deprecated.
-
-    { "wired_title", IDS_OPTIONS_SETTINGS_SECTION_TITLE_WIRED_NETWORK },
-    { "wireless_title", IDS_OPTIONS_SETTINGS_SECTION_TITLE_WIRELESS_NETWORK },
-    { "vpn_title", IDS_OPTIONS_SETTINGS_SECTION_TITLE_VIRTUAL_NETWORK },
-    { "remembered_title",
-      IDS_OPTIONS_SETTINGS_SECTION_TITLE_REMEMBERED_NETWORK },
-    { "connect_button", IDS_OPTIONS_SETTINGS_CONNECT },
-    { "disconnect_button", IDS_OPTIONS_SETTINGS_DISCONNECT },
-    { "options_button", IDS_OPTIONS_SETTINGS_OPTIONS },
-    { "forget_button", IDS_OPTIONS_SETTINGS_FORGET },
-    { "activate_button", IDS_OPTIONS_SETTINGS_ACTIVATE },
-    { "buyplan_button", IDS_OPTIONS_SETTINGS_BUY_PLAN },
-    { "view_account_button", IDS_STATUSBAR_NETWORK_VIEW_ACCOUNT },
-    { "enableWifi", IDS_STATUSBAR_NETWORK_DEVICE_WIFI },
-    { "disableWifi", IDS_STATUSBAR_NETWORK_DEVICE_WIFI },
-    { "enableCellular", IDS_STATUSBAR_NETWORK_DEVICE_CELLULAR },
-    { "disableCellular", IDS_STATUSBAR_NETWORK_DEVICE_CELLULAR },
-    { "ownerOnly", IDS_OPTIONS_ACCOUNTS_OWNER_ONLY },
-    { "generalNetworkingTitle", IDS_OPTIONS_SETTINGS_INTERNET_CONTROL_TITLE },
-
     // Internet details dialog.
 
     { "changeProxyButton",
@@ -349,6 +327,11 @@ void InternetOptionsHandler::GetLocalizedValues(
     { "hardwareAddress",
       IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_HARDWARE_ADDRESS },
     { "detailsInternetDismiss", IDS_CLOSE },
+    { "activateButton", IDS_OPTIONS_SETTINGS_ACTIVATE },
+    { "buyplanButton", IDS_OPTIONS_SETTINGS_BUY_PLAN },
+    { "connectButton", IDS_OPTIONS_SETTINGS_CONNECT },
+    { "disconnectButton", IDS_OPTIONS_SETTINGS_DISCONNECT },
+    { "viewAccountButton", IDS_STATUSBAR_NETWORK_VIEW_ACCOUNT },
 
     // Wifi Tab.
 
@@ -433,10 +416,6 @@ void InternetOptionsHandler::GetLocalizedValues(
   };
 
   RegisterStrings(localized_strings, resources, arraysize(resources));
-
-  // TODO(kevers): Remove once dialog is deprecated.
-  RegisterTitle(localized_strings, "internetPage",
-                IDS_OPTIONS_INTERNET_TAB_LABEL);
 
   std::string owner;
   chromeos::CrosSettings::Get()->GetString(chromeos::kDeviceOwner, &owner);

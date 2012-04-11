@@ -21,9 +21,6 @@ class ProxyHandler : public ::options2::OptionsPageUIHandler {
   virtual void GetLocalizedValues(
       base::DictionaryValue* localized_strings) OVERRIDE;
 
-  // Set network name for proxy page title.
-  void SetNetworkName(const std::string& name);
-
  private:
 
   DISALLOW_COPY_AND_ASSIGN(ProxyHandler);
