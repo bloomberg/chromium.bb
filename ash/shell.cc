@@ -18,6 +18,7 @@
 #include "ash/monitor/monitor_controller.h"
 #include "ash/monitor/multi_monitor_manager.h"
 #include "ash/screen_ash.h"
+#include "ash/shell_context_menu.h"
 #include "ash/shell_delegate.h"
 #include "ash/shell_factory.h"
 #include "ash/shell_window_ids.h"
@@ -253,6 +254,10 @@ class DummyUserWallpaperDelegate : public UserWallpaperDelegate {
   }
 
   virtual void OpenSetWallpaperPage() OVERRIDE {
+  }
+
+  virtual bool CanOpenSetWallpaperPage() OVERRIDE {
+    return false;
   }
 
  private:
@@ -635,6 +640,7 @@ void Shell::Init() {
   nested_dispatcher_controller_.reset(new NestedDispatcherController);
   accelerator_controller_.reset(new AcceleratorController);
 #endif
+  shell_context_menu_.reset(new internal::ShellContextMenu);
   // Pass ownership of the filter to the root window.
   GetRootWindow()->SetEventFilter(root_filter_);
 
@@ -794,8 +800,8 @@ size_t Shell::GetRootWindowEventFilterCount() const {
 
 void Shell::ShowBackgroundMenu(views::Widget* widget,
                                const gfx::Point& location) {
-  if (workspace_controller_.get())
-    workspace_controller_->ShowMenu(widget, location);
+  if (shell_context_menu_.get())
+    shell_context_menu_->ShowMenu(widget, location);
 }
 
 void Shell::ToggleAppList() {

@@ -72,6 +72,7 @@ class RootWindowEventFilter;
 class RootWindowLayoutManager;
 class ShadowController;
 class ShelfLayoutManager;
+class ShellContextMenu;
 class SystemGestureEventFilter;
 class StackingController;
 class TooltipController;
@@ -291,6 +292,7 @@ class ASH_EXPORT Shell {
 
   scoped_ptr<internal::AppList> app_list_;
 
+  scoped_ptr<internal::ShellContextMenu> shell_context_menu_;
   scoped_ptr<internal::StackingController> stacking_controller_;
   scoped_ptr<internal::ActivationController> activation_controller_;
   scoped_ptr<internal::WindowModalityController> window_modality_controller_;

@@ -109,6 +109,8 @@
         'screenshot_delegate.h',
         'shell.cc',
         'shell.h',
+        'shell_context_menu.cc',
+        'shell_context_menu.h',
         'shell_delegate.h',
         'shell_factory.h',
         'shell_window_ids.h',

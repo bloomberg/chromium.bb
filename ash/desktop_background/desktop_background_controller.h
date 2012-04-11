@@ -23,6 +23,10 @@ class UserWallpaperDelegate {
 
   // Open the set wallpaper page in the browser.
   virtual void OpenSetWallpaperPage() = 0;
+
+  // Returns true if user can open set wallpaper page. Only guest user returns
+  // false currently.
+  virtual bool CanOpenSetWallpaperPage() = 0;
 };
 
 // A class to listen for login and desktop background change events and set the

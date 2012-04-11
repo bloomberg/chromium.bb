@@ -4,21 +4,14 @@
 
 #include "ash/wm/workspace_controller.h"
 
-#include "ash/desktop_background/desktop_background_controller.h"
-#include "ash/shell.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/workspace_event_filter.h"
 #include "ash/wm/workspace/workspace_layout_manager.h"
 #include "ash/wm/workspace/workspace_manager.h"
-#include "base/utf_string_conversions.h"
-#include "grit/ash_strings.h"
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
-#include "ui/base/l10n/l10n_util.h"
-#include "ui/views/controls/menu/menu_model_adapter.h"
-#include "ui/views/controls/menu/menu_runner.h"
 
 namespace ash {
 namespace internal {
@@ -56,26 +49,6 @@ void WorkspaceController::ToggleOverview() {
   workspace_manager_->SetOverview(!workspace_manager_->is_overview());
 }
 
-void WorkspaceController::ShowMenu(views::Widget* widget,
-                                   const gfx::Point& location) {
-  // TODO(sky): move this. Since this menu is now specific to the background it
-  // doesn't make sense to be here.
-#if !defined(OS_MACOSX)
-  ui::SimpleMenuModel menu_model(this);
-  // This is just for testing and will be ripped out before we ship, so none of
-  // the strings are localized.
-  menu_model.AddItem(MENU_CHANGE_WALLPAPER,
-                     l10n_util::GetStringUTF16(IDS_AURA_SET_DESKTOP_WALLPAPER));
-  views::MenuModelAdapter menu_model_adapter(&menu_model);
-  menu_runner_.reset(new views::MenuRunner(menu_model_adapter.CreateMenu()));
-  if (menu_runner_->RunMenuAt(
-          widget, NULL, gfx::Rect(location, gfx::Size()),
-          views::MenuItemView::TOPRIGHT, views::MenuRunner::HAS_MNEMONICS) ==
-      views::MenuRunner::MENU_DELETED)
-    return;
-#endif  // !defined(OS_MACOSX)
-}
-
 void WorkspaceController::SetGridSize(int grid_size) {
   workspace_manager_->set_grid_size(grid_size);
   event_filter_->set_grid_size(grid_size);
@@ -86,30 +59,6 @@ void WorkspaceController::OnWindowPropertyChanged(aura::Window* window,
                                                   intptr_t old) {
   if (key == aura::client::kRootWindowActiveWindowKey)
     workspace_manager_->SetActiveWorkspaceByWindow(wm::GetActiveWindow());
-}
-
-bool WorkspaceController::IsCommandIdChecked(int command_id) const {
-  return false;
-}
-
-bool WorkspaceController::IsCommandIdEnabled(int command_id) const {
-  return true;
-}
-
-void WorkspaceController::ExecuteCommand(int command_id) {
-  switch (static_cast<MenuItem>(command_id)) {
-    case MENU_CHANGE_WALLPAPER: {
-      Shell::GetInstance()->user_wallpaper_delegate()->
-          OpenSetWallpaperPage();
-      break;
-    }
-  }
-}
-
-bool WorkspaceController::GetAcceleratorForCommandId(
-      int command_id,
-      ui::Accelerator* accelerator) {
-  return false;
 }
 
 }  // namespace internal

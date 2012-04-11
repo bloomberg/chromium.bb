@@ -37,6 +37,10 @@ class UserWallpaperDelegate: public ash::UserWallpaperDelegate {
     browser->ShowOptionsTab("setWallpaper");
   }
 
+  virtual bool CanOpenSetWallpaperPage() OVERRIDE {
+    return !chromeos::UserManager::Get()->IsLoggedInAsGuest();
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(UserWallpaperDelegate);
 };
