@@ -87,6 +87,15 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     NUM_STATES
   };
 
+  // Used to record the reason an extension was disabled.
+  enum DisableReason {
+    DISABLE_UNKNOWN,
+    DISABLE_USER_ACTION,
+    DISABLE_PERMISSIONS_INCREASE,
+    DISABLE_RELOAD,
+    DISABLE_LAST,  // Not used.
+  };
+
   enum InstallType {
     INSTALL_ERROR,
     DOWNGRADE,

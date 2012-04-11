@@ -720,7 +720,7 @@ void ExtensionService::ReloadExtension(const std::string& extension_id) {
     }
 
     path = current_extension->path();
-    DisableExtension(extension_id);
+    DisableExtension(extension_id, Extension::DISABLE_RELOAD);
     disabled_extension_paths_[extension_id] = path;
   } else {
     path = unloaded_extension_paths_[extension_id];
@@ -898,6 +898,7 @@ void ExtensionService::EnableExtension(const std::string& extension_id) {
     return;
 
   extension_prefs_->SetExtensionState(extension_id, Extension::ENABLED);
+  extension_prefs_->RemoveDisableReason(extension_id);
 
   const Extension* extension =
       GetExtensionByIdInternal(extension_id, false, true, false);
@@ -918,7 +919,9 @@ void ExtensionService::EnableExtension(const std::string& extension_id) {
   SyncExtensionChangeIfNeeded(*extension);
 }
 
-void ExtensionService::DisableExtension(const std::string& extension_id) {
+void ExtensionService::DisableExtension(
+    const std::string& extension_id,
+    Extension::DisableReason disable_reason) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // The extension may have been disabled already.
@@ -932,6 +935,7 @@ void ExtensionService::DisableExtension(const std::string& extension_id) {
     return;
 
   extension_prefs_->SetExtensionState(extension_id, Extension::DISABLED);
+  extension_prefs_->SetDisableReason(extension_id, disable_reason);
 
   extension = GetExtensionByIdInternal(extension_id, true, false, true);
   if (!extension)
@@ -1507,7 +1511,7 @@ void ExtensionService::ProcessExtensionSyncData(
   if (extension_sync_data.enabled()) {
     EnableExtension(id);
   } else {
-    DisableExtension(id);
+    DisableExtension(id, Extension::DISABLE_USER_ACTION);
   }
 
   // We need to cache some version information here because setting the
@@ -2035,12 +2039,13 @@ bool ExtensionService::AddExtension(const Extension* extension) {
   if (disabled) {
     disabled_extensions_.Insert(scoped_extension);
     SyncExtensionChangeIfNeeded(*extension);
+    content::NotificationService::current()->Notify(
+        chrome::NOTIFICATION_EXTENSION_UPDATE_DISABLED,
+        content::Source<Profile>(profile_),
+        content::Details<const Extension>(extension));
 
-    if (extension_prefs_->DidExtensionEscalatePermissions(extension->id())) {
-      content::NotificationService::current()->Notify(
-          chrome::NOTIFICATION_EXTENSION_UPDATE_DISABLED,
-          content::Source<Profile>(profile_),
-          content::Details<const Extension>(extension));
+    if (extension_prefs_->GetDisableReason(extension->id()) ==
+        Extension::DISABLE_PERMISSIONS_INCREASE) {
       extensions::AddExtensionDisabledError(this, extension);
     }
     // Although the extension is disabled, we technically did succeed in adding
@@ -2115,6 +2120,9 @@ void ExtensionService::InitializePermissions(const Extension* extension) {
                                                   true, true, false);
   bool is_extension_upgrade = old != NULL;
   bool is_privilege_increase = false;
+  bool previously_disabled = false;
+  Extension::DisableReason disable_reason =
+      extension_prefs_->GetDisableReason(extension->id());
 
   // We only need to compare the granted permissions to the current permissions
   // if the extension is not allowed to silently increase its permissions.
@@ -2147,6 +2155,24 @@ void ExtensionService::InitializePermissions(const Extension* extension) {
       SetBeingUpgraded(extension, true);
     }
 
+    // If the extension was already disabled, suppress any alerts for becoming
+    // disabled on permissions increase.
+    previously_disabled = extension_prefs_->IsExtensionDisabled(old->id());
+    if (previously_disabled) {
+      Extension::DisableReason reason = extension_prefs_->GetDisableReason(
+          old->id());
+      if (reason == Extension::DISABLE_UNKNOWN) {
+        // Initialize the reason for legacy disabled extensions from whether the
+        // extension already exceeded granted permissions.
+        if (extension_prefs_->DidExtensionEscalatePermissions(old->id()))
+          disable_reason = Extension::DISABLE_PERMISSIONS_INCREASE;
+        else
+          disable_reason = Extension::DISABLE_USER_ACTION;
+      }
+    } else {
+      disable_reason = Extension::DISABLE_PERMISSIONS_INCREASE;
+    }
+
     // To upgrade an extension in place, unload the old one and
     // then load the new one.
     UnloadExtension(old->id(), extension_misc::UNLOAD_REASON_UPDATE);
@@ -2162,6 +2188,7 @@ void ExtensionService::InitializePermissions(const Extension* extension) {
     }
     extension_prefs_->SetExtensionState(extension->id(), Extension::DISABLED);
     extension_prefs_->SetDidExtensionEscalatePermissions(extension, true);
+    extension_prefs_->SetDisableReason(extension->id(), disable_reason);
   }
 }
 

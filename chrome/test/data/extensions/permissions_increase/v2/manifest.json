@@ -1,0 +1,8 @@
+{
+  "version": "2",
+  "name": "Permission Test",
+  "background_page": "background.html",
+  "permissions": [
+    "tabs"
+  ]
+}

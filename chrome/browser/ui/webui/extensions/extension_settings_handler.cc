@@ -583,7 +583,8 @@ void ExtensionSettingsHandler::HandleEnableMessage(const ListValue* args) {
       extension_service_->EnableExtension(extension_id);
     }
   } else {
-    extension_service_->DisableExtension(extension_id);
+    extension_service_->DisableExtension(
+        extension_id, Extension::DISABLE_USER_ACTION);
   }
 }
 
