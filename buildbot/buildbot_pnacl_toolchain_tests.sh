@@ -83,23 +83,12 @@ tc-test-bot() {
     ${LLVM_TESTSUITE} testsuite-prereq ${arch}
     ${LLVM_TESTSUITE} testsuite-clean
 
-    if [[ ${arch} == "arm" ]] ; then
-        # just warn rather then report an error
-        # this can be taken out once we run it on a separate bot
-        { ${LLVM_TESTSUITE} testsuite-configure arm &&
-            ${LLVM_TESTSUITE} testsuite-run arm &&
-            ${LLVM_TESTSUITE} testsuite-report arm -v -c
-        } || handle-error-warn
-    else
-        { ${LLVM_TESTSUITE} testsuite-configure ${arch} &&
-            ${LLVM_TESTSUITE} testsuite-run ${arch} &&
-            ${LLVM_TESTSUITE} testsuite-report ${arch} -v -c
-        } || handle-error
-    fi
+    { ${LLVM_TESTSUITE} testsuite-configure ${arch} &&
+        ${LLVM_TESTSUITE} testsuite-run ${arch} &&
+        ${LLVM_TESTSUITE} testsuite-report ${arch} -v -c
+    } || handle-error
 
-    if [[ ${arch} == "arm" ]] ; then
-        scons-tests-translator "arm"
-    fi
+    scons-tests-translator ${arch}
   done
 
 }
