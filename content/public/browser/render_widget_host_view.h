@@ -34,6 +34,12 @@ class RenderWidgetHost;
 // the surrounding environment and passing them to the RenderWidgetHost, and
 // for actually displaying the content of the RenderWidgetHost when it
 // changes.
+//
+// RenderWidgetHostView Class Hierarchy:
+//   RenderWidgetHostView - Public interface.
+//   RenderWidgetHostViewPort - Private interface for content/ and ports.
+//   RenderWidgetHostViewBase - Common implementation between platforms.
+//   RenderWidgetHostViewWin, ... - Platform specific implementations.
 class CONTENT_EXPORT RenderWidgetHostView {
  public:
   virtual ~RenderWidgetHostView() {}

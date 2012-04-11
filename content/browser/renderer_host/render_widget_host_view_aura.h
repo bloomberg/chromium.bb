@@ -42,6 +42,7 @@ class WebTouchEvent;
 
 class ImageTransportClient;
 
+// RenderWidgetHostView class hierarchy described in render_widget_host_view.h.
 class RenderWidgetHostViewAura
     : public content::RenderWidgetHostViewBase,
       public ui::CompositorObserver,

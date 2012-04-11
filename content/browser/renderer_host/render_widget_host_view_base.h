@@ -36,6 +36,8 @@ class RenderWidgetHostImpl;
 //
 // To enable embedders that add ports, everything else in content/
 // should use the RenderWidgetHostViewPort interface.
+//
+// RenderWidgetHostView class hierarchy described in render_widget_host_view.h.
 class CONTENT_EXPORT RenderWidgetHostViewBase
     : public RenderWidgetHostViewPort {
  public:

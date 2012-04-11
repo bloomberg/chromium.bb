@@ -40,6 +40,7 @@ namespace content {
 
 // This is the larger RenderWidgetHostView interface exposed only
 // within content/ and to embedders looking to port to new platforms.
+// RenderWidgetHostView class hierarchy described in render_widget_host_view.h.
 class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView {
  public:
   virtual ~RenderWidgetHostViewPort() {}

@@ -86,6 +86,7 @@ CONTENT_EXPORT extern const wchar_t kRenderWidgetHostHWNDClass[];
 //     If the render process dies, the RenderWidgetHostHWND goes away and all
 //     references to it must become NULL."
 //
+// RenderWidgetHostView class hierarchy described in render_widget_host_view.h.
 class RenderWidgetHostViewWin
     : public CWindowImpl<RenderWidgetHostViewWin,
                          CWindow,

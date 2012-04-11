@@ -179,6 +179,7 @@ class RenderWidgetHostImpl;
 //     If the render process dies, the RenderWidgetHost* goes away and all
 //     references to it must become NULL."
 //
+// RenderWidgetHostView class hierarchy described in render_widget_host_view.h.
 class RenderWidgetHostViewMac : public content::RenderWidgetHostViewBase {
  public:
   virtual ~RenderWidgetHostViewMac();
