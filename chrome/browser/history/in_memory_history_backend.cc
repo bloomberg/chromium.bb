@@ -51,7 +51,7 @@ void InMemoryHistoryBackend::AttachToHistoryService(Profile* profile) {
   // We only want notifications for the associated profile.
   content::Source<Profile> source(profile_);
   registrar_.Add(this, chrome::NOTIFICATION_HISTORY_URL_VISITED, source);
-  registrar_.Add(this, chrome::NOTIFICATION_HISTORY_TYPED_URLS_MODIFIED,
+  registrar_.Add(this, chrome::NOTIFICATION_HISTORY_URLS_MODIFIED,
                  source);
   registrar_.Add(this, chrome::NOTIFICATION_HISTORY_URLS_DELETED, source);
   registrar_.Add(this,
@@ -82,7 +82,7 @@ void InMemoryHistoryBackend::Observe(
       OnKeywordSearchTermUpdated(
           *content::Details<history::KeywordSearchTermDetails>(details).ptr());
       break;
-    case chrome::NOTIFICATION_HISTORY_TYPED_URLS_MODIFIED:
+    case chrome::NOTIFICATION_HISTORY_URLS_MODIFIED:
       OnTypedURLsModified(
           *content::Details<history::URLsModifiedDetails>(details).ptr());
       break;
@@ -112,12 +112,14 @@ void InMemoryHistoryBackend::OnTypedURLsModified(
   // have Sync(), which would take the ID if it's given and add it.
   URLRows::const_iterator i;
   for (i = details.changed_urls.begin();
-       i != details.changed_urls.end(); i++) {
-    URLID id = db_->GetRowForURL(i->url(), NULL);
-    if (id)
-      db_->UpdateURLRow(id, *i);
-    else
-      id = db_->AddURL(*i);
+       i != details.changed_urls.end(); ++i) {
+    if (i->typed_count() > 0) {
+      URLID id = db_->GetRowForURL(i->url(), NULL);
+      if (id)
+        db_->UpdateURLRow(id, *i);
+      else
+        db_->AddURL(*i);
+    }
   }
 }
 

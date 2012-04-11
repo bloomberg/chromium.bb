@@ -333,7 +333,7 @@ class OmniboxViewTest : public InProcessBrowserTest,
     // Wait at least for the AddPageWithDetails() call to finish.
     {
       content::NotificationRegistrar registrar;
-      registrar.Add(this, chrome::NOTIFICATION_HISTORY_TYPED_URLS_MODIFIED,
+      registrar.Add(this, chrome::NOTIFICATION_HISTORY_URLS_MODIFIED,
                     content::Source<Profile>(profile));
       ui_test_utils::RunMessageLoop();
       // We don't want to return until all observers have processed this
@@ -376,7 +376,7 @@ class OmniboxViewTest : public InProcessBrowserTest,
       case chrome::NOTIFICATION_AUTOCOMPLETE_CONTROLLER_RESULT_READY:
       case chrome::NOTIFICATION_BOOKMARK_MODEL_LOADED:
       case chrome::NOTIFICATION_HISTORY_LOADED:
-      case chrome::NOTIFICATION_HISTORY_TYPED_URLS_MODIFIED:
+      case chrome::NOTIFICATION_HISTORY_URLS_MODIFIED:
       case chrome::NOTIFICATION_TEMPLATE_URL_SERVICE_LOADED:
         break;
       default:

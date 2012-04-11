@@ -68,16 +68,14 @@ void TypedUrlChangeProcessor::Observe(
 
   DVLOG(1) << "Observed typed_url change.";
   DCHECK(running());
-  DCHECK(chrome::NOTIFICATION_HISTORY_TYPED_URLS_MODIFIED == type ||
-         chrome::NOTIFICATION_HISTORY_URLS_DELETED == type ||
-         chrome::NOTIFICATION_HISTORY_URL_VISITED == type);
-  if (type == chrome::NOTIFICATION_HISTORY_TYPED_URLS_MODIFIED) {
+  if (type == chrome::NOTIFICATION_HISTORY_URLS_MODIFIED) {
     HandleURLsModified(
         content::Details<history::URLsModifiedDetails>(details).ptr());
   } else if (type == chrome::NOTIFICATION_HISTORY_URLS_DELETED) {
     HandleURLsDeleted(
         content::Details<history::URLsDeletedDetails>(details).ptr());
-  } else if (type == chrome::NOTIFICATION_HISTORY_URL_VISITED) {
+  } else {
+    DCHECK_EQ(chrome::NOTIFICATION_HISTORY_URL_VISITED, type);
     HandleURLsVisited(
         content::Details<history::URLVisitedDetails>(details).ptr());
   }
@@ -89,9 +87,11 @@ void TypedUrlChangeProcessor::HandleURLsModified(
   sync_api::WriteTransaction trans(FROM_HERE, share_handle());
   for (history::URLRows::iterator url = details->changed_urls.begin();
        url != details->changed_urls.end(); ++url) {
-    // Exit if we were unable to update the sync node.
-    if (!CreateOrUpdateSyncNode(*url, &trans))
-      return;
+    if (url->typed_count() > 0) {
+      // Exit if we were unable to update the sync node.
+      if (!CreateOrUpdateSyncNode(*url, &trans))
+        return;
+    }
   }
 }
 
@@ -300,7 +300,7 @@ void TypedUrlChangeProcessor::StartObserving() {
   DCHECK(expected_loop_ == MessageLoop::current());
   DCHECK(profile_);
   notification_registrar_.Add(
-      this, chrome::NOTIFICATION_HISTORY_TYPED_URLS_MODIFIED,
+      this, chrome::NOTIFICATION_HISTORY_URLS_MODIFIED,
       content::Source<Profile>(profile_));
   notification_registrar_.Add(
       this, chrome::NOTIFICATION_HISTORY_URLS_DELETED,
@@ -314,7 +314,7 @@ void TypedUrlChangeProcessor::StopObserving() {
   DCHECK(expected_loop_ == MessageLoop::current());
   DCHECK(profile_);
   notification_registrar_.Remove(
-      this, chrome::NOTIFICATION_HISTORY_TYPED_URLS_MODIFIED,
+      this, chrome::NOTIFICATION_HISTORY_URLS_MODIFIED,
       content::Source<Profile>(profile_));
   notification_registrar_.Remove(
       this, chrome::NOTIFICATION_HISTORY_URLS_DELETED,

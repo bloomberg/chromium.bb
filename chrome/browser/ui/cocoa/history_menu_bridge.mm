@@ -117,7 +117,7 @@ HistoryMenuBridge::~HistoryMenuBridge() {
   // Unregister ourselves as observers and notifications.
   DCHECK(profile_);
   if (history_service_) {
-    registrar_.Remove(this, chrome::NOTIFICATION_HISTORY_TYPED_URLS_MODIFIED,
+    registrar_.Remove(this, chrome::NOTIFICATION_HISTORY_URLS_MODIFIED,
                       content::Source<Profile>(profile_));
     registrar_.Remove(this, chrome::NOTIFICATION_HISTORY_URL_VISITED,
                       content::Source<Profile>(profile_));
@@ -368,7 +368,7 @@ NSMenuItem* HistoryMenuBridge::AddItemToMenu(HistoryItem* item,
 }
 
 void HistoryMenuBridge::Init() {
-  registrar_.Add(this, chrome::NOTIFICATION_HISTORY_TYPED_URLS_MODIFIED,
+  registrar_.Add(this, chrome::NOTIFICATION_HISTORY_URLS_MODIFIED,
                  content::Source<Profile>(profile_));
   registrar_.Add(this, chrome::NOTIFICATION_HISTORY_URL_VISITED,
                  content::Source<Profile>(profile_));

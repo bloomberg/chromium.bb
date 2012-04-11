@@ -391,7 +391,7 @@ void ExpireHistoryTest::EnsureURLInfoGone(const URLRow& row) {
       EXPECT_NE(notifications_[i].first,
                 chrome::NOTIFICATION_HISTORY_URL_VISITED);
       EXPECT_NE(notifications_[i].first,
-                chrome::NOTIFICATION_HISTORY_TYPED_URLS_MODIFIED);
+                chrome::NOTIFICATION_HISTORY_URLS_MODIFIED);
     }
   }
   EXPECT_TRUE(found_delete_notification);

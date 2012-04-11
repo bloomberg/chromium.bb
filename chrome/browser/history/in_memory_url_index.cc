@@ -102,7 +102,7 @@ InMemoryURLIndex::InMemoryURLIndex(Profile* profile,
     // TODO(mrossetti): Register for language change notifications.
     content::Source<Profile> source(profile);
     registrar_.Add(this, chrome::NOTIFICATION_HISTORY_URL_VISITED, source);
-    registrar_.Add(this, chrome::NOTIFICATION_HISTORY_TYPED_URLS_MODIFIED,
+    registrar_.Add(this, chrome::NOTIFICATION_HISTORY_URLS_MODIFIED,
                    source);
     registrar_.Add(this, chrome::NOTIFICATION_HISTORY_URLS_DELETED, source);
   }
@@ -164,7 +164,7 @@ void InMemoryURLIndex::Observe(int notification_type,
     case chrome::NOTIFICATION_HISTORY_URL_VISITED:
       OnURLVisited(content::Details<URLVisitedDetails>(details).ptr());
       break;
-    case chrome::NOTIFICATION_HISTORY_TYPED_URLS_MODIFIED:
+    case chrome::NOTIFICATION_HISTORY_URLS_MODIFIED:
       OnURLsModified(
           content::Details<history::URLsModifiedDetails>(details).ptr());
       break;

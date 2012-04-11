@@ -477,7 +477,7 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeAdd) {
   history::URLsModifiedDetails details;
   details.changed_urls.push_back(added_entry);
   scoped_refptr<ThreadNotifier> notifier(new ThreadNotifier(&history_thread_));
-  notifier->Notify(chrome::NOTIFICATION_HISTORY_TYPED_URLS_MODIFIED,
+  notifier->Notify(chrome::NOTIFICATION_HISTORY_URLS_MODIFIED,
                    content::Source<Profile>(&profile_),
                    content::Details<history::URLsModifiedDetails>(&details));
 
@@ -507,7 +507,7 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeAddWithBlank) {
   details.changed_urls.push_back(empty_entry);
   details.changed_urls.push_back(added_entry);
   scoped_refptr<ThreadNotifier> notifier(new ThreadNotifier(&history_thread_));
-  notifier->Notify(chrome::NOTIFICATION_HISTORY_TYPED_URLS_MODIFIED,
+  notifier->Notify(chrome::NOTIFICATION_HISTORY_URLS_MODIFIED,
                    content::Source<Profile>(&profile_),
                    content::Details<history::URLsModifiedDetails>(&details));
 
@@ -544,7 +544,7 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeUpdate) {
   history::URLsModifiedDetails details;
   details.changed_urls.push_back(updated_entry);
   scoped_refptr<ThreadNotifier> notifier(new ThreadNotifier(&history_thread_));
-  notifier->Notify(chrome::NOTIFICATION_HISTORY_TYPED_URLS_MODIFIED,
+  notifier->Notify(chrome::NOTIFICATION_HISTORY_URLS_MODIFIED,
                    content::Source<Profile>(&profile_),
                    content::Details<history::URLsModifiedDetails>(&details));
 

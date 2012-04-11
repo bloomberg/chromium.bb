@@ -874,7 +874,7 @@ void HistoryBackend::AddPagesWithDetails(const URLRows& urls,
   //
   // TODO(brettw) bug 1140015: Add an "add page" notification so the history
   // views can keep in sync.
-  BroadcastNotifications(chrome::NOTIFICATION_HISTORY_TYPED_URLS_MODIFIED,
+  BroadcastNotifications(chrome::NOTIFICATION_HISTORY_URLS_MODIFIED,
                          modified.release());
 
   ScheduleCommit();
@@ -888,6 +888,10 @@ void HistoryBackend::SetPageTitle(const GURL& url,
                                   const string16& title) {
   if (!db_.get())
     return;
+
+  // Update the full text index.
+  if (text_database_.get())
+    text_database_->AddPageTitle(url, title);
 
   // Search for recent redirects which should get the same title. We make a
   // dummy list containing the exact URL visited if there are no redirects so
@@ -908,43 +912,24 @@ void HistoryBackend::SetPageTitle(const GURL& url,
     redirects = &dummy_list;
   }
 
-  bool typed_url_changed = false;
-  URLRows changed_urls;
+  scoped_ptr<URLsModifiedDetails> details(new URLsModifiedDetails);
   for (size_t i = 0; i < redirects->size(); i++) {
     URLRow row;
     URLID row_id = db_->GetRowForURL(redirects->at(i), &row);
     if (row_id && row.title() != title) {
       row.set_title(title);
       db_->UpdateURLRow(row_id, row);
-      changed_urls.push_back(row);
-      if (row.typed_count() > 0)
-        typed_url_changed = true;
+      details->changed_urls.push_back(row);
     }
   }
 
-  // Broadcast notifications for typed URLs that have changed. This will
-  // update the in-memory database.
-  //
-  // TODO(brettw) bug 1140020: Broadcast for all changes (not just typed),
-  // in which case some logic can be removed.
-  if (typed_url_changed) {
-    URLsModifiedDetails* modified =
-        new URLsModifiedDetails;
-    for (size_t i = 0; i < changed_urls.size(); i++) {
-      if (changed_urls[i].typed_count() > 0)
-        modified->changed_urls.push_back(changed_urls[i]);
-    }
-    BroadcastNotifications(chrome::NOTIFICATION_HISTORY_TYPED_URLS_MODIFIED,
-                           modified);
-  }
-
-  // Update the full text index.
-  if (text_database_.get())
-    text_database_->AddPageTitle(url, title);
-
-  // Only bother committing if things changed.
-  if (!changed_urls.empty())
+  // Broadcast notifications for any URLs that have changed. This will
+  // update the in-memory database and the InMemoryURLIndex.
+  if (!details->changed_urls.empty()) {
+    BroadcastNotifications(chrome::NOTIFICATION_HISTORY_URLS_MODIFIED,
+                           details.release());
     ScheduleCommit();
+  }
 }
 
 void HistoryBackend::AddPageNoVisitForBookmark(const GURL& url) {
