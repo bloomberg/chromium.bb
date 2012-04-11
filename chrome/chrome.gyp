@@ -712,15 +712,24 @@
           ],
           'variables': {
             'build_app_dmg_script_path': 'tools/build/mac/build_app_dmg',
+
+            'conditions': [
+              # This duplicates the output path from build_app_dmg.
+              ['branding=="Chrome"', {
+                'dmg_name': 'GoogleChrome.dmg',
+              }, { # else: branding!="Chrome"
+                'dmg_name': 'Chromium.dmg',
+              }],
+            ],
           },
           'actions': [
             {
               'inputs': [
                 '<(build_app_dmg_script_path)',
-                '<(PRODUCT_DIR)/<(branding).app',
+                '<(PRODUCT_DIR)/<(mac_product_name).app',
               ],
               'outputs': [
-                '<(PRODUCT_DIR)/<(branding).dmg',
+                '<(PRODUCT_DIR)/<(dmg_name)',
               ],
               'action_name': 'build_app_dmg',
               'action': ['<(build_app_dmg_script_path)', '<@(branding)'],
