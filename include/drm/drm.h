@@ -618,6 +618,17 @@ struct drm_get_cap {
 	__u64 value;
 };
 
+#define DRM_CLOEXEC O_CLOEXEC
+struct drm_prime_handle {
+	__u32 handle;
+
+	/** Flags.. only applicable for handle->fd */
+	__u32 flags;
+
+	/** Returned dmabuf file descriptor */
+	__s32 fd;
+};
+
 #include "drm_mode.h"
 
 #define DRM_IOCTL_BASE			'd'
@@ -685,6 +696,9 @@ struct drm_get_cap {
 
 #define DRM_IOCTL_SG_ALLOC		DRM_IOWR(0x38, struct drm_scatter_gather)
 #define DRM_IOCTL_SG_FREE		DRM_IOW( 0x39, struct drm_scatter_gather)
+
+#define DRM_IOCTL_PRIME_HANDLE_TO_FD    DRM_IOWR(0x2d, struct drm_prime_handle)
+#define DRM_IOCTL_PRIME_FD_TO_HANDLE    DRM_IOWR(0x2e, struct drm_prime_handle)
 
 #define DRM_IOCTL_WAIT_VBLANK		DRM_IOWR(0x3a, union drm_wait_vblank)
 
