@@ -1,9 +1,8 @@
-if BUILD_TESTS
+TESTS = $(check_PROGRAMS)
 
-noinst_PROGRAMS = matrix-test setbacklight
+check_PROGRAMS = matrix-test
 
-endif
-
+noinst_PROGRAMS = setbacklight
 
 AM_CFLAGS = $(GCC_CFLAGS)
 AM_CPPFLAGS = -I$(top_srcdir)/src -DUNIT_TEST $(COMPOSITOR_CFLAGS)

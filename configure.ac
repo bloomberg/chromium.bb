@@ -179,12 +179,6 @@ AC_ARG_ENABLE(tablet-shell, [  --enable-tablet-shell],,
 AM_CONDITIONAL(ENABLE_TABLET_SHELL,
 	       test x$enable_tablet_shell = xyes)
 
-AC_ARG_ENABLE(tests,
-	      AS_HELP_STRING([--disable-tests],
-			     [do not build unit tests [default=enabled]]),,
-	      enable_tests=yes)
-AM_CONDITIONAL(BUILD_TESTS, test x$enable_tests = xyes)
-
 if test "x$GCC" = "xyes"; then
 	GCC_CFLAGS="-Wall -Wextra -Wstrict-prototypes -Wmissing-prototypes \
 		-Wno-unused-parameter -Wno-missing-field-initializers \
