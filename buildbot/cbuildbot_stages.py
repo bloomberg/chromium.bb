@@ -400,7 +400,7 @@ class CommitQueueSyncStage(LKGMCandidateSyncStage):
     """Sets validation pool based on manifest path passed in."""
     CommitQueueSyncStage.pool = \
         validation_pool.ValidationPool.AcquirePoolFromManifest(
-            manifest, self.internal, self._options.buildnumber,
+            manifest, self._build_config['overlays'], self._options.buildnumber,
             self.builder_name, self._build_config['master'],
             self._options.debug)
 
@@ -418,8 +418,8 @@ class CommitQueueSyncStage(LKGMCandidateSyncStage):
           self.repo.Initialize()
 
         pool = validation_pool.ValidationPool.AcquirePool(
-            self.internal, self._build_root, self._options.buildnumber,
-            self.builder_name, self._options.debug)
+            self._build_config['overlays'], self._build_root,
+            self._options.buildnumber, self.builder_name, self._options.debug)
 
         # We only have work to do if there are changes to try.
         try:
@@ -1335,7 +1335,9 @@ class UploadPrebuiltsStage(BoardSpecificBuilderStage):
     binhost_key = self._build_config['binhost_key']
     binhost_base_url = self._build_config['binhost_base_url']
     git_sync = self._build_config['git_sync']
-    private_bucket = overlay_config in ('private', 'both')
+    private_bucket = overlay_config in (constants.PRIVATE_OVERLAYS,
+                                        constants.BOTH_OVERLAYS)
+
     binhosts = []
     extra_args = []
 
@@ -1379,7 +1381,8 @@ class UploadPrebuiltsStage(BoardSpecificBuilderStage):
                 extra_args.extend(['--slave-profile', slave_profile])
 
       # Pre-flight queues should upload host preflight prebuilts.
-      if (cbuildbot_config.IsPFQType(prebuilt_type) and overlays == 'public'
+      if (cbuildbot_config.IsPFQType(prebuilt_type)
+          and overlays == constants.PUBLIC_OVERLAYS
           and prebuilt_type != constants.CHROME_PFQ_TYPE):
         extra_args.append('--sync-host')
 

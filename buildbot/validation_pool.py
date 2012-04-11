@@ -15,6 +15,7 @@ import time
 import urllib
 from xml.dom import minidom
 
+from chromite.buildbot import constants
 from chromite.buildbot import gerrit_helper
 from chromite.buildbot import lkgm_manager
 from chromite.buildbot import patch as cros_patch
@@ -47,6 +48,11 @@ class FailedToSubmitAllChangesException(Exception):
         'submitted' % ' '.join(str(c) for c in changes))
 
 
+class NoMatchingChangeFoundException(Exception):
+  """Raised if we try to apply a non-existent change."""
+  pass
+
+
 class ValidationPool(object):
   """Class that handles interactions with a validation pool.
 
@@ -62,7 +68,7 @@ class ValidationPool(object):
 
   GLOBAL_DRYRUN = False
 
-  def __init__(self, internal, build_number, builder_name, is_master, dryrun,
+  def __init__(self, overlays, build_number, builder_name, is_master, dryrun,
                changes=None, non_os_changes=None,
                conflicting_changes=None):
     """Initializes an instance by setting default valuables to instance vars.
@@ -71,7 +77,7 @@ class ValidationPool(object):
     method.
 
     Args:
-      internal:  Set to True if this is an internal validation pool.
+      overlays:  One of constants.VALID_OVERLAYS.
       build_number:  Build number for this validation attempt.
       builder_name:  Builder name on buildbot dashboard.
       is_master: True if this is the master builder for the Commit Queue.
@@ -84,10 +90,22 @@ class ValidationPool(object):
         we're keeping around because they conflict with other changes in
         flight.
     """
-    build_dashboard = _BUILD_DASHBOARD if not internal else _BUILD_INT_DASHBOARD
+    build_dashboard = _BUILD_DASHBOARD
+
+    self._public_helper = None
+    self._private_helper = None
+
+    # TODO(sosa): Remove False case once overlays logic has stabilized on TOT.
+    if overlays in [constants.PUBLIC_OVERLAYS, constants.BOTH_OVERLAYS, False]:
+      self._public_helper = gerrit_helper.GerritHelper(internal=False)
+
+    if overlays in [constants.PRIVATE_OVERLAYS, constants.BOTH_OVERLAYS]:
+      build_dashboard = _BUILD_INT_DASHBOARD
+      self._private_helper = gerrit_helper.GerritHelper(internal=True)
+
     self.build_log = '%s/builders/%s/builds/%s' % (
         build_dashboard, builder_name, str(build_number))
-    self.gerrit_helper = gerrit_helper.GerritHelper(internal)
+
     self.is_master = is_master
     self.dryrun = dryrun | self.GLOBAL_DRYRUN
 
@@ -97,17 +115,28 @@ class ValidationPool(object):
     self.changes_that_failed_to_apply_earlier = conflicting_changes or []
 
     # Private vars only used for pickling.
-    self._internal = internal
+    self._overlays = overlays
     self._build_number = build_number
     self._builder_name = builder_name
     self._content_merging_projects = None
 
   def __getnewargs__(self):
     """Used for pickling to re-create validation pool."""
-    return (self._internal, self._build_number, self._builder_name,
+    return (self._overlays, self._build_number, self._builder_name,
             self.is_master, self.dryrun, self.changes,
             self.non_manifest_changes,
             self.changes_that_failed_to_apply_earlier)
+
+  @property
+  def gerrit_helpers(self):
+    return [ h for h in self._public_helper, self._private_helper if h ]
+
+  def _HelperFor(self, change):
+    """Returns the Gerrit helper for the |change|."""
+    if change.internal:
+      return self._private_helper
+    else:
+      return self._public_helper
 
   @classmethod
   def _IsTreeOpen(cls, max_timeout=600):
@@ -172,13 +201,13 @@ class ValidationPool(object):
     return False
 
   @classmethod
-  def AcquirePool(cls, internal, buildroot, build_number, builder_name, dryrun):
+  def AcquirePool(cls, overlays, buildroot, build_number, builder_name, dryrun):
     """Acquires the current pool from Gerrit.
 
     Polls Gerrit and checks for which change's are ready to be committed.
 
     Args:
-      internal: If True, use gerrit-int.
+      overlays:  One of constants.VALID_OVERLAYS.
       buildroot: The location of the buildroot used to filter projects.
       build_number: Corresponding build number for the build.
       builder_name:  Builder name on buildbot dashboard.
@@ -192,24 +221,27 @@ class ValidationPool(object):
     # doing this here we can reduce the number of builder cycles.
     if dryrun or cls._IsTreeOpen(max_timeout=3600):
       # Only master configurations should call this method.
-      pool = ValidationPool(internal, build_number, builder_name, True, dryrun)
-      pool.gerrit_helper = gerrit_helper.GerritHelper(internal)
-      raw_changes = pool.gerrit_helper.GrabChangesReadyForCommit()
-      changes, non_manifest_changes = ValidationPool._FilterNonCrosProjects(
-          raw_changes, buildroot)
-      pool.changes, pool.non_manifest_changes = changes, non_manifest_changes
+      pool = ValidationPool(overlays, build_number, builder_name, True, dryrun)
+      # Iterate through changes from all gerrit instances we care about.
+      for helper in pool.gerrit_helpers:
+        raw_changes = helper.GrabChangesReadyForCommit()
+        changes, non_manifest_changes = ValidationPool._FilterNonCrosProjects(
+            raw_changes, buildroot)
+        pool.changes.extend(changes)
+        pool.non_manifest_changes.extend(non_manifest_changes)
+
       return pool
     else:
       raise TreeIsClosedException()
 
   @classmethod
-  def AcquirePoolFromManifest(cls, manifest, internal, build_number,
+  def AcquirePoolFromManifest(cls, manifest, overlays, build_number,
                               builder_name, is_master, dryrun):
     """Acquires the current pool from a given manifest.
 
     Args:
       manifest: path to the manifest where the pool resides.
-      internal: if true, assume gerrit-int.
+      overlays:  One of constants.VALID_OVERLAYS.
       build_number: Corresponding build number for the build.
       builder_name:  Builder name on buildbot dashboard.
       is_master: Boolean that indicates whether this is a pool for a master.
@@ -218,9 +250,8 @@ class ValidationPool(object):
     Returns:
       ValidationPool object.
     """
-    pool = ValidationPool(internal, build_number, builder_name, is_master,
+    pool = ValidationPool(overlays, build_number, builder_name, is_master,
                           dryrun)
-    pool.gerrit_helper = gerrit_helper.GerritHelper(internal)
     manifest_dom = minidom.parse(manifest)
     pending_commits = manifest_dom.getElementsByTagName(
         lkgm_manager.PALADIN_COMMIT_ELEMENT)
@@ -228,8 +259,17 @@ class ValidationPool(object):
       project = pending_commit.getAttribute(lkgm_manager.PALADIN_PROJECT_ATTR)
       change = pending_commit.getAttribute(lkgm_manager.PALADIN_CHANGE_ID_ATTR)
       commit = pending_commit.getAttribute(lkgm_manager.PALADIN_COMMIT_ATTR)
-      pool.changes.append(pool.gerrit_helper.GrabPatchFromGerrit(
-          project, change, commit))
+
+      for helper in pool.gerrit_helpers:
+        try:
+          patch = helper.GrabPatchFromGerrit(project, change, commit)
+          pool.changes.append(patch)
+          break
+        except gerrit_helper.QueryHasNoResults:
+          pass
+      else:
+        raise NoMatchingChangeFoundException(
+            'Could not find change defined by %s' % pending_commit)
 
     return pool
 
@@ -237,8 +277,12 @@ class ValidationPool(object):
   def ContentMergingProjects(self):
     val = self._content_merging_projects
     if val is None:
-      val = self.gerrit_helper.FindContentMergingProjects()
-      self._content_merging_projects = val
+      val = set()
+      for helper in self.gerrit_helpers:
+        val.update(helper.FindContentMergingProjects())
+
+      self._content_merging_projects = frozenset(val)
+
     return val
 
   @staticmethod
@@ -310,6 +354,7 @@ class ValidationPool(object):
     change_map = dict((change.id, change) for change in self.changes)
     for change in self.changes:
       logging.debug('Trying change %s', change.id)
+      helper = self._HelperFor(change)
       # We've already attempted this change because it was a dependent change
       # of another change that was ready.
       if (change in changes_that_failed_to_apply_to_tot or
@@ -321,6 +366,8 @@ class ValidationPool(object):
       change_stack = [change]
       apply_chain = True
       deps = []
+      # TODO(sosa): Modify helper logic to allows deps to be specified across
+      # different gerrit instances.
       try:
         deps.extend(change.GerritDependencies(buildroot))
         deps.extend(change.PaladinDependencies(buildroot))
@@ -339,7 +386,7 @@ class ValidationPool(object):
         if not dep_change:
           # The dep may have been committed already.
           try:
-            if not self.gerrit_helper.IsChangeCommitted(dep, must_match=False):
+            if not helper.IsChangeCommitted(dep, must_match=False):
               message = ('Could not apply change %s because dependent '
                          'change %s is not ready to be committed.' % (
                           change.id, dep))
@@ -416,6 +463,9 @@ class ValidationPool(object):
   def _SubmitChanges(self, changes):
     """Submits given changes to Gerrit.
 
+    Args:
+      changes: GerritPatch's to submit.
+
     Raises:
       TreeIsClosedException: if the tree is closed.
       FailedToSubmitAllChangesException: if we can't submit a change.
@@ -431,8 +481,8 @@ class ValidationPool(object):
         logging.info('Change %s will be submitted', change)
         try:
           self.SubmitChange(change)
-          was_change_submitted = self.gerrit_helper.IsChangeCommitted(
-                change.id, self.dryrun)
+          was_change_submitted = self._HelperFor(
+              change).IsChangeCommitted(change.id, self.dryrun)
         except cros_build_lib.RunCommandError:
           logging.error('gerrit review --submit failed for change.')
         finally:
@@ -448,14 +498,10 @@ class ValidationPool(object):
       raise TreeIsClosedException()
 
   def SubmitChange(self, change):
-    """Submits patch using Gerrit Review.
+    """Submits patch using Gerrit Review."""
+    cmd = self._HelperFor(change).GetGerritReviewCommand(
+        ['--submit', '%s,%s' % (change.gerrit_number, change.patch_number)])
 
-    Args:
-      helper: Instance of gerrit_helper for the gerrit instance.
-      dryrun: If true, do not actually commit anything to Gerrit.
-    """
-    cmd = self.gerrit_helper.GetGerritReviewCommand(['--submit', '%s,%s' % (
-        change.gerrit_number, change.patch_number)])
     _RunCommand(cmd, self.dryrun)
 
   def SubmitNonManifestChanges(self):
@@ -479,7 +525,11 @@ class ValidationPool(object):
       self.HandleApplicationFailure(self.changes_that_failed_to_apply_earlier)
 
   def HandleApplicationFailure(self, changes):
-    """Handles changes that were not able to be applied cleanly."""
+    """Handles changes that were not able to be applied cleanly.
+
+    Args:
+      changes: GerritPatch's to handle.
+    """
     for change in changes:
       logging.info('Change %s did not apply cleanly.', change.id)
       if self.is_master:
@@ -503,11 +553,11 @@ class ValidationPool(object):
           'finish building your change within the specified timeout. If you '
           'believe this happened in error, just re-mark your commit as ready. '
           'Your change will then get automatically retried.')
-      self.gerrit_helper.RemoveCommitReady(change, dryrun=self.dryrun)
+      self._HelperFor(change).RemoveCommitReady(change, dryrun=self.dryrun)
 
   def _SendNotification(self, change, msg):
     msg %= {'build_log':self.build_log}
-    PaladinMessage(msg, change, self.gerrit_helper).Send(self.dryrun)
+    PaladinMessage(msg, change, self._HelperFor(change)).Send(self.dryrun)
 
   def HandleCouldNotSubmit(self, change):
     """Handler that is called when Paladin can't submit a change.
@@ -523,7 +573,7 @@ class ValidationPool(object):
         'The Commit Queue failed to submit your change in %(build_log)s . '
         'This can happen if you submitted your change or someone else '
         'submitted a conflicting change while your change was being tested.')
-    self.gerrit_helper.RemoveCommitReady(change, dryrun=self.dryrun)
+    self._HelperFor(change).RemoveCommitReady(change, dryrun=self.dryrun)
 
   def HandleCouldNotVerify(self, change):
     """Handler for when Paladin fails to validate a change.
@@ -539,7 +589,7 @@ class ValidationPool(object):
         'The Commit Queue failed to verify your change in %(build_log)s . '
         'If you believe this happened in error, just re-mark your commit as '
         'ready. Your change will then get automatically retried.')
-    self.gerrit_helper.RemoveCommitReady(change, dryrun=self.dryrun)
+    self._HelperFor(change).RemoveCommitReady(change, dryrun=self.dryrun)
 
   def HandleCouldNotApply(self, change):
     """Handler for when Paladin fails to apply a change.
@@ -559,7 +609,7 @@ class ValidationPool(object):
 
     msg += extra_msg
     self._SendNotification(change, msg)
-    self.gerrit_helper.RemoveCommitReady(change, dryrun=self.dryrun)
+    self._HelperFor(change).RemoveCommitReady(change, dryrun=self.dryrun)
 
   def HandleApplied(self, change):
     """Handler for when Paladin successfully applies a change.

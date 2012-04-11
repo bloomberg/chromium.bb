@@ -18,6 +18,10 @@ class GerritException(Exception):
   "Base exception, thrown for gerrit failures"""
 
 
+class QueryHasNoResults(GerritException):
+  "Exception thrown when a query returns no results."""
+
+
 class QueryNotSpecific(GerritException):
   """Exception thrown for when a query needs to identify one CL, but matched
   multiple."""
@@ -39,11 +43,11 @@ class GerritHelper():
     if internal:
       self.ssh_port = constants.GERRIT_INT_PORT
       self.ssh_host = constants.GERRIT_INT_HOST
-      self.ssh_url  = constants.GERRIT_INT_SSH_URL
+      self.ssh_url = constants.GERRIT_INT_SSH_URL
     else:
       self.ssh_port = constants.GERRIT_PORT
       self.ssh_host = constants.GERRIT_HOST
-      self.ssh_url  = constants.GERRIT_SSH_URL
+      self.ssh_url = constants.GERRIT_SSH_URL
 
     self.internal = internal
 
@@ -160,7 +164,7 @@ class GerritHelper():
       return None
     elif not results:
       if must_match:
-        raise GerritException('Query %s had no results' % (query,))
+        raise QueryHasNoResults('Query %s had no results' % (query,))
       return None
     elif len(results) != 1:
       raise QueryNotSpecific('Query %s returned too many results: %s'
@@ -207,6 +211,7 @@ class GerritHelper():
       result = sorted(result, key=operator.itemgetter(sort))
     if not raw:
       return [cros_patch.GerritPatch(x, self.internal) for x in result]
+
     return result
 
   def InterpretJSONResults(self, query, result_string, query_type='stats',
@@ -302,14 +307,14 @@ class GerritHelper():
       yield query, result
       last_patch_id = query
 
-  def _SqlQuery(self, input, dryrun=False, is_command=False):
+  def _SqlQuery(self, query, dryrun=False, is_command=False):
     """Run a gsql query against gerrit.
 
     Doing so requires an admin account, and a fair amount of care-
     bad code can trash the underlying DB pretty easily.
 
     Args:
-     input: SQL query to run.
+     query: SQL query to run.
      dryrun: Should we run the SQL, or just pretend we did?
      is_command: Does the SQL modify records (DML), or is it just
        a query?  If it's DML, then this must be set to True.
@@ -318,16 +323,16 @@ class GerritHelper():
      List of dictionaries returned from gerrit for the SQL ran.
     """
     if dryrun:
-      logging.Info("Would have ran sql query %r" % (input,))
+      logging.info("Would have ran sql query %r", (query,))
       return []
 
     command = self.ssh_prefix + ['gerrit', 'gsql', '--format=JSON']
     result = cros_build_lib.RunCommand(command, redirect_stdout=True,
-                                       input=input)
+                                       query=query)
 
     query_type = 'update-stats' if is_command else 'query-stats'
 
-    result = self.InterpretJSONResults(input, result.output,
+    result = self.InterpretJSONResults(query, result.output,
                                        query_type=query_type,
                                        mode='gsql')
     return result

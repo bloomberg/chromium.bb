@@ -44,7 +44,7 @@ def OverrideConfigForTrybot(build_config, remote_trybot):
   for config in [copy_config] + board_specific_configs:
     config['uprev'] = True
     if config['internal']:
-      config['overlays'] = 'both'
+      config['overlays'] = constants.BOTH_OVERLAYS
 
     # Most users don't have access to the pdf repository so disable pdf.
     useflags = config['useflags']
@@ -159,8 +159,8 @@ _settings = dict(
   uprev=True,
 
 # overlays -- Select what overlays to look at for revving and prebuilts. This
-#             can be 'public', 'private' or 'both'.
-  overlays='public',
+#             can be any constants.VALID_OVERLAYS.
+  overlays=constants.PUBLIC_OVERLAYS,
 
 # push_overlays -- Select what overlays to push at. This should be a subset of
 #                  overlays for the particular builder.  Must be None if
@@ -193,12 +193,9 @@ _settings = dict(
 # upload_hw_test_artifacts -- If true, uploads artifacts for hw testing.
   upload_hw_test_artifacts=False,
 
-# platform -- Hardware platform on which the build is tested.
-  platform=None,
-
 # gs_path -- Google Storage path to offload files to.
 #            None - No upload
-#            GS_PATH_DEFULAT - 'gs://chromeos-archive/' + bot_id
+#            GS_PATH_DEFAULT - 'gs://chromeos-archive/' + bot_id
 #            value - Upload to explicit path
   gs_path=GS_PATH_DEFAULT,
 
@@ -409,7 +406,7 @@ pfq = _config(
   build_type=constants.PFQ_TYPE,
   important=True,
   uprev=True,
-  overlays='public',
+  overlays=constants.PUBLIC_OVERLAYS,
   manifest_version=True,
   trybot_list=True,
 )
@@ -417,7 +414,7 @@ pfq = _config(
 paladin = _config(
   important=True,
   build_type=constants.PALADIN_TYPE,
-  overlays='public',
+  overlays=constants.PUBLIC_OVERLAYS,
   prebuilts=True,
   manifest_version=True,
   trybot_list=True,
@@ -427,13 +424,13 @@ paladin = _config(
 incremental = _config(
   build_type=constants.INCREMENTAL_TYPE,
   uprev=False,
-  overlays='public',
+  overlays=constants.PUBLIC_OVERLAYS,
   prebuilts=False,
 )
 
 internal = _config(
   internal=True,
-  overlays='both',
+  overlays=constants.BOTH_OVERLAYS,
   git_url=constants.MANIFEST_INT_URL,
 )
 
@@ -474,7 +471,7 @@ paladin.add_config('x86-generic-paladin',
   boards=['x86-generic'],
   master=True,
   paladin_builder_name='x86 generic paladin',
-  push_overlays='public',
+  push_overlays=constants.PUBLIC_OVERLAYS,
 )
 
 paladin.add_config('arm-tegra2-paladin',
@@ -494,14 +491,14 @@ chrome_pfq = _config(
   important=True,
   chrome_tests=True,
   uprev=False,
-  overlays='public',
+  overlays=constants.PUBLIC_OVERLAYS,
   manifest_version=True,
 )
 
 chrome_pfq.add_config('x86-generic-chrome-pre-flight-queue',
   boards=['x86-generic'],
   master=True,
-  push_overlays='public',
+  push_overlays=constants.PUBLIC_OVERLAYS,
   chrome_rev=constants.CHROME_REV_LATEST,
   chrome_tests=False,
 )
@@ -618,14 +615,15 @@ _config.add_raw_config('x86-generic-asan',
 # Internal Builds
 #
 
-internal_pfq = internal.derive(pfq, overlays='private')
-internal_pfq_branch = internal_pfq.derive(overlays='both')
-internal_paladin = internal.derive(paladin, overlays='private')
-internal_incremental = internal.derive(incremental, overlays='both')
+internal_pfq = internal.derive(pfq, overlays=constants.PRIVATE_OVERLAYS)
+internal_pfq_branch = internal_pfq.derive(overlays=constants.BOTH_OVERLAYS)
+internal_paladin = internal.derive(paladin, overlays=constants.PRIVATE_OVERLAYS)
+internal_incremental = internal.derive(incremental,
+                                       overlays=constants.BOTH_OVERLAYS)
 
 internal_pfq_branch.add_config('x86-alex-pre-flight-branch',
   master=True,
-  push_overlays='both',
+  push_overlays=constants.BOTH_OVERLAYS,
   boards=['x86-alex'],
 )
 
@@ -633,7 +631,7 @@ internal_arm_paladin = internal_paladin.derive(arm)
 
 internal_paladin.add_config('mario-paladin',
   master=True,
-  push_overlays='private',
+  push_overlays=constants.PRIVATE_OVERLAYS,
   boards=['x86-mario'],
   gs_path='gs://chromeos-x86-mario/pre-flight-master',
   paladin_builder_name='mario paladin',
@@ -827,7 +825,7 @@ _factory_release = _release.derive(
 _firmware_release = _release.derive(
   push_image=False,
   uprev=True,
-  overlays='both',
+  overlays=constants.BOTH_OVERLAYS,
   build_tests=False,
   unittests=False,
   vm_tests=None,

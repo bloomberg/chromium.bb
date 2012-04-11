@@ -40,6 +40,7 @@ class TestValidationPool(mox.MoxTestBase):
   def MockPatch(self, change_id, patch_number=None):
     patch = self.mox.CreateMock(cros_patch.GerritPatch)
 
+    patch.internal = False
     patch.id = 'ChangeId%i' % (change_id,)
     patch.gerrit_number = change_id
     patch.patch_number = (patch_number if patch_number is not None else
@@ -52,13 +53,14 @@ class TestValidationPool(mox.MoxTestBase):
   def GetPool(self, *args):
     pool = validation_pool.ValidationPool(*args)
     self.mox.StubOutWithMock(pool, '_SendNotification')
-    self.mox.StubOutWithMock(pool.gerrit_helper, '_SqlQuery')
-    self.mox.StubOutWithMock(pool.gerrit_helper, 'FindContentMergingProjects')
+    self.mox.StubOutWithMock(gerrit_helper.GerritHelper, '_SqlQuery')
+    self.mox.StubOutWithMock(gerrit_helper.GerritHelper,
+                             'FindContentMergingProjects')
     return pool
 
   @staticmethod
   def SetPoolsContentMergingProjects(pool, *projects):
-    pool.gerrit_helper.FindContentMergingProjects().AndReturn(
+    pool.gerrit_helpers[0].FindContentMergingProjects().AndReturn(
         frozenset(projects))
 
   def _TreeStatusFile(self, message, general_state):
@@ -123,7 +125,7 @@ class TestValidationPool(mox.MoxTestBase):
 
     build_root = 'fakebuildroot'
 
-    pool = self.GetPool(False, 1, 'build_name', True, False)
+    pool = self.GetPool(constants.PUBLIC_OVERLAYS, 1, 'build_name', True, False)
     pool.changes = [patch1, patch2]
     self.SetPoolsContentMergingProjects(pool)
 
@@ -150,10 +152,10 @@ class TestValidationPool(mox.MoxTestBase):
     patch2.project = 'fake_project'
     build_root = 'fakebuildroot'
 
-    pool = self.GetPool(False, 1, 'build_name', True, False)
+    pool = self.GetPool(constants.PUBLIC_OVERLAYS, 1, 'build_name', True, False)
     pool.changes = [patch2]
     helper = self.mox.CreateMock(gerrit_helper.GerritHelper)
-    pool.gerrit_helper = helper
+    pool._public_helper = helper
     patch2.GerritDependencies(build_root).AndReturn(['ChangeId1'])
     patch2.PaladinDependencies(build_root).AndReturn([])
     helper.IsChangeCommitted(patch1.id, must_match=False).AndReturn(False)
@@ -171,13 +173,13 @@ class TestValidationPool(mox.MoxTestBase):
     patch2.project = 'fake_project'
     build_root = 'fakebuildroot'
 
-    pool = self.GetPool(False, 1, 'build_name', True, False)
+    pool = self.GetPool(constants.PUBLIC_OVERLAYS, 1, 'build_name', True, False)
     pool.changes = [patch2]
     patch2.project = '3way-project'
     self.SetPoolsContentMergingProjects(pool, '3way-project')
 
-    self.mox.StubOutWithMock(pool.gerrit_helper, 'IsChangeCommitted')
-    pool.gerrit_helper.IsChangeCommitted(
+    self.mox.StubOutWithMock(gerrit_helper.GerritHelper, 'IsChangeCommitted')
+    gerrit_helper.GerritHelper.IsChangeCommitted(
         patch1.id, must_match=False).AndReturn(True)
 
     patch2.GerritDependencies(build_root).AndReturn(['ChangeId1'])
@@ -205,9 +207,9 @@ class TestValidationPool(mox.MoxTestBase):
     patch4 = self.MockPatch(4)
     build_root = 'fakebuildroot'
 
-    pool = self.GetPool(False, 1, 'build_name', True, False)
+    pool = self.GetPool(constants.PUBLIC_OVERLAYS, 1, 'build_name', True, False)
     pool.changes = [patch1, patch2, patch3, patch4]
-    self.mox.StubOutWithMock(pool.gerrit_helper, 'RemoveCommitReady')
+    self.mox.StubOutWithMock(gerrit_helper.GerritHelper, 'RemoveCommitReady')
     self.SetPoolsContentMergingProjects(pool)
     pool.build_log = 'log'
 
@@ -245,7 +247,7 @@ class TestValidationPool(mox.MoxTestBase):
     patch2 = self.MockPatch(2)
     build_root = 'fakebuildroot'
 
-    pool = self.GetPool(False, 1, 'build_name', True, False)
+    pool = self.GetPool(constants.PUBLIC_OVERLAYS, 1, 'build_name', True, False)
     self.mox.StubOutWithMock(pool, 'HandleCouldNotApply')
 
     pool.changes = [patch1, patch2]
@@ -286,7 +288,7 @@ class TestValidationPool(mox.MoxTestBase):
 
     build_root = 'fakebuildroot'
 
-    pool = self.GetPool(False, 1, 'build_name', True, False)
+    pool = self.GetPool(constants.PUBLIC_OVERLAYS, 1, 'build_name', True, False)
     pool.changes = [patch1, patch2, patch3, patch4, patch5]
 
     self.SetPoolsContentMergingProjects(pool)
@@ -322,7 +324,7 @@ class TestValidationPool(mox.MoxTestBase):
     patch2 = self.MockPatch(2)
     build_root = 'fakebuildroot'
 
-    pool = self.GetPool(False, 1, 'build_name', True, False)
+    pool = self.GetPool(constants.PUBLIC_OVERLAYS, 1, 'build_name', True, False)
     pool.changes = [patch1, patch2]
     self.SetPoolsContentMergingProjects(pool)
 
@@ -358,9 +360,9 @@ class TestValidationPool(mox.MoxTestBase):
     build_root = 'fakebuildroot'
 
     validation_pool.ValidationPool._IsTreeOpen().AndReturn(True)
-    pool = self.GetPool(False, 1, 'build_name', True, False)
+    pool = self.GetPool(constants.PUBLIC_OVERLAYS, 1, 'build_name', True, False)
     pool.changes = [patch1, patch2, patch3]
-    pool.gerrit_helper = helper
+    pool._public_helper = helper
     pool.dryrun = False
 
     self.mox.StubOutWithMock(pool, 'SubmitChange')
@@ -390,9 +392,9 @@ class TestValidationPool(mox.MoxTestBase):
     build_root = 'fakebuildroot'
 
     validation_pool.ValidationPool._IsTreeOpen().AndReturn(True)
-    pool = self.GetPool(False, 1, 'build_name', True, False)
+    pool = self.GetPool(constants.PUBLIC_OVERLAYS, 1, 'build_name', True, False)
     pool.changes = [patch1, patch2]
-    pool.gerrit_helper = helper
+    pool._public_helper = helper
     pool.dryrun = False
 
     self.mox.StubOutWithMock(pool, 'SubmitChange')
@@ -414,9 +416,9 @@ class TestValidationPool(mox.MoxTestBase):
     build_root = 'fakebuildroot'
 
     validation_pool.ValidationPool._IsTreeOpen().AndReturn(True)
-    pool = self.GetPool(False, 1, 'build_name', True, False)
+    pool = self.GetPool(constants.PUBLIC_OVERLAYS, 1, 'build_name', True, False)
     pool.non_manifest_changes = [patch1, patch2]
-    pool.gerrit_helper = helper
+    pool._public_helper = helper
     pool.dryrun = False
 
     self.mox.StubOutWithMock(pool, 'SubmitChange')
@@ -431,7 +433,7 @@ class TestValidationPool(mox.MoxTestBase):
 
   def testGerritSubmit(self):
     """Tests submission review string looks correct."""
-    pool = self.GetPool(False, 1, 'build_name', True, False)
+    pool = self.GetPool(constants.PUBLIC_OVERLAYS, 1, 'build_name', True, False)
 
     my_patch = cros_patch.GerritPatch(self.test_json, False)
     validation_pool._RunCommand(
@@ -443,7 +445,7 @@ class TestValidationPool(mox.MoxTestBase):
 
   def testGerritHandleApplied(self):
     """Tests review string looks correct."""
-    pool = self.GetPool(False, 1, 'build_name', True, False)
+    pool = self.GetPool(constants.PUBLIC_OVERLAYS, 1, 'build_name', True, False)
 
     my_patch = cros_patch.GerritPatch(self.test_json, False)
     pool._SendNotification(my_patch, mox.IgnoreArg())
@@ -454,9 +456,10 @@ class TestValidationPool(mox.MoxTestBase):
 
   def testGerritHandleApplyError(self):
     """Tests review string looks correct."""
-    pool = self.GetPool(False, 1, 'build_name', True, False)
-    pool.gerrit_helper._SqlQuery(mox.IgnoreArg(), dryrun=mox.IgnoreArg(),
-                                 is_command=True).AndReturn(None)
+    pool = self.GetPool(constants.PUBLIC_OVERLAYS, 1, 'build_name', True, False)
+    gerrit_helper.GerritHelper._SqlQuery(
+        mox.IgnoreArg(), dryrun=mox.IgnoreArg(),
+        is_command=True).AndReturn(None)
 
     my_patch = cros_patch.GerritPatch(self.test_json, False)
     pool._SendNotification(my_patch, mox.IgnoreArg())
@@ -467,9 +470,10 @@ class TestValidationPool(mox.MoxTestBase):
 
   def testGerritHandleSubmitError(self):
     """Tests review string looks correct."""
-    pool = self.GetPool(False, 1, 'build_name', True, False)
-    pool.gerrit_helper._SqlQuery(mox.IgnoreArg(), dryrun=mox.IgnoreArg(),
-                                 is_command=True).AndReturn(None)
+    pool = self.GetPool(constants.PUBLIC_OVERLAYS, 1, 'build_name', True, False)
+    gerrit_helper.GerritHelper._SqlQuery(
+        mox.IgnoreArg(), dryrun=mox.IgnoreArg(),
+        is_command=True).AndReturn(None)
 
     my_patch = cros_patch.GerritPatch(self.test_json, False)
     pool._SendNotification(my_patch, mox.IgnoreArg())
@@ -480,9 +484,10 @@ class TestValidationPool(mox.MoxTestBase):
 
   def testGerritHandleVerifyError(self):
     """Tests review string looks correct."""
-    pool = self.GetPool(False, 1, 'build_name', True, False)
-    pool.gerrit_helper._SqlQuery(mox.IgnoreArg(), dryrun=mox.IgnoreArg(),
-                                 is_command=True).AndReturn(None)
+    pool = self.GetPool(constants.PUBLIC_OVERLAYS, 1, 'build_name', True, False)
+    gerrit_helper.GerritHelper._SqlQuery(
+        mox.IgnoreArg(), dryrun=mox.IgnoreArg(),
+        is_command=True).AndReturn(None)
 
     my_patch = cros_patch.GerritPatch(self.test_json, False)
     pool._SendNotification(my_patch, mox.IgnoreArg())

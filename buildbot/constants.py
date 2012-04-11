@@ -106,7 +106,7 @@ CHROOT_BUILDER_BOARD = 'amd64-host'
 REFRESH_PACKAGES_TYPE = 'refresh_packages'
 
 # Define pool of machines for Hardware tests.
-HWTEST_MACH_POOL='bvt'
+HWTEST_MACH_POOL = 'bvt'
 
 # Defines VM Test types.
 SMOKE_SUITE_TEST_TYPE = 'smoke_suite'
@@ -118,3 +118,8 @@ VALID_AU_TEST_TYPES = [SMOKE_SUITE_TEST_TYPE, SIMPLE_AU_TEST_TYPE,
 
 VERSION_FILE = os.path.join('src/third_party/chromiumos-overlay',
                             'chromeos/config/chromeos_version.sh')
+
+BOTH_OVERLAYS = 'both'
+PUBLIC_OVERLAYS = 'public'
+PRIVATE_OVERLAYS = 'private'
+VALID_OVERLAYS = [BOTH_OVERLAYS, PUBLIC_OVERLAYS, PRIVATE_OVERLAYS, None]
