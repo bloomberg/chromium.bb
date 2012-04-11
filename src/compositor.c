@@ -1166,6 +1166,33 @@ surface_attach(struct wl_client *client,
 }
 
 static void
+texture_set_subimage(struct weston_surface *surface,
+		     int32_t x, int32_t y, int32_t width, int32_t height)
+{
+	glBindTexture(GL_TEXTURE_2D, surface->texture);
+
+#ifdef GL_UNPACK_ROW_LENGTH
+	/* Mesa does not define GL_EXT_unpack_subimage */
+
+	if (surface->compositor->has_unpack_subimage) {
+		glPixelStorei(GL_UNPACK_ROW_LENGTH, surface->pitch);
+		glPixelStorei(GL_UNPACK_SKIP_PIXELS, x);
+		glPixelStorei(GL_UNPACK_SKIP_ROWS, y);
+
+		glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, width, height,
+				GL_BGRA_EXT, GL_UNSIGNED_BYTE,
+				wl_shm_buffer_get_data(surface->buffer));
+		return;
+	}
+#endif
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_BGRA_EXT,
+		     surface->pitch, surface->buffer->height, 0,
+		     GL_BGRA_EXT, GL_UNSIGNED_BYTE,
+		     wl_shm_buffer_get_data(surface->buffer));
+}
+
+static void
 surface_damage(struct wl_client *client,
 	       struct wl_resource *resource,
 	       int32_t x, int32_t y, int32_t width, int32_t height)
@@ -1174,16 +1201,8 @@ surface_damage(struct wl_client *client,
 
 	weston_surface_damage_rectangle(es, x, y, width, height);
 
-	if (es->buffer && wl_buffer_is_shm(es->buffer)) {
-		glBindTexture(GL_TEXTURE_2D, es->texture);
-		glPixelStorei(GL_UNPACK_ROW_LENGTH, es->pitch);
-		glPixelStorei(GL_UNPACK_SKIP_PIXELS, x);
-		glPixelStorei(GL_UNPACK_SKIP_ROWS, y);
-
-		glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, width, height,
-				GL_BGRA_EXT, GL_UNSIGNED_BYTE,
-				wl_shm_buffer_get_data(es->buffer));
-	}
+	if (es->buffer && wl_buffer_is_shm(es->buffer))
+		texture_set_subimage(es, x, y, width, height);
 }
 
 static void
@@ -2372,10 +2391,8 @@ weston_compositor_init(struct weston_compositor *ec, struct wl_display *display)
 		return -1;
 	}
 
-	if (!strstr(extensions, "GL_EXT_unpack_subimage")) {
-		fprintf(stderr, "GL_EXT_unpack_subimage not available\n");
-		return -1;
-	}
+	if (strstr(extensions, "GL_EXT_unpack_subimage"))
+		ec->has_unpack_subimage = 1;
 
 	extensions =
 		(const char *) eglQueryString(ec->display, EGL_EXTENSIONS);
