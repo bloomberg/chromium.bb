@@ -24,6 +24,7 @@
 #define _WAYLAND_CLIENT_H
 
 #include "wayland-util.h"
+#include "wayland-version.h"
 
 #ifdef  __cplusplus
 extern "C" {

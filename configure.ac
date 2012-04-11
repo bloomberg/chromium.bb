@@ -1,9 +1,21 @@
 AC_PREREQ([2.64])
+
+m4_define([wayland_major_version], [0])
+m4_define([wayland_minor_version], [89])
+m4_define([wayland_micro_version], [0])
+m4_define([wayland_version],
+          [wayland_major_version.wayland_minor_version.wayland_micro_version])
+
 AC_INIT([wayland],
-        [master],
+        [wayland_version],
         [https://bugs.freedesktop.org/enter_bug.cgi?product=wayland],
         [wayland],
         [http://wayland.freedesktop.org/])
+
+AC_SUBST([WAYLAND_VERSION_MAJOR], [wayland_major_version])
+AC_SUBST([WAYLAND_VERSION_MINOR], [wayland_minor_version])
+AC_SUBST([WAYLAND_VERSION_MICRO], [wayland_micro_version])
+AC_SUBST([WAYLAND_VERSION], [wayland_version])
 
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([m4])
@@ -69,6 +81,7 @@ AC_CONFIG_FILES([Makefile
 		 src/Makefile
 		 src/wayland-server.pc
 		 src/wayland-client.pc
+		 src/wayland-version.h
 		 protocol/Makefile
 		 tests/Makefile])
 AC_OUTPUT

@@ -30,6 +30,7 @@ extern "C" {
 #include <sys/types.h>
 #include <stdint.h>
 #include "wayland-util.h"
+#include "wayland-version.h"
 
 enum {
 	WL_EVENT_READABLE = 0x01,

@@ -7,7 +7,8 @@ include_HEADERS =				\
 	wayland-server.h			\
 	wayland-client-protocol.h		\
 	wayland-client.h			\
-	wayland-egl.h
+	wayland-egl.h				\
+	wayland-version.h
 
 libwayland_util_la_SOURCES =			\
 	connection.c				\
@@ -61,3 +62,5 @@ BUILT_SOURCES =					\
 	wayland-protocol.c
 
 CLEANFILES = $(BUILT_SOURCES)
+DISTCLEANFILES = wayland-version.h
+EXTRA_DIST = wayland-version.h.in
