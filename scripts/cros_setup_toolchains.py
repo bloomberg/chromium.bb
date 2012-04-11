@@ -40,7 +40,6 @@ CROSSDEV_OVERLAY = '/usr/local/portage/crossdev'
 # This is done essentially by messing with GetDesiredPackageVersions()
 DEFAULT_VERSION = PACKAGE_STABLE
 DEFAULT_TARGET_VERSION_MAP = {
-  'binutils' : '2.21-r4',
 }
 TARGET_VERSION_MAP = {
   'host' : {
@@ -432,10 +431,9 @@ def UpdateTargets(targets, usepkg):
   packages = []
   for pkg in mergemap:
     for ver in mergemap[pkg]:
-      if ver == PACKAGE_STABLE:
-        packages.append(pkg)
-      elif ver != PACKAGE_NONE:
-        packages.append('=%s-%s' % (pkg, ver))
+      if ver != PACKAGE_NONE:
+        # Be a little more permissive for usepkg, the binaries may not exist.
+        packages.append('%s%s-%s' % ('<=' if usepkg else '=', pkg, ver))
 
   if not packages:
     print 'Nothing to update!'
