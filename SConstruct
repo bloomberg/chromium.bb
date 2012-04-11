@@ -3417,6 +3417,10 @@ nonvariant_tests = [
     'tests/minnacl/nacl.scons',
     'tests/multiple_sandboxes/nacl.scons',
     'tests/nacl.scons',
+    # Potential issue with running them:
+    # http://code.google.com/p/nativeclient/issues/detail?id=2092
+    # See also the comment in "buildbot/buildbot_standard.py"
+    'tests/pnacl_shared_lib_test/nacl.scons',
     'tests/ppapi/nacl.scons',
     'tests/ppapi_browser/bad/nacl.scons',
     'tests/ppapi_browser/crash/nacl.scons',
@@ -3493,13 +3497,19 @@ if nacl_env.GetOption('download'):
   nacl_sync_env['ENV'] = os.environ
   nacl_sync_env.Execute('gclient runhooks --force')
 
+
+def NaClSharedLibrary(env, lib_name, *args, **kwargs):
+  env_shared = env.Clone(COMPONENT_STATIC=False)
+  soname = SCons.Util.adjustixes(lib_name, 'lib', '.so')
+  env_shared.AppendUnique(SHLINKFLAGS=['-Wl,-soname,%s' % (soname)])
+  return env_shared.ComponentLibrary(lib_name, *args, **kwargs)
+
+nacl_env.AddMethod(NaClSharedLibrary)
+
 def NaClSdkLibrary(env, lib_name, *args, **kwargs):
   n = [env.ComponentLibrary(lib_name, *args, **kwargs)]
   if not env.Bit('nacl_disable_shared'):
-    env_shared = env.Clone(COMPONENT_STATIC=False)
-    soname = SCons.Util.adjustixes(lib_name, 'lib', '.so')
-    env_shared.AppendUnique(SHLINKFLAGS=['-Wl,-soname,%s' % (soname)])
-    n.append(env_shared.ComponentLibrary(lib_name, *args, **kwargs))
+    n.append(NaClSharedLibrary(env, lib_name, *args, **kwargs))
   return n
 
 nacl_env.AddMethod(NaClSdkLibrary)
