@@ -9,6 +9,7 @@
 #include "base/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/metrics/histogram.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -238,6 +239,8 @@ void ChromeToMobileService::GenerateSnapshot(base::WeakPtr<Observer> observer) {
 void ChromeToMobileService::SendToMobile(const string16& mobile_id,
                                          const FilePath& snapshot,
                                          base::WeakPtr<Observer> observer) {
+  LogMetric(SENDING_URL);
+
   DCHECK(!access_token_.empty());
   RequestData data;
   data.mobile_id = mobile_id;
@@ -255,6 +258,8 @@ void ChromeToMobileService::SendToMobile(const string16& mobile_id,
   submit_url->Start();
 
   if (send_snapshot) {
+    LogMetric(SENDING_SNAPSHOT);
+
     data.type = SNAPSHOT;
     content::URLFetcher* submit_snapshot = CreateRequest(data);
     request_observer_map_[submit_snapshot] = observer;
@@ -273,6 +278,10 @@ void ChromeToMobileService::DeleteSnapshot(const FilePath& snapshot) {
           base::Bind(&DeleteSnapshotFile, snapshot));
     snapshots_.erase(snapshot);
   }
+}
+
+void ChromeToMobileService::LogMetric(Metric metric) {
+  UMA_HISTOGRAM_ENUMERATION("ChromeToMobile.Service", metric, NUM_METRICS);
 }
 
 void ChromeToMobileService::OnURLFetchComplete(
@@ -409,6 +418,8 @@ void ChromeToMobileService::RequestSearch() {
       elapsed_time.InHours() < kSearchRequestDelayHours)
     return;
 
+  LogMetric(DEVICES_REQUESTED);
+
   RequestData data;
   data.type = SEARCH;
   search_request_.reset(CreateRequest(data));
@@ -459,6 +470,9 @@ void ChromeToMobileService::HandleSearchResponse() {
     }
     mobiles_ = mobiles.Pass();
 
+    if (!mobiles_.empty())
+      LogMetric(DEVICES_AVAILABLE);
+
     Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
     if (browser && browser->command_updater())
       browser->command_updater()->UpdateCommandEnabled(
@@ -500,5 +514,6 @@ void ChromeToMobileService::HandleSubmitResponse(
     }
   }
 
+  LogMetric(success ? SEND_SUCCESS : SEND_ERROR);
   observer->OnSendComplete(success);
 }

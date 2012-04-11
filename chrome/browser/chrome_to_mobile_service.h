@@ -50,6 +50,19 @@ class ChromeToMobileService : public ProfileKeyedService,
     virtual void OnSendComplete(bool success) = 0;
   };
 
+  enum Metric {
+    DEVICES_REQUESTED = 0,  // Cloud print was contacted to list devices.
+    DEVICES_AVAILABLE,      // Cloud print returned 1+ compatible devices.
+    BUBBLE_SHOWN,           // The page action bubble was shown.
+    SNAPSHOT_GENERATED,     // A snapshot was successfully generated.
+    SNAPSHOT_ERROR,         // An error occurred during snapshot generation.
+    SENDING_URL,            // Send was invoked (with or without a snapshot).
+    SENDING_SNAPSHOT,       // A snapshot was sent along with the page URL.
+    SEND_SUCCESS,           // Cloud print responded with success on send.
+    SEND_ERROR,             // Cloud print responded with failure on send.
+    NUM_METRICS
+  };
+
   // The URLFetcher request types.
   enum RequestType {
     SEARCH,
@@ -101,6 +114,10 @@ class ChromeToMobileService : public ProfileKeyedService,
   // Delete the snapshot file (should be called on observer destruction).
   // Virtual for unit test mocking.
   virtual void DeleteSnapshot(const FilePath& snapshot);
+
+  // Log a metric for the "ChromeToMobile.Service" histogram.
+  // Virtual for unit test mocking.
+  virtual void LogMetric(Metric metric);
 
   // content::URLFetcherDelegate method.
   virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;

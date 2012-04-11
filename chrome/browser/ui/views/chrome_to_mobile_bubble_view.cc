@@ -188,10 +188,12 @@ void ChromeToMobileBubbleView::SnapshotGenerated(const FilePath& path,
                                                  int64 bytes) {
   snapshot_path_ = path;
   if (bytes > 0) {
+    service_->LogMetric(ChromeToMobileService::SNAPSHOT_GENERATED);
     send_copy_->SetText(l10n_util::GetStringFUTF16(
         IDS_CHROME_TO_MOBILE_BUBBLE_SEND_COPY, ui::FormatBytes(bytes)));
     send_copy_->SetEnabled(true);
   } else {
+    service_->LogMetric(ChromeToMobileService::SNAPSHOT_ERROR);
     send_copy_->SetText(l10n_util::GetStringUTF16(
         IDS_CHROME_TO_MOBILE_BUBBLE_SEND_COPY_FAILED));
   }
@@ -316,6 +318,8 @@ ChromeToMobileBubbleView::ChromeToMobileBubbleView(views::View* anchor_view,
       send_copy_(NULL),
       send_(NULL),
       cancel_(NULL) {
+  service_->LogMetric(ChromeToMobileService::BUBBLE_SHOWN);
+
   // Generate the MHTML snapshot now to report its size in the bubble.
   service_->GenerateSnapshot(weak_ptr_factory_.GetWeakPtr());
 
