@@ -473,6 +473,49 @@ cr.define('tracing', function() {
             powerCounter.timestamps.push(ts);
             powerCounter.samples.push(powerState);
             break;
+          case 'cpu_frequency':
+            var event = /state=(\d+) cpu_id=(\d)+/.exec(eventBase[5]);
+            if (!event) {
+              this.malformedEvent(eventName);
+              continue;
+            }
+
+            var targetCpuNumber = parseInt(event[2]);
+            var targetCpu = this.getOrCreateCpuState(targetCpuNumber);
+            var powerCounter =
+                targetCpu.cpu.getOrCreateCounter('', 'Clock Frequency');
+            if (powerCounter.numSeries == 0) {
+              powerCounter.seriesNames.push('state');
+              powerCounter.seriesColors.push(
+                  tracing.getStringColorId(powerCounter.name + '.' + 'state'));
+            }
+            var powerState = parseInt(event[1]);
+            powerCounter.timestamps.push(ts);
+            powerCounter.samples.push(powerState);
+            break;
+          case 'cpu_idle':
+            var event = /state=(\d+) cpu_id=(\d)+/.exec(eventBase[5]);
+            if (!event) {
+              this.malformedEvent(eventName);
+              continue;
+            }
+
+            var targetCpuNumber = parseInt(event[2]);
+            var targetCpu = this.getOrCreateCpuState(targetCpuNumber);
+            var powerCounter = targetCpu.cpu.getOrCreateCounter('', 'C-State');
+            if (powerCounter.numSeries == 0) {
+              powerCounter.seriesNames.push('state');
+              powerCounter.seriesColors.push(
+                  tracing.getStringColorId(powerCounter.name));
+            }
+            var powerState = parseInt(event[1]);
+            // NB: 4294967295/-1 means an exit from the current state
+            if (powerState != 4294967295)
+              powerCounter.samples.push(powerState);
+            else
+              powerCounter.samples.push(0);
+            powerCounter.timestamps.push(ts);
+            break;
           case 'workqueue_execute_start':
             var event = workqueueExecuteStartRE.exec(eventBase[5]);
             if (!event) {
