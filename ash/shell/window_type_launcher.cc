@@ -341,8 +341,7 @@ void WindowTypeLauncher::ButtonPressed(views::Button* sender,
   }
 #if !defined(OS_MACOSX)
   else if (sender == examples_button_) {
-    views::examples::ShowExamplesWindow(views::examples::DO_NOTHING_ON_CLOSE,
-                                        NULL);
+    views::examples::ShowExamplesWindow(views::examples::DO_NOTHING_ON_CLOSE);
   }
 #endif  // !defined(OS_MACOSX)
 }

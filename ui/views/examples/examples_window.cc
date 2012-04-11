@@ -11,7 +11,6 @@
 #include "base/process_util.h"
 #include "base/stl_util.h"
 #include "base/utf_string_conversions.h"
-#include "content/public/browser/browser_context.h"
 #include "ui/base/models/combobox_model.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/views/controls/button/text_button.h"
@@ -38,7 +37,6 @@
 #include "ui/views/examples/textfield_example.h"
 #include "ui/views/examples/throbber_example.h"
 #include "ui/views/examples/tree_view_example.h"
-#include "ui/views/examples/webview_example.h"
 #include "ui/views/examples/widget_example.h"
 #include "ui/views/focus/accelerator_handler.h"
 #include "ui/views/layout/fill_layout.h"
@@ -78,13 +76,11 @@ class ComboboxModelExampleList : public ui::ComboboxModel {
 class ExamplesWindowContents : public WidgetDelegateView,
                                public ComboboxListener {
  public:
-ExamplesWindowContents(Operation operation,
-                       content::BrowserContext* browser_context)
+  explicit ExamplesWindowContents(Operation operation)
       : combobox_(new Combobox(&combobox_model_)),
         example_shown_(new View),
         status_label_(new Label),
-        operation_(operation),
-        browser_context_(browser_context) {
+        operation_(operation) {
     instance_ = this;
     combobox_->set_listener(this);
   }
@@ -182,7 +178,6 @@ ExamplesWindowContents(Operation operation,
     combobox_model_.AddExample(new TextfieldExample);
     combobox_model_.AddExample(new ThrobberExample);
     combobox_model_.AddExample(new TreeViewExample);
-    combobox_model_.AddExample(new WebViewExample(browser_context_));
     combobox_model_.AddExample(new WidgetExample);
   }
 
@@ -192,7 +187,6 @@ ExamplesWindowContents(Operation operation,
   View* example_shown_;
   Label* status_label_;
   const Operation operation_;
-  content::BrowserContext* browser_context_;
 
   DISALLOW_COPY_AND_ASSIGN(ExamplesWindowContents);
 };
@@ -200,13 +194,11 @@ ExamplesWindowContents(Operation operation,
 // static
 ExamplesWindowContents* ExamplesWindowContents::instance_ = NULL;
 
-void ShowExamplesWindow(Operation operation,
-                        content::BrowserContext* browser_context) {
+void ShowExamplesWindow(Operation operation) {
   if (ExamplesWindowContents::instance()) {
     ExamplesWindowContents::instance()->GetWidget()->Activate();
   } else {
-    Widget::CreateWindowWithBounds(new ExamplesWindowContents(operation,
-                                                              browser_context),
+    Widget::CreateWindowWithBounds(new ExamplesWindowContents(operation),
                                    gfx::Rect(0, 0, 850, 300))->Show();
   }
 }
