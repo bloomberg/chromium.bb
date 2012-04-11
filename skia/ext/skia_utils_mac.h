@@ -9,12 +9,12 @@
 #include <ApplicationServices/ApplicationServices.h>
 #include <vector>
 
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 struct SkIRect;
 struct SkPoint;
 struct SkRect;
-class SkBitmap;
 class SkCanvas;
 class SkMatrix;
 #ifdef __LP64__
@@ -108,6 +108,8 @@ class SK_API SkiaBitLocker {
   void releaseIfNeeded();
   SkCanvas* canvas_;
   CGContextRef cgContext_;
+  SkBitmap bitmap_;
+  bool useDeviceBits_;
 };
 
 

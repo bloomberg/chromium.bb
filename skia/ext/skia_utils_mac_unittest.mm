@@ -25,7 +25,11 @@ class SkiaUtilsMacTest : public testing::Test {
     TestIdentity = 0,
     TestTranslate = 1,
     TestClip = 2,
-    TestXClip = TestTranslate | TestClip
+    TestXClip = TestTranslate | TestClip,
+    TestNoBits = 4,
+    TestTranslateNoBits = TestTranslate | TestNoBits,
+    TestClipNoBits = TestClip | TestNoBits,
+    TestXClipNoBits = TestXClip | TestNoBits,
   };
   void RunBitLockerTest(BitLockerTest test);
 
@@ -119,7 +123,9 @@ void SkiaUtilsMacTest::RunBitLockerTest(BitLockerTest test) {
   memcpy(bits, original, sizeof(original));
   SkBitmap bitmap;
   bitmap.setConfig(SkBitmap::kARGB_8888_Config, width, height);
-  bitmap.setPixels(bits);
+  if (!(test & TestNoBits)) {
+    bitmap.setPixels(bits);
+  }
   SkCanvas canvas;
   canvas.setBitmapDevice(bitmap);
   if (test & TestTranslate)
@@ -128,12 +134,22 @@ void SkiaUtilsMacTest::RunBitLockerTest(BitLockerTest test) {
     SkRect clipRect = {0, height / 2, width, height};
     canvas.clipRect(clipRect);
   }
-  gfx::SkiaBitLocker bitLocker(&canvas);
-  CGContextRef cgContext = bitLocker.cgContext();
-  CGColorRef testColor = CGColorGetConstantColor(kCGColorWhite);
-  CGContextSetFillColorWithColor(cgContext, testColor);
-  CGRect cgRect = {{0, 0}, {width, height}};
-  CGContextFillRect(cgContext, cgRect);
+  {
+    gfx::SkiaBitLocker bitLocker(&canvas);
+    CGContextRef cgContext = bitLocker.cgContext();
+    CGColorRef testColor = CGColorGetConstantColor(kCGColorWhite);
+    CGContextSetFillColorWithColor(cgContext, testColor);
+    CGRect cgRect = {{0, 0}, {width, height}};
+    CGContextFillRect(cgContext, cgRect);
+    if (test & TestNoBits) {
+      bitmap.setPixels(bits);
+      canvas.setBitmapDevice(bitmap);
+      if (test & TestClip) {
+        SkRect clipRect = {0, height / 2, width, height};
+        canvas.clipRect(clipRect);
+      }
+    }
+  }
   const unsigned results[][storageSize] = {
     {0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF}, // identity
     {0xFF333333, 0xFFFFFFFF, 0xFF999999, 0xFFFFFFFF}, // translate
@@ -141,7 +157,7 @@ void SkiaUtilsMacTest::RunBitLockerTest(BitLockerTest test) {
     {0xFF333333, 0xFF666666, 0xFF999999, 0xFFFFFFFF}  // translate | clip
   };
   for (unsigned index = 0; index < storageSize; index++)
-    EXPECT_EQ(results[test][index], bits[index]);
+    EXPECT_EQ(results[test & ~TestNoBits][index], bits[index]);
 }
 
 void SkiaUtilsMacTest::ShapeHelper(int width, int height,
@@ -229,6 +245,22 @@ TEST_F(SkiaUtilsMacTest, BitLocker_Clip) {
 
 TEST_F(SkiaUtilsMacTest, BitLocker_XClip) {
   RunBitLockerTest(SkiaUtilsMacTest::TestXClip);
+}
+
+TEST_F(SkiaUtilsMacTest, BitLocker_NoBits) {
+  RunBitLockerTest(SkiaUtilsMacTest::TestNoBits);
+}
+
+TEST_F(SkiaUtilsMacTest, BitLocker_TranslateNoBits) {
+  RunBitLockerTest(SkiaUtilsMacTest::TestTranslateNoBits);
+}
+
+TEST_F(SkiaUtilsMacTest, BitLocker_ClipNoBits) {
+  RunBitLockerTest(SkiaUtilsMacTest::TestClipNoBits);
+}
+
+TEST_F(SkiaUtilsMacTest, BitLocker_XClipNoBits) {
+  RunBitLockerTest(SkiaUtilsMacTest::TestXClipNoBits);
 }
 
 }  // namespace

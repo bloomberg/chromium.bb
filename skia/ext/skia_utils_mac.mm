@@ -318,10 +318,15 @@ SkiaBitLocker::~SkiaBitLocker() {
   releaseIfNeeded();
 }
 
+// This must be called to balance calls to cgContext
 void SkiaBitLocker::releaseIfNeeded() {
   if (!cgContext_)
     return;
-  canvas_->getTopDevice()->accessBitmap(true).unlockPixels();
+  if (useDeviceBits_) {
+    bitmap_.unlockPixels();
+  } else {
+    canvas_->drawBitmap(bitmap_, 0, 0);
+  }
   CGContextRelease(cgContext_);
   cgContext_ = 0;
 }
@@ -331,12 +336,20 @@ CGContextRef SkiaBitLocker::cgContext() {
   DCHECK(device);
   if (!device)
     return 0;
-  releaseIfNeeded();
-  const SkBitmap& bitmap = device->accessBitmap(true);
-  bitmap.lockPixels();
-  void* pixels = bitmap.getPixels();
-  cgContext_ = CGBitmapContextCreate(pixels, device->width(),
-    device->height(), 8, bitmap.rowBytes(), CGColorSpaceCreateDeviceRGB(), 
+  releaseIfNeeded(); // This flushes any prior bitmap use
+  const SkBitmap& deviceBits = device->accessBitmap(true);
+  useDeviceBits_ = deviceBits.getPixels();
+  if (useDeviceBits_) {
+    bitmap_ = deviceBits;
+    bitmap_.lockPixels();
+  } else {
+    bitmap_.setConfig(
+        SkBitmap::kARGB_8888_Config, deviceBits.width(), deviceBits.height());
+    bitmap_.allocPixels();
+    bitmap_.eraseColor(0);
+  }
+  cgContext_ = CGBitmapContextCreate(bitmap_.getPixels(), bitmap_.width(),
+    bitmap_.height(), 8, bitmap_.rowBytes(), CGColorSpaceCreateDeviceRGB(), 
     kCGBitmapByteOrder32Host | kCGImageAlphaPremultipliedFirst);
 
   // Apply device matrix.
@@ -344,6 +357,12 @@ CGContextRef SkiaBitLocker::cgContext() {
   contentsTransform = CGAffineTransformTranslate(contentsTransform, 0,
       -device->height());
   CGContextConcatCTM(cgContext_, contentsTransform);
+
+  // Skip applying the matrix and clip when not writing directly to device.
+  // They're applied in the offscreen case when the bitmap is drawn.
+  if (!useDeviceBits_) {
+    return cgContext_;
+  }
 
   // Apply clip in device coordinates.
   CGMutablePathRef clipPath = CGPathCreateMutable();
