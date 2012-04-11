@@ -96,7 +96,8 @@ class DownloadResourceHandler : public ResourceHandler {
 
   void OnResponseCompletedInternal(int request_id,
                                    const net::URLRequestStatus& status,
-                                   const std::string& security_info);
+                                   const std::string& security_info,
+                                   int response_code);
 
   void StartPauseTimer();
   void CallStartedCB(content::DownloadId id, net::Error error);

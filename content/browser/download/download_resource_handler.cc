@@ -259,8 +259,9 @@ bool DownloadResourceHandler::OnResponseCompleted(
            << " request_id = " << request_id
            << " status.status() = " << status.status()
            << " status.error() = " << status.error();
+  int response = status.is_success() ? request_->GetResponseCode() : 0;
   if (download_id_.IsValid()) {
-    OnResponseCompletedInternal(request_id, status, security_info);
+    OnResponseCompletedInternal(request_id, status, security_info, response);
   } else {
     // We got cancelled before the task which sets the id ran on the IO thread.
     // Wait for it.
@@ -268,15 +269,18 @@ bool DownloadResourceHandler::OnResponseCompleted(
         BrowserThread::UI, FROM_HERE,
         base::Bind(&base::DoNothing),
         base::Bind(&DownloadResourceHandler::OnResponseCompletedInternal, this,
-                   request_id, status, security_info));
+                   request_id, status, security_info, response));
   }
+  // Can't trust request_ being value after this point.
+  request_ = NULL;
   return true;
 }
 
 void DownloadResourceHandler::OnResponseCompletedInternal(
     int request_id,
     const net::URLRequestStatus& status,
-    const std::string& security_info) {
+    const std::string& security_info,
+    int response_code) {
   // NOTE: |request_| may be a dangling pointer at this point.
   VLOG(20) << __FUNCTION__ << "()"
            << " request_id = " << request_id
@@ -304,7 +308,6 @@ void DownloadResourceHandler::OnResponseCompletedInternal(
   }
 
   if (status.is_success()) {
-    int response_code = request_->GetResponseCode();
     if (response_code >= 400) {
       switch(response_code) {
         case 404:  // File Not Found.
