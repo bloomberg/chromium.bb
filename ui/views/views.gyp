@@ -29,6 +29,7 @@
         '../../base/base.gyp:base_i18n',
         '../../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../../build/temp_gyp/googleurl.gyp:googleurl',
+        '../../content/content.gyp:content_browser',
         '../../net/net.gyp:net',
         '../../skia/skia.gyp:skia',
         '../../third_party/icu/icu.gyp:icui18n',
@@ -229,6 +230,8 @@
         'controls/tree/tree_view_views.h',
         'controls/tree/tree_view_win.cc',
         'controls/tree/tree_view_win.h',
+        'controls/webview/webview.cc',
+        'controls/webview/webview.h',
         #'debug_utils.cc',
         #'debug_utils.h',
         'drag_controller.h',
@@ -543,7 +546,9 @@
       'dependencies': [
         '../../base/base.gyp:base',
         '../../base/base.gyp:base_i18n',
+        '../../build/temp_gyp/googleurl.gyp:googleurl',
         '../../chrome/chrome_resources.gyp:packed_resources',
+        '../../content/content.gyp:content_browser',
         '../../skia/skia.gyp:skia',
         '../../third_party/icu/icu.gyp:icui18n',
         '../../third_party/icu/icu.gyp:icuuc',
@@ -606,6 +611,8 @@
         'examples/throbber_example.h',
         'examples/tree_view_example.cc',
         'examples/tree_view_example.h',
+        'examples/webview_example.cc',
+        'examples/webview_example.h',
         'examples/widget_example.cc',
         'examples/widget_example.h',
       ],
@@ -624,6 +631,7 @@
         '../../base/base.gyp:base',
         '../../base/base.gyp:base_i18n',
         '../../chrome/chrome_resources.gyp:packed_resources',
+        '../../content/content.gyp:content_shell_lib',
         '../../skia/skia.gyp:skia',
         '../../third_party/icu/icu.gyp:icui18n',
         '../../third_party/icu/icu.gyp:icuuc',
@@ -637,6 +645,13 @@
         '../..',
       ],
       'sources': [
+        '../../content/app/startup_helper_win.cc',
+        'examples/content_client/examples_browser_main_parts.cc',
+        'examples/content_client/examples_browser_main_parts.h',
+        'examples/content_client/examples_content_browser_client.cc',
+        'examples/content_client/examples_content_browser_client.h',
+        'examples/content_client/examples_main_delegate.cc',
+        'examples/content_client/examples_main_delegate.h',
         'examples/examples_main.cc',
         'test/test_views_delegate.cc',
         'test/test_views_delegate.h',
@@ -656,7 +671,13 @@
             'VCManifestTool': {
               'AdditionalManifestFiles': 'examples\\views_examples.exe.manifest',
             },
+            'VCLinkerTool': {
+              'SubSystem': '2',  # Set /SUBSYSTEM:WINDOWS
+            },
           },
+          'dependencies': [
+            '../../sandbox/sandbox.gyp:sandbox',
+          ],
         }],
         ['use_aura==1', {
           'dependencies': [
