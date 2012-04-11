@@ -552,7 +552,7 @@ void RenderWidgetHostViewAura::AcceleratedSurfaceBuffersSwapped(
       // However only do so if we're not between the Draw() and the
       // OnCompositingEnded(), because out-of-order execution in the GPU process
       // might corrupt the "front buffer" for the currently issued frame.
-      RenderWidgetHostImpl::AcknowledgePostSubBuffer(
+      RenderWidgetHostImpl::AcknowledgeSwapBuffers(
           params.route_id, gpu_host_id);
     } else {
       // Add sending an ACK to the list of things to do OnCompositingEnded
