@@ -57,8 +57,11 @@ InProcessBrowserTest::InProcessBrowserTest()
       initial_window_required_(true),
       dom_automation_enabled_(false),
       tab_closeable_state_watcher_enabled_(false)
+#if defined(OS_POSIX)
+      , handle_sigterm_(true)
+#endif
 #if defined(OS_MACOSX)
-    , autorelease_pool_(NULL)
+      , autorelease_pool_(NULL)
 #endif  // OS_MACOSX
     {
 #if defined(OS_MACOSX)
@@ -282,7 +285,8 @@ static void DumpStackTraceSignalHandler(int signal) {
 
 void InProcessBrowserTest::RunTestOnMainThreadLoop() {
 #if defined(OS_POSIX)
-  signal(SIGTERM, DumpStackTraceSignalHandler);
+  if (handle_sigterm_)
+    signal(SIGTERM, DumpStackTraceSignalHandler);
 #endif  // defined(OS_POSIX)
 
 #if defined(OS_MACOSX)

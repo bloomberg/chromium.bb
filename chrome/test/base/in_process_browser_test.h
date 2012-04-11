@@ -174,6 +174,13 @@ class InProcessBrowserTest : public BrowserTestBase {
   void EnableTabCloseableStateWatcher() {
     tab_closeable_state_watcher_enabled_ = true;
   }
+#if defined(OS_POSIX)
+  // This is only needed by a test that raises SIGTERM to ensure that a specific
+  // codepath is taken.
+  void DisableSIGTERMHandling() {
+    handle_sigterm_ = false;
+  }
+#endif
 
 #if defined(OS_MACOSX)
   // Returns the autorelease pool in use inside RunTestOnMainThreadLoop().
@@ -224,6 +231,10 @@ class InProcessBrowserTest : public BrowserTestBase {
   // specified in the command line.
   ScopedTempDir temp_user_data_dir_;
 
+#if defined(OS_POSIX)
+  bool handle_sigterm_;
+#endif
+  
 #if defined(OS_CHROMEOS)
   chromeos::ScopedStubCrosEnabler stub_cros_enabler_;
 #endif  // defined(OS_CHROMEOS)

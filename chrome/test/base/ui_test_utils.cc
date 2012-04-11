@@ -607,6 +607,18 @@ int FindInPage(TabContentsWrapper* tab_contents, const string16& search_string,
   return observer.number_of_matches();
 }
 
+void SimulateMouseClick(content::WebContents* tab, int x, int y) {
+  WebKit::WebMouseEvent mouse_event;
+  mouse_event.type = WebKit::WebInputEvent::MouseDown;
+  mouse_event.button = WebKit::WebMouseEvent::ButtonLeft;
+  mouse_event.x = x;
+  mouse_event.y = y;
+  mouse_event.clickCount = 1;
+  tab->GetRenderViewHost()->ForwardMouseEvent(mouse_event);
+  mouse_event.type = WebKit::WebInputEvent::MouseUp;
+  tab->GetRenderViewHost()->ForwardMouseEvent(mouse_event);
+}
+
 void RegisterAndWait(content::NotificationObserver* observer,
                      int type,
                      const content::NotificationSource& source) {

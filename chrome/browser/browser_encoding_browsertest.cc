@@ -53,7 +53,7 @@ class BrowserEncodingTest : public InProcessBrowserTest {
     EXPECT_TRUE(file_util::ContentsEqual(full_file_name, expected_file_name));
   }
 
-  void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() OVERRIDE {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     save_dir_ = temp_dir_.path();
     temp_sub_resource_dir_ = save_dir_.AppendASCII("sub_resource_files");

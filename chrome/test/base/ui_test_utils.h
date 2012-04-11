@@ -216,6 +216,10 @@ int FindInPage(TabContentsWrapper* tab,
                bool case_sensitive,
                int* ordinal);
 
+// Simulates clicking at the specified position in the given tab. Unlike
+// ClickOnView, this works even if the browser isn't in the foreground.
+void SimulateMouseClick(content::WebContents* tab, int x, int y);
+
 // Returns true if the View is focused.
 bool IsViewFocused(const Browser* browser, ViewID vid);
 
