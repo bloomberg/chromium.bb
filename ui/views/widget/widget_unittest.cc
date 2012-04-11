@@ -40,16 +40,20 @@ class NativeWidgetCapture : public NativeWidgetPlatform {
         mouse_capture_(false) {}
   virtual ~NativeWidgetCapture() {}
 
-  virtual void SetMouseCapture() OVERRIDE {
+  virtual void SetCapture(unsigned int flags) OVERRIDE {
+    if (!(flags & ui::CW_LOCK_MOUSE))
+      return;
     mouse_capture_ = true;
   }
-  virtual void ReleaseMouseCapture() OVERRIDE {
+  virtual void ReleaseCapture() OVERRIDE {
     if (mouse_capture_)
       delegate()->OnMouseCaptureLost();
     mouse_capture_ = false;
   }
-  virtual bool HasMouseCapture() const OVERRIDE {
-    return mouse_capture_;
+  virtual bool HasCapture(unsigned int flags) const OVERRIDE {
+    if (flags == ui::CW_LOCK_MOUSE)
+      return mouse_capture_;
+    return false;
   }
 
  private:
@@ -141,7 +145,7 @@ Widget* CreateChildNativeWidget() {
 
 bool WidgetHasMouseCapture(const Widget* widget) {
   return static_cast<const internal::NativeWidgetPrivate*>(widget->
-      native_widget())->HasMouseCapture();
+      native_widget())->HasCapture(ui::CW_LOCK_MOUSE);
 }
 
 ui::WindowShowState GetWidgetShowState(const Widget* widget) {

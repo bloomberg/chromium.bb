@@ -188,11 +188,18 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
 
   // Capture -------------------------------------------------------------------
 
-  // Sets capture to the specified window.
-  void SetCapture(Window* window);
+  // Sets the capture window to |window|, for events specified in
+  // |flags|. |flags| is ui::CaptureEventFlags. This does nothing if
+  // the window isn't showing (VISIBILITY_SHOWN), or isn't contained
+  // in a valid window hierarchy.
+  void SetCapture(Window* window, unsigned int flags);
 
-  // If |window| has mouse capture, the current capture window is set to NULL.
+  // Stop capturing all events (mouse and touch).
   void ReleaseCapture(Window* window);
+
+  // Returns true if there is a window capturing all event types
+  // specified by |flags|. |flags| is ui::CaptureEventFlags.
+  bool HasCapture(Window* window, unsigned int flags);
 
   // Gesture Recognition -------------------------------------------------------
 
@@ -367,6 +374,8 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
 
   // The gesture_recognizer_ for this.
   scoped_ptr<ui::GestureRecognizer> gesture_recognizer_;
+
+  unsigned int capture_window_flags_;
 
   bool synthesize_mouse_move_;
   bool waiting_on_compositing_end_;

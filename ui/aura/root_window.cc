@@ -98,6 +98,7 @@ RootWindow::RootWindow(const gfx::Rect& initial_bounds)
       focused_window_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           gesture_recognizer_(ui::GestureRecognizer::Create(this))),
+      capture_window_flags_(0),
       synthesize_mouse_move_(false),
       waiting_on_compositing_end_(false),
       draw_on_compositing_end_(false),
@@ -266,12 +267,16 @@ bool RootWindow::DispatchTouchEvent(TouchEvent* event) {
   DispatchHeldMouseMove();
   event->UpdateForRootTransform(layer()->transform());
   bool handled = false;
-  Window* target = capture_window_;
-  ui::TouchStatus status = ui::TOUCH_STATUS_UNKNOWN;
+
+  Window* target = NULL;
+  if (HasCapture(capture_window_, ui::CW_LOCK_TOUCH))
+    target = capture_window_;
 
   if (!target)
     target = static_cast<Window*>(
         gesture_recognizer_->GetTargetForTouchEvent(event));
+
+  ui::TouchStatus status = ui::TOUCH_STATUS_UNKNOWN;
 
   if (!target && !bounds().Contains(event->location())) {
     // If the touch is outside the root window, set its target to the
@@ -305,11 +310,13 @@ bool RootWindow::DispatchTouchEvent(TouchEvent* event) {
 bool RootWindow::DispatchGestureEvent(GestureEvent* event) {
   DispatchHeldMouseMove();
 
-  Window* target = capture_window_;
-  if (!target) {
+  Window* target = NULL;
+  if (HasCapture(capture_window_, ui::CW_LOCK_TOUCH))
+    target = capture_window_;
+  if (!target)
     target = static_cast<Window*>(
         gesture_recognizer_->GetTargetForGestureEvent(event));
-  }
+
   if (target) {
     GestureEvent translated_event(*event, this, target);
     ui::GestureStatus status = ProcessGestureEvent(target, &translated_event);
@@ -396,19 +403,20 @@ void RootWindow::ConvertPointToNativeScreen(gfx::Point* point) const {
   point->Offset(location.x(), location.y());
 }
 
-void RootWindow::SetCapture(Window* window) {
-  if (capture_window_ == window)
+void RootWindow::SetCapture(Window* window, unsigned int flags) {
+  if (capture_window_ == window && flags == capture_window_flags_)
     return;
 
   aura::Window* old_capture_window = capture_window_;
   capture_window_ = window;
+  capture_window_flags_ = flags;
 
   HandleMouseCaptureChanged(old_capture_window);
 
-  if (capture_window_) {
-    // Make all subsequent mouse events and touch go to the capture window. We
-    // shouldn't need to send an event here as OnCaptureLost should take care of
-    // that.
+  if (capture_window_ && flags & ui::CW_LOCK_MOUSE) {
+    // Make all subsequent mouse events go to the capture window. We
+    // shouldn't need to send an event here as OnCaptureLost should
+    // take care of that.
     if (mouse_moved_handler_ || mouse_button_flags_ != 0)
       mouse_moved_handler_ = capture_window_;
   } else {
@@ -421,7 +429,12 @@ void RootWindow::SetCapture(Window* window) {
 void RootWindow::ReleaseCapture(Window* window) {
   if (capture_window_ != window)
     return;
-  SetCapture(NULL);
+  SetCapture(NULL, 0);
+}
+
+bool RootWindow::HasCapture(Window* window, unsigned int flags) {
+  return capture_window_ && window == capture_window_ &&
+      ((flags & capture_window_flags_) == flags);
 }
 
 void RootWindow::AdvanceQueuedTouchEvent(Window* window, bool processed) {
@@ -525,7 +538,7 @@ void RootWindow::OnCompositingEnded(ui::Compositor*) {
 // RootWindow, private:
 
 void RootWindow::HandleMouseCaptureChanged(Window* old_capture_window) {
-  if (capture_window_)
+  if (capture_window_ && capture_window_flags_ & ui::CW_LOCK_MOUSE)
     host_->SetCapture();
   else
     host_->ReleaseCapture();
@@ -645,6 +658,8 @@ ui::GestureStatus RootWindow::ProcessGestureEvent(Window* target,
   if (status == ui::GESTURE_STATUS_UNKNOWN) {
     // The gesture was unprocessed. Generate corresponding mouse events here
     // (e.g. tap to click).
+    // TODO(tdresser|sadrul): We may need to stop firing mouse events
+    // if a mouse lock exists and target != capture_window_.
     switch (event->type()) {
       case ui::ET_GESTURE_TAP:
       case ui::ET_GESTURE_DOUBLE_TAP: {
@@ -841,8 +856,9 @@ bool RootWindow::DispatchMouseEventImpl(MouseEvent* event) {
   last_mouse_location_ = event->location();
   synthesize_mouse_move_ = false;
 
-  Window* target =
-      mouse_pressed_handler_ ? mouse_pressed_handler_ : capture_window_;
+  Window* target = mouse_pressed_handler_;
+  if (!target && HasCapture(capture_window_, ui::CW_LOCK_MOUSE))
+    target = capture_window_;
   if (!target)
     target = GetEventHandlerForPoint(event->location());
   switch (event->type()) {

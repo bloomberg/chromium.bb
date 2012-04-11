@@ -338,16 +338,16 @@ void NativeWidgetAura::SendNativeAccessibilityEvent(
   //NOTIMPLEMENTED();
 }
 
-void NativeWidgetAura::SetMouseCapture() {
-  window_->SetCapture();
+void NativeWidgetAura::SetCapture(unsigned int flags) {
+  window_->SetCapture(flags);
 }
 
-void NativeWidgetAura::ReleaseMouseCapture() {
+void NativeWidgetAura::ReleaseCapture() {
   window_->ReleaseCapture();
 }
 
-bool NativeWidgetAura::HasMouseCapture() const {
-  return window_->HasCapture();
+bool NativeWidgetAura::HasCapture(unsigned int flags) const {
+  return window_->HasCapture(flags);
 }
 
 InputMethod* NativeWidgetAura::CreateInputMethod() {
@@ -664,7 +664,7 @@ void NativeWidgetAura::SetInactiveRenderingDisabled(bool value) {
 Widget::MoveLoopResult NativeWidgetAura::RunMoveLoop() {
   if (window_->parent() &&
       aura::client::GetWindowMoveClient(window_->parent())) {
-    SetMouseCapture();
+    SetCapture(ui::CW_LOCK_MOUSE);
     aura::client::GetWindowMoveClient(window_->parent())->RunMoveLoop(window_);
     return Widget::MOVE_LOOP_SUCCESSFUL;
   }
