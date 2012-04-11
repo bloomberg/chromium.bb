@@ -128,8 +128,7 @@
 // The adaptive analog mode of the AGC is always enabled for desktop platforms
 // in WebRTC.
 //
-// Before recording starts, the ADM sets an AGC state in the
-// AudioInputDevice by calling AudioInputDevice::SetAutomaticGainControl(true).
+// Before recording starts, the ADM enables AGC on the AudioInputDevice.
 //
 // A capture session with AGC is started up as follows (simplified):
 //
@@ -449,6 +448,10 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl
 
   // Local copy of the current Automatic Gain Control state.
   bool agc_is_enabled_;
+
+  // Used for histograms of total recording and playout times.
+  base::Time start_capture_time_;
+  base::Time start_render_time_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRtcAudioDeviceImpl);
 };

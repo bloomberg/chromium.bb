@@ -5,11 +5,14 @@
 #include "content/renderer/media/webrtc_audio_device_impl.h"
 
 #include "base/bind.h"
+#include "base/metrics/histogram.h"
 #include "base/string_util.h"
 #include "base/win/windows_version.h"
 #include "content/renderer/media/audio_hardware.h"
 #include "content/renderer/render_thread_impl.h"
 #include "media/audio/audio_util.h"
+#include "media/audio/audio_parameters.h"
+#include "media/audio/sample_rates.h"
 
 using media::AudioParameters;
 
@@ -30,6 +33,94 @@ static int kValidOutputRates[] = {96000, 48000, 44100};
 static int kValidInputRates[] = {48000};
 static int kValidOutputRates[] = {48000};
 #endif
+
+namespace {
+
+// Helper enum used for histogramming buffer sizes expressed in number of
+// audio frames. This enumerator covers all supported sizes for all platforms.
+// Example: k480 <=> 480 audio frames <=> 10ms@48kHz.
+// TODO(henrika): can be moved to the media namespace if more clients need it.
+enum AudioFramesPerBuffer {
+  k160,
+  k320,
+  k440,  // WebRTC works internally with 440 audio frames at 44.1kHz.
+  k480,
+  k640,
+  k880,
+  k960,
+  k1440,
+  k1920,
+  kUnexpectedAudioBufferSize  // Must always be last!
+};
+
+enum HistogramDirection {
+  kAudioOutput,
+  kAudioInput
+};
+
+}  // anonymous namespace
+
+// Helper method to convert integral values to their respective enum values
+// above, or kUnexpectedAudioBufferSize if no match exists.
+static AudioFramesPerBuffer AsAudioFramesPerBuffer(int frames_per_buffer) {
+  switch (frames_per_buffer) {
+    case 160: return k160;
+    case 320: return k320;
+    case 440: return k440;
+    case 480: return k480;
+    case 640: return k640;
+    case 880: return k880;
+    case 960: return k960;
+    case 1440: return k1440;
+    case 1920: return k1920;
+  }
+  return kUnexpectedAudioBufferSize;
+}
+
+// Helper method which adds histogram data to be uploaded as part of an
+// UMA logging event. Names: "WebRTC.Audio[Output|Input]SampleRate".
+static void AddHistogramSampleRate(HistogramDirection dir, int param) {
+  media::AudioSampleRate asr = media::AsAudioSampleRate(param);
+  if (asr != media::kUnexpectedAudioSampleRate) {
+    if (dir == kAudioOutput) {
+      UMA_HISTOGRAM_ENUMERATION("WebRTC.AudioOutputSampleRate",
+                                asr, media::kUnexpectedAudioSampleRate);
+    } else {
+      UMA_HISTOGRAM_ENUMERATION("WebRTC.AudioInputSampleRate",
+                                asr, media::kUnexpectedAudioSampleRate);
+    }
+  } else {
+    // Report unexpected sample rates using a unique histogram name.
+    if (dir == kAudioOutput) {
+      UMA_HISTOGRAM_COUNTS("WebRTC.AudioOutputSampleRateUnexpected", param);
+    } else {
+      UMA_HISTOGRAM_COUNTS("WebRTC.AudioInputSampleRateUnexpected", param);
+    }
+  }
+}
+
+// Helper method which adds histogram data to be uploaded as part of an
+// UMA logging event. Names: "WebRTC.Audio[Output|Input]FramesPerBuffer".
+static void AddHistogramFramesPerBuffer(HistogramDirection dir, int param) {
+  AudioFramesPerBuffer afpb = AsAudioFramesPerBuffer(param);
+  if (afpb != kUnexpectedAudioBufferSize) {
+    if (dir == kAudioOutput) {
+      UMA_HISTOGRAM_ENUMERATION("WebRTC.AudioOutputFramesPerBuffer",
+                                afpb, kUnexpectedAudioBufferSize);
+    } else {
+      UMA_HISTOGRAM_ENUMERATION("WebRTC.AudioInputFramesPerBuffer",
+                                afpb, kUnexpectedAudioBufferSize);
+    }
+  } else {
+    // Report unexpected sample rates using a unique histogram name.
+    if (dir == kAudioOutput) {
+      UMA_HISTOGRAM_COUNTS("WebRTC.AudioOutputFramesPerBufferUnexpected",
+                           param);
+    } else {
+      UMA_HISTOGRAM_COUNTS("WebRTC.AudioInputFramesPerBufferUnexpected", param);
+    }
+  }
+}
 
 WebRtcAudioDeviceImpl::WebRtcAudioDeviceImpl()
     : ref_count_(0),
@@ -327,6 +418,7 @@ int32_t WebRtcAudioDeviceImpl::Init() {
   // This request is based on a synchronous IPC message.
   int out_sample_rate = audio_hardware::GetOutputSampleRate();
   DVLOG(1) << "Audio output hardware sample rate: " << out_sample_rate;
+  AddHistogramSampleRate(kAudioOutput, out_sample_rate);
 
   // Verify that the reported output hardware sample rate is supported
   // on the current platform.
@@ -342,6 +434,7 @@ int32_t WebRtcAudioDeviceImpl::Init() {
   // This request is based on a synchronous IPC message.
   int in_sample_rate = audio_hardware::GetInputSampleRate();
   DVLOG(1) << "Audio input hardware sample rate: " << in_sample_rate;
+  AddHistogramSampleRate(kAudioInput, in_sample_rate);
 
   // Verify that the reported input hardware sample rate is supported
   // on the current platform.
@@ -355,11 +448,10 @@ int32_t WebRtcAudioDeviceImpl::Init() {
 
   // Ask the browser for the default number of audio input channels.
   // This request is based on a synchronous IPC message.
-  ChannelLayout input_channel_layout =
-      audio_hardware::GetInputChannelLayout();
-  DVLOG(1) << "Audio input hardware channels: " << input_channel_layout;
-
+  ChannelLayout in_channel_layout = audio_hardware::GetInputChannelLayout();
+  DVLOG(1) << "Audio input hardware channels: " << in_channel_layout;
   ChannelLayout out_channel_layout = CHANNEL_LAYOUT_MONO;
+
   AudioParameters::Format in_format = AudioParameters::AUDIO_PCM_LINEAR;
   int in_buffer_size = 0;
   int out_buffer_size = 0;
@@ -451,7 +543,7 @@ int32_t WebRtcAudioDeviceImpl::Init() {
   }
 // Linux
 #elif defined(OS_LINUX) || defined(OS_OPENBSD)
-  input_channel_layout = CHANNEL_LAYOUT_STEREO;
+  in_channel_layout = CHANNEL_LAYOUT_STEREO;
   out_channel_layout = CHANNEL_LAYOUT_MONO;
 
   // Based on tests using the current ALSA implementation in Chrome, we have
@@ -473,12 +565,19 @@ int32_t WebRtcAudioDeviceImpl::Init() {
       out_sample_rate, 16, out_buffer_size);
 
   input_audio_parameters_.Reset(
-      in_format, input_channel_layout, in_sample_rate,
+      in_format, in_channel_layout, in_sample_rate,
       16, in_buffer_size);
 
   // Create and configure the audio capturing client.
   audio_input_device_ = new AudioInputDevice(
       input_audio_parameters_, this, this);
+
+  UMA_HISTOGRAM_ENUMERATION("WebRTC.AudioOutputChannelLayout",
+                            out_channel_layout, CHANNEL_LAYOUT_MAX);
+  UMA_HISTOGRAM_ENUMERATION("WebRTC.AudioInputChannelLayout",
+                            in_channel_layout, CHANNEL_LAYOUT_MAX);
+  AddHistogramFramesPerBuffer(kAudioOutput, out_buffer_size);
+  AddHistogramFramesPerBuffer(kAudioInput, in_buffer_size);
 
   // Create and configure the audio rendering client.
   audio_output_device_ = new AudioDevice(output_audio_parameters_, this);
@@ -632,11 +731,15 @@ int32_t WebRtcAudioDeviceImpl::StartPlayout() {
   if (!audio_transport_callback_) {
     return -1;
   }
+
   if (playing_) {
     // webrtc::VoiceEngine assumes that it is OK to call Start() twice and
     // that the call is ignored the second time.
     return 0;
   }
+
+  start_render_time_ = base::Time::Now();
+
   audio_output_device_->Start();
   playing_ = true;
   return 0;
@@ -648,6 +751,14 @@ int32_t WebRtcAudioDeviceImpl::StopPlayout() {
     // webrtc::VoiceEngine assumes that it is OK to call Stop() just in case.
     return 0;
   }
+
+  // Add histogram data to be uploaded as part of an UMA logging event.
+  // This histogram keeps track of total playout times.
+  if (!start_render_time_.is_null()) {
+    base::TimeDelta render_time = base::Time::Now() - start_render_time_;
+    UMA_HISTOGRAM_LONG_TIMES("WebRTC.AudioRenderTime", render_time);
+  }
+
   audio_output_device_->Stop();
   playing_ = false;
   return 0;
@@ -678,6 +789,8 @@ int32_t WebRtcAudioDeviceImpl::StartRecording() {
     return 0;
   }
 
+  start_capture_time_ = base::Time::Now();
+
   // Specify the session_id which is mapped to a certain device.
   audio_input_device_->SetDevice(session_id_);
   audio_input_device_->Start();
@@ -694,6 +807,13 @@ int32_t WebRtcAudioDeviceImpl::StopRecording() {
       // more than once.
       return 0;
     }
+  }
+
+  // Add histogram data to be uploaded as part of an UMA logging event.
+  // This histogram keeps track of total recording times.
+  if (!start_capture_time_.is_null()) {
+    base::TimeDelta capture_time = base::Time::Now() - start_capture_time_;
+    UMA_HISTOGRAM_LONG_TIMES("WebRTC.AudioCaptureTime", capture_time);
   }
 
   audio_input_device_->Stop();
