@@ -49,7 +49,7 @@ int ShellBrowserMainParts::PreCreateThreads() {
 }
 
 void ShellBrowserMainParts::PreMainMessageLoopRun() {
-  browser_context_.reset(new ShellBrowserContext(this));
+  browser_context_.reset(new ShellBrowserContext);
 
   Shell::PlatformInitialize();
   net::NetModule::SetResourceProvider(Shell::PlatformResourceProvider);

@@ -6,6 +6,10 @@
 #define UI_VIEWS_EXAMPLES_EXAMPLES_WINDOW_H_
 #pragma once
 
+namespace content {
+class BrowserContext;
+}
+
 namespace views {
 namespace examples {
 
@@ -15,7 +19,8 @@ enum Operation {
 };
 
 // Shows a window with the views examples in it.
-void ShowExamplesWindow(Operation operation);
+void ShowExamplesWindow(Operation operation,
+                        content::BrowserContext* browser_context);
 
 }  // namespace examples
 }  // namespace views
