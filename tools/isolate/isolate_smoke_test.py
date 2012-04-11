@@ -17,6 +17,7 @@ import unittest
 
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 VERBOSE = False
+FILENAME = os.path.basename(__file__)
 
 
 class CalledProcessError(subprocess.CalledProcessError):
@@ -34,7 +35,7 @@ class CalledProcessError(subprocess.CalledProcessError):
 
 class Isolate(unittest.TestCase):
   def setUp(self):
-    # The reason is that isolate_test.py --ok is run in a temporary directory
+    # The reason is that FILENAME --ok is run in a temporary directory
     # without access to isolate.py
     import isolate
     self.isolate = isolate
@@ -127,14 +128,14 @@ class Isolate(unittest.TestCase):
   def test_check(self):
     cmd = [
       '--mode', 'check',
-      'isolate_test.py',
+      FILENAME,
     ]
     self._execute(cmd)
     self._expected_tree(['result'])
     self._expected_result(
         False,
-        ['isolate_test.py'],
-        [os.path.join('.', 'isolate_test.py')],
+        [FILENAME],
+        [os.path.join('.', FILENAME)],
         False)
 
   def test_check_non_existant(self):
@@ -165,30 +166,30 @@ class Isolate(unittest.TestCase):
   def test_check_abs_path(self):
     cmd = [
       '--mode', 'check',
-      'isolate_test.py',
+      FILENAME,
       '--',
-      os.path.join(ROOT_DIR, 'isolate_test.py'),
+      os.path.join(ROOT_DIR, FILENAME),
     ]
     self._execute(cmd)
     self._expected_tree(['result'])
     self._expected_result(
-        False, ['isolate_test.py'], ['isolate_test.py'], False)
+        False, [FILENAME], [FILENAME], False)
 
   def test_hashtable(self):
     cmd = [
       '--mode', 'hashtable',
       '--outdir', self.tempdir,
-      'isolate_test.py',
+      FILENAME,
       os.path.join('data', 'isolate') + os.path.sep,
     ]
     self._execute(cmd)
     files = [
-      'isolate_test.py',
+      FILENAME,
       os.path.join('data', 'isolate', 'test_file1.txt'),
       os.path.join('data', 'isolate', 'test_file2.txt'),
     ]
     data = self._expected_result(
-        True, files, [os.path.join('.', 'isolate_test.py')], False)
+        True, files, [os.path.join('.', FILENAME)], False)
     self._expected_tree(
         [f['sha-1'] for f in data['files'].itervalues()] + ['result'])
 
@@ -196,35 +197,35 @@ class Isolate(unittest.TestCase):
     cmd = [
       '--mode', 'remap',
       '--outdir', self.tempdir,
-      'isolate_test.py',
+      FILENAME,
     ]
     self._execute(cmd)
-    self._expected_tree(['isolate_test.py', 'result'])
+    self._expected_tree([FILENAME, 'result'])
     self._expected_result(
         False,
-        ['isolate_test.py'],
-        [os.path.join('.', 'isolate_test.py')],
+        [FILENAME],
+        [os.path.join('.', FILENAME)],
         False)
 
   def test_run(self):
     cmd = [
       '--mode', 'run',
-      'isolate_test.py',
+      FILENAME,
       '--',
-      sys.executable, 'isolate_test.py', '--ok',
+      sys.executable, FILENAME, '--ok',
     ]
     self._execute(cmd)
     self._expected_tree(['result'])
     # cmd[0] is not generated from infiles[0] so it's not using a relative path.
     self._expected_result(
-        False, ['isolate_test.py'], ['isolate_test.py', '--ok'], False)
+        False, [FILENAME], [FILENAME, '--ok'], False)
 
   def test_run_fail(self):
     cmd = [
       '--mode', 'run',
-      'isolate_test.py',
+      FILENAME,
       '--',
-      sys.executable, 'isolate_test.py', '--fail',
+      sys.executable, FILENAME, '--fail',
     ]
     try:
       self._execute(cmd)
@@ -236,9 +237,9 @@ class Isolate(unittest.TestCase):
   def test_trace(self):
     cmd = [
       '--mode', 'trace',
-      'isolate_test.py',
+      FILENAME,
       '--',
-      sys.executable, os.path.join(ROOT_DIR, 'isolate_test.py'), '--ok',
+      sys.executable, os.path.join(ROOT_DIR, FILENAME), '--ok',
     ]
     out = self._execute(cmd, True)
     expected_tree = ['result', 'result.log']
@@ -249,14 +250,14 @@ class Isolate(unittest.TestCase):
     # the gyp result.
     # cmd[0] is not generated from infiles[0] so it's not using a relative path.
     self._expected_result(
-        False, ['isolate_test.py'], ['isolate_test.py', '--ok'], False)
+        False, [FILENAME], [FILENAME, '--ok'], False)
 
     expected_value = {
       'conditions': [
         ['OS=="%s"' % self.isolate.trace_inputs.get_flavor(), {
           'variables': {
             'isolate_files': [
-              '<(DEPTH)/isolate_test.py',
+              '<(DEPTH)/%s' % FILENAME,
             ],
           },
         }],

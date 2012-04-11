@@ -5,26 +5,26 @@
 
 import unittest
 
-import merge_gyp
+import merge_isolate
 
 
 class MergeGyp(unittest.TestCase):
   def test_unknown_key(self):
     try:
-      merge_gyp.process_variables(None, {'foo': [],})
+      merge_isolate.process_variables(None, {'foo': [],})
       self.fail()
     except AssertionError:
       pass
 
   def test_unknown_var(self):
     try:
-      merge_gyp.process_variables(None, {'variables': {'foo': [],}})
+      merge_isolate.process_variables(None, {'variables': {'foo': [],}})
       self.fail()
     except AssertionError:
       pass
 
   def test_parse_gyp_dict_empty(self):
-    f, d, o = merge_gyp.parse_gyp_dict({})
+    f, d, o = merge_isolate.parse_gyp_dict({})
     self.assertEquals({}, f)
     self.assertEquals({}, d)
     self.assertEquals(set(), o)
@@ -95,7 +95,7 @@ class MergeGyp(unittest.TestCase):
     }
     # coleco is included even if only negative.
     expected_oses = set(['atari', 'amiga', 'coleco'])
-    actual_files, actual_dirs, actual_oses = merge_gyp.parse_gyp_dict(value)
+    actual_files, actual_dirs, actual_oses = merge_isolate.parse_gyp_dict(value)
     self.assertEquals(expected_files, actual_files)
     self.assertEquals(expected_dirs, actual_dirs)
     self.assertEquals(expected_oses, actual_oses)
@@ -128,7 +128,7 @@ class MergeGyp(unittest.TestCase):
       'f': set(['!atari']),
       'h': set(['!coleco']),
     }
-    actual_files, actual_dirs = merge_gyp.reduce_inputs(
+    actual_files, actual_dirs = merge_isolate.reduce_inputs(
         value_files, value_dirs, value_oses)
     self.assertEquals(expected_files, actual_files)
     self.assertEquals(expected_dirs, actual_dirs)
@@ -181,7 +181,7 @@ class MergeGyp(unittest.TestCase):
         }],
       ],
     }
-    self.assertEquals(expected, merge_gyp.convert_to_gyp(files, dirs))
+    self.assertEquals(expected, merge_isolate.convert_to_gyp(files, dirs))
 
 
 if __name__ == '__main__':

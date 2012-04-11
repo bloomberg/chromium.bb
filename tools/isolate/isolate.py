@@ -31,7 +31,7 @@ import sys
 import tempfile
 
 import trace_inputs
-import tree_creator
+import run_test_from_archive
 
 
 def relpath(path, root):
@@ -65,15 +65,16 @@ def expand_directories(indir, infiles, blacklist):
   outfiles = []
   for relfile in infiles:
     if os.path.isabs(relfile):
-      raise tree_creator.MappingError('Can\'t map absolute path %s' % relfile)
+      raise run_test_from_archive.MappingError(
+          'Can\'t map absolute path %s' % relfile)
     infile = os.path.normpath(os.path.join(indir, relfile))
     if not infile.startswith(indir):
-      raise tree_creator.MappingError(
+      raise run_test_from_archive.MappingError(
           'Can\'t map file %s outside %s' % (infile, indir))
 
     if relfile.endswith(os.path.sep):
       if not os.path.isdir(infile):
-        raise tree_creator.MappingError(
+        raise run_test_from_archive.MappingError(
             'Input directory %s must have a trailing slash' % infile)
       for dirpath, dirnames, filenames in os.walk(infile):
         # Convert the absolute path to subdir + relative subdirectory.
@@ -85,7 +86,8 @@ def expand_directories(indir, infiles, blacklist):
             del dirnames[index]
     else:
       if not os.path.isfile(infile):
-        raise tree_creator.MappingError('Input file %s doesn\'t exist' % infile)
+        raise run_test_from_archive.MappingError(
+            'Input file %s doesn\'t exist' % infile)
       outfiles.append(relfile)
   return outfiles
 
@@ -134,7 +136,9 @@ def recreate_tree(outdir, indir, infiles, action):
   logging.info('Mapping from %s to %s' % (indir, outdir))
 
   assert action in (
-      tree_creator.HARDLINK, tree_creator.SYMLINK, tree_creator.COPY)
+      run_test_from_archive.HARDLINK,
+      run_test_from_archive.SYMLINK,
+      run_test_from_archive.COPY)
   outdir = os.path.normpath(outdir)
   if not os.path.isdir(outdir):
     logging.info ('Creating %s' % outdir)
@@ -148,7 +152,7 @@ def recreate_tree(outdir, indir, infiles, action):
     outsubdir = os.path.dirname(outfile)
     if not os.path.isdir(outsubdir):
       os.makedirs(outsubdir)
-    tree_creator.link_file(outfile, infile, action)
+    run_test_from_archive.link_file(outfile, infile, action)
 
 
 def separate_inputs_command(args, root, files):
@@ -252,7 +256,8 @@ def MODEhashtable(
       if os.stat(infile).st_size == os.stat(outfile).st_size:
         continue
       # Otherwise, an exception will be raised.
-    tree_creator.link_file(outfile, infile, tree_creator.HARDLINK)
+    run_test_from_archive.link_file(
+        outfile, infile, run_test_from_archive.HARDLINK)
   return 0
 
 
@@ -264,9 +269,9 @@ def MODEremap(
   if len(os.listdir(outdir)):
     print 'Can\'t remap in a non-empty directory'
     return 1
-  recreate_tree(outdir, indir, dictfiles.keys(), tree_creator.HARDLINK)
+  recreate_tree(outdir, indir, dictfiles.keys(), run_test_from_archive.HARDLINK)
   if read_only:
-    tree_creator.make_writable(outdir, True)
+    run_test_from_archive.make_writable(outdir, True)
   return 0
 
 
@@ -275,17 +280,18 @@ def MODErun(
   """Always uses a temporary directory."""
   try:
     outdir = tempfile.mkdtemp(prefix='isolate')
-    recreate_tree(outdir, indir, dictfiles.keys(), tree_creator.HARDLINK)
+    recreate_tree(
+        outdir, indir, dictfiles.keys(), run_test_from_archive.HARDLINK)
     cwd = os.path.join(outdir, relative_cwd)
     if not os.path.isdir(cwd):
       os.makedirs(cwd)
     if read_only:
-      tree_creator.make_writable(outdir, True)
+      run_test_from_archive.make_writable(outdir, True)
 
     logging.info('Running %s, cwd=%s' % (cmd, cwd))
     return subprocess.call(cmd, cwd=cwd)
   finally:
-    tree_creator.rmtree(outdir)
+    run_test_from_archive.rmtree(outdir)
 
 
 def MODEtrace(
@@ -405,7 +411,7 @@ def main():
         options.read_only,
         cmd,
         options.from_results)
-  except tree_creator.MappingError, e:
+  except run_test_from_archive.MappingError, e:
     print >> sys.stderr, str(e)
     return 1
 
