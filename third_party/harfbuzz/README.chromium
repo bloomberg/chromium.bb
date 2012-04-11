@@ -9,7 +9,7 @@ Security Critical: yes
 Description:
 "Harfbuzz is an OpenType text shaping engine."
 Read http://behdad.org/text/ if you dare learn more.
-This code was taken from d10a264823e81631336bab37f08a52cc243d3654
+This code was taken from 90138e5a4d15c44f05456f90083ecacdc3196c8e
 (git://anongit.freedesktop.org/harfbuzz)
 
 The patch in chromium.patch was applied on top of this; I will talk with
