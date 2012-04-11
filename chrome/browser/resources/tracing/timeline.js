@@ -185,6 +185,13 @@ cr.define('tracing', function() {
       this.panX = (viewX / this.scaleX_) - worldX;
     },
 
+    xPanWorldRangeIntoView: function(worldMin, worldMax, viewWidth) {
+      if (this.xWorldToView(worldMin) < 0)
+        this.xPanWorldPosToViewPos(worldMin, 'left', viewWidth);
+      else if (this.xWorldToView(worldMax) > viewWidth)
+        this.xPanWorldPosToViewPos(worldMax, 'right', viewWidth);
+    },
+
     get gridEnabled() {
       return this.gridEnabled_;
     },
@@ -499,11 +506,9 @@ cr.define('tracing', function() {
       switch (e.keyCode) {
         case 37:   // left arrow
           this.selectPrevious_(e);
-          e.preventDefault();
           break;
         case 39:   // right arrow
           this.selectNext_(e);
-          e.preventDefault();
           break;
         case 9:    // TAB
           if (this.focusElement.tabIndex == -1) {
@@ -534,27 +539,30 @@ cr.define('tracing', function() {
 
     /** Select the next slice on the timeline.  Applies to each track. */
     selectNext_: function(e) {
-      this.selectAdjoining_(e, true);
+      if (this.selectAdjoining_(true))
+        e.preventDefault();
     },
 
     /** Select the previous slice on the timeline.  Applies to each track. */
     selectPrevious_: function(e) {
-      this.selectAdjoining_(e, false);
+      if (this.selectAdjoining_(false))
+        e.preventDefault();
     },
 
     /**
      * Helper for selection previous or next.
-     * @param {Event} The current event.
      * @param {boolean} forwardp If true, select one forward (next).
      *   Else, select previous.
+     * @return {boolean} true if current selection changed
      */
-    selectAdjoining_: function(e, forwardp) {
+    selectAdjoining_: function(forwardp) {
       var i, track, slice, adjoining;
       var selection = [];
-      // Clear old selection; try and select next.
+      var minTime = Number.MAX_VALUE;
+      var maxTime = -Number.MAX_VALUE;
+      // Try and select next.
       for (i = 0; i < this.selection_.length; i++) {
         adjoining = undefined;
-        this.selection_[i].slice.selected = false;
         track = this.selection_[i].track;
         slice = this.selection_[i].slice;
         if (slice) {
@@ -563,11 +571,23 @@ cr.define('tracing', function() {
           else
             adjoining = track.pickPrevious(slice);
         }
-        if (adjoining != undefined)
+        if (adjoining != undefined) {
           selection.push({track: track, slice: adjoining});
+          if (slice.start < minTime)
+            minTime = slice.start;
+          if (slice.start + slice.duration > maxTime)
+            maxTime = slice.start + slice.duration;
+        }
+      }
+      if (selection.length == 0) {
+        // Nothing adjoining was found; leave the current selection.
+        return false;
       }
       this.selection = selection;
-      e.preventDefault();
+      // Potentially move the viewport to keep the new selection in view.
+      this.viewport_.xPanWorldRangeIntoView(minTime, maxTime,
+          this.firstCanvas.width);
+       return true;
     },
 
     get keyHelp() {
