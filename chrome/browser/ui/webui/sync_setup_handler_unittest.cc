@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/json/json_writer.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "base/values.h"
@@ -26,21 +27,188 @@ using ::testing::Mock;
 using ::testing::Return;
 using ::testing::ReturnRef;
 
+typedef GoogleServiceAuthError AuthError;
+
+namespace {
+
 MATCHER_P(ModelTypeSetMatches, value, "") { return arg.Equals(value); }
 
-static const char kTestUser[] = "chrome.p13n.test@gmail.com";
-static const char kTestPassword[] = "passwd";
-static const char kTestCaptcha[] = "pizzamyheart";
-static const char kTestCaptchaImageUrl[] = "http://pizzamyheart/image";
-static const char kTestCaptchaUnlockUrl[] = "http://pizzamyheart/unlock";
+const char kTestUser[] = "chrome.p13n.test@gmail.com";
+const char kTestPassword[] = "passwd";
+const char kTestCaptcha[] = "pizzamyheart";
+const char kTestCaptchaImageUrl[] = "http://pizzamyheart/image";
+const char kTestCaptchaUnlockUrl[] = "http://pizzamyheart/unlock";
 
-typedef GoogleServiceAuthError AuthError;
+// List of all the types a user can select in the sync config dialog.
+const syncable::ModelType kUserSelectableTypes[] = {
+  syncable::APPS,
+  syncable::AUTOFILL,
+  syncable::BOOKMARKS,
+  syncable::EXTENSIONS,
+  syncable::PASSWORDS,
+  syncable::PREFERENCES,
+  syncable::SESSIONS,
+  syncable::THEMES,
+  syncable::TYPED_URLS
+};
+
+// Returns a ModelTypeSet with all user selectable types set.
+syncable::ModelTypeSet GetAllTypes() {
+  syncable::ModelTypeSet types;
+  for (size_t i = 0; i < arraysize(kUserSelectableTypes); ++i)
+    types.Put(kUserSelectableTypes[i]);
+  return types;
+}
+
+enum SyncAllDataConfig {
+  SYNC_ALL_DATA,
+  CHOOSE_WHAT_TO_SYNC
+};
+
+enum EncryptAllConfig {
+  ENCRYPT_ALL_DATA,
+  ENCRYPT_PASSWORDS
+};
+
+// Create a json-format string with the key/value pairs appropriate for a call
+// to HandleConfigure(). If |extra_values| is non-null, then the values from
+// the passed dictionary are added to the json.
+std::string GetConfiguration(const DictionaryValue* extra_values,
+                             SyncAllDataConfig sync_all,
+                             syncable::ModelTypeSet types,
+                             const std::string& passphrase,
+                             EncryptAllConfig encrypt_all) {
+  DictionaryValue result;
+  if (extra_values)
+    result.MergeDictionary(extra_values);
+  result.SetBoolean("syncAllDataTypes", sync_all == SYNC_ALL_DATA);
+  result.SetBoolean("encryptAllData", encrypt_all == ENCRYPT_ALL_DATA);
+  result.SetBoolean("usePassphrase", !passphrase.empty());
+  if (!passphrase.empty())
+    result.SetString("passphrase", passphrase);
+  // Add all of our data types.
+  result.SetBoolean("sync_apps", types.Has(syncable::APPS));
+  result.SetBoolean("sync_autofill", types.Has(syncable::AUTOFILL));
+  result.SetBoolean("sync_bookmarks", types.Has(syncable::BOOKMARKS));
+  result.SetBoolean("sync_extensions", types.Has(syncable::EXTENSIONS));
+  result.SetBoolean("sync_passwords", types.Has(syncable::PASSWORDS));
+  result.SetBoolean("sync_preferences", types.Has(syncable::PREFERENCES));
+  result.SetBoolean("sync_sessions", types.Has(syncable::SESSIONS));
+  result.SetBoolean("sync_themes", types.Has(syncable::THEMES));
+  result.SetBoolean("sync_typed_urls", types.Has(syncable::TYPED_URLS));
+  std::string args;
+  base::JSONWriter::Write(&result, &args);
+  return args;
+}
+
+void CheckInt(const DictionaryValue* dictionary,
+              const std::string& key,
+              int expected_value) {
+  int actual_value;
+  EXPECT_TRUE(dictionary->GetInteger(key, &actual_value)) <<
+      "Did not expect to find value for " << key;
+  EXPECT_EQ(actual_value, expected_value) <<
+      "Mismatch found for " << key;
+}
+
+// Checks whether the passed |dictionary| contains a |key| with the given
+// |expected_value|. If |omit_if_false| is true, then the value should only
+// be present if |expected_value| is true.
+void CheckBool(const DictionaryValue* dictionary,
+               const std::string& key,
+               bool expected_value,
+               bool omit_if_false) {
+  if (omit_if_false && !expected_value) {
+    EXPECT_FALSE(dictionary->HasKey(key)) <<
+        "Did not expect to find value for " << key;
+  } else {
+    bool actual_value;
+    EXPECT_TRUE(dictionary->GetBoolean(key, &actual_value)) <<
+        "No value found for " << key;
+    EXPECT_EQ(actual_value, expected_value) <<
+        "Mismatch found for " << key;
+  }
+}
+
+void CheckBool(const DictionaryValue* dictionary,
+               const std::string& key,
+               bool expected_value) {
+  return CheckBool(dictionary, key, expected_value, false);
+}
+
+void CheckString(const DictionaryValue* dictionary,
+                 const std::string& key,
+                 const std::string& expected_value,
+                 bool omit_if_empty) {
+  if (omit_if_empty && expected_value.empty()) {
+    EXPECT_FALSE(dictionary->HasKey(key)) <<
+        "Did not expect to find value for " << key;
+  } else {
+    std::string actual_value;
+    EXPECT_TRUE(dictionary->GetString(key, &actual_value)) <<
+        "No value found for " << key;
+    EXPECT_EQ(actual_value, expected_value) <<
+        "Mismatch found for " << key;
+  }
+}
+
+// Validates that the expected args are being passed off to javascript.
+void CheckShowSyncSetupArgs(const DictionaryValue* dictionary,
+                            std::string error_message,
+                            bool fatal_error,
+                            int error,
+                            std::string user,
+                            bool user_is_editable,
+                            std::string captcha_url) {
+  // showSyncSetupPage() expects to be passed a dictionary with the following
+  // named values set:
+  //   error_message: custom error message to display.
+  //   fatalError: true if there was a fatal error while logging in.
+  //   error: GoogleServiceAuthError from previous login attempt (0 if none).
+  //   user: The email the user most recently entered.
+  //   editable_user: Whether the username field should be editable.
+  //   captchaUrl: The captcha image to display to the user (empty if none).
+  //
+  // The code below validates these arguments.
+
+  CheckString(dictionary, "error_message", error_message, true);
+  CheckString(dictionary, "user", user, false);
+  CheckString(dictionary, "captchaUrl", captcha_url, false);
+  CheckInt(dictionary, "error", error);
+  CheckBool(dictionary, "fatalError", fatal_error, true);
+  CheckBool(dictionary, "editable_user", user_is_editable);
+}
+
+// Checks to make sure that the values stored in |dictionary| match the values
+// expected by the showSyncSetupPage() JS function for a given set of data
+// types.
+void CheckConfigDataTypeArguments(DictionaryValue* dictionary,
+                                  SyncAllDataConfig config,
+                                  syncable::ModelTypeSet types) {
+  CheckBool(dictionary, "syncAllDataTypes", config == SYNC_ALL_DATA);
+  CheckBool(dictionary, "sync_apps", types.Has(syncable::APPS));
+  CheckBool(dictionary, "sync_autofill", types.Has(syncable::AUTOFILL));
+  CheckBool(dictionary, "sync_bookmarks", types.Has(syncable::BOOKMARKS));
+  CheckBool(dictionary, "sync_extensions", types.Has(syncable::EXTENSIONS));
+  CheckBool(dictionary, "sync_passwords", types.Has(syncable::PASSWORDS));
+  CheckBool(dictionary, "sync_preferences", types.Has(syncable::PREFERENCES));
+  CheckBool(dictionary, "sync_sessions", types.Has(syncable::SESSIONS));
+  CheckBool(dictionary, "sync_themes", types.Has(syncable::THEMES));
+  CheckBool(dictionary, "sync_typed_urls", types.Has(syncable::TYPED_URLS));
+}
+
+
+}  // namespace
 
 // Test instance of MockWebUI that tracks the data passed to
 // CallJavascriptFunction().
 class TestWebUI : public content::MockWebUI {
  public:
   virtual ~TestWebUI() {
+    ClearTrackedCalls();
+  }
+
+  void ClearTrackedCalls() {
     // Manually free the arguments stored in CallData, since there's no good
     // way to use a self-freeing reference like scoped_ptr in a std::vector.
     for (std::vector<CallData>::iterator i = call_data_.begin();
@@ -49,6 +217,7 @@ class TestWebUI : public content::MockWebUI {
       delete i->arg1;
       delete i->arg2;
     }
+    call_data_.clear();
   }
 
   virtual void CallJavascriptFunction(const std::string& function_name)
@@ -151,21 +320,6 @@ class SyncSetupHandlerTest : public testing::Test {
     handler_.reset(new TestingSyncSetupHandler(&web_ui_, profile_.get()));
   }
 
-  // Returns a ModelTypeSet with all user selectable types set.
-  syncable::ModelTypeSet GetAllTypes() {
-    syncable::ModelTypeSet types;
-    types.Put(syncable::APPS);
-    types.Put(syncable::AUTOFILL);
-    types.Put(syncable::BOOKMARKS);
-    types.Put(syncable::EXTENSIONS);
-    types.Put(syncable::PASSWORDS);
-    types.Put(syncable::PREFERENCES);
-    types.Put(syncable::SESSIONS);
-    types.Put(syncable::THEMES);
-    types.Put(syncable::TYPED_URLS);
-    return types;
-  }
-
   // Setup the expectations for calls made when displaying the config page.
   void SetDefaultExpectationsForConfigPage() {
     EXPECT_CALL(*mock_pss_, GetRegisteredDataTypes()).
@@ -213,86 +367,6 @@ class SyncSetupHandlerTest : public testing::Test {
   scoped_ptr<TestingSyncSetupHandler> handler_;
 };
 
-#if !defined(OS_CHROMEOS)
-static void CheckInt(const DictionaryValue* dictionary,
-                     const std::string& key,
-                     int expected_value) {
-  int actual_value;
-  EXPECT_TRUE(dictionary->GetInteger(key, &actual_value)) <<
-      "Did not expect to find value for " << key;;
-  EXPECT_EQ(actual_value, expected_value) <<
-      "Mismatch found for " << key;;
-}
-#endif
-
-static void CheckBool(const DictionaryValue* dictionary,
-                      const std::string& key,
-                      bool expected_value,
-                      bool is_optional) {
-  if (is_optional && !expected_value) {
-    EXPECT_FALSE(dictionary->HasKey(key)) <<
-        "Did not expect to find value for " << key;;
-  } else {
-    bool actual_value;
-    EXPECT_TRUE(dictionary->GetBoolean(key, &actual_value)) <<
-        "No value found for " << key;
-    EXPECT_EQ(actual_value, expected_value) <<
-        "Mismatch found for " << key;
-  }
-}
-
-static void CheckBool(const DictionaryValue* dictionary,
-                      const std::string& key,
-                      bool expected_value) {
-  return CheckBool(dictionary, key, expected_value, false);
-}
-
-#if !defined(OS_CHROMEOS)
-static void CheckString(const DictionaryValue* dictionary,
-                        const std::string& key,
-                        const std::string& expected_value,
-                        bool is_optional) {
-  if (is_optional && expected_value.empty()) {
-    EXPECT_FALSE(dictionary->HasKey(key)) <<
-        "Did not expect to find value for " << key;
-  } else {
-    std::string actual_value;
-    EXPECT_TRUE(dictionary->GetString(key, &actual_value)) <<
-        "No value found for " << key;
-    EXPECT_EQ(actual_value, expected_value) <<
-        "Mismatch found for " << key;
-  }
-}
-#endif
-
-#if !defined(OS_CHROMEOS)
-// Validates that the expected args are being passed off to javascript.
-static void CheckShowSyncSetupArgs(const DictionaryValue* dictionary,
-                                   std::string error_message,
-                                   bool fatal_error,
-                                   int error,
-                                   std::string user,
-                                   bool user_is_editable,
-                                   std::string captcha_url) {
-  // showSyncSetupPage() expects to be passed a dictionary with the following
-  // named values set:
-  // error_message: custom error message to display.
-  // fatalError: true if there was a fatal error while logging in.
-  // error: GoogleServiceAuthError from previous login attempt (0 if none).
-  // user: The email the user most recently entered.
-  // editable_user: Whether the username field should be editable.
-  // captchaUrl: The captcha image to display to the user (empty if none).
-  //
-  // The code below validates these arguments.
-
-  CheckString(dictionary, "error_message", error_message, true);
-  CheckString(dictionary, "user", user, false);
-  CheckString(dictionary, "captchaUrl", captcha_url, false);
-  CheckInt(dictionary, "error", error);
-  CheckBool(dictionary, "fatalError", fatal_error, true);
-  CheckBool(dictionary, "editable_user", user_is_editable);
-}
-#endif
 
 TEST_F(SyncSetupHandlerTest, Basic) {
 }
@@ -511,19 +585,8 @@ TEST_F(SyncSetupHandlerTest, GaiaErrorInitializingSync) {
 #endif  // !OS_CHROMEOS
 
 TEST_F(SyncSetupHandlerTest, TestSyncEverything) {
-  std::string args =
-      "{\"syncAllDataTypes\":true,"
-      "\"sync_apps\":true,"
-      "\"sync_autofill\":true,"
-      "\"sync_bookmarks\":true,"
-      "\"sync_extensions\":true,"
-      "\"sync_passwords\":true,"
-      "\"sync_preferences\":true,"
-      "\"sync_sessions\":true,"
-      "\"sync_themes\":true,"
-      "\"sync_typed_urls\":true,"
-      "\"usePassphrase\":false,"
-      "\"encryptAllData\":false}";
+  std::string args = GetConfiguration(
+      NULL, SYNC_ALL_DATA, GetAllTypes(), "", ENCRYPT_PASSWORDS);
   ListValue list_args;
   list_args.Append(new StringValue(args));
   EXPECT_CALL(*mock_pss_, IsPassphraseRequiredForDecryption())
@@ -540,19 +603,8 @@ TEST_F(SyncSetupHandlerTest, TestSyncEverything) {
 }
 
 TEST_F(SyncSetupHandlerTest, TurnOnEncryptAll) {
-  std::string args =
-      "{\"syncAllDataTypes\":true,"
-      "\"sync_apps\":true,"
-      "\"sync_autofill\":true,"
-      "\"sync_bookmarks\":true,"
-      "\"sync_extensions\":true,"
-      "\"sync_passwords\":true,"
-      "\"sync_preferences\":true,"
-      "\"sync_sessions\":true,"
-      "\"sync_themes\":true,"
-      "\"sync_typed_urls\":true,"
-      "\"usePassphrase\":false,"
-      "\"encryptAllData\":true}";
+  std::string args = GetConfiguration(
+      NULL, SYNC_ALL_DATA, GetAllTypes(), "", ENCRYPT_ALL_DATA);
   ListValue list_args;
   list_args.Append(new StringValue(args));
   EXPECT_CALL(*mock_pss_, IsPassphraseRequiredForDecryption())
@@ -570,19 +622,8 @@ TEST_F(SyncSetupHandlerTest, TurnOnEncryptAll) {
 }
 
 TEST_F(SyncSetupHandlerTest, TestPassphraseStillRequired) {
-  std::string args =
-      "{\"syncAllDataTypes\":true,"
-      "\"sync_apps\":true,"
-      "\"sync_autofill\":true,"
-      "\"sync_bookmarks\":true,"
-      "\"sync_extensions\":true,"
-      "\"sync_passwords\":true,"
-      "\"sync_preferences\":true,"
-      "\"sync_sessions\":true,"
-      "\"sync_themes\":true,"
-      "\"sync_typed_urls\":true,"
-      "\"usePassphrase\":false,"
-      "\"encryptAllData\":false}";
+  std::string args = GetConfiguration(
+      NULL, SYNC_ALL_DATA, GetAllTypes(), "", ENCRYPT_PASSWORDS);
   ListValue list_args;
   list_args.Append(new StringValue(args));
   EXPECT_CALL(*mock_pss_, IsPassphraseRequiredForDecryption())
@@ -602,21 +643,13 @@ TEST_F(SyncSetupHandlerTest, TestPassphraseStillRequired) {
 }
 
 TEST_F(SyncSetupHandlerTest, SuccessfullySetPassphrase) {
-  std::string args =
-      "{\"syncAllDataTypes\":true,"
-      "\"sync_apps\":true,"
-      "\"sync_autofill\":true,"
-      "\"sync_bookmarks\":true,"
-      "\"sync_extensions\":true,"
-      "\"sync_passwords\":true,"
-      "\"sync_preferences\":true,"
-      "\"sync_sessions\":true,"
-      "\"sync_themes\":true,"
-      "\"sync_typed_urls\":true,"
-      "\"usePassphrase\":true,"
-      "\"isGooglePassphrase\":true,"
-      "\"passphrase\":\"whoopie\","
-      "\"encryptAllData\":false}";
+  DictionaryValue dict;
+  dict.SetBoolean("isGooglePassphrase", true);
+  std::string args = GetConfiguration(&dict,
+                                      SYNC_ALL_DATA,
+                                      GetAllTypes(),
+                                      "gaia_passphrase",
+                                      ENCRYPT_PASSWORDS);
   ListValue list_args;
   list_args.Append(new StringValue(args));
   // Act as if an encryption passphrase is required the first time, then never
@@ -628,7 +661,7 @@ TEST_F(SyncSetupHandlerTest, SuccessfullySetPassphrase) {
       .WillRepeatedly(Return(false));
   SetupInitializedProfileSyncService();
   EXPECT_CALL(*mock_pss_, OnUserChoseDatatypes(_, _));
-  EXPECT_CALL(*mock_pss_, SetDecryptionPassphrase("whoopie")).
+  EXPECT_CALL(*mock_pss_, SetDecryptionPassphrase("gaia_passphrase")).
       WillOnce(Return(true));
 
   handler_->HandleConfigure(&list_args);
@@ -637,21 +670,13 @@ TEST_F(SyncSetupHandlerTest, SuccessfullySetPassphrase) {
 }
 
 TEST_F(SyncSetupHandlerTest, SelectCustomEncryption) {
-  std::string args =
-      "{\"syncAllDataTypes\":true,"
-      "\"sync_apps\":true,"
-      "\"sync_autofill\":true,"
-      "\"sync_bookmarks\":true,"
-      "\"sync_extensions\":true,"
-      "\"sync_passwords\":true,"
-      "\"sync_preferences\":true,"
-      "\"sync_sessions\":true,"
-      "\"sync_themes\":true,"
-      "\"sync_typed_urls\":true,"
-      "\"usePassphrase\":true,"
-      "\"isGooglePassphrase\":false,"
-      "\"passphrase\":\"whoopie\","
-      "\"encryptAllData\":false}";
+  DictionaryValue dict;
+  dict.SetBoolean("isGooglePassphrase", false);
+  std::string args = GetConfiguration(&dict,
+                                      SYNC_ALL_DATA,
+                                      GetAllTypes(),
+                                      "custom_passphrase",
+                                      ENCRYPT_PASSWORDS);
   ListValue list_args;
   list_args.Append(new StringValue(args));
   EXPECT_CALL(*mock_pss_, IsPassphraseRequiredForDecryption())
@@ -663,7 +688,7 @@ TEST_F(SyncSetupHandlerTest, SelectCustomEncryption) {
   SetupInitializedProfileSyncService();
   EXPECT_CALL(*mock_pss_, OnUserChoseDatatypes(_, _));
   EXPECT_CALL(*mock_pss_,
-              SetEncryptionPassphrase("whoopie",
+              SetEncryptionPassphrase("custom_passphrase",
                                       ProfileSyncService::EXPLICIT));
 
   handler_->HandleConfigure(&list_args);
@@ -672,21 +697,13 @@ TEST_F(SyncSetupHandlerTest, SelectCustomEncryption) {
 }
 
 TEST_F(SyncSetupHandlerTest, UnsuccessfullySetPassphrase) {
-  std::string args =
-      "{\"syncAllDataTypes\":true,"
-      "\"sync_apps\":true,"
-      "\"sync_autofill\":true,"
-      "\"sync_bookmarks\":true,"
-      "\"sync_extensions\":true,"
-      "\"sync_passwords\":true,"
-      "\"sync_preferences\":true,"
-      "\"sync_sessions\":true,"
-      "\"sync_themes\":true,"
-      "\"sync_typed_urls\":true,"
-      "\"usePassphrase\":true,"
-      "\"isGooglePassphrase\":true,"
-      "\"passphrase\":\"whoopie\","
-      "\"encryptAllData\":false}";
+  DictionaryValue dict;
+  dict.SetBoolean("isGooglePassphrase", true);
+  std::string args = GetConfiguration(&dict,
+                                      SYNC_ALL_DATA,
+                                      GetAllTypes(),
+                                      "invalid_passphrase",
+                                      ENCRYPT_PASSWORDS);
   ListValue list_args;
   list_args.Append(new StringValue(args));
   EXPECT_CALL(*mock_pss_, IsPassphraseRequiredForDecryption())
@@ -697,7 +714,7 @@ TEST_F(SyncSetupHandlerTest, UnsuccessfullySetPassphrase) {
       .WillRepeatedly(Return(false));
   SetupInitializedProfileSyncService();
   EXPECT_CALL(*mock_pss_, OnUserChoseDatatypes(_, _));
-  EXPECT_CALL(*mock_pss_, SetDecryptionPassphrase("whoopie")).
+  EXPECT_CALL(*mock_pss_, SetDecryptionPassphrase("invalid_passphrase")).
       WillOnce(Return(false));
 
   SetDefaultExpectationsForConfigPage();
@@ -714,50 +731,34 @@ TEST_F(SyncSetupHandlerTest, UnsuccessfullySetPassphrase) {
   CheckBool(dictionary, "passphrase_failed", true);
 }
 
-TEST_F(SyncSetupHandlerTest, TestSyncOnlyBookmarks) {
-  std::string args =
-      "{\"syncAllDataTypes\":false,"
-      "\"sync_apps\":false,"
-      "\"sync_autofill\":false,"
-      "\"sync_bookmarks\":true,"
-      "\"sync_extensions\":false,"
-      "\"sync_passwords\":false,"
-      "\"sync_preferences\":false,"
-      "\"sync_sessions\":false,"
-      "\"sync_themes\":false,"
-      "\"sync_typed_urls\":false,"
-      "\"usePassphrase\":false,"
-      "\"encryptAllData\":false}";
-  ListValue list_args;
-  list_args.Append(new StringValue(args));
-  EXPECT_CALL(*mock_pss_, IsPassphraseRequiredForDecryption())
-      .WillRepeatedly(Return(false));
-  EXPECT_CALL(*mock_pss_, IsPassphraseRequired())
-      .WillRepeatedly(Return(false));
-  SetupInitializedProfileSyncService();
-  syncable::ModelTypeSet types;
-  types.Put(syncable::BOOKMARKS);
-  EXPECT_CALL(*mock_pss_,
-              OnUserChoseDatatypes(false, ModelTypeSetMatches(types)));
-  handler_->HandleConfigure(&list_args);
+// Walks through each user selectable type, and tries to sync just that single
+// data type.
+TEST_F(SyncSetupHandlerTest, TestSyncIndividualTypes) {
+  for (size_t i = 0; i < arraysize(kUserSelectableTypes); ++i) {
+    syncable::ModelTypeSet type_to_set;
+    type_to_set.Put(kUserSelectableTypes[i]);
+    std::string args = GetConfiguration(
+        NULL, CHOOSE_WHAT_TO_SYNC, type_to_set, "", ENCRYPT_PASSWORDS);
+    ListValue list_args;
+    list_args.Append(new StringValue(args));
+    EXPECT_CALL(*mock_pss_, IsPassphraseRequiredForDecryption())
+        .WillRepeatedly(Return(false));
+    EXPECT_CALL(*mock_pss_, IsPassphraseRequired())
+        .WillRepeatedly(Return(false));
+    SetupInitializedProfileSyncService();
+    EXPECT_CALL(*mock_pss_,
+                OnUserChoseDatatypes(false, ModelTypeSetMatches(type_to_set)));
+    handler_->HandleConfigure(&list_args);
 
-  ExpectDone();
+    ExpectDone();
+    Mock::VerifyAndClearExpectations(mock_pss_);
+    web_ui_.ClearTrackedCalls();
+  }
 }
 
 TEST_F(SyncSetupHandlerTest, TestSyncAllManually) {
-  std::string args =
-      "{\"syncAllDataTypes\":false,"
-      "\"sync_apps\":true,"
-      "\"sync_autofill\":true,"
-      "\"sync_bookmarks\":true,"
-      "\"sync_extensions\":true,"
-      "\"sync_passwords\":true,"
-      "\"sync_preferences\":true,"
-      "\"sync_sessions\":true,"
-      "\"sync_themes\":true,"
-      "\"sync_typed_urls\":true,"
-      "\"usePassphrase\":false,"
-      "\"encryptAllData\":false}";
+  std::string args = GetConfiguration(
+      NULL, CHOOSE_WHAT_TO_SYNC, GetAllTypes(), "", ENCRYPT_PASSWORDS);
   ListValue list_args;
   list_args.Append(new StringValue(args));
   EXPECT_CALL(*mock_pss_, IsPassphraseRequiredForDecryption())
@@ -852,6 +853,7 @@ TEST_F(SyncSetupHandlerTest, ShowSetupSyncEverything) {
   CheckBool(dictionary, "usePassphrase", false);
   CheckBool(dictionary, "passphrase_failed", false);
   CheckBool(dictionary, "encryptAllData", false);
+  CheckConfigDataTypeArguments(dictionary, SYNC_ALL_DATA, GetAllTypes());
 }
 
 TEST_F(SyncSetupHandlerTest, ShowSetupManuallySyncAll) {
@@ -870,52 +872,39 @@ TEST_F(SyncSetupHandlerTest, ShowSetupManuallySyncAll) {
   const TestWebUI::CallData& data = web_ui_.call_data()[0];
   DictionaryValue* dictionary;
   ASSERT_TRUE(data.arg2->GetAsDictionary(&dictionary));
-  CheckBool(dictionary, "syncAllDataTypes", false);
-  CheckBool(dictionary, "sync_apps", true);
-  CheckBool(dictionary, "sync_autofill", true);
-  CheckBool(dictionary, "sync_bookmarks", true);
-  CheckBool(dictionary, "sync_extensions", true);
-  CheckBool(dictionary, "sync_passwords", true);
-  CheckBool(dictionary, "sync_preferences", true);
-  CheckBool(dictionary, "sync_sessions", true);
-  CheckBool(dictionary, "sync_themes", true);
-  CheckBool(dictionary, "sync_typed_urls", true);
+  CheckConfigDataTypeArguments(dictionary, CHOOSE_WHAT_TO_SYNC, GetAllTypes());
 }
 
+TEST_F(SyncSetupHandlerTest, ShowSetupSyncForAllTypesIndividually) {
+  for (size_t i = 0; i < arraysize(kUserSelectableTypes); ++i) {
+    EXPECT_CALL(*mock_pss_, IsPassphraseRequired())
+        .WillRepeatedly(Return(false));
+    EXPECT_CALL(*mock_pss_, IsUsingSecondaryPassphrase())
+        .WillRepeatedly(Return(false));
+    SetupInitializedProfileSyncService();
+    browser_sync::SyncPrefs sync_prefs(profile_->GetPrefs());
+    sync_prefs.SetKeepEverythingSynced(false);
+    SetDefaultExpectationsForConfigPage();
+    syncable::ModelTypeSet types;
+    types.Put(kUserSelectableTypes[i]);
+    EXPECT_CALL(*mock_pss_, GetPreferredDataTypes()).
+        WillRepeatedly(Return(types));
 
-// TODO(atwilson): Change this test to try individually syncing every data type
-// not just bookmarks (http://crbug.com/119653).
-TEST_F(SyncSetupHandlerTest, ShowSetupSyncOnlyBookmarks) {
-  EXPECT_CALL(*mock_pss_, IsPassphraseRequired())
-      .WillRepeatedly(Return(false));
-  EXPECT_CALL(*mock_pss_, IsUsingSecondaryPassphrase())
-      .WillRepeatedly(Return(false));
-  SetupInitializedProfileSyncService();
-  browser_sync::SyncPrefs sync_prefs(profile_->GetPrefs());
-  sync_prefs.SetKeepEverythingSynced(false);
-  SetDefaultExpectationsForConfigPage();
-  syncable::ModelTypeSet types;
-  types.Put(syncable::BOOKMARKS);
-  EXPECT_CALL(*mock_pss_, GetPreferredDataTypes()).
-      WillRepeatedly(Return(types));
+    // This should display the sync setup dialog (not login).
+    handler_->OpenSyncSetup(false);
 
-  // This should display the sync setup dialog (not login).
-  handler_->OpenSyncSetup(false);
-
-  ExpectConfig();
-  const TestWebUI::CallData& data = web_ui_.call_data()[0];
-  DictionaryValue* dictionary;
-  ASSERT_TRUE(data.arg2->GetAsDictionary(&dictionary));
-  CheckBool(dictionary, "syncAllDataTypes", false);
-  CheckBool(dictionary, "sync_apps", false);
-  CheckBool(dictionary, "sync_autofill", false);
-  CheckBool(dictionary, "sync_bookmarks", true);
-  CheckBool(dictionary, "sync_extensions", false);
-  CheckBool(dictionary, "sync_passwords", false);
-  CheckBool(dictionary, "sync_preferences", false);
-  CheckBool(dictionary, "sync_sessions", false);
-  CheckBool(dictionary, "sync_themes", false);
-  CheckBool(dictionary, "sync_typed_urls", false);
+    ExpectConfig();
+    // Close the config overlay.
+    LoginUIServiceFactory::GetForProfile(profile_.get())->LoginUIClosed(
+        &web_ui_);
+    const TestWebUI::CallData& data = web_ui_.call_data()[0];
+    DictionaryValue* dictionary;
+    ASSERT_TRUE(data.arg2->GetAsDictionary(&dictionary));
+    CheckConfigDataTypeArguments(dictionary, CHOOSE_WHAT_TO_SYNC, types);
+    Mock::VerifyAndClearExpectations(mock_pss_);
+    // Clean up so we can loop back to display the dialog again.
+    web_ui_.ClearTrackedCalls();
+  }
 }
 
 TEST_F(SyncSetupHandlerTest, ShowSetupGaiaPassphraseRequired) {

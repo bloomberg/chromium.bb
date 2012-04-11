@@ -58,7 +58,7 @@ class SyncSetupHandler : public options2::OptionsPageUIHandler,
   FRIEND_TEST_ALL_PREFIXES(SyncSetupHandlerTest, TestSyncEverything);
   FRIEND_TEST_ALL_PREFIXES(SyncSetupHandlerTest, TestSyncAllManually);
   FRIEND_TEST_ALL_PREFIXES(SyncSetupHandlerTest, TestPassphraseStillRequired);
-  FRIEND_TEST_ALL_PREFIXES(SyncSetupHandlerTest, TestSyncOnlyBookmarks);
+  FRIEND_TEST_ALL_PREFIXES(SyncSetupHandlerTest, TestSyncIndividualTypes);
   FRIEND_TEST_ALL_PREFIXES(SyncSetupHandlerTest, TurnOnEncryptAll);
   FRIEND_TEST_ALL_PREFIXES(SyncSetupHandlerTest,
                            UnrecoverableErrorInitializingSync);
