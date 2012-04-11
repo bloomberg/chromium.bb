@@ -41,6 +41,8 @@
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/service/service_process_control.h"
+#include "chrome/browser/signin/signin_manager.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/sync_ui_util.h"
@@ -1014,8 +1016,11 @@ DictionaryValue* BrowserOptionsHandler::GetSyncStateDictionary() {
 
   string16 status_label;
   string16 link_label;
+  SigninManager* signin = SigninManagerFactory::GetForProfile(
+      Profile::FromWebUI(web_ui()));
+
   bool status_has_error = sync_ui_util::GetStatusLabels(
-      service, sync_ui_util::WITH_HTML, &status_label, &link_label) ==
+      service, *signin, sync_ui_util::WITH_HTML, &status_label, &link_label) ==
           sync_ui_util::SYNC_ERROR;
   sync_status->SetString("statusText", status_label);
   sync_status->SetString("actionLinkText", link_label);

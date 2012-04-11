@@ -413,7 +413,7 @@ void ProfileSyncService::StartUp() {
   InitializeBackend(!HasSyncSetupCompleted());
 
   if (!sync_global_error_.get()) {
-    sync_global_error_.reset(new SyncGlobalError(this));
+    sync_global_error_.reset(new SyncGlobalError(this, signin()));
     GlobalErrorServiceFactory::GetForProfile(profile_)->AddGlobalError(
         sync_global_error_.get());
     AddObserver(sync_global_error_.get());
@@ -1000,10 +1000,6 @@ bool ProfileSyncService::waiting_for_auth() const {
 
 bool ProfileSyncService::unrecoverable_error_detected() const {
   return unrecoverable_error_detected_;
-}
-
-bool ProfileSyncService::UIShouldDepictAuthInProgress() const {
-  return signin()->AuthInProgress();
 }
 
 bool ProfileSyncService::IsPassphraseRequired() const {

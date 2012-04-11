@@ -98,8 +98,9 @@ class SigninManager : public GaiaAuthConsumer,
   // associated with the user, and canceling all auth in progress.
   virtual void SignOut();
 
-  // Returns true if there's a signin in progress.
-  bool AuthInProgress() const;
+  // Returns true if there's a signin in progress. Virtual so it can be
+  // overridden by mocks.
+  virtual bool AuthInProgress() const;
 
   // Handles errors if a required user info key is not returned from the
   // GetUserInfo call.

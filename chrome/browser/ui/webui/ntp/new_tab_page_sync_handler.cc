@@ -109,8 +109,12 @@ void NewTabPageSyncHandler::BuildAndSendSyncStatus() {
   //               message).
   string16 status_msg;
   string16 link_text;
+  SigninManager* signin = SigninManagerFactory::GetForProfile(
+      Profile::FromWebUI(web_ui()));
+
   sync_ui_util::MessageType type =
       sync_ui_util::GetStatusLabelsForNewTabPage(sync_service_,
+                                                 *signin,
                                                  &status_msg,
                                                  &link_text);
   SendSyncMessageToPage(FromSyncStatusMessageType(type),

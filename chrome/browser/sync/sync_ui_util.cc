@@ -11,6 +11,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -220,6 +221,7 @@ void GetStatusForActionableError(
 
 // status_label and link_label must either be both NULL or both non-NULL.
 MessageType GetStatusInfo(ProfileSyncService* service,
+                          const SigninManager& signin,
                           StatusLabelStyle style,
                           string16* status_label,
                           string16* link_label) {
@@ -248,7 +250,7 @@ MessageType GetStatusInfo(ProfileSyncService* service,
     }
 
     // For auth errors first check if an auth is in progress.
-    if (service->UIShouldDepictAuthInProgress()) {
+    if (signin.AuthInProgress()) {
       if (status_label) {
         status_label->assign(
           l10n_util::GetStringUTF16(IDS_SYNC_AUTHENTICATING_LABEL));
@@ -306,7 +308,7 @@ MessageType GetStatusInfo(ProfileSyncService* service,
         status_label->assign(
             l10n_util::GetStringUTF16(IDS_SYNC_NTP_SETUP_IN_PROGRESS));
       }
-      if (service->UIShouldDepictAuthInProgress()) {
+      if (signin.AuthInProgress()) {
         if (status_label) {
           status_label->assign(
               l10n_util::GetStringUTF16(IDS_SYNC_AUTHENTICATING_LABEL));
@@ -339,6 +341,7 @@ MessageType GetStatusInfo(ProfileSyncService* service,
 // Returns the status info for use on the new tab page, where we want slightly
 // different information than in the settings panel.
 MessageType GetStatusInfoForNewTabPage(ProfileSyncService* service,
+                                       const SigninManager& signin,
                                        string16* status_label,
                                        string16* link_label) {
   DCHECK(status_label);
@@ -370,30 +373,34 @@ MessageType GetStatusInfoForNewTabPage(ProfileSyncService* service,
   }
 
   // Fallback to default.
-  return GetStatusInfo(service, WITH_HTML, status_label, link_label);
+  return GetStatusInfo(service, signin, WITH_HTML, status_label, link_label);
 }
 
 }  // namespace
 
 MessageType GetStatusLabels(ProfileSyncService* service,
+                            const SigninManager& signin,
                             StatusLabelStyle style,
                             string16* status_label,
                             string16* link_label) {
   DCHECK(status_label);
   DCHECK(link_label);
-  return sync_ui_util::GetStatusInfo(service, style, status_label, link_label);
+  return sync_ui_util::GetStatusInfo(
+      service, signin, style, status_label, link_label);
 }
 
 MessageType GetStatusLabelsForNewTabPage(ProfileSyncService* service,
+                                         const SigninManager& signin,
                                          string16* status_label,
                                          string16* link_label) {
   DCHECK(status_label);
   DCHECK(link_label);
   return sync_ui_util::GetStatusInfoForNewTabPage(
-      service, status_label, link_label);
+      service, signin, status_label, link_label);
 }
 
 void GetStatusLabelsForSyncGlobalError(ProfileSyncService* service,
+                                       const SigninManager& signin,
                                        string16* menu_label,
                                        string16* bubble_message,
                                        string16* bubble_accept_label) {
@@ -420,7 +427,7 @@ void GetStatusLabelsForSyncGlobalError(ProfileSyncService* service,
     return;
   }
 
-  MessageType status = GetStatus(service);
+  MessageType status = GetStatus(service, signin);
   if (status != SYNC_ERROR)
     return;
 
@@ -431,12 +438,14 @@ void GetStatusLabelsForSyncGlobalError(ProfileSyncService* service,
   }
 }
 
-MessageType GetStatus(ProfileSyncService* service) {
-  return sync_ui_util::GetStatusInfo(service, WITH_HTML, NULL, NULL);
+MessageType GetStatus(
+    ProfileSyncService* service, const SigninManager& signin) {
+  return sync_ui_util::GetStatusInfo(service, signin, WITH_HTML, NULL, NULL);
 }
 
-string16 GetSyncMenuLabel(ProfileSyncService* service) {
-  MessageType type = GetStatus(service);
+string16 GetSyncMenuLabel(
+    ProfileSyncService* service, const SigninManager& signin) {
+  MessageType type = GetStatus(service, signin);
 
   if (type == sync_ui_util::SYNCED)
     return l10n_util::GetStringUTF16(IDS_SYNC_MENU_SYNCED_LABEL);

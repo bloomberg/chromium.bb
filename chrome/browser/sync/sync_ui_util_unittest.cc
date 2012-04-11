@@ -7,6 +7,8 @@
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/signin_manager.h"
+#include "chrome/browser/signin/signin_manager_fake.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "content/test/test_browser_thread.h"
@@ -35,9 +37,16 @@ enum DistinctState {
 
 namespace {
 
+// Mock that allows us to mock a SigninManager that is authenticating.
+class SigninManagerMock : public SigninManager {
+ public:
+  MOCK_CONST_METHOD0(AuthInProgress, bool());
+};
+
 // Utility function to test that GetStatusLabelsForSyncGlobalError returns
 // the correct results for the given states.
 void VerifySyncGlobalErrorResult(NiceMock<ProfileSyncServiceMock>* service,
+                                 const SigninManager& signin,
                                  GoogleServiceAuthError::State error_state,
                                  bool is_signed_in,
                                  bool is_error) {
@@ -49,7 +58,7 @@ void VerifySyncGlobalErrorResult(NiceMock<ProfileSyncServiceMock>* service,
 
   string16 label1, label2, label3;
   sync_ui_util::GetStatusLabelsForSyncGlobalError(
-      service, &label1, &label2, &label3);
+      service, signin, &label1, &label2, &label3);
   EXPECT_EQ(label1.empty(), !is_error);
   EXPECT_EQ(label2.empty(), !is_error);
   EXPECT_EQ(label3.empty(), !is_error);
@@ -97,13 +106,14 @@ TEST(SyncUIUtilTest, PassphraseGlobalError) {
   scoped_ptr<Profile> profile(
       ProfileSyncServiceMock::MakeSignedInTestingProfile());
   NiceMock<ProfileSyncServiceMock> service(profile.get());
+  FakeSigninManager signin;
 
   EXPECT_CALL(service, IsPassphraseRequired())
               .WillOnce(Return(true));
   EXPECT_CALL(service, IsPassphraseRequiredForDecryption())
               .WillOnce(Return(true));
   VerifySyncGlobalErrorResult(
-      &service, GoogleServiceAuthError::NONE, true, true);
+      &service, signin, GoogleServiceAuthError::NONE, true, true);
 }
 
 // Test that GetStatusLabelsForSyncGlobalError indicates errors for conditions
@@ -137,16 +147,18 @@ TEST(SyncUIUtilTest, AuthStateGlobalError) {
     { GoogleServiceAuthError::HOSTED_NOT_ALLOWED, true },
   };
 
+  FakeSigninManager signin;
   for (size_t i = 0; i < sizeof(table)/sizeof(*table); ++i) {
     VerifySyncGlobalErrorResult(
-        &service, table[i].error_state, true, table[i].is_error);
+        &service, signin, table[i].error_state, true, table[i].is_error);
     VerifySyncGlobalErrorResult(
-        &service, table[i].error_state, false, false);
+        &service, signin, table[i].error_state, false, false);
   }
 }
 // Loads a ProfileSyncServiceMock to emulate one of a number of distinct cases
 // in order to perform tests on the generated messages.
 void GetDistinctCase(ProfileSyncServiceMock& service,
+                     SigninManagerMock& signin,
                      GoogleServiceAuthError** auth_error,
                      int caseNumber) {
   // Auth Error object is returned by reference in mock and needs to stay in
@@ -164,8 +176,7 @@ void GetDistinctCase(ProfileSyncServiceMock& service,
       *auth_error = new GoogleServiceAuthError(GoogleServiceAuthError::NONE);
       EXPECT_CALL(service, GetAuthError())
                   .WillOnce(ReturnRef(**auth_error));
-      EXPECT_CALL(service, UIShouldDepictAuthInProgress())
-                  .WillOnce(Return(false));
+      EXPECT_CALL(signin, AuthInProgress()).WillRepeatedly(Return(false));
       return;
     }
    case STATUS_CASE_SETUP_ERROR: {
@@ -175,6 +186,7 @@ void GetDistinctCase(ProfileSyncServiceMock& service,
                   .WillOnce(Return(false));
       EXPECT_CALL(service, unrecoverable_error_detected())
                   .WillOnce(Return(true));
+      EXPECT_CALL(signin, AuthInProgress()).WillRepeatedly(Return(false));
       browser_sync::SyncBackendHost::Status status;
       EXPECT_CALL(service, QueryDetailedSyncStatus())
                   .WillOnce(Return(status));
@@ -188,8 +200,7 @@ void GetDistinctCase(ProfileSyncServiceMock& service,
                   .WillOnce(Return(status));
       EXPECT_CALL(service, unrecoverable_error_detected())
                   .WillOnce(Return(false));
-      EXPECT_CALL(service, UIShouldDepictAuthInProgress())
-                  .WillOnce(Return(true));
+      EXPECT_CALL(signin, AuthInProgress()).WillRepeatedly(Return(true));
       *auth_error = new GoogleServiceAuthError(GoogleServiceAuthError::NONE);
       EXPECT_CALL(service, GetAuthError())
                   .WillOnce(ReturnRef(**auth_error));
@@ -205,10 +216,9 @@ void GetDistinctCase(ProfileSyncServiceMock& service,
          GoogleServiceAuthError::SERVICE_UNAVAILABLE);
       EXPECT_CALL(service, unrecoverable_error_detected())
                   .WillOnce(Return(false));
+      EXPECT_CALL(signin, AuthInProgress()).WillRepeatedly(Return(false));
       EXPECT_CALL(service, GetAuthError())
                   .WillOnce(ReturnRef(**auth_error));
-      EXPECT_CALL(service, UIShouldDepictAuthInProgress())
-                  .WillOnce(Return(false));
       return;
     }
     case STATUS_CASE_PROTOCOL_ERROR: {
@@ -223,9 +233,8 @@ void GetDistinctCase(ProfileSyncServiceMock& service,
       *auth_error = new GoogleServiceAuthError(GoogleServiceAuthError::NONE);
       EXPECT_CALL(service, GetAuthError())
                   .WillOnce(ReturnRef(**auth_error));
+      EXPECT_CALL(signin, AuthInProgress()).WillRepeatedly(Return(false));
       EXPECT_CALL(service, unrecoverable_error_detected())
-                  .WillOnce(Return(false));
-      EXPECT_CALL(service, UIShouldDepictAuthInProgress())
                   .WillOnce(Return(false));
       return;
     }
@@ -240,8 +249,7 @@ void GetDistinctCase(ProfileSyncServiceMock& service,
                   .WillOnce(ReturnRef(**auth_error));
       EXPECT_CALL(service, unrecoverable_error_detected())
                   .WillOnce(Return(false));
-      EXPECT_CALL(service, UIShouldDepictAuthInProgress())
-                  .WillOnce(Return(false));
+      EXPECT_CALL(signin, AuthInProgress()).WillRepeatedly(Return(false));
       EXPECT_CALL(service, IsPassphraseRequired())
                   .WillOnce(Return(true));
       EXPECT_CALL(service, IsPassphraseRequiredForDecryption())
@@ -257,9 +265,8 @@ void GetDistinctCase(ProfileSyncServiceMock& service,
       *auth_error = new GoogleServiceAuthError(GoogleServiceAuthError::NONE);
       EXPECT_CALL(service, GetAuthError())
                   .WillOnce(ReturnRef(**auth_error));
+      EXPECT_CALL(signin, AuthInProgress()).WillRepeatedly(Return(false));
       EXPECT_CALL(service, unrecoverable_error_detected())
-                  .WillOnce(Return(false));
-      EXPECT_CALL(service, UIShouldDepictAuthInProgress())
                   .WillOnce(Return(false));
       EXPECT_CALL(service, IsPassphraseRequired())
                   .WillOnce(Return(false));
@@ -279,11 +286,13 @@ TEST(SyncUIUtilTest, DistinctCasesReportUniqueMessageSets) {
     scoped_ptr<Profile> profile(
         ProfileSyncServiceMock::MakeSignedInTestingProfile());
     ProfileSyncServiceMock service(profile.get());
+    NiceMock<SigninManagerMock> signin;
     GoogleServiceAuthError* auth_error = NULL;
-    GetDistinctCase(service, &auth_error, idx);
+    GetDistinctCase(service, signin, &auth_error, idx);
     string16 status_label;
     string16 link_label;
     sync_ui_util::GetStatusLabels(&service,
+                                  signin,
                                   sync_ui_util::WITH_HTML,
                                   &status_label,
                                   &link_label);
@@ -306,11 +315,13 @@ TEST(SyncUIUtilTest, HtmlNotIncludedInStatusIfNotRequested) {
     scoped_ptr<Profile> profile(
         ProfileSyncServiceMock::MakeSignedInTestingProfile());
     ProfileSyncServiceMock service(profile.get());
+    NiceMock<SigninManagerMock> signin;
     GoogleServiceAuthError* auth_error = NULL;
-    GetDistinctCase(service, &auth_error, idx);
+    GetDistinctCase(service, signin, &auth_error, idx);
     string16 status_label;
     string16 link_label;
     sync_ui_util::GetStatusLabels(&service,
+                                  signin,
                                   sync_ui_util::PLAIN_TEXT,
                                   &status_label,
                                   &link_label);

@@ -296,14 +296,6 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
     return unrecoverable_error_location_;
   }
 
-  // Reports whether the user is currently authenticating or not. This is used
-  // by the sync_ui_util helper routines to allow the UI to properly display
-  // an "authenticating..." status message instead of an auth error when we are
-  // in the process of trying to update credentials.
-  // TODO(atwilson): This state now resides in SigninManager - this method
-  // will be removed once we've cleaned up the callers. http://crbug.com/95269.
-  virtual bool UIShouldDepictAuthInProgress() const;
-
   // Returns true if OnPassphraseRequired has been called for any reason.
   virtual bool IsPassphraseRequired() const;
 

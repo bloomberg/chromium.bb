@@ -10,6 +10,8 @@
 #include "base/logging.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/signin_manager.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/sync_ui_util.h"
@@ -29,10 +31,11 @@ void UpdateSyncItem(id syncItem, BOOL syncEnabled, Profile* profile) {
   ProfileSyncService* syncService =
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(
           profile->GetOriginalProfile());
+  SigninManager* signin = SigninManagerFactory::GetForProfile(profile);
   UpdateSyncItemForStatus(
       syncItem,
       syncEnabled,
-      sync_ui_util::GetStatus(syncService),
+      sync_ui_util::GetStatus(syncService, *signin),
       profile->GetPrefs()->GetString(prefs::kGoogleServicesUsername));
 }
 

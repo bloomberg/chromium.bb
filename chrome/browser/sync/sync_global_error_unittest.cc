@@ -8,6 +8,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/signin/signin_manager.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
@@ -112,7 +113,8 @@ TEST_F(SyncGlobalErrorTest, PassphraseGlobalError) {
   scoped_ptr<Profile> profile(
       ProfileSyncServiceMock::MakeSignedInTestingProfile());
   NiceMock<ProfileSyncServiceMock> service(profile.get());
-  SyncGlobalError error(&service);
+  SigninManager* signin = SigninManagerFactory::GetForProfile(profile.get());
+  SyncGlobalError error(&service, signin);
 
   EXPECT_CALL(service, IsPassphraseRequired())
               .WillRepeatedly(Return(true));
@@ -129,7 +131,8 @@ TEST_F(SyncGlobalErrorTest, AuthStateGlobalError) {
   scoped_ptr<Profile> profile(
       ProfileSyncServiceMock::MakeSignedInTestingProfile());
   NiceMock<ProfileSyncServiceMock> service(profile.get());
-  SyncGlobalError error(&service);
+  SigninManager* signin = SigninManagerFactory::GetForProfile(profile.get());
+  SyncGlobalError error(&service, signin);
 
   browser_sync::SyncBackendHost::Status status;
   EXPECT_CALL(service, QueryDetailedSyncStatus())

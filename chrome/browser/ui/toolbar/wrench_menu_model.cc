@@ -18,6 +18,8 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/signin/signin_manager.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/sync_global_error.h"
@@ -574,6 +576,8 @@ void WrenchMenuModel::UpdateZoomControls() {
 }
 
 string16 WrenchMenuModel::GetSyncMenuLabel() const {
-  return sync_ui_util::GetSyncMenuLabel(ProfileSyncServiceFactory::
-      GetInstance()->GetForProfile(browser_->profile()->GetOriginalProfile()));
+  Profile* profile = browser_->profile()->GetOriginalProfile();
+  return sync_ui_util::GetSyncMenuLabel(
+      ProfileSyncServiceFactory::GetForProfile(profile),
+      *SigninManagerFactory::GetForProfile(profile));
 }
