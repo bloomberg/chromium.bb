@@ -642,21 +642,17 @@ void NativeWidgetWin::SendNativeAccessibilityEvent(
                    GetNativeView(), OBJID_CLIENT, child_id);
 }
 
-void NativeWidgetWin::SetCapture(unsigned int flags) {
-  if (flags & ui::CW_LOCK_MOUSE) {
-    DCHECK(!HasCapture(ui::CW_LOCK_MOUSE));
-    ::SetCapture(hwnd());
-  }
+void NativeWidgetWin::SetMouseCapture() {
+  DCHECK(!HasMouseCapture());
+  SetCapture(hwnd());
 }
 
-void NativeWidgetWin::ReleaseCapture() {
-  ::ReleaseCapture();
+void NativeWidgetWin::ReleaseMouseCapture() {
+  ReleaseCapture();
 }
 
-bool NativeWidgetWin::HasCapture(unsigned int flags) const {
-  if (flags == ui::CW_LOCK_MOUSE)
-    return ::GetCapture() == hwnd();
-  return false;
+bool NativeWidgetWin::HasMouseCapture() const {
+  return GetCapture() == hwnd();
 }
 
 InputMethod* NativeWidgetWin::CreateInputMethod() {
@@ -1128,7 +1124,7 @@ void NativeWidgetWin::SetInactiveRenderingDisabled(bool value) {
 }
 
 Widget::MoveLoopResult NativeWidgetWin::RunMoveLoop() {
-  ReleaseCapture();
+  ReleaseMouseCapture();
   MoveLoopMouseWatcher watcher(this);
   SendMessage(hwnd(), WM_SYSCOMMAND, SC_MOVE | 0x0002, GetMessagePos());
   // Windows doesn't appear to offer a way to determine whether the user
@@ -1564,10 +1560,10 @@ LRESULT NativeWidgetWin::OnMouseRange(UINT message,
   } else if (message == WM_NCRBUTTONDOWN &&
       (w_param == HTCAPTION || w_param == HTSYSMENU)) {
     is_right_mouse_pressed_on_caption_ = true;
-    // We SetCapture() to ensure we only show the menu when the button
+    // We SetMouseCapture() to ensure we only show the menu when the button
     // down and up are both on the caption. Note: this causes the button up to
     // be WM_RBUTTONUP instead of WM_NCRBUTTONUP.
-    SetCapture(ui::CW_LOCK_MOUSE);
+    SetMouseCapture();
   }
 
   MSG msg = { hwnd(), message, w_param, l_param, 0,
@@ -1578,7 +1574,7 @@ LRESULT NativeWidgetWin::OnMouseRange(UINT message,
     if (tooltip_manager_.get())
       tooltip_manager_->OnMouse(message, w_param, l_param);
 
-  if (event.type() == ui::ET_MOUSE_MOVED && !HasCapture(ui::CW_LOCK_MOUSE)) {
+  if (event.type() == ui::ET_MOUSE_MOVED && !HasMouseCapture()) {
     // Windows only fires WM_MOUSELEAVE events if the application begins
     // "tracking" mouse events for a given HWND during WM_MOUSEMOVE events.
     // We need to call |TrackMouseEvents| to listen for WM_MOUSELEAVE.

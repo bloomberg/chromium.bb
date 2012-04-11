@@ -103,11 +103,6 @@ enum TouchStatus {
                              // handler.
 };
 
-enum CaptureEventFlags {
-  CW_LOCK_MOUSE = 1 << 0,
-  CW_LOCK_TOUCH = 1 << 1,
-};
-
 // Updates the list of devices for cached properties.
 UI_EXPORT void UpdateDeviceList();
 
