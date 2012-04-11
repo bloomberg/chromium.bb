@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -195,7 +195,9 @@ TEST_F(GeolocationGpsProviderLinuxTests, LibGpsReconnect) {
   // This task makes gps_open() and LibGps::Start() to succeed after
   // 1500ms.
   MessageLoop::current()->PostDelayedTask(
-      FROM_HERE, base::Bind(&EnableGpsOpenCallback), 1500);
+      FROM_HERE,
+      base::Bind(&EnableGpsOpenCallback),
+      base::TimeDelta::FromMilliseconds(1500));
   MessageLoop::current()->Run();
   provider_->GetPosition(&position);
   EXPECT_TRUE(position.IsInitialized());
