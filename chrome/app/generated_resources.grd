@@ -7601,6 +7601,9 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         cannot reach the website.  This is typically caused by network issues,
         but can also be the result of a misconfigured firewall or proxy server.
       </message>
+      <message name="IDS_ERRORPAGES_SUMMARY_FILE_ACCESS_DENIED" desc="Summary in the error page when we can't open a file.">
+        The file at <ph name="URL">&lt;strong jscontent="failedUrl"&gt;&lt;/strong&gt;</ph> is not readable.  It may have been removed, moved, or file permissions may be preventing access.
+      </message>
       <if expr="pp_ifdef('android')">
         <message name="IDS_ERRORPAGES_SUMMARY_NETWORK_ACCESS_DENIED" desc="Mobile: Summary in the error page when we're not being allowed to access the network.">
           <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph>
@@ -7850,6 +7853,9 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       <message name="IDS_ERRORPAGES_DETAILS_NETWORK_ACCESS_DENIED" desc="The error message displayed when we're not being allowed to access the network.">
         Unable to access the network.
       </message>
+      <message name="IDS_ERRORPAGES_DETAILS_FILE_ACCESS_DENIED" desc="The error message displayed when we're not being allowed to access a file.">
+        Unable to access the file.
+      </message>
       <message name="IDS_ERRORPAGES_DETAILS_PROXY_CONNECTION_FAILED" desc="The error message displayed when the proxy server connection failed.">
         Proxy server connection failed.
       </message>
@@ -7892,6 +7898,9 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
 
       <message name="IDS_ERRORPAGES_HEADING_ACCESS_DENIED" desc="Heading in the error page when a server returns a 403.  Also suitable for similar error codes.">
         Access to the webpage was denied
+      </message>
+      <message name="IDS_ERRORPAGES_HEADING_FILE_ACCESS_DENIED" desc="Heading in the error page when a file is denied access.">
+        Access to the file was denied
       </message>
       <message name="IDS_ERRORPAGES_SUMMARY_FORBIDDEN" desc="Summary in the error page when a server returns a 403.">
         You are not authorized to access the webpage at <ph name="URL">&lt;strong jscontent="failedUrl"&gt;&lt;/strong&gt;</ph>.  You may need to sign in.
