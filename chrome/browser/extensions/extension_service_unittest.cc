@@ -27,6 +27,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/version.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/extensions/app_sync_data.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_creator.h"
@@ -4008,7 +4009,7 @@ TEST_F(ExtensionServiceTest, GetSyncData) {
 
   SyncDataList list = service_->GetAllSyncData(syncable::EXTENSIONS);
   ASSERT_EQ(list.size(), 1U);
-  ExtensionSyncData data(list[0]);
+  extensions::ExtensionSyncData data(list[0]);
   EXPECT_EQ(extension->id(), data.id());
   EXPECT_FALSE(data.uninstalled());
   EXPECT_EQ(service_->IsExtensionEnabled(good_crx), data.enabled());
@@ -4031,7 +4032,7 @@ TEST_F(ExtensionServiceTest, GetSyncDataTerminated) {
 
   SyncDataList list = service_->GetAllSyncData(syncable::EXTENSIONS);
   ASSERT_EQ(list.size(), 1U);
-  ExtensionSyncData data(list[0]);
+  extensions::ExtensionSyncData data(list[0]);
   EXPECT_EQ(extension->id(), data.id());
   EXPECT_FALSE(data.uninstalled());
   EXPECT_EQ(service_->IsExtensionEnabled(good_crx), data.enabled());
@@ -4068,7 +4069,7 @@ TEST_F(ExtensionServiceTest, GetSyncExtensionDataUserSettings) {
   {
     SyncDataList list = service_->GetAllSyncData(syncable::EXTENSIONS);
     ASSERT_EQ(list.size(), 1U);
-    ExtensionSyncData data(list[0]);
+    extensions::ExtensionSyncData data(list[0]);
     EXPECT_TRUE(data.enabled());
     EXPECT_FALSE(data.incognito_enabled());
   }
@@ -4077,7 +4078,7 @@ TEST_F(ExtensionServiceTest, GetSyncExtensionDataUserSettings) {
   {
     SyncDataList list = service_->GetAllSyncData(syncable::EXTENSIONS);
     ASSERT_EQ(list.size(), 1U);
-    ExtensionSyncData data(list[0]);
+    extensions::ExtensionSyncData data(list[0]);
     EXPECT_FALSE(data.enabled());
     EXPECT_FALSE(data.incognito_enabled());
   }
@@ -4086,7 +4087,7 @@ TEST_F(ExtensionServiceTest, GetSyncExtensionDataUserSettings) {
   {
     SyncDataList list = service_->GetAllSyncData(syncable::EXTENSIONS);
     ASSERT_EQ(list.size(), 1U);
-    ExtensionSyncData data(list[0]);
+    extensions::ExtensionSyncData data(list[0]);
     EXPECT_FALSE(data.enabled());
     EXPECT_TRUE(data.incognito_enabled());
   }
@@ -4095,7 +4096,7 @@ TEST_F(ExtensionServiceTest, GetSyncExtensionDataUserSettings) {
   {
     SyncDataList list = service_->GetAllSyncData(syncable::EXTENSIONS);
     ASSERT_EQ(list.size(), 1U);
-    ExtensionSyncData data(list[0]);
+    extensions::ExtensionSyncData data(list[0]);
     EXPECT_TRUE(data.enabled());
     EXPECT_TRUE(data.incognito_enabled());
   }
@@ -4116,9 +4117,10 @@ TEST_F(ExtensionServiceTest, GetSyncAppDataUserSettings) {
   {
     SyncDataList list = service_->GetAllSyncData(syncable::APPS);
     ASSERT_EQ(list.size(), 1U);
-    ExtensionSyncData data(list[0]);
-    EXPECT_TRUE(initial_ordinal.Equal(data.app_launch_ordinal()));
-    EXPECT_TRUE(initial_ordinal.Equal(data.page_ordinal()));
+
+    extensions::AppSyncData app_sync_data(list[0]);
+    EXPECT_TRUE(initial_ordinal.Equal(app_sync_data.app_launch_ordinal()));
+    EXPECT_TRUE(initial_ordinal.Equal(app_sync_data.page_ordinal()));
   }
 
   ExtensionSorting* sorting = service_->extension_prefs()->extension_sorting();
@@ -4126,18 +4128,20 @@ TEST_F(ExtensionServiceTest, GetSyncAppDataUserSettings) {
   {
     SyncDataList list = service_->GetAllSyncData(syncable::APPS);
     ASSERT_EQ(list.size(), 1U);
-    ExtensionSyncData data(list[0]);
-    EXPECT_TRUE(initial_ordinal.LessThan(data.app_launch_ordinal()));
-    EXPECT_TRUE(initial_ordinal.Equal(data.page_ordinal()));
+
+    extensions::AppSyncData app_sync_data(list[0]);
+    EXPECT_TRUE(initial_ordinal.LessThan(app_sync_data.app_launch_ordinal()));
+    EXPECT_TRUE(initial_ordinal.Equal(app_sync_data.page_ordinal()));
   }
 
   sorting->SetPageOrdinal(app->id(), initial_ordinal.CreateAfter());
   {
     SyncDataList list = service_->GetAllSyncData(syncable::APPS);
     ASSERT_EQ(list.size(), 1U);
-    ExtensionSyncData data(list[0]);
-    EXPECT_TRUE(initial_ordinal.LessThan(data.app_launch_ordinal()));
-    EXPECT_TRUE(initial_ordinal.LessThan(data.page_ordinal()));
+
+    extensions::AppSyncData app_sync_data(list[0]);
+    EXPECT_TRUE(initial_ordinal.LessThan(app_sync_data.app_launch_ordinal()));
+    EXPECT_TRUE(initial_ordinal.LessThan(app_sync_data.page_ordinal()));
   }
 }
 
@@ -4161,9 +4165,12 @@ TEST_F(ExtensionServiceTest, GetSyncAppDataUserSettingsOnExtensionMoved) {
   {
     SyncDataList list = service_->GetAllSyncData(syncable::APPS);
     ASSERT_EQ(list.size(), 3U);
-    ExtensionSyncData data[kAppCount];
+
+    extensions::AppSyncData data[kAppCount];
     for (size_t i = 0; i < kAppCount; ++i)
-      data[i] = ExtensionSyncData(list[i]);
+    {
+      data[i] = extensions::AppSyncData(list[i]);
+    }
 
     // The sync data is not always in the same order our apps were installed in,
     // so we do that sorting here so we can make sure the values are changed as

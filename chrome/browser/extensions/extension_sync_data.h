@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,19 +10,17 @@
 
 #include "base/version.h"
 #include "chrome/browser/sync/api/sync_change.h"
-#include "chrome/browser/sync/api/sync_data.h"
-#include "chrome/common/extensions/extension.h"
 #include "chrome/common/string_ordinal.h"
 #include "googleurl/src/gurl.h"
 
+class Extension;
 class SyncData;
+
 namespace sync_pb {
-class AppSpecifics;
 class ExtensionSpecifics;
 }
 
-// TODO(csharp): Split this class up into AppSyncData and ExtensionsSyncData.
-// crbug.com/107729
+namespace extensions {
 
 // A class that encapsulates the synced properties of an Extension.
 class ExtensionSyncData {
@@ -32,18 +30,21 @@ class ExtensionSyncData {
   explicit ExtensionSyncData(const SyncChange& sync_change);
   ExtensionSyncData(const Extension& extension,
                     bool enabled,
-                    bool incognito_enabled,
-                    const std::string& notifications_client_id,
-                    bool notifications_disabled,
-                    const StringOrdinal& app_launch_ordinal,
-                    const StringOrdinal& page_ordinal);
+                    bool incognito_enabled);
   ~ExtensionSyncData();
 
-  // Convert an ExtensionSyncData back out to a sync structure.
-  void PopulateAppSpecifics(sync_pb::AppSpecifics* specifics) const;
-  void PopulateExtensionSpecifics(sync_pb::ExtensionSpecifics* specifics) const;
+  // Retrieve sync data from this class.
   SyncData GetSyncData() const;
   SyncChange GetSyncChange(SyncChange::SyncChangeType change_type) const;
+
+  // Convert an ExtensionSyncData back out to a sync structure.
+  void PopulateExtensionSpecifics(sync_pb::ExtensionSpecifics* specifics) const;
+
+  // Populate this class from sync inputs.
+  void PopulateFromExtensionSpecifics(
+      const sync_pb::ExtensionSpecifics& specifics);
+
+  void set_uninstalled(bool uninstalled);
 
   const std::string& id() const { return id_; }
 
@@ -53,11 +54,6 @@ class ExtensionSyncData {
   bool uninstalled() const { return uninstalled_; }
   bool enabled() const { return enabled_; }
   bool incognito_enabled() const { return incognito_enabled_; }
-  Extension::SyncType type() const { return type_; }
-  // These ordinals aren't necessarily valid.
-  const StringOrdinal& app_launch_ordinal() const {
-    return app_launch_ordinal_; }
-  const StringOrdinal& page_ordinal() const {return page_ordinal_; }
 
   // Version-dependent properties (i.e., should be used only when the
   // version of the currenty-installed extension matches |version|).
@@ -66,33 +62,19 @@ class ExtensionSyncData {
   // Used only for debugging.
   const std::string& name() const { return name_; }
 
-  const std::string& notifications_client_id() const {
-    return notifications_client_id_;
-  }
-
-  bool notifications_disabled() const {
-    return notifications_disabled_;
-  }
-
  private:
-  void PopulateFromAppSpecifics(
-      const sync_pb::AppSpecifics& specifics);
-  void PopulateFromExtensionSpecifics(
-      const sync_pb::ExtensionSpecifics& specifics);
+  // Populate this class from sync inputs.
   void PopulateFromSyncData(const SyncData& sync_data);
 
   std::string id_;
   bool uninstalled_;
   bool enabled_;
   bool incognito_enabled_;
-  Extension::SyncType type_;
   Version version_;
   GURL update_url_;
   std::string name_;
-  std::string notifications_client_id_;
-  bool notifications_disabled_;
-  StringOrdinal app_launch_ordinal_;
-  StringOrdinal page_ordinal_;
 };
+
+}  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_SYNC_DATA_H_

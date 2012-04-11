@@ -23,12 +23,13 @@
 #include "base/time.h"
 #include "base/tuple.h"
 #include "chrome/browser/extensions/app_shortcut_manager.h"
+#include "chrome/browser/extensions/app_sync_bundle.h"
 #include "chrome/browser/extensions/apps_promo.h"
 #include "chrome/browser/extensions/extension_icon_manager.h"
 #include "chrome/browser/extensions/extension_menu_manager.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
-#include "chrome/browser/extensions/extension_sync_data.h"
+#include "chrome/browser/extensions/extension_sync_bundle.h"
 #include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/extensions/extension_warning_set.h"
 #include "chrome/browser/extensions/extensions_quota_service.h"
@@ -73,7 +74,9 @@ class ExtensionInputMethodEventRouter;
 
 namespace extensions {
 class APIResourceController;
+class AppSyncData;
 class ComponentLoader;
+class ExtensionSyncData;
 class ExtensionUpdater;
 class SettingsFrontend;
 class WebNavigationEventRouter;
@@ -428,6 +431,30 @@ class ExtensionService
       const tracked_objects::Location& from_here,
       const SyncChangeList& change_list) OVERRIDE;
 
+  // Gets the sync data for the given extension, assuming that the extension is
+  // syncable.
+  extensions::ExtensionSyncData GetExtensionSyncData(
+      const Extension& extension) const;
+
+  // Gets the sync data for the given app, assuming that the app is
+  // syncable.
+  extensions::AppSyncData GetAppSyncData(const Extension& extension) const;
+
+  // Gets the ExtensionSyncData for all extensions.
+  std::vector<extensions::ExtensionSyncData> GetExtensionSyncDataList() const;
+
+  // Gets the AppSyncData for all extensions.
+  std::vector<extensions::AppSyncData> GetAppSyncDataList() const;
+
+  // Applies the change specified passed in by either ExtensionSyncData or
+  // AppSyncData to the current system.
+  // Returns false if the changes were not completely applied and were added
+  // to the pending list to be tried again.
+  bool ProcessExtensionSyncData(
+      const extensions::ExtensionSyncData& extension_sync_data);
+  bool ProcessAppSyncData(const extensions::AppSyncData& app_sync_data);
+
+
   void set_extensions_enabled(bool enabled) { extensions_enabled_ = enabled; }
   bool extensions_enabled() { return extensions_enabled_; }
 
@@ -586,23 +613,6 @@ class ExtensionService
   AppShortcutManager* app_shortcut_manager() { return &app_shortcut_manager_; }
 
  private:
-  // Bundle of type (app or extension)-specific sync stuff.
-  struct SyncBundle {
-    SyncBundle();
-    ~SyncBundle();
-
-    void Reset();
-
-    bool HasExtensionId(const std::string& id) const;
-    bool HasPendingExtensionId(const std::string& id) const;
-
-    // Note: all members of the struct need to be explicitly cleared in Reset().
-    ExtensionFilter filter;
-    std::set<std::string> synced_extensions;
-    std::map<std::string, ExtensionSyncData> pending_sync_data;
-    scoped_ptr<SyncChangeProcessor> sync_processor;
-  };
-
   // Contains Extension data that can change during the life of the process,
   // but does not persist across restarts.
   struct ExtensionRuntimeData {
@@ -632,33 +642,17 @@ class ExtensionService
   };
   typedef std::list<NaClModuleInfo> NaClModuleInfoList;
 
-  // Get the appropriate SyncBundle, given some representation of Sync data.
-  SyncBundle* GetSyncBundleForExtension(const Extension& extension);
-  SyncBundle* GetSyncBundleForExtensionSyncData(
-      const ExtensionSyncData& extension_sync_data);
-  SyncBundle* GetSyncBundleForModelType(syncable::ModelType type);
-  const SyncBundle* GetSyncBundleForModelTypeConst(syncable::ModelType type)
+  // Return true if the sync type of |extension| matches |type|.
+  bool IsCorrectSyncType(const Extension& extension, syncable::ModelType type)
       const;
 
-  // Gets the ExtensionSyncData for all extensions.
-  std::vector<ExtensionSyncData> GetSyncDataList(
-      const SyncBundle& bundle) const;
-
-  // Gets the sync data for the given extension, assuming that the extension is
-  // syncable.
-  ExtensionSyncData GetSyncData(const Extension& extension) const;
-
-  // Appends sync data objects for every extension in |extensions|
-  // that passes |filter|.
-  void GetSyncDataListHelper(
-      const ExtensionSet& extensions,
-      const SyncBundle& bundle,
-      std::vector<ExtensionSyncData>* sync_data_list) const;
-
-  // Applies the change specified in an ExtensionSyncData to the current system.
-  void ProcessExtensionSyncData(
-      const ExtensionSyncData& extension_sync_data,
-      SyncBundle& bundle);
+  // Handles setting the extension specific values in |extension_sync_data| to
+  // the current system.
+  // Returns false if the changes were not completely applied and need to be
+  // tried again later.
+  bool ProcessExtensionSyncDataHelper(
+      const extensions::ExtensionSyncData& extension_sync_data,
+      syncable::ModelType type);
 
   // Look up an extension by ID, optionally including either or both of enabled
   // and disabled extensions.
@@ -828,8 +822,8 @@ class ExtensionService
 
   NaClModuleInfoList nacl_module_list_;
 
-  SyncBundle app_sync_bundle_;
-  SyncBundle extension_sync_bundle_;
+  extensions::AppSyncBundle app_sync_bundle_;
+  extensions::ExtensionSyncBundle extension_sync_bundle_;
 
   // Contains an entry for each warning that shall be currently shown.
   ExtensionWarningSet extension_warnings_;
