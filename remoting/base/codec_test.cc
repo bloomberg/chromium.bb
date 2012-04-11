@@ -303,7 +303,8 @@ static void TestEncodeDecodeRects(Encoder* encoder,
   // Generate random data for the updated region.
   srand(0);
   for (int i = 0; i < count; ++i) {
-    const int bytes_per_pixel = GetBytesPerPixel(data->pixel_format());
+    CHECK_EQ(data->pixel_format(), media::VideoFrame::RGB32);
+    const int bytes_per_pixel = 4;  // Because of RGB32 on previous line.
     const int row_size = bytes_per_pixel * rects[i].width();
     uint8* memory = data->data_planes().data[0] +
       data->data_planes().strides[0] * rects[i].top() +

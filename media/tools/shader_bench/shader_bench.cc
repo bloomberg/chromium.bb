@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,7 +16,6 @@
 #include "media/base/video_frame.h"
 #include "media/tools/shader_bench/cpu_color_painter.h"
 #include "media/tools/shader_bench/gpu_color_painter.h"
-#include "media/tools/shader_bench/gpu_color_painter_exp.h"
 #include "media/tools/shader_bench/painter.h"
 #include "media/tools/shader_bench/window.h"
 #include "ui/gfx/gl/gl_bindings.h"
@@ -149,7 +148,6 @@ int main(int argc, char** argv) {
   } painters[] = {
     { "CPU CSC + GPU Render", new CPUColorPainter() },
     { "GPU CSC/Render", new GPUColorWithLuminancePainter() },
-    { "GPU CSC/Render (experimental)", new GPUColorRGBALumHackPainter() },
   };
 
   // Run GPU painter tests.

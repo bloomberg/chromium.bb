@@ -80,8 +80,9 @@ void EncoderRowBased::Encode(
 
 void EncoderRowBased::EncodeRect(const SkIRect& rect, bool last) {
   CHECK(capture_data_->data_planes().data[0]);
+  CHECK_EQ(capture_data_->pixel_format(), media::VideoFrame::RGB32);
   const int strides = capture_data_->data_planes().strides[0];
-  const int bytes_per_pixel = GetBytesPerPixel(capture_data_->pixel_format());
+  const int bytes_per_pixel = 4;
   const int row_size = bytes_per_pixel * rect.width();
 
   compressor_->Reset();

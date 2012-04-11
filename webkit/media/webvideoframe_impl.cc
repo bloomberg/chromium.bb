@@ -33,16 +33,10 @@ WebVideoFrameImpl::~WebVideoFrameImpl() {}
                    int(media::VideoFrame::chromium_name), \
                    mismatching_enums)
 COMPILE_ASSERT_MATCHING_ENUM(FormatInvalid, INVALID);
-COMPILE_ASSERT_MATCHING_ENUM(FormatRGB555, RGB555);
-COMPILE_ASSERT_MATCHING_ENUM(FormatRGB565, RGB565);
-COMPILE_ASSERT_MATCHING_ENUM(FormatRGB24, RGB24);
 COMPILE_ASSERT_MATCHING_ENUM(FormatRGB32, RGB32);
-COMPILE_ASSERT_MATCHING_ENUM(FormatRGBA, RGBA);
 COMPILE_ASSERT_MATCHING_ENUM(FormatYV12, YV12);
 COMPILE_ASSERT_MATCHING_ENUM(FormatYV16, YV16);
-COMPILE_ASSERT_MATCHING_ENUM(FormatNV12, NV12);
 COMPILE_ASSERT_MATCHING_ENUM(FormatEmpty, EMPTY);
-COMPILE_ASSERT_MATCHING_ENUM(FormatASCII, ASCII);
 COMPILE_ASSERT_MATCHING_ENUM(FormatI420, I420);
 COMPILE_ASSERT_MATCHING_ENUM(FormatNativeTexture, NATIVE_TEXTURE);
 
@@ -68,19 +62,13 @@ unsigned WebVideoFrameImpl::planes() const {
   if (!video_frame_.get())
     return 0;
   switch (video_frame_->format()) {
-    case media::VideoFrame::RGB555:
-    case media::VideoFrame::RGB565:
-    case media::VideoFrame::RGB24:
     case media::VideoFrame::RGB32:
-    case media::VideoFrame::RGBA:
       return 1;
     case media::VideoFrame::YV12:
     case media::VideoFrame::YV16:
       return 3;
     case media::VideoFrame::INVALID:
-    case media::VideoFrame::NV12:
     case media::VideoFrame::EMPTY:
-    case media::VideoFrame::ASCII:
     case media::VideoFrame::I420:
       break;
     case media::VideoFrame::NATIVE_TEXTURE:

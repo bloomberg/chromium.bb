@@ -15,9 +15,6 @@ namespace remoting {
 // Return a string that contains the current date formatted as 'MMDD/HHMMSS:'.
 std::string GetTimestampString();
 
-// TODO(sergeyu): Move these methods to media.
-int GetBytesPerPixel(media::VideoFrame::Format format);
-
 // Convert and scale YUV to RGB32 on a specific rectangle. The source and
 // destination buffers are assumed to contain only |source_buffer_rect| and
 // |dest_buffer_rect| areas correspondingly. The scaling factor is determined

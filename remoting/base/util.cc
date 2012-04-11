@@ -17,6 +17,8 @@ using media::VideoFrame;
 
 namespace remoting {
 
+enum { kBytesPerPixelRGB32 = 4 };
+
 // Do not write LOG messages in this routine since it is called from within
 // our LOG message handler. Bad things will happen.
 std::string GetTimestampString() {
@@ -28,24 +30,9 @@ std::string GetTimestampString() {
                       tex.hour, tex.minute, tex.second);
 }
 
-int GetBytesPerPixel(VideoFrame::Format format) {
-  // Note: The order is important here for performance. This is sorted from the
-  // most common to the less common (PIXEL_FORMAT_ASCII is mostly used
-  // just for testing).
-  switch (format) {
-    case VideoFrame::RGB24:  return 3;
-    case VideoFrame::RGB565: return 2;
-    case VideoFrame::RGB32:  return 4;
-    case VideoFrame::ASCII:  return 1;
-    default:
-      NOTREACHED() << "Pixel format not supported";
-      return 0;
-  }
-}
-
 // Helper methods to calculate plane offset given the coordinates.
 static int CalculateRGBOffset(int x, int y, int stride) {
-  return stride * y + GetBytesPerPixel(media::VideoFrame::RGB32) * x;
+  return stride * y + kBytesPerPixelRGB32 * x;
 }
 
 static int CalculateYOffset(int x, int y, int stride) {
@@ -274,7 +261,7 @@ void CopyRGB32Rect(const uint8* source_buffer,
            source_stride,
            dest_buffer + dest_offset,
            dest_stride,
-           GetBytesPerPixel(media::VideoFrame::RGB32),
+           kBytesPerPixelRGB32,
            SkIRect::MakeWH(dest_rect.width(), dest_rect.height()));
 }
 

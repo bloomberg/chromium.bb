@@ -971,8 +971,6 @@
         '../media/media.gyp:media',
       ],
       'sources': [
-        'host/capturer_fake_ascii.cc',
-        'host/capturer_fake_ascii.h',
         'host/continue_window.h',
         'host/continue_window_mac.mm',
         'host/continue_window_linux.cc',
