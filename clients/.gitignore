@@ -10,15 +10,15 @@ libtoytoolkit.a
 resizor
 screenshooter-client-protocol.h
 screenshooter-protocol.c
-screenshot
 simple-egl
 simple-shm
 simple-touch
 smoke
 tablet-shell-client-protocol.h
 tablet-shell-protocol.c
-terminal
 view
 weston-desktop-shell
 weston-tablet-shell
+weston-screenshooter
+weston-terminal
 wscreensaver
