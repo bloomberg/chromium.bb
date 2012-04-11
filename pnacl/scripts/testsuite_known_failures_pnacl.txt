@@ -27,7 +27,6 @@ spirit arm
 AMGmk arm
 flops arm
 CrystalMk arm
-lpbench arm
 # wrong output on ARM (a time? really?)
 stepanov_v1p2 arm
 # has stderr ordering problem, but also extraneous "<<" in output
