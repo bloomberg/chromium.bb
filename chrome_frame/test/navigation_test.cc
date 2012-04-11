@@ -186,8 +186,7 @@ TEST_P(FullTabNavigationTest, DISABLED_MultipleBackForward) {
           VerifyAddressBarUrl(&ie_mock_),
           CloseBrowserMock(&ie_mock_)));
 
-  LaunchIENavigateAndLoop(page1,
-                          kChromeFrameLongNavigationTimeoutInSeconds * 2);
+  LaunchIENavigateAndLoop(page1, kChromeFrameLongNavigationTimeout * 2);
 }
 
 // Test multiple back and forward operations among urls with anchors.
@@ -363,8 +362,7 @@ TEST_P(FullTabNavigationTest, DISABLED_JavascriptWindowOpenDifferentDomain) {
       .WillOnce(CloseBrowserMock(&ie_mock_));
 
   // OnNavigateError can take a long time to fire.
-  LaunchIENavigateAndLoop(parent_url,
-                          kChromeFrameLongNavigationTimeoutInSeconds * 4);
+  LaunchIENavigateAndLoop(parent_url, kChromeFrameLongNavigationTimeout * 4);
   ASSERT_TRUE(new_window_mock.event_sink()->web_browser2() != NULL);
 }
 
@@ -403,8 +401,7 @@ TEST_P(FullTabNavigationTest, JavascriptWindowOpenCanClose) {
   EXPECT_CALL(new_window_mock, OnQuit())
       .WillOnce(CloseBrowserMock(&ie_mock_));
 
-  LaunchIENavigateAndLoop(parent_url,
-                          kChromeFrameLongNavigationTimeoutInSeconds * 2);
+  LaunchIENavigateAndLoop(parent_url, kChromeFrameLongNavigationTimeout * 2);
 }
 
 // Parameter for tests using the NavigationTransitionTest fixture. Includes two
@@ -506,8 +503,7 @@ TEST_P(NavigationTransitionTest, JavascriptWindowOpen) {
   EXPECT_CALL(new_window_mock, OnQuit())
       .WillOnce(CloseBrowserMock(&ie_mock_));
 
-  LaunchIENavigateAndLoop(parent_url,
-                          kChromeFrameLongNavigationTimeoutInSeconds * 2);
+  LaunchIENavigateAndLoop(parent_url, kChromeFrameLongNavigationTimeout * 2);
 }
 
 // Test redirection with window.location in Javascript.
@@ -863,8 +859,7 @@ TEST_F(FullTabDownloadTest, CF_DownloadFileFromPost) {
             testing::InvokeWithoutArgs(
                 testing::CreateFunctor(CloseWindow, &owner_window)),
             CloseBrowserMock(&ie_mock_)));
-  LaunchIENavigateAndLoop(src_url,
-                          kChromeFrameVeryLongNavigationTimeoutInSeconds);
+  LaunchIENavigateAndLoop(src_url, kChromeFrameVeryLongNavigationTimeout);
 
   std::string data;
   EXPECT_TRUE(file_util::ReadFileToString(temp_file_path, &data));
@@ -970,8 +965,7 @@ TEST_P(FullTabNavigationTest, RefreshContents) {
       .WillOnce(DelayRefresh(&ie_mock_, &loop_, 50))
       .WillOnce(CloseBrowserMock(&ie_mock_));
 
-  LaunchIENavigateAndLoop(src_url,
-                          kChromeFrameVeryLongNavigationTimeoutInSeconds);
+  LaunchIENavigateAndLoop(src_url, kChromeFrameVeryLongNavigationTimeout);
 }
 
 class FullTabSeleniumTest
@@ -1042,7 +1036,7 @@ TEST_F(FullTabSeleniumTest, DISABLED_Core) {
                                CloseBrowserMock(&ie_mock_)));
 
   // Selenium tests take longer to finish, lets give it 2 mins.
-  const int kSeleniumTestTimeout = 120;
+  const base::TimeDelta kSeleniumTestTimeout = base::TimeDelta::FromMinutes(2);
   LaunchIENavigateAndLoop(url, kSeleniumTestTimeout);
 }
 
@@ -1120,8 +1114,7 @@ TEST_F(FullTabDownloadTest, TopLevelPostReissueFromChromeFramePage) {
                               StrEq(tgt_url))))
       .Times(2);
 
-  LaunchIENavigateAndLoop(src_url,
-                          kChromeFrameVeryLongNavigationTimeoutInSeconds);
+  LaunchIENavigateAndLoop(src_url, kChromeFrameVeryLongNavigationTimeout);
 }
 
 MATCHER_P(UserAgentHeaderMatcher, ua_string, "") {
@@ -1204,8 +1197,7 @@ TEST_P(FullTabNavigationTest, RefreshContentsUATest) {
         .WillOnce(DelayRefresh(&ie_mock_, &loop_, 50));
   }
 
-  LaunchIENavigateAndLoop(src_url,
-                          kChromeFrameVeryLongNavigationTimeoutInSeconds);
+  LaunchIENavigateAndLoop(src_url, kChromeFrameVeryLongNavigationTimeout);
 }
 
 // Link navigations in the same domain specified with the noreferrer flag
@@ -1287,8 +1279,7 @@ TEST_F(FullTabNavigationTest, JavascriptWindowOpenNoReferrerOpensInHost) {
   EXPECT_CALL(no_referrer_target_opener_window_mock, OnQuit())
       .WillOnce(CloseBrowserMock(&ie_mock_));
 
-  LaunchIENavigateAndLoop(initial_url,
-                          kChromeFrameVeryLongNavigationTimeoutInSeconds);
+  LaunchIENavigateAndLoop(initial_url, kChromeFrameVeryLongNavigationTimeout);
 }
 
 }  // namespace chrome_frame_test

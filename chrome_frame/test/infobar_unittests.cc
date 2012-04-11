@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -536,7 +536,8 @@ TEST(InfobarsInfobarWindowTest, SlidingTest) {
 
   ASSERT_NO_FATAL_FAILURE(check.Call("returned from Show"));
 
-  ASSERT_NO_FATAL_FAILURE(message_loop.RunFor(10));  // seconds
+  ASSERT_NO_FATAL_FAILURE(message_loop.RunFor(
+      base::TimeDelta::FromSeconds(10)));
 
   window.DestroyWindow();
 
@@ -592,7 +593,7 @@ TEST(InfobarsInfobarManagerTest, BasicTest) {
 
   ASSERT_TRUE(manager->Show(content, TOP_INFOBAR));
 
-  message_loop.RunFor(10);  // seconds
+  message_loop.RunFor(base::TimeDelta::FromSeconds(10));
 
   window.DestroyWindow();
 

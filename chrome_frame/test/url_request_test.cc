@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,7 +20,7 @@
 
 using testing::CreateFunctor;
 
-const int kChromeFrameLongNavigationTimeoutInSeconds = 10;
+using chrome_frame_test::kChromeFrameLongNavigationTimeout;
 
 static void AppendToStream(IStream* s, void* buffer, ULONG cb) {
   ULONG bytes_written;
@@ -106,10 +106,10 @@ TEST(UrlmonUrlRequestTest, Simple1) {
 
   EXPECT_CALL(mock, OnResponseEnd(1, testing::_))
     .Times(1)
-    .WillOnce(QUIT_LOOP_SOON(loop, 2));
+    .WillOnce(QUIT_LOOP_SOON(loop, base::TimeDelta::FromSeconds(2)));
 
   request.Start();
-  loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
+  loop.RunFor(kChromeFrameLongNavigationTimeout);
   request.Release();
 }
 
@@ -151,10 +151,10 @@ TEST(UrlmonUrlRequestTest, Head) {
 
   EXPECT_CALL(mock, OnResponseEnd(1, testing::_))
     .Times(1)
-    .WillOnce(QUIT_LOOP_SOON(loop, 2));
+    .WillOnce(QUIT_LOOP_SOON(loop, base::TimeDelta::FromSeconds(2)));
 
   request.Start();
-  loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
+  loop.RunFor(kChromeFrameLongNavigationTimeout);
   request.Release();
 }
 
@@ -187,7 +187,7 @@ TEST(UrlmonUrlRequestTest, UnreachableUrl) {
                                       testing::_, testing::_, testing::_,
                                       testing::_, testing::_))
     .Times(1)
-    .WillOnce(QUIT_LOOP_SOON(loop, 2));
+    .WillOnce(QUIT_LOOP_SOON(loop, base::TimeDelta::FromSeconds(2)));
 
   EXPECT_CALL(mock, OnResponseEnd(1, testing::Property(
               &net::URLRequestStatus::error,
@@ -195,7 +195,7 @@ TEST(UrlmonUrlRequestTest, UnreachableUrl) {
     .Times(testing::AtMost(1));
 
   request.Start();
-  loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
+  loop.RunFor(kChromeFrameLongNavigationTimeout);
   request.Release();
 }
 
@@ -228,12 +228,12 @@ TEST(UrlmonUrlRequestTest, ZeroLengthResponse) {
     .WillOnce(QUIT_LOOP(loop));
 
   request.Start();
-  loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
+  loop.RunFor(kChromeFrameLongNavigationTimeout);
   EXPECT_FALSE(loop.WasTimedOut());
 
   // Should stay quiet, since we do not ask for anything for awhile.
   EXPECT_CALL(mock, OnResponseEnd(1, testing::_)).Times(0);
-  loop.RunFor(3);
+  loop.RunFor(base::TimeDelta::FromSeconds(3));
 
   // Invoke read. Only now the response end ("server closed the connection")
   // is supposed to be delivered.
@@ -283,10 +283,10 @@ TEST(UrlmonUrlRequestManagerTest, Simple1) {
 
   EXPECT_CALL(mock, OnResponseEnd(1, testing::_))
     .Times(1)
-    .WillOnce(QUIT_LOOP_SOON(loop, 2));
+    .WillOnce(QUIT_LOOP_SOON(loop, base::TimeDelta::FromSeconds(2)));
 
   mgr->StartUrlRequest(1, r1);
-  loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
+  loop.RunFor(kChromeFrameLongNavigationTimeout);
   mgr.reset();
 }
 
@@ -311,7 +311,7 @@ TEST(UrlmonUrlRequestManagerTest, Abort1) {
     .Times(1)
     .WillOnce(testing::DoAll(
         ManagerEndRequest(&loop, mgr.get(), 1),
-        QUIT_LOOP_SOON(loop, 3)));
+        QUIT_LOOP_SOON(loop, base::TimeDelta::FromSeconds(3))));
 
   EXPECT_CALL(mock, OnReadComplete(1, testing::_))
     .Times(0);
@@ -320,6 +320,6 @@ TEST(UrlmonUrlRequestManagerTest, Abort1) {
     .Times(0);
 
   mgr->StartUrlRequest(1, r1);
-  loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
+  loop.RunFor(kChromeFrameLongNavigationTimeout);
   mgr.reset();
 }

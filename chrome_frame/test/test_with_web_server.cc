@@ -24,8 +24,8 @@
 #include "net/base/mime_util.h"
 #include "net/http/http_util.h"
 
-using chrome_frame_test::kChromeFrameLongNavigationTimeoutInSeconds;
-using chrome_frame_test::kChromeFrameVeryLongNavigationTimeoutInSeconds;
+using chrome_frame_test::kChromeFrameLongNavigationTimeout;
+using chrome_frame_test::kChromeFrameVeryLongNavigationTimeout;
 
 using testing::_;
 using testing::StrCaseEq;
@@ -201,8 +201,9 @@ bool ChromeFrameTestWithWebServer::BringBrowserToTop() {
       GetProcessId(browser_handle_));
 }
 
-bool ChromeFrameTestWithWebServer::WaitForTestToComplete(int milliseconds) {
-  loop_.RunFor(milliseconds/1000);
+bool ChromeFrameTestWithWebServer::WaitForTestToComplete(
+    base::TimeDelta duration) {
+  loop_.RunFor(duration);
   return true;
 }
 
@@ -217,7 +218,7 @@ void ChromeFrameTestWithWebServer::SimpleBrowserTestExpectedResult(
   server_mock_.ExpectAndHandlePostedResult(CFInvocation(CFInvocation::NONE),
                                            kPostedResultSubstring);
   ASSERT_TRUE(LaunchBrowser(browser, page));
-  WaitForTestToComplete(TestTimeouts::action_max_timeout_ms());
+  WaitForTestToComplete(TestTimeouts::action_max_timeout());
   ASSERT_EQ(result, server_mock_.posted_result());
 }
 
@@ -264,7 +265,7 @@ void ChromeFrameTestWithWebServer::VersionTest(BrowserKind browser,
   server_mock_.ExpectAndHandlePostedResult(CFInvocation(CFInvocation::NONE),
                                            kPostedResultSubstring);
   EXPECT_TRUE(LaunchBrowser(browser, page));
-  WaitForTestToComplete(TestTimeouts::action_max_timeout_ms());
+  WaitForTestToComplete(TestTimeouts::action_max_timeout());
   ASSERT_EQ(version, UTF8ToWide(server_mock_.posted_result()));
 }
 
@@ -669,7 +670,7 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_InstallFlowTest) {
 
     ASSERT_TRUE(LaunchBrowser(IE, kInstallFlowTestUrl));
 
-    loop_.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
+    loop_.RunFor(kChromeFrameLongNavigationTimeout);
 
     ScopedChromeFrameRegistrar::RegisterAtPath(
         GetChromeFrameBuildPath().value(),
@@ -677,7 +678,7 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_InstallFlowTest) {
 
     server_mock_.ExpectAndHandlePostedResult(CFInvocation(CFInvocation::NONE),
                                              kPostedResultSubstring);
-    loop_.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
+    loop_.RunFor(kChromeFrameLongNavigationTimeout);
 
     chrome_frame_test::CloseAllIEWindows();
     ASSERT_EQ("OK", server_mock_.posted_result());
@@ -728,7 +729,7 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_TestPostReissue) {
 
   ASSERT_TRUE(LaunchBrowser(IE, server.FormatHttpPath(kPages[0]).c_str()));
 
-  loop_.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
+  loop_.RunFor(kChromeFrameLongNavigationTimeout);
 
   const test_server::Request* request = NULL;
   server.FindRequest("/quit?OK", &request);
@@ -760,7 +761,7 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_TestMultipleGet) {
 
   ASSERT_TRUE(LaunchBrowser(IE, server.FormatHttpPath(kPages[0]).c_str()));
 
-  loop_.RunFor(kChromeFrameVeryLongNavigationTimeoutInSeconds);
+  loop_.RunFor(kChromeFrameVeryLongNavigationTimeout);
 
   const test_server::Request* request = NULL;
   server.FindRequest("/quit?OK", &request);
@@ -878,7 +879,7 @@ TEST_F(ChromeFrameTestWithWebServer, FAILS_FullTabModeIE_RefreshMshtmlTest) {
 
   ASSERT_TRUE(LaunchBrowser(IE, server.FormatHttpPath(kPages[0]).c_str()));
 
-  loop_.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
+  loop_.RunFor(kChromeFrameLongNavigationTimeout);
 
   test_server::SimpleWebServer* ws = server.web_server();
   const test_server::ConnectionList& connections = ws->connections();
@@ -1019,7 +1020,7 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_TestDownloadFromForm) {
   std::wstring url(server.FormatHttpPath(L"form.html"));
 
   ASSERT_TRUE(LaunchBrowser(IE, url.c_str()));
-  loop_.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
+  loop_.RunFor(kChromeFrameLongNavigationTimeout);
 
   EXPECT_EQ(1, response->get_request_count());
   EXPECT_EQ(1, response->post_request_count());

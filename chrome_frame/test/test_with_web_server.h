@@ -152,7 +152,8 @@ class ChromeFrameTestWithWebServer : public testing::Test {
   enum BrowserKind { INVALID, IE, CHROME };
 
   bool LaunchBrowser(BrowserKind browser, const wchar_t* url);
-  bool WaitForTestToComplete(int milliseconds);
+  bool WaitForTestToComplete(base::TimeDelta duration);
+
   // Waits for the page to notify us of the window.onload event firing.
   // Note that the milliseconds value is only approximate.
   bool WaitForOnLoad(int milliseconds);

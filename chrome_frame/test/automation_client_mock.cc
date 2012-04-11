@@ -23,9 +23,9 @@ using testing::Return;
 namespace {
 
 #ifndef NDEBUG
-const int kChromeLaunchTimeout = 15;
+const base::TimeDelta kChromeLaunchTimeout = base::TimeDelta::FromSeconds(15);
 #else
-const int kChromeLaunchTimeout = 10;
+const base::TimeDelta kChromeLaunchTimeout = base::TimeDelta::FromSeconds(10);
 #endif
 
 const int kSaneAutomationTimeoutMs = 10 * 1000;
@@ -231,7 +231,7 @@ TEST_F(CFACWithChrome, NavigateFailed) {
 
   EXPECT_CALL(cfd_, OnNavigationFailed(_, GURL(url)))
       .Times(1)
-      .WillOnce(QUIT_LOOP_SOON(loop_, 2));
+      .WillOnce(QUIT_LOOP_SOON(loop_, base::TimeDelta::FromSeconds(2)));
 
   EXPECT_TRUE(client_->Initialize(&cfd_, launch_params_));
 
@@ -270,7 +270,7 @@ TEST_F(CFACMockTest, MockedCreateTabOk) {
   clp->set_launch_timeout(timeout);
   clp->set_version_check(false);
   EXPECT_TRUE(client_->Initialize(&cfd_, clp));
-  loop_.RunFor(10);
+  loop_.RunFor(base::TimeDelta::FromSeconds(10));
 
   EXPECT_CALL(mock_proxy_, ReleaseTabProxy(testing::Eq(tab_handle_))).Times(1);
   client_->Uninitialize();
@@ -303,7 +303,7 @@ TEST_F(CFACMockTest, MockedCreateTabFailed) {
   clp->set_launch_timeout(timeout_);
   clp->set_version_check(false);
   EXPECT_TRUE(client_->Initialize(&cfd_, clp));
-  loop_.RunFor(4);
+  loop_.RunFor(base::TimeDelta::FromSeconds(4));
   client_->Uninitialize();
 }
 
@@ -334,6 +334,7 @@ TEST_F(CFACMockTest, OnChannelErrorEmpty) {
 }
 
 TEST_F(CFACMockTest, OnChannelError) {
+  const base::TimeDelta loop_duration = base::TimeDelta::FromSeconds(11);
   TestChromeFrameAutomationProxyImpl proxy;
   returned_proxy_ = &proxy;
 
@@ -365,12 +366,12 @@ TEST_F(CFACMockTest, OnChannelError) {
   EXPECT_CALL(cfd1, OnAutomationServerReady()).WillOnce(QUIT_LOOP(loop_));
   EXPECT_TRUE(client1->Initialize(&cfd1, clp));
   // Wait for OnAutomationServerReady to be called in the UI thread.
-  loop_.RunFor(11);
+  loop_.RunFor(loop_duration);
 
   proxy.FakeChannelError();
   EXPECT_CALL(cfd1, OnChannelError()).WillOnce(QUIT_LOOP(loop_));
   // Wait for OnChannelError to be propagated to delegate from the UI thread.
-  loop_.RunFor(11);
+  loop_.RunFor(loop_duration);
 
   // Add a second tab using a different delegate.
   StrictMock<MockCFDelegate> cfd2;
@@ -381,13 +382,13 @@ TEST_F(CFACMockTest, OnChannelError) {
   EXPECT_CALL(cfd2, OnAutomationServerReady()).WillOnce(QUIT_LOOP(loop_));
   EXPECT_TRUE(client2->Initialize(&cfd2, clp));
   // Wait for OnAutomationServerReady to be called in the UI thread.
-  loop_.RunFor(11);
+  loop_.RunFor(loop_duration);
 
   EXPECT_CALL(cfd1, OnChannelError()).Times(1);
   EXPECT_CALL(cfd2, OnChannelError()).WillOnce(QUIT_LOOP(loop_));
   proxy.FakeChannelError();
   // Wait for OnChannelError to be propagated to delegate from the UI thread.
-  loop_.RunFor(11);
+  loop_.RunFor(loop_duration);
 
   // And now a 3rd tab using the first delegate.
   scoped_refptr<ChromeFrameAutomationClient> client3;
@@ -397,14 +398,14 @@ TEST_F(CFACMockTest, OnChannelError) {
   EXPECT_CALL(cfd1, OnAutomationServerReady()).WillOnce(QUIT_LOOP(loop_));
   EXPECT_TRUE(client3->Initialize(&cfd1, clp));
   // Wait for OnAutomationServerReady to be called in the UI thread.
-  loop_.RunFor(11);
+  loop_.RunFor(loop_duration);
 
   EXPECT_CALL(cfd2, OnChannelError()).Times(1);
   EXPECT_CALL(cfd1, OnChannelError()).Times(2).WillOnce(Return())
       .WillOnce(QUIT_LOOP(loop_));
   proxy.FakeChannelError();
   // Wait for OnChannelError to be propagated to delegate from the UI thread.
-  loop_.RunFor(11);
+  loop_.RunFor(loop_duration);
 
   // Cleanup.
   client1->Uninitialize();
@@ -464,7 +465,7 @@ TEST_F(CFACMockTest, NavigateTwiceAfterInitToSameUrl) {
   launch_params->set_launch_timeout(timeout);
   launch_params->set_version_check(false);
   EXPECT_TRUE(client_->Initialize(&cfd_, launch_params));
-  loop_.RunFor(10);
+  loop_.RunFor(base::TimeDelta::FromSeconds(10));
 
   EXPECT_CALL(mock_proxy_, ReleaseTabProxy(testing::Eq(tab_handle_))).Times(1);
   client_->Uninitialize();

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -219,7 +219,7 @@ class PageLoadTest : public testing::Test {
     ie_event_sink.Attach(web_browser2);
     hr = ie_event_sink.Navigate(UTF8ToWide(url.spec()));
     if (SUCCEEDED(hr)) {
-      message_loop.RunFor(g_timeout_seconds);
+      message_loop.RunFor(base::TimeDelta::FromSeconds(g_timeout_seconds));
       if (!message_loop.WasTimedOut())
         metrics.result = NAVIGATION_SUCCESS;
     }

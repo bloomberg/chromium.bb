@@ -17,6 +17,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/process_util.h"
+#include "base/time.h"
 #include "base/test/test_reg_util_win.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_comptr.h"
@@ -53,8 +54,8 @@ extern const wchar_t kIEImageName[];
 extern const wchar_t kIEBrokerImageName[];
 extern const char kChromeImageName[];
 extern const wchar_t kChromeLauncher[];
-extern const int kChromeFrameLongNavigationTimeoutInSeconds;
-extern const int kChromeFrameVeryLongNavigationTimeoutInSeconds;
+extern const base::TimeDelta kChromeFrameLongNavigationTimeout;
+extern const base::TimeDelta kChromeFrameVeryLongNavigationTimeout;
 
 // Temporarily impersonate the current thread to low integrity for the lifetime
 // of the object. Destructor will automatically revert integrity level.
@@ -191,8 +192,8 @@ class TimedMsgLoop {
   TimedMsgLoop() : quit_loop_invoked_(false) {
   }
 
-  void RunFor(int seconds) {
-    QuitAfter(seconds);
+  void RunFor(base::TimeDelta duration) {
+    QuitAfter(duration);
     quit_loop_invoked_ = false;
     loop_.MessageLoop::Run();
   }
@@ -208,13 +209,12 @@ class TimedMsgLoop {
   }
 
   void Quit() {
-    QuitAfter(0);
+    QuitAfter(base::TimeDelta());
   }
 
-  void QuitAfter(int seconds) {
+  void QuitAfter(base::TimeDelta delay) {
     quit_loop_invoked_ = true;
-    loop_.PostDelayedTask(
-        FROM_HERE, MessageLoop::QuitClosure(), 1000 * seconds);
+    loop_.PostDelayedTask(FROM_HERE, MessageLoop::QuitClosure(), delay);
   }
 
   bool WasTimedOut() const {
@@ -232,9 +232,9 @@ class TimedMsgLoop {
 #define QUIT_LOOP(loop) testing::InvokeWithoutArgs(\
   testing::CreateFunctor(&loop, &chrome_frame_test::TimedMsgLoop::Quit))
 
-#define QUIT_LOOP_SOON(loop, seconds) testing::InvokeWithoutArgs(\
+#define QUIT_LOOP_SOON(loop, delay) testing::InvokeWithoutArgs(\
   testing::CreateFunctor(&loop, &chrome_frame_test::TimedMsgLoop::QuitAfter, \
-  seconds))
+                         delay))
 
 // Launches IE as a COM server and returns the corresponding IWebBrowser2
 // interface pointer.

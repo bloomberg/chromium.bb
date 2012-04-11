@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,7 +31,8 @@ using testing::DoAll;
 using testing::WithArgs;
 
 
-static int kUrlmonMonikerTimeoutSec = 5;
+static const base::TimeDelta kUrlmonMonikerTimeout =
+     base::TimeDelta::FromSeconds(5);
 
 namespace {
 const char kTestContent[] = "<html><head>"
@@ -81,7 +82,7 @@ class RunTestServer : public base::Thread {
   }
 
   bool wait_until_ready() {
-    return ::WaitForSingleObject(ready_, kUrlmonMonikerTimeoutSec * 1000)
+    return ::WaitForSingleObject(ready_, kUrlmonMonikerTimeout.InMilliseconds())
            == WAIT_OBJECT_0;
   }
 
@@ -250,7 +251,7 @@ TEST_F(UrlmonMonikerTest, BindToStorageAsynchronous) {
   HRESULT hr = callback.CreateUrlMonikerAndBindToStorage(test_url,
                                                          bind_ctx.Receive());
   EXPECT_EQ(MK_S_ASYNCHRONOUS, hr);
-  test.loop().RunFor(kUrlmonMonikerTimeoutSec);
+  test.loop().RunFor(kUrlmonMonikerTimeout);
 
   IBindCtx* release = bind_ctx.Detach();
   EXPECT_EQ(0, release->Release());
@@ -288,7 +289,7 @@ TEST_F(UrlmonMonikerTest, BindToStorageSwitchContent) {
 
   HRESULT hr = callback.CreateUrlMonikerAndBindToStorage(test_url, NULL);
   EXPECT_EQ(MK_S_ASYNCHRONOUS, hr);
-  test.loop().RunFor(kUrlmonMonikerTimeoutSec);
+  test.loop().RunFor(kUrlmonMonikerTimeout);
 
   scoped_refptr<RequestData> request_data(
       test.nav_manager().GetActiveRequestData(test_url));
@@ -332,7 +333,7 @@ TEST_F(UrlmonMonikerTest, BindToStorageCachedContent) {
 
   HRESULT hr = callback.CreateUrlMonikerAndBindToStorage(test_url, NULL);
   EXPECT_EQ(MK_S_ASYNCHRONOUS, hr);
-  test.loop().RunFor(kUrlmonMonikerTimeoutSec);
+  test.loop().RunFor(kUrlmonMonikerTimeout);
 
   scoped_refptr<RequestData> request_data(
       test.nav_manager().GetActiveRequestData(test_url));

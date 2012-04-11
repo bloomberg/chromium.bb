@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -43,8 +43,7 @@ TEST_P(ChromeFrameSitesTest, LoadSite) {
           VerifyAddressBarUrl(&ie_mock_),
           CloseBrowserMock(&ie_mock_)));
 
-  LaunchIENavigateAndLoop(GetParam(),
-                          kChromeFrameLongNavigationTimeoutInSeconds * 2);
+  LaunchIENavigateAndLoop(GetParam(), kChromeFrameLongNavigationTimeout * 2);
 }
 
 }  // namespace chrome_frame_test

@@ -292,7 +292,8 @@ class MockIEEventSinkTest {
   void LaunchIEAndNavigate(const std::wstring& url);
 
   // Same as above but allows the timeout to be specified.
-  void LaunchIENavigateAndLoop(const std::wstring& url, int timeout);
+  void LaunchIENavigateAndLoop(const std::wstring& url,
+                               base::TimeDelta timeout);
 
   // Returns the url for the test file given. |relative_path| should be
   // relative to the test data directory.

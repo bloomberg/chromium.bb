@@ -103,8 +103,7 @@ TEST_P(FullTabUITest, DISABLED_KeyboardBackForward) {
   EXPECT_CALL(ie_mock_, OnLoad(in_cf, StrEq(page2)))
       .WillOnce(CloseBrowserMock(&ie_mock_));
 
-  LaunchIENavigateAndLoop(page1,
-                          kChromeFrameVeryLongNavigationTimeoutInSeconds);
+  LaunchIENavigateAndLoop(page1, kChromeFrameVeryLongNavigationTimeout);
 }
 
 // Tests new window behavior with ctrl+N.
@@ -142,7 +141,7 @@ TEST_P(FullTabUITest, CtrlN) {
       .Times(testing::AtMost(2));
 
   LaunchIENavigateAndLoop(GetSimplePageUrl(),
-                          kChromeFrameVeryLongNavigationTimeoutInSeconds);
+                          kChromeFrameVeryLongNavigationTimeout);
 }
 
 // Test that Ctrl+F opens the Find dialog.
@@ -172,7 +171,7 @@ TEST_P(FullTabUITest, CtrlF) {
       .WillOnce(CloseBrowserMock(&ie_mock_));
 
   LaunchIENavigateAndLoop(GetSimplePageUrl(),
-                          kChromeFrameVeryLongNavigationTimeoutInSeconds);
+                          kChromeFrameVeryLongNavigationTimeout);
 }
 
 // Test that ctrl+r does cause a refresh.
@@ -196,7 +195,7 @@ TEST_P(FullTabUITest, CtrlR) {
       .WillRepeatedly(testing::Return());
 
   LaunchIENavigateAndLoop(GetSimplePageUrl(),
-                          kChromeFrameVeryLongNavigationTimeoutInSeconds);
+                          kChromeFrameVeryLongNavigationTimeout);
 }
 
 // Test window close with ctrl+w.
@@ -213,7 +212,7 @@ TEST_P(FullTabUITest, CtrlW) {
           DelaySendChar(&loop_, 1000, 'w', simulate_input::CONTROL)));
 
   LaunchIENavigateAndLoop(GetSimplePageUrl(),
-                          kChromeFrameVeryLongNavigationTimeoutInSeconds);
+                          kChromeFrameVeryLongNavigationTimeout);
 }
 
 // Test address bar navigation with Alt+d and URL.
@@ -234,7 +233,7 @@ TEST_P(FullTabUITest, AltD) {
       .WillOnce(CloseBrowserMock(&ie_mock_));
 
   LaunchIENavigateAndLoop(GetSimplePageUrl(),
-                          kChromeFrameVeryLongNavigationTimeoutInSeconds);
+                          kChromeFrameVeryLongNavigationTimeout);
 }
 
 // Tests that the renderer has focus after navigation.
@@ -459,7 +458,7 @@ class ContextMenuTest : public MockIEEventSinkTest, public testing::Test {
         .WillOnce(CloseWhenFileSaved(&ie_mock_, temp_file_path, 8000));
 
     LaunchIENavigateAndLoop(GetTestUrl(L"save_as_context_menu.html"),
-                            kChromeFrameVeryLongNavigationTimeoutInSeconds);
+                            kChromeFrameVeryLongNavigationTimeout);
     ASSERT_TRUE(file_util::DieFileDie(temp_file_path, false));
   }
 
@@ -585,7 +584,7 @@ TEST_F(ContextMenuTest, CFInspector) {
       .WillOnce(CloseBrowserMock(&ie_mock_));
 
   LaunchIENavigateAndLoop(GetSimplePageUrl(),
-                          kChromeFrameVeryLongNavigationTimeoutInSeconds);
+                          kChromeFrameVeryLongNavigationTimeout);
 }
 
 // http://code.google.com/p/chromium/issues/detail?id=83114
@@ -1030,8 +1029,7 @@ TEST_F(ContextMenuTest, FLAKY_CFBackForward) {
   EXPECT_CALL(ie_mock_, OnLoad(IN_CF, StrEq(page3)))
       .WillOnce(CloseBrowserMock(&ie_mock_));
 
-  LaunchIENavigateAndLoop(page1,
-                          kChromeFrameVeryLongNavigationTimeoutInSeconds);
+  LaunchIENavigateAndLoop(page1, kChromeFrameVeryLongNavigationTimeout);
 }
 
 }  // namespace chrome_frame_test

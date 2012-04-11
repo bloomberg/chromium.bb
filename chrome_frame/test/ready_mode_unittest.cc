@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -213,7 +213,8 @@ class ReadyPromptWindowButtonTest : public ReadyPromptWindowTest {
 
   void RunUntilCloseInfobar() {
     EXPECT_CALL(frame_, CloseInfobar()).WillOnce(QUIT_LOOP(message_loop_));
-    ASSERT_NO_FATAL_FAILURE(message_loop_.RunFor(5));  // seconds
+    ASSERT_NO_FATAL_FAILURE(message_loop_.RunFor(
+        base::TimeDelta::FromSeconds(5)));
   }
 
   chrome_frame_test::TimedMsgLoop message_loop_;

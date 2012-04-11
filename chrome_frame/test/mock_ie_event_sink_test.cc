@@ -192,15 +192,15 @@ MockIEEventSinkTest::MockIEEventSinkTest(int port, const std::wstring& address,
 }
 
 void MockIEEventSinkTest::LaunchIEAndNavigate(const std::wstring& url) {
-  LaunchIENavigateAndLoop(url, kChromeFrameLongNavigationTimeoutInSeconds);
+  LaunchIENavigateAndLoop(url, kChromeFrameLongNavigationTimeout);
 }
 
 void MockIEEventSinkTest::LaunchIENavigateAndLoop(const std::wstring& url,
-                                                  int timeout) {
+                                                  base::TimeDelta timeout) {
   if (GetInstalledIEVersion() >= IE_8) {
     chrome_frame_test::ClearIESessionHistory();
   }
-  hung_call_detector_ = HungCOMCallDetector::Setup(timeout);
+  hung_call_detector_ = HungCOMCallDetector::Setup(ceil(timeout.InSecondsF()));
   EXPECT_TRUE(hung_call_detector_ != NULL);
 
   IEEventSink::SetAbnormalShutdown(false);
