@@ -11,8 +11,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/timer.h"
 #include "googleurl/src/gurl.h"
-#include "media/base/seekable_buffer.h"
-#include "net/base/file_stream.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLLoader.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLLoaderClient.h"
@@ -21,6 +19,7 @@
 
 namespace media {
 class MediaLog;
+class SeekableBuffer;
 }
 
 namespace webkit_media {
@@ -46,6 +45,25 @@ class BufferedResourceLoader : public WebKit::WebURLLoaderClient {
     kThresholdDefer,
   };
 
+  // Status codes for start/read operations on BufferedResourceLoader.
+  enum Status {
+    // Everything went as planned.
+    kOK,
+
+    // The operation failed, which may have been due to:
+    //   - Page navigation
+    //   - Server replied 4xx/5xx
+    //   - The response was invalid
+    //   - Connection was terminated
+    //
+    // At this point you should delete the loader.
+    kFailed,
+
+    // The loader will never be able to satisfy the read request. Please stop,
+    // delete, create a new loader, and try again.
+    kCacheMiss,
+  };
+
   // |url| - URL for the resource to be loaded.
   // |first_byte_position| - First byte to start loading from,
   // |kPositionNotSpecified| for not specified.
@@ -64,20 +82,15 @@ class BufferedResourceLoader : public WebKit::WebURLLoaderClient {
   virtual ~BufferedResourceLoader();
 
   // Start the resource loading with the specified URL and range.
-  // This method operates in asynchronous mode. Once there's a response from the
-  // server, success or fail |callback| is called with the result.
-  // |callback| is called with the following values:
-  // - net::OK
-  //   The request has started successfully.
-  // - net::ERR_FAILED
-  //   The request has failed because of an error with the network.
-  // - net::ERR_INVALID_RESPONSE
-  //   An invalid response is received from the server.
-  // - (Anything else)
-  //   An error code that indicates the request has failed.
-  // |event_cb| is called when the response is completed, data is received, the
-  // request is suspended or resumed.
-  virtual void Start(const net::CompletionCallback& start_cb,
+  //
+  // |event_cb| is called to notify the client of network activity in the
+  // following situations:
+  //   - Data was received
+  //   - Reading was suspended/resumed
+  //   - Loading completed
+  //   - Loading failed
+  typedef base::Callback<void(Status)> StartCB;
+  virtual void Start(const StartCB& start_cb,
                      const base::Closure& event_cb,
                      WebKit::WebFrame* frame);
 
@@ -87,19 +100,17 @@ class BufferedResourceLoader : public WebKit::WebURLLoaderClient {
   // It is safe to delete a BufferedResourceLoader after calling Stop().
   virtual void Stop();
 
-  // Reads the specified |read_size| from |position| into |buffer| and when
-  // the operation is done invoke |callback| with number of bytes read or an
-  // error code. If necessary, will temporarily increase forward capacity of
-  // buffer to accomodate an unusually large read.
-  // |callback| is called with the following values:
-  // - (Anything greater than or equal 0)
-  //   Read was successful with the indicated number of bytes read.
-  // - net::ERR_FAILED
-  //   The read has failed because of an error with the network.
-  // - net::ERR_CACHE_MISS
-  //   The read was made too far away from the current buffered position.
+  // Copies |read_size| bytes from |position| into |buffer|, executing |read_cb|
+  // when the operation has completed.
+  //
+  // The callback will contain the number of bytes read iff the status is kOK,
+  // zero otherwise.
+  //
+  // If necessary will temporarily increase forward capacity of buffer to
+  // accomodate an unusually large read.
+  typedef base::Callback<void(Status, int)> ReadCB;
   virtual void Read(int64 position, int read_size,
-                    uint8* buffer, const net::CompletionCallback& callback);
+                    uint8* buffer, const ReadCB& read_cb);
 
   // Returns the position of the last byte buffered. Returns
   // |kPositionNotSpecified| if such value is not available.
@@ -229,10 +240,10 @@ class BufferedResourceLoader : public WebKit::WebURLLoaderClient {
 
   // Done with read. Invokes the read callback and reset parameters for the
   // read request.
-  void DoneRead(int error);
+  void DoneRead(Status status, int bytes_read);
 
   // Done with start. Invokes the start callback and reset it.
-  void DoneStart(int error);
+  void DoneStart(Status status);
 
   // Calls |event_cb_| in terms of a network event.
   void NotifyNetworkEvent();
@@ -269,14 +280,14 @@ class BufferedResourceLoader : public WebKit::WebURLLoaderClient {
   base::Closure event_cb_;
 
   // Members used during request start.
-  net::CompletionCallback start_cb_;
+  StartCB start_cb_;
   int64 offset_;
   int64 content_length_;
   int64 instance_size_;
 
   // Members used during a read operation. They should be reset after each
   // read has completed or failed.
-  net::CompletionCallback read_cb_;
+  ReadCB read_cb_;
   int64 read_position_;
   size_t read_size_;
   uint8* read_buffer_;

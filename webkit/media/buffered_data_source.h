@@ -109,8 +109,10 @@ class BufferedDataSource : public media::DataSource {
   // the render thread.
   void ReadInternal();
 
-  // Calls |read_cb_| and reset all read parameters.
-  void DoneRead_Locked(int error);
+  // Calls |read_cb_| and reset all read parameters. Non-negative |bytes_read|
+  // values represent successful reads, otherwise |bytes_read| should be
+  // kReadError.
+  void DoneRead_Locked(int bytes_read);
 
   // Calls |initialize_cb_| and reset it.
   void DoneInitialization_Locked(media::PipelineStatus status);
@@ -118,23 +120,21 @@ class BufferedDataSource : public media::DataSource {
   // Callback method for |loader_| if URL for the resource requested is using
   // HTTP protocol. This method is called when response for initial request is
   // received.
-  void HttpInitialStartCallback(int error);
+  void HttpInitialStartCallback(BufferedResourceLoader::Status status);
 
   // Callback method for |loader_| if URL for the resource requested is using
   // a non-HTTP protocol, e.g. local files. This method is called when response
   // for initial request is received.
-  void NonHttpInitialStartCallback(int error);
+  void NonHttpInitialStartCallback(BufferedResourceLoader::Status status);
 
   // Callback method to be passed to BufferedResourceLoader during range
   // request. Once a resource request has started, this method will be called
   // with the error code. This method will be executed on the thread
   // BufferedResourceLoader lives, i.e. render thread.
-  void PartialReadStartCallback(int error);
+  void PartialReadStartCallback(BufferedResourceLoader::Status status);
 
   // Callback method for making a read request to BufferedResourceLoader.
-  // If data arrives or the request has failed, this method is called with
-  // the error code or the number of bytes read.
-  void ReadCallback(int error);
+  void ReadCallback(BufferedResourceLoader::Status status, int bytes_read);
 
   // Callback method when a network event is received.
   void NetworkEventCallback();

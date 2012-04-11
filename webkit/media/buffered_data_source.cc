@@ -228,7 +228,7 @@ void BufferedDataSource::CleanupTask() {
     stopped_on_render_loop_ = true;
 
     if (!read_cb_.is_null())
-      DoneRead_Locked(net::ERR_FAILED);
+      DoneRead_Locked(kReadError);
   }
 
   // We just need to stop the loader, so it stops activity.
@@ -321,21 +321,14 @@ void BufferedDataSource::ReadInternal() {
                 base::Bind(&BufferedDataSource::ReadCallback, this));
 }
 
-// Method to report the results of the current read request. Also reset all
-// the read parameters.
-void BufferedDataSource::DoneRead_Locked(int error) {
-  DVLOG(1) << "DoneRead: " << error << " bytes";
-
+void BufferedDataSource::DoneRead_Locked(int bytes_read) {
+  DVLOG(1) << "DoneRead: " << bytes_read << " bytes";
   DCHECK(MessageLoop::current() == render_loop_);
   DCHECK(!read_cb_.is_null());
+  DCHECK(bytes_read >= 0 || bytes_read == kReadError);
   lock_.AssertAcquired();
 
-  if (error >= 0) {
-    read_cb_.Run(error);
-  } else {
-    read_cb_.Run(kReadError);
-  }
-
+  read_cb_.Run(bytes_read);
   read_cb_.Reset();
   read_position_ = 0;
   read_size_ = 0;
@@ -354,12 +347,10 @@ void BufferedDataSource::DoneInitialization_Locked(
 
 /////////////////////////////////////////////////////////////////////////////
 // BufferedResourceLoader callback methods.
-void BufferedDataSource::HttpInitialStartCallback(int error) {
+void BufferedDataSource::HttpInitialStartCallback(
+    BufferedResourceLoader::Status status) {
   DCHECK(MessageLoop::current() == render_loop_);
   DCHECK(loader_.get());
-
-  int64 instance_size = loader_->instance_size();
-  bool success = error == net::OK;
 
   bool initialize_cb_is_null = false;
   {
@@ -371,11 +362,12 @@ void BufferedDataSource::HttpInitialStartCallback(int error) {
     return;
   }
 
+  bool success = status == BufferedResourceLoader::kOK;
   if (success) {
     // TODO(hclam): Needs more thinking about supporting servers without range
     // request or their partial response is not complete.
-    total_bytes_ = instance_size;
-    streaming_ = (instance_size == kPositionNotSpecified) ||
+    total_bytes_ = loader_->instance_size();
+    streaming_ = (total_bytes_ == kPositionNotSpecified) ||
         !loader_->range_supported();
   } else {
     // TODO(hclam): In case of failure, we can retry several times.
@@ -411,7 +403,8 @@ void BufferedDataSource::HttpInitialStartCallback(int error) {
   }
 }
 
-void BufferedDataSource::NonHttpInitialStartCallback(int error) {
+void BufferedDataSource::NonHttpInitialStartCallback(
+    BufferedResourceLoader::Status status) {
   DCHECK(MessageLoop::current() == render_loop_);
   DCHECK(loader_.get());
 
@@ -426,7 +419,8 @@ void BufferedDataSource::NonHttpInitialStartCallback(int error) {
   }
 
   int64 instance_size = loader_->instance_size();
-  bool success = error == net::OK && instance_size != kPositionNotSpecified;
+  bool success = status == BufferedResourceLoader::kOK &&
+     instance_size != kPositionNotSpecified;
 
   if (success) {
     total_bytes_ = instance_size;
@@ -464,11 +458,12 @@ void BufferedDataSource::NonHttpInitialStartCallback(int error) {
   }
 }
 
-void BufferedDataSource::PartialReadStartCallback(int error) {
+void BufferedDataSource::PartialReadStartCallback(
+    BufferedResourceLoader::Status status) {
   DCHECK(MessageLoop::current() == render_loop_);
   DCHECK(loader_.get());
 
-  if (error == net::OK) {
+  if (status == BufferedResourceLoader::kOK) {
     // Once the request has started successfully, we can proceed with
     // reading from it.
     ReadInternal();
@@ -489,24 +484,28 @@ void BufferedDataSource::PartialReadStartCallback(int error) {
   base::AutoLock auto_lock(lock_);
   if (stop_signal_received_)
     return;
-  DoneRead_Locked(net::ERR_INVALID_RESPONSE);
+  DoneRead_Locked(kReadError);
 }
 
-void BufferedDataSource::ReadCallback(int error) {
+void BufferedDataSource::ReadCallback(
+    BufferedResourceLoader::Status status,
+    int bytes_read) {
   DCHECK(MessageLoop::current() == render_loop_);
 
-  if (error < 0) {
-    DCHECK(loader_.get());
-
+  if (status != BufferedResourceLoader::kOK) {
     // Stop the resource load if it failed.
     loader_->Stop();
 
-    if (error == net::ERR_CACHE_MISS && cache_miss_retries_left_ > 0) {
+    if (status == BufferedResourceLoader::kCacheMiss &&
+        cache_miss_retries_left_ > 0) {
       cache_miss_retries_left_--;
       render_loop_->PostTask(FROM_HERE,
           base::Bind(&BufferedDataSource::RestartLoadingTask, this));
       return;
     }
+
+    // Fall through to signal a read error.
+    bytes_read = kReadError;
   }
 
   // We need to prevent calling to filter host and running the callback if
@@ -521,11 +520,9 @@ void BufferedDataSource::ReadCallback(int error) {
   if (stop_signal_received_)
     return;
 
-  if (error > 0) {
-    // If a position error code is received, read was successful. So copy
-    // from intermediate read buffer to the target read buffer.
-    memcpy(read_buffer_, intermediate_read_buffer_.get(), error);
-  } else if (error == 0 && total_bytes_ == kPositionNotSpecified) {
+  if (bytes_read > 0) {
+    memcpy(read_buffer_, intermediate_read_buffer_.get(), bytes_read);
+  } else if (bytes_read == 0 && total_bytes_ == kPositionNotSpecified) {
     // We've reached the end of the file and we didn't know the total size
     // before. Update the total size so Read()s past the end of the file will
     // fail like they would if we had known the file size at the beginning.
@@ -536,7 +533,7 @@ void BufferedDataSource::ReadCallback(int error) {
       host()->SetBufferedBytes(total_bytes_);
     }
   }
-  DoneRead_Locked(error);
+  DoneRead_Locked(bytes_read);
 }
 
 void BufferedDataSource::NetworkEventCallback() {

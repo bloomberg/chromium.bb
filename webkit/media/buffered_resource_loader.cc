@@ -4,12 +4,13 @@
 
 #include "webkit/media/buffered_resource_loader.h"
 
+#include "base/callback_helpers.h"
 #include "base/format_macros.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "media/base/media_log.h"
-#include "net/base/net_errors.h"
+#include "media/base/seekable_buffer.h"
 #include "net/http/http_request_headers.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLLoaderOptions.h"
@@ -130,7 +131,7 @@ BufferedResourceLoader::BufferedResourceLoader(
 BufferedResourceLoader::~BufferedResourceLoader() {}
 
 void BufferedResourceLoader::Start(
-    const net::CompletionCallback& start_cb,
+    const StartCB& start_cb,
     const base::Closure& event_cb,
     WebFrame* frame) {
   // Make sure we have not started.
@@ -206,7 +207,7 @@ void BufferedResourceLoader::Read(
     int64 position,
     int read_size,
     uint8* buffer,
-    const net::CompletionCallback& read_cb) {
+    const ReadCB& read_cb) {
   DCHECK(start_cb_.is_null());
   DCHECK(read_cb_.is_null());
   DCHECK(!read_cb.is_null());
@@ -229,7 +230,7 @@ void BufferedResourceLoader::Read(
   if (instance_size_ != kPositionNotSpecified &&
       instance_size_ <= read_position_) {
     DVLOG(1) << "Appear to have seeked beyond EOS; returning 0.";
-    DoneRead(0);
+    DoneRead(kOK, 0);
     return;
   }
 
@@ -237,14 +238,14 @@ void BufferedResourceLoader::Read(
   // amount.
   if (read_position_ > offset_ + kint32max ||
       read_position_ < offset_ + kint32min) {
-    DoneRead(net::ERR_CACHE_MISS);
+    DoneRead(kCacheMiss, 0);
     return;
   }
 
   // Make sure |read_size_| is not too large for the buffer to ever be able to
   // fulfill the read request.
   if (read_size_ > kMaxBufferCapacity) {
-    DoneRead(net::ERR_FAILED);
+    DoneRead(kFailed, 0);
     return;
   }
 
@@ -293,7 +294,7 @@ void BufferedResourceLoader::Read(
   }
 
   // Make a callback to report failure.
-  DoneRead(net::ERR_CACHE_MISS);
+  DoneRead(kCacheMiss, 0);
 }
 
 int64 BufferedResourceLoader::GetBufferedPosition() {
@@ -376,8 +377,6 @@ void BufferedResourceLoader::didReceiveResponse(
   // successful (in particular range request). So we only verify the partial
   // response for HTTP and HTTPS protocol.
   if (url_.SchemeIs(kHttpScheme) || url_.SchemeIs(kHttpsScheme)) {
-    int error = net::OK;
-
     bool partial_response = (response.httpStatusCode() == kHttpPartialContent);
     bool ok_response = (response.httpStatusCode() == kHttpOK);
 
@@ -388,8 +387,8 @@ void BufferedResourceLoader::didReceiveResponse(
       range_supported_ = (accept_ranges.find("bytes") != std::string::npos);
 
       // If we have verified the partial response and it is correct, we will
-      // return net::OK. It's also possible for a server to support range
-      // requests without advertising Accept-Ranges: bytes.
+      // return kOK. It's also possible for a server to support range requests
+      // without advertising "Accept-Ranges: bytes".
       if (partial_response && VerifyPartialResponse(response)) {
         range_supported_ = true;
       } else if (ok_response && first_byte_position_ == 0 &&
@@ -399,19 +398,16 @@ void BufferedResourceLoader::didReceiveResponse(
         // to return.
         instance_size_ = content_length_;
       } else {
-        error = net::ERR_INVALID_RESPONSE;
+        DoneStart(kFailed);
+        return;
       }
     } else {
       instance_size_ = content_length_;
       if (response.httpStatusCode() != kHttpOK) {
         // We didn't request a range but server didn't reply with "200 OK".
-        error = net::ERR_FAILED;
+        DoneStart(kFailed);
+        return;
       }
-    }
-
-    if (error != net::OK) {
-      DoneStart(error);
-      return;
     }
 
   } else {
@@ -425,7 +421,7 @@ void BufferedResourceLoader::didReceiveResponse(
   }
 
   // Calls with a successful response.
-  DoneStart(net::OK);
+  DoneStart(kOK);
 }
 
 void BufferedResourceLoader::didReceiveData(
@@ -497,7 +493,7 @@ void BufferedResourceLoader::didFinishLoading(
   if (!start_cb_.is_null()) {
     DCHECK(read_cb_.is_null())
         << "Shouldn't have a read callback during start";
-    DoneStart(net::OK);
+    DoneStart(kOK);
     return;
   }
 
@@ -511,7 +507,7 @@ void BufferedResourceLoader::didFinishLoading(
     if (CanFulfillRead())
       ReadInternal();
     else
-      DoneRead(net::ERR_CACHE_MISS);
+      DoneRead(kCacheMiss, 0);
   }
 
   // There must not be any outstanding read request.
@@ -535,13 +531,13 @@ void BufferedResourceLoader::didFail(
   if (!start_cb_.is_null()) {
     DCHECK(read_cb_.is_null())
         << "Shouldn't have a read callback during start";
-    DoneStart(net::ERR_FAILED);
+    DoneStart(kFailed);
     return;
   }
 
   // Don't leave read callbacks hanging around.
   if (HasPendingRead()) {
-    DoneRead(net::ERR_FAILED);
+    DoneRead(kFailed, 0);
   }
 }
 
@@ -710,7 +706,7 @@ void BufferedResourceLoader::ReadInternal() {
   offset_ += first_offset_ + read;
 
   // And report with what we have read.
-  DoneRead(read);
+  DoneRead(kOK, read);
 }
 
 // static
@@ -798,7 +794,7 @@ std::string BufferedResourceLoader::GenerateHeaders(
   return header;
 }
 
-void BufferedResourceLoader::DoneRead(int error) {
+void BufferedResourceLoader::DoneRead(Status status, int bytes_read) {
   if (buffer_.get() && saved_forward_capacity_) {
     buffer_->set_forward_capacity(saved_forward_capacity_);
     saved_forward_capacity_ = 0;
@@ -810,15 +806,12 @@ void BufferedResourceLoader::DoneRead(int error) {
   last_offset_ = 0;
   Log();
 
-  net::CompletionCallback read_cb;
-  std::swap(read_cb, read_cb_);
-  read_cb.Run(error);
+  base::ResetAndReturn(&read_cb_).Run(status, bytes_read);
 }
 
-void BufferedResourceLoader::DoneStart(int error) {
-  net::CompletionCallback start_cb;
-  std::swap(start_cb, start_cb_);
-  start_cb.Run(error);
+
+void BufferedResourceLoader::DoneStart(Status status) {
+  base::ResetAndReturn(&start_cb_).Run(status);
 }
 
 void BufferedResourceLoader::NotifyNetworkEvent() {
