@@ -1133,9 +1133,14 @@ list .detail-name > .file-checkbox::before,
 
 /* GData-specfic styles */
 
-[gdata][offline] .table-row-cell > :not(.gdata-present),
-[gdata][offline] .thumbnail-item > :not(.gdata-present) {
+[gdata][offline] .table-row:not(.gdata-present),
+[gdata][offline] .thumbnail-item:not(.gdata-present) {
   color: #808080;
+}
+
+[gdata][offline] .table-row:not(.gdata-present) .detail-icon,
+[gdata][offline] .thumbnail-item:not(.gdata-present) .img-container {
+  opacity: 0.3;
 }
 
 /* Overlay pane covering the entire file manager window (e.g. image editor)*/

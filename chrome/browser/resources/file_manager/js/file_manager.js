@@ -1362,6 +1362,13 @@ FileManager.prototype = {
    * Initialize the file list table.
    */
   FileManager.prototype.initTable_ = function() {
+    var renderFunction = this.table_.getRenderFunction();
+    this.table_.setRenderFunction(function(entry, parent) {
+      var item = renderFunction(entry, parent);
+      this.styleGDataItem_(entry, item);
+      return item;
+    }.bind(this));
+
     var fullPage = (this.dialogType_ == FileManager.DialogType.FULL_PAGE);
 
     var columns = [
@@ -1994,9 +2001,8 @@ FileManager.prototype = {
       li.appendChild(this.renderSelectionCheckbox_(entry));
 
     li.appendChild(this.renderThumbnailBox_(entry, false));
-    var label = this.renderFileNameLabel_(entry);
-    this.styleGDataItem_(entry, label);
-    li.appendChild(label);
+    li.appendChild(this.renderFileNameLabel_(entry));
+    this.styleGDataItem_(entry, li);
   };
 
   /**
@@ -2112,7 +2118,7 @@ FileManager.prototype = {
     chrome.fileBrowserPrivate.removeMount(entry.toURL());
   };
 
-  FileManager.prototype.styleGDataItem_ = function(entry, element) {
+  FileManager.prototype.styleGDataItem_ = function(entry, listItem) {
     if (!this.isOnGData())
       return;
 
@@ -2121,10 +2127,10 @@ FileManager.prototype = {
         return;
 
       if (entry.gdata_.isHosted) {
-        element.classList.add('gdata-hosted');
+        listItem.classList.add('gdata-hosted');
       }
       if (entry.isDirectory || FileManager.isAvaliableOffline_(entry.gdata_)) {
-        element.classList.add('gdata-present');
+        listItem.classList.add('gdata-present');
       }
     }.bind(this));
   };
@@ -2146,8 +2152,6 @@ FileManager.prototype = {
     label.entry = entry;
     label.className = 'detail-name';
     label.appendChild(this.renderFileNameLabel_(entry));
-
-    this.styleGDataItem_(entry, label);
     return label;
   };
 
@@ -2178,7 +2182,6 @@ FileManager.prototype = {
     var div = this.document_.createElement('div');
     div.className = 'size';
     this.updateSize_(div, entry);
-    this.styleGDataItem_(entry, div);
     return div;
   };
 
@@ -2212,7 +2215,6 @@ FileManager.prototype = {
     var div = this.document_.createElement('div');
     div.className = 'type';
     this.updateType_(div, entry);
-    this.styleGDataItem_(entry, div);
     return div;
   };
 
@@ -2240,7 +2242,6 @@ FileManager.prototype = {
     var div = this.document_.createElement('div');
     div.className = 'date';
     this.updateDate_(div, entry);
-    this.styleGDataItem_(entry, div);
     return div;
   };
 
