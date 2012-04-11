@@ -230,7 +230,8 @@ void SetPermissionsForGDataCacheFiles(Profile* profile,
 bool IsGDataAvailable(Profile* profile) {
   // We allow GData only in canary and dev channels.  http://crosbug.com/28806
   chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
-  if (channel == chrome::VersionInfo::CHANNEL_BETA ||
+  if (channel == chrome::VersionInfo::CHANNEL_DEV ||
+      channel == chrome::VersionInfo::CHANNEL_BETA ||
       channel == chrome::VersionInfo::CHANNEL_STABLE)
     return false;
 
