@@ -38,6 +38,9 @@ static base::LazyInstance<ThreadLocalPointer<IndexedDBDispatcher> >::Leaky
 
 namespace {
 
+IndexedDBDispatcher* const HAS_BEEN_DELETED =
+    reinterpret_cast<IndexedDBDispatcher*>(0x1);
+
 int32 CurrentWorkerId() {
   return WorkerTaskRunner::Instance()->CurrentWorkerId();
 }
@@ -51,10 +54,14 @@ IndexedDBDispatcher::IndexedDBDispatcher() {
 }
 
 IndexedDBDispatcher::~IndexedDBDispatcher() {
-  g_idb_dispatcher_tls.Pointer()->Set(NULL);
+  g_idb_dispatcher_tls.Pointer()->Set(HAS_BEEN_DELETED);
 }
 
 IndexedDBDispatcher* IndexedDBDispatcher::ThreadSpecificInstance() {
+  if (g_idb_dispatcher_tls.Pointer()->Get() == HAS_BEEN_DELETED) {
+    NOTREACHED() << "Re-instantiating TLS IndexedDBDispatcher.";
+    g_idb_dispatcher_tls.Pointer()->Set(NULL);
+  }
   if (g_idb_dispatcher_tls.Pointer()->Get())
     return g_idb_dispatcher_tls.Pointer()->Get();
 
