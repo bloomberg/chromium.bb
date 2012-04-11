@@ -187,7 +187,8 @@ enum URLSchemeForHistogram {
   kFileURLScheme,
   kBlobURLScheme,
   kDataURLScheme,
-  kMaxURLScheme = kDataURLScheme  // Must be equal to highest enum value.
+  kFileSystemScheme,
+  kMaxURLScheme = kFileSystemScheme  // Must be equal to highest enum value.
 };
 
 URLSchemeForHistogram URLScheme(const GURL& url) {
@@ -200,6 +201,7 @@ URLSchemeForHistogram URLScheme(const GURL& url) {
   if (url.SchemeIs("file")) return kFileURLScheme;
   if (url.SchemeIs("blob")) return kBlobURLScheme;
   if (url.SchemeIs("data")) return kDataURLScheme;
+  if (url.SchemeIs("filesystem")) return kFileSystemScheme;
   return kUnknownURLScheme;
 }
 
