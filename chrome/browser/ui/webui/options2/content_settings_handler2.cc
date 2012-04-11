@@ -695,6 +695,8 @@ void ContentSettingsHandler::ApplyWhitelist(ContentSettingsType content_type,
     return;
   ContentSetting old_setting =
       map->GetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS, NULL);
+  // TODO(bauerb): Remove this once the Google Talk plug-in works nicely with
+  // click-to-play (b/6090625).
   if (old_setting == CONTENT_SETTING_ALLOW &&
       default_setting == CONTENT_SETTING_ASK) {
     map->SetWebsiteSetting(
