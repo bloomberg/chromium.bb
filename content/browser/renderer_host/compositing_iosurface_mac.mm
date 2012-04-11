@@ -136,15 +136,7 @@ void CompositingIOSurfaceMac::DrawIOSurface(NSView* view) {
     glBindTexture(GL_TEXTURE_RECTANGLE_ARB, texture_); CHECK_GL_ERROR();
     glEnable(GL_TEXTURE_RECTANGLE_ARB); CHECK_GL_ERROR();
 
-    glEnableClientState(GL_VERTEX_ARRAY); CHECK_GL_ERROR();
-    glEnableClientState(GL_TEXTURE_COORD_ARRAY); CHECK_GL_ERROR();
-
-    glVertexPointer(2, GL_FLOAT, sizeof(SurfaceVertex), &quad_.verts_[0].x_);
-    glTexCoordPointer(2, GL_FLOAT, sizeof(SurfaceVertex), &quad_.verts_[0].tx_);
-    glDrawArrays(GL_QUADS, 0, 4); CHECK_GL_ERROR();
-
-    glDisableClientState(GL_VERTEX_ARRAY);
-    glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+    DrawQuad(quad_);
 
     glBindTexture(GL_TEXTURE_RECTANGLE_ARB, 0); CHECK_GL_ERROR();
   }
@@ -152,6 +144,77 @@ void CompositingIOSurfaceMac::DrawIOSurface(NSView* view) {
   CGLFlushDrawable(cglContext_);
 
   CGLSetCurrentContext(0);
+}
+
+bool CompositingIOSurfaceMac::CopyTo(const gfx::Size& dst_size, void* out) {
+  if (!MapIOSurfaceToTexture(io_surface_handle_))
+    return false;
+
+  CGLSetCurrentContext(cglContext_);
+  GLuint target = GL_TEXTURE_RECTANGLE_ARB;
+
+  GLuint dst_texture = 0;
+  glGenTextures(1, &dst_texture); CHECK_GL_ERROR();
+  glBindTexture(target, dst_texture); CHECK_GL_ERROR();
+
+  GLuint dst_framebuffer = 0;
+  glGenFramebuffersEXT(1, &dst_framebuffer); CHECK_GL_ERROR();
+  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, dst_framebuffer); CHECK_GL_ERROR();
+
+  glTexImage2D(target,
+               0,
+               GL_RGBA,
+               dst_size.width(),
+               dst_size.height(),
+               0,
+               GL_BGRA,
+               GL_UNSIGNED_INT_8_8_8_8_REV,
+               NULL); CHECK_GL_ERROR();
+  glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT,
+                            GL_COLOR_ATTACHMENT0_EXT,
+                            target,
+                            dst_texture,
+                            0); CHECK_GL_ERROR();
+  glBindTexture(target, 0); CHECK_GL_ERROR();
+
+  glViewport(0, 0, dst_size.width(), dst_size.height());
+
+  glMatrixMode(GL_PROJECTION);
+  glLoadIdentity();
+  glOrtho(0, dst_size.width(), 0, dst_size.height(), -1, 1);
+  glMatrixMode(GL_MODELVIEW);
+  glLoadIdentity();
+
+  glDisable(GL_DEPTH_TEST);
+  glDisable(GL_BLEND);
+
+  glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+
+  // Draw only the color channels from the incoming texture.
+  glColorMask(true, true, true, false);
+
+  // Draw the color channels from the incoming texture.
+  glBindTexture(GL_TEXTURE_RECTANGLE_ARB, texture_); CHECK_GL_ERROR();
+  glEnable(GL_TEXTURE_RECTANGLE_ARB); CHECK_GL_ERROR();
+
+  SurfaceQuad quad;
+  quad.set_size(dst_size, io_surface_size_);
+  DrawQuad(quad);
+
+  glBindTexture(GL_TEXTURE_RECTANGLE_ARB, 0); CHECK_GL_ERROR();
+
+  CGLFlushDrawable(cglContext_);
+
+  glReadPixels(0, 0, dst_size.width(), dst_size.height(),
+               GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, out);
+
+  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0); CHECK_GL_ERROR();
+
+  glDeleteFramebuffersEXT(1, &dst_framebuffer);
+  glDeleteTextures(1, &dst_texture);
+
+  CGLSetCurrentContext(0);
+  return true;
 }
 
 bool CompositingIOSurfaceMac::MapIOSurfaceToTexture(
@@ -176,7 +239,7 @@ bool CompositingIOSurfaceMac::MapIOSurfaceToTexture(
       io_surface_support_->IOSurfaceGetWidth(io_surface_),
       io_surface_support_->IOSurfaceGetHeight(io_surface_));
 
-  quad_.set_size(io_surface_size_);
+  quad_.set_size(io_surface_size_, io_surface_size_);
 
   GLenum target = GL_TEXTURE_RECTANGLE_ARB;
   glGenTextures(1, &texture_);
@@ -207,6 +270,18 @@ void CompositingIOSurfaceMac::UnrefIOSurface() {
   CGLSetCurrentContext(cglContext_);
   UnrefIOSurfaceWithContextCurrent();
   CGLSetCurrentContext(0);
+}
+
+void CompositingIOSurfaceMac::DrawQuad(const SurfaceQuad& quad) {
+  glEnableClientState(GL_VERTEX_ARRAY); CHECK_GL_ERROR();
+  glEnableClientState(GL_TEXTURE_COORD_ARRAY); CHECK_GL_ERROR();
+
+  glVertexPointer(2, GL_FLOAT, sizeof(SurfaceVertex), &quad.verts_[0].x_);
+  glTexCoordPointer(2, GL_FLOAT, sizeof(SurfaceVertex), &quad.verts_[0].tx_);
+  glDrawArrays(GL_QUADS, 0, 4); CHECK_GL_ERROR();
+
+  glDisableClientState(GL_VERTEX_ARRAY);
+  glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 }
 
 void CompositingIOSurfaceMac::UnrefIOSurfaceWithContextCurrent() {

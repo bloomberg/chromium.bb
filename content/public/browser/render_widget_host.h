@@ -180,7 +180,8 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Channel::Sender {
 
   // Copies the given subset of the backing store into the given (uninitialized)
   // PlatformCanvas. If |src_rect| is empty, the whole contents is copied.
-  // |callback| is invoked with true on success, false otherwise.
+  // |callback| is invoked with true on success, false otherwise. |output| can
+  // be initialized even on failure.
   // When accelerated compositing is active, the contents is copied
   // asynchronously from the compositing surface, but when the backing store is
   // available, the contents is copied synchronously because it's fast enough.

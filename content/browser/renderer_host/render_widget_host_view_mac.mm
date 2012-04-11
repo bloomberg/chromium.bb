@@ -796,9 +796,15 @@ BackingStore* RenderWidgetHostViewMac::AllocBackingStore(
 bool RenderWidgetHostViewMac::CopyFromCompositingSurface(
       const gfx::Size& size,
       skia::PlatformCanvas* output) {
-  // TODO(mazda): Implement this.
-  NOTIMPLEMENTED();
-  return false;
+  if (!compositing_iosurface_.get() ||
+      !compositing_iosurface_->HasIOSurface())
+    return false;
+
+  if (!output->initialize(size.width(), size.height(), true))
+    return false;
+
+  return compositing_iosurface_->CopyTo(
+      size, output->getTopDevice()->accessBitmap(true).getPixels());
 }
 
 void RenderWidgetHostViewMac::AsyncCopyFromCompositingSurface(

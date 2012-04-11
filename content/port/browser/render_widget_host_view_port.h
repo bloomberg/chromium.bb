@@ -146,8 +146,9 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView {
                                           skia::PlatformCanvas* output) = 0;
 
   // Asynchrnously copies the contents of the compositing surface into the given
-  // (uninitialized) PlatformCanvas if any. Returns true on success, false
-  // otherwise.
+  // (uninitialized) PlatformCanvas if any.
+  // |callback| is invoked with true on success, false otherwise. |output| can
+  // be initialized even on failure.
   virtual void AsyncCopyFromCompositingSurface(
       const gfx::Size& size,
       skia::PlatformCanvas* output,
