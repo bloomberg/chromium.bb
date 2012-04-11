@@ -28,7 +28,7 @@ from policy_test_cases import PolicyPrefsTestCases
 
 
 class PolicyPrefsUITest(policy_base.PolicyTestBase):
-  """Tests policies and their impact on the prefs UI."""
+  """Tests user policies and their impact on the prefs UI."""
 
   settings_pages = [
       'chrome://settings-frame',
@@ -44,6 +44,10 @@ class PolicyPrefsUITest(policy_base.PolicyTestBase):
         'chrome://settings-frame/accounts',
     ]
 
+  def setUp(self):
+    policy_base.PolicyTestBase.setUp(self)
+    if self.IsChromeOS():
+      self.LoginWithTestAccount()
 
   def IsAnyBannerVisible(self):
     """Returns true if any managed prefs banner is visible in the current page.
@@ -62,10 +66,10 @@ class PolicyPrefsUITest(policy_base.PolicyTestBase):
     """)
     return ret == 'true'
 
-  def testNoPoliciesNoBanner(self):
-    """Verifies that the banner isn't present when no policies are in place."""
+  def testNoUserPoliciesNoBanner(self):
+    """Verifies the banner isn't present when no user policies are in place."""
 
-    self.SetPolicies({})
+    self.SetUserPolicy({})
     for page in PolicyPrefsUITest.settings_pages:
       self.NavigateToURL(page)
       self.assertFalse(self.IsAnyBannerVisible(), msg=
@@ -73,8 +77,8 @@ class PolicyPrefsUITest(policy_base.PolicyTestBase):
           'Please check that chrome/test/functional/policy_prefs_ui.py has an '
           'entry for any new policies introduced.' % page)
 
-  def RunPoliciesShowBanner(self, include_expected, include_unexpected):
-    """Tests all the policies on each settings page.
+  def RunUserPoliciesShowBanner(self, include_expected, include_unexpected):
+    """Tests all the user policies on each settings page.
 
     If |include_expected|, pages where the banner is expected will be verified.
     If |include_unexpected|, pages where the banner should not appear will also
@@ -82,8 +86,12 @@ class PolicyPrefsUITest(policy_base.PolicyTestBase):
     """
 
     os = self.GetPlatform()
+    all_policies = self.GetPolicyDefinitionList()
 
     for policy, policy_test in PolicyPrefsTestCases.policies.iteritems():
+      # Skip device policies
+      if policy in all_policies and all_policies[policy][1]:
+        continue
       if os not in policy_test[PolicyPrefsTestCases.INDEX_OS]:
         continue
       expected_pages = [PolicyPrefsUITest.settings_pages[n]
@@ -100,7 +108,7 @@ class PolicyPrefsUITest(policy_base.PolicyTestBase):
           policy_dict = {
             policy: policy_test[PolicyPrefsTestCases.INDEX_VALUE]
           }
-          self.SetPolicies(policy_dict)
+          self.SetUserPolicy(policy_dict)
         self.NavigateToURL(page)
         self.assertEqual(expected, self.IsAnyBannerVisible(), msg=
             'Banner was%sexpected in %s, but it was%svisible.\n'
@@ -112,26 +120,29 @@ class PolicyPrefsUITest(policy_base.PolicyTestBase):
       if did_test:
         logging.debug('Policy passed: %s' % policy)
 
-  def testPoliciesShowBanner(self):
-    """Verifies that the banner is shown when a pref is managed by policy."""
-    self.RunPoliciesShowBanner(True, False)
+  def testUserPoliciesShowBanner(self):
+    """Verifies the banner is shown when a user pref is managed by policy."""
+    self.RunUserPoliciesShowBanner(True, False)
 
   # This test is disabled by default because it takes a very long time,
   # for little benefit.
-  def PoliciesDontShowBanner(self):
+  def UserPoliciesDontShowBanner(self):
     """Verifies that the banner is NOT shown on unrelated pages."""
-    self.RunPoliciesShowBanner(False, True)
+    self.RunUserPoliciesShowBanner(False, True)
 
-  def testFailOnPoliciesNotTested(self):
-    """Verifies that all existing policies are covered.
+  def testFailOnUserPoliciesNotTested(self):
+    """Verifies that all existing user policies are covered.
 
-    Fails for all policies listed in GetPolicyDefinitionList() that aren't
+    Fails for all user policies listed in GetPolicyDefinitionList() that aren't
     listed in |PolicyPrefsUITest.policies|, and thus are not tested by
-    |testPoliciesShowBanner|.
+    |testUserPoliciesShowBanner|.
     """
 
     all_policies = self.GetPolicyDefinitionList()
     for policy in all_policies:
+      # Skip device policies
+      if all_policies[policy][1]:
+        continue
       self.assertTrue(policy in PolicyPrefsTestCases.policies, msg=
           'Policy "%s" does not have a test in '
           'chrome/test/functional/policy_prefs_ui.py.\n'
@@ -143,10 +154,10 @@ class PolicyPrefsUITest(policy_base.PolicyTestBase):
           'Policy "%s" has type "%s" but the test value has type "%s".' %
               (policy, expected_type, test_type))
 
-  def testTogglePolicyTogglesBanner(self):
-    """Verifies that toggling a policy also toggles the banner's visibility."""
-    # |policy| just has to be any policy that has at least a settings page that
-    # displays the banner when the policy is set.
+  def testToggleUserPolicyTogglesBanner(self):
+    """Verifies that toggling a user policy toggles the banner's visibility."""
+    # |policy| just has to be any user policy that has at least a settings page
+    # that displays the banner when the policy is set.
     policy = 'ShowHomeButton'
 
     policy_test = PolicyPrefsTestCases.policies[policy]
@@ -156,14 +167,14 @@ class PolicyPrefsUITest(policy_base.PolicyTestBase):
       policy: policy_test[PolicyPrefsTestCases.INDEX_VALUE]
     }
 
-    self.SetPolicies({})
+    self.SetUserPolicy({})
     self.NavigateToURL(page)
     self.assertFalse(self.IsAnyBannerVisible())
 
-    self.SetPolicies(policy_dict)
+    self.SetUserPolicy(policy_dict)
     self.assertTrue(self.IsAnyBannerVisible())
 
-    self.SetPolicies({})
+    self.SetUserPolicy({})
     self.assertFalse(self.IsAnyBannerVisible())
 
 

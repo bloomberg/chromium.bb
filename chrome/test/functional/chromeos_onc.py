@@ -25,6 +25,7 @@ class ChromeosONC(policy_base.PolicyTestBase):
   def setUp(self):
     policy_base.PolicyTestBase.setUp(self)
     self.CleanupFlimflamDirsOnChromeOS()
+    self.LoginWithTestAccount()
 
   def _ReadONCFileAndSet(self, filename):
     """Reads the specified ONC file and sends it as a policy.
@@ -34,7 +35,7 @@ class ChromeosONC(policy_base.PolicyTestBase):
                 all be stored in the path defined by ONC_PATH.
     """
     with open(os.path.join(self.ONC_PATH, filename)) as fp:
-      self.SetPolicies({'OpenNetworkConfiguration': fp.read()})
+      self.SetUserPolicy({'OpenNetworkConfiguration': fp.read()})
 
   def _VerifyRememberedWifiNetworks(self, wifi_expect):
     """Verify the list of remembered networks contains those in wifi_expect.

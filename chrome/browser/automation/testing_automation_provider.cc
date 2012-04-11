@@ -146,8 +146,6 @@
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
 #include "chrome/browser/policy/browser_policy_connector.h"
-#include "chrome/browser/policy/configuration_policy_provider.h"
-#include "chrome/browser/policy/policy_map.h"
 #include "policy/policy_constants.h"
 #endif
 
@@ -2312,8 +2310,6 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
       &TestingAutomationProvider::GetMultiProfileInfo;
   handler_map["GetProcessInfo"] =
       &TestingAutomationProvider::GetProcessInfo;
-  handler_map["SetPolicies"] =
-      &TestingAutomationProvider::SetPolicies;
   handler_map["GetPolicyDefinitionList"] =
       &TestingAutomationProvider::GetPolicyDefinitionList;
   handler_map["RefreshPolicies"] =
@@ -6215,68 +6211,6 @@ void TestingAutomationProvider::WaitForAllViewsToStopLoading(
   // This class will send the message immediately if no tab is loading.
   new AllViewsStoppedLoadingObserver(
       this, reply_message, profile()->GetExtensionProcessManager());
-}
-
-void TestingAutomationProvider::SetPolicies(
-    DictionaryValue* args,
-    IPC::Message* reply_message) {
-  scoped_ptr<AutomationJSONReply> reply(
-      new AutomationJSONReply(this, reply_message));
-
-#if !defined(ENABLE_CONFIGURATION_POLICY) || defined(OFFICIAL_BUILD)
-  reply->SendError("Configuration Policy disabled");
-#else
-  policy::BrowserPolicyConnector* connector =
-      g_browser_process->browser_policy_connector();
-  struct {
-    std::string name;
-    policy::ConfigurationPolicyProvider* provider;
-    policy::PolicyLevel level;
-  } providers[] = {
-    { "managed_cloud",
-      connector->GetManagedCloudProvider(),
-      policy::POLICY_LEVEL_MANDATORY },
-    { "managed_platform",
-      connector->GetManagedPlatformProvider(),
-      policy::POLICY_LEVEL_MANDATORY },
-    { "recommended_cloud",
-      connector->GetRecommendedCloudProvider(),
-      policy::POLICY_LEVEL_RECOMMENDED },
-    { "recommended_platform",
-      connector->GetRecommendedPlatformProvider(),
-      policy::POLICY_LEVEL_RECOMMENDED },
-  };
-  // Verify if all the requested providers exist before changing anything.
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(providers); ++i) {
-    DictionaryValue* policies = NULL;
-    if (args->GetDictionary(providers[i].name, &policies) &&
-        policies &&
-        !providers[i].provider) {
-      reply->SendError("Provider not available: " + providers[i].name);
-      return;
-    }
-  }
-  // TODO(joaodasilva): POLICY_SCOPE_USER is currently hardcoded, and the
-  // level is determined by the provider. Change this interface to support
-  // per-policy level and scope once the PolicyService is ready.
-  // http://crbug.com/110588
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(providers); ++i) {
-    DictionaryValue* policies = NULL;
-    if (args->GetDictionary(providers[i].name, &policies) && policies) {
-      policy::PolicyMap* map = new policy::PolicyMap;
-      map->LoadFrom(policies, providers[i].level, policy::POLICY_SCOPE_USER);
-      providers[i].provider->OverridePolicies(map);
-    }
-  }
-
-  // Make sure the policies are in effect before returning. This will go
-  // away once all platforms rely on directly installing the policy files and
-  // using RefreshPolicies, and SetPolicies is removed.
-  PolicyUpdatesObserver::PostCallbackAfterPolicyUpdates(
-      base::Bind(&AutomationJSONReply::SendSuccess,
-                 base::Owned(reply.release()),
-                 static_cast<const Value*>(NULL)));
-#endif  // defined(OFFICIAL_BUILD)
 }
 
 void TestingAutomationProvider::GetPolicyDefinitionList(

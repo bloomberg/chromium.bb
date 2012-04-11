@@ -443,6 +443,11 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     PyUITest.RunSuperuserActionOnChromeOS('CleanFlimflamDirs')
 
   @staticmethod
+  def RemoveAllCryptohomeVaultsOnChromeOS():
+    """Remove any existing cryptohome vaults."""
+    PyUITest.RunSuperuserActionOnChromeOS('RemoveAllCryptohomeVaults')
+
+  @staticmethod
   def _IsInodeNew(path, old_inode):
     """Determine whether an inode has changed. POSIX only.
 
@@ -3731,33 +3736,6 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       'command': 'GetMultiProfileInfo'
     }
     return self._GetResultFromJSONRequest(cmd_dict, windex=None)
-
-  def SetPolicies(self, managed_platform=None, recommended_platform=None,
-                  managed_cloud=None, recommended_cloud=None):
-    """Sets the policies on the browser. Always fails on official builds.
-
-    Args:
-      managed_platform: a dictionary with the policy values for the managed
-                        platform provider.
-      recommended_platform: a dictionary with the policy values for the
-                            recommended platform provider.
-      managed_cloud: a dictionary with the policy values for the managed
-                     cloud provider.
-      recommended_cloud: a dictionary with the policy values for the recommended
-                         cloud provider.
-
-    Leaving an argument to None will restore the default behavior for that
-    provider.
-    """
-    assert not self.GetBrowserInfo()['properties']['is_official']
-    cmd_dict = {
-        'command': 'SetPolicies',
-        'managed_cloud': managed_cloud,
-        'managed_platform': managed_platform,
-        'recommended_cloud': recommended_cloud,
-        'recommended_platform': recommended_platform
-    }
-    return self._GetResultFromJSONRequest(cmd_dict)
 
   def GetPolicyDefinitionList(self):
     """Gets a dictionary of existing policies mapped to their definitions.

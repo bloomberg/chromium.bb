@@ -18,7 +18,7 @@ class PolicyPrefsTestCases(object):
 
   # Each policy has an entry with a tuple (Pref, Value, Pages, OS)
   #
-  # |Pref| is the preference key for simple policies that map directly to a
+  # |Pref| is the preference key for simple user policies that map directly to a
   #        preference (Refer to
   #        chrome/browser/policy/configuration_policy_handler_list.cc).
   #        Otherwise, set as None.
@@ -34,6 +34,9 @@ class PolicyPrefsTestCases(object):
   #      platforms are 'win', 'mac', 'linux', and 'chromeos'. The list can be
   #      empty to skip the policy or set to OS_ALL if applicable to all
   #      platforms.
+  #
+  # ChromeOS device policies are also listed but are currently not tested by
+  # policy_prefs_ui.py.
   [INDEX_PREF, INDEX_VALUE, INDEX_PAGES, INDEX_OS] = range(4)
   OS_ALL = ['win', 'mac', 'linux', 'chromeos']
   policies = {
