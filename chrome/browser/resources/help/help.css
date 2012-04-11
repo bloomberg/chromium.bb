@@ -21,9 +21,12 @@ body {
   margin-top: 30px;
 }
 
-#update-buttons-container,
-#update-status-container {
+#update-buttons-container {
   margin-top: 5px;
+}
+
+#update-status-container {
+  margin-top: 10px;
 }
 
 #update-status {
