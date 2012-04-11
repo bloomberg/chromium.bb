@@ -689,7 +689,7 @@ bool HostNPScriptObject::UpdateDaemonConfig(const NPVariant* args,
       reinterpret_cast<base::DictionaryValue*>(config.release()));
 
   ScopedRefNPObject callback_obj(ObjectFromNPVariant(args[1]));
-  if (callback_obj.get()) {
+  if (!callback_obj.get()) {
     SetException("updateDaemonConfig: invalid callback parameter");
     return false;
   }
