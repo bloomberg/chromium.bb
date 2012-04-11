@@ -6,8 +6,6 @@
 
 #include <string>
 
-#include "base/process.h"
-#include "base/process_util.h"
 #include "base/sys_string_conversions.h"
 #include "base/win/windows_version.h"
 #include "sandbox/src/sandbox_factory.h"
@@ -91,14 +89,12 @@ BrokerServices* GetBroker() {
 
 TestRunner::TestRunner(JobLevel job_level, TokenLevel startup_token,
                        TokenLevel main_token)
-    : is_init_(false), is_async_(false), no_sandbox_(false),
-      target_process_id_(0) {
+    : is_init_(false), is_async_(false), target_process_id_(0) {
   Init(job_level, startup_token, main_token);
 }
 
 TestRunner::TestRunner()
-    : is_init_(false), is_async_(false), no_sandbox_(false),
-      target_process_id_(0) {
+    : is_init_(false), is_async_(false), target_process_id_(0) {
   Init(JOB_LOCKDOWN, USER_RESTRICTED_SAME_ACCESS, USER_LOCKDOWN);
 }
 
@@ -213,23 +209,11 @@ int TestRunner::InternalRunTest(const wchar_t* command) {
 
   std::wstring arguments(L"\"");
   arguments += prog_name;
-  arguments += L"\" -child";
-  arguments += no_sandbox_ ? L"-no-sandbox " : L" ";
+  arguments += L"\" -child ";
   arguments += command;
 
-  if (no_sandbox_) {
-    STARTUPINFO startup_info = {sizeof(STARTUPINFO)};
-    if (::CreateProcessW(prog_name, &arguments[0], NULL, NULL, FALSE, 0,
-                         NULL, NULL, &startup_info, &target)) {
-      result = SBOX_ALL_OK;
-      SandboxFactory::GetBrokerServices()->AddTargetPeer(target.hProcess);
-    } else {
-      result = SBOX_ERROR_GENERIC;
-    }
-  } else {
-    result = broker_->SpawnTarget(prog_name, arguments.c_str(), policy_,
-                                  &target);
-  }
+  result = broker_->SpawnTarget(prog_name, arguments.c_str(), policy_,
+                                &target);
 
   if (SBOX_ALL_OK != result)
     return SBOX_TEST_FAILED_TO_RUN_TEST;
@@ -320,20 +304,18 @@ int DispatchCall(int argc, wchar_t **argv) {
     command(argc - 4, argv + 4);
 
   TargetServices* target = SandboxFactory::GetTargetServices();
-  if (target) {
-    if (SBOX_ALL_OK != target->Init())
-      return SBOX_TEST_FAILED_TO_EXECUTE_COMMAND;
-
-    if (BEFORE_REVERT == state)
-      return command(argc - 4, argv + 4);
-    else if (EVERY_STATE == state)
-      command(argc - 4, argv + 4);
-
-    target->LowerToken();
-  } else if (0 != _wcsicmp(argv[1], L"-child-no-sandbox")) {
+  if (!target)
     return SBOX_TEST_FAILED_TO_EXECUTE_COMMAND;
-  }
 
+  if (SBOX_ALL_OK != target->Init())
+    return SBOX_TEST_FAILED_TO_EXECUTE_COMMAND;
+
+  if (BEFORE_REVERT == state)
+    return command(argc - 4, argv + 4);
+  else if (EVERY_STATE == state)
+    command(argc - 4, argv + 4);
+
+  target->LowerToken();
   return command(argc - 4, argv + 4);
 }
 

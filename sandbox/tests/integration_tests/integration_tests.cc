@@ -7,8 +7,7 @@
 
 int wmain(int argc, wchar_t **argv) {
   if (argc >= 2) {
-    if (0 == _wcsicmp(argv[1], L"-child") ||
-        0 == _wcsicmp(argv[1], L"-child-no-sandbox"))
+    if (0 == _wcsicmp(argv[1], L"-child"))
       // This instance is a child, not the test.
       return sandbox::DispatchCall(argc, argv);
   }
