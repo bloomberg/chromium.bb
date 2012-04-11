@@ -19,6 +19,10 @@
 
 class FilePath;
 
+namespace base {
+class WaitableEvent;
+}
+
 namespace net {
 
 class IOBuffer;
@@ -36,7 +40,9 @@ class NET_EXPORT FileStreamWin {
            const CompletionCallback& callback);
   int OpenSync(const FilePath& path, int open_flags);
   bool IsOpen() const;
-  int64 Seek(Whence whence, int64 offset);
+  int Seek(Whence whence, int64 offset,
+           const Int64CompletionCallback& callback);
+  int64 SeekSync(Whence whence, int64 offset);
   int64 Available();
   int Read(IOBuffer* buf, int buf_len, const CompletionCallback& callback);
   int ReadSync(char* buf, int buf_len);
@@ -51,14 +57,23 @@ class NET_EXPORT FileStreamWin {
 
  private:
   class AsyncContext;
-  friend class AsyncContext;
+
+  // A helper method for Seek.
+  void SeekFile(Whence whence, int64 offset, int64* result);
 
   // Called when the file_ is opened asynchronously. |result| contains the
   // result as a network error code.
-  void OnOpened(int* result);
+  void OnOpened(const CompletionCallback& callback, int* result);
 
   // Called when the file_ is closed asynchronously.
-  void OnClosed();
+  void OnClosed(const CompletionCallback& callback);
+
+  // Called when the file_ is seeked asynchronously.
+  void OnSeeked(const Int64CompletionCallback& callback, int64* result);
+
+  // Resets on_io_complete_ and WeakPtr's.
+  // Called in OnOpened, OnClosed and OnSeeked.
+  void ResetOnIOComplete();
 
   // Waits until the in-flight async open/close operation is complete.
   void WaitForIOCompletion();
@@ -73,7 +88,6 @@ class NET_EXPORT FileStreamWin {
   bool record_uma_;
   net::BoundNetLog bound_net_log_;
   base::WeakPtrFactory<FileStreamWin> weak_ptr_factory_;
-  CompletionCallback callback_;
   scoped_ptr<base::WaitableEvent> on_io_complete_;
 
   DISALLOW_COPY_AND_ASSIGN(FileStreamWin);

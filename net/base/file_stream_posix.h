@@ -10,7 +10,6 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/synchronization/waitable_event.h"
 #include "base/platform_file.h"
 #include "net/base/completion_callback.h"
 #include "net/base/file_stream_whence.h"
@@ -18,6 +17,10 @@
 #include "net/base/net_log.h"
 
 class FilePath;
+
+namespace base {
+class WaitableEvent;
+}
 
 namespace net {
 
@@ -36,7 +39,9 @@ class NET_EXPORT FileStreamPosix {
            const CompletionCallback& callback);
   int OpenSync(const FilePath& path, int open_flags);
   bool IsOpen() const;
-  int64 Seek(Whence whence, int64 offset);
+  int Seek(Whence whence, int64 offset,
+           const Int64CompletionCallback& callback);
+  int64 SeekSync(Whence whence, int64 offset);
   int64 Available();
   int Read(IOBuffer* buf, int buf_len, const CompletionCallback& callback);
   int ReadSync(char* buf, int buf_len);
@@ -50,13 +55,13 @@ class NET_EXPORT FileStreamPosix {
       const net::BoundNetLog& owner_bound_net_log);
   base::PlatformFile GetPlatformFileForTesting();
 
+  // Resets on_io_complete_ and WeakPtr's.
+  // Called when Read() or Write() is completed.
+  void ResetOnIOComplete();
+
  private:
   // Called when the file_ is closed asynchronously.
-  void OnClosed();
-
-  // Called when Read() or Write() is completed (used only for POSIX).
-  // |result| contains the result as a network error code.
-  void OnIOComplete(int* result);
+  void OnClosed(const CompletionCallback& callback);
 
   // Waits until the in-flight async open/close/read/write operation is
   // complete.
@@ -68,7 +73,6 @@ class NET_EXPORT FileStreamPosix {
   bool record_uma_;
   net::BoundNetLog bound_net_log_;
   base::WeakPtrFactory<FileStreamPosix> weak_ptr_factory_;
-  CompletionCallback callback_;
   scoped_ptr<base::WaitableEvent> on_io_complete_;
 
   DISALLOW_COPY_AND_ASSIGN(FileStreamPosix);

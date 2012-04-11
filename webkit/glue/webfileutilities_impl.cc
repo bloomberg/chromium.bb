@@ -128,7 +128,7 @@ long long WebFileUtilitiesImpl::seekFile(base::PlatformFile handle,
   if (handle == base::kInvalidPlatformFileValue)
     return -1;
   net::FileStream file_stream(handle, 0, NULL);
-  return file_stream.Seek(static_cast<net::Whence>(origin), offset);
+  return file_stream.SeekSync(static_cast<net::Whence>(origin), offset);
 }
 
 bool WebFileUtilitiesImpl::truncateFile(base::PlatformFile handle,

@@ -180,7 +180,7 @@ void FileWriterDelegate::OnResponseStarted(net::URLRequest* request) {
     OnError(base::PLATFORM_FILE_ERROR_FAILED);
     return;
   }
-  int64 error = file_stream_->Seek(net::FROM_BEGIN, offset_);
+  int64 error = file_stream_->SeekSync(net::FROM_BEGIN, offset_);
   if (error != offset_) {
     OnError(base::PLATFORM_FILE_ERROR_FAILED);
     return;

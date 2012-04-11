@@ -510,7 +510,7 @@ net::Error BaseFile::Open() {
 
     // We may be re-opening the file after rename. Always make sure we're
     // writing at the end of the file.
-    int64 seek_result = file_stream_->Seek(net::FROM_END, 0);
+    int64 seek_result = file_stream_->SeekSync(net::FROM_END, 0);
     if (seek_result < 0)
       return ClearStream(LOG_ERROR("Seek", seek_result));
   } else {

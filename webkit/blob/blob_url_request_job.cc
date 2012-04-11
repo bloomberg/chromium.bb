@@ -385,10 +385,10 @@ void BlobURLRequestJob::DidOpenFile(int bytes_to_read,
 
   const BlobData::Item& item = blob_data_->items().at(current_item_index_);
   {
-    // stream_.Seek() blocks the IO thread, see http://crbug.com/75548.
+    // stream_.SeekSync() blocks the IO thread, see http://crbug.com/75548.
     base::ThreadRestrictions::ScopedAllowIO allow_io;
     int64 offset = current_item_offset_ + static_cast<int64>(item.offset);
-    if (offset > 0 && offset != stream_->Seek(net::FROM_BEGIN, offset)) {
+    if (offset > 0 && offset != stream_->SeekSync(net::FROM_BEGIN, offset)) {
       NotifyFailure(net::ERR_FAILED);
       return;
     }

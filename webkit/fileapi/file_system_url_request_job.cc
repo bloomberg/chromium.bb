@@ -245,7 +245,8 @@ void FileSystemURLRequestJob::DidOpen(base::PlatformFileError error_code,
   if (remaining_bytes_ > 0 &&
       byte_range_.first_byte_position() != 0 &&
       byte_range_.first_byte_position() !=
-          stream_->Seek(net::FROM_BEGIN, byte_range_.first_byte_position())) {
+          stream_->SeekSync(net::FROM_BEGIN,
+                            byte_range_.first_byte_position())) {
     NotifyFailed(net::ERR_REQUEST_RANGE_NOT_SATISFIABLE);
     return;
   }

@@ -125,6 +125,37 @@ void CloseFileAndSignal(base::PlatformFile* file,
   on_io_complete->Signal();
 }
 
+// Adjusts the position from where the data is read.
+void SeekFile(base::PlatformFile file,
+              Whence whence,
+              int64 offset,
+              int64* result,
+              bool record_uma,
+              const net::BoundNetLog& bound_net_log) {
+  off_t res = lseek(file, static_cast<off_t>(offset),
+                    static_cast<int>(whence));
+  if (res == static_cast<off_t>(-1)) {
+    *result = RecordAndMapError(errno,
+                                FILE_ERROR_SOURCE_SEEK,
+                                record_uma,
+                                bound_net_log);
+    return;
+  }
+  *result = res;
+}
+
+// Seeks a file by calling SeekSync() and signals the completion.
+void SeekFileAndSignal(base::PlatformFile file,
+                       Whence whence,
+                       int64 offset,
+                       int64* result,
+                       bool record_uma,
+                       base::WaitableEvent* on_io_complete,
+                       const net::BoundNetLog& bound_net_log) {
+  SeekFile(file, whence, offset, result, record_uma, bound_net_log);
+  on_io_complete->Signal();
+}
+
 // ReadFile() is a simple wrapper around read() that handles EINTR signals and
 // calls MapSystemError() to map errno to net error codes.
 void ReadFile(base::PlatformFile file,
@@ -203,6 +234,20 @@ int FlushFile(base::PlatformFile file,
   return res;
 }
 
+// Called when Read(), Write() or Seek() is completed.
+// |result| contains the result or a network error code.
+template <typename R>
+void OnIOComplete(const base::WeakPtr<FileStreamPosix>& stream,
+                  const base::Callback<void(R)>& callback,
+                  R* result) {
+  if (!stream.get())
+    return;
+
+  // Reset this before Run() as Run() may issue a new async operation.
+  stream->ResetOnIOComplete();
+  callback.Run(*result);
+}
+
 }  // namespace
 
 // FileStreamPosix ------------------------------------------------------------
@@ -257,10 +302,8 @@ FileStreamPosix::~FileStreamPosix() {
 
 void FileStreamPosix::Close(const CompletionCallback& callback) {
   DCHECK(open_flags_ & base::PLATFORM_FILE_ASYNC);
-  DCHECK(callback_.is_null());
 
-  callback_ = callback;
-
+  DCHECK(!weak_ptr_factory_.HasWeakPtrs());
   DCHECK(!on_io_complete_.get());
   on_io_complete_.reset(new base::WaitableEvent(
       false  /* manual_reset */, false  /* initially_signaled */));
@@ -273,7 +316,8 @@ void FileStreamPosix::Close(const CompletionCallback& callback) {
       base::Bind(&CloseFileAndSignal, &file_, on_io_complete_.get(),
                  bound_net_log_),
       base::Bind(&FileStreamPosix::OnClosed,
-                 weak_ptr_factory_.GetWeakPtr()),
+                 weak_ptr_factory_.GetWeakPtr(),
+                 callback),
       true /* task_is_slow */);
 
   DCHECK(posted);
@@ -301,12 +345,10 @@ int FileStreamPosix::Open(const FilePath& path, int open_flags,
     return ERR_UNEXPECTED;
   }
 
-  DCHECK(callback_.is_null());
-  callback_ = callback;
-
   open_flags_ = open_flags;
   DCHECK(open_flags_ & base::PLATFORM_FILE_ASYNC);
 
+  DCHECK(!weak_ptr_factory_.HasWeakPtrs());
   DCHECK(!on_io_complete_.get());
   on_io_complete_.reset(new base::WaitableEvent(
       false  /* manual_reset */, false  /* initially_signaled */));
@@ -320,9 +362,8 @@ int FileStreamPosix::Open(const FilePath& path, int open_flags,
       base::Bind(&OpenFileAndSignal,
                  path, open_flags, record_uma_, &file_, result,
                  on_io_complete_.get(), bound_net_log_),
-      base::Bind(&FileStreamPosix::OnIOComplete,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 base::Owned(result)),
+      base::Bind(&OnIOComplete<int>, weak_ptr_factory_.GetWeakPtr(),
+                 callback, base::Owned(result)),
       true /* task_is_slow */);
   DCHECK(posted);
   return ERR_IO_PENDING;
@@ -349,7 +390,33 @@ bool FileStreamPosix::IsOpen() const {
   return file_ != base::kInvalidPlatformFileValue;
 }
 
-int64 FileStreamPosix::Seek(Whence whence, int64 offset) {
+int FileStreamPosix::Seek(Whence whence, int64 offset,
+                          const Int64CompletionCallback& callback) {
+  if (!IsOpen())
+    return ERR_UNEXPECTED;
+
+  // Make sure we're async and we have no other in-flight async operations.
+  DCHECK(open_flags_ & base::PLATFORM_FILE_ASYNC);
+  DCHECK(!weak_ptr_factory_.HasWeakPtrs());
+  DCHECK(!on_io_complete_.get());
+
+  on_io_complete_.reset(new base::WaitableEvent(
+      false  /* manual_reset */, false  /* initially_signaled */));
+
+  int64* result = new int64(-1);
+  const bool posted = base::WorkerPool::PostTaskAndReply(
+      FROM_HERE,
+      base::Bind(&SeekFileAndSignal, file_, whence, offset, result,
+                 record_uma_, on_io_complete_.get(), bound_net_log_),
+      base::Bind(&OnIOComplete<int64>,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 callback, base::Owned(result)),
+      true /* task is slow */);
+  DCHECK(posted);
+  return ERR_IO_PENDING;
+}
+
+int64 FileStreamPosix::SeekSync(Whence whence, int64 offset) {
   base::ThreadRestrictions::AssertIOAllowed();
 
   if (!IsOpen())
@@ -357,18 +424,11 @@ int64 FileStreamPosix::Seek(Whence whence, int64 offset) {
 
   // If we're in async, make sure we don't have a request in flight.
   DCHECK(!(open_flags_ & base::PLATFORM_FILE_ASYNC) ||
-         callback_.is_null());
+         !on_io_complete_.get());
 
-  off_t res = lseek(file_, static_cast<off_t>(offset),
-                    static_cast<int>(whence));
-  if (res == static_cast<off_t>(-1)) {
-    return RecordAndMapError(errno,
-                             FILE_ERROR_SOURCE_SEEK,
-                             record_uma_,
-                             bound_net_log_);
-  }
-
-  return res;
+  off_t result = -1;
+  SeekFile(file_, whence, offset, &result, record_uma_, bound_net_log_);
+  return result;
 }
 
 int64 FileStreamPosix::Available() {
@@ -377,7 +437,7 @@ int64 FileStreamPosix::Available() {
   if (!IsOpen())
     return ERR_UNEXPECTED;
 
-  int64 cur_pos = Seek(FROM_CURRENT, 0);
+  int64 cur_pos = SeekSync(FROM_CURRENT, 0);
   if (cur_pos < 0)
     return cur_pos;
 
@@ -404,22 +464,23 @@ int FileStreamPosix::Read(
   DCHECK_GT(buf_len, 0);
   DCHECK(open_flags_ & base::PLATFORM_FILE_READ);
   DCHECK(open_flags_ & base::PLATFORM_FILE_ASYNC);
-  // Make sure we don't have a request in flight.
-  DCHECK(callback_.is_null());
 
-  callback_ = callback;
-  int* result = new int(OK);
-  scoped_refptr<IOBuffer> buf = in_buf;
+  // Make sure we don't have a request in flight.
+  DCHECK(!weak_ptr_factory_.HasWeakPtrs());
   DCHECK(!on_io_complete_.get());
+
   on_io_complete_.reset(new base::WaitableEvent(
       false  /* manual_reset */, false  /* initially_signaled */));
+
+  int* result = new int(OK);
+  scoped_refptr<IOBuffer> buf = in_buf;
   const bool posted = base::WorkerPool::PostTaskAndReply(
       FROM_HERE,
       base::Bind(&ReadFileAndSignal, file_, buf, buf_len,
                  record_uma_, result, on_io_complete_.get(), bound_net_log_),
-      base::Bind(&FileStreamPosix::OnIOComplete,
+      base::Bind(&OnIOComplete<int>,
                  weak_ptr_factory_.GetWeakPtr(),
-                 base::Owned(result)),
+                 callback, base::Owned(result)),
       true /* task is slow */);
   DCHECK(posted);
   return ERR_IO_PENDING;
@@ -469,22 +530,22 @@ int FileStreamPosix::Write(
   DCHECK(open_flags_ & base::PLATFORM_FILE_WRITE);
   // write(..., 0) will return 0, which indicates end-of-file.
   DCHECK_GT(buf_len, 0);
-  // Make sure we don't have a request in flight.
-  DCHECK(callback_.is_null());
 
-  callback_ = callback;
-  int* result = new int(OK);
-  scoped_refptr<IOBuffer> buf = in_buf;
+  // Make sure we don't have a request in flight.
+  DCHECK(!weak_ptr_factory_.HasWeakPtrs());
   DCHECK(!on_io_complete_.get());
   on_io_complete_.reset(new base::WaitableEvent(
       false  /* manual_reset */, false  /* initially_signaled */));
+
+  int* result = new int(OK);
+  scoped_refptr<IOBuffer> buf = in_buf;
   const bool posted = base::WorkerPool::PostTaskAndReply(
       FROM_HERE,
       base::Bind(&WriteFileAndSignal, file_, buf, buf_len,
                  record_uma_, result, on_io_complete_.get(), bound_net_log_),
-      base::Bind(&FileStreamPosix::OnIOComplete,
+      base::Bind(&OnIOComplete<int>,
                  weak_ptr_factory_.GetWeakPtr(),
-                 base::Owned(result)),
+                 callback, base::Owned(result)),
       true /* task is slow */);
   DCHECK(posted);
   return ERR_IO_PENDING;
@@ -515,7 +576,7 @@ int64 FileStreamPosix::Truncate(int64 bytes) {
   DCHECK(open_flags_ & base::PLATFORM_FILE_WRITE);
 
   // Seek to the position to truncate from.
-  int64 seek_position = Seek(FROM_BEGIN, bytes);
+  int64 seek_position = SeekSync(FROM_BEGIN, bytes);
   if (seek_position != bytes)
     return ERR_UNEXPECTED;
 
@@ -569,19 +630,17 @@ base::PlatformFile FileStreamPosix::GetPlatformFileForTesting() {
   return file_;
 }
 
-void FileStreamPosix::OnClosed() {
-  file_ = base::kInvalidPlatformFileValue;
-  int result = OK;
-  OnIOComplete(&result);
+void FileStreamPosix::ResetOnIOComplete() {
+  on_io_complete_.reset();
+  weak_ptr_factory_.InvalidateWeakPtrs();
 }
 
-void FileStreamPosix::OnIOComplete(int* result) {
-  CompletionCallback temp_callback = callback_;
-  callback_.Reset();
+void FileStreamPosix::OnClosed(const CompletionCallback& callback) {
+  file_ = base::kInvalidPlatformFileValue;
 
   // Reset this before Run() as Run() may issue a new async operation.
-  on_io_complete_.reset();
-  temp_callback.Run(*result);
+  ResetOnIOComplete();
+  callback.Run(OK);
 }
 
 void FileStreamPosix::WaitForIOCompletion() {
