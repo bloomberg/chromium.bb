@@ -11,7 +11,7 @@
 
 namespace gfx {
 
-template class PointBase<Point, float>;
+template class PointBase<PointF, float>;
 
 PointF::PointF() : PointBase<PointF, float>(0, 0) {
 }
