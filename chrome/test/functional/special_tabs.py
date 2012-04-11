@@ -51,7 +51,6 @@ class SpecialTabsTest(pyauto.PyUITest):
     'chrome://flags': {},
     'chrome://flash': {},
     'chrome://gpu-internals': {},
-    'chrome://help': { 'title': 'Help' },
     'chrome://histograms': { 'title': 'About Histograms' },
     'chrome://history': { 'title': 'History' },
     'chrome://media-internals': { 'title': 'Media Internals' },
@@ -62,12 +61,12 @@ class SpecialTabsTest(pyauto.PyUITest):
     'chrome://plugins': { 'title': 'Plug-ins' },
     'chrome://sessions': { 'title': 'Sessions' },
     'chrome://settings': { 'title': 'Settings' },
-    'chrome://settings/autofill': { 'title': 'Settings - Autofill Settings' },
+    'chrome://settings/autofill': { 'title': 'Settings - Autofill settings' },
     'chrome://settings/clearBrowserData':
-      { 'title': 'Settings - Clear Browsing Data' },
-    'chrome://settings/content': { 'title': 'Settings - Content Settings' },
+      { 'title': 'Settings - Clear browsing data' },
+    'chrome://settings/content': { 'title': 'Settings - Content settings' },
     'chrome://settings/languages':
-      { 'title': 'Settings - Languages and Input' },
+      { 'title': 'Settings - Languages' },
     'chrome://settings/passwords': { 'title': 'Settings - Passwords' },
     'chrome://stats': {},
     'chrome://sync': { 'title': 'Sync Internals' },
@@ -76,7 +75,7 @@ class SpecialTabsTest(pyauto.PyUITest):
     'chrome://terms': {},
     'chrome://version': { 'title': 'About Version' },
     'chrome://view-http-cache': {},
-    'chrome://workers': { 'title': 'Workers' },
+    'chrome://inspect': { 'title': 'Inspect with Chrome Developer Tools' },
   }
   broken_special_url_tabs = {
     # crashed under debug when invoked from location bar (bug 88223).
@@ -273,8 +272,6 @@ class SpecialTabsTest(pyauto.PyUITest):
       self.NavigateToURL(url)
       expected_title = 'title' in properties and properties['title'] or url
       actual_title = self.GetActiveTabTitle()
-      logging.debug('  %s title was %s (%s)' %
-                    (url, actual_title, expected_title == actual_title))
       self.assertEqual(expected_title, actual_title)
       include_list = []
       exclude_list = []
