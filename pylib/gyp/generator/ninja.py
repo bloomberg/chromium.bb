@@ -1164,6 +1164,17 @@ def OpenOutput(path):
   return open(path, 'w')
 
 
+def _WriteWinEnvironmentHelper(toplevel_build, generator_flags):
+  """It's not sufficient to have the absolute path to the compiler, linker,
+  etc. on Windows, as those tools rely on .dlls being in the PATH. We write a
+  helper .bat file that sets up the environment correctly once we've detected
+  which toolchain we want to use."""
+  out = OpenOutput(os.path.join(toplevel_build, 'set_environment.bat'))
+  vsvars_path = gyp.msvs_emulation.GetVsvarsPath(generator_flags)
+  out.write('@call "%s"\n' % vsvars_path)
+  out.close()
+
+
 def GenerateOutputForConfig(target_list, target_dicts, data, params,
                             config_name):
   options = params['options']
@@ -1175,16 +1186,19 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
   build_dir = os.path.join(generator_flags.get('output_dir', 'out'),
                            config_name)
 
+  toplevel_build = os.path.join(options.toplevel_dir, build_dir)
+
   master_ninja = ninja_syntax.Writer(
-      OpenOutput(os.path.join(options.toplevel_dir, build_dir, 'build.ninja')),
+      OpenOutput(os.path.join(toplevel_build, 'build.ninja')),
       width=120)
 
   # Put build-time support tools in out/{config_name}.
-  gyp.common.CopyTool(flavor, os.path.join(options.toplevel_dir, build_dir))
+  gyp.common.CopyTool(flavor, toplevel_build)
 
   # Grab make settings for CC/CXX.
   if flavor == 'win':
     cc = cxx = gyp.msvs_emulation.GetCLPath(generator_flags)
+    _WriteWinEnvironmentHelper(toplevel_build, generator_flags)
   else:
     cc, cxx = 'gcc', 'g++'
   build_file, _, _ = gyp.common.ParseQualifiedTarget(target_list[0])
@@ -1416,11 +1430,9 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
       obj += '.' + toolset
     output_file = os.path.join(obj, base_path, name + '.ninja')
 
-    abs_build_dir=os.path.abspath(os.path.join(options.toplevel_dir, build_dir))
+    abs_build_dir = os.path.abspath(toplevel_build)
     writer = NinjaWriter(target_outputs, base_path, build_dir,
-                         OpenOutput(os.path.join(options.toplevel_dir,
-                                                 build_dir,
-                                                 output_file)),
+                         OpenOutput(os.path.join(toplevel_build, output_file)),
                          flavor, abs_build_dir=abs_build_dir)
     master_ninja.subninja(output_file)
 

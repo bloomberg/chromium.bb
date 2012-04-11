@@ -445,6 +445,11 @@ def GetMidlPath(generator_flags):
 def GetRCPath(generator_flags):
   return _GetBinaryPath(generator_flags, 'rc.exe')
 
+def GetVsvarsPath(generator_flags):
+  vs = GetVSVersion(generator_flags)
+  return os.path.normpath(os.path.join(
+      vs.Path(), r'Common7\Tools\vsvars32.bat'))
+
 def ExpandMacros(string, expansions):
   """Expand $(Variable) per expansions dict. See MsvsSettings.GetVSMacroEnv
   for the canonical way to retrieve a suitable dict."""
