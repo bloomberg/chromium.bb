@@ -641,7 +641,7 @@ bool ChromeContentRendererClient::RunIdleHandlerWhenWidgetsHidden() {
 bool ChromeContentRendererClient::AllowPopup(const GURL& creator) {
   ChromeV8Context* current_context =
       extension_dispatcher_->v8_context_set().GetCurrent();
-  return current_context && !current_context->extension_id().empty();
+  return current_context && current_context->extension();
 }
 
 bool ChromeContentRendererClient::ShouldFork(WebFrame* frame,

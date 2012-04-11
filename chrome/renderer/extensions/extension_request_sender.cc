@@ -96,13 +96,15 @@ void ExtensionRequestSender::StartRequest(
   v8::Persistent<v8::Context> v8_context =
       v8::Persistent<v8::Context>::New(v8::Context::GetCurrent());
   DCHECK(!v8_context.IsEmpty());
+
+  std::string extension_id = current_context->GetExtensionID();
   InsertRequest(request_id, new PendingRequest(
-      v8_context, name, current_context->extension_id()));
+      v8_context, name, extension_id));
 
   ExtensionHostMsg_Request_Params params;
   params.name = name;
   params.arguments.Swap(value_args);
-  params.extension_id = current_context->extension_id();
+  params.extension_id = extension_id;
   params.source_url = source_url;
   params.source_origin = source_origin.toString();
   params.request_id = request_id;

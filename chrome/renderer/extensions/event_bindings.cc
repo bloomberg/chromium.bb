@@ -77,21 +77,20 @@ class ExtensionImpl : public ChromeV8Extension {
               event_name))
         return v8::Undefined();
 
+      std::string extension_id = context->GetExtensionID();
       EventListenerCounts& listener_counts =
-          g_listener_counts.Get()[context->extension_id()];
+          g_listener_counts.Get()[extension_id];
       if (++listener_counts[event_name] == 1) {
         content::RenderThread::Get()->Send(
-            new ExtensionHostMsg_AddListener(context->extension_id(),
-                                             event_name));
+            new ExtensionHostMsg_AddListener(extension_id, event_name));
       }
 
       // This is called the first time the page has added a listener. Since
       // the background page is the only lazy page, we know this is the first
       // time this listener has been registered.
-      if (self->IsLazyBackgroundPage(context->extension_id())) {
+      if (self->IsLazyBackgroundPage(context->extension())) {
         content::RenderThread::Get()->Send(
-            new ExtensionHostMsg_AddLazyListener(context->extension_id(),
-                                                 event_name));
+            new ExtensionHostMsg_AddLazyListener(extension_id, event_name));
       }
     }
 
@@ -111,25 +110,24 @@ class ExtensionImpl : public ChromeV8Extension {
       if (!context)
         return v8::Undefined();
 
+      std::string extension_id = context->GetExtensionID();
       EventListenerCounts& listener_counts =
-          g_listener_counts.Get()[context->extension_id()];
+          g_listener_counts.Get()[extension_id];
       std::string event_name(*v8::String::AsciiValue(args[0]));
       bool is_manual = args[1]->BooleanValue();
 
       if (--listener_counts[event_name] == 0) {
         content::RenderThread::Get()->Send(
-            new ExtensionHostMsg_RemoveListener(context->extension_id(),
-                                                event_name));
+            new ExtensionHostMsg_RemoveListener(extension_id, event_name));
       }
 
       // DetachEvent is called when the last listener for the context is
       // removed. If the context is the background page, and it removes the
       // last listener manually, then we assume that it is no longer interested
       // in being awakened for this event.
-      if (is_manual && self->IsLazyBackgroundPage(context->extension_id())) {
+      if (is_manual && self->IsLazyBackgroundPage(context->extension())) {
         content::RenderThread::Get()->Send(
-            new ExtensionHostMsg_RemoveLazyListener(context->extension_id(),
-                                                    event_name));
+            new ExtensionHostMsg_RemoveLazyListener(extension_id, event_name));
       }
     }
 
@@ -138,14 +136,12 @@ class ExtensionImpl : public ChromeV8Extension {
 
  private:
 
-  bool IsLazyBackgroundPage(const std::string& extension_id) {
+  bool IsLazyBackgroundPage(const Extension* extension) {
     content::RenderView* render_view = GetCurrentRenderView();
     if (!render_view)
       return false;
 
     ExtensionHelper* helper = ExtensionHelper::Get(render_view);
-    const ::Extension* extension =
-        extension_dispatcher()->extensions()->GetByID(extension_id);
     return (extension && extension->has_lazy_background_page() &&
             helper->view_type() == chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE);
   }

@@ -2806,7 +2806,6 @@
         'browser/extensions/extension_management_apitest.cc',
         'browser/extensions/extension_management_browsertest.cc',
         'browser/extensions/extension_messages_apitest.cc',
-        'browser/extensions/extension_messages_browsertest.cc',
         'browser/extensions/extension_metrics_apitest.cc',
         'browser/extensions/extension_module_apitest.cc',
         'browser/extensions/extension_omnibox_apitest.cc',

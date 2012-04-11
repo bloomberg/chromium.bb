@@ -89,9 +89,6 @@ class ExtensionDispatcher : public content::RenderProcessObserver {
                                 v8::Handle<v8::Context> context,
                                 int world_id);
 
-  void SetTestExtensionId(const std::string& extension_id);
-  bool IsTestExtensionId(const std::string& id);
-
   // TODO(mpcomplete): remove. http://crbug.com/100411
   bool IsAdblockWithWebRequestInstalled() const {
     return webrequest_adblock_;
@@ -221,8 +218,6 @@ class ExtensionDispatcher : public content::RenderProcessObserver {
 
   // True once WebKit has been initialized (and it is therefore safe to poke).
   bool is_webkit_initialized_;
-
-  std::string test_extension_id_;
 
   // Status of webrequest usage for known extensions.
   // TODO(mpcomplete): remove. http://crbug.com/100411

@@ -8,8 +8,10 @@
 #include "base/logging.h"
 #include "base/string_split.h"
 #include "base/values.h"
+#include "chrome/common/extensions/api/extension_api.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/renderer/extensions/chrome_v8_extension.h"
+#include "chrome/renderer/extensions/user_script_slave.h"
 #include "content/public/renderer/render_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
@@ -42,22 +44,26 @@ std::string GetContextTypeDescription(Feature::Context context_type) {
 
 ChromeV8Context::ChromeV8Context(v8::Handle<v8::Context> v8_context,
                                  WebKit::WebFrame* web_frame,
-                                 const std::string& extension_id,
+                                 const Extension* extension,
                                  Feature::Context context_type)
     : v8_context_(v8::Persistent<v8::Context>::New(v8_context)),
       web_frame_(web_frame),
-      extension_id_(extension_id),
+      extension_(extension),
       context_type_(context_type) {
-  VLOG(1) << "Created context for extension\n"
-          << "  id:           " << extension_id << "\n"
+  VLOG(1) << "Created context:\n"
+          << "  extension id: " << GetExtensionID() << "\n"
           << "  frame:        " << web_frame_ << "\n"
           << "  context type: " << GetContextTypeDescription(context_type);
 }
 
 ChromeV8Context::~ChromeV8Context() {
   VLOG(1) << "Destroyed context for extension\n"
-          << "  id:    " << extension_id_;
+          << "  extension id: " << GetExtensionID();
   v8_context_.Dispose();
+}
+
+std::string ChromeV8Context::GetExtensionID() {
+  return extension_ ? extension_->id() : "";
 }
 
 // static
@@ -146,19 +152,30 @@ bool ChromeV8Context::CallChromeHiddenMethod(
   return true;
 }
 
+const std::set<std::string>& ChromeV8Context::GetAvailableExtensionAPIs() {
+  if (!available_extension_apis_.get()) {
+    available_extension_apis_ =
+        extensions::ExtensionAPI::GetSharedInstance()->GetAPIsForContext(
+            context_type_,
+            extension_,
+            UserScriptSlave::GetDataSourceURLForFrame(web_frame_)).Pass();
+  }
+  return *(available_extension_apis_.get());
+}
+
 void ChromeV8Context::DispatchOnLoadEvent(bool is_extension_process,
                                           bool is_incognito_process,
-                                          int manifest_version) const {
+                                          int manifest_version) {
   v8::HandleScope handle_scope;
   v8::Handle<v8::Value> argv[4];
-  argv[0] = v8::String::New(extension_id_.c_str());
+  argv[0] = v8::String::New(GetExtensionID().c_str());
   argv[1] = v8::Boolean::New(is_extension_process);
   argv[2] = v8::Boolean::New(is_incognito_process);
   argv[3] = v8::Integer::New(manifest_version);
   CallChromeHiddenMethod("dispatchOnLoad", arraysize(argv), argv, NULL);
 }
 
-void ChromeV8Context::DispatchOnUnloadEvent() const {
+void ChromeV8Context::DispatchOnUnloadEvent() {
   v8::HandleScope handle_scope;
   CallChromeHiddenMethod("dispatchOnUnload", 0, NULL, NULL);
 }

@@ -141,10 +141,10 @@ class LazyBackgroundPageNativeHandler : public ChromeV8Extension {
   v8::Handle<v8::Value> IncrementKeepaliveCount(const v8::Arguments& args) {
     ChromeV8Context* context =
         extension_dispatcher()->v8_context_set().GetCurrent();
-    if (IsCurrentContextLazyBackgroundPage(context->extension_id())) {
+    if (IsCurrentContextLazyBackgroundPage(context->extension())) {
       content::RenderThread::Get()->Send(
           new ExtensionHostMsg_IncrementLazyKeepaliveCount(
-              context->extension_id()));
+              context->extension()->id()));
     }
     return v8::Undefined();
   }
@@ -152,23 +152,21 @@ class LazyBackgroundPageNativeHandler : public ChromeV8Extension {
   v8::Handle<v8::Value> DecrementKeepaliveCount(const v8::Arguments& args) {
     ChromeV8Context* context =
         extension_dispatcher()->v8_context_set().GetCurrent();
-    if (IsCurrentContextLazyBackgroundPage(context->extension_id())) {
+    if (IsCurrentContextLazyBackgroundPage(context->extension())) {
       content::RenderThread::Get()->Send(
           new ExtensionHostMsg_DecrementLazyKeepaliveCount(
-              context->extension_id()));
+              context->extension()->id()));
     }
     return v8::Undefined();
   }
 
  private:
-  bool IsCurrentContextLazyBackgroundPage(const std::string& extension_id) {
+  bool IsCurrentContextLazyBackgroundPage(const Extension* extension) {
     content::RenderView* render_view = GetCurrentRenderView();
     if (!render_view)
       return false;
 
     ExtensionHelper* helper = ExtensionHelper::Get(render_view);
-    const ::Extension* extension =
-        extension_dispatcher()->extensions()->GetByID(extension_id);
     return (extension && extension->has_lazy_background_page() &&
             helper->view_type() == chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE);
   }
@@ -569,7 +567,7 @@ void ExtensionDispatcher::DidCreateScriptContext(
   std::string extension_id = GetExtensionID(frame, world_id);
 
   const Extension* extension = extensions_.GetByID(extension_id);
-  if (!extension && !extension_id.empty() && !IsTestExtensionId(extension_id)) {
+  if (!extension && !extension_id.empty()) {
     // There are conditions where despite a context being associated with an
     // extension, no extension actually gets found.  Ignore "invalid" because
     // CSP blocks extension page loading by switching the extension ID to
@@ -578,6 +576,8 @@ void ExtensionDispatcher::DidCreateScriptContext(
       LOG(ERROR) << "Extension \"" << extension_id << "\" not found";
       RenderThread::Get()->RecordUserMetrics("ExtensionNotFound_ED");
     }
+
+    extension_id = "";
   }
 
   ExtensionURLInfo url_info(frame->document().securityOrigin(),
@@ -587,7 +587,7 @@ void ExtensionDispatcher::DidCreateScriptContext(
       ClassifyJavaScriptContext(extension_id, extension_group, url_info);
 
   ChromeV8Context* context =
-      new ChromeV8Context(v8_context, frame, extension_id, context_type);
+      new ChromeV8Context(v8_context, frame, extension, context_type);
   v8_context_set_.Add(context);
 
   scoped_ptr<ModuleSystem> module_system(new ModuleSystem(&source_map_));
@@ -637,25 +637,14 @@ void ExtensionDispatcher::DidCreateScriptContext(
       // regardless of |context_type|. ExtensionAPI knows how to return the
       // correct APIs, however, until it doesn't have a 2MB overhead we can't
       // load it in every process.
-      scoped_ptr<std::set<std::string> > apis =
-        ExtensionAPI::GetSharedInstance()->GetAPIsForContext(
-            context_type, extension, url_info.url());
-      for (std::set<std::string>::iterator i = apis->begin(); i != apis->end();
-          ++i) {
+      const std::set<std::string>& apis = context->GetAvailableExtensionAPIs();
+      for (std::set<std::string>::const_iterator i = apis.begin();
+           i != apis.end(); ++i) {
         InstallBindings(module_system.get(), v8_context, *i);
       }
 
       break;
     }
-  }
-
-  // TODO(kalman): this is probably the most unfortunate thing I've ever had to
-  // write. We really need to factor things differently to delete the concept
-  // of a test extension ID.
-  if (IsTestExtensionId(extension_id)) {
-    module_system->Require("miscellaneous_bindings");
-    module_system->Require("schema_generated_bindings");
-    InstallBindings(module_system.get(), v8_context, "extension");
   }
 
   // Inject custom JS into the platform app context to block certain features
@@ -674,9 +663,7 @@ void ExtensionDispatcher::DidCreateScriptContext(
 }
 
 std::string ExtensionDispatcher::GetExtensionID(WebFrame* frame, int world_id) {
-  if (!test_extension_id_.empty()) {
-    return test_extension_id_;
-  } else if (world_id != 0) {
+  if (world_id != 0) {
     // Isolated worlds (content script).
     return user_script_slave_->GetExtensionIdForIsolatedWorld(world_id);
   } else {
@@ -697,15 +684,6 @@ void ExtensionDispatcher::WillReleaseScriptContext(
 
   v8_context_set_.Remove(context);
   VLOG(1) << "Num tracked contexts: " << v8_context_set_.size();
-}
-
-void ExtensionDispatcher::SetTestExtensionId(const std::string& id) {
-  CHECK(!id.empty());
-  test_extension_id_ = id;
-}
-
-bool ExtensionDispatcher::IsTestExtensionId(const std::string& id) {
-  return !test_extension_id_.empty() && id == test_extension_id_;
 }
 
 void ExtensionDispatcher::OnActivateExtension(
@@ -885,12 +863,8 @@ bool ExtensionDispatcher::CheckCurrentContextAccessToExtensionAPI(
     return false;
   }
 
-  const ::Extension* extension = NULL;
-  if (!context->extension_id().empty()) {
-    extension = extensions()->GetByID(context->extension_id());
-  }
-
-  if (!extension || !extension->HasAPIPermission(function_name)) {
+  if (!context->extension() ||
+      !context->extension()->HasAPIPermission(function_name)) {
     static const char kMessage[] =
         "You do not have permission to use '%s'. Be sure to declare"
         " in your manifest what permissions you need.";
@@ -900,7 +874,7 @@ bool ExtensionDispatcher::CheckCurrentContextAccessToExtensionAPI(
     return false;
   }
 
-  if (!IsExtensionActive(extension->id()) &&
+  if (!IsExtensionActive(context->extension()->id()) &&
       ExtensionAPI::GetSharedInstance()->IsPrivileged(function_name)) {
     static const char kMessage[] =
         "%s can only be used in an extension process.";

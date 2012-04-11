@@ -30,7 +30,7 @@ class ChromeV8Context {
  public:
   ChromeV8Context(v8::Handle<v8::Context> context,
                   WebKit::WebFrame* frame,
-                  const std::string& extension_id,
+                  const Extension* extension,
                   extensions::Feature::Context context_type);
   ~ChromeV8Context();
 
@@ -38,8 +38,8 @@ class ChromeV8Context {
     return v8_context_;
   }
 
-  const std::string& extension_id() const {
-    return extension_id_;
+  const Extension* extension() const {
+    return extension_;
   }
 
   WebKit::WebFrame* web_frame() const {
@@ -56,6 +56,10 @@ class ChromeV8Context {
   void set_module_system(scoped_ptr<ModuleSystem> module_system) {
     module_system_ = module_system.Pass();
   }
+
+  // Returns the ID of the extension associated with this context, or empty
+  // string if there is no such extension.
+  std::string GetExtensionID();
 
   // Returns a special Chrome-specific hidden object that is associated with a
   // context, but not reachable from the JavaScript in that context. This is
@@ -77,8 +81,8 @@ class ChromeV8Context {
   // TODO(aa): Move this to EventBindings.
   void DispatchOnLoadEvent(bool is_extension_process,
                            bool is_incognito_process,
-                           int manifest_version) const;
-  void DispatchOnUnloadEvent() const;
+                           int manifest_version);
+  void DispatchOnUnloadEvent();
 
   // Call the named method of the chromeHidden object in this context.
   // The function can be a sub-property like "Port.dispatchOnMessage". Returns
@@ -89,6 +93,10 @@ class ChromeV8Context {
       int argc,
       v8::Handle<v8::Value>* argv,
       v8::Handle<v8::Value>* result) const;
+
+  // Returns the set of extension APIs that are available to this context. If no
+  // APIs are available, returns an empty set.
+  const std::set<std::string>& GetAvailableExtensionAPIs();
 
  private:
   // The v8 context the bindings are accessible to. We keep a strong reference
@@ -104,14 +112,18 @@ class ChromeV8Context {
   // object can outlive is destroyed asynchronously.
   WebKit::WebFrame* web_frame_;
 
-  // The extension ID this context is associated with.
-  std::string extension_id_;
+  // The extension associated with this context, or NULL if there is none. This
+  // might be a hosted app in the case that this context is hosting a web URL.
+  const Extension* extension_;
 
   // The type of context.
   extensions::Feature::Context context_type_;
 
   // Owns and structures the JS that is injected to set up extension bindings.
   scoped_ptr<ModuleSystem> module_system_;
+
+  // The extension APIs available to this context.
+  scoped_ptr<std::set<std::string> > available_extension_apis_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeV8Context);
 };

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -117,8 +117,11 @@ void ChromeV8ContextSet::DispatchChromeHiddenMethod(
     if ((*it)->v8_context().IsEmpty())
       continue;
 
-    if (!extension_id.empty() && extension_id != (*it)->extension_id())
-      continue;
+    if (!extension_id.empty()) {
+      const Extension* extension = (*it)->extension();
+      if (!extension || (extension_id != extension->id()))
+        continue;
+    }
 
     content::RenderView* context_render_view = (*it)->GetRenderView();
     if (!context_render_view)

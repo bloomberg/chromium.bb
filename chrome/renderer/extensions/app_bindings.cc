@@ -73,10 +73,7 @@ AppBindings::AppBindings(ExtensionDispatcher* dispatcher,
 
 v8::Handle<v8::Value> AppBindings::GetIsInstalled(
     const v8::Arguments& args) {
-  // TODO(aa): Hm, maybe ExtensionBindingsContext should have GetExtension()
-  // afterall?
-  const ::Extension* extension =
-      extension_dispatcher_->extensions()->GetByID(context_->extension_id());
+  const Extension* extension = context_->extension();
 
   // TODO(aa): Why only hosted app?
   bool result = extension && extension->is_hosted_app() &&
