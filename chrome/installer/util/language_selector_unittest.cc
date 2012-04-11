@@ -168,3 +168,4 @@ TEST(LanguageSelectorTest, DefaultLanguageName) {
   installer::LanguageSelector instance;
   EXPECT_FALSE(instance.GetLanguageName(instance.offset()).empty());
 }
+
