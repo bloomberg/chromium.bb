@@ -311,6 +311,7 @@ void FileBrowserEventRouter::DispatchFolderChangeEvent(
   }
 }
 
+// TODO(tbarzic): This is not used anymore. Remove it.
 void FileBrowserEventRouter::DispatchDiskEvent(
     const DiskMountManager::Disk* disk, bool added) {
   if (!profile_) {
@@ -411,11 +412,16 @@ void FileBrowserEventRouter::OnDiskAdded(
     return;
   }
 
-  // If disk is not mounted yet, give it a try.
-  if (disk->mount_path().empty()) {
+  // If disk is not mounted yet and it has media, give it a try.
+  if (disk->mount_path().empty() && disk->has_media()) {
     // Initiate disk mount operation.
     DiskMountManager::GetInstance()->MountPath(
         disk->device_path(), chromeos::MOUNT_TYPE_DEVICE);
+  } else {
+    // Either the disk was mounted or it has no media. In both cases we don't
+    // want the Scanning notification to persist.
+    notifications_->HideNotification(FileBrowserNotifications::DEVICE,
+                                     disk->system_path_prefix());
   }
   DispatchDiskEvent(disk, true);
 }
@@ -437,7 +443,7 @@ void FileBrowserEventRouter::OnDeviceAdded(
   notifications_->RegisterDevice(device_path);
   notifications_->ShowNotificationDelayed(FileBrowserNotifications::DEVICE,
                                           device_path,
-                                          4000);
+                                          5000);
 }
 
 void FileBrowserEventRouter::OnDeviceRemoved(
