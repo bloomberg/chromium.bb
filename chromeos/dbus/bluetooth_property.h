@@ -23,7 +23,7 @@ class BluetoothPropertySet : public dbus::PropertySet {
  public:
   BluetoothPropertySet(dbus::ObjectProxy* object_proxy,
                        const std::string& interface,
-                       PropertyChangedCallback callback)
+                       const PropertyChangedCallback& callback)
       : dbus::PropertySet(object_proxy, interface, callback) {}
 
   // dbus::PropertySet override.

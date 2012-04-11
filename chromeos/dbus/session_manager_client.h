@@ -60,12 +60,12 @@ class CHROMEOS_EXPORT SessionManagerClient {
 
   // Fetches the device policy blob stored by the session manager.  Upon
   // completion of the retrieve attempt, we will call the provided callback.
-  virtual void RetrieveDevicePolicy(RetrievePolicyCallback callback) = 0;
+  virtual void RetrieveDevicePolicy(const RetrievePolicyCallback& callback) = 0;
 
   // Fetches the user policy blob stored by the session manager for the
   // currently signed-in user.  Upon completion of the retrieve attempt, we will
   // call the provided callback.
-  virtual void RetrieveUserPolicy(RetrievePolicyCallback callback) = 0;
+  virtual void RetrieveUserPolicy(const RetrievePolicyCallback& callback) = 0;
 
   // Used for StoreDevicePolicy and StoreUserPolicy. Takes a boolean indicating
   // whether the operation was successful or not.
@@ -74,13 +74,13 @@ class CHROMEOS_EXPORT SessionManagerClient {
   // Attempts to asynchronously store |policy_blob| as device policy.  Upon
   // completion of the store attempt, we will call callback.
   virtual void StoreDevicePolicy(const std::string& policy_blob,
-                                 StorePolicyCallback callback) = 0;
+                                 const StorePolicyCallback& callback) = 0;
 
   // Attempts to asynchronously store |policy_blob| as user policy for the
   // currently signed-in user.  Upon completion of the store attempt, we will
   // call callback.
   virtual void StoreUserPolicy(const std::string& policy_blob,
-                               StorePolicyCallback callback) = 0;
+                               const StorePolicyCallback& callback) = 0;
 
   // Creates the instance.
   static SessionManagerClient* Create(DBusClientImplementationType type,

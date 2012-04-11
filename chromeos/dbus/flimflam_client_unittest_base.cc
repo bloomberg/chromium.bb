@@ -67,7 +67,7 @@ void FlimflamClientUnittestBase::TearDown() {
 
 void FlimflamClientUnittestBase::PrepareForMethodCall(
     const std::string& method_name,
-    ArgumentCheckCallback argument_checker,
+    const ArgumentCheckCallback& argument_checker,
     dbus::Response* response) {
   expected_method_name_ = method_name;
   argument_checker_ = argument_checker;
@@ -147,8 +147,8 @@ void FlimflamClientUnittestBase::ExpectDictionaryValueResult(
 void FlimflamClientUnittestBase::OnConnectToSignal(
     const std::string& interface_name,
     const std::string& signal_name,
-    dbus::ObjectProxy::SignalCallback signal_callback,
-    dbus::ObjectProxy::OnConnectedCallback on_connected_callback) {
+    const dbus::ObjectProxy::SignalCallback& signal_callback,
+    const dbus::ObjectProxy::OnConnectedCallback& on_connected_callback) {
   property_changed_handler_ = signal_callback;
   const bool success = true;
   message_loop_.PostTask(FROM_HERE,
@@ -161,7 +161,7 @@ void FlimflamClientUnittestBase::OnConnectToSignal(
 void FlimflamClientUnittestBase::OnCallMethod(
     dbus::MethodCall* method_call,
     int timeout_ms,
-    dbus::ObjectProxy::ResponseCallback response_callback) {
+    const dbus::ObjectProxy::ResponseCallback& response_callback) {
   EXPECT_EQ(interface_name_, method_call->GetInterface());
   EXPECT_EQ(expected_method_name_, method_call->GetMember());
   dbus::MessageReader reader(method_call);

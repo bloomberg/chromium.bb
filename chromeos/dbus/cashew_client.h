@@ -44,7 +44,8 @@ class CHROMEOS_EXPORT CashewClient {
                               dbus::Bus* bus);
 
   // Sets DataPlansUpdate signal handler.
-  virtual void SetDataPlansUpdateHandler(DataPlansUpdateHandler handler) = 0;
+  virtual void SetDataPlansUpdateHandler(
+      const DataPlansUpdateHandler& handler) = 0;
 
   // Resets DataPlansUpdate signal handler.
   virtual void ResetDataPlansUpdateHandler() = 0;

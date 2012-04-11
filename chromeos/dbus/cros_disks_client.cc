@@ -114,8 +114,8 @@ class CrosDisksClientImpl : public CrosDisksClient {
   // CrosDisksClient override.
   virtual void Mount(const std::string& source_path,
                      MountType type,
-                     MountCallback callback,
-                     ErrorCallback error_callback) OVERRIDE {
+                     const MountCallback& callback,
+                     const ErrorCallback& error_callback) OVERRIDE {
     dbus::MethodCall method_call(cros_disks::kCrosDisksInterface,
                                  cros_disks::kMount);
     dbus::MessageWriter writer(&method_call);
@@ -134,8 +134,8 @@ class CrosDisksClientImpl : public CrosDisksClient {
 
   // CrosDisksClient override.
   virtual void Unmount(const std::string& device_path,
-                       UnmountCallback callback,
-                       ErrorCallback error_callback) OVERRIDE {
+                       const UnmountCallback& callback,
+                       const ErrorCallback& error_callback) OVERRIDE {
     dbus::MethodCall method_call(cros_disks::kCrosDisksInterface,
                                  cros_disks::kUnmount);
     dbus::MessageWriter writer(&method_call);
@@ -154,8 +154,8 @@ class CrosDisksClientImpl : public CrosDisksClient {
 
   // CrosDisksClient override.
   virtual void EnumerateAutoMountableDevices(
-      EnumerateAutoMountableDevicesCallback callback,
-      ErrorCallback error_callback) OVERRIDE {
+      const EnumerateAutoMountableDevicesCallback& callback,
+      const ErrorCallback& error_callback) OVERRIDE {
     dbus::MethodCall method_call(cros_disks::kCrosDisksInterface,
                                  cros_disks::kEnumerateAutoMountableDevices);
     proxy_->CallMethod(
@@ -169,8 +169,8 @@ class CrosDisksClientImpl : public CrosDisksClient {
   // CrosDisksClient override.
   virtual void FormatDevice(const std::string& device_path,
                             const std::string& filesystem,
-                            FormatDeviceCallback callback,
-                            ErrorCallback error_callback) OVERRIDE {
+                            const FormatDeviceCallback& callback,
+                            const ErrorCallback& error_callback) OVERRIDE {
     dbus::MethodCall method_call(cros_disks::kCrosDisksInterface,
                                  cros_disks::kFormatDevice);
     dbus::MessageWriter writer(&method_call);
@@ -185,9 +185,10 @@ class CrosDisksClientImpl : public CrosDisksClient {
   }
 
   // CrosDisksClient override.
-  virtual void GetDeviceProperties(const std::string& device_path,
-                                   GetDevicePropertiesCallback callback,
-                                   ErrorCallback error_callback) OVERRIDE {
+  virtual void GetDeviceProperties(
+      const std::string& device_path,
+      const GetDevicePropertiesCallback& callback,
+      const ErrorCallback& error_callback) OVERRIDE {
     dbus::MethodCall method_call(cros_disks::kCrosDisksInterface,
                                  cros_disks::kGetDeviceProperties);
     dbus::MessageWriter writer(&method_call);
@@ -203,8 +204,8 @@ class CrosDisksClientImpl : public CrosDisksClient {
 
   // CrosDisksClient override.
   virtual void SetUpConnections(
-      MountEventHandler mount_event_handler,
-      MountCompletedHandler mount_completed_handler) OVERRIDE {
+      const MountEventHandler& mount_event_handler,
+      const MountCompletedHandler& mount_completed_handler) OVERRIDE {
     static const SignalEventTuple kSignalEventTuples[] = {
       { cros_disks::kDeviceAdded, DEVICE_ADDED },
       { cros_disks::kDeviceScanned, DEVICE_SCANNED },
@@ -246,8 +247,8 @@ class CrosDisksClientImpl : public CrosDisksClient {
   };
 
   // Handles the result of Mount and calls |callback| or |error_callback|.
-  void OnMount(MountCallback callback,
-               ErrorCallback error_callback,
+  void OnMount(const MountCallback& callback,
+               const ErrorCallback& error_callback,
                dbus::Response* response) {
     if (!response) {
       error_callback.Run();
@@ -258,8 +259,8 @@ class CrosDisksClientImpl : public CrosDisksClient {
 
   // Handles the result of Unount and calls |callback| or |error_callback|.
   void OnUnmount(const std::string& device_path,
-                 UnmountCallback callback,
-                 ErrorCallback error_callback,
+                 const UnmountCallback& callback,
+                 const ErrorCallback& error_callback,
                  dbus::Response* response) {
     if (!response) {
       error_callback.Run();
@@ -271,8 +272,8 @@ class CrosDisksClientImpl : public CrosDisksClient {
   // Handles the result of EnumerateAutoMountableDevices and calls |callback| or
   // |error_callback|.
   void OnEnumerateAutoMountableDevices(
-      EnumerateAutoMountableDevicesCallback callback,
-      ErrorCallback error_callback,
+      const EnumerateAutoMountableDevicesCallback& callback,
+      const ErrorCallback& error_callback,
       dbus::Response* response) {
     if (!response) {
       error_callback.Run();
@@ -291,8 +292,8 @@ class CrosDisksClientImpl : public CrosDisksClient {
   // Handles the result of FormatDevice and calls |callback| or
   // |error_callback|.
   void OnFormatDevice(const std::string& device_path,
-                      FormatDeviceCallback callback,
-                      ErrorCallback error_callback,
+                      const FormatDeviceCallback& callback,
+                      const ErrorCallback& error_callback,
                       dbus::Response* response) {
     if (!response) {
       error_callback.Run();
@@ -311,8 +312,8 @@ class CrosDisksClientImpl : public CrosDisksClient {
   // Handles the result of GetDeviceProperties and calls |callback| or
   // |error_callback|.
   void OnGetDeviceProperties(const std::string& device_path,
-                             GetDevicePropertiesCallback callback,
-                             ErrorCallback error_callback,
+                             const GetDevicePropertiesCallback& callback,
+                             const ErrorCallback& error_callback,
                              dbus::Response* response) {
     if (!response) {
       error_callback.Run();
@@ -375,24 +376,25 @@ class CrosDisksClientStubImpl : public CrosDisksClient {
 
   virtual void Mount(const std::string& source_path,
                      MountType type,
-                     MountCallback callback,
-                     ErrorCallback error_callback) OVERRIDE {}
+                     const MountCallback& callback,
+                     const ErrorCallback& error_callback) OVERRIDE {}
   virtual void Unmount(const std::string& device_path,
-                       UnmountCallback callback,
-                       ErrorCallback error_callback) OVERRIDE {}
+                       const UnmountCallback& callback,
+                       const ErrorCallback& error_callback) OVERRIDE {}
   virtual void EnumerateAutoMountableDevices(
-      EnumerateAutoMountableDevicesCallback callback,
-      ErrorCallback error_callback) OVERRIDE {}
+      const EnumerateAutoMountableDevicesCallback& callback,
+      const ErrorCallback& error_callback) OVERRIDE {}
   virtual void FormatDevice(const std::string& device_path,
                             const std::string& filesystem,
-                            FormatDeviceCallback callback,
-                            ErrorCallback error_callback) OVERRIDE {}
-  virtual void GetDeviceProperties(const std::string& device_path,
-                                   GetDevicePropertiesCallback callback,
-                                   ErrorCallback error_callback) OVERRIDE {}
+                            const FormatDeviceCallback& callback,
+                            const ErrorCallback& error_callback) OVERRIDE {}
+  virtual void GetDeviceProperties(
+      const std::string& device_path,
+      const GetDevicePropertiesCallback& callback,
+      const ErrorCallback& error_callback) OVERRIDE {}
   virtual void SetUpConnections(
-      MountEventHandler mount_event_handler,
-      MountCompletedHandler mount_completed_handler) OVERRIDE {}
+      const MountEventHandler& mount_event_handler,
+      const MountCompletedHandler& mount_completed_handler) OVERRIDE {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CrosDisksClientStubImpl);

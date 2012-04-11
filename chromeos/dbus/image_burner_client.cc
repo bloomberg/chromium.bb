@@ -45,7 +45,7 @@ class ImageBurnerClientImpl : public ImageBurnerClient {
   // ImageBurnerClient override.
   virtual void BurnImage(const std::string& from_path,
                          const std::string& to_path,
-                         ErrorCallback error_callback) OVERRIDE {
+                         const ErrorCallback& error_callback) OVERRIDE {
     dbus::MethodCall method_call(imageburn::kImageBurnServiceInterface,
                                  imageburn::kBurnImage);
     dbus::MessageWriter writer(&method_call);
@@ -59,8 +59,8 @@ class ImageBurnerClientImpl : public ImageBurnerClient {
 
   // ImageBurnerClient override.
   virtual void SetEventHandlers(
-      BurnFinishedHandler burn_finished_handler,
-      BurnProgressUpdateHandler burn_progress_update_handler) OVERRIDE {
+      const BurnFinishedHandler& burn_finished_handler,
+      const BurnProgressUpdateHandler& burn_progress_update_handler) OVERRIDE {
     burn_finished_handler_ = burn_finished_handler;
     burn_progress_update_handler_ = burn_progress_update_handler;
   }
@@ -136,10 +136,10 @@ class ImageBurnerClientStubImpl : public ImageBurnerClient {
   virtual ~ImageBurnerClientStubImpl() {}
   virtual void BurnImage(const std::string& from_path,
                          const std::string& to_path,
-                         ErrorCallback error_callback) OVERRIDE {}
+                         const ErrorCallback& error_callback) OVERRIDE {}
   virtual void SetEventHandlers(
-      BurnFinishedHandler burn_finished_handler,
-      BurnProgressUpdateHandler burn_progress_update_handler) OVERRIDE {}
+      const BurnFinishedHandler& burn_finished_handler,
+      const BurnProgressUpdateHandler& burn_progress_update_handler) OVERRIDE {}
   virtual void ResetEventHandlers() OVERRIDE {}
 
  private:

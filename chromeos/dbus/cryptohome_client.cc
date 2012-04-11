@@ -42,7 +42,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
   }
 
   // CryptohomeClient override.
-  virtual void SetAsyncCallStatusHandler(AsyncCallStatusHandler handler)
+  virtual void SetAsyncCallStatusHandler(const AsyncCallStatusHandler& handler)
       OVERRIDE {
     async_call_status_handler_ = handler;
   }
@@ -67,7 +67,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
   // CryptohomeClient override.
   virtual void AsyncCheckKey(const std::string& username,
                              const std::string& key,
-                             AsyncMethodCallback callback) OVERRIDE {
+                             const AsyncMethodCallback& callback) OVERRIDE {
     INITIALIZE_METHOD_CALL(method_call, cryptohome::kCryptohomeAsyncCheckKey);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(username);
@@ -82,7 +82,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
   virtual void AsyncMigrateKey(const std::string& username,
                                const std::string& from_key,
                                const std::string& to_key,
-                               AsyncMethodCallback callback) OVERRIDE {
+                               const AsyncMethodCallback& callback) OVERRIDE {
     INITIALIZE_METHOD_CALL(method_call, cryptohome::kCryptohomeAsyncMigrateKey);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(username);
@@ -96,7 +96,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
 
   // CryptohomeClient override.
   virtual void AsyncRemove(const std::string& username,
-                           AsyncMethodCallback callback) OVERRIDE {
+                           const AsyncMethodCallback& callback) OVERRIDE {
     INITIALIZE_METHOD_CALL(method_call, cryptohome::kCryptohomeAsyncRemove);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(username);
@@ -126,7 +126,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
   virtual void AsyncMount(const std::string& username,
                           const std::string& key,
                           const bool create_if_missing,
-                          AsyncMethodCallback callback) OVERRIDE {
+                          const AsyncMethodCallback& callback) OVERRIDE {
     INITIALIZE_METHOD_CALL(method_call, cryptohome::kCryptohomeAsyncMount);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(username);
@@ -142,7 +142,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
   }
 
   // CryptohomeClient override.
-  virtual void AsyncMountGuest(AsyncMethodCallback callback) OVERRIDE {
+  virtual void AsyncMountGuest(const AsyncMethodCallback& callback) OVERRIDE {
     INITIALIZE_METHOD_CALL(method_call, cryptohome::kCryptohomeAsyncMountGuest);
     proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
                        base::Bind(&CryptohomeClientImpl::OnAsyncMethodCall,
@@ -157,7 +157,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
   }
 
   // CryptohomeClient override.
-  virtual void TpmIsEnabled(BoolMethodCallback callback) OVERRIDE {
+  virtual void TpmIsEnabled(const BoolMethodCallback& callback) OVERRIDE {
     INITIALIZE_METHOD_CALL(method_call, cryptohome::kCryptohomeTpmIsEnabled);
     proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
@@ -219,7 +219,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
   }
 
   // CryptohomeClient override.
-  virtual void Pkcs11IsTpmTokenReady(BoolMethodCallback callback)
+  virtual void Pkcs11IsTpmTokenReady(const BoolMethodCallback& callback)
       OVERRIDE {
     INITIALIZE_METHOD_CALL(method_call,
                            cryptohome::kCryptohomePkcs11IsTpmTokenReady);
@@ -232,8 +232,8 @@ class CryptohomeClientImpl : public CryptohomeClient {
   }
 
   // CryptohomeClient override.
-  virtual void Pkcs11GetTpmTokenInfo(Pkcs11GetTpmTokenInfoCallback callback)
-      OVERRIDE {
+  virtual void Pkcs11GetTpmTokenInfo(
+      const Pkcs11GetTpmTokenInfoCallback& callback) OVERRIDE {
     INITIALIZE_METHOD_CALL(method_call,
                            cryptohome::kCryptohomePkcs11GetTpmTokenInfo);
     proxy_->CallMethod(
@@ -309,7 +309,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
 
  private:
   // Handles the result of AsyncXXX methods.
-  void OnAsyncMethodCall(AsyncMethodCallback callback,
+  void OnAsyncMethodCall(const AsyncMethodCallback& callback,
                          dbus::Response* response) {
     if (!response)
       return;
@@ -334,7 +334,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
   }
 
   // Handles responses for methods with a bool value result.
-  void OnBoolMethod(BoolMethodCallback callback,
+  void OnBoolMethod(const BoolMethodCallback& callback,
                     dbus::Response* response) {
     if (!response) {
       callback.Run(DBUS_METHOD_CALL_FAILURE, false);
@@ -350,7 +350,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
   }
 
   // Handles responses for Pkcs11GetTpmtTokenInfo.
-  void OnPkcs11GetTpmTokenInfo(Pkcs11GetTpmTokenInfoCallback callback,
+  void OnPkcs11GetTpmTokenInfo(const Pkcs11GetTpmTokenInfoCallback& callback,
                                dbus::Response* response) {
     if (!response) {
       callback.Run(DBUS_METHOD_CALL_FAILURE, std::string(), std::string());
@@ -411,7 +411,7 @@ class CryptohomeClientStubImpl : public CryptohomeClient {
   virtual ~CryptohomeClientStubImpl() {}
 
   // CryptohomeClient override.
-  virtual void SetAsyncCallStatusHandler(AsyncCallStatusHandler handler)
+  virtual void SetAsyncCallStatusHandler(const AsyncCallStatusHandler& handler)
       OVERRIDE {
     async_call_status_handler_ = handler;
   }
@@ -436,7 +436,7 @@ class CryptohomeClientStubImpl : public CryptohomeClient {
   // CryptohomeClient override.
   virtual void AsyncCheckKey(const std::string& username,
                              const std::string& key,
-                             AsyncMethodCallback callback) OVERRIDE {
+                             const AsyncMethodCallback& callback) OVERRIDE {
     ReturnAsyncMethodResult(callback);
   }
 
@@ -444,13 +444,13 @@ class CryptohomeClientStubImpl : public CryptohomeClient {
   virtual void AsyncMigrateKey(const std::string& username,
                                const std::string& from_key,
                                const std::string& to_key,
-                               AsyncMethodCallback callback) OVERRIDE {
+                               const AsyncMethodCallback& callback) OVERRIDE {
     ReturnAsyncMethodResult(callback);
   }
 
   // CryptohomeClient override.
   virtual void AsyncRemove(const std::string& username,
-                           AsyncMethodCallback callback) OVERRIDE {
+                           const AsyncMethodCallback& callback) OVERRIDE {
     ReturnAsyncMethodResult(callback);
   }
 
@@ -466,12 +466,12 @@ class CryptohomeClientStubImpl : public CryptohomeClient {
   virtual void AsyncMount(const std::string& username,
                           const std::string& key,
                           const bool create_if_missing,
-                          AsyncMethodCallback callback) OVERRIDE {
+                          const AsyncMethodCallback& callback) OVERRIDE {
     ReturnAsyncMethodResult(callback);
   }
 
   // CryptohomeClient override.
-  virtual void AsyncMountGuest(AsyncMethodCallback callback) OVERRIDE {
+  virtual void AsyncMountGuest(const AsyncMethodCallback& callback) OVERRIDE {
     ReturnAsyncMethodResult(callback);
   }
 
@@ -482,7 +482,7 @@ class CryptohomeClientStubImpl : public CryptohomeClient {
   }
 
   // CryptohomeClient override.
-  virtual void TpmIsEnabled(BoolMethodCallback callback) OVERRIDE {
+  virtual void TpmIsEnabled(const BoolMethodCallback& callback) OVERRIDE {
     MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, true));
   }
@@ -519,14 +519,15 @@ class CryptohomeClientStubImpl : public CryptohomeClient {
   virtual bool TpmClearStoredPassword() OVERRIDE { return true; }
 
   // CryptohomeClient override.
-  virtual void Pkcs11IsTpmTokenReady(BoolMethodCallback callback) OVERRIDE {
+  virtual void Pkcs11IsTpmTokenReady(
+      const BoolMethodCallback& callback) OVERRIDE {
     MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, true));
   }
 
   // CryptohomeClient override.
   virtual void Pkcs11GetTpmTokenInfo(
-      Pkcs11GetTpmTokenInfoCallback callback) OVERRIDE {
+      const Pkcs11GetTpmTokenInfoCallback& callback) OVERRIDE {
     const char kStubLabel[] = "Stub TPM Token";
     const char kStubUserPin[] = "012345";
     MessageLoop::current()->PostTask(
@@ -585,7 +586,7 @@ class CryptohomeClientStubImpl : public CryptohomeClient {
 
  private:
   // Posts tasks which return fake results to the UI thread.
-  void ReturnAsyncMethodResult(AsyncMethodCallback callback) {
+  void ReturnAsyncMethodResult(const AsyncMethodCallback& callback) {
     MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&CryptohomeClientStubImpl::ReturnAsyncMethodResultInternal,
@@ -594,7 +595,7 @@ class CryptohomeClientStubImpl : public CryptohomeClient {
   }
 
   // This method is used to implement ReturnAsyncMethodResult.
-  void ReturnAsyncMethodResultInternal(AsyncMethodCallback callback) {
+  void ReturnAsyncMethodResultInternal(const AsyncMethodCallback& callback) {
     callback.Run(async_call_id_);
     if (!async_call_status_handler_.is_null()) {
       MessageLoop::current()->PostTask(

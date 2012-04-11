@@ -162,7 +162,7 @@ class CHROMEOS_EXPORT PowerManagerClient {
       uint32 request_id,
       uint32 duration,
       int overrides,
-      PowerStateRequestIdCallback callback) = 0;
+      const PowerStateRequestIdCallback& callback) = 0;
 
   // Creates the instance.
   static PowerManagerClient* Create(DBusClientImplementationType type,

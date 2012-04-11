@@ -25,12 +25,12 @@ class MockSessionManagerClient : public SessionManagerClient {
   MOCK_METHOD2(RestartJob, void(int, const std::string&));
   MOCK_METHOD1(StartSession, void(const std::string&));
   MOCK_METHOD0(StopSession, void(void));
-  MOCK_METHOD1(RetrieveDevicePolicy, void(RetrievePolicyCallback));
-  MOCK_METHOD1(RetrieveUserPolicy, void(RetrievePolicyCallback));
+  MOCK_METHOD1(RetrieveDevicePolicy, void(const RetrievePolicyCallback&));
+  MOCK_METHOD1(RetrieveUserPolicy, void(const RetrievePolicyCallback&));
   MOCK_METHOD2(StoreDevicePolicy, void(const std::string&,
-                                       StorePolicyCallback));
+                                       const StorePolicyCallback&));
   MOCK_METHOD2(StoreUserPolicy, void(const std::string&,
-                                     StorePolicyCallback));
+                                     const StorePolicyCallback&));
 };
 
 }  // namespace chromeos

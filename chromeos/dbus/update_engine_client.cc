@@ -87,7 +87,8 @@ class UpdateEngineClientImpl : public UpdateEngineClient {
   }
 
   // UpdateEngineClient override.
-  virtual void RequestUpdateCheck(UpdateCheckCallback callback) OVERRIDE {
+  virtual void RequestUpdateCheck(
+      const UpdateCheckCallback& callback) OVERRIDE {
     dbus::MethodCall method_call(
         update_engine::kUpdateEngineInterface,
         update_engine::kAttemptUpdate);
@@ -135,7 +136,8 @@ class UpdateEngineClientImpl : public UpdateEngineClient {
   }
 
   // UpdateEngineClient override.
-  virtual void GetReleaseTrack(GetReleaseTrackCallback callback) OVERRIDE {
+  virtual void GetReleaseTrack(
+      const GetReleaseTrackCallback& callback) OVERRIDE {
     dbus::MethodCall method_call(
         update_engine::kUpdateEngineInterface,
         update_engine::kGetTrack);
@@ -156,7 +158,7 @@ class UpdateEngineClientImpl : public UpdateEngineClient {
 
  private:
   // Called when a response for RequestUpdateCheck() is received.
-  void OnRequestUpdateCheck(UpdateCheckCallback callback,
+  void OnRequestUpdateCheck(const UpdateCheckCallback& callback,
                             dbus::Response* response) {
     if (!response) {
       LOG(ERROR) << "Failed to request update check";
@@ -183,7 +185,7 @@ class UpdateEngineClientImpl : public UpdateEngineClient {
   }
 
   // Called when a response for GetReleaseTrack() is received.
-  void OnGetReleaseTrack(GetReleaseTrackCallback callback,
+  void OnGetReleaseTrack(const GetReleaseTrackCallback& callback,
                          dbus::Response* response) {
     if (!response) {
       LOG(ERROR) << "Failed to request getting release track";
@@ -254,12 +256,14 @@ class UpdateEngineClientStubImpl : public UpdateEngineClient {
   virtual void RemoveObserver(Observer* observer) OVERRIDE {}
   virtual bool HasObserver(Observer* observer) OVERRIDE { return false; }
 
-  virtual void RequestUpdateCheck(UpdateCheckCallback callback) OVERRIDE {
+  virtual void RequestUpdateCheck(
+      const UpdateCheckCallback& callback) OVERRIDE {
     callback.Run(UPDATE_RESULT_NOTIMPLEMENTED);
   }
   virtual void RebootAfterUpdate() OVERRIDE {}
   virtual void SetReleaseTrack(const std::string& track) OVERRIDE {}
-  virtual void GetReleaseTrack(GetReleaseTrackCallback callback) OVERRIDE {
+  virtual void GetReleaseTrack(
+      const GetReleaseTrackCallback& callback) OVERRIDE {
     callback.Run("beta-channel");
   }
   virtual Status GetLastStatus() OVERRIDE { return Status(); }

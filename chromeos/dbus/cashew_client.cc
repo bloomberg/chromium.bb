@@ -41,7 +41,7 @@ class CashewClientImpl : public CashewClient {
 
   // CashewClient override.
   virtual void SetDataPlansUpdateHandler(
-      DataPlansUpdateHandler handler) OVERRIDE {
+      const DataPlansUpdateHandler& handler) OVERRIDE {
     data_plans_update_handler_ = handler;
   }
 
@@ -101,7 +101,7 @@ class CashewClientStubImpl : public CashewClient {
 
   // CashewClient override.
   virtual void SetDataPlansUpdateHandler(
-      DataPlansUpdateHandler handler) OVERRIDE {}
+      const DataPlansUpdateHandler& handler) OVERRIDE {}
 
   // CashewClient override.
   virtual void ResetDataPlansUpdateHandler() OVERRIDE {}

@@ -134,27 +134,29 @@ class SessionManagerClientImpl : public SessionManagerClient {
   }
 
   // SessionManagerClient override.
-  virtual void RetrieveDevicePolicy(RetrievePolicyCallback callback) OVERRIDE {
+  virtual void RetrieveDevicePolicy(
+      const RetrievePolicyCallback& callback) OVERRIDE {
     CallRetrievePolicy(login_manager::kSessionManagerRetrievePolicy,
                        callback);
   }
 
   // SessionManagerClient override.
-  virtual void RetrieveUserPolicy(RetrievePolicyCallback callback) OVERRIDE {
+  virtual void RetrieveUserPolicy(
+      const RetrievePolicyCallback& callback) OVERRIDE {
     CallRetrievePolicy(login_manager::kSessionManagerRetrieveUserPolicy,
                        callback);
   }
 
   // SessionManagerClient override.
   virtual void StoreDevicePolicy(const std::string& policy_blob,
-                                 StorePolicyCallback callback) OVERRIDE {
+                                 const StorePolicyCallback& callback) OVERRIDE {
     CallStorePolicy(login_manager::kSessionManagerStorePolicy,
                     policy_blob, callback);
   }
 
   // SessionManagerClient override.
   virtual void StoreUserPolicy(const std::string& policy_blob,
-                               StorePolicyCallback callback) OVERRIDE {
+                               const StorePolicyCallback& callback) OVERRIDE {
     CallStorePolicy(login_manager::kSessionManagerStoreUserPolicy,
                     policy_blob, callback);
   }
@@ -162,7 +164,7 @@ class SessionManagerClientImpl : public SessionManagerClient {
  private:
   // Helper for Retrieve{User,Device}Policy.
   virtual void CallRetrievePolicy(const std::string& method_name,
-                                  RetrievePolicyCallback callback) {
+                                  const RetrievePolicyCallback& callback) {
     dbus::MethodCall method_call(login_manager::kSessionManagerInterface,
                                  method_name);
     session_manager_proxy_->CallMethod(
@@ -177,7 +179,7 @@ class SessionManagerClientImpl : public SessionManagerClient {
   // Helper for Store{User,Device}Policy.
   virtual void CallStorePolicy(const std::string& method_name,
                                const std::string& policy_blob,
-                               StorePolicyCallback callback) {
+                               const StorePolicyCallback& callback) {
     dbus::MethodCall method_call(login_manager::kSessionManagerInterface,
                                  method_name);
     dbus::MessageWriter writer(&method_call);
@@ -238,7 +240,7 @@ class SessionManagerClientImpl : public SessionManagerClient {
   // Called when kSessionManagerRetrievePolicy or
   // kSessionManagerRetrieveUserPolicy  method is complete.
   void OnRetrievePolicy(const std::string& method_name,
-                        RetrievePolicyCallback callback,
+                        const RetrievePolicyCallback& callback,
                         dbus::Response* response) {
     if (!response) {
       LOG(ERROR) << "Failed to call " << method_name;
@@ -261,7 +263,7 @@ class SessionManagerClientImpl : public SessionManagerClient {
   // Called when kSessionManagerStorePolicy or kSessionManagerStoreUserPolicy
   // method is complete.
   void OnStorePolicy(const std::string& method_name,
-                     StorePolicyCallback callback,
+                     const StorePolicyCallback& callback,
                      dbus::Response* response) {
     bool success = false;
     if (!response) {
@@ -324,18 +326,20 @@ class SessionManagerClientStubImpl : public SessionManagerClient {
   virtual void RestartEntd() OVERRIDE {}
   virtual void StartSession(const std::string& user_email) OVERRIDE {}
   virtual void StopSession() OVERRIDE {}
-  virtual void RetrieveDevicePolicy(RetrievePolicyCallback callback) OVERRIDE {
+  virtual void RetrieveDevicePolicy(
+      const RetrievePolicyCallback& callback) OVERRIDE {
     callback.Run("");
   }
-  virtual void RetrieveUserPolicy(RetrievePolicyCallback callback) OVERRIDE {
+  virtual void RetrieveUserPolicy(
+      const RetrievePolicyCallback& callback) OVERRIDE {
     callback.Run("");
   }
   virtual void StoreDevicePolicy(const std::string& policy_blob,
-                                 StorePolicyCallback callback) OVERRIDE {
+                                 const StorePolicyCallback& callback) OVERRIDE {
     callback.Run(true);
   }
   virtual void StoreUserPolicy(const std::string& policy_blob,
-                               StorePolicyCallback callback) OVERRIDE {
+                               const StorePolicyCallback& callback) OVERRIDE {
     callback.Run(true);
   }
 };

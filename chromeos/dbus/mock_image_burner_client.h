@@ -18,10 +18,11 @@ class MockImageBurnerClient : public ImageBurnerClient {
   MockImageBurnerClient();
   virtual ~MockImageBurnerClient();
 
-  MOCK_METHOD3(BurnImage,
-               void(const std::string&, const std::string&, ErrorCallback));
-  MOCK_METHOD2(SetEventHandlers,
-                void(BurnFinishedHandler, BurnProgressUpdateHandler));
+  MOCK_METHOD3(BurnImage, void(const std::string&,
+                               const std::string&,
+                               const ErrorCallback&));
+  MOCK_METHOD2(SetEventHandlers, void(const BurnFinishedHandler&,
+                                      const BurnProgressUpdateHandler&));
   MOCK_METHOD0(ResetEventHandlers, void());
 
 };

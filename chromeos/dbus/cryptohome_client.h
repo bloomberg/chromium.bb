@@ -51,7 +51,8 @@ class CHROMEOS_EXPORT CryptohomeClient {
   // |handler| is called when results for AsyncXXX methods are returned.
   // Cryptohome service will process the calls in a first-in-first-out manner
   // when they are made in parallel.
-  virtual void SetAsyncCallStatusHandler(AsyncCallStatusHandler handler) = 0;
+  virtual void SetAsyncCallStatusHandler(
+      const AsyncCallStatusHandler& handler) = 0;
 
   // Resets AsyncCallStatus signal handler.
   virtual void ResetAsyncCallStatusHandler() = 0;
@@ -68,19 +69,19 @@ class CHROMEOS_EXPORT CryptohomeClient {
   // succeeds.
   virtual void AsyncCheckKey(const std::string& username,
                              const std::string& key,
-                             AsyncMethodCallback callback) = 0;
+                             const AsyncMethodCallback& callback) = 0;
 
   // Calls AsyncMigrateKey method.  |callback| is called after the method call
   // succeeds.
   virtual void AsyncMigrateKey(const std::string& username,
                                const std::string& from_key,
                                const std::string& to_key,
-                               AsyncMethodCallback callback) = 0;
+                               const AsyncMethodCallback& callback) = 0;
 
   // Calls AsyncRemove method.  |callback| is called after the method call
   // succeeds.
   virtual void AsyncRemove(const std::string& username,
-                           AsyncMethodCallback callback) = 0;
+                           const AsyncMethodCallback& callback) = 0;
 
   // Calls GetSystemSalt method.  This method blocks until the call returns.
   // The original content of |salt| is lost.
@@ -91,18 +92,18 @@ class CHROMEOS_EXPORT CryptohomeClient {
   virtual void AsyncMount(const std::string& username,
                           const std::string& key,
                           const bool create_if_missing,
-                          AsyncMethodCallback callback) = 0;
+                          const AsyncMethodCallback& callback) = 0;
 
   // Calls AsyncMountGuest method.  |callback| is called after the method call
   // succeeds.
-  virtual void AsyncMountGuest(AsyncMethodCallback callback) = 0;
+  virtual void AsyncMountGuest(const AsyncMethodCallback& callback) = 0;
 
   // Calls TpmIsReady method and returns true when the call succeeds.
   // This method blocks until the call returns.
   virtual bool TpmIsReady(bool* ready) = 0;
 
   // Calls TpmIsEnabled method.
-  virtual void TpmIsEnabled(BoolMethodCallback callback) = 0;
+  virtual void TpmIsEnabled(const BoolMethodCallback& callback) = 0;
 
   // Calls TpmIsEnabled method and returns true when the call succeeds.
   // This method blocks until the call returns.
@@ -131,11 +132,11 @@ class CHROMEOS_EXPORT CryptohomeClient {
   virtual bool TpmClearStoredPassword() = 0;
 
   // Calls Pkcs11IsTpmTokenReady method.
-  virtual void Pkcs11IsTpmTokenReady(BoolMethodCallback callback) = 0;
+  virtual void Pkcs11IsTpmTokenReady(const BoolMethodCallback& callback) = 0;
 
   // Calls Pkcs11GetTpmTokenInfo method.
   virtual void Pkcs11GetTpmTokenInfo(
-      Pkcs11GetTpmTokenInfoCallback callback) = 0;
+      const Pkcs11GetTpmTokenInfoCallback& callback) = 0;
 
   // Calls InstallAttributesGet method and returns true when the call succeeds.
   // This method blocks until the call returns.

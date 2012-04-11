@@ -224,7 +224,7 @@ class PowerManagerClientImpl : public PowerManagerClient {
       uint32 request_id,
       uint32 duration,
       int overrides,
-      PowerStateRequestIdCallback callback) OVERRIDE {
+      const PowerStateRequestIdCallback& callback) OVERRIDE {
     dbus::MethodCall method_call(power_manager::kPowerManagerInterface,
                                  power_manager::kStateOverrideRequest);
     dbus::MessageWriter writer(&method_call);
@@ -544,7 +544,7 @@ class PowerManagerClientStubImpl : public PowerManagerClient {
       uint32 request_id,
       uint32 duration,
       int overrides,
-      PowerStateRequestIdCallback callback) OVERRIDE {}
+      const PowerStateRequestIdCallback& callback) OVERRIDE {}
 
   virtual void NotifyScreenLockRequested() OVERRIDE {
     FOR_EACH_OBSERVER(Observer, observers_, LockScreen());

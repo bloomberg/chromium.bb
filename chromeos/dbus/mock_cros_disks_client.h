@@ -18,18 +18,25 @@ class MockCrosDisksClient : public CrosDisksClient {
   MockCrosDisksClient();
   virtual ~MockCrosDisksClient();
 
-  MOCK_METHOD4(Mount, void(const std::string&, MountType, MountCallback,
-                           ErrorCallback));
-  MOCK_METHOD3(Unmount, void(const std::string&, UnmountCallback,
-                             ErrorCallback));
-  MOCK_METHOD2(EnumerateAutoMountableDevices, void(
-      EnumerateAutoMountableDevicesCallback, ErrorCallback));
-  MOCK_METHOD4(FormatDevice, void(const std::string&, const std::string&,
-                                  FormatDeviceCallback, ErrorCallback));
-  MOCK_METHOD3(GetDeviceProperties, void(
-      const std::string&, GetDevicePropertiesCallback, ErrorCallback));
-  MOCK_METHOD2(SetUpConnections, void(MountEventHandler,
-                                      MountCompletedHandler));
+  MOCK_METHOD4(Mount, void(const std::string&,
+                           MountType,
+                           const MountCallback&,
+                           const ErrorCallback&));
+  MOCK_METHOD3(Unmount, void(const std::string&,
+                             const UnmountCallback&,
+                             const ErrorCallback&));
+  MOCK_METHOD2(EnumerateAutoMountableDevices,
+               void(const EnumerateAutoMountableDevicesCallback&,
+                    const ErrorCallback&));
+  MOCK_METHOD4(FormatDevice, void(const std::string&,
+                                  const std::string&,
+                                  const FormatDeviceCallback&,
+                                  const ErrorCallback&));
+  MOCK_METHOD3(GetDeviceProperties, void(const std::string&,
+                                         const GetDevicePropertiesCallback&,
+                                         const ErrorCallback&));
+  MOCK_METHOD2(SetUpConnections, void(const MountEventHandler&,
+                                      const MountCompletedHandler&));
 };
 
 }  // namespace chromeos

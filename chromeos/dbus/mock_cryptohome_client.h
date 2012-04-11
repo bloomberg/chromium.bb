@@ -18,39 +18,40 @@ class MockCryptohomeClient : public CryptohomeClient {
   MockCryptohomeClient();
   virtual ~MockCryptohomeClient();
 
-  MOCK_METHOD1(SetAsyncCallStatusHandler, void(AsyncCallStatusHandler handler));
+  MOCK_METHOD1(SetAsyncCallStatusHandler,
+               void(const AsyncCallStatusHandler& handler));
   MOCK_METHOD0(ResetAsyncCallStatusHandler, void());
   MOCK_METHOD1(IsMounted, bool(bool* is_mounted));
   MOCK_METHOD1(Unmount, bool(bool* success));
   MOCK_METHOD3(AsyncCheckKey,
                void(const std::string& username,
                     const std::string& key,
-                    base::Callback<void(int async_id)> callback));
+                    const AsyncMethodCallback& callback));
   MOCK_METHOD4(AsyncMigrateKey,
                void(const std::string& username,
                     const std::string& from_key,
                     const std::string& to_key,
-                    base::Callback<void(int async_id)> callback));
+                    const AsyncMethodCallback& callback));
   MOCK_METHOD2(AsyncRemove, void(const std::string& username,
-                                 base::Callback<void(int async_id)> callback));
+                                 const AsyncMethodCallback& callback));
   MOCK_METHOD1(GetSystemSalt, bool(std::vector<uint8>* salt));
   MOCK_METHOD4(AsyncMount, void(const std::string& username,
                                 const std::string& key,
                                 const bool create_if_missing,
-                                base::Callback<void(int async_id)> callback));
+                                const AsyncMethodCallback& callback));
   MOCK_METHOD1(AsyncMountGuest,
-               void(base::Callback<void(int async_id)> callback));
+               void(const AsyncMethodCallback& callback));
   MOCK_METHOD1(TpmIsReady, bool(bool* ready));
-  MOCK_METHOD1(TpmIsEnabled, void(BoolMethodCallback callback));
+  MOCK_METHOD1(TpmIsEnabled, void(const BoolMethodCallback& callback));
   MOCK_METHOD1(CallTpmIsEnabledAndBlock, bool(bool* enabled));
   MOCK_METHOD1(TpmGetPassword, bool(std::string* password));
   MOCK_METHOD1(TpmIsOwned, bool(bool* owned));
   MOCK_METHOD1(TpmIsBeingOwned, bool(bool* owning));
   MOCK_METHOD0(TpmCanAttemptOwnership, bool());
   MOCK_METHOD0(TpmClearStoredPassword, bool());
-  MOCK_METHOD1(Pkcs11IsTpmTokenReady, void(BoolMethodCallback callback));
+  MOCK_METHOD1(Pkcs11IsTpmTokenReady, void(const BoolMethodCallback& callback));
   MOCK_METHOD1(Pkcs11GetTpmTokenInfo,
-               void(Pkcs11GetTpmTokenInfoCallback callback));
+               void(const Pkcs11GetTpmTokenInfoCallback& callback));
   MOCK_METHOD3(InstallAttributesGet,
                bool(const std::string& name,
                     std::vector<uint8>* value,

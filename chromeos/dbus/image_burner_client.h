@@ -42,15 +42,15 @@ class CHROMEOS_EXPORT ImageBurnerClient {
   // Burns the image |from_path| to the disk |to_path|.
   virtual void BurnImage(const std::string& from_path,
                          const std::string& to_path,
-                         ErrorCallback error_callback) = 0;
+                         const ErrorCallback& error_callback) = 0;
 
   // Sets callbacks as event handlers.
   // |burn_finished_handler| is called when burn_finished signal is received.
   // |burn_progress_update_handler| is called when burn_progress_update signal
   // is received.
   virtual void SetEventHandlers(
-      BurnFinishedHandler burn_finished_handler,
-      BurnProgressUpdateHandler burn_progress_update_handler) = 0;
+      const BurnFinishedHandler& burn_finished_handler,
+      const BurnProgressUpdateHandler& burn_progress_update_handler) = 0;
 
   // Resets event handlers. After calling this method, nothing is done when
   // signals are received.

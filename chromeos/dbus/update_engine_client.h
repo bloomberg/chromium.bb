@@ -82,7 +82,7 @@ class CHROMEOS_EXPORT UpdateEngineClient {
   typedef base::Callback<void(UpdateCheckResult)> UpdateCheckCallback;
 
   // Requests an update check and calls |callback| when completed.
-  virtual void RequestUpdateCheck(UpdateCheckCallback callback) = 0;
+  virtual void RequestUpdateCheck(const UpdateCheckCallback& callback) = 0;
 
   // Reboots if update has been performed.
   virtual void RebootAfterUpdate() = 0;
@@ -98,7 +98,7 @@ class CHROMEOS_EXPORT UpdateEngineClient {
   // Requests to get the release track and calls |callback| with the
   // release track (channel). On error, calls |callback| with an empty
   // string.
-  virtual void GetReleaseTrack(GetReleaseTrackCallback callback) = 0;
+  virtual void GetReleaseTrack(const GetReleaseTrackCallback& callback) = 0;
 
   // Returns the last status the object received from the update engine.
   //

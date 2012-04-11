@@ -20,10 +20,10 @@ class MockUpdateEngineClient : public UpdateEngineClient {
   MOCK_METHOD1(AddObserver, void(Observer*));
   MOCK_METHOD1(RemoveObserver, void(Observer*));
   MOCK_METHOD1(HasObserver, bool(Observer*));
-  MOCK_METHOD1(RequestUpdateCheck, void(UpdateCheckCallback));
+  MOCK_METHOD1(RequestUpdateCheck, void(const UpdateCheckCallback&));
   MOCK_METHOD0(RebootAfterUpdate, void());
   MOCK_METHOD1(SetReleaseTrack, void(const std::string&));
-  MOCK_METHOD1(GetReleaseTrack, void(GetReleaseTrackCallback));
+  MOCK_METHOD1(GetReleaseTrack, void(const GetReleaseTrackCallback&));
   MOCK_METHOD0(GetLastStatus, Status());
 };
 

@@ -16,7 +16,8 @@ class MockCashewClient : public CashewClient {
   MockCashewClient();
   virtual ~MockCashewClient();
 
-  MOCK_METHOD1(SetDataPlansUpdateHandler, void(DataPlansUpdateHandler handler));
+  MOCK_METHOD1(SetDataPlansUpdateHandler,
+               void(const DataPlansUpdateHandler& handler));
   MOCK_METHOD0(ResetDataPlansUpdateHandler, void());
   MOCK_METHOD0(RequestDataPlansUpdate, void());
 };

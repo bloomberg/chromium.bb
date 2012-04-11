@@ -47,7 +47,7 @@ class FlimflamClientUnittestBase : public testing::Test {
 
   // Sets expectations for called method name and arguments, and sets response.
   void PrepareForMethodCall(const std::string& method_name,
-                            ArgumentCheckCallback argument_checker,
+                            const ArgumentCheckCallback& argument_checker,
                             dbus::Response* response);
 
   // Sends property changed signal to the tested client.
@@ -95,14 +95,15 @@ class FlimflamClientUnittestBase : public testing::Test {
   void OnConnectToSignal(
       const std::string& interface_name,
       const std::string& signal_name,
-      dbus::ObjectProxy::SignalCallback signal_callback,
-      dbus::ObjectProxy::OnConnectedCallback on_connected_callback);
+      const dbus::ObjectProxy::SignalCallback& signal_callback,
+      const dbus::ObjectProxy::OnConnectedCallback& on_connected_callback);
 
   // Checks the content of the method call and returns the response.
   // Used to implement the mock proxy.
-  void OnCallMethod(dbus::MethodCall* method_call,
-                    int timeout_ms,
-                    dbus::ObjectProxy::ResponseCallback response_callback);
+  void OnCallMethod(
+      dbus::MethodCall* method_call,
+      int timeout_ms,
+      const dbus::ObjectProxy::ResponseCallback& response_callback);
 
   // The interface name.
   const std::string interface_name_;

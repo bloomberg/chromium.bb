@@ -180,40 +180,40 @@ class CHROMEOS_EXPORT CrosDisksClient {
   // otherwise, |error_callback| is called.
   virtual void Mount(const std::string& source_path,
                      MountType type,
-                     MountCallback callback,
-                     ErrorCallback error_callback) = 0;
+                     const MountCallback& callback,
+                     const ErrorCallback& error_callback) = 0;
 
   // Calls Unmount method.  |callback| is called after the method call succeeds,
   // otherwise, |error_callback| is called.
   virtual void Unmount(const std::string& device_path,
-                       UnmountCallback callback,
-                       ErrorCallback error_callback) = 0;
+                       const UnmountCallback& callback,
+                       const ErrorCallback& error_callback) = 0;
 
   // Calls EnumerateAutoMountableDevices method.  |callback| is called after the
   // method call succeeds, otherwise, |error_callback| is called.
   virtual void EnumerateAutoMountableDevices(
-      EnumerateAutoMountableDevicesCallback callback,
-      ErrorCallback error_callback) = 0;
+      const EnumerateAutoMountableDevicesCallback& callback,
+      const ErrorCallback& error_callback) = 0;
 
   // Calls FormatDevice method.  |callback| is called after the method call
   // succeeds, otherwise, |error_callback| is called.
   virtual void FormatDevice(const std::string& device_path,
                             const std::string& filesystem,
-                            FormatDeviceCallback callback,
-                            ErrorCallback error_callback) = 0;
+                            const FormatDeviceCallback& callback,
+                            const ErrorCallback& error_callback) = 0;
 
   // Calls GetDeviceProperties method.  |callback| is called after the method
   // call succeeds, otherwise, |error_callback| is called.
   virtual void GetDeviceProperties(const std::string& device_path,
-                                   GetDevicePropertiesCallback callback,
-                                   ErrorCallback error_callback) = 0;
+                                   const GetDevicePropertiesCallback& callback,
+                                   const ErrorCallback& error_callback) = 0;
 
   // Registers given callback for events.
   // |mount_event_handler| is called when mount event signal is received.
   // |mount_completed_handler| is called when MountCompleted signal is received.
   virtual void SetUpConnections(
-      MountEventHandler mount_event_handler,
-      MountCompletedHandler mount_completed_handler) = 0;
+      const MountEventHandler& mount_event_handler,
+      const MountCompletedHandler& mount_completed_handler) = 0;
 
   // Factory function, creates a new instance and returns ownership.
   // For normal usage, access the singleton via DBusThreadManager::Get().
