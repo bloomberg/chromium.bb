@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/tab_contents/web_contents_drag_win.h"
+#include "content/browser/web_contents/web_contents_drag_win.h"
 
 #include <windows.h>
 

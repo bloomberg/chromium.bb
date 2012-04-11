@@ -72,10 +72,10 @@
 #elif defined(TOOLKIT_GTK)
 #include "content/browser/tab_contents/tab_contents_view_gtk.h"
 #elif defined(OS_MACOSX)
-#include "content/browser/tab_contents/web_contents_view_mac.h"
+#include "content/browser/web_contents/web_contents_view_mac.h"
 #include "ui/gfx/surface/io_surface_support_mac.h"
 #elif defined(OS_ANDROID)
-#include "content/browser/tab_contents/web_contents_view_android.h"
+#include "content/browser/web_contents/web_contents_view_android.h"
 #endif
 
 // Cross-Site Navigations

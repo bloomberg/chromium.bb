@@ -7,7 +7,7 @@
 #include "content/browser/intents/intent_injector.h"
 #include "content/browser/intents/internal_web_intents_dispatcher.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
-#include "content/browser/tab_contents/test_web_contents.h"
+#include "content/browser/web_contents/test_web_contents.h"
 #include "content/common/intents_messages.h"
 #include "content/common/view_messages.h"
 #include "content/test/web_contents_tester.h"

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_TAB_CONTENTS_TEST_WEB_CONTENTS_H_
-#define CONTENT_BROWSER_TAB_CONTENTS_TEST_WEB_CONTENTS_H_
+#ifndef CONTENT_BROWSER_WEB_CONTENTS_TEST_WEB_CONTENTS_H_
+#define CONTENT_BROWSER_WEB_CONTENTS_TEST_WEB_CONTENTS_H_
 #pragma once
 
 #include "content/browser/tab_contents/tab_contents.h"
@@ -98,4 +98,4 @@ class TestWebContents : public TabContents, public WebContentsTester {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_TAB_CONTENTS_TEST_WEB_CONTENTS_H_
+#endif  // CONTENT_BROWSER_WEB_CONTENTS_TEST_WEB_CONTENTS_H_

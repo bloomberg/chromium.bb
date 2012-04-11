@@ -7,7 +7,7 @@
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
-#include "content/browser/tab_contents/test_web_contents.h"
+#include "content/browser/web_contents/test_web_contents.h"
 #import "content/browser/web_contents/web_drag_dest_mac.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"

@@ -12,7 +12,7 @@
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/download/save_package.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
-#include "content/browser/tab_contents/test_web_contents.h"
+#include "content/browser/web_contents/test_web_contents.h"
 #include "content/test/net/url_request_mock_http_job.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "content/browser/tab_contents/web_contents_view_mac.h"
+#import "content/browser/web_contents/web_contents_view_mac.h"
 
 #include "base/memory/scoped_nsobject.h"
 #import "ui/base/test/ui_cocoa_test_helper.h"

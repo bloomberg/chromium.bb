@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_TAB_CONTENTS_WEB_CONTENTS_DRAG_WIN_H_
-#define CONTENT_BROWSER_TAB_CONTENTS_WEB_CONTENTS_DRAG_WIN_H_
+#ifndef CONTENT_BROWSER_WEB_CONTENTS_WEB_CONTENTS_DRAG_WIN_H_
+#define CONTENT_BROWSER_WEB_CONTENTS_WEB_CONTENTS_DRAG_WIN_H_
 #pragma once
 
 #include "base/callback.h"
@@ -111,4 +111,4 @@ class CONTENT_EXPORT WebContentsDragWin
   DISALLOW_COPY_AND_ASSIGN(WebContentsDragWin);
 };
 
-#endif  // CONTENT_BROWSER_TAB_CONTENTS_WEB_CONTENTS_DRAG_WIN_H_
+#endif  // CONTENT_BROWSER_WEB_CONTENTS_WEB_CONTENTS_DRAG_WIN_H_

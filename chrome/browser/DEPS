@@ -40,7 +40,7 @@ include_rules = [
   # TODO(ben): http://crbug.com/118410 will fix the following:
   "+content/browser/renderer_host/render_view_host_factory.h",
   "+content/browser/tab_contents/tab_contents_view_helper.h",
-  "+content/browser/tab_contents/web_contents_drag_win.h",
+  "+content/browser/web_contents/web_contents_drag_win.h",
   "+content/browser/web_contents/web_drag_dest_win.h",
   # DO NOT ADD ANY MORE ITEMS TO THE ABOVE LIST!
 
