@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -119,7 +119,11 @@ cr.define('cr.ui', function() {
 
     // Fired whenever a touch that is being tracked has been released.
     // Correlates 1:1 with a TOUCH_START.
-    TOUCH_END: 'touchHandler:touch_end'
+    TOUCH_END: 'touchHandler:touch_end',
+
+    // Fired whenever the element is tapped in a short time and no dragging is
+    // detected.
+    TAP: 'touchHandler:tap'
   };
 
 
@@ -479,6 +483,8 @@ cr.define('cr.ui', function() {
       if (this.swallowNextClick_)
         this.swallowNextClick_ = false;
 
+      this.disableTap_ = false;
+
       // Sign up for end/cancel notifications for this touch.
       // Note that we do this on the document so that even if the user drags
       // their finger off the element, we'll still know what they're doing.
@@ -591,6 +597,7 @@ cr.define('cr.ui', function() {
           this.startTouchX_ = clientX;
           this.startTouchY_ = clientY;
           this.startTime_ = e.timeStamp;
+          this.disableTap_ = true;
         } else {
           this.endTracking_();
         }
@@ -705,6 +712,8 @@ cr.define('cr.ui', function() {
       // drag-and-drop events are nested inside of the mouse events that trigger
       // them).
       this.dispatchEvent_(TouchHandler.EventType.TOUCH_END, touch);
+      if (!this.disableTap_)
+        this.dispatchEvent_(TouchHandler.EventType.TAP, touch);
     },
 
     /**
@@ -766,6 +775,7 @@ cr.define('cr.ui', function() {
       // touch start event.  This simple click-busting technique should be
       // sufficient here since a real click should have a touchstart first.
       this.swallowNextClick_ = true;
+      this.disableTap_ = true;
 
       // Dispatch to the LONG_PRESS
       this.dispatchEventXY_(TouchHandler.EventType.LONG_PRESS, this.element_,

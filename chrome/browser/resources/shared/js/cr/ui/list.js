@@ -316,15 +316,23 @@ cr.define('cr.ui', function() {
       var length = this.dataModel ? this.dataModel.length : 0;
       this.selectionModel = new ListSelectionModel(length);
 
-      this.addEventListener('dblclick', this.handleDoubleClick_);
-      this.addEventListener('mousedown', this.handleMouseDownUp_);
-      this.addEventListener('mouseup', this.handleMouseDownUp_);
+      this.addEventListener('dblclick', this.handleDoubleClickOrTap_);
+      this.addEventListener('mousedown', this.handlePointerDownUp_);
+      this.addEventListener('mouseup', this.handlePointerDownUp_);
       this.addEventListener('keydown', this.handleKeyDown);
       this.addEventListener('focus', this.handleElementFocus_, true);
       this.addEventListener('blur', this.handleElementBlur_, true);
       this.addEventListener('scroll', this.handleScroll.bind(this));
       this.setAttribute('role', 'listbox');
 
+      this.touchHandler_ = new cr.ui.TouchHandler(this);
+      this.addEventListener(cr.ui.TouchHandler.EventType.TOUCH_START,
+                            this.handlePointerDownUp_);
+      this.addEventListener(cr.ui.TouchHandler.EventType.TOUCH_END,
+                            this.handlePointerDownUp_);
+      this.addEventListener(cr.ui.TouchHandler.EventType.TAP,
+                            this.handleDoubleClickOrTap_);
+      this.touchHandler_.enable(false, false);
       // Make list focusable
       if (!this.hasAttribute('tabindex'))
         this.tabIndex = 0;
@@ -448,29 +456,35 @@ cr.define('cr.ui', function() {
     },
 
     /**
-     * Callback for the double click event.
-     * @param {Event} e The mouse event object.
+     * Callback for the double click or TAP event.
+     * @param {Event} e The mouse or TouchHandler event object.
      * @private
      */
-    handleDoubleClick_: function(e) {
+    handleDoubleClickOrTap_: function(e) {
       if (this.disabled)
         return;
 
-      var target = this.getListItemAncestor(e.target);
+      var target = e.target;
+      if (e.touchedElement)
+        target = e.touchedElement;
+
+      target = this.getListItemAncestor(target);
       if (target)
         this.activateItemAtIndex(this.getIndexOfListItem(target));
     },
 
     /**
-     * Callback for mousedown and mouseup events.
-     * @param {Event} e The mouse event object.
+     * Callback for mousedown, mouseup, TOUCH_START and TOUCH_END events.
+     * @param {Event} e The mouse or TouchHandler event object.
      * @private
      */
-    handleMouseDownUp_: function(e) {
+    handlePointerDownUp_: function(e) {
       if (this.disabled)
         return;
 
       var target = e.target;
+      if (e.touchedElement)
+        target = e.touchedElement;
 
       // If the target was this element we need to make sure that the user did
       // not click on a border or a scrollbar.
@@ -480,7 +494,7 @@ cr.define('cr.ui', function() {
       target = this.getListItemAncestor(target);
 
       var index = target ? this.getIndexOfListItem(target) : -1;
-      this.selectionController_.handleMouseDownUp(e, index);
+      this.selectionController_.handlePointerDownUp(e, index);
     },
 
     /**

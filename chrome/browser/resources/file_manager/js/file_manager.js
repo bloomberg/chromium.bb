@@ -1332,9 +1332,13 @@ FileManager.prototype = {
   FileManager.prototype.initGrid_ = function() {
     var self = this;
     this.grid_.itemConstructor = GridItem.bind(null, this);
-
+    // TODO(bshe): should override cr.ui.List's activateItemAtIndex function
+    // rather than listen explicitly for double click or tap events.
     this.grid_.addEventListener(
-        'dblclick', this.onDetailDoubleClick_.bind(this));
+        'dblclick', this.onDetailDoubleClickOrTap_.bind(this));
+    this.grid_.addEventListener(
+        cr.ui.TouchHandler.EventType.TAP,
+        this.onDetailDoubleClickOrTap_.bind(this));
     cr.ui.contextMenuHandler.setContextMenu(this.grid_, this.fileContextMenu_);
     this.grid_.addEventListener('mousedown',
                                 this.onGridOrTableMouseDown_.bind(this));
@@ -1387,9 +1391,14 @@ FileManager.prototype = {
       this.gdataColumnModel_ = null;
     }
 
+    // TODO(bshe): should override cr.ui.List's activateItemAtIndex function
+    // rather than listen explicitly for double click or tap events.
     // Don't pay attention to double clicks on the table header.
-    this.table_.querySelector('.list').addEventListener(
-        'dblclick', this.onDetailDoubleClick_.bind(this));
+    this.table_.list.addEventListener(
+        'dblclick', this.onDetailDoubleClickOrTap_.bind(this));
+    this.table_.list.addEventListener(
+        cr.ui.TouchHandler.EventType.TAP,
+        this.onDetailDoubleClickOrTap_.bind(this));
 
     cr.ui.contextMenuHandler.setContextMenu(this.table_.querySelector('.list'),
         this.fileContextMenu_);
@@ -1871,6 +1880,14 @@ FileManager.prototype = {
     input.classList.add('file-checkbox');
     input.addEventListener('click',
                            this.onCheckboxClick_.bind(this));
+    // Since we do not want to open the item when tap on checkbox, we need to
+    // stop propagation of TAP event dispatched by checkbox ideally. But all
+    // touch events from touch_handler are dispatched to the list control. So we
+    // have to stop propagation of native touchstart event to prevent list
+    // control from generating TAP event here. The synthetic click event will
+    // select the touched checkbox/item.
+    input.addEventListener('touchstart',
+                           function(e) { e.stopPropagation() });
 
     if (this.selection && this.selection.entries.indexOf(entry) != -1) {
       // Our DOM nodes get discarded as soon as we're scrolled out of view,
@@ -3658,11 +3675,11 @@ FileManager.prototype = {
   };
 
   /**
-   * Handle a double-click event on an entry in the detail list.
+   * Handle a double-click or tap event on an entry in the detail list.
    *
    * @param {Event} event The click event.
    */
-  FileManager.prototype.onDetailDoubleClick_ = function(event) {
+  FileManager.prototype.onDetailDoubleClickOrTap_ = function(event) {
     if (this.isRenamingInProgress()) {
       // Don't pay attention to double clicks during a rename.
       return;
