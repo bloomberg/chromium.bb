@@ -849,13 +849,13 @@ NativeWidget* Widget::native_widget() {
 void Widget::SetMouseCapture(views::View* view) {
   is_mouse_button_pressed_ = true;
   root_view_->SetMouseHandler(view);
-  if (!native_widget_->HasMouseCapture())
-    native_widget_->SetMouseCapture();
+  if (!native_widget_->HasCapture(ui::CW_LOCK_MOUSE))
+    native_widget_->SetCapture(ui::CW_LOCK_MOUSE);
 }
 
 void Widget::ReleaseMouseCapture() {
-  if (native_widget_->HasMouseCapture())
-    native_widget_->ReleaseMouseCapture();
+  if (native_widget_->HasCapture(ui::CW_LOCK_MOUSE))
+    native_widget_->ReleaseCapture();
 }
 
 const Event* Widget::GetCurrentEvent() {
@@ -1060,8 +1060,8 @@ bool Widget::OnMouseEvent(const MouseEvent& event) {
       // press processing may have made the window hide (as happens with menus).
       if (GetRootView()->OnMousePressed(event) && IsVisible()) {
         is_mouse_button_pressed_ = true;
-        if (!native_widget_->HasMouseCapture())
-          native_widget_->SetMouseCapture();
+        if (!native_widget_->HasCapture(ui::CW_LOCK_MOUSE))
+          native_widget_->SetCapture(ui::CW_LOCK_MOUSE);
         return true;
       }
       return false;
@@ -1069,15 +1069,16 @@ bool Widget::OnMouseEvent(const MouseEvent& event) {
       last_mouse_event_was_move_ = false;
       is_mouse_button_pressed_ = false;
       // Release capture first, to avoid confusion if OnMouseReleased blocks.
-      if (native_widget_->HasMouseCapture() &&
+      if (native_widget_->HasCapture(ui::CW_LOCK_MOUSE) &&
           ShouldReleaseCaptureOnMouseReleased()) {
-        native_widget_->ReleaseMouseCapture();
+        native_widget_->ReleaseCapture();
       }
       GetRootView()->OnMouseReleased(event);
       return (event.flags() & ui::EF_IS_NON_CLIENT) ? false : true;
     case ui::ET_MOUSE_MOVED:
     case ui::ET_MOUSE_DRAGGED:
-      if (native_widget_->HasMouseCapture() && is_mouse_button_pressed_) {
+      if (native_widget_->HasCapture(ui::CW_LOCK_MOUSE) &&
+          is_mouse_button_pressed_) {
         last_mouse_event_was_move_ = false;
         GetRootView()->OnMouseDragged(event);
       } else if (!last_mouse_event_was_move_ ||
