@@ -79,12 +79,6 @@ FileManager.prototype = {
       'answer.py?hl=en&answer=1700055&topic=29026&ctx=topic';
 
   /**
-   * Mnemonics for the recurse parameter of the copyFiles method.
-   */
-  const CP_RECURSE = true;
-  const CP_NO_RECURSE = false;
-
-  /**
    * Maximum amount of thumbnails in the preview pane.
    */
   const MAX_PREVIEW_THUMBAIL_COUNT = 4;
@@ -179,18 +173,6 @@ FileManager.prototype = {
       child_path += '/';
 
     return child_path.indexOf(parent_path) == 0;
-  }
-
-  /**
-   * Returns parent folder path of file path.
-   *
-   * @param {string} path The file path.
-   */
-  function getParentPath(path) {
-    var parent = path.replace(/[\/]?[^\/]+[\/]?$/,'');
-    if (parent.length == 0)
-      parent = '/';
-    return parent;
   }
 
  /**
@@ -3236,34 +3218,6 @@ FileManager.prototype = {
     bc.lastChild.style.width = (currentWidth - lastCrumbSeparatorWidth) + 'px';
   };
 
-  FileManager.prototype.formatMetadataValue_ = function(obj) {
-    if (typeof obj.type == 'undefined') {
-      return obj.value;
-    } else if (obj.type == 'duration') {
-
-
-      var totalSeconds = Math.floor(obj.value / 1000);
-      var hours = Math.floor(totalSeconds / 60 / 60);
-
-      var fmtSkeleton;
-
-      // Print hours if available
-      //TODO: dzvorygin use better skeletons when documentation become available
-      if (hours > 0) {
-        fmtSkeleton = 'hh:mm:ss';
-      } else {
-        fmtSkeleton = 'mm:ss';
-      }
-
-      // Convert duration to milliseconds since time start
-      var date = new Date(parseInt(obj.value));
-
-      var fmt = this.locale_.createDateTimeFormat({skeleton:fmtSkeleton});
-
-      return fmt.format(date);
-    }
-  };
-
   FileManager.prototype.getThumbnailURL = function(entry, callback) {
     if (!entry)
       return;
@@ -3288,15 +3242,6 @@ FileManager.prototype = {
       } else {
         returnStockIcon();
       }
-    });
-  };
-
-  FileManager.prototype.getDescription = function(entry, callback) {
-    if (!entry)
-      return;
-
-    this.getMetadataProvider().fetch(entry.toURL(), function(metadata) {
-      callback(metadata.description);
     });
   };
 
