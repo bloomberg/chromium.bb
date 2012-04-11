@@ -20,7 +20,7 @@ namespace content {
 class WebContents;
 }
 
-// A chrome/ specific class that extends TabContentsViewGtk with features like
+// A chrome/ specific class that extends WebContentsViewGtk with features like
 // constrained windows, which live in chrome/.
 class ChromeWebContentsViewDelegateGtk
     : public content::WebContentsViewDelegate {
@@ -35,7 +35,7 @@ class ChromeWebContentsViewDelegateGtk
   ui::FocusStoreGtk* focus_store() { return focus_store_; }
 
   // Unlike Windows, ConstrainedWindows need to collaborate with the
-  // TabContentsViewGtk to position the dialogs.
+  // WebContentsViewGtk to position the dialogs.
   void AttachConstrainedWindow(ConstrainedWindowGtk* constrained_window);
   void RemoveConstrainedWindow(ConstrainedWindowGtk* constrained_window);
 

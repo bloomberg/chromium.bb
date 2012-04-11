@@ -5697,7 +5697,7 @@
    Memcheck:Unaddressable
    fun:_ZN4aura6WindowD0Ev
    fun:_ZN10scoped_ptrIN4aura6WindowEED1Ev
-   fun:_ZN19TabContentsViewAuraD0Ev
+   fun:_ZN19WebContentsViewAuraD0Ev
    fun:_ZN10scoped_ptrIN7content15WebContentsViewEED1Ev
    fun:_ZN15WebContentsImplD0Ev
    fun:_ZN10scoped_ptrIN7content11WebContentsEE5resetEPS1_

@@ -24,7 +24,7 @@ class FocusManager;
 class Widget;
 }
 
-// A chrome specific class that extends TabContentsViewWin with features like
+// A chrome specific class that extends WebContentsViewWin with features like
 // constrained windows, which live in chrome.
 class ChromeWebContentsViewDelegateViews
     : public content::WebContentsViewDelegate {

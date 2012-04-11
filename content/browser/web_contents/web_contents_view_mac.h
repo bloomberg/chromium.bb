@@ -15,7 +15,7 @@
 
 #include "base/memory/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/browser/tab_contents/tab_contents_view_helper.h"
+#include "content/browser/web_contents/web_contents_view_helper.h"
 #include "content/public/browser/web_contents_view.h"
 #include "ui/base/cocoa/base_view.h"
 #include "ui/gfx/size.h"
@@ -123,7 +123,7 @@ class WebContentsViewMac : public content::WebContentsView {
   WebContentsImpl* web_contents_;
 
   // Common implementations of some WebContentsView methods.
-  TabContentsViewHelper tab_contents_view_helper_;
+  WebContentsViewHelper web_contents_view_helper_;
 
   // The Cocoa NSView that lives in the view hierarchy.
   scoped_nsobject<WebContentsViewCocoa> cocoa_view_;

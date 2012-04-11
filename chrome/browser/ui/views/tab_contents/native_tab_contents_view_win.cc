@@ -22,7 +22,7 @@ using content::WebContents;
 
 namespace {
 
-// See comment above TempParent in tab_contents_view_win.cc.
+// See comment above TempParent in web_contents_view_win.cc.
 // Also, Tabs must be created as child widgets, otherwise they will be given
 // a FocusManager which will conflict with the FocusManager of the
 // window they eventually end up attached to.

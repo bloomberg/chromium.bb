@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_TAB_CONTENTS_TAB_CONTENTS_VIEW_HELPER_H_
-#define CONTENT_BROWSER_TAB_CONTENTS_TAB_CONTENTS_VIEW_HELPER_H_
+#ifndef CONTENT_BROWSER_WEB_CONTENTS_WEB_CONTENTS_VIEW_HELPER_H_
+#define CONTENT_BROWSER_WEB_CONTENTS_WEB_CONTENTS_VIEW_HELPER_H_
 #pragma once
 
 #include <map>
@@ -34,11 +34,11 @@ class Rect;
 
 // Provides helper methods that provide common implementations of some
 // WebContentsView methods.
-class CONTENT_EXPORT TabContentsViewHelper
+class CONTENT_EXPORT WebContentsViewHelper
     : public content::NotificationObserver {
  public:
-  TabContentsViewHelper();
-  virtual ~TabContentsViewHelper();
+  WebContentsViewHelper();
+  virtual ~WebContentsViewHelper();
 
   // Creates a new window; call |ShowCreatedWindow| below to show it.
   WebContentsImpl* CreateNewWindow(
@@ -98,7 +98,7 @@ class CONTENT_EXPORT TabContentsViewHelper
   // Registers and unregisters us for notifications.
   content::NotificationRegistrar registrar_;
 
-  DISALLOW_COPY_AND_ASSIGN(TabContentsViewHelper);
+  DISALLOW_COPY_AND_ASSIGN(WebContentsViewHelper);
 };
 
-#endif  // CONTENT_BROWSER_TAB_CONTENTS_TAB_CONTENTS_VIEW_HELPER_H_
+#endif  // CONTENT_BROWSER_WEB_CONTENTS_WEB_CONTENTS_VIEW_HELPER_H_

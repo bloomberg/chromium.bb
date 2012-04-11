@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/tab_contents/tab_contents_view_gtk.h"
+#include "content/browser/web_contents/web_contents_view_gtk.h"
 
 #include <gdk/gdk.h>
 #include <gdk/gdkkeysyms.h>
@@ -78,7 +78,7 @@ gboolean OnMouseScroll(GtkWidget* widget, GdkEventScroll* event,
 
 namespace content {
 
-TabContentsViewGtk::TabContentsViewGtk(
+WebContentsViewGtk::WebContentsViewGtk(
     TabContents* tab_contents,
     content::WebContentsViewDelegate* delegate)
     : tab_contents_(tab_contents),
@@ -97,15 +97,15 @@ TabContentsViewGtk::TabContentsViewGtk(
     delegate_->Initialize(expanded_.get(), &focus_store_);
 }
 
-TabContentsViewGtk::~TabContentsViewGtk() {
+WebContentsViewGtk::~WebContentsViewGtk() {
   expanded_.Destroy();
 }
 
-void TabContentsViewGtk::CreateView(const gfx::Size& initial_size) {
+void WebContentsViewGtk::CreateView(const gfx::Size& initial_size) {
   requested_size_ = initial_size;
 }
 
-RenderWidgetHostView* TabContentsViewGtk::CreateViewForWidget(
+RenderWidgetHostView* WebContentsViewGtk::CreateViewForWidget(
     RenderWidgetHost* render_widget_host) {
   if (render_widget_host->GetView()) {
     // During testing, the view will already be set up in most cases to the
@@ -141,26 +141,26 @@ RenderWidgetHostView* TabContentsViewGtk::CreateViewForWidget(
   return view;
 }
 
-gfx::NativeView TabContentsViewGtk::GetNativeView() const {
+gfx::NativeView WebContentsViewGtk::GetNativeView() const {
   if (delegate_.get())
     return delegate_->GetNativeView();
 
   return expanded_.get();
 }
 
-gfx::NativeView TabContentsViewGtk::GetContentNativeView() const {
+gfx::NativeView WebContentsViewGtk::GetContentNativeView() const {
   RenderWidgetHostView* rwhv = tab_contents_->GetRenderWidgetHostView();
   if (!rwhv)
     return NULL;
   return rwhv->GetNativeView();
 }
 
-gfx::NativeWindow TabContentsViewGtk::GetTopLevelNativeWindow() const {
+gfx::NativeWindow WebContentsViewGtk::GetTopLevelNativeWindow() const {
   GtkWidget* window = gtk_widget_get_ancestor(GetNativeView(), GTK_TYPE_WINDOW);
   return window ? GTK_WINDOW(window) : NULL;
 }
 
-void TabContentsViewGtk::GetContainerBounds(gfx::Rect* out) const {
+void WebContentsViewGtk::GetContainerBounds(gfx::Rect* out) const {
   // This is used for positioning the download shelf arrow animation,
   // as well as sizing some other widgets in Windows.  In GTK the size is
   // managed for us, so it appears to be only used for the download shelf
@@ -177,7 +177,7 @@ void TabContentsViewGtk::GetContainerBounds(gfx::Rect* out) const {
                requested_size_.width(), requested_size_.height());
 }
 
-void TabContentsViewGtk::SetPageTitle(const string16& title) {
+void WebContentsViewGtk::SetPageTitle(const string16& title) {
   // Set the window name to include the page title so it's easier to spot
   // when debugging (e.g. via xwininfo -tree).
   gfx::NativeView content_view = GetContentNativeView();
@@ -189,11 +189,11 @@ void TabContentsViewGtk::SetPageTitle(const string16& title) {
   }
 }
 
-void TabContentsViewGtk::OnTabCrashed(base::TerminationStatus status,
+void WebContentsViewGtk::OnTabCrashed(base::TerminationStatus status,
                                       int error_code) {
 }
 
-void TabContentsViewGtk::SizeContents(const gfx::Size& size) {
+void WebContentsViewGtk::SizeContents(const gfx::Size& size) {
   // We don't need to manually set the size of of widgets in GTK+, but we do
   // need to pass the sizing information on to the RWHV which will pass the
   // sizing information on to the renderer.
@@ -203,10 +203,10 @@ void TabContentsViewGtk::SizeContents(const gfx::Size& size) {
     rwhv->SetSize(size);
 }
 
-void TabContentsViewGtk::RenderViewCreated(content::RenderViewHost* host) {
+void WebContentsViewGtk::RenderViewCreated(content::RenderViewHost* host) {
 }
 
-void TabContentsViewGtk::Focus() {
+void WebContentsViewGtk::Focus() {
   if (tab_contents_->ShowingInterstitialPage()) {
     tab_contents_->GetInterstitialPage()->Focus();
   } else if (delegate_.get()) {
@@ -214,39 +214,39 @@ void TabContentsViewGtk::Focus() {
   }
 }
 
-void TabContentsViewGtk::SetInitialFocus() {
+void WebContentsViewGtk::SetInitialFocus() {
   if (tab_contents_->FocusLocationBarByDefault())
     tab_contents_->SetFocusToLocationBar(false);
   else
     Focus();
 }
 
-void TabContentsViewGtk::StoreFocus() {
+void WebContentsViewGtk::StoreFocus() {
   focus_store_.Store(GetNativeView());
 }
 
-void TabContentsViewGtk::RestoreFocus() {
+void WebContentsViewGtk::RestoreFocus() {
   if (focus_store_.widget())
     gtk_widget_grab_focus(focus_store_.widget());
   else
     SetInitialFocus();
 }
 
-bool TabContentsViewGtk::IsDoingDrag() const {
+bool WebContentsViewGtk::IsDoingDrag() const {
   return false;
 }
 
-void TabContentsViewGtk::CancelDragAndCloseTab() {
+void WebContentsViewGtk::CancelDragAndCloseTab() {
 }
 
-bool TabContentsViewGtk::IsEventTracking() const {
+bool WebContentsViewGtk::IsEventTracking() const {
   return false;
 }
 
-void TabContentsViewGtk::CloseTabAfterEventTracking() {
+void WebContentsViewGtk::CloseTabAfterEventTracking() {
 }
 
-void TabContentsViewGtk::GetViewBounds(gfx::Rect* out) const {
+void WebContentsViewGtk::GetViewBounds(gfx::Rect* out) const {
   GdkWindow* window = gtk_widget_get_window(GetNativeView());
   if (!window) {
     out->SetRect(0, 0, requested_size_.width(), requested_size_.height());
@@ -257,22 +257,22 @@ void TabContentsViewGtk::GetViewBounds(gfx::Rect* out) const {
   out->SetRect(x, y, w, h);
 }
 
-WebContents* TabContentsViewGtk::web_contents() {
+WebContents* WebContentsViewGtk::web_contents() {
   return tab_contents_;
 }
 
-void TabContentsViewGtk::UpdateDragCursor(WebDragOperation operation) {
+void WebContentsViewGtk::UpdateDragCursor(WebDragOperation operation) {
   drag_dest_->UpdateDragStatus(operation);
 }
 
-void TabContentsViewGtk::GotFocus() {
+void WebContentsViewGtk::GotFocus() {
   // This is only used in the views FocusManager stuff but it bleeds through
   // all subclasses. http://crbug.com/21875
 }
 
 // This is called when the renderer asks us to take focus back (i.e., it has
 // iterated past the last focusable element on the page).
-void TabContentsViewGtk::TakeFocus(bool reverse) {
+void WebContentsViewGtk::TakeFocus(bool reverse) {
   if (!tab_contents_->GetDelegate())
     return;
   if (!tab_contents_->GetDelegate()->TakeFocus(reverse)) {
@@ -281,7 +281,7 @@ void TabContentsViewGtk::TakeFocus(bool reverse) {
   }
 }
 
-void TabContentsViewGtk::InsertIntoContentArea(GtkWidget* widget) {
+void WebContentsViewGtk::InsertIntoContentArea(GtkWidget* widget) {
   gtk_container_add(GTK_CONTAINER(expanded_.get()), widget);
 }
 
@@ -290,7 +290,7 @@ void TabContentsViewGtk::InsertIntoContentArea(GtkWidget* widget) {
 // and grab focus if we don't have it. The call to
 // FocusThroughTabTraversal(bool) forwards the "move focus forward" effect to
 // webkit.
-gboolean TabContentsViewGtk::OnFocus(GtkWidget* widget,
+gboolean WebContentsViewGtk::OnFocus(GtkWidget* widget,
                                      GtkDirectionType focus) {
   // Give our view wrapper first chance at this event.
   if (delegate_.get()) {
@@ -311,51 +311,51 @@ gboolean TabContentsViewGtk::OnFocus(GtkWidget* widget,
   return TRUE;
 }
 
-void TabContentsViewGtk::CreateNewWindow(
+void WebContentsViewGtk::CreateNewWindow(
     int route_id,
     const ViewHostMsg_CreateWindow_Params& params) {
-  tab_contents_view_helper_.CreateNewWindow(tab_contents_, route_id, params);
+  web_contents_view_helper_.CreateNewWindow(tab_contents_, route_id, params);
 }
 
-void TabContentsViewGtk::CreateNewWidget(
+void WebContentsViewGtk::CreateNewWidget(
     int route_id, WebKit::WebPopupType popup_type) {
-  tab_contents_view_helper_.CreateNewWidget(tab_contents_,
+  web_contents_view_helper_.CreateNewWidget(tab_contents_,
                                             route_id,
                                             false,
                                             popup_type);
 }
 
-void TabContentsViewGtk::CreateNewFullscreenWidget(int route_id) {
-  tab_contents_view_helper_.CreateNewWidget(tab_contents_,
+void WebContentsViewGtk::CreateNewFullscreenWidget(int route_id) {
+  web_contents_view_helper_.CreateNewWidget(tab_contents_,
                                             route_id,
                                             true,
                                             WebKit::WebPopupTypeNone);
 }
 
-void TabContentsViewGtk::ShowCreatedWindow(int route_id,
+void WebContentsViewGtk::ShowCreatedWindow(int route_id,
                                            WindowOpenDisposition disposition,
                                            const gfx::Rect& initial_pos,
                                            bool user_gesture) {
-  tab_contents_view_helper_.ShowCreatedWindow(
+  web_contents_view_helper_.ShowCreatedWindow(
       tab_contents_, route_id, disposition, initial_pos, user_gesture);
 }
 
-void TabContentsViewGtk::ShowCreatedWidget(
+void WebContentsViewGtk::ShowCreatedWidget(
     int route_id, const gfx::Rect& initial_pos) {
-  tab_contents_view_helper_.ShowCreatedWidget(tab_contents_,
+  web_contents_view_helper_.ShowCreatedWidget(tab_contents_,
                                               route_id,
                                               false,
                                               initial_pos);
 }
 
-void TabContentsViewGtk::ShowCreatedFullscreenWidget(int route_id) {
-  tab_contents_view_helper_.ShowCreatedWidget(tab_contents_,
+void WebContentsViewGtk::ShowCreatedFullscreenWidget(int route_id) {
+  web_contents_view_helper_.ShowCreatedWidget(tab_contents_,
                                               route_id,
                                               true,
                                               gfx::Rect());
 }
 
-void TabContentsViewGtk::ShowContextMenu(
+void WebContentsViewGtk::ShowContextMenu(
     const content::ContextMenuParams& params) {
   // Allow delegates to handle the context menu operation first.
   if (web_contents()->GetDelegate() &&
@@ -369,7 +369,7 @@ void TabContentsViewGtk::ShowContextMenu(
     DLOG(ERROR) << "Cannot show context menus without a delegate.";
 }
 
-void TabContentsViewGtk::ShowPopupMenu(const gfx::Rect& bounds,
+void WebContentsViewGtk::ShowPopupMenu(const gfx::Rect& bounds,
                                        int item_height,
                                        double item_font_size,
                                        int selected_item,
@@ -382,7 +382,7 @@ void TabContentsViewGtk::ShowPopupMenu(const gfx::Rect& bounds,
 
 // Render view DnD -------------------------------------------------------------
 
-void TabContentsViewGtk::StartDragging(const WebDropData& drop_data,
+void WebContentsViewGtk::StartDragging(const WebDropData& drop_data,
                                        WebDragOperationsMask ops,
                                        const SkBitmap& image,
                                        const gfx::Point& image_offset) {
@@ -399,7 +399,7 @@ void TabContentsViewGtk::StartDragging(const WebDropData& drop_data,
 
 // -----------------------------------------------------------------------------
 
-void TabContentsViewGtk::OnChildSizeRequest(GtkWidget* widget,
+void WebContentsViewGtk::OnChildSizeRequest(GtkWidget* widget,
                                             GtkWidget* child,
                                             GtkRequisition* requisition) {
   if (tab_contents_->GetDelegate()) {
@@ -408,7 +408,7 @@ void TabContentsViewGtk::OnChildSizeRequest(GtkWidget* widget,
   }
 }
 
-void TabContentsViewGtk::OnSizeAllocate(GtkWidget* widget,
+void WebContentsViewGtk::OnSizeAllocate(GtkWidget* widget,
                                         GtkAllocation* allocation) {
   int width = allocation->width;
   int height = allocation->height;

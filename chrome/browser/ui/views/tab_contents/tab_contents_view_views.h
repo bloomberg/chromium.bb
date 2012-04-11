@@ -10,7 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/timer.h"
 #include "chrome/browser/ui/views/tab_contents/native_tab_contents_view_delegate.h"
-#include "content/browser/tab_contents/tab_contents_view_helper.h"
+#include "content/browser/web_contents/web_contents_view_helper.h"
 #include "content/public/browser/web_contents_view.h"
 #include "ui/views/widget/widget.h"
 
@@ -128,7 +128,7 @@ class TabContentsViewViews : public views::Widget,
   content::WebContents* web_contents_;
 
   // Common implementations of some WebContentsView methods.
-  TabContentsViewHelper tab_contents_view_helper_;
+  WebContentsViewHelper web_contents_view_helper_;
 
   NativeTabContentsView* native_tab_contents_view_;
 

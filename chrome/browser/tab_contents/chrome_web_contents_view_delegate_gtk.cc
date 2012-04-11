@@ -110,7 +110,7 @@ gboolean ChromeWebContentsViewDelegateGtk::OnNativeViewFocusEvent(
     return TRUE;
   }
 
-  // Let the default TabContentsViewGtk::OnFocus() behaviour run.
+  // Let the default WebContentsViewGtk::OnFocus() behaviour run.
   return FALSE;
 }
 

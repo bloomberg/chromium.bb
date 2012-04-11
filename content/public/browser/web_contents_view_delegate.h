@@ -60,8 +60,8 @@ class CONTENT_EXPORT WebContentsViewDelegate {
                           ui::FocusStoreGtk* focus_store) = 0;
 
   // Returns the top widget that contains |view| passed in from WrapView. This
-  // is exposed through TabContentsViewGtk::GetNativeView() when a wrapper is
-  // supplied to a TabContentsViewGtk.
+  // is exposed through WebContentsViewGtk::GetNativeView() when a wrapper is
+  // supplied to a WebContentsViewGtk.
   virtual gfx::NativeView GetNativeView() const = 0;
 
   // Handles a focus event from the renderer process.

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_TAB_CONTENTS_TAB_CONTENTS_VIEW_GTK_H_
-#define CONTENT_BROWSER_TAB_CONTENTS_TAB_CONTENTS_VIEW_GTK_H_
+#ifndef CONTENT_BROWSER_WEB_CONTENTS_WEB_CONTENTS_VIEW_GTK_H_
+#define CONTENT_BROWSER_WEB_CONTENTS_WEB_CONTENTS_VIEW_GTK_H_
 #pragma once
 
 #include <gtk/gtk.h>
@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
-#include "content/browser/tab_contents/tab_contents_view_helper.h"
+#include "content/browser/web_contents/web_contents_view_helper.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/web_contents_view.h"
 #include "ui/base/gtk/focus_store_gtk.h"
@@ -25,16 +25,16 @@ class WebDragDestDelegate;
 class WebDragDestGtk;
 class WebDragSourceGtk;
 
-class CONTENT_EXPORT TabContentsViewGtk : public WebContentsView {
+class CONTENT_EXPORT WebContentsViewGtk : public WebContentsView {
  public:
   // The corresponding TabContents is passed in the constructor, and manages
   // our lifetime. This doesn't need to be the case, but is this way currently
   // because that's what was easiest when they were split. We optionally take
   // |wrapper| which creates an intermediary widget layer for features from the
   // Embedding layer that lives with the WebContentsView.
-  TabContentsViewGtk(WebContentsImpl* web_contents,
+  WebContentsViewGtk(WebContentsImpl* web_contents,
                      WebContentsViewDelegate* delegate);
-  virtual ~TabContentsViewGtk();
+  virtual ~WebContentsViewGtk();
 
   WebContentsViewDelegate* delegate() const { return delegate_.get(); }
   WebContents* web_contents();
@@ -103,23 +103,23 @@ class CONTENT_EXPORT TabContentsViewGtk : public WebContentsView {
 
   // Handle focus traversal on the render widget native view. Can be overridden
   // by subclasses.
-  CHROMEGTK_CALLBACK_1(TabContentsViewGtk, gboolean, OnFocus, GtkDirectionType);
+  CHROMEGTK_CALLBACK_1(WebContentsViewGtk, gboolean, OnFocus, GtkDirectionType);
 
   // Used to adjust the size of its children when the size of |expanded_| is
   // changed.
-  CHROMEGTK_CALLBACK_2(TabContentsViewGtk, void, OnChildSizeRequest,
+  CHROMEGTK_CALLBACK_2(WebContentsViewGtk, void, OnChildSizeRequest,
                        GtkWidget*, GtkRequisition*);
 
   // Used to propagate the size change of |expanded_| to our RWHV to resize the
   // renderer content.
-  CHROMEGTK_CALLBACK_1(TabContentsViewGtk, void, OnSizeAllocate,
+  CHROMEGTK_CALLBACK_1(WebContentsViewGtk, void, OnSizeAllocate,
                        GtkAllocation*);
 
   // The WebContentsImpl whose contents we display.
   WebContentsImpl* tab_contents_;
 
   // Common implementations of some WebContentsView methods.
-  TabContentsViewHelper tab_contents_view_helper_;
+  WebContentsViewHelper web_contents_view_helper_;
 
   // This container holds the tab's web page views. It is a GtkExpandedContainer
   // so that we can control the size of the web pages.
@@ -143,9 +143,9 @@ class CONTENT_EXPORT TabContentsViewGtk : public WebContentsView {
   // variable because resizing in GTK+ is async.
   gfx::Size requested_size_;
 
-  DISALLOW_COPY_AND_ASSIGN(TabContentsViewGtk);
+  DISALLOW_COPY_AND_ASSIGN(WebContentsViewGtk);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_TAB_CONTENTS_TAB_CONTENTS_VIEW_GTK_H_
+#endif  // CONTENT_BROWSER_WEB_CONTENTS_WEB_CONTENTS_VIEW_GTK_H_

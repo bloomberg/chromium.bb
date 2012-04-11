@@ -361,8 +361,8 @@ void DragBookmarks(Profile* profile,
   if (widget) {
     widget->RunShellDrag(NULL, data, gfx::Point(), operation);
   } else {
-    // We hit this case when we're using TabContentsViewWin or
-    // TabContentsViewAura, instead of TabContentsViewViews.
+    // We hit this case when we're using WebContentsViewWin or
+    // WebContentsViewAura, instead of TabContentsViewViews.
     views::RunShellDrag(view, data, gfx::Point(), operation);
   }
 

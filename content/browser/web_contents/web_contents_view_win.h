@@ -2,42 +2,49 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_TAB_CONTENTS_TAB_CONTENTS_VIEW_AURA_H_
-#define CONTENT_BROWSER_TAB_CONTENTS_TAB_CONTENTS_VIEW_AURA_H_
+#ifndef CONTENT_BROWSER_WEB_CONTENTS_WEB_CONTENTS_VIEW_WIN_H_
+#define CONTENT_BROWSER_WEB_CONTENTS_WEB_CONTENTS_VIEW_WIN_H_
 #pragma once
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/browser/tab_contents/tab_contents_view_helper.h"
+#include "base/timer.h"
+#include "base/win/win_util.h"
+#include "content/browser/web_contents/web_contents_view_helper.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/web_contents_view.h"
-#include "ui/aura/client/drag_drop_delegate.h"
-#include "ui/aura/window_delegate.h"
+#include "ui/base/win/window_impl.h"
 
-namespace aura {
-class Window;
-}
+class RenderWidgetHostViewWin;
+class WebDragDest;
+class WebContentsDragWin;
 
 namespace content {
 class WebContentsViewDelegate;
-class WebDragDestDelegate;
 }
 
-class CONTENT_EXPORT TabContentsViewAura
-    : public content::WebContentsView,
-      public aura::WindowDelegate,
-      public aura::client::DragDropDelegate {
+// An implementation of WebContentsView for Windows.
+class CONTENT_EXPORT WebContentsViewWin : public content::WebContentsView,
+                                          public ui::WindowImpl {
  public:
-  TabContentsViewAura(WebContentsImpl* web_contents,
-                      content::WebContentsViewDelegate* delegate);
-  virtual ~TabContentsViewAura();
+  WebContentsViewWin(WebContentsImpl* web_contents,
+                     content::WebContentsViewDelegate* delegate);
+  virtual ~WebContentsViewWin();
 
- private:
-  void SizeChangedCommon(const gfx::Size& size);
-
-  void EndDrag(WebKit::WebDragOperationsMask ops);
-
-  content::WebDragDestDelegate* GetDragDestDelegate();
+  BEGIN_MSG_MAP_EX(WebContentsViewWin)
+    MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
+    MESSAGE_HANDLER(WM_WINDOWPOSCHANGED, OnWindowPosChanged)
+    MESSAGE_HANDLER(WM_LBUTTONDOWN, OnMouseDown)
+    MESSAGE_HANDLER(WM_MBUTTONDOWN, OnMouseDown)
+    MESSAGE_HANDLER(WM_RBUTTONDOWN, OnMouseDown)
+    MESSAGE_HANDLER(WM_MOUSEMOVE, OnMouseMove)
+    MESSAGE_HANDLER(base::win::kReflectedMessage, OnReflectedMessage)
+    // Hacks for old ThinkPad touchpads/scroll points.
+    MESSAGE_HANDLER(WM_NCCALCSIZE, OnNCCalcSize)
+    MESSAGE_HANDLER(WM_HSCROLL, OnScroll)
+    MESSAGE_HANDLER(WM_VSCROLL, OnScroll)
+    MESSAGE_HANDLER(WM_SIZE, OnSize)
+  END_MSG_MAP()
 
   // Overridden from WebContentsView:
   virtual void CreateView(const gfx::Size& initial_size) OVERRIDE;
@@ -62,7 +69,7 @@ class CONTENT_EXPORT TabContentsViewAura
   virtual void CloseTabAfterEventTracking() OVERRIDE;
   virtual void GetViewBounds(gfx::Rect* out) const OVERRIDE;
 
-  // Overridden from RenderViewHostDelegate::View:
+  // Implementation of RenderViewHostDelegate::View.
   virtual void CreateNewWindow(
       int route_id,
       const ViewHostMsg_CreateWindow_Params& params) OVERRIDE;
@@ -92,52 +99,56 @@ class CONTENT_EXPORT TabContentsViewAura
   virtual void GotFocus() OVERRIDE;
   virtual void TakeFocus(bool reverse) OVERRIDE;
 
-  // Overridden from aura::WindowDelegate:
-  virtual gfx::Size GetMinimumSize() const OVERRIDE;
-  virtual void OnBoundsChanged(const gfx::Rect& old_bounds,
-                               const gfx::Rect& new_bounds) OVERRIDE;
-  virtual void OnFocus() OVERRIDE;
-  virtual void OnBlur() OVERRIDE;
-  virtual bool OnKeyEvent(aura::KeyEvent* event) OVERRIDE;
-  virtual gfx::NativeCursor GetCursor(const gfx::Point& point) OVERRIDE;
-  virtual int GetNonClientComponent(const gfx::Point& point) const OVERRIDE;
-  virtual bool OnMouseEvent(aura::MouseEvent* event) OVERRIDE;
-  virtual ui::TouchStatus OnTouchEvent(aura::TouchEvent* event) OVERRIDE;
-  virtual ui::GestureStatus OnGestureEvent(aura::GestureEvent* event) OVERRIDE;
-  virtual bool CanFocus() OVERRIDE;
-  virtual void OnCaptureLost() OVERRIDE;
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
-  virtual void OnWindowDestroying() OVERRIDE;
-  virtual void OnWindowDestroyed() OVERRIDE;
-  virtual void OnWindowVisibilityChanged(bool visible) OVERRIDE;
+  WebContentsImpl* tab_contents() const { return tab_contents_; }
 
-  // Overridden from aura::client::DragDropDelegate:
-  virtual void OnDragEntered(const aura::DropTargetEvent& event) OVERRIDE;
-  virtual int OnDragUpdated(const aura::DropTargetEvent& event) OVERRIDE;
-  virtual void OnDragExited() OVERRIDE;
-  virtual int OnPerformDrop(const aura::DropTargetEvent& event) OVERRIDE;
+ private:
+  void EndDragging();
+  void CloseTab();
+
+  LRESULT OnDestroy(
+      UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled);
+  LRESULT OnWindowPosChanged(
+      UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled);
+  LRESULT OnMouseDown(
+      UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled);
+  LRESULT OnMouseMove(
+      UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled);
+  LRESULT OnReflectedMessage(
+      UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled);
+  LRESULT OnNCCalcSize(
+      UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled);
+  LRESULT OnScroll(
+      UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled);
+  LRESULT OnSize(
+      UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled);
 
   gfx::Size initial_size_;
-
-  scoped_ptr<aura::Window> window_;
 
   // The WebContentsImpl whose contents we display.
   WebContentsImpl* tab_contents_;
 
-  content::RenderWidgetHostView* view_;
+  RenderWidgetHostViewWin* view_;
 
   scoped_ptr<content::WebContentsViewDelegate> delegate_;
 
-  // Common implementations of some WebContentsView methods.
-  TabContentsViewHelper tab_contents_view_helper_;
+  // The helper object that handles drag destination related interactions with
+  // Windows.
+  scoped_refptr<WebDragDest> drag_dest_;
 
-  WebKit::WebDragOperationsMask current_drag_op_;
+  // Used to handle the drag-and-drop.
+  scoped_refptr<WebContentsDragWin> drag_handler_;
 
   // Set to true if we want to close the tab after the system drag operation
   // has finished.
   bool close_tab_after_drag_ends_;
 
-  DISALLOW_COPY_AND_ASSIGN(TabContentsViewAura);
+  // Used to close the tab after the stack has unwound.
+  base::OneShotTimer<WebContentsViewWin> close_tab_timer_;
+
+  // Common implementations of some WebContentsView methods.
+  WebContentsViewHelper web_contents_view_helper_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebContentsViewWin);
 };
 
-#endif  // CONTENT_BROWSER_TAB_CONTENTS_TAB_CONTENTS_VIEW_AURA_H_
+#endif  // CONTENT_BROWSER_WEB_CONTENTS_WEB_CONTENTS_VIEW_WIN_H_

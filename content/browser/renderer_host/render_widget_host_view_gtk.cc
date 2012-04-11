@@ -337,7 +337,7 @@ class RenderWidgetHostViewGtkWidget {
       widget_host->ForwardMouseEvent(WebInputEventFactory::mouseEvent(event));
 
     // Although we did handle the mouse event, we need to let other handlers
-    // run (in particular the one installed by TabContentsViewGtk).
+    // run (in particular the one installed by WebContentsViewGtk).
     return FALSE;
   }
 

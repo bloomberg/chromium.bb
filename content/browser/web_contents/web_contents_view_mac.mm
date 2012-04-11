@@ -269,13 +269,13 @@ void WebContentsViewMac::TakeFocus(bool reverse) {
 void WebContentsViewMac::CreateNewWindow(
     int route_id,
     const ViewHostMsg_CreateWindow_Params& params) {
-  tab_contents_view_helper_.CreateNewWindow(web_contents_, route_id, params);
+  web_contents_view_helper_.CreateNewWindow(web_contents_, route_id, params);
 }
 
 void WebContentsViewMac::CreateNewWidget(
     int route_id, WebKit::WebPopupType popup_type) {
   RenderWidgetHostView* widget_view =
-      tab_contents_view_helper_.CreateNewWidget(web_contents_,
+      web_contents_view_helper_.CreateNewWidget(web_contents_,
                                                 route_id,
                                                 false,
                                                 popup_type);
@@ -289,7 +289,7 @@ void WebContentsViewMac::CreateNewWidget(
 
 void WebContentsViewMac::CreateNewFullscreenWidget(int route_id) {
   RenderWidgetHostView* widget_view =
-      tab_contents_view_helper_.CreateNewWidget(web_contents_,
+      web_contents_view_helper_.CreateNewWidget(web_contents_,
                                                 route_id,
                                                 true,
                                                 WebKit::WebPopupTypeNone);
@@ -305,14 +305,14 @@ void WebContentsViewMac::ShowCreatedWindow(int route_id,
                                            WindowOpenDisposition disposition,
                                            const gfx::Rect& initial_pos,
                                            bool user_gesture) {
-  tab_contents_view_helper_.ShowCreatedWindow(
+  web_contents_view_helper_.ShowCreatedWindow(
       web_contents_, route_id, disposition, initial_pos, user_gesture);
 }
 
 void WebContentsViewMac::ShowCreatedWidget(
     int route_id, const gfx::Rect& initial_pos) {
   RenderWidgetHostView* widget_host_view =
-      tab_contents_view_helper_.ShowCreatedWidget(web_contents_,
+      web_contents_view_helper_.ShowCreatedWidget(web_contents_,
                                                   route_id,
                                                   false,
                                                   initial_pos);
@@ -327,7 +327,7 @@ void WebContentsViewMac::ShowCreatedWidget(
 
 void WebContentsViewMac::ShowCreatedFullscreenWidget(int route_id) {
   RenderWidgetHostView* widget_host_view =
-      tab_contents_view_helper_.ShowCreatedWidget(web_contents_,
+      web_contents_view_helper_.ShowCreatedWidget(web_contents_,
                                                   route_id,
                                                   true,
                                                   gfx::Rect());

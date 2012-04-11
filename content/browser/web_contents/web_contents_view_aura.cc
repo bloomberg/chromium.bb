@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/tab_contents/tab_contents_view_aura.h"
+#include "content/browser/web_contents/web_contents_view_aura.h"
 
 #include "base/utf_string_conversions.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
@@ -160,9 +160,9 @@ WebKit::WebDragOperationsMask ConvertToWeb(int drag_op) {
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// TabContentsViewAura, public:
+// WebContentsViewAura, public:
 
-TabContentsViewAura::TabContentsViewAura(
+WebContentsViewAura::WebContentsViewAura(
     TabContents* tab_contents,
     content::WebContentsViewDelegate* delegate)
     : tab_contents_(tab_contents),
@@ -172,13 +172,13 @@ TabContentsViewAura::TabContentsViewAura(
       close_tab_after_drag_ends_(false) {
 }
 
-TabContentsViewAura::~TabContentsViewAura() {
+WebContentsViewAura::~WebContentsViewAura() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// TabContentsViewAura, private:
+// WebContentsViewAura, private:
 
-void TabContentsViewAura::SizeChangedCommon(const gfx::Size& size) {
+void WebContentsViewAura::SizeChangedCommon(const gfx::Size& size) {
   if (tab_contents_->GetInterstitialPage())
     tab_contents_->GetInterstitialPage()->SetSize(size);
   content::RenderWidgetHostView* rwhv =
@@ -187,7 +187,7 @@ void TabContentsViewAura::SizeChangedCommon(const gfx::Size& size) {
     rwhv->SetSize(size);
 }
 
-void TabContentsViewAura::EndDrag(WebKit::WebDragOperationsMask ops) {
+void WebContentsViewAura::EndDrag(WebKit::WebDragOperationsMask ops) {
   aura::RootWindow* root_window = GetNativeView()->GetRootWindow();
   gfx::Point screen_loc = root_window->last_mouse_location();
   gfx::Point client_loc = screen_loc;
@@ -198,14 +198,14 @@ void TabContentsViewAura::EndDrag(WebKit::WebDragOperationsMask ops) {
       screen_loc.y(), ops);
 }
 
-content::WebDragDestDelegate* TabContentsViewAura::GetDragDestDelegate() {
+content::WebDragDestDelegate* WebContentsViewAura::GetDragDestDelegate() {
   return delegate_.get() ? delegate_->GetDragDestDelegate() : NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// TabContentsViewAura, WebContentsView implementation:
+// WebContentsViewAura, WebContentsView implementation:
 
-void TabContentsViewAura::CreateView(const gfx::Size& initial_size) {
+void WebContentsViewAura::CreateView(const gfx::Size& initial_size) {
   initial_size_ = initial_size;
 
   window_.reset(new aura::Window(this));
@@ -215,10 +215,10 @@ void TabContentsViewAura::CreateView(const gfx::Size& initial_size) {
   window_->Init(ui::LAYER_NOT_DRAWN);
   window_->SetParent(NULL);
   window_->layer()->SetMasksToBounds(true);
-  window_->SetName("TabContentsViewAura");
+  window_->SetName("WebContentsViewAura");
 }
 
-content::RenderWidgetHostView* TabContentsViewAura::CreateViewForWidget(
+content::RenderWidgetHostView* WebContentsViewAura::CreateViewForWidget(
     content::RenderWidgetHost* render_widget_host) {
   if (render_widget_host->GetView()) {
     // During testing, the view will already be set up in most cases to the
@@ -241,32 +241,32 @@ content::RenderWidgetHostView* TabContentsViewAura::CreateViewForWidget(
   return view_;
 }
 
-gfx::NativeView TabContentsViewAura::GetNativeView() const {
+gfx::NativeView WebContentsViewAura::GetNativeView() const {
   return window_.get();
 }
 
-gfx::NativeView TabContentsViewAura::GetContentNativeView() const {
+gfx::NativeView WebContentsViewAura::GetContentNativeView() const {
   return view_->GetNativeView();
 }
 
-gfx::NativeWindow TabContentsViewAura::GetTopLevelNativeWindow() const {
+gfx::NativeWindow WebContentsViewAura::GetTopLevelNativeWindow() const {
   return window_->GetToplevelWindow();
 }
 
-void TabContentsViewAura::GetContainerBounds(gfx::Rect *out) const {
+void WebContentsViewAura::GetContainerBounds(gfx::Rect *out) const {
   *out = window_->GetScreenBounds();
 }
 
-void TabContentsViewAura::SetPageTitle(const string16& title) {
+void WebContentsViewAura::SetPageTitle(const string16& title) {
   window_->set_title(title);
 }
 
-void TabContentsViewAura::OnTabCrashed(base::TerminationStatus status,
+void WebContentsViewAura::OnTabCrashed(base::TerminationStatus status,
                                        int error_code) {
   view_ = NULL;
 }
 
-void TabContentsViewAura::SizeContents(const gfx::Size& size) {
+void WebContentsViewAura::SizeContents(const gfx::Size& size) {
   gfx::Rect bounds = window_->bounds();
   if (bounds.size() != size) {
     bounds.set_size(size);
@@ -279,10 +279,10 @@ void TabContentsViewAura::SizeContents(const gfx::Size& size) {
   }
 }
 
-void TabContentsViewAura::RenderViewCreated(content::RenderViewHost* host) {
+void WebContentsViewAura::RenderViewCreated(content::RenderViewHost* host) {
 }
 
-void TabContentsViewAura::Focus() {
+void WebContentsViewAura::Focus() {
   if (tab_contents_->GetInterstitialPage()) {
     tab_contents_->GetInterstitialPage()->Focus();
     return;
@@ -297,31 +297,31 @@ void TabContentsViewAura::Focus() {
     rwhv->Focus();
 }
 
-void TabContentsViewAura::SetInitialFocus() {
+void WebContentsViewAura::SetInitialFocus() {
   if (tab_contents_->FocusLocationBarByDefault())
     tab_contents_->SetFocusToLocationBar(false);
   else
     Focus();
 }
 
-void TabContentsViewAura::StoreFocus() {
+void WebContentsViewAura::StoreFocus() {
   if (delegate_.get())
     delegate_->StoreFocus();
 }
 
-void TabContentsViewAura::RestoreFocus() {
+void WebContentsViewAura::RestoreFocus() {
   if (delegate_.get())
     delegate_->RestoreFocus();
 }
 
-bool TabContentsViewAura::IsDoingDrag() const {
+bool WebContentsViewAura::IsDoingDrag() const {
   aura::RootWindow* root_window = GetNativeView()->GetRootWindow();
   if (aura::client::GetDragDropClient(root_window))
     return aura::client::GetDragDropClient(root_window)->IsDragDropInProgress();
   return false;
 }
 
-void TabContentsViewAura::CancelDragAndCloseTab() {
+void WebContentsViewAura::CancelDragAndCloseTab() {
   DCHECK(IsDoingDrag());
   // We can't close the tab while we're in the drag and
   // |drag_handler_->CancelDrag()| is async.  Instead, set a flag to cancel
@@ -333,65 +333,65 @@ void TabContentsViewAura::CancelDragAndCloseTab() {
   close_tab_after_drag_ends_ = true;
 }
 
-bool TabContentsViewAura::IsEventTracking() const {
+bool WebContentsViewAura::IsEventTracking() const {
   return false;
 }
 
-void TabContentsViewAura::CloseTabAfterEventTracking() {
+void WebContentsViewAura::CloseTabAfterEventTracking() {
 }
 
-void TabContentsViewAura::GetViewBounds(gfx::Rect* out) const {
+void WebContentsViewAura::GetViewBounds(gfx::Rect* out) const {
   *out = window_->GetScreenBounds();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// TabContentsViewAura, RenderViewHostDelegate::View implementation:
+// WebContentsViewAura, RenderViewHostDelegate::View implementation:
 
-void TabContentsViewAura::CreateNewWindow(
+void WebContentsViewAura::CreateNewWindow(
     int route_id,
     const ViewHostMsg_CreateWindow_Params& params) {
-  tab_contents_view_helper_.CreateNewWindow(tab_contents_, route_id, params);
+  web_contents_view_helper_.CreateNewWindow(tab_contents_, route_id, params);
 }
 
-void TabContentsViewAura::CreateNewWidget(int route_id,
+void WebContentsViewAura::CreateNewWidget(int route_id,
                                           WebKit::WebPopupType popup_type) {
-  tab_contents_view_helper_.CreateNewWidget(tab_contents_,
+  web_contents_view_helper_.CreateNewWidget(tab_contents_,
                                             route_id,
                                             false,
                                             popup_type);
 }
 
-void TabContentsViewAura::CreateNewFullscreenWidget(int route_id) {
-  tab_contents_view_helper_.CreateNewWidget(tab_contents_,
+void WebContentsViewAura::CreateNewFullscreenWidget(int route_id) {
+  web_contents_view_helper_.CreateNewWidget(tab_contents_,
                                             route_id,
                                             true,
                                             WebKit::WebPopupTypeNone);
 }
 
-void TabContentsViewAura::ShowCreatedWindow(int route_id,
+void WebContentsViewAura::ShowCreatedWindow(int route_id,
                                             WindowOpenDisposition disposition,
                                             const gfx::Rect& initial_pos,
                                             bool user_gesture) {
-  tab_contents_view_helper_.ShowCreatedWindow(
+  web_contents_view_helper_.ShowCreatedWindow(
       tab_contents_, route_id, disposition, initial_pos, user_gesture);
 }
 
-void TabContentsViewAura::ShowCreatedWidget(int route_id,
+void WebContentsViewAura::ShowCreatedWidget(int route_id,
                                             const gfx::Rect& initial_pos) {
-  tab_contents_view_helper_.ShowCreatedWidget(tab_contents_,
+  web_contents_view_helper_.ShowCreatedWidget(tab_contents_,
                                               route_id,
                                               false,
                                               initial_pos);
 }
 
-void TabContentsViewAura::ShowCreatedFullscreenWidget(int route_id) {
-  tab_contents_view_helper_.ShowCreatedWidget(tab_contents_,
+void WebContentsViewAura::ShowCreatedFullscreenWidget(int route_id) {
+  web_contents_view_helper_.ShowCreatedWidget(tab_contents_,
                                               route_id,
                                               true,
                                               gfx::Rect());
 }
 
-void TabContentsViewAura::ShowContextMenu(
+void WebContentsViewAura::ShowContextMenu(
     const content::ContextMenuParams& params) {
   // Allow WebContentsDelegates to handle the context menu operation first.
   if (tab_contents_->GetDelegate() &&
@@ -403,7 +403,7 @@ void TabContentsViewAura::ShowContextMenu(
     delegate_->ShowContextMenu(params);
 }
 
-void TabContentsViewAura::ShowPopupMenu(const gfx::Rect& bounds,
+void WebContentsViewAura::ShowPopupMenu(const gfx::Rect& bounds,
                                         int item_height,
                                         double item_font_size,
                                         int selected_item,
@@ -413,7 +413,7 @@ void TabContentsViewAura::ShowPopupMenu(const gfx::Rect& bounds,
   NOTIMPLEMENTED();
 }
 
-void TabContentsViewAura::StartDragging(
+void WebContentsViewAura::StartDragging(
     const WebDropData& drop_data,
     WebKit::WebDragOperationsMask operations,
     const SkBitmap& image,
@@ -424,10 +424,8 @@ void TabContentsViewAura::StartDragging(
 
   ui::OSExchangeDataProviderAura* provider = new ui::OSExchangeDataProviderAura;
   PrepareDragData(drop_data, provider);
-  if (!image.isNull()) {
+  if (!image.isNull())
     provider->set_drag_image(image);
-    provider->set_drag_image_offset(image_offset);
-  }
   ui::OSExchangeData data(provider);  // takes ownership of |provider|.
 
   scoped_ptr<WebDragSourceAura> drag_source(
@@ -442,6 +440,7 @@ void TabContentsViewAura::StartDragging(
     // initiate the drag). The location information should be carried over from
     // webkit. http://crbug.com/114754
     gfx::Point location(root_window->last_mouse_location());
+    location.Offset(-image_offset.x(), -image_offset.y());
     MessageLoop::ScopedNestableTaskAllower allow(MessageLoop::current());
     result_op = aura::client::GetDragDropClient(root_window)->StartDragAndDrop(
         data, location, ConvertFromWeb(operations));
@@ -450,16 +449,16 @@ void TabContentsViewAura::StartDragging(
   EndDrag(ConvertToWeb(result_op));
   tab_contents_->GetRenderViewHost()->DragSourceSystemDragEnded();}
 
-void TabContentsViewAura::UpdateDragCursor(WebKit::WebDragOperation operation) {
+void WebContentsViewAura::UpdateDragCursor(WebKit::WebDragOperation operation) {
   current_drag_op_ = operation;
 }
 
-void TabContentsViewAura::GotFocus() {
+void WebContentsViewAura::GotFocus() {
   if (tab_contents_->GetDelegate())
     tab_contents_->GetDelegate()->WebContentsFocused(tab_contents_);
 }
 
-void TabContentsViewAura::TakeFocus(bool reverse) {
+void WebContentsViewAura::TakeFocus(bool reverse) {
   if (tab_contents_->GetDelegate() &&
       !tab_contents_->GetDelegate()->TakeFocus(reverse) &&
       delegate_.get()) {
@@ -468,38 +467,38 @@ void TabContentsViewAura::TakeFocus(bool reverse) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// TabContentsViewAura, aura::WindowDelegate implementation:
+// WebContentsViewAura, aura::WindowDelegate implementation:
 
-gfx::Size TabContentsViewAura::GetMinimumSize() const {
+gfx::Size WebContentsViewAura::GetMinimumSize() const {
   return gfx::Size();
 }
 
-void TabContentsViewAura::OnBoundsChanged(const gfx::Rect& old_bounds,
+void WebContentsViewAura::OnBoundsChanged(const gfx::Rect& old_bounds,
                                           const gfx::Rect& new_bounds) {
   SizeChangedCommon(new_bounds.size());
   if (delegate_.get())
     delegate_->SizeChanged(new_bounds.size());
 }
 
-void TabContentsViewAura::OnFocus() {
+void WebContentsViewAura::OnFocus() {
 }
 
-void TabContentsViewAura::OnBlur() {
+void WebContentsViewAura::OnBlur() {
 }
 
-bool TabContentsViewAura::OnKeyEvent(aura::KeyEvent* event) {
+bool WebContentsViewAura::OnKeyEvent(aura::KeyEvent* event) {
   return false;
 }
 
-gfx::NativeCursor TabContentsViewAura::GetCursor(const gfx::Point& point) {
+gfx::NativeCursor WebContentsViewAura::GetCursor(const gfx::Point& point) {
   return gfx::kNullCursor;
 }
 
-int TabContentsViewAura::GetNonClientComponent(const gfx::Point& point) const {
+int WebContentsViewAura::GetNonClientComponent(const gfx::Point& point) const {
   return HTCLIENT;
 }
 
-bool TabContentsViewAura::OnMouseEvent(aura::MouseEvent* event) {
+bool WebContentsViewAura::OnMouseEvent(aura::MouseEvent* event) {
   if (!tab_contents_->GetDelegate())
     return false;
 
@@ -517,41 +516,41 @@ bool TabContentsViewAura::OnMouseEvent(aura::MouseEvent* event) {
   return false;
 }
 
-ui::TouchStatus TabContentsViewAura::OnTouchEvent(aura::TouchEvent* event) {
+ui::TouchStatus WebContentsViewAura::OnTouchEvent(aura::TouchEvent* event) {
   return ui::TOUCH_STATUS_UNKNOWN;
 }
 
-ui::GestureStatus TabContentsViewAura::OnGestureEvent(
+ui::GestureStatus WebContentsViewAura::OnGestureEvent(
     aura::GestureEvent* event) {
   return ui::GESTURE_STATUS_UNKNOWN;
 }
 
-bool TabContentsViewAura::CanFocus() {
+bool WebContentsViewAura::CanFocus() {
   return true;
 }
 
-void TabContentsViewAura::OnCaptureLost() {
+void WebContentsViewAura::OnCaptureLost() {
 }
 
-void TabContentsViewAura::OnPaint(gfx::Canvas* canvas) {
+void WebContentsViewAura::OnPaint(gfx::Canvas* canvas) {
 }
 
-void TabContentsViewAura::OnWindowDestroying() {
+void WebContentsViewAura::OnWindowDestroying() {
 }
 
-void TabContentsViewAura::OnWindowDestroyed() {
+void WebContentsViewAura::OnWindowDestroyed() {
 }
 
-void TabContentsViewAura::OnWindowVisibilityChanged(bool visible) {
+void WebContentsViewAura::OnWindowVisibilityChanged(bool visible) {
   if (visible)
     tab_contents_->ShowContents();
   else
     tab_contents_->HideContents();
 }
 ////////////////////////////////////////////////////////////////////////////////
-// TabContentsViewAura, aura::client::DragDropDelegate implementation:
+// WebContentsViewAura, aura::client::DragDropDelegate implementation:
 
-void TabContentsViewAura::OnDragEntered(const aura::DropTargetEvent& event) {
+void WebContentsViewAura::OnDragEntered(const aura::DropTargetEvent& event) {
   if (GetDragDestDelegate())
     GetDragDestDelegate()->DragInitialize(tab_contents_);
 
@@ -570,7 +569,7 @@ void TabContentsViewAura::OnDragEntered(const aura::DropTargetEvent& event) {
   }
 }
 
-int TabContentsViewAura::OnDragUpdated(const aura::DropTargetEvent& event) {
+int WebContentsViewAura::OnDragUpdated(const aura::DropTargetEvent& event) {
   WebKit::WebDragOperationsMask op = ConvertToWeb(event.source_operations());
   gfx::Point screen_pt =
       GetNativeView()->GetRootWindow()->last_mouse_location();
@@ -583,13 +582,13 @@ int TabContentsViewAura::OnDragUpdated(const aura::DropTargetEvent& event) {
   return ConvertFromWeb(current_drag_op_);
 }
 
-void TabContentsViewAura::OnDragExited() {
+void WebContentsViewAura::OnDragExited() {
   tab_contents_->GetRenderViewHost()->DragTargetDragLeave();
   if (GetDragDestDelegate())
     GetDragDestDelegate()->OnDragLeave();
 }
 
-int TabContentsViewAura::OnPerformDrop(const aura::DropTargetEvent& event) {
+int WebContentsViewAura::OnPerformDrop(const aura::DropTargetEvent& event) {
   tab_contents_->GetRenderViewHost()->DragTargetDrop(
       event.location(),
       GetNativeView()->GetRootWindow()->last_mouse_location());

@@ -66,11 +66,11 @@
 #include "webkit/glue/webpreferences.h"
 
 #if defined(USE_AURA)
-#include "content/browser/tab_contents/tab_contents_view_aura.h"
+#include "content/browser/web_contents/web_contents_view_aura.h"
 #elif defined(OS_WIN)
-#include "content/browser/tab_contents/tab_contents_view_win.h"
+#include "content/browser/web_contents/web_contents_view_win.h"
 #elif defined(TOOLKIT_GTK)
-#include "content/browser/tab_contents/tab_contents_view_gtk.h"
+#include "content/browser/web_contents/web_contents_view_gtk.h"
 #elif defined(OS_MACOSX)
 #include "content/browser/web_contents/web_contents_view_mac.h"
 #include "ui/gfx/surface/io_surface_support_mac.h"
@@ -287,11 +287,11 @@ WebContentsImpl::WebContentsImpl(
         content::GetContentClient()->browser()->GetWebContentsViewDelegate(
             this);
 #if defined(USE_AURA)
-    view_.reset(new TabContentsViewAura(this, delegate));
+    view_.reset(new WebContentsViewAura(this, delegate));
 #elif defined(OS_WIN)
-    view_.reset(new TabContentsViewWin(this, delegate));
+    view_.reset(new WebContentsViewWin(this, delegate));
 #elif defined(TOOLKIT_GTK)
-    view_.reset(new content::TabContentsViewGtk(this, delegate));
+    view_.reset(new content::WebContentsViewGtk(this, delegate));
 #elif defined(OS_MACOSX)
     view_.reset(web_contents_view_mac::CreateWebContentsView(this, delegate));
 #elif defined(OS_ANDROID)

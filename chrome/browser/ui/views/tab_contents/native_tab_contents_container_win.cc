@@ -120,7 +120,7 @@ void NativeTabContentsContainerWin::RequestFocus() {
     // don't send it to listeners.
     views::AutoNativeNotificationDisabler local_notification_disabler;
     views::FocusManager* focus_manager = GetFocusManager();
-    if (focus_manager)  // NULL in unittests when using TabContentsViewWin.
+    if (focus_manager)  // NULL in unittests when using WebContentsViewWin.
       focus_manager->ClearFocus();
   }
   View::RequestFocus();

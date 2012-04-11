@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/tab_contents/tab_contents_view_win.h"
+#include "content/browser/web_contents/web_contents_view_win.h"
 
 #include "base/bind.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
@@ -55,14 +55,14 @@ class TempParent : public ui::WindowImpl {
   void OnClose() {
   }
 
-  BEGIN_MSG_MAP_EX(TabContentsViewWin)
+  BEGIN_MSG_MAP_EX(WebContentsViewWin)
     MSG_WM_CLOSE(OnClose)
   END_MSG_MAP()
 };
 
 }  // namespace namespace
 
-TabContentsViewWin::TabContentsViewWin(TabContents* tab_contents,
+WebContentsViewWin::WebContentsViewWin(TabContents* tab_contents,
                                        WebContentsViewDelegate* delegate)
     : tab_contents_(tab_contents),
       view_(NULL),
@@ -70,12 +70,12 @@ TabContentsViewWin::TabContentsViewWin(TabContents* tab_contents,
       close_tab_after_drag_ends_(false) {
 }
 
-TabContentsViewWin::~TabContentsViewWin() {
+WebContentsViewWin::~WebContentsViewWin() {
   if (IsWindow(hwnd()))
     DestroyWindow(hwnd());
 }
 
-void TabContentsViewWin::CreateView(const gfx::Size& initial_size) {
+void WebContentsViewWin::CreateView(const gfx::Size& initial_size) {
   initial_size_ = initial_size;
 
   set_window_style(WS_VISIBLE | WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS);
@@ -92,7 +92,7 @@ void TabContentsViewWin::CreateView(const gfx::Size& initial_size) {
   }
 }
 
-RenderWidgetHostView* TabContentsViewWin::CreateViewForWidget(
+RenderWidgetHostView* WebContentsViewWin::CreateViewForWidget(
     content::RenderWidgetHost* render_widget_host)  {
   if (render_widget_host->GetView()) {
     // During testing, the view will already be set up in most cases to the
@@ -112,20 +112,20 @@ RenderWidgetHostView* TabContentsViewWin::CreateViewForWidget(
   return view_;
 }
 
-gfx::NativeView TabContentsViewWin::GetNativeView() const {
+gfx::NativeView WebContentsViewWin::GetNativeView() const {
   return hwnd();
 }
 
-gfx::NativeView TabContentsViewWin::GetContentNativeView() const {
+gfx::NativeView WebContentsViewWin::GetContentNativeView() const {
   RenderWidgetHostView* rwhv = tab_contents_->GetRenderWidgetHostView();
   return rwhv ? rwhv->GetNativeView() : NULL;
 }
 
-gfx::NativeWindow TabContentsViewWin::GetTopLevelNativeWindow() const {
+gfx::NativeWindow WebContentsViewWin::GetTopLevelNativeWindow() const {
   return GetParent(GetNativeView());
 }
 
-void TabContentsViewWin::GetContainerBounds(gfx::Rect *out) const {
+void WebContentsViewWin::GetContainerBounds(gfx::Rect *out) const {
   // Copied from NativeWidgetWin::GetClientAreaScreenBounds().
   RECT r;
   GetClientRect(hwnd(), &r);
@@ -134,20 +134,20 @@ void TabContentsViewWin::GetContainerBounds(gfx::Rect *out) const {
   *out = gfx::Rect(point.x, point.y, r.right - r.left, r.bottom - r.top);
 }
 
-void TabContentsViewWin::SetPageTitle(const string16& title) {
+void WebContentsViewWin::SetPageTitle(const string16& title) {
   // It's possible to get this after the hwnd has been destroyed.
   if (GetNativeView())
     ::SetWindowText(GetNativeView(), title.c_str());
 }
 
-void TabContentsViewWin::OnTabCrashed(base::TerminationStatus status,
+void WebContentsViewWin::OnTabCrashed(base::TerminationStatus status,
                                       int error_code) {
   // TODO(avi): No other TCV implementation does anything in this callback. Can
   // this be moved elsewhere so that |OnTabCrashed| can be removed everywhere?
   view_ = NULL;
 }
 
-void TabContentsViewWin::SizeContents(const gfx::Size& size) {
+void WebContentsViewWin::SizeContents(const gfx::Size& size) {
   gfx::Rect bounds;
   GetContainerBounds(&bounds);
   if (bounds.size() != size) {
@@ -164,10 +164,10 @@ void TabContentsViewWin::SizeContents(const gfx::Size& size) {
   }
 }
 
-void TabContentsViewWin::RenderViewCreated(RenderViewHost* host) {
+void WebContentsViewWin::RenderViewCreated(RenderViewHost* host) {
 }
 
-void TabContentsViewWin::Focus() {
+void WebContentsViewWin::Focus() {
   if (tab_contents_->GetInterstitialPage()) {
     tab_contents_->GetInterstitialPage()->Focus();
     return;
@@ -181,28 +181,28 @@ void TabContentsViewWin::Focus() {
     rwhv->Focus();
 }
 
-void TabContentsViewWin::SetInitialFocus() {
+void WebContentsViewWin::SetInitialFocus() {
   if (tab_contents_->FocusLocationBarByDefault())
     tab_contents_->SetFocusToLocationBar(false);
   else
     Focus();
 }
 
-void TabContentsViewWin::StoreFocus() {
+void WebContentsViewWin::StoreFocus() {
   if (delegate_.get())
     delegate_->StoreFocus();
 }
 
-void TabContentsViewWin::RestoreFocus() {
+void WebContentsViewWin::RestoreFocus() {
   if (delegate_.get())
     delegate_->RestoreFocus();
 }
 
-bool TabContentsViewWin::IsDoingDrag() const {
+bool WebContentsViewWin::IsDoingDrag() const {
   return drag_handler_.get() != NULL;
 }
 
-void TabContentsViewWin::CancelDragAndCloseTab() {
+void WebContentsViewWin::CancelDragAndCloseTab() {
   DCHECK(IsDoingDrag());
   // We can't close the tab while we're in the drag and
   // |drag_handler_->CancelDrag()| is async.  Instead, set a flag to cancel
@@ -211,64 +211,64 @@ void TabContentsViewWin::CancelDragAndCloseTab() {
   close_tab_after_drag_ends_ = true;
 }
 
-bool TabContentsViewWin::IsEventTracking() const {
+bool WebContentsViewWin::IsEventTracking() const {
   return false;
 }
 
-void TabContentsViewWin::CloseTabAfterEventTracking() {
+void WebContentsViewWin::CloseTabAfterEventTracking() {
 }
 
-void TabContentsViewWin::GetViewBounds(gfx::Rect* out) const {
+void WebContentsViewWin::GetViewBounds(gfx::Rect* out) const {
   RECT r;
   GetWindowRect(hwnd(), &r);
   *out = gfx::Rect(r);
 }
 
-void TabContentsViewWin::CreateNewWindow(
+void WebContentsViewWin::CreateNewWindow(
     int route_id,
     const ViewHostMsg_CreateWindow_Params& params) {
-  tab_contents_view_helper_.CreateNewWindow(tab_contents_, route_id, params);
+  web_contents_view_helper_.CreateNewWindow(tab_contents_, route_id, params);
 }
 
-void TabContentsViewWin::CreateNewWidget(int route_id,
+void WebContentsViewWin::CreateNewWidget(int route_id,
                                          WebKit::WebPopupType popup_type) {
-  tab_contents_view_helper_.CreateNewWidget(tab_contents_,
+  web_contents_view_helper_.CreateNewWidget(tab_contents_,
                                             route_id,
                                             false,
                                             popup_type);
 }
 
-void TabContentsViewWin::CreateNewFullscreenWidget(int route_id) {
-  tab_contents_view_helper_.CreateNewWidget(tab_contents_,
+void WebContentsViewWin::CreateNewFullscreenWidget(int route_id) {
+  web_contents_view_helper_.CreateNewWidget(tab_contents_,
                                             route_id,
                                             true,
                                             WebKit::WebPopupTypeNone);
 }
 
-void TabContentsViewWin::ShowCreatedWindow(int route_id,
+void WebContentsViewWin::ShowCreatedWindow(int route_id,
                                            WindowOpenDisposition disposition,
                                            const gfx::Rect& initial_pos,
                                            bool user_gesture) {
-  tab_contents_view_helper_.ShowCreatedWindow(
+  web_contents_view_helper_.ShowCreatedWindow(
       tab_contents_, route_id, disposition, initial_pos, user_gesture);
 }
 
-void TabContentsViewWin::ShowCreatedWidget(int route_id,
+void WebContentsViewWin::ShowCreatedWidget(int route_id,
                                            const gfx::Rect& initial_pos) {
-  tab_contents_view_helper_.ShowCreatedWidget(tab_contents_,
+  web_contents_view_helper_.ShowCreatedWidget(tab_contents_,
                                               route_id,
                                               false,
                                               initial_pos);
 }
 
-void TabContentsViewWin::ShowCreatedFullscreenWidget(int route_id) {
-  tab_contents_view_helper_.ShowCreatedWidget(tab_contents_,
+void WebContentsViewWin::ShowCreatedFullscreenWidget(int route_id) {
+  web_contents_view_helper_.ShowCreatedWidget(tab_contents_,
                                               route_id,
                                               true,
                                               gfx::Rect());
 }
 
-void TabContentsViewWin::ShowContextMenu(
+void WebContentsViewWin::ShowContextMenu(
     const content::ContextMenuParams& params) {
   // Allow WebContentsDelegates to handle the context menu operation first.
   if (tab_contents_->GetDelegate() &&
@@ -280,7 +280,7 @@ void TabContentsViewWin::ShowContextMenu(
     delegate_->ShowContextMenu(params);
 }
 
-void TabContentsViewWin::ShowPopupMenu(const gfx::Rect& bounds,
+void WebContentsViewWin::ShowPopupMenu(const gfx::Rect& bounds,
                                        int item_height,
                                        double item_font_size,
                                        int selected_item,
@@ -290,7 +290,7 @@ void TabContentsViewWin::ShowPopupMenu(const gfx::Rect& bounds,
   NOTIMPLEMENTED();
 }
 
-void TabContentsViewWin::StartDragging(const WebDropData& drop_data,
+void WebContentsViewWin::StartDragging(const WebDropData& drop_data,
                                        WebKit::WebDragOperationsMask operations,
                                        const SkBitmap& image,
                                        const gfx::Point& image_offset) {
@@ -298,20 +298,20 @@ void TabContentsViewWin::StartDragging(const WebDropData& drop_data,
       GetNativeView(),
       tab_contents_,
       drag_dest_,
-      base::Bind(&TabContentsViewWin::EndDragging, base::Unretained(this)));
+      base::Bind(&WebContentsViewWin::EndDragging, base::Unretained(this)));
   drag_handler_->StartDragging(drop_data, operations, image, image_offset);
 }
 
-void TabContentsViewWin::UpdateDragCursor(WebKit::WebDragOperation operation) {
+void WebContentsViewWin::UpdateDragCursor(WebKit::WebDragOperation operation) {
   drag_dest_->set_drag_cursor(operation);
 }
 
-void TabContentsViewWin::GotFocus() {
+void WebContentsViewWin::GotFocus() {
   if (tab_contents_->GetDelegate())
     tab_contents_->GetDelegate()->WebContentsFocused(tab_contents_);
 }
 
-void TabContentsViewWin::TakeFocus(bool reverse) {
+void WebContentsViewWin::TakeFocus(bool reverse) {
   if (tab_contents_->GetDelegate() &&
       !tab_contents_->GetDelegate()->TakeFocus(reverse) &&
       delegate_.get()) {
@@ -319,21 +319,21 @@ void TabContentsViewWin::TakeFocus(bool reverse) {
   }
 }
 
-void TabContentsViewWin::EndDragging() {
+void WebContentsViewWin::EndDragging() {
   drag_handler_ = NULL;
   if (close_tab_after_drag_ends_) {
     close_tab_timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(0),
-                           this, &TabContentsViewWin::CloseTab);
+                           this, &WebContentsViewWin::CloseTab);
   }
   tab_contents_->SystemDragEnded();
 }
 
-void TabContentsViewWin::CloseTab() {
+void WebContentsViewWin::CloseTab() {
   RenderViewHost* rvh = tab_contents_->GetRenderViewHost();
   rvh->GetDelegate()->Close(rvh);
 }
 
-LRESULT TabContentsViewWin::OnDestroy(
+LRESULT WebContentsViewWin::OnDestroy(
     UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled) {
   if (drag_dest_.get()) {
     RevokeDragDrop(GetNativeView());
@@ -342,7 +342,7 @@ LRESULT TabContentsViewWin::OnDestroy(
   return 0;
 }
 
-LRESULT TabContentsViewWin::OnWindowPosChanged(
+LRESULT WebContentsViewWin::OnWindowPosChanged(
     UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled) {
   WINDOWPOS* window_pos = reinterpret_cast<WINDOWPOS*>(lparam);
   if (window_pos->flags & SWP_HIDEWINDOW) {
@@ -375,7 +375,7 @@ LRESULT TabContentsViewWin::OnWindowPosChanged(
   return 0;
 }
 
-LRESULT TabContentsViewWin::OnMouseDown(
+LRESULT WebContentsViewWin::OnMouseDown(
     UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled) {
   // Make sure this TabContents is activated when it is clicked on.
   if (tab_contents_->GetDelegate())
@@ -383,7 +383,7 @@ LRESULT TabContentsViewWin::OnMouseDown(
   return 0;
 }
 
-LRESULT TabContentsViewWin::OnMouseMove(
+LRESULT WebContentsViewWin::OnMouseMove(
     UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled) {
   // Let our delegate know that the mouse moved (useful for resetting status
   // bubble state).
@@ -394,7 +394,7 @@ LRESULT TabContentsViewWin::OnMouseMove(
   return 0;
 }
 
-LRESULT TabContentsViewWin::OnReflectedMessage(
+LRESULT WebContentsViewWin::OnReflectedMessage(
     UINT msg, WPARAM wparam, LPARAM lparam, BOOL& handled) {
   MSG* message = reinterpret_cast<MSG*>(lparam);
   switch (message->message) {
@@ -410,7 +410,7 @@ LRESULT TabContentsViewWin::OnReflectedMessage(
   return 0;
 }
 
-LRESULT TabContentsViewWin::OnNCCalcSize(
+LRESULT WebContentsViewWin::OnNCCalcSize(
     UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled) {
   // Hack for ThinkPad mouse wheel driver. We have set the fake scroll bars
   // to receive scroll messages from ThinkPad touch-pad driver. Suppress
@@ -418,7 +418,7 @@ LRESULT TabContentsViewWin::OnNCCalcSize(
   return 0;
 }
 
-LRESULT TabContentsViewWin::OnScroll(
+LRESULT WebContentsViewWin::OnScroll(
     UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled) {
   int scroll_type = LOWORD(wparam);
   short position = HIWORD(wparam);
@@ -459,7 +459,7 @@ LRESULT TabContentsViewWin::OnScroll(
   return 0;
 }
 
-LRESULT TabContentsViewWin::OnSize(
+LRESULT WebContentsViewWin::OnSize(
     UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled) {
   // NOTE: Because we handle OnWindowPosChanged without calling DefWindowProc,
   // OnSize is NOT called on window resize. This handler is called only once

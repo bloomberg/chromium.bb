@@ -270,19 +270,19 @@ views::Widget* TabContentsViewViews::GetSadTab() const {
 void TabContentsViewViews::CreateNewWindow(
     int route_id,
     const ViewHostMsg_CreateWindow_Params& params) {
-  tab_contents_view_helper_.CreateNewWindow(web_contents_, route_id, params);
+  web_contents_view_helper_.CreateNewWindow(web_contents_, route_id, params);
 }
 
 void TabContentsViewViews::CreateNewWidget(
     int route_id, WebKit::WebPopupType popup_type) {
-  tab_contents_view_helper_.CreateNewWidget(web_contents_,
+  web_contents_view_helper_.CreateNewWidget(web_contents_,
                                             route_id,
                                             false,
                                             popup_type);
 }
 
 void TabContentsViewViews::CreateNewFullscreenWidget(int route_id) {
-  tab_contents_view_helper_.CreateNewWidget(web_contents_,
+  web_contents_view_helper_.CreateNewWidget(web_contents_,
                                             route_id,
                                             true,
                                             WebKit::WebPopupTypeNone);
@@ -292,20 +292,20 @@ void TabContentsViewViews::ShowCreatedWindow(int route_id,
                                              WindowOpenDisposition disposition,
                                              const gfx::Rect& initial_pos,
                                              bool user_gesture) {
-  tab_contents_view_helper_.ShowCreatedWindow(
+  web_contents_view_helper_.ShowCreatedWindow(
       web_contents_, route_id, disposition, initial_pos, user_gesture);
 }
 
 void TabContentsViewViews::ShowCreatedWidget(
     int route_id, const gfx::Rect& initial_pos) {
-  tab_contents_view_helper_.ShowCreatedWidget(web_contents_,
+  web_contents_view_helper_.ShowCreatedWidget(web_contents_,
                                               route_id,
                                               false,
                                               initial_pos);
 }
 
 void TabContentsViewViews::ShowCreatedFullscreenWidget(int route_id) {
-  tab_contents_view_helper_.ShowCreatedWidget(web_contents_,
+  web_contents_view_helper_.ShowCreatedWidget(web_contents_,
                                               route_id,
                                               true,
                                               gfx::Rect());

@@ -390,7 +390,7 @@ class CONTENT_EXPORT WebContentsImpl
 #elif defined(OS_MACOSX)
   friend class WebContentsViewMac;
 #elif defined(TOOLKIT_GTK)
-  friend class TabContentsViewGtk;
+  friend class WebContentsViewGtk;
 #endif
 
   // So InterstitialPageImpl can access SetIsLoading.
