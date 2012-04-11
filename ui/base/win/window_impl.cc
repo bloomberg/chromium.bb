@@ -188,19 +188,28 @@ void WindowImpl::Init(HWND parent, const gfx::Rect& bounds) {
   HWND hwnd = CreateWindowEx(window_ex_style_, name.c_str(), NULL,
                              window_style_, x, y, width, height,
                              parent, NULL, NULL, this);
-  if (!hwnd_) {
+  if (!hwnd_ && GetLastError() == 0) {
     base::debug::Alias(&destroyed);
     base::debug::Alias(&hwnd);
-    DWORD last_error = GetLastError();
-    base::debug::Alias(&last_error);
     bool got_create = got_create_;
     base::debug::Alias(&got_create);
     bool got_valid_hwnd = got_valid_hwnd_;
     base::debug::Alias(&got_valid_hwnd);
+    WNDCLASSEX class_info;
+    memset(&class_info, 0, sizeof(WNDCLASSEX));
+    class_info.cbSize = sizeof(WNDCLASSEX);
+    BOOL got_class = GetClassInfoEx(
+        GetModuleHandle(NULL), name.c_str(), &class_info);
+    base::debug::Alias(&got_class);
+    bool procs_match = got_class && class_info.lpfnWndProc ==
+        base::win::WrappedWindowProc<&WindowImpl::WndProc>;
+    base::debug::Alias(&procs_match);
     CHECK(false);
   }
   if (!destroyed)
     destroyed_ = NULL;
+
+  CheckWindowCreated(hwnd_);
 
   // The window procedure should have set the data for us.
   CHECK_EQ(this, ui::GetWindowUserData(hwnd));
@@ -261,7 +270,7 @@ std::wstring WindowImpl::GetWindowClassName() {
     base::win::WrappedWindowProc<&WindowImpl::WndProc>,
     0,
     0,
-    NULL,
+    GetModuleHandle(NULL),
     icon,
     NULL,
     reinterpret_cast<HBRUSH>(background + 1),
