@@ -93,7 +93,7 @@ void StatusIconWin::DisplayBalloon(const SkBitmap& icon,
   wcscpy_s(icon_data.szInfo, contents.c_str());
   icon_data.uTimeout = 0;
 
-  base::win::Version win_version = base::win::OSInfo::GetInstance()->version();
+  base::win::Version win_version = base::win::GetVersion();
   if (!icon.empty() && win_version != base::win::VERSION_PRE_XP) {
     balloon_icon_.Set(IconUtil::CreateHICONFromSkBitmap(icon));
     if (win_version >= base::win::VERSION_VISTA) {
@@ -148,8 +148,7 @@ void StatusIconWin::HandleClickEvent(const gfx::Point& cursor_pos,
 }
 
 void StatusIconWin::InitIconData(NOTIFYICONDATA* icon_data) {
-  if (base::win::OSInfo::GetInstance()->version() >=
-      base::win::VERSION_VISTA) {
+  if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
     memset(icon_data, 0, sizeof(NOTIFYICONDATA));
     icon_data->cbSize = sizeof(NOTIFYICONDATA);
   } else {
