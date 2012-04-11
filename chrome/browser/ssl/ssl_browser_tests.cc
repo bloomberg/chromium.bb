@@ -3,7 +3,11 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/path_service.h"
+#include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/time.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser.h"
@@ -11,6 +15,7 @@
 #include "chrome/browser/ui/constrained_window_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -510,6 +515,42 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSExpiredCertAndGoForward) {
   EXPECT_FALSE(tab->GetController().CanGoForward());
   NavigationEntry* entry4 = tab->GetController().GetActiveEntry();
   EXPECT_TRUE(entry2 == entry4);
+}
+
+// Visits a HTTPS page and proceeds despite an invalid certificate. The page
+// requests WSS connection to the same origin host to check if WSS connection
+// share certificates policy with HTTPS correcly.
+IN_PROC_BROWSER_TEST_F(SSLUITest, TestWSSInvalidCertAndGoForward) {
+  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(https_server_expired_.Start());
+
+  // Start pywebsocket with TLS.
+  ui_test_utils::TestWebSocketServer wss_server;
+  int port = wss_server.UseRandomPort();
+  wss_server.UseTLS();
+  FilePath wss_root_dir;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &wss_root_dir));
+  ASSERT_TRUE(wss_server.Start(wss_root_dir));
+
+  // Setup page title observer.
+  WebContents* tab = browser()->GetSelectedWebContents();
+  ui_test_utils::TitleWatcher watcher(tab, ASCIIToUTF16("PASS"));
+  watcher.AlsoWaitForTitle(ASCIIToUTF16("FAIL"));
+
+  // Visits bad HTTPS page.
+  std::string urlPath =
+      StringPrintf("%s%d%s", "https://localhost:", port, "/wss.html");
+  ui_test_utils::NavigateToURL(browser(), GURL(urlPath));
+  CheckAuthenticationBrokenState(tab, net::CERT_STATUS_COMMON_NAME_INVALID,
+                                 false, true);  // Interstitial showing
+
+  // Proceeds anyway.
+  ProceedThroughInterstitial(tab);
+
+  // Test page run a WebSocket wss connection test. The result will be shown
+  // as page title.
+  const string16 result = watcher.WaitAndGetTitle();
+  EXPECT_TRUE(LowerCaseEqualsASCII(result, "pass"));
 }
 
 // Flaky on CrOS http://crbug.com/92292

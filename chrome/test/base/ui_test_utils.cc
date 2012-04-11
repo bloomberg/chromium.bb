@@ -768,7 +768,9 @@ void TimedMessageLoopRunner::QuitAfter(int ms) {
 }
 
 TestWebSocketServer::TestWebSocketServer()
-    : started_(false), port_(kDefaultWsPort) {
+    : started_(false),
+      port_(kDefaultWsPort),
+      secure_(false) {
 #if defined(OS_POSIX)
   process_group_id_ = base::kNullProcessHandle;
 #endif
@@ -777,6 +779,10 @@ TestWebSocketServer::TestWebSocketServer()
 int TestWebSocketServer::UseRandomPort() {
   port_ = base::RandInt(1024, 65535);
   return port_;
+}
+
+void TestWebSocketServer::UseTLS() {
+  secure_ = true;
 }
 
 bool TestWebSocketServer::Start(const FilePath& root_directory) {
@@ -790,6 +796,8 @@ bool TestWebSocketServer::Start(const FilePath& root_directory) {
   cmd_line->AppendArgNative(FILE_PATH_LITERAL("--root=") +
                             root_directory.value());
   cmd_line->AppendArg("--port=" + base::IntToString(port_));
+  if (secure_)
+    cmd_line->AppendArg("--tls");
   if (!temp_dir_.CreateUniqueTempDir()) {
     LOG(ERROR) << "Unable to create a temporary directory.";
     return false;

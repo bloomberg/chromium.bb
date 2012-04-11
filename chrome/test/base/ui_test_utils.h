@@ -333,6 +333,9 @@ class TestWebSocketServer {
   // Use a random port, useful for tests that are sharded. Returns the port.
   int UseRandomPort();
 
+  // Serves with TLS.
+  void UseTLS();
+
   // Starts the python websocket server using |root_directory|. Returns whether
   // the server was successfully started.
   bool Start(const FilePath& root_directory);
@@ -365,7 +368,11 @@ class TestWebSocketServer {
   base::win::ScopedHandle job_handle_;
 #endif
 
+  // Holds port number which the python websocket server uses.
   int port_;
+
+  // If the python websocket server serves with TLS.
+  bool secure_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWebSocketServer);
 };
