@@ -378,11 +378,14 @@ bool Target::ProcessPacket(Packet* pktIn, Packet* pktOut) {
         break;
       }
 
+      pktIn->GetBlock(ctx_, abi_->GetContextSize());
+
       // GDB payload to OS registers
       for (uint32_t a = 0; a < abi_->GetRegisterCount(); a++) {
         const Abi::RegDef *def = abi_->GetRegisterDef(a);
         thread->SetRegister(a, &ctx_[def->offset_], def->bytes_);
       }
+
       pktOut->AddBlock(ctx_, abi_->GetContextSize());
       break;
     }
