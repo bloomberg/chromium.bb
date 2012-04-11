@@ -31,10 +31,6 @@ handle-error() {
   echo "@@@STEP_FAILURE@@@"
 }
 
-handle-error-warn() {
-  echo "@@@STEP_WARNINGS@@@"
-}
-
 #### Support for running arm sbtc tests on this bot, since we have
 # less coverage on the main waterfall now:
 # http://code.google.com/p/nativeclient/issues/detail?id=2581
@@ -52,9 +48,9 @@ scons-tests-translator() {
   build-sbtc-prerequisites ${platform}
   local use_sbtc="use_sandboxed_translator=1"
   local extra="--mode=opt-host,nacl -j${PNACL_CONCURRENCY} ${use_sbtc} -k"
-  ${SCONS_COMMON} ${extra} platform=${platform} "small_tests" || handle-error-warn
-  ${SCONS_COMMON} ${extra} platform=${platform} "medium_tests" || handle-error-warn
-  ${SCONS_COMMON} ${extra} platform=${platform} "large_tests" || handle-error-warn
+  ${SCONS_COMMON} ${extra} platform=${platform} "small_tests" || handle-error
+  ${SCONS_COMMON} ${extra} platform=${platform} "medium_tests" || handle-error
+  ${SCONS_COMMON} ${extra} platform=${platform} "large_tests" || handle-error
 }
 ####
 
@@ -88,6 +84,13 @@ tc-test-bot() {
         ${LLVM_TESTSUITE} testsuite-report ${arch} -v -c
     } || handle-error
 
+    # Note: we do not build the sandboxed translator on this bot
+    # because this would add another 20min to the build time.
+    # The upshot of this is that we are using the sandboxed
+    # toolchain which is currently deps in.
+    # There is a small upside here: we will notice that bitcode has
+    # changed in a way that is incompatible with older translators.
+    # Todo(pnacl-team): rethink this.
     scons-tests-translator ${arch}
   done
 
