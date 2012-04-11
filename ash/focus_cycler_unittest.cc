@@ -27,7 +27,7 @@ namespace {
 
 internal::StatusAreaView* GetStatusAreaView(views::Widget* widget) {
   return static_cast<internal::StatusAreaView*>(
-      widget->GetContentsView()->child_at(0));
+      widget->GetContentsView());
 }
 
 }  // namespace
@@ -59,10 +59,6 @@ TEST_F(FocusCyclerTest, CycleFocusForward) {
   focus_cycler->AddWidget(status_widget);
   GetStatusAreaView(status_widget)->SetFocusCyclerForTesting(
       focus_cycler.get());
-
-  // Add a mock button to the status area.
-  status_widget->GetContentsView()->AddChildView(
-      new views::MenuButton(NULL, string16(), NULL, false));
 
   // Add the launcher
   Launcher* launcher = Shell::GetInstance()->launcher();
@@ -101,10 +97,6 @@ TEST_F(FocusCyclerTest, CycleFocusBackward) {
   focus_cycler->AddWidget(status_widget);
   GetStatusAreaView(status_widget)->SetFocusCyclerForTesting(
       focus_cycler.get());
-
-  // Add a mock button to the status area.
-  status_widget->GetContentsView()->AddChildView(
-      new views::MenuButton(NULL, string16(), NULL, false));
 
   // Add the launcher
   Launcher* launcher = Shell::GetInstance()->launcher();
@@ -175,10 +167,6 @@ TEST_F(FocusCyclerLauncherTest, CycleFocusForwardInvisible) {
   GetStatusAreaView(status_widget)->SetFocusCyclerForTesting(
       focus_cycler.get());
 
-  // Add a mock button to the status area.
-  status_widget->GetContentsView()->AddChildView(
-      new views::MenuButton(NULL, string16(), NULL, false));
-
   // Add the launcher
   Launcher* launcher = Shell::GetInstance()->launcher();
   ASSERT_TRUE(launcher);
@@ -212,10 +200,6 @@ TEST_F(FocusCyclerLauncherTest, CycleFocusBackwardInvisible) {
   focus_cycler->AddWidget(status_widget);
   GetStatusAreaView(status_widget)->SetFocusCyclerForTesting(
       focus_cycler.get());
-
-  // Add a mock button to the status area.
-  status_widget->GetContentsView()->AddChildView(
-      new views::MenuButton(NULL, string16(), NULL, false));
 
   // Add the launcher
   Launcher* launcher = Shell::GetInstance()->launcher();

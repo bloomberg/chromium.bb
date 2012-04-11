@@ -23,6 +23,7 @@ namespace internal {
 
 StatusAreaView::StatusAreaView()
     : focus_cycler_for_testing_(NULL) {
+  SetLayoutManager(new views::FillLayout);
 }
 
 StatusAreaView::~StatusAreaView() {
@@ -30,6 +31,10 @@ StatusAreaView::~StatusAreaView() {
 
 void StatusAreaView::SetFocusCyclerForTesting(const FocusCycler* focus_cycler) {
   focus_cycler_for_testing_ = focus_cycler;
+}
+
+views::View* StatusAreaView::GetDefaultFocusableChild() {
+  return child_at(0);
 }
 
 bool StatusAreaView::AcceleratorPressed(const ui::Accelerator& accelerator) {
@@ -58,38 +63,27 @@ bool StatusAreaView::CanActivate() const {
 }
 
 void StatusAreaView::DeleteDelegate() {
-  // If this is used as the content-view of the widget, then do nothing, since
-  // deleting the widget will end up deleting this. But if this is used only as
-  // the widget-delegate, then delete this now.
-  if (!GetWidget())
-    delete this;
 }
 
 ASH_EXPORT views::Widget* CreateStatusArea(views::View* contents) {
+  if (!contents) {
+    contents = new views::View;
+    contents->set_focusable(true);
+  }
   StatusAreaView* status_area_view = new StatusAreaView;
-  if (!contents)
-    contents = status_area_view;
   views::Widget* widget = new views::Widget;
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-  gfx::Size ps = contents ? contents->GetPreferredSize() : gfx::Size(200, 29);
+  gfx::Size ps = contents->GetPreferredSize();
   params.bounds = gfx::Rect(0, 0, ps.width(), ps.height());
   params.delegate = status_area_view;
   params.parent = Shell::GetInstance()->GetContainer(
       ash::internal::kShellWindowId_StatusContainer);
   params.transparent = true;
   widget->Init(params);
-  // TODO(sky): We need the contents to be an AccessiblePaneView for
-  // FocusCycler. SystemTray isn't an AccessiblePaneView, so we wrap it in
-  // one. This is a bit of a hack, but at this point this code path is only used
-  // for tests. Once the migration to SystemTray is done this method should no
-  // longer be needed and we can nuke this.
-  views::AccessiblePaneView* accessible_pane =
-      new views::AccessiblePaneView;
-  accessible_pane->SetLayoutManager(new views::FillLayout);
-  accessible_pane->AddChildView(contents);
   widget->set_focus_on_creation(false);
-  widget->SetContentsView(accessible_pane);
+  status_area_view->AddChildView(contents);
+  widget->SetContentsView(status_area_view);
   widget->Show();
   widget->GetNativeView()->SetName("StatusAreaView");
   return widget;

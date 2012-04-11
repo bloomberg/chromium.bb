@@ -333,7 +333,7 @@ TEST_F(ShelfLayoutManagerTest, SetAutoHideBehavior) {
 }
 
 // Verifies the shelf is visible when status/launcher is focused.
-TEST_F(ShelfLayoutManagerTest, VisibileWhenStatusOrLauncherFocused) {
+TEST_F(ShelfLayoutManagerTest, VisibleWhenStatusOrLauncherFocused) {
   // Since ShelfLayoutManager queries for mouse location, move the mouse so
   // it isn't over the shelf.
   aura::test::EventGenerator generator(
@@ -359,7 +359,12 @@ TEST_F(ShelfLayoutManagerTest, VisibileWhenStatusOrLauncherFocused) {
   widget->Activate();
   EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
 
+  // Trying to activate the status should fail, since we only allow activating
+  // it when the user is using the keyboard (i.e. through FocusCycler).
   shelf->status()->Activate();
+  EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
+
+  shelf->launcher()->GetFocusCycler()->RotateFocus(FocusCycler::FORWARD);
   EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE_SHOWN, shelf->auto_hide_state());
 }
 

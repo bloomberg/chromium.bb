@@ -25,6 +25,9 @@ class ASH_EXPORT StatusAreaView : public views::WidgetDelegate,
   // Sets the focus cycler.
   void SetFocusCyclerForTesting(const FocusCycler* focus_cycler);
 
+  // Overridden from views::AccessiblePaneView.
+  virtual View* GetDefaultFocusableChild() OVERRIDE;
+
   // Overridden from views::View:
   virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
   virtual views::Widget* GetWidget() OVERRIDE;
