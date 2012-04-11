@@ -667,13 +667,6 @@ FileManager.prototype = {
     cr.ui.Table.decorate(this.table_);
     cr.ui.Grid.decorate(this.grid_);
 
-    this.downloadsWarning_ =
-        this.dialogDom_.querySelector('.downloads-warning');
-    var html = util.htmlUnescape(str('DOWNLOADS_DIRECTORY_WARNING'));
-    this.downloadsWarning_.lastElementChild.innerHTML = html;
-    var link = this.downloadsWarning_.querySelector('a');
-    link.addEventListener('click', this.onDownloadsWarningClick_.bind(this));
-
     this.document_.addEventListener('keydown', this.onKeyDown_.bind(this));
     this.document_.addEventListener('copy', this.onCopy_.bind(this));
     this.document_.addEventListener('beforecopy',
@@ -3744,17 +3737,18 @@ FileManager.prototype = {
    * @param {boolean} show True if the box need to be shown.
    */
   FileManager.prototype.showLowDiskSpaceWarning_ = function(show) {
+    var box = this.dialogDom_.querySelector('.downloads-warning');
     if (show) {
-      if (this.downloadsWarning_.hasAttribute('hidden')) {
-        this.downloadsWarning_.removeAttribute('hidden');
-        this.requestResize_(0);
-      }
+      var html = util.htmlUnescape(str('DOWNLOADS_DIRECTORY_WARNING'));
+      box.lastElementChild.innerHTML = html;
+      var link = box.querySelector('a');
+      link.addEventListener('click', this.onDownloadsWarningClick_.bind(this));
     } else {
-      if (!this.downloadsWarning_.hasAttribute('hidden')) {
-        this.downloadsWarning_.setAttribute('hidden', '');
-        this.requestResize_(100);
-      }
+      box.lastElementChild.innerHTML = '';
     }
+
+    box.hidden = !show;
+    this.requestResize_(100);
   };
 
   /**
