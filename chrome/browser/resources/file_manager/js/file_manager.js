@@ -514,6 +514,8 @@ FileManager.prototype = {
     this.copyManager_ = new FileCopyManager();
     this.copyManager_.addEventListener('copy-progress',
                                        this.onCopyProgress_.bind(this));
+    this.copyManager_.addEventListener('copy-operation-complete',
+        this.onCopyManagerOperationComplete_.bind(this));
 
     window.addEventListener('popstate', this.onPopState_.bind(this));
     window.addEventListener('unload', this.onUnload_.bind(this));
@@ -1604,6 +1606,26 @@ FileManager.prototype = {
           event.reason == 'CANCELLED') {
         this.directoryModel_.rescanLater();
       }
+    }
+  };
+
+  /**
+   * Handler of file manager operations. Update directory model
+   * to reflect operation result iimediatelly (not waiting directory
+   * update event).
+   */
+  FileManager.prototype.onCopyManagerOperationComplete_ = function(event) {
+    var currentPath = this.directoryModel_.currentEntry.fullPath;
+    function inCurrentDirectory(entry) {
+      var fullPath = entry.fullPath;
+      var dirPath = fullPath.substr(0, fullPath.length -
+                                       entry.name.length - 1);
+      return dirPath == currentPath;
+    }
+    for (var i = 0; i < event.affectedEntries.length; i++) {
+      entry = event.affectedEntries[i];
+      if (inCurrentDirectory(entry))
+        this.directoryModel_.onEntryChanged(entry.name);
     }
   };
 

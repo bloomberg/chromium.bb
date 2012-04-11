@@ -202,6 +202,19 @@ FileCopyManager.prototype.sendProgressEvent_ = function(reason, opt_err) {
 };
 
 /**
+ * Dispatch an event of file operation completion (allows to update the UI).
+ * @param {string} reason Completed file operation: 'movied|copied|deleted'.
+ * @param {Array.<Entry>} affectedEntries deleted ot created entries.
+ */
+FileCopyManager.prototype.sendOperationEvent_ = function(reason,
+                                                         affectedEntries) {
+  var event = new cr.Event('copy-operation-complete');
+  event.reason = reason;
+  event.affectedEntries = affectedEntries;
+  this.dispatchEvent(event);
+};
+
+/**
  * Completely clear out the copy queue, either because we encountered an error
  * or completed successfully.
  */
@@ -400,15 +413,17 @@ FileCopyManager.prototype.serviceNextTask_ = function(
   function deleteOriginals() {
     var count = task.originalEntries.length;
 
-    function onEntryDeleted() {
+    function onEntryDeleted(entry) {
+      self.sendOperationEvent_('deleted', [entry]);
       count--;
       if (!count)
         onTaskComplete();
     }
 
     for (var i = 0; i < task.originalEntries.length; i++) {
+      var entry = task.originalEntries[i];
       util.removeFileOrDirectory(
-          task.originalEntries[i], onEntryDeleted, onFilesystemError);
+          entry, onEntryDeleted.bind(self, entry), onFilesystemError);
     }
   }
 
@@ -490,9 +505,14 @@ FileCopyManager.prototype.serviceNextTaskEntry_ = function(
   var renameTries = 0;
   var firstExistingEntry = null;
 
-  function onCopyComplete(entry, size) {
+  function onCopyCompleteBase(entry, size) {
     task.markEntryComplete(entry, size);
     successCallback(entry, size);
+  }
+
+  function onCopyComplete(entry, size) {
+    self.sendOperationEvent_('copied', [entry]);
+    onCopyCompleteBase(entry, size);
   }
 
   function onError(reason, data) {
@@ -500,12 +520,18 @@ FileCopyManager.prototype.serviceNextTaskEntry_ = function(
     errorCallback(new FileCopyManager.Error(reason, data));
   }
 
-  function onFilesystemCopyComplete(entry) {
+  function onFilesystemCopyComplete(sourceEntry, targetEntry) {
     // TODO(benchan): We currently do not know the size of data being
     // copied by FileEntry.copyTo(), so task.completedBytes will not be
     // increased. We will address this issue once we need to use
     // task.completedBytes to track the progress.
-    onCopyComplete(entry, 0);
+    self.sendOperationEvent_('copied', [sourceEntry, targetEntry]);
+    onCopyCompleteBase(targetEntry, 0);
+  }
+
+  function onFilesystemMoveComplete(sourceEntry, targetEntry) {
+    self.sendOperationEvent_('moved', [sourceEntry, targetEntry]);
+    onCopyCompleteBase(targetEntry, 0);
   }
 
   function onFilesystemError(err) {
@@ -584,7 +610,8 @@ FileCopyManager.prototype.serviceNextTaskEntry_ = function(
           targetDirEntry, targetRelativePath,
           function(dirEntry, fileName) {
             sourceEntry.moveTo(dirEntry, fileName,
-                               onFilesystemCopyComplete, onFilesystemError);
+                               onFilesystemMoveComplete.bind(self, sourceEntry),
+                               onFilesystemError);
           },
           onFilesystemError);
       // Since the file has been moved (not copied) the original file doesn't
@@ -602,7 +629,8 @@ FileCopyManager.prototype.serviceNextTaskEntry_ = function(
             targetDirEntry, targetRelativePath,
             function(dirEntry, fileName) {
               sourceEntry.copyTo(dirEntry, fileName,
-                                 onFilesystemCopyComplete, onFilesystemError);
+                  onFilesystemCopyComplete.bind(self, sourceEntry),
+                  onFilesystemError);
             },
             onFilesystemError);
         return;
@@ -623,7 +651,9 @@ FileCopyManager.prototype.serviceNextTaskEntry_ = function(
                 'Error copying ' + sourceFileUrl + ' to ' + targetFileUrl);
             onFilesystemError({code: chrome.extension.lastError.message});
           } else {
-            onFilesystemCopyComplete(sourceEntry);
+            targetDirEntry.getFile(targetRelativePath, {},
+                onFilesystemCopyComplete.bind(self, sourceEntry),
+                onFilesystemError);
           }
         });
       return;

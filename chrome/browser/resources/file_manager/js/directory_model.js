@@ -421,6 +421,50 @@ DirectoryModel.prototype = {
     onComplete();
   },
 
+  onEntryChanged: function(name) {
+    var currentEntry = this.currentEntry;
+    var dm = this.fileList_;
+    var self = this;
+
+    function onEntryFound(entry) {
+      self.prefetchCacheForSorting_([entry], function() {
+        // Do nothing if current directory changed during async operations.
+        if (self.currentEntry != currentEntry)
+          return;
+
+        var index = self.findIndexByName_(name);
+        if (index >= 0)
+          dm.splice(index, 1, entry);
+        else
+          dm.splice(dm.length, 0, entry);
+      });
+    };
+
+    function onError(err) {
+      // Do nothing if current directory changed during async operations.
+      if (self.currentEntry != currentEntry)
+        return;
+      if (err.code != FileError.NOT_FOUND_ERR) {
+        self.rescanLater();
+        return;
+      }
+
+      var index = self.findIndexByName_(name);
+      if (index >= 0)
+        dm.splice(index, 1);
+    };
+
+    util.resolvePath(currentEntry, name, onEntryFound, onError);
+  },
+
+  findIndexByName_: function(name) {
+    var dm = this.fileList_;
+    for (var i = 0; i < dm.length; i++)
+      if (dm.item(i).name == name)
+        return i;
+    return -1;
+  },
+
   /**
    * Rename the entry in the filesystem and update the file list.
    * @param {Entry} entry Entry to rename.
