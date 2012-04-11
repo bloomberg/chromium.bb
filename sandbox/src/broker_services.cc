@@ -45,7 +45,25 @@ enum {
   THREAD_CTRL_LAST
 };
 
-}
+// Helper structure that allows the Broker to associate a job notification
+// with a job object and with a policy.
+struct JobTracker {
+  HANDLE job;
+  sandbox::PolicyBase* policy;
+  JobTracker(HANDLE cjob, sandbox::PolicyBase* cpolicy)
+      : job(cjob), policy(cpolicy) {
+  }
+};
+
+// Helper structure that allows the broker to track peer processes
+struct PeerTracker {
+  HANDLE wait_object_;
+  base::win::ScopedHandle process_;
+  PeerTracker() : wait_object_(NULL) {
+  }
+};
+
+}  // namespace
 
 namespace sandbox {
 
@@ -91,6 +109,16 @@ BrokerServicesBase::~BrokerServicesBase() {
   // the policy objects ourselves.
   ::PostQueuedCompletionStatus(job_port_, 0, THREAD_CTRL_QUIT, FALSE);
   ::CloseHandle(job_port_);
+
+  {  // Cancel the wait events for all the peers.
+    AutoLock lock(&lock_);
+    for (PeerTrackerMap::iterator it = peer_map_.begin();
+         it != peer_map_.end(); ++it) {
+      // This call terminates any running handlers.
+      ::UnregisterWaitEx(it->second->wait_object_, NULL);
+      delete it->second;
+    }
+  }
 
   if (WAIT_TIMEOUT == ::WaitForSingleObject(job_thread_, 1000)) {
     // Cannot clean broker services.
@@ -312,7 +340,56 @@ ResultCode BrokerServicesBase::WaitForAllTargets() {
 
 bool BrokerServicesBase::IsActiveTarget(DWORD process_id) {
   AutoLock lock(&lock_);
-  return child_process_ids_.find(process_id) != child_process_ids_.end();
+  return child_process_ids_.find(process_id) != child_process_ids_.end() ||
+         peer_map_.find(process_id) != peer_map_.end();
+}
+
+VOID CALLBACK BrokerServicesBase::RemovePeerData(PVOID parameter, BOOLEAN) {
+  DWORD process_id = reinterpret_cast<DWORD>(parameter);
+  BrokerServicesBase* broker = BrokerServicesBase::GetInstance();
+  PeerTracker* peer_data;
+
+  {  // Hold the lock only during removal (since UregisterWaitEx can block).
+    AutoLock lock(&broker->lock_);
+    PeerTrackerMap::iterator it = broker->peer_map_.find(process_id);
+    peer_data = it->second;
+    broker->peer_map_.erase(it);
+  }
+
+  HANDLE wait_object = peer_data->wait_object_;
+  delete peer_data;
+  // This prevents us from terminating our own running handler.
+  ::UnregisterWaitEx(wait_object, INVALID_HANDLE_VALUE);
+}
+
+ResultCode BrokerServicesBase::AddTargetPeer(HANDLE peer_process) {
+  DWORD process_id = ::GetProcessId(peer_process);
+  if (!process_id)
+    return SBOX_ERROR_GENERIC;
+
+  scoped_ptr<PeerTracker> peer(new PeerTracker);
+  if (!::DuplicateHandle(::GetCurrentProcess(), peer_process,
+                         ::GetCurrentProcess(), peer->process_.Receive(),
+                         SYNCHRONIZE, FALSE, 0)) {
+    return SBOX_ERROR_GENERIC;
+  }
+
+  AutoLock lock(&lock_);
+  if (!peer_map_.insert(std::make_pair(process_id, peer.get())).second)
+    return SBOX_ERROR_BAD_PARAMS;
+
+  if (!::RegisterWaitForSingleObject(&peer->wait_object_,
+                                     peer->process_, RemovePeerData,
+                                     reinterpret_cast<void*>(process_id),
+                                     INFINITE, WT_EXECUTEINWAITTHREAD |
+                                     WT_EXECUTEONLYONCE)) {
+    peer_map_.erase(process_id);
+    return SBOX_ERROR_GENERIC;
+  }
+
+  // Leak the pointer since it will be cleaned up by the callback.
+  peer.release();
+  return SBOX_ALL_OK;
 }
 
 }  // namespace sandbox
