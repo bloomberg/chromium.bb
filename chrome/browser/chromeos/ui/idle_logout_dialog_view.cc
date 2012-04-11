@@ -50,7 +50,7 @@ KioskModeSettings* IdleLogoutSettingsProvider::GetKioskModeSettings() {
 }
 
 void IdleLogoutSettingsProvider::LogoutCurrentUser(IdleLogoutDialogView*) {
-  BrowserList::AttemptUserExit();
+  BrowserList::ExitCleanly();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
