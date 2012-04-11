@@ -736,6 +736,7 @@ TEST(ExceptionHandlerTest, ExternalDumper) {
   ASSERT_EQ(n, kCrashContextSize);
   ASSERT_EQ(msg.msg_controllen, kControlMsgSize);
   ASSERT_EQ(msg.msg_flags, 0);
+  ASSERT_EQ(close(fds[0]), 0);
 
   pid_t crashing_pid = -1;
   int signal_fd = -1;
@@ -764,6 +765,7 @@ TEST(ExceptionHandlerTest, ExternalDumper) {
                             kCrashContextSize));
   static const char b = 0;
   HANDLE_EINTR(write(signal_fd, &b, 1));
+  ASSERT_EQ(close(signal_fd), 0);
 
   int status;
   ASSERT_NE(HANDLE_EINTR(waitpid(child, &status, 0)), -1);
