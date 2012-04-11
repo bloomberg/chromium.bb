@@ -122,14 +122,17 @@ def BuildRootGitCleanup(buildroot):
 
 def CleanUpMountPoints(buildroot):
   """Cleans up any stale mount points from previous runs."""
-  mount_output = cros_lib.RunCommandCaptureOutput(['mount'])
-  mount_pts_in_buildroot = cros_lib.RunCommandCaptureOutput(
-      ['grep', buildroot], input=mount_output.output, error_code_ok=True)
+  mount_result = cros_lib.RunCommandCaptureOutput(['mount'], print_cmd=False)
 
-  for mount_pt_str in mount_pts_in_buildroot.output.splitlines():
-    mount_pt = mount_pt_str.rpartition(' type ')[0].partition(' on ')[2]
-    cros_lib.SudoRunCommand(['umount', '-l', mount_pt], error_ok=True,
-                            print_cmd=False)
+  mount_lines = [x for x in mount_result.output.splitlines() if buildroot in x]
+
+  mount_lines = [x.rpartition(' type ')[0].partition(' on ')[2]
+                 for x in mount_lines]
+
+  mount_lines.sort(reverse=True)
+
+  for mount_pt in mount_lines:
+    cros_lib.SudoRunCommand(['umount', '-l', mount_pt])
 
 
 def WipeOldOutput(buildroot):
