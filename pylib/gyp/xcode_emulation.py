@@ -440,6 +440,34 @@ class XcodeSettings(object):
           '$(EXECUTABLE_PATH)', self.GetExecutablePath())
     return install_name
 
+  def _MapLinkerFlagFilename(self, ldflag, gyp_to_build_path):
+    """Checks if ldflag contains a filename and if so remaps it from
+    gyp-directory-relative to build-directory-relative."""
+    # This list is expanded on demand.
+    # They get matched as:
+    #   -exported_symbols_list file
+    #   -Wl,exported_symbols_list file
+    #   -Wl,exported_symbols_list,file
+    LINKER_FILE = '(\S+)'
+    WORD = '\S+'
+    linker_flags = [
+      ['-exported_symbols_list', LINKER_FILE],    # Needed for NaCl.
+      ['-unexported_symbols_list', LINKER_FILE],
+      ['-reexported_symbols_list', LINKER_FILE],
+      ['-sectcreate', WORD, WORD, LINKER_FILE],   # Needed for remoting.
+    ]
+    for flag_pattern in linker_flags:
+      regex = re.compile('(?:-Wl,)?' + '[ ,]'.join(flag_pattern))
+      m = regex.match(ldflag)
+      if m:
+        ldflag = ldflag[:m.start(1)] + gyp_to_build_path(m.group(1)) + \
+                 ldflag[m.end(1):]
+    # Required for ffmpeg (no idea why they don't use LIBRARY_SEARCH_PATHS,
+    # TODO(thakis): Update ffmpeg.gyp):
+    if ldflag.startswith('-L'):
+      ldflag = '-L' + gyp_to_build_path(ldflag[len('-L'):])
+    return ldflag
+
   def GetLdflags(self, configname, product_dir, gyp_to_build_path):
     """Returns flags that need to be passed to the linker.
 
@@ -454,19 +482,9 @@ class XcodeSettings(object):
     ldflags = []
 
     # The xcode build is relative to a gyp file's directory, and OTHER_LDFLAGS
-    # contains two entries that depend on this. Explicitly absolutify for these
-    # two cases.
-    def MapGypPathWithPrefix(flag, prefix):
-      if flag.startswith(prefix):
-        flag = prefix + gyp_to_build_path(flag[len(prefix):])
-      return flag
+    # can contain entries that depend on this. Explicitly absolutify these.
     for ldflag in self._Settings().get('OTHER_LDFLAGS', []):
-      # Required for ffmpeg (no idea why they don't use LIBRARY_SEARCH_PATHS,
-      # TODO(thakis): Update ffmpeg.gyp):
-      ldflag = MapGypPathWithPrefix(ldflag, '-L')
-      # Required for the nacl plugin:
-      ldflag = MapGypPathWithPrefix(ldflag, '-Wl,-exported_symbols_list ')
-      ldflags.append(ldflag)
+      ldflags.append(self._MapLinkerFlagFilename(ldflag, gyp_to_build_path))
 
     if self._Test('DEAD_CODE_STRIPPING', 'YES', default='NO'):
       ldflags.append('-Wl,-dead_strip')
