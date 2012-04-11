@@ -77,8 +77,11 @@ TEST_F(ProxyFactoryTest, CreateSameProfile) {
 }
 
 TEST_F(ProxyFactoryTest, CreateDifferentProfiles) {
+  LaunchDelegateMock d2;
+
   EXPECT_CALL(launch_delegate_mock_,
-              LaunchComplete(testing::NotNull(), testing::_)).Times(2);
+              LaunchComplete(testing::NotNull(), testing::_));
+  EXPECT_CALL(d2, LaunchComplete(testing::NotNull(), testing::_));
 
   scoped_refptr<ChromeFrameLaunchParams> params1(
       MakeLaunchParams(L"Adam.N.Epilinter"));
@@ -89,10 +92,10 @@ TEST_F(ProxyFactoryTest, CreateDifferentProfiles) {
   void* i2 = NULL;
 
   proxy_factory_.GetAutomationServer(&launch_delegate_mock_, params1, &i1);
-  proxy_factory_.GetAutomationServer(&launch_delegate_mock_, params2, &i2);
+  proxy_factory_.GetAutomationServer(&d2, params2, &i2);
 
   EXPECT_NE(i1, i2);
-  proxy_factory_.ReleaseAutomationServer(i2, &launch_delegate_mock_);
+  proxy_factory_.ReleaseAutomationServer(i2, &d2);
   proxy_factory_.ReleaseAutomationServer(i1, &launch_delegate_mock_);
 }
 
