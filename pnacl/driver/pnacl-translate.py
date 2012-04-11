@@ -191,12 +191,6 @@ def main(argv):
     bcfile = bcfiles[0]
   else:
     bcfile = None
-  bctype = driver_tools.FileType(bcfile)
-  # Force the same effect of having the '-shared' commandline option.
-  # Usually only -shared is specified to the bitcode linker to create
-  # the .pso, and the translator operates with few commandline options.
-  if bctype == 'pso':
-    env.set('SHARED', '1')
 
   # If there's a bitcode file, translate it now.
   tng = driver_tools.TempNameGen(inputs + bcfiles, output)
@@ -232,15 +226,14 @@ def main(argv):
     inputs = ListReplace(inputs, bcfile, '__BITCODE__')
     env.set('INPUTS', *inputs)
 
-  # Get bitcode metadata.
+  # Get bitcode type and metadata
   if bcfile:
+    bctype = driver_tools.FileType(bcfile)
     metadata = driver_tools.GetBitcodeMetadata(bcfile)
 
   # Determine the output type, in this order of precedence:
   # 1) Output type can be specified on command-line (-S, -c, -shared, -static)
-  #    -S and -c are handled above (see the early return when output_type
-  #    is .o and .s).
-  # 2) If bitcode file given, use it's output type. (pso->so, pexe->nexe, po->o)
+  # 2) If bitcode file given, use its output type. (pso->so, pexe->nexe, po->o)
   # 3) Otherwise, assume nexe output.
   if env.getbool('SHARED'):
     output_type = 'so'
@@ -279,6 +272,9 @@ def main(argv):
   return 0
 
 def ApplyBitcodeConfig(metadata, bctype):
+  if bctype == 'pso':
+    env.set('SHARED', '1')
+
   if env.getbool('SHARED'):
     env.set('PIC', '1')
 
@@ -429,8 +425,6 @@ def RunLLCSRPC():
   # Get the values returned from the llc RPC to use in input to ld
   is_shared = re.search(r'output\s+0:\s+i\(([0|1])\)', stdout).group(1)
   is_shared = (is_shared == '1')
-  if is_shared:
-    assert env.getbool('SHARED')
   soname = re.search(r'output\s+1:\s+s\("(.*)"\)', stdout).group(1)
   needed_str = re.search(r'output\s+2:\s+s\("(.*)"\)', stdout).group(1)
   # If the delimiter changes, this line needs to change
