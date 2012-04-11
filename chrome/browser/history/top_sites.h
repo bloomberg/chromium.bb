@@ -31,10 +31,6 @@
 class FilePath;
 class Profile;
 
-namespace base {
-class DictionaryValue;
-}
-
 namespace history {
 
 class TopSitesCache;
@@ -125,21 +121,6 @@ class TopSites
 
   // Clear the blacklist.
   void ClearBlacklistedURLs();
-
-  // Pinned URLs
-
-  // Pin a URL at |index|.
-  void AddPinnedURL(const GURL& url, size_t index);
-
-  // Returns true if a URL is pinned.
-  bool IsURLPinned(const GURL& url);
-
-  // Unpin a URL.
-  void RemovePinnedURL(const GURL& url);
-
-  // Return a URL pinned at |index| via |out|. Returns true if there
-  // is a URL pinned at |index|.
-  bool GetPinnedURLAtIndex(size_t index, GURL* out);
 
   // Shuts down top sites.
   void Shutdown();
@@ -267,14 +248,8 @@ class TopSites
   // Returns true if any pages were added.
   static bool AddPrepopulatedPages(MostVisitedURLList* urls);
 
-  // Convert pinned_urls_ dictionary to the new format. Use URLs as
-  // dictionary keys.
-  void MigratePinnedURLs();
-
-  // Takes |urls|, produces it's copy in |out| after removing
-  // blacklisted URLs and reordering pinned URLs.
-  void ApplyBlacklistAndPinnedURLs(const MostVisitedURLList& urls,
-                                   MostVisitedURLList* out);
+  // Takes |urls|, produces it's copy in |out| after removing blacklisted URLs.
+  void ApplyBlacklist(const MostVisitedURLList& urls, MostVisitedURLList* out);
 
   // Converts a url into a canonical string representation.
   std::string GetURLString(const GURL& url);
@@ -373,11 +348,6 @@ class TopSites
   // enough Top Sites (new profile), we store it until the next
   // SetTopSites call.
   TempImages temp_images_;
-
-  // This is a dictionary for the pinned URLs for the the most visited part of
-  // the new tab page. Key is the URL, value is index where it is pinned at (may
-  // be the same as key). This is owned by the PrefService.
-  const base::DictionaryValue* pinned_urls_;
 
   // See description above HistoryLoadState.
   HistoryLoadState history_state_;

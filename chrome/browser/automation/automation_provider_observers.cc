@@ -2140,7 +2140,6 @@ void NTPInfoObserver::OnTopSitesReceived(
     DictionaryValue* dict = new DictionaryValue;
     dict->SetString("url", visited.url.spec());
     dict->SetString("title", visited.title);
-    dict->SetBoolean("is_pinned", top_sites_->IsURLPinned(visited.url));
     list_value->Append(dict);
   }
   ntp_info_->Set("most_visited", list_value);

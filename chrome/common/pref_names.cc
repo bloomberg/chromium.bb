@@ -1319,10 +1319,6 @@ const char kNtp4IntroDisplayCount[] = "ntp.intro_display_count";
 // New Tab Page URLs that should not be shown as most visited thumbnails.
 const char kNtpMostVisitedURLsBlacklist[] = "ntp.most_visited_blacklist";
 
-// The URLs that have been pinned to the Most Visited section of the New Tab
-// Page.
-const char kNtpMostVisitedPinnedURLs[] = "ntp.pinned_urls";
-
 // Data downloaded from promo resource pages (JSON, RSS) to be used to
 // dynamically deliver data for the new tab page.
 const char kNtpPromoResourceCache[] = "ntp.promo_resource_cache";

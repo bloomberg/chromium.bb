@@ -483,7 +483,6 @@ extern const char kNtpTipsResourceServer[];
 
 extern const char kNtp4IntroDisplayCount[];
 extern const char kNtpMostVisitedURLsBlacklist[];
-extern const char kNtpMostVisitedPinnedURLs[];
 extern const char kNtpPromoResourceCache[];
 extern const char kNtpPromoResourceCacheUpdate[];
 extern const char kNtpPromoIsLoggedInToPlus[];

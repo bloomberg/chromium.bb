@@ -844,12 +844,6 @@ class TestingAutomationProvider : public AutomationProvider,
                                      base::DictionaryValue* args,
                                      IPC::Message* reply_message);
 
-  // Unpins a thumbnail in the NTP's Most Visited sites section.
-  // Uses the JSON interface for input/output.
-  void UnpinNTPMostVisitedThumbnail(Browser* browser,
-                                    base::DictionaryValue* args,
-                                    IPC::Message* reply_message);
-
   // Restores all thumbnails that have been removed (i.e., blacklisted) from the
   // NTP's Most Visited sites section.
   // Uses the JSON interface for input/output.

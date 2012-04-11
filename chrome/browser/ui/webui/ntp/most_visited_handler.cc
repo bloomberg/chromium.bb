@@ -209,7 +209,4 @@ std::string MostVisitedHandler::GetDictionaryKeyForURL(const std::string& url) {
 void MostVisitedHandler::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterDictionaryPref(prefs::kNtpMostVisitedURLsBlacklist,
                                 PrefService::UNSYNCABLE_PREF);
-  // TODO(estade): remove this.
-  prefs->RegisterDictionaryPref(prefs::kNtpMostVisitedPinnedURLs,
-                                PrefService::UNSYNCABLE_PREF);
 }

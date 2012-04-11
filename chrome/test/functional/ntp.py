@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -100,7 +100,6 @@ class NTPTest(pyauto.PyUITest):
     thumbnail = self.GetNTPThumbnails()[0]
     self.assertEqual(self.PAGES[1]['url'], thumbnail['url'])
     self.assertEqual(self.PAGES[1]['title'], thumbnail['title'])
-    self.assertFalse(thumbnail['is_pinned'])
 
   def testMoveThumbnailBasic(self):
     """Tests moving a thumbnail to a different index"""
@@ -109,21 +108,8 @@ class NTPTest(pyauto.PyUITest):
     self.NavigateToURL(self.PAGES[1]['url'])
     thumbnails = self.GetNTPThumbnails()
     self.MoveNTPThumbnail(thumbnails[0], 1)
-    self.assertTrue(self.IsNTPThumbnailPinned(thumbnails[0]))
-    self.assertFalse(self.IsNTPThumbnailPinned(thumbnails[1]))
     self.assertEqual(self.PAGES[0]['url'], self.GetNTPThumbnails()[1]['url'])
     self.assertEqual(1, self.GetNTPThumbnailIndex(thumbnails[0]))
-
-  def testPinningThumbnailBasic(self):
-    """Tests that we can pin/unpin a thumbnail"""
-    self.RemoveNTPDefaultThumbnails()
-    self.NavigateToURL(self.PAGES[0]['url'])
-    thumbnail1 = self.GetNTPThumbnails()[0]
-    self.assertFalse(self.IsNTPThumbnailPinned(thumbnail1))
-    self.PinNTPThumbnail(thumbnail1)
-    self.assertTrue(self.IsNTPThumbnailPinned(thumbnail1))
-    self.UnpinNTPThumbnail(thumbnail1)
-    self.assertFalse(self.IsNTPThumbnailPinned(thumbnail1))
 
   def testRemoveThumbnail(self):
     """Tests removing a thumbnail works"""
@@ -153,18 +139,6 @@ class NTPTest(pyauto.PyUITest):
     self.OpenNewBrowserWindowWithNewProfile()
     self.NavigateToURL(self.PAGES[0]['url'], 1, 0)
     self.assertFalse(self.GetNTPThumbnails())
-
-  def testRestoreOncePinnedThumbnail(self):
-    """Tests that after restoring a once pinned thumbnail, the thumbnail is
-    not pinned"""
-    self.RemoveNTPDefaultThumbnails()
-    self.NavigateToURL(self.PAGES[0]['url'])
-    thumbnail1 = self.GetNTPThumbnails()[0]
-    self.PinNTPThumbnail(thumbnail1)
-    self.RemoveNTPThumbnail(thumbnail1)
-    self.RestoreAllNTPThumbnails()
-    self.RemoveNTPDefaultThumbnails()
-    self.assertFalse(self.IsNTPThumbnailPinned(thumbnail1))
 
   def testThumbnailPersistence(self):
     """Tests that thumbnails persist across Chrome restarts"""
@@ -202,16 +176,6 @@ class NTPTest(pyauto.PyUITest):
     self.AppendTab(pyauto.GURL(self.PAGES[0]['url']))
     self.AppendTab(pyauto.GURL(self.PAGES[0]['url']))
     self.assertEqual(self.PAGES[0]['url'], self.GetNTPThumbnails()[0]['url'])
-
-  def testPinnedThumbnailNeverMoves(self):
-    """Tests that once a thumnail is pinned it never moves"""
-    self.RemoveNTPDefaultThumbnails()
-    for page in self.PAGES:
-      self.AppendTab(pyauto.GURL(page['url']))
-    self.PinNTPThumbnail(self.GetNTPThumbnails()[0])
-    thumbnails = self.GetNTPThumbnails()
-    self.AppendTab(pyauto.GURL(self.PAGES[1]['url']))
-    self.assertEqual(thumbnails, self.GetNTPThumbnails())
 
   def testThumbnailTitleChangeAfterPageTitleChange(self):
     """Tests that once a page title changes, the thumbnail title changes too"""

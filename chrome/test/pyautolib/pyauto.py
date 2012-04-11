@@ -3331,12 +3331,10 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     """Return a list of info about the sites in the NTP most visited section.
     SAMPLE:
       [{ u'title': u'Google',
-         u'url': u'http://www.google.com',
-         u'is_pinned': False},
+         u'url': u'http://www.google.com'},
        {
          u'title': u'Yahoo',
-         u'url': u'http://www.yahoo.com',
-         u'is_pinned': True}]
+         u'url': u'http://www.yahoo.com'}]
     """
     return self._GetNTPInfo()['most_visited']
 
@@ -3357,8 +3355,6 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     Visited sites section look like:
       0  1  2  3
       4  5  6  7
-
-    When a thumbnail is moved, it is automatically pinned.
 
     Args:
       thumbnail: a thumbnail dict received from |GetNTPThumbnails|
@@ -3390,38 +3386,6 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       'url': thumbnail['url']
     }
     self._GetResultFromJSONRequest(cmd_dict)
-
-  def PinNTPThumbnail(self, thumbnail):
-    """Pins the NTP thumbnail.
-
-    Args:
-      thumbnail: a thumbnail dict received from |GetNTPThumbnails|
-    """
-    self._CheckNTPThumbnailShown(thumbnail)
-    self.MoveNTPThumbnail(thumbnail, self.GetNTPThumbnailIndex(thumbnail))
-
-  def UnpinNTPThumbnail(self, thumbnail):
-    """Unpins the NTP thumbnail and returns true on success.
-
-    Args:
-      thumbnail: a thumbnail dict received from |GetNTPThumbnails|
-    """
-    self._CheckNTPThumbnailShown(thumbnail)
-    cmd_dict = {
-      'command': 'UnpinNTPMostVisitedThumbnail',
-      'url': thumbnail['url']
-    }
-    self._GetResultFromJSONRequest(cmd_dict)
-
-  def IsNTPThumbnailPinned(self, thumbnail):
-    """Returns whether the NTP thumbnail is pinned.
-
-    Args:
-      thumbnail: a thumbnail dict received from |GetNTPThumbnails|
-    """
-    self._CheckNTPThumbnailShown(thumbnail)
-    index = self.GetNTPThumbnailIndex(thumbnail)
-    return self.GetNTPThumbnails()[index]['is_pinned']
 
   def RestoreAllNTPThumbnails(self):
     """Restores all the removed NTP thumbnails.

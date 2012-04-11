@@ -2530,8 +2530,6 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
       &TestingAutomationProvider::MoveNTPMostVisitedThumbnail;
   browser_handler_map["RemoveNTPMostVisitedThumbnail"] =
       &TestingAutomationProvider::RemoveNTPMostVisitedThumbnail;
-  browser_handler_map["UnpinNTPMostVisitedThumbnail"] =
-      &TestingAutomationProvider::UnpinNTPMostVisitedThumbnail;
   browser_handler_map["RestoreAllNTPMostVisitedThumbnails"] =
       &TestingAutomationProvider::RestoreAllNTPMostVisitedThumbnails;
 
@@ -5639,13 +5637,6 @@ void TestingAutomationProvider::MoveNTPMostVisitedThumbnail(
     reply.SendError("TopSites service is not initialized.");
     return;
   }
-  GURL swapped;
-  // If thumbnail A is switching positions with a pinned thumbnail B, B
-  // should be pinned in the old index of A.
-  if (top_sites->GetPinnedURLAtIndex(index, &swapped)) {
-    top_sites->AddPinnedURL(swapped, old_index);
-  }
-  top_sites->AddPinnedURL(GURL(url), index);
   reply.SendSuccess(NULL);
 }
 
@@ -5665,25 +5656,6 @@ void TestingAutomationProvider::RemoveNTPMostVisitedThumbnail(
     return;
   }
   top_sites->AddBlacklistedURL(GURL(url));
-  reply.SendSuccess(NULL);
-}
-
-void TestingAutomationProvider::UnpinNTPMostVisitedThumbnail(
-    Browser* browser,
-    DictionaryValue* args,
-    IPC::Message* reply_message) {
-  AutomationJSONReply reply(this, reply_message);
-  std::string url;
-  if (!args->GetString("url", &url)) {
-    reply.SendError("Missing or invalid 'url' key.");
-    return;
-  }
-  history::TopSites* top_sites = browser->profile()->GetTopSites();
-  if (!top_sites) {
-    reply.SendError("TopSites service is not initialized.");
-    return;
-  }
-  top_sites->RemovePinnedURL(GURL(url));
   reply.SendSuccess(NULL);
 }
 
