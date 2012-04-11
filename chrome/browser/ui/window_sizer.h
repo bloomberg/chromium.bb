@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -95,6 +95,10 @@ class WindowSizer {
 
   // Returns the default origin for popups of the given size.
   static gfx::Point GetDefaultPopupOrigin(const gfx::Size& size);
+
+  // The number of pixels which are kept free top, left and right when a window
+  // gets positioned to its default location.
+  static const int kDesktopBorderSize;
 
   // How much horizontal and vertical offset there is between newly
   // opened windows.  This value may be different on each platform.

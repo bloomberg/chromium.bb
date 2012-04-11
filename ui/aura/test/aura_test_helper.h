@@ -35,6 +35,8 @@ class AuraTestHelper {
   // Flushes message loop.
   void RunAllPendingInMessageLoop(RootWindow* root_window);
 
+  MessageLoopForUI* message_loop() { return &message_loop_; };
+
  private:
   MessageLoopForUI message_loop_;
   bool setup_called_;

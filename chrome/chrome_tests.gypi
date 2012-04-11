@@ -1970,6 +1970,7 @@
         'browser/ui/webui/theme_source_unittest.cc',
         'browser/ui/webui/web_ui_unittest.cc',
         'browser/ui/window_sizer_unittest.cc',
+        'browser/ui/window_sizer_aura_unittest.cc',
         'browser/ui/window_snapshot/window_snapshot_mac_unittest.mm',
         'browser/chrome_to_mobile_service_unittest.cc',
         'browser/user_style_sheet_watcher_unittest.cc',
@@ -2115,6 +2116,7 @@
         '../webkit/fileapi/mock_file_system_options.h',
         '../webkit/quota/mock_storage_client.cc',
         '../webkit/quota/mock_storage_client.h',
+        '../ash/test/test_shell_delegate.cc',
       ],
       'conditions': [
         ['enable_background==0', {
@@ -2153,6 +2155,11 @@
             ['exclude', '^browser/ui/views/bookmarks/bookmark_editor_view_unittest.cc'],
             ['exclude', '^browser/ui/panels/display_settings_provider_win_unittest.cc'],
             ['exclude', '^browser/bookmarks/bookmark_node_data_unittest.cc'],
+            ['exclude', '^browser/ui/window_sizer_unittest.cc'],
+          ],
+          'sources': [
+            '../ash/test/ash_test_base.cc',
+            '../ash/test/ash_test_base.h',
           ],
         }],
         ['enable_task_manager==0', {
@@ -2454,11 +2461,10 @@
             'browser/ui/toolbar/toolbar_model_unittest.cc',
             'browser/ui/toolbar/wrench_menu_model_unittest.cc',
             'browser/ui/webui/html_dialog_tab_contents_delegate_unittest.cc',
+            'browser/ui/window_sizer_unittest.cc',
             'test/base/browser_with_test_window_test.cc',
             'test/base/browser_with_test_window_test.h',
             'test/base/test_browser_window.h',
-
-            'browser/ui/window_sizer_unittest.cc',
           ],
           'sources/': [
             ['exclude', '^browser/chrome_to_mobile'],

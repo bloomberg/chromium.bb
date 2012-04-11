@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -123,6 +123,10 @@ class DefaultStateProvider : public WindowSizer::StateProvider {
 
 ///////////////////////////////////////////////////////////////////////////////
 // WindowSizer, public:
+
+// The number of pixels which are kept free top, left and right when a window
+// gets positioned to its default location.
+const int WindowSizer::kDesktopBorderSize = 16;
 
 WindowSizer::WindowSizer(StateProvider* state_provider, const Browser* browser)
     : state_provider_(state_provider),

@@ -77,8 +77,8 @@ const int WindowSizer::kWindowTilePixels = 10;
 
 // static
 gfx::Point WindowSizer::GetDefaultPopupOrigin(const gfx::Size& size) {
-  // TODO(oshima):This is used to control panel/popups, and this may not be
-  // needed on aura environment as they must be controlled by WM.
+  // TODO(skuhne): Check if this isn't needed anymore (since it is implemented
+  // in WindowPositioner) and remove it.
   return gfx::Point();
 }
 
@@ -110,21 +110,24 @@ void WindowSizer::GetDefaultWindowBounds(gfx::Rect* default_bounds) const {
 
   gfx::Rect work_area = monitor_info_provider_->GetPrimaryMonitorWorkArea();
 
-  DCHECK_EQ(16, ash::Shell::GetInstance()->GetGridSize());
-  int border = 16;
+  DCHECK_EQ(kDesktopBorderSize, ash::Shell::GetInstance()->GetGridSize());
 
   // There should be a 'desktop' border around the window at the left and right
   // side.
-  int default_width = work_area.width() - 2 * border;
+  int default_width = work_area.width() - 2 * kDesktopBorderSize;
   // There should also be a 'desktop' border around the window at the top.
   // Since the workspace excludes the tray area we only need one border size.
-  int default_height = work_area.height() - border;
-  if (default_width > 1280) {
+  int default_height = work_area.height() - kDesktopBorderSize;
+  int offset_x = kDesktopBorderSize;
+  int maximum_window_width = 1280;
+  if (default_width > maximum_window_width) {
+    // The window should get centered on the screen as well.
+    offset_x = (work_area.width() - maximum_window_width) / 2;
     // Never make a window wider then 1280.
-    default_width = 1280;
+    default_width = maximum_window_width;
   }
-  default_bounds->SetRect(work_area.x() + border,
-                          work_area.y() + border,
+  default_bounds->SetRect(work_area.x() + offset_x,
+                          work_area.y() + kDesktopBorderSize,
                           default_width,
                           default_height);
 }
