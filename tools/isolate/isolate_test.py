@@ -21,9 +21,15 @@ VERBOSE = False
 
 class CalledProcessError(subprocess.CalledProcessError):
   """Makes 2.6 version act like 2.7"""
-  def __init__(self, returncode, cmd, output):
+  def __init__(self, returncode, cmd, output, cwd):
     super(CalledProcessError, self).__init__(returncode, cmd)
     self.output = output
+    self.cwd = cwd
+
+  def __str__(self):
+    return super(CalledProcessError, self).__str__() + (
+        '\n'
+        'cwd=%s\n%s') % (self.cwd, self.output)
 
 
 class Isolate(unittest.TestCase):
@@ -44,12 +50,15 @@ class Isolate(unittest.TestCase):
     self.assertEquals(sorted(files), sorted(os.listdir(self.tempdir)))
 
   def _expected_result(self, with_hash, files, args, read_only):
-    # 4 modes are supported, 0755 (rwx), 0644 (rw), 0555 (rx), 0444 (r)
-    min_mode = 0444
-    if not read_only:
-      min_mode |= 0200
-    def mode(filename):
-      return (min_mode | 0111) if filename.endswith('.py') else min_mode
+    if sys.platform == 'win32':
+      mode = lambda _: 420
+    else:
+      # 4 modes are supported, 0755 (rwx), 0644 (rw), 0555 (rx), 0444 (r)
+      min_mode = 0444
+      if not read_only:
+        min_mode |= 0200
+      def mode(filename):
+        return (min_mode | 0111) if filename.endswith('.py') else min_mode
     expected = {
       u'command':
         [unicode(sys.executable)] +
@@ -82,11 +91,16 @@ class Isolate(unittest.TestCase):
       cmd.extend(['-v'] * 3)
       stdout = None
       stderr = None
+    cwd = ROOT_DIR
     p = subprocess.Popen(
-        cmd + args, stdout=stdout, stderr=stderr, cwd=ROOT_DIR)
+        cmd + args,
+        stdout=stdout,
+        stderr=stderr,
+        cwd=cwd,
+        universal_newlines=True)
     out = p.communicate()[0]
     if p.returncode:
-      raise CalledProcessError(p.returncode, cmd, out)
+      raise CalledProcessError(p.returncode, cmd, out, cwd)
     return out
 
   def test_help_modes(self):
@@ -118,7 +132,10 @@ class Isolate(unittest.TestCase):
     self._execute(cmd)
     self._expected_tree(['result'])
     self._expected_result(
-        False, ['isolate_test.py'], ['./isolate_test.py'], False)
+        False,
+        ['isolate_test.py'],
+        [os.path.join('.', 'isolate_test.py')],
+        False)
 
   def test_check_non_existant(self):
     cmd = [
@@ -162,7 +179,7 @@ class Isolate(unittest.TestCase):
       '--mode', 'hashtable',
       '--outdir', self.tempdir,
       'isolate_test.py',
-      os.path.join('data', 'isolate') + '/',
+      os.path.join('data', 'isolate') + os.path.sep,
     ]
     self._execute(cmd)
     files = [
@@ -170,7 +187,8 @@ class Isolate(unittest.TestCase):
       os.path.join('data', 'isolate', 'test_file1.txt'),
       os.path.join('data', 'isolate', 'test_file2.txt'),
     ]
-    data = self._expected_result(True, files, ['./isolate_test.py'], False)
+    data = self._expected_result(
+        True, files, [os.path.join('.', 'isolate_test.py')], False)
     self._expected_tree(
         [f['sha-1'] for f in data['files'].itervalues()] + ['result'])
 
@@ -183,7 +201,10 @@ class Isolate(unittest.TestCase):
     self._execute(cmd)
     self._expected_tree(['isolate_test.py', 'result'])
     self._expected_result(
-        False, ['isolate_test.py'], ['./isolate_test.py'], False)
+        False,
+        ['isolate_test.py'],
+        [os.path.join('.', 'isolate_test.py')],
+        False)
 
   def test_run(self):
     cmd = [
@@ -220,7 +241,10 @@ class Isolate(unittest.TestCase):
       sys.executable, os.path.join(ROOT_DIR, 'isolate_test.py'), '--ok',
     ]
     out = self._execute(cmd, True)
-    self._expected_tree(['result', 'result.log'])
+    expected_tree = ['result', 'result.log']
+    if sys.platform == 'win32':
+      expected_tree.append('result.log.etl')
+    self._expected_tree(expected_tree)
     # The 'result.log' log is OS-specific so we can't read it but we can read
     # the gyp result.
     # cmd[0] is not generated from infiles[0] so it's not using a relative path.

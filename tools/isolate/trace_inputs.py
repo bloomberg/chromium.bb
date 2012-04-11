@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# coding=utf-8
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -10,6 +11,8 @@ Automatically extracts directories where all the files are used to make the
 dependencies list more compact.
 """
 
+import codecs
+import csv
 import logging
 import optparse
 import os
@@ -20,6 +23,83 @@ import sys
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = os.path.dirname(os.path.dirname(BASE_DIR))
+
+
+if sys.platform == 'win32':
+  from ctypes.wintypes import create_unicode_buffer
+  from ctypes.wintypes import windll, FormatError  # pylint: disable=E0611
+  from ctypes.wintypes import GetLastError  # pylint: disable=E0611
+
+
+  def QueryDosDevice(drive_letter):
+    """Returns the Windows 'native' path for a DOS drive letter."""
+    assert re.match(r'^[a-zA-Z]:$', drive_letter), drive_letter
+    # Guesswork. QueryDosDeviceW never returns the required number of bytes.
+    chars = 1024
+    drive_letter = unicode(drive_letter)
+    p = create_unicode_buffer(chars)
+    if 0 == windll.kernel32.QueryDosDeviceW(drive_letter, p, chars):
+      err = GetLastError()
+      if err:
+        # pylint: disable=E0602
+        raise WindowsError(
+            err,
+            'QueryDosDevice(%s): %s (%d)' % (
+              str(drive_letter), FormatError(err), err))
+    return p.value
+
+
+  def GetShortPathName(long_path):
+    """Returns the Windows short path equivalent for a 'long' path."""
+    long_path = unicode(long_path)
+    chars = windll.kernel32.GetShortPathNameW(long_path, None, 0)
+    if chars:
+      p = create_unicode_buffer(chars)
+      if windll.kernel32.GetShortPathNameW(long_path, p, chars):
+        return p.value
+
+    err = GetLastError()
+    if err:
+      # pylint: disable=E0602
+      raise WindowsError(
+          err,
+          'GetShortPathName(%s): %s (%d)' % (
+            str(long_path), FormatError(err), err))
+
+
+  def get_current_encoding():
+    """Returns the 'ANSI' code page associated to the process."""
+    return 'cp%d' % int(windll.kernel32.GetACP())
+
+
+  class DosDriveMap(object):
+    """Maps \Device\HarddiskVolumeN to N: on Windows."""
+    # Keep one global cache.
+    _MAPPING = {}
+
+    def __init__(self):
+      if not self._MAPPING:
+        for letter in (chr(l) for l in xrange(ord('C'), ord('Z')+1)):
+          try:
+            letter = '%s:' % letter
+            mapped = QueryDosDevice(letter)
+            # It can happen. Assert until we see it happens in the wild. In
+            # practice, prefer the lower drive letter.
+            assert mapped not in self._MAPPING
+            if mapped not in self._MAPPING:
+              self._MAPPING[mapped] = letter
+          except WindowsError:  # pylint: disable=E0602
+            pass
+
+    def to_dos(self, path):
+      """Converts a native NT path to DOS path."""
+      m = re.match(r'(^\\Device\\[a-zA-Z0-9]+)(\\.*)?$', path)
+      if not m or m.group(1) not in self._MAPPING:
+        assert False, path
+      drive = self._MAPPING[m.group(1)]
+      if not m.group(2):
+        return drive
+      return drive + m.group(2)
 
 
 def get_flavor():
@@ -623,6 +703,352 @@ class Dtrace(object):
       logfile.write(''.join(lines))
 
 
+class LogmanTrace(object):
+  """Uses the native Windows ETW based tracing functionality to trace a child
+  process.
+  """
+  class _Context(object):
+    """Processes a ETW log line and keeps the list of existent and non
+    existent files accessed.
+
+    Ignores directories.
+    """
+
+    EVENT_NAME = 0
+    TYPE = 1
+    PID = 9
+    CHILD_PID = 20
+    PARENT_PID = 21
+    FILE_PATH = 25
+    PROC_NAME = 26
+    CMD_LINE = 27
+
+    def __init__(self, blacklist):
+      self.blacklist = blacklist
+      self.files = set()
+      self.non_existent = set()
+
+      self._processes = set()
+      self._drive_map = DosDriveMap()
+      self._first_line = False
+
+    def on_csv_line(self, line):
+      """Processes a CSV Event line."""
+      # So much white space!
+      line = [i.strip() for i in line]
+      if not self._first_line:
+        assert line == [
+          u'Event Name',
+          u'Type',
+          u'Event ID',
+          u'Version',
+          u'Channel',
+          u'Level',  # 5
+          u'Opcode',
+          u'Task',
+          u'Keyword',
+          u'PID',
+          u'TID',  # 10
+          u'Processor Number',
+          u'Instance ID',
+          u'Parent Instance ID',
+          u'Activity ID',
+          u'Related Activity ID',  # 15
+          u'Clock-Time',
+          u'Kernel(ms)',
+          u'User(ms)',
+          u'User Data',
+        ]
+        self._first_line = True
+        return
+
+      # As you can see, the CSV is full of useful non-redundant information:
+      # Event ID
+      assert line[2] == '0'
+      # Version
+      assert line[3] in ('2', '3'), line[3]
+      # Channel
+      assert line[4] == '0'
+      # Level
+      assert line[5] == '0'
+      # Task
+      assert line[7] == '0'
+      # Keyword
+      assert line[8] == '0x0000000000000000'
+      # Instance ID
+      assert line[12] == ''
+      # Parent Instance ID
+      assert line[13] == ''
+      # Activity ID
+      assert line[14] == '{00000000-0000-0000-0000-000000000000}'
+      # Related Activity ID
+      assert line[15] == ''
+
+      if line[0].startswith('{'):
+        # Skip GUIDs.
+        return
+
+      # Convert the PID in-place from hex.
+      line[self.PID] = int(line[self.PID], 16)
+
+      # By Opcode
+      handler = getattr(
+          self,
+          'handle_%s_%s' % (line[self.EVENT_NAME], line[self.TYPE]),
+          None)
+      if not handler:
+        # Try to get an universal fallback
+        handler = getattr(self, 'handle_%s_Any' % line[self.EVENT_NAME], None)
+      if handler:
+        handler(line)
+      else:
+        assert False, '%s_%s' % (line[self.EVENT_NAME], line[self.TYPE])
+
+    def handle_EventTrace_Any(self, line):
+      pass
+
+    def handle_FileIo_Create(self, line):
+      m = re.match(r'^\"(.+)\"$', line[self.FILE_PATH])
+      self._handle_file(self._drive_map.to_dos(m.group(1)).lower())
+
+    def handle_FileIo_Rename(self, line):
+      # TODO(maruel): Handle?
+      pass
+
+    def handle_FileIo_Any(self, line):
+      pass
+
+    def handle_Image_DCStart(self, line):
+      # TODO(maruel): Handle?
+      pass
+
+    def handle_Image_Load(self, line):
+      # TODO(maruel): Handle?
+      pass
+
+    def handle_Image_Any(self, line):
+      # TODO(maruel): Handle?
+      pass
+
+    def handle_Process_Any(self, line):
+      pass
+
+    def handle_Process_DCStart(self, line):
+      """Gives historic information about the process tree.
+
+      Use it to extract the pid of the trace_inputs.py parent process that
+      started logman.exe.
+      """
+      ppid = int(line[self.PARENT_PID], 16)
+      if line[self.PROC_NAME] == '"logman.exe"':
+        # logman's parent is us.
+        self._processes.add(ppid)
+        logging.info('Found logman\'s parent at %d' % ppid)
+
+    def handle_Process_End(self, line):
+      # Look if it is logman terminating, if so, grab the parent's process pid
+      # and inject cwd.
+      if line[self.PID] in self._processes:
+        logging.info('Terminated: %d' % line[self.PID])
+        self._processes.remove(line[self.PID])
+
+    def handle_Process_Start(self, line):
+      """Handles a new child process started by PID."""
+      ppid = line[self.PID]
+      pid = int(line[self.CHILD_PID], 16)
+      if ppid in self._processes:
+        if line[self.PROC_NAME] == '"logman.exe"':
+          # Skip the shutdown call.
+          return
+        self._processes.add(pid)
+        logging.info(
+            'New child: %d -> %d %s' % (ppid, pid, line[self.PROC_NAME]))
+
+    def handle_SystemConfig_Any(self, line):
+      pass
+
+    def _handle_file(self, filename):
+      """Handles a file that was touched.
+
+      Interestingly enough, the file is always with an absolute path.
+      """
+      if (self.blacklist(filename) or
+          os.path.isdir(filename) or
+          filename in self.files or
+          filename in self.non_existent):
+        return
+      logging.debug('_handle_file(%s)' % filename)
+      if os.path.isfile(filename):
+        self.files.add(filename)
+      else:
+        self.non_existent.add(filename)
+
+  def __init__(self):
+    # Most ignores need to be determined at runtime.
+    self.IGNORED = set([os.path.dirname(sys.executable).lower()])
+    # Add many directories from environment variables.
+    vars_to_ignore = (
+      'APPDATA',
+      'LOCALAPPDATA',
+      'ProgramData',
+      'ProgramFiles',
+      'ProgramFiles(x86)',
+      'ProgramW6432',
+      'SystemRoot',
+      'TEMP',
+      'TMP',
+    )
+    for i in vars_to_ignore:
+      if os.environ.get(i):
+        self.IGNORED.add(os.environ[i].lower())
+
+    # Also add their short path name equivalents.
+    for i in list(self.IGNORED):
+      self.IGNORED.add(GetShortPathName(i).lower())
+
+    # Add this one last since it has no short path name equivalent.
+    self.IGNORED.add('\\systemroot')
+    self.IGNORED = tuple(sorted(self.IGNORED))
+
+  @classmethod
+  def gen_trace(cls, cmd, cwd, logname):
+    logging.info('gen_trace(%s, %s, %s)' % (cmd, cwd, logname))
+    # Use "logman -?" for help.
+
+    etl = logname + '.etl'
+
+    silent = not isEnabledFor(logging.INFO)
+    stdout = stderr = None
+    if silent:
+      stdout = subprocess.PIPE
+      stderr = subprocess.PIPE
+
+    # 1. Start the log collection. Requires administrative access. logman.exe is
+    # synchronous so no need for a "warmup" call.
+    # 'Windows Kernel Trace' is *localized* so use its GUID instead.
+    # The GUID constant name is SystemTraceControlGuid. Lovely.
+    cmd_start = [
+      'logman.exe',
+      'start',
+      'NT Kernel Logger',
+      '-p', '{9e814aad-3204-11d2-9a82-006008a86939}',
+      '(process,img,file,fileio)',
+      '-o', etl,
+      '-ets',  # Send directly to kernel
+    ]
+    logging.debug('Running: %s' % cmd_start)
+    subprocess.check_call(cmd_start, stdout=stdout, stderr=stderr)
+
+    try:
+      # 2. Run the child process.
+      logging.debug('Running: %s' % cmd)
+      result = subprocess.call(cmd, cwd=cwd, stdout=stdout, stderr=stderr)
+    finally:
+      # 3. Stop the log collection.
+      cmd_stop = [
+        'logman.exe',
+        'stop',
+        'NT Kernel Logger',
+        '-ets',  # Send directly to kernel
+      ]
+      logging.debug('Running: %s' % cmd_stop)
+      subprocess.check_call(cmd_stop, stdout=stdout, stderr=stderr)
+
+    # 4. Convert the traces to text representation.
+    # Use "tracerpt -?" for help.
+    LOCALE_INVARIANT = 0x7F
+    windll.kernel32.SetThreadLocale(LOCALE_INVARIANT)
+    cmd_convert = [
+      'tracerpt.exe',
+      '-l', etl,
+      '-o', logname,
+      '-gmt',  # Use UTC
+      '-y',  # No prompt
+    ]
+
+    # Normally, 'csv' is sufficient. If complex scripts are used (like eastern
+    # languages), use 'csv_unicode'. If localization gets in the way, use 'xml'.
+    logformat = 'csv'
+
+    if logformat == 'csv':
+      # tracerpt localizes the 'Type' column, for major brainfuck
+      # entertainment. I can't imagine any sane reason to do that.
+      cmd_convert.extend(['-of', 'CSV'])
+    elif logformat == 'csv_utf16':
+      # This causes it to use UTF-16, which doubles the log size but ensures the
+      # log is readable for non-ASCII characters.
+      cmd_convert.extend(['-of', 'CSV', '-en', 'Unicode'])
+    elif logformat == 'xml':
+      cmd_convert.extend(['-of', 'XML'])
+    else:
+      assert False, logformat
+    logging.debug('Running: %s' % cmd_convert)
+    subprocess.check_call(cmd_convert, stdout=stdout, stderr=stderr)
+    return result
+
+  @classmethod
+  def parse_log(cls, filename, blacklist):
+    logging.info('parse_log(%s, %s)' % (filename, blacklist))
+
+    # Auto-detect the log format
+    with open(filename, 'rb') as f:
+      hdr = f.read(2)
+      assert len(hdr) == 2
+      if hdr == '<E':
+        # It starts with <Events>
+        logformat = 'xml'
+      elif hdr == '\xFF\xEF':
+        # utf-16 BOM.
+        logformat = 'csv_utf16'
+      else:
+        logformat = 'csv'
+
+    context = cls._Context(blacklist)
+
+    if logformat == 'csv_utf16':
+      def utf_8_encoder(unicode_csv_data):
+        """Encodes the unicode object as utf-8 encoded str instance"""
+        for line in unicode_csv_data:
+          yield line.encode('utf-8')
+
+      def unicode_csv_reader(unicode_csv_data, **kwargs):
+        """Encodes temporarily as UTF-8 since csv module doesn't do unicode."""
+        csv_reader = csv.reader(utf_8_encoder(unicode_csv_data), **kwargs)
+        for row in csv_reader:
+          # Decode str utf-8 instances back to unicode instances, cell by cell:
+          yield [cell.decode('utf-8') for cell in row]
+
+      # The CSV file is UTF-16 so use codecs.open() to load the file into the
+      # python internal unicode format (utf-8). Then explicitly re-encode as
+      # utf8 as str instances so csv can parse it fine. Then decode the utf-8
+      # str back into python unicode instances. This sounds about right.
+      for line in unicode_csv_reader(codecs.open(filename, 'r', 'utf-16')):
+        # line is a list of unicode objects
+        context.on_csv_line(line)
+
+    elif logformat == 'csv':
+      def ansi_csv_reader(ansi_csv_data, **kwargs):
+        """Loads an 'ANSI' code page and returns unicode() objects."""
+        assert sys.getfilesystemencoding() == 'mbcs'
+        encoding = get_current_encoding()
+        for row in csv.reader(ansi_csv_data, **kwargs):
+          # Decode str 'ansi' instances to unicode instances, cell by cell:
+          yield [cell.decode(encoding) for cell in row]
+
+      # The fastest and smallest format but only supports 'ANSI' file paths.
+      # E.g. the filenames are encoding in the 'current' encoding.
+      for line in ansi_csv_reader(open(filename)):
+        # line is a list of unicode objects
+        context.on_csv_line(line)
+
+    else:
+      raise NotImplementedError('Implement %s' % logformat)
+
+    return (
+        set(os.path.realpath(f) for f in context.files),
+        set(os.path.realpath(f) for f in context.non_existent))
+
+
 def relevant_files(files, root):
   """Trims the list of files to keep the expected files and unexpected files.
 
@@ -654,7 +1080,7 @@ def extract_directories(files, root):
     )
     if not (actual - files):
       files -= actual
-      files.add(directory + '/')
+      files.add(directory + os.path.sep)
   return sorted(files)
 
 
@@ -744,6 +1170,16 @@ def trace_inputs(logfile, cmd, root_dir, cwd_dir, product_dir, force_trace):
   # Resolve any symlink
   root_dir = os.path.realpath(root_dir)
 
+  if sys.platform == 'win32':
+    # Help ourself and lowercase all the paths.
+    # TODO(maruel): handle short path names by converting them to long path name
+    # as needed.
+    root_dir = root_dir.lower()
+    if cwd_dir:
+      cwd_dir = cwd_dir.lower()
+    if product_dir:
+      product_dir = product_dir.lower()
+
   def print_if(txt):
     if cwd_dir is None:
       print(txt)
@@ -753,6 +1189,8 @@ def trace_inputs(logfile, cmd, root_dir, cwd_dir, product_dir, force_trace):
     api = Strace()
   elif flavor == 'mac':
     api = Dtrace()
+  elif sys.platform == 'win32':
+    api = LogmanTrace()
   else:
     print >> sys.stderr, 'Unsupported platform %s' % sys.platform
     return 1
@@ -781,7 +1219,8 @@ def trace_inputs(logfile, cmd, root_dir, cwd_dir, product_dir, force_trace):
   for f in non_existent:
     print_if('  %s' % f)
 
-  expected, unexpected = relevant_files(files, root_dir.rstrip('/') + '/')
+  expected, unexpected = relevant_files(
+      files, root_dir.rstrip(os.path.sep) + os.path.sep)
   if unexpected:
     print_if('Unexpected: %d' % len(unexpected))
     for f in unexpected:
@@ -794,9 +1233,10 @@ def trace_inputs(logfile, cmd, root_dir, cwd_dir, product_dir, force_trace):
 
   if cwd_dir is not None:
     def cleanuppath(x):
-      """Cleans up a relative path."""
+      """Cleans up a relative path. Converts any os.path.sep to '/' on Windows.
+      """
       if x:
-        x = x.rstrip('/')
+        x = x.rstrip(os.path.sep).replace(os.path.sep, '/')
       if x == '.':
         x = ''
       if x:
@@ -810,6 +1250,10 @@ def trace_inputs(logfile, cmd, root_dir, cwd_dir, product_dir, force_trace):
     def fix(f):
       """Bases the file on the most restrictive variable."""
       logging.debug('fix(%s)' % f)
+      # Important, GYP stores the files with / and not \.
+      if sys.platform == 'win32':
+        f = f.replace('\\', '/')
+
       if product_dir and f.startswith(product_dir):
         return '<(PRODUCT_DIR)/%s' % f[len(product_dir):]
       elif cwd_dir and f.startswith(cwd_dir):
@@ -858,7 +1302,10 @@ def main():
       '--root-dir', default=ROOT_DIR,
       help='Root directory to base everything off. Default: %default')
   parser.add_option(
-      '-f', '--force', action='store_true', help='Force to retrace the file')
+      '-f', '--force',
+      action='store_true',
+      default=False,
+      help='Force to retrace the file')
 
   options, args = parser.parse_args()
   level = [logging.ERROR, logging.INFO, logging.DEBUG][min(2, options.verbose)]

@@ -41,7 +41,7 @@ class TraceInputs(unittest.TestCase):
 
   def _execute(self, is_gyp):
     cmd = [
-      sys.executable, os.path.join('..', 'trace_inputs.py'),
+      sys.executable, os.path.join('..', '..', 'trace_inputs.py'),
       '--log', self.log,
       '--root-dir', ROOT_DIR,
     ]
@@ -51,48 +51,52 @@ class TraceInputs(unittest.TestCase):
             '--cwd', 'data',
             '--product', '.',  # Not tested.
           ])
-    cmd.append(os.path.join('..', FILENAME))
+    cmd.append(sys.executable)
     if is_gyp:
+      # When the gyp argument is specified, the command is started from --cwd
+      # directory. In this case, 'data'.
+      cmd.extend([os.path.join('..', FILENAME), '--child-gyp'])
+    else:
       # When the gyp argument is not specified, the command is started from
       # --root-dir directory.
-      cmd.append('--child-gyp')
-    else:
-      # When the gyp argument is specified, the command is started from --cwd
-      # directory.
-      cmd.append('--child')
+      cmd.extend([FILENAME, '--child'])
 
-    cwd = 'data'
+    # The current directory doesn't matter, the traced process will be called
+    # from the correct cwd.
+    cwd = os.path.join('data', 'trace_inputs')
+    # Ignore stderr.
+    logging.info('Command: %s' % ' '.join(cmd))
     p = subprocess.Popen(
-        cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, cwd=cwd)
-    out = p.communicate()[0]
+        cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=cwd,
+        universal_newlines=True)
+    out, err = p.communicate()
     if p.returncode:
-      raise CalledProcessError(p.returncode, cmd, out, cwd)
-    return out
+      raise CalledProcessError(p.returncode, cmd, out + err, cwd)
+    return out or ''
 
   def test_trace(self):
-    if sys.platform not in ('linux2', 'darwin'):
-      print 'WARNING: unsupported: %s' % sys.platform
-      return
     expected_end = [
-      "Interesting: 4 reduced to 3",
-      "  data/trace_inputs/",
-      "  trace_inputs.py",
-      "  %s" % FILENAME,
+      'Interesting: 4 reduced to 3',
+      '  data/trace_inputs/'.replace('/', os.path.sep),
+      '  trace_inputs.py',
+      '  %s' % FILENAME,
     ]
     actual = self._execute(False).splitlines()
-    self.assertTrue(actual[0].startswith('Tracing... ['))
-    self.assertTrue(actual[1].startswith('Loading traces... '))
-    self.assertTrue(actual[2].startswith('Total: '))
-    self.assertEquals("Non existent: 0", actual[3])
+    self.assertTrue(actual[0].startswith('Tracing... ['), actual)
+    self.assertTrue(actual[1].startswith('Loading traces... '), actual)
+    self.assertTrue(actual[2].startswith('Total: '), actual)
+    if sys.platform == 'win32':
+      # On windows, python searches the current path for python stdlib like
+      # subprocess.py and others, I'm not sure why.
+      self.assertTrue(actual[3].startswith('Non existent: '), actual[3])
+    else:
+      self.assertEquals('Non existent: 0', actual[3])
     # Ignore any Unexpected part.
     # TODO(maruel): Make sure there is no Unexpected part, even in the case of
     # virtualenv usage.
     self.assertEquals(expected_end, actual[-len(expected_end):])
 
   def test_trace_gyp(self):
-    if sys.platform not in ('linux2', 'darwin'):
-      print 'WARNING: unsupported: %s' % sys.platform
-      return
     import trace_inputs
     expected_value = {
       'conditions': [
@@ -120,7 +124,7 @@ def child():
   """When the gyp argument is not specified, the command is started from
   --root-dir directory.
   """
-  print 'child'
+  print 'child from %s' % os.getcwd()
   # Force file opening with a non-normalized path.
   open(os.path.join('data', '..', 'trace_inputs.py'), 'rb').close()
   # Do not wait for the child to exit.
@@ -134,7 +138,7 @@ def child_gyp():
   """When the gyp argument is specified, the command is started from --cwd
   directory.
   """
-  print 'child_gyp'
+  print 'child_gyp from %s' % os.getcwd()
   # Force file opening.
   open(os.path.join('..', 'trace_inputs.py'), 'rb').close()
   # Do not wait for the child to exit.

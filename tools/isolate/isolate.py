@@ -37,13 +37,20 @@ import tree_creator
 def relpath(path, root):
   """os.path.relpath() that keeps trailing slash."""
   out = os.path.relpath(path, root)
-  if path.endswith('/'):
-    out += '/'
+  if path.endswith(os.path.sep):
+    out += os.path.sep
+  elif sys.platform == 'win32' and path.endswith('/'):
+    # TODO(maruel): Temporary.
+    out += os.path.sep
   return out
 
 
 def to_relative(path, root, relative):
   """Converts any absolute path to a relative path, only if under root."""
+  if sys.platform == 'win32':
+    path = path.lower()
+    root = root.lower()
+    relative = relative.lower()
   if path.startswith(root):
     logging.info('%s starts with %s' % (path, root))
     path = os.path.relpath(path, relative)
@@ -64,7 +71,7 @@ def expand_directories(indir, infiles, blacklist):
       raise tree_creator.MappingError(
           'Can\'t map file %s outside %s' % (infile, indir))
 
-    if relfile.endswith('/'):
+    if relfile.endswith(os.path.sep):
       if not os.path.isdir(infile):
         raise tree_creator.MappingError(
             'Input directory %s must have a trailing slash' % infile)
@@ -289,12 +296,17 @@ def MODEtrace(
   checkout at src/.
   """
   logging.info('Running %s, cwd=%s' % (cmd, os.path.join(indir, relative_cwd)))
+  try:
+    # Guesswork here.
+    product_dir = os.path.relpath(os.path.dirname(resultfile), indir)
+  except ValueError:
+    product_dir = ''
   return trace_inputs.trace_inputs(
       '%s.log' % resultfile,
       cmd,
       indir,
       relative_cwd,
-      os.path.relpath(os.path.dirname(resultfile), indir),  # Guesswork here.
+      product_dir,
       False)
 
 
