@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,6 +32,8 @@ void ClientEventDispatcher::OnInitialized() {
 }
 
 void ClientEventDispatcher::InjectKeyEvent(const KeyEvent& event) {
+  DCHECK(event.has_keycode() || event.has_usb_keycode());
+  DCHECK(event.has_pressed());
   EventMessage message;
   message.set_sequence_number(base::Time::Now().ToInternalValue());
   message.mutable_key_event()->CopyFrom(event);

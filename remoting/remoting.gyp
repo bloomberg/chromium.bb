@@ -715,7 +715,6 @@
         '../media/media.gyp:yuv_convert',
         'remoting_jingle_glue',
         'proto/chromotocol.gyp:chromotocol_proto_lib',
-        'proto/trace.gyp:trace_proto_lib',
       ],
       'export_dependent_settings': [
         '../base/base.gyp:base',

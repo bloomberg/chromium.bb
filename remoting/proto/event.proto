@@ -13,8 +13,8 @@ package remoting.protocol;
 // Defines a keyboard event.
 message KeyEvent {
   // The Windows Virtual Key code.
-  required int32 keycode = 1;
-  required bool pressed = 2;
+  optional int32 keycode = 1;
+  optional bool pressed = 2;
 
   // The USB key code.
   // The upper 16-bits are the USB Page (0x07 for key events).

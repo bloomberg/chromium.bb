@@ -33,11 +33,13 @@ void HostEventDispatcher::OnMessageReceived(
 
   base::ScopedClosureRunner done_runner(done_task);
 
-  sequence_number_callback_.Run(message->sequence_number());
+  if (message->has_sequence_number() && !sequence_number_callback_.is_null())
+    sequence_number_callback_.Run(message->sequence_number());
 
   if (message->has_key_event()) {
     const KeyEvent& event = message->key_event();
-    if (event.has_keycode() && event.has_pressed()) {
+    if ((event.has_keycode() || event.has_usb_keycode()) &&
+        event.has_pressed()) {
       input_stub_->InjectKeyEvent(event);
     } else {
       LOG(WARNING) << "Received invalid key event.";
