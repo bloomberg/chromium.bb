@@ -653,8 +653,9 @@ void CollectNetworkStats(const std::string& network_stats_server,
 
     // After October 30, 2012 builds, it will always be in default group
     // (disable_network_stats).
-    trial = new base::FieldTrial("NetworkConnectivity", kDivisor,
-                                 "disable_network_stats", 2012, 10, 30);
+    trial = base::FieldTrialList::FactoryGetFieldTrial(
+        "NetworkConnectivity", kDivisor, "disable_network_stats",
+        2012, 10, 30, NULL);
 
     // Add option to collect_stats for NetworkConnectivity.
     int collect_stats_group = trial->AppendGroup("collect_stats",

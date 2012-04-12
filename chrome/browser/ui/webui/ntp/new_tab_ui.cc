@@ -275,8 +275,8 @@ void NewTabUI::RegisterUserPrefs(PrefService* prefs) {
 // static
 void NewTabUI::SetupFieldTrials() {
   scoped_refptr<base::FieldTrial> trial(
-      new base::FieldTrial(kWebStoreLinkExperiment, 3, "Disabled",
-                           2012, 6, 1));
+      base::FieldTrialList::FactoryGetFieldTrial(
+          kWebStoreLinkExperiment, 3, "Disabled", 2012, 6, 1, NULL));
 
   // Try to give the user a consistent experience, if possible.
   if (base::FieldTrialList::IsOneTimeRandomizationEnabled())

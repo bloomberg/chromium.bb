@@ -14,12 +14,14 @@ namespace {
 const char* const kFieldTrialName = "PepperFlash";
 const char* const kDisableGroupName = "DisableByDefault";
 const char* const kEnableGroupName = "EnableByDefault";
+int g_disabled_group_number = -1;
 
 void ActivateFieldTrial() {
   // The field trial will expire on Jan 1st, 2014.
   scoped_refptr<base::FieldTrial> trial(
-      new base::FieldTrial(kFieldTrialName, 1000, kDisableGroupName,
-                           2014, 1, 1));
+      base::FieldTrialList::FactoryGetFieldTrial(
+          kFieldTrialName, 1000, kDisableGroupName, 2014, 1, 1,
+          &g_disabled_group_number));
 
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kPpapiFlashFieldTrial)) {
@@ -55,5 +57,5 @@ bool PepperFlashFieldTrial::InEnableByDefaultGroup() {
 
   int group = base::FieldTrialList::FindValue(kFieldTrialName);
   return group != base::FieldTrial::kNotFinalized &&
-         group != base::FieldTrial::kDefaultGroupNumber;
+         group != g_disabled_group_number;
 }

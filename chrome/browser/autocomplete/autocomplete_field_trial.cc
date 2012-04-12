@@ -64,18 +64,19 @@ void AutocompleteFieldTrial::Activate() {
   if (base::FieldTrialList::IsOneTimeRandomizationEnabled()) {  // sticky trials
     // Create aggressive History URL Provider field trial.
     // Make it expire on August 1, 2012.
-    scoped_refptr<base::FieldTrial> trial(new base::FieldTrial(
-        kAggressiveHUPFieldTrialName, kAggressiveHUPFieldTrialDivisor,
-        "Standard", 2012, 8, 1));
+    scoped_refptr<base::FieldTrial> trial(
+        base::FieldTrialList::FactoryGetFieldTrial(
+            kAggressiveHUPFieldTrialName, kAggressiveHUPFieldTrialDivisor,
+            "Standard", 2012, 8, 1, NULL));
     trial->UseOneTimeRandomization();
     aggressive_hup_experiment_group = trial->AppendGroup("Aggressive",
         kAggressiveHUPFieldTrialExperimentFraction);
 
     // Create inline History Quick Provider field trial.
     // Make it expire on November 8, 2012.
-    trial = new base::FieldTrial(
+    trial = base::FieldTrialList::FactoryGetFieldTrial(
         kDisallowInlineHQPFieldTrialName, kDisallowInlineHQPFieldTrialDivisor,
-        "Standard", 2012, 11, 8);
+        "Standard", 2012, 11, 8, NULL);
     trial->UseOneTimeRandomization();
     disallow_inline_hqp_experiment_group = trial->AppendGroup("DisallowInline",
         kDisallowInlineHQPFieldTrialExperimentFraction);
@@ -84,9 +85,10 @@ void AutocompleteFieldTrial::Activate() {
   // Create the suggest field trial (regardless of sticky-ness status, but
   // make it sticky if possible).
   // Make it expire on October 1, 2012.
-  scoped_refptr<base::FieldTrial> trial(new base::FieldTrial(
-      kSuggestFieldTrialName, kSuggestFieldTrialNumberOfGroups,
-      "0", 2012, 10, 1));
+  scoped_refptr<base::FieldTrial> trial(
+      base::FieldTrialList::FactoryGetFieldTrial(
+        kSuggestFieldTrialName, kSuggestFieldTrialNumberOfGroups,
+        "0", 2012, 10, 1, NULL));
   if (base::FieldTrialList::IsOneTimeRandomizationEnabled())
     trial->UseOneTimeRandomization();
   // We've already created one group; now just need to create

@@ -21,6 +21,7 @@ namespace prerender {
 namespace {
 
 const char kOmniboxTrialName[] = "PrerenderFromOmnibox";
+int g_omnibox_trial_default_group_number = -1;
 
 void SetupPrefetchFieldTrial() {
   chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
@@ -32,8 +33,9 @@ void SetupPrefetchFieldTrial() {
   const base::FieldTrial::Probability divisor = 1000;
   const base::FieldTrial::Probability prefetch_probability = 500;
   scoped_refptr<base::FieldTrial> trial(
-      new base::FieldTrial("Prefetch", divisor,
-                           "ContentPrefetchPrefetchOff", 2012, 6, 30));
+      base::FieldTrialList::FactoryGetFieldTrial(
+          "Prefetch", divisor, "ContentPrefetchPrefetchOff",
+          2012, 6, 30, NULL));
   const int kPrefetchOnGroup = trial->AppendGroup("ContentPrefetchPrefetchOn",
                                                   prefetch_probability);
   PrerenderManager::SetIsPrefetchEnabled(trial->group() == kPrefetchOnGroup);
@@ -68,47 +70,48 @@ void SetupPrerenderFieldTrial() {
            control1_probability + no_use1_probability + exp2_probability +
            exp2_5min_ttl_probability + control2_probability +
            no_use2_probability);
+  int experiment_1_group = -1;
   scoped_refptr<base::FieldTrial> trial(
-      new base::FieldTrial("Prerender", divisor,
-                           "ContentPrefetchPrerender1", 2012, 6, 30));
+      base::FieldTrialList::FactoryGetFieldTrial(
+          "Prerender", divisor, "ContentPrefetchPrerender1",
+          2012, 6, 30, &experiment_1_group));
 
-  const int kExperiment1Group = trial->kDefaultGroupNumber;
-  const int kExperiment15minTTLGroup =
+  const int experiment_15_min_TTL_group =
       trial->AppendGroup("ContentPrefetchPrerenderExp5minTTL1",
                          exp1_5min_ttl_probability);
-  const int kControl1Group =
+  const int control_1_group =
       trial->AppendGroup("ContentPrefetchPrerenderControl1",
                          control1_probability);
-  const int kNoUse1Group =
+  const int no_use_1_group =
       trial->AppendGroup("ContentPrefetchPrerenderNoUse1",
                          no_use1_probability);
-  const int kExperiment2Group =
+  const int experiment_2_group =
       trial->AppendGroup("ContentPrefetchPrerender2",
                          exp2_probability);
-  const int kExperiment25minTTLGroup =
+  const int experiment_25_min_TTL_group =
       trial->AppendGroup("ContentPrefetchPrerenderExp5minTTL2",
                          exp2_5min_ttl_probability);
-  const int kControl2Group =
+  const int control_2_group =
       trial->AppendGroup("ContentPrefetchPrerenderControl2",
                          control2_probability);
-  const int kNoUse2Group =
+  const int no_use_2_group =
       trial->AppendGroup("ContentPrefetchPrerenderNoUse2",
                          no_use2_probability);
   const int trial_group = trial->group();
-  if (trial_group == kExperiment1Group ||
-      trial_group == kExperiment2Group) {
+  if (trial_group == experiment_1_group ||
+      trial_group == experiment_2_group) {
     PrerenderManager::SetMode(
         PrerenderManager::PRERENDER_MODE_EXPERIMENT_PRERENDER_GROUP);
-  } else if (trial_group == kExperiment15minTTLGroup ||
-             trial_group == kExperiment25minTTLGroup) {
+  } else if (trial_group == experiment_15_min_TTL_group ||
+             trial_group == experiment_25_min_TTL_group) {
     PrerenderManager::SetMode(
         PrerenderManager::PRERENDER_MODE_EXPERIMENT_5MIN_TTL_GROUP);
-  } else if (trial_group == kControl1Group ||
-             trial_group == kControl2Group) {
+  } else if (trial_group == control_1_group ||
+             trial_group == control_2_group) {
     PrerenderManager::SetMode(
         PrerenderManager::PRERENDER_MODE_EXPERIMENT_CONTROL_GROUP);
-  } else if (trial_group == kNoUse1Group ||
-             trial_group == kNoUse2Group) {
+  } else if (trial_group == no_use_1_group ||
+             trial_group == no_use_2_group) {
     PrerenderManager::SetMode(
         PrerenderManager::PRERENDER_MODE_EXPERIMENT_NO_USE_GROUP);
   } else {
@@ -192,8 +195,9 @@ void ConfigureOmniboxPrerender() {
     kDisabledProbability = 1;
   }
   scoped_refptr<base::FieldTrial> omnibox_prerender_trial(
-      new base::FieldTrial(kOmniboxTrialName, kDivisor,
-                           "OmniboxPrerenderEnabled", 2012, 8, 30));
+      base::FieldTrialList::FactoryGetFieldTrial(
+          kOmniboxTrialName, kDivisor, "OmniboxPrerenderEnabled",
+          2012, 8, 30, &g_omnibox_trial_default_group_number));
   omnibox_prerender_trial->AppendGroup("OmniboxPrerenderDisabled",
                                        kDisabledProbability);
 
@@ -202,8 +206,9 @@ void ConfigureOmniboxPrerender() {
   const base::FieldTrial::Probability kEightProbability = 33;
 
   scoped_refptr<base::FieldTrial> weighting_trial(
-      new base::FieldTrial("OmniboxPrerenderHitWeightingTrial", kDivisor,
-                           "OmniboxPrerenderWeight1.0", 2012, 8, 30));
+      base::FieldTrialList::FactoryGetFieldTrial(
+          "OmniboxPrerenderHitWeightingTrial", kDivisor,
+          "OmniboxPrerenderWeight1.0", 2012, 8, 30, NULL));
   const int kOmniboxWeightFourGroup =
       weighting_trial->AppendGroup("OmniboxPrerenderWeight4.0",
                                    kFourProbability);
@@ -242,7 +247,7 @@ bool IsOmniboxEnabled(Profile* profile) {
 
   const int group = base::FieldTrialList::FindValue(kOmniboxTrialName);
   return group == base::FieldTrial::kNotFinalized ||
-         group == base::FieldTrial::kDefaultGroupNumber;
+         group == g_omnibox_trial_default_group_number;
 }
 
 }  // namespace prerender

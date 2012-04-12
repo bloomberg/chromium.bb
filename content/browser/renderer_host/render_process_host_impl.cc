@@ -632,7 +632,7 @@ void RenderProcessHostImpl::AppendRendererCommandLine(
   std::string field_trial_states;
   base::FieldTrialList::StatesToString(&field_trial_states);
   if (!field_trial_states.empty()) {
-    command_line->AppendSwitchASCII(switches::kForceFieldTestNameAndValue,
+    command_line->AppendSwitchASCII(switches::kForceFieldTrials,
                                     field_trial_states);
   }
 

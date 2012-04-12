@@ -1040,8 +1040,10 @@ void ChromeFrameAutomationClient::InitializeFieldTrials() {
   if (!trial) {
     // Do one-time initialization of the field trial here.
     // TODO(robertshield): End the field trial before March 7th 2013.
-    scoped_refptr<base::FieldTrial> new_trial = new base::FieldTrial(
-        "ChromeShutdownDelay", 1000, kWithDelayFieldTrialName, 2013, 3, 7);
+    scoped_refptr<base::FieldTrial> new_trial =
+        base::FieldTrialList::FactoryGetFieldTrial(
+            "ChromeShutdownDelay", 1000, kWithDelayFieldTrialName,
+            2013, 3, 7, NULL);
 
     // Be consistent for this client. Note that this will only have an effect
     // once the client id is persisted. See http://crbug.com/117188

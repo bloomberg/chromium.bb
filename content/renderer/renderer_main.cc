@@ -236,10 +236,10 @@ int RendererMain(const content::MainFunctionParams& parameters) {
   // one-time randomized trials; they should be created in the browser process.
   base::FieldTrialList field_trial(EmptyString());
   // Ensure any field trials in browser are reflected into renderer.
-  if (parsed_command_line.HasSwitch(switches::kForceFieldTestNameAndValue)) {
+  if (parsed_command_line.HasSwitch(switches::kForceFieldTrials)) {
     std::string persistent = parsed_command_line.GetSwitchValueASCII(
-        switches::kForceFieldTestNameAndValue);
-    bool ret = field_trial.CreateTrialsInChildProcess(persistent);
+        switches::kForceFieldTrials);
+    bool ret = base::FieldTrialList::CreateTrialsFromString(persistent);
     DCHECK(ret);
   }
 

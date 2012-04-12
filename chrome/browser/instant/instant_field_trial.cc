@@ -17,6 +17,7 @@ namespace {
 // Field trial IDs of the control and experiment groups. Though they are not
 // literally "const", they are set only once, in Activate() below. See the .h
 // file for what these groups represent.
+int g_inactive = -1;
 int g_instant = 0;
 int g_suggest = 0;
 int g_hidden  = 0;
@@ -28,7 +29,8 @@ int g_control = 0;
 // static
 void InstantFieldTrial::Activate() {
   scoped_refptr<base::FieldTrial> trial(
-      new base::FieldTrial("Instant", 1000, "Inactive", 2013, 7, 1));
+      base::FieldTrialList::FactoryGetFieldTrial(
+          "Instant", 1000, "Inactive", 2013, 7, 1, &g_inactive));
 
   // Try to give the user a consistent experience, if possible.
   if (base::FieldTrialList::IsOneTimeRandomizationEnabled())
@@ -76,8 +78,7 @@ InstantFieldTrial::Group InstantFieldTrial::GetGroup(Profile* profile) {
   }
 
   const int group = base::FieldTrialList::FindValue("Instant");
-  if (group == base::FieldTrial::kNotFinalized ||
-      group == base::FieldTrial::kDefaultGroupNumber) {
+  if (group == base::FieldTrial::kNotFinalized || group == g_inactive) {
     UMA_HISTOGRAM_ENUMERATION("Instant.FieldTrial.Reason", 2, 10);
     return INACTIVE;
   }

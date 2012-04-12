@@ -588,6 +588,19 @@ void ChromeBrowserMainParts::SetupMetricsAndFieldTrials() {
     metrics->ForceClientIdCreation();  // Needed below.
   field_trial_list_.reset(new base::FieldTrialList(metrics->GetClientId()));
 
+  // Ensure any field trials specified on the command line are initialized.
+  // Also stop the metrics service so that we don't pollute UMA.
+#ifndef NDEBUG
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kForceFieldTrials)) {
+    std::string persistent = command_line->GetSwitchValueASCII(
+        switches::kForceFieldTrials);
+    bool ret = base::FieldTrialList::CreateTrialsFromString(persistent);
+    CHECK(ret) << "Invalid --" << switches::kForceFieldTrials <<
+                  " list specified.";
+  }
+#endif  // NDEBUG
+
   SetupFieldTrials(metrics->recording_active(),
                    local_state_->IsManagedPreference(
                        prefs::kMaxConnectionsPerProxy));
@@ -609,16 +622,17 @@ void ChromeBrowserMainParts::ConnectionFieldTrial() {
   const base::FieldTrial::Probability kConnectDivisor = 100;
   const base::FieldTrial::Probability kConnectProbability = 1;  // 1% prob.
 
-  // After June 30, 2011 builds, it will always be in default group.
-  scoped_refptr<base::FieldTrial> connect_trial(
-      new base::FieldTrial(
-          "ConnCountImpact", kConnectDivisor, "conn_count_6", 2011, 6, 30));
-
   // This (6) is the current default value. Having this group declared here
   // makes it straightforward to modify |kConnectProbability| such that the same
   // probability value will be assigned to all the other groups, while
   // preserving the remainder of the of probability space to the default value.
-  const int connect_6 = connect_trial->kDefaultGroupNumber;
+  int connect_6 = -1;
+
+  // After June 30, 2011 builds, it will always be in default group.
+  scoped_refptr<base::FieldTrial> connect_trial(
+      base::FieldTrialList::FactoryGetFieldTrial(
+          "ConnCountImpact", kConnectDivisor, "conn_count_6", 2011, 6, 30,
+          &connect_6));
 
   const int connect_5 = connect_trial->AppendGroup("conn_count_5",
                                                    kConnectProbability);
@@ -663,10 +677,11 @@ void ChromeBrowserMainParts::SocketTimeoutFieldTrial() {
   const base::FieldTrial::Probability kSocketTimeoutProbability = 1;
 
   // After June 30, 2011 builds, it will always be in default group.
+  int socket_timeout_10 = -1;
   scoped_refptr<base::FieldTrial> socket_timeout_trial(
-      new base::FieldTrial("IdleSktToImpact", kIdleSocketTimeoutDivisor,
-          "idle_timeout_10", 2011, 6, 30));
-  const int socket_timeout_10 = socket_timeout_trial->kDefaultGroupNumber;
+      base::FieldTrialList::FactoryGetFieldTrial(
+          "IdleSktToImpact", kIdleSocketTimeoutDivisor, "idle_timeout_10",
+          2011, 6, 30, &socket_timeout_10));
 
   const int socket_timeout_5 =
       socket_timeout_trial->AppendGroup("idle_timeout_5",
@@ -696,16 +711,17 @@ void ChromeBrowserMainParts::ProxyConnectionsFieldTrial() {
   // 25% probability
   const base::FieldTrial::Probability kProxyConnectionProbability = 1;
 
-  // After June 30, 2011 builds, it will always be in default group.
-  scoped_refptr<base::FieldTrial> proxy_connection_trial(
-      new base::FieldTrial("ProxyConnectionImpact", kProxyConnectionsDivisor,
-          "proxy_connections_32", 2011, 6, 30));
-
   // This (32 connections per proxy server) is the current default value.
   // Declaring it here allows us to easily re-assign the probability space while
   // maintaining that the default group always has the remainder of the "share",
   // which allows for cleaner and quicker changes down the line if needed.
-  const int proxy_connections_32 = proxy_connection_trial->kDefaultGroupNumber;
+  int proxy_connections_32 = -1;
+
+  // After June 30, 2011 builds, it will always be in default group.
+  scoped_refptr<base::FieldTrial> proxy_connection_trial(
+      base::FieldTrialList::FactoryGetFieldTrial(
+          "ProxyConnectionImpact", kProxyConnectionsDivisor,
+          "proxy_connections_32", 2011, 6, 30, &proxy_connections_32));
 
   // The number of max sockets per group cannot be greater than the max number
   // of sockets per proxy server.  We tried using 8, and it can easily
@@ -758,13 +774,14 @@ void ChromeBrowserMainParts::SpdyFieldTrial() {
     base::FieldTrial::Probability npnhttp_probability = 5;
     base::FieldTrial::Probability spdy3_probability = 10;
 
+    // NPN with spdy support is the default.
+    int npn_spdy_grp = -1;
+
     // After June 30, 2013 builds, it will always be in default group.
     scoped_refptr<base::FieldTrial> trial(
-        new base::FieldTrial(
-            "SpdyImpact", kSpdyDivisor, "npn_with_spdy", 2013, 6, 30));
-
-    // NPN with spdy support is the default.
-    int npn_spdy_grp = trial->kDefaultGroupNumber;
+        base::FieldTrialList::FactoryGetFieldTrial(
+            "SpdyImpact", kSpdyDivisor, "npn_with_spdy", 2013, 6, 30,
+            &npn_spdy_grp));
 
     // NPN with only http support, no spdy.
     int npn_http_grp = trial->AppendGroup("npn_with_http", npnhttp_probability);
@@ -798,8 +815,8 @@ void ChromeBrowserMainParts::SpdyFieldTrial() {
   // After June 30, 2013 builds, it will always be in default group
   // (cwndDynamic).
   scoped_refptr<base::FieldTrial> trial(
-      new base::FieldTrial(
-          "SpdyCwnd", kSpdyCwndDivisor, "cwndDynamic", 2013, 6, 30));
+      base::FieldTrialList::FactoryGetFieldTrial(
+          "SpdyCwnd", kSpdyCwndDivisor, "cwndDynamic", 2013, 6, 30, NULL));
 
   trial->AppendGroup("cwnd10", kSpdyCwnd10);
   trial->AppendGroup("cwnd16", kSpdyCwnd16);
@@ -835,14 +852,15 @@ void ChromeBrowserMainParts::WarmConnectionFieldTrial() {
   const base::FieldTrial::Probability kWarmSocketDivisor = 100;
   const base::FieldTrial::Probability kWarmSocketProbability = 33;
 
+  // Default value is USE_LAST_ACCESSED_SOCKET.
+  int last_accessed_socket = -1;
+
   // After January 30, 2013 builds, it will always be in default group.
   scoped_refptr<base::FieldTrial> warmest_socket_trial(
-      new base::FieldTrial(
+      base::FieldTrialList::FactoryGetFieldTrial(
           "WarmSocketImpact", kWarmSocketDivisor, "last_accessed_socket",
-          2013, 1, 30));
+          2013, 1, 30, &last_accessed_socket));
 
-  // Default value is USE_LAST_ACCESSED_SOCKET.
-  const int last_accessed_socket = warmest_socket_trial->kDefaultGroupNumber;
   const int warmest_socket = warmest_socket_trial->AppendGroup(
       "warmest_socket", kWarmSocketProbability);
   const int warm_socket = warmest_socket_trial->AppendGroup(
@@ -872,11 +890,11 @@ void ChromeBrowserMainParts::ConnectBackupJobsFieldTrial() {
     // 1% probability.
     const base::FieldTrial::Probability kConnectBackupJobsProbability = 1;
     // After June 30, 2011 builds, it will always be in default group.
+    int connect_backup_jobs_enabled = -1;
     scoped_refptr<base::FieldTrial> trial(
-        new base::FieldTrial("ConnnectBackupJobs",
-            kConnectBackupJobsDivisor, "ConnectBackupJobsEnabled", 2011, 6,
-                30));
-    const int connect_backup_jobs_enabled = trial->kDefaultGroupNumber;
+        base::FieldTrialList::FactoryGetFieldTrial("ConnnectBackupJobs",
+            kConnectBackupJobsDivisor, "ConnectBackupJobsEnabled",
+            2011, 6, 30, &connect_backup_jobs_enabled));
     trial->AppendGroup("ConnectBackupJobsDisabled",
                        kConnectBackupJobsProbability);
     const int trial_group = trial->group();
@@ -894,8 +912,9 @@ void ChromeBrowserMainParts::PredictorFieldTrial() {
   // After June 30, 2011 builds, it will always be in default group
   // (default_enabled_prefetch).
   scoped_refptr<base::FieldTrial> trial(
-      new base::FieldTrial("DnsImpact", kDivisor,
-                           "default_enabled_prefetch", 2011, 10, 30));
+      base::FieldTrialList::FactoryGetFieldTrial(
+          "DnsImpact", kDivisor, "default_enabled_prefetch", 2011, 10, 30,
+          NULL));
 
   // First option is to disable prefetching completely.
   int disabled_prefetch = trial->AppendGroup("disabled_prefetch",
@@ -1038,6 +1057,13 @@ bool ChromeBrowserMainParts::IsMetricsReportingEnabled() {
   // prefs, we turn on recording.  We disable metrics completely for
   // non-official builds.
   bool enabled = false;
+#ifndef NDEBUG
+  // The debug build doesn't sent UMA logs when FieldTrials are forced.
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kForceFieldTrials))
+    return false;
+#endif  // #ifndef NDEBUG
+
 #if defined(GOOGLE_CHROME_BUILD)
 #if defined(OS_CHROMEOS)
   chromeos::CrosSettings::Get()->GetBoolean(chromeos::kStatsReportingPref,
@@ -1608,10 +1634,11 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
     base::FieldTrial::Probability kSDCH_DIVISOR = 1000;
     base::FieldTrial::Probability kSDCH_DISABLE_PROBABILITY = 1;  // 0.1% prob.
     // After March 31, 2012 builds, it will always be in default group.
+    int sdch_enabled_group = -1;
     scoped_refptr<base::FieldTrial> sdch_trial(
-        new base::FieldTrial("GlobalSdch", kSDCH_DIVISOR, "global_enable_sdch",
-            2012, 3, 31));
-    int sdch_enabled_group = sdch_trial->kDefaultGroupNumber;
+        base::FieldTrialList::FactoryGetFieldTrial(
+            "GlobalSdch", kSDCH_DIVISOR, "global_enable_sdch", 2012, 3, 31,
+            &sdch_enabled_group));
 
     sdch_trial->AppendGroup("global_disable_sdch",
                             kSDCH_DISABLE_PROBABILITY);
