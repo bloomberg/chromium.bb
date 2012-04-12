@@ -24,10 +24,6 @@
     'version_full':
         '<!(python <(version_py_path) -f <(version_path) -t "@MAJOR@.@MINOR@.@BUILD@.@PATCH@")',
 
-    # Windows Installer XML (WiX) path can be set in ~/.gyp/include.gypi to
-    # indicate that WiX is available.
-    'wix_path%': '',
-
     'conditions': [
       ['OS=="mac"', {
         'conditions': [
@@ -396,11 +392,12 @@
       ],  # end of 'targets'
     }],  # 'OS=="win"'
 
-    # The host installation is generated only if WiX location is known and only
-    # as part of a non-component build. WiX does not provide a easy way to
-    # include all DLLs imported by the installed binaries depend on, so
-    # supporting the component build becomes a burden.
-    ['"<(wix_path)" != "" and component != "shared_library"', {
+    # The host installation is generated only if WiX is available and when
+    # building a non-component build. WiX does not provide a easy way to
+    # include all DLLs imported by the installed binaries, so supporting
+    # the component build becomes a burden.
+    ['OS == "win" and component != "shared_library" and wix_exists == "True" \
+        and platformsdk_exists == "True"', {
       'targets': [
         {
           'target_name': 'remoting_host_installation',
@@ -416,9 +413,6 @@
           'outputs': [
             '<(PRODUCT_DIR)/chromoting.msi',
           ],
-          'variables': {
-            'sas_dll_path': '<(DEPTH)/third_party/platformsdk_win7/files/redist/x86/sas.dll'
-          },
           'conditions': [
             ['branding == "Chrome"', {
               'variables': {
@@ -438,7 +432,7 @@
                 '<(PRODUCT_DIR)/remoting_host_controller.exe',
                 '<(PRODUCT_DIR)/remoting_me2me_host.exe',
                 '<(PRODUCT_DIR)/remoting_service.exe',
-                '<(sas_dll_path)'
+                '<(platformsdk_path)/redist/x86/sas.dll'
               ],
               'outputs': [
                 '<(INTERMEDIATE_DIR)/<(RULE_INPUT_ROOT).wixobj',
@@ -447,13 +441,13 @@
               'msvs_cygwin_shell': 0,
               'msvs_quote_cmd': 0,
               'action': [
-                '"<(wix_path)\\bin\\candle"',
-                '-ext "<(wix_path)\\bin\\WixFirewallExtension.dll"',
-                '-ext "<(wix_path)\\bin\\WixUIExtension.dll"',
-                '-ext "<(wix_path)\\bin\\WixUtilExtension.dll"',
+                '"<(wix_path)\\candle"',
+                '-ext "<(wix_path)\\WixFirewallExtension.dll"',
+                '-ext "<(wix_path)\\WixUIExtension.dll"',
+                '-ext "<(wix_path)\\WixUtilExtension.dll"',
                 '-dVersion=<(version_full) '
                 '"-dFileSource=<(PRODUCT_DIR)." '
-                '"-dSasDllPath=<(sas_dll_path)" '
+                '"-dSasDllPath=<(platformsdk_path)/redist/x86/sas.dll" '
                 '<(branding) '
                 '-out <@(_outputs)',
                 '"<(RULE_INPUT_PATH)"',
@@ -467,7 +461,7 @@
                 '<(PRODUCT_DIR)/remoting_host_controller.exe',
                 '<(PRODUCT_DIR)/remoting_me2me_host.exe',
                 '<(PRODUCT_DIR)/remoting_service.exe',
-                '<(sas_dll_path)'
+                '<(platformsdk_path)/redist/x86/sas.dll'
               ],
               'outputs': [
                 '<(PRODUCT_DIR)/<(RULE_INPUT_ROOT).msi',
@@ -476,14 +470,14 @@
               'msvs_cygwin_shell': 0,
               'msvs_quote_cmd': 0,
               'action': [
-                '"<(wix_path)\\bin\\light"',
-                '-ext "<(wix_path)\\bin\\WixFirewallExtension.dll"',
-                '-ext "<(wix_path)\\bin\\WixUIExtension.dll"',
-                '-ext "<(wix_path)\\bin\\WixUtilExtension.dll"',
+                '"<(wix_path)\\light"',
+                '-ext "<(wix_path)\\WixFirewallExtension.dll"',
+                '-ext "<(wix_path)\\WixUIExtension.dll"',
+                '-ext "<(wix_path)\\WixUtilExtension.dll"',
                 '-cultures:en-us',
                 '-dVersion=<(version_full) '
                 '"-dFileSource=<(PRODUCT_DIR)." '
-                '"-dSasDllPath=<(sas_dll_path)" '
+                '"-dSasDllPath=<(platformsdk_path)/redist/x86/sas.dll" '
                 '<(branding) '
                 '-out "<(PRODUCT_DIR)/<(RULE_INPUT_ROOT).msi"',
                 '"<(RULE_INPUT_PATH)"',

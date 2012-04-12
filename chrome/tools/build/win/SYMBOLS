@@ -5,7 +5,10 @@ libGLESv2.pdb
 mini_installer.pdb
 nacl64_exe.pdb
 ppGoogleNaClPluginChrome.pdb
+remoting_host_controller.pdb
 remoting_host_plugin.pdb
+remoting_me2me_host.pdb
+remoting_service.pdb
 setup.pdb
 gcp_portmon.pdb
 gcp_portmon64.pdb
