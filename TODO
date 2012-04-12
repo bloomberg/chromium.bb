@@ -70,27 +70,6 @@ Core wayland protocol
 
  - Add timestamp to touch_cancel, add touch id to touch_cancel (?)
 
- - Serial numbers.  The wayland protocol, as X, uses timestamps to
-   match up certain requests with input events.  The problem is that
-   sometimes an event happens that triggers a timestamped event.  For
-   example, a surface goes away and a new surface receives a
-   pointer.enter event.  These events are normally timestamped with
-   the evdev event timestamp, but in this case, we don't have a evdev
-   timestamp.  So we have to go to gettimeofday (or clock_gettime())
-   and then we don't know if it's coming from the same time source
-   etc.  And we don't really need a real time timestamp, we just need
-   a serial number that encodes the order of events inside the server.
-   So we need to introduce a serial number mechanism (uint32_t,
-   maintained in libwayland-server.so) that we can use to order
-   events, and have a look at the events we send out and decide
-   whether they need serial number or timestamp or both.  We still
-   need real-time timestamps for actual input device events (motion,
-   buttons, keys, touch), to be able to reason about double-click
-   speed and movement speed.  The serial number will also give us a
-   mechanism to key together events that are "logically the same" such
-   as a unicode event and a keycode event, or a motion event and a
-   relative event from a raw device.
-
  - The output protocol needs to send all the ugly timing details for the modes.
 
 ICCCM
