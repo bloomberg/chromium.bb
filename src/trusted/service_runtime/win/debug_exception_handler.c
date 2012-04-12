@@ -21,7 +21,6 @@
 #include "native_client/src/trusted/service_runtime/win/thread_handle_map.h"
 
 
-static int HandleBreakpointException(HANDLE thread_handle);
 static int HandleException(HANDLE process_handle, DWORD windows_thread_id,
                            HANDLE thread_handle);
 
@@ -164,19 +163,22 @@ int NaClDebugLoop(HANDLE process_handle, DWORD *exit_code) {
             continue_status = DBG_CONTINUE;
           } else if (exception_code == EXCEPTION_BREAKPOINT) {
             /*
-             * The debuggee process is stopped by a breakpoint when it
-             * is launched.  On some systems, we have to resume the
-             * debuggee with DBG_CONTINUE, because resuming it with
-             * DBG_EXCEPTION_NOT_HANDLED kills the process.  This
-             * happens on our 32-bit Windows trybots, but not on
-             * 32-bit Windows Server on EC2, or on the 64-bit Windows
-             * systems I have tested.
+             * When we attach to a process, the Windows debug API
+             * triggers a breakpoint in the process by injecting a
+             * thread to run NTDLL's DbgUiRemoteBreakin, which calls
+             * DbgBreakPoint.  We need to resume the process from this
+             * breakpoint.
+             *
+             * Resuming the breakpoint with DBG_EXCEPTION_NOT_HANDLED
+             * sometimes works, but not on all versions of Windows.
+             * This creates a userland exception which is not handled
+             * in older versions of Windows, and it does not get
+             * handled successfully with NaCl's
+             * KiUserExceptionDispatcher patch because TLS is not set
+             * up this injected thread (see
+             * http://code.google.com/p/nativeclient/issues/detail?id=2726).
              */
-#if NACL_BUILD_SUBARCH == 32
-            if (HandleBreakpointException(thread_handle)) {
-              continue_status = DBG_CONTINUE;
-            }
-#endif
+            continue_status = DBG_CONTINUE;
           }
         }
         break;
@@ -198,26 +200,6 @@ int NaClDebugLoop(HANDLE process_handle, DWORD *exit_code) {
   }
   GetExitCodeProcess(process_handle, exit_code);
   return DEBUG_EXCEPTION_HANDLER_SUCCESS;
-}
-
-/*
- * INT3 is not allowed in NaCl code but breakpoint exception
- * always happens when debugger attaches to the program or
- * starts program under debugging. This is the only exception
- * that must be handled in trusted code.
- */
-static BOOL HandleBreakpointException(HANDLE thread_handle) {
-  CONTEXT context;
-  LDT_ENTRY cs_entry;
-  DWORD cs_limit;
-  context.ContextFlags = CONTEXT_CONTROL;
-  if (!GetThreadContext(thread_handle, &context)) {
-    return FALSE;
-  }
-  GetThreadSelectorEntry(thread_handle, context.SegCs, &cs_entry);
-  cs_limit = cs_entry.LimitLow + (((int)cs_entry.HighWord.Bits.LimitHi) << 16);
-  /* Segment limits are 4Gb in trusted code */
-  return cs_limit == 0xfffff;
 }
 
 
