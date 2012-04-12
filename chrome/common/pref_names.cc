@@ -749,11 +749,13 @@ const char kPluginsEnabledInternalPDF[] = "plugins.enabled_internal_pdf3";
 // enable it by default, we'll want to do so only once.
 const char kPluginsEnabledNaCl[] = "plugins.enabled_nacl";
 
+#if !defined(OS_ANDROID)
 const char kPluginsShowSetReaderDefaultInfobar[] =
     "plugins.show_set_reader_default";
 
 // Whether about:plugins is shown in the details mode or not.
 const char kPluginsShowDetails[] = "plugins.show_details";
+#endif
 
 // Boolean that indicates whether outdated plugins are allowed or not.
 const char kPluginsAllowOutdated[] = "plugins.allow_outdated";
@@ -818,9 +820,11 @@ const char kContentSettingsPatternPairs[] =
 const char kContentSettingsDefaultWhitelistVersion[] =
     "profile.content_settings.whitelist_version";
 
+#if !defined(OS_ANDROID)
 // Which plugins have been whitelisted manually by the user.
 const char kContentSettingsPluginWhitelist[] =
     "profile.content_settings.plugin_whitelist";
+#endif
 
 // Boolean that is true if we should unconditionally block third-party cookies,
 // regardless of other content settings.
@@ -864,7 +868,9 @@ const char kEditBookmarksEnabled[] = "bookmarks.editing_enabled";
 // Boolean that is true when the translate feature is enabled.
 const char kEnableTranslate[] = "translate.enabled";
 
+#if !defined(OS_ANDROID)
 const char kPinnedTabs[] = "pinned_tabs";
+#endif
 
 // Boolean that is true when HTTP throttling is enabled.
 const char kHttpThrottlingEnabled[] = "http_throttling.enabled";
@@ -1323,8 +1329,10 @@ const char kNtpMostVisitedURLsBlacklist[] = "ntp.most_visited_blacklist";
 // dynamically deliver data for the new tab page.
 const char kNtpPromoResourceCache[] = "ntp.promo_resource_cache";
 
+#if defined(ENABLE_PROMO_RESOURCE_SERVICE)
 // Last time of update of promo_resource_cache.
 const char kNtpPromoResourceCacheUpdate[] = "ntp.promo_resource_cache_update";
+#endif
 
 // Is user logged into G+ (used for G+ extension promo).
 const char kNtpPromoIsLoggedInToPlus[] = "ntp.promo_is_logged_in_to_plus";
@@ -1347,10 +1355,12 @@ const char kNtpShownBookmarksFolder[] = "ntp.shown_bookmarks_folder";
 // Which page should be visible on the new tab page v4
 const char kNtpShownPage[] = "ntp.shown_page";
 
+#if defined(ENABLE_PROMO_RESOURCE_SERVICE)
 // Dates between which the NTP should show a custom logo rather than the
 // standard one.
 const char kNtpCustomLogoStart[] = "ntp.alt_logo_start";
 const char kNtpCustomLogoEnd[] = "ntp.alt_logo_end";
+#endif
 
 // The promo resource service version number.
 const char kNtpPromoVersion[] = "ntp.promo_version";
@@ -1577,9 +1587,11 @@ const char kCloudPrintSigninDialogHeight[] =
 // launches.
 const char kRegisteredBackgroundContents[] = "background_contents.registered";
 
+#if !defined(OS_ANDROID)
 // An int that stores how often we've shown the "Chrome is configured to
 // auto-launch" infobar.
 const char kShownAutoLaunchInfobar[] = "browser.shown_autolaunch_infobar";
+#endif
 
 // String that lists supported HTTP authentication schemes.
 const char kAuthSchemes[] = "auth.schemes";

@@ -393,6 +393,14 @@ void NTPResourceCache::CreateNewTabHTML() {
   localized_strings.SetString("themegravity",
       (alignment & ThemeService::ALIGN_RIGHT) ? "right" : "");
 
+#if defined(ENABLE_PROMO_RESOURCE_SERVICE)
+  // If the user has preferences for a start and end time for a promo from
+  // the server, and this promo string exists, set the localized string.
+  if (PromoResourceService::CanShowNotificationPromo(profile_)) {
+    localized_strings.SetString("serverpromo",
+        prefs->GetString(prefs::kNtpPromoLine));
+  }
+
   // If the user has preferences for a start and end time for a custom logo,
   // and the time now is between these two times, show the custom logo.
   if (prefs->FindPreference(prefs::kNtpCustomLogoStart) &&
@@ -404,13 +412,9 @@ void NTPResourceCache::CreateNewTabHTML() {
   } else {
     localized_strings.SetString("customlogo", "false");
   }
-
-  // If the user has preferences for a start and end time for a promo from
-  // the server, and this promo string exists, set the localized string.
-  if (PromoResourceService::CanShowNotificationPromo(profile_)) {
-    localized_strings.SetString("serverpromo",
-        prefs->GetString(prefs::kNtpPromoLine));
-  }
+#else
+  localized_strings.SetString("customlogo", "false");
+#endif
 
   // Determine whether to show the menu for accessing tabs on other devices.
   bool show_other_sessions_menu = !CommandLine::ForCurrentProcess()->HasSwitch(

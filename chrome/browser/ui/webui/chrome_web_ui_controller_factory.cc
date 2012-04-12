@@ -196,8 +196,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(content::WebUI* web_ui,
     return &NewWebUI<NetworkActionPredictorUI>;
   if (url.host() == chrome::kChromeUIOmniboxHost)
     return &NewWebUI<OmniboxUI>;
-  if (url.host() == chrome::kChromeUIPluginsHost)
-    return &NewWebUI<PluginsUI>;
   if (url.host() == chrome::kChromeUIProfilerHost)
     return &NewWebUI<ProfilerUI>;
   if (url.host() == chrome::kChromeUIQuotaInternalsHost)
@@ -242,6 +240,9 @@ WebUIFactoryFunction GetWebUIFactoryFunction(content::WebUI* web_ui,
           prefs::kPrintPreviewDisabled)) {
     return &NewWebUI<PrintPreviewUI>;
   }
+  // Android does not support plugins for now.
+  if (url.host() == chrome::kChromeUIPluginsHost)
+    return &NewWebUI<PluginsUI>;
 #endif
 #if defined(OS_WIN)
   if (url.host() == chrome::kChromeUIConflictsHost)
@@ -498,10 +499,11 @@ RefCountedMemory* ChromeWebUIControllerFactory::GetFaviconResourceBytes(
   // Android doesn't use the Options pages.
   if (page_url.host() == chrome::kChromeUISettingsFrameHost)
     return options2::OptionsUI::GetFaviconResourceBytes();
-#endif
 
+  // Android doesn't use the plugins pages.
   if (page_url.host() == chrome::kChromeUIPluginsHost)
     return PluginsUI::GetFaviconResourceBytes();
+#endif
 
   return NULL;
 }

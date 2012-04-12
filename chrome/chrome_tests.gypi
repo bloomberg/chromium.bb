@@ -2133,6 +2133,11 @@
             'browser/ui/gtk/one_click_signin_dialog_gtk_unittest.cc',
           ]
         }],
+        ['enable_promo_resource_service==0', {
+          'sources/': [
+            ['exclude', '^browser/web_resource/promo_resource_service'],
+          ],
+        }],
         ['disable_nacl==1', {
           'sources!':[
             'nacl/nacl_ipc_adapter_unittest.cc',

@@ -4000,6 +4000,11 @@
             'browser/ui/views/sync/one_click_signin_bubble_view.h',
           ]
         }],
+        ['enable_promo_resource_service==0', {
+          'sources/': [
+            ['exclude', '^browser/web_resource/promo_resource_service'],
+          ],
+        }],
         ['enable_task_manager==0', {
           'sources/': [
             ['exclude', '^browser/task_manager/'],
@@ -4471,6 +4476,8 @@
 
             'browser/ui/sad_tab_helper.cc',
             'browser/ui/webui/certificate_viewer_webui.cc',
+            'browser/ui/webui/plugins_ui.cc',
+            'browser/ui/webui/plugins_ui.h',
             'browser/ui/window_sizer.cc',
             'browser/ui/window_sizer.h',
             'browser/ui/webui/ntp/ntp_resource_cache.cc',

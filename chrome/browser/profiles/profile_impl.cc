@@ -429,11 +429,13 @@ void ProfileImpl::InitHostZoomMap() {
 }
 
 void ProfileImpl::InitPromoResources() {
+#if defined(ENABLE_PROMO_RESOURCE_SERVICE)
   if (promo_resource_service_)
     return;
 
   promo_resource_service_ = new PromoResourceService(this);
   promo_resource_service_->StartAfterDelay();
+#endif
 }
 
 void ProfileImpl::InitRegisteredProtocolHandlers() {
