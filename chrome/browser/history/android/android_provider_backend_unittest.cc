@@ -60,7 +60,7 @@ class AndroidProviderBackendDelegate : public HistoryBackend::Delegate {
       case chrome::NOTIFICATION_FAVICON_CHANGED:
         favicon_details_.reset(static_cast<FaviconChangeDetails*>(details));
         break;
-      case chrome::NOTIFICATION_HISTORY_TYPED_URLS_MODIFIED:
+      case chrome::NOTIFICATION_HISTORY_URLS_MODIFIED:
         modified_details_.reset(static_cast<URLsModifiedDetails*>(details));
         break;
     }

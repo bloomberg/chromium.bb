@@ -316,7 +316,7 @@ bool AndroidProviderBackend::UpdateHistoryAndBookmarks(
 
   if (!modified->changed_urls.empty())
     notifications->push_back(HistoryNotification(
-        chrome::NOTIFICATION_HISTORY_TYPED_URLS_MODIFIED, modified.release()));
+        chrome::NOTIFICATION_HISTORY_URLS_MODIFIED, modified.release()));
 
   if (!favicon->urls.empty())
     notifications->push_back(HistoryNotification(
@@ -362,7 +362,7 @@ AndroidURLID AndroidProviderBackend::InsertHistoryAndBookmark(
   }
 
   notifications->push_back(HistoryNotification(
-      chrome::NOTIFICATION_HISTORY_TYPED_URLS_MODIFIED, modified.release()));
+      chrome::NOTIFICATION_HISTORY_URLS_MODIFIED, modified.release()));
   if (favicon.get())
     notifications->push_back(HistoryNotification(
         chrome::NOTIFICATION_FAVICON_CHANGED, favicon.release()));
@@ -437,7 +437,7 @@ bool AndroidProviderBackend::DeleteHistory(
     modified->changed_urls.push_back(row);
   }
   notifications->push_back(HistoryNotification(
-      chrome::NOTIFICATION_HISTORY_TYPED_URLS_MODIFIED, modified.release()));
+      chrome::NOTIFICATION_HISTORY_URLS_MODIFIED, modified.release()));
 
   return true;
 }
@@ -977,7 +977,7 @@ bool AndroidProviderBackend::SimulateUpdateURL(
     notifications->push_back(HistoryNotification(
         chrome::NOTIFICATION_FAVICON_CHANGED, favicon_details.release()));
   notifications->push_back(HistoryNotification(
-      chrome::NOTIFICATION_HISTORY_TYPED_URLS_MODIFIED, modified.release()));
+      chrome::NOTIFICATION_HISTORY_URLS_MODIFIED, modified.release()));
 
   return true;
 }
