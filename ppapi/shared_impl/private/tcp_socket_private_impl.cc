@@ -264,8 +264,12 @@ void TCPSocketPrivateImpl::OnSSLHandshakeCompleted(
         certificate_fields);
     TrackedCallback::ClearAndRun(&ssl_handshake_callback_, PP_OK);
   } else {
+    // The resource might be released in the callback so we need to hold
+    // a reference so we can Disconnect() first.
+    AddRef();
     TrackedCallback::ClearAndRun(&ssl_handshake_callback_, PP_ERROR_FAILED);
     Disconnect();
+    Release();
   }
 }
 

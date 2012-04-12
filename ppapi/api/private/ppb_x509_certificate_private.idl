@@ -83,13 +83,13 @@ enum PP_X509Certificate_Private_Field {
    * Note: This field is unimplemented and will return
    * <code>PP_VARTYPE_NULL</code>.
    */
-  PP_X509CERTIFICATE_PRIVATE_ALGORITHM_OID = 16,
+  PP_X509CERTIFICATE_PRIVATE_SIGNATURE_ALGORITHM_OID = 16,
 
   /**
    * Note: This field is unimplemented and will return
    * <code>PP_VARTYPE_NULL</code>.
    */
-  PP_X509CERTIFICATE_PRIVATE_ALGORITHM_PARAMATERS_RAW = 17,
+  PP_X509CERTIFICATE_PRIVATE_SIGNATURE_ALGORITHM_PARAMATERS_RAW = 17,
 
   /**
    * This corresponds to a double (<code>PP_VARTYPE_DOUBLE</code>) which
@@ -116,7 +116,13 @@ enum PP_X509Certificate_Private_Field {
    * This corresponds to a byte array (<code>PP_VARTYPE_ARRAY_BUFFER</code>).
    * This is the DER-encoded representation of the certificate.
    */
-  PP_X509CERTIFICATE_PRIVATE_RAW = 22
+  PP_X509CERTIFICATE_PRIVATE_RAW = 22,
+
+  /** This corresponds to a string (<code>PP_VARTYPE_STRING</code>). */
+  PP_X509CERTIFICATE_PRIVATE_ISSUER_DISTINGUISHED_NAME = 23,
+
+  /** This corresponds to a string (<code>PP_VARTYPE_STRING</code>). */
+  PP_X509CERTIFICATE_PRIVATE_SUBJECT_DISTINGUISHED_NAME = 24
 };
 
 /**

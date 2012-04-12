@@ -4,7 +4,7 @@
  */
 
 /* From private/ppb_x509_certificate_private.idl,
- *   modified Thu Mar 29 16:25:36 2012.
+ *   modified Wed Apr 11 17:11:26 2012.
  */
 
 #ifndef PPAPI_C_PRIVATE_PPB_X509_CERTIFICATE_PRIVATE_H_
@@ -87,12 +87,12 @@ typedef enum {
    * Note: This field is unimplemented and will return
    * <code>PP_VARTYPE_NULL</code>.
    */
-  PP_X509CERTIFICATE_PRIVATE_ALGORITHM_OID = 16,
+  PP_X509CERTIFICATE_PRIVATE_SIGNATURE_ALGORITHM_OID = 16,
   /**
    * Note: This field is unimplemented and will return
    * <code>PP_VARTYPE_NULL</code>.
    */
-  PP_X509CERTIFICATE_PRIVATE_ALGORITHM_PARAMATERS_RAW = 17,
+  PP_X509CERTIFICATE_PRIVATE_SIGNATURE_ALGORITHM_PARAMATERS_RAW = 17,
   /**
    * This corresponds to a double (<code>PP_VARTYPE_DOUBLE</code>) which
    * can be cast to a <code>PP_TIME</code>.
@@ -114,7 +114,11 @@ typedef enum {
    * This corresponds to a byte array (<code>PP_VARTYPE_ARRAY_BUFFER</code>).
    * This is the DER-encoded representation of the certificate.
    */
-  PP_X509CERTIFICATE_PRIVATE_RAW = 22
+  PP_X509CERTIFICATE_PRIVATE_RAW = 22,
+  /** This corresponds to a string (<code>PP_VARTYPE_STRING</code>). */
+  PP_X509CERTIFICATE_PRIVATE_ISSUER_DISTINGUISHED_NAME = 23,
+  /** This corresponds to a string (<code>PP_VARTYPE_STRING</code>). */
+  PP_X509CERTIFICATE_PRIVATE_SUBJECT_DISTINGUISHED_NAME = 24
 } PP_X509Certificate_Private_Field;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_X509Certificate_Private_Field, 4);
 
