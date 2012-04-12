@@ -40,6 +40,8 @@ const char kExpectedSequenceIdTag[] = "expected-sequence-id";
 
 const int64 kDefaultHeartbeatIntervalMs = 5 * 60 * 1000;  // 5 minutes.
 const int64 kResendDelayMs = 10 * 1000;  // 10 seconds.
+const int64 kResendDelayOnHostNotFoundMs = 10 * 1000; // 10 seconds.
+const int kMaxResendOnHostNotFoundCount = 12;  // 2 minutes (12 x 10 seconds).
 
 const int kExitCodeHostIdInvalid = 100;
 
@@ -55,7 +57,9 @@ HeartbeatSender::HeartbeatSender(
       interval_ms_(kDefaultHeartbeatIntervalMs),
       sequence_id_(0),
       sequence_id_was_set_(false),
-      sequence_id_recent_set_num_(0) {
+      sequence_id_recent_set_num_(0),
+      heartbeat_succeeded_(false),
+      failed_startup_heartbeat_count_(0) {
   DCHECK(signal_strategy_);
   DCHECK(key_pair_);
 
@@ -114,10 +118,26 @@ void HeartbeatSender::ProcessResponse(IqRequest* request,
         response->FirstNamed(QName(buzz::NS_CLIENT, kErrorTag));
     if (error_element) {
       if (error_element->FirstNamed(QName(buzz::NS_STANZA, kNotFoundTag))) {
+        LOG(ERROR) << "Received error: Host ID not found";
+        // If the host was registered immediately before it sends a heartbeat,
+        // then server-side latency may prevent the server recognizing the
+        // host ID in the heartbeat. So even if all of the first few heartbeats
+        // get a "host ID not found" error, that's not a good enough reason to
+        // exit.
+        failed_startup_heartbeat_count_++;
+        if (!heartbeat_succeeded_ && (failed_startup_heartbeat_count_ <=
+                kMaxResendOnHostNotFoundCount)) {
+          timer_resend_.Start(FROM_HERE,
+                              base::TimeDelta::FromMilliseconds(
+                                  kResendDelayOnHostNotFoundMs),
+                              this,
+                              &HeartbeatSender::ResendStanza);
+          return;
+        }
         // TODO(lambroslambrou): Trigger an application-defined callback to
         // shut down the host properly, instead of just exiting here
         // (http://crbug.com/112160).
-        LOG(ERROR) << "Received error: Host ID invalid";
+        LOG(ERROR) << "Exit: Host ID not found";
         exit(kExitCodeHostIdInvalid);
       }
     }
@@ -126,6 +146,8 @@ void HeartbeatSender::ProcessResponse(IqRequest* request,
                << response->Str();
     return;
   }
+
+  heartbeat_succeeded_ = true;
 
   // This method must only be called for error or result stanzas.
   DCHECK_EQ(std::string(buzz::STR_RESULT), type);

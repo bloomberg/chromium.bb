@@ -122,6 +122,8 @@ class HeartbeatSender : public SignalStrategy::Listener {
   int sequence_id_;
   bool sequence_id_was_set_;
   int sequence_id_recent_set_num_;
+  bool heartbeat_succeeded_;
+  int failed_startup_heartbeat_count_;
 
   DISALLOW_COPY_AND_ASSIGN(HeartbeatSender);
 };
