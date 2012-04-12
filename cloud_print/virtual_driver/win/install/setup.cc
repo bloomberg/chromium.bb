@@ -12,6 +12,7 @@
 #include "base/file_version_info_win.h"
 #include "base/logging.h"
 #include "base/path_service.h"
+#include "base/process.h"
 #include "base/process_util.h"
 #include "base/string16.h"
 #include "base/win/registry.h"
@@ -120,14 +121,18 @@ HRESULT RegisterPortMonitor(bool install, const FilePath& install_path) {
   }
   string16 source;
   source = cloud_print::GetPortMonitorDllName();
+  FilePath source_path = install_path.Append(source);
   if (install) {
-    FilePath source_path = install_path.Append(source);
     if (!file_util::CopyFileW(source_path, target_path)) {
       LOG(ERROR) << "Unable copy port monitor dll from " <<
           source_path.value() << " to " << target_path.value();
       return ERROR_ACCESS_DENIED;
     }
+  } else if (!file_util::PathExists(source_path)) {
+    // Already removed.  Just "succeed" silently.
+    return S_OK;
   }
+
   FilePath regsvr32_path;
   result = GetRegsvr32Path(&regsvr32_path);
   if (!SUCCEEDED(result)) {
@@ -187,7 +192,7 @@ DWORDLONG GetVersionNumber() {
     VS_FIXEDFILEINFO* fixed_file_info = version_info_win->fixed_file_info();
     retval = fixed_file_info->dwFileVersionMS;
     retval <<= 32;
-    retval |= fixed_file_info->dwFileVersionMS;
+    retval |= fixed_file_info->dwFileVersionLS;
   }
   return retval;
 }
@@ -461,6 +466,11 @@ HRESULT UninstallVirtualDriver(const FilePath& install_path) {
   result = UninstallPpd();
   if (!SUCCEEDED(result)) {
     LOG(ERROR) << "Unable to remove Ppd.";
+    // Put the printer back since we're not able to
+    // complete the uninstallation.
+    // TODO(abodenha@chromium.org) Figure out a better way to recover.
+    // See http://code.google.com/p/chromium/issues/detail?id=123039
+    InstallPrinter();
     return result;
   }
   result = RegisterPortMonitor(false, install_path);
@@ -474,24 +484,60 @@ HRESULT UninstallVirtualDriver(const FilePath& install_path) {
   return S_OK;
 }
 
-HRESULT LaunchChildForUninstall() {
-  FilePath installer_source;
-  if (PathService::Get(base::FILE_EXE, &installer_source)) {
-    FilePath temp_path;
-    if (file_util::CreateTemporaryFile(&temp_path)) {
-      file_util::Move(installer_source, temp_path);
-      file_util::DeleteAfterReboot(temp_path);
-      CommandLine command_line(temp_path);
-      command_line.AppendArg("--douninstall");
-      base::LaunchOptions options;
-      if (!base::LaunchProcess(command_line, options, NULL)) {
-        LOG(ERROR) << "Unable to launch child uninstall.";
-        return ERROR_NOT_SUPPORTED;
+HRESULT DoLaunchUninstall(const FilePath& installer_source, bool wait) {
+  FilePath temp_path;
+  if (file_util::CreateTemporaryFile(&temp_path)) {
+    file_util::CopyFile(installer_source, temp_path);
+    file_util::DeleteAfterReboot(temp_path);
+    CommandLine command_line(temp_path);
+    command_line.AppendArg("--douninstall");
+    base::LaunchOptions options;
+    options.wait = wait;
+    base::ProcessHandle process_handle;
+    if (!base::LaunchProcess(command_line, options, &process_handle)) {
+      LOG(ERROR) << "Unable to launch child uninstall.";
+      return ERROR_NOT_SUPPORTED;
+    }
+    if (wait) {
+      int exit_code = -1;
+      base::TerminationStatus status =
+          base::GetTerminationStatus(process_handle, &exit_code);
+      if (status == base::TERMINATION_STATUS_NORMAL_TERMINATION) {
+        return exit_code;
+      } else {
+        LOG(ERROR) << "Improper termination of uninstall. " << status;
+        return E_FAIL;
       }
     }
   }
   return S_OK;
 }
+
+HRESULT LaunchChildForUninstall() {
+  FilePath installer_source;
+  if (PathService::Get(base::FILE_EXE, &installer_source)) {
+    return DoLaunchUninstall(installer_source, false);
+  }
+  return S_OK;
+}
+
+HRESULT UninstallPreviousVersion() {
+  base::win::RegKey key;
+  if (key.Open(HKEY_LOCAL_MACHINE, kUninstallRegistry,
+               KEY_QUERY_VALUE) != ERROR_SUCCESS) {
+    // Not installed.
+    return S_OK;
+  }
+  string16 install_path;
+  key.ReadValue(L"InstallLocation", &install_path);
+  FilePath installer_source(install_path);
+  installer_source = installer_source.Append(kInstallerName);
+  if (file_util::PathExists(installer_source)) {
+    return DoLaunchUninstall(installer_source, true);
+  }
+  return S_OK;
+}
+
 }  // namespace
 
 int WINAPI WinMain(__in  HINSTANCE hInstance,
@@ -509,7 +555,10 @@ int WINAPI WinMain(__in  HINSTANCE hInstance,
     } else if (CommandLine::ForCurrentProcess()->HasSwitch("uninstall")) {
       retval = LaunchChildForUninstall();
     } else {
-      retval = InstallVirtualDriver(install_path);
+      retval = UninstallPreviousVersion();
+      if (SUCCEEDED(retval)) {
+        retval = InstallVirtualDriver(install_path);
+      }
     }
   }
   // Installer is silent by default as required by Omaha.
