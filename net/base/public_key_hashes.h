@@ -1,18 +1,15 @@
-# Copyright (c) 2012 The Chromium Authors. All rights reserved.
-# Use of this source code is governed by a BSD-style license that can be
-# found in the LICENSE file.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-# This file contains pinned certificates to be used in conjunction with
-# hsts_preloaded.json. See the comments at the beginning of that file for
-# details.
+#ifndef NET_BASE_PUBLIC_KEY_HASHES_
+#define NET_BASE_PUBLIC_KEY_HASHES_
+#pragma once
 
-# Each entry consists of a line containing the name of the pin followed either
-# by a hash in the format "sha1/" + base64(hash), or a PEM encoded certificate.
+// This file contains SubjectPublicKeyInfo hashes for public key pinning. The
+// hashes are base64 encoded, SHA1 digests.
 
-TestSPKI
-sha1/AAAAAAAAAAAAAAAAAAAAAAAAAAA=
-
-VeriSignClass3
+#if 0
 -----BEGIN CERTIFICATE-----
 MIICPDCCAaUCEDyRMcsf9tAbDpq40ES/Er4wDQYJKoZIhvcNAQEFBQAwXzELMAkG
 A1UEBhMCVVMxFzAVBgNVBAoTDlZlcmlTaWduLCBJbmMuMTcwNQYDVQQLEy5DbGFz
@@ -27,8 +24,11 @@ CSqGSIb3DQEBBQUAA4GBABByUqkFFBkyCEHwxWsKzH4PIRnN5GfcX6kb5sroc50i
 2JhucwNhkcV8sEVAbkSdjbCxlnRhLQ2pRdKkkirWmnWXbj9T/UWZYB2oK0z5XqcJ
 2HUw19JlYD1n1khVdWk/kfVIC0dpImmClr7JyDiGSnoscxlIaU5rfGW/D/xwzoiQ
 -----END CERTIFICATE-----
+#endif
+static const char kSPKIHash_VeriSignClass3[] =
+    "sha1/4n972HfV354KP560yw4uqe/baXc=";
 
-VeriSignClass3_G3
+#if 0
 -----BEGIN CERTIFICATE-----
 MIIEGjCCAwICEQCbfgZJoz5iudXukEhxKe9XMA0GCSqGSIb3DQEBBQUAMIHKMQsw
 CQYDVQQGEwJVUzEXMBUGA1UEChMOVmVyaVNpZ24sIEluYy4xHzAdBgNVBAsTFlZl
@@ -53,8 +53,11 @@ DGBvtcC1IyIuBwvLqXTLR7sdwdela8wv0kL9Sd2nic9TutoAWii/gt/4uhMdUIaC
 F4ErWjfJXir0xuKhXFSbplQAz/DxwceYMBo7Nhbbo27q/a2ywtrvAkcTisDxszGt
 TxzhT5yvDwyd93gN2PQ1VoDat20Xj50egWTh/sVFuq1ruQp6Tk9LhO5L8X3dEQ==
 -----END CERTIFICATE-----
+#endif
+static const char kSPKIHash_VeriSignClass3_G3[] =
+    "sha1/IvGeLsbqzPxdI0b0wuj2xVTdXgc=";
 
-Google1024
+#if 0
 -----BEGIN CERTIFICATE-----
 MIICsDCCAhmgAwIBAgIDC2dxMA0GCSqGSIb3DQEBBQUAME4xCzAJBgNVBAYTAlVT
 MRAwDgYDVQQKEwdFcXVpZmF4MS0wKwYDVQQLEyRFcXVpZmF4IFNlY3VyZSBDZXJ0
@@ -72,11 +75,15 @@ BZqrocb6ghwYB8TrgbCoZutJqOkM0ymt9e8kTP3kS8p/XmOrmSfLnzYhLLkQYGfN
 0rTw8Ktx5YtaiScRhKqOv5nwnQkhClIZmloJ0pC3+gz4fniisIWvXEyZ2VxVKfml
 UUIuOss4jHg7y/j7lYe8vJD5UDI=
 -----END CERTIFICATE-----
+#endif
+static const char kSPKIHash_Google1024[] =
+    "sha1/QMVAHW+MuvCLAO3vse6H0AWzuc0=";
 
-Google2048
-sha1/AbkhxY0L343gKf+cki7NVWp+ozk=
+// Not yet used publicly.
+static const char kSPKIHash_Google2048[] =
+    "sha1/AbkhxY0L343gKf+cki7NVWp+ozk=";
 
-EquifaxSecureCA
+#if 0
 -----BEGIN CERTIFICATE-----
 MIIDIDCCAomgAwIBAgIENd70zzANBgkqhkiG9w0BAQUFADBOMQswCQYDVQQGEwJV
 UzEQMA4GA1UEChMHRXF1aWZheDEtMCsGA1UECxMkRXF1aWZheCBTZWN1cmUgQ2Vy
@@ -96,8 +103,11 @@ A4GBAFjOKer89961zgK5F7WF0bnj4JXMJTENAKaSbn+2kmOeUJXRmm/kEd5jhW6Y
 7qj/WsjTVbJmcVfewCHrPSqnI0kBBIZCe/zuf6IWUrVnZ9NA2zsmWLIodz2uFHdh
 1voqZiegDfqnc1zqcPGUIWVEX/r87yloqaKHee9570+sB3c4
 -----END CERTIFICATE-----
+#endif
+static const char kSPKIHash_EquifaxSecureCA[] =
+    "sha1/SOZo+SvSspXXR9gjIBBPM5iQn9Q=";
 
-Aetna
+#if 0
 -----BEGIN CERTIFICATE-----
 MIICsjCCAhugAwIBAgIDBe3YMA0GCSqGSIb3DQEBBQUAME4xCzAJBgNVBAYTAlVT
 MRAwDgYDVQQKEwdFcXVpZmF4MS0wKwYDVQQLEyRFcXVpZmF4IFNlY3VyZSBDZXJ0
@@ -115,8 +125,11 @@ UG3UYbN76xiF9FDRzWTs5Mvv4Psvf2kk426slzNO0ukFAsmwqN1mA/P9Nc4FlMMC
 YtcnLNwC/syEYdQBOJjxfTVGTqh5q6jDs7S3rPJv8mrFk8ldC8PxU1ZJVfSlFCDn
 6diMDgvOAJfUeJlIRLGu2k/ksI0Y1w==
 -----END CERTIFICATE-----
+#endif
+static const char kSPKIHash_Aetna[] =
+    "sha1/klKqFN6/gK4wqtlOYDhwJKVDLxo=";
 
-GeoTrustGlobal
+#if 0
 -----BEGIN CERTIFICATE-----
 MIIDfTCCAuagAwIBAgIDErvmMA0GCSqGSIb3DQEBBQUAME4xCzAJBgNVBAYTAlVT
 MRAwDgYDVQQKEwdFcXVpZmF4MS0wKwYDVQQLEyRFcXVpZmF4IFNlY3VyZSBDZXJ0
@@ -138,8 +151,11 @@ AHbhEm5OSxYShjAGsoEIz/AIx8dxfmbuwu3UOx//8PDITtZDOLC5MH0Y0FWDomrL
 NhGc6Ehmo21/uBPUR/6LWlxz/K7ZGzIZOKuXNBSqltLroxwUCEm2u+WR74M26x1W
 b8ravHNjkOR/ez4iyz0H7V84dJzjA1BOoa+Y7mHyhD8S
 -----END CERTIFICATE-----
+#endif
+static const char kSPKIHash_GeoTrustGlobal[] =
+    "sha1/wHqYaI2J+6sFZAwRfap9ZbjKzE4=";
 
-GeoTrustPrimary
+#if 0
 -----BEGIN CERTIFICATE-----
 MIIDizCCAvSgAwIBAgIDDW5iMA0GCSqGSIb3DQEBBQUAME4xCzAJBgNVBAYTAlVT
 MRAwDgYDVQQKEwdFcXVpZmF4MS0wKwYDVQQLEyRFcXVpZmF4IFNlY3VyZSBDZXJ0
@@ -161,8 +177,11 @@ KoZIhvcNAQEFBQADgYEAr/MO1nKrx6mXyiprhDneeanwgeUIZ6vXLyACAXEMBCLJ
 HoiVA8lJOq9nCEmw1Qj1ID2AkaDFh6P7yaMXkfmoL67pD9+Wcg91F4BdeAFNnx9t
 e9j1QjgjGpmT9IO+OzV05zcTNXqstLaQgmwnpODsnjW9v+UpoUefWzL86Zl9Kzk=
 -----END CERTIFICATE-----
+#endif
+static const char kSPKIHash_GeoTrustPrimary[] =
+    "sha1/sBmJ5+/7Sq/LFI9YRjl2IkFQ4bo=";
 
-Intel
+#if 0
 -----BEGIN CERTIFICATE-----
 MIIFijCCBHKgAwIBAgIKYSCKYgAAAAAACDANBgkqhkiG9w0BAQUFADBSMQswCQYD
 VQQGEwJVUzEaMBgGA1UEChMRSW50ZWwgQ29ycG9yYXRpb24xJzAlBgNVBAMTHklu
@@ -195,8 +214,11 @@ xmH3droUmMJI0/aZJHsLtjbjFnNsHDNrJZX1vxlM78Lb1hjskTENPmhbVbfTj5i/
 ZGnhv4tmI8QZPCNtcegXJrfhRl2D9bWpdTOPrWiLDUqzy1Z6KL7TcOS/PCl8RHCJ
 XkPau/thTQCpIoDa2+c+3XA++gRTfAQ4svTO260N
 -----END CERTIFICATE-----
+#endif
+static const char kSPKIHash_Intel[] =
+    "sha1/DsYq91myCBCQJW/D3f2KZjEwK8U=";
 
-TCTrustCenter
+#if 0
 -----BEGIN CERTIFICATE-----
 MIIDWzCCAsSgAwIBAgIDCaxIMA0GCSqGSIb3DQEBBQUAME4xCzAJBgNVBAYTAlVT
 MRAwDgYDVQQKEwdFcXVpZmF4MS0wKwYDVQQLEyRFcXVpZmF4IFNlY3VyZSBDZXJ0
@@ -217,8 +239,11 @@ KoZIhvcNAQEFBQADgYEAVKyJLbJha83PggEit8+dzh50wIsKXpTV2K6K4HnUI1kh
 xqocLVfQORluC+LS7L78D2EKTWLZ8WNujiP6DbbIPSTsMasuiBMQMBUlJMUqsp/M
 XmQJgIGAbxsr19MY6mmB30oWuo4cjHnkMzSCfhcON6Rxvbjijk2qCWXkk2T2HAk=
 -----END CERTIFICATE-----
+#endif
+static const char kSPKIHash_TCTrustCenter[] =
+    "sha1/gzuEEAB/bkqdQS3EIjk2by7lW+k=";
 
-Vodafone
+#if 0
 -----BEGIN CERTIFICATE-----
 MIIDJDCCAo2gAwIBAgIDBfw3MA0GCSqGSIb3DQEBBQUAME4xCzAJBgNVBAYTAlVT
 MRAwDgYDVQQKEwdFcXVpZmF4MS0wKwYDVQQLEyRFcXVpZmF4IFNlY3VyZSBDZXJ0
@@ -238,8 +263,11 @@ AQUFAAOBgQCs37zuSY/KkPigCvJevu+ewWy9GP2bFZi5EaxKuHGF+tYFZUNkyc06
 ACYMM3ADPM6dVUYeXIDZnPfV8BJFCpdoAHkSNlg341AVjabCOWtzOYolBn0ua8Wi
 BM471XfzzXD7yMliek9J4fUn2vQU7MYgEkSAA53ZkMScGDkA/c1wMQ==
 -----END CERTIFICATE-----
+#endif
+static const char kSPKIHash_Vodafone[] =
+    "sha1/DX/hXFUUNmiZ/EDWIgjvIuvRFRw=";
 
-RapidSSL
+#if 0
 -----BEGIN CERTIFICATE-----
 MIID1TCCAr2gAwIBAgIDAjbRMA0GCSqGSIb3DQEBBQUAMEIxCzAJBgNVBAYTAlVT
 MRYwFAYDVQQKEw1HZW9UcnVzdCBJbmMuMRswGQYDVQQDExJHZW9UcnVzdCBHbG9i
@@ -263,8 +291,11 @@ SUNjpWxOJ4cl61tt/qJ/OCjgNqutOaWlYsS3XFgsql0BYKZiZ6PAx2Ij9OdsRu61
 knYYCnwPLKbK3opie9jzzl9ovY8+wXS7FXI6FoOpC+ZNmZzYV+yoAVHHb1c0XqtK
 LEL2TxyJeN4mTvVvk0wVaydWTQBUbHq3tw==
 -----END CERTIFICATE-----
+#endif
+static const char kSPKIHash_RapidSSL[] =
+    "sha1/o5OZxATDsgmwgcIfIWIneMJ0jkw=";
 
-DigiCertEVRoot
+#if 0
 -----BEGIN CERTIFICATE-----
 MIIDxTCCAq2gAwIBAgIQAqxcJmoLQJuPC3nyrkYldzANBgkqhkiG9w0BAQUFADBs
 MQswCQYDVQQGEwJVUzEVMBMGA1UEChMMRGlnaUNlcnQgSW5jMRkwFwYDVQQLExB3
@@ -288,15 +319,19 @@ Yzi9RKR/5CYrCsSXaQ3pjOLAEFe4yHYSkVXySGnYvCoCWw9E1CAx2/S6cCZdkGCe
 vEsXCS+0yx5DaMkHJ8HSXPfqIbloEpw8nL+e/IBcm2PN7EeqJSdnoDfzAIJ9VNep
 +OkuE6N36B9K
 -----END CERTIFICATE-----
+#endif
+static const char kSPKIHash_DigiCertEVRoot[] =
+    "sha1/gzF+YoVCU9bXeDGQ7JGQVumRueM=";
 
-Tor1
-sha1/juNxSTv9UANmpC9kF5GKpmWNx3Y=
-Tor2
-sha1/lia43lPolzSPVIq34Dw57uYcLD8=
-Tor3
-sha1/rzEyQIKOh77j87n5bjWUNguXF8Y=
+// Not public
+static const char kSPKIHash_Tor1[] =
+    "sha1/juNxSTv9UANmpC9kF5GKpmWNx3Y=";
+static const char kSPKIHash_Tor2[] =
+    "sha1/lia43lPolzSPVIq34Dw57uYcLD8=";
+static const char kSPKIHash_Tor3[] =
+    "sha1/rzEyQIKOh77j87n5bjWUNguXF8Y=";
 
-VeriSignClass1
+#if 0
 -----BEGIN CERTIFICATE-----
 MIICPTCCAaYCEQDNun9W8N/kvFT+IqyzcqpVMA0GCSqGSIb3DQEBAgUAMF8xCzAJ
 BgNVBAYTAlVTMRcwFQYDVQQKEw5WZXJpU2lnbiwgSW5jLjE3MDUGA1UECxMuQ2xh
@@ -312,8 +347,11 @@ EWx8QszznC7EBz8UsA9P/5CSdvnivErpj82ggAr3xSnxgiJduLHdgSOjeyUVRjB5
 FvjqBUuUfx3CHMjjt/QQQDwTw18fU+hI5Ia0e6E1sHslurjTjqs/OJ0ANACY89Fx
 lA==
 -----END CERTIFICATE-----
+#endif
+static const char kSPKIHash_VeriSignClass1[] =
+    "sha1/I0PRSKJViZuUfUYaeX7ATP7RcLc=";
 
-VeriSignClass3_G4
+#if 0
 -----BEGIN CERTIFICATE-----
 MIIDhDCCAwqgAwIBAgIQL4D+I4wOIg9IZxIokYesszAKBggqhkjOPQQDAzCByjEL
 MAkGA1UEBhMCVVMxFzAVBgNVBAoTDlZlcmlTaWduLCBJbmMuMR8wHQYDVQQLExZW
@@ -335,8 +373,11 @@ kf3upm7ktS5Jj4d4gYDs5bG1MAoGCCqGSM49BAMDA2gAMGUCMGYhDBgmYFo4e1ZC
 4Kf8NoRRkSAsdk1DPcQdhCPQrNZ8NQbOzWm9kA3bbEhCHQ6qQgIxAJw9SDkjOVga
 FRJZap7v1VmyHVIsmXHNxynfGyphe3HR3vPA5Q06Sqotp9iGKt0uEA==
 -----END CERTIFICATE-----
+#endif
+static const char kSPKIHash_VeriSignClass3_G4[] =
+    "sha1/7WYxNdMb1OymFMQp4xkGn5TBJlA=";
 
-VeriSignClass4_G3
+#if 0
 -----BEGIN CERTIFICATE-----
 MIIEGjCCAwICEQDsoKeLbnVqAc/EfMwvlF7XMA0GCSqGSIb3DQEBBQUAMIHKMQsw
 CQYDVQQGEwJVUzEXMBUGA1UEChMOVmVyaVNpZ24sIEluYy4xHzAdBgNVBAsTFlZl
@@ -361,8 +402,11 @@ fjaF3H48ZwC15DtS4KjrXRX5xm3wrR0OhbepmnMUWluPQSjA1egtTaRezarZ7c7c
 2NU8Qh0XwRJdRTjDOPP8hS6DRkiy1yBfkjaP53kPmF6Z6PDQpLv1U70qzlmwr25/
 bLvSHgCwIe34QWKCudiyxLtGUPMxxY8BqHTr9Xgn2uf3ZkPznoM+IKrDNWCRzg==
 -----END CERTIFICATE-----
+#endif
+static const char kSPKIHash_VeriSignClass4_G3[] =
+    "sha1/PANDaGiVHPNpKri0Jtq6j+ki5b0=";
 
-VeriSignClass1_G3
+#if 0
 -----BEGIN CERTIFICATE-----
 MIIEGjCCAwICEQCLW3VWhFSFCwDPrzhIzrGkMA0GCSqGSIb3DQEBBQUAMIHKMQsw
 CQYDVQQGEwJVUzEXMBUGA1UEChMOVmVyaVNpZ24sIEluYy4xHzAdBgNVBAsTFlZl
@@ -387,8 +431,11 @@ ns7NZ3xPZQL/kYVUc8f/NveGLezQXk//EZ9yBta4GvFMDSZl4kSAHsef493oCtrs
 pSCAaWihT37ha88HQfqDjrw43bAuEbFrskLMmrz5SCJ5ShkPshw+IHTZasO+8ih4
 E1Z5T21Q6huwtVexN2ZYI/PcD98Kh8TvhgXVOBRgmaNL3gaWcSzy27YfpO8/7g==
 -----END CERTIFICATE-----
+#endif
+static const char kSPKIHash_VeriSignClass1_G3[] =
+    "sha1/VRmyeKyygdftp6vBg5nDu2kEJLU=";
 
-VeriSignClass2_G3
+#if 0
 -----BEGIN CERTIFICATE-----
 MIIEGTCCAwECEGFwy0mMX5hFKeewptlQW3owDQYJKoZIhvcNAQEFBQAwgcoxCzAJ
 BgNVBAYTAlVTMRcwFQYDVQQKEw5WZXJpU2lnbiwgSW5jLjEfMB0GA1UECxMWVmVy
@@ -413,8 +460,11 @@ sQAsBNB0owIFImNjzYO1+8FtYmtpdf1dcEG59b98377BMnMiIYtYgXsVkXq642RI
 sH/7NiXaldDxJBQX3RiAa0YjOVT1jmIJBB2UkKab5iXiQkWquJCtvgiPqQtCGJTP
 cjnhsUPgKM+351psE2tJs//jGHyJizNdrDPXp/naOlXJWBD5qu9ats9LS98q
 -----END CERTIFICATE-----
+#endif
+static const char kSPKIHash_VeriSignClass2_G3[] =
+    "sha1/Wr7Fddyu87COJxlD/H8lDD32YeM=";
 
-VeriSignClass3_G2
+#if 0
 -----BEGIN CERTIFICATE-----
 MIIDAjCCAmsCEH3Z/gfPqB63EHln+6eJNMYwDQYJKoZIhvcNAQEFBQAwgcExCzAJ
 BgNVBAYTAlVTMRcwFQYDVQQKEw5WZXJpU2lnbiwgSW5jLjE8MDoGA1UECxMzQ2xh
@@ -434,8 +484,11 @@ U01UbSuvDV1Ai2TT1+7eVmGSX6bEHRBhNtMsJzzoKQm5EWR0zLVznxxIqbxhAe7i
 F6YM40AIOw7n60RzKprxaZLvcRTDOaxxp5EJb+RxBrO6WVcmeQD2+A2iMzAo1KpY
 oJ2daZH9
 -----END CERTIFICATE-----
+#endif
+static const char kSPKIHash_VeriSignClass3_G2[] =
+    "sha1/GiG0lStik84Ys2XsnA6TTLOB5tQ=";
 
-VeriSignClass2_G2
+#if 0
 -----BEGIN CERTIFICATE-----
 MIIDAzCCAmwCEQC5L2DMiJ+hekYJuFtwbIqvMA0GCSqGSIb3DQEBBQUAMIHBMQsw
 CQYDVQQGEwJVUzEXMBUGA1UEChMOVmVyaVNpZ24sIEluYy4xPDA6BgNVBAsTM0Ns
@@ -455,8 +508,11 @@ nb3/7aHmZuovCfTK1+qlK5X2JGCGTUQug6XELaDTrnhpb3LabK4I8GOSN+a7xDAX
 rXfMSTWqz9iP0b63GJZHc2pUIjRkLbYWm1lbtFFZOrMLFPQS32eg9K0yZF6xRnIn
 jBJ7xUS0rg==
 -----END CERTIFICATE-----
+#endif
+static const char kSPKIHash_VeriSignClass2_G2[] =
+    "sha1/Eje6RRfurSkm/cHN/r7t8t7ZFFw=";
 
-VeriSignClass3_G5
+#if 0
 -----BEGIN CERTIFICATE-----
 MIIE0zCCA7ugAwIBAgIQGNrRniZ96LtKIVjNzGs7SjANBgkqhkiG9w0BAQUFADCB
 yjELMAkGA1UEBhMCVVMxFzAVBgNVBAoTDlZlcmlTaWduLCBJbmMuMR8wHQYDVQQL
@@ -485,8 +541,11 @@ WE9gyn6CagsCqiUXObXbf+eEZSqVir2G3l6BFoMtEMze/aiCKm0oHw0LxOXnGiYZ
 4fQRbxC1lfznQgUy286dUV4otp6F01vvpX1FQHKOtw5rDgb7MzVIcbidJ4vEZV8N
 hnacRHr2lVz2XTIIM6RUthg/aFzyQkqFOFSDX9HoLPKsEdao7WNq
 -----END CERTIFICATE-----
+#endif
+static const char kSPKIHash_VeriSignClass3_G5[] =
+    "sha1/sYEIGhmkwJQf+uiVKMEkyZs0rMc=";
 
-VeriSignUniversal
+#if 0
 -----BEGIN CERTIFICATE-----
 MIIEuTCCA6GgAwIBAgIQQBrEZCGzEyEDDrvkEhrFHTANBgkqhkiG9w0BAQsFADCB
 vTELMAkGA1UEBhMCVVMxFzAVBgNVBAoTDlZlcmlTaWduLCBJbmMuMR8wHQYDVQQL
@@ -515,11 +574,15 @@ BxHw1dvd5Yzw1TKwg+ZX4o+/vqGqvz0dtdQ46tewXDpPaj+PwGZsY6rp2aQW9IHR
 lRQOfc2VNNnSj3BzgXucfr2YYdhFh5iQxeuGMMY1v/D/w1WIg0vvBZIGcfK4mJO3
 7M2CYfE45k+XmCpajQ==
 -----END CERTIFICATE-----
+#endif
+static const char kSPKIHash_VeriSignUniversal[] =
+    "sha1/u8I+KQuzKHcdrT6iTb30I70GsD0=";
 
-Twitter1
-sha1/Vv7zwhR9TtOIN/29MFI4cgHld40=
+// Not public
+static const char kSPKIHash_Twitter1[] =
+    "sha1/Vv7zwhR9TtOIN/29MFI4cgHld40=";
 
-GeoTrustGlobal2
+#if 0
 -----BEGIN CERTIFICATE-----
 MIIDZjCCAk6gAwIBAgIBATANBgkqhkiG9w0BAQUFADBEMQswCQYDVQQGEwJVUzEW
 MBQGA1UEChMNR2VvVHJ1c3QgSW5jLjEdMBsGA1UEAxMUR2VvVHJ1c3QgR2xvYmFs
@@ -541,8 +604,11 @@ abby/+Ea0AzRdoXLiiW9l14sbxWZJue2Kf8i7MkCx1YAzUm5s2x7UwQa4qjJqhIF
 I8LO57sEAszAR6LkxCkvW0VXiVHuPOtSCP8HNR6fNWpHSlaY0VqFH4z1Ir+rzoPz
 4iIprn2DQKi6bA==
 -----END CERTIFICATE-----
+#endif
+static const char kSPKIHash_GeoTrustGlobal2[] =
+    "sha1/cTg28gIxU0crbrplRqkQFVggBQk=";
 
-GeoTrustUniversal
+#if 0
 -----BEGIN CERTIFICATE-----
 MIIFaDCCA1CgAwIBAgIBATANBgkqhkiG9w0BAQUFADBFMQswCQYDVQQGEwJVUzEW
 MBQGA1UEChMNR2VvVHJ1c3QgSW5jLjEeMBwGA1UEAxMVR2VvVHJ1c3QgVW5pdmVy
@@ -574,8 +640,11 @@ ER/frslKxfMnZmaGrGiR/9nmUxwPi1xpZQomyB40w11Re9epnAahNt3ViZS82eQt
 DF4JbAiXfKM9fJP/P6EUp8+1Xevb2xzEdt+Iub1FBZUbrvxGakyvSOPOrg/Sfuvm
 bJxPgWp6ZKy7PtXny3YuxadIwVyQD8vIP/rmMuGNG2+k5o7Y+SlIis5z/iw=
 -----END CERTIFICATE-----
+#endif
+static const char kSPKIHash_GeoTrustUniversal[] =
+    "sha1/h+hbY1PGI6MSjLD/u/VR/lmADiI=";
 
-GeoTrustUniversal2
+#if 0
 -----BEGIN CERTIFICATE-----
 MIIFbDCCA1SgAwIBAgIBATANBgkqhkiG9w0BAQUFADBHMQswCQYDVQQGEwJVUzEW
 MBQGA1UEChMNR2VvVHJ1c3QgSW5jLjEgMB4GA1UEAxMXR2VvVHJ1c3QgVW5pdmVy
@@ -607,8 +676,11 @@ OCiNUW7dFGdTbHFcJoRNdVq2fmBWqU2t+5sel/MN2dKXVHfaPRK34B7vCAas+YWH
 6aLcr34YEoP9VhdBLtUpgn2Z9DH2canPLAEnpQW5qrJITirvn5NSUZU8UnOOVkwX
 QMAJKOSLakhT2+zNVVXxxvjpoixMptEmX36vWkzaH6byHCx+rgIW0lbQL1dTR+iS
 -----END CERTIFICATE-----
+#endif
+static const char kSPKIHash_GeoTrustUniversal2[] =
+    "sha1/Xk9ThoXdT57KX9wNRW99UbHcm3s=";
 
-GeoTrustPrimary_G2
+#if 0
 -----BEGIN CERTIFICATE-----
 MIICrjCCAjWgAwIBAgIQPLL0SAoA4v7rJDteYD7DazAKBggqhkjOPQQDAzCBmDEL
 MAkGA1UEBhMCVVMxFjAUBgNVBAoTDUdlb1RydXN0IEluYy4xOTA3BgNVBAsTMChj
@@ -626,8 +698,11 @@ CCqGSM49BAMDA2cAMGQCMGSWWaboCd6LuvpaiIjwH5HTRqjySkwCY/tsXzjbLkGT
 qQ7mndwxHLKgpxgceeHHNgIwOlavmnRs9vuD4DPTCF+hnMJbn0bWtsuRBmOiBucz
 rD6ogRLQy7rQkgu2npaqBA+K
 -----END CERTIFICATE-----
+#endif
+static const char kSPKIHash_GeoTrustPrimary_G2[] =
+    "sha1/vb6nG6txV/nkddlU0rcngBqCJoI=";
 
-GeoTrustPrimary_G3
+#if 0
 -----BEGIN CERTIFICATE-----
 MIID/jCCAuagAwIBAgIQFaxulBmyeUtB9iepwxgPHzANBgkqhkiG9w0BAQsFADCB
 mDELMAkGA1UEBhMCVVMxFjAUBgNVBAoTDUdlb1RydXN0IEluYy4xOTA3BgNVBAsT
@@ -652,8 +727,11 @@ AWh9jUGhlBjBJVz88P6DAod8DQ3PLghcSkANPuyBYeYk28rgDi0Hsj5W3I31QYUH
 SJsMC8tJP33st/3LjWeJGqvtux6jAAgIFyqCXDFdRootD4abdNlF+9RAsXqqaC2G
 spki4cErx5z481+oghLrGREt
 -----END CERTIFICATE-----
+#endif
+static const char kSPKIHash_GeoTrustPrimary_G3[] =
+    "sha1/nKmNAK90Dd2BgNITRaWLjy6UONY=";
 
-Entrust_2048
+#if 0
 -----BEGIN CERTIFICATE-----
 MIIEKjCCAxKgAwIBAgIEOGPe+DANBgkqhkiG9w0BAQUFADCBtDEUMBIGA1UEChMLRW50cnVzdC5u
 ZXQxQDA+BgNVBAsUN3d3dy5lbnRydXN0Lm5ldC9DUFNfMjA0OCBpbmNvcnAuIGJ5IHJlZi4gKGxp
@@ -675,8 +753,11 @@ zX1XEC+bBAlahLVu2B064dae0Wx5XnkcFMXj0EyTO2U87d89vqbllRrDtRnDvV5bu/8j72gZyxKT
 J1wDLW8w0B62GqzeWvfRqqgnpv55gcR5mTNXuhKwqeBCbJPKVt7+bYQLCIt+jerXmCHG8+c8eS9e
 nNFMFY3h7CI3zJpDC5fcgJCNs2ebb0gIFVbPv/ErfF6adulZkMV8gzURZVE=
 -----END CERTIFICATE-----
+#endif
+static const char kSPKIHash_Entrust_2048[] =
+    "sha1/VeSB0RGAvtiJuQijMfmhJAkWuXA=";
 
-Entrust_EV
+#if 0
 -----BEGIN CERTIFICATE-----
 MIIEkTCCA3mgAwIBAgIERWtQVDANBgkqhkiG9w0BAQUFADCBsDELMAkGA1UEBhMC
 VVMxFjAUBgNVBAoTDUVudHJ1c3QsIEluYy4xOTA3BgNVBAsTMHd3dy5lbnRydXN0
@@ -704,8 +785,11 @@ AGAT/3B+XxFNSRuzFVJ7yVTav52Vr2ua2J7p8eRDjeIRRDq/r72DQnNSi6q7pynP
 eu6FSqdQgPCnXEqULl8FmTxSQeDNtGPPAUO6nIPcj2A781q0tHuu2guQOHXvgR1m
 0vdXcDazv/wor3ElhVsT/h5/WrQ8
 -----END CERTIFICATE-----
+#endif
+static const char kSPKIHash_Entrust_EV[] =
+    "sha1/ukKwgYhTiB2GY71MwF4I/upuu3c=";
 
-Entrust_G2
+#if 0
 -----BEGIN CERTIFICATE-----
 MIIEPjCCAyagAwIBAgIESlOMKDANBgkqhkiG9w0BAQsFADCBvjELMAkGA1UEBhMC
 VVMxFjAUBgNVBAoTDUVudHJ1c3QsIEluYy4xKDAmBgNVBAsTH1NlZSB3d3cuZW50
@@ -731,8 +815,11 @@ Rkfz6/djwUAFQKXSt/S1mja/qYh2iARVBCuch38aNzx+LaUa2NSJXsq9rD1s2G2v
 nAuknZoh8/CbCzB428Hch0P+vGOaysXCHMnHjf87ElgI5rY97HosTvuDls4MPGmH
 VHOkc8KT/1EQrBVUAdj8BbGJoX90g5pJ19xOe4pIb4tF9g==
 -----END CERTIFICATE-----
+#endif
+static const char kSPKIHash_Entrust_G2[] =
+    "sha1/qzDTr0vY8WtYae5FaSnahLhzlIg=";
 
-Entrust_SSL
+#if 0
 -----BEGIN CERTIFICATE-----
 MIIE2DCCBEGgAwIBAgIEN0rSQzANBgkqhkiG9w0BAQUFADCBwzELMAkGA1UEBhMC
 VVMxFDASBgNVBAoTC0VudHJ1c3QubmV0MTswOQYDVQQLEzJ3d3cuZW50cnVzdC5u
@@ -761,8 +848,11 @@ hvcNAQEFBQADgYEAkNwwAvpkdMKnCqV8IY00F6j7Rw7/JXyNEwr75Ji174z4xRAN
 95K+8cPV1ZVqBLssziY2ZcgxxufuP+NXdYR6Ee9GTxj005i7qIcyunL2POI9n9cd
 2cNgQ4xYDiKWL2KjLB+6rQXvqzJ4h6BUcxm1XAX5Uj5tLUUL9wqT6u0G+bI=
 -----END CERTIFICATE-----
+#endif
+static const char kSPKIHash_Entrust_SSL[] =
+    "sha1/8BdiE1U9s/8KAGv7UISX8+1i0Bo=";
 
-AAACertificateServices
+#if 0
 -----BEGIN CERTIFICATE-----
 MIIEMjCCAxqgAwIBAgIBATANBgkqhkiG9w0BAQUFADB7MQswCQYDVQQGEwJHQjEb
 MBkGA1UECAwSR3JlYXRlciBNYW5jaGVzdGVyMRAwDgYDVQQHDAdTYWxmb3JkMRow
@@ -788,8 +878,11 @@ G9w84FoVxp7Z8VlIMCFlA2zs6SFz7JsDoeA3raAVGI/6ugLOpyypEBMs1OUIJqsi
 l2D4kF501KKaU73yqWjgom7C12yxow+ev+to51byrvLjKzg6CYG1a4XXvi3tPxq3
 smPi9WIsgtRqAEFQ8TmDn5XpNpaYbg==
 -----END CERTIFICATE-----
+#endif
+static const char kSPKIHash_AAACertificateServices[] =
+    "sha1/xDAoxdPjCAwQRIssd7okU5dgu/k=";
 
-AddTrustClass1CARoot
+#if 0
 -----BEGIN CERTIFICATE-----
 MIIEGDCCAwCgAwIBAgIBATANBgkqhkiG9w0BAQUFADBlMQswCQYDVQQGEwJTRTEU
 MBIGA1UEChMLQWRkVHJ1c3QgQUIxHTAbBgNVBAsTFEFkZFRydXN0IFRUUCBOZXR3
@@ -814,8 +907,11 @@ eDdXL+gzB2ffHsdrKpV2ro9Xo/D0UrSpUwjP4E/TelOL/bscVjby/rK25Xa71SJl
 pz/+0WatC7xrmYbvP33zGDLKe8bjq2RGlfgmadlVg3sslgf/WSxEo8bl6ancoWOA
 WiFeIc9TVPC6b4nbqKqVz4vjccweGyBECMB6tkD9xOQ14R0WHNC8K47Wcdk=
 -----END CERTIFICATE-----
+#endif
+static const char kSPKIHash_AddTrustClass1CARoot[] =
+    "sha1/i9vXzKBoU0IW9MErJUT8Apyli0c=";
 
-AddTrustExternalCARoot
+#if 0
 -----BEGIN CERTIFICATE-----
 MIIENjCCAx6gAwIBAgIBATANBgkqhkiG9w0BAQUFADBvMQswCQYDVQQGEwJTRTEU
 MBIGA1UEChMLQWRkVHJ1c3QgQUIxJjAkBgNVBAsTHUFkZFRydXN0IEV4dGVybmFs
@@ -841,8 +937,11 @@ Nr4TDea9Y355e6cJDUCrat2PisP29owaQgVR1EX1n6diIWgVIEM8med8vSTYqZEX
 c4g/VhsxOBi0cQ+azcgOno4uG+GMmIPLHzHxREzGBHNJdmAPx/i9F4BrLunMTA5a
 mnkPIAou1Z5jJh5VkpTYghdae9C8x49OhgQ=
 -----END CERTIFICATE-----
+#endif
+static const char kSPKIHash_AddTrustExternalCARoot[] =
+    "sha1/T5x9IXmcrQ7YuQxXnxoCmeeQ84c=";
 
-AddTrustPublicCARoot
+#if 0
 -----BEGIN CERTIFICATE-----
 MIIEFTCCAv2gAwIBAgIBATANBgkqhkiG9w0BAQUFADBkMQswCQYDVQQGEwJTRTEU
 MBIGA1UEChMLQWRkVHJ1c3QgQUIxHTAbBgNVBAsTFEFkZFRydXN0IFRUUCBOZXR3
@@ -867,8 +966,11 @@ GEjwxrzQvzSAlsJKsW2Ox5BF3i9nrEUEo3rcVZLJR2bYGozH7ZxOmuASu7VqTITh
 4SINhwBk/ox9Yjllpu9CtoAlEmEBqCQTcAARJl/6NVDFSMwGR+gn2HCNX2TmoUQm
 XiLsks3/QppEIW1cxeMiHV9HEufOX1362KqxMy3ZdvJOOjMMK7MtkAY=
 -----END CERTIFICATE-----
+#endif
+static const char kSPKIHash_AddTrustPublicCARoot[] =
+    "sha1/qFdl1ugyyMUZY3Namhd0OoHf7i4=";
 
-AddTrustQualifiedCARoot
+#if 0
 -----BEGIN CERTIFICATE-----
 MIIEHjCCAwagAwIBAgIBATANBgkqhkiG9w0BAQUFADBnMQswCQYDVQQGEwJTRTEU
 MBIGA1UEChMLQWRkVHJ1c3QgQUIxHTAbBgNVBAsTFEFkZFRydXN0IFRUUCBOZXR3
@@ -894,8 +996,11 @@ P6CxB9bpT9zeRXEwMn8bLgn5v1Kh7sKAPgZcLlVAwRv1cEWw3F369nJad9Jjzc9Y
 iQBCYz95OdBEsIJuQRno3eDBiFrRHnGTHyQwdOUeqN48Jzd/g66ed8/wMLH/S5no
 xqE=
 -----END CERTIFICATE-----
+#endif
+static const char kSPKIHash_AddTrustQualifiedCARoot[] =
+    "sha1/vOS3IxJVmOVjQRkcUOS2R8J2Bdc=";
 
-COMODOCertificationAuthority
+#if 0
 -----BEGIN CERTIFICATE-----
 MIIEHTCCAwWgAwIBAgIQToEtioJl4AsC7j41AkblPTANBgkqhkiG9w0BAQUFADCB
 gTELMAkGA1UEBhMCR0IxGzAZBgNVBAgTEkdyZWF0ZXIgTWFuY2hlc3RlcjEQMA4G
@@ -921,8 +1026,11 @@ zJVSk/BwJVmcIGfE7vmLV2H0knZ9P4SNVbfo5azV8fUZVqZa+5Acr5Pr5RzUZ5dd
 BA6+C4OmF4O5MBKgxTMVBbkN+8cFduPYSo38NBejxiEovjBFMR7HeL5YYTisO+IB
 ZQ==
 -----END CERTIFICATE-----
+#endif
+static const char kSPKIHash_COMODOCertificationAuthority[] =
+    "sha1/EeSR0cnkwOuazs9zVF3h8agwPsM=";
 
-SecureCertificateServices
+#if 0
 -----BEGIN CERTIFICATE-----
 MIIEPzCCAyegAwIBAgIBATANBgkqhkiG9w0BAQUFADB+MQswCQYDVQQGEwJHQjEb
 MBkGA1UECAwSR3JlYXRlciBNYW5jaGVzdGVyMRAwDgYDVQQHDAdTYWxmb3JkMRow
@@ -948,8 +1056,11 @@ gKvcnDe4IRRLDXE97IMzbtFuMhbsmMcWi1mmNKsFVy2T96oTy9IT4rcuO81rUBcJ
 aD61JlfutuC23bkpgHl9j6PwpCikFcSF9CfUa7/lXORlAnZUtOM3ZiTTGWHIUhDl
 izeauan5Hb/qmZJhlv8BzaFfDbxxvA6sCx1HRR3B7Hzs/Sk=
 -----END CERTIFICATE-----
+#endif
+static const char kSPKIHash_SecureCertificateServices[] =
+    "sha1/PLQahC71XPIaPaVKyNG+OQh2N7w=";
 
-TrustedCertificateServices
+#if 0
 -----BEGIN CERTIFICATE-----
 MIIEQzCCAyugAwIBAgIBATANBgkqhkiG9w0BAQUFADB/MQswCQYDVQQGEwJHQjEb
 MBkGA1UECAwSR3JlYXRlciBNYW5jaGVzdGVyMRAwDgYDVQQHDAdTYWxmb3JkMRow
@@ -975,8 +1086,11 @@ jBc/lDb+XbDABHcTuPQV1T84zJQ6VdCsmPW6AF/ghhmBeC8owH7TzEIK9a5QoNE+
 xqFx7D+gIIxmOom0jtTYsU0lR+4viMi14QVFwL4Ucd56/Y57fU0IlqUSc/Atyjcn
 dBInTMu2l+nZrghtWjlA3QVHdWpaIbOjGM9O9y5Xt5hwXsjEeLBi
 -----END CERTIFICATE-----
+#endif
+static const char kSPKIHash_TrustedCertificateServices[] =
+    "sha1//nLI678ML7sOJhOTkzwsqY3cJJQ=";
 
-UTNDATACorpSGC
+#if 0
 -----BEGIN CERTIFICATE-----
 MIIEXjCCA0agAwIBAgIQRL4Mi1AAIbQR0ypoBqmtaTANBgkqhkiG9w0BAQUFADCB
 kzELMAkGA1UEBhMCVVMxCzAJBgNVBAgTAlVUMRcwFQYDVQQHEw5TYWx0IExha2Ug
@@ -1003,8 +1117,11 @@ KWss5nbZqSl9Mt3JNjy9rjXxEZ4du5A/EkdOjtd+D2JzHVImOBwYSf0wdJrE5SIv
 2MCN7ZF6TACPcn9d2t0bi0Vr591pl6jFVkwPDPafepE39peC4N1xaf92P2BNPM/3
 mfnGV/TJVTl4uix5yaaIK/QI
 -----END CERTIFICATE-----
+#endif
+static const char kSPKIHash_UTNDATACorpSGC[] =
+    "sha1/UzLRs89/+uDxoF2FTpLSnkUdtE8=";
 
-UTNUSERFirstClientAuthenticationandEmail
+#if 0
 -----BEGIN CERTIFICATE-----
 MIIEojCCA4qgAwIBAgIQRL4Mi1AAJLQR0zYlJWfJiTANBgkqhkiG9w0BAQUFADCB
 rjELMAkGA1UEBhMCVVMxCzAJBgNVBAgTAlVUMRcwFQYDVQQHEw5TYWx0IExha2Ug
@@ -1032,8 +1149,11 @@ rfafnoOTHh1CuEava2bwm3/q4wMC5QJRwarVNZ1yQAOJujEdxRBoUp7fooXFXAim
 eOZTT7Hot9MUnpOmw2TjrH5xzbyf6QMbzPvprDHBr3wVdAKZw7JHpsIyYdfHb0gk
 USeh1YdV8nuPmD0Wnu51tvjQjvLzxq4oW6fw8zYX/MMF08oDSlQ=
 -----END CERTIFICATE-----
+#endif
+static const char kSPKIHash_UTNUSERFirstClientAuthenticationandEmail[] =
+    "sha1/iYJnfcSdJnAAS7RQSHzePa4Ebn0=";
 
-UTNUSERFirstHardware
+#if 0
 -----BEGIN CERTIFICATE-----
 MIIEdDCCA1ygAwIBAgIQRL4Mi1AAJLQR0zYq/mUK/TANBgkqhkiG9w0BAQUFADCB
 lzELMAkGA1UEBhMCVVMxCzAJBgNVBAgTAlVUMRcwFQYDVQQHEw5TYWx0IExha2Ug
@@ -1060,8 +1180,11 @@ CJChicsZUN/KHAG8HQQZexB2lzvukJDKxA4fFm517zP4029bHpbj4HR3dHuKom4t
 3XbWOTCC8KucUvIqx69JXn7HaOWCgchqJ/kniCrVWFCVH/A7HFe7fRQ5YiuayZSS
 KqMiDP+JJn1fIytH1xUdqWqeUQ0qUZ6B+dQ7XnASfxAynB67nfhmqA==
 -----END CERTIFICATE-----
+#endif
+static const char kSPKIHash_UTNUSERFirstHardware[] =
+    "sha1/oXJfJhsomEOVXQc31YWWnUvSw0U=";
 
-UTNUSERFirstObject
+#if 0
 -----BEGIN CERTIFICATE-----
 MIIEZjCCA06gAwIBAgIQRL4Mi1AAJLQR0zYt4LNfGzANBgkqhkiG9w0BAQUFADCB
 lTELMAkGA1UEBhMCVVMxCzAJBgNVBAgTAlVUMRcwFQYDVQQHEw5TYWx0IExha2Ug
@@ -1088,8 +1211,11 @@ mMiKVl0+7kNOPmsnjtA6S4ULX9Ptaqd1y9Fahy85dRNacrACgZ++8A+EVCBibGnU
 81OtbLUrohKqGU8J2l7nk8aOFAj+8DCAGKCGhU3IfdeLA/5u1fedFqySLKAj5ZyR
 Uh+U3xeUc8OzwcFxBSAAeL0TUh2oPs0AH8g=
 -----END CERTIFICATE-----
+#endif
+static const char kSPKIHash_UTNUSERFirstObject[] =
+    "sha1/2u1kdBScFDyr3ZmpvVsoTYs8ydg=";
 
-GTECyberTrustGlobalRoot
+#if 0
 -----BEGIN CERTIFICATE-----
 MIICWjCCAcMCAgGlMA0GCSqGSIb3DQEBBAUAMHUxCzAJBgNVBAYTAlVTMRgwFgYD
 VQQKEw9HVEUgQ29ycG9yYXRpb24xJzAlBgNVBAsTHkdURSBDeWJlclRydXN0IFNv
@@ -1105,3 +1231,8 @@ GwnpXtlR22ciYaQqPEh346B8pt5zohQDhT37qw4wxYMWM4ETCJ57NE7fQMh017l9
 3PR2VX2bY1QY6fDq81yx2YtCHrnAlU66+tXifPVoYb+O7AWXX1uw16OFNMQkpw0P
 lZPvy5TYnh+dXIVtx6quTx8itc2VrbqnzPmrC3p/
 -----END CERTIFICATE-----
+#endif
+static const char kSPKIHash_GTECyberTrustGlobalRoot[] =
+    "sha1/WXkS3mF11m/EI7d3E3THlt5viHI=";
+
+#endif // NET_BASE_PUBLIC_KEY_HASHES_
