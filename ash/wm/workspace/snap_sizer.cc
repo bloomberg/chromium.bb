@@ -96,8 +96,9 @@ void SnapSizer::ChangeBounds(int x, int delta) {
 gfx::Rect SnapSizer::GetTargetBounds() const {
   gfx::Rect work_area(ScreenAsh::GetUnmaximizedWorkAreaBounds(window_));
   int y = WindowResizer::AlignToGridRoundUp(work_area.y(), grid_size_);
-  int max_y =
-      WindowResizer::AlignToGridRoundDown(work_area.bottom(), grid_size_);
+  // We don't align to the bottom of the grid as the launcher may not
+  // necessarily align to the grid (happens when auto-hidden).
+  int max_y = work_area.bottom();
   int width = static_cast<float>(work_area.width()) * kPercents[percent_index_];
   if (edge_ == LEFT_EDGE) {
     int x = WindowResizer::AlignToGridRoundUp(work_area.x(), grid_size_);
