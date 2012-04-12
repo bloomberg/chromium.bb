@@ -46,14 +46,28 @@ bool IsLumpy() {
 
 static const char kFallbackInputMethodLocale[] = "en-US";
 
-Preferences::Preferences() {}
+Preferences::Preferences()
+    : input_method_manager_(input_method::InputMethodManager::GetInstance()) {
+}
+
+Preferences::Preferences(input_method::InputMethodManager* input_method_manager)
+    : input_method_manager_(input_method_manager) {
+}
 
 Preferences::~Preferences() {}
 
 // static
 void Preferences::RegisterUserPrefs(PrefService* prefs) {
-  input_method::InputMethodManager* manager =
-      input_method::InputMethodManager::GetInstance();
+  std::string hardware_keyboard_id;
+  // TODO(yusukes): Remove the runtime hack.
+  if (base::chromeos::IsRunningOnChromeOS()) {
+    input_method::InputMethodManager* manager =
+        input_method::InputMethodManager::GetInstance();
+    hardware_keyboard_id =
+        manager->GetInputMethodUtil()->GetHardwareInputMethodId();
+  } else {
+    hardware_keyboard_id = "xkb:us::eng";  // only for testing.
+  }
 
   const bool enable_tap_to_click_default = IsLumpy();
   prefs->RegisterBooleanPref(prefs::kTapToClickEnabled,
@@ -133,10 +147,9 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterStringPref(prefs::kLanguagePreferredLanguages,
                             kFallbackInputMethodLocale,
                             PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterStringPref(
-      prefs::kLanguagePreloadEngines,
-      manager->GetInputMethodUtil()->GetHardwareInputMethodId(),
-      PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterStringPref(prefs::kLanguagePreloadEngines,
+                            hardware_keyboard_id,
+                            PrefService::UNSYNCABLE_PREF);
   for (size_t i = 0; i < language_prefs::kNumChewingBooleanPrefs; ++i) {
     prefs->RegisterBooleanPref(
         language_prefs::kChewingBooleanPrefs[i].pref_name,
@@ -251,7 +264,7 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
                             PrefService::UNSYNCABLE_PREF);
 }
 
-void Preferences::Init(PrefService* prefs) {
+void Preferences::InitUserPrefs(PrefService* prefs) {
   tap_to_click_enabled_.Init(prefs::kTapToClickEnabled, prefs, this);
   natural_scroll_.Init(prefs::kNaturalScroll, prefs, this);
   accessibility_enabled_.Init(prefs::kSpokenFeedbackEnabled, prefs, this);
@@ -328,6 +341,10 @@ void Preferences::Init(PrefService* prefs) {
       prefs::kLanguageXkbAutoRepeatInterval, prefs, this);
 
   enable_screen_lock_.Init(prefs::kEnableScreenLock, prefs, this);
+}
+
+void Preferences::Init(PrefService* prefs) {
+  InitUserPrefs(prefs);
 
   // Initialize preferences to currently saved state.
   NotifyPrefChanged(NULL);
@@ -340,6 +357,14 @@ void Preferences::Init(PrefService* prefs) {
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kGuestSession)) {
     LoginUtils::Get()->SetFirstLoginPrefs(prefs);
   }
+}
+
+void Preferences::InitUserPrefsForTesting(PrefService* prefs) {
+  InitUserPrefs(prefs);
+}
+
+void Preferences::SetInputMethodListForTesting() {
+  SetInputMethodList();
 }
 
 void Preferences::Observe(int type,
@@ -433,29 +458,16 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
     UpdateAutoRepeatRate();
   }
 
-  if (!pref_name || *pref_name == prefs::kLanguagePreloadEngines) {
+  if (!pref_name) {
+    SetInputMethodList();
+  } else if (*pref_name == prefs::kLanguagePreloadEngines) {
     SetLanguageConfigStringListAsCSV(language_prefs::kGeneralSectionName,
                                      language_prefs::kPreloadEnginesConfigName,
                                      preload_engines_.GetValue());
   }
 
-  // Do not check |*pref_name| for the two prefs. We're only interested in
-  // initial values of the prefs.
-  if (!pref_name) {
-    const std::string previous_input_method_id =
-        previous_input_method_.GetValue();
-    const std::string current_input_method_id =
-        current_input_method_.GetValue();
-    // NOTICE: ChangeInputMethod() has to be called AFTER the value of
-    // |preload_engines_| is sent to the InputMethodManager. Otherwise, the
-    // ChangeInputMethod request might be ignored as an invalid input method ID.
-    input_method::InputMethodManager* manager =
-        input_method::InputMethodManager::GetInstance();
-    if (!previous_input_method_id.empty())
-      manager->ChangeInputMethod(previous_input_method_id);
-    if (!current_input_method_id.empty())
-      manager->ChangeInputMethod(current_input_method_id);
-  }
+  // Do not check |*pref_name| of the prefs for remembering current/previous
+  // input methods here. We're only interested in initial values of the prefs.
 
   for (size_t i = 0; i < language_prefs::kNumChewingBooleanPrefs; ++i) {
     if (!pref_name ||
@@ -569,8 +581,7 @@ void Preferences::SetLanguageConfigBoolean(const char* section,
   input_method::InputMethodConfigValue config;
   config.type = input_method::InputMethodConfigValue::kValueTypeBool;
   config.bool_value = value;
-  input_method::InputMethodManager::GetInstance()->
-      SetInputMethodConfig(section, name, config);
+  input_method_manager_->SetInputMethodConfig(section, name, config);
 }
 
 void Preferences::SetLanguageConfigInteger(const char* section,
@@ -579,8 +590,7 @@ void Preferences::SetLanguageConfigInteger(const char* section,
   input_method::InputMethodConfigValue config;
   config.type = input_method::InputMethodConfigValue::kValueTypeInt;
   config.int_value = value;
-  input_method::InputMethodManager::GetInstance()->
-      SetInputMethodConfig(section, name, config);
+  input_method_manager_->SetInputMethodConfig(section, name, config);
 }
 
 void Preferences::SetLanguageConfigString(const char* section,
@@ -589,8 +599,7 @@ void Preferences::SetLanguageConfigString(const char* section,
   input_method::InputMethodConfigValue config;
   config.type = input_method::InputMethodConfigValue::kValueTypeString;
   config.string_value = value;
-  input_method::InputMethodManager::GetInstance()->
-      SetInputMethodConfig(section, name, config);
+  input_method_manager_->SetInputMethodConfig(section, name, config);
 }
 
 void Preferences::SetLanguageConfigStringList(
@@ -602,8 +611,7 @@ void Preferences::SetLanguageConfigStringList(
   for (size_t i = 0; i < values.size(); ++i)
     config.string_list_value.push_back(values[i]);
 
-  input_method::InputMethodManager::GetInstance()->
-      SetInputMethodConfig(section, name, config);
+  input_method_manager_->SetInputMethodConfig(section, name, config);
 }
 
 void Preferences::SetLanguageConfigStringListAsCSV(const char* section,
@@ -618,6 +626,31 @@ void Preferences::SetLanguageConfigStringListAsCSV(const char* section,
   // We should call the cros API even when |value| is empty, to disable default
   // config.
   SetLanguageConfigStringList(section, name, split_values);
+}
+
+void Preferences::SetInputMethodList() {
+  // When |preload_engines_| are set, InputMethodManager::ChangeInputMethod()
+  // might be called to change the current input method to the first one in the
+  // |preload_engines_| list. This also updates previous/current input method
+  // prefs. That's why GetValue() calls are placed before the
+  // SetLanguageConfigStringListAsCSV() call below.
+  const std::string previous_input_method_id =
+      previous_input_method_.GetValue();
+  const std::string current_input_method_id = current_input_method_.GetValue();
+  SetLanguageConfigStringListAsCSV(language_prefs::kGeneralSectionName,
+                                   language_prefs::kPreloadEnginesConfigName,
+                                   preload_engines_.GetValue());
+
+  // ChangeInputMethod() has to be called AFTER the value of |preload_engines_|
+  // is sent to the InputMethodManager. Otherwise, the ChangeInputMethod request
+  // might be ignored as an invalid input method ID. The ChangeInputMethod()
+  // calls are also necessary to restore the previous/current input method prefs
+  // which could have been modified by the SetLanguageConfigStringListAsCSV call
+  // above to the original state.
+  if (!previous_input_method_id.empty())
+    input_method_manager_->ChangeInputMethod(previous_input_method_id);
+  if (!current_input_method_id.empty())
+    input_method_manager_->ChangeInputMethod(current_input_method_id);
 }
 
 void Preferences::UpdateModifierKeyMapping() {
@@ -641,8 +674,7 @@ void Preferences::UpdateModifierKeyMapping() {
         input_method::ModifierKeyPair(
             input_method::kLeftAltKey,
             input_method::ModifierKey(alt_remap)));
-    input_method::InputMethodManager::GetInstance()->GetXKeyboard()->
-        RemapModifierKeys(modifier_map);
+    input_method_manager_->GetXKeyboard()->RemapModifierKeys(modifier_map);
   } else {
     LOG(ERROR) << "Failed to remap modifier keys. Unexpected value(s): "
                << search_remap << ", " << control_remap << ", " << alt_remap;
