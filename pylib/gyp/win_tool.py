@@ -60,7 +60,7 @@ class WinTool(object):
     out, _ = popen.communicate()
     for line in out.splitlines():
       if not line.startswith('   Creating library '):
-        sys.stdout.write(line)
+        print line
     return popen.returncode
 
   def ExecMidlWrapper(self, outdir, tlb, h, dlldata, iid, proxy, idl, *flags):
@@ -87,7 +87,7 @@ class WinTool(object):
     processing = set(os.path.basename(x) for x in lines if x.startswith(prefix))
     for line in lines:
       if not line.startswith(prefix) and line not in processing:
-        sys.stdout.write(line)
+        print line
     return popen.returncode
 
   def ExecRcWrapper(self, *args):
@@ -99,7 +99,7 @@ class WinTool(object):
     for line in out.splitlines():
       if (not line.startswith('Microsoft (R) Windows (R) Resource Compiler') and
           not line.startswith('Copyright (C) Microsoft Corporation')):
-        sys.stdout.write(line)
+        print line
     return popen.returncode
 
 if __name__ == '__main__':
