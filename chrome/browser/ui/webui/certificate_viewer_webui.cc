@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/i18n/time_formatting.h"
+#include "base/json/json_writer.h"
 #include "base/utf_string_conversions.h"
 #include "base/string_number_conversions.h"
 #include "chrome/browser/certificate_viewer.h"
@@ -101,61 +102,8 @@ void CertificateViewerDialog::GetDialogSize(gfx::Size* size) const {
 }
 
 std::string CertificateViewerDialog::GetDialogArgs() const {
-  return std::string();
-}
+  std::string data;
 
-void CertificateViewerDialog::OnDialogClosed(const std::string& json_retval) {
-  delete this;
-}
-
-void CertificateViewerDialog::OnCloseContents(WebContents* source,
-                                              bool* out_close_dialog) {
-  if (out_close_dialog)
-    *out_close_dialog = true;
-}
-
-bool CertificateViewerDialog::ShouldShowDialogTitle() const {
-  return true;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// CertificateViewerDialogHandler
-
-CertificateViewerDialogHandler::CertificateViewerDialogHandler(
-    gfx::NativeWindow window,
-    net::X509Certificate* cert) : cert_(cert), window_(window) {
-  x509_certificate_model::GetCertChainFromCert(cert_->os_cert_handle(),
-      &cert_chain_);
-}
-
-CertificateViewerDialogHandler::~CertificateViewerDialogHandler() {
-}
-
-void CertificateViewerDialogHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback("exportCertificate",
-      base::Bind(&CertificateViewerDialogHandler::ExportCertificate,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("requestCertificateInfo",
-      base::Bind(&CertificateViewerDialogHandler::RequestCertificateInfo,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("requestCertificateFields",
-      base::Bind(&CertificateViewerDialogHandler::RequestCertificateFields,
-                 base::Unretained(this)));
-}
-
-void CertificateViewerDialogHandler::ExportCertificate(
-    const base::ListValue* args) {
-  int cert_index = GetCertificateIndex(args);
-  if (cert_index < 0)
-    return;
-
-  ShowCertExportDialog(web_ui()->GetWebContents(),
-                       window_,
-                       cert_chain_[cert_index]);
-}
-
-void CertificateViewerDialogHandler::RequestCertificateInfo(
-    const base::ListValue* args) {
   // Certificate information. The keys in this dictionary's general key
   // correspond to the IDs in the Html page.
   DictionaryValue cert_info;
@@ -245,8 +193,59 @@ void CertificateViewerDialogHandler::RequestCertificateInfo(
   // Set the last node as the top of the certificate hierarchy.
   cert_info.Set("hierarchy", children);
 
-  // Send certificate information to javascript.
-  web_ui()->CallJavascriptFunction("cert_viewer.getCertificateInfo", cert_info);
+    base::JSONWriter::WriteWithOptions(
+          &cert_info,
+          base::JSONWriter::OPTIONS_DO_NOT_ESCAPE,
+          &data);
+
+  return data;
+}
+
+void CertificateViewerDialog::OnDialogClosed(const std::string& json_retval) {
+  delete this;
+}
+
+void CertificateViewerDialog::OnCloseContents(WebContents* source,
+                                              bool* out_close_dialog) {
+  if (out_close_dialog)
+    *out_close_dialog = true;
+}
+
+bool CertificateViewerDialog::ShouldShowDialogTitle() const {
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// CertificateViewerDialogHandler
+
+CertificateViewerDialogHandler::CertificateViewerDialogHandler(
+    gfx::NativeWindow window,
+    net::X509Certificate* cert) : cert_(cert), window_(window) {
+  x509_certificate_model::GetCertChainFromCert(cert_->os_cert_handle(),
+      &cert_chain_);
+}
+
+CertificateViewerDialogHandler::~CertificateViewerDialogHandler() {
+}
+
+void CertificateViewerDialogHandler::RegisterMessages() {
+  web_ui()->RegisterMessageCallback("exportCertificate",
+      base::Bind(&CertificateViewerDialogHandler::ExportCertificate,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("requestCertificateFields",
+      base::Bind(&CertificateViewerDialogHandler::RequestCertificateFields,
+                 base::Unretained(this)));
+}
+
+void CertificateViewerDialogHandler::ExportCertificate(
+    const base::ListValue* args) {
+  int cert_index = GetCertificateIndex(args);
+  if (cert_index < 0)
+    return;
+
+  ShowCertExportDialog(web_ui()->GetWebContents(),
+                       window_,
+                       cert_chain_[cert_index]);
 }
 
 void CertificateViewerDialogHandler::RequestCertificateFields(

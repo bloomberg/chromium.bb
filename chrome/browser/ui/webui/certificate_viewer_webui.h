@@ -91,10 +91,6 @@ class CertificateViewerDialogHandler : public content::WebUIMessageHandler {
   // The input is an integer index to the certificate in the chain to view.
   void RequestCertificateFields(const base::ListValue* args);
 
-  // Extracts the certificate details and returns them to the javascript
-  // function cert_viewer.getCertificateInfo in a dictionary structure.
-  void RequestCertificateInfo(const base::ListValue* args);
-
   // Helper function to get the certificate index from |args|. Returns -1 if
   // the index is out of range.
   int GetCertificateIndex(const base::ListValue* args) const;

@@ -10,15 +10,29 @@ cr.define('cert_viewer', function() {
    * substituting in translated strings and requesting certificate details.
    */
   function initialize() {
-    $('export').onclick = exportCertificate;
     cr.ui.decorate('tabbox', cr.ui.TabBox);
 
-    initializeTree($('hierarchy'), showCertificateFields);
-    initializeTree($('cert-fields'), showCertificateFieldValue);
-
     i18nTemplate.process(document, templateData);
+
+    var args = JSON.parse(chrome.dialogArguments);
+    getCertificateInfo(args);
+
+    // The second tab's contents aren't visible on startup, so we can
+    // shorten startup by not populating those controls until after we
+    // have had a chance to draw the visible controls the first time.
+    // The value of 200ms is quick enough that the user couldn't open the
+    // tab in that time but long enough to allow the first tab to draw on
+    // even the slowest machine.
+    setTimeout(function() {
+      initializeTree($('hierarchy'), showCertificateFields);
+      initializeTree($('cert-fields'), showCertificateFieldValue);
+      createCertificateHierarchy(args.hierarchy);
+    }, 200);
+
     stripGtkAccessorKeys();
-    chrome.send('requestCertificateInfo');
+
+    $('export').onclick = exportCertificate;
+
     // TODO(kochi): ESC key should be handled in the views window side.
     document.addEventListener('keydown', function(e) {
       if (e.keyCode == 27)  // ESC
@@ -72,7 +86,6 @@ cr.define('cert_viewer', function() {
     for (var key in certInfo.general) {
       $(key).textContent = certInfo.general[key];
     }
-    createCertificateHierarchy(certInfo.hierarchy);
   }
 
   /**
@@ -147,7 +160,7 @@ cr.define('cert_viewer', function() {
     treeItem.add(treeItem.detail.children['root'] =
         constructTree(certFields[0]));
     revealTree(treeItem);
-    // Ensure the list is scrolled  to the top by selecting the first item.
+    // Ensure the list is scrolled to the top by selecting the first item.
     treeItem.children[0].selected = true;
   }
 
@@ -173,7 +186,6 @@ cr.define('cert_viewer', function() {
 
   return {
     initialize: initialize,
-    getCertificateInfo: getCertificateInfo,
     getCertificateFields: getCertificateFields,
   };
 });
