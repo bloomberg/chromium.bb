@@ -2396,8 +2396,8 @@ void Browser::ShowHistoryTab() {
 
 void Browser::ShowDownloadsTab() {
   content::RecordAction(UserMetricsAction("ShowDownloads"));
-#if !defined(OS_CHROMEOS)
-  // ChromiumOS uses ActiveDownloadsUI instead of of DownloadShelf.
+#if !defined(OS_CHROMEOS) || defined(USE_AURA)
+  // ChromiumOS (non-Aura) uses ActiveDownloadsUI instead of of DownloadShelf.
   if (window()) {
     DownloadShelf* shelf = window()->GetDownloadShelf();
     if (shelf->IsShowing())

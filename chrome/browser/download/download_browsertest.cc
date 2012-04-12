@@ -1108,6 +1108,28 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, PerWindowShelf) {
 }
 #endif  // !OS_CHROMEOS
 
+#if !defined(OS_CHROMEOS) || defined(USE_AURA)
+// Check whether the downloads shelf is closed when the downloads tab is
+// invoked.
+IN_PROC_BROWSER_TEST_F(DownloadTest, CloseShelfOnDownloadsTab) {
+  ASSERT_TRUE(InitialSetup(false));
+  FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
+  GURL url(URLRequestMockHTTPJob::GetMockUrl(file));
+
+  // Download the file and wait.  We do not expect the Select File dialog.
+  DownloadAndWait(browser(), url, EXPECT_NO_SELECT_DIALOG);
+
+  // Check state.
+  EXPECT_EQ(1, browser()->tab_count());
+  CheckDownloadUI(browser(), true, true, file);
+
+  // Open the downloads tab.
+  browser()->ShowDownloadsTab();
+  // The shelf should now be closed.
+  CheckDownloadUI(browser(), false, false, FilePath());
+}
+#endif
+
 // UnknownSize and KnownSize are tests which depend on
 // URLRequestSlowDownloadJob to serve content in a certain way. Data will be
 // sent in two chunks where the first chunk is 35K and the second chunk is 10K.
